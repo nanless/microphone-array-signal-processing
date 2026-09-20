@@ -1,4 +1,4 @@
-> ⚠️ 本篇是系列教程第 13 篇（共 13 篇），可独立阅读，前后篇见下方导航。
+> ⚠️ 本篇是系列教程第 13 章（共 13 章），可独立阅读，前后篇见下方导航。
 >
 > 🏠 首页导读：[`00_overview.md`](./00_overview.md) ｜ 上一篇：[12_appendix-symbols-math.md](./12_appendix-symbols-math.md) ｜ 下一篇：（无）
 
@@ -37,7 +37,7 @@
 
 **期刊**：IEEE/ACM Transactions on Audio, Speech, and Language Processing（TASLP，本领域主刊）、IEEE JSTSP（信号处理选题特刊）、JASA（美国声学学会刊）、Speech Communication。
 
-**挑战赛**（入门者建立“什么难、做到什么水平”直觉的最快途径）：CHiME（远场多通道识别，已办 9 届——CHiME-9 于 2026 年 5 月在巴塞罗那与 HSCMA、ICASSP 2026 同期举办，两个新任务：MCoRec 多会话鸡尾酒会转写+会话聚类、ECHI 低延迟助听对话增强，见 §13.3）、DCASE（声事件检测与定位 SELD）、REVERB（去混响）、ICASSP DNS/AEC Challenge（降噪与回声消除）、SPEAR（AR 设备语音增强）。
+**挑战赛**（入门者建立“什么难、做到什么水平”直觉的最快途径）：CHiME（远场多通道识别，已办 9 届——CHiME-9 于 2026 年 5 月在巴塞罗那与 HSCMA、ICASSP 2026 同期举办，两个新任务：MCoRec 多会话鸡尾酒会转写+会话聚类、ECHI 低延迟助听对话增强，见 §13.3；CHiME-10 定于 2026 年 7 月举办（ECHI-2/URGENT/SG-TSE 三个新任务，成绩待补））、DCASE（声事件检测与定位 SELD）、REVERB（去混响）、ICASSP DNS/AEC Challenge（降噪与回声消除）、SPEAR（AR 设备语音增强）。
 
 **历史脉络**（本领域是雷达/声呐技术向语音的迁移史）：
 
@@ -56,7 +56,7 @@
 | 2014 | Amazon Echo（6+1 圆环麦克风）开启消费级远场语音时代 |
 | 2015–18 | CHiME-3/4/5 引爆“掩码 + 波束形成”路线；GSS（2018） |
 | 2019–24 | DNN 定位/追踪（ACCDOA：声源活动与方向联合输出，Shimada et al., ICASSP 2021）、端到端一体化；CHiME-7/8 大模型后端；STARSS24（DCASE 2024 Task 3）新增声源距离估计子任务 |
-| 2025–26 | CHiME-9（巴塞罗那，与 HSCMA/ICASSP 2026 同期）：MCoRec 多会话鸡尾酒会转写+会话聚类、ECHI 低延迟助听对话增强 |
+| 2025–26 | CHiME-9（巴塞罗那，与 HSCMA/ICASSP 2026 同期）：MCoRec 多会话鸡尾酒会转写+会话聚类、ECHI 低延迟助听对话增强；CHiME-10（2026 年 7 月，ECHI-2/URGENT/SG-TSE）已定，成绩待补 |
 
 ### 13.3 研究前沿速览（2024—）
 
@@ -68,9 +68,9 @@
 2. **阵列无关（array-agnostic）系统**：CHiME-8 的重要结论——不依赖具体阵列拓扑、可跨设备泛化的系统已能与针对特定几何定制的系统打平，意味着“算法摆脱硬件绑定”正在成真。[CHiME-8 DASR](https://www.isca-archive.org/chime_2024/cornell24_chime.html "citation")
 3. **目标说话人提取（本节第 3 条，Target Speaker Extraction，简称 TSE）**：不只是“听某个方向”，而是“听某个**人**”——用几秒钟注册语音或指向方向作提示，从混杂中抽出目标音轨；AR 眼镜微型阵列（SPEAR 挑战赛）、手机上的微结构辅助方向提取（SonicSieve）是热点载体。[SonicSieve, arXiv:2504.10793](https://arxiv.org/abs/2504.10793 "citation")只听注册声纹、不看方向的主流做法是 TEA-PSE（ICASSP 2022会议版，DOI 10.1109/ICASSP43922.2022.9747765；3.0版 arXiv:2303.07704）/ CIENet 一族：拿注册语音提声纹嵌入，做条件注入、帧级对齐，直接映射出目标掩码——§6.1.6 的 pAEC（“只留机主”，15~25 s 注册语音提嵌入）技术底座正是它，也是个性化增强赛道（DNS 挑战赛个性化 track）的主流解法。
 4. **神经差分/方向滤波**：把第 5 章的超指向、DMA 参数化进可学习结构（如可转向高阶神经差分波束形成器），解析骨架+学习参数的混合路线正在成为高端小型设备（耳机、眼镜）的主流思路——近年 IWAENC/EUSIPCO 上此类“解析骨架+学习参数”的工作明显增多（定性趋势，代表性论文尚待沉淀）。
-5. **生成式语音增强走向成熟**：扩散模型把语音增强从“回归一个干净谱”改写为“以带噪语音为条件生成干净语音”——SGMSE+（Richter et al., IEEE/ACM TASLP 2023）在复数 STFT 域做随机微分方程扩散，StoRM（Lemercier et al., IEEE/ACM TASLP 2023）进一步把扩散与回归桥接、降低采样成本。方法学上由此形成一条分界：**预测式（discriminative）**方法直接映射输入到输出，稳定、可控、指标友好；**生成式（generative）**方法从噪声中采样重建，听感更自然、对训练分布外的噪声泛化更好，但存在“幻觉”风险——可能生成参考信号中并不存在的语音内容，听感讨喜却可能骗过客观指标、坑了下游识别。实务建议：以听感为终点的产品（助听器、通话）可积极采用，以识别为终点的前端需谨慎评估幻觉带来的 WER 代价。[SGMSE+ 代码与论文](https://github.com/sp-uhh/sgmse "citation")、 [StoRM 代码与论文](https://github.com/sp-uhh/storm "citation")2024—2025 的主线是“更快、更稳”：流匹配（flow matching）把弯曲的扩散轨迹拉直，采样步数大减；单步蒸馏/一致性模型把多步采样压到一步，瞄准实时链路——分离侧的 FlowSep（ICASSP 2025）就是该趋势的证据：整流流匹配在 VAE 隐空间学“噪声→目标”的直线轨迹，质量与效率双超扩散式基线。[FlowSep, arXiv:2409.07614](https://arxiv.org/abs/2409.07614 "citation")“采样太慢进不了实时链路”是生成式全家的病，AEC 侧的 FADI-AEC（score 适配压到每帧一次，§6.1.15）吃的正是同一种药。还有一句实话：上面全是单通道复数谱扩散——多通道扩散（空间协方差建模+生成）至今仍是开放问题，远没到 §5.9 掩码+MVDR 的成熟度，别以为扩散已包打一切。
+5. **生成式语音增强走向成熟**：扩散模型把语音增强从“回归一个干净谱”改写为“以带噪语音为条件生成干净语音”——SGMSE+（Richter et al., IEEE/ACM TASLP 2023）在复数 STFT 域做随机微分方程扩散，StoRM（Lemercier et al., IEEE/ACM TASLP 2023）进一步把扩散与回归桥接、降低采样成本。方法学上由此形成一条分界：**预测式（discriminative）**方法直接映射输入到输出，稳定、可控、指标友好；**生成式（generative）**方法从噪声中采样重建，听感更自然、对训练分布外的噪声泛化更好，但存在“幻觉”风险——可能生成参考信号中并不存在的语音内容，听感讨喜却可能骗过客观指标、坑了下游识别。实务建议：以听感为终点的产品（助听器、通话）可积极采用，以识别为终点的前端需谨慎评估幻觉带来的 WER 代价。[SGMSE+ 代码与论文](https://github.com/sp-uhh/sgmse "citation")、 [StoRM 代码与论文](https://github.com/sp-uhh/storm "citation")2024—2025 的主线是“更快、更稳”：流匹配（flow matching）把弯曲的扩散轨迹拉直，采样步数大减；单步蒸馏/一致性模型把多步采样压到一步，瞄准实时链路——分离侧的 FlowSep（ICASSP 2025）就是该趋势的证据：整流流匹配在 VAE 隐空间学“噪声→目标”的直线轨迹，质量与效率双超扩散式基线（FlowSep 做的是 LASS 文本查询通用音频分离，VAE 隐空间 + vocoder，结论外推到语音增强要谨慎）。[FlowSep, arXiv:2409.07614](https://arxiv.org/abs/2409.07614 "citation")“采样太慢进不了实时链路”是生成式全家的病，AEC 侧的 FADI-AEC（score 适配压到每帧一次，§6.1.15）吃的正是同一种药。还有一句实话：上面全是单通道复数谱扩散——多通道扩散（空间协方差建模+生成）至今仍是开放问题，远没到 §5.9 掩码+MVDR 的成熟度，别以为扩散已包打一切。
 6. **TF-GridNet 与复数谱映射骨干**：Wang et al. 的 TF-GridNet（IEEE/ACM TASLP 2023）原文做的是单通道说话人分离（WSJ0-2mix 上报告 23.4 dB SI-SDRi，见原文摘要），是常用的对照基线之一；多通道论文多借用其帧内/帧间双路径思想，新方法的“打擂对象”常是它或其变体。[TF-GridNet, arXiv:2209.03952](https://arxiv.org/abs/2209.03952 "citation")它的 RNN-free 继任者是 TF-Locoformer（2024）：把双路径里的 RNN 换成“卷积 FFN 夹注意力”的纯 Transformer 块，并行好训、性能持平甚至反超（IWAENC 2024）。这么看后 TF-GridNet 时代有两条线——Transformer 化（TF-Locoformer，本条）与状态空间化（Mamba，下条），骨干从 RNN 双路径分叉了。[TF-Locoformer, arXiv:2408.03440](https://arxiv.org/abs/2408.03440 "citation")
-7. **Mamba/状态空间模型进入语音分离**：SPMamba（2024）把 TF-GridNet 的双路径骨干换成状态空间模型，以线性复杂度建模长序列，在长会议录音上同时拿到性能与效率；SepMamba（ICASSP 2025）进一步把 Mamba 引入说话人分离。线性复杂度的长序列建模正在冲击 Transformer 前端在超长录音上的统治地位。[SPMamba, arXiv:2404.02063](https://arxiv.org/abs/2404.02063 "citation")
+7. **Mamba/状态空间模型进入语音分离**：SPMamba（2024）把 TF-GridNet 的双路径骨干换成状态空间模型，以线性复杂度建模长序列，在 WSJ0-2Mix/WHAM!/Libri2Mix/Echo2Mix 上拿到性能与效率（摘要口径）；SepMamba（ICASSP 2025）进一步把 Mamba 引入说话人分离。线性复杂度的长序列建模正在冲击 Transformer 前端在超长录音上的统治地位。[SPMamba, arXiv:2404.02063](https://arxiv.org/abs/2404.02063 "citation")
 8. **几何无关前端的第二条证据链**：继 CHiME-8 DASR 之后，NTT 把其几何无关多说话人远场识别系统整理为期刊版（Kamo et al., *Microphone Array Geometry-Independent Multi-Talker Distant ASR*, Computer Speech & Language 95:101820, 2026）——不依赖阵列拓扑的系统在真实会议数据上站稳了脚跟，“算法摆脱硬件绑定”从挑战赛结论升级为期刊级证据。
 9. **CHiME-9 动态与 LLM 耦合**：CHiME-9（2026 年 5 月，巴塞罗那，HSCMA/ICASSP 2026 卫星会）设两个新任务——**MCoRec**：单台 360° 音视频设备转写同屋多场并行会话并做会话聚类（回答“谁在何时对同组的谁说了什么”）；**ECHI**：助听设备对话增强，显式约束低延迟。[CHiME-9 官网](https://www.chimechallenge.org/challenges/chime9/index "citation") 与此同时，“前端输出给谁用”正在从 ASR 扩展到 LLM：DiCoW（Polok et al., Computer Speech & Language, 2025）把分割结果作为条件注入 Whisper 做目标说话人识别，前端与大模型的耦合开始成为系统设计的默认选项。
 
@@ -170,7 +170,7 @@
 **第 2 章（基础）**
 
 2. 手算：3 麦线阵、间距 3 cm、声源 45°、频率 2 kHz，写出导向矢量；该频率是否超过无混叠上限？6 kHz 呢？（参考答案：2 kHz 时 $\lambda=17.15$ cm，$\psi=\frac{2\pi d}{\lambda}\sin45°\approx0.777$ rad（44.5°），$\vec{a}=[1,\ e^{-j0.777},\ e^{-j1.554}]^\top\approx[1,\ 0.713-0.701j,\ 0.016-1.000j]^\top$；$d=3$ cm $< \lambda/2=8.58$ cm，不超上限。6 kHz 时 $\lambda=5.72$ cm，$\lambda/2=2.86$ cm $< 3$ cm，**超过**无混叠上限，出现空间混叠/栅瓣。）
-3. 用赛宾公式估算你所在房间的 $T_{60}$ 与临界距离 $d_c$，判断 3 m 对话处在直达占优还是混响占优区。（参考示例：5 m × 4 m × 2.8 m 客厅，$V=56$ m³、$A\approx18$ m² → $T_{60}=0.161V/A\approx0.5$ s，$d_c=0.057\sqrt{V/T_{60}}\approx0.6$ m；3 m 对话距离 $\gg d_c$，处于混响占优区——这正是远场语音难做的日常写照。）
+3. 用赛宾公式估算你所在房间的 $T_{60}$ 与临界距离 $d_c$，判断 3 m 对话处在直达占优还是混响占优区。（参考示例：5 m × 4 m × 2.8 m 客厅，$V=56$ m³、$A\approx18$ m²（取平均吸声系数约 0.2） → $T_{60}=0.161V/A\approx0.5$ s，$d_c=0.057\sqrt{V/T_{60}}\approx0.6$ m；3 m 对话距离 $\gg d_c$，处于混响占优区——这正是远场语音难做的日常写照。）
 
 **第 3 章（几何）**
 
@@ -210,7 +210,7 @@
 **综合**
 
 15. 用 pyroomacoustics 生成 $T_{60}=0.6$ s 房间的 4 麦圆阵 RIR，跑 SRP-PHAT，画出定位误差随声源距离的变化曲线，找出“临界距离”附近的拐点。（最小代码骨架：`room = pra.ShoeBox([5,4,2.8], fs=16000, max_order=12, absorption=xxx)` 建房 → `room.add_source(pos)` + `pra.circular_2D_array(...)` 布阵 → `room.compute_rir()` 取 RIR → 卷积语音得麦信号 → 分帧 GCC-PHAT 按 §4.3 投票 → 误差-距离画曲线。提示：误差曲线应在 $d_c=0.057\sqrt{V/T_{60}}$ 附近开始抬头——DRR 跌破 0 后反射峰开始干扰直达峰；可先算房间尺寸对应的 $d_c$ 再对照曲线验证。）
-16. **（研究拓展）**读一篇 CHiME-8 参赛系统报告（见 §13.3 引用），画出它的前端流程图，与本报告图23 对照，找出模块差异并解释为什么。（提示：CHiME-8 头部系统普遍弱化了显式“定位→追踪→波束”三段式，换成几何无关的神经前端 + 大模型后端——对照图23 数一数少了哪几个框、多了什么，并想想 §10.1第1条“阵列形态决定上限”在其中如何体现。）
+16. **（研究拓展）**读一篇 CHiME-8 参赛系统报告（见 §13.3 引用），画出它的前端流程图，与本报告图23 对照，找出模块差异并解释为什么。（提示：CHiME-8 头部系统普遍弱化了显式“定位→追踪→波束”三段式，换成几何无关的神经前端 + 大模型后端——对照图23 数一数少了哪几个框、多了什么，并想想 §10.8 各条“阵列形态决定上限”在其中如何体现。）
 
 ### 13.7 复现说明
 
@@ -219,7 +219,7 @@
 绘图脚本都在 `scripts/` 里。在报告根目录跑两个命令，结果进 `figures/`，共 33 张图（图 1～25、图 33 约 20 秒，图 26～32 约 11 秒，全套约半分钟，机器不同有出入）：
 
 ```bash
-.venv/bin/python scripts/make_figures.py      # 图 1~25
+.venv/bin/python scripts/make_figures.py      # 图 1~25、图 33
 .venv/bin/python scripts/make_aec_figures.py  # 图 26~32（回声消除专题）
 ```
 

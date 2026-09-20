@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>第 6 篇 · 声学回声消除（AEC） · 麦克风阵列信号处理教程</title><style>
+<title>第 6 章 · 声学回声消除（AEC） · 麦克风阵列信号处理教程</title><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -38,14 +38,14 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 </script>
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head><body id="top">
-<div class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 6 篇 · 声学回声消除（AEC）</div>
+<div class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 6 章 · 声学回声消除（AEC）</div>
 <div class="wrap"><nav class="side"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
-<div class="chap"><a href="01_problem-definition.html">第 1 篇 · 问题定义与双耳启示</a></div>
-<div class="chap"><a href="02_basics-signal-model.html">第 2 篇 · 声音到达阵列时发生了什么</a></div>
-<div class="chap"><a href="03_array-geometry.html">第 3 篇 · 阵列几何形态</a></div>
-<div class="chap"><a href="04_doa-estimation.html">第 4 篇 · 声源定位（DOA 估计）</a></div>
-<div class="chap"><a href="05_beamforming.html">第 5 篇 · 波束形成</a></div>
-<div class="chap cur">第 6 篇 · 声学回声消除（AEC）</div>
+<div class="chap"><a href="01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
+<div class="chap"><a href="02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
+<div class="chap"><a href="03_array-geometry.html">第 3 章 · 阵列几何形态</a></div>
+<div class="chap"><a href="04_doa-estimation.html">第 4 章 · 声源定位（DOA 估计）</a></div>
+<div class="chap"><a href="05_beamforming.html">第 5 章 · 波束形成</a></div>
+<div class="chap cur">第 6 章 · 声学回声消除（AEC）</div>
 <ul>
 <li><a href="06_aec.html#sec-1">6. 声学回声消除（AEC）</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-2">6.0 修订说明（读正文前先看：已确认表述的修正）</a></li>
@@ -68,11 +68,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 <li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="06_aec.html#sec-19">6.1.16 十大误区与自测题</a></li>
 <li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="06_aec.html#sec-20">6.1.17 延伸阅读</a></li>
 </ul>
-<div class="chap"><a href="07_wpe-dereverberation.html">第 7 篇 · 去混响（WPE）</a></div>
-<div class="chap"><a href="08_speech-separation.html">第 8 篇 · 语音分离</a></div>
-<div class="chap"><a href="09_source-tracking.html">第 9 篇 · 声源追踪</a></div>
-<div class="chap"><a href="10_engineering-practice.html">第 10 篇 · 工程实现与产业实践</a></div>
-<div class="chap"><a href="11_selection-guide.html">第 11 篇 · 总结与选型指南</a></div>
+<div class="chap"><a href="07_wpe-dereverberation.html">第 7 章 · 去混响（WPE）</a></div>
+<div class="chap"><a href="08_speech-separation.html">第 8 章 · 语音分离</a></div>
+<div class="chap"><a href="09_source-tracking.html">第 9 章 · 声源追踪</a></div>
+<div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现与产业实践</a></div>
+<div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
 <main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
@@ -99,8 +99,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 <li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="06_aec.html#sec-20">6.1.17 延伸阅读</a></li>
 </ul></details>
 <blockquote>
-<p>⚠️ 本篇是系列教程第 6 篇（共 13 篇），可独立阅读，前后篇见下方导航。</p>
-<p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="./05_beamforming.html">第 5 篇 · 波束形成</a> ｜ 下一篇：<a href="./07_wpe-dereverberation.html">第 7 篇 · 去混响（WPE）</a></p>
+<p>⚠️ 本篇是系列教程第 6 章（共 13 章），可独立阅读，前后篇见下方导航。</p>
+<p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="./05_beamforming.html">第 5 章 · 波束形成</a> ｜ 下一篇：<a href="./07_wpe-dereverberation.html">第 7 章 · 去混响（WPE）</a></p>
 </blockquote>
 <hr />
 <h2 id="sec-1">6. 声学回声消除（AEC）</h2>
@@ -497,7 +497,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 <p><strong>专栏：tanh 最小手算（平台那 20 dB 是失真漏过去的，清单#7）。</strong> 设某采样播放 $x=1.5$（大音量，归一化幅度），扬声器 tanh 软削波输出 $\tanh(1.5)\approx0.905$；线性滤波器按小信号斜率（$\tanh'(0)=1$）预测回声约 $1.5$（取路径增益归一），实际只有 0.905——单样本残余 0.595，能量占比 $(0.595/0.905)^2\approx0.43$（约 $-3.7$ dB，这是单点最坏情况，别拿它当整段指标）。平均到整段语音（大信号小信号混合），失真能量约占回声总能量的 1%（$-20$ dB）——线性部分消得再干净，残余里永远剩这 1%，ERLE $=10\log_{10}(1/0.01)=20$ dB 封顶。对照小信号 $x=0.3$：$\tanh(0.3)\approx0.291$，残余 0.009，占比 $(0.009/0.291)^2\approx0.001$（$-30$ dB，可忽略）。所以“小音量 ERLE 明显更高”（诊断 D4 的原理）：<strong>平台是音量喂出来的，不是没收敛</strong>——这也是图31（b）粉区要标在大信号两端的用意。</p>
 </blockquote>
 <p><img alt="图19 AEC 的能力边界与算法版图" src="../figures/fig19_aec_landscape.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图19 看什么：（a） 线性路径约 37 dB、非线性 tanh 路径约 19~20 dB，看的是两条线的差距、不是绝对值（其标题“与图AEC-6同数据”系作图笔误，实为与图31（a）同数据）；（b）算法时间线三锚点：1970 LMS/NLMS（随机梯度起点）、2006 FDKF（增益即最优时变步长）、2021 AEC Challenge（混合式登顶）——看分工是怎么一步步变细的。</p>
+<p>图19 看什么：（a） 线性路径约 37 dB、非线性 tanh 路径约 19~20 dB，看的是两条线的差距、不是绝对值（实为与图31（a）同数据）；（b）算法时间线三锚点：1960 LMS / 1967 NLMS（随机梯度起点）、2006 FDKF（增益即最优时变步长）、2021 AEC Challenge（混合式登顶）——看分工是怎么一步步变细的。</p>
 <p><img alt="图30 工程两大坑" src="../figures/fig30_aec_delay_dtd.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图30 看什么：（a） 用互相关找延迟峰（这个例子里峰值约 301 采样）；（b） 对齐约 32 dB、不对齐约 2 dB——这个例子里延迟 300 抽头超过了滤波器跨度 128，不对齐就“够不着”，所以掉得特别狠；实际产品里失配一般没这么极端，关键看失配有没有超出滤波器的覆盖范围；（c） 双讲冻结 vs 不冻结：冻住则双讲结束后立刻恢复，不冻则滤波器被近端语音带坏、恢复慢。记住排障顺序：先查对齐，再查冻结。</p>
 <p><strong>出路①：把非线性建进模型</strong>。二阶 Volterra（沃尔泰拉）级数显式建模平方项——线性核之外再添一个二阶核（权重作用于乘积项 $x(n-i)x(n-j)$）；完整的二阶核有 $O(L^2)$ 个系数，实用实现只保留对角线附近的稀疏条带（扬声器的非线性记忆很短），代价压到约 2 倍乘法，实测比线性 NLMS 再提约 5~7 dB（Guérin et al., <em>IEEE Trans. Speech Audio Processing</em> 2003）；之所以几乎没人用三阶以上，是因为系数数量随阶数爆炸而失真能量主要集中在前两阶。更省的是 Hammerstein/Wiener 级联（Hammerstein：静态非线性串联线性动态；Wiener：顺序反过来）——“静态非线性 + 线性滤波”两段式，Nollett &amp; Jones（NSIP 1997）报告提升 8.4 dB。<a href="https://www.iwaenc.org/proceedings/1997/nsip97/pdf/author/ns970521.pdf" title="citation">Nollett &amp; Jones 1997</a> 这类参数化模型的通病：真实失真稍微偏离模型假设，收益就迅速缩水。</p>
@@ -1259,7 +1259,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 <td>图19</td>
 <td>（a）线性约 37 dB vs 非线性约 20 dB 平台；（b）算法时间线</td>
 <td>§6.1.4、§6.1.6</td>
-<td>看两条线的差距不看绝对值；（a）与图31（a）<strong>同数据</strong>，其标题“与图AEC-6同数据”系作图笔误，实指图31（a）</td>
+<td>看两条线的差距不看绝对值；（a）与图31（a）<strong>同数据</strong></td>
 </tr>
 <tr>
 <td>图20</td>

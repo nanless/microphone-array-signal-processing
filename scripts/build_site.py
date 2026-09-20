@@ -5,8 +5,8 @@
     .venv/bin/python scripts/build_site.py
 
 产物：site/index.html（首页）+ site/01..13_*.html（13 篇正文），
-左侧边栏 = 首页 + 13 篇 + 每篇的二级/三级小节锚点，顶部面包屑，
-文末上一篇/下一篇。图片直接引用 ../figures/（不复制）。
+左侧边栏 = 首页 + 13 篇 + 每篇的二级及以下小节锚点，顶部面包屑，
+文末上一篇/下一篇（首页不输出该盒）。图片直接引用 ../figures/（不复制）。
 数学公式用 MathJax CDN 渲染（离线时显示源码，页面顶部有提示）。
 """
 import re
@@ -17,17 +17,17 @@ SRC = ROOT / "chapters"
 OUT = ROOT / "site"
 
 CHAPTERS = [
-    ("01_problem-definition.md", "第 1 篇 · 问题定义与双耳启示"),
-    ("02_basics-signal-model.md", "第 2 篇 · 声音到达阵列时发生了什么"),
-    ("03_array-geometry.md", "第 3 篇 · 阵列几何形态"),
-    ("04_doa-estimation.md", "第 4 篇 · 声源定位（DOA 估计）"),
-    ("05_beamforming.md", "第 5 篇 · 波束形成"),
-    ("06_aec.md", "第 6 篇 · 声学回声消除（AEC）"),
-    ("07_wpe-dereverberation.md", "第 7 篇 · 去混响（WPE）"),
-    ("08_speech-separation.md", "第 8 篇 · 语音分离"),
-    ("09_source-tracking.md", "第 9 篇 · 声源追踪"),
-    ("10_engineering-practice.md", "第 10 篇 · 工程实现与产业实践"),
-    ("11_selection-guide.md", "第 11 篇 · 总结与选型指南"),
+    ("01_problem-definition.md", "第 1 章 · 问题定义与双耳启示"),
+    ("02_basics-signal-model.md", "第 2 章 · 声音到达阵列时发生了什么"),
+    ("03_array-geometry.md", "第 3 章 · 阵列几何形态"),
+    ("04_doa-estimation.md", "第 4 章 · 声源定位（DOA 估计）"),
+    ("05_beamforming.md", "第 5 章 · 波束形成"),
+    ("06_aec.md", "第 6 章 · 声学回声消除（AEC）"),
+    ("07_wpe-dereverberation.md", "第 7 章 · 去混响（WPE）"),
+    ("08_speech-separation.md", "第 8 章 · 语音分离"),
+    ("09_source-tracking.md", "第 9 章 · 声源追踪"),
+    ("10_engineering-practice.md", "第 10 章 · 工程实现与产业实践"),
+    ("11_selection-guide.md", "第 11 章 · 总结与选型指南"),
     ("12_appendix-symbols-math.md", "附录 A · 符号术语数学"),
     ("13_appendix-guide.md", "附录 B · 路径地图与练习"),
 ]
@@ -81,7 +81,7 @@ window.MathJax = {{tex: {{inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath:
 <div class="wrap"><nav class="side">{sidebar}</nav>
 <main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary>{toc}</details>
-{body}<div class="pn"><span>{prev}</span><span>{next}</span></div>
+{body}{pn}
 <div class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</div>
 </main></div><a class="topbtn" href="#top" title="回顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>
@@ -212,7 +212,7 @@ def main():
     (OUT / "index.html").write_text(PAGE.format(
         title="导读与导航", css=CSS, crumb="导读与导航",
         sidebar=sidebar_with_anchors(None, home_heads), toc=toc,
-        body=home_html, prev="", next=""), encoding="utf-8")
+        body=home_html, pn=""), encoding="utf-8")
     print("saved index.html")
     names = [f for f, _ in CHAPTERS]
     for i, (fname, label) in enumerate(CHAPTERS):
@@ -230,10 +230,11 @@ def main():
             nxt = f'<a href="{names[i+1].replace(".md", ".html")}">下一篇 →</a>'
         else:
             nxt = '<a href="index.html">回首页 →</a>'
+        pn = f'<div class="pn"><span>{prev}</span><span>{nxt}</span></div>'
         (OUT / html_name).write_text(PAGE.format(
             title=label, css=CSS, crumb=label,
             sidebar=sidebar_with_anchors(fname, heads), toc=toc,
-            body=body, prev=prev, next=nxt), encoding="utf-8")
+            body=body, pn=pn), encoding="utf-8")
         print("saved", html_name)
     print("DONE", len(names) + 1, "pages")
 

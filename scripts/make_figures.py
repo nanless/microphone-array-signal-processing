@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-"""生成《多麦克风阵列信号处理研究报告》全部插图"""
+"""生成教程插图 26 张（图 1~25、图 33；图 26~32 见 make_aec_figures.py）。
+
+用法（仓库根目录）：
+    .venv/bin/python scripts/make_figures.py      # 图 1~25、图 33 → figures/
+"""
 import sys
 from pathlib import Path
 import numpy as np
@@ -453,14 +457,20 @@ def fig_srp_grid():
 
 # ----------------------------------------------------------------------
 # 图22 声源追踪：粒子滤波 vs 直方图
+# 口径说明（F12 定稿，供正文与重出核对）：
+#   (a) SIR-PF：N=200 粒子；观测 = 真值 + 高斯噪声（σ=7°），另约 20% 帧替换为
+#       [0,120]° 均匀野点（与第 9 章正文一致）。(b) 为独立合成的 PHD 强度示意。
+#   两子图独立仿真、角度约定不同（(a) 0~120°扇区，(b) −90°~+90°，见子图标题）。
 # ----------------------------------------------------------------------
 def fig_tracking():
     T = 120
     t = np.arange(T)
     true = 60 + 40 * np.sin(2 * np.pi * t / T)
     obs = true + rng.normal(0, 7, T)
+    is_out = rng.random(T) < 0.2
+    obs = np.where(is_out, rng.uniform(0, 120, T), obs)
     # 粒子滤波
-    N = 300
+    N = 200
     particles = np.full(N, true[0]) + rng.normal(0, 10, N)
     est = np.zeros(T); n_eff = np.zeros(T)
     for k in range(T):
@@ -471,7 +481,7 @@ def fig_tracking():
         particles = particles[idx] + rng.normal(0, 0.5, N) * (1 - neff / N > 0.5)
         est[k] = np.average(particles, weights=w)
     fig, axes = plt.subplots(1, 2, figsize=(13, 4.6))
-    axes[0].plot(t, obs, ".", color="gray", ms=4, label="DOA观测(含噪)")
+    axes[0].plot(t, obs, ".", color="gray", ms=4, label="DOA观测(含噪+野点)")
     axes[0].plot(t, true, color="k", lw=2, label="真实轨迹")
     axes[0].plot(t, est, color=C_RED, lw=1.6, label="粒子滤波估计")
     axes[0].set_xlabel("帧"); axes[0].set_ylabel("方位角 (°)")
@@ -504,15 +514,12 @@ def fig_wng_di():
     freqs = np.linspace(100, 8000, 200)
     M, d_phys = 6, 0.04  # 4cm间距六麦环
     th = np.linspace(0, 2 * np.pi, 3601)
-    wng_dsb, di_dsb, wng_mvdr, di_mvdr = [], [], [], []
+    wng_dsb, di_dsb, wng_sd, di_sd = [], [], [], []
     for f in freqs:
         dl = f * d_phys / 343
         m = np.arange(M)
         a0 = np.exp(-2j * np.pi * dl * (np.cos(m * 2 * np.pi / M) * 1))  # 0°方向
-        Rdiff = np.sinc(2 * dl * np.abs(np.cos(np.subtract.outer(m, m) * 2 * np.pi / M) * 0 + np.subtract.outer(m, m) * 0))
-        # 简化: 用各向同性噪声协方差
-        Riso = np.sinc(2 * dl * np.abs(np.subtract.outer(m, m) * 0))  # 占位
-        # 正确各向同性噪声: Γ[i,j]=sinc(2 d_ij f/c)
+        # 各向同性噪声协方差: Γ[i,j]=sinc(2 d_ij f/c)
         D = np.abs(np.subtract.outer(m, m)) * d_phys
         G = np.sinc(2 * f * D / 343)
         w_ds = a0 / M
@@ -523,11 +530,11 @@ def fig_wng_di():
         Bsd = np.abs(w_sd.conj() @ A) ** 2
         wng_dsb.append(10 * np.log10(1 / np.sum(np.abs(w_ds) ** 2)))
         di_dsb.append(10 * np.log10(Bds.max() / Bds.mean()))
-        wng_mvdr.append(10 * np.log10(1 / np.sum(np.abs(w_sd) ** 2)))
-        di_mvdr.append(10 * np.log10(Bsd.max() / Bsd.mean()))
+        wng_sd.append(10 * np.log10(1 / np.sum(np.abs(w_sd) ** 2)))
+        di_sd.append(10 * np.log10(Bsd.max() / Bsd.mean()))
     fig, axes = plt.subplots(1, 2, figsize=(13.2, 4.4))
     axes[0].semilogx(freqs, wng_dsb, color=C_BLUE, lw=2.0, label="DSB 延迟求和（理想无失配理论值）")
-    axes[0].semilogx(freqs, wng_mvdr, color=C_RED, label="超指向(最大化DI)")
+    axes[0].semilogx(freqs, wng_sd, color=C_RED, label="超指向(最大化DI)")
     axes[0].axhline(0, color="gray", ls="--", lw=1.2)
     axes[0].text(0.97, 0.93, "WNG = 0 dB 稳健门限（低于此别用）", transform=axes[0].transAxes,
                  fontsize=FS_SMALL + 1, color="dimgray", ha="right", va="bottom",
@@ -537,7 +544,7 @@ def fig_wng_di():
     axes[0].grid(ls=":", alpha=0.5); axes[0].set_title("(a) WNG：超指向低频稳健性差", fontsize=FS_TITLE)
     axes[1].axvspan(4000, 8000, color="gray", alpha=0.07, zorder=1)
     axes[1].semilogx(freqs, di_dsb, color=C_BLUE, lw=2.0, label="DSB 延迟求和")
-    axes[1].semilogx(freqs, di_mvdr, color=C_RED, label="超指向(最大化DI)")
+    axes[1].semilogx(freqs, di_sd, color=C_RED, label="超指向(最大化DI)")
     axes[1].text(500, 1.5, "高频灰底区抖动\n选型只看 <3kHz", fontsize=FS_SMALL + 0.5,
                  color="dimgray", ha="center", va="top",
                  bbox=dict(fc="white", ec="0.7", alpha=0.9, boxstyle="round,pad=0.3"))
@@ -1591,11 +1598,14 @@ def fig_aec_landscape():
     # ---- (b) AEC 算法家族演进时间线（定性） ----
     ax2 = fig.add_subplot(2, 1, 2)
     # (年份, 注释, 竖直层)——四层交错防止相邻标签叠字
+    # 口径（D5 定稿，已核实）：1960 LMS（Widrow&Hoff）/ 1967 NLMS（Nagumo&Noda）；
+    # 1987 MDF（Soo&Pang）→ 1992 PBFDAF 分区实现；最优步长控制记 2000 年
+    # （Mäder/Puder/Schmidt, Signal Processing 2000，与 PNLMS 同年，两圆点重合，标签上下错开）。
     events = [
-        (1970, "LMS / NLMS\n随机梯度自适应滤波", 0.9),
-        (1992, "PBFDAF\n分区块频域，长滤波器实用化", -0.9),
+        (1960, "LMS（Widrow&Hoff 1960）/ NLMS（Nagumo&Noda 1967）\n随机梯度自适应滤波", 0.9),
+        (1987, "MDF（Soo&Pang 1987）→ PBFDAF（1992 分区实现）\n分区块频域，长滤波器实用化", -0.9),
         (2000, "PNLMS → IPNLMS(2002)\n按系数幅度比例分配步长", 0.9),
-        (2001, "最优步长控制\nDTD 从冻结走向连续调节", -1.15),
+        (2000, "最优步长控制\nDTD 从冻结走向连续调节", -1.15),
         (2006, "频域卡尔曼 FDKF\n增益 = 最优时变步长", 1.75),
         (2019, "端到端 DNN-AEC\n监督分离表述", -0.9),
         (2021, "AEC Challenge 创办\n混合式（线性+神经）夺冠", 0.9),
@@ -1612,9 +1622,9 @@ def fig_aec_landscape():
     ax2.scatter([], [], s=80, color=C_BLUE, edgecolors="k", label="解析 / 自适应滤波时代")
     ax2.scatter([], [], s=80, color=C_ORANGE, edgecolors="k", label="深度学习时代")
     ax2.legend(fontsize=FS_SMALL, loc="lower left", framealpha=0.9)
-    ax2.set_xlim(1964, 2031); ax2.set_ylim(-3.1, 3.1)
+    ax2.set_xlim(1956, 2031); ax2.set_ylim(-3.1, 3.1)
     ax2.set_yticks([])
-    ax2.set_xticks([1970, 1980, 1990, 2000, 2010, 2020, 2030])
+    ax2.set_xticks([1960, 1970, 1980, 1990, 2000, 2010, 2020, 2030])
     ax2.tick_params(labelsize=FS_SMALL)
     ax2.set_xlabel("年份", fontsize=FS_LABEL)
     for sp in ("left", "right", "top"):

@@ -2,7 +2,7 @@
 """图号整理脚本（已退役，仅存档）。
 
 历史：单篇长文时代做过一次图号重排（纳入 fig22/fig23 后按首次出现顺序重排，
-当时共 23 张图）。单篇长文已删除，教程改为拆分版 12 篇，图增至 32 张，
+当时共 23 张图）。单篇长文已删除，教程改为拆分版 14 篇，图增至 33 张，
 本脚本原有的“读单篇 md→改 md/py/png→重跑绘图”流程已不再适用，
 直接运行会因找不到旧单篇文件而退出。
 
@@ -12,7 +12,7 @@
 chapters/ 重排要先改 `../figures/` 前缀与数量断言，不然对不上。
 
 当前可用的绘图入口（在报告根目录执行）：
-    .venv/bin/python scripts/make_figures.py      # 图 1~25
+    .venv/bin/python scripts/make_figures.py      # 图 1~25、图 33
     .venv/bin/python scripts/make_aec_figures.py  # 图 26~32
 """
 import os
@@ -20,7 +20,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MD = os.path.join(ROOT, "多麦克风阵列信号处理教程.md")  # 旧单篇，已删除
-PY = os.path.join(ROOT, "Scripts", "make_figures.py")
+PY = os.path.join(ROOT, "scripts", "make_figures.py")
 FIGDIR = os.path.join(ROOT, "figures")
 
 if not os.path.exists(MD):

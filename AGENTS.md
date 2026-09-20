@@ -121,5 +121,6 @@
 - 改图只改 `scripts/make_figures.py` / `make_aec_figures.py` 里对应的 `fig_*()` 函数，
   不许直接往 `figures/` 里丢手画的图（保证可复现，随机种子固定）。
 - 大的改动先列提纲再动手；一次改动只做一件事，改完即验证。
+- 联网研究用 Tavily MCP（工具名形如 `mcp__tavily__tavily_search`，已配进 web profile；若某会话里没有该工具，跑 `bash ~/tools/tavily-search.sh "查询词" [条数] [--answer]`，key 已内置）。子智能体没有联网能力，需要核实就由你亲自查，查完把结论喂给它们。
 - 完工时在回复里列出主要产出文件的路径（用 Markdown 行内代码格式），
   并用 `present` 标记用户要接收的交付文件。

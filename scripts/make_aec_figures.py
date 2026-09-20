@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
-"""AEC 深度扩展版配套插图（入门导向，7 张） duct-taped to repo style."""
+"""回声消除专题插图（入门导向，7 张）：图 26~32。
+
+用法（仓库根目录）：
+    .venv/bin/python scripts/make_aec_figures.py  # 图 26~32 → figures/
+函数与图号对照：fig_problem→图26、fig_concept→图27、fig_nlms→图28、
+fig_erle→图29、fig_delay_dtd→图30、fig_nonlinear→图31、fig_hybrid→图32。
+"""
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -172,7 +178,7 @@ def fig_nlms():
         ax.plot(tcc[:len(er)], er, color=c, label=f"μ={mu}")
     ax.set_xlabel("时间 (s)", fontsize=FS_LABEL); ax.set_ylabel("ERLE (dB)", fontsize=FS_LABEL)
     ax.legend(fontsize=FS_SMALL); ax.grid(ls=":", alpha=0.5); ax.tick_params(labelsize=FS_TINY)
-    ax.text(0.05, 0.10, "μ∈(0,2)才稳定，工程取0.1~0.5",
+    ax.text(0.05, 0.10, "理想假设下 μ∈(0,2) 才稳定，工程取 0.1~0.5",
             transform=ax.transAxes, fontsize=FS_SMALL + 1, color=C_RED)
     fig.tight_layout(rect=(0, 0, 1, 0.90))
     save(fig, "fig28_aec_nlms.png")
@@ -332,7 +338,7 @@ def fig_hybrid():
     tab = ax.table(cellText=rows, colLabels=["算法", "算力", "内存", "双讲鲁棒", "推荐场景"],
                    loc="center", colColours=["0.9"]*5)
     tab.auto_set_font_size(False); tab.set_fontsize(9.5); tab.scale(1, 1.8)
-    ax.text(0.5, 0.02, "时间线：1970 LMS → 1992 PBFDAF → 2006 FDKF → 2019 端到端 → 2021 混合夺冠 → 2023 pAEC",
+    ax.text(0.5, 0.02, "时间线：1960 LMS / 1967 NLMS → 1987 MDF → 1992 PBFDAF分区实现 → 2006 FDKF → 2019 端到端 → 2021 混合夺冠 → 2023 pAEC",
             ha="center", fontsize=FS_TINY, color="0.35", transform=ax.transAxes)
     fig.subplots_adjust(top=0.92, hspace=0.5)
     save(fig, "fig32_aec_hybrid_select.png")

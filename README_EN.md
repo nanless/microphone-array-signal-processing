@@ -19,26 +19,26 @@ A beginner-friendly Chinese tutorial on microphone array signal processing (grad
 | # | File | Topics | Lines | Level |
 |---|---|---|---|---|
 | Guide | `chapters/00_overview.md` | Navigation, three learning paths, figure map | 289 | Beginner |
-| Ch 1 | `chapters/01_…` | Problem setup, array gain, binaural cues | 89 | Beginner |
-| Ch 2 | `chapters/02_…` | Delay, near/far field, signal model, reverberation, STFT/covariance, beampattern metrics | 317 | Intermediate |
-| Ch 3 | `chapters/03_…` | Linear/circular/spherical/sparse arrays, endfire collapse, calibration | 234 | Intermediate |
-| Ch 4 | `chapters/04_…` | GCC-PHAT, SRP, TDOA geometry, Bartlett/Capon, MUSIC/ESPRIT, broadband focusing, DNN localization, CRLB | 491 | Advanced |
-| Ch 5 | `chapters/05_…` | DSB, superdirective, MVDR, LCMV, GSC, SPP, postfilters, spherical harmonics, DNN beamforming | 570 | Advanced |
-| Ch 6 | `chapters/06_…` | NLMS/FDKF/PBFDAF, double-talk, nonlinear echo, hybrid neural AEC, WebRTC AEC3 teardown | 611 | Advanced |
-| Ch 7 | `chapters/07_…` | WPE dereverberation (derivation, Δ/K selection, online WPE, three worked examples) | 229 | Intermediate |
-| Ch 8 | `chapters/08_…` | Mixing model, BSS family, GSS, deep separation, TSE, datasets | 146 | Intermediate |
-| Ch 9 | `chapters/09_…` | Kalman 5-step worked example, particle filter, PHD tracking, closed loop | 222 | Intermediate |
-| Ch 10 | `chapters/10_…` | Frontend pipeline, latency budget, SRO/calibration, metrics, 6 scenarios × 22 deployment notes | 472 | Intermediate |
-| Ch 11 | `chapters/11_…` | Six takeaways, scenario table, decision tree, plan A/B/C | 66 | Beginner |
-| App A | `chapters/12_…` | Symbol table, ~90-term glossary, math refresher | 217 | Reference |
-| App B | `chapters/13_…` | Learning paths, field map, research frontier, debugging guide, 16 exercises, reproduction guide | 237 | Reference |
+| Ch 1 | `chapters/01_problem-definition.md` | Problem setup, array gain, binaural cues | 89 | Beginner |
+| Ch 2 | `chapters/02_basics-signal-model.md` | Delay, near/far field, signal model, reverberation, STFT/covariance, beampattern metrics | 321 | Intermediate |
+| Ch 3 | `chapters/03_array-geometry.md` | Linear/circular/spherical/sparse arrays, endfire collapse, calibration | 232 | Intermediate |
+| Ch 4 | `chapters/04_doa-estimation.md` | GCC-PHAT, SRP, TDOA geometry, Bartlett/Capon, MUSIC/ESPRIT, broadband focusing, DNN localization, CRLB | 491 | Advanced |
+| Ch 5 | `chapters/05_beamforming.md` | DSB, superdirective, MVDR, LCMV, GSC, SPP, postfilters, spherical harmonics, DNN beamforming | 572 | Advanced |
+| Ch 6 | `chapters/06_aec.md` | NLMS/FDKF/PBFDAF, double-talk, nonlinear echo, hybrid neural AEC, WebRTC AEC3 teardown | 614 | Advanced |
+| Ch 7 | `chapters/07_wpe-dereverberation.md` | WPE dereverberation (derivation, Δ/K selection, online WPE, three worked examples) | 234 | Intermediate |
+| Ch 8 | `chapters/08_speech-separation.md` | Mixing model, BSS family, GSS, deep separation, TSE, datasets | 154 | Intermediate |
+| Ch 9 | `chapters/09_source-tracking.md` | Kalman 5-step worked example, particle filter, PHD tracking, closed loop | 228 | Intermediate |
+| Ch 10 | `chapters/10_engineering-practice.md` | Frontend pipeline, latency budget, SRO/calibration, metrics, 6 scenarios × 22 deployment notes | 476 | Intermediate |
+| Ch 11 | `chapters/11_selection-guide.md` | Six takeaways, scenario table, decision tree, plan A/B/C | 68 | Beginner |
+| App A | `chapters/12_appendix-symbols-math.md` | Symbol table, ~90-term glossary, math refresher | 216 | Reference |
+| App B | `chapters/13_appendix-guide.md` | Learning paths, field map, research frontier, debugging guide, 16 exercises, reproduction guide | 237 | Reference |
 
 ## Quick start
 
 ```bash
 # 1. Virtualenv and dependencies
 python3 -m venv .venv
-.venv/bin/pip install numpy matplotlib markdown pypdf pdfminer.six
+.venv/bin/pip install numpy matplotlib markdown pypdf
 # pyroomacoustics is optional (only used by Appendix B exercise 15)
 
 # 2. Generate the 33 figures (~20 s for figs 1–25 & 33, ~11 s for figs 26–32)
@@ -54,8 +54,14 @@ python3 -m venv .venv
 .venv/bin/python scripts/build_pdf.py
 ```
 
+## Learning paths
+
+- **Path A (from scratch, 2–3 weeks)**: Guide → 01 → 11.1/11.3 → 02/03 → 04 (GCC+SRP) → 05 (DSB+MVDR) → 06/07/08 → 09 → reproduce all 33 figures.
+- **Path B (deployment, 1 week)**: 11.1/11.2/11.3 for plan A/B/C → 05/06/07/08 → full Ch 10 → output latency/sync/calibration budgets.
+- **Path C (research frontier)**: 02 (CRLB) → 03 (sparse arrays) → 04/05 frontier → 06/07/08 → 13.3 nine frontiers + 13.6 exercises.
+
 ## Conventions
 
-- Hand-numbered equations (e.g. `(4-1)`), cited as "见式(5-1)".
+- Hand-numbered equations (e.g. `(4-1)`), cited as "see Eq. (5-1)".
 - Abbreviations spelled out on first use; dB uses 10log (power) / 20log (amplitude).
 - Benchmark numbers always carry conditions and sources; simulation numbers carry implementation notes.

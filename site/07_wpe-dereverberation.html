@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>第 7 篇 · 去混响（WPE） · 麦克风阵列信号处理教程</title><style>
+<title>第 7 章 · 去混响（WPE） · 麦克风阵列信号处理教程</title><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -38,15 +38,15 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 </script>
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head><body id="top">
-<div class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 7 篇 · 去混响（WPE）</div>
+<div class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 7 章 · 去混响（WPE）</div>
 <div class="wrap"><nav class="side"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
-<div class="chap"><a href="01_problem-definition.html">第 1 篇 · 问题定义与双耳启示</a></div>
-<div class="chap"><a href="02_basics-signal-model.html">第 2 篇 · 声音到达阵列时发生了什么</a></div>
-<div class="chap"><a href="03_array-geometry.html">第 3 篇 · 阵列几何形态</a></div>
-<div class="chap"><a href="04_doa-estimation.html">第 4 篇 · 声源定位（DOA 估计）</a></div>
-<div class="chap"><a href="05_beamforming.html">第 5 篇 · 波束形成</a></div>
-<div class="chap"><a href="06_aec.html">第 6 篇 · 声学回声消除（AEC）</a></div>
-<div class="chap cur">第 7 篇 · 去混响（WPE）</div>
+<div class="chap"><a href="01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
+<div class="chap"><a href="02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
+<div class="chap"><a href="03_array-geometry.html">第 3 章 · 阵列几何形态</a></div>
+<div class="chap"><a href="04_doa-estimation.html">第 4 章 · 声源定位（DOA 估计）</a></div>
+<div class="chap"><a href="05_beamforming.html">第 5 章 · 波束形成</a></div>
+<div class="chap"><a href="06_aec.html">第 6 章 · 声学回声消除（AEC）</a></div>
+<div class="chap cur">第 7 章 · 去混响（WPE）</div>
 <ul>
 <li><a href="07_wpe-dereverberation.html#sec-1">7. 去混响（WPE）</a></li>
 <li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-2">7.1 去混响与 WPE：把房间的“拖尾”减掉</a></li>
@@ -54,10 +54,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 <li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="07_wpe-dereverberation.html#sec-4">7.1.2 五个坑与自测九题</a></li>
 <li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="07_wpe-dereverberation.html#sec-5">7.1.3 前沿 2024–2026：WPE 还在长大（只收会议版已发表，链接为预印本存档）</a></li>
 </ul>
-<div class="chap"><a href="08_speech-separation.html">第 8 篇 · 语音分离</a></div>
-<div class="chap"><a href="09_source-tracking.html">第 9 篇 · 声源追踪</a></div>
-<div class="chap"><a href="10_engineering-practice.html">第 10 篇 · 工程实现与产业实践</a></div>
-<div class="chap"><a href="11_selection-guide.html">第 11 篇 · 总结与选型指南</a></div>
+<div class="chap"><a href="08_speech-separation.html">第 8 章 · 语音分离</a></div>
+<div class="chap"><a href="09_source-tracking.html">第 9 章 · 声源追踪</a></div>
+<div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现与产业实践</a></div>
+<div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
 <main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
@@ -69,8 +69,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 <li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="07_wpe-dereverberation.html#sec-5">7.1.3 前沿 2024–2026：WPE 还在长大（只收会议版已发表，链接为预印本存档）</a></li>
 </ul></details>
 <blockquote>
-<p>⚠️ 本篇是系列教程第 7 篇（共 13 篇），可独立阅读，前后篇见下方导航。</p>
-<p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="./06_aec.html">第 6 篇 · 声学回声消除（AEC）</a> ｜ 下一篇：<a href="./08_speech-separation.html">第 8 篇 · 语音分离</a></p>
+<p>⚠️ 本篇是系列教程第 7 章（共 13 章），可独立阅读，前后篇见下方导航。</p>
+<p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="./06_aec.html">第 6 章 · 声学回声消除（AEC）</a> ｜ 下一篇：<a href="./08_speech-separation.html">第 8 章 · 语音分离</a></p>
 </blockquote>
 <h2 id="sec-1">7. 去混响（WPE）</h2>
 <p>回声是设备自己吵自己，第 6 章的 AEC 已经把它减掉了。本章只讲混响拖尾，WPE 怎么收（§7.1）。多人抢话的分离与掩码、整条链路的顺序不在这讲，见 <a href="08_speech-separation.html">08_speech-separation.md</a> §8.1/§8.2。</p>
@@ -112,7 +112,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 <td>Nakatani et al. 2010</td>
 <td>晚期混响拖尾</td>
 <td>倒谱 liftering（单通道轻量）</td>
-<td>约 15~30%（离线版）</td>
+<td>约 15~30%（离线版；分通道数口径见 <a href="08_speech-separation.html">08_speech-separation.md</a> §8.1 数据集口径表）</td>
 <td>整句批处理；在线版帧级、性能打折扣</td>
 <td>中（迭代 2~5 次）</td>
 <td>不动直达与早期反射；短语音迭代不足</td>
@@ -187,7 +187,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 <p>补一行 $\lambda$ 的求导（固定 $G$、对 $\lambda(n)$ 求导）：负对数似然里与 $\lambda(n)$ 有关的是 $|E(n)|^2/\lambda(n)+\log\lambda(n)$，求导置零（$|E|^2/\lambda^2-1/\lambda=0$）即得 $\hat\lambda(n)=|E(n)|^2$——功率谱就是当前残差的能量，交替迭代即“$G$ 定 $\lambda$、$\lambda$ 定 $G$”来回打磨。</p>
 <p><strong>算例 7-3：加权最小二乘求解器的手算（单抽头 $K=1$、3 帧，体验“权重怎么掺”）</strong></p>
 <p>出题：单频点、$K=1$（只学一个抽头 $g=G(\Delta)$），3 帧观测 $X=[1.0,\ 0.6,\ 0.2]$（取实数省掉共轭，道理一样），历史向量退化为标量 $x=[0.8,\ 0.5,\ 0.4]$（即每帧的 $X(n-\Delta)$），权重 $w(n)=1/\lambda(n)=[1,\ 4,\ 1]$（第 2 帧最轻、权重最大——轻帧可信、嗓门帧降权）。求闭式解 $\hat g$。</p>
-<p>手算（标量版正规方程 $R\,g=r$，$R=\sum w x^2$，$r=\sum w x X$）：$R=1\times0.64+4\times0.25+1\times0.16=0.64+1.00+0.16=1.80$；$r=1\times0.8\times1.0+4\times0.5\times0.6+1\times0.4\times0.2=0.80+1.20+0.08=2.08$；$\hat g=2.08/1.80\approx1.156$。对比无加权（$w$ 全 1）：$R=0.64+0.25+0.16=1.05$，$r=0.80+0.30+0.08=1.18$，$\hat g\approx1.124$——权重把估计往“轻而可信”的第 2 帧拽了一点。这就是 $\lambda$ 的全部作用：<strong>响帧降权、轻帧升权</strong>，各帧按可信度掺和。矩阵版（$K>1$）同理，只是标量除法换成 $K\times K$ 解线性方程组。</p>
+<p>手算（标量版正规方程 $R\,g=r$，$R=\sum w x^2$，$r=\sum w x X$）：$R=1\times0.64+4\times0.25+1\times0.16=0.64+1.00+0.16=1.80$；$r=1\times0.8\times1.0+4\times0.5\times0.6+1\times0.4\times0.2=0.80+1.20+0.08=2.08$；$\hat g=2.08/1.80\approx1.156$。别被“大于 1”吓到：这是凑出来的玩具数，只为演示加权怎么掺；真实多抽头 $G$ 的模值通常小于 1。对比无加权（$w$ 全 1）：$R=0.64+0.25+0.16=1.05$，$r=0.80+0.30+0.08=1.18$，$\hat g\approx1.124$——权重把估计往“轻而可信”的第 2 帧拽了一点。这就是 $\lambda$ 的全部作用：<strong>响帧降权、轻帧升权</strong>，各帧按可信度掺和。矩阵版（$K>1$）同理，只是标量除法换成 $K\times K$ 解线性方程组。</p>
 <p><strong>多通道版（MIMO-WPE, Yoshioka &amp; Nakatani 2012）</strong>：从一个人记账变成全家一起对账——预测第 $m$ 个通道的当前帧时，把<strong>所有 $M$ 个通道</strong>的过去帧都拿来当预报线索：</p>
 <p>$$X_m(n,f) = E_m(n,f) + \sum_{m'=1}^{M}\sum_{k=\Delta}^{\Delta+K-1} G^*_{m,m'}(k,f)\,X_{m'}(n-k,f)$$。</p>
 <p>$G$ 从一串数升级为 $M\times M$ 矩阵滤波器：晚期混响是弥散声场，同一条尾巴被所有麦克风录到、只是相位不同，多通道等于多了 $M-1$ 个独立视角交叉验证。混响越重，多通道相对单通道的优势越大，具体数字以 Yoshioka 2012 原文实验表为准。这版 MIMO-WPE 就是开源 <code>nara_wpe</code> 实现的事实标准形态。</p>
@@ -203,7 +203,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 Z = wpe(Y, taps=10, delay=3,   # taps=K（翻多远的旧账），delay=Δ（保护期）
         iterations=3)          # 交替迭代次数，离线取 3，在线可减到 1
 </code></pre>
-<p>其中 $Y$ 是 STFT 后的（通道，帧，频点）数组（轴序以所装版本 <code>help(wpe)</code> 为准）；多通道就是把所有通道一起传进去，包内自动走 MIMO-WPE；块在线/帧在线见包内在线模块与示例 notebook。</p>
+<p>其中 $Y$ 是复数 STFT（后两轴为通道 $D$、帧 $T$，其余前轴为频点等多维，0.0.11 版 <code>help(wpe)</code> 原话是 <code>(..., D, T)</code>；大版本轴序可能变，用前先看一眼 help）；多通道就是把所有通道一起传进去，包内自动走 MIMO-WPE；块在线/帧在线见包内在线模块与示例 notebook。</p>
 <p><strong>DNN 去混响数字例子（与 WPE 怎么分工）</strong>：DNN 去混响的输入输出是另一套形态——输入混响语音的对数功率谱或复谱，输出直接预测干净谱（谱映射）或一个时频掩码（掩码法，掩码思想与 <a href="08_speech-separation.html">08_speech-separation.md</a> §8.1 同源），损失函数常用压缩谱 MSE 或 SI-SDR（定义见 <a href="10_engineering-practice.html">10_engineering-practice.md</a> §10.5）。训练数据口径是它的命根：一份典型配置是数千小时干净语音 × 数千条仿真房间冲激响应（混响时间覆盖约 0.1~1 s、大小房间混搭）再混入噪声，仿真配比决定跨房间泛化上限。和 WPE 的分工一句话：WPE 只动晚期拖尾、不碰直达与早期反射，所以“WPE 在前收尾巴、DNN 在后擦残留并顺手去噪”是标准级联；顺序反了（DNN 先）也行，但 DNN 的非线性会破坏通道间相位关系，后面的多通道 WPE/MVDR 就吃不上空间红利——这也是 <a href="08_speech-separation.html">08_speech-separation.md</a> §8.2 把 DNN 后滤波放在链尾的原因。</p>
 <p><strong>局限：四象限失效场景</strong>：只去晚期混响、不动直达与早期反射，这是设计如此，不是缺陷；但下面四种场景会让 WPE 掉链子，每象限一句话加对策——</p>
 <table>
@@ -302,7 +302,7 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（翻多远的旧账），delay=Δ（保
 </blockquote>
 <h4 id="sec-5">7.1.3 前沿 2024–2026：WPE 还在长大（只收会议版已发表，链接为预印本存档）</h4>
 <p>本体进化三条（Lohmann 组，分布式大间距，全部已发表）：参考麦克风选择（IWAENC 2024，用归一化 ℓp 范数选参考，比按功率选更好）；麦克风子集选择（ICASSP 2024，组稀疏惩罚自动挑子集，效果接近穷举最优，少数麦克风性能几乎不掉）；麦克风相关预测延迟（ICASSP 2023，按到达时延给各通道定各自延迟，统一延迟会失真那个坑就是它填的）。<a href="https://arxiv.org/abs/2411.03168" title="citation">参考麦克风选择</a>、 <a href="https://arxiv.org/abs/2401.08486" title="citation">子集选择</a>、 <a href="https://arxiv.org/abs/2301.07649" title="citation">相关延迟</a></p>
-<p>神经先验三条（物理骨架保留，DNN 换先验）：即插即用数据先验 PnP-WPE（把学到的话音先验塞进 WPE 迭代，复杂含噪更稳，预印本）；VINP（已推进到 v3 并投稿 TASLP：任意判别式 DNN 当干净语音先验，变分贝叶斯联合估计干净谱与滤波，还能盲辨房间冲激响应，单通道主客观双优且不伤识别）；VACE-WPE（预印本，神经网络脑补虚拟通道，让单麦克风吃上双通道红利）。<a href="https://arxiv.org/abs/2312.02773" title="citation">PnP-WPE</a>、 <a href="https://arxiv.org/abs/2502.07205" title="citation">VINP</a>、 <a href="https://arxiv.org/abs/2102.05259" title="citation">VACE-WPE</a></p>
+<p>神经先验三条（物理骨架保留，DNN 换先验；含一则早年预印本，列入作对照）：即插即用数据先验 PnP-WPE（把学到的话音先验塞进 WPE 迭代，复杂含噪更稳，预印本）；VINP（已推进到 v3 并投稿 TASLP：任意判别式 DNN 当干净语音先验，变分贝叶斯联合估计干净谱与滤波，还能盲辨房间冲激响应，单通道主客观双优且不伤识别）；VACE-WPE（2021 年预印本，早于本节 2024–2026 窗口，列入作对照：神经网络脑补虚拟通道，让单麦克风吃上双通道红利）。<a href="https://arxiv.org/abs/2312.02773" title="citation">PnP-WPE</a>、 <a href="https://arxiv.org/abs/2502.07205" title="citation">VINP</a>、 <a href="https://arxiv.org/abs/2102.05259" title="citation">VACE-WPE</a></p>
 <p>无监督/弱监督两条（不要配对数据）：BUDDy（IWAENC 2024 会议版已发表、期刊扩展版预印本：无条件扩散模型当先验加指数衰减子带滤波器当房间参数模型，联合估计，失配声学下超监督 DNN）；USDnet（TASLP 已发表：多麦克风互为约束，DNN 估计经前向卷积预测逼近各通道混合，把 WPE 式滤波翻转为“前向”用）。<a href="https://arxiv.org/abs/2405.04272" title="citation">BUDDy</a>、 <a href="https://arxiv.org/abs/2402.00820" title="citation">USDnet</a></p>
 <p>系统证据两条：GPU 加速 GSS（Interspeech 2023，已发表，全链路可免神经网络的算力底气）；WPD（WPE 与 MPDR 统一，Fujita et al., APSIPA 2024，已发表，运行时用 WPE 生成伪真值给神经网络微调——WPE 给网络当老师的标准范式）。<a href="https://arxiv.org/abs/2212.05271" title="citation">GPU-GSS</a>、 <a href="https://arxiv.org/abs/2410.22805" title="citation">WPD</a></p>
 <p>2026 新芽一句话带过（多为已接收、值得跟进、不作定论）：GAN 联合去混响加指向滤波、RIR 条件训练加速扩散、去混响与声反馈消除的联合归一化。</p>

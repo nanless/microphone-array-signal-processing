@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>第 9 篇 · 声源追踪 · 麦克风阵列信号处理教程</title><style>
+<title>第 9 章 · 声源追踪 · 麦克风阵列信号处理教程</title><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -38,17 +38,17 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 </script>
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head><body id="top">
-<div class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 9 篇 · 声源追踪</div>
+<div class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 9 章 · 声源追踪</div>
 <div class="wrap"><nav class="side"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
-<div class="chap"><a href="01_problem-definition.html">第 1 篇 · 问题定义与双耳启示</a></div>
-<div class="chap"><a href="02_basics-signal-model.html">第 2 篇 · 声音到达阵列时发生了什么</a></div>
-<div class="chap"><a href="03_array-geometry.html">第 3 篇 · 阵列几何形态</a></div>
-<div class="chap"><a href="04_doa-estimation.html">第 4 篇 · 声源定位（DOA 估计）</a></div>
-<div class="chap"><a href="05_beamforming.html">第 5 篇 · 波束形成</a></div>
-<div class="chap"><a href="06_aec.html">第 6 篇 · 声学回声消除（AEC）</a></div>
-<div class="chap"><a href="07_wpe-dereverberation.html">第 7 篇 · 去混响（WPE）</a></div>
-<div class="chap"><a href="08_speech-separation.html">第 8 篇 · 语音分离</a></div>
-<div class="chap cur">第 9 篇 · 声源追踪</div>
+<div class="chap"><a href="01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
+<div class="chap"><a href="02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
+<div class="chap"><a href="03_array-geometry.html">第 3 章 · 阵列几何形态</a></div>
+<div class="chap"><a href="04_doa-estimation.html">第 4 章 · 声源定位（DOA 估计）</a></div>
+<div class="chap"><a href="05_beamforming.html">第 5 章 · 波束形成</a></div>
+<div class="chap"><a href="06_aec.html">第 6 章 · 声学回声消除（AEC）</a></div>
+<div class="chap"><a href="07_wpe-dereverberation.html">第 7 章 · 去混响（WPE）</a></div>
+<div class="chap"><a href="08_speech-separation.html">第 8 章 · 语音分离</a></div>
+<div class="chap cur">第 9 章 · 声源追踪</div>
 <ul>
 <li><a href="09_source-tracking.html#sec-1">9. 声源追踪（Source Tracking）</a></li>
 <li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-2">9.1 问题与声学特殊性</a></li>
@@ -57,8 +57,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 <li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-5">9.4 定位–追踪–波束闭环</a></li>
 <li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-6">本章练习</a></li>
 </ul>
-<div class="chap"><a href="10_engineering-practice.html">第 10 篇 · 工程实现与产业实践</a></div>
-<div class="chap"><a href="11_selection-guide.html">第 11 篇 · 总结与选型指南</a></div>
+<div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现与产业实践</a></div>
+<div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
 <main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
@@ -71,8 +71,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 <li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-6">本章练习</a></li>
 </ul></details>
 <blockquote>
-<p>⚠️ 本篇是系列教程第 9 篇（共 13 篇），可独立阅读，前后篇见下方导航。</p>
-<p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="./08_speech-separation.html">第 8 篇 · 语音分离</a> ｜ 下一篇：<a href="./10_engineering-practice.html">第 10 篇 · 工程实现与产业实践</a></p>
+<p>⚠️ 本篇是系列教程第 9 章（共 13 章），可独立阅读，前后篇见下方导航。</p>
+<p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="./08_speech-separation.html">第 8 章 · 语音分离</a> ｜ 下一篇：<a href="./10_engineering-practice.html">第 10 章 · 工程实现与产业实践</a></p>
 </blockquote>
 <hr />
 <h2 id="sec-1">9. 声源追踪（Source Tracking）</h2>
@@ -177,7 +177,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 </table>
 <p>IMM 最小可抄例子：两模型并行（静止 Q 小 / 机动 Q 大），转移矩阵 $\mathbf{\Pi}=\begin{bmatrix}0.95&0.05\\0.05&0.95\end{bmatrix}$，每帧按新息似然更新模型概率再加权融合输出——要拧的就两个旋钮：Q 大小与 $\mathbf{\Pi}$ 对角占优程度。
 | <strong>粒子滤波（PF，Particle Filter）/SIR（序贯重要性重采样）</strong> | $N$ 个带权粒子近似后验：预测扩散→按似然加权→重采样 | <strong>任意非线性非高斯、天然多峰、抗野点</strong> | 粒子数需求高、退化问题 | <strong>声学追踪经典主力</strong> |</p>
-<p><strong>IMM 的直觉</strong>：让几个不同脾气的滤波器赛跑——一个假设目标静止、一个假设匀速、一个假设加速——谁的预测准就多听谁的，权重随每帧的新息似然自动更新。说话人“停—走—停”的机动场景正是它的主场：单一模型的 KF 要么跟不上启动、要么在停顿时乱飘，IMM 则自动把话语权交给当前最像的那个模型。最小例子只用两个模型（静止/匀速），模型间转移矩阵取 $\mathbf{\Pi}=\begin{bmatrix}0.9&0.1\\0.1&0.9\end{bmatrix}$——对角 0.9 是“大概率留在本模型、不乱跳”，0.1 是“留一成 prior 给切换”，工程先照这个抄，再按自家语料调。</p>
+<p><strong>IMM 的直觉</strong>：让几个不同脾气的滤波器赛跑——一个假设目标静止、一个假设匀速、一个假设加速——谁的预测准就多听谁的，权重随每帧的新息似然自动更新。说话人“停—走—停”的机动场景正是它的主场：单一模型的 KF 要么跟不上启动、要么在停顿时乱飘，IMM 则自动把话语权交给当前最像的那个模型。最小例子只用两个模型（静止/匀速），模型间转移矩阵同上取对角 0.95——对角占优是“大概率留在本模型、不乱跳”，0.05 是“留半成 prior 给切换”；切换更频繁的场景可放宽到对角 0.9 作备选，工程先照 0.95 抄，再按自家语料调。</p>
 <p><strong>EKF/UKF 三行补课</strong>：EKF 对 $\theta=\operatorname{atan2}(y-y_0,\ x-x_0)$ 求雅可比，用切线代替曲线，偏得远就发散；量测矩阵 $\mathbf{H}$ 就是这个雅可比在当前估计处的值，只挑“位置变一点、角度变多少”；UKF 跳过求导，直接撒约 $2L+1$ 个 sigma 点过一遍真 atan2 再统计回来，贵一点但稳得多。</p>
 <p><strong>算例 9-2：粒子滤波玩具例（10 个粒子的完整一轮“加权—重采样”）</strong></p>
 <p>卡尔曼滤波假设“真相是一个高斯钟形”，只维护钟形的中心和宽度（均值、协方差两个数）。<strong>粒子滤波</strong>（Particle Filter, PF）更暴力也更自由：干脆派 $N$ 个“猜测”（粒子）同时上场，每个粒子是一个候选状态，周期性地“按像不像观测打分、优生劣汰”，用这一群粒子的分布去近似真实后验——非高斯、多峰、含野点都不怕。这里把 $N$ 压到 10，手工走完一轮。</p>
@@ -321,14 +321,14 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 </tbody>
 </table>
 <p>表中后三行属进阶路线，初读可跳过，一句话注解：LMB/δ-GLMB 给每个目标贴上“身份标签”，直接输出“谁是谁”的轨迹；track-before-detect 不先把谱峰切成“是/否有目标”，让弱目标的证据在滤波里慢慢累积；DNN 追踪里的 ACCDOA（声源活动与方向联合输出，见 §4）把追踪隐含在网络输出里。</p>
-<p>PHD 要点人话版：别去数“有几个人、每人在哪”，改去画一张“各方向有人概率密度图”——上帧每个方向的目标大概率还在（按运动模型挪地方），再加上随时可能冒出来的新说话人，就是这帧的密度图；有观测的峰附近加分，是杂波的扣分；人数≈峰的个数，位置≈峰的位置。<strong>湖面涟漪类比</strong>：想象往湖面扔石子——每颗石子激起一圈涟漪，整片水面的高度就是强度 $D(\theta)$，水面鼓起来的包（峰）处最可能有人；旧涟漪按运动模型散开（预测项里 $f_t$ 挪地方），随时有新石子入水（出生强度 $\gamma_t$），新的观测来了就给对上号的水面加高、对不上的压低（更新）；退潮了（杂波扣分）水面落回去。数人数不用点名，数水面上有几个包就行——这就是“免数据关联”的底气。公式版：预测 $D_{t|t-1}(\theta)=\int p_S\,f_t(\theta|\theta')\,D_{t-1}(\theta')\,d\theta' + \gamma_t(\theta)$——$p_S$ 是目标“存活概率”（上一帧的目标这帧大概率还在），$f_t(\theta|\theta')$ 是状态转移核，人话就是“旧目标按运动模型挪到新方向的规则”（原来在 $\theta'$ 的目标，这帧出现在 $\theta$ 的概率密度），$\gamma_t$ 是“出生强度”（新说话人可能在任何方向出现）；更新写出一行：$D_t(\theta)=(1-p_D)\,D_{t|t-1}(\theta)+\sum_{z}\dfrac{p_D\,g(z|\theta)\,D_{t|t-1}(\theta)}{\kappa(z)+\int p_D\,g(z|\xi)\,D_{t|t-1}(\xi)\,d\xi}$——人话是：$p_D$ 叫检出概率（真有说话人、定位算法把它逮住的概率，漏检多就调小）；$\kappa$ 叫杂波强度（每帧平均冒出几个假峰，假峰越多分母越大、真峰加分被摊薄）；粒子流迁移减少粒子数；音视频联合（DOA+人脸方位）显著提升遮挡/静默期维持能力。<a href="https://openresearch.surrey.ac.uk/esploro/fulltext/journalArticle/Audio-Visual-Particle-Flow-SMC-PHD-Filtering-for/99513411302346" title="citation">Liu et al. 2019</a> 多目标追踪的误差度量（OSPA（最优子模式分配距离）、ID 切换次数）见 §10.5。</p>
+<p>PHD 要点人话版：别去数“有几个人、每人在哪”，改去画一张“各方向有人概率密度图”——上帧每个方向的目标大概率还在（按运动模型挪地方），再加上随时可能冒出来的新说话人，就是这帧的密度图；有观测的峰附近加分，是杂波的扣分；人数≈峰的个数，位置≈峰的位置。<strong>湖面涟漪类比</strong>：想象往湖面扔石子——每颗石子激起一圈涟漪，整片水面的高度就是强度 $D(\theta)$，水面鼓起来的包（峰）处最可能有人；旧涟漪按运动模型散开（预测项里 $f_t$ 挪地方），随时有新石子入水（出生强度 $\gamma_t$），新的观测来了就给对上号的水面加高、对不上的压低（更新）；退潮了（杂波扣分）水面落回去。数人数不用点名，数水面上有几个包就行——这就是“免数据关联”的底气。公式版：预测 $D_{t|t-1}(\theta)=\int p_S\,f_t(\theta|\theta')\,D_{t-1}(\theta')\,d\theta' + \gamma_t(\theta)$——$p_S$ 是目标“存活概率”（上一帧的目标这帧大概率还在），$f_t(\theta|\theta')$ 是状态转移核，人话就是“旧目标按运动模型挪到新方向的规则”（原来在 $\theta'$ 的目标，这帧出现在 $\theta$ 的概率密度），$\gamma_t$ 是“出生强度”（新说话人可能在任何方向出现；此处略去衍生项 spawning——已存目标分出新目标，入门够用，完整形式见原论文）；更新写出一行：$D_t(\theta)=(1-p_D)\,D_{t|t-1}(\theta)+\sum_{z}\dfrac{p_D\,g(z|\theta)\,D_{t|t-1}(\theta)}{\kappa(z)+\int p_D\,g(z|\xi)\,D_{t|t-1}(\xi)\,d\xi}$——人话是：$p_D$ 叫检出概率（真有说话人、定位算法把它逮住的概率，漏检多就调小）；$\kappa$ 叫杂波强度（每帧平均冒出几个假峰，假峰越多分母越大、真峰加分被摊薄）；粒子流迁移减少粒子数；音视频联合（DOA+人脸方位）显著提升遮挡/静默期维持能力。<a href="https://openresearch.surrey.ac.uk/esploro/fulltext/journalArticle/Audio-Visual-Particle-Flow-SMC-PHD-Filtering-for/99513411302346" title="citation">Liu et al. 2019</a> 多目标追踪的误差度量（OSPA（最优子模式分配距离）、ID 切换次数）见 §10.5。</p>
 <blockquote>
 <p><strong>幕间小结 9-B · 多目标看完</strong>：多人一上场，定位准不准退居其次，关联与数人数才是主战场——JPDA/MHT 算归属概率，RFS/PHD 改画密度图免掉关联，LMB 贴标签给身份，track-before-detect 留住弱目标。OSPA 连人数带误差一起罚，人数错比站歪罚得狠。下面闭环把追踪放回链路，看它怎么做波束的缓冲带。</p>
 </blockquote>
 <h3 id="sec-5">9.4 定位–追踪–波束闭环</h3>
 <p>单目标给轨迹、多目标给身份，闭环只剩一件事：追踪输出的平滑方向怎么喂给波束，又不被波束带跑——下面九框图与工程细节就是这条绳子的系法。</p>
-<p><img alt="图23 前端处理链路" src="../figures/fig23_pipeline.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>追踪在此闭环中是“低通滤波器 + 预测器”：平滑 DOA 抖动，目标短时静默时外推方向防波束跑偏。图中 ①~⑨ 九框的输入输出定义见 §10.1 对照表。<strong>工程细节</strong>：波束方向每帧限幅（≤3~5°，经验值，随帧率与目标转速调整）、静默保持、唤醒词触发重置——否则“波束–定位”互相污染振荡。</p>
+<p><img alt="图23 前端处理链路（总图定义见 <a href="10_engineering-practice.html">10_engineering-practice.md</a> §10.1，此处为引用）" src="../figures/fig23_pipeline.png" onerror="this.alt+='（图缺失）'" /></p>
+<p>追踪在此闭环中是“低通滤波器 + 预测器”：平滑 DOA 抖动，目标短时静默时外推方向防波束跑偏。图中 ①~⑨ 九框的输入输出定义以 §10.1 对照表为准。<strong>工程细节</strong>：波束方向每帧限幅（≤3~5°，经验值，随帧率与目标转速调整）、静默保持、唤醒词触发重置——否则“波束–定位”互相污染振荡。</p>
 <h3 id="sec-6">本章练习</h3>
 <ol>
 <li>KF 手算＋静默外推：沿用算例 9-1 的末态（估计 $[30.72,\ 0.513]^{\top}$，协方差左上角 3.705）。假设接下来两帧说话人静默、无观测，只做预测不做更新：手算两帧后的角度估计与角度方差，并说清波束指向这时该听谁的。

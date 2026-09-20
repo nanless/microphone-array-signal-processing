@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """把 chapters/ 14 篇合成一个带目录超链接的单页 HTML，再调 Chrome 无头打印成 PDF.
 
+书签口径：仅一级章节书签（节级锚点不写入 PDF，见 scripts/README.md 备注）。
+
 用法（报告根目录）：
     .venv/bin/python scripts/build_pdf.py
 产物：dist/combined.html → dist/microphone-array-tutorial.pdf

@@ -20,17 +20,17 @@ English version: [README_EN.md](./README_EN.md)
 |---|---|---|---|---|
 | 导读 | `chapters/00_overview.md` | 全套导航、三条学习路径、插图地图 | 289 | 入门 |
 | 第 1 章 | `chapters/01_problem-definition.md` | 四个麻烦（噪声/混响/干扰/自噪）、阵列增益三本账、双耳三线索 | 89 | 入门 |
-| 第 2 章 | `chapters/02_basics-signal-model.md` | 时延、远近场、信号模型、房间混响、STFT/协方差、波束图六度量 | 317 | 进阶 |
-| 第 3 章 | `chapters/03_array-geometry.md` | 线阵/圆阵/球阵/稀疏阵、端射崩塌、阵列校准 | 234 | 进阶 |
+| 第 2 章 | `chapters/02_basics-signal-model.md` | 时延、远近场、信号模型、房间混响、STFT/协方差、波束图六度量 | 321 | 进阶 |
+| 第 3 章 | `chapters/03_array-geometry.md` | 线阵/圆阵/球阵/稀疏阵、端射崩塌、阵列校准 | 232 | 进阶 |
 | 第 4 章 | `chapters/04_doa-estimation.md` | GCC-PHAT、SRP、几何解算、Bartlett/Capon、MUSIC/ESPRIT、宽带聚焦、DNN 定位、CRLB | 491 | 较难 |
-| 第 5 章 | `chapters/05_beamforming.md` | DSB、超指向、MVDR、LCMV、GSC、SPP、后置滤波、球谐、DNN 波束 | 570 | 较难 |
-| 第 6 章 | `chapters/06_aec.md` | NLMS/FDKF/PBFDAF、双讲检测、非线性、混合神经 AEC、WebRTC AEC3 解剖 | 611 | 较难 |
-| 第 7 章 | `chapters/07_wpe-dereverberation.md` | WPE 原理与推导、Δ/K 选型、在线 WPE、三个手算算例 | 229 | 进阶 |
-| 第 8 章 | `chapters/08_speech-separation.md` | 混合模型、BSS 四兄弟、GSS、深度分离、TSE、数据集 | 146 | 进阶 |
-| 第 9 章 | `chapters/09_source-tracking.md` | KF 五步手算、粒子滤波、PHD 多目标、定位-追踪-波束闭环 | 222 | 进阶 |
-| 第 10 章 | `chapters/10_engineering-practice.md` | 前端链路、延迟预算、SRO/标定、评测指标、六大场景 22 条落地 | 472 | 进阶 |
-| 第 11 章 | `chapters/11_selection-guide.md` | 六条结论、场景对照表、三问决策树、A/B/C 开箱方案 | 66 | 入门 |
-| 附录 A | `chapters/12_appendix-symbols-math.md` | 符号表、白话术语词典（约 90 条）、预备数学速览 | 217 | 查阅 |
+| 第 5 章 | `chapters/05_beamforming.md` | DSB、超指向、MVDR、LCMV、GSC、SPP、后置滤波、球谐、DNN 波束 | 572 | 较难 |
+| 第 6 章 | `chapters/06_aec.md` | NLMS/FDKF/PBFDAF、双讲检测、非线性、混合神经 AEC、WebRTC AEC3 解剖 | 614 | 较难 |
+| 第 7 章 | `chapters/07_wpe-dereverberation.md` | WPE 原理与推导、Δ/K 选型、在线 WPE、三个手算算例 | 234 | 进阶 |
+| 第 8 章 | `chapters/08_speech-separation.md` | 混合模型、BSS 四兄弟、GSS、深度分离、TSE、数据集 | 154 | 进阶 |
+| 第 9 章 | `chapters/09_source-tracking.md` | KF 五步手算、粒子滤波、PHD 多目标、定位-追踪-波束闭环 | 228 | 进阶 |
+| 第 10 章 | `chapters/10_engineering-practice.md` | 前端链路、延迟预算、SRO/标定、评测指标、六大场景 22 条落地 | 476 | 进阶 |
+| 第 11 章 | `chapters/11_selection-guide.md` | 六条结论、场景对照表、三问决策树、A/B/C 开箱方案 | 68 | 入门 |
+| 附录 A | `chapters/12_appendix-symbols-math.md` | 符号表、白话术语词典（约 90 条）、预备数学速览 | 216 | 查阅 |
 | 附录 B | `chapters/13_appendix-guide.md` | 学习路径、领域地图、研究前沿、踩坑指南、16 道练习、复现说明 | 237 | 查阅 |
 
 ## 快速开始
@@ -38,7 +38,7 @@ English version: [README_EN.md](./README_EN.md)
 ```bash
 # 1. 建虚拟环境并装依赖
 python3 -m venv .venv
-.venv/bin/pip install numpy matplotlib markdown pypdf pdfminer.six
+.venv/bin/pip install numpy matplotlib markdown pypdf
 # pyroomacoustics 可选（只给附录 B 第 15 题用）
 
 # 2. 生成 33 张图（图 1~25、图 33 约 20 秒，图 26~32 约 11 秒）
@@ -56,9 +56,9 @@ python3 -m venv .venv
 
 ## 学习路径
 
-- **路径 A（零基础入门，2~3 周）**：导读 → 01 → 11.1/11.3 → 02/03 → 04（GCC+SRP）→ 05（DSB+MVDR）→ 06/07/08 → 09 → 跑通 32 张图。
+- **路径 A（零基础入门，2~3 周）**：导读 → 01 → 11.1/11.3 → 02/03 → 04（GCC+SRP）→ 05（DSB+MVDR）→ 06/07/08 → 09 → 跑通 33 张图。
 - **路径 B（工程落地，1 周精读）**：11.1/11.2/11.3 定 A/B/C 方案 → 05/06/07/08 → 10 全读 → 输出延迟/同步/标定三张预算表。
-- **路径 C（研究前沿）**：02（CRB）→ 03（稀疏阵）→ 04/05 前沿 → 06/07/08 → 13.3 九条前沿 + 13.6 练习。
+- **路径 C（研究前沿）**：02（CRLB）→ 03（稀疏阵）→ 04/05 前沿 → 06/07/08 → 13.3 九条前沿 + 13.6 练习。
 
 ## 约定
 

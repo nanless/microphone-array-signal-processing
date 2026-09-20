@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>第 4 篇 · 声源定位（DOA 估计） · 麦克风阵列信号处理教程</title><style>
+<title>第 4 章 · 声源定位（DOA 估计） · 麦克风阵列信号处理教程</title><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -38,12 +38,12 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 </script>
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head><body id="top">
-<div class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 4 篇 · 声源定位（DOA 估计）</div>
+<div class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 4 章 · 声源定位（DOA 估计）</div>
 <div class="wrap"><nav class="side"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
-<div class="chap"><a href="01_problem-definition.html">第 1 篇 · 问题定义与双耳启示</a></div>
-<div class="chap"><a href="02_basics-signal-model.html">第 2 篇 · 声音到达阵列时发生了什么</a></div>
-<div class="chap"><a href="03_array-geometry.html">第 3 篇 · 阵列几何形态</a></div>
-<div class="chap cur">第 4 篇 · 声源定位（DOA 估计）</div>
+<div class="chap"><a href="01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
+<div class="chap"><a href="02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
+<div class="chap"><a href="03_array-geometry.html">第 3 章 · 阵列几何形态</a></div>
+<div class="chap cur">第 4 章 · 声源定位（DOA 估计）</div>
 <ul>
 <li><a href="04_doa-estimation.html#sec-1">4. 声源定位（DOA 估计）</a></li>
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-2">4.1 总览：四大类思路</a></li>
@@ -60,13 +60,13 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-13">4.8 定位算法总对比</a></li>
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-14">4.9 本章练习</a></li>
 </ul>
-<div class="chap"><a href="05_beamforming.html">第 5 篇 · 波束形成</a></div>
-<div class="chap"><a href="06_aec.html">第 6 篇 · 声学回声消除（AEC）</a></div>
-<div class="chap"><a href="07_wpe-dereverberation.html">第 7 篇 · 去混响（WPE）</a></div>
-<div class="chap"><a href="08_speech-separation.html">第 8 篇 · 语音分离</a></div>
-<div class="chap"><a href="09_source-tracking.html">第 9 篇 · 声源追踪</a></div>
-<div class="chap"><a href="10_engineering-practice.html">第 10 篇 · 工程实现与产业实践</a></div>
-<div class="chap"><a href="11_selection-guide.html">第 11 篇 · 总结与选型指南</a></div>
+<div class="chap"><a href="05_beamforming.html">第 5 章 · 波束形成</a></div>
+<div class="chap"><a href="06_aec.html">第 6 章 · 声学回声消除（AEC）</a></div>
+<div class="chap"><a href="07_wpe-dereverberation.html">第 7 章 · 去混响（WPE）</a></div>
+<div class="chap"><a href="08_speech-separation.html">第 8 章 · 语音分离</a></div>
+<div class="chap"><a href="09_source-tracking.html">第 9 章 · 声源追踪</a></div>
+<div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现与产业实践</a></div>
+<div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
 <main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
@@ -87,8 +87,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-14">4.9 本章练习</a></li>
 </ul></details>
 <blockquote>
-<p>⚠️ 本篇是系列教程第 4 篇（共 13 篇），可独立阅读，前后篇见下方导航。</p>
-<p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="./03_array-geometry.html">第 3 篇 · 阵列几何形态</a> ｜ 下一篇：<a href="./05_beamforming.html">第 5 篇 · 波束形成</a></p>
+<p>⚠️ 本篇是系列教程第 4 章（共 13 章），可独立阅读，前后篇见下方导航。</p>
+<p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="./03_array-geometry.html">第 3 章 · 阵列几何形态</a> ｜ 下一篇：<a href="./05_beamforming.html">第 5 章 · 波束形成</a></p>
 </blockquote>
 <hr />
 <h2 id="sec-1">4. 声源定位（DOA 估计）</h2>
@@ -113,7 +113,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 <h3 id="sec-3">4.1B 源数估计：动手之前先数有几个人在说话</h3>
 <p>子空间类（MUSIC、ESPRIT）开工前都要先回答一件事：源数 $K$ 是几——$K$ 定错了，信号子空间和噪声子空间的切分位置就错了，后面全盘皆输。所以源数估计不是附带品，是子空间方法的“开工许可证”。三招由糙到细：</p>
 <p><strong>第 1 招：看特征值台阶（特征间隙，eigen-gap）</strong>。把协方差矩阵 $\hat{\mathbf{R}}$（读作“R 帽”，帽子表示用有限快拍估计出来的版本）的特征值从大到小一字排开：前 $K$ 个明显高（信号+噪声），后面 $M-K$ 个塌成一片平地（纯噪声地板 $\approx\sigma^2$）。台阶落在哪，$K$ 就是几。算例 4-4 里无噪声单源给出 $3,\,0,\,0$——一个高、两个零，台阶像刀切一样齐，$K=1$ 一眼可辨。实际中有噪声时台阶变矮变圆：低信噪比（SNR）或快拍太少，大特征值被压矮、小特征值被抬高，台阶糊成斜坡，这时就看相邻特征值的比值或差值在何处最大（这就是“gap”的字面意思），取 gap 最大处为分界。糙、快、免调参，信噪比高时够用。</p>
-<p><strong>第 2 招：信息准则（AIC/MDL）</strong>。直觉一句话：每多认一个源，数据拟合都变好一点点，但模型也要多占一份自由度——AIC（Akaike information criterion，赤池信息准则）和 MDL（minimum description length，最小描述长度）都是“拟合奖励 − 复杂度罚款”的打分，取分最低的 $K$。MDL 的罚款比 AIC 重，所以大样本下 MDL 更不容易虚报源数，工程里用 MDL 的更多。两者的软肋一样：低 SNR、快拍不足时统统容易错；相干源（混响多径）直接把台阶塌掉，准则跟着失灵——这时先做空间平滑再数（见 §4.6）。</p>
+<p><strong>第 2 招：信息准则（AIC/MDL）</strong>。直觉一句话：每多认一个源，数据拟合都变好一点点，但模型也要多占一份自由度——AIC（Akaike information criterion，赤池信息准则）和 MDL（minimum description length，最小描述长度）都是“拟合奖励 − 复杂度罚款”的打分，取分最低的 $K$。MDL 的罚款比 AIC 重，所以大样本下 MDL 更不容易虚报源数，工程里用 MDL 的更多。打分式的具体形式本教程不展开，实现以原论文为准。两者的软肋一样：低 SNR、快拍不足时统统容易错；相干源（混响多径）直接把台阶塌掉，准则跟着失灵——这时先做空间平滑再数（见 §4.6）。</p>
 <p>一句话选型：信噪比高、快拍足，直接看台阶；要自动化、做成产品，用 MDL；混响重、疑似相干，先平滑再用 MDL，台阶仅作交叉验证。</p>
 <blockquote>
 <p>源数数清了再开工——§4.2 从最糙最快的 GCC-PHAT 干起，先保底再谈精度。</p>
@@ -183,14 +183,14 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 </tbody>
 </table>
 <p>（注意：单帧时 $\sqrt{|X_1|^2|X_2|^2}=|X_1X_2^*|$，SCOT 与 PHAT 字面等价；差别在多帧平均——SCOT 的分母换成平滑后的自谱，不受瞬时谱起伏影响，更稳。）</p>
-<p>由时延换算角度：$\hat\theta = \arcsin(c\,\hat\tau/d)$。</p>
+<p>由时延换算角度：$\hat\theta = \arcsin(c\,\hat\tau/d)$。实现时自变量先限幅到 $[−1,1]$，超限按端射方向处理或判为野值。</p>
 <p><strong>这个换算怎么来的</strong>：几何推导见 §2.1“时差的几何来源”——平面波以角 $\theta$ 斜入射，路程差 $\Delta=d\sin\theta$（图12(c)），折成时间即 $\hat\tau=\dfrac{d\sin\theta}{c}$，反解得上式；$\theta$ 一律从<strong>正横方向</strong>起算。<strong>注意角度起算基准</strong>：若 $\theta$ 从两麦<strong>连线方向</strong>起算（§5.2 手算示例用的就是这种），公式变成 $\hat\tau = \dfrac{d\cos\theta}{c}$——读论文时先确认它用的是哪一种，别把两个 convention 混了。另外提醒：双麦只给一个标量时延，三维空间里“与该时延相容”的方向构成以连线为轴的整整一个<strong>锥面</strong>——双麦在三维存在整个锥面模糊（§3.1 的镜像/锥面讨论），定方向至少要加第三只麦。</p>
 <p><strong>两个实用细节</strong>：①16 kHz 下一个采样点 62.5 μs，对 4 cm 间距相当于约 30° 的角度量化误差（这是正横方向附近的最好情况；越靠近端射方向，同样的量化误差放大越狠，见算例 3-2）——实际系统必须对互相关峰做<strong>抛物线插值</strong>或直接拟合相位斜率，把时延估计细化到亚采样级，否则角度会跳格子；②PHAT“只留相位”是把双刃剑：相位信息变重要了，麦克风的相位响应不一致（标定问题，§10.2）会直接变成定位偏差。</p>
 <p><img alt="图12 GCC-PHAT 原理" src="../figures/fig12_gcc_phat.png" onerror="this.alt+='（图缺失）'" /></p>
 <p><strong>看什么</strong>：（a）两路波形错开一点（$d=4$ cm、$\theta=30°$，真实时延 $\tau\approx58.3\,\mu$s）；（b）互相关只有一个尖峰，峰值位置即时间差——注意 $58.3\,\mu$s 只有约 0.93 个采样点（16 kHz 下一格 62.5 μs），图中峰落在采样格之间，必须靠插值读出亚采样位置；（c）时差 × 声速 = 路程差，路程差 ÷ 间距 = 角度正弦（$\theta$ 从正横起算，与 §2.1 约定一致）。这个“峰落在格子之间”的情形不是特例而是常态——§2.1“离散化与同步”说过 4 cm 小阵列的最大时差也不到 2 个采样格，亚采样插值是刚需。</p>
 <p><strong>算例：GCC-PHAT 完整数字链（$d=4$ cm、$\theta=30°$）</strong>：按 §2.1 几何关系，真值时延 $\tau_0=d\sin\theta/c=0.04\times0.5/343\approx58.3\,\mu$s；16 kHz 下 1 个采样点 $=62.5\,\mu$s，故峰的真值位置在 $58.3/62.5\approx0.93$ 个采样点（图12(b) 的峰正在格子之间）。直接取整读峰只能得到 1 个采样点（对应 $\arcsin(343\times62.5\,\mu s/0.04)\approx32.4°$，偏差约 2.4°）；做三点抛物线插值（取峰顶与其左右邻点拟合抛物线、顶点即亚采样峰位），可恢复出约 0.93 格，折回角度 $\arcsin(343\times0.93\times62.5\,\mu s/0.04)\approx30°$（精度注：按 0.93 格精确算是 $\arcsin(0.4984)\approx29.9°$，与 30° 真值的 0.1° 之差来自“约 0.93”的舍入，不是方法偏差）。这条“时延 → 格数 → 插值 → 角度”的链条就是亚采样级 TDOA（time difference of arrival，到达时间差：声波到两麦的时间差）估计的全部内容。</p>
 <p><strong>优缺点</strong>：计算极快——慢做法 $O(N^2)$ vs 快做法 $O(N\log N)$：1024 点约快 30 倍、4096 点约快 100 倍，整条曲线一次 IFFT 全出、无需先验、可实时；但只输出单个粗糙时延，强混响或 SNR&lt;5 dB 时峰变钝甚至找错。GCC 加权家族的经典出处是 Knapp &amp; Carter, “The generalized correlation method for estimation of time delay”, <em>IEEE Trans. Acoustics, Speech, and Signal Processing</em>, 24(4): 320–327, 1976（PHAT 加权即出自该文的讨论）。多源场景它还有结构性短板：每对麦的 GCC 会出现多个峰、跨麦对的峰配对存在歧义——这是 GCC 类不适合多源的直接原因（§4.8 表中“多源 ✗”）。</p>
-<p><strong>混响如何影响它</strong>（图13，数值模拟，镜像法合成 RIR，room impulse response，房间冲击响应：从声源到麦克风的“回声指纹”，含直达加全部反射）：实际系统按 32~64 ms 短帧算 GCC——帧越短，峰的“信噪比”越低。房间冲击响应的尾部让两路信号各自混入大量与直达声相位不一致的成分，互相关背景随之抬高、野峰增多。150 次随机试验的统计（图13(e) 红色正确率曲线）：$T_{60}$（混响时间：声压衰减 60 dB 所需的秒数）$\approx0.4$ s 时正确率约 99%，$T_{60}\approx0.6$ s 时约 89%，$T_{60}=0.8$ s 时约 70%，$T_{60}=1.0$ s 时只剩约 55%——单帧峰在强混响下超过四成概率指错位置。这就是为什么实际系统要做去混响（§7.1）、帧间平滑与追踪（§8），而不是直接相信单帧的峰。</p>
+<p><strong>混响如何影响它</strong>（图13，数值模拟，镜像法合成 RIR，room impulse response，房间冲击响应：从声源到麦克风的“回声指纹”，含直达加全部反射；以下为合成特定条件下的量级，详细房间/阵列/SNR 口径以实现代码为准）：实际系统按 32~64 ms 短帧算 GCC——帧越短，峰的“信噪比”越低。房间冲击响应的尾部让两路信号各自混入大量与直达声相位不一致的成分，互相关背景随之抬高、野峰增多。150 次随机试验的统计（图13(e) 红色正确率曲线）：$T_{60}$（混响时间：声压衰减 60 dB 所需的秒数）$\approx0.4$ s 时正确率约 99%，$T_{60}\approx0.6$ s 时约 89%，$T_{60}=0.8$ s 时约 70%，$T_{60}=1.0$ s 时只剩约 55%——单帧峰在强混响下超过四成概率指错位置。这就是为什么实际系统要做去混响（§7.1）、帧间平滑与追踪（§8），而不是直接相信单帧的峰。</p>
 <p><img alt="图13 GCC-PHAT 受混响的影响" src="../figures/fig13_gcc_reverb.png" onerror="this.alt+='（图缺失）'" /></p>
 <p><strong>看什么</strong>：盯住图13(e)那条红色正确率曲线——$T_{60}$ 从 0.4 s 爬到 1.0 s，正确率从约 99% 掉到约 55%；再对照混响加重时峰形的变化：直达峰变钝、野峰变多，单帧的峰越来越靠不住。</p>
 <p><strong>看什么（续，(a)–(d)）</strong>：(a)干净房间的峰又尖又稳，(b)–(d)混响加重、野峰一个个冒出来——(b)–(d)是单次仿真的抓拍，野峰冒在哪个延迟格是偶然的，别数野峰个数，对照着 (e) 的正确率曲线读：峰形变丑，正确率就掉。</p>
@@ -317,7 +317,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 <p>$$\|\vec{p}-\vec{r}_i\| - \|\vec{p}-\vec{r}_1\| = c\,\tau_{i1}, \quad i=2..M\text{。}$$</p>
 <ul>
 <li>$\vec{p}$：待求声源位置（远场只需方向）；$\vec{r}_i$：第 $i$ 个麦的坐标（已知，靠标定）；</li>
-<li>方程共 $M-1$ 个：只估方位角（1 个未知数）需 2 对麦；估 2D 位置（2 个未知数）需 3 对；估 3D 位置（3 个未知数）至少需要 4 个不共面的麦。方程多于未知数时称为<strong>超定</strong>（over-determined），此时没有精确解，用最小二乘找“最照顾全局”的解——多出来的方程正是抗时延误差的冗余。这就是术语表说的<strong>超定方程组</strong>：方程比未知数多，只能用最小二乘解。</li>
+<li>方程共 $M-1$ 个：1 对麦可得角度（含前后模糊），2 对起解模糊/测 2D 位置；估 3D 位置（3 个未知数）至少需要 4 个不共面的麦。方程多于未知数时称为<strong>超定</strong>（over-determined），此时没有精确解，用最小二乘找“最照顾全局”的解——多出来的方程正是抗时延误差的冗余。这就是术语表说的<strong>超定方程组</strong>：方程比未知数多，只能用最小二乘解。</li>
 </ul>
 <p><strong>算例 4-2：TDOA 几何解算数值例——两个时延怎么变成一个方向</strong></p>
 <p>§4.4 给出了方程组 $\|\vec{p}-\vec{r}_i\|-\|\vec{p}-\vec{r}_1\|=c\tau_{i1}$。远场条件下它退化为非常简单的几何：每对麦给出方向的一个“方向余弦”分量。用具体数字走一遍。</p>
@@ -443,7 +443,7 @@ $$\vec{a}^H(30°)\,\vec{e}_3=\frac{1}{\sqrt6}\big(1\times1+(+\mathrm{j})\times1+
 <p><strong>宽带合并时还要做一次筛选</strong>：各频点归一化后再叠加投票；若某频点归一化后整条谱接近平坦（峰背比 &lt; 2 dB），说明该频点没有可用的方向信息，直接剔除比留着投票效果更好——2 dB 是经验门限，按子带统计峰背比，低于门限的子带整条弃权。</p>
 </blockquote>
 <h4 id="sec-10">ESPRIT（旋转不变子空间法，Roy &amp; Kailath, 1989）</h4>
-<p>先拿单源想：两子阵看到的波形形状完全相同，只差一个由固定平移带来的相位差——解出这个相位差就得到方向，全程不用逐格扫描；多源时每个源各贡献一个相位差，装进矩阵 $\boldsymbol\Psi$ 的特征值里。具体：利用两个平移对称子阵的旋转不变性：$\mathbf{E}_{s2} = \mathbf{E}_{s1}\boldsymbol\Psi$，其中 $\mathbf{E}_{s1}, \mathbf{E}_{s2}$ 是两个子阵的信号子空间，$\boldsymbol\Psi$ 是联系它们的“旋转矩阵”——它的特征值的相位正好是两个子阵之间的相位差，而相位差直接由入射角决定，于是求特征值就得到 DOA。<strong>免谱搜索、对阵列流形标定不敏感（但仍需精确知道两子阵的平移量——间距与取向）、计算快</strong>；代价是需特殊阵列结构（双平行子阵）、相干源同样需平滑、精度略逊于 root-MUSIC。宽带扩展版本（如 EB-ESPRIT）在强混响下（$T_{60}\ge0.4$ s）误差同样明显增大。</p>
+<p>先拿单源想：两子阵看到的波形形状完全相同，只差一个由固定平移带来的相位差——解出这个相位差就得到方向，全程不用逐格扫描；多源时每个源各贡献一个相位差，装进矩阵 $\boldsymbol\Psi$ 的特征值里。具体：利用两个平移对称子阵的旋转不变性：$\mathbf{E}_{s2} = \mathbf{E}_{s1}\boldsymbol\Psi$，其中 $\mathbf{E}_{s1}, \mathbf{E}_{s2}$ 是两个子阵的信号子空间，$\boldsymbol\Psi$ 是联系它们的“旋转矩阵”——它的特征值的相位正好是两个子阵之间的相位差，而相位差直接由入射角决定，于是求特征值就得到 DOA。<strong>免谱搜索、对阵列流形标定不敏感（但仍需精确知道两子阵的平移量——间距与取向）、计算快</strong>；代价是需特殊阵列结构（双平行子阵）、相干源同样需平滑、精度略逊于 root-MUSIC。宽带/球阵扩展版本（如 Eigenbeam ESPRIT，即 EB-ESPRIT，球谐域子空间法）在强混响下误差同样明显增大（T60 门限与量级以原文为准）。</p>
 <p><strong>算例：ESPRIT 最小数字链（$M=3$、$d=\lambda/2$、单源 $\theta=0°$）</strong>：子阵 1 取麦 {1,2}、子阵 2 取麦 {2,3}（平移量 $d$）。无噪声时信号子空间即导向矢量方向，$\mathbf{E}_{s1}\propto[1,1]^\top$、$\mathbf{E}_{s2}\propto[1,1]^\top$（正横方向两子阵同相）；旋转矩阵退化为标量 $\Psi=e^{-\mathrm{j}\pi\sin\theta}=e^{0}=1$，相位 $\arg\Psi=0$，反推 $\theta=\arcsin(\arg\Psi/\pi)=0°$ ✓。换一组：源在 $\theta=30°$ 时子阵间相位差 $\pi\sin30°=\pi/2$，$\Psi=e^{-\mathrm{j}\pi/2}=-\mathrm{j}$，$\arg\Psi=-\pi/2$，$\theta=\arcsin(0.5)=30°$ ✓。实际流程只是把“导向矢量”换成“从数据特征分解得到的信号子空间”、把“标量相位”换成“矩阵 $\boldsymbol\Psi$ 的特征值相位”，多源时每个特征值对应一个源——这就是 ESPRIT 免扫描的实质。换句话说：两个子阵的信号子空间形状相同，只差一个由固定平移带来的相位差，解出这个相位差就得到方向，全程不用逐格扫描。⚠️符号警告：这里 $\Psi=e^{-\mathrm{j}\pi\sin\theta}$ 取负号，是因为子阵 2 相对子阵 1 有延迟、相位滞后；若反过来以子阵 2 为基准，$\Psi$ 取共轭、相位变号，反推角度时用 $|\arg\Psi|$ 或配套公式——与 §4.2 定理桥“谁共轭谁定峰的正负”是同一个坑。</p>
 <blockquote>
 <p>窄带两员大将（MUSIC/ESPRIT）到齐——但语音宽到 300 Hz–8 kHz，下面先解决“窄带方法怎么吃宽带”。</p>
@@ -476,7 +476,7 @@ $$\vec{a}^H(30°)\,\vec{e}_3=\frac{1}{\sqrt6}\big(1\times1+(+\mathrm{j})\times1+
 <tbody>
 <tr>
 <td>GCC-PHAT 特征 + DNN</td>
-<td>Vesperini、Vecchiotti 等（<em>Computer Speech &amp; Language</em>, 2018）：MLP（multilayer perceptron，多层感知机）/CNN 骨干 × 角度网格分类输出</td>
+<td>Vesperini、Vecchiotti 等（<em>Computer Speech &amp; Language</em>, vol.49, 2018）：MLP（multilayer perceptron，多层感知机）/CNN 骨干 × 角度网格分类输出</td>
 <td>多麦对 GCC-PHAT Patterns 向量 → MLP/CNN 角度网格分类</td>
 <td>低分辨率（5~10° 网格）但极抗噪</td>
 </tr>
@@ -500,15 +500,15 @@ $$\vec{a}^H(30°)\,\vec{e}_3=\frac{1}{\sqrt6}\big(1\times1+(+\mathrm{j})\times1+
 </tr>
 <tr>
 <td>序列模型</td>
-<td>CRNN/Transformer 骨干 × ACCDOA/multi-ACCDOA 输出格式（ACCDOA = activity-coupled Cartesian DOA，活动耦合笛卡尔坐标方向：向量长度表有无声、方向表位置，一根向量同时回答“谁在说、在哪说”；向量例子：30° 方向有人说话输出 $0.9\times(\cos30°,\sin30°)=(0.78,0.45)$——长度 0.9 表“有人在说”、指向表“在 30° 说”，静音段输出长度 $\approx0$ 的小向量、直接弃用）</td>
+<td>CRNN/Transformer 骨干 × ACCDOA/multi-ACCDOA 输出格式（ACCDOA = activity-coupled Cartesian DOA，活动耦合笛卡尔坐标方向，Shimada et al., ICASSP 2021：向量长度表有无声、方向表位置，一根向量同时回答“谁在说、在哪说”；向量例子：30° 方向有人说话输出 $0.9\times(\cos30°,\sin30°)=(0.78,0.45)$——长度 0.9 表“有人在说”、指向表“在 30° 说”，静音段输出长度 $\approx0$ 的小向量、直接弃用）</td>
 <td>利用时序上下文，输出活动-定位耦合</td>
-<td>同时解决“谁在说、在哪说”，多说话人/强混响下报告精度较好的方案之一（截至 2026 年）</td>
+<td>同时解决“谁在说、在哪说”，多说话人/强混响下报告精度较好的方案之一（截至 2026 年，代表性结果以原论文为准）</td>
 </tr>
 </tbody>
 </table>
 <p><strong>效果规律</strong>（图9(b)，示意量级，房间和阵列条件见各原文）：$T_{60}\lt 0.3$ s 时 MUSIC 类逼近理论极限，DNN 无优势；$T_{60}>0.5$ s 或低 SNR 时传统方法明显退化，DNN 能把误差维持在 5~10°量级（同类卷积空间谱工作的代表见 Chakrabarty &amp; Habets <a href="https://arxiv.org/abs/1807.11722" title="citation">arXiv:1807.11722</a>，期刊版 DOI <a href="https://doi.org/10.1109/JSTSP.2019.2901664">10.1109/JSTSP.2019.2901664</a>）。代价：需要大量带标注数据、跨房间泛化差、模型大。</p>
 <p><strong>相关研究前沿——SELD（声事件定位与检测，sound event localization and detection）</strong>：不只回答“说话人在哪”，而是同时回答“<strong>什么声音</strong>（狗叫/键盘/玻璃碎）+ <strong>从哪里</strong>来 + <strong>什么时候</strong>发生”，是 DCASE 挑战赛的核心任务（代表数据集 STARSS23），方法上与 ACCDOA 一脉相承，也是机器人听觉、安防监控的技术基础。<a href="https://dcase.community/" title="citation">DCASE Challenge</a></p>
-<p><strong>距离估计半段——从“指方向”到“定点”</strong>：远场模型只给方向，近场（见 §3.1：声源离阵列不够远、波前弯曲不能忽略时）才谈得上距离。DCASE 2024 Task 3（STARSS24）在方位/俯仰之外新增距离分支，代表做法（PSELDnet 等，见 DCASE 官网 Task 3 页面）是大规模预训练音频编码器（encoder，如 ATST 一族）抽通用声学表示，后面挂多任务头同时输出“事件类别 + 方向 + 距离”——距离正是近场模型的 DNN 版本，几何上对应波前曲率，网络侧对应利用直达混响比和声级随距离衰减的线索。现状是方向误差已能做到几度水平，距离误差还大（相对误差常以百分之几十计），机器人/AR 听觉的刚需子任务，仍在爬坡。</p>
+<p><strong>距离估计半段——从“指方向”到“定点”</strong>：远场模型只给方向，近场（见 §3.1：声源离阵列不够远、波前弯曲不能忽略时）才谈得上距离。DCASE 2024 Task 3（STARSS24，声音事件定位检测加声源距离估计赛道）在方位/俯仰之外新增距离分支，代表做法（见 DCASE 官网 Task 3 页面，如用大规模预训练音频编码器抽表示再挂多任务头的系统）是大规模预训练音频编码器（encoder，如 ATST 一族）抽通用声学表示，后面挂多任务头同时输出“事件类别 + 方向 + 距离”——距离正是近场模型的 DNN 版本，几何上对应波前曲率，网络侧对应利用直达混响比和声级随距离衰减的线索。现状是方向误差已能做到几度水平，距离误差还大（相对误差常以百分之几十计，具体数以各参赛报告为准），机器人/AR 听觉的刚需子任务，仍在爬坡。</p>
 <h3 id="sec-13">4.8 定位算法总对比</h3>
 <table>
 <thead>
@@ -589,7 +589,7 @@ $$\vec{a}^H(30°)\,\vec{e}_3=\frac{1}{\sqrt6}\big(1\times1+(+\mathrm{j})\times1+
 </tbody>
 </table>
 <p>表注：鲁棒性一星到四星只做横向排序、不做绝对精度承诺，抗混响与抗噪合看（混响权重更高）；$N_{\mathrm{grid}}$=角度/位置网格数，$N$=帧长，$T$=快拍数，$M$=麦克风数。Bartlett 每网格点算 $\vec{a}^H\hat{\mathbf{R}}\vec{a}$ 是 $O(M^2)$，另有 $O(TM^2)$ 估协方差；SRP-PHAT 的 $O(N_{\mathrm{grid}}M^2)$ 按麦对数 $M(M-1)/2\approx M^2/2$ 计；MUSIC 行的“需平滑”指相干源场景需空间平滑预处理，其代价是约一半有效孔径（§4.6）。</p>
-<p><strong>理论极限长什么样——CRLB 小框</strong>。本章几次说某算法“逼近理论极限（CRLB）”，这个极限有显式公式。Cramér–Rao 下界（CRLB）：任何无偏估计量的方差都不可能小于它。对 TDOA 估计（高 SNR、平坦谱近似下）：</p>
+<p><strong>理论极限长什么样——CRLB 小框</strong>。本章几次说某算法“逼近理论极限（CRLB）”，这个极限有显式公式（标准结论，具体出处待核实）。Cramér–Rao 下界（CRLB）：任何无偏估计量的方差都不可能小于它。对 TDOA 估计（高 SNR、平坦谱近似下）：</p>
 <p>$$\sigma_\tau^2 \;\ge\; \frac{3}{8\pi^2\,T\cdot\mathrm{SNR}\cdot B_{\mathrm{w}}^3}$$</p>
 <p>逐个符号：$\sigma_\tau^2$ 为时延估计方差（s²）；$T$ 为观测时长（s）；$\mathrm{SNR}$ 为线性信噪比（0 dB = 1），此处指信号总功率与噪声总功率之比；$B_{\mathrm{w}}$ 为单边信号带宽（Hz）。系数口径说明：在总信噪比×单边带宽口径下正确分母是 $8\pi^2$，单通道SNR口径下是 $4\pi^2$——换句话说，分母写 $4\pi^2$ 的书按单通道SNR理解，对照其他书时先对齐 $\mathrm{SNR}$/$B_{\mathrm{w}}$ 定义。注意 $B_{\mathrm{w}}^3$ 在分母——<strong>带宽是最值钱的东西</strong>，带宽翻倍，时延精度提升近 3 倍。按本框口径算个数：$T=1$ s、SNR = 0 dB、$B_{\mathrm{w}}=4$ kHz（电话带宽语音），$\sigma_\tau\ge\sqrt{3/(8\pi^2\times1\times1\times4000^3)}\approx0.77\,\mu$s；折成 4 cm 双麦正横方向的角度误差约 $343\times0.77\,\mu s/0.04\approx0.38°$——这就是这套配置、这套口径下<strong>任何</strong>算法的天花板（合成条件，实测还受混响与标定误差拖累）。<strong>带宽翻倍对照</strong>（同样 $T$ 与 SNR、同口径）：$B_{\mathrm{w}}=8$ kHz 时分母 $B_{\mathrm{w}}^3$ 变为 8 倍，$\sigma_\tau\ge0.77/\sqrt8\approx0.27\,\mu$s，对应角度误差约 $0.13°$——带宽翻一倍，时延标准差缩小为原来的 $1/(2\sqrt2)\approx0.35$ 倍，这就是宽带语音（8 kHz）定位明显准于电话带宽（4 kHz）的定量原因。角度 CRLB 的定性结论同样值得记：误差方差 $\propto 1/(\mathrm{SNR}\times\text{快拍数}\times\text{孔径}^2)$——孔径以平方进入，这正是 §4.4 GDOP“几何放大”的另一面：小孔径场景再聪明的算法也撞在这堵墙上。</p>
 <p><strong>选型经验</strong>：先看几何与采样率预算（孔径、GDOP、亚采样能力），再选算法——小孔径场景任何算法都救不回来。在此之上：嵌入式产品默认 SRP-PHAT（免训练、粗到细加速）；高分辨研究用 MUSIC/root-MUSIC + 空间平滑；强混响/多说话人/算力充足 → DNN（CRNN/ACCDOA）或与 SRP-PHAT 级联。</p>
