@@ -1,0 +1,1170 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>第 10 篇 · 工程实现与产业实践 · 麦克风阵列信号处理教程</title><style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
+.topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
+.topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
+.wrap{display:flex;max-width:1280px;margin:0 auto}
+.side{width:300px;flex-shrink:0;padding:20px 14px;position:sticky;top:47px;height:calc(100vh - 47px);overflow-y:auto;background:#fff;border-right:1px solid #e5e8ee;font-size:13.5px}
+.side a{color:#2f6db3;text-decoration:none}.side a:hover{text-decoration:underline}
+.side .chap{margin:10px 0 2px;font-weight:700}.side .chap.cur{color:#c0392b}
+.side ul{margin:2px 0 6px;padding-left:16px;color:#666}.side li{margin:2px 0}
+.main{flex:1;min-width:0;padding:28px 36px;background:#fff}
+.main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
+table{border-collapse:collapse;margin:14px 0;display:block;overflow-x:auto;max-width:100%}
+th,td{border:1px solid #dfe3ea;padding:6px 10px;font-size:14px;text-align:left}
+th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;font-size:13.5px}
+pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
+pre code{background:none;color:inherit;padding:0}
+blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
+mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+.pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
+.pn a{color:#2f6db3;text-decoration:none}.pn .off{color:#aaa}
+.foot{color:#888;font-size:13px;margin:20px 0 40px}
+h1{font-size:26px;border-bottom:2px solid #1a1a2e;padding-bottom:8px}
+h2{font-size:21px;margin-top:34px;border-bottom:1px solid #e5e8ee;padding-bottom:6px}
+h3{font-size:17px;margin-top:24px}
+h4{font-size:15.5px;margin-top:20px;color:#333}
+.toc-mobile{display:none;margin:0 0 16px;border:1px solid #e5e8ee;border-radius:8px;padding:10px 14px;background:#f7fafd;font-size:14px}
+.toc-mobile summary{cursor:pointer;font-weight:700}
+.toc-mobile ul{padding-left:18px;margin:8px 0 2px}.toc-mobile a{color:#2f6db3;text-decoration:none}
+.topbtn{position:fixed;bottom:20px;right:20px;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px;opacity:.75}
+.offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
+@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}}
+@media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
+</style>
+<script>
+window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['$$', '$$']]}};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head><body id="top">
+<div class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 10 篇 · 工程实现与产业实践</div>
+<div class="wrap"><nav class="side"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
+<div class="chap"><a href="01_问题定义与双耳启示.html">第 1 篇 · 问题定义与双耳启示</a></div>
+<div class="chap"><a href="02_基础_声音到达阵列时发生了什么.html">第 2 篇 · 声音到达阵列时发生了什么</a></div>
+<div class="chap"><a href="03_阵列几何形态.html">第 3 篇 · 阵列几何形态</a></div>
+<div class="chap"><a href="04_声源定位DOA估计.html">第 4 篇 · 声源定位（DOA 估计）</a></div>
+<div class="chap"><a href="05_波束形成Beamforming.html">第 5 篇 · 波束形成</a></div>
+<div class="chap"><a href="06_声学回声消除AEC.html">第 6 篇 · 声学回声消除（AEC）</a></div>
+<div class="chap"><a href="07_去混响WPE.html">第 7 篇 · 去混响（WPE）</a></div>
+<div class="chap"><a href="08_语音分离.html">第 8 篇 · 语音分离</a></div>
+<div class="chap"><a href="09_声源追踪SourceTracking.html">第 9 篇 · 声源追踪</a></div>
+<div class="chap cur">第 10 篇 · 工程实现与产业实践</div>
+<ul>
+<li><a href="10_工程实现评测与产业实践.html#sec-1">10. 工程实现、评测与产业实践</a></li>
+<li>&nbsp;&nbsp;<a href="10_工程实现评测与产业实践.html#sec-2">10.1 完整前端链路与 AFE（音频前端）排序</a></li>
+<li>&nbsp;&nbsp;<a href="10_工程实现评测与产业实践.html#sec-3">10.2 硬件基础：拾音器件、采集、SRO（采样率偏移）与 AGC（自动增益控制）锁定</a></li>
+<li>&nbsp;&nbsp;<a href="10_工程实现评测与产业实践.html#sec-4">10.3 单通道 NS（噪声抑制）、VAD（语音活动检测）门控与 KWS（关键词唤醒）分支</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="10_工程实现评测与产业实践.html#sec-5">10.3.1 单通道 NS 在链路中的位置与选型</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="10_工程实现评测与产业实践.html#sec-6">10.3.2 VAD 门控矩阵</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="10_工程实现评测与产业实践.html#sec-7">10.3.3 KWS 分支：常开、低功耗、独立阈值</a></li>
+<li>&nbsp;&nbsp;<a href="10_工程实现评测与产业实践.html#sec-8">10.4 定点化、PTQ/QAT（量化）与端侧预算</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="10_工程实现评测与产业实践.html#sec-9">10.4.1 定点化专节：从浮点到定点要过四关</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="10_工程实现评测与产业实践.html#sec-10">10.4.2 PTQ 与 QAT 掉点对照表</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="10_工程实现评测与产业实践.html#sec-11">10.4.3 端侧预算实例（均为示意值，架构选型阶段估算用；量产以实测为准）</a></li>
+<li>&nbsp;&nbsp;<a href="10_工程实现评测与产业实践.html#sec-12">10.5 评测体系与语音质量指标选型</a></li>
+<li>&nbsp;&nbsp;<a href="10_工程实现评测与产业实践.html#sec-13">10.6 公开数据集与工具</a></li>
+<li>&nbsp;&nbsp;<a href="10_工程实现评测与产业实践.html#sec-14">10.7 分布式阵列：同步、标定、融合三本账</a></li>
+<li>&nbsp;&nbsp;<a href="10_工程实现评测与产业实践.html#sec-15">10.8 产业实践中的阵列形态</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="10_工程实现评测与产业实践.html#sec-16">10.8.1 场景 22 条落地（每条独立可抄，数字全待自家实测）</a></li>
+<li>&nbsp;&nbsp;<a href="10_工程实现评测与产业实践.html#sec-17">10.9 从模型到芯片：算力、功耗与部署</a></li>
+<li>&nbsp;&nbsp;<a href="10_工程实现评测与产业实践.html#sec-18">10.10 联调顺序与验收清单（按此顺序逐项打勾，错序排查会走弯路）</a></li>
+<li>&nbsp;&nbsp;<a href="10_工程实现评测与产业实践.html#sec-19">10.11 本章小结：从 demo（演示样机）到量产的三句话</a></li>
+</ul>
+<div class="chap"><a href="11_总结与选型指南.html">第 11 篇 · 总结与选型指南</a></div>
+<div class="chap"><a href="12_附录A_符号术语数学.html">附录 A · 符号术语数学</a></div>
+<div class="chap"><a href="13_附录B_路径地图前沿踩坑练习复现.html">附录 B · 路径地图与练习</a></div></nav>
+<main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
+<details class="toc-mobile"><summary>本页目录</summary><ul>
+<li><a href="10_工程实现评测与产业实践.html#sec-1">10. 工程实现、评测与产业实践</a></li>
+<li>&nbsp;&nbsp;<a href="10_工程实现评测与产业实践.html#sec-2">10.1 完整前端链路与 AFE（音频前端）排序</a></li>
+<li>&nbsp;&nbsp;<a href="10_工程实现评测与产业实践.html#sec-3">10.2 硬件基础：拾音器件、采集、SRO（采样率偏移）与 AGC（自动增益控制）锁定</a></li>
+<li>&nbsp;&nbsp;<a href="10_工程实现评测与产业实践.html#sec-4">10.3 单通道 NS（噪声抑制）、VAD（语音活动检测）门控与 KWS（关键词唤醒）分支</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="10_工程实现评测与产业实践.html#sec-5">10.3.1 单通道 NS 在链路中的位置与选型</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="10_工程实现评测与产业实践.html#sec-6">10.3.2 VAD 门控矩阵</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="10_工程实现评测与产业实践.html#sec-7">10.3.3 KWS 分支：常开、低功耗、独立阈值</a></li>
+<li>&nbsp;&nbsp;<a href="10_工程实现评测与产业实践.html#sec-8">10.4 定点化、PTQ/QAT（量化）与端侧预算</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="10_工程实现评测与产业实践.html#sec-9">10.4.1 定点化专节：从浮点到定点要过四关</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="10_工程实现评测与产业实践.html#sec-10">10.4.2 PTQ 与 QAT 掉点对照表</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="10_工程实现评测与产业实践.html#sec-11">10.4.3 端侧预算实例（均为示意值，架构选型阶段估算用；量产以实测为准）</a></li>
+<li>&nbsp;&nbsp;<a href="10_工程实现评测与产业实践.html#sec-12">10.5 评测体系与语音质量指标选型</a></li>
+<li>&nbsp;&nbsp;<a href="10_工程实现评测与产业实践.html#sec-13">10.6 公开数据集与工具</a></li>
+<li>&nbsp;&nbsp;<a href="10_工程实现评测与产业实践.html#sec-14">10.7 分布式阵列：同步、标定、融合三本账</a></li>
+<li>&nbsp;&nbsp;<a href="10_工程实现评测与产业实践.html#sec-15">10.8 产业实践中的阵列形态</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="10_工程实现评测与产业实践.html#sec-16">10.8.1 场景 22 条落地（每条独立可抄，数字全待自家实测）</a></li>
+<li>&nbsp;&nbsp;<a href="10_工程实现评测与产业实践.html#sec-17">10.9 从模型到芯片：算力、功耗与部署</a></li>
+<li>&nbsp;&nbsp;<a href="10_工程实现评测与产业实践.html#sec-18">10.10 联调顺序与验收清单（按此顺序逐项打勾，错序排查会走弯路）</a></li>
+<li>&nbsp;&nbsp;<a href="10_工程实现评测与产业实践.html#sec-19">10.11 本章小结：从 demo（演示样机）到量产的三句话</a></li>
+</ul></details>
+<blockquote>
+<p>⚠️ 本篇是系列教程第 10 篇（共 13 篇），可独立阅读，前后篇见下方导航。</p>
+<p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="./09_声源追踪SourceTracking.html">第 9 篇 · 声源追踪</a> ｜ 下一篇：<a href="./11_总结与选型指南.html">第 11 篇 · 总结与选型指南</a></p>
+</blockquote>
+<hr />
+<h2 id="sec-1">10. 工程实现、评测与产业实践</h2>
+<blockquote>
+<p>本章缩写中英对照（按出场分组，共 5 组）：
+链路模块：AFE（Audio Front End，音频前端）｜ AEC（Acoustic Echo Cancellation，声学回声消除）｜ WPE（Weighted Prediction Error，加权预测误差去混响）｜ NS（Noise Suppression，噪声抑制）｜ AGC（Automatic Gain Control，自动增益控制）｜ VAD（Voice Activity Detection，语音活动检测）｜ KWS（Keyword Spotting，关键词唤醒）｜ ASR（Automatic Speech Recognition，自动语音识别）。
+信号与阵列：SRO（Sampling Rate Offset，采样率偏移）｜ STFT（Short-Time Fourier Transform，短时傅里叶变换）｜ WNG（White Noise Gain，白噪声增益）｜ DOA（Direction of Arrival，波达方向）｜ TDOA（Time Difference of Arrival，到达时间差）｜ RIR（Room Impulse Response，房间冲激响应）。
+量化部署：PTQ（Post-Training Quantization，训练后量化）｜ QAT（Quantization-Aware Training，量化感知训练）｜ PDM（Pulse Density Modulation，脉冲密度调制）｜ TDM（Time Division Multiplexing，时分复用）。
+评测指标：ERLE（Echo Return Loss Enhancement，回声返回损失增强，交付口径为含残余抑制的 ERLE_total，见 §10.5）｜ WER（Word Error Rate，词错误率）｜ CER（Character Error Rate，字错误率）｜ SI-SDR（Scale-Invariant Signal-to-Distortion Ratio，尺度不变信失真比）｜ STOI（Short-Time Objective Intelligibility，短时客观可懂度）｜ PESQ（Perceptual Evaluation of Speech Quality，感知语音质量评估）。
+主观与追踪：POLQA（Perceptual Objective Listening Quality Analysis，感知客观听音质量分析）｜ MOS（Mean Opinion Score，平均意见分）｜ OSPA（Optimal Sub-Pattern Assignment，最优子模式分配距离）｜ HATS（Head and Torso Simulator，人工头躯干模拟器）。</p>
+</blockquote>
+<h3 id="sec-2">10.1 完整前端链路与 AFE（音频前端）排序</h3>
+<p>第一编开场：先把九框链路与顺序因果立住——后面硬件、评测、部署三编全挂在这条链上，联调排障按框号查，错序排查走弯路。</p>
+<p>完整链路一句话：多通道采集 → AEC（声学回声消除）→ 去混响（WPE）→ 声源定位（SSL，Sound Source Localization）→ 声源追踪（Tracking）→ 波束形成（Beamforming）→ 单通道噪声抑制（NS）→ 自动增益控制（AGC）→ VAD（语音活动检测）门控 → 唤醒词（KWS）/语音识别（ASR）。各模块原理分别见第 4~9 章（回声§6.1/去混响§7.1/分离§8.1/追踪§9.x），顺序的因果逻辑见 <a href="08_语音分离.html">08_语音分离.md</a> §8.2。</p>
+<p>为什么是这个顺序（每一步说清因果）：</p>
+<ol>
+<li>AEC 必须最靠前。扬声器播出的声音是已知的最强干扰，且它是线性回声——只有趁信号还没被任何非线性（NS 谱减、AGC 变增益、削波）破坏之前减掉，参考通道与麦克风通道的线性关系才成立。NS 或 AGC 一旦先动手，回声路径就变成时变的，AEC 自适应滤波器跟不上。</li>
+<li>WPE 紧跟 AEC。WPE 是线性预测去混响，同样要求输入保持线性；放在波束之前可以用多通道联合预测（多通道 WPE 比单通道残余混响少 1~3 dB，见 §7.1）。</li>
+<li>定位与追踪用 AEC+WPE 后的信号。混响与回声都会污染互相关峰，先清理再做 TDOA（到达时间差）/SRP（Steered Response Power，导向响应功率），DOA（波达方向）误差可小 2°~5°（混响 T60 = 0.5 s 条件下的常见量级）。</li>
+<li>波束形成在定位/追踪之后。波束需要目标方向（定位给方向，追踪给平滑后的方向），先有方向再有指向性增强，顺序不可倒。</li>
+<li>单通道 NS（噪声抑制）在波束之后、AGC 之前。波束输出是单通道，此时做谱抑制代价最小；NS 必须在 AGC 之前，否则 AGC 会把噪声底抬起来再让 NS 猜，噪声估计偏大 3~6 dB。</li>
+<li>AGC（自动增益控制）在 NS 之后、VAD/KWS 之前。识别器与唤醒模型都要求输入电平稳定（目标 −26 ~ −22 dBFS 附近），AGC 负责把电平熨平；但 AEC 收敛期间 AGC 必须锁定（见 §10.2）。</li>
+<li>VAD（语音活动检测）是门控信号（门控矩阵见§10.3.2，此处不展开）。</li>
+<li>KWS（关键词唤醒）从 AGC 后取分支常开；ASR（语音识别）在 VAD 判有话、KWS 唤醒后才全速运行（见 §10.3）。</li>
+</ol>
+<p><strong>图 23 说明</strong>：图 23 为横向 9 框流程图，从左到右依次为 ① 多通道采集 → ② AEC → ③ WPE → ④ SSL 定位 → ⑤ 追踪 → ⑥ 波束形成 → ⑦ NS+AGC → ⑧ VAD 门控 → ⑨ KWS/ASR 后端；其中 ⑧ VAD 用虚线反向箭头指向 ②③⑤⑥⑨，表示门控关系；⑨ KWS 另有一条从 ⑦ 直接引出的常开旁路箭头，表示低功耗常驻分支；① 下方标注时钟源，⑥ 下方标注方向输入来自 ⑤。误差传导标注在主链上方：标定误差与时钟偏差在 ① 处注入，逐级向右传递。</p>
+<p><strong>误差逐级传导</strong>：标定误差与时钟偏差在 ① 处注入，逐级向右传递（标定数字见§10.2）。</p>
+<p><strong>端到端延迟预算</strong>：语音交互从声音进入麦克风到系统给出反应，经验预算约 300 ms。把预算拆到各模块的算法延迟（指示性量级，仅供建立直觉）：</p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>算法延迟量级</th>
+<th>来源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>STFT（短时傅里叶变换）分帧</td>
+<td>窗长 32 ms</td>
+<td>帧移 8 ms 决定输出节奏，窗长决定第一帧等待</td>
+</tr>
+<tr>
+<td>AEC</td>
+<td>4~16 ms</td>
+<td>块处理（§6.1）</td>
+</tr>
+<tr>
+<td>WPE</td>
+<td>约一个帧长（8~32 ms）</td>
+<td>WPE 只用第 Δ 到 Δ+K−1 帧之前的历史预测当前帧，是向后上下文而非前瞻，不额外引入前瞻延迟（在线变体功率谱平滑另加少量延迟，§7.1）</td>
+</tr>
+<tr>
+<td>波束形成</td>
+<td>逐帧或逐块</td>
+<td>权重逐帧（8 ms 级）或逐块更新（第 5 章）</td>
+</tr>
+<tr>
+<td>追踪</td>
+<td>约 1~2 帧滞后</td>
+<td>平滑与外推的固有代价（第 9 章）</td>
+</tr>
+<tr>
+<td>单通道 NS + AGC</td>
+<td>约 1 帧（8~16 ms）</td>
+<td>谱增益平滑与增益平滑各引入约一帧记忆</td>
+</tr>
+<tr>
+<td>VAD 判决</td>
+<td>约 20~30 ms 确认延迟</td>
+<td>迟滞判决的确认窗（§10.3），与下文 200 ms 拖尾挂起是两回事</td>
+</tr>
+<tr>
+<td>DNN 增强/分离后端</td>
+<td>示意十几~百 ms 级（图 25 取 120 ms）</td>
+<td>另源示意值，不在上表口径内，量产以实测为准</td>
+</tr>
+<tr>
+<td>ASR 解码</td>
+<td>示意数十 ms 级（图 25 取 60 ms）</td>
+<td>另源示意值，流式与离线差一个量级，量产以实测为准</td>
+</tr>
+</tbody>
+</table>
+<p><img alt="图25 延迟预算瀑布条" src="../figures/fig25_latency_budget.png" onerror="this.alt+='（图缺失）'" /></p>
+<p>图25 看什么：把上表画成一条瀑布——采集 32 ms + AEC 16 ms + WPE 24 ms + 波束 12 ms + 追踪 8 ms + DNN 120 ms + 语音识别（ASR）60 ms，合计约 272 ms，红色虚线是 300 ms 经验预算，剩约 28 ms 余量。优化方向一目了然：短窗（32→16 ms）、流式处理各省 20~40 ms；DNN 后端是最大的一块，模型选型直接决定余量生死。注意本图数字为指示性量级，做立项估算用，量产以实测为准；其中 DNN 120 ms、ASR 60 ms 为另源示意取值，不在上表内。</p>
+<p><strong>工程结论</strong>：账面是 STFT 32 ms + AEC 4~16 ms + WPE 约一个帧长 + 波束与追踪各 1~2 帧 + NS/AGC/VAD 约 2~3 帧，纯解析链路合计约 80~140 ms。真正的预算大头是 DNN 后端与采集/播放缓冲，叠加后才可能逼近 300 ms。所以实时系统常用更短的窗（16 ms）、流式 WPE 与在线波束把总延迟压进 100 ms 级；唤醒场景（先喊唤醒词再下指令）可以放宽——用户的等待预期从听到回应提示音后才开始计。</p>
+<p><strong>图 23 对照表：①~⑨ 框输入输出一览</strong>（图 23 见 §10.1；联调时按此表逐项对接口，任一框输入输出对不上即从此处查起）：</p>
+<p><img alt="图23 前端处理链路（缩略，完整说明见本文件 §10.4）" src="../figures/fig23_pipeline.png" onerror="this.alt+='（图缺失）'" /></p>
+<p>上图为图 23 缩略图，点图回到 §10.1 看完整链路与闭环说明。</p>
+<table>
+<thead>
+<tr>
+<th>框</th>
+<th>名称</th>
+<th>输入</th>
+<th>输出</th>
+<th>关键参数</th>
+<th>典型失效</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>①</td>
+<td>多通道采集</td>
+<td>M 路麦信号＋时钟</td>
+<td>对齐 PCM</td>
+<td>帧 8 ms，偏差＜2 μs</td>
+<td>错位→定位偏；削波→全链挂</td>
+</tr>
+<tr>
+<td>②</td>
+<td>AEC</td>
+<td>麦信号＋扬声器参考</td>
+<td>去回声多通道＋ERLE</td>
+<td>全量档 1024~2048 抽头（64~128 ms@16 kHz；在线轻量档 128~256 抽头仅覆盖 8~16 ms，只够 demo），ERLE_total 35～45 dB</td>
+<td>参考失准/AGC 未锁→泄漏</td>
+</tr>
+<tr>
+<td>③</td>
+<td>WPE</td>
+<td>AEC 后多通道 STFT</td>
+<td>去混响 STFT</td>
+<td>Δ＝3 帧，K＝10</td>
+<td>Δ 过小→吃直达声发闷</td>
+</tr>
+<tr>
+<td>④</td>
+<td>SSL 定位</td>
+<td>去混响 STFT</td>
+<td>DOA 候选＋置信度</td>
+<td>步进 1°～5°</td>
+<td>强混响→假峰跳变</td>
+</tr>
+<tr>
+<td>⑤</td>
+<td>追踪</td>
+<td>逐帧 DOA</td>
+<td>平滑轨迹＋身份号</td>
+<td>滞后 1～2 帧</td>
+<td>遮挡/交叉→身份跳变</td>
+</tr>
+<tr>
+<td>⑥</td>
+<td>波束形成</td>
+<td>多通道 STFT＋方向</td>
+<td>单通道增强 STFT</td>
+<td>对角加载 −20 dB</td>
+<td>偏 5°→高频掉 3～6 dB</td>
+</tr>
+<tr>
+<td>⑦</td>
+<td>NS＋AGC</td>
+<td>单通道 STFT</td>
+<td>稳电平 PCM</td>
+<td>抑制 10～15 dB，−24 dBFS</td>
+<td>过强→空洞感；抽吸效应</td>
+</tr>
+<tr>
+<td>⑧</td>
+<td>VAD 门控</td>
+<td>⑦输出＋信噪比</td>
+<td>话音标志＋使能</td>
+<td>挂起 200 ms，迟滞 ±3 dB</td>
+<td>过高→切头；过低→空转</td>
+</tr>
+<tr>
+<td>⑨</td>
+<td>KWS/ASR</td>
+<td>⑦输出（门控后）</td>
+<td>唤醒事件/文本</td>
+<td>误唤醒＜1 次/24 h</td>
+<td>过松→误唤醒；过严→唤不醒</td>
+</tr>
+</tbody>
+</table>
+<p>表下备注：PCM 指 16 kHz/16 bit 对齐多通道；ERLE 为交付口径 ERLE_total（含残余抑制，纯线性段另见 ERLE_linear，见 §6.1）；NS 上限钳制 15～18 dB；KWS 从 AGC 后、VAD 门控前取分支常开，ASR 由 VAD＋KWS 门控后启动。</p>
+<h3 id="sec-3">10.2 硬件基础：拾音器件、采集、SRO（采样率偏移）与 AGC（自动增益控制）锁定</h3>
+<p>第二编开场：链路跑在硬件上——麦器件、时钟、增益三样不对，后面算法全是沙上盖楼。本编先把四个参数、同步账、AGC 锁定规范一次立好。</p>
+<p>消费阵列清一色用 MEMS（Micro-Electro-Mechanical Systems，微机电系统）麦克风（半导体工艺刻出的微型电容话筒，3~4 mm 见方）。看懂规格书只需四个参数：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>消费级典型值</th>
+<th>对阵列的意义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>信噪比 SNR（Signal-to-Noise Ratio，A 计权）</td>
+<td>59~65 dBA，高端 70~73 dBA</td>
+<td>麦克风自身底噪下限，正是 WNG 所对抗的白噪声来源；SNR 差的麦，再多阵元也救不回来</td>
+</tr>
+<tr>
+<td>声学过载点 AOP（Acoustic Overload Point）</td>
+<td>120~135 dB SPL（失真达 10% 的声压）</td>
+<td>音箱贴脸播音乐、车载噪声下不削波；削波是非线性的，AEC 和波束全部失效</td>
+</tr>
+<tr>
+<td>灵敏度</td>
+<td>模拟 −46~−26 dBV/Pa，数字 −37~−26 dBFS</td>
+<td>对阵列真正重要的是通道间一致性（±1 dB 内）：增益/相位不一致直接吃掉超指向性能</td>
+</tr>
+<tr>
+<td>接口</td>
+<td>PDM / I2S（Inter-IC Sound）/ TDM</td>
+<td>见下段“接口与同步”</td>
+</tr>
+</tbody>
+</table>
+<p><a href="https://www.macnica.co.jp/en/business/semiconductor/articles/infineon/129257/" title="citation">Infineon MEMS 麦克风参数趋势</a>、 <a href="https://www.farnell.com/datasheets/2310301.pdf" title="citation">ST MP34DT04-C1 数据手册</a></p>
+<p><strong>接口与同步</strong>：数字麦用 PDM（一根数据线左右声道复用挂 2 只）或 TDM（一条线挂 8 通道），多麦共享同一时钟，天然同步。算笔账：2 μs 的通道间偏差 × 声速 ≈ 0.7 mm 路程差，在 4 cm 间距上约 1° 角度误差（$\arcsin(0.7/40)\approx1°$，小角度下路程差除以间距就是弧度）——比很多算法固有误差还大。</p>
+<p><strong>采样率</strong>：语音 16 kHz 足够（定位可用带宽到 8 kHz，2 cm 间距无混叠上限约 8.6 kHz）；音乐/会议用 44.1/48 kHz。位深 16/24 bit，新出现 32 bit 浮点采集可免增益调节。</p>
+<p><strong>采样率偏移 SRO：分布式阵列必须处理的一项误差</strong>：“共享同一时钟”只在同一台设备内部成立。分布式/自组织阵列的各设备各有晶振，采样率存在 ppm（parts per million，百万分之一）级相对偏差。100 ppm 意味着每秒积累 100 μs 相对漂移，TDOA 随时间线性漂移，是分布式阵列的核心难题之一。</p>
+<p>SRO 估计与补偿的标准做法分三步：① 估计——选一路作参考，对每路计算互相关包络漂移斜率或导频相位斜率，估计相对 SRO（精度做到 ±1~2 ppm 为在线跟踪可用门限，0.1 ppm 是出厂有线同步线——在线能跑的不等于出厂能交的，两档别混）；② 补偿——用多相重采样器把该路信号重采样到参考时钟域；③ 跟踪——每 1~5 s 更新一次估计，慢变跟踪温漂。硬件上若有有线回传时钟可直接同源，一步到位。</p>
+<p>ppm 退化曲线（理论漂移量 + 工程经验退化方向，供设计时查表，实测以自家数据为准）：</p>
+<table>
+<thead>
+<tr>
+<th>相对 SRO</th>
+<th>每秒漂移</th>
+<th>10 分钟累计漂移</th>
+<th>对 TDOA/定位的影响</th>
+<th>对识别的影响方向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10 ppm</td>
+<td>10 μs/s</td>
+<td>6 ms</td>
+<td>短句（&lt;10 s）内可忽略；长时追踪缓慢偏</td>
+<td>长会议后半段 WER 缓慢上升</td>
+</tr>
+<tr>
+<td>20 ppm</td>
+<td>20 μs/s</td>
+<td>12 ms（约 192 个采样点@16 kHz）</td>
+<td>每秒新增约 6.9 mm 等效路程差（20 μs/s × 343 m/s），短句内瞬时影响 DOA 偏 1°~2°；10 分钟累计 12 ms 是长时漂移，须补偿，否则跟踪持续偏置</td>
+<td>波束错开，SI-SDR 掉 1~2 dB</td>
+</tr>
+<tr>
+<td>50 ppm</td>
+<td>50 μs/s</td>
+<td>30 ms</td>
+<td>一帧以上错位，SRP 峰展宽</td>
+<td>未补偿时 WER 相对上升约 5%~15%</td>
+</tr>
+<tr>
+<td>100 ppm</td>
+<td>100 μs/s</td>
+<td>60 ms</td>
+<td>数帧错位，定位出现持续偏置</td>
+<td>波束主瓣偏离，接近失效</td>
+</tr>
+<tr>
+<td>200 ppm</td>
+<td>200 μs/s</td>
+<td>120 ms</td>
+<td>TDOA 线性漂移肉眼可见</td>
+<td>必须补偿，否则长时不可用</td>
+</tr>
+</tbody>
+</table>
+<p>研究这一问题可用的公开数据是 §10.6 的 Libri-adhoc40——它提供 40 节点 ad-hoc 阵列的强同步录音（其论文动机恰恰是弥补以往 ad-hoc 数据未同步的缺陷），需要失步测试环境时可人为加入时钟扰动构造。<a href="https://arxiv.org/abs/2103.15118" title="citation">Libri-adhoc40 论文, arXiv:2103.15118</a></p>
+<p><strong>SRO 的人话类比：两块差表</strong>：单设备多麦好比同一块表带的几个秒针，走得再糙也是一起糙，互相之间不差事；分布式阵列是每人手腕上戴一块便宜电子表，出厂就差着几秒，每天还各走各的。短时间约个饭（说一两句话）对不上那几秒没关系，时间一长（开十分钟会）一个说三点一个说三点零五，约好的事全乱套。SRO 补偿干的就是“每隔几分钟对一次表”：挑一块表当老大，其他表隔 1~5 秒偷瞄一眼老大的针，算出自己快了慢了多少，然后把自己的针往回拨（重采样）。有线回传时钟相当于大家都看墙上同一块挂钟，一步到位不用对表。所以记住：单设备谈的是“针装得齐不齐”（通道偏差微秒级），分布式谈的是“表走得一样不一样”（ppm 级漂移），这是两回事，别混着调。</p>
+<p><strong>麦克风 AGC 锁增益规范（不锁会发生什么先说清）</strong>：AGC 在正常通话时缓慢调节电平是好事，但在 AEC 收敛期调节就是灾难——增益一变，回声路径等效突变，AEC 自适应滤波器刚学到的系数作废，ERLE 掉 10~20 dB。所以规范要求：AEC 收敛完成前锁定麦克风模拟增益与数字前置增益，只允许 AEC 后的 NS/AGC（⑦）调节电平。</p>
+<table>
+<thead>
+<tr>
+<th>条款</th>
+<th>规范值（推荐起点，量产前实测微调）</th>
+<th>验证方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>锁定窗口</td>
+<td>从通话建立/扬声器出声起，锁定前置增益至少 2~4 s，或直到 ERLE ≥ 30 dB</td>
+<td>录 ERLE 曲线，确认锁定段无阶跃</td>
+</tr>
+<tr>
+<td>锁定对象</td>
+<td>麦克风偏置/模拟 PGA（Programmable Gain Amplifier，可编程增益放大器）+ 前置数字增益</td>
+<td>代码审查：锁定标志位覆盖两级增益寄存器</td>
+</tr>
+<tr>
+<td>允许调节</td>
+<td>仅 ⑦ 的后置 AGC 可动，速率 ≤ 1 dB/100 ms，最大增益 ≤ 18 dB</td>
+<td>注入 −40 dBFS 正弦，测输出稳定时间</td>
+</tr>
+<tr>
+<td>增益跳变量化</td>
+<td>锁定期间任何跳变 &lt; 0.5 dB，否则 AEC 冻结步长</td>
+<td>回放测试：人为跳 1 dB，确认 ERLE 跌落可恢复</td>
+</tr>
+<tr>
+<td>解锁条件</td>
+<td>ERLE 达标且双讲检测连续 1 s 无异常，才允许前置微调（步进 ≤ 1 dB/次）</td>
+<td>双讲测试集通过率</td>
+</tr>
+<tr>
+<td>削波保护</td>
+<td>输入超 −3 dBFS 累计 50 ms，允许紧急衰减（例外解锁），并通知 AEC 重收敛</td>
+<td>120 dB SPL 扫频，确认无削波粘连</td>
+</tr>
+</tbody>
+</table>
+<p><strong>阵列标定</strong>：出厂前在安静环境播放扫频或白噪声，测各通道相对增益与相位，按频点存校准表；量级记住一个：0.5 mm 位置误差在 4 kHz 约引入 2° 相位误差（4 kHz 波长约 8.6 cm，0.05 cm/8.6 cm×360°≈2°），超指向的高频零陷最先错位；麦克风安装位置用尺量 + 声源自标定（播已知信号、用 TDOA 反演位置）双保险。温漂与老化会让校准失效，高端产品需定期复检。</p>
+<h3 id="sec-4">10.3 单通道 NS（噪声抑制）、VAD（语音活动检测）门控与 KWS（关键词唤醒）分支</h3>
+<h4 id="sec-5">10.3.1 单通道 NS 在链路中的位置与选型</h4>
+<p>先说位置结论：单通道 NS 放在波束形成之后、AGC 之前（即 ⑦ 的前半段）。三条理由：① 波束已把多通道压成单通道，此时做一次谱抑制算力最小（多通道各做一次是浪费）；② AEC 与 WPE 要求线性，谱减/掩蔽这类非线性只能在它们之后；③ AGC 要求输入噪声底已压低，否则 AGC 把噪声一起放大。</p>
+<p>单通道 NS 三代做法对照：</p>
+<table>
+<thead>
+<tr>
+<th>做法</th>
+<th>输入输出</th>
+<th>抑制量（常见值）</th>
+<th>算力</th>
+<th>损伤特征</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>谱减 / 维纳（经典解析）</td>
+<td>单通道 STFT 进，谱增益 STFT 出</td>
+<td>稳态噪 8~12 dB</td>
+<td>每次 FFT 量级，可跑在 DSP</td>
+<td>musical noise（音乐噪声，残留孤立谱峰听感）</td>
+</tr>
+<tr>
+<td>掩蔽估计 DNN（如 NSNet 类）</td>
+<td>对数功率谱进，实值/复值掩蔽出</td>
+<td>非稳态噪 12~18 dB</td>
+<td>百万~千万乘加/帧，需 NPU 或 HiFi DSP</td>
+<td>过抑制→辅音发闷、首尾切</td>
+</tr>
+<tr>
+<td>生成式/映射式 DNN</td>
+<td>波形或复谱进，波形出</td>
+<td>主观 MOS 高 0.2~0.4</td>
+<td>大 3~10 倍，多在应用处理器跑</td>
+<td>幻觉伪影（低信噪比时编造音素）</td>
+</tr>
+</tbody>
+</table>
+<p>工程建议：端侧量产优先“经典打底 + 轻量 DNN 掩蔽”组合；NS 输出接 AGC 前先做上限钳制（最大抑制 15~18 dB），留一点底噪反而自然，且给 AGC 的噪声跟踪留观测窗。NS 的噪声功率跟踪必须受 VAD 门控（只在 VAD 判无话段更新，见 §10.3.2），否则会把语音当噪声学进去。</p>
+<p><strong>单通道经典降噪四老件（放在链路⑦里看，各管一摊）</strong>：下面四个都是 DNN 出来之前吃饭的家伙，现在也没退休——端侧打底、DNN 兜底时垫底、算力不够时顶班，靠的都是它们。统一说一句：四个全是单通道、非线性，只能放在 AEC/WPE 之后，这是铁律。</p>
+<p><strong>谱减法：最直白的减法</strong>：想法笨到好笑——带噪谱减去噪声谱，剩下的当语音。无话段偷学一帧噪声谱存着，有话了就拿当前谱减它，减出负的按零算（半波整流），再拼上带噪相位逆变换回去。好处是啥都不用假设、几行代码、DSP 里随便跑，稳态风扇空调声减得挺利索。毛病也全写在这“减”字上：噪声是随机起伏的，一帧的噪声跟存的那帧对不上，减完满屏都是孤零零没减干净的谱峰，听起来像夜里小虫子叫，也就是“音乐噪声”。后人打的补丁（过减系数、谱下限、最小值跟踪）都是给这个虫子叫声擦屁股：多减一点虫子少了但语音也被啃薄了，少减一点语音保住了但底噪哗哗的。量产里谱减一般不单独上场，当 DNN 掩蔽的保底——DNN 抽风时切回谱减，至少不静音不断字（具体抑制档位按自家语料实测定，稳态风扇噪常见 8~12 dB 起步）。</p>
+<p><strong>维纳滤波：按信噪比掂量的减法</strong>：谱减是硬减，维纳是按“这频点有多可信”打折：信噪比高的频点增益接近 1（放行），信噪比低的频点增益压到接近 0（关门），增益就是先验信噪比除以它加一。理论上是均方误差最小，听感上比谱减顺溜，音乐噪声轻一截。但鸡生蛋问题躲不掉——算增益要先知道干净语音和噪声各是多少，可这俩正是要估计的东西。实际靠判决引导法一帧一帧递推先验信噪比，递推系数 $\alpha$ 一般取 0.97~0.99（经典值 0.98，按自家语料微调），递推稳了增益就稳，递推出飘增益就抽风。维纳怕的是非平稳噪声：噪声底一变脸，递推还没跟上，增益要么关晚了漏噪声，要么关早了啃辅音。工程上维纳常和 VAD 锁死——VAD 说无话才更新噪声谱，VAD 一瞎增益全瞎，所以维纳的上限其实是 VAD 的上限。</p>
+<p><strong>子空间法：把语音和噪声分房间关</strong>：前两个都在频点上一个个动手，子空间换了个思路：把一帧带噪语音堆成矩阵做特征分解，大的特征值归语音子空间、小的归噪声子空间，然后把噪声那间房整个拆掉、语音那间房打扫干净（加权收缩）。白噪声下这招特漂亮——分解一把梭，残留噪声是散的、不聚成孤立谱峰，元音饱满度保得比谱减好。代价有三：分解的算力比 FFT 贵一个量级，端侧小核跑着肉疼；要猜“语音占几间房”（秩估计），猜多了漏噪声、猜少了砍语音，低信噪比时这个数最难猜；有色噪声下两间房串味，分解分不干净。所以子空间现在多半躲在助听器、历史教材和对音质挑剔又不差算力的离线处理里，一线量产反而少见——不是不好，是娇贵，伺候不起（算力与音质取舍以自家端侧预算实测为准）。</p>
+<p><strong>MMSE-STSA：冲着人耳朵优化的估计</strong>：前面三位一个比均方误差、一个比分解漂亮，MMSE-STSA（最小均方误差短时谱幅度估计）直接问耳朵：人对响度是取对数感知的，短时谱幅度的对数域误差小，听着就舒服。它假设语音和噪声谱系数都服从高斯，用贝叶斯后验推出短时谱幅度的最优估计，配的还是那套判决引导先验信噪比估计。听感上它的招牌是“自然”——同样抑制量下语音发闷、起伏感比谱减维纳轻，搞语音增强论文拿它当 baseline 就是这个原因。短板也实在：高斯假设在真实非平稳噪声前偏乐观，突发型敲门狗叫声它照样手忙脚乱；增益是逐频点独立算的，频点之间没约束，低信噪比下照样冒零星伪影；算 exp、 Bessel 函数那套，定点 DSP 得查表（见 §10.4.1 第三关）。现在端侧常拿它当 DNN 的参照物和 fallback：DNN 在时它歇着，DNN 掉线或算力不够它顶上，至少保证不断线（各档先验信噪比平滑系数与增益下限以自家语料实测为准）。</p>
+<p><strong>四老件一句话横比</strong>：谱减是钝刀，好磨但留毛边；维纳是杆秤，准不准看 VAD 的脸色；子空间是手术刀，快但挑大夫（秩估计）；MMSE-STSA 是顺耳丸，听着舒服但治不了急病。四个的通病一样——噪声跟踪都指着 VAD，VAD 瞎它们全瞎；四个的出路也一样——给 DNN 打底、做 fallback、凑“经典打底 + 轻量掩蔽”的组合，别指望单打独斗过低信噪比。</p>
+<h4 id="sec-6">10.3.2 VAD 门控矩阵</h4>
+<p>VAD 输出两路：快判决（每帧，约 8 ms，用于内部使能）与挂起判决（hangover，约 150~250 ms 拖尾，用于开关 ASR/KWS 上报）。下表是 VAD 状态对各模块的门控动作——联调时按此表逐项核对，漏掉一行就会出现"WPE 学进语音""无人时后端空转费电"之类问题：</p>
+<table>
+<thead>
+<tr>
+<th>VAD 状态</th>
+<th>WPE 系数更新</th>
+<th>波束协方差更新</th>
+<th>AEC 步长</th>
+<th>NS 噪声跟踪</th>
+<th>KWS 评分</th>
+<th>ASR 解码</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>有话（speech）</td>
+<td>冻结（只用历史预测，不拿当前帧学）</td>
+<td>更新目标协方差，冻结噪声协方差</td>
+<td>正常步长；双讲时减半</td>
+<td>冻结</td>
+<td>计分并上报候选</td>
+<td>启动/继续解码</td>
+</tr>
+<tr>
+<td>无话（non-speech）</td>
+<td>允许更新</td>
+<td>更新噪声协方差，冻结目标协方差</td>
+<td>可加大步长加速收敛</td>
+<td>更新噪声功率</td>
+<td>只跑低阈值预筛，不上报</td>
+<td>挂起窗内等待，超时关闭</td>
+</tr>
+<tr>
+<td>不确定（低置信）</td>
+<td>减半更新</td>
+<td>按置信加权更新</td>
+<td>减半步长</td>
+<td>按置信加权更新</td>
+<td>缓存特征不判决</td>
+<td>保持上一状态</td>
+</tr>
+</tbody>
+</table>
+<p>门限整定经验值：迟滞阈值上下差 3 dB（开话门限高于关话门限 3 dB，防抖）；拖尾挂起 200 ms（短了切尾音，长了灌噪声）；首字保护：KWS/ASR 起始向前回溯 100~150 ms 音频，抵消 VAD 开头 20~30 ms 确认延迟。</p>
+<h4 id="sec-7">10.3.3 KWS 分支：常开、低功耗、独立阈值</h4>
+<p>KWS 从 ⑦（NS+AGC）后取分支，与 ASR 并列而非串行：KWS 模型小（约 200~500K 参数，int8 后约 200~400KB），常驻在低功耗 DSP 上每帧打分；ASR 平时休眠，KWS 命中才唤醒。关键数字：</p>
+<table>
+<thead>
+<tr>
+<th>条目</th>
+<th>推荐值/范围</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>取点</td>
+<td>AGC 后、VAD 门控前（要听全量音频，不能被 VAD 切掉）</td>
+<td>VAD 只管上报，不管 KWS 特征缓存</td>
+</tr>
+<tr>
+<td>模型</td>
+<td>DNN-KWS（DS-CNN/Conformer-tiny 类），关键词 1~3 个</td>
+<td>中文"小爱同学"类双词结构误唤醒更低</td>
+</tr>
+<tr>
+<td>误唤醒率</td>
+<td>≤ 1 次/24 h（家庭噪声回放测试）</td>
+<td>用 24 h 负样本音频集实测，不是推算</td>
+</tr>
+<tr>
+<td>漏唤醒率</td>
+<td>3 m 远场、60 dBA 噪声下 ≤ 5%</td>
+<td>与阈值联动，阈值（KWS 后验打分，0~1 无量纲）每松 0.05 漏唤醒降约 1% 但误唤醒翻倍</td>
+</tr>
+<tr>
+<td>功耗</td>
+<td>DSP 常驻分支 ≤ 5 mW（指示值，见 §10.4 测量方法）</td>
+<td>主处理器休眠是省电来源</td>
+</tr>
+<tr>
+<td>抗回声</td>
+<td>KWS 分支必须用 AEC 后信号，播放音乐时唤醒率才保得住</td>
+<td>用 AEC 前信号做 KWS 是常见联调错误</td>
+</tr>
+</tbody>
+</table>
+<h3 id="sec-8">10.4 定点化、PTQ/QAT（量化）与端侧预算</h3>
+<h4 id="sec-9">10.4.1 定点化专节：从浮点到定点要过四关</h4>
+<p>DSP（Digital Signal Processor，数字信号处理器）与低成本 NPU 很多只跑定点（int16/int8），浮点模型与解析算法都要过定点化。定点格式记作 Qm.n（m 位整数、n 位小数，如 Q1.15 表示 [-1,1) 精度约 3e-5）。四关逐一说明：</p>
+<ol>
+<li>动态范围关。先统计各节点信号峰值（跑 1 h 覆盖语音/音乐/噪声的代表集），按"峰值留 6 dB 裕量"定小数点位置。FFT（Fast Fourier Transform，快速傅里叶变换）每级蝶形增益 2 倍，int16 FFT 必须每级或每两级右移 1 位防溢出；右移过多则小信号被量化噪声淹没——这是定点 FFT 信噪比不如浮点的来源。</li>
+<li>精度关。MVDR（Minimum Variance Distortionless Response，最小方差无失真响应）矩阵求逆条件数大，int16 直接求逆易发散；做法是对角加载（对角线加 −20 dB 量级正则）+ 32 位累加器（MAC 用 32/40 位，存回才截断到 16 位）。WPE 的线性方程组同样用 32 位中间精度。</li>
+<li>非线性函数关。sigmoid/exp/log 用分段查表（LUT，Look-Up Table）+ 线性插值，表大小 256~1024 点，误差 &lt; 1e-3 即可；DNN 的 softmax 查表后要重归一化。</li>
+<li>一致性关。定点 C 与浮点 Python 参考实现逐模块对齐：STFT 一致性要求频点幅度误差 &lt; −60 dBFS；掩蔽值误差 &lt; 0.01；整链 SI-SDR 落差 &lt; 0.3 dB 才算定点化通过。</li>
+</ol>
+<h4 id="sec-10">10.4.2 PTQ 与 QAT 掉点对照表</h4>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>PTQ（训练后量化）</th>
+<th>QAT（量化感知训练）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>做法</td>
+<td>训好浮点模型，直接按校准集定 scale/zero-point</td>
+<td>训练时插入伪量化节点，让权重适应量化格点</td>
+</tr>
+<tr>
+<td>成本</td>
+<td>几小时，无需重训</td>
+<td>需重训 10%~30% 步数，要训练管线</td>
+</tr>
+<tr>
+<td>int8 模型体积</td>
+<td>约浮点 1/4</td>
+<td>同左</td>
+</tr>
+<tr>
+<td>NS/KWS 类小模型掉点（SI-SDR / 唤醒率）</td>
+<td>SI-SDR 掉 0.2~0.8 dB；KWS 漏唤醒升 0.5%~2%（常见区间，实测为准）</td>
+<td>基本追回：SI-SDR 落差 &lt; 0.2 dB；KWS 落差 &lt; 0.5%</td>
+</tr>
+<tr>
+<td>分离大模型掉点</td>
+<td>掉 0.5~1.5 dB，多在高频掩蔽偏差</td>
+<td>可追回一半以上</td>
+</tr>
+<tr>
+<td>何时选</td>
+<td>上线急、小模型、掉点可接受</td>
+<td>大模型、int8 落差超标、或要下到 int4/二值</td>
+</tr>
+</tbody>
+</table>
+<p>对照测量方法：同一测试集、同一浮点基线，分别报 PTQ-int8 与 QAT-int8 的 SI-SDR、STOI、WER 三项，不只报模型体积。只报体积不报掉点是耍流氓。</p>
+<h4 id="sec-11">10.4.3 端侧预算实例（均为示意值，架构选型阶段估算用；量产以实测为准）</h4>
+<p>测量方法统一说明：算力用"帧耗时/帧长"换算等效 MIPS（Million Instructions Per Second，每秒百万指令）或 MAC（Multiply-Accumulate，乘积累加）计数；内存用高水位（high-watermark）实测；功耗用功率分析仪测整机增量；延迟用声卡回采对齐。以下三例覆盖高中低三档：</p>
+<p>实例 A：智能音箱 mains 供电（7 麦环，16 kHz）：</p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>算力（示意）</th>
+<th>内存（示意）</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AEC（7 通道，全量档 1024~2048 抽头/64~128 ms，PBFDAF；§6.1.7 算力表口径：单通道约 6~14 MMACs，7 通道约 40~100 MIPS）</td>
+<td>约 40~100 MIPS</td>
+<td>约 1~2 MB（含系数与 FFT 缓冲）</td>
+<td>DSP 固化</td>
+</tr>
+<tr>
+<td>WPE（流式，K=8，K 为预测阶数，流式实时常用下限，再低残余混响明显回升）</td>
+<td>约 100 MIPS</td>
+<td>约 500 KB（历史缓冲）</td>
+<td>应用处理器</td>
+</tr>
+<tr>
+<td>SRP-PHAT + 追踪</td>
+<td>约 80 MIPS</td>
+<td>约 100 KB</td>
+<td>候选方向 360 点</td>
+</tr>
+<tr>
+<td>MVDR + NS(DNN-tiny)+AGC+VAD+KWS</td>
+<td>约 200 MIPS</td>
+<td>约 800 KB（含 KWS 模型 300 KB）</td>
+<td>KWS 常驻 DSP</td>
+</tr>
+<tr>
+<td>合计</td>
+<td>约 500~600 MIPS，延迟约 120 ms，增量功耗约 1~2 W</td>
+<td>RAM 高水位约 2 MB</td>
+<td>云端做 ASR</td>
+</tr>
+</tbody>
+</table>
+<p>实例 B：电池会议宝（4 麦线阵，USB/电池双模）：</p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>算力（示意）</th>
+<th>内存（示意）</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AEC（4 通道）+ WPE-lite（K=6，低端降档极限，残余混响比 K=8 明显多一截）</td>
+<td>约 150 MIPS</td>
+<td>约 500 KB</td>
+<td>去混响阶数降档省内存</td>
+</tr>
+<tr>
+<td>固定波束切换（代替自适应 MVDR）</td>
+<td>约 30 MIPS</td>
+<td>约 50 KB</td>
+<td>预存 6 个方向权重，无求逆</td>
+</tr>
+<tr>
+<td>NS + AGC + VAD</td>
+<td>约 80 MIPS</td>
+<td>约 200 KB</td>
+<td>全定点 int16</td>
+</tr>
+<tr>
+<td>合计</td>
+<td>约 250 MIPS，延迟约 100 ms，续航 8 h（5000 mAh）</td>
+<td>RAM 约 1 MB</td>
+<td>全端侧、无云端</td>
+</tr>
+</tbody>
+</table>
+<p>实例 C：真无线耳机（2 麦，电池极小）：</p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>算力（示意）</th>
+<th>内存（示意）</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>双麦波束 + 风噪 NS</td>
+<td>约 50 MIPS</td>
+<td>约 150 KB</td>
+<td>迎风/静风双模切换</td>
+</tr>
+<tr>
+<td>骨导+VAD 联合判决 + KWS-tiny</td>
+<td>约 30 MIPS</td>
+<td>约 200 KB</td>
+<td>KWS 模型压到 150 KB</td>
+</tr>
+<tr>
+<td>合计</td>
+<td>约 80 MIPS，延迟 &lt; 60 ms，增量功耗约 5~10 mW</td>
+<td>RAM 约 512 KB</td>
+<td>通话上行只传单通道</td>
+</tr>
+</tbody>
+</table>
+<p>三例横比结论：麦数减半，AEC 与 WPE 开销接近减半；MVDR 求逆是"奢侈品"，低端用固定波束切换代替；KWS 常驻功耗细节见§10.3.3。</p>
+<h3 id="sec-12">10.5 评测体系与语音质量指标选型</h3>
+<p>第三编开场：硬件联调完拿什么验收——本编先立指标（定位、增强、识别、追踪、系统五层），再讲选型口诀（有参考用 POLQA、无参考用 DNSMOS、调 AEC 看 AECMOS），最后给数据集与工具入口。</p>
+<table>
+<thead>
+<tr>
+<th>层级</th>
+<th>指标</th>
+<th>白话含义</th>
+<th>常用基准</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>定位</td>
+<td>RMSE/MAE（°）、准确率、源数错误率</td>
+<td>角度误差的均方根/平均值；误差在容差内的帧占比；多数/漏数人数</td>
+<td>LOCATA/自建数据集</td>
+</tr>
+<tr>
+<td>增强</td>
+<td>SI-SDR、STOI、PESQ/DNSMOS</td>
+<td>信号保真度（幅度无关）/ 可懂度预测 / 主观质量预测</td>
+<td>WSJ0-2mix、VoiceBank</td>
+</tr>
+<tr>
+<td>识别</td>
+<td>WER/CER</td>
+<td>识别错词率（中文按字）——端到端金标准</td>
+<td>CHiME 主指标</td>
+</tr>
+<tr>
+<td>追踪</td>
+<td>OSPA/OSPA(2)、ID-switch 次数、丢失率</td>
+<td>位置+人数联合误差 / 身份标签跳变次数 / 丢轨迹比例</td>
+<td>多目标专用</td>
+</tr>
+<tr>
+<td>系统</td>
+<td>端到端延迟（唤醒 &lt;300 ms）、CPU/内存、BOM（Bill of Materials，物料清单）</td>
+<td>产品能不能用、多少钱</td>
+<td>产品验收</td>
+</tr>
+</tbody>
+</table>
+<p>几个核心指标的定义与"多少算好"（量级参考）：</p>
+<ul>
+<li><strong>WER</strong>：$\mathrm{WER}=(S+D+I)/N$——替换数 $S$、删除数 $D$、插入数 $I$ 之和除以参考总词数 $N$；中文常按字算（CER）。越小越好，错得离谱时可超过 100%。</li>
+<li><strong>SI-SDR</strong>：$\mathrm{SI\text{-}SDR}=10\log_{10}\dfrac{\|s_{target}\|^2}{\|e\|^2}$，其中 $s_{target}=\dfrac{\langle\hat s,s\rangle}{\|s\|^2}s$ 是估计在真实方向的投影、$e=\hat s-s_{target}$ 是剩余失真——整体音量偏差不算错。改善 10 dB 已属很强。</li>
+<li><strong>SDR / SIR / SAR（BSS-eval 三件套，BSS-eval 是盲源分离评估工具）</strong>：把估计正交分解——$\hat s = s_{target} + e_{interf} + e_{noise} + e_{artif}$（目标投影 + 干扰泄漏 + 噪声残留 + 算法伪影），分别度量综合质量/干扰残留/算法伪影。BSS-eval 的 SDR 允许滤波器尺度失真容忍，与 SI-SDR 口径不同，两篇论文数字不能直接横比（Vincent, Gribonval &amp; Févotte, <em>Performance Measurement in Blind Audio Source Separation</em>, IEEE TASLP 2006）。</li>
+<li><strong>ERLE</strong>：定义与目标见 §6.1。本章报的都是交付口径 ERLE_total（含残余抑制，经验目标 35~45 dB）；纯线性自适应段另记为 ERLE_linear（约 20~22 dB），两处口径别混着比。</li>
+<li><strong>STOI</strong>：0~1，预测可懂度，&gt;0.9 接近透明；参考实现 pystoi 库。</li>
+<li><strong>PESQ</strong>：−0.5~4.5 分，&gt;3.5 算良好；pesq 库。</li>
+<li><strong>OSPA</strong>：多目标追踪联合误差，同时惩罚定位误差与人数错误，越小越好。</li>
+<li><strong>DOA RMSE / MAE</strong>：角度误差均方根/平均；强混响下 5~10° 已属不错（对照 §4.3）。</li>
+</ul>
+<p><strong>语音质量指标选型表（什么场景用什么，谁也替代不了谁）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>全称/性质</th>
+<th>输入要求</th>
+<th>适用场景</th>
+<th>边界与坑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P.808（ITU-T 主观众包框架）</td>
+<td>主观听测流程标准，不是算法</td>
+<td>原始+处理音频，需 20+ 听众打分</td>
+<td>产品验收、论文主观分</td>
+<td>贵且慢（数天~数周）；众包环境不可控，需嵌入 trapping 题</td>
+</tr>
+<tr>
+<td>P.835</td>
+<td>主观三维打分（信号/背景/总分）</td>
+<td>同上，按三维量表</td>
+<td>降噪产品（要区分"语音损伤"与"噪声残留"）</td>
+<td>只适用于单通道近端听测，不评定位/分离</td>
+</tr>
+<tr>
+<td>POLQA（P.863）</td>
+<td>客观仪器，需商用授权</td>
+<td>参考+劣化信号，需精确对齐</td>
+<td>运营商/车载验收，替代 PESQ 的新标准</td>
+<td>要干净参考信号；对生成式 DNN 的幻觉伪影不敏感；音乐上慎用</td>
+</tr>
+<tr>
+<td>DNSMOS</td>
+<td>DNN 盲估 MOS（无需参考）</td>
+<td>仅劣化信号，16 kHz</td>
+<td>大规模自动化回归、无参考场景</td>
+<td>训练域偏英语/特定噪声，换语种或音乐失真可能失准；只评单通道</td>
+</tr>
+<tr>
+<td>AECMOS</td>
+<td>回声场景专用盲估（回声+双讲 MOS）</td>
+<td>仅处理后信号</td>
+<td>AEC 调参、双讲测试</td>
+<td>只懂回声，不管混响与分离；ERLE 高但 AECMOS 低时查非线性残留</td>
+</tr>
+</tbody>
+</table>
+<p>选型口诀：有参考要仲裁用 POLQA；无参考要 nightly 回归用 DNSMOS；调 AEC 看 AECMOS+ERLE 双项；报产品质量必须补 P.808/P.835 真人听测——客观分只是主观分的廉价替身，换噪声类型或失真模式后可能失准。</p>
+<p><strong>新指标五件套（STOI/PESQ 不够用了看这半页）</strong>：下面五个是这两年联调和审稿人最爱问的，每个半段，只讲“补哪块短板、怎么用、坑在哪”。凡涉具体分值一律以自家实测为准，不抄网上的数。</p>
+<p><strong>ESTOI：STOI 的非平稳补丁</strong>：STOI 拿短时包络相关预测可懂度，稳态噪声下挺准，一碰上调制型干扰（ competing speaker、开关门、音乐）就虚高——包络起伏被干扰带着走，相关算出来挺美，人耳根本听不清。ESTOI（Extended STOI）把相关搬到频谱包络的谱域里做，专治这种“数字好看人听不懂”。用法：调制噪声、鸡尾酒会、双讲场景报 ESTOI 不报 STOI，或者两个一起报看差值——差值大说明干扰是调制型的。坑：它还是纯客观预测，不认中文声调那点事（声调语言可懂度以真人听测为准，自家中文集重测）；采样率、窗长对不上参考实现就对不上数，报数时把实现版本写清楚。</p>
+<p><strong>P.835：把“一耳朵好不好”拆成三句话</strong>：降噪最烦的夸奖就是“噪声没了”——代价是语音被啃成机器人，P.808 一个总分根本问不出来。P.835 让听众打三个分：语音信号分（有没有损伤发闷）、背景噪声分（残留吵不吵）、总分（愿不愿意用）。联调时看三角关系：NS 档位一加大，噪声分涨、信号分掉，总分先涨后掉，拐点就是你家产品的档位上限。坑有二：一是只管单通道近端听感，不管定位偏没偏、分离串没串，别拿它验收波束；二是听众培训不到位三个分会互相串（噪声大就顺手给语音打低分）， trapping 题和培训一个不能少（听测组织细节待标准核对）。</p>
+<p><strong>SQUIM：没参考时请来的代打裁判</strong>：nightly 回归、线上劣化、用户上传的脏音频，根本没有干净参考，PESQ/POLQA/STOI 全罢工，DNSMOS 又只给一个 MOS。SQUIM（Speech QUality and Intelligibility Measures，TorchAudio 自监督那套）用自监督模型直接从劣化语音里估出 PESQ/STOI/SI-SDR 的预测值，不用参考。用法：当回归曲线的“冒烟报警器”——今晚合入的代码让 SQUIM 预测分掉了一截，第二天再花真钱跑主观。坑也直白：它是“预测的预测”，换语种、换音乐、换生成式伪影，分分钟失准；只能做同仓对比（今晚 vs 昨晚），不能跨论文横比，更不能当验收依据（大规模回归阈值按自家 nightly 基线实测划线）。</p>
+<p><strong>定位追踪指标：角度对了不算完</strong>：单源定死了报 RMSE/MAE 就够；多人多目标得看三样。OSPA/OSPA(2) 是把“位置误差 + 人数报错”揉成一个数——多报一个人、漏一个人、两个身份对调，都要扣分，单看 RMSE 全是假笑；ID-switch 次数专盯追踪：两个人交叉走一遍，身份标签跳了几次，跳一次用户那边的跟拍画面就抽一下；还有 completeness/fragmentation（轨迹断没断、碎成几截），碎轨迹进到波束里就是方向来回跳。验收建议：消声室先看 RMSE（地基），混响室加报 OSPA（综合），交叉走位专报 ID-switch（体验），三个数缺一个等于没测（各档通过线以 §10.10 为准绳，自家数据重测）。</p>
+<p><strong>幻觉度量：生成式 DNN 的新欠条</strong>：映射式/生成式增强有个老指标装看不见的毛病：低信噪比时它会一本正经地“编”音素——含含糊糊的输入进去，出来的语音字正腔圆但跟说的内容没关系，PESQ 还挺高。治法有三：① 跑下游 ASR 看 WER/ phoneme 错误——编出来的音素识别器不认，WER 会露馅；② 做听辨/内容一致性主观（P.835 信号分会掉，另加内容复述题）；③ 算参考无关的伪影检测（如 SQUIM 伪影分支、DNSMOS 背景分的异常组合）。选型话糙理不糙：上生成式之前先想好拿什么抓它的现行，抓不住就别上量产，尤其唤醒词和助听这种错一个字都算事故的场景（幻觉率基线按自家低信噪比集实测）。</p>
+<p><strong>数据是怎么测出来的</strong>：客观测量通常在消声室（无反射，测器件/阵列本身特性）或混响室（可控 T60，测真实反射下表现）进行；模拟"人听到的效果"用人工头 HATS——带耳廓与躯干声学模型的假人，把麦克风放在鼓膜位置录音，兼顾 ITD（Interaural Time Difference，双耳时间差）/ILD（Interaural Level Difference，双耳声级差）等双耳线索。</p>
+<h3 id="sec-13">10.6 公开数据集与工具</h3>
+<ul>
+<li><strong>数据集</strong>（各附一句话规模/用途/获取）：</li>
+<li><strong>CHiME 3/4/5/6</strong>：远场多通道识别评测的事实标准——CHiME-3/4 为平板 6 通道真实嘈杂环境录音（约数千句）、CHiME-5 为 20 场真实家庭晚宴（6 台 4 麦 Kinect 阵列 + 双耳麦，总约 50 小时）、CHiME-6 在其上重录并追加同步分离器；官网申请下载（<a href="https://www.chimechallenge.org/" title="citation">chimechallenge.org</a>）。</li>
+<li><strong>REVERB</strong>：受控混响基准（1 个房间实测 + 多组仿真 RIR，约 7 千余句），WPE 与去混响算法的主战场；官网申请（<a href="https://reverb2014.dereverberation.com/" title="citation">reverb2014.dereverberation.com</a>）。</li>
+<li><strong>LOCATA</strong>：运动说话人定位追踪基准——消声室录制、多种阵列（含机器人头部阵列）、光学动捕真值，约 14 个场景；官网申请（<a href="https://www.locata.lms.tf.fau.de/" title="citation">locata.lms.tf.fau.de</a>）。</li>
+<li><strong>LibriCSS</strong>：连续会议语音（7 麦圆阵重放 Librispeech 拼接，约 10 小时，含 0%~40% 重叠率分级），连续语音分离与会议标配；<a href="https://github.com/chenzhuo1011/libri_css" title="citation">GitHub 直接下载</a>。</li>
+<li><strong>WHAMR!</strong>：WSJ0 双说话人混合 + 噪声 + pyroomacoustics 仿真混响（约 2.8 万条：train 2 万 / dev 5 千 / test 3 千），"混响+噪声+分离"三合一基准；<a href="http://wham.whisper.ai/" title="citation">项目主页下载</a>。</li>
+<li><strong>Libri-adhoc40</strong>：真实办公室内 40 个强同步分布式节点录制的重放 Librispeech（约 69 小时），ad-hoc 阵列基准（Guan et al., APSIPA ASC 2021）；<a href="https://github.com/ISmallFish/Libri-adhoc40" title="citation">GitHub 直接下载</a>。</li>
+<li><strong>STARSS23/24</strong>：DCASE SELD（Sound Event Localization and Detection，声音事件定位与检测）官方数据——STARSS23 为索尼真实场景空间录音（FOA + 双耳，含 13 类声事件与 DOA 真值），STARSS24 追加声源距离真值；<a href="https://github.com/SonyResearch/Sony-CSTARSS-datasets" title="citation">Zenodo/GitHub 直接下载</a>。</li>
+<li><strong>VoiceHome-2</strong>：真实家庭多房间分布式阵列录音，远场家居场景的补充基准。</li>
+<li><strong>工具</strong>：pyroomacoustics（阵列+混响仿真全套算法，含镜像法 RIR 生成器）、BeamformIt（SRP+MVDR 经典管线）、nara_wpe（WPE 去混响参考实现）、WebRTC AudioProcessing（AEC/NS/AGC 工业级）、ESP-SR（乐鑫 AFE：AEC+BF+NS）、Kaldi/ESPnet 多通道配方、ODAS（开源定位追踪系统：SRP-PHAT + 粒子滤波）。最小可跑例子（5 行，先装 <code>pip install pyroomacoustics</code>）：</li>
+</ul>
+<pre><code class="language-python">import pyroomacoustics as pra
+room = pra.ShoeBox([5, 4, 3], fs=16000, max_order=3)  # 5×4×3 米房间，镜像法算到 3 阶反射
+room.add_source([1, 1, 1]); room.add_microphone_array(pra.MicrophoneArray([[2, 2.04], [2, 2], [1, 1]], room.fs))  # 注意传的是各麦 x/y/z 坐标列表，不是间距
+room.compute_rir(); room.plot_rir()  # 先看 RIR 有没有直达声主峰，再跑定位，别直接信仿真分
+</code></pre>
+<p>干货两行：阵列坐标小数点后两位（2.00 vs 2.04）就是 4 cm 间距，改一位数定位结果跟着变，正好练标定敏感度；<code>max_order</code> 从 3 加到 10 再听混响尾，T60 的量级感一下就有了。</p>
+<h3 id="sec-14">10.7 分布式阵列：同步、标定、融合三本账</h3>
+<p>分布式阵列（如多房间音箱组网、ad-hoc 手机组阵）相对单设备阵列多出三本账，每本账给验收数字：</p>
+<p><strong>账一：同步账（时间对齐）</strong>。验收指标：残余 SRO ≤ 0.1 ppm（按“录 10 分钟连续语音、真值漂移 &lt; 1 个采样点”验收：0.1 ppm × 600 s = 60 μs ≈ 1 个采样点@16 kHz，62.5 μs；若验收放宽到 10 分钟漂移 &lt; 20 个采样点，残余 SRO ≤ 2 ppm 可用：2 ppm × 600 s = 1.2 ms ≈ 19 个采样点），通道间残余偏移 ≤ 10 μs（16 kHz 下约 1/6 采样点）。做法：有线回传时钟优先；无线组网用参考信道法（播导频或复用一路语音做互相关跟踪，每 1~5 s 更新重采样比）；事后处理可用互相关包络对齐。验收测试：录 10 分钟连续语音，首尾各测一次 TDOA，真值漂移应 &lt; 1 个采样点（62.5 μs）。</p>
+<p><strong>账二：标定账（位置与增益）</strong>。分布式节点位置事先未知，验收指标：节点位置误差 ≤ 2 cm，通道间增益差 ≤ ±1 dB。做法：播放已知扫频信号，用 TDOA 反演几何（自标定）+ 在线增益归一化；温漂与搬动后需重标定。验收测试：已知位置声源播 5 点，定位 RMSE ≤ 5°（3 m 距离对应约 26 cm 切向误差，含标定与算法总误差）。</p>
+<p><strong>账三：融合账（选谁、怎么合）</strong>。验收指标：融合后 WER 相对单节点最好通道下降 ≥ 10%，且弱节点加入不拖后腿（单调性）。做法按算力三选一：① 通道选择（每句选 SNR 最高一路，最便宜，适合上行带宽受限）；② 加权波束（传特征或协方差，中心节点做 MVDR，需同步最严）；③ 后端融合（各节点独立识别后 ROVER（识别输出投票纠错）/置信度投票，最鲁棒但延迟最大）。融合权重由 VAD 置信度与 SNR 双信号驱动（门控做法见§10.3.2）。</p>
+<h3 id="sec-15">10.8 产业实践中的阵列形态</h3>
+<table>
+<thead>
+<tr>
+<th>产品</th>
+<th>阵列形态</th>
+<th>前端要点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Amazon Echo 系列</td>
+<td>6+1 圆环（6 环麦 + 1 顶麦，约 7.5 cm 环径，与 §3.2 算例 3-3 取值统一；无混叠上限约 4.6 kHz：$f_{\max}=c/(2d)=343/(2\times0.0375)\approx4573$ Hz）</td>
+<td>上代方案为 SRP-PHAT 定位 + 波束 + 谱减（Amazon 未公开细节，此为社区推测与专利信息）；锥形挡板利用散射扩带宽，挡板一拆高频前后比立马掉几个 dB，定位跟着镜像</td>
+</tr>
+<tr>
+<td>Google Home（一代）</td>
+<td>2 麦</td>
+<td>极简成本路线，靠 DNN 前端补偿阵列能力</td>
+</tr>
+<tr>
+<td>Apple HomePod</td>
+<td>6 麦环（拾音）+ 多高音单元（扬声器，只放音不拾音）</td>
+<td>多波束动态聚束 + 房间建模</td>
+</tr>
+<tr>
+<td>Soundbar/会议条</td>
+<td>2~4 麦线阵（靠墙 180°）</td>
+<td>芯片级 AEC+BF（XMOS xCORE 等）；Microchip ZLK38AVS 1/2/3 麦 AVS 认证方案 <a href="https://www.techmezine.com/microchip-product-news/development-kit-amazon-avs-supports-far-field-voice-interaction-multiple-microphone-array-options/" title="citation">Microchip</a></td>
+</tr>
+<tr>
+<td>讯飞/小米音箱、车载</td>
+<td>4~6 麦环/分布式</td>
+<td>自研 AFE：环形 AEC + 神经降噪 + 波束</td>
+</tr>
+<tr>
+<td>学术/机器人头部</td>
+<td>球阵/四面体阵</td>
+<td>球谐波束形成、声场分析</td>
+</tr>
+</tbody>
+</table>
+<p>行业经验：环形 6 麦 + 挡板 + 芯片级 AFE 是 360° 远场语音的常见折中选择，兼顾定位精度、成本与功耗；双麦只在成本敏感或结构受限（耳机/手机）时选择。<a href="https://www.dusuniot.com/blog/microphone-array/" title="citation">行业选型指南</a></p>
+<h4 id="sec-16">10.8.1 场景 22 条落地（每条独立可抄，数字全待自家实测）</h4>
+<blockquote>
+<p>看法说明：下面 22 条是把“第 3~7 章的算法”翻译成“各产品线第一天联调抄什么”。每条 200~400 字，结尾挂“待查证/待实测”——凡是声压、距离、通过线，全部按你家声学结构重测，不许抄走就当验收线。</p>
+<p>分组导览（六组无编号，条号连续不重排）：音箱 1–4 ｜ 会议 5–8 ｜ 车载 9–12 ｜ 助听/TWS 13–16 ｜ 机器人 17–19 ｜ 手机 20–22。</p>
+</blockquote>
+<p><strong>音箱 4 条</strong></p>
+<p><strong>第 1 条｜音箱拆解：6+1 到底长啥样（拆解小表）</strong>：主流全向音箱是 6 只环麦围一圈加 1 只顶麦，环径大概一个手掌大（量级待实测）。环麦管 360° 水平面，顶麦专管头顶和近距离补充——人站着俯视说话时顶麦信噪比反而最高。麦下面垫着锥形挡板，人话讲就是拿声波散射“垫高”高频方向性：没有挡板的高频全向乎乎分不清前后，有了挡板前后差能拉开几个 dB。联调第一天先别跑算法，逐个敲麦看映射对不对，再播扫频看 6 只的一致性，差 1 dB 以上先换料别调参。电源是市电所以算力最富，AEC 全量档、WPE、MVDR、大模型全能上，也是全书算法最齐的一档（具体环径与挡板尺寸待查证）。</p>
+<p><strong>第 2 条｜音箱 AVS 三元组：过认证要交的三样东西</strong>：亚马逊 AVS（Alexa Voice Service）认证本质是三元组——阵列构型 + AFE 固件 + 测试报告，缺一个都下不来。构型要报麦数、拓扑、挡板；固件要锁 AEC+波束+NS 版本号，换一版重测一版；报告要交远场唤醒率、误唤醒、双讲 ERLE 三项在标准噪声集上的成绩。社区里 1/2/3 麦的 AVS 参考方案（如 Microchip ZLK 系列）就是给小厂抄近道的：麦少就老老实实承认覆盖缩水，别拿 2 麦去报 5 米全向的成绩，送测就是送人头。认证数字以官方最新文档为准（待标准核对）。</p>
+<p><strong>第 3 条｜音箱音乐唤醒：最难的一仗</strong>：音箱自己放着音乐还要听见小声唤醒词，这是 AEC 的地狱模式——回声比人声响几十分贝是常态。链路铁律：KWS 分支必须从 AEC 后取信号，用 AEC 前信号做唤醒是联调第一大冤案；AEC 参考必须取播放链路末端（含音效后处理之后），取早了等于参考和喇叭放的不是一首歌；音乐场景 AEC 抽头按长混响配（64~128 ms 量级起步，待实测），短抽头只够 demo。验收就一句话：音乐声压开到正常听音档（具体声压待实测），3~5 米唤醒率和静音时比，掉多少自己认，认不下就加麦或加算力，别在阈值上耍滑头（阈值每松一点误唤醒翻倍，见 §10.3.3）。</p>
+<p><strong>第 4 条｜音箱专属坑：挡板与顶麦</strong>：两个坑专坑照着默认参数生搬硬套的人。一是挡板装反/装歪——散射方向全变，高频定位直接镜像，现象是“人明明在前面，定位说在后面”，先查结构别查算法。二是顶麦被当摆设——顶麦离喇叭最近，回声最大，有人图省事把它剔出波束，近场头顶说话立马变差。顶麦正确用法是进 AEC、进波束协方差，但定位权重降低（顶麦对水平角基本没贡献），三处缺一就瘸。以上现象以自家结构复现为准（待查证）。</p>
+<p><strong>会议 4 条</strong></p>
+<p><strong>第 5 条｜会议三选一：吊麦/条形机/桌面宝</strong>：会议室三种形态先三选一，别想着一套固件通吃。吊顶麦阵列离人远（几米量级，待实测），混响吃满，靠的是波束数量和 WPE，怕的是空调出风口直吹；条形机（Soundbar 形态）靠墙只看 180°，2~4 麦线阵够用，AEC 压力小（离电视近、离人远，回声路径稳定），怕的是投影仪风扇正对着；桌面会议宝离人最近，信噪比最好，但人围一圈要 360° 覆盖，还要防敲桌子、翻纸声。选型一句话：人不动机器动选条形机，人围着机器选会议宝，大房间天花板高选吊麦（房间尺寸与混响分界待实测）。</p>
+<p><strong>第 6 条｜会议重叠分级：0%~40% 是道坎</strong>：LibriCSS 把重叠率分成几档（0%、10%、20%、30%、40%，具体划分待查证），档位越高分离越难。工程翻译：0%~10% 靠 VAD + 单波束轮流伺候就行；20% 性价比拐点，不上分离光靠波束已经含糊了；30%~40% 必须分离网络 + 掩码 MVDR，不上就是“听不清还赖网不好”。立项时先问客户“你们开会抢话多不多”，抢话多直接按高重叠档配算力，别按单人朗读配，配错了后期加模型等于推倒重来（各档 WER 基线待实测）。</p>
+<p><strong>第 7 条｜会议 Teams 验收行：过了自家测试不算过</strong>：Teams（Microsoft Teams）这类会议平台认证不是考你家算法多牛，是考“在它的链路上不断、不啸、不吞字”。验收行一般包括回声（双讲不断字）、噪声（键盘空调声压得住）、电平（AGC 输出稳在平台要的窗里）、延迟（端到端别让人抢话撞车）四项。最容易挂的是电平和延迟：你家 AGC 输出忽大忽小，平台侧 AGC 再补一刀，声音一抽一抽；你家延迟一大，平台的回声消除器盖不住，直接啸叫。送测前先用平台官方测试工具自测三遍，工具版本以官网最新为准（待标准核对）。</p>
+<p><strong>第 8 条｜会议专属坑：投影仪与长桌</strong>：会议室两个专属坑。投影仪风扇是定向稳态噪声，正对麦时波束会把它当“人”锁死——现象是没人说话波束方向还钉在投影仪上，解法是开机先采噪声指纹、噪声协方差里把它扣掉（见第 5 章掩码思想）。长桌是混响帮凶：桌面反射制造一个“桌下假声源”，定位在俯仰角上乱跳，解法是俯仰搜索范围限死在桌面以上，别让算法往桌子底下找人。两个坑的现象与解法以自家房间复现为准（待查证）。</p>
+<p><strong>车载 4 条</strong></p>
+<p><strong>第 9 条｜车内布麦：4 麦一般放哪</strong>：家用车常见 4 麦：主驾、副驾头顶各一到两只，加上中控或后排补充。离嘴近是最大优势（半米量级，待实测），信噪比先天好；难的是噪声杂——发动机、胎噪、风噪、空调全是宽带非平稳，还随车速变脸。布麦铁律：离出风口远一点，离车窗密封条近一点（漏风的风噪是杀手），主副驾对称，线束和麦克风一起做振动隔离——车体振动传到麦上就是低频轰鸣，算法救不回来。声学包（隔音棉）动一块，麦的频响跟着变，结构一改就要重标定（见 §10.2）。</p>
+<p><strong>第 10 条｜车载 SRO：多 ECU 各走各的表</strong>：车里麦可能分属不同 ECU（电子控制单元），各吃各的晶振，§10.2 的时钟漂移在这里是标配不是例外。车速一上来温度一漂，ppm 跟着变，TDOA 缓慢漂移，主驾副驾分区越用越偏。做法：有车载同步总线就吃总线时钟；没有就跑在线 SRO 跟踪（1~5 s 更新一次是常用起点，待实测），分区功能上线前先跑长时漂移测试（十分钟连续语音首尾对齐，见 §10.7 账一）。分区（主驾说话只控主驾窗）是 SRO 最敏感的功能，SRO 没过关分区必串区，别先怪模型。</p>
+<p><strong>第 11 条｜车载认证行：车厂要看的三样</strong>：车载是强认证行业，算法 over-the-air 升级都受管。一般要交噪声分级成绩（怠速/城市/高速三档，车速定义待标准核对）、双讲通话质量（开着音乐打蓝牙电话对方听不听得清）、功能安全相关（紧急呼叫那路音频优先级最高，不许被娱乐链路掐掉）。送测全是实车跑，不是实验室录音回放能蒙混的——轮胎一换、季节一变，噪声谱全变。所以训练集里必须有自家车型实采，拿公开集训完直接上车，高速段必翻车（各档通过线待实测）。</p>
+<p><strong>第 12 条｜车三坑：开窗/空调/音乐</strong>：车载三坑个个日常。开窗风噪是阵发性的，一开窗低频能量暴涨几十分贝，迎风那只麦直接削波——削波一出现 AEC 和波束全失效（见 §10.1），解法是削波检测一触发立刻衰减那路权重，别硬算。空调 MAX 档是稳态轰鸣，VAD 会把它当“一直有人说话”，后端空转还费电，解法是噪声指纹 + VAD 阈值随车速联动。车载音乐+导航+通话三源并发，AEC 参考只能取末端混音之后，取早一路就漏一路回声。三坑复现条件待查证。</p>
+<p><strong>助听/TWS 4 条</strong></p>
+<p><strong>第 13 条｜助听 TWS 拆档：两档不是一档</strong>：助听器和 TWS 降噪耳机长得像，指标差着档。助听是医疗/准医疗，首要“别治坏耳朵”——增益上限、啸叫抑制（FBC）、验配公式全是法规，音质排第二；TWS 是消费电子，首要“通话对方听得清”， FBC 压力小得多。算力上助听更惨：纽扣电池、几十 MIPS、延迟红线更低（见第 16 条），双麦端射 + 固定波束 + 轻量 NS 是常见起点（待查证）。一句话：给 TWS 写的自适应大招，搬到助听上先问法规和功耗答不答应，别直接搬。</p>
+<p><strong>第 14 条｜HATS 摆位：假人头怎么摆</strong>：HATS（人工头躯干模拟器）是助听和耳机测量的“标准病人”。摆位铁律：助听器按佩戴位置戴在假人耳廓上，耳机按入耳/半入耳戴到位，麦克风对准鼓膜参考点；转台每步转的角度（常用 5°/15° 步进是起点，待实测）决定方向性曲线的细腻度；消声室测本体、混响室测场景，两套数据别混着报。最常见的作弊是“假人戴歪了 10° 然后报方向性提升 3 dB”——转台归零和重复性（同条件连测三次）必须写进报告，否则数据等于废纸（摆位规范待标准核对）。</p>
+<p><strong>第 15 条｜FBC 坑：啸叫是助听的命门</strong>：FBC（Feedback Cancellation，反馈消除）防的是“喇叭→麦克风”自激啸叫：助听增益一大，漏出去的声音又被麦收回来，一环扣一环就叫了。坑有三：FBC 和 AEC 长得像但参考不一样（FBC 参考是自家受话器，AEC 参考是远端/播放链路），抄 AEC 代码不改参考必错；FBC 自适应和音乐信号八字不合——音乐自相关强，FBC 会把音乐当啸叫学，学完音乐变味，解法是音乐检测一切换就冻结或降档；验配增益一调大，原先不叫的也叫了，所以 FBC 裕量要按最大验配增益留，不是按出厂默认留（裕量数字待实测）。</p>
+<p><strong>第 16 条｜延迟矛盾点破：助听为什么抠毫秒</strong>：助听延迟红线是“自己说话听着别扭”（甩耳朵效应）：处理过的声音和骨传导直达的声音在耳道里打架，延迟一大自己说话像听录音回放，别扭到戴不住。行业红线是毫秒级（具体毫秒数待标准核对），TWS 通话能忍几十毫秒，助听不行。矛盾点：降噪去混响都想要长窗多看几眼（32 ms 窗、WPE 看历史），延迟只让看一眼。点破法：短窗 + 低延迟滤波器组 + 把大模型搬到“只做上行通话那路”（对方听的），下行（自己听的）走轻量低延迟链。两路延迟预算分开写，别写一个总数糊弄（预算拆分待实测）。</p>
+<p><strong>机器人 3 条</strong></p>
+<p><strong>第 17 条｜机器人球阶数：几阶够用</strong>：机器人头/球阵常用球谐域处理，阶数 N 由“球半径 × 频率上限”卡死（kr 规则，具体阶数表待查证）。一阶（4 振子）最省，能做粗定向；二~三阶是服务机器人的甜点区，方向性够用、麦数（一般 8~16 只量级，待查证）也摆得下；再往上算力和标定误差一起爆炸，0.5 mm 装配误差先吃掉高阶的增益（见 §10.2）。选型话：别一上来就高阶，阶数每加一，麦数、算力、标定难度全跟着涨，先问“导航避障那点事要不要这么尖的波束”，多数室内跟随一~二阶够了。</p>
+<p><strong>第 18 条｜ego-noise 链：自噪声是第一干扰</strong>：机器人 ego-noise（电机、风扇、轮子压地板）是“自己造的噪声”，特点是和运动强相关——轮子一转噪声就来，还带着振动传到麦上。链路解法是一串：振动隔离（结构）→ 电机转速前馈（转多快、噪声啥谱，提前告诉降噪）→ 多通道 ego-noise 建模（噪声协方差随转速查表切换）→ 波束把主瓣从自噪声方向上挪开。单靠 NS 压 ego-noise 等于拿苍蝇拍挡推土机。验收必须带“动起来测”：原地静止的成绩单翻倍好看，跑起来掉回去，交付按跑起来的成绩算（转速分档待实测）。</p>
+<p><strong>第 19 条｜头动补偿 + HARK 行：会动的阵列</strong>：机器人一转头，阵列流形跟着转，定位和波束全错——补偿法是拿里程计/IMU 的转角实时旋转导向矢量（或球谐系数），转多少补多少，延迟要对齐到帧级（常用对齐粒度待实测），对不齐补偿不如不补。HARK（开源机器人听觉软件）是这一行的“开箱对照组”：定位+分离+识别一整套，社区食谱多，拿它当 baseline 再换自己的模块，一次只换一个，换两个出问题就说不清是谁的锅。HARK 版本与 recipe 以官网最新为准（待标准核对）。</p>
+<p><strong>手机 3 条</strong></p>
+<p><strong>第 20 条｜手机三麦：顶底 + 后置那点事</strong>：智能手机常见三麦：底部主麦（离嘴最近，通话主力）、顶部副麦（离嘴远，专采噪声做双麦抑制）、后置/摄像头旁第三麦（视频录制、变焦定向、横握时补位）。三麦构不成阵列的孔径，指望它做高精度定位是想多了，它的活是“通话降噪 + 视频定向 + 免提切换”三件套。联调先分清哪只麦是主：横竖屏一切换、手指一挡，主麦角色跟着变，挡麦检测（能量突降 + 频响突变）一切就切参考，别让被手指堵住的麦继续当主角（切换逻辑待实测）。</p>
+<p><strong>第 21 条｜手机 3GPP 行：通话质量谁说了算</strong>：手机通话质量进网要过 3GPP（SA/TS 系列语音增强/终端声学）那套：发送响度、接收响度、回声、双讲、噪声抑制几项全有通过线，运营商入库还在上面加码。双麦/三麦降噪的成绩最终折算成“发送端MOS/响度”交卷，不是交 SI-SDR——实验室 SI-SDR 涨 3 dB，认证 MOS 原地踏步等于白干。送测用的是标准测试头（HATS 变体）+ 标准噪声集，自家在消声室先按标准摆位自测，摆位对不上送测必挂。当期版本号与通过线以官方文档为准（待标准核对）。</p>
+<p><strong>第 22 条｜手机三坑：挡麦/握持/风噪</strong>：手机三坑全和手有关。挡麦：游戏横握、视频竖握，手指正好堵住降噪麦，现象是对方突然说“你那边闷了”，解法是挡麦检测 + 主副角色对调。握持：手一包，麦的频响低频鼓包、高频滚降，等于阵列流形变了，固定波束预存权重对不上，解法是握持状态机（横/竖/免提/贴脸）切参数组。风噪：骑车、窗口边，单只麦低频爆掉，解法是风噪检测一触发就把爆掉那路权重踩死、退化成单麦 + 低频衰减。三坑触发阈值全部待实测，别抄别家手机的数。</p>
+<h3 id="sec-17">10.9 从模型到芯片：算力、功耗与部署</h3>
+<p>第四编开场：指标验收的是 demo，能量产的还得过算力、功耗、延迟三本账——本编先给量级直觉，再讲芯片分工与端云取舍，最后 §10.10 按联调顺序逐项打勾收尾。</p>
+<p>算法能跑通和能量产之间隔着三本账：算力、功耗、延迟。先建立算力量级的直觉（相对量级，非精确值）：</p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>算力量级（每帧）</th>
+<th>内存/实现要点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GCC-PHAT（一对麦）</td>
+<td>1 次 FFT 量级</td>
+<td>最小；SRP-PHAT = 按候选方向数（百~千）重复，是定位主要开销</td>
+</tr>
+<tr>
+<td>MVDR/超指向</td>
+<td>M×M 矩阵求逆，每频点一次</td>
+<td>频点数 × 求逆，可用对角加载稳定数值；逐块更新可再省几倍</td>
+</tr>
+<tr>
+<td>WPE</td>
+<td>逐频点解 K×K 线性方程组</td>
+<td>帧缓冲（Δ+K 帧历史）是主要内存开销</td>
+</tr>
+<tr>
+<td>单通道 NS（DNN-tiny）</td>
+<td>百万~千万次乘加/帧</td>
+<td>内存与功耗大头之一</td>
+</tr>
+<tr>
+<td>KWS</td>
+<td>几十万~百万次乘加/帧</td>
+<td>常驻功耗关键，可放小核</td>
+</tr>
+<tr>
+<td>DNN 分离大模型</td>
+<td>数千万次乘加/帧</td>
+<td>参数量几百万到几千万，内存与功耗大头</td>
+</tr>
+</tbody>
+</table>
+<p><strong>芯片分工</strong>：常听设备不可能让主处理器一直醒着，于是形成分级唤醒设计——低功耗 DSP（CEVA、Cadence HiFi 类音频 DSP）常驻跑小模型 KWS（功耗与阈值见§10.3.3），喊中唤醒词才唤醒应用处理器启动完整前端（AEC+WPE+波束+大模型）。解析模块（AEC、波束）适合固化在 DSP 上，DNN 模块跑在带 NPU（Neural Processing Unit，神经网络加速器）/DSP 加速的处理器上。</p>
+<p><strong>DNN 部署链路（入门概念）</strong>：训练好的浮点模型 → 导出 ONNX（Open Neural Network Exchange，开放神经网络交换格式）中间格式 → 量化（32 位浮点压成 8 位整数，模型小 4 倍、快数倍，精度掉一点，见 §10.4.2）→ 定点化部署到嵌入式 DSP/NPU（见 §10.4.1）。ONNX 坑两行：导出先跑算子白名单，DSP 不吃的算子（如某些动态 shape、自定义 attention）提前改写，否则量产前夜返工；导出的图要在目标精度下重跑一遍 §10.4.1 一致性关，图优化（fuse/折叠）悄悄改数不是新鲜事。模型太大时先压缩：剪枝（删不重要的权重）、知识蒸馏（小模型模仿大模型）。</p>
+<p><strong>端云分工的取舍</strong>：端侧做完全部前端——延迟低、隐私好、断网可用，但算力与电量受限；上云——模型可以任意大、持续升级，但要付出网络延迟与隐私成本。主流智能音箱是混合式：唤醒词与基础前端在端侧，大模型识别与语义在云端；助听器、耳机这类贴身穿戴则几乎必须全端侧（低延迟 + 隐私双重约束）。</p>
+<h3 id="sec-18">10.10 联调顺序与验收清单（按此顺序逐项打勾，错序排查会走弯路）</h3>
+<p>联调必须自前向后：先把 ①② 的电信号与回声搞对，再调 ③~⑥ 的声学算法，最后调 ⑦⑧⑨ 的电平与门控。跳过前面调后面，看到的现象全是假象。</p>
+<p><strong>第一步：采集与时钟（对应 ①，半天量级）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>检查项</th>
+<th>方法</th>
+<th>通过线</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>通道映射</td>
+<td>逐个敲麦克风，看对应通道波形跳变</td>
+<td>M 路一一对应，无错位</td>
+</tr>
+<tr>
+<td>通道间延迟</td>
+<td>同一声源录音，互相关峰位置</td>
+<td>偏差 &lt; 2 μs（16 kHz 下 &lt; 1/30 采样点）</td>
+</tr>
+<tr>
+<td>削波</td>
+<td>90 dB SPL 扫频回放，观察波形</td>
+<td>峰值 &lt; −3 dBFS，全程无平顶</td>
+</tr>
+<tr>
+<td>底噪</td>
+<td>静音段录 10 s，算 A 计权噪声</td>
+<td>与麦克风 SNR 规格书相差 &lt; 3 dB</td>
+</tr>
+<tr>
+<td>SRO（仅分布式）</td>
+<td>录 10 分钟，首尾互相关对比</td>
+<td>首尾漂移 &lt; 1 采样点，否则先做 §10.2 补偿</td>
+</tr>
+</tbody>
+</table>
+<p><strong>第二步：AEC（对应 ②，1~2 天量级）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>检查项</th>
+<th>方法</th>
+<th>通过线</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>参考对齐</td>
+<td>录参考与麦克风，互相关确认整体（bulk）延迟</td>
+<td>残余失准 &lt; 1 ms（前提是滤波器覆盖回声路径；短失配 5 ms 量级掉 2~3 dB，若失配超出滤波器跨度则掉几十分贝，见 §6.1.9 与图 30（b））</td>
+</tr>
+<tr>
+<td>ERLE 单讲</td>
+<td>播音乐/白噪，测回声前后功率比</td>
+<td>≥ 35 dB（交付口径 ERLE_total 目标 35~45 dB，见 §6.1）</td>
+</tr>
+<tr>
+<td>双讲不发散</td>
+<td>人声与回声叠加，观察 ERLE 曲线</td>
+<td>无持续跌落，恢复时间 &lt; 500 ms</td>
+</tr>
+<tr>
+<td>AGC 锁定</td>
+<td>检查锁定标志覆盖 PGA 与前置增益</td>
+<td>锁定段增益跳变 &lt; 0.5 dB（§10.2 规范）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>第三步：WPE+定位+追踪+波束（对应 ③④⑤⑥，3~5 天量级）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>检查项</th>
+<th>方法</th>
+<th>通过线</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>WPE 不吃直达声</td>
+<td>对比开关 WPE 的干声 STOI</td>
+<td>STOI 跌落 &lt; 0.02，且混响尾明显缩短</td>
+</tr>
+<tr>
+<td>DOA 精度</td>
+<td>消声室 12 方向转台，RMSE</td>
+<td>≤ 3°（消声室）；混响室 T60=0.5 s 下 ≤ 8°</td>
+</tr>
+<tr>
+<td>追踪身份</td>
+<td>两人交叉走位 10 次</td>
+<td>ID-switch ≤ 1 次/10 次交叉</td>
+</tr>
+<tr>
+<td>波束增益</td>
+<td>目标方向播语音，开关波束比 SI-SDR</td>
+<td>提升 ≥ 3 dB；方向偏 5° 时跌落可复现</td>
+</tr>
+</tbody>
+</table>
+<p><strong>第四步：NS+AGC+VAD+KWS（对应 ⑦⑧⑨，2~3 天量级）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>检查项</th>
+<th>方法</th>
+<th>通过线</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NS 抑制与损伤</td>
+<td>NOISEX 噪声 0/5/10 dB SNR 三档</td>
+<td>抑制 10~15 dB，SI-SDR 净提升 ≥ 2 dB，无空洞感（P.835 信号分 ≥ 3.5）</td>
+</tr>
+<tr>
+<td>AGC 稳定</td>
+<td>−40~−15 dBFS 跳变输入</td>
+<td>输出稳定在 −26~−22 dBFS，无抽吸效应（pumping，增益来回抽动）</td>
+</tr>
+<tr>
+<td>VAD 首尾</td>
+<td>带时间戳测试集</td>
+<td>首字切除 &lt; 50 ms，尾音拖尾 150~250 ms</td>
+</tr>
+<tr>
+<td>KWS 唤醒</td>
+<td>24 h 负样本 + 远场正样本</td>
+<td>误唤醒 ≤ 1 次/24 h，3 m 60 dBA 下漏唤醒 ≤ 5%</td>
+</tr>
+<tr>
+<td>全链 WER</td>
+<td>CHiME/LibriCSS 子集或自录集</td>
+<td>相对单麦基线 WER 下降 ≥ 20%</td>
+</tr>
+</tbody>
+</table>
+<p><strong>常见故障速查（现象→先查哪里）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>先查</th>
+<th>后查</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>一开扬声器就啸叫/回声大</td>
+<td>② 参考失准、AGC 未锁</td>
+<td>① 削波</td>
+</tr>
+<tr>
+<td>语音发闷、辅音丢</td>
+<td>③ WPE 的 Δ 过小、⑦ NS 过抑制</td>
+<td>⑥ 波束高频零陷错位（标定）</td>
+</tr>
+<tr>
+<td>定位乱跳</td>
+<td>④ 输入是否 AEC+WPE 后、混响过强</td>
+<td>① 时钟偏差</td>
+</tr>
+<tr>
+<td>唤不醒但识别率正常</td>
+<td>⑨ KWS 取点是否 AEC 前（错）、阈值过严</td>
+<td>⑧ VAD 切掉 KWS 缓存</td>
+</tr>
+<tr>
+<td>无人时功耗下不来</td>
+<td>⑧ VAD 门控漏配、⑨ ASR 未休眠</td>
+<td>KWS 模型过大</td>
+</tr>
+<tr>
+<td>输入一大就破音/定位跟着偏</td>
+<td>① 削波（90 dB SPL 扫频看有无平顶，峰值压到 −3 dBFS 下）</td>
+<td>⑦ AGC 输出窗、② AEC 参考</td>
+</tr>
+<tr>
+<td>长时会越跑越偏</td>
+<td>① 分布式 SRO（10 分钟首尾漂移超 1 采样点先做 §10.2 补偿）</td>
+<td>⑦ 融合权重是否被弱节点带偏</td>
+</tr>
+</tbody>
+</table>
+<h3 id="sec-19">10.11 本章小结：从 demo（演示样机）到量产的三句话</h3>
+<ol>
+<li>顺序不能错：AEC 与 WPE 的线性假设决定了它们必须在 NS/AGC 之前；VAD 是门控不是串行环节，漏配一行门控就会出一个怪病。</li>
+<li>数字不能省：SRO 的 ppm、AGC 的锁定窗口、VAD 的挂起毫秒数、量化的掉点 dB 数——每个数字都对应一次联调返工，写下来就是省时间。</li>
+<li>指标不能单看：ERLE 配 AECMOS、SI-SDR 配 P.835、WER 配真人听测——单看一个指标调优，等于蒙着一只眼睛开车。</li>
+</ol>
+<hr />
+<blockquote>
+<p>📄 本篇信息：约 472 行 ｜ 字符约 31523 ｜ 配图 2 张 ｜ <a href="./index.html">回首页</a></p>
+</blockquote><div class="pn"><span><a href="09_声源追踪SourceTracking.html">← 上一篇</a></span><span><a href="11_总结与选型指南.html">下一篇 →</a></span></div>
+<div class="foot">麦克风阵列信号处理教程 · 静态站由 Scripts/build_site.py 生成</div>
+</main></div><a class="topbtn" href="#top" title="回顶部">↑</a>
+<script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>
+</body></html>

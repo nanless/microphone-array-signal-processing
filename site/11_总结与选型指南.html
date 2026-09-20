@@ -1,0 +1,147 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>第 11 篇 · 总结与选型指南 · 麦克风阵列信号处理教程</title><style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
+.topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
+.topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
+.wrap{display:flex;max-width:1280px;margin:0 auto}
+.side{width:300px;flex-shrink:0;padding:20px 14px;position:sticky;top:47px;height:calc(100vh - 47px);overflow-y:auto;background:#fff;border-right:1px solid #e5e8ee;font-size:13.5px}
+.side a{color:#2f6db3;text-decoration:none}.side a:hover{text-decoration:underline}
+.side .chap{margin:10px 0 2px;font-weight:700}.side .chap.cur{color:#c0392b}
+.side ul{margin:2px 0 6px;padding-left:16px;color:#666}.side li{margin:2px 0}
+.main{flex:1;min-width:0;padding:28px 36px;background:#fff}
+.main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
+table{border-collapse:collapse;margin:14px 0;display:block;overflow-x:auto;max-width:100%}
+th,td{border:1px solid #dfe3ea;padding:6px 10px;font-size:14px;text-align:left}
+th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;font-size:13.5px}
+pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
+pre code{background:none;color:inherit;padding:0}
+blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
+mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+.pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
+.pn a{color:#2f6db3;text-decoration:none}.pn .off{color:#aaa}
+.foot{color:#888;font-size:13px;margin:20px 0 40px}
+h1{font-size:26px;border-bottom:2px solid #1a1a2e;padding-bottom:8px}
+h2{font-size:21px;margin-top:34px;border-bottom:1px solid #e5e8ee;padding-bottom:6px}
+h3{font-size:17px;margin-top:24px}
+h4{font-size:15.5px;margin-top:20px;color:#333}
+.toc-mobile{display:none;margin:0 0 16px;border:1px solid #e5e8ee;border-radius:8px;padding:10px 14px;background:#f7fafd;font-size:14px}
+.toc-mobile summary{cursor:pointer;font-weight:700}
+.toc-mobile ul{padding-left:18px;margin:8px 0 2px}.toc-mobile a{color:#2f6db3;text-decoration:none}
+.topbtn{position:fixed;bottom:20px;right:20px;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px;opacity:.75}
+.offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
+@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}}
+@media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
+</style>
+<script>
+window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['$$', '$$']]}};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head><body id="top">
+<div class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 11 篇 · 总结与选型指南</div>
+<div class="wrap"><nav class="side"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
+<div class="chap"><a href="01_问题定义与双耳启示.html">第 1 篇 · 问题定义与双耳启示</a></div>
+<div class="chap"><a href="02_基础_声音到达阵列时发生了什么.html">第 2 篇 · 声音到达阵列时发生了什么</a></div>
+<div class="chap"><a href="03_阵列几何形态.html">第 3 篇 · 阵列几何形态</a></div>
+<div class="chap"><a href="04_声源定位DOA估计.html">第 4 篇 · 声源定位（DOA 估计）</a></div>
+<div class="chap"><a href="05_波束形成Beamforming.html">第 5 篇 · 波束形成</a></div>
+<div class="chap"><a href="06_声学回声消除AEC.html">第 6 篇 · 声学回声消除（AEC）</a></div>
+<div class="chap"><a href="07_去混响WPE.html">第 7 篇 · 去混响（WPE）</a></div>
+<div class="chap"><a href="08_语音分离.html">第 8 篇 · 语音分离</a></div>
+<div class="chap"><a href="09_声源追踪SourceTracking.html">第 9 篇 · 声源追踪</a></div>
+<div class="chap"><a href="10_工程实现评测与产业实践.html">第 10 篇 · 工程实现与产业实践</a></div>
+<div class="chap cur">第 11 篇 · 总结与选型指南</div>
+<ul>
+<li><a href="11_总结与选型指南.html#sec-1">11. 总结与选型指南</a></li>
+<li>&nbsp;&nbsp;<a href="11_总结与选型指南.html#sec-2">11.1 总纲：六条结论先立住</a></li>
+<li>&nbsp;&nbsp;<a href="11_总结与选型指南.html#sec-3">11.2 场景对照表（开箱即用版；第一版照方抓哪个）</a></li>
+<li>&nbsp;&nbsp;<a href="11_总结与选型指南.html#sec-4">11.3 三问决策树（问完就知道照方抓 A/B/C，抓完就能动手）</a></li>
+<li>&nbsp;&nbsp;<a href="11_总结与选型指南.html#sec-5">11.4 本章练习</a></li>
+<li>&nbsp;&nbsp;<a href="11_总结与选型指南.html#sec-6">11.5 分流：工程往哪走，研究往哪走</a></li>
+</ul>
+<div class="chap"><a href="12_附录A_符号术语数学.html">附录 A · 符号术语数学</a></div>
+<div class="chap"><a href="13_附录B_路径地图前沿踩坑练习复现.html">附录 B · 路径地图与练习</a></div></nav>
+<main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
+<details class="toc-mobile"><summary>本页目录</summary><ul>
+<li><a href="11_总结与选型指南.html#sec-1">11. 总结与选型指南</a></li>
+<li>&nbsp;&nbsp;<a href="11_总结与选型指南.html#sec-2">11.1 总纲：六条结论先立住</a></li>
+<li>&nbsp;&nbsp;<a href="11_总结与选型指南.html#sec-3">11.2 场景对照表（开箱即用版；第一版照方抓哪个）</a></li>
+<li>&nbsp;&nbsp;<a href="11_总结与选型指南.html#sec-4">11.3 三问决策树（问完就知道照方抓 A/B/C，抓完就能动手）</a></li>
+<li>&nbsp;&nbsp;<a href="11_总结与选型指南.html#sec-5">11.4 本章练习</a></li>
+<li>&nbsp;&nbsp;<a href="11_总结与选型指南.html#sec-6">11.5 分流：工程往哪走，研究往哪走</a></li>
+</ul></details>
+<blockquote>
+<p>⚠️ 本篇是系列教程第 11 篇（共 13 篇），可独立阅读，前后篇见下方导航。</p>
+<p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="./10_工程实现评测与产业实践.html">第 10 篇 · 工程实现与产业实践</a> ｜ 下一篇：<a href="./12_附录A_符号术语数学.html">附录 A · 符号术语数学</a></p>
+</blockquote>
+<hr />
+<h2 id="sec-1">11. 总结与选型指南</h2>
+<h3 id="sec-2">11.1 总纲：六条结论先立住</h3>
+<ol>
+<li><strong>阵列形态决定上限</strong>：孔径定分辨率、形态定覆盖、间距定无混叠带宽、挡板定低频下限，因为几何决定了信号里原本有多少方向信息，算法只能提炼不能无中生有。360° 场景选圆阵（≥4 麦，推荐 6 麦），单向场景选线阵，3D/研究选球阵；麦数受限且算法能力强时可考虑稀疏（嵌套/互质）几何。</li>
+<li><strong>定位</strong>：嵌入式产品用 SRP-PHAT，因为它皮实、算力省、不用训模型；高分辨研究用 MUSIC/ESPRIT，因为子空间能突破瑞利限；强混响多源上 DNN（深度神经网络），因为数据能驯服模型写不出的混响。典型量级（先说条件再记数）：消声室 SRP-PHAT 约 3°~5°（3 米外偏十几到几十厘米）；普通办公室约 8°~10°；强混响低信噪比退到 20° 以上（3 米外偏 1 米开外，约 109 cm），DNN 可压回 10° 内（3 米外偏约半米，约 52 cm）。</li>
+<li><strong>波束形成照方抓药版（工程抓药单版；算法细节抄法见第 5 章，此处只给配比和火候）</strong>：直接抓这副药——MVDR（最小方差无失真响应，RTF（相对传递函数）版）＋对角加载＋后置滤波，因为 RTF 保得住混响里的目标、对角加载防矩阵病态、后置滤波专管残余噪声，三味缺一就瘸。GSC（广义旁瓣对消器）跑得快，但阻塞矩阵一失配就漏目标，所以用它先想好失配对策；超指向不加 WNG 约束等于裸奔；掩码-神经 MVDR 与端到端联合模型是多说话人/强混响下报告精度较好的方案之一（截至 2026 年，见 §4.7/§5.9），但把 WNG/无失真写进网络结构是落地关键。</li>
+<li><strong>时间维度三模块不能省</strong>：AEC（声学回声消除）最先行（波束前、逐通道、参考取播放链路末端），因为回声路径只在原始麦克风上固定不变；WPE 去晚期混响与神经波束级联互补，因为一个管时间拖尾、一个管空间指向；多人场景靠分离网络输出掩码反哺 MVDR，因为掩码告诉波束谁是噪声。</li>
+<li><strong>追踪大白话</strong>：一个人慢慢走，单源就用 KF（卡尔曼滤波）/α-β 加直方图门控，够用了，别上重武器；人多了还互相串，就换 PHD/LMB 这种不用事先定人数、不用硬配对的方法；想发论文就去啃 track-before-detect 加 DNN 定位谱那条线，因为那是现在最热的。</li>
+<li><strong>闭环集成</strong>：顺序见§10.1/图23；麦间标定与同步是系统成败的地基，因为 0.5 毫米误差就能吃掉 2° 精度，地基歪了上面全白搭。</li>
+</ol>
+<p><strong>三句话总纲</strong>：阵列形态决定性能上限，算法只是在逼近这个上限；混响是共同的敌人（解析方法靠模型对抗它，DNN 靠数据驯服它）；白噪声增益（WNG）–指向性指数（DI）权衡无处不在——凡是声称“又稳又尖又便宜”的波束，先问它牺牲了哪一头。</p>
+<p>短被子说明：WNG 和 DI 好比一条短被子——往头上拉（波束又尖又窄，DI 高），脚就露在外面冻着（自噪声放大、鲁棒性掉）；往脚上拉（图稳、WNG 高），肩膀又晾着（波束变宽、掠射方向（grazing，贴着阵列平面掠过来的干扰）漏进来）。想头脚都盖住，要么换条长被子（加麦加孔径），要么中间压床垫子（加约束、加对角加载）。所以“又稳又尖又便宜”等于说短被子能盖两个人，物理上不存在，选型就是选露哪头。</p>
+<p>总纲立住了，但结论还悬在半空。下面 11.2 把它落到四个常见场景，第一版直接抄作业。</p>
+<h3 id="sec-3">11.2 场景对照表（开箱即用版；第一版照方抓哪个）</h3>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>照方抓</th>
+<th>第一版配置（照抄先跑通）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>客厅音箱（6 麦，全向）</td>
+<td>A</td>
+<td>6 麦圆环＋挡板＋SRP-PHAT＋MVDR-对角加载＋AEC 先行</td>
+</tr>
+<tr>
+<td>车载（4 麦，噪声大）</td>
+<td>A</td>
+<td>分布式 4 麦＋DNN 定位＋掩码 MVDR＋末端参考 AEC</td>
+</tr>
+<tr>
+<td>会议室（混响重）</td>
+<td>B</td>
+<td>WPE 先行＋SRP-PHAT＋MVDR＋单路 DNN 扫尾</td>
+</tr>
+<tr>
+<td>助听/耳机（双麦，没算力）</td>
+<td>C</td>
+<td>双麦端射 DMA＋固定波束＋轻量 NS</td>
+</tr>
+</tbody>
+</table>
+<p>表有了，但抓 A 还是抓 B，得看你手里有几只麦、算力够不够、屋子混响重不重。11.3 三个问题帮你分到对应的方子。</p>
+<h3 id="sec-4">11.3 三问决策树（问完就知道照方抓 A/B/C，抓完就能动手）</h3>
+<ol>
+<li><strong>你先数有几只麦？</strong>你只有 2 只→抓 C；你有 3 只（手机/笔电常见）→先抓 C 跑通，再按需借 A 的 DNN 降噪单点补强；你有 4 只以上→下一问。</li>
+<li><strong>你的算力够跑神经吗</strong>（够：有 NPU 或几百 MIPS 余量；不够：纯 DSP 小核、几十 MIPS；半档：百 MIPS 级，能跑 tiny 模型）？够→抓 A；跑不动→下一问；半档→抓 B，DNN 只做扫尾。</li>
+<li><strong>你的混响重吗</strong>（T60 超 0.5 秒，或总在 3 米外说话）？重→抓 B；屋小人近→抓 C。</li>
+</ol>
+<p>叶节点参数起点（先照方抓数，再按自家数据调；与第 6 章算法抄法分开，此处是工程开箱包）：A（神经主力）WPE 取 Δ=3、K=10，MVDR 对角加载 −20 dB（ε 约 1e-2 量级、相对协方差对角均值），NLP 用均衡档 12~18 dB，AEC 抽头先按 64~128 ms 配；B（解析主力）WPE 取 Δ=3、K=10、迭代 3，SRP 先 5° 粗扫，NLMS 取 μ=0.3、ε 取输入功率约 1e-6 量级防静默发散，NLP 均衡档；C（便宜够用）固定波束预存 6 个方向，NS 上限钳 15 dB，VAD（语音活动检测）挂起 200 ms、迟滞 3 dB，KWS 阈值先松后紧。</p>
+<p>风险单列一项：分布式多设备有时钟漂移与采样率偏移（SRO），上线前必须标定补偿（§10.2），否则方向估计越跑越偏，多麦冗余也救不回来。</p>
+<p>方子抓到手，先别急着调参。11.4 留了一道题，逼你把“为谁牺牲了谁”说出口——说不出口，说明选型还没吃透。</p>
+<h3 id="sec-5">11.4 本章练习</h3>
+<p>场景三选一：下面三个场景各用一句话写出你的选型（形态＋定位＋波束＋AEC），并说清为谁牺牲了谁。（ａ）客厅 6 麦音箱，3 米语音点播；（ｂ）车载 4 麦，发动机噪声下免唤醒连续对话；（ｃ）助听器双麦，电池只够跑几十 MIPS。
+答案要点：（ａ）6 麦圆环＋挡板＋SRP-PHAT＋MVDR-对角加载＋AEC 先行，牺牲低频分辨换全向覆盖；（ｂ）分布式 4 麦＋DNN 定位＋WNG 约束超指向（或掩码 MVDR）＋末端参考 AEC，牺牲算力功耗换低频鲁棒与 SRO 补偿；（ｃ）双麦端射 DMA＋固定波束＋轻量 NS，牺牲定位与自适应能力换功耗，WNG 恶化靠近场高信噪比兜底。</p>
+<p>题做完，本篇的活就干完了。但选型只是起点，往下走分两条路，11.5 帮你分流。</p>
+<h3 id="sec-6">11.5 分流：工程往哪走，研究往哪走</h3>
+<p>做工程的，带着方案去 §10.10 照联调顺序逐项打勾验收，撞墙了回 13.4 八面排错墙对症状找病根。做研究的，去 13.3 跟九条前沿找题目，再动手做 13.6 的第 14 题（车载选型论证，练落笔）和第 16 题（画 CHiME-8 前端流程图对照图 23，练眼力）。</p>
+<hr />
+<hr />
+<blockquote>
+<p>📄 本篇信息：约 66 行 ｜ 字符约 3127 ｜ 配图 0 张 ｜ <a href="./index.html">回首页</a></p>
+</blockquote><div class="pn"><span><a href="10_工程实现评测与产业实践.html">← 上一篇</a></span><span><a href="12_附录A_符号术语数学.html">下一篇 →</a></span></div>
+<div class="foot">麦克风阵列信号处理教程 · 静态站由 Scripts/build_site.py 生成</div>
+</main></div><a class="topbtn" href="#top" title="回顶部">↑</a>
+<script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>
+</body></html>
