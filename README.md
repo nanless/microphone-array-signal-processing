@@ -8,29 +8,30 @@ English version: [README_EN.md](./README_EN.md)
 
 | 目录/文件 | 说明 |
 |---|---|
-| `拆分版/` | 教程正文 14 篇 Markdown（`00_首页_导读与导航.md` 是入口，`01`～`11` 是 11 章正文，`12`/`13` 是附录 A/B） |
+| `chapters/` | 教程正文 14 篇 Markdown（`00_overview.md` 是入口，`01`～`11` 是 11 章正文，`12`/`13` 是附录 A/B） |
 | `figures/` | 33 张插图（`fig01`～`fig33_*.png`），全部由脚本生成、可复现 |
-| `Scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `Scripts/README.md`） |
-| `site/` | 多级页面站（`index.html` 首页 + 13 篇正文页）与合订 PDF（`麦克风阵列信号处理教程.pdf`，192 页，14 个章节书签） |
+| `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
+| `site/` | 多级页面站（`index.html` 首页 + 13 篇正文页，构建产物，可再生） |
+| `dist/` | 合订 PDF（`microphone-array-tutorial.pdf`，约 196 页，14 个章节书签）与合订 HTML 中间产物 |
 
 ## 章节导览
 
 | 篇 | 文件 | 内容 | 行数 | 难度 |
 |---|---|---|---|---|
-| 导读 | `00_首页_导读与导航.md` | 全套导航、三条学习路径、插图地图 | 289 | 入门 |
-| 第 1 章 | `01_问题定义与双耳启示.md` | 四个麻烦（噪声/混响/干扰/自噪）、阵列增益三本账、双耳三线索 | 89 | 入门 |
-| 第 2 章 | `02_基础_声音到达阵列时发生了什么.md` | 时延、远近场、信号模型、房间混响、STFT/协方差、波束图六度量 | 317 | 进阶 |
-| 第 3 章 | `03_阵列几何形态.md` | 线阵/圆阵/球阵/稀疏阵、端射崩塌、阵列校准 | 234 | 进阶 |
-| 第 4 章 | `04_声源定位DOA估计.md` | GCC-PHAT、SRP、几何解算、Bartlett/Capon、MUSIC/ESPRIT、宽带聚焦、DNN 定位、CRLB | 491 | 较难 |
-| 第 5 章 | `05_波束形成Beamforming.md` | DSB、超指向、MVDR、LCMV、GSC、SPP、后置滤波、球谐、DNN 波束 | 570 | 较难 |
-| 第 6 章 | `06_声学回声消除AEC.md` | NLMS/FDKF/PBFDAF、双讲检测、非线性、混合神经 AEC、WebRTC AEC3 解剖 | 611 | 较难 |
-| 第 7 章 | `07_去混响WPE.md` | WPE 原理与推导、Δ/K 选型、在线 WPE、三个手算算例 | 229 | 进阶 |
-| 第 8 章 | `08_语音分离.md` | 混合模型、BSS 四兄弟、GSS、深度分离、TSE、数据集 | 146 | 进阶 |
-| 第 9 章 | `09_声源追踪SourceTracking.md` | KF 五步手算、粒子滤波、PHD 多目标、定位-追踪-波束闭环 | 222 | 进阶 |
-| 第 10 章 | `10_工程实现评测与产业实践.md` | 前端链路、延迟预算、SRO/标定、评测指标、六大场景 22 条落地 | 472 | 进阶 |
-| 第 11 章 | `11_总结与选型指南.md` | 六条结论、场景对照表、三问决策树、A/B/C 开箱方案 | 66 | 入门 |
-| 附录 A | `12_附录A_符号术语数学.md` | 符号表、白话术语词典（约 90 条）、预备数学速览 | 217 | 查阅 |
-| 附录 B | `13_附录B_路径地图前沿踩坑练习复现.md` | 学习路径、领域地图、研究前沿、踩坑指南、16 道练习、复现说明 | 237 | 查阅 |
+| 导读 | `chapters/00_overview.md` | 全套导航、三条学习路径、插图地图 | 289 | 入门 |
+| 第 1 章 | `chapters/01_problem-definition.md` | 四个麻烦（噪声/混响/干扰/自噪）、阵列增益三本账、双耳三线索 | 89 | 入门 |
+| 第 2 章 | `chapters/02_basics-signal-model.md` | 时延、远近场、信号模型、房间混响、STFT/协方差、波束图六度量 | 317 | 进阶 |
+| 第 3 章 | `chapters/03_array-geometry.md` | 线阵/圆阵/球阵/稀疏阵、端射崩塌、阵列校准 | 234 | 进阶 |
+| 第 4 章 | `chapters/04_doa-estimation.md` | GCC-PHAT、SRP、几何解算、Bartlett/Capon、MUSIC/ESPRIT、宽带聚焦、DNN 定位、CRLB | 491 | 较难 |
+| 第 5 章 | `chapters/05_beamforming.md` | DSB、超指向、MVDR、LCMV、GSC、SPP、后置滤波、球谐、DNN 波束 | 570 | 较难 |
+| 第 6 章 | `chapters/06_aec.md` | NLMS/FDKF/PBFDAF、双讲检测、非线性、混合神经 AEC、WebRTC AEC3 解剖 | 611 | 较难 |
+| 第 7 章 | `chapters/07_wpe-dereverberation.md` | WPE 原理与推导、Δ/K 选型、在线 WPE、三个手算算例 | 229 | 进阶 |
+| 第 8 章 | `chapters/08_speech-separation.md` | 混合模型、BSS 四兄弟、GSS、深度分离、TSE、数据集 | 146 | 进阶 |
+| 第 9 章 | `chapters/09_source-tracking.md` | KF 五步手算、粒子滤波、PHD 多目标、定位-追踪-波束闭环 | 222 | 进阶 |
+| 第 10 章 | `chapters/10_engineering-practice.md` | 前端链路、延迟预算、SRO/标定、评测指标、六大场景 22 条落地 | 472 | 进阶 |
+| 第 11 章 | `chapters/11_selection-guide.md` | 六条结论、场景对照表、三问决策树、A/B/C 开箱方案 | 66 | 入门 |
+| 附录 A | `chapters/12_appendix-symbols-math.md` | 符号表、白话术语词典（约 90 条）、预备数学速览 | 217 | 查阅 |
+| 附录 B | `chapters/13_appendix-guide.md` | 学习路径、领域地图、研究前沿、踩坑指南、16 道练习、复现说明 | 237 | 查阅 |
 
 ## 快速开始
 
@@ -41,15 +42,16 @@ python3 -m venv .venv
 # pyroomacoustics 可选（只给附录 B 第 15 题用）
 
 # 2. 生成 33 张图（图 1~25、图 33 约 20 秒，图 26~32 约 11 秒）
-.venv/bin/python Scripts/make_figures.py
-.venv/bin/python Scripts/make_aec_figures.py
+.venv/bin/python scripts/make_figures.py
+.venv/bin/python scripts/make_aec_figures.py
 
 # 3. 建多级页面站（输出 site/*.html）
-.venv/bin/python Scripts/build_site.py
+.venv/bin/python scripts/build_site.py
 # 浏览器打开 site/index.html（双击即可；公式需联网加载 MathJax 渲染）
 
-# 4. 生成合订 PDF（需本机装有 Google Chrome）
-.venv/bin/python Scripts/build_pdf.py
+# 4. 生成合订 PDF（输出 dist/microphone-array-tutorial.pdf，需本机装有 Google Chrome，
+#    非 macOS 可用 CHROME_BIN 环境变量指定 Chrome 路径）
+.venv/bin/python scripts/build_pdf.py
 ```
 
 ## 学习路径

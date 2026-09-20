@@ -68,19 +68,19 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 <li><a href="index.html#sec-26">9. 常见问题</a></li>
 <li><a href="index.html#sec-27">附录：下一步清单</a></li>
 </ul>
-<div class="chap"><a href="01_问题定义与双耳启示.html">第 1 篇 · 问题定义与双耳启示</a></div>
-<div class="chap"><a href="02_基础_声音到达阵列时发生了什么.html">第 2 篇 · 声音到达阵列时发生了什么</a></div>
-<div class="chap"><a href="03_阵列几何形态.html">第 3 篇 · 阵列几何形态</a></div>
-<div class="chap"><a href="04_声源定位DOA估计.html">第 4 篇 · 声源定位（DOA 估计）</a></div>
-<div class="chap"><a href="05_波束形成Beamforming.html">第 5 篇 · 波束形成</a></div>
-<div class="chap"><a href="06_声学回声消除AEC.html">第 6 篇 · 声学回声消除（AEC）</a></div>
-<div class="chap"><a href="07_去混响WPE.html">第 7 篇 · 去混响（WPE）</a></div>
-<div class="chap"><a href="08_语音分离.html">第 8 篇 · 语音分离</a></div>
-<div class="chap"><a href="09_声源追踪SourceTracking.html">第 9 篇 · 声源追踪</a></div>
-<div class="chap"><a href="10_工程实现评测与产业实践.html">第 10 篇 · 工程实现与产业实践</a></div>
-<div class="chap"><a href="11_总结与选型指南.html">第 11 篇 · 总结与选型指南</a></div>
-<div class="chap"><a href="12_附录A_符号术语数学.html">附录 A · 符号术语数学</a></div>
-<div class="chap"><a href="13_附录B_路径地图前沿踩坑练习复现.html">附录 B · 路径地图与练习</a></div></nav>
+<div class="chap"><a href="01_problem-definition.html">第 1 篇 · 问题定义与双耳启示</a></div>
+<div class="chap"><a href="02_basics-signal-model.html">第 2 篇 · 声音到达阵列时发生了什么</a></div>
+<div class="chap"><a href="03_array-geometry.html">第 3 篇 · 阵列几何形态</a></div>
+<div class="chap"><a href="04_doa-estimation.html">第 4 篇 · 声源定位（DOA 估计）</a></div>
+<div class="chap"><a href="05_beamforming.html">第 5 篇 · 波束形成</a></div>
+<div class="chap"><a href="06_aec.html">第 6 篇 · 声学回声消除（AEC）</a></div>
+<div class="chap"><a href="07_wpe-dereverberation.html">第 7 篇 · 去混响（WPE）</a></div>
+<div class="chap"><a href="08_speech-separation.html">第 8 篇 · 语音分离</a></div>
+<div class="chap"><a href="09_source-tracking.html">第 9 篇 · 声源追踪</a></div>
+<div class="chap"><a href="10_engineering-practice.html">第 10 篇 · 工程实现与产业实践</a></div>
+<div class="chap"><a href="11_selection-guide.html">第 11 篇 · 总结与选型指南</a></div>
+<div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
+<div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
 <main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><ul>
 <li><a href="index.html#sec-2">1. 这是一份什么样的教程</a></li>
@@ -135,98 +135,98 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 <tbody>
 <tr>
 <td>00</td>
-<td><code><a href="index.html">00_首页_导读与导航.md</a></code>（本页）</td>
+<td><code><a href="index.html">00_overview.md</a></code>（本页）</td>
 <td>—</td>
 <td>入门</td>
 <td>15～20 分钟，先读本页</td>
 </tr>
 <tr>
 <td>01</td>
-<td><code><a href="01_问题定义与双耳启示.html">01_问题定义与双耳启示.md</a></code></td>
+<td><code><a href="01_problem-definition.html">01_problem-definition.md</a></code></td>
 <td>图1</td>
 <td>入门</td>
 <td>10 分钟</td>
 </tr>
 <tr>
 <td>02</td>
-<td><code><a href="02_基础_声音到达阵列时发生了什么.html">02_基础_声音到达阵列时发生了什么.md</a></code></td>
+<td><code><a href="02_basics-signal-model.html">02_basics-signal-model.md</a></code></td>
 <td>图2～图7，共 6 张</td>
 <td>进阶</td>
 <td>45～60 分钟，建议完整读一遍</td>
 </tr>
 <tr>
 <td>03</td>
-<td><code><a href="03_阵列几何形态.html">03_阵列几何形态.md</a></code></td>
+<td><code><a href="03_array-geometry.html">03_array-geometry.md</a></code></td>
 <td>图8～图10，共 3 张</td>
 <td>进阶</td>
 <td>30 分钟</td>
 </tr>
 <tr>
 <td>04</td>
-<td><code><a href="04_声源定位DOA估计.html">04_声源定位DOA估计.md</a></code></td>
+<td><code><a href="04_doa-estimation.html">04_doa-estimation.md</a></code></td>
 <td>图11～图14、图33，共 5 张</td>
 <td>较难</td>
 <td>60～90 分钟，建议分两次读</td>
 </tr>
 <tr>
 <td>05</td>
-<td><code><a href="05_波束形成Beamforming.html">05_波束形成Beamforming.md</a></code></td>
+<td><code><a href="05_beamforming.html">05_beamforming.md</a></code></td>
 <td>图15～图17，共 3 张</td>
 <td>较难</td>
 <td>60～90 分钟，跟着手算一遍</td>
 </tr>
 <tr>
 <td>06</td>
-<td><code><a href="06_声学回声消除AEC.html">06_声学回声消除AEC.md</a></code></td>
+<td><code><a href="06_aec.html">06_aec.md</a></code></td>
 <td>图18～20、图26～32，共 10 张，另引用图23</td>
 <td>较难</td>
 <td>60～80 分钟，建议分两次读</td>
 </tr>
 <tr>
 <td>07</td>
-<td><code><a href="07_去混响WPE.html">07_去混响WPE.md</a></code></td>
+<td><code><a href="07_wpe-dereverberation.html">07_wpe-dereverberation.md</a></code></td>
 <td>图21、图24，共 2 张，另引用图23（全书链路总图）</td>
 <td>较难</td>
 <td>30～45 分钟</td>
 </tr>
 <tr>
 <td>08</td>
-<td><code><a href="08_语音分离.html">08_语音分离.md</a></code></td>
+<td><code><a href="08_speech-separation.html">08_speech-separation.md</a></code></td>
 <td>0 张专属图，引用图23（全书链路总图）</td>
 <td>较难</td>
 <td>30～45 分钟</td>
 </tr>
 <tr>
 <td>09</td>
-<td><code><a href="09_声源追踪SourceTracking.html">09_声源追踪SourceTracking.md</a></code></td>
+<td><code><a href="09_source-tracking.html">09_source-tracking.md</a></code></td>
 <td>引用 2 张图（图22 是本章的，图23 是全书链路总图）</td>
 <td>进阶</td>
 <td>30～40 分钟</td>
 </tr>
 <tr>
 <td>10</td>
-<td><code><a href="10_工程实现评测与产业实践.html">10_工程实现评测与产业实践.md</a></code></td>
+<td><code><a href="10_engineering-practice.html">10_engineering-practice.md</a></code></td>
 <td>新图 1 张（图25），另引用图23</td>
 <td>进阶</td>
 <td>20～30 分钟</td>
 </tr>
 <tr>
 <td>11</td>
-<td><code><a href="11_总结与选型指南.html">11_总结与选型指南.md</a></code></td>
+<td><code><a href="11_selection-guide.html">11_selection-guide.md</a></code></td>
 <td>0</td>
 <td>入门</td>
 <td>5 分钟，11.1 总纲→11.2 场景表→11.3 决策树→11.4 练习→11.5 分流，选方案时直接查</td>
 </tr>
 <tr>
 <td>12</td>
-<td><code><a href="12_附录A_符号术语数学.html">12_附录A_符号术语数学.md</a></code></td>
+<td><code><a href="12_appendix-symbols-math.html">12_appendix-symbols-math.md</a></code></td>
 <td>0</td>
 <td>入门</td>
 <td>通读约 25 分钟，也可以当词典查</td>
 </tr>
 <tr>
 <td>13</td>
-<td><code><a href="13_附录B_路径地图前沿踩坑练习复现.html">13_附录B_路径地图前沿踩坑练习复现.md</a></code></td>
+<td><code><a href="13_appendix-guide.html">13_appendix-guide.md</a></code></td>
 <td>0</td>
 <td>入门到进阶</td>
 <td>通读约 40 分钟，也可以按需查</td>
@@ -237,11 +237,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 时间紧可以这样走：读完本页，读 01，再读 11，用 5 分钟拿到选型结论。接着读 02 打基础。之后按需要看 04、05、06、07、08。做工程看 05、06、07、08、10＋附录 B 的排错部分。做研究看 04、09＋附录 B 的地图和前沿部分。</p>
 <hr />
 <h2 id="sec-4">3. 每篇讲什么，读完能弄清什么</h2>
-<h3 id="sec-5"><a href="./01_问题定义与双耳启示.html">01 · 问题定义与双耳启示</a></h3>
+<h3 id="sec-5"><a href="./01_problem-definition.html">01 · 问题定义与双耳启示</a></h3>
 <p>89 行（约 3278 字），1 张图，入门。讲智能音箱要战胜的四个麻烦：噪声、混响、干扰、设备自身噪声。引出三个任务：判断声音从哪来，只听一个方向，人走动时跟住方向。还算了一笔增益账：麦克风数量翻倍，信噪比能提高多少分贝。这笔账分三种情况算，对付麦克风自身噪声看 WNG（白噪声增益），对付四面八方的混响看 DI（指向性指数），对付单个方向的干扰看零陷深度。三者别混在一起比。</p>
 <p>人只用两只耳朵就能定位，机器用一堆麦克风，办法是相通的：人用双耳时间差，机器也测时间差。人靠耳朵形状分辨方向，机器靠事先测好的方向数据。细节都在第 1 章。</p>
 <p>读完能弄清：为什么要用一群麦克风。增益上限是多少。人耳的方案对应到机器的哪些模块。</p>
-<h3 id="sec-6"><a href="./02_基础_声音到达阵列时发生了什么.html">02 · 基础：声音到达阵列时发生了什么</a></h3>
+<h3 id="sec-6"><a href="./02_basics-signal-model.html">02 · 基础：声音到达阵列时发生了什么</a></h3>
 <p>317 行（约 2.33 万字），6 张图，进阶。全书的符号和概念都在这章第一次出现。建议完整读一遍。后面看不懂随时回来查。
 2.1 节讲时延：声音到达每个麦克风有先有后。采样率 16kHz 时，一格是 62.5 微秒，约等于 2.1 厘米。时延估计要用到比采样间隔更细的插值。多路信号必须用同一个时钟录。
 2.2 节讲远场和近场：判据是距离大于两倍孔径平方除以波长。结论记住两条：7 厘米的小阵列在整个房间都按远场处理。1.26 米的大线阵在房间里要按近场处理，算法不一样。
@@ -250,11 +250,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['
 2.5 节讲 STFT（短时傅里叶变换）：32 毫秒窗，8 毫秒步进，重叠 75%。分帧之后估计协方差矩阵。这是定位和波束形成算法的共同输入。
 2.6 节讲四个评价量：主瓣宽度、旁瓣、DI、WNG。还讲分辨率极限、栅瓣条件（间距不超过半波长）、CRLB（克拉美-罗下界，估计精度理论上最好能到多少）。</p>
 <p>读完能弄清：时延、相位、导向矢量、协方差分别是什么。后文公式里的符号是什么意思。</p>
-<h3 id="sec-7"><a href="./03_阵列几何形态.html">03 · 阵列几何形态</a></h3>
+<h3 id="sec-7"><a href="./03_array-geometry.html">03 · 阵列几何形态</a></h3>
 <p>234 行（约 1.36 万字），3 张图，进阶。讲麦克风怎么摆，以及摆法决定什么上限。</p>
 <p>两种双麦摆法。六种常见形态对比：线阵、圆阵、方阵、球阵、螺旋阵、分布式阵列。共线的阵列分不清上下，靠加麦克风解决不了，这是几何本身的限制。端射方向（阵列轴线方向）对误差敏感，同样的时延误差在端射方向会被放大很多。四条规律：孔径和波长的比值决定分辨率。圆阵看满孔径。有挡板时低频下限会改善。一般做 4～8 个麦，性价比合适，数量再多提升有限。稀疏阵：6 个麦放在非均匀位置，靠协方差只跟间距有关的性质，能得到比麦克风数量多得多的自由度。例子是嵌套阵，6 个麦能得到 23 个连续自由度。</p>
 <p>读完能弄清：麦克风怎么摆决定什么上限。小阵列为什么在低频分不清方向。不同场景选哪种形态。</p>
-<h3 id="sec-8"><a href="./04_声源定位DOA估计.html">04 · 声源定位 DOA 估计</a></h3>
+<h3 id="sec-8"><a href="./04_doa-estimation.html">04 · 声源定位 DOA 估计</a></h3>
 <p>491 行（约 3.42 万字），5 张图，较难。DOA 是到达方向估计，也就是判断声音从哪来。本章算法种类多，建议分两次读。</p>
 <p>四类方法：两步法（互相关＋几何解算）、扫描法、子空间法、稀疏重构＋深度学习。
 GCC-PHAT（广义互相关相位变换）：看相位随频率的变化斜率。混响会拖累它，T60（混响时间）从 0.4 秒升到 1.0 秒，正确率从约 99% 掉到约 55%。时延估计要做亚采样插值。
@@ -263,44 +263,44 @@ SRP（可控响应功率）：全阵列投票找能量最大的点。算例里�
 扫描法：Bartlett 波束能量宽，Capon（最小方差谱估计）峰更尖，例子里峰旁比 1.8 对 5.0。子空间法 MUSIC（多重信号分类）靠信号子空间和噪声子空间正交来找峰。相干信号会让协方差矩阵掉秩，要用空间平滑恢复。ESPRIT（旋转不变子空间法）利用阵列的平移结构直接解角度，不用逐格扫描。
 DNN（深度神经网络）方法在强混响下能把误差从 15～30 度压到 5～10 度。CRLB（克拉美-罗下界）说明带宽是立方关系，加带宽最划算。</p>
 <p>读完能弄清：四类定位方法各适合什么几何和算力。混响怎么影响互相关法。MUSIC 方法为什么怕相干信号。</p>
-<h3 id="sec-9"><a href="./05_波束形成Beamforming.html">05 · 波束形成 Beamforming</a></h3>
+<h3 id="sec-9"><a href="./05_beamforming.html">05 · 波束形成 Beamforming</a></h3>
 <p>570 行（约 4.02 万字），3 张图，较难。波束形成就是只听一个方向，压住别的方向。统一写成加权求和，目标是在不损伤目标方向的前提下压住噪声。跟着手算一遍效果更好。
 三类噪声对应三类招数：麦克风自身噪声看 WNG，用延迟求和。弥散混响看 DI，用超指向。单个方向干扰用零陷，用 MVDR（最小方差无失真响应）。
 DSB（延迟求和波束形成）：权重就是导向矢量除以麦克风数，WNG 等于麦克风数。超指向在低频把指向性做上去，代价是 WNG 暴跌。例子是两麦端射，WNG 掉到负 10 分贝，换 DI 提高 6 分贝。间距减半，WNG 再掉约 6 分贝。
 MVDR 分四步推导。算例里负 23.8 分贝的零陷自己长出来，正对着干扰方向。LCMV（线性约束最小方差）加多个约束。MWF（多通道维纳滤波）再考虑降噪和失真的折中。GSC（广义旁瓣对消器）分成固定波束、阻塞矩阵、自适应对消三路，算例里对消系数正好抵消干扰，它跟 LCMV 在数学上等价。后置滤波只改幅度不改相位。球谐方法适合球阵，旋转后波束形状不变。DNN 方法有三条线：掩码估计、掩码＋MVDR、直接端到端。</p>
 <p>读完能弄清：WNG 和 DI 的权衡怎么做。MVDR 的零陷从哪里来。GSC 和 LCMV 是什么关系。</p>
-<h3 id="sec-10"><a href="./06_声学回声消除AEC.html">06 · 声学回声消除 AEC</a></h3>
+<h3 id="sec-10"><a href="./06_aec.html">06 · 声学回声消除 AEC</a></h3>
 <p>611 行（约 4.75 万字），10 张图（图18～20、图26～32，另引用图23），较难。专讲回声消除这一件事，对照图 18、图 26～32 看收敛过程最直观。</p>
 <p>AEC（声学回声消除）：设备自己放的声音又被自己的麦克风收进去，要减掉。四种场景，四处难点。能预测波形就做减法，这是减法和乘法的分界。
 NLMS（归一化最小均方自适应滤波）一步能把误差压掉一半。PBFDAF（分块频域自适应滤波）、子带方法、IPNLMS、FDKF（频域卡尔曼滤波，增益就是步长）是对付长房间脉冲响应的加速办法。扬声器非线性有约 20 分贝的天花板，线性部分做到 22 分贝之后，剩下的靠非线性建模和神经网络。DTD（双讲检测）管双方同时说话。深度方法经历了四届挑战赛（其中没有 2024 届，赛制是混合定调）。
 阵列里顺序见§10.1/图23。评测看两个数：ERLE（回声损耗增强，客观算出来压了多少分贝）、MOS（平均主观分，找人听了打分）。ERLE 高不一定听着舒服，两个都要看。WebRTC 的 AEC3 是开源对照实现。</p>
 <p>读完能弄清：回声消除为什么必须在波束形成之前。线性做到 22 分贝之后靠什么做到 40 分贝。三种布放顺序为什么只有逐通道做在前面能用。</p>
-<h3 id="sec-11"><a href="./07_去混响WPE.html">07 · 去混响与语音分离</a></h3>
+<h3 id="sec-11"><a href="./07_wpe-dereverberation.html">07 · 去混响与语音分离</a></h3>
 <p>232 行，2 张图（图21、图24，另引用全书链路总图23），较难。专讲时间维度的清理：房间的拖尾怎么收掉。</p>
 <p>WPE（加权预测误差去混响）：用过去的信号预测混响拖尾并减掉，保护当前帧不损伤直达声。例子里混响能量降约 4.7 分贝。Δ/K 先照 7.1.1 的表取值，再微调。多人抢话的分离搬到 08 讲，整条链路的顺序也在 08 的§8.2 收拢。</p>
 <p>读完能弄清：WPE 的保护延迟 Δ 是干什么的。去混响为什么要放在定位之前。三条老手艺（MINT、倒谱、谱方差）各讲清了什么道理。</p>
-<h3 id="sec-12"><a href="./08_语音分离.html">08 · 语音分离</a></h3>
+<h3 id="sec-12"><a href="./08_speech-separation.html">08 · 语音分离</a></h3>
 <p>146 行，0 张专属图（引用全书链路总图23），较难。专讲好几个人同时说话怎么分开，以及掩码这个枢纽。</p>
 <p>三条路线：免训练的经典盲源分离四兄弟（AuxIVA、ILRMA、MNMF、TRINICON）、GSS（引导源分离，用说话人活动标注解决置换问题，在 CHiME-5 上相对delay-and-sum基线相对降低约 10～21%（见08 §8.1原文表位））、深度分离（掩码估计、深度聚类、PIT、Conv-TasNet，再到 Mamba 和查询型分离）。§8.1 讲分离，§8.2 给出整条链路的顺序：回声消除在前，去混响在定位前，定位和追踪在波束前，波束和分离在后，干净的信号给语音识别。</p>
 <p>读完能弄清：源数超过麦克风数时四兄弟里谁还能用。GSS 的导引解决什么问题。分离掩码怎么回过去帮波束形成估计噪声。</p>
-<h3 id="sec-13"><a href="./09_声源追踪SourceTracking.html">09 · 声源追踪 Source Tracking</a></h3>
+<h3 id="sec-13"><a href="./09_source-tracking.html">09 · 声源追踪 Source Tracking</a></h3>
 <p>222 行（约 1.34 万字），2 张图，进阶。讲人走动时方向一直在变，怎么平滑地跟住。
 状态是角度、角速度、角加速度。声音信号有四个麻烦：时断时续、野点多、人数会变、角度计算有非线性。
 KF（卡尔曼滤波）分五步：预测、更新、算增益、修正、传下去。稳态时每帧只信观测 15% 左右，大部分信预测。PF（粒子滤波）同时保持一堆猜测，按跟观测像不像打分，分低的淘汰，分高的留下。例子用了十个粒子。多人追踪用 IMM（交互多模型）、PHD（概率假设密度滤波，不用事先定人数）、LMB、TBD（检测前追踪）。§9.4 讲闭环：波束方向每帧限幅 3～5 度，静默时保持方向，唤醒词触发重置。不然定位和波束会互相带偏。</p>
 <p>读完能弄清：追踪为什么处在定位和波束之间。多目标和单目标方法怎么选。实际系统里方向更新要加哪些约束。</p>
-<h3 id="sec-14"><a href="./10_工程实现评测与产业实践.html">10 · 工程实现、评测与产业实践</a></h3>
+<h3 id="sec-14"><a href="./10_engineering-practice.html">10 · 工程实现、评测与产业实践</a></h3>
 <p>472 行（约 3.11 万字），新图 1 张（图25），另引用图23，进阶。讲从算法到产品之间隔着什么。
 图 23 是全书链路总图，顺序见§10.1/图23。
 MEMS（微机电系统）麦克风看四个参数。同步要到微秒级，多设备组网还有 SRO（采样率偏移）：每台设备的时钟快慢不一样，每秒差 100 微秒，几分钟下来方向估计能偏好几度，要专门标定和补偿。
 评测分五层：SI-SDR（尺度不变信干比）、STOI（短时客观可懂度）、PESQ（语音质量感知评价）、WER（词错误率）、OSPA（多目标追踪误差）。形态选择上 6 麦圆环＋挡板＋前端处理是常见组合。芯片分级做唤醒和量化，平衡功耗和算力。</p>
 <p>读完能弄清：延迟、同步、标定预算怎么做。评测指标各测什么。从算法到产品要补哪些环节。</p>
-<h3 id="sec-15"><a href="./11_总结与选型指南.html">11 · 总结与选型指南</a></h3>
+<h3 id="sec-15"><a href="./11_selection-guide.html">11 · 总结与选型指南</a></h3>
 <p>66 行（约 3112 字），5 分钟，入门。11.1 总纲立六条结论＋三句话＋一条短口诀，讲清 WNG 和 DI 的权衡。11.2 场景对照表给四个场景的开箱配置。11.3 三问决策树＋叶节点参数起点，问完就知道抓 A、B 还是 C。11.4 留一道三选一练习，逼你说清为谁牺牲了谁。11.5 分流：工程和研究各去哪。</p>
 <p>读完能弄清：给定一个场景，第一版方案抄什么。形态、混响、WNG 和 DI 权衡这三条线怎么用。</p>
-<h3 id="sec-16"><a href="./12_附录A_符号术语数学.html">12 · 附录 A：符号、术语、数学</a></h3>
+<h3 id="sec-16"><a href="./12_appendix-symbols-math.html">12 · 附录 A：符号、术语、数学</a></h3>
 <p>216 行（约 1.27 万字），查阅用。12.1 节是符号表。12.2 节是白话词典，约 90 条，拆成五个正式小节：信号与数学基础、房间声学、波束形成与阵列度量、定位与追踪、系统与硬件，点目录就能跳。12.3 节是六块数学：复数、分贝、卷积和相关、期望和协方差、最小二乘、特征分解。</p>
 <p>用法：符号看不懂、行话看不懂、公式看不懂时回来查。不用通读背诵。</p>
-<h3 id="sec-17"><a href="./13_附录B_路径地图前沿踩坑练习复现.html">13 · 附录 B：路径、地图、前沿、排错、练习、复现</a></h3>
+<h3 id="sec-17"><a href="./13_appendix-guide.html">13 · 附录 B：路径、地图、前沿、排错、练习、复现</a></h3>
 <p>237 行（约 1.72 万字），查阅加动手。13.1 节是学习路径，分四步，每步都能动手（动手）。13.2 节是领域地图：7 本教材、6 个会议、期刊、挑战赛、从 1940 年代到 2026 年的历史（查阅，找书找会时翻）。13.3 节是 9 条前沿加泛化失配专栏，专栏必读（追新）。13.4 节是 8 面排错墙（查阅，撞墙时对症状找病根）。13.5 节是公式速查卡（查阅）。13.6 节是 16 道练习题（动手，开脚本改参数跑）。13.7 节是复现说明，跟着做就能画出 33 张图（动手）。</p>
 <p>用法：想动手、想追前沿、想排错、想复习时打开它。</p>
 <hr />
@@ -599,8 +599,8 @@ MEMS（微机电系统）麦克风看四个参数。同步要到微秒级，多�
 </ol>
 <hr />
 <h2 id="sec-25">8. 动手复现</h2>
-<p>想自己动手画图，画图脚本都在 <code>Scripts/</code> 里。回到报告根目录跑两个命令，33 张图就出来了（图 1～25、图 33 约 20 秒，图 26～32 约 11 秒，全套约半分钟，机器不同有出入），画完打开 <code>figures/</code> 对照正文看图。
-具体步骤和报错处理去看 <code>Scripts/README.md</code>，跟着做就行。改参数多试几次，图里的趋势会记得更牢。Windows 上把命令里的 <code>.venv/bin/python</code> 换成 <code>.venv\Scripts\python</code>。</p>
+<p>想自己动手画图，画图脚本都在 <code>scripts/</code> 里。回到报告根目录跑两个命令，33 张图就出来了（图 1～25、图 33 约 20 秒，图 26～32 约 11 秒，全套约半分钟，机器不同有出入），画完打开 <code>figures/</code> 对照正文看图。
+具体步骤和报错处理去看 <code>scripts/README.md</code>，跟着做就行。改参数多试几次，图里的趋势会记得更牢。Windows 上把命令里的 <code>.venv/bin/python</code> 换成 <code>.venv\Scripts\python</code>。</p>
 <hr />
 <h2 id="sec-26">9. 常见问题</h2>
 <p><strong>图片看不到怎么办？</strong>
@@ -625,7 +625,7 @@ MEMS（微机电系统）麦克风看四个参数。同步要到微秒级，多�
 <li>[ ] 对照附录 B 13.4 节八面排错墙排错，对照 10 做延迟、同步、标定预算。</li>
 </ul>
 <p>记住三条：麦克风怎么摆决定性能上限。算法只能逼近这个上限。房间混响是最大的麻烦。选波束时先问它保了哪头、舍了哪头，再谈好不好。</p><div class="pn"><span></span><span></span></div>
-<div class="foot">麦克风阵列信号处理教程 · 静态站由 Scripts/build_site.py 生成</div>
+<div class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</div>
 </main></div><a class="topbtn" href="#top" title="回顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>
 </body></html>

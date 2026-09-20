@@ -4,3 +4,5 @@ __pycache__/
 .DS_Store
 *.log
 /tmp/
+# 合订 HTML 是中间产物（重跑 build_pdf.py 即再生），不入库；PDF 是发布件，入库
+dist/combined.html
