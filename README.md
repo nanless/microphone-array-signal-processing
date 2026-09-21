@@ -1,6 +1,6 @@
 # 深入浅出麦克风阵列信号处理
 
-一套写给初学者和入门研究生的麦克风阵列信号处理中文教程：从"为什么摆一群麦克风"讲到定位（DOA）、波束形成、回声消除（AEC）、去混响（WPE）、语音分离、声源追踪，一直到工程落地与选型。文字平实，公式推导与手算例子给全，33 张图全部可复现。
+一套写给初学者和入门研究生的麦克风阵列信号处理中文教程：从“为什么摆一群麦克风”讲到定位（DOA）、波束形成、回声消除（AEC）、去混响（WPE）、语音分离、声源追踪，一直到工程实现与选型。正文提供关键公式推导、可复算例子、适用边界和 33 张脚本生成的图。
 
 English version: [README_EN.md](./README_EN.md)
 
@@ -16,22 +16,22 @@ English version: [README_EN.md](./README_EN.md)
 
 ## 章节导览
 
-| 篇 | 文件 | 内容 | 行数 | 难度 |
-|---|---|---|---|---|
-| 导读 | `chapters/00_overview.md` | 全套导航、三条学习路径、插图地图 | 286 | 入门 |
-| 第 1 章 | `chapters/01_problem-definition.md` | 噪声、混响、干扰、自噪声，阵列增益与双耳线索 | 86 | 入门 |
-| 第 2 章 | `chapters/02_basics-signal-model.md` | 时延、远近场、信号模型、房间混响、STFT/协方差、波束图度量 | 323 | 进阶 |
-| 第 3 章 | `chapters/03_array-geometry.md` | 线阵、圆阵、球阵、稀疏阵，端射灵敏度与阵列校准 | 221 | 进阶 |
-| 第 4 章 | `chapters/04_doa-estimation.md` | GCC-PHAT、SRP、几何解算、Bartlett/Capon、MUSIC/ESPRIT、宽带聚焦、DNN 定位、CRLB | 490 | 较难 |
-| 第 5 章 | `chapters/05_beamforming.md` | DSB、超指向、MVDR、LCMV、GSC、SPP、后置滤波、球谐、DNN 波束 | 574 | 较难 |
-| 第 6 章 | `chapters/06_aec.md` | NLMS/FDKF/PBFDAF、双讲检测、非线性、混合神经 AEC、AEC3 | 565 | 较难 |
-| 第 7 章 | `chapters/07_wpe-dereverberation.md` | WPE 原理与推导、Δ/K 选择、在线 WPE、手算例 | 229 | 进阶 |
-| 第 8 章 | `chapters/08_speech-separation.md` | 混合模型、BSS、GSS、深度分离、TSE、数据集 | 156 | 进阶 |
-| 第 9 章 | `chapters/09_source-tracking.md` | KF 手算、粒子滤波、PHD 多目标、定位—追踪—波束接口 | 236 | 进阶 |
-| 第 10 章 | `chapters/10_engineering-practice.md` | 参考链路、关键路径延迟、SRO/标定、资源预算与评测 | 276 | 进阶 |
-| 第 11 章 | `chapters/11_selection-guide.md` | 条件化选型、场景约束、可验证规格与练习 | 110 | 入门 |
-| 附录 A | `chapters/12_appendix-symbols-math.md` | 符号表、术语定义、预备数学速览 | 222 | 查阅 |
-| 附录 B | `chapters/13_appendix-guide.md` | 学习路径、领域地图、研究前沿、排错、16 道练习、复现说明 | 231 | 查阅 |
+| 篇 | 文件 | 内容 | 难度 |
+|---|---|---|---|
+| 导读 | `chapters/00_overview.md` | 全套导航、三条学习路径、插图地图 | 入门 |
+| 第 1 章 | `chapters/01_problem-definition.md` | 噪声、混响、干扰、自噪声，阵列增益与双耳线索 | 入门 |
+| 第 2 章 | `chapters/02_basics-signal-model.md` | 时延、远近场、信号模型、房间混响、STFT/协方差、波束图度量 | 进阶 |
+| 第 3 章 | `chapters/03_array-geometry.md` | 线阵、圆阵、球阵、稀疏阵，端射灵敏度与阵列校准 | 进阶 |
+| 第 4 章 | `chapters/04_doa-estimation.md` | GCC-PHAT、SRP、几何解算、Bartlett/Capon、MUSIC/ESPRIT、宽带聚焦、DNN 定位、CRLB | 较难 |
+| 第 5 章 | `chapters/05_beamforming.md` | DSB、超指向、MVDR、LCMV、GSC、SPP、后置滤波、球谐、DNN 波束 | 较难 |
+| 第 6 章 | `chapters/06_aec.md` | NLMS/FDKF/PBFDAF、双讲检测、非线性、混合神经 AEC、AEC3 | 较难 |
+| 第 7 章 | `chapters/07_wpe-dereverberation.md` | WPE 原理与推导、Δ/K 选择、在线 WPE、手算例 | 进阶 |
+| 第 8 章 | `chapters/08_speech-separation.md` | 混合模型、BSS、GSS、深度分离、TSE、连续会议分离与数据集 | 进阶 |
+| 第 9 章 | `chapters/09_source-tracking.md` | KF 手算、粒子滤波、PHD 多目标、定位—追踪—波束接口 | 进阶 |
+| 第 10 章 | `chapters/10_engineering-practice.md` | 参考链路、关键路径延迟、SRO/标定、资源预算与评测 | 进阶 |
+| 第 11 章 | `chapters/11_selection-guide.md` | 条件化选型、场景约束、可验证规格与练习 | 入门 |
+| 附录 A | `chapters/12_appendix-symbols-math.md` | 符号表、术语定义、预备数学速览 | 查阅 |
+| 附录 B | `chapters/13_appendix-guide.md` | 学习路径、领域地图、研究前沿、排错、17 道练习、复现说明 | 查阅 |
 
 ## 快速开始
 
@@ -39,9 +39,9 @@ English version: [README_EN.md](./README_EN.md)
 # 1. 建虚拟环境并装依赖
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-# pyroomacoustics 可选（只给附录 B 第 15 题用）
+# pyroomacoustics 可选（只给附录 B 第 16 题用）
 
-# 2. 生成 33 张图（图 1~25、图 33 约 20 秒，图 26~32 约 11 秒）
+# 2. 生成 33 张图（运行时间随硬件、软件版本和负载变化）
 .venv/bin/python scripts/make_figures.py
 .venv/bin/python scripts/make_aec_figures.py
 
@@ -69,3 +69,4 @@ python3 -m venv .venv
 - 公式编号手写（如 `(4-1)`、`式(5-1)`），引用写“见式(5-1)”。
 - 缩写首次出现给全称；"dB 换算用 10log（功率）/20log（幅度）"。
 - 数字凡涉榜单均标注条件与出处，仿真数字注明实现口径。
+- 外部公式、算法和数据优先链接 DOI、标准组织或官方页面；引用时核对标题、作者、年份和具体表/节，不能只检查链接能否打开。

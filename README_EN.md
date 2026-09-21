@@ -1,6 +1,6 @@
 # An Accessible Guide to Microphone Array Signal Processing
 
-A beginner-friendly Chinese tutorial on microphone array signal processing (graduate-entry level): from "why an array of microphones" through DOA estimation, beamforming, acoustic echo cancellation (AEC), dereverberation (WPE), speech separation, and source tracking, all the way to engineering practice and system selection. Plain language, fully worked derivations and hand-computed examples, and 33 reproducible figures.
+A beginner-friendly Chinese tutorial on microphone array signal processing (graduate-entry level): from “why an array of microphones” through DOA estimation, beamforming, acoustic echo cancellation (AEC), dereverberation (WPE), speech separation, and source tracking, all the way to engineering practice and system selection. It provides key derivations, reproducible numerical examples, validity limits, and 33 script-generated figures.
 
 中文版：[README.md](./README.md)
 
@@ -16,22 +16,22 @@ A beginner-friendly Chinese tutorial on microphone array signal processing (grad
 
 ## Chapters
 
-| # | File | Topics | Lines | Level |
-|---|---|---|---|---|
-| Guide | `chapters/00_overview.md` | Navigation, three learning paths, figure map | 286 | Beginner |
-| Ch 1 | `chapters/01_problem-definition.md` | Noise, reverberation, interference, self-noise, array gain, binaural cues | 86 | Beginner |
-| Ch 2 | `chapters/02_basics-signal-model.md` | Delay, near/far field, signal model, reverberation, STFT/covariance, beampattern metrics | 323 | Intermediate |
-| Ch 3 | `chapters/03_array-geometry.md` | Linear/circular/spherical/sparse arrays, endfire sensitivity, calibration | 221 | Intermediate |
-| Ch 4 | `chapters/04_doa-estimation.md` | GCC-PHAT, SRP, TDOA geometry, Bartlett/Capon, MUSIC/ESPRIT, broadband focusing, DNN localization, CRLB | 490 | Advanced |
-| Ch 5 | `chapters/05_beamforming.md` | DSB, superdirective, MVDR, LCMV, GSC, SPP, postfilters, spherical harmonics, DNN beamforming | 574 | Advanced |
-| Ch 6 | `chapters/06_aec.md` | NLMS/FDKF/PBFDAF, double-talk, nonlinear echo, hybrid neural AEC, AEC3 | 565 | Advanced |
-| Ch 7 | `chapters/07_wpe-dereverberation.md` | WPE derivation, Δ/K selection, online WPE, worked examples | 229 | Intermediate |
-| Ch 8 | `chapters/08_speech-separation.md` | Mixing model, BSS, GSS, deep separation, TSE, datasets | 156 | Intermediate |
-| Ch 9 | `chapters/09_source-tracking.md` | Kalman worked example, particle filtering, PHD tracking, localization–tracking–beamforming interface | 236 | Intermediate |
-| Ch 10 | `chapters/10_engineering-practice.md` | Reference pipeline, critical-path latency, SRO/calibration, resource budgets, evaluation | 276 | Intermediate |
-| Ch 11 | `chapters/11_selection-guide.md` | Conditional selection, scenario constraints, verifiable specifications, exercises | 110 | Beginner |
-| App A | `chapters/12_appendix-symbols-math.md` | Symbols, terminology, math refresher | 222 | Reference |
-| App B | `chapters/13_appendix-guide.md` | Learning paths, field map, research frontier, debugging, 16 exercises, reproduction guide | 231 | Reference |
+| # | File | Topics | Level |
+|---|---|---|---|
+| Guide | `chapters/00_overview.md` | Navigation, three learning paths, figure map | Beginner |
+| Ch 1 | `chapters/01_problem-definition.md` | Noise, reverberation, interference, self-noise, array gain, binaural cues | Beginner |
+| Ch 2 | `chapters/02_basics-signal-model.md` | Delay, near/far field, signal model, reverberation, STFT/covariance, beampattern metrics | Intermediate |
+| Ch 3 | `chapters/03_array-geometry.md` | Linear/circular/spherical/sparse arrays, endfire sensitivity, calibration | Intermediate |
+| Ch 4 | `chapters/04_doa-estimation.md` | GCC-PHAT, SRP, TDOA geometry, Bartlett/Capon, MUSIC/ESPRIT, broadband focusing, DNN localization, CRLB | Advanced |
+| Ch 5 | `chapters/05_beamforming.md` | DSB, superdirective, MVDR, LCMV, GSC, SPP, postfilters, spherical harmonics, DNN beamforming | Advanced |
+| Ch 6 | `chapters/06_aec.md` | NLMS/FDKF/PBFDAF, double-talk, nonlinear echo, hybrid neural AEC, AEC3 | Advanced |
+| Ch 7 | `chapters/07_wpe-dereverberation.md` | WPE derivation, Δ/K selection, online WPE, worked examples | Intermediate |
+| Ch 8 | `chapters/08_speech-separation.md` | Mixing model, BSS, GSS, deep separation, TSE, continuous meeting separation, datasets | Intermediate |
+| Ch 9 | `chapters/09_source-tracking.md` | Kalman worked example, particle filtering, PHD tracking, localization–tracking–beamforming interface | Intermediate |
+| Ch 10 | `chapters/10_engineering-practice.md` | Reference pipeline, critical-path latency, SRO/calibration, resource budgets, evaluation | Intermediate |
+| Ch 11 | `chapters/11_selection-guide.md` | Conditional selection, scenario constraints, verifiable specifications, exercises | Beginner |
+| App A | `chapters/12_appendix-symbols-math.md` | Symbols, terminology, math refresher | Reference |
+| App B | `chapters/13_appendix-guide.md` | Learning paths, field map, research frontier, debugging, 17 exercises, reproduction guide | Reference |
 
 ## Quick start
 
@@ -39,9 +39,9 @@ A beginner-friendly Chinese tutorial on microphone array signal processing (grad
 # 1. Virtualenv and dependencies
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-# pyroomacoustics is optional (only used by Appendix B exercise 15)
+# pyroomacoustics is optional (only used by Appendix B exercise 16)
 
-# 2. Generate the 33 figures (~20 s for figs 1–25 & 33, ~11 s for figs 26–32)
+# 2. Generate the 33 figures (runtime depends on hardware, software versions, and load)
 .venv/bin/python scripts/make_figures.py
 .venv/bin/python scripts/make_aec_figures.py
 
@@ -57,6 +57,8 @@ python3 -m venv .venv
 .venv/bin/python -m unittest discover -s tests -v
 .venv/bin/python scripts/quality_check.py
 ```
+
+External formulas, algorithms, datasets, and standards should link to a DOI, standards body, or official project page whenever possible. Verify the cited title, authors, year, and exact table or section; an accessible URL alone is not sufficient evidence.
 
 ## Learning paths
 

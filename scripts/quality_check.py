@@ -57,7 +57,9 @@ def fail(errors: list[str], message: str):
 
 
 def check_sources(errors: list[str]):
-    for path in sorted(CHAPTERS.glob("*.md")):
+    paths = sorted(CHAPTERS.glob("*.md"))
+    paths += [ROOT / "README.md", ROOT / "README_EN.md", ROOT / "scripts" / "README.md"]
+    for path in paths:
         for line_no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
             if EDITING_MARKERS.search(line):
                 fail(errors, f"编辑占位：{path.relative_to(ROOT)}:{line_no}: {line.strip()[:100]}")
@@ -79,6 +81,17 @@ def check_figures(errors: list[str]):
         path = ROOT / "figures" / name
         if not path.exists() or path.stat().st_size == 0:
             fail(errors, f"图片缺失或为空：figures/{name}")
+            continue
+        try:
+            from PIL import Image
+            with Image.open(path) as image:
+                image.verify()
+            with Image.open(path) as image:
+                width, height = image.size
+            if width < 800 or height < 300:
+                fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
+        except Exception as exc:
+            fail(errors, f"图片无法解码：figures/{name}: {exc}")
 
 
 def check_site(errors: list[str]):
@@ -103,6 +116,12 @@ def check_site(errors: list[str]):
             fail(errors, f"表头缺少 scope：{path.name}: {parser.th_without_scope}")
         if parser.source_digest != expected_digest:
             fail(errors, f"站点页面不是当前源文件生成：{path.name}")
+        if "main-content" not in parser.ids or '#main-content' not in parser.links:
+            fail(errors, f"页面缺少键盘跳转正文链接：{path.name}")
+        if 'aria-current="page"' not in page_text:
+            fail(errors, f"页面未标记当前导航项：{path.name}")
+        if ":focus-visible" not in page_text:
+            fail(errors, f"页面缺少键盘焦点样式：{path.name}")
         parsed[path.name] = parser
     for name, parser in parsed.items():
         for href in parser.links:

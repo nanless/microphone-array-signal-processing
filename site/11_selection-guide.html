@@ -1,10 +1,13 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 11 章 · 总结与选型指南 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="6381515cd6ea"><style>
+<meta name="source-digest" content="81a6b66ee82c"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
+a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
+.skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
+.skip-link:focus{top:8px}
 .wrap{display:flex;max-width:1280px;margin:0 auto}
 .side{width:300px;flex-shrink:0;padding:20px 14px;position:sticky;top:47px;height:calc(100vh - 47px);overflow-y:auto;background:#fff;border-right:1px solid #e5e8ee;font-size:13.5px}
 .side a{color:#2f6db3;text-decoration:none}.side a:hover{text-decoration:underline}
@@ -39,7 +42,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
  onerror="document.getElementById('offnote').style.display='block';document.getElementById('offnote').textContent='公式渲染脚本加载失败：当前显示的是公式源码。';"></script>
-</head><body id="top">
+</head><body id="top"><a class="skip-link" href="#main-content">跳到正文</a>
 <header class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 11 章 · 总结与选型指南</header>
 <div class="wrap"><nav class="side" aria-label="全书目录"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
 <div class="chap"><a href="01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
@@ -52,7 +55,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="08_speech-separation.html">第 8 章 · 语音分离</a></div>
 <div class="chap"><a href="09_source-tracking.html">第 9 章 · 声源追踪</a></div>
 <div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现与产业实践</a></div>
-<div class="chap cur">第 11 章 · 总结与选型指南</div>
+<div class="chap cur" aria-current="page">第 11 章 · 总结与选型指南</div>
 <ul>
 <li><a href="11_selection-guide.html#sec-2">11.1 先回答六个问题</a></li>
 <li><a href="11_selection-guide.html#sec-3">11.2 按条件选择模块</a></li>
@@ -67,7 +70,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ul>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
-<main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
+<main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
 <li><a href="11_selection-guide.html#sec-2">11.1 先回答六个问题</a></li>
 <li><a href="11_selection-guide.html#sec-3">11.2 按条件选择模块</a></li>
@@ -91,7 +94,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <h2 id="sec-2">11.1 先回答六个问题</h2>
 <ol>
 <li>
-<p><strong>系统要输出什么？</strong> 输出一个方向、连续轨迹、增强语音、彼此独立的多人语流，还是识别文本？输出不同，所需模块不同。只做固定方向录音时，不需要在线定位；只做方向显示时，也未必需要波束形成和 NS。</p>
+<p><strong>系统要输出什么？</strong> 输出一个方向、连续轨迹、增强语音、彼此独立的多人语流、指定目标的一条语流，还是识别文本？多人输出还要说明人数固定还是随时间变化、整句处理还是连续流、是否需要保持说话人身份。输出不同，所需模块不同。只做固定方向录音时，不需要在线定位；只做方向显示时，也未必需要波束形成和 NS。</p>
 </li>
 <li>
 <p><strong>覆盖区域和声源距离是什么？</strong> 线阵适合重点覆盖阵列轴所在平面或扇区，但会有前后或镜像歧义；圆阵适合水平面环绕覆盖；平面阵与球阵可提供俯仰信息，但需要更多通道和更严格的标定。形态不是按“几只麦”直接决定的。</p>
@@ -106,7 +109,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>目标是否移动、人数是否变化？</strong> 单个慢速目标可从简单平滑或卡尔曼滤波开始。人数变化、交叉和遮挡要求显式处理轨迹出生、消失和数据关联。概率假设密度（Probability Hypothesis Density，PHD）滤波、带标签多伯努利（Labeled Multi-Bernoulli，LMB）滤波或其他随机有限集方法不会因“人数多”自动成为合适方案；还要考虑观测模型、身份连续性要求和实现成本。</p>
 </li>
 <li>
-<p><strong>硬件和合规边界是什么？</strong> 写明采样率、麦数、时钟域、算力、峰值内存、功耗、关键路径延迟、隐私和认证要求。每秒百万条指令（Millions of Instructions per Second，MIPS）不能脱离处理器型号比较，电池续航要用瓦时（Wh）与整机平均功耗估算，见第 10 章 §10.4。</p>
+<p><strong>硬件和合规边界是什么？</strong> 写明采样率、麦数、时钟域、算力、峰值内存、功耗、关键路径延迟、隐私和认证要求。使用注册声纹或云端录音时，还要写明同意、访问、保留和删除方式，见第 10 章 §10.6。每秒百万条指令（Millions of Instructions per Second，MIPS）不能脱离处理器型号比较，电池续航要用瓦时（Wh）与整机平均功耗估算，见第 10 章 §10.4。</p>
 </li>
 </ol>
 <h2 id="sec-3">11.2 按条件选择模块</h2>
@@ -152,9 +155,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>多人重叠</td>
-<td>多波束或掩码波束</td>
-<td>需要独立语流且空间方法仍串扰时启用分离网络</td>
-<td>输出人数、排列、内容改变、算力</td>
+<td>只需一路增强时先试多波束选择或掩码波束</td>
+<td>需要保留重叠中的全部语音内容时评估分离/CSS；只需指定一人且有可靠目标条件时评估 TSE</td>
+<td>最大同时说话数、固定/变化总人数、整句/连续流、跨块排列、身份、内容改变、算力</td>
 </tr>
 <tr>
 <td>轨迹平滑</td>
@@ -171,6 +174,50 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tbody>
 </table>
 <p>算法名只确定了方法类别，还没有确定参数。WPE 的预测延迟和阶数、MVDR 的加载量、AEC 的滤波器覆盖范围、VAD 的挂起时间都应由目标数据和硬件测量得到，不应作为通用默认值从别的产品复制。</p>
+<p>多人重叠场景可按下面的决策维度缩小范围：</p>
+<table>
+<th scope="col"ead>
+<tr>
+<th scope="col">任务条件</th>
+<th scope="col">一路波束/掩码波束</th>
+<th scope="col">连续语音分离（CSS）</th>
+<th scope="col">目标说话人提取（TSE）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>需要的输出</td>
+<td>一路增强音频</td>
+<td>固定或少量无重叠输出流；同一路可在不同时段承载不同说话人</td>
+<td>被注册语音、视觉或方向指定的一人</td>
+</tr>
+<tr>
+<td>人数变化</td>
+<td>可跟随一个选中目标；不负责完整输出所有人</td>
+<td>总参会人数可多于输出流数；流数由最大同时说话数和系统设计决定</td>
+<td>非目标人数可变化，但目标条件必须持续有效</td>
+</tr>
+<tr>
+<td>时间范围</td>
+<td>可逐帧或分块在线处理</td>
+<td>连续长录音；必须说明分块、上下文和拼接</td>
+<td>可整句或流式；需报告注册和首帧延迟</td>
+</tr>
+<tr>
+<td>身份连续</td>
+<td>由追踪/分割模块提供</td>
+<td>分离槽位不等于永久身份，通常还需分割或声纹关联</td>
+<td>目标条件提供身份线索，但会受注册信道和冒用影响</td>
+</tr>
+<tr>
+<td>主要验收</td>
+<td>目标保持、串扰、语音损伤、WER</td>
+<td>重叠段遗漏、跨块换人、cpWER/ORC-WER/sa-WER、延迟</td>
+<td>目标遗漏、非目标泄漏、错误目标、隐私与删除</td>
+</tr>
+</tbody>
+</table>
+<p>这张表比较的是任务条件，不表示 CSS 或 TSE 一定优于解析波束。若应用只消费一路音频，多输出分离会增加排列和资源问题；若应用要完整转写未知参会者，要求预先注册每个人的 TSE 又会成为功能性限制。</p>
 <h2 id="sec-4">11.3 几何与算法要一起选</h2>
 <p>阵列几何决定观测中有哪些空间信息，算法决定如何使用这些信息。</p>
 <ul>
@@ -260,6 +307,56 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tbody>
 </table>
 <p>可以先建立最小基线，再一次增加一个模块。增加模块后要同时检查收益、语音损伤、延迟、功耗和失败样例。如果 WPE 没有改善目标房间的结果，或分离网络虽然提高了尺度不变信号失真比（Scale-Invariant Signal-to-Distortion Ratio，SI-SDR）却增加了内容错误，就不应因为流程图里画了它而保留。</p>
+<p><strong>完整决策例：未知参会者的连续转写</strong>。假设会议中共有 2～6 名未注册说话人，人数随时间变化，但任一时刻最多两人同时说话。系统要连续输出全部内容给 ASR，并要求端到端延迟可测但尚未给定阈值。先用硬约束筛选，再进入实测：</p>
+<table>
+<th scope="col"ead>
+<tr>
+<th scope="col">条件或证据</th>
+<th scope="col">一路掩码波束</th>
+<th scope="col">两路 CSS</th>
+<th scope="col">注册声纹 TSE</th>
+<th scope="col">决定</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>必须保留重叠双方内容</td>
+<td>单路输出可能丢失其中一人，未通过硬约束</td>
+<td>两路分别承载同一时刻最多两人的语音，设计目标与要求一致</td>
+<td>每次只提取已指定目标，未通过“全部未知说话人”约束</td>
+<td>保留两路 CSS 候选</td>
+</tr>
+<tr>
+<td>总参会人数为 2～6 人且随时间变化</td>
+<td>可选择当前目标，但不输出完整集合</td>
+<td>不同说话人可在不同时段复用两路输出；需验证静默流和跨块排列</td>
+<td>需事先获得每位目标条件，本场景没有</td>
+<td>记录 CSS 的人数与槽位管理风险</td>
+</tr>
+<tr>
+<td>连续长录音</td>
+<td>可流式</td>
+<td>必须报告块长、左右上下文、拼接和状态重置</td>
+<td>模型若支持可流式，但功能约束已淘汰</td>
+<td>对 CSS 设置延迟测试项</td>
+</tr>
+<tr>
+<td>身份与识别评测</td>
+<td>单路 WER 不能评价重叠双方</td>
+<td>报 ORC-WER 或 cpWER；若要求身份再报 sa-WER</td>
+<td>需另测错误目标和声纹冒用</td>
+<td>先按无注册转写口径验收</td>
+</tr>
+<tr>
+<td>资源与质量证据</td>
+<td>作为低成本基线保留</td>
+<td>在目标硬件测 p50/p95/p99 延迟、RTF、内存、遗漏和内容错误</td>
+<td>功能约束不满足，不参加性能比较</td>
+<td>CSS 只有实测净收益后才采用</td>
+</tr>
+</tbody>
+</table>
+<p>这个例子中，2～6 是整场会议的总参会人数，两路输出由“最多同时两人重叠”决定，二者并不冲突；输出槽位也不代表永久说话人身份。例子没有填写性能分数，因为算力和准确率必须在目标硬件与目标会议数据上测量。若需求改成“始终只听主持人，且主持人可注册”，硬约束会改变，TSE 才重新成为候选。</p>
 <h2 id="sec-7">11.6 练习</h2>
 <h3 id="sec-8">题 1：带播放的周向语音终端</h3>
 <p>需求是水平面周向覆盖，设备会播放音乐，主要任务是唤醒和单人指令。请写出候选几何、必要模块和两个关键对照实验。</p>
@@ -277,6 +374,6 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>📄 <a href="./index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="10_engineering-practice.html">← 上一篇</a></span><span><a href="12_appendix-symbols-math.html">下一篇 →</a></span></div>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
-</main></div><a class="topbtn" href="#top" title="回顶部">↑</a>
+</main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>
 </body></html>

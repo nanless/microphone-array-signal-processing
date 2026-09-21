@@ -73,8 +73,30 @@ class BuildHelpersTest(unittest.TestCase):
             "0123456789ab",
         )
 
+    def test_unrendered_math_detector_catches_tex_but_not_plain_text(self):
+        self.assertTrue(build_pdf.contains_unrendered_math(r"残留 \frac{a}{b}"))
+        self.assertTrue(build_pdf.contains_unrendered_math("残留 $x+y$"))
+        self.assertFalse(build_pdf.contains_unrendered_math("公式已经渲染为可搜索文字"))
+
     def test_site_source_digest_is_stable_length(self):
         self.assertRegex(build_site.source_digest(), r"^[0-9a-f]{12}$")
+
+    def test_site_heading_parser_ignores_backtick_and_tilde_fences(self):
+        markdown = (
+            "## 正文标题\n"
+            "```text\n### 代码里的井号\n```\n"
+            "~~~~text\n### 另一段代码里的井号\n~~~~\n"
+            "### 正文小节\n"
+        )
+        self.assertEqual(
+            build_site.parse_headings(markdown),
+            [(2, "正文标题"), (3, "正文小节")],
+        )
+
+    def test_site_page_has_keyboard_skip_link_and_visible_focus(self):
+        self.assertIn('href="#main-content"', build_site.PAGE)
+        self.assertIn('id="main-content"', build_site.PAGE)
+        self.assertIn(":focus-visible", build_site.CSS)
 
 
 if __name__ == "__main__":

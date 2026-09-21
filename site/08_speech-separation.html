@@ -1,10 +1,13 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 8 章 · 语音分离 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="6381515cd6ea"><style>
+<meta name="source-digest" content="81a6b66ee82c"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
+a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
+.skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
+.skip-link:focus{top:8px}
 .wrap{display:flex;max-width:1280px;margin:0 auto}
 .side{width:300px;flex-shrink:0;padding:20px 14px;position:sticky;top:47px;height:calc(100vh - 47px);overflow-y:auto;background:#fff;border-right:1px solid #e5e8ee;font-size:13.5px}
 .side a{color:#2f6db3;text-decoration:none}.side a:hover{text-decoration:underline}
@@ -39,7 +42,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
  onerror="document.getElementById('offnote').style.display='block';document.getElementById('offnote').textContent='公式渲染脚本加载失败：当前显示的是公式源码。';"></script>
-</head><body id="top">
+</head><body id="top"><a class="skip-link" href="#main-content">跳到正文</a>
 <header class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 8 章 · 语音分离</header>
 <div class="wrap"><nav class="side" aria-label="全书目录"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
 <div class="chap"><a href="01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
@@ -49,7 +52,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="05_beamforming.html">第 5 章 · 波束形成</a></div>
 <div class="chap"><a href="06_aec.html">第 6 章 · 声学回声消除（AEC）</a></div>
 <div class="chap"><a href="07_wpe-dereverberation.html">第 7 章 · 去混响（WPE）</a></div>
-<div class="chap cur">第 8 章 · 语音分离</div>
+<div class="chap cur" aria-current="page">第 8 章 · 语音分离</div>
 <ul>
 <li><a href="08_speech-separation.html#sec-2">8.1 多说话人语音分离：鸡尾酒会问题</a></li>
 <li><a href="08_speech-separation.html#sec-3">8.2 处理模块的顺序</a></li>
@@ -59,7 +62,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
-<main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
+<main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
 <li><a href="08_speech-separation.html#sec-2">8.1 多说话人语音分离：鸡尾酒会问题</a></li>
 <li><a href="08_speech-separation.html#sec-3">8.2 处理模块的顺序</a></li>
@@ -113,16 +116,30 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 </tbody>
 </table>
+<p><strong>PIT 的 2×2 手算例</strong>。分离器输出为 $\hat s_1,\hat s_2$，参考为 $s_1,s_2$。假设某种失真损失的矩阵为</p>
+<p>$$
+\mathbf L=
+\begin{bmatrix}
+L(\hat s_1,s_1)&L(\hat s_1,s_2)\\
+L(\hat s_2,s_1)&L(\hat s_2,s_2)
+\end{bmatrix}
+=
+\begin{bmatrix}0.4&3.1\\2.8&0.6\end{bmatrix}.
+$$</p>
+<p>保持对应关系时总损失是 $0.4+0.6=1.0$；交换参考时是 $3.1+2.8=5.9$，所以本次更新使用前一种对应关系。这个例子说明 PIT 解决的是“输出槽位没有固定说话人标签”，并不自动解决未知人数或跨长录音的身份保持。逐帧独立选择排列会让同一输出在相邻帧换人；整句级置换不变训练（utterance-level PIT，uPIT）在整句上只选一次排列，可减少这种帧间交换。说话人数较多时，可以把损失矩阵交给线性指派算法求最小总代价，而不必枚举全部 $N!$ 种排列。<a href="https://arxiv.org/abs/1607.00325" title="citation">PIT 原始论文</a>、<a href="https://arxiv.org/abs/1703.06284" title="citation">uPIT 原始论文</a>。</p>
 <p><strong>四类经典 BSS 方法</strong>。以下按模型假设、计算代价和失效条件比较 AuxIVA、ILRMA、MNMF 与 TRINICON。</p>
 <p><strong>AuxIVA（辅助函数型独立向量分析，Auxiliary-function IVA，Ono 2011）</strong>。它假设不同说话人统计独立，并联合建模同一说话人在各频点的分量。频域 ICA 在各频点独立求解，可能得到不同的输出排列；IVA 利用跨频点包络相关性缓解该置换问题。AuxIVA 使用辅助函数进行闭式更新，不需要设置梯度步长，目标函数在理论条件下单调下降。标准实现仍是整段迭代，在线版本需要递推改写；强混响、说话人包络高度相关和短语音都会削弱统计独立性或估计稳定性。它常作为免训练分离基线。</p>
 <p><strong>ILRMA（独立低秩矩阵分析，Independent Low-rank Matrix Analysis）</strong>。ILRMA 在独立性假设之外，再用非负矩阵分解（NMF）表示每个源的低秩功率谱，并联合优化解混矩阵与谱模型。它增加了基数、迭代次数等超参数，计算量和初始化敏感性也高于 AuxIVA。复杂音乐、重叠笑声和强混响可能不满足低秩或独立性假设，需用目标数据验证。</p>
 <p><strong>MNMF（多通道 NMF，Multichannel NMF）</strong>。MNMF 同样使用低秩源谱模型，但以满秩空间协方差描述传播，不要求方阵解混矩阵可逆，因此可以表示欠定混合。谱基、激活和空间协方差需要联合做最大似然估计，参数较多、迭代较慢且对初值敏感。实践中可用 AuxIVA 或 ILRMA 结果初始化。其计算量通常更适合离线分析或伪标签生成。</p>
 <p><strong>TRINICON（三重 N 卷积混合盲分离，TRIple-N ICA for CONvolutive mixtures）</strong>直接优化时域解混滤波器，用二阶去相关和高阶独立性处理卷积混合，因此不依赖逐频点瞬时混合近似。代价是滤波器与统计窗口较长、优化量大，声源或房间变化时还要重新适应。滤波器长度决定能表示多长的卷积逆，但不等于端到端延迟：因果 FIR 可逐样本输出，块实现的额外等待由分块、缓冲、FFT 和是否使用未来样本决定。</p>
 <p>AuxIVA 适合确定混合的免训练基线；ILRMA 进一步利用源谱低秩结构；MNMF 用满秩空间协方差表示欠定混合；TRINICON 直接处理时域卷积混合。选择时需同时检查源数与麦克风数、混响强度、数据长度和实时预算。</p>
+<p><strong>BSS 的排列与尺度歧义</strong>。若 $\mathbf W(f)$ 能把混合信号分开，交换 $\mathbf W$ 的两行只会交换两个输出；把某一行乘非零复数，也不会破坏输出间的统计独立性。因此 BSS 只能在排列和复尺度因子意义下恢复声源。IVA、ILRMA 用跨频点结构缓解频点间排列错乱，但仍要固定输出尺度。方阵情形可令 $\hat{\mathbf A}(f)=\mathbf W^{-1}(f)$，选参考麦克风 $r$，再做</p>
+<p>$$\tilde Y_n(f,k)=\hat A_{rn}(f)Y_n(f,k).$$</p>
+<p>这一步称为回投影（projection back）：它把第 $n$ 个分离输出恢复到参考通道上的幅度和相位尺度。回投影不能修复分离错误，也不能保证不同时间块中的说话人编号一致；连续录音仍要做跨块排列对齐。</p>
 <p><strong>BSS 方法的规模例子</strong>。以下计算用于说明参数量和迭代规模；性能数字必须以各论文的测试集和评测脚本为准。</p>
-<p>AuxIVA 的规模例子：2 源 2 麦、8 kHz、3 s 语音，STFT 取 256 点窗和 64 点帧移。名义帧率为 $8000/64=125$ 帧/s，3 s 约为 375 帧；不补零、从首样本开始取完整窗时，精确帧数是 $\lfloor(24000-256)/64\rfloor+1=372$。非负频点数为 129，每个频点维护一个 $2\times2$ 解混矩阵，共 516 个复数参数。辅助函数迭代不需要学习率。帧数还取决于是否居中、边界补零和丢弃尾部不完整窗。算法见 <a href="https://ieeexplore.ieee.org/document/5406142">AuxIVA 原始论文</a>（Ono, WASPAA 2011；公开实现见 <a href="https://github.com/fakufaku/piva">piva</a>）。</p>
-<p>ILRMA 在同一 2 源 2 麦例子中，还要为每个源维护 NMF 基矩阵和激活矩阵。若每源取 2 个基，则矩阵尺寸分别为 $129\times2$ 和 $2\times375$，并与解混矩阵交替更新。基数、迭代次数和初值都会影响计算量与结果。语音与音乐是否满足同样的低秩假设，需要分别验证。见 <a href="https://ieeexplore.ieee.org/document/6612533">ILRMA 原始论文</a>（Kitamura et al., TASLP 2016）。</p>
-<p>MNMF 可以表示 3 个说话人、2 个麦克风的欠定混合。每个频点、每个源对应一个 $2\times2$ Hermitian 空间协方差；129 个频点和 3 个源共需 387 个协方差矩阵，还要联合估计谱基和激活。计算量和局部最优问题使初始化十分重要，AuxIVA 或 ILRMA 结果可作为初值。见 <a href="https://ieeexplore.ieee.org/document/7038252">MNMF 综述与原始工作</a>（Sawada et al., 2013 起系列工作）。</p>
+<p>AuxIVA 的规模例子：2 源 2 麦、8 kHz、3 s 语音，STFT 取 256 点窗和 64 点帧移。名义帧率为 $8000/64=125$ 帧/s，3 s 约为 375 帧；不补零、从首样本开始取完整窗时，精确帧数是 $\lfloor(24000-256)/64\rfloor+1=372$。非负频点数为 129，每个频点维护一个 $2\times2$ 解混矩阵，共 516 个复数参数。辅助函数迭代不需要学习率。帧数还取决于是否居中、边界补零和丢弃尾部不完整窗。算法见 <a href="https://doi.org/10.1109/ASPAA.2011.6082320">AuxIVA 原始论文</a>（Ono, WASPAA 2011, pp. 189–192；公开实现见 <a href="https://github.com/fakufaku/piva">piva</a>）。</p>
+<p>ILRMA 在同一 2 源 2 麦例子中，还要为每个源维护 NMF 基矩阵和激活矩阵。若每源取 2 个基，则矩阵尺寸分别为 $129\times2$ 和 $2\times375$，并与解混矩阵交替更新。基数、迭代次数和初值都会影响计算量与结果。语音与音乐是否满足同样的低秩假设，需要分别验证。见 <a href="https://doi.org/10.1109/TASLP.2016.2577880">ILRMA 原始论文</a>（Kitamura et al., IEEE/ACM TASLP 24(9), 2016, pp. 1626–1641）。</p>
+<p>MNMF 可以表示 3 个说话人、2 个麦克风的欠定混合。每个频点、每个源对应一个 $2\times2$ Hermitian 空间协方差；129 个频点和 3 个源共需 387 个协方差矩阵，还要联合估计谱基和激活。计算量和局部最优问题使初始化十分重要，AuxIVA 或 ILRMA 结果可作为初值。见 <a href="https://doi.org/10.1109/TASL.2013.2239990">MNMF 原始论文</a>（Sawada et al., IEEE TASL 21(5), 2013, pp. 971–982）。</p>
 <p>TRINICON 的长度换算可以这样看：8 kHz 下，0.5 s 对应 4000 个采样，但这不表示解混滤波器必须取 4000 点，也不表示算法延迟就是 0.5 s。实际长度是在可表示的卷积范围、估计方差、计算量和块实现之间折中。例如 1024 点与 2048 点分别覆盖 128 ms 和 256 ms 的滤波器记忆；系统仍要单独报告块大小、帧移、前视和输入输出缓冲，才能得到算法延迟。见 <a href="https://ieeexplore.ieee.org/document/1414341">TRINICON 原始论文</a>（Buchner et al., 2005）。</p>
 <p><strong>GSS（导引源分离，guided source separation）</strong>在 CHiME-5/6 的真实晚宴多通道任务中得到广泛使用（Boeddeker et al., CHiME-5 2018；CHiME-8 任务设置已经变化，引用时应按当届规则）：
 1. <strong>cACGMM（复角中心高斯混合模型，complex angular central Gaussian mixture model）空间聚类</strong>：把多通道观测向量归一化为 $\mathbf z=\mathbf X/\|\mathbf X\|_2$，主要保留通道间的复数比例。第 $n$ 个分量的密度满足</p>
@@ -136,7 +153,13 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>$$\mathbf R_{\mathrm{tar}}(f)=\frac{\sum_k\gamma(f,k)\mathbf X(f,k)\mathbf X^H(f,k)}{\sum_k\gamma(f,k)+\varepsilon}.$$</p>
 <p>噪声协方差可用相应的非目标掩码估计。软权重的有效样本数不是“$\gamma>0.8$ 的帧数”，而可用 Kish 公式近似：</p>
 <p>$$N_{\mathrm{eff}}(f)=\frac{\left(\sum_k\gamma(f,k)\right)^2}{\sum_k\gamma^2(f,k)}.$$</p>
-<p>例如 900 帧权重全为 1 时 $N_{\mathrm{eff}}=900$；若权重集中在少数帧，有效样本数会明显更小。估计 $M\times M$ 协方差不仅需要样本数大于矩阵维度，还要覆盖足够多的独立空间状态；高度相关的连续帧不能当作同等数量的独立快照。工程上应检查 $N_{\mathrm{eff}}$、矩阵条件数，并在必要时做对角加载。说话人活动标注用于限制各簇可出现的时间区间，从而减少跨频点置换。见 <a href="https://ieeexplore.ieee.org/document/6987389">cACGMM 原始工作</a>（Ito et al., TASLP 2016）与 <a href="https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf">GSS 原始论文</a>。</p>
+<p>例如 900 帧权重全为 1 时 $N_{\mathrm{eff}}=900$；若权重集中在少数帧，有效样本数会明显更小。估计 $M\times M$ 协方差不仅需要样本数大于矩阵维度，还要覆盖足够多的独立空间状态；高度相关的连续帧不能当作同等数量的独立快照。工程上应检查 $N_{\mathrm{eff}}$、矩阵条件数，并在必要时做对角加载。说话人活动标注用于限制各簇可出现的时间区间，从而减少跨频点置换。见 <a href="https://doi.org/10.1109/EUSIPCO.2016.7760429">cACGMM 原始工作</a>（Ito et al., EUSIPCO 2016, pp. 1153–1157）与 <a href="https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf">GSS 原始论文</a>。</p>
+<p><strong>掩码到波束权重的小例子</strong>。以下实数向量只是复数 STFT 观测的简化手算。两个时频快照取 $\mathbf X_1=[1,1]^\top$、$\mathbf X_2=[1,-1]^\top$，目标掩码为 $\gamma=[0.9,0.1]$。因为权重和为 1，目标协方差为</p>
+<p>$$
+\mathbf R_{\mathrm{tar}}=0.9\mathbf X_1\mathbf X_1^H+0.1\mathbf X_2\mathbf X_2^H
+=\begin{bmatrix}1&0.8\\0.8&1\end{bmatrix}.
+$$</p>
+<p>若这个二分类例子中用 $1-\gamma=[0.1,0.9]$ 估计干扰协方差，则 $\mathbf R_{\mathrm{int}}=\begin{bmatrix}1&-0.8\\-0.8&1\end{bmatrix}$。正的非对角项表示目标快照中两通道同相成分占优，负的非对角项表示干扰快照中反相成分占优。随后可从 $\mathbf R_{\mathrm{tar}}$ 估计目标相对传递函数，并与 $\mathbf R_{\mathrm{int}}$ 一起计算 MVDR；GEV 则直接求矩阵对 $(\mathbf R_{\mathrm{tar}},\mathbf R_{\mathrm{int}})$ 的主广义特征向量，并需另做尺度归一化。真实的“目标 + 多个说话人 + 环境噪声”并非二分类，$1-\gamma$ 会把所有非目标成分合在一起，不能解释成纯噪声掩码。实际实现还要检查有效样本数、条件数和对角加载。<a href="https://doi.org/10.1109/ICASSP.2016.7471664" title="citation">掩码波束形成实例</a>。</p>
 <p>定位结果可以给分离提供方向先验；分离网络输出的掩码又能用于估计 MVDR 的目标与干扰协方差。常用的尺度不变信号失真比（scale-invariant signal-to-distortion ratio，SI-SDR）先把估计信号 $\hat s$ 投影到参考 $s$ 上：$s_{\mathrm{tar}}=\langle\hat s,s\rangle s/\|s\|^2$，再计算 $10\log_{10}(\|s_{\mathrm{tar}}\|^2/\|\hat s-s_{\mathrm{tar}}\|^2)$。SI-SDR 提升量（SI-SDRi）是输出 SI-SDR 减去混合输入的 SI-SDR，两项必须使用同一预处理和实现。</p>
 <p><strong>数据集口径表</strong>：去混响与分离的论文使用不同数据、通道和指标。下表只说明各数据集的用途，不给出脱离原文表格的性能范围。</p>
 <table>
@@ -176,7 +199,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>干净重叠两/三人</td>
 <td>无噪声、无混响（近场干声直接叠加）</td>
 <td>8 kHz / 16 kHz；min 版（按最短截断）/ max 版（全长补零）；30 小时训练 / 10 小时验证 / 5 小时测试</td>
-<td>表中四个约数统一按 8 kHz、min、SI-SNRi 口径列出；引用时还应注明静态或动态混合</td>
+<td>引用时注明采样率、min/max、源数、静态/动态混合和指标实现</td>
 </tr>
 <tr>
 <td>LibriMix</td>
@@ -185,9 +208,17 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>16 kHz；train-100/train-360 两档训练量；另有稀疏重叠测试集</td>
 <td>用于跨语料验证时，同时注明训练集、测试集和噪声版本。见 <a href="https://arxiv.org/abs/2005.11262">LibriMix</a></td>
 </tr>
+<tr>
+<td>LibriCSS</td>
+<td>连续会议式重叠与长录音识别</td>
+<td>扬声器在真实会议室回放 LibriSpeech 语音，包含不同重叠率</td>
+<td>7 通道圆阵录音；每段约 10 min，输出需跨块保持一致</td>
+<td>检查分块、跨块排列、输出流数和识别评测的说话人分配规则。见 <a href="https://arxiv.org/abs/2001.11482" title="citation">LibriCSS</a></td>
+</tr>
 </tbody>
 </table>
-<p>REVERB 主要用于去混响与识别，CHiME-5/6 用于真实重叠语音的分离与识别，WHAMR 同时包含噪声、混响和重叠，WSJ0-2mix/3mix 是干净混合基准，LibriMix 还可检查跨数据集泛化。不同数据集的数字不能直接比较。</p>
+<p>REVERB 主要用于去混响与识别，CHiME-5/6 用于真实重叠语音的分离与识别，WHAMR 同时包含噪声、混响和重叠，WSJ0-2mix/3mix 是干净混合基准，LibriMix 还可检查跨数据集泛化，LibriCSS 则把问题扩展到连续会议。CHiME-6 重新对齐了 CHiME-5 的部分录音，引用结果时不能把两个版本混为同一数据版本。<a href="https://www.chimechallenge.org/challenges/chime6" title="citation">CHiME-6 官方说明</a>。不同数据集的数字不能直接比较。</p>
+<p><strong>连续会议分离（continuous speech separation，CSS）</strong>不能把整句分离器机械地逐块调用。长录音中的活动人数会变化，同一输出槽位还可能在相邻块交换说话人。实现需明确四件事：每块使用多少左、右上下文；重叠块怎样加权拼接；跨块排列依据声纹、波形相关性还是联合优化；输出流数固定还是随活动人数变化。连续识别的指标也要写清分配规则：连接最小排列词错误率（concatenated minimum-permutation WER，cpWER）、最优参考组合词错误率（optimal reference combination WER，ORC-WER）和说话人归属词错误率（speaker-attributed WER，sa-WER）处理说话人对应的方式不同，不能只写“WER”。CSS 解决长录音的分块与输出一致性，不保证身份永久不交换；需要稳定身份时还要结合分割或说话人跟踪。阵列无关 CSS 的一个公开实例见 <a href="https://arxiv.org/abs/2110.05745" title="citation">VarArray</a>。</p>
 <p><strong>时频稀疏性与掩码</strong>：在某些语音混合中，同一时频点往往由一个声源占优，文献将这种近似称为 W-不重叠正交性（W-disjoint orthogonality，WDO）。掩码方法可以据此估计每个时频点属于各声源的权重。说话人在同一时频区域强烈重叠时，WDO 近似变差。波束形成的区别不是“对整个频带统一加权”：宽带 STFT 波束形成通常在每个频点使用一组复权重，利用通道间的幅度和相位关系做空间选择。</p>
 <p><strong>深度分离的几类结构</strong>。下表只比较建模方式。原论文的指标、数据生成和评测代码并不完全相同，不在表中按单个 dB 数排名。</p>
 <table>
@@ -226,20 +257,21 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>时频网格</td>
 <td>TF-GridNet（Wang et al., 2023）</td>
 <td>在时频域分别建模时间、频率与跨帧关系，并结合子带 LSTM 和注意力</td>
-<td>原文主表使用 SI-SDRi；不与上三行的 SI-SNRi 直接排名</td>
-<td>整句注意力需要改造后才能流式运行。见 <a href="https://arxiv.org/abs/2209.03952">TF-GridNet</a></td>
+<td>会议版是单通道分离，原文主表使用 SI-SDRi；多通道混响扩展是另一模型与实验设置</td>
+<td>整句注意力需要改造后才能流式运行。见<a href="https://arxiv.org/abs/2209.03952">单通道会议版</a>与<a href="https://doi.org/10.1109/TASLP.2023.3304482" title="citation">多通道混响期刊扩展</a></td>
 </tr>
 </tbody>
 </table>
 <p>比较分离数字时要对齐采样率、<code>min</code>/<code>max</code> 混合方式、静态或动态混合、源数、评测脚本和指标名称。分离文献中的 SI-SNR 常采用与 SI-SDR 相同的正交投影公式，二者在相同去均值与数值实现下可以相等；也有代码把均值处理、截断长度或稳定项写得不同。不能笼统地说两者固定相差若干 dB。引用 SI-SNRi 或 SI-SDRi 时，应给出实现或至少说明是否去均值，并始终用同一指标计算输入基线和输出结果。</p>
 <p><strong>深度分离的结构选择</strong>。卷积、循环网络、注意力和状态空间模型都可以作为分离骨干。选择时不要只看单个榜单分数，还要检查模型是否使用整句上下文、块边界如何处理、状态能否在流式推理中延续，以及计算量和内存怎样随语句长度变化。生成式方法还要检查采样步数和语音幻觉。近期模型若没有在相同数据、采样率、混合方式和评测脚本下比较，本章不按论文年份或模型名称给出性能排序。</p>
-<p>目标说话人提取（target speaker extraction，TSE）不要求输出所有声源，而是用注册语音、说话人活动标注或文本查询指定目标。声纹网络可把注册语音变成定长嵌入，再将其广播到混合语音的各帧；嵌入可在编码器入口拼接，也可用逐层缩放与偏置调制（FiLM）或交叉注意力注入。嵌入维度、注册时长和余弦阈值由具体模型和训练数据决定，不存在跨模型通用的“同人区间”。部署时要验证注册信道失配、非目标泄漏、目标误抑制和首帧延迟。§6.1.6 的 pAEC 也使用声纹条件，但训练目标还包含回声消除。见 <a href="https://arxiv.org/abs/1705.10687">SpeakerBeam/TSE 系列</a>（Žmolíková et al. 起）与 <a href="https://arxiv.org/abs/2206.04769">CLAP</a>（Elizalde et al., 2022）；声纹嵌入的端侧存储、加密和删除要求见 §6.1.14。</p>
+<p>目标说话人提取（target speaker extraction，TSE）不要求输出所有声源，而是用注册语音、视觉或方向等与目标说话人绑定的条件提取一条音轨。声纹网络可把注册语音变成定长嵌入，再将其广播到混合语音的各帧；嵌入可在编码器入口拼接，也可用逐层缩放与偏置调制（FiLM）或交叉注意力注入。嵌入维度、注册时长和余弦阈值由具体模型和训练数据决定，不存在跨模型通用的“同人区间”。部署时要验证注册信道失配、非目标泄漏、目标误抑制和首帧延迟。§6.1.6 的 pAEC 也使用声纹条件，但训练目标还包含回声消除。见 <a href="https://arxiv.org/abs/1705.10687" title="citation">SpeakerBeam/TSE 系列</a>；声纹嵌入的端侧存储、加密和删除要求见 §6.1.14。</p>
+<p>文本查询通用声音分离是另一项任务：查询词描述“警报声”“狗叫”等声音类别，不保证对应某个可注册的说话人。对比语言—音频预训练（Contrastive Language-Audio Pretraining，CLAP）可提供文本与音频嵌入，但 CLAP 本身不是分离器；实际系统还需要用查询嵌入控制掩码或波形生成模块。见 <a href="https://arxiv.org/abs/2206.04769" title="citation">CLAP</a>与使用语言查询的 AudioSep（<a href="https://arxiv.org/abs/2308.05037" title="citation">2023 年 arXiv 预印本</a>）。因此 TSE 的身份泄漏、注册信道和声纹保护测试，不能由文本查询分离的类别级结果替代。</p>
 <blockquote>
 <p><strong>练习 8-1（自测三题）</strong></p>
 <ol>
 <li>说明 WDO 假设及其失效条件。（要点：同一时频点通常只有一个人占优；重叠越重，近似越差）</li>
 <li>GSS 三步顺序是什么？（要点：WPE 去混响 → cACGMM 聚类得掩码 → 掩码换协方差喂 MVDR/GEV）</li>
-<li>掩码换协方差要写哪两个矩阵？（要点：目标协方差 R_target 与噪声协方差，分别用掩码 γ 与 1−γ 加权平均）
+<li>掩码换协方差要写哪两个矩阵？（要点：目标协方差 $\mathbf R_{\mathrm{tar}}$ 与干扰协方差 $\mathbf R_{\mathrm{int}}$；二分类例子可分别用 $\gamma$ 与 $1-\gamma$ 加权，多说话人加环境噪声时应按模型分别定义非目标掩码，不能把 $1-\gamma$ 一律解释成纯噪声）
 </li>
 </ol>
 </blockquote>
@@ -253,7 +285,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><strong>diarization 在 GSS 聚类之前、掩码在 MVDR 之前</strong>：diarization 提供“谁在何时说话”的标注，用于约束 cACGMM 的跨频点置换；掩码随后用于估计目标和噪声协方差，再计算波束权重（见 §5.4 和 §8.1）；</li>
 <li><strong>DNN 的位置由输出决定</strong>：逐通道改写复谱或波形的网络可能破坏跨通道相位，通常放在波束形成后的单通道链路；只输出共享掩码、协方差或 WPE 功率先验的网络可以放在多通道算法内部；联合多通道网络则可能同时完成分离和波束形成。还要单独检查网络是否使用未来帧。</li>
 </ol>
-<p>默认链路把逐通道线性处理放在前面，把单通道增强放在波束形成之后。若神经网络只估计解析算法所需的统计量，或本身联合建模多通道相位，则不受这个默认顺序限制。</p>
+<p>对于“逐通道线性前端—波束形成—单通道增强”这类实现，逐通道处理通常位于前端，单通道增强位于波束形成之后。若神经网络只估计解析算法所需的统计量，或本身联合建模多通道相位，则不受这个顺序限制。</p>
 <p><strong>本章模块与图 23 的对应关系</strong>（图的信号取点与启用条件见<a href="./10_engineering-practice.html">第 10 章 §10.1</a>）：</p>
 <table>
 <th scope="col"ead>
@@ -287,6 +319,6 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>📄 本篇信息：配图 0 张 ｜ <a href="./index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="07_wpe-dereverberation.html">← 上一篇</a></span><span><a href="09_source-tracking.html">下一篇 →</a></span></div>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
-</main></div><a class="topbtn" href="#top" title="回顶部">↑</a>
+</main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>
 </body></html>

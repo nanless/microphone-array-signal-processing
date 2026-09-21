@@ -1,10 +1,13 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>导读与导航 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="6381515cd6ea"><style>
+<meta name="source-digest" content="81a6b66ee82c"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
+a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
+.skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
+.skip-link:focus{top:8px}
 .wrap{display:flex;max-width:1280px;margin:0 auto}
 .side{width:300px;flex-shrink:0;padding:20px 14px;position:sticky;top:47px;height:calc(100vh - 47px);overflow-y:auto;background:#fff;border-right:1px solid #e5e8ee;font-size:13.5px}
 .side a{color:#2f6db3;text-decoration:none}.side a:hover{text-decoration:underline}
@@ -39,9 +42,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
  onerror="document.getElementById('offnote').style.display='block';document.getElementById('offnote').textContent='公式渲染脚本加载失败：当前显示的是公式源码。';"></script>
-</head><body id="top">
+</head><body id="top"><a class="skip-link" href="#main-content">跳到正文</a>
 <header class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 导读与导航</header>
-<div class="wrap"><nav class="side" aria-label="全书目录"><div class="chap cur">🏠 导读与导航（首页）</div>
+<div class="wrap"><nav class="side" aria-label="全书目录"><div class="chap cur" aria-current="page">🏠 导读与导航（首页）</div>
 <ul>
 <li><a href="index.html#sec-2">1. 这是一份什么样的教程</a></li>
 <li><a href="index.html#sec-3">2. 14 个文件一览</a></li>
@@ -83,7 +86,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
-<main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
+<main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
 <li><a href="index.html#sec-2">1. 这是一份什么样的教程</a></li>
 <li><a href="index.html#sec-3">2. 14 个文件一览</a></li>
@@ -301,17 +304,17 @@ KF（卡尔曼滤波）由状态预测、观测更新和协方差递推组成，
 <p>查阅用。12.1 节是符号表。12.2 节是术语词典，按信号与数学基础、房间声学、自适应滤波与分离、波束形成与阵列度量、定位与追踪、系统与硬件分组。12.3 节介绍复数、分贝、卷积和相关、期望和协方差、最小二乘与特征分解。</p>
 <p>遇到未定义符号、术语或数学步骤时，可按主题查阅，无需顺序通读。</p>
 <h3 id="sec-17"><a href="./13_appendix-guide.html">13 · 附录 B：路径、地图、前沿、排错、练习、复现</a></h3>
-<p>查阅加动手。13.1 节是学习路径。13.2 节是教材、会议、期刊、挑战赛与历史地图。13.3 节介绍九个研究方向与泛化失配。13.4 节是排错指南，13.5 节是公式速查卡，13.6 节有 16 道练习题，13.7 节说明怎样复现 33 张图。</p>
+<p>查阅加动手。13.1 节是学习路径。13.2 节是教材、会议、期刊、挑战赛与历史地图。13.3 节介绍八个研究方向与泛化失配。13.4 节是排错指南，13.5 节是公式速查卡，13.6 节有 17 道练习题，13.7 节说明怎样复现 33 张图。</p>
 <p>需要查学习资料、研究方向、排错方法、练习或复现步骤时，可直接进入对应小节。</p>
 <hr />
 <h2 id="sec-18">4. 阅读顺序</h2>
 <p>本页先读。接着读 01，建立问题意识，10 分钟。
 再读 02，打基础。符号不懂回 12 查。这是后面所有章节的共同起点。
 之后可分三条线。几何线：03 讲形态怎样限制观测信息，读完可用 §11.1～§11.3 形成候选几何。
-空间线：04 找方向，09 跟轨迹，05 指波束。04 的掩码估计连着 05 的 MVDR 和 08 的分离方法。
+空间线：04 找方向，09 跟轨迹，05 指波束。02、05 和 08 介绍的时频掩码可用于估计目标或噪声协方差，再交给 MVDR 或分离模块。
 干扰处理线：06 讲回声消除，07 讲去混响，08 讲语音分离；启用条件和参考依赖见 §10.1 与图 23。
 工程线：10 讲链路、硬件、评测、芯片，看完去 11 定方案。
-附录 A（文件 12）汇总符号、术语和数学。附录 B（文件 13）提供学习路径、领域地图、前沿、排错、练习和复现说明。完成第 11 章后，工程读者可到 §10.10 制定联调与验收计划，遇到问题查 §13.4；研究读者可读 §13.3，再做 §13.6 的第 14、16 题。两篇附录均可按需查阅。</p>
+附录 A（文件 12）汇总符号、术语和数学。附录 B（文件 13）提供学习路径、领域地图、前沿、排错、练习和复现说明。完成第 11 章后，工程读者可到 §10.10 制定联调与验收计划，遇到问题查 §13.4；研究读者可读 §13.3，再做 §13.6 的第 16、17 题，分别练习房间仿真和论文系统复核。两篇附录均可按需查阅。</p>
 <hr />
 <h2 id="sec-19">5. 三条阅读路径</h2>
 <h3 id="sec-20">路径 A：零基础入门（能跑通演示，约 2～3 周）</h3>
@@ -320,21 +323,21 @@ KF（卡尔曼滤波）由状态预测、观测更新和协方差递推组成，
 <li>02 精读 60 分钟。推导可以先跳，重点是会读图 2～图 7。</li>
 <li>03 读表格＋算例 30 分钟。04 读 4.2、4.3 节＋算例 60 分钟，对照看图 12、图 14。05 读 5.1、5.2、5.4 节，跟着手算 60 分钟，对照看图 16。</li>
 <li>06 读 6.1.1、6.1.2、6.1.7（AEC 在阵列里放哪）、6.1.9 共 60 分钟，对照看图 18。07 读 7.1 节直觉部分和 7.1.1（Δ/K 照表取值），对照看图 21、图24。08 读 8.1 节三条路线和掩码枢纽 30 分钟。09 读 9.2 节卡尔曼滤波五步 30 分钟。</li>
-<li>阅读 §10.1、§10.4 和 §10.6，了解参考链路、资源口径与房间仿真。按需查附录 A，再做附录 B 的第 2、3、5、7、10、11、13 题，并用 §13.4 检查常见问题。</li>
+<li>阅读 §10.1、§10.4 和 §10.6，了解参考链路、资源口径与房间仿真。按需查附录 A，再做附录 B 的第 2、3、5、7、10、11、14 题，并用 §13.4 检查常见问题。</li>
 <li>终点：对照第 8 节自己动手画一遍 33 张图，再在树莓派＋ReSpeaker 麦克风阵列上实现指哪说哪。</li>
 </ol>
 <h3 id="sec-21">路径 B：工程实现（形成可验证的前端方案，约 1 周精读）</h3>
 <ol>
 <li>用 §11.1～§11.5 写清任务、几何、场景、模块启用条件和验收指标。第 5 章重点读 MVDR、稳健化与后置滤波；第 6 章核对回声参考、双讲和与波束的顺序条件；第 7 章根据目标房间验证 WPE；第 8 章在确有重叠语音需求时选择分离方法。更换阵列前阅读 §13.3 的泛化专栏。</li>
-<li>通读第 10 章，按关键路径核算延迟，区分多设备同步与 SRO，统一评测、算力和功耗口径。再查 §13.4，完成 §13.6 的第 7、8、9、11、13、14 题。</li>
+<li>通读第 10 章，按关键路径核算延迟，区分多设备同步与 SRO，统一评测、算力和功耗口径。再查 §13.4，完成 §13.6 的第 7、8、9、11、14、15 题。</li>
 <li>终点：输出延迟、同步、标定三张预算表。对照 WebRTC AEC3 检查回声消除。用 ERLE 和 MOS 验收。</li>
 </ol>
 <h3 id="sec-22">路径 C：研究前沿（发论文或者打榜，长期）</h3>
 <ol>
-<li>02 的 CRLB 定性能上限。03 的稀疏阵列。04 的 4.6、4.7 节（空间平滑、深度学习定位、ACCDOA 多目标联合表示、SELD 声事件定位检测）。05 的 RTF（相对传递函数）版 MVDR、球谐方法、掩码＋GEV（广义特征值波束形成）、端到端网络。</li>
+<li>02 的 CRLB 给出指定观测模型和正则条件下无偏估计方差的下界。03 的稀疏阵列。04 的 4.6、4.7 节（空间平滑、宽带子空间方法、学习型定位、ACCDOA 声事件定位表示）。05 的 RTF（相对传递函数）版 MVDR、球谐方法、掩码＋GEV（广义特征值波束形成）、端到端网络。</li>
 <li>06 的 FDKF、混合神经卡尔曼。07 的在线 WPE。08 的扩散模型、GSS 与掩码枢纽。09 的 PHD、LMB、TBD。10 的指标口径（SI-SDR 和 BSS-eval 两套指标不能直接比数值）＋CHiME、LibriCSS、STARSS 数据集。</li>
-<li>用附录 B §13.2 查领域资料，阅读 §13.3 中与课题相关的方向和泛化专栏，再做 §13.6 的第 6、8、12、15、16 题。阅读 CHiME-8 系统报告时，可把实际前端结构与图 23 对照。</li>
-<li>终点：掩码＋MVDR 或者几何无关前端，配大模型后端做基线。</li>
+<li>用附录 B §13.2 查领域资料，阅读 §13.3 中与课题相关的方向和泛化专栏，再做 §13.6 的第 6、8、12、13、16、17 题，分别覆盖定位分辨、稳健波束、分离、追踪、房间仿真和论文系统复核。阅读 CHiME-8 系统报告时，可把实际前端结构与图 23 对照。</li>
+<li>终点：在一个公开数据集上固定阵列、训练/测试划分和指标，分别实现一个解析基线与一个数据驱动基线，并记录模型版本、输入特征和推理资源。</li>
 </ol>
 <hr />
 <h2 id="sec-23">6. 插图地图：33 张图在哪篇</h2>
@@ -424,7 +427,7 @@ KF（卡尔曼滤波）由状态预测、观测更新和协方差递推组成，
 <td>fig11_doa_spectrum</td>
 <td>04</td>
 <td>仿真</td>
-<td>Bartlett 峰宽，Capon 峰尖，MUSIC 峰如针</td>
+<td>指定高信噪比、充足快拍条件下的三种谱形；不检验分辨极限</td>
 </tr>
 <tr>
 <td>图12</td>
@@ -438,7 +441,7 @@ KF（卡尔曼滤波）由状态预测、观测更新和协方差递推组成，
 <td>fig13_gcc_reverb</td>
 <td>04</td>
 <td>说明性仿真</td>
-<td>在 16 kHz、64 ms、无传感器噪声的随机衰减尾模型中，每点 150 次固定种子试验；只比较随 $T_{60}$ 增大的趋势，不外推绝对正确率</td>
+<td>在 16 kHz、64 ms、无传感器噪声的随机衰减尾模型中，每点 150 次固定种子试验；正确率带 95% Wilson 区间，峰对比度带四分位区间；只比较随 $T_{60}$ 增大的趋势</td>
 </tr>
 <tr>
 <td>图14</td>
@@ -473,7 +476,7 @@ KF（卡尔曼滤波）由状态预测、观测更新和协方差递推组成，
 <td>fig18_aec</td>
 <td>06</td>
 <td>框图＋本书仿真</td>
-<td>固定随机种子样例的 NLMS 稳态 ERLE 约 17.5 dB（图中取整标约 17 dB）；双讲区间冻结更新</td>
+<td>固定随机种子样例在 $0.45\lt t\lt 0.8$ s 窗口的 NLMS ERLE 均值约 29.23 dB（图中取整约 29 dB）；双讲区间冻结更新</td>
 </tr>
 <tr>
 <td>图19</td>
@@ -494,7 +497,7 @@ KF（卡尔曼滤波）由状态预测、观测更新和协方差递推组成，
 <td>fig21_wpe</td>
 <td>07</td>
 <td>仿真</td>
-<td>语谱拖尾被压掉，边界恢复</td>
+<td>共用谱幅参考值比较干净、混响和 WPE 输出；统计量按 10 ms 直达延迟对齐干净参考，再报告静音帧能量占比与活跃帧复增益对齐谱域 NMSE</td>
 </tr>
 <tr>
 <td>图22</td>
@@ -620,11 +623,11 @@ KF（卡尔曼滤波）由状态预测、观测更新和协方差递推组成，
 <li>[ ] 60 分钟读 02，学会读图 7（主瓣、旁瓣、零陷、主瓣宽度、栅瓣）。</li>
 <li>[ ] 按第 2 节的时间表读 04～08：04、05 各 60～90 分钟，06 约 60～80 分钟，07、08 各 30～45 分钟。</li>
 <li>[ ] 对照第 8 节画一遍 33 张图，打开 <code>figures/</code> 对照正文看图。</li>
-<li>[ ] 做附录 B 的练习题（入门做 2、3、5、7、10、11、13 题，进阶＋6、8、12、15、16 题）。</li>
+<li>[ ] 做附录 B 的练习题（入门做 2、3、5、7、10、11、14 题，进阶再做 6、8、12、13、16、17 题）。</li>
 <li>[ ] 用附录 B §13.4 排查常见问题，并按第 10 章编制延迟、同步和标定预算。</li>
 </ul>
 <p>阵列几何决定可观测的空间信息，算法在给定数据和模型下利用这些信息。房间混响是远场拾音的主要困难之一。比较波束形成器时，应同时说明目标保持、干扰抑制和失配鲁棒性。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
-</main></div><a class="topbtn" href="#top" title="回顶部">↑</a>
+</main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>
 </body></html>

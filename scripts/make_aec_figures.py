@@ -29,8 +29,14 @@ def save(fig, name):
     print("saved", name)
 
 def synth_h(taps=256, decay=60, seed=7):
+    """构造含直达、三条早期反射和随机晚期尾的可复现回声路径。"""
     r = np.random.default_rng(seed)
-    return np.exp(-np.arange(taps) / decay) * r.standard_normal(taps)
+    h = 0.08 * np.exp(-np.arange(taps) / decay) * r.standard_normal(taps)
+    h[0] += 1.0
+    for index, amplitude in ((25, 0.45), (62, -0.30), (103, 0.18)):
+        if index < taps:
+            h[index] += amplitude
+    return h
 
 def colored_x(N, seed=3):
     r = np.random.default_rng(seed)
@@ -65,14 +71,15 @@ def nlms_run(x, d, taps=128, mu=0.5, freeze=None):
     X = np.zeros(taps)
     for n in range(N):
         X = np.roll(X, 1); X[0] = x[n]
+        if n % 400 == 0:
+            # 在本次更新前留快照，因此第一条曲线确实表示“0 步”。
+            snaps.append(w.copy())
         y = float(w @ X)
         e[n] = d[n] - y
         if freeze is not None and freeze[n]:
             pass
         else:
             w = w + mu * e[n] * X / (float(X @ X) + 1e-6)
-        if n % 400 == 0:
-            snaps.append(w.copy())
     return e, np.array(snaps), w
 
 def block_erle(echo, e, blk=400):
@@ -100,8 +107,8 @@ def mask_metric_intervals(times, values, intervals):
 def fig_problem():
     N = int(1.6 * FS)
     r = np.random.default_rng(2601)
-    x = colored_x(N, seed=2602); h = synth_h(seed=2603)
-    echo = np.convolve(x, h, mode="full")[:N] * 0.5
+    x = colored_x(N, seed=2602); h = 0.5 * synth_h(seed=2603)
+    echo = np.convolve(x, h, mode="full")[:N]
     s = np.zeros(N); s[int(0.8*FS):int(1.2*FS)] = 0.7 * r.standard_normal(int(0.4*FS))
     v = 0.02 * r.standard_normal(N)
     d = echo + s + v
@@ -111,9 +118,9 @@ def fig_problem():
     gs = gridspec.GridSpec(1, 3, figure=fig, width_ratios=[1, 1.4, 1.4])
     ax = fig.add_subplot(gs[0])
     ax.set_title("(a) 用脉冲响应 h(n) 表示房间回声路径", fontsize=FS_TITLE)
-    ax.stem(h[:80], linefmt=C_BLUE, markerfmt="o", basefmt=" ", label="h抽头")
+    ax.stem(h[:128], linefmt=C_BLUE, markerfmt="o", basefmt=" ", label="h抽头")
     ax.set_xlabel("抽头 n", fontsize=FS_LABEL); ax.set_ylabel("归一化幅度", fontsize=FS_LABEL)
-    ax.annotate("前50抽头能量最大\n直达+早期反射", xy=(10, h[10]), xytext=(55, 0.85),
+    ax.annotate("0号抽头为直达声；25、62、103号为早期反射\n其余随机衰减项表示晚期尾", xy=(25, h[25]), xytext=(48, 0.43),
                 fontsize=FS_SMALL + 1, arrowprops=dict(arrowstyle="->", color=C_ORANGE), color=C_ORANGE)
     ax.grid(ls=":", alpha=0.5); ax.tick_params(labelsize=FS_TINY)
     ax = fig.add_subplot(gs[1])

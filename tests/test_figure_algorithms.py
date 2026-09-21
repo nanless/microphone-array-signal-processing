@@ -34,6 +34,14 @@ class FigureAlgorithmTest(unittest.TestCase):
         delayed = figures.causal_delay(signal, 2)
         np.testing.assert_array_equal(delayed, [0, 0, 1, 2, 3, 4])
 
+    def test_wilson_interval_handles_boundary_counts(self):
+        low_zero, high_zero = figures.wilson_interval(0, 100)
+        low_all, high_all = figures.wilson_interval(100, 100)
+        self.assertEqual(low_zero, 0.0)
+        self.assertGreater(high_zero, 0.0)
+        self.assertLess(low_all, 1.0)
+        self.assertAlmostEqual(high_all, 1.0, places=15)
+
     def test_distortionless_weights_keep_unit_target_response(self):
         covariance = np.array(
             [[2.0, 0.3 - 0.1j], [0.3 + 0.1j, 1.0]], dtype=complex)
@@ -131,8 +139,26 @@ class FigureAlgorithmTest(unittest.TestCase):
         steady_values = erle[steady & np.isfinite(erle)]
         self.assertGreater(steady_values.size, 0)
         self.assertAlmostEqual(plateau, float(np.mean(steady_values)), places=12)
-        self.assertAlmostEqual(plateau, 17.46, places=2)
+        # 回归向量以当前样本 x[n] 开头；固定种子下应收敛到约 29.23 dB。
+        self.assertAlmostEqual(plateau, 29.23, places=2)
         self.assertTrue(np.all(np.isnan(erle[(times >= 0.8) & (times < 1.2)])))
+
+    def test_wpe_relative_loading_scales_with_covariance(self):
+        covariance = np.array(
+            [[2.0, 0.3 + 0.1j], [0.3 - 0.1j, 1.0]], dtype=complex)
+        cross = np.array([1.0 + 0.2j, 0.4 - 0.1j])
+        filt, loading = figures.solve_wpe_filter(covariance, cross)
+        scaled_filt, scaled_loading = figures.solve_wpe_filter(
+            100.0 * covariance, 100.0 * cross)
+        np.testing.assert_allclose(filt, scaled_filt, rtol=1e-12, atol=1e-12)
+        self.assertAlmostEqual(scaled_loading, 100.0 * loading, places=12)
+
+    def test_scale_aligned_spectral_nmse_ignores_global_complex_gain(self):
+        reference = np.array([[1 + 1j, 2 - 1j], [0.5, -0.2j]])
+        estimate = (2.0 - 0.5j) * reference
+        nmse_db = figures.scale_aligned_spectral_nmse_db(
+            reference, estimate, np.array([True, True]))
+        self.assertLess(nmse_db, -150.0)
 
     def test_systematic_resampling_indices_stay_in_bounds(self):
         weights = np.array([1e-16, 1e-16, 1.0 - 2e-16])

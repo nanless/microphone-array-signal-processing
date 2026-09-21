@@ -1,10 +1,13 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 5 章 · 波束形成 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="6381515cd6ea"><style>
+<meta name="source-digest" content="81a6b66ee82c"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
+a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
+.skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
+.skip-link:focus{top:8px}
 .wrap{display:flex;max-width:1280px;margin:0 auto}
 .side{width:300px;flex-shrink:0;padding:20px 14px;position:sticky;top:47px;height:calc(100vh - 47px);overflow-y:auto;background:#fff;border-right:1px solid #e5e8ee;font-size:13.5px}
 .side a{color:#2f6db3;text-decoration:none}.side a:hover{text-decoration:underline}
@@ -39,14 +42,14 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
  onerror="document.getElementById('offnote').style.display='block';document.getElementById('offnote').textContent='公式渲染脚本加载失败：当前显示的是公式源码。';"></script>
-</head><body id="top">
+</head><body id="top"><a class="skip-link" href="#main-content">跳到正文</a>
 <header class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 5 章 · 波束形成</header>
 <div class="wrap"><nav class="side" aria-label="全书目录"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
 <div class="chap"><a href="01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
 <div class="chap"><a href="02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
 <div class="chap"><a href="03_array-geometry.html">第 3 章 · 阵列几何形态</a></div>
 <div class="chap"><a href="04_doa-estimation.html">第 4 章 · 声源定位（DOA 估计）</a></div>
-<div class="chap cur">第 5 章 · 波束形成</div>
+<div class="chap cur" aria-current="page">第 5 章 · 波束形成</div>
 <ul>
 <li><a href="05_beamforming.html#sec-2">5.1 统一问题表述</a></li>
 <li><a href="05_beamforming.html#sec-3">5.2 延迟求和波束形成器（Delay-and-Sum Beamformer，简称 DSB）：“合唱前先把大家对齐”</a></li>
@@ -59,7 +62,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="05_beamforming.html#sec-10">5.7 后置滤波</a></li>
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-11">5.7.1 语音存在概率 SPP：每个时频点的"有人吗"</a></li>
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-12">5.7.2 Wiener 后滤通用式：SPP 加权与 MWF 级联</a></li>
-<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-13">5.7.3 音乐噪声与三个调节参数</a></li>
+<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-13">5.7.3 音乐噪声与三项调节参数</a></li>
 <li><a href="05_beamforming.html#sec-14">5.8 球谐域波束形成（球阵专属）</a></li>
 <li><a href="05_beamforming.html#sec-15">5.9 深度神经网络（Deep Neural Network，简称 DNN）波束形成</a></li>
 <li><a href="05_beamforming.html#sec-16">5.10 波束形成算法总对比</a></li>
@@ -74,7 +77,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
-<main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
+<main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
 <li><a href="05_beamforming.html#sec-2">5.1 统一问题表述</a></li>
 <li><a href="05_beamforming.html#sec-3">5.2 延迟求和波束形成器（Delay-and-Sum Beamformer，简称 DSB）：“合唱前先把大家对齐”</a></li>
@@ -87,7 +90,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="05_beamforming.html#sec-10">5.7 后置滤波</a></li>
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-11">5.7.1 语音存在概率 SPP：每个时频点的"有人吗"</a></li>
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-12">5.7.2 Wiener 后滤通用式：SPP 加权与 MWF 级联</a></li>
-<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-13">5.7.3 音乐噪声与三个调节参数</a></li>
+<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-13">5.7.3 音乐噪声与三项调节参数</a></li>
 <li><a href="05_beamforming.html#sec-14">5.8 球谐域波束形成（球阵专属）</a></li>
 <li><a href="05_beamforming.html#sec-15">5.9 深度神经网络（Deep Neural Network，简称 DNN）波束形成</a></li>
 <li><a href="05_beamforming.html#sec-16">5.10 波束形成算法总对比</a></li>
@@ -103,7 +106,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <h2 id="sec-2">5.1 统一问题表述</h2>
 <p>波束形成器对 $M$ 路信号做线性组合（频域）：</p>
 <p>$$y(k,n) = \vec{w}^H(k,n)\,\vec{x}(k,n)\text{。}$$</p>
-<p>设计目标：期望方向 $\theta_0$ 无失真（$\vec{w}^H\vec{a}(\theta_0)=1$）的前提下，最小化某类噪声/干扰的输出功率。<strong>所有经典波束形成器的差别只在：用什么噪声模型、加什么约束。</strong> 三类噪声的现实对应：</p>
+<p>本章先研究一类共同问题：在期望方向 $\theta_0$ 无失真（$\vec{w}^H\vec{a}(\theta_0)=1$）的前提下，最小化某类噪声或干扰的输出功率。DSB、超指向、MVDR 和 LCMV 可用噪声模型与线性约束的差异统一描述。MWF 直接最小化均方误差，GEV 最大化输出信噪比，并不满足同一个无失真优化问题；它们在后文单独说明。三类噪声的现实对应：</p>
 <ul>
 <li><strong>传感器白噪声</strong>：麦克风自噪声 → 对应度量白噪声增益（White Noise Gain，简称 WNG）；</li>
 <li><strong>弥散噪声</strong>：充分弥散的晚期混响（球面各向同性场模型中，协方差矩阵 $\mathbf{\Gamma}$ 的第 $i,j$ 个元素为 $[\mathbf{\Gamma}]_{ij}=\mathrm{sinc}(2fd_{ij}/c)$，$d_{ij}$ 为两麦间距；本章 sinc 用归一化定义 $\mathrm{sinc}(x)=\sin(\pi x)/(\pi x)$，部分文献用 $\sin x/x$，对照时要换算自变量）→ 对应度量指向性指数（Directivity Index，简称 DI）。DI 越高，表示对目标方向保持单位响应时，指定弥散场模型下的输出噪声功率越低。风噪常由麦克风附近的局部湍流产生，不能无条件纳入这个各向同性模型；</li>
@@ -127,7 +130,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 2. 输出幅度就是等比数列求和（公比 $e^{\mathrm{j}\psi}$）：
 $$B(\psi) = \sum_{m=0}^{M-1} e^{\mathrm{j}m\psi} = e^{\mathrm{j}(M-1)\psi/2}\,\frac{\sin(M\psi/2)}{\sin(\psi/2)}$$
 3. 取模：$|B| = \left|\dfrac{\sin(M\psi/2)}{\sin(\psi/2)}\right|$。$\psi=0$（即 $\theta=\theta_0$）时分子分母都趋于零，取极限得最大值 $M$。离开目标方向后，该比值随 $\psi$ 周期变化，形成主瓣、零点和旁瓣；
-4. 主瓣边缘：第一个零点在 $M\psi/2 = \pi$ 即 $\psi = 2\pi/M$，换算回角度得“零点到零点”宽度 $= 2\lambda/(Md)$（正横附近，斜指向按§2.6除cosθ0），半功率宽度 $\approx 0.886\lambda/(Md)$——<strong>§2.6 的主瓣宽度公式就是这么来的</strong>：孔径越大、频率越高，主瓣越窄。（口径：本报告 HPBW 一律按有效孔径 $(M-1)d$，大 $M$ 近似下写作 $Md$，见 §2.6 与算例 3-4。）</p>
+4. 主瓣边缘：第一个零点在 $M\psi/2 = \pi$，即 $\psi = 2\pi/M$。正横附近用 $\sin\theta\approx\theta$，离散均匀线阵的“零点到零点”宽度约为 $2\lambda/(Md)$，半功率宽度约为 $0.886\lambda/(Md)$；斜指向时还要按 §2.6 除以 $\cos\theta_0$。这里的 $Md$ 来自 $M$ 项离散阵因子，不等于阵列首尾的物理跨度 $D=(M-1)d$。用 $\lambda/D$ 表示的是孔径尺度估计；两者只在 $M$ 较大时接近，小阵列中必须说明采用哪一种口径。两种写法都表达同一趋势：阵元数或间距增大、波长减小时，主瓣变窄。</p>
 <p>均匀加权等价于空间域的矩形窗，其第一旁瓣相对主瓣约为 −13 dB。非均匀加权（如 Dolph–Chebyshev 加权）可按设计值降低旁瓣，但会展宽主瓣；因此必须在旁瓣电平、主瓣宽度和有效孔径之间权衡。</p>
 <p><strong>WNG 上限是怎么算出来的</strong>（两步，柯西-施瓦茨不等式）：
 1. 代入 DSB 权重 $\vec{w} = \vec{a}/M$：$\mathrm{WNG} = \dfrac{|\vec{w}^H\vec{a}|^2}{\|\vec{w}\|^2} = \dfrac{|\vec{a}^H\vec{a}/M|^2}{\|\vec{a}\|^2/M^2} = \dfrac{1}{M/M^2} = M$——所以 DSB 的白噪增益恰好是 $10\log_{10}M$ dB；
@@ -202,8 +205,8 @@ $$B(\psi) = \sum_{m=0}^{M-1} e^{\mathrm{j}m\psi} = e^{\mathrm{j}(M-1)\psi/2}\,\f
 </table>
 <p>在本例的双麦端射模型中，间距减半时权重模长近似翻倍，WNG 约降低 6 dB；这一近似来自权重随 $\lambda/d$ 增长、白噪声输出功率随 $(\lambda/d)^2$ 增长。表中数值只对应所列理想模型，实际设计还要加入通道失配、自噪声与阵列几何误差。</p>
 <p><img alt="图15 WNG–DI 权衡" src="../figures/fig15_wng_di.png" onerror="this.alt+='（图缺失）'" /></p>
-<p><strong>图示说明</strong>：图 15 使用半径 4 cm 的 6 元均匀圆阵；六边形相邻阵元的弦长也为 4 cm。导向矢量与三维各向同性弥散场相干矩阵都由同一组二维阵元坐标计算。左图比较 DSB 与超指向的 WNG，右图比较二者的 DI。超指向协方差矩阵加入相对对角加载 $10^{-6}$，即绝对加载量为 $10^{-6}\operatorname{tr}(\mathbf\Gamma)/M$；两种方法均归一化为目标方向单位响应。曲线只展示该模型下的频率趋势，不代表硬件实测，也不能把某个交点当作通用设计门限。</p>
-<p><strong>差分麦克风阵列（Differential Microphone Array，简称 DMA）</strong>是超指向的时域形态。一阶两抽头形式可写为 $y(t)=x_1(t)-g\,x_2(t-\tau)$，其中 $g$ 是实数幅度系数，$\tau$ 是内延迟；更一般的实时域实现用 FIR 滤波器提供频率相关的幅相响应。$\tau=0$ 且 $g=1$ 的纯实数相减只能得到前后对称的偶极子；心形需要延迟与相减配合，推导见算例 3-1。在 $kd\ll1$（麦距远小于波长）的低频近似下，配合所需的幅度均衡后，归一化指向形状可在一段频带内近似不变；有限间距、离散延迟、壳体散射和失配都会破坏该近似。DMA 尺寸小，但 WNG 低，对麦距和通道失配敏感。</p>
+<p><strong>图示说明</strong>：图 15 使用半径 4 cm 的 6 元均匀圆阵；六边形相邻阵元的弦长也为 4 cm。导向矢量与三维各向同性弥散场相干矩阵都由同一组二维阵元坐标计算。左图比较 DSB 与超指向的 WNG，右图比较二者的 DI；两种算法同时用颜色和线型区分，灰度打印时仍可辨认。超指向协方差矩阵加入相对对角加载 $10^{-6}$，即绝对加载量为 $10^{-6}\operatorname{tr}(\mathbf\Gamma)/M$；两种方法均归一化为目标方向单位响应。曲线只展示该模型下的频率趋势，不代表硬件实测，也不能把某个交点当作通用设计门限。</p>
+<p><strong>差分麦克风阵列（Differential Microphone Array，简称 DMA）</strong>是超指向的时域形态。一阶两抽头形式可写为 $y(t)=x_1(t)-g\,x_2(t-\tau)$，其中 $g$ 是实数幅度系数，$\tau$ 是内延迟；更一般的实时域实现用 FIR 滤波器提供频率相关的幅相响应。$\tau=0$ 且 $g=1$ 的纯实数相减只能得到前后对称的偶极子；心形需要延迟与相减配合，推导见算例 3-1。在 $\kappa d\ll1$（$\kappa=2\pi f/c$，麦距远小于波长）的低频近似下，配合所需的幅度均衡后，归一化指向形状可在一段频带内近似不变；有限间距、离散延迟、壳体散射和失配都会破坏该近似。DMA 尺寸小，但 WNG 低，对麦距和通道失配敏感。</p>
 <p><strong>四项诊断量</strong>：超指向或 MVDR 权重求出后，应检查以下指标，再进入录音评估。</p>
 <ol>
 <li><strong>WNG 余量</strong>：算 $\mathrm{WNG}=1/\|\vec{w}\|^2$（精确无失真约束下），再用本机的自噪声、增益/相位公差和目标输出余量确定最低允许值。阈值必须来自器件规格与失配仿真，不能用一个固定 dB 数覆盖所有设备；</li>
@@ -212,64 +215,43 @@ $$B(\psi) = \sum_{m=0}^{M-1} e^{\mathrm{j}m\psi} = e^{\mathrm{j}(M-1)\psi/2}\,\f
 <li><strong>通道失配灵敏度</strong>：按照麦克风数据手册、标定残差和装配误差给导向矢量逐通道施加增益、相位与位置扰动，统计目标响应 $|\vec{w}^H\vec{a}_{mis}-1|$、零陷位置与 WNG 的变化。算例 5-1 第 6 步提供了 1% 增益失配的手算；实际扰动范围和验收门限必须按设备确定。</li>
 </ol>
 <h3 id="sec-5">专栏：差分麦克风（DMA）——从一阶心形到高阶与神经差分</h3>
-<p>上一节末尾说 DMA 是“超指向的时域形态”，这里把这句话展开：它到底差分了什么、心形从哪来、为什么能做小、以及它和现在研究里的神经差分是什么关系。</p>
+<p>上一节末尾把 DMA 归入紧凑超指向设计。下面说明差分、延迟和均衡如何共同形成一阶方向图，以及提高阶数时为什么必须同时检查 WNG。</p>
 <p><strong>一阶差分原理</strong>：两个相距很近的麦克风接收同一远场声波时存在小的传播时延差。对其中一路施加内部延迟和增益后相减，可使某些方向相消、另一些方向保留。输出写成 $y(t)=x_1(t)-g\,x_2(t-\tau)$：$g$ 控制两路幅度与相位配比，$\tau$ 控制相减前的内部延迟；改变 $(g,\tau)$ 就会改变零点位置和指向图形状。</p>
-<p><strong>心形是怎么配出来的（端射双麦）</strong>：设声音从 0°（正对麦 1 一侧）来，两麦延迟差为 $\tau_0=d/c$。取 $g=1$、$\tau=\tau_0$，则 180°（正后方）来的声音在两麦间走出的路程差恰好被内部延迟抵掉、两路同相相减归零——零点打在后方；而 0°（正前方）来的声音在两麦间多走了一个来回，相减反而保留——前方拾取。零点在后、波瓣在前的形状就是<strong>心形（cardioid）</strong>：前方拾取、后方抑制。若把零点从 180° 往两侧挪（调 $g$ 与 $\tau$ 的配比），过渡带压得更窄、但后方冒出小旁瓣，这就是<strong>超心形（supercardioid）</strong>一族。<strong>8 字形（figure-8）</strong>则是另一副模样：零点打在侧向（±90°）、前后两个波瓣对称拾取。同一套减法硬件，参数不同、零点位置不同。注意心形必须“延迟+相减”配合：$\tau=0$ 且 $g=1$ 的纯实数相减只能得到前后对称的偶极子（dipole），变不出前后不对称的心形。</p>
-<p><strong>高阶 DMA（拿级联换更窄的波束）</strong>：把多个一阶差分单元串起来（前级的输出做后级的输入），$N$ 级级联就是 $N$ 阶 DMA，指向性随阶数变窄（理想指向性指数随阶数线性增长），且整套结构仍然只用加减延迟、尺寸可以做得很小——助听器、真无线耳机里塞的就是它。代价同样级联放大：每加一阶，白噪声增益再掉一截，对麦克风间距与增益一致性的要求再严一档；所以三阶以上很少裸用，一般要配均衡或与超指向的白噪声增益约束联合设计。</p>
-<p><strong>高阶 DMA 设计对照表（端射摆位，一阶原型取心形/超心形族）</strong>：阶数每加一，零点多一个、波束窄一圈、白噪增益掉一截——选阶数就是在这三者之间点菜。</p>
+<p><strong>后向零点怎样变成近似心形</strong>：设端射双麦间距为 $d$，某方向的传播时延差为 $\tau_p(\theta)$。该方向的频率响应可写成</p>
+<p>$$H(\omega,\theta)=1-g\,e^{-\mathrm j\omega[\tau+\tau_p(\theta)]}。$$</p>
+<p>选择 $g$ 和内部延迟 $\tau$ 可以令后向响应在设计频率或低频近似下为零。仅有这个零点还不能证明整个宽带方向图是心形。当 $\kappa d=2\pi fd/c\ll1$，把指数项作一阶展开，并用均衡器补偿差分器随频率上升的幅度后，归一化方向图才可在一段频带内近似“全向项加偶极项”；取相应系数时得到心形、超心形或 8 字形。频率升高、间距不再远小于波长、延迟量化或通道失配都会使形状偏离该近似。$\tau=0$ 且 $g=1$ 的纯相减只产生前后对称的偶极响应。<a href="https://doi.org/10.1109/ICASSP.1997.599609" title="citation">Elko &amp; Pong, ICASSP 1997</a></p>
+<p><strong>提高阶数改变了什么</strong>：多个一阶差分单元级联可形成高阶方向图，并提供更多可配置零点。阶数增加并不对应一个脱离条件的固定 DI 增量。理想 DI 取决于采用球面还是柱面弥散场、目标方向图和归一化方式；换成 dB 后也不能概括为“每阶线性增加”。同时，高阶差分包含更强的相消和低频均衡，通常增大权重范数，使阵元自噪声和增益、相位、位置误差更容易进入输出。设计时应按每个频点同时报告方向图、DI、WNG、条件数和失配扫描，而不是只按阶数选型。<a href="https://doi.org/10.1007/1-4020-7769-6_2" title="citation">Elko, <em>Differential Microphone Arrays</em></a></p>
 <table>
 <th scope="col"ead>
 <tr>
-<th scope="col">阶数 $N$</th>
-<th scope="col">零点数（理想）</th>
-<th scope="col">典型形状举例</th>
-<th scope="col">理想 DI（端射）</th>
-<th scope="col">WNG 趋势</th>
-<th scope="col">失配敏感度</th>
-<th scope="col">适用</th>
+<th scope="col">设计变化</th>
+<th scope="col">可能获得的能力</th>
+<th scope="col">同时增加的风险</th>
+<th scope="col">必须固定的比较条件</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>1</td>
-<td>1</td>
-<td>心形（零点在 180°）、超心形（零点约 ±120°）、8 字形</td>
-<td>约 4~6 dB（心形约 4.8 dB、超心形约 5.7 dB、8 字形约 4.8 dB）</td>
-<td>基准（已比 DSB 低）</td>
-<td>敏感</td>
-<td>TWS 通话、助听器</td>
+<td>增加差分阶数</td>
+<td>可配置更多零点和更细的空间变化</td>
+<td>权重范数增大，低频自噪声和失配更易被放大</td>
+<td>频率、间距、噪声场、目标图形与均衡器</td>
 </tr>
 <tr>
-<td>2</td>
-<td>2</td>
-<td>二阶心形/超心形组合，旁瓣出现</td>
-<td>约 6~9 dB</td>
-<td>再掉约 6 dB</td>
-<td>更严（间距+增益双标定）</td>
-<td>可穿戴近场拾音</td>
+<td>减小阵元间距</td>
+<td>在更高频率前维持 $\kappa d\ll1$ 近似</td>
+<td>通道观测更相似，差分后的 WNG 可能降低</td>
+<td>麦克风自噪声、标定残差与数值精度</td>
 </tr>
 <tr>
-<td>3</td>
-<td>3</td>
-<td>三阶组合，主瓣更窄、旁瓣更多</td>
-<td>约 9~12 dB</td>
-<td>裸用多半不可接受</td>
-<td>严苛（一般要配均衡）</td>
-<td>实验室/配约束用</td>
-</tr>
-<tr>
-<td>≥4</td>
-<td>≥4</td>
-<td>理论可继续变窄</td>
-<td>理论值继续增加，实际值受失配限制</td>
-<td>很低（需强约束）</td>
-<td>通常不直接使用</td>
-<td>理论对照</td>
+<td>增强低频均衡</td>
+<td>补偿差分器的低频衰减</td>
+<td>同时放大低频传感器噪声和风噪</td>
+<td>最大增益、削波余量与 WNG 下限</td>
 </tr>
 </tbody>
 </table>
-<p>表中的 DI 与 WNG 是理想模型下的趋势。实测结果还受通道失配、阵元位置误差和混响影响。阶数应根据麦克风一致性、允许的 WNG 和标定能力确定，不能只按理想 DI 选择。</p>
-<p><strong>神经差分（解析结构 + 学习参数）</strong>：可把 $(g,\tau)$、级联系数或阶数选择设为可学习参数，并保留可转向的高阶差分结构。解析结构限定基本指向特性，网络用训练数据估计真实佩戴和混响条件下的参数。这与 §5.9 的“学习参数或掩码，再由结构化波束形成器求解”属于同一类组合方法。</p>
+<p>学习方法若用于 DMA，更适合估计受约束的系数、掩码或正则化参数，再由解析差分结构形成输出。这样仍可检查零点、WNG 和失配；若网络直接输出任意滤波器，则应按 §5.9 的端到端方法评价，不能仅因输入来自小间距阵列就称为 DMA。</p>
 <blockquote>
 <p><strong>阶段小结（DSB 与超指向）</strong>：在精确导向和空间白噪声模型下，DSB 达到最大 WNG；超指向针对弥散噪声提高 DI，但通常降低低频 WNG。后面的 MVDR 和稳健波束形成把这种指标权衡推广到估计得到的噪声协方差与导向误差。</p>
 </blockquote>
@@ -568,7 +550,7 @@ $$\vec w_{SDW}=\frac{\phi_s q}{\mu+\phi_s q}\,\vec w_{MVDR},\qquad q=\vec a^H\ma
 <ul>
 <li><strong>上支路</strong>：延迟求和（固定波束），输出 $d$ = 目标 + 漏入噪声；</li>
 <li><strong>下支路</strong>：阻塞矩阵 $\mathbf{B}$（满足 $\mathbf{B}^H\vec{a}(\theta_0)=\vec{0}$，把目标方向陷掉）→ 纯噪声参考 → 多通道自适应滤波（NLMS/RLS）学出噪声副本 $y$；</li>
-<li><strong>相减</strong> $e = d - y$：噪声对消、目标无损。</li>
+<li><strong>相减</strong> $e = d - y$：在上支路满足目标约束、阻塞矩阵精确消除目标且自适应滤波器收敛时，对消与下支路相关的噪声，同时保持设计目标响应。任一条件失配都可能造成目标衰减。</li>
 </ul>
 <p><strong>算例 5-3：GSC 数字走一遍——干扰是怎么被“减掉”的</strong>（对应脚本 <code>scripts/make_figures.py::fig_gsc</code>，改步长可看收敛过程）</p>
 <p><strong>题设</strong>：2 麦，$d=\lambda/2$；目标 0°（正横），干扰 60°。按 §5.6 的 GSC 结构逐数走一遍：上支路延迟求和，下支路阻塞矩阵 $\mathbf{B} = [1,\ -1]^\top$（2×1，两路相减——这是 2 麦特例；$M$ 麦时 $\mathbf{B}$ 为 $M\times(M-1)$，常用相邻通道相减或取 $\vec{a}(\theta_0)$ 的正交补基），自适应滤波器退化为 1 个复数抽头 $h$（2 麦时阻塞后只剩 1 路噪声参考，滤波器只需 1 个系数）。</p>
@@ -592,13 +574,13 @@ $$\vec w_{SDW}=\frac{\phi_s q}{\mu+\phi_s q}\,\vec w_{MVDR},\qquad q=\vec a^H\ma
 <p>（一个纯虚数——恰好把下支路的干扰副本旋转 −90° 再缩到 0.107 倍，补成上支路泄漏项的模样。）验证：</p>
 <p>$$h^*\cdot u = -0.1068\mathrm{j}\times(1.9127+0.4086\mathrm{j}) = 0.0436-0.2043\mathrm{j}\text{。}$$（在给定舍入精度内与泄漏项一致。）</p>
 <p>$$e = d - h^*u = (1.0436-0.2043\mathrm{j}) - (0.0436-0.2043\mathrm{j}) = 1.0000 = s\ \checkmark$$</p>
-<p>输出只剩目标。把干扰换成 $i = 0.5\mathrm{j}$、$-2$、$0.3+0.7\mathrm{j}$ 再算，$e$ 都恒等于 1——对消效果与干扰强度无关，这正是“对消”优于“压制”的地方。</p>
+<p>在本例的单个相干干扰、精确阵列模型和最优系数下，输出只剩目标。把同一路径上的干扰标量换成 $i = 0.5\mathrm{j}$、$-2$、$0.3+0.7\mathrm{j}$ 再算，$e$ 仍等于 1，因为上下支路的干扰都按同一标量缩放。加入不相关噪声、第二个独立干扰、阻塞泄漏或有限步自适应后，这个结论不再成立。</p>
 <p><strong>第 5 步：$h$ 不是算出来的，是“学”出来的</strong></p>
 <p>实际系统不知道 $g_u$、$g_\ell$。按 $e=d-h^*u$ 的复数约定，NLMS 更新应写成 $h \leftarrow h + \mu\,u e^*/(|u|^2+\varepsilon)$。若阻塞支路中只有与目标不相关的干扰，这个更新会学习上支路中与 $u$ 相关的分量。本例的收敛目标是 $h=+0.1068\mathrm{j}$，等价的直接乘子 $h^*$ 为 $-0.1068\mathrm{j}$；具体稳定步长和收敛帧数取决于输入统计，不能由这一帧手算固定。</p>
 <p><strong>第 6 步：看一眼这个结构的命门</strong></p>
 <p>上述对消依赖 $\mathbf{B}^H\vec{a}(0°)=0$。若目标实际方向偏到 2°，则 $\mathbf{B}^H\vec{a}(2°) = 1-e^{-\mathrm{j}\pi\sin2°} \approx +0.1096\mathrm{j}$，约 1.2% 的目标功率泄漏进下支路。自适应滤波器会把泄漏目标的一部分当作干扰抵消，造成语音衰减或断续。可使用自适应阻塞矩阵（ABM）和语音存在门控降低这一风险。</p>
 <p><strong>优点</strong>：约束由固定支路与阻塞矩阵实现，下支路可用 LMS 等无约束自适应算法。<strong>主要边界——阻塞矩阵失配</strong>：目标因 DOA 误差或混响泄漏进下支路时，会被当作噪声对消。可使用自适应阻塞（ABM）、语音存在概率门控步长和泄漏均衡（CA-GSC）。</p>
-<p><strong>一个值得知道的定理</strong>：GSC 与 LCMV 在数学上<strong>完全等价</strong>（Breed &amp; Strauss 2002 的简短证明，A short proof of the equivalence of LCMV and GSC beamforming, <em>IEEE Signal Process. Lett.</em>, vol.9, pp.168–169）——GSC 并没有产生新东西，它只是把 LCMV 的“带约束求解”改写成“固定支路 + 无约束自适应滤波”的结构。等价的意义是双向的：GSC 的所有性能边界可以用 LCMV 理论分析，而 LCMV 的所有约束都继承为 GSC 的结构设计问题（阻塞矩阵的好坏就是约束的好坏）。<a href="https://doi.org/10.1109/LSP.2002.800506" title="citation">Breed &amp; Strauss, IEEE SPL 2002</a></p>
+<p><strong>LCMV 与 GSC 的等价条件</strong>：若固定权重满足 LCMV 约束，阻塞矩阵的列满秩且张成约束矩阵的零空间，无约束支路又达到同一二次目标的最优解，那么 GSC 与 LCMV 给出同一个最优权重。GSC 把“带约束求解”改写成“固定支路 + 零空间内的无约束优化”。有限步自适应、阻塞矩阵失配、秩不足或不同的正则化都会破坏严格等价，因此工程实现仍要分别检查收敛和目标泄漏。<a href="https://doi.org/10.1109/LSP.2002.800506" title="citation">Breed &amp; Strauss, IEEE SPL 2002</a></p>
 <blockquote>
 <p><strong>阶段小结（LCMV、Frost 与 GSC）</strong>：LCMV 把 MVDR 的单约束推广为多约束；Frost 用投影更新实现时域 LCMV；GSC 用固定支路和阻塞矩阵实现相同约束。三者都受约束失配影响，GSC 还要单独检查目标向下支路的泄漏。</p>
 </blockquote>
@@ -622,144 +604,130 @@ $$\hat{\Phi}_{nn}(k) = \frac{1}{M}\sum_{i=1}^{M}\Phi_{x_ix_i}(k)\;-\;\frac{2}{M(
 <p>$$G(k,n) = \max\!\left(1 - \frac{\hat\Phi_{nn}(k,n)}{\Phi_{yy}(k,n)},\, G_{\min}\right),\qquad \hat S = G\cdot Y\text{。}$$</p>
 <p>$Y$ 是波束输出，$\Phi_{yy}$ 是其功率谱，$\hat\Phi_{nn}$ 是估计的残留噪声谱，$G_{\min}$ 是最小允许增益，也称增益地板。它限制最大衰减量，以减轻谱估计误差造成的音乐噪声；取值应按听感、目标失真和残留噪声共同确定。SPP 可用于条件更新噪声谱，也可连续调节增益。OM-LSA（Optimally-Modified Log-Spectral Amplitude，最优修正对数谱幅度估计）是在对数谱幅度 MMSE 准则下结合语音存在不确定性的一类方法。</p>
 <p><strong>与 MWF 的关系</strong>：MWF（§5.5 末）在一个均方误差目标中联合权衡残留噪声和目标失真。MVDR 与单通道 Wiener 后滤级联时，前级施加空间无失真约束，后级再按时频统计抑制残留噪声；两级的估计误差和延迟会累加。两种结构没有无条件的优劣，应在同一目标参考、延迟预算和任务指标下比较。</p>
-<h3 id="sec-13">5.7.3 音乐噪声与三个调节参数</h3>
+<h3 id="sec-13">5.7.3 音乐噪声与三项调节参数</h3>
 <p><strong>音乐噪声</strong>表现为随时间和频率随机出现的窄带音调成分。主要原因是噪声谱估计误差使相邻时频点的增益变化不连续，以及 $G_{\min}$ 过低导致被强衰减点与残留点之间反差过大。</p>
-<p><strong>trade-off 三个旋钮</strong>：① $G_{\min}$ 抬高（−20 dB → −12 dB）：音乐噪声立刻轻，但残留噪声底上来——降噪量与音乐噪声直接换比；② 增益平滑（帧间/频间递归平均）：碎音连成片就不刺耳，代价是语音起止沿被抹圆一点（语头语尾软）；③ 过减因子（式中 $1-\alpha\hat\Phi_{nn}/\Phi_{yy}$，$\alpha>1$ 故意多估一点噪声）：压得更干净但目标也被连带削（发闷），$\alpha$ 一般 1~2 之间试，经验值、场景相关。调参顺序：先定 $G_{\min}$ 保听感下限，再开平滑，最后动 $\alpha$——三个旋钮一次只拧一个，边听边看谱。</p>
+<p>三项参数分别影响不同误差。提高增益地板 $G_{\min}$ 会减小相邻时频点之间的衰减反差，通常也会保留更多残留噪声。帧间或频间平滑会减小增益的局部波动，但平滑时间或频带过宽时会模糊语音起止和瞬态。把增益改为 $1-\alpha\hat\Phi_{nn}/\Phi_{yy}$ 且取 $\alpha>1$，会增大估计噪声的扣除量，同时提高目标语音被衰减的风险；$\alpha$ 没有脱离算法版本、噪声估计偏差和数据集的通用范围。参数选择应在同一组验证片段上做受控扫描，同时报告残留噪声、目标失真和音乐噪声的听评或指标；比较某一参数时保持其余参数不变。</p>
 <p><strong>算例 5-3补：后置滤波小算例——“残留噪声谱估计 + 逐点打折”</strong></p>
 <p><strong>题设</strong>：3 麦已按目标对齐。某频点三路输入功率谱都是 $\Phi_{xx}=4$（目标功率 3、噪声功率 1），两两噪声互谱实部为 $+0.3$，所以总互谱实部为 $3.3$。用 Zelinski 式估噪声谱，再算维纳型后置增益。</p>
 <p><strong>第 1 步（估噪声谱）</strong>：自谱平均为 4，互谱实部平均为 3.3，因此 $\hat\Phi_{nn}=4-3.3=0.7$。真实噪声功率是 1，Zelinski 低估了 0.3：正相关噪声被误当成相干目标。若噪声互不相关，互谱实部为 3.0，估计才等于 1.0；若噪声相关实部为负，偏差方向会相反。</p>
 <p><strong>第 2 步（算增益）</strong>：若波束输出功率谱取 4，则 $G=1-0.7/4=0.825$。同一个实数增益会把该时频点的目标和噪声功率都乘以 $G^2$，所以单个时频点的 SNR 不变。整段信号的 SNR 改善来自不同点使用不同增益：语音缺席、噪声占优的点应压得更多。具体改善量取决于语音存在率、谱估计偏差、增益平滑和评价区间，不能由这个单点例子推出固定的 dB 数。</p>
-<p><strong>为什么放在最后、且通常只改幅度</strong>：波束形成先利用空间信息，后置滤波再按时频统计压制残留噪声。实数非负增益保留波束输出相位，但仍会改变目标幅度；降噪量与目标失真必须在同一测试集、同一参考信号和同一统计区间内同时报告，不能脱离条件承诺固定 dB 收益。现代系统也会用 DNN 降噪或去混响模块替代解析后置滤波；例如 DeepFilterNet 结合 ERB（等效矩形带宽）粗包络与深滤波，具体算力、延迟与收益应以对应模型和硬件实测为准。</p>
+<p><strong>为什么放在最后、且通常只改幅度</strong>：波束形成先利用空间信息，后置滤波再按时频统计压制残留噪声。实数非负增益保留波束输出相位，但仍会改变目标幅度；降噪量与目标失真必须在同一测试集、同一参考信号和同一统计区间内同时报告，不能脱离条件承诺固定 dB 收益。学习型后置滤波器也要按相同口径检查目标失真、因果延迟和目标硬件上的资源消耗，不能仅凭模型名称推断效果。</p>
 <h2 id="sec-14">5.8 球谐域波束形成（球阵专属）</h2>
 <p>球阵把声场分解为球谐系数：</p>
-<p>$$p(k,\Omega) = \sum_{n=0}^{N}\sum_{m=-n}^{n} b_n(kr)\,Y_n^m(\Omega)\,\varphi_{nm}(k)$$</p>
-<p>逐个符号（式中已省略与方向无关的常数因子）：$p(k,\Omega)$ 是波数 $k$（$k=2\pi f/c$，就是"频率"的另一种写法）、方向 $\Omega$ 处的声压；$Y_n^m(\Omega)$ 是<strong>球谐函数</strong>——球面上的"正弦和余弦"：阶数 $n$ 相当于空间频率（$n$ 越大，花纹在球面上变化越快），同一阶内 $2n+1$ 个不同的 $m$ 对应不同朝向的花纹（式中省略的只是全局增益常数，不影响方向，只影响整体响度）。傅里叶基注：时间信号用 $e^{\mathrm{j}\omega t}$ 做基展开成频谱，球面声场就用 $Y_n^m(\Omega)$ 做基展开成球谐谱——式中求和 $\sum_{n,m}(\cdot)Y_n^m(\Omega)\varphi_{nm}$ 与傅里叶级数 $\sum_k(\cdot)e^{\mathrm{j}\omega_k t}X_k$ 是同一个模子，前者基函数住在球面上、后者住在时间轴上；$b_n(kr)$ 是径向项，描述半径 $r$ 的球面麦克风阵列对各阶成分的采样响应（刚性球与开放球形式不同）；$\varphi_{nm}(k)$ 是<strong>球谐系数</strong>——声场在第 $(n,m)$ 个空间模式上的含量，地位完全类比傅里叶系数之于时间信号。</p>
-<p>SHD 域波束形成具有<strong>旋转不变性</strong>（波束形状与转向无关），支持高阶立体声（Higher-Order Ambisonics，简称 HOA）录音、最大 DI 波束、相位模式超指向。约束：球谐阶数 $N$ 受麦数限制（$M\ge(N+1)^2$），高阶重建对噪声病态（需特征波束正则化）。课程讲义引用的研究称小球阵可接近大线阵的识别性能。[Kumatani et al.（出处同 §5.2 引文）]</p>
-<p><strong>圆阵的二维对应：相位模式（phase-mode / 圆谐波）处理</strong>。智能音箱的圆阵用同一思想的二维版：圆环上的声场做方位角傅里叶分解（Jacobi–Anger 展开），各阶“圆谐波”系数经模态补偿（除以贝塞尔函数 $J_n(kr)$）后，可合成<strong>与频率无关、可电子旋转</strong>的固定形状波束（特征波束）。代价与球阵同族：模态阶数受麦数限制，低频段 $J_n(kr)\to0$ 使补偿病态——又是 WNG–DI 权衡的一次现身。同心多环圆阵（Concentric Circular Microphone Array，同心圆麦克风阵列，简称 CCMA）可扩展带宽与俯仰控制（Huang, Chen &amp; Benesty, <em>Insights into Frequency-Invariant Beamforming with Concentric Circular Microphone Arrays</em>, IEEE/ACM TASLP, vol.26, no.12, pp.2305–2318, DOI <a href="https://doi.org/10.1109/TASLP.2018.2862826">10.1109/TASLP.2018.2862826</a>）。</p>
+<p>$$p(\kappa,\Omega) = \sum_{n=0}^{N}\sum_{m=-n}^{n} b_n(\kappa r)\,Y_n^m(\Omega)\,\varphi_{nm}(\kappa)$$</p>
+<p>逐个符号（式中已省略与方向无关的常数因子）：$p(\kappa,\Omega)$ 是波数 $\kappa=2\pi f/c$、方向 $\Omega$ 处的声压；这里改用 $\kappa$，避免与前文的 STFT 频点索引 $k$ 混淆。$Y_n^m(\Omega)$ 是球谐函数，阶数 $n$ 表示球面上的空间变化快慢，同一阶有 $2n+1$ 个不同的 $m$。$b_n(\kappa r)$ 是径向项，描述半径 $r$ 的球阵对第 $n$ 阶成分的响应；刚性球与开放球的形式不同。$\varphi_{nm}(\kappa)$ 是声场在第 $(n,m)$ 个空间模式上的系数。球谐展开与时间傅里叶展开的共同点是都把信号投影到一组正交基；两者的定义域和物理单位不同，不能把波数直接当作频点编号。</p>
+<p>在理想球谐表示、相同阶数截断和正确旋转下，波束图可通过旋转系数转向而不改变自身形状。该性质支持高阶立体声（Higher-Order Ambisonics，简称 HOA）录音、最大 DI 波束和相位模式超指向。表示到 $N$ 阶共有 $(N+1)^2$ 个系数，因此 $M\ge(N+1)^2$ 只是阵元数量的必要条件；采样矩阵还必须满列秩，阵元布局要能稳定区分这些模式，径向响应也不能落入未正则化的深零点。高阶重建常因径向补偿和采样条件数而放大噪声。课程讲义引用的特定实验称小球阵可接近大线阵的识别性能，该结论只适用于其阵列、数据和识别器。[Kumatani et al.（出处同 §5.2 引文）]</p>
+<p><strong>圆阵的二维对应：相位模式（phase-mode / 圆谐波）处理</strong>。智能音箱的圆阵用同一思想的二维版：圆环上的声场做方位角傅里叶分解（Jacobi–Anger 展开），各阶圆谐波系数经模态补偿（除以贝塞尔函数 $J_n(\kappa r)$）后，可在模型成立的频带内合成可电子旋转的目标波束。代价与球阵同族：模态阶数受麦数限制，$J_n(\kappa r)$ 接近零时补偿会放大噪声，需要正则化和 WNG 约束。同心多环圆阵（Concentric Circular Microphone Array，同心圆麦克风阵列，CCMA）可扩展可控频带与空间自由度（Huang, Chen &amp; Benesty, <em>Insights into Frequency-Invariant Beamforming with Concentric Circular Microphone Arrays</em>, IEEE/ACM TASLP, vol.26, no.12, pp.2305–2318, DOI <a href="https://doi.org/10.1109/TASLP.2018.2862826">10.1109/TASLP.2018.2862826</a>）。</p>
 <p><strong>球谐域实现步骤</strong>：</p>
 <ol>
-<li><strong>设备选型</strong>：先定最高工作频率 $f_{\max}$ 与球半径 $r$，算 $kr=2\pi f_{\max}r/c$；麦数 $M$ 决定最高可用阶数（$M\ge(N+1)^2$，如 32 麦对应 $N\le4$）。刚性球（实心球，带散射）低频响应好、径向项无深零点，优先选；开放球（空架子）便宜但某些频率 $b_n(kr)$ 过零、该阶直接失效；</li>
-<li><strong>定阶数</strong>：$N\approx kr$（经验截断：高于 $kr$ 的阶成分幅度衰减快，硬做高阶等于放大噪声）。如 $r=4.2$ cm、$f=4$ kHz，$kr\approx3.1$，取 $N=3$（需至少 16 麦）；低频段 $kr\lt 1$ 时只用 $N=1$，别贪高；</li>
-<li><strong>径向补偿</strong>：球谐系数 $\varphi_{nm}$ 要从麦克风声压反推，需除以径向项 $b_n(kr)$——低频段 $b_n$ 很小（尤其开放球），除法等于放大噪声。实操一律加限幅：$|b_n|$ 低于阈值按阈值算，或等效成白噪声增益约束；</li>
+<li><strong>设备选型</strong>：先定最高工作频率 $f_{\max}$ 与球半径 $r$，算 $\kappa r=2\pi f_{\max}r/c$；阵元数要满足 $M\ge(N+1)^2$，还要检查实际采样矩阵的秩和条件数。刚性球与开放球的径向响应不同，选型时应计算目标频带内各阶 $b_n(\kappa r)$ 的最小幅度，而不能只按麦数定阶；</li>
+<li><strong>定阶数</strong>：$N\approx \kappa r$ 可作为声场截断的起点，因为远高于 $\kappa r$ 的阶成分幅度通常较小。如 $r=4.2$ cm、$f=4$ kHz，$\kappa r\approx3.1$，可先评估 $N=3$（至少需要 16 个稳定、独立的采样通道）；最终阶数还要受 WNG 和径向条件数约束；</li>
+<li><strong>径向补偿</strong>：球谐系数 $\varphi_{nm}$ 要从麦克风声压反推，需除以径向项 $b_n(\kappa r)$。当 $|b_n|$ 很小时，补偿会放大噪声；应对逆径向滤波做正则化或显式限制模态 WNG，并报告阈值的归一化口径；</li>
 <li><strong>正则化</strong>：高阶模态统一加特征波束正则（Eigen-beamforming 正则化：对角加载的球谐版），以指向性换稳健——与 §5.4 的对角加载同一笔账；</li>
-<li><strong>代码入口</strong>：先用解析球谐变换把阵列信号转成 $\varphi_{nm}(k)$，之后所有波束（最大指向性、超指向、MVDR）都在系数域用闭式解一次算出；转向只需旋转系数（Wigner-D 矩阵乘法），不用重算权重——“旋转不变性”在代码里就是这一个矩阵乘法。</li>
+<li><strong>实现检查</strong>：先用球谐变换把阵列信号转成 $\varphi_{nm}(\kappa)$，再在模态域设计权重。固定目标波束可用 Wigner-D 矩阵旋转系数；涉及数据相关 SCM 的 MVDR 仍要更新统计量和权重，不能把所有波束都概括为“一次闭式求解”。</li>
 </ol>
 <h2 id="sec-15">5.9 深度神经网络（Deep Neural Network，简称 DNN）波束形成</h2>
+<p>神经网络最适合先解决解析波束形成中难估计的统计量，而不是把多个模型名称并列成性能等级。以掩码波束形成为例，固定频点 $k$，多通道观测为 $\vec x(k,n)\in\mathbb C^M$，网络输出目标掩码 $m_s(k,n)$ 和噪声掩码 $m_n(k,n)$。一个可复现的处理顺序如下。</p>
 <ol>
-<li><strong>掩码估计 + 解析波束形成</strong>：DNN 逐时频点（Time-Frequency bin，简称 TF-bin）估计目标和噪声掩码，据此重构协方差，再用解析式求权重。MVDR（式(5-1)）施加无失真约束；广义特征值（Generalized Eigenvalue，简称 GEV）波束形成器求解 $\mathbf{R}_{ss}\vec{w}=\lambda\,\mathbf{R}_{nn}\vec{w}$ 的最大广义特征向量，以最大化输出 SNR。GEV 没有无失真约束，权重还存在任意尺度，因此通常需要归一化或后处理。相关系统见 <a href="https://ieeexplore.ieee.org/abstract/document/8691791/" title="citation">IEEE JSTSP 2019</a>。</li>
-<li><strong>端到端滤波网络</strong>：直接回归复数滤波器权重或时域卷积核，可与语音识别（Automatic Speech Recognition，简称 ASR）损失联合训练（全神经波束形成路线），抑制能力较强，但失去显式约束、跨阵列泛化能力较弱。（Gu et al., IEEE/ACM TASLP, vol.31, pp.849–862, DOI <a href="https://doi.org/10.1109/TASLP.2022.3229261">10.1109/TASLP.2022.3229261</a>，预印本 <a href="https://arxiv.org/pdf/2212.08348" title="citation">arXiv:2212.08348</a>）</li>
-<li><strong>联合一体化</strong>：定位、波束形成与分离可在同一系统中联合训练，例如 ESPnet 中的相关参考实现。评估时应固定数据、后端识别器和评分脚本，并同时报告前端信号指标与词错误率（Word Error Rate，简称 WER）。</li>
-<li><strong>TF-GridNet 的多通道用法</strong>：TF-GridNet 交替建模帧内频谱、子带时间序列和全频带时间序列。用于多通道前端时，可堆叠多通道谱作为输入，由网络输出目标掩码，再按第 1 条重构协方差并求 MVDR 或 GEV 权重。具体实现见 §13.3 对应条目。</li>
-<li><strong>TF-Locoformer</strong>：这类模型用局部与全局注意力建模时频上下文，可作为掩码估计器，后接 MVDR 或 GEV 解析求解。相较循环结构，其参数量、算力和长时依赖建模能力应按具体实现与硬件实测比较。</li>
-<li><strong>EaBNet</strong>：EaBNet（Embedding and Beamforming Network，嵌入与波束形成网络）先学习多通道嵌入，再在嵌入空间估计波束式加权。它保留加权结构，但不把权重完全限制为 MVDR 或 GEV 闭式，位于“掩码估计 + 解析求解”和直接端到端滤波之间。</li>
+<li><strong>掩码到空间协方差矩阵（Spatial Covariance Matrix，SCM）</strong>：
+$$\hat{\mathbf R}_{ss}(k)=\frac{\sum_n m_s(k,n)\vec x(k,n)\vec x^H(k,n)}{\sum_n m_s(k,n)+\epsilon},\quad
+\hat{\mathbf R}_{nn}(k)=\frac{\sum_n m_n(k,n)\vec x(k,n)\vec x^H(k,n)}{\sum_n m_n(k,n)+\epsilon}。$$
+分母只做掩码权重归一化；$\epsilon$ 防止整段掩码接近零。协方差是否使用未来帧决定这一步能否在线运行。</li>
+<li><strong>SCM 到约束向量或广义特征向量</strong>：在秩一目标近似下，可取 $\hat{\mathbf R}_{ss}$ 的主特征向量并按参考麦归一化，得到相对传递函数 $\hat{\vec a}$。MVDR 再用式(5-1)求权重。另一条路线直接解
+$$\hat{\mathbf R}_{ss}\vec w_{GEV}=\lambda_{\max}\hat{\mathbf R}_{nn}\vec w_{GEV}，$$
+最大化估计输出 SNR。GEV 没有无失真约束，$c\vec w_{GEV}$ 对任意非零复数 $c$ 都表示同一广义特征向量，因此必须注明参考麦归一化、盲解析归一化（Blind Analytic Normalization，BAN）或后置滤波的尺度规则。<a href="https://doi.org/10.1109/TASL.2007.898454" title="citation">Warsitz &amp; Haeb-Umbach 2007</a></li>
+<li><strong>滤波与检查</strong>：输出 $Y=\vec w^H\vec x$。除信号指标外，还要检查 $\hat{\mathbf R}_{nn}$ 条件数、目标响应、WNG、掩码泄漏和通道置换。网络训练集未覆盖的阵列几何或混响条件可能使 SCM 估计偏离真实统计量；解析求解并不会自动消除这种误差。<a href="https://doi.org/10.21437/Interspeech.2016-552" title="citation">Erdogan et al., Interspeech 2016</a>、<a href="https://doi.org/10.1109/ICASSP.2017.7952140" title="citation">Heymann et al., ICASSP 2017</a></li>
 </ol>
+<p><strong>两麦小例子</strong>：设掩码估得 $\hat{\mathbf R}_{nn}=\operatorname{diag}(2,1)$，目标 RTF 为 $\hat{\vec a}=[1,1]^\top$。则 $\hat{\mathbf R}_{nn}^{-1}\hat{\vec a}=[0.5,1]^\top$，归一化分母为 $1.5$，所以 $\vec w_{MVDR}=[1/3,2/3]^\top$。可直接验证 $\vec w^H\hat{\vec a}=1$，输出噪声功率为 $\vec w^H\hat{\mathbf R}_{nn}\vec w=2/3$。若目标掩码把干扰大量计入 $\hat{\mathbf R}_{ss}$，RTF 会偏移，上述无失真条件只对错误的 $\hat{\vec a}$ 成立。</p>
+<p>端到端网络也可以直接估计复数权重、时域滤波器或输出波形。它不再自动满足无失真、WNG 或因果约束，必须把阵列泛化、前瞻帧数、目标失真和目标硬件上的资源消耗列入评测。若与 ASR 联合训练，还应固定后端识别器和评分脚本，同时报告前端信号指标与词错误率（Word Error Rate，WER）。<a href="https://doi.org/10.1109/TASLP.2022.3229261" title="citation">Gu et al., IEEE/ACM TASLP 2023</a></p>
 <h2 id="sec-16">5.10 波束形成算法总对比</h2>
+<p>不同方法的混响抑制量不能脱离阵列、数据、因果性和指标压成星级。下表只比较可由定义确定的目标、输入与失败条件；运算量仍要按通道数、频点数、滤波长度和实现测量。</p>
 <table>
 <th scope="col"ead>
 <tr>
-<th scope="col">算法</th>
-<th scope="col">主要噪声或干扰</th>
-<th scope="col">抗混响</th>
-<th scope="col">稳健性</th>
-<th scope="col">失真</th>
-<th scope="col">计算量</th>
-<th scope="col">方法定位</th>
+<th scope="col">方法</th>
+<th scope="col">优化目标或固定规则</th>
+<th scope="col">需要的统计量/先验</th>
+<th scope="col">目标保持条件</th>
+<th scope="col">主要失败模式</th>
+<th scope="col">主要计算</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>DSB</td>
-<td>白噪</td>
-<td>★</td>
-<td>理想模型下 WNG 最高</td>
-<td>导向匹配时无失真</td>
-<td>极低</td>
-<td>基准/固定上支路</td>
+<td>导向后等权平均</td>
+<td>导向矢量或时延</td>
+<td>导向匹配</td>
+<td>空间分辨率有限；混叠或导向误差</td>
+<td>延迟/相位补偿与求和</td>
 </tr>
 <tr>
 <td>超指向</td>
-<td>弥散噪</td>
-<td>★★★</td>
-<td><strong>最差(低频)</strong></td>
-<td>小(失配时大)</td>
-<td>低</td>
-<td>必须加 WNG 正则</td>
+<td>在弥散场模型下最大化 DI</td>
+<td>阵列几何、弥散相干矩阵</td>
+<td>精确模型与单位响应约束</td>
+<td>低频 WNG、阵元失配、矩阵病态</td>
+<td>每频点线性方程求解</td>
 </tr>
 <tr>
-<td>DMA(差分)</td>
-<td>弥散噪</td>
-<td>★★</td>
-<td>差</td>
-<td>小</td>
-<td>极低</td>
-<td>微型设备</td>
+<td>DMA</td>
+<td>小间距差分形成目标图形</td>
+<td>间距、内部延迟、均衡器</td>
+<td>$\kappa d\ll1$ 近似及标定成立</td>
+<td>自噪声和失配经差分、均衡放大</td>
+<td>延迟、FIR 与求和</td>
 </tr>
 <tr>
-<td>MVDR(导向)</td>
-<td>白噪+定向干扰</td>
-<td>★★★</td>
-<td>取决于加载与估计</td>
-<td>导向匹配时无失真</td>
-<td>中</td>
-<td>需估噪声协方差</td>
-</tr>
-<tr>
-<td>MVDR(RTF)</td>
-<td>含早期反射</td>
-<td>★★★★</td>
-<td>好</td>
-<td>小</td>
-<td>中</td>
-<td>CHiME 级</td>
+<td>MVDR</td>
+<td>无失真约束下最小输出噪声</td>
+<td>噪声 SCM、导向矢量或 RTF</td>
+<td>约束向量等于真实目标传递向量</td>
+<td>SCM 误差、目标泄漏、导向失配</td>
+<td>SCM 估计与矩阵求解</td>
 </tr>
 <tr>
 <td>LCMV</td>
-<td>多约束</td>
-<td>★★★</td>
-<td>取决于约束与失配</td>
-<td>约束匹配时可控</td>
-<td>中</td>
-<td>干扰方向已知</td>
+<td>多个线性约束下最小输出功率</td>
+<td>SCM、全部约束向量与响应</td>
+<td>约束模型匹配且可行</td>
+<td>约束占用自由度、约束失配</td>
+<td>MVDR 外加小型约束矩阵求解</td>
 </tr>
 <tr>
-<td>GSC/TF-GSC</td>
-<td>非平稳干扰</td>
-<td>★★★</td>
-<td>中</td>
-<td><strong>阻塞失配时失真</strong></td>
-<td>中</td>
-<td>自适应快</td>
+<td>GSC</td>
+<td>在约束零空间内自适应对消</td>
+<td>固定支路、阻塞矩阵、噪声参考</td>
+<td>精确阻塞且自适应支路收敛</td>
+<td>目标泄漏到阻塞支路</td>
+<td>阻塞变换与自适应滤波</td>
 </tr>
 <tr>
-<td>MWF</td>
-<td>统计最优</td>
-<td>★★★</td>
-<td>中</td>
-<td>有</td>
-<td>中</td>
-<td>常与 MVDR 结合</td>
+<td>MWF/SDW-MWF</td>
+<td>最小化目标估计均方误差</td>
+<td>目标与噪声 SCM、参考麦</td>
+<td>不保证严格无失真</td>
+<td>统计失配和目标—噪声权衡设置错误</td>
+<td>SCM 估计与矩阵求解</td>
 </tr>
 <tr>
-<td>掩码+MVDR</td>
-<td>训练数据覆盖的空间模式</td>
-<td><strong>★★★★★</strong></td>
-<td>取决于掩码与解析求解</td>
-<td>导向匹配时小</td>
-<td>大</td>
-<td>学习协方差估计，解析求权重</td>
+<td>掩码 + MVDR/GEV</td>
+<td>网络估计 SCM，解析层求权重</td>
+<td>多通道谱、训练得到的掩码</td>
+<td>MVDR 还需正确 RTF；GEV 需定尺度</td>
+<td>掩码泄漏、训练分布和阵列变化</td>
+<td>网络推理、SCM 与矩阵求解</td>
 </tr>
 <tr>
-<td>端到端</td>
-<td>训练数据覆盖的空间模式</td>
-<td><strong>★★★★★</strong></td>
-<td>依赖训练分布</td>
-<td>不可保证</td>
-<td>大</td>
-<td>直接学习滤波器或输出</td>
+<td>端到端滤波</td>
+<td>按训练损失直接估计权重或输出</td>
+<td>训练数据与固定输入定义</td>
+<td>由损失和结构决定，通常无硬保证</td>
+<td>域外阵列、未知设备、目标失真</td>
+<td>由模型、上下文和硬件决定</td>
 </tr>
 </tbody>
 </table>
-<p>表注：“主要噪声或干扰”指方法设计时采用的主要统计模型；“稳健性”综合导向失配、协方差估计误差、训练分布偏移和 WNG，不能只用其中一项替代。</p>
 <p><strong>贯穿全章的约束</strong>：在单位幅度导向矢量和精确无失真约束下，WNG 不超过 $M$（dB 表示为 $10\log_{10}M$）。DI 同时受阵列几何、频率、噪声场模型和 WNG 预算限制。紧凑阵列在理想各向同性弥散场、端射超指向的渐近模型下可出现 $M^2$ 的指向因数上限，但实现该极限通常伴随很低的 WNG；它不是任意孔径、频率和方向都成立的通用保证。</p>
 <p>上表“目标失真”列若要量化，必须先固定基线。以参考麦选择向量 $\vec e_r$ 为基线，噪声降低量定义为
 $$\mathrm{NR}_{ref}=10\log_{10}\frac{\vec e_r^H\mathbf R_{nn}\vec e_r}{\vec w^H\mathbf R_{nn}\vec w}\text{。}$$
@@ -784,6 +752,6 @@ $$\mathrm{NR}_{ref}=10\log_{10}\frac{\vec e_r^H\mathbf R_{nn}\vec e_r}{\vec w^H\
 <p>📄 本篇信息：配图 3 张 ｜ <a href="./index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="04_doa-estimation.html">← 上一篇</a></span><span><a href="06_aec.html">下一篇 →</a></span></div>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
-</main></div><a class="topbtn" href="#top" title="回顶部">↑</a>
+</main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>
 </body></html>

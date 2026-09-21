@@ -42,6 +42,9 @@ CSS = """
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
+a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
+.skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
+.skip-link:focus{top:8px}
 .wrap{display:flex;max-width:1280px;margin:0 auto}
 .side{width:300px;flex-shrink:0;padding:20px 14px;position:sticky;top:47px;height:calc(100vh - 47px);overflow-y:auto;background:#fff;border-right:1px solid #e5e8ee;font-size:13.5px}
 .side a{color:#2f6db3;text-decoration:none}.side a:hover{text-decoration:underline}
@@ -81,14 +84,14 @@ window.MathJax = {{tex: {{inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], displayM
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
  onerror="document.getElementById('offnote').style.display='block';document.getElementById('offnote').textContent='公式渲染脚本加载失败：当前显示的是公式源码。';"></script>
-</head><body id="top">
+</head><body id="top"><a class="skip-link" href="#main-content">跳到正文</a>
 <header class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; {crumb}</header>
 <div class="wrap"><nav class="side" aria-label="全书目录">{sidebar}</nav>
-<main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
+<main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录">{toc}</nav></details>
 {body}{pn}
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
-</main></div><a class="topbtn" href="#top" title="回顶部">↑</a>
+</main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>
 </body></html>
 """
@@ -119,13 +122,22 @@ def source_digest():
 def parse_headings(md):
     """掃 md 源码标题，跳过围栏代码块，避免幽灵条目。"""
     heads = []
-    in_fence = False
+    fence_char = None
+    fence_len = 0
     for line in md.splitlines():
         s = line.strip()
-        if s.startswith("```"):
-            in_fence = not in_fence
+        marker = re.match(r"^(`{3,}|~{3,})", s)
+        if marker and fence_char is None:
+            fence_char = marker.group(1)[0]
+            fence_len = len(marker.group(1))
             continue
-        if in_fence:
+        if (marker and fence_char is not None
+                and marker.group(1)[0] == fence_char
+                and len(marker.group(1)) >= fence_len):
+            fence_char = None
+            fence_len = 0
+            continue
+        if fence_char is not None:
             continue
         m = re.match(r"^(#{1,4})\s+(.*)$", line)
         if m:
@@ -217,7 +229,7 @@ def sidebar_with_anchors(current, heads):
     """current: None=首页。首页展开自己的目录（修首页零锚点bug）。"""
     parts = []
     if current is None:
-        parts.append('<div class="chap cur">🏠 导读与导航（首页）</div>')
+        parts.append('<div class="chap cur" aria-current="page">🏠 导读与导航（首页）</div>')
         lst, _ = sub_list("index.html", heads)
         parts.append(lst)
     else:
@@ -225,7 +237,7 @@ def sidebar_with_anchors(current, heads):
     for fname, label in CHAPTERS:
         html_name = fname.replace(".md", ".html")
         if fname == current:
-            parts.append(f'<div class="chap cur">{label}</div>')
+            parts.append(f'<div class="chap cur" aria-current="page">{label}</div>')
             lst, _ = sub_list(html_name, heads)
             parts.append(lst)
         else:

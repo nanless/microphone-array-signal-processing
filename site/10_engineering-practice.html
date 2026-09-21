@@ -1,10 +1,13 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 10 章 · 工程实现与产业实践 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="6381515cd6ea"><style>
+<meta name="source-digest" content="81a6b66ee82c"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
+a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
+.skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
+.skip-link:focus{top:8px}
 .wrap{display:flex;max-width:1280px;margin:0 auto}
 .side{width:300px;flex-shrink:0;padding:20px 14px;position:sticky;top:47px;height:calc(100vh - 47px);overflow-y:auto;background:#fff;border-right:1px solid #e5e8ee;font-size:13.5px}
 .side a{color:#2f6db3;text-decoration:none}.side a:hover{text-decoration:underline}
@@ -39,7 +42,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
  onerror="document.getElementById('offnote').style.display='block';document.getElementById('offnote').textContent='公式渲染脚本加载失败：当前显示的是公式源码。';"></script>
-</head><body id="top">
+</head><body id="top"><a class="skip-link" href="#main-content">跳到正文</a>
 <header class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 10 章 · 工程实现与产业实践</header>
 <div class="wrap"><nav class="side" aria-label="全书目录"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
 <div class="chap"><a href="01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
@@ -51,7 +54,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="07_wpe-dereverberation.html">第 7 章 · 去混响（WPE）</a></div>
 <div class="chap"><a href="08_speech-separation.html">第 8 章 · 语音分离</a></div>
 <div class="chap"><a href="09_source-tracking.html">第 9 章 · 声源追踪</a></div>
-<div class="chap cur">第 10 章 · 工程实现与产业实践</div>
+<div class="chap cur" aria-current="page">第 10 章 · 工程实现与产业实践</div>
 <ul>
 <li><a href="10_engineering-practice.html#sec-2">10.1 参考链路与端到端延迟</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-3">10.1.1 延迟不能把每个模块的耗时直接相加</a></li>
@@ -75,7 +78,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
-<main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
+<main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
 <li><a href="10_engineering-practice.html#sec-2">10.1 参考链路与端到端延迟</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-3">10.1.1 延迟不能把每个模块的耗时直接相加</a></li>
@@ -164,7 +167,8 @@ L_p=L_{\text{lookahead}}+L_{\text{buffer}}+L_{\text{compute}}+L_{\text{schedule}
 \tag{10-1}
 $$</p>
 <p><img alt="图25 延迟预算示意" src="../figures/fig25_latency_budget.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图 25(a) 用采集与分帧 32 ms、未来帧前瞻 16 ms、判决确认 25 ms、计算与调度 20 ms 组成一条 93 ms 的示例关键路径。这些数字用于说明记账方法，不是通用预算，也没有包含图外可能存在的解码和交互延迟。实际系统应在声学输入与最终输出之间记录时间戳或回采脉冲，分别测量冷启动、稳定运行和最不利调度条件。把短时傅里叶变换（Short-Time Fourier Transform，STFT）窗长从 32 ms 改为 16 ms，也不等于必然省下 16 ms：只有依赖完整窗或未来样本的等待发生变化，关键路径才会缩短。</p>
+<p>图 25(a) 把“采集/帧就绪等待”示意为 32 ms，再与未来帧前瞻 16 ms、判决确认 25 ms、计算与调度 20 ms 组成一条 93 ms 的示例关键路径。这里的 32 ms 是工作表示例，不等同于 STFT 窗长，也不是所有 32 ms 窗都会增加 32 ms 算法等待；窗的左右对齐、声卡周期、帧移和模块何时开始计算都会改变实际值。这些数字只说明记账方法，没有包含图外可能存在的解码和交互延迟。实际系统应在声学输入与最终输出之间记录时间戳或回采脉冲，分别测量冷启动、稳定运行和最不利调度条件。把 STFT 窗长从 32 ms 改为 16 ms，也不等于必然省下 16 ms：只有依赖完整窗或未来样本的等待发生变化，关键路径才会缩短。</p>
+<p>延迟报告不能只有平均值。稳定运行阶段至少给出中位数（p50）与尾延迟（如 p95、p99）、样本数和测量时长；冷启动另报模型加载、内存分配和状态填充所需时间。若系统存在不同设备、网络或调度模式，应分别报告，而不是把所有样本混成一个分位数。测量点也要写清，例如“音频驱动时间戳 → 第一块可播放增强 PCM”与“音频入口 → 首个 ASR token”是两条不同关键路径。</p>
 <p>参考接口可按下表检查：</p>
 <table>
 <th scope="col"ead>
@@ -431,6 +435,7 @@ $$</p>
 <p>ITU-T P.835（07/2026）用于对含噪语音处理系统做主观听测，分别评价语音信号（Signal，SIG）、背景噪声（Background，BAK）和总体效果（Overall，OVRL）。它适合区分“噪声是否减弱”和“语音是否受损”，但不能直接评价 DOA、轨迹身份或空间位置。正式报告应写明标准版本、听测材料、听众筛选、播放设备和统计区间。</p>
 <h2 id="sec-14">10.6 数据、仿真与复现</h2>
 <p>公开数据集适合建立可复现基线，不能代替目标设备录音。选择数据时要核对采样率、麦克风几何、房间、说话人数、重叠率、参考真值和许可证。训练、调参、最终测试应按房间或说话人隔离，避免相邻片段泄漏。</p>
+<p>录音和声纹还要有数据治理清单：记录采集目的与用户同意范围；区分原始音频、转写文本、声纹嵌入和调试日志；说明数据在端侧还是云侧处理、传输与静态存储怎样加密、哪些角色可以访问；规定保留期限、删除与撤回流程；导出故障样本前做身份信息检查；第三方数据集按许可证限制保存和再分发。目标说话人提取使用的注册声纹可能比普通缓存更敏感，不能因为只保存嵌入而默认无法关联个人。具体法律和认证要求取决于部署地区与产品用途，应由相应合规审查确认。</p>
 <p>房间冲激响应仿真也要写全条件。以下代码说明 max_order 与混响时间的关系：</p>
 <pre><code class="language-python">import pyroomacoustics as pra
 
@@ -444,7 +449,8 @@ room = pra.ShoeBox(
     max_order=max_order,
 )
 </code></pre>
-<p><code>inverse_sabine</code> 根据目标混响时间 $T_{60}$ 和房间尺寸给出吸收参数及建议的镜像源截断阶数；$T_{60}$ 表示声能衰减 60 dB 所需的时间。<code>max_order</code> 控制镜像反射的截断深度，不能单独决定 $T_{60}$。论文或报告还应记录声源/麦克风坐标、材料模型、随机种子、噪声生成方法和所用库版本。</p>
+<p><code>inverse_sabine</code> 根据目标混响时间 $T_{60}$ 和房间尺寸给出吸收参数及建议的镜像源截断阶数；$T_{60}$ 表示声能衰减 60 dB 所需的时间。这里的 <code>target_rt60=0.45</code> 是设计目标，不是已经测得的仿真结果。生成房间冲激响应（Room Impulse Response，RIR）后，还应由 RIR 的 Schroeder 能量衰减曲线估计实际 $T_{60}$，并报告拟合区间；衰减动态范围不足时，不应把短区间外推值写成直接测得的 60 dB 衰减时间。</p>
+<p><code>max_order</code> 控制镜像反射的截断深度，不能单独决定 $T_{60}$。可逐步增加 <code>max_order</code>，直到测得 $T_{60}$、RIR 总能量和目标任务结果在预定容差内不再明显变化；若始终不收敛，应调整房间或仿真方法，而不是只抬高阶数。论文或报告还应分别记录目标与实测 $T_{60}$、声源/麦克风坐标、材料模型、随机种子、噪声生成方法、pyroomacoustics 版本和拟合方法。</p>
 <h2 id="sec-15">10.7 分布式阵列</h2>
 <p>分布式系统要分别解决三类问题：</p>
 <ol>
@@ -612,6 +618,6 @@ room = pra.ShoeBox(
 <p>📄 <a href="./index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="09_source-tracking.html">← 上一篇</a></span><span><a href="11_selection-guide.html">下一篇 →</a></span></div>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
-</main></div><a class="topbtn" href="#top" title="回顶部">↑</a>
+</main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>
 </body></html>

@@ -1,10 +1,13 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 2 章 · 声音到达阵列时发生了什么 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="6381515cd6ea"><style>
+<meta name="source-digest" content="81a6b66ee82c"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
+a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
+.skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
+.skip-link:focus{top:8px}
 .wrap{display:flex;max-width:1280px;margin:0 auto}
 .side{width:300px;flex-shrink:0;padding:20px 14px;position:sticky;top:47px;height:calc(100vh - 47px);overflow-y:auto;background:#fff;border-right:1px solid #e5e8ee;font-size:13.5px}
 .side a{color:#2f6db3;text-decoration:none}.side a:hover{text-decoration:underline}
@@ -39,11 +42,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
  onerror="document.getElementById('offnote').style.display='block';document.getElementById('offnote').textContent='公式渲染脚本加载失败：当前显示的是公式源码。';"></script>
-</head><body id="top">
+</head><body id="top"><a class="skip-link" href="#main-content">跳到正文</a>
 <header class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 2 章 · 声音到达阵列时发生了什么</header>
 <div class="wrap"><nav class="side" aria-label="全书目录"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
 <div class="chap"><a href="01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
-<div class="chap cur">第 2 章 · 声音到达阵列时发生了什么</div>
+<div class="chap cur" aria-current="page">第 2 章 · 声音到达阵列时发生了什么</div>
 <ul>
 <li><a href="02_basics-signal-model.html#sec-2">2.1 核心事实：同一声音，到达各麦克风有先有后</a></li>
 <li><a href="02_basics-signal-model.html#sec-3">2.2 近场与远场</a></li>
@@ -65,7 +68,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
-<main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
+<main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
 <li><a href="02_basics-signal-model.html#sec-2">2.1 核心事实：同一声音，到达各麦克风有先有后</a></li>
 <li><a href="02_basics-signal-model.html#sec-3">2.2 近场与远场</a></li>
@@ -138,7 +141,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>左边表示时域延迟 $\tau$ 秒，右边表示频域中乘以复相位因子。频域形式便于把宽带信号分频点处理，也便于将卷积近似为乘法，因此许多阵列算法采用 STFT 实现；这种近似的边界见 §2.5。</p>
 <p>这个 $e^{-\mathrm{j}2\pi f\tau}$ 到底是什么？<strong>它是复平面上一个长度为 1 的箭头，从正实轴出发顺时针转过角度 $2\pi f\tau$</strong>（图4(b)）。其中 $\mathrm{j}$ 是虚数单位（$\mathrm{j}^2=-1$）；$e$ 的复指数由欧拉公式定义：$e^{\mathrm{j}\phi} = \cos\phi + \mathrm{j}\sin\phi$；有些书把 $2\pi f$ 写成 $\omega$（角频率），两者是一回事。直觉检验：延迟恰好等于一个周期（$\tau = 1/f$）时转过整整一圈 $2\pi$——波形平移一个周期后与原波形重合，箭头也转回原地，两边对上了 ✓。</p>
 <p><img alt="图4 时延为什么变成复数相位" src="../figures/fig04_delay_phase.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图 4（b）表明，纯时延对应单位模复数，只改变相位而不改变幅度。图 4（c）给出相位与频率的线性关系，其斜率为 $-2\pi\tau$；§4.2 的 GCC-PHAT 正是利用这项关系估计时延。</p>
+<p>图 4 的三幅子图采用同一组参数：4 cm 麦距、声速 343 m/s、端射方向，因此 $\tau=d/c\approx0.1166$ ms。时域波形右移约 0.117 ms；1 kHz 复相量顺时针旋转约 $2\pi\times1000\times0.1166\text{ ms}\approx42°$；相位—频率图的斜率为 $-2\pi\tau$，2 kHz 处约为 −84°。§4.2 的 GCC-PHAT 正是利用这项关系估计时延。</p>
 <p>图 4（c）还说明，同一时延引起的相位旋转与频率成正比。相位展开后，直线斜率为 $-2\pi\tau$；实际数据中的相位缠绕、噪声和混响会使估计更复杂。</p>
 <p><strong>第三步：把 $M$ 个式子摞起来，写成向量</strong></p>
 <p>对第 $m$ 路、第 $f$ 个频点，时移性质给出：</p>
@@ -168,7 +171,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><strong>晚期混响</strong>：经多次反射后形成的弥散尾音。统计建模时，常把充分弥散的晚期混响近似为各向同性声场；这个近似适合分析波束形成器的 DI（指向性指数，§2.6），但不表示混响在时间上就是独立白噪声。WPE（第 7 章）正是利用晚期混响仍有时间相关性来做预测消除。</li>
 </ol>
 <p><img alt="图5 房间声学基础" src="../figures/fig05_room_acoustics.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图 5（a）把房间脉冲响应分为直达声、早期反射和晚期混响；图 5（b）用能量衰减 60 dB 所需时间定义 $T_{60}$；图 5（c）展示给定房间参数下临界距离与体积、混响时间的关系。图中的距离只适用于相应参数，不能直接作为所有房间的分界。</p>
+<p>图 5（a）把房间脉冲响应分为直达声、早期反射和晚期混响；图 5（b）用能量衰减 60 dB 所需时间定义 $T_{60}$；图 5（c）固定 $d_c=1.0$ m，展示直达声与混响声的相对声级怎样随声源—麦克风距离变化。该子图是归一化示例，不直接给出体积或混响时间不同的房间结果。</p>
 <p><strong>混响有多强：$T_{60}$ 与赛宾公式</strong>。$T_{60}$ 是声能衰减 60 dB 所需的时间（图5(b)），可用赛宾（Sabine）公式估算：</p>
 <p>$$T_{60} = \frac{0.161\,V}{A}, \qquad A = \sum_i S_i\,\alpha_i\text{。}$$</p>
 <ul>
@@ -199,7 +202,7 @@ $$T_{60} = \frac{24\ln 10}{c}\cdot\frac{V}{A} = \frac{55.3}{343}\cdot\frac{V}{A}
 4. <strong>代入赛宾公式</strong> $A = \dfrac{0.161V}{T_{60}}$：$d_c = \sqrt{\dfrac{0.161V}{16\pi\,T_{60}}} = \sqrt{0.00321\,\dfrac{V}{T_{60}}} \approx 0.057\sqrt{\dfrac{V}{T_{60}}}$。
 <strong>B-3 常数 0.057 的来源</strong>：$0.161/(16\pi)\approx0.003203$，再开平方得到 $0.0566\approx0.057$。因此该常数同时包含赛宾公式中的 0.161 和球面扩散项 $16\pi$。</p>
 </blockquote>
-<p>图 5（c）是设定 $d_c=1.0$ m 的归一化示例。在该模型中，3 m 处的 DRR 为 $-20\log_{10}(3/1)\approx-9.5$ dB，表示混响能量高于直达声；这个数不能外推到未测量的房间。实际 $d_c$ 还随体积、吸声量和声源指向性变化。DRR 可作为距离估计的声学线索，但也会受房间和声源级别影响。<a href="https://www.montana.edu/rmaher/eele217_sp12/reverberation_time.pdf" title="citation">Montana State 房间声学讲义</a></p>
+<p>图 5（b）的指数包络把名义 $T_{60}$ 设为 0.5 s；加入固定随机尾和早期反射后，Schroeder 剩余能量曲线最接近 −60 dB 的位置约为 0.514 s。因此 0.5 s 是生成模型的名义参数，不表示该固定样例恰好在 0.500 s 穿过 −60 dB。图 5（c）是设定 $d_c=1.0$ m 的归一化示例。在该模型中，3 m 处的 DRR 为 $-20\log_{10}(3/1)\approx-9.5$ dB，表示混响能量高于直达声；这个数不能外推到未测量的房间。实际 $d_c$ 还随体积、吸声量和声源指向性变化。DRR 可作为距离估计的声学线索，但也会受房间和声源级别影响。<a href="https://www.montana.edu/rmaher/eele217_sp12/reverberation_time.pdf" title="citation">Montana State 房间声学讲义</a></p>
 <p><strong>仿真怎么造混响</strong>：镜像法（Image Method，镜像声源法，Allen &amp; Berkley 1979）把墙面反射等效为镜像声源的叠加，开源库 pyroomacoustics 可直接生成任意房间、任意阵列的房间脉冲响应（RIR）：拿 ShoeBox 类建房、调 compute_rir 算脉冲响应（函数名以版本文档为准）。</p>
 <p><strong>反过来，怎么实测一个房间的混响</strong>：粗糙做法是拍手/爆破气球后看衰减（只能估个大概）；更可控的做法是<strong>指数正弦扫频（ESS, Farina 2000）</strong>：播放频率指数上升的扫频信号，录音后反卷积得到 RIR。在系统近似时不变、没有削波且扫频长度足够时，ESS 可将若干谐波失真成分与线性 RIR 在反卷积结果中分开。环境噪声、削波、时变非线性和播放/录音链路的频响仍会影响测量。也可以用普通语音<strong>盲估</strong> $T_{60}$ 和 DRR（例如利用两麦相干函数估计直达-弥散比），供无法播放测试音的在线场景使用。</p>
 <p>房间传播模型解释了麦克风信号的组成。算法实现还需要把连续波形组织成 STFT、快拍和协方差矩阵。</p>
@@ -209,11 +212,11 @@ $$T_{60} = \frac{24\ln 10}{c}\cdot\frac{V}{A} = \frac{55.3}{343}\cdot\frac{V}{A}
 <p>为什么需要这张表？因为 STFT 把宽带语音分解为一组<strong>近似窄带</strong>问题。时延 $\tau$ 对应的相位旋转 $2\pi f\tau$ 随频率变化，因此每个频点要使用自己的 $\vec a(f,\theta)$。把卷积在每个时频点写成 $\vec{x}(f,t)\approx\vec{a}(f,\theta)s(f,t)+\vec n(f,t)$ 仍是窄带近似：窗函数会使直线卷积在 STFT 中产生频带内和跨频带项，长房间响应、过短窗或频率变化过快时误差更大。第 4、5 章逐频点处理时，需把窗长与有效冲激响应长度纳入验证。</p>
 <p><strong>STFT 分帧数字例子</strong>：阵列配置——4 麦、常规小间距；采样率 16 kHz、窗长 32 ms、帧移 8 ms。窗长折成采样点 $=16000\times0.032=512$ 点（FFT 常用 512 点）；帧移 $=16000\times0.008=128$ 点，相邻帧重叠 $(512-128)/512=75\%$。1 s 语音共 $(1000-32)/8+1\approx122$ 帧；每帧 FFT 给出 257 个有效频点（0~8 kHz，频率分辨率 $16000/512=31.25$ Hz）。于是 1 s、4 麦录音展开为 $122\times257=31354$ 个时频点，每个点上一个 4 维快拍向量——这就是后文协方差矩阵 $\hat{\mathbf{R}}(f)$ 在每个频点上平均的对象（每频点约 122 个快拍参与平均）。</p>
 <p><strong>快拍（snapshot，快照向量）</strong>：固定一个频点 $f$、取某一帧 $t$，把 $M$ 个麦克风在该时频点 $(f,t)$ 的复数谱排成列向量 $\vec{x}(f,t)$，就是一个快拍——相当于阵列在某瞬间拍下的一张“空间照片”（图6(b) 里标的那个格子就是它，按正文记作 $(f,t)$，$f$ 是频点号、$t$ 是帧号）。</p>
-<p><strong>空间协方差矩阵</strong>：单张快拍太噪，把几十到几百个快拍平均：</p>
+<p><strong>空间二阶矩（阵列文献常称空间协方差矩阵）</strong>：单张快拍太噪，把几十到几百个快拍平均：</p>
 <p>$$\hat{\mathbf{R}}(f) = \frac{1}{T}\sum_{t} \vec{x}(f,t)\,\vec{x}^H(f,t)\text{。}$$ (2-2)</p>
-<p>它是 $M\times M$ 的复数矩阵，第 $m,n$ 个元素记录“麦 $m$ 与麦 $n$ 在该频点上的相关程度与相位差”（图6(c)）。它浓缩了阵列数据的二阶统计信息。Capon、MVDR、MUSIC 都以它为输入；MUSIC 再用特征分解把观测空间分成信号子空间和噪声子空间。只有在窄带远场模型正确、$K\lt M$ 个声源互不相干、噪声为空间白噪声且快拍足够多时，才可把高于噪声底的 $K$ 个特征值解释成 $K$ 个声源。相干反射、彩色噪声、有限快拍和阵列失配都会破坏这种整齐分组。</p>
+<p>式(2-2)没有减去样本均值，严格说是未中心化的样本二阶矩；当 STFT 快拍在所用时间段内可视为零均值，或已经去均值时，它才等于样本协方差。阵列文献常把两者都简称为空间协方差，使用实现或论文时要核对其定义。它是 $M\times M$ 的复数矩阵，第 $m,n$ 个元素记录麦 $m$ 与麦 $n$ 在该频点上的相关幅度与相位差。Capon、MVDR、MUSIC 都以它为输入；MUSIC 再用特征分解把观测空间分成信号子空间和噪声子空间。只有在窄带远场模型正确、$K\lt M$、导向矩阵与源协方差均满秩、噪声为空间白噪声且快拍足够多时，才可把高于噪声底的 $K$ 个特征值解释成 $K$ 个声源。相干反射、彩色噪声、有限快拍和阵列失配都会破坏这种分组。</p>
 <p><img alt="图6 从波形到协方差矩阵" src="../figures/fig06_stft_cov.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图 6（a）（b）展示语谱图中的复数时频点，图 6（c）展示通道间相关性和相位差形成的协方差矩阵。图 6（d）只在独立声源、白噪声和充足快拍等条件下，才能把较大特征值的个数与声源数联系起来。</p>
+<p>图 6（a）（b）来自单通道示意语音，用来解释分帧和时频点。图 6（c）（d）是另一组独立的 8 麦、2 个互不相干窄带源加空间白噪声理论例，并非由（a）（b）的单通道波形累积得到；（c）只画 $|R_{ij}|$，相位仍包含在复数 $R_{ij}$ 中但未在图上显示。图中索引 $(k,l)$ 与正文的 $(f,t)$ 都依次表示“频点、帧”。只有在源协方差满秩、噪声为空间白噪声、阵列模型正确且快拍充足等条件下，才能把较大特征值的个数与声源数联系起来。</p>
 <p><strong>两个常考的细节</strong>：①快拍数太少时 $\hat{\mathbf{R}}$ 估计不准、小特征值乱跳，这是 Capon/MVDR 需要“对角加载”（§5.4）的根源；②帧移小、相邻帧高度重叠，快拍间并不独立，有效快拍数比帧数少。</p>
 <p><strong>快拍不够时会发生什么</strong>（处理方法见 §5.4、§8.1）：样本协方差是 $T$ 个秩一外积之和，因此</p>
 <p>$$\operatorname{rank}(\hat{\mathbf{R}})\le \min(M,T)\text{。}$$</p>
@@ -299,6 +302,6 @@ $$T_{60} = \frac{24\ln 10}{c}\cdot\frac{V}{A} = \frac{55.3}{343}\cdot\frac{V}{A}
 <p>📄 本篇信息：配图 6 张 ｜ <a href="./index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="01_problem-definition.html">← 上一篇</a></span><span><a href="03_array-geometry.html">下一篇 →</a></span></div>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
-</main></div><a class="topbtn" href="#top" title="回顶部">↑</a>
+</main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>
 </body></html>

@@ -335,6 +335,15 @@ def find_chrome():
     return chrome
 
 
+def contains_unrendered_math(text):
+    """检测 PDF 文本层里常见的未渲染 TeX 痕迹。"""
+    return bool(
+        "$" in text
+        or "MathJax" in text
+        or re.search(r"\\(?:tag|text|qquad|frac|varepsilon)\b", text)
+    )
+
+
 def print_pdf(combined, pdf, timeout_min_pages=100):
     chrome = find_chrome()
     if not Path(chrome).exists():
@@ -381,7 +390,8 @@ def print_pdf(combined, pdf, timeout_min_pages=100):
             from pypdf import PdfReader
             reader = PdfReader(str(tmp_pdf))
             npages = len(reader.pages)
-            last_text = reader.pages[-1].extract_text() or ""
+            page_texts = [page.extract_text() or "" for page in reader.pages]
+            last_text = page_texts[-1]
         except Exception as e:
             raise SystemExit(f"PDF 校验失败（可能被截断）：{e}")
         print("pages:", npages)
@@ -389,6 +399,8 @@ def print_pdf(combined, pdf, timeout_min_pages=100):
             raise SystemExit(f"PDF 页数异常（{npages} 页），疑似截断")
         if "全书完" not in last_text:
             raise SystemExit("PDF 末页未检测到固定结束标记，疑似截断")
+        if contains_unrendered_math("\n".join(page_texts)):
+            raise SystemExit("PDF 文本层含未渲染的公式源码；保留原发布件")
         os.replace(tmp_pdf, pdf)
     finally:
         tmp_pdf.unlink(missing_ok=True)

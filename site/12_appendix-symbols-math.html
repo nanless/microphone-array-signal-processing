@@ -1,10 +1,13 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 A · 符号术语数学 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="6381515cd6ea"><style>
+<meta name="source-digest" content="81a6b66ee82c"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
+a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
+.skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
+.skip-link:focus{top:8px}
 .wrap{display:flex;max-width:1280px;margin:0 auto}
 .side{width:300px;flex-shrink:0;padding:20px 14px;position:sticky;top:47px;height:calc(100vh - 47px);overflow-y:auto;background:#fff;border-right:1px solid #e5e8ee;font-size:13.5px}
 .side a{color:#2f6db3;text-decoration:none}.side a:hover{text-decoration:underline}
@@ -39,7 +42,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
  onerror="document.getElementById('offnote').style.display='block';document.getElementById('offnote').textContent='公式渲染脚本加载失败：当前显示的是公式源码。';"></script>
-</head><body id="top">
+</head><body id="top"><a class="skip-link" href="#main-content">跳到正文</a>
 <header class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 附录 A · 符号术语数学</header>
 <div class="wrap"><nav class="side" aria-label="全书目录"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
 <div class="chap"><a href="01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
@@ -53,7 +56,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="09_source-tracking.html">第 9 章 · 声源追踪</a></div>
 <div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现与产业实践</a></div>
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
-<div class="chap cur">附录 A · 符号术语数学</div>
+<div class="chap cur" aria-current="page">附录 A · 符号术语数学</div>
 <ul>
 <li><a href="12_appendix-symbols-math.html#sec-2">12.1 符号表</a></li>
 <li><a href="12_appendix-symbols-math.html#sec-3">12.2 术语词典</a></li>
@@ -66,7 +69,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="12_appendix-symbols-math.html#sec-10">12.3 预备知识速览</a></li>
 </ul>
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
-<main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
+<main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
 <li><a href="12_appendix-symbols-math.html#sec-2">12.1 符号表</a></li>
 <li><a href="12_appendix-symbols-math.html#sec-3">12.2 术语词典</a></li>
@@ -228,12 +231,12 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>某一帧、某一频点上，$M$ 个麦克风复数谱排成的列向量——阵列的一张“空间照片”（§2.5）</td>
 </tr>
 <tr>
-<td>协方差矩阵 $\hat{\mathbf{R}}$</td>
-<td>快拍与其共轭转置的外积做时间平均；浓缩“几个源、多强、从哪来、噪声什么结构”，是 Capon/MVDR/MUSIC 的共同输入（§2.5）</td>
+<td>空间协方差矩阵 $\hat{\mathbf{R}}$</td>
+<td>阵列文献常把快拍外积的时间平均称为空间协方差。若未减均值，它严格说是未中心化二阶矩；零均值或已经中心化时才等于样本协方差。它是 Capon/MVDR/MUSIC 的共同输入（§2.5）</td>
 </tr>
 <tr>
 <td>特征分解 / 子空间</td>
-<td>把协方差矩阵拆成特征值与特征向量：大特征值对应的方向张成信号子空间，小的张成噪声子空间（图6d）</td>
+<td>把厄米矩阵拆成特征值与特征向量。在源协方差满秩、$K\lt M$、空间白噪声、模型正确且快拍充足时，较大特征值对应的特征向量张成信号子空间，噪声底对应的特征向量张成噪声子空间（图6d、§4.6）</td>
 </tr>
 <tr>
 <td>超定方程组</td>
@@ -692,7 +695,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 答案：① $10\log_{10}(4\times2)\approx9$ dB；② 幅度约减半，功率约为原来的四分之一。</p>
 <p><strong>SNR 换算例。</strong> 目标功率为 3、噪声功率为 1 时，线性 SNR 为 3，对应 $10\log_{10}3\approx4.8$ dB。若处理后输出 SNR 为 12 dB，则 SNR 增益约为 $12-4.8=7.2$ dB。输入 SNR、输出 SNR 和 SNR 增益是三个不同的量（§5.1）。</p>
 <p><strong>③ 卷积与相关。</strong> 卷积 $y=x*h$ 表示信号 $x$ 经过线性时不变系统 $h$ 后的输出；在固定声源和接收位置的近似下，$h$ 可以取房间脉冲响应（§2.4）。相关 $R(\tau)$ 衡量两段信号在相对位移 $\tau$ 下的相似度；峰值位置可作为时延候选（§4.2）。傅里叶变换把线性卷积转成频域乘法，配合快速傅里叶变换可降低长卷积的计算量，但分帧、补零和重叠相加仍要按实现条件处理。</p>
-<p><strong>④ 期望、方差与协方差矩阵。</strong> 期望 $E[\cdot]$ = 平均；方差 = 离平均多远；协方差 = 两个量“一起起伏”的程度。把 $M$ 个麦克风的协方差排成矩阵就是空间协方差矩阵 $\hat{\mathbf{R}}$（§2.5）——它记录的是“哪些麦的信号总是一起动、相位差多少”。</p>
+<p><strong>④ 期望、方差与协方差矩阵。</strong> 期望 $E[\cdot]$ 表示统计平均；方差描述变量偏离均值的平方平均；协方差描述两个中心化变量共同变化的程度。把 $M$ 个麦克风两两协方差排成矩阵就是空间协方差矩阵。§2.5 的常用估计式未显式减均值，因此在零均值假设下才与协方差相同；否则应称未中心化二阶矩。</p>
 <p><strong>⑤ 最小二乘。</strong> 方程比未知数多时通常没有精确解，最小二乘求使总残差平方最小的 $\hat{\vec{x}}$：$\min_{\vec{x}}\|\mathbf{A}\vec{x}-\vec{b}\|^2$。当 $\mathbf A$ 满列秩时，$\hat{\vec{x}}=(\mathbf{A}^H\mathbf{A})^{-1}\mathbf{A}^H\vec{b}$；秩不足或条件很差时，应使用 Moore–Penrose 伪逆、QR/SVD 或正则化，不能直接求逆。TDOA 几何解算（§4.4）和 WPE 系数估计（§7.1）都会用到这一思想。</p>
 <p><strong>拉格朗日四步模板（MVDR）</strong>。复约束必须同时包含约束及其共轭，常写成实值函数</p>
 <p>$$L=\vec{w}^H\mathbf{R}\vec{w}+2\operatorname{Re}\!\left\{\lambda^*(\vec{w}^H\vec{a}-1)\right\}\text{。}$$</p>
@@ -707,6 +710,6 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>📄 本篇信息：配图 0 张 ｜ <a href="./index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="11_selection-guide.html">← 上一篇</a></span><span><a href="13_appendix-guide.html">下一篇 →</a></span></div>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
-</main></div><a class="topbtn" href="#top" title="回顶部">↑</a>
+</main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>
 </body></html>

@@ -1,6 +1,6 @@
 # Scripts：绘图与工具脚本
 
-本目录放教程的全部可运行脚本。在**报告根目录**（不是本目录）执行（图 1~25 约 20 秒，图 26~32 约 11 秒，全套约半分钟，机器不同有出入；Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`）：
+本目录放教程的全部可运行脚本。在**报告根目录**（不是本目录）执行。运行时间取决于处理器、操作系统、Python 与依赖版本和当前负载；若要报告耗时，应同时记录这些条件、运行次数和统计方式。Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 
 ```bash
 .venv/bin/python scripts/make_figures.py      # 生成图 1～25、图 33 → figures/
