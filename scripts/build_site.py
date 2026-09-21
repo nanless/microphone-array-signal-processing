@@ -52,7 +52,9 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .side ul{margin:2px 0 6px;padding-left:16px;color:#666}.side li{margin:2px 0}
 .main{flex:1;min-width:0;padding:28px 36px;background:#fff}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
-table{border-collapse:collapse;margin:14px 0;display:block;overflow-x:auto;max-width:100%}
+table{border-collapse:collapse;margin:14px 0;max-width:100%}
+.table-scroll{max-width:100%;overflow-x:auto}
+.table-scroll:focus-visible{outline:3px solid #e67e22;outline-offset:2px}
 th,td{border:1px solid #dfe3ea;padding:6px 10px;font-size:14px;text-align:left}
 th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;font-size:13.5px}
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
@@ -72,7 +74,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{position:fixed;bottom:20px;right:20px;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px;opacity:.75}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 @media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}}
-@media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
+@media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 """
 
 PAGE = """<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
@@ -110,7 +112,7 @@ def source_digest():
     paths = sorted(SRC.glob("*.md"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "make_figures.py",
-              ROOT / "scripts" / "make_aec_figures.py"]
+              ROOT / "scripts" / "make_aec_figures.py", ROOT / "requirements.txt"]
     for path in paths:
         digest.update(path.relative_to(ROOT).as_posix().encode("utf-8"))
         digest.update(b"\0")
@@ -169,6 +171,14 @@ def render(md_text):
     html = re.sub(r"<(h[1-4])>(.*?)</\1>", repl, html, flags=re.S)
     html = re.sub(r'<th(?![^>]*\bscope=)([^>]*)>',
                   r'<th scope="col"\1>', html, flags=re.S)
+    # 保留 table 原生语义；横向滚动由可聚焦的外层区域承担，键盘用户也能操作宽表。
+    html = re.sub(
+        r"<table>(.*?)</table>",
+        (r'<div class="table-scroll" tabindex="0" role="region" '
+         r'aria-label="数据表，可横向滚动"><table>\1</table></div>'),
+        html,
+        flags=re.S,
+    )
     # md 内链 .md → .html；00 首页 → index.html
     html = re.sub(r"\.md((?:#[^\"')\s]*)?)([\"')])",
                   lambda m: ".html" + m.group(1) + m.group(2), html)

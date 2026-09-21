@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 8 章 · 语音分离 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="81a6b66ee82c"><style>
+<meta name="source-digest" content="eafb88b9006e"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -15,7 +15,9 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .side ul{margin:2px 0 6px;padding-left:16px;color:#666}.side li{margin:2px 0}
 .main{flex:1;min-width:0;padding:28px 36px;background:#fff}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
-table{border-collapse:collapse;margin:14px 0;display:block;overflow-x:auto;max-width:100%}
+table{border-collapse:collapse;margin:14px 0;max-width:100%}
+.table-scroll{max-width:100%;overflow-x:auto}
+.table-scroll:focus-visible{outline:3px solid #e67e22;outline-offset:2px}
 th,td{border:1px solid #dfe3ea;padding:6px 10px;font-size:14px;text-align:left}
 th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;font-size:13.5px}
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
@@ -35,7 +37,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{position:fixed;bottom:20px;right:20px;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px;opacity:.75}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 @media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}}
-@media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
+@media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
 window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']]}};
@@ -86,7 +88,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>例如麦间距 $d=4$ cm、声速 $c=343$ m/s、目标方向 $\theta=30°$。在 $f=2$ kHz 时，相邻麦克风时延差 $\Delta t=d\sin\theta/c\approx58.3\ \mu$s，相位差为 $2\pi f\Delta t\approx0.733$ rad，即约 42°。4 麦阵列的导向矢量约为 $[1,e^{-\mathrm j42°},e^{-\mathrm j84°},e^{-\mathrm j126°}]^\top$。频率升到 4 kHz 时，相位差增至约 84°。2 kHz 的波长约 17 cm，4 cm 间距小于半波长；8 kHz 的波长约 4.3 cm，此间距会产生空间混叠和栅瓣。</p>
 <p>最小方差无失真响应（MVDR）、广义特征值（GEV）波束形成、MNMF 和复角中心高斯混合模型（complex Angular Central Gaussian Mixture Model，cACGMM）都会使用二阶统计量：$$\mathbf{R}(f,k) = E[\mathbf{X}\mathbf{X}^H] \approx \mathbf{A}\mathbf{R}_s\mathbf{A}^H + \mathbf{R}_v$$。其中 $\mathbf{R}_s$ 是源信号协方差，$\mathbf{R}_v$ 是噪声协方差。BSS 直接估计解混矩阵；GSS 和部分深度方法先估计时频掩码，再由掩码计算目标与干扰协方差，做法见 §5.4。</p>
 <p>波束形成一次输出通常针对一个目标，但可以用不同导向或掩码构造多组权重，分别输出多个人的信号。因此“波束形成”和“语音分离”不是互斥方法：GSS 正是先估掩码，再为每个目标计算一组波束权重。下面按解混矩阵、空间聚类和监督学习三条路线比较。</p>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">路线</th>
@@ -115,7 +117,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>依赖训练数据，跨场景泛化需验证</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>PIT 的 2×2 手算例</strong>。分离器输出为 $\hat s_1,\hat s_2$，参考为 $s_1,s_2$。假设某种失真损失的矩阵为</p>
 <p>$$
 \mathbf L=
@@ -162,7 +164,7 @@ $$</p>
 <p>若这个二分类例子中用 $1-\gamma=[0.1,0.9]$ 估计干扰协方差，则 $\mathbf R_{\mathrm{int}}=\begin{bmatrix}1&-0.8\\-0.8&1\end{bmatrix}$。正的非对角项表示目标快照中两通道同相成分占优，负的非对角项表示干扰快照中反相成分占优。随后可从 $\mathbf R_{\mathrm{tar}}$ 估计目标相对传递函数，并与 $\mathbf R_{\mathrm{int}}$ 一起计算 MVDR；GEV 则直接求矩阵对 $(\mathbf R_{\mathrm{tar}},\mathbf R_{\mathrm{int}})$ 的主广义特征向量，并需另做尺度归一化。真实的“目标 + 多个说话人 + 环境噪声”并非二分类，$1-\gamma$ 会把所有非目标成分合在一起，不能解释成纯噪声掩码。实际实现还要检查有效样本数、条件数和对角加载。<a href="https://doi.org/10.1109/ICASSP.2016.7471664" title="citation">掩码波束形成实例</a>。</p>
 <p>定位结果可以给分离提供方向先验；分离网络输出的掩码又能用于估计 MVDR 的目标与干扰协方差。常用的尺度不变信号失真比（scale-invariant signal-to-distortion ratio，SI-SDR）先把估计信号 $\hat s$ 投影到参考 $s$ 上：$s_{\mathrm{tar}}=\langle\hat s,s\rangle s/\|s\|^2$，再计算 $10\log_{10}(\|s_{\mathrm{tar}}\|^2/\|\hat s-s_{\mathrm{tar}}\|^2)$。SI-SDR 提升量（SI-SDRi）是输出 SI-SDR 减去混合输入的 SI-SDR，两项必须使用同一预处理和实现。</p>
 <p><strong>数据集口径表</strong>：去混响与分离的论文使用不同数据、通道和指标。下表只说明各数据集的用途，不给出脱离原文表格的性能范围。</p>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">数据集</th>
@@ -184,15 +186,15 @@ $$</p>
 <td>CHiME-5/6</td>
 <td>真实晚宴多说话人（分离 + 识别端 WER）</td>
 <td>真实家庭：厨房、餐厅、客厅多房间自然混响加生活噪声</td>
-<td>每处多台 Kinect 6 麦阵列（共用参考 binaural 打分）；重叠率高、说话人走动</td>
-<td>GSS 结果必须注明所选阵列、分段/日志输入、打分集和原文表号</td>
+<td>每场 6 台 Kinect、每台 4 个同步麦克风，每个房间 2 台；每位参与者另戴双耳麦</td>
+<td>双耳录音主要辅助转写和阵列同步，不是干净参考音频；GSS 结果还要注明所选阵列、分段/日志输入、打分集和原文表号</td>
 </tr>
 <tr>
 <td>WHAMR</td>
 <td>噪声 + 混响 + 重叠三合一</td>
-<td>合成房间冲激响应，混响时间约 0.1~1 s（大/中/小三档房间混搭）</td>
-<td>8 kHz；min 版（截短对齐）/ max 版（全长）两版；底子是 WSJ0-2mix 加 WHAM 噪声</td>
-<td>报告时注明 min/max、采样率、源数和 SI-SDRi 实现</td>
+<td>合成房间冲激响应；$T_{60}$ 低、中、高三档分别从 0.1～0.3 s、0.2～0.6 s、0.4～1.0 s 均匀采样，这三档表示混响程度，不表示房间大小</td>
+<td>8 kHz / 16 kHz；min 版（截短对齐）/ max 版（全长）两版；底子是 WSJ0-2mix 加 WHAM 噪声</td>
+<td>报告时注明 min/max、采样率、源数、目标是无混响还是带混响语音，以及 SI-SDRi 实现。见 <a href="https://arxiv.org/abs/1910.10279" title="citation">WHAMR 原始论文 §2 与表 1</a></td>
 </tr>
 <tr>
 <td>WSJ0-2mix / 3mix</td>
@@ -205,23 +207,23 @@ $$</p>
 <td>LibriMix</td>
 <td>干净或含噪重叠（WSJ0 的开源替代）</td>
 <td>clean 版无污染；noisy 版叠加 WHAM 环境噪声</td>
-<td>16 kHz；train-100/train-360 两档训练量；另有稀疏重叠测试集</td>
-<td>用于跨语料验证时，同时注明训练集、测试集和噪声版本。见 <a href="https://arxiv.org/abs/2005.11262">LibriMix</a></td>
+<td>8 kHz / 16 kHz；train-100/train-360；min/max；另行发布的 SparseLibriMix 是稀疏重叠测试集</td>
+<td>用于跨语料验证时，同时注明训练集、测试集、噪声版本和是否使用 SparseLibriMix。见 <a href="https://arxiv.org/abs/2005.11262" title="citation">LibriMix 论文</a>与<a href="https://github.com/JorisCos/LibriMix" title="citation">官方生成仓库</a></td>
 </tr>
 <tr>
 <td>LibriCSS</td>
 <td>连续会议式重叠与长录音识别</td>
-<td>扬声器在真实会议室回放 LibriSpeech 语音，包含不同重叠率</td>
-<td>7 通道圆阵录音；每段约 10 min，输出需跨块保持一致</td>
-<td>检查分块、跨块排列、输出流数和识别评测的说话人分配规则。见 <a href="https://arxiv.org/abs/2001.11482" title="citation">LibriCSS</a></td>
+<td>扬声器在真实会议室回放 LibriSpeech 语音；共 10 个约 1 h 会话，每个分成 6 个约 10 min 小会话，条件为 0S、0L、10%、20%、30%、40% 重叠</td>
+<td>7 通道圆阵录音；0S 与 0L 都无重叠，但句间静音长度不同</td>
+<td>检查具体重叠条件、分块、跨块排列、输出流数和识别评测的说话人分配规则。见 <a href="https://arxiv.org/abs/2001.11482" title="citation">LibriCSS</a></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>REVERB 主要用于去混响与识别，CHiME-5/6 用于真实重叠语音的分离与识别，WHAMR 同时包含噪声、混响和重叠，WSJ0-2mix/3mix 是干净混合基准，LibriMix 还可检查跨数据集泛化，LibriCSS 则把问题扩展到连续会议。CHiME-6 重新对齐了 CHiME-5 的部分录音，引用结果时不能把两个版本混为同一数据版本。<a href="https://www.chimechallenge.org/challenges/chime6" title="citation">CHiME-6 官方说明</a>。不同数据集的数字不能直接比较。</p>
 <p><strong>连续会议分离（continuous speech separation，CSS）</strong>不能把整句分离器机械地逐块调用。长录音中的活动人数会变化，同一输出槽位还可能在相邻块交换说话人。实现需明确四件事：每块使用多少左、右上下文；重叠块怎样加权拼接；跨块排列依据声纹、波形相关性还是联合优化；输出流数固定还是随活动人数变化。连续识别的指标也要写清分配规则：连接最小排列词错误率（concatenated minimum-permutation WER，cpWER）、最优参考组合词错误率（optimal reference combination WER，ORC-WER）和说话人归属词错误率（speaker-attributed WER，sa-WER）处理说话人对应的方式不同，不能只写“WER”。CSS 解决长录音的分块与输出一致性，不保证身份永久不交换；需要稳定身份时还要结合分割或说话人跟踪。阵列无关 CSS 的一个公开实例见 <a href="https://arxiv.org/abs/2110.05745" title="citation">VarArray</a>。</p>
 <p><strong>时频稀疏性与掩码</strong>：在某些语音混合中，同一时频点往往由一个声源占优，文献将这种近似称为 W-不重叠正交性（W-disjoint orthogonality，WDO）。掩码方法可以据此估计每个时频点属于各声源的权重。说话人在同一时频区域强烈重叠时，WDO 近似变差。波束形成的区别不是“对整个频带统一加权”：宽带 STFT 波束形成通常在每个频点使用一组复权重，利用通道间的幅度和相位关系做空间选择。</p>
 <p><strong>深度分离的几类结构</strong>。下表只比较建模方式。原论文的指标、数据生成和评测代码并不完全相同，不在表中按单个 dB 数排名。</p>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">结构</th>
@@ -261,7 +263,7 @@ $$</p>
 <td>整句注意力需要改造后才能流式运行。见<a href="https://arxiv.org/abs/2209.03952">单通道会议版</a>与<a href="https://doi.org/10.1109/TASLP.2023.3304482" title="citation">多通道混响期刊扩展</a></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>比较分离数字时要对齐采样率、<code>min</code>/<code>max</code> 混合方式、静态或动态混合、源数、评测脚本和指标名称。分离文献中的 SI-SNR 常采用与 SI-SDR 相同的正交投影公式，二者在相同去均值与数值实现下可以相等；也有代码把均值处理、截断长度或稳定项写得不同。不能笼统地说两者固定相差若干 dB。引用 SI-SNRi 或 SI-SDRi 时，应给出实现或至少说明是否去均值，并始终用同一指标计算输入基线和输出结果。</p>
 <p><strong>深度分离的结构选择</strong>。卷积、循环网络、注意力和状态空间模型都可以作为分离骨干。选择时不要只看单个榜单分数，还要检查模型是否使用整句上下文、块边界如何处理、状态能否在流式推理中延续，以及计算量和内存怎样随语句长度变化。生成式方法还要检查采样步数和语音幻觉。近期模型若没有在相同数据、采样率、混合方式和评测脚本下比较，本章不按论文年份或模型名称给出性能排序。</p>
 <p>目标说话人提取（target speaker extraction，TSE）不要求输出所有声源，而是用注册语音、视觉或方向等与目标说话人绑定的条件提取一条音轨。声纹网络可把注册语音变成定长嵌入，再将其广播到混合语音的各帧；嵌入可在编码器入口拼接，也可用逐层缩放与偏置调制（FiLM）或交叉注意力注入。嵌入维度、注册时长和余弦阈值由具体模型和训练数据决定，不存在跨模型通用的“同人区间”。部署时要验证注册信道失配、非目标泄漏、目标误抑制和首帧延迟。§6.1.6 的 pAEC 也使用声纹条件，但训练目标还包含回声消除。见 <a href="https://arxiv.org/abs/1705.10687" title="citation">SpeakerBeam/TSE 系列</a>；声纹嵌入的端侧存储、加密和删除要求见 §6.1.14。</p>
@@ -287,7 +289,7 @@ $$</p>
 </ol>
 <p>对于“逐通道线性前端—波束形成—单通道增强”这类实现，逐通道处理通常位于前端，单通道增强位于波束形成之后。若神经网络只估计解析算法所需的统计量，或本身联合建模多通道相位，则不受这个顺序限制。</p>
 <p><strong>本章模块与图 23 的对应关系</strong>（图的信号取点与启用条件见<a href="./10_engineering-practice.html">第 10 章 §10.1</a>）：</p>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">本章模块</th>
@@ -312,7 +314,7 @@ $$</p>
 <td>各模块按目标任务启用，不在本章展开</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>回声、混响和分离使用不同的参考与统计假设，模块顺序需要服从这些条件。下一章讨论如何把逐帧定位结果连接成连续轨迹。</p>
 <hr />
 <blockquote>

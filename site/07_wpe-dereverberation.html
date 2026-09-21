@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 7 章 · 去混响（WPE） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="81a6b66ee82c"><style>
+<meta name="source-digest" content="eafb88b9006e"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -15,7 +15,9 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .side ul{margin:2px 0 6px;padding-left:16px;color:#666}.side li{margin:2px 0}
 .main{flex:1;min-width:0;padding:28px 36px;background:#fff}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
-table{border-collapse:collapse;margin:14px 0;display:block;overflow-x:auto;max-width:100%}
+table{border-collapse:collapse;margin:14px 0;max-width:100%}
+.table-scroll{max-width:100%;overflow-x:auto}
+.table-scroll:focus-visible{outline:3px solid #e67e22;outline-offset:2px}
 th,td{border:1px solid #dfe3ea;padding:6px 10px;font-size:14px;text-align:left}
 th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;font-size:13.5px}
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
@@ -35,7 +37,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{position:fixed;bottom:20px;right:20px;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px;opacity:.75}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 @media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}}
-@media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
+@media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
 window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']]}};
@@ -86,7 +88,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>谱方差抑制</strong>。该方法假设晚期混响与直达声统计独立，并从历史帧递推晚期混响功率谱，再用维纳增益或谱减法抑制。它可以按帧因果运行，但会受到功率估计滞后、非平稳噪声和音乐噪声影响。现代学习型谱增强仍沿用“估计干扰功率或增益，再施加频带增益”的基本形式。</p>
 <p>MINT 说明已知房间响应时的逆滤波条件；倒谱方法说明单通道频谱分解的局限；谱方差方法提供了逐帧功率估计与增益抑制思路。WPE 不要求预先测量 RIR，并可扩展到多通道，同时通过保护延迟只预测晚期成分。</p>
 <p><strong>三路线对照表</strong>。不同论文使用的阵列、数据集、识别器和因果条件不同，不能把词错率改善幅度横向拼成统一范围。表中只比较处理对象与实现条件；需要性能数字时，应引用同一数据集上的原始实验。</p>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">路线</th>
@@ -123,7 +125,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>跨房间、跨设备泛化和语音失真需单独验证</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>长混响可先评估 WPE；存在定向干扰时再结合波束形成；学习型后滤波还需满足算力和训练数据条件。多通道 WPE、波束形成与单通道后滤波可以组成一条候选链路，但实际顺序取决于统计量和通道数，见<a href="./10_engineering-practice.html">第 10 章 §10.1</a>。</p>
 <p><strong>REVERB 挑战赛中的 WPE</strong>：REVERB 包含 8 通道、2 通道和单通道设置，仿真数据的混响时间约为 0.25～0.7 s，另含真实房间录音。Kinoshita 等在 <em>Computer Speech &amp; Language</em> 2016 的总结表明，WPE 对远场识别的改善与通道数和数据条件有关；引用结果时必须注明通道数与测试集。图21（b）中音节结束后的横向能量拖尾，在（c）中得到减弱。</p>
 <p><strong>WPE 的直觉</strong>：晚期混响在所选时频模型中被近似为可由历史观测线性预测的成分，再从当前帧减去该预测。这不要求语音或混响全程平稳；算法用随帧变化的功率 $\lambda(n,f)$ 表示语音非平稳性。预测时跳过最近的 $\Delta-1$ 帧，是为了降低直达声和早期反射进入预测项的程度。</p>
@@ -218,8 +220,8 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 </code></pre>
 <p>其中 $Y$ 是复数 STFT（后两轴为通道 $D$、帧 $T$，其余前轴可用于频点等维度，0.0.11 版 <code>help(wpe)</code> 标注为 <code>(..., D, T)</code>）。上述 <code>wpe()</code> 会在已给整段数据上交替估计，属于离线调用。块在线或逐帧递推必须使用包内对应模块，并按安装版本的官方文档与示例确认轴序、状态和接口；安装命令本身不能证明在线因果性。<a href="https://github.com/fgnt/nara_wpe" title="citation"><code>fgnt/nara_wpe</code> 官方仓库</a></p>
 <p><strong>DNN 与 WPE 的位置</strong>。神经网络可以预测干净复谱、时频掩码或 WPE 所需的功率 $\lambda$。若网络对每个通道独立做波形或复谱映射，它可能改变跨通道相位关系；这类网络通常放在多通道 WPE 和波束形成之后。若网络只估计共享掩码、空间协方差或 $\lambda$，而多通道复谱仍由解析滤波器处理，则网络可以放在 WPE 或波束形成内部。还有联合训练的多通道模型同时完成去混响与波束形成。模块位置应由输入输出是否保留空间相位、是否使用未来帧和训练目标决定，不能简单规定所有 DNN 都在链尾。</p>
-<p><strong>局限与处理办法</strong>：WPE 只去除晚期混响，不处理直达声与早期反射。下列条件会使估计不稳定或收益有限：</p>
-<table>
+<p><strong>局限与处理办法</strong>：WPE 的模型目标是抑制可由延迟历史预测的晚期混响，而不是主动消除直达声与早期反射；保护延迟、功率估计或预测模型失配时，输出仍可能改变这些希望保留的成分。下列条件会使估计不稳定、早期成分失真或收益有限：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">场景</th>
@@ -249,7 +251,7 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 <td>麦克风相关延迟：按到达时延给各通道定各自延迟（<a href="https://doi.org/10.1109/ICASSP49357.2023.10096992" title="citation">Lohmann et al., ICASSP 2023</a>）</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>启用 WPE 前应检查可用帧数、混响强度、加性噪声和通道时延。任一条件不满足时，应调整块长、模型或旁路策略。卷积功率最小无失真响应（Weighted Power minimization Distortionless response，WPD）把多帧、多通道滤波写进同一个无失真最小功率问题，可同时处理去混响与波束形成；它不是简单串联两个现成模块，也不能用条件不同的 WPE、MPDR 数字相加预测收益。原始 WPD 工作见 Nakatani 与 Kinoshita 2019，后续因式分解工作说明了它与 WPE、波束形成的关系。<a href="https://arxiv.org/abs/1908.02710" title="citation">Nakatani &amp; Kinoshita, EUSIPCO 2019</a>、<a href="https://doi.org/10.1109/ICASSP40776.2020.9054393" title="citation">Boeddeker et al., ICASSP 2020</a></p>
 <h3 id="sec-3">7.1.1 $\Delta$ 与 $K$ 的参数换算</h3>
 <p>先把帧数换成物理时间。若帧移为 $H$ ms，最近的预测帧是 $t-\Delta$，其时延为 $\Delta H$；$K$ 个预测帧从 $t-\Delta$ 到 $t-(\Delta+K-1)$，最远时延为 $(\Delta+K-1)H$。这个索引关系比“$\Delta+K$ 帧”少一帧，因为起点已算入 $K$ 个样本。</p>
@@ -273,7 +275,7 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 </blockquote>
 <h3 id="sec-5">7.1.3 研究方向</h3>
 <p>WPE 的改进主要围绕四个限制展开：分布式阵列需要按通道到达时延调整预测延迟；麦克风很多时需要参考通道或子集选择；短块和强噪声下需要更稳健的功率估计；系统级方法尝试把去混响与波束形成联合求解。神经网络可以为这些解析结构估计功率、掩码或先验，但比较结果时要对齐数据集、通道数、因果性和延迟。本章不列无法按这些条件复核的近期性能数字。</p>
-<p>参数设置应先保证直达声和早期反射不受损，再根据晚期拖尾长度选择 $K$。弱混响时可以旁路 WPE。多说话人分离见第 8 章。</p>
+<p>参数设置应先在目标数据上把直达声和早期反射的损伤控制在声明的指标阈值内，再根据晚期拖尾长度和可用帧数选择 $K$。保护延迟不能保证早期成分完全不变；弱混响时可以旁路 WPE。多说话人分离见第 8 章。</p>
 <blockquote>
 <p>📄 本篇信息：配图 2 张 ｜ <a href="./index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="06_aec.html">← 上一篇</a></span><span><a href="08_speech-separation.html">下一篇 →</a></span></div>

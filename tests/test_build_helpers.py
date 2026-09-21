@@ -16,6 +16,7 @@ def load(name, path):
 
 build_pdf = load("build_pdf", ROOT / "scripts" / "build_pdf.py")
 build_site = load("build_site", ROOT / "scripts" / "build_site.py")
+quality_check = load("quality_check", ROOT / "scripts" / "quality_check.py")
 
 
 class BuildHelpersTest(unittest.TestCase):
@@ -25,6 +26,32 @@ class BuildHelpersTest(unittest.TestCase):
             build_pdf.rewrite_book_links(html),
             '<a href="#ch-1">第一章</a>',
         )
+
+    def test_combined_links_keep_deep_section_anchor(self):
+        html = '<a href="04_doa-estimation.html#sec-7">定位小节</a>'
+        self.assertEqual(
+            build_pdf.rewrite_book_links(html),
+            '<a href="#ch-4-sec-7">定位小节</a>',
+        )
+
+    def test_combined_page_title_anchor_maps_to_chapter(self):
+        self.assertEqual(
+            build_pdf.rewrite_book_links(
+                '<a href="04_doa-estimation.html#sec-1">定位章</a>'
+            ),
+            '<a href="#ch-4">定位章</a>',
+        )
+
+    def test_combined_links_reject_unknown_anchor_scheme(self):
+        with self.assertRaisesRegex(ValueError, "无法映射章节锚点"):
+            build_pdf.rewrite_book_links(
+                '<a href="04_doa-estimation.html#custom">定位小节</a>'
+            )
+
+    def test_page_info_block_removal_pattern_does_not_leave_empty_quote(self):
+        html = '<hr><blockquote>\n<p>📄 <a href="#ch-0">回首页</a></p>\n</blockquote>'
+        cleaned = build_pdf.remove_page_info(html)
+        self.assertNotIn("blockquote", cleaned)
 
     def test_outline_restores_sections(self):
         html = (
@@ -75,6 +102,8 @@ class BuildHelpersTest(unittest.TestCase):
 
     def test_unrendered_math_detector_catches_tex_but_not_plain_text(self):
         self.assertTrue(build_pdf.contains_unrendered_math(r"残留 \frac{a}{b}"))
+        self.assertTrue(build_pdf.contains_unrendered_math(r"残留 \mathbf{x}"))
+        self.assertTrue(build_pdf.contains_unrendered_math(r"残留 \sum_k x_k"))
         self.assertTrue(build_pdf.contains_unrendered_math("残留 $x+y$"))
         self.assertFalse(build_pdf.contains_unrendered_math("公式已经渲染为可搜索文字"))
 
@@ -97,6 +126,20 @@ class BuildHelpersTest(unittest.TestCase):
         self.assertIn('href="#main-content"', build_site.PAGE)
         self.assertIn('id="main-content"', build_site.PAGE)
         self.assertIn(":focus-visible", build_site.CSS)
+
+    def test_site_render_wraps_table_in_focusable_scroll_region(self):
+        html, _ = build_site.render("| 列 |\n|---|\n| 值 |")
+        self.assertIn('class="table-scroll" tabindex="0"', html)
+        self.assertIn('role="region"', html)
+        self.assertIn('<table>', html)
+
+    def test_page_parser_records_accessibility_fields(self):
+        parser = quality_check.PageParser()
+        parser.feed('<html lang="zh-CN"><h1>标题</h1><h3>跳级</h3>'
+                    '<img src="x.png" alt="阵列图"></html>')
+        self.assertEqual(parser.html_lang, "zh-CN")
+        self.assertEqual(parser.heading_levels, [1, 3])
+        self.assertEqual(parser.images, [("x.png", "阵列图")])
 
 
 if __name__ == "__main__":

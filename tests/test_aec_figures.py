@@ -24,9 +24,16 @@ class AecFiguresTest(unittest.TestCase):
         echo = np.ones(1200)
         residual = np.full(1200, 0.1)
 
-        _, erle = block_erle(echo, residual, blk=400)
+        times, erle = block_erle(echo, residual, blk=400)
 
+        np.testing.assert_array_equal(times, np.array([0.0, 0.025, 0.05]))
         np.testing.assert_allclose(erle, 20.0, atol=1e-12)
+
+    def test_block_erle_rejects_incompatible_inputs(self):
+        with self.assertRaises(ValueError):
+            block_erle(np.ones(800), np.ones(400), blk=400)
+        with self.assertRaises(ValueError):
+            block_erle(np.ones(800), np.ones(800), blk=0)
 
     def test_colored_signal_seed_is_repeatable_and_independent(self):
         first = colored_x(128, seed=101)

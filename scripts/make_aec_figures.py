@@ -83,10 +83,17 @@ def nlms_run(x, d, taps=128, mu=0.5, freeze=None):
     return e, np.array(snaps), w
 
 def block_erle(echo, e, blk=400):
-    t = np.arange(len(echo)) / FS
-    te = np.array([np.mean(echo[i:i+blk] ** 2) for i in range(0, len(echo) - blk, blk)])
-    re = np.array([np.mean(e[i:i+blk] ** 2) for i in range(0, len(e) - blk, blk)])
-    tc = np.array([i / FS for i in range(0, len(e) - blk, blk)])
+    echo = np.asarray(echo)
+    e = np.asarray(e)
+    if echo.shape != e.shape or echo.ndim != 1:
+        raise ValueError("echo 与 e 必须是同长度一维数组")
+    if not isinstance(blk, (int, np.integer)) or blk <= 0:
+        raise ValueError("blk 必须是正整数")
+    starts = range(0, len(echo) - blk + 1, blk)
+    te = np.array([np.mean(echo[i:i+blk] ** 2) for i in starts])
+    starts = range(0, len(e) - blk + 1, blk)
+    re = np.array([np.mean(e[i:i+blk] ** 2) for i in starts])
+    tc = np.array([i / FS for i in range(0, len(echo) - blk + 1, blk)])
     with np.errstate(divide="ignore"):
         erle = 10 * np.log10(te / np.maximum(re, 1e-12))
     return tc, erle
@@ -215,7 +222,7 @@ def fig_nlms():
     ax.set_ylabel("失配 (dB)", fontsize=FS_LABEL, color=C_RED)
     ax2.set_ylabel("ERLE (dB)", fontsize=FS_LABEL, color=C_BLUE)
     ax.grid(ls=":", alpha=0.5)
-    ax.text(0.99, -6.0, "本仿真中：失配每下降 10 dB，ERLE 约上升 10 dB", fontsize=FS_SMALL, color=C_MAIN, ha="right",
+    ax.text(0.99, -6.0, "系数欧氏失配与残余功率采用不同加权；\n这里只比较下降/上升趋势，不作等量换算", fontsize=FS_SMALL, color=C_MAIN, ha="right",
             bbox=dict(fc="white", ec="0.7", alpha=0.9))
     ax = axes[2]; ax.set_title("(c) 步长 μ：增大可加快收敛，也会增大波动", fontsize=FS_TITLE)
     for mu, c in [(0.2, C_BLUE), (0.5, C_ORANGE), (1.0, C_RED)]:
@@ -300,7 +307,7 @@ def fig_delay_dtd():
     pm = float(np.nanmean(er_mis[(tcc > 0.45) & (tcc < 0.8)]))
     fig, axes = plt.subplots(1, 3, figsize=(15, 4.2), layout="constrained")
     fig.suptitle("图30 延迟对齐与双讲冻结", fontsize=FS_SUP)
-    ax = axes[0]; ax.set_title("(a) 互相关找延迟", fontsize=FS_TITLE)
+    ax = axes[0]; ax.set_title("(a) 有符号互相关的最大正峰", fontsize=FS_TITLE)
     seg = 4000
     corr = np.correlate(d[:seg], x[:seg], mode="full")
     lags = np.arange(len(corr)) - (seg - 1)
@@ -308,8 +315,12 @@ def fig_delay_dtd():
     tau_hat = int(lags[np.argmax(corr)])
     ax.plot(lags, corr, color=C_PURPLE, lw=1.0)
     ax.axvline(tau_hat, color=C_PURPLE, ls="--")
-    ax.annotate(f"峰值约{tau_hat}采样", xy=(tau_hat, 0.55), xytext=(tau_hat, 0.68), fontsize=FS_SMALL + 1.5, color=C_PURPLE)
-    ax.set_xlim(-50, delay + 200); ax.set_xlabel("延迟采样", fontsize=FS_LABEL)
+    ax.annotate(f"最大正峰约{tau_hat}采样", xy=(tau_hat, 0.55), xytext=(tau_hat, 0.68), fontsize=FS_SMALL + 1.5, color=C_PURPLE)
+    ax.text(0.03, 0.06, "设置的纯延迟为300采样；\n有色参考与多径会移动相关峰",
+            transform=ax.transAxes, fontsize=FS_TINY, color="0.25",
+            bbox=dict(fc="white", ec="0.7", alpha=0.9))
+    ax.set_xlim(-50, delay + 200); ax.set_xlabel("滞后（采样）", fontsize=FS_LABEL)
+    ax.set_ylabel("归一化有符号互相关", fontsize=FS_LABEL)
     ax.grid(ls=":", alpha=0.5); ax.tick_params(labelsize=FS_TINY)
     ax = axes[1]; ax.set_title("(b) 对齐与不对齐（延迟 300 抽头 > 滤波器 128 抽头）", fontsize=FS_TITLE)
     ax.plot(tcc, er_align_view, color=C_BLUE, lw=1.6, label=f"对齐（单讲约{pa:.0f}dB）")

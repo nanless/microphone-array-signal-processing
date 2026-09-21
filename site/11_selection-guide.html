@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 11 章 · 总结与选型指南 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="81a6b66ee82c"><style>
+<meta name="source-digest" content="eafb88b9006e"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -15,7 +15,9 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .side ul{margin:2px 0 6px;padding-left:16px;color:#666}.side li{margin:2px 0}
 .main{flex:1;min-width:0;padding:28px 36px;background:#fff}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
-table{border-collapse:collapse;margin:14px 0;display:block;overflow-x:auto;max-width:100%}
+table{border-collapse:collapse;margin:14px 0;max-width:100%}
+.table-scroll{max-width:100%;overflow-x:auto}
+.table-scroll:focus-visible{outline:3px solid #e67e22;outline-offset:2px}
 th,td{border:1px solid #dfe3ea;padding:6px 10px;font-size:14px;text-align:left}
 th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;font-size:13.5px}
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
@@ -35,7 +37,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{position:fixed;bottom:20px;right:20px;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px;opacity:.75}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 @media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}}
-@media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
+@media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
 window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']]}};
@@ -113,7 +115,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </li>
 </ol>
 <h2 id="sec-3">11.2 按条件选择模块</h2>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">决策对象</th>
@@ -172,10 +174,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>语音损伤、域外噪声、下游 WER</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>算法名只确定了方法类别，还没有确定参数。WPE 的预测延迟和阶数、MVDR 的加载量、AEC 的滤波器覆盖范围、VAD 的挂起时间都应由目标数据和硬件测量得到，不应作为通用默认值从别的产品复制。</p>
 <p>多人重叠场景可按下面的决策维度缩小范围：</p>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">任务条件</th>
@@ -216,7 +218,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>目标遗漏、非目标泄漏、错误目标、隐私与删除</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>这张表比较的是任务条件，不表示 CSS 或 TSE 一定优于解析波束。若应用只消费一路音频，多输出分离会增加排列和资源问题；若应用要完整转写未知参会者，要求预先注册每个人的 TSE 又会成为功能性限制。</p>
 <h2 id="sec-4">11.3 几何与算法要一起选</h2>
 <p>阵列几何决定观测中有哪些空间信息，算法决定如何使用这些信息。</p>
@@ -230,7 +232,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>白噪声增益（White Noise Gain，WNG）和指向性指数（Directivity Index，DI）之间常有取舍。更窄的波束或更深的零陷可能放大传感器自噪声和标定误差。对角加载、WNG 约束和限制工作频带都能改善鲁棒性，但通常会牺牲一部分空间选择性。</p>
 <h2 id="sec-5">11.4 四个场景怎样推导方案</h2>
 <p>下表给的是推导方法，不是产品清单。</p>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">场景</th>
@@ -260,11 +262,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>监听与通话上行可采用不同链路。固定双麦波束和轻量 NS 是候选基线，不是必选答案；法规、反馈路径、佩戴变化和听觉安全优先。</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>同一场景也可能得出不同答案。例如会议设备安装在墙边时，覆盖区域可能只有半空间；放在桌中央时则要覆盖周向。前者可能适合线阵或弧形阵，后者可能适合圆阵。覆盖区域确定后，才能据此选择阵列形态和麦克风数量。</p>
 <h2 id="sec-6">11.5 把候选方案写成可验证的规格</h2>
 <p>为了复现实验并比较方案，候选方案的规格应覆盖以下内容：</p>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">项目</th>
@@ -305,10 +307,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>通道失效、方向低置信度、网络断开和算力过载时的行为</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>可以先建立最小基线，再一次增加一个模块。增加模块后要同时检查收益、语音损伤、延迟、功耗和失败样例。如果 WPE 没有改善目标房间的结果，或分离网络虽然提高了尺度不变信号失真比（Scale-Invariant Signal-to-Distortion Ratio，SI-SDR）却增加了内容错误，就不应因为流程图里画了它而保留。</p>
 <p><strong>完整决策例：未知参会者的连续转写</strong>。假设会议中共有 2～6 名未注册说话人，人数随时间变化，但任一时刻最多两人同时说话。系统要连续输出全部内容给 ASR，并要求端到端延迟可测但尚未给定阈值。先用硬约束筛选，再进入实测：</p>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">条件或证据</th>
@@ -355,7 +357,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>CSS 只有实测净收益后才采用</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>这个例子中，2～6 是整场会议的总参会人数，两路输出由“最多同时两人重叠”决定，二者并不冲突；输出槽位也不代表永久说话人身份。例子没有填写性能分数，因为算力和准确率必须在目标硬件与目标会议数据上测量。若需求改成“始终只听主持人，且主持人可注册”，硬约束会改变，TSE 才重新成为候选。</p>
 <h2 id="sec-7">11.6 练习</h2>
 <h3 id="sec-8">题 1：带播放的周向语音终端</h3>

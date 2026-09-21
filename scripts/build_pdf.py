@@ -132,7 +132,7 @@ def source_digest():
     paths = sorted(SRC.glob("*.md"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "make_figures.py",
-              ROOT / "scripts" / "make_aec_figures.py"]
+              ROOT / "scripts" / "make_aec_figures.py", ROOT / "requirements.txt"]
     for path in paths:
         digest.update(path.relative_to(ROOT).as_posix().encode("utf-8"))
         digest.update(b"\0")
@@ -145,15 +145,32 @@ HTML_TO_CH = {fname.replace(".md", ".html"): i for i, (fname, _) in enumerate(CH
 
 
 def rewrite_book_links(html):
-    """把分篇站点链接改成合订本内部链接，避免生成 file:// 注释。"""
+    """把分篇链接改成合订本内部链接，并保留站点的 sec-N 深层锚点。"""
     def repl(m):
-        fname, text = m.group(1), m.group(2)
+        fname, fragment, text = m.group(1), m.group(2), m.group(3)
         idx = HTML_TO_CH.get(fname)
-        return m.group(0) if idx is None else f'<a href="#ch-{idx}">{text}</a>'
+        if idx is None:
+            return m.group(0)
+        if not fragment:
+            target = f"ch-{idx}"
+        elif re.fullmatch(r"sec-\d+", fragment):
+            # sec-1 是分篇页标题；合订时该重复标题被外层 ch-N 标题替代。
+            target = f"ch-{idx}" if fragment == "sec-1" else f"ch-{idx}-{fragment}"
+        else:
+            raise ValueError(f"合订本无法映射章节锚点：{fname}#{fragment}")
+        return f'<a href="#{target}">{text}</a>'
 
     return re.sub(
-        r'<a href="(?:\./)?([^"#/]+\.html)(?:#[^"]*)?">(.*?)</a>',
+        r'<a href="(?:\./)?([^"#/]+\.html)(?:#([^"]+))?">(.*?)</a>',
         repl, html, flags=re.S)
+
+
+def remove_page_info(html):
+    """删除分篇页脚信息及其引用块，避免打印出空色条。"""
+    html = re.sub(
+        r"<blockquote>\s*<p>📄.*?</p>\s*</blockquote>",
+        "", html, flags=re.S)
+    return re.sub(r"<p>📄 本篇信息.*?</p>", "", html, flags=re.S)
 
 
 def build_html():
@@ -167,6 +184,15 @@ def build_html():
         md, repo = shield_math((SRC / fname).read_text(encoding="utf-8"))
         html = markdown.markdown(md, extensions=["tables", "fenced_code", "sane_lists"])
         html = unshield_math(html, repo)
+        # 与分篇站点一致，sec-N 按源文标题顺序编号；合订本加篇前缀避免冲突。
+        source_heading = [0]
+
+        def tag_source_heading(m):
+            source_heading[0] += 1
+            return (f'<{m.group(1)} id="ch-{i}-sec-{source_heading[0]}">'
+                    f'{m.group(2)}</{m.group(1)}>')
+
+        html = re.sub(r"<(h[1-4])>(.*?)</\1>", tag_source_heading, html, flags=re.S)
         html = re.sub(r"\.md((?:#[^\"')\s]*)?)([\"')])",
                       lambda m: ".html" + m.group(1) + m.group(2), html)
         html = rewrite_book_links(html)
@@ -174,27 +200,34 @@ def build_html():
         html = re.sub(
             r"^\s*(?:<blockquote>.*?</blockquote>\s*)+(?:<hr\s*/?>\s*)?",
             "", html, flags=re.S)
-        html = re.sub(r"<p>📄 本篇信息.*?</p>", "", html, flags=re.S)
+        # 篇末“本篇信息”位于引用块中；整块删除，避免只删段落后留下空色条。
+        html = remove_page_info(html)
         # 外层已经提供篇标题，删掉源文重复标题。导读以 h2 为节；其余篇章
         # 原文以 h2 作篇标题、h3 作节标题，因此在合订本里提升一级。
-        html = re.sub(r"<h[12]>.*?</h[12]>", "", html, count=1, flags=re.S)
+        html = re.sub(r"<h[12][^>]*>.*?</h[12]>", "", html, count=1, flags=re.S)
         if i > 0:
             html = re.sub(
-                r"<h([34])>(.*?)</h\1>",
-                lambda m: f"<h{int(m.group(1)) - 1}>{m.group(2)}</h{int(m.group(1)) - 1}>",
+                r"<h([34])([^>]*)>(.*?)</h\1>",
+                lambda m: (f"<h{int(m.group(1)) - 1}{m.group(2)}>{m.group(3)}"
+                           f"</h{int(m.group(1)) - 1}>"),
                 html, flags=re.S)
 
         # 节标题编号：h2 进入目录和 PDF 书签。
         secs = []
 
         def tag_h2(m):
-            secs.append(plain_text(m.group(1)))
-            return f'<h2 id="ch-{i}-s{len(secs) - 1}">{m.group(1)}</h2>'
+            attrs, inner = m.group(1), m.group(2)
+            match = re.search(r'\bid="([^"]+)"', attrs)
+            section_id = match.group(1) if match else f"ch-{i}-s{len(secs)}"
+            secs.append((plain_text(inner), section_id))
+            if match:
+                return f"<h2{attrs}>{inner}</h2>"
+            return f'<h2 id="{section_id}"{attrs}>{inner}</h2>'
 
-        html = re.sub(r"<h2>(.*?)</h2>", tag_h2, html, flags=re.S)
+        html = re.sub(r"<h2([^>]*)>(.*?)</h2>", tag_h2, html, flags=re.S)
         n_imgs += len(re.findall(r"<img ", html))
         body_parts.append(f'<div class="chap" id="ch-{i}"><h1>{label}</h1>{html}</div>')
-        outline.append((label, f"ch-{i}", [(t, f"ch-{i}-s{j}") for j, t in enumerate(secs)]))
+        outline.append((label, f"ch-{i}", secs))
     # 两级 HTML 目录
     toc = ['<h1>麦克风阵列信号处理教程</h1><ul class="toc">']
     for label, cid, secs in outline:
@@ -340,7 +373,13 @@ def contains_unrendered_math(text):
     return bool(
         "$" in text
         or "MathJax" in text
-        or re.search(r"\\(?:tag|text|qquad|frac|varepsilon)\b", text)
+        or re.search(
+            r"\\(?:begin|end|left|right|tag|text|quad|qquad|frac|dfrac|tfrac|"
+            r"sqrt|mathbf|mathrm|mathbb|mathcal|operatorname|sum|prod|int|"
+            r"cdot|times|leq|geq|alpha|beta|gamma|theta|lambda|mu|sigma|omega|"
+            r"varepsilon)(?![A-Za-z])",
+            text,
+        )
     )
 
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 9 章 · 声源追踪 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="81a6b66ee82c"><style>
+<meta name="source-digest" content="eafb88b9006e"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -15,7 +15,9 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .side ul{margin:2px 0 6px;padding-left:16px;color:#666}.side li{margin:2px 0}
 .main{flex:1;min-width:0;padding:28px 36px;background:#fff}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
-table{border-collapse:collapse;margin:14px 0;display:block;overflow-x:auto;max-width:100%}
+table{border-collapse:collapse;margin:14px 0;max-width:100%}
+.table-scroll{max-width:100%;overflow-x:auto}
+.table-scroll:focus-visible{outline:3px solid #e67e22;outline-offset:2px}
 th,td{border:1px solid #dfe3ea;padding:6px 10px;font-size:14px;text-align:left}
 th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;font-size:13.5px}
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
@@ -35,7 +37,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{position:fixed;bottom:20px;right:20px;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px;opacity:.75}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 @media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}}
-@media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
+@media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
 window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']]}};
@@ -81,7 +83,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <h1 id="sec-1">9. 声源追踪</h1>
 <h2 id="sec-2">9.1 问题与声学特殊性</h2>
 <p>声源追踪持续估计运动声源状态 $\vec{s}_t=[\theta_t,\dot\theta_t,\ddot\theta_t]^\top$，其中三项分别为角度、角速度和角加速度。它把含噪且可能间断的逐帧定位结果融合成连续轨迹，再为波束形成提供较平滑的指向。<a href="https://www.locata.lms.tf.fau.de/" title="citation">LOCATA 声源定位与追踪挑战</a>包含静止或运动的声源与阵列录音，并提供光学动捕真值；使用时要按任务编号区分单源/多源、静止/运动和阵列配置，数据选择的一般原则见 §10.6。</p>
-<p>声学追踪有四个特点：说话人停顿会造成间歇观测，需要语音活动检测（Voice Activity Detection，VAD）门控和轨迹维持；混响会产生非高斯误差和野点；声源数会随时间变化；到达方向（Direction of Arrival，DOA）与笛卡尔位置之间是非线性关系。若状态为平面位置与速度 $[x,y,\dot x,\dot y]$，阵列中心为 $(x_0,y_0)$，则观测函数为 $\theta=\operatorname{atan2}(y-y_0,x-x_0)$。扩展卡尔曼滤波（Extended Kalman Filter，EKF）用该函数的雅可比做一阶线性化，无迹卡尔曼滤波（Unscented Kalman Filter，UKF）则传播 $2L+1$ 个 sigma 点；此处 $L=4$，需要 9 个点。近距离或跨越阵列正上方时非线性更强，应比较 UKF、粒子滤波或其他非线性方法，而不是直接套用线性卡尔曼滤波（Kalman Filter，KF）。</p>
+<p>声学追踪有四个特点：说话人停顿会造成间歇观测，需要语音活动检测（Voice Activity Detection，VAD）门控和轨迹维持；混响会产生非高斯误差和野点；声源数会随时间变化；到达方向（Direction of Arrival，DOA）与笛卡尔位置之间是非线性关系。若状态为平面位置与速度 $[x,y,\dot x,\dot y]$，阵列中心为 $(x_0,y_0)$，则观测函数为 $\theta=\operatorname{atan2}(y-y_0,x-x_0)$。</p>
+<p>单个固定阵列的一次方位观测不能确定距离。令阵列中心为 $(0,0)$，声源在 $(1\ \mathrm m,1\ \mathrm m)$ 与 $(2\ \mathrm m,2\ \mathrm m)$ 时都得到 $45^\circ$；沿同一射线缩放位置不会改变 <code>atan2</code> 的结果。连续仅测方位观测只有在已知运动约束和足够的阵列—声源相对运动使系统可观测时，才可能逐步估计距离。否则，即使用扩展卡尔曼滤波（Extended Kalman Filter，EKF）或无迹卡尔曼滤波（Unscented Kalman Filter，UKF），径向位置仍不能由滤波器自行产生。位置级追踪通常还要引入已知中心不同的多个阵列、到达时间差（Time Difference of Arrival，TDOA）或距离观测，或利用满足可观测条件的移动阵列轨迹。<a href="https://doi.org/10.1080/00207178908559665" title="citation">仅测方位可观测性分析</a>。</p>
+<p>EKF 用该观测函数的雅可比做一阶线性化，UKF 则传播 $2L+1$ 个 sigma 点；此处 $L=4$，需要 9 个点。近距离或声源越过阵列附近时非线性更强，应比较 UKF、粒子滤波或其他非线性方法，而不是直接套用线性卡尔曼滤波（Kalman Filter，KF）。</p>
 <h2 id="sec-3">9.2 单目标追踪</h2>
 <p>状态模型写为 $\vec{s}_t=\mathbf F\vec{s}_{t-1}+\vec v_t$，其中 $\mathbf F$ 描述匀速或匀加速运动，$\vec v_t$ 是未建模运动造成的过程噪声。若定位器只输出角度，观测模型为 $\theta_t^{obs}=\mathbf H\vec{s}_t+w_t$，$w_t$ 是观测噪声。三维状态时 $\mathbf H=[1,0,0]$；下文二维简化状态 $[\theta,\dot\theta]^\top$ 使用 $\mathbf H=[1,0]$。</p>
 <p>贝叶斯递推包含预测和更新。预测阶段依据运动模型外推状态，并增加因过程噪声带来的不确定度；更新阶段用观测与预测之差，即新息，修正状态和协方差。在线性高斯假设下，卡尔曼滤波给出这两个阶段的闭式递推。</p>
@@ -137,7 +141,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>角度方差从 4.35 降到 3.71（标准差约 1.93°）——每吸收一次观测，不确定度就降一截。若下一帧说话人停顿没有观测，就只做第 1、2 步：$\mathbf{P}$ 重新涨大，波束指向维持外推，这就是“静默保持”（§9.4）。</p>
 <p>算例 9-1说明了单步卡尔曼递推。下表比较常见单目标追踪方法的假设、计算量和适用条件。</p>
 <p>表中 α-β 滤波器说的“免 Riccati 迭代”，指的就是把第 2、3、5 步的不确定度递推（Riccati 方程）换成固定增益。</p>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">方法</th>
@@ -191,7 +195,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>观测多峰或运动模型明显非线性</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>IMM 的转移概率和各模型过程噪声需要用目标运动数据标定。对角占优的转移矩阵表示运动模式通常会持续多帧，但具体数值不能脱离帧率和语料直接照搬。</p>
 <p><strong>IMM 的模型切换</strong>：IMM 并行运行静止、匀速或加速等运动模型，再根据各模型的新息似然更新权重。它适合包含启动、停止和匀速段的轨迹。两模型例子可使用静止与匀速模型；转移矩阵的对角元素表示保持当前运动模式的概率。0.95 或 0.9 只能作为示例，实际数值必须结合帧率和目标运动数据估计。</p>
 <p><strong>EKF 与 UKF</strong>：EKF 对 $\theta=\operatorname{atan2}(y-y_0,x-x_0)$ 求雅可比，并在当前估计附近做一阶线性化；估计偏离真实状态较大时，线性化误差可能导致发散。UKF 不显式求导，而是将 $2L+1$ 个 sigma 点通过原始非线性观测函数，再重构均值与协方差，计算量通常高于 EKF。</p>
@@ -204,7 +208,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>每个粒子的权重用高斯似然：离观测越近分越高，</p>
 <p>$$w_i=\exp\!\left(-\frac{(x_i-\theta^{obs})^2}{2\sigma^2}\right)=\exp\!\left(-\frac{(x_i-31)^2}{50}\right)$$</p>
 <p>逐个计算（$(x_i-31)^2$ 先列出来）：</p>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">粒子 $x_i$</th>
@@ -264,7 +268,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>$\exp(-1.62)=0.1979$</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>权重和 $=0.4868+0.7261+0.8353+0.9802+0.9802+1.0000+0.9802+0.9231+0.7261+0.1979=7.8359$。</p>
 <p><strong>第 2 步：归一化权重</strong></p>
 <p>$$\tilde w_i=\frac{w_i}{7.8359}\;\Rightarrow\;[0.0621,\ 0.0927,\ 0.1066,\ 0.1251,\ 0.1251,\ 0.1276,\ 0.1251,\ 0.1178,\ 0.0927,\ 0.0253]$$</p>
@@ -285,7 +289,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>单目标追踪由预测和观测更新组成。线性高斯条件下可使用卡尔曼滤波；非线性、多峰或重尾观测可考虑 UKF 或粒子滤波。粒子滤波仍需门控或杂波似然处理野点，IMM 用于多运动模型切换，VAD 用于控制无观测时的更新。</p>
 <h2 id="sec-4">9.3 多目标追踪</h2>
 <p>多目标追踪需要同时解决观测与轨迹的<strong>数据关联</strong>，并估计当前的<strong>声源数量</strong>。</p>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">方法族</th>
@@ -332,10 +336,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>仍需训练数据；是否输出稳定身份取决于标签和损失</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>LMB/δ-GLMB 为目标维护标签，可输出带身份的轨迹；检测前追踪直接递推定位谱，保留未越过检测阈值的弱证据。活动耦合笛卡尔 DOA（activity-coupled Cartesian DOA，ACCDOA）把向量方向编码为 DOA、向量长度编码为活动强度。它本身是逐帧声事件定位与检测的输出表示，不等同于追踪器；只有结合时序模型、平滑和身份关联后，才形成轨迹。</p>
 <p>PHD 强度 $D_t(x)$ 也不是“某处有人”的普通概率密度。它在区域 $A$ 上的积分表示该区域内目标数的期望，因而总目标数估计来自 $\hat N_t=\int D_t(x)\,dx$，再按整数规则取值。目标位置通常从强度峰或聚类中心提取；“峰数就是人数”只是实现近似。PHD 避免显式枚举观测—目标关联，但只传播一阶矩，不保留目标身份，也不能完整描述目标间相关性。</p>
-<p>下面的递推针对标准独立点目标模型：各目标独立演化，检测事件相互独立，每个被检测目标每帧至多产生一条观测，杂波是与目标观测独立的 Poisson 随机有限集；为得到下面的标准闭式更新，还采用 Poisson 型预测多目标分布近似。PHD 的预测式为</p>
+<p>下面的递推针对标准独立点目标模型：各目标独立演化，检测事件相互独立，每个被检测目标每帧至多产生一条观测，杂波是与目标观测独立的 Poisson 随机有限集，并忽略由既有目标衍生新目标（spawning）的过程，只用 $\gamma_t$ 表示自发出生；为得到下面的标准闭式更新，还采用 Poisson 型预测多目标分布近似。PHD 的预测式为</p>
 <p>$$D_{t|t-1}(x)=\int p_S(x')f_t(x\mid x')D_{t-1}(x')\,dx'+\gamma_t(x),$$</p>
 <p>其中 $p_S$ 是存活概率，$f_t$ 是状态转移密度，$\gamma_t$ 是新生目标强度。给定本帧观测集合 $Z_t$，标准 PHD 更新为</p>
 <p>$$

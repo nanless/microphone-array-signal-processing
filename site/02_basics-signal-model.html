@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 2 章 · 声音到达阵列时发生了什么 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="81a6b66ee82c"><style>
+<meta name="source-digest" content="eafb88b9006e"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -15,7 +15,9 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .side ul{margin:2px 0 6px;padding-left:16px;color:#666}.side li{margin:2px 0}
 .main{flex:1;min-width:0;padding:28px 36px;background:#fff}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
-table{border-collapse:collapse;margin:14px 0;display:block;overflow-x:auto;max-width:100%}
+table{border-collapse:collapse;margin:14px 0;max-width:100%}
+.table-scroll{max-width:100%;overflow-x:auto}
+.table-scroll:focus-visible{outline:3px solid #e67e22;outline-offset:2px}
 th,td{border:1px solid #dfe3ea;padding:6px 10px;font-size:14px;text-align:left}
 th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;font-size:13.5px}
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
@@ -35,7 +37,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{position:fixed;bottom:20px;right:20px;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px;opacity:.75}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 @media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}}
-@media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
+@media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
 window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']]}};
@@ -164,15 +166,15 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>直达声模型明确后，§2.4 再加入房间反射，说明混响会怎样改变观测。</p>
 </blockquote>
 <h2 id="sec-5">2.4 房间声学：混响到底是怎么来的</h2>
-<p><strong>房间脉冲响应（RIR, Room Impulse Response）</strong>：在房间里拍手一次，麦克风录到的“啪——嗡嗡嗡”就是 RIR。它就是房间的“指纹”：麦克风收到的任何声音 = 干净声音与 RIR 做卷积。RIR 分三段（图5(a)）：</p>
+<p><strong>房间脉冲响应（RIR, Room Impulse Response）</strong>：RIR 是房间和收发位置固定时，系统对理想单位冲激的响应。线性、时不变近似下，麦克风信号等于声源信号与 RIR 的卷积。拍手录音可以粗略显示直达声和衰减尾，却不是严格的 RIR：拍手本身有有限时长和频谱，麦克风响应也会进入录音。要得到可用于计算的 RIR，通常播放已知测试信号并反卷积，测量方法见本节末。RIR 可按图5(a)作教学性分段：</p>
 <ol>
 <li><strong>直达声</strong>：从声源直线到达，最干净、携带最准的方向信息；</li>
-<li><strong>早期反射</strong>（到达后约 80 ms 内）：只反射一两次的回声。它响度上有帮助，但会<strong>模糊方向线索</strong>——人类听觉靠“优先效应”（先入为主）不被它带偏，算法却容易被带偏；</li>
+<li><strong>早期反射</strong>：直达声后较早到达、仍能分辨出路径结构的反射。图5(a)用 80 ms 作示意分界；80 ms 也是音乐清晰度指标 $C_{80}$ 的积分分界，而语音清晰度常用 50 ms 的 $C_{50}$。这不是早、晚反射的普适物理边界，80 ms 内的反射次数也取决于房间尺度和路径。早期反射可能增加响度，也会模糊方向线索；</li>
 <li><strong>晚期混响</strong>：经多次反射后形成的弥散尾音。统计建模时，常把充分弥散的晚期混响近似为各向同性声场；这个近似适合分析波束形成器的 DI（指向性指数，§2.6），但不表示混响在时间上就是独立白噪声。WPE（第 7 章）正是利用晚期混响仍有时间相关性来做预测消除。</li>
 </ol>
 <p><img alt="图5 房间声学基础" src="../figures/fig05_room_acoustics.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图 5（a）把房间脉冲响应分为直达声、早期反射和晚期混响；图 5（b）用能量衰减 60 dB 所需时间定义 $T_{60}$；图 5（c）固定 $d_c=1.0$ m，展示直达声与混响声的相对声级怎样随声源—麦克风距离变化。该子图是归一化示例，不直接给出体积或混响时间不同的房间结果。</p>
-<p><strong>混响有多强：$T_{60}$ 与赛宾公式</strong>。$T_{60}$ 是声能衰减 60 dB 所需的时间（图5(b)），可用赛宾（Sabine）公式估算：</p>
+<p><strong>混响有多强：$T_{60}$ 与赛宾公式</strong>。$T_{60}$ 是声能衰减 60 dB 所需的时间（图5(b)），可用赛宾（Sabine）公式估算。原始理论可追溯到 Sabine 的声学论文集。实测时要按空间类型选标准：<a href="https://www.iso.org/standard/40979.html" title="citation">ISO 3382-1:2009</a>面向演出空间，<a href="https://www.iso.org/standard/36201.html" title="citation">ISO 3382-2:2008</a>面向普通房间：</p>
 <p>$$T_{60} = \frac{0.161\,V}{A}, \qquad A = \sum_i S_i\,\alpha_i\text{。}$$</p>
 <ul>
 <li>$V$：房间体积（m³）；$S_i$、$\alpha_i$：第 $i$ 个表面的面积与吸声系数（0=全反射的光滑瓷砖，1=全吸声的开放窗户）。</li>
@@ -189,7 +191,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 $$T_{60} = \frac{24\ln 10}{c}\cdot\frac{V}{A} = \frac{55.3}{343}\cdot\frac{V}{A} \approx 0.161\,\frac{V}{A}\ \checkmark\text{。}$$
 <strong>B-2 常数 0.161 的来源</strong>：$24\ln10\approx55.26$；取声速 $c=343$ m/s，$55.26/343\approx0.161$。其中 $6\ln10$ 来自 60 dB 的能量比，几何平均路径项再带来因子 4。</p>
 </blockquote>
-<p><strong>适用边界</strong>：推导用了“扩散场 + 弱吸收”假设。当平均吸声系数较大（$\bar\alpha > 0.3$，比如录音棚）时赛宾会高估混响时间，要换 Eyring 公式 $T_{60} = \dfrac{-0.161V}{S\ln(1-\bar\alpha)}$（极端检查：$\bar\alpha=1$ 时 Eyring 给出 $T_{60}=0$，物理正确；赛宾却给出非零值，错了）。</p>
+<p><strong>适用边界</strong>：推导用了“扩散场 + 弱吸收”假设。当平均吸声系数较大（$\bar\alpha > 0.3$，比如录音棚）时赛宾会高估混响时间，可改用 Eyring 公式 $T_{60} = \dfrac{-0.161V}{S\ln(1-\bar\alpha)}$（极端检查：$\bar\alpha=1$ 时 Eyring 给出 $T_{60}=0$，赛宾却给出非零值）。公式来源见 <a href="https://doi.org/10.1121/1.1915175" title="citation">Eyring 1930 原论文</a>。</p>
 <p><strong>多远开始失控：直达混响比 DRR 与临界距离</strong>。直达声随距离按平方反比衰减（每远一倍弱 6 dB），而晚期混响在房间里处处一样响。两者相等的位置叫<strong>临界距离</strong> $d_c$：</p>
 <p>$$d_c \approx 0.057\sqrt{\frac{V}{T_{60}}}\ \text{(m)}\text{。}$$</p>
 <p>（此式默认声源全向辐射，即指向性因子 $Q=1$；若声源有指向性（如人声朝前更响），把 $Q$ 乘进根号内的分子：$d_c \approx 0.057\sqrt{QV/T_{60}}$。）</p>
@@ -202,15 +204,15 @@ $$T_{60} = \frac{24\ln 10}{c}\cdot\frac{V}{A} = \frac{55.3}{343}\cdot\frac{V}{A}
 4. <strong>代入赛宾公式</strong> $A = \dfrac{0.161V}{T_{60}}$：$d_c = \sqrt{\dfrac{0.161V}{16\pi\,T_{60}}} = \sqrt{0.00321\,\dfrac{V}{T_{60}}} \approx 0.057\sqrt{\dfrac{V}{T_{60}}}$。
 <strong>B-3 常数 0.057 的来源</strong>：$0.161/(16\pi)\approx0.003203$，再开平方得到 $0.0566\approx0.057$。因此该常数同时包含赛宾公式中的 0.161 和球面扩散项 $16\pi$。</p>
 </blockquote>
-<p>图 5（b）的指数包络把名义 $T_{60}$ 设为 0.5 s；加入固定随机尾和早期反射后，Schroeder 剩余能量曲线最接近 −60 dB 的位置约为 0.514 s。因此 0.5 s 是生成模型的名义参数，不表示该固定样例恰好在 0.500 s 穿过 −60 dB。图 5（c）是设定 $d_c=1.0$ m 的归一化示例。在该模型中，3 m 处的 DRR 为 $-20\log_{10}(3/1)\approx-9.5$ dB，表示混响能量高于直达声；这个数不能外推到未测量的房间。实际 $d_c$ 还随体积、吸声量和声源指向性变化。DRR 可作为距离估计的声学线索，但也会受房间和声源级别影响。<a href="https://www.montana.edu/rmaher/eele217_sp12/reverberation_time.pdf" title="citation">Montana State 房间声学讲义</a></p>
-<p><strong>仿真怎么造混响</strong>：镜像法（Image Method，镜像声源法，Allen &amp; Berkley 1979）把墙面反射等效为镜像声源的叠加，开源库 pyroomacoustics 可直接生成任意房间、任意阵列的房间脉冲响应（RIR）：拿 ShoeBox 类建房、调 compute_rir 算脉冲响应（函数名以版本文档为准）。</p>
-<p><strong>反过来，怎么实测一个房间的混响</strong>：粗糙做法是拍手/爆破气球后看衰减（只能估个大概）；更可控的做法是<strong>指数正弦扫频（ESS, Farina 2000）</strong>：播放频率指数上升的扫频信号，录音后反卷积得到 RIR。在系统近似时不变、没有削波且扫频长度足够时，ESS 可将若干谐波失真成分与线性 RIR 在反卷积结果中分开。环境噪声、削波、时变非线性和播放/录音链路的频响仍会影响测量。也可以用普通语音<strong>盲估</strong> $T_{60}$ 和 DRR（例如利用两麦相干函数估计直达-弥散比），供无法播放测试音的在线场景使用。</p>
+<p>图 5（b）的指数包络把名义 $T_{60}$ 设为 0.5 s；加入固定随机尾和早期反射后，<a href="https://doi.org/10.1121/1.1909343" title="citation">Schroeder 剩余能量积分</a>曲线最接近 −60 dB 的位置约为 0.514 s。因此 0.5 s 是生成模型的名义参数，不表示该固定样例恰好在 0.500 s 穿过 −60 dB。这里直接寻找 −60 dB 交点，只用于核对这条合成曲线；实测应按场所选择 ISO 3382 的相应分册，常对衰减曲线的 −5～−25 dB（$T_{20}$）或 −5～−35 dB（$T_{30}$）区间回归，再外推到 60 dB。图 5（c）是设定 $d_c=1.0$ m 的归一化示例。在该模型中，3 m 处的 DRR 为 $-20\log_{10}(3/1)\approx-9.5$ dB，表示混响能量高于直达声；这个数不能外推到未测量的房间。实际 $d_c$ 还随体积、吸声量和声源指向性变化。DRR 可作为距离估计的声学线索，但也会受房间和声源级别影响。</p>
+<p><strong>仿真怎么造混响</strong>：镜像法（Image Method，镜像声源法）把墙面反射等效为镜像声源的叠加，算法定义见 <a href="https://doi.org/10.1121/1.382599" title="citation">Allen 与 Berkley 1979 原论文</a>。开源库 pyroomacoustics 可生成给定房间和阵列的 RIR：用 ShoeBox 类建房，再调用 compute_rir（函数名以所用版本文档为准）。</p>
+<p><strong>反过来，怎么实测一个房间的混响</strong>：拍手或爆破气球后观察衰减只能作粗略估计；更可控的做法是<strong>指数正弦扫频（ESS, Exponential Sine Sweep）</strong>：播放频率指数上升的已知扫频，录音后反卷积得到 RIR，方法见 <a href="https://aes.org/publications/elibrary-page/?id=10211" title="citation">Farina 2000, AES Convention Paper 5093</a>。在系统近似时不变、没有削波且扫频长度足够时，ESS 可将若干谐波失真成分与线性 RIR 在反卷积结果中分开。环境噪声、削波、时变非线性和播放/录音链路的频响仍会影响测量。也可以用普通语音<strong>盲估</strong> $T_{60}$ 和 DRR（例如利用两麦相干函数估计直达-弥散比），供无法播放测试音的在线场景使用。</p>
 <p>房间传播模型解释了麦克风信号的组成。算法实现还需要把连续波形组织成 STFT、快拍和协方差矩阵。</p>
 <h2 id="sec-6">2.5 数据怎么组织：STFT、快拍与协方差矩阵</h2>
 <p>后面的算法反复出现三个词——STFT、快拍、协方差矩阵，先在这里一次讲清。</p>
 <p><strong>STFT（短时傅里叶变换，Short-Time Fourier Transform）</strong>把波形切成重叠短帧，每帧加窗后做快速傅里叶变换（Fast Fourier Transform，FFT），得到时间—频率复数网格，即语谱图（图 6（a）（b））。增强或波束示例可用 32 ms 窗、8 ms 帧移；自动语音识别（Automatic Speech Recognition，ASR）前端常见另一组设置为 25 ms/10 ms。比较文献时应核对采样率、窗函数、窗长和帧移。每个时频点同时包含幅度与相位。</p>
 <p>为什么需要这张表？因为 STFT 把宽带语音分解为一组<strong>近似窄带</strong>问题。时延 $\tau$ 对应的相位旋转 $2\pi f\tau$ 随频率变化，因此每个频点要使用自己的 $\vec a(f,\theta)$。把卷积在每个时频点写成 $\vec{x}(f,t)\approx\vec{a}(f,\theta)s(f,t)+\vec n(f,t)$ 仍是窄带近似：窗函数会使直线卷积在 STFT 中产生频带内和跨频带项，长房间响应、过短窗或频率变化过快时误差更大。第 4、5 章逐频点处理时，需把窗长与有效冲激响应长度纳入验证。</p>
-<p><strong>STFT 分帧数字例子</strong>：阵列配置——4 麦、常规小间距；采样率 16 kHz、窗长 32 ms、帧移 8 ms。窗长折成采样点 $=16000\times0.032=512$ 点（FFT 常用 512 点）；帧移 $=16000\times0.008=128$ 点，相邻帧重叠 $(512-128)/512=75\%$。1 s 语音共 $(1000-32)/8+1\approx122$ 帧；每帧 FFT 给出 257 个有效频点（0~8 kHz，频率分辨率 $16000/512=31.25$ Hz）。于是 1 s、4 麦录音展开为 $122\times257=31354$ 个时频点，每个点上一个 4 维快拍向量——这就是后文协方差矩阵 $\hat{\mathbf{R}}(f)$ 在每个频点上平均的对象（每频点约 122 个快拍参与平均）。</p>
+<p><strong>STFT 分帧数字例子</strong>：阵列配置——4 麦、常规小间距；采样率 16 kHz、窗长 32 ms、帧移 8 ms。窗长折成采样点 $=16000\times0.032=512$ 点（FFT 常用 512 点）；帧移 $=16000\times0.008=128$ 点，相邻帧重叠 $(512-128)/512=75\%$。1 s 语音共 $(1000-32)/8+1\approx122$ 帧；每帧 FFT 给出 257 个有效频点（0～8 kHz），相邻频点间隔为 $16000/512=31.25$ Hz。这个 31.25 Hz 是 DFT 网格间隔，不等于能分开两条相邻谱线的频率分辨能力；后者还取决于窗函数的主瓣宽度等条件。于是 1 s、4 麦录音展开为 $122\times257=31354$ 个时频点，每个点上一个 4 维快拍向量——这就是后文协方差矩阵 $\hat{\mathbf{R}}(f)$ 在每个频点上平均的对象（每频点约 122 个快拍参与平均）。窗函数对谱分析的影响可参见 <a href="https://doi.org/10.1109/PROC.1978.10837" title="citation">Harris 1978</a>。</p>
 <p><strong>快拍（snapshot，快照向量）</strong>：固定一个频点 $f$、取某一帧 $t$，把 $M$ 个麦克风在该时频点 $(f,t)$ 的复数谱排成列向量 $\vec{x}(f,t)$，就是一个快拍——相当于阵列在某瞬间拍下的一张“空间照片”（图6(b) 里标的那个格子就是它，按正文记作 $(f,t)$，$f$ 是频点号、$t$ 是帧号）。</p>
 <p><strong>空间二阶矩（阵列文献常称空间协方差矩阵）</strong>：单张快拍太噪，把几十到几百个快拍平均：</p>
 <p>$$\hat{\mathbf{R}}(f) = \frac{1}{T}\sum_{t} \vec{x}(f,t)\,\vec{x}^H(f,t)\text{。}$$ (2-2)</p>
@@ -253,8 +255,8 @@ $$T_{60} = \frac{24\ln 10}{c}\cdot\frac{V}{A} = \frac{55.3}{343}\cdot\frac{V}{A}
 <p><strong>可跳过：−13 dB 从哪里来</strong>：均匀加权阵因子近似为 $\sin x/x$ 型（$x$ 正比于偏离指向的相位）。第一个旁瓣是该函数第一个负向极值点，位置约 $x\approx4.4934$（方程 $\tan x=x$ 的首个非零解），函数值 $\sin(4.4934)/4.4934\approx-0.2172$。幅度比 $0.2172$ 折成功率 $0.2172^2\approx0.0472$，取 $10\log_{10}0.0472\approx-13.26$ dB——这就是“约 −13 dB”的来历。直觉：等权矩形窗的傅里叶变换是 sinc，旁瓣是 sinc 振铃的第一个波峰，高度由 sinc 包络 $1/x$ 决定；加窗（汉明等）就是把矩形边沿削薄，振铃随之降低。</p>
 </blockquote>
 <p><strong>度量三：指向性指数 DI（抗混响/抗弥散噪声）</strong>。充分弥散的晚期混响常近似为从各方向入射的声场；实际风噪通常由局部湍流激发，不能无条件按弥散场处理。DI 表示在指定的各向同性弥散场模型下，波束对目标方向的信噪比改善。它由主瓣方向增益的平方除以全空间平均增益的平方，再取对数：</p>
-<p>$$\mathrm{DI} = 10\log_{10}\frac{4\pi\,|B(\theta_0)|^2}{\int |B(\theta)|^2\,\mathrm{d}\Omega}\text{。}$$</p>
-<p>$B(\theta)$ 是波束图，$\mathrm{d}\Omega$ 是立体角微元，整个球面的立体角为 $4\pi$。分母对波束图在整个球面上积分，表示弥散场中各方向输入的总贡献。DI = 0 dB 表示没有方向选择性；DI 越大，能量越集中于目标方向。超指向波束形成（§5.3）的目标之一就是提高这一指标。</p>
+<p>$$\mathrm{DI} = 10\log_{10}\frac{4\pi\,|B(\Omega_0)|^2}{\int_{4\pi} |B(\Omega)|^2\,\mathrm{d}\Omega}\text{。}$$</p>
+<p>$\Omega=(\theta,\phi)$ 表示三维方向，$B(\Omega)$ 是该方向上的复响应，$\Omega_0$ 是目标方向；$\mathrm{d}\Omega$ 是立体角微元，整个球面的立体角为 $4\pi$。分母对波束图在整个球面上积分，表示弥散场中各方向输入的总贡献。只有波束图轴对称时，才能把 $B(\Omega)$ 简写为单角变量。DI = 0 dB 表示没有方向选择性；DI 越大，能量越集中于目标方向。超指向波束形成（§5.3）的目标之一就是提高这一指标。</p>
 <p><strong>度量四：白噪增益 WNG（抗自身噪声/稳健性）</strong>。每个麦克风自己有底噪（热噪声），各通道互相独立。波束权重把它们合起来时会放大多少倍？这就是 WNG：</p>
 <p>$$\mathrm{WNG} = 10\log_{10}\frac{|\vec{w}^H\vec{a}(\theta)|^2}{\|\vec{w}\|^2}\text{。}$$</p>
 <p>分子是目标方向的增益平方，分母是权重自身的能量。无失真约束下，WNG 为负表示输出白噪声功率高于单通道参考。超指向设计在低频可能产生较大的正负权重，使通道增益、相位和位置失配显著改变主瓣或零陷。单位幅度导向矢量下的 WNG 上限是 $10\log_{10}M$，DSB 达到该上限（§5.2）。</p>
@@ -262,14 +264,15 @@ $$T_{60} = \frac{24\ln 10}{c}\cdot\frac{V}{A} = \frac{55.3}{343}\cdot\frac{V}{A}
 <p><strong>常规波束的分辨率尺度</strong>。HPBW 的量级约为 $\lambda/D$，因此它常被用作常规波束扫描能否分开两个近邻源的经验尺度。这不是所有估计器都不能越过的普适物理边界：MUSIC 等子空间方法在模型正确、信噪比和快拍数足够时可以得到窄于常规主瓣的谱峰，所以称为<strong>超分辨（super-resolution）</strong>；代价是对源相关性、阵列失配和有限样本更敏感。</p>
 <p><strong>空间混叠（栅瓣）</strong>：相邻麦间距超过半波长后，不同方向可能产生相同的离散空间相位。图 7（b）中，8 麦阵列指向 60°，间距从 $\lambda/2$ 增至 $\lambda$ 后，−7.7° 出现与主瓣等高的栅瓣，因而无法仅凭该频点区分两个方向。</p>
 <p>这个 −7.7° 可以手算验证：栅瓣条件 $\sin\theta-\sin\theta_0=\pm\lambda/d$，取 $d=\lambda$、$\theta_0=60°$，得 $\sin\theta=\sin60°-1=0.8660-1=-0.1340$，$\theta=\arcsin(-0.1340)\approx-7.7°$——与图7(b) 标注一致。消费级阵列（麦距 2~4 cm）的无混叠带宽约 4.3~8.6 kHz（验算 $c/(2d)=343/(2\times0.04)\approx4.3$ kHz、$343/(2\times0.02)\approx8.6$ kHz）。</p>
-<p>这与时间域奈奎斯特采样具有相似结构：时间采样要求 $f_s\ge2f_{max}$ 以避免频谱混叠；均匀线阵在整个可视角域避免空间混叠的充分条件是 $d\le\lambda/2$。超过这一间距后，不同方向可能产生相同的离散空间相位序列，表现为栅瓣。</p>
+<p>这与时间域奈奎斯特采样具有相似结构：时间采样要求 $f_s\ge2f_{max}$ 以避免频谱混叠；工程上常用 $d\le\lambda/2$ 作为均匀线阵的全视场安全线。若把可视角写成闭区间 $[-90°,90°]$，等号处仍有一个端点退化：$+90°$ 与 $-90°$ 的相邻相位分别为 $+\pi$ 与 $-\pi$，两者相差 $2\pi$，无法仅凭该频点区分。要求闭区间内严格一一对应时应取 $d\lt \lambda/2$。</p>
 <p><strong>为什么 $d \le \lambda/2$ 是安全线</strong>（三步推导）：
 1. 相邻两麦对来自 $\theta$ 方向的平面波，相位差为 $\psi = 2\pi d\sin\theta/\lambda$（正横方向起算）；
 2. 相位以 $2\pi$ 为周期，因此 $\psi$ 与 $\psi+2\pi$ 不可区分。当 $\dfrac{2\pi d}{\lambda}(\sin\theta-\sin\theta_0)=2\pi$，即 $\sin\theta-\sin\theta_0=\dfrac{\lambda}{d}$ 时，另一个方向与指向方向产生相同的阵元相位序列，波束图上出现等高栅瓣；
 3. $\sin$ 的取值范围是 $[-1,1]$，所以 $|\sin\theta-\sin\theta_0|\le2$。当 $d\lt \lambda/2$ 时，$\lambda/d>2$，上式在可见范围内无解。反之，$d>\lambda/2$ 只表示不再保证全视场无栅瓣；某个特定转向是否出现可见等高栅瓣，还要检查上式是否有可见解。</p>
-<p><strong>精度理论下界（CRB）</strong>（统计内容较重，第一遍可跳过，§4 用到时再回）：克拉美－罗界（Cramér–Rao Bound）是在给定观测模型和正则条件下，对无偏到达方向（Direction of Arrival，DOA）估计器方差的下界。下面的显式式子采用单源、窄带、确定性信号模型，阵列是 $M$ 元均匀线阵（Uniform Linear Array，ULA）、间距为 $d$，共有 $T$ 个独立快拍，噪声为空间白高斯噪声，信噪比（Signal-to-Noise Ratio，SNR）按单阵元定义；改变这些假设，界也会改变：</p>
+<p>等号边界可直接代入核对：$d=\lambda/2$、$\theta=+90°$ 与 $\theta_0=-90°$ 时，$\sin\theta-\sin\theta_0=2=\lambda/d$。因此“半波长安全线”包含端射两端重合这一边界例外。</p>
+<p><strong>精度理论下界（CRB）</strong>（统计内容较重，第一遍可跳过，§4 用到时再回）：克拉美－罗界（Cramér–Rao Bound）是在给定观测模型和正则条件下，对无偏到达方向（Direction of Arrival，DOA）估计器方差的下界。下面的显式式子采用单源、窄带、确定性信号模型；每个快拍的未知复幅度作为干扰参数，阵列是 $M$ 元均匀线阵（Uniform Linear Array，ULA）、间距为 $d$，共有 $T$ 个独立快拍，噪声为各阵元方差均为 $\sigma^2$ 的圆对称复白高斯噪声。这里的单阵元线性 SNR 定义为 $\mathrm{SNR}=\sum_{t=1}^{T}|s_t|^2/(T\sigma^2)$。在这些约定下可得到下式；改变复/实噪声、已知/未知幅度或 SNR 定义会改变常数，推导口径见 <a href="https://doi.org/10.1109/29.17564" title="citation">Stoica 与 Nehorai 1989</a>：</p>
 <p>$$\mathrm{CRB}(\theta) = \frac{6}{T \cdot \mathrm{SNR} \cdot M(M^2-1) \cdot \left(\frac{2\pi d}{\lambda}\right)^2 \cos^2\theta}\quad(\text{rad}^2)\text{。}$$</p>
-<p>三个规律一目了然：误差方差与 <strong>SNR、快拍数、孔径平方</strong>（$M^3$ 与 $(d/\lambda)^2$）成反比，且在端射方向（$\cos\theta\to0$）发散。公式里的 $M(M^2-1)$ 来自各麦位置绕阵列中心的二阶矩 $\sum_m (m-\frac{M-1}{2})^2 = \frac{M(M^2-1)}{12}$——孔径在公式里的真实身份就是“麦克风位置的方差”。</p>
+<p>误差方差与 SNR、快拍数和阵元位置的二阶矩成反比，并在端射方向（$\cos\theta\to0$）发散。固定间距 $d$ 并增加阵元时，$M(M^2-1)d^2$ 约按 $M^3d^2$ 增长；若固定物理孔径 $D=(M-1)d$，同一项可写成 $M(M+1)D^2/(M-1)$，约按 $MD^2$ 增长，不能仍称为 $M^3$ 标度。公式里的 $M(M^2-1)$ 来自各麦位置绕阵列中心的二阶矩 $\sum_m (m-\frac{M-1}{2})^2 = \frac{M(M^2-1)}{12}$。</p>
 <p><strong>算例 2-1：CRB 最小数值例</strong></p>
 <p>阵列配置——6 麦、间距 1.4 cm、孔径 7 cm；正横方向、$f=1$ kHz、$T=100$ 快拍。</p>
 <p>在上述模型内，任何满足正则条件的无偏估计器，其方差都不低于该 CRB；它不直接约束有偏估计器的均方误差，也不能脱离模型解释成所有算法的绝对极限。正横方向（$\theta=0°$，即 $\cos\theta=1$）、$\lambda=0.343$ m。SNR 要换成线性值再代入：SNR $=10$ dB 对应 10，0 dB 对应 1。代入上式：</p>

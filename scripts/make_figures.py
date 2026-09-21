@@ -31,7 +31,6 @@ FS_TINY = 8      # 刻度 / 极小标注
 
 # 每张含随机数据的图使用独立种子。调用顺序变化不会改变其他图片。
 FIGURE_SEEDS = {
-    "geometries": 8001,
     "doa_spectrum": 11001,
     "gcc_phat": 12001,
     "tracking": 22001,
@@ -74,6 +73,62 @@ def wilson_interval(successes, trials, z=1.96):
     center = (p + z ** 2 / (2 * trials)) / denominator
     half = z * np.sqrt(p * (1 - p) / trials + z ** 2 / (4 * trials ** 2)) / denominator
     return center - half, center + half
+
+
+def fibonacci_sphere(count):
+    """在单位球面上返回确定性的 Fibonacci 近均匀布点。"""
+    if not isinstance(count, (int, np.integer)) or count <= 0:
+        raise ValueError("count 必须为正整数")
+    index = np.arange(count, dtype=float)
+    z = 1.0 - 2.0 * (index + 0.5) / count
+    azimuth = np.pi * (3.0 - np.sqrt(5.0)) * index
+    radius = np.sqrt(np.maximum(0.0, 1.0 - z ** 2))
+    return np.column_stack((radius * np.cos(azimuth),
+                            radius * np.sin(azimuth), z))
+
+
+def random_decay_rir(t60, fs, rng, duration_factor=1.1):
+    """生成单位直达项加随机指数尾的说明性冲激响应。
+
+    振幅包络在 t=t60 时下降 60 dB；尾长默认取 1.1*t60，
+    因此截断前已低于 -60 dB，而不是用固定时长截断长混响尾。
+    """
+    if t60 <= 0 or fs <= 0 or duration_factor <= 1.0:
+        raise ValueError("t60、fs 必须为正，duration_factor 必须大于 1")
+    length = int(np.ceil(duration_factor * t60 * fs)) + 1
+    time = np.arange(length) / fs
+    tail_scale = np.sqrt(2.9 * 13.82 / fs)
+    rir = rng.standard_normal(length) * np.exp(-6.91 * time / t60) * tail_scale
+    rir[0] = 1.0
+    return rir
+
+
+def fft_convolve_prefix(signal, impulse_response, output_length):
+    """用零填充 FFT 计算线性卷积，并返回前 output_length 点。"""
+    signal = np.asarray(signal)
+    impulse_response = np.asarray(impulse_response)
+    if signal.ndim != 1 or impulse_response.ndim != 1:
+        raise ValueError("signal 和 impulse_response 必须是一维")
+    if not isinstance(output_length, (int, np.integer)) or output_length < 0:
+        raise ValueError("output_length 必须为非负整数")
+    full_length = signal.size + impulse_response.size - 1
+    n_fft = 1 << max(0, (full_length - 1).bit_length())
+    result = np.fft.irfft(
+        np.fft.rfft(signal, n_fft) * np.fft.rfft(impulse_response, n_fft),
+        n_fft)[:full_length]
+    return result[:output_length]
+
+
+def gcc_peak_is_correct(peak_lag, true_delay_samples, tolerance_samples=1):
+    """X1*conj(X2) 约定下，第二路延迟 true_delay 时真峰位于负 lag。"""
+    return abs(peak_lag + true_delay_samples) <= tolerance_samples
+
+
+def gcc_peak_contrast(correlation):
+    """图13所用峰值对比度：max(g) / median(abs(g))。"""
+    correlation = np.asarray(correlation)
+    return float(np.max(correlation) /
+                 (np.median(np.abs(correlation)) + 1e-12))
 
 
 def distortionless_weights(covariance, steering, diagonal_loading=0.0):
@@ -122,11 +177,10 @@ def gcc_phat_interpolated(x1, x2, fs, interp=16, max_tau=None):
 # 图8 阵列几何形态大全
 # ----------------------------------------------------------------------
 def fig_geometries():
-    rng = np.random.default_rng(FIGURE_SEEDS["geometries"])
     fig, axes = plt.subplots(2, 4, figsize=(15, 7.5))
     titles = ["(a) 双麦 Endfire", "(b) 双麦 Broadside", "(c) 四麦均匀线阵 ULA",
               "(d) 四麦方阵/平面阵", "(e) 六麦圆阵 UCA + 中心麦",
-              "(f) 均匀球阵(32麦)", "(g) 螺旋阵/对数阵", "(h) 分布式/非规则阵"]
+              "(f) Fibonacci近均匀球阵(32麦)", "(g) 螺旋阵/对数阵", "(h) 分布式/非规则阵"]
     for ax, t in zip(axes.flat, titles):
         ax.set_title(t, fontsize=11)
         ax.set_aspect("equal")
@@ -137,14 +191,14 @@ def fig_geometries():
     ax.scatter([0, 0], [0, 4], s=180, c=C_BLUE, zorder=5, marker="o", edgecolors="k")
     for a in np.linspace(-0.5, 0.5, 7):
         ax.plot([0, 6 * np.sin(a)], [2, 2 + 6 * np.cos(a)], color=C_ORANGE, alpha=0.5, lw=1)
-    ax.annotate("拾音主轴", xy=(1.2, 6.2), fontsize=9, color=C_ORANGE)
+    ax.annotate("假定目标主轴", xy=(1.2, 6.2), fontsize=9, color=C_ORANGE)
     ax.set_xlim(-4, 6); ax.set_ylim(-1, 7)
     # (b) broadside
     ax = axes[0, 1]
     ax.scatter([-2, 2], [0, 0], s=180, c=C_BLUE, zorder=5, edgecolors="k")
     for a in np.linspace(np.pi / 2 - 0.55, np.pi / 2 + 0.55, 7):
         ax.plot([0, 6 * np.cos(a)], [0, 6 * np.sin(a)], color=C_ORANGE, alpha=0.5, lw=1)
-    ax.annotate("拾音主轴", xy=(1.5, 5.5), fontsize=9, color=C_ORANGE)
+    ax.annotate("假定目标主轴", xy=(1.5, 5.5), fontsize=9, color=C_ORANGE)
     ax.set_xlim(-6.5, 6.5); ax.set_ylim(-1, 7)
     # (c) ULA
     ax = axes[0, 2]
@@ -173,8 +227,8 @@ def fig_geometries():
     ax = axes[1, 1]
     ax.remove()
     ax = fig.add_subplot(2, 4, 6, projection="3d")
-    ax.set_title("(f) 均匀球阵(32麦)", fontsize=FS_TITLE)
-    u = rng.normal(size=(32, 3)); u /= np.linalg.norm(u, axis=1, keepdims=True)
+    ax.set_title("(f) Fibonacci近均匀球阵(32麦)", fontsize=FS_TITLE)
+    u = fibonacci_sphere(32)
     ax.scatter(u[:, 0], u[:, 1], u[:, 2], s=65, c=C_BLUE, edgecolors="k", lw=0.4, depthshade=False)
     r = 1
     phi, theta = np.mgrid[0:np.pi:20j, 0:2 * np.pi:20j]
@@ -370,7 +424,7 @@ def fig_doa_spectrum():
         axes[1].annotate(f"真源{s}°", xy=(s, -2), xytext=(s - 6, -8), fontsize=9,
                          arrowprops=dict(arrowstyle="->", color="k", lw=0.8))
     axes[1].set_ylim(-25, 3); axes[1].set_xlabel("角度 (°)"); axes[1].set_ylabel("伪谱 (dB)")
-    axes[1].text(0.5, 0.12, "MUSIC伪谱非功率：峰高无意义，只看峰位", transform=axes[1].transAxes,
+    axes[1].text(0.5, 0.12, "峰高不等于源功率；本图只比较峰位与谱形", transform=axes[1].transAxes,
                  fontsize=FS_SMALL, color=C_RED, ha="center",
                  bbox=dict(fc="white", ec=C_RED, lw=0.7, alpha=0.9, boxstyle="round,pad=0.3"))
     axes[1].legend(fontsize=FS_SMALL); axes[1].set_title("(b) MUSIC 特征结构类伪谱", fontsize=12); axes[1].grid(ls=":", alpha=0.5)
@@ -509,9 +563,9 @@ def fig_gsc():
     arrow(10.0, 3.35, 10.8, 3.35)
     ax.text(10.55, 3.6, "e(n)", fontsize=FS_LABEL, color=C_RED, ha="center")
     # ---- 支路标签：放在各自支路最左端正上方
-    ax.text(0.3, 5.68, "上支路（固定波束，目标无失真）", fontsize=FS_LABEL, color=C_ORANGE, ha="left")
+    ax.text(0.3, 5.68, "上支路（设计目标：期望方向单位响应）", fontsize=FS_LABEL, color=C_ORANGE, ha="left")
     ax.text(2.7, 2.68, "下支路（自适应噪声估计）", fontsize=FS_LABEL, color=C_BLUE, ha="left")
-    ax.text(5.75, 0.55, "输出 $e(n)$：期望方向无失真，干扰/噪声被自适应对消",
+    ax.text(5.75, 0.55, "模型匹配且滤波器收敛时：保持目标响应，对消相关干扰",
             ha="center", fontsize=FS_LABEL, color=C_RED)
     ax.set_title("图17  GSC（广义旁瓣对消器）结构框图", fontsize=FS_SUP)
     save(fig, "fig17_gsc.png")
@@ -559,6 +613,7 @@ def fig_srp_grid():
         ax.plot([mic[0], src[0]], [mic[1], src[1]], ls=":", color=C_ORANGE, alpha=0.6, lw=1)
     ax.legend(fontsize=9); ax.set_title("(a) 空间网格 + 各麦到候选点的距离线", fontsize=11)
     ax.set_xlim(-0.5, 7); ax.set_ylim(-0.5, 5.2); ax.set_aspect("equal"); ax.grid(ls=":", alpha=0.3)
+    ax.set_xlabel("x (m)", fontsize=FS_LABEL); ax.set_ylabel("y (m)", fontsize=FS_LABEL)
     ax = axes[1]
     gx = np.linspace(-0.5, 7.0, 90); gy = np.linspace(-0.5, 5.2, 68)
     GX, GY = np.meshgrid(gx, gy)
@@ -571,8 +626,10 @@ def fig_srp_grid():
     ax.set_xlim(-0.5, 7); ax.set_ylim(-0.5, 5.2); ax.set_aspect("equal")
     ax.set_xlabel("x (m)", fontsize=FS_LABEL); ax.set_ylabel("y (m)", fontsize=FS_LABEL)
     fig.colorbar(im, ax=ax, shrink=0.8, label="归一化麦对 GCC 累积分数")
-    fig.suptitle("图14  SRP-PHAT 定位过程（理想化 GCC 峰；6 个麦对 TDOA 累积）", fontsize=FS_SUP)
-    fig.subplots_adjust(left=0.06, right=0.94, bottom=0.11, top=0.88, wspace=0.28)
+    fig.suptitle("图14  SRP-PHAT 定位过程（独立米级分布式阵列例）\n"
+                 "4 m × 3 m 四麦；源(5.5, 3.8) m；c=343 m/s；高斯峰σ=166.7 μs；90×68网格",
+                 fontsize=FS_SUP)
+    fig.subplots_adjust(left=0.06, right=0.94, bottom=0.11, top=0.80, wspace=0.28)
     save(fig, "fig14_srp_grid.png")
 
 
@@ -1301,22 +1358,56 @@ def scale_aligned_spectral_nmse_db(reference, estimate, frame_mask):
     return 10 * np.log10(max(error_power / reference_power, np.finfo(float).eps))
 
 
+def smooth_power_valid(power, width=5):
+    """沿最后一轴做移动平均；边缘只除以实际参与平均的样本数。"""
+    power = np.asarray(power, dtype=float)
+    if power.ndim != 2:
+        raise ValueError("power 必须是 F×T 矩阵")
+    if not isinstance(width, (int, np.integer)) or width < 1:
+        raise ValueError("width 必须为正整数")
+    if power.shape[1] == 0:
+        return power.copy()
+    effective_width = min(int(width), power.shape[1])
+    kernel = np.ones(effective_width, dtype=float)
+    counts = np.convolve(np.ones(power.shape[1]), kernel, mode="same")
+    return np.apply_along_axis(
+        lambda row: np.convolve(row, kernel, mode="same") / counts,
+        1,
+        power,
+    )
+
+
 def wpe_dereverb(Y, K=10, delay=3, iters=3):
     """单通道 WPE (Nakatani 2010)。Y: F x T 复数 STFT。"""
+    Y = np.asarray(Y, dtype=complex)
+    if Y.ndim != 2:
+        raise ValueError("Y 必须是 F×T 矩阵")
+    if not isinstance(K, (int, np.integer)) or K < 0:
+        raise ValueError("K 必须为非负整数")
+    if not isinstance(delay, (int, np.integer)) or delay < 1:
+        raise ValueError("delay 必须为正整数")
+    if not isinstance(iters, (int, np.integer)) or iters < 0:
+        raise ValueError("iters 必须为非负整数")
     F, T = Y.shape
     X = Y.copy()
-    lam_floor = 1e-5 * np.abs(Y).max() ** 2
+    if K == 0 or iters == 0 or T == 0:
+        return X
+    t0, Ypast, ycur = wpe_past_frames(Y, K, delay)
+    if T <= t0:
+        return X
+    peak_power = np.max(np.abs(Y) ** 2, axis=1, keepdims=True)
+    active = peak_power[:, 0] > 0
+    if not np.any(active):
+        return X
+    lam_floor = 1e-5 * peak_power
     for _ in range(iters):
-        lam = np.maximum(np.abs(X) ** 2, lam_floor)
-        # 沿时间轴平滑功率谱，防止静音帧权重过大
-        ker = np.ones(5) / 5
-        lam = np.apply_along_axis(lambda v: np.convolve(v, ker, mode="same"), 1, lam)
+        # 先按有效样本数平滑，再施加相对功率下限。这样常数功率在边缘不被零填充压低。
+        lam = smooth_power_valid(np.abs(X) ** 2, width=5)
+        lam = np.maximum(lam, lam_floor)
         G = np.zeros((F, K), dtype=complex)
-        t0, Ypast, ycur = wpe_past_frames(Y, K, delay)
-        if T <= t0:
-            break
-        w = 1.0 / lam[:, t0:]
-        for f in range(F):
+        w = np.zeros_like(lam[:, t0:])
+        w[active] = 1.0 / lam[active, t0:]
+        for f in np.flatnonzero(active):
             P = Ypast[f]  # K x Tv
             ww = w[f]
             Rw = (P * ww[None, :]) @ P.conj().T
@@ -1495,22 +1586,18 @@ def fig_gcc_reverb():
         声源—麦克风距离或经标定的 DRR，统计数字只用于检查定性趋势。
         """
         r = np.random.default_rng(seed)
-        L = int(0.6 * fs)
-        t = np.arange(L) / fs
-        tail_scale = np.sqrt(2.9 * 13.82 / fs)  # 使 尾/直达 能量比 ≈ 2.9·T60
-        rir1 = r.standard_normal(L) * np.exp(-6.91 * t / T60) * tail_scale
-        rir2 = r.standard_normal(L) * np.exp(-6.91 * t / T60) * tail_scale
-        rir1[0], rir2[0] = 1.0, 1.0
+        rir1 = random_decay_rir(T60, fs, r)
+        rir2 = random_decay_rir(T60, fs, r)
         sig = make_src(seed + 1000)
-        x1 = np.convolve(sig, rir1)[:N]
-        x2 = np.convolve(causal_delay(sig, tau_true), rir2)[:N]
+        x1 = fft_convolve_prefix(sig, rir1, N)
+        x2 = fft_convolve_prefix(causal_delay(sig, tau_true), rir2, N)
         i0 = r.integers(0, N - frame - 1)
         f1 = x1[i0:i0 + frame]
         f2 = x2[i0:i0 + frame]
         lags, g = gcc_phat(f1, f2)
         pk = lags[np.argmax(g)]
-        contrast = np.max(g) / (np.median(np.abs(g)) + 1e-12)
-        return abs(pk + tau_true) <= 1, contrast
+        contrast = gcc_peak_contrast(g)
+        return gcc_peak_is_correct(pk, tau_true), contrast
 
     # (a) 示例互相关曲线
     fig = plt.figure(figsize=(14.5, 4.6))
@@ -1522,15 +1609,11 @@ def fig_gcc_reverb():
                                     (1.0, "(d) $T_{60}$=1.0s：单帧示例")]):
         ax = fig.add_subplot(gs[i])
         r = np.random.default_rng(7)
-        L = int(0.6 * fs)
-        t = np.arange(L) / fs
-        tail_scale = np.sqrt(2.9 * 13.82 / fs)
-        rir1 = r.standard_normal(L) * np.exp(-6.91 * t / T60) * tail_scale
-        rir2 = r.standard_normal(L) * np.exp(-6.91 * t / T60) * tail_scale
-        rir1[0], rir2[0] = 1.0, 1.0
+        rir1 = random_decay_rir(T60, fs, r)
+        rir2 = random_decay_rir(T60, fs, r)
         sig = make_src(3)
-        x1 = np.convolve(sig, rir1)[:N]
-        x2 = np.convolve(causal_delay(sig, tau_true), rir2)[:N]
+        x1 = fft_convolve_prefix(sig, rir1, N)
+        x2 = fft_convolve_prefix(causal_delay(sig, tau_true), rir2, N)
         i0 = 4000
         f1 = x1[i0:i0 + 1024]
         f2 = x2[i0:i0 + 1024]
@@ -1541,7 +1624,7 @@ def fig_gcc_reverb():
         ax.axvline(-tau_true / fs * 1000, color="k", ls="--", lw=1, alpha=0.6)
         pk = lags[np.argmax(g)]
         ax.plot(lags_ms[np.argmax(g)], 1.0, "r^", ms=10)
-        ok = abs(pk + tau_true) <= 1
+        ok = gcc_peak_is_correct(pk, tau_true)
         ax.set_title(ttl + ("\n本帧峰位置正确" if ok else "\n本帧找错峰"), fontsize=10.5,
                      color=C_GREEN if ok else C_RED)
         if T60 >= 0.6:
@@ -1583,7 +1666,8 @@ def fig_gcc_reverb():
     h1, lb1 = ax.get_legend_handles_labels()
     h2, lb2 = ax2.get_legend_handles_labels()
     ax.legend(h1 + h2, lb1 + lb2, fontsize=FS_SMALL, loc="upper left")
-    ax.set_title("(e) 150 次随机模拟（64 ms 短帧）：\n指数尾增强时峰更难辨认", fontsize=10.5)
+    ax.set_title("(e) 150 次随机模拟（64 ms 短帧）：\n"
+                 "正确=真峰±1点；对比度=max(g)/median|g|", fontsize=10.5)
     ax.grid(ls=":", alpha=0.5)
     fig.suptitle("图13  随机衰减尾会扰乱 GCC-PHAT 峰\n（说明性随机尾模型；黑虚线=直达声时延；无传感器噪声；不用于报告绝对性能）", fontsize=FS_SUP)
     fig.subplots_adjust(left=0.055, right=0.94, bottom=0.14, top=0.77, wspace=0.42)

@@ -42,6 +42,41 @@ class FigureAlgorithmTest(unittest.TestCase):
         self.assertLess(low_all, 1.0)
         self.assertAlmostEqual(high_all, 1.0, places=15)
 
+    def test_fibonacci_sphere_is_deterministic_and_on_unit_sphere(self):
+        points = figures.fibonacci_sphere(32)
+        np.testing.assert_allclose(np.linalg.norm(points, axis=1), 1.0,
+                                   rtol=0.0, atol=1e-14)
+        np.testing.assert_allclose(points, figures.fibonacci_sphere(32))
+        expected_z = 1.0 - 2.0 * (np.arange(32) + 0.5) / 32
+        np.testing.assert_allclose(points[:, 2], expected_z)
+
+    def test_random_decay_rir_extends_beyond_t60(self):
+        fs = 16000
+        t60 = 1.0
+        rir = figures.random_decay_rir(
+            t60, fs, np.random.default_rng(7))
+        self.assertGreater(rir.size, fs)
+        end_time = (rir.size - 1) / fs
+        envelope_db = 20 * np.log10(np.exp(-6.91 * end_time / t60))
+        self.assertLess(envelope_db, -60.0)
+        self.assertEqual(rir[0], 1.0)
+
+    def test_fft_convolve_prefix_matches_direct_linear_convolution(self):
+        signal = np.array([1.0, -2.0, 0.5, 3.0])
+        impulse = np.array([0.4, 1.0, -0.2])
+        actual = figures.fft_convolve_prefix(signal, impulse, 5)
+        expected = np.convolve(signal, impulse)[:5]
+        np.testing.assert_allclose(actual, expected, rtol=1e-13, atol=1e-13)
+
+    def test_gcc_peak_metrics_use_documented_sign_and_tolerance(self):
+        self.assertTrue(figures.gcc_peak_is_correct(-9, 9))
+        self.assertTrue(figures.gcc_peak_is_correct(-8, 9))
+        self.assertFalse(figures.gcc_peak_is_correct(-7, 9))
+        correlation = np.array([-1.0, 2.0, 4.0, -3.0])
+        self.assertAlmostEqual(
+            figures.gcc_peak_contrast(correlation),
+            4.0 / (np.median(np.abs(correlation)) + 1e-12), places=12)
+
     def test_distortionless_weights_keep_unit_target_response(self):
         covariance = np.array(
             [[2.0, 0.3 - 0.1j], [0.3 + 0.1j, 1.0]], dtype=complex)
@@ -152,6 +187,32 @@ class FigureAlgorithmTest(unittest.TestCase):
             100.0 * covariance, 100.0 * cross)
         np.testing.assert_allclose(filt, scaled_filt, rtol=1e-12, atol=1e-12)
         self.assertAlmostEqual(scaled_loading, 100.0 * loading, places=12)
+
+    def test_wpe_all_zero_frequency_bins_are_bypassed(self):
+        spectrum = np.zeros((5, 20), dtype=complex)
+        output = figures.wpe_dereverb(spectrum, K=4, delay=2, iters=2)
+        np.testing.assert_array_equal(output, spectrum)
+        self.assertTrue(np.all(np.isfinite(output)))
+
+    def test_wpe_zero_order_empty_and_short_inputs_are_safe(self):
+        spectrum = np.ones((2, 4), dtype=complex)
+        np.testing.assert_array_equal(
+            figures.wpe_dereverb(spectrum, K=0, delay=1, iters=2), spectrum)
+        empty = np.empty((2, 0), dtype=complex)
+        self.assertEqual(figures.wpe_dereverb(empty, K=1, delay=1).shape, (2, 0))
+        for frames in (2, 3, 4):
+            output = figures.wpe_dereverb(
+                np.ones((2, frames), dtype=complex), K=1, delay=1, iters=1)
+            self.assertEqual(output.shape, (2, frames))
+            self.assertTrue(np.all(np.isfinite(output)))
+
+    def test_wpe_power_smoothing_preserves_constant_edges(self):
+        power = np.full((2, 9), 3.5)
+        smoothed = figures.smooth_power_valid(power, width=5)
+        np.testing.assert_allclose(smoothed, power, rtol=0, atol=1e-15)
+        short = figures.smooth_power_valid(np.full((2, 3), 2.0), width=5)
+        self.assertEqual(short.shape, (2, 3))
+        np.testing.assert_allclose(short, 2.0, rtol=0, atol=1e-15)
 
     def test_scale_aligned_spectral_nmse_ignores_global_complex_gain(self):
         reference = np.array([[1 + 1j, 2 - 1j], [0.5, -0.2j]])

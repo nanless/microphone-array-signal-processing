@@ -37,7 +37,7 @@
 
 **期刊**：IEEE/ACM Transactions on Audio, Speech, and Language Processing（TASLP，本领域主刊）、IEEE JSTSP（信号处理选题特刊）、JASA（美国声学学会刊）、Speech Communication。
 
-**挑战赛**（用于了解公开任务和评测口径）：CHiME 覆盖远场、多说话人和多通道语音处理；CHiME-9 设置 MCoRec 多会话鸡尾酒会转写与会话聚类、ECHI 低延迟助听对话增强。[CHiME 官方](https://www.chimechallenge.org/ "citation")于 2026 年 7 月公布 CHiME-10 的 ECHI-2、URGENT、SG-TSE 三项任务；挑战计划于 2027 年 2 月 4 日开放，提交期暂定为 2027 年 8～9 月。日程可能调整，参赛时应以官方页面为准。DCASE 2026 Task 3 是 Semantic Acoustic Imaging SELD，与 DCASE 2024 Task 3 的距离估计设置不同；任务定义见 [DCASE 2026 官方页面](https://dcase.community/challenge2026/ "citation")。其他公开评测包括 REVERB 去混响评测、ICASSP DNS/AEC Challenge，以及面向 AR 设备语音增强的 SPEAR。
+**挑战赛**（用于了解公开任务和评测口径）：CHiME 覆盖远场、多说话人和多通道语音处理；CHiME-9 设置 MCoRec 多会话鸡尾酒会转写与会话聚类、ECHI 低延迟助听对话增强。[CHiME 官方](https://www.chimechallenge.org/ "citation")于 2026 年 7 月公布 CHiME-10 的 ECHI-2、URGENT、SG-TSE 三项任务；挑战计划于 2027 年 2 月 4 日开放，提交期暂定为 2027 年 8～9 月。日程可能调整，参赛时应以官方页面为准。DCASE 2026 已于 2026 年 6 月 15 日结束，并在 7 月 1 日公布结果；Task 3 是 Semantic Acoustic Imaging SELD，与 DCASE 2024 Task 3 的距离估计设置不同。以上状态核实于 2026 年 9 月，任务定义与结果见 [DCASE 2026 官方页面](https://dcase.community/challenge2026/ "citation")和[结果公告](https://dcase.community/articles/dcase2026-challenge-results-published "citation")。其他公开评测包括 REVERB 去混响评测、ICASSP DNS/AEC Challenge，以及面向 AR 设备语音增强的 SPEAR。
 
 **历史脉络**（本领域是雷达/声呐技术向语音的迁移史）：
 
@@ -56,7 +56,7 @@
 | 2014 | Amazon Echo 把多麦克风远场语音带入一类消费设备；具体阵列规格随硬件代次而变 |
 | 2015–18 | CHiME-3/4/5 的公开任务推动了掩码辅助波束与 GSS 等方法的可复现比较 |
 | 2019–24 | DNN 定位/追踪（ACCDOA：声源活动与方向联合输出，Shimada et al., ICASSP 2021）、端到端一体化；CHiME-7/8 大模型后端；STARSS24（DCASE 2024 Task 3）新增声源距离估计子任务 |
-| 2025–26 | CHiME-9 设置 MCoRec 与 ECHI；2026 年 7 月公布 CHiME-10 三项任务；DCASE 2026 Task 3 转为 Semantic Acoustic Imaging SELD |
+| 2025–26 | CHiME-9 设置 MCoRec 与 ECHI；2026 年 7 月公布 CHiME-10 三项任务；DCASE 2026 Task 3 转为 Semantic Acoustic Imaging SELD，并于 2026 年 7 月公布挑战结果 |
 
 ### 13.3 研究前沿速览（2024—）
 
@@ -70,6 +70,9 @@
 6. **TF-GridNet 与复数谱映射骨干**：TF-GridNet 的单通道会议版（Wang et al., ICASSP 2023）研究单通道说话人分离；期刊扩展（IEEE/ACM TASLP 2023）进一步覆盖噪声、混响和多通道条件。具体 SI-SDRi 必须按原文的数据版本、混合方式和表号引用，不能把两版结果混在一起。[ICASSP 2023 单通道会议版](https://doi.org/10.1109/ICASSP49357.2023.10094992 "citation")、[TASLP 2023 期刊扩展](https://doi.org/10.1109/TASLP.2023.3304482 "citation")。
 7. **几何无关前端的期刊研究**：Kamo et al. 在 *Computer Speech & Language* 95:101820（2026）中整理了几何无关的多说话人远场识别系统，并在真实会议数据上评估。[Kamo et al., *Computer Speech & Language*](https://www.sciencedirect.com/science/article/pii/S0885230825000452 "citation") 它与 CHiME-8 的系统共同说明，不固定阵列拓扑可以作为明确的系统设计目标；泛化范围仍以论文的训练阵列、测试设备和数据为边界。
 8. **CHiME-9 与大模型后端**：CHiME-9 设置 MCoRec 和 ECHI 两项任务；前者涉及多会话转写与会话聚类，后者研究低延迟助听对话增强。[CHiME-9 官网](https://www.chimechallenge.org/challenges/chime9/index "citation") DiCoW（Polok et al., *Computer Speech & Language* 95:101841，2026）把分割信息作为条件注入 Whisper，用于目标说话人识别，说明前端的分割、增强结果可以作为大模型后端的显式条件，而不只是输出单路音频。[DiCoW, DOI 10.1016/j.csl.2025.101841](https://www.sciencedirect.com/science/article/pii/S088523082500066X "citation")
+9. **扩散先验用于无监督盲分离**：ArrayDPS（Xu et al., ICML 2025）处理“没有阵列几何、房间冲激响应和配对分离标签”的多通道盲分离问题。AuxIVA 通过源独立性直接迭代解混矩阵；ArrayDPS 改为从单说话人扩散先验采样，并在每个采样步骤内估计相对房间冲激响应，用该近似混合模型计算似然梯度。它仍假设说话人数已知、各通道同步、混合可由卷积模型近似，而且单说话人先验要覆盖测试语音域；扩散先验不能替代源数估计、同步或域外验证。
+
+   最小复现可沿用官方 SMS-WSJ 配置：两名说话人、3 通道、8 kHz，先下载作者提供的单说话人扩散模型，再运行 `separate.py`，设置 `num_speakers=2`、`n_channels=3`、`num_steps=400`，将输出与其 IVA 初始化按同一 SI-SDR 实现比较，同时记录总耗时和峰值显存。官方说明要求显存大于 7 GB；400 步扩散采样还嵌套相对 RIR 优化，因此它是离线研究候选，不应直接列入低延迟流式基线。[ArrayDPS 论文（PMLR 267）](https://proceedings.mlr.press/v267/xu25f.html "citation")、[官方实现与复现命令](https://github.com/ArrayDPS/ArrayDPS "citation")。
 
 #### 专栏：神经网络前端的泛化失配与四类对策
 

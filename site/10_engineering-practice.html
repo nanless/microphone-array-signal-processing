@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 10 章 · 工程实现与产业实践 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="81a6b66ee82c"><style>
+<meta name="source-digest" content="eafb88b9006e"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -15,7 +15,9 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .side ul{margin:2px 0 6px;padding-left:16px;color:#666}.side li{margin:2px 0}
 .main{flex:1;min-width:0;padding:28px 36px;background:#fff}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
-table{border-collapse:collapse;margin:14px 0;display:block;overflow-x:auto;max-width:100%}
+table{border-collapse:collapse;margin:14px 0;max-width:100%}
+.table-scroll{max-width:100%;overflow-x:auto}
+.table-scroll:focus-visible{outline:3px solid #e67e22;outline-offset:2px}
 th,td{border:1px solid #dfe3ea;padding:6px 10px;font-size:14px;text-align:left}
 th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;font-size:13.5px}
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
@@ -35,7 +37,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{position:fixed;bottom:20px;right:20px;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px;opacity:.75}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 @media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}}
-@media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
+@media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
 window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']]}};
@@ -123,7 +125,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>AEC 通常位于会改变回声路径关系的非线性处理之前。参考信号应覆盖实际播放链中的增益、均衡和混音变化。若参考取在这些处理之前，AEC 看到的参考与扬声器实际播放内容不一致。WPE、波束和 NS 的先后则要结合实现判断：多通道 WPE 需要多通道输入；单通道 WPE 可以放在波束之后；神经网络若联合完成波束与去混响，也不能再套用传统串行顺序。</p>
 <h3 id="sec-3">10.1.1 延迟不能把每个模块的耗时直接相加</h3>
 <p>端到端延迟应沿实际关键路径测量，并分成五类：</p>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">类别</th>
@@ -158,7 +160,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>流式 ASR 解码、网络往返、播报准备</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>若若干模块在同一帧内串行执行，它们的计算时间要相加；并行分支取耗时最长的关键分支；流水重叠的等待只沿关键路径计一次。在线 WPE 只使用历史帧时，本身不需要未来帧，但其分帧、平滑和实现缓冲仍可能产生延迟。</p>
 <p>可把第 $p$ 条路径写成</p>
 <p>$$
@@ -170,7 +172,7 @@ $$</p>
 <p>图 25(a) 把“采集/帧就绪等待”示意为 32 ms，再与未来帧前瞻 16 ms、判决确认 25 ms、计算与调度 20 ms 组成一条 93 ms 的示例关键路径。这里的 32 ms 是工作表示例，不等同于 STFT 窗长，也不是所有 32 ms 窗都会增加 32 ms 算法等待；窗的左右对齐、声卡周期、帧移和模块何时开始计算都会改变实际值。这些数字只说明记账方法，没有包含图外可能存在的解码和交互延迟。实际系统应在声学输入与最终输出之间记录时间戳或回采脉冲，分别测量冷启动、稳定运行和最不利调度条件。把 STFT 窗长从 32 ms 改为 16 ms，也不等于必然省下 16 ms：只有依赖完整窗或未来样本的等待发生变化，关键路径才会缩短。</p>
 <p>延迟报告不能只有平均值。稳定运行阶段至少给出中位数（p50）与尾延迟（如 p95、p99）、样本数和测量时长；冷启动另报模型加载、内存分配和状态填充所需时间。若系统存在不同设备、网络或调度模式，应分别报告，而不是把所有样本混成一个分位数。测量点也要写清，例如“音频驱动时间戳 → 第一块可播放增强 PCM”与“音频入口 → 首个 ASR token”是两条不同关键路径。</p>
 <p>参考接口可按下表检查：</p>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">模块</th>
@@ -231,7 +233,7 @@ $$</p>
 <td>取点、缓存、误报与漏报</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="sec-4">10.2 拾音、同步与增益</h2>
 <p>麦克风选型至少要看自噪声、声学过载点、灵敏度、频响和通道一致性。单个器件的典型值不能代替整机测试：声孔、密封、挡板、电源噪声和装配偏差都会改变阵列响应。</p>
 <p>脉冲密度调制（Pulse-Density Modulation，PDM）、芯片间音频总线（Inter-IC Sound，I²S）和时分复用（Time-Division Multiplexing，TDM）是常见数字接口，但一根数据线能承载多少通道取决于器件、时钟和控制器配置，不能只按接口名称判断。阵列处理还要确认通道是否共享采样时钟、帧同步是否一致，以及驱动是否会独立丢样。</p>
@@ -255,7 +257,7 @@ $$</p>
 <h2 id="sec-7">10.3 NS、控制信号与唤醒分支</h2>
 <h3 id="sec-8">10.3.1 单通道 NS 的方法和边界</h3>
 <p>单通道 NS 常放在波束输出之后，因为此处计算量较小，也不会反过来破坏传统 AEC 的线性关系。但联合增强网络、多通道掩码估计或为定位专设的增强支路可能采用不同顺序。应依据训练输入和模块假设决定取点。</p>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">方法</th>
@@ -295,11 +297,11 @@ $$</p>
 <td>域外噪声、伪影和内容改变</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>MMSE-STSA 和 MMSE-LSA 不是同一目标：前者估计短时谱幅度，后者在对数谱幅度域定义误差。噪声估计也不必“只在 VAD 判无话时更新”。最小统计量、软语音存在概率和神经网络软掩码都能在语音段缓慢更新；关键是避免把语音持续吸收到噪声模型中。</p>
 <h3 id="sec-9">10.3.2 控制状态不能只看一个 VAD 比特</h3>
 <p>控制状态需要涵盖近端语音、远端播放和双讲。下表列出这些状态下的更新条件；具体实现可以使用离散状态，也可以使用连续的活动概率。</p>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">状态</th>
@@ -344,7 +346,7 @@ $$</p>
 <td>后端可休眠，KWS 是否常开由应用需求决定</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>WPE 正是利用语音及其晚期混响的统计关系估计预测滤波器，不能用“VAD 有话就冻结”作为通用规则。AEC 的控制则必须结合远端活动和双讲检测；仅用近端 VAD 无法判断滤波器是否有可学习的回声参考。</p>
 <p>VAD 的迟滞、挂起和预卷缓存应由语料中的短词、停顿和噪声脉冲调节。KWS 是否绕过 VAD、是否持续运行、从 AEC 后还是增强后取信号，也取决于功耗和训练域。阈值需要在指定误唤醒率下报告漏唤醒率，不能只给一个孤立分数。</p>
 <h2 id="sec-10">10.4 定点化、算力与功耗预算</h2>
@@ -358,7 +360,7 @@ $$</p>
 <li>RTF 定义为处理时长除以音频时长。RTF 小于 1 只说明平均速度足够；还要检查单帧最坏耗时、调度抖动和队列增长。</li>
 </ul>
 <p>“帧耗时/帧长”得到的是 RTF，不是等效 MIPS。预算表应记录测量平台和版本：</p>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">模块</th>
@@ -381,7 +383,7 @@ $$</p>
 <td style="text-align: right;">功率仪实测</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>电池容量应换算为能量。若标称电压为 $V$、容量为 $C_{\mathrm{Ah}}$，标称能量近似为 $E=VC_{\mathrm{Ah}}\ \mathrm{Wh}$，其中 Wh（watt-hour）表示瓦时。续航估算为</p>
 <p>$$
 t\approx\frac{E\,\eta}{P_{\text{avg}}},
@@ -390,7 +392,7 @@ $$</p>
 <p>其中 $\eta$ 包含可用容量、转换效率和老化裕量，$P_{\text{avg}}$ 是包含占空比的整机平均功率。只给毫安时（mAh）而不给电压和平均功耗，无法推出续航。</p>
 <h2 id="sec-13">10.5 评测体系</h2>
 <p>每项指标只能回答一部分问题。面向完整系统的评测通常还需覆盖任务效果、语音质量、稳定性、资源占用和长时间运行。</p>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">对象</th>
@@ -430,7 +432,7 @@ $$</p>
 <td>平均值不代表尾延迟和最坏状态</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>OSPA 把定位误差与目标数量错误合成一个集合距离；经典 OSPA 本身不保留身份标签，因此不能用它代替轨迹身份切换指标。OSPA(2) 比较一段时间内的轨迹集合，仍应把身份连续性指标及轨迹关联规则另行说明。</p>
 <p>ITU-T P.835（07/2026）用于对含噪语音处理系统做主观听测，分别评价语音信号（Signal，SIG）、背景噪声（Background，BAK）和总体效果（Overall，OVRL）。它适合区分“噪声是否减弱”和“语音是否受损”，但不能直接评价 DOA、轨迹身份或空间位置。正式报告应写明标准版本、听测材料、听众筛选、播放设备和统计区间。</p>
 <h2 id="sec-14">10.6 数据、仿真与复现</h2>
@@ -461,7 +463,7 @@ room = pra.ShoeBox(
 <p>验收阈值应由网络带宽、最长会话和目标任务确定。例如，要求一小时内相位相干的系统与只做句级识别的系统，对残余 SRO 的要求不会相同。</p>
 <h2 id="sec-16">10.8 阵列形态与场景约束</h2>
 <p>公开产品的麦克风数量、位置和算法会随硬件版本及地区型号变化。若没有可追溯的一手资料，不应从拆解照片推断算法链。本教程因此只讨论可迁移的设计条件：</p>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">场景</th>
@@ -508,7 +510,7 @@ room = pra.ShoeBox(
 <td>手指挡孔、风噪、贴脸、免提、录像</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>球阵的可用球谐阶数同时受空间采样、阵列半径、频率和模态噪声放大限制。这里 $k=2\pi f/c$ 是波数，$r$ 是球阵半径，$kr$ 是无量纲频率。表示到 $N$ 阶的完整球谐系数共有 $(N+1)^2$ 个，因此离散阵元数至少要能支撑相应的空间采样；实际还要留出几何和数值稳定性余量。可用阶数在高频受阵元空间混叠限制，在低频又受 $kr$ 较小和径向滤波噪声放大限制。不能用 $N=\lceil kr\rceil+1$ 一条式子替代完整设计，也不能把“某阶需要多少系数”直接等同于任意摆放的同数麦克风一定可用。</p>
 <p>三个非共点麦克风已经构成阵列。若几何非共线，它们能提供二维空间信息；若接近共线，则某些方向存在镜像或条件数问题。手机的主要限制通常是孔径小、结构遮挡和工作模式变化，而不是“三麦构不成阵列”。</p>
 <h2 id="sec-17">10.9 从模型到设备</h2>
@@ -517,7 +519,7 @@ room = pra.ShoeBox(
 <p>端侧、云侧或混合部署要比较隐私、断网可用性、网络尾延迟、更新能力和能耗。对品牌产品的实现方式没有公开证据时，只能写成候选架构，不能当作产品事实。</p>
 <h2 id="sec-18">10.10 联调与验收</h2>
 <p>联调应按依赖关系排查，不必强行把所有模块串成一个固定顺序。</p>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">阶段</th>
@@ -567,10 +569,10 @@ room = pra.ShoeBox(
 <td>在目标硬件、发布配置和最不利并发状态实测</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>每个验收阈值都应包含测量条件、统计量和样本量。例如“角误差小于 5°”还要说明声源角度分布、距离、房间、信噪比，以及该数值是均值还是某个分位数。教程中的算例只能用于验证计算，不能直接作为产品验收阈值。</p>
 <p>常见故障可按依赖关系缩小范围：</p>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
 <th scope="col">现象</th>
@@ -605,7 +607,7 @@ room = pra.ShoeBox(
 <td>平均 RTF 和内存带宽</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="sec-19">10.11 本章小结</h2>
 <ol>
 <li>图 23 是参考依赖图，不是所有设备必须执行的固定流水线。</li>
