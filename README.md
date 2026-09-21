@@ -39,7 +39,8 @@ English version: [README_EN.md](./README_EN.md)
 # 1. 建虚拟环境并装依赖
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-# pyroomacoustics 可选（只给附录 B 第 16 题用）
+# 可选：附录 B 第 16 题和第 10 章房间示例按 pyroomacoustics 0.10.0 编写
+.venv/bin/pip install pyroomacoustics==0.10.0
 
 # 2. 生成 33 张图（运行时间随硬件、软件版本和负载变化）
 .venv/bin/python scripts/make_figures.py
@@ -52,6 +53,7 @@ python3 -m venv .venv
 # 4. 生成合订 PDF（输出 dist/microphone-array-tutorial.pdf，需本机装有 Google Chrome，
 #    非 macOS 可用 CHROME_BIN 环境变量指定 Chrome 路径）
 .venv/bin/python scripts/build_pdf.py
+# 需要可复现的封面日期时，加 --build-date YYYY-MM-DD，或设置 SOURCE_DATE_EPOCH
 
 # 5. 发布前检查
 .venv/bin/python -m unittest discover -s tests -v
@@ -60,13 +62,13 @@ python3 -m venv .venv
 
 ## 学习路径
 
-- **路径 A（零基础入门，2~3 周）**：导读 → 01 → 11.1/11.3 → 02/03 → 04（GCC+SRP）→ 05（DSB+MVDR）→ 06/07/08 → 09 → 跑通 33 张图。
-- **路径 B（工程落地，1 周精读）**：11.1/11.2/11.3 定 A/B/C 方案 → 05/06/07/08 → 10 全读 → 输出延迟/同步/标定三张预算表。
+- **路径 A（零基础入门，2～3 周）**：导读 → 01 → 11.1/11.3 → 02/03 → 04（GCC+SRP）→ 05（DSB+MVDR）→ 06/07/08 → 09 → 复现并解释 33 张图。
+- **路径 B（工程实现，1 周精读）**：11.1/11.2/11.3 定 A/B/C 方案 → 05/06/07/08 → 10 全读 → 输出延迟/同步/标定三张预算表。
 - **路径 C（研究前沿）**：02（CRLB）→ 03（稀疏阵）→ 04/05 前沿 → 06/07/08 → 13.3 九条前沿 + 13.6 练习。
 
 ## 约定
 
-- 公式编号手写（如 `(4-1)`、`式(5-1)`），引用写“见式(5-1)”。
+- 需要跨段或跨章引用的核心公式在公式块内使用 `\tag{章-序}` 编号，正文引用写“见式(5-1)”。
 - 缩写首次出现给全称；"dB 换算用 10log（功率）/20log（幅度）"。
 - 数字凡涉榜单均标注条件与出处，仿真数字注明实现口径。
 - 外部公式、算法和数据优先链接 DOI、标准组织或官方页面；引用时核对标题、作者、年份和具体表/节，不能只检查链接能否打开。

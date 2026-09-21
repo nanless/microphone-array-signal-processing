@@ -6,6 +6,7 @@
 函数与图号对照：fig_problem→图26、fig_concept→图27、fig_nlms→图28、
 fig_erle→图29、fig_delay_dtd→图30、fig_nonlinear→图31、fig_hybrid→图32。
 """
+import hashlib
 import os
 import numpy as np
 import matplotlib
@@ -22,9 +23,27 @@ FS_SUP, FS_TITLE, FS_LABEL, FS_SMALL, FS_TINY = 13, 11, 10, 9, 8
 plt.rcParams["font.sans-serif"] = ["PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Arial Unicode MS"]
 plt.rcParams["axes.unicode_minus"] = False
 FS = 16000
+SOURCE_SCRIPT = "scripts/make_aec_figures.py"
+
+def source_script_digest():
+    """返回当前绘图源文件完整字节的 SHA-256，供 PNG 溯源。"""
+    return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+
+def figure_metadata():
+    """生成确定性的 PNG 元数据；不写入构建时间。"""
+    return {
+        "SourceScript": SOURCE_SCRIPT,
+        "SourceScriptDigest": source_script_digest(),
+    }
 
 def save(fig, name):
-    fig.savefig(OUT / name, dpi=150, bbox_inches="tight", facecolor="white")
+    fig.savefig(
+        OUT / name,
+        dpi=150,
+        bbox_inches="tight",
+        facecolor="white",
+        metadata=figure_metadata(),
+    )
     plt.close(fig)
     print("saved", name)
 
@@ -63,24 +82,62 @@ def rms_envelope(x, win=320):
     kernel = np.ones(int(win), dtype=float) / int(win)
     return np.sqrt(np.convolve(np.asarray(x, dtype=float) ** 2, kernel, mode="same"))
 
-def nlms_run(x, d, taps=128, mu=0.5, freeze=None):
+def nlms_adaptation_trace(
+    x, d, taps=128, mu=0.5, freeze=None, snapshot_interval=400, true_path=None
+):
+    """运行 NLMS 并返回更新前快照、失配及其采样位置。
+
+    每个快照都在相应样本的更新之前记录，所以第 0 个快照严格表示
+    全零初值。若提供 ``true_path``，同时返回归一化系数欧氏失配（dB）。
+    """
+    x = np.asarray(x, dtype=float)
+    d = np.asarray(d, dtype=float)
+    if x.ndim != 1 or d.ndim != 1 or x.shape != d.shape:
+        raise ValueError("x 与 d 必须是同长度一维数组")
+    if not isinstance(taps, (int, np.integer)) or taps <= 0:
+        raise ValueError("taps 必须是正整数")
+    if not isinstance(snapshot_interval, (int, np.integer)) or snapshot_interval <= 0:
+        raise ValueError("snapshot_interval 必须是正整数")
+    if freeze is not None:
+        freeze = np.asarray(freeze, dtype=bool)
+        if freeze.shape != x.shape:
+            raise ValueError("freeze 必须与 x 同形")
+    if true_path is not None:
+        true_path = np.asarray(true_path, dtype=float)
+        if true_path.shape != (taps,):
+            raise ValueError("true_path 的长度必须等于 taps")
+        path_power = float(true_path @ true_path)
+        if path_power <= 0:
+            raise ValueError("true_path 的能量必须为正")
+
     N = len(x)
     w = np.zeros(taps)
     e = np.zeros(N)
-    snaps, mismatch = [], []
+    snaps, mismatch, snapshot_samples = [], [], []
     X = np.zeros(taps)
     for n in range(N):
         X = np.roll(X, 1); X[0] = x[n]
-        if n % 400 == 0:
-            # 在本次更新前留快照，因此第一条曲线确实表示“0 步”。
+        if n % snapshot_interval == 0:
             snaps.append(w.copy())
+            snapshot_samples.append(n)
+            if true_path is not None:
+                mismatch.append(10 * np.log10(float((true_path - w) @ (true_path - w)) / path_power))
         y = float(w @ X)
         e[n] = d[n] - y
-        if freeze is not None and freeze[n]:
-            pass
-        else:
+        if freeze is None or not freeze[n]:
             w = w + mu * e[n] * X / (float(X @ X) + 1e-6)
-    return e, np.array(snaps), w
+    return (
+        e,
+        np.asarray(snaps),
+        w,
+        np.asarray(mismatch),
+        np.asarray(snapshot_samples, dtype=int),
+    )
+
+def nlms_run(x, d, taps=128, mu=0.5, freeze=None):
+    """兼容原绘图调用的 NLMS 包装器。"""
+    e, snaps, w, _, _ = nlms_adaptation_trace(x, d, taps, mu, freeze)
+    return e, snaps, w
 
 def block_erle(echo, e, blk=400):
     echo = np.asarray(echo)
@@ -110,7 +167,7 @@ def mask_metric_intervals(times, values, intervals):
         masked[(times >= start) & (times < stop)] = np.nan
     return masked
 
-# ---- 图1：回声是怎么产生的 ----
+# ---- 图26：回声是怎么产生的 ----
 def fig_problem():
     N = int(1.6 * FS)
     r = np.random.default_rng(2601)
@@ -121,10 +178,10 @@ def fig_problem():
     d = echo + s + v
     t = np.arange(N) / FS
     fig = plt.figure(figsize=(13.5, 5.2), layout="constrained")
-    fig.suptitle("图26 回声形成：d(n) = s(n) + x(n)*h(n) + v(n)", fontsize=FS_SUP)
+    fig.suptitle("图26 回声形成：d(n) = s(n) + x(n)*h[ℓ] + v(n)", fontsize=FS_SUP)
     gs = gridspec.GridSpec(1, 3, figure=fig, width_ratios=[1, 1.4, 1.4])
     ax = fig.add_subplot(gs[0])
-    ax.set_title("(a) 用脉冲响应 h(n) 表示房间回声路径", fontsize=FS_TITLE)
+    ax.set_title("(a) 用脉冲响应 h[ℓ] 表示房间回声路径", fontsize=FS_TITLE)
     ax.stem(h[:128], linefmt=C_BLUE, markerfmt="o", basefmt=" ", label="h抽头")
     ax.set_xlabel("抽头 n", fontsize=FS_LABEL); ax.set_ylabel("归一化幅度", fontsize=FS_LABEL)
     ax.annotate("0号抽头为直达声；25、62、103号为早期反射\n其余随机衰减项表示晚期尾", xy=(25, h[25]), xytext=(48, 0.43),
@@ -148,7 +205,7 @@ def fig_problem():
     ax.legend(fontsize=FS_SMALL); ax.grid(ls=":", alpha=0.5); ax.tick_params(labelsize=FS_TINY)
     save(fig, "fig26_aec_problem.png")
 
-# ---- 图2：一句话结构 ----
+# ---- 图27：AEC 基本结构 ----
 def fig_concept():
     fig, ax = plt.subplots(figsize=(13.5, 3.8), layout="constrained")
     fig.suptitle("图27 AEC 结构：根据播放参考估计回声，再从麦克风信号中相减", fontsize=FS_SUP)
@@ -186,21 +243,15 @@ def fig_concept():
                 arrowprops=dict(arrowstyle="->", color=C_PURPLE, lw=1.8, connectionstyle="arc3,rad=-0.25"))
     save(fig, "fig27_aec_concept.png")
 
-# ---- 图3：NLMS 路径估计 ----
+# ---- 图28：NLMS 路径估计 ----
 def fig_nlms():
     N = int(1.6 * FS); taps = 128
     h = np.exp(-np.arange(taps) / 25) * np.random.default_rng(2801).standard_normal(taps)
     x = colored_x(N, seed=2802); d = np.convolve(x, h, mode="full")[:N]
-    e, snaps, w = nlms_run(x, d, taps, 0.5, None)
-    tc = np.arange(0, N, 400) / FS
-    mism = []
-    ww = np.zeros(taps); X = np.zeros(taps)
-    for n in range(N):
-        X = np.roll(X, 1); X[0] = x[n]
-        ww = ww + 0.5 * (d[n] - float(ww @ X)) * X / (float(X @ X) + 1e-6)
-        if n % 400 == 0:
-            mism.append(10*np.log10(np.sum((h-ww)**2)/np.sum(h**2)))
-    mism = np.array(mism)
+    e, snaps, _w, mism, snapshot_samples = nlms_adaptation_trace(
+        x, d, taps, 0.5, None, snapshot_interval=400, true_path=h
+    )
+    tc = snapshot_samples / FS
     tcc, erle = block_erle(d, e)
     fig, axes = plt.subplots(1, 3, figsize=(13.5, 4.2), layout="constrained")
     fig.suptitle("图28 NLMS 自适应：路径估计逐步逼近真实响应", fontsize=FS_SUP)
@@ -210,11 +261,11 @@ def fig_nlms():
                  (C_GREEN, "-.", "绿色点划线"), (C_PURPLE, ":", "紫色点线")]
     pick = [0, len(snaps)//3, 2*len(snaps)//3, len(snaps)-1]
     for j, (c, ls, _nm) in zip(pick, cb_styles):
-        ax.plot(snaps[j][:64], color=c, ls=ls, lw=1.6, label=f"{j*400}步")
+        ax.plot(snaps[j][:64], color=c, ls=ls, lw=1.6, label=f"{snapshot_samples[j]}步")
     ax.set_xlabel("抽头", fontsize=FS_LABEL); ax.legend(fontsize=FS_SMALL)
     ax.grid(ls=":", alpha=0.5); ax.tick_params(labelsize=FS_TINY)
     ax = axes[1]; ax.set_title("(b) 失配下降，ERLE 上升", fontsize=FS_TITLE)
-    ax.plot(tc[:len(mism)], mism, color=C_RED, label="失配(dB)")
+    ax.plot(tc, mism, color=C_RED, label="失配(dB)")
     ax.set_xlabel("时间 (s)", fontsize=FS_LABEL); ax.tick_params(labelsize=FS_TINY)
     ax2 = ax.twinx(); ax2.plot(tcc, erle, color=C_BLUE, label="ERLE(dB)")
     ax.tick_params(labelsize=FS_TINY, colors=C_RED)
@@ -237,7 +288,7 @@ def fig_nlms():
             bbox=dict(fc="white", ec="0.8", alpha=0.85))
     save(fig, "fig28_aec_nlms.png")
 
-# ---- 图4：ERLE + 双讲冻结 ----
+# ---- 图29：ERLE + 双讲冻结 ----
 def fig_erle():
     N = int(1.6 * FS); taps = 128
     h = np.exp(-np.arange(taps) / 25) * np.random.default_rng(2901).standard_normal(taps)
@@ -283,7 +334,7 @@ def fig_erle():
     ax.grid(ls=":", alpha=0.5); ax.tick_params(labelsize=FS_TINY)
     save(fig, "fig29_aec_erle_freeze.png")
 
-# ---- 图5：延迟 × 双讲 ----
+# ---- 图30：延迟 × 双讲 ----
 def fig_delay_dtd():
     N = int(1.6 * FS); taps = 128; delay = 300
     h = np.exp(-np.arange(taps) / 25) * np.random.default_rng(3001).standard_normal(taps)
@@ -322,7 +373,7 @@ def fig_delay_dtd():
     ax.set_xlim(-50, delay + 200); ax.set_xlabel("滞后（采样）", fontsize=FS_LABEL)
     ax.set_ylabel("归一化有符号互相关", fontsize=FS_LABEL)
     ax.grid(ls=":", alpha=0.5); ax.tick_params(labelsize=FS_TINY)
-    ax = axes[1]; ax.set_title("(b) 对齐与不对齐（延迟 300 抽头 > 滤波器 128 抽头）", fontsize=FS_TITLE)
+    ax = axes[1]; ax.set_title("(b) 对齐与不对齐（纯延迟 300 采样 > 滤波器 128 抽头）", fontsize=FS_TITLE)
     ax.plot(tcc, er_align_view, color=C_BLUE, lw=1.6, label=f"对齐（单讲约{pa:.0f}dB）")
     ax.plot(tcc, er_mis_view, color="0.6", lw=1.4, ls="--", label=f"不对齐（单讲约{pm:.0f}dB）")
     ax.axvspan(0.8, 1.2, color=C_RED, alpha=0.08)
@@ -338,7 +389,7 @@ def fig_delay_dtd():
     save(fig, "fig30_aec_delay_dtd.png")
     print(f"对齐约 {pa:.1f} dB，不对齐约 {pm:.1f} dB")
 
-# ---- 图6：非线性失配 ----
+# ---- 图31：非线性失配 ----
 def fig_nonlinear():
     N = int(3.0 * FS); taps = 256
     r = np.random.default_rng(3101)
@@ -374,7 +425,7 @@ def fig_nonlinear():
     ax.text(0, -1.55, "输入幅度增大后，输出逐渐偏离线性关系", ha="center", fontsize=FS_SMALL + 1, color=C_RED)
     save(fig, "fig31_aec_nonlinear.png")
 
-# ---- 图7：混合流程与条件化选型 ----
+# ---- 图32：混合流程与条件化选型 ----
 def fig_hybrid():
     fig = plt.figure(figsize=(13.5, 8.8), layout="constrained")
     fig.suptitle("图32 线性回声消除与残余抑制：按系统条件选择模块", fontsize=FS_SUP)

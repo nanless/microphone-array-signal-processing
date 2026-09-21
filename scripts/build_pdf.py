@@ -5,7 +5,7 @@
   1. 读 chapters/ 14 篇 Markdown，用 markdown 库转 HTML（数学段先 shield 再贴回，
      与 build_site.py 同逻辑，保证两端渲染一致）。
   2. 每篇包进 <div class="chap">，篇标题记 id="ch-{i}"；统一标题层级后，
-     实际小节记 id="ch-{i}-s{j}"，同时产出篇/节两级目录。
+     编号小节使用 ch-{i}-sec-x-y 稳定标识，并保留旧顺序别名。
   3. 跨篇 .md 链改成合订本内部锚点；分章导航块和页脚行删除；图片
      ../figures/ 原样透传（combined.html 与 figures/ 同处仓库根的
      相邻目录，相对关系成立；单发 HTML 给别人会缺图，要分发请发 PDF）。
@@ -40,7 +40,9 @@ import shutil
 import subprocess
 import tempfile
 import time
+from html.parser import HTMLParser
 from pathlib import Path
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).parent.parent
 SRC = ROOT / "chapters"
@@ -57,7 +59,7 @@ CHAPTERS = [
     ("07_wpe-dereverberation.md", "第 7 章 · 去混响（WPE）"),
     ("08_speech-separation.md", "第 8 章 · 语音分离"),
     ("09_source-tracking.md", "第 9 章 · 声源追踪"),
-    ("10_engineering-practice.md", "第 10 章 · 工程实现与产业实践"),
+    ("10_engineering-practice.md", "第 10 章 · 工程实现、评测与产业实践"),
     ("11_selection-guide.md", "第 11 章 · 总结与选型指南"),
     ("12_appendix-symbols-math.md", "附录 A · 符号术语数学"),
     ("13_appendix-guide.md", "附录 B · 路径地图与练习"),
@@ -77,13 +79,16 @@ a{color:#2f6db3;text-decoration:none}
 h1{font-size:24px;border-bottom:2px solid #1a1a2e;padding-bottom:6px}
 h2{font-size:20px;margin-top:30px;border-bottom:1px solid #e5e8ee;padding-bottom:5px}
 h3{font-size:16.5px}h4{font-size:15px}
-.cover{text-align:center;padding:120px 0 60px}
+.cover{text-align:center;padding:120px 0 60px;break-after:page;page-break-after:always}
 .cover h1{font-size:34px;border:none}
 .cover .sub{font-size:17px;color:#444;margin-top:18px}
 .cover .meta{font-size:13.5px;color:#777;margin-top:40px}
 .chap{page-break-before:always}
-.toc li{margin:3px 0}
-.toc .sec{font-size:14px;color:#333}
+.toc-page>h1{font-size:28px;margin-bottom:18px}
+.toc{columns:2;column-gap:28px;padding-left:20px}
+.toc>li{margin:5px 0;break-inside:avoid-column}
+.toc .sec{font-size:12.5px;color:#333;padding-left:18px}
+.anchor-alias{display:none}
 .book-end{text-align:center;color:#777;margin:36px 0 8px;font-size:13px}
 @media print{
 body{max-width:none;margin:0;padding:0}
@@ -100,6 +105,71 @@ th,code,pre,blockquote{-webkit-print-color-adjust:exact;print-color-adjust:exact
 """
 
 
+INLINE_CODE_RE = re.compile(r"(?<!`)(`+)(?!`)(.+?)(?<!`)\1(?!`)", re.S)
+ALLOWED_LINK_SCHEMES = {"http", "https", "mailto"}
+
+
+def protect_code(md):
+    """暂存围栏和行内代码，使数学正则不会改写代码中的 `$...$`。"""
+    repo = []
+
+    def stash(value):
+        repo.append(value)
+        return f"@@CODETOKEN{len(repo) - 1}@@"
+
+    lines = md.splitlines(keepends=True)
+    protected = []
+    index = 0
+    while index < len(lines):
+        marker = re.match(r"^\s{0,3}(`{3,}|~{3,})", lines[index])
+        if not marker:
+            protected.append(lines[index])
+            index += 1
+            continue
+        fence_char = marker.group(1)[0]
+        fence_len = len(marker.group(1))
+        block = [lines[index]]
+        index += 1
+        while index < len(lines):
+            block.append(lines[index])
+            closing = re.match(r"^\s{0,3}(`{3,}|~{3,})\s*$", lines[index].rstrip("\r\n"))
+            index += 1
+            if (closing and closing.group(1)[0] == fence_char
+                    and len(closing.group(1)) >= fence_len):
+                break
+        protected.append(stash("".join(block)))
+
+    text = "".join(protected)
+    text = INLINE_CODE_RE.sub(lambda match: stash(match.group(0)), text)
+    return text, repo
+
+
+def restore_code(text, repo):
+    return re.sub(r"@@CODETOKEN(\d+)@@", lambda m: repo[int(m.group(1))], text)
+
+
+def validate_url_schemes(html):
+    """只允许文档内相对链接以及 http、https、mailto 外链。"""
+    class TargetParser(HTMLParser):
+        def __init__(self):
+            super().__init__(convert_charrefs=True)
+            self.targets = []
+
+        def handle_starttag(self, _tag, attrs):
+            self.targets.extend((key, value) for key, value in attrs
+                                if key.lower() in {"href", "src"} and value is not None)
+
+    parser = TargetParser()
+    parser.feed(html)
+    for attribute, value in parser.targets:
+        parsed = urlparse(value.strip())
+        scheme = parsed.scheme.lower()
+        if parsed.netloc and not scheme:
+            raise ValueError(f"不允许省略协议的外部 {attribute}：{value}")
+        if scheme and scheme not in ALLOWED_LINK_SCHEMES:
+            raise ValueError(f"不安全或不支持的 {attribute} 协议：{scheme}")
+
+
 def shield_math(md):
     """数学段暂存：防 markdown 吃下划线（_x_→斜体），防浏览器吞 <（i<j）。
     转完 markdown 再原样贴回。"""
@@ -109,8 +179,10 @@ def shield_math(md):
         repo.append(m.group(0).replace("<", r"\lt "))
         return f"@@MATH{len(repo) - 1}@@"
 
+    md, code_repo = protect_code(md)
     md = re.sub(r"\$\$.*?\$\$", stash, md, flags=re.S)
     md = re.sub(r"\$[^$]+?\$", stash, md, flags=re.S)
+    md = restore_code(md, code_repo)
     return md, repo
 
 
@@ -144,8 +216,19 @@ def source_digest():
 HTML_TO_CH = {fname.replace(".md", ".html"): i for i, (fname, _) in enumerate(CHAPTERS)}
 
 
+def heading_anchor(text, fallback_index):
+    """与分页站一致：编号标题用 sec-x-y，其余用稳定内容摘要。"""
+    label = plain_text(text)
+    numbered = re.match(r"^(\d+(?:\.\d+)+)(?=\s|$)", label)
+    if numbered:
+        return "sec-" + numbered.group(1).replace(".", "-")
+    if label:
+        return "sec-u-" + hashlib.sha1(label.encode("utf-8")).hexdigest()[:10]
+    return f"sec-{fallback_index}"
+
+
 def rewrite_book_links(html):
-    """把分篇链接改成合订本内部链接，并保留站点的 sec-N 深层锚点。"""
+    """把分篇链接改成合订本内部链接，兼容新旧标识。"""
     def repl(m):
         fname, fragment, text = m.group(1), m.group(2), m.group(3)
         idx = HTML_TO_CH.get(fname)
@@ -153,7 +236,7 @@ def rewrite_book_links(html):
             return m.group(0)
         if not fragment:
             target = f"ch-{idx}"
-        elif re.fullmatch(r"sec-\d+", fragment):
+        elif re.fullmatch(r"sec-(?:\d+(?:-\d+)*|u-[0-9a-f]{10}(?:-\d+)?)", fragment):
             # sec-1 是分篇页标题；合订时该重复标题被外层 ch-N 标题替代。
             target = f"ch-{idx}" if fragment == "sec-1" else f"ch-{idx}-{fragment}"
         else:
@@ -173,7 +256,23 @@ def remove_page_info(html):
     return re.sub(r"<p>📄 本篇信息.*?</p>", "", html, flags=re.S)
 
 
-def build_html():
+def resolve_build_date(explicit=None):
+    """返回可复现的封面日期；显式参数优先，其次 SOURCE_DATE_EPOCH。"""
+    if explicit:
+        try:
+            return datetime.date.fromisoformat(explicit).isoformat()
+        except ValueError as exc:
+            raise ValueError("--build-date 必须是 YYYY-MM-DD") from exc
+    epoch = os.environ.get("SOURCE_DATE_EPOCH")
+    if epoch is not None:
+        try:
+            return datetime.datetime.fromtimestamp(int(epoch), datetime.timezone.utc).date().isoformat()
+        except (ValueError, OverflowError, OSError) as exc:
+            raise ValueError("SOURCE_DATE_EPOCH 必须是有效的 Unix 秒数") from exc
+    return datetime.date.today().isoformat()
+
+
+def build_html(build_date=None):
     """合 14 篇为单页 HTML。返回 (page, outline)，outline 为
     [(章label, 章id, [(节title, 节id), ...]), ...]，供书签定位用。"""
     import markdown
@@ -184,12 +283,21 @@ def build_html():
         md, repo = shield_math((SRC / fname).read_text(encoding="utf-8"))
         html = markdown.markdown(md, extensions=["tables", "fenced_code", "sane_lists"])
         html = unshield_math(html, repo)
-        # 与分篇站点一致，sec-N 按源文标题顺序编号；合订本加篇前缀避免冲突。
+        validate_url_schemes(html)
+        # 与分页站一致：编号标题用语义标识，旧 sec-N 作别名。
         source_heading = [0]
+        used_heading_ids = {}
 
         def tag_source_heading(m):
             source_heading[0] += 1
-            return (f'<{m.group(1)} id="ch-{i}-sec-{source_heading[0]}">'
+            base = heading_anchor(m.group(2), source_heading[0])
+            used_heading_ids[base] = used_heading_ids.get(base, 0) + 1
+            primary = (base if used_heading_ids[base] == 1 else
+                       f"{base}-{used_heading_ids[base]}")
+            legacy = f"sec-{source_heading[0]}"
+            alias = ("" if primary == legacy else
+                     f'<span id="ch-{i}-{legacy}" class="anchor-alias"></span>')
+            return (f'{alias}<{m.group(1)} id="ch-{i}-{primary}">'
                     f'{m.group(2)}</{m.group(1)}>')
 
         html = re.sub(r"<(h[1-4])>(.*?)</\1>", tag_source_heading, html, flags=re.S)
@@ -204,7 +312,12 @@ def build_html():
         html = remove_page_info(html)
         # 外层已经提供篇标题，删掉源文重复标题。导读以 h2 为节；其余篇章
         # 原文以 h2 作篇标题、h3 作节标题，因此在合订本里提升一级。
-        html = re.sub(r"<h[12][^>]*>.*?</h[12]>", "", html, count=1, flags=re.S)
+        # 外层已提供篇标题；保留原标题 id 作隐藏别名，
+        # 避免分页站点中指向篇标题的合法深链在合订本中失效。
+        html = re.sub(
+            r'<h[12][^>]*\bid="([^"]+)"[^>]*>.*?</h[12]>',
+            r'<span id="\1" class="anchor-alias"></span>',
+            html, count=1, flags=re.S)
         if i > 0:
             html = re.sub(
                 r"<h([34])([^>]*)>(.*?)</h\1>",
@@ -229,7 +342,7 @@ def build_html():
         body_parts.append(f'<div class="chap" id="ch-{i}"><h1>{label}</h1>{html}</div>')
         outline.append((label, f"ch-{i}", secs))
     # 两级 HTML 目录
-    toc = ['<h1>麦克风阵列信号处理教程</h1><ul class="toc">']
+    toc = ['<section class="toc-page"><h1>目录</h1><ul class="toc">']
     for label, cid, secs in outline:
         toc.append(f"<li><a href=\"#{cid}\">{label}</a>")
         if secs:
@@ -237,8 +350,8 @@ def build_html():
             toc.extend(f"<li><a href=\"#{sid}\">{t}</a></li>" for t, sid in secs)
             toc.append("</ul>")
         toc.append("</li>")
-    toc.append("</ul>")
-    date_s = datetime.date.today().isoformat()
+    toc.append("</ul></section>")
+    date_s = resolve_build_date(build_date)
     cover = (f'<div class="cover"><h1>麦克风阵列信号处理教程</h1>'
              f'<div class="sub">深入浅出 · 从阵列摆位到工程选型（合订本）</div>'
              f'<div class="meta">构建日期 {date_s} · 源文件 sha256 {source_digest()} · '
@@ -506,6 +619,7 @@ def main(argv=None):
     mode.add_argument("--pdf-only", action="store_true", help="只打印（复用现有 HTML）+ 写书签")
     ap.add_argument("--no-bookmarks", action="store_true", help="跳过书签写入")
     ap.add_argument("--min-pages", type=int, default=100, help="PDF 页数下限（默认 100）")
+    ap.add_argument("--build-date", help="封面构建日期 YYYY-MM-DD；也可设置 SOURCE_DATE_EPOCH")
     args = ap.parse_args(argv)
     OUT.mkdir(exist_ok=True)
     combined = OUT / "combined.html"
@@ -513,7 +627,7 @@ def main(argv=None):
     outline = None
     if not args.pdf_only:
         check_figures()
-        page, outline = build_html()
+        page, outline = build_html(args.build_date)
         fd, tmp_name = tempfile.mkstemp(prefix="combined-", suffix=".html", dir=OUT)
         os.close(fd)
         tmp_html = Path(tmp_name)

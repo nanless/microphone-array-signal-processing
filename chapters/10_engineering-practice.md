@@ -174,13 +174,17 @@ $$
 | AEC | 回声返回损失增强（Echo Return Loss Enhancement，ERLE）、双讲恢复、残余回声主观分 | ERLE 高不等于近端语音无损 |
 | 定位 | 角误差、漏检率、虚警率、均方根误差（Root Mean Square Error，RMSE） | 单源 RMSE 不代表多人追踪稳定 |
 | 波束/分离 | 尺度不变信号失真比（Scale-Invariant Signal-to-Distortion Ratio，SI-SDR）、下游词错误率（Word Error Rate，WER）或字错误率（Character Error Rate，CER）、串扰 | 单个客观分不代表听感或内容正确 |
-| 增强 | 短时客观可懂度（Short-Time Objective Intelligibility，STOI）、感知语音质量评估（Perceptual Evaluation of Speech Quality，PESQ）、感知客观听音质量分析（Perceptual Objective Listening Quality Analysis，POLQA）、主观听测 | 客观模型可能在新失真上失准 |
+| 增强 | 短时客观可懂度（Short-Time Objective Intelligibility，STOI）、旧研究复现中的感知语音质量评估（Perceptual Evaluation of Speech Quality，PESQ）、感知客观听音质量分析（Perceptual Objective Listening Quality Analysis，POLQA）、主观听测 | 客观模型可能在新失真上失准 |
 | 追踪 | 最优子模式分配距离（Optimal Sub-Pattern Assignment，OSPA）、轨迹完整度、轨迹身份切换（ID switch） | 位置准确不等于身份连续 |
 | 系统 | 端到端延迟、RTF、功耗、崩溃/丢帧 | 平均值不代表尾延迟和最坏状态 |
 
 OSPA 把定位误差与目标数量错误合成一个集合距离；经典 OSPA 本身不保留身份标签，因此不能用它代替轨迹身份切换指标。OSPA(2) 比较一段时间内的轨迹集合，仍应把身份连续性指标及轨迹关联规则另行说明。
 
-ITU-T P.835（07/2026）用于对含噪语音处理系统做主观听测，分别评价语音信号（Signal，SIG）、背景噪声（Background，BAK）和总体效果（Overall，OVRL）。它适合区分“噪声是否减弱”和“语音是否受损”，但不能直接评价 DOA、轨迹身份或空间位置。正式报告应写明标准版本、听测材料、听众筛选、播放设备和统计区间。
+ITU-T 已于 2024 年 1 月 5 日撤销 [P.862（PESQ）](https://www.itu.int/rec/T-REC-P.862/en "citation")，并在官方页面指向 [P.863（POLQA）](https://www.itu.int/rec/T-REC-P.863/en "citation")。因此，PESQ 适合在必须对照旧论文时按原条件复现；新的标准合规性表述不应把 P.862 写成现行建议书。P.863 是现行的客观语音质量建议书，但其适用范围和版本仍需随正式报告记录。
+
+[ITU-T P.835（07/2026）](https://www.itu.int/rec/T-REC-P.835/en "citation")用于对含噪语音处理系统做主观听测，分别评价语音信号（Signal，SIG）、背景噪声（Background，BAK）和总体效果（Overall，OVRL）。它适合区分“噪声是否减弱”和“语音是否受损”，但不能直接评价 DOA、轨迹身份或空间位置。正式报告应写明标准版本、听测材料、听众筛选、播放设备和统计区间。
+
+[ITU-T P.566（07/2026）](https://www.itu.int/rec/T-REC-P.566/en "citation")的官方条目将其列为“已生效，待发布”（in force / to be published）的单端机器学习多维语音质量模型。在正式文本发布前，本书不从二手资料扩写输出维度或评分细则。P.566 的单端客观预测不能代替 P.835 主观听测，也不评价 DOA、轨迹或空间位置。
 
 ### 10.6 数据、仿真与复现
 
@@ -188,7 +192,7 @@ ITU-T P.835（07/2026）用于对含噪语音处理系统做主观听测，分�
 
 录音和声纹还要有数据治理清单：记录采集目的与用户同意范围；区分原始音频、转写文本、声纹嵌入和调试日志；说明数据在端侧还是云侧处理、传输与静态存储怎样加密、哪些角色可以访问；规定保留期限、删除与撤回流程；导出故障样本前做身份信息检查；第三方数据集按许可证限制保存和再分发。目标说话人提取使用的注册声纹可能比普通缓存更敏感，不能因为只保存嵌入而默认无法关联个人。具体法律和认证要求取决于部署地区与产品用途，应由相应合规审查确认。
 
-房间冲激响应仿真也要写全条件。以下代码说明 max_order 与混响时间的关系：
+房间冲激响应仿真也要写全条件。以下代码按 [pyroomacoustics 0.10.0](https://pypi.org/project/pyroomacoustics/0.10.0/ "citation") 编写，说明 `max_order` 与混响时间的关系；安装命令见项目 README：
 
 ~~~python
 import pyroomacoustics as pra

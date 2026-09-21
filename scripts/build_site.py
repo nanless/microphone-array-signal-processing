@@ -13,7 +13,10 @@ import os
 import re
 import tempfile
 import hashlib
+from collections import Counter
+from html.parser import HTMLParser
 from pathlib import Path
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).parent.parent
 SRC = ROOT / "chapters"
@@ -29,7 +32,7 @@ CHAPTERS = [
     ("07_wpe-dereverberation.md", "第 7 章 · 去混响（WPE）"),
     ("08_speech-separation.md", "第 8 章 · 语音分离"),
     ("09_source-tracking.md", "第 9 章 · 声源追踪"),
-    ("10_engineering-practice.md", "第 10 章 · 工程实现与产业实践"),
+    ("10_engineering-practice.md", "第 10 章 · 工程实现、评测与产业实践"),
     ("11_selection-guide.md", "第 11 章 · 总结与选型指南"),
     ("12_appendix-symbols-math.md", "附录 A · 符号术语数学"),
     ("13_appendix-guide.md", "附录 B · 路径地图与练习"),
@@ -73,6 +76,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .toc-mobile ul{padding-left:18px;margin:8px 0 2px}.toc-mobile a{color:#2f6db3;text-decoration:none}
 .topbtn{position:fixed;bottom:20px;right:20px;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px;opacity:.75}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
+.anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
 @media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 """
@@ -147,9 +151,99 @@ def parse_headings(md):
     return heads
 
 
+def heading_anchor(text, fallback_index):
+    """编号标题使用 sec-x-y；无编号标题使用内容摘要。"""
+    label = clean_label(re.sub(r"<[^>]+>", "", text))
+    numbered = re.match(r"^(\d+(?:\.\d+)+)(?=\s|$)", label)
+    if numbered:
+        return "sec-" + numbered.group(1).replace(".", "-")
+    if label:
+        token = hashlib.sha1(label.encode("utf-8")).hexdigest()[:10]
+        return f"sec-u-{token}"
+    return f"sec-{fallback_index}"
+
+
+def heading_records(heads):
+    """返回 (level, text, primary_id, legacy_id)，稳定处理重名标题。"""
+    seen = Counter()
+    records = []
+    for index, (level, text) in enumerate(heads, 1):
+        base = heading_anchor(text, index)
+        seen[base] += 1
+        primary = base if seen[base] == 1 else f"{base}-{seen[base]}"
+        records.append((level, text, primary, f"sec-{index}"))
+    return records
+
+
+INLINE_CODE_RE = re.compile(r"(?<!`)(`+)(?!`)(.+?)(?<!`)\1(?!`)", re.S)
+ALLOWED_LINK_SCHEMES = {"http", "https", "mailto"}
+
+
+def protect_code(md_text):
+    """暂存围栏和行内代码，使数学正则不会改写代码中的 `$...$`。"""
+    repo = []
+
+    def stash(value):
+        repo.append(value)
+        return f"@@CODETOKEN{len(repo) - 1}@@"
+
+    lines = md_text.splitlines(keepends=True)
+    protected = []
+    index = 0
+    while index < len(lines):
+        marker = re.match(r"^\s{0,3}(`{3,}|~{3,})", lines[index])
+        if not marker:
+            protected.append(lines[index])
+            index += 1
+            continue
+        fence_char = marker.group(1)[0]
+        fence_len = len(marker.group(1))
+        block = [lines[index]]
+        index += 1
+        while index < len(lines):
+            block.append(lines[index])
+            closing = re.match(r"^\s{0,3}(`{3,}|~{3,})\s*$", lines[index].rstrip("\r\n"))
+            index += 1
+            if (closing and closing.group(1)[0] == fence_char
+                    and len(closing.group(1)) >= fence_len):
+                break
+        protected.append(stash("".join(block)))
+
+    text = "".join(protected)
+    text = INLINE_CODE_RE.sub(lambda match: stash(match.group(0)), text)
+    return text, repo
+
+
+def restore_code(text, repo):
+    return re.sub(r"@@CODETOKEN(\d+)@@", lambda m: repo[int(m.group(1))], text)
+
+
+def validate_url_schemes(html):
+    """只允许站内相对链接以及 http、https、mailto 外链。"""
+    class TargetParser(HTMLParser):
+        def __init__(self):
+            super().__init__(convert_charrefs=True)
+            self.targets = []
+
+        def handle_starttag(self, _tag, attrs):
+            self.targets.extend((key, value) for key, value in attrs
+                                if key.lower() in {"href", "src"} and value is not None)
+
+    parser = TargetParser()
+    parser.feed(html)
+    for attribute, value in parser.targets:
+        parsed = urlparse(value.strip())
+        scheme = parsed.scheme.lower()
+        if parsed.netloc and not scheme:
+            raise ValueError(f"不允许省略协议的外部 {attribute}：{value}")
+        if scheme and scheme not in ALLOWED_LINK_SCHEMES:
+            raise ValueError(f"不安全或不支持的 {attribute} 协议：{scheme}")
+
+
 def render(md_text):
-    """返回 (html, 锚点数)。锚点按真实 h 标签顺序编号，是唯一的真相源。"""
+    """返回 (html, 标题数)；主标识稳定，并保留旧 sec-N 别名。"""
     import markdown
+    records = heading_records(parse_headings(md_text))
     # 数学段暂存：防 markdown 吃下划线、防浏览器吞 <，转完再贴回
     repo = []
 
@@ -157,16 +251,22 @@ def render(md_text):
         repo.append(m.group(0).replace("<", r"\lt "))
         return f"@@MATH{len(repo) - 1}@@"
 
+    md_text, code_repo = protect_code(md_text)
     md_text = re.sub(r"\$\$.*?\$\$", stash, md_text, flags=re.S)
     md_text = re.sub(r"\$[^$]+?\$", stash, md_text, flags=re.S)
+    md_text = restore_code(md_text, code_repo)
     html = markdown.markdown(md_text, extensions=["tables", "fenced_code", "sane_lists"])
     html = re.sub(r"@@MATH(\d+)@@", lambda m: repo[int(m.group(1))], html)
+    validate_url_schemes(html)
     counter = [0]
 
     def repl(m):
         counter[0] += 1
         tag, inner = m.group(1), m.group(2)
-        return f"<{tag} id=\"sec-{counter[0]}\">{inner}</{tag}>"
+        _level, _text, primary, legacy = records[counter[0] - 1]
+        alias = ("" if primary == legacy else
+                 f'<span id="{legacy}" class="anchor-alias" aria-hidden="true"></span>')
+        return f'{alias}<{tag} id="{primary}">{inner}</{tag}>'
 
     html = re.sub(r"<(h[1-4])>(.*?)</\1>", repl, html, flags=re.S)
     html = re.sub(r'<th(?![^>]*\bscope=)([^>]*)>',
@@ -226,10 +326,10 @@ def sub_list(html_name, heads, start_idx=1):
     """当前页的小节目录，返回 (html, 下一起始编号)。编号与 render 同序。"""
     parts = ["<ul>"]
     idx = start_idx
-    for lvl, text in heads:
+    for lvl, text, primary, _legacy in heading_records(heads):
         if lvl >= 2:
             pad = "" if lvl == 2 else ("&nbsp;&nbsp;" if lvl == 3 else "&nbsp;&nbsp;&nbsp;&nbsp;— ")
-            parts.append(f'<li>{pad}<a href="{html_name}#sec-{idx}">{text}</a></li>')
+            parts.append(f'<li>{pad}<a href="{html_name}#{primary}">{text}</a></li>')
         idx += 1
     parts.append("</ul>")
     return "\n".join(parts), idx

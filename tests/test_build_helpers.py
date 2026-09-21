@@ -1,6 +1,11 @@
 import importlib.util
+import os
+import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
+
+import markdown
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,6 +37,13 @@ class BuildHelpersTest(unittest.TestCase):
         self.assertEqual(
             build_pdf.rewrite_book_links(html),
             '<a href="#ch-4-sec-7">定位小节</a>',
+        )
+
+    def test_combined_links_keep_semantic_section_anchor(self):
+        html = '<a href="04_doa-estimation.html#sec-4-2">定位小节</a>'
+        self.assertEqual(
+            build_pdf.rewrite_book_links(html),
+            '<a href="#ch-4-sec-4-2">定位小节</a>',
         )
 
     def test_combined_page_title_anchor_maps_to_chapter(self):
@@ -122,6 +134,41 @@ class BuildHelpersTest(unittest.TestCase):
             [(2, "正文标题"), (3, "正文小节")],
         )
 
+    def test_site_render_uses_semantic_anchor_and_keeps_legacy_alias(self):
+        html, count = build_site.render("## 篇名\n### 10.1 延迟\n")
+        self.assertEqual(count, 2)
+        self.assertIn('id="sec-10-1"', html)
+        self.assertIn('id="sec-2" class="anchor-alias"', html)
+        self.assertEqual(html.count("<h2"), 1)
+        self.assertEqual(html.count("<h3"), 1)
+
+    def test_math_shielding_preserves_fenced_and_inline_code(self):
+        source = ('```python\na = "$x<y$"\n```\n'
+                  '`$HOME < $PATH` 与数学 $x<y$')
+        site_html, _ = build_site.render(source)
+        self.assertIn('a = &quot;$x&lt;y$&quot;', site_html)
+        self.assertIn('<code>$HOME &lt; $PATH</code>', site_html)
+        self.assertIn('$x\\lt y$', site_html)
+        shielded, repo = build_pdf.shield_math(source)
+        pdf_html = build_pdf.unshield_math(
+            markdown.markdown(shielded, extensions=["fenced_code"]), repo)
+        self.assertIn('a = &quot;$x&lt;y$&quot;', pdf_html)
+        self.assertIn('<code>$HOME &lt; $PATH</code>', pdf_html)
+        self.assertIn('$x\\lt y$', pdf_html)
+
+    def test_link_protocol_policy_accepts_normal_links_and_rejects_active_content(self):
+        build_site.validate_url_schemes(
+            '<a href="https://example.org">外链</a><a href="#sec-1">节</a>'
+            '<a href="javascript-not-a-scheme.html">近似名称</a>')
+        for html in ('<a href="javascript:alert(1)">危险</a>',
+                     "<a href='javascript&#58;alert(1)'>实体编码</a>",
+                     '<img src="data:text/html,boom">',
+                     '<a href="//example.org/path">省略协议</a>'):
+            with self.assertRaises(ValueError):
+                build_site.validate_url_schemes(html)
+            with self.assertRaises(ValueError):
+                build_pdf.validate_url_schemes(html)
+
     def test_site_page_has_keyboard_skip_link_and_visible_focus(self):
         self.assertIn('href="#main-content"', build_site.PAGE)
         self.assertIn('id="main-content"', build_site.PAGE)
@@ -140,6 +187,137 @@ class BuildHelpersTest(unittest.TestCase):
         self.assertEqual(parser.html_lang, "zh-CN")
         self.assertEqual(parser.heading_levels, [1, 3])
         self.assertEqual(parser.images, [("x.png", "阵列图")])
+
+    def test_structure_count_ignores_code_and_detects_deleted_section(self):
+        valid = "## 章名\n### 1.1 一\n```md\n### 代码\n```\n### 1.2 二\n"
+        self.assertEqual(quality_check.section_count_from_markdown(valid), 2)
+        self.assertEqual(
+            quality_check.section_count_from_markdown(valid.replace("### 1.2 二\n", "")),
+            1,
+        )
+
+    def test_figure_semantics_accept_any_reuse_and_reject_mismatch_or_orphan(self):
+        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 34)]
+        refs.extend([("图1 复用", "fig01_x.png", 1),
+                     ("图23 复用", "fig23_x.png", 23)])
+        names = [f"fig{i:02d}_x.png" for i in range(1, 34)]
+        self.assertEqual(quality_check.figure_inventory_issues(refs, names), [])
+        bad_refs = list(refs)
+        bad_refs[0] = ("图2 错配", "fig01_x.png", 1)
+        issues = quality_check.figure_inventory_issues(bad_refs, names + ["fig34_orphan.png"])
+        self.assertTrue(any("不匹配" in item for item in issues))
+        self.assertTrue(any("孤立 PNG" in item for item in issues))
+
+    def test_formula_semantics_valid_duplicate_missing_and_arithmetic_near_miss(self):
+        valid = {"02_x.md": "$$x=1\\tag{2-1}$$\n见式(2-1)。\n算术 (10-1) 不是引用。"}
+        self.assertEqual(quality_check.formula_semantic_issues(valid), [])
+        duplicate = {
+            "02_x.md": "$$x=1\\tag{2-1}$$",
+            "03_x.md": "$$y=1\\tag{2-1}$$\n见式(9-9)",
+        }
+        issues = quality_check.formula_semantic_issues(duplicate)
+        self.assertTrue(any("重复" in item for item in issues))
+        self.assertTrue(any("章号不匹配" in item for item in issues))
+        self.assertTrue(any("无定义" in item for item in issues))
+
+    def test_formula_semantics_rejects_malformed_outside_and_legacy_tags(self):
+        documents = {
+            "02_x.md": (
+                "正文 \\tag{2-1}\n"
+                "$$x=1\\tag{2_1}$$\n"
+                "$$y=2$$\n(2-2)\n"
+            )
+        }
+        issues = quality_check.formula_semantic_issues(documents)
+        self.assertTrue(any("不在" in item for item in issues))
+        self.assertTrue(any("语法错误" in item for item in issues))
+        self.assertTrue(any("旧式" in item for item in issues))
+
+    def test_section_reference_requires_existing_section_and_semantic_fragment(self):
+        valid = {
+            "04_x.md": "## 章\n### 4.2 GCC\n",
+            "11_x.md": "[§4.2](04_x.md#sec-4-2)\n",
+        }
+        self.assertEqual(quality_check.section_reference_issues(valid), [])
+        bad = {
+            "04_x.md": "## 章\n### 4.2 GCC\n",
+            "11_x.md": "[§4.2](04_x.md) 与 §9.9\n",
+        }
+        issues = quality_check.section_reference_issues(bad)
+        self.assertTrue(any("未指向语义片段" in item for item in issues))
+        self.assertTrue(any("引用不存在" in item for item in issues))
+
+    def test_section_semantics_rejects_wrong_chapter_and_duplicate_number(self):
+        documents = {
+            "03_x.md": "## 章\n### 4.2 错章\n",
+            "04_x.md": "## 章\n### 4.2 重复\n",
+        }
+        issues = quality_check.section_reference_issues(documents)
+        self.assertTrue(any("章号不匹配" in item for item in issues))
+        self.assertTrue(any("编号重复" in item for item in issues))
+
+    def test_expected_outline_comes_from_markdown_without_importing_builder(self):
+        documents = {
+            "00_overview.md": "# 导读\n## 1. 开始\n",
+            "01_problem-definition.md": "## 第一章\n### 1.1 问题\n",
+        }
+        chapters = [("00_overview.md", "导读"),
+                    ("01_problem-definition.md", "第一章")]
+        with mock.patch.object(quality_check, "EXPECTED_CHAPTERS", chapters):
+            self.assertEqual(
+                quality_check.expected_outline(documents),
+                [("导读", ["1. 开始"]), ("第一章", ["1.1 问题"])],
+            )
+
+    def test_source_content_expectation_tracks_heading_and_repeated_images(self):
+        source = ("## 章名\n### 10.1 小节\n"
+                  "![图1 一](../figures/fig01_x.png)\n"
+                  "![图1 再用](../figures/fig01_x.png)\n")
+        ids, images = quality_check.expected_site_content("10_x.md", source)
+        self.assertIn("sec-10-1", ids)
+        self.assertEqual(images["../figures/fig01_x.png"], 2)
+
+    def test_strip_fenced_code_preserves_following_line_numbers(self):
+        source = "第一行\n```text\n乱飞\n```\n第五行乱飞\n"
+        prose = quality_check.strip_fenced_code(source)
+        self.assertEqual(prose.count("\n", 0, prose.rfind("乱飞")) + 1, 5)
+
+    def test_url_scheme_checker_has_valid_invalid_and_near_miss_cases(self):
+        valid = ["https://example.org", "mailto:a@example.org", "chapter.html#sec-1",
+                 "javascript-not-a-scheme.html"]
+        self.assertEqual(quality_check.url_scheme_issues(valid), [])
+        issues = quality_check.url_scheme_issues(
+            ["javascript:alert(1)", "data:text/html,boom", "//example.org/path"])
+        self.assertEqual(len(issues), 3)
+
+    def test_build_date_accepts_explicit_or_source_date_epoch(self):
+        self.assertEqual(build_pdf.resolve_build_date("2026-09-21"), "2026-09-21")
+        with mock.patch.dict(os.environ, {"SOURCE_DATE_EPOCH": "0"}):
+            self.assertEqual(build_pdf.resolve_build_date(), "1970-01-01")
+        with self.assertRaises(ValueError):
+            build_pdf.resolve_build_date("2026-99-99")
+
+    def test_png_provenance_accepts_current_digest_and_rejects_stale_digest(self):
+        from PIL import Image, PngImagePlugin
+        with tempfile.TemporaryDirectory(dir=ROOT) as temp_dir:
+            base = Path(temp_dir)
+            script = base / "make_figures.py"
+            script.write_text("print('stable')\n", encoding="utf-8")
+            import hashlib
+            digest = hashlib.sha256(script.read_bytes()).hexdigest()
+            image_path = base / "fig01_x.png"
+            info = PngImagePlugin.PngInfo()
+            info.add_text("SourceScript", "make_figures.py")
+            info.add_text("SourceScriptDigest", digest)
+            Image.new("RGB", (8, 8)).save(image_path, pnginfo=info)
+            self.assertEqual(
+                quality_check.png_provenance_issues(image_path, script), [])
+            script.write_text("print('changed')\n", encoding="utf-8")
+            self.assertTrue(quality_check.png_provenance_issues(image_path, script))
+
+    def test_ascii_range_rule_ignores_version_near_miss(self):
+        self.assertIsNotNone(quality_check.NUMERIC_ASCII_RANGE.search("2~3 周"))
+        self.assertIsNone(quality_check.NUMERIC_ASCII_RANGE.search("v1.2~1.3"))
 
 
 if __name__ == "__main__":

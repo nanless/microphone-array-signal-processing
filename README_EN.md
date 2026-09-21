@@ -39,7 +39,8 @@ A beginner-friendly Chinese tutorial on microphone array signal processing (grad
 # 1. Virtualenv and dependencies
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-# pyroomacoustics is optional (only used by Appendix B exercise 16)
+# Optional: Ch. 10 and Appendix B exercise 16 target pyroomacoustics 0.10.0
+.venv/bin/pip install pyroomacoustics==0.10.0
 
 # 2. Generate the 33 figures (runtime depends on hardware, software versions, and load)
 .venv/bin/python scripts/make_figures.py
@@ -52,6 +53,7 @@ python3 -m venv .venv
 # 4. Build the combined PDF (outputs dist/microphone-array-tutorial.pdf; requires Google Chrome locally,
 #    set CHROME_BIN env var on non-macOS)
 .venv/bin/python scripts/build_pdf.py
+# For a reproducible cover date, add --build-date YYYY-MM-DD or set SOURCE_DATE_EPOCH
 
 # 5. Pre-release checks
 .venv/bin/python -m unittest discover -s tests -v
@@ -68,6 +70,6 @@ External formulas, algorithms, datasets, and standards should link to a DOI, sta
 
 ## Conventions
 
-- Hand-numbered equations (e.g. `(4-1)`), cited as "see Eq. (5-1)".
+- Core equations that are referenced across sections use MathJax `\tag{chapter-index}` labels and are cited as “see Eq. (5-1)”.
 - Abbreviations spelled out on first use; dB uses 10log (power) / 20log (amplitude).
 - Benchmark numbers always carry conditions and sources; simulation numbers carry implementation notes.

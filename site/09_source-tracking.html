@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 9 章 · 声源追踪 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="eafb88b9006e"><style>
+<meta name="source-digest" content="e95b9ec33eb1"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -36,6 +36,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .toc-mobile ul{padding-left:18px;margin:8px 0 2px}.toc-mobile a{color:#2f6db3;text-decoration:none}
 .topbtn{position:fixed;bottom:20px;right:20px;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px;opacity:.75}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
+.anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
 @media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
@@ -57,52 +58,62 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="08_speech-separation.html">第 8 章 · 语音分离</a></div>
 <div class="chap cur" aria-current="page">第 9 章 · 声源追踪</div>
 <ul>
-<li><a href="09_source-tracking.html#sec-2">9.1 问题与声学特殊性</a></li>
-<li><a href="09_source-tracking.html#sec-3">9.2 单目标追踪</a></li>
-<li><a href="09_source-tracking.html#sec-4">9.3 多目标追踪</a></li>
-<li><a href="09_source-tracking.html#sec-5">9.4 定位、追踪与波束形成的接口</a></li>
-<li><a href="09_source-tracking.html#sec-6">本章练习</a></li>
+<li><a href="09_source-tracking.html#sec-9-1">9.1 问题与声学特殊性</a></li>
+<li><a href="09_source-tracking.html#sec-9-2">9.2 单目标追踪</a></li>
+<li><a href="09_source-tracking.html#sec-9-3">9.3 多目标追踪</a></li>
+<li><a href="09_source-tracking.html#sec-9-4">9.4 定位、追踪与波束形成的接口</a></li>
+<li><a href="09_source-tracking.html#sec-u-f7a201edb9">本章练习</a></li>
 </ul>
-<div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现与产业实践</a></div>
+<div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a></div>
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
-<li><a href="09_source-tracking.html#sec-2">9.1 问题与声学特殊性</a></li>
-<li><a href="09_source-tracking.html#sec-3">9.2 单目标追踪</a></li>
-<li><a href="09_source-tracking.html#sec-4">9.3 多目标追踪</a></li>
-<li><a href="09_source-tracking.html#sec-5">9.4 定位、追踪与波束形成的接口</a></li>
-<li><a href="09_source-tracking.html#sec-6">本章练习</a></li>
+<li><a href="09_source-tracking.html#sec-9-1">9.1 问题与声学特殊性</a></li>
+<li><a href="09_source-tracking.html#sec-9-2">9.2 单目标追踪</a></li>
+<li><a href="09_source-tracking.html#sec-9-3">9.3 多目标追踪</a></li>
+<li><a href="09_source-tracking.html#sec-9-4">9.4 定位、追踪与波束形成的接口</a></li>
+<li><a href="09_source-tracking.html#sec-u-f7a201edb9">本章练习</a></li>
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是教程正文第 9 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
-<p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="./08_speech-separation.html">第 8 章 · 语音分离</a> ｜ 下一篇：<a href="./10_engineering-practice.html">第 10 章 · 工程实现与产业实践</a></p>
+<p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="./08_speech-separation.html">第 8 章 · 语音分离</a> ｜ 下一篇：<a href="./10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a></p>
 </blockquote>
 <hr />
-<h1 id="sec-1">9. 声源追踪</h1>
-<h2 id="sec-2">9.1 问题与声学特殊性</h2>
+<span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-6521bc6f00">9. 声源追踪</h1>
+<span id="sec-2" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-9-1">9.1 问题与声学特殊性</h2>
 <p>声源追踪持续估计运动声源状态 $\vec{s}_t=[\theta_t,\dot\theta_t,\ddot\theta_t]^\top$，其中三项分别为角度、角速度和角加速度。它把含噪且可能间断的逐帧定位结果融合成连续轨迹，再为波束形成提供较平滑的指向。<a href="https://www.locata.lms.tf.fau.de/" title="citation">LOCATA 声源定位与追踪挑战</a>包含静止或运动的声源与阵列录音，并提供光学动捕真值；使用时要按任务编号区分单源/多源、静止/运动和阵列配置，数据选择的一般原则见 §10.6。</p>
 <p>声学追踪有四个特点：说话人停顿会造成间歇观测，需要语音活动检测（Voice Activity Detection，VAD）门控和轨迹维持；混响会产生非高斯误差和野点；声源数会随时间变化；到达方向（Direction of Arrival，DOA）与笛卡尔位置之间是非线性关系。若状态为平面位置与速度 $[x,y,\dot x,\dot y]$，阵列中心为 $(x_0,y_0)$，则观测函数为 $\theta=\operatorname{atan2}(y-y_0,x-x_0)$。</p>
 <p>单个固定阵列的一次方位观测不能确定距离。令阵列中心为 $(0,0)$，声源在 $(1\ \mathrm m,1\ \mathrm m)$ 与 $(2\ \mathrm m,2\ \mathrm m)$ 时都得到 $45^\circ$；沿同一射线缩放位置不会改变 <code>atan2</code> 的结果。连续仅测方位观测只有在已知运动约束和足够的阵列—声源相对运动使系统可观测时，才可能逐步估计距离。否则，即使用扩展卡尔曼滤波（Extended Kalman Filter，EKF）或无迹卡尔曼滤波（Unscented Kalman Filter，UKF），径向位置仍不能由滤波器自行产生。位置级追踪通常还要引入已知中心不同的多个阵列、到达时间差（Time Difference of Arrival，TDOA）或距离观测，或利用满足可观测条件的移动阵列轨迹。<a href="https://doi.org/10.1080/00207178908559665" title="citation">仅测方位可观测性分析</a>。</p>
-<p>EKF 用该观测函数的雅可比做一阶线性化，UKF 则传播 $2L+1$ 个 sigma 点；此处 $L=4$，需要 9 个点。近距离或声源越过阵列附近时非线性更强，应比较 UKF、粒子滤波或其他非线性方法，而不是直接套用线性卡尔曼滤波（Kalman Filter，KF）。</p>
-<h2 id="sec-3">9.2 单目标追踪</h2>
-<p>状态模型写为 $\vec{s}_t=\mathbf F\vec{s}_{t-1}+\vec v_t$，其中 $\mathbf F$ 描述匀速或匀加速运动，$\vec v_t$ 是未建模运动造成的过程噪声。若定位器只输出角度，观测模型为 $\theta_t^{obs}=\mathbf H\vec{s}_t+w_t$，$w_t$ 是观测噪声。三维状态时 $\mathbf H=[1,0,0]$；下文二维简化状态 $[\theta,\dot\theta]^\top$ 使用 $\mathbf H=[1,0]$。</p>
+<p>EKF 用该观测函数的雅可比做一阶线性化。标准对称或缩放无迹变换的 UKF 通常传播 $2L+1$ 个 sigma 点；对位置—速度状态 $[x,y,\dot x,\dot y]^\top$，状态维数 $L=4$，因此是 9 个点。单纯方位—角速度状态只有 $L=2$，对应 5 个点。也有单纯形、球面径向等减少点数的变体，不能把 $2L+1$ 写成所有 UKF 的定义。近距离或声源越过阵列附近时非线性更强，应比较 UKF、粒子滤波或其他非线性方法，而不是直接套用线性卡尔曼滤波（Kalman Filter，KF）。</p>
+<span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-9-2">9.2 单目标追踪</h2>
+<p>状态与观测模型写为</p>
+<p>$$\vec{s}_t=\mathbf F\vec{s}_{t-1}+\vec v_t,\qquad \vec z_t=\mathbf H\vec s_t+\vec w_t\text{。}\tag{9-1}$$</p>
+<p>其中 $\mathbf F$ 描述匀速或匀加速运动，$\vec v_t$ 是未建模运动造成的过程噪声。若状态维数为 $d$、观测维数为 $p$，则过程噪声协方差 $\mathbf Q=E[\vec v_t\vec v_t^\top]\in\mathbb R^{d\times d}$，观测噪声协方差 $\mathbf R=E[\vec w_t\vec w_t^\top]\in\mathbb R^{p\times p}$。协方差元素的单位由对应状态分量相乘决定；例如 $[\theta,\dot\theta]^\top$ 的对角线单位分别是 $\mathrm{deg}^2$ 和 $(\mathrm{deg/frame})^2$。若定位器只输出角度，$\vec z_t$ 退化为标量 $\theta_t^{obs}$，$\vec w_t$ 是观测噪声，$\mathbf R$ 也退化为角度方差。三维状态时 $\mathbf H=[1,0,0]$；下文二维简化状态 $[\theta,\dot\theta]^\top$ 使用 $\mathbf H=[1,0]$。</p>
 <p>贝叶斯递推包含预测和更新。预测阶段依据运动模型外推状态，并增加因过程噪声带来的不确定度；更新阶段用观测与预测之差，即新息，修正状态和协方差。在线性高斯假设下，卡尔曼滤波给出这两个阶段的闭式递推。</p>
 <p><strong>卡尔曼滤波（KF）的五步递推</strong>（状态取 [角度, 角速度]）：
-1. <strong>预测</strong>：$\hat{\vec{s}}^-_t = \mathbf{F}\hat{\vec{s}}_{t-1}$——“他上一帧以这个速度在走，这帧大概到这儿”；
-2. <strong>预测的不确定度</strong>：$\mathbf{P}^-_t = \mathbf{F}\mathbf{P}_{t-1}\mathbf{F}^\top + \mathbf{Q}$。$\mathbf F$ 先把上一帧协方差传播到当前状态，$\mathbf Q$ 再加入未建模运动的过程噪声。不能根据这一式断言每个协方差元素或方差在任意 $\mathbf F$ 下都必然增大；本章的无观测匀速数例中，角度方差会增大；
-3. <strong>计算卡尔曼增益</strong>：$\mathbf{K}_t = \mathbf{P}^-_t\mathbf{H}^\top(\mathbf{H}\mathbf{P}^-_t\mathbf{H}^\top + \mathbf{R})^{-1}$，其中 $\mathbf R$ 是观测噪声协方差。观测噪声较小时增益增大，更新更依赖观测；预测协方差较小时增益减小，更新更依赖运动模型；
-4. <strong>更新</strong>：$\hat{\vec{s}}_t = \hat{\vec{s}}^-_t + \mathbf{K}_t\big(\theta^{obs}_t - \mathbf{H}\hat{\vec{s}}^-_t\big)$——括号里的差叫<strong>新息</strong>（innovation，观测与预测之差），用增益加权的新息修正预测；
-5. <strong>更新的不确定度</strong>：$\mathbf{P}_t = (\mathbf{I}-\mathbf{K}_t\mathbf{H})\mathbf{P}^-_t$——每吸收一次观测，不确定度就降一截。</p>
+1. <strong>预测状态</strong>：
+   $$\hat{\vec{s}}^-_t = \mathbf{F}\hat{\vec{s}}_{t-1}\text{。}\tag{9-2}$$
+2. <strong>预测协方差</strong>：
+   $$\mathbf{P}^-_t = \mathbf{F}\mathbf{P}_{t-1}\mathbf{F}^\top + \mathbf{Q}\text{。}\tag{9-3}$$
+   $\mathbf F$ 先把上一帧协方差传播到当前状态，$\mathbf Q$ 再加入未建模运动的过程噪声。不能据此断言任意 $\mathbf F$ 下每个协方差元素都必然增大；本章的无观测匀速数例中，角度方差会增大。
+3. <strong>计算卡尔曼增益</strong>：
+   $$\mathbf{K}_t = \mathbf{P}^-_t\mathbf{H}^\top(\mathbf{H}\mathbf{P}^-_t\mathbf{H}^\top + \mathbf{R})^{-1}\text{。}\tag{9-4}$$
+   $\mathbf R$ 是式(9-1)定义的观测噪声协方差。观测噪声较小时增益增大，更新更依赖观测；预测协方差较小时增益减小，更新更依赖运动模型。
+4. <strong>更新状态</strong>：
+   $$\hat{\vec{s}}_t = \hat{\vec{s}}^-_t + \mathbf{K}_t\big(\theta^{obs}_t - \mathbf{H}\hat{\vec{s}}^-_t\big)\text{。}\tag{9-5}$$
+   括号里的差称为新息（innovation），即观测与预测之差。
+5. <strong>更新协方差</strong>：
+   $$\mathbf{P}_t = (\mathbf{I}-\mathbf{K}_t\mathbf{H})\mathbf{P}^-_t\text{。}\tag{9-6}$$</p>
 <p>方位角跨越表示区间边界时，新息不能直接相减。若角度约定为 $[-180^\circ,180^\circ)$，定义</p>
-<p>$$\operatorname{wrap}_{180}(\alpha)=((\alpha+180^\circ)\bmod 360^\circ)-180^\circ,$$</p>
-<p>并在第 4 步使用 $\operatorname{wrap}_{180}(\theta_t^{obs}-\mathbf H\hat{\vec s}_t^-)$。例如预测为 $+179^\circ$、观测为 $-179^\circ$，直接相减得到 $-358^\circ$，最短圆周角差却是 $+2^\circ$。不做环绕会让滤波器沿错误方向大幅更新，门控也可能把正确观测判成野点。若设备只搜索一个不跨边界的有限扇区，则应使用该扇区的边界模型，不能把 $-180^\circ$ 与 $+180^\circ$ 自动视为相邻。</p>
-<p>第 5 步的简式便于手算；浮点实现可使用数值上更稳健的 Joseph 形式</p>
-<p>$$\mathbf P_t=(\mathbf I-\mathbf K_t\mathbf H)\mathbf P_t^-(\mathbf I-\mathbf K_t\mathbf H)^\top+\mathbf K_t\mathbf R\mathbf K_t^\top.$$</p>
-<p>两式在精确算术和标准卡尔曼增益下等价。Joseph 形式把两个半正定项相加，更不容易因舍入误差得到不对称或负方差；实现中仍应检查 $\mathbf P_t$ 的对称性和最小特征值。</p>
+<p>$$\operatorname{wrap}_{180}(\alpha)=((\alpha+180^\circ)\bmod 360^\circ)-180^\circ\text{。}\tag{9-7}$$</p>
+<p>并在第 4 步使用 $\operatorname{wrap}_{180}(\theta_t^{obs}-\mathbf H\hat{\vec s}_t^-)$。预测和更新完成后，还应把状态中的角度分量按式(9-7)映射回同一表示区间；角速度等非角度分量不做环绕。例如预测为 $+179^\circ$、观测为 $-179^\circ$，直接相减得到 $-358^\circ$，最短圆周角差却是 $+2^\circ$。不做环绕会让滤波器沿错误方向大幅更新，门控也可能把正确观测判成野点。若设备只搜索一个不跨边界的有限扇区，则应使用该扇区的边界模型，不能把 $-180^\circ$ 与 $+180^\circ$ 自动视为相邻。</p>
+<p>式(9-6)便于手算；浮点实现可使用数值上更稳健的 Joseph 形式</p>
+<p>$$\mathbf P_t=(\mathbf I-\mathbf K_t\mathbf H)\mathbf P_t^-(\mathbf I-\mathbf K_t\mathbf H)^\top+\mathbf K_t\mathbf R\mathbf K_t^\top\text{。}\tag{9-8}$$</p>
+<p>式(9-6)与式(9-8)在精确算术和标准卡尔曼增益下等价。Joseph 形式把两个半正定项相加，更不容易因舍入误差得到不对称或负方差；实现中仍应检查 $\mathbf P_t$ 的对称性和最小特征值。</p>
 <p><strong>算例 9-1：卡尔曼滤波单步数值例（跟住一个正在转头的说话人）</strong></p>
-<p>下面用一组数值执行完整递推。状态向量取 §9.1 三维状态的二维简化版 $\vec{s}=[\theta,\dot\theta]^{\top}$，单位分别为度和度/帧。该模型省略加速度，适合运动较平缓的示例；频繁机动时可改用含加速度的模型或后文的 IMM。已知：</p>
+<p>下面用一组数值复算式(9-2)至式(9-6)。状态向量取 §9.1 三维状态的二维简化版 $\vec{s}=[\theta,\dot\theta]^{\top}$，单位分别为度和度/帧。该模型省略加速度，适合运动较平缓的示例；频繁机动时可改用含加速度的模型或后文的 IMM。已知：</p>
 <ul>
 <li>上一帧估计：$\hat{\vec{s}}_{t-1}=[30,\ 0.5]^{\top}$（目标在 30°，每帧向右走 0.5°）；</li>
 <li>上一帧不确定度：$\mathbf{P}_{t-1}=\begin{bmatrix}4&0\\0&0.25\end{bmatrix}$（角度方差 4°²，即标准差 2°；角速度方差 0.25）；</li>
@@ -168,27 +179,27 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td><strong>卡尔曼滤波 KF</strong></td>
-<td>高斯线性最优贝叶斯递推（预测+新息加权更新）</td>
-<td>最优（线性高斯）、$O(d^3)$ 且 $d$ 只有 2~3，计算量可忽略</td>
-<td>抗野点差、需调 Q/R</td>
-<td>观测质量好时首选</td>
+<td>高斯线性贝叶斯递推（预测+新息加权更新）</td>
+<td>在线性高斯模型正确时得到最小均方误差估计</td>
+<td>稠密实现随状态维数 $d$、观测维数 $p$ 约为 $O(d^3+p^3)$；标量 DOA 更新可更低，但仍需在目标硬件计时；抗野点差、需调 Q/R</td>
+<td>观测质量较好且模型近似成立</td>
 </tr>
 <tr>
 <td>EKF（扩展卡尔曼滤波）/UKF（无迹卡尔曼滤波）</td>
 <td>一阶线性化/无迹变换处理非线性</td>
-<td>位置↔角度非线性可处理</td>
-<td>EKF 易发散、UKF 需传播约 2L+1 个 sigma 点</td>
+<td>可处理位置到角度的非线性观测</td>
+<td>EKF 对线性化误差敏感；标准对称/缩放 UKF 常传播 $2L+1$ 个 sigma 点，其他变体点数不同</td>
 <td>分布式阵列位置级追踪</td>
 </tr>
 <tr>
 <td>IMM 交互多模型</td>
-<td>静止/匀速/加速等多个运动模型并行跑 KF，按各自似然动态加权融合</td>
-<td>机动与静止通吃、无需预知运动模式</td>
-<td>计算为单 KF 的数倍、需调模型间转移概率</td>
-<td>说话人“停—走—停”的机动场景</td>
+<td>静止、匀速、加速等多个运动模型各自运行 KF，再按新息似然加权融合</td>
+<td>可在多个预设运动模式之间平滑切换</td>
+<td>计算量随模型数增加；未包含的运动模式仍会失配，且需标定模型转移概率</td>
+<td>包含启动、停止和匀速段的机动场景</td>
 </tr>
 <tr>
-<td><strong>粒子滤波（PF）/SIR</strong></td>
+<td><strong>粒子滤波（Particle Filter，PF）/序贯重要性重采样（Sequential Importance Resampling，SIR）</strong></td>
 <td>带权粒子近似后验；预测、加权、按需重采样</td>
 <td>能表示非线性、非高斯和多峰后验</td>
 <td>鲁棒性取决于似然与杂波模型；会权重退化和样本贫化</td>
@@ -198,7 +209,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </table></div>
 <p>IMM 的转移概率和各模型过程噪声需要用目标运动数据标定。对角占优的转移矩阵表示运动模式通常会持续多帧，但具体数值不能脱离帧率和语料直接照搬。</p>
 <p><strong>IMM 的模型切换</strong>：IMM 并行运行静止、匀速或加速等运动模型，再根据各模型的新息似然更新权重。它适合包含启动、停止和匀速段的轨迹。两模型例子可使用静止与匀速模型；转移矩阵的对角元素表示保持当前运动模式的概率。0.95 或 0.9 只能作为示例，实际数值必须结合帧率和目标运动数据估计。</p>
-<p><strong>EKF 与 UKF</strong>：EKF 对 $\theta=\operatorname{atan2}(y-y_0,x-x_0)$ 求雅可比，并在当前估计附近做一阶线性化；估计偏离真实状态较大时，线性化误差可能导致发散。UKF 不显式求导，而是将 $2L+1$ 个 sigma 点通过原始非线性观测函数，再重构均值与协方差，计算量通常高于 EKF。</p>
+<p><strong>EKF 与 UKF</strong>：EKF 对 $\theta=\operatorname{atan2}(y-y_0,x-x_0)$ 求雅可比，并在当前估计附近做一阶线性化；估计偏离真实状态较大时，线性化误差可能导致发散。标准对称或缩放 UKF 不显式求导，而是将 $2L+1$ 个 sigma 点通过原始非线性观测函数，再重构均值与协方差；减少 sigma 点的变体使用不同构造。计算量要按状态维数、sigma 点数、观测维数和矩阵实现估算，不能只按“UKF”名称排序。</p>
 <p><strong>算例 9-2：10 个粒子的一轮加权与重采样</strong></p>
 <p>卡尔曼滤波用均值和协方差表示单峰高斯后验。<strong>粒子滤波</strong>（particle filter，PF）用 $N$ 个带权样本近似后验，可以表达偏斜或多峰分布。它并不会自动抵抗观测野点：若似然模型把野点当成高置信观测，粒子权重仍会被错误观测拉偏。鲁棒性来自观测门控、重尾似然或“目标加均匀杂波”的混合似然。下面用 10 个粒子演示加权与重采样。</p>
 <p>设本帧 10 个粒子的角度猜测（单位：度）为：</p>
@@ -279,15 +290,15 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>第 4 步：在重采样前计算本帧估计</strong></p>
 <p>$$\hat\theta=\sum_{i=1}^{10}\tilde w_i\,x_i=0.0621\times25+0.0927\times27+0.1066\times28+0.1251\times30+\cdots+0.0253\times40\approx30.65°$$</p>
 <p>不加权的平均为 31.1°，加权估计约为 30.65°。这个后验均值必须用重采样前的粒子和归一化权重计算。重采样后权重重置为 $1/N$，不能把旧权重再乘到新粒子上；重采样后取均值只是在有限样本下近似同一后验。</p>
-<p><strong>第 5 步：系统重采样</strong>。连续加权会使多数粒子的权重趋近于零。系统重采样按归一化权重重新抽取 10 个粒子，允许高权重粒子重复出现，并把新权重统一重置为 $1/10$。先计算累积和 $[0.0621,\ 0.1548,\ 0.2614,\ 0.3865,\ 0.5116,\ 0.6392,\ 0.7643,\ 0.8821,\ 0.9747,\ 1.0000]$，再从 $[0,0.1)$ 取起点 $u_0=0.0637$，以 0.1 为间隔得到 10 个采样点。对应的新粒子群为：</p>
+<p><strong>第 5 步：为演示算法，强制执行一次系统重采样</strong>。本例 $N_{eff}=9.08>N/2=5$，按上一段的示例阈值本来不会触发重采样；下面只为展示系统重采样的索引过程而人为执行一次，不能把它当作阈值判决结果。系统重采样按归一化权重重新抽取 10 个粒子，允许高权重粒子重复出现，并把新权重统一重置为 $1/10$。先计算累积和 $[0.0621,\ 0.1548,\ 0.2614,\ 0.3865,\ 0.5116,\ 0.6392,\ 0.7643,\ 0.8821,\ 0.9747,\ 1.0000]$，再从 $[0,0.1)$ 取起点 $u_0=0.0637$，以 0.1 为间隔得到 10 个采样点。对应的新粒子群为：</p>
 <p>$$[27,\ 28,\ 30,\ 30,\ 30,\ 31,\ 32,\ 32,\ 33,\ 35]$$</p>
 <p>30° 和 32° 的粒子被重复抽取，25° 和 40° 的粒子未被抽中。重采样是随机过程，不按单个粒子的权重机械排序；31° 虽有最高单粒子权重，本次仍只保留一份。下一帧先按运动模型传播粒子，再根据新观测重新计算权重。</p>
 <p>粒子滤波依次执行状态传播、似然加权、归一化和按需重采样。它能表示多峰后验，但观测野点仍需门控或杂波似然处理。</p>
-<p>抗野点技巧包括观测门控、混合似然和辅助粒子滤波（Auxiliary Particle Filter，APF）。门控阈值不能只照搬固定的 $3\sigma$，应结合观测误差分布和漏检代价标定。图22(a) 为序贯重要性重采样粒子滤波（Sequential Importance Resampling Particle Filter，SIR-PF）平滑 DOA 观测的本书仿真。真值是 $60^\circ+40^\circ\sin(2\pi t/120)$ 的正弦轨迹；逐帧观测加标准差 $7^\circ$ 的高斯噪声，并将约 20% 帧替换为 $0^\circ$～$120^\circ$ 均匀野点。第 48～57 帧被置为缺测；这 10 帧只执行状态预测。滤波器使用 200 个粒子和“高斯目标 + 均匀杂波”混合似然，均匀杂波权重为 0.1。</p>
+<p>抗野点技巧包括观测门控、混合似然和辅助粒子滤波（Auxiliary Particle Filter，APF）。门控阈值不能只照搬固定的 $3\sigma$，应结合观测误差分布和漏检代价标定。图22(a) 为序贯重要性重采样粒子滤波（Sequential Importance Resampling Particle Filter，SIR-PF）平滑 DOA 观测的本书仿真。真值是 $60^\circ+40^\circ\sin(2\pi t/120)$ 的正弦轨迹；逐帧观测加标准差 $7^\circ$ 的高斯噪声，并将约 20% 帧替换为 $0^\circ$～$120^\circ$ 均匀野点。第 48～57 帧被置为缺测；这 10 帧只执行状态预测。滤波器使用 200 个粒子和“高斯目标 + 均匀杂波”混合似然，均匀杂波权重为 0.1。状态只允许落在 $[0^\circ,120^\circ]$ 有限扇区，越界粒子按扇区端点作镜面反射；这是便于展示的玩具边界，不是圆周角的 $360^\circ$ 环绕，也不代表真实墙面反射。</p>
 <p><img alt="图22 声源追踪示意" src="../figures/fig22_tracking.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图22（a）中，灰点为逐帧 DOA 观测，黑线为正弦真值轨迹，红线为粒子滤波估计，紫色阴影标出连续 10 帧缺测，橙色竖线表示有效粒子数低于 $N/2$ 后执行了系统重采样。缺测段没有似然更新，轨迹只由匀速状态模型与过程噪声外推。（b）在 −25° 和 +40° 附近设置两个强度峰，用于说明多目标强度函数。峰数只能近似用于提取人数，严格定义见 §9.3。</p>
+<p>图22（a）中，灰点为逐帧 DOA 观测，黑线为正弦真值轨迹，红线为粒子滤波估计，紫色阴影标出连续 10 帧缺测，橙色竖线表示有效粒子数低于 $N/2$ 后执行了系统重采样。缺测段没有似然更新，轨迹只由匀速状态模型与过程噪声外推；$0^\circ$ 与 $120^\circ$ 是采用反射规则的有限扇区边界。（b）在 −25° 和 +40° 附近设置两个强度峰，用于说明多目标强度函数。峰数只能近似用于提取人数，严格定义见 §9.3。</p>
 <p>单目标追踪由预测和观测更新组成。线性高斯条件下可使用卡尔曼滤波；非线性、多峰或重尾观测可考虑 UKF 或粒子滤波。粒子滤波仍需门控或杂波似然处理野点，IMM 用于多运动模型切换，VAD 用于控制无观测时的更新。</p>
-<h2 id="sec-4">9.3 多目标追踪</h2>
+<span id="sec-4" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-9-3">9.3 多目标追踪</h2>
 <p>多目标追踪需要同时解决观测与轨迹的<strong>数据关联</strong>，并估计当前的<strong>声源数量</strong>。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -301,9 +312,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <tbody>
 <tr>
 <td>数据关联+单目标滤波</td>
-<td>JPDA（联合概率数据关联）、MHT（多假设跟踪）</td>
-<td>算观测属于各轨迹的概率/假设树</td>
-<td>有效但组合爆炸，声学实现重</td>
+<td>联合概率数据关联（Joint Probabilistic Data Association，JPDA）、多假设跟踪（Multiple Hypothesis Tracking，MHT）</td>
+<td>计算观测属于各轨迹的概率或假设树</td>
+<td>假设数可能随观测和轨迹数快速增加</td>
 </tr>
 <tr>
 <td>多目标粒子滤波</td>
@@ -312,32 +323,32 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>计算量、数据关联和目标数先验都需按实现验证</td>
 </tr>
 <tr>
-<td><strong>随机有限集（RFS）/ PHD 滤波</strong></td>
-<td>PHD、CPHD、SMC-PHD</td>
+<td><strong>随机有限集（Random Finite Set，RFS）/概率假设密度（Probability Hypothesis Density，PHD）滤波</strong></td>
+<td>PHD、势概率假设密度（Cardinalized PHD，CPHD）、序贯蒙特卡洛 PHD（Sequential Monte Carlo PHD，SMC-PHD）</td>
 <td>传播目标集合的一阶强度；积分给期望目标数，峰用于提取状态</td>
 <td>避免显式枚举关联，但不保留身份；峰提取和参数设置影响结果 <a href="https://arxiv.org/pdf/1812.01570" title="citation">Liu et al. 2018</a></td>
 </tr>
 <tr>
-<td>LMB（标记多伯努利） / δ-GLMB</td>
-<td>labeled RFS</td>
-<td>给目标贴标签、输出带身份轨迹</td>
+<td>标记多伯努利（Labeled Multi-Bernoulli，LMB）/δ-广义标记多伯努利（delta-Generalized Labeled Multi-Bernoulli，δ-GLMB）</td>
+<td>带标签的 RFS</td>
+<td>为目标维护标签、输出带身份轨迹</td>
 <td>标签管理、假设数和计算量随具体实现而变</td>
 </tr>
 <tr>
-<td>track-before-detect</td>
-<td>对定位谱直接滤波</td>
-<td>不硬切观测，保留弱目标信息</td>
-<td>与 DNN 定位谱天然契合</td>
+<td>检测前追踪（Track-Before-Detect，TBD）</td>
+<td>对经校准的定位谱或似然场直接递推</td>
+<td>不先把弱峰硬切成离散观测，可保留阈值以下的证据</td>
+<td>输入谱必须有跨帧一致的尺度与杂波模型；未经校准的 DNN 分数不能直接当似然</td>
 </tr>
 <tr>
 <td>序列神经网络</td>
-<td>RNN/Transformer 处理定位后验序列</td>
+<td>循环神经网络（Recurrent Neural Network，RNN）/Transformer 处理定位后验序列</td>
 <td>可学习时间平滑与活动模式</td>
 <td>仍需训练数据；是否输出稳定身份取决于标签和损失</td>
 </tr>
 </tbody>
 </table></div>
-<p>LMB/δ-GLMB 为目标维护标签，可输出带身份的轨迹；检测前追踪直接递推定位谱，保留未越过检测阈值的弱证据。活动耦合笛卡尔 DOA（activity-coupled Cartesian DOA，ACCDOA）把向量方向编码为 DOA、向量长度编码为活动强度。它本身是逐帧声事件定位与检测的输出表示，不等同于追踪器；只有结合时序模型、平滑和身份关联后，才形成轨迹。</p>
+<p>LMB/δ-GLMB 为目标维护标签，可输出带身份的轨迹；检测前追踪直接递推定位谱，保留未越过检测阈值的弱证据。把连续定位谱接入 TBD 前，应先在独立验证集上校准“谱值—似然或似然比”的映射，并固定角度网格、归一化、温度缩放、声源数先验、信噪比与混响条件。网络 softmax 分数只在其类别集合内归一化，不能自动跨帧比较；出生、存活、漏检和杂波参数也要与同一标定口径匹配。若这些条件变化，应重新标定或把分数仅作为特征输入，而不是直接解释为概率。活动耦合笛卡尔 DOA（Activity-Coupled Cartesian DOA，ACCDOA）把向量方向编码为 DOA、向量长度编码为活动强度。它本身是逐帧声事件定位与检测的输出表示，不等同于追踪器；只有结合时序模型、平滑和身份关联后，才形成轨迹。</p>
 <p>PHD 强度 $D_t(x)$ 也不是“某处有人”的普通概率密度。它在区域 $A$ 上的积分表示该区域内目标数的期望，因而总目标数估计来自 $\hat N_t=\int D_t(x)\,dx$，再按整数规则取值。目标位置通常从强度峰或聚类中心提取；“峰数就是人数”只是实现近似。PHD 避免显式枚举观测—目标关联，但只传播一阶矩，不保留目标身份，也不能完整描述目标间相关性。</p>
 <p>下面的递推针对标准独立点目标模型：各目标独立演化，检测事件相互独立，每个被检测目标每帧至多产生一条观测，杂波是与目标观测独立的 Poisson 随机有限集，并忽略由既有目标衍生新目标（spawning）的过程，只用 $\gamma_t$ 表示自发出生；为得到下面的标准闭式更新，还采用 Poisson 型预测多目标分布近似。PHD 的预测式为</p>
 <p>$$D_{t|t-1}(x)=\int p_S(x')f_t(x\mid x')D_{t-1}(x')\,dx'+\gamma_t(x),$$</p>
@@ -350,16 +361,16 @@ D_t(x)=[1-p_D(x)]D_{t|t-1}(x)
 $$</p>
 <p>$p_D$ 是检测概率，$g_t(z\mid x)$ 是目标在状态 $x$ 时产生观测 $z$ 的似然，$\kappa_t(z)$ 是杂波强度。第一项保留可能漏检的目标；求和中的每个分母比较“该观测来自杂波”与“来自任一目标”的解释，因此杂波强度越大，单条观测增加的目标强度越少。</p>
 <p>用两个离散角度网格做手算。预测强度质量为 $D^-=[0.8,0.6]$，表示两个网格合计期望目标数 1.4；取 $p_D=1$，本帧只有一个观测，其似然为 $g=[0.9,0.1]$，杂波强度为 0.1。分母是 $0.1+0.9\times0.8+0.1\times0.6=0.88$，更新后两个网格的强度质量分别为 $0.72/0.88\approx0.818$ 和 $0.06/0.88\approx0.068$，总和约 0.886。它小于 1 是因为这条观测仍有一部分概率由杂波解释；若 $p_D\lt 1$，还要加上第一项的漏检质量。这个离散例子只解释更新各项，不能替代连续状态中的积分、峰提取和轨迹身份管理。相关混响峰不满足独立杂波假设，扩展目标还可能在一帧产生多条观测；这两类情况需修改似然或杂波模型，或采用相应的扩展目标、多目标滤波模型，不能直接套用上式。粒子或高斯混合只是表示和计算强度函数的不同方法。目标数由强度积分估计，位置再从峰或聚类中心提取。<a href="https://doi.org/10.1109/TAES.2003.1261119" title="citation">PHD 原始论文</a>；音频视觉粒子实现见 <a href="https://openresearch.surrey.ac.uk/esploro/outputs/journalArticle/Audio-Visual-Particle-Flow-SMC-PHD-Filtering-for/99513411302346" title="citation">Liu et al. 2019</a>。</p>
-<p>多目标追踪还要估计观测与轨迹的对应关系以及目标数。JPDA 和 MHT 显式处理关联；PHD 传播随机有限集的一阶强度；LMB 保留目标标签；检测前追踪保留未越过检测阈值的弱证据。OSPA 同时度量定位误差和目标数误差，但不评价身份连续性。</p>
-<h2 id="sec-5">9.4 定位、追踪与波束形成的接口</h2>
+<p>多目标追踪还要估计观测与轨迹的对应关系以及目标数。JPDA 和 MHT 显式处理关联；PHD 传播随机有限集的一阶强度；LMB 保留目标标签；检测前追踪保留未越过检测阈值的弱证据。最优子模式分配距离（Optimal Subpattern Assignment，OSPA）同时度量定位误差和目标数误差，但不评价身份连续性。</p>
+<span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-9-4">9.4 定位、追踪与波束形成的接口</h2>
 <p>追踪器向波束形成器提供平滑方向和置信度。若定位又使用波束形成后的信号，两个模块会相互影响，因此需要限制更新速率并处理静默期。</p>
 <p><img alt="图23 前端处理参考链路（总图定义见第10章§10.1，此处为引用）" src="../figures/fig23_pipeline.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>追踪器兼有平滑和预测作用：它减小 DOA 抖动，并在目标短时静默时外推方向。图 23 中，定位与追踪向波束形成提供方向，VAD、远端活动和双讲检测通过控制面约束状态更新；详细输入输出见<a href="./10_engineering-practice.html">第 10 章 §10.1</a>。波束方向的变化上限应按帧率、目标最大转速和允许跟随延迟确定；静默超时或唤醒词触发时还需保持或重置状态，避免定位与波束权重相互影响而振荡。</p>
+<p>追踪器兼有平滑和预测作用：它减小 DOA 抖动，并在目标短时静默时外推方向。图 23 中，定位与追踪向波束形成提供方向，VAD、远端活动和双讲检测通过控制面约束状态更新；详细输入输出见<a href="./10_engineering-practice.html#sec-10-1">第 10 章 §10.1</a>。波束方向的变化上限应按帧率、目标最大转速和允许跟随延迟确定；静默超时或唤醒词触发时还需保持或重置状态，避免定位与波束权重相互影响而振荡。</p>
 <p>多目标结果可用最优子模式分配距离（optimal subpattern assignment，OSPA）评价。若真值集 $X$ 有 $m$ 个目标，估计集 $Y$ 有 $n\ge m$ 个目标，截断距离为 $c$，阶数为 $p$，则</p>
 <p>$$d_p^{(c)}(X,Y)=\left[\frac{1}{n}\left(\min_{\pi}\sum_{i=1}^{m}\min\{c,d(x_i,y_{\pi(i)})\}^p+c^p(n-m)\right)\right]^{1/p}.$$</p>
-<p>第一项是最优配对后的截断定位误差，第二项惩罚目标数不一致，最后还要除以较大的集合大小。OSPA 不保留身份，所以身份切换要另报 ID switch 等轨迹指标。</p>
+<p>第一项是最优配对后的截断定位误差，第二项惩罚目标数不一致，最后还要除以较大的集合大小。OSPA 不保留身份，所以身份切换要另报身份切换次数（Identity Switch，ID switch）等轨迹指标。</p>
 <p>这个定义来自 Schuhmacher、Vo 与 Vo 的 OSPA 原始论文（IEEE TSP 56(8), 2008, pp. 3447–3457，<a href="https://doi.org/10.1109/TSP.2008.920469" title="citation">DOI 10.1109/TSP.2008.920469</a>）。截断距离 $c$ 同时限制单个定位误差并设定漏检/虚警的惩罚尺度，因此比较系统时必须使用相同的 $p$、$c$、坐标和角度环绕约定。</p>
-<h2 id="sec-6">本章练习</h2>
+<span id="sec-6" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-f7a201edb9">本章练习</h2>
 <ol>
 <li>KF 手算＋静默外推：沿用算例 9-1 的末态（估计 $[30.72,\ 0.513]^{\top}$，协方差左上角 3.705）。假设接下来两帧说话人静默、无观测，只做预测不做更新：手算两帧后的角度估计与角度方差，并说明波束应使用哪个方向。
    答案要点：每帧角度 $+0.513°$，两帧后约 31.75°；在本题给定的 $\mathbf F$ 与 $\mathbf Q$ 下，角度方差约按 3.705→4.49→5.80 增长，完整协方差依次约为 $\begin{bmatrix}4.49&0.47\\0.47&0.27\end{bmatrix}$ 和 $\begin{bmatrix}5.80&0.74\\0.74&0.28\end{bmatrix}$。波束可暂时使用外推值。若目标允许的最大角速度为 $\omega_{\max}$，帧间隔为 $\Delta t$，单帧转角限值应与 $\omega_{\max}\Delta t$ 同量级，再根据允许跟随延迟和机械转速标定；不能在没有帧率时固定写成 3～5°/帧。</li>

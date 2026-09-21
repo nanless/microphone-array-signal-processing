@@ -8,6 +8,7 @@ import sys
 import hashlib
 import unicodedata
 from collections import Counter
+from html import unescape
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import unquote, urlparse
@@ -21,6 +22,51 @@ DIST = ROOT / "dist"
 EDITING_MARKERS = re.compile(
     r"待核实|待补(?:实测|充)?|链接待补|成绩待补|清单#|"
     r"修订说明|编号不动|只调标题层级|新增块一律"
+)
+
+EXPECTED_SECTION_COUNTS = {
+    "00_overview.md": 10,
+    "01_problem-definition.md": 1,
+    "02_basics-signal-model.md": 8,
+    "03_array-geometry.md": 5,
+    "04_doa-estimation.md": 9,
+    "05_beamforming.md": 11,
+    "06_aec.md": 1,
+    "07_wpe-dereverberation.md": 1,
+    "08_speech-separation.md": 2,
+    "09_source-tracking.md": 5,
+    "10_engineering-practice.md": 11,
+    "11_selection-guide.md": 7,
+    "12_appendix-symbols-math.md": 3,
+    "13_appendix-guide.md": 7,
+}
+# 上表为独立发布基线，不从待检 HTML 或构建器反推。
+EXPECTED_CHAPTERS = [
+    ("00_overview.md", "导读与导航"),
+    ("01_problem-definition.md", "第 1 章 · 问题定义与双耳启示"),
+    ("02_basics-signal-model.md", "第 2 章 · 声音到达阵列时发生了什么"),
+    ("03_array-geometry.md", "第 3 章 · 阵列几何形态"),
+    ("04_doa-estimation.md", "第 4 章 · 声源定位（DOA 估计）"),
+    ("05_beamforming.md", "第 5 章 · 波束形成"),
+    ("06_aec.md", "第 6 章 · 声学回声消除（AEC）"),
+    ("07_wpe-dereverberation.md", "第 7 章 · 去混响（WPE）"),
+    ("08_speech-separation.md", "第 8 章 · 语音分离"),
+    ("09_source-tracking.md", "第 9 章 · 声源追踪"),
+    ("10_engineering-practice.md", "第 10 章 · 工程实现、评测与产业实践"),
+    ("11_selection-guide.md", "第 11 章 · 总结与选型指南"),
+    ("12_appendix-symbols-math.md", "附录 A · 符号术语数学"),
+    ("13_appendix-guide.md", "附录 B · 路径地图与练习"),
+]
+EXPECTED_CHAPTER_COUNT = 14
+EXPECTED_SECTION_COUNT = 81
+EXPECTED_FIGURE_NUMBERS = set(range(1, 34))
+ALLOWED_LINK_SCHEMES = {"http", "https", "mailto"}
+COLLOQUIAL_REVIEW = re.compile(
+    r"乱飞|跳格子|翻车|掉链子|猪队友|吃进去|喂给|神经网络接管|记死|照抄"
+)
+NUMERIC_ASCII_RANGE = re.compile(
+    r"(?<![A-Za-z0-9_.])\d+(?:\.\d+)?\s*~\s*\d+(?:\.\d+)?"
+    r"(?![A-Za-z0-9_.])"
 )
 
 
@@ -62,11 +108,207 @@ def fail(errors: list[str], message: str):
     errors.append(message)
 
 
-def check_sources(errors: list[str]):
+def strip_fenced_code(text: str):
+    lines = []
+    fence_char = None
+    fence_len = 0
+    for line in text.splitlines():
+        marker = re.match(r"^\s*(`{3,}|~{3,})", line)
+        if marker and fence_char is None:
+            fence_char = marker.group(1)[0]
+            fence_len = len(marker.group(1))
+            lines.append("")
+            continue
+        if (marker and fence_char is not None and marker.group(1)[0] == fence_char
+                and len(marker.group(1)) >= fence_len):
+            fence_char = None
+            fence_len = 0
+            lines.append("")
+            continue
+        if fence_char is None:
+            lines.append(line)
+        else:
+            lines.append("")
+    return "\n".join(lines)
+
+
+def strip_inline_code(text: str):
+    """屏蔽行内代码但保留字符位置和换行，避免把示例语法当正文。"""
+    pattern = re.compile(r"(?<!`)(`+)(?!`)(.+?)(?<!`)\1(?!`)", re.S)
+    return pattern.sub(lambda match: " " * len(match.group(0)), text)
+
+
+def clean_heading_text(text: str):
+    text = re.sub(r"!\[.*?\]\(.*?\)", "", text)
+    text = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    text = re.sub(r"<[^>]+>", "", text)
+    text = re.sub(r"[`*_~]", "", text)
+    return re.sub(r"\s+", " ", unescape(text)).strip()
+
+
+def semantic_heading_ids(text: str):
+    """按公开锚点规则独立计算源 Markdown 的主标题标识。"""
+    seen = Counter()
+    result = []
+    for index, (level, title) in enumerate(markdown_headings(text), 1):
+        label = clean_heading_text(title)
+        numbered = re.match(r"^(\d+(?:\.\d+)+)(?=\s|$)", label)
+        if numbered:
+            base = "sec-" + numbered.group(1).replace(".", "-")
+        elif label:
+            base = "sec-u-" + hashlib.sha1(label.encode("utf-8")).hexdigest()[:10]
+        else:
+            base = f"sec-{index}"
+        seen[base] += 1
+        primary = base if seen[base] == 1 else f"{base}-{seen[base]}"
+        result.append((level, label, primary))
+    return result
+
+
+def markdown_headings(text: str):
+    headings = []
+    for line in strip_fenced_code(text).splitlines():
+        match = re.match(r"^(#{1,6})\s+(.+)$", line)
+        if match:
+            headings.append((len(match.group(1)), match.group(2).strip()))
+    return headings
+
+
+def section_count_from_markdown(text: str, overview=False):
+    headings = markdown_headings(text)
+    if overview:
+        return sum(level == 2 for level, _ in headings)
+    return sum(level == 3 for level, _ in headings)
+
+
+def structure_issues(documents: dict[str, str]):
+    issues = []
+    actual = set(documents)
+    expected = set(EXPECTED_SECTION_COUNTS)
+    if actual != expected:
+        issues.append(f"章节文件集不符合基线：缺失 {sorted(expected - actual)}，多出 {sorted(actual - expected)}")
+    total = 0
+    for name, expected_count in EXPECTED_SECTION_COUNTS.items():
+        if name not in documents:
+            continue
+        actual_count = section_count_from_markdown(
+            documents[name], overview=name == "00_overview.md")
+        total += actual_count
+        if actual_count != expected_count:
+            issues.append(f"节数不符合基线：{name}: {actual_count}，应为 {expected_count}")
+    if len(documents) != EXPECTED_CHAPTER_COUNT:
+        issues.append(f"源文档数应为 {EXPECTED_CHAPTER_COUNT}，实际 {len(documents)}")
+    if total != EXPECTED_SECTION_COUNT:
+        issues.append(f"全书节数应为 {EXPECTED_SECTION_COUNT}，实际 {total}")
+    return issues
+
+
+def formula_semantic_issues(documents: dict[str, str]):
+    issues = []
+    definitions: dict[str, str] = {}
+    references = []
+    for name, original in documents.items():
+        text = strip_inline_code(strip_fenced_code(original))
+        chapter_match = re.match(r"(\d{2})_", name)
+        expected_chapter = int(chapter_match.group(1)) if chapter_match else None
+        displays = list(re.finditer(r"\$\$(.*?)\$\$", text, flags=re.S))
+        display_ranges = [(match.start(), match.end()) for match in displays]
+        valid_tags = []
+        for match in re.finditer(r"\\tag(?:\{\d+-\d+\}|[^\s$]*)", text):
+            exact = re.fullmatch(r"\\tag\{(\d+)-(\d+)\}", match.group(0))
+            if not exact:
+                issues.append(f"公式标签语法错误：{name}: {match.group(0)!r}")
+                continue
+            if not any(start <= match.start() < end for start, end in display_ranges):
+                issues.append(f"公式标签不在 $$...$$ 公式块内：{name}: {match.group(0)}")
+                continue
+            valid_tags.append(exact)
+        for display in displays:
+            count = len(re.findall(r"\\tag\{\d+-\d+\}", display.group(1)))
+            if count > 1:
+                issues.append(f"单个公式块含多个编号：{name}")
+        for display in displays:
+            suffix = text[display.end():]
+            legacy = re.match(r"[ \t]*\r?\n[ \t]*[（(]\d+-\d+[)）]", suffix)
+            if legacy:
+                issues.append(f"旧式公式编号位于公式块外：{name}: {legacy.group(0).strip()!r}")
+        chapter_numbers = []
+        for match in valid_tags:
+            tag = f"{int(match.group(1))}-{int(match.group(2))}"
+            if tag in definitions:
+                issues.append(f"公式编号重复：{tag}（{definitions[tag]} 与 {name}）")
+            else:
+                definitions[tag] = name
+            if expected_chapter is not None:
+                if int(match.group(1)) != expected_chapter:
+                    issues.append(f"公式章号不匹配：{name} 中 \\tag{{{tag}}}")
+                else:
+                    chapter_numbers.append(int(match.group(2)))
+        if chapter_numbers and sorted(chapter_numbers) != list(range(1, len(chapter_numbers) + 1)):
+            issues.append(f"公式编号不连续：{name}: {sorted(chapter_numbers)}")
+        references.extend(
+            (f"{int(m.group(1))}-{int(m.group(2))}", name)
+            for m in re.finditer(r"式\s*[\(（]\s*(\d+)-(\d+)\s*[\)）]", text)
+        )
+    for tag, name in references:
+        if tag not in definitions:
+            issues.append(f"公式引用无定义：{name} 中式({tag})")
+    return issues
+
+
+def section_reference_issues(documents: dict[str, str]):
+    issues = []
+    sections = set()
+    sections_by_file = {}
+    owners = {}
+    for name, text in documents.items():
+        local = set()
+        chapter_match = re.match(r"(\d{2})_", name)
+        expected_chapter = int(chapter_match.group(1)) if chapter_match else None
+        for _level, title in markdown_headings(text):
+            match = re.match(r"^(\d+(?:\.\d+)+)(?=\s|$)", title)
+            if match:
+                number = match.group(1)
+                local.add(number)
+                owners.setdefault(number, []).append(name)
+                if expected_chapter is not None and int(number.split(".")[0]) != expected_chapter:
+                    issues.append(f"小节章号不匹配：{name}: {number}")
+        sections |= local
+        sections_by_file[name] = local
+    for number, names in owners.items():
+        if len(names) > 1:
+            issues.append(f"小节编号重复：{number}: {names}")
+    for name, original in documents.items():
+        text = strip_fenced_code(original)
+        for match in re.finditer(r"§\s*(\d+(?:\.\d+)+)", text):
+            if match.group(1) not in sections:
+                issues.append(f"小节引用不存在：{name}: §{match.group(1)}")
+        link_re = re.compile(r"\[([^\]]+)\]\((?:\./)?([^\s)#]+\.md)(#[^\s)]+)?\)")
+        for match in link_re.finditer(text):
+            label, target_name, fragment = match.groups()
+            section_match = (re.search(r"§\s*(\d+(?:\.\d+)+)", label)
+                             or re.search(r"第\s*(\d+(?:\.\d+)+)\s*节", label)
+                             or re.fullmatch(r"\s*(\d+(?:\.\d+)+)\s*", label))
+            if not section_match:
+                continue
+            number = section_match.group(1)
+            expected_fragment = "#sec-" + number.replace(".", "-")
+            if fragment != expected_fragment:
+                issues.append(
+                    f"具体小节链接未指向语义片段：{name}: [{label}] -> "
+                    f"{target_name}{fragment or ''}，应为 {expected_fragment}")
+            if target_name in sections_by_file and number not in sections_by_file[target_name]:
+                issues.append(f"小节链接目标不包含 {number}：{name} -> {target_name}")
+    return issues
+
+
+def check_sources(errors: list[str], notices: list[str]):
     paths = sorted(CHAPTERS.glob("*.md"))
     paths += [ROOT / "README.md", ROOT / "README_EN.md", ROOT / "scripts" / "README.md"]
     for path in paths:
-        for line_no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        original = path.read_text(encoding="utf-8")
+        prose = strip_fenced_code(original)
+        for line_no, line in enumerate(original.splitlines(), 1):
             if EDITING_MARKERS.search(line):
                 fail(errors, f"编辑占位：{path.relative_to(ROOT)}:{line_no}: {line.strip()[:100]}")
             if re.search(r"\\\(|\\\)|\\\[|\\\]", line):
@@ -75,15 +317,114 @@ def check_sources(errors: list[str]):
                     f"不兼容的公式定界符：{path.relative_to(ROOT)}:{line_no}: "
                     f"请使用 $...$ 或 $$...$$",
                 )
+        style_text = re.sub(r"`[^`]*`", "", prose)
+        style_text = re.sub(r"https?://[^\s)]+", "", style_text)
+        if "本报告" in style_text:
+            fail(errors, f"编辑视角残留：{path.relative_to(ROOT)}: 本报告")
+        if NUMERIC_ASCII_RANGE.search(style_text):
+            fail(errors, f"中文数字范围使用 ASCII ~：{path.relative_to(ROOT)}")
+        for match in COLLOQUIAL_REVIEW.finditer(prose):
+            line_no = prose.count("\n", 0, match.start()) + 1
+            notices.append(
+                f"高风险口语需人工复核：{path.relative_to(ROOT)}:{line_no}: {match.group(0)}")
+
+    documents = {path.name: path.read_text(encoding="utf-8")
+                 for path in sorted(CHAPTERS.glob("*.md"))}
+    errors.extend(structure_issues(documents))
+    errors.extend(formula_semantic_issues(documents))
+    errors.extend(section_reference_issues(documents))
+
+
+def url_scheme_issues(urls):
+    issues = []
+    for value in urls:
+        parsed = urlparse(value.strip())
+        scheme = parsed.scheme.lower()
+        if parsed.netloc and not scheme:
+            issues.append(f"省略协议的外部链接：{value}")
+        elif scheme and scheme not in ALLOWED_LINK_SCHEMES:
+            issues.append(f"不安全或不支持的链接协议 {scheme}：{value}")
+    return issues
+
+
+def expected_site_content(name: str, source: str):
+    ids = {primary for _level, _title, primary in semantic_heading_ids(source)}
+    images = Counter(f"../figures/{figure_name}"
+                     for _alt, figure_name, _number in extract_figure_references(source))
+    return ids, images
+
+
+def expected_outline(documents=None):
+    """仅从显式篇名清单和 Markdown 标题解析 PDF 期望书签。"""
+    if documents is None:
+        documents = {path.name: path.read_text(encoding="utf-8")
+                     for path in CHAPTERS.glob("*.md")}
+    result = []
+    for name, label in EXPECTED_CHAPTERS:
+        headings = semantic_heading_ids(documents[name])
+        section_level = 2 if name == "00_overview.md" else 3
+        children = [title for level, title, _primary in headings if level == section_level]
+        result.append((label, children))
+    return result
+
+
+def extract_figure_references(text: str):
+    pattern = re.compile(r"!\[([^\]]*)\]\(\.\./figures/(fig(\d{2})_[^\s)\"]+\.png)(?:\s+\"[^\"]*\")?\)")
+    return [(match.group(1), match.group(2), int(match.group(3)))
+            for match in pattern.finditer(strip_fenced_code(text))]
+
+
+def figure_inventory_issues(references, png_names):
+    issues = []
+    refs = Counter(name for _alt, name, _number in references)
+    numbers = set()
+    names_by_number = {}
+    for alt, name, number in references:
+        numbers.add(number)
+        names_by_number.setdefault(number, set()).add(name)
+        alt_match = re.match(r"^\s*图\s*(\d+)(?=\D|$)", alt)
+        if not alt_match:
+            issues.append(f"图片 alt 未以图号开头：{name}: {alt!r}")
+        elif int(alt_match.group(1)) != number:
+            issues.append(f"图号与文件名不匹配：alt 图{alt_match.group(1)} -> {name}")
+    if numbers != EXPECTED_FIGURE_NUMBERS:
+        issues.append(
+            f"正文图号应为 1..33：缺失 {sorted(EXPECTED_FIGURE_NUMBERS - numbers)}，"
+            f"多出 {sorted(numbers - EXPECTED_FIGURE_NUMBERS)}")
+    for number, names in names_by_number.items():
+        if len(names) > 1:
+            issues.append(f"同一图号对应多个文件：图{number}: {sorted(names)}")
+    orphans = sorted(set(png_names) - set(refs))
+    if orphans:
+        issues.append(f"孤立 PNG（正文未引用）：{orphans}")
+    missing = sorted(set(refs) - set(png_names))
+    if missing:
+        issues.append(f"正文引用但图片目录缺失：{missing}")
+    return issues
+
+
+def png_provenance_issues(image_path: Path, script_path: Path):
+    from PIL import Image
+    with Image.open(image_path) as image:
+        metadata = dict(image.info)
+    source = metadata.get("SourceScript", "")
+    accepted_sources = {script_path.name, script_path.relative_to(ROOT).as_posix()}
+    expected_digest = hashlib.sha256(script_path.read_bytes()).hexdigest()
+    issues = []
+    if source not in accepted_sources:
+        issues.append(f"SourceScript={source!r}，应为 {sorted(accepted_sources)} 之一")
+    if metadata.get("SourceScriptDigest") != expected_digest:
+        issues.append("SourceScriptDigest 与当前绘图脚本的完整 sha256 不一致")
+    return issues
 
 
 def check_figures(errors: list[str]):
-    refs: Counter[str] = Counter()
+    references = []
     for path in CHAPTERS.glob("*.md"):
-        refs.update(re.findall(r"\.\./figures/([^\s)\"]+)", path.read_text(encoding="utf-8")))
-    if len(refs) != 33:
-        fail(errors, f"正文唯一图片数应为 33，实际 {len(refs)}")
-    for name in refs:
+        references.extend(extract_figure_references(path.read_text(encoding="utf-8")))
+    png_names = [path.name for path in (ROOT / "figures").glob("fig*.png")]
+    errors.extend(figure_inventory_issues(references, png_names))
+    for name in sorted(set(item[1] for item in references)):
         path = ROOT / "figures" / name
         if not path.exists() or path.stat().st_size == 0:
             fail(errors, f"图片缺失或为空：figures/{name}")
@@ -96,6 +437,12 @@ def check_figures(errors: list[str]):
                 width, height = image.size
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
+            number = int(re.match(r"fig(\d{2})_", name).group(1))
+            script_name = ("make_figures.py" if number <= 25 or number == 33
+                           else "make_aec_figures.py")
+            script_path = ROOT / "scripts" / script_name
+            for issue in png_provenance_issues(path, script_path):
+                fail(errors, f"PNG 溯源失效：figures/{name}: {issue}")
         except Exception as exc:
             fail(errors, f"图片无法解码：figures/{name}: {exc}")
 
@@ -105,6 +452,11 @@ def check_site(errors: list[str]):
     if len(pages) != 14:
         fail(errors, f"站点页面数应为 14，实际 {len(pages)}")
     parsed = {}
+    documents = {path.name: path.read_text(encoding="utf-8")
+                 for path in CHAPTERS.glob("*.md")}
+    source_by_page = {"index.html": "00_overview.md"}
+    source_by_page.update({name.replace(".md", ".html"): name
+                           for name, _label in EXPECTED_CHAPTERS[1:]})
     expected_digest = site_source_digest()
     for path in pages:
         page_text = path.read_text(encoding="utf-8")
@@ -134,6 +486,19 @@ def check_site(errors: list[str]):
             fail(errors, f"页面应有且仅有一个当前导航项：{path.name}: {current_count}")
         if ":focus-visible" not in page_text:
             fail(errors, f"页面缺少键盘焦点样式：{path.name}")
+        for issue in url_scheme_issues(parser.links + [src for src, _alt in parser.images]):
+            fail(errors, f"站点链接协议错误：{path.name}: {issue}")
+        source_name = source_by_page.get(path.name)
+        if source_name and source_name in documents:
+            expected_ids, expected_images = expected_site_content(
+                source_name, documents[source_name])
+            missing_ids = sorted(expected_ids - set(parser.ids))
+            if missing_ids:
+                fail(errors, f"站点缺少源标题锚点：{path.name}: {missing_ids[:5]}")
+            actual_images = Counter(src for src, _alt in parser.images)
+            if actual_images != expected_images:
+                fail(errors, f"站点图片与源 Markdown 不一致：{path.name}: "
+                     f"实际 {dict(actual_images)}，应为 {dict(expected_images)}")
         parsed[path.name] = parser
     for name, parser in parsed.items():
         for href in parser.links:
@@ -192,6 +557,30 @@ def check_combined_html(errors: list[str]):
     parser = PageParser()
     parser.feed(text)
     ids = set(parser.ids)
+    documents = {path.name: path.read_text(encoding="utf-8")
+                 for path in CHAPTERS.glob("*.md")}
+    expected_ids = set()
+    expected_images = Counter()
+    for index, (name, _label) in enumerate(EXPECTED_CHAPTERS):
+        expected_ids.add(f"ch-{index}")
+        section_level = 2 if name == "00_overview.md" else 3
+        for level, _title, primary in semantic_heading_ids(documents[name]):
+            if level == section_level:
+                expected_ids.add(f"ch-{index}-{primary}")
+        expected_images.update(
+            f"../figures/{figure_name}"
+            for _alt, figure_name, _number in extract_figure_references(documents[name])
+        )
+    missing_ids = sorted(expected_ids - ids)
+    if missing_ids:
+        fail(errors, f"dist/combined.html 缺少源章节或小节：{missing_ids[:8]}")
+    actual_images = Counter(src for src, _alt in parser.images)
+    if actual_images != expected_images:
+        fail(errors, "dist/combined.html 图片引用与源 Markdown 不一致")
+    if "全书完" not in text:
+        fail(errors, "dist/combined.html 缺少固定结束标记“全书完”")
+    for issue in url_scheme_issues(parser.links + [src for src, _alt in parser.images]):
+        fail(errors, f"dist/combined.html 链接协议错误：{issue}")
     for href in parser.links:
         if href.startswith("#") and href[1:] not in ids:
             fail(errors, f"dist/combined.html 内部锚点不存在：{href}")
@@ -235,19 +624,6 @@ def norm(text: str):
     return re.sub(r"[\s·：:，,。；;、“”‘’「」『』（）()—–\-]", "", text)
 
 
-def expected_outline():
-    # 期望值必须来自 Markdown 源文件，不能从待检的 combined.html 自证正确。
-    import importlib.util
-    module_path = ROOT / "scripts" / "build_pdf.py"
-    spec = importlib.util.spec_from_file_location("quality_build_pdf", module_path)
-    module = importlib.util.module_from_spec(spec)
-    assert spec.loader is not None
-    spec.loader.exec_module(module)
-    _page, outline = module.build_html()
-    return [(label, [title for title, _sid in children])
-            for label, _cid, children in outline]
-
-
 def check_pdf(errors: list[str], notices: list[str]):
     path = DIST / "microphone-array-tutorial.pdf"
     if not path.exists():
@@ -287,6 +663,8 @@ def check_pdf(errors: list[str], notices: list[str]):
             if uri.startswith("file:"):
                 fail(errors, f"PDF 本地路径链接：p{page_no}: {uri}")
     text = "\n".join(extracted)
+    if not extracted or "全书完" not in extracted[-1]:
+        fail(errors, "PDF 末页缺少固定结束标记“全书完”")
     radicals = re.findall(r"[\u2e80-\u2eff\u2f00-\u2fdf]", text)
     if radicals:
         fail(errors, f"PDF 文本层含部首类错误码位：{len(radicals)} 个")
@@ -299,7 +677,7 @@ def check_pdf(errors: list[str], notices: list[str]):
         else:
             actual.append([item, []])
     if [item[0].title for item in actual] != [label for label, _ in expected]:
-        fail(errors, "PDF 顶级书签标题或顺序与合订 HTML 不一致")
+        fail(errors, "PDF 顶级书签标题或顺序与源 Markdown 不一致")
     else:
         for (parent, children), (label, expected_children) in zip(actual, expected):
             if [child.title for child in children] != expected_children:
@@ -324,7 +702,7 @@ def check_pdf(errors: list[str], notices: list[str]):
 def main():
     errors: list[str] = []
     notices: list[str] = []
-    check_sources(errors)
+    check_sources(errors, notices)
     check_figures(errors)
     check_site(errors)
     check_combined_html(errors)

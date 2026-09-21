@@ -41,6 +41,8 @@
 
 多人重叠场景可按下面的决策维度缩小范围：
 
+下表使用三种不同的识别口径。拼接最小排列词错误率（Concatenated minimum-Permutation Word Error Rate，cpWER）先按说话人拼接参考与假设，再寻找一个全局最优的说话人排列；最优参考组合词错误率（Optimal Reference Combination Word Error Rate，ORC-WER）允许参考语句在输出流之间做最优组合，不要求一条输出流全程对应同一个人；说话人归属词错误率（Speaker-Attributed Word Error Rate，sa-WER）则把词转写与说话人标签一起评价，归属错误会影响结果。三者不能互换：ORC-WER 偏向检查内容是否被完整识别，cpWER 还要求全局输出流一致，sa-WER 用于确实需要身份归属的任务。实现时还要记录分段与重叠处理、标记规则和评分工具版本。[MeetEval 评分算法说明](https://github.com/fgnt/meeteval/blob/main/doc/algorithms.md "citation")
+
 | 任务条件 | 一路波束/掩码波束 | 连续语音分离（CSS） | 目标说话人提取（TSE） |
 |---|---|---|---|
 | 需要的输出 | 一路增强音频 | 固定或少量无重叠输出流；同一路可在不同时段承载不同说话人 | 被注册语音、视觉或方向指定的一人 |
