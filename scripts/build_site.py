@@ -9,7 +9,9 @@
 文末上一篇/下一篇（首页不输出该盒）。图片直接引用 ../figures/（不复制）。
 数学公式用 MathJax CDN 渲染（离线时显示源码，页面顶部有提示）。
 """
+import os
 import re
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
@@ -73,9 +75,9 @@ PAGE = """<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{title} · 麦克风阵列信号处理教程</title><style>{css}</style>
 <script>
-window.MathJax = {{tex: {{inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']]}}}};
+window.MathJax = {{tex: {{inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], displayMath: [['$$', '$$']]}}}};
 </script>
-<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
 </head><body id="top">
 <div class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; {crumb}</div>
 <div class="wrap"><nav class="side">{sidebar}</nav>
@@ -203,40 +205,45 @@ def sidebar_with_anchors(current, heads):
 
 
 def main():
-    OUT.mkdir(exist_ok=True)
-    home_md = (SRC / HOME_FNAME).read_text(encoding="utf-8")
-    home_heads = parse_headings(home_md)
-    home_html, home_n = render(home_md)
-    assert home_n == len(home_heads), f"首页锚点 {home_n} vs 标题 {len(home_heads)}"
-    toc, _ = sub_list("index.html", home_heads)
-    (OUT / "index.html").write_text(PAGE.format(
-        title="导读与导航", css=CSS, crumb="导读与导航",
-        sidebar=sidebar_with_anchors(None, home_heads), toc=toc,
-        body=home_html, pn=""), encoding="utf-8")
-    print("saved index.html")
     names = [f for f, _ in CHAPTERS]
-    for i, (fname, label) in enumerate(CHAPTERS):
-        md = (SRC / fname).read_text(encoding="utf-8")
-        heads = parse_headings(md)
-        html_name = fname.replace(".md", ".html")
-        body, n = render(md)
-        assert n == len(heads), f"{fname}: 锚点 {n} vs 标题 {len(heads)}"
-        toc, _ = sub_list(html_name, heads)
-        if i > 0:
-            prev = f'<a href="{names[i-1].replace(".md", ".html")}">← 上一篇</a>'
-        else:
-            prev = '<span class="off">← 上一篇</span>'
-        if i < len(names) - 1:
-            nxt = f'<a href="{names[i+1].replace(".md", ".html")}">下一篇 →</a>'
-        else:
-            nxt = '<a href="index.html">回首页 →</a>'
-        pn = f'<div class="pn"><span>{prev}</span><span>{nxt}</span></div>'
-        (OUT / html_name).write_text(PAGE.format(
-            title=label, css=CSS, crumb=label,
-            sidebar=sidebar_with_anchors(fname, heads), toc=toc,
-            body=body, pn=pn), encoding="utf-8")
-        print("saved", html_name)
-    print("DONE", len(names) + 1, "pages")
+    expected = {"index.html", *(name.replace(".md", ".html") for name in names)}
+    with tempfile.TemporaryDirectory(prefix=".site-build-", dir=ROOT) as tmp:
+        temp_out = Path(tmp)
+        home_md = (SRC / HOME_FNAME).read_text(encoding="utf-8")
+        home_heads = parse_headings(home_md)
+        home_html, home_n = render(home_md)
+        assert home_n == len(home_heads), f"首页锚点 {home_n} vs 标题 {len(home_heads)}"
+        toc, _ = sub_list("index.html", home_heads)
+        (temp_out / "index.html").write_text(PAGE.format(
+            title="导读与导航", css=CSS, crumb="导读与导航",
+            sidebar=sidebar_with_anchors(None, home_heads), toc=toc,
+            body=home_html, pn=""), encoding="utf-8")
+        for i, (fname, label) in enumerate(CHAPTERS):
+            md = (SRC / fname).read_text(encoding="utf-8")
+            heads = parse_headings(md)
+            html_name = fname.replace(".md", ".html")
+            body, n = render(md)
+            assert n == len(heads), f"{fname}: 锚点 {n} vs 标题 {len(heads)}"
+            toc, _ = sub_list(html_name, heads)
+            prev = (f'<a href="{names[i-1].replace(".md", ".html")}">← 上一篇</a>'
+                    if i > 0 else '<a href="index.html">← 导读</a>')
+            nxt = (f'<a href="{names[i+1].replace(".md", ".html")}">下一篇 →</a>'
+                   if i < len(names) - 1 else '<a href="index.html">回首页 →</a>')
+            pn = f'<div class="pn"><span>{prev}</span><span>{nxt}</span></div>'
+            (temp_out / html_name).write_text(PAGE.format(
+                title=label, css=CSS, crumb=label,
+                sidebar=sidebar_with_anchors(fname, heads), toc=toc,
+                body=body, pn=pn), encoding="utf-8")
+        built = {path.name for path in temp_out.glob("*.html")}
+        if built != expected:
+            raise SystemExit(f"站点产物集合异常：期望 {sorted(expected)}，实际 {sorted(built)}")
+        OUT.mkdir(exist_ok=True)
+        for name in sorted(expected):
+            os.replace(temp_out / name, OUT / name)
+        for stale in OUT.glob("*.html"):
+            if stale.name not in expected:
+                stale.unlink()
+    print("DONE", len(expected), "pages")
 
 
 if __name__ == "__main__":

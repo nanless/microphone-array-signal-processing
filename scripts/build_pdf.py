@@ -1,17 +1,44 @@
 #!/usr/bin/env python3
-"""把 chapters/ 14 篇合成一个带目录超链接的单页 HTML，再调 Chrome 无头打印成 PDF.
+"""合订本构建脚本：14 篇文档 → 单页 HTML → Chrome 无头打印 A4 PDF。
 
-书签口径：仅一级章节书签（节级锚点不写入 PDF，见 scripts/README.md 备注）。
+做的事情（按顺序）：
+  1. 读 chapters/ 14 篇 Markdown，用 markdown 库转 HTML（数学段先 shield 再贴回，
+     与 build_site.py 同逻辑，保证两端渲染一致）。
+  2. 每篇包进 <div class="chap">，篇标题记 id="ch-{i}"；统一标题层级后，
+     实际小节记 id="ch-{i}-s{j}"，同时产出篇/节两级目录。
+  3. 跨篇 .md 链改成合订本内部锚点；分章导航块和页脚行删除；图片
+     ../figures/ 原样透传（combined.html 与 figures/ 同处仓库根的
+     相邻目录，相对关系成立；单发 HTML 给别人会缺图，要分发请发 PDF）。
+  4. 写 dist/combined.html（中间产物，git 忽略），调 Chrome 无头打印成
+     临时 PDF；页数和末页通过检查后原子替换发布件，再用 pypdf 原子写入两级书签。
 
-用法（报告根目录）：
-    .venv/bin/python scripts/build_pdf.py
-产物：dist/combined.html → dist/microphone-array-tutorial.pdf
+用法（仓库根目录）：
+    .venv/bin/python scripts/build_pdf.py                 # 全量：HTML + PDF + 书签
+    .venv/bin/python scripts/build_pdf.py --html-only     # 只合 HTML，不调 Chrome
+    .venv/bin/python scripts/build_pdf.py --pdf-only      # 只打印（复用现有 HTML）
+    .venv/bin/python scripts/build_pdf.py --no-bookmarks  # 跳过书签（调排版时省时间）
+    CHROME_BIN=/path/to/chrome .venv/bin/python scripts/build_pdf.py  # 非 macOS
+
+依赖：markdown、pypdf（根 README 依赖行）；Chrome（macOS 默认路径，余者走环境变量
+或 which 回退）。公式经固定版本 MathJax 3.2.2 渲染——构建机必须联网。
+
+已知边界（诚实写在前面）：
+  - PDF 只有篇/节两级书签，更细的标题不进书签（合订本 TOC 同）。
+  - 页眉页脚关闭（--no-pdf-header-footer），PDF 内无页码——Chrome 无头打印不支持
+    CSS 生成页码，要页码得换 WeasyPrint/Prince 链路。
+  - 节书签定位靠"节标题文本首次出现页"逐章顺序搜索，标题串进正文会指偏，
+    偏差一般不超过 1 页；章书签用同样方法，目录页自动排除。
+  - Chrome 153+ 实测写完 PDF 进程常不退出：本脚本看文件大小（稳定 15 秒即收工，
+    主动 kill），不傻等进程结束；超时/页数（<100 页）判失败。
 """
+import argparse
+import datetime
 import os
 import re
 import shutil
 import subprocess
-import sys
+import tempfile
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
@@ -36,6 +63,7 @@ CHAPTERS = [
 ]
 
 CSS = """
+@page{size:A4;margin:16mm 15mm 18mm}
 body{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;max-width:860px;margin:0 auto;padding:24px}
 img{max-width:100%;height:auto;display:block;margin:12px auto}
 table{border-collapse:collapse;margin:12px 0;display:block;overflow-x:visible;max-width:100%}
@@ -48,9 +76,15 @@ a{color:#2f6db3;text-decoration:none}
 h1{font-size:24px;border-bottom:2px solid #1a1a2e;padding-bottom:6px}
 h2{font-size:20px;margin-top:30px;border-bottom:1px solid #e5e8ee;padding-bottom:5px}
 h3{font-size:16.5px}h4{font-size:15px}
+.cover{text-align:center;padding:120px 0 60px}
+.cover h1{font-size:34px;border:none}
+.cover .sub{font-size:17px;color:#444;margin-top:18px}
+.cover .meta{font-size:13.5px;color:#777;margin-top:40px}
 .chap{page-break-before:always}
 .toc li{margin:3px 0}
+.toc .sec{font-size:14px;color:#333}
 @media print{
+body{max-width:none;margin:0;padding:0}
 .chap{page-break-before:always}
 table{display:table;width:100%}
 thead{display:table-header-group}
@@ -84,18 +118,150 @@ def unshield_math(html, repo):
     return re.sub(r"@@MATH(\d+)@@", back, html)
 
 
-def add_bookmarks(pdf_path):
-    """按 CHAPTERS 给 PDF 写一级大纲（章节书签）。
+def plain_text(html):
+    """去标签取纯文本（书签标题用）。"""
+    t = re.sub(r"<[^>]+>", "", html)
+    return re.sub(r"\s+", " ", t).strip()
 
-    做法：逐页抽文本，每章定位其 <h1>label 首次出现的非常规页。
-    目录页（含 3 个以上章节标题的页）排除在外，避免指到目录。
-    pypdf 缺失或定位失败都不让构建失败，只打印警告。
-    """
+
+def git_rev():
+    try:
+        r = subprocess.run(["git", "rev-parse", "--short", "HEAD"],
+                           capture_output=True, text=True, timeout=10, cwd=ROOT)
+        rev = r.stdout.strip() or "未知"
+        dirty = subprocess.run(["git", "status", "--porcelain"],
+                               capture_output=True, text=True, timeout=10, cwd=ROOT)
+        return rev + ("+dirty" if dirty.stdout.strip() else "")
+    except Exception:
+        return "未知"
+
+
+HTML_TO_CH = {fname.replace(".md", ".html"): i for i, (fname, _) in enumerate(CHAPTERS)}
+
+
+def rewrite_book_links(html):
+    """把分篇站点链接改成合订本内部链接，避免生成 file:// 注释。"""
+    def repl(m):
+        fname, text = m.group(1), m.group(2)
+        idx = HTML_TO_CH.get(fname)
+        return m.group(0) if idx is None else f'<a href="#ch-{idx}">{text}</a>'
+
+    return re.sub(
+        r'<a href="(?:\./)?([^"#/]+\.html)(?:#[^"]*)?">(.*?)</a>',
+        repl, html, flags=re.S)
+
+
+def build_html():
+    """合 14 篇为单页 HTML。返回 (page, outline)，outline 为
+    [(章label, 章id, [(节title, 节id), ...]), ...]，供书签定位用。"""
+    import markdown
+    body_parts = []
+    outline = []  # 章级
+    n_imgs = 0
+    for i, (fname, label) in enumerate(CHAPTERS):
+        md, repo = shield_math((SRC / fname).read_text(encoding="utf-8"))
+        html = markdown.markdown(md, extensions=["tables", "fenced_code", "sane_lists"])
+        html = unshield_math(html, repo)
+        html = re.sub(r"\.md((?:#[^\"')\s]*)?)([\"')])",
+                      lambda m: ".html" + m.group(1) + m.group(2), html)
+        html = rewrite_book_links(html)
+        # 去掉分章导航块与页脚行：它们的 ./xx.md 链在单文件里会变成 file:// 死链
+        html = re.sub(r"<blockquote>\s*<p>⚠️ 本篇是系列教程.*?</blockquote>", "", html, flags=re.S)
+        html = re.sub(r"<blockquote>\s*<p>🏠 首页导读.*?</blockquote>", "", html, flags=re.S)
+        html = re.sub(r"<p>📄 本篇信息.*?</p>", "", html, flags=re.S)
+        # 外层已经提供篇标题，删掉源文重复标题。导读以 h2 为节；其余篇章
+        # 原文以 h2 作篇标题、h3 作节标题，因此在合订本里提升一级。
+        html = re.sub(r"<h[12]>.*?</h[12]>", "", html, count=1, flags=re.S)
+        if i > 0:
+            html = re.sub(
+                r"<h([34])>(.*?)</h\1>",
+                lambda m: f"<h{int(m.group(1)) - 1}>{m.group(2)}</h{int(m.group(1)) - 1}>",
+                html, flags=re.S)
+
+        # 节标题编号：h2 进入目录和 PDF 书签。
+        secs = []
+
+        def tag_h2(m):
+            secs.append(plain_text(m.group(1)))
+            return f'<h2 id="ch-{i}-s{len(secs) - 1}">{m.group(1)}</h2>'
+
+        html = re.sub(r"<h2>(.*?)</h2>", tag_h2, html, flags=re.S)
+        n_imgs += len(re.findall(r"<img ", html))
+        body_parts.append(f'<div class="chap" id="ch-{i}"><h1>{label}</h1>{html}</div>')
+        outline.append((label, f"ch-{i}", [(t, f"ch-{i}-s{j}") for j, t in enumerate(secs)]))
+    # 两级 HTML 目录
+    toc = ['<h1>麦克风阵列信号处理教程</h1><ul class="toc">']
+    for label, cid, secs in outline:
+        toc.append(f"<li><a href=\"#{cid}\">{label}</a>")
+        if secs:
+            toc.append('<ul class="sec">')
+            toc.extend(f"<li><a href=\"#{sid}\">{t}</a></li>" for t, sid in secs)
+            toc.append("</ul>")
+        toc.append("</li>")
+    toc.append("</ul>")
+    date_s = datetime.date.today().isoformat()
+    cover = (f'<div class="cover"><h1>麦克风阵列信号处理教程</h1>'
+             f'<div class="sub">深入浅出 · 从阵列摆位到工程选型（合订本）</div>'
+             f'<div class="meta">构建日期 {date_s} · git {git_rev()} · '
+             f'共 14 篇：导读、11 章正文、2 篇附录</div></div>')
+    page = ("<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\">"
+            f"<title>麦克风阵列信号处理教程（合订本）</title><style>{CSS}</style>"
+            "<script>\nwindow.MathJax = {tex: {inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], displayMath: [['$$', '$$']]}};\n</script>"
+            "<script defer src=\"https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js\"></script>"
+            "</head><body>" + cover + "\n".join(toc) + "\n".join(body_parts) + "</body></html>")
+    n_secs = sum(len(s) for _, _, s in outline)
+    unique_imgs = len(set(re.findall(r'<img [^>]*src="([^"]+)"', page)))
+    print(f"合订：{len(CHAPTERS)} 篇 / {n_secs} 节 / {unique_imgs} 张唯一图片（{n_imgs} 次引用）")
+    return page, outline
+
+
+def norm(s):
+    # 两步归一：① NFKC 折叠大部分兼容汉字（如双⽿→双耳）；
+    # ② CJK 部首扩展区（U+2E80–U+2EFF，如⻅⻨⻛⻚⻆）没有兼容分解，
+    #    NFKC 折不动，实测出现一个补一个（Chrome 按页子集化字体所致）。
+    import unicodedata
+    s = unicodedata.normalize("NFKC", s)
+    s = s.translate(str.maketrans({"⻅": "见", "⻨": "麦", "⻛": "风",
+                                   "⻚": "页", "⻆": "角"}))
+    s = s.replace(" ", "").replace("\n", "").replace("·", "")
+    # PDF 提取会把全角/半角标点、弯引号和破折号互换；书签定位只关心
+    # 标题的字母、数字与汉字序列，因此统一忽略这些排版标点。
+    return re.sub(r'[：:，,。；;、“”‘’「」『』（）()—–\-]', '', s)
+
+
+def locate(texts, key, start, skip):
+    """在 texts[start:] 里找 key 所在页（跳过 skip 集）。
+    两轮：先找"标题独占一整行"的页（h2 块级元素换行，正文串文是行内，
+    不会被误命中）；找不到再退回子串首次出现。找不到返回 None。"""
+    nkey = norm(key)
+    for i in range(start, len(texts)):
+        if i in skip:
+            continue
+        for line in texts[i].split("\n"):
+            if norm(line) == nkey or norm(line).startswith(nkey):
+                return i
+    for i in range(start, len(texts)):
+        if i in skip:
+            continue
+        if key in texts[i] or (nkey and nkey in norm(texts[i])):
+            return i
+    # Chrome/PDF 字体子集化有时会替换破折号或引号，长标题也可能被换行拆开。
+    # 节号加标题前缀在同一章内足够唯一；只在完整匹配失败后使用，避免正文
+    # 偶然出现标题后半句时抢先命中。
+    prefix = nkey[:10]
+    if len(prefix) >= 8:
+        for i in range(start, len(texts)):
+            if i not in skip and prefix in norm(texts[i]):
+                return i
+    return None
+
+
+def add_bookmarks(pdf_path, outline):
+    """按 outline 写两级大纲（篇 + 节），校验完整后原子替换 PDF。"""
     try:
         from pypdf import PdfReader, PdfWriter
-    except ImportError:
-        print("pypdf 未安装，跳过书签写入（.venv/bin/pip install pypdf）")
-        return
+    except ImportError as e:
+        raise SystemExit("缺少 pypdf，无法写入并校验书签") from e
     reader = PdfReader(str(pdf_path))
     texts = []
     for p in reader.pages:
@@ -103,136 +269,206 @@ def add_bookmarks(pdf_path):
             texts.append(p.extract_text() or "")
         except Exception:
             texts.append("")
-    labels = [label for _, label in CHAPTERS]
+    ch_labels = [label for label, _, _ in outline]
     toc_pages = {i for i, t in enumerate(texts)
-                 if sum(1 for label in labels if label in t) >= 3}
-
-    def norm(s):
-        # NFKC 把 PDF 抽词时的兼容汉字（如双⽿）折叠回普通字（如双耳）
-        import unicodedata
-        s = unicodedata.normalize("NFKC", s)
-        return s.replace(" ", "").replace("\n", "").replace("·", "")
-
+                 if sum(1 for label in ch_labels if label in t) >= 3}
     writer = PdfWriter()
     writer.append(reader)
-    prev, added = -1, 0
-    for _, label in CHAPTERS:
-        page_no = None
-        for i in range(prev + 1, len(texts)):
-            if i in toc_pages:
-                continue
-            if label in texts[i] or norm(label) in norm(texts[i]):
-                page_no = i
-                break
+    writer.add_metadata({
+        "/Title": "麦克风阵列信号处理教程",
+        "/Subject": "从阵列摆位到工程选型",
+        "/Creator": "scripts/build_pdf.py",
+    })
+    prev, n_ch, n_sec = -1, 0, 0
+    for label, _cid, secs in outline:
+        page_no = locate(texts, label, prev + 1, toc_pages)
         if page_no is None:
-            print(f"书签跳过（找不到起始页）：{label}")
+            print(f"章书签跳过（找不到起始页）：{label}")
             continue
-        writer.add_outline_item(label, page_no)
-        prev, added = page_no, added + 1
-    with open(pdf_path, "wb") as f:
-        writer.write(f)
-    print(f"书签写入 {added}/{len(CHAPTERS)}")
+        parent = writer.add_outline_item(label, page_no)
+        prev, n_ch = page_no, n_ch + 1
+        sprev = page_no
+        for title, _sid in secs:
+            # 从本节往后找标题出现处；注意用 sp 而不是 sp+1——一页可能挤多个节，
+            # +1 会跳过同页后面的节。标题串进正文时会指偏（一般 ≤1 页）。
+            sp = locate(texts, title, sprev, toc_pages)
+            if sp is None:
+                continue
+            writer.add_outline_item(title, sp, parent=parent)
+            sprev, n_sec = sp, n_sec + 1
+    expected_secs = sum(len(secs) for _, _, secs in outline)
+    if n_ch != len(outline) or n_sec != expected_secs:
+        raise SystemExit(
+            f"书签不完整：篇 {n_ch}/{len(outline)}，节 {n_sec}/{expected_secs}")
+    fd, tmp_name = tempfile.mkstemp(prefix="bookmarked-", suffix=".pdf", dir=pdf_path.parent)
+    os.close(fd)
+    tmp_path = Path(tmp_name)
+    try:
+        with open(tmp_path, "wb") as f:
+            writer.write(f)
+        PdfReader(str(tmp_path))
+        os.replace(tmp_path, pdf_path)
+    finally:
+        tmp_path.unlink(missing_ok=True)
+    print(f"书签写入：{n_ch}/{len(outline)} 篇，{n_sec} 节")
+    return n_ch, n_sec
 
 
-def main():
-    import markdown
-    import json
-    body_parts = []
-    toc = ['<h1>麦克风阵列信号处理教程</h1><ul class="toc">']
-    # 书签侧车文件：[(章标题, [(sec_id, 小节标题)])]，供加书签脚本用
-    sidecar = []
-    counter = [0]
-
-    def number_headings(html):
-        def repl(m):
-            counter[0] += 1
-            tag, inner = m.group(1), m.group(2)
-            return f"<{tag} id=\"sec-{counter[0]}\">{inner}</{tag}>"
-        return re.sub(r"<(h[1-4])>(.*?)</\1>", repl, html, flags=re.S)
-
-    def plain_text(html):
-        t = re.sub(r"<[^>]+>", "", html)
-        return re.sub(r"\s+", " ", t).strip()
-    for i, (fname, label) in enumerate(CHAPTERS):
-        md, repo = shield_math((SRC / fname).read_text(encoding="utf-8"))
-        html = markdown.markdown(md, extensions=["tables", "fenced_code", "sane_lists"])
-        html = unshield_math(html, repo)
-        html = re.sub(r"\.md((?:#[^\"')\s]*)?)([\"')])",
-                      lambda m: ".html" + m.group(1) + m.group(2), html)
-        html = html.replace("00_overview.html", "合订本")
-        # 篇内跨篇 .html 链在单文件里无意义，转成文字
-        html = re.sub(r'<a href="(?:0\d|1\d)_[^"]+\.html">([^<]+)</a>', r"\1", html)
-        # 去掉分章导航块与页脚行：它们的 ./xx.md 链在单文件里会变成 file:// 死链
-        html = re.sub(r"<blockquote>\s*<p>⚠️ 本篇是系列教程.*?</blockquote>", "", html, flags=re.S)
-        html = re.sub(r"<blockquote>\s*<p>🏠 首页导读.*?</blockquote>", "", html, flags=re.S)
-        html = re.sub(r"<p>📄 本篇信息.*?</p>", "", html, flags=re.S)
-        body_parts.append(f'<div class="chap" id="ch-{i}"><h1>{label}</h1>{html}</div>')
-        toc.append(f"<li><a href=\"#ch-{i}\">{label}</a></li>")
-    toc.append("</ul>")
-    page = ("<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\">"
-            f"<title>麦克风阵列信号处理教程（合订本）</title><style>{CSS}</style>"
-            "<script>\nwindow.MathJax = {tex: {inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], displayMath: [['$$', '$$']]}};\n</script>"
-            "<script async src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js\"></script>"
-            "</head><body>" + "\n".join(toc) + "\n".join(body_parts) + "</body></html>")
-    OUT.mkdir(exist_ok=True)
-    combined = OUT / "combined.html"
-    combined.write_text(page, encoding="utf-8")
-    print("saved", combined, combined.stat().st_size // 1024, "KB")
-    if "--html-only" in sys.argv:
-        print("html only, skip printing")
-        return
-    pdf = OUT / "microphone-array-tutorial.pdf"
-    import tempfile
-    default_chrome = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-    chrome = os.environ.get("CHROME_BIN", default_chrome)
+def find_chrome():
+    default = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    chrome = os.environ.get("CHROME_BIN", default)
     if not Path(chrome).exists():
-        found = shutil.which("google-chrome") or shutil.which("chromium") or shutil.which("chrome")
+        found = (shutil.which("google-chrome") or shutil.which("chromium")
+                 or shutil.which("chrome"))
         if found:
             chrome = found
-    # 说明：不用 --virtual-time-budget（新版 Chrome 下虚时间与网络 fetch 叠加会 hang 住
-    # 打印进程）。--timeout 给页面真实时间做 MathJax 渲染，时间到即落版。
-    # 另：实测 Chrome 153 写完 PDF 后进程常常不退出，所以这里不傻等进程结束，
-    # 而是轮询 PDF 文件大小——稳定 15 秒即视为写完，主动 kill，避免无限 hang。
-    import time
-    with tempfile.TemporaryDirectory() as udd:
-        proc = subprocess.Popen(
-            [chrome, "--headless", "--disable-gpu", "--no-sandbox",
-             f"--user-data-dir={udd}", "--timeout=180000",
-             f"--print-to-pdf={pdf}", "--no-pdf-header-footer",
-             combined.as_uri()],
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-        if pdf.exists():
-            pdf.unlink()  # 删掉旧文件，避免把上一版当成这次的
-        deadline, last_size, stable_since = time.time() + 600, -1, None
-        while time.time() < deadline:
-            if proc.poll() is not None:
-                break  # 自己退出了
-            if pdf.exists():
-                sz = pdf.stat().st_size
-                now = time.time()
-                if sz == last_size and sz > 1024 * 1024:
-                    if stable_since is not None and now - stable_since > 15:
-                        break  # 15 秒没长个，写完了
-                else:
-                    last_size, stable_since = sz, now
-            time.sleep(5)
-        if proc.poll() is None:
-            proc.kill()
-            proc.wait()
-    print((proc.stdout.read() or "")[-500:] if proc.stdout else "")
-    if pdf.exists():
-        print("saved", pdf, pdf.stat().st_size // 1024 // 1024, "MB")
+    return chrome
+
+
+def print_pdf(combined, pdf, timeout_min_pages=100):
+    chrome = find_chrome()
+    if not Path(chrome).exists():
+        raise SystemExit(f"找不到 Chrome：{chrome}")
+    fd, tmp_name = tempfile.mkstemp(prefix="printed-", suffix=".pdf", dir=pdf.parent)
+    os.close(fd)
+    tmp_pdf = Path(tmp_name)
+    tmp_pdf.unlink()
+    completed_by_stability = False
+    log_text = ""
+    try:
+        with tempfile.TemporaryDirectory() as udd, tempfile.TemporaryFile(mode="w+") as log:
+            proc = subprocess.Popen(
+                [chrome, "--headless", "--disable-gpu", "--no-sandbox",
+                 f"--user-data-dir={udd}", "--timeout=180000",
+                 f"--print-to-pdf={tmp_pdf}", "--no-pdf-header-footer",
+                 combined.as_uri()], stdout=log, stderr=subprocess.STDOUT, text=True)
+            deadline, last_size, stable_since = time.time() + 600, -1, None
+            while time.time() < deadline:
+                if proc.poll() is not None:
+                    break
+                if tmp_pdf.exists():
+                    sz = tmp_pdf.stat().st_size
+                    now = time.time()
+                    if sz == last_size and sz > 64 * 1024:
+                        if stable_since is not None and now - stable_since > 15:
+                            completed_by_stability = True
+                            break
+                    else:
+                        last_size, stable_since = sz, now
+                time.sleep(5)
+            if proc.poll() is None:
+                proc.kill()
+                proc.wait()
+            log.seek(0)
+            log_text = log.read()[-1000:]
+            if proc.returncode not in (0, None) and not completed_by_stability:
+                raise SystemExit(f"Chrome 打印失败（退出码 {proc.returncode}）\n{log_text}")
+        if not tmp_pdf.exists():
+            raise SystemExit(f"PDF 生成失败\n{log_text}")
+        print(log_text)
+        print("generated", tmp_pdf, tmp_pdf.stat().st_size // 1024 // 1024, "MB")
         try:
             from pypdf import PdfReader
-            npages = len(PdfReader(str(pdf)).pages)
+            reader = PdfReader(str(tmp_pdf))
+            npages = len(reader.pages)
+            last_text = reader.pages[-1].extract_text() or ""
         except Exception as e:
             raise SystemExit(f"PDF 校验失败（可能被截断）：{e}")
         print("pages:", npages)
-        if npages < 100:
+        if npages < timeout_min_pages:
             raise SystemExit(f"PDF 页数异常（{npages} 页），疑似截断")
-        add_bookmarks(pdf)
-    else:
-        raise SystemExit("PDF 生成失败")
+        if "附录" not in last_text and "练习" not in last_text:
+            raise SystemExit("PDF 末页未检测到附录 B 收尾内容，疑似截断")
+        os.replace(tmp_pdf, pdf)
+    finally:
+        tmp_pdf.unlink(missing_ok=True)
+    print("saved", pdf, pdf.stat().st_size // 1024 // 1024, "MB")
+    return npages
+
+
+def check_figures():
+    """合订前检查：正文引用的图必须存在、非空，并覆盖 33 个唯一文件。"""
+    missing = []
+    refs = set()
+    for fname, _ in CHAPTERS:
+        md = (SRC / fname).read_text(encoding="utf-8")
+        for m in re.finditer(r"\.\./figures/([^\")\s]+)", md):
+            refs.add(m.group(1))
+            path = ROOT / "figures" / m.group(1)
+            if not path.exists() or path.stat().st_size == 0:
+                missing.append(f"{fname}: {m.group(1)}")
+    if missing:
+        raise SystemExit("缺图，中止：\n" + "\n".join(missing))
+    if len(refs) != 33:
+        raise SystemExit(f"唯一图片数异常：期望 33，实际 {len(refs)}")
+    print(f"图片检查通过（{len(CHAPTERS)} 篇、{len(refs)} 张唯一图片）")
+
+
+def outline_from_html(html):
+    """从合订 HTML 还原篇与节，供 --pdf-only 使用。"""
+    outline = []
+    blocks = re.findall(
+        r'<div class="chap" id="(ch-\d+)"><h1>(.*?)</h1>(.*?)(?=<div class="chap"|</body>)',
+        html, flags=re.S)
+    for cid, label, body in blocks:
+        secs = [(plain_text(title), sid) for sid, title in re.findall(
+            r'<h2 id="([^"]+)">(.*?)</h2>', body, flags=re.S)]
+        outline.append((plain_text(label), cid, secs))
+    return outline
+
+
+def validate_pdf_links(pdf_path):
+    """发布件不得含构建机本地路径。"""
+    from pypdf import PdfReader
+    bad = []
+    for page_no, page in enumerate(PdfReader(str(pdf_path)).pages, 1):
+        for ref in page.get("/Annots", []):
+            obj = ref.get_object()
+            action = obj.get("/A")
+            uri = str(action.get("/URI")) if action and action.get("/URI") else ""
+            if uri.startswith("file:"):
+                bad.append((page_no, uri))
+    if bad:
+        sample = "\n".join(f"p{p}: {u}" for p, u in bad[:5])
+        raise SystemExit(f"PDF 含 {len(bad)} 个本地 file:// 链接：\n{sample}")
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description="合订本构建：chapters/ → dist/combined.html → dist PDF")
+    mode = ap.add_mutually_exclusive_group()
+    mode.add_argument("--html-only", action="store_true", help="只合 HTML，不调 Chrome")
+    mode.add_argument("--pdf-only", action="store_true", help="只打印（复用现有 HTML）+ 写书签")
+    ap.add_argument("--no-bookmarks", action="store_true", help="跳过书签写入")
+    ap.add_argument("--min-pages", type=int, default=100, help="PDF 页数下限（默认 100）")
+    args = ap.parse_args(argv)
+    OUT.mkdir(exist_ok=True)
+    combined = OUT / "combined.html"
+    pdf = OUT / "microphone-array-tutorial.pdf"
+    outline = None
+    if not args.pdf_only:
+        check_figures()
+        page, outline = build_html()
+        fd, tmp_name = tempfile.mkstemp(prefix="combined-", suffix=".html", dir=OUT)
+        os.close(fd)
+        tmp_html = Path(tmp_name)
+        try:
+            tmp_html.write_text(page, encoding="utf-8")
+            os.replace(tmp_html, combined)
+        finally:
+            tmp_html.unlink(missing_ok=True)
+        print("saved", combined, combined.stat().st_size // 1024, "KB")
+    if args.html_only:
+        print("html only, skip printing")
+        return
+    if args.pdf_only and outline is None:
+        html = combined.read_text(encoding="utf-8")
+        outline = outline_from_html(html)
+        print(f"--pdf-only：从 HTML 反推 {len(outline)} 篇、"
+              f"{sum(len(s) for _, _, s in outline)} 节")
+    print_pdf(combined, pdf, args.min_pages)
+    if not args.no_bookmarks:
+        add_bookmarks(pdf, outline)
+    validate_pdf_links(pdf)
 
 
 if __name__ == "__main__":

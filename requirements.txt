@@ -1,0 +1,4 @@
+numpy==2.5.3
+matplotlib==3.11.2
+Markdown==3.10.3
+pypdf==6.19.0
