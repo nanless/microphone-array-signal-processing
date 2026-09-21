@@ -1,6 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>第 11 章 · 总结与选型指南 · 麦克风阵列信号处理教程</title><style>
+<title>第 11 章 · 总结与选型指南 · 麦克风阵列信号处理教程</title>
+<meta name="source-digest" content="6381515cd6ea"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -36,10 +37,11 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 <script>
 window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']]}};
 </script>
-<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
+ onerror="document.getElementById('offnote').style.display='block';document.getElementById('offnote').textContent='公式渲染脚本加载失败：当前显示的是公式源码。';"></script>
 </head><body id="top">
-<div class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 11 章 · 总结与选型指南</div>
-<div class="wrap"><nav class="side"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
+<header class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 11 章 · 总结与选型指南</header>
+<div class="wrap"><nav class="side" aria-label="全书目录"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
 <div class="chap"><a href="01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
 <div class="chap"><a href="02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
 <div class="chap"><a href="03_array-geometry.html">第 3 章 · 阵列几何形态</a></div>
@@ -52,43 +54,41 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现与产业实践</a></div>
 <div class="chap cur">第 11 章 · 总结与选型指南</div>
 <ul>
-<li><a href="11_selection-guide.html#sec-1">11. 总结与选型指南</a></li>
-<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-2">11.1 先回答六个问题</a></li>
-<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-3">11.2 按条件选择模块</a></li>
-<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-4">11.3 几何与算法要一起选</a></li>
-<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-5">11.4 四个场景怎样推导方案</a></li>
-<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-6">11.5 把候选方案写成可验证的规格</a></li>
-<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-7">11.6 练习</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="11_selection-guide.html#sec-8">题 1：带播放的周向语音终端</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="11_selection-guide.html#sec-9">题 2：多人会议</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="11_selection-guide.html#sec-10">题 3：跨时钟车载阵列</a></li>
-<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-11">11.7 后续阅读</a></li>
+<li><a href="11_selection-guide.html#sec-2">11.1 先回答六个问题</a></li>
+<li><a href="11_selection-guide.html#sec-3">11.2 按条件选择模块</a></li>
+<li><a href="11_selection-guide.html#sec-4">11.3 几何与算法要一起选</a></li>
+<li><a href="11_selection-guide.html#sec-5">11.4 四个场景怎样推导方案</a></li>
+<li><a href="11_selection-guide.html#sec-6">11.5 把候选方案写成可验证的规格</a></li>
+<li><a href="11_selection-guide.html#sec-7">11.6 练习</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-8">题 1：带播放的周向语音终端</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-9">题 2：多人会议</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-10">题 3：跨时钟车载阵列</a></li>
+<li><a href="11_selection-guide.html#sec-11">11.7 后续阅读</a></li>
 </ul>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
 <main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
-<details class="toc-mobile"><summary>本页目录</summary><ul>
-<li><a href="11_selection-guide.html#sec-1">11. 总结与选型指南</a></li>
-<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-2">11.1 先回答六个问题</a></li>
-<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-3">11.2 按条件选择模块</a></li>
-<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-4">11.3 几何与算法要一起选</a></li>
-<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-5">11.4 四个场景怎样推导方案</a></li>
-<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-6">11.5 把候选方案写成可验证的规格</a></li>
-<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-7">11.6 练习</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="11_selection-guide.html#sec-8">题 1：带播放的周向语音终端</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="11_selection-guide.html#sec-9">题 2：多人会议</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="11_selection-guide.html#sec-10">题 3：跨时钟车载阵列</a></li>
-<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-11">11.7 后续阅读</a></li>
-</ul></details>
+<details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
+<li><a href="11_selection-guide.html#sec-2">11.1 先回答六个问题</a></li>
+<li><a href="11_selection-guide.html#sec-3">11.2 按条件选择模块</a></li>
+<li><a href="11_selection-guide.html#sec-4">11.3 几何与算法要一起选</a></li>
+<li><a href="11_selection-guide.html#sec-5">11.4 四个场景怎样推导方案</a></li>
+<li><a href="11_selection-guide.html#sec-6">11.5 把候选方案写成可验证的规格</a></li>
+<li><a href="11_selection-guide.html#sec-7">11.6 练习</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-8">题 1：带播放的周向语音终端</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-9">题 2：多人会议</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-10">题 3：跨时钟车载阵列</a></li>
+<li><a href="11_selection-guide.html#sec-11">11.7 后续阅读</a></li>
+</ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是教程第 11 章。前后篇见下方导航。</p>
 <p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="./10_engineering-practice.html">第 10 章 · 工程实现与产业实践</a> ｜ 下一篇：<a href="./12_appendix-symbols-math.html">附录 A · 符号术语数学</a></p>
 </blockquote>
 <hr />
-<h2 id="sec-1">11. 总结与选型指南</h2>
+<h1 id="sec-1">11. 总结与选型指南</h1>
 <p>选型应从任务和约束开始。同一个四麦阵列用于固定座位通话、多人会议或机器人跟随时，合适的处理链可能完全不同。本章先确定目标，再选择几何和模块，最后按第 10 章的方法验证。</p>
 <p>本章常用缩写如下：波达方向（Direction of Arrival，DOA）、声学回声消除（Acoustic Echo Cancellation，AEC）、加权预测误差去混响（Weighted Prediction Error，WPE）、噪声抑制（Noise Suppression，NS）、语音活动检测（Voice Activity Detection，VAD）、实时因子（Real-Time Factor，RTF）和采样率偏移（Sampling Rate Offset，SRO）。各定位、波束和追踪算法的全称在首次出现处给出。</p>
-<h3 id="sec-2">11.1 先回答六个问题</h3>
+<h2 id="sec-2">11.1 先回答六个问题</h2>
 <ol>
 <li>
 <p><strong>系统要输出什么？</strong> 输出一个方向、连续轨迹、增强语音、彼此独立的多人语流，还是识别文本？输出不同，所需模块不同。只做固定方向录音时，不需要在线定位；只做方向显示时，也未必需要波束形成和 NS。</p>
@@ -109,14 +109,14 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>硬件和合规边界是什么？</strong> 写明采样率、麦数、时钟域、算力、峰值内存、功耗、关键路径延迟、隐私和认证要求。每秒百万条指令（Millions of Instructions per Second，MIPS）不能脱离处理器型号比较，电池续航要用瓦时（Wh）与整机平均功耗估算，见第 10 章 §10.4。</p>
 </li>
 </ol>
-<h3 id="sec-3">11.2 按条件选择模块</h3>
+<h2 id="sec-3">11.2 按条件选择模块</h2>
 <table>
-<thead>
+<th scope="col"ead>
 <tr>
-<th>决策对象</th>
-<th>适合先尝试的方案</th>
-<th>何时换方案</th>
-<th>同时检查的风险</th>
+<th scope="col">决策对象</th>
+<th scope="col">适合先尝试的方案</th>
+<th scope="col">何时换方案</th>
+<th scope="col">同时检查的风险</th>
 </tr>
 </thead>
 <tbody>
@@ -128,7 +128,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>固定方向增强</td>
-<td>延时求和或固定超指向波束</td>
+<td>延时求和或固定超指向（superdirective）波束</td>
 <td>噪声场变化且统计量可估计时，评估最小方差无失真响应（Minimum Variance Distortionless Response，MVDR）或线性约束最小方差（Linearly Constrained Minimum Variance，LCMV）波束形成</td>
 <td>白噪声增益、方向失配、标定</td>
 </tr>
@@ -171,24 +171,24 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tbody>
 </table>
 <p>算法名只确定了方法类别，还没有确定参数。WPE 的预测延迟和阶数、MVDR 的加载量、AEC 的滤波器覆盖范围、VAD 的挂起时间都应由目标数据和硬件测量得到，不应作为通用默认值从别的产品复制。</p>
-<h3 id="sec-4">11.3 几何与算法要一起选</h3>
+<h2 id="sec-4">11.3 几何与算法要一起选</h2>
 <p>阵列几何决定观测中有哪些空间信息，算法决定如何使用这些信息。</p>
 <ul>
 <li><strong>双麦或近似线阵</strong>：可以估计沿阵列轴投影的时差并形成方向性，但某些方向会有镜像歧义。适合已知目标扇区、孔径和外形受限的设备。</li>
 <li><strong>非共线三麦及平面阵</strong>：能提供二维几何约束。精度仍受孔径、频带、遮挡和标定影响，不能把“三麦”简单归为单麦处理。</li>
 <li><strong>圆阵</strong>：便于覆盖水平面。阵元数和半径应由所需角分辨率、最高频率与结构尺寸共同确定，不存在“全向必须至少四麦、六麦最好”的通用答案。</li>
-<li><strong>球阵或三维阵</strong>：适合需要俯仰角、声场分析或多方向波束的任务。可用球谐阶数受阵元采样、$kr$、径向滤波噪声放大和标定误差共同限制，详见 §10.8。</li>
+<li><strong>球阵或三维阵</strong>：适合需要俯仰角、声场分析或多方向波束的任务。可用球谐阶数受阵元采样、无量纲频率 $kr$（$k=2\pi f/c$ 为波数，$r$ 为球阵半径）、径向滤波噪声放大和标定误差共同限制，详见 §10.8。</li>
 <li><strong>稀疏阵</strong>：差分共阵可增加二阶统计中的虚拟滞后数，但不会凭空增加独立物理通道，也不保证宽带、相干声源和有限快拍下都能得到同样的自由度。应按第 3 章的适用条件验证。</li>
 </ul>
 <p>白噪声增益（White Noise Gain，WNG）和指向性指数（Directivity Index，DI）之间常有取舍。更窄的波束或更深的零陷可能放大传感器自噪声和标定误差。对角加载、WNG 约束和限制工作频带都能改善鲁棒性，但通常会牺牲一部分空间选择性。</p>
-<h3 id="sec-5">11.4 四个场景怎样推导方案</h3>
+<h2 id="sec-5">11.4 四个场景怎样推导方案</h2>
 <p>下表给的是推导方法，不是产品清单。</p>
 <table>
-<thead>
+<th scope="col"ead>
 <tr>
-<th>场景</th>
-<th>条件变化</th>
-<th>方案怎样变化</th>
+<th scope="col">场景</th>
+<th scope="col">条件变化</th>
+<th scope="col">方案怎样变化</th>
 </tr>
 </thead>
 <tbody>
@@ -215,13 +215,13 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tbody>
 </table>
 <p>同一场景也可能得出不同答案。例如会议设备安装在墙边时，覆盖区域可能只有半空间；放在桌中央时则要覆盖周向。前者可能适合线阵或弧形阵，后者可能适合圆阵。覆盖区域确定后，才能据此选择阵列形态和麦克风数量。</p>
-<h3 id="sec-6">11.5 把候选方案写成可验证的规格</h3>
+<h2 id="sec-6">11.5 把候选方案写成可验证的规格</h2>
 <p>为了复现实验并比较方案，候选方案的规格应覆盖以下内容：</p>
 <table>
-<thead>
+<th scope="col"ead>
 <tr>
-<th>项目</th>
-<th>应写内容</th>
+<th scope="col">项目</th>
+<th scope="col">应写内容</th>
 </tr>
 </thead>
 <tbody>
@@ -260,23 +260,23 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tbody>
 </table>
 <p>可以先建立最小基线，再一次增加一个模块。增加模块后要同时检查收益、语音损伤、延迟、功耗和失败样例。如果 WPE 没有改善目标房间的结果，或分离网络虽然提高了尺度不变信号失真比（Scale-Invariant Signal-to-Distortion Ratio，SI-SDR）却增加了内容错误，就不应因为流程图里画了它而保留。</p>
-<h3 id="sec-7">11.6 练习</h3>
-<h4 id="sec-8">题 1：带播放的周向语音终端</h4>
+<h2 id="sec-7">11.6 练习</h2>
+<h3 id="sec-8">题 1：带播放的周向语音终端</h3>
 <p>需求是水平面周向覆盖，设备会播放音乐，主要任务是唤醒和单人指令。请写出候选几何、必要模块和两个关键对照实验。</p>
 <p><strong>答案要点</strong>：圆阵是候选，不应在没有孔径与频带要求时先定麦数。播放时仍需拾音，因此要评估 AEC，并确保参考覆盖播放处理。定位或多方向固定波束可用于周向选择；WPE 和分离不是默认必选。关键对照至少包括“静音播放与音乐播放下的唤醒曲线”和“AEC 开关下的近端语音损伤及残余回声”。</p>
-<h4 id="sec-9">题 2：多人会议</h4>
+<h3 id="sec-9">题 2：多人会议</h3>
 <p>房间混响明显，偶尔有人抢话，只输出一路会议音频。什么时候需要 WPE，什么时候需要分离？</p>
 <p><strong>答案要点</strong>：先在目标房间比较关闭/开启 WPE 后的 WER、可懂度和语音损伤；晚期混响限制任务且净收益稳定时才启用。若多波束或掩码波束已经满足一路输出的串扰要求，不必因为存在重叠就输出独立语流；只有重叠段仍造成不可接受的任务失败，且应用需要保留各说话人内容时，再评估分离网络。</p>
-<h4 id="sec-10">题 3：跨时钟车载阵列</h4>
+<h3 id="sec-10">题 3：跨时钟车载阵列</h3>
 <p>四只麦克风分属两个时钟域。为什么不能先调波束权重？应该先测什么？</p>
 <p><strong>答案要点</strong>：相对 SRO 会让通道相位关系随时间漂移，固定权重和导向矢量很快失配。应先测初始时差、累计漂移、丢样和时间戳稳定性，完成重采样或时钟同步后再标定几何与增益，最后调波束。验收要覆盖温度和长时间运行，而不是只看一段短录音。</p>
-<h3 id="sec-11">11.7 后续阅读</h3>
+<h2 id="sec-11">11.7 后续阅读</h2>
 <p>要实现算法，可回到第 4～9 章查看定位、波束、AEC、WPE、分离和追踪。要制定整机预算和验收计划，见<a href="./10_engineering-practice.html">第 10 章</a>。<a href="./12_appendix-symbols-math.html">附录 A</a>汇总符号与数学工具，<a href="./13_appendix-guide.html">附录 B</a>给出进一步阅读、练习和排错入口。</p>
 <hr />
 <blockquote>
 <p>📄 <a href="./index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="10_engineering-practice.html">← 上一篇</a></span><span><a href="12_appendix-symbols-math.html">下一篇 →</a></span></div>
-<div class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</div>
+<footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>
 </body></html>

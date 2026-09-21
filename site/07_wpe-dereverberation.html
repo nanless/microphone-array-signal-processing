@@ -1,6 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>第 7 章 · 去混响（WPE） · 麦克风阵列信号处理教程</title><style>
+<title>第 7 章 · 去混响（WPE） · 麦克风阵列信号处理教程</title>
+<meta name="source-digest" content="6381515cd6ea"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -36,10 +37,11 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 <script>
 window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']]}};
 </script>
-<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
+ onerror="document.getElementById('offnote').style.display='block';document.getElementById('offnote').textContent='公式渲染脚本加载失败：当前显示的是公式源码。';"></script>
 </head><body id="top">
-<div class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 7 章 · 去混响（WPE）</div>
-<div class="wrap"><nav class="side"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
+<header class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 7 章 · 去混响（WPE）</header>
+<div class="wrap"><nav class="side" aria-label="全书目录"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
 <div class="chap"><a href="01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
 <div class="chap"><a href="02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
 <div class="chap"><a href="03_array-geometry.html">第 3 章 · 阵列几何形态</a></div>
@@ -48,11 +50,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="06_aec.html">第 6 章 · 声学回声消除（AEC）</a></div>
 <div class="chap cur">第 7 章 · 去混响（WPE）</div>
 <ul>
-<li><a href="07_wpe-dereverberation.html#sec-1">7. 去混响（WPE）</a></li>
-<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-2">7.1 WPE 去混响</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="07_wpe-dereverberation.html#sec-3">7.1.1 $\Delta$ 与 $K$ 的参数起点</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="07_wpe-dereverberation.html#sec-4">7.1.2 常见错误与练习</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="07_wpe-dereverberation.html#sec-5">7.1.3 研究方向</a></li>
+<li><a href="07_wpe-dereverberation.html#sec-2">7.1 WPE 去混响</a></li>
+<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-3">7.1.1 $\Delta$ 与 $K$ 的参数换算</a></li>
+<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-4">7.1.2 常见错误与练习</a></li>
+<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-5">7.1.3 研究方向</a></li>
 </ul>
 <div class="chap"><a href="08_speech-separation.html">第 8 章 · 语音分离</a></div>
 <div class="chap"><a href="09_source-tracking.html">第 9 章 · 声源追踪</a></div>
@@ -61,21 +62,20 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
 <main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
-<details class="toc-mobile"><summary>本页目录</summary><ul>
-<li><a href="07_wpe-dereverberation.html#sec-1">7. 去混响（WPE）</a></li>
-<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-2">7.1 WPE 去混响</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="07_wpe-dereverberation.html#sec-3">7.1.1 $\Delta$ 与 $K$ 的参数起点</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="07_wpe-dereverberation.html#sec-4">7.1.2 常见错误与练习</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="07_wpe-dereverberation.html#sec-5">7.1.3 研究方向</a></li>
-</ul></details>
+<details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
+<li><a href="07_wpe-dereverberation.html#sec-2">7.1 WPE 去混响</a></li>
+<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-3">7.1.1 $\Delta$ 与 $K$ 的参数换算</a></li>
+<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-4">7.1.2 常见错误与练习</a></li>
+<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-5">7.1.3 研究方向</a></li>
+</ul></nav></details>
 <blockquote>
-<p>⚠️ 本篇是系列教程第 7 章（共 13 章），可独立阅读，前后篇见下方导航。</p>
+<p>⚠️ 本篇是教程正文第 7 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
 <p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="./06_aec.html">第 6 章 · 声学回声消除（AEC）</a> ｜ 下一篇：<a href="./08_speech-separation.html">第 8 章 · 语音分离</a></p>
 </blockquote>
-<h2 id="sec-1">7. 去混响（WPE）</h2>
+<h1 id="sec-1">7. 去混响（WPE）</h1>
 <p>第 6 章处理设备播放声返回麦克风形成的回声。本章讨论房间混响的晚期拖尾及 WPE 去混响。多说话人分离、掩码估计和完整处理顺序见第 8 章。</p>
-<h3 id="sec-2">7.1 WPE 去混响</h3>
-<p>AEC 处理已知播放参考产生的回声，WPE 则利用语音跨帧预测结构估计晚期混响。它保留直达声和早期反射，只减去延迟若干帧之后的可预测成分。</p>
+<h2 id="sec-2">7.1 WPE 去混响</h2>
+<p>AEC 处理已知播放参考产生的回声，WPE 则利用语音跨帧预测结构估计晚期混响。保护延迟用来减少对直达声和早期反射的损伤，但不能保证它们完全不受影响；估计误差、过小的保护延迟和模型失配都可能产生语音失真。</p>
 <p>去混响有三条常见路线：<strong>波束形成</strong>（第 5 章，利用空间选择性压低弥散混响）、<strong>盲逆滤波或线性预测</strong>，以及神经网络谱增强。本节重点介绍加权预测误差法（weighted prediction error，WPE）。WPE 既指它采用的加权预测误差准则，也常用来指基于该准则的去混响算法。</p>
 <p><strong>WPE 之前的三类方法</strong>。多通道逆滤波、倒谱分离和谱方差抑制分别依赖已知路径、倒谱域可分性或晚期混响功率估计。它们的假设和局限有助于理解 WPE 的设计。</p>
 <p><strong>MINT 多通道逆滤波</strong>（Multiple-input/output INverse Theorem，Miyoshi &amp; Kaneda 1988）。它假设房间冲激响应（Room Impulse Response，RIR）已知，且各通道传递函数没有公共零点，再用有限脉冲响应（Finite Impulse Response，FIR）逆滤波器抵消房间响应。条件满足时可作为理想逆滤波的参考，但它对 RIR 估计误差、公共零点和加性噪声敏感，滤波器长度也随混响时间增加。因此实际系统很少依赖预先精确测得的 RIR。</p>
@@ -84,14 +84,14 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>MINT 说明已知房间响应时的逆滤波条件；倒谱方法说明单通道频谱分解的局限；谱方差方法提供了逐帧功率估计与增益抑制思路。WPE 不要求预先测量 RIR，并可扩展到多通道，同时通过保护延迟只预测晚期成分。</p>
 <p><strong>三路线对照表</strong>。不同论文使用的阵列、数据集、识别器和因果条件不同，不能把词错率改善幅度横向拼成统一范围。表中只比较处理对象与实现条件；需要性能数字时，应引用同一数据集上的原始实验。</p>
 <table>
-<thead>
+<th scope="col"ead>
 <tr>
-<th>路线</th>
-<th>代表</th>
-<th>主要处理对象</th>
-<th>所需输入或假设</th>
-<th>因果性与计算</th>
-<th>主要限制</th>
+<th scope="col">路线</th>
+<th scope="col">代表</th>
+<th scope="col">主要处理对象</th>
+<th scope="col">所需输入或假设</th>
+<th scope="col">因果性与计算</th>
+<th scope="col">主要限制</th>
 </tr>
 </thead>
 <tbody>
@@ -123,14 +123,15 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </table>
 <p>长混响可先评估 WPE；存在定向干扰时再结合波束形成；学习型后滤波还需满足算力和训练数据条件。多通道 WPE、波束形成与单通道后滤波可以组成一条候选链路，但实际顺序取决于统计量和通道数，见<a href="./10_engineering-practice.html">第 10 章 §10.1</a>。</p>
 <p><strong>REVERB 挑战赛中的 WPE</strong>：REVERB 包含 8 通道、2 通道和单通道设置，仿真数据的混响时间约为 0.25～0.7 s，另含真实房间录音。Kinoshita 等在 <em>Computer Speech &amp; Language</em> 2016 的总结表明，WPE 对远场识别的改善与通道数和数据条件有关；引用结果时必须注明通道数与测试集。图21（b）中音节结束后的横向能量拖尾，在（c）中得到减弱。</p>
-<p><strong>WPE 的直觉</strong>：晚期混响是当前帧之前若干帧的“回声叠加”，统计上近似平稳——<strong>可以用过去的观测把拖尾预测出来，然后减掉</strong>。为了不让算法把直达声也“预测掉”，预测时故意跳过最近的 $\Delta-1$ 帧（保护直达声与早期反射）。</p>
+<p><strong>WPE 的直觉</strong>：晚期混响在所选时频模型中被近似为可由历史观测线性预测的成分，再从当前帧减去该预测。这不要求语音或混响全程平稳；算法用随帧变化的功率 $\lambda(n,f)$ 表示语音非平稳性。预测时跳过最近的 $\Delta-1$ 帧，是为了降低直达声和早期反射进入预测项的程度。</p>
 <p>WPE 的预测式只引用当前帧之前的观测，这使它可以改造成流式算法。但经典批处理 WPE 会用整段录音反复估计滤波器和时变功率，仍然是非因果处理。只有把统计量、滤波器和功率估计都改为只使用当前及历史数据，并计入 STFT 分帧带来的等待时间，才能称为因果在线 WPE。保护延迟 $\Delta$ 用来隔开当前帧与预测历史，避免把直达声和早期反射当成可预测拖尾一并减去。</p>
 <p><strong>模型</strong>（每个频点 $f$ 独立处理；本节 $X$、$E$、$G$ 都是<strong>逐时频点的复数标量</strong>，多通道版才升级为向量）：</p>
-<p>$$X(n,f) = \underbrace{E(n,f)}_{\text{直达+早期}} + \sum_{k=\Delta}^{\Delta+K-1} G^*(k,f)\,X(n-k,f)$$。</p>
+<p>$$X(n,f) = E(n,f) + \sum_{k=\Delta}^{\Delta+K-1} G^*(k,f)\,X(n-k,f)$$。</p>
+<p>这里 $E(n,f)$ 表示希望保留的直达声与早期反射。</p>
 <p>该式把当前观测分成早期成分 $E$ 和由历史帧线性预测的晚期成分。不同频点的混响衰减不同，因此每个频点分别估计一组 $G$，实现时可并行计算。$\Delta$ 将当前帧与预测历史隔开，避免使用最近几帧预测直达声和早期反射。其中：</p>
 <ul>
 <li>$X(n,f)$：第 $n$ 帧、频点 $f$ 的观测谱（拿到的数据）；$E(n,f)$：想恢复的干净早期成分；</li>
-<li>$G(k,f)$：预测滤波器系数（混响拖尾的规律，要求的东西）；$\Delta$：保护延迟（典型 2~3 帧，即跳过最近 $\Delta-1$ 帧、求和的 $k$ 从 $\Delta$ 起算，以保护直达声与早期反射），$K$：预测阶数（覆盖混响尾巴，典型 8~20 帧）。</li>
+<li>$G(k,f)$：预测滤波器系数；$\Delta$：保护延迟，求和的 $k$ 从 $\Delta$ 起算，因此跳过最近 $\Delta-1$ 帧；$K$：预测阶数，决定使用多少个历史帧。$\Delta$ 和 $K$ 没有脱离帧移、数据量和目标失真指标的通用默认值。</li>
 </ul>
 <p><img alt="图24 WPE 的帧结构" src="../figures/fig24_wpe_frames.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图24 使用与 <code>nara_wpe</code> 一致的索引：$\Delta=3$、$K=5$ 时，受保护而不参与预测的是 $t-1$、$t-2$；五个预测帧依次为 $t-3$ 到 $t-7$。统一写成</p>
@@ -174,8 +175,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>$$-\log p = \sum_n \frac{|X(n)-\sum_k G^*(k)X(n-k)|^2}{\lambda(n)} + \sum_n\log\lambda(n) + \mathrm{const}$$。</p>
 <p>固定 $\lambda$ 时第二项是常数，最小化第一项就是<strong>加权最小二乘</strong>。</p>
 <p><strong>中间行 3——对 $G$ 求导得正规方程</strong>：把历史帧排成向量 $\vec{x}(n)=[X(n-\Delta),\dots,X(n-\Delta-K+1)]^\top$，记 $\vec{g}=[G(\Delta),\dots,G(\Delta+K-1)]^\top$，则求和式可写成 $E(n)=X(n)-\vec{g}^H\vec{x}(n)$，其中上标 $H$ 表示共轭转置。对 $\vec{g}^*$ 使用 Wirtinger 导数并令其为零，得到 $K\times K$ 加权正规方程：</p>
-<p>$$\underbrace{\left(\sum_n \frac{\vec{x}(n)\vec{x}^H(n)}{\lambda(n)}\right)}_{\text{加权自相关 }R}\vec{g} = \underbrace{\sum_n \frac{\vec{x}(n)X^*(n)}{\lambda(n)}}_{\text{加权互相关 }\vec{r}},\qquad \hat{G}\ \text{即解 }R\vec{g}=\vec{r}$$。</p>
-<p>$R$ 是 $K\times K$ 共轭对称矩阵，$K$ 典型取 5～20 时可用 Cholesky 分解求解。算法交替固定 $\lambda$ 求 $G$、固定 $G$ 更新 $\lambda$；第一次迭代的 $\lambda$ 常用整段观测能量初始化。在线版通常减少交替次数，并用递推统计量补偿样本不足。</p>
+<p>$$\mathbf R=\sum_n \frac{\vec{x}(n)\vec{x}^H(n)}{\lambda(n)},\qquad
+\vec r=\sum_n \frac{\vec{x}(n)X^*(n)}{\lambda(n)},\qquad
+\mathbf R\vec g=\vec r$$</p>
+<p>$\mathbf R$ 是加权自相关矩阵，$\vec r$ 是加权互相关向量；解这个线性方程组即可得到预测系数 $\vec g$。</p>
+<p>$R$ 是 $K\times K$ 共轭对称矩阵；当正则化后的 $R$ 为正定矩阵时，可用 Cholesky 分解求解。$K$ 应根据可用帧数、拖尾覆盖范围、通道数和矩阵条件数在目标数据上选择，不能只凭固定区间设定。算法交替固定 $\lambda$ 求 $G$、固定 $G$ 更新 $\lambda$；第一次迭代的 $\lambda$ 可用观测能量初始化。在线版改用递推统计量，并需要单独处理样本不足和矩阵病态。</p>
 <p>$$\hat{G} = \arg\min_G \sum_n \frac{|X(n,f)-\sum_k G^*(k,f)X(n-k,f)|^2}{\lambda(n,f)}, \qquad \lambda(n,f)=|E(n,f)|^2$$。</p>
 <p>固定 $G$ 后，对 $\lambda(n)>0$ 求导：</p>
 <p>$$\frac{\partial}{\partial\lambda(n)}\left(\frac{|E(n)|^2}{\lambda(n)}+\log\lambda(n)\right)=-\frac{|E(n)|^2}{\lambda^2(n)}+\frac{1}{\lambda(n)}.$$</p>
@@ -188,7 +192,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>$G$ 相应扩展为 $M\times M$ 的矩阵滤波器。晚期混响会同时出现在多个麦克风上，但幅度和相位不同；多通道观测因此提供额外空间信息。相对收益取决于混响、阵列和数据长度，具体数字应查 Yoshioka 2012 的实验条件。开源 <code>nara_wpe</code> 实现了这种 MIMO-WPE 形式。</p>
 <p><img alt="图21 WPE 去混响效果" src="../figures/fig21_wpe.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图21 的横轴约为 0~1400 ms，纵轴约为 0~2.5 kHz，颜色表示相对能量的 dB 值。（a）给出无混响参考；（b）加入合成混响后，音节结束处出现横向拖尾；（c）经本书单通道 WPE 示例处理后，拖尾减弱，但仍有残留。该图用于观察同一示例的前后差异，不代表公开数据集上的平均性能。</p>
-<p><strong>与其他模块的组合</strong>：WPE 先减弱晚期混响，掩码 MVDR 再抑制噪声与定向干扰。Drude et al.（Interspeech 2018）在其测试条件下报告了联合系统相对单模块的改善。WPE → GSS → MVDR/GEV 也可不使用神经分离网络，见第 8 章。Raj et al.（Interspeech 2023）的 GPU 实现报告约 300 倍加速；引用时应注明其硬件、数据和基线。开源实现 <code>nara_wpe</code> 可直接调用，在线形式见下段。<a href="https://www.isca-archive.org/interspeech_2018/drude18_interspeech.html" title="citation">Interspeech 2018 论文</a>、 <a href="https://www.isca-archive.org/interspeech_2017/kinoshita17_interspeech.html" title="citation">在线 WPE</a></p>
+<p><strong>与其他模块的组合</strong>：WPE 可先减弱晚期混响，掩码 MVDR 再抑制噪声与定向干扰。Drude et al.（Interspeech 2018）在其测试条件下报告了联合系统相对单模块的改善。WPE → GSS → MVDR/GEV 也可不使用神经分离网络，见第 8 章。Raj et al.（Interspeech 2023）展示了 GSS 的 GPU 并行实现；速度比较只能按其论文的硬件、数据、代码版本和计时范围解读，不将加速倍数外推到其他实现。开源实现 <code>nara_wpe</code> 的离线与在线接口需要分开选择。<a href="https://www.isca-archive.org/interspeech_2018/drude18_interspeech.html" title="citation">Interspeech 2018 论文</a>、 <a href="https://www.isca-archive.org/interspeech_2017/kinoshita17_interspeech.html" title="citation">在线 WPE</a></p>
 <p><strong>在线版</strong>分为按块更新和逐帧递推两类。块在线 WPE 在最近一段历史上估计统计量；递推 WPE 用遗忘因子逐帧更新相关矩阵和滤波器。短块提供的有效样本较少，$\lambda$ 和相关矩阵的方差更大；块过长又会增加等待时间，并使旧房间统计占比过高。在线实现还要处理初始化、矩阵正则化、静音冻结和路径突变，不能只把批处理迭代次数改成 1。DNN-WPE 可以用网络估计 $\lambda$，但是否优于传统估计取决于训练数据与测试房间是否匹配。</p>
 <p>帧移为 8 ms 时，0.25 s 约含 31 帧，2 s 含 250 帧。这个换算可以用来估计统计样本量和块等待时间，但不能单独决定参数。起始值应在目标数据上同时检查拖尾衰减、语音失真、计算量和端到端延迟，再调整块长、遗忘因子、预测阶数和正则化强度。</p>
 <p><strong>开源实现 <code>nara_wpe</code>（MIMO-WPE 的事实标准实现，PyPI 包 <code>nara-wpe</code>，算法基线 Yoshioka &amp; Nakatani 2012）</strong>，最小可复制调用三行：</p>
@@ -196,29 +200,29 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </code></pre>
 <pre><code class="language-python">from nara_wpe.wpe import wpe
 Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延迟）
-        iterations=3)          # 交替迭代次数，离线取 3，在线可减到 1
+        iterations=3)          # 离线交替迭代次数；改成 1 仍是离线调用
 </code></pre>
-<p>其中 $Y$ 是复数 STFT（后两轴为通道 $D$、帧 $T$，其余前轴为频点等多维，0.0.11 版 <code>help(wpe)</code> 原话是 <code>(..., D, T)</code>；大版本轴序可能变，用前先看一眼 help）；多通道就是把所有通道一起传进去，包内自动走 MIMO-WPE；块在线/帧在线见包内在线模块与示例 notebook。</p>
+<p>其中 $Y$ 是复数 STFT（后两轴为通道 $D$、帧 $T$，其余前轴为频点等多维，0.0.11 版 <code>help(wpe)</code> 标注为 <code>(..., D, T)</code>）。上述 <code>wpe()</code> 会在已给整段数据上交替估计，属于离线调用。块在线或逐帧递推必须使用包内对应的在线模块，并按安装版本的 <code>help</code> 与示例确认轴序和接口。</p>
 <p><strong>DNN 与 WPE 的位置</strong>。神经网络可以预测干净复谱、时频掩码或 WPE 所需的功率 $\lambda$。若网络对每个通道独立做波形或复谱映射，它可能改变跨通道相位关系；这类网络通常放在多通道 WPE 和波束形成之后。若网络只估计共享掩码、空间协方差或 $\lambda$，而多通道复谱仍由解析滤波器处理，则网络可以放在 WPE 或波束形成内部。还有联合训练的多通道模型同时完成去混响与波束形成。模块位置应由输入输出是否保留空间相位、是否使用未来帧和训练目标决定，不能简单规定所有 DNN 都在链尾。</p>
 <p><strong>局限与处理办法</strong>：WPE 只去除晚期混响，不处理直达声与早期反射。下列条件会使估计不稳定或收益有限：</p>
 <table>
-<thead>
+<th scope="col"ead>
 <tr>
-<th>场景</th>
-<th>现象</th>
-<th>对策</th>
+<th scope="col">场景</th>
+<th scope="col">现象</th>
+<th scope="col">对策</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>短语音（1~2 s 以内）</td>
-<td>二阶统计估不准，迭代把误差放大</td>
-<td>块在线加遗忘因子，或 DNN 直接给 $\lambda$</td>
+<td>可用帧数与待估参数数量接近</td>
+<td>二阶统计量方差增大，相关矩阵可能病态</td>
+<td>降低预测阶数、增加正则化；流式实现另行调节遗忘因子</td>
 </tr>
 <tr>
-<td>弱混响/高信噪比（T60 小于约 0.2 s、近讲）</td>
-<td>拖尾本来就小，减法主要减出失真</td>
-<td>先测混响时间/直混比，弱混响直接 bypass</td>
+<td>弱混响或高信噪比近讲</td>
+<td>可预测拖尾较弱，处理收益可能小于失真</td>
+<td>先测混响时间、直混比和旁路差异，再决定是否启用</td>
 </tr>
 <tr>
 <td>强加性噪声</td>
@@ -233,53 +237,11 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 </tbody>
 </table>
 <p>启用 WPE 前应检查可用帧数、混响强度、加性噪声和通道时延。任一条件不满足时，应调整块长、模型或旁路策略。</p>
-<h4 id="sec-3">7.1.1 $\Delta$ 与 $K$ 的参数起点</h4>
-<p>以下换算采用 16 kHz、32 ms 窗和 8 ms 帧移。保护时间用于保留直达声和早期反射，$\Delta$ 约等于保护时间除以帧移；预测窗口覆盖需要建模的晚期拖尾，$K$ 约等于覆盖时间除以帧移。帧移改变时，应按物理时间同比调整 $\Delta$ 和 $K$。增加麦克风数可能减少达到同等估计稳定性所需的 $K$，但仍需在目标阵列上验证。</p>
-<table>
-<thead>
-<tr>
-<th>房间/混响时间</th>
-<th>帧移 8 ms（标准）</th>
-<th>帧移 16 ms（省算力）</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>小房间/办公室，T60 不超过 0.3 s</td>
-<td>$\Delta=2$~3，$K=5$~10，迭代 2~3</td>
-<td>$\Delta=1$~2，$K=3$~5</td>
-<td>尾巴短，$K$ 小就够，贪大反过拟合</td>
-</tr>
-<tr>
-<td>会议室/教室，T60 约 0.3~0.7 s</td>
-<td>$\Delta=3$，$K=10$，迭代 3</td>
-<td>$\Delta=2$，$K=5$~8</td>
-<td>最稳的一档，先跑这组再调</td>
-</tr>
-<tr>
-<td>大厅/报告厅，T60 约 0.7~1.0 s</td>
-<td>$\Delta=3$~4，$K=12$~16，迭代 3~5</td>
-<td>$\Delta=2$，$K=6$~8</td>
-<td>尾巴长 $K$ 跟上，建议配 DNN 估计功率谱</td>
-</tr>
-<tr>
-<td>礼堂/教堂，T60 超过 1 s</td>
-<td>$\Delta=4$，$K=15$~20，迭代 3~5 加 DNN 先验</td>
-<td>$\Delta=2$~3，$K=8$~10 加 DNN 先验</td>
-<td>纯 WPE 回报递减，需结合目标数据验证</td>
-</tr>
-<tr>
-<td>分布式大间距阵列</td>
-<td>在上表基础上用麦克风相关延迟（Lohmann et al., ICASSP 2023：按到达时延补偿后定各通道延迟）</td>
-<td>同左</td>
-<td>大间距下统一延迟会失真</td>
-</tr>
-</tbody>
-</table>
-<p>$\Delta$ 应覆盖需要保留的早期反射，$K$ 应覆盖主要晚期拖尾。增大 $K$ 会增加计算量和过拟合风险。算力不足时可先减少交替迭代次数，再缩短 $K$；改变 $\Delta$ 前应先检查直达声和早期反射是否受到损伤。</p>
-<p><strong>换算数字例子（把“T60 → 毫秒 → 帧数”走一遍）</strong>：设会议室 $T_{60}=0.6$ s、标准 STFT（16 kHz，帧移 8 ms）。① $\Delta$：要保住直达加早期反射约 30~50 ms，取保护 24 ms → $\Delta=24/8=3$，即预测窗从 $t-3$ 起算（跳过 $t-1$、$t-2$，正是图24 画的那档）。② $K$：0.6 s 的尾巴不可能全覆盖——200 ms 之后的尾巴又弱又不可预报，硬加抽头只涨误差不涨擦除；取覆盖约 80 ms → $K=80/8=10$（预测窗 $t-3$ 到 $t-12$ 共 10 帧）。从当前帧算起最远回溯 $\Delta+K=13$ 帧 ≈ 104 ms——注意 104 ms 含 24 ms 保护期，真正擦除的是 80 ms。这 104 ms 就是选型表里“会议室档 $\Delta=3$、$K=10$”的来历。③ 换帧移：如果为了省算力把帧移放大到 16 ms，物理时间不变，$\Delta=24/16\approx1$~2、$K=80/16=5$，与表中 16 ms 列对上。④ 换房间：小办公室 $T_{60}=0.25$ s，尾巴短，$K=5$（40 ms）就够，贪大到 15 只会过拟合；大厅 $T_{60}=0.9$ s，把 $K$ 加到 12~16（约 100~130 ms）再往上就配 DNN 估计 $\lambda$，纯加抽头回报递减。</p>
-<h4 id="sec-4">7.1.2 常见错误与练习</h4>
+<h3 id="sec-3">7.1.1 $\Delta$ 与 $K$ 的参数换算</h3>
+<p>先把帧数换成物理时间。若帧移为 $H$ ms，最近的预测帧是 $t-\Delta$，其时延为 $\Delta H$；$K$ 个预测帧从 $t-\Delta$ 到 $t-(\Delta+K-1)$，最远时延为 $(\Delta+K-1)H$。这个索引关系比“$\Delta+K$ 帧”少一帧，因为起点已算入 $K$ 个样本。</p>
+<p>以图 21 的本书仿真为例：采样率 16 kHz，短时傅里叶变换（Short-Time Fourier Transform，STFT）窗长 512 点（32 ms），帧移 128 点（8 ms），$\Delta=6$、$K=10$、交替迭代 3 次。因此使用 $t-6$ 到 $t-15$ 的十帧：最近预测帧延迟 $6\times8=48$ ms，最远为 $15\times8=120$ ms。这些数值只是图 21 的可复现配置，不是会议室、教室或其他房间的通用起点。</p>
+<p>选参时，先对 $\Delta$ 扫描并检查直达声和早期成分的失真；再在数据量足够的条件下增大 $K$，检查晚期拖尾、矩阵条件数、计算量和下游任务指标。增大 $K$ 会增加参数量，在短语音或强噪声下反而可能使估计不稳定。$T_{60}$ 只描述整体衰减时间，不能单独决定 $\Delta$、$K$ 或迭代次数。</p>
+<h3 id="sec-4">7.1.2 常见错误与练习</h3>
 <p><strong>五项常见错误</strong>：① 取 $\Delta=0$，使预测器同时减去直达声；② 无条件增大 $K$，导致数据不足时过拟合；③ 用 WPE 处理本应保留的早期反射；④ 把 WPE 当作加性噪声抑制器，忽略模型中没有独立噪声项；⑤ 在弱混响条件下仍强制启用 WPE。对应的检查量分别是早期语音损伤、有效样本数、直混比、噪声强度和混响时间。</p>
 <blockquote>
 <p><strong>练习 7-1（自测九题）</strong></p>
@@ -288,20 +250,20 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 <li>$\Delta=2$、$K=2$、$n=10$ 时用哪几帧、跳过哪几帧？（要点：用第 8、7 帧；跳过第 9 帧）</li>
 <li>复算算例 7-1 第 1 步的复数乘法。（要点：$(0.5-0.1\mathrm{j})(0.8+0.1\mathrm{j})=0.41-0.03\mathrm{j}$）</li>
 <li>独立完成算例 7-2 并算出 dB 数。（要点：$E=0.69+0.28\mathrm{j}$；能量约 1.25→0.55，约 3.5 dB）</li>
-<li>写出最大似然交替的两步，并写出固定 $\lambda$ 时的正规方程 $R\vec{g}=\vec{r}$。（要点：固定 $\lambda$ 加权最小二乘解 $G$；固定 $G$ 用 $\lambda=|E|^2$；2~5 次收敛；$R$、$\vec{r}$ 为 $\lambda$ 加权的自/互相关）</li>
+<li>写出最大似然交替的两步，并写出固定 $\lambda$ 时的正规方程 $R\vec{g}=\vec{r}$。（要点：固定 $\lambda$ 时用加权最小二乘解 $G$；固定 $G$ 时用 $\lambda=|E|^2$ 更新功率；迭代次数或停止条件要随实现与数据一并报告；$R$、$\vec{r}$ 为 $\lambda$ 加权的自相关和互相关）</li>
 <li>手算算例 7-3，并解释权重如何改变估计。（要点：$\hat g\approx1.156$；第 2 帧权重较大，因此对结果影响更大）</li>
-<li>T60=0.6 s、帧移 8 ms，给出 $\Delta/K$ 起点并说理由。（要点：$\Delta=3$、$K=10$；会议室档默认起点；保护约 24 ms、覆盖约 80 ms 拖尾）</li>
+<li>图 21 的帧移为 8 ms，$\Delta=6$、$K=10$。写出最近和最远预测帧及对应的物理时延。（要点：用 $t-6$ 到 $t-15$；最近 48 ms，最远 120 ms；这是本书仿真配置，不是由 $T_{60}$ 唯一决定的通用参数）</li>
 <li>说出在线版相对离线版打折的两处来源与对策。（要点：短块 $\lambda$ 不准；老 $G$ 过时；对策是 DNN 估计功率谱、遗忘因子）</li>
 <li>神经网络可以放在 WPE 前、后或内部吗？（要点：独立改写各通道复谱的网络通常放在多通道处理之后；只估计共享掩码、协方差或 $\lambda$ 的网络可以放在解析算法内部；还要检查是否使用未来帧）</li>
 </ol>
 </blockquote>
-<h4 id="sec-5">7.1.3 研究方向</h4>
+<h3 id="sec-5">7.1.3 研究方向</h3>
 <p>WPE 的改进主要围绕四个限制展开：分布式阵列需要按通道到达时延调整预测延迟；麦克风很多时需要参考通道或子集选择；短块和强噪声下需要更稳健的功率估计；系统级方法尝试把去混响与波束形成联合求解。神经网络可以为这些解析结构估计功率、掩码或先验，但比较结果时要对齐数据集、通道数、因果性和延迟。本章不列无法按这些条件复核的近期性能数字。</p>
 <p>参数设置应先保证直达声和早期反射不受损，再根据晚期拖尾长度选择 $K$。弱混响时可以旁路 WPE。多说话人分离见第 8 章。</p>
 <blockquote>
-<p>📄 本篇信息：约 229 行 ｜ 字符约 13330 ｜ 配图 2 张 ｜ <a href="./index.html">回首页</a></p>
+<p>📄 本篇信息：配图 2 张 ｜ <a href="./index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="06_aec.html">← 上一篇</a></span><span><a href="08_speech-separation.html">下一篇 →</a></span></div>
-<div class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</div>
+<footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>
 </body></html>

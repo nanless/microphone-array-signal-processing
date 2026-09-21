@@ -33,6 +33,7 @@
 """
 import argparse
 import datetime
+import hashlib
 import os
 import re
 import shutil
@@ -64,12 +65,12 @@ CHAPTERS = [
 
 CSS = """
 @page{size:A4;margin:16mm 15mm 18mm}
-body{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;max-width:860px;margin:0 auto;padding:24px}
+body{font-family:"STHeiti","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;max-width:860px;margin:0 auto;padding:24px}
 img{max-width:100%;height:auto;display:block;margin:12px auto}
 table{border-collapse:collapse;margin:12px 0;display:block;overflow-x:visible;max-width:100%}
 th,td{border:1px solid #dfe3ea;padding:5px 9px;font-size:13.5px;text-align:left}
-th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;font-size:13px}
-pre{background:#f4f6f9;padding:12px;border-radius:6px;overflow-x:visible;white-space:pre-wrap}
+th{background:#f0f4f9}code{font-family:"STHeiti",monospace;background:#f0f3f7;padding:1px 5px;border-radius:4px;font-size:13px}
+pre{font-family:"STHeiti",monospace;background:#f4f6f9;padding:12px;border-radius:6px;overflow-x:visible;white-space:pre-wrap}
 pre code{background:none;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:12px 0;padding:6px 12px;background:#f2f7fd}
 a{color:#2f6db3;text-decoration:none}
@@ -83,6 +84,7 @@ h3{font-size:16.5px}h4{font-size:15px}
 .chap{page-break-before:always}
 .toc li{margin:3px 0}
 .toc .sec{font-size:14px;color:#333}
+.book-end{text-align:center;color:#777;margin:36px 0 8px;font-size:13px}
 @media print{
 body{max-width:none;margin:0;padding:0}
 .chap{page-break-before:always}
@@ -124,16 +126,19 @@ def plain_text(html):
     return re.sub(r"\s+", " ", t).strip()
 
 
-def git_rev():
-    try:
-        r = subprocess.run(["git", "rev-parse", "--short", "HEAD"],
-                           capture_output=True, text=True, timeout=10, cwd=ROOT)
-        rev = r.stdout.strip() or "未知"
-        dirty = subprocess.run(["git", "status", "--porcelain"],
-                               capture_output=True, text=True, timeout=10, cwd=ROOT)
-        return rev + ("+dirty" if dirty.stdout.strip() else "")
-    except Exception:
-        return "未知"
+def source_digest():
+    """发布输入的稳定摘要；避免把生成物自身所在提交写回生成物造成循环漂移。"""
+    digest = hashlib.sha256()
+    paths = sorted(SRC.glob("*.md"))
+    paths += sorted((ROOT / "figures").glob("fig*.png"))
+    paths += [Path(__file__), ROOT / "scripts" / "make_figures.py",
+              ROOT / "scripts" / "make_aec_figures.py"]
+    for path in paths:
+        digest.update(path.relative_to(ROOT).as_posix().encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()[:12]
 
 
 HTML_TO_CH = {fname.replace(".md", ".html"): i for i, (fname, _) in enumerate(CHAPTERS)}
@@ -165,9 +170,10 @@ def build_html():
         html = re.sub(r"\.md((?:#[^\"')\s]*)?)([\"')])",
                       lambda m: ".html" + m.group(1) + m.group(2), html)
         html = rewrite_book_links(html)
-        # 去掉分章导航块与页脚行：它们的 ./xx.md 链在单文件里会变成 file:// 死链
-        html = re.sub(r"<blockquote>\s*<p>⚠️ 本篇是系列教程.*?</blockquote>", "", html, flags=re.S)
-        html = re.sub(r"<blockquote>\s*<p>🏠 首页导读.*?</blockquote>", "", html, flags=re.S)
+        # 每篇开头的引用块都是分篇导航。用位置边界删除，不依赖某一种中文句式。
+        html = re.sub(
+            r"^\s*(?:<blockquote>.*?</blockquote>\s*)+(?:<hr\s*/?>\s*)?",
+            "", html, flags=re.S)
         html = re.sub(r"<p>📄 本篇信息.*?</p>", "", html, flags=re.S)
         # 外层已经提供篇标题，删掉源文重复标题。导读以 h2 为节；其余篇章
         # 原文以 h2 作篇标题、h3 作节标题，因此在合订本里提升一级。
@@ -202,13 +208,14 @@ def build_html():
     date_s = datetime.date.today().isoformat()
     cover = (f'<div class="cover"><h1>麦克风阵列信号处理教程</h1>'
              f'<div class="sub">深入浅出 · 从阵列摆位到工程选型（合订本）</div>'
-             f'<div class="meta">构建日期 {date_s} · git {git_rev()} · '
+             f'<div class="meta">构建日期 {date_s} · 源文件 sha256 {source_digest()} · '
              f'共 14 篇：导读、11 章正文、2 篇附录</div></div>')
     page = ("<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\">"
             f"<title>麦克风阵列信号处理教程（合订本）</title><style>{CSS}</style>"
             "<script>\nwindow.MathJax = {tex: {inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], displayMath: [['$$', '$$']]}};\n</script>"
             "<script defer src=\"https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js\"></script>"
-            "</head><body>" + cover + "\n".join(toc) + "\n".join(body_parts) + "</body></html>")
+            "</head><body>" + cover + "\n".join(toc) + "\n".join(body_parts)
+            + '<div class="book-end">全书完</div></body></html>')
     n_secs = sum(len(s) for _, _, s in outline)
     unique_imgs = len(set(re.findall(r'<img [^>]*src="([^"]+)"', page)))
     print(f"合订：{len(CHAPTERS)} 篇 / {n_secs} 节 / {unique_imgs} 张唯一图片（{n_imgs} 次引用）")
@@ -271,14 +278,17 @@ def add_bookmarks(pdf_path, outline):
             texts.append("")
     ch_labels = [label for label, _, _ in outline]
     toc_pages = {i for i, t in enumerate(texts)
-                 if sum(1 for label in ch_labels if label in t) >= 3}
+                 if sum(1 for label in ch_labels if norm(label) in norm(t)) >= 3}
     writer = PdfWriter()
     writer.append(reader)
     writer.add_metadata({
         "/Title": "麦克风阵列信号处理教程",
         "/Subject": "从阵列摆位到工程选型",
         "/Creator": "scripts/build_pdf.py",
+        "/SourceDigest": source_digest(),
     })
+    from pypdf.generic import NameObject, TextStringObject
+    writer._root_object.update({NameObject("/Lang"): TextStringObject("zh-CN")})
     prev, n_ch, n_sec = -1, 0, 0
     for label, _cid, secs in outline:
         page_no = locate(texts, label, prev + 1, toc_pages)
@@ -377,8 +387,8 @@ def print_pdf(combined, pdf, timeout_min_pages=100):
         print("pages:", npages)
         if npages < timeout_min_pages:
             raise SystemExit(f"PDF 页数异常（{npages} 页），疑似截断")
-        if "附录" not in last_text and "练习" not in last_text:
-            raise SystemExit("PDF 末页未检测到附录 B 收尾内容，疑似截断")
+        if "全书完" not in last_text:
+            raise SystemExit("PDF 末页未检测到固定结束标记，疑似截断")
         os.replace(tmp_pdf, pdf)
     finally:
         tmp_pdf.unlink(missing_ok=True)
@@ -415,6 +425,11 @@ def outline_from_html(html):
             r'<h2 id="([^"]+)">(.*?)</h2>', body, flags=re.S)]
         outline.append((plain_text(label), cid, secs))
     return outline
+
+
+def digest_from_html(html):
+    match = re.search(r"源文件 sha256 ([0-9a-f]{12})", html)
+    return match.group(1) if match else None
 
 
 def validate_pdf_links(pdf_path):
@@ -462,6 +477,13 @@ def main(argv=None):
         return
     if args.pdf_only and outline is None:
         html = combined.read_text(encoding="utf-8")
+        embedded_digest = digest_from_html(html)
+        current_digest = source_digest()
+        if embedded_digest != current_digest:
+            raise SystemExit(
+                "--pdf-only 拒绝使用陈旧 combined.html："
+                f"内嵌摘要 {embedded_digest or '缺失'}，当前源文件 {current_digest}。"
+                "请先运行完整构建或 --html-only。")
         outline = outline_from_html(html)
         print(f"--pdf-only：从 HTML 反推 {len(outline)} 篇、"
               f"{sum(len(s) for _, _, s in outline)} 节")

@@ -51,6 +51,31 @@ class BuildHelpersTest(unittest.TestCase):
     def test_site_keeps_mathjax_parenthesis_escapes(self):
         self.assertIn("['\\\\(', '\\\\)']", build_site.PAGE)
 
+    def test_content_headings_promote_to_one_h1(self):
+        html = '<h2 id="sec-1">篇名</h2><h3 id="sec-2">小节</h3>'
+        promoted, heads = build_site.promote_content_headings(
+            html, [(2, "篇名"), (3, "小节")]
+        )
+        self.assertEqual(promoted.count("<h1"), 1)
+        self.assertIn('<h2 id="sec-2">小节</h2>', promoted)
+        self.assertEqual(heads, [(1, "篇名"), (2, "小节")])
+
+    def test_source_digest_is_stable_length(self):
+        self.assertRegex(build_pdf.source_digest(), r"^[0-9a-f]{12}$")
+
+    def test_pdf_prefers_searchable_chinese_font(self):
+        self.assertLess(build_pdf.CSS.index('"STHeiti"'),
+                        build_pdf.CSS.index('"Hiragino Sans GB"'))
+
+    def test_pdf_only_digest_parser(self):
+        self.assertEqual(
+            build_pdf.digest_from_html("源文件 sha256 0123456789ab"),
+            "0123456789ab",
+        )
+
+    def test_site_source_digest_is_stable_length(self):
+        self.assertRegex(build_site.source_digest(), r"^[0-9a-f]{12}$")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -13,7 +13,7 @@
 
 | 脚本 | 作用 | 输出 |
 |---|---|---|
-| `make_figures.py` | 约 1900 行。23 张旧图 + 图 24（WPE 帧条带）+ 图 25（延迟预算瀑布）+ 图 33（GCC 两种实现对照）。只用 numpy 和 matplotlib，不依赖 scipy。随机种子固定，结果可复现。图 13 蒙特卡洛最耗时 | `figures/fig01~fig25_*.png` + `fig33_*` |
+| `make_figures.py` | 生成图 1～25 和图 33。只用 numpy 和 matplotlib，不依赖 scipy；随机种子固定，结果可复现。图 13 的蒙特卡洛统计耗时最长 | `figures/fig01~fig25_*.png` + `fig33_*` |
 | `make_aec_figures.py` | 7 张回声消除专题图（建模/结构/NLMS/冻结/延迟双讲/非线性/混合选型）。风格与上一个脚本统一（六色/五级字号/dpi150） | `figures/fig26~fig32_*.png` |
 | `renumber2.py` | 已退役。单篇长文时代的图号整理工具，留作存档，平时不用跑 | 无 |
 | `build_site.py` | 建站脚本。读 `chapters/` 14 篇 Markdown，用 markdown 库转成静态页面：首页 + 13 个内容页，左侧边栏可跳章节与小节，文末上一篇/下一篇。图片直接引用 `figures/`，数学公式使用固定版本的 MathJax 3.2.2 在线渲染 | `site/*.html`（共 14 页） |

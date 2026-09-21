@@ -1,6 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>第 1 章 · 问题定义与双耳启示 · 麦克风阵列信号处理教程</title><style>
+<title>第 1 章 · 问题定义与双耳启示 · 麦克风阵列信号处理教程</title>
+<meta name="source-digest" content="6381515cd6ea"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -36,14 +37,14 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 <script>
 window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']]}};
 </script>
-<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
+ onerror="document.getElementById('offnote').style.display='block';document.getElementById('offnote').textContent='公式渲染脚本加载失败：当前显示的是公式源码。';"></script>
 </head><body id="top">
-<div class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 1 章 · 问题定义与双耳启示</div>
-<div class="wrap"><nav class="side"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
+<header class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 1 章 · 问题定义与双耳启示</header>
+<div class="wrap"><nav class="side" aria-label="全书目录"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
 <div class="chap cur">第 1 章 · 问题定义与双耳启示</div>
 <ul>
-<li><a href="01_problem-definition.html#sec-1">1. 从一个生活场景出发：问题定义</a></li>
-<li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-2">1.1 双耳听觉的三类定位线索</a></li>
+<li><a href="01_problem-definition.html#sec-2">1.1 双耳听觉的三类定位线索</a></li>
 </ul>
 <div class="chap"><a href="02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
 <div class="chap"><a href="03_array-geometry.html">第 3 章 · 阵列几何形态</a></div>
@@ -58,16 +59,15 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
 <main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
-<details class="toc-mobile"><summary>本页目录</summary><ul>
-<li><a href="01_problem-definition.html#sec-1">1. 从一个生活场景出发：问题定义</a></li>
-<li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-2">1.1 双耳听觉的三类定位线索</a></li>
-</ul></details>
+<details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
+<li><a href="01_problem-definition.html#sec-2">1.1 双耳听觉的三类定位线索</a></li>
+</ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是教程正文第 1 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
 <p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：（无） ｜ 下一篇：<a href="./02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></p>
 </blockquote>
 <hr />
-<h2 id="sec-1">1. 从一个生活场景出发：问题定义</h2>
+<h1 id="sec-1">1. 从一个生活场景出发：问题定义</h1>
 <p>本章从客厅里的远场语音交互出发，依次说明空间处理的三项任务、阵列增益的不同度量，以及双耳听觉为机器阵列提供的线索。</p>
 <p><strong>客厅里那句“今天天气怎么样”</strong></p>
 <p>想象你坐在客厅里，对 3 米外的智能音箱说“今天天气怎么样”。音箱听清这句话，要同时战胜四个敌人：</p>
@@ -77,16 +77,16 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><strong>干扰说话人</strong>：旁边有人在看电视或说话；</li>
 <li><strong>麦克风自噪声</strong>：传感器自身的底噪，包括热噪声和电路噪声。普通环境里，它往往低于环境噪声；超指向波束形成依赖通道间的精确相消，可能显著放大自噪声，因此自噪声会限制阵列性能（见 §2.6 的白噪声增益 WNG 和 §5.3）。</li>
 </ol>
-<p>人用两只耳朵毫不费力就能做到的事，机器要靠<strong>一群麦克风</strong>来做到：因为每个麦克风处于空间不同位置，同一声音到达它们的<strong>时间、强度略有不同</strong>——这些“不同”里藏着声音的<strong>方向信息</strong>，也给了机器<strong>挑选某个方向</strong>的能力。</p>
+<p>人的听觉系统会合并双耳线索来定位和选择性聆听。机器可以用<strong>一组麦克风</strong>观测类似的空间差异：每个麦克风处于不同位置，同一声音到达它们的<strong>时间、强度略有不同</strong>。这些差异包含方向信息，也使系统能够优先保留某个方向的声音。</p>
 <p>这些干扰的结构不同，不能用同一个“降噪增益”概括。先区分阵列空间处理承担的任务，再分别定义收益。</p>
 <p><strong>空间处理的三项任务</strong></p>
 <p>下面三项是阵列空间处理的核心任务：</p>
 <table>
-<thead>
+<th scope="col"ead>
 <tr>
-<th>任务</th>
-<th>类比</th>
-<th>回答的问题</th>
+<th scope="col">任务</th>
+<th scope="col">类比</th>
+<th scope="col">回答的问题</th>
 </tr>
 </thead>
 <tbody>
@@ -121,7 +121,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>以 4 只麦为例：信号幅度变为 4 倍，功率变为 16 倍；独立噪声的总功率变为 4 倍。因此信噪比提高 4 倍，约为 6 dB。满足上述条件时，麦数翻倍可增加约 3 dB。</p>
 <p>对白噪声而言，<strong>信号同相相加，独立噪声只按功率相加</strong>。这给出延迟求和的 WNG 上限；它不是 DI、零陷深度或所有阵列算法的共同上限。</p>
 <p>这个结果只依赖相干信号与独立噪声的叠加规律。真实系统还可利用双耳听觉中类似的时差、声级差和方向相关频谱线索。</p>
-<h3 id="sec-2">1.1 双耳听觉的三类定位线索</h3>
+<h2 id="sec-2">1.1 双耳听觉的三类定位线索</h2>
 <p>从阵列模型看，双耳可以近似为带有头部散射的双传感器系统。人类主要利用三组线索判断声源方向，并在嘈杂环境中进行选择性聆听：</p>
 <p><img alt="图1 人类双耳听觉的定位线索" src="../figures/fig01_binaural.png" onerror="this.alt+='（图缺失）'" /></p>
 <ol>
@@ -133,11 +133,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>双耳线索与阵列方法的对应关系</strong></p>
 <p>下表列出双耳听觉现象与阵列处理方法之间的联系：</p>
 <table>
-<thead>
+<th scope="col"ead>
 <tr>
-<th>人类的办法</th>
-<th>机器阵列的对应技术（术语先不用记）</th>
-<th>章节</th>
+<th scope="col">人类的办法</th>
+<th scope="col">机器阵列的对应技术（术语先不用记）</th>
+<th scope="col">章节</th>
 </tr>
 </thead>
 <tbody>
@@ -172,9 +172,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>第 2 章将从传播时延出发，把这些空间差异写成阵列信号模型。</p>
 <hr />
 <blockquote>
-<p>📄 本篇信息：约 86 行 ｜ 字符约 3430 ｜ 配图 1 张 ｜ <a href="./index.html">回首页</a></p>
+<p>📄 本篇信息：配图 1 张 ｜ <a href="./index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="index.html">← 导读</a></span><span><a href="02_basics-signal-model.html">下一篇 →</a></span></div>
-<div class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</div>
+<footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>
 </body></html>

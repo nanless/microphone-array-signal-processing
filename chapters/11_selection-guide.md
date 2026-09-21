@@ -29,7 +29,7 @@
 | 决策对象 | 适合先尝试的方案 | 何时换方案 | 同时检查的风险 |
 |---|---|---|---|
 | 单源 DOA | 广义互相关相位变换（Generalized Cross-Correlation with Phase Transform，GCC-PHAT）或导向响应功率相位变换（Steered Response Power with Phase Transform，SRP-PHAT）基线 | 需要更高分辨率且协方差条件满足时，评估多重信号分类（Multiple Signal Classification，MUSIC）或旋转不变子空间（Estimation of Signal Parameters via Rotational Invariance Techniques，ESPRIT）；复杂混响下可评估学习方法 | 阵列歧义、混响、宽带融合、虚警 |
-| 固定方向增强 | 延时求和或固定超指向波束 | 噪声场变化且统计量可估计时，评估最小方差无失真响应（Minimum Variance Distortionless Response，MVDR）或线性约束最小方差（Linearly Constrained Minimum Variance，LCMV）波束形成 | 白噪声增益、方向失配、标定 |
+| 固定方向增强 | 延时求和或固定超指向（superdirective）波束 | 噪声场变化且统计量可估计时，评估最小方差无失真响应（Minimum Variance Distortionless Response，MVDR）或线性约束最小方差（Linearly Constrained Minimum Variance，LCMV）波束形成 | 白噪声增益、方向失配、标定 |
 | 自适应波束 | MVDR 或 LCMV 加稳健化 | 目标相对传递函数或导向矢量难以估计时，评估掩码辅助或联合模型 | 协方差秩、对角加载、目标泄漏 |
 | 晚期混响 | 先用关闭 WPE 的基线 | 晚期混响确实限制词错误率（Word Error Rate，WER）、可懂度或听感时启用 WPE | 预测延迟、阶数、直达声损伤 |
 | 本机回声 | 有播放泄漏时启用 AEC | 非线性扬声器、路径变化或多扬声器时增加相应建模 | 参考取点、整体延迟、双讲 |
@@ -46,7 +46,7 @@
 - **双麦或近似线阵**：可以估计沿阵列轴投影的时差并形成方向性，但某些方向会有镜像歧义。适合已知目标扇区、孔径和外形受限的设备。
 - **非共线三麦及平面阵**：能提供二维几何约束。精度仍受孔径、频带、遮挡和标定影响，不能把“三麦”简单归为单麦处理。
 - **圆阵**：便于覆盖水平面。阵元数和半径应由所需角分辨率、最高频率与结构尺寸共同确定，不存在“全向必须至少四麦、六麦最好”的通用答案。
-- **球阵或三维阵**：适合需要俯仰角、声场分析或多方向波束的任务。可用球谐阶数受阵元采样、$kr$、径向滤波噪声放大和标定误差共同限制，详见 §10.8。
+- **球阵或三维阵**：适合需要俯仰角、声场分析或多方向波束的任务。可用球谐阶数受阵元采样、无量纲频率 $kr$（$k=2\pi f/c$ 为波数，$r$ 为球阵半径）、径向滤波噪声放大和标定误差共同限制，详见 §10.8。
 - **稀疏阵**：差分共阵可增加二阶统计中的虚拟滞后数，但不会凭空增加独立物理通道，也不保证宽带、相干声源和有限快拍下都能得到同样的自由度。应按第 3 章的适用条件验证。
 
 白噪声增益（White Noise Gain，WNG）和指向性指数（Directivity Index，DI）之间常有取舍。更窄的波束或更深的零陷可能放大传感器自噪声和标定误差。对角加载、WNG 约束和限制工作频带都能改善鲁棒性，但通常会牺牲一部分空间选择性。

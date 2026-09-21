@@ -84,6 +84,18 @@ def block_erle(echo, e, blk=400):
         erle = 10 * np.log10(te / np.maximum(re, 1e-12))
     return tc, erle
 
+def mask_metric_intervals(times, values, intervals):
+    """把指标定义无效的时间区间置为 NaN，保留原数组不变。"""
+    times = np.asarray(times, dtype=float)
+    masked = np.asarray(values, dtype=float).copy()
+    if times.shape != masked.shape:
+        raise ValueError("times 与 values 必须同形")
+    for start, stop in intervals:
+        if stop <= start:
+            raise ValueError("区间终点必须大于起点")
+        masked[(times >= start) & (times < stop)] = np.nan
+    return masked
+
 # ---- 图1：回声是怎么产生的 ----
 def fig_problem():
     N = int(1.6 * FS)
@@ -98,7 +110,7 @@ def fig_problem():
     fig.suptitle("图26 回声形成：d(n) = s(n) + x(n)*h(n) + v(n)", fontsize=FS_SUP)
     gs = gridspec.GridSpec(1, 3, figure=fig, width_ratios=[1, 1.4, 1.4])
     ax = fig.add_subplot(gs[0])
-    ax.set_title("(a) 房间就是一条脉冲响应 h(n)", fontsize=FS_TITLE)
+    ax.set_title("(a) 用脉冲响应 h(n) 表示房间回声路径", fontsize=FS_TITLE)
     ax.stem(h[:80], linefmt=C_BLUE, markerfmt="o", basefmt=" ", label="h抽头")
     ax.set_xlabel("抽头 n", fontsize=FS_LABEL); ax.set_ylabel("归一化幅度", fontsize=FS_LABEL)
     ax.annotate("前50抽头能量最大\n直达+早期反射", xy=(10, h[10]), xytext=(55, 0.85),
@@ -140,7 +152,7 @@ def fig_concept():
     ax.add_patch(Circle((8.2, 3.2), 0.45, fc="white", ec="k", lw=1.4))
     ax.text(8.2, 3.2, "Σ−", ha="center", va="center", fontsize=FS_LABEL + 4)
     box(9.1, 2.5, 1.6, 1.4, "处理后输出 e\n→波束/识别", "#e8f6db")
-    box(4.2, 4.6, 2.2, 0.9, "DTD 开关（双讲冻结）", "#f6e5db")
+    box(7.7, 4.6, 2.2, 0.9, "DTD（由 x、d 判定）\n控制系数更新", "#f6e5db")
     arrow((2.2, 3.2), (2.7, 3.2), C_BLUE)
     arrow((4.7, 3.2), (5.4, 3.2), C_BLUE)
     arrow((1.25, 2.5), (3.0, 1.6), C_BLUE)
@@ -148,7 +160,14 @@ def fig_concept():
     arrow((7.3, 1.0), (8.02, 2.72), C_BLUE)
     arrow((7.3, 3.2), (7.75, 3.2), C_BLUE)
     arrow((8.65, 3.2), (9.1, 3.2), C_GREEN, w=2.0)
-    arrow((5.3, 4.6), (3.7, 1.6), C_RED, ls="--", w=1.8)
+    # 残差 e 沿底部返回滤波器更新端；DTD 控制反馈支路上的开关。
+    ax.plot([9.9, 9.9, 9.15], [2.5, 0.18, 0.18], color=C_BLUE, lw=1.4)
+    ax.add_patch(Rectangle((8.35, 0.03), 0.8, 0.3, fc="white", ec=C_RED, lw=1.2, zorder=4))
+    ax.plot([8.48, 8.98], [0.29, 0.08], color=C_RED, lw=1.6, zorder=5)
+    ax.plot([3.7, 8.35], [0.18, 0.18], color=C_BLUE, lw=1.4)
+    arrow((3.7, 0.18), (3.7, 0.4), C_BLUE)
+    ax.text(8.4, 0.36, "残差 e 驱动更新", fontsize=FS_TINY, color=C_BLUE, ha="center")
+    arrow((8.8, 4.6), (8.75, 0.33), C_RED, ls="--", w=1.8)
     ax.annotate("估计回声路径", xy=(3.7, 1.0), xytext=(0.7, 0.35), fontsize=FS_SMALL + 2, color=C_PURPLE,
                 arrowprops=dict(arrowstyle="->", color=C_PURPLE, lw=1.8, connectionstyle="arc3,rad=-0.25"))
     save(fig, "fig27_aec_concept.png")
@@ -198,8 +217,10 @@ def fig_nlms():
         ax.plot(tcc[:len(er)], er, color=c, label=f"μ={mu}")
     ax.set_xlabel("时间 (s)", fontsize=FS_LABEL); ax.set_ylabel("ERLE (dB)", fontsize=FS_LABEL)
     ax.legend(fontsize=FS_SMALL); ax.grid(ls=":", alpha=0.5); ax.tick_params(labelsize=FS_TINY)
-    ax.text(0.05, 0.10, "白化输入与理想模型下，0<μ<2；工程常取 0.1~0.5",
-            transform=ax.transAxes, fontsize=FS_SMALL + 1, color=C_RED)
+    ax.text(0.05, 0.08, "本图只比较 μ=0.2、0.5、1.0。\n"
+            "实际步长需按输入相关性、失配和双讲条件验证。",
+            transform=ax.transAxes, fontsize=FS_SMALL, color=C_RED,
+            bbox=dict(fc="white", ec="0.8", alpha=0.85))
     save(fig, "fig28_aec_nlms.png")
 
 # ---- 图4：ERLE + 双讲冻结 ----
@@ -264,6 +285,10 @@ def fig_delay_dtd():
     tcc, er_align = block_erle(echo, e_align)
     _, er_mis = block_erle(echo, e_mis)
     _, er_nof = block_erle(echo, e_nof)
+    invalid_intervals = [(0.8, 1.2)]
+    er_align_view = mask_metric_intervals(tcc, er_align, invalid_intervals)
+    er_mis_view = mask_metric_intervals(tcc, er_mis, invalid_intervals)
+    er_nof_view = mask_metric_intervals(tcc, er_nof, invalid_intervals)
     pa = float(np.nanmean(er_align[(tcc > 0.45) & (tcc < 0.8)]))
     pm = float(np.nanmean(er_mis[(tcc > 0.45) & (tcc < 0.8)]))
     fig, axes = plt.subplots(1, 3, figsize=(15, 4.2), layout="constrained")
@@ -280,14 +305,16 @@ def fig_delay_dtd():
     ax.set_xlim(-50, delay + 200); ax.set_xlabel("延迟采样", fontsize=FS_LABEL)
     ax.grid(ls=":", alpha=0.5); ax.tick_params(labelsize=FS_TINY)
     ax = axes[1]; ax.set_title("(b) 对齐与不对齐（延迟 300 抽头 > 滤波器 128 抽头）", fontsize=FS_TITLE)
-    ax.plot(tcc, er_align, color=C_BLUE, lw=1.6, label=f"对齐（约{pa:.0f}dB）")
-    ax.plot(tcc, er_mis, color="0.6", lw=1.4, ls="--", label=f"不对齐（单讲约{pm:.0f}dB）")
+    ax.plot(tcc, er_align_view, color=C_BLUE, lw=1.6, label=f"对齐（单讲约{pa:.0f}dB）")
+    ax.plot(tcc, er_mis_view, color="0.6", lw=1.4, ls="--", label=f"不对齐（单讲约{pm:.0f}dB）")
+    ax.axvspan(0.8, 1.2, color=C_RED, alpha=0.08)
     ax.set_ylim(-10, 40); ax.set_xlabel("时间 (s)", fontsize=FS_LABEL); ax.set_ylabel("ERLE (dB)", fontsize=FS_LABEL)
     ax.legend(fontsize=FS_SMALL); ax.grid(ls=":", alpha=0.5); ax.tick_params(labelsize=FS_TINY)
-    ax = axes[2]; ax.set_title("(c) 双讲时冻结与继续更新", fontsize=FS_TITLE)
-    ax.plot(tcc, er_align, color=C_BLUE, lw=1.6, label="双讲时冻结更新")
-    ax.plot(tcc, er_nof, color=C_RED, lw=1.4, ls="--", label="双讲时继续更新")
+    ax = axes[2]; ax.set_title("(c) 双讲区不计算 ERLE；比较双讲后的恢复", fontsize=FS_TITLE)
+    ax.plot(tcc, er_align_view, color=C_BLUE, lw=1.6, label="双讲时冻结更新")
+    ax.plot(tcc, er_nof_view, color=C_RED, lw=1.4, ls="--", label="双讲时继续更新")
     ax.axvspan(0.8, 1.2, color=C_RED, alpha=0.10)
+    ax.text(1.0, -5, "残差含近端语音\nERLE 无定义", ha="center", fontsize=FS_SMALL, color=C_RED)
     ax.set_ylim(-10, 40); ax.set_xlabel("时间 (s)", fontsize=FS_LABEL)
     ax.legend(fontsize=FS_SMALL); ax.grid(ls=":", alpha=0.5); ax.tick_params(labelsize=FS_TINY)
     save(fig, "fig30_aec_delay_dtd.png")
@@ -341,18 +368,29 @@ def fig_hybrid():
         ax.text(x+w/2, y+h/2, text, ha="center", va="center", fontsize=fs, color=C_MAIN)
     def arrow(a, b, c="k", w=1.4):
         ax.add_patch(FancyArrowPatch(a, b, arrowstyle="-|>", mutation_scale=14, color=c, lw=w))
-    box(0.2, 3.2, 1.8, 1.6, "远端参考\n(链路末端取)", "#f6e5db")
-    box(2.5, 3.2, 1.8, 1.6, "延迟估计与对齐\n互相关估计 τ", "#dbe9f6")
-    box(4.8, 3.2, 2.2, 1.6, "线性AEC\nPBFDAF/FDKF", "#dbe9f6")
-    box(7.5, 3.2, 2.2, 1.6, "学习型残余抑制\n输入可含 e 与 x", "#fde3c8")
-    box(10.2, 3.2, 2.0, 1.6, "处理后输出\n→语音识别", "#e8f6db")
-    for a, b in [((2.0, 4.0), (2.5, 4.0)), ((4.3, 4.0), (4.8, 4.0)), ((7.0, 4.0), (7.5, 4.0)), ((9.7, 4.0), (10.2, 4.0))]:
+    # 音频主链从麦克风信号开始；远端参考是线性 AEC 的第二路输入。
+    box(0.2, 3.2, 2.0, 1.6, "麦克风信号 d(n)\n近端+回声+噪声", "#f6dbdb")
+    box(2.8, 3.2, 2.2, 1.6, "线性 AEC\nPBFDAF / FDKF", "#dbe9f6")
+    box(5.5, 3.2, 1.8, 1.6, "线性残差 e(n)", "#dbe9f6")
+    box(7.8, 3.2, 2.4, 1.6, "学习型残余抑制\n输入可含 e 与 x", "#fde3c8")
+    box(10.7, 3.2, 2.0, 1.6, "处理后输出\n→语音识别", "#e8f6db")
+    for a, b in [((2.2, 4.0), (2.8, 4.0)), ((5.0, 4.0), (5.5, 4.0)),
+                 ((7.3, 4.0), (7.8, 4.0)), ((10.2, 4.0), (10.7, 4.0))]:
         arrow(a, b, C_BLUE)
-    box(4.8, 1.0, 2.2, 1.2, "双讲检测\n与步长控制", "#f6e5db", FS_TINY)
-    ax.plot([1.1, 1.1, 8.6, 8.6], [3.2, 2.2, 2.2, 3.2], color=C_BLUE, lw=1.0, ls=":")
-    ax.text(3.0, 2.45, "部分模型同时使用参考 x 与线性残差 e", ha="center", fontsize=FS_SMALL + 1, color=C_BLUE)
-    ax.text(2.5, 6.0, "线性自适应滤波：估计线性回声路径", fontsize=FS_SMALL, color=C_BLUE)
-    ax.text(7.5, 6.0, "学习型后处理：抑制训练条件覆盖的残余成分", fontsize=FS_SMALL, color=C_ORANGE)
+    box(0.2, 0.9, 1.9, 1.2, "远端参考 x(n)\n从播放链路末端取", "#f6e5db", FS_TINY)
+    box(2.6, 0.9, 1.8, 1.2, "延迟估计与对齐\n得到 x_a(n)", "#dbe9f6", FS_TINY)
+    arrow((2.1, 1.5), (2.6, 1.5), C_BLUE)
+    arrow((3.5, 2.1), (3.9, 3.2), C_BLUE)
+    # 某些学习型后处理同时使用对齐参考；虚线表示可选输入，而非必需主链。
+    ax.plot([4.4, 9.0, 9.0], [1.5, 1.5, 3.2], color=C_BLUE, lw=1.0, ls=":")
+    ax.text(6.8, 1.68, "可选：对齐参考 x_a(n) 作为学习模型的条件输入",
+            ha="center", fontsize=FS_SMALL, color=C_BLUE)
+    box(5.0, 0.35, 2.0, 0.85, "DTD 与步长控制", "#f6e5db", FS_TINY)
+    arrow((6.0, 1.2), (4.5, 3.2), C_ORANGE)
+    ax.text(3.9, 5.75, "线性 AEC 同时接收麦克风信号 d(n) 和对齐参考 x_a(n)",
+            fontsize=FS_SMALL, color=C_BLUE, ha="center")
+    ax.text(9.0, 5.75, "学习型后处理只抑制训练条件覆盖的残余成分",
+            fontsize=FS_SMALL, color=C_ORANGE, ha="center")
     gs2 = gridspec.GridSpecFromSubplotSpec(1, 2, subplot_spec=gs[1])
     ax = fig.add_subplot(gs2[0]); ax.set_title("(b) 每个模块都要满足前提条件", fontsize=FS_TITLE)
     ax.axis("off")

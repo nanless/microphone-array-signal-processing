@@ -8,19 +8,57 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def load_module():
-    path = ROOT / "scripts" / "make_figures.py"
-    spec = importlib.util.spec_from_file_location("make_figures", path)
+def load_module(name, filename):
+    path = ROOT / "scripts" / filename
+    spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
     spec.loader.exec_module(module)
     return module
 
 
-figures = load_module()
+figures = load_module("make_figures", "make_figures.py")
+aec_figures = load_module("make_aec_figures", "make_aec_figures.py")
 
 
 class FigureAlgorithmTest(unittest.TestCase):
+    def test_array_scale_indicators_use_exact_formulas(self):
+        wng, pairs, covariance_entries = figures.array_scale_indicators(
+            np.array([2, 4, 8]))
+        np.testing.assert_allclose(wng, 10 * np.log10([2, 4, 8]))
+        np.testing.assert_array_equal(pairs, [1, 6, 28])
+        np.testing.assert_array_equal(covariance_entries, [4, 16, 64])
+
+    def test_causal_delay_zero_fills_instead_of_wrapping(self):
+        signal = np.arange(1.0, 7.0)
+        delayed = figures.causal_delay(signal, 2)
+        np.testing.assert_array_equal(delayed, [0, 0, 1, 2, 3, 4])
+
+    def test_distortionless_weights_keep_unit_target_response(self):
+        covariance = np.array(
+            [[2.0, 0.3 - 0.1j], [0.3 + 0.1j, 1.0]], dtype=complex)
+        steering = np.array([1.0, np.exp(-0.4j)])
+        weights, loading = figures.distortionless_weights(
+            covariance, steering, diagonal_loading=1e-3)
+        self.assertAlmostEqual(float((weights.conj() @ steering).real), 1.0, places=12)
+        self.assertAlmostEqual(float((weights.conj() @ steering).imag), 0.0, places=12)
+        self.assertAlmostEqual(loading, 1e-3 * np.trace(covariance).real / 2)
+
+    def test_interpolated_gcc_phat_recovers_fractional_delay(self):
+        rng = np.random.default_rng(77)
+        fs = 16000
+        sample_delay = 0.7
+        signal = rng.normal(size=2048)
+        spectrum = np.fft.rfft(signal)
+        frequencies = np.fft.rfftfreq(signal.size, 1 / fs)
+        spectrum[frequencies > 6000] = 0
+        reference = np.fft.irfft(spectrum)
+        delayed = np.fft.irfft(
+            spectrum * np.exp(-2j * np.pi * frequencies * sample_delay / fs))
+        _, _, estimate = figures.gcc_phat_interpolated(
+            delayed, reference, fs, interp=32, max_tau=0.5e-3)
+        self.assertAlmostEqual(estimate * fs, sample_delay, delta=1 / 32)
+
     def test_bartlett_matches_explicit_quadratic_form(self):
         covariance = np.array(
             [[2.0, 0.5 + 0.25j], [0.5 - 0.25j, 1.5]], dtype=complex)
@@ -63,6 +101,38 @@ class FigureAlgorithmTest(unittest.TestCase):
             observation_std=2.0, resample_fraction=0.5)
         np.testing.assert_array_equal(resampled, neff < 50.0)
         self.assertTrue(np.all((neff >= 1.0) & (neff <= 100.0 + 1e-12)))
+
+    def test_particle_filter_predicts_through_missing_observations(self):
+        observations = np.array([30.0, 31.0, np.nan, np.nan, 34.0])
+        estimates, neff, resampled = figures.particle_filter_doa(
+            observations, np.random.default_rng(124), n_particles=300)
+        self.assertTrue(np.all(np.isfinite(estimates)))
+        self.assertTrue(np.all(np.isfinite(neff)))
+        self.assertFalse(bool(resampled[2]))
+        self.assertFalse(bool(resampled[3]))
+
+    def test_phd_intensity_integrates_to_expected_target_count(self):
+        grid = np.linspace(-90, 90, 2001)
+        intensity = figures.normalized_phd_intensity(
+            grid, centers=[-25, 40], stds=[4, 5], weights=[1, 1])
+        self.assertAlmostEqual(float(np.trapezoid(intensity, grid)), 2.0, places=10)
+
+    def test_erle_mask_removes_double_talk_interval_only(self):
+        times = np.array([0.7, 0.8, 1.0, 1.2, 1.3])
+        values = np.arange(5.0)
+        masked = aec_figures.mask_metric_intervals(
+            times, values, [(0.8, 1.2)])
+        np.testing.assert_array_equal(np.isnan(masked), [False, True, True, False, False])
+        np.testing.assert_array_equal(masked[[0, 3, 4]], values[[0, 3, 4]])
+
+    def test_fig18_fixed_seed_steady_erle_matches_plotted_value(self):
+        times, erle, plateau = figures.fig18_erle_simulation()
+        steady = (times > 0.45) & (times < 0.8)
+        steady_values = erle[steady & np.isfinite(erle)]
+        self.assertGreater(steady_values.size, 0)
+        self.assertAlmostEqual(plateau, float(np.mean(steady_values)), places=12)
+        self.assertAlmostEqual(plateau, 17.46, places=2)
+        self.assertTrue(np.all(np.isnan(erle[(times >= 0.8) & (times < 1.2)])))
 
     def test_systematic_resampling_indices_stay_in_bounds(self):
         weights = np.array([1e-16, 1e-16, 1.0 - 2e-16])

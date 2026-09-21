@@ -12,6 +12,7 @@
 import os
 import re
 import tempfile
+import hashlib
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
@@ -73,18 +74,20 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 
 PAGE = """<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{title} · 麦克风阵列信号处理教程</title><style>{css}</style>
+<title>{title} · 麦克风阵列信号处理教程</title>
+<meta name="source-digest" content="{source_digest}"><style>{css}</style>
 <script>
 window.MathJax = {{tex: {{inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], displayMath: [['$$', '$$']]}}}};
 </script>
-<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
+ onerror="document.getElementById('offnote').style.display='block';document.getElementById('offnote').textContent='公式渲染脚本加载失败：当前显示的是公式源码。';"></script>
 </head><body id="top">
-<div class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; {crumb}</div>
-<div class="wrap"><nav class="side">{sidebar}</nav>
+<header class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; {crumb}</header>
+<div class="wrap"><nav class="side" aria-label="全书目录">{sidebar}</nav>
 <main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
-<details class="toc-mobile"><summary>本页目录</summary>{toc}</details>
+<details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录">{toc}</nav></details>
 {body}{pn}
-<div class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</div>
+<footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>
 </body></html>
@@ -96,6 +99,21 @@ def clean_label(text):
     text = re.sub(r"[`*_~]", "", text)
     text = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", text)
     return text.strip()
+
+
+def source_digest():
+    """站点正文与构建器的稳定摘要，用于拒绝陈旧生成物。"""
+    digest = hashlib.sha256()
+    paths = sorted(SRC.glob("*.md"))
+    paths += sorted((ROOT / "figures").glob("fig*.png"))
+    paths += [Path(__file__), ROOT / "scripts" / "make_figures.py",
+              ROOT / "scripts" / "make_aec_figures.py"]
+    for path in paths:
+        digest.update(path.relative_to(ROOT).as_posix().encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()[:12]
 
 
 def parse_headings(md):
@@ -137,6 +155,8 @@ def render(md_text):
         return f"<{tag} id=\"sec-{counter[0]}\">{inner}</{tag}>"
 
     html = re.sub(r"<(h[1-4])>(.*?)</\1>", repl, html, flags=re.S)
+    html = re.sub(r'<th(?![^>]*\bscope=)([^>]*)>',
+                  r'<th scope="col"\1>', html, flags=re.S)
     # md 内链 .md → .html；00 首页 → index.html
     html = re.sub(r"\.md((?:#[^\"')\s]*)?)([\"')])",
                   lambda m: ".html" + m.group(1) + m.group(2), html)
@@ -169,6 +189,15 @@ def render(md_text):
 
     html = re.sub(r'(^|[\s>(])((?:0\d|1\d)_[^<\s)"]+\.md)', bare_link, html)
     return html, counter[0]
+
+
+def promote_content_headings(html, heads):
+    """内容页源文件以 h2 写篇名；站点中提升一级，得到唯一 h1 和连续层级。"""
+    for old, new in (("h2", "h1"), ("h3", "h2"), ("h4", "h3")):
+        html = re.sub(fr"<{old}([^>]*)>(.*?)</{old}>",
+                      fr"<{new}\1>\2</{new}>", html, flags=re.S)
+    promoted = [(max(1, level - 1), text) for level, text in heads]
+    return html, promoted
 
 
 def sub_list(html_name, heads, start_idx=1):
@@ -209,6 +238,7 @@ def main():
     expected = {"index.html", *(name.replace(".md", ".html") for name in names)}
     with tempfile.TemporaryDirectory(prefix=".site-build-", dir=ROOT) as tmp:
         temp_out = Path(tmp)
+        build_digest = source_digest()
         home_md = (SRC / HOME_FNAME).read_text(encoding="utf-8")
         home_heads = parse_headings(home_md)
         home_html, home_n = render(home_md)
@@ -216,6 +246,7 @@ def main():
         toc, _ = sub_list("index.html", home_heads)
         (temp_out / "index.html").write_text(PAGE.format(
             title="导读与导航", css=CSS, crumb="导读与导航",
+            source_digest=build_digest,
             sidebar=sidebar_with_anchors(None, home_heads), toc=toc,
             body=home_html, pn=""), encoding="utf-8")
         for i, (fname, label) in enumerate(CHAPTERS):
@@ -224,6 +255,7 @@ def main():
             html_name = fname.replace(".md", ".html")
             body, n = render(md)
             assert n == len(heads), f"{fname}: 锚点 {n} vs 标题 {len(heads)}"
+            body, heads = promote_content_headings(body, heads)
             toc, _ = sub_list(html_name, heads)
             prev = (f'<a href="{names[i-1].replace(".md", ".html")}">← 上一篇</a>'
                     if i > 0 else '<a href="index.html">← 导读</a>')
@@ -232,6 +264,7 @@ def main():
             pn = f'<div class="pn"><span>{prev}</span><span>{nxt}</span></div>'
             (temp_out / html_name).write_text(PAGE.format(
                 title=label, css=CSS, crumb=label,
+                source_digest=build_digest,
                 sidebar=sidebar_with_anchors(fname, heads), toc=toc,
                 body=body, pn=pn), encoding="utf-8")
         built = {path.name for path in temp_out.glob("*.html")}

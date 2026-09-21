@@ -1,4 +1,4 @@
-> ⚠️ 本篇是系列教程第 6 章（共 13 章），可独立阅读，前后篇见下方导航。
+> ⚠️ 本篇是教程正文第 6 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。
 >
 > 🏠 首页导读：[`00_overview.md`](./00_overview.md) ｜ 上一篇：[05_beamforming.md](./05_beamforming.md) ｜ 下一篇：[07_wpe-dereverberation.md](./07_wpe-dereverberation.md)
 
@@ -83,13 +83,15 @@ $$\hat{\vec{w}}(n+1) = \hat{\vec{w}}(n) + \mu\,\frac{e(n)\,\vec{x}(n)}{\|\vec{x}
 
 **第 1 步：算回声副本与残差**。$\hat y(n)=\hat{\vec{w}}^\top(n)\vec{x}(n)=0\times1+0\times0.5+0\times(-0.5)=0$——滤波器还是零，回声一点没被减掉，残差 $e(n)=d(n)-\hat y(n)=0.8$ 就是全部。
 
-**第 2 步：算归一化因子**。$\|\vec{x}(n)\|^2=1^2+0.5^2+(-0.5)^2=1.5$。拿输入能量去除：播放音量大时分母大、步子自动变小——这就是 NLMS 不怕音量起伏的原因。
+**第 2 步：算归一化因子**。$\|\vec{x}(n)\|^2=1^2+0.5^2+(-0.5)^2=1.5$。用输入能量归一化后，播放幅度增大时分母也随之增大，可降低固定步长对输入幅度变化的敏感性。
 
 **第 3 步：算更新量、更新滤波器**。
 
 $$\mu\,\frac{e(n)}{\|\vec{x}(n)\|^2}\,\vec{x}(n)=\frac{0.5\times0.8}{1.5}\begin{bmatrix}1\\0.5\\-0.5\end{bmatrix}=\frac{0.4}{1.5}\begin{bmatrix}1\\0.5\\-0.5\end{bmatrix}\approx\begin{bmatrix}0.267\\0.133\\-0.133\end{bmatrix}$$
 
-$$\hat{\vec{w}}(n+1)=[0,\ 0,\ 0]^\top+\text{更新量}\approx[0.267,\ 0.133,\ -0.133]^\top$$
+$$\hat{\vec{w}}(n+1)=[0,\ 0,\ 0]^\top+\Delta\vec w\approx[0.267,\ 0.133,\ -0.133]^\top$$
+
+这里 $\Delta\vec w$ 就是上式算出的更新向量。
 
 这一步只修正了当前输入方向上的误差；其他方向需要后续不同的输入向量提供梯度信息。更新方向与 $\vec{x}(n)$ 平行。
 
@@ -109,7 +111,7 @@ $$\hat y'(n)=\hat{\vec{w}}^\top(n+1)\vec{x}(n)=0.267\times1+0.133\times0.5+(-0.1
 
 ![图18 AEC 原理](../figures/fig18_aec.png)
 
-图18（a）给出整体结构；（b）给出 NLMS 在模拟回声路径上的收敛曲线。此仿真取 $\mu=0.5$，ERLE 在约 0.3～0.5 s 达到约 22 dB，粉色区域表示双讲期间冻结更新。
+图18（a）给出整体结构；（b）给出 NLMS 在模拟回声路径上的收敛曲线。此仿真取 $\mu=0.5$；按绘图脚本固定随机种子生成的结果，在 $0.45<t<0.8$ s 的远端单讲窗口内，ERLE 均值约为 17.5 dB，图中按整数标为约 17 dB。粉色区域表示双讲期间冻结更新，该区间不统计 ERLE。
 
 ![图28 NLMS 自适应过程](../figures/fig28_aec_nlms.png)
 
@@ -155,7 +157,7 @@ $$\hat y'(n)=\hat{\vec{w}}^\top(n+1)\vec{x}(n)=0.267\times1+0.133\times0.5+(-0.1
 
 **子带自适应**：分析滤波器组把信号分成多个子带。带内频谱较平坦，有利于收敛；降采样也会缩短各带滤波器并降低计算量。临界采样时子带间存在混叠，严格重建需要带间交叉滤波器补偿（Gilloire & Vetterli, *IEEE Trans. Signal Processing* 1992）。[Gilloire & Vetterli 1992](https://infoscience.epfl.ch/record/34234/files/GilloireV88.pdf "citation")
 
-**IPNLMS：按稀疏度分配步长**。真实回声路径通常由直达声和少数强反射贡献主要能量，其余抽头较小。NLMS 对所有抽头使用同类更新；PNLMS（比例 NLMS，proportionate NLMS，Duttweiler 2000）与改进版 IPNLMS（改进比例 NLMS，improved proportionate NLMS，Benesty & Gay, ICASSP 2002）按系数当前幅度成比例分配步长，使较大的系数优先收敛。IPNLMS 用混合系数 $\alpha\in[-1,1]$ 在均匀步长与比例步长之间插值：$\alpha=-1$ 退化为 NLMS，$\alpha=0$ 偏向比例更新，$\alpha=-0.5$ 介于两者之间。声学回声路径通常不如网络回声路径稀疏，因此 IPNLMS 的收益需在实际路径上验证。
+**IPNLMS：按稀疏度分配步长**。真实回声路径通常由直达声和少数强反射贡献主要能量，其余抽头较小。NLMS 对所有抽头使用同类更新；PNLMS（比例 NLMS，proportionate NLMS，Duttweiler 2000）与改进版 IPNLMS（改进比例 NLMS，improved proportionate NLMS，Benesty & Gay, ICASSP 2002）按系数当前幅度分配更新量，使较大的系数优先收敛。按 Benesty 与 Gay 的常用参数化，混合系数 $\alpha\in[-1,1]$：$\alpha=-1$ 退化为 NLMS，$\alpha=1$ 对应纯比例更新，$\alpha=0$ 对两部分等权混合。不同文献可能改写参数，比较数值前要先核对定义。声学回声路径通常不如网络回声路径稀疏，因此 IPNLMS 的收益需在实际路径上验证。
 
 **RLS 与卡尔曼**。RLS（递归最小二乘，Recursive Least Squares）用带遗忘的最小二乘代替随机梯度，标准全矩阵实现复杂度为 $O(L^2)$。遗忘因子 $\lambda$ 越小，历史样本衰减越快，路径变化后适应得更快，但稳态估计方差也更大。有效记忆长度常用 $1/(1-\lambda)$ 粗略估计：$\lambda=0.99$ 约为 100 个样本，$\lambda=0.999$ 约为 1000 个样本。[Elisei-Iliescu et al. 2017（AEC 自适应算法综述）](https://www.thinkmind.org/articles/tele_v10_n34_2017_2.pdf "citation")
 
@@ -210,7 +212,7 @@ $$\frac{\partial}{\partial\Psi}\left(\frac{|E|^2}{\Psi}+\log\Psi\right)=-\frac{|
 
 ![图19 AEC 的能力边界与算法版图](../figures/fig19_aec_landscape.png)
 
-图19（a）比较该脚本配置下的线性路径与 `tanh` 非线性路径。约 37 dB 和 19～20 dB 只适用于图中的输入、路径和统计区间。（b）列出 LMS/NLMS、FDKF 和 AEC Challenge 等发展节点，用于说明线性估计、自适应控制与学习型残余抑制的分工变化。
+图19（a）比较该脚本配置下的线性路径与 `tanh` 非线性路径。约 37 dB 和 19～20 dB 只适用于图中的输入、路径和统计区间。（b）按模型假设和处理对象区分逐样本时域 LMS/NLMS、分区块频域 MDF/PBFDAF、状态空间频域卡尔曼滤波和残余抑制。横向位置不表示年代或性能排名；选择方法时要结合路径长度、变化速度、非线性程度和资源约束。
 
 ![图30 延迟对齐与双讲冻结](../figures/fig30_aec_delay_dtd.png)
 
@@ -250,20 +252,18 @@ $$\frac{\partial}{\partial\Psi}\left(\frac{|E|^2}{\Psi}+\log\Psi\right)=-\frac{|
 
 #### 6.1.6 学习型 AEC
 
-**分水岭：微软 AEC Challenge**。2021 年起微软连续举办了**共 4 届** AEC 挑战赛（ICASSP 2021、Interspeech 2021、ICASSP 2022、ICASSP 2023）——**注意没有 2024 届**：2024 年起微软转向丢包隐藏（PLC，packet loss concealment）挑战赛，网上流传的“AEC Challenge 2024”系误传（官方仓库停在 2023 年第四届）。四届的关键信息：
+**微软 AEC Challenge 的评测变化**。以下只摘录 2021 年和 2023 年官方报告可直接定位的信息。挑战赛的届次名称、任务、排名指标和延迟约束会改变，不能由年份或仓库更新时间推断后续赛事状态。
 
-| 届次 | 关键升级 | 代表结果 |
+| 报告 | 可复核的设置 | 读取时的限定 |
 |---|---|---|
-| ICASSP 2021 | 开源 2500+ 条真实设备录音；改用 P.808 众包 MOS 排名（动机：ERLE/PESQ 与真实听感相关性差） | 冠军 Amazon PercepNet（线性 AEC + Bark 域轻量神经后滤波）；亚军 wRLS+NN；季军 DTLN-AEC |
-| Interspeech 2021 | 延续首届设置，扩充真实场景与设备覆盖 | 排名前列仍以混合式方案为主 |
-| ICASSP 2022 | 升级 48 kHz 全频带；新增 WAcc（对下游 ASR 的影响，2023 届沿用 MOS + WAcc 双排名） | 神经卡尔曼与混合式并驾齐驱 |
-| ICASSP 2023 | 新增个性化 AEC 任务（注册语音 15～25 s）；算法与缓冲延迟从 40 ms 收紧到 20 ms | 非个性化冠军：西工大 NPU-ASLP |
+| ICASSP 2021 报告 | 发布真实设备录音并引入 ITU-T P.808 众包主观评价 | 数据数量、系统排名和分数应直接查报告的数据与结果表 |
+| ICASSP 2023 报告 | 包含一般 AEC 和个性化 AEC 任务，并同时考查主观质量与语音识别 | 注册语音、延迟和排名条件只属于该届规则，不是通用产品规范 |
 
 [Sridhar et al.（ICASSP 2021 AEC Challenge 报告）](https://arxiv.org/pdf/2009.04972.pdf "citation")、 [Cutler et al. 2023（ICASSP 2023 AEC Challenge 报告）](https://arxiv.org/html/2309.12553v1 "citation")
 
-挑战赛带来了三项变化。**评测指标**从单独比较 ERLE 和 PESQ，转向 P.808 众包主观 MOS（平均意见分，Mean Opinion Score），因为较高的 ERLE 仍可能伴随可闻的非线性残余。**测试数据**加入 2500 多条真实设备录音，覆盖真实扬声器失真、房间和双讲条件。**系统结构**方面，首届前三名中既有线性 AEC 加神经后滤波的混合方案，也有纯神经端到端的 DTLN-AEC。两类方法应按延迟、算力、泛化和故障诊断要求分别评估。
+这些报告说明，ERLE 不能单独表示双讲质量或近端语音损伤，因此评测还需主观质量和下游识别指标。参赛系统同时包含线性 AEC 加学习型后滤波的混合方案和端到端方案。两类方法应按延迟、算力、泛化和故障诊断要求分别评估。
 
-后续规则继续增加约束。2022 届采用 48 kHz 全频带信号，高频相位对路径失配更敏感；同届新增词准确率（WAcc，word accuracy），用于评价前端对下游识别的影响。2023 届把算法和缓冲延迟预算从 40 ms 收紧到 20 ms，长窗和长缓冲方案需要相应改成因果或低前视实现。
+后续报告继续加入全频带、个性化和下游识别等条件。复现时应从对应年份的规则和论文表格读取采样率、延迟、注册语音与排名指标，不把某届数字写成后续系统的通用限值。
 
 **混合式结构：线性估计加学习型残余抑制**。自适应滤波器利用已知参考估计线性回声，不需要训练数据；神经网络则处理线性模型未覆盖的残余回声、环境噪声和部分晚期混响。两者分工可以减少网络需要学习的动态范围，同时保留线性段的路径与收敛诊断。
 
@@ -279,18 +279,18 @@ $$\frac{\partial}{\partial\Psi}\left(\frac{|E|^2}{\Psi}+\log\Psi\right)=-\frac{|
 
 - **PercepNet**（Amazon，首届冠军）：经典线性 AEC 之后接一个 Bark 域（人耳听觉刻度）的轻量 RNN（循环神经网络，Recurrent Neural Network），输出逐频带增益。是否实时取决于模型版本、处理器、线程和计时范围；
 - **Ma et al. 2020**：自适应滤波器 + RNN 后处理的系统化实现，把混合式做成可复现的开源基线 [Ma et al. 2020](https://arxiv.org/pdf/2005.09237.pdf "citation")；
-- **DTLN-AEC**（首届季军）：双级 LSTM（长短期记忆网络，Long Short-Term Memory），第一级在时域分离，第二级在频域细化，两级之间用可学习变换连接；
+- **DTLN-AEC**：双级 LSTM（长短期记忆网络，Long Short-Term Memory）先在短时频谱表示上估计掩码并重建时域信号，再在学习到的一维卷积时域表示上做第二级处理；
 - **DeepVQE**（Microsoft，Interspeech 2023）：单模型联合 AEC、降噪和去混响，用交叉注意力在参考与麦克风信号之间做软对齐。论文报告了作者实现面向 Teams 场景的实时测试；这一结论只适用于论文所述模型、硬件和软件配置，不能据此推断其他实现的实时性。[DeepVQE](https://arxiv.org/abs/2306.03177 "citation")
 
 **端到端神经 AEC**把问题写成条件语音分离：输入麦克风信号和播放参考，直接估计近端语音。它能联合建模非线性与残余噪声，但低 SER 下的近端保护、未见设备上的泛化、因果延迟和故障诊断都需要单独验证。深度滤波不只输出 0~1 掩码，而是估计复数时频滤波器，可以同时调整幅度和相位。不同方案的 MOS 与 ERLE 只有在数据、场景、延迟和统计区间相同的条件下才能比较。
 
 **训练数据**。回声路径可以用§2.4 的镜像法生成不同房间尺寸和 $T_{60}$，非线性失真可以用随机 Wiener–Hammerstein 级联参数化，SER 和 SNR 也可按区间采样。真实设备录音仍用于覆盖仿真中缺少的扬声器、结构振动和系统链路特性。常见做法是先用合成数据训练，再用目标设备录音微调并验证。
 
-**神经卡尔曼滤波：保留递推结构，学习难以建模的参数**。这类方法保留 FDKF 的预测、更新和增益递推，由 DNN 估计卡尔曼增益、状态转移因子或非线性修正项。增益曲线和残余谱仍可用于诊断。NeuralKalman（ASRU 2023）报告了下游任务改善，引用性能结果时需同时给出论文中的数据集、基线和表格位置。[NeuralKalman, arXiv:2301.12363](https://arxiv.org/abs/2301.12363 "citation") Deep Adaptive AEC（Amazon，ICASSP 2022）把自适应滤波器写成可微分层，与深度网络联合训练。[Deep Adaptive AEC](https://minjekim.com/wp-content/uploads/icassp2022_hzhang.pdf "citation") Seidel et al. 比较了经典 FDKF 与神经变体；各方法的收敛、双讲保护和计算量应按该文的具体实验设置解读。[Seidel et al., IEEE SPM 2024](https://arxiv.org/pdf/2501.16367 "citation")
+**神经卡尔曼滤波：保留递推结构，学习难以建模的参数**。这类方法保留 FDKF 的预测、更新和增益递推，由 DNN 估计卡尔曼增益、状态转移因子或非线性修正项。增益曲线和残余谱仍可用于诊断。NeuralKalman 的公开版本为 2023 年 arXiv 预印本；引用性能结果时需同时给出论文中的数据集、基线和表格位置。[NeuralKalman, arXiv:2301.12363](https://arxiv.org/abs/2301.12363 "citation") Deep Adaptive AEC（Amazon，ICASSP 2022）把自适应滤波器写成可微分层，与深度网络联合训练。[Deep Adaptive AEC](https://minjekim.com/wp-content/uploads/icassp2022_hzhang.pdf "citation") Seidel et al. 的评述在 2025 年以 arXiv:2501.16367 公开，其出版状态应以论文页当前记录为准；各方法的收敛、双讲保护和计算量应按该文的具体实验设置解读。[Seidel et al., arXiv:2501.16367](https://arxiv.org/abs/2501.16367 "citation")
 
 把混合式方案按功能拆开，可分为自适应控制、线性路径估计和残余抑制。网络可以估计步长、卡尔曼统计量或残余增益；PBFDAF/FDKF 等解析结构仍提供可检查的路径估计和收敛状态。具体分工取决于延迟、算力和训练数据，不能写成固定的行业结论。
 
-**个性化 AEC（personalized AEC，pAEC）**：2023 届 AEC Challenge 的个性化任务要求系统消除回声并保留注册用户的近端语音；该届规则使用 15～25 s 注册语音，并把算法与缓冲延迟限制为 20 ms。这两个数字是该届挑战赛条件，不是所有 pAEC 产品的注册时长和延迟标准。[Cutler et al. 2023](https://arxiv.org/html/2309.12553v1 "citation") 系统从注册语音提取声纹嵌入，并把它作为网络条件；这一思路与目标说话人提取（Target Speaker Extraction，TSE；见 §13.3）相近。[GTCNN, Interspeech 2022](https://www.isca-archive.org/interspeech_2022/zhang22t_interspeech.pdf "citation") 合规与验收细节见 §6.1.14。
+**个性化 AEC（personalized AEC，pAEC）**：2023 年 AEC Challenge 报告描述了个性化任务，系统要消除回声并保留注册用户的近端语音。注册语音时长、延迟和评分条件应按该报告的对应规则复现，不能写成所有 pAEC 产品的通用标准。[Cutler et al. 2023](https://arxiv.org/html/2309.12553v1 "citation") 系统从注册语音提取声纹嵌入，并把它作为网络条件；这一思路与目标说话人提取（Target Speaker Extraction，TSE；见 §13.3）相近。[GTCNN, Interspeech 2022](https://www.isca-archive.org/interspeech_2022/zhang22t_interspeech.pdf "citation") 合规与验收细节见 §6.1.14。
 
 > **pAEC 门限例子。** 设注册嵌入为 $\vec e_{\mathrm{enroll}}$，逐帧近端嵌入为 $\vec e_t$，余弦相似度 $c=\cos(\vec e_t,\vec e_{\mathrm{enroll}})$。阈值不能从通用经验直接照搬，应在目标设备、注册时长、距离和噪声条件下，用目标用户和非目标用户验证集标定。可以设置放行、抑制和不确定三个区间；不确定区间采用较保守的抑制，降低误压目标用户的风险。验收时分别报告目标用户误抑制率、非目标用户泄漏率和普通双讲质量，而不是只报一个相似度阈值。
 
@@ -318,7 +318,7 @@ $$\frac{\partial}{\partial\Psi}\left(\frac{|E|^2}{\Psi}+\log\Psi\right)=-\frac{|
 
 **联合分析**：Schwartz et al.（Interspeech 2024）在论文所述的多通道维纳滤波（Multichannel Wiener Filter，MCWF）模型下分析了 AEC 与波束形成的顺序。结论依赖其统计模型和目标函数；实际系统若采用波束后 AEC，需要验证权重变化期间的回声泄漏，也可评估在重收敛期间暂时保持波束权重。[Schwartz et al., Interspeech 2024](https://www.isca-archive.org/interspeech_2024/schwartz24_interspeech.pdf "citation")
 
-> **边栏：立体声 AEC 的非唯一性问题。** 两个扬声器播同源内容（立体声左右声道强相关）时，正常方程奇异：除了真实回声路径，还存在无穷多组解都能拟合当前数据，而这些“伪解”全都依赖**远端房间**——对端房间一变，回声立刻漏出（Sondhi, Morgan & Hall, *IEEE Signal Processing Letters* 1995）。出路是给两路参考**去相关**：对每声道加轻微且互不相同的非线性（如半波整流），破坏通道间的完全相关性（Benesty et al., ICASSP 1997）。[Benesty et al. 1997](https://www2.spsc.tugraz.at/people/franklyn/ICASSP97/pdf/scan/ic970303.pdf "citation") 完整选型见 §6.1.10。
+> **边栏：立体声 AEC 的非唯一性问题。** 两个扬声器的参考完全线性相关时，参考相关矩阵秩亏，正常方程奇异：除了真实回声路径，还存在无穷多组解能拟合当前数据。参考只是高度相关而非完全相关时，矩阵通常不是严格奇异，但可能病态，对噪声和节目内容变化很敏感（Sondhi, Morgan & Hall, *IEEE Signal Processing Letters* 1995）。去相关方法给各路参考加轻微且互不相同的处理，以改善条件数；非线性处理的可闻影响和改善程度要另行测量（Benesty et al., ICASSP 1997）。[Benesty et al. 1997](https://www2.spsc.tugraz.at/people/franklyn/ICASSP97/pdf/scan/ic970303.pdf "citation") 完整选型见 §6.1.10。
 
 > **立体声非唯一性的数字例子。** 若 $x_1=x_2=x$，真实路径 $h_1=0.8$、$h_2=0.2$ 与另一组 $h'_1=1.3$、$h'_2=-0.3$ 都产生 $(h_1+h_2)x=x$，仅凭当前参考无法区分。相关系数 $\rho=0.99$ 时，归一化相关矩阵的特征值为 $1\pm\rho$，条件数约为 199，说明估计对噪声和信号变化很敏感。去相关的目标是改善条件数，但改善程度仍应由实际节目内容和处理强度测量。
 
@@ -328,9 +328,9 @@ $$\frac{\partial}{\partial\Psi}\left(\frac{|E|^2}{\Psi}+\log\Psi\right)=-\frac{|
 
 | 算法 | 单通道本书手算 | $M$ 通道关系 | 仍需实测的资源 |
 |---|---:|---:|---|
-| 时域 NLMS | $6144\times16000\approx98.3$ MMAC/s | 约为 $98.3M$ MMAC/s | 指令数、内存带宽、系数与历史缓冲 |
-| PBFDAF，无逐分区梯度约束 | $352\times16000\approx5.6$ MMAC/s | 约为 $5.6M$ MMAC/s | FFT 实现、功率估计、约束频率与缓冲 |
-| PBFDAF，逐分区梯度约束 | $864\times16000\approx13.8$ MMAC/s | 约为 $13.8M$ MMAC/s | 同上，并计入所有约束变换 |
+| 时域 NLMS | $6144\times16000\approx98.3$ 百万次实乘法/s | 约为 $M_{\mathrm{mic}}\times98.3$ 百万次实乘法/s | 指令数、内存带宽、系数与历史缓冲 |
+| PBFDAF，无逐分区梯度约束 | $352\times16000\approx5.6$ 百万次实乘法/s | 约为 $M_{\mathrm{mic}}\times5.6$ 百万次实乘法/s | FFT 实现、功率估计、约束频率与缓冲 |
+| PBFDAF，逐分区梯度约束 | $864\times16000\approx13.8$ 百万次实乘法/s | 约为 $M_{\mathrm{mic}}\times13.8$ 百万次实乘法/s | 同上，并计入所有约束变换 |
 | FDKF 或神经后滤波 | 不给固定倍数 | 由状态维度或模型结构决定 | 目标实现的算子、线程、内存和实时因子 |
 
 逐通道线性 AEC 的主要计算量随麦克风数 $M$ 近似线性增长；放在波束后的单通道处理只运行一路，但会面对等效路径随波束权重变化的问题。两种结构应分别在目标实现上测量资源，并检查波束切换期间的回声泄漏。
@@ -345,7 +345,7 @@ $$\mathrm{ERLE}=10\log_{10}\frac{\sum_n |y(n)|^2}{\sum_n |e_{\mathrm{echo}}(n)|^
 
 > **ERLE 换算。** 若残余回声能量与输入回声能量之比为 0.0063，ERLE 为 $10\log_{10}(1/0.0063)\approx22$ dB；比值为 0.0001 时，ERLE 为 40 dB。双讲段的输出还含近端语音，不能把总输出能量直接代入 ERLE 分母。
 
-**主观与自动感知指标**。ERLE 只度量能量衰减，不能反映残余回声的音色或近端语音损伤。AECMOS（Purin et al., ICASSP 2022）分别预测回声和其他失真的主观评分，可用于批量回归测试。[AECMOS](https://arxiv.org/abs/2110.03010 "citation") 自动感知模型会受到训练域、版本和输入处理影响，不能替代双盲听测；报告时应固定模型版本，并与真人听测和下游任务一起使用。
+**主观与自动感知指标**。ERLE 只度量能量衰减，不能反映残余回声的音色或近端语音损伤。AECMOS（Purin et al., ICASSP 2022）分别预测回声感知分和“Other”维度；后者表示回声之外的其他可闻退化，例如语音失真和噪声。[AECMOS](https://arxiv.org/abs/2110.03010 "citation") 自动感知模型会受到训练域、版本和输入处理影响，不能替代双盲听测；报告时应固定模型版本，并与真人听测和下游任务一起使用。
 
 **系统验收的三类结果**：
 
@@ -472,7 +472,7 @@ $$\mathrm{ERLE}=10\log_{10}\frac{\sum_n |y(n)|^2}{\sum_n |e_{\mathrm{echo}}(n)|^
 | D2 | ERLE 不再上升 | 延迟失配 | 互相关峰、图30（a）和延迟日志 | 峰位置应落入滤波器覆盖范围；多峰时检查多路径与周期信号 |
 | D3 | 双讲后恢复慢 | 自适应控制 | DTD 判决、步长和路径失配日志 | 恢复过程相对同一设备的远端单讲基线无异常停滞 |
 | D4 | ERLE 随播放电平出现平台 | 非线性占比 | 多个播放电平的 ERLE 与失真对比 | 电平降低后残余非线性同步减小，见图31的仿真机制 |
-| D5 | 断续/闷罐/死寂 | NLP 过压 | 旁路 NLP 对比 PESQ/AECMOS Other 维 | 旁路后语音明显改善 → 回退 NLP |
+| D5 | 断续/闷罐/背景声突然消失 | NLP 过度抑制 | 旁路 NLP，对比感知语音质量评估（Perceptual Evaluation of Speech Quality，PESQ）、AECMOS Other 维和听测 | 旁路后语音改善 → 减小 NLP 抑制量 |
 | D6 | 沉默段背景突变 | CNG 频谱与电平 | 沉默段频谱与真实底噪对照 | 以盲听和频带差异共同调节，不使用统一 dB 阈值 |
 | D7 | 长通话逐渐变差 | SRO 累积漂移 | 覆盖最长目标会话的延迟估计曲线 | 残余速率差应满足相干性和任务指标要求 |
 | D8 | 切歌或切设备后失效 | 延迟突变 | 对齐切换事件的 ERLE 与延迟轨迹 | 在项目规定时间内恢复，并检查搜窗是否覆盖新路径 |
@@ -494,7 +494,7 @@ D1～D3检查参考、延迟和双讲控制；D4用于判断非线性残余；D5
 
 #### 6.1.14 个性化 AEC 的合规检查
 
-pAEC（个性化 AEC，personalized AEC）在 §6.1.6 定义。15～25 s 注册语音和 20 ms 延迟是 2023 届 AEC Challenge 的任务条件；实际产品应根据注册错误率、首帧处理和端到端延迟另定规格。实现时还要检查以下隐私、访问控制与体验问题：
+pAEC（个性化 AEC，personalized AEC）在 §6.1.6 定义。注册语音和算法延迟的具体限制应从采用的挑战赛规则、论文实验设置或产品需求中逐项读取，不能把某一届任务条件直接当作通用产品规格。实现时还要检查以下隐私、访问控制与体验问题：
 
 | # | 检查项 | 需要明确的设计 | 不满足的后果 |
 |---|---|---|---|
@@ -516,9 +516,9 @@ pAEC（个性化 AEC，personalized AEC）在 §6.1.6 定义。15～25 s 注册�
 > | 图 | 内容 | 对应正文 | 口径提醒 |
 > |---|---|---|---|
 > | 图27 | 播放参考、路径估计与相减结构 | §6.1.1 | 顶部 DTD 控制自适应滤波器更新 |
-> | 图18 | （a）结构 + DTD 开关；（b）NLMS 收敛 + 双讲冻结 | §6.1.2 | 约 22 dB 是短时仿真在纯线性、$\mu=0.5$ 条件下的末段数值，不代表性能上限 |
+> | 图18 | （a）结构 + DTD 开关；（b）NLMS 收敛 + 双讲冻结 | §6.1.2 | 固定随机种子下，$0.45<t<0.8$ s 远端单讲窗口的 ERLE 均值约为 17.5 dB；不代表性能上限 |
 > | 图28 | （a）$\hat w$ 逼近 $h$；（b）失配与 ERLE 的关系；（c）$\mu$ 取舍 | §6.1.2 | $\mu\in(0,2)$ 只对应理想假设，实际范围要用目标信号和双讲场景验证 |
-> | 图19 | （a）线性与非线性路径对比；（b）算法时间线 | §6.1.4、§6.1.6 | 约 37 dB 与 19～20 dB 只适用于该图的仿真配置 |
+> | 图19 | （a）线性与非线性路径对比；（b）按模型假设和处理对象分类 | §6.1.4、§6.1.6 | 横向位置不表示年代或性能排名；约 37 dB 与 19～20 dB 只适用于该图的仿真配置 |
 > | 图20 | （a）系统信号流；（b）混合结构 | §6.1.9、§6.1.6 | 橙色模块表示可选的学习型残余抑制 |
 > | 图29 | 三路均方根包络与远端单讲 ERLE | §6.1.2 末、§6.1.5 | 双讲区不绘制 ERLE，因为残差含近端语音 |
 > | 图30 | （a）互相关峰约 331 采样；（b）对齐约 28 dB、不对齐约 2 dB；（c）冻结与继续更新 | §6.1.9、§6.1.5 | 延迟 300 个采样超过 128 抽头滤波器跨度，因此不对齐时差异较大 |

@@ -1,6 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>第 3 章 · 阵列几何形态 · 麦克风阵列信号处理教程</title><style>
+<title>第 3 章 · 阵列几何形态 · 麦克风阵列信号处理教程</title>
+<meta name="source-digest" content="6381515cd6ea"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -36,29 +37,29 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 <script>
 window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']]}};
 </script>
-<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
+ onerror="document.getElementById('offnote').style.display='block';document.getElementById('offnote').textContent='公式渲染脚本加载失败：当前显示的是公式源码。';"></script>
 </head><body id="top">
-<div class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 3 章 · 阵列几何形态</div>
-<div class="wrap"><nav class="side"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
+<header class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 3 章 · 阵列几何形态</header>
+<div class="wrap"><nav class="side" aria-label="全书目录"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
 <div class="chap"><a href="01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
 <div class="chap"><a href="02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
 <div class="chap cur">第 3 章 · 阵列几何形态</div>
 <ul>
-<li><a href="03_array-geometry.html#sec-1">3. 阵列几何形态</a></li>
-<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-2">3.1 形态总览</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="03_array-geometry.html#sec-3">专栏（算例独立）：算例 3-1 双麦耳机的差分——1 cm 间距怎么做心形指向</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="03_array-geometry.html#sec-4">专栏（算例独立）：算例 3-2 端射崩塌的数字——同一个 10 μs 误差，正横是小事、端射是灾难</a></li>
-<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-5">3.2 四条设计规律</a></li>
-<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-6">3.3 稀疏阵列与差分协同阵</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="03_array-geometry.html#sec-7">协同阵的概念：从麦的位置到麦对的间距</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="03_array-geometry.html#sec-8">协方差为什么能当虚拟观测</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="03_array-geometry.html#sec-9">代价与边界：差分空缺、宽带和混响</a></li>
-<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-10">3.4 阵列校准：麦克风个个不一样时怎么办</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="03_array-geometry.html#sec-11">3.4.1 增益相位自校准：利用未知声源的多位置观测</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="03_array-geometry.html#sec-12">3.4.2 互耦补偿：把串音矩阵抵消掉</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="03_array-geometry.html#sec-13">3.4.3 位置自标定：有锚测绘、无锚边走边建图</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="03_array-geometry.html#sec-14">3.4.4 失配灵敏度表：先坏哪、坏多少</a></li>
-<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-15">本章练习</a></li>
+<li><a href="03_array-geometry.html#sec-2">3.1 形态总览</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-3">专栏（算例独立）：算例 3-1 双麦耳机的差分——1 cm 间距怎么做心形指向</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-4">专栏（算例独立）：算例 3-2 端射崩塌的数字——同一个 10 μs 误差，正横是小事、端射是灾难</a></li>
+<li><a href="03_array-geometry.html#sec-5">3.2 四条设计规律</a></li>
+<li><a href="03_array-geometry.html#sec-6">3.3 稀疏阵列与差分协同阵</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-7">协同阵的概念：从麦的位置到麦对的间距</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-8">协方差为什么能当虚拟观测</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-9">代价与边界：差分空缺、宽带和混响</a></li>
+<li><a href="03_array-geometry.html#sec-10">3.4 阵列校准：麦克风个个不一样时怎么办</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-11">3.4.1 增益相位自校准：利用未知声源的多位置观测</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-12">3.4.2 互耦补偿：把串音矩阵抵消掉</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-13">3.4.3 位置自标定：有锚测绘、无锚边走边建图</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-14">3.4.4 失配灵敏度表：先坏哪、坏多少</a></li>
+<li><a href="03_array-geometry.html#sec-15">本章练习</a></li>
 </ul>
 <div class="chap"><a href="04_doa-estimation.html">第 4 章 · 声源定位（DOA 估计）</a></div>
 <div class="chap"><a href="05_beamforming.html">第 5 章 · 波束形成</a></div>
@@ -71,39 +72,39 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
 <main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
-<details class="toc-mobile"><summary>本页目录</summary><ul>
-<li><a href="03_array-geometry.html#sec-1">3. 阵列几何形态</a></li>
-<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-2">3.1 形态总览</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="03_array-geometry.html#sec-3">专栏（算例独立）：算例 3-1 双麦耳机的差分——1 cm 间距怎么做心形指向</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="03_array-geometry.html#sec-4">专栏（算例独立）：算例 3-2 端射崩塌的数字——同一个 10 μs 误差，正横是小事、端射是灾难</a></li>
-<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-5">3.2 四条设计规律</a></li>
-<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-6">3.3 稀疏阵列与差分协同阵</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="03_array-geometry.html#sec-7">协同阵的概念：从麦的位置到麦对的间距</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="03_array-geometry.html#sec-8">协方差为什么能当虚拟观测</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="03_array-geometry.html#sec-9">代价与边界：差分空缺、宽带和混响</a></li>
-<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-10">3.4 阵列校准：麦克风个个不一样时怎么办</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="03_array-geometry.html#sec-11">3.4.1 增益相位自校准：利用未知声源的多位置观测</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="03_array-geometry.html#sec-12">3.4.2 互耦补偿：把串音矩阵抵消掉</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="03_array-geometry.html#sec-13">3.4.3 位置自标定：有锚测绘、无锚边走边建图</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="03_array-geometry.html#sec-14">3.4.4 失配灵敏度表：先坏哪、坏多少</a></li>
-<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-15">本章练习</a></li>
-</ul></details>
+<details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
+<li><a href="03_array-geometry.html#sec-2">3.1 形态总览</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-3">专栏（算例独立）：算例 3-1 双麦耳机的差分——1 cm 间距怎么做心形指向</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-4">专栏（算例独立）：算例 3-2 端射崩塌的数字——同一个 10 μs 误差，正横是小事、端射是灾难</a></li>
+<li><a href="03_array-geometry.html#sec-5">3.2 四条设计规律</a></li>
+<li><a href="03_array-geometry.html#sec-6">3.3 稀疏阵列与差分协同阵</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-7">协同阵的概念：从麦的位置到麦对的间距</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-8">协方差为什么能当虚拟观测</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-9">代价与边界：差分空缺、宽带和混响</a></li>
+<li><a href="03_array-geometry.html#sec-10">3.4 阵列校准：麦克风个个不一样时怎么办</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-11">3.4.1 增益相位自校准：利用未知声源的多位置观测</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-12">3.4.2 互耦补偿：把串音矩阵抵消掉</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-13">3.4.3 位置自标定：有锚测绘、无锚边走边建图</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-14">3.4.4 失配灵敏度表：先坏哪、坏多少</a></li>
+<li><a href="03_array-geometry.html#sec-15">本章练习</a></li>
+</ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是正文第 3 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
 <p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="./02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a> ｜ 下一篇：<a href="./04_doa-estimation.html">第 4 章 · 声源定位（DOA 估计）</a></p>
 </blockquote>
 <hr />
-<h2 id="sec-1">3. 阵列几何形态</h2>
-<h3 id="sec-2">3.1 形态总览</h3>
+<h1 id="sec-1">3. 阵列几何形态</h1>
+<h2 id="sec-2">3.1 形态总览</h2>
 <p><img alt="图8 常见麦克风阵列几何形态" src="../figures/fig08_geometries.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图8 画出八种常见形态：（a）双麦前后排（Endfire）、（b）双麦左右排（Broadside）、（c）四麦均匀线阵、（d）四麦方阵、（e）六麦圆阵加中心麦、（f）32 麦均匀球阵、（g）螺旋或对数阵、（h）分布式或非规则阵。（a）的拾音主轴沿两麦连线，（b）的主轴垂直于连线。（d）的四只麦虽然也落在同一个圆周上，这里按方阵的平面几何分析。</p>
 <p><strong>两种基础双麦摆法</strong>（只有 2 麦时仅这两种有意义）：</p>
 <ul>
 <li><strong>Endfire（前后排列）</strong>：拾音主轴沿连线方向，类似心形指向话筒——前方灵敏、后方抑制。用于真无线立体声（True Wireless Stereo，TWS）耳机、手机；</li>
 </ul>
-<h4 id="sec-3">专栏（算例独立）：算例 3-1 双麦耳机的差分——1 cm 间距怎么做心形指向</h4>
+<h3 id="sec-3">专栏（算例独立）：算例 3-1 双麦耳机的差分——1 cm 间距怎么做心形指向</h3>
 <p>TWS 耳机上的双麦常采用端射（endfire）摆法：两个麦前后排列、间距 $d = 1$ cm，主轴沿两麦连线。它构成 §5.3 所述的<strong>一阶差分麦克风阵列（DMA，Differential Microphone Array）</strong>。若只把两路信号乘实数增益后相减，即 $y = x_1 - g\,x_2$（$g$ 为标量），无法形成心形指向。纯实增益不改变相位；前方与后方来声的麦间相位差分别为 $-\Delta\phi$ 和 $+\Delta\phi$，而前方 $|1-ge^{-j\Delta\phi}|$ 与后方 $|1-ge^{+j\Delta\phi}|$ 相等，结果是前后对称的 8 字形。要打破这种对称性，需先引入时延再相减：把后路麦的信号延迟 $\tau_0=d/c$，再从前路麦信号中减去：</p>
-<p>$$y(t) = x_1(t) - x_2\!\left(t - \tfrac{d}{c}\right) \qquad\xrightarrow{\text{频域}}\qquad Y(f) = X_1(f) - e^{-j2\pi f d/c}\,X_2(f)$$</p>
+<p>$$y(t) = x_1(t) - x_2\!\left(t - \tfrac{d}{c}\right) \qquad\xrightarrow{\mathcal F}\qquad Y(f) = X_1(f) - e^{-j2\pi f d/c}\,X_2(f)$$</p>
+<p>$\mathcal F$ 表示傅里叶变换。</p>
 <p>其中 $x_1$ 是前路麦，$x_2$ 是后路麦，$d/c$ 是声音传播一个麦间距所需的时间。下面分别计算前方和后方来声的响应。</p>
 <p><strong>第 1 步：两麦之间的相位差</strong>。声音沿连线方向传来时，两麦时差最大：
 $$\Delta\tau = \frac{d}{c} = \frac{0.01}{343} \approx 29.2\ \mu s$$
@@ -114,7 +115,9 @@ $$\Delta\phi = 2\pi f\,\Delta\tau = \frac{2\pi\times1000\times0.01}{343} \approx
 $$|Y| = \left|1 - e^{-j2\Delta\phi}\right| = 2\sin\Delta\phi = 2\sin 10.5° \approx 0.365$$
 换算成分贝：$20\log_{10}0.365 \approx$ <strong>−8.8 dB</strong>。前方保留而后方出现零陷，因此得到心形指向。低频近似下，只要电延迟与几何时差的关系保持不变，归一化波束形状随频率变化较小。</p>
 <p><strong>第 4 步：计算输出信噪比变化</strong>。与单个麦克风相比，前方信号幅度为 0.365，对应 −8.8 dB。两路独立自噪声相减后功率相加，噪声功率增加约 3 dB，因此输出信噪比降低约 $8.8+3=11.8$ dB。这是一阶 DMA 在低频 WNG 较低的原因：间距越小、频率越低，$\Delta\phi$ 越小，目标信号在相减中保留得越少。</p>
-<p><strong>第 5 步：失配最先伤害哪里</strong>。后方零陷靠的是「两路幅度精确相等、相减归零」。若两麦增益差 1%，后方相减后留下约 1% 的残余——零陷从理论无穷深变浅到约 $20\log_{10}0.01 = -40$ dB；而前方响应只跟着轻微变化。也就是说，<strong>增益失配主要伤害后方零陷的深度</strong>（约 40 dB 封顶），这就是为什么耳机、助听器这类微型设备用得起差分（尺寸刚需，且产线可逐只配对标定），而大阵列宁可走延迟求和路线。</p>
+<p><strong>第 5 步：失配最先伤害哪里</strong>。后方零陷靠的是“两路幅度精确相等、相减归零”。若麦 2 的增益是 1.01，后方响应的绝对幅度为 $|1-1.01|=0.01$；相对单麦输入是 $20\log_{10}0.01=-40$ dB。波束图通常将目标方向归一化为 0 dB，这时还要除以失配后的前方响应：</p>
+<p>$$|B_{\rm front}|=\left|1-1.01e^{-\mathrm j2\Delta\phi}\right|\approx0.367,\qquad 20\log_{10}\frac{0.01}{0.367}\approx-31.3\ \mathrm{dB}。$$</p>
+<p>因此，“约 −40 dB”是以单麦幅度为参考的绝对残差；本算例归一到前方主响应后，零陷约为 −31 dB。两个数的参考量不同，不能混用。增益失配主要限制后方零陷的深度，依赖精确相消的微型差分阵列因此需要通道配对和标定。</p>
 <p>端射摆法利用延迟与相减形成前后不对称；正横（Broadside）摆法则把主轴放在麦克风连线的垂直方向。</p>
 <ul>
 <li><strong>Broadside（左右排列）</strong>：拾音主轴垂直于连线，用于笔记本、平板通话降噪。</li>
@@ -123,13 +126,13 @@ $$|Y| = \left|1 - e^{-j2\Delta\phi}\right| = 2\sin\Delta\phi = 2\sin 10.5° \app
 <p>双麦只有一个独立时延约束。增加阵元并改变几何后，覆盖范围、歧义形式和端射灵敏度也会变化。</p>
 <p><strong>多麦形态对比</strong>：</p>
 <table>
-<thead>
+<th scope="col"ead>
 <tr>
-<th>形态</th>
-<th>覆盖</th>
-<th>优点</th>
-<th>缺点</th>
-<th>典型应用</th>
+<th scope="col">形态</th>
+<th scope="col">覆盖</th>
+<th scope="col">优点</th>
+<th scope="col">缺点</th>
+<th scope="col">典型应用</th>
 </tr>
 </thead>
 <tbody>
@@ -179,7 +182,7 @@ $$|Y| = \left|1 - e^{-j2\Delta\phi}\right| = 2\sin\Delta\phi = 2\sin 10.5° \app
 </table>
 <p><em>（表中的算法名词如 MUSIC/ESPRIT 可先跳过，读完 §4 后回看本表会更清晰。）</em></p>
 <p><strong>读表时要区分两种模糊</strong>。线阵只有沿阵列轴的位置投影信息，因此同一组时延对应以阵列轴为轴的锥面；把麦继续加在同一直线上，能提高阵列增益和估计精度，却不能消除这类锥面模糊。非共线的平面阵能同时估计两个方向余弦，但若阵列两侧都开放，平面法向两侧的镜像方向仍可能产生相同时延，需要挡板、幅度模型或半空间先验消歧。另一类问题是端射分辨率下降：正横起算时 $\Delta\tau=(d/c)\sin\theta$，在 $\theta\to\pm90°$ 处导数趋近于零，同样的时延误差会对应更大的角度区间；这与 §2.6 CRB 中 $\cos\theta\to0$ 时下界发散一致。</p>
-<h4 id="sec-4">专栏（算例独立）：算例 3-2 端射崩塌的数字——同一个 10 μs 误差，正横是小事、端射是灾难</h4>
+<h3 id="sec-4">专栏（算例独立）：算例 3-2 端射崩塌的数字——同一个 10 μs 误差，正横是小事、端射是灾难</h3>
 <p>§3.1 说线阵「端射区分辨率崩塌」，根源是时延与角度的关系 $\Delta\tau = \frac{d}{c}\sin\theta$（$\theta$ 从正横方向起算，$d$ 为麦间距）。对 $\theta$ 求导：
 $$\frac{d\Delta\tau}{d\theta} = \frac{d}{c}\cos\theta \quad\Rightarrow\quad d\theta \approx \frac{c}{d\cos\theta}\,d\Delta\tau$$
 即：<strong>同样的时延误差 $d\Delta\tau$，换算成角度误差时要除以 $\cos\theta$</strong>。取 $d = 4$ cm 的线阵（与 §4.4 的例子一致）、时延误差 $d\Delta\tau = 10\ \mu s$（16 kHz 采样下不到 1/5 个采样点，是很容易残留的误差量级），算两个方向。</p>
@@ -190,7 +193,7 @@ $$d\theta = \frac{343\times10\times10^{-6}}{0.04\times1} \approx 0.0858\ \text{r
 <p>$$\hat\theta=\arcsin\!\left(\frac{(116.2-10)\times10^{-6}\times343}{0.04}\right)\approx65.6°\text{，}$$</p>
 <p>误差约 19.4°。微分式在足够小的误差下仍说明灵敏度按 $1/\cos\theta$ 增大，但不能把 85° 处的 10 μs 线性外推成 56° 并当作精确误差。实际可用角域由允许误差、信噪比、快拍数和几何共同决定，不存在统一的“端点扣掉 30°”规则。</p>
 <p>端射方向的非线性算例说明，阵列灵敏度随入射角变化。下面把几何设计中最常用的四条规律集中列出。</p>
-<h3 id="sec-5">3.2 四条设计规律</h3>
+<h2 id="sec-5">3.2 四条设计规律</h2>
 <ol>
 <li><strong>常规波束的分辨率尺度由孔径与波长之比决定</strong>（约 $\lambda/D$）：7 cm 级圆阵在 1 kHz 的这个尺度已经超过线阵的整个可视角域，方向选择性很弱；到 4 kHz 才进入几十度量级（见算例 3-3）。高频虽然能提供更大的电尺寸，却也更容易遇到空间混叠、传播衰减和阵列失配。设计时必须把这些因素一起考虑。</li>
 </ol>
@@ -213,59 +216,59 @@ $$f_{\max} = \frac{c}{2d} = \frac{343}{2\times0.0375} \approx 4573\ \text{Hz} \a
 <p>取一条 4 麦均匀线阵（ULA，uniform linear array，等间距直线排列的阵列），间距 $d = 3$ cm，指向正横。首末阵元的物理跨度为 $(M-1)d=9$ cm；§2.6 从离散阵因子推得的窄主瓣近似则是</p>
 <p>$$\mathrm{HPBW} \approx \frac{0.886\,\lambda}{Md}\ \text{rad}$$</p>
 <p>这里的 $Md=12$ cm 来自 Dirichlet 核的近似尺度，不等于物理跨度。对小阵列要保留这个区别。</p>
-<p><strong>1 kHz</strong>：波长 $\lambda = 343/1000 = 0.343$ m，
-$$\frac{0.886\times0.343}{0.12} \approx 2.53\ \text{rad} \approx 145°$$</p>
+<p><strong>1 kHz</strong>：波长 $\lambda = 343/1000 = 0.343$ m。若强行代入窄主瓣近似，会得到 $0.886\times0.343/0.12\approx2.53$ rad，但这个数不是该阵列的 HPBW。直接计算精确阵因子：端射处 $\psi=2\pi d/\lambda\approx0.550$ rad，</p>
+<p>$$\left|B(90°)\right|=\left|\frac{\sin(M\psi/2)}{M\sin(\psi/2)}\right|\approx0.821，$$</p>
+<p>即 $20\log_{10}0.821\approx-1.71$ dB。从 $-90°$ 到 $90°$ 都没有降到 −3 dB，所以本例在 1 kHz 下<strong>没有可定义的 −3 dB 主瓣宽度</strong>。</p>
 <p><strong>8 kHz</strong>：波长 $\lambda = 343/8000 \approx 0.0429$ m，
 $$\mathrm{HPBW} \approx \frac{0.886\times0.0429}{0.12} \approx 0.317\ \text{rad} \approx 18.1°$$</p>
-<p><strong>这两个数怎么读</strong>：1 kHz 下估计值已接近整个可视范围，窄主瓣近似本身很粗，只能说明波束方向选择性很弱；此时应直接计算阵因子。8 kHz 下估计约为 18.1°，主瓣明显收窄。只要几何和转向不变，处在公式适用区间时，频率减半会使 HPBW 约增大一倍。</p>
+<p><strong>这两个结果怎么读</strong>：1 kHz 下精确阵因子在可视范围内没有 −3 dB 交点，只能说明波束方向选择性很弱；不能把近似式给出的 145° 当成实际 HPBW。8 kHz 下近似估计约为 18.1°，主瓣明显收窄。只要几何和转向不变，处在窄主瓣近似的适用区间时，频率减半会使 HPBW 约增大一倍。</p>
 <ol start="2">
 <li><strong>圆阵与线阵各有适用方向</strong>：线阵在正横附近投影孔径最大，转向端射时灵敏度下降；圆阵在水平面各方位的几何更均衡。球阵还可提供俯仰信息。哪一种识别率更高，取决于尺寸、挡板、房间、算法和评测方向分布，不能只按阵形下结论。<a href="https://course.ece.cmu.edu/~ece792/handouts/KumataniEtAl12.pdf" title="citation">Kumatani–McDonough–Raj《Microphone Array Processing for Distant Speech Recognition》CMU 课程讲义，2012</a></li>
 <li><strong>挡板效应必须纳入导向模型</strong>：麦克风装在刚性圆柱或球体上时，绕射和散射会改变跨通道的幅相响应。某些频段和方向上，它能增加可辨的幅相差；另一些位置也可能出现阴影或共振。因此应使用相应的解析散射模型或实测阵列流形，不能把挡板一概等效为固定倍数的“虚拟孔径”。</li>
-<li><strong>麦克风数量没有统一甜蜜区</strong>：增加麦克风通常能提高统计稳定性和可控自由度，但收益取决于是否同时增加孔径、噪声相关性、带宽、算法和计算预算。对独立等功率自噪声，理想 DSB 的 WNG 为 $10\log_{10}M$，麦数翻倍增加 3 dB；这只是一个特定噪声模型下的基准，不足以推出所有产品都应选 4～8 麦。</li>
+<li><strong>麦克风数量没有通用最优值</strong>：增加麦克风通常能提高统计稳定性和可控自由度，但收益取决于是否同时增加孔径、噪声相关性、带宽、算法和计算预算。对独立等功率自噪声，理想 DSB 的 WNG 为 $10\log_{10}M$，麦数翻倍增加约 3 dB；这只是特定噪声模型下的基准，不能单独决定产品所需的麦克风数量。</li>
 </ol>
-<p><img alt="图9 阵列规模与算法鲁棒性权衡" src="../figures/fig09_tradeoffs.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图9 只用于说明两类权衡：（a）增加麦数可能提高性能，也会增加通道、同步、功耗和计算成本；曲线不是通用选型结论。（b）混响会使不同定位方法以不同速度退化，具体数值取决于仿真条件。</p>
-<p>图9（ｂ）从另一个角度补充了“多麦”的意义：三类定位算法（TDOA 类、波束扫描类、子空间类）的误差随混响加重的对比——多麦阵列的冗余度，正是转化为这种混响下的定位稳健性。这里只看定性趋势（混响越重误差越大，但各类算法恶化的快慢不同），定量讨论见 §4.8（各类算法本身的细节见 §4.2～§4.6）。</p>
+<p><img alt="图9 麦克风数量、理想白噪声增益与数据项规模" src="../figures/fig09_tradeoffs.png" onerror="this.alt+='（图缺失）'" /></p>
+<p>图 9（a）在目标精确对齐、各通道噪声独立同方差的条件下，按 $10\log_{10}M$ 画出理想 DSB 白噪声增益。（b）分别按 $M$、$M(M-1)/2$ 和 $M^2$ 计算输入通道、无序麦对与完整协方差矩阵的元素数量。右图的纵轴采用以 2 为底的对数刻度。这些数量用于说明数据结构怎样随 $M$ 增长，不等同于具体实现的运行时间、功耗或价格。</p>
 <blockquote>
 <p>§3.3 转向非均匀稀疏阵，说明怎样用差分协同阵扩展虚拟孔径。</p>
 </blockquote>
-<h3 id="sec-6">3.3 稀疏阵列与差分协同阵</h3>
-<h4 id="sec-7">协同阵的概念：从麦的位置到麦对的间距</h4>
+<h2 id="sec-6">3.3 稀疏阵列与差分协同阵</h2>
+<h3 id="sec-7">协同阵的概念：从麦的位置到麦对的间距</h3>
 <p>均匀线阵若要在整个可视角域避免栅瓣，阵元间距需不大于半波长（§2.6）。在给定麦克风数量下，这一条件限制了物理孔径。<strong>稀疏阵列（sparse array）</strong>采用非均匀位置，并利用麦克风对的位置差构造更长的虚拟阵列。</p>
 <p><strong>核心概念：差分协同阵（difference co-array）</strong>。理想远场窄带模型下，协方差矩阵第 $i,j$ 个元素的相位由麦 $i$ 与麦 $j$ 的位置差决定。收集所有麦对的位置差，就得到差分协同阵。6 麦均匀线阵的位置是 {0,1,2,3,4,5}（单位 $\lambda/2$），不同的有符号滞后是 {0, ±1, …, ±5}，共 11 个；6 麦嵌套阵 {0,1,2,3,7,11} 可得到 {0, ±1, …, ±11}，共 23 个连续滞后（图10）。这 23 个数是连续的<strong>有符号差分滞后</strong>，不是 23 路彼此独立的物理快拍。若按滞后平均、构造 Toeplitz 虚拟协方差并做空间平滑，可得到比物理阵更长的虚拟 ULA；在模型和秩条件满足时，部分协同阵方法因而可能估计多于物理麦数的非相干源。可分辨源数仍取决于连续单侧滞后长度、重构方法、平滑后的矩阵维数、信噪比和快拍数，不能直接等同于 23。</p>
 <p>差分集合只给出虚拟阵列的位置。要把这些位置用于子空间估计，还需要从协方差中构造相应的二阶统计量。</p>
-<h4 id="sec-8">协方差为什么能当虚拟观测</h4>
+<h3 id="sec-8">协方差为什么能当虚拟观测</h3>
 <p><strong>为什么协方差能提供虚拟滞后观测</strong>：对互不相干的远场源，$\mathbf{R}$ 的第 $i,j$ 个元素是各源功率乘相位项 $e^{-j2\pi f(\tau_i-\tau_j)}$ 的和，只依赖两麦位置差。相同位置差的麦对可做平均，降低估计方差；不同位置差提供不同滞后。把协方差元素按滞后重排后，可把连续的一段滞后解释为虚拟 ULA 的二阶统计量。它不是原始阵列快拍，因此标准 MUSIC 不能不经处理直接套用；通常还需 Toeplitz 重构、直接协同阵处理或空间平滑，才能形成满足子空间方法要求的虚拟协方差。相干源、宽带混响、有限快拍和有洞差集都会降低可用秩和自由度。</p>
 <p>可以把它理解为重新整理“麦对间距表”：相同间距的观测合并，不同间距按顺序排成一条虚拟标尺。标尺更长，潜在孔径更大；但只有完成统计重构并满足秩条件后，这些滞后才会转化为可用的子空间自由度。</p>
 <p><img alt="图10 稀疏阵列与差分协同阵" src="../figures/fig10_sparse_array.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图10 左侧比较均匀、嵌套和互质三种摆法，横轴单位是半波长；右侧比较有符号差分滞后。均匀阵有 11 个连续滞后，图中的嵌套阵有 23 个连续滞后，互质阵覆盖更远但中间有洞。连续滞后数描述虚拟孔径结构，不应直接写成 MUSIC 可分辨的源数。</p>
+<p>图 10 左侧比较均匀、嵌套和互质三种摆法，横轴单位是半波长；右侧枚举所有有序麦对的位置差，得到有符号差分位置（也称有符号滞后）。均匀阵有 11 个连续滞后，图中的嵌套阵有 23 个连续滞后，互质阵覆盖范围更大但中间有空缺。连续滞后数描述虚拟孔径结构，不应直接写成 MUSIC 可分辨的源数。</p>
 <p>这种虚拟观测依赖统计重构和秩条件；差分集合中的空缺、宽带信号和混响都会限制可用自由度。</p>
-<h4 id="sec-9">代价与边界：差分空缺、宽带和混响</h4>
+<h3 id="sec-9">代价与边界：差分空缺、宽带和混响</h3>
 <p><strong>代价与边界</strong>：协同阵使用的是二阶统计量，需要专门的协同阵 MUSIC、Toeplitz 重构、空间平滑或稀疏重构；差分滞后中的洞还会使可用连续虚拟孔径缩短，插值或矩阵补全又会引入额外假设。嵌套阵与互质阵最初主要在窄带阵列模型下发展。语音宽带、混响和频率相关阵列流形会增加处理难度，因此实际使用前应在目标频带和房间条件下验证，而不能只按理论差集长度选型。<a href="https://doi.org/10.1109/TSP.2010.2049264" title="citation">Pal &amp; Vaidyanathan 嵌套阵原始论文</a>、<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7378761/" title="citation">互质阵自由度分析</a></p>
 <p>稀疏阵与分布式阵不是同一概念。稀疏阵通常指按特定非均匀位置设计的阵列；分布式阵由多个独立设备组成，除了几何布局，还要处理节点标定、独立时钟和通信。</p>
 <p>上述几何分析默认通道和位置准确。实际系统还需要通过标定减小增益、相位、耦合和位置误差。</p>
-<h3 id="sec-10">3.4 阵列校准：麦克风个个不一样时怎么办</h3>
+<h2 id="sec-10">3.4 阵列校准：麦克风个个不一样时怎么办</h2>
 <p>前面的理想公式假设各通道增益和相位一致、阵元位置准确，并忽略壳体散射、声学耦合和电串扰。实际偏差会使导向模型与观测不匹配。本节把常见偏差写进模型，再说明怎样测量和补偿。</p>
-<h4 id="sec-11">3.4.1 增益相位自校准：利用未知声源的多位置观测</h4>
-<p><strong>1. 增益相位自校准的思想</strong>。把每只麦的“不一样”写成一个复数：增益误差是幅度缩放，相位误差是额外旋转，合起来第 $m$ 路的实际增益是 $(1+\Delta g_m)e^{\mathrm{j}\Delta\phi_m}$（理想值是 1）。导向矢量 $\vec{a}(\theta)$ 的每个分量就被乘上这么一个误差，MUSIC 谱峰塌掉、波束零陷变浅，全是从这来的。</p>
+<h3 id="sec-11">3.4.1 增益相位自校准：利用未知声源的多位置观测</h3>
+<p><strong>1. 增益相位自校准的思想</strong>。把每只麦的响应误差写成一个复数：增益误差是幅度缩放，相位误差是额外旋转，合起来第 $m$ 路的实际增益是 $(1+\Delta g_m)e^{\mathrm{j}\Delta\phi_m}$（理想值是 1）。导向矢量 $\vec{a}(\theta)$ 的每个分量都会乘上这个误差，因此 MUSIC 谱峰会变宽或偏移，波束零陷也会变浅。</p>
 <p>自校准可以不用已知方向的专用声源。常见做法是交替估计：先固定通道误差估方向，再固定方向估各麦的复增益，循环到目标函数收敛。它依赖可辨识条件。若只有一个固定方向，声源相位、传播相位和麦克风相位误差可能互相混淆；加入多个充分分散的方向、频点或几何约束后，才有机会分离这些未知量。具体需要多少方向取决于模型参数和约束，不能用一条固定数字概括。</p>
 <p>复增益标定处理单通道幅相偏差；壳体散射和跨通道串扰还需要频率相关的耦合模型。</p>
-<h4 id="sec-12">3.4.2 互耦补偿：把串音矩阵抵消掉</h4>
+<h3 id="sec-12">3.4.2 互耦补偿：把串音矩阵抵消掉</h3>
 <p><strong>2. 耦合与串扰补偿</strong>。壳体和相邻器件会改变声场，电路走线也可能产生串扰。在线性近似下，可以把这类通道间混合写成频率相关矩阵 $\mathbf{C}(f)$，实际导向矢量变为 $\mathbf{C}(f)\vec{a}(f,\theta)$。可用已知方向的测量拟合 $\mathbf{C}(f)$，也可直接把实测阵列流形存入系统。若显式求逆，$\mathbf{C}(f)$ 条件数很大时会放大噪声，因此通常需要正则化，而不是无条件左乘精确逆矩阵。依赖深零陷的差分或超指向设计通常比 DSB 更容易受失配影响。</p>
 <p>耦合矩阵描述通道间混合，但不能替代麦克风坐标标定。位置误差会直接改变传播相位。</p>
-<h4 id="sec-13">3.4.3 位置自标定：有锚测绘、无锚边走边建图</h4>
+<h3 id="sec-13">3.4.3 位置自标定：有锚测绘、无锚边走边建图</h3>
 <p><strong>3. 位置自标定</strong>。8 kHz 的波长约为 4.3 cm，2 mm 位置误差对应的相位误差为 $2\pi\times0.002/0.0429\approx0.29$ rad，即约 17°；低频下同一位置误差造成的相位偏差较小。位置标定有两类方法：①<strong>有锚点标定</strong>，在多个已知位置播放信号，由 TDOA 反解麦克风坐标；②<strong>无锚点自标定</strong>，同时估计声源位置与麦克风位置，要求声源运动或多位置观测满足可辨识条件。分布式阵列还需同时估计节点时钟关系（§10.2），否则 TDOA 会包含系统偏差。</p>
 <p>下表汇总不同失配首先影响的量、误差尺度和补偿方法。</p>
-<h4 id="sec-14">3.4.4 失配灵敏度表：先坏哪、坏多少</h4>
+<h3 id="sec-14">3.4.4 失配灵敏度表：先坏哪、坏多少</h3>
 <p><strong>4. 失配灵敏度表</strong>：</p>
 <table>
-<thead>
+<th scope="col"ead>
 <tr>
-<th>失配类型</th>
-<th>典型量级</th>
-<th>最先坏掉的东西</th>
-<th>数量感</th>
-<th>补救</th>
+<th scope="col">失配类型</th>
+<th scope="col">典型量级</th>
+<th scope="col">最先坏掉的东西</th>
+<th scope="col">数量感</th>
+<th scope="col">补救</th>
 </tr>
 </thead>
 <tbody>
@@ -273,7 +276,7 @@ $$\mathrm{HPBW} \approx \frac{0.886\times0.0429}{0.12} \approx 0.317\ \text{rad}
 <td>增益失配</td>
 <td>1%（约 0.1 dB）</td>
 <td>差分/超指向的零陷深度</td>
-<td>零陷从理论无穷深封顶到约 −40 dB（§3.1 算例 3-1 第 5 步）；前方响应几乎不动</td>
+<td>本例残差相对单麦为 −40 dB；波束图归一到前方响应后约 −31 dB（§3.1 算例 3-1 第 5 步）</td>
 <td>产线逐只配对、出厂标定系数</td>
 </tr>
 <tr>
@@ -309,7 +312,7 @@ $$\mathrm{HPBW} \approx \frac{0.886\times0.0429}{0.12} \approx 0.317\ \text{rad}
 <p>位置误差造成的相位偏差随频率增大；增益漂移、耦合和噪声则未必遵循同一单调关系。依赖精确相消的零陷和超指向设计通常最敏感。固定一体式阵列常用出厂标定，分布式阵列还需处理节点位置、时钟偏移和采样率漂移，并根据设备移动或时钟变化决定是否在线更新。</p>
 <p><strong>工程流程</strong>通常分三步：先在受控声场中测各通道的频率响应和阵列流形，再把补偿参数写入设备，最后用若干已知方向复测主瓣、旁瓣和零陷。若设备结构、温度或节点位置会变化，还要定义重新标定的触发条件。采用逐只通道修正、整机流形查表还是在线联合估计，取决于硬件一致性、存储、算力和使用环境。</p>
 <p>几何决定可观测的空间信息，标定决定理论模型能否用于实测数据。第 4 章将从 GCC-PHAT 开始介绍声源定位算法。</p>
-<h3 id="sec-15">本章练习</h3>
+<h2 id="sec-15">本章练习</h2>
 <ol>
 <li>协同阵数差集验证：6 麦均匀线阵位置记为 {0, 1, 2, 3, 4, 5}（单位 $\lambda/2$），列出全部麦对位置差，验证连续差集是 {0, ±1, …, ±5}、共 11 个有符号滞后；再对嵌套阵 {0, 1, 2, 3, 7, 11} 做一遍，验证是 {0, ±1, …, ±11}、共 23 个连续滞后。为什么还不能直接说它能分辨 22 个声源？
    答案要点：这些数是二阶统计量中的有符号滞后，不是 23 路独立快拍。必须先按滞后平均并构造满足结构约束的虚拟协方差，必要时再做空间平滑。可分辨源数由平滑后矩阵的维数和秩、源相关性、信噪比及快拍数共同决定，不能直接用 23 减 1。</li>
@@ -318,9 +321,9 @@ $$\mathrm{HPBW} \approx \frac{0.886\times0.0429}{0.12} \approx 0.317\ \text{rad}
 </ol>
 <hr />
 <blockquote>
-<p>📄 本篇信息：约 221 行 ｜ 字符约 12300 ｜ 配图 3 张 ｜ <a href="./index.html">回首页</a></p>
+<p>📄 本篇信息：配图 3 张 ｜ <a href="./index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="02_basics-signal-model.html">← 上一篇</a></span><span><a href="04_doa-estimation.html">下一篇 →</a></span></div>
-<div class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</div>
+<footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>
 </body></html>

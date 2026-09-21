@@ -1,6 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>附录 A · 符号术语数学 · 麦克风阵列信号处理教程</title><style>
+<title>附录 A · 符号术语数学 · 麦克风阵列信号处理教程</title>
+<meta name="source-digest" content="6381515cd6ea"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -36,10 +37,11 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 <script>
 window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']]}};
 </script>
-<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
+ onerror="document.getElementById('offnote').style.display='block';document.getElementById('offnote').textContent='公式渲染脚本加载失败：当前显示的是公式源码。';"></script>
 </head><body id="top">
-<div class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 附录 A · 符号术语数学</div>
-<div class="wrap"><nav class="side"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
+<header class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 附录 A · 符号术语数学</header>
+<div class="wrap"><nav class="side" aria-label="全书目录"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
 <div class="chap"><a href="01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
 <div class="chap"><a href="02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
 <div class="chap"><a href="03_array-geometry.html">第 3 章 · 阵列几何形态</a></div>
@@ -53,44 +55,44 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
 <div class="chap cur">附录 A · 符号术语数学</div>
 <ul>
-<li><a href="12_appendix-symbols-math.html#sec-1">附录 A：符号、术语与数学基础</a></li>
-<li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-2">12.1 符号表</a></li>
-<li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-3">12.2 术语词典</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="12_appendix-symbols-math.html#sec-4">信号与数学基础</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="12_appendix-symbols-math.html#sec-5">房间声学</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="12_appendix-symbols-math.html#sec-6">波束形成与阵列度量</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="12_appendix-symbols-math.html#sec-7">定位与追踪</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="12_appendix-symbols-math.html#sec-8">系统与硬件</a></li>
-<li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-9">12.3 预备知识速览</a></li>
+<li><a href="12_appendix-symbols-math.html#sec-2">12.1 符号表</a></li>
+<li><a href="12_appendix-symbols-math.html#sec-3">12.2 术语词典</a></li>
+<li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-4">信号与数学基础</a></li>
+<li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-5">房间声学</a></li>
+<li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-6">自适应滤波、增强与分离</a></li>
+<li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-7">波束形成与阵列度量</a></li>
+<li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-8">定位与追踪</a></li>
+<li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-9">系统与硬件</a></li>
+<li><a href="12_appendix-symbols-math.html#sec-10">12.3 预备知识速览</a></li>
 </ul>
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
 <main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
-<details class="toc-mobile"><summary>本页目录</summary><ul>
-<li><a href="12_appendix-symbols-math.html#sec-1">附录 A：符号、术语与数学基础</a></li>
-<li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-2">12.1 符号表</a></li>
-<li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-3">12.2 术语词典</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="12_appendix-symbols-math.html#sec-4">信号与数学基础</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="12_appendix-symbols-math.html#sec-5">房间声学</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="12_appendix-symbols-math.html#sec-6">波束形成与阵列度量</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="12_appendix-symbols-math.html#sec-7">定位与追踪</a></li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="12_appendix-symbols-math.html#sec-8">系统与硬件</a></li>
-<li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-9">12.3 预备知识速览</a></li>
-</ul></details>
+<details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
+<li><a href="12_appendix-symbols-math.html#sec-2">12.1 符号表</a></li>
+<li><a href="12_appendix-symbols-math.html#sec-3">12.2 术语词典</a></li>
+<li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-4">信号与数学基础</a></li>
+<li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-5">房间声学</a></li>
+<li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-6">自适应滤波、增强与分离</a></li>
+<li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-7">波束形成与阵列度量</a></li>
+<li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-8">定位与追踪</a></li>
+<li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-9">系统与硬件</a></li>
+<li><a href="12_appendix-symbols-math.html#sec-10">12.3 预备知识速览</a></li>
+</ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是附录 A（正文共 11 章，另有附录 A/B），可独立查阅，前后篇见下方导航。</p>
 <p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="./11_selection-guide.html">第 11 章 · 总结与选型指南</a> ｜ 下一篇：<a href="./13_appendix-guide.html">附录 B · 路径地图与练习</a></p>
 </blockquote>
 <hr />
-<h2 id="sec-1">附录 A：符号、术语与数学基础</h2>
+<h1 id="sec-1">附录 A：符号、术语与数学基础</h1>
 <p>本附录沿用 12.1～12.3 的节号，便于与正文既有引用对应；下一篇是附录 B。</p>
-<h3 id="sec-2">12.1 符号表</h3>
+<h2 id="sec-2">12.1 符号表</h2>
 <p>约定同 §2.3：<strong>斜体 = 标量，头顶箭头 = 向量，加粗大写 = 矩阵</strong>；$^H$ 共轭转置、$^\top$ 转置、$\hat{\ }$ 估计值；$X(f)$、$X(n,f)$ 类大写字母为逐频点复数<strong>标量</strong>（语音文献习惯）。</p>
 <p><strong>字母复用</strong>（与 §2.3 一致）：受文献惯例所限，$k$ 可表示频点索引、波数或 WPE 的滞后帧号；$D$ 可表示阵列孔径或 PHD 强度函数；$\lambda$ 可表示波长、WPE 功率谱或矩阵特征值；$K$ 可表示声源数或 WPE 预测阶数；$s$ 可表示源信号或追踪状态。具体含义以所在公式的定义为准。</p>
 <table>
-<thead>
+<th scope="col"ead>
 <tr>
-<th>符号</th>
-<th>含义</th>
+<th scope="col">符号</th>
+<th scope="col">含义</th>
 </tr>
 </thead>
 <tbody>
@@ -206,14 +208,14 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </table>
 <p>3 分钟手算（12.1）：在无失真归一化、各通道自噪声独立且等功率时，$M=6$ 的 DSB WNG 是多少 dB？$2\times2$ 对角协方差 $\mathrm{diag}(4, 1)$ 的特征值是哪两个数？
 答案：$10\log_{10}6\approx7.8$ dB；对角阵的特征值就是对角元 4 和 1。这里的特征向量是两条传感器空间坐标轴，不一定对应真实空间中的两个入射方向。</p>
-<h3 id="sec-3">12.2 术语词典</h3>
+<h2 id="sec-3">12.2 术语词典</h2>
 <p>下表按主题解释正文和相关文献中常见的术语。</p>
-<h4 id="sec-4">信号与数学基础</h4>
+<h3 id="sec-4">信号与数学基础</h3>
 <table>
-<thead>
+<th scope="col"ead>
 <tr>
-<th>术语</th>
-<th>解释</th>
+<th scope="col">术语</th>
+<th scope="col">解释</th>
 </tr>
 </thead>
 <tbody>
@@ -259,7 +261,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>优先效应（precedence effect）</td>
-<td>人耳“先入为主”：先到的直达声决定方向感，几 ms 后的反射不干扰定位；机器没有这种本能，需要算法来对抗早期反射（§2.4）</td>
+<td>直达声之后短时间内到达的反射，会与直达声共同影响听觉事件，但方向判断通常更偏向先到声。延迟、声级差和信号类型改变时，反射仍可能改变音色、清晰度或定位结果（§2.4）</td>
 </tr>
 <tr>
 <td>拉格朗日乘子法</td>
@@ -291,22 +293,22 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>远场 / 近场</td>
-<td>远场中波前可近似为平面，导向模型主要由方向决定；近场采用球面波模型，还要考虑距离和通道幅度差。常用 Fraunhofer 判据为 $r>2D^2/\lambda$，其中 $D$ 是孔径；其数值随频率和孔径变化（§2.2）</td>
+<td>远场中波前可近似为平面，导向模型主要由方向决定；近场采用球面波模型，还要考虑距离和通道幅度差。$2D^2/\lambda$ 可作为检查波前相位曲率的距离尺度，但不是单独决定远近场的硬边界；还要检查 $r\gg D$、允许的相位误差和通道幅度差（§2.2）</td>
 </tr>
 </tbody>
 </table>
-<h4 id="sec-5">房间声学</h4>
+<h3 id="sec-5">房间声学</h3>
 <table>
-<thead>
+<th scope="col"ead>
 <tr>
-<th>术语</th>
-<th>解释</th>
+<th scope="col">术语</th>
+<th scope="col">解释</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>RIR（房间脉冲响应）</td>
-<td>房间的“指纹”：拍一下手录到的声音。任何声音 = 干净声 ⊗ RIR（§2.4）</td>
+<td>在指定声源、接收位置和系统近似线性时，RIR 描述从声源到麦克风的声学传递路径；干净信号与 RIR 卷积可得到该路径下的接收信号（§2.4）</td>
 </tr>
 <tr>
 <td>$T_{60}$</td>
@@ -318,12 +320,27 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>临界距离 $d_c$</td>
-<td>在给定声源指向性与扩散场假设下，直达声和混响声能量相等、即 DRR=0 的距离；本书简化模型为 $d_c\approx0.057\sqrt{V/T_{60}}$（§2.4）</td>
+<td>在给定声源指向性与扩散场假设下，直达声和混响声能量相等、即 DRR=0 的距离；Sabine 近似下常写成 $d_c\approx0.057\sqrt{QV/T_{60}}$，其中 $Q$ 是声源指向因子。取全向声源 $Q=1$ 时才化为 $0.057\sqrt{V/T_{60}}$（§2.4）</td>
 </tr>
 <tr>
 <td>镜像法</td>
 <td>把墙面反射等效成墙后镜像声源的仿真方法（Allen &amp; Berkley 1979），pyroomacoustics 的核心</td>
 </tr>
+<tr>
+<td>弥散噪声场</td>
+<td>来自大量方向、没有单一主导入射方向的声场模型。晚期混响常用这一模型近似；麦克风附近的湍流风噪通常不满足各向同性弥散场假设</td>
+</tr>
+</tbody>
+</table>
+<h3 id="sec-6">自适应滤波、增强与分离</h3>
+<table>
+<th scope="col"ead>
+<tr>
+<th scope="col">术语</th>
+<th scope="col">解释</th>
+</tr>
+</thead>
+<tbody>
 <tr>
 <td>LMS / NLMS / RLS</td>
 <td>LMS 结构简单；NLMS 按输入功率归一化步长；RLS 利用输入相关矩阵的递推逆，通常收敛更快，但计算量和存储量也更大。实际差距取决于输入相关性、滤波长度和参数设置（§5.6、§6.1）</td>
@@ -334,20 +351,16 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>ICA / IVA / PIT</td>
-<td>语音分离术语：ICA 按“各说话人统计独立”解混；IVA 把各频点绑成向量联合解混，一次定下排列不用来回对齐；PIT（排列不变训练）让分离网络不用管“哪个输出口对应哪个人”（§8.1）</td>
-</tr>
-<tr>
-<td>弥散噪声场</td>
-<td>从四面八方均匀涌来的噪声场（晚期混响、风噪的模型），DI 度量就是针对它</td>
+<td>ICA 利用源间统计独立性估计解混矩阵；IVA 把同一输出在各频点的分量组成向量联合估计，以降低频点间排列不一致；PIT（排列不变训练）在训练时选择与参考源匹配代价最小的输出排列（§8.1）</td>
 </tr>
 </tbody>
 </table>
-<h4 id="sec-6">波束形成与阵列度量</h4>
+<h3 id="sec-7">波束形成与阵列度量</h3>
 <table>
-<thead>
+<th scope="col"ead>
 <tr>
-<th>术语</th>
-<th>解释</th>
+<th scope="col">术语</th>
+<th scope="col">解释</th>
 </tr>
 </thead>
 <tbody>
@@ -421,16 +434,16 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>WDO（W-不相关正交）</td>
-<td>分离掩码（掩码见本表“定位与追踪”组掩码行）的理论依据：不同说话人的语谱在时频平面上几乎不重叠（每个时频点基本只被一个人占据），所以逐时频点“贴标签”就能分人（§8.1）</td>
+<td>一种近似假设：不同说话人的主要能量在时频平面上较少重叠。假设接近成立时，可通过逐时频点估计主导声源来构造分离掩码；强混响或多人同时发声会削弱这一近似（§8.1）</td>
 </tr>
 </tbody>
 </table>
-<h4 id="sec-7">定位与追踪</h4>
+<h3 id="sec-8">定位与追踪</h3>
 <table>
-<thead>
+<th scope="col"ead>
 <tr>
-<th>术语</th>
-<th>解释</th>
+<th scope="col">术语</th>
+<th scope="col">解释</th>
 </tr>
 </thead>
 <tbody>
@@ -440,7 +453,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>DOA（波达方向）</td>
-<td>声从哪个方向来，一般指角度。TDOA 是“两麦差了几毫秒”（时间量），DOA 是“换算完指向几度”（角度量），远场下 DOA 直接由 TDOA 算出来（§4.1、§4.4）</td>
+<td>声从哪个方向来，一般指角度。TDOA 是两路麦克风信号的到达时间差；紧凑阵列中常为几十到几百微秒。远场模型下，可结合麦克风间距和声速把 TDOA 换算成入射角（§4.1、§4.4）</td>
 </tr>
 <tr>
 <td>ITD / ILD</td>
@@ -468,7 +481,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>GDOP（几何精度因子）</td>
-<td>同样的时延误差，几何布局差时被放大得更多；小孔径阵列的 GDOP 天然大（§4.4）</td>
+<td>同样的时延误差经过不同几何布局会产生不同的位置误差。阵列孔径较小、麦对基线方向单一或目标位于不利方位时，几何误差放大通常更明显（§4.4）</td>
 </tr>
 <tr>
 <td>VAD（语音活动检测）</td>
@@ -512,12 +525,12 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 </tbody>
 </table>
-<h4 id="sec-8">系统与硬件</h4>
+<h3 id="sec-9">系统与硬件</h3>
 <table>
-<thead>
+<th scope="col"ead>
 <tr>
-<th>术语</th>
-<th>解释</th>
+<th scope="col">术语</th>
+<th scope="col">解释</th>
 </tr>
 </thead>
 <tbody>
@@ -555,7 +568,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>dBA</td>
-<td>A 计权声级：按规定的 A 计权频率响应处理后得到的声级。它不是未加权 dB，比较数据时要核对参考量和计权方式（§9.2）</td>
+<td>A 计权声级：按规定的 A 计权频率响应处理后得到的声级。它不是未加权 dB，比较数据时要核对参考量和计权方式（§10.2）</td>
 </tr>
 <tr>
 <td>AOP（声学过载点）</td>
@@ -607,7 +620,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>IPNLMS</td>
-<td>改进比例 NLMS：按抽头幅度成比例分配步长，稀疏冲激响应上收敛更快；混合系数 $\alpha=-1$ 时退化为 NLMS，实践常取 0 或 -0.5（§6.1.3）</td>
+<td>改进比例 NLMS：按抽头幅度分配各系数的更新量。常见定义中，混合系数 $\alpha=-1$ 退化为 NLMS，$\alpha=1$ 接近纯比例更新，$\alpha=0$ 是两部分的折中；具体取值要与所用公式和数据一同验证（§6.1.3）</td>
 </tr>
 <tr>
 <td>CNG（舒适噪声）</td>
@@ -629,16 +642,16 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </table>
 <p>3 分钟手算（12.2）：幅度减半是多少 dB？功率减半又是多少 dB？这是两个不同的物理变化；§12.3 还会说明同一物理变化怎样用幅度比或功率比等价表示。
 答案：幅度减半为 $20\log_{10}0.5\approx-6$ dB；功率减半为 $10\log_{10}0.5\approx-3$ dB。前者对应功率变为四分之一，后者对应幅度变为 $1/\sqrt{2}$。</p>
-<h3 id="sec-9">12.3 预备知识速览</h3>
+<h2 id="sec-10">12.3 预备知识速览</h2>
 <p>本节为零基础读者准备，只讲“够用”的程度。</p>
 <p><strong>① 复数与相位——为什么信号要用复数表示。</strong> 本书采用 $e^{j2\pi ft}$ 的时间约定：$e^{j2\pi ft}=\cos(2\pi ft)+j\sin(2\pi ft)$。复数可写成幅度与相位的乘积 $z=Ae^{j\phi}$。在这个约定下，延迟 $\tau$ 对应乘子 $e^{-j2\pi f\tau}$，相位变化为 $-2\pi f\tau$；若只谈相位差大小，则为 $2\pi f|\tau|$。符号正负还取决于通道相减的顺序，估计 TDOA 时必须与通道定义保持一致（§2.3、§4.2）。</p>
 <p><strong>② 分贝 dB——比值的对数表示。</strong> 能量比用 $10\log_{10}(\cdot)$，幅度比用 $20\log_{10}(\cdot)$。系数相差一倍，是因为相同阻抗下功率与幅度平方成正比。因此同一物理变化用两种比值表示时，dB 数相同：幅度变为 0.5 时功率变为 0.25，$20\log_{10}0.5=10\log_{10}0.25\approx-6$ dB。</p>
 <table>
-<thead>
+<th scope="col"ead>
 <tr>
-<th>dB</th>
-<th>幅度比</th>
-<th>功率比</th>
+<th scope="col">dB</th>
+<th scope="col">幅度比</th>
+<th scope="col">功率比</th>
 </tr>
 </thead>
 <tbody>
@@ -678,7 +691,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>dB 练习：① 功率先乘 4 再乘 2，总增益是多少 dB？② 电压增益为 −6 dB 时，幅度比约为多少？
 答案：① $10\log_{10}(4\times2)\approx9$ dB；② 幅度约减半，功率约为原来的四分之一。</p>
 <p><strong>SNR 换算例。</strong> 目标功率为 3、噪声功率为 1 时，线性 SNR 为 3，对应 $10\log_{10}3\approx4.8$ dB。若处理后输出 SNR 为 12 dB，则 SNR 增益约为 $12-4.8=7.2$ dB。输入 SNR、输出 SNR 和 SNR 增益是三个不同的量（§5.1）。</p>
-<p><strong>③ 卷积与相关。</strong> 卷积 $y = x * h$：信号 $x$ 经过系统 $h$ 后的输出，房间里就是“干净声音卷上 RIR”（§2.4）。相关 $R(\tau)$：把两段信号错开 $\tau$ 后看相似度，峰在哪里，时延就是多少（§4.2）。傅里叶变换把卷积变成乘法（时域卷 = 频域乘），这是所有频域算法快的原因。</p>
+<p><strong>③ 卷积与相关。</strong> 卷积 $y=x*h$ 表示信号 $x$ 经过线性时不变系统 $h$ 后的输出；在固定声源和接收位置的近似下，$h$ 可以取房间脉冲响应（§2.4）。相关 $R(\tau)$ 衡量两段信号在相对位移 $\tau$ 下的相似度；峰值位置可作为时延候选（§4.2）。傅里叶变换把线性卷积转成频域乘法，配合快速傅里叶变换可降低长卷积的计算量，但分帧、补零和重叠相加仍要按实现条件处理。</p>
 <p><strong>④ 期望、方差与协方差矩阵。</strong> 期望 $E[\cdot]$ = 平均；方差 = 离平均多远；协方差 = 两个量“一起起伏”的程度。把 $M$ 个麦克风的协方差排成矩阵就是空间协方差矩阵 $\hat{\mathbf{R}}$（§2.5）——它记录的是“哪些麦的信号总是一起动、相位差多少”。</p>
 <p><strong>⑤ 最小二乘。</strong> 方程比未知数多时通常没有精确解，最小二乘求使总残差平方最小的 $\hat{\vec{x}}$：$\min_{\vec{x}}\|\mathbf{A}\vec{x}-\vec{b}\|^2$。当 $\mathbf A$ 满列秩时，$\hat{\vec{x}}=(\mathbf{A}^H\mathbf{A})^{-1}\mathbf{A}^H\vec{b}$；秩不足或条件很差时，应使用 Moore–Penrose 伪逆、QR/SVD 或正则化，不能直接求逆。TDOA 几何解算（§4.4）和 WPE 系数估计（§7.1）都会用到这一思想。</p>
 <p><strong>拉格朗日四步模板（MVDR）</strong>。复约束必须同时包含约束及其共轭，常写成实值函数</p>
@@ -691,9 +704,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>病态矩阵与对角加载。</strong> 当最大、最小奇异值相差很大时，矩阵条件数高，求逆会放大数据和舍入误差。低频小间距的超指向设计（§5.3）是常见例子。把 $\mathbf R$ 换成 $\mathbf R+\varepsilon\mathbf I$ 可抬高小特征值、改善条件数，但也会改变最优权重并牺牲一部分指向性。附录 B 第 8 题可比较加载前后的 WNG、DI 与条件数；数值由脚本参数决定，不预设固定区间。</p>
 <hr />
 <blockquote>
-<p>📄 本篇信息：约 222 行 ｜ 约 1.34 万字符 ｜ 配图 0 张 ｜ <a href="./index.html">回首页</a></p>
+<p>📄 本篇信息：配图 0 张 ｜ <a href="./index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="11_selection-guide.html">← 上一篇</a></span><span><a href="13_appendix-guide.html">下一篇 →</a></span></div>
-<div class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</div>
+<footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>
 </body></html>

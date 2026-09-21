@@ -1,6 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>第 2 章 · 声音到达阵列时发生了什么 · 麦克风阵列信号处理教程</title><style>
+<title>第 2 章 · 声音到达阵列时发生了什么 · 麦克风阵列信号处理教程</title>
+<meta name="source-digest" content="6381515cd6ea"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -36,22 +37,22 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 <script>
 window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']]}};
 </script>
-<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
+ onerror="document.getElementById('offnote').style.display='block';document.getElementById('offnote').textContent='公式渲染脚本加载失败：当前显示的是公式源码。';"></script>
 </head><body id="top">
-<div class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 2 章 · 声音到达阵列时发生了什么</div>
-<div class="wrap"><nav class="side"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
+<header class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; 第 2 章 · 声音到达阵列时发生了什么</header>
+<div class="wrap"><nav class="side" aria-label="全书目录"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
 <div class="chap"><a href="01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
 <div class="chap cur">第 2 章 · 声音到达阵列时发生了什么</div>
 <ul>
-<li><a href="02_basics-signal-model.html#sec-1">2. 基础：声音到达阵列时发生了什么</a></li>
-<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2">2.1 核心事实：同一声音，到达各麦克风有先有后</a></li>
-<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-3">2.2 近场与远场</a></li>
-<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-4">2.3 信号模型：把“声音有先有后”写成数学</a></li>
-<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-5">2.4 房间声学：混响到底是怎么来的</a></li>
-<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-6">2.5 数据怎么组织：STFT、快拍与协方差矩阵</a></li>
-<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-7">2.6 怎么衡量一个波束好不好：先学会读波束图</a></li>
-<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-8">2.7 小结：声源走近了，平面波不够用——近场要换的三样东西</a></li>
-<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-9">本章练习</a></li>
+<li><a href="02_basics-signal-model.html#sec-2">2.1 核心事实：同一声音，到达各麦克风有先有后</a></li>
+<li><a href="02_basics-signal-model.html#sec-3">2.2 近场与远场</a></li>
+<li><a href="02_basics-signal-model.html#sec-4">2.3 信号模型：把“声音有先有后”写成数学</a></li>
+<li><a href="02_basics-signal-model.html#sec-5">2.4 房间声学：混响到底是怎么来的</a></li>
+<li><a href="02_basics-signal-model.html#sec-6">2.5 数据怎么组织：STFT、快拍与协方差矩阵</a></li>
+<li><a href="02_basics-signal-model.html#sec-7">2.6 怎么衡量一个波束好不好：先学会读波束图</a></li>
+<li><a href="02_basics-signal-model.html#sec-8">2.7 小结：声源走近了，平面波不够用——近场要换的三样东西</a></li>
+<li><a href="02_basics-signal-model.html#sec-9">本章练习</a></li>
 </ul>
 <div class="chap"><a href="03_array-geometry.html">第 3 章 · 阵列几何形态</a></div>
 <div class="chap"><a href="04_doa-estimation.html">第 4 章 · 声源定位（DOA 估计）</a></div>
@@ -65,24 +66,23 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
 <main class="main"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
-<details class="toc-mobile"><summary>本页目录</summary><ul>
-<li><a href="02_basics-signal-model.html#sec-1">2. 基础：声音到达阵列时发生了什么</a></li>
-<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2">2.1 核心事实：同一声音，到达各麦克风有先有后</a></li>
-<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-3">2.2 近场与远场</a></li>
-<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-4">2.3 信号模型：把“声音有先有后”写成数学</a></li>
-<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-5">2.4 房间声学：混响到底是怎么来的</a></li>
-<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-6">2.5 数据怎么组织：STFT、快拍与协方差矩阵</a></li>
-<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-7">2.6 怎么衡量一个波束好不好：先学会读波束图</a></li>
-<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-8">2.7 小结：声源走近了，平面波不够用——近场要换的三样东西</a></li>
-<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-9">本章练习</a></li>
-</ul></details>
+<details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
+<li><a href="02_basics-signal-model.html#sec-2">2.1 核心事实：同一声音，到达各麦克风有先有后</a></li>
+<li><a href="02_basics-signal-model.html#sec-3">2.2 近场与远场</a></li>
+<li><a href="02_basics-signal-model.html#sec-4">2.3 信号模型：把“声音有先有后”写成数学</a></li>
+<li><a href="02_basics-signal-model.html#sec-5">2.4 房间声学：混响到底是怎么来的</a></li>
+<li><a href="02_basics-signal-model.html#sec-6">2.5 数据怎么组织：STFT、快拍与协方差矩阵</a></li>
+<li><a href="02_basics-signal-model.html#sec-7">2.6 怎么衡量一个波束好不好：先学会读波束图</a></li>
+<li><a href="02_basics-signal-model.html#sec-8">2.7 小结：声源走近了，平面波不够用——近场要换的三样东西</a></li>
+<li><a href="02_basics-signal-model.html#sec-9">本章练习</a></li>
+</ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是正文第 2 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
 <p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="./01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a> ｜ 下一篇：<a href="./03_array-geometry.html">第 3 章 · 阵列几何形态</a></p>
 </blockquote>
 <hr />
-<h2 id="sec-1">2. 基础：声音到达阵列时发生了什么</h2>
-<h3 id="sec-2">2.1 核心事实：同一声音，到达各麦克风有先有后</h3>
+<h1 id="sec-1">2. 基础：声音到达阵列时发生了什么</h1>
+<h2 id="sec-2">2.1 核心事实：同一声音，到达各麦克风有先有后</h2>
 <p>声音速度 $c \approx 343$ m/s。两个相距 4 cm 的麦克风，当声音沿两麦连线的方向传来时（先到近麦、后到远麦，时差最大的情形），到达时间差约 $\frac{0.04}{343}\approx 0.116$ ms（16 kHz 采样率下约 2 个采样点）；当声音垂直于连线传来时，两麦同时收到、时差为零。<strong>时差随方向连续变化——这正是它能用来测向的原因。</strong> 这个“到达时间差”是整个领域的信息源泉，记作 <strong>TDOA</strong>（Time Difference of Arrival）。</p>
 <p><strong>时差的几何来源：$\Delta\tau = d\sin\theta/c$</strong>。平面波以角度 $\theta$ 斜入射到间距 $d$ 的两个麦克风：波前是平面，先碰到近麦、再碰到远麦，多走一截路程。把两麦连线（长度 $d$，作斜边）与波前（作一条直角边）画成直角三角形，$\theta$ 角的对边就是路程差 $\Delta = d\sin\theta$（图2）；路程折成时间即得全书最常用的几何关系：</p>
 <p>$$\Delta\tau = \frac{d\sin\theta}{c}\text{。}$$</p>
@@ -91,13 +91,13 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><img alt="图2 时延的几何来源与角度约定" src="../figures/fig02_dsin_geometry.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图 2 中的直角三角形给出路程差 $d\sin\theta$。本书规定入射角从正横方向起算，因此正横时差为零，端射时差达到最大。</p>
 <p><strong>离散化与同步</strong>。16 kHz 采样率下，采样间隔为 $1/16000=62.5$ μs，对应约 $343\times62.5\,\mu s\approx2.1$ cm 的传播距离。4 cm 阵列的最大时差约为 117 μs，不到两个采样间隔。仅按整数采样点定位会得到很粗的方向，因此实际系统需要亚采样 TDOA 估计，例如对互相关峰插值、对相关函数上采样，或在频域拟合相位斜率（见 §4.2）。多路信号还必须同步采样。同一设备可让多通道模数转换器（ADC，Analog-to-Digital Converter）共享时钟；分布式设备则有独立晶振。相对偏移为 50 ppm 时，1 小时累积约 $50\times10^{-6}\times3600=0.18$ 秒，远大于阵列所测的微秒级时差，因此需要时钟同步或采样率偏移补偿（§10.2）。</p>
-<p>上式在 §2.3 编号为式（2-1），采用平面波近似。声源接近阵列时，波前曲率不能忽略，需要先区分近场与远场。</p>
-<h3 id="sec-3">2.2 近场与远场</h3>
+<p>上式是 §2.3 远场向量模型的几何基础；式（2-1）将在那里给出。声源接近阵列时，波前曲率不能忽略，需要先区分近场与远场。</p>
+<h2 id="sec-3">2.2 近场与远场</h2>
 <ul>
 <li><strong>近场</strong>（声源很近）：波前（波阵面，即相位相同的面）是球面，各麦克风信号的<strong>时间和幅度都有差别</strong>；</li>
 <li><strong>远场</strong>（声源距离远大于阵列尺寸）：波前近似平面，各麦克风收到的是“同一个信号错开一些时间”，幅度几乎相同。</li>
 </ul>
-<p>经验判据（Fraunhofer 距离）：当 $r > \dfrac{2D^2}{\lambda}$（$D$ 为阵列孔径、$\lambda$ 为波长）时按远场处理。<strong>注意孔径 $D$ 是平方项，阵列越小越容易满足</strong>：7 cm 小阵列在 1 kHz（$\lambda=0.343$ m）时只需 $2\times0.07^2/0.343\approx0.029$ m $\approx 3$ cm——所以智能音箱这类小阵列在整个房间内都是远场问题；而 1.26 m 的会议大线阵在 1 kHz 下需要约 9 m 才算远场，放在会议室里近场球面波效应不可忽略，定位与波束都得改用球面波模型。</p>
+<p>Fraunhofer 距离 $r_F=2D^2/\lambda$（$D$ 为阵列孔径、$\lambda$ 为波长）是常用的<strong>相位曲率</strong>尺度。当 $r$ 大于该尺度，且同时满足下面展开所需的 $r\gg D$ 时，可以把球面波的相位近似为平面波。例如，7 cm 阵列在 1 kHz（$\lambda=0.343$ m）时的公式值是 $2\times0.07^2/0.343\approx2.9$ cm，但 2.9 cm 并不满足 $r\gg D$，不能据此宣称从 3 cm 开始整个房间都是远场。对实际拾音距离，还应检查阵列到声源的距离比、各阵元的幅度差，以及最高使用频率。1.26 m 的线阵在 1 kHz 下有 $r_F\approx9.3$ m，普通会议室内应核对球面波模型。</p>
 <p><strong>Fraunhofer 判据的推导</strong>：
 1. 球面波到达阵列<strong>中心</strong>与到达<strong>边缘</strong>的路程不一样。阵列半宽 $D/2$，由勾股定理，这个额外路程是 $\sqrt{r^2+(D/2)^2}-r$；
 2. $r \gg D$ 时用近似 $\sqrt{1+x}\approx 1+x/2$ 展开：$\sqrt{r^2+(D/2)^2}-r \approx \dfrac{D^2}{8r}$；</p>
@@ -112,7 +112,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><img alt="图3 近场与远场声场模型" src="../figures/fig03_near_far_field.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图 3 对比两种波前：近场采用球面波模型，各通道同时存在传播时延和幅度差；远场近似为平面波，传播模型主要由方向决定。这是下一节远场向量模型的前提。</p>
 <p>确定远场条件后，可以把麦克风之间的传播时延写成导向矢量。</p>
-<h3 id="sec-4">2.3 信号模型：把“声音有先有后”写成数学</h3>
+<h2 id="sec-4">2.3 信号模型：把“声音有先有后”写成数学</h2>
 <blockquote>
 <p><strong>符号约定（全书通用）</strong>：标量用普通斜体，如 $s$、$\tau$、$\theta$、$\sigma^2$；向量用头顶箭头，如 $\vec{x}$、$\vec{a}$、$\vec{w}$（默认列向量，零向量记 $\vec{0}$）；矩阵用加粗大写，如 $\mathbf{R}$、$\mathbf{C}$、$\mathbf{\Gamma}$、$\mathbf{E}_n$。</p>
 <p>再认几枚上标：$^H$ 是共轭转置（频域复数用）、$^\top$ 是转置（时域实数用）、$^*$ 是共轭、$^{-1}$ 是逆；$\hat{\ }$ 表示估计值，$\|\cdot\|$ 为范数、$|\cdot|$ 为幅度。</p>
@@ -133,8 +133,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>这个式子很诚实，但有个麻烦：<strong>“移位”操作不好算</strong>——$s(t-\tau_m)$ 里未知数藏在函数的自变量里，没法做加减乘除、没法解方程。</p>
 <p><strong>第二步：搬到频率域——延迟从“移位”变成“转个角度”</strong></p>
 <p>傅里叶变换有一条关键性质（时移性质）：</p>
-<p>$$s(t-\tau)\ \xrightarrow{\text{傅里叶变换}}\ S(f)\,e^{-\mathrm{j}2\pi f\tau}\text{。}$$</p>
-<p>左边是时域的“晚到 $\tau$ 秒”，右边是频域的“乘上一个复数”。乘法比移位好处理得多——这就是整个领域都在频域干活的原因。</p>
+<p>$$s(t-\tau)\ \xrightarrow{\mathcal{F}}\ S(f)\,e^{-\mathrm{j}2\pi f\tau}$$</p>
+<p>箭头上的 $\mathcal F$ 表示傅里叶变换。</p>
+<p>左边表示时域延迟 $\tau$ 秒，右边表示频域中乘以复相位因子。频域形式便于把宽带信号分频点处理，也便于将卷积近似为乘法，因此许多阵列算法采用 STFT 实现；这种近似的边界见 §2.5。</p>
 <p>这个 $e^{-\mathrm{j}2\pi f\tau}$ 到底是什么？<strong>它是复平面上一个长度为 1 的箭头，从正实轴出发顺时针转过角度 $2\pi f\tau$</strong>（图4(b)）。其中 $\mathrm{j}$ 是虚数单位（$\mathrm{j}^2=-1$）；$e$ 的复指数由欧拉公式定义：$e^{\mathrm{j}\phi} = \cos\phi + \mathrm{j}\sin\phi$；有些书把 $2\pi f$ 写成 $\omega$（角频率），两者是一回事。直觉检验：延迟恰好等于一个周期（$\tau = 1/f$）时转过整整一圈 $2\pi$——波形平移一个周期后与原波形重合，箭头也转回原地，两边对上了 ✓。</p>
 <p><img alt="图4 时延为什么变成复数相位" src="../figures/fig04_delay_phase.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图 4（b）表明，纯时延对应单位模复数，只改变相位而不改变幅度。图 4（c）给出相位与频率的线性关系，其斜率为 $-2\pi\tau$；§4.2 的 GCC-PHAT 正是利用这项关系估计时延。</p>
@@ -152,14 +153,14 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>$$\vec{x} = \vec{a}(\theta)\,s + \vec{n}\text{。}$$ (2-1)</p>
 <ul>
 <li>$\vec{x}$：$M$ 路信号的列向量（$M$ 为麦数），头顶箭头 = 向量；$\vec{a}(\theta)$：导向矢量（定义见下条）；$\theta$：声源方向（想求的）；$s$：该频点的声源谱（标量），即上面逐行式子中的 $S(f)$；$\vec{n}$：噪声向量（紧凑写法省略频点自变量 $(f)$，下文沿用此简写）；</li>
-<li>$\vec{a}(\theta)$：<strong>导向矢量（steering vector）</strong>——它是“如果声源真的在 $\theta$ 方向，各麦信号的相对相位应该是什么样”的<strong>标准答案</strong>。注意它的每个分量模长都是 1（只转相位、不改幅度），分量之间的差异全部来自各麦时延差 $\tau_m(\theta)$。几乎所有定位与波束算法，本质都是“拿真实数据和各个方向的 $\vec{a}(\theta)$ 比对”。</li>
+<li>$\vec{a}(\theta)$：<strong>导向矢量（steering vector）</strong>，描述声源位于 $\theta$ 方向时各麦克风的相对相位。在本节等幅远场模型中，每个分量的模长为 1，分量差异来自各麦时延 $\tau_m(\theta)$。定位算法可用候选方向的导向矢量解释观测，波束形成器则用它规定目标方向响应；近场或含散射时还要加入距离和幅度项。</li>
 </ul>
 <p><strong>手算一遍</strong>：阵列配置——3 麦、间距 4 cm、孔径 8 cm；声源 30°（正横起算，§2.1 的约定与推导；取麦 1 为参考，$\tau_1=0$）、$f=1$ kHz。相邻麦时延差 $\Delta\tau = \frac{d\sin 30°}{c} = \frac{0.04\times 0.5}{343} \approx 58.3$ μs，相邻麦相位差 $2\pi f\Delta\tau \approx 0.366$ rad ≈ 21°，于是 $\vec{a} = [1,\ e^{-\mathrm{j}0.366},\ e^{-\mathrm{j}0.733}]^\top$——读作：“麦 2 比麦 1 相位落后 21°，麦 3 落后 42°”。把这句话从“文字”变成“一个复数向量”，就是导向矢量的全部含义。</p>
 <p><strong>混响</strong>：实际房间中麦克风收到“直达声 + 一堆反射”的叠加（声源与房间脉冲响应 RIR 的卷积），混响强度用 <strong>$T_{60}$</strong> 度量——混响是本领域最难缠的敌人之一（与噪声、干扰、自噪并列，见 §1），它到底是怎么来的、怎么定量描述，见下一节。</p>
 <blockquote>
 <p>直达声模型明确后，§2.4 再加入房间反射，说明混响会怎样改变观测。</p>
 </blockquote>
-<h3 id="sec-5">2.4 房间声学：混响到底是怎么来的</h3>
+<h2 id="sec-5">2.4 房间声学：混响到底是怎么来的</h2>
 <p><strong>房间脉冲响应（RIR, Room Impulse Response）</strong>：在房间里拍手一次，麦克风录到的“啪——嗡嗡嗡”就是 RIR。它就是房间的“指纹”：麦克风收到的任何声音 = 干净声音与 RIR 做卷积。RIR 分三段（图5(a)）：</p>
 <ol>
 <li><strong>直达声</strong>：从声源直线到达，最干净、携带最准的方向信息；</li>
@@ -172,7 +173,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>$$T_{60} = \frac{0.161\,V}{A}, \qquad A = \sum_i S_i\,\alpha_i\text{。}$$</p>
 <ul>
 <li>$V$：房间体积（m³）；$S_i$、$\alpha_i$：第 $i$ 个表面的面积与吸声系数（0=全反射的光滑瓷砖，1=全吸声的开放窗户）。</li>
-<li><strong>算例</strong>（本例是房间算例，不涉阵列配置）：5 m × 4 m × 2.8 m 的客厅（$V=56$ m³），软硬装合计吸声量 $A\approx18$ m²，则 $T_{60}\approx0.5$ s——正是“安静客厅 0.3~0.5 s”的来历；瓷砖大食堂 $A$ 小一个量级，$T_{60}$ 可达 2 s 以上。</li>
+<li><strong>算例</strong>（本例是参数演示，不代表某类房间的通用测量值）：房间尺寸取 5 m × 4 m × 2.8 m，故 $V=56$ m³；再假设各表面的赛宾吸声量合计为 $A=18$ m²，则 $T_{60}=0.161\times56/18\approx0.50$ s。改变表面材料或摆设会改变 $A$，因此同尺寸房间也可能得到不同结果。</li>
 </ul>
 <p><strong>这个公式怎么推出来的</strong>（五步，能量守恒 + 一个几何事实）：
 1. <strong>模型</strong>：混响期的声能在房间里近似均匀分布（扩散场假设），声线不断撞墙，每撞一次被吸收掉一部分；
@@ -190,22 +191,22 @@ $$T_{60} = \frac{24\ln 10}{c}\cdot\frac{V}{A} = \frac{55.3}{343}\cdot\frac{V}{A}
 <p>$$d_c \approx 0.057\sqrt{\frac{V}{T_{60}}}\ \text{(m)}\text{。}$$</p>
 <p>（此式默认声源全向辐射，即指向性因子 $Q=1$；若声源有指向性（如人声朝前更响），把 $Q$ 乘进根号内的分子：$d_c \approx 0.057\sqrt{QV/T_{60}}$。）</p>
 <p><strong>这个公式怎么推出来的</strong>（四步，全是能量账）：
-1. <strong>直达声能量密度</strong>：声源功率 $W$ 均匀洒在半径 $r$ 的球面上，距离 $r$ 处的能量密度 $\propto \dfrac{W}{4\pi r^2}$——平方反比，越近越强；
-2. <strong>混响声能量密度</strong>：房间里的混响能量不断被墙面吸收、又不断被声源补充，稳态下弥散能量密度 $\propto \dfrac{4W}{A}$（$A$ 是赛宾吸声量）——与位置无关，处处一样；</p>
+1. <strong>直达声的声强与能量密度</strong>：全向声源的功率 $W$ 均匀分布在半径 $r$ 的球面上，声强为 $I_d=W/(4\pi r^2)$，单位是 W/m²。对向外传播的平面波局部近似，能量密度为 $E_d=I_d/c=W/(4\pi r^2c)$，单位是 J/m³；
+2. <strong>混响声能量密度</strong>：房间里的混响能量不断被墙面吸收、又不断被声源补充，稳态扩散场中的能量密度为 $E_r=4W/(cA)$（$A$ 是赛宾吸声量），与位置无关；</p>
 <blockquote>
-<p><strong>可跳过：弥散能量式中 4 从哪里来（$4W/A$）</strong>：稳态能量平衡是“注入功率 $=$ 吸收功率”。墙面每秒吸收的功率 $=$ 能量密度 $E$ $\times$ 声速 $c$ $\times$ 有效吸收面积。关键一步：各向同性声场中，只有面向墙面方向的能量流才会被吸收，对半球方向平均后有效因子恰为 $1/4$（各向同性场向墙面投影平均带来的 $1/4$ 因子，直觉版的严格说法见上），于是吸收功率 $=E\cdot cA/4$。令它等于注入功率 $W$，解得 $E=4W/(cA)$；写成正比关系即 $4W/A$。与上一步平均自由程里的 4 是同一个几何根源：都是“各向同性场向一面墙投影”带来的 $1/4$。
-3. <strong>令两者相等</strong>（临界距离的定义）：$\dfrac{1}{4\pi r^2} = \dfrac{4}{A} \;\Rightarrow\; d_c = \sqrt{\dfrac{A}{16\pi}}$；
+<p><strong>可跳过：弥散能量式中 4 从哪里来（$4W/(cA)$）</strong>：稳态能量平衡是“注入功率 $=$ 吸收功率”。墙面每秒吸收的功率 $=$ 能量密度 $E$ $\times$ 声速 $c$ $\times$ 有效吸收面积。关键一步：各向同性声场中，只有面向墙面方向的能量流才会被吸收，对半球方向平均后有效因子恰为 $1/4$（各向同性场向墙面投影平均带来的 $1/4$ 因子，直觉版的严格说法见上），于是吸收功率 $=E\cdot cA/4$。令它等于注入功率 $W$，解得 $E=4W/(cA)$。与上一步平均自由程里的 4 是同一个几何根源：都是“各向同性场向一面墙投影”带来的 $1/4$。
+3. <strong>令两个能量密度相等</strong>（临界距离的定义）：$\dfrac{W}{4\pi r^2c} = \dfrac{4W}{cA}$；$W$ 和 $c$ 消去后，$d_c = \sqrt{\dfrac{A}{16\pi}}$；
 4. <strong>代入赛宾公式</strong> $A = \dfrac{0.161V}{T_{60}}$：$d_c = \sqrt{\dfrac{0.161V}{16\pi\,T_{60}}} = \sqrt{0.00321\,\dfrac{V}{T_{60}}} \approx 0.057\sqrt{\dfrac{V}{T_{60}}}$。
 <strong>B-3 常数 0.057 的来源</strong>：$0.161/(16\pi)\approx0.003203$，再开平方得到 $0.0566\approx0.057$。因此该常数同时包含赛宾公式中的 0.161 和球面扩散项 $16\pi$。</p>
 </blockquote>
-<p>典型客厅 $d_c$ 只有 0.5~1.5 m（图5(c)）。<strong>智能音箱在 3 m 外交互时，混响能量已经超过直达声（DRR &lt; 0）</strong>——远场语音难，难在使用场景天然运行在混响占优区。DRR 也是估计声源距离的物理依据。<a href="https://www.montana.edu/rmaher/eele217_sp12/reverberation_time.pdf" title="citation">Montana State 房间声学讲义</a></p>
+<p>图 5（c）是设定 $d_c=1.0$ m 的归一化示例。在该模型中，3 m 处的 DRR 为 $-20\log_{10}(3/1)\approx-9.5$ dB，表示混响能量高于直达声；这个数不能外推到未测量的房间。实际 $d_c$ 还随体积、吸声量和声源指向性变化。DRR 可作为距离估计的声学线索，但也会受房间和声源级别影响。<a href="https://www.montana.edu/rmaher/eele217_sp12/reverberation_time.pdf" title="citation">Montana State 房间声学讲义</a></p>
 <p><strong>仿真怎么造混响</strong>：镜像法（Image Method，镜像声源法，Allen &amp; Berkley 1979）把墙面反射等效为镜像声源的叠加，开源库 pyroomacoustics 可直接生成任意房间、任意阵列的房间脉冲响应（RIR）：拿 ShoeBox 类建房、调 compute_rir 算脉冲响应（函数名以版本文档为准）。</p>
-<p><strong>反过来，怎么实测一个房间的混响</strong>：粗糙做法是拍手/爆破气球后看衰减（只能估个大概）；标准做法是<strong>指数正弦扫频（ESS, Farina 2000）</strong>——播放一段频率从低到高指数上升的扫频信号，录音后做反卷积即可干净地分离出 RIR，抗噪且不受播放设备失真影响（失真成分会被推到 RIR 的“负时间”区直接丢弃）。也可以用普通语音<strong>盲估</strong> $T_{60}$ 和 DRR（例如利用两麦相干函数估计直达-弥散比），供无法播放测试音的在线场景使用。</p>
+<p><strong>反过来，怎么实测一个房间的混响</strong>：粗糙做法是拍手/爆破气球后看衰减（只能估个大概）；更可控的做法是<strong>指数正弦扫频（ESS, Farina 2000）</strong>：播放频率指数上升的扫频信号，录音后反卷积得到 RIR。在系统近似时不变、没有削波且扫频长度足够时，ESS 可将若干谐波失真成分与线性 RIR 在反卷积结果中分开。环境噪声、削波、时变非线性和播放/录音链路的频响仍会影响测量。也可以用普通语音<strong>盲估</strong> $T_{60}$ 和 DRR（例如利用两麦相干函数估计直达-弥散比），供无法播放测试音的在线场景使用。</p>
 <p>房间传播模型解释了麦克风信号的组成。算法实现还需要把连续波形组织成 STFT、快拍和协方差矩阵。</p>
-<h3 id="sec-6">2.5 数据怎么组织：STFT、快拍与协方差矩阵</h3>
+<h2 id="sec-6">2.5 数据怎么组织：STFT、快拍与协方差矩阵</h2>
 <p>后面的算法反复出现三个词——STFT、快拍、协方差矩阵，先在这里一次讲清。</p>
 <p><strong>STFT（短时傅里叶变换，Short-Time Fourier Transform）</strong>把波形切成重叠短帧，每帧加窗后做快速傅里叶变换（Fast Fourier Transform，FFT），得到时间—频率复数网格，即语谱图（图 6（a）（b））。增强或波束示例可用 32 ms 窗、8 ms 帧移；自动语音识别（Automatic Speech Recognition，ASR）前端常见另一组设置为 25 ms/10 ms。比较文献时应核对采样率、窗函数、窗长和帧移。每个时频点同时包含幅度与相位。</p>
-<p>为什么非要这张表？因为<strong>宽带语音由此被切成一堆窄带问题</strong>：同一频点上，阵列模型 $\vec{x}=\vec{a}(\theta)s+\vec{n}$ 才严格成立——时延 $\tau$ 对应的相位旋转 $2\pi f\tau$ 随频率变化，只在一个频点内，“延迟”才恰好是“乘一个固定复数”；宽带信号的导向矢量随频率而变，共用不了一个 $\vec{a}(\theta)$。这就是第 4、5 章算法逐频点（STFT 后）处理的原因。</p>
+<p>为什么需要这张表？因为 STFT 把宽带语音分解为一组<strong>近似窄带</strong>问题。时延 $\tau$ 对应的相位旋转 $2\pi f\tau$ 随频率变化，因此每个频点要使用自己的 $\vec a(f,\theta)$。把卷积在每个时频点写成 $\vec{x}(f,t)\approx\vec{a}(f,\theta)s(f,t)+\vec n(f,t)$ 仍是窄带近似：窗函数会使直线卷积在 STFT 中产生频带内和跨频带项，长房间响应、过短窗或频率变化过快时误差更大。第 4、5 章逐频点处理时，需把窗长与有效冲激响应长度纳入验证。</p>
 <p><strong>STFT 分帧数字例子</strong>：阵列配置——4 麦、常规小间距；采样率 16 kHz、窗长 32 ms、帧移 8 ms。窗长折成采样点 $=16000\times0.032=512$ 点（FFT 常用 512 点）；帧移 $=16000\times0.008=128$ 点，相邻帧重叠 $(512-128)/512=75\%$。1 s 语音共 $(1000-32)/8+1\approx122$ 帧；每帧 FFT 给出 257 个有效频点（0~8 kHz，频率分辨率 $16000/512=31.25$ Hz）。于是 1 s、4 麦录音展开为 $122\times257=31354$ 个时频点，每个点上一个 4 维快拍向量——这就是后文协方差矩阵 $\hat{\mathbf{R}}(f)$ 在每个频点上平均的对象（每频点约 122 个快拍参与平均）。</p>
 <p><strong>快拍（snapshot，快照向量）</strong>：固定一个频点 $f$、取某一帧 $t$，把 $M$ 个麦克风在该时频点 $(f,t)$ 的复数谱排成列向量 $\vec{x}(f,t)$，就是一个快拍——相当于阵列在某瞬间拍下的一张“空间照片”（图6(b) 里标的那个格子就是它，按正文记作 $(f,t)$，$f$ 是频点号、$t$ 是帧号）。</p>
 <p><strong>空间协方差矩阵</strong>：单张快拍太噪，把几十到几百个快拍平均：</p>
@@ -221,7 +222,7 @@ $$T_{60} = \frac{24\ln 10}{c}\cdot\frac{V}{A} = \frac{55.3}{343}\cdot\frac{V}{A}
 <p>用 $0\le\rho\le1$ 在样本统计量和各向同性先验之间折中；§5.4 的对角加载与它目标相近。二是用时频掩码为快拍加权，分别估计目标或噪声协方差（§8.1）。掩码可以减少干扰泄漏，但也会减少有效样本数，仍须检查矩阵的条件数并配合加载。</p>
 <p><strong>顺带认识一下语音这个信号本身</strong>（后面许多设计都与这三条有关）：①典型成人语音的基频常落在约 80～300 Hz，电话语音传统通带约为 300 Hz～3.4 kHz；宽带语音还包含更高频的辅音和摩擦音。谐波结构会让互相关出现周期性假峰，因此 TDOA 算法常做宽带加权（§4.2）。②语音短时近似平稳、长时非平稳，所以常按几十毫秒分帧。③多说话人语音在时频域常呈近似稀疏：不少时频点由某个声源占优，这是掩码类方法与聚类方法能工作的依据（§8.1），但混响和同频谐波会削弱这一近似。阵列能否利用高频定位，还要同时检查混叠：4 cm 间距对应的全视场安全上限约 4.3 kHz，3 cm 间距约 5.7 kHz（§2.6）；超过上限并非一律不能用，而是必须结合转向范围、阵列几何和宽带融合处理歧义。</p>
 <p>有了协方差和导向矢量，便可以定义波束图及其分辨率、旁瓣、WNG 和 DI。</p>
-<h3 id="sec-7">2.6 怎么衡量一个波束好不好：先学会读波束图</h3>
+<h2 id="sec-7">2.6 怎么衡量一个波束好不好：先学会读波束图</h2>
 <p><strong>本节路线图</strong>：四个度量回答四个问题——主瓣多窄（看得多细）？旁瓣多高（漏多少）？DI（抗混响/弥散噪声的能力）？WNG（抗自身底噪的能力）？</p>
 <p>前面说过，波束形成器就是“让某个方向的信号通过、压住其他方向”。把它对<strong>每个方向</strong>的增益都画出来，就是<strong>波束图（beampattern）</strong>——横轴是方向，纵轴是增益（dB）。它是本节四个度量的共同载体，先花一分钟学会读它（图7(a)）：</p>
 <ul>
@@ -248,13 +249,13 @@ $$T_{60} = \frac{24\ln 10}{c}\cdot\frac{V}{A} = \frac{55.3}{343}\cdot\frac{V}{A}
 <blockquote>
 <p><strong>可跳过：−13 dB 从哪里来</strong>：均匀加权阵因子近似为 $\sin x/x$ 型（$x$ 正比于偏离指向的相位）。第一个旁瓣是该函数第一个负向极值点，位置约 $x\approx4.4934$（方程 $\tan x=x$ 的首个非零解），函数值 $\sin(4.4934)/4.4934\approx-0.2172$。幅度比 $0.2172$ 折成功率 $0.2172^2\approx0.0472$，取 $10\log_{10}0.0472\approx-13.26$ dB——这就是“约 −13 dB”的来历。直觉：等权矩形窗的傅里叶变换是 sinc，旁瓣是 sinc 振铃的第一个波峰，高度由 sinc 包络 $1/x$ 决定；加窗（汉明等）就是把矩形边沿削薄，振铃随之降低。</p>
 </blockquote>
-<p><strong>度量三：指向性指数 DI（抗混响/抗弥散噪声）</strong>。混响尾音、风噪这类噪声从四面八方<strong>均匀地</strong>涌来。DI 回答的是：“如果所有方向均匀放同样强度的噪声，这个波束能挡掉多少？”——主瓣方向增益的平方，除以全空间平均增益的平方，再取对数：</p>
+<p><strong>度量三：指向性指数 DI（抗混响/抗弥散噪声）</strong>。充分弥散的晚期混响常近似为从各方向入射的声场；实际风噪通常由局部湍流激发，不能无条件按弥散场处理。DI 表示在指定的各向同性弥散场模型下，波束对目标方向的信噪比改善。它由主瓣方向增益的平方除以全空间平均增益的平方，再取对数：</p>
 <p>$$\mathrm{DI} = 10\log_{10}\frac{4\pi\,|B(\theta_0)|^2}{\int |B(\theta)|^2\,\mathrm{d}\Omega}\text{。}$$</p>
 <p>$B(\theta)$ 是波束图，$\mathrm{d}\Omega$ 是立体角微元，整个球面的立体角为 $4\pi$。分母对波束图在整个球面上积分，表示弥散场中各方向输入的总贡献。DI = 0 dB 表示没有方向选择性；DI 越大，能量越集中于目标方向。超指向波束形成（§5.3）的目标之一就是提高这一指标。</p>
 <p><strong>度量四：白噪增益 WNG（抗自身噪声/稳健性）</strong>。每个麦克风自己有底噪（热噪声），各通道互相独立。波束权重把它们合起来时会放大多少倍？这就是 WNG：</p>
 <p>$$\mathrm{WNG} = 10\log_{10}\frac{|\vec{w}^H\vec{a}(\theta)|^2}{\|\vec{w}\|^2}\text{。}$$</p>
-<p>分子是目标方向的增益平方，分母是权重自身的能量。<strong>WNG 是负数意味着权重把自身噪声放大了</strong>——这在超指向设计里真实会发生：权重变得巨大且正负相抵，任何麦克风失配都被同步放大，波束就“碎”了。上限是 $10\log_{10}M$（DSB 达到，§5.2 有证明）。</p>
-<p><strong>DI 与 WNG 的此消彼长是波束设计的第一性权衡</strong>（详见 §5.3、图15）：想要更尖的指向（DI 高），就要牺牲稳健性（WNG 低）；反之亦然。</p>
+<p>分子是目标方向的增益平方，分母是权重自身的能量。无失真约束下，WNG 为负表示输出白噪声功率高于单通道参考。超指向设计在低频可能产生较大的正负权重，使通道增益、相位和位置失配显著改变主瓣或零陷。单位幅度导向矢量下的 WNG 上限是 $10\log_{10}M$，DSB 达到该上限（§5.2）。</p>
+<p><strong>DI 与 WNG 需要联合检查</strong>（详见 §5.3、图 15）：在固定紧凑阵列上，超指向设计为提高弥散场 DI 往往会增大权重范数并降低 WNG，但变化幅度取决于频率、几何、对角加载和失配。不能只按其中一个指标选择权重。</p>
 <p><strong>常规波束的分辨率尺度</strong>。HPBW 的量级约为 $\lambda/D$，因此它常被用作常规波束扫描能否分开两个近邻源的经验尺度。这不是所有估计器都不能越过的普适物理边界：MUSIC 等子空间方法在模型正确、信噪比和快拍数足够时可以得到窄于常规主瓣的谱峰，所以称为<strong>超分辨（super-resolution）</strong>；代价是对源相关性、阵列失配和有限样本更敏感。</p>
 <p><strong>空间混叠（栅瓣）</strong>：相邻麦间距超过半波长后，不同方向可能产生相同的离散空间相位。图 7（b）中，8 麦阵列指向 60°，间距从 $\lambda/2$ 增至 $\lambda$ 后，−7.7° 出现与主瓣等高的栅瓣，因而无法仅凭该频点区分两个方向。</p>
 <p>这个 −7.7° 可以手算验证：栅瓣条件 $\sin\theta-\sin\theta_0=\pm\lambda/d$，取 $d=\lambda$、$\theta_0=60°$，得 $\sin\theta=\sin60°-1=0.8660-1=-0.1340$，$\theta=\arcsin(-0.1340)\approx-7.7°$——与图7(b) 标注一致。消费级阵列（麦距 2~4 cm）的无混叠带宽约 4.3~8.6 kHz（验算 $c/(2d)=343/(2\times0.04)\approx4.3$ kHz、$343/(2\times0.02)\approx8.6$ kHz）。</p>
@@ -281,13 +282,13 @@ $$T_{60} = \frac{24\ln 10}{c}\cdot\frac{V}{A} = \frac{55.3}{343}\cdot\frac{V}{A}
 - <strong>DI</strong>：把 DSB 波束图按定义式在整个球面上数值积分，得 $\mathrm{DI} \approx$ <strong>6 dB</strong>（3D 各向同性弥散场口径）——对 $\lambda/2$ 间距的线阵，两者数值恰好相等。原因是：弥散场噪声在两麦间的相关系数正比于 $\mathrm{sinc}(2\pi d/\lambda)$，$d=\lambda/2$ 时恰好为 0，即各麦的弥散噪声互不相关，统计性质与自噪声一致，两本账自然相同。（口径注：此处 $\mathrm{sinc}$ 取 $\sin x/x$ 定义；§5.1 用归一化定义 $\sin(\pi x)/(\pi x)$，同一物理量在该口径下写作 $\mathrm{sinc}(1)=0$——差的只是自变量里的 $\pi$，对照时先换算。）</p>
 <p>量级结论：在本例的半波间距、空间白噪声近似下，4 元 DSB 的 WNG 和 DI 都是 6 dB。若针对某个弥散噪声模型提高 DI，权重通常会变得更敏感，WNG 可能下降；具体上限取决于阵列几何、频率、噪声相关矩阵和稳健性约束，不能只由麦克风数给出。</p>
 <p>上述度量基于远场平面波模型。声源进入近场后，导向模型、搜索空间和定位参数都要加入距离维度。</p>
-<h3 id="sec-8">2.7 小结：声源走近了，平面波不够用——近场要换的三样东西</h3>
+<h2 id="sec-8">2.7 小结：声源走近了，平面波不够用——近场要换的三样东西</h2>
 <p>远场模型把波前当平面，只剩方向一个未知数；声源走近后波前弯成球面，到达各麦的<strong>距离</strong>本身也携带信息。本小节把近场需要换掉的三样东西一次列清。</p>
 <p><strong>① 球面导向矢量</strong>：远场导向矢量的第 $m$ 个分量只有相位旋转 $e^{-\mathrm{j}2\pi f\tau_m(\theta)}$（幅度视为相同）；近场要写成球面波形式——声源在位置 $\vec{p}$ 时，第 $m$ 个麦（位置 $\vec{r}_m$）收到的复增益正比于 $\dfrac{e^{-\mathrm{j}2\pi f\|\vec{p}-\vec{r}_m\|/c}}{\|\vec{p}-\vec{r}_m\|}$。与远场相比多出两处变化：相位按<strong>真实距离</strong> $\|\vec{p}-\vec{r}_m\|$ 计算（不再是方向投影 $d\sin\theta$），幅度按 $1/$距离衰减（各麦幅度不再相等，近的响、远的弱）。归一化后即近场导向矢量 $\vec{a}(\vec{p})$——注意自变量从方向 $\theta$ 变成了位置 $\vec{p}$，定位输出自然从“角度”升级为“角度 + 距离”。</p>
 <p><strong>② 距离估计从哪里来</strong>：球面弯曲在阵列边缘相对中心造成的额外路程约为 $D^2/(8r)$（§2.2 第 2 步），它同时改变相位曲率与幅度差。声源越近，波前越弯，边缘麦相对平面波预测的相位偏差越大；拟合这部分曲率可以估计距离 $r$。距离是否可观测取决于 $D^2/(r\lambda)$、信噪比、带宽、麦数和几何形态。孔径很小或声源很远时，球面模型与平面模型几乎不可区分，此时距离估计会很不稳定。距离误差用米、角度误差用弧度，不能用“相差一个量级”直接比较。</p>
-<p><strong>③ 切换线：何时必须换球面模型</strong>：工程上以 Fraunhofer 距离 $r=2D^2/\lambda$ 为切换线——声源远于此线，用平面模型（本章第 3 节向量式）；近于此线，换球面导向 $\vec{a}(\vec{p})$，SRP 搜索网格也从角度一维扩展为位置二维/三维（§4.3 的 $\tau_{ij}(\vec{r})$ 本来就是按距离差写的，天然兼容近场）。记忆锚点：7 cm 小阵列在 1 kHz 下切换线仅约 3 cm（整个房间都是远场）；1.26 m 大线阵在同频率下切换线约 9 m（会议室里全程近场）。频率越高波长越短，切换线越远——宽带系统一般按最高工作频率核定是否需要近场模型。</p>
+<p><strong>③ 何时换球面模型</strong>：Fraunhofer 距离 $r_F=2D^2/\lambda$ 可作为相位曲率的起始检查，但不是跨过就立即从近场变为远场的物理分界。使用平面波模型前，还要满足推导里的 $r\gg D$，并核对幅度差和允许的相位误差。条件不满足时，改用球面导向 $\vec{a}(\vec{p})$，SRP 搜索网格也从角度一维扩展为位置二维/三维（§4.3 的 $\tau_{ij}(\vec{r})$ 已按距离差写出）。7 cm 阵列在 1 kHz 下有 $r_F\approx2.9$ cm，该数只表示相位曲率尺度，不能单独支持“整个房间都是远场”；1.26 m 线阵在同频率下有 $r_F\approx9.3$ m，会议室内常需要球面波模型。频率越高、波长越短，$r_F$ 越大；宽带系统应在目标频带内逐频检查建模误差。</p>
 <p>本章从传播时延建立了远近场模型，并定义了 STFT、快拍、协方差及四项阵列度量。第 3 章将讨论麦克风几何如何限制这些观测与指标。</p>
-<h3 id="sec-9">本章练习</h3>
+<h2 id="sec-9">本章练习</h2>
 <ol>
 <li>STFT 分帧换算：采样率 8 kHz、窗长 32 ms、帧移 8 ms，求窗长采样点数、帧移采样点数、重叠率和 1 s 语音的帧数。（参考答案：窗长 $8000\times0.032=256$ 点；帧移 $8000\times0.008=64$ 点；重叠率 $(256-64)/256=75\%$；帧数 $(1000-32)/8+1\approx122$ 帧——帧数与 16 kHz 时一样，因为只由窗长帧移的时间值决定。口径注：此处是无补零做法，即 FFT 点数 = 窗长点数（256 点窗做 256 点 FFT）；若补零到 512 点再做 FFT，频点数与频率分辨率另算，本题不按那个口径。）</li>
 <li>协方差读数：2 麦在某频点上信号完全相干（互相关系数幅值为 1、相位差 30°），各麦总功率都是 2，写出 $2\times2$ 协方差矩阵 $\hat{\mathbf{R}}$。（参考答案：$\hat{\mathbf{R}}=\begin{bmatrix}2 & 2e^{\mathrm{j}\pi/6}\\ 2e^{-\mathrm{j}\pi/6} & 2\end{bmatrix}$。对角线是各麦功率，非对角线的模是相干强度，辐角是麦间相位差；矩阵应满足对角元为实数且整体共轭对称。这里约定麦 1 相位超前 30°；若采用相反的通道顺序，非对角元的相位符号也相反。）</li>
@@ -295,9 +296,9 @@ $$T_{60} = \frac{24\ln 10}{c}\cdot\frac{V}{A} = \frac{55.3}{343}\cdot\frac{V}{A}
 </ol>
 <hr />
 <blockquote>
-<p>📄 本篇信息：约 323 行 ｜ 字符约 22680 ｜ 配图 6 张 ｜ <a href="./index.html">回首页</a></p>
+<p>📄 本篇信息：配图 6 张 ｜ <a href="./index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="01_problem-definition.html">← 上一篇</a></span><span><a href="03_array-geometry.html">下一篇 →</a></span></div>
-<div class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</div>
+<footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>
 </body></html>
