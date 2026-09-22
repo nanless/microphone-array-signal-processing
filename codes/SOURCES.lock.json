@@ -1,0 +1,209 @@
+{
+  "schema_version": 1,
+  "verified_at": "2026-09-22",
+  "notes": "Code licenses only. Model, dataset, media, dependency and trademark terms must be checked separately.",
+  "projects": [
+    {
+      "id": "pyroomacoustics",
+      "url": "https://github.com/LCAV/pyroomacoustics.git",
+      "revision": "0dd39f2614b7fc44b2cc63dbe7d60f4641068890",
+      "release": "v0.10.0",
+      "license": "MIT",
+      "fetch_enabled": true,
+      "scope": "room simulation, STFT, DOA, beamforming, BSS",
+      "note": "The book's optional reproduction environment and this source revision are pinned to 0.10.0. Current main was separately inspected at ff7d61f219e4eb41489963c4bb5f57bea5bc2c69."
+    },
+    {
+      "id": "odas",
+      "url": "https://github.com/introlab/odas.git",
+      "revision": "bcb845434495e293df3d48f1203b7a86e1852449",
+      "license": "MIT",
+      "fetch_enabled": true,
+      "scope": "real-time localization, tracking, separation and post-filtering"
+    },
+    {
+      "id": "nara_wpe",
+      "url": "https://github.com/fgnt/nara_wpe.git",
+      "revision": "a166779cca2088817e330481bd20af1a2c598555",
+      "release": "v0.0.11",
+      "license": "MIT",
+      "fetch_enabled": true,
+      "scope": "offline, block-online and frame-online WPE",
+      "note": "Annotated tag v0.0.11 peels to this commit. Current main was separately inspected at 5fbfc3639274e5a70dffcf08e20615a38c372ebb."
+    },
+    {
+      "id": "asteroid",
+      "url": "https://github.com/asteroid-team/asteroid.git",
+      "revision": "fce87469132760fbab41c20616ea0f0e079aad38",
+      "license": "MIT",
+      "fetch_enabled": false,
+      "scope": "deep source separation framework"
+    },
+    {
+      "id": "speechbrain",
+      "url": "https://github.com/speechbrain/speechbrain.git",
+      "revision": "89ead74d163463d30c62329a09cfdb4c54f5abc1",
+      "license": "Apache-2.0",
+      "fetch_enabled": false,
+      "scope": "speech enhancement and separation recipes"
+    },
+    {
+      "id": "espnet",
+      "url": "https://github.com/espnet/espnet.git",
+      "revision": "be79590bb2ff26ffb01bc825c5f68cb9418b7f0d",
+      "license": "Apache-2.0",
+      "fetch_enabled": false,
+      "scope": "speech enhancement, separation, dereverberation and end-to-end systems"
+    },
+    {
+      "id": "webrtc",
+      "url": "https://webrtc.googlesource.com/src",
+      "revision": "0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e",
+      "license": "BSD-3-Clause",
+      "fetch_enabled": false,
+      "scope": "AEC3 and real-time audio processing",
+      "note": "This is the AEC3 revision cited in the book. Current main was separately inspected at a3553f1c82a5580c91ad1f82baab4b11ed4b34b6. The canonical build uses depot_tools and additional dependency metadata; this lock is not a complete checkout recipe."
+    },
+    {
+      "id": "speexdsp",
+      "url": "https://gitlab.xiph.org/xiph/speexdsp.git",
+      "revision": "8e29a256ef0235ebbe7fcb8417b5ac7731eb8307",
+      "license": "BSD-3-Clause",
+      "fetch_enabled": true,
+      "scope": "AEC, preprocessing and resampling"
+    },
+    {
+      "id": "rnnoise",
+      "url": "https://gitlab.xiph.org/xiph/rnnoise.git",
+      "revision": "70f1d256acd4b34a572f999a05c87bf00b67730d",
+      "license": "BSD-3-Clause",
+      "fetch_enabled": true,
+      "scope": "neural noise suppression",
+      "note": "Training data and model artifacts require separate review."
+    },
+    {
+      "id": "portaudio",
+      "url": "https://github.com/PortAudio/portaudio.git",
+      "revision": "3f7bee79a65327d2e0965e8a74299723ed6f072d",
+      "release": "19.7.0",
+      "license": "MIT",
+      "fetch_enabled": true,
+      "scope": "cross-platform real-time audio I/O",
+      "note": "The official release notes map 19.7.0 to this commit. Current main was separately inspected at 17967f32de95f2179e7f7caa9632a79c5d59a2ea."
+    },
+    {
+      "id": "cmsis_dsp",
+      "url": "https://github.com/ARM-software/CMSIS-DSP.git",
+      "revision": "83a2d7bc98c81b4bbe4a6f48b1f2ecf179868a0b",
+      "license": "Apache-2.0",
+      "fetch_enabled": true,
+      "scope": "embedded DSP kernels"
+    },
+    {
+      "id": "onnxruntime",
+      "url": "https://github.com/microsoft/onnxruntime.git",
+      "revision": "48795e0281bcaa6b3b63b28af5e078b4c41e995f",
+      "license": "MIT",
+      "fetch_enabled": false,
+      "scope": "edge and mobile model inference"
+    },
+    {
+      "id": "icodoa",
+      "url": "https://github.com/DavidDiazGuerra/icoDOA.git",
+      "revision": "04d1a89594c78ae3cf42f07d94c3737bdc1f7c82",
+      "license": "AGPL-3.0",
+      "fetch_enabled": false,
+      "scope": "research reproduction for icosahedral CNN-based DOA",
+      "note": "Index only because AGPL obligations and the historical Python/PyTorch/gpuRIR/icoCNN stack need a separate compatibility review."
+    },
+    {
+      "id": "torchaudio",
+      "url": "https://github.com/pytorch/audio.git",
+      "revision": "b85c99ccac635a06b1afaf5284bf4c1a00c1f9b5",
+      "license": "BSD-2-Clause",
+      "fetch_enabled": false,
+      "scope": "official SoudenMVDR tutorial and audio transforms",
+      "note": "The cited main/nightly documentation is in maintenance phase and is not a stable-release compatibility promise."
+    },
+    {
+      "id": "piva",
+      "url": "https://github.com/fakufaku/piva.git",
+      "revision": "7fa273e9aa597aba57067aef2e7b6c999dadef26",
+      "license": "GPL-3.0",
+      "fetch_enabled": false,
+      "scope": "AuxIVA, OverIVA, FIVE and related blind source separation",
+      "note": "Index only because source or binary redistribution has GPL obligations; native dependencies require separate review."
+    },
+    {
+      "id": "meeteval",
+      "url": "https://github.com/fgnt/meeteval.git",
+      "revision": "6e3dc81284f2d6928f7ef9e620fd3b6906daa429",
+      "license": "MIT",
+      "fetch_enabled": false,
+      "scope": "cpWER, ORC-WER, MIMO-WER and DI-cpWER meeting evaluation",
+      "note": "Input transcripts and challenge datasets retain their own terms."
+    },
+    {
+      "id": "filterpy",
+      "url": "https://github.com/rlabbe/filterpy.git",
+      "revision": "3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33",
+      "license": "MIT",
+      "fetch_enabled": false,
+      "scope": "Kalman, EKF, UKF and particle-filter references"
+    },
+    {
+      "id": "stonesoup",
+      "url": "https://github.com/dstl/Stone-Soup.git",
+      "revision": "8d1edeb07ef8505ed065cbef435cfb5e517d9bdc",
+      "license": "MIT",
+      "fetch_enabled": false,
+      "scope": "state estimation and multi-target tracking framework",
+      "note": "Externally linked sample data is not covered automatically by the code license."
+    },
+    {
+      "id": "s4m",
+      "url": "https://github.com/JusperLee/S4M.git",
+      "revision": "4990b3fe9d7391e59d652c5a7d2803d1354fd0ae",
+      "license": "MIT",
+      "fetch_enabled": false,
+      "scope": "state-space speech separation research code",
+      "note": "No complete training entry point, checkpoint, or dataset is bundled; upstream components and datasets need separate review."
+    },
+    {
+      "id": "audiosep",
+      "url": "https://github.com/audio-agi/audiosep.git",
+      "revision": "944583f18b84589dc965de3ad77525c945334252",
+      "license": "MIT",
+      "fetch_enabled": false,
+      "scope": "language-queried universal sound separation",
+      "note": "The main checkpoint and evaluation media do not inherit a clearly stated redistribution grant from the code license."
+    },
+    {
+      "id": "sgmse",
+      "url": "https://github.com/sp-uhh/sgmse.git",
+      "revision": "1961cf4483e37df1bb92ccf0eb8b28bf6f44cb0e",
+      "license": "MIT",
+      "fetch_enabled": false,
+      "scope": "score-based speech enhancement and dereverberation",
+      "note": "Hosted checkpoints and every training dataset require separate permission review."
+    },
+    {
+      "id": "storm",
+      "url": "https://github.com/sp-uhh/storm.git",
+      "revision": "257e9636a7251ca40aa200753d5c0fe918e31879",
+      "license": "MIT",
+      "fetch_enabled": false,
+      "scope": "regression plus diffusion speech enhancement",
+      "note": "Hosted checkpoints and every training dataset require separate permission review."
+    },
+    {
+      "id": "arraydps",
+      "url": "https://github.com/ArrayDPS/ArrayDPS.git",
+      "revision": "750ac2b7c75458f4ca5bad203dafda528f575e55",
+      "license": "MIT",
+      "fetch_enabled": false,
+      "scope": "diffusion-prior unsupervised multichannel blind separation",
+      "note": "The checkpoint has no separate redistribution statement; SMS-WSJ generation code does not grant rights to the underlying WSJ audio."
+    }
+  ]
+}

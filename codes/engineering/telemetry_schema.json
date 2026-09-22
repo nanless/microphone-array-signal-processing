@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Microphone-array frontend frame telemetry",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "timestamp_ns",
+    "frame_index",
+    "sample_rate_hz",
+    "queue_depth",
+    "xrun_count",
+    "dropped_samples",
+    "clipping_fraction",
+    "sro_ppm",
+    "rtf",
+    "vad_active",
+    "deadline_miss",
+    "agc_gain",
+    "model_version"
+  ],
+  "properties": {
+    "timestamp_ns": {"type": "integer", "minimum": 0, "description": "Monotonic capture-clock timestamp for the first sample of this frame, in nanoseconds; not wall time."},
+    "frame_index": {"type": "integer", "minimum": 0, "description": "Zero-based input frame counter in the capture clock domain."},
+    "sample_rate_hz": {"type": "integer", "minimum": 1, "description": "Nominal capture sample rate in samples per second."},
+    "queue_depth": {"type": "integer", "minimum": 0, "description": "Frames waiting for processing at publication time; excludes the frame currently executing."},
+    "xrun_count": {"type": "integer", "minimum": 0, "description": "Cumulative driver-reported underflow plus overflow events since stream start."},
+    "dropped_samples": {"type": "integer", "minimum": 0, "description": "Cumulative samples discarded by this pipeline since stream start, summed across time rather than channels."},
+    "clipping_fraction": {"type": "number", "minimum": 0, "maximum": 1, "description": "Fraction of scalar samples clipped in this frame across all channels."},
+    "sro_ppm": {"type": "number", "description": "Estimated device sampling-rate offset relative to the designated reference clock, in ppm, over the configured estimator window."},
+    "rtf": {"type": "number", "minimum": 0, "description": "Processing time divided by audio duration for this frame on the measured critical path."},
+    "vad_active": {"type": "boolean", "description": "VAD output state for this frame after hysteresis and hangover."},
+    "deadline_miss": {"type": "boolean", "description": "Whether this frame completed after its configured frame deadline."},
+    "agc_gain": {"type": "number", "minimum": 0, "description": "Linear amplitude gain applied to this frame."},
+    "model_version": {"type": "string", "minLength": 1, "description": "Stable identifier for the complete ordered model chain; use an application-defined compound identifier when several models run."}
+  }
+}

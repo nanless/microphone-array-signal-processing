@@ -177,7 +177,7 @@ $$\hat\theta=\arcsin\!\left(\frac{343\times58.59375\times10^{-6}}{0.04}\right)\a
 
 该估计比 30° 真值高约 0.16°。这个固定样例说明时延网格插值能避免只在整数采样点上搜索；实际偏差仍取决于信号带宽、观测长度、噪声、混响和插值方法，需要在多次试验或实测数据上统计。
 
-**优缺点**：频域实现为 $O(N\log N)$，适合实时处理；但一对麦每帧通常只读一个主峰，多源时会出现多个峰且跨麦对难以配对。强混响或低信噪比还会使峰展宽或选错。GCC 加权家族的定义、统计模型和最大似然权重见 [Knapp 与 Carter, *IEEE TASSP*, 1976](https://doi.org/10.1109/TASSP.1976.1162830 "citation")。
+**优缺点**：频域实现的主导运算量为 $O(N\log N)$；是否满足实时要求仍取决于窗长、帧移、麦对数量、FFT 库、硬件、线程、缓存和计时范围，不能由复杂度记号直接推出。但一对麦每帧通常只读一个主峰，多源时会出现多个峰且跨麦对难以配对。强混响或低信噪比还会使峰展宽或选错。GCC 加权家族的定义、统计模型和最大似然权重见 [Knapp 与 Carter, *IEEE TASSP*, 1976](https://doi.org/10.1109/TASSP.1976.1162830 "citation")。
 
 **参数口径反例：$T_{60}$ 不能单独推出定位趋势**。反射会把多个延迟副本叠到直达声上，使相关背景抬高、主峰展宽并出现旁峰；但一张合成图的变化方向还取决于如何归一化反射尾。
 
@@ -385,7 +385,7 @@ Bartlett 的典型分辨尺度由该阵列的常规波束主瓣决定。Rayleigh
 
 $$P_C(f_k,\theta) = \frac{1}{\vec{a}^H(f_k,\theta)\,\hat{\mathbf{R}}^{-1}(f_k)\,\vec{a}(f_k,\theta)}\text{。}\tag{4-2}$$
 
-这个式子来自约束优化：最小化 $\vec{w}^H\hat{\mathbf{R}}\vec{w}$，同时要求 $\vec{w}^H\vec{a}(\theta)=1$。拉格朗日乘子法给出 $\vec{w}=\hat{\mathbf{R}}^{-1}\vec{a}/(\vec{a}^H\hat{\mathbf{R}}^{-1}\vec{a})$；把该权重代回输出功率，得到上面的 Capon 谱。完整推导见 §5.4 和式(5-1)。
+这个式子来自约束优化：最小化 $\vec{w}^H\hat{\mathbf{R}}\vec{w}$，同时要求 $\vec{w}^H\vec{a}(\theta)=1$。拉格朗日乘子法给出 $\vec{w}=\hat{\mathbf{R}}^{-1}\vec{a}/(\vec{a}^H\hat{\mathbf{R}}^{-1}\vec{a})$；把该权重代回输出功率，得到上面的 Capon 谱。完整推导见 §5.4 和式(5-3)。
 
 候选方向与真实源方向一致时，无失真约束保留该源，因此最小输出功率较大；方向不匹配时，优化器可进一步压低输出功率。$\hat{\mathbf R}$ 是 $M\times M$ 协方差矩阵。
 
@@ -601,7 +601,7 @@ MUSIC、ESPRIT 的基本推导采用窄带假设：在单个频点内，导向�
 
 最小比较应在同一批多通道数据上生成相同分辨率的 SRP-PHAT 球面图，以直接取峰为基线，再训练 icoDOA，并在未参与训练的旋转和房间上用同一角误差与检出规则比较。若没有这些数据覆盖或算力，解析 SRP-PHAT 更适合作为可解释基线。算法定义、60 个离散旋转等变性和 soft-argmax 输出见 [Díaz-Guerra、Miguel 与 Beltrán 的原论文](https://doi.org/10.1109/TASLP.2022.3224282 "citation")。
 
-官方 [icoDOA 代码仓库](https://github.com/DavidDiazGuerra/icoDOA "citation")给出的最小入口是 `1sourceTracking_icoCNN.py`。README 记录的验证环境为 Python 3.8.1、PyTorch 1.8.1，并依赖 gpuRIR；合成训练需准备 LibriSpeech，实录测试需准备 LOCATA，输入图分辨率由脚本参数 `r` 控制，预训练模型和对应结果位于 `models/`、`results/`。这些版本和路径是仓库的复现口径，不是对其他版本的兼容性保证。
+官方 [icoDOA 代码仓库](https://github.com/DavidDiazGuerra/icoDOA "citation")给出的最小入口是 `1sourceTracking_icoCNN.py`。README 记录的验证环境为 Python 3.8.1、PyTorch 1.8.1，并依赖 gpuRIR；合成训练需准备 LibriSpeech，实录测试需准备 LOCATA，输入图分辨率由脚本参数 `r` 控制，预训练模型和对应结果位于 `models/`、`results/`。这些版本和路径是仓库的复现口径，不是对其他版本的兼容性保证。该仓库采用 [AGPL-3.0](https://github.com/DavidDiazGuerra/icoDOA/blob/master/LICENSE "citation")，并明确定位为论文复现代码而非通用软件库；本书只给官方链接，不复制其源码。许可证与环境信息核实于 2026-09-22，当日 `master` 的完整提交为 `04d1a89594c78ae3cf42f07d94c3737bdc1f7c82`；实际使用前仍应复查目标提交及模型、数据集的附加条款。
 
 **数据驱动结果的比较范围**：定位网络必须在相同数据集、阵列、信噪比、混响、训练数据和误差指标下比较。上表只归纳输入与输出形式，不给出跨论文排名。卷积空间谱定位可参见 Chakrabarty & Habets [期刊论文](https://doi.org/10.1109/JSTSP.2019.2901664 "citation")；IPDnet 见 Wang、Yang 与 Li 的 [IEEE/ACM TASLP 2024 正式论文](https://doi.org/10.1109/TASLP.2024.3507560 "citation")；ACCDOA 见 [Shimada et al., ICASSP 2021](https://doi.org/10.1109/ICASSP39728.2021.9413609 "citation")。使用时还需评估标注成本、跨房间泛化和模型复杂度。
 
@@ -658,6 +658,14 @@ $$J(r,\theta)=\sqrt{\frac{1}{3}\sum_{m=1}^{3}\left(\frac{\delta_m(r,\theta)-\del
 若真实位置落在格点之间，应做局部细化或连续优化，不能把粗网格误差归因于观测噪声。球面波下联合估计角度与距离的宽带最大似然模型可参见 [Chen、Hudson 与 Yao 2002](https://doi.org/10.1109/TSP.2002.800420 "citation")。
 
 **距离不可观测边界**：当 $r\to\infty$ 时，$d_m-d_2\to-x_m\sin\theta$，对 $r$ 的导数趋近 0；不同大距离候选的 TDOA 因而趋于同一平面波值。此时表中同角度的失配差会继续缩小，距离维度形成平坦谷。孔径很小、带宽或 SNR 不足、通道相位未标定时也会出现相同现象；算法应报告距离低置信度或只输出 DOA，而不是把搜索边界当成可靠距离。
+
+#### 4.7.2 可执行基线的输入契约、回退与外部实现边界
+
+本书的原创 NumPy 基线位于 [`doa.py`](../codes/array_tutorial/doa.py)。`gcc_phat` 对应 §4.2，返回的正时延严格表示 $\tau_{12}=t_1-t_2$；它使用零填充线性相关、物理时延裁剪和可选三点插值。`srp_phat` 对应式(4-1)，输入多通道谱的形状固定为 `通道 × 频点 × 帧`。`bartlett_spectrum`、`capon_spectrum`、`music_spectrum` 和 `esprit_ula` 分别对应 §4.5、§4.6；平面波和近场导向矢量来自 [`geometry.py`](../codes/array_tutorial/geometry.py)。完整小例与手算回归见 [`ch02_05_baselines.py`](../codes/examples/ch02_05_baselines.py) 和 [`test_codes_doa_beam.py`](../tests/test_codes_doa_beam.py)。
+
+接入实际录音时还要固定 WAV 数值口径、采样率、通道顺序、麦克风坐标及单位、参考麦、坐标轴、声速和时间戳。GCC 必须按物理孔径裁剪 lag，并同时输出峰值、峰背比和有效频带；SRP 还要记录阵元对、二维或三维搜索范围、网格单位、插值和粗到细规则。扫描谱要记录快拍窗口、频带合并、源数、选峰间距和加载口径。Capon/MUSIC/MVDR 使用厄米线性求解或 `eigh`，不显式形成矩阵逆；协方差奇异且没有加载时，示例代码会报错，调用方应明确选择增加快拍、相对加载、保持上次可靠估计或退回 SRP/Bartlett，不能把 NaN 当成方向。
+
+本书不复制第三方定位代码。核实于 2026-09-22 的官方索引包括：[pyroomacoustics](https://github.com/LCAV/pyroomacoustics)（MIT；发布页当日显示 v0.10.1，书中 NormMUSIC 仍固定为 0.10.0 口径）、[ODAS](https://github.com/introlab/odas)（MIT；面向嵌入式定位、追踪、分离和后处理，复现时应固定完整提交号）以及前述 icoDOA（AGPL-3.0）。CSSM、WAVES、TOPS、FRIDA、原子范数、SBL 和神经定位涉及额外优化器、训练数据或许可证，本轮只保留原论文与官方仓库索引，不把第三方实现改写成来源不清的“简化版”。
 
 ### 4.8 定位算法总对比
 

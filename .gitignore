@@ -6,3 +6,6 @@ __pycache__/
 /tmp/
 # 合订 HTML 是中间产物（重跑 build_pdf.py 即再生），不入库；PDF 是发布件，入库
 dist/combined.html
+# 第三方源码只按需获取到本地，不纳入本仓库
+codes/upstream/_downloads/
+codes/vendor/

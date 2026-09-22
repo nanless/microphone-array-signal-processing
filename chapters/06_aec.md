@@ -447,7 +447,7 @@ $$\mathrm{ERLE}=10\log_{10}\frac{\sum_n |y(n)|^2}{\sum_n |e_{\mathrm{echo}}(n)|^
 
 §6.1.6～§6.1.8比较了混合式、端到端和神经卡尔曼方案，并说明了阵列中的模块顺序和评测口径。线性 ERLE、最终输出质量和近端语音损伤应分别报告；AEC 放在波束形成之后时，还需验证波束权重变化造成的路径突变。
 
-**系统实现与验收（§6.1.9～§6.1.17）**
+**系统实现与验收（§6.1.9～§6.1.18）**
 
 #### 6.1.9 WebRTC AEC3 的结构与排障
 
@@ -623,7 +623,21 @@ pAEC（个性化 AEC，personalized AEC）在 §6.1.6 定义。注册语音和�
 > | 图31 | （a）线性与归一化 `tanh` 非线性路径；（b）同一映射 | §6.1.4 | 唯一职责是量化映射曲率与线性模型残差平台；后段均值由图示配置计算 |
 > | 图32 | （a）混合处理流程；（b）模块前提；（c）选型条件 | §6.1.6、§6.1.3 | 不给固定性能档次，需按目标设备实测 |
 
-#### 6.1.16 常见误区与自测题
+#### 6.1.16 可执行基线与开源实现边界
+
+本书提供只依赖 NumPy 的时域 NLMS 与 ERLE 基线，源码见 [`codes/array_tutorial/aec.py`](../codes/array_tutorial/aec.py)，四章联合示例见 [`codes/examples/ch06_09_baselines.py`](../codes/examples/ch06_09_baselines.py)。在仓库根目录运行：
+
+```bash
+.venv/bin/python -m codes.examples.ch06_09_baselines
+```
+
+`nlms(reference, microphone, filter_length, ...)` 接收两个等长一维实数数组，返回残差、估计回声和最终抽头。`freeze[n]=True` 时仍产生当前样本输出，但不更新抽头；参考回归向量能量为零时也跳过更新。`erle_db()` 用 `double_talk_mask` 明确排除双讲样本；调用者还需用 `valid_mask` 排除初始收敛段、近端单讲和静音段。该实现用于核对式(6-2)的抽头顺序、冻结语义和指标窗口，不包含延迟搜索、非线性处理、舒适噪声或实时音频接口。
+
+自动测试见 [`tests/test_codes_aec_wpe_sep_track.py`](../tests/test_codes_aec_wpe_sep_track.py)，覆盖零能量参考、已知路径收敛、路径突变、冻结更新以及双讲样本不进入 ERLE。接入设备时还必须增加参考断流、纯延迟超过滤波器覆盖范围、削波、多参考高度相关、块边界和长时路径漂移测试；异常时的安全回退是冻结自适应更新或旁路线性抵消，而不是继续用不可信残差更新。
+
+WebRTC AEC3 属于完整工业实现层级，包含参考缓冲、延迟处理、快慢滤波器、残余抑制和舒适噪声；本书只索引 §6.1.9 固定提交的官方源码，不复制其实现。PBFDAF/MDF、FDKF、神经 DTD、DeepVQE、个性化 AEC 与 GEIC 也只给原始论文或官方项目入口。评估这些实现时应固定源码提交、许可证、构建选项、采样率、声道数、帧长、参考抽头、允许延迟、状态重置规则和测试取点；模型权重与挑战赛数据还需分别核对再分发许可。不能用本节教学 NLMS 的结果替代这些系统的验收。
+
+#### 6.1.17 常见误区与自测题
 
 **常见误区**：
 
@@ -656,7 +670,7 @@ pAEC（个性化 AEC，personalized AEC）在 §6.1.6 定义。注册语音和�
 15. 画出 AEC3 示例中的参考缓冲、延迟估计、自适应滤波、残余抑制与舒适噪声关系。
 16. 说出客观 ERLE、主观 MOS 和自动 AECMOS 各自评价什么，并说明双讲时为什么不能用 ERLE。
 
-#### 6.1.17 延伸阅读
+#### 6.1.18 延伸阅读
 
 1. **Hänsler & Schmidt, *Acoustic Echo and Noise Control*（Wiley 2004）**——AEC 领域的经典大部头，从自适应理论到免提终端工程全覆盖。[Wiley 在线版](https://onlinelibrary.wiley.com/doi/book/10.1002/0471678406 "citation")
 2. **Benesty, Gänsler, Morgan, Sondhi & Gay, *Advances in Network and Acoustic Echo Cancellation*（Springer 2001）**——PBFDAF、IPNLMS、立体声 AEC 的原始出处合集（读 IPNLMS 认符号 $\alpha$，读 PBFDAF 注意 MDF 一脉）。
@@ -664,7 +678,7 @@ pAEC（个性化 AEC，personalized AEC）在 §6.1.6 定义。注册语音和�
 4. **Breining et al., IEEE SPM 1999**——四大难点的经典出处，一节一引，入门必读（链接见 §6.1.1）。
 5. 中文参考：《语音识别服务实战》第 3.4 节，侧重工程实现。
 
-§6.1.9～§6.1.17讨论了 AEC3 的信号流、多参考相关性、参考抽头、验收、诊断、个性化处理和研究方向。部署时应先确认参考信号与延迟对齐，再检查自适应控制和残余抑制。
+§6.1.9～§6.1.18讨论了 AEC3 的信号流、多参考相关性、参考抽头、验收、诊断、个性化处理、代码基线和研究方向。部署时应先确认参考信号与延迟对齐，再检查自适应控制和残余抑制。
 
 > 第 7 章讨论 WPE 去混响，第 8 章讨论多说话人分离。
 

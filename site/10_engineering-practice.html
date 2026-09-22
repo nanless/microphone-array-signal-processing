@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 10 章 · 工程实现、评测与产业实践 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f619c708bea4"><style>
+<meta name="source-digest" content="aea756f1a7d4"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -63,12 +63,14 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="10_engineering-practice.html#sec-u-5a84f59f93">10. 工程实现、评测与产业实践</a></li>
 <li><a href="10_engineering-practice.html#sec-10-1">10.1 参考链路与端到端延迟</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-1-1">10.1.1 延迟不能把每个模块的耗时直接相加</a></li>
+<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-1-2">10.1.2 实时回调只搬运数据</a></li>
 <li><a href="10_engineering-practice.html#sec-10-2">10.2 拾音、同步与增益</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-2-1">10.2.1 SRO：先区分初始时差和采样率偏移</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-2-2">10.2.2 增益变化与 AEC</a></li>
 <li><a href="10_engineering-practice.html#sec-10-3">10.3 NS、控制信号与唤醒分支</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-3-1">10.3.1 单通道 NS 的方法和边界</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-3-2">10.3.2 控制状态不能只看一个 VAD 比特</a></li>
+<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-3-3">10.3.3 VAD 与 AGC 的最小可运行基线</a></li>
 <li><a href="10_engineering-practice.html#sec-10-4">10.4 定点化、算力与功耗预算</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-4-1">10.4.1 从浮点实现到目标芯片</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-4-2">10.4.2 不混用指令数、乘加次数和实时因子</a></li>
@@ -77,6 +79,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="10_engineering-practice.html#sec-10-7">10.7 分布式阵列</a></li>
 <li><a href="10_engineering-practice.html#sec-10-8">10.8 阵列形态与场景约束</a></li>
 <li><a href="10_engineering-practice.html#sec-10-9">10.9 从模型到设备</a></li>
+<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-9-1">10.9.1 开源实现怎样用作工程对照</a></li>
 <li><a href="10_engineering-practice.html#sec-10-10">10.10 联调与验收</a></li>
 <li><a href="10_engineering-practice.html#sec-10-11">10.11 本章小结</a></li>
 </ul>
@@ -88,12 +91,14 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="10_engineering-practice.html#sec-u-5a84f59f93">10. 工程实现、评测与产业实践</a></li>
 <li><a href="10_engineering-practice.html#sec-10-1">10.1 参考链路与端到端延迟</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-1-1">10.1.1 延迟不能把每个模块的耗时直接相加</a></li>
+<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-1-2">10.1.2 实时回调只搬运数据</a></li>
 <li><a href="10_engineering-practice.html#sec-10-2">10.2 拾音、同步与增益</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-2-1">10.2.1 SRO：先区分初始时差和采样率偏移</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-2-2">10.2.2 增益变化与 AEC</a></li>
 <li><a href="10_engineering-practice.html#sec-10-3">10.3 NS、控制信号与唤醒分支</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-3-1">10.3.1 单通道 NS 的方法和边界</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-3-2">10.3.2 控制状态不能只看一个 VAD 比特</a></li>
+<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-3-3">10.3.3 VAD 与 AGC 的最小可运行基线</a></li>
 <li><a href="10_engineering-practice.html#sec-10-4">10.4 定点化、算力与功耗预算</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-4-1">10.4.1 从浮点实现到目标芯片</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-4-2">10.4.2 不混用指令数、乘加次数和实时因子</a></li>
@@ -102,6 +107,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="10_engineering-practice.html#sec-10-7">10.7 分布式阵列</a></li>
 <li><a href="10_engineering-practice.html#sec-10-8">10.8 阵列形态与场景约束</a></li>
 <li><a href="10_engineering-practice.html#sec-10-9">10.9 从模型到设备</a></li>
+<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-9-1">10.9.1 开源实现怎样用作工程对照</a></li>
 <li><a href="10_engineering-practice.html#sec-10-10">10.10 联调与验收</a></li>
 <li><a href="10_engineering-practice.html#sec-10-11">10.11 本章小结</a></li>
 </ul></nav></details>
@@ -224,6 +230,10 @@ $$</p>
 <p>这些数字只说明记账方法，没有包含图外可能存在的解码和交互延迟。实际系统应在声学输入与最终输出之间记录时间戳或回采脉冲，分别测量冷启动、稳定运行和最不利调度条件。</p>
 <p>把 STFT 窗长从 32 ms 改为 16 ms，也不等于必然省下 16 ms：只有依赖完整窗或未来样本的等待发生变化，关键路径才会缩短。</p>
 <p>延迟报告不能只有平均值。稳定运行阶段至少给出中位数（p50）与尾延迟（如 p95、p99）、样本数和测量时长；冷启动另报模型加载、内存分配和状态填充所需时间。若系统存在不同设备、网络或调度模式，应分别报告，而不是把所有样本混成一个分位数。测量点也要写清，例如“音频驱动时间戳 → 第一块可播放增强 PCM”与“音频入口 → 首个 ASR token”是两条不同关键路径。</p>
+<span id="sec-4" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-1-2">10.1.2 实时回调只搬运数据</h3>
+<p>声卡回调线程的首要目标是按时交付下一块音频。回调中临时分配大数组、等待互斥锁、访问磁盘、打印日志或执行时间不确定的模型推理，都可能让驱动错过期限。常见结构是：回调只复制交织或非交织样本、记录设备时间戳和状态位，再把固定大小的数据块写入预分配的环形缓冲；工作线程从缓冲读取并执行 AEC、波束和后端。回调与工作线程的时钟、缓冲单位和丢帧策略必须写清。</p>
+<p>环形缓冲已满时，系统需要事先选择“丢最旧块”“丢新块”或“降级处理”。任何一种策略都会改变输出：丢块破坏连续状态，等待会阻塞采集，积压则增大延迟。本书的 <a href="../codes/array_tutorial/engineering.py"><code>RingBuffer</code></a> 采用“丢最旧样本”的可见基线，并累计 <code>dropped</code>；它用来说明容量和溢出语义，不是无锁实时队列。</p>
+<p><a href="../codes/array_tutorial/engineering.py"><code>simulate_deadline_queue</code></a> 用一条串行工作队列区分三件事：处理完成晚于本帧期限、队列达到高水位、容量已满而丢帧。平均 RTF 小于 1 仍可能出现其中任何一种。正式设备还要记录驱动报告的 underrun/overrun（合称 xrun）、线程优先级、CPU 频率策略和并发负载。</p>
 <p>参考接口可按下表检查：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -294,12 +304,12 @@ $$</p>
 </tr>
 </tbody>
 </table></div>
-<span id="sec-4" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-2">10.2 拾音、同步与增益</h2>
+<span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-2">10.2 拾音、同步与增益</h2>
 <p>麦克风选型至少要看自噪声、声学过载点、灵敏度、频响和通道一致性。单个器件的典型值不能代替整机测试：声孔、密封、挡板、电源噪声和装配偏差都会改变阵列响应。</p>
 <p>脉冲密度调制（Pulse-Density Modulation，PDM）、芯片间音频总线（Inter-IC Sound，I²S）和时分复用（Time-Division Multiplexing，TDM）是常见数字接口，但一根数据线能承载多少通道取决于器件、时钟和控制器配置，不能只按接口名称判断。阵列处理还要确认通道是否共享采样时钟、帧同步是否一致，以及驱动是否会独立丢样。</p>
 <p>16 位、24 位和 32 位浮点描述的是数字样本格式。32 位浮点便于保留中间动态范围，不能提高麦克风的声学过载点，也不能消除模拟前端的底噪或削波。某些录音设备以浮点文件保存多增益通路合成后的信号，但这仍不等于“无需增益设计”。</p>
-<span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-2-1">10.2.1 SRO：先区分初始时差和采样率偏移</h3>
-<p>设参考设备采样率为 $f_s$，另一设备的相对偏移为 $\varepsilon$。经过 $T$ 秒后，两路时间轴的相对漂移近似为</p>
+<span id="sec-6" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-2-1">10.2.1 SRO：先区分初始时差和采样率偏移</h3>
+<p>设参考设备采样率为 $f_s$，另一设备满足 $f_{\mathrm{device}}=f_s(1+\varepsilon)$。经过 $T$ 秒后，两路时间轴的相对漂移一阶近似为</p>
 <p>$$
 \Delta t(T)=\varepsilon T .
 \tag{10-2}
@@ -313,7 +323,9 @@ $$</p>
 </ol>
 <p>互相关峰漂移、相位漂移或专用导频都可用于估计。更新周期和允许残差应由最长连续运行时间、相干性要求及任务指标反推，不宜照搬固定 ppm 门限。</p>
 <p>能够共享硬件时钟时，应优先消除 SRO 来源；不能共享时钟时，再评估在线补偿。</p>
-<span id="sec-6" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-2-2">10.2.2 增益变化与 AEC</h3>
+<p>初始时差表现为整条“延迟—时间”曲线的截距，稳定 SRO 表现为斜率，偶发丢样则表现为阶跃。三者不能只靠首尾两个点可靠区分。工程上可分块估计互相关峰，先检查峰值置信度，再对可信的“时间—相对延迟”点做直线拟合；残差中若出现近似一个或多个采样间隔的突跳，应先查丢样和时间戳，而不是把所有变化都拟合成 ppm。</p>
+<p><a href="../codes/array_tutorial/engineering.py"><code>estimate_sro_ppm</code></a> 把相对延迟定义为“参考时间减设备时间”，再拟合截距和斜率；正斜率表示设备采样率较高，与 <a href="../codes/array_tutorial/engineering.py"><code>resample_sro_to_reference</code></a> 的符号一致。若横轴使用参考时间，精确斜率为 $\varepsilon/(1+\varepsilon)$；函数按小偏移的一阶近似把斜率乘 $10^6$ 报为 ppm，在音频设备常见的几十至数百 ppm 范围内用于教学。要求更高时应反解 $\varepsilon=s/(1-s)$，其中 $s$ 是拟合斜率。重采样函数用线性插值演示长度和方向；线性插值没有足够的带外抑制，只适合教学检查。设备实现要换成有抗混叠滤波和跨块状态的异步采样率转换器，并测量补偿后的相位残差。</p>
+<span id="sec-7" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-2-2">10.2.2 增益变化与 AEC</h3>
 <p>AEC 前的时变增益会改变它要辨识的等效回声路径。设计时应记录每一级增益位于参考取点之前还是之后，并确保 AEC 能获知或跟踪这些变化。常见做法是：AEC 收敛和双讲期间保持前置增益稳定；发生削波风险时允许保护性衰减，同时重置或减小自适应步长。锁定时间、解锁条件和允许步进都应通过本机回声路径和双讲集确定，不存在通用的秒数或 dB 阈值。</p>
 <p>阵列标定应覆盖相对增益、相位/时延和麦克风坐标。位置误差造成的相位误差为</p>
 <p>$$
@@ -321,8 +333,9 @@ $$</p>
 \tag{10-3}
 $$</p>
 <p>例如 $\Delta r=0.5\ \text{mm}$、$f=4\ \text{kHz}$、$c=343\ \text{m/s}$ 时，$\Delta\phi\approx2.1^\circ$。这说明高频和深零陷波束更敏感，不表示 0.5 mm 是所有产品的统一公差。</p>
-<span id="sec-7" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-3">10.3 NS、控制信号与唤醒分支</h2>
-<span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-3-1">10.3.1 单通道 NS 的方法和边界</h3>
+<p>标定不能止于得到一组系数。可执行流程应包含：确认通道编号和设备时间戳；在多个已知方向播放宽带信号；估计相对增益、固定时延和随频率变化的相位；核对实际麦克风坐标与坐标系；把系数连同设备序列、采样率、温度和标定日期保存；最后在未参与拟合的方向复测波束图和 DOA。更换声孔、密封件、麦克风或采集板后，要重新判断旧系数是否仍适用。</p>
+<span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-3">10.3 NS、控制信号与唤醒分支</h2>
+<span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-3-1">10.3.1 单通道 NS 的方法和边界</h3>
 <p>单通道 NS 常放在波束输出之后，因为此处计算量较小，也不会反过来破坏传统 AEC 的线性关系。但联合增强网络、多通道掩码估计或为定位专设的增强支路可能采用不同顺序。应依据训练输入和模块假设决定取点。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -366,7 +379,7 @@ $$</p>
 </tbody>
 </table></div>
 <p>MMSE-STSA 和 MMSE-LSA 不是同一目标：前者估计短时谱幅度，后者在对数谱幅度域定义误差。噪声估计也不必“只在 VAD 判无话时更新”。最小统计量、软语音存在概率和神经网络软掩码都能在语音段缓慢更新；关键是避免把语音持续吸收到噪声模型中。</p>
-<span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-3-2">10.3.2 控制状态不能只看一个 VAD 比特</h3>
+<span id="sec-10" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-3-2">10.3.2 控制状态不能只看一个 VAD 比特</h3>
 <p>控制状态需要涵盖近端语音、远端播放和双讲。下表列出这些状态下的更新条件；具体实现可以使用离散状态，也可以使用连续的活动概率。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -418,8 +431,12 @@ $$</p>
 <p>VAD 的迟滞、挂起和预卷缓存应由语料中的短词、停顿和噪声脉冲调节。</p>
 <p>KWS 是否绕过 VAD、是否持续运行、从 AEC 后还是增强后取信号，取决于功耗和训练域。</p>
 <p>阈值需要在指定误唤醒率下报告漏唤醒率，不能只给一个孤立分数。</p>
-<span id="sec-10" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-4">10.4 定点化、算力与功耗预算</h2>
-<span id="sec-11" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-4-1">10.4.1 从浮点实现到目标芯片</h3>
+<span id="sec-11" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-3-3">10.3.3 VAD 与 AGC 的最小可运行基线</h3>
+<p>能量 VAD 虽然简单，却能把控制逻辑讲清。启动阈值应高于继续阈值，避免能量在单一阈值附近来回切换；hangover 在能量下降后继续保持若干帧，减少词尾被截断。预卷缓存解决的是词首：VAD 刚触发时，把触发前保留的短时音频一并送给后端。三个时间量都要换算成帧数，并在短词、长停顿和脉冲噪声上分别验证。</p>
+<p><a href="../codes/array_tutorial/engineering.py"><code>HysteresisVAD</code></a> 输入线性均方能量，不接受 dB 阈值；把 dBFS 门限传给它会造成口径错误。<code>hangover_frames=2</code> 表示首次跌破继续阈值的两帧仍保持活动，第三帧才关闭。该基线没有噪声自适应、频带特征和神经网络，也不自行保存预卷；预卷可用 <a href="../codes/array_tutorial/engineering.py"><code>RingBuffer</code></a> 保留触发前的固定帧数，并在 VAD 由假变真时先取出缓存。</p>
+<p>AGC 要区分“把正常语音逐渐推向目标电平”和“立刻避免削波”。增益上升可以缓慢释放，增益下降需要更快；即使平滑状态来不及下降，当前块也要受安全上限约束。<a href="../codes/array_tutorial/engineering.py"><code>PeakProtectAGC</code></a> 给出这种峰值保护基线。它不估计响度，也不能修复模拟前端已经发生的削波。验收时要同时画输入电平、增益、输出峰值和削波比例，并在 AEC 双讲期间检查增益变化是否破坏回声路径模型。</p>
+<span id="sec-12" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-4">10.4 定点化、算力与功耗预算</h2>
+<span id="sec-13" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-4-1">10.4.1 从浮点实现到目标芯片</h3>
 <p>定点化要检查四件事：</p>
 <ul>
 <li>数值范围；</li>
@@ -429,7 +446,9 @@ $$</p>
 </ul>
 <p>协方差矩阵求解与 WPE 线性方程组尤其要观察条件数；对角加载能改善数值稳定性，但加载量应相对矩阵尺度定义。32 位或更宽的累加器可以减少乘加溢出，不能保证病态矩阵求解正确。</p>
 <p>训练后量化（Post-Training Quantization，PTQ）先用校准数据确定量化尺度；量化感知训练（Quantization-Aware Training，QAT）在训练中模拟量化误差。选哪一种应由目标芯片的算子、代表性数据上的任务指标和最不利输入测试决定。不能预先承诺固定的指标下降量或加速倍数。</p>
-<span id="sec-12" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-4-2">10.4.2 不混用指令数、乘加次数和实时因子</h3>
+<p>定点格式还要明确舍入和饱和规则。本书的 <a href="../codes/array_tutorial/engineering.py"><code>q15_quantize</code></a> 把 $[-1,1)$ 映射到有符号 Q1.15：乘 $32768$、按最近偶数舍入，再饱和到 $[-32768,32767]$。因此 $-1$ 可以精确表示，$+1$ 只能饱和为 $32767/32768$。<a href="../codes/array_tutorial/engineering.py"><code>q15_dot</code></a> 用 64 位整数累加乘积，只在输出时除以 $2^{15}$、按最近偶数舍入并饱和；目标 DSP 若使用不同累加位宽或逐乘积舍入，就不应期待 bit-exact 相同。测试既要覆盖正常小数，也要覆盖 $\pm1$、超范围输入和累加器极值；不能只比较平均误差。</p>
+<p>SIMD（单指令多数据）优化从数据布局开始。连续的频点、通道或抽头便于向量加载，跨步访问和频繁转置会抵消乘加加速。报告 SIMD 收益时要写明标量基线、指令集、编译选项、数组对齐、块尺寸、线程数和是否包含格式转换。运行时派发还要保留标量回退，并让两条路径通过同一组数值容差或 bit-exact 测试；“编译器打开了向量化”不能代替这些检查。</p>
+<span id="sec-14" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-4-2">10.4.2 不混用指令数、乘加次数和实时因子</h3>
 <ul>
 <li>每秒乘加次数（Multiply-Accumulate Operations per Second，MAC/s）或每秒百万次乘加（Million MAC/s，MMAC/s）适合描述已经明确算子图和计数规则的算法计算量。</li>
 <li>每秒百万条指令（Millions of Instructions per Second，MIPS）依赖指令集、并行宽度、存储访问和编译器。同一算法在不同处理器上的 MIPS 不可直接比较。</li>
@@ -466,7 +485,7 @@ t\approx\frac{E\,\eta}{P_{\text{avg}}},
 \tag{10-4}
 $$</p>
 <p>其中 $\eta$ 包含可用容量、转换效率和老化裕量，$P_{\text{avg}}$ 是包含占空比的整机平均功率。只给毫安时（mAh）而不给电压和平均功耗，无法推出续航。</p>
-<span id="sec-13" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-5">10.5 评测体系</h2>
+<span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-5">10.5 评测体系</h2>
 <p>每项指标只能回答一部分问题。面向完整系统的评测通常还需覆盖任务效果、语音质量、稳定性、资源占用和长时间运行。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -518,7 +537,7 @@ $$</p>
 <p>ITU-T 已于 2024 年 1 月 5 日撤销 <a href="https://www.itu.int/rec/T-REC-P.862/en" title="citation">P.862（PESQ）</a>，并在官方页面指向 <a href="https://www.itu.int/rec/T-REC-P.863/en" title="citation">P.863（POLQA）</a>。因此，PESQ 适合在必须对照旧论文时按原条件复现；新的标准合规性表述不应把 P.862 写成现行建议书。P.863 是现行的客观语音质量建议书，但其适用范围和版本仍需随正式报告记录。</p>
 <p><a href="https://www.itu.int/rec/T-REC-P.835/en" title="citation">ITU-T P.835（07/2026）</a>用于对含噪语音处理系统做主观听测，分别评价语音信号（Signal，SIG）、背景噪声（Background，BAK）和总体效果（Overall，OVRL）。它适合区分“噪声是否减弱”和“语音是否受损”，但不能直接评价 DOA、轨迹身份或空间位置。正式报告应写明标准版本、听测材料、听众筛选、播放设备和统计区间。</p>
 <p><a href="https://www.itu.int/rec/T-REC-P.566/en" title="citation">ITU-T P.566（07/2026）</a>的官方条目将其列为“已生效，待发布”（in force / to be published）的单端机器学习多维语音质量模型。在正式文本发布前，本书不从二手资料扩写输出维度或评分细则。P.566 的单端客观预测不能代替 P.835 主观听测，也不评价 DOA、轨迹或空间位置。</p>
-<span id="sec-14" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-6">10.6 数据、仿真与复现</h2>
+<span id="sec-16" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-6">10.6 数据、仿真与复现</h2>
 <p>公开数据集适合建立可复现基线，不能代替目标设备录音。选择数据时要核对采样率、麦克风几何、房间、说话人数、重叠率、参考真值和许可证。训练、调参、最终测试应按房间或说话人隔离，避免相邻片段泄漏。</p>
 <p>录音和声纹还要有数据治理清单：</p>
 <ul>
@@ -554,7 +573,7 @@ room = pra.ShoeBox(
 <li>材料模型、随机种子与噪声生成方法；</li>
 <li>pyroomacoustics 版本和拟合方法。</li>
 </ul>
-<span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-7">10.7 分布式阵列</h2>
+<span id="sec-17" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-7">10.7 分布式阵列</h2>
 <p>分布式系统要分别解决三类问题：</p>
 <ol>
 <li><strong>时间轴</strong>：初始时差、SRO、丢包和网络抖动要分开估计。长录音首尾对齐只能发现累计误差，不能代替运行时监测。</li>
@@ -562,7 +581,7 @@ room = pra.ShoeBox(
 <li><strong>融合</strong>：集中式波束需要传多通道信号或统计量，对同步和带宽要求高；通道选择和识别结果融合要求较低，但损失空间信息。应把弱节点加入后的退化列为测试项。</li>
 </ol>
 <p>验收阈值应由网络带宽、最长会话和目标任务确定。例如，要求一小时内相位相干的系统与只做句级识别的系统，对残余 SRO 的要求不会相同。</p>
-<span id="sec-16" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-8">10.8 阵列形态与场景约束</h2>
+<span id="sec-18" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-8">10.8 阵列形态与场景约束</h2>
 <p>公开产品的麦克风数量、位置和算法会随硬件版本及地区型号变化。若没有可追溯的一手资料，不应从拆解照片推断算法链。本教程因此只讨论可迁移的设计条件：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -616,11 +635,51 @@ room = pra.ShoeBox(
 <p>表示到 $N$ 阶的完整球谐系数共有 $(N+1)^2$ 个，因此离散阵元数至少要能支撑相应的空间采样；实际还要留出几何和数值稳定性余量。</p>
 <p>可用阶数在高频受阵元空间混叠限制，在低频又受 $kr$ 较小和径向滤波噪声放大限制。不能用 $N=\lceil kr\rceil+1$ 一条式子替代完整设计，也不能把“某阶需要多少系数”直接等同于任意摆放的同数麦克风一定可用。</p>
 <p>三个非共点麦克风已经构成阵列。若几何非共线，它们能提供二维空间信息；若接近共线，则某些方向存在镜像或条件数问题。手机的主要限制通常是孔径小、结构遮挡和工作模式变化，而不是“三麦构不成阵列”。</p>
-<span id="sec-17" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-9">10.9 从模型到设备</h2>
+<span id="sec-19" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-9">10.9 从模型到设备</h2>
 <p>部署前先固定输入尺寸、算子版本、量化方式和线程配置，再测算力与内存。模型参数从 32 位浮点量化到 8 位整数时，参数存储在理想情况下约缩小四倍；端到端速度取决于硬件是否有相应整数内核、访存和算子融合，不能据此承诺“快四倍”。</p>
 <p>低功耗常驻任务和高算力按需任务可以分开：例如 KWS 在低功耗处理器上运行，唤醒后再启动 ASR 或分离网络。但 AEC、波束、WPE 是否常驻取决于是否需要持续边播边听、录音或通话，不应把“唤醒前关闭完整前端”写成固定方案。</p>
 <p>端侧、云侧或混合部署要比较隐私、断网可用性、网络尾延迟、更新能力和能耗。对品牌产品的实现方式没有公开证据时，只能写成候选架构，不能当作产品事实。</p>
-<span id="sec-18" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-10">10.10 联调与验收</h2>
+<span id="sec-20" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-9-1">10.9.1 开源实现怎样用作工程对照</h3>
+<p>开源项目解决的是链路中的不同部分，不能因为都能处理音频就横向替换。下面只列本书正文能够说明用途和边界的项目；固定来源、提交、许可证和核实日期统一记录在 <a href="../codes/SOURCES.lock.json"><code>codes/SOURCES.lock.json</code></a>，代码、模型权重和数据集许可证分别检查。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">官方项目</th>
+<th scope="col">可以对照什么</th>
+<th scope="col">不能由它证明什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/">WebRTC AEC3 固定提交</a></td>
+<td>实时 AEC 的延迟估计、线性消除和残余回声抑制分工，详见 §6.1.9</td>
+<td>不能把内部常数当成本产品阈值，也不覆盖阵列定位和 WPE</td>
+</tr>
+<tr>
+<td><a href="https://github.com/PortAudio/portaudio/tree/3f7bee79a65327d2e0965e8a74299723ed6f072d">PortAudio 19.7.0 固定提交</a></td>
+<td>跨平台设备枚举、阻塞与回调式音频输入输出；该提交按官方 Release Notes 定位</td>
+<td>不负责跨设备同步、重采样、AEC 或波束形成</td>
+</tr>
+<tr>
+<td><a href="https://pypi.org/project/pyroomacoustics/0.10.0/">pyroomacoustics 0.10.0 发布记录</a></td>
+<td>房间、RIR、DOA 与波束的 Python 原型</td>
+<td>仿真通过不等于目标设备达到实时性或实录效果</td>
+</tr>
+<tr>
+<td><a href="https://pypi.org/project/nara-wpe/0.0.11/">nara_wpe 0.0.11 发布记录</a></td>
+<td>离线、块在线和递归 WPE 的接口对照</td>
+<td>安装命令不能证明所选接口因果，也不能证明当前 Python 环境兼容</td>
+</tr>
+<tr>
+<td><a href="https://github.com/microsoft/onnxruntime/tree/48795e0281bcaa6b3b63b28af5e078b4c41e995f">ONNX Runtime 固定源码快照</a></td>
+<td>模型执行、执行提供程序和量化后的设备部署；链接固定到本轮核实的完整提交，不把未发布版本写成正式发布</td>
+<td>它是运行时，不定义 NS、分离或波束算法的训练目标</td>
+</tr>
+</tbody>
+</table></div>
+<p>WebRTC 与 PortAudio 规模较大，本仓库不复制其源码。需要对照时按锁定清单获取，并在隔离环境构建。<code>codes/array_tutorial/</code> 中的程序是本书教学基线，作用是复算约定和边界；它们不冒充上游项目，也不构成产品性能承诺。</p>
+<p>模型落地时还要固定输入采样率、通道顺序、块长、动态轴、归一化、状态张量、算子集、运行时版本和线程配置。冷启动测量包含模型读取、图优化、权重上传和首轮内核准备；稳定运行延迟要在 warm-up 后另测。更新模型前保存可回滚版本，并用同一硬件、同一数据和同一计时范围比较。</p>
+<span id="sec-21" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-10">10.10 联调与验收</h2>
 <p>联调应按依赖关系排查，不必强行把所有模块串成一个固定顺序。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -674,6 +733,47 @@ room = pra.ShoeBox(
 </tbody>
 </table></div>
 <p>每个验收阈值都应包含测量条件、统计量和样本量。例如“角误差小于 5°”还要说明声源角度分布、距离、房间、信噪比，以及该数值是均值还是某个分位数。教程中的算例只能用于验证计算，不能直接作为产品验收阈值。</p>
+<p>在线监控应记录足以定位故障、但不默认保存原始语音的字段。本书给出的 <a href="../codes/engineering/telemetry_schema.json"><code>telemetry_schema.json</code></a> 采用以下口径；它是最小示例，不含用户身份、转写文本或原始音频。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">字段组</th>
+<th scope="col">单位与统计口径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>timestamp_ns</code>、<code>frame_index</code></td>
+<td>单调采集时钟域；时间戳指本帧首样本，不是墙上时间</td>
+</tr>
+<tr>
+<td><code>queue_depth</code></td>
+<td>发布该条记录时仍在等待的帧数，不含正在执行的帧</td>
+</tr>
+<tr>
+<td><code>xrun_count</code>、<code>dropped_samples</code></td>
+<td>从流启动起的累计值；丢样按时间样本计，不按通道展开</td>
+</tr>
+<tr>
+<td><code>clipping_fraction</code></td>
+<td>本帧所有通道标量样本中的削波比例</td>
+</tr>
+<tr>
+<td><code>sro_ppm</code></td>
+<td>相对指定参考设备、在已配置估计窗内得到的采样率偏移</td>
+</tr>
+<tr>
+<td><code>rtf</code>、<code>deadline_miss</code></td>
+<td>本帧关键路径处理时长除以音频时长，以及是否越过本帧期限</td>
+</tr>
+<tr>
+<td><code>agc_gain</code>、<code>model_version</code></td>
+<td>本帧线性幅度增益；完整有序模型链的稳定版本标识</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>simulate_deadline_queue</code> 的 <code>queue_high_water</code> 包含正在处理的帧，故不能直接写进上表的等待队列深度。实际产品若要记录敏感内容，应按 §10.6 的同意、访问、保留和删除规则另行设计。</p>
+<p>故障注入要对应恢复动作。固定延迟跳变用于检查 AEC 重对齐；单通道增益或相位扰动用于检查标定和波束鲁棒性；插入或删除样本用于区分丢样与 SRO；CPU 负载脉冲用于检查队列、尾延迟和降级；截断或 NaN 模型输出用于检查旁路和重置。每次试验都要记录注入位置、持续时间、期望状态转换和恢复时间，不能只确认进程没有崩溃。</p>
 <p>常见故障可按依赖关系缩小范围：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -711,7 +811,7 @@ room = pra.ShoeBox(
 </tr>
 </tbody>
 </table></div>
-<span id="sec-19" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-11">10.11 本章小结</h2>
+<span id="sec-22" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-11">10.11 本章小结</h2>
 <ol>
 <li>图 23 是参考依赖图，不是所有设备必须执行的固定流水线。</li>
 <li>延迟、算力和续航必须在目标硬件上按明确口径测量；窗口长度、MIPS 和 mAh 不能互相替代。</li>

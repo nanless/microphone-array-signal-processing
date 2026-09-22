@@ -1,6 +1,6 @@
 # Scripts：绘图与工具脚本
 
-本目录放教程的全部可运行脚本。请在**仓库根目录**执行，不要在本目录执行。
+本目录放绘图、构建和发布检查工具。算法与工程教学代码在 `codes/`；两类程序都应在**仓库根目录**执行。
 
 运行时间取决于处理器、操作系统、Python 与依赖版本和当前负载。若要报告耗时，应同时记录这些条件、运行次数和统计方式。
 
@@ -11,6 +11,7 @@
 .venv/bin/python scripts/build_pdf.py         # 合订 chapters/ → dist/combined.html → dist/microphone-array-tutorial.pdf（需 Chrome）
 .venv/bin/python scripts/quality_check.py      # 发布前检查结构、公式、图片溯源、链接、书签和本地路径泄露
 .venv/bin/python -m unittest discover -s tests -v  # 运行构建与算法回归测试
+.venv/bin/python -m codes.examples.ch10_engineering_baselines  # 第 10 章工程基线
 ```
 
 Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
@@ -22,19 +23,21 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 | `renumber2.py` | 已退役。单篇长文时代的图号整理工具，留作存档，平时不用跑 | 无 |
 | `build_site.py` | 建站脚本。读 `chapters/` 14 篇 Markdown，用 markdown 库转成静态页面：首页 + 13 个内容页，左侧边栏可跳章节与小节，文末上一篇/下一篇。编号小节使用 `sec-x-y` 稳定标识，并保留旧 `sec-N` 别名。图片直接引用 `figures/`，数学公式使用固定版本的 MathJax 3.2.2 在线渲染 | `site/*.html`（共 14 页） |
 | `build_pdf.py` | 合订本脚本。14 篇合成带封面、三级目录的单页 HTML，再调 Chrome 无头打印成 A4 PDF，最后写篇/节/指定子节三级书签；第三级收入第 6、7 章的源 h4。输出先写临时文件，校验后再替换发布件。常用 flag：`--html-only`、`--pdf-only`、`--no-bookmarks`、`--build-date YYYY-MM-DD` | `dist/combined.html`（中间产物） + `dist/microphone-array-tutorial.pdf` |
-| `quality_check.py` | 发布门禁。用独立基线检查 14 篇/81 节/20 个指定子节/33 图，核对图号、alt、公式编号与引用、小节语义链接、PNG 绘图脚本摘要、网页导航和 PDF 三级书签。确定性问题阻断发布，高风险口语只提醒人工复核 | 通过、失败清单，以及不阻断发布的人工复核与可访问性提示 |
+| `quality_check.py` | 发布门禁。用独立基线检查 14 篇/81 节/21 个指定子节/33 图，核对图号、alt、公式编号与引用、小节语义链接、PNG 绘图脚本摘要、网页导航和 PDF 三级书签。确定性问题阻断发布，高风险口语只提醒人工复核 | 通过、失败清单，以及不阻断发布的人工复核与可访问性提示 |
 
 改图练习（如附录 B 习题）：改对应 `fig_*()` 函数里的参数，重跑本目录脚本，到 `figures/` 看效果。
 
+`codes/array_tutorial/engineering.py` 中的工程基线只依赖 NumPy。它包括 SRO 拟合与教学用线性重采样、VAD 迟滞与 hangover、峰值保护 AGC、固定容量环形缓冲、deadline/队列模拟、Q1.15 量化和遥测字段校验。运行 `.venv/bin/python -m unittest tests.test_codes_engineering -v` 可执行对应回归测试。代码范围、上游实现与许可证边界以 `codes/README.md`、`codes/COVERAGE.md`、`codes/THIRD_PARTY.md` 和 `codes/SOURCES.lock.json` 为准。
+
 **发布与验收说明**
 
-**书签与人工抽查**：合订本 PDF 顶层是导读、11 章正文和 2 篇附录，第二层来自各篇实际小节；第 6 章的 17 个源 h4 和第 7 章的 3 个源 h4 作为第三级书签，并保持在各自父节之下。
+**书签与人工抽查**：合订本 PDF 顶层是导读、11 章正文和 2 篇附录，第二层来自各篇实际小节；第 6 章的 18 个源 h4 和第 7 章的 3 个源 h4 作为第三级书签，并保持在各自父节之下。
 
 合订本构建需联网加载固定版本的 MathJax。文本层检查只能发现部分未渲染源码，不能证明异步排版已经完整结束；正式发布前必须打开 PDF，抽查公式、宽表、长代码块、图片和分页是否存在半渲染、溢出或裁切。
 
 **PDF 可访问性限制**：当前 PDF 由 Chrome 打印生成，保留可搜索文本、`zh-CN` 语言信息和三级书签，但不保证包含 PDF 结构标签或可靠的辅助技术阅读顺序。`quality_check.py` 会披露这一限制而不让现有构建无条件失败；交付时不能把该提示表述为“PDF 可访问性已完整验收”。
 
-**独立结构基线**：发布门禁的独立结构基线为 14 个顶级书签、81 个二级书签、20 个三级书签，共 115 个大纲项，以及图 1～33。它还检查图号与 alt、公式编号与引用、小节语义链接、每个源 h2/h3/h4 标题是否真的出现在当前页导航中（源 h1 可排除），以及 PNG 中的 `SourceScript` 和完整 `SourceScriptDigest`。
+**独立结构基线**：发布门禁的独立结构基线为 14 个顶级书签、81 个二级书签、21 个三级书签，共 116 个大纲项，以及图 1～33。它还检查图号与 alt、公式编号与引用、小节语义链接、每个源 h2/h3/h4 标题是否真的出现在当前页导航中（源 h1 可排除），以及 PNG 中的 `SourceScript` 和完整 `SourceScriptDigest`。
 
 修改绘图脚本后未重画的 PNG 会使门禁失败；高风险口语命中只输出人工复核提示。
 

@@ -15,7 +15,7 @@
 3. **原始论文**：Capon（1969）、Griffiths & Jim GSC（1982，*An Alternative Approach to Linearly Constrained Adaptive Beamforming*, IEEE Trans. Antennas Propag. 30(1):27–34）、Schmidt MUSIC（1986）、Roy & Kailath ESPRIT（1989）、Allen & Berkley 镜像法（1979）、Nakatani et al. WPE（IEEE TASLP 2010）、Pal & Vaidyanathan 嵌套阵（IEEE TSP 2010）。
 4. **回声消除**：Hänsler & Schmidt, *Acoustic Echo and Noise Control*（Wiley 2004）；近年进展看 ICASSP AEC Challenge 系列报告。
 5. **DNN 方向**：Chakrabarty & Habets（IEEE JSTSP 2019）、Gu et al. 全神经波束形成（IEEE/ACM TASLP, vol.31, pp.849–862, DOI 10.1109/TASLP.2022.3229261）。
-6. **实验顺序**：用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线；运行 `scripts/` 中的两个绘图脚本，复现 33 张图；选择与研究任务匹配的公开数据和参考系统；最后在可用的多通道硬件上验证实时性、同步和标定。数据集、框架和硬件只是候选工具，应根据任务与许可证选择。
+6. **实验顺序**：先运行 `codes/` 中只依赖 NumPy 的教学实现，核对手算、数组维度和边界；再用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线；运行 `scripts/` 中的两个绘图脚本，复现 33 张图；随后选择与研究任务匹配的公开数据和固定版本参考系统；最后在可用的多通道硬件上验证实时性、同步和标定。数据集、框架和硬件只是候选工具，应根据任务与许可证选择。
 
 ### 13.2 领域地图：教材、会议、期刊与挑战赛
 
@@ -295,6 +295,8 @@ VarArray 把 TAC、Conformer 分离和通道间相位差特征用于几何无关
 
     **提示**：分别列出前瞻、缓冲、计算、调度和解码/交互。把 STFT 窗长从 32 ms 改为 16 ms 只会改变依赖完整窗的等待，不会自动把端到端延迟减半；WPE 流式化和后端分级也要以实测关键路径验收。
 
+    运行 `.venv/bin/python -m codes.examples.ch10_engineering_baselines`，再把调度示例中的两个 18 ms 处理帧逐步增大。记录 deadline miss、队列高水位和丢帧数。该模拟器只有一条串行工作线程，不含操作系统抢占；它验证记账方式，不是目标硬件性能测试。
+
 **第 11 章（选型）**
 
 15. 思考题：给“车载 4 麦分布式 + 强发动机噪声 + 免唤醒连续对话”场景写一段选型论证，分别说明几何、定位、波束和 AEC。
@@ -320,20 +322,27 @@ VarArray 把 TAC、Conformer 分离和通道间相位差特征用于几何无关
 
 ### 13.7 复现说明
 
-下面两条命令用于重新生成全部 33 张图。
+下面先运行代码基线的单元测试和第 10 章示例，再重新生成全部 33 张图：
+
+```bash
+.venv/bin/python -m unittest tests.test_codes_engineering -v
+.venv/bin/python -m codes.examples.ch10_engineering_baselines
+```
+
+第 10 章示例使用确定性输入，覆盖 SRO 直线拟合与线性重采样、VAD 迟滞与 hangover、峰值保护 AGC、固定容量环形缓冲、deadline/队列模拟和 Q1.15 饱和量化。线性重采样、Python 环形缓冲和调度模拟都是教学基线，不应替换带抗混叠滤波的流式重采样器、无锁实时队列或目标系统测量。
 
 绘图脚本都在 `scripts/` 里。在仓库根目录跑两个命令，结果进 `figures/`，共 33 张图：
 
 ```bash
-.venv/bin/python scripts/make_figures.py      # 图 1~25、图 33
-.venv/bin/python scripts/make_aec_figures.py  # 图 26~32（回声消除专题）
+.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33
+.venv/bin/python scripts/make_aec_figures.py  # 图 26～32（回声消除专题）
 ```
 
 Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`，其余不变。
 
 运行时间随硬件、软件版本和负载变化。报告耗时时应同时记录这些条件、运行次数和统计方式。
 
-脚本的基础依赖是 `numpy` 和 `matplotlib`，并使用固定随机种子，因此相同环境和参数下应得到相同结果。每个脚本生成哪些图、练习需要哪些扩展依赖，见 `scripts/README.md`。
+代码基线只依赖 `numpy`；绘图脚本依赖 `numpy` 和 `matplotlib`，并使用固定随机种子，因此相同环境和参数下应得到相同结果。每个脚本生成哪些图、练习需要哪些扩展依赖，见 `scripts/README.md`；代码覆盖范围、上游来源和许可证见 `codes/README.md`、`codes/COVERAGE.md` 与 `codes/SOURCES.lock.json`。
 
 正文中引用的定量结果应追溯到相应论文、标准或本仓库脚本，并同时记录数据、通道、参数和指标口径。不同实验条件下的数值不直接排名。
 

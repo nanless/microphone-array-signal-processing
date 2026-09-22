@@ -60,6 +60,18 @@ class BuildHelpersTest(unittest.TestCase):
                 '<a href="04_doa-estimation.html#custom">定位小节</a>'
             )
 
+    def test_repository_links_become_portable_in_combined_pdf(self):
+        html = '<a href="../codes/array_tutorial/aec.py">AEC code</a>'
+        rewritten = build_pdf.rewrite_repository_links(html)
+        self.assertEqual(
+            rewritten,
+            '<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/aec.py">AEC code</a>',
+        )
+        self.assertEqual(
+            build_pdf.rewrite_repository_links('<a href="https://example.com/a">a</a>'),
+            '<a href="https://example.com/a">a</a>',
+        )
+
     def test_page_info_block_removal_pattern_does_not_leave_empty_quote(self):
         html = '<hr><blockquote>\n<p>📄 <a href="#ch-0">回首页</a></p>\n</blockquote>'
         cleaned = build_pdf.remove_page_info(html)

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>导读与导航 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f619c708bea4"><style>
+<meta name="source-digest" content="aea756f1a7d4"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -626,7 +626,15 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ol>
 <hr />
 <span id="sec-25" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-6d43c0086f">8. 动手复现</h2>
-<p>绘图脚本位于 <code>scripts/</code>。在仓库根目录运行第 13.7 节列出的两个命令，可重新生成 33 张图；运行时间取决于机器。具体步骤和错误处理见 <code>scripts/README.md</code>。Windows 上需把命令中的 <code>.venv/bin/python</code> 换成 <code>.venv\Scripts\python</code>。</p>
+<p><code>codes/</code> 先提供与公式相对应的小规模教学基线，<code>scripts/</code> 再生成书中的图。前者适合逐步检查时延、矩阵形状、约束残差和边界输入；后者适合复现正文的完整示意或仿真条件。算法覆盖状态见 <code>codes/COVERAGE.md</code>，第三方官方实现、固定提交和许可证边界见 <code>codes/THIRD_PARTY.md</code>。</p>
+<p>在仓库根目录先运行三组章节例子：</p>
+<pre><code class="language-bash">.venv/bin/python codes/examples/ch02_05_baselines.py
+.venv/bin/python codes/examples/ch06_09_baselines.py
+.venv/bin/python codes/examples/ch10_engineering_baselines.py
+.venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
+</code></pre>
+<p>再运行第 13.7 节列出的绘图命令，可重新生成 33 张图；运行时间取决于机器。具体构建步骤和错误处理见 <code>scripts/README.md</code>。Windows 上需把命令中的 <code>.venv/bin/python</code> 换成 <code>.venv\Scripts\python</code>。</p>
+<p>这些 NumPy/标准库程序用于复算，不是产品实时前端。大型训练框架、WebRTC 和设备链路采用固定来源索引，默认不复制进仓库；代码、模型、数据和示例录音的许可证要分别核对。</p>
 <hr />
 <span id="sec-26" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-ccd87eee7f">9. 常见问题</h2>
 <p><strong>图片看不到怎么办？</strong></p>
@@ -636,7 +644,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>公式看不懂怎么办？</strong></p>
 <p>先查第 2 章和附录 A 中的符号、术语与数学基础，再结合图 7、图 11、图 15、图 16 阅读第 4、5、7、8 章的推导。</p>
 <p><strong>想跑实验怎么办？</strong></p>
-<p>可先按第 8 节重绘 33 张图，再用 pyroomacoustics 建立房间仿真基线。公开数据和硬件实验应根据任务、许可证与设备条件选择，练习入口见附录 B 的 §13.1、§13.6。</p>
+<p>先按第 8 节运行章节教学基线，确认公式约定和边界输入，再重绘 33 张图。之后可按锁定版本用 pyroomacoustics 建立房间仿真基线。公开数据、模型和硬件实验应根据任务、许可证与设备条件选择，练习入口见附录 B 的 §13.1、§13.6。</p>
 <p><strong>不同实验的绝对数值能比吗？</strong></p>
 <p>不能。阵列几何、房间、信噪比、数据集、实现和评测口径不同，绝对数值不能直接横向比较。先确认条件一致，再比较趋势和量级。</p>
 <hr />
@@ -647,6 +655,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>[ ] 60 分钟读 02，学会读图 7（主瓣、旁瓣、零陷、主瓣宽度、栅瓣）。</li>
 <li>[ ] 按第 2 节的时间表读 04～08：04、05 各 60～90 分钟，06 约 60～80 分钟，07、08 各 30～45 分钟。</li>
 <li>[ ] 对照第 8 节画一遍 33 张图，打开 <code>figures/</code> 对照正文看图。</li>
+<li>[ ] 运行 <code>codes/examples/</code> 的三组基线，并从 <code>codes/COVERAGE.md</code> 选一个原理索引项目核对其官方实现边界。</li>
 <li>[ ] 做附录 B 的练习题（入门做 2、3、5、7、10、11、14 题，进阶再做 6、8、12、13、16、17 题）。</li>
 <li>
 <p>[ ] 用附录 B §13.4 排查常见问题，并按第 10 章编制延迟、同步和标定预算。</p>

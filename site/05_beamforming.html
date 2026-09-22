@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 5 章 · 波束形成 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f619c708bea4"><style>
+<meta name="source-digest" content="aea756f1a7d4"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -70,6 +70,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-5-7-3">5.7.3 音乐噪声与三项调节参数</a></li>
 <li><a href="05_beamforming.html#sec-5-8">5.8 球谐域波束形成（球阵专属）</a></li>
 <li><a href="05_beamforming.html#sec-5-9">5.9 深度神经网络（Deep Neural Network，简称 DNN）波束形成</a></li>
+<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-5fd4cffa34">可执行基线与上线检查</a></li>
 <li><a href="05_beamforming.html#sec-5-10">5.10 波束形成算法总对比</a></li>
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-38e7ff9a06">延伸阅读：Kumatani 等的 CMU 课程讲义</a></li>
 <li><a href="05_beamforming.html#sec-5-11">5.11 本章练习</a></li>
@@ -99,6 +100,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-5-7-3">5.7.3 音乐噪声与三项调节参数</a></li>
 <li><a href="05_beamforming.html#sec-5-8">5.8 球谐域波束形成（球阵专属）</a></li>
 <li><a href="05_beamforming.html#sec-5-9">5.9 深度神经网络（Deep Neural Network，简称 DNN）波束形成</a></li>
+<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-5fd4cffa34">可执行基线与上线检查</a></li>
 <li><a href="05_beamforming.html#sec-5-10">5.10 波束形成算法总对比</a></li>
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-38e7ff9a06">延伸阅读：Kumatani 等的 CMU 课程讲义</a></li>
 <li><a href="05_beamforming.html#sec-5-11">5.11 本章练习</a></li>
@@ -720,7 +722,11 @@ $$\hat{\mathbf R}_{ss}\vec w_{GEV}=\lambda_{\max}\hat{\mathbf R}_{nn}\vec w_{GEV
 <p>可直接验证 $\vec w^H\hat{\vec a}=1$，输出噪声功率为 $\vec w^H\hat{\mathbf R}_{nn}\vec w=2/3$。</p>
 <p>若目标掩码把干扰大量计入 $\hat{\mathbf R}_{ss}$，RTF 会偏移，上述无失真条件只对错误的 $\hat{\vec a}$ 成立。</p>
 <p>端到端网络也可以直接估计复数权重、时域滤波器或输出波形。它不再自动满足无失真、WNG 或因果约束，必须把阵列泛化、前瞻帧数、目标失真和目标硬件上的资源消耗列入评测。若与 ASR 联合训练，还应固定后端识别器和评分脚本，同时报告前端信号指标与词错误率（Word Error Rate，WER）。<a href="https://doi.org/10.1109/TASLP.2022.3229261" title="citation">Gu et al., IEEE/ACM TASLP 2023</a></p>
-<span id="sec-16" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-5-10">5.10 波束形成算法总对比</h2>
+<span id="sec-16" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-5fd4cffa34">可执行基线与上线检查</h3>
+<p><a href="../codes/array_tutorial/beamforming.py"><code>beamforming.py</code></a> 提供 DSB、弥散场相干矩阵、加载超指向/MVDR、LCMV、GSC 阻塞矩阵和 Wiener 增益的原创 NumPy 基线。权重约定统一为输出 $Y=\vec w^H\vec x$，多通道谱形状统一为 <code>通道 × 频点 × 帧</code>；逐频点权重为 <code>频点 × 通道</code>。函数用线性方程求解代替显式求逆；未加载协方差病态、LCMV 约束不独立或空统计量都会报错。正文算例的 DSB 单位响应、Capon 数值、MVDR 权重、LCMV 双约束、GSC 阻塞和 Wiener 增益由 <a href="../tests/test_codes_doa_beam.py"><code>test_codes_doa_beam.py</code></a> 独立回归，串联示例见 <a href="../codes/examples/ch02_05_baselines.py"><code>ch02_05_baselines.py</code></a>。</p>
+<p>这些函数是公式基线，不是完整设备状态机。实时实现还要记录 STFT 窗长和帧移、分数延时滤波器、固定传播补偿、参考通道、SCM 遗忘因子、VAD/SPP 门控、权值更新周期和输出限幅。每次更新后检查条件数、$|\vec w^H\vec a-1|$、WNG 和输出峰值；空掩码或病态矩阵出现时，应在“保持上一组已验证权值、增加已标明口径的加载、退回 DSB”之间预先规定顺序。目标泄漏时应冻结噪声 SCM 或 GSC 自适应支路，并记录触发原因，不能只在输出失真后重新初始化。</p>
+<p>第三方项目只作索引，不复制源码。核实于 2026-09-22 的官方参考包括：<a href="https://docs.pytorch.org/audio/main/tutorials/mvdr_tutorial.html">torchaudio MVDR 教程</a>及其<a href="https://github.com/pytorch/audio/blob/main/examples/tutorials/mvdr_tutorial.py">官方示例源码</a>（<a href="https://github.com/pytorch/audio/blob/main/LICENSE" title="citation">BSD-2-Clause</a>）。该教程链接指向 nightly 文档，页面当日打印的版本为 torchaudio <code>2.11.0a0+2470b9c</code>；官方仓库当日 <code>main</code> 的完整提交为 <code>b85c99ccac635a06b1afaf5284bf4c1a00c1f9b5</code>，两者不能当成同一个稳定发行版。官方主页还说明 torchaudio 自 2.8 起进入维护阶段，部分 API 在 2.8 弃用并于 2.9 移除，因此复现应固定实际验证版本。<a href="https://github.com/espnet/espnet/blob/master/espnet2/enh/layers/beamformer.py">ESPnet beamformer</a>采用 Apache-2.0，当日发布页显示 v.202609；<a href="https://github.com/speechbrain/speechbrain">SpeechBrain</a>采用 Apache-2.0。完整 GEV+BAN、WPD、神经掩码、球谐径向滤波、MCRA/IMCRA 与 OM-LSA 需要额外算法和依赖，本轮不把它们伪装成本书已经覆盖的最小实现。</p>
+<span id="sec-17" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-5-10">5.10 波束形成算法总对比</h2>
 <p>不同方法的混响抑制量不能脱离阵列、数据、因果性和指标压成星级。下表只比较可由定义确定的目标、输入与失败条件；运算量仍要按通道数、频点数、滤波长度和实现测量。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -812,7 +818,7 @@ $$\hat{\mathbf R}_{ss}\vec w_{GEV}=\lambda_{\max}\hat{\mathbf R}_{nn}\vec w_{GEV
 <p>上表“目标保持条件”列只说明算法约束，并不是目标失真的数值。若要量化目标损伤，必须先固定基线。以参考麦选择向量 $\vec e_r$ 为基线，噪声降低量定义为
 $$\mathrm{NR}_{ref}=10\log_{10}\frac{\vec e_r^H\mathbf R_{nn}\vec e_r}{\vec w^H\mathbf R_{nn}\vec w}\text{。}$$
 分子、分母要用同一频带和统计窗口。若以 DSB 为基线，就把分子换成 DSB 的输出噪声功率并明确标注。存在导向失配时，只报 NR 会掩盖目标衰减，还应同时报告 $|\vec w^H\vec a_{true}-1|$，或报告相对同一参考麦的输出 SNR 改善。</p>
-<span id="sec-17" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-38e7ff9a06">延伸阅读：Kumatani 等的 CMU 课程讲义</h3>
+<span id="sec-18" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-38e7ff9a06">延伸阅读：Kumatani 等的 CMU 课程讲义</h3>
 <p>本章 §5.2、§5.3、§5.8 引用的是同一份 [Kumatani et al.（出处同 §5.2 引文）] CMU 远场语音识别课程讲义，其中讨论球阵、圆阵上的波束形成与识别实验。该材料是课程讲义而非期刊论文，适合用来比较算法结构与识别评测；公式与适用条件仍需回到相应原始论文核对。阅读时可围绕以下三点整理记录。</p>
 <p>第一，<strong>GEV 与 MVDR 的约束差异</strong>。GEV 最大化输出信噪比，没有无失真约束，输出尺度由后续归一化确定；MVDR 对设计导向矢量施加单位响应。阅读讲义的对比表时，应同时记录噪声抑制、目标失真、归一化方法和最终识别率，不能只比较单一分数。</p>
 <p>第二，<strong>特征波束（eigen-beam）的结构</strong>。球谐或圆谐波域中的各阶模态可分别正则化。高阶模态通常提供更细的空间变化，也更容易放大噪声；应按 WNG 预算限制其增益。该处理与阵元域对角加载都用于限制病态逆问题，但作用矩阵和参数口径不同。</p>
@@ -821,7 +827,7 @@ $$\mathrm{NR}_{ref}=10\log_{10}\frac{\vec e_r^H\mathbf R_{nn}\vec e_r}{\vec w^H\
 <blockquote>
 <p><strong>本章小结</strong>：DSB 提供固定波束基线；超指向在弥散场 DI 与 WNG 之间权衡；MVDR、LCMV、Frost 和 GSC 用不同形式实现协方差驱动的约束优化；后滤波处理残留噪声；球谐域方法适用于球阵；神经网络可估计掩码、协方差或滤波器。选型时应同时报告目标响应、WNG、噪声降低量、延迟和任务指标。</p>
 </blockquote>
-<span id="sec-18" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-5-11">5.11 本章练习</h2>
+<span id="sec-19" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-5-11">5.11 本章练习</h2>
 <ol>
 <li>DSB 增益与 WNG 上限：4 麦均匀线阵、DSB 指向目标，白噪声增益是多少 dB？再用柯西-施瓦茨不等式说明：任何满足无失真约束（$\vec{w}^H\vec{a}=1$）的权重，$G_{\mathrm{WNG}}$ 都不超过 4。（参考答案：$\mathrm{WNG}_{\mathrm{dB}}=10\log_{10}4\approx$<strong>6 dB</strong>；$1=|\vec{w}^H\vec{a}|\le\|\vec{w}\|\|\vec{a}\|=\|\vec{w}\|\sqrt4$，故 $G_{\mathrm{WNG}}=1/\|\vec{w}\|^2\le4$——等号在 $\vec{w}\propto\vec{a}$ 即 DSB 时成立，完整两步见 §5.2 的上限推导。）</li>
 <li>GSC 阻塞失配：沿用算例 5-3 的 2 麦阵，若目标实际偏到 2°（DOA 估计差 2°），下支路会漏进多少目标功率？自适应对消器会如何处理这部分泄漏，输出会出现什么变化？（参考答案：$\mathbf{B}^H\vec{a}(2°)\approx0.0060-0.1094\mathrm{j}$，模约为 0.1096，漏进约 <strong>1.2%</strong> 的目标功率（见算例第 6 步）；下支路的目标与上支路相关，对消器会把它也当干扰抵消，导致目标语音衰减或断续。对策见 §5.6 末。）</li>

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 11 章 · 总结与选型指南 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f619c708bea4"><style>
+<meta name="source-digest" content="aea756f1a7d4"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -225,7 +225,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>说话人归属词错误率（Speaker-Attributed Word Error Rate，sa-WER）把词转写与说话人标签一起评价，归属错误会影响结果。</li>
 </ul>
 <p>三者不能互换：ORC-WER 偏向检查内容是否被完整识别，cpWER 还要求全局输出流一致，sa-WER 用于确实需要身份归属的任务。</p>
-<p>实现时还要记录分段与重叠处理、标记规则，以及固定的评分工具版本或提交。本文核实于 2026-09-21，并将算法说明钉在 MeetEval 提交 <a href="https://github.com/fgnt/meeteval/blob/6e3dc81284f2d6928f7ef9e620fd3b6906daa429/doc/algorithms.html"><code>6e3dc81284f2d6928f7ef9e620fd3b6906daa429</code></a>；复现实验也应记录实际安装包版本或完整提交号，不能只写会移动的 <code>main</code>。</p>
+<p>实现时还要记录分段与重叠处理、标记规则，以及固定的评分工具版本或提交。本文核实于 2026-09-22，并将 MeetEval 对 cpWER、ORC-WER、MIMO-WER 和 DI-cpWER 的算法说明钉在提交 <a href="https://github.com/fgnt/meeteval/blob/6e3dc81284f2d6928f7ef9e620fd3b6906daa429/doc/algorithms.html"><code>6e3dc81284f2d6928f7ef9e620fd3b6906daa429</code></a>；该锁定文档没有把 sa-WER 列作同一工具的实现，使用 sa-WER 时应另行固定定义与评分器。复现实验还应记录实际安装包版本或完整提交号，不能只写会移动的 <code>main</code>。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
@@ -359,6 +359,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </table></div>
 <p>可以先建立最小基线，再一次增加一个模块。增加模块后要同时检查收益、语音损伤、延迟、功耗和失败样例。</p>
 <p>如果 WPE 没有改善目标房间的结果，或分离网络虽然提高了尺度不变信号失真比（Scale-Invariant Signal-to-Distortion Ratio，SI-SDR）却增加了内容错误，就不应因为流程图里画了它而保留。</p>
+<p>开源实现也要按任务筛选。项目名称不能代替算法条件：PortAudio 解决设备输入输出，不解决跨设备同步；ONNX Runtime 执行模型，不规定模型训练目标；pyroomacoustics 适合房间与阵列原型，不证明目标设备实时；WebRTC AEC3 可以对照实时回声链路，但其内部参数不是其他产品的默认值。选择开源项目时应把规范仓库、固定提交或发布、许可证、支持平台、输入输出契约、维护状态和最小测试一起写入方案，详见 §10.9.1 与 <a href="../codes/SOURCES.lock.json"><code>codes/SOURCES.lock.json</code></a>。</p>
+<p>本书代码使用三种标记：短小且可由公式独立复算的“教学实现”、调用固定外部版本的“适配器”、不复制大型上游源码的“参考索引”。教学实现通过单元测试，只能说明约定和边界算例正确；它没有经过目标设备的实时、长稳、合规和主观听测，不能直接标成工业实现。</p>
 <p><strong>完整决策例：未知参会者的连续转写</strong>。假设会议中共有 2～6 名未注册说话人，人数随时间变化，但任一时刻最多两人同时说话。系统要连续输出全部内容给 ASR，并要求端到端延迟可测但尚未给定阈值。先用硬约束筛选，再进入实测：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>

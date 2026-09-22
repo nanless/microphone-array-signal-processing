@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 4 章 · 声源定位（DOA 估计） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f619c708bea4"><style>
+<meta name="source-digest" content="aea756f1a7d4"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -67,6 +67,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-4-6-1">4.6.1 宽带聚焦：跨频率合并子空间信息</a></li>
 <li><a href="04_doa-estimation.html#sec-4-7">4.7 稀疏重构与深度学习</a></li>
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-4-7-1">4.7.1 近场模型失配：角度相同，距离仍会改变导向矢量</a></li>
+<li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-4-7-2">4.7.2 可执行基线的输入契约、回退与外部实现边界</a></li>
 <li><a href="04_doa-estimation.html#sec-4-8">4.8 定位算法总对比</a></li>
 <li><a href="04_doa-estimation.html#sec-4-9">4.9 本章练习</a></li>
 </ul>
@@ -94,6 +95,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-4-6-1">4.6.1 宽带聚焦：跨频率合并子空间信息</a></li>
 <li><a href="04_doa-estimation.html#sec-4-7">4.7 稀疏重构与深度学习</a></li>
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-4-7-1">4.7.1 近场模型失配：角度相同，距离仍会改变导向矢量</a></li>
+<li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-4-7-2">4.7.2 可执行基线的输入契约、回退与外部实现边界</a></li>
 <li><a href="04_doa-estimation.html#sec-4-8">4.8 定位算法总对比</a></li>
 <li><a href="04_doa-estimation.html#sec-4-9">4.9 本章练习</a></li>
 </ul></nav></details>
@@ -239,7 +241,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>图 12 的脚本不是三点抛物线拟合，而是对互谱补零，把 GCC-PHAT 的时延网格细化到 $62.5/16\approx3.91\,\mu$s，再在相关序列上取最大值。固定随机种子的噪声样例得到 $58.59375\,\mu$s，即 $0.9375$ 格；换算角度为</p>
 <p>$$\hat\theta=\arcsin\!\left(\frac{343\times58.59375\times10^{-6}}{0.04}\right)\approx30.16°。$$</p>
 <p>该估计比 30° 真值高约 0.16°。这个固定样例说明时延网格插值能避免只在整数采样点上搜索；实际偏差仍取决于信号带宽、观测长度、噪声、混响和插值方法，需要在多次试验或实测数据上统计。</p>
-<p><strong>优缺点</strong>：频域实现为 $O(N\log N)$，适合实时处理；但一对麦每帧通常只读一个主峰，多源时会出现多个峰且跨麦对难以配对。强混响或低信噪比还会使峰展宽或选错。GCC 加权家族的定义、统计模型和最大似然权重见 <a href="https://doi.org/10.1109/TASSP.1976.1162830" title="citation">Knapp 与 Carter, <em>IEEE TASSP</em>, 1976</a>。</p>
+<p><strong>优缺点</strong>：频域实现的主导运算量为 $O(N\log N)$；是否满足实时要求仍取决于窗长、帧移、麦对数量、FFT 库、硬件、线程、缓存和计时范围，不能由复杂度记号直接推出。但一对麦每帧通常只读一个主峰，多源时会出现多个峰且跨麦对难以配对。强混响或低信噪比还会使峰展宽或选错。GCC 加权家族的定义、统计模型和最大似然权重见 <a href="https://doi.org/10.1109/TASSP.1976.1162830" title="citation">Knapp 与 Carter, <em>IEEE TASSP</em>, 1976</a>。</p>
 <p><strong>参数口径反例：$T_{60}$ 不能单独推出定位趋势</strong>。反射会把多个延迟副本叠到直达声上，使相关背景抬高、主峰展宽并出现旁峰；但一张合成图的变化方向还取决于如何归一化反射尾。</p>
 <p>图 13 把两个因素分开控制：每路冲激响应的直达能量固定为 1，随机指数尾分别归一到 DRR=+6、0、−6 dB；尾长取 $1.1T_{60}$，考察 $T_{60}=0.1、0.4、0.8$ s。采样率为 16 kHz，帧长约 64 ms，无额外传感器噪声，每个 $T_{60}\times\mathrm{DRR}$ 条件做 150 次固定种子的试验。</p>
 <p>互谱按 $X_1X_2^*$ 定义。第二路比第一路晚 9 点时，$\tau_{12}=-9$ 点，真峰 lag 也为 −9。估计峰落在真值 ±1 点内算正确。</p>
@@ -436,7 +438,7 @@ $$\frac{c\tau_{31}}{d}=\frac{0.0282975}{0.04}=0.7074\approx\frac{\sqrt2}{2}\quad
 <p>Bartlett 的典型分辨尺度由该阵列的常规波束主瓣决定。Rayleigh 类判据是约定的分辨标准，不是所有噪声和检测条件下的绝对物理边界。下面的单频算例为减轻记号负担，省略固定的 $f_k$。</p>
 <p><strong>Capon/MVDR 谱</strong>：对每个候选方向设计“该方向增益为 1、输出功率最小”的滤波器：</p>
 <p>$$P_C(f_k,\theta) = \frac{1}{\vec{a}^H(f_k,\theta)\,\hat{\mathbf{R}}^{-1}(f_k)\,\vec{a}(f_k,\theta)}\text{。}\tag{4-2}$$</p>
-<p>这个式子来自约束优化：最小化 $\vec{w}^H\hat{\mathbf{R}}\vec{w}$，同时要求 $\vec{w}^H\vec{a}(\theta)=1$。拉格朗日乘子法给出 $\vec{w}=\hat{\mathbf{R}}^{-1}\vec{a}/(\vec{a}^H\hat{\mathbf{R}}^{-1}\vec{a})$；把该权重代回输出功率，得到上面的 Capon 谱。完整推导见 §5.4 和式(5-1)。</p>
+<p>这个式子来自约束优化：最小化 $\vec{w}^H\hat{\mathbf{R}}\vec{w}$，同时要求 $\vec{w}^H\vec{a}(\theta)=1$。拉格朗日乘子法给出 $\vec{w}=\hat{\mathbf{R}}^{-1}\vec{a}/(\vec{a}^H\hat{\mathbf{R}}^{-1}\vec{a})$；把该权重代回输出功率，得到上面的 Capon 谱。完整推导见 §5.4 和式(5-3)。</p>
 <p>候选方向与真实源方向一致时，无失真约束保留该源，因此最小输出功率较大；方向不匹配时，优化器可进一步压低输出功率。$\hat{\mathbf R}$ 是 $M\times M$ 协方差矩阵。</p>
 <p>Capon 在模型准确、快拍充分时通常比 Bartlett 得到更窄的谱峰。快拍不足、相干多径或协方差病态时，应加正则并检查稳健性。</p>
 <p>这里的“加载”必须注明口径。绝对加载用 $\hat{\mathbf R}+\delta\mathbf I$，$\delta$ 与协方差元素同量纲；相对加载用 $\hat{\mathbf R}+\eta\operatorname{tr}(\hat{\mathbf R})\mathbf I/M$，$\eta$ 无量纲。图11的 Capon 采用相对加载 $\eta=10^{-6}$；图15的超指向波束也采用相对加载，但两图的数据模型不同，不能比较裸谱值。不同信号幅度下直接复用同一个绝对 $\delta$ 会改变实际正则强度，因此比较实现时不能只比较裸数值。</p>
@@ -609,7 +611,7 @@ $$\vec{a}^H(30°)\,\vec{e}_3=\frac{1}{\sqrt6}\big(1\times1+(-\mathrm{j})\times1+
 <p><strong>球面 SRP 图 + 等变 CNN 的使用边界</strong>：它解决的是把经纬度球面图直接送入平面 CNN 时邻域畸变、极区采样和旋转模式不一致的问题。相对解析 SRP 基线，它不替换麦对几何累积，而是在二十面体网格上学习空间响应的球面局部模式。</p>
 <p>成立条件是阵列坐标与声速模型已知、训练与推理使用兼容的球面采样，并且训练数据覆盖部署时的声源数、混响和噪声。</p>
 <p>最小比较应在同一批多通道数据上生成相同分辨率的 SRP-PHAT 球面图，以直接取峰为基线，再训练 icoDOA，并在未参与训练的旋转和房间上用同一角误差与检出规则比较。若没有这些数据覆盖或算力，解析 SRP-PHAT 更适合作为可解释基线。算法定义、60 个离散旋转等变性和 soft-argmax 输出见 <a href="https://doi.org/10.1109/TASLP.2022.3224282" title="citation">Díaz-Guerra、Miguel 与 Beltrán 的原论文</a>。</p>
-<p>官方 <a href="https://github.com/DavidDiazGuerra/icoDOA" title="citation">icoDOA 代码仓库</a>给出的最小入口是 <code>1sourceTracking_icoCNN.py</code>。README 记录的验证环境为 Python 3.8.1、PyTorch 1.8.1，并依赖 gpuRIR；合成训练需准备 LibriSpeech，实录测试需准备 LOCATA，输入图分辨率由脚本参数 <code>r</code> 控制，预训练模型和对应结果位于 <code>models/</code>、<code>results/</code>。这些版本和路径是仓库的复现口径，不是对其他版本的兼容性保证。</p>
+<p>官方 <a href="https://github.com/DavidDiazGuerra/icoDOA" title="citation">icoDOA 代码仓库</a>给出的最小入口是 <code>1sourceTracking_icoCNN.py</code>。README 记录的验证环境为 Python 3.8.1、PyTorch 1.8.1，并依赖 gpuRIR；合成训练需准备 LibriSpeech，实录测试需准备 LOCATA，输入图分辨率由脚本参数 <code>r</code> 控制，预训练模型和对应结果位于 <code>models/</code>、<code>results/</code>。这些版本和路径是仓库的复现口径，不是对其他版本的兼容性保证。该仓库采用 <a href="https://github.com/DavidDiazGuerra/icoDOA/blob/master/LICENSE" title="citation">AGPL-3.0</a>，并明确定位为论文复现代码而非通用软件库；本书只给官方链接，不复制其源码。许可证与环境信息核实于 2026-09-22，当日 <code>master</code> 的完整提交为 <code>04d1a89594c78ae3cf42f07d94c3737bdc1f7c82</code>；实际使用前仍应复查目标提交及模型、数据集的附加条款。</p>
 <p><strong>数据驱动结果的比较范围</strong>：定位网络必须在相同数据集、阵列、信噪比、混响、训练数据和误差指标下比较。上表只归纳输入与输出形式，不给出跨论文排名。卷积空间谱定位可参见 Chakrabarty &amp; Habets <a href="https://doi.org/10.1109/JSTSP.2019.2901664" title="citation">期刊论文</a>；IPDnet 见 Wang、Yang 与 Li 的 <a href="https://doi.org/10.1109/TASLP.2024.3507560" title="citation">IEEE/ACM TASLP 2024 正式论文</a>；ACCDOA 见 <a href="https://doi.org/10.1109/ICASSP39728.2021.9413609" title="citation">Shimada et al., ICASSP 2021</a>。使用时还需评估标注成本、跨房间泛化和模型复杂度。</p>
 <p><strong>SELD（声事件定位与检测，sound event localization and detection）</strong>同时估计事件类别、方向和活动时段。STARSS23 是 DCASE 2023 Task 3 使用的带距离元数据示例；当届正式输出并未要求距离。任务定义、划分和指标应按<a href="https://dcase.community/challenge2023/task-sound-event-localization-and-detection-evaluated-in-real-spatial-sound-scenes">当届官方任务页</a>核对，不能把某一届设置外推为长期不变的“前沿”。</p>
 <blockquote>
@@ -673,7 +675,11 @@ $$\vec{a}^H(30°)\,\vec{e}_3=\frac{1}{\sqrt6}\big(1\times1+(-\mathrm{j})\times1+
 <p>因此这个无噪、真值落在网格上的例子选中 $(0.20\text{ m},30°)$。它说明角度相同不等于近场导向矢量相同，也说明网格范围和间距本身会限制输出精度。</p>
 <p>若真实位置落在格点之间，应做局部细化或连续优化，不能把粗网格误差归因于观测噪声。球面波下联合估计角度与距离的宽带最大似然模型可参见 <a href="https://doi.org/10.1109/TSP.2002.800420" title="citation">Chen、Hudson 与 Yao 2002</a>。</p>
 <p><strong>距离不可观测边界</strong>：当 $r\to\infty$ 时，$d_m-d_2\to-x_m\sin\theta$，对 $r$ 的导数趋近 0；不同大距离候选的 TDOA 因而趋于同一平面波值。此时表中同角度的失配差会继续缩小，距离维度形成平坦谷。孔径很小、带宽或 SNR 不足、通道相位未标定时也会出现相同现象；算法应报告距离低置信度或只输出 DOA，而不是把搜索边界当成可靠距离。</p>
-<span id="sec-14" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-8">4.8 定位算法总对比</h2>
+<span id="sec-14" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-4-7-2">4.7.2 可执行基线的输入契约、回退与外部实现边界</h3>
+<p>本书的原创 NumPy 基线位于 <a href="../codes/array_tutorial/doa.py"><code>doa.py</code></a>。<code>gcc_phat</code> 对应 §4.2，返回的正时延严格表示 $\tau_{12}=t_1-t_2$；它使用零填充线性相关、物理时延裁剪和可选三点插值。<code>srp_phat</code> 对应式(4-1)，输入多通道谱的形状固定为 <code>通道 × 频点 × 帧</code>。<code>bartlett_spectrum</code>、<code>capon_spectrum</code>、<code>music_spectrum</code> 和 <code>esprit_ula</code> 分别对应 §4.5、§4.6；平面波和近场导向矢量来自 <a href="../codes/array_tutorial/geometry.py"><code>geometry.py</code></a>。完整小例与手算回归见 <a href="../codes/examples/ch02_05_baselines.py"><code>ch02_05_baselines.py</code></a> 和 <a href="../tests/test_codes_doa_beam.py"><code>test_codes_doa_beam.py</code></a>。</p>
+<p>接入实际录音时还要固定 WAV 数值口径、采样率、通道顺序、麦克风坐标及单位、参考麦、坐标轴、声速和时间戳。GCC 必须按物理孔径裁剪 lag，并同时输出峰值、峰背比和有效频带；SRP 还要记录阵元对、二维或三维搜索范围、网格单位、插值和粗到细规则。扫描谱要记录快拍窗口、频带合并、源数、选峰间距和加载口径。Capon/MUSIC/MVDR 使用厄米线性求解或 <code>eigh</code>，不显式形成矩阵逆；协方差奇异且没有加载时，示例代码会报错，调用方应明确选择增加快拍、相对加载、保持上次可靠估计或退回 SRP/Bartlett，不能把 NaN 当成方向。</p>
+<p>本书不复制第三方定位代码。核实于 2026-09-22 的官方索引包括：<a href="https://github.com/LCAV/pyroomacoustics">pyroomacoustics</a>（MIT；发布页当日显示 v0.10.1，书中 NormMUSIC 仍固定为 0.10.0 口径）、<a href="https://github.com/introlab/odas">ODAS</a>（MIT；面向嵌入式定位、追踪、分离和后处理，复现时应固定完整提交号）以及前述 icoDOA（AGPL-3.0）。CSSM、WAVES、TOPS、FRIDA、原子范数、SBL 和神经定位涉及额外优化器、训练数据或许可证，本轮只保留原论文与官方仓库索引，不把第三方实现改写成来源不清的“简化版”。</p>
+<span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-8">4.8 定位算法总对比</h2>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
@@ -764,7 +770,7 @@ $$\vec{a}^H(30°)\,\vec{e}_3=\frac{1}{\sqrt6}\big(1\times1+(-\mathrm{j})\times1+
 <li><strong>信号存在性</strong>：该方向波束输出的 SNR 或语音存在概率；静音段的方向估计直接弃用。</li>
 </ol>
 <p>丢轨阈值必须用本系统验证集标定。满足丢轨条件后，追踪器应转入重捕获状态，而不是继续输出抖动角度。这三类量是第 9 章追踪状态机的输入。</p>
-<span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-9">4.9 本章练习</h2>
+<span id="sec-16" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-9">4.9 本章练习</h2>
 <ol>
 <li>★基础（TDOA + GDOP）：4 cm 双麦、正横方向附近，时延估计偏了 10 μs，角度会偏多少？（参考答案：正横附近 $\Delta\theta\approx c\Delta\tau/d=343\times10\times10^{-6}/0.04\approx0.086$ rad≈<strong>4.9°</strong>。线性近似只能在偏差足够小时使用。例如真值为 85° 时，时延约 116.2 μs；估计值增加 10 μs 会超过 4 cm 双麦的物理上限 $d/c\approx116.6$ μs，应判为越界或限制到端射。若减少 10 μs，精确反算为 $\arcsin[(116.2-10)\times10^{-6}\times343/0.04]\approx65.6°$，误差约 19.4°。这与 §3.1 算例 3-2 一致：端射附近的有限偏差必须用反正弦精确反算，不能把微分式的 56.4° 当成精确答案。）</li>
 <li>★★进阶（CRLB 口径题）：为什么只写“带宽 4 kHz、SNR 0 dB”还不足以算出唯一的 TDOA CRLB？（参考答案：还需说明单通道或双通道观测、波形已知与否、SNR 和单/双边谱定义、观测时长或快拍数、信号的实际谱形及其均方根带宽，以及未知幅度等干扰参数；条件不同，Fisher 信息和常数系数都会变化。）</li>

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 8 章 · 语音分离 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f619c708bea4"><style>
+<meta name="source-digest" content="aea756f1a7d4"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -345,6 +345,9 @@ $$</p>
 <p>文本查询通用声音分离是另一项任务：查询词描述“警报声”“狗叫”等声音类别，不保证对应某个可注册的说话人。对比语言—音频预训练（Contrastive Language-Audio Pretraining，CLAP）可提供文本与音频嵌入，但 CLAP 本身不是分离器；实际系统还需要用查询嵌入控制掩码或波形生成模块。</p>
 <p>见 <a href="https://arxiv.org/abs/2206.04769" title="citation">CLAP</a>与使用语言查询的 AudioSep。AudioSep 已正式发表于 <em>IEEE/ACM Transactions on Audio, Speech, and Language Processing</em>, vol. 33, pp. 458–471，DOI <a href="https://doi.org/10.1109/TASLP.2024.3520017">10.1109/TASLP.2024.3520017</a>；<a href="https://github.com/audio-agi/audiosep">官方仓库</a>提供模型与推理入口。</p>
 <p>TSE 的身份泄漏、注册信道和声纹保护测试，不能由文本查询分离的类别级结果替代。</p>
+<p><strong>可执行分离基线与代码边界。</strong> <a href="../codes/array_tutorial/separation.py"><code>codes/array_tutorial/separation.py</code></a> 提供四个只依赖 NumPy 的小模块：<code>si_sdr()</code> 接收等长一维估计与参考；<code>pit_permutation()</code> 接收 <code>(源, 样本)</code> 数组并枚举排列，返回“第几个输出对应第几个参考”的元组和平均 SI-SDR；<code>masked_spatial_covariance()</code> 接收 <code>(频点, 通道, 帧)</code> 复谱与 <code>(频点, 帧)</code> 非负掩码；<code>mask_mvdr_2x2()</code> 用目标 SCM 的主特征向量估计相对传递函数，再以干扰 SCM 求两麦 MVDR，返回 <code>(频点, 帧)</code> 输出和 <code>(频点, 2)</code> 权重。</p>
+<p>联合示例用 <code>.venv/bin/python -m codes.examples.ch06_09_baselines</code> 运行，测试见 <a href="../tests/test_codes_aec_wpe_sep_track.py"><code>tests/test_codes_aec_wpe_sep_track.py</code></a>。测试覆盖输出交换、静音参考和静音估计拒绝、SCM 厄米性、MVDR 无失真约束，以及目标或干扰掩码为空时回退参考麦。实际评测还必须固定去均值、时延/增益对齐、静音段、截断长度和输入基线；秩亏 SCM、单通道输入、$N>M$、跨块换人及 STFT 重构均需单独测试。教学版 MVDR 在目标或干扰统计不可用时退回参考麦克风，不应把这一回退的输出解释成成功分离。</p>
+<p>AuxIVA/ILRMA 的完整数值实现应使用 <code>piva</code> 等上游项目；MNMF、TRINICON、CHiME GSS/GPU-GSS、Asteroid/SpeechBrain/ESPnet 中的 Conv-TasNet、DPRNN、SepFormer，以及 S4M、SpeakerBeam 和 AudioSep 均只索引论文官方仓库，不在本书复制。使用时记录提交或发布版、许可证、训练/测试数据版本、预训练权重许可、采样率、源数、因果/前瞻设置、块状态、指标脚本、硬件和峰值内存。cACGMM 的正文伪代码用于解释依赖关系，不是生产 GSS；若没有空分量重置、对数域后验和收敛检查，不能把它列为可复现基线。</p>
 <blockquote>
 <p><strong>练习 8-1（自测三题）</strong></p>
 <ol>

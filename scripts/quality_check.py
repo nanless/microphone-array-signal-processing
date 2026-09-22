@@ -43,7 +43,7 @@ EXPECTED_SECTION_COUNTS = {
 # 第 6、7 章的源 h4 单独进入合订目录和 PDF 第三级书签。此表是独立发布
 # 基线，不从构建脚本或待检产物反推。
 EXPECTED_SUBSECTION_COUNTS = {
-    "06_aec.md": 17,
+    "06_aec.md": 18,
     "07_wpe-dereverberation.md": 3,
 }
 # 上表为独立发布基线，不从待检 HTML 或构建器反推。
@@ -65,8 +65,8 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 81
-EXPECTED_SUBSECTION_COUNT = 20
-EXPECTED_OUTLINE_ITEM_COUNT = 115
+EXPECTED_SUBSECTION_COUNT = 21
+EXPECTED_OUTLINE_ITEM_COUNT = 116
 EXPECTED_FIGURE_NUMBERS = set(range(1, 34))
 ALLOWED_LINK_SCHEMES = {"http", "https", "mailto"}
 COLLOQUIAL_REVIEW = re.compile(

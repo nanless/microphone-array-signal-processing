@@ -294,6 +294,10 @@ $$\hat{\mathbf{R}}_{\mathrm{shrink}}(f_k)=(1-\rho)\hat{\mathbf{R}}(f_k)+\rho\fra
 
 第二类处理是用时频掩码为快拍加权，分别估计目标或噪声协方差（§8.1）。掩码可以减少干扰泄漏，但也会减少有效样本数，仍须检查矩阵的条件数并配合加载。
 
+**本书代码采用的数组与流式约定。** [`spectral.py`](../codes/array_tutorial/spectral.py) 中的 STFT 固定输出 `通道数 × 频点数 × 帧数`，即 $M\times F\times L$；[`covariance.py`](../codes/array_tutorial/covariance.py) 再把它变成 $F$ 个 $M\times M$ 空间二阶矩。示例使用前向变换 $e^{-\mathrm j2\pi ft}$、周期 Hann 窗和加权重叠相加。`center=True` 会在两端补半窗，因此离线重构可对齐原波形；实时系统不能据此把延迟写成零，还要把首帧等待、窗长、帧移、分块缓存和可能的前瞻一并计入端到端延迟。
+
+协方差实现同时给出批量估计和指数递归更新。掩码在某个频点的权重和为零时，代码会报错，而不是用 $\varepsilon$ 伪造一个无统计依据的矩阵；有限精度造成的非厄米残差会被对称化。需要加载时采用无量纲相对口径 $\alpha\operatorname{tr}(\hat{\mathbf R})\mathbf I/M$。上线还应记录遗忘因子、VAD/SPP 更新门控、每频点有效权重、条件数以及回退方式；这些参数共同决定跟踪速度，不能只记录“用了 MVDR”。可运行的端到端小例见 [`ch02_05_baselines.py`](../codes/examples/ch02_05_baselines.py)，解析边界测试见 [`test_codes_doa_beam.py`](../tests/test_codes_doa_beam.py)。
+
 **语音信号对阵列处理的影响**：
 
 1. 语音既含低频基频及谐波，也含更高频的辅音和摩擦音；具体频带随说话人、发音和采集链路变化。谐波结构会让互相关出现周期性假峰，因此 TDOA 算法常做宽带加权（§4.2）。

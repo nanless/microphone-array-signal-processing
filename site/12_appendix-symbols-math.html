@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 A · 符号术语数学 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f619c708bea4"><style>
+<meta name="source-digest" content="aea756f1a7d4"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -733,8 +733,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>$$L=\vec{w}^H\mathbf{R}\vec{w}+2\operatorname{Re}\!\left\{\lambda^*(\vec{w}^H\vec{a}-1)\right\}\text{。}$$</p>
 <p><strong>第 2 步：求驻点。</strong> 对 $\vec w^*$ 做 Wirtinger 求导并令零，得到 $\mathbf R\vec w+\lambda^*\vec a=0$。</p>
 <p><strong>第 3 步：写出比例关系。</strong> 乘子的命名可吸收共轭与负号，因此得到 $\vec w\propto\mathbf R^{-1}\vec a$。</p>
-<p><strong>第 4 步：代回约束。</strong> 用 $\vec w^H\vec a=1$ 定出比例系数，即得 §5.4 式(5-1)。LCMV 把标量约束和乘子换成向量形式（§5.5）。</p>
-<p><strong>Wirtinger 求导。</strong> 对实值目标函数，可在 Wirtinger 微积分中把 $\vec{w}$ 和 $\vec{w}^*$ 视为形式上独立的变量，对 $\vec{w}^*$ 求偏导并令其为零。§5.4 的脚注给出与实部、虚部分别求导等价的写法。</p>
+<p><strong>第 4 步：代回约束。</strong> 用 $\vec w^H\vec a=1$ 定出比例系数，即得 §5.4 式(5-3)。LCMV 把标量约束和乘子换成向量形式（§5.5）。</p>
+<p><strong>Wirtinger 求导。</strong> 对实值目标函数，可在 Wirtinger 微积分中把 $\vec{w}$ 和 $\vec{w}^*$ 视为形式上独立的变量，对 $\vec{w}^*$ 求偏导并令其为零。§5.4 给出了与实部、虚部分别求导等价的完整推导。</p>
 <p><strong>⑥ 特征值分解</strong></p>
 <p>对 Hermitian 协方差矩阵可写 $\mathbf{R}=\mathbf{E}\boldsymbol\Lambda\mathbf{E}^H$。特征向量是传感器观测空间中的正交主轴，特征值表示沿这些主轴的能量；它们通常不等于真实空间中的 DOA。</p>
 <p>MUSIC（§4.6）在独立源、白噪声和模型正确等条件下，把较大的特征值所张成的空间解释为信号子空间，把噪声底对应的空间解释为噪声子空间。</p>

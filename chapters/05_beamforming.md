@@ -667,6 +667,14 @@ $$\hat{\mathbf R}_{ss}\vec w_{GEV}=\lambda_{\max}\hat{\mathbf R}_{nn}\vec w_{GEV
 
 端到端网络也可以直接估计复数权重、时域滤波器或输出波形。它不再自动满足无失真、WNG 或因果约束，必须把阵列泛化、前瞻帧数、目标失真和目标硬件上的资源消耗列入评测。若与 ASR 联合训练，还应固定后端识别器和评分脚本，同时报告前端信号指标与词错误率（Word Error Rate，WER）。[Gu et al., IEEE/ACM TASLP 2023](https://doi.org/10.1109/TASLP.2022.3229261 "citation")
 
+#### 可执行基线与上线检查
+
+[`beamforming.py`](../codes/array_tutorial/beamforming.py) 提供 DSB、弥散场相干矩阵、加载超指向/MVDR、LCMV、GSC 阻塞矩阵和 Wiener 增益的原创 NumPy 基线。权重约定统一为输出 $Y=\vec w^H\vec x$，多通道谱形状统一为 `通道 × 频点 × 帧`；逐频点权重为 `频点 × 通道`。函数用线性方程求解代替显式求逆；未加载协方差病态、LCMV 约束不独立或空统计量都会报错。正文算例的 DSB 单位响应、Capon 数值、MVDR 权重、LCMV 双约束、GSC 阻塞和 Wiener 增益由 [`test_codes_doa_beam.py`](../tests/test_codes_doa_beam.py) 独立回归，串联示例见 [`ch02_05_baselines.py`](../codes/examples/ch02_05_baselines.py)。
+
+这些函数是公式基线，不是完整设备状态机。实时实现还要记录 STFT 窗长和帧移、分数延时滤波器、固定传播补偿、参考通道、SCM 遗忘因子、VAD/SPP 门控、权值更新周期和输出限幅。每次更新后检查条件数、$|\vec w^H\vec a-1|$、WNG 和输出峰值；空掩码或病态矩阵出现时，应在“保持上一组已验证权值、增加已标明口径的加载、退回 DSB”之间预先规定顺序。目标泄漏时应冻结噪声 SCM 或 GSC 自适应支路，并记录触发原因，不能只在输出失真后重新初始化。
+
+第三方项目只作索引，不复制源码。核实于 2026-09-22 的官方参考包括：[torchaudio MVDR 教程](https://docs.pytorch.org/audio/main/tutorials/mvdr_tutorial.html)及其[官方示例源码](https://github.com/pytorch/audio/blob/main/examples/tutorials/mvdr_tutorial.py)（[BSD-2-Clause](https://github.com/pytorch/audio/blob/main/LICENSE "citation")）。该教程链接指向 nightly 文档，页面当日打印的版本为 torchaudio `2.11.0a0+2470b9c`；官方仓库当日 `main` 的完整提交为 `b85c99ccac635a06b1afaf5284bf4c1a00c1f9b5`，两者不能当成同一个稳定发行版。官方主页还说明 torchaudio 自 2.8 起进入维护阶段，部分 API 在 2.8 弃用并于 2.9 移除，因此复现应固定实际验证版本。[ESPnet beamformer](https://github.com/espnet/espnet/blob/master/espnet2/enh/layers/beamformer.py)采用 Apache-2.0，当日发布页显示 v.202609；[SpeechBrain](https://github.com/speechbrain/speechbrain)采用 Apache-2.0。完整 GEV+BAN、WPD、神经掩码、球谐径向滤波、MCRA/IMCRA 与 OM-LSA 需要额外算法和依赖，本轮不把它们伪装成本书已经覆盖的最小实现。
+
 ### 5.10 波束形成算法总对比
 
 不同方法的混响抑制量不能脱离阵列、数据、因果性和指标压成星级。下表只比较可由定义确定的目标、输入与失败条件；运算量仍要按通道数、频点数、滤波长度和实现测量。

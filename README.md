@@ -2,7 +2,7 @@
 
 一套写给初学者和入门研究生的麦克风阵列信号处理中文教程。从“为什么摆一群麦克风”讲到定位（DOA）、波束形成、回声消除（AEC）、去混响（WPE）、语音分离、声源追踪，一直到工程实现与选型。
 
-正文提供关键公式推导、可复算例子、适用边界和 33 张脚本生成的图。
+正文提供关键公式推导、可复算例子、适用边界、33 张脚本生成的图，以及与各章公式对应的 NumPy/标准库教学代码。
 
 English version: [README_EN.md](./README_EN.md)
 
@@ -12,6 +12,7 @@ English version: [README_EN.md](./README_EN.md)
 |---|---|
 | `chapters/` | 教程正文 14 篇 Markdown（`00_overview.md` 是入口，`01`～`11` 是 11 章正文，`12`/`13` 是附录 A/B） |
 | `figures/` | 33 张插图（`fig01`～`fig33_*.png`），全部由脚本生成、可复现 |
+| `codes/` | 教学算法、章节例子、工业实现小工具、第三方官方源码索引与精确版本锁定；覆盖表见 `codes/COVERAGE.md` |
 | `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
 | `site/` | 多级页面站（`index.html` 首页 + 13 个内容页，构建产物，可再生） |
 | `dist/` | 合订 PDF（`microphone-array-tutorial.pdf`，导读、11 章正文和 2 篇附录均有顶级书签）与合订 HTML 中间产物 |
@@ -44,28 +45,34 @@ python3 -m venv .venv
 # 可选：附录 B 第 16 题和第 10 章房间示例按 pyroomacoustics 0.10.0 编写
 .venv/bin/pip install pyroomacoustics==0.10.0
 
-# 2. 生成 33 张图（运行时间随硬件、软件版本和负载变化）
+# 2. 运行与正文对应的教学基线及回归测试
+.venv/bin/python codes/examples/ch02_05_baselines.py
+.venv/bin/python codes/examples/ch06_09_baselines.py
+.venv/bin/python codes/examples/ch10_engineering_baselines.py
+.venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
+
+# 3. 生成 33 张图（运行时间随硬件、软件版本和负载变化）
 .venv/bin/python scripts/make_figures.py
 .venv/bin/python scripts/make_aec_figures.py
 
-# 3. 建多级页面站（输出 site/*.html）
+# 4. 建多级页面站（输出 site/*.html）
 .venv/bin/python scripts/build_site.py
 # 浏览器打开 site/index.html（双击即可；公式需联网加载 MathJax 渲染）
 
-# 4. 生成合订 PDF（输出 dist/microphone-array-tutorial.pdf，需本机装有 Google Chrome，
+# 5. 生成合订 PDF（输出 dist/microphone-array-tutorial.pdf，需本机装有 Google Chrome，
 #    非 macOS 可用 CHROME_BIN 环境变量指定 Chrome 路径）
 .venv/bin/python scripts/build_pdf.py
 # 需要可复现的封面日期时，加 --build-date YYYY-MM-DD，或设置 SOURCE_DATE_EPOCH
 
-# 5. 发布前检查
+# 6. 发布前检查
 .venv/bin/python -m unittest discover -s tests -v
 .venv/bin/python scripts/quality_check.py
 ```
 
 ## 学习路径
 
-- **路径 A（零基础入门，2～3 周）**：导读 → 01 → 11.1/11.3 → 02/03 → 04（GCC+SRP）→ 05（DSB+MVDR）→ 06/07/08 → 09 → 复现并解释 33 张图。
-- **路径 B（工程实现，1 周精读）**：11.1/11.2/11.3 定 A/B/C 方案 → 05/06/07/08 → 10 全读 → 输出延迟/同步/标定三张预算表。
+- **路径 A（零基础入门，2～3 周）**：导读 → 01 → 11.1/11.3 → 02/03 → 04（GCC+SRP）→ 05（DSB+MVDR）→ 06/07/08 → 09 → 运行 `codes/examples/` 并复现 33 张图。
+- **路径 B（工程实现，1 周精读）**：11.1/11.2/11.3 定 A/B/C 方案 → 05/06/07/08 → 10 全读 → 运行第 10 章工程基线 → 输出延迟/同步/标定三张预算表。
 - **路径 C（研究前沿）**：02（CRLB）→ 03（稀疏阵）→ 04/05 前沿 → 06/07/08 → 13.3 九条前沿 + 13.6 练习。
 
 ## 约定
@@ -74,3 +81,4 @@ python3 -m venv .venv
 - 缩写首次出现给全称；"dB 换算用 10log（功率）/20log（幅度）"。
 - 数字凡涉榜单均标注条件与出处，仿真数字注明实现口径。
 - 外部公式、算法和数据优先链接 DOI、标准组织或官方页面；引用时核对标题、作者、年份和具体表/节，不能只检查链接能否打开。
+- 本仓库教学代码与外部参考实现的边界见 `codes/README.md`；第三方代码、模型和数据的许可证分别核对。

@@ -341,6 +341,12 @@ $$\bar{\vec w}=[1/3,2/3,0,0]^\top，$$
 
 原始 WPD 工作见 Nakatani 与 Kinoshita 2019，后续因式分解工作说明了它与 WPE、波束形成的关系。[Nakatani & Kinoshita, EUSIPCO 2019](https://arxiv.org/abs/1908.02710 "citation")、[Boeddeker et al., ICASSP 2020](https://doi.org/10.1109/ICASSP40776.2020.9054393 "citation")
 
+**可执行 WPE 基线。** [`codes/array_tutorial/dereverberation.py`](../codes/array_tutorial/dereverberation.py) 提供只依赖 NumPy 的最小离线 WPE。`offline_wpe()` 接收复数 STFT，单通道轴序为 `(频点, 帧)`，多通道轴序为 `(频点, 通道, 帧)`，输出保持相同形状；它实现保护延迟、按滞后堆叠多通道历史、共享功率权重、相对对角加载和复共轭预测。`taps=0`、迭代次数为零、记录短于首个有效回归帧或整个频点为零时直接旁路。输入必须是复谱，不能把幅度谱传入后再补相位。
+
+联合示例用 `.venv/bin/python -m codes.examples.ch06_09_baselines` 运行，边界测试见 [`tests/test_codes_aec_wpe_sep_track.py`](../tests/test_codes_aec_wpe_sep_track.py)。测试固定检查 $K=0$、短输入、全零频点、单抽头复共轭方向、多通道形状和整体幅度缩放等变性。实际音频管线还要自行固定 STFT 的窗、帧移、`center`/补零约定与 ISTFT 长度，并测试短语音、静音权重、病态矩阵、通道交换及块边界。求解失败时应增加加载、降低 $K$ 或旁路该频点，不能输出 NaN。
+
+该基线是整段离线估计，不宣称因果或实时。`nara_wpe` 的离线、块在线和逐帧接口属于官方参考实现层级，应按所装版本记录提交、许可证、轴序、初始化、状态重置和延迟；DNN-WPE、WPD、GPU GSS 等大型实现只索引官方仓库或论文，不复制训练代码、模型权重和第三方数据。工程比较还必须固定通道数、上下文长度、硬件、计时范围以及是否使用未来帧。
+
 #### 7.1.1 $\Delta$ 与 $K$ 的参数换算
 
 先把帧数换成物理时间。若帧移为 $H$ ms，最近的预测帧是 $t-\Delta$，其时延为 $\Delta H$；$K$ 个预测帧从 $t-\Delta$ 到 $t-(\Delta+K-1)$，最远时延为 $(\Delta+K-1)H$。这个索引关系比“$\Delta+K$ 帧”少一帧，因为起点已算入 $K$ 个样本。

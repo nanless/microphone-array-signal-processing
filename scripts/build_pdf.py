@@ -224,6 +224,7 @@ def source_digest():
 
 
 HTML_TO_CH = {fname.replace(".md", ".html"): i for i, (fname, _) in enumerate(CHAPTERS)}
+REPOSITORY_BLOB_BASE = "https://github.com/nanless/microphone-array-signal-processing/blob/main/"
 
 
 def heading_anchor(text, fallback_index):
@@ -256,6 +257,17 @@ def rewrite_book_links(html):
     return re.sub(
         r'<a href="(?:\./)?([^"#/]+\.html)(?:#([^"]+))?">(.*?)</a>',
         repl, html, flags=re.S)
+
+
+def rewrite_repository_links(html):
+    """把源码相对链接改为可移植的仓库链接，避免 PDF 泄露构建机路径。"""
+    return re.sub(
+        r'href="(?:\.\./)+(codes|tests)/([^"]+)"',
+        lambda match: (
+            f'href="{REPOSITORY_BLOB_BASE}{match.group(1)}/{match.group(2)}"'
+        ),
+        html,
+    )
 
 
 def remove_page_info(html):
@@ -315,6 +327,7 @@ def build_html(build_date=None):
         html = re.sub(r"\.md((?:#[^\"')\s]*)?)([\"')])",
                       lambda m: ".html" + m.group(1) + m.group(2), html)
         html = rewrite_book_links(html)
+        html = rewrite_repository_links(html)
         # 每篇开头的引用块都是分篇导航。用位置边界删除，不依赖某一种中文句式。
         html = re.sub(
             r"^\s*(?:<blockquote>.*?</blockquote>\s*)+(?:<hr\s*/?>\s*)?",

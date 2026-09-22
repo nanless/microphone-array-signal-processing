@@ -240,6 +240,12 @@ VarArray 的正式论文发表于 ICASSP 2022（pp. 6027–6031，DOI [10.1109/I
 
 TSE 的身份泄漏、注册信道和声纹保护测试，不能由文本查询分离的类别级结果替代。
 
+**可执行分离基线与代码边界。** [`codes/array_tutorial/separation.py`](../codes/array_tutorial/separation.py) 提供四个只依赖 NumPy 的小模块：`si_sdr()` 接收等长一维估计与参考；`pit_permutation()` 接收 `(源, 样本)` 数组并枚举排列，返回“第几个输出对应第几个参考”的元组和平均 SI-SDR；`masked_spatial_covariance()` 接收 `(频点, 通道, 帧)` 复谱与 `(频点, 帧)` 非负掩码；`mask_mvdr_2x2()` 用目标 SCM 的主特征向量估计相对传递函数，再以干扰 SCM 求两麦 MVDR，返回 `(频点, 帧)` 输出和 `(频点, 2)` 权重。
+
+联合示例用 `.venv/bin/python -m codes.examples.ch06_09_baselines` 运行，测试见 [`tests/test_codes_aec_wpe_sep_track.py`](../tests/test_codes_aec_wpe_sep_track.py)。测试覆盖输出交换、静音参考和静音估计拒绝、SCM 厄米性、MVDR 无失真约束，以及目标或干扰掩码为空时回退参考麦。实际评测还必须固定去均值、时延/增益对齐、静音段、截断长度和输入基线；秩亏 SCM、单通道输入、$N>M$、跨块换人及 STFT 重构均需单独测试。教学版 MVDR 在目标或干扰统计不可用时退回参考麦克风，不应把这一回退的输出解释成成功分离。
+
+AuxIVA/ILRMA 的完整数值实现应使用 `piva` 等上游项目；MNMF、TRINICON、CHiME GSS/GPU-GSS、Asteroid/SpeechBrain/ESPnet 中的 Conv-TasNet、DPRNN、SepFormer，以及 S4M、SpeakerBeam 和 AudioSep 均只索引论文官方仓库，不在本书复制。使用时记录提交或发布版、许可证、训练/测试数据版本、预训练权重许可、采样率、源数、因果/前瞻设置、块状态、指标脚本、硬件和峰值内存。cACGMM 的正文伪代码用于解释依赖关系，不是生产 GSS；若没有空分量重置、对数域后验和收敛检查，不能把它列为可复现基线。
+
 > **练习 8-1（自测三题）**
 >
 > 1. 说明 WDO 假设及其失效条件。
