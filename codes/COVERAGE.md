@@ -9,7 +9,7 @@
 - **原理索引**：已有原理或来源依据，但尚未形成唯一、许可明确且承担对应计算的源码映射；代码可见而许可不明时也保留此状态，并说明原因。
 - **明确排除**：指定软件的身份或许可不满足本书当前收录方式；不表示删除相应方法的学术讨论。
 
-算法表共 229 行：本仓库可运行基线 40 行、外部参考实现 130 行、原理索引 57 行、明确排除 2 行。下列新增练习映射单独计数，不是新增算法行，也不增加原有的 40 行基线。
+算法表共 229 行：本仓库可运行基线 41 行、外部参考实现 129 行、原理索引 57 行、明确排除 2 行。练习映射单独计数，不因题数增加算法行；MDL 的覆盖状态因新增公共教学实现而从外部参考改为本地基线。
 
 源码取得与入口核对见 [SOURCE_STATUS.json](SOURCE_STATUS.json)；该文件中的依赖验证和执行字段未开展时为 `not_run`，不承载方法级数值实验结果。实际运行及数值对照见[增强研究记录](research/02_aec_wpe_separation.md)和 [WPE 独立对照脚本](examples/compare_wpe_reference.py)。覆盖状态不是测试结果。完整提交、官方地址、许可与来源 ID 见 [SOURCES.lock.json](SOURCES.lock.json)。教学路径相对于 [array_tutorial/](array_tutorial/)；外部路径相对于对应项目根，出现“同文件”时仅继承上一行文件，不继承其算法或验证结论。
 
@@ -39,7 +39,7 @@
 | 正文或研究范围 | 算法/机制 | 覆盖状态 | 教学入口或主清单 ID：官方源码入口 | 关键边界 |
 |---|---|---|---|---|
 | §4.1.1 | AIC 源数估计 | 外部参考实现 | `doatools`：`doatools/estimation/source_number.py::aic` | 特征值排序、快拍独立性、白噪声 |
-| §4.1.1 | MDL 源数估计 | 外部参考实现 | `doatools`：同文件 `mdl` | 惩罚项不同于 AIC |
+| §4.1.1、§4.10 | MDL 源数估计 | 本仓库可运行基线 | `doa.py::mdl_source_count`；外部对照 `doatools`：`doatools/estimation/source_number.py::mdl` | 复高斯独立快拍、白噪声、正特征值；无自动加载 |
 | §4.2 | GCC-PHAT 与物理 lag 裁剪 | 本仓库可运行基线 | `doa.py::gcc_phat` | 静音、麦序、带宽与多峰 |
 | §4.2 | GCC 峰三点亚采样插值 | 本仓库可运行基线 | `doa.py::gcc_phat` 插值选项 | 不能创造窄带缺少的信息 |
 | §4.3 | 远场 SRP-PHAT | 本仓库可运行基线 | `doa.py::srp_phat` | 麦对、网格、时延表 |
@@ -291,11 +291,11 @@
 
 ## 章节代码练习与音频映射
 
-60 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 229 行算法统计。三个模块均提供 `run_exercises()`，返回可序列化为 JSON 的结果；各 20 道题的回归测试独立于外部源码取得状态。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
+61 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 229 行算法统计。三个模块均提供 `run_exercises()`，返回可序列化为 JSON 的结果；21/20/20 道题的回归测试独立于外部源码取得状态。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
 
 | 章节与稳定 ID | 练习入口 | 回归测试 |
 |---|---|---|
-| 第 1～5 章：`E01-01`～`E01-03`、`E02-01`～`E02-05`、`E03-01`～`E03-04`、`E04-01`～`E04-04`、`E05-01`～`E05-04`（20 题） | [exercises_spatial.py](examples/exercises_spatial.py) | [test_codes_exercises_spatial.py](../tests/test_codes_exercises_spatial.py) |
+| 第 1～5 章：`E01-01`～`E01-03`、`E02-01`～`E02-05`、`E03-01`～`E03-04`、`E04-01`～`E04-05`、`E05-01`～`E05-04`（21 题） | [exercises_spatial.py](examples/exercises_spatial.py) | [test_codes_exercises_spatial.py](../tests/test_codes_exercises_spatial.py) |
 | 第 6～9 章：每章 `E06-01`～`E06-05`、`E07-01`～`E07-05`、`E08-01`～`E08-05`、`E09-01`～`E09-05`（20 题） | [exercises_enhancement.py](examples/exercises_enhancement.py) | [test_codes_exercises_enhancement.py](../tests/test_codes_exercises_enhancement.py) |
 | 第 10～11 章、附录 A/B：`E10-01`～`E10-12`、`E11-01`～`E11-04`、`E12-01`～`E12-03`、`E13-01`（20 题） | [exercises_engineering.py](examples/exercises_engineering.py) | [test_codes_exercises_engineering.py](../tests/test_codes_exercises_engineering.py) |
 
@@ -316,3 +316,6 @@
 原理索引明确保留下一步所需证据：唯一作者实现、明确许可、原模型配置，或与正文模型一致的最小代码。不得仅因为框架大、copyleft 或权重未授权就将许可明确的源码降为“没有实现”；也不得因同名函数存在就将整个算法家族标为已覆盖。
 
 本仓库不提交下载缓存、模型权重、第三方语料或录音；`audio/` 中的 36 个文件是本书自行合成的教学样本。独立上游工作目录的取得、许可保留与未执行项目按来源状态记录报告。算法、源码或排除范围变化时，同步修改本表、研究说明、来源清单和真实验证记录。
+
+
+真实数据练习 R01 使用 [prepare_real_recordings.py](examples/prepare_real_recordings.py) 与 [real_recordings.py](array_tutorial/real_recordings.py)，测试见 [test_codes_real_recordings.py](../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 61 道合成/手算代码题。数据来源和许可另见 [real_audio/](real_audio/README.md)。

@@ -17,13 +17,25 @@ class SpatialExerciseTest(unittest.TestCase):
     def setUpClass(cls):
         cls.results = run_exercises()
 
-    def test_registry_has_twenty_finite_json_results(self):
+    def test_registry_has_twenty_one_finite_json_results(self):
         expected = {"E01-01", "E01-02", "E02-01", "E02-02", "E02-03", "E03-01",
                     "E03-02", "E04-01", "E04-02", "E04-03", "E05-01", "E05-02",
                     "E01-03", "E02-04", "E02-05", "E03-03", "E03-04", "E04-04",
-                    "E05-03", "E05-04"}
+                    "E05-03", "E05-04", "E04-05"}
         self.assertEqual(set(self.results), expected)
         json.dumps(self.results, allow_nan=False)
+
+    def test_mdl_scores_match_independent_hand_values(self):
+        result = self.results["E04-05"]
+        np.testing.assert_allclose([row["mdl"] for row in result["cases"]],
+            [171.35547573266692, 86.43784729230299, 28.63605470127869, 34.53877639491069])
+        np.testing.assert_allclose([row["arithmetic_mean"] for row in result["cases"]],
+                                   [3.75, 2., 1., .9])
+        self.assertEqual(result["selected_count"], 2)
+        self.assertEqual(result["equal_spectrum_count"], 0)
+        self.assertEqual(result["same_spectrum_n4_count"], 0)
+        self.assertEqual(result["scaled_count"], 2)
+        self.assertTrue(result["rank_deficient_rejected"])
 
     def test_noise_correlation_matches_covariance_sum(self):
         rows = self.results["E01-01"]["cases"]

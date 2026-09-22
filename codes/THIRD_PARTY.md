@@ -67,6 +67,12 @@
 | [dcase2025-stereo-seld](https://github.com/partha2409/DCASE2025_seld_baseline/tree/42a48b6456b73be35ad0e1a9ffeb6ceef83ae0bd) | 双通道方位/距离与视听 SELD | No explicit redistribution license established from inspected official tree and source header | 仅来源索引 |
 | [notsofar1](https://github.com/microsoft/NOTSOFAR1-Challenge/tree/6f58e08b008f7530ba4141f0aeb02447c70b6fd7) | 连续语音分离训练、会议推理与转写基线 | MIT code; DATA_LICENSE and dataset-version restrictions separate | 已取得独立源码 |
 
+## 真实录音的数据许可
+
+DEMAND v1.0 的 NRIVER 河流场景来自 [Zenodo 1227121](https://zenodo.org/records/1227121)，作者为 Joachim Thiemann、Nobutaka Ito、Emmanuel Vincent。官方记录明确将音频和说明文档按 [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) 分发，核实日期为 2026-09-22。
+
+本仓库只纳入前 10 s 的同步 16 通道摘录、单麦提取、双麦及 16 麦零延时均值，4 个 WAV 连同修改说明保持同一数据许可；见 [署名与修改记录](real_audio/ATTRIBUTION.txt)和[数据清单](real_audio/MANIFEST.json)。完整归档固定 SHA-256，保存在忽略的下载目录，不进入 Git。公开数据许可不等于原作者认可本书的处理结果，也不改变本仓库独立代码的许可状态。
+
 ## 不能混同的许可范围
 
 - **MetaAF**：仅取得 `metaaf/` 核心及 README。核心许可为 University of Illinois/NCSA；`zoo/` 和权重的 Adobe Research License 单独处理，未随核心下载。核心可读不等于任务配方和模型已经齐备。

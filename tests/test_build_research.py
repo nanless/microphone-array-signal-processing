@@ -230,6 +230,22 @@ class ResearchBuildTest(unittest.TestCase):
                     with mock.patch.object(Path, "read_bytes", read):
                         self.assertNotEqual(before, builder.source_digest())
 
+    def test_pdf_same_chapter_fragment_gets_chapter_prefix(self):
+        result = build_pdf.rewrite_repository_links(
+            '<a href="#sec-4-10">MDL</a><a href="#sec-1">章首</a>',
+            ROOT / "chapters/04_doa-estimation.md")
+        self.assertEqual(result, '<a href="#ch-4-sec-4-10">MDL</a><a href="#ch-4">章首</a>')
+
+    def test_pdf_same_chapter_unknown_fragment_is_rejected(self):
+        with self.assertRaises(ValueError):
+            build_pdf.rewrite_repository_links('<a href="#missing">缺失</a>',
+                                               ROOT / "chapters/04_doa-estimation.md")
+
+    def test_pdf_external_fragment_is_not_a_chapter_link(self):
+        source = '<a href="https://example.org/#sec-4-10">外部</a>'
+        self.assertEqual(build_pdf.rewrite_repository_links(source,
+                         ROOT / "chapters/04_doa-estimation.md"), source)
+
     def test_temporary_build_navigation_and_all_local_deep_links(self):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "site"
@@ -252,6 +268,16 @@ class ResearchBuildTest(unittest.TestCase):
                         continue
                     target = (path.parent / unquote(uri.path)).resolve() if uri.path else path
                     with self.subTest(page=path.name, href=href):
+                        if target.parent == (output / "real_audio").resolve():
+                            self.assertIn(target.name, {
+                                "demand_nriver_16ch_10s.wav", "demand_nriver_ch01_10s.wav",
+                                "demand_nriver_mean02_10s.wav", "demand_nriver_mean16_10s.wav",
+                                "MANIFEST.json", "README.md", "ATTRIBUTION.txt", "LICENSE.txt",
+                            })
+                            self.assertTrue(target.is_file())
+                            self.assertEqual(target.read_bytes(), (ROOT / "codes/real_audio" / target.name).read_bytes())
+                            self.assertFalse(uri.fragment)
+                            continue
                         if target.suffix == ".wav":
                             self.assertEqual(target.parent, (output / "audio").resolve())
                             self.assertTrue(target.is_file())

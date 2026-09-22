@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 2 章 · 声音到达阵列时发生了什么 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="3ffa19bfc241"><style>
+<meta name="source-digest" content="7dad810a9a67"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -292,6 +292,35 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><code>center=True</code> 会在两端补半窗，因此离线重构可对齐原波形；实时系统不能据此把延迟写成零，还要把首帧等待、窗长、帧移、分块缓存和可能的前瞻一并计入端到端延迟。</p>
 <p>协方差实现同时给出批量估计和指数递归更新。掩码在某个频点的权重和为零时，代码会报错，而不是用 $\varepsilon$ 伪造一个无统计依据的矩阵；有限精度造成的非厄米残差会被对称化。需要加载时采用无量纲相对口径 $\alpha\operatorname{tr}(\hat{\mathbf R})\mathbf I/M$。</p>
 <p>上线还应记录遗忘因子、VAD/SPP 更新门控、每频点有效权重、条件数以及回退方式；这些参数共同决定跟踪速度，不能只记录“用了 MVDR”。可运行的端到端小例见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/ch02_05_baselines.py"><code>ch02_05_baselines.py</code></a>，解析边界测试见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_doa_beam.py"><code>test_codes_doa_beam.py</code></a>。</p>
+<p><strong>真实录音 R01：忽略通道交叉项会怎样？</strong> <a href="https://zenodo.org/records/1227121" title="citation">DEMAND 数据库</a>的 NRIVER 场景提供真实同步环境噪声。本书取其 16 kHz 版本前 10 s，即各通道样本 <code>[0,160000)</code>，分别平均通道 1～2 和 1～16。</p>
+<p>16 只麦克风由同一设备采集，原始通道增益未经彼此校准；没有干净语音参考或声源位置真值。数据及本书派生音频按 CC BY-SA 3.0 分发，作者、采集条件、几何和修改说明见<a href="real_audio/README.md">真实录音说明</a>。</p>
+<p>PCM 整数除以 32768 后，直接计算未去均值的二阶矩 $R_{ij}=T^{-1}\sum_n x_i[n]x_j[n]$，这里 $T=160000$。等权平均功率包含全部 $R_{ij}$；若只保留对角项，就得到“交叉项为零”的预测。这个预测仍保留各通道自身功率，不另行假设麦克风等增益。非零均值下，统计独立也不自动意味着二阶交叉项为零。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">使用通道</th>
+<th scope="col" style="text-align: right;">仅对角项预测功率</th>
+<th scope="col" style="text-align: right;">保留交叉项的平均功率</th>
+<th scope="col" style="text-align: right;">WAV 读回相对预测（dB）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1～2</td>
+<td style="text-align: right;">$5.653225\times10^{-6}$</td>
+<td style="text-align: right;">$6.683714\times10^{-6}$</td>
+<td style="text-align: right;">0.7272</td>
+</tr>
+<tr>
+<td>1～16</td>
+<td style="text-align: right;">$6.857479\times10^{-7}$</td>
+<td style="text-align: right;">$1.809816\times10^{-6}$</td>
+<td style="text-align: right;">4.2148</td>
+</tr>
+</tbody>
+</table></div>
+<p>功率单位为数字满刻度幅度平方，不是 Pa²。全部文件导出增益为 1，无去直流、时移或逐文件归一化；平均后仅做一次 PCM16 舍入，故 WAV 读回功率与表中量化前功率有微小差别。数值为本书对该固定片段的计算，表格最后统一舍入。</p>
+<p>本片段的交叉项为正，忽略它们会低估平均后的数字功率；增加通道并没有消除这个偏差。平均后的音量下降不等于语音增强成功，因为这里没有目标语音可供检验。练习 R01 的逐步计算、10 个连续 1 s 子段、代码及三个单通道试听对照见<a href="research/05_exercises_and_audio.html#12-r01真实河流录音中的通道相关项">真实河流录音实验</a>。子段范围不是独立重复实验的置信区间。</p>
 <p><strong>语音信号对阵列处理的影响</strong>：</p>
 <ol>
 <li>语音既含低频基频及谐波，也含更高频的辅音和摩擦音；具体频带随说话人、发音和采集链路变化。谐波结构会让互相关出现周期性假峰，因此 TDOA 算法常做宽带加权（§4.2）。</li>

@@ -120,6 +120,36 @@ window.MathJax = {{tex: {{inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], displayM
 """
 
 
+REAL_AUDIO_WAVS = {
+    "demand_nriver_16ch_10s.wav", "demand_nriver_ch01_10s.wav",
+    "demand_nriver_mean02_10s.wav", "demand_nriver_mean16_10s.wav",
+}
+REAL_AUDIO_FILES = REAL_AUDIO_WAVS | {"MANIFEST.json", "ATTRIBUTION.txt", "LICENSE.txt", "README.md"}
+
+
+def stage_real_audio(source, destination):
+    """Stage a fixed data release with attribution, separate from synthetic audio."""
+    manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+    records = manifest["files"]
+    if len(records) != 4 or {r["file"] for r in records} != REAL_AUDIO_WAVS:
+        raise ValueError("真实录音清单必须匹配四个独立发布文件")
+    if {p.name for p in source.iterdir() if p.is_file()} != REAL_AUDIO_FILES:
+        raise ValueError("真实录音文件或许可集合不符")
+    for record in records:
+        path = source / record["file"]
+        if path.is_symlink() or hashlib.sha256(path.read_bytes()).hexdigest() != record["sha256"]:
+            raise ValueError("真实录音摘要不符")
+    for name in ("ATTRIBUTION.txt", "LICENSE.txt"):
+        if not (source / name).read_text(encoding="utf-8").strip():
+            raise ValueError("真实录音署名或许可为空")
+    destination.mkdir()
+    for name in sorted(REAL_AUDIO_FILES):
+        if (source / name).is_symlink():
+            raise ValueError("真实录音发布文件不能为符号链接")
+        shutil.copy2(source / name, destination / name)
+    return REAL_AUDIO_FILES.copy()
+
+
 def clean_label(text):
     text = re.sub(r"!\[.*?\]\(.*?\)", "", text)
     text = re.sub(r"[`*_~]", "", text)
@@ -134,6 +164,7 @@ def source_digest():
     paths += [ROOT / "codes" / "research" / name for name, _ in RESEARCH]
     paths += sorted((ROOT / "codes" / "audio").glob("*.wav"))
     paths += [ROOT / "codes" / "audio" / "MANIFEST.json"]
+    paths += sorted((ROOT / "codes" / "real_audio").glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "make_figures.py",
               ROOT / "scripts" / "make_aec_figures.py", ROOT / "requirements.txt"]
@@ -312,6 +343,9 @@ def rewrite_site_links(html, source_path):
         if target.parent == (ROOT / "codes" / "audio").resolve() and target.suffix == ".wav":
             relative = os.path.relpath("audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
+        if target.parent == (ROOT / "codes" / "real_audio").resolve() and target.name in REAL_AUDIO_FILES:
+            relative = os.path.relpath("real_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
+            return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
         return repository_url(parsed, target)
 
     html = rewrite_href_targets(html, transform)
@@ -319,7 +353,11 @@ def rewrite_site_links(html, source_path):
     def player(match):
         href, label = unescape(match.group(1)), match.group(2)
         parsed = urlsplit(href)
-        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?audio/[a-z0-9_]+\.wav", parsed.path):
+        # Browsers may reject or downmix 16 channels. Preserve the analysis
+        # input as a download link; only the explicit mono derivatives play.
+        if parsed.path.endswith("real_audio/demand_nriver_16ch_10s.wav"):
+            return match.group(0)
+        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio)/[a-z0-9_]+\.wav", parsed.path):
             return match.group(0)
         safe_href = escape(href, quote=True)
         safe_label = escape(re.sub(r'<[^>]+>', '', unescape(label)), quote=True)
@@ -578,8 +616,14 @@ def main():
                 raise ValueError(f"音频校验失败：{source.name}")
             shutil.copy2(source, temp_out / "audio" / source.name)
         stale += [path for path in (OUT / "audio").glob("*.wav") if path.name not in audio_names]
+        real_names = stage_real_audio(ROOT / "codes/real_audio", temp_out / "real_audio")
+        (OUT / "real_audio").mkdir(exist_ok=True)
+        stale += [path for path in (OUT / "real_audio").iterdir()
+                  if path.is_file() and path.name not in real_names]
         publish_files([(temp_out / name, OUT / name) for name in sorted(expected)] +
-                      [(temp_out / "audio" / name, OUT / "audio" / name) for name in audio_names], stale)
+                      [(temp_out / "audio" / name, OUT / "audio" / name) for name in audio_names] +
+                      [(temp_out / "real_audio" / name, OUT / "real_audio" / name)
+                       for name in sorted(real_names)], stale)
     print("DONE", len(expected), "pages")
 
 

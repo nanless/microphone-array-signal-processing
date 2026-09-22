@@ -1,0 +1,18 @@
+Data license: Creative Commons Attribution-ShareAlike 3.0 Unported.
+SPDX identifier: CC-BY-SA-3.0
+
+The DEMAND recordings and the four audio files in this directory are covered
+by CC BY-SA 3.0. Attribution and modification details are in ATTRIBUTION.txt.
+This notice applies to these data and their audio adaptations, not to the
+independent source code or all other files in the parent repository.
+
+License deed: https://creativecommons.org/licenses/by-sa/3.0/
+Complete legal terms: https://creativecommons.org/licenses/by-sa/3.0/legalcode
+
+You may share and adapt the licensed material subject to the license terms,
+including attribution, retaining notices, and ShareAlike for adaptations.
+Do not imply endorsement by the authors or add incompatible restrictions.
+The original material is offered without warranties under the license.
+Other rights, such as privacy or publicity rights, may still apply.
+
+This brief notice is not a replacement for the linked complete legal terms.

@@ -6,10 +6,65 @@ projects.  They favor explicit validation and formula-to-code correspondence.
 
 from __future__ import annotations
 
+import math
+
 import numpy as np
 
 from .conventions import hermitian_part, validate_cft, validate_frequencies
 from .geometry import plane_wave_delays
+
+
+def mdl_source_count(eigenvalues: np.ndarray, snapshots: int) -> tuple[int, np.ndarray]:
+    """Return ``(selected_count, scores_for_k_0_through_M_minus_1)``.
+
+    Wax--Kailath complex Gaussian, spatially white noise MDL (Chapter 4.10).
+    Input is a nonempty 1-D vector of finite, strictly positive *real* sample
+    covariance eigenvalues, in any order.  Scores use natural logarithms and
+    omit the common ``0.5 * log(snapshots)`` penalty; they are not probabilities.
+    Snapshots must be an integer >= max(M, 2), representing independent,
+    identically distributed, known-zero-mean complex observations.  This
+    necessary full-rank sample-size check cannot establish model validity.
+    Centered samples need N > M; dependent STFT frames need separate analysis.
+
+    No covariance loading or eigenvalue flooring is applied: singular spectra
+    are rejected.  Sorting does not mutate the input; exact ties choose smaller
+    k.  Log-domain tail means avoid products and power-scale overflow/underflow.
+    Reference: Wax & Kailath, ICASSP 1984, equations (10)--(15),
+    doi:10.1109/ICASSP.1984.1172389. This is a teaching baseline, not a detector
+    for coherent sources, colored noise, or the real Gaussian model.
+    """
+    values = np.asarray(eigenvalues)
+    if values.ndim != 1 or values.size < 1 or values.dtype.kind not in "iuf":
+        raise ValueError("eigenvalues must be a nonempty 1-D real numeric vector")
+    with np.errstate(over="ignore", invalid="ignore"):
+        values = values.astype(float)
+    if not np.all(np.isfinite(values)) or np.any(values <= 0.0):
+        raise ValueError("eigenvalues must be finite and strictly positive; no loading is applied")
+    channels = values.size
+    if (isinstance(snapshots, (bool, np.bool_))
+            or not isinstance(snapshots, (int, np.integer))
+            or snapshots < max(channels, 2)):
+        raise ValueError("snapshots must be an integer >= max(number of eigenvalues, 2)")
+    try:
+        count = float(snapshots)
+    except OverflowError as error:
+        raise ValueError("snapshots exceeds floating-point range") from error
+    if not math.isfinite(count):
+        raise ValueError("snapshots exceeds floating-point range")
+    logs = np.log(np.sort(values)[::-1])
+    scores = np.empty(channels)
+    for k in range(channels):
+        tail = logs[k:]
+        shifted = tail - tail[0]
+        # A normalized eigenvalue itself could underflow to zero; its log
+        # remains finite here and must still contribute to the geometric mean.
+        arithmetic_log = math.log(math.fsum(math.exp(x) for x in shifted) / tail.size)
+        geometric_log = math.fsum(shifted) / tail.size
+        gap = max(0.0, arithmetic_log - geometric_log)  # AM >= GM; round-off only.
+        scores[k] = count * tail.size * gap + 0.5 * k * (2 * channels - k) * math.log(count)
+    if not np.all(np.isfinite(scores)):
+        raise ValueError("MDL scores exceed floating-point range")
+    return int(np.argmin(scores)), scores
 
 
 def gcc_phat(

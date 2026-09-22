@@ -280,6 +280,11 @@ def rewrite_repository_links(html, source_path=None):
 
     def transform(href):
         parsed, target = build_site.local_link_target(href, source_path)
+        if (not parsed.scheme and not parsed.netloc and not parsed.path
+                and not parsed.query and parsed.fragment):
+            # A chapter-local link must receive the same chapter prefix as
+            # its heading when many standalone pages become one document.
+            target = Path(source_path).resolve()
         if target is None:
             return href
         if target in chapters and not parsed.query:

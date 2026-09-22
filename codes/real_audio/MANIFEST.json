@@ -1,0 +1,598 @@
+{
+  "schema_version": 1,
+  "origin": "real simultaneously acquired 16-microphone environmental recording; not synthesized speech",
+  "source": {
+    "dataset": "DEMAND",
+    "version": "1.0",
+    "scene": "NRIVER",
+    "record_url": "https://zenodo.org/records/1227121",
+    "archive_url": "https://zenodo.org/records/1227121/files/NRIVER_16k.zip?download=1",
+    "archive_bytes": 98689565,
+    "archive_md5": "54264db61d3fe073fb81f2e40e0d19b5",
+    "archive_sha256": "98e3a3f05a7234ea07619d965bafeea68a100bbce5c9269b7487393e3b559660",
+    "checked_on": "2026-09-22",
+    "members": [
+      "NRIVER/ch01.wav",
+      "NRIVER/ch02.wav",
+      "NRIVER/ch03.wav",
+      "NRIVER/ch04.wav",
+      "NRIVER/ch05.wav",
+      "NRIVER/ch06.wav",
+      "NRIVER/ch07.wav",
+      "NRIVER/ch08.wav",
+      "NRIVER/ch09.wav",
+      "NRIVER/ch10.wav",
+      "NRIVER/ch11.wav",
+      "NRIVER/ch12.wav",
+      "NRIVER/ch13.wav",
+      "NRIVER/ch14.wav",
+      "NRIVER/ch15.wav",
+      "NRIVER/ch16.wav"
+    ],
+    "source_frames": 4800064,
+    "sample_interval_half_open": [
+      0,
+      160000
+    ],
+    "excerpt_interleaved_pcm_sha256": "cff2df04123f7eb01a5ee724bf594f4f42b68388e4b49c2d58fa3a0ddd91f12c",
+    "original_rate_hz": 48000,
+    "upstream_resampled_rate_hz": 16000,
+    "upstream_resampler": "MATLAB R2012a resample; DEMAND.pdf section 3.2"
+  },
+  "license": {
+    "id": "CC-BY-SA-3.0",
+    "url": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "authors": [
+      "Joachim Thiemann",
+      "Nobutaka Ito",
+      "Emmanuel Vincent"
+    ],
+    "scope": "source recording, excerpt, channel extraction and averaged audio; not repository code"
+  },
+  "geometry": {
+    "unit": "m",
+    "channel_order": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ],
+    "xyz": [
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.05,
+        0.0
+      ],
+      [
+        0.0,
+        0.1,
+        0.0
+      ],
+      [
+        0.0,
+        0.15000000000000002,
+        0.0
+      ],
+      [
+        0.04330127018922194,
+        0.025,
+        0.0
+      ],
+      [
+        0.04330127018922194,
+        0.07500000000000001,
+        0.0
+      ],
+      [
+        0.04330127018922194,
+        0.125,
+        0.0
+      ],
+      [
+        0.04330127018922194,
+        0.17500000000000002,
+        0.0
+      ],
+      [
+        0.08660254037844388,
+        0.0,
+        0.0
+      ],
+      [
+        0.08660254037844388,
+        0.05,
+        0.0
+      ],
+      [
+        0.08660254037844388,
+        0.1,
+        0.0
+      ],
+      [
+        0.08660254037844388,
+        0.15000000000000002,
+        0.0
+      ],
+      [
+        0.1299038105676658,
+        0.025,
+        0.0
+      ],
+      [
+        0.1299038105676658,
+        0.07500000000000001,
+        0.0
+      ],
+      [
+        0.1299038105676658,
+        0.125,
+        0.0
+      ],
+      [
+        0.1299038105676658,
+        0.17500000000000002,
+        0.0
+      ]
+    ],
+    "coordinate_source": "official scripts.zip arraypos.m; DEMAND.pdf section 3.1",
+    "scripts_zip_sha256": "3415d1c54620b5ba30004943e3515f63db76930640f27aa2c30a21a718677dad",
+    "position_tolerance_m": 0.002,
+    "plane": "parallel to ground",
+    "microphones": "16 Sony ECM-C10; gains not calibrated relative to one another",
+    "recorder": "one Inrevium/Tokyo Electron Device TD-BD-16ADUSB",
+    "source_position_ground_truth": null
+  },
+  "processing": {
+    "common_export_gain": 1.0,
+    "dc_removed": false,
+    "time_shifts_samples": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "per_file_normalization": false,
+    "channel_calibration": false,
+    "weights": {
+      "mean02": [
+        0.5,
+        0.5
+      ],
+      "mean16": [
+        0.0625,
+        0.0625,
+        0.0625,
+        0.0625,
+        0.0625,
+        0.0625,
+        0.0625,
+        0.0625,
+        0.0625,
+        0.0625,
+        0.0625,
+        0.0625,
+        0.0625,
+        0.0625,
+        0.0625,
+        0.0625
+      ]
+    },
+    "quantization": "PCM16 little endian; nearest-even; no dither; no clipping",
+    "clean_speech_reference": null,
+    "snr_or_si_sdr_claim": false,
+    "listening": "No formal listening evaluation; lower device volume before playback."
+  },
+  "generator_inputs": {
+    "codes/array_tutorial/real_recordings.py": "37bf3cec32722895d8c5aced99a4bca1769a5188a184c62354ca93620d08ae90",
+    "codes/examples/prepare_real_recordings.py": "cab2a84486fc3eb68c83f7d16d2060af10185eb347103aa6c862727635c6f979"
+  },
+  "metrics": {
+    "exercise_id": "R01",
+    "power_definition": "mean(x**2); PCM16 divided by 32768; DC retained",
+    "full_excerpt": [
+      {
+        "channels": 2,
+        "mean_channel_power": 1.1306449302355759e-05,
+        "diagonal_only_power": 5.6532246511778796e-06,
+        "cross_terms_power": 1.0304891009582208e-06,
+        "unquantized_mean_power": 6.6837137521361e-06,
+        "exported_mean_power": 6.683733209501952e-06,
+        "measured_minus_diagonal_db": 0.7272286204614381,
+        "mean_to_ch01_power_db": -2.256574341571548,
+        "max_quantization_error_pcm": 0.5
+      },
+      {
+        "channels": 16,
+        "mean_channel_power": 1.097196588962106e-05,
+        "diagonal_only_power": 6.857478681013162e-07,
+        "cross_terms_power": 1.1240677806199531e-06,
+        "unquantized_mean_power": 1.8098156487212693e-06,
+        "exported_mean_power": 1.8098752072546632e-06,
+        "measured_minus_diagonal_db": 4.2148416473807595,
+        "mean_to_ch01_power_db": -7.930279094036835,
+        "max_quantization_error_pcm": 0.5
+      }
+    ],
+    "one_second_blocks": [
+      {
+        "start_sample": 0,
+        "stop_sample": 16000,
+        "results": [
+          {
+            "channels": 2,
+            "mean_channel_power": 2.1040622086729855e-06,
+            "diagonal_only_power": 1.0520311043364927e-06,
+            "cross_terms_power": 7.571289606858044e-07,
+            "unquantized_mean_power": 1.8091600650222971e-06,
+            "exported_mean_power": 1.8095234408974648e-06,
+            "measured_minus_diagonal_db": 2.355356330588276,
+            "mean_to_ch01_power_db": -0.16893897232094487,
+            "max_quantization_error_pcm": 0.5
+          },
+          {
+            "channels": 16,
+            "mean_channel_power": 2.272528705361765e-06,
+            "diagonal_only_power": 1.420330440851103e-07,
+            "cross_terms_power": 1.094791642117343e-06,
+            "unquantized_mean_power": 1.2368246862024533e-06,
+            "exported_mean_power": 1.2370680924504996e-06,
+            "measured_minus_diagonal_db": 9.400042102904742,
+            "mean_to_ch01_power_db": -1.8206450530508107,
+            "max_quantization_error_pcm": 0.5
+          }
+        ]
+      },
+      {
+        "start_sample": 16000,
+        "stop_sample": 32000,
+        "results": [
+          {
+            "channels": 2,
+            "mean_channel_power": 2.0603312877938152e-06,
+            "diagonal_only_power": 1.0301656438969076e-06,
+            "cross_terms_power": 6.652457814197986e-07,
+            "unquantized_mean_power": 1.6954114253167062e-06,
+            "exported_mean_power": 1.695188577286899e-06,
+            "measured_minus_diagonal_db": 2.1631095526811324,
+            "mean_to_ch01_power_db": -0.3073740511581967,
+            "max_quantization_error_pcm": 0.5
+          },
+          {
+            "channels": 16,
+            "mean_channel_power": 2.2806902961747255e-06,
+            "diagonal_only_power": 1.4254314351092034e-07,
+            "cross_terms_power": 9.70340232925082e-07,
+            "unquantized_mean_power": 1.1128833764360024e-06,
+            "exported_mean_power": 1.113052654545754e-06,
+            "measured_minus_diagonal_db": 8.925693776574995,
+            "mean_to_ch01_power_db": -2.1343971267427637,
+            "max_quantization_error_pcm": 0.5
+          }
+        ]
+      },
+      {
+        "start_sample": 32000,
+        "stop_sample": 48000,
+        "results": [
+          {
+            "channels": 2,
+            "mean_channel_power": 1.8220530182588845e-06,
+            "diagonal_only_power": 9.110265091294423e-07,
+            "cross_terms_power": 5.096672393847256e-07,
+            "unquantized_mean_power": 1.4206937485141678e-06,
+            "exported_mean_power": 1.420889631845057e-06,
+            "measured_minus_diagonal_db": 1.9302933094884152,
+            "mean_to_ch01_power_db": -0.7452398286105706,
+            "max_quantization_error_pcm": 0.5
+          },
+          {
+            "channels": 16,
+            "mean_channel_power": 2.110866040311521e-06,
+            "diagonal_only_power": 1.3192912751947006e-07,
+            "cross_terms_power": 8.72301852723467e-07,
+            "unquantized_mean_power": 1.004230980242937e-06,
+            "exported_mean_power": 1.0043951915577054e-06,
+            "measured_minus_diagonal_db": 8.815639345553421,
+            "mean_to_ch01_power_db": -2.2517970320163503,
+            "max_quantization_error_pcm": 0.5
+          }
+        ]
+      },
+      {
+        "start_sample": 48000,
+        "stop_sample": 64000,
+        "results": [
+          {
+            "channels": 2,
+            "mean_channel_power": 5.8470770891290155e-06,
+            "diagonal_only_power": 2.9235385445645078e-06,
+            "cross_terms_power": 5.79008221393451e-07,
+            "unquantized_mean_power": 3.5025467659579587e-06,
+            "exported_mean_power": 3.5023943637497725e-06,
+            "measured_minus_diagonal_db": 0.7845622128985187,
+            "mean_to_ch01_power_db": -1.847770498420608,
+            "max_quantization_error_pcm": 0.5
+          },
+          {
+            "channels": 16,
+            "mean_channel_power": 8.750198194320547e-06,
+            "diagonal_only_power": 5.468873871450342e-07,
+            "cross_terms_power": 1.1338697327119007e-06,
+            "unquantized_mean_power": 1.6807571198569348e-06,
+            "exported_mean_power": 1.6813442925922573e-06,
+            "measured_minus_diagonal_db": 4.8775874662485394,
+            "mean_to_ch01_power_db": -5.034854411869657,
+            "max_quantization_error_pcm": 0.5
+          }
+        ]
+      },
+      {
+        "start_sample": 64000,
+        "stop_sample": 80000,
+        "results": [
+          {
+            "channels": 2,
+            "mean_channel_power": 8.07997354422696e-06,
+            "diagonal_only_power": 4.03998677211348e-06,
+            "cross_terms_power": 1.3234918878879396e-06,
+            "unquantized_mean_power": 5.363478660001419e-06,
+            "exported_mean_power": 5.363399162888527e-06,
+            "measured_minus_diagonal_db": 1.230601767487318,
+            "mean_to_ch01_power_db": -0.4987366606344992,
+            "max_quantization_error_pcm": 0.5
+          },
+          {
+            "channels": 16,
+            "mean_channel_power": 9.921458044118482e-06,
+            "diagonal_only_power": 6.200911277574051e-07,
+            "cross_terms_power": 1.5618501247445237e-06,
+            "unquantized_mean_power": 2.181941252501929e-06,
+            "exported_mean_power": 2.1818088134750725e-06,
+            "measured_minus_diagonal_db": 5.463611742444928,
+            "mean_to_ch01_power_db": -4.404970941753848,
+            "max_quantization_error_pcm": 0.5
+          }
+        ]
+      },
+      {
+        "start_sample": 80000,
+        "stop_sample": 96000,
+        "results": [
+          {
+            "channels": 2,
+            "mean_channel_power": 9.182940470054747e-06,
+            "diagonal_only_power": 4.591470235027373e-06,
+            "cross_terms_power": 1.4329744444694364e-06,
+            "unquantized_mean_power": 6.02444467949681e-06,
+            "exported_mean_power": 6.024625559803098e-06,
+            "measured_minus_diagonal_db": 1.1797828670742887,
+            "mean_to_ch01_power_db": -1.5590426039514529,
+            "max_quantization_error_pcm": 0.5
+          },
+          {
+            "channels": 16,
+            "mean_channel_power": 2.48081271238334e-05,
+            "diagonal_only_power": 1.5505079452395874e-06,
+            "cross_terms_power": 1.0395908361715553e-06,
+            "unquantized_mean_power": 2.5900987814111427e-06,
+            "exported_mean_power": 2.5901872431859375e-06,
+            "measured_minus_diagonal_db": 2.2285716409472394,
+            "mean_to_ch01_power_db": -5.2250316025714,
+            "max_quantization_error_pcm": 0.5
+          }
+        ]
+      },
+      {
+        "start_sample": 96000,
+        "stop_sample": 112000,
+        "results": [
+          {
+            "channels": 2,
+            "mean_channel_power": 2.534583045053296e-05,
+            "diagonal_only_power": 1.267291522526648e-05,
+            "cross_terms_power": 9.93609835859388e-07,
+            "unquantized_mean_power": 1.3666525061125869e-05,
+            "exported_mean_power": 1.366640831110999e-05,
+            "measured_minus_diagonal_db": 0.3277786230002955,
+            "mean_to_ch01_power_db": -3.5753245069696424,
+            "max_quantization_error_pcm": 0.5
+          },
+          {
+            "channels": 16,
+            "mean_channel_power": 2.0359994927275694e-05,
+            "diagonal_only_power": 1.2724996829547309e-06,
+            "cross_terms_power": 1.1052131608266789e-06,
+            "unquantized_mean_power": 2.3777128437814097e-06,
+            "exported_mean_power": 2.37783242482692e-06,
+            "measured_minus_diagonal_db": 2.7152356212267694,
+            "mean_to_ch01_power_db": -11.170055977619242,
+            "max_quantization_error_pcm": 0.5
+          }
+        ]
+      },
+      {
+        "start_sample": 112000,
+        "stop_sample": 128000,
+        "results": [
+          {
+            "channels": 2,
+            "mean_channel_power": 1.6659557732054965e-05,
+            "diagonal_only_power": 8.329778866027482e-06,
+            "cross_terms_power": 4.979434597771613e-07,
+            "unquantized_mean_power": 8.827722325804644e-06,
+            "exported_mean_power": 8.827702142298222e-06,
+            "measured_minus_diagonal_db": 0.2521419892785552,
+            "mean_to_ch01_power_db": -0.34752474665894406,
+            "max_quantization_error_pcm": 0.5
+          },
+          {
+            "channels": 16,
+            "mean_channel_power": 1.309352205862524e-05,
+            "diagonal_only_power": 8.183451286640775e-07,
+            "cross_terms_power": 1.0030188200289557e-06,
+            "unquantized_mean_power": 1.8213639486930332e-06,
+            "exported_mean_power": 1.821023935917765e-06,
+            "measured_minus_diagonal_db": 3.4737915274148525,
+            "mean_to_ch01_power_db": -7.202844914746583,
+            "max_quantization_error_pcm": 0.5
+          }
+        ]
+      },
+      {
+        "start_sample": 128000,
+        "stop_sample": 144000,
+        "results": [
+          {
+            "channels": 2,
+            "mean_channel_power": 3.343039687024429e-05,
+            "diagonal_only_power": 1.6715198435122146e-05,
+            "cross_terms_power": 1.9703799043782093e-06,
+            "unquantized_mean_power": 1.8685578339500356e-05,
+            "exported_mean_power": 1.8686040712054818e-05,
+            "measured_minus_diagonal_db": 0.48405754025266784,
+            "mean_to_ch01_power_db": -3.1263718200321367,
+            "max_quantization_error_pcm": 0.5
+          },
+          {
+            "channels": 16,
+            "mean_channel_power": 1.858307051588781e-05,
+            "diagonal_only_power": 1.1614419072429882e-06,
+            "cross_terms_power": 1.3272093729028711e-06,
+            "unquantized_mean_power": 2.4886512801458594e-06,
+            "exported_mean_power": 2.4884965387172996e-06,
+            "measured_minus_diagonal_db": 3.3093954878508476,
+            "mean_to_ch01_power_db": -11.882174317168122,
+            "max_quantization_error_pcm": 0.5
+          }
+        ]
+      },
+      {
+        "start_sample": 144000,
+        "stop_sample": 160000,
+        "results": [
+          {
+            "channels": 2,
+            "mean_channel_power": 8.532270352588966e-06,
+            "diagonal_only_power": 4.266135176294483e-06,
+            "cross_terms_power": 1.5754412743262947e-06,
+            "unquantized_mean_power": 5.841576450620778e-06,
+            "exported_mean_power": 5.841160193085671e-06,
+            "measured_minus_diagonal_db": 1.3646450453563865,
+            "mean_to_ch01_power_db": -1.3160692653068242,
+            "max_quantization_error_pcm": 0.5
+          },
+          {
+            "channels": 16,
+            "mean_channel_power": 7.539202990301419e-06,
+            "diagonal_only_power": 4.712001868938387e-07,
+            "cross_terms_power": 1.1324920310471498e-06,
+            "unquantized_mean_power": 1.6036922179409886e-06,
+            "exported_mean_power": 1.6035428852774202e-06,
+            "measured_minus_diagonal_db": 5.318751251907847,
+            "mean_to_ch01_power_db": -6.930254641797369,
+            "max_quantization_error_pcm": 0.5
+          }
+        ]
+      }
+    ],
+    "block_interpretation": "ten observed time blocks, not independent trials or confidence intervals"
+  },
+  "files": [
+    {
+      "file": "demand_nriver_16ch_10s.wav",
+      "sha256": "19009b72e803784574cb4bfbc7994c896f93db5de39d6eb8d9727ce5bf644d07",
+      "sample_rate_hz": 16000,
+      "channels": 16,
+      "samples": 160000,
+      "duration_s": 10.0,
+      "peak": 0.051544189453125,
+      "rms": [
+        0.0033522644395104265,
+        0.0033727172624317863,
+        0.0031746581560272735,
+        0.0034200104363135554,
+        0.003967437264387507,
+        0.003446931899663015,
+        0.00273481835130196,
+        0.00339998794613899,
+        0.0052263352838925504,
+        0.002606817720861801,
+        0.002482264846544345,
+        0.0023804919444486406,
+        0.0039398159053678225,
+        0.00268921319646934,
+        0.0024293078812779845,
+        0.0031477879310875347
+      ],
+      "common_export_gain": 1.0
+    },
+    {
+      "file": "demand_nriver_ch01_10s.wav",
+      "sha256": "24bbb792aaa2f7061e5cbe485dfd62c6f76fd2cc05f8076a5c67f822269e3e22",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 160000,
+      "duration_s": 10.0,
+      "peak": 0.0289306640625,
+      "rms": [
+        0.0033522644395104265
+      ],
+      "common_export_gain": 1.0
+    },
+    {
+      "file": "demand_nriver_mean02_10s.wav",
+      "sha256": "01ce0e408fc1b824741c772abd539224f91ba75d6ac0e55bd1bdb7ab5fa597e1",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 160000,
+      "duration_s": 10.0,
+      "peak": 0.02032470703125,
+      "rms": [
+        0.002585291706848949
+      ],
+      "common_export_gain": 1.0
+    },
+    {
+      "file": "demand_nriver_mean16_10s.wav",
+      "sha256": "4b12db985ede64e0a49d2c22a60427ceb8e197e04826811a20e45a7a5076a8e3",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 160000,
+      "duration_s": 10.0,
+      "peak": 0.006378173828125,
+      "rms": [
+        0.0013453160250493797
+      ],
+      "common_export_gain": 1.0
+    }
+  ]
+}

@@ -20,7 +20,7 @@ if str(ROOT) not in sys.path:
 
 from codes.array_tutorial.beamforming import lcmv_weights, mvdr_weights
 from codes.array_tutorial.covariance import recursive_covariance, spatial_covariance
-from codes.array_tutorial.doa import gcc_phat, music_spectrum
+from codes.array_tutorial.doa import gcc_phat, mdl_source_count, music_spectrum
 from codes.array_tutorial.geometry import direction_vector, near_field_steering, plane_wave_delays, plane_wave_steering
 from codes.array_tutorial.spectral import istft, stft
 
@@ -263,6 +263,35 @@ def coherent_spatial_smoothing() -> dict:
             "original_aperture_in_spacings": 3, "smoothed_aperture_in_spacings": 2}
 
 
+def mdl_candidate_scores() -> dict:
+    """E04-05: prescribed positive spectrum, not a measured source-count result."""
+    eigenvalues = np.array([9., 4., 1.1, .9])
+    selected, scores = mdl_source_count(eigenvalues, 100)
+    rows = []
+    for k in range(eigenvalues.size):
+        tail = eigenvalues[k:]
+        arithmetic = float(np.mean(tail))
+        geometric = float(np.exp(np.mean(np.log(tail))))
+        penalty = .5 * k * (2 * eigenvalues.size - k) * np.log(100.)
+        rows.append({"candidate": k, "arithmetic_mean": arithmetic,
+                     "geometric_mean": geometric, "fit_term": float(scores[k]-penalty),
+                     "penalty": float(penalty), "mdl": float(scores[k])})
+    equal_count, equal_scores = mdl_source_count(np.ones(4), 100)
+    short_count, short_scores = mdl_source_count(eigenvalues, 4)
+    scaled_count, scaled_scores = mdl_source_count(eigenvalues * 1e-200, 100)
+    rank_deficient_rejected = False
+    try:
+        mdl_source_count([9., 4., 1., 0.], 100)
+    except ValueError:
+        rank_deficient_rejected = True
+    return {"eigenvalues_descending": eigenvalues.tolist(), "snapshots": 100,
+            "cases": rows, "selected_count": selected,
+            "equal_spectrum_count": equal_count, "equal_spectrum_scores": equal_scores.tolist(),
+            "same_spectrum_n4_count": short_count, "same_spectrum_n4_scores": short_scores.tolist(),
+            "scaled_count": scaled_count, "scaled_scores": scaled_scores.tolist(),
+            "rank_deficient_rejected": rank_deficient_rejected}
+
+
 def beam_output_noise() -> dict:
     """E05-03: separate input noise estimate from DSB residual-noise PSD."""
     weight = np.ones(3) / 3
@@ -293,7 +322,7 @@ def complex_constraint_response() -> dict:
 
 
 def run_exercises() -> dict:
-    """Return twenty JSON-serializable results; no downloads, training or playback."""
+    """Return twenty-one JSON-serializable results; no downloads, training or playback."""
     functions = {
         "E01-01": correlated_noise, "E01-02": amplitude_and_power,
         "E02-01": stft_framing, "E02-02": complex_covariance, "E02-03": stft_roundtrip,
@@ -304,6 +333,7 @@ def run_exercises() -> dict:
         "E02-05": recursive_startup, "E03-03": azimuth_roundtrip,
         "E03-04": near_to_far_error, "E04-04": coherent_spatial_smoothing,
         "E05-03": beam_output_noise, "E05-04": complex_constraint_response,
+        "E04-05": mdl_candidate_scores,
     }
     return {identifier: function() for identifier, function in functions.items()}
 

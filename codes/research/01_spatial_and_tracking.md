@@ -54,7 +54,13 @@
 
 ### 5. AIC 与 MDL 源数估计
 
-对应 §4.1。外部入口为 doatools 的 `estimation/source_number.py` 中 `aic`、`mdl`、`ld_stat`。它们比较候选源数下剩余特征值的平坦程度与模型复杂度；接口接受协方差或升序特征值，并需要快拍数。[作者 API](https://morriswmz.github.io/doatools.py/references/doatools.estimation.source_number.html)。
+对应 [§4.1.1](../../chapters/04_doa-estimation.md#sec-4-1-1) 和 [§4.10](../../chapters/04_doa-estimation.md#sec-4-10)。本书 `doa.py::mdl_source_count` 提供复高斯、空间白噪声模型的 MDL 教学基线；输入为任意顺序的严格正实特征值和独立快拍数，输出所选源数与全部候选评分。它拒绝秩亏、非法类型和不足以支持满秩样本协方差的快拍数，不静默加载，也不把评分写成概率。
+
+外部入口仍为 doatools 的 `estimation/source_number.py` 中 `aic`、`mdl`、`ld_stat`。其接口接受协方差或**升序**特征值，并需要快拍数；本书接口不接受协方差矩阵。锁定版本的 `mdl` 保留公共惩罚 $\tfrac12\ln N$，本书去掉该常数，所以直接比较评分时要先统一口径，源数最小值不受影响。上游 `ld_stat` 直接计算特征值乘积，本书改用平移后的对数计算，以覆盖极大、极小尺度。[作者 API](https://morriswmz.github.io/doatools.py/references/doatools.estimation.source_number.html)；[锁定提交的官方源码](https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/estimation/source_number.py)。版本同时登记在 `SOURCES.lock.json`。
+
+E04-05 使用指定谱 $[9,4,1.1,0.9]$ 和 $N=100$，四个 MDL 总分为约 171.355476、86.437847、28.636055、34.538776，选择 2。表格、算例、`exercises_spatial.py` 与 `test_codes_mdl.py` 对应；测试期望值另由 Decimal 高精度标量公式产生，覆盖所有排序、共同尺度 $10^{-300}$ 至 $10^{300}$、最小正浮点数、纯噪声、最后一个候选和拒绝输入。这是本书手算及数值回归，不是数据集检测正确率实验。
+
+公式核查使用 Wax 与 Kailath 的 *Determining the number of signals by information theoretic criteria*，ICASSP **1984**，§II～IV、式(10)～(15)，[DOI](https://doi.org/10.1109/ICASSP.1984.1172389)及[作者上传原文](https://www.researchgate.net/profile/Mati-Wax/publication/3177764_Detection_of_signals_by_information_theoretic_criteria/links/56cacde408aee3cee54041cd/Detection-of-signals-by-information-theoretic-criteria.pdf)。[1985 年期刊论文](https://doi.org/10.1109/TASSP.1985.1164557)另题为 *Detection of signals by information theoretic criteria*；ResearchGate 的该期刊条目挂载的是 1984 年会议稿，引用定位以 PDF 的实际版本为准。核查日期：2026-09-22。
 
 建议用已知白噪声方差的双源模型，改变快拍数、源强比和源相关性，报告源数正确率而非只展示一次输出。重叠 STFT 帧不天然独立，把帧数全部当成独立快拍会改变惩罚口径；有色噪声也可能被误识别为额外声源。源数检测应有时间迟滞，避免每帧改变下游子空间维度。
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 4 章 · 声源定位（DOA 估计） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="3ffa19bfc241"><style>
+<meta name="source-digest" content="7dad810a9a67"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -73,6 +73,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-4-7-2">4.7.2 可执行基线的输入契约、回退与外部实现边界</a></li>
 <li><a href="04_doa-estimation.html#sec-4-8">4.8 定位算法总对比</a></li>
 <li><a href="04_doa-estimation.html#sec-4-9">4.9 本章练习</a></li>
+<li><a href="04_doa-estimation.html#sec-4-10">4.10 MDL 源数估计：逐候选评分与数值例</a></li>
 </ul>
 <div class="chap"><a href="05_beamforming.html">第 5 章 · 波束形成</a></div>
 <div class="chap"><a href="06_aec.html">第 6 章 · 声学回声消除（AEC）</a></div>
@@ -102,6 +103,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-4-7-2">4.7.2 可执行基线的输入契约、回退与外部实现边界</a></li>
 <li><a href="04_doa-estimation.html#sec-4-8">4.8 定位算法总对比</a></li>
 <li><a href="04_doa-estimation.html#sec-4-9">4.9 本章练习</a></li>
+<li><a href="04_doa-estimation.html#sec-4-10">4.10 MDL 源数估计：逐候选评分与数值例</a></li>
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是教程正文第 4 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
@@ -135,7 +137,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>MUSIC 还要满足 $K\lt M$，否则没有非零维噪声子空间可供正交检验。ESPRIT 的两个子阵也都必须至少有 $K$ 维，实际通常保留更多阵元以降低有限快拍误差。下面给出两种常用估计方法。</p>
 <p><strong>方法 1：特征值间隙（eigen-gap）</strong>。把固定频点 $f_k$ 的协方差矩阵 $\hat{\mathbf{R}}(f_k)$（读作“R 帽”，帽子表示用有限快拍估计出来的版本）的特征值从大到小排列。前 $K$ 个特征值包含信号与噪声功率，后面 $M-K$ 个在白噪声模型下接近 $\sigma^2$。</p>
 <p>算例 4-4 的无噪声单源给出 $3,\,0,\,0$，因此 $K=1$。实际数据中，低信噪比或快拍不足会缩小相邻特征值之间的间隔；可比较相邻特征值的比值或差值，并把最大间隙所在位置作为候选分界。这种方法计算简单，但在低信噪比或快拍不足时不稳定。</p>
-<p><strong>方法 2：信息准则（AIC/MDL）</strong>。增加候选源数通常会改善数据拟合，同时也会增加模型复杂度。AIC（Akaike information criterion，赤池信息准则）和 MDL（minimum description length，最小描述长度）用不同的复杂度惩罚项平衡这两部分，并取准则值最小的候选 $K$。<a href="https://doi.org/10.1109/TASSP.1985.1164557" title="citation">Wax 与 Kailath 的阵列源数信息准则原文，式(7)–(8)</a>给出了白噪声、独立快拍模型下基于最小特征值算术均值与几何均值之比的打分式。实现时必须核对复/实数据、快拍数和惩罚项口径；低 SNR、快拍不足、彩色噪声或相干源导致的信号协方差降秩都会造成误判。</p>
+<p><strong>方法 2：信息准则（AIC/MDL）</strong>。增加候选源数通常会改善数据拟合，同时也会增加模型复杂度。AIC（Akaike information criterion，赤池信息准则）和 MDL（minimum description length，最小描述长度）用不同的复杂度惩罚项平衡这两部分，并取准则值最小的候选 $K$。</p>
+<p>Wax 与 Kailath 的<a href="https://doi.org/10.1109/ICASSP.1984.1172389" title="citation">1984 年原始会议论文，式(10)～(15)</a>给出了复数观测、空间白噪声、独立快拍模型下的推导；<a href="https://doi.org/10.1109/TASSP.1985.1164557" title="citation">1985 年期刊论文</a>题为 <em>Detection of signals by information theoretic criteria</em>。两篇论文的题名和公式编号不能混用。MDL 比较剩余特征值的几何均值与算术均值，再加入源数惩罚；<a href="#sec-4-10">§4.10</a>给出完整定义、逐候选计算和代码练习。</p>
+<p>实现时必须核对复/实数据、快拍数和惩罚项口径。低 SNR、快拍不足、彩色噪声或相干源导致的信号协方差降秩都会造成误判。</p>
 <p>信噪比高、快拍充足时，可以先看特征间隙；需要自动选择 $K$ 时可用 MDL，并用特征值谱交叉检查。</p>
 <p>相干源场景还存在一个实际循环：空间平滑要按候选源数选择子阵长度，而源数又要从平滑后的谱估计。可先给出源数上界 $K_{\max}$，对候选 $K$ 和子阵长度联合扫描，再检查结果对参数是否稳定。对 $M$ 元均匀线阵（Uniform Linear Array，ULA）做前向空间平滑时，若切成 $L$ 个长度为 $P=M-L+1$ 的重叠子阵，要分辨 $K$ 个完全相干源，至少需要 $L\ge K$ 且 $P>K$。这两个条件同时限制可分辨源数和剩余有效孔径。<a href="https://doi.org/10.1109/TASSP.1985.1164649" title="citation">Shan、Wax 与 Kailath 的空间平滑分析</a>。</p>
 <blockquote>
@@ -862,6 +866,7 @@ $$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$<
 </li>
 </ol>
 <p>以下四题用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 复算。它们检查时延符号、统计秩、几何歧义和空间平滑，不把谱峰尖锐程度当作准确性的唯一依据。</p>
+<p>MDL 练习 E04-05 随完整算例放在 <a href="#sec-4-10">§4.10</a>，先计算各候选的评分，再检验代码边界。</p>
 <p><strong>E04-01：交换两段录音，延迟应怎样变化？</strong> 16 kHz 下，让麦 1 比麦 2 晚 3 点，零填充而不循环移动信号。对单脉冲和固定种子宽带噪声各算一次 GCC-PHAT，再交换两通道。静音输入应返回哪个方向？</p>
 <p><strong>参考答案</strong>：$\tau_{12}=3/16000=187.5$ μs，交换后为 −187.5 μs。两类输入都应得到 +3、−3 点；零能量输入没有可辨的相关峰，本书函数会明确报错，不能把首个搜索点当成方向。</p>
 <p>这个 3 点延迟至少对应 $343\times187.5\,\mu\mathrm{s}=6.43$ cm 的麦距，不能把它再代入 4 cm 双麦反算实数角度。本题隔离代码符号与零输入行为，不模拟混响或亚采样误差。</p>
@@ -878,6 +883,81 @@ $$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$<
 \begin{bmatrix}2&0&-2\\0&2&0\\-2&0&2\end{bmatrix}。$$</p>
 <p>向量 $[1,0,1]^\top$、$[0,1,0]^\top$、$[1,0,-1]^\top$ 分别给出特征值 0、2、4。原矩阵只有特征值 8 非零，平滑后恢复两个非零特征值；物理源数始终为 2。</p>
 <p>原孔径为 $3d$，平滑后为 $2d$，所以恢复秩并不保留全部孔径。记子阵数量为 $L$、物理源数为 $K$、每个子阵的麦数为 $P$，本例满足 $L=2\ge K=2$、$P=3>K$；任意非均匀阵不能只滑动矩阵下标套用。代码在本题中直接平均两个子矩阵，不提供通用空间平滑器。<a href="https://morriswmz.github.io/doatools.py/references/doatools.estimation.preprocessing.html" title="citation">doatools 官方接口</a>同样区分子阵数量与输出矩阵维数。</p>
+<span id="sec-17" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-10">4.10 MDL 源数估计：逐候选评分与数值例</h2>
+<p>本节把 §4.1.1 的源数选择写成可复算步骤。输入是在同一频点估计的 $M\times M$ 样本协方差的特征值，以及用于估计它的独立快拍数 $N$。MDL 输出候选信号子空间维数，不直接输出方位，也不保证等于房间里的物理声源数。</p>
+<p><strong>模型与适用条件</strong>。采用已知零均值、独立同分布的圆对称复高斯观测 $\vec x_n\in\mathbb C^M$。空间噪声协方差为 $\sigma^2\mathbf I$，其中 $\sigma^2>0$ 未知；噪声与源信号不相关，阵列流形 $\mathbf A$ 满列秩，源协方差 $\mathbf S$ 正定，源数 $K\lt M$。于是 $\mathbf R=\mathbf A\mathbf S\mathbf A^H+\sigma^2\mathbf I$ 有 $M-K$ 个相等的总体噪声特征值。有限快拍下，这些样本特征值通常不再完全相等。</p>
+<p>样本协方差取 $\hat{\mathbf R}=N^{-1}\sum_{n=1}^N\vec x_n\vec x_n^H$，不另行估计并减去样本均值。由于它的秩不超过 $N$，$N\ge M$ 是满秩的必要条件，但不是正确检测的保证；若先减去样本均值，则秩不超过 $N-1$，必要条件变为 $N>M$。本节直接使用严格正的样本特征值，不能把前面无噪声算例的 $3,0,0$ 代入对数。</p>
+<p><strong>从尾部特征值到评分</strong>。将样本特征值按 $\hat\lambda_1\ge\cdots\ge\hat\lambda_M>0$ 排列。对候选源数 $k=0,\ldots,M-1$，把最大的 $k$ 个划入信号部分，剩余 $q_k=M-k$ 个暂作噪声，定义</p>
+<p>$$\begin{aligned}
+a_k&=\frac{1}{M-k}\sum_{i=k+1}^{M}\hat\lambda_i,\\
+g_k&=\left(\prod_{i=k+1}^{M}\hat\lambda_i\right)^{1/(M-k)}。
+\end{aligned}\tag{4-4}$$</p>
+<p>$a_k$ 是算术均值，也是该候选模型下噪声方差的最大似然估计；$g_k$ 是几何均值。两者具有相同的功率单位，因此 $a_k/g_k$ 无量纲。算术均值不小于几何均值，且相等当且仅当剩余特征值全相等，所以 $\ln(a_k/g_k)$ 衡量把它们用同一个噪声方差解释时损失了多少拟合。</p>
+<p>复高斯对数似然中，与候选有关的部分是 $-N[\ln\det\mathbf R+\operatorname{tr}(\mathbf R^{-1}\hat{\mathbf R})]$。用前 $k$ 个样本特征值和尾部均值 $a_k$ 代替该候选的总体特征值后，迹项为 $M$，对所有候选相同。减去同样与候选无关的 $N\sum_{i=1}^M\ln\hat\lambda_i$ 后，负对数似然的差为</p>
+<p>$$N\left[(M-k)\ln a_k-\sum_{i=k+1}^{M}\ln\hat\lambda_i\right]
+=N(M-k)\ln(a_k/g_k)。$$</p>
+<p>复杂度不能只数 $k$ 个特征值。$k$ 个复特征向量原有 $2Mk$ 个实参数；正交归一约束减去 $k^2$ 个，不改变协方差的各列相位再减去 $k$ 个。再加上 $k$ 个信号特征值和一个公共噪声方差，得到 $\nu_k=k(2M-k)+1$ 个实自由参数。MDL 的惩罚为 $\nu_k\ln N/2$；去掉每个候选都有的 $\ln N/2$，采用</p>
+<p>$$\begin{aligned}
+\mathrm{MDL}(k)&=N(M-k)\ln(a_k/g_k)
+                 +\frac{k(2M-k)}{2}\ln N,\\
+\hat K&=\underset{0\le k\lt M}{\arg\min}\;\mathrm{MDL}(k)。
+\end{aligned}\tag{4-5}$$</p>
+<p>全部对数都是自然对数，评分无单位、越小越好，但不是概率或置信度。$k=M-1$ 时只剩一个特征值，拟合项必为零；没有复杂度惩罚就会偏向这类过大的模型。实高斯观测的似然系数和自由参数计数不同，不能直接把原始实数 PCM 的协方差当作本节复高斯模型使用。</p>
+<p>上述模型、最大似然估计与评分对应 Wax 与 Kailath，<em>Determining the number of signals by information theoretic criteria</em>，ICASSP 1984，§II～IV、式(10)～(15)，<a href="https://www.researchgate.net/profile/Mati-Wax/publication/3177764_Detection_of_signals_by_information_theoretic_criteria/links/56cacde408aee3cee54041cd/Detection-of-signals-by-information-theoretic-criteria.pdf" title="citation">作者公开原文</a>。本书用 $M,N,k$ 统一记号，并展开参数计数；这不是阵列几何已知时按方位参数重新推导的另一种 MDL。</p>
+<p><strong>算例 4-5：为什么选择两个源，而不是三个？</strong> 给定四麦、$N=100$ 和样本特征值 $[9,4,1.1,0.9]$，功率单位统一为任意参考单位。这是一组为手算指定的输入，不是真实录音或论文性能数据；不需要假设某个阵列几何、采样率或 SNR 来执行此评分，也不能由这四个数反推出这些条件。</p>
+<p>以 $k=1$ 为例，剩下 $4,1.1,0.9$，故 $a_1=6/3=2$、$g_1=(4\times1.1\times0.9)^{1/3}\approx1.582092$。拟合项为 $100\times3\times\ln\bigl(2/(3.96)^{1/3}\bigr)\approx70.319752$，惩罚项为 $\tfrac12\times1\times7\times\ln100\approx16.118096$，合计约 86.437847。表中计算使用未舍入中间值，最后统一保留六位小数。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">候选 $k$</th>
+<th scope="col" style="text-align: right;">$a_k$</th>
+<th scope="col" style="text-align: right;">$g_k$</th>
+<th scope="col" style="text-align: right;">拟合项</th>
+<th scope="col" style="text-align: right;">惩罚项</th>
+<th scope="col" style="text-align: right;">MDL 总分</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td style="text-align: right;">3.750000</td>
+<td style="text-align: right;">2.443343</td>
+<td style="text-align: right;">171.355476</td>
+<td style="text-align: right;">0.000000</td>
+<td style="text-align: right;">171.355476</td>
+</tr>
+<tr>
+<td>1</td>
+<td style="text-align: right;">2.000000</td>
+<td style="text-align: right;">1.582092</td>
+<td style="text-align: right;">70.319752</td>
+<td style="text-align: right;">16.118096</td>
+<td style="text-align: right;">86.437847</td>
+</tr>
+<tr>
+<td>2</td>
+<td style="text-align: right;">1.000000</td>
+<td style="text-align: right;">0.994987</td>
+<td style="text-align: right;">1.005034</td>
+<td style="text-align: right;">27.631021</td>
+<td style="text-align: right;">28.636055</td>
+</tr>
+<tr>
+<td>3</td>
+<td style="text-align: right;">0.900000</td>
+<td style="text-align: right;">0.900000</td>
+<td style="text-align: right;">0.000000</td>
+<td style="text-align: right;">34.538776</td>
+<td style="text-align: right;">34.538776</td>
+</tr>
+</tbody>
+</table></div>
+<p>从 $k=1$ 增至 2，拟合项减少约 69.314718，超过惩罚增加的 11.512925。再从 2 增至 3，拟合项只减少约 1.005034，却多付约 6.907755 的惩罚，所以最小值在 $\hat K=2$。本例说明 MDL 不要求尾部两个特征值精确相等；它比较改善拟合是否值得增加模型维数。</p>
+<p>这个结论依赖指定的谱和快拍数。保持同一组特征值、仅在评分中把 $N$ 改为 4，四个总分约为 $6.854219,7.664820,8.357968,10.397208$，会选择 $k=0$。这是固定谱下的参数敏感性手算，不是从 100 个真实快拍删到 4 个快拍的实验：真正删减数据后，样本特征值也会变化。</p>
+<p><strong>E04-05：复算 MDL，并检验哪些输入不成立。</strong> 复算表中四个候选，再计算特征值全为 1 的情况。把原谱整体乘以 $10^{-200}$ 后，源数是否应改变？若最后一个特征值为零，能否随意补一个很小的常数继续评分？</p>
+<p><strong>参考答案</strong>：原谱选 2；全为 1 时所有拟合项为零，惩罚最小的 $k=0$ 胜出。共同正尺度在 $a_k/g_k$ 中约去，所以缩放后评分和选择应在浮点误差内不变。零特征值使几何均值和对数不满足本节定义，本书接口明确拒绝；对角加载会改变谱和准则结果，不能不加说明地当作原算法的数值修补。</p>
+<p>复算入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 的 <code>E04-05</code>；通用教学接口是 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/doa.py"><code>doa.py::mdl_source_count</code></a>。它接受任意顺序的严格正实特征值，内部排序但不修改输入，返回所选源数和 $k=0$ 至 $M-1$ 的全部评分。实现直接用对数求几何均值，并在每个尾部内用最大对数平移后求算术均值的对数，避免先连乘或把极小特征值除到零。独立测试用高精度标量计算核对本表，并覆盖尺度、排序、纯噪声、秩亏和样本数错误。</p>
+<p>实际工程还要区分三类失效：空间有色噪声使尾部不平；完全相干源使信号协方差降秩；重叠 STFT 帧使独立快拍假设不成立。不能把帧数直接当成有效独立样本数，也不能随意用窗口时长替代 $N$。平滑、白化或有效样本数校正需要另行验证模型；本节代码不自动执行这些步骤，不以一次选对源数证明长期检测可靠。</p>
 <hr />
 <blockquote>
 <p>📄 本篇信息：配图 5 张 ｜ <a href="index.html">回首页</a></p>

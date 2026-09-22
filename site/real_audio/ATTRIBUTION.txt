@@ -1,0 +1,30 @@
+DEMAND: a collection of multi-channel recordings of acoustic noise in diverse environments
+Version 1.0, June 9, 2013
+Creators: Joachim Thiemann (IRISA-CNRS), Nobutaka Ito (University of Tokyo),
+Emmanuel Vincent (Inria Rennes - Bretagne Atlantique).
+Source: https://doi.org/10.5281/zenodo.1227121
+Official record: https://zenodo.org/records/1227121
+License: Creative Commons Attribution-ShareAlike 3.0 Unported (CC BY-SA 3.0).
+License URL: https://creativecommons.org/licenses/by-sa/3.0/
+Legal text: https://creativecommons.org/licenses/by-sa/3.0/legalcode
+
+The source NRIVER_16k.zip contains actual 16-channel creek-noise recordings.
+Source archive SHA-256:
+98e3a3f05a7234ea07619d965bafeea68a100bbce5c9269b7487393e3b559660
+
+Changes made for this tutorial (2026-09-22):
+- Extracted samples [0, 160000), at 16000 Hz, from each of channels 1 through 16.
+- Repackaged those unmodified PCM samples into one 16-channel WAV file.
+- Exported channel 1 as a separate mono WAV.
+- Created zero-delay equal-weight averages of channels 1-2 and channels 1-16,
+  with nearest-even PCM16 quantization; no dither, no calibration, no DC
+  removal, no time shifts, and no per-file normalization. Common gain is 1.
+
+These four audio files and their audio adaptations are distributed under
+CC BY-SA 3.0. This attribution is not a claim that the original authors endorse
+this tutorial. No clean-speech reference, SNR improvement, source-location
+ground truth, or formal listening test is supplied by this exercise.
+
+This data-specific notice does not change the license status of the independent
+tutorial source code or unrelated repository content. Keep this attribution
+and the license notice with redistributed excerpts and derived audio.

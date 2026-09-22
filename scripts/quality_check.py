@@ -31,7 +31,7 @@ EXPECTED_SECTION_COUNTS = {
     "01_problem-definition.md": 2,
     "02_basics-signal-model.md": 8,
     "03_array-geometry.md": 5,
-    "04_doa-estimation.md": 9,
+    "04_doa-estimation.md": 10,
     "05_beamforming.md": 11,
     "06_aec.md": 1,
     "07_wpe-dereverberation.md": 1,
@@ -66,11 +66,11 @@ EXPECTED_CHAPTERS = [
     ("13_appendix-guide.md", "附录 B · 路径地图与练习"),
 ]
 EXPECTED_CHAPTER_COUNT = 14
-EXPECTED_SECTION_COUNT = 84
+EXPECTED_SECTION_COUNT = 85
 EXPECTED_SUBSECTION_COUNT = 21
-EXPECTED_OUTLINE_ITEM_COUNT = 119
+EXPECTED_OUTLINE_ITEM_COUNT = 120
 EXPECTED_FIGURE_NUMBERS = set(range(1, 36))
-# 研究附站使用独立显式清单，不挤占 14 篇教程或 119 项 PDF 大纲基线。
+# 研究附站使用独立显式清单，不挤占 14 篇教程或 120 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
     ("README.md", "index.html"),
@@ -836,6 +836,7 @@ def site_source_digest():
     paths += [ROOT / "codes" / "research" / name for name, _ in EXPECTED_RESEARCH_PAGES]
     paths += sorted((ROOT / "codes" / "audio").glob("*.wav"))
     paths += [ROOT / "codes" / "audio" / "MANIFEST.json"]
+    paths += sorted((ROOT / "codes" / "real_audio").glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
               ("build_site.py", "make_figures.py", "make_aec_figures.py")]
@@ -969,6 +970,87 @@ EXPECTED_AUDIO_STEMS = {
 }
 
 
+EXPECTED_REAL_AUDIO_CHANNELS = {
+    "demand_nriver_16ch_10s.wav": 16,
+    "demand_nriver_ch01_10s.wav": 1,
+    "demand_nriver_mean02_10s.wav": 1,
+    "demand_nriver_mean16_10s.wav": 1,
+}
+EXPECTED_REAL_AUDIO_FILES = set(EXPECTED_REAL_AUDIO_CHANNELS) | {
+    "MANIFEST.json", "ATTRIBUTION.txt", "LICENSE.txt", "README.md",
+}
+
+
+def check_real_audio(errors):
+    """Independent inventory and PCM/attribution checks for the DEMAND excerpt."""
+    import numpy as np
+    root = ROOT / "codes/real_audio"
+    try:
+        for folder in (root, SITE / "real_audio"):
+            if {p.name for p in folder.iterdir() if p.is_file()} != EXPECTED_REAL_AUDIO_FILES:
+                fail(errors, "真实录音文件或许可集合不符")
+        for name in EXPECTED_REAL_AUDIO_FILES:
+            source, published = root / name, SITE / "real_audio" / name
+            if source.is_symlink() or published.is_symlink() or source.read_bytes() != published.read_bytes():
+                fail(errors, f"真实录音站点副本不符：{name}")
+        attribution = (root / "ATTRIBUTION.txt").read_text(encoding="utf-8")
+        for required in ("Joachim Thiemann", "Nobutaka Ito", "Emmanuel Vincent",
+                         "1227121", "creativecommons.org/licenses/by-sa/3.0"):
+            if required not in attribution:
+                fail(errors, f"真实录音署名缺少 {required}")
+        if "creativecommons.org/licenses/by-sa/3.0" not in (root / "LICENSE.txt").read_text(encoding="utf-8"):
+            fail(errors, "真实录音许可地址缺失")
+        manifest = json.loads((root / "MANIFEST.json").read_text(encoding="utf-8"))
+        expected_inputs = {"codes/array_tutorial/real_recordings.py", "codes/examples/prepare_real_recordings.py"}
+        if set(manifest["generator_inputs"]) != expected_inputs:
+            fail(errors, "真实录音生成来源清单不符")
+        for name in expected_inputs:
+            if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != manifest["generator_inputs"].get(name):
+                fail(errors, f"真实录音生成源过期：{name}")
+        records = manifest["files"]
+        if len(records) != 4 or {r["file"] for r in records} != set(EXPECTED_REAL_AUDIO_CHANNELS):
+            raise ValueError("真实录音清单不符")
+        for record in records:
+            path = root / record["file"]
+            if hashlib.sha256(path.read_bytes()).hexdigest() != record["sha256"]:
+                fail(errors, f"真实录音摘要不符：{path.name}")
+            with wave.open(str(path), "rb") as wav:
+                if (wav.getframerate(), wav.getsampwidth(), wav.getcomptype(), wav.getnframes(), wav.getnchannels()) != (
+                        16000, 2, "NONE", 160000, EXPECTED_REAL_AUDIO_CHANNELS[path.name]):
+                    raise ValueError(f"真实录音 PCM 格式不符：{path.name}")
+                pcm = np.frombuffer(wav.readframes(160000), dtype="<i2").astype(float)
+                pcm = pcm.reshape(160000, wav.getnchannels()) / 32768
+            if (record["sample_rate_hz"], record["samples"], record["channels"], record["duration_s"]) != (
+                    16000, 160000, EXPECTED_REAL_AUDIO_CHANNELS[path.name], 10):
+                fail(errors, f"真实录音尺寸元数据不符：{path.name}")
+            rms = np.asarray(record["rms"])
+            if (rms.shape != (pcm.shape[1],) or not np.all(np.isfinite(rms)) or
+                    not np.allclose(rms, np.sqrt(np.mean(pcm**2, axis=0)), rtol=0, atol=1e-14)):
+                fail(errors, f"真实录音 RMS 不符：{path.name}")
+            if not np.isfinite(record["peak"]) or abs(record["peak"] - np.max(np.abs(pcm))) > 1e-15:
+                fail(errors, f"真实录音峰值不符：{path.name}")
+            if not np.isfinite(record["common_export_gain"]) or record["common_export_gain"] != 1:
+                fail(errors, f"真实录音共同增益应为 1：{path.name}")
+        class Players(HTMLParser):
+            def __init__(self):
+                super().__init__()
+                self.items = []
+            def handle_starttag(self, tag, attrs):
+                if tag == "audio":
+                    self.items.append(dict(attrs))
+        parser = Players()
+        parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
+        real = [p for p in parser.items if not (p.get("src") or "").startswith("../audio/")]
+        if len(real) != 3 or {p.get("src") for p in real} != {
+                "../real_audio/" + name for name, channels in EXPECTED_REAL_AUDIO_CHANNELS.items() if channels == 1}:
+            fail(errors, "真实录音试听控件集合不符")
+        if any("autoplay" in p or "controls" not in p or p.get("preload") != "none"
+               or not p.get("aria-label") for p in real):
+            fail(errors, "真实录音试听控件必须有标签和控制且不自动播放")
+    except Exception as exc:
+        fail(errors, f"真实录音检查失败：{exc}")
+
+
 def check_audio(errors):
     """Independent published PCM inventory, provenance, format and player checks."""
     root = ROOT / "codes/audio"
@@ -1036,7 +1118,8 @@ def check_audio(errors):
                     self.players.append(dict(attrs))
         parser = AudioParser()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
-        if len(parser.players) != 36 or {p.get("src") for p in parser.players} != {"../audio/" + n for n in names}:
+        synthetic_players = [p for p in parser.players if (p.get("src") or "").startswith("../audio/")]
+        if len(synthetic_players) != 36 or {p.get("src") for p in synthetic_players} != {"../audio/" + n for n in names}:
             fail(errors, "试听控件集合不符")
         for player in parser.players:
             if "autoplay" in player or "controls" not in player or player.get("preload") != "none" or not player.get("aria-label"):
@@ -1053,6 +1136,7 @@ def main():
     check_site(errors)
     check_research_site(errors)
     check_audio(errors)
+    check_real_audio(errors)
     check_combined_html(errors)
     check_pdf(errors, notices)
     for item in notices:
