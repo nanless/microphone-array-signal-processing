@@ -322,13 +322,14 @@ def promote_content_headings(html, heads):
     return html, promoted
 
 
-def sub_list(html_name, heads, start_idx=1):
+def sub_list(html_name, heads, start_idx=1, include_level1=False):
     """当前页的小节目录，返回 (html, 下一起始编号)。编号与 render 同序。"""
     parts = ["<ul>"]
     idx = start_idx
     for lvl, text, primary, _legacy in heading_records(heads):
-        if lvl >= 2:
-            pad = "" if lvl == 2 else ("&nbsp;&nbsp;" if lvl == 3 else "&nbsp;&nbsp;&nbsp;&nbsp;— ")
+        if lvl >= 2 or (include_level1 and lvl == 1):
+            pad = ("" if lvl <= 2 else
+                   ("&nbsp;&nbsp;" if lvl == 3 else "&nbsp;&nbsp;&nbsp;&nbsp;— "))
             parts.append(f'<li>{pad}<a href="{html_name}#{primary}">{text}</a></li>')
         idx += 1
     parts.append("</ul>")
@@ -348,7 +349,8 @@ def sidebar_with_anchors(current, heads):
         html_name = fname.replace(".md", ".html")
         if fname == current:
             parts.append(f'<div class="chap cur" aria-current="page">{label}</div>')
-            lst, _ = sub_list(html_name, heads)
+            # 内容页的源 h2 会提升为 h1，但仍是源导航基线的一部分。
+            lst, _ = sub_list(html_name, heads, include_level1=True)
             parts.append(lst)
         else:
             parts.append(f'<div class="chap"><a href="{html_name}">{label}</a></div>')
@@ -378,7 +380,7 @@ def main():
             body, n = render(md)
             assert n == len(heads), f"{fname}: 锚点 {n} vs 标题 {len(heads)}"
             body, heads = promote_content_headings(body, heads)
-            toc, _ = sub_list(html_name, heads)
+            toc, _ = sub_list(html_name, heads, include_level1=True)
             prev = (f'<a href="{names[i-1].replace(".md", ".html")}">← 上一篇</a>'
                     if i > 0 else '<a href="index.html">← 导读</a>')
             nxt = (f'<a href="{names[i+1].replace(".md", ".html")}">下一篇 →</a>'

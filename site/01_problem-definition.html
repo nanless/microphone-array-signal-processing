@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 1 章 · 问题定义与双耳启示 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="e95b9ec33eb1"><style>
+<meta name="source-digest" content="fcda0545e596"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -50,6 +50,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="wrap"><nav class="side" aria-label="全书目录"><div class="chap"><a href="index.html">🏠 导读与导航（首页）</a></div>
 <div class="chap cur" aria-current="page">第 1 章 · 问题定义与双耳启示</div>
 <ul>
+<li><a href="01_problem-definition.html#sec-u-5cd90bfd4e">1. 从一个生活场景出发：问题定义</a></li>
 <li><a href="01_problem-definition.html#sec-1-1">1.1 双耳听觉的三类定位线索</a></li>
 </ul>
 <div class="chap"><a href="02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
@@ -66,6 +67,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
+<li><a href="01_problem-definition.html#sec-u-5cd90bfd4e">1. 从一个生活场景出发：问题定义</a></li>
 <li><a href="01_problem-definition.html#sec-1-1">1.1 双耳听觉的三类定位线索</a></li>
 </ul></nav></details>
 <blockquote>
@@ -133,7 +135,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <ol>
 <li><strong>ITD（双耳时间差）</strong>：声音先到近耳、后到远耳，正侧面时两耳的时间差最大，量级约为数百微秒；按头部半径 8.75 cm、声速 343 m/s 的 Woodworth 刚性球模型计算，正侧面约为 656 μs，即约 0.66 ms（图1(b)）。图中“正前方偏 1°约对应 9 μs”只是该几何模型的换算，不是普适的听觉阈值。实际可辨阈值随频率、声级、刺激类型和实验任务变化。Woodworth 模型是高频射线近似，低频窄带声还需考虑绕射模型。<a href="https://doi.org/10.1121/1.4861243" title="citation">Aaronson 与 Hartmann 对 Woodworth 模型假设及适用范围的检验，JASA 2014</a>。频率升高后，相位会绕圈，听觉神经的波形锁相也逐渐减弱，因此纯相位 ITD 会出现歧义。</li>
 <li><strong>ILD（双耳声级差，Interaural Level Difference）</strong>：头颅遮挡使远耳听到的高频通常更弱，低频绕射则会减小两耳声级差。瑞利<strong>双重理论（duplex theory）</strong>把低频细结构 ITD 和高频 ILD 视为主要线索，但它不是互不重叠的硬分界：<a href="https://doi.org/10.1121/1.4795778" title="citation">Brughera、Dunai 与 Hartmann 的纯音实验</a>显示，细结构 ITD 的高频可辨上限因人而异，并在略高于 1.4 kHz 后消失；低频仍可能存在 ILD；<a href="https://doi.org/10.1121/1.1570431" title="citation">Bernstein 与 Trahiotis 的高频调制刺激实验</a>则说明，高频载波的包络 ITD 仍可影响侧向感知，不能与纯音相位 ITD 混为一谈。图1(c)据此只画理论线索区和约 1.4 kHz 的非硬性边界，不画未经测量支持的人体 ILD 数值曲线。机器阵列也不能照搬这一频段划分：当均匀阵间距不满足半波长安全条件时，高频窄带相位会产生空间混叠，但非均匀几何、实测阵列流形和宽带融合仍可利用高频信息（§2.6、§3.2）。</li>
-<li><strong>HRTF（头相关传递函数，Head-Related Transfer Function）</strong>：耳廓的褶皱，加上头和肩膀的散射，对不同方向、尤其是不同俯仰角的声音产生不同的滤波（谱峰/谱谷位置变化），这是人类分辨前后、上下的依据。</li>
+<li><strong>HRTF（头相关传递函数，Head-Related Transfer Function）</strong>：耳廓的褶皱，加上头和肩膀的散射，对不同方向、尤其是不同俯仰角的声音产生不同的滤波（谱峰/谱谷位置变化）。这种方向相关谱形是人类判断俯仰和减少前后混淆的重要线索之一；判断还会联合双耳时差、双耳声级差、头部运动和既有听觉经验，不能把 HRTF 写成唯一依据。经典综述可参见 <a href="https://doi.org/10.1146/annurev.ps.42.020191.001031" title="citation">Middlebrooks 与 Green 1991</a>。</li>
 </ol>
 <p>这些听觉线索在机器阵列中都有对应的观测量或处理方法。</p>
 <p><strong>双耳线索与阵列方法的对应关系</strong></p>

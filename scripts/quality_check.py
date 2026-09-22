@@ -40,6 +40,12 @@ EXPECTED_SECTION_COUNTS = {
     "12_appendix-symbols-math.md": 3,
     "13_appendix-guide.md": 7,
 }
+# 第 6、7 章的源 h4 单独进入合订目录和 PDF 第三级书签。此表是独立发布
+# 基线，不从构建脚本或待检产物反推。
+EXPECTED_SUBSECTION_COUNTS = {
+    "06_aec.md": 17,
+    "07_wpe-dereverberation.md": 3,
+}
 # 上表为独立发布基线，不从待检 HTML 或构建器反推。
 EXPECTED_CHAPTERS = [
     ("00_overview.md", "导读与导航"),
@@ -59,6 +65,8 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 81
+EXPECTED_SUBSECTION_COUNT = 20
+EXPECTED_OUTLINE_ITEM_COUNT = 115
 EXPECTED_FIGURE_NUMBERS = set(range(1, 34))
 ALLOWED_LINK_SCHEMES = {"http", "https", "mailto"}
 COLLOQUIAL_REVIEW = re.compile(
@@ -75,6 +83,7 @@ class PageParser(HTMLParser):
         super().__init__()
         self.ids: list[str] = []
         self.links: list[str] = []
+        self.nav_links: list[str] = []
         self.images: list[tuple[str, str | None]] = []
         self.heading_levels: list[int] = []
         self.h1_count = 0
@@ -82,10 +91,13 @@ class PageParser(HTMLParser):
         self.th_without_scope = 0
         self.source_digest = ""
         self.html_lang = ""
+        self.nav_depth = 0
 
     def handle_starttag(self, tag, attrs):
         data = dict(attrs)
         self.tags[tag] += 1
+        if tag == "nav":
+            self.nav_depth += 1
         if tag == "h1":
             self.h1_count += 1
         if re.fullmatch(r"h[1-6]", tag):
@@ -100,8 +112,14 @@ class PageParser(HTMLParser):
             self.ids.append(data["id"])
         if tag == "a" and "href" in data:
             self.links.append(data["href"])
+            if self.nav_depth:
+                self.nav_links.append(data["href"])
         if tag == "img" and "src" in data:
             self.images.append((data["src"], data.get("alt")))
+
+    def handle_endtag(self, tag):
+        if tag == "nav" and self.nav_depth:
+            self.nav_depth -= 1
 
 
 def fail(errors: list[str], message: str):
@@ -200,6 +218,21 @@ def structure_issues(documents: dict[str, str]):
         issues.append(f"源文档数应为 {EXPECTED_CHAPTER_COUNT}，实际 {len(documents)}")
     if total != EXPECTED_SECTION_COUNT:
         issues.append(f"全书节数应为 {EXPECTED_SECTION_COUNT}，实际 {total}")
+    subsection_total = 0
+    for name, expected_count in EXPECTED_SUBSECTION_COUNTS.items():
+        if name not in documents:
+            continue
+        actual_count = sum(level == 4 for level, _title in markdown_headings(documents[name]))
+        subsection_total += actual_count
+        if actual_count != expected_count:
+            issues.append(f"PDF 子节数不符合基线：{name}: {actual_count}，应为 {expected_count}")
+    if subsection_total != EXPECTED_SUBSECTION_COUNT:
+        issues.append(
+            f"PDF 第三级子节数应为 {EXPECTED_SUBSECTION_COUNT}，实际 {subsection_total}")
+    outline_total = len(documents) + total + subsection_total
+    if outline_total != EXPECTED_OUTLINE_ITEM_COUNT:
+        issues.append(
+            f"PDF 大纲项总数应为 {EXPECTED_OUTLINE_ITEM_COUNT}，实际 {outline_total}")
     return issues
 
 
@@ -354,6 +387,27 @@ def expected_site_content(name: str, source: str):
     return ids, images
 
 
+def expected_site_nav_fragments(name: str, source: str):
+    """返回必须出现在当前页 nav 中的源 h2～h4 标题锚点；源 h1 可省略。"""
+    return {
+        primary for level, _title, primary in semantic_heading_ids(source)
+        if 2 <= level <= 4
+    }
+
+
+def site_nav_fragment_issues(page_name: str, source_name: str, source: str,
+                             nav_links: list[str]):
+    """正文中的普通链接不参与导航完整性判定，只检查 nav 内当前页片段。"""
+    present = set()
+    for href in nav_links:
+        parsed = urlparse(href)
+        target_name = unquote(parsed.path) or page_name
+        if not parsed.scheme and target_name == page_name and parsed.fragment:
+            present.add(unquote(parsed.fragment))
+    missing = sorted(expected_site_nav_fragments(source_name, source) - present)
+    return [f"当前页导航缺少源标题片段：{fragment}" for fragment in missing]
+
+
 def expected_outline(documents=None):
     """仅从显式篇名清单和 Markdown 标题解析 PDF 期望书签。"""
     if documents is None:
@@ -363,7 +417,15 @@ def expected_outline(documents=None):
     for name, label in EXPECTED_CHAPTERS:
         headings = semantic_heading_ids(documents[name])
         section_level = 2 if name == "00_overview.md" else 3
-        children = [title for level, title, _primary in headings if level == section_level]
+        children = []
+        current = None
+        for level, title, _primary in headings:
+            if level == section_level:
+                current = [title, []]
+                children.append(current)
+            elif (name in EXPECTED_SUBSECTION_COUNTS
+                  and level == section_level + 1 and current is not None):
+                current[1].append(title)
         result.append((label, children))
     return result
 
@@ -495,6 +557,9 @@ def check_site(errors: list[str]):
             missing_ids = sorted(expected_ids - set(parser.ids))
             if missing_ids:
                 fail(errors, f"站点缺少源标题锚点：{path.name}: {missing_ids[:5]}")
+            for issue in site_nav_fragment_issues(
+                    path.name, source_name, documents[source_name], parser.nav_links):
+                fail(errors, f"站点导航不完整：{path.name}: {issue}")
             actual_images = Counter(src for src, _alt in parser.images)
             if actual_images != expected_images:
                 fail(errors, f"站点图片与源 Markdown 不一致：{path.name}: "
@@ -565,7 +630,9 @@ def check_combined_html(errors: list[str]):
         expected_ids.add(f"ch-{index}")
         section_level = 2 if name == "00_overview.md" else 3
         for level, _title, primary in semantic_heading_ids(documents[name]):
-            if level == section_level:
+            if (level == section_level
+                    or (name in EXPECTED_SUBSECTION_COUNTS
+                        and level == section_level + 1)):
                 expected_ids.add(f"ch-{index}-{primary}")
         expected_images.update(
             f"../figures/{figure_name}"
@@ -624,6 +691,30 @@ def norm(text: str):
     return re.sub(r"[\s·：:，,。；;、“”‘’「」『』（）()—–\-]", "", text)
 
 
+def bookmark_title_matches_page(title: str, page_text: str) -> bool:
+    """接受 PDF 提取保留标题文字、但丢失 MathJax 公式的情况。"""
+    page_key = norm(page_text)
+    title_key = norm(title)
+    if title_key and title_key in page_key:
+        return True
+    if "$" not in title:
+        return False
+    mathless = norm(re.sub(r"\$[^$]*\$", "", title))
+    return len(mathless) >= 8 and mathless in page_key
+
+
+def pdf_outline_tree(items):
+    """把 pypdf 的交错 destination/list 表示转成 [(destination, children)]。"""
+    result = []
+    for item in items:
+        if isinstance(item, list):
+            if result:
+                result[-1][1].extend(pdf_outline_tree(item))
+        else:
+            result.append([item, []])
+    return result
+
+
 def check_pdf(errors: list[str], notices: list[str]):
     path = DIST / "microphone-array-tutorial.pdf"
     if not path.exists():
@@ -669,25 +760,27 @@ def check_pdf(errors: list[str], notices: list[str]):
     if radicals:
         fail(errors, f"PDF 文本层含部首类错误码位：{len(radicals)} 个")
     expected = expected_outline()
-    actual = []
-    for item in reader.outline:
-        if isinstance(item, list):
-            if actual:
-                actual[-1][1].extend(item)
-        else:
-            actual.append([item, []])
+    actual = pdf_outline_tree(reader.outline)
     if [item[0].title for item in actual] != [label for label, _ in expected]:
         fail(errors, "PDF 顶级书签标题或顺序与源 Markdown 不一致")
     else:
         for (parent, children), (label, expected_children) in zip(actual, expected):
-            if [child.title for child in children] != expected_children:
+            if [child.title for child, _subchildren in children] != [
+                    title for title, _subtitles in expected_children]:
                 fail(errors, f"PDF 节书签标题或顺序不一致：{label}")
                 continue
-            for destination in [parent, *children]:
+            destinations = [parent]
+            for (child, subchildren), (_title, expected_subtitles) in zip(
+                    children, expected_children):
+                actual_subtitles = [subchild.title for subchild, _ in subchildren]
+                if actual_subtitles != expected_subtitles:
+                    fail(errors, f"PDF 子节书签标题或顺序不一致：{label} / {child.title}")
+                destinations.append(child)
+                destinations.extend(subchild for subchild, _ in subchildren)
+            for destination in destinations:
                 page_no = reader.get_destination_page_number(destination)
-                title_key = norm(destination.title)
-                page_key = norm(extracted[page_no]) if 0 <= page_no < len(extracted) else ""
-                if title_key and title_key not in page_key:
+                page_text = extracted[page_no] if 0 <= page_no < len(extracted) else ""
+                if not bookmark_title_matches_page(destination.title, page_text):
                     fail(errors, f"PDF 书签落页未出现标题：{destination.title} -> p{page_no + 1}")
     import importlib.util
     module_path = ROOT / "scripts" / "build_pdf.py"

@@ -18,17 +18,24 @@ plt.rcParams.update({
     "font.sans-serif": ["PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC",
                         "Microsoft YaHei", "Arial Unicode MS", "DejaVu Sans"],
     "axes.unicode_minus": False,
+    "font.size": 11,
+    "axes.titlesize": 12,
+    "axes.labelsize": 11,
+    "legend.fontsize": 11,
+    "xtick.labelsize": 10,
+    "ytick.labelsize": 10,
 })
 
 OUT = Path(__file__).parent.parent / "figures"
 OUT.mkdir(exist_ok=True)
 C_MAIN, C_BLUE, C_RED, C_GREEN, C_ORANGE, C_PURPLE = "#1a1a2e", "#2f6db3", "#c0392b", "#2e8b57", "#e67e22", "#7d3c98"
 # 全局字号约定（统一全书插图）
-FS_SUP = 13      # 图题 suptitle
-FS_TITLE = 11    # 子图标题
-FS_LABEL = 10    # 轴标签 / 主要注释
-FS_SMALL = 9     # 图例 / 次要注释
-FS_TINY = 8      # 刻度 / 极小标注
+MAX_FIGURE_WIDTH = 9.5
+FS_SUP = 14      # 图题 suptitle
+FS_TITLE = 12    # 子图标题
+FS_LABEL = 11    # 轴标签 / 主要注释
+FS_SMALL = 11    # 图例 / 次要注释
+FS_TINY = 11     # 最小注释；最终尺寸下不低于 11 pt
 
 # 每张含随机数据的图使用独立种子。调用顺序变化不会改变其他图片。
 FIGURE_SEEDS = {
@@ -55,7 +62,27 @@ def figure_png_metadata():
     }
 
 
+def finalize_figure(fig):
+    """统一最终画布与关键文字下限；各图仍应先按内容选择合适布局。"""
+    width, height = fig.get_size_inches()
+    if width > MAX_FIGURE_WIDTH:
+        fig.set_size_inches(MAX_FIGURE_WIDTH, height * MAX_FIGURE_WIDTH / width)
+    for ax in fig.axes:
+        ax.title.set_fontsize(max(ax.title.get_fontsize(), FS_TITLE))
+        ax.xaxis.label.set_fontsize(max(ax.xaxis.label.get_fontsize(), FS_LABEL))
+        ax.yaxis.label.set_fontsize(max(ax.yaxis.label.get_fontsize(), FS_LABEL))
+        for text_item in ax.texts:
+            text_item.set_fontsize(max(text_item.get_fontsize(), FS_LABEL))
+        for legend in ([ax.get_legend()] if ax.get_legend() is not None else []):
+            for text_item in legend.get_texts():
+                text_item.set_fontsize(max(text_item.get_fontsize(), FS_LABEL))
+    if getattr(fig, "_suptitle", None) is not None:
+        fig._suptitle.set_fontsize(max(fig._suptitle.get_fontsize(), FS_SUP))
+    return fig
+
+
 def save(fig, name):
+    finalize_figure(fig)
     fig.savefig(OUT / name, dpi=150, bbox_inches="tight", facecolor="white",
                 metadata=figure_png_metadata())
     plt.close(fig)
@@ -228,7 +255,9 @@ def gcc_phat_interpolated(x1, x2, fs, interp=16, max_tau=None):
 # 图8 阵列几何形态大全
 # ----------------------------------------------------------------------
 def fig_geometries():
-    fig, axes = plt.subplots(2, 4, figsize=(15, 7.5))
+    fig, grid = plt.subplots(4, 2, figsize=(9.5, 14.0))
+    axes = np.array([[grid[0, 0], grid[0, 1], grid[1, 0], grid[1, 1]],
+                     [grid[2, 0], grid[2, 1], grid[3, 0], grid[3, 1]]])
     titles = ["(a) 同一双麦基线：端射方向", "(b) 同一双麦基线：正横方向", "(c) 四麦均匀线阵 ULA",
               "(d) 四麦方阵/平面阵", "(e) 六麦圆阵 UCA + 中心麦",
               "(f) Fibonacci近均匀球阵(32麦)", "(g) 螺旋阵/对数阵", "(h) 分布式/非规则阵"]
@@ -280,12 +309,12 @@ def fig_geometries():
     ax.scatter(np.cos(th), np.sin(th), s=180, c=C_BLUE, zorder=5, edgecolors="k")
     ax.scatter([0], [0], s=260, c=C_RED, zorder=6, marker="*", edgecolors="k")
     ax.add_patch(Circle((0, 0), 1, fill=False, ls="--", color="gray"))
-    ax.text(0, -1.35, "红★为中心麦", ha="center", fontsize=9, color=C_RED)
+    ax.text(0, -1.35, "红★为中心麦", ha="center", fontsize=FS_SMALL, color=C_RED)
     ax.set_xlim(-1.6, 1.6); ax.set_ylim(-1.6, 1.6)
     # (f) spherical
     ax = axes[1, 1]
     ax.remove()
-    ax = fig.add_subplot(2, 4, 6, projection="3d")
+    ax = fig.add_subplot(4, 2, 6, projection="3d")
     ax.set_title("(f) Fibonacci近均匀球阵(32麦)", fontsize=FS_TITLE)
     u = fibonacci_sphere(32)
     ax.scatter(u[:, 0], u[:, 1], u[:, 2], s=65, c=C_BLUE, edgecolors="k", lw=0.4, depthshade=False)
@@ -324,16 +353,16 @@ def fig_geometries():
 # 图3 近场球面波 vs 远场平面波
 # ----------------------------------------------------------------------
 def fig_near_far_field():
-    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 5.5))
     ax = axes[0]
     src = (0, 4.0)
     ax.scatter(*src, marker="*", s=400, c=C_RED, zorder=6, edgecolors="k")
-    ax.annotate("近场点声源", xy=src, xytext=(0.3, 4.35), fontsize=10, color=C_RED)
+    ax.annotate("近场点声源", xy=src, xytext=(0.3, 4.35), fontsize=FS_LABEL, color=C_RED)
     th = np.linspace(np.pi + 0.35, 2 * np.pi - 0.35, 60)
     for rr in [0.8, 1.3, 1.8, 2.3]:
         ax.plot(src[0] + rr * np.cos(th), src[1] + rr * np.sin(th), color=C_BLUE, alpha=0.55)
     ax.scatter([-0.8, 0, 0.8], [0, 0, 0], s=150, c=C_GREEN, zorder=6, edgecolors="k")
-    ax.annotate("幅度差 + 相位差\n(球面波)", xy=(1.6, 1.2), fontsize=10, color=C_GREEN)
+    ax.annotate("幅度差 + 相位差\n(球面波)", xy=(1.6, 1.2), fontsize=FS_LABEL, color=C_GREEN)
     ax.set_xlabel("水平示意坐标（无量纲）", fontsize=FS_SMALL)
     ax.set_ylabel("竖直示意坐标（无量纲）", fontsize=FS_SMALL)
     ax.set_title("(a) 近场模型：球面波，需联合估计距离与方向", fontsize=11)
@@ -386,7 +415,7 @@ def fig_beampatterns():
     a0_sd = ula_steering(d_sd * m, 0)[:, 0]
     G = np.sinc(2 * d_sd * np.abs(np.subtract.outer(m, m)))
     w_sd, _ = distortionless_weights(G, a0_sd, diagonal_loading=1e-6)
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4.8), subplot_kw=dict(polar=True))
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 5.4), subplot_kw=dict(polar=True))
     fig.subplots_adjust(wspace=0.12)
     curves = [("DSB 延迟求和 (d=λ/2)", w_ds, d, C_BLUE, "-"),
               ("MVDR 干扰零陷20° (d=λ/2)", w_mvdr, d, C_RED, "--"),
@@ -446,6 +475,38 @@ def bartlett_spectrum(covariance, steering_vectors):
         steering_vectors).real
 
 
+def capon_spectrum(covariance, steering_vectors, relative_loading=1e-6):
+    """计算带相对对角加载的 Capon 谱，并返回实际加载量。
+
+    加载量按 ``relative_loading * trace(R) / M`` 定义，因此协方差整体缩放时，
+    归一化空间谱不变。这里用线性方程求解，避免显式求逆。
+    """
+    covariance = np.asarray(covariance)
+    steering_vectors = np.asarray(steering_vectors)
+    if covariance.ndim != 2 or covariance.shape[0] != covariance.shape[1]:
+        raise ValueError("covariance 必须是方阵")
+    if (steering_vectors.ndim != 2
+            or steering_vectors.shape[0] != covariance.shape[0]):
+        raise ValueError("steering_vectors 必须为 M×G，且 M 与 covariance 一致")
+    if not np.isfinite(relative_loading) or relative_loading < 0:
+        raise ValueError("relative_loading 必须是非负有限数")
+    scale = float(np.trace(covariance).real / covariance.shape[0])
+    if not np.isfinite(scale) or scale <= 0:
+        raise ValueError("covariance 的平均对角功率必须为正且有限")
+    loading = relative_loading * scale
+    loaded = covariance + loading * np.eye(covariance.shape[0])
+    try:
+        solved = np.linalg.solve(loaded, steering_vectors)
+    except np.linalg.LinAlgError as error:
+        raise np.linalg.LinAlgError(
+            "Capon 协方差奇异；请使用正的 relative_loading 或改进协方差估计") from error
+    denominator = np.einsum(
+        "mg,mg->g", steering_vectors.conj(), solved).real
+    if np.any(denominator <= 0) or not np.all(np.isfinite(denominator)):
+        raise ValueError("Capon 分母必须为正且有限")
+    return 1.0 / denominator, loading
+
+
 def fig_doa_spectrum():
     rng = np.random.default_rng(FIGURE_SEEDS["doa_spectrum"])
     M, d = 8, 0.5
@@ -465,14 +526,13 @@ def fig_doa_spectrum():
     Av = ula_steering(d * m, th)  # M x grid
     bart = bartlett_spectrum(R, Av)
     bart /= bart.max()
-    Rinv = np.linalg.inv(R + 1e-6 * np.eye(M))
-    capon = 1 / np.sum(Av.conj() * (Rinv @ Av), axis=0).real
+    capon, _ = capon_spectrum(R, Av, relative_loading=1e-6)
     capon /= capon.max()
     evals, evecs = np.linalg.eigh(R)
     En = evecs[:, :M - 2]
     music = 1 / np.sum(np.abs(En.conj().T @ Av) ** 2, axis=0)
     music_db = 10 * np.log10(music / music.max())
-    fig, axes = plt.subplots(1, 2, figsize=(13, 4.6))
+    fig, axes = plt.subplots(2, 1, figsize=(9.5, 9.0))
     axes[0].plot(th, 10 * np.log10(bart + 1e-6), color=C_BLUE, alpha=0.85, lw=1.4, label="Bartlett (常规BF)")
     axes[0].plot(th, 10 * np.log10(capon + 1e-6), color=C_RED, lw=2.2, label="Capon/MVDR 谱")
     for s in srcs:
@@ -486,7 +546,7 @@ def fig_doa_spectrum():
     for s in srcs:
         axes[1].axvline(s, color="0.55", ls="--", lw=1.2, alpha=0.9)
         axes[1].plot(s, 2.2, marker=11, color="0.45", ms=10)
-        axes[1].annotate(f"真源{s}°", xy=(s, -2), xytext=(s - 6, -8), fontsize=9,
+        axes[1].annotate(f"真源{s}°", xy=(s, -2), xytext=(s - 6, -8), fontsize=FS_SMALL,
                          arrowprops=dict(arrowstyle="->", color="k", lw=0.8))
     axes[1].set_ylim(-25, 3); axes[1].set_xlabel("角度 (°)"); axes[1].set_ylabel("伪谱 (dB)")
     axes[1].text(0.5, 0.12, "峰高不等于源功率；本图只比较峰位与谱形", transform=axes[1].transAxes,
@@ -522,20 +582,22 @@ def fig_gcc_phat():
     F0 = np.fft.rfft(sig)
     x1 = np.fft.irfft(F0 * np.exp(-2j * np.pi * fr * tau_true)) + 0.05 * rng.standard_normal(n)
     x2 = sig + 0.05 * rng.standard_normal(n)
-    fig, axes = plt.subplots(1, 3, figsize=(14.5, 4.2))
+    fig, axes = plt.subplots(3, 1, figsize=(9.5, 12.0))
     # (a) 两路信号：放大到亚毫秒窗口，时移肉眼可辨
     ax = axes[0]
     t0 = 2.0e-3
     m = (np.arange(n) / fs >= t0) & (np.arange(n) / fs < t0 + 5e-4)
     tt = np.arange(n)[m] / fs * 1e3
-    ax.plot(tt, x2[m], "o-", color=C_BLUE, ms=3.5, lw=1.2, label="麦克风2（先到）")
-    ax.plot(tt, x1[m], "s-", color=C_RED, ms=3.5, lw=1.2, label="麦克风1（晚到 τ）")
+    display_scale = max(np.max(np.abs(x1[m])), np.max(np.abs(x2[m])))
+    ax.plot(tt, x2[m] / display_scale, "o-", color=C_BLUE, ms=3.5, lw=1.2, label="麦克风2（先到）")
+    ax.plot(tt, x1[m] / display_scale, "s-", color=C_RED, ms=3.5, lw=1.2, label="麦克风1（晚到 τ）")
     ax.annotate("", xy=(2.20, 0.62), xytext=(2.20 - tau_true * 1e3, 0.62),
                 arrowprops=dict(arrowstyle="<->", color="k", lw=2.0))
     ax.text(2.20 - tau_true * 1e3 / 2, 0.68, "τ≈58 μs", ha="center", fontsize=FS_SMALL)
     ax.set_ylim(-0.8, 0.95)
     ax.set_title("(a) 两路信号（放大 0.5 ms 窗口）", fontsize=FS_TITLE)
     ax.set_xlabel("时间 (ms)", fontsize=FS_LABEL)
+    ax.set_ylabel("归一化幅度", fontsize=FS_LABEL)
     ax.text(0.03, 0.05, "τ=58.3 μs < 采样间隔 62.5 μs\n（不足 1 个采样点，肉眼几乎难辨）",
             transform=ax.transAxes, fontsize=FS_SMALL, color=C_MAIN, va="bottom")
     ax.legend(fontsize=FS_SMALL, loc="upper right"); ax.grid(ls=":", alpha=0.5)
@@ -597,7 +659,7 @@ def fig_gcc_phat():
 # 图17 GSC 结构框图
 # ----------------------------------------------------------------------
 def fig_gsc():
-    fig, ax = plt.subplots(figsize=(11.5, 6.0))
+    fig, ax = plt.subplots(figsize=(9.5, 6.0))
     ax.axis("off"); ax.set_xlim(0, 11.5); ax.set_ylim(0, 6.4)
     def box(x, y, w, h, text, fc="#dbe9f6"):
         ax.add_patch(plt.Rectangle((x, y), w, h, fc=fc, ec="k", lw=1.2, zorder=3))
@@ -663,8 +725,20 @@ def srp_tdoa_score(grid_x, grid_y, mics, source, sound_speed=343.0,
     return score / pair_count
 
 
+def candidate_distance_segments(microphones, candidate):
+    """返回每个麦克风到同一候选位置的线段端点，形状为 M×2×2。"""
+    microphones = np.asarray(microphones, dtype=float)
+    candidate = np.asarray(candidate, dtype=float)
+    if microphones.ndim != 2 or microphones.shape[1] != 2:
+        raise ValueError("microphones 必须为 M×2 坐标")
+    if candidate.shape != (2,):
+        raise ValueError("candidate 必须是二维坐标")
+    return np.stack(
+        (microphones, np.broadcast_to(candidate, microphones.shape)), axis=1)
+
+
 def fig_srp_grid():
-    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 5.5))
     ax = axes[0]
     mics = np.array([[0, 0], [4, 0], [0, 3], [4, 3]])
     ax.scatter(mics[:, 0], mics[:, 1], s=160, c=C_BLUE, zorder=6, edgecolors="k", label="麦克风")
@@ -673,10 +747,13 @@ def fig_srp_grid():
     for gx in np.linspace(0.5, 6.5, 8):
         for gy in np.linspace(0.5, 4.5, 6):
             ax.plot(gx, gy, ".", color="gray", ms=3, alpha=0.6)
-    ax.plot(2.214, 2.1, marker="s", ms=8, mfc="none", mec=C_GREEN, mew=2, label="候选位置 r")
-    for mic in mics:
-        ax.plot([mic[0], src[0]], [mic[1], src[1]], ls=":", color=C_ORANGE, alpha=0.6, lw=1)
-    ax.legend(fontsize=9); ax.set_title("(a) 空间网格 + 各麦到候选点的距离线", fontsize=11)
+    candidate = np.array([2.214, 2.1])
+    ax.plot(*candidate, marker="s", ms=8, mfc="none", mec=C_GREEN, mew=2,
+            label="候选位置 r")
+    for segment in candidate_distance_segments(mics, candidate):
+        ax.plot(segment[:, 0], segment[:, 1], ls=":", color=C_ORANGE,
+                alpha=0.6, lw=1)
+    ax.legend(fontsize=FS_SMALL); ax.set_title("(a) 空间网格 + 各麦到候选点的距离线", fontsize=11)
     ax.set_xlim(-0.5, 7); ax.set_ylim(-0.5, 5.2); ax.set_aspect("equal"); ax.grid(ls=":", alpha=0.3)
     ax.set_xlabel("x (m)", fontsize=FS_LABEL); ax.set_ylabel("y (m)", fontsize=FS_LABEL)
     ax = axes[1]
@@ -687,7 +764,7 @@ def fig_srp_grid():
     ax.scatter(mics[:, 0], mics[:, 1], s=120, c=C_BLUE, edgecolors="k", zorder=6)
     imax = np.unravel_index(np.argmax(SRP), SRP.shape)
     ax.plot(GX[imax], GY[imax], "r*", ms=12, mec="k")
-    ax.set_title("(b) SRP-PHAT 麦对累积分数，峰值即位置估计", fontsize=FS_TITLE)
+    ax.set_title("(b) SRP-PHAT 累积分数与峰值位置", fontsize=FS_TITLE)
     ax.set_xlim(-0.5, 7); ax.set_ylim(-0.5, 5.2); ax.set_aspect("equal")
     ax.set_xlabel("x (m)", fontsize=FS_LABEL); ax.set_ylabel("y (m)", fontsize=FS_LABEL)
     fig.colorbar(im, ax=ax, shrink=0.8, label="归一化麦对 GCC 累积分数")
@@ -708,7 +785,13 @@ def fig_srp_grid():
 def systematic_resample(weights, rng):
     """系统重采样，返回与 weights 等长的祖先索引。"""
     weights = np.asarray(weights, dtype=float)
-    weights = weights / weights.sum()
+    with np.errstate(over="ignore"):
+        total = weights.sum()
+    if (weights.ndim != 1 or weights.size == 0
+            or not np.all(np.isfinite(weights)) or np.any(weights < 0)
+            or not np.isfinite(total) or total <= 0):
+        raise ValueError("weights 必须是一维、非空、有限、非负且总和为正")
+    weights = weights / total
     positions = (rng.random() + np.arange(len(weights))) / len(weights)
     cumulative = np.cumsum(weights)
     cumulative[-1] = 1.0  # 避免浮点舍入使 searchsorted 返回越界索引。
@@ -745,33 +828,65 @@ def particle_filter_doa(observations, rng, n_particles=200, process_std=1.0,
     observations = np.asarray(observations, dtype=float)
     if observations.ndim != 1 or observations.size == 0:
         raise ValueError("observations 必须是非空一维序列")
-    if not 0 <= clutter_probability < 1:
+    if np.any(np.isinf(observations)):
+        raise ValueError("observations 只允许有限值或表示缺测的 NaN")
+    if not isinstance(n_particles, (int, np.integer)) or n_particles <= 0:
+        raise ValueError("n_particles 必须是正整数")
+    for name, value in (("process_std", process_std),
+                        ("velocity_process_std", velocity_process_std)):
+        if not np.isfinite(value) or value < 0:
+            raise ValueError(f"{name} 必须是非负有限数")
+    if not np.isfinite(observation_std) or observation_std <= 0:
+        raise ValueError("observation_std 必须是正有限数")
+    if not np.isfinite(resample_fraction) or not 0 <= resample_fraction <= 1:
+        raise ValueError("resample_fraction 必须在 [0, 1] 内")
+    if not np.isfinite(clutter_probability) or not 0 <= clutter_probability < 1:
         raise ValueError("clutter_probability 必须在 [0, 1) 内")
-    finite = np.flatnonzero(np.isfinite(observations))
-    initial_angle = (observations[finite[0]] if finite.size else
-                     0.5 * (angle_bounds[0] + angle_bounds[1]))
+    lower, upper = map(float, angle_bounds)
+    if not np.isfinite(lower) or not np.isfinite(upper) or not lower < upper:
+        raise ValueError("angle_bounds 必须是递增的有限边界")
+    # 未知初始方向时使用独立先验，不能偷看首个未来有效观测。
     velocities = rng.normal(0.0, 1.0, n_particles)
-    angles, velocities, _ = reflect_interval(
-        rng.normal(initial_angle, 10.0, n_particles), velocities, angle_bounds)
+    angles = rng.uniform(lower, upper, n_particles)
     weights = np.full(n_particles, 1.0 / n_particles)
     estimates = np.empty(len(observations))
     neff_history = np.empty(len(observations))
     resampled = np.zeros(len(observations), dtype=bool)
-    reflected = np.zeros(len(observations), dtype=bool)
+    reflection_fraction = np.zeros(len(observations), dtype=float)
     for k, observation in enumerate(observations):
         velocities += rng.normal(0.0, velocity_process_std, n_particles)
         proposed = angles + velocities + rng.normal(0.0, process_std, n_particles)
         angles, velocities, hit_bound = reflect_interval(
             proposed, velocities, angle_bounds)
-        reflected[k] = np.any(hit_bound)
+        reflection_fraction[k] = np.mean(hit_bound)
         if np.isfinite(observation):
-            normalizer = observation_std * np.sqrt(2 * np.pi)
-            gaussian = np.exp(-0.5 * ((angles - observation) / observation_std) ** 2) / normalizer
-            uniform = 1.0 / (angle_bounds[1] - angle_bounds[0])
-            likelihood = ((1.0 - clutter_probability) * gaussian
-                          + clutter_probability * uniform)
-            weights *= likelihood
-            weights /= weights.sum()
+            if clutter_probability == 0:
+                # 只需相对似然。先减去最小绝对残差再形成平方差，避免极远观测
+                # 使所有普通高斯密度同时下溢为零。
+                absolute_residual = np.abs(angles - observation)
+                closest = np.min(absolute_residual)
+                with np.errstate(over="ignore", invalid="ignore"):
+                    squared_difference = ((absolute_residual - closest)
+                                          * (absolute_residual + closest)
+                                          / observation_std ** 2)
+                likelihood_log = -0.5 * squared_difference
+            else:
+                standardized = (angles - observation) / observation_std
+                with np.errstate(over="ignore"):
+                    gaussian_log = (-0.5 * standardized ** 2
+                                    - np.log(observation_std * np.sqrt(2 * np.pi)))
+                target_log = np.log1p(-clutter_probability) + gaussian_log
+                clutter_log = (np.log(clutter_probability)
+                               - np.log(upper - lower))
+                likelihood_log = np.logaddexp(target_log, clutter_log)
+            with np.errstate(divide="ignore", under="ignore"):
+                posterior_log = np.log(weights) + likelihood_log
+            posterior_log -= np.max(posterior_log)
+            weights = np.exp(posterior_log)
+            weight_sum = weights.sum()
+            if not np.isfinite(weight_sum) or weight_sum <= 0:
+                raise FloatingPointError("粒子权重归一化失败")
+            weights /= weight_sum
         estimates[k] = np.sum(weights * angles)
         neff_history[k] = 1.0 / np.sum(weights ** 2)
         if (np.isfinite(observation)
@@ -781,7 +896,7 @@ def particle_filter_doa(observations, rng, n_particles=200, process_std=1.0,
             velocities = velocities[indices]
             weights.fill(1.0 / n_particles)
             resampled[k] = True
-    return estimates, neff_history, resampled, reflected
+    return estimates, neff_history, resampled, reflection_fraction
 
 
 def normalized_phd_intensity(grid, centers, stds, weights=None, background=None):
@@ -820,15 +935,17 @@ def fig_tracking():
     missing[48:58] = True
     obs[missing] = np.nan
     N = 200
-    est, n_eff, resampled, reflected = particle_filter_doa(obs, rng, n_particles=N)
-    fig, axes = plt.subplots(1, 2, figsize=(13, 4.6))
+    est, n_eff, resampled, reflection_fraction = particle_filter_doa(
+        obs, rng, n_particles=N)
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 5.4))
     axes[0].plot(t, obs, ".", color="gray", ms=4, label="DOA观测（含噪声和均匀杂波）")
     axes[0].plot(t, true, color="k", lw=2, label="真实轨迹")
     axes[0].plot(t, est, color=C_RED, lw=1.6, label="混合似然粒子滤波估计")
     axes[0].plot(t[resampled], est[resampled], "|", color=C_ORANGE, ms=7,
                  label=r"重采样 ($N_\mathrm{eff}<N/2$)")
-    axes[0].plot(t[reflected], est[reflected], "x", color=C_PURPLE, ms=5,
-                 label="预测粒子触及反射边界")
+    boundary_active = reflection_fraction >= 0.05
+    axes[0].plot(t[boundary_active], est[boundary_active], "x", color=C_PURPLE,
+                 ms=5, label="反射粒子比例≥5%")
     axes[0].axvspan(48, 57, color=C_PURPLE, alpha=0.12, label="连续 10 帧缺测")
     axes[0].set_xlabel("帧"); axes[0].set_ylabel("方位角 (°)")
     axes[0].legend(fontsize=FS_SMALL + 1, loc="lower left", framealpha=0.95); axes[0].grid(ls=":", alpha=0.5)
@@ -877,7 +994,7 @@ def fig_wng_di():
         di_dsb.append(10 * np.log10(1 / np.real(w_ds.conj() @ G @ w_ds)))
         wng_sd.append(10 * np.log10(1 / np.sum(np.abs(w_sd) ** 2)))
         di_sd.append(10 * np.log10(1 / np.real(w_sd.conj() @ G @ w_sd)))
-    fig, axes = plt.subplots(1, 2, figsize=(13.2, 5.2))
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 5.8))
     axes[0].semilogx(freqs, wng_dsb, color=C_BLUE, lw=2.0, label="DSB 延迟求和（理想无失配理论值）")
     axes[0].semilogx(freqs, wng_sd, color=C_RED, ls="--", lw=2.0,
                      label=r"对角加载超指向（相对加载 $10^{-6}$）")
@@ -904,129 +1021,149 @@ def fig_wng_di():
 # ----------------------------------------------------------------------
 # 图23 远场语音前端处理链路
 # ----------------------------------------------------------------------
-def fig_pipeline():
-    # 12 英寸画布在 150 dpi 输出为 1800 px；缩到 860 px 时，9 pt 文字仍约 9 px。
-    fig, ax = plt.subplots(figsize=(12.0, 6.0))
-    ax.axis("off"); ax.set_xlim(0, 16.6); ax.set_ylim(0, 5.1)
-    box_w, box_h, audio_y = 1.65, 1.14, 1.08
-    audio_steps = [
-        ("capture", 0.25, "多通道采集\n同步/标定", "#dbe9f6", "时钟源"),
-        ("aec", 2.25, "AEC\n回声消除", "#dbe9f6", "最先处理"),
-        ("wpe", 4.25, "去混响\nWPE", "#dbe9f6", "历史预测"),
-        ("bf", 10.25, "空间增强\nBF / GSS / 分离", "#e8f6db", "按目标数选输出"),
-        ("ns", 12.25, "NS + AGC\n降噪/电平", "#e8f6db", "单通道增强"),
-        ("backend", 14.25, "KWS / ASR\n后端", "#f6dbdb", "取点可配置"),
-    ]
-    centers = {}
-    for name, x, text_value, facecolor, role in audio_steps:
-        centers[name] = x + box_w / 2
-        ax.add_patch(plt.Rectangle(
-            (x, audio_y), box_w, box_h, fc=facecolor, ec="k", lw=1.2))
-        ax.text(x + box_w / 2, audio_y + box_h / 2, text_value,
-                ha="center", va="center", fontsize=FS_LABEL)
-        ax.text(x + box_w / 2, 0.82, role, ha="center", va="center",
-                fontsize=FS_SMALL, color="dimgray")
-    for left, right in zip(audio_steps[:-1], audio_steps[1:]):
-        ax.add_patch(FancyArrowPatch(
-            (left[1] + box_w, audio_y + box_h / 2),
-            (right[1], audio_y + box_h / 2), arrowstyle="-|>",
-            mutation_scale=16, color="k", lw=1.5))
-    ax.text(8.05, audio_y + box_h / 2 - 0.18, "多通道音频 / STFT",
-            fontsize=FS_SMALL, color="dimgray", ha="center")
-
-    # 定位与追踪是控制支路：读取多通道特征，输出方向信息，不串行传递音频。
-    branch_y, branch_h = 2.68, 0.92
-    branch_steps = [
-        ("ssl", 6.25, "声源定位\nSSL / DOA", "方向观测"),
-        ("tracking", 8.25, "声源追踪\n轨迹平滑", "连续方向"),
-    ]
-    for name, x, text_value, role in branch_steps:
-        centers[name] = x + box_w / 2
-        ax.add_patch(plt.Rectangle(
-            (x, branch_y), box_w, branch_h, fc="#f6e5db", ec=C_ORANGE, lw=1.2))
-        ax.text(x + box_w / 2, branch_y + branch_h / 2, text_value,
-                ha="center", va="center", fontsize=FS_LABEL)
-        ax.text(x + box_w / 2, branch_y - 0.20, role, ha="center", va="center",
-                fontsize=FS_SMALL, color="dimgray")
-    ax.add_patch(FancyArrowPatch(
-        (4.25 + box_w, audio_y + box_h), (6.25, branch_y + branch_h / 2),
-        arrowstyle="-|>", mutation_scale=15, color=C_ORANGE, lw=1.6,
-        connectionstyle="arc3,rad=-0.18"))
-    ax.text(6.18, 2.30, "多通道特征", fontsize=FS_SMALL,
-            color=C_ORANGE, ha="center")
-    ax.add_patch(FancyArrowPatch(
-        (6.25 + box_w, branch_y + branch_h / 2),
-        (8.25, branch_y + branch_h / 2), arrowstyle="-|>",
-        mutation_scale=15, color=C_ORANGE, lw=1.6))
-    ax.add_patch(FancyArrowPatch(
-        (centers["tracking"], branch_y),
-        (centers["bf"], audio_y + box_h), arrowstyle="-|>",
-        mutation_scale=17, color=C_RED, lw=2.0,
-        connectionstyle="arc3,rad=-0.16"))
-    ax.text(10.15, 2.48, "平滑 DOA / 轨迹标签",
-            fontsize=FS_SMALL, color=C_RED, ha="center",
-            bbox=dict(fc="white", ec=C_RED, lw=0.6, alpha=0.9,
-                      boxstyle="round,pad=0.2"))
-
-    # 第九框是控制面：单个 VAD 比特不足以决定所有模块的更新策略。
-    control_x, control_y, control_w, control_h = 11.95, 3.82, 3.55, 0.72
-    ax.add_patch(plt.Rectangle(
-        (control_x, control_y), control_w, control_h,
-        fc="#f6e5db", ec=C_PURPLE, lw=1.4))
-    ax.text(control_x + control_w / 2, control_y + control_h / 2,
-            "活动状态控制\nVAD / 远端活动 / 双讲",
-            ha="center", va="center", fontsize=FS_LABEL, color=C_PURPLE)
-    bus_y = 3.70
-    ax.plot([centers["aec"], centers["backend"]], [bus_y, bus_y],
-            ls="--", color=C_PURPLE, lw=1.4)
-    target_tops = {
-        "aec": audio_y + box_h, "wpe": audio_y + box_h,
-        "ssl": branch_y + branch_h, "tracking": branch_y + branch_h,
-        "bf": audio_y + box_h, "backend": audio_y + box_h,
+def pipeline_dependency_spec():
+    """返回图23的信号/统计量依赖，供绘图与回归测试共用。"""
+    return {
+        "audio": {
+            ("capture", "aec"), ("aec", "wpe"), ("wpe", "bf"),
+            ("bf", "ns"), ("ns", "backend"),
+            ("wpe", "neural_separator"), ("neural_separator", "ns"),
+            ("far_end", "render"), ("render", "speaker"),
+            ("speaker", "capture"), ("render", "render_tap"),
+            ("render_tap", "aec"),
+        },
+        "information": {
+            ("wpe", "ssl"), ("ssl", "tracking"), ("tracking", "bf"),
+            ("diarization", "gss_mask"), ("wpe", "gss_mask"),
+            ("gss_mask", "scm"), ("wpe", "scm"), ("scm", "bf"),
+        },
+        "control": {
+            ("activity_control", "aec"), ("activity_control", "wpe"),
+            ("activity_control", "tracking"), ("activity_control", "bf"),
+            ("activity_control", "backend"),
+        },
     }
-    for target in ["aec", "wpe", "ssl", "tracking", "bf", "backend"]:
-        ax.add_patch(FancyArrowPatch(
-            (centers[target], bus_y), (centers[target], target_tops[target]),
-            arrowstyle="-|>", mutation_scale=11, color=C_PURPLE,
-            lw=1.1, ls="--"))
-    ax.add_patch(FancyArrowPatch(
-        (control_x + control_w / 2, control_y),
-        (control_x + control_w / 2, bus_y),
-        arrowstyle="-|>", mutation_scale=11, color=C_PURPLE,
-        lw=1.2, ls="--"))
-    ax.text(7.2, bus_y + 0.10, "按状态分别更新、保持或旁路",
-            fontsize=FS_SMALL, color=C_PURPLE, ha="center")
 
-    # 增强后音频可直接送 KWS；是否绕过 VAD、何时启动 ASR 由产品策略决定。
-    x_ns_out = 12.25 + box_w
-    x_backend = centers["backend"]
-    ax.add_patch(FancyArrowPatch(
-        (x_ns_out, audio_y), (x_backend, audio_y), arrowstyle="-|>",
-        mutation_scale=12, color=C_ORANGE, lw=1.2, ls="--",
-        connectionstyle="arc3,rad=0.25"))
-    ax.text(14.55, 0.30,
-            "KWS 可旁路 VAD\n取点与 ASR 启动按产品配置",
-            fontsize=FS_SMALL, color=C_ORANGE, ha="center", va="center",
-            bbox=dict(fc="white", ec=C_ORANGE, lw=0.6, alpha=0.92,
-                      boxstyle="round,pad=0.2"))
 
-    ax.text(0.25, 4.25,
-            "黑色实线为音频主链；橙/红实线为定位特征与方向信息；虚线为状态控制或可选旁路。",
-            fontsize=FS_SMALL, color="dimgray", ha="left", va="center")
-    ax.text(10.15, 0.35, "单目标：波束形成\n多目标并行输出：GSS / 分离",
-            fontsize=FS_SMALL, color=C_GREEN, ha="center", va="center",
-            bbox=dict(fc="white", ec=C_GREEN, lw=0.7, alpha=0.9, boxstyle="round,pad=0.2"))
-    legend_items = [
-        ("蓝色=信号级", "#dbe9f6"), ("粉色=信息/控制", "#f6e5db"),
-        ("绿色=增强级", "#e8f6db"), ("红色=后端", "#f6dbdb")]
-    for x, (label, facecolor) in zip([0.35, 2.55, 4.95, 7.15], legend_items):
-        ax.add_patch(plt.Rectangle(
-            (x, 4.56), 0.28, 0.22, fc=facecolor, ec="k", lw=0.7))
-        ax.text(x + 0.38, 4.67, label, fontsize=FS_SMALL,
-                va="center", ha="left")
-    ax.set_title(
-        "图23  远场语音前端：音频主链、方向反馈、状态控制与可选旁路",
-        fontsize=FS_SUP)
+def fig_pipeline():
+    # 六层布局：播放、GSS、定位、控制、音频主链、神经旁路。
+    fig, ax = plt.subplots(figsize=(9.5, 12.5))
+    ax.axis("off"); ax.set_xlim(0, 16.2); ax.set_ylim(0, 11.8)
+    box_w, box_h = 2.0, 0.95
+    positions = {
+        "capture": (0.20, 2.10), "aec": (2.60, 2.10), "wpe": (5.00, 2.10),
+        "bf": (8.80, 2.10), "ns": (11.20, 2.10), "backend": (13.60, 2.10),
+        "neural_separator": (7.00, 0.20),
+        "ssl": (8.80, 4.75), "tracking": (11.40, 4.75),
+        "diarization": (0.50, 6.55), "gss_mask": (3.20, 6.55),
+        "scm": (5.90, 6.55),
+        "far_end": (0.20, 10.00), "render": (2.60, 10.00),
+        "render_tap": (2.60, 8.25), "speaker": (5.00, 10.00),
+    }
+    labels = {
+        "capture": "多通道采集\n同步/标定", "aec": "AEC\n回声消除",
+        "wpe": "WPE\n去混响", "bf": "波束形成\nMVDR / GEV",
+        "ns": "NS + AGC\n单通道增强", "backend": "KWS / ASR",
+        "neural_separator": "神经/CSS\n分离旁路",
+        "ssl": "声源定位\nSSL / DOA", "tracking": "轨迹预测\n状态+协方差",
+        "diarization": "说话人分割\n活动标注", "gss_mask": "GSS / cACG\n掩码",
+        "scm": "目标/干扰\nSCM",
+        "far_end": "远端播放", "render": "播放处理\nEQ / 音量",
+        "render_tap": "render tap\nAEC 参考", "speaker": "DAC / 功放\n扬声器",
+    }
+    colors = {
+        "capture": "#dbe9f6", "aec": "#dbe9f6", "wpe": "#dbe9f6",
+        "bf": "#e8f6db", "ns": "#e8f6db", "backend": "#f6dbdb",
+        "neural_separator": "#e8f6db", "ssl": "#f6e5db", "tracking": "#f6e5db",
+        "diarization": "#f6e5db", "gss_mask": "#f6e5db", "scm": "#f6e5db",
+        "far_end": "#fff2cc", "render": "#fff2cc", "render_tap": "#fff2cc",
+        "speaker": "#fff2cc",
+    }
+    node_rectangles, node_texts = {}, {}
+    for name, (x, y) in positions.items():
+        rectangle = plt.Rectangle((x, y), box_w, box_h, fc=colors[name],
+                                  ec="k", lw=1.1)
+        text_artist = ax.text(x + box_w / 2, y + box_h / 2, labels[name],
+                              ha="center", va="center", fontsize=FS_SMALL)
+        ax.add_patch(rectangle)
+        node_rectangles[name] = rectangle
+        node_texts[name] = text_artist
+
+    def anchor(name, side):
+        x, y = positions[name]
+        return {
+            "left": (x, y + box_h / 2), "right": (x + box_w, y + box_h / 2),
+            "top": (x + box_w / 2, y + box_h), "bottom": (x + box_w / 2, y),
+        }[side]
+
+    dependencies = pipeline_dependency_spec()
+    drawn_edges = {category: set() for category in dependencies}
+
+    def edge(source, target, category, color="k", linestyle="-", source_side="right",
+             target_side="left", rad=0.0, lw=1.5, via=None):
+        points = [anchor(source, source_side), *(via or []), anchor(target, target_side)]
+        for index, (start, stop) in enumerate(zip(points[:-1], points[1:])):
+            ax.add_patch(FancyArrowPatch(
+                start, stop, arrowstyle="-|>" if index == len(points) - 2 else "-",
+                mutation_scale=14, color=color, lw=lw, ls=linestyle,
+                connectionstyle=f"arc3,rad={rad if via is None else 0.0}"))
+        drawn_edges[category].add((source, target))
+
+    audio_routes = {
+        ("render", "render_tap"): dict(color=C_RED, linestyle="--", source_side="bottom", target_side="top"),
+        ("render_tap", "aec"): dict(
+            color=C_RED, linestyle="--", source_side="bottom", target_side="top",
+            via=[(2.80, 7.85), (2.80, 3.45), (3.60, 3.45)], lw=1.8),
+        ("speaker", "capture"): dict(color=C_RED, linestyle=":", source_side="right", target_side="top", rad=-0.47, lw=1.8),
+        ("wpe", "neural_separator"): dict(color=C_GREEN, linestyle="-.", source_side="bottom", target_side="left", rad=0.10),
+        ("neural_separator", "ns"): dict(color=C_GREEN, linestyle="-.", source_side="right", target_side="bottom", rad=-0.18),
+    }
+    for source, target in sorted(dependencies["audio"]):
+        edge(source, target, "audio", **audio_routes.get((source, target), {}))
+    ax.text(1.95, 8.05, "处理后参考", color=C_RED, fontsize=FS_SMALL, ha="center")
+    ax.text(10.7, 10.70, "声学回路：扬声器 → 房间/机壳 → 麦克风",
+            color=C_RED, fontsize=FS_SMALL, ha="center")
+
+    information_routes = {
+        ("wpe", "ssl"): dict(color=C_ORANGE, linestyle="-.", source_side="top", target_side="left"),
+        ("ssl", "tracking"): dict(color=C_ORANGE, linestyle="-."),
+        ("tracking", "bf"): dict(color=C_RED, linestyle="-.", source_side="bottom", target_side="top"),
+        ("diarization", "gss_mask"): dict(color=C_PURPLE, linestyle=":"),
+        ("wpe", "gss_mask"): dict(color=C_PURPLE, linestyle=":", source_side="top", target_side="bottom", rad=-0.18),
+        ("gss_mask", "scm"): dict(color=C_PURPLE, linestyle=":"),
+        ("wpe", "scm"): dict(color=C_PURPLE, linestyle=":", source_side="top", target_side="bottom", rad=-0.27),
+        ("scm", "bf"): dict(color=C_PURPLE, linestyle=":", source_side="bottom", target_side="top"),
+    }
+    for source, target in sorted(dependencies["information"]):
+        edge(source, target, "information", **information_routes[(source, target)])
+    ax.text(10.60, 4.47, "带时间戳方向", color=C_RED, fontsize=FS_SMALL, ha="center")
+
+    ax.text(7.15, 7.82, "活动标注→掩码；WPE 未方向归一 STFT→SCM",
+            color=C_PURPLE, fontsize=FS_SMALL, ha="center")
+    ax.text(8.75, 0.02, "神经/CSS 分离旁路解析波束",
+            color=C_GREEN, fontsize=FS_SMALL, ha="center")
+
+    control_y = 3.85
+    ax.plot([anchor("aec", "top")[0], anchor("backend", "top")[0]],
+            [control_y, control_y],
+            ls="--", color=C_ORANGE, lw=1.3)
+    ax.text(12.45, 4.08, "活动控制：VAD / 远端 / 双讲",
+            color=C_ORANGE, fontsize=FS_SMALL, ha="center")
+    for target in ("aec", "wpe", "tracking", "bf", "backend"):
+        target_side = "bottom" if target == "tracking" else "top"
+        x = anchor(target, target_side)[0]
+        ax.add_patch(FancyArrowPatch((x, control_y), anchor(target, target_side),
+                                    arrowstyle="-|>", mutation_scale=10,
+                                    color=C_ORANGE, lw=1.0, ls="--"))
+        drawn_edges["control"].add(("activity_control", target))
+    ax.text(0.20, 11.48,
+            "实线=音频；红/橙=参考、方向或控制；紫点线=GSS统计；绿点划线=神经旁路。",
+            fontsize=FS_SMALL, color="dimgray", ha="left")
+    ax.set_title("图23  远场语音前端：播放参考、音频主链与三条条件支路",
+                 fontsize=FS_SUP)
+    fig._pipeline_edges = {key: frozenset(value) for key, value in drawn_edges.items()}
+    fig._pipeline_node_rectangles = node_rectangles
+    fig._pipeline_node_texts = node_texts
     save(fig, "fig23_pipeline.png")
 
 
@@ -1046,7 +1183,7 @@ def array_scale_indicators(mic_counts):
 
 
 def fig_tradeoffs():
-    fig, axes = plt.subplots(1, 2, figsize=(12.5, 4.4))
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 5.2))
     mic_counts = np.array([2, 4, 6, 8, 16, 32])
     ideal_wng_db, pair_counts, covariance_entries = array_scale_indicators(mic_counts)
 
@@ -1127,7 +1264,7 @@ def fig_room_acoustics():
     # 早期反射若干离散峰
     for dt, a in [(0.010, 0.55), (0.018, -0.4), (0.027, 0.3), (0.036, -0.22)]:
         rir[tau + int(dt * fs)] += a
-    fig, axes = plt.subplots(1, 3, figsize=(14.5, 4.0))
+    fig, axes = plt.subplots(3, 1, figsize=(9.5, 12.0))
     ax = axes[0]
     ax.plot(t * 1000, rir, color=C_BLUE, lw=0.7)
     ax.axvspan(0, 12, color="0.8", alpha=0.12)
@@ -1137,13 +1274,13 @@ def fig_room_acoustics():
     ax.axvline(12, color="gray", ls="--", lw=0.9, alpha=0.8)
     ax.axvline(92, color="gray", ls="--", lw=0.9, alpha=0.8)
     ax.set_ylim(-2.6, 3.1)
-    ax.annotate("直达声\n（12 ms 到达）", xy=(12, 1.05), xytext=(16, 2.72), fontsize=9.5, color=C_GREEN,
+    ax.annotate("直达声\n（12 ms 到达）", xy=(12, 1.05), xytext=(16, 2.72), fontsize=FS_SMALL, color=C_GREEN,
                 arrowprops=dict(arrowstyle="->", color=C_GREEN))
-    ax.annotate("早期反射\n（直达后 0–80 ms）", xy=(55, 0.7), xytext=(105, 2.15), fontsize=9.5,
+    ax.annotate("早期反射\n（直达后 0–80 ms）", xy=(55, 0.7), xytext=(105, 2.15), fontsize=FS_SMALL,
                 color=C_ORANGE, arrowprops=dict(arrowstyle="->", color=C_ORANGE))
-    ax.annotate("晚期随机尾\n（本图指数衰减模型）", xy=(260, 0.25), xytext=(330, 1.5), fontsize=9.5,
+    ax.annotate("晚期随机尾\n（本图指数衰减模型）", xy=(260, 0.25), xytext=(330, 1.5), fontsize=FS_SMALL,
                 color=C_RED, arrowprops=dict(arrowstyle="->", color=C_RED))
-    ax.set_xlabel("时间 (ms)"); ax.set_ylabel("幅度")
+    ax.set_xlabel("时间 (ms)"); ax.set_ylabel("幅度（任意单位）")
     ax.set_title("(a) 房间脉冲响应 RIR 的三段结构", fontsize=11)
     ax.grid(ls=":", alpha=0.5)
     ax = axes[1]
@@ -1158,7 +1295,7 @@ def fig_room_acoustics():
         ax.axvline(realized_ms, color="k", ls="--", alpha=0.6)
         ax.annotate(f"固定随机种子的 EDC 首次到 −60 dB：{realized_ms:.0f} ms\n"
                     f"指数包络参数：名义 $T_{{60}}$={T60*1000:.0f} ms",
-                    xy=(realized_ms, -60), xytext=(205, -35), fontsize=9.2,
+                    xy=(realized_ms, -60), xytext=(205, -35), fontsize=FS_SMALL,
                     arrowprops=dict(arrowstyle="->", color="k"))
     ax.set_ylim(-75, 2); ax.set_xlabel("时间 (ms)"); ax.set_ylabel("剩余能量 (dB)")
     ax.set_title("(b) 能量衰减曲线与混响时间 $T_{60}$", fontsize=11)
@@ -1172,10 +1309,10 @@ def fig_room_acoustics():
     ax.plot(d, reverb, color=C_RED, lw=1.8, label="混响声参考：本图设为 0 dB")
     ax.axvline(dc, color="k", ls="--", alpha=0.6)
     ax.annotate("本子图设定 $d_c=1.0$ m\n两条曲线在此相等", xy=(dc, 0),
-                xytext=(1.7, 14), fontsize=9.5, arrowprops=dict(arrowstyle="->", color="k"))
+                xytext=(1.7, 14), fontsize=FS_SMALL, arrowprops=dict(arrowstyle="->", color="k"))
     ax.fill_between(d, direct, reverb, where=direct > reverb, color=C_GREEN, alpha=0.08)
-    ax.text(0.27, -19.5, "直达占优\n(DRR>0)", fontsize=FS_LABEL - 0.5, color=C_GREEN)
-    ax.text(3.6, 6, "混响占优\n(DRR<0)", fontsize=FS_LABEL - 0.5, color=C_RED)
+    ax.text(0.27, -19.5, "直达占优\n(DRR>0)", fontsize=FS_LABEL, color=C_GREEN)
+    ax.text(3.6, 6, "混响占优\n(DRR<0)", fontsize=FS_LABEL, color=C_RED)
     ax.set_xlabel("声源-麦克风距离 (m)"); ax.set_ylabel("相对声级 (dB)")
     ax.set_ylim(-25, 22); ax.legend(fontsize=FS_SMALL); ax.grid(ls=":", alpha=0.5)
     ax.set_title("(c) 直达混响比 DRR 与临界距离", fontsize=FS_TITLE)
@@ -1196,7 +1333,7 @@ def fig_stft_cov():
     frames = [sig[i:i + n_fft] * win
               for i in range(0, len(sig) - n_fft + 1, hop)]
     S = np.array([np.fft.rfft(fr) for fr in frames]).T  # F x T
-    fig, axes = plt.subplots(2, 2, figsize=(12.5, 8))
+    fig, axes = plt.subplots(2, 2, figsize=(9.5, 8.5))
     ax = axes[0, 0]
     tt = t[:3200] * 1000
     ax.plot(tt, sig[:3200], color="gray", lw=0.8)
@@ -1232,8 +1369,8 @@ def fig_stft_cov():
     R = A @ np.diag([10, 5]) @ A.conj().T + np.eye(M)
     im = ax.imshow(np.abs(R), cmap="Blues")
     ax.set_xticks(range(M)); ax.set_yticks(range(M))
-    ax.set_xticklabels([f"麦{i+1}" for i in range(M)], fontsize=9)
-    ax.set_yticklabels([f"麦{i+1}" for i in range(M)], fontsize=9)
+    ax.set_xticklabels([f"麦{i+1}" for i in range(M)], fontsize=FS_SMALL)
+    ax.set_yticklabels([f"麦{i+1}" for i in range(M)], fontsize=FS_SMALL)
     ax.set_title("(c) 独立理论例：空间二阶矩阵 R（8麦）", fontsize=FS_TITLE)
     fig.colorbar(im, ax=ax, shrink=0.8, label="|R[i,j]|")
     ax = axes[1, 1]
@@ -1244,23 +1381,16 @@ def fig_stft_cov():
            color=colors, edgecolor="k")
     ax.axhline(0, color=C_BLUE, ls="--", lw=1.2)
     ax.annotate("2个大特征值\n→ 信号子空间(2个源)", xy=(2, evals_db[1] - 1),
-                xytext=(3.0, 13), fontsize=10, color=C_RED,
+                xytext=(3.0, 13), fontsize=FS_LABEL, color=C_RED,
                 arrowprops=dict(arrowstyle="->", color=C_RED))
     ax.annotate("6个小特征值≈噪声底(0 dB)\n→ 噪声子空间", xy=(6.5, 0), xytext=(3.2, 4.5),
-                fontsize=10, color=C_BLUE, arrowprops=dict(arrowstyle="->", color=C_BLUE))
+                fontsize=FS_LABEL, color=C_BLUE, arrowprops=dict(arrowstyle="->", color=C_BLUE))
     ax.set_xlabel("特征值序号"); ax.set_ylabel("特征值 (dB)")
     ax.set_ylim(-4, 21)
     ax.set_title("(d) (c) 的特征值谱：已知白噪声模型下的示意", fontsize=11)
     ax.grid(ls=":", alpha=0.4)
     fig.suptitle("图6  从波形到协方差矩阵：阵列算法处理的数据形态（模拟）", fontsize=FS_SUP)
     fig.tight_layout()
-    # (a)(b) 和 (c)(d) 使用不同数据，避免用箭头暗示它们来自同一次计算。
-    pos_b = axes[0, 1].get_position(); pos_c = axes[1, 0].get_position()
-    x_lane = pos_c.x1 + (pos_b.x0 - pos_c.x1) * 0.55      # 垂直走廊中线
-    fig.text(x_lane, (pos_b.y0 + pos_c.y1) / 2 + 0.005,
-             "上排：单通道分帧示例\n下排：独立的 8 麦理论例",
-             fontsize=FS_SMALL, color=C_MAIN, ha="center", va="center",
-             bbox=dict(fc="white", ec="0.75", alpha=0.95, boxstyle="round,pad=0.25"))
     save(fig, "fig06_stft_cov.png")
 
 
@@ -1271,13 +1401,13 @@ def fig_sparse_array():
     ula = np.arange(6)
     nested = np.array([0, 1, 2, 3, 7, 11])
     coprime = np.array([0, 3, 4, 6, 8, 9])
-    fig, axes = plt.subplots(1, 2, figsize=(12.5, 4.2))
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 5.2))
     ax = axes[0]
     for y, (name, pos, c) in enumerate([("均匀线阵 ULA", ula, C_BLUE),
                                         ("嵌套阵 Nested", nested, C_RED),
                                         ("互质阵 Coprime", coprime, C_GREEN)]):
         ax.scatter(pos, np.full_like(pos, 2 - y, dtype=float), s=170, c=c, zorder=6, edgecolors="k")
-        ax.text(-0.7, 2 - y, name, fontsize=10, va="center", ha="right")
+        ax.text(-0.7, 2 - y, name, fontsize=FS_LABEL, va="center", ha="right")
         for p in pos:
             ax.plot([p, p], [2 - y - 0.16, 2 - y + 0.16], color="k", lw=0.8)
     ax.set_xlim(-5.5, 12.5); ax.set_ylim(-0.6, 2.6)
@@ -1299,7 +1429,7 @@ def fig_sparse_array():
                                         ("互质阵：有“洞”但范围大（17个）", coprime, C_GREEN)]):
         lags = coarray(pos)
         ax.scatter(lags, np.full(len(lags), 2 - y, dtype=float), marker="|", s=400, c=c, lw=2.5)
-        ax.text(-11.5, 2 - y + 0.32, name, fontsize=10, va="center", color=c)
+        ax.text(-11.5, 2 - y + 0.32, name, fontsize=FS_LABEL, va="center", color=c)
     ax.set_xlim(-13, 12.5); ax.set_ylim(-0.7, 2.75)
     ax.set_yticks([]); ax.set_xlabel("差分滞后（单位 λ/2）")
     ax.grid(axis="x", ls=":", alpha=0.5)
@@ -1363,7 +1493,7 @@ def fig18_erle_simulation():
 
 
 def fig_aec():
-    fig = plt.figure(figsize=(13.5, 4.6))
+    fig = plt.figure(figsize=(9.5, 5.2))
     ax = fig.add_subplot(1, 2, 1)
     ax.axis("off"); ax.set_xlim(0, 11); ax.set_ylim(0, 6)
     def box(x, y, w, h, text, fc="#dbe9f6", fs=9.5):
@@ -1372,7 +1502,7 @@ def fig_aec():
     def arrow(x1, y1, x2, y2, text="", c="k", dy=0.15):
         ax.add_patch(FancyArrowPatch((x1, y1), (x2, y2), arrowstyle="-|>", mutation_scale=14, color=c, lw=1.4, zorder=2))
         if text:
-            ax.text((x1 + x2) / 2, (y1 + y2) / 2 + dy, text, fontsize=10.5, ha="center", color=c,
+            ax.text((x1 + x2) / 2, (y1 + y2) / 2 + dy, text, fontsize=FS_LABEL, ha="center", color=c,
             bbox=dict(fc="white", alpha=0.85, pad=1, ec="none"))
     box(0.2, 4.6, 1.9, 0.9, "播放信号 x(n)\n(已知参考)", "#f6e5db")
     box(3.0, 4.6, 1.6, 0.9, "扬声器")
@@ -1405,7 +1535,7 @@ def fig_aec():
                 xy=(0.62, erle_plateau), xytext=(0.18, erle_plateau + 7),
                 fontsize=FS_LABEL, color=C_BLUE,
                 arrowprops=dict(arrowstyle="->", color=C_BLUE))
-    ax.text(1.0, 5, "双讲期冻结系数\n残差含近端语音，不计算 ERLE", fontsize=FS_LABEL - 0.5,
+    ax.text(1.0, 5, "双讲期冻结系数\n残差含近端语音，不计算 ERLE", fontsize=FS_LABEL,
             color=C_RED, ha="center")
     ax.set_xlabel("时间 (s)", fontsize=FS_LABEL); ax.set_ylabel("ERLE (dB)", fontsize=FS_LABEL)
     ax.set_ylim(-10, 40)
@@ -1586,7 +1716,11 @@ def fig_wpe():
     wpe_quiet_db = quiet_energy_ratio_db(Xd)
     rev_nmse_db = scale_aligned_spectral_nmse_db(Yc_aligned, Yr, active)
     wpe_nmse_db = scale_aligned_spectral_nmse_db(Yc_aligned, Xd, active)
-    fig, axes = plt.subplots(1, 3, figsize=(14.5, 5.0), constrained_layout=True)
+    fig = plt.figure(figsize=(9.5, 13.5), layout="constrained")
+    grid = fig.add_gridspec(4, 1, height_ratios=[1, 1, 1, 0.12])
+    axes = np.array([fig.add_subplot(grid[index, 0]) for index in range(3)])
+    footer = fig.add_subplot(grid[3, 0])
+    footer.axis("off")
     tms = np.arange(Yc_aligned.shape[1]) * hop / fs * 1000
     fk = np.fft.rfftfreq(n_fft, 1 / fs) / 1000
     reference_amplitude = max(np.abs(S).max() for S in (Yc_aligned, Yr, Xd))
@@ -1610,17 +1744,17 @@ def fig_wpe():
                  f"静音帧能量占比 {wpe_quiet_db:.1f} dB\n对齐参考活跃帧 NMSE {wpe_nmse_db:.1f} dB",
                  transform=axes[2].transAxes, fontsize=FS_TINY, color="white", va="bottom",
                  bbox=dict(fc="black", ec="none", alpha=0.55, pad=2))
-    fig.suptitle(
-        "图21  WPE 去混响效果（本书单通道仿真）\n"
-        "输入：16 kHz、1.4 s 合成音节、随机种子 21001；RIR：直达延迟 10 ms、"
-        "0.8 s 指数随机尾、$T_{60}$=0.6 s、DRR=6 dB、无加性噪声\n"
-        "STFT：Hann 窗 512 点、帧移 128 点；WPE：$\\Delta$=6 帧、$K$=10、3 次迭代；"
-        "三图共用传播时延对齐后的时间基准和谱幅参考值；NMSE 与帧掩码采用同一参考",
-        fontsize=FS_SUP - 2)
+    fig.suptitle("图21  WPE 去混响效果（本书单通道仿真）", fontsize=FS_SUP)
+    footer.text(
+        0.5, 0.55,
+        "配置：16 kHz、1.4 s、种子 21001；RIR 直达延迟 10 ms、$T_{60}$=0.6 s、DRR=6 dB；\n"
+        "Hann 512 点、帧移 128 点；WPE $\\Delta$=6、$K$=10、3 次迭代；三图共用对齐时间与谱幅参考。",
+        ha="center", va="center", fontsize=FS_SMALL)
     cb = fig.colorbar(mesh, ax=axes, shrink=0.85, pad=0.015, label="相对谱能量 (dB)")
     cb.ax.tick_params(labelsize=FS_SMALL + 1)
     cb.set_label("相对谱能量 (dB)", fontsize=FS_LABEL + 2)
     cb.outline.set_linewidth(1.3)
+    fig._footer_axis = footer
     save(fig, "fig21_wpe.png")
 
 
@@ -1628,14 +1762,14 @@ def fig_wpe():
 # 图1 人类双耳定位线索：ITD / ILD
 # ----------------------------------------------------------------------
 def fig_binaural():
-    fig = plt.figure(figsize=(14, 4.2))
-    ax = fig.add_subplot(1, 3, 1)
+    fig = plt.figure(figsize=(9.5, 12.0))
+    ax = fig.add_subplot(3, 1, 1)
     ax.set_aspect("equal"); ax.axis("off")
     a = 1.0
     ax.add_patch(Circle((0, 0), a, fc="#f6e5db", ec="k", lw=1.5))
     ax.scatter([-a, a], [0, 0], s=180, c=C_BLUE, zorder=6, edgecolors="k")
-    ax.annotate("左耳", xy=(-a, 0), xytext=(-a - 0.1, -0.35), fontsize=10, ha="center")
-    ax.annotate("右耳", xy=(a, 0), xytext=(a + 0.1, -0.35), fontsize=10, ha="center")
+    ax.annotate("左耳", xy=(-a, 0), xytext=(-a - 0.1, -0.35), fontsize=FS_LABEL, ha="center")
+    ax.annotate("右耳", xy=(a, 0), xytext=(a + 0.1, -0.35), fontsize=FS_LABEL, ha="center")
     th = np.deg2rad(60)
     for dy in np.linspace(-0.9, 0.9, 5):
         p1 = np.array([3.2 * np.cos(th) - dy * np.sin(th), 3.2 * np.sin(th) + dy * np.cos(th)])
@@ -1644,12 +1778,12 @@ def fig_binaural():
                     arrowprops=dict(arrowstyle="->", color=C_BLUE, alpha=0.55, lw=1.2))
     ax.annotate("", xy=(1.15 * np.cos(th), 1.15 * np.sin(th)), xytext=(3.1 * np.cos(th), 3.1 * np.sin(th)),
                 arrowprops=dict(arrowstyle="->", color=C_RED, lw=1.8))
-    ax.text(3.3 * np.cos(th) + 0.05, 3.3 * np.sin(th), "声源方向", fontsize=10, color=C_RED)
+    ax.text(3.3 * np.cos(th) + 0.05, 3.3 * np.sin(th), "声源方向", fontsize=FS_LABEL, color=C_RED)
     ax.text(-1.85, -1.35, "头影：远侧耳被头遮挡\n路程差 → 双耳时间差 ITD\n遮挡 → 双耳声级差 ILD",
-            fontsize=FS_LABEL - 0.5, ha="left", va="top", color=C_MAIN)
+            fontsize=FS_LABEL, ha="left", va="top", color=C_MAIN)
     ax.set_xlim(-1.9, 3.6); ax.set_ylim(-2.6, 3.6)
     ax.set_title("(a) 头 + 双耳 = 天然的 2 麦阵列（带挡板）", fontsize=11)
-    ax = fig.add_subplot(1, 3, 2)
+    ax = fig.add_subplot(3, 1, 2)
     az = np.linspace(-90, 90, 400)
     a_head, c = 0.0875, 343
     itd = (a_head / c) * (np.deg2rad(az) + np.sin(np.deg2rad(az))) * 1e6
@@ -1658,14 +1792,14 @@ def fig_binaural():
     max_itd_us = float(itd[-1])
     ax.axhline(max_itd_us, color="gray", ls="--", lw=0.8)
     ax.annotate(f"最大值 ≈ {max_itd_us:.0f} μs（正侧面 90°）",
-                xy=(90, max_itd_us), xytext=(-5, 500), fontsize=9.5,
+                xy=(90, max_itd_us), xytext=(-5, 500), fontsize=FS_SMALL,
                 arrowprops=dict(arrowstyle="->", color="gray"))
-    ax.annotate("正前方偏 1° ≈ 9 μs\n（几何换算，不是听觉阈值）", xy=(1, 9), xytext=(-64, 300), fontsize=9.5,
+    ax.annotate("正前方偏 1° ≈ 9 μs\n（几何换算，不是听觉阈值）", xy=(1, 9), xytext=(-64, 300), fontsize=FS_SMALL,
                 arrowprops=dict(arrowstyle="->", color=C_RED), color=C_RED)
     ax.set_xlabel("声源方位角 (°)"); ax.set_ylabel("ITD (μs)")
     ax.set_title("(b) 双耳时间差 ITD（Woodworth 模型）", fontsize=11)
     ax.grid(ls=":", alpha=0.5)
-    ax = fig.add_subplot(1, 3, 3)
+    ax = fig.add_subplot(3, 1, 3)
     ax.set_xscale("log")
     ax.set_xlim(100, 10000); ax.set_ylim(-0.45, 2.65)
     bands = [
@@ -1684,7 +1818,7 @@ def fig_binaural():
             fontsize=FS_TINY, ha="right", va="top",
             bbox=dict(fc="white", ec="none", alpha=0.88, pad=1.5))
     ax.set_yticks([]); ax.set_xlabel("频率 (Hz)")
-    ax.set_title("(c) 双重理论的线索主导区（理论示意，不是人体响应曲线）", fontsize=10.5)
+    ax.set_title("(c) 双重理论的线索主导区（理论示意，不是人体响应曲线）", fontsize=FS_LABEL)
     ax.grid(ls=":", alpha=0.35, which="both", axis="x")
     fig.suptitle("图1  人类双耳定位线索：几何 ITD 与双重理论的适用边界", fontsize=13)
     fig.tight_layout()
@@ -1744,7 +1878,7 @@ def fig_gcc_reverb():
     t60_values = np.asarray([0.1, 0.4, 0.8])
     drr_values = np.asarray([6.0, 0.0, -6.0])
     stats = gcc_reverb_statistics(t60_values, drr_values, trials=150)
-    fig, axes = plt.subplots(1, 3, figsize=(14.5, 4.8))
+    fig, axes = plt.subplots(3, 1, figsize=(9.5, 12.0))
 
     ax = axes[0]
     for t60, color, linestyle in zip(t60_values, [C_GREEN, C_BLUE, C_RED], ["-", "--", ":"]):
@@ -1782,7 +1916,11 @@ def fig_gcc_reverb():
     fig.suptitle("图13  GCC-PHAT 的两因素实验：随机尾时长 $T_{60}$ 与尾能量 DRR\n"
                  "直达能量=1；两通道独立随机尾按目标 DRR 固定总能量；64 ms 帧；无加性噪声；本书仿真",
                  fontsize=FS_SUP - 1)
-    fig.subplots_adjust(left=0.06, right=0.98, bottom=0.15, top=0.77, wspace=0.30)
+    fig.subplots_adjust(left=0.08, right=0.98, bottom=0.07, top=0.84,
+                        hspace=0.52)
+    fig._panel_vertical_gap = min(
+        axes[index].get_position().y0 - axes[index + 1].get_position().y1
+        for index in range(2))
     save(fig, "fig13_gcc_reverb.png")
 
 
@@ -1790,7 +1928,7 @@ def fig_gcc_reverb():
 # 图4 时延 = 相位旋转：复数表示的几何直觉
 # ----------------------------------------------------------------------
 def fig_delay_phase():
-    fig, axes = plt.subplots(1, 3, figsize=(14, 4.2))
+    fig, axes = plt.subplots(3, 1, figsize=(9.5, 12.0))
     sound_speed = 343.0
     spacing = 0.04
     tau = spacing / sound_speed  # 4 cm 端射入射的最大麦间时延
@@ -1807,7 +1945,7 @@ def fig_delay_phase():
     ax.text(arrow_start + tau * 500, -1.15, "τ≈0.117 ms", fontsize=11, ha="center")
     ax.set_xlabel("时间 (ms)"); ax.set_ylabel("幅度")
     ax.set_title("(a) 时域看延迟：整条波形向右平移", fontsize=11)
-    ax.legend(fontsize=9, loc="upper right"); ax.grid(ls=":", alpha=0.5)
+    ax.legend(fontsize=FS_SMALL, loc="upper right"); ax.grid(ls=":", alpha=0.5)
     ax.set_ylim(-1.5, 1.5)
     # (b) 复平面：相位旋转
     ax = axes[1]
@@ -1824,10 +1962,11 @@ def fig_delay_phase():
     ax.add_patch(arc)
     ax.annotate("", xy=(0.69, -0.39), xytext=(0.70, -0.18),
                 arrowprops=dict(arrowstyle="->", color="k", lw=1.2))
-    ax.text(1.05, 0.06, "原始 $S(f)$", fontsize=10, color=C_BLUE)
-    ax.text(0.05, -1.18, "延迟后 S(f)·e^(−j2πfτ)", fontsize=10, color=C_RED)
+    ax.text(1.05, 0.06, "原始 $S(f)$", fontsize=FS_LABEL, color=C_BLUE)
+    ax.text(0.05, -1.18, r"延迟后 $S(f)e^{-j2\pi f\tau}$", fontsize=FS_LABEL,
+            color=C_RED)
     ax.text(0.60, -0.12, "2πfτ≈42°", fontsize=11, style="italic")
-    ax.text(-1.55, 1.15, "延迟 τ 等价于复平面上\n顺时针转 2πfτ", fontsize=10, color=C_MAIN)
+    ax.text(-1.55, 1.15, "延迟 τ 等价于复平面上\n顺时针转 2πfτ", fontsize=FS_LABEL, color=C_MAIN)
     ax.set_xlim(-1.7, 1.7); ax.set_ylim(-1.55, 1.5)
     ax.set_title("(b) 频域看延迟：复数相位转过一个角度", fontsize=11)
     # (c) 相位-频率直线
@@ -1838,7 +1977,7 @@ def fig_delay_phase():
     for fk in [1000, 2000, 3000, 4000]:
         ax.plot(fk / 1000, np.rad2deg(-2 * np.pi * fk * tau), "o", color=C_RED, ms=6)
     ax.annotate("1 kHz → -42°\n2 kHz → -84°\n转角与频率成正比\n斜率 = -2πτ", xy=(3.0, -125),
-                xytext=(3.6, -55), fontsize=9.5,
+                xytext=(3.6, -55), fontsize=FS_SMALL,
                 arrowprops=dict(arrowstyle="->", color="k"))
     ax.set_xlabel("频率 (kHz)"); ax.set_ylabel("相位 (°)")
     ax.set_title("(c) 同一延迟在不同频率：相位-频率是直线", fontsize=11)
@@ -1865,7 +2004,7 @@ def fig_beampattern_anatomy():
         B = np.abs(w.conj() @ A)
         return 20 * np.log10(np.maximum(B / B.max(), 1e-5))
 
-    fig, axes = plt.subplots(1, 2, figsize=(14, 4.6))
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 5.5))
     # (a) 解剖图
     ax = axes[0]
     Bdb = pattern(0.5, 30)
@@ -1878,15 +2017,15 @@ def fig_beampattern_anatomy():
     left = np.where(Bdb[:i0] < -3)[0][-1]; right = i0 + np.where(Bdb[i0:] < -3)[0][0]
     ax.annotate("", xy=(th[right], -3), xytext=(th[left], -3),
                 arrowprops=dict(arrowstyle="<->", color=C_RED, lw=1.5))
-    ax.text(30, -1.4, f"半功率波束宽度 HPBW ≈ {th[right]-th[left]:.1f}°（-3dB 线上量）", ha="center", fontsize=10, color=C_RED,
+    ax.text(30, -1.4, f"半功率波束宽度 HPBW ≈ {th[right]-th[left]:.1f}°（-3dB 线上量）", ha="center", fontsize=FS_LABEL, color=C_RED,
             bbox=dict(fc="white", ec=C_RED, lw=0.7, alpha=0.9, boxstyle="round,pad=0.25"))
-    ax.annotate("主瓣（想听的方向 30°）", xy=(29, -1), xytext=(-18, -4), fontsize=10,
+    ax.annotate("主瓣（想听的方向 30°）", xy=(29, -1), xytext=(-18, -4), fontsize=FS_LABEL,
                 arrowprops=dict(arrowstyle="->", color="k"))
-    ax.annotate("最高旁瓣 ≈ −13 dB\n（旁瓣电平 SLL）", xy=(54, -13.5), xytext=(30, -32), fontsize=10,
+    ax.annotate("最高旁瓣 ≈ −13 dB\n（旁瓣电平 SLL）", xy=(54, -13.5), xytext=(30, -32), fontsize=FS_LABEL,
                 color=C_ORANGE, arrowprops=dict(arrowstyle="->", color=C_ORANGE))
-    ax.annotate("旁瓣：其他方向漏进来的通道", xy=(-32, -17), xytext=(-75, -8), fontsize=10,
+    ax.annotate("旁瓣：其他方向漏进来的通道", xy=(-32, -17), xytext=(-75, -8), fontsize=FS_LABEL,
                 arrowprops=dict(arrowstyle="->", color="gray"))
-    ax.annotate("零点（相消干涉处）", xy=(8.5, -38), xytext=(-30, -34), fontsize=10,
+    ax.annotate("零点（相消干涉处）", xy=(8.5, -38), xytext=(-30, -34), fontsize=FS_LABEL,
                 arrowprops=dict(arrowstyle="->", color="k"))
     ax.set_xlabel("方向 (°)"); ax.set_ylabel("增益 (dB)")
     ax.set_title("(a) 波束图解剖：8 麦线阵、间距 λ/2、指向 30°", fontsize=11)
@@ -1899,7 +2038,7 @@ def fig_beampattern_anatomy():
     ax.text(0.03, 0.94, "栅瓣条件（独立成行）：sinθ = sin60° − λ/d", transform=ax.transAxes,
             fontsize=FS_LABEL, color=C_RED, va="top", ha="left",
             bbox=dict(fc="white", ec="0.7", alpha=0.9, boxstyle="round,pad=0.3"))
-    ax.annotate("主瓣 60°", xy=(60, 0.3), xytext=(40, 5), fontsize=10,
+    ax.annotate("主瓣 60°", xy=(60, 0.3), xytext=(40, 5), fontsize=FS_LABEL,
                 arrowprops=dict(arrowstyle="->", color="k"))
     ax.annotate("栅瓣 @ −7.7°：\n与主瓣等高的鬼影（分不清声源在哪边）", xy=(-7.7, 0.3), xytext=(-82, -10),
                 fontsize=FS_LABEL, color=C_RED, arrowprops=dict(arrowstyle="->", color=C_RED))
@@ -1926,7 +2065,7 @@ def fig_dsin_geometry():
     ds = d * np.sin(theta)                            # 路程差 d·sinθ
     P = mic2 - ds * u                                 # 直角三角形顶点（垂足）
 
-    fig = plt.figure(figsize=(13, 6.2))
+    fig = plt.figure(figsize=(9.5, 8.0))
     gs = fig.add_gridspec(2, 3, width_ratios=[2.1, 1.0, 1.0], wspace=0.12, hspace=0.35)
     ax = fig.add_subplot(gs[:, :2])
     ax.set_aspect("equal"); ax.axis("off")
@@ -2018,7 +2157,7 @@ def fig_dsin_geometry():
 # 图20 AEC 信号处理链：经典结构 vs 混合式结构（示意）
 # ----------------------------------------------------------------------
 def fig_aec_pipeline():
-    fig = plt.figure(figsize=(13.5, 9.2))
+    fig = plt.figure(figsize=(9.5, 11.0))
 
     # ---- (a) 经典 AEC 信号流 ----
     ax = fig.add_subplot(2, 1, 1)
@@ -2028,9 +2167,9 @@ def fig_aec_pipeline():
         ax.add_patch(plt.Rectangle((x, y), w, h, fc=fc, ec=ec, lw=lw, ls=ls, zorder=3))
         ax.text(x + w / 2, y + h / 2, text, ha="center", va="center", fontsize=fs, zorder=4)
 
-    def arrow(x1, y1, x2, y2, text="", c="k", dy=0.18, fs=FS_TINY):
+    def arrow(x1, y1, x2, y2, text="", c="k", dy=0.18, fs=FS_TINY, ls="-"):
         ax.add_patch(FancyArrowPatch((x1, y1), (x2, y2), arrowstyle="-|>",
-                                     mutation_scale=14, color=c, lw=1.4, zorder=2))
+                                     mutation_scale=14, color=c, lw=1.4, ls=ls, zorder=2))
         if text:
             ax.text((x1 + x2) / 2, (y1 + y2) / 2 + dy, text, fontsize=fs, ha="center", color=c)
 
@@ -2055,7 +2194,7 @@ def fig_aec_pipeline():
     box(3.2, 2.5, 2.6, 0.95, "自适应滤波器 ŵ(n)\n（NLMS，估计线性路径）", fs=FS_TINY)
     box(6.7, 2.5, 1.7, 0.95, "回声副本\nŷ(n)=ŵ*x", fs=FS_TINY)
     sum_node(9.15, 2.98, label="−")
-    arrow(1.25, 6.2, 1.25, 3.45, "参考", C_BLUE)
+    arrow(1.25, 6.2, 1.25, 3.45, "参考", C_BLUE, ls="--")
     arrow(2.2, 2.98, 3.2, 2.98)
     arrow(5.8, 2.98, 6.7, 2.98)
     arrow(8.4, 2.98, 8.82, 2.98)
@@ -2097,9 +2236,9 @@ def fig_aec_pipeline():
         ax2.add_patch(plt.Rectangle((x, y), w, h, fc=fc, ec=ec, lw=lw, ls=ls, zorder=3))
         ax2.text(x + w / 2, y + h / 2, text, ha="center", va="center", fontsize=fs, zorder=4)
 
-    def arrow2(x1, y1, x2, y2, text="", c="k", dy=0.18, fs=FS_TINY):
+    def arrow2(x1, y1, x2, y2, text="", c="k", dy=0.18, fs=FS_TINY, ls="-"):
         ax2.add_patch(FancyArrowPatch((x1, y1), (x2, y2), arrowstyle="-|>",
-                                      mutation_scale=14, color=c, lw=1.4, zorder=2))
+                                      mutation_scale=14, color=c, lw=1.4, ls=ls, zorder=2))
         if text:
             ax2.text((x1 + x2) / 2, (y1 + y2) / 2 + dy, text, fontsize=fs, ha="center", color=c)
 
@@ -2124,16 +2263,26 @@ def fig_aec_pipeline():
     ax2.text(5.4, 2.28, "参考 x 也可作为 DNN 输入（帮助区分残余回声与近端语音）",
              fontsize=FS_SMALL + 1.5, color=C_BLUE, ha="center", alpha=0.9,
              bbox=dict(fc="white", alpha=0.7, pad=1, ec="none"))
-    # DTD / 步长控制
+    # DTD / 步长控制：从左侧绕行，避免穿过两条职责说明。
     box2(3.4, 0.7, 5.4, 0.95,
          "DTD / 步长控制（根据参考、麦克风与残差信号控制线性滤波器更新）",
          "white", FS_TINY, ec=C_ORANGE, ls="--")
-    arrow2(6.1, 1.65, 6.1, y0, "控制更新", C_ORANGE)
+    ax2.plot([6.1, 3.8, 3.8, 4.65], [1.65, 1.65, 4.05, 4.05],
+             color=C_ORANGE, lw=1.4, ls="--", zorder=2)
+    ax2.add_patch(FancyArrowPatch((4.65, 4.05), (5.35, y0),
+                                  arrowstyle="-|>", mutation_scale=14,
+                                  color=C_ORANGE, lw=1.4, ls="--", zorder=2))
+    ax2.text(3.62, 2.8, "控制更新", fontsize=FS_TINY,
+             color=C_ORANGE, ha="right", rotation=90)
     # 分工注释
-    ax2.text(6.1, 3.85, "线性 AEC 只能消除滤波器能够表示并由参考解释的回声分量",
-             fontsize=FS_TINY, color=C_BLUE, ha="center")
-    ax2.text(11.05, 3.85, "DNN 抑制训练条件覆盖的非线性残余、噪声或混响",
-             fontsize=FS_TINY, color=C_ORANGE, ha="center")
+    linear_note = ax2.text(
+        6.1, 3.62, "线性 AEC：消除参考可解释、滤波器可表示的回声",
+        fontsize=FS_TINY, color=C_BLUE, ha="center",
+        bbox=dict(fc="white", ec="none", alpha=0.92, pad=1.5))
+    neural_note = ax2.text(
+        10.95, 3.08, "神经残余抑制：处理训练覆盖的非线性残余与噪声",
+        fontsize=FS_TINY, color=C_ORANGE, ha="center",
+        bbox=dict(fc="white", ec="none", alpha=0.92, pad=1.5))
     # 图例
     ax2.add_patch(plt.Rectangle((0.3, 7.3), 0.4, 0.4, fc=C_DSP, ec="k", lw=1.0))
     ax2.text(0.8, 7.5, "传统 DSP", fontsize=FS_TINY, va="center")
@@ -2143,6 +2292,7 @@ def fig_aec_pipeline():
 
     fig.suptitle("图20  AEC 信号处理链：自适应滤波与混合式结构（示意）", fontsize=FS_SUP)
     fig.tight_layout(rect=(0, 0, 1, 0.96))
+    fig._lower_annotation_lanes = (linear_note, neural_note)
     save(fig, "fig20_aec_pipeline.png")
 
 
@@ -2150,7 +2300,7 @@ def fig_aec_pipeline():
 # 图19 AEC 全景：线性模型失配仿真 + 算法家族按假设分类
 # ----------------------------------------------------------------------
 def fig_aec_landscape():
-    fig = plt.figure(figsize=(13.5, 8.8))
+    fig = plt.figure(figsize=(9.5, 10.5))
 
     # ---- (a) 线性 AEC 面对未建模非线性时的单次可复现仿真 ----
     ax = fig.add_subplot(2, 1, 1)
@@ -2235,15 +2385,16 @@ def fig_aec_landscape():
 def fig_wpe_frames():
     K, delay = 5, 3
     n_show = 12  # 画面上显示的过去帧数
-    fig, ax = plt.subplots(figsize=(14, 4.2))
-    ax.axis("off"); ax.set_xlim(0, 15.4); ax.set_ylim(0, 6)
+    fig, ax = plt.subplots(figsize=(9.5, 5.0))
+    ax.axis("off"); ax.set_xlim(0, 16.5); ax.set_ylim(0, 6)
     bw, gap, x0, y0 = 0.95, 0.12, 0.6, 3.0
     # 从左到右：更过去 … t-K-delay … 历史窗K … 间隔Δ … 当前帧t
     labels = {}
+    current_note = None
     for i in range(n_show + 1):
         x = x0 + i * (bw + gap)
         if i == n_show:
-            fc, ec, lw, tag = "#f6dbdb", C_RED, 2.0, "当前帧 t\n（含直达+早期+晚期）"
+            fc, ec, lw, tag = "#f6dbdb", C_RED, 2.0, "当前帧 t\n含直达/早期/晚期"
         elif n_show - delay + 1 <= i <= n_show - 1:
             fc, ec, lw, tag = "#eeeeee", "0.5", 1.0, None
         elif n_show - delay - K + 1 <= i <= n_show - delay:
@@ -2254,7 +2405,9 @@ def fig_wpe_frames():
         if i == n_show:
             ax.text(x + bw / 2, y0 + 0.55, "t", ha="center", va="center",
                     fontsize=FS_TITLE, color=C_RED, weight=600, zorder=4)
-            ax.text(x + bw / 2, y0 - 0.35, tag, ha="center", va="top", fontsize=FS_SMALL, color=C_RED)
+            current_note = ax.text(
+                x + bw + 0.14, y0 + 0.55, tag, ha="left", va="center",
+                fontsize=FS_SMALL, color=C_RED)
         labels[i] = x
     i_k0, i_k1 = n_show - delay - K + 1, n_show - delay
     x_k = (labels[i_k0] + labels[i_k1] + bw) / 2
@@ -2274,16 +2427,19 @@ def fig_wpe_frames():
     # 预测箭头：历史窗底部 → 当前帧底部（走条带下方，不压框）
     ax.add_patch(FancyArrowPatch((x_k, y0 - 0.12), (labels[n_show] + bw / 2, y0 - 0.12),
                                  arrowstyle="-|>", mutation_scale=14, color=C_GREEN, lw=1.5, zorder=2))
-    ax.text((x_k + labels[n_show]) / 2 - 0.15, y0 - 0.30,
-            r"晚期估计：$\hat y(t,f)=\sum_{k=0}^{K-1}G^*(k,f)y(t-\Delta-k,f)$" "\n"
-            r"去混响输出：$y(t,f)-\hat y(t,f)$",
-            ha="center", va="top", fontsize=FS_SMALL + 1, color=C_GREEN,
-            bbox=dict(fc="white", alpha=0.8, pad=1, ec="none"))
+    formula_note = ax.text(
+        (x_k + labels[n_show]) / 2 - 0.15, y0 - 0.30,
+        r"晚期估计：$\hat y(t,f)=\sum_{k=0}^{K-1}G^*(k,f)y(t-\Delta-k,f)$" "\n"
+        r"去混响输出：$y(t,f)-\hat y(t,f)$",
+        ha="center", va="top", fontsize=FS_SMALL + 1, color=C_GREEN,
+        bbox=dict(fc="white", alpha=0.8, pad=1, ec="none"))
     ax.text(7.4, 1.15, "回归只用过去帧；端到端仍含分帧与计算延迟", ha="center", va="center",
             fontsize=FS_LABEL, color=C_MAIN,
             bbox=dict(fc="#e8f6db", ec=C_GREEN, lw=0.8, alpha=0.9, boxstyle="round,pad=0.35"))
     fig.suptitle("图24  WPE 延迟预测：Δ=3 时保护 t−1、t−2，K=5 使用 t−3…t−7", fontsize=FS_SUP)
     fig.tight_layout(rect=(0, 0, 1, 0.90))
+    fig._wpe_current_note = current_note
+    fig._wpe_formula_note = formula_note
     save(fig, "fig24_wpe_frames.png")
 
 
@@ -2291,14 +2447,14 @@ def fig_wpe_frames():
 # 图25 延迟分类：关键路径 vs 因果历史状态
 # ----------------------------------------------------------------------
 def fig_latency_budget():
-    fig, (ax, info) = plt.subplots(
-        1, 2, figsize=(14.5, 4.8), gridspec_kw={"width_ratios": [1.2, 1]})
+    fig, ax = plt.subplots(figsize=(9.5, 4.8))
 
     # 数字只是一组可替换的工作表格示例，不声称代表某产品。只有同一条关键路径上的项目才相加。
     critical_path = [("采集/分帧", 32, "#dbe9f6"),
                      ("未来帧前瞻", 16, C_PURPLE),
-                     ("判决确认", 25, C_ORANGE),
-                     ("计算/调度", 20, C_RED)]
+                     ("计算", 14, C_RED),
+                     ("调度", 6, "#9b4d3b"),
+                     ("首个判决确认", 25, C_ORANGE)]
     left = 0
     for name, duration_ms, color in critical_path:
         ax.barh(0, duration_ms, left=left, height=0.48, color=color,
@@ -2307,37 +2463,24 @@ def fig_latency_budget():
                 ha="center", va="center", fontsize=FS_SMALL,
                 color="white" if color == C_RED else C_MAIN)
         left += duration_ms
-    ax.annotate(f"关键路径示例：{left} ms",
+    continuous_audio_ms = sum(item[1] for item in critical_path[:-1])
+    ax.axvline(continuous_audio_ms, color=C_GREEN, ls="--", lw=1.5)
+    ax.text(continuous_audio_ms, -0.42, f"连续音频 {continuous_audio_ms} ms",
+            color=C_GREEN, ha="right", fontsize=FS_SMALL)
+    ax.annotate(f"首个判决 {left} ms",
                 xy=(left, 0.24), xytext=(left - 2, 0.68), ha="right",
                 fontsize=FS_LABEL, arrowprops=dict(arrowstyle="->", lw=1.1))
     ax.set_xlim(0, 110); ax.set_ylim(-0.72, 1.0)
     ax.set_yticks([0]); ax.set_yticklabels(["同一关键路径"])
     ax.set_xlabel("与实时时钟同量纲的延迟 (ms)", fontsize=FS_LABEL)
-    ax.set_title("(a) 只相加真正串行的延迟", fontsize=FS_TITLE)
+    ax.set_title("只相加同一关键路径上的串行等待", fontsize=FS_TITLE)
     ax.grid(axis="x", ls=":", alpha=0.5)
-
-    info.axis("off")
-    info.set_xlim(0, 1); info.set_ylim(0, 1)
-    info.text(0.04, 0.92, "会增加关键路径", fontsize=FS_TITLE, color=C_RED,
-              weight=600, va="top")
-    adds = ["等待未来帧（look-ahead）", "集齐整块数据后才开始",
-            "VAD/KWS 确认或 hangover", "不能被流水隐藏的计算与调度"]
-    for i, text_value in enumerate(adds):
-        info.text(0.06, 0.82 - 0.09 * i, "• " + text_value, fontsize=FS_LABEL, va="top")
-    info.text(0.04, 0.46, "不能直接当成串行前瞻", fontsize=FS_TITLE,
-              color=C_GREEN, weight=600, va="top")
-    states = ["WPE 的过去帧 K/Δ", "追踪器的历史状态",
-              "协方差递归/平滑窗", "AGC 的因果时间常数"]
-    for i, text_value in enumerate(states):
-        info.text(0.06, 0.37 - 0.065 * i, "• " + text_value, fontsize=FS_LABEL, va="top")
-    info.text(0.04, 0.01,
-              "实际验收：打时间戳，测“音频入口 → 可用输出/首个判决”；\n"
-              "若模块并行或流水，不要把每个内部窗长机械相加。",
-              fontsize=FS_SMALL, color="dimgray", va="bottom",
-              bbox=dict(fc="#f4f4f4", ec="0.7", boxstyle="round,pad=0.35"))
-    info.set_title("(b) 先分清前瞻与因果历史", fontsize=FS_TITLE)
-    fig.suptitle("图25  端到端延迟：找关键路径，不把历史窗当成串行等待（示例数字非产品指标）", fontsize=FS_SUP)
-    fig.subplots_adjust(left=0.08, right=0.98, bottom=0.15, top=0.84, wspace=0.28)
+    ax.text(0.01, -0.34,
+            "连续音频：统计到可用音频输出；首个判决：另含确认窗；端点 hangover：只延后结束事件。"
+            "WPE/追踪历史状态不是未来帧等待。",
+            transform=ax.transAxes, fontsize=FS_SMALL, va="top")
+    fig.suptitle("图25  端到端延迟关键路径（示例数字非产品指标）", fontsize=FS_SUP)
+    fig.subplots_adjust(left=0.10, right=0.98, bottom=0.30, top=0.82)
     save(fig, "fig25_latency_budget.png")
 
 
@@ -2384,6 +2527,7 @@ def fig_gcc_two_ways():
     spectrum = np.fft.rfft(x_early)
     spectrum[np.fft.rfftfreq(n, 1 / fs) > 3500] = 0
     x_early = np.fft.irfft(spectrum, n)
+    x_early /= np.max(np.abs(x_early))
     x_late = np.zeros_like(x_early)
     x_late[delay_samples:] = x_early[:-delay_samples]
 
@@ -2404,7 +2548,7 @@ def fig_gcc_two_ways():
     lags_ms = lags_td / fs * 1000
     view = np.abs(lags_td) <= 18
 
-    fig, axes = plt.subplots(2, 2, figsize=(13.8, 7.0))
+    fig, axes = plt.subplots(2, 2, figsize=(9.5, 8.0))
     sample_index = np.arange(36)
     axes[0, 0].plot(sample_index, x_early[:36], "o-", ms=3, lw=1.2,
                     color=C_BLUE, label="x₂[n]（先到）")
@@ -2412,7 +2556,7 @@ def fig_gcc_two_ways():
                     color=C_RED, label=f"x₁[n]（晚 {delay_samples} 点）")
     axes[0, 0].set_title("(a) 输入：零填充整数延迟", fontsize=FS_TITLE)
     axes[0, 0].set_xlabel("采样点 n", fontsize=FS_LABEL)
-    axes[0, 0].set_ylabel("幅度", fontsize=FS_LABEL)
+    axes[0, 0].set_ylabel("归一化幅度", fontsize=FS_LABEL)
     axes[0, 0].legend(fontsize=FS_SMALL)
     axes[0, 0].grid(ls=":", alpha=0.5)
 
@@ -2429,10 +2573,12 @@ def fig_gcc_two_ways():
 
     freq_khz = np.fft.rfftfreq(n, 1 / fs) / 1000
     cross_spectrum = np.fft.rfft(x_late) * np.conj(np.fft.rfft(x_early))
-    axes[0, 1].plot(freq_khz, np.abs(cross_spectrum), color=C_PURPLE, lw=1.3)
+    cross_magnitude = np.abs(cross_spectrum)
+    cross_magnitude /= np.max(cross_magnitude)
+    axes[0, 1].plot(freq_khz, cross_magnitude, color=C_PURPLE, lw=1.3)
     axes[0, 1].set_title("(c) 频域乘积 X₁·conj(X₂)", fontsize=FS_TITLE)
     axes[0, 1].set_xlabel("频率 (kHz)", fontsize=FS_LABEL)
-    axes[0, 1].set_ylabel("幅度", fontsize=FS_LABEL)
+    axes[0, 1].set_ylabel("归一化互谱幅度", fontsize=FS_LABEL)
     axes[0, 1].set_xlim(0, 4.0)
     axes[0, 1].grid(ls=":", alpha=0.5)
 

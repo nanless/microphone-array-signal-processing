@@ -56,7 +56,7 @@ L(\hat s_2,s_1)&L(\hat s_2,s_2)
 \begin{bmatrix}0.4&3.1\\2.8&0.6\end{bmatrix}.
 $$
 
-保持对应关系时总损失是 $0.4+0.6=1.0$；交换参考时是 $3.1+2.8=5.9$，所以本次更新使用前一种对应关系。这个例子说明 PIT 解决的是“输出槽位没有固定说话人标签”，并不自动解决未知人数或跨长录音的身份保持。逐帧独立选择排列会让同一输出在相邻帧换人；整句级置换不变训练（utterance-level PIT，uPIT）在整句上只选一次排列，可减少这种帧间交换。说话人数较多时，可以把损失矩阵交给线性指派算法求最小总代价，而不必枚举全部 $N!$ 种排列。[PIT 原始论文](https://arxiv.org/abs/1607.00325 "citation")、[uPIT 原始论文](https://arxiv.org/abs/1703.06284 "citation")。
+保持对应关系时总损失是 $0.4+0.6=1.0$；交换参考时是 $3.1+2.8=5.9$，所以本次更新使用前一种对应关系。这个例子说明 PIT 解决的是“输出槽位没有固定说话人标签”，并不自动解决未知人数或跨长录音的身份保持。逐帧独立选择排列会让同一输出在相邻帧换人；整句级置换不变训练（utterance-level PIT，uPIT）在整句上只选一次排列，可减少这种帧间交换。只有当总目标确实分解成式(8-3)这种“每个输出—参考对各贡献一个代价，再把所选代价相加”的形式时，才能把 $N\times N$ 成对损失矩阵交给线性指派算法求最小总代价。若损失含有跨输出耦合项、集合级正则项或共同解码约束，就不能直接用匈牙利算法代替全排列目标。[PIT 正式论文](https://doi.org/10.1109/ICASSP.2017.7952154)、[uPIT 正式论文](https://doi.org/10.1109/TASLP.2017.2648230)。
 
 **四类经典 BSS 方法**。以下按模型假设、计算代价和失效条件比较 AuxIVA、ILRMA、MNMF 与 TRINICON。
 
@@ -87,13 +87,23 @@ MNMF 可以表示 3 个说话人、2 个麦克风的欠定混合。每个频点�
 TRINICON 的长度换算可以这样看：8 kHz 下，0.5 s 对应 4000 个采样，但这不表示解混滤波器必须取 4000 点，也不表示算法延迟就是 0.5 s。实际长度是在可表示的卷积范围、估计方差、计算量和块实现之间折中。例如 1024 点与 2048 点分别覆盖 128 ms 和 256 ms 的滤波器记忆；系统仍要单独报告块大小、帧移、前视和输入输出缓冲，才能得到算法延迟。见 [TRINICON 原始论文](https://ieeexplore.ieee.org/document/1414341)（Buchner et al., 2005）。
 
 **GSS（导引源分离，guided source separation）**在 CHiME-5/6 的真实晚宴多通道任务中得到广泛使用（Boeddeker et al., CHiME-5 2018；CHiME-8 任务设置已经变化，引用时应按当届规则）：
-1. **cACGMM 空间聚类**：把多通道观测向量归一化为 $\mathbf z=\mathbf X/\|\mathbf X\|_2$，主要保留通道间的复数比例。第 $n$ 个分量的密度满足
+1. **cACGMM 空间聚类**：记 WPE 输出、尚未做方向归一化的多通道 STFT 为 $\mathbf Y(f,k)$。先剔除 $\|\mathbf Y(f,k)\|_2\le\varepsilon_E$ 的低能量点，再对保留点严格归一化为 $\mathbf z=\mathbf Y/\|\mathbf Y\|_2$，主要保留通道间的复数比例。第 $n$ 个分量的密度满足
 
    $$p(\mathbf z\mid\mathbf B_n)\propto \frac{1}{\det(\mathbf B_n)}\left(\mathbf z^H\mathbf B_n^{-1}\mathbf z\right)^{-M}\text{，}\qquad \|\mathbf z\|_2=1\text{。}\tag{8-4}$$
 
-   其中 $\mathbf B_n$ 是正定的形状矩阵，整体尺度需要固定，因为 cACG 分布对尺度不敏感。式(8-4)建模的是归一化方向 $\mathbf z$ 的密度，不是 $\mathbf X$ 的功率 SCM。混合模型的后验概率 $\gamma_n(f,k)$ 用作软时频掩码。“免训练”只表示聚类参数在当前录音上用期望最大化（Expectation-Maximization，EM）估计，不需要预先训练分离网络；说话人活动标注仍可能来自监督模型。
+   其中 $\mathbf B_n$ 是正定的形状矩阵。cAC 密度对 $\mathbf B_n$ 的正比例缩放不变，所以每次更新后必须固定尺度，例如令 $\operatorname{tr}(\mathbf B_n)=M$。式(8-4)建模的是归一化方向 $\mathbf z$ 的密度，不是 $\mathbf Y$ 的功率 SCM。混合模型的后验概率 $\gamma_n(f,k)$ 用作软时频掩码。“免训练”只表示聚类参数在当前录音上用期望最大化（Expectation-Maximization，EM）估计，不需要预先训练分离网络；说话人活动标注仍可能来自监督模型。
 2. **导引（Guided）**：各频点独立聚类会产生簇标签置换。GSS 使用**说话人活动时间标注**（diarization 输出）限制每个说话人可出现的帧，从而统一不同频点的簇标签；
 3. **级联**：WPE 去混响 → GSS 得到掩码 → 掩码估计目标/噪声协方差 → MVDR/GEV 波束形成。MVDR 是最小方差无失真响应，GEV 是广义特征值波束形成，见 §5.4。GSS 论文在 CHiME-5 的特定阵列和打分集上报告了识别结果；引用数字时必须同时给出原文表号、阵列配置、打分集和基线。[GSS 原始论文](https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf "citation")
+
+**紧凑实现顺序**。下面的伪代码强调依赖关系，不替代具体实现中的复数矩阵更新式。
+
+1. 从 WPE 输出 $\mathbf Y$ 中剔除 $\|\mathbf Y\|_2\le\varepsilon_E$ 的点；对其余点计算严格单位向量 $\mathbf z=\mathbf Y/\|\mathbf Y\|_2$。活动标注只初始化或约束混合权重（以及允许的分量掩码）；$\mathbf B_n$ 另用单位阵或空间统计量初始化，不能把活动标注当作形状矩阵。
+2. E 步按式(8-4)计算后验 $\gamma_n(f,k)$，并把活动标注为“不发言”的分量权重置零，再对允许的分量归一化。
+3. M 步按 cACG 的固定点更新形状矩阵：每个 $\mathbf z\mathbf z^H$ 外积除以当前二次型 $\mathbf z^H\mathbf B_n^{-1}\mathbf z$，再用 $\gamma_n$ 加权求和；每次更新后令 $\operatorname{tr}(\mathbf B_n)=M$（或采用等价的固定行列式约定），再加入小的正则项。有效权重接近零或条件数过大时，重置该分量，不能继续求逆。
+4. 重复 E/M 步，直到对数似然相对变化小于预设阈值，或达到最大迭代次数；报告实际迭代数、停止条件和重置次数。
+5. 将后验作为掩码，但用同一 WPE 阶段、未做方向归一化的 $\mathbf Y\mathbf Y^H$ 按式(8-5)估计目标/干扰 SCM，再计算每个目标的 MVDR 或 GEV 权重。这里不能把单位向量 $\mathbf z$ 的外积误当成带功率信息的 SCM。
+
+活动标注只限制允许的簇，不会自动修复错误分割；短活动段、空分量或近奇异形状矩阵仍需要正则化和失败检测。
 
 **GSS 的源数与计算规模**：输入通常是一段包含重叠语音的会议录音。cACGMM 的分量数通常由日志或系统配置预先给定；它不会仅凭式(8-4)可靠推断未知说话人数。$M\ge2$ 才有跨通道方向信息；当 $N\le M$ 时，掩码波束形成通常还有空间自由度，当 $N>M$ 时仍可为每个已知目标估计掩码和 SCM，但分离依赖时频占优、活动标注与数据量，不能获得方阵解混的可逆性保证。WPE 先减弱晚期混响；cACGMM 在目标段附近的上下文上做 EM 聚类，为每个时频点输出说话人后验掩码；目标和非目标掩码分别用于估计 SCM，再计算 MVDR 或 GEV 权重。上下文长度和 EM 迭代次数会共同影响估计方差、延迟与计算量。GPU 并行化的收益必须绑定硬件、数据、代码版本和计时范围，不能作为跨实现的通用加速倍数。
 
@@ -101,7 +111,7 @@ TRINICON 的长度换算可以这样看：8 kHz 下，0.5 s 对应 4000 个采�
 
 掩码换成目标协方差时，用
 
-$$\mathbf R_{\mathrm{tar}}(f)=\frac{\sum_k\gamma(f,k)\mathbf X(f,k)\mathbf X^H(f,k)}{\sum_k\gamma(f,k)+\varepsilon}\text{。}\tag{8-5}$$
+$$\mathbf R_{\mathrm{tar}}(f)=\frac{\sum_k\gamma(f,k)\mathbf Y(f,k)\mathbf Y^H(f,k)}{\sum_k\gamma(f,k)+\varepsilon}\text{。}\tag{8-5}$$
 
 噪声协方差可用相应的非目标掩码估计。软权重的有效样本数不是“$\gamma>0.8$ 的帧数”，而可用 Kish 公式近似：
 
@@ -109,10 +119,10 @@ $$N_{\mathrm{eff}}(f)=\frac{\left(\sum_k\gamma(f,k)\right)^2}{\sum_k\gamma^2(f,k
 
 例如 900 帧权重全为 1 时 $N_{\mathrm{eff}}=900$；若权重集中在少数帧，有效样本数会明显更小。估计 $M\times M$ 协方差不仅需要样本数大于矩阵维度，还要覆盖足够多的独立空间状态；高度相关的连续帧不能当作同等数量的独立快照。工程上应检查 $N_{\mathrm{eff}}$、矩阵条件数，并在必要时做对角加载。说话人活动标注用于限制各簇可出现的时间区间，从而减少跨频点置换。见 [cACGMM 原始工作](https://doi.org/10.1109/EUSIPCO.2016.7760429)（Ito et al., EUSIPCO 2016, pp. 1153–1157）与 [GSS 原始论文](https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf)。
 
-**掩码到波束权重的小例子**。以下实数向量只是复数 STFT 观测的简化手算。两个时频快照取 $\mathbf X_1=[1,1]^\top$、$\mathbf X_2=[1,-1]^\top$，目标掩码为 $\gamma=[0.9,0.1]$。因为权重和为 1，目标协方差为
+**掩码到波束权重的小例子**。以下实数向量只是 WPE 输出复数 STFT 的简化手算。两个时频快照取 $\mathbf Y_1=[1,1]^\top$、$\mathbf Y_2=[1,-1]^\top$，目标掩码为 $\gamma=[0.9,0.1]$。因为权重和为 1，目标协方差为
 
 $$
-\mathbf R_{\mathrm{tar}}=0.9\mathbf X_1\mathbf X_1^H+0.1\mathbf X_2\mathbf X_2^H
+\mathbf R_{\mathrm{tar}}=0.9\mathbf Y_1\mathbf Y_1^H+0.1\mathbf Y_2\mathbf Y_2^H
 =\begin{bmatrix}1&0.8\\0.8&1\end{bmatrix}.
 $$
 
@@ -120,16 +130,19 @@ $$
 
 定位结果可以给分离提供方向先验；分离网络输出的掩码又能用于估计 MVDR 的目标与干扰协方差。常用的尺度不变信号失真比（scale-invariant signal-to-distortion ratio，SI-SDR）先把估计信号 $\hat s$ 投影到参考 $s$ 上：$s_{\mathrm{tar}}=\langle\hat s,s\rangle s/\|s\|^2$，再计算 $10\log_{10}(\|s_{\mathrm{tar}}\|^2/\|\hat s-s_{\mathrm{tar}}\|^2)$。SI-SDR 提升量（SI-SDRi）是输出 SI-SDR 减去混合输入的 SI-SDR，两项必须使用同一预处理和实现。
 
+**分离指标的最小报告模板**：写明目标信号定义（无混响干声、带混响参考或参考麦克风图像）、参考通道、采样率与截断长度；说明是否去均值，以及固定传播时延、算法时延和整体增益怎样对齐；给出活动区间、静音段处理、输出—参考排列规则和输入混合基线；固定指标实现及版本，并对多次随机实验报告种子、次数和离散程度。若其中任一项不同，SI-SDRi、SI-SNRi 或 WER 数字不能直接横向排名。
+
 **数据集口径表**：去混响与分离的论文使用不同数据、通道和指标。下表只说明各数据集的用途，不给出脱离原文表格的性能范围。
 
 | 数据集 | 考什么 | 房间/混响口径 | 通道/采样口径 | 怎么用 |
 |---|---|---|---|---|
 | REVERB 挑战赛 | 去混响（含识别端 WER） | 仿真三档混响时间约 0.25 / 0.5 / 0.7 s；另有真实房间录音（MC-WSJ-AV 基） | 8 通道 / 2 通道 / 单通道三种设置；基线语音来自 WSJCAM0 | 比较 WPE 时必须注明通道数、识别器、测试子集和 WER 的绝对/相对口径 |
-| CHiME-5/6 | 真实晚宴多说话人（分离 + 识别端 WER） | 真实家庭：厨房、餐厅、客厅多房间自然混响加生活噪声 | 每场 6 台 Kinect、每台 4 个同步麦克风，每个房间 2 台；每位参与者另戴双耳麦 | 双耳录音主要辅助转写和阵列同步，不是干净参考音频；GSS 结果还要注明所选阵列、分段/日志输入、打分集和原文表号 |
-| WHAMR | 噪声 + 混响 + 重叠三合一 | 合成房间冲激响应；$T_{60}$ 低、中、高三档分别从 0.1～0.3 s、0.2～0.6 s、0.4～1.0 s 均匀采样，这三档表示混响程度，不表示房间大小 | 8 kHz / 16 kHz；min 版（截短对齐）/ max 版（全长）两版；底子是 WSJ0-2mix 加 WHAM 噪声 | 报告时注明 min/max、采样率、源数、目标是无混响还是带混响语音，以及 SI-SDRi 实现。见 [WHAMR 原始论文 §2 与表 1](https://arxiv.org/abs/1910.10279 "citation") |
+| CHiME-5 | 真实晚宴多说话人（分离 + 识别端 WER） | 真实家庭：厨房、餐厅、客厅多房间自然混响加生活噪声 | 每场 6 台 Kinect、每台 4 个同步麦克风；每位参与者另戴双耳麦 | 6 台设备不能缩写成“6 麦阵列”；双耳录音用于辅助转写与时间对齐，不是干净评分参考。见 [CHiME-5 官方数据说明](https://www.chimechallenge.org/challenges/chime5/overview) |
+| CHiME-6 | 重新对齐的 CHiME-5 录音；多阵列远场识别 | 与 CHiME-5 相同的真实家庭录音，但版本与划分必须写清 | 共 32 个物理通道：6 台四麦阵列的 24 通道，加 4 套双耳设备的 8 通道 | Track 2 评测中双耳通道只允许同步，不能用于分割、增强或识别；GSS 还要注明实际选用阵列、日志输入、打分集和表号。见 [CHiME-6 Track 2 官方数据规则](https://www.chimechallenge.org/challenges/chime6/track2_data) |
+| WHAMR | 噪声 + 混响 + 重叠三合一 | 合成房间冲激响应；$T_{60}$ 低、中、高三档分别从 0.1～0.3 s、0.2～0.6 s、0.4～1.0 s 均匀采样，这三档表示混响程度，不表示房间大小 | 8 kHz / 16 kHz；min 版（截短对齐）/ max 版（全长）两版；底子是 WSJ0-2mix 加 WHAM 噪声 | 报告时注明 min/max、采样率、源数、目标是无混响还是带混响语音，以及 SI-SDRi 实现。见 [WHAMR 正式论文 §2 与表 1](https://doi.org/10.1109/ICASSP40776.2020.9053327) |
 | WSJ0-2mix / 3mix | 干净重叠两/三人 | 无噪声、无混响（近场干声直接叠加） | 8 kHz / 16 kHz；min 版（按最短截断）/ max 版（全长补零）；30 小时训练 / 10 小时验证 / 5 小时测试 | 引用时注明采样率、min/max、源数、静态/动态混合和指标实现 |
 | LibriMix | 干净或含噪重叠（WSJ0 的开源替代） | clean 版无污染；noisy 版叠加 WHAM 环境噪声 | 8 kHz / 16 kHz；train-100/train-360；min/max；另行发布的 SparseLibriMix 是稀疏重叠测试集 | 用于跨语料验证时，同时注明训练集、测试集、噪声版本和是否使用 SparseLibriMix。见 [LibriMix 论文](https://arxiv.org/abs/2005.11262 "citation")与[官方生成仓库](https://github.com/JorisCos/LibriMix "citation") |
-| LibriCSS | 连续会议式重叠与长录音识别 | 扬声器在真实会议室回放 LibriSpeech 语音；共 10 个约 1 h 会话，每个分成 6 个约 10 min 小会话，条件为 0S、0L、10%、20%、30%、40% 重叠 | 7 通道圆阵录音；0S 与 0L 都无重叠，但句间静音长度不同 | 检查具体重叠条件、分块、跨块排列、输出流数和识别评测的说话人分配规则。见 [LibriCSS](https://arxiv.org/abs/2001.11482 "citation") |
+| LibriCSS | 连续会议式重叠与长录音识别 | 扬声器在真实会议室回放 LibriSpeech 语音；共 10 个约 1 h 会话，每个分成 6 个约 10 min 小会话，条件为 0S、0L、10%、20%、30%、40% 重叠 | 7 通道圆阵录音；0S 与 0L 都无重叠，但句间静音长度不同 | 检查具体重叠条件、分块、跨块排列、输出流数和识别评测的说话人分配规则。见 [LibriCSS 正式论文](https://doi.org/10.1109/ICASSP40776.2020.9053426) |
 
 REVERB 主要用于去混响与识别，CHiME-5/6 用于真实重叠语音的分离与识别，WHAMR 同时包含噪声、混响和重叠，WSJ0-2mix/3mix 是干净混合基准，LibriMix 还可检查跨数据集泛化，LibriCSS 则把问题扩展到连续会议。CHiME-6 重新对齐了 CHiME-5 的部分录音，引用结果时不能把两个版本混为同一数据版本。[CHiME-6 官方说明](https://www.chimechallenge.org/challenges/chime6 "citation")。不同数据集的数字不能直接比较。
 
@@ -141,11 +154,11 @@ REVERB 主要用于去混响与识别，CHiME-5/6 用于真实重叠语音的分
 
 | 结构 | 代表 | 主要结构 | 结果复现要求 | 优点与限制 |
 |---|---|---|---|---|
-| 时域卷积 | Conv-TasNet（Luo & Mesgarani, 2019） | 可学习的短窗编码器代替 STFT，时序卷积网络（Temporal Convolutional Network，TCN）的空洞卷积建模长上下文，再对编码系数施加掩码 | 核对数据版本、采样率、因果设置和 SI-SNRi 实现 | 端到端延迟取决于编码窗、感受野和缓冲。见 [Conv-TasNet](https://arxiv.org/abs/1809.07454) |
-| 双路径循环 | DPRNN（Luo et al., 2020） | 长序列分块，块内 RNN 建模局部，块间 RNN 建模较长时间关系 | 核对模型规模、块长、静态/动态混合和 SI-SNRi 实现 | RNN 顺序计算会限制并行度，块长影响内存与上下文。见 [DPRNN](https://arxiv.org/abs/1910.06379) |
-| 双路径注意力 | SepFormer（Subakan et al., 2021） | 在双路径结构中用 Transformer 替换 RNN | 核对源数、数据生成、模型版本和 SI-SNRi 实现 | 注意力内存随序列长度增长，长句通常需分块。见 [SepFormer](https://arxiv.org/abs/2010.13154) |
+| 时域卷积 | Conv-TasNet（Luo & Mesgarani, 2019） | 可学习的短窗编码器代替 STFT，时序卷积网络（Temporal Convolutional Network，TCN）的空洞卷积建模长上下文，再对编码系数施加掩码 | 核对数据版本、采样率、因果设置和 SI-SNRi 实现 | 端到端延迟取决于编码窗、感受野和缓冲。见 [Conv-TasNet 正式论文](https://doi.org/10.1109/TASLP.2019.2915167) |
+| 双路径循环 | DPRNN（Luo et al., 2020） | 长序列分块，块内 RNN 建模局部，块间 RNN 建模较长时间关系 | 核对模型规模、块长、静态/动态混合和 SI-SNRi 实现 | RNN 顺序计算会限制并行度，块长影响内存与上下文。见 [DPRNN 正式论文](https://doi.org/10.1109/ICASSP40776.2020.9054266) |
+| 双路径注意力 | SepFormer（Subakan et al., 2021） | 在双路径结构中用 Transformer 替换 RNN | 核对源数、数据生成、模型版本和 SI-SNRi 实现 | 注意力内存随序列长度增长，长句通常需分块。见 [SepFormer 正式论文](https://doi.org/10.1109/ICASSP39728.2021.9413901) |
 | 状态空间 | S4M（Chen et al., 2023） | 用多尺度编码和结构化状态空间块替换分离骨干中的循环或注意力时序建模 | 原文使用固定两源的 WSJ0-2Mix、LibriMix 与 LRS2-Mix；核对 8/16 kHz 数据版本、源数和官方配置 | 状态递推提供长程建模的另一种实现，但原论文未验证严格因果的前瞻量与端到端延迟。见 [Interspeech 2023 正式论文](https://doi.org/10.21437/Interspeech.2023-696) 与[官方复现仓库](https://github.com/JusperLee/S4M) |
-| 时频网格 | TF-GridNet（Wang et al., 2023） | 在时频域分别建模时间、频率与跨帧关系，并结合子带长短期记忆网络（Long Short-Term Memory，LSTM）和注意力 | 会议版是单通道分离，原文主表使用 SI-SDRi；多通道混响扩展是另一模型与实验设置 | 整句注意力需要改造后才能流式运行。见[单通道会议版](https://arxiv.org/abs/2209.03952)与[多通道混响期刊扩展](https://doi.org/10.1109/TASLP.2023.3304482 "citation") |
+| 时频网格 | TF-GridNet（Wang et al., 2023） | 在时频域分别建模时间、频率与跨帧关系，并结合子带长短期记忆网络（Long Short-Term Memory，LSTM）和注意力 | 会议版是单通道分离，原文主表使用 SI-SDRi；多通道混响扩展是另一模型与实验设置 | 整句注意力需要改造后才能流式运行。见[单通道会议正式论文](https://doi.org/10.1109/ICASSP49357.2023.10094992)与[多通道混响期刊扩展](https://doi.org/10.1109/TASLP.2023.3304482 "citation") |
 
 比较分离数字时要对齐采样率、`min`/`max` 混合方式、静态或动态混合、源数、评测脚本和指标名称。分离文献中的 SI-SNR 常采用与 SI-SDR 相同的正交投影公式，二者在相同去均值与数值实现下可以相等；也有代码把均值处理、截断长度或稳定项写得不同。不能笼统地说两者固定相差若干 dB。引用 SI-SNRi 或 SI-SDRi 时，应给出实现或至少说明是否去均值，并始终用同一指标计算输入基线和输出结果。
 
@@ -153,7 +166,7 @@ REVERB 主要用于去混响与识别，CHiME-5/6 用于真实重叠语音的分
 
 目标说话人提取（target speaker extraction，TSE）不要求输出所有声源，而是用注册语音、视觉或方向等与目标说话人绑定的条件提取一条音轨。声纹网络可把注册语音变成定长嵌入，再将其广播到混合语音的各帧；嵌入可在编码器入口拼接，也可用逐层缩放与偏置调制（FiLM）或交叉注意力注入。嵌入维度、注册时长和余弦阈值由具体模型和训练数据决定，不存在跨模型通用的“同人区间”。部署时要验证注册信道失配、非目标泄漏、目标误抑制和首帧延迟。§6.1.6 的 pAEC 也使用声纹条件，但训练目标还包含回声消除。见 [SpeakerBeam/TSE 系列](https://arxiv.org/abs/1705.10687 "citation")；声纹嵌入的端侧存储、加密和删除要求见 §6.1.14。
 
-文本查询通用声音分离是另一项任务：查询词描述“警报声”“狗叫”等声音类别，不保证对应某个可注册的说话人。对比语言—音频预训练（Contrastive Language-Audio Pretraining，CLAP）可提供文本与音频嵌入，但 CLAP 本身不是分离器；实际系统还需要用查询嵌入控制掩码或波形生成模块。见 [CLAP](https://arxiv.org/abs/2206.04769 "citation")与使用语言查询的 AudioSep。AudioSep 已正式发表于 *IEEE Transactions on Audio, Speech and Language Processing*, vol. 33, pp. 458–471，DOI [10.1109/TASLP.2024.3520017](https://doi.org/10.1109/TASLP.2024.3520017)；[官方仓库](https://github.com/audio-agi/audiosep)提供模型与推理入口。因此 TSE 的身份泄漏、注册信道和声纹保护测试，不能由文本查询分离的类别级结果替代。
+文本查询通用声音分离是另一项任务：查询词描述“警报声”“狗叫”等声音类别，不保证对应某个可注册的说话人。对比语言—音频预训练（Contrastive Language-Audio Pretraining，CLAP）可提供文本与音频嵌入，但 CLAP 本身不是分离器；实际系统还需要用查询嵌入控制掩码或波形生成模块。见 [CLAP](https://arxiv.org/abs/2206.04769 "citation")与使用语言查询的 AudioSep。AudioSep 已正式发表于 *IEEE/ACM Transactions on Audio, Speech, and Language Processing*, vol. 33, pp. 458–471，DOI [10.1109/TASLP.2024.3520017](https://doi.org/10.1109/TASLP.2024.3520017)；[官方仓库](https://github.com/audio-agi/audiosep)提供模型与推理入口。因此 TSE 的身份泄漏、注册信道和声纹保护测试，不能由文本查询分离的类别级结果替代。
 
 > **练习 8-1（自测三题）**
 >
@@ -165,7 +178,7 @@ REVERB 主要用于去混响与识别，CHiME-5/6 用于真实重叠语音的分
 
 回声、混响和多说话人混合对应不同的信号模型。以下顺序由参考可用性、空间相位保持和统计量依赖关系决定，接口定义见 §10.1。
 
-一种较完整的参考链见[第 10 章 §10.1](./10_engineering-practice.md#sec-10-1)：**AEC → WPE → 定位/追踪 → 波束形成 → 单通道增强**。项目只启用满足输入条件且能改善目标指标的模块。说话人日志和 GSS 掩码不是独立音频处理框，而是波束形成的外部控制或统计量输入。各模块采用这一相对位置的原因如下：
+一种较完整的音频主链见[第 10 章 §10.1](./10_engineering-practice.md#sec-10-1)：**采集 → AEC → WPE → 解析波束形成 → 单通道增强**。定位/追踪、说话人分割/GSS/SCM 是为解析波束提供条件的支路；神经或 CSS 分离则是从多通道特征到单通道/多流输出的替代音频路径，不与 GSS 掩码或解析波束合并成一个黑箱。项目只启用满足输入条件且能改善目标指标的模块。
 
 1. **启用声学回声消除（Acoustic Echo Cancellation，AEC）时先处理回声**：回声参考与麦克风回声之间的线性关系可能被后续自适应波束、非线性增益或单通道增强改变，见[第 10 章 §10.1](./10_engineering-practice.md#sec-10-1)；
 2. **多通道 WPE 通常在波束之前**：晚期混响会污染波束形成所需的协方差估计。WPE 是线性处理，但各通道的预测滤波器不同，不能笼统保证所有跨通道相位关系完全不变。应验证处理后的目标相对传递函数和协方差是否仍适用于后续波束；
@@ -179,8 +192,10 @@ REVERB 主要用于去混响与识别，CHiME-5/6 用于真实重叠语音的分
 
 | 本章模块 | 图 23 中的位置 | 作用 |
 |---|---|---|
-| diarization / GSS（说话人日志给时间标注，cACGMM 聚类得掩码） | 波束形成的外部活动标注与掩码输入 | diarization 约束跨频点置换，掩码用于估计目标和噪声协方差，见 §5.4 |
-| DNN 后滤波 / DNN 后端 | 波束形成后的单通道增强或后端 | 独立改写复谱的网络通常放在多通道 WPE/MVDR 之后，以免破坏空间相位 |
+| diarization / GSS | “说话人分割 → GSS/cACGMM 掩码”支路 | diarization 约束活动时间与跨频点置换；它不直接输出 SCM 或音频 |
+| 目标/干扰 SCM 与解析波束 | “GSS 掩码 + 同阶段 WPE 输出未方向归一 STFT → SCM → DSB/MVDR/GEV”支路 | 掩码只给权重，SCM 仍由 $\mathbf Y\mathbf Y^H$ 加权计算；不能改用单位向量 $\mathbf z$ |
+| 神经分离 / CSS | WPE 后的替代音频路径，可绕过解析波束后接单通道增强 | 是否输出固定多流、使用未来上下文和跨块排列，都要单独说明 |
+| DNN 后滤波 / DNN 后端 | 波束形成或分离后的单通道增强或后端 | 独立改写复谱的网络通常放在多通道 WPE/MVDR 之后，以免破坏空间相位 |
 | 降噪（Noise Suppression，NS）/自动增益控制（Automatic Gain Control，AGC）/语音活动检测（VAD）/关键词检出（Keyword Spotting，KWS） | 单通道增强与可选 KWS 旁路；VAD 属控制面 | 各模块按目标任务启用，不在本章展开 |
 
 回声、混响和分离使用不同的参考与统计假设，模块顺序需要服从这些条件。下一章讨论如何把逐帧定位结果连接成连续轨迹。

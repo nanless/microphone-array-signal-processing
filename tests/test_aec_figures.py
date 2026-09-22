@@ -6,6 +6,7 @@ import unittest
 from unittest.mock import patch
 
 import matplotlib.pyplot as plt
+from matplotlib.text import Text
 from PIL import Image
 import scripts.make_aec_figures as aec_figures
 
@@ -24,6 +25,111 @@ from scripts.make_aec_figures import (
 
 
 class AecFiguresTest(unittest.TestCase):
+    def test_figures_26_to_32_fit_final_width_and_keep_key_text_readable(self):
+        builders = [
+            aec_figures.fig_problem,
+            aec_figures.fig_concept,
+            aec_figures.fig_nlms,
+            aec_figures.fig_erle,
+            aec_figures.fig_delay_dtd,
+            aec_figures.fig_nonlinear,
+            aec_figures.fig_hybrid,
+        ]
+        figures = {}
+
+        def capture(figure, name):
+            figures[name] = figure
+
+        try:
+            with patch.object(aec_figures, "save", side_effect=capture):
+                for builder in builders:
+                    builder()
+
+            self.assertEqual(len(figures), 7)
+            for name, figure in figures.items():
+                with self.subTest(figure=name):
+                    self.assertLessEqual(figure.get_size_inches()[0], 10.0)
+                    ticks = [
+                        tick
+                        for axis in figure.axes
+                        for tick in (
+                            *axis.xaxis.get_major_ticks(),
+                            *axis.xaxis.get_minor_ticks(),
+                            *axis.yaxis.get_major_ticks(),
+                            *axis.yaxis.get_minor_ticks(),
+                        )
+                    ]
+                    tick_text_ids = {
+                        id(label)
+                        for tick in ticks
+                        for label in (tick.label1, tick.label2)
+                    }
+                    key_texts = [
+                        artist
+                        for artist in figure.findobj(match=Text)
+                        if artist.get_text().strip() and id(artist) not in tick_text_ids
+                    ]
+                    self.assertTrue(key_texts)
+                    self.assertGreaterEqual(
+                        min(text.get_fontsize() for text in key_texts),
+                        11.0,
+                    )
+
+            figure26 = figures["fig26_aec_problem.png"]
+            self.assertEqual(figure26.axes[0].get_xlabel(), "抽头索引 ℓ（采样）")
+            self.assertEqual(len(figure26.axes), 3)
+            self.assertEqual(figure26.axes[0].get_subplotspec().colspan.stop, 2)
+
+            figure28 = figures["fig28_aec_nlms.png"]
+            path_axis = next(axis for axis in figure28.axes if axis.get_title().startswith("(a)"))
+            trend_axis = next(axis for axis in figure28.axes if axis.get_title().startswith("(b)"))
+            step_axis = next(axis for axis in figure28.axes if axis.get_title().startswith("(c)"))
+            trend_twin = next(
+                axis for axis in figure28.axes
+                if not axis.get_title() and axis.get_ylabel() == "ERLE (dB)"
+            )
+            self.assertEqual(path_axis.get_ylabel(), "滤波器系数（无量纲）")
+            self.assertNotEqual(
+                trend_axis.get_lines()[0].get_linestyle(),
+                trend_twin.get_lines()[0].get_linestyle(),
+            )
+            self.assertEqual(
+                len({line.get_linestyle() for line in step_axis.get_lines()}),
+                3,
+            )
+            self.assertTrue(all(line.get_marker() != "None" for line in step_axis.get_lines()))
+
+            figure31 = figures["fig31_aec_nonlinear.png"]
+            erle_axis, mapping_axis = figure31.axes
+            self.assertNotEqual(
+                erle_axis.get_lines()[0].get_linestyle(),
+                erle_axis.get_lines()[1].get_linestyle(),
+            )
+            self.assertEqual(mapping_axis.get_xlabel(), "归一化输入幅度（无量纲）")
+            self.assertEqual(mapping_axis.get_ylabel(), "归一化输出幅度（无量纲）")
+            mapping_note = next(
+                text for text in mapping_axis.texts
+                if text.get_text().startswith("输入幅度增大后")
+            )
+            self.assertIn("\n", mapping_note.get_text())
+            self.assertGreaterEqual(mapping_note.get_fontsize(), 11.0)
+            self.assertIs(mapping_note.get_transform(), mapping_axis.transAxes)
+            self.assertLessEqual(mapping_note.get_position()[1], 0.10)
+            figure31.canvas.draw()
+            note_bounds = mapping_note.get_window_extent()
+            axis_bounds = mapping_axis.get_window_extent()
+            self.assertGreaterEqual(note_bounds.x0, axis_bounds.x0)
+            self.assertLessEqual(note_bounds.x1, axis_bounds.x1)
+            self.assertGreaterEqual(note_bounds.y0, axis_bounds.y0)
+            self.assertLessEqual(note_bounds.y1, axis_bounds.y1)
+
+            figure32 = figures["fig32_aec_hybrid_select.png"]
+            self.assertEqual(len(figure32.axes), 1)
+            self.assertFalse(figure32.axes[0].tables)
+        finally:
+            for figure in figures.values():
+                plt.close(figure)
+
     def test_causal_delay_zero_fills_instead_of_wrapping(self):
         x = np.array([1.0, 2.0, 3.0, 4.0])
 
@@ -47,6 +153,25 @@ class AecFiguresTest(unittest.TestCase):
 
         np.testing.assert_array_equal(times, np.array([0.0, 0.025, 0.05]))
         np.testing.assert_allclose(erle, 20.0, atol=1e-12)
+
+    def test_block_erle_is_invariant_to_common_amplitude_scale(self):
+        echo = np.linspace(0.2, 1.2, 1200)
+        residual = 0.1 * echo
+        _, reference = block_erle(echo, residual, blk=400)
+
+        for scale in (1e-9, 1e9):
+            _, scaled = block_erle(scale * echo, scale * residual, blk=400)
+            np.testing.assert_allclose(scaled, reference, atol=1e-12)
+
+    def test_block_erle_preserves_zero_power_semantics(self):
+        echo = np.r_[np.ones(400), np.zeros(800)]
+        residual = np.r_[np.zeros(400), np.ones(400), np.zeros(400)]
+
+        _, erle = block_erle(echo, residual, blk=400)
+
+        self.assertTrue(np.isposinf(erle[0]))
+        self.assertTrue(np.isneginf(erle[1]))
+        self.assertTrue(np.isnan(erle[2]))
 
     def test_block_erle_rejects_incompatible_inputs(self):
         with self.assertRaises(ValueError):
@@ -156,8 +281,50 @@ class AecFiguresTest(unittest.TestCase):
         view = mask_metric_intervals(times, aligned_erle, [(0.8, 1.2)])
 
         self.assertEqual(peak_lag, 331)
+        self.assertAlmostEqual(aligned_plateau, 27.949, delta=0.05)
+        self.assertAlmostEqual(misaligned_plateau, 1.855, delta=0.05)
         self.assertGreater(aligned_plateau, misaligned_plateau + 20.0)
         self.assertTrue(np.isnan(view[(times >= 0.8) & (times < 1.2)]).all())
+
+    def test_figure30_uses_readable_two_row_layout_and_labels_both_erle_axes(self):
+        captured = {}
+
+        def capture(figure, name):
+            captured["figure"] = figure
+            captured["name"] = name
+
+        with patch.object(aec_figures, "save", side_effect=capture):
+            aec_figures.fig_delay_dtd()
+
+        figure = captured["figure"]
+        try:
+            self.assertEqual(captured["name"], "fig30_aec_delay_dtd.png")
+            self.assertEqual(len(figure.axes), 3)
+            correlation_axis, alignment_axis, double_talk_axis = figure.axes
+
+            correlation_spec = correlation_axis.get_subplotspec()
+            alignment_spec = alignment_axis.get_subplotspec()
+            double_talk_spec = double_talk_axis.get_subplotspec()
+            self.assertEqual(
+                (correlation_spec.rowspan.start, correlation_spec.rowspan.stop),
+                (0, 1),
+            )
+            self.assertEqual(
+                (correlation_spec.colspan.start, correlation_spec.colspan.stop),
+                (0, 2),
+            )
+            self.assertEqual(
+                (alignment_spec.rowspan.start, alignment_spec.colspan.start),
+                (1, 0),
+            )
+            self.assertEqual(
+                (double_talk_spec.rowspan.start, double_talk_spec.colspan.start),
+                (1, 1),
+            )
+            self.assertEqual(alignment_axis.get_ylabel(), "ERLE (dB)")
+            self.assertEqual(double_talk_axis.get_ylabel(), "ERLE (dB)")
+        finally:
+            plt.close(figure)
 
     def test_nonlinear_path_has_lower_late_erle_than_matched_linear_path(self):
         sample_count = int(3.0 * FS)
@@ -178,6 +345,8 @@ class AecFiguresTest(unittest.TestCase):
 
         linear_late = float(np.mean(linear_erle[linear_times > 2.2]))
         nonlinear_late = float(np.mean(nonlinear_erle[nonlinear_times > 2.2]))
+        self.assertAlmostEqual(linear_late, 34.024, delta=0.05)
+        self.assertAlmostEqual(nonlinear_late, 17.747, delta=0.05)
         self.assertGreater(linear_late, nonlinear_late + 5.0)
 
     def test_png_metadata_tracks_full_source_digest_without_timestamp(self):

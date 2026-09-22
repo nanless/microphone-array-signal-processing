@@ -1,5 +1,8 @@
 import importlib.util
 import hashlib
+import inspect
+import re
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -23,6 +26,22 @@ aec_figures = load_module("make_aec_figures", "make_aec_figures.py")
 
 
 class FigureAlgorithmTest(unittest.TestCase):
+    def capture_figure(self, builder):
+        captured = []
+        original_save = figures.save
+        try:
+            def capture(figure, _name):
+                figures.finalize_figure(figure)
+                figure.canvas.draw()
+                captured.append(figure)
+            figures.save = capture
+            builder()
+        finally:
+            figures.save = original_save
+        self.assertEqual(len(captured), 1)
+        self.addCleanup(figures.plt.close, captured[0])
+        return captured[0]
+
     def test_png_metadata_identifies_exact_source_without_timestamp(self):
         metadata = figures.figure_png_metadata()
         self.assertEqual(metadata["SourceScript"], "scripts/make_figures.py")
@@ -30,6 +49,24 @@ class FigureAlgorithmTest(unittest.TestCase):
             (ROOT / "scripts" / "make_figures.py").read_bytes()).hexdigest()
         self.assertEqual(metadata["SourceScriptDigest"], expected)
         self.assertFalse(any("time" in key.lower() for key in metadata))
+
+    def test_saved_png_contains_stable_source_metadata(self):
+        original_out = figures.OUT
+        with tempfile.TemporaryDirectory() as directory:
+            try:
+                figures.OUT = Path(directory)
+                figure, axis = figures.plt.subplots(figsize=(1.0, 1.0))
+                axis.plot([0, 1], [0, 1])
+                figures.save(figure, "metadata-smoke.png")
+                payload = (Path(directory) / "metadata-smoke.png").read_bytes()
+            finally:
+                figures.OUT = original_out
+        self.assertTrue(payload.startswith(b"\x89PNG\r\n\x1a\n"))
+        self.assertIn(b"SourceScript", payload)
+        self.assertIn(b"scripts/make_figures.py", payload)
+        self.assertIn(b"SourceScriptDigest", payload)
+        self.assertIn(figures.source_script_digest().encode("ascii"), payload)
+        self.assertNotIn(b"Creation Time", payload)
 
     def test_ula_steering_obeys_positive_angle_sign_convention(self):
         steering = figures.ula_steering([0.0, 0.04], 30.0)[:, 0]
@@ -174,6 +211,38 @@ class FigureAlgorithmTest(unittest.TestCase):
         np.testing.assert_allclose(actual, expected, atol=1e-12)
         self.assertTrue(np.all(actual >= 0.0))
 
+    def test_capon_relative_loading_is_scale_invariant(self):
+        covariance = np.array(
+            [[2.0, 0.4 + 0.2j], [0.4 - 0.2j, 1.2]], dtype=complex)
+        steering = np.array(
+            [[1.0, 1.0], [1.0j, np.exp(0.3j)]], dtype=complex)
+        spectrum, loading = figures.capon_spectrum(covariance, steering)
+        scaled_spectrum, scaled_loading = figures.capon_spectrum(
+            100.0 * covariance, steering)
+        np.testing.assert_allclose(
+            spectrum / spectrum.max(), scaled_spectrum / scaled_spectrum.max(),
+            rtol=1e-12, atol=1e-12)
+        self.assertAlmostEqual(scaled_loading, 100.0 * loading, places=12)
+
+    def test_capon_matches_independent_two_by_two_oracle(self):
+        covariance = np.diag([2.0, 1.0])
+        steering = np.array([[1.0, 0.0, 1.0],
+                             [0.0, 1.0, 1.0]])
+        spectrum, loading = figures.capon_spectrum(
+            covariance, steering, relative_loading=0.0)
+        self.assertEqual(loading, 0.0)
+        np.testing.assert_allclose(spectrum, [2.0, 1.0, 2.0 / 3.0], atol=1e-12)
+
+    def test_capon_rank_deficiency_requires_loading(self):
+        covariance = np.ones((2, 2))
+        steering = np.eye(2)
+        with self.assertRaisesRegex(np.linalg.LinAlgError, "relative_loading"):
+            figures.capon_spectrum(covariance, steering, relative_loading=0.0)
+        spectrum, loading = figures.capon_spectrum(
+            covariance, steering, relative_loading=1e-3)
+        self.assertGreater(loading, 0.0)
+        self.assertTrue(np.all(np.isfinite(spectrum)))
+
     def test_srp_tdoa_score_peaks_at_source_grid_point(self):
         mics = np.array([[0.0, 0.0], [4.0, 0.0], [0.0, 3.0], [4.0, 3.0]])
         source = np.array([5.5, 3.8])
@@ -186,6 +255,15 @@ class FigureAlgorithmTest(unittest.TestCase):
         self.assertAlmostEqual(grid_y[peak], source[1], delta=0.06)
         self.assertGreaterEqual(float(score.min()), 0.0)
         self.assertLessEqual(float(score.max()), 1.0 + 1e-12)
+
+    def test_srp_candidate_distance_lines_end_at_candidate(self):
+        microphones = np.array(
+            [[0.0, 0.0], [4.0, 0.0], [0.0, 3.0], [4.0, 3.0]])
+        candidate = np.array([2.214, 2.1])
+        segments = figures.candidate_distance_segments(microphones, candidate)
+        np.testing.assert_allclose(segments[:, 0, :], microphones)
+        np.testing.assert_allclose(
+            segments[:, 1, :], np.broadcast_to(candidate, microphones.shape))
 
     def test_wpe_regressor_has_exact_delay_and_length(self):
         samples = np.arange(12, dtype=float)[None, :]
@@ -205,23 +283,75 @@ class FigureAlgorithmTest(unittest.TestCase):
 
     def test_particle_filter_resamples_only_below_neff_threshold(self):
         observations = np.array([30.0, 31.0, 90.0, 32.0, 33.0])
-        _, neff, resampled, reflected = figures.particle_filter_doa(
+        _, neff, resampled, reflection_fraction = figures.particle_filter_doa(
             observations, np.random.default_rng(123), n_particles=100,
             observation_std=2.0, resample_fraction=0.5)
         np.testing.assert_array_equal(resampled, neff < 50.0)
         self.assertTrue(np.all((neff >= 1.0) & (neff <= 100.0 + 1e-12)))
-        self.assertEqual(reflected.dtype, np.dtype(bool))
+        self.assertEqual(reflection_fraction.dtype, np.dtype(float))
+        self.assertTrue(np.all((reflection_fraction >= 0.0)
+                               & (reflection_fraction <= 1.0)))
 
     def test_particle_filter_predicts_through_missing_observations(self):
         observations = np.array([30.0, 31.0, np.nan, np.nan, 34.0])
-        estimates, neff, resampled, reflected = figures.particle_filter_doa(
+        estimates, neff, resampled, reflection_fraction = figures.particle_filter_doa(
             observations, np.random.default_rng(124), n_particles=300)
         self.assertTrue(np.all(np.isfinite(estimates)))
         self.assertTrue(np.all((estimates >= 0.0) & (estimates <= 120.0)))
         self.assertTrue(np.all(np.isfinite(neff)))
         self.assertFalse(bool(resampled[2]))
         self.assertFalse(bool(resampled[3]))
-        self.assertEqual(reflected.shape, observations.shape)
+        self.assertEqual(reflection_fraction.shape, observations.shape)
+
+    def test_particle_filter_prior_does_not_look_ahead_to_future_observation(self):
+        first = figures.particle_filter_doa(
+            [np.nan, 20.0], np.random.default_rng(125), n_particles=200)
+        second = figures.particle_filter_doa(
+            [np.nan, 100.0], np.random.default_rng(125), n_particles=200)
+        self.assertEqual(first[0][0], second[0][0])
+        self.assertEqual(first[1][0], second[1][0])
+
+    def test_particle_filter_log_weights_survive_extreme_zero_clutter_case(self):
+        estimates, neff, _, reflection_fraction = figures.particle_filter_doa(
+            [1e6, -1e6], np.random.default_rng(126), n_particles=100,
+            observation_std=1e-6, clutter_probability=0.0)
+        self.assertTrue(np.all(np.isfinite(estimates)))
+        self.assertTrue(np.all(np.isfinite(neff)))
+        self.assertTrue(np.all(np.isfinite(reflection_fraction)))
+
+    def test_particle_filter_survives_finite_extreme_and_boundary_observations(self):
+        observations = np.array([1e300, -1e300, 0.0, 120.0])
+        for clutter_probability in (0.0, 0.2):
+            result = figures.particle_filter_doa(
+                observations, np.random.default_rng(128), n_particles=128,
+                observation_std=1.0, clutter_probability=clutter_probability)
+            for values in (result[0], result[1], result[3]):
+                self.assertTrue(np.all(np.isfinite(values)))
+            self.assertTrue(np.all((result[0] >= 0.0) & (result[0] <= 120.0)))
+
+    def test_particle_filter_all_missing_observations_are_prediction_only(self):
+        observations = np.full(6, np.nan)
+        estimates, neff, resampled, reflection_fraction = figures.particle_filter_doa(
+            observations, np.random.default_rng(129), n_particles=80)
+        self.assertTrue(np.all(np.isfinite(estimates)))
+        self.assertTrue(np.all(np.isfinite(neff)))
+        self.assertFalse(np.any(resampled))
+        self.assertTrue(np.all(np.isfinite(reflection_fraction)))
+
+    def test_particle_filter_rejects_invalid_parameters(self):
+        rng = np.random.default_rng(127)
+        invalid = [
+            ({"n_particles": 0}, [30.0]),
+            ({"observation_std": 0.0}, [30.0]),
+            ({"process_std": -1.0}, [30.0]),
+            ({"resample_fraction": 1.1}, [30.0]),
+            ({"angle_bounds": (20.0, 20.0)}, [30.0]),
+            ({}, [np.inf]),
+        ]
+        for kwargs, observations in invalid:
+            with self.subTest(kwargs=kwargs, observations=observations):
+                with self.assertRaises(ValueError):
+                    figures.particle_filter_doa(observations, rng, **kwargs)
 
     def test_reflect_interval_preserves_overshoot_and_reverses_velocity(self):
         position, velocity, hit = figures.reflect_interval(
@@ -318,6 +448,138 @@ class FigureAlgorithmTest(unittest.TestCase):
         indices = figures.systematic_resample(
             weights, np.random.default_rng(321))
         self.assertTrue(np.all((indices >= 0) & (indices < len(weights))))
+
+    def test_systematic_resampling_rejects_invalid_weights(self):
+        for weights in ([], [0.0, 0.0], [0.5, -0.1], [0.5, np.nan],
+                        [1e308, 1e308]):
+            with self.subTest(weights=weights):
+                with self.assertRaises(ValueError):
+                    figures.systematic_resample(
+                        weights, np.random.default_rng(322))
+
+    def test_pipeline_dependencies_keep_control_paths_separate(self):
+        dependencies = figures.pipeline_dependency_spec()
+        audio = dependencies["audio"]
+        information = dependencies["information"]
+        self.assertIn(("render", "render_tap"), audio)
+        self.assertIn(("render", "speaker"), audio)
+        self.assertIn(("render_tap", "aec"), audio)
+        self.assertIn(("speaker", "capture"), audio)
+        self.assertIn(("tracking", "bf"), information)
+        self.assertNotIn(("tracking", "gss_mask"), information)
+        self.assertIn(("diarization", "gss_mask"), information)
+        self.assertIn(("gss_mask", "scm"), information)
+        self.assertIn(("scm", "bf"), information)
+        self.assertIn(("wpe", "neural_separator"), audio)
+        self.assertEqual(
+            dependencies["control"],
+            {("activity_control", target)
+             for target in ("aec", "wpe", "tracking", "bf", "backend")})
+
+    def test_pipeline_draws_exactly_the_declared_dependencies(self):
+        figure = self.capture_figure(figures.fig_pipeline)
+        expected = {key: frozenset(value)
+                    for key, value in figures.pipeline_dependency_spec().items()}
+        self.assertEqual(figure._pipeline_edges, expected)
+        self.assertLessEqual(figure.get_size_inches()[0], figures.MAX_FIGURE_WIDTH)
+        text = " ".join(item.get_text() for item in figure.axes[0].texts)
+        self.assertIn("未方向归一 STFT", text)
+
+    def test_pipeline_node_text_stays_inside_boxes_and_layers_are_separate(self):
+        figure = self.capture_figure(figures.fig_pipeline)
+        renderer = figure.canvas.get_renderer()
+        for name, rectangle in figure._pipeline_node_rectangles.items():
+            with self.subTest(node=name):
+                box = rectangle.get_window_extent(renderer).expanded(1.03, 1.08)
+                text_box = figure._pipeline_node_texts[name].get_window_extent(renderer)
+                self.assertGreaterEqual(text_box.x0, box.x0)
+                self.assertLessEqual(text_box.x1, box.x1)
+                self.assertGreaterEqual(text_box.y0, box.y0)
+                self.assertLessEqual(text_box.y1, box.y1)
+        positions = {name: rectangle.get_y()
+                     for name, rectangle in figure._pipeline_node_rectangles.items()}
+        self.assertGreater(positions["far_end"], positions["diarization"])
+        self.assertGreater(positions["diarization"], positions["ssl"])
+        self.assertGreater(positions["ssl"], positions["capture"])
+        self.assertGreater(positions["capture"], positions["neural_separator"])
+
+    def test_fig13_has_room_between_panel_titles_and_previous_xlabels(self):
+        figure = self.capture_figure(figures.fig_gcc_reverb)
+        self.assertGreater(figure._panel_vertical_gap, 0.055)
+        renderer = figure.canvas.get_renderer()
+        for upper, lower in zip(figure.axes[:-1], figure.axes[1:]):
+            upper_xlabel = upper.xaxis.label.get_window_extent(renderer)
+            lower_title = lower.title.get_window_extent(renderer)
+            self.assertGreater(upper_xlabel.y0, lower_title.y1)
+
+    def test_fig20_lower_responsibility_notes_use_distinct_lanes(self):
+        figure = self.capture_figure(figures.fig_aec_pipeline)
+        renderer = figure.canvas.get_renderer()
+        first, second = figure._lower_annotation_lanes
+        self.assertNotAlmostEqual(first.get_position()[1], second.get_position()[1])
+        self.assertFalse(first.get_window_extent(renderer).overlaps(
+            second.get_window_extent(renderer)))
+
+    def test_fig21_footer_has_its_own_nonoverlapping_grid_row(self):
+        figure = self.capture_figure(figures.fig_wpe)
+        footer = figure._footer_axis.get_position()
+        last_plot = figure.axes[2].get_position()
+        self.assertLessEqual(footer.y1, last_plot.y0)
+        renderer = figure.canvas.get_renderer()
+        for text_item in figure._footer_axis.texts:
+            self.assertTrue(figure.bbox.contains(*text_item.get_window_extent(renderer).get_points()[0]))
+            self.assertTrue(figure.bbox.contains(*text_item.get_window_extent(renderer).get_points()[1]))
+
+    def test_fig6_has_no_floating_interrow_explanation_box(self):
+        figure = self.capture_figure(figures.fig_stft_cov)
+        all_text = " ".join(text_item.get_text()
+                            for axis in figure.axes for text_item in axis.texts)
+        all_text += " " + " ".join(text_item.get_text() for text_item in figure.texts)
+        self.assertNotIn("上排：", all_text)
+
+    def test_fig14_short_title_fits_inside_figure(self):
+        figure = self.capture_figure(figures.fig_srp_grid)
+        renderer = figure.canvas.get_renderer()
+        title = figure.axes[1].title
+        self.assertEqual(title.get_text(), "(b) SRP-PHAT 累积分数与峰值位置")
+        self.assertLessEqual(title.get_window_extent(renderer).x1, figure.bbox.x1)
+
+    def test_fig24_current_note_does_not_overlap_formula(self):
+        figure = self.capture_figure(figures.fig_wpe_frames)
+        renderer = figure.canvas.get_renderer()
+        current = figure._wpe_current_note.get_window_extent(renderer)
+        formula = figure._wpe_formula_note.get_window_extent(renderer)
+        self.assertFalse(current.overlaps(formula))
+
+    def test_all_declared_main_figure_widths_fit_final_page(self):
+        source = inspect.getsource(figures)
+        widths = [float(value) for value in re.findall(
+            r"figsize=\(\s*([0-9]+(?:\.[0-9]+)?)\s*,", source)]
+        self.assertGreaterEqual(len(widths), 26)
+        self.assertLessEqual(max(widths), figures.MAX_FIGURE_WIDTH)
+        numeric_font_sizes = [float(value) for value in re.findall(
+            r"fontsize\s*=\s*([0-9]+(?:\.[0-9]+)?)", source)]
+        self.assertTrue(numeric_font_sizes)
+        self.assertGreaterEqual(min(numeric_font_sizes), 11.0)
+        self.assertGreaterEqual(
+            min(figures.FS_SUP, figures.FS_TITLE, figures.FS_LABEL,
+                figures.FS_SMALL, figures.FS_TINY), 11.0)
+
+    def test_finalize_figure_enforces_key_text_sizes(self):
+        figure, axis = figures.plt.subplots(figsize=(12.0, 3.0))
+        axis.set_title("标题", fontsize=7)
+        axis.set_xlabel("横轴", fontsize=7)
+        axis.set_ylabel("纵轴", fontsize=7)
+        axis.text(0.5, 0.5, "关键注释", fontsize=7)
+        axis.plot([0, 1], [0, 1], label="图例")
+        axis.legend(fontsize=7)
+        figures.finalize_figure(figure)
+        self.assertLessEqual(figure.get_size_inches()[0], figures.MAX_FIGURE_WIDTH)
+        self.assertGreaterEqual(axis.title.get_fontsize(), figures.FS_TITLE)
+        self.assertGreaterEqual(axis.xaxis.label.get_fontsize(), figures.FS_LABEL)
+        self.assertTrue(all(text.get_fontsize() >= figures.FS_LABEL
+                            for text in axis.texts + axis.get_legend().get_texts()))
+        figures.plt.close(figure)
 
     def test_time_and_fft_correlation_are_independent_but_equivalent(self):
         rng = np.random.default_rng(456)

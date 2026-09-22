@@ -72,8 +72,41 @@ class BuildHelpersTest(unittest.TestCase):
         )
         self.assertEqual(
             build_pdf.outline_from_html(html),
-            [("导读", "ch-0", [("开始", "ch-0-s0")])],
+            [("导读", "ch-0", [("开始", "ch-0-s0", [])])],
         )
+
+    def test_outline_restores_third_level_only_for_configured_chapters(self):
+        html = (
+            '<div class="chap" id="ch-6"><h1>AEC</h1>'
+            '<h2 id="ch-6-sec-6-1">问题</h2>'
+            '<h3 id="ch-6-sec-u-a">FDKF</h3></div>'
+            '<div class="chap" id="ch-5"><h1>波束</h1>'
+            '<h2 id="ch-5-sec-5-1">问题</h2>'
+            '<h3 id="ch-5-sec-u-b">局部说明</h3></div></body>'
+        )
+        self.assertEqual(
+            build_pdf.outline_from_html(html),
+            [
+                ("AEC", "ch-6", [("问题", "ch-6-sec-6-1", [("FDKF", "ch-6-sec-u-a")])]),
+                ("波束", "ch-5", [("问题", "ch-5-sec-5-1", [])]),
+            ],
+        )
+
+    def test_pdf_outline_tree_keeps_three_level_parentage(self):
+        chapter, section, subsection = object(), object(), object()
+        self.assertEqual(
+            quality_check.pdf_outline_tree(
+                [chapter, [section, [subsection]]]
+            ),
+            [[chapter, [[section, [[subsection, []]]]]]],
+        )
+
+    def test_bookmark_title_match_allows_missing_mathjax_text_only(self):
+        title = r"7.1.1 $\Delta$ 与 $K$ 的参数换算"
+        self.assertTrue(quality_check.bookmark_title_matches_page(
+            title, "7.1.1  与  的参数换算\n先把帧数换成物理时间。"))
+        self.assertFalse(quality_check.bookmark_title_matches_page(
+            title, "7.1.2 在线 WPE 的递推更新"))
 
     def test_locate_falls_back_to_unique_title_prefix(self):
         pages = ["目录", "4.2 GCC-PHAT：\n对齐两段录音"]
@@ -81,6 +114,21 @@ class BuildHelpersTest(unittest.TestCase):
             build_pdf.locate(
                 pages,
                 "4.2 GCC-PHAT：“对齐两段录音，找最吻合的错位”",
+                0,
+                {0},
+            ),
+            1,
+        )
+
+    def test_locate_handles_mathjax_text_missing_from_pdf_extraction(self):
+        pages = [
+            "目录\n7.1.1 Delta 与 K 的参数换算",
+            "7.1.1  与  的参数换算\n先把帧数换成物理时间。",
+        ]
+        self.assertEqual(
+            build_pdf.locate(
+                pages,
+                r"7.1.1 $\Delta$ 与 $K$ 的参数换算",
                 0,
                 {0},
             ),
@@ -98,6 +146,13 @@ class BuildHelpersTest(unittest.TestCase):
         self.assertEqual(promoted.count("<h1"), 1)
         self.assertIn('<h2 id="sec-2">小节</h2>', promoted)
         self.assertEqual(heads, [(1, "篇名"), (2, "小节")])
+
+    def test_content_navigation_includes_promoted_source_h2(self):
+        heads = [(1, "篇名"), (2, "小节")]
+        nav, _ = build_site.sub_list(
+            "06_aec.html", heads, include_level1=True)
+        self.assertIn("篇名", nav)
+        self.assertIn("小节", nav)
 
     def test_source_digest_is_stable_length(self):
         self.assertRegex(build_pdf.source_digest(), r"^[0-9a-f]{12}$")
@@ -188,6 +243,37 @@ class BuildHelpersTest(unittest.TestCase):
         self.assertEqual(parser.heading_levels, [1, 3])
         self.assertEqual(parser.images, [("x.png", "阵列图")])
 
+    def test_site_nav_gate_accepts_all_current_page_fragments(self):
+        source = "## 章名\n### 6.1 主节\n#### 子节\n"
+        links = [f"06_aec.html#{primary}" for level, _title, primary in
+                 quality_check.semantic_heading_ids(source) if 2 <= level <= 4]
+        self.assertEqual(
+            quality_check.site_nav_fragment_issues(
+                "06_aec.html", "06_aec.md", source, links),
+            [],
+        )
+
+    def test_site_nav_gate_reports_missing_fragment(self):
+        source = "## 章名\n### 6.1 主节\n#### 子节\n"
+        title_id = next(primary for level, _title, primary in
+                        quality_check.semantic_heading_ids(source) if level == 2)
+        issues = quality_check.site_nav_fragment_issues(
+            "06_aec.html", "06_aec.md", source,
+            [f"06_aec.html#{title_id}", "06_aec.html#sec-6-1"],
+        )
+        self.assertEqual(len(issues), 1)
+        self.assertIn("导航缺少", issues[0])
+
+    def test_body_link_does_not_count_as_navigation(self):
+        source = "## 章名\n### 6.1 主节\n"
+        parser = quality_check.PageParser()
+        parser.feed('<main><a href="06_aec.html#sec-6-1">正文链接</a></main>'
+                    '<nav><a href="index.html">首页</a></nav>')
+        self.assertIn("06_aec.html#sec-6-1", parser.links)
+        self.assertNotIn("06_aec.html#sec-6-1", parser.nav_links)
+        self.assertTrue(quality_check.site_nav_fragment_issues(
+            "06_aec.html", "06_aec.md", source, parser.nav_links))
+
     def test_structure_count_ignores_code_and_detects_deleted_section(self):
         valid = "## 章名\n### 1.1 一\n```md\n### 代码\n```\n### 1.2 二\n"
         self.assertEqual(quality_check.section_count_from_markdown(valid), 2)
@@ -266,7 +352,8 @@ class BuildHelpersTest(unittest.TestCase):
         with mock.patch.object(quality_check, "EXPECTED_CHAPTERS", chapters):
             self.assertEqual(
                 quality_check.expected_outline(documents),
-                [("导读", ["1. 开始"]), ("第一章", ["1.1 问题"])],
+                [("导读", [["1. 开始", []]]),
+                 ("第一章", [["1.1 问题", []]])],
             )
 
     def test_source_content_expectation_tracks_heading_and_repeated_images(self):

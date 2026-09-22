@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 B · 路径地图与练习 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="e95b9ec33eb1"><style>
+<meta name="source-digest" content="fcda0545e596"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -62,6 +62,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
 <div class="chap cur" aria-current="page">附录 B · 路径地图与练习</div>
 <ul>
+<li><a href="13_appendix-guide.html#sec-u-636d9cd65b">附录 B：学习路径、领域地图、排错、练习与复现</a></li>
 <li><a href="13_appendix-guide.html#sec-13-1">13.1 研究生学习路径</a></li>
 <li><a href="13_appendix-guide.html#sec-13-2">13.2 领域地图：教材、会议、期刊与挑战赛</a></li>
 <li><a href="13_appendix-guide.html#sec-13-3">13.3 研究前沿速览（2024—）</a></li>
@@ -73,6 +74,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ul></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
+<li><a href="13_appendix-guide.html#sec-u-636d9cd65b">附录 B：学习路径、领域地图、排错、练习与复现</a></li>
 <li><a href="13_appendix-guide.html#sec-13-1">13.1 研究生学习路径</a></li>
 <li><a href="13_appendix-guide.html#sec-13-2">13.2 领域地图：教材、会议、期刊与挑战赛</a></li>
 <li><a href="13_appendix-guide.html#sec-13-3">13.3 研究前沿速览（2024—）</a></li>
@@ -216,7 +218,6 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><strong>预训练模型用作远场识别后端</strong>：CHiME-7/8（2023/2024）部分参赛系统使用 Whisper、WavLM 等预训练模型作为识别后端，也有系统保留 GSS（导引源分离，详见 §8.1）和解析波束。这些参赛系统只能说明相应架构在该届数据和评测中被实现，不能据此断言整个领域已转向某一种架构。<a href="https://arxiv.org/abs/2507.18161" title="citation">CHiME-7/8 综述预印本，arXiv:2507.18161</a></li>
 <li><strong>阵列无关（array-agnostic）系统</strong>：CHiME-8 的 DASR 系统报告描述了不固定阵列拓扑的设计。其泛化范围只能以报告中的训练阵列、测试设备、任务和打分脚本为边界。<a href="https://www.isca-archive.org/chime_2024/cornell24_chime.html" title="citation">CHiME-8 DASR</a></li>
 <li><strong>目标说话人提取（Target Speaker Extraction，TSE）</strong>：系统用注册语音、视觉或方向提示描述目标说话人，再从混合语音中提取相应音轨。AR 眼镜阵列和手机结构辅助方向提取提供了不同的条件输入形式。<a href="https://doi.org/10.1145/3772318.3790376" title="citation">SonicSieve, CHI 2026</a> TEA-PSE（ICASSP 2022，DOI 10.1109/ICASSP43922.2022.9747765；后续版本 arXiv:2303.07704）和 <a href="https://ieeexplore.ieee.org/document/10284995/" title="citation">CIENet</a> 等方法从注册语音提取说话人嵌入，再通过条件注入或帧级对齐估计目标掩码。§6.1.6 的个性化 AEC 与这类条件提取方法相关，但训练目标和回声参考结构仍需分别定义。</li>
-<li><strong>神经差分与方向滤波</strong>：把第 5 章的超指向或 DMA 结构参数化，再用数据学习延迟、增益或级联系数。这类“解析结构 + 学习参数”方法兼顾可解释性和适配能力，是小型阵列的一条活跃研究路线；是否优于掩码加解析波束，仍要按设备尺寸、延迟、训练数据和失配条件比较。</li>
 <li><strong>生成式语音增强与推理加速</strong>：SGMSE+（Richter et al., IEEE/ACM TASLP 2023）在复数 STFT 域使用基于随机微分方程的扩散模型；StoRM（Lemercier et al., IEEE/ACM TASLP 2023）把判别式回归与生成过程结合，以减少采样负担。<a href="https://github.com/sp-uhh/sgmse" title="citation">SGMSE+ 代码与论文</a>、<a href="https://github.com/sp-uhh/storm" title="citation">StoRM 代码与论文</a>。这类方法可能改善特定数据上的感知质量，也可能生成参考中不存在的语音细节，因此要同时评估听感、内容一致性和下游 WER。流匹配、蒸馏和一致性模型试图减少采样步数；FlowSep（ICASSP 2025）把整流流用于 VAE 隐空间中的文本查询通用音频分离，其结论不能直接外推到多通道语音增强。<a href="https://doi.org/10.1109/ICASSP49660.2025.10890129" title="citation">FlowSep, DOI 10.1109/ICASSP49660.2025.10890129</a> 多通道生成模型还需显式处理跨通道相位、空间协方差和实时性，目前与 §5.9 的掩码加解析波束属于不同成熟度的技术路线。</li>
 <li><strong>TF-GridNet 与复数谱映射骨干</strong>：TF-GridNet 的单通道会议版（Wang et al., ICASSP 2023）研究单通道说话人分离；期刊扩展（IEEE/ACM TASLP 2023）进一步覆盖噪声、混响和多通道条件。具体 SI-SDRi 必须按原文的数据版本、混合方式和表号引用，不能把两版结果混在一起。<a href="https://doi.org/10.1109/ICASSP49357.2023.10094992" title="citation">ICASSP 2023 单通道会议版</a>、<a href="https://doi.org/10.1109/TASLP.2023.3304482" title="citation">TASLP 2023 期刊扩展</a>。</li>
 <li><strong>几何无关前端的期刊研究</strong>：Kamo et al. 在 <em>Computer Speech &amp; Language</em> 95:101820（2026）中整理了几何无关的多说话人远场识别系统，并在真实会议数据上评估。<a href="https://www.sciencedirect.com/science/article/pii/S0885230825000452" title="citation">Kamo et al., <em>Computer Speech &amp; Language</em></a> 它与 CHiME-8 的系统共同说明，不固定阵列拓扑可以作为明确的系统设计目标；泛化范围仍以论文的训练阵列、测试设备和数据为边界。</li>
@@ -225,13 +226,13 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ol>
 <p>最小复现可沿用官方 SMS-WSJ 配置：两名说话人、3 通道、8 kHz，先下载作者提供的单说话人扩散模型，再运行 <code>separate.py</code>，设置 <code>num_speakers=2</code>、<code>n_channels=3</code>、<code>num_steps=400</code>，将输出与其 IVA 初始化按同一 SI-SDR 实现比较，同时记录总耗时和峰值显存。官方说明要求显存大于 7 GB；400 步扩散采样还嵌套相对 RIR 优化，因此它是离线研究候选，不应直接列入低延迟流式基线。<a href="https://proceedings.mlr.press/v267/xu25f.html" title="citation">ArrayDPS 论文（PMLR 267）</a>、<a href="https://github.com/ArrayDPS/ArrayDPS" title="citation">官方实现与复现命令</a>。</p>
 <span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-b74f82c81d">专栏：神经网络前端的泛化失配与四类对策</h3>
-<p>本专栏解释阵列或房间改变后性能下降的原因，并展开 13.3 第 2、7 条涉及的四类对策。</p>
+<p>本专栏解释阵列或房间改变后性能下降的原因，并展开 13.3 第 2、6 条涉及的四类对策。</p>
 <p>神经网络前端可能在训练阵列和房间上表现良好，换到新的几何、声学条件或任务后却明显退化，这就是<strong>泛化失配</strong>。下面把失配分为阵列、声学、任务与数据三类，再从数据、表示、训练和部署四方面讨论缓解方法。</p>
 <p><strong>失配三源</strong>：</p>
 <ol>
 <li><strong>阵列失配</strong>：训练与部署的几何、通道数、麦克风一致性或采样时钟不同。若网络依赖固定通道编号及其相位关系，更换阵列后这些特征不再成立，端到端波束尤其容易受影响（§5.9 第 2 条）。</li>
 <li><strong>声学失配</strong>：混响时间、噪声类型和说话人距离改变。训练数据未覆盖相应混响尾部或噪声结构时，掩码估计误差会传递到协方差和 MVDR 权重。</li>
-<li><strong>任务与数据失配</strong>：仿真未包含麦位误差、挡板散射或非平坦频响；训练与测试的语言不同；面向听感训练的增强模型被直接用于 ASR。最后一种情况还要检查生成式模型是否改变语音内容（§13.3 第 5 条）。</li>
+<li><strong>任务与数据失配</strong>：仿真未包含麦位误差、挡板散射或非平坦频响；训练与测试的语言不同；面向听感训练的增强模型被直接用于 ASR。最后一种情况还要检查生成式模型是否改变语音内容（§13.3 第 4 条）。</li>
 </ol>
 <p><strong>四类对策</strong>：</p>
 <ol>
@@ -240,7 +241,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><strong>训练</strong>：随机丢弃通道、置换通道顺序并扰动麦克风坐标，分别模拟通道失效、可变麦数和标定误差；网络结构还要满足相应的置换不变或等变性质。</li>
 <li><strong>部署</strong>：先做通道一致性和几何标定，再根据置信度、资源和失败模式选择模型或解析基线。模型分级只是候选架构，是否有净收益要在目标硬件上测量。</li>
 </ol>
-<p><strong>阵列无关系统的常见结构</strong>：各通道先独立提取特征，再用注意力或池化聚合成对通道顺序不敏感、可接受可变通道数的表示。中间量可选掩码、协方差或说话人活动；分离与波束部分采用 GSS 等解析方法，或使用满足几何无关要求的神经前端。后端再用预训练识别模型吸收残余失配。CHiME-8 DASR 与 §13.3 第 7 条的期刊系统给出了两类公开实例。复现时应画出实际流程图，并逐项标明训练数据、通道聚合方式、解析约束和测试阵列范围。</p>
+<p><strong>阵列无关系统的常见结构</strong>：各通道先独立提取特征，再用注意力或池化聚合成对通道顺序不敏感、可接受可变通道数的表示。中间量可选掩码、协方差或说话人活动；分离与波束部分采用 GSS 等解析方法，或使用满足几何无关要求的神经前端。后端再用预训练识别模型吸收残余失配。CHiME-8 DASR 与 §13.3 第 6 条的期刊系统给出了两类公开实例。复现时应画出实际流程图，并逐项标明训练数据、通道聚合方式、解析约束和测试阵列范围。</p>
 <p><strong>TAC 与 VarArray</strong>。TAC（Transform-Average-Concatenate）先对各通道独立变换，再跨通道平均并把聚合结果拼回各通道，从结构上支持可变通道数和通道置换。VarArray 把 TAC、Conformer 分离和通道间相位差特征用于几何无关的连续语音分离，并在 AMI 会议转写上报告端到端 sa-WER 结果。它们为后续跨设备系统提供了结构基础。<a href="https://doi.org/10.1109/ICASSP43922.2022.9746876" title="citation">VarArray, ICASSP 2022, DOI 10.1109/ICASSP43922.2022.9746876</a></p>
 <span id="sec-6" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-13-4">13.4 常见问题与调试指南</h2>
 <p>下面按“现象 → 优先检查项”列出八类常见问题。</p>
@@ -388,7 +389,12 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <tr>
 <td>$D_{t\vert t-1}(\vec x)=\gamma_t(\vec x)+\int p_S(\vec\xi)f_{t\vert t-1}(\vec x\mid\vec\xi)D_{t-1}(\vec\xi)\,d\vec\xi$</td>
 <td>PHD 预测：新生目标强度加存活目标的状态转移</td>
-<td>§9.3</td>
+<td>式(9-9)</td>
+</tr>
+<tr>
+<td>$D_t=(1-p_D)D^-+\sum_{z\in Z_t}\dfrac{p_Dg(z\mid x)D^-}{\kappa(z)+\int p_Dg(z\mid\xi)D^-(\xi)d\xi}$</td>
+<td>PHD 更新：漏检项加每条观测的“目标/杂波”归一化贡献</td>
+<td>式(9-10)</td>
 </tr>
 </tbody>
 </table></div>
@@ -475,7 +481,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ol>
 <p><strong>第 9 章（追踪）</strong></p>
 <ol start="13">
-<li>打开 <code>fig_tracking</code> 按题面改：当前基线使用 200 个粒子、$7^\circ$ 观测噪声、“高斯目标 + 均匀杂波”混合似然（杂波权重 0.1）、第 48～57 帧连续缺测、$0°～120°$ 有限搜索扇区的镜面反射边界，以及有效粒子数低于 $N/2$ 时的系统重采样。把生成观测的标准差和 <code>particle_filter_doa(..., observation_std=...)</code> 同时从 7° 改为 20°，分别用 $N=200,500,1000$ 运行；其他设置保持不变。记录轨迹 RMSE、<code>n_eff</code> 的最小值/中位数、<code>resampled</code> 为真的帧数、<code>reflected</code> 为真的帧数，并单独报告缺测段 RMSE。（提示：当前图用橙色竖线标出重采样帧，用紫色叉号标出预测粒子触及反射边界的帧，但没有绘制 <code>n_eff</code> 曲线；需要曲线时应增加子图。只改一处噪声参数是观测模型失配实验。粒子数增加是否改善结果，应由这些记录判断。）</li>
+<li>打开 <code>fig_tracking</code> 按题面改：当前基线使用 200 个粒子、$7^\circ$ 观测噪声、“高斯目标 + 均匀杂波”混合似然（杂波权重 0.1）、第 48～57 帧连续缺测、$0°～120°$ 有限搜索扇区的镜面反射边界，以及有效粒子数低于 $N/2$ 时的系统重采样。把生成观测的标准差和 <code>particle_filter_doa(..., observation_std=...)</code> 同时从 7° 改为 20°，分别用 $N=200,500,1000$ 运行；其他设置保持不变。记录轨迹 RMSE、<code>n_eff</code> 的最小值/中位数、<code>resampled</code> 为真的帧数、<code>reflection_fraction</code> 的最大值/中位数与不低于 5% 的帧数，并单独报告缺测段 RMSE。（提示：当前图用橙色竖线标出重采样帧，用紫色叉号标出反射粒子比例不低于 5% 的帧，但没有绘制 <code>n_eff</code> 或反射比例曲线；需要曲线时应增加子图。只改一处噪声参数是观测模型失配实验。粒子数增加是否改善结果，应由这些记录判断。）</li>
 </ol>
 <p><strong>第 10 章（工程实现）</strong></p>
 <ol start="14">
@@ -492,7 +498,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ol>
 <span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-13-7">13.7 复现说明</h2>
 <p>下面两条命令用于重新生成全部 33 张图。</p>
-<p>绘图脚本都在 <code>scripts/</code> 里。在报告根目录跑两个命令，结果进 <code>figures/</code>，共 33 张图。运行时间随硬件、软件版本和负载变化；报告耗时时应同时记录这些条件、运行次数和统计方式：</p>
+<p>绘图脚本都在 <code>scripts/</code> 里。在仓库根目录跑两个命令，结果进 <code>figures/</code>，共 33 张图。运行时间随硬件、软件版本和负载变化；报告耗时时应同时记录这些条件、运行次数和统计方式：</p>
 <pre><code class="language-bash">.venv/bin/python scripts/make_figures.py      # 图 1~25、图 33
 .venv/bin/python scripts/make_aec_figures.py  # 图 26~32（回声消除专题）
 </code></pre>

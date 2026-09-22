@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 A · 符号术语数学 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="e95b9ec33eb1"><style>
+<meta name="source-digest" content="fcda0545e596"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -61,6 +61,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
 <div class="chap cur" aria-current="page">附录 A · 符号术语数学</div>
 <ul>
+<li><a href="12_appendix-symbols-math.html#sec-u-78b6668a18">附录 A：符号、术语与数学基础</a></li>
 <li><a href="12_appendix-symbols-math.html#sec-12-1">12.1 符号表</a></li>
 <li><a href="12_appendix-symbols-math.html#sec-12-2">12.2 术语词典</a></li>
 <li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-u-e2e1cb6329">信号与数学基础</a></li>
@@ -74,6 +75,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
+<li><a href="12_appendix-symbols-math.html#sec-u-78b6668a18">附录 A：符号、术语与数学基础</a></li>
 <li><a href="12_appendix-symbols-math.html#sec-12-1">12.1 符号表</a></li>
 <li><a href="12_appendix-symbols-math.html#sec-12-2">12.2 术语词典</a></li>
 <li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-u-e2e1cb6329">信号与数学基础</a></li>
@@ -92,8 +94,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-78b6668a18">附录 A：符号、术语与数学基础</h1>
 <p>本附录沿用 12.1～12.3 的节号，便于与正文既有引用对应；下一篇是附录 B。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-12-1">12.1 符号表</h2>
-<p>约定同 §2.3：<strong>斜体 = 标量，头顶箭头 = 向量，加粗大写 = 矩阵</strong>；$^H$ 共轭转置、$^\top$ 转置、$\hat{\ }$ 估计值；$X(f)$、$X(n,f)$ 类大写字母为逐频点复数<strong>标量</strong>（语音文献习惯）。本书采用前向傅里叶核 $e^{-\mathrm j2\pi ft}$。麦 1 位于 $x=0$，麦 2 位于 $+x$；正横为 0°，正角朝麦 2；$\vec u$ 从阵列指向声源，传播方向为 $-\vec u$。</p>
-<p><strong>字母复用</strong>（与 §2.3 一致）：受文献惯例所限，$k$ 可表示频点索引、波数或 WPE 的滞后帧号；$D$ 可表示阵列孔径或 PHD 强度函数；$\lambda$ 可表示波长、WPE 功率谱或矩阵特征值；$K$ 可表示声源数或 WPE 预测阶数；$s$ 可表示源信号或追踪状态。具体含义以所在公式的定义为准。</p>
+<p>约定同 §2.3：<strong>斜体 = 标量，头顶箭头 = 向量，加粗大写 = 矩阵</strong>；$^H$ 共轭转置、$^\top$ 转置、$\hat{\ }$ 估计值；$X(f)$、$X(f_k,\ell)$ 类大写字母为逐频点复数<strong>标量</strong>（语音文献习惯）。本书采用前向傅里叶核 $e^{-\mathrm j2\pi ft}$。麦 1 位于 $x=0$，麦 2 位于 $+x$；正横为 0°，正角朝麦 2；$\vec u$ 从阵列指向声源，传播方向为 $-\vec u$。</p>
+<p><strong>字母复用</strong>（与 §2.3 一致）：受文献惯例所限，$k$ 可表示频点索引、波数或 WPE 的滞后帧号；$D$ 可表示阵列孔径或 PHD 强度函数；$\lambda$ 可表示波长、WPE 功率谱或矩阵特征值；$K$ 可表示声源数或 WPE 预测阶数；$s$ 可表示源信号或追踪状态。具体含义以所在公式的定义为准。需要区分 STFT 网格时，本书用 $k$ 表示频点索引、$f_k=kf_s/N$ 表示对应的 Hz 频率、$\ell$ 表示帧索引；连续时间仍用 $t$，离散采样索引用 $n$。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
@@ -107,8 +109,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>麦数、阵元间距、阵列孔径</td>
 </tr>
 <tr>
-<td>$c$, $\lambda$, $f$</td>
-<td>声速（≈343 m/s）、波长、频率</td>
+<td>$c$, $\lambda$, $f$，$f_k$</td>
+<td>声速（≈343 m/s）、波长、连续物理频率（Hz）、第 $k$ 个 DFT/STFT 频点对应的物理频率 $f_k=kf_s/N$</td>
 </tr>
 <tr>
 <td>$\theta$, $\theta_0$</td>
@@ -123,8 +125,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>第 $m$ 个麦克风的位置向量、声源位置向量</td>
 </tr>
 <tr>
-<td>$t$, $n$, $f$, $k$, $T$</td>
-<td>连续时间、帧或采样索引、频率或频点、算法内索引、快拍数；具体含义看所在公式</td>
+<td>$t$, $n$, $k$, $\ell$, $T$</td>
+<td>连续时间、离散采样索引、频点索引、帧索引、用于统计的快拍数；WPE 等局部公式若复用 $k$ 作滞后号，会在公式旁重新定义</td>
 </tr>
 <tr>
 <td>$\psi$</td>
@@ -475,7 +477,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>HRTF</td>
-<td>头相关传递函数：头与耳廓对声音的方向相关滤波，人类分辨前后/上下的依据（§1.1）</td>
+<td>头相关传递函数：头、耳廓和躯干对声音的方向相关滤波；其谱形是判断俯仰和减少前后混淆的重要线索之一，并非唯一线索（§1.1）</td>
 </tr>
 <tr>
 <td>鸡尾酒会效应</td>

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 6 章 · 声学回声消除（AEC） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="e95b9ec33eb1"><style>
+<meta name="source-digest" content="fcda0545e596"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -55,6 +55,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="05_beamforming.html">第 5 章 · 波束形成</a></div>
 <div class="chap cur" aria-current="page">第 6 章 · 声学回声消除（AEC）</div>
 <ul>
+<li><a href="06_aec.html#sec-u-44e7e35bd3">6. 声学回声消除（Acoustic Echo Cancellation，AEC）</a></li>
 <li><a href="06_aec.html#sec-6-1">6.1 AEC 的模型、算法与实现</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-6-1-1">6.1.1 回声从哪来：系统模型与四种场景</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-6-1-2">6.1.2 线性自适应滤波：NLMS 回顾</a></li>
@@ -83,6 +84,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
+<li><a href="06_aec.html#sec-u-44e7e35bd3">6. 声学回声消除（Acoustic Echo Cancellation，AEC）</a></li>
 <li><a href="06_aec.html#sec-6-1">6.1 AEC 的模型、算法与实现</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-6-1-1">6.1.1 回声从哪来：系统模型与四种场景</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-6-1-2">6.1.2 线性自适应滤波：NLMS 回顾</a></li>
@@ -137,7 +139,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><strong>路径时变</strong>：人走动、门开关、设备被挪动都会改变等效路径 $h_n[\ell]$；参考具有足够激励时，滤波器需要更新以跟踪这些变化。<a href="https://doi.org/10.1109/79.774933" title="citation">Breining et al., IEEE Signal Processing Magazine 1999</a></li>
 </ol>
 <blockquote>
-<p><strong>边栏：温度如何搬动回声。</strong> 声速随温度变化 $v\approx331+0.61\,T$ m/s（$T$ 为摄氏温度）：温度每变化 1 °C，声速改变约 0.18%；变化 10 °C，就是约 1.8%。扬声器到麦克风 1 m 的直达路径约 3 ms，10 °C 的温漂把所有反射的到达时间整体搬动约 50 µs——在 16 kHz 采样下不足一个样本，但高频段的相位已经转过可观角度。Elko、Diethorn 与 Gänsler（IWAENC 2003）的实测表明，缓慢的热漂移会侵蚀已收敛 AEC 的性能——这是“路径时变”比较隐蔽、也无法靠出厂标定消除的一种形式。<a href="https://www.frontiersin.org/journals/signal-processing/articles/10.3389/frsip.2024.1426082/full" title="citation">Frontiers in Signal Processing 2024（温度对 AEC 影响的实测研究）</a></p>
+<p><strong>边栏：温度如何搬动回声。</strong> 声速随温度变化 $v\approx331+0.61\,T$ m/s（$T$ 为摄氏温度）：温度每变化 1 °C，声速改变约 0.18%；变化 10 °C，就是约 1.8%。对固定 1 m 路径，传播时延从 20 °C 的 $1/343.2\approx2.914$ ms 变为 30 °C 的 $1/349.3\approx2.863$ ms，缩短约 51 µs，在 16 kHz 下约 0.82 个采样。反射路径长度各不相同，所以每条路径按自身长度产生不同的时延变化，并非整条冲激响应统一平移 50 µs。Elko、Diethorn 与 Gänsler（IWAENC 2003）的实测表明，缓慢的热漂移会侵蚀已收敛 AEC 的性能——这是“路径时变”比较隐蔽、也无法靠出厂标定消除的一种形式。<a href="https://www.iwaenc.org/proceedings/2003/data/0025.pdf" title="citation">Elko, Diethorn &amp; Gänsler, IWAENC 2003</a>、<a href="https://www.frontiersin.org/journals/signal-processing/articles/10.3389/frsip.2024.1426082/full" title="citation">Frontiers in Signal Processing 2024（温度对 AEC 影响的实测研究）</a></p>
 </blockquote>
 <p><strong>减法与乘法两类处理</strong>。AEC 有已知参考，可以估计回声的幅度和相位后做减法；相位估计错误时，减法也可能放大残余。降噪（§5.7）通常没有噪声波形参考，只能估计能量并施加 0～1 的增益。§6.1.9 的非线性处理（Nonlinear Processing，NLP）残余抑制和第 5 章的后置滤波都属于后一类方法。</p>
 <p><img alt="图27 AEC 基本结构" src="../figures/fig27_aec_concept.png" onerror="this.alt+='（图缺失）'" /></p>
@@ -226,6 +228,10 @@ W_m&=\hat W_m^-+K_mE_m,& P_m&=(1-K_mX_m)P_m^-.
 <p>$$\frac{\partial}{\partial\Psi}\left(\frac{|E|^2}{\Psi}+\log\Psi\right)=-\frac{|E|^2}{\Psi^2}+\frac{1}{\Psi}.$$</p>
 <p>令它为零得到单帧极大似然估计 $\hat\Psi=|E|^2$。单帧估计波动很大，还把未建模回声混入“观测噪声”，所以实际系统会做时间平滑、双讲判决或由网络估计 $\Psi$，不能直接把当前 $|E|^2$ 当成准确的近端语音功率。</p>
 <p>最小数例取 $X=1$、$P^-=1$。远端单讲时若 $\Psi=0.01$，$K=1/1.01\approx0.990$，残差的大部分用于更新；双讲时若 $\Psi=10$，$K=1/11\approx0.091$，更新量约为前者的 9.2%。这说明软门控会缩小更新，但并没有严格冻结。</p>
+<p><strong>完整的一轮标量递推。</strong> 取实数特例 $W_{m-1}=0.2$、$P_{m-1}=0.5$、$a=1$、$\Phi_m=0.1$、$X_m=2$、$D_m=1.4$、$\Psi_m=0.4$。预测得到 $\hat W_m^-=0.2$、$P_m^-=0.6$；先验残差 $E_m=1.4-2\times0.2=1.0$。于是</p>
+<p>$$K_m=\frac{0.6\times2}{2^2\times0.6+0.4}=\frac{1.2}{2.8}\approx0.4286,$$</p>
+<p>$$W_m=0.2+0.4286\times1.0\approx0.6286,\qquad P_m=(1-0.4286\times2)0.6\approx0.0857。$$</p>
+<p>用更新后的系数回看该观测，残差为 $1.4-2\times0.6286\approx0.1429$；它是后验检查，不应代替式(6-3)中用于更新的先验残差。若 $\Psi_m\to\infty$，则 $K_m\to0$，路径几乎不更新；若理想化地令 $\Psi_m\to0$ 且 $X_m\ne0$，标量模型会令 $K_m\to1/X_m$、$P_m\to0$。实际系统存在模型失配和数值误差，需要为方差设置正下限，不能把 $P_m=0$ 当作永久确定。</p>
 <p><strong>方法对比</strong>（描述相对趋势；具体计算量和收敛速度取决于滤波长度、输入谱、块长与实现，选型条件另见图32（c））：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -286,21 +292,19 @@ W_m&=\hat W_m^-+K_mE_m,& P_m&=(1-K_mX_m)P_m^-.
 <p><strong>非线性回声与双讲控制（§6.1.4～§6.1.5）</strong></p>
 <span id="sec-6" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-6-1-4">6.1.4 非线性回声：模型失配与处理方法</h3>
 <p><strong>非线性从哪来</strong>。微型扬声器的悬边与磁路在大振幅下不再线性（悬边变硬、音圈跑出匀强磁场区），功放或数字播放链在大音量下可能削顶（clipping），机壳与结构件也可能随声压振动产生二次辐射。Birkett &amp; Goubran（WASPAA 1995）实测讨论了免提终端中的非线性回声，Klippel（JAES 2006）从扬声器物理模型分析了相关机制。这里不作“最早提出”的优先权判断。</p>
-<p><strong>平台从哪里来</strong>。线性滤波器只能估计播放参考的线性组合。扬声器软削波产生的谐波和互调分量不在这个线性子空间内，因此即使路径估计已经收敛，残差仍会保留非线性分量。图19（a）是本书脚本设定下的单次仿真：线性路径与 <code>tanh</code> 软削波路径使用同一套 NLMS 参数，后者出现较低的平台。图中的平台高度只属于该输入幅度分布、软削波强度、路径和统计区间，不能外推为某类设备固定的 ERLE 上限。</p>
-<blockquote>
-<p><strong><code>tanh</code> 的最小手算。</strong> 图19和图31使用归一化映射 $y=\tanh(1.1x)/\tanh(1.1)$，使 $x=1$ 时 $y=1$。取 $x=0.3$，得到 $y\approx0.398$；取 $x=1.5$，得到 $y\approx1.160$。相对参考直线 $y=x$，两点的偏差分别约为 $+0.098$ 和 $-0.340$。该映射在零点附近的斜率为 $1.1/\tanh(1.1)\approx1.37$，所以 $y=x$ 只是图中的参考线，不是它的小信号切线。这两个采样点只说明映射具有曲率，不能推出整段语音的失真功率或 ERLE。平台数值还取决于输入分布、路径、最佳线性拟合和统计窗口。</p>
-</blockquote>
+<p><strong>平台从哪里来</strong>。线性滤波器只能估计播放参考的线性组合。扬声器软削波产生的谐波和互调分量不在这个线性子空间内，因此即使路径估计已经收敛，残差仍会保留非线性分量。图19（a）用一组独立定量仿真展示这项能力边界，图31则用另一组受控仿真和静态映射检查同一机制。两图都取 3 s 输入、256 抽头、步长 0.3 和驱动系数 1.1，但随机种子、参考序列的边界成形方式及具体输入和路径实现不同，属于两次独立单次仿真，ERLE 数值不能横向比较。每个平台高度只属于各自图示配置，不能外推为某类设备固定的 ERLE 上限。</p>
 <p><img alt="图19 AEC 的能力边界与算法版图" src="../figures/fig19_aec_landscape.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图19（a）比较该脚本配置下的线性路径与归一化 <code>tanh</code> 非线性路径。两条曲线的数值只适用于图中的输入、路径和统计区间，并由脚本在修正后的 current-first 回归向量下重新计算。（b）按模型假设和处理对象区分逐样本时域 LMS/NLMS、分区块频域 MDF/PBFDAF、状态空间频域卡尔曼滤波和残余抑制。横向位置不表示年代或性能排名；选择方法时要结合路径长度、变化速度、非线性程度和资源约束。</p>
-<p><img alt="图30 延迟对齐与双讲冻结" src="../figures/fig30_aec_delay_dtd.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图30（a）在前 4000 个样本上计算参考与麦克风信号的<strong>有符号互相关</strong>，最大正相关峰位于约 331 个采样。仿真设置的纯延迟是 300 个采样；参考是有色信号，路径又含多个正负抽头，因此相关峰是输入自相关与整条路径共同作用的结果，不能解释成“300 加某个主抽头位置”。若改取互相关绝对值、使用广义互相关（Generalized Cross-Correlation，GCC）加权或改变参考频谱，峰值也可能改变。（b）对齐后的远端单讲 ERLE 约为 28 dB，不对齐时约为 2 dB。本例的纯延迟超过 128 抽头滤波器的覆盖范围，因此差异较大。（c）比较双讲期间冻结和继续更新；后者会使路径估计偏离，双讲结束后需要重新收敛。排查时应分别检查延迟估计方法和双讲控制。</p>
+<p>图19（a）是独立定量仿真，只支持其图示配置下“非线性失配使线性 AEC 出现残差平台”这一结论；它与图31不是同一实验，不能比较两图的平台高低。（b）按模型假设和处理对象区分逐样本时域 LMS/NLMS、分区块频域 MDF/PBFDAF、状态空间频域卡尔曼滤波和残余抑制。横向位置不表示年代或性能排名；选择方法时要结合路径长度、变化速度、非线性程度和资源约束。</p>
+<blockquote>
+<p><strong><code>tanh</code> 的最小手算。</strong> 图31使用归一化映射 $y=\tanh(1.1x)/\tanh(1.1)$，使 $x=1$ 时 $y=1$。取 $x=0.3$，得到 $y\approx0.398$；取 $x=1.5$，得到 $y\approx1.160$。相对参考直线 $y=x$，两点的偏差分别约为 $+0.098$ 和 $-0.340$。该映射在零点附近的斜率为 $1.1/\tanh(1.1)\approx1.37$，所以 $y=x$ 只是图中的参考线，不是它的小信号切线。这两个采样点只说明映射具有曲率，不能推出整段语音的失真功率或 ERLE。平台数值还取决于输入分布、路径、最佳线性拟合和统计窗口。</p>
+</blockquote>
+<p><img alt="图31 非线性平台" src="../figures/fig31_aec_nonlinear.png" onerror="this.alt+='（图缺失）'" /></p>
+<p>图31（a）在当前仿真参数下比较线性路径与 $\tanh(1.1x)/\tanh(1.1)$ 非线性路径，后段均值由脚本按图示窗口计算，不是设备性能上限。（b）显示同一映射相对参考直线 $y=x$ 的曲率。图31的唯一职责是把“映射曲率—线性模型残差平台”对应起来；线性滤波器无法精确表示由此产生的非线性分量，因此只增加抽头或调整步长不能消除该模型失配。</p>
 <p><strong>出路①：把非线性建进模型</strong>。二阶 Volterra（沃尔泰拉）级数在线性核之外增加作用于 $x(n-i)x(n-j)$ 的二阶核。完整二阶核有 $O(L^2)$ 个系数，实用实现会限制核的结构或保留部分系数，以交换计算量和建模能力。Hammerstein/Wiener 级联则用“静态非线性 + 线性动态”两段建模；Nollett &amp; Jones（NSIP 1997）在该论文的实验配置下报告相对线性基线提高 8.4 dB。<a href="https://www.iwaenc.org/proceedings/1997/nsip97/pdf/author/ns970521.pdf" title="citation">Nollett &amp; Jones 1997</a> 这个数值与论文中的输入、失真模型、路径和统计口径绑定；当真实失真偏离模型假设时，需要重新测量收益。</p>
 <p><strong>出路②：换参考，绕开建模</strong>。非线性发生在播放链路里，可以把参考取在更接近扬声器的一端，使参考包含更多已经发生的失真。（a）电信号参考直接采样扬声器端子的电压或电流。Shah et al. 在论文所述的受控设备和测试条件下报告，相对原参考的改善约为 6～15 dB；该结果只覆盖实验中的电—气链路失真，不能外推到结构二次辐射或其他硬件。<a href="https://scholarsmine.mst.edu/context/ele_comeng_facwork/article/7649/viewcontent/Nonlinear_Acoustic_Echo_Cancellation_Using_Voltage_and_Current_Feedback.pdf" title="citation">Shah et al., IEEE/ACM TASLP 2015</a> （b）机械振动参考用加速度计采集振膜或机壳振动，需增加传感器和采集通道。两种做法都要比较新增参考带来的收益、噪声、同步误差和硬件代价。</p>
 <p><strong>出路③：神经网络</strong>。深度神经网络（Deep Neural Network，DNN）可以从数据学习残余抑制，适用条件和验证方法见 §6.1.6。</p>
 <span id="sec-7" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-6-1-5">6.1.5 双讲检测与自适应控制</h3>
 <p>双讲时，残差同时包含路径失配和近端语音。若仍按普通 NLMS 更新，近端语音会进入梯度并使路径估计偏离。双讲检测（Double-Talk Detection，DTD）用于降低步长或冻结更新。门限过于敏感会延迟路径跟踪，门限过于迟钝则可能导致误更新。</p>
-<p><img alt="图31 非线性平台" src="../figures/fig31_aec_nonlinear.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图31（a）在当前仿真参数下比较线性路径与 $\tanh(1.1x)/\tanh(1.1)$ 非线性路径，后段均值由脚本按图示窗口计算，不是设备性能上限。（b）显示同一映射相对参考直线 $y=x$ 的曲率。线性滤波器无法精确表示由此产生的非线性分量，因此只增加抽头或调整步长不能消除该模型失配。</p>
 <p><strong>常见 DTD 方法</strong>（DTD = 双讲检测，double-talk detection；NCC = 归一化互相关，normalized cross-correlation）：</p>
 <ol>
 <li><strong>Geigel 能量比较</strong>：设 $x_a$ 为已经补偿纯延迟、送入长度 $L$ 自适应滤波器的参考，可写成 $\xi(n)=|d(n)|/\max_{0\le j\lt L}|x_a(n-j)|$；高于阈值时判为双讲。经典示例阈值 $T=0.5$ 来自线路回声中混合器至少衰减 6 dB 的假设（$20\log_{10}2\approx6$ dB），不是任意声学回声路径的固定阈值。多抽头路径的若干项还会在同一样本叠加，单个参考峰值与麦克风回声峰值之间没有通用的 0.5 上界。若声学回声较强，远端单讲也可能被误判；若回声很弱，小声近端语音又可能漏检。因此该方法适合低成本初筛，不宜单独承担声学双讲检测。<a href="https://doi.org/10.1109/TCOM.1978.1094133" title="citation">Duttweiler, IEEE Transactions on Communications 1978</a>；</li>
@@ -313,6 +317,8 @@ W_m&=\hat W_m^-+K_mE_m,& P_m&=(1-K_mX_m)P_m^-.
 <p><strong>Geigel 判决的数字例子。</strong> 只为复算经典线路回声假设，设参考历史窗的峰值为 1.0，并把回声简化为单个衰减 6 dB 的副本，则远端单讲时 $|d|\approx0.5$，阈值 0.5 位于边界。这个数字没有包含声学多径叠加、背景噪声或参考失配，不能据此为声学 AEC 固定阈值。实际强回声可能在远端单讲时误判，弱回声叠加小声近端语音又可能漏检。</p>
 </blockquote>
 <p><strong>从二值冻结到连续步长</strong>。冻结是 0/1 开关，也可以根据残余回声与近端干扰的相对功率连续调整步长。Mäder、Puder &amp; Schmidt（<em>Signal Processing</em> 2000）推导的最优步长 $\alpha(k)$ 在 $[0,1]$ 内变化：回声占优时增大，双讲占优时减小。连续控制可减少硬切换造成的跟踪迟滞。</p>
+<p><img alt="图30 延迟对齐与双讲冻结" src="../figures/fig30_aec_delay_dtd.png" onerror="this.alt+='（图缺失）'" /></p>
+<p>图30属于本节的时序控制例。图30（a）在前 4000 个样本上计算参考与麦克风信号的<strong>有符号互相关</strong>，最大正相关峰位于约 331 个采样。仿真设置的纯延迟是 300 个采样；参考是有色信号，路径又含多个正负抽头，因此相关峰是输入自相关与整条路径共同作用的结果，不能解释成“300 加某个主抽头位置”。若改取互相关绝对值、使用广义互相关（Generalized Cross-Correlation，GCC）加权或改变参考频谱，峰值也可能改变。（b）对齐后的远端单讲 ERLE 约为 28 dB，不对齐时约为 2 dB。本例的纯延迟超过 128 抽头滤波器的覆盖范围，因此差异较大。（c）比较双讲期间冻结和继续更新；后者会使路径估计偏离，双讲结束后需要重新收敛。排查时应分别检查延迟估计方法和双讲控制。</p>
 <p><strong>神经 DTD</strong>。Ivry et al. 的深度变步长（Deep Variable Step-Size，DVSS，ICASSP 2022）用 DNN 预测逐帧步长。在该论文的数据、路径突变定义、成功判据和基线实现下，DVSS 的重收敛时间为 3.4 s、成功率为 95%，NLMS 加经典 DTD 基线分别为 7.9 s 和 58%。这些是论文实验结果，不是产品验收阈值；复现时要沿用论文的判据，部署时则按目标设备另定恢复条件。<a href="https://israelcohen.com/wp-content/uploads/2022/04/Deep_Adaptation_Control_for_Acoustic_Echo_Cancellation.pdf" title="citation">Ivry et al., ICASSP 2022</a></p>
 <p>§6.1.4～§6.1.5分别说明了非线性失配和双讲误更新。非线性残余可通过显式建模、改变参考位置或学习型抑制处理；双讲期间应根据检测置信度冻结或减小步长。由于输出含近端语音，双讲区间不能用普通 ERLE 评价。</p>
 <p><strong>学习型残余抑制、阵列顺序与评测（§6.1.6～§6.1.8）</strong></p>
@@ -453,7 +459,7 @@ W_m&=\hat W_m^-+K_mE_m,& P_m&=(1-K_mX_m)P_m^-.
 <span id="sec-10" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-6-1-8">6.1.8 评测体系与工程验收清单</h3>
 <p><strong>客观指标与适用边界</strong>。ERLE（echo return loss enhancement，回声返回损失增强）应在远端单讲的同一统计窗口内计算：</p>
 <p>$$\mathrm{ERLE}=10\log_{10}\frac{\sum_n |y(n)|^2}{\sum_n |e_{\mathrm{echo}}(n)|^2}\text{。}\tag{6-4}$$</p>
-<p>其中 $y=x*h$ 是进入消除器前的回声分量，$e_{\mathrm{echo}}$ 是消除后的回声分量。真实录音通常不能直接分离这两项，测试时可用远端单讲录音，以 AEC 输入和输出功率近似，但背景噪声会给分母设置下限。报告中应注明采样率、统计窗口、是否去除初始收敛段，以及输出是否包含残余抑制。双讲时输出含近端语音，ERLE 不再表示回声衰减，应改用双讲回声和近端语音质量指标。图18、图29和图31来自不同仿真配置，数值不能横向比较。</p>
+<p>其中 $y=x*h$ 是进入消除器前的回声分量，$e_{\mathrm{echo}}$ 是消除后的回声分量。真实录音通常不能直接分离这两项，测试时可用远端单讲录音，以 AEC 输入和输出功率近似，但背景噪声会给分母设置下限。报告中应注明采样率、统计窗口、是否去除初始收敛段，以及输出是否包含残余抑制。双讲时输出含近端语音，ERLE 不再表示回声衰减，应改用双讲回声和近端语音质量指标。图18、图19（a）、图29和图31来自不同仿真配置，数值不能横向比较。</p>
 <blockquote>
 <p><strong>ERLE 换算。</strong> 若残余回声能量与输入回声能量之比为 0.0063，ERLE 为 $10\log_{10}(1/0.0063)\approx22$ dB；比值为 0.0001 时，ERLE 为 40 dB。双讲段的输出还含近端语音，不能把总输出能量直接代入 ERLE 分母。</p>
 </blockquote>
@@ -622,7 +628,7 @@ W_m&=\hat W_m^-+K_mE_m,& P_m&=(1-K_mX_m)P_m^-.
 </tbody>
 </table></div>
 <p>在可访问的节点中，通常优先评估包含更多数字处理且时间戳可靠的较晚参考。若音量增益发生在抽头之后，线性区内播放增益变化会等比例改变等效路径增益；收敛时间和 ERLE 变化量需在目标实现上测量。抽头位于时变增益之前时，可以比较包络补偿与改取较晚参考两种方案。无线或外接播放链路还要实测延迟分布、突变和丢帧，并让延迟搜索与缓冲覆盖所需分位数，而不是采用固定抖动范围。</p>
-<p>云端无法取得末端参考时，可由端侧完成线性 AEC，云端只做声学回声抑制（AES，acoustic echo suppression）。</p>
+<p>云端若拿不到与麦克风时钟对齐、且能代表实际播放链路的参考，就不能直接运行依赖该参考的线性 AEC；此时可在端侧完成 AEC，云端再做无参考或弱参考的声学回声抑制（Acoustic Echo Suppression，AES）。另一种方案是上传对齐后的参考波形或特征，但会增加上行带宽、同步、隐私和故障恢复负担。选择哪种划分应同时记录参考取点、时间戳精度、传输抖动与端云总延迟，不能把“云端只做 AES”当作架构定律。</p>
 <span id="sec-14" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-6-1-12">6.1.12 测试覆盖与验收矩阵</h3>
 <p>下面的矩阵用于组织测试，不给出通用认证阈值。若项目受某项通信、车载或主观听测标准约束，应记录标准号、版本、测试序列、设备配置和适用 profile，并直接采用该版本规定的判据。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -993,9 +999,9 @@ W_m&=\hat W_m^-+K_mE_m,& P_m&=(1-K_mX_m)P_m^-.
 </tr>
 <tr>
 <td>图19</td>
-<td>（a）线性与归一化 <code>tanh</code> 路径对比；（b）按模型假设和处理对象分类</td>
+<td>（a）独立仿真线性/非线性场景；（b）按模型假设和处理对象分类</td>
 <td>§6.1.4、§6.1.6</td>
-<td>current-first 回归向量；数值只适用于该图的输入、路径和统计窗口</td>
+<td>（a）支持自身配置下的定量结论；与图31配置不同，ERLE 数值不可横向比较</td>
 </tr>
 <tr>
 <td>图20</td>
@@ -1012,14 +1018,14 @@ W_m&=\hat W_m^-+K_mE_m,& P_m&=(1-K_mX_m)P_m^-.
 <tr>
 <td>图30</td>
 <td>（a）有符号互相关的最大正峰约 331 采样；（b）对齐约 28 dB、不对齐约 2 dB；（c）冻结与继续更新</td>
-<td>§6.1.9、§6.1.5</td>
+<td>§6.1.5、§6.1.9</td>
 <td>设置的纯延迟为 300 个采样；相关峰还受有色参考和多径影响，且该延迟超过 128 抽头滤波器跨度</td>
 </tr>
 <tr>
 <td>图31</td>
 <td>（a）线性与归一化 <code>tanh</code> 非线性路径；（b）同一映射</td>
 <td>§6.1.4</td>
-<td>映射为 $\tanh(1.1x)/\tanh(1.1)$；后段均值由图示配置计算</td>
+<td>唯一职责是量化映射曲率与线性模型残差平台；后段均值由图示配置计算</td>
 </tr>
 <tr>
 <td>图32</td>

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 10 章 · 工程实现、评测与产业实践 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="e95b9ec33eb1"><style>
+<meta name="source-digest" content="fcda0545e596"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -59,6 +59,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="09_source-tracking.html">第 9 章 · 声源追踪</a></div>
 <div class="chap cur" aria-current="page">第 10 章 · 工程实现、评测与产业实践</div>
 <ul>
+<li><a href="10_engineering-practice.html#sec-u-5a84f59f93">10. 工程实现、评测与产业实践</a></li>
 <li><a href="10_engineering-practice.html#sec-10-1">10.1 参考链路与端到端延迟</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-1-1">10.1.1 延迟不能把每个模块的耗时直接相加</a></li>
 <li><a href="10_engineering-practice.html#sec-10-2">10.2 拾音、同步与增益</a></li>
@@ -83,6 +84,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
+<li><a href="10_engineering-practice.html#sec-u-5a84f59f93">10. 工程实现、评测与产业实践</a></li>
 <li><a href="10_engineering-practice.html#sec-10-1">10.1 参考链路与端到端延迟</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-1-1">10.1.1 延迟不能把每个模块的耗时直接相加</a></li>
 <li><a href="10_engineering-practice.html#sec-10-2">10.2 拾音、同步与增益</a></li>
@@ -112,7 +114,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>本章常用缩写如下：音频前端（Audio Front End，AFE）、声学回声消除（Acoustic Echo Cancellation，AEC）、加权预测误差去混响（Weighted Prediction Error，WPE）、噪声抑制（Noise Suppression，NS）、自动增益控制（Automatic Gain Control，AGC）、语音活动检测（Voice Activity Detection，VAD）、关键词唤醒（Keyword Spotting，KWS）、自动语音识别（Automatic Speech Recognition，ASR）、采样率偏移（Sampling Rate Offset，SRO）和实时因子（Real-Time Factor，RTF）。本章中的 RTF 均指实时因子；波束形成中的“目标相对传递函数”（relative transfer function）不缩写为 RTF，以免混淆。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-1">10.1 参考链路与端到端延迟</h2>
 <p>音频前端没有适用于所有产品的固定流水顺序。图 23 给出的是一条参考链路：</p>
-<p>多通道采集 → AEC → WPE → 定位与追踪 → 波束形成 → 单通道 NS/AGC → KWS/ASR。</p>
+<p>音频主链是“多通道采集 → AEC → WPE → 解析波束形成 → 单通道 NS/AGC → KWS/ASR”。定位与追踪读取多通道特征，只向解析波束提供带时间戳的方向状态；说话人分割约束 GSS/cACGMM 掩码，掩码与同一 WPE 阶段输出、未做方向归一化的多通道 STFT 一起形成目标/干扰 SCM，再送入波束形成。神经或连续语音分离（Continuous Speech Separation，CSS）是 WPE 后绕过解析波束的替代音频路径，不与“GSS 掩码—SCM—波束”合并成一个模块。</p>
 <p>它表达模块间的依赖，不表示每个项目都要启用全部模块。</p>
 <ul>
 <li>设备不播放声音，或不需要边播边听时，可以不启用 AEC。</li>
@@ -122,7 +124,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>VAD、远端活动检测和双讲检测是控制信号。它们不应画成主音频流中的串行处理框。</li>
 </ul>
 <p><img alt="图23 前端处理参考链路" src="../figures/fig23_pipeline.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图 23 按较完整的语音交互系统绘制。虚线表示控制关系或可选旁路，实线表示音频或特征的传递关系。图中 AEC 的“最先处理”是指：启用 AEC 时，应在会破坏播放参考与回声之间线性关系的 NS、AGC 等处理之前消除回声，并不表示任何系统都必须以 AEC 开头。确定实际模块后，还要重新核对各信号取点。</p>
+<p>图 23 按较完整的语音交互系统绘制。远端音频先经过混音、均衡和音量控制；AEC 的 render tap 取在这些播放处理之后、DAC/功放之前，扬声器经房间和机壳耦合回麦克风形成声学回路。虚线表示活动控制，实线表示音频、特征或统计量依赖。图中 AEC 的“最先处理”是指：启用 AEC 时，应在会破坏播放参考与回声之间线性关系的 NS、AGC 等处理之前消除回声，并不表示任何系统都必须以 AEC 开头。确定实际模块后，还要重新核对各信号取点。</p>
 <p>AEC 通常位于会改变回声路径关系的非线性处理之前。参考信号应覆盖实际播放链中的增益、均衡和混音变化。若参考取在这些处理之前，AEC 看到的参考与扬声器实际播放内容不一致。WPE、波束和 NS 的先后则要结合实现判断：多通道 WPE 需要多通道输入；单通道 WPE 可以放在波束之后；神经网络若联合完成波束与去混响，也不能再套用传统串行顺序。</p>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-1-1">10.1.1 延迟不能把每个模块的耗时直接相加</h3>
 <p>端到端延迟应沿实际关键路径测量，并分成五类：</p>
@@ -162,7 +164,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 </tbody>
 </table></div>
-<p>若若干模块在同一帧内串行执行，它们的计算时间要相加；并行分支取耗时最长的关键分支；流水重叠的等待只沿关键路径计一次。在线 WPE 只使用历史帧时，本身不需要未来帧，但其分帧、平滑和实现缓冲仍可能产生延迟。</p>
+<p>同一帧内有多个模块串行执行时，它们的计算时间要相加；并行分支取耗时最长的关键分支；流水重叠的等待只沿关键路径计一次。在线 WPE 只使用历史帧时，本身不需要未来帧，但其分帧、平滑和实现缓冲仍可能产生延迟。</p>
 <p>可把第 $p$ 条路径写成</p>
 <p>$$
 L_p=L_{\text{lookahead}}+L_{\text{buffer}}+L_{\text{compute}}+L_{\text{schedule}}+L_{\text{decode}},
@@ -170,7 +172,8 @@ L_p=L_{\text{lookahead}}+L_{\text{buffer}}+L_{\text{compute}}+L_{\text{schedule}
 \tag{10-1}
 $$</p>
 <p><img alt="图25 延迟预算示意" src="../figures/fig25_latency_budget.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图 25(a) 把“采集/帧就绪等待”示意为 32 ms，再与未来帧前瞻 16 ms、判决确认 25 ms、计算与调度 20 ms 组成一条 93 ms 的示例关键路径。这里的 32 ms 是工作表示例，不等同于 STFT 窗长，也不是所有 32 ms 窗都会增加 32 ms 算法等待；窗的左右对齐、声卡周期、帧移和模块何时开始计算都会改变实际值。这些数字只说明记账方法，没有包含图外可能存在的解码和交互延迟。实际系统应在声学输入与最终输出之间记录时间戳或回采脉冲，分别测量冷启动、稳定运行和最不利调度条件。把 STFT 窗长从 32 ms 改为 16 ms，也不等于必然省下 16 ms：只有依赖完整窗或未来样本的等待发生变化，关键路径才会缩短。</p>
+<p>图 25(a) 把“采集/帧就绪等待”示意为 32 ms，再与未来帧前瞻 16 ms、首个判决确认 25 ms、计算 14 ms 和调度 6 ms 组成一条 93 ms 的示例关键路径。这里的 32 ms 是工作表示例，不等同于 STFT 窗长，也不是所有 32 ms 窗都会增加 32 ms 算法等待；窗的左右对齐、声卡周期、帧移和模块何时开始计算都会改变实际值。图 25(b) 另行区分三条口径：连续增强音频只计其实际前瞻、缓冲、计算与调度；首个 KWS/ASR 判决还可能等待确认窗；端点 hangover 只延后“语音结束”事件，不应自动计入连续音频或首个判决。WPE 历史帧、追踪状态、递归协方差和因果 AGC 时间常数是历史状态，也不能机械当作未来等待。</p>
+<p>这些数字只说明记账方法，没有包含图外可能存在的解码和交互延迟。实际系统应在声学输入与最终输出之间记录时间戳或回采脉冲，分别测量冷启动、稳定运行和最不利调度条件。把 STFT 窗长从 32 ms 改为 16 ms，也不等于必然省下 16 ms：只有依赖完整窗或未来样本的等待发生变化，关键路径才会缩短。</p>
 <p>延迟报告不能只有平均值。稳定运行阶段至少给出中位数（p50）与尾延迟（如 p95、p99）、样本数和测量时长；冷启动另报模型加载、内存分配和状态填充所需时间。若系统存在不同设备、网络或调度模式，应分别报告，而不是把所有样本混成一个分位数。测量点也要写清，例如“音频驱动时间戳 → 第一块可播放增强 PCM”与“音频入口 → 首个 ASR token”是两条不同关键路径。</p>
 <p>参考接口可按下表检查：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -194,9 +197,9 @@ $$</p>
 <tr>
 <td>AEC</td>
 <td>本机播放可能进入麦克风</td>
-<td>麦克风、播放参考</td>
-<td>回声减弱的麦克风信号</td>
-<td>参考取点、整体延迟、双讲稳定性</td>
+<td>麦克风；播放处理之后、DAC/功放之前的 render tap；远端活动/双讲状态</td>
+<td>回声减弱的麦克风信号、残余回声与适配状态</td>
+<td>参考是否覆盖混音/EQ/音量、参考—麦克风整体延迟、削波、双讲稳定性</td>
 </tr>
 <tr>
 <td>WPE</td>
@@ -208,16 +211,23 @@ $$</p>
 <tr>
 <td>定位/追踪</td>
 <td>波束或应用需要方向/轨迹</td>
-<td>多通道信号</td>
-<td>方向、置信度、轨迹</td>
-<td>坐标系、时间戳、漏检与虚警</td>
+<td>多通道特征、活动状态、测量时间</td>
+<td>坐标系、测量/发布时间、状态与协方差、活动/存在概率、轨迹 ID 与有效期</td>
+<td>坐标变换、过期外推、漏检/虚警、ID 生命周期；接口细节见 §9.4</td>
 </tr>
 <tr>
-<td>波束形成</td>
-<td>需要空间选择性</td>
-<td>多通道信号、方向或目标相对传递函数</td>
-<td>增强信号</td>
-<td>失配、白噪声增益、协方差估计</td>
+<td>GSS 掩码/SCM/解析波束</td>
+<td>已知活动日志且需要多人空间增强</td>
+<td>分割活动标注、多通道 STFT、GSS 掩码、目标/干扰 SCM 或方向</td>
+<td>每目标增强信号、条件数/有效样本诊断</td>
+<td>diarization→掩码→SCM→BF 的依赖不能省略；掩码不是 SCM，方向只控制解析 BF</td>
+</tr>
+<tr>
+<td>神经分离/CSS/TSE</td>
+<td>重叠内容需多流，或有可靠目标条件</td>
+<td>多通道特征；可选注册语音、视觉或方向条件</td>
+<td>固定/动态输出流、单目标音轨</td>
+<td>左右上下文、首帧延迟、跨块排列、身份泄漏、域外泛化；它是解析波束的替代路径</td>
 </tr>
 <tr>
 <td>NS/AGC</td>
@@ -414,8 +424,13 @@ $$</p>
 </tr>
 <tr>
 <td>波束/分离</td>
-<td>尺度不变信号失真比（Scale-Invariant Signal-to-Distortion Ratio，SI-SDR）、下游词错误率（Word Error Rate，WER）或字错误率（Character Error Rate，CER）、串扰</td>
-<td>单个客观分不代表听感或内容正确</td>
+<td>尺度不变信号失真比（Scale-Invariant Signal-to-Distortion Ratio，SI-SDR）、串扰；多输出转写用 cpWER、ORC-WER 或 sa-WER</td>
+<td>单个客观分不代表听感或内容正确；多输出指标的排列/身份口径见第 11 章“多人重叠”决策表</td>
+</tr>
+<tr>
+<td>说话人分割</td>
+<td>分割错误率（Diarization Error Rate，DER）、Jaccard 错误率（Jaccard Error Rate，JER）</td>
+<td>必须固定 collar、重叠计分、参考区域和评分工具版本；分割正确不等于分离内容正确</td>
 </tr>
 <tr>
 <td>增强</td>
@@ -424,8 +439,8 @@ $$</p>
 </tr>
 <tr>
 <td>追踪</td>
-<td>最优子模式分配距离（Optimal Sub-Pattern Assignment，OSPA）、轨迹完整度、轨迹身份切换（ID switch）</td>
-<td>位置准确不等于身份连续</td>
+<td>最优子模式分配距离（Optimal Sub-Pattern Assignment，OSPA）、轨迹完整度、轨迹中断/碎片数、轨迹身份切换（ID switch）</td>
+<td>位置准确不等于身份连续；OSPA 的 $p,c$ 和角度距离见 §9.4</td>
 </tr>
 <tr>
 <td>系统</td>
@@ -434,7 +449,7 @@ $$</p>
 </tr>
 </tbody>
 </table></div>
-<p>OSPA 把定位误差与目标数量错误合成一个集合距离；经典 OSPA 本身不保留身份标签，因此不能用它代替轨迹身份切换指标。OSPA(2) 比较一段时间内的轨迹集合，仍应把身份连续性指标及轨迹关联规则另行说明。</p>
+<p>OSPA 把定位误差与目标数量错误合成一个集合距离；经典 OSPA 本身不保留身份标签，因此不能用它代替轨迹身份切换指标。报告还应给出轨迹中断/碎片数、ID 切换和关联规则，而不是用一个集合距离覆盖全部时序失败。</p>
 <p>ITU-T 已于 2024 年 1 月 5 日撤销 <a href="https://www.itu.int/rec/T-REC-P.862/en" title="citation">P.862（PESQ）</a>，并在官方页面指向 <a href="https://www.itu.int/rec/T-REC-P.863/en" title="citation">P.863（POLQA）</a>。因此，PESQ 适合在必须对照旧论文时按原条件复现；新的标准合规性表述不应把 P.862 写成现行建议书。P.863 是现行的客观语音质量建议书，但其适用范围和版本仍需随正式报告记录。</p>
 <p><a href="https://www.itu.int/rec/T-REC-P.835/en" title="citation">ITU-T P.835（07/2026）</a>用于对含噪语音处理系统做主观听测，分别评价语音信号（Signal，SIG）、背景噪声（Background，BAK）和总体效果（Overall，OVRL）。它适合区分“噪声是否减弱”和“语音是否受损”，但不能直接评价 DOA、轨迹身份或空间位置。正式报告应写明标准版本、听测材料、听众筛选、播放设备和统计区间。</p>
 <p><a href="https://www.itu.int/rec/T-REC-P.566/en" title="citation">ITU-T P.566（07/2026）</a>的官方条目将其列为“已生效，待发布”（in force / to be published）的单端机器学习多维语音质量模型。在正式文本发布前，本书不从二手资料扩写输出维度或评分细则。P.566 的单端客观预测不能代替 P.835 主观听测，也不评价 DOA、轨迹或空间位置。</p>

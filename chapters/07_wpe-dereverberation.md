@@ -32,7 +32,7 @@ MINT 说明已知房间响应时的逆滤波条件；倒谱方法说明单通道
 
 长混响可先评估 WPE；存在定向干扰时再结合波束形成；学习型后滤波还需满足算力和训练数据条件。多通道 WPE、波束形成与单通道后滤波可以组成一条候选链路，但实际顺序取决于统计量和通道数，见[第 10 章 §10.1](./10_engineering-practice.md#sec-10-1)。
 
-**REVERB 挑战赛中的 WPE**：REVERB 包含 8 通道、2 通道和单通道设置，仿真数据的混响时间约为 0.25～0.7 s，另含真实房间录音。Kinoshita 等在 *Computer Speech & Language* 2016 的总结表明，WPE 对远场识别的改善与通道数和数据条件有关；引用结果时必须注明通道数与测试集。图21（b）中音节结束后的横向能量拖尾，在（c）中得到减弱。
+**REVERB 挑战赛中的 WPE**：REVERB 包含 8 通道、2 通道和单通道设置，仿真数据的混响时间约为 0.25～0.7 s，另含真实房间录音。Kinoshita 等在 *EURASIP Journal on Advances in Signal Processing* 2016 的挑战总结表明，WPE 对远场识别的改善与通道数和数据条件有关；引用结果时必须注明通道数与测试集。[REVERB Challenge 官方任务说明](https://reverb2014.audiolabs-erlangen.de/index.html "citation")、[Kinoshita et al., 2016, §2、§4.1.1 与图5](https://doi.org/10.1186/s13634-016-0306-6 "citation") 图21（b）中音节结束后的横向能量拖尾，在（c）中得到减弱。
 
 **WPE 的直觉**：晚期混响在所选时频模型中被近似为可由历史观测线性预测的成分，再从当前帧减去该预测。这不要求语音或混响全程平稳；算法用随帧变化的功率 $\lambda(n,f)$ 表示语音非平稳性。预测时跳过最近的 $\Delta-1$ 帧，是为了降低直达声和早期反射进入预测项的程度。
 
@@ -172,11 +172,17 @@ $$X_m(n,f) = E_m(n,f) + \sum_{m'=1}^{M}\sum_{k=\Delta}^{\Delta+K-1} G^*_{m,m'}(k
 
 ![图21 WPE 去混响效果](../figures/fig21_wpe.png)
 
-图21 的横轴约为 0～1400 ms，纵轴约为 0～2.5 kHz，颜色表示相对能量的 dB 值。三幅语谱图在显示前都已补偿合成路径的 10 ms 直达传播时延，因此横轴表示同一对齐时间基准；（a）给出无混响参考，（b）加入合成混响后，音节结束处出现横向拖尾，（c）经本书单通道 WPE 示例处理后，拖尾减弱但仍有残留。脚本再按对齐后的无混响参考帧功率定义活动帧和安静帧；随后报告安静帧能量占比，以及活动帧相对该对齐参考、经复增益校准后的谱域归一化均方误差（Normalized Mean Square Error，NMSE）。前者下降而后者增大时，说明去拖尾与语音损伤之间存在权衡。正规方程使用 $\epsilon\operatorname{tr}(R)\mathbf I/K$ 的相对对角加载，图注给出 $\epsilon$。这些量来自同一个固定随机种子的合成例，不代表公开数据集上的平均性能。
+图21 的横轴约为 0～1400 ms，纵轴约为 0～2.5 kHz，颜色表示相对能量的 dB 值。三幅语谱图在显示前都已补偿合成路径的 10 ms 直达传播时延，因此横轴表示同一对齐时间基准；（a）给出无混响参考，（b）加入合成混响后，音节结束处出现横向拖尾，（c）经本书单通道 WPE 示例处理后，拖尾减弱但仍有残留。脚本再按对齐后的无混响参考帧功率定义活动帧和安静帧；随后报告安静帧能量占比，以及活动帧相对该对齐参考、经复增益校准后的谱域归一化均方误差（Normalized Mean Square Error，NMSE）。前者下降而后者增大时，说明去拖尾与语音损伤之间存在权衡。功率 $\lambda$ 使用居中的 5 帧移动平均，因此会读取左右各 2 帧，图中实现是离线而非因果；功率下限为该频点峰值的 $10^{-5}$。正规方程使用 $\epsilon\operatorname{tr}(R)\mathbf I/K$ 的相对对角加载，$\epsilon=10^{-6}$。合成混响的全卷积尾部被裁到 1.4 s 记录长度，图中指标只统计保留的对齐窗口，不覆盖被裁掉的尾部。这些量来自同一个固定随机种子的合成例，不代表公开数据集上的平均性能。
 
 **与其他模块的组合**：WPE 可先减弱晚期混响，掩码 MVDR 再抑制噪声与定向干扰。Drude et al.（Interspeech 2018）在其测试条件下报告了联合系统相对单模块的改善。WPE → GSS → MVDR/GEV 也可不使用神经分离网络，见第 8 章。Raj et al.（Interspeech 2023）展示了 GSS 的 GPU 并行实现；速度比较只能按其论文的硬件、数据、代码版本和计时范围解读，不将加速倍数外推到其他实现。开源实现 `nara_wpe` 的离线与在线接口需要分开选择。[Interspeech 2018 论文](https://www.isca-archive.org/interspeech_2018/drude18_interspeech.html "citation")、 [在线 WPE](https://www.isca-archive.org/interspeech_2017/kinoshita17_interspeech.html "citation")
 
 **在线版**分为按块更新和逐帧递推两类。块在线 WPE 在最近一段历史上估计统计量；递推 WPE 用遗忘因子逐帧更新相关矩阵和滤波器。短块提供的有效样本较少，$\lambda$ 和相关矩阵的方差更大；块过长又会增加等待时间，并使旧房间统计占比过高。在线实现还要处理初始化、矩阵正则化、静音冻结和路径突变，不能只把批处理迭代次数改成 1。DNN-WPE 可以用网络估计 $\lambda$，但是否优于传统估计取决于训练数据与测试房间是否匹配。
+
+**三帧因果递推小例。** 对单频点、单抽头实数特例，令历史回归量为 $x_t=X_{t-\Delta}$，遗忘因子 $\alpha=0.5$、$\lambda_t=1$，并按
+
+$$R_t=\alpha R_{t-1}+x_t^2/\lambda_t,\qquad r_t=\alpha r_{t-1}+x_tX_t/\lambda_t,\qquad g_t=r_t/(R_t+\delta)$$
+
+递推；本例为便于手算取 $\delta=0$，且 $R_0=r_0=0$。三帧 $(x_t,X_t)$ 依次为 $(1,0.8),(2,1.6),(1,1.0)$：第 1 帧 $R_1=1,r_1=0.8,g_1=0.8$；第 2 帧 $R_2=0.5\times1+4=4.5,r_2=0.5\times0.8+3.2=3.6,g_2=0.8$；第 3 帧 $R_3=0.5\times4.5+1=3.25,r_3=0.5\times3.6+1=2.8,g_3\approx0.8615$。流式输出应先用上一帧已有的 $g_{t-1}$ 预测当前拖尾，再用当前 $(x_t,X_t)$ 更新出 $g_t$ 供下一帧使用；初始化阶段可旁路。这个例子只演示因果统计量顺序，不包含交替更新的功率估计。$\lambda_t$ 也必须只用当前与历史信息，不能沿用图21的居中平滑；$\alpha\to1$ 记忆更长但跟踪更慢，$\alpha\to0$ 跟踪更快但估计方差增大，实际实现还需 $\delta>0$ 和静音冻结。[Drude et al., 2018，§4.2～§4.3](https://groups.uni-paderborn.de/nt/pubs/2018/ITG_2018_Drude_Paper.pdf "citation")、[Kinoshita et al., Interspeech 2017](https://www.isca-archive.org/interspeech_2017/kinoshita17_interspeech.html "citation")
 
 帧移为 8 ms 时，0.25 s 约含 31 帧，2 s 含 250 帧。这个换算可以用来估计统计样本量和块等待时间，但不能单独决定参数。起始值应在目标数据上同时检查拖尾衰减、语音失真、计算量和端到端延迟，再调整块长、遗忘因子、预测阶数和正则化强度。
 
@@ -205,7 +211,11 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 | 强加性噪声 | 模型里没有独立噪声项，$G$ 与 $\lambda$ 被污染 | 采用显式含噪模型或联合卷积波束形成；不能把单独去噪器的收益算作 WPE 本身 |
 | 大间距分布式阵列 | 统一 $\Delta$ 让参考与预测仍相关，输出失真 | 麦克风相关延迟：按到达时延给各通道定各自延迟（[Lohmann et al., ICASSP 2023](https://doi.org/10.1109/ICASSP49357.2023.10096992 "citation")） |
 
-启用 WPE 前应检查可用帧数、混响强度、加性噪声和通道时延。任一条件不满足时，应调整块长、模型或旁路策略。卷积功率最小无失真响应（Weighted Power minimization Distortionless response，WPD）把多帧、多通道滤波写进同一个无失真最小功率问题，可同时处理去混响与波束形成；它不是简单串联两个现成模块，也不能用条件不同的 WPE、MPDR 数字相加预测收益。原始 WPD 工作见 Nakatani 与 Kinoshita 2019，后续因式分解工作说明了它与 WPE、波束形成的关系。[Nakatani & Kinoshita, EUSIPCO 2019](https://arxiv.org/abs/1908.02710 "citation")、[Boeddeker et al., ICASSP 2020](https://doi.org/10.1109/ICASSP40776.2020.9054393 "citation")
+启用 WPE 前应检查可用帧数、混响强度、加性噪声和通道时延。任一条件不满足时，应调整块长、模型或旁路策略。卷积功率最小无失真响应（Weighted Power minimization Distortionless response，WPD）把多帧、多通道滤波写进同一个无失真最小功率问题，可同时处理去混响与波束形成；它不是简单串联两个现成模块，也不能用条件不同的 WPE、MPDR 数字相加预测收益。把当前多通道帧及延迟历史堆成 $\bar{\vec x}_t=[\vec x_t^\top,\vec x_{t-\Delta}^\top,\ldots]^\top$，并把目标导向约束扩展为 $\bar{\vec v}=[\vec v^\top,\vec0^\top,\ldots]^\top$，则加权协方差 $\bar{\mathbf R}=\sum_t\bar{\vec x}_t\bar{\vec x}_t^H/\lambda_t$ 下的解为
+
+$$\bar{\vec w}_{\mathrm{WPD}}=\frac{\bar{\mathbf R}^{-1}\bar{\vec v}}{\bar{\vec v}^H\bar{\mathbf R}^{-1}\bar{\vec v}}。$$
+
+最小维度检查：2 麦、1 个历史块时，$\bar{\vec x}$ 和 $\bar{\vec w}$ 都有 4 个元素。若 $\bar{\mathbf R}=\operatorname{diag}(2,1,4,4)$、$\vec v=[1,1]^\top$，则扩展约束向量为 $\bar{\vec v}=[1,1,0,0]^\top$，所以 $\bar{\mathbf R}^{-1}\bar{\vec v}=[0.5,1,0,0]^\top$，分母为 1.5，故 $\bar{\vec w}=[1/3,2/3,0,0]^\top$，并可直接验证 $\bar{\vec w}^H\bar{\vec v}=1$。这里当前帧与历史块没有互相关，历史权重退化为零，WPD 退化到当前帧的加权 MPDR（weighted minimum power distortionless response，加权最小功率无失真响应）；$\bar{\mathbf R}$ 仍是用 $1/\lambda_t$ 加权的观测协方差，不是噪声协方差。只有把优化中的矩阵明确取为目标缺席时的噪声协方差 $\mathbf R_{nn}$，同形闭式解才对应 MVDR。延迟历史与当前晚期混响之间存在可利用相关性时，历史权重才会参与去混响。该模型还假设希望保留的早期目标可由当前块的导向向量描述、$\lambda_t>0$ 且加载后的协方差可逆；若 $\lambda_t$ 或协方差使用未来帧，所得实现仍是离线的。原始 WPD 工作见 Nakatani 与 Kinoshita 2019，后续因式分解工作说明了它与 WPE、波束形成的关系。[Nakatani & Kinoshita, EUSIPCO 2019](https://arxiv.org/abs/1908.02710 "citation")、[Boeddeker et al., ICASSP 2020](https://doi.org/10.1109/ICASSP40776.2020.9054393 "citation")
 
 #### 7.1.1 $\Delta$ 与 $K$ 的参数换算
 

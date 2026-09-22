@@ -10,7 +10,7 @@
      ../figures/ 原样透传（combined.html 与 figures/ 同处仓库根的
      相邻目录，相对关系成立；单发 HTML 给别人会缺图，要分发请发 PDF）。
   4. 写 dist/combined.html（中间产物，git 忽略），调 Chrome 无头打印成
-     临时 PDF；页数和末页通过检查后原子替换发布件，再用 pypdf 原子写入两级书签。
+     临时 PDF；页数和末页通过检查后原子替换发布件，再用 pypdf 原子写入三级书签。
 
 用法（仓库根目录）：
     .venv/bin/python scripts/build_pdf.py                 # 全量：HTML + PDF + 书签
@@ -23,7 +23,7 @@
 或 which 回退）。公式经固定版本 MathJax 3.2.2 渲染——构建机必须联网。
 
 已知边界（诚实写在前面）：
-  - PDF 只有篇/节两级书签，更细的标题不进书签（合订本 TOC 同）。
+  - PDF 书签与合订本 TOC 包含篇/节两级；第 6、7 章再收入源 h4 作为第三级。
   - 页眉页脚关闭（--no-pdf-header-footer），PDF 内无页码——Chrome 无头打印不支持
     CSS 生成页码，要页码得换 WeasyPrint/Prince 链路。
   - 节书签定位靠"节标题文本首次出现页"逐章顺序搜索，标题串进正文会指偏，
@@ -65,6 +65,14 @@ CHAPTERS = [
     ("13_appendix-guide.md", "附录 B · 路径地图与练习"),
 ]
 
+# 第 6、7 章的源 h4 是较长算法章中不可省略的导航层。其余章节仍停在篇/节两级，
+# 避免把算例和局部说明无差别塞入印刷目录与 PDF 书签。
+PDF_THIRD_LEVEL_FILES = {"06_aec.md", "07_wpe-dereverberation.md"}
+PDF_THIRD_LEVEL_CHAPTER_IDS = {
+    f"ch-{index}" for index, (name, _label) in enumerate(CHAPTERS)
+    if name in PDF_THIRD_LEVEL_FILES
+}
+
 CSS = """
 @page{size:A4;margin:16mm 15mm 18mm}
 body{font-family:"STHeiti","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;max-width:860px;margin:0 auto;padding:24px}
@@ -88,6 +96,7 @@ h3{font-size:16.5px}h4{font-size:15px}
 .toc{columns:2;column-gap:28px;padding-left:20px}
 .toc>li{margin:5px 0;break-inside:avoid-column}
 .toc .sec{font-size:12.5px;color:#333;padding-left:18px}
+.toc .subsec{font-size:11.5px;color:#555;padding-left:18px}
 .anchor-alias{display:none}
 .book-end{text-align:center;color:#777;margin:36px 0 8px;font-size:13px}
 @media print{
@@ -274,7 +283,8 @@ def resolve_build_date(explicit=None):
 
 def build_html(build_date=None):
     """合 14 篇为单页 HTML。返回 (page, outline)，outline 为
-    [(章label, 章id, [(节title, 节id), ...]), ...]，供书签定位用。"""
+    [(章label, 章id, [(节title, 节id, [(子节title, 子节id), ...]), ...]), ...]，
+    供印刷目录和书签定位用。"""
     import markdown
     body_parts = []
     outline = []  # 章级
@@ -325,29 +335,46 @@ def build_html(build_date=None):
                            f"</h{int(m.group(1)) - 1}>"),
                 html, flags=re.S)
 
-        # 节标题编号：h2 进入目录和 PDF 书签。
+        # h2 进入目录和 PDF 书签；第 6、7 章的 h3 作为其前一 h2 的子节。
         secs = []
 
-        def tag_h2(m):
-            attrs, inner = m.group(1), m.group(2)
+        def tag_outline_heading(m):
+            level, attrs, inner = int(m.group(1)), m.group(2), m.group(3)
             match = re.search(r'\bid="([^"]+)"', attrs)
-            section_id = match.group(1) if match else f"ch-{i}-s{len(secs)}"
-            secs.append((plain_text(inner), section_id))
+            if level == 2:
+                fallback = f"ch-{i}-s{len(secs)}"
+            else:
+                parent_index = max(0, len(secs) - 1)
+                child_index = len(secs[-1][2]) if secs else 0
+                fallback = f"ch-{i}-s{parent_index}-{child_index}"
+            section_id = match.group(1) if match else fallback
+            if level == 2:
+                secs.append((plain_text(inner), section_id, []))
+            elif fname in PDF_THIRD_LEVEL_FILES and secs:
+                secs[-1][2].append((plain_text(inner), section_id))
             if match:
-                return f"<h2{attrs}>{inner}</h2>"
-            return f'<h2 id="{section_id}"{attrs}>{inner}</h2>'
+                return f"<h{level}{attrs}>{inner}</h{level}>"
+            return f'<h{level} id="{section_id}"{attrs}>{inner}</h{level}>'
 
-        html = re.sub(r"<h2([^>]*)>(.*?)</h2>", tag_h2, html, flags=re.S)
+        html = re.sub(r"<h([23])([^>]*)>(.*?)</h\1>", tag_outline_heading,
+                      html, flags=re.S)
         n_imgs += len(re.findall(r"<img ", html))
         body_parts.append(f'<div class="chap" id="ch-{i}"><h1>{label}</h1>{html}</div>')
         outline.append((label, f"ch-{i}", secs))
-    # 两级 HTML 目录
+    # 篇/节目录；第 6、7 章再显示第三级子节。
     toc = ['<section class="toc-page"><h1>目录</h1><ul class="toc">']
     for label, cid, secs in outline:
         toc.append(f"<li><a href=\"#{cid}\">{label}</a>")
         if secs:
             toc.append('<ul class="sec">')
-            toc.extend(f"<li><a href=\"#{sid}\">{t}</a></li>" for t, sid in secs)
+            for title, sid, subsecs in secs:
+                toc.append(f'<li><a href="#{sid}">{title}</a>')
+                if subsecs:
+                    toc.append('<ul class="subsec">')
+                    toc.extend(f'<li><a href="#{subid}">{subtitle}</a></li>'
+                               for subtitle, subid in subsecs)
+                    toc.append('</ul>')
+                toc.append('</li>')
             toc.append("</ul>")
         toc.append("</li>")
     toc.append("</ul></section>")
@@ -363,8 +390,11 @@ def build_html(build_date=None):
             "</head><body>" + cover + "\n".join(toc) + "\n".join(body_parts)
             + '<div class="book-end">全书完</div></body></html>')
     n_secs = sum(len(s) for _, _, s in outline)
+    n_subsecs = sum(len(subsecs) for _, _, secs in outline
+                    for _title, _sid, subsecs in secs)
     unique_imgs = len(set(re.findall(r'<img [^>]*src="([^"]+)"', page)))
-    print(f"合订：{len(CHAPTERS)} 篇 / {n_secs} 节 / {unique_imgs} 张唯一图片（{n_imgs} 次引用）")
+    print(f"合订：{len(CHAPTERS)} 篇 / {n_secs} 节 / {n_subsecs} 子节 / "
+          f"{unique_imgs} 张唯一图片（{n_imgs} 次引用）")
     return page, outline
 
 
@@ -398,6 +428,20 @@ def locate(texts, key, start, skip):
             continue
         if key in texts[i] or (nkey and nkey in norm(texts[i])):
             return i
+    # Chrome 打印后，PDF 文本提取有时会完全丢掉 MathJax 公式，只留下公式
+    # 两侧的文字。例如标题 ``7.1.1 $\Delta$ 与 $K$ 的参数换算`` 会变成
+    # ``7.1.1  与  的参数换算``。此时用“删去行内公式后的标题”定位；节号与
+    # 其余中文仍可避免误命中正文中的普通句子。
+    if "$" in key:
+        mathless = norm(re.sub(r"\$[^$]*\$", "", key))
+        if len(mathless) >= 8:
+            for i in range(start, len(texts)):
+                if i in skip:
+                    continue
+                for line in texts[i].split("\n"):
+                    nline = norm(line)
+                    if nline == mathless or nline.startswith(mathless):
+                        return i
     # Chrome/PDF 字体子集化有时会替换破折号或引号，长标题也可能被换行拆开。
     # 节号加标题前缀在同一章内足够唯一；只在完整匹配失败后使用，避免正文
     # 偶然出现标题后半句时抢先命中。
@@ -410,7 +454,7 @@ def locate(texts, key, start, skip):
 
 
 def add_bookmarks(pdf_path, outline):
-    """按 outline 写两级大纲（篇 + 节），校验完整后原子替换 PDF。"""
+    """按 outline 写三级大纲（篇 + 节 + 指定子节），校验后原子替换 PDF。"""
     try:
         from pypdf import PdfReader, PdfWriter
     except ImportError as e:
@@ -435,7 +479,7 @@ def add_bookmarks(pdf_path, outline):
     })
     from pypdf.generic import NameObject, TextStringObject
     writer._root_object.update({NameObject("/Lang"): TextStringObject("zh-CN")})
-    prev, n_ch, n_sec = -1, 0, 0
+    prev, n_ch, n_sec, n_subsec = -1, 0, 0, 0
     for label, _cid, secs in outline:
         page_no = locate(texts, label, prev + 1, toc_pages)
         if page_no is None:
@@ -444,18 +488,29 @@ def add_bookmarks(pdf_path, outline):
         parent = writer.add_outline_item(label, page_no)
         prev, n_ch = page_no, n_ch + 1
         sprev = page_no
-        for title, _sid in secs:
+        for title, _sid, subsecs in secs:
             # 从本节往后找标题出现处；注意用 sp 而不是 sp+1——一页可能挤多个节，
             # +1 会跳过同页后面的节。标题串进正文时会指偏（一般 ≤1 页）。
             sp = locate(texts, title, sprev, toc_pages)
             if sp is None:
                 continue
-            writer.add_outline_item(title, sp, parent=parent)
+            section_parent = writer.add_outline_item(title, sp, parent=parent)
             sprev, n_sec = sp, n_sec + 1
+            subprev = sp
+            for subtitle, _subid in subsecs:
+                subpage = locate(texts, subtitle, subprev, toc_pages)
+                if subpage is None:
+                    continue
+                writer.add_outline_item(subtitle, subpage, parent=section_parent)
+                subprev, n_subsec = subpage, n_subsec + 1
     expected_secs = sum(len(secs) for _, _, secs in outline)
-    if n_ch != len(outline) or n_sec != expected_secs:
+    expected_subsecs = sum(len(subsecs) for _, _, secs in outline
+                           for _title, _sid, subsecs in secs)
+    if (n_ch != len(outline) or n_sec != expected_secs
+            or n_subsec != expected_subsecs):
         raise SystemExit(
-            f"书签不完整：篇 {n_ch}/{len(outline)}，节 {n_sec}/{expected_secs}")
+            f"书签不完整：篇 {n_ch}/{len(outline)}，节 {n_sec}/{expected_secs}，"
+            f"子节 {n_subsec}/{expected_subsecs}")
     fd, tmp_name = tempfile.mkstemp(prefix="bookmarked-", suffix=".pdf", dir=pdf_path.parent)
     os.close(fd)
     tmp_path = Path(tmp_name)
@@ -466,8 +521,8 @@ def add_bookmarks(pdf_path, outline):
         os.replace(tmp_path, pdf_path)
     finally:
         tmp_path.unlink(missing_ok=True)
-    print(f"书签写入：{n_ch}/{len(outline)} 篇，{n_sec} 节")
-    return n_ch, n_sec
+    print(f"书签写入：{n_ch}/{len(outline)} 篇，{n_sec} 节，{n_subsec} 子节")
+    return n_ch, n_sec, n_subsec
 
 
 def find_chrome():
@@ -579,14 +634,23 @@ def check_figures():
 
 
 def outline_from_html(html):
-    """从合订 HTML 还原篇与节，供 --pdf-only 使用。"""
+    """从合订 HTML 还原篇、节与指定子节，供 --pdf-only 使用。"""
     outline = []
     blocks = re.findall(
         r'<div class="chap" id="(ch-\d+)"><h1>(.*?)</h1>(.*?)(?=<div class="chap"|</body>)',
         html, flags=re.S)
     for cid, label, body in blocks:
-        secs = [(plain_text(title), sid) for sid, title in re.findall(
-            r'<h2 id="([^"]+)">(.*?)</h2>', body, flags=re.S)]
+        secs = []
+        for match in re.finditer(r'<h([23])([^>]*)>(.*?)</h\1>', body, flags=re.S):
+            level, attrs, title = int(match.group(1)), match.group(2), match.group(3)
+            id_match = re.search(r'\bid="([^"]+)"', attrs)
+            if not id_match:
+                continue
+            heading_id = id_match.group(1)
+            if level == 2:
+                secs.append((plain_text(title), heading_id, []))
+            elif cid in PDF_THIRD_LEVEL_CHAPTER_IDS and secs:
+                secs[-1][2].append((plain_text(title), heading_id))
         outline.append((plain_text(label), cid, secs))
     return outline
 
@@ -650,8 +714,10 @@ def main(argv=None):
                 f"内嵌摘要 {embedded_digest or '缺失'}，当前源文件 {current_digest}。"
                 "请先运行完整构建或 --html-only。")
         outline = outline_from_html(html)
+        subsec_count = sum(len(subsecs) for _, _, secs in outline
+                           for _title, _sid, subsecs in secs)
         print(f"--pdf-only：从 HTML 反推 {len(outline)} 篇、"
-              f"{sum(len(s) for _, _, s in outline)} 节")
+              f"{sum(len(s) for _, _, s in outline)} 节、{subsec_count} 子节")
     print_pdf(combined, pdf, args.min_pages)
     if not args.no_bookmarks:
         add_bookmarks(pdf, outline)

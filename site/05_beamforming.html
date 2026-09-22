@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 5 章 · 波束形成 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="e95b9ec33eb1"><style>
+<meta name="source-digest" content="fcda0545e596"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -54,6 +54,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="04_doa-estimation.html">第 4 章 · 声源定位（DOA 估计）</a></div>
 <div class="chap cur" aria-current="page">第 5 章 · 波束形成</div>
 <ul>
+<li><a href="05_beamforming.html#sec-u-5b20e7dd9d">5. 波束形成（Beamforming）</a></li>
 <li><a href="05_beamforming.html#sec-5-1">5.1 统一问题表述</a></li>
 <li><a href="05_beamforming.html#sec-5-2">5.2 延迟求和波束形成器（Delay-and-Sum Beamformer，简称 DSB）：“合唱前先把大家对齐”</a></li>
 <li><a href="05_beamforming.html#sec-5-3">5.3 超指向的白噪声增益—指向性权衡</a></li>
@@ -82,6 +83,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
+<li><a href="05_beamforming.html#sec-u-5b20e7dd9d">5. 波束形成（Beamforming）</a></li>
 <li><a href="05_beamforming.html#sec-5-1">5.1 统一问题表述</a></li>
 <li><a href="05_beamforming.html#sec-5-2">5.2 延迟求和波束形成器（Delay-and-Sum Beamformer，简称 DSB）：“合唱前先把大家对齐”</a></li>
 <li><a href="05_beamforming.html#sec-5-3">5.3 超指向的白噪声增益—指向性权衡</a></li>
@@ -125,7 +127,7 @@ Q=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\mathbf{\Gamma}\vec{w}},\quad
 \mathrm{DI}=10\log_{10}Q\text{。}\tag{5-1}$$</p>
 <p>$G_{\mathrm{WNG}}$ 是阵列对<strong>通道独立白噪声</strong>的输出 SNR 线性增益，$Q$ 是指定弥散场模型下的输出 SNR 线性增益；式(5-1)明确区分了线性量和 dB 量。无失真约束下两个线性量的分子恒为 1，只需比较分母。4 元 $\lambda/2$ 线阵的算例见算例 2-2。图 15 的纵轴标成 WNG (dB) 和 DI (dB)，分别对应 $\mathrm{WNG}_{\mathrm{dB}}$ 与 DI。</p>
 <p>弥散场有两种常用理想模型：<strong>球面各向同性</strong>假定声音从三维各方向等概率到达，相干系数为 $\mathrm{sinc}$ 形；<strong>柱面各向同性</strong>只对水平面方位角积分，相干系数为零阶贝塞尔函数 $J_0(2\pi f d/c)$。<a href="https://israelcohen.com/wp-content/uploads/2018/05/JASA_Nov2008.pdf" title="citation">Habets, JASA 2008</a> 实际会议室中的说话人、反射和设备噪声通常不满足严格的柱面各向同性分布，应由测得的空间相干性或验证集结果选择模型，不能仅凭场景名称判定。</p>
-<p><strong>时域还是频域实现？</strong> 本章公式写在频域，每个频点各有一组权重 $\vec{w}(k)$。短时傅里叶变换（Short-Time Fourier Transform，STFT）把宽带语音分解为一组近似窄带的问题（§2.5），逐频点求解后再逆变换。对应的时域形式称为<strong>滤波求和（filter-and-sum）</strong>：每路麦克风经过一段有限冲激响应（Finite Impulse Response，FIR）滤波器后求和，DSB 是滤波器退化为纯延迟的特例；Frost 波束形成器则是时域自适应 LCMV 的经典实现。两种实现的计算量、算法延迟和约束实现方式取决于帧长、滤波器长度与硬件，不应只凭“时域”或“频域”作统一判断。</p>
+<p><strong>时域还是频域实现？</strong> 本章公式写在频域，每个频点各有一组权重 $\vec{w}(k)$。短时傅里叶变换（Short-Time Fourier Transform，STFT）把宽带语音分解为一组近似窄带的问题（§2.5），逐频点求解后再逆变换。对应的时域形式称为<strong>滤波求和（filter-and-sum）</strong>：每路麦克风经过一段有限冲激响应（Finite Impulse Response，FIR）滤波器后求和，DSB 是滤波器退化为纯延迟的特例；Frost 波束形成器则是时域自适应 LCMV 的经典实现。<a href="https://doi.org/10.1109/PROC.1972.8817" title="citation">Frost, <em>Proceedings of the IEEE</em>, 1972</a> 两种实现的计算量、算法延迟和约束实现方式取决于帧长、滤波器长度与硬件，不应只凭“时域”或“频域”作统一判断。</p>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-5-2">5.2 延迟求和波束形成器（Delay-and-Sum Beamformer，简称 DSB）：“合唱前先把大家对齐”</h2>
 <p>$\vec{w}_{DSB} = \frac{1}{M}\vec{a}(\theta_0)$：按导向矢量把各通道时延补偿后等权相加。若不除以 $M$，对齐后的目标幅度是单通道的 $M$ 倍；本章采用的 $1/M$ 归一化使目标响应为 1。这两种写法的输出 SNR 相同，但绝对幅度增益不同。</p>
 <p><strong>手算例子</strong>：2 麦相距 $d=4$ cm，声源与阵列正横方向夹角 $30°$（从正横量角，§2.1 约定，本章统一用此约定），频率 $f=1$ kHz。
@@ -139,8 +141,8 @@ Q=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\mathbf{\Gamma}\vec{w}},\quad
 2. 输出幅度就是等比数列求和（公比 $e^{\mathrm{j}\psi}$）：
 $$B(\psi) = \sum_{m=0}^{M-1} e^{\mathrm{j}m\psi} = e^{\mathrm{j}(M-1)\psi/2}\,\frac{\sin(M\psi/2)}{\sin(\psi/2)}$$
 3. 取模：$|B| = \left|\dfrac{\sin(M\psi/2)}{\sin(\psi/2)}\right|$。$\psi=0$（即 $\theta=\theta_0$）时分子分母都趋于零，取极限得最大值 $M$。离开目标方向后，该比值随 $\psi$ 周期变化，形成主瓣、零点和旁瓣；
-4. 主瓣边缘：第一个零点在 $M\psi/2 = \pi$，即 $\psi = 2\pi/M$。正横附近用 $\sin\theta\approx\theta$，离散均匀线阵的“零点到零点”宽度约为 $2\lambda/(Md)$，半功率宽度约为 $0.886\lambda/(Md)$；斜指向时还要按 §2.6 除以 $\cos\theta_0$。这里的 $Md$ 来自 $M$ 项离散阵因子，不等于阵列首尾的物理跨度 $D=(M-1)d$。用 $\lambda/D$ 表示的是孔径尺度估计；两者只在 $M$ 较大时接近，小阵列中必须说明采用哪一种口径。两种写法都表达同一趋势：阵元数或间距增大、波长减小时，主瓣变窄。</p>
-<p>均匀加权等价于空间域的矩形窗，其第一旁瓣相对主瓣约为 −13 dB。非均匀加权（如 Dolph–Chebyshev 加权）可按设计值降低旁瓣，但会展宽主瓣；因此必须在旁瓣电平、主瓣宽度和有效孔径之间权衡。</p>
+4. 主瓣边缘：第一个零点在 $M\psi/2 = \pi$，即 $\psi = 2\pi/M$。正横附近用 $\sin\theta\approx\theta$，并把主瓣内离散阵因子近似为连续孔径时，“零点到零点”宽度约为 $2\lambda/(Md)$，半功率宽度约为 $0.886\lambda/(Md)$；斜指向时还要按 §2.6 除以 $\cos\theta_0$。后一个系数是充分大 $M$、正横小角度下的近似值，小阵列应直接从上式数值求半功率点。这里的 $Md$ 来自 $M$ 项离散阵因子，不等于阵列首尾的物理跨度 $D=(M-1)d$。用 $\lambda/D$ 表示的是孔径尺度估计；两者只在 $M$ 较大时接近，小阵列中必须说明采用哪一种口径。两种写法都表达同一趋势：阵元数或间距增大、波长减小时，主瓣变窄。</p>
+<p>均匀加权等价于空间域的矩形窗。其第一旁瓣随 $M$ 增大才趋近相对主瓣约 −13.26 dB；例如按上面的离散阵因子复算，$M=3,4,8,16$ 时约为 −9.54、−11.30、−12.80、−13.15 dB，$M=2$ 则没有常规意义下的旁瓣。因此小阵列不能直接套用“−13 dB”。非均匀加权（如 Dolph–Chebyshev 加权）可按设计值降低旁瓣，但会展宽主瓣；因此必须在旁瓣电平、主瓣宽度和有效孔径之间权衡。</p>
 <p><strong>WNG 上限是怎么算出来的</strong>（两步，柯西-施瓦茨不等式）：
 1. 代入 DSB 权重 $\vec{w} = \vec{a}/M$：$G_{\mathrm{WNG}} = \dfrac{|\vec{w}^H\vec{a}|^2}{\|\vec{w}\|^2} = \dfrac{|\vec{a}^H\vec{a}/M|^2}{\|\vec{a}\|^2/M^2} = \dfrac{1}{M/M^2} = M$，所以 DSB 的 $\mathrm{WNG}_{\mathrm{dB}}=10\log_{10}M$ dB；
 2. 若各阵元目标响应幅度均为 1，则 $\|\vec a\|^2=M$。柯西-施瓦茨不等式给出 $|\vec{w}^H\vec{a}| \le \|\vec{w}\|\,\|\vec{a}\|$，所以满足精确无失真约束的权重有 $G_{\mathrm{WNG}}\le M$，等号在 $\vec w\propto\vec a$ 时成立。这个结论针对空间白噪声、精确导向矢量和单位幅度阵列流形；阵元增益不等、噪声相关或导向失配时不能直接套用。</p>
@@ -229,6 +231,9 @@ $$B(\psi) = \sum_{m=0}^{M-1} e^{\mathrm{j}m\psi} = e^{\mathrm{j}(M-1)\psi/2}\,\f
 <p><strong>后向零点怎样变成近似心形</strong>：设端射双麦间距为 $d$，某方向的传播时延差为 $\tau_p(\theta)$。该方向的频率响应可写成</p>
 <p>$$H(\omega,\theta)=1-g\,e^{-\mathrm j\omega[\tau+\tau_p(\theta)]}。$$</p>
 <p>选择 $g$ 和内部延迟 $\tau$ 可以令后向响应在设计频率或低频近似下为零。仅有这个零点还不能证明整个宽带方向图是心形。当 $\kappa d=2\pi fd/c\ll1$，把指数项作一阶展开，并用均衡器补偿差分器随频率上升的幅度后，归一化方向图才可在一段频带内近似“全向项加偶极项”；取相应系数时得到心形、超心形或 8 字形。频率升高、间距不再远小于波长、延迟量化或通道失配都会使形状偏离该近似。$\tau=0$ 且 $g=1$ 的纯相减只产生前后对称的偶极响应。<a href="https://doi.org/10.1109/ICASSP.1997.599609" title="citation">Elko &amp; Pong, ICASSP 1997</a></p>
+<p><strong>算例：一阶 DMA 的零点、均衡与 WNG。</strong> 取端射双麦 $d=2$ cm、$c=343$ m/s，则 $T=d/c=58.31\ \mu$s。沿用式中的符号约定，令后向 $\tau_p=-T$、前向 $\tau_p=+T$，并取 $g=1,\tau=T$。后向响应为 $H_b=1-e^0=0$。在 $f=500$ Hz，前向响应</p>
+<p>$$H_f=1-e^{-\mathrm j2\omega T},\qquad |H_f|=2\sin(\omega T)=2\sin(0.1832)\approx0.3644。$$</p>
+<p>因此要把前向响应归一到 1，均衡器幅度需乘 $1/0.3644\approx2.744$。两路独立、单位功率的阵元自噪声在均衡后功率为 $2/|H_f|^2\approx15.06$，所以 $\mathrm{WNG}_{\mathrm{dB}}=10\log_{10}(1/15.06)\approx-11.78$ dB。若第二通道有 1% 增益误差，原本的后向零点变为 $|1-1.01|/|H_f|\approx0.0274$，即相对前向约 −31.2 dB；零点不再无限深。这个单频点数例只验证相消和噪声放大的代价。它不证明宽带心形：500 Hz 时 $\kappa d\approx0.183$ 尚可作低频近似，频率升高、均衡器限幅或误差增大时必须重新计算方向图和 WNG。</p>
 <p><strong>提高阶数改变了什么</strong>：多个一阶差分单元级联可形成高阶方向图，并提供更多可配置零点。阶数增加并不对应一个脱离条件的固定 DI 增量。理想 DI 取决于采用球面还是柱面弥散场、目标方向图和归一化方式；换成 dB 后也不能概括为“每阶线性增加”。同时，高阶差分包含更强的相消和低频均衡，通常增大权重范数，使阵元自噪声和增益、相位、位置误差更容易进入输出。设计时应按每个频点同时报告方向图、DI、WNG、条件数和失配扫描，而不是只按阶数选型。<a href="https://doi.org/10.1007/1-4020-7769-6_2" title="citation">Elko, <em>Differential Microphone Arrays</em></a></p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -410,10 +415,10 @@ $$\lambda = \frac{1}{\vec{a}^H\mathbf{R}_{nn}^{-1}\vec{a}}$$
 <li><strong>C：相干干扰或混响</strong>：早期反射与直达声相干，可能降低信号子空间秩并改变零陷位置；</li>
 <li><strong>D：目标自消</strong>：含目标的协方差与失配约束共同作用，使自适应权重抑制真实目标。</li>
 </ul>
-<p><strong>方法 1：最差情况优化（Worst-Case Optimization）</strong>。若把真实导向矢量限制在球形不确定集 $\|\vec a_{true}-\vec a_0\|\le\epsilon$ 中，可要求集合内所有导向矢量都满足最低响应。对常见球形、范数有界模型，其 KKT 条件常导出对角加载形式，但加载量需由不确定集半径和数据共同求得；任意固定加载并不等同于完整的鲁棒 Capon 问题。$\epsilon$ 应由 DOA 误差和通道标定统计确定，取大时会牺牲 DI 与零陷深度。</p>
-<p><strong>方法 2：特征空间波束形成（Eigenspace Beamforming）</strong>。对含目标的采样协方差做特征分解，把权重投影到由主要特征向量张成的子空间中，可减小小特征值估计误差造成的权重偏差。代价是必须选择子空间维数；低信噪比或弱目标条件下，信号与噪声特征值难以分开，投影也可能删除有用成分。</p>
-<p><strong>方法 3：协方差重构（Covariance Reconstruction）</strong>。MVDR 需要干扰加噪声协方差，但 VAD 选出的噪声段可能含目标残留和混响尾音。以 Capon 谱积分重构为例，可在非目标角度区域估计空间谱，再积分重建 $\hat{\mathbf R}_{nn}$。代价是增加谱估计与积分计算；目标区域或积分区域设错时，也会删除干扰信息或保留目标泄漏。</p>
-<p><strong>方法 4：前后向空间平滑（Forward-Backward Spatial Smoothing）</strong>。均匀线阵可切成重叠子阵，先平均前向子阵协方差，再加入共轭反转的后向项。该处理可恢复部分相干源条件下的协方差秩。代价是子阵长度小于原阵列，因而有效孔径和剩余自由度下降；子阵数量必须同时满足去相关与可分辨性要求。</p>
+<p><strong>方法 1：最差情况优化（Worst-Case Optimization）</strong>。若把真实导向矢量限制在球形不确定集 $\|\vec a_{true}-\vec a_0\|\le\epsilon$ 中，可要求集合内所有导向矢量都满足最低响应。对常见球形、范数有界模型，其 KKT 条件常导出对角加载形式，但加载量需由不确定集半径和数据共同求得；任意固定加载并不等同于完整的鲁棒 Capon 问题。$\epsilon$ 应由 DOA 误差和通道标定统计确定，取大时会牺牲 DI 与零陷深度。<a href="https://doi.org/10.1109/TSP.2002.806865" title="citation">Vorobyov, Gershman &amp; Luo, <em>IEEE TSP</em>, 2003</a></p>
+<p><strong>方法 2：特征空间波束形成（Eigenspace Beamforming）</strong>。对含目标的采样协方差做特征分解，把权重投影到由主要特征向量张成的子空间中，可减小小特征值估计误差造成的权重偏差。代价是必须选择子空间维数；低信噪比或弱目标条件下，信号与噪声特征值难以分开，投影也可能删除有用成分。<a href="https://doi.org/10.1109/8.202711" title="citation">Chang &amp; Yeh, <em>IEEE Transactions on Antennas and Propagation</em>, 1992</a></p>
+<p><strong>方法 3：协方差重构（Covariance Reconstruction）</strong>。MVDR 需要干扰加噪声协方差，但 VAD 选出的噪声段可能含目标残留和混响尾音。以 Capon 谱积分重构为例，可在非目标角度区域估计空间谱，再积分重建 $\hat{\mathbf R}_{nn}$。代价是增加谱估计与积分计算；目标区域或积分区域设错时，也会删除干扰信息或保留目标泄漏。<a href="https://doi.org/10.1109/TSP.2012.2194289" title="citation">Gu &amp; Leshem, <em>IEEE TSP</em>, 2012</a></p>
+<p><strong>方法 4：前后向空间平滑（Forward-Backward Spatial Smoothing）</strong>。均匀线阵可切成重叠子阵，先平均前向子阵协方差，再加入共轭反转的后向项。该处理可恢复部分相干源条件下的协方差秩。代价是子阵长度小于原阵列，因而有效孔径和剩余自由度下降；子阵数量必须同时满足去相关与可分辨性要求。<a href="https://doi.org/10.1109/TASSP.1985.1164649" title="citation">Shan, Wax &amp; Kailath, <em>IEEE TASSP</em>, 1985（空间平滑）</a>、<a href="https://doi.org/10.1109/29.17496" title="citation">Pillai &amp; Kwon, <em>IEEE TASSP</em>, 1989（前后向扩展）</a></p>
 <p><strong>方法选择表</strong>（对角加载主要处理病态求逆和权重范数，其他误差还需针对性处理）：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -475,7 +480,7 @@ $$\lambda = \frac{1}{\vec{a}^H\mathbf{R}_{nn}^{-1}\vec{a}}$$
 <span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-5-5">5.5 线性约束最小方差（Linearly Constrained Minimum Variance，简称 LCMV）：多约束推广</h2>
 <p>多个线性约束写成矩阵形式 $\mathbf{C}^H\vec{w}=\vec{f}$（$\mathbf{C}$：约束矩阵，每列是一个约束方向/约束向量；$\vec{f}$：对应的约束值向量），LCMV 闭式解为：</p>
 <p>$$\vec{w}_{LCMV} = \mathbf{R}^{-1}\mathbf{C}\big(\mathbf{C}^H\mathbf{R}^{-1}\mathbf{C}\big)^{-1}\vec{f}\text{。}\tag{5-4}$$</p>
-<p>（$\mathbf{R}$ 可以是噪声协方差 $\mathbf{R}_{nn}$，也可以是含目标的 $\mathbf{R}_{xx}$——小快拍下常用后者，代价是目标自消风险，见 §5.4 工程要点。）</p>
+<p>（$\mathbf{R}$ 可以是噪声协方差 $\mathbf{R}_{nn}$；目标缺席样本不可得时也会使用含目标的 $\mathbf{R}_{xx}$，但目标泄漏会带来自消风险。快拍少会使两种采样协方差都不稳定，仍需对角加载、收缩估计或降阶，不能把 $\mathbf R_{xx}$ 当作小快拍问题的自动解法；见 §5.4 工程要点。）</p>
 <p><strong>推导</strong>：与式(5-3)使用相同的拉格朗日乘子法，只是标量乘子改为 $K_c\times1$ 向量 $\vec\lambda$。要保证对 $\vec w^*$ 求导时约束项确实产生 $\mathbf C\vec\lambda$，完整写法为</p>
 <p>$$L=\vec w^H\mathbf R\vec w+\vec\lambda^H(\vec f-\mathbf C^H\vec w)+(\vec f^H-\vec w^H\mathbf C)\vec\lambda。$$</p>
 <p>对 $\vec w^*$ 求导并置零：$\mathbf R\vec w-\mathbf C\vec\lambda=\vec0$，因此 $\vec w=\mathbf R^{-1}\mathbf C\vec\lambda$。代入 $\mathbf C^H\vec w=\vec f$ 得</p>
@@ -551,7 +556,7 @@ $$\vec w_{SDW}=\frac{\phi_s q}{\mu+\phi_s q}\,\vec w_{MVDR},\qquad q=\vec a^H\ma
 </table></div>
 <p>Frost 用投影更新实现时域 LCMV；下一节的 GSC 用固定支路和阻塞矩阵实现同一类约束。</p>
 <span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-5-6">5.6 广义旁瓣对消器（Generalized Sidelobe Canceller，简称 GSC）：把约束改装成“噪声对消器”</h2>
-<p><strong>广义旁瓣对消器</strong>把 LCMV 约束吸收进结构，分两条支路：</p>
+<p><strong>广义旁瓣对消器</strong>把 LCMV 约束吸收进结构，分两条支路。<a href="https://doi.org/10.1109/TAP.1982.1142739" title="citation">Griffiths &amp; Jim, <em>IEEE Transactions on Antennas and Propagation</em>, 1982</a></p>
 <p><img alt="图17 GSC 结构" src="../figures/fig17_gsc.png" onerror="this.alt+='（图缺失）'" /></p>
 <p><strong>图示说明</strong>：上支路固定波束形成器输出目标与残留噪声 $d$；下支路的阻塞矩阵在模型匹配时消除目标，得到近似不含目标的干扰参考 $u$；自适应滤波器由 $u$ 估计上支路中与它相关的残留干扰 $y$，最后相减得到 $e=d-y$。图中的“目标无失真”和“干扰/噪声被自适应对消”表示设计目标，只有固定支路满足约束、阻塞矩阵模型匹配且自适应滤波器收敛时才成立。数值过程见算例 5-3。</p>
 <ul>
@@ -733,8 +738,8 @@ $$\hat{\mathbf R}_{ss}\vec w_{GEV}=\lambda_{\max}\hat{\mathbf R}_{nn}\vec w_{GEV
 </tr>
 </tbody>
 </table></div>
-<p><strong>贯穿全章的约束</strong>：在单位幅度导向矢量和精确无失真约束下，$G_{\mathrm{WNG}}\le M$，等价地 $\mathrm{WNG}_{\mathrm{dB}}\le10\log_{10}M$ dB。DI 同时受阵列几何、频率、噪声场模型和白噪声增益预算限制。紧凑阵列在理想各向同性弥散场、端射超指向的渐近模型下可出现 $M^2$ 的指向因数上限，但实现该极限通常伴随很低的 $\mathrm{WNG}_{\mathrm{dB}}$；它不是任意孔径、频率和方向都成立的通用保证。</p>
-<p>上表“目标失真”列若要量化，必须先固定基线。以参考麦选择向量 $\vec e_r$ 为基线，噪声降低量定义为
+<p><strong>贯穿全章的约束</strong>：在单位幅度导向矢量和精确无失真约束下，$G_{\mathrm{WNG}}\le M$，等价地 $\mathrm{WNG}_{\mathrm{dB}}\le10\log_{10}M$ dB。DI 同时受阵列几何、频率、噪声场模型和白噪声增益预算限制。紧凑端射阵在理想弥散场模型下可能获得高于 DSB 的 DI，但逼近强相消解通常伴随很低的 $\mathrm{WNG}_{\mathrm{dB}}$；脱离阵列几何、频率、噪声场和稳健性约束，不应给出统一的 DI 上限。</p>
+<p>上表“目标保持条件”列只说明算法约束，并不是目标失真的数值。若要量化目标损伤，必须先固定基线。以参考麦选择向量 $\vec e_r$ 为基线，噪声降低量定义为
 $$\mathrm{NR}_{ref}=10\log_{10}\frac{\vec e_r^H\mathbf R_{nn}\vec e_r}{\vec w^H\mathbf R_{nn}\vec w}\text{。}$$
 分子、分母要用同一频带和统计窗口。若以 DSB 为基线，就把分子换成 DSB 的输出噪声功率并明确标注。存在导向失配时，只报 NR 会掩盖目标衰减，还应同时报告 $|\vec w^H\vec a_{true}-1|$，或报告相对同一参考麦的输出 SNR 改善。</p>
 <span id="sec-17" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-38e7ff9a06">延伸阅读：Kumatani 等的 CMU 课程讲义</h3>
