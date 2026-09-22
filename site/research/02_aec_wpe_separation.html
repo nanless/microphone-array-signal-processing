@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AEC、WPE 与分离源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="1c057bc95262"><style>
+<meta name="source-digest" content="5a44d84ec0bb"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -285,7 +285,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>读码时核对历史排序、保护延迟、统计有效区、复共轭与功率下限。最小实验先复算正文单抽头正规方程，再把单通道扩成两个完全相同通道；失败实验使用短于历史窗口的记录、静音频点和病态 SCM。库的稳定求解策略不能替代明确的旁路条件。<a href="https://doi.org/10.1109/TASL.2012.2210879">原始 MIMO-WPE 论文</a>定义了希望保留的早期成分。</p>
 <p>本书另提供已执行的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/compare_wpe_reference.py">独立实现对照</a>。它使用 nara-wpe 0.0.11 的原始 <code>wpe_v6()</code> 与教学 <code>offline_wpe()</code>比较，固定种子 20260922、复谱形状 <code>(4, 2, 192)</code>、2 个预测抽头、3 帧保护延迟、有效历史统计、无功率平滑且关闭对角加载。两麦、单麦、通道交换和整体缩放四种输入，各运行 1 次和 3 次迭代。</p>
 <p>2026-09-22 的本机对照环境为 macOS arm64、Python 3.13.12、NumPy 2.5.3，输入与求解使用 <code>complex128</code>。脚本输出运行环境，便于区分后续平台或线性代数库带来的末位舍入差异；本次没有计时或硬件速度比较。</p>
-<p>八组对照中，完整历史后的帧最大绝对复数误差约为 <code>2.69e-15</code>，最大相对 L2 误差约为 <code>5.28e-16</code>。开头 4 帧不参与比较：教学实现旁路，上游允许零补历史后滤波。这是合成复谱上回归求解的一致性检查，不是语音质量、公开数据集或实时性测量；随机复谱不对应任何指定采样率与声学房间。</p>
+<p>2026-09-23 在同一设置下重跑，八组对照中完整历史后的帧最大绝对复数误差约为 <code>3.17e-15</code>，最大相对 L2 误差约为 <code>5.76e-16</code>。开头 4 帧不参与比较：教学实现旁路，上游允许零补历史后滤波。这是合成复谱上回归求解的一致性检查，不是语音质量、公开数据集或实时性测量；随机复谱不对应任何指定采样率与声学房间。</p>
 <p>教学练习 E07-04 另用前缀相同、末帧不同的四帧记录检查未来依赖：一轮离线 WPE 的首个有效输出从 0 变为 −1/9。其回归量虽只含历史，系数却使用整段统计；这说明“预测索引只向过去”不足以证明端到端因果。该题没有使用居中功率平滑，也不把未变化的某个单例当作一般因果性证明。</p>
 <span id="sec-21" class="anchor-alias" aria-hidden="true"></span><span id="w02-逐帧递推-wpe" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-737de64b9e">W02　逐帧递推 WPE</h3>
 <p><code>nara_wpe/wpe.py</code> 的 <code>OnlineWPE</code> 保存逆相关矩阵、预测抽头、功率和输入缓冲；<code>step_frame()</code> 接收 <code>(频点, 通道)</code>。该实现先由旧状态输出当前预测残差，再更新状态，这与每次对增长的整段录音重新运行离线 <code>wpe()</code>不同。原理出处为<a href="https://www.isca-archive.org/interspeech_2017/kinoshita17_interspeech.html">Kinoshita 等，Interspeech 2017</a>。</p>

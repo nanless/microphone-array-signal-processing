@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 8 章 · 语音分离 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="1c057bc95262"><style>
+<meta name="source-digest" content="5a44d84ec0bb"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -381,7 +381,7 @@ $$</p>
 <li><code>masked_spatial_covariance()</code> 接收 <code>(频点, 通道, 帧)</code> 复谱与 <code>(频点, 帧)</code> 非负掩码；<code>epsilon</code> 必须是有限正数，空掩码返回零矩阵而不是 NaN。</li>
 <li><code>mask_mvdr_2x2()</code> 用目标 SCM 的主特征向量估计相对传递函数，再以干扰 SCM 求两麦 MVDR，返回 <code>(频点, 帧)</code> 输出和 <code>(频点, 2)</code> 权重。</li>
 </ul>
-<p>两麦 MVDR 先按每频点所有通道共同的实部/虚部峰值缩放观测，再计算统计量；解方程前还按干扰 SCM 的平均对角元素归一化。共同尺度会在 MVDR 的分子、分母中抵消，输出再恢复原尺度，因此不能用带绝对功率尺度的固定分母阈值决定旁路。目标或干扰掩码权重不足、零能量或求解失败仍退回参考麦；不把这些情形计为成功分离。</p>
+<p>两麦 MVDR 先按每频点所有通道共同的实部/虚部峰值缩放观测，再计算统计量；两组非空掩码还分别按自身峰值归一化，然后估计 SCM。这样共同正比例缩放掩码不会仅因落到一个绝对分母地板以下而误触发旁路。解方程前再按干扰 SCM 的平均对角元素归一化；共同信号尺度在 MVDR 权重的分子、分母中抵消，输出恢复原尺度。掩码全空、有效目标或干扰统计为零，以及求解失败时仍退回参考麦；不把这些情形计为成功分离。这里的掩码归一化只属于 <code>mask_mvdr_2x2()</code>，不能反推上一节直接调用 <code>masked_spatial_covariance()</code> 时也具有相同的极小掩码行为。</p>
 <p>联合示例用 <code>.venv/bin/python -m codes.examples.ch06_09_baselines</code> 运行，测试见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_wpe_sep_track.py"><code>tests/test_codes_aec_wpe_sep_track.py</code></a>。测试覆盖输出交换、静音参考和静音估计拒绝、SCM 厄米性、MVDR 无失真约束，以及目标或干扰掩码为空时回退参考麦。实际评测还必须固定去均值、时延/增益对齐、静音段、截断长度和输入基线；秩亏 SCM、单通道输入、$N>M$、跨块换人及 STFT 重构均需单独测试。教学版 MVDR 在目标或干扰统计不可用时退回参考麦克风，不应把这一回退的输出解释成成功分离。</p>
 <p>本章的外部实现已经按具体算法定位，不能把“正文尚未实现”写成“没有可用源码”。<a href="research/02_aec_wpe_separation.html#bss">盲分离与 GSS 研究</a>和<a href="research/02_aec_wpe_separation.html#neural">神经分离研究</a>进一步列出读码顺序、状态、最小实验与失败条件。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>

@@ -47,15 +47,26 @@ def offline_wpe(
     output = y.copy()
     dimension = channels * taps
     for frequency in range(frequencies):
-        observed = y[frequency]
-        current = output[frequency]
-        observed_scale = float(np.max(np.mean(np.abs(observed) ** 2, axis=0)))
-        if observed_scale <= np.finfo(float).tiny:
-            output[frequency] = observed
+        raw = y[frequency]
+        # A common amplitude scale leaves the WPE solution unchanged. Divide
+        # components separately: complex division can overflow its reciprocal
+        # even when every desired ratio is bounded (subnormal input levels).
+        input_scale = float(max(np.max(np.abs(raw.real)), np.max(np.abs(raw.imag))))
+        if input_scale == 0.0:
             continue
-        initial_scale = observed_scale
-        floor = power_floor * initial_scale
-        power = np.maximum(np.mean(np.abs(current) ** 2, axis=0), floor)
+        observed = np.empty_like(raw)
+        observed.real = raw.real / input_scale
+        observed.imag = raw.imag / input_scale
+        current = observed.copy()
+        try:
+            with np.errstate(over="raise", invalid="raise", divide="raise"):
+                initial_scale = float(np.max(np.mean(np.abs(observed) ** 2, axis=0)))
+                floor = power_floor * initial_scale
+                if not np.isfinite(floor) or floor <= 0.0:
+                    raise ValueError("relative WPE power floor is not representable")
+                power = np.maximum(np.mean(np.abs(current) ** 2, axis=0), floor)
+        except FloatingPointError as error:
+            raise ValueError("WPE power estimate exceeds the float64 range") from error
 
         histories = []
         for frame in range(first, frames):
@@ -67,22 +78,57 @@ def offline_wpe(
         targets = observed[:, first:].T
 
         for _ in range(iterations):
-            weights = 1.0 / np.maximum(power[first:], floor)
-            correlation = np.einsum("t,ti,tj->ij", weights, history, history.conj())
-            cross = np.einsum("t,ti,tm->im", weights, history, targets.conj())
+            # Multiplying every inverse-power weight by the same positive
+            # value does not change either the normal equations or relative
+            # diagonal loading, and keeps the weights bounded by one.
+            valid_power = np.maximum(power[first:], floor)
+            weights = np.min(valid_power) / valid_power
+            try:
+                with np.errstate(over="raise", invalid="raise"):
+                    correlation = np.einsum("t,ti,tj->ij", weights, history, history.conj())
+                    cross = np.einsum("t,ti,tm->im", weights, history, targets.conj())
+            except FloatingPointError as error:
+                raise ValueError("WPE normal equations exceed the float64 range") from error
             trace = float(np.trace(correlation).real)
-            if trace <= np.finfo(float).tiny:
+            if not np.isfinite(trace) or not np.all(np.isfinite(cross)):
+                raise ValueError("WPE normal equations exceed the float64 range")
+            if trace == 0.0 and np.all(history == 0):
                 current = observed.copy()
                 break
-            loaded = correlation + diagonal_loading * trace / dimension * np.eye(dimension)
+            if trace <= np.finfo(float).tiny:
+                raise ValueError("WPE history energy is too small to solve reliably")
+            try:
+                with np.errstate(over="raise", invalid="raise"):
+                    loaded = correlation + diagonal_loading * trace / dimension * np.eye(dimension)
+            except FloatingPointError as error:
+                raise ValueError("WPE diagonal loading exceeds the float64 range") from error
             try:
                 predictor = np.linalg.solve(loaded, cross)
             except np.linalg.LinAlgError:
                 predictor = np.linalg.lstsq(loaded, cross, rcond=None)[0]
-            prediction = history @ predictor.conj()
+            if not np.all(np.isfinite(predictor)):
+                raise ValueError("WPE predictor is not finite")
+            try:
+                with np.errstate(over="raise", invalid="raise"):
+                    prediction = history @ predictor.conj()
+            except FloatingPointError as error:
+                raise ValueError("WPE prediction exceeds the float64 range") from error
             current = observed.copy()
             current[:, first:] = (targets - prediction).T
-            power = np.maximum(np.mean(np.abs(current) ** 2, axis=0), floor)
-        output[frequency] = current
+            if not np.all(np.isfinite(current)):
+                raise ValueError("WPE residual is not finite")
+            try:
+                with np.errstate(over="raise", invalid="raise"):
+                    power = np.maximum(np.mean(np.abs(current) ** 2, axis=0), floor)
+            except FloatingPointError as error:
+                raise ValueError("WPE residual power exceeds the float64 range") from error
+        try:
+            with np.errstate(over="raise", invalid="raise"):
+                output[frequency].real = current.real * input_scale
+                output[frequency].imag = current.imag * input_scale
+        except FloatingPointError as error:
+            raise ValueError("WPE output exceeds the float64 range") from error
+        if not np.all(np.isfinite(output[frequency])):
+            raise ValueError("WPE output exceeds the float64 range")
 
     return output[:, 0, :] if squeeze else output

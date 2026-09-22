@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 4 章 · 声源定位（DOA 估计） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="1c057bc95262"><style>
+<meta name="source-digest" content="5a44d84ec0bb"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -72,9 +72,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-4-7-1">4.7.1 近场模型失配：角度相同，距离仍会改变导向矢量</a></li>
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-4-7-2">4.7.2 可执行基线的输入契约、回退与外部实现边界</a></li>
 <li><a href="04_doa-estimation.html#sec-4-8">4.8 定位算法总对比</a></li>
-<li><a href="04_doa-estimation.html#sec-4-9">4.9 本章练习</a></li>
-<li><a href="04_doa-estimation.html#sec-4-10">4.10 MDL 源数估计：逐候选评分与数值例</a></li>
+<li><a href="04_doa-estimation.html#sec-4-9">4.9 MDL 源数估计：逐候选评分与数值例</a></li>
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-467e2bd676">重复抽样：把模型失败与有限样本误差分开</a></li>
+<li><a href="04_doa-estimation.html#sec-4-10">4.10 四麦亚采样时差：从几何到可听信号</a></li>
+<li><a href="04_doa-estimation.html#sec-4-11">4.11 本章练习</a></li>
 </ul>
 <div class="chap"><a href="05_beamforming.html">第 5 章 · 波束形成</a></div>
 <div class="chap"><a href="06_aec.html">第 6 章 · 声学回声消除（AEC）</a></div>
@@ -103,9 +104,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-4-7-1">4.7.1 近场模型失配：角度相同，距离仍会改变导向矢量</a></li>
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-4-7-2">4.7.2 可执行基线的输入契约、回退与外部实现边界</a></li>
 <li><a href="04_doa-estimation.html#sec-4-8">4.8 定位算法总对比</a></li>
-<li><a href="04_doa-estimation.html#sec-4-9">4.9 本章练习</a></li>
-<li><a href="04_doa-estimation.html#sec-4-10">4.10 MDL 源数估计：逐候选评分与数值例</a></li>
+<li><a href="04_doa-estimation.html#sec-4-9">4.9 MDL 源数估计：逐候选评分与数值例</a></li>
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-467e2bd676">重复抽样：把模型失败与有限样本误差分开</a></li>
+<li><a href="04_doa-estimation.html#sec-4-10">4.10 四麦亚采样时差：从几何到可听信号</a></li>
+<li><a href="04_doa-estimation.html#sec-4-11">4.11 本章练习</a></li>
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是教程正文第 4 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
@@ -140,7 +142,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>方法 1：特征值间隙（eigen-gap）</strong>。把固定频点 $f_k$ 的协方差矩阵 $\hat{\mathbf{R}}(f_k)$（读作“R 帽”，帽子表示用有限快拍估计出来的版本）的特征值从大到小排列。前 $K$ 个特征值包含信号与噪声功率，后面 $M-K$ 个在白噪声模型下接近 $\sigma^2$。</p>
 <p>算例 4-4 的无噪声单源给出 $3,\,0,\,0$，因此 $K=1$。实际数据中，低信噪比或快拍不足会缩小相邻特征值之间的间隔；可比较相邻特征值的比值或差值，并把最大间隙所在位置作为候选分界。这种方法计算简单，但在低信噪比或快拍不足时不稳定。</p>
 <p><strong>方法 2：信息准则（AIC/MDL）</strong>。增加候选源数通常会改善数据拟合，同时也会增加模型复杂度。AIC（Akaike information criterion，赤池信息准则）和 MDL（minimum description length，最小描述长度）用不同的复杂度惩罚项平衡这两部分，并取准则值最小的候选 $K$。</p>
-<p>Wax 与 Kailath 的<a href="https://doi.org/10.1109/ICASSP.1984.1172389" title="citation">1984 年原始会议论文，式(10)～(15)</a>给出了复数观测、空间白噪声、独立快拍模型下的推导；<a href="https://doi.org/10.1109/TASSP.1985.1164557" title="citation">1985 年期刊论文</a>题为 <em>Detection of signals by information theoretic criteria</em>。两篇论文的题名和公式编号不能混用。MDL 比较剩余特征值的几何均值与算术均值，再加入源数惩罚；<a href="#sec-4-10">§4.10</a>给出完整定义、逐候选计算和代码练习。</p>
+<p>Wax 与 Kailath 的<a href="https://doi.org/10.1109/ICASSP.1984.1172389" title="citation">1984 年原始会议论文，式(10)～(15)</a>给出了复数观测、空间白噪声、独立快拍模型下的推导；<a href="https://doi.org/10.1109/TASSP.1985.1164557" title="citation">1985 年期刊论文</a>题为 <em>Detection of signals by information theoretic criteria</em>。两篇论文的题名和公式编号不能混用。MDL 比较剩余特征值的几何均值与算术均值，再加入源数惩罚；<a href="#sec-4-9">§4.9</a>给出完整定义、逐候选计算和代码练习。</p>
 <p>实现时必须核对复/实数据、快拍数和惩罚项口径。低 SNR、快拍不足、彩色噪声或相干源导致的信号协方差降秩都会造成误判。</p>
 <p>信噪比高、快拍充足时，可以先看特征间隙；需要自动选择 $K$ 时可用 MDL，并用特征值谱交叉检查。</p>
 <p>相干源场景还存在一个实际循环：空间平滑要按候选源数选择子阵长度，而源数又要从平滑后的谱估计。可先给出源数上界 $K_{\max}$，对候选 $K$ 和子阵长度联合扫描，再检查结果对参数是否稳定。对 $M$ 元均匀线阵（Uniform Linear Array，ULA）做前向空间平滑时，若切成 $L$ 个长度为 $P=M-L+1$ 的重叠子阵，要分辨 $K$ 个完全相干源，至少需要 $L\ge K$ 且 $P>K$。这两个条件同时限制可分辨源数和剩余有效孔径。<a href="https://doi.org/10.1109/TASSP.1985.1164649" title="citation">Shan、Wax 与 Kailath 的空间平滑分析</a>。</p>
@@ -238,6 +240,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tbody>
 </table></div>
 <p>单帧直接代入时，$\sqrt{|X_1|^2|X_2|^2}=|X_1X_2^*|$，SCOT 与 PHAT 的分母数值相同。使用统计谱估计后，SCOT 的分母来自两路自谱，而 PHAT 的分母来自互谱幅度；两者的偏差和方差取决于平均窗、频带、信噪比及谱估计方法，不能笼统断言哪一个始终更稳。</p>
+<p>教学实现 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/doa.py"><code>gcc_phat</code></a> 把 <code>epsilon</code> 解释为<strong>相对本麦对互谱最大幅值</strong>的无量纲门限，并先缩放输入以避免大幅度有限样本的中间乘法溢出。全零麦对没有可估时差，函数会报错；这不是返回 $0^\circ$ 或“静音方向”。门限、麦序与实际频带都必须随实验记录，不能把这里的数值保护误认为噪声下的方向置信度。</p>
 <p>由时延换算角度：$\hat\theta = \arcsin(c\,\hat\tau/d)$。先检查 $|c\hat\tau/d|\le1$：轻微超限若能由已验证的数值舍入界解释，可限幅后计算；明显超限说明该峰不满足双麦平面波几何，应判为野值或低置信度，不能一律吸附到端射方向。</p>
 <p><strong>这个换算怎么来的</strong>：几何推导见 §2.1“时差的几何来源”。平面波以角 $\theta$ 斜入射，路程差 $\Delta=d\sin\theta$（图12(c)），因此 $\hat\tau=d\sin\theta/c$；$\theta$ 从正横方向起算。若论文把角度定义为相对麦克风连线，则同一关系写成 $\hat\tau=d\cos\theta/c$。双麦只给一个标量时延，三维中相容方向构成以连线为轴的锥面；要解除该模糊，需要增加不共线的麦克风或加入其他先验。</p>
 <p><strong>两个实用细节</strong>：</p>
@@ -270,6 +273,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>$$\hat{\vec{p}} = \arg\max_{\vec{r}} \sum_{i\lt j} R^{PHAT}_{x_ix_j}\big(\tau_{ij}(\vec{r})\big)\text{。}\tag{4-1}$$</p>
 <p>其中 $\tau_{ij}(\vec{r})=\big(\|\vec{r}_i-\vec{r}\|-\|\vec{r}_j-\vec{r}\|\big)/c$——候选点到麦 $i$ 的距离减去到麦 $j$ 的距离，再除以声速；几何意义即下文 §4.4 的双曲线（等时差线）。</p>
 <p>候选位置正确时，各麦对会在各自预测 TDOA 附近取得较大的 GCC-PHAT 值，累积得分随之升高；候选位置错误时，各麦对的取值通常无法同时达到峰值。扫描可扩展到三维网格，也可从空间响应图中寻找多个局部峰。多个峰是否对应真实声源，仍需结合最小峰距、置信度和跨帧一致性判断。</p>
+<p>教学 <code>srp_phat</code> 对每个有效麦对分别做相对幅度归一化；如果输入全零或只有不能提供方向信息的直流分量，便明确报错，而不是返回一张全零图让 <code>argmax</code> 捏造网格的第一个方向。输入有声仍不保证方向可靠；宽带有效性、反射和多源峰的判断由调用者另行处理。</p>
 <p>SRP-PHAT 把 PHAT 加权引入可控响应功率扫描的原始系统论述见 <a href="https://www.glat.info/ma/av16.3/2000-DiBiaseThesis.pdf" title="citation">DiBiase, Brown University 博士论文, 2000</a>。式(4-1)采用麦对 GCC-PHAT 在预测时延处求和的实现形式；搜索区域、网格间距、频带和插值共同决定响应图的离散化与峰形。</p>
 <p><strong>算例 4-1：SRP-PHAT 的六麦对累积</strong></p>
 <p>下面用两个候选点计算预测时延，再比较六个麦对的累积得分。</p>
@@ -440,7 +444,7 @@ $$\frac{c\tau_{31}}{d}=\frac{0.0282975}{0.04}=0.7074\approx\frac{\sqrt2}{2}\quad
 <p><strong>几何怎样放大测量误差（GDOP，geometric dilution of precision，几何精度因子）</strong>：把 TDOA 模型在真值附近线性化后，位置或角度误差由几何雅可比矩阵传播。麦对基线过短、方向过于相似或声源位于端射等不利方位时，雅可比矩阵接近秩亏，固定的时延误差会被放大。对双麦、正横附近的一维角度模型，有</p>
 <p>$$\mathrm{var}(\theta)\;\approx\;\Big(\frac{c}{d\cos\theta}\Big)^2\sigma_\tau^2$$</p>
 <ul>
-<li>$\sigma_\tau$：时延估计误差的标准差；$d$：麦间距。这个一阶近似来自 $\mathrm d\theta=\dfrac{c}{d\cos\theta}\,\mathrm d\tau$。因此角度标准差相对正横方向放大 $1/|\cos\theta|$，角度方差放大 $1/\cos^2\theta$；例如 $\theta=60°$ 时，标准差放大 2 倍，方差放大 4 倍。端射附近 $\cos\theta\to0$，线性化失效，有限时延偏差应按反正弦精确计算并检查物理时延上限（见 §4.9 第 1 题）。4 cm 间距下 10 μs 的时延误差在正横附近对应约 5° 的角度误差。</li>
+<li>$\sigma_\tau$：时延估计误差的标准差；$d$：麦间距。这个一阶近似来自 $\mathrm d\theta=\dfrac{c}{d\cos\theta}\,\mathrm d\tau$。因此角度标准差相对正横方向放大 $1/|\cos\theta|$，角度方差放大 $1/\cos^2\theta$；例如 $\theta=60°$ 时，标准差放大 2 倍，方差放大 4 倍。端射附近 $\cos\theta\to0$，线性化失效，有限时延偏差应按反正弦精确计算并检查物理时延上限（见 §4.11 第 1 题）。4 cm 间距下 10 μs 的时延误差在正横附近对应约 5° 的角度误差。</li>
 </ul>
 <p>这条近似只说明基线和方位对局部角度误差的影响。分布式阵列可以用更长基线降低部分几何放大，但厘米级位置误差还要求足够带宽、同步、标定、信噪比和可控多径；不能只由阵列尺寸推出。</p>
 <blockquote>
@@ -505,6 +509,7 @@ $$\frac{c\tau_{31}}{d}=\frac{0.0282975}{0.04}=0.7074\approx\frac{\sqrt2}{2}\quad
 <p><strong>第 2 步为什么成立</strong>：信号模型下协方差矩阵是 $\mathbf{R} = \mathbf{A}\mathbf{S}\mathbf{A}^H + \sigma^2\mathbf{I}$，其中 $\mathbf{A}$ 是 $M\times K$ 的导向矢量矩阵、$\mathbf{S}$ 是 $K\times K$ 的源协方差矩阵。</p>
 <p>只有当 $K\lt M$、$\mathbf A$ 列满秩且 $\mathbf S$ 满秩时，$\mathbf{A}\mathbf{S}\mathbf{A}^H$ 的秩才等于 $K$，其列空间才等于 $\operatorname{span}(\mathbf A)$。空间白噪声项 $\sigma^2\mathbf I$ 只平移特征值，不改变特征向量；其余 $M-K$ 个特征向量因此与真实导向矢量正交。</p>
 <p>相干源使 $\mathbf S$ 降秩，彩色噪声也不再只平移特征值。这两种情况都破坏上述论证。<a href="https://doi.org/10.1109/TAP.1986.1143830" title="citation">Schmidt 的 MUSIC 原始论文</a>。</p>
+<p>输入的样本协方差必须是厄米半正定矩阵；秩亏不等于非法，但负特征值若超出舍入容差，就不再代表有效功率。教学 <code>music_spectrum</code> 会拒绝这类矩阵，也会拒绝全零协方差，因为此时无法由数据区分信号与噪声子空间。Bartlett 教学接口采用同样的协方差有效性检查。</p>
 <blockquote>
 <p><strong>可跳过·进阶★★：正交三步的秩论证（分步说明）</strong></p>
 <ol>
@@ -881,43 +886,7 @@ $$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$<
 <li><strong>信号存在性</strong>：该方向波束输出的 SNR 或语音存在概率；静音段的方向估计直接弃用。</li>
 </ol>
 <p>丢轨阈值必须用本系统验证集标定。满足丢轨条件后，追踪器应转入重捕获状态，而不是继续输出抖动角度。这三类量是第 9 章追踪状态机的输入。</p>
-<span id="sec-16" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-9">4.9 本章练习</h2>
-<ol>
-<li>
-<p>★基础（TDOA + GDOP）：4 cm 双麦、正横方向附近，时延估计偏了 10 μs，角度会偏多少？</p>
-<p>参考答案：正横附近 $\Delta\theta\approx c\Delta\tau/d=343\times10\times10^{-6}/0.04\approx0.086$ rad，即约 4.9°。线性近似只能在偏差足够小时使用。</p>
-<p>真值为 85° 时，时延约为 116.2 μs；增加 10 μs 会超过物理上限 $d/c\approx116.6$ μs，应标成越界。减少 10 μs 后用反正弦精确反算约为 65.6°，误差约 19.4°。这与 §3.1 算例 3-2 一致：端射附近的有限偏差不能把微分式的 56.4° 当成精确答案。</p>
-</li>
-<li>
-<p>★★进阶（CRLB 口径题）：为什么只写“带宽 4 kHz、SNR 0 dB”还不足以算出唯一的 TDOA CRLB？</p>
-<p>参考答案需要补齐三组条件：</p>
-<ul>
-<li>观测模型：单通道或双通道、波形是否已知、未知幅度等干扰参数；</li>
-<li>功率口径：SNR 定义、单边或双边谱、实际谱形和均方根带宽；</li>
-<li>数据量：观测时长或独立快拍数。</li>
-</ul>
-<p>条件不同，Fisher 信息和常数系数也会变化，因此不能仅凭名义带宽和一个 SNR 数字给出唯一答案。</p>
-</li>
-</ol>
-<p>以下四题用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 复算。它们检查时延符号、统计秩、几何歧义和空间平滑，不把谱峰尖锐程度当作准确性的唯一依据。</p>
-<p>MDL 练习 E04-05 随完整算例放在 <a href="#sec-4-10">§4.10</a>，先计算各候选的评分，再检验代码边界。</p>
-<p><strong>E04-01：交换两段录音，延迟应怎样变化？</strong> 16 kHz 下，让麦 1 比麦 2 晚 3 点，零填充而不循环移动信号。对单脉冲和固定种子宽带噪声各算一次 GCC-PHAT，再交换两通道。静音输入应返回哪个方向？</p>
-<p><strong>参考答案</strong>：$\tau_{12}=3/16000=187.5$ μs，交换后为 −187.5 μs。两类输入都应得到 +3、−3 点；零能量输入没有可辨的相关峰，本书函数会明确报错，不能把首个搜索点当成方向。</p>
-<p>这个 3 点延迟至少对应 $343\times187.5\,\mu\mathrm{s}=6.43$ cm 的麦距，不能把它再代入 4 cm 双麦反算实数角度。本题隔离代码符号与零输入行为，不模拟混响或亚采样误差。</p>
-<p><a href="research/05_exercises_and_audio.html#3-对齐与平均">音频总览的“对齐与平均”实验</a>另提供含噪的双通道 WAV，也采用第一通道晚 3 点的约定。先读取采样率和通道顺序，再估计时差；谐波样本可能产生多个相关峰，不能把 E04-01 的宽带、无噪结果直接当作该文件的误差保证。</p>
-<p><strong>E04-02：两个声源为什么可能只产生一个大特征值？</strong> 取四麦 ULA、$d=\lambda/2$，两个方向为 −30°、+30°，两源功率均为 1、无传感器噪声。比较源协方差为单位阵和全 1 矩阵时的阵列协方差特征值。</p>
-<p><strong>参考答案</strong>：两列导向矢量的范数平方均为 4，内积为 $1-1+1-1=0$。非相干时 $\mathbf R=\mathbf A\mathbf A^H$，特征值为 $4,4,0,0$；完全相干时观测方向向量为两列之和，$\mathbf R=(\vec a_1+\vec a_2)(\vec a_1+\vec a_2)^H$，其范数平方为 8，特征值为 $8,0,0,0$。</p>
-<p>物理声源数在两种情况下都是 2，变化的是二阶统计量的秩。本题用理论协方差避免有限样本扰动，不能据此宣称实际录音一定得到精确零特征值。</p>
-<p><strong>E04-03：MUSIC 能消除由间距造成的歧义吗？</strong> 四麦 ULA 取 $d=\lambda$，比较 −30°、+30° 的导向矢量。在真实方向的秩一协方差上加 $0.1\mathbf I$，分别计算这两个候选方向的 MUSIC 值。</p>
-<p><strong>参考答案</strong>：相邻相位分别为 $-\pi$、$+\pi$，复指数相同，两个导向矢量均为 $[1,-1,1,-1]^\top$。所以两个候选的噪声子空间投影相同；本书用 $10^{-15}$ 限制伪谱分母，二者均达到约 $10^{15}$。这个数由数值保护决定，不是置信度，也不是信噪比。</p>
-<p>更密的角度扫描或更尖的谱峰不能分开完全相同的观测模型。需要改变几何、引入其他频率或限定已知可见区域；限定区域所用的先验也应随结果说明。</p>
-<p><strong>E04-04：空间平滑怎样恢复两维信号子空间？</strong> 沿用 E04-02 的完全相干双源，截取麦 1～3 与麦 2～4 的两个子阵协方差，再等权平均。计算平滑矩阵与特征值，并比较处理前后的孔径。复算入口仍为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a>。</p>
-<p><strong>参考答案</strong>：两个源的合成导向为 $[2,0,-2,0]^\top$。两个子阵的向量分别为 $[2,0,-2]^\top$ 和 $[0,-2,0]^\top$，外积平均得到</p>
-<p>$$\mathbf R_{\mathrm{sm}}=
-\begin{bmatrix}2&0&-2\\0&2&0\\-2&0&2\end{bmatrix}。$$</p>
-<p>向量 $[1,0,1]^\top$、$[0,1,0]^\top$、$[1,0,-1]^\top$ 分别给出特征值 0、2、4。原矩阵只有特征值 8 非零，平滑后恢复两个非零特征值；物理源数始终为 2。</p>
-<p>原孔径为 $3d$，平滑后为 $2d$，所以恢复秩并不保留全部孔径。记子阵数量为 $L$、物理源数为 $K$、每个子阵的麦数为 $P$，本例满足 $L=2\ge K=2$、$P=3>K$；任意非均匀阵不能只滑动矩阵下标套用。代码在本题中直接平均两个子矩阵，不提供通用空间平滑器。<a href="https://morriswmz.github.io/doatools.py/references/doatools.estimation.preprocessing.html" title="citation">doatools 官方接口</a>同样区分子阵数量与输出矩阵维数。</p>
-<span id="sec-17" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-10">4.10 MDL 源数估计：逐候选评分与数值例</h2>
+<span id="sec-16" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-9">4.9 MDL 源数估计：逐候选评分与数值例</h2>
 <p>本节把 §4.1.1 的源数选择写成可复算步骤。输入是在同一频点估计的 $M\times M$ 样本协方差的特征值，以及用于估计它的独立快拍数 $N$。MDL 输出候选信号子空间维数，不直接输出方位，也不保证等于房间里的物理声源数。</p>
 <p><strong>模型与适用条件</strong>。采用已知零均值、独立同分布的圆对称复高斯观测 $\vec x_n\in\mathbb C^M$。空间噪声协方差为 $\sigma^2\mathbf I$，其中 $\sigma^2>0$ 未知；噪声与源信号不相关，阵列流形 $\mathbf A$ 满列秩，源协方差 $\mathbf S$ 正定，源数 $K\lt M$。于是 $\mathbf R=\mathbf A\mathbf S\mathbf A^H+\sigma^2\mathbf I$ 有 $M-K$ 个相等的总体噪声特征值。有限快拍下，这些样本特征值通常不再完全相等。</p>
 <p>样本协方差取 $\hat{\mathbf R}=N^{-1}\sum_{n=1}^N\vec x_n\vec x_n^H$，不另行估计并减去样本均值。由于它的秩不超过 $N$，$N\ge M$ 是满秩的必要条件，但不是正确检测的保证；若先减去样本均值，则秩不超过 $N-1$，必要条件变为 $N>M$。本节直接使用严格正的样本特征值，不能把前面无噪声算例的 $3,0,0$ 代入对数。</p>
@@ -992,7 +961,7 @@ g_k&=\left(\prod_{i=k+1}^{M}\hat\lambda_i\right)^{1/(M-k)}。
 <p><strong>参考答案</strong>：原谱选 2；全为 1 时所有拟合项为零，惩罚最小的 $k=0$ 胜出。共同正尺度在 $a_k/g_k$ 中约去，所以缩放后评分和选择应在浮点误差内不变。零特征值使几何均值和对数不满足本节定义，本书接口明确拒绝；对角加载会改变谱和准则结果，不能不加说明地当作原算法的数值修补。</p>
 <p>复算入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 的 <code>E04-05</code>；通用教学接口是 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/doa.py"><code>doa.py::mdl_source_count</code></a>。它接受任意顺序的严格正实特征值，内部排序但不修改输入，返回所选源数和 $k=0$ 至 $M-1$ 的全部评分。实现直接用对数求几何均值，并在每个尾部内用最大对数平移后求算术均值的对数，避免先连乘或把极小特征值除到零。独立测试用高精度标量计算核对本表，并覆盖尺度、排序、纯噪声、秩亏和样本数错误。</p>
 <p>实际工程还要区分三类失效：空间有色噪声使尾部不平；完全相干源使信号协方差降秩；重叠 STFT 帧使独立快拍假设不成立。不能把帧数直接当成有效独立样本数，也不能随意用窗口时长替代 $N$。平滑、白化或有效样本数校正需要另行验证模型；本节代码不自动执行这些步骤，不以一次选对源数证明长期检测可靠。</p>
-<span id="sec-18" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-467e2bd676">重复抽样：把模型失败与有限样本误差分开</h3>
+<span id="sec-17" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-467e2bd676">重复抽样：把模型失败与有限样本误差分开</h3>
 <p><strong>E04-06：真正减少快拍后，MDL 会怎样变化？</strong> 使用四麦均匀线阵，$f=1000$ Hz、$c=343$ m/s、间距 $d=0.1715$ m，即半波长；两源方向为 $-30^\circ,+30^\circ$。分别改变独立快拍数 $N$、每源功率 $p$、源间相关性和噪声空间协方差。每个条件重新生成 200 次观测，统计输出 $k=0,1,2,3$ 的次数，不沿用上一题的固定特征值。</p>
 <p>这是本书的窄带数学仿真，不是真实录音或语音质量测试。每个复高斯变量用两份独立标准正态数 $u,v$ 构造 $(u+\mathrm jv)/\sqrt2$，使总复数功率为 1。白噪声条件下，每通道噪声功率为 1；独立双源的每源功率为 $p$，所以按阵列平均功率定义的 SNR 为 $10\log_{10}(2p)$，$p=1$ 时为 3.01 dB，$p=0.1$ 时为 −6.99 dB。完全相干条件令两源使用同一个随机序列，仍各有功率 1，但各通道叠加功率不再相同，不能把阵列平均 SNR 写成每通道 SNR。</p>
 <p>每次直接计算已知零均值模型的 $\hat{\mathbf R}=\mathbf X\mathbf X^H/N$，不减样本均值、不加载、不作特征值下限处理。输入是独立复快拍，因此没有音频采样率、窗长和帧移。程序按条件编号使用 <code>SeedSequence([20260922, 条件编号])</code> 与 PCG64，编号按下表从 0 开始；每次试验都重新抽取源和噪声。以下结果实运行于 NumPy 2.5.3，统计次数保留整数，比例与区间保留一位小数。</p>
@@ -1064,6 +1033,85 @@ g_k&=\left(\prod_{i=k+1}^{M}\hat\lambda_i\right)^{1/(M-k)}。
 <p>再看随机表：第一、二行只改变快拍数，较短窗口出现漏检与过检。第三、四行的源功率较弱，有限样本下拟合改善常不足以抵消惩罚；100 个快拍仍远不足以保证检出。一次或少数次偶然输出 2 不能证明更短窗口更好。</p>
 <p>第五行的相干模型与第七行的有色噪声已经违背用该 MDL 估计物理源数的前提，增加快拍不能自动修复这种模型失配。表格只说明这些指定条件，不给出一般声源检测率，也没有检验重叠 STFT 帧的影响。</p>
 <p>运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/mdl_repeated_trials.py"><code>mdl_repeated_trials.py</code></a> 可单独复算全部条件，用 <code>--trials</code> 和 <code>--seed</code> 修改试验次数与种子；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 的 <code>E04-06</code> 也会实际执行默认 7×200 次并输出相同结构。输出保留总体谱、模型是否满足物理源数解释的前提、完整计数、比例区间、种子和软件版本；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_mdl_repeated.py"><code>test_codes_mdl_repeated.py</code></a> 另用标量算术—几何均值式核对实际抽样后的评分，并检查总体谱与区间，不把硬编码一次随机计数当作算法正确性的证明。</p>
+<span id="sec-18" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-10">4.10 四麦亚采样时差：从几何到可听信号</h2>
+<p>前面的整数点脉冲适合检查 GCC 的正负号，但物理阵列的时差通常不是整数采样。这里另外给出一组可核验的四麦数学合成音频。四个麦克风在 $x=0,0.04,0.08,0.12$ m，$y=0$；正横为 $0^\circ$，声源方位为 $30^\circ$，声速取 343 m/s，采样率为 16 kHz。远场平面波从 $+x$ 一侧先到达麦 4，再到达麦 1；相邻时差的绝对值为 $0.04\sin30^\circ/343=58.3090\ \mu\mathrm{s}$，相当于 $0.932945$ 个采样点。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">麦克风</th>
+<th scope="col" style="text-align: right;">相对麦 1 的到达时差／$\mu$s</th>
+<th scope="col" style="text-align: right;">对齐到最晚的麦 1 所需因果延迟／采样点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>2</td>
+<td style="text-align: right;">−58.309</td>
+<td style="text-align: right;">0.932945</td>
+</tr>
+<tr>
+<td>3</td>
+<td style="text-align: right;">−116.618</td>
+<td style="text-align: right;">1.865889</td>
+</tr>
+<tr>
+<td>4</td>
+<td style="text-align: right;">−174.927</td>
+<td style="text-align: right;">2.798834</td>
+</tr>
+</tbody>
+</table></div>
+<p>不能把后三列直接四舍五入成整数再宣称严格对齐。合成器以线性插值定义分数采样的传播和对齐，在源信号之外补零；源信号是 383 Hz 六谐波音叠加固定种子的宽带噪声，每个麦再加独立传感器噪声，所有文件在同组共用一个导出增益。麦 1 的无噪版本是参考，不是来自真实录音的“干净语音”。</p>
+<p><strong>E04-07：算出时差并区分理想相量与实际 WAV。</strong> 手算表中四个时差。若只取 2298 Hz 的理想单音、暂时忽略噪声与插值，四麦未经对齐直接平均后，相对单麦的幅度是多少？按表中因果时延对齐后是多少？最后读取下列 WAV，对参考计算 20～1980 ms 的均方误差，比较两种平均方式；不得对输出逐文件调增益，也不要把单次合成结果写成真实场景的平均性能。</p>
+<p><strong>参考答案。</strong> 相邻理想相位差的大小是 $2\pi(2298)(0.04\sin30^\circ/343)\approx0.84191$ rad。未经对齐时的幅度为 $\left|\sum_{m=0}^{3}e^{\mathrm j m(0.84191)}/4\right|\approx0.607893$，即相对单麦约 −4.32345 dB；理想对齐后四个相量同相，目标幅度为 1。音频还含宽带成分、两次线性插值、独立噪声和 PCM16 量化，因此 WAV 的逐样本均方误差不会等于这两个单频幅度。运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 的 <code>E04-07</code> 可复算理想相量，按<a href="research/05_exercises_and_audio.html#14-四麦分数采样时差">练习与音频实验</a>读取 WAV 并检查全频结果。</p>
+<ul>
+<li><a href="audio/fractional_reference.wav">无噪麦 1 参考</a><audio class="audio-sample" controls preload="none" aria-label="无噪麦 1 参考" src="audio/fractional_reference.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="audio/fractional_array.wav">四通道阵列原始输入</a><audio class="audio-sample" controls preload="none" aria-label="四通道阵列原始输入" src="audio/fractional_array.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="audio/fractional_unaligned.wav">未经对齐的四麦平均</a><audio class="audio-sample" controls preload="none" aria-label="未经对齐的四麦平均" src="audio/fractional_unaligned.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="audio/fractional_aligned.wav">按已知几何延迟对齐后的四麦平均</a><audio class="audio-sample" controls preload="none" aria-label="按已知几何延迟对齐后的四麦平均" src="audio/fractional_aligned.wav">请使用上方 WAV 链接下载。</audio></li>
+</ul>
+<p>音频中的角度和传感器时差是真值，因为它们由合成器设定；它们并不是某种 DOA 算法在真实房间中“测出”的值。先用这组样本检查算法的单位、角度零点和输出符号，仍需另用未知方向、反射及真实多通道录音评价定位性能。</p>
+<span id="sec-19" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-11">4.11 本章练习</h2>
+<ol>
+<li>
+<p>★基础（TDOA + GDOP）：4 cm 双麦、正横方向附近，时延估计偏了 10 μs，角度会偏多少？</p>
+<p>参考答案：正横附近 $\Delta\theta\approx c\Delta\tau/d=343\times10\times10^{-6}/0.04\approx0.086$ rad，即约 4.9°。线性近似只能在偏差足够小时使用。</p>
+<p>真值为 85° 时，时延约为 116.2 μs；增加 10 μs 会超过物理上限 $d/c\approx116.6$ μs，应标成越界。减少 10 μs 后用反正弦精确反算约为 65.6°，误差约 19.4°。这与 §3.1 算例 3-2 一致：端射附近的有限偏差不能把微分式的 56.4° 当成精确答案。</p>
+</li>
+<li>
+<p>★★进阶（CRLB 口径题）：为什么只写“带宽 4 kHz、SNR 0 dB”还不足以算出唯一的 TDOA CRLB？</p>
+<p>参考答案需要补齐三组条件：</p>
+<ul>
+<li>观测模型：单通道或双通道、波形是否已知、未知幅度等干扰参数；</li>
+<li>功率口径：SNR 定义、单边或双边谱、实际谱形和均方根带宽；</li>
+<li>数据量：观测时长或独立快拍数。</li>
+</ul>
+<p>条件不同，Fisher 信息和常数系数也会变化，因此不能仅凭名义带宽和一个 SNR 数字给出唯一答案。</p>
+</li>
+</ol>
+<p>以下四题用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 复算。它们检查时延符号、统计秩、几何歧义和空间平滑，不把谱峰尖锐程度当作准确性的唯一依据。</p>
+<p>MDL 练习 E04-05、E04-06 随完整算例放在 <a href="#sec-4-9">§4.9</a>；四麦音频练习 E04-07 放在 <a href="#sec-4-10">§4.10</a>。题号保持稳定，建议先读对应专题，再做本节综合练习。</p>
+<p><strong>E04-01：交换两段录音，延迟应怎样变化？</strong> 16 kHz 下，让麦 1 比麦 2 晚 3 点，零填充而不循环移动信号。对单脉冲和固定种子宽带噪声各算一次 GCC-PHAT，再交换两通道。静音输入应返回哪个方向？</p>
+<p><strong>参考答案</strong>：$\tau_{12}=3/16000=187.5$ μs，交换后为 −187.5 μs。两类输入都应得到 +3、−3 点；零能量输入没有可辨的相关峰，本书函数会明确报错，不能把首个搜索点当成方向。</p>
+<p>这个 3 点延迟至少对应 $343\times187.5\,\mu\mathrm{s}=6.43$ cm 的麦距，不能把它再代入 4 cm 双麦反算实数角度。本题隔离代码符号与零输入行为，不模拟混响或亚采样误差。</p>
+<p><a href="research/05_exercises_and_audio.html#3-对齐与平均">音频总览的“对齐与平均”实验</a>另提供含噪的双通道 WAV，也采用第一通道晚 3 点的约定。先读取采样率和通道顺序，再估计时差；谐波样本可能产生多个相关峰，不能把 E04-01 的宽带、无噪结果直接当作该文件的误差保证。</p>
+<p><strong>E04-02：两个声源为什么可能只产生一个大特征值？</strong> 取四麦 ULA、$d=\lambda/2$，两个方向为 −30°、+30°，两源功率均为 1、无传感器噪声。比较源协方差为单位阵和全 1 矩阵时的阵列协方差特征值。</p>
+<p><strong>参考答案</strong>：两列导向矢量的范数平方均为 4，内积为 $1-1+1-1=0$。非相干时 $\mathbf R=\mathbf A\mathbf A^H$，特征值为 $4,4,0,0$；完全相干时观测方向向量为两列之和，$\mathbf R=(\vec a_1+\vec a_2)(\vec a_1+\vec a_2)^H$，其范数平方为 8，特征值为 $8,0,0,0$。</p>
+<p>物理声源数在两种情况下都是 2，变化的是二阶统计量的秩。本题用理论协方差避免有限样本扰动，不能据此宣称实际录音一定得到精确零特征值。</p>
+<p><strong>E04-03：MUSIC 能消除由间距造成的歧义吗？</strong> 四麦 ULA 取 $d=\lambda$，比较 −30°、+30° 的导向矢量。在真实方向的秩一协方差上加 $0.1\mathbf I$，分别计算这两个候选方向的 MUSIC 值。</p>
+<p><strong>参考答案</strong>：相邻相位分别为 $-\pi$、$+\pi$，复指数相同，两个导向矢量均为 $[1,-1,1,-1]^\top$。所以两个候选的噪声子空间投影相同；本书用 $10^{-15}$ 限制伪谱分母，二者均达到约 $10^{15}$。这个数由数值保护决定，不是置信度，也不是信噪比。</p>
+<p>更密的角度扫描或更尖的谱峰不能分开完全相同的观测模型。需要改变几何、引入其他频率或限定已知可见区域；限定区域所用的先验也应随结果说明。</p>
+<p><strong>E04-04：空间平滑怎样恢复两维信号子空间？</strong> 沿用 E04-02 的完全相干双源，截取麦 1～3 与麦 2～4 的两个子阵协方差，再等权平均。计算平滑矩阵与特征值，并比较处理前后的孔径。复算入口仍为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a>。</p>
+<p><strong>参考答案</strong>：两个源的合成导向为 $[2,0,-2,0]^\top$。两个子阵的向量分别为 $[2,0,-2]^\top$ 和 $[0,-2,0]^\top$，外积平均得到</p>
+<p>$$\mathbf R_{\mathrm{sm}}=
+\begin{bmatrix}2&0&-2\\0&2&0\\-2&0&2\end{bmatrix}。$$</p>
+<p>向量 $[1,0,1]^\top$、$[0,1,0]^\top$、$[1,0,-1]^\top$ 分别给出特征值 0、2、4。原矩阵只有特征值 8 非零，平滑后恢复两个非零特征值；物理源数始终为 2。</p>
+<p>原孔径为 $3d$，平滑后为 $2d$，所以恢复秩并不保留全部孔径。记子阵数量为 $L$、物理源数为 $K$、每个子阵的麦数为 $P$，本例满足 $L=2\ge K=2$、$P=3>K$；任意非均匀阵不能只滑动矩阵下标套用。代码在本题中直接平均两个子矩阵，不提供通用空间平滑器。<a href="https://morriswmz.github.io/doatools.py/references/doatools.estimation.preprocessing.html" title="citation">doatools 官方接口</a>同样区分子阵数量与输出矩阵维数。</p>
 <hr />
 <blockquote>
 <p>📄 本篇信息：配图 5 张 ｜ <a href="index.html">回首页</a></p>

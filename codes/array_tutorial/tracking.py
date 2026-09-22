@@ -42,10 +42,18 @@ class ConstantVelocityKalman:
         if not np.isfinite(dt) or dt <= 0.0:
             raise ValueError("dt must be finite and positive")
         transition = np.array([[1.0, dt], [0.0, 1.0]])
-        self.state = transition @ self.state
-        self.state[0] = wrap_angle(self.state[0])
-        self.covariance = transition @ self.covariance @ transition.T + self.process_noise
-        self.covariance = (self.covariance + self.covariance.T) / 2.0
+        try:
+            with np.errstate(over="raise", invalid="raise", divide="raise"):
+                state = transition @ self.state
+                state[0] = wrap_angle(state[0])
+                covariance = transition @ self.covariance @ transition.T + self.process_noise
+                covariance = _checked_covariance(covariance)
+        except FloatingPointError as error:
+            raise ValueError("predicted state or covariance exceeds floating-point range") from error
+        if not np.all(np.isfinite(state)):
+            raise ValueError("predicted state exceeds floating-point range")
+        self.state = state
+        self.covariance = covariance
         return self.state.copy()
 
     def update(self, angle: float, measurement_variance: float) -> np.ndarray:
@@ -53,21 +61,48 @@ class ConstantVelocityKalman:
         measurement_variance = finite_real_scalar(measurement_variance, "measurement_variance")
         if not np.isfinite(angle) or not np.isfinite(measurement_variance) or measurement_variance <= 0:
             raise ValueError("angle must be finite and measurement_variance positive")
-        observation = np.array([[1.0, 0.0]])
-        innovation = wrap_angle(angle - self.state[0])
-        innovation_variance = float((observation @ self.covariance @ observation.T).item() + measurement_variance)
-        gain = self.covariance @ observation.T / innovation_variance
-        self.state = self.state + gain[:, 0] * innovation
-        self.state[0] = wrap_angle(self.state[0])
-        identity = np.eye(2)
-        residual_map = identity - gain @ observation
-        # Joseph form preserves symmetry and positive semidefiniteness better.
-        self.covariance = (
-            residual_map @ self.covariance @ residual_map.T
-            + (gain * measurement_variance) @ gain.T
-        )
-        self.covariance = (self.covariance + self.covariance.T) / 2.0
+        # Reducing the observation before subtraction avoids overflowing two
+        # finite angles that represent ordinary directions modulo 360 degrees.
+        innovation = wrap_angle(wrap_angle(angle) - self.state[0])
+        scale = max(float(np.max(np.abs(self.covariance[:, 0]))), measurement_variance)
+        if scale <= 0.0:
+            raise ValueError("innovation variance must be positive")
+        denominator = self.covariance[0, 0] / scale + measurement_variance / scale
+        if denominator <= 0.0 or not np.isfinite(denominator):
+            raise ValueError("innovation variance must be positive and finite")
+        try:
+            with np.errstate(over="raise", invalid="raise", divide="raise"):
+                gain = (self.covariance[:, 0] / scale) / denominator
+                if not np.all(np.isfinite(gain)):
+                    raise ValueError("Kalman gain exceeds floating-point range")
+                state = self.state + gain * innovation
+                state[0] = wrap_angle(state[0])
+                residual_map = np.array([[1.0 - gain[0], 0.0], [-gain[1], 1.0]])
+                # Joseph form keeps covariance positive semidefinite better
+                # than subtracting nearly equal prior and correction matrices.
+                covariance = (
+                    residual_map @ self.covariance @ residual_map.T
+                    + measurement_variance * np.outer(gain, gain)
+                )
+                covariance = _checked_covariance(covariance)
+        except FloatingPointError as error:
+            raise ValueError("updated state or covariance exceeds floating-point range") from error
+        if not np.all(np.isfinite(state)):
+            raise ValueError("updated state exceeds floating-point range")
+        self.state = state
+        self.covariance = covariance
         return self.state.copy()
+
+
+def _checked_covariance(matrix: np.ndarray) -> np.ndarray:
+    """Symmetrize without doubling large entries; reject invalid covariance."""
+    symmetric = 0.5 * matrix + 0.5 * matrix.T
+    if not np.all(np.isfinite(symmetric)):
+        raise ValueError("tracking covariance exceeds floating-point range")
+    scale = float(np.max(np.abs(symmetric)))
+    if scale and np.min(np.linalg.eigvalsh(symmetric / scale)) < -1e-10:
+        raise ValueError("tracking covariance is not positive semidefinite")
+    return symmetric
 
 
 def systematic_resample(weights: np.ndarray, rng: np.random.Generator) -> np.ndarray:
@@ -76,10 +111,11 @@ def systematic_resample(weights: np.ndarray, rng: np.random.Generator) -> np.nda
     weights = finite_real_array(weights, "weights")
     if weights.ndim != 1 or weights.size == 0 or np.any(weights < 0):
         raise ValueError("weights must be a non-empty non-negative vector")
-    total = float(np.sum(weights))
-    if not np.isfinite(total) or total <= 0:
-        raise ValueError("weights must have a finite positive sum")
-    normalized = weights / total
+    scale = float(np.max(weights))
+    if scale <= 0.0:
+        raise ValueError("weights must have a positive sum")
+    scaled = weights / scale
+    normalized = scaled / np.sum(scaled)
     cumulative = np.cumsum(normalized)
     cumulative[-1] = 1.0
     positions = (rng.random() + np.arange(weights.size)) / weights.size

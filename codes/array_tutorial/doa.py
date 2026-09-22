@@ -17,7 +17,7 @@ from .geometry import plane_wave_delays
 def mdl_source_count(eigenvalues: np.ndarray, snapshots: int) -> tuple[int, np.ndarray]:
     """Return ``(selected_count, scores_for_k_0_through_M_minus_1)``.
 
-    Wax--Kailath complex Gaussian, spatially white noise MDL (Chapter 4.10).
+    Wax--Kailath complex Gaussian, spatially white noise MDL (Chapter 4.9).
     Input is a nonempty 1-D vector of finite, strictly positive *real* sample
     covariance eigenvalues, in any order.  Scores use natural logarithms and
     omit the common ``0.5 * log(snapshots)`` penalty; they are not probabilities.
@@ -79,7 +79,10 @@ def gcc_phat(
     """Estimate ``tau12 = t1 - t2`` using ``ifft(X1 * conj(X2))``.
 
     Returns ``(tau_seconds, peak_value, lags_seconds, correlation)``.  The
-    FFT padding covers the unweighted linear-correlation support.  PHAT's
+    FFT padding covers the unweighted linear-correlation support.  Each input
+    is scaled by its own peak before the FFT; ``epsilon`` is a fraction of the
+    largest resulting cross-spectrum magnitude.  This keeps the PHAT result
+    invariant to a nonzero overall gain on either channel.  PHAT's
     nonlinear spectral normalization does not retain that finite support:
     the result is a sampled periodic inverse transform restricted to physical
     lags, and changing the FFT length can change its values.  Optional
@@ -97,11 +100,16 @@ def gcc_phat(
         raise ValueError("epsilon must be finite and positive")
     linear_length = first.size + second.size - 1
     n_fft = 1 << (linear_length - 1).bit_length()
-    cross = np.fft.fft(first, n_fft) * np.fft.fft(second, n_fft).conj()
-    magnitude = np.abs(cross)
-    if np.max(magnitude) <= epsilon:
+    first_scale = np.max(np.abs(first))
+    second_scale = np.max(np.abs(second))
+    if first_scale == 0.0 or second_scale == 0.0:
         raise ValueError("GCC-PHAT is undefined for a zero-energy pair")
-    cross /= np.maximum(magnitude, epsilon)
+    cross = np.fft.fft(first / first_scale, n_fft) * np.fft.fft(second / second_scale, n_fft).conj()
+    magnitude = np.abs(cross)
+    maximum = np.max(magnitude)
+    if not np.isfinite(maximum) or maximum == 0.0:
+        raise ValueError("GCC-PHAT is undefined for a zero-energy pair")
+    cross /= np.maximum(magnitude, epsilon * maximum)
     circular = np.fft.ifft(cross).real
     negative_lags = circular[-(second.size - 1) :] if second.size > 1 else circular[:0]
     correlation = np.concatenate((negative_lags, circular[: first.size]))
@@ -137,7 +145,12 @@ def srp_phat(
     sound_speed: float = 343.0,
     epsilon: float = 1e-12,
 ) -> np.ndarray:
-    """Scan far-field azimuths by averaging PHAT-normalized microphone pairs."""
+    """Scan far-field azimuths by averaging PHAT-normalized microphone pairs.
+
+    Each channel is scaled before forming cross spectra. ``epsilon`` is
+    relative to each pair's maximum cross-spectrum magnitude. A recording
+    with no usable microphone pair has no direction and raises ``ValueError``.
+    """
     if not np.isfinite(epsilon) or epsilon <= 0.0:
         raise ValueError("epsilon must be finite and positive")
     x = validate_cft(spectra)
@@ -152,13 +165,32 @@ def srp_phat(
     )
     if delays.shape[1] != x.shape[0]:
         raise ValueError("positions and spectra have different channel counts")
+    # Use componentwise scales: abs(complex) itself can overflow although
+    # both components of the input are finite.
+    scales = np.max(np.maximum(np.abs(x.real), np.abs(x.imag)), axis=(1, 2))
+    normalized = np.zeros_like(x)
+    active = scales > 0.0
+    normalized[active] = x[active].real / scales[active, None, None] + 1j * (
+        x[active].imag / scales[active, None, None]
+    )
     score = np.zeros(candidates.size, dtype=float)
     pair_count = 0
+    informative_pairs = 0
     for first in range(x.shape[0]):
         for second in range(first + 1, x.shape[0]):
-            cross = x[first] * x[second].conj()
+            cross = normalized[first] * normalized[second].conj()
             magnitude = np.abs(cross)
-            phat = np.where(magnitude > epsilon, cross / np.maximum(magnitude, epsilon), 0.0)
+            maximum = np.max(magnitude)
+            if maximum == 0.0:
+                pair_count += 1
+                continue
+            if np.any(magnitude[frequencies > 0.0] > epsilon * maximum):
+                informative_pairs += 1
+            phat = np.where(
+                magnitude > epsilon * maximum,
+                cross / np.maximum(magnitude, epsilon * maximum),
+                0.0,
+            )
             mean_cross = np.mean(phat, axis=1)
             predicted = delays[:, first] - delays[:, second]
             phase = np.exp(2.0j * np.pi * predicted[:, None] * frequencies[None, :])
@@ -166,6 +198,10 @@ def srp_phat(
             pair_count += 1
     if pair_count == 0:
         raise ValueError("SRP-PHAT needs at least two microphones")
+    if informative_pairs == 0:
+        raise ValueError("SRP-PHAT has no informative microphone pair")
+    if not np.all(np.isfinite(score)):
+        raise ValueError("SRP-PHAT scores are not finite for this geometry and frequency grid")
     return score / (pair_count * frequencies.size)
 
 
@@ -185,8 +221,11 @@ def bartlett_spectrum(covariance: np.ndarray, steering: np.ndarray) -> np.ndarra
     matrix = hermitian_part(np.asarray(covariance, dtype=complex))
     if matrix.ndim != 2 or matrix.shape[0] < 1 or not np.all(np.isfinite(matrix)):
         raise ValueError("covariance must be a single square matrix")
+    _validate_positive_semidefinite(matrix)
     candidates = _steering_rows(steering, matrix.shape[0])
     values = np.einsum("km,mn,kn->k", candidates.conj(), matrix, candidates)
+    if not np.all(np.isfinite(values)):
+        raise ValueError("Bartlett scores exceed floating-point range")
     return np.real_if_close(values).real
 
 
@@ -226,8 +265,13 @@ def music_spectrum(
     channels = matrix.shape[0]
     if not isinstance(source_count, (int, np.integer)) or not 0 < source_count < channels:
         raise ValueError("source_count must be in [1, channels - 1]")
+    scale = float(np.max(np.maximum(np.abs(matrix.real), np.abs(matrix.imag))))
+    if scale == 0.0:
+        raise ValueError("MUSIC has no signal or noise energy from which to form a subspace")
     candidates = _steering_rows(steering, channels)
-    _, eigenvectors = np.linalg.eigh(matrix)
+    eigenvalues, eigenvectors = np.linalg.eigh(matrix / scale)
+    if eigenvalues[0] < -1e-10 * max(1.0, float(np.max(np.abs(eigenvalues)))):
+        raise np.linalg.LinAlgError("covariance must be positive semidefinite")
     noise = eigenvectors[:, : channels - source_count]
     projection = candidates.conj() @ noise
     denominator = np.sum(np.abs(projection) ** 2, axis=1)
@@ -267,6 +311,16 @@ def esprit_ula(
     if np.any(np.abs(sine) > 1.0 + alias_tolerance):
         raise ValueError("estimated spatial phase has no unaliased physical azimuth")
     return np.sort(np.arcsin(np.clip(sine, -1.0, 1.0)).real)
+
+
+def _validate_positive_semidefinite(matrix: np.ndarray) -> None:
+    """Reject a covariance with a materially negative normalized eigenvalue."""
+    scale = float(np.max(np.maximum(np.abs(matrix.real), np.abs(matrix.imag))))
+    if scale == 0.0:
+        return  # The zero matrix is PSD; callers decide if it is informative.
+    eigenvalues = np.linalg.eigvalsh(matrix / scale)
+    if eigenvalues[0] < -1e-10 * max(1.0, float(np.max(np.abs(eigenvalues)))):
+        raise np.linalg.LinAlgError("covariance must be positive semidefinite")
 
 
 def _load_covariance(

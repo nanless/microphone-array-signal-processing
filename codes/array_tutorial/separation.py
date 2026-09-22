@@ -124,6 +124,9 @@ def mask_mvdr_2x2(
     normalized to reference microphone 0.  Frequencies with unusable statistics
     fall back to selecting microphone 0. Statistics use a common per-frequency
     input scale, which cancels from the MVDR weights; output retains input scale.
+    Each non-empty mask is scaled by its own per-frequency maximum before its
+    SCM is formed, so a common positive change in mask values does not by itself
+    trigger the absolute denominator floor used by ``masked_spatial_covariance``.
     """
 
     x = np.asarray(spectrum)
@@ -136,6 +139,15 @@ def mask_mvdr_2x2(
         raise ValueError("diagonal_loading must be finite and non-negative")
     target_weights = finite_real_array(target_mask, "target_mask")
     interference_weights = finite_real_array(interference_mask, "interference_mask")
+    expected_mask_shape = (x.shape[0], x.shape[2])
+    if target_weights.shape != expected_mask_shape or interference_weights.shape != expected_mask_shape:
+        raise ValueError("target and interference masks must have shape (F,T)")
+    if np.any(target_weights < 0) or np.any(interference_weights < 0):
+        raise ValueError("target and interference masks must be non-negative")
+    target_peak = np.max(target_weights, axis=1)
+    interference_peak = np.max(interference_weights, axis=1)
+    target_weights = target_weights / np.where(target_peak > 0, target_peak, 1.0)[:, None]
+    interference_weights = interference_weights / np.where(interference_peak > 0, interference_peak, 1.0)[:, None]
     # Avoid squaring extreme but finite STFT amplitudes. Real/imaginary peak
     # also avoids overflow in abs(complex) near the floating-point limit.
     input_scale = np.maximum(np.max(np.abs(x.real), axis=(1, 2)),
@@ -147,8 +159,8 @@ def mask_mvdr_2x2(
     normalized = np.empty(x.shape, dtype=np.complex128)
     normalized.real = x.real / common_scale
     normalized.imag = x.imag / common_scale
-    target = masked_spatial_covariance(normalized, target_mask)
-    interference = masked_spatial_covariance(normalized, interference_mask)
+    target = masked_spatial_covariance(normalized, target_weights)
+    interference = masked_spatial_covariance(normalized, interference_weights)
     output = np.empty((x.shape[0], x.shape[2]), dtype=np.complex128)
     beam_weights = np.empty((x.shape[0], 2), dtype=np.complex128)
     fallback = np.array([1.0 + 0j, 0j])
@@ -156,7 +168,7 @@ def mask_mvdr_2x2(
     interference_mass = np.sum(interference_weights, axis=1)
 
     for frequency in range(x.shape[0]):
-        if target_mass[frequency] <= 1e-12 or interference_mass[frequency] <= 1e-12:
+        if target_mass[frequency] == 0.0 or interference_mass[frequency] == 0.0:
             beam_weights[frequency] = fallback
             output[frequency] = x[frequency, 0]
             continue
@@ -186,5 +198,11 @@ def mask_mvdr_2x2(
             except np.linalg.LinAlgError:
                 weight = fallback
         beam_weights[frequency] = weight
-        output[frequency] = (weight.conj() @ normalized[frequency]) * input_scale[frequency]
+        try:
+            with np.errstate(over="raise", invalid="raise"):
+                output[frequency] = (weight.conj() @ normalized[frequency]) * input_scale[frequency]
+        except FloatingPointError as error:
+            raise ValueError("MVDR output exceeds the float64 range") from error
+        if not np.all(np.isfinite(output[frequency])):
+            raise ValueError("MVDR output exceeds the float64 range")
     return output, beam_weights

@@ -17,11 +17,11 @@ class SpatialExerciseTest(unittest.TestCase):
     def setUpClass(cls):
         cls.results = run_exercises()
 
-    def test_registry_has_twenty_five_finite_json_results(self):
+    def test_registry_has_twenty_six_finite_json_results(self):
         expected = {"E01-01", "E01-02", "E02-01", "E02-02", "E02-03", "E03-01",
                     "E03-02", "E04-01", "E04-02", "E04-03", "E05-01", "E05-02",
                     "E01-03", "E02-04", "E02-05", "E03-03", "E03-04", "E04-04",
-                    "E05-03", "E05-04", "E04-05", "E02-06", "E03-05", "E04-06", "E05-05"}
+                    "E05-03", "E05-04", "E04-05", "E02-06", "E03-05", "E04-06", "E04-07", "E05-05"}
         self.assertEqual(set(self.results), expected)
         json.dumps(self.results, allow_nan=False)
 
@@ -88,6 +88,18 @@ class SpatialExerciseTest(unittest.TestCase):
         self.assertEqual(row["delay_pairs_samples"], [[3, -3], [3, -3]])
         self.assertTrue(row["silence_rejected"])
         self.assertEqual(row["minimum_spacing_for_3_samples_m"], 0.0643125)
+
+    def test_four_mic_fractional_delay_has_independent_phasor_answer(self):
+        row = self.results["E04-07"]
+        adjacent_seconds = .04 * .5 / 343
+        np.testing.assert_allclose(row["relative_arrival_us"],
+                                   -1e6 * adjacent_seconds * np.arange(4), atol=1e-12)
+        np.testing.assert_allclose(row["causal_alignment_samples"],
+                                   16000 * adjacent_seconds * np.arange(4), atol=1e-12)
+        phase = 2 * math.pi * 2298 * adjacent_seconds
+        expected = abs(math.sin(2*phase) / (4*math.sin(phase/2)))
+        self.assertAlmostEqual(row["ideal_unaligned_amplitude"], expected, places=13)
+        self.assertAlmostEqual(row["ideal_aligned_amplitude"], 1., places=13)
 
     def test_coherent_rank_preserves_physical_source_count(self):
         row = self.results["E04-02"]

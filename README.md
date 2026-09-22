@@ -2,7 +2,7 @@
 
 一套写给初学者和入门研究生的麦克风阵列信号处理中文教程。从“为什么摆一群麦克风”讲到定位（DOA）、波束形成、回声消除（AEC）、去混响（WPE）、语音分离、声源追踪，一直到工程实现与选型。
 
-正文提供关键公式推导、可复算例子、适用边界、36 张脚本生成的图，以及与各章公式对应的 NumPy/标准库教学代码。提供 67 道可运行代码练习和 10 组、共 40 个合成音频文件，输入、答案与试听条件见[练习与音频实验](codes/research/05_exercises_and_audio.md)。这 40 个音频不是自然语音或正式听测数据。另提供 DEMAND 河流场景的真实 16 通道录音摘录及 3 个派生 WAV，共 4 个文件，独立标注 CC BY-SA 3.0 数据许可；实验只分析噪声功率与通道相关性。
+正文提供关键公式推导、可复算例子、适用边界、36 张脚本生成的图，以及与各章公式对应的 NumPy/标准库教学代码。提供 68 道可运行代码练习和 11 组、共 44 个合成音频文件，输入、答案与试听条件见[练习与音频实验](codes/research/05_exercises_and_audio.md)。这 44 个音频不是自然语音或正式听测数据。另提供 DEMAND 河流场景的真实 16 通道录音摘录及 3 个派生 WAV，共 4 个文件，独立标注 CC BY-SA 3.0 数据许可；实验只分析噪声功率与通道相关性。
 
 [源码研究手册](codes/research/README.md) 进一步展开算法实现、工业配置和复现实验，分为空间处理与追踪、AEC/WPE/分离、工业部署与评测三篇专题，另附源码复现方法、练习与音频实验。官方实现固定提交，取得的源码保存在 `codes/upstream/_downloads/` 的独立工作树中。
 
@@ -15,13 +15,13 @@ English version: [README_EN.md](./README_EN.md)
 | `chapters/` | 教程正文 14 篇 Markdown（`00_overview.md` 是入口，`01`～`11` 是 11 章正文，`12`/`13` 是附录 A/B） |
 | `figures/` | 36 张插图（`fig01`～`fig36_*.png`），全部由脚本生成、可复现 |
 | `codes/` | 教学算法、章节例子、工业实现小工具、第三方官方源码索引与精确版本锁定；覆盖表见 `codes/COVERAGE.md` |
-| `codes/audio/` | 10 组、40 个本书合成的 WAV 及参数、摘要清单，由脚本生成，不直接编辑 |
+| `codes/audio/` | 11 组、44 个本书合成的 WAV 及参数、摘要清单，由脚本生成，不直接编辑 |
 | `codes/real_audio/` | DEMAND 真实同步录音摘录、派生均值、独立清单与数据许可；不是合成数据 |
 | `codes/research/` | 详细源码研究手册：算法步骤、状态与配置、代码入口、失败实验和工业复现 |
 | `codes/reports/` | 工业接口与空间算法的小规模运行报告；与源码获取状态、论文全量评测分开 |
 | `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
 | `site/` | 20 个网页：14 个教程页（含首页）及 `research/` 下 6 个研究手册页；构建产物，可再生 |
-| `dist/` | 合订 PDF（`microphone-array-tutorial.pdf`）与合订 HTML；PDF 含 14 个顶级、85 个二级、21 个三级书签，共 120 个 |
+| `dist/` | 合订 PDF（`microphone-array-tutorial.pdf`）与合订 HTML；PDF 含 14 个顶级、86 个二级、21 个三级书签，共 121 个 |
 
 ## 章节导览
 
@@ -60,7 +60,7 @@ python3 -m venv .venv
 .venv/bin/python -m codes.examples.exercises_engineering
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 
-# 3. 先生成 40 个音频，再生成 36 张图（图 34～36 读取生成的音频）
+# 3. 先生成 44 个音频，再生成 36 张图（图 34～36 读取生成的音频）
 .venv/bin/python codes/examples/generate_audio_samples.py
 .venv/bin/python scripts/make_figures.py
 .venv/bin/python scripts/make_aec_figures.py

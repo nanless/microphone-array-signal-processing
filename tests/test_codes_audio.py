@@ -43,7 +43,7 @@ class AudioSamplesTest(unittest.TestCase):
         pan = cases['tracking']['signals']['tracking_pan']
         np.testing.assert_allclose(np.sum(pan**2, axis=0), sep['separation_source1']**2, atol=1e-15)
         files, groups = prepare_exports(cases)
-        self.assertEqual(len(files), 40)
+        self.assertEqual(len(files), 44)
         for blob, info in files.values():
             self.assertEqual(info['common_export_gain'], groups[info['group']]['common_export_gain'])
             self.assertLess(info['peak'], .801)
@@ -52,7 +52,7 @@ class AudioSamplesTest(unittest.TestCase):
     def test_manifest_check_detects_modified_audio(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            self.assertEqual(generate(root)['files'], 40)
+            self.assertEqual(generate(root)['files'], 44)
             self.assertTrue(generate(root, check=True)['checked'])
             (root/'spatial_reference.wav').write_bytes(b'not a WAV')
             with self.assertRaisesRegex(ValueError, 'audio content differs'):
@@ -146,6 +146,28 @@ class AudioSamplesTest(unittest.TestCase):
             amplitude = 2*np.abs(np.fft.rfft(decoded[0])[[1000, 3000]])/32000
             # DFT amplitude error <= twice the pointwise rounding bound.
             np.testing.assert_allclose(amplitude, expected, atol=1/32768, rtol=0)
+
+    def test_four_mic_fractional_array_geometry_and_alignment(self):
+        case = build_cases()['fractional_array']
+        signals = case['signals']
+        params = case['parameters']
+        expected_adjacent = .04 * .5 / 343
+        np.testing.assert_allclose(-np.diff(params['relative_arrival_seconds']), expected_adjacent,
+                                   rtol=1e-13, atol=0)
+        self.assertAlmostEqual(params['arrival_difference_adjacent_samples'],
+                               16000 * expected_adjacent, places=12)
+        self.assertEqual(signals['fractional_array'].shape, (4, 32000))
+        # The independent model says correct geometry restores coherence; this
+        # test evaluates the actual generated arrays without per-file gain fit.
+        reference = signals['fractional_reference'][320:-320]
+        mse_unaligned = np.mean((signals['fractional_unaligned'][320:-320]-reference)**2)
+        mse_aligned = np.mean((signals['fractional_aligned'][320:-320]-reference)**2)
+        self.assertLess(mse_aligned, mse_unaligned / 10)
+        files, groups = prepare_exports({'fractional_array': case})
+        self.assertEqual(len(files), 4)
+        self.assertEqual(groups['fractional_array']['parameters']['azimuth_deg'], 30.)
+        _, decoded = read_pcm16(files['fractional_array.wav'][0])
+        self.assertEqual(decoded.shape, (4, 32000))
 
 
 if __name__ == '__main__':

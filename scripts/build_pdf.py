@@ -82,7 +82,7 @@ PDF_THIRD_LEVEL_CHAPTER_IDS = {
 CSS = """
 @page{size:A4;margin:16mm 15mm 18mm}
 body{font-family:"STHeiti","Hiragino Sans GB","Microsoft YaHei",sans-serif;font-size:16px;line-height:1.75;color:#1a1a2e;max-width:860px;margin:0 auto;padding:24px}
-p{margin:0 0 .85em}li>p{margin:.3em 0}
+p{margin:0 0 .85em;break-inside:avoid;orphans:2;widows:2}li>p{margin:.3em 0}
 img{max-width:100%;height:auto;display:block;margin:12px auto}
 table{border-collapse:collapse;margin:12px 0;display:block;overflow-x:visible;max-width:100%}
 th,td{border:1px solid #dfe3ea;padding:5px 9px;font-size:13.5px;text-align:left}

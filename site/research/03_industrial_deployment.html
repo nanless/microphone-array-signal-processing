@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>工业音频实现研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="1c057bc95262"><style>
+<meta name="source-digest" content="5a44d84ec0bb"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -146,7 +146,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="工业音频实现从采集状态到部署和评分" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-d1edc87d16">工业音频实现：从采集、状态到部署和评分</h1>
 <p>核实日期：2026-09-22。对应正文第 10、11 章和附录 B。这里讨论本书算法进入连续音频系统后需要补上的部分：驱动、参考路由、跨块状态、定点内核、模型运行时和评分器。每项的完整提交以 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json"><code>SOURCES.lock.json</code></a> 为准；网页文档版本只说明核实依据，不自动等于本机安装版本。</p>
-<p>下面的试验是建议执行的设备验收步骤，不是本书已经测得的产品结果。源码下载、依赖安装、编译、运行、声学测量是不同状态。没有硬件、模型或数据时，可以完成源码核对，但不能把该项标成已经通过设备验收。</p>
+<p>除明确写出输入、环境和实测值的本地接口实验外，下面的试验是建议执行的设备验收步骤，不是已经测得的产品结果。源码下载、依赖安装、编译、运行、声学测量是不同状态。没有硬件、模型或数据时，可以完成源码核对，但不能把该项标成已经通过设备验收。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="1-采集时钟与连续流" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-ffac6d1f19">1. 采集、时钟与连续流</h2>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><span id="i01portaudio-回调与设备时间戳" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-39d396e1a1">I01：PortAudio 回调与设备时间戳</h3>
 <p>PortAudio 为不同主机音频系统提供统一入口。本书锁定 19.7.0 对应提交。先读 <code>include/portaudio.h</code> 的回调签名，再看 <code>examples/</code> 中的采集与播放例子；库为 MIT 许可，平台后端仍有自身依赖。官方<a href="https://portaudio.com/docs/v19-doxydocs/writing_a_callback.html">回调说明</a>明确限制会阻塞或耗时不可预测的操作。</p>
@@ -162,8 +162,43 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>测试会议语音、通知声和音乐是否都进入参考；切换默认扬声器后再次检查。用断开参考和改变播放延迟的试验观察 AEC 恢复。系统已启用 AEC 时，应用再启用一套 AEC 会改变输入统计与近端损伤，应设置单套与双套处理对照，不能只检查虚拟麦克风能否出现。</p>
 <span id="sec-6" class="anchor-alias" aria-hidden="true"></span><span id="i04libsamplerate-的有状态重采样" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-7371fbfb85">I04：libsamplerate 的有状态重采样</h3>
 <p><code>libsndfile/libsamplerate</code> 的 README 标识 0.2.2，根许可为 BSD-2-Clause。核心入口 <a href="https://github.com/libsndfile/libsamplerate/blob/0844c208f683527c08ea8a80acc13b398aa9c8bf/src/samplerate.c"><code>src/samplerate.c</code></a> 的 <code>src_new</code>、<code>src_process</code> 与 <code>src_reset</code> 管理转换状态；滤波实现位于 <code>src/</code>。</p>
-<p><a href="https://libsndfile.github.io/libsamplerate/api_full.html">Full API</a>规定 <code>src_ratio=输出采样率/输入采样率</code>，调用后分别返回实际消耗的 <code>input_frames_used</code> 和生成的 <code>output_frames_gen</code>。不能假设每次恰好消耗整个输入块，也不能把多个连续块各自交给一个新实例。流结束时要按 API 排空滤波尾部。</p>
+<p><a href="https://libsndfile.github.io/libsamplerate/api_full.html">Full API</a>规定 <code>src_ratio=输出采样率/输入采样率</code>，调用后分别返回实际消耗的 <code>input_frames_used</code> 和生成的 <code>output_frames_gen</code>。不能假设每次恰好消耗整个输入块，也不能把多个连续块各自交给一个新实例。最后一个输入块设置 <code>end_of_input=1</code>；若输出缓冲尚未取尽，保持同一状态继续调用，直至不再产生输出。只在文件头写入新的采样率，或消耗完输入就停止调用，均不能完成上述转换协议。</p>
+<p>逐次改变 <code>SRC_DATA.src_ratio</code> 时，库会在上次与本次的比例间平滑过渡；调用 <code>src_set_ratio</code> 可让下一次处理从新比例开始，绕过这一平滑。两者用于不同控制目的，不能把“更新了比例”当成已经实现时钟估计或低伪影切换。<a href="https://libsndfile.github.io/libsamplerate/api_full.html">官方 Full API 的 Set Ratio 小节</a></p>
 <p>本书 SRO 约定中设备快 100 ppm 时，转换到参考时钟的比例为 <code>1/1.0001≈0.99990001</code>。用同一宽带信号比较整段与分块输出；补偿固定滤波延迟后检查残差，再测接近奈奎斯特频率的带外泄漏。比例更新还要测突变、平滑过渡和队列长期漂移；短录音长度看似正确不足以说明相位相干。</p>
+<p>本书另以<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/run_libsamplerate_sro.py">可重跑的 C 接口实验</a>核对一个受限情形。输入是 10 s 的单通道数学合成脉冲：参考时钟 16 kHz，设备时钟在前 5 s 快 100 ppm（16 001.6 样本/s），后 5 s 快 150 ppm（16 002.4 样本/s），脉冲发生于参考时间 1、3、4、6、8、9 s。按两段时钟积分并四舍五入，设备共生成 160 020 帧；从独立时钟算式可得 1～9 s 两个脉冲的未校正相对偏移增量为 16 帧。设备采样率在本实验中是<strong>事先给定的真值</strong>，并非由音频估计。</p>
+<p>锁定 <code>libsamplerate</code> 0.2.2、提交 <code>0844c208f683527c08ea8a80acc13b398aa9c8bf</code>，本机 macOS arm64、Apple clang 21.0.0、CMake 4.3.2，仅在临时目录构建静态库；<code>SRC_SINC_MEDIUM_QUALITY</code>、257 帧输入块、64 帧输出缓冲、浮点单通道、状态跨块保留。未校正组的比例始终为 1；校正组在两段分别传入 <code>16000/16001.6≈0.99990001</code> 和 <code>16000/16002.4≈0.99985002</code>。两组最后一个输入块都设 <code>end_of_input=1</code>，随后继续取尽尾部。该实验使用 <code>SRC_DATA.src_ratio</code> 的跨调用平滑，不测试 <code>src_set_ratio</code> 的突变控制。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">对照</th>
+<th scope="col" style="text-align: right;">输出总帧数</th>
+<th scope="col">六个脉冲相对参考时间的峰值采样点偏移（帧）</th>
+<th scope="col" style="text-align: right;">1～9 s 偏移增量（帧）</th>
+<th scope="col" style="text-align: right;">部分消费调用</th>
+<th scope="col" style="text-align: right;">输入取尽后补出帧数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>不校正，比例 1</td>
+<td style="text-align: right;">160 020</td>
+<td>2，5，6，10，15，18</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">1 875</td>
+<td style="text-align: right;">84</td>
+</tr>
+<tr>
+<td>按已知时钟更新比例</td>
+<td style="text-align: right;">159 999</td>
+<td>0，0，0，0，0，0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1 874</td>
+<td style="text-align: right;">127</td>
+</tr>
+</tbody>
+</table></div>
+<p>表中的“部分消费”由每次 <code>input_frames_used &lt; input_frames</code> 计数，两组实际累计消耗均为 160 020 输入帧；输出计数、比例和排空顺序还由逐调用记录独立检查。校正组总帧数比 10 s×16 kHz 少 1 帧，不能因为内部六个标记对齐就写成输出长度严格等于 160 000。此处只观察孤立脉冲峰值位置，没有拟合固定时移或增益；脉冲之间的波形、带外抑制和听感不是表中测量项。</p>
+<p>运行命令是 <code>.venv/bin/python codes/examples/run_libsamplerate_sro.py</code>。脚本先核对本地上游提交及范围，完成临时构建后输出 JSON；源文件、二进制输出和调用轨迹均不进入发布仓库。对应<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_libsamplerate_sro.py">独立算式与接口失败用例测试</a>检查错误比率、丢失输入、过早结束与遗漏排空。实际设备仍需另测 SRO 估计误差、比例更新伪影、抗混叠、时间戳闭环和长时队列稳定；本实验不能代表这些项目通过。</p>
 <span id="sec-7" class="anchor-alias" aria-hidden="true"></span><span id="i05speexdsp-的流式转换与回声缓冲" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-1336ddbb4b">I05：SpeexDSP 的流式转换与回声缓冲</h3>
 <p>SpeexDSP 的 <code>libspeexdsp/resample.c</code>、<code>include/speex/speex_resampler.h</code> 是另一组连续重采样入口。<code>libspeexdsp/mdf.c</code> 提供分块频域回声处理，可与第 6 章教学 NLMS 对照。代码根许可为 BSD-3-Clause，版本和提交沿用锁定清单。</p>
 <p>重采样配置包括输入/输出速率、通道数、质量档位、整数或浮点输入，以及每次调用的输入/输出长度。AEC 的帧长、滤波覆盖长度、采样率和播放参考缓冲另行固定；两者共享“连续状态”要求，但不能共用一个模糊的延迟参数。</p>

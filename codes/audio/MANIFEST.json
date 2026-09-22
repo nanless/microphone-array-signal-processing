@@ -10,7 +10,7 @@
     "float_dtype": "float64"
   },
   "synthetic_signal": {
-    "applies_to": "harmonic targets in groups other than nonlinear; see each group for noise and transforms",
+    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear and fractional_array; see each group for noise and transforms",
     "duration_s": 2,
     "base_frequencies_hz": [
       173,
@@ -33,12 +33,13 @@
   "pcm": "signed little-endian 16-bit, round-to-nearest-even; no dither; no per-file normalization",
   "listening": "Start at low device volume. No automatic playback. No formal listening study performed.",
   "generator_inputs": {
-    "codes/examples/generate_audio_samples.py": "242d0a64a2761518f5ebe9045bd01bf042012db9b9d37963b295338a2de200ac",
-    "codes/array_tutorial/audio_samples.py": "ab905441cd0d5dabcaf73ad720490f3c169321401236d38a9e0d36d911ae2e78",
+    "codes/examples/generate_audio_samples.py": "f9e62b470b3b937a4279707afba0f0590e2c48872b89e7838aa66037c21319cb",
+    "codes/array_tutorial/audio_samples.py": "acf3b270c96a2e9a03f1c91ead3a29da3161ca415467cd6b429b9ba041dc09f1",
     "codes/array_tutorial/aec.py": "d2b23b7fb16f146f26d644726ed6a83c8f189d09d00402c73be9b1e4e1ae2769",
-    "codes/array_tutorial/dereverberation.py": "99a1429c5bbe3f8a98dc754bbfaabdd9f27ec7216b04696379d7e5922469f360",
+    "codes/array_tutorial/dereverberation.py": "5f7bfae766930bcd8b468e39e1e0e5c516fd38d1b0e2af95999872a10df42e2a",
     "codes/array_tutorial/spectral.py": "9b7c3d3e2b936fdfa793f372e5d258788a4b43b9536294c231019454bfcb45c6",
-    "codes/array_tutorial/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385"
+    "codes/array_tutorial/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385",
+    "codes/array_tutorial/geometry.py": "7e9c33e90101c41441cde659d288f0aa25be141e9cdbaaa9fcabee54b285f72a"
   },
   "groups": {
     "spatial": {
@@ -55,6 +56,58 @@
         "alignment": "delay mic2 by 3, no noncausal advance"
       },
       "limits": "Integer-delay broadband model; not binaural HRTF, measured array or speech.",
+      "common_export_gain": 1.0
+    },
+    "fractional_array": {
+      "parameters": {
+        "seed": 20260924,
+        "sample_rate_hz": 16000,
+        "positions_m": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.04,
+            0.0
+          ],
+          [
+            0.08,
+            0.0
+          ],
+          [
+            0.12,
+            0.0
+          ]
+        ],
+        "azimuth_deg": 30.0,
+        "sound_speed_m_s": 343.0,
+        "relative_arrival_seconds": [
+          -0.0,
+          -5.8309037900874625e-05,
+          -0.00011661807580174925,
+          -0.00017492711370262388
+        ],
+        "arrival_seconds": [
+          0.002174927113702624,
+          0.0021166180758017492,
+          0.0020583090379008746,
+          0.002
+        ],
+        "arrival_difference_adjacent_samples": 0.9329446064139935,
+        "source": "383 Hz six-harmonic tone plus seeded broadband noise, std 0.04",
+        "sensor_noise_std_each_channel": 0.02,
+        "fractional_delay_model": "linear interpolation with zero outside the 2 s source",
+        "reference": "clean microphone 1 at its physical arrival time; no gain or delay fitting",
+        "alignment": "causally delay microphones 2--4 to microphone 1 using linear interpolation",
+        "channel_order": [
+          "mic1_x0",
+          "mic2_x0.04",
+          "mic3_x0.08",
+          "mic4_x0.12"
+        ]
+      },
+      "limits": "Far-field plane wave with simulated fractional delays and independent sensor noise; no measured room, microphone directivity or physical moving-source recording.",
       "common_export_gain": 1.0
     },
     "aec": {
@@ -335,6 +388,58 @@
       "quantization_max_abs_error": 1.5258633691360435e-05
     },
     {
+      "file": "fractional_reference.wav",
+      "sha256": "d937940571cbe07e08d3ed3fd6cb7b58579d0df2f789becddf4a080f3a47cd29",
+      "group": "fractional_array",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.49700927734375,
+      "rms": 0.15254790095317886,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5257484374243263e-05
+    },
+    {
+      "file": "fractional_array.wav",
+      "sha256": "462a4fb54cc196749d46e6ee92da0f0585973a27b55311671cd13b223443b960",
+      "group": "fractional_array",
+      "sample_rate_hz": 16000,
+      "channels": 4,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.540557861328125,
+      "rms": 0.15511024706426396,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258767745870983e-05
+    },
+    {
+      "file": "fractional_unaligned.wav",
+      "sha256": "ad8f8ea4e1b3d56b65b355a27e00ade78fb6799b57fe931ae88be3029bb773a4",
+      "group": "fractional_array",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.424102783203125,
+      "rms": 0.14470764835212793,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.52585974009245e-05
+    },
+    {
+      "file": "fractional_aligned.wav",
+      "sha256": "21fcb5d26fdbc19bc15e41881bac33e7d64556e9470eb60f78e9c872a8c28029",
+      "group": "fractional_array",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.499786376953125,
+      "rms": 0.15276713467746156,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.52586821088041e-05
+    },
+    {
       "file": "aec_far.wav",
       "sha256": "e4e5cd0e98f709fb326feae82157d08c60e422178ce6089f85c6f3442082cfca",
       "group": "aec",
@@ -436,7 +541,7 @@
       "peak": 0.17218017578125,
       "rms": 0.021823528115692083,
       "common_export_gain": 1.0,
-      "quantization_max_abs_error": 1.5258156931271562e-05
+      "quantization_max_abs_error": 1.5258157098475486e-05
     },
     {
       "file": "separation_source1.wav",

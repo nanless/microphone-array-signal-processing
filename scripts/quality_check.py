@@ -31,7 +31,7 @@ EXPECTED_SECTION_COUNTS = {
     "01_problem-definition.md": 2,
     "02_basics-signal-model.md": 8,
     "03_array-geometry.md": 5,
-    "04_doa-estimation.md": 10,
+    "04_doa-estimation.md": 11,
     "05_beamforming.md": 11,
     "06_aec.md": 1,
     "07_wpe-dereverberation.md": 1,
@@ -66,11 +66,11 @@ EXPECTED_CHAPTERS = [
     ("13_appendix-guide.md", "附录 B · 路径地图与练习"),
 ]
 EXPECTED_CHAPTER_COUNT = 14
-EXPECTED_SECTION_COUNT = 85
+EXPECTED_SECTION_COUNT = 86
 EXPECTED_SUBSECTION_COUNT = 21
-EXPECTED_OUTLINE_ITEM_COUNT = 120
+EXPECTED_OUTLINE_ITEM_COUNT = 121
 EXPECTED_FIGURE_NUMBERS = set(range(1, 37))
-# 研究附站使用独立显式清单，不挤占 14 篇教程或 120 项 PDF 大纲基线。
+# 研究附站使用独立显式清单，不挤占 14 篇教程或 121 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
     ("README.md", "index.html"),
@@ -971,6 +971,7 @@ EXPECTED_AUDIO_STEMS = {
     "conditioning_reference", "conditioning_well_input", "conditioning_ill_input",
     "conditioning_well_output", "conditioning_ill_output",
     "nonlinear_reference", "nonlinear_echo", "nonlinear_estimate", "nonlinear_residual",
+    "fractional_reference", "fractional_array", "fractional_unaligned", "fractional_aligned",
 }
 
 
@@ -1062,16 +1063,17 @@ def check_audio(errors):
         manifest = json.loads((root / "MANIFEST.json").read_text())
         records = manifest["files"]
         names = {stem + ".wav" for stem in EXPECTED_AUDIO_STEMS}
-        if len(records) != 40 or {r["file"] for r in records} != names:
-            fail(errors, "音频清单必须包含独立基线的 40 个 WAV")
+        if len(records) != 44 or {r["file"] for r in records} != names:
+            fail(errors, "音频清单必须包含独立基线的 44 个 WAV")
         if {p.name for p in root.glob("*.wav")} != names or {p.name for p in (SITE / "audio").glob("*.wav")} != names:
             fail(errors, "源音频或站点音频文件集合不符")
         if set(manifest["groups"]) != {"spatial", "aec", "wpe", "separation", "engineering", "tracking",
-                                      "correlation", "polarity", "conditioning", "nonlinear"}:
+                                      "correlation", "polarity", "conditioning", "nonlinear", "fractional_array"}:
             fail(errors, "音频实验组不符")
         expected_inputs = {"codes/examples/generate_audio_samples.py", "codes/array_tutorial/audio_samples.py",
                            "codes/array_tutorial/aec.py", "codes/array_tutorial/dereverberation.py",
-                           "codes/array_tutorial/spectral.py", "codes/array_tutorial/conventions.py"}
+                           "codes/array_tutorial/spectral.py", "codes/array_tutorial/conventions.py",
+                           "codes/array_tutorial/geometry.py"}
         if set(manifest["generator_inputs"]) != expected_inputs:
             fail(errors, "音频生成来源清单不完整")
         for name, expected in manifest["generator_inputs"].items():
@@ -1095,7 +1097,7 @@ def check_audio(errors):
                 raw = wav.readframes(frames)
             if record["sample_rate_hz"] != 16000 or record["duration_s"] != frames / 16000:
                 fail(errors, f"音频清单采样率或时长不符：{name}")
-            expected_group = name.split("_", 1)[0]
+            expected_group = "fractional_array" if name.startswith("fractional_") else name.split("_", 1)[0]
             if record["group"] != expected_group:
                 fail(errors, f"音频分组归属不符：{name}")
             if len(raw) != frames * channels * 2 or frames != record["samples"] or channels != record["channels"]:
@@ -1123,7 +1125,7 @@ def check_audio(errors):
         parser = AudioParser()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         synthetic_players = [p for p in parser.players if (p.get("src") or "").startswith("../audio/")]
-        if len(synthetic_players) != 40 or {p.get("src") for p in synthetic_players} != {"../audio/" + n for n in names}:
+        if len(synthetic_players) != 44 or {p.get("src") for p in synthetic_players} != {"../audio/" + n for n in names}:
             fail(errors, "试听控件集合不符")
         for player in parser.players:
             if "autoplay" in player or "controls" not in player or player.get("preload") != "none" or not player.get("aria-label"):

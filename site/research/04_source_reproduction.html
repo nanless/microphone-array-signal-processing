@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码获取与独立复现记录 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="1c057bc95262"><style>
+<meta name="source-digest" content="5a44d84ec0bb"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -257,6 +257,13 @@ ERLE 不能把双讲中的近端语音解释成残余回声，也不能用参考
 <td>已核对固定提交</td>
 <td>原源码隔离构建静态库；未安装系统依赖</td>
 <td>分块/排空/重置、半幅响度/静音、PCM16 短读与独立读回通过</td>
+<td>未测</td>
+</tr>
+<tr>
+<td>libsamplerate 0.2.2 变比接口</td>
+<td>已核对固定提交</td>
+<td>原源码隔离构建静态库；未安装系统依赖</td>
+<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/run_libsamplerate_sro.py">两段已知时钟偏差实验</a>通过，逐调用核对消费量和尾部排空；时钟估计闭环与抗混叠未测</td>
 <td>未测</td>
 </tr>
 <tr>

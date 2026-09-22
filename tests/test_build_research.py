@@ -1,6 +1,7 @@
 """Research publishing regressions; no network, browser or final output writes."""
 import contextlib
 import io
+import re
 import tempfile
 import unittest
 from html.parser import HTMLParser
@@ -232,9 +233,21 @@ class ResearchBuildTest(unittest.TestCase):
 
     def test_pdf_same_chapter_fragment_gets_chapter_prefix(self):
         result = build_pdf.rewrite_repository_links(
-            '<a href="#sec-4-10">MDL</a><a href="#sec-1">章首</a>',
+            '<a href="#sec-4-9">MDL</a><a href="#sec-1">章首</a>',
             ROOT / "chapters/04_doa-estimation.md")
-        self.assertEqual(result, '<a href="#ch-4-sec-4-10">MDL</a><a href="#ch-4">章首</a>')
+        self.assertEqual(result, '<a href="#ch-4-sec-4-9">MDL</a><a href="#ch-4">章首</a>')
+
+    def test_chapter_four_mdl_precedes_audio_and_summary_exercises(self):
+        source = (ROOT / "chapters/04_doa-estimation.md").read_text(encoding="utf-8")
+        headings = re.findall(r"^### (4\.(?:9|10|11)) (.+)$", source, re.MULTILINE)
+        self.assertEqual(headings, [
+            ("4.9", "MDL 源数估计：逐候选评分与数值例"),
+            ("4.10", "四麦亚采样时差：从几何到可听信号"),
+            ("4.11", "本章练习"),
+        ])
+        self.assertLess(source.index("**E04-05"), source.index("**E04-06"))
+        self.assertLess(source.index("**E04-06"), source.index("**E04-07"))
+        self.assertLess(source.index("**E04-07"), source.index("**E04-01"))
 
     def test_pdf_same_chapter_unknown_fragment_is_rejected(self):
         with self.assertRaises(ValueError):

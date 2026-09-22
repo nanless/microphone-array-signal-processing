@@ -378,8 +378,28 @@ def mvdr_finite_noise_null() -> dict:
             "spacing_wavelengths": .5, "white_noise_variance": 1., "cases": rows}
 
 
+def four_mic_fractional_delay() -> dict:
+    """E04-07: plane-wave delays and ideal narrowband sum for the audio fixture."""
+    positions = np.column_stack((.04 * np.arange(4), np.zeros(4)))
+    delays = plane_wave_delays(positions, np.deg2rad(30.))
+    frequency = 6 * 383.
+    source_phasors = np.exp(-2j * np.pi * frequency * delays)
+    extra_delays = -delays
+    aligned_phasors = source_phasors * np.exp(-2j * np.pi * frequency * extra_delays)
+    unaligned_amplitude = float(abs(np.mean(source_phasors)))
+    return {"positions_m": positions.tolist(), "azimuth_deg": 30.,
+            "sample_rate_hz": 16000, "sound_speed_m_s": 343.,
+            "relative_arrival_us": (delays * 1e6).tolist(),
+            "causal_alignment_samples": (extra_delays * 16000).tolist(),
+            "test_frequency_hz": frequency,
+            "ideal_unaligned_amplitude": unaligned_amplitude,
+            "ideal_unaligned_db": float(20 * np.log10(unaligned_amplitude)),
+            "ideal_aligned_amplitude": float(abs(np.mean(aligned_phasors))),
+            "model_scope": "ideal pure-tone phasor; WAV additionally uses broadband noise, linear interpolation and PCM16"}
+
+
 def run_exercises() -> dict:
-    """Return twenty-five JSON results, including 7 x 200 MDL resampling trials."""
+    """Return twenty-six JSON results, including 7 x 200 MDL resampling trials."""
     functions = {
         "E01-01": correlated_noise, "E01-02": amplitude_and_power,
         "E02-01": stft_framing, "E02-02": complex_covariance, "E02-03": stft_roundtrip,
@@ -393,6 +413,7 @@ def run_exercises() -> dict:
         "E04-05": mdl_candidate_scores,
         "E02-06": mask_common_scale, "E03-05": differential_gain_pattern,
         "E04-06": mdl_repeated_trials, "E05-05": mvdr_finite_noise_null,
+        "E04-07": four_mic_fractional_delay,
     }
     return {identifier: function() for identifier, function in functions.items()}
 

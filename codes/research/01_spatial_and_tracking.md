@@ -60,7 +60,7 @@ SBL、RobustSBL、BTK 和 SMP-PHAT 的依据分别是固定提交的 [SBL LICENS
 
 ### 5. AIC 与 MDL 源数估计
 
-对应 [§4.1.1](../../chapters/04_doa-estimation.md#sec-4-1-1) 和 [§4.10](../../chapters/04_doa-estimation.md#sec-4-10)。本书 `doa.py::mdl_source_count` 提供复高斯、空间白噪声模型的 MDL 教学基线；输入为任意顺序的严格正实特征值和独立快拍数，输出所选源数与全部候选评分。它拒绝秩亏、非法类型和不足以支持满秩样本协方差的快拍数，不静默加载，也不把评分写成概率。
+对应 [§4.1.1](../../chapters/04_doa-estimation.md#sec-4-1-1) 和 [§4.9](../../chapters/04_doa-estimation.md#sec-4-9)。本书 `doa.py::mdl_source_count` 提供复高斯、空间白噪声模型的 MDL 教学基线；输入为任意顺序的严格正实特征值和独立快拍数，输出所选源数与全部候选评分。它拒绝秩亏、非法类型和不足以支持满秩样本协方差的快拍数，不静默加载，也不把评分写成概率。
 
 外部入口仍为 doatools 的 `estimation/source_number.py` 中 `aic`、`mdl`、`ld_stat`。其接口接受协方差或**升序**特征值，并需要快拍数；本书接口不接受协方差矩阵。锁定版本的 `mdl` 保留公共惩罚 $\tfrac12\ln N$，本书去掉该常数，所以直接比较评分时要先统一口径，源数最小值不受影响。上游 `ld_stat` 直接计算特征值乘积，本书改用平移后的对数计算，以覆盖极大、极小尺度。[作者 API](https://morriswmz.github.io/doatools.py/references/doatools.estimation.source_number.html)；[锁定提交的官方源码](https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/estimation/source_number.py)。版本同时登记在 `SOURCES.lock.json`。
 
@@ -70,7 +70,7 @@ E04-05 使用指定谱 $[9,4,1.1,0.9]$ 和 $N=100$，四个 MDL 总分为约 171
 
 E04-06 已加入实际重复抽样，入口为 [`mdl_repeated_trials.py`](../examples/mdl_repeated_trials.py)，也由 `exercises_spatial.py` 执行。四麦半波长线阵，1000 Hz、343 m/s、两源 $\pm30^\circ$；每组 200 次独立圆对称复高斯快拍试验，使用 PCG64 与 `SeedSequence([20260922, 组编号])`。七组分别改变快拍数 100/16、每源功率 1/0.1、独立/完全相干源，以及无源时白噪声/协方差为 $\operatorname{diag}(9,4,1,1)$ 的有色噪声。白噪声每通道方差为 1；按阵列平均功率定义的双源 SNR 为 3.01/−6.99 dB。源和噪声每次重新生成，协方差不减样本均值、不加载；这里没有波形、STFT 或音频采样率。
 
-完整计数与逐条件 Wilson 95% 比例区间见 [§4.10 的 E04-06](../../chapters/04_doa-estimation.md#sec-4-10)。NumPy 2.5.3 下，独立双源功率 1、100 快拍的 200 次均输出 2，而降至 16 快拍时为 163 次；有色纯噪声的 200 次均输出 2，尽管物理源数为 0。相干双源有 199 次输出 1，这与总体信号秩 1 一致，但不等于检出两个物理源。区间只描述指定条件下输出与物理源数相符的重复事件，不是单次 MDL 置信度；全相符也不保证以后不失败。[区间公式：NIST/SEMATECH §7.2.4.1](https://itl.nist.gov/div898/handbook/prc/section2/prc241.htm)。
+完整计数与逐条件 Wilson 95% 比例区间见 [§4.9 的 E04-06](../../chapters/04_doa-estimation.md#sec-4-9)。NumPy 2.5.3 下，独立双源功率 1、100 快拍的 200 次均输出 2，而降至 16 快拍时为 163 次；有色纯噪声的 200 次均输出 2，尽管物理源数为 0。相干双源有 199 次输出 1，这与总体信号秩 1 一致，但不等于检出两个物理源。区间只描述指定条件下输出与物理源数相符的重复事件，不是单次 MDL 置信度；全相符也不保证以后不失败。[区间公式：NIST/SEMATECH §7.2.4.1](https://itl.nist.gov/div898/handbook/prc/section2/prc241.htm)。
 
 这组实验没有检验重叠 STFT 帧、不同源强比、真实房间或时间迟滞。重叠帧不天然独立，把帧数全部当成独立快拍会改变评分口径；工程中的源数检测还应评估迟滞，避免每帧改变下游子空间维度。不能由本书七组数学仿真推出真实录音检测率。
 

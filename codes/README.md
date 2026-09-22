@@ -15,6 +15,8 @@
 已取得锁定的 libsoxr、libebur128、libsndfile 源码，并具备 CMake 与 clang 时，可显式运行
 `.venv/bin/python codes/examples/run_industrial_interfaces.py --report tmp/industrial-rerun.json`。
 它在忽略的临时目录构建静态库，检查分块、排空、响度及 PCM 读写，不安装系统依赖。
+已取得锁定的 libsamplerate 0.2.2 源码时，可另运行 `.venv/bin/python codes/examples/run_libsamplerate_sro.py`，
+复核两段已知时钟偏差下的变比调用、部分消费和尾部排空；这不是时钟估计闭环或真实设备测试。
 SBL 使用 `.venv/bin/python codes/examples/reproduce_sbl_reference.py --output tmp/sbl-rerun.json`，
 只调用独立目录中的固定作者实现。已有结果、失败条件与未执行范围见[复现记录](research/04_source_reproduction.md)。
 
@@ -31,7 +33,7 @@ SMP-PHAT 可用 `.venv/bin/python codes/examples/reproduce_smpphat_reference.py 
 | `array_tutorial/` | 本书自行编写的 NumPy/标准库教学实现 |
 | `examples/` | 按章节组织的可运行例子，打印输入口径、中间量和结果 |
 | `reports/` | 显式运行外部接口与算法后保存的数值报告；记录输入、固定版本及环境，不等同于源码获取状态 |
-| `audio/` | 10 组、40 个本书合成 WAV 及 `MANIFEST.json`；由音频生成器产生，不直接编辑 |
+| `audio/` | 11 组、44 个本书合成 WAV 及 `MANIFEST.json`；由音频生成器产生，不直接编辑 |
 | `real_audio/` | 真实 DEMAND 河流录音摘录与 3 个派生 WAV，独立记录 CC BY-SA 3.0 数据许可 |
 | `upstream/` | 第三方官方仓库的按需获取工具；下载内容默认不入 Git |
 | `COVERAGE.md` | 正文算法到代码、测试和外部实现的逐项映射 |
@@ -56,7 +58,7 @@ SMP-PHAT 可用 `.venv/bin/python codes/examples/reproduce_smpphat_reference.py 
 例子只使用确定性输入，随机输入会固定种子。函数拒绝维度、单位或参数范围明显错误的输入；这类检查是
 为了尽早暴露口径错误，不表示代码已经达到产品级防御能力。
 
-三个 `exercises_` 模块分别有 25、22、20 道题，共 67 道，使用 `E01-01` 至 `E13-01` 等稳定题号，不改原有练习编号。每个模块的 `run_exercises()` 返回可序列化为 JSON 的计算结果，导入模块不会执行练习。题目与测试映射见 [COVERAGE.md](COVERAGE.md)，逐题入口与音频对照见[练习与音频实验](research/05_exercises_and_audio.md)。练习数量与算法数量分开统计；MDL 另有可运行教学实现，当前基线算法共 41 行。
+三个 `exercises_` 模块分别有 26、22、20 道题，共 68 道，使用 `E01-01` 至 `E13-01` 等稳定题号，不改原有练习编号。每个模块的 `run_exercises()` 返回可序列化为 JSON 的计算结果，导入模块不会执行练习。题目与测试映射见 [COVERAGE.md](COVERAGE.md)，逐题入口与音频对照见[练习与音频实验](research/05_exercises_and_audio.md)。练习数量与算法数量分开统计；MDL 另有可运行教学实现，当前基线算法共 41 行。
 
 ## 合成音频与图 34～36
 
@@ -68,7 +70,7 @@ SMP-PHAT 可用 `.venv/bin/python codes/examples/reproduce_smpphat_reference.py 
 .venv/bin/python codes/examples/generate_audio_samples.py --check
 ```
 
-40 个音频文件分为空间处理、AEC、WPE、给定矩阵解混、工程失真、追踪、相关噪声、极性错误、病态求逆和非线性回声 10 组，均为本书合成的 16 kHz、PCM16 信号，这 40 个文件不含第三方录音；真实录音使用独立的 `real_audio/` 目录。每组共用一个增益，避免逐文件归一化掩盖幅度差异；清单记录参数、随机种子、生成源文件摘要和 WAV 摘要。`--check` 检查当前生成物，不重写文件，也不自动播放音频。
+44 个音频文件分为空间处理、四麦分数采样时差、AEC、WPE、给定矩阵解混、工程失真、追踪、相关噪声、极性错误、病态求逆和非线性回声 11 组，均为本书合成的 16 kHz、PCM16 信号，这 44 个文件不含第三方录音；真实录音使用独立的 `real_audio/` 目录。每组共用一个增益，避免逐文件归一化掩盖幅度差异；清单记录参数、随机种子、生成源文件摘要和 WAV 摘要。`--check` 检查当前生成物，不重写文件，也不自动播放音频。
 
 样例用于观察时延、残留回声、混响、混合和削波等现象，不是自然语音质量评测。给定混合矩阵的求逆不是盲分离；已知双讲区间的冻结不是双讲检测器。这些限制及试听顺序见[音频实验说明](research/05_exercises_and_audio.md)。合成文件的来源说明不等于授予新的再分发许可，许可边界仍见下节。
 

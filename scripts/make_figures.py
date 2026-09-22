@@ -1354,8 +1354,8 @@ def fig_stft_cov():
     f0, fb = 60, 128          # 第 60 帧、约 2 kHz 频点
     px, py = f0 * hop / fs * 1000, np.fft.rfftfreq(n_fft, 1 / fs)[fb] / 1000
     ax.plot(px, py, "x", color="w", ms=12, mew=2.8)
-    ax.annotate("一个格子 = 一个时频点 (k, l)\n一个快拍 = 固定该时频点、跨 M 个\n麦克风取同一格的复数谱 → 见 (c)",
-                xy=(px, py), xytext=(430, 5.2), fontsize=FS_LABEL, color="w",
+    ax.annotate("一个格子：一个时频点 $(k,\\ell)$\n固定此格，取 $M$ 路复数谱\n组成一个快拍，见 (c)",
+                xy=(px, py), xytext=(350, 5.3), fontsize=FS_LABEL, color="w",
                 arrowprops=dict(arrowstyle="->", color="w", lw=1.5))
     ax.set_ylim(0, 8); ax.set_xlabel("时间 (ms)", fontsize=FS_LABEL)
     ax.set_ylabel("频率 (kHz)", fontsize=FS_LABEL)
@@ -1965,9 +1965,9 @@ def fig_delay_phase():
     ax.text(1.05, 0.06, "原始 $S(f)$", fontsize=FS_LABEL, color=C_BLUE)
     ax.text(0.05, -1.18, r"延迟后 $S(f)e^{-j2\pi f\tau}$", fontsize=FS_LABEL,
             color=C_RED)
-    ax.text(0.60, -0.12, "2πfτ≈42°", fontsize=11, style="italic")
-    ax.text(-1.55, 1.15, "延迟 τ 等价于复平面上\n顺时针转 2πfτ", fontsize=FS_LABEL, color=C_MAIN)
-    ax.set_xlim(-1.7, 1.7); ax.set_ylim(-1.55, 1.5)
+    ax.text(0.98, -0.38, "2πfτ≈42°", fontsize=11, style="italic")
+    ax.text(-2.25, 0.95, "延迟 τ 等价于复平面上\n顺时针转 2πfτ", fontsize=FS_LABEL, color=C_MAIN)
+    ax.set_xlim(-2.35, 1.8); ax.set_ylim(-1.55, 1.5)
     ax.set_title("(b) 频域看延迟：复数相位转过一个角度", fontsize=11)
     # (c) 相位-频率直线
     ax = axes[2]
@@ -1976,15 +1976,15 @@ def fig_delay_phase():
     ax.plot(f / 1000, np.rad2deg(phase), color=C_BLUE, lw=2)
     for fk in [1000, 2000, 3000, 4000]:
         ax.plot(fk / 1000, np.rad2deg(-2 * np.pi * fk * tau), "o", color=C_RED, ms=6)
-    ax.annotate("1 kHz → -42°\n2 kHz → -84°\n转角与频率成正比\n斜率 = -2πτ", xy=(3.0, -125),
-                xytext=(3.6, -55), fontsize=FS_SMALL,
+    ax.annotate("1 kHz → −42°\n2 kHz → −84°\n转角与频率成正比\n斜率 = −2πτ", xy=(3.0, -125),
+                xytext=(3.8, -135), fontsize=FS_SMALL,
                 arrowprops=dict(arrowstyle="->", color="k"))
     ax.set_xlabel("频率 (kHz)"); ax.set_ylabel("相位 (°)")
     ax.set_title("(c) 同一延迟在不同频率：相位-频率是直线", fontsize=11)
     ax.grid(ls=":", alpha=0.5)
     fig.suptitle("图4  时延为什么变成 $e^{-j2\\pi f\\tau}$：几何直觉\n"
                  "（4 cm 麦距；端射方向达到最大麦间时延 τ=d/c≈0.117 ms）", fontsize=12.5)
-    fig.tight_layout()
+    fig.tight_layout(rect=(0, 0, 1, 0.89), h_pad=3.5)
     save(fig, "fig04_delay_phase.png")
 
 
@@ -2010,22 +2010,29 @@ def fig_beampattern_anatomy():
     Bdb = pattern(0.5, 30)
     ax.plot(th, Bdb, color=C_BLUE, lw=1.8)
     ax.axhline(-3, color="gray", ls="--", lw=1)
-    ax.axhline(-13.3, color=C_ORANGE, ls="--", lw=1)
-    ax.set_ylim(-40, 3); ax.set_xlim(-90, 90)
+    main_lobe = np.abs(np.sin(tr) - np.sin(np.deg2rad(30))) <= 2 / M
+    right_sidelobe = ~main_lobe & (th > 30)
+    sidelobe_index = np.argmax(np.where(right_sidelobe, Bdb, -np.inf))
+    sidelobe_db = float(Bdb[sidelobe_index])
+    ax.axhline(sidelobe_db, color=C_ORANGE, ls="--", lw=1)
+    ax.set_ylim(-40, 13); ax.set_xlim(-90, 90)
     # HPBW 实测
     i0 = np.argmax(Bdb)
     left = np.where(Bdb[:i0] < -3)[0][-1]; right = i0 + np.where(Bdb[i0:] < -3)[0][0]
     ax.annotate("", xy=(th[right], -3), xytext=(th[left], -3),
                 arrowprops=dict(arrowstyle="<->", color=C_RED, lw=1.5))
-    ax.text(30, -1.4, f"半功率波束宽度 HPBW ≈ {th[right]-th[left]:.1f}°（-3dB 线上量）", ha="center", fontsize=FS_LABEL, color=C_RED,
+    ax.text(0.03, 0.96, f"HPBW ≈ {th[right]-th[left]:.1f}°\n两侧 −3 dB 交点间角宽",
+            transform=ax.transAxes, ha="left", va="top", fontsize=FS_LABEL, color=C_RED,
             bbox=dict(fc="white", ec=C_RED, lw=0.7, alpha=0.9, boxstyle="round,pad=0.25"))
-    ax.annotate("主瓣（想听的方向 30°）", xy=(29, -1), xytext=(-18, -4), fontsize=FS_LABEL,
+    ax.annotate("30° 主瓣", xy=(30, 0), xytext=(13, 7), fontsize=FS_LABEL,
                 arrowprops=dict(arrowstyle="->", color="k"))
-    ax.annotate("最高旁瓣 ≈ −13 dB\n（旁瓣电平 SLL）", xy=(54, -13.5), xytext=(30, -32), fontsize=FS_LABEL,
+    ax.annotate(f"最高旁瓣 ≈ {sidelobe_db:.1f} dB\n（旁瓣电平 SLL）",
+                xy=(th[sidelobe_index], sidelobe_db), xytext=(30, -32), fontsize=FS_LABEL,
                 color=C_ORANGE, arrowprops=dict(arrowstyle="->", color=C_ORANGE))
-    ax.annotate("旁瓣：其他方向漏进来的通道", xy=(-32, -17), xytext=(-75, -8), fontsize=FS_LABEL,
+    ax.annotate("旁瓣", xy=(-32, -17), xytext=(-75, -8), fontsize=FS_LABEL,
                 arrowprops=dict(arrowstyle="->", color="gray"))
-    ax.annotate("零点（相消干涉处）", xy=(8.5, -38), xytext=(-30, -34), fontsize=FS_LABEL,
+    first_left_null = np.rad2deg(np.arcsin(np.sin(np.deg2rad(30)) - 2 / M))
+    ax.annotate("零点（相消干涉处）", xy=(first_left_null, -39), xytext=(-30, -34), fontsize=FS_LABEL,
                 arrowprops=dict(arrowstyle="->", color="k"))
     ax.set_xlabel("方向 (°)"); ax.set_ylabel("增益 (dB)")
     ax.set_title("(a) 波束图解剖：8 麦线阵、间距 λ/2、指向 30°", fontsize=11)
@@ -2035,14 +2042,15 @@ def fig_beampattern_anatomy():
     ax.plot(th, pattern(0.5, 60), color=C_BLUE, lw=1.8, ls="--", label="d = λ/2（安全）")
     ax.plot(th, pattern(1.0, 60), color=C_RED, lw=2.5, label="d = λ（超半波长）")
     ax.axvline(-7.7, color="gray", ls=":", lw=1.2, alpha=0.8)
-    ax.text(0.03, 0.94, "栅瓣条件（独立成行）：sinθ = sin60° − λ/d", transform=ax.transAxes,
+    ax.set_ylim(-40, 13); ax.set_xlim(-90, 90)
+    ax.text(0.03, 0.96, "栅瓣条件：sinθ = sin60° − λ/d", transform=ax.transAxes,
             fontsize=FS_LABEL, color=C_RED, va="top", ha="left",
             bbox=dict(fc="white", ec="0.7", alpha=0.9, boxstyle="round,pad=0.3"))
-    ax.annotate("主瓣 60°", xy=(60, 0.3), xytext=(40, 5), fontsize=FS_LABEL,
+    ax.annotate("主瓣 60°", xy=(60, 0), xytext=(42, 7), fontsize=FS_LABEL,
                 arrowprops=dict(arrowstyle="->", color="k"))
-    ax.annotate("栅瓣 @ −7.7°：\n与主瓣等高的鬼影（分不清声源在哪边）", xy=(-7.7, 0.3), xytext=(-82, -10),
-                fontsize=FS_LABEL, color=C_RED, arrowprops=dict(arrowstyle="->", color=C_RED))
-    ax.set_ylim(-40, 8); ax.set_xlim(-90, 90)
+    ax.annotate("−7.7° 栅瓣\n与 60° 主瓣等高", xy=(-7.7, 0), xytext=(-82, 5),
+                fontsize=FS_LABEL, color=C_RED, va="top",
+                arrowprops=dict(arrowstyle="->", color=C_RED))
     ax.set_xlabel("方向 (°)"); ax.set_ylabel("增益 (dB)")
     ax.legend(fontsize=12, loc="lower left")
     ax.set_title("(b) 栅瓣演示：同阵列指向 60°，间距超半波长后", fontsize=11)

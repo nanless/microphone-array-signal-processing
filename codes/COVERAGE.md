@@ -39,10 +39,10 @@
 | 正文或研究范围 | 算法/机制 | 覆盖状态 | 教学入口或主清单 ID：官方源码入口 | 关键边界 |
 |---|---|---|---|---|
 | §4.1.1 | AIC 源数估计 | 外部参考实现 | `doatools`：`doatools/estimation/source_number.py::aic` | 特征值排序、快拍独立性、白噪声 |
-| §4.1.1、§4.10 | MDL 源数估计 | 本仓库可运行基线 | `doa.py::mdl_source_count`；外部对照 `doatools`：`doatools/estimation/source_number.py::mdl` | 复高斯独立快拍、白噪声、正特征值；无自动加载 |
-| §4.2 | GCC-PHAT 与物理 lag 裁剪 | 本仓库可运行基线 | `doa.py::gcc_phat` | 静音、麦序、带宽与多峰 |
+| §4.1.1、§4.9 | MDL 源数估计 | 本仓库可运行基线 | `doa.py::mdl_source_count`；外部对照 `doatools`：`doatools/estimation/source_number.py::mdl` | 复高斯独立快拍、白噪声、正特征值；无自动加载 |
+| §4.2 | GCC-PHAT 与物理 lag 裁剪 | 本仓库可运行基线 | `doa.py::gcc_phat` | 静音、麦序、带宽与多峰；互谱阈值相对本麦对峰值 |
 | §4.2 | GCC 峰三点亚采样插值 | 本仓库可运行基线 | `doa.py::gcc_phat` 插值选项 | 不能创造窄带缺少的信息 |
-| §4.3 | 远场 SRP-PHAT | 本仓库可运行基线 | `doa.py::srp_phat` | 麦对、网格、时延表 |
+| §4.3 | 远场 SRP-PHAT | 本仓库可运行基线 | `doa.py::srp_phat` | 麦对、网格、时延表；全零或仅直流输入拒绝给出方向 |
 | §4.7.1；研究扩展：空间 §8 | 近场三维 SRP | 原理索引 | 正文球面传播与角度—距离网格；空间研究 §8 的版本边界 | 锁定 pyroomacoustics 0.10.0 未将 `mode/r` 接入有效导向和距离网格，不能作为该变体实现 |
 | §4.3；研究扩展：空间 §9 | 分层 SRP 搜索 | 外部参考实现 | `odas`：`src/module/mod_ssl.c`、`src/signal/scan.c` | 粗层丢峰不能由细层恢复 |
 | 研究扩展：空间 §9 | 方向性麦对筛选 | 外部参考实现 | `odas`：`src/signal/spatialindex.c` 与配置 | 设备指向性及有效麦对 |
@@ -51,7 +51,7 @@
 | §4.4 | TDOA 加权非线性最小二乘 | 原理索引 | 正文高斯—牛顿推导 | 共享参考误差相关、多解、雅可比 |
 | §4.5 | Bartlett 空间谱 | 本仓库可运行基线 | `doa.py::bartlett_spectrum` | 导向与输出功率归一 |
 | §4.5 | Capon 空间谱 | 本仓库可运行基线 | `doa.py::capon_spectrum` | 加载、秩亏、失配 |
-| §4.6 | MUSIC | 本仓库可运行基线 | `doa.py::music_spectrum` | 源数、噪声子空间、选峰 |
+| §4.6 | MUSIC | 本仓库可运行基线 | `doa.py::music_spectrum` | 源数、噪声子空间、选峰；非半正定及零协方差拒绝 |
 | §4.6 | NormMUSIC | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/doa/normmusic.py` | 低可靠频点可能被过度加权 |
 | §4.6 | 前向空间平滑 | 外部参考实现 | `doatools`：`doatools/estimation/preprocessing.py::spatial_smooth` | 参数 `l` 是子阵数 |
 | §4.6 | 前后向空间平滑 | 外部参考实现 | `doatools`：同函数 `fb` 选项 | 对称与平移模型、孔径损失 |
@@ -105,7 +105,7 @@
 | §5.9 | BAN 缩放 | 外部参考实现 | `pb_bss`：同文件 `blind_analytic_normalization` | 是独立缩放步骤，不保证无失真 |
 | §5.9 | RTF 幂迭代估计 | 外部参考实现 | `espnet`：`espnet2/enh/layers/beamformer.py::get_rtf` | 函数本身不完成参考通道归一 |
 | §5.9、§8.1 | 掩码空间协方差 | 本仓库可运行基线 | `separation.py::masked_spatial_covariance` | 轴序、空掩码、保留原始功率 |
-| §5.9、§8.1 | 两通道掩码 MVDR | 本仓库可运行基线 | `separation.py::mask_mvdr_2x2` | 限定 2×2，不是完整神经系统 |
+| §5.9、§8.1 | 两通道掩码 MVDR | 本仓库可运行基线 | `separation.py::mask_mvdr_2x2` | 限定 2×2；非零掩码公共缩放不应改变结果；不是完整神经系统 |
 | §5.8 | 球面采样到球谐系数 | 外部参考实现 | `sound-field-analysis`：`sound_field_analysis/process.py::spatFT` | 实/复、余纬角、排列和归一 |
 | §5.8 | 理论径向补偿 | 外部参考实现 | `sound-field-analysis`：`sound_field_analysis/gen.py::radial_filter` | 开放/刚性球、低频噪声 |
 | §5.8；研究扩展：空间 §25 | 软限制径向滤波 | 外部参考实现 | `spherical-array-processing`：`arraySHTfiltersTheory_softLim.m` | 限幅与模态误差权衡 |
@@ -310,11 +310,11 @@
 
 ## 章节代码练习与音频映射
 
-67 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 241 行算法统计。三个模块均提供 `run_exercises()`，返回可序列化为 JSON 的结果；25/22/20 道题的回归测试独立于外部源码取得状态。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
+68 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 241 行算法统计。三个模块均提供 `run_exercises()`，返回可序列化为 JSON 的结果；26/22/20 道题的回归测试独立于外部源码取得状态。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
 
 | 章节与稳定 ID | 练习入口 | 回归测试 |
 |---|---|---|
-| 第 1～5 章：`E01-01`～`E01-03`、`E02-01`～`E02-06`、`E03-01`～`E03-05`、`E04-01`～`E04-06`、`E05-01`～`E05-05`（25 题） | [exercises_spatial.py](examples/exercises_spatial.py)；E04-06 另有 [MDL 重复实验](examples/mdl_repeated_trials.py) | [test_codes_exercises_spatial.py](../tests/test_codes_exercises_spatial.py)、[独立重复实验测试](../tests/test_codes_mdl_repeated.py) |
+| 第 1～5 章：`E01-01`～`E01-03`、`E02-01`～`E02-06`、`E03-01`～`E03-05`、`E04-01`～`E04-07`、`E05-01`～`E05-05`（26 题） | [exercises_spatial.py](examples/exercises_spatial.py)；E04-06 另有 [MDL 重复实验](examples/mdl_repeated_trials.py) | [test_codes_exercises_spatial.py](../tests/test_codes_exercises_spatial.py)、[独立重复实验测试](../tests/test_codes_mdl_repeated.py) |
 | 第 6～9 章：`E06-01`～`E06-06`、`E07-01`～`E07-05`、`E08-01`～`E08-06`、`E09-01`～`E09-05`（22 题） | [exercises_enhancement.py](examples/exercises_enhancement.py) | [test_codes_exercises_enhancement.py](../tests/test_codes_exercises_enhancement.py) |
 | 第 10～11 章、附录 A/B：`E10-01`～`E10-12`、`E11-01`～`E11-04`、`E12-01`～`E12-03`、`E13-01`（20 题） | [exercises_engineering.py](examples/exercises_engineering.py) | [test_codes_exercises_engineering.py](../tests/test_codes_exercises_engineering.py) |
 
@@ -326,7 +326,7 @@
 .venv/bin/python -m codes.examples.exercises_engineering
 ```
 
-题目、答案和 10 组、40 个合成音频的对应关系见[练习与音频实验](research/05_exercises_and_audio.md)。音频由 [generate_audio_samples.py](examples/generate_audio_samples.py) 生成，参数和摘要见 [MANIFEST.json](audio/MANIFEST.json)；它们只展示特定条件下的现象，不作为完整算法、工业性能或自然语音听测的新增覆盖证据。
+题目、答案和 11 组、44 个合成音频的对应关系见[练习与音频实验](research/05_exercises_and_audio.md)。音频由 [generate_audio_samples.py](examples/generate_audio_samples.py) 生成，参数和摘要见 [MANIFEST.json](audio/MANIFEST.json)；它们只展示特定条件下的现象，不作为完整算法、工业性能或自然语音听测的新增覆盖证据。
 
 ## 未完成项怎样保留
 
@@ -334,7 +334,7 @@
 
 原理索引明确保留下一步所需证据：唯一作者实现、明确许可、原模型配置，或与正文模型一致的最小代码。不得仅因为框架大、copyleft 或权重未授权就将许可明确的源码降为“没有实现”；也不得因同名函数存在就将整个算法家族标为已覆盖。
 
-本仓库不提交下载缓存、模型权重或未经授权的第三方语料；`audio/` 中的 40 个文件是本书自行合成的教学样本，`real_audio/` 中另有许可明确的 DEMAND 小型摘录和派生文件，不包含完整下载归档。独立上游工作目录的取得、许可保留与未执行项目按来源状态记录报告。算法、源码或排除范围变化时，同步修改本表、研究说明、来源清单和真实验证记录。
+本仓库不提交下载缓存、模型权重或未经授权的第三方语料；`audio/` 中的 44 个文件是本书自行合成的教学样本，`real_audio/` 中另有许可明确的 DEMAND 小型摘录和派生文件，不包含完整下载归档。独立上游工作目录的取得、许可保留与未执行项目按来源状态记录报告。算法、源码或排除范围变化时，同步修改本表、研究说明、来源清单和真实验证记录。
 
 
-真实数据练习 R01 使用 [prepare_real_recordings.py](examples/prepare_real_recordings.py) 与 [real_recordings.py](array_tutorial/real_recordings.py)，测试见 [test_codes_real_recordings.py](../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 67 道合成/手算代码题。数据来源和许可另见 [real_audio/](real_audio/README.md)。
+真实数据练习 R01 使用 [prepare_real_recordings.py](examples/prepare_real_recordings.py) 与 [real_recordings.py](array_tutorial/real_recordings.py)，测试见 [test_codes_real_recordings.py](../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 68 道合成/手算代码题。数据来源和许可另见 [real_audio/](real_audio/README.md)。

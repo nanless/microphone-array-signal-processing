@@ -159,6 +159,8 @@ $$
 
 连续流可对照 libsamplerate 的 `src_process` 或 SpeexDSP 的重采样接口。以 libsamplerate 为例，比例定义为“输出速率/输入速率”；设备快 100 ppm 时，转到参考时钟的比例约为 $1/1.0001=0.99990001$。每次调用还会返回实际消耗的输入帧数和生成的输出帧数，调用方必须保留未消耗输入，不能假设一进一出或每块重新创建转换器。[libsamplerate Full API](https://libsndfile.github.io/libsamplerate/api_full.html "citation")
 
+本书的[libsamplerate 两段已知时钟实验](../codes/research/03_industrial_deployment.md#i04libsamplerate-的有状态重采样)实际调用锁定的 C 接口：前 5 s 为 +100 ppm，后 5 s 为 +150 ppm。未校正组在 1～9 s 的标记偏移增加 16 帧，按真值更新比例后该段残余增加 0 帧；每次输入消费量及结束排空也逐调用核对。这里的时钟速率是预先给定的，不能把结果写成“已自动估计漂移”，也没有测抗混叠或真实设备。
+
 换用另一库时要重新检查比例方向。libsoxr 的 `soxr_set_io_ratio` 使用“输入/输出”比，同一 100 ppm 算例应设为 1.0001，而非 0.99990001。其渐变长度以输出样本数计，滤波延迟也应从输出样本换算到时间；创建状态、切换比率与排空尾部是不同操作。[libsoxr 固定可变比率示例](https://sourceforge.net/p/soxr/code/ci/945b592b70470e29f917f4de89b4281fbbd540c0/tree/examples/5-variable-rate.c "citation")
 
 #### 10.2.2 增益变化与 AEC

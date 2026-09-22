@@ -258,7 +258,7 @@ class BuildHelpersTest(unittest.TestCase):
 
     def test_web_and_pdf_define_paragraph_spacing_explicitly(self):
         self.assertIn(".main p{margin:0 0 1.05em}", build_site.CSS)
-        self.assertIn("p{margin:0 0 .85em}", build_pdf.CSS)
+        self.assertIn("p{margin:0 0 .85em;break-inside:avoid;orphans:2;widows:2}", build_pdf.CSS)
 
     def test_site_render_wraps_table_in_focusable_scroll_region(self):
         html, _ = build_site.render("| 列 |\n|---|\n| 值 |")

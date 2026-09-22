@@ -13,6 +13,7 @@ import numpy as np
 
 from .aec import nlms
 from .dereverberation import offline_wpe
+from .geometry import plane_wave_delays
 from .spectral import stft, istft
 
 SAMPLE_RATE = 16000
@@ -80,7 +81,7 @@ def _tone(t: np.ndarray, frequency: float) -> np.ndarray:
 
 
 def build_cases() -> dict:
-    """Return ten experiments with model parameters and references.
+    """Return eleven experiments with model parameters and references.
 
     Each entry has ``signals`` (filename stem -> CxN array), ``parameters`` and
     ``limits``. Signals are pre-export floats; no group uses peak matching.
@@ -137,6 +138,25 @@ def build_cases() -> dict:
     best_linear_gain = float(nonlinear_reference @ nonlinear_echo
                              / (nonlinear_reference @ nonlinear_reference))
     nonlinear_estimate = best_linear_gain * nonlinear_reference
+    # Four-microphone far-field example. A separate RNG leaves all older
+    # experiments unchanged. Linear interpolation defines the fractional-
+    # sample signal model; the corresponding alignment uses the same model.
+    array_positions = np.column_stack((.04 * np.arange(4), np.zeros(4)))
+    relative_delays = plane_wave_delays(array_positions, np.deg2rad(30.0))
+    arrivals = .002 + relative_delays - np.min(relative_delays)
+    fractional_rng = np.random.default_rng(SEED + 2)
+    fractional_source = _tone(t, 383) + .04 * fractional_rng.standard_normal(t.size)
+    fractional_clean = np.vstack([
+        np.interp(t - arrival, t, fractional_source, left=0., right=0.)
+        for arrival in arrivals
+    ])
+    fractional_array = fractional_clean + .02 * fractional_rng.standard_normal(fractional_clean.shape)
+    fractional_reference = fractional_clean[0]
+    fractional_unaligned = np.mean(fractional_array, axis=0)
+    fractional_aligned = np.mean(np.vstack([
+        np.interp(t - (arrivals[0] - arrival), t, channel, left=0., right=0.)
+        for arrival, channel in zip(arrivals, fractional_array)
+    ]), axis=0)
     return {
         'spatial': {
             'signals': {'spatial_reference': delay_samples(target, 3),
@@ -148,6 +168,24 @@ def build_cases() -> dict:
                            'channel_order': ['mic1_later', 'mic2_earlier'],
                            'alignment': 'delay mic2 by 3, no noncausal advance'},
             'limits': 'Integer-delay broadband model; not binaural HRTF, measured array or speech.'},
+        'fractional_array': {
+            'signals': {'fractional_reference': fractional_reference,
+                        'fractional_array': fractional_array,
+                        'fractional_unaligned': fractional_unaligned,
+                        'fractional_aligned': fractional_aligned},
+            'parameters': {'seed': SEED + 2, 'sample_rate_hz': SAMPLE_RATE,
+                           'positions_m': array_positions.tolist(), 'azimuth_deg': 30.,
+                           'sound_speed_m_s': 343., 'relative_arrival_seconds': relative_delays.tolist(),
+                           'arrival_seconds': arrivals.tolist(),
+                           'arrival_difference_adjacent_samples': float((arrivals[0] - arrivals[1]) * SAMPLE_RATE),
+                           'source': '383 Hz six-harmonic tone plus seeded broadband noise, std 0.04',
+                           'sensor_noise_std_each_channel': .02,
+                           'fractional_delay_model': 'linear interpolation with zero outside the 2 s source',
+                           'reference': 'clean microphone 1 at its physical arrival time; no gain or delay fitting',
+                           'alignment': 'causally delay microphones 2--4 to microphone 1 using linear interpolation',
+                           'channel_order': ['mic1_x0', 'mic2_x0.04', 'mic3_x0.08', 'mic4_x0.12']},
+            'limits': 'Far-field plane wave with simulated fractional delays and independent sensor noise; '
+                      'no measured room, microphone directivity or physical moving-source recording.'},
         'aec': {
             'signals': {'aec_far': far, 'aec_near': near, 'aec_microphone': microphone,
                         'aec_frozen': frozen, 'aec_unfrozen': free},
