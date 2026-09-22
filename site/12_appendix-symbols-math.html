@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 A · 符号术语数学 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="9187099fc571"><style>
+<meta name="source-digest" content="80cb834cf708"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -16,6 +16,7 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .main{flex:1;min-width:0;padding:28px 36px;background:#fff;overflow-wrap:anywhere}
 .main p{margin:0 0 1.05em}.main li>p{margin:.35em 0}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
+.audio-sample{display:block;width:min(100%,460px);margin:8px 0 18px}.audio-sample:focus-visible{outline:3px solid #e67e22}
 table{border-collapse:collapse;margin:14px 0;max-width:100%}
 .table-scroll{max-width:100%;overflow-x:auto}
 .table-scroll:focus-visible{outline:3px solid #e67e22;outline-offset:2px}
@@ -24,7 +25,8 @@ th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
-mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
+mjx-assistive-mml{width:1px!important;height:1px!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
 .pn a{color:#2f6db3;text-decoration:none}.pn .off{color:#aaa}
@@ -39,7 +41,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{position:fixed;bottom:20px;right:20px;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px;opacity:.75}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
-@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}}
+@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
@@ -73,6 +75,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-u-9dd3091211">定位与追踪</a></li>
 <li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-u-91410707a4">系统与硬件</a></li>
 <li><a href="12_appendix-symbols-math.html#sec-12-3">12.3 预备知识速览</a></li>
+<li><a href="12_appendix-symbols-math.html#sec-12-4">12.4 计算练习</a></li>
 </ul>
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div>
 <div class="chap"><a href="research/index.html">源码研究</a></div></nav>
@@ -88,6 +91,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-u-9dd3091211">定位与追踪</a></li>
 <li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-u-91410707a4">系统与硬件</a></li>
 <li><a href="12_appendix-symbols-math.html#sec-12-3">12.3 预备知识速览</a></li>
+<li><a href="12_appendix-symbols-math.html#sec-12-4">12.4 计算练习</a></li>
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是附录 A（正文共 11 章，另有附录 A/B），可独立查阅，前后篇见下方导航。</p>
@@ -95,7 +99,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </blockquote>
 <hr />
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-78b6668a18">附录 A：符号、术语与数学基础</h1>
-<p>本附录沿用 12.1～12.3 的节号，便于与正文既有引用对应；下一篇是附录 B。</p>
+<p>本附录的 12.1～12.3 汇总符号、术语和数学工具，12.4 用小矩阵与短序列练习复算；下一篇是附录 B。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-12-1">12.1 符号表</h2>
 <p>约定同 §2.3：<strong>斜体 = 标量，头顶箭头 = 向量，加粗大写 = 矩阵</strong>；$^H$ 表示共轭转置，$^\top$ 表示转置，$\hat{\ }$ 表示估计值。$X(f)$、$X(f_k,\ell)$ 这类大写字母按语音文献惯例表示逐频点复数<strong>标量</strong>。</p>
 <p>本书采用前向傅里叶核 $e^{-\mathrm j2\pi ft}$。</p>
@@ -728,7 +732,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>⑤ 最小二乘</strong></p>
 <p>方程比未知数多时通常没有精确解。最小二乘求使总残差平方最小的 $\hat{\vec{x}}$：</p>
 <p>$$\min_{\vec{x}}\|\mathbf{A}\vec{x}-\vec{b}\|^2\text{。}$$</p>
-<p>当 $\mathbf A$ 满列秩时，$\hat{\vec{x}}=(\mathbf{A}^H\mathbf{A})^{-1}\mathbf{A}^H\vec{b}$。秩不足或条件很差时，应使用 Moore–Penrose 伪逆、QR/SVD 或正则化，不能直接求逆。</p>
+<p>当 $\mathbf A$ 满列秩时，$\hat{\vec{x}}=(\mathbf{A}^H\mathbf{A})^{-1}\mathbf{A}^H\vec{b}$。这是闭式表达式，不是要求程序显式求逆；即使满列秩，形成 $\mathbf A^H\mathbf A$ 也会把二范数条件数平方，因而 QR/SVD 通常更适合作为数值求解入口。</p>
+<p>秩不足时最小二乘解可能不唯一，Moore–Penrose 伪逆给出其中范数最小的一解。<code>numpy.linalg.lstsq</code> 同时返回秩与奇异值，便于检查可辨识性；不能只看到残差很小就认定参数唯一。<a href="https://numpy.org/doc/stable/reference/generated/numpy.linalg.lstsq.html" title="citation">NumPy 最小二乘接口说明</a>。12.4 的 E12-03 给出两列完全相关的例子。</p>
 <p>TDOA 几何解算（§4.4）和 WPE 系数估计（§7.1）都会用到这一思想。</p>
 <p><strong>拉格朗日四步模板（MVDR）</strong></p>
 <p><strong>第 1 步：写拉格朗日函数。</strong> 复约束必须同时包含约束及其共轭，常写成实值函数</p>
@@ -750,6 +755,28 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ul>
 <p>两者都可抬高小特征值，但会改变最优权重和指向性。报告参数时必须说明采用哪一种口径，不能只写一个无单位的“$\varepsilon$”。</p>
 <p>附录 B 第 8 题可比较加载前后的 WNG、DI 与条件数；数值由脚本参数决定，不预设固定区间。</p>
+<span id="sec-11" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-12-4">12.4 计算练习</h2>
+<p>三题都可通过 <code>.venv/bin/python -m codes.examples.exercises_engineering</code> 复算。代码中的数组是本书构造的输入，答案先由短序列求和或代数得到，再与实现比较。</p>
+<p><strong>E12-01：FFT 乘法为什么需要补零。</strong> 取 $x=[1,2]$、$h=[1,0.5]$，下标都从 0 开始。求完整线性卷积，再比较 FFT 长度为 2 和 3 时的结果。</p>
+<p>线性卷积逐点为 $y_0=1\times1=1$、$y_1=1\times0.5+2\times1=2.5$、$y_2=2\times0.5=1$，共 $2+2-1=3$ 点。</p>
+<p>FFT 长度为 2 时，频域相乘给出的是 2 点循环卷积，第三点绕回第零点，结果为 $[1+1,2.5]=[2,2.5]$。补零到 3 点或更长，才可容纳这次完整线性卷积；FFT 长度不必是 2 的幂，但不同长度的执行效率可能不同。</p>
+<p>这道题只检查一次有限卷积。连续音频还需要正确保留重叠与历史，不能对每个短块独立补零、丢掉尾部，再假定拼接结果等于整段卷积。</p>
+<p><strong>E12-02：未中心化二阶矩为什么不总等于协方差。</strong> 一个频点上有两路麦克风、两个快拍，列向量为 $\vec x_1=[1,\mathrm j]^\top$、$\vec x_2=[1,-\mathrm j]^\top$。分别计算以快拍数 2 为分母的二阶矩，以及先减样本均值的协方差。本题不使用无偏估计的 $T-1$ 分母。</p>
+<p>两个外积为</p>
+<p>$$
+\vec x_1\vec x_1^H=\begin{bmatrix}1&-\mathrm j\\\mathrm j&1\end{bmatrix},\qquad
+\vec x_2\vec x_2^H=\begin{bmatrix}1&\mathrm j\\-\mathrm j&1\end{bmatrix}.
+$$</p>
+<p>相加除以 2 得 $\mathbf I$。均值是 $\bar{\vec x}=[1,0]^\top$；减均值后的两列为 $[0,\mathrm j]^\top$ 和 $[0,-\mathrm j]^\top$，所以中心化结果为 $\operatorname{diag}(0,1)$。</p>
+<p>第一路始终为 1，有二阶矩能量，却没有相对样本均值的波动。这个例子说明减均值会改变秩，不能把两种估计混着解释。复外积还必须使用共轭转置：$\mathrm j\,\mathrm j^*=1$，若误写成 $\mathrm j^2=-1$，会把非负功率算成负数。</p>
+<p><strong>E12-03：零残差是否意味着参数唯一。</strong> 给定</p>
+<p>$$
+\mathbf A=\begin{bmatrix}1&1\\2&2\end{bmatrix},\qquad
+\vec b=\begin{bmatrix}2\\4\end{bmatrix}.
+$$</p>
+<p>求所有满足 $\mathbf A\vec x=\vec b$ 的解，并找出范数最小者。<code>numpy.linalg.lstsq</code> 应报告多大的秩？</p>
+<p>第二行是第一行的两倍，只有 $x_1+x_2=2$ 这一条独立约束，所以所有解可写成 $[t,2-t]^\top$。范数平方为 $t^2+(2-t)^2=2(t-1)^2+2$，在 $t=1$ 取最小值；最小范数解为 $[1,1]^\top$，秩为 1。奇异值理论上为 $\sqrt{10}$ 和 0，浮点运算可能把后者算成接近零的数，因此还要记录判秩容差。</p>
+<p>残差为零只说明输入方程被满足，没有说明两个参数可分别辨认。增加重复行不会改变这一点，需要新增独立观测或明确的先验约束。</p>
 <hr />
 <blockquote>
 <p>📄 本篇信息：配图 0 张 ｜ <a href="index.html">回首页</a></p>

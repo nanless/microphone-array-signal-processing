@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""生成教程插图 26 张（图 1~25、图 33；图 26~32 见 make_aec_figures.py）。
+"""生成教程插图 27 张（图 1~25、图 33~34；图 26~32 见 make_aec_figures.py）。
 
 用法（仓库根目录）：
-    .venv/bin/python scripts/make_figures.py      # 图 1~25、图 33 → figures/
+    .venv/bin/python scripts/make_figures.py      # 图 1~25、图 33~34 → figures/
 """
 from pathlib import Path
 import hashlib
@@ -81,10 +81,10 @@ def finalize_figure(fig):
     return fig
 
 
-def save(fig, name):
+def save(fig, name, extra_metadata=None):
     finalize_figure(fig)
     fig.savefig(OUT / name, dpi=150, bbox_inches="tight", facecolor="white",
-                metadata=figure_png_metadata())
+                metadata={**figure_png_metadata(), **(extra_metadata or {})})
     plt.close(fig)
     print("saved", name)
 
@@ -2604,6 +2604,59 @@ def fig_gcc_two_ways():
     save(fig, "fig33_gcc_two_ways.png")
 
 
+def fig_audio_examples():
+    """Read the exported PCM itself, so curves and downloadable audio agree."""
+    import json
+    import wave
+    root = Path(__file__).resolve().parents[1]
+    audio = root / "codes" / "audio"
+    manifest = audio / "MANIFEST.json"
+    metadata = json.loads(manifest.read_text())
+    for record in metadata["files"]:
+        if hashlib.sha256((audio / record["file"]).read_bytes()).hexdigest() != record["sha256"]:
+            raise ValueError("音频文件与清单不符，先重新生成并核验")
+
+    def read(stem):
+        with wave.open(str(audio / (stem + '.wav')), 'rb') as wav:
+            rate, channels = wav.getframerate(), wav.getnchannels()
+            x = np.frombuffer(wav.readframes(wav.getnframes()), dtype='<i2').reshape(-1, channels).T / 32768
+        return rate, x[0]
+
+    def rms_blocks(x, size=320):
+        x = x[:len(x)//size*size].reshape(-1, size)
+        return np.sqrt(np.mean(x*x, axis=1))
+
+    fig, axes = plt.subplots(3, 1, figsize=(9.5, 9))
+    for stem, label, style in [('spatial_mic1', '单麦', '-'),
+                               ('spatial_aligned', '对齐平均', '--'),
+                               ('spatial_reference', '延迟参考', ':')]:
+        fs, x = read(stem)
+        sl = slice(8000, 8320)
+        axes[0].plot(np.arange(sl.start, sl.stop)/fs*1000, x[sl], style, label=label, lw=1.2)
+    axes[0].set(title='(a) 已知延迟 3 点；同组共同增益', xlabel='时间 (ms)', ylabel='PCM 幅度 / 满量程')
+    for stem, label, style in [('aec_microphone', '回声＋近端', '-'),
+                               ('aec_frozen', '冻结残差', '--'), ('aec_near', '近端参考', ':')]:
+        fs, x = read(stem)
+        values = rms_blocks(x)
+        axes[1].plot((np.arange(len(values))+.5)*320/fs, values, style, label=label)
+    axes[1].axvspan(1.2, 1.8, color=C_ORANGE, alpha=.13, label='已知双讲时段')
+    axes[1].set(title='(b) AEC：冻结来自真值掩码，不是检测结果', xlabel='时间 (s)', ylabel='20 ms 块 RMS / 满量程')
+    for stem, label, style in [('wpe_reverberant', '稀疏回声输入', '-'),
+                               ('wpe_output', '离线 WPE 输出', '--'), ('wpe_dry', '无回声参考', ':')]:
+        fs, x = read(stem)
+        values = rms_blocks(x)
+        axes[2].plot((np.arange(len(values))+.5)*320/fs, values, style, label=label)
+    axes[2].set(title='(c) 谐波目标也可预测：功率降低不等于恢复更好', xlabel='时间 (s)', ylabel='20 ms 块 RMS / 满量程')
+    for ax in axes:
+        bottom, top = ax.get_ylim()
+        ax.set_ylim(bottom, top + .35 * (top - bottom))
+        ax.legend(loc='upper right', fontsize=11, ncol=2)
+        ax.grid(ls=':', alpha=.4)
+    fig.suptitle('图34  可下载合成音频的波形与分段能量（16 kHz；非实测语音）', fontsize=FS_SUP)
+    fig.tight_layout(rect=(0, 0, 1, .96))
+    save(fig, 'fig34_audio_examples.png', {'AudioManifestDigest': hashlib.sha256(manifest.read_bytes()).hexdigest()})
+
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -2632,6 +2685,7 @@ def main():
     fig_wpe_frames()
     fig_latency_budget()
     fig_gcc_two_ways()
+    fig_audio_examples()
     print("ALL DONE")
 
 

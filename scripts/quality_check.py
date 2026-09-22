@@ -6,6 +6,8 @@ from __future__ import annotations
 import re
 import sys
 import hashlib
+import json
+import wave
 import unicodedata
 from collections import Counter
 from html import unescape
@@ -26,7 +28,7 @@ EDITING_MARKERS = re.compile(
 
 EXPECTED_SECTION_COUNTS = {
     "00_overview.md": 10,
-    "01_problem-definition.md": 1,
+    "01_problem-definition.md": 2,
     "02_basics-signal-model.md": 8,
     "03_array-geometry.md": 5,
     "04_doa-estimation.md": 9,
@@ -35,9 +37,9 @@ EXPECTED_SECTION_COUNTS = {
     "07_wpe-dereverberation.md": 1,
     "08_speech-separation.md": 2,
     "09_source-tracking.md": 5,
-    "10_engineering-practice.md": 11,
+    "10_engineering-practice.md": 12,
     "11_selection-guide.md": 7,
-    "12_appendix-symbols-math.md": 3,
+    "12_appendix-symbols-math.md": 4,
     "13_appendix-guide.md": 7,
 }
 # 第 6、7 章的源 h4 单独进入合订目录和 PDF 第三级书签。此表是独立发布
@@ -64,11 +66,11 @@ EXPECTED_CHAPTERS = [
     ("13_appendix-guide.md", "附录 B · 路径地图与练习"),
 ]
 EXPECTED_CHAPTER_COUNT = 14
-EXPECTED_SECTION_COUNT = 81
+EXPECTED_SECTION_COUNT = 84
 EXPECTED_SUBSECTION_COUNT = 21
-EXPECTED_OUTLINE_ITEM_COUNT = 116
-EXPECTED_FIGURE_NUMBERS = set(range(1, 34))
-# 研究附站使用独立显式清单，不挤占 14 篇教程或 116 项 PDF 大纲基线。
+EXPECTED_OUTLINE_ITEM_COUNT = 119
+EXPECTED_FIGURE_NUMBERS = set(range(1, 35))
+# 研究附站使用独立显式清单，不挤占 14 篇教程或 119 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
     ("README.md", "index.html"),
@@ -76,8 +78,9 @@ EXPECTED_RESEARCH_PAGES = (
     ("02_aec_wpe_separation.md", "02_aec_wpe_separation.html"),
     ("03_industrial_deployment.md", "03_industrial_deployment.html"),
     ("04_source_reproduction.md", "04_source_reproduction.html"),
+    ("05_exercises_and_audio.md", "05_exercises_and_audio.html"),
 )
-EXPECTED_RESEARCH_PAGE_COUNT = 5
+EXPECTED_RESEARCH_PAGE_COUNT = 6
 ALLOWED_LINK_SCHEMES = {"http", "https", "mailto"}
 COLLOQUIAL_REVIEW = re.compile(
     r"乱飞|跳格子|翻车|掉链子|猪队友|吃进去|喂给|神经网络接管|记死|照抄"
@@ -510,7 +513,7 @@ def figure_inventory_issues(references, png_names):
             issues.append(f"图号与文件名不匹配：alt 图{alt_match.group(1)} -> {name}")
     if numbers != EXPECTED_FIGURE_NUMBERS:
         issues.append(
-            f"正文图号应为 1..33：缺失 {sorted(EXPECTED_FIGURE_NUMBERS - numbers)}，"
+            f"正文图号应为 1..34：缺失 {sorted(EXPECTED_FIGURE_NUMBERS - numbers)}，"
             f"多出 {sorted(numbers - EXPECTED_FIGURE_NUMBERS)}")
     for number, names in names_by_number.items():
         if len(names) > 1:
@@ -559,11 +562,16 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_figures.py" if number <= 25 or number == 33
+            script_name = ("make_figures.py" if number <= 25 or number in (33, 34)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
                 fail(errors, f"PNG 溯源失效：figures/{name}: {issue}")
+            if number == 34:
+                expected = hashlib.sha256((ROOT / "codes/audio/MANIFEST.json").read_bytes()).hexdigest()
+                with Image.open(path) as image:
+                    if image.info.get("AudioManifestDigest") != expected:
+                        fail(errors, "图 34 音频清单摘要失效")
         except Exception as exc:
             fail(errors, f"图片无法解码：figures/{name}: {exc}")
 
@@ -826,6 +834,8 @@ def site_source_digest():
     digest = hashlib.sha256()
     paths = sorted(CHAPTERS.glob("*.md"))
     paths += [ROOT / "codes" / "research" / name for name, _ in EXPECTED_RESEARCH_PAGES]
+    paths += sorted((ROOT / "codes" / "audio").glob("*.wav"))
+    paths += [ROOT / "codes" / "audio" / "MANIFEST.json"]
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
               ("build_site.py", "make_figures.py", "make_aec_figures.py")]
@@ -908,6 +918,8 @@ def check_pdf(errors: list[str], notices: list[str]):
     text = "\n".join(extracted)
     if not extracted or "全书完" not in extracted[-1]:
         fail(errors, "PDF 末页缺少固定结束标记“全书完”")
+    elif norm(extracted[-1]) == "全书完":
+        fail(errors, "PDF 末页只有结束标记，缺少同页正文")
     radicals = re.findall(r"[\u2e80-\u2eff\u2f00-\u2fdf]", text)
     if radicals:
         fail(errors, f"PDF 文本层含部首类错误码位：{len(radicals)} 个")
@@ -944,6 +956,79 @@ def check_pdf(errors: list[str], notices: list[str]):
         fail(errors, "PDF 疑似含未渲染的公式源码")
 
 
+EXPECTED_AUDIO_STEMS = {
+    "spatial_reference", "spatial_array", "spatial_mic1", "spatial_unaligned", "spatial_aligned",
+    "aec_far", "aec_near", "aec_microphone", "aec_frozen", "aec_unfrozen",
+    "wpe_dry", "wpe_reverberant", "wpe_output", "separation_source1", "separation_source2",
+    "separation_mixture", "separation_recovered1", "separation_recovered2",
+    "engineering_reference", "engineering_clipped", "engineering_low_level", "engineering_dropout", "tracking_pan",
+}
+
+
+def check_audio(errors):
+    """Independent published PCM inventory, provenance, format and player checks."""
+    root = ROOT / "codes/audio"
+    try:
+        manifest = json.loads((root / "MANIFEST.json").read_text())
+        records = manifest["files"]
+        names = {stem + ".wav" for stem in EXPECTED_AUDIO_STEMS}
+        if len(records) != 23 or {r["file"] for r in records} != names:
+            fail(errors, "音频清单必须包含独立基线的 23 个 WAV")
+        if {p.name for p in root.glob("*.wav")} != names or {p.name for p in (SITE / "audio").glob("*.wav")} != names:
+            fail(errors, "源音频或站点音频文件集合不符")
+        if set(manifest["groups"]) != {"spatial", "aec", "wpe", "separation", "engineering", "tracking"}:
+            fail(errors, "音频实验组不符")
+        expected_inputs = {"codes/examples/generate_audio_samples.py", "codes/array_tutorial/audio_samples.py",
+                           "codes/array_tutorial/aec.py", "codes/array_tutorial/dereverberation.py",
+                           "codes/array_tutorial/spectral.py", "codes/array_tutorial/conventions.py"}
+        if set(manifest["generator_inputs"]) != expected_inputs:
+            fail(errors, "音频生成来源清单不完整")
+        for name, expected in manifest["generator_inputs"].items():
+            if name not in expected_inputs:
+                continue
+            if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != expected:
+                fail(errors, f"音频生成源过期：{name}")
+        import numpy as np
+        for record in records:
+            name = record["file"]
+            if name not in names:
+                continue
+            path = root / name
+            blob = path.read_bytes()
+            if hashlib.sha256(blob).hexdigest() != record["sha256"] or (SITE / "audio" / name).read_bytes() != blob:
+                fail(errors, f"音频摘要或站点副本不符：{name}")
+            with wave.open(str(path), "rb") as wav:
+                frames, channels = wav.getnframes(), wav.getnchannels()
+                if (wav.getframerate(), wav.getsampwidth(), wav.getcomptype()) != (16000, 2, "NONE"):
+                    fail(errors, f"音频格式不符：{name}")
+                raw = wav.readframes(frames)
+            if len(raw) != frames * channels * 2 or frames != record["samples"] or channels != record["channels"]:
+                fail(errors, f"音频尺寸不符：{name}")
+            samples = np.frombuffer(raw, dtype="<i2").astype(float) / 32768
+            if np.max(np.abs(samples)) > .80002 or abs(float(np.max(np.abs(samples))) - record["peak"]) > 1e-15:
+                fail(errors, f"音频峰值不符：{name}")
+            if record["common_export_gain"] != manifest["groups"][record["group"]]["common_export_gain"]:
+                fail(errors, f"音频比较组增益不一致：{name}")
+            if not 0 <= record["quantization_max_abs_error"] <= .5/32768 + 1e-15:
+                fail(errors, f"音频量化误差超限：{name}")
+        class AudioParser(HTMLParser):
+            def __init__(self):
+                super().__init__()
+                self.players = []
+            def handle_starttag(self, tag, attrs):
+                if tag == "audio":
+                    self.players.append(dict(attrs))
+        parser = AudioParser()
+        parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
+        if len(parser.players) != 23 or {p.get("src") for p in parser.players} != {"../audio/" + n for n in names}:
+            fail(errors, "试听控件集合不符")
+        for player in parser.players:
+            if "autoplay" in player or "controls" not in player or player.get("preload") != "none" or not player.get("aria-label"):
+                fail(errors, "试听控件必须有标签和控制、不自动播放或预加载")
+    except Exception as exc:
+        fail(errors, f"音频检查失败：{exc}")
+
+
 def main():
     errors: list[str] = []
     notices: list[str] = []
@@ -951,6 +1036,7 @@ def main():
     check_figures(errors)
     check_site(errors)
     check_research_site(errors)
+    check_audio(errors)
     check_combined_html(errors)
     check_pdf(errors, notices)
     for item in notices:

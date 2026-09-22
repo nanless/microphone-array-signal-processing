@@ -1,0 +1,23 @@
+# 本书合成音频
+
+这里的 23 个 WAV 由 `codes/examples/generate_audio_samples.py` 生成，使用固定种子 20260922、16 kHz、16 位 PCM。
+它们是调幅谐波、噪声、延迟、有限冲激响应和已知混合矩阵构成的数学样本，没有真人录音、模型权重或下载素材。
+这些文件可随代码重新生成，不是测量数据、语音数据库或产品效果证明；本仓库仍未指定独立发布许可证。
+
+严格字节检查同时比较清单中的 Python、NumPy 与平台记录，异机环境不一致时会拒绝通过，不能据此认定算法有误。
+生成过程中若中断，可能留下与清单不一致的文件；此时不得发布，必须重新生成并运行 `--check`，再重建图和站点。
+
+每组参考、输入和输出使用同一个导出增益，见 [MANIFEST.json](MANIFEST.json)。不得分别把峰值归一到一样大，再据此判断算法增益。
+听音前把设备音量调低；文件不会自动播放。没有进行正式主观听测，音频统计检查不等于听感验收。
+
+生成或只读核验：
+
+```bash
+.venv/bin/python codes/examples/generate_audio_samples.py
+.venv/bin/python codes/examples/generate_audio_samples.py --check
+```
+
+详细模型、听音问题和对应代码题见[章节代码练习与音频实验](../research/05_exercises_and_audio.md)。站点构建会复制清单中的 WAV 到 `site/audio/`，不能手改两个目录中的生成文件。
+
+清单记录每个文件的采样率、通道数、时长、峰值、RMS、量化误差、共同增益与 SHA-256，并记录生成源码摘要和全部模型参数。
+16 位 PCM 按最近偶数舍入，不加抖动，不自动限幅；绝对量化误差不超过半个最低有效位。该行为由[Python 标准库 wave 接口](https://docs.python.org/3/library/wave.html)写入无压缩 PCM，本书负责量化和通道交织。

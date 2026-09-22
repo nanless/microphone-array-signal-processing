@@ -159,10 +159,10 @@ class ResearchBuildTest(unittest.TestCase):
     def render(self, markdown, source):
         return build_site.render(markdown, source)[0]
 
-    def test_explicit_page_map_has_14_tutorial_and_5_research_pages(self):
+    def test_explicit_page_map_has_14_tutorial_and_6_research_pages(self):
         paths = list(build_site.source_outputs().values())
-        self.assertEqual(len(paths), 19)
-        self.assertEqual(sum(path.startswith("research/") for path in paths), 5)
+        self.assertEqual(len(paths), 20)
+        self.assertEqual(sum(path.startswith("research/") for path in paths), 6)
         self.assertEqual(build_site.source_outputs()[RESEARCH / "README.md"], "research/index.html")
 
     def test_chapter_links_to_research_and_source_documents(self):
@@ -240,7 +240,7 @@ class ResearchBuildTest(unittest.TestCase):
                 parser = Links()
                 parser.feed(path.read_text(encoding="utf-8"))
                 pages[path.resolve()] = parser
-            self.assertEqual(len(pages), 19)
+            self.assertEqual(len(pages), 20)
             for path, parsed in pages.items():
                 if path.parent.name == "research":
                     self.assertIn("../index.html", parsed.hrefs)
@@ -252,6 +252,11 @@ class ResearchBuildTest(unittest.TestCase):
                         continue
                     target = (path.parent / unquote(uri.path)).resolve() if uri.path else path
                     with self.subTest(page=path.name, href=href):
+                        if target.suffix == ".wav":
+                            self.assertEqual(target.parent, (output / "audio").resolve())
+                            self.assertTrue(target.is_file())
+                            self.assertFalse(uri.fragment)
+                            continue
                         self.assertIn(target, pages)
                         if uri.fragment:
                             self.assertIn(unquote(uri.fragment), pages[target].ids)

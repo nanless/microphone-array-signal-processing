@@ -36,6 +36,8 @@ def gcc_phat(
         raise ValueError("signals contain NaN or infinity")
     if not np.isfinite(sample_rate) or sample_rate <= 0.0:
         raise ValueError("sample_rate must be positive")
+    if not np.isfinite(epsilon) or epsilon <= 0.0:
+        raise ValueError("epsilon must be finite and positive")
     linear_length = first.size + second.size - 1
     n_fft = 1 << (linear_length - 1).bit_length()
     cross = np.fft.fft(first, n_fft) * np.fft.fft(second, n_fft).conj()
@@ -79,12 +81,14 @@ def srp_phat(
     epsilon: float = 1e-12,
 ) -> np.ndarray:
     """Scan far-field azimuths by averaging PHAT-normalized microphone pairs."""
+    if not np.isfinite(epsilon) or epsilon <= 0.0:
+        raise ValueError("epsilon must be finite and positive")
     x = validate_cft(spectra)
     frequencies = validate_frequencies(frequencies_hz)
     candidates = np.atleast_1d(np.asarray(candidate_azimuths_rad, dtype=float))
     if frequencies.size != x.shape[1]:
         raise ValueError("frequencies_hz does not match the STFT frequency axis")
-    if not np.all(np.isfinite(candidates)) or candidates.size < 1:
+    if candidates.ndim != 1 or not np.all(np.isfinite(candidates)) or candidates.size < 1:
         raise ValueError("candidate_azimuths_rad must be finite and non-empty")
     delays = plane_wave_delays(
         positions, candidates, sound_speed=sound_speed
@@ -122,7 +126,7 @@ def _steering_rows(steering: np.ndarray, channels: int) -> np.ndarray:
 def bartlett_spectrum(covariance: np.ndarray, steering: np.ndarray) -> np.ndarray:
     """Evaluate ``a.H @ R @ a`` for each steering-vector row."""
     matrix = hermitian_part(np.asarray(covariance, dtype=complex))
-    if matrix.ndim != 2:
+    if matrix.ndim != 2 or matrix.shape[0] < 1 or not np.all(np.isfinite(matrix)):
         raise ValueError("covariance must be a single square matrix")
     candidates = _steering_rows(steering, matrix.shape[0])
     values = np.einsum("km,mn,kn->k", candidates.conj(), matrix, candidates)
@@ -154,8 +158,10 @@ def music_spectrum(
     denominator_floor: float = 1e-15,
 ) -> np.ndarray:
     """Evaluate the narrowband MUSIC pseudospectrum using ``numpy.linalg.eigh``."""
+    if not np.isfinite(denominator_floor) or denominator_floor <= 0.0:
+        raise ValueError("denominator_floor must be finite and positive")
     matrix = hermitian_part(np.asarray(covariance, dtype=complex))
-    if matrix.ndim != 2:
+    if matrix.ndim != 2 or matrix.shape[0] < 1 or not np.all(np.isfinite(matrix)):
         raise ValueError("covariance must be a single square matrix")
     channels = matrix.shape[0]
     if not isinstance(source_count, (int, np.integer)) or not 0 < source_count < channels:
@@ -179,15 +185,18 @@ def esprit_ula(
 ) -> np.ndarray:
     """Estimate ULA broadside azimuths with least-squares ESPRIT."""
     matrix = hermitian_part(np.asarray(covariance, dtype=complex))
-    if matrix.ndim != 2:
+    if matrix.ndim != 2 or matrix.shape[0] < 1 or not np.all(np.isfinite(matrix)):
         raise ValueError("covariance must be a single square matrix")
     channels = matrix.shape[0]
     if channels < 2 or not isinstance(source_count, (int, np.integer)):
         raise ValueError("ESPRIT needs at least two channels and an integer source_count")
     if not 0 < source_count < channels:
         raise ValueError("source_count must be in [1, channels - 1]")
-    if spacing_m <= 0.0 or frequency_hz <= 0.0 or sound_speed <= 0.0:
+    if (not np.all(np.isfinite([spacing_m, frequency_hz, sound_speed]))
+            or spacing_m <= 0.0 or frequency_hz <= 0.0 or sound_speed <= 0.0):
         raise ValueError("spacing, frequency, and sound speed must be positive")
+    if not np.isfinite(alias_tolerance) or alias_tolerance < 0.0:
+        raise ValueError("alias_tolerance must be finite and non-negative")
     _, eigenvectors = np.linalg.eigh(matrix)
     signal = eigenvectors[:, -source_count:]
     first = signal[:-1]
@@ -206,8 +215,10 @@ def _load_covariance(
     condition_limit: float,
 ) -> np.ndarray:
     matrix = hermitian_part(np.asarray(covariance, dtype=complex))
-    if matrix.ndim != 2 or not np.all(np.isfinite(matrix)):
+    if matrix.ndim != 2 or matrix.shape[0] < 1 or not np.all(np.isfinite(matrix)):
         raise ValueError("covariance must be one finite square matrix")
+    if not np.isfinite(condition_limit) or condition_limit < 1.0:
+        raise ValueError("condition_limit must be finite and at least one")
     if not np.isfinite(relative_diagonal_loading) or relative_diagonal_loading < 0.0:
         raise ValueError("relative_diagonal_loading must be non-negative")
     scale = np.trace(matrix).real / matrix.shape[0]

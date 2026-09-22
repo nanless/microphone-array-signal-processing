@@ -22,6 +22,8 @@ def apply_beamformer(spectra: np.ndarray, weights: np.ndarray) -> np.ndarray:
     """Apply frequency-wise weights to channels x frequency x frames spectra."""
     x = validate_cft(spectra)
     w = np.asarray(weights, dtype=complex)
+    if not np.all(np.isfinite(w)):
+        raise ValueError("weights must be finite")
     if w.ndim == 1:
         if w.shape != (x.shape[0],):
             raise ValueError("one-dimensional weights must match channel count")
@@ -66,6 +68,8 @@ def mvdr_weights(
         raise ValueError("covariance must be channels x channels or frequency x channels x channels")
     if vectors.shape != (matrices.shape[0], matrices.shape[1]):
         raise ValueError("steering must match the covariance frequency and channel axes")
+    if min(matrices.shape) < 1 or not np.all(np.isfinite(vectors)):
+        raise ValueError("covariance must be non-empty and steering must be finite")
     result = np.empty_like(vectors)
     for index, (matrix, vector) in enumerate(zip(matrices, vectors)):
         loaded = _load_covariance(matrix, relative_diagonal_loading, condition_limit)
@@ -111,6 +115,8 @@ def lcmv_weights(
         raise ValueError("constraints must have shape channels x constraints")
     if f.shape != (c.shape[1],):
         raise ValueError("responses must have one value per constraint")
+    if c.shape[1] < 1 or not np.all(np.isfinite(c)) or not np.all(np.isfinite(f)):
+        raise ValueError("constraints and responses must be finite and non-empty")
     if np.linalg.matrix_rank(c) != c.shape[1]:
         raise np.linalg.LinAlgError("constraint columns must be linearly independent")
     whitened = np.linalg.solve(matrix, c)
@@ -122,6 +128,8 @@ def lcmv_weights(
 
 def blocking_matrix(constraints: np.ndarray, *, rtol: float = 1e-12) -> np.ndarray:
     """Return an orthonormal basis ``B`` for the null space of ``C.H``."""
+    if not np.isfinite(rtol) or not 0.0 <= rtol < 1.0:
+        raise ValueError("rtol must be finite and in [0, 1)")
     c = np.asarray(constraints, dtype=complex)
     if c.ndim == 1:
         c = c[:, None]
@@ -152,6 +160,8 @@ def wiener_gain(
         raise ValueError("power arrays must be non-negative")
     if not 0.0 <= gain_floor <= 1.0:
         raise ValueError("gain_floor must be in [0, 1]")
+    if not np.isfinite(power_floor) or power_floor <= 0.0:
+        raise ValueError("power_floor must be finite and positive")
     return np.maximum(1.0 - noise / np.maximum(output, power_floor), gain_floor)
 
 
@@ -161,8 +171,10 @@ def _load_covariance(
     condition_limit: float,
 ) -> np.ndarray:
     matrix = hermitian_part(np.asarray(covariance, dtype=complex))
-    if matrix.ndim != 2 or not np.all(np.isfinite(matrix)):
+    if matrix.ndim != 2 or matrix.shape[0] < 1 or not np.all(np.isfinite(matrix)):
         raise ValueError("covariance must be one finite square matrix")
+    if not np.isfinite(condition_limit) or condition_limit < 1.0:
+        raise ValueError("condition_limit must be finite and at least one")
     if relative_diagonal_loading < 0.0 or not np.isfinite(relative_diagonal_loading):
         raise ValueError("relative_diagonal_loading must be non-negative")
     scale = np.trace(matrix).real / matrix.shape[0]

@@ -23,6 +23,41 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class EngineeringCodeTests(unittest.TestCase):
+    def test_nonfinite_configuration_is_rejected(self):
+        for bad in (float("nan"), float("inf"), -float("inf")):
+            for factory in (
+                lambda: HysteresisVAD(bad, .1, 2),
+                lambda: HysteresisVAD(.2, bad, 2),
+                lambda: PeakProtectAGC(max_gain=bad),
+                lambda: PeakProtectAGC(gain=bad),
+                lambda: simulate_deadline_queue(np.array([1.]), bad, 2),
+            ):
+                with self.subTest(value=bad, factory=factory), self.assertRaises(ValueError):
+                    factory()
+
+    def test_integer_configuration_and_read_count(self):
+        for bad in (.5, 2., True, np.bool_(False), float("nan")):
+            for factory in (
+                lambda: HysteresisVAD(.2, .1, bad),
+                lambda: RingBuffer(bad),
+                lambda: RingBuffer(4).read(bad),
+                lambda: simulate_deadline_queue(np.array([1.]), 10., bad),
+            ):
+                with self.subTest(value=bad), self.assertRaises(ValueError):
+                    factory()
+        self.assertEqual(RingBuffer(np.int64(4)).capacity, 4)
+        self.assertFalse(HysteresisVAD(.2, .1, np.int64(0)).update(np.zeros(2)))
+
+    def test_resampler_rejects_nonfinite_and_empty_channels(self):
+        for samples in (np.array([1., np.nan]), np.array([1., np.inf]), np.empty((0, 4))):
+            with self.assertRaises(ValueError):
+                resample_sro_to_reference(samples, 100.)
+
+    def test_finite_large_amplitudes_do_not_overflow(self):
+        with np.errstate(over="raise", invalid="raise"):
+            self.assertTrue(HysteresisVAD(.2, .1, 0).update(np.array([1e308, -1e308])))
+            np.testing.assert_array_equal(q15_quantize(np.array([-1e308, 1e308])), [-32768, 32767])
+
     def test_sro_fit_separates_offset_and_rate(self):
         times = np.arange(0.0, 101.0, 10.0)
         delays = 0.003 - 75e-6 * times

@@ -10,8 +10,27 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 import math
+from numbers import Integral, Real
 
 import numpy as np
+
+
+def _finite_scalar(value: float, name: str) -> float:
+    if isinstance(value, (bool, np.bool_)) or not isinstance(value, Real):
+        raise ValueError(f"{name} must be a finite real scalar")
+    result = float(value)
+    if not math.isfinite(result):
+        raise ValueError(f"{name} must be a finite real scalar")
+    return result
+
+
+def _integer(value: int, name: str, minimum: int = 0) -> int:
+    if isinstance(value, (bool, np.bool_)) or not isinstance(value, Integral):
+        raise ValueError(f"{name} must be an integer >= {minimum}")
+    result = int(value)
+    if result < minimum:
+        raise ValueError(f"{name} must be an integer >= {minimum}")
+    return result
 
 
 def _finite_1d(values: np.ndarray | list[float], name: str) -> np.ndarray:
@@ -55,7 +74,9 @@ def resample_sro_to_reference(samples: np.ndarray, relative_sro_ppm: float) -> n
     signal = np.asarray(samples, dtype=float)
     if signal.ndim not in (1, 2) or signal.shape[-1] < 2:
         raise ValueError("samples must have shape (time,) or (channel, time), with time >= 2")
-    ratio = 1.0 + float(relative_sro_ppm) * 1e-6
+    if signal.size == 0 or not np.all(np.isfinite(signal)):
+        raise ValueError("samples must be non-empty and finite")
+    ratio = 1.0 + _finite_scalar(relative_sro_ppm, "relative_sro_ppm") * 1e-6
     if not math.isfinite(ratio) or ratio <= 0.0:
         raise ValueError("relative_sro_ppm gives a non-positive or non-finite rate")
     output_length = int(np.floor((signal.shape[-1] - 1) / ratio)) + 1
@@ -84,22 +105,29 @@ class HysteresisVAD:
     _remaining: int = 0
 
     def __post_init__(self) -> None:
+        self.on_threshold = _finite_scalar(self.on_threshold, "on_threshold")
+        self.off_threshold = _finite_scalar(self.off_threshold, "off_threshold")
+        self.hangover_frames = _integer(self.hangover_frames, "hangover_frames")
+        self._remaining = _integer(self._remaining, "_remaining")
+        if not isinstance(self.active, (bool, np.bool_)):
+            raise ValueError("active must be boolean")
         if self.on_threshold < self.off_threshold or self.off_threshold < 0.0:
             raise ValueError("thresholds require on_threshold >= off_threshold >= 0")
-        if self.hangover_frames < 0:
-            raise ValueError("hangover_frames must be non-negative")
 
     def update(self, frame: np.ndarray) -> bool:
         samples = np.asarray(frame, dtype=float)
         if samples.size == 0 or not np.all(np.isfinite(samples)):
             raise ValueError("frame must be non-empty and finite")
-        energy = float(np.mean(samples * samples))
+        # Compare RMS rather than squaring raw amplitudes: finite large samples
+        # must not overflow before the threshold comparison.
+        peak = float(np.max(np.abs(samples)))
+        rms = peak * float(np.sqrt(np.mean((samples / peak) ** 2))) if peak else 0.0
         if not self.active:
-            if energy >= self.on_threshold:
+            if rms >= math.sqrt(self.on_threshold):
                 self.active = True
                 self._remaining = self.hangover_frames
             return self.active
-        if energy >= self.off_threshold:
+        if rms >= math.sqrt(self.off_threshold):
             self._remaining = self.hangover_frames
         elif self._remaining > 0:
             self._remaining -= 1
@@ -123,6 +151,8 @@ class PeakProtectAGC:
     gain: float = 1.0
 
     def __post_init__(self) -> None:
+        for name in ("target_peak", "max_gain", "attack", "release", "gain"):
+            setattr(self, name, _finite_scalar(getattr(self, name), name))
         if not 0.0 < self.target_peak <= 1.0:
             raise ValueError("target_peak must be in (0, 1]")
         if self.max_gain <= 0.0 or self.gain <= 0.0:
@@ -151,9 +181,7 @@ class RingBuffer:
     """Fixed-capacity FIFO that drops the oldest samples on overflow."""
 
     def __init__(self, capacity: int):
-        if capacity <= 0:
-            raise ValueError("capacity must be positive")
-        self.capacity = int(capacity)
+        self.capacity = _integer(capacity, "capacity", 1)
         self._data = np.empty(self.capacity, dtype=float)
         self._start = 0
         self._size = 0
@@ -175,6 +203,7 @@ class RingBuffer:
         return samples.size
 
     def read(self, count: int) -> np.ndarray:
+        count = _integer(count, "count")
         if count < 0 or count > self._size:
             raise ValueError("count must be between zero and the current size")
         indices = (self._start + np.arange(count)) % self.capacity
@@ -197,6 +226,8 @@ def simulate_deadline_queue(
     """
 
     durations = _finite_1d(processing_ms, "processing_ms")
+    frame_period_ms = _finite_scalar(frame_period_ms, "frame_period_ms")
+    capacity_frames = _integer(capacity_frames, "capacity_frames", 1)
     if np.any(durations < 0.0):
         raise ValueError("processing durations must be non-negative")
     if frame_period_ms <= 0.0 or capacity_frames <= 0:
@@ -235,7 +266,7 @@ def q15_quantize(values: np.ndarray) -> np.ndarray:
     array = np.asarray(values, dtype=float)
     if not np.all(np.isfinite(array)):
         raise ValueError("values must be finite")
-    scaled = np.rint(array * 32768.0)
+    scaled = np.rint(np.clip(array, -1.0, 1.0) * 32768.0)
     return np.clip(scaled, -32768, 32767).astype(np.int16)
 
 

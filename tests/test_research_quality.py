@@ -60,22 +60,23 @@ class ResearchQualityTests(unittest.TestCase):
         self.assertIn(old, text)
         path.write_text(text.replace(old, new), encoding="utf-8")
 
-    def test_valid_five_research_pages_pass(self):
+    def test_valid_six_research_pages_pass(self):
         self.assertEqual(self.issues(), [])
 
     def test_explicit_baselines_preserve_tutorial_pdf_and_figure_counts(self):
         self.assertEqual(quality.EXPECTED_CHAPTER_COUNT, 14)
-        self.assertEqual(quality.EXPECTED_SECTION_COUNT, 81)
+        self.assertEqual(quality.EXPECTED_SECTION_COUNT, 84)
         self.assertEqual(quality.EXPECTED_SUBSECTION_COUNT, 21)
-        self.assertEqual(quality.EXPECTED_OUTLINE_ITEM_COUNT, 116)
-        self.assertEqual(quality.EXPECTED_FIGURE_NUMBERS, set(range(1, 34)))
-        self.assertEqual(quality.EXPECTED_RESEARCH_PAGE_COUNT, 5)
+        self.assertEqual(quality.EXPECTED_OUTLINE_ITEM_COUNT, 119)
+        self.assertEqual(quality.EXPECTED_FIGURE_NUMBERS, set(range(1, 35)))
+        self.assertEqual(quality.EXPECTED_RESEARCH_PAGE_COUNT, 6)
         self.assertEqual(quality.EXPECTED_RESEARCH_PAGES, (
             ("README.md", "index.html"),
             ("01_spatial_and_tracking.md", "01_spatial_and_tracking.html"),
             ("02_aec_wpe_separation.md", "02_aec_wpe_separation.html"),
             ("03_industrial_deployment.md", "03_industrial_deployment.html"),
             ("04_source_reproduction.md", "04_source_reproduction.html"),
+            ("05_exercises_and_audio.md", "05_exercises_and_audio.html"),
         ))
 
     def test_missing_page_fails_without_file_read_crash(self):

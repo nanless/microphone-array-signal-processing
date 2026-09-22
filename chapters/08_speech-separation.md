@@ -102,19 +102,22 @@ AuxIVA 的规模例子：2 源 2 麦、8 kHz、3 s 语音，STFT 取 256 点窗�
 
 辅助函数迭代不需要学习率。帧数还取决于是否居中、边界补零和丢弃尾部不完整窗。算法见 [AuxIVA 原始论文](https://doi.org/10.1109/ASPAA.2011.6082320)（Ono, WASPAA 2011, pp. 189–192；公开实现见 [piva](https://github.com/fakufaku/piva)）。
 
-ILRMA 在同一 2 源 2 麦例子中，还要为每个源维护 NMF 基矩阵和激活矩阵。若每源取 2 个基，则矩阵尺寸分别为 $129\times2$ 和 $2\times375$，并与解混矩阵交替更新。基数、迭代次数和初值都会影响计算量与结果。语音与音乐是否满足同样的低秩假设，需要分别验证。见 [ILRMA 原始论文](https://doi.org/10.1109/TASLP.2016.2577880)（Kitamura et al., IEEE/ACM TASLP 24(9), 2016, pp. 1626–1641）。
+ILRMA 在同一 2 源 2 麦例子中，还要为每个源维护 NMF 基矩阵和激活矩阵。若每源取 2 个基，沿用上述不补零的 372 帧，则矩阵尺寸分别为 $129\times2$ 和 $2\times372$，并与解混矩阵交替更新。基数、迭代次数和初值都会影响计算量与结果。语音与音乐是否满足同样的低秩假设，需要分别验证。见 [ILRMA 原始论文](https://doi.org/10.1109/TASLP.2016.2577880)（Kitamura et al., IEEE/ACM TASLP 24(9), 2016, pp. 1626–1641）。
 
 MNMF 可以表示 3 个说话人、2 个麦克风的欠定混合。每个频点、每个源对应一个 $2\times2$ Hermitian 空间协方差；129 个频点和 3 个源共需 387 个协方差矩阵，还要联合估计谱基和激活。计算量和局部最优问题使初始化十分重要，AuxIVA 或 ILRMA 结果可作为初值。见 [MNMF 原始论文](https://doi.org/10.1109/TASL.2013.2239990)（Sawada et al., IEEE TASL 21(5), 2013, pp. 971–982）。
 
 TRINICON 的长度换算可以这样看：8 kHz 下，0.5 s 对应 4000 个采样，但这不表示解混滤波器必须取 4000 点，也不表示算法延迟就是 0.5 s。实际长度是在可表示的卷积范围、估计方差、计算量和块实现之间折中。例如 1024 点与 2048 点分别覆盖 128 ms 和 256 ms 的滤波器记忆；系统仍要单独报告块大小、帧移、前视和输入输出缓冲，才能得到算法延迟。见 [TRINICON 原始论文](https://ieeexplore.ieee.org/document/1414341)（Buchner et al., 2005）。
 
 **GSS（导引源分离，guided source separation）**在 CHiME-5/6 的真实晚宴多通道任务中得到广泛使用（Boeddeker et al., CHiME-5 2018；CHiME-8 任务设置已经变化，引用时应按当届规则）：
+
 1. **cACGMM 空间聚类**：记 WPE 输出、尚未做方向归一化的多通道 STFT 为 $\mathbf Y(f,k)$。先剔除 $\|\mathbf Y(f,k)\|_2\le\varepsilon_E$ 的低能量点，再对保留点严格归一化为 $\mathbf z=\mathbf Y/\|\mathbf Y\|_2$，主要保留通道间的复数比例。第 $n$ 个分量的密度满足
 
-   $$p(\mathbf z\mid\mathbf B_n)\propto \frac{1}{\det(\mathbf B_n)}\left(\mathbf z^H\mathbf B_n^{-1}\mathbf z\right)^{-M}\text{，}\qquad \|\mathbf z\|_2=1\text{。}\tag{8-4}$$
+    $$p(\mathbf z\mid\mathbf B_n)\propto \frac{1}{\det(\mathbf B_n)}\left(\mathbf z^H\mathbf B_n^{-1}\mathbf z\right)^{-M}\text{，}\qquad \|\mathbf z\|_2=1\text{。}\tag{8-4}$$
 
-   其中 $\mathbf B_n$ 是正定的形状矩阵。cAC 密度对 $\mathbf B_n$ 的正比例缩放不变，所以每次更新后必须固定尺度，例如令 $\operatorname{tr}(\mathbf B_n)=M$。式(8-4)建模的是归一化方向 $\mathbf z$ 的密度，不是 $\mathbf Y$ 的功率 SCM。混合模型的后验概率 $\gamma_n(f,k)$ 用作软时频掩码。“免训练”只表示聚类参数在当前录音上用期望最大化（Expectation-Maximization，EM）估计，不需要预先训练分离网络；说话人活动标注仍可能来自监督模型。
+    其中 $\mathbf B_n$ 是正定的形状矩阵。cAC 密度对 $\mathbf B_n$ 的正比例缩放不变，所以每次更新后必须固定尺度，例如令 $\operatorname{tr}(\mathbf B_n)=M$。式(8-4)建模的是归一化方向 $\mathbf z$ 的密度，不是 $\mathbf Y$ 的功率 SCM。混合模型的后验概率 $\gamma_n(f,k)$ 用作软时频掩码。“免训练”只表示聚类参数在当前录音上用期望最大化（Expectation-Maximization，EM）估计，不需要预先训练分离网络；说话人活动标注仍可能来自监督模型。
+
 2. **导引（Guided）**：各频点独立聚类会产生簇标签置换。GSS 使用**说话人活动时间标注**（diarization 输出）限制每个说话人可出现的帧，从而统一不同频点的簇标签；
+
 3. **级联**：WPE 去混响 → GSS 得到掩码 → 掩码估计目标/噪声协方差 → MVDR/GEV 波束形成。MVDR 是最小方差无失真响应，GEV 是广义特征值波束形成，见 §5.4。GSS 论文在 CHiME-5 的特定阵列和打分集上报告了识别结果；引用数字时必须同时给出原文表号、阵列配置、打分集和基线。[GSS 原始论文](https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf "citation")
 
 **紧凑实现顺序**。下面的伪代码强调依赖关系，不替代具体实现中的复数矩阵更新式。
@@ -166,7 +169,16 @@ $$
 
 定位结果可以给分离提供方向先验；分离网络输出的掩码又能用于估计 MVDR 的目标与干扰协方差。
 
-常用的尺度不变信号失真比（scale-invariant signal-to-distortion ratio，SI-SDR）先把估计信号 $\hat s$ 投影到参考 $s$ 上：$s_{\mathrm{tar}}=\langle\hat s,s\rangle s/\|s\|^2$，再计算 $10\log_{10}(\|s_{\mathrm{tar}}\|^2/\|\hat s-s_{\mathrm{tar}}\|^2)$。SI-SDR 提升量（SI-SDRi）是输出 SI-SDR 减去混合输入的 SI-SDR，两项必须使用同一预处理和实现。
+常用的尺度不变信号失真比（scale-invariant signal-to-distortion ratio，SI-SDR）把等长实数估计信号 $\hat s$ 投影到非零参考 $s$ 上，再比较投影能量与正交残差能量。采用去均值口径时，应先分别去掉两信号的均值：
+
+$$\begin{aligned}
+\alpha&=\frac{\langle\hat s,s\rangle}{\|s\|^2},\qquad s_{\mathrm{tar}}=\alpha s,\\
+\mathrm{SI\!\text{-}\!SDR}&=10\log_{10}\frac{\|s_{\mathrm{tar}}\|^2}{\|\hat s-s_{\mathrm{tar}}\|^2}.
+\end{aligned}\tag{8-6}$$
+
+投影会把估计中与参考平行的部分全部归入 $s_{\mathrm{tar}}$，不能把任何人工加入的“噪声”都直接当作分母。若该噪声含与 $s$ 同方向的分量，必须先做投影。该指标不自动消除时间偏移、频率响应差异或跨块换人。[Le Roux et al., ICASSP 2019，§2.3、式(3)～(5)](https://www.merl.com/publications/docs/TR2019-013.pdf)。
+
+SI-SDR 提升量（SI-SDRi）是输出 SI-SDR 减去混合输入的 SI-SDR，两项必须使用同一预处理和实现。精确数学中，非零完美估计对应正无穷，非零且与参考正交的估计对应负无穷；零参考或零估计不能给出有效分数。实现通常另设数值边界，必须在报告中说明。
 
 **分离指标的最小报告模板**：
 
@@ -240,7 +252,12 @@ VarArray 的正式论文发表于 ICASSP 2022（pp. 6027–6031，DOI [10.1109/I
 
 TSE 的身份泄漏、注册信道和声纹保护测试，不能由文本查询分离的类别级结果替代。
 
-**可执行分离基线与代码边界。** [`codes/array_tutorial/separation.py`](../codes/array_tutorial/separation.py) 提供四个只依赖 NumPy 的小模块：`si_sdr()` 接收等长一维估计与参考；`pit_permutation()` 接收 `(源, 样本)` 数组并枚举排列，返回“第几个输出对应第几个参考”的元组和平均 SI-SDR；`masked_spatial_covariance()` 接收 `(频点, 通道, 帧)` 复谱与 `(频点, 帧)` 非负掩码；`mask_mvdr_2x2()` 用目标 SCM 的主特征向量估计相对传递函数，再以干扰 SCM 求两麦 MVDR，返回 `(频点, 帧)` 输出和 `(频点, 2)` 权重。
+**可执行分离基线与代码边界。** [`codes/array_tutorial/separation.py`](../codes/array_tutorial/separation.py) 提供四个只依赖 NumPy 的小模块：
+
+- `si_sdr()` 接收等长一维估计与参考。先各自按峰值缩放再去均值，避免绝对幅度引起溢出；能量下限是估计能量乘 `epsilon`，而不是固定绝对能量。默认 `epsilon=1e-12` 时，完美和正交样本分别返回约 +120/−120 dB 的有限边界值；这些上限不是测量精度。零信号及去均值后为零的信号明确报错。
+- `pit_permutation()` 接收 `(源, 样本)` 数组并枚举排列，返回“第几个输出对应第几个参考”的元组和平均 SI-SDR。这是已知参考下的评价，不是在线说话人身份恢复。
+- `masked_spatial_covariance()` 接收 `(频点, 通道, 帧)` 复谱与 `(频点, 帧)` 非负掩码；`epsilon` 必须是有限正数，空掩码返回零矩阵而不是 NaN。
+- `mask_mvdr_2x2()` 用目标 SCM 的主特征向量估计相对传递函数，再以干扰 SCM 求两麦 MVDR，返回 `(频点, 帧)` 输出和 `(频点, 2)` 权重。
 
 联合示例用 `.venv/bin/python -m codes.examples.ch06_09_baselines` 运行，测试见 [`tests/test_codes_aec_wpe_sep_track.py`](../tests/test_codes_aec_wpe_sep_track.py)。测试覆盖输出交换、静音参考和静音估计拒绝、SCM 厄米性、MVDR 无失真约束，以及目标或干扰掩码为空时回退参考麦。实际评测还必须固定去均值、时延/增益对齐、静音段、截断长度和输入基线；秩亏 SCM、单通道输入、$N>M$、跨块换人及 STFT 重构均需单独测试。教学版 MVDR 在目标或干扰统计不可用时退回参考麦克风，不应把这一回退的输出解释成成功分离。
 
@@ -276,7 +293,29 @@ FastMNMF 的可用实现还体现了许可需要逐来源检查：作者 `SoundS
 > 3. 掩码换协方差要写哪两个矩阵？
 >
 >     **答案要点**：目标协方差 $\mathbf R_{\mathrm{tar}}$ 与干扰协方差 $\mathbf R_{\mathrm{int}}$；二分类例子可分别用 $\gamma$ 与 $1-\gamma$ 加权，多说话人加环境噪声时应按模型分别定义非目标掩码，不能把 $1-\gamma$ 一律解释成纯噪声。
->
+
+**可运行练习 E08-01～E08-03**
+
+运行 `.venv/bin/python -m codes.examples.exercises_enhancement` 复算以下三题。逐题结果和代码见 [`exercises_enhancement.py`](../codes/examples/exercises_enhancement.py)，合成混合与已知矩阵解混音频见[练习及音频手册](../codes/research/05_exercises_and_audio.md)。
+
+- **E08-01：尺度不变是否意味着时移不变？** 取零均值 $s=[1,0,-1,0]$、$u=[0,1,0,-1]$，$\hat s=s+0.1u$。分别计算原幅度、两信号同乘 $10^{-5}$、把干净 $s$ 循环右移一采样后的 SI-SDR。
+
+    **解答**：$\langle s,u\rangle=0$、两者能量均为 2，故 $\alpha=1$，能量比 $2/(0.01\times2)=100$，原幅度与低幅度都为 20 dB。循环右移一采样恰好得到 $u$，与 $s$ 正交，数学分数为负无穷，教学实现报 −120 dB 边界。
+
+    循环移位只是四点数组反例；真实延迟应补零、对齐并固定共同窗口，不能用 `roll` 把尾部声波移回开头。该题说明 SI-SDR 忽略整体增益，不忽略时间轴。
+
+- **E08-02：PIT 分数高是否证明身份连续？** 沿用上题 $s,u$。参考顺序为 $[s,u]$，输出为 $[u+0.1s,s+0.1u]$；比较固定顺序评分与最优排列评分。
+
+    **解答**：固定顺序时每个输出的目标幅度是 0.1、正交干扰幅度是 1，分数为 −20 dB。交换对应关系后每路均为 20 dB，输出到参考的零起始索引为 `[1,0]`。
+
+    PIT 利用真实参考选取评价排列；若相邻块不断交换输出而每块各自评分，仍可能得到高分。连续系统必须另外检查跨块对应和身份切换，不能用这个最优排列作为实际可用的身份标签。
+
+- **E08-03：已知混合矩阵为何仍可能不稳？** 令两源组成 $S$，两麦观测 $X=AS$，其中 $A=\begin{bmatrix}1&0.5\\0.5&1\end{bmatrix}$。用线性方程求解恢复 $S$，再给单个观测列加上 $[0.01,-0.01]^\top$。将两个非对角元素改成 0.99 后重复。
+
+    **解答**：第一种矩阵特征值为 1.5、0.5，二范数条件数为 3；观测误差恢复为 $[0.02,-0.02]^\top$。第二种特征值为 1.99、0.01，条件数为 199，同一误差恢复为 $[1,-1]^\top$。无噪声且矩阵准确时，两者都可在浮点误差内恢复源；噪声和矩阵误差会暴露病态风险。
+
+    这里直接给定了 $A$，因此只是已知瞬时混合的代数实验，不是 ICA、IVA 或其他盲分离算法，也不代表实际卷积房间中的性能。
+
 ### 8.2 处理模块的顺序
 
 回声、混响和多说话人混合对应不同的信号模型。以下顺序由参考可用性、空间相位保持和统计量依赖关系决定，接口定义见 §10.1。

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码获取与独立复现记录 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="9187099fc571"><style>
+<meta name="source-digest" content="80cb834cf708"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -16,6 +16,7 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .main{flex:1;min-width:0;padding:28px 36px;background:#fff;overflow-wrap:anywhere}
 .main p{margin:0 0 1.05em}.main li>p{margin:.35em 0}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
+.audio-sample{display:block;width:min(100%,460px);margin:8px 0 18px}.audio-sample:focus-visible{outline:3px solid #e67e22}
 table{border-collapse:collapse;margin:14px 0;max-width:100%}
 .table-scroll{max-width:100%;overflow-x:auto}
 .table-scroll:focus-visible{outline:3px solid #e67e22;outline-offset:2px}
@@ -24,7 +25,8 @@ th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
-mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
+mjx-assistive-mml{width:1px!important;height:1px!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
 .pn a{color:#2f6db3;text-decoration:none}.pn .off{color:#aaa}
@@ -39,7 +41,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{position:fixed;bottom:20px;right:20px;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px;opacity:.75}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
-@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}}
+@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
@@ -67,6 +69,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="04_source_reproduction.html#sec-u-96ac81c5a8">5. 记录结果的必要字段</a></li>
 <li><a href="04_source_reproduction.html#sec-u-56cf8b0bbf">6. 何时可以进入设备比较</a></li>
 </ul>
+<div class="chap"><a href="05_exercises_and_audio.html">章节代码练习与音频实验</a></div>
 <div class="chap"><a href="../01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
 <div class="chap"><a href="../02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
 <div class="chap"><a href="../03_array-geometry.html">第 3 章 · 阵列几何形态</a></div>

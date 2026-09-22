@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 10 章 · 工程实现、评测与产业实践 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="9187099fc571"><style>
+<meta name="source-digest" content="80cb834cf708"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -16,6 +16,7 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .main{flex:1;min-width:0;padding:28px 36px;background:#fff;overflow-wrap:anywhere}
 .main p{margin:0 0 1.05em}.main li>p{margin:.35em 0}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
+.audio-sample{display:block;width:min(100%,460px);margin:8px 0 18px}.audio-sample:focus-visible{outline:3px solid #e67e22}
 table{border-collapse:collapse;margin:14px 0;max-width:100%}
 .table-scroll{max-width:100%;overflow-x:auto}
 .table-scroll:focus-visible{outline:3px solid #e67e22;outline-offset:2px}
@@ -24,7 +25,8 @@ th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
-mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
+mjx-assistive-mml{width:1px!important;height:1px!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
 .pn a{color:#2f6db3;text-decoration:none}.pn .off{color:#aaa}
@@ -39,7 +41,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{position:fixed;bottom:20px;right:20px;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px;opacity:.75}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
-@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}}
+@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
@@ -64,7 +66,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="10_engineering-practice.html#sec-u-5a84f59f93">10. 工程实现、评测与产业实践</a></li>
 <li><a href="10_engineering-practice.html#sec-10-1">10.1 参考链路与端到端延迟</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-1-1">10.1.1 延迟不能把每个模块的耗时直接相加</a></li>
-<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-1-2">10.1.2 实时回调只搬运数据</a></li>
+<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-1-2">10.1.2 实时回调的期限与数据搬运</a></li>
 <li><a href="10_engineering-practice.html#sec-10-2">10.2 拾音、同步与增益</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-2-1">10.2.1 SRO：先区分初始时差和采样率偏移</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-2-2">10.2.2 增益变化与 AEC</a></li>
@@ -82,7 +84,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="10_engineering-practice.html#sec-10-9">10.9 从模型到设备</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-9-1">10.9.1 开源实现怎样用作工程对照</a></li>
 <li><a href="10_engineering-practice.html#sec-10-10">10.10 联调与验收</a></li>
-<li><a href="10_engineering-practice.html#sec-10-11">10.11 本章小结</a></li>
+<li><a href="10_engineering-practice.html#sec-10-11">10.11 本章练习</a></li>
+<li><a href="10_engineering-practice.html#sec-10-12">10.12 本章小结</a></li>
 </ul>
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
@@ -93,7 +96,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="10_engineering-practice.html#sec-u-5a84f59f93">10. 工程实现、评测与产业实践</a></li>
 <li><a href="10_engineering-practice.html#sec-10-1">10.1 参考链路与端到端延迟</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-1-1">10.1.1 延迟不能把每个模块的耗时直接相加</a></li>
-<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-1-2">10.1.2 实时回调只搬运数据</a></li>
+<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-1-2">10.1.2 实时回调的期限与数据搬运</a></li>
 <li><a href="10_engineering-practice.html#sec-10-2">10.2 拾音、同步与增益</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-2-1">10.2.1 SRO：先区分初始时差和采样率偏移</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-2-2">10.2.2 增益变化与 AEC</a></li>
@@ -111,7 +114,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="10_engineering-practice.html#sec-10-9">10.9 从模型到设备</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-9-1">10.9.1 开源实现怎样用作工程对照</a></li>
 <li><a href="10_engineering-practice.html#sec-10-10">10.10 联调与验收</a></li>
-<li><a href="10_engineering-practice.html#sec-10-11">10.11 本章小结</a></li>
+<li><a href="10_engineering-practice.html#sec-10-11">10.11 本章练习</a></li>
+<li><a href="10_engineering-practice.html#sec-10-12">10.12 本章小结</a></li>
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是教程第 10 章。前后篇见下方导航。</p>
@@ -234,8 +238,15 @@ $$</p>
 <p>这些数字只说明记账方法，没有包含图外可能存在的解码和交互延迟。实际系统应在声学输入与最终输出之间记录时间戳或回采脉冲，分别测量冷启动、稳定运行和最不利调度条件。</p>
 <p>把 STFT 窗长从 32 ms 改为 16 ms，也不等于必然省下 16 ms：只有依赖完整窗或未来样本的等待发生变化，关键路径才会缩短。</p>
 <p>延迟报告不能只有平均值。稳定运行阶段至少给出中位数（p50）与尾延迟（如 p95、p99）、样本数和测量时长；冷启动另报模型加载、内存分配和状态填充所需时间。若系统存在不同设备、网络或调度模式，应分别报告，而不是把所有样本混成一个分位数。测量点也要写清，例如“音频驱动时间戳 → 第一块可播放增强 PCM”与“音频入口 → 首个 ASR token”是两条不同关键路径。</p>
-<span id="sec-4" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-1-2">10.1.2 实时回调只搬运数据</h3>
-<p>声卡回调线程的首要目标是按时交付下一块音频。回调中临时分配大数组、等待互斥锁、访问磁盘、打印日志或执行时间不确定的模型推理，都可能让驱动错过期限。常见结构是：回调只复制交织或非交织样本、记录设备时间戳和状态位，再把固定大小的数据块写入预分配的环形缓冲；工作线程从缓冲读取并执行 AEC、波束和后端。回调与工作线程的时钟、缓冲单位和丢帧策略必须写清。</p>
+<span id="sec-4" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-1-2">10.1.2 实时回调的期限与数据搬运</h3>
+<p>声卡回调线程的首要目标是按时交付下一块音频。回调中临时分配大数组、等待互斥锁、访问磁盘、打印日志或执行时间不确定的模型推理，都可能让驱动错过期限。<a href="https://portaudio.com/docs/v19-doxydocs/writing_a_callback.html" title="citation">PortAudio 官方回调说明</a>列出了分配、输入输出和互斥等可能产生无界等待的操作。</p>
+<p>一种便于检查的分工是：</p>
+<ul>
+<li>回调复制交织或非交织样本，记录设备时间戳和状态位，写入预分配缓冲；</li>
+<li>工作线程读取数据，执行 AEC、波束及后端；</li>
+<li>监控线程汇总期限违约、丢样和高水位，不让日志写入阻塞回调。</li>
+</ul>
+<p>回调与工作线程的时钟、缓冲单位和丢帧策略必须写清。这是一种参考结构，不表示所有实时 DSP 都只能在回调外执行；有界、预分配且能满足期限的小型处理也可以在回调中完成。</p>
 <p>环形缓冲已满时，系统需要事先选择“丢最旧块”“丢新块”或“降级处理”。任何一种策略都会改变输出：丢块破坏连续状态，等待会阻塞采集，积压则增大延迟。本书的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>RingBuffer</code></a> 采用“丢最旧样本”的可见基线，并累计 <code>dropped</code>；它用来说明容量和溢出语义，不是无锁实时队列。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>simulate_deadline_queue</code></a> 用一条串行工作队列区分三件事：处理完成晚于本帧期限、队列达到高水位、容量已满而丢帧。平均 RTF 小于 1 仍可能出现其中任何一种。正式设备还要记录驱动报告的 underrun/overrun（合称 xrun）、线程优先级、CPU 频率策略和并发负载。</p>
 <p>Linux 的 ALSA（Advanced Linux Sound Architecture，先进 Linux 声音架构）还区分具体恢复原因：<code>-EPIPE</code> 表示上溢或下溢，<code>-ESTRPIPE</code> 与挂起有关，<code>-ENODEV</code> 可表示设备移除；某些回声参考设备在关联播放未启动时会返回 <code>-ENODATA</code>。这些状态不能统一解释为“再读一次”。恢复后要记录丢样，并通知依赖连续历史的 AEC、重采样器及后端。<a href="https://www.alsa-project.org/alsa-doc/alsa-lib/pcm.html" title="citation">ALSA PCM 官方接口说明</a></p>
@@ -329,7 +340,9 @@ $$</p>
 <p>互相关峰漂移、相位漂移或专用导频都可用于估计。更新周期和允许残差应由最长连续运行时间、相干性要求及任务指标反推，不宜照搬固定 ppm 门限。</p>
 <p>能够共享硬件时钟时，应优先消除 SRO 来源；不能共享时钟时，再评估在线补偿。</p>
 <p>初始时差表现为整条“延迟—时间”曲线的截距，稳定 SRO 表现为斜率，偶发丢样则表现为阶跃。三者不能只靠首尾两个点可靠区分。工程上可分块估计互相关峰，先检查峰值置信度，再对可信的“时间—相对延迟”点做直线拟合；残差中若出现近似一个或多个采样间隔的突跳，应先查丢样和时间戳，而不是把所有变化都拟合成 ppm。</p>
-<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>estimate_sro_ppm</code></a> 把相对延迟定义为“参考时间减设备时间”，再拟合截距和斜率；正斜率表示设备采样率较高，与 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>resample_sro_to_reference</code></a> 的符号一致。若横轴使用参考时间，精确斜率为 $\varepsilon/(1+\varepsilon)$；函数按小偏移的一阶近似把斜率乘 $10^6$ 报为 ppm，在音频设备常见的几十至数百 ppm 范围内用于教学。要求更高时应反解 $\varepsilon=s/(1-s)$，其中 $s$ 是拟合斜率。重采样函数用线性插值演示长度和方向；线性插值没有足够的带外抑制，只适合教学检查。设备实现要换成有抗混叠滤波和跨块状态的异步采样率转换器，并测量补偿后的相位残差。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>estimate_sro_ppm</code></a> 把相对延迟定义为“参考时间减设备时间”，再拟合截距和斜率；正斜率表示设备采样率较高，与 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>resample_sro_to_reference</code></a> 的符号一致。</p>
+<p>若横轴使用参考时间，精确斜率为 $\varepsilon/(1+\varepsilon)$；函数按小偏移的一阶近似把斜率乘 $10^6$ 报为 ppm。要求更高时应反解 $\varepsilon=s/(1-s)$，其中 $s$ 是拟合斜率。例如 $s=0.0001$ 的一阶报告是 100 ppm，精确反解约为 100.010 ppm。截距描述初始错位，不进入这个速率换算。</p>
+<p>重采样函数用线性插值演示长度和方向；线性插值没有足够的带外抑制，只适合教学检查。设备实现要换成有抗混叠滤波和跨块状态的异步采样率转换器，并测量补偿后的相位残差。</p>
 <p>连续流可对照 libsamplerate 的 <code>src_process</code> 或 SpeexDSP 的重采样接口。以 libsamplerate 为例，比例定义为“输出速率/输入速率”；设备快 100 ppm 时，转到参考时钟的比例约为 $1/1.0001=0.99990001$。每次调用还会返回实际消耗的输入帧数和生成的输出帧数，调用方必须保留未消耗输入，不能假设一进一出或每块重新创建转换器。<a href="https://libsndfile.github.io/libsamplerate/api_full.html" title="citation">libsamplerate Full API</a></p>
 <span id="sec-7" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-2-2">10.2.2 增益变化与 AEC</h3>
 <p>AEC 前的时变增益会改变它要辨识的等效回声路径。设计时应记录每一级增益位于参考取点之前还是之后，并确保 AEC 能获知或跟踪这些变化。常见做法是：AEC 收敛和双讲期间保持前置增益稳定；发生削波风险时允许保护性衰减，同时重置或减小自适应步长。锁定时间、解锁条件和允许步进都应通过本机回声路径和双讲集确定，不存在通用的秒数或 dB 阈值。</p>
@@ -339,7 +352,14 @@ $$</p>
 \tag{10-3}
 $$</p>
 <p>例如 $\Delta r=0.5\ \text{mm}$、$f=4\ \text{kHz}$、$c=343\ \text{m/s}$ 时，$\Delta\phi\approx2.1^\circ$。这说明高频和深零陷波束更敏感，不表示 0.5 mm 是所有产品的统一公差。</p>
-<p>标定不能止于得到一组系数。可执行流程应包含：确认通道编号和设备时间戳；在多个已知方向播放宽带信号；估计相对增益、固定时延和随频率变化的相位；核对实际麦克风坐标与坐标系；把系数连同设备序列、采样率、温度和标定日期保存；最后在未参与拟合的方向复测波束图和 DOA。更换声孔、密封件、麦克风或采集板后，要重新判断旧系数是否仍适用。</p>
+<p>标定不能止于得到一组系数。可执行流程应包含以下步骤：</p>
+<ol>
+<li>确认通道编号和设备时间戳，在多个已知方向播放宽带信号。</li>
+<li>估计相对增益、固定时延和随频率变化的相位，同时核对实际麦克风坐标与坐标系。</li>
+<li>把系数连同设备序列、采样率、温度和标定日期保存。</li>
+<li>在未参与拟合的方向复测波束图和 DOA。</li>
+</ol>
+<p>更换声孔、密封件、麦克风或采集板后，要重新判断旧系数是否仍适用。</p>
 <span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-3">10.3 NS、控制信号与唤醒分支</h2>
 <span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-3-1">10.3.1 单通道 NS 的方法和边界</h3>
 <p>单通道 NS 常放在波束输出之后，因为此处计算量较小，也不会反过来破坏传统 AEC 的线性关系。但联合增强网络、多通道掩码估计或为定位专设的增强支路可能采用不同顺序。应依据训练输入和模块假设决定取点。</p>
@@ -544,10 +564,13 @@ $$</p>
 </table></div>
 <p>OSPA 把定位误差与目标数量错误合成一个集合距离；经典 OSPA 本身不保留身份标签，因此不能用它代替轨迹身份切换指标。报告还应给出轨迹中断/碎片数、ID 切换和关联规则，而不是用一个集合距离覆盖全部时序失败。</p>
 <p>ITU-T 已于 2024 年 1 月 5 日撤销 <a href="https://www.itu.int/rec/T-REC-P.862/en" title="citation">P.862（PESQ）</a>，并在官方页面指向 <a href="https://www.itu.int/rec/T-REC-P.863/en" title="citation">P.863（POLQA）</a>。因此，PESQ 适合在必须对照旧论文时按原条件复现；新的标准合规性表述不应把 P.862 写成现行建议书。P.863 是现行的客观语音质量建议书，但其适用范围和版本仍需随正式报告记录。</p>
-<p><a href="https://www.itu.int/rec/T-REC-P.835/en" title="citation">ITU-T P.835（07/2026）</a>用于对含噪语音处理系统做主观听测，分别评价语音信号（Signal，SIG）、背景噪声（Background，BAK）和总体效果（Overall，OVRL）。它适合区分“噪声是否减弱”和“语音是否受损”，但不能直接评价 DOA、轨迹身份或空间位置。正式报告应写明标准版本、听测材料、听众筛选、播放设备和统计区间。</p>
+<p><a href="https://www.itu.int/rec/T-REC-P.835/en" title="citation">ITU-T P.835（07/2026）</a>用于对含噪语音处理系统做主观听测，分别评价语音信号（Signal，SIG）、背景噪声（Background，BAK）和总体效果（Overall，OVRL）。截至 2026-09-22，官方条目状态为“生效，预发布”（in force, prepublished）；三维评分的用途可见<a href="https://www.itu.int/itu-t/workprog/wp_item.aspx?isn=20844" title="citation">官方工作项目说明</a>。</p>
+<p>它适合区分“噪声是否减弱”和“语音是否受损”，但不能直接评价 DOA、轨迹身份或空间位置。正式报告应写明标准版本、听测材料、听众筛选、播放设备和统计区间。</p>
 <p><a href="https://www.itu.int/rec/T-REC-P.566/en" title="citation">ITU-T P.566（07/2026）</a>的官方条目将其列为“已生效，待发布”（in force / to be published）的单端机器学习多维语音质量模型。在正式文本发布前，本书不从二手资料扩写输出维度或评分细则。P.566 的单端客观预测不能代替 P.835 主观听测，也不评价 DOA、轨迹或空间位置。</p>
 <p>公开评分代码可帮助固定执行口径。DNS Challenge 的 <code>DNSMOS/dnsmos_local.py</code> 提供本地质量预测，AEC Challenge 的 <code>AECMOS/AECMOS_local/</code> 提供回声相关评分；前者还区分普通和个性化模式。需要同时锁定模型摘要、采样率、裁段、短文件处理与聚合方式。模型预测分不是实际听众 MOS，也不能代替任务识别指标。<a href="https://github.com/microsoft/DNS-Challenge/tree/591184a9fcb2cbdec02520fed81a32bbbf9d73ff/DNSMOS" title="citation">DNSMOS 本地说明</a>、<a href="https://github.com/microsoft/AEC-Challenge/tree/6c633d0a9d2a143a0e364899b91b06f127315b18/AECMOS" title="citation">AECMOS 本地说明</a></p>
 <p>AECMOS 官方为 2021/2022 测试集规定了收敛段后的评分范围，近端单讲、远端单讲和双讲的裁取方式不同。使用别的测试集时，应按该测试集规则定义区间，不能直接沿用旧届剪裁。逐文件失败、静音输出和缺失场景也要计入报告，避免只汇总成功评分的子集。</p>
+<p>本书的音频示例用于辨认时延、拖尾、削波和增益等现象，不是标准主观评分材料。试听前先降低播放音量，确认没有异常峰值，再比较同一输入的参考、受扰和处理后版本。对同组文件施加共同线性增益，可以保留它们的相对电平；各文件分别峰值归一化会抹去衰减或增益差异。若为了比较音色而另做响度匹配，应把该版本和原始测量版本分开保存，并记录匹配方法。</p>
+<p>数值评分应使用规定的原始数据、对齐和增益规则，不能直接把试听归一化后的文件当作评分输入。合成谐波或噪声只检验信号处理现象，不包含自然语言内容，不能由此报告语音 MOS、可懂度或 WER。材料来源、参数及章节练习见<a href="research/05_exercises_and_audio.html">练习与音频实验手册</a>。</p>
 <span id="sec-16" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-6">10.6 数据、仿真与复现</h2>
 <p>公开数据集适合建立可复现基线，不能代替目标设备录音。选择数据时要核对采样率、麦克风几何、房间、说话人数、重叠率、参考真值和许可证。训练、调参、最终测试应按房间或说话人隔离，避免相邻片段泄漏。</p>
 <p>录音和声纹还要有数据治理清单：</p>
@@ -823,7 +846,15 @@ room = pra.ShoeBox(
 </tbody>
 </table></div>
 <p><code>simulate_deadline_queue</code> 的 <code>queue_high_water</code> 包含正在处理的帧，故不能直接写进上表的等待队列深度。实际产品若要记录敏感内容，应按 §10.6 的同意、访问、保留和删除规则另行设计。</p>
-<p>故障注入要对应恢复动作。固定延迟跳变用于检查 AEC 重对齐；单通道增益或相位扰动用于检查标定和波束鲁棒性；插入或删除样本用于区分丢样与 SRO；CPU 负载脉冲用于检查队列、尾延迟和降级；截断或 NaN 模型输出用于检查旁路和重置。每次试验都要记录注入位置、持续时间、期望状态转换和恢复时间，不能只确认进程没有崩溃。</p>
+<p>故障注入要对应恢复动作：</p>
+<ul>
+<li>固定延迟跳变用于检查 AEC 重对齐；</li>
+<li>单通道增益或相位扰动用于检查标定和波束鲁棒性；</li>
+<li>插入或删除样本用于区分丢样与 SRO；</li>
+<li>CPU 负载脉冲用于检查队列、尾延迟和降级；</li>
+<li>截断或 NaN 模型输出用于检查旁路和重置。</li>
+</ul>
+<p>每次试验都要记录注入位置、持续时间、期望状态转换和恢复时间，不能只确认进程没有崩溃。教学接口会拒绝非有限阈值、非整数容量和非有限输入，不将这些输入静默转成有效音频；设备上的旁路或停流策略则要由系统接口另行定义。</p>
 <p>常见故障可按依赖关系缩小范围：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -861,7 +892,79 @@ room = pra.ShoeBox(
 </tr>
 </tbody>
 </table></div>
-<span id="sec-22" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-11">10.11 本章小结</h2>
+<span id="sec-22" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-11">10.11 本章练习</h2>
+<p>以下六题的输入均为本书构造的教学数据。先手算，再运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_engineering.py"><code>exercises_engineering.py</code></a>：</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.examples.exercises_engineering
+</code></pre>
+<p>程序按稳定编号输出中间量和结果；它不访问声卡，也不代表硬件性能测量。</p>
+<p><strong>E10-01：把初始错位与 SRO 分开。</strong> 在参考时间 $[0,10,20]$ s 测得相对延迟 $[2,3,4]$ ms。按 §10.2 的一阶模型求截距、ppm、600 s 累积漂移，以及设备转到参考速率所需的“输出/输入”比例。</p>
+<p>答案：斜率为 $(4-2)\ \mathrm{ms}/20\ \mathrm{s}=10^{-4}$，即 100 ppm；截距为 2 ms。累计漂移约 $10^{-4}\times600=0.06$ s，即 60 ms，不含初始的 2 ms；比例约 $1/1.0001=0.99990001$。这组点恰好共线，不能据此认为实录估计也没有噪声，或首尾两点足以识别丢样。</p>
+<p><strong>E10-02：VAD 的迟滞与两帧挂起。</strong> 帧长 160 点、采样率 16 kHz，启动/继续能量阈值为 0.08/0.03，挂起为 2 帧，初始不活动。六帧均方能量依次为 $[0,0.09,0.04,0,0,0]$。写出六个活动标志及挂起时间。</p>
+<p>答案：<code>[False, True, True, True, True, False]</code>。第 2 帧越过启动阈值；第 3 帧虽低于启动阈值，却高于继续阈值，因此继续活动并补满挂起计数。第 4、5 帧消耗两个计数，第 6 帧关闭。每帧 $160/16000=10$ ms，两帧为 20 ms；这不包含预卷，也不保证真实辅音都能保留。</p>
+<p><strong>E10-03：环形缓冲满了以后留下什么。</strong> 容量为 4 个时间样本，依次写入 $[1,2,3]$ 和 $[4,5]$，中间不读取；溢出策略为丢最旧样本。求读取结果、累计丢样数。若这些数来自连续 FIR 输入，应如何处理历史？</p>
+<p>答案：保留 $[2,3,4,5]$，丢 1 个样本。不能把新数据直接标成与旧数据连续而不记录缺口；应将丢样事件和时间戳通知下游，再按协议重置、重新对齐或做明示的缺口填充。环形缓冲只实现容量语义，不会自行修复 AEC 历史。</p>
+<p><strong>E10-04：平均处理量够，为什么还会丢帧。</strong> 每 10 ms 到一帧，六帧处理耗时为 $[2,18,18,2,2,2]$ ms。一条串行线程，容量为 2 帧，包含正在执行者；满时丢新帧。各帧期限为自身到达时间加 10 ms。计算接纳、结束、违约及丢帧情况。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">帧号（从 0 开始）</th>
+<th scope="col" style="text-align: right;">到达（ms）</th>
+<th scope="col" style="text-align: right;">开始（ms）</th>
+<th scope="col" style="text-align: right;">结束（ms）</th>
+<th scope="col">结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2</td>
+<td>按期</td>
+</tr>
+<tr>
+<td>1</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">28</td>
+<td>违约</td>
+</tr>
+<tr>
+<td>2</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">46</td>
+<td>违约</td>
+</tr>
+<tr>
+<td>3</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">46</td>
+<td style="text-align: right;">48</td>
+<td>违约</td>
+</tr>
+<tr>
+<td>4</td>
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">—</td>
+<td>容量已满，丢弃</td>
+</tr>
+<tr>
+<td>5</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">52</td>
+<td>按期</td>
+</tr>
+</tbody>
+</table></div>
+<p>答案：总输入工作量比为 $44/60\approx0.733$，但 3 帧违约、1 帧丢失，高水位为 2，最大等待为 16 ms。这里的 0.733 是全部输入的拟处理工作量比；不是把已经丢弃的任务从分子删掉后得到的“设备 RTF”。模拟不含线程抢占和驱动下溢。</p>
+<p><strong>E10-05：半个量化级怎样取整。</strong> 把 $[-1,-0.5/32768,0.5/32768,1.5/32768,1]$ 转成 Q1.15。使用最近偶数舍入和有符号饱和，写出整数编码。</p>
+<p>答案：乘 32768 后为 $[-32768,-0.5,0.5,1.5,32768]$；舍入和饱和后为 <code>[-32768, 0, 0, 2, 32767]</code>。恰好位于半级处时选偶整数；正满幅不能精确表示。若目标内核采用截位，这道题应有不同答案，不能将两种实现混称为逐位一致。</p>
+<p><strong>E10-06：峰值保护与目标电平不是一回事。</strong> 初始增益 1，目标峰值 0.8，最大增益 4，增益下降/上升平滑系数均为 0.5。连续两块是 $[-0.2,0.2]$ 和 $[-2,2]$。按 <code>PeakProtectAGC</code> 计算平滑增益、安全限幅和输出峰值。</p>
+<p>答案：第一块期望增益为 4，平滑后 $1+0.5(4-1)=2.5$，输出峰值 0.5。第二块期望增益为 0.4，平滑后 $2.5+0.5(0.4-2.5)=1.45$，但不削波上限为 $1/2=0.5$，最终增益 0.5、输出峰值 1。安全保护避免超出满幅，并不保证每块恰好达到目标 0.8，也不能修复输入中已有的模拟削波。</p>
+<span id="sec-23" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-12">10.12 本章小结</h2>
 <ol>
 <li>图 23 是参考依赖图，不是所有设备必须执行的固定流水线。</li>
 <li>延迟、算力和续航必须在目标硬件上按明确口径测量；窗口长度、MIPS 和 mAh 不能互相替代。</li>

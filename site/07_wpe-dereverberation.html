@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 7 章 · 去混响（WPE） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="9187099fc571"><style>
+<meta name="source-digest" content="80cb834cf708"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -16,6 +16,7 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .main{flex:1;min-width:0;padding:28px 36px;background:#fff;overflow-wrap:anywhere}
 .main p{margin:0 0 1.05em}.main li>p{margin:.35em 0}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
+.audio-sample{display:block;width:min(100%,460px);margin:8px 0 18px}.audio-sample:focus-visible{outline:3px solid #e67e22}
 table{border-collapse:collapse;margin:14px 0;max-width:100%}
 .table-scroll{max-width:100%;overflow-x:auto}
 .table-scroll:focus-visible{outline:3px solid #e67e22;outline-offset:2px}
@@ -24,7 +25,8 @@ th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
-mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
+mjx-assistive-mml{width:1px!important;height:1px!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
 .pn a{color:#2f6db3;text-decoration:none}.pn .off{color:#aaa}
@@ -39,7 +41,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{position:fixed;bottom:20px;right:20px;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px;opacity:.75}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
-@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}}
+@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
@@ -347,7 +349,8 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 <p>延迟历史与当前晚期混响之间存在可利用相关性时，历史权重才会参与去混响。</p>
 <p>该模型还假设希望保留的早期目标可由当前块的导向向量描述、$\lambda_t>0$ 且加载后的协方差可逆；若 $\lambda_t$ 或协方差使用未来帧，所得实现仍是离线的。</p>
 <p>原始 WPD 工作见 Nakatani 与 Kinoshita 2019，后续因式分解工作说明了它与 WPE、波束形成的关系。<a href="https://arxiv.org/abs/1908.02710" title="citation">Nakatani &amp; Kinoshita, EUSIPCO 2019</a>、<a href="https://doi.org/10.1109/ICASSP40776.2020.9054393" title="citation">Boeddeker et al., ICASSP 2020</a></p>
-<p><strong>可执行 WPE 基线。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/dereverberation.py"><code>codes/array_tutorial/dereverberation.py</code></a> 提供只依赖 NumPy 的最小离线 WPE。<code>offline_wpe()</code> 接收复数 STFT，单通道轴序为 <code>(频点, 帧)</code>，多通道轴序为 <code>(频点, 通道, 帧)</code>，输出保持相同形状；它实现保护延迟、按滞后堆叠多通道历史、共享功率权重、相对对角加载和复共轭预测。<code>taps=0</code>、迭代次数为零、记录短于首个有效回归帧或整个频点为零时直接旁路。输入必须是复谱，不能把幅度谱传入后再补相位。</p>
+<p><strong>可执行 WPE 基线。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/dereverberation.py"><code>codes/array_tutorial/dereverberation.py</code></a> 提供只依赖 NumPy 的最小离线 WPE。<code>offline_wpe()</code> 接收复数 STFT，单通道轴序为 <code>(频点, 帧)</code>，多通道轴序为 <code>(频点, 通道, 帧)</code>，输出保持相同形状；它实现保护延迟、按滞后堆叠多通道历史、共享功率权重、相对对角加载和复共轭预测。</p>
+<p><code>taps=0</code>、迭代次数为零、记录短于首个有效回归帧或整个频点为零时直接旁路。输入各维不能为空、数值必须有限；阶数、延迟和迭代次数必须为整数，功率下限必须是有限正数。输入必须是复谱，不能把幅度谱传入后再补相位。</p>
 <p>联合示例用 <code>.venv/bin/python -m codes.examples.ch06_09_baselines</code> 运行，边界测试见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_wpe_sep_track.py"><code>tests/test_codes_aec_wpe_sep_track.py</code></a>。测试固定检查 $K=0$、短输入、全零频点、单抽头复共轭方向、多通道形状和整体幅度缩放等变性。实际音频管线还要自行固定 STFT 的窗、帧移、<code>center</code>/补零约定与 ISTFT 长度，并测试短语音、静音权重、病态矩阵、通道交换及块边界。求解失败时应增加加载、降低 $K$ 或旁路该频点，不能输出 NaN。</p>
 <p>该基线是整段离线估计，不宣称因果或实时。离线、在线、学习功率与联合滤波的源代码入口分别如下，完整读码顺序和失效实验见 <a href="research/02_aec_wpe_separation.html#wpe">WPE 源码研究</a>。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -416,20 +419,61 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 <li>在弱混响条件下仍强制启用 WPE。</li>
 </ol>
 <p>对应的检查量分别是当前帧泄漏与早期语音损伤、有效样本数、直混比、噪声强度和混响时间。</p>
-<blockquote>
 <p><strong>练习 7-1（自测九题）</strong></p>
 <ol>
-<li>默写单通道 WPE 模型并解释 $\Delta$、$K$。（要点：$X=E+\sum G^*X$；$\Delta$ 保护延迟，$K$ 预测阶数）</li>
-<li>$\Delta=2$、$K=2$、$n=10$ 时用哪几帧、跳过哪几帧？（要点：用第 8、7 帧；跳过第 9 帧）</li>
-<li>复算算例 7-1 第 1 步的复数乘法。（要点：$(0.5-0.1\mathrm{j})(0.8+0.1\mathrm{j})=0.41-0.03\mathrm{j}$）</li>
-<li>独立完成算例 7-2 并算出 dB 数。（要点：$E=0.69+0.28\mathrm{j}$；能量约 1.25→0.55，约 3.5 dB）</li>
-<li>写出最大似然交替的两步，并写出固定 $\lambda$ 时的正规方程 $R\vec{g}=\vec{r}$。（要点：固定 $\lambda$ 时用加权最小二乘解 $G$；固定 $G$ 时用 $\lambda=|E|^2$ 更新功率；迭代次数或停止条件要随实现与数据一并报告；$R$、$\vec{r}$ 为 $\lambda$ 加权的自相关和互相关）</li>
-<li>手算算例 7-3，并解释权重如何改变估计。（要点：$\hat g\approx1.156$；第 2 帧权重较大，因此对结果影响更大）</li>
-<li>图 21 的帧移为 8 ms，$\Delta=6$、$K=10$。写出最近和最远预测帧及对应的物理时延。（要点：用 $t-6$ 到 $t-15$；最近 48 ms，最远 120 ms；这是本书仿真配置，不是由 $T_{60}$ 唯一决定的通用参数）</li>
-<li>说出在线版相对离线版打折的两处来源与对策。（要点：短块 $\lambda$ 不准；老 $G$ 过时；对策是 DNN 估计功率谱、遗忘因子）</li>
-<li>神经网络可以放在 WPE 前、后或内部吗？（要点：独立改写各通道复谱的网络通常放在多通道处理之后；只估计共享掩码、协方差或 $\lambda$ 的网络可以放在解析算法内部；还要检查是否使用未来帧）</li>
+<li>
+<p>默写单通道 WPE 模型并解释 $\Delta$、$K$。</p>
+<p><strong>答案</strong>：式(7-1)为当前早期成分加上延迟历史的预测。$\Delta$ 是最近预测帧的时延，跳过最近 $\Delta-1$ 帧；$K$ 是参与预测的历史帧数。</p>
+</li>
+<li>
+<p>$\Delta=2$、$K=2$、$n=10$ 时用哪几帧、跳过哪几帧？</p>
+<p><strong>答案</strong>：用第 8、7 帧；跳过第 9 帧，不使用当前第 10 帧作为回归量。</p>
+</li>
+<li>
+<p>复算算例 7-1 第 1 步的复数乘法。</p>
+<p><strong>答案</strong>：先取共轭，实部是 $0.5\times0.8+0.1\times0.1=0.41$，虚部是 $0.5\times0.1-0.1\times0.8=-0.03$，结果 $0.41-0.03\mathrm j$。</p>
+</li>
+<li>
+<p>独立完成算例 7-2 并算出 dB 数。</p>
+<p><strong>答案</strong>：预测项相加为 $0.31+0.22\mathrm j$，输出 $E=0.69+0.28\mathrm j$；输出能量为 0.5545，$10\log_{10}(1.25/0.5545)\approx3.53$ dB。这里只计算能量变化，不评价语音失真。</p>
+</li>
+<li>
+<p>写出最大似然交替的两步，以及固定 $\lambda$ 时的正规方程。</p>
+<p><strong>答案</strong>：固定 $\lambda$，按式(7-3)计算加权自相关 $R$、互相关 $\vec r$，解 $R\vec g=\vec r$；固定 $G$，用未平滑标量模型的 $\lambda=|E|^2$ 更新功率。实际平滑、下限、对角加载和停止条件均要随实现报告。</p>
+</li>
+<li>
+<p>手算算例 7-3，并解释权重如何改变估计。</p>
+<p><strong>答案</strong>：按三帧输入累加得 $R=0.64+4\times0.25+0.16=1.80$、$r=0.8+4\times0.3+0.08=2.08$，$\hat g=2.08/1.80\approx1.156$。第二帧权重较大，因此对估计影响更大；权重全为 1 时结果约为 1.124。</p>
+</li>
+<li>
+<p>图21的帧移为 8 ms，$\Delta=6$、$K=10$。写出最近和最远预测帧及物理时延。</p>
+<p><strong>答案</strong>：用 $t-6$ 到 $t-15$；最近 48 ms，最远 120 ms。该配置属于本书仿真，不能仅由 $T_{60}$ 推为通用参数。</p>
+</li>
+<li>
+<p>在线版面临哪两种统计困难？可以怎样验证改进？</p>
+<p><strong>答案</strong>：短历史会使功率与相关矩阵估计波动；长历史又会保留旧路径信息。应在相同录音上扫描统计窗、遗忘因子、阶数与加载，同时测拖尾和目标失真。DNN 功率估计是需训练和域外验证的候选，不保证比传统估计好；在线与离线的收益也不必处处按同一方向排序。</p>
+</li>
+<li>
+<p>神经网络可以放在 WPE 前、后或内部吗？</p>
+<p><strong>答案</strong>：独立改写各通道复谱的网络通常放在多通道处理之后；只估计共享掩码、协方差或 $\lambda$ 的网络可以放在解析算法内部。还要检查是否使用未来帧，单次解析更新不证明整体因果。</p>
+</li>
 </ol>
-</blockquote>
+<p><strong>可运行练习 E07-01～E07-03</strong></p>
+<p>运行 <code>.venv/bin/python -m codes.examples.exercises_enhancement</code>，源码见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_enhancement.py"><code>exercises_enhancement.py</code></a>。可听的混响前后样本及其固定处理参数见<a href="research/05_exercises_and_audio.html">练习及音频手册</a>；下面的复数序列只用于数学核对。</p>
+<ul>
+<li>
+<p><strong>E07-01：有效帧与矩阵尺寸。</strong> 2 通道、12 帧、$\Delta=3$、$K=2$、帧移 8 ms，采用零起始帧号。首个有效帧、有效帧数、回归向量维数分别是多少？</p>
+<p><strong>解答</strong>：首帧为 $3+2-1=4$，使用历史帧 1、0，每个历史帧含两通道。共有 $12-4=8$ 个有效帧，向量有 $MK=4$ 项，正规矩阵为 $4\times4$。最近/最远历史分别延迟 24/32 ms。8 个样本多于 4 个参数不保证独立或良态。</p>
+</li>
+<li>
+<p><strong>E07-02：复共轭写反会怎样？</strong> 令 $G=0.5+0.25\mathrm j$，$X_0=1$，之后 $X_t=G^*X_{t-1}$。取 12 帧、单抽头、延迟 1、一次离线更新且不加载，检查有效帧输出。</p>
+<p><strong>解答</strong>：$X_1=0.5-0.25\mathrm j$。正规方程恢复共轭预测关系，有效帧残差应在浮点误差内接近零，首帧仍为 1。若预测误用 $GX_0$，第一有效帧残差为 $-0.5\mathrm j$。完全可预测的序列被消掉，不表示真实语音应该被消掉，也不证明去混响质量。</p>
+</li>
+<li>
+<p><strong>E07-03：加载修复了什么？</strong> 给定 $R=\begin{bmatrix}1&1\\1&1\end{bmatrix}$、$r=[1,1]^\top$，按 $R+0.1\operatorname{tr}(R)I/2$ 加载，求特征值、条件数和解。</p>
+<p><strong>解答</strong>：原特征值为 0、2，不能唯一求逆；加载矩阵对角元素增加 0.1，特征值变为 0.1、2.1，条件数为 21。解的两项均为 $1/2.1\approx0.47619$。加载选出稳定的正则化解，但不会补回缺失的独立观测，也会改变无加载目标。</p>
+</li>
+</ul>
 <span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-7-1-3">7.1.3 研究方向</h3>
 <p>WPE 的改进主要围绕四个限制展开：分布式阵列需要按通道到达时延调整预测延迟；麦克风很多时需要参考通道或子集选择；短块和强噪声下需要更稳健的功率估计；系统级方法尝试把去混响与波束形成联合求解。神经网络可以为这些解析结构估计功率、掩码或先验，但比较结果时要对齐数据集、通道数、因果性和延迟。本章不列无法按这些条件复核的近期性能数字。</p>
 <p>参数设置应先在目标数据上把直达声和早期反射的损伤控制在声明的指标阈值内，再根据晚期拖尾长度和可用帧数选择 $K$。保护延迟不能保证早期成分完全不变；弱混响时可以旁路 WPE。多说话人分离见第 8 章。</p>

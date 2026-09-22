@@ -106,6 +106,7 @@ h3{font-size:16.5px}h4{font-size:15px}
 .toc .subsec{font-size:11.5px;color:#555;padding-left:18px}
 .anchor-alias{display:none}
 .book-end{text-align:center;color:#777;margin:36px 0 8px;font-size:13px}
+.book-ending{break-inside:avoid;page-break-inside:avoid}
 /* MathJax 的 serif 中文回退在部分 macOS 字体中会生成部首码位的 ToUnicode。 */
 mjx-mtext>mjx-utext{font-family:MJXZERO,"STHeiti","Hiragino Sans GB","Microsoft YaHei",sans-serif!important}
 @media print{
@@ -302,6 +303,15 @@ def remove_page_info(html):
     return re.sub(r"<p>📄 本篇信息.*?</p>", "", html, flags=re.S)
 
 
+def append_book_end(html):
+    """Keep the final paragraph and end marker together, not on a marker-only page."""
+    pattern = r'(<p>(?:(?!<p>).)*?</p>\s*(?:<hr\s*/?>\s*)?)$'
+    result, count = re.subn(pattern, r'<div class="book-ending">\1<div class="book-end">全书完</div></div>', html, flags=re.S)
+    if count != 1:
+        raise ValueError("末章必须以正文段落收尾，才能保持结束标记与正文同页")
+    return result
+
+
 def resolve_build_date(explicit=None):
     """返回可复现的封面日期；显式参数优先，其次 SOURCE_DATE_EPOCH。"""
     if explicit:
@@ -395,6 +405,8 @@ def build_html(build_date=None):
         html = re.sub(r"<h([23])([^>]*)>(.*?)</h\1>", tag_outline_heading,
                       html, flags=re.S)
         n_imgs += len(re.findall(r"<img ", html))
+        if i == len(CHAPTERS) - 1:
+            html = append_book_end(html)
         body_parts.append(f'<div class="chap" id="ch-{i}"><h1>{label}</h1>{html}</div>')
         outline.append((label, f"ch-{i}", secs))
     # 篇/节目录；第 6、7 章再显示第三级子节。
@@ -424,7 +436,7 @@ def build_html(build_date=None):
             "<script>\nwindow.MathJax = {tex: {inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], displayMath: [['$$', '$$']]}};\n</script>"
             "<script defer src=\"https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js\"></script>"
             "</head><body>" + cover + "\n".join(toc) + "\n".join(body_parts)
-            + '<div class="book-end">全书完</div></body></html>')
+            + '</body></html>')
     n_secs = sum(len(s) for _, _, s in outline)
     n_subsecs = sum(len(subsecs) for _, _, secs in outline
                     for _title, _sid, subsecs in secs)
@@ -681,7 +693,7 @@ def print_pdf(combined, pdf, timeout_min_pages=100):
 
 
 def check_figures():
-    """合订前检查：正文引用的图必须存在、非空，并覆盖 33 个唯一文件。"""
+    """合订前检查：正文引用的图必须存在、非空，并覆盖 34 个唯一文件。"""
     missing = []
     refs = set()
     for fname, _ in CHAPTERS:
@@ -693,8 +705,8 @@ def check_figures():
                 missing.append(f"{fname}: {m.group(1)}")
     if missing:
         raise SystemExit("缺图，中止：\n" + "\n".join(missing))
-    if len(refs) != 33:
-        raise SystemExit(f"唯一图片数异常：期望 33，实际 {len(refs)}")
+    if len(refs) != 34:
+        raise SystemExit(f"唯一图片数异常：期望 34，实际 {len(refs)}")
     print(f"图片检查通过（{len(CHAPTERS)} 篇、{len(refs)} 张唯一图片）")
 
 

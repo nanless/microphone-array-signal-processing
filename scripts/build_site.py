@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""把 chapters/ 14 篇及 codes/research/ 5 篇 Markdown 建成静态站。
+"""把 chapters/ 14 篇及 codes/research/ 6 篇 Markdown 建成静态站。
 
 用法（报告根目录）：
     .venv/bin/python scripts/build_site.py
 
 产物：site/index.html（首页）+ site/01..13_*.html（13 篇正文），
-另有 site/research/index.html 和 4 篇独立研究页。
+另有 site/research/index.html 和 5 篇独立研究页，以及 23 个本地 WAV。
 左侧边栏 = 首页 + 13 篇 + 每篇的二级及以下小节锚点，顶部面包屑，
 文末上一篇/下一篇（首页不输出该盒）。图片直接引用 ../figures/（不复制）。
 数学公式用 MathJax CDN 渲染（离线时显示源码，页面顶部有提示）。
@@ -14,6 +14,7 @@ import os
 import re
 import tempfile
 import hashlib
+import json
 import shutil
 from html import escape, unescape
 from collections import Counter
@@ -47,6 +48,7 @@ RESEARCH = [
     ("02_aec_wpe_separation.md", "AEC、WPE 与分离源码研究"),
     ("03_industrial_deployment.md", "工业音频实现研究"),
     ("04_source_reproduction.md", "源码获取与独立复现记录"),
+    ("05_exercises_and_audio.md", "章节代码练习与音频实验"),
 ]
 REPOSITORY_BLOB_BASE = "https://github.com/nanless/microphone-array-signal-processing/blob/main/"
 LABEL_BY_FNAME = {f: l for f, l in CHAPTERS}
@@ -67,6 +69,7 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .main{flex:1;min-width:0;padding:28px 36px;background:#fff;overflow-wrap:anywhere}
 .main p{margin:0 0 1.05em}.main li>p{margin:.35em 0}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
+.audio-sample{display:block;width:min(100%,460px);margin:8px 0 18px}.audio-sample:focus-visible{outline:3px solid #e67e22}
 table{border-collapse:collapse;margin:14px 0;max-width:100%}
 .table-scroll{max-width:100%;overflow-x:auto}
 .table-scroll:focus-visible{outline:3px solid #e67e22;outline-offset:2px}
@@ -75,7 +78,8 @@ th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
-mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
+mjx-assistive-mml{width:1px!important;height:1px!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
 .pn a{color:#2f6db3;text-decoration:none}.pn .off{color:#aaa}
@@ -90,7 +94,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{position:fixed;bottom:20px;right:20px;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px;opacity:.75}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
-@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}}
+@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 """
 
@@ -128,6 +132,8 @@ def source_digest():
     digest = hashlib.sha256()
     paths = sorted(SRC.glob("*.md"))
     paths += [ROOT / "codes" / "research" / name for name, _ in RESEARCH]
+    paths += sorted((ROOT / "codes" / "audio").glob("*.wav"))
+    paths += [ROOT / "codes" / "audio" / "MANIFEST.json"]
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "make_figures.py",
               ROOT / "scripts" / "make_aec_figures.py", ROOT / "requirements.txt"]
@@ -303,9 +309,23 @@ def rewrite_site_links(html, source_path):
         if target in outputs:
             relative = os.path.relpath(outputs[target], Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
+        if target.parent == (ROOT / "codes" / "audio").resolve() and target.suffix == ".wav":
+            relative = os.path.relpath("audio/" + target.name, Path(current).parent).replace(os.sep, "/")
+            return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
         return repository_url(parsed, target)
 
-    return rewrite_href_targets(html, transform)
+    html = rewrite_href_targets(html, transform)
+    # Only generated local WAV links gain controls; no autoplay and no remote media.
+    def player(match):
+        href, label = unescape(match.group(1)), match.group(2)
+        parsed = urlsplit(href)
+        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?audio/[a-z0-9_]+\.wav", parsed.path):
+            return match.group(0)
+        safe_href = escape(href, quote=True)
+        safe_label = escape(re.sub(r'<[^>]+>', '', unescape(label)), quote=True)
+        return (match.group(0) + f'<audio class="audio-sample" controls preload="none" '
+                f'aria-label="{safe_label}" src="{safe_href}">请使用上方 WAV 链接下载。</audio>')
+    return re.sub(r'<a href="([^"]+)">(.*?)</a>', player, html, flags=re.S)
 
 
 def render(md_text, source_path=None):
@@ -545,7 +565,21 @@ def main():
         stale = [path for path in OUT.glob("*.html") if path.name not in expected]
         stale += [path for path in (OUT / "research").glob("*.html")
                   if "research/" + path.name not in expected]
-        publish_files([(temp_out / name, OUT / name) for name in sorted(expected)], stale)
+        audio_root = ROOT / "codes" / "audio"
+        manifest = json.loads((audio_root / "MANIFEST.json").read_text())
+        audio_names = [record["file"] for record in manifest["files"]]
+        if len(audio_names) != len(set(audio_names)) or any(not re.fullmatch(r"[a-z0-9_]+\.wav", name) for name in audio_names):
+            raise ValueError("音频清单含重复或不安全路径")
+        (temp_out / "audio").mkdir()
+        (OUT / "audio").mkdir(exist_ok=True)
+        for record in manifest["files"]:
+            source = audio_root / record["file"]
+            if hashlib.sha256(source.read_bytes()).hexdigest() != record["sha256"]:
+                raise ValueError(f"音频校验失败：{source.name}")
+            shutil.copy2(source, temp_out / "audio" / source.name)
+        stale += [path for path in (OUT / "audio").glob("*.wav") if path.name not in audio_names]
+        publish_files([(temp_out / name, OUT / name) for name in sorted(expected)] +
+                      [(temp_out / "audio" / name, OUT / "audio" / name) for name in audio_names], stale)
     print("DONE", len(expected), "pages")
 
 

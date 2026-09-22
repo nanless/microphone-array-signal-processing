@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 3 章 · 阵列几何形态 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="9187099fc571"><style>
+<meta name="source-digest" content="80cb834cf708"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -16,6 +16,7 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .main{flex:1;min-width:0;padding:28px 36px;background:#fff;overflow-wrap:anywhere}
 .main p{margin:0 0 1.05em}.main li>p{margin:.35em 0}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
+.audio-sample{display:block;width:min(100%,460px);margin:8px 0 18px}.audio-sample:focus-visible{outline:3px solid #e67e22}
 table{border-collapse:collapse;margin:14px 0;max-width:100%}
 .table-scroll{max-width:100%;overflow-x:auto}
 .table-scroll:focus-visible{outline:3px solid #e67e22;outline-offset:2px}
@@ -24,7 +25,8 @@ th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
-mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
+mjx-assistive-mml{width:1px!important;height:1px!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
 .pn a{color:#2f6db3;text-decoration:none}.pn .off{color:#aaa}
@@ -39,7 +41,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{position:fixed;bottom:20px;right:20px;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px;opacity:.75}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
-@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}}
+@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
@@ -369,6 +371,14 @@ $$d\theta = \frac{343\times10\times10^{-6}}{0.04\times1} \approx 0.0858\ \text{r
 <p>答案要点：8 kHz 波长约 4.3 cm，半波长约 2.1 cm，小于 3.75 cm 相邻麦距，已经不满足全视场无混叠的充分条件。圆阵是否在某一转向出现等高歧义，要看完整几何和宽带融合，不能只套 ULA 的单一栅瓣角公式。挡板会以频率和方向相关的方式改变幅相响应；若模型使用得当，这些额外差异可帮助消歧，但它不是固定地把低频下限移动某个倍频程。</p>
 </li>
 </ol>
+<p>下面两题使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 复算，分别把差分位置和反三角函数的边界写成可检查的输出。</p>
+<p><strong>E03-01：差分位置相同，观测次数也相同吗？</strong> 对位置 $\{0,1,2,3,4,5\}$ 和 $\{0,1,2,3,7,11\}$，枚举全部有序麦对，包括同一麦与自身配对。计算每个差分滞后的重数，并检查重数之和。位置单位为半波长。</p>
+<p><strong>参考答案</strong>：两种布局都有 $6\times6=36$ 个有序麦对，零滞后的重数均为 6。均匀阵的滞后从 −5 到 5，重数依次为 $1,2,3,4,5,6,5,4,3,2,1$，共 11 个不同位置。</p>
+<p>嵌套阵的滞后连续覆盖 −11 到 11，共 23 个；正滞后 1～11 的重数依次为 $3,2,1,2,1,1,1,1,1,1,1$，负滞后与之对称。相同滞后的样本可以平均，但不同麦对可能共享同一通道，不能据重数直接假定它们统计独立，更不能把 23 个差分位置当作 23 路原始录音。</p>
+<p><strong>E03-02：把越界时延与大角度误差分开。</strong> 麦距 4 cm、声速 343 m/s，真角取 0° 和 85°。分别给真实时延加、减 10 μs，用完整反正弦反算；若反正弦输入超出 $[-1,1]$，应如何记录？</p>
+<p><strong>参考答案</strong>：正横的真实时延为零，两个估计角分别约为 −4.92°、+4.92°。85° 时的真实时延约为 116.17 μs；减去 10 μs 后约为 65.57°，增加 10 μs 则超过最大时延 $0.04/343\approx116.62$ μs，无实数方向可解。保留更多位计算，再将角度舍入到两位小数。</p>
+<p>代码将越界结果记为 <code>valid=false</code>、角度为 <code>null</code>，不把它悄悄夹到 90°。系统可以另设夹限策略，但必须保留越界标记；夹限输出是恢复动作，不是一次准确的方向观测。</p>
+<p>更多跨章练习和音频条件见<a href="research/05_exercises_and_audio.html">实验总览</a>。其中整数延迟音频只提供已知通道时差，没有模拟某一真实麦克风外壳；不能由该样本推断挡板收益或阵列标定精度。</p>
 <hr />
 <blockquote>
 <p>📄 本篇信息：配图 3 张 ｜ <a href="index.html">回首页</a></p>

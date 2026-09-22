@@ -7,7 +7,13 @@ import numpy as np
 
 
 def si_sdr(estimate: np.ndarray, reference: np.ndarray, *, zero_mean: bool = True, epsilon: float = 1e-12) -> float:
-    """Compute scale-invariant SDR for equal-length one-dimensional signals."""
+    """Compute SI-SDR with a relative energy floor and no time alignment.
+
+    Peak scaling before centering avoids absolute-level dependence. ``epsilon``
+    sets finite caps of approximately +/- ``-10*log10(epsilon)`` dB. Zero signals
+    and signals constant after centering are rejected; perfect estimates return
+    the positive cap, not infinity. See Le Roux et al. (ICASSP 2019), eq. (3--5).
+    """
 
     estimate = np.asarray(estimate, dtype=float)
     reference = np.asarray(reference, dtype=float)
@@ -15,20 +21,31 @@ def si_sdr(estimate: np.ndarray, reference: np.ndarray, *, zero_mean: bool = Tru
         raise ValueError("estimate and reference must be equal-length 1-D arrays")
     if not np.all(np.isfinite(estimate)) or not np.all(np.isfinite(reference)):
         raise ValueError("estimate and reference must be finite")
+    if not np.isfinite(epsilon) or not 0.0 < epsilon < 1.0:
+        raise ValueError("epsilon must be finite and between zero and one")
+    estimate_peak = float(np.max(np.abs(estimate)))
+    reference_peak = float(np.max(np.abs(reference)))
+    if estimate_peak == 0.0 or reference_peak == 0.0:
+        raise ValueError("SI-SDR is undefined for a silent signal")
+    estimate = estimate / estimate_peak
+    reference = reference / reference_peak
     if zero_mean:
         estimate = estimate - np.mean(estimate)
         reference = reference - np.mean(reference)
     reference_energy = float(reference @ reference)
     estimate_energy = float(estimate @ estimate)
-    if not np.isfinite(epsilon) or epsilon <= 0.0:
-        raise ValueError("epsilon must be finite and positive")
-    if reference_energy <= epsilon:
+    if reference_energy == 0.0:
         raise ValueError("SI-SDR is undefined for a silent reference")
-    if estimate_energy <= epsilon:
+    if estimate_energy == 0.0:
         raise ValueError("SI-SDR is undefined for a silent estimate")
     target = (float(estimate @ reference) / reference_energy) * reference
     noise = estimate - target
-    return float(10.0 * np.log10((float(target @ target) + epsilon) / (float(noise @ noise) + epsilon)))
+    # Normalize energies before flooring: epsilon * energy can underflow for
+    # valid subnormal epsilon, and dividing by that floor can overflow even
+    # when the final logarithmic score is representable.
+    target_fraction = max(float(target @ target) / estimate_energy, epsilon)
+    noise_fraction = max(float(noise @ noise) / estimate_energy, epsilon)
+    return float(10.0 * (np.log10(target_fraction) - np.log10(noise_fraction)))
 
 
 def pit_permutation(estimates: np.ndarray, references: np.ndarray) -> tuple[tuple[int, ...], float]:
@@ -65,6 +82,8 @@ def masked_spatial_covariance(spectrum: np.ndarray, mask: np.ndarray, *, epsilon
         raise ValueError("expected spectrum (F,M,T) and mask (F,T)")
     if not np.all(np.isfinite(x)) or not np.all(np.isfinite(weights)) or np.any(weights < 0):
         raise ValueError("spectrum must be finite and mask weights finite and non-negative")
+    if not np.isfinite(epsilon) or epsilon <= 0.0:
+        raise ValueError("epsilon must be finite and positive")
     numerator = np.einsum("ft,fmt,fnt->fmn", weights, x, x.conj())
     denominator = np.sum(weights, axis=1)[:, None, None]
     return numerator / np.maximum(denominator, epsilon)

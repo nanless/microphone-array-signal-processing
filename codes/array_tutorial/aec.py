@@ -30,12 +30,14 @@ def nlms(
     d = np.asarray(microphone, dtype=float)
     if x.ndim != 1 or d.ndim != 1 or x.shape != d.shape:
         raise ValueError("reference and microphone must be equal-length 1-D arrays")
-    if filter_length <= 0:
-        raise ValueError("filter_length must be positive")
+    if not np.all(np.isfinite(x)) or not np.all(np.isfinite(d)):
+        raise ValueError("reference and microphone must be finite")
+    if isinstance(filter_length, (bool, np.bool_)) or not isinstance(filter_length, (int, np.integer)) or filter_length <= 0:
+        raise ValueError("filter_length must be a positive integer")
     if not 0.0 <= step_size < 2.0:
         raise ValueError("step_size must satisfy 0 <= step_size < 2")
-    if epsilon < 0:
-        raise ValueError("epsilon must be non-negative")
+    if not np.isfinite(epsilon) or epsilon < 0:
+        raise ValueError("epsilon must be finite and non-negative")
 
     frozen = np.zeros(x.size, dtype=bool) if freeze is None else np.asarray(freeze, dtype=bool)
     if frozen.shape != x.shape:
@@ -46,6 +48,8 @@ def nlms(
         weights = np.asarray(initial_weights, dtype=float).copy()
         if weights.shape != (filter_length,):
             raise ValueError("initial_weights has the wrong length")
+        if not np.all(np.isfinite(weights)):
+            raise ValueError("initial_weights must be finite")
 
     padded = np.pad(x, (filter_length - 1, 0))
     residual = np.empty_like(d)

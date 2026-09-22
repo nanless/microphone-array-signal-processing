@@ -25,9 +25,13 @@ def offline_wpe(
     original = np.asarray(spectrum)
     if original.ndim not in (2, 3) or not np.iscomplexobj(original):
         raise ValueError("spectrum must be a complex array shaped (F,T) or (F,M,T)")
+    if any(size == 0 for size in original.shape) or not np.all(np.isfinite(original)):
+        raise ValueError("spectrum dimensions must be non-empty and values finite")
+    if any(isinstance(value, (bool, np.bool_)) or not isinstance(value, (int, np.integer)) for value in (taps, delay, iterations)):
+        raise ValueError("taps, delay and iterations must be integers")
     if taps < 0 or delay < 1 or iterations < 0:
         raise ValueError("require taps >= 0, delay >= 1, iterations >= 0")
-    if diagonal_loading < 0 or power_floor <= 0:
+    if not np.isfinite(diagonal_loading) or not np.isfinite(power_floor) or diagonal_loading < 0 or power_floor <= 0:
         raise ValueError("loading must be non-negative and power_floor positive")
     if taps == 0 or iterations == 0:
         return original.copy()

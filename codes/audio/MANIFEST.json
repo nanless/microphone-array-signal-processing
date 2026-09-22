@@ -1,0 +1,466 @@
+{
+  "schema_version": 1,
+  "seed": 20260922,
+  "origin": "original deterministic mathematical synthesis",
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "system": "Darwin",
+    "machine": "arm64",
+    "float_dtype": "float64"
+  },
+  "synthetic_signal": {
+    "duration_s": 2,
+    "base_frequencies_hz": [
+      173,
+      293
+    ],
+    "harmonic_numbers": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "harmonic_amplitude": "1/(4*k)",
+    "envelope": "0.3+0.7*sin(2*pi*2*t)^2",
+    "fade_duration_s": 0.02,
+    "fade": "squared sine, endpoint included"
+  },
+  "rights": "No third-party recordings or model weights. Repository licensing remains unspecified.",
+  "pcm": "signed little-endian 16-bit, round-to-nearest-even; no dither; no per-file normalization",
+  "listening": "Start at low device volume. No automatic playback. No formal listening study performed.",
+  "generator_inputs": {
+    "codes/examples/generate_audio_samples.py": "1c147326676a980c823ae90e455b823472e443b0c5d2774951fe2d36ed2b7d9c",
+    "codes/array_tutorial/audio_samples.py": "320278fb7152de97b2c5b65d36dfb2156cf4194c1beb0cf16381cd8e247ff2ae",
+    "codes/array_tutorial/aec.py": "199483d53bcce69373fa4f5dff8cb184a17c43836db3952f1a611f45e5267d4a",
+    "codes/array_tutorial/dereverberation.py": "99a1429c5bbe3f8a98dc754bbfaabdd9f27ec7216b04696379d7e5922469f360",
+    "codes/array_tutorial/spectral.py": "81b7bda66a3b9eeae915ddff53224316f21a9a46a48781208f9edcd49b5ad92b",
+    "codes/array_tutorial/conventions.py": "6c935a23ca9c8d366a3d55aa2b21e8a4aa373f1dc53364608c609c06b277e921"
+  },
+  "groups": {
+    "spatial": {
+      "parameters": {
+        "delay_samples": 3,
+        "delay_seconds": 0.0001875,
+        "noise_std_each_channel": 0.07,
+        "noise_correlation": 0,
+        "reference": "target delayed by 3 samples; ignore first 3 samples when scoring",
+        "channel_order": [
+          "mic1_later",
+          "mic2_earlier"
+        ],
+        "alignment": "delay mic2 by 3, no noncausal advance"
+      },
+      "limits": "Integer-delay broadband model; not binaural HRTF, measured array or speech.",
+      "common_export_gain": 1.0
+    },
+    "aec": {
+      "parameters": {
+        "path_nonzero_samples": [
+          0,
+          12,
+          24
+        ],
+        "path_values": [
+          0.7,
+          -0.3,
+          0.15
+        ],
+        "filter_length": 32,
+        "step_size": 0.4,
+        "epsilon": 1e-08,
+        "oracle_freeze_interval_s": [
+          1.2,
+          1.8
+        ],
+        "far_end_only_scoring_interval_s": [
+          0.6,
+          1.1
+        ],
+        "algorithm_delay_samples": 0
+      },
+      "limits": "Exactly matched linear path, known double-talk mask (not an implemented DTD); no real-room ERLE claim.",
+      "common_export_gain": 1.0
+    },
+    "wpe": {
+      "parameters": {
+        "echo_delays_samples": [
+          0,
+          640,
+          1280
+        ],
+        "echo_gains": [
+          1,
+          0.6,
+          0.3
+        ],
+        "tail_padding_samples": 4000,
+        "n_fft": 512,
+        "hop": 128,
+        "taps": 4,
+        "delay_frames": 3,
+        "iterations": 3,
+        "first_valid_frame": 6,
+        "relative_diagonal_loading": 1e-06,
+        "relative_power_floor": 1e-05,
+        "window": "periodic Hann",
+        "center": true,
+        "synthesis_denominator_floor": 1e-12,
+        "causal": false,
+        "propagation_delay_samples": 0
+      },
+      "limits": "Offline WPE may remove predictable harmonic content; this sparse FIR is not a room or speech-quality benchmark.",
+      "common_export_gain": 1.0
+    },
+    "separation": {
+      "parameters": {
+        "mixing_matrix": [
+          [
+            1.0,
+            0.5
+          ],
+          [
+            0.2,
+            1.0
+          ]
+        ],
+        "condition_number": 2.0587013272949823,
+        "algorithm_delay_samples": 0,
+        "permutation": [
+          0,
+          1
+        ]
+      },
+      "limits": "Known instantaneous mixing matrix; solving it is not blind separation, ICA or neural inference.",
+      "common_export_gain": 1.0
+    },
+    "engineering": {
+      "parameters": {
+        "clip_operation": "clip(3*x,-0.3,0.3)/3",
+        "low_level_gain": 0.02,
+        "dropout_interval_s": [
+          0.9,
+          1.0
+        ],
+        "algorithm_delay_samples": 0
+      },
+      "limits": "Clipping and dropout are deliberate faults, not enhancement algorithms.",
+      "common_export_gain": 1.0
+    },
+    "tracking": {
+      "parameters": {
+        "left_gain": "cos(phi)",
+        "right_gain": "sin(phi)",
+        "phi_range_rad": [
+          0,
+          1.5707963267948966
+        ]
+      },
+      "limits": "Equal-power stereo panning; not a physical moving-source array recording and not valid DOA ground truth.",
+      "common_export_gain": 1.0
+    }
+  },
+  "files": [
+    {
+      "file": "spatial_reference.wav",
+      "sha256": "c14777eadb3b479b6ca7c0efbcc4b565020c474c104aaae28ff78e57541a30bf",
+      "group": "spatial",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.405517578125,
+      "rms": 0.14996833373517848,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258540274315502e-05
+    },
+    {
+      "file": "spatial_array.wav",
+      "sha256": "e19db2716920a477f14991616f2203c02f48ed9ab9dd84b9384d21cf90024fa9",
+      "group": "spatial",
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.610565185546875,
+      "rms": 0.1654864700414225,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258573734064362e-05
+    },
+    {
+      "file": "spatial_mic1.wav",
+      "sha256": "ea036f9b92e265e44e60b6ec74fccee46fc2993cb1d880f8b26878c8e4f355cc",
+      "group": "spatial",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.610565185546875,
+      "rms": 0.1656297329945296,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258573734064362e-05
+    },
+    {
+      "file": "spatial_unaligned.wav",
+      "sha256": "268462dce903f93a39ad2f66cf7dd3a2e8d91b095c9419feab0e008a795d126e",
+      "group": "spatial",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.52532958984375,
+      "rms": 0.1549349171102757,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258146008806373e-05
+    },
+    {
+      "file": "spatial_aligned.wav",
+      "sha256": "9a65aa858c1c52f6ff7c823f7a94c341704635f20111710841ab0bba00ce546e",
+      "group": "spatial",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.557281494140625,
+      "rms": 0.15789334545457667,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258633691360435e-05
+    },
+    {
+      "file": "aec_far.wav",
+      "sha256": "e4e5cd0e98f709fb326feae82157d08c60e422178ce6089f85c6f3442082cfca",
+      "group": "aec",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.589599609375,
+      "rms": 0.12381834793230859,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258760986402997e-05
+    },
+    {
+      "file": "aec_near.wav",
+      "sha256": "3325c8296ad9c1c1316bba7250c895ee52eb098d07385681a1b380516681a1fb",
+      "group": "aec",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.2027587890625,
+      "rms": 0.03873576234744909,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5257870710360874e-05
+    },
+    {
+      "file": "aec_microphone.wav",
+      "sha256": "772befe7256b195c486d34a80c23a5377304680bba135261679506cba6c218d6",
+      "group": "aec",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.49169921875,
+      "rms": 0.10304011050441615,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258089457570456e-05
+    },
+    {
+      "file": "aec_frozen.wav",
+      "sha256": "48533f6dfc8cd4450f70b23778f51703b1824361a46278dc3c66127e2d904498",
+      "group": "aec",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.2027587890625,
+      "rms": 0.03877643886963648,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5257870710334853e-05
+    },
+    {
+      "file": "aec_unfrozen.wav",
+      "sha256": "8f1dc25fa95676a2e6192b0457e2edf9e41943a8b26f9a49cc895f7450396dae",
+      "group": "aec",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.27447509765625,
+      "rms": 0.04237169258960369,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5257004838772903e-05
+    },
+    {
+      "file": "wpe_dry.wav",
+      "sha256": "0cf676582d7c2d334989f22a4a590e519e4504d7a5174b0c186db06356a38c33",
+      "group": "wpe",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 36000,
+      "duration_s": 2.25,
+      "peak": 0.405517578125,
+      "rms": 0.14139150099652265,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258540274315502e-05
+    },
+    {
+      "file": "wpe_reverberant.wav",
+      "sha256": "1e65aa160ce7a78fb2d08d7f6088b44d122e28cce0fc08b3abbc23ee3ba278d9",
+      "group": "wpe",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 36000,
+      "duration_s": 2.25,
+      "peak": 0.573699951171875,
+      "rms": 0.22188302438811053,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258670013548747e-05
+    },
+    {
+      "file": "wpe_output.wav",
+      "sha256": "10af3721ae304f059636917408baafa6e92cc29973c71997b393853bace861ca",
+      "group": "wpe",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 36000,
+      "duration_s": 2.25,
+      "peak": 0.17218017578125,
+      "rms": 0.021823528115692083,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258156931271562e-05
+    },
+    {
+      "file": "separation_source1.wav",
+      "sha256": "c70d7b31a1dcdd7cd763fb65e204d959818db754bf505c8d1d4fbaacdbb1a0e6",
+      "group": "separation",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.405517578125,
+      "rms": 0.14996833373517848,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258540274315502e-05
+    },
+    {
+      "file": "separation_source2.wav",
+      "sha256": "c953867587af849720850b913c4256c7b1b8aeb5cc65731b1eaf2ae545e4bd68",
+      "group": "separation",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.4053955078125,
+      "rms": 0.14996813267680725,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.525682740610712e-05
+    },
+    {
+      "file": "separation_mixture.wav",
+      "sha256": "4b2a934040f6cbe4c840c51602a9fc79000a9b806a0852056ea6db5b6952ec82",
+      "group": "separation",
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.6011962890625,
+      "rms": 0.1604744042388867,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258566471484936e-05
+    },
+    {
+      "file": "separation_recovered1.wav",
+      "sha256": "c70d7b31a1dcdd7cd763fb65e204d959818db754bf505c8d1d4fbaacdbb1a0e6",
+      "group": "separation",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.405517578125,
+      "rms": 0.14996833373517848,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258540274301624e-05
+    },
+    {
+      "file": "separation_recovered2.wav",
+      "sha256": "c953867587af849720850b913c4256c7b1b8aeb5cc65731b1eaf2ae545e4bd68",
+      "group": "separation",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.4053955078125,
+      "rms": 0.14996813267680725,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.525682740610712e-05
+    },
+    {
+      "file": "engineering_reference.wav",
+      "sha256": "c70d7b31a1dcdd7cd763fb65e204d959818db754bf505c8d1d4fbaacdbb1a0e6",
+      "group": "engineering",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.405517578125,
+      "rms": 0.14996833373517848,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258540274315502e-05
+    },
+    {
+      "file": "engineering_clipped.wav",
+      "sha256": "9423a70418fa10c2ba59bd1b93d6e2569ac1a53c7e8f204ba8d951323c7e60c7",
+      "group": "engineering",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.100006103515625,
+      "rms": 0.08129453831780364,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.525779376339298e-05
+    },
+    {
+      "file": "engineering_low_level.wav",
+      "sha256": "918b039b029a99248c346892c7695f2af772ada9d1488cd94003facc85ea0fd9",
+      "group": "engineering",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.00811767578125,
+      "rms": 0.002999511741998043,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258186867243666e-05
+    },
+    {
+      "file": "engineering_dropout.wav",
+      "sha256": "53941ea22e3d79a05fb89765bffec908d768ff8eb7b9bb1be77b9db4a9da036c",
+      "group": "engineering",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.405517578125,
+      "rms": 0.14703260399023202,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258540274315502e-05
+    },
+    {
+      "file": "tracking_pan.wav",
+      "sha256": "6eaf9c264793b19ac2d4796177c75c7a378e31657f13725ee96e7f38126b5522",
+      "group": "tracking",
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.403350830078125,
+      "rms": 0.10604359044764208,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258679693486155e-05
+    }
+  ]
+}

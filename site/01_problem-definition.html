@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 1 章 · 问题定义与双耳启示 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="9187099fc571"><style>
+<meta name="source-digest" content="80cb834cf708"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -16,6 +16,7 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .main{flex:1;min-width:0;padding:28px 36px;background:#fff;overflow-wrap:anywhere}
 .main p{margin:0 0 1.05em}.main li>p{margin:.35em 0}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
+.audio-sample{display:block;width:min(100%,460px);margin:8px 0 18px}.audio-sample:focus-visible{outline:3px solid #e67e22}
 table{border-collapse:collapse;margin:14px 0;max-width:100%}
 .table-scroll{max-width:100%;overflow-x:auto}
 .table-scroll:focus-visible{outline:3px solid #e67e22;outline-offset:2px}
@@ -24,7 +25,8 @@ th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
-mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
+mjx-assistive-mml{width:1px!important;height:1px!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
 .pn a{color:#2f6db3;text-decoration:none}.pn .off{color:#aaa}
@@ -39,7 +41,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{position:fixed;bottom:20px;right:20px;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px;opacity:.75}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
-@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}}
+@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
@@ -54,6 +56,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <ul>
 <li><a href="01_problem-definition.html#sec-u-5cd90bfd4e">1. 从一个生活场景出发：问题定义</a></li>
 <li><a href="01_problem-definition.html#sec-1-1">1.1 双耳听觉的三类定位线索</a></li>
+<li><a href="01_problem-definition.html#sec-u-f7a201edb9">本章练习</a></li>
 </ul>
 <div class="chap"><a href="02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
 <div class="chap"><a href="03_array-geometry.html">第 3 章 · 阵列几何形态</a></div>
@@ -72,6 +75,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
 <li><a href="01_problem-definition.html#sec-u-5cd90bfd4e">1. 从一个生活场景出发：问题定义</a></li>
 <li><a href="01_problem-definition.html#sec-1-1">1.1 双耳听觉的三类定位线索</a></li>
+<li><a href="01_problem-definition.html#sec-u-f7a201edb9">本章练习</a></li>
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是教程正文第 1 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
@@ -177,7 +181,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>头颅当挡板</td>
-<td>挡板效应放大麦间相位差（§3.2）</td>
+<td>挡板散射改变与频率、方向有关的幅相响应（§3.2）</td>
 <td>§3</td>
 </tr>
 <tr>
@@ -200,6 +204,41 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>人类用两只耳朵、头部与耳廓产生 ITD、ILD 和 HRTF，再由神经系统融合这些线索。硬件形态先提供可观测信息，后端算法再利用信息；机器阵列也是同一分工。</p>
 <p>解析模型负责约束和可解释边界，数据驱动方法可补足难以精确建模的细节。</p>
 <p>第 2 章将从传播时延出发，把这些空间差异写成阵列信号模型。</p>
+<span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-f7a201edb9">本章练习</h2>
+<p>下面两题可用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 复算。程序输出按 E01-01、E01-02 标识，不需要下载数据。这里的数字是本书推导，不是设备实测。</p>
+<p><strong>E01-01：四只麦不一定得到 6 dB。</strong> 目标已经对齐，各路噪声功率均为 1，任意两路噪声的相关系数均为 $\rho$。对四路信号取平均，分别计算 $\rho=0、0.5、1$ 时的输出噪声功率和 SNR 改善量。为什么完全相同的噪声不会被平均消除？</p>
+<p><strong>参考答案</strong>：四个对角项贡献 4，十二个非对角项贡献 $12\rho$；平均权重的乘积均为 $1/16$，所以输出噪声功率为 $(4+12\rho)/16=(1+3\rho)/4$。目标响应仍为 1，SNR 改善量是该噪声功率倒数的 $10\log_{10}$。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">噪声相关系数 $\rho$</th>
+<th scope="col">输出噪声功率</th>
+<th scope="col">SNR 改善量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>0.250</td>
+<td>6.02 dB</td>
+</tr>
+<tr>
+<td>0.5</td>
+<td>0.625</td>
+<td>2.04 dB</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1.000</td>
+<td>0.00 dB</td>
+</tr>
+</tbody>
+</table></div>
+<p>相关系数为 1 时，四路噪声也同相相加，平均后原样保留。这个等相关模型用于隔离噪声相关性的影响；真实弥散场的相关性还随频率和麦间距变化，不能用一个固定 $\rho$ 描述整段语音。</p>
+<p><strong>E01-02：更轻的声音是否一定更干净？</strong> 对序列 $[0,1,0,-1]$ 整体乘 0.5，计算均方功率比和电平变化。如果目标与噪声同时乘 0.5，SNR 会提高吗？</p>
+<p><strong>参考答案</strong>：原均方功率为 $2/4=0.5$，缩放后为 $0.5/4=0.125$，功率比为 0.25。因此电平变化为 $10\log_{10}0.25=20\log_{10}0.5\approx-6.02$ dB。目标与噪声功率同时缩小到四分之一，SNR 不变。</p>
+<p>比较处理前后音频时，应保留共同的幅度尺度；若分别归一化到同一峰值，这项整体增益变化就会被隐藏。这里的 dB 是相对功率变化，不是声压级 dB SPL。</p>
+<p>可在<a href="research/05_exercises_and_audio.html">章节代码练习与音频实验</a>中试听“单麦输入”和“对齐后平均”。文件共用增益，使用本书合成的谐波音和独立噪声，不是真人语音；先从低播放音量开始。听音用于观察差别，不能替代本题的功率计算。</p>
 <hr />
 <blockquote>
 <p>📄 本篇信息：配图 1 张 ｜ <a href="index.html">回首页</a></p>

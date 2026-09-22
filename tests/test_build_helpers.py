@@ -25,6 +25,21 @@ quality_check = load("quality_check", ROOT / "scripts" / "quality_check.py")
 
 
 class BuildHelpersTest(unittest.TestCase):
+    def test_book_end_stays_with_final_paragraph(self):
+        html = '<p>前段</p>\n<p>最后一段。</p>\n<hr />\n'
+        result = build_pdf.append_book_end(html)
+        self.assertTrue(result.startswith('<p>前段</p>\n<div class="book-ending"><p>最后一段。</p>'))
+        self.assertEqual(result.count('全书完'), 1)
+        self.assertTrue(result.endswith('<div class="book-end">全书完</div></div>'))
+        with self.assertRaises(ValueError):
+            build_pdf.append_book_end('<table><tr><td>没有结尾段落</td></tr></table>')
+
+    def test_narrow_screen_math_keeps_local_scroll_and_accessible_copy(self):
+        self.assertIn('max-width:100%;min-width:0!important', build_site.CSS)
+        self.assertIn('mjx-assistive-mml{width:1px!important;height:1px!important}', build_site.CSS)
+        self.assertIn('mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}', build_site.CSS)
+        self.assertNotIn('mjx-assistive-mml{display:none', build_site.CSS)
+
     def test_combined_links_become_internal(self):
         html = '<a href="./01_problem-definition.html">第一章</a>'
         self.assertEqual(
@@ -342,14 +357,14 @@ class BuildHelpersTest(unittest.TestCase):
         )
 
     def test_figure_semantics_accept_any_reuse_and_reject_mismatch_or_orphan(self):
-        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 34)]
+        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 35)]
         refs.extend([("图1 复用", "fig01_x.png", 1),
                      ("图23 复用", "fig23_x.png", 23)])
-        names = [f"fig{i:02d}_x.png" for i in range(1, 34)]
+        names = [f"fig{i:02d}_x.png" for i in range(1, 35)]
         self.assertEqual(quality_check.figure_inventory_issues(refs, names), [])
         bad_refs = list(refs)
         bad_refs[0] = ("图2 错配", "fig01_x.png", 1)
-        issues = quality_check.figure_inventory_issues(bad_refs, names + ["fig34_orphan.png"])
+        issues = quality_check.figure_inventory_issues(bad_refs, names + ["fig35_orphan.png"])
         self.assertTrue(any("不匹配" in item for item in issues))
         self.assertTrue(any("孤立 PNG" in item for item in issues))
 

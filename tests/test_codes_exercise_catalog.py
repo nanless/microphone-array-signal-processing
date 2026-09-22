@@ -1,0 +1,87 @@
+"""Explicit cross-module, chapter and research inventory for 36 exercises."""
+
+import json
+import re
+import unittest
+from pathlib import Path
+
+from codes.examples import exercises_engineering, exercises_enhancement, exercises_spatial
+
+
+ROOT = Path(__file__).resolve().parents[1]
+EXPECTED = {
+    "spatial": {
+        "E01-01", "E01-02", "E02-01", "E02-02", "E02-03", "E03-01",
+        "E03-02", "E04-01", "E04-02", "E04-03", "E05-01", "E05-02",
+    },
+    "enhancement": {
+        "E06-01", "E06-02", "E06-03", "E07-01", "E07-02", "E07-03",
+        "E08-01", "E08-02", "E08-03", "E09-01", "E09-02", "E09-03",
+    },
+    "engineering": {
+        "E10-01", "E10-02", "E10-03", "E10-04", "E10-05", "E10-06",
+        "E11-01", "E11-02", "E12-01", "E12-02", "E12-03", "E13-01",
+    },
+}
+MODULES = {"spatial": exercises_spatial, "enhancement": exercises_enhancement,
+           "engineering": exercises_engineering}
+ALL_IDS = set().union(*EXPECTED.values())
+
+
+def documented_ids(text):
+    """Expand only explicit same-chapter ranges such as E01-01～02."""
+    found = set(re.findall(r"\bE\d{2}-\d{2}\b", text))
+    for chapter, first, last in re.findall(r"\bE(\d{2})-(\d{2})～(\d{2})\b", text):
+        if int(last) < int(first):
+            raise ValueError("Exercise range must be ascending")
+        found.update(f"E{chapter}-{number:02d}" for number in range(int(first), int(last) + 1))
+    return found
+
+
+class ExerciseCatalogTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.results = {name: module.run_exercises() for name, module in MODULES.items()}
+
+    def test_independent_inventory_has_36_unique_ids(self):
+        self.assertEqual(len(ALL_IDS), 36)
+        self.assertEqual(sum(map(len, EXPECTED.values())), 36)
+
+    def test_each_module_returns_exact_assigned_ids(self):
+        for name, results in self.results.items():
+            with self.subTest(module=name):
+                self.assertIsInstance(results, dict)
+                self.assertEqual(set(results), EXPECTED[name])
+                self.assertTrue(all(isinstance(value, dict) and value for value in results.values()))
+
+    def test_results_are_strict_json_without_numpy_or_nonfinite_values(self):
+        for name, results in self.results.items():
+            with self.subTest(module=name):
+                encoded = json.dumps(results, allow_nan=False, ensure_ascii=False)
+                self.assertEqual(set(json.loads(encoded)), EXPECTED[name])
+
+    def test_every_id_appears_in_its_own_chapter(self):
+        for exercise_id in sorted(ALL_IDS):
+            with self.subTest(exercise_id=exercise_id):
+                chapters = list((ROOT / "chapters").glob(exercise_id[1:3] + "_*.md"))
+                self.assertEqual(len(chapters), 1)
+                text = chapters[0].read_text(encoding="utf-8")
+                self.assertRegex(text, rf"\b{re.escape(exercise_id)}\b")
+
+    def test_chapter_and_research_inventories_cover_exactly_36_ids(self):
+        chapters = "\n".join(path.read_text(encoding="utf-8")
+                             for path in (ROOT / "chapters").glob("*.md"))
+        research = (ROOT / "codes/research/05_exercises_and_audio.md").read_text(encoding="utf-8")
+        self.assertEqual(documented_ids(chapters), ALL_IDS)
+        self.assertEqual(documented_ids(research), ALL_IDS)
+
+    def test_range_parser_does_not_invent_ids_from_partial_labels(self):
+        self.assertEqual(documented_ids("E01-01～02、E13-01；E09 章"),
+                         {"E01-01", "E01-02", "E13-01"})
+        self.assertEqual(documented_ids("E01-010、xE01-01、E01-01x"), set())
+        with self.assertRaises(ValueError):
+            documented_ids("E01-03～01")
+
+
+if __name__ == "__main__":
+    unittest.main()

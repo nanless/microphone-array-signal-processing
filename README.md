@@ -2,9 +2,9 @@
 
 一套写给初学者和入门研究生的麦克风阵列信号处理中文教程。从“为什么摆一群麦克风”讲到定位（DOA）、波束形成、回声消除（AEC）、去混响（WPE）、语音分离、声源追踪，一直到工程实现与选型。
 
-正文提供关键公式推导、可复算例子、适用边界、33 张脚本生成的图，以及与各章公式对应的 NumPy/标准库教学代码。
+正文提供关键公式推导、可复算例子、适用边界、34 张脚本生成的图，以及与各章公式对应的 NumPy/标准库教学代码。新增 36 道可运行代码练习和 6 组、共 23 个合成音频文件，输入、答案与试听条件见[练习与音频实验](codes/research/05_exercises_and_audio.md)。这些音频不是自然语音或正式听测数据。
 
-[源码研究手册](codes/research/README.md) 进一步展开算法实现、工业配置和复现实验，分为空间处理与追踪、AEC/WPE/分离、工业部署与评测三篇专题，另附源码复现方法。官方实现固定提交，取得的源码保存在 `codes/upstream/_downloads/` 的独立工作树中。
+[源码研究手册](codes/research/README.md) 进一步展开算法实现、工业配置和复现实验，分为空间处理与追踪、AEC/WPE/分离、工业部署与评测三篇专题，另附源码复现方法、练习与音频实验。官方实现固定提交，取得的源码保存在 `codes/upstream/_downloads/` 的独立工作树中。
 
 English version: [README_EN.md](./README_EN.md)
 
@@ -13,12 +13,13 @@ English version: [README_EN.md](./README_EN.md)
 | 目录/文件 | 说明 |
 |---|---|
 | `chapters/` | 教程正文 14 篇 Markdown（`00_overview.md` 是入口，`01`～`11` 是 11 章正文，`12`/`13` 是附录 A/B） |
-| `figures/` | 33 张插图（`fig01`～`fig33_*.png`），全部由脚本生成、可复现 |
+| `figures/` | 34 张插图（`fig01`～`fig34_*.png`），全部由脚本生成、可复现 |
 | `codes/` | 教学算法、章节例子、工业实现小工具、第三方官方源码索引与精确版本锁定；覆盖表见 `codes/COVERAGE.md` |
+| `codes/audio/` | 6 组、23 个本书合成的 WAV 及参数、摘要清单，由脚本生成，不直接编辑 |
 | `codes/research/` | 详细源码研究手册：算法步骤、状态与配置、代码入口、失败实验和工业复现 |
 | `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
-| `site/` | 多级页面站（首页 + 13 个教程内容页，另有 `research/` 下 5 个研究手册页；构建产物，可再生） |
-| `dist/` | 合订 PDF（`microphone-array-tutorial.pdf`，导读、11 章正文和 2 篇附录均有顶级书签）与合订 HTML 中间产物 |
+| `site/` | 20 个网页：14 个教程页（含首页）及 `research/` 下 6 个研究手册页；构建产物，可再生 |
+| `dist/` | 合订 PDF（`microphone-array-tutorial.pdf`）与合订 HTML；PDF 含 14 个顶级、84 个二级、21 个三级书签，共 119 个 |
 
 ## 章节导览
 
@@ -37,7 +38,7 @@ English version: [README_EN.md](./README_EN.md)
 | 第 10 章 | `chapters/10_engineering-practice.md` | 参考链路、关键路径延迟、SRO/标定、资源预算与评测 | 进阶 |
 | 第 11 章 | `chapters/11_selection-guide.md` | 条件化选型、场景约束、可验证规格与练习 | 入门 |
 | 附录 A | `chapters/12_appendix-symbols-math.md` | 符号表、术语定义、预备数学速览 | 查阅 |
-| 附录 B | `chapters/13_appendix-guide.md` | 学习路径、领域地图、研究前沿、排错、17 道练习、复现说明 | 查阅 |
+| 附录 B | `chapters/13_appendix-guide.md` | 学习路径、领域地图、研究前沿、排错、原有 17 道练习与新增代码练习、复现说明 | 查阅 |
 
 ## 快速开始
 
@@ -52,9 +53,13 @@ python3 -m venv .venv
 .venv/bin/python codes/examples/ch02_05_baselines.py
 .venv/bin/python codes/examples/ch06_09_baselines.py
 .venv/bin/python codes/examples/ch10_engineering_baselines.py
+.venv/bin/python -m codes.examples.exercises_spatial
+.venv/bin/python -m codes.examples.exercises_enhancement
+.venv/bin/python -m codes.examples.exercises_engineering
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 
-# 3. 生成 33 张图（运行时间随硬件、软件版本和负载变化）
+# 3. 先生成 23 个音频，再生成 34 张图（图 34 读取生成的音频）
+.venv/bin/python codes/examples/generate_audio_samples.py
 .venv/bin/python scripts/make_figures.py
 .venv/bin/python scripts/make_aec_figures.py
 
@@ -68,6 +73,7 @@ python3 -m venv .venv
 # 需要可复现的封面日期时，加 --build-date YYYY-MM-DD，或设置 SOURCE_DATE_EPOCH
 
 # 6. 发布前检查
+.venv/bin/python codes/examples/generate_audio_samples.py --check
 .venv/bin/python -m unittest discover -s tests -v
 .venv/bin/python scripts/quality_check.py
 ```
@@ -84,9 +90,9 @@ python3 -m venv .venv
 
 ## 学习路径
 
-- **路径 A（零基础入门，2～3 周）**：导读 → 01 → 11.1/11.3 → 02/03 → 04（GCC+SRP）→ 05（DSB+MVDR）→ 06/07/08 → 09 → 运行 `codes/examples/` 并复现 33 张图。
+- **路径 A（零基础入门，2～3 周）**：导读 → 01 → 11.1/11.3 → 02/03 → 04（GCC+SRP）→ 05（DSB+MVDR）→ 06/07/08 → 09 → 运行 `codes/examples/` 并复现 34 张图。
 - **路径 B（工程实现，1 周精读）**：11.1/11.2/11.3 定 A/B/C 方案 → 05/06/07/08 → 10 全读 → 运行第 10 章工程基线 → 输出延迟/同步/标定三张预算表。
-- **路径 C（研究前沿）**：02（CRLB）→ 03（稀疏阵）→ 04/05 前沿 → 06/07/08 → 13.3 九条前沿 + 13.6 练习。
+- **路径 C（研究前沿）**：02（CRLB）→ 03（稀疏阵）→ 04/05 前沿 → 06/07/08 → 13.3 八条前沿 + 13.6 练习。
 
 ## 约定
 

@@ -22,6 +22,8 @@ def spatial_covariance(
     channels x channels and is symmetrized after accumulation.
     """
     x = validate_cft(spectra)
+    if not np.isfinite(denominator_floor) or denominator_floor <= 0.0:
+        raise ValueError("denominator_floor must be finite and positive")
     channels, frequencies, frames = x.shape
     if weights is None:
         weight = np.ones((frequencies, frames), dtype=float)

@@ -15,7 +15,7 @@
 3. **原始论文**：Capon（1969）、Griffiths & Jim GSC（1982，*An Alternative Approach to Linearly Constrained Adaptive Beamforming*, IEEE Trans. Antennas Propag. 30(1):27–34）、Schmidt MUSIC（1986）、Roy & Kailath ESPRIT（1989）、Allen & Berkley 镜像法（1979）、Nakatani et al. WPE（IEEE TASLP 2010）、Pal & Vaidyanathan 嵌套阵（IEEE TSP 2010）。
 4. **回声消除**：Hänsler & Schmidt, *Acoustic Echo and Noise Control*（Wiley 2004）；近年进展看 ICASSP AEC Challenge 系列报告。
 5. **DNN 方向**：Chakrabarty & Habets（IEEE JSTSP 2019）、Gu et al. 全神经波束形成（IEEE/ACM TASLP, vol.31, pp.849–862, DOI 10.1109/TASLP.2022.3229261）。
-6. **实验顺序**：先运行 `codes/` 中只依赖 NumPy 的教学实现，核对手算、数组维度和边界；再用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线；运行 `scripts/` 中的两个绘图脚本，复现 33 张图；随后选择与研究任务匹配的公开数据和固定版本参考系统；最后在可用的多通道硬件上验证实时性、同步和标定。数据集、框架和硬件只是候选工具，应根据任务与许可证选择。
+6. **实验顺序**：先运行 `codes/` 中只依赖 NumPy 的教学实现，核对手算、数组维度和边界；再用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线；运行 `scripts/` 中的两个绘图脚本，复现 34 张图；随后选择与研究任务匹配的公开数据和固定版本参考系统；最后在可用的多通道硬件上验证实时性、同步和标定。数据集、框架和硬件只是候选工具，应根据任务与许可证选择。
 
 ### 13.2 领域地图：教材、会议、期刊与挑战赛
 
@@ -71,31 +71,36 @@ DCASE 2024 Task 3 的官方任务页明确将开发集和评测集称为 STARSS2
 本节把正文中的经典方法与 2024 年以来若干公开研究方向相连。具体成绩只在原论文的数据、实现和评测条件下成立；带日程的内容以对应挑战赛官方页面为准。
 
 1. **预训练模型用作远场识别后端**：CHiME-7/8（2023/2024）部分参赛系统使用 Whisper、WavLM 等预训练模型作为识别后端，也有系统保留 GSS（导引源分离，详见 §8.1）和解析波束。这些参赛系统只能说明相应架构在该届数据和评测中被实现，不能据此断言整个领域已转向某一种架构。[CHiME-7/8 综述预印本，arXiv:2507.18161](https://arxiv.org/abs/2507.18161 "citation")
+
 2. **阵列无关（array-agnostic）系统**：CHiME-8 的 DASR 系统报告描述了不固定阵列拓扑的设计。其泛化范围只能以报告中的训练阵列、测试设备、任务和打分脚本为边界。[CHiME-8 DASR](https://www.isca-archive.org/chime_2024/cornell24_chime.html "citation")
+
 3. **目标说话人提取（Target Speaker Extraction，TSE）**：系统用注册语音、视觉或方向提示描述目标说话人，再从混合语音中提取相应音轨。AR 眼镜阵列和手机结构辅助方向提取提供了不同的条件输入形式。
 
-   [SonicSieve, CHI 2026](https://doi.org/10.1145/3772318.3790376 "citation") TEA-PSE（ICASSP 2022，DOI 10.1109/ICASSP43922.2022.9747765；后续版本 arXiv:2303.07704）和 [CIENet](https://ieeexplore.ieee.org/document/10284995/ "citation") 等方法从注册语音提取说话人嵌入，再通过条件注入或帧级对齐估计目标掩码。
+    [SonicSieve, CHI 2026](https://doi.org/10.1145/3772318.3790376 "citation") TEA-PSE（ICASSP 2022，DOI 10.1109/ICASSP43922.2022.9747765；后续版本 arXiv:2303.07704）和 [CIENet](https://ieeexplore.ieee.org/document/10284995/ "citation") 等方法从注册语音提取说话人嵌入，再通过条件注入或帧级对齐估计目标掩码。
 
-   §6.1.6 的个性化 AEC 与这类条件提取方法相关，但训练目标和回声参考结构仍需分别定义。
+    §6.1.6 的个性化 AEC 与这类条件提取方法相关，但训练目标和回声参考结构仍需分别定义。
 
 4. **生成式语音增强与推理加速**：SGMSE+（Richter et al., IEEE/ACM TASLP 2023）在复数 STFT 域使用基于随机微分方程的扩散模型；StoRM（Lemercier et al., IEEE/ACM TASLP 2023）把判别式回归与生成过程结合，以减少采样负担。[SGMSE+ 代码与论文](https://github.com/sp-uhh/sgmse "citation")、[StoRM 代码与论文](https://github.com/sp-uhh/storm "citation")。
 
-   这类方法可能改善特定数据上的感知质量，也可能生成参考中不存在的语音细节，因此要同时评估听感、内容一致性和下游 WER。流匹配、蒸馏和一致性模型试图减少采样步数。
+    这类方法可能改善特定数据上的感知质量，也可能生成参考中不存在的语音细节，因此要同时评估听感、内容一致性和下游 WER。流匹配、蒸馏和一致性模型试图减少采样步数。
 
-   FlowSep（ICASSP 2025）把整流流用于 VAE 隐空间中的文本查询通用音频分离，其结论不能直接外推到多通道语音增强。[FlowSep, DOI 10.1109/ICASSP49660.2025.10890129](https://doi.org/10.1109/ICASSP49660.2025.10890129 "citation")
+    FlowSep（ICASSP 2025）把整流流用于 VAE 隐空间中的文本查询通用音频分离，其结论不能直接外推到多通道语音增强。[FlowSep, DOI 10.1109/ICASSP49660.2025.10890129](https://doi.org/10.1109/ICASSP49660.2025.10890129 "citation")
 
-   多通道生成模型还需显式处理跨通道相位、空间协方差和实时性，目前与 §5.9 的掩码加解析波束属于不同成熟度的技术路线。
+    多通道生成模型还需显式处理跨通道相位、空间协方差和实时性，目前与 §5.9 的掩码加解析波束属于不同成熟度的技术路线。
+
 5. **TF-GridNet 与复数谱映射骨干**：TF-GridNet 的单通道会议版（Wang et al., ICASSP 2023）研究单通道说话人分离；期刊扩展（IEEE/ACM TASLP 2023）进一步覆盖噪声、混响和多通道条件。具体 SI-SDRi 必须按原文的数据版本、混合方式和表号引用，不能把两版结果混在一起。[ICASSP 2023 单通道会议版](https://doi.org/10.1109/ICASSP49357.2023.10094992 "citation")、[TASLP 2023 期刊扩展](https://doi.org/10.1109/TASLP.2023.3304482 "citation")。
+
 6. **几何无关前端的期刊研究**：Kamo et al. 在 *Computer Speech & Language* 95:101820（2026）中整理了几何无关的多说话人远场识别系统，并在真实会议数据上评估。[Kamo et al., *Computer Speech & Language*](https://www.sciencedirect.com/science/article/pii/S0885230825000452 "citation") 它与 CHiME-8 的系统共同说明，不固定阵列拓扑可以作为明确的系统设计目标；泛化范围仍以论文的训练阵列、测试设备和数据为边界。
+
 7. **CHiME-9 与大模型后端**：CHiME-9 设置 MCoRec 和 ECHI 两项任务；前者涉及多会话转写与会话聚类，后者研究低延迟助听对话增强。[CHiME-9 官网](https://www.chimechallenge.org/challenges/chime9/index "citation")
 
-   DiCoW（Polok et al., *Computer Speech & Language* 95:101841，2026）把分割信息作为条件注入 Whisper，用于目标说话人识别。这个实例说明前端的分割、增强结果可以作为大模型后端的显式条件，而不只是输出单路音频。[DiCoW, DOI 10.1016/j.csl.2025.101841](https://www.sciencedirect.com/science/article/pii/S088523082500066X "citation")
+    DiCoW（Polok et al., *Computer Speech & Language* 95:101841，2026）把分割信息作为条件注入 Whisper，用于目标说话人识别。这个实例说明前端的分割、增强结果可以作为大模型后端的显式条件，而不只是输出单路音频。[DiCoW, DOI 10.1016/j.csl.2025.101841](https://www.sciencedirect.com/science/article/pii/S088523082500066X "citation")
 
 8. **扩散先验用于无监督盲分离**：ArrayDPS（Xu et al., ICML 2025）处理“没有阵列几何、房间冲激响应和配对分离标签”的多通道盲分离问题。AuxIVA 通过源独立性直接迭代解混矩阵；ArrayDPS 改为从单说话人扩散先验采样，并在每个采样步骤内估计相对房间冲激响应，用该近似混合模型计算似然梯度。
 
-   它仍假设说话人数已知、各通道同步、混合可由卷积模型近似，而且单说话人先验要覆盖测试语音域；扩散先验不能替代源数估计、同步或域外验证。
+    它仍假设说话人数已知、各通道同步、混合可由卷积模型近似，而且单说话人先验要覆盖测试语音域；扩散先验不能替代源数估计、同步或域外验证。
 
-   最小复现可沿用官方 SMS-WSJ 配置：两名说话人、3 通道、8 kHz，先下载作者提供的单说话人扩散模型，再运行 `separate.py`，设置 `num_speakers=2`、`n_channels=3`、`num_steps=400`，将输出与其 IVA 初始化按同一 SI-SDR 实现比较，同时记录总耗时和峰值显存。官方说明要求显存大于 7 GB；400 步扩散采样还嵌套相对 RIR 优化，因此它是离线研究候选，不应直接列入低延迟流式基线。[ArrayDPS 论文（PMLR 267）](https://proceedings.mlr.press/v267/xu25f.html "citation")、[官方实现与复现命令](https://github.com/ArrayDPS/ArrayDPS "citation")。
+    最小复现可沿用官方 SMS-WSJ 配置：两名说话人、3 通道、8 kHz，先下载作者提供的单说话人扩散模型，再运行 `separate.py`，设置 `num_speakers=2`、`n_channels=3`、`num_steps=400`，将输出与其 IVA 初始化按同一 SI-SDR 实现比较，同时记录总耗时和峰值显存。官方说明要求显存大于 7 GB；400 步扩散采样还嵌套相对 RIR 优化，因此它是离线研究候选，不应直接列入低延迟流式基线。[ArrayDPS 论文（PMLR 267）](https://proceedings.mlr.press/v267/xu25f.html "citation")、[官方实现与复现命令](https://github.com/ArrayDPS/ArrayDPS "citation")。
 
 #### 专栏：神经网络前端的泛化失配与四类对策
 
@@ -130,20 +135,27 @@ VarArray 把 TAC、Conformer 分离和通道间相位差特征用于几何无关
 
 1. **MUSIC 没有峰 / 峰位置不稳定** → 先看样本协方差的秩与条件数。若直接用 $T$ 个 $M$ 维快照计算未中心二阶矩，矩阵秩不超过 $T$，所以 $T<M$ 时必然奇异；若先估计并减去样本均值，中心化后的 $T$ 个向量线性和为零，秩上限通常降为 $T-1$，所以 $T\le M$ 时必然奇异。快照数超过这一最低门槛也不代表估计已经稳定。
 
-   再检查源数 $K$ 和噪声底是否可分，最后检查直达声与反射是否强相干。空间平滑只适用于具有可分重叠子阵的几何，而且会缩短有效孔径；它不是所有混响场景的必选项（§2.5、§4.6）。
+    再检查源数 $K$ 和噪声底是否可分，最后检查直达声与反射是否强相干。空间平滑只适用于具有可分重叠子阵的几何，而且会缩短有效孔径；它不是所有混响场景的必选项（§2.5、§4.6）。
+
 2. **GCC-PHAT 峰位置在离散时延格点间跳变** → 没有做亚采样时延估计，或原始时延网格太粗；也可能是强反射峰超过直达峰（图13）。图12采用 16 倍互谱补零插值，不是三点抛物线拟合；其他实现也可采用相关峰插值或相位斜率拟合（§4.2）。
+
 3. **波束形成后目标语音反而失真** → 先查 DOA、RTF 和通道标定是否一致，再检查噪声协方差的估计方式。
 
-   噪声协方差既可由目标缺席帧估计，也可由时频掩码加权估计；关键是尽量排除目标泄漏，同时保留足够有效快拍。混响中还要确认约束对象是否应改用 RTF（§5.4、§5.9）。
+    噪声协方差既可由目标缺席帧估计，也可由时频掩码加权估计；关键是尽量排除目标泄漏，同时保留足够有效快拍。混响中还要确认约束对象是否应改用 RTF（§5.4、§5.9）。
+
 4. **超指向输出噪声很大** → 检查 WNG、协方差条件数、通道增益相位和阵列流形误差。容许的失配没有统一 dB 门槛，应从目标 WNG、最高工作频率和实测波束图反推；可用对角加载或显式 WNG 约束改善稳健性（§5.3、§5.4）。
+
 5. **AEC 残余回声较大** → 优先检查参考取点、参考与麦克风的整体延迟、扬声器削波以及滤波器覆盖时间。参考不同步是需要排查的原因之一，不是所有设备的固定首因。
 
-   若线性路径已收敛而仍有与播放相关的非线性残余，再评估非线性处理（NLP）或学习型 AEC（§6.1）。
+    若线性路径已收敛而仍有与播放相关的非线性残余，再评估非线性处理（NLP）或学习型 AEC（§6.1）。
+
 6. **SRP-PHAT 出现镜像假峰** → 间距超过半波长出现栅瓣（§2.6），或墙面的强反射形成了“镜像声源”——先检查无混叠带宽，再考虑限制搜索空间。
+
 7. **多麦录音各通道逐渐错位** → 先区分固定的初始时差、独立丢样和 SRO。单设备可让通道共享采样时钟；分布式设备无法共享时钟时，要估计相对采样率并重采样。PDM/TDM 是接口形式，不自动保证跨设备同步（§10.2）。
+
 8. **仿真很好、实测很差** → 逐项加入麦位误差、通道增益相位误差、壳体散射、频响差异、时钟偏移和扬声器非线性，寻找哪一项能复现实测退化。
 
-   位置容差应按最高频率允许的相位误差换算，不存在对所有阵列通用的毫米阈值。完成标定后，再在容差范围和多个位置上复测。
+    位置容差应按最高频率允许的相位误差换算，不存在对所有阵列通用的毫米阈值。完成标定后，再在容差范围和多个位置上复测。
 
 ### 13.5 核心公式速查卡
 
@@ -194,7 +206,7 @@ D_t&=(1-p_D)D^-\\
 
 练习按章节排列。修改脚本参数时，应同时记录随机种子、实验条件和输出指标。数值题附参考答案，综合题附思路提示。
 
-**练习涉及的绘图函数**（做题时打开对应函数按题面改参数就行）：
+**练习涉及的绘图函数**：先阅读参数与生成模型。需要改参数时，在个人实验副本中运行并保存到独立输出目录，不直接覆盖本书的出版插图。
 
 | 函数名 | 它画的是什么 | 用在哪道题 |
 |---|---|---|
@@ -206,6 +218,8 @@ D_t&=(1-p_D)D^-\\
 | `fig_tracking` | 粒子滤波追踪 | 题13 |
 
 动手题用的绘图函数都在 `scripts/` 里，具体对应关系见上表。第 16 题还要安装 pyroomacoustics 0.10.0；它是房间声学仿真的扩展依赖，命令见该题和项目 README。
+
+章内还有带稳定编号 `E01-01` 等的计算练习，由[练习与音频实验手册](../codes/research/05_exercises_and_audio.md)统一索引。附录原有题号仍用于下面的 1～17 题；不要把两个编号系统按顺序相加。工程练习 E10、选型练习 E11 和数学练习 E12 的运行入口是 `codes/examples/exercises_engineering.py`，可先手算再比对输出。
 
 **第 1 章（问题定义）**
 
@@ -332,13 +346,20 @@ D_t&=(1-p_D)D^-\\
 
     逐项标出定位、分割、GSS/波束、增强和 ASR 后端是否存在，不先假定高排名系统都采用同一架构；再说明其阵列无关设计依赖哪些训练数据或解析模块。
 
+**E13-01：试听归一化会隐藏什么。** 两段四点信号分别为 $a=[0,0.4,-0.4,0]$、$b=[0,0.2,-0.2,0]$，仅用于手算，不应当作可听语料。求两者电平差，再比较“共同乘 2”和“各自除以自身峰值”两种处理。
+
+答案：$b$ 的幅度是 $a$ 的一半，电平低 $20\log_{10}2\approx6.0206$ dB。共同乘 2 后，两者峰值是 0.8 和 0.4，原来的比例保留。各自除以自身峰值后，都变成 $[0,1,-1,0]$，差值为零，衰减被归一化消除了。
+
+运行 `.venv/bin/python -m codes.examples.exercises_engineering` 中的 `E13-01` 可复核这组数字。实际试听使用[音频实验手册](../codes/research/05_exercises_and_audio.md)列出的较长素材。比较残余回声电平或 AGC 行为时，不能先分别拉到同一峰值再宣称电平没有变化；若只比较音色，可另建等响度试听版本，但仍保留未经该处理的评分输入。
+
 ### 13.7 复现说明
 
-下面先运行代码基线的单元测试和第 10 章示例，再重新生成全部 33 张图：
+下面先运行代码基线的单元测试和第 10 章示例，再重新生成全部 34 张图：
 
 ```bash
 .venv/bin/python -m unittest tests.test_codes_engineering -v
 .venv/bin/python -m codes.examples.ch10_engineering_baselines
+.venv/bin/python -m codes.examples.exercises_engineering
 ```
 
 第 10 章示例使用确定性输入，覆盖 SRO 直线拟合与线性重采样、VAD 迟滞与 hangover、峰值保护 AGC、固定容量环形缓冲、deadline/队列模拟和 Q1.15 饱和量化。线性重采样、Python 环形缓冲和调度模拟都是教学基线，不应替换带抗混叠滤波的流式重采样器、无锁实时队列或目标系统测量。
@@ -347,10 +368,11 @@ D_t&=(1-p_D)D^-\\
 
 会议识别复现还要固定数据准备与文本规范化。CHiME-8 的官方 `chime-utils` 提供 SegLST 转写格式、该届规范化及 cpWER/tcpWER 评分；其中缺失场景的忽略选项会改变实际计分范围。应保留每个场景的输入文件数、失败数和最终参与评分的清单，并先用正确转写、说话人交换、漏词和时间戳偏移的小夹具检查评分口径。[CHiME-8 官方评分实现](https://github.com/chimechallenge/chime-utils/tree/152882404f572d40769ef02bf91c5a9a9cfc9c78 "citation")
 
-绘图脚本都在 `scripts/` 里。在仓库根目录跑两个命令，结果进 `figures/`，共 33 张图：
+绘图脚本都在 `scripts/` 里。图 34 读取合成音频，因此先生成音频，再运行两个绘图脚本；图片写入 `figures/`，共 34 张：
 
 ```bash
-.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33
+.venv/bin/python codes/examples/generate_audio_samples.py
+.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～34
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32（回声消除专题）
 ```
 

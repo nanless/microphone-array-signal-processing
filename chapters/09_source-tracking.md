@@ -42,19 +42,32 @@ $$\vec{s}_t=\mathbf F\vec{s}_{t-1}+\vec v_t,\qquad \vec z_t=\mathbf H\vec s_t+\v
 贝叶斯递推包含预测和更新。预测阶段依据运动模型外推状态，并增加因过程噪声带来的不确定度；更新阶段用观测与预测之差，即新息，修正状态和协方差。在线性高斯假设下，卡尔曼滤波给出这两个阶段的闭式递推。
 
 **卡尔曼滤波（KF）的五步递推**（状态取 [角度, 角速度]）：
+
 1. **预测状态**：
-   $$\hat{\vec{s}}^-_t = \mathbf{F}\hat{\vec{s}}_{t-1}\text{。}\tag{9-2}$$
+
+    $$\hat{\vec{s}}^-_t = \mathbf{F}\hat{\vec{s}}_{t-1}\text{。}\tag{9-2}$$
+
 2. **预测协方差**：
-   $$\mathbf{P}^-_t = \mathbf{F}\mathbf{P}_{t-1}\mathbf{F}^\top + \mathbf{Q}\text{。}\tag{9-3}$$
-   $\mathbf F$ 先把上一帧协方差传播到当前状态，$\mathbf Q$ 再加入未建模运动的过程噪声。不能据此断言任意 $\mathbf F$ 下每个协方差元素都必然增大；本章的无观测匀速数例中，角度方差会增大。
+
+    $$\mathbf{P}^-_t = \mathbf{F}\mathbf{P}_{t-1}\mathbf{F}^\top + \mathbf{Q}\text{。}\tag{9-3}$$
+
+    $\mathbf F$ 先把上一帧协方差传播到当前状态，$\mathbf Q$ 再加入未建模运动的过程噪声。不能据此断言任意 $\mathbf F$ 下每个协方差元素都必然增大；本章的无观测匀速数例中，角度方差会增大。
+
 3. **计算卡尔曼增益**：
-   $$\mathbf{K}_t = \mathbf{P}^-_t\mathbf{H}^\top(\mathbf{H}\mathbf{P}^-_t\mathbf{H}^\top + \mathbf{R})^{-1}\text{。}\tag{9-4}$$
-   $\mathbf R$ 是式(9-1)定义的观测噪声协方差。观测噪声较小时增益增大，更新更依赖观测；预测协方差较小时增益减小，更新更依赖运动模型。
+
+    $$\mathbf{K}_t = \mathbf{P}^-_t\mathbf{H}^\top(\mathbf{H}\mathbf{P}^-_t\mathbf{H}^\top + \mathbf{R})^{-1}\text{。}\tag{9-4}$$
+
+    $\mathbf R$ 是式(9-1)定义的观测噪声协方差。观测噪声较小时增益增大，更新更依赖观测；预测协方差较小时增益减小，更新更依赖运动模型。
+
 4. **更新状态**：
-   $$\hat{\vec{s}}_t = \hat{\vec{s}}^-_t + \mathbf{K}_t\big(\theta^{obs}_t - \mathbf{H}\hat{\vec{s}}^-_t\big)\text{。}\tag{9-5}$$
-   括号里的差称为新息（innovation），即观测与预测之差。
+
+    $$\hat{\vec{s}}_t = \hat{\vec{s}}^-_t + \mathbf{K}_t\big(\theta^{obs}_t - \mathbf{H}\hat{\vec{s}}^-_t\big)\text{。}\tag{9-5}$$
+
+    括号里的差称为新息（innovation），即观测与预测之差。
+
 5. **更新协方差**：
-   $$\mathbf{P}_t = (\mathbf{I}-\mathbf{K}_t\mathbf{H})\mathbf{P}^-_t\text{。}\tag{9-6}$$
+
+    $$\mathbf{P}_t = (\mathbf{I}-\mathbf{K}_t\mathbf{H})\mathbf{P}^-_t\text{。}\tag{9-6}$$
 
 方位角跨越表示区间边界时，新息不能直接相减。若角度约定为 $[-180^\circ,180^\circ)$，定义
 
@@ -142,7 +155,10 @@ $$\mathbf{P}_t=\begin{bmatrix}0.852&0\\-0.0085&1\end{bmatrix}\begin{bmatrix}4.35
 
 （第一行：$0.852\times4.35=3.705$，$0.852\times0.25=0.213$；第二行：$-0.0085\times4.35+1\times0.25=0.213$，$-0.0085\times0.25+1\times0.26=0.258$。）
 
-角度方差从 4.35 降到 3.71（标准差约 1.93°）——每吸收一次观测，不确定度就降一截。若下一帧说话人停顿没有观测，就只做第 1、2 步：$\mathbf{P}$ 重新涨大，波束指向维持外推，这就是“静默保持”（§9.4）。
+角度方差从 4.35 降到 3.71（标准差约 1.93°）。在线性模型、协方差和卡尔曼增益满足本节条件时，观测更新降低或保持估计协方差；错误观测或错误噪声模型仍可能让真实误差增大。
+
+若下一帧说话人停顿没有观测，就只做第 1、2 步：本例角度方差再次增大，波束指向维持外推，这就是“静默保持”（§9.4）。
+
 算例 9-1说明了单步卡尔曼递推。下表比较常见单目标追踪方法的假设、计算量和适用条件。其中，α-β 滤波器所说的“免 Riccati 迭代”，是把第 2、3、5 步的不确定度递推（Riccati 方程）换成固定增益。
 
 | 方法 | 原理 | 优点 | 缺点 | 适用 |
@@ -348,9 +364,17 @@ $p_D$ 是检测概率，$g_t(z\mid x)$ 是目标在状态 $x$ 时产生观测 $z
 
 多目标追踪还要估计观测与轨迹的对应关系以及目标数。JPDA 和 MHT 显式处理关联；PHD 传播随机有限集的一阶强度；LMB 保留目标标签；检测前追踪保留未越过检测阈值的弱证据。最优子模式分配距离（Optimal Subpattern Assignment，OSPA）同时度量定位误差和目标数误差，但不评价身份连续性。
 
-**可执行单目标基线与高级算法边界。** [`codes/array_tutorial/tracking.py`](../codes/array_tutorial/tracking.py) 提供常速度角度 Kalman 滤波器、$[-180^\circ,180^\circ)$ 环绕、系统重采样和圆周角 SIR 粒子滤波器。`ConstantVelocityKalman` 的状态单位是 `[度, 度/秒]`；每帧先用实际秒数 `dt` 调用 `predict()`，有观测时再以角度方差调用 `update()`，缺测时不调用更新。协方差使用 Joseph 形式。`CircularParticleFilter` 用圆周高斯目标似然与均匀杂波的混合更新权重，按有效粒子数决定是否系统重采样；它只估计单个圆周角，不包含速度粒子、有限扇区反射或轨迹身份。
+**可执行单目标基线与高级算法边界。** [`codes/array_tutorial/tracking.py`](../codes/array_tutorial/tracking.py) 提供常速度角度 Kalman 滤波器、$[-180^\circ,180^\circ)$ 环绕、系统重采样和圆周角 SIR 粒子滤波器。
 
-联合示例用 `.venv/bin/python -m codes.examples.ch06_09_baselines` 运行，测试见 [`tests/test_codes_aec_wpe_sep_track.py`](../tests/test_codes_aec_wpe_sep_track.py)。测试覆盖 $179^\circ$ 与 $-179^\circ$ 的最短新息、缺测时角度方差增长、Joseph 更新后的对称半正定性、远距离高置信观测的对数权重、退化权重的系统重采样，以及对称后验下未定义的圆周均值。教学 Kalman 类的过程噪声矩阵 $Q$ 已按一次预测间隔离散化；若 `dt` 改变，不能继续照搬同一个 $Q$。粒子后验的圆周合向量接近零时，代码会明确报错，而不是返回由浮点残差决定的任意角度。设备只搜索有限扇区时不得使用圆周环绕；还需测试迟到/乱序观测、长缺测、错误时间戳、野点门控、目标交叉、轨迹出生/确认/删除、ID 重用和消息超时。无有效观测时应只预测并增大不确定度，超过有效期后回到搜索模式。
+`ConstantVelocityKalman` 的状态单位是 `[度, 度/秒]`；每帧先用实际秒数 `dt` 调用 `predict()`，有观测时再以角度方差调用 `update()`，缺测时不调用更新。协方差使用 Joseph 形式。它与算例9-1的“度/帧”不同，比较前应转换状态、转移矩阵及过程噪声单位。
+
+`CircularParticleFilter` 用最短圆周角差的高斯目标项与均匀杂波项混合更新权重，按有效粒子数决定是否系统重采样；它只估计单个圆周角，不包含速度粒子、有限扇区反射或轨迹身份。该高斯项是小角度误差模型，不是一般宽分布的严格环绕正态密度。
+
+联合示例用 `.venv/bin/python -m codes.examples.ch06_09_baselines` 运行，测试见 [`tests/test_codes_aec_wpe_sep_track.py`](../tests/test_codes_aec_wpe_sep_track.py)。测试覆盖 $179^\circ$ 与 $-179^\circ$ 的最短新息、缺测时角度方差增长、Joseph 更新后的对称半正定性、远距离高置信观测的对数权重、退化权重的系统重采样，以及对称后验下未定义的圆周均值。
+
+教学 Kalman 类的过程噪声矩阵 $Q$ 已按一次预测间隔离散化；若 `dt` 改变，不能继续照搬同一个 $Q$。粒子后验的圆周合向量接近零时，代码会明确报错，而不是返回由浮点残差决定的任意角度。
+
+设备只搜索有限扇区时不得使用圆周环绕；还需测试迟到/乱序观测、长缺测、错误时间戳、野点门控、目标交叉、轨迹出生/确认/删除、ID 重用和消息超时。无有效观测时只预测并传播协方差，超过有效期后回到搜索模式，不能把外推方向当作新观测。
 
 进一步的实现可按 FilterPy 和 Stone Soup 的固定版本阅读，源码工作目录、许可和入口由 [`SOURCES.lock.json`](../codes/SOURCES.lock.json) 管理。FilterPy 的 `kalman/EKF.py`、`UKF.py`、`IMM.py` 分别定位非线性更新和运动模型切换；Stone Soup 的 `dataassociator/probability.py::JPDA` 处理联合关联，`updater/pointprocess.py::PHDUpdater` 配合 `mixturereducer/gaussianmixture.py::GaussianMixtureReducer` 完成 GM-PHD 更新与分量合并、剪枝。具体阅读顺序、实验输入和失败情况见[空间处理与追踪研究](../codes/research/01_spatial_and_tracking.md)。
 
@@ -431,6 +455,31 @@ OSPA 不保留身份，所以身份切换要另报身份切换次数（Identity 
     **答案要点**：静音且参考能量不足时冻结 WPE 系数，避免病态统计；确认无目标语音时，可以更新噪声协方差和降噪器的噪声功率。目标语音活动时则避免把目标泄漏写入噪声统计，WPE 是否更新由其语音活动和矩阵条件共同决定。
 
     单帧转角限值可以 $\omega_{\max}\Delta t$ 为物理起点，5 帧累计上限为 $5\omega_{\max}\Delta t$；超过保持时间或不确定度阈值后，应降低波束更新置信度或回到搜索模式。
+
+**可运行练习 E09-01～E09-03**
+
+运行 `.venv/bin/python -m codes.examples.exercises_enhancement`，源码见 [`exercises_enhancement.py`](../codes/examples/exercises_enhancement.py)。这三题使用方向数值，不通过左右声道音量模拟阵列定位；后者的声像不能代替麦克风传播时延模型。
+
+- **E09-01：把“每帧”改为“每秒”。** 初态 $[30^\circ,5^\circ/\mathrm s]$，$P=\operatorname{diag}(4,1)$；每 0.1 s 预测一次，采用已为此间隔离散化的 $Q=\operatorname{diag}(0.1,0.01)$。连续两次缺测，求状态和协方差。
+
+    **解答**：每步角度增加 $5\times0.1=0.5^\circ$，两步状态依次是 $[30.5,5]^\top$、$[31,5]^\top$。按式(9-3)得到
+
+    $$\begin{aligned}
+    P_1^-&=\begin{bmatrix}4.11&0.1\\0.1&1.01\end{bmatrix},\\
+    P_2^-&=\begin{bmatrix}4.2401&0.201\\0.201&1.02\end{bmatrix}.
+    \end{aligned}$$
+
+    若误把 5 当成“度/帧”，两帧会外推到 40°。若改采样间隔，还要从声明的运动噪声模型重新离散化 $Q$；本题没有给出可任意换帧率的连续噪声密度。
+
+- **E09-02：跨越 ±180° 时朝哪边更新？** 当前预测为 179°，观测 −179°，预测角度方差和观测方差都为 1，角速度与角度无互协方差。只做一次观测更新。
+
+    **解答**：原始差为 −358°，式(9-7)得到最短新息 +2°。角度增益为 $1/(1+1)=0.5$，更新到 180° 后映射为 −180°；后验角度方差为 0.5。有限搜索扇区的两端不自动相邻，只有完整圆周约定才适用这个操作。
+
+- **E09-03：有效粒子数与 CDF 索引。** 四个粒子的归一化权重为 $[0.1,0.2,0.6,0.1]$，阈值取 $N/2=2$。是否应触发重采样？再为演示人为强制一次，取起点 $u_0\approx0.1592404$、间隔 0.25，写出零起始祖先索引。
+
+    **解答**：平方和为 $0.01+0.04+0.36+0.01=0.42$，有效粒子数约 2.381，大于 2，因此阈值判决不触发。CDF 为 $[0.1,0.3,0.9,1]$，四个位置约为 0.15924、0.40924、0.65924、0.90924，对应索引 `[1,2,2,3]`。代码起点来自 NumPy `default_rng(0)` 的首个随机数除以 4。
+
+    重采样后四个新粒子权重均为 0.25。该过程重新分配有限计算样本，没有增加观测信息，不能把单次均值变化解释成精度必然提高。[Stone Soup 官方系统重采样教程](https://stonesoup.readthedocs.io/en/v1.5/auto_tutorials/sampling/ResamplingTutorial.html)。
 
 ---
 

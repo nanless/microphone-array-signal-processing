@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 5 章 · 波束形成 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="9187099fc571"><style>
+<meta name="source-digest" content="80cb834cf708"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -16,6 +16,7 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .main{flex:1;min-width:0;padding:28px 36px;background:#fff;overflow-wrap:anywhere}
 .main p{margin:0 0 1.05em}.main li>p{margin:.35em 0}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
+.audio-sample{display:block;width:min(100%,460px);margin:8px 0 18px}.audio-sample:focus-visible{outline:3px solid #e67e22}
 table{border-collapse:collapse;margin:14px 0;max-width:100%}
 .table-scroll{max-width:100%;overflow-x:auto}
 .table-scroll:focus-visible{outline:3px solid #e67e22;outline-offset:2px}
@@ -24,7 +25,8 @@ th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
-mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
+mjx-assistive-mml{width:1px!important;height:1px!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
 .pn a{color:#2f6db3;text-decoration:none}.pn .off{color:#aaa}
@@ -39,7 +41,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{position:fixed;bottom:20px;right:20px;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px;opacity:.75}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
-@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}}
+@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
@@ -410,10 +412,12 @@ Q&=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\mathbf{\Gamma}\vec{w}},&
 <p><strong>图示说明</strong>：图 16 的三组权重都满足目标方向单位响应。线性幅度图保留这一绝对响应，dB 图以目标响应为 0 dB 参考，并截断到 −40 dB。</p>
 <p>DSB 与 MVDR 使用 8 元、$d=\lambda/2$，MVDR 协方差模型含 20° 定向干扰。超指向使用另一个 $d=0.2\lambda$ 的紧凑阵列和相对对角加载 $10^{-6}$。</p>
 <p>由于阵元间距和噪声模型不同，超指向曲线不能作为与前两条曲线的同几何性能排名；该图也不能直接给出 WNG 或 DI。图中参数与算例 5-2 的 2 元阵、30° 干扰不同，零陷深度不能直接互比。</p>
-<p><strong>实现中的三个问题</strong>：
-1. <strong>$\mathbf{R}_{nn}$ 从哪来</strong>：无目标帧估计（语音活动检测即 VAD 辅助）；语音场景经典做法是时频掩码（Time-Frequency mask，简称 TF-mask）——神经网络预测每个时频点是语音还是噪声，分别加权估出目标/噪声协方差（在 CHiME 系列远场语音识别挑战赛中验证有效的主流做法；这类掩码做法在完整系统里的效果证据见 §8.1）；
-2. <strong>病态与对角加载</strong>：小快拍下 $\hat{\mathbf{R}}$ 可能病态，可改用 $\hat{\mathbf R}+\varepsilon\mathbf I$。它抬高小特征值并限制权重范数；与显式 WNG 约束的关系见下文，二者不能不加条件地写成同一个问题；
-3. <strong>混响中的约束对象</strong>：自由场导向矢量只描述直达传播。混响房间中的目标通道还包含早期反射，因此实际目标传递向量可能与自由场模型不一致。可估计相对传递函数（Relative Transfer Function，简称 RTF），用各麦相对参考麦的目标传递函数作为约束向量；RTF 估计误差仍需通过失配仿真评估。</p>
+<p><strong>实现中的三个问题</strong>：</p>
+<ol>
+<li><strong>$\mathbf{R}_{nn}$ 从哪来</strong>：无目标帧估计（语音活动检测即 VAD 辅助）；语音场景经典做法是时频掩码（Time-Frequency mask，简称 TF-mask）——神经网络预测每个时频点是语音还是噪声，分别加权估出目标/噪声协方差（在 CHiME 系列远场语音识别挑战赛中验证有效的主流做法；这类掩码做法在完整系统里的效果证据见 §8.1）；</li>
+<li><strong>病态与对角加载</strong>：小快拍下 $\hat{\mathbf{R}}$ 可能病态，可改用 $\hat{\mathbf R}+\varepsilon\mathbf I$。它抬高小特征值并限制权重范数；与显式 WNG 约束的关系见下文，二者不能不加条件地写成同一个问题；</li>
+<li><strong>混响中的约束对象</strong>：自由场导向矢量只描述直达传播。混响房间中的目标通道还包含早期反射，因此实际目标传递向量可能与自由场模型不一致。可估计相对传递函数（Relative Transfer Function，简称 RTF），用各麦相对参考麦的目标传递函数作为约束向量；RTF 估计误差仍需通过失配仿真评估。</li>
+</ol>
 <p><strong>对角加载、WNG 约束与正则化的关系</strong>：绝对加载写成 $\hat{\mathbf R}+\varepsilon\mathbf I$，其中 $\varepsilon$ 与协方差矩阵的元素具有相同量纲；它等于在目标函数中加入 $\varepsilon\|\vec w\|^2$。</p>
 <p>为使输入整体缩放后加载强度不变，本节比较表改用无量纲相对加载量 $\alpha$：</p>
 <p>$$\hat{\mathbf R}_{\mathrm{load}}=\hat{\mathbf R}+\alpha\,\frac{\operatorname{tr}(\hat{\mathbf R})}{M}\mathbf I。$$</p>
@@ -877,9 +881,22 @@ $$\mathrm{NR}_{ref}=10\log_{10}\frac{\vec e_r^H\mathbf R_{nn}\vec e_r}{\vec w^H\
 <p>等号在 $\vec{w}\propto\vec{a}$ 即 DSB 时成立，完整两步见 §5.2 的上限推导。</p>
 </li>
 <li>
-<p>GSC 阻塞失配：沿用算例 5-3 的 2 麦阵，若目标实际偏到 2°（DOA 估计差 2°），下支路会漏进多少目标功率？自适应对消器会如何处理这部分泄漏，输出会出现什么变化？（参考答案：$\mathbf{B}^H\vec{a}(2°)\approx0.0060-0.1094\mathrm{j}$，模约为 0.1096，漏进约 <strong>1.2%</strong> 的目标功率（见算例第 6 步）；下支路的目标与上支路相关，对消器会把它也当干扰抵消，导致目标语音衰减或断续。对策见 §5.6 末。）</p>
+<p>GSC 阻塞失配：沿用算例 5-3 的 2 麦阵，若目标实际偏到 2°（DOA 估计差 2°），下支路会漏进多少目标功率？自适应对消器会如何处理这部分泄漏，输出会出现什么变化？</p>
+<p>参考答案：采用该算例的阻塞矩阵归一化，$\mathbf{B}^H\vec{a}(2°)\approx0.0060-0.1094\mathrm{j}$，模约为 0.1096，功率比为 $0.1096^2\approx0.012$，即约 1.2%（见算例第 6 步）。换用单位范数阻塞向量时，必须重新计算支路功率，不能照搬这个百分比。</p>
+<p>泄漏目标与固定支路输出相关，自适应对消器可能将这部分目标一并消除，造成目标衰减；实际程度还取决于自适应滤波器和更新门控。保护措施见 §5.6 末。</p>
 </li>
 </ol>
+<p>下面两题由 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 输出完整权重和响应，用来检查实现所需的模型条件。</p>
+<p><strong>E05-01：一般 MWF 为什么不能总用秩一公式？</strong> 噪声协方差为 $\mathbf I$，参考麦选择向量为 $[1,0]^\top$，噪声权重为 1。分别取目标协方差 $\operatorname{diag}(2,1)$ 和 $\operatorname{diag}(2,0)$，比较一般 MWF 线性方程与目标秩一时的迹化简。</p>
+<p><strong>参考答案</strong>：一般解为 $(\mathbf R_{ss}+\mathbf I)^{-1}\mathbf R_{ss}\vec e_1$。两种目标协方差都得到 $[2/3,0]^\top$，因为参考通道对应的对角项是 $2/(2+1)$。</p>
+<p>在噪声为单位阵、噪声权重为 1 的条件下，秩一迹化简写成 $\mathbf R_{ss}\vec e_1/(1+\operatorname{tr}\mathbf R_{ss})$。全秩输入得到 $[1/2,0]^\top$，与一般解不同；秩一输入才得到 $[2/3,0]^\top$。全秩反例说明的是化简前提不成立，不代表一般 MWF 线性方程有误。</p>
+<p><strong>E05-02：加载增强稳健性时，哪项抑制能力会改变？</strong> 取目标导向 $[1,1]^\top$、干扰导向 $[1,\mathrm j]^\top$，噪声协方差为</p>
+<p>$$\mathbf R_{nn}=\begin{bmatrix}11&-10\mathrm j\\10\mathrm j&11\end{bmatrix}.$$</p>
+<p>分别使用相对加载量 0 和 1 求 MVDR。这里相对加载量 1 表示增加 $(\operatorname{tr}\mathbf R_{nn}/2)\mathbf I=11\mathbf I$。比较目标响应、干扰响应幅度和 WNG。</p>
+<p><strong>参考答案</strong>：未加载时，权重为 $[1/2+5\mathrm j/11,1/2-5\mathrm j/11]^\top$；目标响应为 1，干扰复响应为 $(1+\mathrm j)/22$，幅度约为 0.06428。</p>
+<p>权重平方范数为 $1/2+50/121=221/242$，所以线性 WNG 为 $242/221\approx1.09502$。增加 $11\mathbf I$ 后，权重虚部减半为 $\pm5/22$，目标响应仍为 1，WNG 变为 $242/146\approx1.65753$；干扰响应幅度则增至 $3\sqrt2/11\approx0.38569$。</p>
+<p>本例中，加载减小权重范数，改善白噪声增益，却使该方向的干扰抑制减弱。两个指标针对不同噪声模型，不应合并成一个“效果更好”的判断。这里只作单频理想协方差手算，不给出语音质量或设备实时性能结论。</p>
+<p>从单频权重走到波形还需要逐频点处理与 iSTFT。可先用<a href="research/05_exercises_and_audio.html">音频实验总览</a>中的对齐平均样本检查通道、增益和参考时延，再搭建自适应波束实验。总览中的对齐平均不是 MVDR 输出，不能把它的听感或误差写成 E05-02 的实验结果。</p>
 <hr />
 <blockquote>
 <p>📄 本篇信息：配图 3 张 ｜ <a href="index.html">回首页</a></p>
