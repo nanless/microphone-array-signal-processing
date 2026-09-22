@@ -1,6 +1,8 @@
 # An Accessible Guide to Microphone Array Signal Processing
 
-A beginner-friendly Chinese tutorial on microphone array signal processing (graduate-entry level): from “why an array of microphones” through DOA estimation, beamforming, acoustic echo cancellation (AEC), dereverberation (WPE), speech separation, and source tracking, all the way to engineering practice and system selection. It provides key derivations, reproducible numerical examples, validity limits, and 33 script-generated figures.
+A beginner-friendly Chinese tutorial on microphone array signal processing at graduate-entry level. It starts with “why use an array of microphones” and covers DOA estimation, beamforming, acoustic echo cancellation (AEC), dereverberation (WPE), speech separation, source tracking, engineering practice, and system selection.
+
+The tutorial provides key derivations, reproducible numerical examples, validity limits, and 33 script-generated figures.
 
 中文版：[README.md](./README.md)
 

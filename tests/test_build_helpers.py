@@ -229,6 +229,10 @@ class BuildHelpersTest(unittest.TestCase):
         self.assertIn('id="main-content"', build_site.PAGE)
         self.assertIn(":focus-visible", build_site.CSS)
 
+    def test_web_and_pdf_define_paragraph_spacing_explicitly(self):
+        self.assertIn(".main p{margin:0 0 1.05em}", build_site.CSS)
+        self.assertIn("p{margin:0 0 .85em}", build_pdf.CSS)
+
     def test_site_render_wraps_table_in_focusable_scroll_region(self):
         html, _ = build_site.render("| 列 |\n|---|\n| 值 |")
         self.assertIn('class="table-scroll" tabindex="0"', html)
@@ -242,6 +246,49 @@ class BuildHelpersTest(unittest.TestCase):
         self.assertEqual(parser.html_lang, "zh-CN")
         self.assertEqual(parser.heading_levels, [1, 3])
         self.assertEqual(parser.images, [("x.png", "阵列图")])
+
+    def test_paragraph_review_candidates_find_dense_plain_paragraph(self):
+        text = "。".join(["同一自然段承担一个完整判断"] * 7) + "。"
+        candidates = quality_check.paragraph_review_candidates(text)
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0]["line"], 1)
+        self.assertGreaterEqual(candidates[0]["sentences"], 6)
+
+    def test_paragraph_review_candidates_do_not_flag_structured_list(self):
+        item = "每项有独立结构和解释" * 30
+        text = f"- {item}\n- {item}\n- {item}\n"
+        self.assertEqual(quality_check.paragraph_review_candidates(text), [])
+
+    def test_paragraph_review_candidates_do_not_force_short_paragraph_split(self):
+        text = "条件与它限定的结论应当保留在一起。\n\n下一段只解释一个新任务。"
+        self.assertEqual(quality_check.paragraph_review_candidates(text), [])
+
+    def test_paragraph_review_candidates_do_not_treat_short_english_as_280_chinese_chars(self):
+        text = (
+            "This tutorial covers localization, beamforming, echo cancellation, "
+            "dereverberation, separation, and tracking. It also includes worked examples."
+        )
+        self.assertEqual(quality_check.paragraph_review_candidates(text), [])
+
+    def test_every_source_chapter_renders_in_site_pipeline(self):
+        names = [build_site.HOME_FNAME] + [name for name, _label in build_site.CHAPTERS]
+        for name in names:
+            with self.subTest(name=name):
+                html, heading_count = build_site.render(
+                    (ROOT / "chapters" / name).read_text(encoding="utf-8")
+                )
+                self.assertTrue(html)
+                self.assertGreater(heading_count, 0)
+
+    def test_loose_ordered_list_keeps_answer_inside_original_item(self):
+        html, _ = build_site.render(
+            "1. 题干\n\n    答案段。\n\n2. 第二题\n"
+        )
+        self.assertEqual(html.count("<ol>"), 1)
+        self.assertRegex(
+            html,
+            r"<li>\s*<p>题干</p>\s*<p>答案段。</p>\s*</li>",
+        )
 
     def test_site_nav_gate_accepts_all_current_page_fragments(self):
         source = "## 章名\n### 6.1 主节\n#### 子节\n"

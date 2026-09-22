@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 1 章 · 问题定义与双耳启示 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="fcda0545e596"><style>
+<meta name="source-digest" content="f619c708bea4"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -14,6 +14,7 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .side .chap{margin:10px 0 2px;font-weight:700}.side .chap.cur{color:#c0392b}
 .side ul{margin:2px 0 6px;padding-left:16px;color:#666}.side li{margin:2px 0}
 .main{flex:1;min-width:0;padding:28px 36px;background:#fff}
+.main p{margin:0 0 1.05em}.main li>p{margin:.35em 0}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
 table{border-collapse:collapse;margin:14px 0;max-width:100%}
 .table-scroll{max-width:100%;overflow-x:auto}
@@ -118,8 +119,16 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>它们没有覆盖开头的全部问题。设备自己的回声由声学回声消除（Acoustic Echo Cancellation，AEC）处理，房间拖尾由去混响处理，多人同时说话还需要语音分离；这些任务分别在第 6～8 章展开。</p>
 <p>定位、波束形成和追踪回答的问题不同，对应的评价指标也不同。下面先计算最基础的白噪声阵列增益。</p>
 <p><strong>三类阵列收益</strong></p>
-<p>麦克风阵列最容易算清的一项理论收益，是对白噪声的<strong>阵列增益</strong>：$M$ 元延迟求和阵列在理想条件下可得到 $10\log_{10}M$ dB（功率 2 倍约 3 dB，10 倍为 10 dB；4 麦约 6 dB、8 麦约 9 dB）。这里的条件是：各通道噪声互不相关、目标可按远场平面波对齐、各麦增益和相位一致。定向干扰、弥散混响和模型失配不能直接并入这一个数字；它们要分别看零陷、DI 与稳健性，具体收益随场景变化。<a href="https://course.ece.cmu.edu/~ece792/handouts/KumataniEtAl12.pdf" title="citation">Kumatani–McDonough–Raj《Microphone Array Processing for Distant Speech Recognition》CMU 课程讲义，2012</a></p>
-<p>这三类收益不能混用。$10\log_{10}M$ 描述独立、等功率通道噪声下的 WNG，延迟求和阵列在理想无失真归一化下达到这一数值。四面八方到来的<strong>弥散场</strong>，例如晚期混响，要用<strong>指向性指数（Directivity Index，DI）</strong>评价；超指向设计可获得高于同麦数延迟求和阵列的 DI，但通常会牺牲 WNG（§5.3）。单个定向干扰则看零陷深度，§5.4 的算例给出一个 −24 dB 零陷。三种声场分别对应 WNG、DI 和零陷深度，不能用其中一个指标替代另外两个。</p>
+<p>麦克风阵列最容易算清的一项理论收益，是对白噪声的<strong>阵列增益</strong>：$M$ 元延迟求和阵列在理想条件下可得到 $10\log_{10}M$ dB。功率 2 倍约为 3 dB，10 倍为 10 dB；4 麦约为 6 dB，8 麦约为 9 dB。</p>
+<p>这个结果要求各通道噪声互不相关、目标可按远场平面波对齐，而且各麦克风的增益和相位一致。<a href="https://course.ece.cmu.edu/~ece792/handouts/KumataniEtAl12.pdf" title="citation">Kumatani–McDonough–Raj《Microphone Array Processing for Distant Speech Recognition》CMU 课程讲义，2012</a></p>
+<p>定向干扰、弥散混响和模型失配不能直接并入这一个数字。它们要分别检查零陷、DI 与稳健性，具体收益随场景变化。</p>
+<p>三类声场对应三种不同收益：</p>
+<ul>
+<li>对独立、等功率通道噪声，用 WNG 评价。延迟求和阵列在理想无失真归一化下达到 $10\log_{10}M$。</li>
+<li>对四面八方到来的<strong>弥散场</strong>，例如晚期混响，用<strong>指向性指数（Directivity Index，DI）</strong>评价。超指向设计可获得高于同麦数延迟求和阵列的 DI，但通常会牺牲 WNG（§5.3）。</li>
+<li>对单个定向干扰，检查零陷深度。§5.4 的算例给出一个 −24 dB 零陷。</li>
+</ul>
+<p>WNG、DI 和零陷深度的声场假设不同，不能用其中一个指标替代另外两个。</p>
 <p><strong>白噪声增益的推导</strong>（各麦噪声相互独立）：</p>
 <ol>
 <li><strong>信号侧</strong>：各麦收到的是“同一个声音错开一点时间”，对齐后同相相加——幅度变成 $M$ 倍，所以功率变成 $M^2$ 倍（功率正比于幅度的平方）；</li>
@@ -133,9 +142,19 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>从阵列模型看，双耳可以近似为带有头部散射的双传感器系统。人类主要利用三组线索判断声源方向，并在嘈杂环境中进行选择性聆听：</p>
 <p><img alt="图1 人类双耳听觉的定位线索" src="../figures/fig01_binaural.png" onerror="this.alt+='（图缺失）'" /></p>
 <ol>
-<li><strong>ITD（双耳时间差）</strong>：声音先到近耳、后到远耳，正侧面时两耳的时间差最大，量级约为数百微秒；按头部半径 8.75 cm、声速 343 m/s 的 Woodworth 刚性球模型计算，正侧面约为 656 μs，即约 0.66 ms（图1(b)）。图中“正前方偏 1°约对应 9 μs”只是该几何模型的换算，不是普适的听觉阈值。实际可辨阈值随频率、声级、刺激类型和实验任务变化。Woodworth 模型是高频射线近似，低频窄带声还需考虑绕射模型。<a href="https://doi.org/10.1121/1.4861243" title="citation">Aaronson 与 Hartmann 对 Woodworth 模型假设及适用范围的检验，JASA 2014</a>。频率升高后，相位会绕圈，听觉神经的波形锁相也逐渐减弱，因此纯相位 ITD 会出现歧义。</li>
-<li><strong>ILD（双耳声级差，Interaural Level Difference）</strong>：头颅遮挡使远耳听到的高频通常更弱，低频绕射则会减小两耳声级差。瑞利<strong>双重理论（duplex theory）</strong>把低频细结构 ITD 和高频 ILD 视为主要线索，但它不是互不重叠的硬分界：<a href="https://doi.org/10.1121/1.4795778" title="citation">Brughera、Dunai 与 Hartmann 的纯音实验</a>显示，细结构 ITD 的高频可辨上限因人而异，并在略高于 1.4 kHz 后消失；低频仍可能存在 ILD；<a href="https://doi.org/10.1121/1.1570431" title="citation">Bernstein 与 Trahiotis 的高频调制刺激实验</a>则说明，高频载波的包络 ITD 仍可影响侧向感知，不能与纯音相位 ITD 混为一谈。图1(c)据此只画理论线索区和约 1.4 kHz 的非硬性边界，不画未经测量支持的人体 ILD 数值曲线。机器阵列也不能照搬这一频段划分：当均匀阵间距不满足半波长安全条件时，高频窄带相位会产生空间混叠，但非均匀几何、实测阵列流形和宽带融合仍可利用高频信息（§2.6、§3.2）。</li>
-<li><strong>HRTF（头相关传递函数，Head-Related Transfer Function）</strong>：耳廓的褶皱，加上头和肩膀的散射，对不同方向、尤其是不同俯仰角的声音产生不同的滤波（谱峰/谱谷位置变化）。这种方向相关谱形是人类判断俯仰和减少前后混淆的重要线索之一；判断还会联合双耳时差、双耳声级差、头部运动和既有听觉经验，不能把 HRTF 写成唯一依据。经典综述可参见 <a href="https://doi.org/10.1146/annurev.ps.42.020191.001031" title="citation">Middlebrooks 与 Green 1991</a>。</li>
+<li>
+<p><strong>ITD（双耳时间差）</strong>：声音先到近耳、后到远耳，正侧面时两耳的时间差最大，量级约为数百微秒；按头部半径 8.75 cm、声速 343 m/s 的 Woodworth 刚性球模型计算，正侧面约为 656 μs，即约 0.66 ms（图1(b)）。</p>
+<p>图中“正前方偏 1°约对应 9 μs”只是该几何模型的换算，不是普适的听觉阈值。实际可辨阈值随频率、声级、刺激类型和实验任务变化。Woodworth 模型是高频射线近似，低频窄带声还需考虑绕射模型。<a href="https://doi.org/10.1121/1.4861243" title="citation">Aaronson 与 Hartmann 对 Woodworth 模型假设及适用范围的检验，JASA 2014</a>。频率升高后，相位会绕圈，听觉神经的波形锁相也逐渐减弱，因此纯相位 ITD 会出现歧义。</p>
+</li>
+<li>
+<p><strong>ILD（双耳声级差，Interaural Level Difference）</strong>：头颅遮挡使远耳听到的高频通常更弱，低频绕射则会减小两耳声级差。</p>
+<p>瑞利<strong>双重理论（duplex theory）</strong>把低频细结构 ITD 和高频 ILD 视为主要线索，但它不是互不重叠的硬分界。<a href="https://doi.org/10.1121/1.4795778" title="citation">Brughera、Dunai 与 Hartmann 的纯音实验</a>显示，细结构 ITD 的高频可辨上限因人而异，并在略高于 1.4 kHz 后消失；低频仍可能存在 ILD。<a href="https://doi.org/10.1121/1.1570431" title="citation">Bernstein 与 Trahiotis 的高频调制刺激实验</a>则说明，高频载波的包络 ITD 仍可影响侧向感知，不能与纯音相位 ITD 混为一谈。</p>
+<p>图1(c)据此只画理论线索区和约 1.4 kHz 的非硬性边界，不画未经测量支持的人体 ILD 数值曲线。机器阵列也不能照搬这一频段划分：当均匀阵间距不满足半波长安全条件时，高频窄带相位会产生空间混叠，但非均匀几何、实测阵列流形和宽带融合仍可利用高频信息（§2.6、§3.2）。</p>
+</li>
+<li>
+<p><strong>HRTF（头相关传递函数，Head-Related Transfer Function）</strong>：耳廓的褶皱，加上头和肩膀的散射，对不同方向、尤其是不同俯仰角的声音产生不同的滤波（谱峰/谱谷位置变化）。</p>
+<p>这种方向相关谱形是人类判断俯仰和减少前后混淆的重要线索之一。判断还会联合双耳时差、双耳声级差、头部运动和既有听觉经验，不能把 HRTF 写成唯一依据。经典综述可参见 <a href="https://doi.org/10.1146/annurev.ps.42.020191.001031" title="citation">Middlebrooks 与 Green 1991</a>。</p>
+</li>
 </ol>
 <p>这些听觉线索在机器阵列中都有对应的观测量或处理方法。</p>
 <p><strong>双耳线索与阵列方法的对应关系</strong></p>
@@ -176,7 +195,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 </tbody>
 </table></div>
-<p>人类用两只耳朵、头部与耳廓产生 ITD、ILD 和 HRTF，再由神经系统融合这些线索。硬件形态先提供可观测信息，后端算法再利用信息；机器阵列也是同一分工。解析模型负责约束和可解释边界，数据驱动方法可补足难以精确建模的细节。</p>
+<p>人类用两只耳朵、头部与耳廓产生 ITD、ILD 和 HRTF，再由神经系统融合这些线索。硬件形态先提供可观测信息，后端算法再利用信息；机器阵列也是同一分工。</p>
+<p>解析模型负责约束和可解释边界，数据驱动方法可补足难以精确建模的细节。</p>
 <p>第 2 章将从传播时延出发，把这些空间差异写成阵列信号模型。</p>
 <hr />
 <blockquote>

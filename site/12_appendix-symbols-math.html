@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 A · 符号术语数学 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="fcda0545e596"><style>
+<meta name="source-digest" content="f619c708bea4"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -14,6 +14,7 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .side .chap{margin:10px 0 2px;font-weight:700}.side .chap.cur{color:#c0392b}
 .side ul{margin:2px 0 6px;padding-left:16px;color:#666}.side li{margin:2px 0}
 .main{flex:1;min-width:0;padding:28px 36px;background:#fff}
+.main p{margin:0 0 1.05em}.main li>p{margin:.35em 0}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
 table{border-collapse:collapse;margin:14px 0;max-width:100%}
 .table-scroll{max-width:100%;overflow-x:auto}
@@ -94,7 +95,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-78b6668a18">附录 A：符号、术语与数学基础</h1>
 <p>本附录沿用 12.1～12.3 的节号，便于与正文既有引用对应；下一篇是附录 B。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-12-1">12.1 符号表</h2>
-<p>约定同 §2.3：<strong>斜体 = 标量，头顶箭头 = 向量，加粗大写 = 矩阵</strong>；$^H$ 共轭转置、$^\top$ 转置、$\hat{\ }$ 估计值；$X(f)$、$X(f_k,\ell)$ 类大写字母为逐频点复数<strong>标量</strong>（语音文献习惯）。本书采用前向傅里叶核 $e^{-\mathrm j2\pi ft}$。麦 1 位于 $x=0$，麦 2 位于 $+x$；正横为 0°，正角朝麦 2；$\vec u$ 从阵列指向声源，传播方向为 $-\vec u$。</p>
+<p>约定同 §2.3：<strong>斜体 = 标量，头顶箭头 = 向量，加粗大写 = 矩阵</strong>；$^H$ 表示共轭转置，$^\top$ 表示转置，$\hat{\ }$ 表示估计值。$X(f)$、$X(f_k,\ell)$ 这类大写字母按语音文献惯例表示逐频点复数<strong>标量</strong>。</p>
+<p>本书采用前向傅里叶核 $e^{-\mathrm j2\pi ft}$。</p>
+<p>阵列坐标约定为：麦 1 位于 $x=0$，麦 2 位于 $+x$；正横为 0°，正角朝麦 2；$\vec u$ 从阵列指向声源，传播方向为 $-\vec u$。</p>
 <p><strong>字母复用</strong>（与 §2.3 一致）：受文献惯例所限，$k$ 可表示频点索引、波数或 WPE 的滞后帧号；$D$ 可表示阵列孔径或 PHD 强度函数；$\lambda$ 可表示波长、WPE 功率谱或矩阵特征值；$K$ 可表示声源数或 WPE 预测阶数；$s$ 可表示源信号或追踪状态。具体含义以所在公式的定义为准。需要区分 STFT 网格时，本书用 $k$ 表示频点索引、$f_k=kf_s/N$ 表示对应的 Hz 频率、$\ell$ 表示帧索引；连续时间仍用 $t$，离散采样索引用 $n$。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -222,8 +225,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 </tbody>
 </table></div>
-<p>3 分钟手算（12.1）：在无失真归一化、各通道自噪声独立且等功率时，$M=6$ 的 DSB WNG 是多少 dB？$2\times2$ 对角协方差 $\mathrm{diag}(4, 1)$ 的特征值是哪两个数？
-答案：$10\log_{10}6\approx7.8$ dB；对角阵的特征值就是对角元 4 和 1。这里的特征向量是两条传感器空间坐标轴，不一定对应真实空间中的两个入射方向。</p>
+<p>3 分钟手算（12.1）：在无失真归一化、各通道自噪声独立且等功率时，$M=6$ 的 DSB WNG 是多少 dB？$2\times2$ 对角协方差 $\mathrm{diag}(4, 1)$ 的特征值是哪两个数？</p>
+<p>答案：$10\log_{10}6\approx7.8$ dB；对角阵的特征值就是对角元 4 和 1。这里的特征向量是两条传感器空间坐标轴，不一定对应真实空间中的两个入射方向。</p>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-12-2">12.2 术语词典</h2>
 <p>下表按主题解释正文和相关文献中常见的术语。</p>
 <span id="sec-4" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-e2e1cb6329">信号与数学基础</h3>
@@ -656,12 +659,18 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 </tbody>
 </table></div>
-<p>3 分钟手算（12.2）：幅度减半是多少 dB？功率减半又是多少 dB？这是两个不同的物理变化；§12.3 还会说明同一物理变化怎样用幅度比或功率比等价表示。
-答案：幅度减半为 $20\log_{10}0.5\approx-6$ dB；功率减半为 $10\log_{10}0.5\approx-3$ dB。前者对应功率变为四分之一，后者对应幅度变为 $1/\sqrt{2}$。</p>
+<p>3 分钟手算（12.2）：幅度减半是多少 dB？功率减半又是多少 dB？这是两个不同的物理变化；§12.3 还会说明同一物理变化怎样用幅度比或功率比等价表示。</p>
+<p>答案：幅度减半为 $20\log_{10}0.5\approx-6$ dB；功率减半为 $10\log_{10}0.5\approx-3$ dB。前者对应功率变为四分之一，后者对应幅度变为 $1/\sqrt{2}$。</p>
 <span id="sec-10" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-12-3">12.3 预备知识速览</h2>
 <p>本节为零基础读者准备，只讲“够用”的程度。</p>
-<p><strong>① 复数与相位——为什么信号要用复数表示。</strong> 本书用 $e^{+j2\pi ft}$ 表示正频率复正弦，并采用前向傅里叶变换 $X(f)=\int x(t)e^{-j2\pi ft}\,\mathrm dt$。复数可写成 $z=Ae^{j\phi}$，且 $e^{j\phi}=\cos\phi+j\sin\phi$。在此约定下，延迟 $\tau$ 对应乘子 $e^{-j2\pi f\tau}$。对麦 1 参考的远场导向矢量，$\tau_{m1}=-(\vec r_m-\vec r_1)^\top\vec u/c$，所以 $a_m=e^{-j2\pi f\tau_{m1}}=e^{+j2\pi f(\vec r_m-\vec r_1)^\top\vec u/c}$。若采用相反傅里叶约定，相关公式的相位符号也要整体改变，不能只改其中一式（§2.3、§4.2）。</p>
-<p><strong>② 分贝 dB——比值的对数表示。</strong> 能量比用 $10\log_{10}(\cdot)$，幅度比用 $20\log_{10}(\cdot)$。系数相差一倍，是因为相同阻抗下功率与幅度平方成正比。因此同一物理变化用两种比值表示时，dB 数相同：幅度变为 0.5 时功率变为 0.25，$20\log_{10}0.5=10\log_{10}0.25\approx-6$ dB。</p>
+<p><strong>① 复数与相位——为什么信号要用复数表示</strong></p>
+<p>本书用 $e^{+j2\pi ft}$ 表示正频率复正弦，并采用前向傅里叶变换 $X(f)=\int x(t)e^{-j2\pi ft}\,\mathrm dt$。复数可写成 $z=Ae^{j\phi}$，且 $e^{j\phi}=\cos\phi+j\sin\phi$。</p>
+<p>在此约定下，延迟 $\tau$ 对应乘子 $e^{-j2\pi f\tau}$。对麦 1 参考的远场导向矢量，$\tau_{m1}=-(\vec r_m-\vec r_1)^\top\vec u/c$，所以</p>
+<p>$$a_m=e^{-j2\pi f\tau_{m1}}=e^{+j2\pi f(\vec r_m-\vec r_1)^\top\vec u/c}\text{。}$$</p>
+<p>若采用相反傅里叶约定，相关公式的相位符号也要整体改变，不能只改其中一式（§2.3、§4.2）。</p>
+<p><strong>② 分贝 dB——比值的对数表示</strong></p>
+<p>能量比用 $10\log_{10}(\cdot)$，幅度比用 $20\log_{10}(\cdot)$。系数相差一倍，是因为相同阻抗下功率与幅度平方成正比。</p>
+<p>因此，同一物理变化用两种比值表示时，dB 数相同：幅度变为 0.5 时功率变为 0.25，$20\log_{10}0.5=10\log_{10}0.25\approx-6$ dB。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
@@ -704,20 +713,41 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tbody>
 </table></div>
 <p>对数把连乘转为相加，便于表示跨越多个数量级的增益、信噪比和衰减。</p>
-<p>dB 练习：① 功率先乘 4 再乘 2，总增益是多少 dB？② 电压增益为 −6 dB 时，幅度比约为多少？
-答案：① $10\log_{10}(4\times2)\approx9$ dB；② 幅度约减半，功率约为原来的四分之一。</p>
+<p>dB 练习：① 功率先乘 4 再乘 2，总增益是多少 dB？② 电压增益为 −6 dB 时，幅度比约为多少？</p>
+<p>答案：① $10\log_{10}(4\times2)\approx9$ dB；② 幅度约减半，功率约为原来的四分之一。</p>
 <p><strong>SNR 换算例。</strong> 目标功率为 3、噪声功率为 1 时，线性 SNR 为 3，对应 $10\log_{10}3\approx4.8$ dB。若处理后输出 SNR 为 12 dB，则 SNR 增益约为 $12-4.8=7.2$ dB。输入 SNR、输出 SNR 和 SNR 增益是三个不同的量（§5.1）。</p>
-<p><strong>③ 卷积与相关。</strong> 卷积 $y=x*h$ 表示信号 $x$ 经过线性时不变系统 $h$ 后的输出；在固定声源和接收位置的近似下，$h$ 可以取房间脉冲响应（§2.4）。相关 $R(\tau)$ 衡量两段信号在相对位移 $\tau$ 下的相似度；峰值位置可作为时延候选（§4.2）。傅里叶变换把线性卷积转成频域乘法，配合快速傅里叶变换可降低长卷积的计算量，但分帧、补零和重叠相加仍要按实现条件处理。</p>
-<p><strong>④ 期望、方差与协方差矩阵。</strong> 期望 $E[\cdot]$ 表示统计平均；方差描述变量偏离均值的平方平均；协方差描述两个中心化变量共同变化的程度。把 $M$ 个麦克风两两协方差排成矩阵就是空间协方差矩阵。§2.5 的常用估计式未显式减均值，因此在零均值假设下才与协方差相同；否则应称未中心化二阶矩。</p>
-<p><strong>⑤ 最小二乘。</strong> 方程比未知数多时通常没有精确解，最小二乘求使总残差平方最小的 $\hat{\vec{x}}$：$\min_{\vec{x}}\|\mathbf{A}\vec{x}-\vec{b}\|^2$。当 $\mathbf A$ 满列秩时，$\hat{\vec{x}}=(\mathbf{A}^H\mathbf{A})^{-1}\mathbf{A}^H\vec{b}$；秩不足或条件很差时，应使用 Moore–Penrose 伪逆、QR/SVD 或正则化，不能直接求逆。TDOA 几何解算（§4.4）和 WPE 系数估计（§7.1）都会用到这一思想。</p>
-<p><strong>拉格朗日四步模板（MVDR）</strong>。复约束必须同时包含约束及其共轭，常写成实值函数</p>
+<p><strong>③ 卷积与相关</strong></p>
+<p>卷积 $y=x*h$ 表示信号 $x$ 经过线性时不变系统 $h$ 后的输出；在固定声源和接收位置的近似下，$h$ 可以取房间脉冲响应（§2.4）。</p>
+<p>相关 $R(\tau)$ 衡量两段信号在相对位移 $\tau$ 下的相似度；峰值位置可作为时延候选（§4.2）。</p>
+<p>傅里叶变换把线性卷积转成频域乘法，配合快速傅里叶变换可降低长卷积的计算量，但分帧、补零和重叠相加仍要按实现条件处理。</p>
+<p><strong>④ 期望、方差与协方差矩阵</strong></p>
+<p>期望 $E[\cdot]$ 表示统计平均；方差描述变量偏离均值的平方平均；协方差描述两个中心化变量共同变化的程度。把 $M$ 个麦克风两两协方差排成矩阵，就是空间协方差矩阵。</p>
+<p>§2.5 的常用估计式未显式减均值，因此在零均值假设下才与协方差相同；否则应称未中心化二阶矩。</p>
+<p><strong>⑤ 最小二乘</strong></p>
+<p>方程比未知数多时通常没有精确解。最小二乘求使总残差平方最小的 $\hat{\vec{x}}$：</p>
+<p>$$\min_{\vec{x}}\|\mathbf{A}\vec{x}-\vec{b}\|^2\text{。}$$</p>
+<p>当 $\mathbf A$ 满列秩时，$\hat{\vec{x}}=(\mathbf{A}^H\mathbf{A})^{-1}\mathbf{A}^H\vec{b}$。秩不足或条件很差时，应使用 Moore–Penrose 伪逆、QR/SVD 或正则化，不能直接求逆。</p>
+<p>TDOA 几何解算（§4.4）和 WPE 系数估计（§7.1）都会用到这一思想。</p>
+<p><strong>拉格朗日四步模板（MVDR）</strong></p>
+<p><strong>第 1 步：写拉格朗日函数。</strong> 复约束必须同时包含约束及其共轭，常写成实值函数</p>
 <p>$$L=\vec{w}^H\mathbf{R}\vec{w}+2\operatorname{Re}\!\left\{\lambda^*(\vec{w}^H\vec{a}-1)\right\}\text{。}$$</p>
-<p>对 $\vec w^*$ 做 Wirtinger 求导并令零，可写成 $\mathbf R\vec w+\lambda^*\vec a=0$；乘子的命名可吸收共轭与负号，因此得到 $\vec w\propto\mathbf R^{-1}\vec a$。再代入 $\vec w^H\vec a=1$ 定出比例系数，即得 §5.4 式(5-1)。LCMV 把标量约束和乘子换成向量形式（§5.5）。</p>
+<p><strong>第 2 步：求驻点。</strong> 对 $\vec w^*$ 做 Wirtinger 求导并令零，得到 $\mathbf R\vec w+\lambda^*\vec a=0$。</p>
+<p><strong>第 3 步：写出比例关系。</strong> 乘子的命名可吸收共轭与负号，因此得到 $\vec w\propto\mathbf R^{-1}\vec a$。</p>
+<p><strong>第 4 步：代回约束。</strong> 用 $\vec w^H\vec a=1$ 定出比例系数，即得 §5.4 式(5-1)。LCMV 把标量约束和乘子换成向量形式（§5.5）。</p>
 <p><strong>Wirtinger 求导。</strong> 对实值目标函数，可在 Wirtinger 微积分中把 $\vec{w}$ 和 $\vec{w}^*$ 视为形式上独立的变量，对 $\vec{w}^*$ 求偏导并令其为零。§5.4 的脚注给出与实部、虚部分别求导等价的写法。</p>
-<p><strong>⑥ 特征值分解。</strong> 对 Hermitian 协方差矩阵可写 $\mathbf{R}=\mathbf{E}\boldsymbol\Lambda\mathbf{E}^H$。特征向量是传感器观测空间中的正交主轴，特征值表示沿这些主轴的能量；它们通常不等于真实空间中的 DOA。MUSIC（§4.6）在独立源、白噪声和模型正确等条件下，把较大的特征值所张成的空间解释为信号子空间，把噪声底对应的空间解释为噪声子空间。</p>
-<p>3 分钟手算（12.3）：协方差 $\begin{bmatrix}4&0\\0&1\end{bmatrix}$ 的特征值和特征向量各是什么？若两个共轭对称的非对角元都变成 0.5，哪个特征值变大？
-答案：特征值为 4 和 1，对应特征向量可取 $[1,0]^{\top}$ 和 $[0,1]^{\top}$。非对角元都变为 0.5 后，两个特征值为 $(5\pm\sqrt{10})/2$，约 4.08 和 0.92；通道相关性使特征值间隔增大。</p>
-<p><strong>病态矩阵与对角加载。</strong> 当最大、最小奇异值相差很大时，矩阵条件数高，求逆会放大数据和舍入误差。低频小间距的超指向设计（§5.3）是常见例子。绝对加载写作 $\mathbf R+\delta\mathbf I$，$\delta$ 与协方差元素同量纲；相对加载写作 $\mathbf R+\eta\operatorname{tr}(\mathbf R)\mathbf I/M$，$\eta$ 无量纲，整体缩放 $\mathbf R$ 时加载也同比缩放。两者都可抬高小特征值，但会改变最优权重和指向性。报告参数时必须说明采用哪一种口径，不能只写一个无单位的“$\varepsilon$”。附录 B 第 8 题可比较加载前后的 WNG、DI 与条件数；数值由脚本参数决定，不预设固定区间。</p>
+<p><strong>⑥ 特征值分解</strong></p>
+<p>对 Hermitian 协方差矩阵可写 $\mathbf{R}=\mathbf{E}\boldsymbol\Lambda\mathbf{E}^H$。特征向量是传感器观测空间中的正交主轴，特征值表示沿这些主轴的能量；它们通常不等于真实空间中的 DOA。</p>
+<p>MUSIC（§4.6）在独立源、白噪声和模型正确等条件下，把较大的特征值所张成的空间解释为信号子空间，把噪声底对应的空间解释为噪声子空间。</p>
+<p>3 分钟手算（12.3）：协方差 $\begin{bmatrix}4&0\\0&1\end{bmatrix}$ 的特征值和特征向量各是什么？若两个共轭对称的非对角元都变成 0.5，哪个特征值变大？</p>
+<p>答案：特征值为 4 和 1，对应特征向量可取 $[1,0]^{\top}$ 和 $[0,1]^{\top}$。非对角元都变为 0.5 后，两个特征值为 $(5\pm\sqrt{10})/2$，约 4.08 和 0.92；通道相关性使特征值间隔增大。</p>
+<p><strong>病态矩阵与对角加载</strong></p>
+<p>当最大、最小奇异值相差很大时，矩阵条件数高，求逆会放大数据和舍入误差。低频小间距的超指向设计（§5.3）是常见例子。</p>
+<ul>
+<li>绝对加载写作 $\mathbf R+\delta\mathbf I$，$\delta$ 与协方差元素同量纲；</li>
+<li>相对加载写作 $\mathbf R+\eta\operatorname{tr}(\mathbf R)\mathbf I/M$，$\eta$ 无量纲，整体缩放 $\mathbf R$ 时加载也同比缩放。</li>
+</ul>
+<p>两者都可抬高小特征值，但会改变最优权重和指向性。报告参数时必须说明采用哪一种口径，不能只写一个无单位的“$\varepsilon$”。</p>
+<p>附录 B 第 8 题可比较加载前后的 WNG、DI 与条件数；数值由脚本参数决定，不预设固定区间。</p>
 <hr />
 <blockquote>
 <p>📄 本篇信息：配图 0 张 ｜ <a href="./index.html">回首页</a></p>

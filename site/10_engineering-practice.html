@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 10 章 · 工程实现、评测与产业实践 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="fcda0545e596"><style>
+<meta name="source-digest" content="f619c708bea4"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -14,6 +14,7 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .side .chap{margin:10px 0 2px;font-weight:700}.side .chap.cur{color:#c0392b}
 .side ul{margin:2px 0 6px;padding-left:16px;color:#666}.side li{margin:2px 0}
 .main{flex:1;min-width:0;padding:28px 36px;background:#fff}
+.main p{margin:0 0 1.05em}.main li>p{margin:.35em 0}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
 table{border-collapse:collapse;margin:14px 0;max-width:100%}
 .table-scroll{max-width:100%;overflow-x:auto}
@@ -111,11 +112,55 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <hr />
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-5a84f59f93">10. 工程实现、评测与产业实践</h1>
 <p>本章把前九章的算法放进真实系统，讨论模块启用条件、信号取点、资源预算和验收方法。</p>
-<p>本章常用缩写如下：音频前端（Audio Front End，AFE）、声学回声消除（Acoustic Echo Cancellation，AEC）、加权预测误差去混响（Weighted Prediction Error，WPE）、噪声抑制（Noise Suppression，NS）、自动增益控制（Automatic Gain Control，AGC）、语音活动检测（Voice Activity Detection，VAD）、关键词唤醒（Keyword Spotting，KWS）、自动语音识别（Automatic Speech Recognition，ASR）、采样率偏移（Sampling Rate Offset，SRO）和实时因子（Real-Time Factor，RTF）。本章中的 RTF 均指实时因子；波束形成中的“目标相对传递函数”（relative transfer function）不缩写为 RTF，以免混淆。</p>
+<p>本章常用缩写如下：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">缩写</th>
+<th scope="col">中文名与英文全称</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AFE</td>
+<td>音频前端（Audio Front End）</td>
+</tr>
+<tr>
+<td>AEC</td>
+<td>声学回声消除（Acoustic Echo Cancellation）</td>
+</tr>
+<tr>
+<td>WPE</td>
+<td>加权预测误差去混响（Weighted Prediction Error）</td>
+</tr>
+<tr>
+<td>NS / AGC</td>
+<td>噪声抑制（Noise Suppression）/自动增益控制（Automatic Gain Control）</td>
+</tr>
+<tr>
+<td>VAD</td>
+<td>语音活动检测（Voice Activity Detection）</td>
+</tr>
+<tr>
+<td>KWS / ASR</td>
+<td>关键词唤醒（Keyword Spotting）/自动语音识别（Automatic Speech Recognition）</td>
+</tr>
+<tr>
+<td>SRO</td>
+<td>采样率偏移（Sampling Rate Offset）</td>
+</tr>
+<tr>
+<td>RTF</td>
+<td>实时因子（Real-Time Factor）</td>
+</tr>
+</tbody>
+</table></div>
+<p>本章中的 RTF 均指实时因子；波束形成中的“目标相对传递函数”（relative transfer function）不缩写为 RTF，以免混淆。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-1">10.1 参考链路与端到端延迟</h2>
-<p>音频前端没有适用于所有产品的固定流水顺序。图 23 给出的是一条参考链路：</p>
-<p>音频主链是“多通道采集 → AEC → WPE → 解析波束形成 → 单通道 NS/AGC → KWS/ASR”。定位与追踪读取多通道特征，只向解析波束提供带时间戳的方向状态；说话人分割约束 GSS/cACGMM 掩码，掩码与同一 WPE 阶段输出、未做方向归一化的多通道 STFT 一起形成目标/干扰 SCM，再送入波束形成。神经或连续语音分离（Continuous Speech Separation，CSS）是 WPE 后绕过解析波束的替代音频路径，不与“GSS 掩码—SCM—波束”合并成一个模块。</p>
-<p>它表达模块间的依赖，不表示每个项目都要启用全部模块。</p>
+<p>音频前端没有适用于所有产品的固定流水顺序。图 23 给出的是一条参考链路，只表达模块间的依赖，不表示每个项目都要启用全部模块。</p>
+<p>音频主链是“多通道采集 → AEC → WPE → 解析波束形成 → 单通道 NS/AGC → KWS/ASR”。</p>
+<p>定位与追踪读取多通道特征，只向解析波束提供带时间戳的方向状态。说话人分割约束 GSS/cACGMM 掩码；掩码与同一 WPE 阶段输出、未做方向归一化的多通道 STFT 一起形成目标/干扰 SCM，再送入波束形成。</p>
+<p>神经或连续语音分离（Continuous Speech Separation，CSS）是 WPE 后绕过解析波束的替代音频路径，不与“GSS 掩码—SCM—波束”合并成一个模块。</p>
 <ul>
 <li>设备不播放声音，或不需要边播边听时，可以不启用 AEC。</li>
 <li>晚期混响已不影响目标指标时，可以不启用 WPE。</li>
@@ -124,8 +169,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>VAD、远端活动检测和双讲检测是控制信号。它们不应画成主音频流中的串行处理框。</li>
 </ul>
 <p><img alt="图23 前端处理参考链路" src="../figures/fig23_pipeline.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图 23 按较完整的语音交互系统绘制。远端音频先经过混音、均衡和音量控制；AEC 的 render tap 取在这些播放处理之后、DAC/功放之前，扬声器经房间和机壳耦合回麦克风形成声学回路。虚线表示活动控制，实线表示音频、特征或统计量依赖。图中 AEC 的“最先处理”是指：启用 AEC 时，应在会破坏播放参考与回声之间线性关系的 NS、AGC 等处理之前消除回声，并不表示任何系统都必须以 AEC 开头。确定实际模块后，还要重新核对各信号取点。</p>
-<p>AEC 通常位于会改变回声路径关系的非线性处理之前。参考信号应覆盖实际播放链中的增益、均衡和混音变化。若参考取在这些处理之前，AEC 看到的参考与扬声器实际播放内容不一致。WPE、波束和 NS 的先后则要结合实现判断：多通道 WPE 需要多通道输入；单通道 WPE 可以放在波束之后；神经网络若联合完成波束与去混响，也不能再套用传统串行顺序。</p>
+<p>图 23 按较完整的语音交互系统绘制。远端音频先经过混音、均衡和音量控制；AEC 的 render tap 取在这些播放处理之后、DAC/功放之前，扬声器经房间和机壳耦合回麦克风形成声学回路。虚线表示活动控制，实线表示音频、特征或统计量依赖。</p>
+<p>图中 AEC 的“最先处理”是指：启用 AEC 时，应在会破坏播放参考与回声之间线性关系的 NS、AGC 等处理之前消除回声，并不表示任何系统都必须以 AEC 开头。</p>
+<p>确定实际模块后，还要重新核对各信号取点。AEC 通常位于会改变回声路径关系的非线性处理之前。参考信号应覆盖实际播放链中的增益、均衡和混音变化。若参考取在这些处理之前，AEC 看到的参考与扬声器实际播放内容不一致。WPE、波束和 NS 的先后则要结合实现判断：多通道 WPE 需要多通道输入；单通道 WPE 可以放在波束之后；神经网络若联合完成波束与去混响，也不能再套用传统串行顺序。</p>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-1-1">10.1.1 延迟不能把每个模块的耗时直接相加</h3>
 <p>端到端延迟应沿实际关键路径测量，并分成五类：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -172,8 +218,11 @@ L_p=L_{\text{lookahead}}+L_{\text{buffer}}+L_{\text{compute}}+L_{\text{schedule}
 \tag{10-1}
 $$</p>
 <p><img alt="图25 延迟预算示意" src="../figures/fig25_latency_budget.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图 25(a) 把“采集/帧就绪等待”示意为 32 ms，再与未来帧前瞻 16 ms、首个判决确认 25 ms、计算 14 ms 和调度 6 ms 组成一条 93 ms 的示例关键路径。这里的 32 ms 是工作表示例，不等同于 STFT 窗长，也不是所有 32 ms 窗都会增加 32 ms 算法等待；窗的左右对齐、声卡周期、帧移和模块何时开始计算都会改变实际值。图 25(b) 另行区分三条口径：连续增强音频只计其实际前瞻、缓冲、计算与调度；首个 KWS/ASR 判决还可能等待确认窗；端点 hangover 只延后“语音结束”事件，不应自动计入连续音频或首个判决。WPE 历史帧、追踪状态、递归协方差和因果 AGC 时间常数是历史状态，也不能机械当作未来等待。</p>
-<p>这些数字只说明记账方法，没有包含图外可能存在的解码和交互延迟。实际系统应在声学输入与最终输出之间记录时间戳或回采脉冲，分别测量冷启动、稳定运行和最不利调度条件。把 STFT 窗长从 32 ms 改为 16 ms，也不等于必然省下 16 ms：只有依赖完整窗或未来样本的等待发生变化，关键路径才会缩短。</p>
+<p>图 25(a) 把“采集/帧就绪等待”示意为 32 ms，再与未来帧前瞻 16 ms、首个判决确认 25 ms、计算 14 ms 和调度 6 ms 组成一条 93 ms 的示例关键路径。这里的 32 ms 是工作表示例，不等同于 STFT 窗长，也不是所有 32 ms 窗都会增加 32 ms 算法等待；窗的左右对齐、声卡周期、帧移和模块何时开始计算都会改变实际值。</p>
+<p>图 25(b) 另行区分三条口径：连续增强音频只计其实际前瞻、缓冲、计算与调度；首个 KWS/ASR 判决还可能等待确认窗；端点 hangover 只延后“语音结束”事件，不应自动计入连续音频或首个判决。</p>
+<p>WPE 历史帧、追踪状态、递归协方差和因果 AGC 时间常数是历史状态，不能机械当作未来等待。</p>
+<p>这些数字只说明记账方法，没有包含图外可能存在的解码和交互延迟。实际系统应在声学输入与最终输出之间记录时间戳或回采脉冲，分别测量冷启动、稳定运行和最不利调度条件。</p>
+<p>把 STFT 窗长从 32 ms 改为 16 ms，也不等于必然省下 16 ms：只有依赖完整窗或未来样本的等待发生变化，关键路径才会缩短。</p>
 <p>延迟报告不能只有平均值。稳定运行阶段至少给出中位数（p50）与尾延迟（如 p95、p99）、样本数和测量时长；冷启动另报模型加载、内存分配和状态填充所需时间。若系统存在不同设备、网络或调度模式，应分别报告，而不是把所有样本混成一个分位数。测量点也要写清，例如“音频驱动时间戳 → 第一块可播放增强 PCM”与“音频入口 → 首个 ASR token”是两条不同关键路径。</p>
 <p>参考接口可按下表检查：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -256,7 +305,14 @@ $$</p>
 \tag{10-2}
 $$</p>
 <p>100 ppm（parts per million，百万分之一）即 $\varepsilon=100\times10^{-6}$。若不校正，1 秒累积 100 μs，10 分钟累积 60 ms。这里的 60 ms 是时间轴长期累积的错位，不能直接当成每一秒都存在的到达时间差（Time Difference of Arrival，TDOA），也不能据此直接换算成固定的波达方向（Direction of Arrival，DOA）偏差。定位退化取决于重对齐周期、分析窗、频带、阵列孔径和估计器。</p>
-<p>工程处理分三步：估计相对速率，按估计值重采样，再持续跟踪温漂。互相关峰漂移、相位漂移或专用导频都可用于估计。更新周期和允许残差应由最长连续运行时间、相干性要求及任务指标反推，不宜照搬固定 ppm 门限。能够共享硬件时钟时，应优先消除 SRO 来源；不能共享时钟时，再评估在线补偿。</p>
+<p>工程处理分三步：</p>
+<ol>
+<li>估计相对速率；</li>
+<li>按估计值重采样；</li>
+<li>持续跟踪温漂。</li>
+</ol>
+<p>互相关峰漂移、相位漂移或专用导频都可用于估计。更新周期和允许残差应由最长连续运行时间、相干性要求及任务指标反推，不宜照搬固定 ppm 门限。</p>
+<p>能够共享硬件时钟时，应优先消除 SRO 来源；不能共享时钟时，再评估在线补偿。</p>
 <span id="sec-6" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-2-2">10.2.2 增益变化与 AEC</h3>
 <p>AEC 前的时变增益会改变它要辨识的等效回声路径。设计时应记录每一级增益位于参考取点之前还是之后，并确保 AEC 能获知或跟踪这些变化。常见做法是：AEC 收敛和双讲期间保持前置增益稳定；发生削波风险时允许保护性衰减，同时重置或减小自适应步长。锁定时间、解锁条件和允许步进都应通过本机回声路径和双讲集确定，不存在通用的秒数或 dB 阈值。</p>
 <p>阵列标定应覆盖相对增益、相位/时延和麦克风坐标。位置误差造成的相位误差为</p>
@@ -359,10 +415,19 @@ $$</p>
 </tbody>
 </table></div>
 <p>WPE 正是利用语音及其晚期混响的统计关系估计预测滤波器，不能用“VAD 有话就冻结”作为通用规则。AEC 的控制则必须结合远端活动和双讲检测；仅用近端 VAD 无法判断滤波器是否有可学习的回声参考。</p>
-<p>VAD 的迟滞、挂起和预卷缓存应由语料中的短词、停顿和噪声脉冲调节。KWS 是否绕过 VAD、是否持续运行、从 AEC 后还是增强后取信号，也取决于功耗和训练域。阈值需要在指定误唤醒率下报告漏唤醒率，不能只给一个孤立分数。</p>
+<p>VAD 的迟滞、挂起和预卷缓存应由语料中的短词、停顿和噪声脉冲调节。</p>
+<p>KWS 是否绕过 VAD、是否持续运行、从 AEC 后还是增强后取信号，取决于功耗和训练域。</p>
+<p>阈值需要在指定误唤醒率下报告漏唤醒率，不能只给一个孤立分数。</p>
 <span id="sec-10" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-4">10.4 定点化、算力与功耗预算</h2>
 <span id="sec-11" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-4-1">10.4.1 从浮点实现到目标芯片</h3>
-<p>定点化要检查四件事：数值范围、累加位宽、非线性函数近似和模块间缩放。协方差矩阵求解与 WPE 线性方程组尤其要观察条件数；对角加载能改善数值稳定性，但加载量应相对矩阵尺度定义。32 位或更宽的累加器可以减少乘加溢出，不能保证病态矩阵求解正确。</p>
+<p>定点化要检查四件事：</p>
+<ul>
+<li>数值范围；</li>
+<li>累加位宽；</li>
+<li>非线性函数近似；</li>
+<li>模块间缩放。</li>
+</ul>
+<p>协方差矩阵求解与 WPE 线性方程组尤其要观察条件数；对角加载能改善数值稳定性，但加载量应相对矩阵尺度定义。32 位或更宽的累加器可以减少乘加溢出，不能保证病态矩阵求解正确。</p>
 <p>训练后量化（Post-Training Quantization，PTQ）先用校准数据确定量化尺度；量化感知训练（Quantization-Aware Training，QAT）在训练中模拟量化误差。选哪一种应由目标芯片的算子、代表性数据上的任务指标和最不利输入测试决定。不能预先承诺固定的指标下降量或加速倍数。</p>
 <span id="sec-12" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-4-2">10.4.2 不混用指令数、乘加次数和实时因子</h3>
 <ul>
@@ -455,7 +520,17 @@ $$</p>
 <p><a href="https://www.itu.int/rec/T-REC-P.566/en" title="citation">ITU-T P.566（07/2026）</a>的官方条目将其列为“已生效，待发布”（in force / to be published）的单端机器学习多维语音质量模型。在正式文本发布前，本书不从二手资料扩写输出维度或评分细则。P.566 的单端客观预测不能代替 P.835 主观听测，也不评价 DOA、轨迹或空间位置。</p>
 <span id="sec-14" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-6">10.6 数据、仿真与复现</h2>
 <p>公开数据集适合建立可复现基线，不能代替目标设备录音。选择数据时要核对采样率、麦克风几何、房间、说话人数、重叠率、参考真值和许可证。训练、调参、最终测试应按房间或说话人隔离，避免相邻片段泄漏。</p>
-<p>录音和声纹还要有数据治理清单：记录采集目的与用户同意范围；区分原始音频、转写文本、声纹嵌入和调试日志；说明数据在端侧还是云侧处理、传输与静态存储怎样加密、哪些角色可以访问；规定保留期限、删除与撤回流程；导出故障样本前做身份信息检查；第三方数据集按许可证限制保存和再分发。目标说话人提取使用的注册声纹可能比普通缓存更敏感，不能因为只保存嵌入而默认无法关联个人。具体法律和认证要求取决于部署地区与产品用途，应由相应合规审查确认。</p>
+<p>录音和声纹还要有数据治理清单：</p>
+<ul>
+<li>记录采集目的与用户同意范围；</li>
+<li>区分原始音频、转写文本、声纹嵌入和调试日志；</li>
+<li>说明数据在端侧还是云侧处理，传输与静态存储怎样加密，哪些角色可以访问；</li>
+<li>规定保留期限、删除与撤回流程；</li>
+<li>导出故障样本前做身份信息检查；</li>
+<li>第三方数据集按许可证限制保存和再分发。</li>
+</ul>
+<p>目标说话人提取使用的注册声纹可能比普通缓存更敏感，不能因为只保存嵌入而默认无法关联个人。</p>
+<p>具体法律和认证要求取决于部署地区与产品用途，应由相应合规审查确认。</p>
 <p>房间冲激响应仿真也要写全条件。以下代码按 <a href="https://pypi.org/project/pyroomacoustics/0.10.0/" title="citation">pyroomacoustics 0.10.0</a> 编写，说明 <code>max_order</code> 与混响时间的关系；安装命令见项目 README：</p>
 <pre><code class="language-python">import pyroomacoustics as pra
 
@@ -469,8 +544,16 @@ room = pra.ShoeBox(
     max_order=max_order,
 )
 </code></pre>
-<p><code>inverse_sabine</code> 根据目标混响时间 $T_{60}$ 和房间尺寸给出吸收参数及建议的镜像源截断阶数；$T_{60}$ 表示声能衰减 60 dB 所需的时间。这里的 <code>target_rt60=0.45</code> 是设计目标，不是已经测得的仿真结果。生成房间冲激响应（Room Impulse Response，RIR）后，还应由 RIR 的 Schroeder 能量衰减曲线估计实际 $T_{60}$，并报告拟合区间；衰减动态范围不足时，不应把短区间外推值写成直接测得的 60 dB 衰减时间。</p>
-<p><code>max_order</code> 控制镜像反射的截断深度，不能单独决定 $T_{60}$。可逐步增加 <code>max_order</code>，直到测得 $T_{60}$、RIR 总能量和目标任务结果在预定容差内不再明显变化；若始终不收敛，应调整房间或仿真方法，而不是只抬高阶数。论文或报告还应分别记录目标与实测 $T_{60}$、声源/麦克风坐标、材料模型、随机种子、噪声生成方法、pyroomacoustics 版本和拟合方法。</p>
+<p><code>inverse_sabine</code> 根据目标混响时间 $T_{60}$ 和房间尺寸给出吸收参数及建议的镜像源截断阶数；$T_{60}$ 表示声能衰减 60 dB 所需的时间。</p>
+<p>这里的 <code>target_rt60=0.45</code> 是设计目标，不是已经测得的仿真结果。生成房间冲激响应（Room Impulse Response，RIR）后，还应由 RIR 的 Schroeder 能量衰减曲线估计实际 $T_{60}$，并报告拟合区间。衰减动态范围不足时，不应把短区间外推值写成直接测得的 60 dB 衰减时间。</p>
+<p><code>max_order</code> 控制镜像反射的截断深度，不能单独决定 $T_{60}$。可逐步增加 <code>max_order</code>，直到测得 $T_{60}$、RIR 总能量和目标任务结果在预定容差内不再明显变化。若始终不收敛，应调整房间或仿真方法，而不是只抬高阶数。</p>
+<p>论文或报告还应记录：</p>
+<ul>
+<li>目标与实测 $T_{60}$；</li>
+<li>声源和麦克风坐标；</li>
+<li>材料模型、随机种子与噪声生成方法；</li>
+<li>pyroomacoustics 版本和拟合方法。</li>
+</ul>
 <span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-7">10.7 分布式阵列</h2>
 <p>分布式系统要分别解决三类问题：</p>
 <ol>
@@ -529,7 +612,9 @@ room = pra.ShoeBox(
 </tr>
 </tbody>
 </table></div>
-<p>球阵的可用球谐阶数同时受空间采样、阵列半径、频率和模态噪声放大限制。这里 $k=2\pi f/c$ 是波数，$r$ 是球阵半径，$kr$ 是无量纲频率。表示到 $N$ 阶的完整球谐系数共有 $(N+1)^2$ 个，因此离散阵元数至少要能支撑相应的空间采样；实际还要留出几何和数值稳定性余量。可用阶数在高频受阵元空间混叠限制，在低频又受 $kr$ 较小和径向滤波噪声放大限制。不能用 $N=\lceil kr\rceil+1$ 一条式子替代完整设计，也不能把“某阶需要多少系数”直接等同于任意摆放的同数麦克风一定可用。</p>
+<p>球阵的可用球谐阶数同时受空间采样、阵列半径、频率和模态噪声放大限制。这里 $k=2\pi f/c$ 是波数，$r$ 是球阵半径，$kr$ 是无量纲频率。</p>
+<p>表示到 $N$ 阶的完整球谐系数共有 $(N+1)^2$ 个，因此离散阵元数至少要能支撑相应的空间采样；实际还要留出几何和数值稳定性余量。</p>
+<p>可用阶数在高频受阵元空间混叠限制，在低频又受 $kr$ 较小和径向滤波噪声放大限制。不能用 $N=\lceil kr\rceil+1$ 一条式子替代完整设计，也不能把“某阶需要多少系数”直接等同于任意摆放的同数麦克风一定可用。</p>
 <p>三个非共点麦克风已经构成阵列。若几何非共线，它们能提供二维空间信息；若接近共线，则某些方向存在镜像或条件数问题。手机的主要限制通常是孔径小、结构遮挡和工作模式变化，而不是“三麦构不成阵列”。</p>
 <span id="sec-17" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-9">10.9 从模型到设备</h2>
 <p>部署前先固定输入尺寸、算子版本、量化方式和线程配置，再测算力与内存。模型参数从 32 位浮点量化到 8 位整数时，参数存储在理想情况下约缩小四倍；端到端速度取决于硬件是否有相应整数内核、访存和算子融合，不能据此承诺“快四倍”。</p>

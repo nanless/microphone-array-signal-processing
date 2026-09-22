@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 4 章 · 声源定位（DOA 估计） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="fcda0545e596"><style>
+<meta name="source-digest" content="f619c708bea4"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -14,6 +14,7 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .side .chap{margin:10px 0 2px;font-weight:700}.side .chap.cur{color:#c0392b}
 .side ul{margin:2px 0 6px;padding-left:16px;color:#666}.side li{margin:2px 0}
 .main{flex:1;min-width:0;padding:28px 36px;background:#fff}
+.main p{margin:0 0 1.05em}.main li>p{margin:.35em 0}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
 table{border-collapse:collapse;margin:14px 0;max-width:100%}
 .table-scroll{max-width:100%;overflow-x:auto}
@@ -118,19 +119,27 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
       ├── L1-SVD / SBL（压缩感知；SBL = sparse Bayesian learning）
       └── DNN（deep neural network，深度神经网络；SRP-CNN、GCC-PHAT+CRNN、ACCDOA）
 </code></pre>
-<p>图 11 在同一个两源仿真（−20°、30°）中比较 Bartlett、Capon 和 MUSIC。条件为 8 元半波长 ULA、每阵元总输入 SNR 20 dB、400 个快拍，两源相隔 50°；这个较容易的条件只展示三种谱形，不检验最小可分辨角度。Bartlett 按标准空间谱计算；Capon 在样本协方差上使用相对对角加载 $\eta=10^{-6}$，即 $\hat{\mathbf R}+\eta\operatorname{tr}(\hat{\mathbf R})\mathbf I/M$；MUSIC 给出伪谱，峰高不是功率。只有在源间隔、信噪比、快拍数、源数和阵列失配都明确时，才能用重复试验比较分辨成功率。</p>
+<p>图 11 在同一个两源仿真（−20°、30°）中比较 Bartlett、Capon 和 MUSIC。条件为 8 元半波长 ULA、每阵元总输入 SNR 20 dB、400 个快拍，两源相隔 50°。这个较容易的条件只展示三种谱形，不检验最小可分辨角度。</p>
+<p>Bartlett 按标准空间谱计算。Capon 在样本协方差上使用相对对角加载 $\eta=10^{-6}$，即 $\hat{\mathbf R}+\eta\operatorname{tr}(\hat{\mathbf R})\mathbf I/M$。MUSIC 给出伪谱，峰高不是功率。</p>
+<p>只有在源间隔、信噪比、快拍数、源数和阵列失配都明确时，才能用重复试验比较分辨成功率。</p>
 <p><img alt="图11 DOA 空间谱估计对比" src="../figures/fig11_doa_spectrum.png" onerror="this.alt+='（图缺失）'" /></p>
 <p><strong>图示说明</strong>：比较三类方法的谱形，不比较图中的绝对峰高。Bartlett 的分辨率受阵列孔径限制；Capon 利用协方差逆矩阵抑制其他方向；MUSIC 依赖信号子空间与噪声子空间的正交性。谱峰个数也不能无条件当作源数：旁瓣、相干多径和有限快拍都可能产生假峰或合并真峰，源数估计要按下一节的方法独立完成。</p>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-4-1-1">4.1.1 源数估计：确定信号子空间维数</h3>
-<p>子空间类（MUSIC、ESPRIT）必须先确定源数 $K$。$K$ 定错后，信号子空间与噪声子空间的切分位置也会错。还要满足 $K\lt M$，否则没有非零维噪声子空间可供 MUSIC 做正交检验；ESPRIT 的两个子阵也都必须至少有 $K$ 维，实际通常保留更多阵元以降低有限快拍误差。下面给出两种常用估计方法。</p>
-<p><strong>方法 1：特征值间隙（eigen-gap）</strong>。把固定频点 $f_k$ 的协方差矩阵 $\hat{\mathbf{R}}(f_k)$（读作“R 帽”，帽子表示用有限快拍估计出来的版本）的特征值从大到小排列。前 $K$ 个特征值包含信号与噪声功率，后面 $M-K$ 个在白噪声模型下接近 $\sigma^2$。算例 4-4 的无噪声单源给出 $3,\,0,\,0$，因此 $K=1$。实际数据中，低信噪比或快拍不足会缩小相邻特征值之间的间隔；可比较相邻特征值的比值或差值，并把最大间隙所在位置作为候选分界。这种方法计算简单，但在低信噪比或快拍不足时不稳定。</p>
-<p><strong>方法 2：信息准则（AIC/MDL）</strong>。增加候选源数通常会改善数据拟合，同时也会增加模型复杂度。AIC（Akaike information criterion，赤池信息准则）和 MDL（minimum description length，最小描述长度）用不同的复杂度惩罚项平衡这两部分，并取准则值最小的候选 $K$。<a href="https://doi.org/10.1109/TASSP.1985.1164557" title="citation">Wax 与 Kailath 的阵列源数信息准则原文，式(7)–(8)</a>给出了白噪声、独立快拍模型下基于最小特征值算术均值与几何均值之比的打分式。实现时必须核对复/实数据、快拍数和惩罚项口径。低 SNR、快拍不足或彩色噪声都会造成误判；相干源还会使信号协方差降秩。</p>
-<p>信噪比高、快拍充足时，可以先看特征间隙；需要自动选择 $K$ 时可用 MDL，并用特征值谱交叉检查。相干源场景存在一个实际循环：空间平滑要按候选源数选择子阵长度，而源数又要从平滑后的谱估计。可先给出源数上界 $K_{\max}$，对候选 $K$ 和子阵长度联合扫描，再检查结果对参数是否稳定。对 $M$ 元均匀线阵（Uniform Linear Array，ULA）做前向空间平滑时，若切成 $L$ 个长度为 $P=M-L+1$ 的重叠子阵，要分辨 $K$ 个完全相干源，至少需要 $L\ge K$ 且 $P>K$；这两个条件同时限制可分辨源数和剩余有效孔径。<a href="https://doi.org/10.1109/TASSP.1985.1164649" title="citation">Shan、Wax 与 Kailath 的空间平滑分析</a>。</p>
+<p>子空间类（MUSIC、ESPRIT）必须先确定源数 $K$。$K$ 定错后，信号子空间与噪声子空间的切分位置也会错。</p>
+<p>MUSIC 还要满足 $K\lt M$，否则没有非零维噪声子空间可供正交检验。ESPRIT 的两个子阵也都必须至少有 $K$ 维，实际通常保留更多阵元以降低有限快拍误差。下面给出两种常用估计方法。</p>
+<p><strong>方法 1：特征值间隙（eigen-gap）</strong>。把固定频点 $f_k$ 的协方差矩阵 $\hat{\mathbf{R}}(f_k)$（读作“R 帽”，帽子表示用有限快拍估计出来的版本）的特征值从大到小排列。前 $K$ 个特征值包含信号与噪声功率，后面 $M-K$ 个在白噪声模型下接近 $\sigma^2$。</p>
+<p>算例 4-4 的无噪声单源给出 $3,\,0,\,0$，因此 $K=1$。实际数据中，低信噪比或快拍不足会缩小相邻特征值之间的间隔；可比较相邻特征值的比值或差值，并把最大间隙所在位置作为候选分界。这种方法计算简单，但在低信噪比或快拍不足时不稳定。</p>
+<p><strong>方法 2：信息准则（AIC/MDL）</strong>。增加候选源数通常会改善数据拟合，同时也会增加模型复杂度。AIC（Akaike information criterion，赤池信息准则）和 MDL（minimum description length，最小描述长度）用不同的复杂度惩罚项平衡这两部分，并取准则值最小的候选 $K$。<a href="https://doi.org/10.1109/TASSP.1985.1164557" title="citation">Wax 与 Kailath 的阵列源数信息准则原文，式(7)–(8)</a>给出了白噪声、独立快拍模型下基于最小特征值算术均值与几何均值之比的打分式。实现时必须核对复/实数据、快拍数和惩罚项口径；低 SNR、快拍不足、彩色噪声或相干源导致的信号协方差降秩都会造成误判。</p>
+<p>信噪比高、快拍充足时，可以先看特征间隙；需要自动选择 $K$ 时可用 MDL，并用特征值谱交叉检查。相干源场景还存在一个实际循环：空间平滑要按候选源数选择子阵长度，而源数又要从平滑后的谱估计。可先给出源数上界 $K_{\max}$，对候选 $K$ 和子阵长度联合扫描，再检查结果对参数是否稳定。对 $M$ 元均匀线阵（Uniform Linear Array，ULA）做前向空间平滑时，若切成 $L$ 个长度为 $P=M-L+1$ 的重叠子阵，要分辨 $K$ 个完全相干源，至少需要 $L\ge K$ 且 $P>K$。这两个条件同时限制可分辨源数和剩余有效孔径。<a href="https://doi.org/10.1109/TASSP.1985.1164649" title="citation">Shan、Wax 与 Kailath 的空间平滑分析</a>。</p>
 <blockquote>
 <p>子空间法需要源数，GCC-PHAT 不需要。下一节先从双通道时延估计讲起。</p>
 </blockquote>
 <span id="sec-4" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-2">4.2 GCC-PHAT：“对齐两段录音，找最吻合的错位”</h2>
-<p>本章沿用 §2.1～§2.3：麦 1 在 $x=0$，麦 2 在 $+x$；正横为 0°，正角朝麦 2；$\vec u$ 从阵列指向声源，传播方向为 $-\vec u$；$\tau_{ij}=t_i-t_j$。采用前向核 $e^{-\mathrm j2\pi ft}$ 时，$\tau_{m1}=-(\vec r_m-\vec r_1)^\top\vec u/c$，导向分量为 $a_m=e^{-\mathrm j2\pi f\tau_{m1}}=e^{+\mathrm j2\pi f(\vec r_m-\vec r_1)^\top\vec u/c}$。因此正角双麦有 $\tau_{21}\lt 0、\tau_{12}>0$。</p>
+<p>本章沿用 §2.1～§2.3：麦 1 在 $x=0$，麦 2 在 $+x$；正横为 0°，正角朝麦 2；$\vec u$ 从阵列指向声源，传播方向为 $-\vec u$；$\tau_{ij}=t_i-t_j$。</p>
+<p>采用前向核 $e^{-\mathrm j2\pi ft}$ 时，</p>
+<p>$$\tau_{m1}=-(\vec r_m-\vec r_1)^\top\vec u/c,$$</p>
+<p>$$a_m=e^{-\mathrm j2\pi f\tau_{m1}}=e^{+\mathrm j2\pi f(\vec r_m-\vec r_1)^\top\vec u/c}。$$</p>
+<p>因此正角双麦有 $\tau_{21}\lt 0、\tau_{12}>0$。</p>
 <p><strong>直觉</strong>：把第二路录音左右平移，平移到与第一路最像的那个错位量就是时间差。</p>
 <p><strong>时域定义</strong>。两路离散信号 $x_1(n)$、$x_2(n)$，定义时延 $\tau$ 处的互相关值（$\tau$ 以采样点为单位，取遍 $\cdots,-2,-1,0,1,2,\cdots$）：</p>
 <p>$$R(\tau) = \sum_n x_1(n)\,x_2(n-\tau)\text{。}$$</p>
@@ -141,21 +150,40 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>连续时间形式写成积分，见下文的快速实现公式。</p>
 <p>两边是同一个相关函数，只是计算路线不同。本文把 $\tau_{12}>0$ 定义为“信号到麦 1 比到麦 2 晚”，即 $x_1(t)=x_2(t-\tau_{12})$。在这个定义下，<code>ifft(X1·conj(X2))</code> 的峰位是 $+\tau_{12}$；若交换两路，峰位变成 $-\tau_{12}$。实现和论文若采用不同的信号次序或相关定义，符号也会随之改变。</p>
 </blockquote>
-<p><strong>频域实现：用一次 IFFT 计算整条相关曲线</strong>（两路信号 $x_1, x_2$，$X_1(f)$、$X_2(f)$ 是它们在第 $f$ 个频点上的复数谱值——<strong>标量</strong>；运算顺序是“先共轭再乘”：先对 $X_2(f)$ 取共轭得到 $X_2^*(f)$，再与 $X_1(f)$ 逐频点相乘）：</p>
+<p><strong>频域实现：用一次 IFFT 计算整条相关曲线</strong>。两路信号为 $x_1,x_2$，$X_1(f)$、$X_2(f)$ 是它们在第 $f$ 个频点上的复数谱值，都是标量。运算顺序是先对 $X_2(f)$ 取共轭得到 $X_2^*(f)$，再与 $X_1(f)$ 逐频点相乘：</p>
 <p>$$R_{x_1x_2}(\tau) = \int \Phi(f)\,X_1(f)X_2^*(f)\,e^{\mathrm{j}2\pi f\tau}df, \qquad \hat\tau = \arg\max_\tau R(\tau)\text{。}$$</p>
-<p>代码里就是 <code>ifft(Φ·X1·conj(X2))</code> 后找最大值索引。快速傅里叶变换（Fast Fourier Transform，FFT）负责计算整条相关曲线，$\arg\max$ 负责从曲线上读峰位，两者是前后两步。复杂度从 $O(N^2)$ 降到 $O(N\log N)$；实际加速比还取决于帧长、补零长度、FFT 库和硬件，不能只由渐近复杂度给出固定倍数。</p>
+<p>代码里就是 <code>ifft(Φ·X1·conj(X2))</code> 后找最大值索引。快速傅里叶变换（Fast Fourier Transform，FFT）负责计算整条相关曲线，$\arg\max$ 负责从曲线上读峰位，两者是前后两步。</p>
+<p>复杂度从 $O(N^2)$ 降到 $O(N\log N)$。实际加速比还取决于帧长、补零长度、FFT 库和硬件，不能只由渐近复杂度给出固定倍数。</p>
 <p><img alt="图33 时域滑动乘加等于频域共轭乘加IFFT" src="../figures/fig33_gcc_two_ways.png" onerror="this.alt+='（图缺失）'" /></p>
 <p><strong>图示说明</strong>：图33(a)给出零填充整数延迟信号；(b)按定义逐个 lag 直接求和；(c)计算频域乘积 $X_1X_2^*$；(d)用零填充 FFT 和 IFFT 得到线性互相关。时域与频域由独立代码计算，图中给出最大数值误差。该图对应 $\Phi(f)=1$ 的普通互相关，不包含 PHAT 加权。</p>
 <p><strong>线性相关与补零</strong>：FFT 算的是<strong>圆周相关</strong>（序列尾部会卷绕到开头），帧不够长时两端的 $R(\tau)$ 会被卷绕项污染；工程上补零到 $N\ge N_1+N_2-1$（两帧长度之和减一）再做 FFT。下文 8 点手算例因脉冲远离边缘、考察点无混叠，所以未补零也能得到相同结果；一般输入仍须补零。</p>
 <p><strong>符号说明</strong>：这里的 $R(\tau)$ 是时延 $\tau$ 的标量互相关函数；后文 §4.5 起的 $\hat{\mathbf{R}}(f_k)$ 是频点 $f_k$ 上的 $M\times M$ 协方差矩阵，以黑体和估计符号相区别。</p>
 <p><strong>为什么相位里藏着时延</strong>：沿用“麦 1 晚到”为正的定义，$x_1(t)=x_2(t-\tau_0)$，因此 $X_1(f)=X_2(f)e^{-\mathrm{j}2\pi f\tau_0}$。于是</p>
 <p>$$X_1(f)X_2^*(f) = |X_2(f)|^2\,e^{-\mathrm{j}2\pi f\tau_0}\text{，}$$</p>
-<p>相位 $\angle\{X_1X_2^*\}=-2\pi f\tau_0$ 的斜率是 $-2\pi\tau_0$。例如 $\tau_0=58.3\,\mu$s 时，1 kHz 和 2 kHz 处的相位分别约为 $-0.366$ rad 和 $-0.733$ rad。逆变换在 $\tau=\tau_0$ 处乘上 $e^{\mathrm{j}2\pi f\tau_0}$，恰好抵消这条负斜率，各频点同相相加形成峰。PHAT 把互谱除以其幅度，使每个保留频点只贡献单位幅度的相位项；理想单时延模型下，减少谱包络对相关峰形的展宽。它不会修复混响或噪声造成的错误相位，还可能放大原本很弱、信噪比很低的频点，因此实现时通常在分母加 $\varepsilon$，并可配合频带筛选或可靠度加权。</p>
+<p>相位 $\angle\{X_1X_2^*\}=-2\pi f\tau_0$ 的斜率是 $-2\pi\tau_0$。例如 $\tau_0=58.3\,\mu$s 时，1 kHz 和 2 kHz 处的相位分别约为 $-0.366$ rad 和 $-0.733$ rad。逆变换在 $\tau=\tau_0$ 处乘上 $e^{\mathrm{j}2\pi f\tau_0}$，恰好抵消这条负斜率，各频点同相相加形成峰。</p>
+<p>PHAT 把互谱除以其幅度，使每个保留频点只贡献单位幅度的相位项。理想单时延模型下，这样可以减少谱包络对相关峰形的展宽。</p>
+<p>PHAT 不会修复混响或噪声造成的错误相位，还可能放大原本很弱、信噪比很低的频点。因此实现时通常在分母加 $\varepsilon$，并可配合频带筛选或可靠度加权。</p>
 <p><strong>算例 4-0bis：8 点脉冲手算——时域与频域结果一致</strong></p>
 <p>下面用最简单的脉冲分别计算时域相关和频域等价式，核对峰值位置与数值。</p>
-<p><strong>设定</strong>：$N=8$，序列（$n=0\ldots7$）：$x_1=[0,0,3,0,0,0,0,0]$（3 在 $n=2$ 处，即 $x_1$ 比 $x_2$ 晚到 2 拍），$x_2=[2,0,0,0,0,0,0,0]$（2 在 $n=0$ 处）。线性互相关定义 $R(\tau)=\sum_n x_1(n)x_2(n-\tau)$，越界按 0 处理。考察 $\tau=0/1/2$ 时，下标 $2-\tau=2/1/0$ 都落在序列范围内，因此线性相关与 8 点圆周相关在这三点没有回绕混叠、数值相等。一般情况仍要补零到 $N\ge N_1+N_2-1$，见上文补零提醒。</p>
+<p><strong>设定</strong>：$N=8$，序列（$n=0\ldots7$）为</p>
+<ul>
+<li>$x_1=[0,0,3,0,0,0,0,0]$，3 在 $n=2$ 处，即 $x_1$ 比 $x_2$ 晚到 2 拍；</li>
+<li>$x_2=[2,0,0,0,0,0,0,0]$，2 在 $n=0$ 处。</li>
+</ul>
+<p>线性互相关定义为 $R(\tau)=\sum_n x_1(n)x_2(n-\tau)$，越界按 0 处理。考察 $\tau=0/1/2$ 时，下标 $2-\tau=2/1/0$ 都落在序列范围内，因此线性相关与 8 点圆周相关在这三点没有回绕混叠、数值相等。一般情况仍要补零到 $N\ge N_1+N_2-1$，见上文补零提醒。</p>
 <p><strong>时域计算：逐 $\tau$ 算 $R(0)$、$R(1)$、$R(2)$，取最大值</strong>。$x_1$ 只在 $n=2$ 处非零（值为 3），加总只剩一项：$R(\tau)=3\cdot x_2(2-\tau)$。$R(0)=3\cdot x_2(2)=3\times0=\mathbf{0}$；$R(1)=3\cdot x_2(1)=3\times0=\mathbf{0}$；$R(2)=3\cdot x_2(0)=3\times2=\mathbf{6}$（最大值，$\hat\tau=2$，即 $x_1$ 晚到 2 个采样点，峰在 $+2$，与设定一致）。</p>
-<p><strong>频域手算：DFT 共轭乘 + IDFT</strong>。记 $W=e^{-\mathrm{j}2\pi/8}$，DFT 定义 $X[k]=\sum_n x[n]W^{kn}$。$x_2$ 只有 $n=0$ 项：$X_2[k]=2$（$k=0\ldots7$ 全是 2）；$x_1$ 只有 $n=2$ 项：$X_1[k]=3W^{2k}=3e^{-\mathrm{j}\pi k/2}$，逐个写出：$X_1=[3,-3\mathrm{j},-3,3\mathrm{j},3,-3\mathrm{j},-3,3\mathrm{j}]$，$X_2^*=[2,2,2,2,2,2,2,2]$，互谱 $G[k]=X_1X_2^*=[6,-6\mathrm{j},-6,6\mathrm{j},6,-6\mathrm{j},-6,6\mathrm{j}]$。IDFT 为 $r[\tau]=\frac{1}{8}\sum_k G[k]e^{+\mathrm{j}2\pi k\tau/8}$，算三点：$\tau=0$ 时 $\frac{1}{8}(6-6\mathrm{j}-6+6\mathrm{j}+6-6\mathrm{j}-6+6\mathrm{j})$，实部虚部各自相消，得 $\mathbf{r[0]=0}$（$=R(0)$）；$\tau=1$ 时 $G[k]\cdot e^{\mathrm{j}2\pi k/8}=6(e^{-\mathrm{j}\pi/4})^k$，$k=0\ldots7$ 是公比 $\ne1$ 的完整周期几何级数、配对相消，得 $\mathbf{r[1]=0}$（$=R(1)$）；$\tau=2$ 时 $G[k]\cdot e^{\mathrm{j}2\pi k\cdot2/8}=6e^{-\mathrm{j}\pi k/2}\cdot e^{+\mathrm{j}\pi k/2}=6$，8 项全是 6，得 $r[2]=48/8=\mathbf{6}$（$=R(2)$）。在 $\tau=2$ 处，各频点的相位因子精确抵消，8 个实数 6 同相相加；其他两个候选时延的正负项相消。</p>
+<p><strong>频域手算：DFT 共轭乘 + IDFT</strong>。记 $W=e^{-\mathrm{j}2\pi/8}$，DFT 定义 $X[k]=\sum_n x[n]W^{kn}$。$x_2$ 只有 $n=0$ 项，所以 $X_2[k]=2$，$k=0\ldots7$ 全是 2。</p>
+<p>$x_1$ 只有 $n=2$ 项，因此 $X_1[k]=3W^{2k}=3e^{-\mathrm{j}\pi k/2}$。逐个写出：</p>
+<p>$$X_1=[3,-3\mathrm{j},-3,3\mathrm{j},3,-3\mathrm{j},-3,3\mathrm{j}],$$</p>
+<p>$$X_2^*=[2,2,2,2,2,2,2,2],$$</p>
+<p>$$G[k]=X_1X_2^*=[6,-6\mathrm{j},-6,6\mathrm{j},6,-6\mathrm{j},-6,6\mathrm{j}]。$$</p>
+<p>IDFT 为 $r[\tau]=\frac{1}{8}\sum_k G[k]e^{+\mathrm{j}2\pi k\tau/8}$。分别计算三个候选点：</p>
+<ol>
+<li>$\tau=0$ 时，$\frac{1}{8}(6-6\mathrm{j}-6+6\mathrm{j}+6-6\mathrm{j}-6+6\mathrm{j})$ 的实部和虚部各自相消，得 $\mathbf{r[0]=0}=R(0)$；</li>
+<li>$\tau=1$ 时，$G[k]\cdot e^{\mathrm{j}2\pi k/8}=6(e^{-\mathrm{j}\pi/4})^k$。$k=0\ldots7$ 构成公比不等于 1 的完整周期几何级数，配对相消，得 $\mathbf{r[1]=0}=R(1)$；</li>
+<li>$\tau=2$ 时，$G[k]\cdot e^{\mathrm{j}2\pi k\cdot2/8}=6e^{-\mathrm{j}\pi k/2}\cdot e^{+\mathrm{j}\pi k/2}=6$。8 项全是 6，得 $r[2]=48/8=\mathbf{6}=R(2)$。</li>
+</ol>
+<p>在 $\tau=2$ 处，各频点的相位因子精确抵消，8 个实数 6 同相相加；其他两个候选时延的正负项相消。</p>
 <p><strong>时域与频域结果对照</strong>：$\tau=0$ 处时域和频域均为 0；$\tau=1$ 处均为 0；$\tau=2$ 处均为最大值 6，因此两种计算都得到 $\hat\tau=2$。</p>
 <p><strong>本例的 PHAT 结果</strong>：$|G[k]|=6$ 在所有频点相等，所以归一化不改变相对频谱。PHAT 谱 $\Psi[k]=G[k]/|G[k]|=[1,-\mathrm{j},-1,\mathrm{j},1,-\mathrm{j},-1,\mathrm{j}]$，IDFT 在 $\tau=2$ 处为 1，其余位置为 0。理想单时延、无噪条件下峰位不变；实际数据中，PHAT 改变各频点权重，峰位仍会受噪声和混响影响。</p>
 <p>核心是加权函数 $\Phi(f)$ 的选择：</p>
@@ -198,16 +226,26 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>单帧直接代入时，$\sqrt{|X_1|^2|X_2|^2}=|X_1X_2^*|$，SCOT 与 PHAT 的分母数值相同。使用统计谱估计后，SCOT 的分母来自两路自谱，而 PHAT 的分母来自互谱幅度；两者的偏差和方差取决于平均窗、频带、信噪比及谱估计方法，不能笼统断言哪一个始终更稳。</p>
 <p>由时延换算角度：$\hat\theta = \arcsin(c\,\hat\tau/d)$。先检查 $|c\hat\tau/d|\le1$：轻微超限若能由已验证的数值舍入界解释，可限幅后计算；明显超限说明该峰不满足双麦平面波几何，应判为野值或低置信度，不能一律吸附到端射方向。</p>
 <p><strong>这个换算怎么来的</strong>：几何推导见 §2.1“时差的几何来源”。平面波以角 $\theta$ 斜入射，路程差 $\Delta=d\sin\theta$（图12(c)），因此 $\hat\tau=d\sin\theta/c$；$\theta$ 从正横方向起算。若论文把角度定义为相对麦克风连线，则同一关系写成 $\hat\tau=d\cos\theta/c$。双麦只给一个标量时延，三维中相容方向构成以连线为轴的锥面；要解除该模糊，需要增加不共线的麦克风或加入其他先验。</p>
-<p><strong>两个实用细节</strong>：①16 kHz 下一个采样点为 62.5 μs；对 4 cm 间距，从正横方向的 0 延迟跳到 1 个采样点对应 $\arcsin(343\times62.5\,\mu\mathrm{s}/0.04)\approx32.4°$，而且越靠近端射方向，同样的时延误差造成的角度误差越大。实际系统要对相关峰插值或拟合相位斜率，得到亚采样时延。②PHAT 提高了相位的相对权重，因此麦克风相位响应不一致会直接造成定位偏差（见 §10.2）。</p>
+<p><strong>两个实用细节</strong>：</p>
+<ol>
+<li>16 kHz 下一个采样点为 62.5 μs。对 4 cm 间距，从正横方向的 0 延迟跳到 1 个采样点对应 $\arcsin(343\times62.5\,\mu\mathrm{s}/0.04)\approx32.4°$，而且越靠近端射方向，同样的时延误差造成的角度误差越大。实际系统要对相关峰插值或拟合相位斜率，得到亚采样时延。</li>
+<li>PHAT 提高了相位的相对权重，因此麦克风相位响应不一致会直接造成定位偏差（见 §10.2）。</li>
+</ol>
 <p><img alt="图12 GCC-PHAT 原理" src="../figures/fig12_gcc_phat.png" onerror="this.alt+='（图缺失）'" /></p>
-<p><strong>图示说明</strong>：（a）两路波形的设定真值为 $d=4$ cm、$\theta=30°$，对应 $\tau_0\approx58.3\,\mu$s，即 16 kHz 下约 0.933 个采样点；（b）将两路固定噪声样例做 16 倍时延网格插值后计算 GCC-PHAT，峰值落在 $58.59375\,\mu$s，即 0.9375 个原始采样点；虚线标出 $58.3\,\mu$s 真值。（c）时差乘声速得路程差，再除以间距得角度正弦（$\theta$ 从正横起算，与 §2.1 约定一致）。本次固定样例的估计接近真值，但单个样例不能代表误差分布。</p>
+<p><strong>图示说明</strong>：图 12（a）的两路波形设定为 $d=4$ cm、$\theta=30°$，对应 $\tau_0\approx58.3\,\mu$s，即 16 kHz 下约 0.933 个采样点。</p>
+<p>图 12（b）将两路固定噪声样例做 16 倍时延网格插值后计算 GCC-PHAT，峰值落在 $58.59375\,\mu$s，即 0.9375 个原始采样点；虚线标出 $58.3\,\mu$s 真值。图 12（c）把时差乘声速得到路程差，再除以间距得到角度正弦，$\theta$ 从正横起算，与 §2.1 约定一致。</p>
+<p>本次固定样例的估计接近真值，但单个样例不能代表误差分布。</p>
 <p><strong>算例：GCC-PHAT 完整数字链（$d=4$ cm、$\theta=30°$）</strong>：按 §2.1 几何关系，真值时延 $\tau_0=d\sin\theta/c=0.04\times0.5/343\approx58.3\,\mu$s；16 kHz 下 1 个采样点 $=62.5\,\mu$s，故真值在 $58.3/62.5\approx0.933$ 格。直接取整读峰只能得到 1 格，对应 $\arcsin(343\times62.5\,\mu s/0.04)\approx32.4°$。</p>
 <p>图 12 的脚本不是三点抛物线拟合，而是对互谱补零，把 GCC-PHAT 的时延网格细化到 $62.5/16\approx3.91\,\mu$s，再在相关序列上取最大值。固定随机种子的噪声样例得到 $58.59375\,\mu$s，即 $0.9375$ 格；换算角度为</p>
 <p>$$\hat\theta=\arcsin\!\left(\frac{343\times58.59375\times10^{-6}}{0.04}\right)\approx30.16°。$$</p>
 <p>该估计比 30° 真值高约 0.16°。这个固定样例说明时延网格插值能避免只在整数采样点上搜索；实际偏差仍取决于信号带宽、观测长度、噪声、混响和插值方法，需要在多次试验或实测数据上统计。</p>
 <p><strong>优缺点</strong>：频域实现为 $O(N\log N)$，适合实时处理；但一对麦每帧通常只读一个主峰，多源时会出现多个峰且跨麦对难以配对。强混响或低信噪比还会使峰展宽或选错。GCC 加权家族的定义、统计模型和最大似然权重见 <a href="https://doi.org/10.1109/TASSP.1976.1162830" title="citation">Knapp 与 Carter, <em>IEEE TASSP</em>, 1976</a>。</p>
-<p><strong>参数口径反例：$T_{60}$ 不能单独推出定位趋势</strong>。反射会把多个延迟副本叠到直达声上，使相关背景抬高、主峰展宽并出现旁峰；但一张合成图的变化方向还取决于如何归一化反射尾。图13把两个因素分开控制：每路冲激响应的直达能量固定为 1，随机指数尾分别归一到 DRR=+6、0、−6 dB；尾长取 $1.1T_{60}$，考察 $T_{60}=0.1、0.4、0.8$ s。采样率为 16 kHz，帧长约 64 ms，无额外传感器噪声，每个 $T_{60}\times\mathrm{DRR}$ 条件做 150 次固定种子的试验。互谱按 $X_1X_2^*$ 定义；第二路比第一路晚 9 点时，$\tau_{12}=-9$ 点，真峰 lag 也为 −9。估计峰落在真值 ±1 点内算正确。正确率给出 Wilson 95% 区间；峰值对比度采用 $\max g/\operatorname{median}|g|$，汇报中位数和四分位区间。</p>
-<p>这个受控试验把每条随机尾的<strong>总能量</strong>固定在目标 DRR，并为两个通道独立生成随机尾。因此，增大 $T_{60}$ 会把同一总能量分散到更长的时间；在 64 ms 短帧内，瞬时尾能量可能反而降低，所以正确率和峰对比度不必随 $T_{60}$ 单调变差。这不能解释为“混响更长有利于 GCC-PHAT”。独立通道随机尾也没有模拟真实晚期混响随麦距和频率变化的空间相干性。这些随机尾不是几何房间的镜像法 RIR，也不是实测数据；图13只比较该说明模型内两个因素对峰统计量的影响，不能外推绝对性能。</p>
+<p><strong>参数口径反例：$T_{60}$ 不能单独推出定位趋势</strong>。反射会把多个延迟副本叠到直达声上，使相关背景抬高、主峰展宽并出现旁峰；但一张合成图的变化方向还取决于如何归一化反射尾。</p>
+<p>图 13 把两个因素分开控制：每路冲激响应的直达能量固定为 1，随机指数尾分别归一到 DRR=+6、0、−6 dB；尾长取 $1.1T_{60}$，考察 $T_{60}=0.1、0.4、0.8$ s。采样率为 16 kHz，帧长约 64 ms，无额外传感器噪声，每个 $T_{60}\times\mathrm{DRR}$ 条件做 150 次固定种子的试验。</p>
+<p>互谱按 $X_1X_2^*$ 定义。第二路比第一路晚 9 点时，$\tau_{12}=-9$ 点，真峰 lag 也为 −9。估计峰落在真值 ±1 点内算正确。</p>
+<p>正确率给出 Wilson 95% 区间；峰值对比度采用 $\max g/\operatorname{median}|g|$，汇报中位数和四分位区间。</p>
+<p>这个受控试验把每条随机尾的<strong>总能量</strong>固定在目标 DRR，并为两个通道独立生成随机尾。因此，增大 $T_{60}$ 会把同一总能量分散到更长的时间；在 64 ms 短帧内，瞬时尾能量可能反而降低，所以正确率和峰对比度不必随 $T_{60}$ 单调变差。这不能解释为“混响更长有利于 GCC-PHAT”。</p>
+<p>独立通道随机尾没有模拟真实晚期混响随麦距和频率变化的空间相干性。这些随机尾不是几何房间的镜像法 RIR，也不是实测数据。图 13 只比较该说明模型内两个因素对峰统计量的影响，不能外推绝对性能。</p>
 <p><img alt="图13 GCC-PHAT 随 T60 与 DRR 的联合作用" src="../figures/fig13_gcc_reverb.png" onerror="this.alt+='（图缺失）'" /></p>
 <p><strong>图示说明</strong>：图13(a)在 DRR=0 dB 下比较三个 $T_{60}$ 的固定种子单帧；(b)分别画出三种 DRR 下的正确率和 Wilson 95% 区间；(c)画峰值对比度的中位数和四分位区间。读图时应同时指定 $T_{60}$ 与 DRR：前者控制尾的衰减时长，后者控制尾相对直达声的总能量。</p>
 <blockquote>
@@ -321,7 +359,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>结果解释</strong>：候选点 B 虽然与真源相距较远，得分仍接近峰值，说明小孔径阵列的空间响应峰可能较宽。错位量以采样点计时，16 kHz 下 1 个采样点对应约 2.14 cm 的传播距离，因此实际系统常用亚采样插值（§4.2 细节①）。网格间隔、插值方式和 GCC 峰宽都会影响最终定位精度。</p>
 <p>本手算采用 sinc 峰便于逐项计算；图14采用高斯 GCC 峰便于显示连续的等时差亮带。两者都在演示式(4-1)的麦对累积过程，数值不能相互代入。</p>
 <p><img alt="图14 SRP-PHAT 过程" src="../figures/fig14_srp_grid.png" onerror="this.alt+='（图缺失）'" /></p>
-<p><strong>图示说明</strong>：图14是与前述厘米级手算独立的米级分布式阵列例。四麦坐标为 $(0,0)$、$(4,0)$、$(0,3)$、$(4,3)$ m，真实声源为 $(5.5,3.8)$ m，声速取 343 m/s；(a)给出几何和候选点，(b)在 $x\in[-0.5,7.0]$ m、$y\in[-0.5,5.2]$ m 的 $90\times68$ 网格上扫描。每个麦对的理想高斯 GCC 峰标准差取 $1/6000$ s $\approx166.7\,\mu$s。亮带对应单个麦对的近似等时差轨迹，多条亮带在真实声源附近相交。色标是六个麦对 GCC 取值的平均数，不是实测声功率；峰宽还取决于设定的 GCC 峰宽和网格间隔。</p>
+<p><strong>图示说明</strong>：图 14 是与前述厘米级手算独立的米级分布式阵列例。四麦坐标为 $(0,0)$、$(4,0)$、$(0,3)$、$(4,3)$ m，真实声源为 $(5.5,3.8)$ m，声速取 343 m/s。</p>
+<p>图 14（a）给出几何和候选点；图 14（b）在 $x\in[-0.5,7.0]$ m、$y\in[-0.5,5.2]$ m 的 $90\times68$ 网格上扫描。每个麦对的理想高斯 GCC 峰标准差取 $1/6000$ s $\approx166.7\,\mu$s。亮带对应单个麦对的近似等时差轨迹，多条亮带在真实声源附近相交。</p>
+<p>色标是六个麦对 GCC 取值的平均数，不是实测声功率。峰宽还取决于设定的 GCC 峰宽和网格间隔。</p>
 <p><strong>计算口径</strong>：全网格计算量约随 $N_{\mathrm{grid}}M(M-1)/2$ 增长。网格间距只给出离散化误差的下限，实际误差还受孔径、混响、信噪比、标定和插值影响。工程上常先粗扫，再只在主峰邻域细扫；节省多少计算量取决于两级网格范围，不能脱离配置给出固定倍数。</p>
 <blockquote>
 <p>SRP 的计算量随网格点数和麦对数增加。若已获得可靠且已配对的 TDOA，也可以采用 §4.4 的几何解算，直接估计位置坐标。</p>
@@ -331,8 +371,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>以麦 1 为参考，各麦对的 TDOA 构成方程组：</p>
 <p>$$\|\vec{p}-\vec{r}_i\| - \|\vec{p}-\vec{r}_1\| = c\,\tau_{i1}, \quad i=2..M\text{。}$$</p>
 <ul>
-<li>$\vec{p}$：待求声源位置（远场只需方向）；$\vec{r}_i$：第 $i$ 个麦的坐标（已知，靠标定）；</li>
-<li>方程共 $M-1$ 个。对一般近场非线性方程，二维至少需要 3 只不共线麦、三维至少需要 4 只不共面麦，且某些几何仍可能有多个候选解。方程数超过位置维数后可用最小二乘吸收测量误差。下面的 Chan 线性化还引入参考距离这一附加未知量，因此其第一阶段无正则最小二乘在二维至少需要 4 只麦、三维至少需要 5 只麦，并要求线性方程组满列秩。</li>
+<li>$\vec{p}$：待求声源位置，远场只需方向；</li>
+<li>$\vec{r}_i$：第 $i$ 个麦的坐标，已知且依赖标定；</li>
+<li>方程共 $M-1$ 个。对一般近场非线性方程，二维至少需要 3 只不共线麦、三维至少需要 4 只不共面麦，且某些几何仍可能有多个候选解。方程数超过位置维数后可用最小二乘吸收测量误差；</li>
+<li>下面的 Chan 线性化还引入参考距离这一附加未知量，因此其第一阶段无正则最小二乘在二维至少需要 4 只麦、三维至少需要 5 只麦，并要求线性方程组满列秩。</li>
 </ul>
 <p><strong>算例 4-2：TDOA 几何解算数值例——两个时延怎么变成一个方向</strong></p>
 <p>§4.4 给出了方程组 $\|\vec{p}-\vec{r}_i\|-\|\vec{p}-\vec{r}_1\|=c\tau_{i1}$。远场条件下它退化为非常简单的几何：每对麦给出方向的一个“方向余弦”分量。用具体数字走一遍。</p>
@@ -359,15 +401,26 @@ $$\frac{c\tau_{31}}{d}=\frac{0.0282975}{0.04}=0.7074\approx\frac{\sqrt2}{2}\quad
 <li>$c\tau_{21}=-\vec{u}\cdot\vec{r}_2=-(-0.5)\times0.04=0.020000$ m $\Rightarrow\tau_{21}=0.020000/343=0.058309$ ms $\approx+0.0583$ ms ✓</li>
 <li>$c\tau_{31}=-\vec{u}\cdot\vec{r}_3=-(-0.7071)\times0.04=0.028284$ m $\Rightarrow\tau_{31}=0.028284/343=0.082461$ ms $\approx+0.0825$ ms ✓</li>
 </ul>
-<p>完全回到给定值。<strong>近场修正的量级</strong>：若声源位于 $L=2$ m 处的 $\vec{p}=2\vec{u}=(-1,\,-1.4142,\,1)$ m，按球面波精确计算得 $\tau_{21}=0.0592$ ms、$\tau_{31}=0.0830$ ms。它们分别比远场结果大 1.5% 和 0.7%，说明不同麦对不能共用一个固定修正比例；$L=10$ m 时差异约为 0.3%。本例阵列孔径为 $\sqrt{4^2+4^2}\approx5.66$ cm，2 m 已满足较大的距离孔径比，因此残余曲率误差处于百分比量级。</p>
-<p><strong>怎么解</strong>：方程带根号、非线性，有两条经典路线——
-1. <strong>Chan 算法</strong>：把方程平方并重组为线性方程组。第一阶段把参考距离 $R_1=\|\vec p-\vec r_1\|$ 当作附加未知量，与位置一起求解；第二阶段再利用 $R_1$ 与位置的平方关系做加权修正。二维时未知量为 $(p_x,p_y,R_1)$，所以第一阶段至少要 $M-1\ge3$，即 4 只麦；三维至少要 5 只麦。计数只是必要条件，还需阵列几何使矩阵满列秩、通道同步、TDOA 与麦对关联正确，并满足点声源近场模型。低噪声且误差模型匹配时，两步加权最小二乘可接近相应的 CRLB。<a href="https://doi.org/10.1109/78.301830" title="citation">Chan &amp; Ho, IEEE TSP 1994</a></p>
+<p>完全回到给定值。</p>
+<p><strong>近场修正的量级</strong>：若声源位于 $L=2$ m 处的 $\vec{p}=2\vec{u}=(-1,\,-1.4142,\,1)$ m，按球面波精确计算得 $\tau_{21}=0.0592$ ms、$\tau_{31}=0.0830$ ms。它们分别比远场结果大 1.5% 和 0.7%，说明不同麦对不能共用一个固定修正比例；$L=10$ m 时差异约为 0.3%。</p>
+<p>本例阵列孔径为 $\sqrt{4^2+4^2}\approx5.66$ cm，2 m 已满足较大的距离孔径比，因此残余曲率误差处于百分比量级。</p>
+<p><strong>怎么解</strong>：方程带根号、非线性，有两条经典路线。</p>
+<p><strong>路线 1：Chan 算法</strong>。把方程平方并重组为线性方程组。第一阶段把参考距离 $R_1=\|\vec p-\vec r_1\|$ 当作附加未知量，与位置一起求解；第二阶段再利用 $R_1$ 与位置的平方关系做加权修正。</p>
+<p>二维时未知量为 $(p_x,p_y,R_1)$，所以第一阶段至少要 $M-1\ge3$，即 4 只麦；三维至少要 5 只麦。计数只是必要条件，还需阵列几何使矩阵满列秩、通道同步、TDOA 与麦对关联正确，并满足点声源近场模型。低噪声且误差模型匹配时，两步加权最小二乘可接近相应的 CRLB。<a href="https://doi.org/10.1109/78.301830" title="citation">Chan &amp; Ho, IEEE TSP 1994</a></p>
 <blockquote>
-<p><strong>可跳过·进阶★★：平方消根号的线性化展开（以 $i=2$ 为例）</strong>：记 $R_1=\|\vec{p}-\vec{r}_1\|$，原方程 $\|\vec{p}-\vec{r}_i\|=r_{i,1}+R_1$ 两边平方得 $\|\vec{p}\|^2-2\vec{r}_i^\top\vec{p}+\|\vec{r}_i\|^2=r_{i,1}^2+2r_{i,1}R_1+R_1^2$；而 $R_1^2=\|\vec{p}\|^2-2\vec{r}_1^\top\vec{p}+\|\vec{r}_1\|^2$，代入后 $\|\vec{p}\|^2$ 在等式两边恰好相消；整理得 $(\vec{r}_1-\vec{r}_i)^\top\vec{p}-r_{i,1}R_1=\tfrac{1}{2}(r_{i,1}^2+\|\vec{r}_1\|^2-\|\vec{r}_i\|^2)$——左边对未知量 $(\vec{p},R_1)$ 是线性的，右边全是已知量；把 $i=2..M$ 的行摞起来即线性方程组 $\mathbf{G}\,[{\vec{p}}^\top,R_1]^\top=\vec{h}$（矩阵样例：$M=3$、估 2D 位置时未知量 $(p_x,p_y,R_1)$ 共 3 个、方程 $i=2,3$ 只有 2 行，$\mathbf{G}$ 是 $2\times3$ 的矮胖矩阵——这就是为什么 2D 定位至少要 4 只麦（三对时延）：方程数 $M-1$ 必须压过未知量个数），第一步最小二乘先解它，第二步再用 $R_1=\|\vec{p}-\vec{r}_1\|$ 的平方关系加权修正一次。以 $i=2$ 代入算例 4-2 的数验量纲：$\vec{r}_1=(0,0)$、$\vec{r}_2=(0.04,0)$、$r_{2,1}=0.02$ m，右边 $=\tfrac{1}{2}(0.02^2+0-0.04^2)=\tfrac{1}{2}(0.0004-0.0016)=-0.0006$（m²），左边 $(\vec{r}_1-\vec{r}_2)^\top\vec{p}-0.02R_1$ 也是“米×米”量级，等式两边单位均为 m²。
-2. <strong>泰勒级数迭代</strong>：从 SRP-PHAT 的粗解出发，在当前估计点 $\vec{p}_k$ 把方程一阶展开（线性化），用最小二乘解修正量并更新：</p>
+<p><strong>可跳过·进阶★★：平方消根号的线性化展开（以 $i=2$ 为例）</strong></p>
+<p>记 $R_1=\|\vec{p}-\vec{r}_1\|$。原方程 $\|\vec{p}-\vec{r}_i\|=r_{i,1}+R_1$ 两边平方得 $\|\vec{p}\|^2-2\vec{r}_i^\top\vec{p}+\|\vec{r}_i\|^2=r_{i,1}^2+2r_{i,1}R_1+R_1^2$。</p>
+<p>又有 $R_1^2=\|\vec{p}\|^2-2\vec{r}_1^\top\vec{p}+\|\vec{r}_1\|^2$。代入后，$\|\vec{p}\|^2$ 在等式两边恰好相消。整理得</p>
+<p>$$(\vec{r}_1-\vec{r}_i)^\top\vec{p}-r_{i,1}R_1=\tfrac{1}{2}(r_{i,1}^2+\|\vec{r}_1\|^2-\|\vec{r}_i\|^2)。$$</p>
+<p>左边对未知量 $(\vec{p},R_1)$ 是线性的，右边全是已知量。把 $i=2..M$ 的行摞起来，即得线性方程组 $\mathbf{G}\,[{\vec{p}}^\top,R_1]^\top=\vec{h}$。</p>
+<p>例如 $M=3$、估计二维位置时，未知量 $(p_x,p_y,R_1)$ 共 3 个，方程 $i=2,3$ 只有 2 行，$\mathbf{G}$ 是 $2\times3$ 的矮胖矩阵。这就是为什么二维定位至少要 4 只麦，即三对时延：方程数 $M-1$ 必须不少于未知量个数。第一步最小二乘先解该线性方程组，第二步再用 $R_1=\|\vec{p}-\vec{r}_1\|$ 的平方关系加权修正一次。</p>
+<p>以 $i=2$ 代入算例 4-2 的数验量纲：$\vec{r}_1=(0,0)$、$\vec{r}_2=(0.04,0)$、$r_{2,1}=0.02$ m。右边 $=\tfrac{1}{2}(0.02^2+0-0.04^2)=\tfrac{1}{2}(0.0004-0.0016)=-0.0006$ m²；左边 $(\vec{r}_1-\vec{r}_2)^\top\vec{p}-0.02R_1$ 也是“米×米”量级，等式两边单位均为 m²。</p>
 </blockquote>
+<p><strong>路线 2：泰勒级数迭代</strong>。从 SRP-PHAT 的粗解出发，在当前估计点 $\vec{p}_k$ 把方程一阶展开，用最小二乘解修正量并更新：</p>
 <p>$$\vec{p}\leftarrow\vec{p}+(\mathbf{J}^\top\mathbf{J})^{-1}\mathbf{J}^\top\boldsymbol{\varepsilon}\text{。}$$</p>
-<p>令观测距离差为 $\vec z=[c\tau_{21},\ldots,c\tau_{M1}]^\top$，模型预测为 $\vec h(\vec p)$，这里定义残差 $\boldsymbol\varepsilon=\vec z-\vec h(\vec p)$（实测减预测），$\mathbf J=\partial\vec h/\partial\vec p$。在这个残差定义下，上式使用加号；若把残差定义成预测减实测，更新式必须改用减号。$\mathbf J$ 的第 $i$ 行是两个单位方向向量之差。上面的逆矩阵写法只在 $\mathbf J$ 满列秩且条件良好时适用；基线方向过于单一或声源处于不利位置时，实现应用 QR/SVD、伪逆或阻尼 Gauss–Newton，而不是显式求 $\mathbf J^\top\mathbf J$ 的逆。各 TDOA 共用同一参考麦时，其测量误差通常相关；若已知或能估计误差协方差，应用加权最小二乘。迭代还需要足够接近真解的初值；要抗野点需配合稳健损失或剔除机制，普通最小二乘本身并不抗野点。</p>
+<p>令观测距离差为 $\vec z=[c\tau_{21},\ldots,c\tau_{M1}]^\top$，模型预测为 $\vec h(\vec p)$，这里定义残差 $\boldsymbol\varepsilon=\vec z-\vec h(\vec p)$，即实测减预测；$\mathbf J=\partial\vec h/\partial\vec p$。在这个残差定义下，上式使用加号。若把残差定义成预测减实测，更新式必须改用减号。$\mathbf J$ 的第 $i$ 行是两个单位方向向量之差。</p>
+<p>上面的逆矩阵写法只在 $\mathbf J$ 满列秩且条件良好时适用。基线方向过于单一或声源处于不利位置时，实现应用 QR/SVD、伪逆或阻尼 Gauss–Newton，而不是显式求 $\mathbf J^\top\mathbf J$ 的逆。</p>
+<p>各 TDOA 共用同一参考麦时，其测量误差通常相关；若已知或能估计误差协方差，应用加权最小二乘。迭代还需要足够接近真解的初值。要抗野点需配合稳健损失或剔除机制，普通最小二乘本身并不抗野点。</p>
 <p><strong>几何怎样放大测量误差（GDOP，geometric dilution of precision，几何精度因子）</strong>：把 TDOA 模型在真值附近线性化后，位置或角度误差由几何雅可比矩阵传播。麦对基线过短、方向过于相似或声源位于端射等不利方位时，雅可比矩阵接近秩亏，固定的时延误差会被放大。对双麦、正横附近的一维角度模型，有</p>
 <p>$$\mathrm{var}(\theta)\;\approx\;\Big(\frac{c}{d\cos\theta}\Big)^2\sigma_\tau^2$$</p>
 <ul>
@@ -378,10 +431,14 @@ $$\frac{c\tau_{31}}{d}=\frac{0.0282975}{0.04}=0.7074\approx\frac{\sqrt2}{2}\quad
 <p>两阶段几何法需要先把各麦对 TDOA 归属于同一声源；多源时数据关联会显著变难。§4.5 的 Bartlett 和 Capon 改为空间扫描，可直接从多个谱峰寻找候选方向。</p>
 </blockquote>
 <span id="sec-7" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-5">4.5 波束扫描类：Bartlett 与 Capon</h2>
-<p><strong>Bartlett</strong>：在固定频点 $f_k$，$P_B(f_k,\theta) = \vec{a}^H(f_k,\theta)\hat{\mathbf{R}}(f_k)\vec{a}(f_k,\theta)$。按式(2-2)，$\hat{\mathbf{R}}(f_k)=L^{-1}\sum_{\ell=1}^{L}\vec{x}(f_k,\ell)\vec{x}^H(f_k,\ell)$；$L$ 是快拍数，$\ell$ 是快拍索引。矩阵对角元是各通道自功率，非对角元是通道间互功率；二次型给出按候选导向矢量转向后的平均输出功率。若各方向的 $\|\vec a(f_k,\theta)\|$ 相同，省略统一归一化不改变峰位。Bartlett 的典型分辨尺度由该阵列的常规波束主瓣决定；Rayleigh 类判据是约定的分辨标准，不是所有噪声和检测条件下的绝对物理边界。下面的单频算例为减轻记号负担，省略固定的 $f_k$。</p>
+<p><strong>Bartlett</strong>：在固定频点 $f_k$，$P_B(f_k,\theta) = \vec{a}^H(f_k,\theta)\hat{\mathbf{R}}(f_k)\vec{a}(f_k,\theta)$。按式(2-2)，$\hat{\mathbf{R}}(f_k)=L^{-1}\sum_{\ell=1}^{L}\vec{x}(f_k,\ell)\vec{x}^H(f_k,\ell)$；$L$ 是快拍数，$\ell$ 是快拍索引。</p>
+<p>矩阵对角元是各通道自功率，非对角元是通道间互功率。二次型给出按候选导向矢量转向后的平均输出功率。若各方向的 $\|\vec a(f_k,\theta)\|$ 相同，省略统一归一化不改变峰位。</p>
+<p>Bartlett 的典型分辨尺度由该阵列的常规波束主瓣决定。Rayleigh 类判据是约定的分辨标准，不是所有噪声和检测条件下的绝对物理边界。下面的单频算例为减轻记号负担，省略固定的 $f_k$。</p>
 <p><strong>Capon/MVDR 谱</strong>：对每个候选方向设计“该方向增益为 1、输出功率最小”的滤波器：</p>
 <p>$$P_C(f_k,\theta) = \frac{1}{\vec{a}^H(f_k,\theta)\,\hat{\mathbf{R}}^{-1}(f_k)\,\vec{a}(f_k,\theta)}\text{。}\tag{4-2}$$</p>
-<p>这个式子来自约束优化：最小化 $\vec{w}^H\hat{\mathbf{R}}\vec{w}$，同时要求 $\vec{w}^H\vec{a}(\theta)=1$。拉格朗日乘子法给出 $\vec{w}=\hat{\mathbf{R}}^{-1}\vec{a}/(\vec{a}^H\hat{\mathbf{R}}^{-1}\vec{a})$；把该权重代回输出功率，得到上面的 Capon 谱。完整推导见 §5.4 和式(5-1)。候选方向与真实源方向一致时，无失真约束保留该源，因此最小输出功率较大；方向不匹配时，优化器可进一步压低输出功率。$\hat{\mathbf R}$ 是 $M\times M$ 协方差矩阵。Capon 在模型准确、快拍充分时通常比 Bartlett 得到更窄的谱峰；快拍不足、相干多径或协方差病态时，应加正则并检查稳健性。</p>
+<p>这个式子来自约束优化：最小化 $\vec{w}^H\hat{\mathbf{R}}\vec{w}$，同时要求 $\vec{w}^H\vec{a}(\theta)=1$。拉格朗日乘子法给出 $\vec{w}=\hat{\mathbf{R}}^{-1}\vec{a}/(\vec{a}^H\hat{\mathbf{R}}^{-1}\vec{a})$；把该权重代回输出功率，得到上面的 Capon 谱。完整推导见 §5.4 和式(5-1)。</p>
+<p>候选方向与真实源方向一致时，无失真约束保留该源，因此最小输出功率较大；方向不匹配时，优化器可进一步压低输出功率。$\hat{\mathbf R}$ 是 $M\times M$ 协方差矩阵。</p>
+<p>Capon 在模型准确、快拍充分时通常比 Bartlett 得到更窄的谱峰。快拍不足、相干多径或协方差病态时，应加正则并检查稳健性。</p>
 <p>这里的“加载”必须注明口径。绝对加载用 $\hat{\mathbf R}+\delta\mathbf I$，$\delta$ 与协方差元素同量纲；相对加载用 $\hat{\mathbf R}+\eta\operatorname{tr}(\hat{\mathbf R})\mathbf I/M$，$\eta$ 无量纲。图11的 Capon 采用相对加载 $\eta=10^{-6}$；图15的超指向波束也采用相对加载，但两图的数据模型不同，不能比较裸谱值。不同信号幅度下直接复用同一个绝对 $\delta$ 会改变实际正则强度，因此比较实现时不能只比较裸数值。</p>
 <blockquote>
 <p><strong>可跳过·进阶★★★：拉格朗日求解三步</strong>：</p>
@@ -420,9 +477,17 @@ $$\frac{c\tau_{31}}{d}=\frac{0.0282975}{0.04}=0.7074\approx\frac{\sqrt2}{2}\quad
 3. 构造伪谱，分母在真实 DOA 处趋零，出现尖峰：</p>
 <p>$$P_{MU}(\theta) = \frac{1}{\vec{a}^H(\theta)\,\mathbf{E}_n\mathbf{E}_n^H\,\vec{a}(\theta)}\text{。}\tag{4-3}$$</p>
 <p>正交检验的含义是：候选导向矢量若属于信号子空间，它在理想噪声子空间上的投影为零，伪谱分母趋近零；候选方向不匹配时，该投影通常非零，伪谱保持有限。</p>
-<p><strong>第 2 步为什么成立</strong>：信号模型下协方差矩阵是 $\mathbf{R} = \mathbf{A}\mathbf{S}\mathbf{A}^H + \sigma^2\mathbf{I}$，其中 $\mathbf{A}$ 是 $M\times K$ 的导向矢量矩阵、$\mathbf{S}$ 是 $K\times K$ 的源协方差矩阵。只有当 $K\lt M$、$\mathbf A$ 列满秩且 $\mathbf S$ 满秩时，$\mathbf{A}\mathbf{S}\mathbf{A}^H$ 的秩才等于 $K$，其列空间才等于 $\operatorname{span}(\mathbf A)$。空间白噪声项 $\sigma^2\mathbf I$ 只平移特征值，不改变特征向量；其余 $M-K$ 个特征向量因此与真实导向矢量正交。相干源使 $\mathbf S$ 降秩，彩色噪声也不再只平移特征值，这两种情况都破坏上述论证。<a href="https://doi.org/10.1109/TAP.1986.1143830" title="citation">Schmidt 的 MUSIC 原始论文</a>。</p>
+<p><strong>第 2 步为什么成立</strong>：信号模型下协方差矩阵是 $\mathbf{R} = \mathbf{A}\mathbf{S}\mathbf{A}^H + \sigma^2\mathbf{I}$，其中 $\mathbf{A}$ 是 $M\times K$ 的导向矢量矩阵、$\mathbf{S}$ 是 $K\times K$ 的源协方差矩阵。</p>
+<p>只有当 $K\lt M$、$\mathbf A$ 列满秩且 $\mathbf S$ 满秩时，$\mathbf{A}\mathbf{S}\mathbf{A}^H$ 的秩才等于 $K$，其列空间才等于 $\operatorname{span}(\mathbf A)$。空间白噪声项 $\sigma^2\mathbf I$ 只平移特征值，不改变特征向量；其余 $M-K$ 个特征向量因此与真实导向矢量正交。</p>
+<p>相干源使 $\mathbf S$ 降秩，彩色噪声也不再只平移特征值。这两种情况都破坏上述论证。<a href="https://doi.org/10.1109/TAP.1986.1143830" title="citation">Schmidt 的 MUSIC 原始论文</a>。</p>
 <blockquote>
-<p><strong>可跳过·进阶★★：正交三步的秩论证（分步说明）</strong>：第 1 步——$\mathrm{rank}(\mathbf{A}\mathbf{S}\mathbf{A}^H)\le\min(M,K,K)=K$；非相干源时 $\mathbf{S}$ 满秩且 $\mathbf{A}$ 列满秩，取等号。于是 $\mathbf{R}$ 的前 $K$ 个大特征值对应信号，其余 $M-K$ 个特征值等于 $\sigma^2$。第 2 步——信号子空间 $\mathrm{span}(\mathbf{E}_s)=\mathrm{span}(\mathbf{A})$，且 $\mathbf{E}_n\perp\mathbf{E}_s$，所以 $\mathbf{E}_n^H\mathbf{A}=\mathbf{0}$。第 3 步——分母 $\|\mathbf{E}_n^H\vec{a}(\theta)\|^2$ 在真实 DOA 处为零，偏离时通常大于零，扫描 $\theta$ 因而得到峰值。源数 $K$ 对应 $K$ 维信号子空间和 $M-K$ 维噪声子空间；算例 4-4 的 $M=3、K=1$ 给出特征值 $3,0,0$。相干源会使 $\mathbf S$ 秩降低，第一步的等号不再成立，这正是空间平滑所处理的条件。</p>
+<p><strong>可跳过·进阶★★：正交三步的秩论证（分步说明）</strong></p>
+<ol>
+<li>$\mathrm{rank}(\mathbf{A}\mathbf{S}\mathbf{A}^H)\le\min(M,K,K)=K$。非相干源时，$\mathbf{S}$ 满秩且 $\mathbf{A}$ 列满秩，取等号。于是 $\mathbf{R}$ 的前 $K$ 个大特征值对应信号，其余 $M-K$ 个特征值等于 $\sigma^2$。</li>
+<li>信号子空间 $\mathrm{span}(\mathbf{E}_s)=\mathrm{span}(\mathbf{A})$，且 $\mathbf{E}_n\perp\mathbf{E}_s$，所以 $\mathbf{E}_n^H\mathbf{A}=\mathbf{0}$。</li>
+<li>分母 $\|\mathbf{E}_n^H\vec{a}(\theta)\|^2$ 在真实 DOA 处为零，偏离时通常大于零，扫描 $\theta$ 因而得到峰值。</li>
+</ol>
+<p>源数 $K$ 对应 $K$ 维信号子空间和 $M-K$ 维噪声子空间；算例 4-4 的 $M=3、K=1$ 给出特征值 $3,0,0$。相干源会使 $\mathbf S$ 秩降低，第一步的等号不再成立，这正是空间平滑所处理的条件。</p>
 </blockquote>
 <p><strong>算例 4-4：MUSIC 最小可算例——逐项验证正交性</strong></p>
 <p>§4.6 的 MUSIC 基于一个条件：<strong>真实方向的导向矢量与噪声子空间正交</strong>。用一个 $3\times3$ 的例子把这句话算成看得见的数字。</p>
@@ -465,10 +530,14 @@ $$\vec{a}^H(30°)\,\vec{e}_3=\frac{1}{\sqrt6}\big(1\times1+(-\mathrm{j})\times1+
 <p><strong>宽带合并前的频点筛选</strong>：归一化伪谱接近平坦时，该频点提供的方向信息有限。可按信噪比、谱峰与背景之比或统计可靠度选择频点；门限应在目标数据集上验证，不能把某个经验值当作通用标准。</p>
 </blockquote>
 <span id="sec-10" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-8dda6571c9">ESPRIT（借助旋转不变技术估计信号参数，Estimation of Signal Parameters via Rotational Invariance Techniques）</h3>
-<p>先看单源情形：两个平移子阵接收的信号子空间只差一个由子阵位移决定的相位因子，求出该因子即可反演方向，不需要逐角度扫描。多源时，每个源对应 $\boldsymbol\Psi$ 的一个特征值。具体地，$\mathbf{E}_{s2} = \mathbf{E}_{s1}\boldsymbol\Psi$，其中 $\mathbf{E}_{s1}$、$\mathbf{E}_{s2}$ 是两个子阵的信号子空间，$\boldsymbol\Psi$ 是二者之间的旋转矩阵；其特征值相位由子阵位移和 DOA 决定。ESPRIT 的优点是免谱搜索；它仍需准确知道两子阵的相对位移与取向，并要求阵列具有平移不变结构。相干源需要先做去相关处理，宽带或球阵扩展也会受混响和模型误差影响。<a href="https://doi.org/10.1109/29.32276" title="citation">Roy 与 Kailath 的 ESPRIT 原始论文</a>。</p>
-<p><strong>算例：ESPRIT 最小数字链（$M=3$、$d=\lambda/2$）</strong>：子阵 1 取麦 {1,2}，子阵 2 取麦 {2,3}。在本章导向矢量约定下，旋转因子为 $\Psi=e^{+\mathrm{j}\pi\sin\theta}$，因此反演式是
-$$\theta=\arcsin\!\left(\frac{\arg\Psi}{\pi}\right)\text{。}$$
-$\theta=0°$ 时 $\Psi=1$，反演得 0°；$\theta=30°$ 时 $\Psi=+\mathrm j$、$\arg\Psi=+\pi/2$，反演得 30°。不能对 $\arg\Psi$ 取绝对值，否则会丢失左右方向的符号。若交换两子阵的次序，$\Psi$ 变为共轭，反演式中的符号也要同时改变。上式还假定相位没有空间混叠；$d>\lambda/2$ 时，主值相位可能对应多个角度，必须限制搜索区间或使用额外频率消歧。</p>
+<p>先看单源情形：两个平移子阵接收的信号子空间只差一个由子阵位移决定的相位因子，求出该因子即可反演方向，不需要逐角度扫描。</p>
+<p>多源时，每个源对应 $\boldsymbol\Psi$ 的一个特征值。具体地，$\mathbf{E}_{s2} = \mathbf{E}_{s1}\boldsymbol\Psi$，其中 $\mathbf{E}_{s1}$、$\mathbf{E}_{s2}$ 是两个子阵的信号子空间，$\boldsymbol\Psi$ 是二者之间的旋转矩阵；其特征值相位由子阵位移和 DOA 决定。</p>
+<p>ESPRIT 的优点是免谱搜索。它仍需准确知道两子阵的相对位移与取向，并要求阵列具有平移不变结构。相干源需要先做去相关处理，宽带或球阵扩展也会受混响和模型误差影响。<a href="https://doi.org/10.1109/29.32276" title="citation">Roy 与 Kailath 的 ESPRIT 原始论文</a>。</p>
+<p><strong>算例：ESPRIT 最小数字链（$M=3$、$d=\lambda/2$）</strong>：子阵 1 取麦 {1,2}，子阵 2 取麦 {2,3}。在本章导向矢量约定下，旋转因子为 $\Psi=e^{+\mathrm{j}\pi\sin\theta}$，因此反演式是</p>
+<p>$$\theta=\arcsin\!\left(\frac{\arg\Psi}{\pi}\right)\text{。}$$</p>
+<p>$\theta=0°$ 时 $\Psi=1$，反演得 0°；$\theta=30°$ 时 $\Psi=+\mathrm j$、$\arg\Psi=+\pi/2$，反演得 30°。</p>
+<p>不能对 $\arg\Psi$ 取绝对值，否则会丢失左右方向的符号。若交换两子阵的次序，$\Psi$ 变为共轭，反演式中的符号也要同时改变。</p>
+<p>上式还假定相位没有空间混叠。$d>\lambda/2$ 时，主值相位可能对应多个角度，必须限制搜索区间或使用额外频率消歧。</p>
 <blockquote>
 <p>MUSIC 与 ESPRIT 的上述推导基于窄带模型。宽带语音需要在频率维度合并信息，下一节讨论相干与非相干宽带处理。</p>
 </blockquote>
@@ -484,9 +553,16 @@ $\theta=0°$ 时 $\Psi=1$，反演得 0°；$\theta=30°$ 时 $\Psi=+\mathrm j$�
 <p>子空间法完成宽带扩展后，§4.7 转向稀疏重构与数据驱动定位。</p>
 </blockquote>
 <span id="sec-12" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-7">4.7 稀疏重构与深度学习</h2>
-<p><strong>稀疏重构</strong>：把角度网格化（$N_{\mathrm{grid}}\gg M$ 个候选方向），每个方向摆一个“模板”（导向矢量），真实信号只来自其中少数几个方向，于是“用模板拼出观测数据”的系数向量是<strong>稀疏的</strong>（绝大多数位置为零）；用 $\ell_1$ 正则或稀疏贝叶斯学习（SBL，sparse Bayesian learning，稀疏贝叶斯学习）估计少数非零位置，即得 DOA。不同算法不能共用“单快拍、超分辨、免源数估计”这一组无条件标签：例如 <a href="https://doi.org/10.1109/TSP.2005.850882" title="citation">L1-SVD 原论文</a>先用奇异值分解汇总多个时间或频率样本，再做稀疏重构；SBL 的输入统计量、超参数和选峰规则又不同。稀疏先验可在条件合适时产生窄于常规波束的峰，也可不显式预设源数，但结果仍受正则强度、信噪比、样本数和停止或选峰规则影响。共同代价是优化开销与离散网格失配。</p>
+<p><strong>稀疏重构</strong>：把角度网格化（$N_{\mathrm{grid}}\gg M$ 个候选方向），每个方向摆一个“模板”（导向矢量）。真实信号只来自其中少数几个方向，因此“用模板拼出观测数据”的系数向量是稀疏的，绝大多数位置为零。用 $\ell_1$ 正则或稀疏贝叶斯学习（SBL，sparse Bayesian learning，稀疏贝叶斯学习）估计少数非零位置，即得 DOA。</p>
+<p>不同算法不能共用“单快拍、超分辨、免源数估计”这一组无条件标签。例如 <a href="https://doi.org/10.1109/TSP.2005.850882" title="citation">L1-SVD 原论文</a>先用奇异值分解汇总多个时间或频率样本，再做稀疏重构；SBL 的输入统计量、超参数和选峰规则又不同。</p>
+<p>稀疏先验可在条件合适时产生窄于常规波束的峰，也可不显式预设源数，但结果仍受正则强度、信噪比、样本数和停止或选峰规则影响。共同代价是优化开销与离散网格失配。</p>
 <p><strong>网格无关方法：FRIDA 与原子范数</strong>。离散稀疏重构存在网格失配：真实方向是连续值，若声源位于两个候选角之间，估计能量可能分散到相邻网格并产生角度偏差。网格越细，离散误差通常越小，但字典规模和计算量随之增加。网格无关方法直接在连续角度域中估计参数，避免预先量化角度。</p>
-<p>两条代表路线如下：①FRIDA（finite rate of innovation DOA，有限新息率波达方向估计）把任意阵列的空间协方差元素线性变换为均匀采样的指数和，再从连续参数反解方向，不需要离散角度网格；其可辨识条件和误差受阵列几何、源数、标定与噪声影响。<a href="https://doi.org/10.1109/ICASSP.2017.7952744" title="citation">Pan et al. 的 FRIDA 原始论文</a>。②原子范数（atomic norm）把连续频率或角度上的复指数导向矢量集合定义为“原子”，用这些原子的最小加权组合解释观测；对满足结构条件的线阵模型可转化为半定规划，定义与条件见 <a href="https://doi.org/10.1109/TIT.2013.2277451" title="citation">Tang 等 2013</a>及其阵列扩展 <a href="https://doi.org/10.1109/TSP.2015.2420541" title="citation">Yang 与 Xie 2015</a>。两类方法避免了预设角度网格的量化误差，但仍有阵列结构、最小间隔、样本数和噪声条件，计算量也通常高于固定网格扫描。实时性、精度和源数条件必须绑定到具体实现与数据，不能用统一的 1° 门限选择算法。</p>
+<p>两条代表路线如下：</p>
+<ul>
+<li><strong>FRIDA</strong>（finite rate of innovation DOA，有限新息率波达方向估计）把任意阵列的空间协方差元素线性变换为均匀采样的指数和，再从连续参数反解方向，不需要离散角度网格。其可辨识条件和误差受阵列几何、源数、标定与噪声影响。<a href="https://doi.org/10.1109/ICASSP.2017.7952744" title="citation">Pan et al. 的 FRIDA 原始论文</a>。</li>
+<li><strong>原子范数</strong>（atomic norm）把连续频率或角度上的复指数导向矢量集合定义为“原子”，用这些原子的最小加权组合解释观测。对满足结构条件的线阵模型可转化为半定规划，定义与条件见 <a href="https://doi.org/10.1109/TIT.2013.2277451" title="citation">Tang 等 2013</a>及其阵列扩展 <a href="https://doi.org/10.1109/TSP.2015.2420541" title="citation">Yang 与 Xie 2015</a>。</li>
+</ul>
+<p>两类方法避免了预设角度网格的量化误差，但仍有阵列结构、最小间隔、样本数和噪声条件，计算量也通常高于固定网格扫描。实时性、精度和源数条件必须绑定到具体实现与数据，不能用统一的 1° 门限选择算法。</p>
 <p><strong>DNN 定位</strong>：网络用带方向标签的多通道数据学习噪声、混响与直达声线索之间的映射。训练规模、房间覆盖范围和阵列几何决定其泛化边界。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -530,11 +606,22 @@ $\theta=0°$ 时 $\Psi=1$，反演得 0°；$\theta=30°$ 时 $\Psi=+\mathrm j$�
 </tr>
 </tbody>
 </table></div>
-<p><strong>球面 SRP 图 + 等变 CNN 的使用边界</strong>：它解决的是把经纬度球面图直接送入平面 CNN 时邻域畸变、极区采样和旋转模式不一致的问题；相对解析 SRP 基线，它不替换麦对几何累积，而是在二十面体网格上学习空间响应的球面局部模式。成立条件是阵列坐标与声速模型已知、训练与推理使用兼容的球面采样，并且训练数据覆盖部署时的声源数、混响和噪声。最小比较应在同一批多通道数据上生成相同分辨率的 SRP-PHAT 球面图，以直接取峰为基线，再训练 icoDOA，并在未参与训练的旋转和房间上用同一角误差与检出规则比较；若没有这些数据覆盖或算力，解析 SRP-PHAT 更适合作为可解释基线。算法定义、60 个离散旋转等变性和 soft-argmax 输出见 <a href="https://doi.org/10.1109/TASLP.2022.3224282" title="citation">Díaz-Guerra、Miguel 与 Beltrán 的原论文</a>。官方 <a href="https://github.com/DavidDiazGuerra/icoDOA" title="citation">icoDOA 代码仓库</a>给出的最小入口是 <code>1sourceTracking_icoCNN.py</code>：README 记录的验证环境为 Python 3.8.1、PyTorch 1.8.1，并依赖 gpuRIR；合成训练需准备 LibriSpeech，实录测试需准备 LOCATA，输入图分辨率由脚本参数 <code>r</code> 控制，预训练模型和对应结果位于 <code>models/</code>、<code>results/</code>。这些版本和路径是仓库的复现口径，不是对其他版本的兼容性保证。</p>
+<p><strong>球面 SRP 图 + 等变 CNN 的使用边界</strong>：它解决的是把经纬度球面图直接送入平面 CNN 时邻域畸变、极区采样和旋转模式不一致的问题。相对解析 SRP 基线，它不替换麦对几何累积，而是在二十面体网格上学习空间响应的球面局部模式。</p>
+<p>成立条件是阵列坐标与声速模型已知、训练与推理使用兼容的球面采样，并且训练数据覆盖部署时的声源数、混响和噪声。</p>
+<p>最小比较应在同一批多通道数据上生成相同分辨率的 SRP-PHAT 球面图，以直接取峰为基线，再训练 icoDOA，并在未参与训练的旋转和房间上用同一角误差与检出规则比较。若没有这些数据覆盖或算力，解析 SRP-PHAT 更适合作为可解释基线。算法定义、60 个离散旋转等变性和 soft-argmax 输出见 <a href="https://doi.org/10.1109/TASLP.2022.3224282" title="citation">Díaz-Guerra、Miguel 与 Beltrán 的原论文</a>。</p>
+<p>官方 <a href="https://github.com/DavidDiazGuerra/icoDOA" title="citation">icoDOA 代码仓库</a>给出的最小入口是 <code>1sourceTracking_icoCNN.py</code>。README 记录的验证环境为 Python 3.8.1、PyTorch 1.8.1，并依赖 gpuRIR；合成训练需准备 LibriSpeech，实录测试需准备 LOCATA，输入图分辨率由脚本参数 <code>r</code> 控制，预训练模型和对应结果位于 <code>models/</code>、<code>results/</code>。这些版本和路径是仓库的复现口径，不是对其他版本的兼容性保证。</p>
 <p><strong>数据驱动结果的比较范围</strong>：定位网络必须在相同数据集、阵列、信噪比、混响、训练数据和误差指标下比较。上表只归纳输入与输出形式，不给出跨论文排名。卷积空间谱定位可参见 Chakrabarty &amp; Habets <a href="https://doi.org/10.1109/JSTSP.2019.2901664" title="citation">期刊论文</a>；IPDnet 见 Wang、Yang 与 Li 的 <a href="https://doi.org/10.1109/TASLP.2024.3507560" title="citation">IEEE/ACM TASLP 2024 正式论文</a>；ACCDOA 见 <a href="https://doi.org/10.1109/ICASSP39728.2021.9413609" title="citation">Shimada et al., ICASSP 2021</a>。使用时还需评估标注成本、跨房间泛化和模型复杂度。</p>
 <p><strong>SELD（声事件定位与检测，sound event localization and detection）</strong>同时估计事件类别、方向和活动时段。STARSS23 是 DCASE 2023 Task 3 使用的带距离元数据示例；当届正式输出并未要求距离。任务定义、划分和指标应按<a href="https://dcase.community/challenge2023/task-sound-event-localization-and-detection-evaluated-in-real-spatial-sound-scenes">当届官方任务页</a>核对，不能把某一届设置外推为长期不变的“前沿”。</p>
 <blockquote>
-<p><strong>DCASE 任务变化（核实于 2026-09-21）</strong>：2024 Task 3 把<a href="https://dcase.community/challenge2024/task-audio-and-audiovisual-sound-event-localization-and-detection-with-source-distance-estimation">声源距离估计</a>纳入正式输出；2025 Task 3 改用<a href="https://dcase.community/challenge2025/task-stereo-sound-event-localization-and-detection-in-regular-video-content">常规视频内容中的双声道音频</a>，因双声道几何的前后与上下歧义只评水平方位，同时保留距离；2026 Task 3 又转向<a href="https://dcase.community/challenge2026/task-semantic-acoustic-imaging-for-sound-event-localization-and-detection-from-spatial-audio-and-audiovisual-scenes">语义声学成像</a>。2026 开发阶段提供 32 通道 Eigenmike 录音和高分辨率声学图标签；评测阶段不提供标签、元数据或 32 通道录音，只给 4 通道四面体阵列/一阶 Ambisonics 音频，视听赛道另给视频。每个提交 JSON 的 <code>annotations</code> 条目必须写 <code>metadata_frame_index</code>、<code>category_id</code>、<code>score</code> 和 <code>segmentation</code>；其中 <code>segmentation</code> 是一个或多个由 <code>[x,y,intensity]</code> 三元组构成的空间掩码，<code>distance</code> 为可选字段。这个变化说明，学习式定位的“输出”已经从稀疏 DOA 向量扩展到距离和稠密空间图；复现时必须绑定届次，不能只写“DCASE Task 3”。</p>
+<p><strong>DCASE 任务变化（核实于 2026-09-21）</strong></p>
+<ul>
+<li>2024 Task 3 把<a href="https://dcase.community/challenge2024/task-audio-and-audiovisual-sound-event-localization-and-detection-with-source-distance-estimation">声源距离估计</a>纳入正式输出。</li>
+<li>2025 Task 3 改用<a href="https://dcase.community/challenge2025/task-stereo-sound-event-localization-and-detection-in-regular-video-content">常规视频内容中的双声道音频</a>。因双声道几何存在前后与上下歧义，该届只评水平方位，同时保留距离。</li>
+<li>2026 Task 3 转向<a href="https://dcase.community/challenge2026/task-semantic-acoustic-imaging-for-sound-event-localization-and-detection-from-spatial-audio-and-audiovisual-scenes">语义声学成像</a>。</li>
+</ul>
+<p>2026 开发阶段提供 32 通道 Eigenmike 录音和高分辨率声学图标签。评测阶段不提供标签、元数据或 32 通道录音，只给 4 通道四面体阵列/一阶 Ambisonics 音频，视听赛道另给视频。</p>
+<p>每个提交 JSON 的 <code>annotations</code> 条目必须写 <code>metadata_frame_index</code>、<code>category_id</code>、<code>score</code> 和 <code>segmentation</code>；其中 <code>segmentation</code> 是一个或多个由 <code>[x,y,intensity]</code> 三元组构成的空间掩码，<code>distance</code> 为可选字段。</p>
+<p>这些变化说明，学习式定位的“输出”已经从稀疏 DOA 向量扩展到距离和稠密空间图。复现时必须绑定届次，不能只写“DCASE Task 3”。</p>
 </blockquote>
 <p><strong>距离估计：从方向扩展到三维位置</strong>：远场模型只给方向；近场球面模型同时含角度和距离（见 §2.7）。网络也可能利用波前曲率、直达混响比和声级衰减，但后两类线索受声源级别、房间和训练分布影响。距离结果必须在明确的数据集、误差定义和范围内报告，不能与只估方向的结果直接比较。</p>
 <span id="sec-13" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-4-7-1">4.7.1 近场模型失配：角度相同，距离仍会改变导向矢量</h3>
@@ -550,7 +637,9 @@ $\theta=0°$ 时 $\Psi=1$，反演得 0°；$\theta=30°$ 时 $\Psi=+\mathrm j$�
 <li>将观测相对路程差记作 $\delta_m^{\rm obs}$，对每个候选计算 TDOA 均方根失配</li>
 </ol>
 <p>$$J(r,\theta)=\sqrt{\frac{1}{3}\sum_{m=1}^{3}\left(\frac{\delta_m(r,\theta)-\delta_m^{\rm obs}}{c}\right)^2}\text{，}$$</p>
-<p>这里把参考麦 $m=2$ 的恒零项 $\delta_2-\delta_2^{\rm obs}=0$ 也计入三通道均方根，所以分母为 3；若只对两个非参考麦取均方根，分母应改为 2，$J$ 的数值会整体乘以 $\sqrt{3/2}$，但最小点不变。选 $J$ 最小的网格点。实际 SRP 或宽带最大似然会用多频复数观测和噪声权重打分；这里的 $J$ 只用于手算几何核心。真值 $(0.20\text{ m},30°)$ 给出 $\boldsymbol\delta^{\rm obs}=[29.13,0,-19.72]$ mm，即相对时延约 $[84.9,0,-57.5]$ μs。取角度网格 $\{20°,30°,40°\}$、距离网格 $\{0.20,0.50,2.00\}$ m，逐格代入上式：</p>
+<p>这里把参考麦 $m=2$ 的恒零项 $\delta_2-\delta_2^{\rm obs}=0$ 也计入三通道均方根，所以分母为 3。若只对两个非参考麦取均方根，分母应改为 2，$J$ 的数值会整体乘以 $\sqrt{3/2}$，但最小点不变。</p>
+<p>实际 SRP 或宽带最大似然会用多频复数观测和噪声权重打分；这里的 $J$ 只用于手算几何核心。算法选择 $J$ 最小的网格点。</p>
+<p>真值 $(0.20\text{ m},30°)$ 给出 $\boldsymbol\delta^{\rm obs}=[29.13,0,-19.72]$ mm，即相对时延约 $[84.9,0,-57.5]$ μs。取角度网格 $\{20°,30°,40°\}$、距离网格 $\{0.20,0.50,2.00\}$ m，逐格代入上式：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
@@ -581,7 +670,8 @@ $\theta=0°$ 时 $\Psi=1$，反演得 0°；$\theta=30°$ 时 $\Psi=+\mathrm j$�
 </tr>
 </tbody>
 </table></div>
-<p>因此这个无噪、真值落在网格上的例子选中 $(0.20\text{ m},30°)$。它说明角度相同不等于近场导向矢量相同，也说明网格范围和间距本身会限制输出精度。若真实位置落在格点之间，应做局部细化或连续优化，不能把粗网格误差归因于观测噪声。球面波下联合估计角度与距离的宽带最大似然模型可参见 <a href="https://doi.org/10.1109/TSP.2002.800420" title="citation">Chen、Hudson 与 Yao 2002</a>。</p>
+<p>因此这个无噪、真值落在网格上的例子选中 $(0.20\text{ m},30°)$。它说明角度相同不等于近场导向矢量相同，也说明网格范围和间距本身会限制输出精度。</p>
+<p>若真实位置落在格点之间，应做局部细化或连续优化，不能把粗网格误差归因于观测噪声。球面波下联合估计角度与距离的宽带最大似然模型可参见 <a href="https://doi.org/10.1109/TSP.2002.800420" title="citation">Chen、Hudson 与 Yao 2002</a>。</p>
 <p><strong>距离不可观测边界</strong>：当 $r\to\infty$ 时，$d_m-d_2\to-x_m\sin\theta$，对 $r$ 的导数趋近 0；不同大距离候选的 TDOA 因而趋于同一平面波值。此时表中同角度的失配差会继续缩小，距离维度形成平坦谷。孔径很小、带宽或 SNR 不足、通道相位未标定时也会出现相同现象；算法应报告距离低置信度或只输出 DOA，而不是把搜索边界当成可靠距离。</p>
 <span id="sec-14" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-8">4.8 定位算法总对比</h2>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -663,9 +753,17 @@ $\theta=0°$ 时 $\Psi=1$，反演得 0°；$\theta=30°$ 时 $\Psi=+\mathrm j$�
 </tbody>
 </table></div>
 <p>表中的复杂度只列主导运算量，不等同于延迟、内存或功耗。不同方法的分辨率和鲁棒性不能脱离阵列、SNR、混响、快拍数、搜索网格与训练数据排成统一星级。</p>
-<p><strong>Cramér–Rao 下界（CRLB）的适用口径</strong>。CRLB 给出指定观测模型下无偏估计量的方差下界。对已知波形、加性白噪声中的时延估计，Fisher 信息随线性 SNR、观测量以及信号的均方根带宽平方增加，因此时延方差下界随这些量减小。精确系数取决于单通道还是双通道模型、SNR 定义、单边或双边谱、波形是否已知以及是否同时估计未知幅度等条件；条件未写全时，不能把某个系数或微秒数当成通用下界。对 DOA 而言，还要通过阵列几何的雅可比把时延下界换成角度下界。定性上，SNR、有效带宽、快拍数和有效孔径增大通常会降低方差，端射方向和退化阵列几何会放大误差。</p>
+<p><strong>Cramér–Rao 下界（CRLB）的适用口径</strong>。CRLB 给出指定观测模型下无偏估计量的方差下界。对已知波形、加性白噪声中的时延估计，Fisher 信息随线性 SNR、观测量以及信号的均方根带宽平方增加，因此时延方差下界随这些量减小。</p>
+<p>精确系数取决于单通道还是双通道模型、SNR 定义、单边或双边谱、波形是否已知以及是否同时估计未知幅度等条件。条件未写全时，不能把某个系数或微秒数当成通用下界。</p>
+<p>对 DOA 而言，还要通过阵列几何的雅可比把时延下界换成角度下界。定性上，SNR、有效带宽、快拍数和有效孔径增大通常会降低方差，端射方向和退化阵列几何会放大误差。</p>
 <p><strong>选择依据</strong>：先检查几何与采样率带来的可观测性，包括孔径、GDOP、空间混叠和亚采样时延能力。算法可在明确模型或先验下改善统计效率，但不能恢复几何中不存在的信息。资源受限且不使用训练数据时，可把 SRP-PHAT 作为基线并验证粗到细搜索；满足源数、秩和标定条件时，可评估 MUSIC/root-MUSIC；学习型方法只有在训练数据覆盖目标阵列、房间、噪声与源数，并在同条件验证集上优于解析基线时，才有采用依据。</p>
-<p><strong>定位置信度与丢轨判据</strong>：单帧给一个方向是不够的，在线系统还要回答“这个方向值不值得信、目标跟丢了没有”。三个常用健康度量：①<strong>峰值显著度</strong>（主峰与次高峰/背景均值的比值，SRP 功率图或 GCC 峰背比；比值越大说明指向越明确）；②<strong>帧间一致性</strong>（连续多帧 DOA 的方差或中值偏移，平稳声源下跳动大即不可信）；③<strong>信号存在性</strong>（该方向波束输出的 SNR 或语音存在概率，静音段的方向估计直接弃用）。丢轨阈值必须用本系统验证集标定；满足丢轨条件后，追踪器应转入重捕获状态，而不是继续输出抖动角度。这三类量是第 9 章追踪状态机的输入。</p>
+<p><strong>定位置信度与丢轨判据</strong>：单帧给一个方向是不够的，在线系统还要回答“这个方向值不值得信、目标跟丢了没有”。三个常用健康度量如下：</p>
+<ol>
+<li><strong>峰值显著度</strong>：主峰与次高峰或背景均值的比值，例如 SRP 功率图或 GCC 峰背比；比值越大，指向越明确；</li>
+<li><strong>帧间一致性</strong>：连续多帧 DOA 的方差或中值偏移；平稳声源下跳动大即不可信；</li>
+<li><strong>信号存在性</strong>：该方向波束输出的 SNR 或语音存在概率；静音段的方向估计直接弃用。</li>
+</ol>
+<p>丢轨阈值必须用本系统验证集标定。满足丢轨条件后，追踪器应转入重捕获状态，而不是继续输出抖动角度。这三类量是第 9 章追踪状态机的输入。</p>
 <span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-9">4.9 本章练习</h2>
 <ol>
 <li>★基础（TDOA + GDOP）：4 cm 双麦、正横方向附近，时延估计偏了 10 μs，角度会偏多少？（参考答案：正横附近 $\Delta\theta\approx c\Delta\tau/d=343\times10\times10^{-6}/0.04\approx0.086$ rad≈<strong>4.9°</strong>。线性近似只能在偏差足够小时使用。例如真值为 85° 时，时延约 116.2 μs；估计值增加 10 μs 会超过 4 cm 双麦的物理上限 $d/c\approx116.6$ μs，应判为越界或限制到端射。若减少 10 μs，精确反算为 $\arcsin[(116.2-10)\times10^{-6}\times343/0.04]\approx65.6°$，误差约 19.4°。这与 §3.1 算例 3-2 一致：端射附近的有限偏差必须用反正弦精确反算，不能把微分式的 56.4° 当成精确答案。）</li>

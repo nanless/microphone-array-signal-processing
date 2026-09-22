@@ -164,6 +164,44 @@ def clean_heading_text(text: str):
     return re.sub(r"\s+", " ", unescape(text)).strip()
 
 
+def paragraph_review_candidates(text: str, min_chars: int = 280,
+                                min_sentences: int = 6):
+    """返回需要人工复核的长正文段；长度是线索，不是发布失败条件。"""
+    prose = strip_fenced_code(text)
+    candidates = []
+    offset = 0
+    for block in re.split(r"\n\s*\n", prose):
+        start = prose.find(block, offset)
+        offset = start + len(block)
+        lines = [line.strip() for line in block.splitlines() if line.strip()]
+        if not lines:
+            continue
+        first = lines[0]
+        if (re.match(r"^(?:#{1,6}\s|[-*+]\s|\d+[.)]\s|>|\||```|~~~|\$\$|<)", first)
+                or all(line.startswith("|") for line in lines)):
+            continue
+        visible = " ".join(lines)
+        visible = strip_inline_code(visible)
+        visible = re.sub(r"!\[([^]]*)\]\([^)]*\)", r"\1", visible)
+        visible = re.sub(r"\[([^]]*)\]\([^)]*\)", r"\1", visible)
+        han_count = len(re.findall(r"[\u3400-\u9fff]", visible))
+        word_count = len(re.findall(r"\b[A-Za-z]+(?:[-'][A-Za-z]+)*\b", visible))
+        sentence_count = len(re.findall(r"[。！？；]", visible))
+        sentence_count += len(re.findall(r"[.!?](?=\s|$)", visible))
+        length_value = han_count if han_count >= 20 else word_count
+        length_unit = "汉字" if han_count >= 20 else "英文词"
+        length_limit = min_chars if han_count >= 20 else 160
+        if length_value >= length_limit or sentence_count >= min_sentences:
+            candidates.append({
+                "line": prose.count("\n", 0, start) + 1,
+                "chars": length_value,
+                "unit": length_unit,
+                "sentences": sentence_count,
+                "preview": re.sub(r"\s+", " ", visible)[:72],
+            })
+    return candidates
+
+
 def semantic_heading_ids(text: str):
     """按公开锚点规则独立计算源 Markdown 的主标题标识。"""
     seen = Counter()
@@ -360,6 +398,17 @@ def check_sources(errors: list[str], notices: list[str]):
             line_no = prose.count("\n", 0, match.start()) + 1
             notices.append(
                 f"高风险口语需人工复核：{path.relative_to(ROOT)}:{line_no}: {match.group(0)}")
+        paragraph_candidates = paragraph_review_candidates(original)
+        if paragraph_candidates:
+            worst = max(
+                paragraph_candidates,
+                key=lambda item: (item["chars"], item["sentences"]),
+            )
+            notices.append(
+                f"段落结构需人工复核：{path.relative_to(ROOT)} 共 "
+                f"{len(paragraph_candidates)} 处；最长候选在第 {worst['line']} 行，"
+                f"约 {worst['chars']} {worst['unit']}、{worst['sentences']} 句。长度只用于定位。"
+            )
 
     documents = {path.name: path.read_text(encoding="utf-8")
                  for path in sorted(CHAPTERS.glob("*.md"))}
