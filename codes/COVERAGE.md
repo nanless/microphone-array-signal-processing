@@ -1,86 +1,296 @@
-# 算法—代码覆盖表
+# 算法—源码—验证覆盖表
 
-本表的“覆盖”只针对正文实际定义、推导或直接用于工程选择的内容。一个条目属于以下四类之一：
+核实日期：2026-09-22。本表覆盖正文定义、推导或用于选型的方法，以及三篇研究文档中明确说明收录理由的扩展。每行限定具体计算步骤、算法变体或工业机制；同一算法的教学实现与外部对照不重复登记成不同状态。
 
-- **教学基线**：本仓库有可运行实现、例子和单元测试；用于理解公式，不代表论文完整系统或产品实现。
-- **外部实现**：官方或作者维护的实现已在 `THIRD_PARTY.md` 和锁定清单中定位。
-- **原理索引**：正文讲原理、假设和选型，但完整实现依赖大型框架、训练数据、硬件或复杂工程。
-- **排除**：名称或来源不能唯一确认，或许可证不足以支持当前分发方式；说明原因，不放占位代码。
+四种覆盖状态：
 
-## 基础、定位与波束形成
+- **本仓库可运行基线**：有教学实现、示例与回归测试；只覆盖该行说明的范围，不代表完整论文系统或产品。
+- **外部参考实现**：已定位官方或作者实现并登记许可、版本；可能仍缺依赖、模型、数据或硬件，也可能存在已记录的实现疑点。
+- **原理索引**：已有原理或来源依据，但尚未形成唯一、许可明确且承担对应计算的源码映射；代码可见而许可不明时也保留此状态，并说明原因。
+- **明确排除**：指定软件的身份或许可不满足本书当前收录方式；不表示删除相应方法的学术讨论。
 
-| 正文 | 算法/步骤 | 状态 | 本仓库入口 | 独立检查重点 |
+源码取得与入口核对见 [SOURCE_STATUS.json](SOURCE_STATUS.json)；该文件中的依赖验证和执行字段未开展时为 `not_run`，不承载方法级数值实验结果。实际运行及数值对照见[增强研究记录](research/02_aec_wpe_separation.md)和 [WPE 独立对照脚本](examples/compare_wpe_reference.py)。覆盖状态不是测试结果。完整提交、官方地址、许可与来源 ID 见 [SOURCES.lock.json](SOURCES.lock.json)。教学路径相对于 [array_tutorial/](array_tutorial/)；外部路径相对于对应项目根，出现“同文件”时仅继承上一行文件，不继承其算法或验证结论。
+
+详细模型、源码阅读与实验设计见 [空间与追踪](research/01_spatial_and_tracking.md)、[AEC、WPE 与分离](research/02_aec_wpe_separation.md)、[工业部署](research/03_industrial_deployment.md)。表中“研究扩展”不表示正文已有完整推导。第 6 章算法实际位于 §6.1 的子节，第 7 章位于 §7.1 及其子节；不再引用不存在的 §6.2、§6.3 或 §7.4。
+
+## 基础模型、几何与统计
+
+| 正文或研究范围 | 算法/机制 | 覆盖状态 | 教学入口或主清单 ID：官方源码入口 | 关键边界 |
 |---|---|---|---|---|
-| §2.2～2.3 | 远场时延、导向矢量 | 教学基线 | `geometry.py` | 双阵元手算、角度边界、相位约定 |
-| §2.2～2.3 | 近场球面波导向、距离衰减 | 教学基线 | `geometry.py` | 参考麦归一化、零距离拒绝、远场退化趋势 |
-| §2.5 | STFT/iSTFT、空间协方差 | 教学基线 | `spectral.py`、`covariance.py` | 完美重构、Hermitian、半正定 |
-| §2.4 | 镜像法房间脉冲响应 | 外部实现 | pyroomacoustics 0.10.0 | 房间、吸声、`max_order`、采样率和随机性 |
-| §3.1～3.3 | 阵列几何、差分/稀疏阵与协同阵 | 原理索引 | 正文推导、`geometry.py` 的坐标输入 | 几何集合不等于完整阵列优化器 |
-| §3.4 | 增益相位、互耦和位置自标定 | 原理索引 | 正文校准流程 | 可观测性、锚点、环境和留出方向复测 |
-| §4.1 | AIC/MDL 源数估计 | 原理索引 | 正文公式与原论文 | 快拍数、白噪声和独立源假设 |
-| §4.2 | GCC-PHAT/TDOA | 教学基线 | `doa.py` | 整数时延、静音输入、最大物理时延 |
-| §4.3 | SRP-PHAT 扫描 | 教学基线 | `doa.py` | 目标网格峰、麦对计数 |
-| §4.4 | TDOA 几何最小二乘/高斯—牛顿 | 原理索引 | 正文手算与优化步骤 | 参考麦、双曲面、多解、初值和雅可比 |
-| §4.5～4.6 | Bartlett、Capon、MUSIC、ESPRIT | 教学基线 | `doa.py` | 二阵元解析例、加载、源数和秩亏 |
-| §4.7 | CSSM、WAVES、TOPS、FRIDA、稀疏/原子范数定位 | 原理索引 | pyroomacoustics 等外部项目 | 各方法假设不同，不做统一性能排名 |
-| §4.7 | 学习型 DOA/SELD/ACCDOA/icoDOA | 原理索引 | icoDOA、SpeechBrain、ESPnet | 模型、特征、标签、权重和数据许可证另核对 |
-| §4.8 | CRLB/Fisher 信息下界 | 原理索引 | 正文观测模型 | 它是指定模型下的方差下界，不是定位器 |
-| §5.2～5.4 | DSB、超指向、MVDR | 教学基线 | `beamforming.py` | 单位增益、WNG、协方差病态 |
-| §5.5～5.7 | LCMV、GSC 阻塞、维纳后滤波 | 教学基线 | `beamforming.py` | 约束残差、目标泄漏、零功率 |
-| §5.4 | 对角加载、最坏情形/不确定集鲁棒 MVDR | 原理索引 | 教学 MVDR 只实现相对加载 | 加载口径、WNG、失配集和目标保持 |
-| §5.7 | SPP、MCRA/IMCRA、OM-LSA、多通道后滤 | 原理索引 | 教学版只实现标量 Wiener 增益 | 噪声跟踪、增益平滑和音乐噪声 |
-| §5.8 | 球谐域波束和径向滤波 | 原理索引 | 正文公式 | 阵列半径、阶数、模态强度和径向零点 |
-| §5.9 | GEV+BAN、RTF、掩码/端到端波束 | 原理索引 | torchaudio、SpeechBrain、ESPnet | 完整系统依赖协方差、掩码、训练和缩放口径 |
+| §2.2、§2.3 | 远场相对时延 | 本仓库可运行基线 | `geometry.py::plane_wave_delays` | 坐标、角度零点、时延正号 |
+| §2.3 | 平面波导向矢量 | 本仓库可运行基线 | `geometry.py::plane_wave_steering` | 傅里叶符号、公共相位 |
+| §2.2、§2.7 | 球面波导向与距离衰减 | 本仓库可运行基线 | `geometry.py::near_field_steering` | 参考麦归一、零距离、远场退化 |
+| §2.4 | 镜像法 RIR | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/room.py` | 反射阶数不等于任意实测混响时间 |
+| 研究扩展：空间 §2 | 射线追踪房间模拟 | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/libroom_src/` | 不自动包含衍射、结构传声 |
+| §2.5 | STFT 分析 | 本仓库可运行基线 | `spectral.py::stft` | 窗、帧移、补零与轴序 |
+| §2.5 | 加权重叠相加 iSTFT | 本仓库可运行基线 | `spectral.py::istft` | 窗乘积包络、输出长度 |
+| §2.5 | 批处理空间协方差 | 本仓库可运行基线 | `covariance.py::spatial_covariance` | 共轭、快拍与功率归一 |
+| §2.5、§5.4 | 递推空间协方差 | 本仓库可运行基线 | `covariance.py::recursive_covariance` | 遗忘因子、启动与非平稳性 |
+| §3.3 | 差分协同阵增广协方差 | 外部参考实现 | `doatools`：`doatools/estimation/coarray.py` | 虚拟滞后不是独立物理通道 |
+| §3.3 | 稀疏阵几何优化 | 原理索引 | 正文差分集合与孔径分析 | 协方差重建不是几何优化器 |
+| §3.4.1 | 增益—相位自校准 | 原理索引 | 正文交替估计流程 | 规范不唯一、锚点、留出方向 |
+| §3.4.2 | 互耦补偿 | 原理索引 | 正文互耦矩阵模型 | 病态逆补偿放大噪声 |
+| §3.4.3 | 麦位置自标定 | 原理索引 | 正文有锚/无锚模型 | 坐标规范、同步与可观测性 |
 
-## 回声、去混响、分离与追踪
+## 定位与搜索
 
-| 正文 | 算法/步骤 | 状态 | 本仓库入口 | 独立检查重点 |
+| 正文或研究范围 | 算法/机制 | 覆盖状态 | 教学入口或主清单 ID：官方源码入口 | 关键边界 |
 |---|---|---|---|---|
-| §6.2 | 时域 NLMS | 教学基线 | `aec.py` | 已知 FIR、双讲冻结、零参考 |
-| §6.3 | ERLE 与有效帧掩码 | 教学基线 | `aec.py` | 参考对齐、双讲段排除、静音 |
-| §6.1.3、§6.1.5、§6.1.9 | PBFDAF、FDKF、DTD、AEC3 | 外部实现 | WebRTC、SpeexDSP | 播放参考、延迟估计、非线性和状态机不可省略 |
-| §6.1.3～6.1.6 | 比例自适应、卡尔曼 AEC、Volterra、混合神经 AEC | 原理索引 | 正文论文与系统结构 | 完整实现依赖分块状态、控制器、训练和数据 |
-| §6.1.10 | 多参考 AEC 与参考去相关 | 原理索引 | 正文选型 | 多播放通道可辨识性和参考抽头位置 |
-| §7.1～7.3 | 批处理 WPE | 教学基线 | `dereverberation.py` | 保护延迟、复数加权最小二乘、短输入 |
-| §7.4 | 在线/块在线 WPE | 外部实现 | nara_wpe 0.0.11 | 因果性、递推状态、启动段和算法延迟 |
-| §7.4 | DNN-WPE、WPD | 原理索引 | ESPnet 等上游系统 | 模型版本、掩码/功率估计、前瞻和训练数据 |
-| §8 | SI-SDR、PIT、掩码协方差、掩码 MVDR | 教学基线 | `separation.py` | 排列枚举、零能量、复数协方差 |
-| §8 | AuxIVA、ILRMA | 外部实现 | pyroomacoustics 等官方实现 | 白化、尺度/排列、迭代停止和频点一致性 |
-| §8 | MNMF、cACGMM/GSS、TRINICON | 原理索引 | 正文伪代码与论文系统 | 空分量、数值下溢、活动日志和迭代收敛 |
-| §8 | Conv-TasNet、DPRNN、SepFormer、S4M、TF-GridNet | 原理索引 | Asteroid、SpeechBrain、ESPnet 与论文仓库 | 源数、因果性、块状态、权重和数据许可 |
-| §8 | TSE、CSS、扩散分离 | 原理索引 | 正文论文与官方项目 | 条件泄漏、跨块排列、前瞻、采样步数和身份隐私 |
-| §9.2 | 角度状态 Kalman 滤波 | 教学基线 | `tracking.py` | 角度回绕、缺测、Joseph 更新 |
-| §9.3 | 粒子滤波与系统重采样 | 教学基线 | `tracking.py` | 权重归一化、确定种子、退化权重 |
-| §9.3 | JPDA/MHT、PHD/CPHD、LMB/GLMB、TBD | 原理索引 | 论文和领域工具 | 出生/消亡、漏检、杂波、身份和计算截断决定实现 |
+| §4.1.1 | AIC 源数估计 | 外部参考实现 | `doatools`：`doatools/estimation/source_number.py::aic` | 特征值排序、快拍独立性、白噪声 |
+| §4.1.1 | MDL 源数估计 | 外部参考实现 | `doatools`：同文件 `mdl` | 惩罚项不同于 AIC |
+| §4.2 | GCC-PHAT 与物理 lag 裁剪 | 本仓库可运行基线 | `doa.py::gcc_phat` | 静音、麦序、带宽与多峰 |
+| §4.2 | GCC 峰三点亚采样插值 | 本仓库可运行基线 | `doa.py::gcc_phat` 插值选项 | 不能创造窄带缺少的信息 |
+| §4.3 | 远场 SRP-PHAT | 本仓库可运行基线 | `doa.py::srp_phat` | 麦对、网格、时延表 |
+| §4.7.1；研究扩展：空间 §8 | 近场三维 SRP | 原理索引 | 正文球面传播与角度—距离网格；空间研究 §8 的版本边界 | 锁定 pyroomacoustics 0.10.0 未将 `mode/r` 接入有效导向和距离网格，不能作为该变体实现 |
+| §4.3；研究扩展：空间 §9 | 分层 SRP 搜索 | 外部参考实现 | `odas`：`src/module/mod_ssl.c`、`src/signal/scan.c` | 粗层丢峰不能由细层恢复 |
+| 研究扩展：空间 §9 | 方向性麦对筛选 | 外部参考实现 | `odas`：`src/signal/spatialindex.c` 与配置 | 设备指向性及有效麦对 |
+| 研究扩展：空间 §10 | SVD-PHAT | 原理索引 | 原论文与低秩实验设计 | 未确认唯一且许可明确的作者实现 |
+| 研究扩展：空间 §10 | 多源 SVD-PHAT | 原理索引 | 多源原论文 | 普通 SVD 库不实现逐次投影规则 |
+| §4.4 | TDOA 加权非线性最小二乘 | 原理索引 | 正文高斯—牛顿推导 | 共享参考误差相关、多解、雅可比 |
+| §4.5 | Bartlett 空间谱 | 本仓库可运行基线 | `doa.py::bartlett_spectrum` | 导向与输出功率归一 |
+| §4.5 | Capon 空间谱 | 本仓库可运行基线 | `doa.py::capon_spectrum` | 加载、秩亏、失配 |
+| §4.6 | MUSIC | 本仓库可运行基线 | `doa.py::music_spectrum` | 源数、噪声子空间、选峰 |
+| §4.6 | NormMUSIC | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/doa/normmusic.py` | 低可靠频点可能被过度加权 |
+| §4.6 | 前向空间平滑 | 外部参考实现 | `doatools`：`doatools/estimation/preprocessing.py::spatial_smooth` | 参数 `l` 是子阵数 |
+| §4.6 | 前后向空间平滑 | 外部参考实现 | `doatools`：同函数 `fb` 选项 | 对称与平移模型、孔径损失 |
+| §4.6 | root-MUSIC | 外部参考实现 | `doatools`：`doatools/estimation/music.py::RootMUSIC1D` | ULA、根选择、半波距与 NumPy 相容性 |
+| §4.6 | LS-ESPRIT | 本仓库可运行基线 | `doa.py::esprit_ula` | 平移子阵、相位反解 |
+| §4.6；研究扩展：空间 §14 | TLS-ESPRIT | 外部参考实现 | `doatools`：`doatools/estimation/esprit.py` | 双侧误差模型不同于 LS |
+| §4.6.1 | CSSM | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/doa/cssm.py` | 已登记剔除频点后协方差下标疑点 |
+| §4.6.1 | WAVES | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/doa/waves.py` | 已登记剔除频点后协方差下标疑点 |
+| §4.6.1 | TOPS | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/doa/tops.py` | 已登记真实 bin/列表下标疑点 |
+| §4.7 | FRIDA | 外部参考实现 | `frida-original`：`doa/fri.py`；`pyroomacoustics`：`pyroomacoustics/doa/frida.py` | 随机初值、连续角；原实验旧环境 |
+| §4.7 | 组稀疏多快拍定位 | 外部参考实现 | `doatools`：`doatools/estimation/sparse.py::GroupSparseEstimator` | 离格误差、字典尺度、求解器 |
+| §4.7 | 稀疏协方差匹配 | 外部参考实现 | `doatools`：同文件 `SparseCovarianceMatching` | 不相关源功率模型 |
+| §4.7 | 稀疏贝叶斯定位 SBL | 原理索引 | 正文原论文 | 其他稀疏优化器不能代表 SBL |
+| §4.7 | 原子范数定位 | 原理索引 | 正文连续参数模型 | 通用 SDP 求解器不是完整实现 |
+| §4.7、§9.3 | icoDOA | 外部参考实现 | `icodoa`：`1sourceTracking_icoCNN.py` | AGPL；gpuRIR、icoCNN、数据另核 |
+| 研究扩展：空间 §41 | Cross3D | 外部参考实现 | `icodoa`：`acousticTrackingModels.py::Cross3D` | 类存在不等于训练已经复现 |
+| §4.8；研究扩展：空间 §38 | 随机源 CRB | 外部参考实现 | `doatools`：`doatools/performance/crb.py::crb_sto_farfield_1d` | 模型下界，不是定位器 |
+| 研究扩展：空间 §38 | 确定源 CRB | 外部参考实现 | `doatools`：同文件 `crb_det_farfield_1d` | 不能混用随机源模型 |
+| 研究扩展：空间 §38 | 不相关随机源 CRB | 外部参考实现 | `doatools`：同文件 `crb_stouc_farfield_1d` | 独立性与方差单位 |
+| 研究扩展：空间神经定位 | IPDnet 固定阵列 | 原理索引 | `fn-ssl-ipdnet`：`IPDnet/FixedAarryIPDnet.py` 来源索引 | 原文件如此拼写；未建立明确许可，不下载 |
+| 研究扩展：空间神经定位 | IPDnet 可变阵列 | 原理索引 | `fn-ssl-ipdnet`：`IPDnet/VariableArrayIPDnet.py` 来源索引 | 许可未建立；几何、特征和在线状态另核 |
+| §4.7；研究扩展：空间 §43 | 单轨 ACCDOA 表示 | 原理索引 | `dcase2022-seld`：`seldnet_model.py` 后续届次实现索引 | 许可未建立；向量模不等于概率或距离 |
+| §4.7；研究扩展：空间 §44 | Multi-ACCDOA 多轨表示 | 原理索引 | `dcase2022-seld`：`seldnet_model.py` 来源索引 | 许可未建立；同类重叠源与轨道容量 |
+| §4.7；研究扩展：空间 §44 | ADPIT 辅助重复排列训练 | 原理索引 | `dcase2022-seld`：`seldnet_model.py` 来源索引 | 许可未建立；训练置换不提供持久身份 |
+| 研究扩展：空间 SELD | DCASE 2025 双声道 SELD 基线 | 原理索引 | `dcase2025-stereo-seld`：`model.py`、`loss.py` 来源索引 | 许可未建立；立体声任务不等于耳廓/HRTF 双耳录音或任意阵列 |
 
-## 工业实现与评测
+## 波束、后滤与球阵
 
-| 正文 | 算法/机制 | 状态 | 本仓库入口 | 产品化时还需解决 |
+| 正文或研究范围 | 算法/机制 | 覆盖状态 | 教学入口或主清单 ID：官方源码入口 | 关键边界 |
 |---|---|---|---|---|
-| §10.1 | 固定容量环形缓冲、截止期限/队列模拟 | 教学基线 | `engineering.py` | 音频回调不得分配、阻塞或做文件/网络 I/O |
-| §10.2 | SRO 线性拟合与重采样 | 教学基线 | `engineering.py` | 真实时钟漂移、时戳抖动、异步设备控制 |
-| §10.3 | 峰值 AGC、迟滞/挂起 VAD、预卷环形缓冲 | 教学基线 | `engineering.py` | 响度、限幅器、噪声门和语音质量共同验收 |
-| §10.3 | 谱减、MMSE-STSA/LSA、MCRA/IMCRA、神经 NS | 原理索引 | RNNoise、WebRTC 及正文原论文 | 噪声跟踪、因果性、训练域和语音损伤 |
-| §10.4 | Q1.15 量化与宽累加点积 | 教学基线 | `engineering.py` | 定点缩放、溢出、舍入、DSP 指令差异 |
-| §10.4 | PTQ、QAT、SIMD/内核优化 | 原理索引 | ONNX Runtime、CMSIS-DSP | 算子支持、校准集、布局、编译器和目标核 |
-| §10.10 | 遥测记录结构与校验 | 教学基线 | `engineering.py`、`telemetry_schema.json` | 隐私、统计窗、留存、时钟域和发布环境 |
-| §10 | 实时采集、AEC/NS 产品链、边缘推理 | 外部实现 | PortAudio、WebRTC、RNNoise、ONNX Runtime、CMSIS-DSP、ODAS | OS/驱动/线程、平台构建、模型和设备验收 |
+| §5.2 | DSB 权重 | 本仓库可运行基线 | `beamforming.py::dsb_weights` | 不含设备分数延时 FIR |
+| §5.3 | 弥散场相干模型 | 本仓库可运行基线 | `beamforming.py::diffuse_coherence` | 各向同性假设 |
+| §5.3 | 超指向波束 | 本仓库可运行基线 | `beamforming.py::superdirective_weights` | 低频 WNG 与麦误差 |
+| §5.3 专栏 | 差分麦克风阵 DMA | 原理索引 | 正文一阶算例与高阶模型 | 超指向接口不覆盖全部 DMA |
+| §5.4 | MVDR 与相对对角加载 | 本仓库可运行基线 | `beamforming.py::mvdr_weights` | 加载按平均特征值缩放 |
+| §5.4.1 | 最坏情形稳健波束 | 原理索引 | 正文误差集模型 | 经验加载不等于明确误差集优化 |
+| §5.4.1 | 显式 WNG 约束设计 | 原理索引 | 正文约束与选型 | WNG 计算不等于约束优化器 |
+| §5.5 | LCMV 闭式权重 | 本仓库可运行基线 | `beamforming.py::lcmv_weights` | 约束独立性、残差 |
+| §5.5 | Frost 投影自适应 | 原理索引 | 正文时域投影更新 | 闭式 LCMV 不是在线 Frost |
+| §5.6 | GSC 阻塞矩阵 | 本仓库可运行基线 | `beamforming.py::blocking_matrix` | 不含持续自适应抵消支路 |
+| §5.6 | 完整在线自适应 GSC | 原理索引 | 正文三支路结构 | 更新器、冻结、状态、泄漏控制 |
+| §5.7.2 | 标量 Wiener 增益 | 本仓库可运行基线 | `beamforming.py::wiener_gain` | 不是完整噪声估计器 |
+| §5.7.1 | MCRA | 原理索引 | 正文与空间研究的作者软件入口 | 未获得可核版本/许可包 |
+| §5.7.1 | IMCRA | 原理索引 | 正文与空间研究的作者软件入口 | 不把普通最小值跟踪称 IMCRA |
+| §5.7.2 | OM-LSA | 原理索引 | 正文及作者方法说明 | 不以 Wiener 或其他 MMSE 增益代替 |
+| §5.7.2；研究扩展：空间后滤 | 全秩 SDW-MWF | 外部参考实现 | `espnet`：`espnet2/enh/layers/beamformer.py::get_sdw_mwf_vector` | 失真权重与参考通道 |
+| 研究扩展：空间后滤 | 秩一迹化简 WMWF | 外部参考实现 | `pb_bss`：`pb_bss/extraction/beamformer.py::get_wmwf_vector` | 不代表一般全秩 MWF |
+| §5.9 | GEV 波束权重 | 外部参考实现 | `pb_bss`：同文件 `get_gev_vector` | 广义特征向量尺度不确定 |
+| §5.9 | BAN 缩放 | 外部参考实现 | `pb_bss`：同文件 `blind_analytic_normalization` | 是独立缩放步骤，不保证无失真 |
+| §5.9 | RTF 幂迭代估计 | 外部参考实现 | `espnet`：`espnet2/enh/layers/beamformer.py::get_rtf` | 函数本身不完成参考通道归一 |
+| §5.9、§8.1 | 掩码空间协方差 | 本仓库可运行基线 | `separation.py::masked_spatial_covariance` | 轴序、空掩码、保留原始功率 |
+| §5.9、§8.1 | 两通道掩码 MVDR | 本仓库可运行基线 | `separation.py::mask_mvdr_2x2` | 限定 2×2，不是完整神经系统 |
+| §5.8 | 球面采样到球谐系数 | 外部参考实现 | `sound-field-analysis`：`sound_field_analysis/process.py::spatFT` | 实/复、余纬角、排列和归一 |
+| §5.8 | 理论径向补偿 | 外部参考实现 | `sound-field-analysis`：`sound_field_analysis/gen.py::radial_filter` | 开放/刚性球、低频噪声 |
+| §5.8；研究扩展：空间 §25 | 软限制径向滤波 | 外部参考实现 | `spherical-array-processing`：`arraySHTfiltersTheory_softLim.m` | 限幅与模态误差权衡 |
+| §5.8；研究扩展：空间 §25 | 理论正则球阵编码 | 外部参考实现 | `spherical-array-processing`：`arraySHTfiltersTheory_regLS.m` | 正则量、噪声模型 |
+| §3.4、§5.8 | 实测响应正则编码 | 外部参考实现 | `spherical-array-processing`：`arraySHTfiltersMeas_regLS.m` | 设计集与留出方向分开 |
+| 研究扩展：空间 §26 | 球谐 Dolph–Chebyshev 波束 | 外部参考实现 | `spherical-array-processing`：`beamWeightsDolphChebyshev2Spherical.m` | 有效阶数与旁瓣 |
+| §5.8 | 球谐 MVDR | 外部参考实现 | `spherical-array-processing`：`sphMVDR.m` | 径向滤波后噪声统计更新 |
+| §5.8 | 球谐 LCMV | 外部参考实现 | `spherical-array-processing`：`sphLCMV.m` | 约束和编码误差 |
+| 研究扩展：空间 §26 | 球谐 MUSIC | 外部参考实现 | `spherical-array-processing`：`sphMUSIC.m` | 源数与有效阶数 |
+| 研究扩展：空间 §26 | 球谐 ESPRIT | 外部参考实现 | `spherical-array-processing`：`sphESPRIT.m` | 与阵元 ULA 结构不同 |
+| 研究扩展：空间 §27 | C/C++ 球阵编码块处理 | 外部参考实现 | `spatial-audio-framework`：`examples/src/array2sh/array2sh.c` | 核心 ISC、可选 GPL 模块与后端另核 |
+| 研究扩展：空间 §23 | Acoustic Rake | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/beamforming.py::rake_mvdr_filters` | 需要反射模型，不是通用去混响器 |
+| 研究扩展：空间 §28 | DAMAS | 外部参考实现 | `acoular`：`acoular/fbeamform.py::BeamformerDamas` | 输出功率图，依赖 PSF |
+| 研究扩展：空间 §29 | CLEAN-SC | 外部参考实现 | `acoular`：同文件 `BeamformerCleansc` | 减去量、停止与弱源保留 |
+| 研究扩展：空间 §30 | CMF | 外部参考实现 | `acoular`：同文件 `BeamformerCMF` | 约束、缩放与残差 |
+| 研究扩展：空间 §30 | SODIX | 外部参考实现 | `acoular`：同文件 `BeamformerSODIX` | 源强和指向性可辨识性 |
+| 研究扩展：空间 §30 | 移动源时域声学成像 | 外部参考实现 | `acoular`：`acoular/tbeamform.py` | 轨迹/传播真值，不直接输出增强语音 |
 
-## 选型、评测与研究扩展
+## 回声消除与自适应控制
 
-| 正文 | 算法/工具 | 状态 | 外部入口 | 核实边界 |
+| 正文或研究范围 | 算法/机制 | 覆盖状态 | 教学入口或主清单 ID：官方源码入口 | 关键边界 |
 |---|---|---|---|---|
-| §11.2 | cpWER、ORC-WER、MIMO-WER、DI-cpWER | 外部实现 | MeetEval 固定提交 | sa-WER 是另一评价口径，不能暗示同一锁定文档已经实现 |
-| §9.2～9.3 | KF/EKF/UKF/PF 与多目标追踪组件 | 外部实现 | FilterPy、Stone Soup | 坐标、角度环绕、时间单位、出生/杂波/剪枝配置另对齐 |
-| §8.1 | AuxIVA、OverIVA、FIVE | 外部实现 | piva | GPL-3.0，只索引；依赖和分发义务另核对 |
-| §8.1 | S4M | 原理索引 | S4M 论文代码 | 仓库没有完整训练入口、checkpoint 或数据 |
-| §8.1 | AudioSep | 原理索引 | AudioSep 论文代码 | 主 checkpoint 许可未单列，训练/评测媒体各有条款 |
-| 附录 B §13.3 | SGMSE+、StoRM | 原理索引 | 两个论文官方仓库 | 代码 MIT 不自动覆盖托管权重和训练集 |
-| 附录 B §13.3 | ArrayDPS | 原理索引 | 论文官方仓库 | checkpoint 未单列许可，SMS-WSJ 代码不授予 WSJ 音频权利 |
+| §6.1.2 | LMS | 原理索引 | 正文梯度更新 | 教学 NLMS 不是固定步长 LMS |
+| §6.1.2 | NLMS | 本仓库可运行基线 | `aec.py::nlms` | 外部冻结掩码、零参考、有限 FIR |
+| 研究扩展：增强 A01 | 泄漏 NLMS | 原理索引 | 泄漏更新说明 | 教学函数没有泄漏参数 |
+| §6.1.3 | 单块 FDAF | 原理索引 | 正文频域卷积与约束 | 分区 MDF 不覆盖所有单块变体 |
+| §6.1.3 | MDF/PBFDAF 分区结构 | 外部参考实现 | `speexdsp`：`libspeexdsp/mdf.c` | 实际为 AUMDF；重叠保存与约束 |
+| §6.1.3；研究扩展：增强 A03 | AUMDF 约束调度 | 外部参考实现 | `speexdsp`：同文件 | 约束调度不同于梯度更新 |
+| §6.1.3 | PNLMS | 原理索引 | 正文比例更新 | Speex 控制不代表全部变体 |
+| §6.1.3 | IPNLMS | 原理索引 | 正文改进比例更新 | 比例/均匀项与路径稀疏度 |
+| §6.1.3 | 子带自适应 AEC | 原理索引 | 正文子带结构 | 混叠、带间延迟、更新率 |
+| §6.1.3 | FDKF | 原理索引 | 增强 A04 原论文 | AEC3/Speex 不自动归为卡尔曼 |
+| §6.1.3 | 分区 FDKF | 原理索引 | 增强 A04 分区状态模型 | 跨分区相关、对角近似 |
+| §6.1.4 | Volterra 非线性 AEC | 原理索引 | 正文路径模型 | 阶数、过拟合、未见削波 |
+| §6.1.4 | Hammerstein 非线性路径 | 原理索引 | 正文级联模型 | 非线性位于线性动态系统之前 |
+| §6.1.4 | Wiener 非线性路径 | 原理索引 | 正文级联模型 | 非线性位于线性动态系统之后 |
+| §6.1.5 | Geigel DTD | 原理索引 | 正文判决模型 | 电平与路径变化 |
+| §6.1.5 | 相关/相干性 DTD | 原理索引 | 正文统计控制 | 路径失配可能被误判双讲 |
+| §6.1.5 | 连续可变学习率 | 外部参考实现 | `speexdsp`：`libspeexdsp/mdf.c` | 不是独立二值 DTD |
+| §6.1.9 | AEC3 参考延迟控制 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/render_delay_controller.cc` | 缓冲、调用次序、丢块与重对齐 |
+| §6.1.9 | AEC3 线性抵消 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/subtractor.cc` | 保留线性输出取点 |
+| §6.1.9、§6.1.13 | AEC3 残余回声估计 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/residual_echo_estimator.cc` | 与执行抑制增益分开 |
+| §6.1.9、§6.1.13 | AEC3 抑制增益 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/suppression_gain.cc` | 近端损伤与回声泄漏分别计量 |
+| §6.1.9 | AEC3 舒适噪声 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/comfort_noise_generator.cc` | 不掩盖滤波器未收敛 |
+| §6.1.10 | 多播放参考 AEC | 外部参考实现 | `speexdsp`：`libspeexdsp/mdf.c::speex_echo_state_init_mc` | 交织顺序、参考相关、路径可辨识性 |
+| §6.1.10 | 播放参考去相关 | 原理索引 | 正文多参考选型 | 不能任意加噪而忽略失真 |
+| §6.1.6 | DTLN-aec | 外部参考实现 | `dtln_aec`：`run_aec.py` | 双输入、两阶段状态；模型另核 |
+| §6.1.6 | NKF-AEC | 原理索引 | `nkf_aec`：`src/nkf.py` 来源索引 | 许可未明确；线性 AEC、需对齐 |
+| §6.1.6 | NeuralKalman | 原理索引 | 增强 A12 原论文 | 与 NKF-AEC 不同，未核完整官方软件 |
+| §6.1.6 | Deep Adaptive AEC | 原理索引 | 增强 A12 原论文 | 学习更新系统不等于 NS 分支 |
+| §6.1.6 | DeepVQE | 原理索引 | 增强 A12 原论文 | 联合任务、参考和训练目标 |
+| 研究扩展：增强 A13 | Meta-AF 核心更新器 | 外部参考实现 | `metaaf`：`metaaf/filter.py`、`metaaf/core.py`、`metaaf/meta.py` | 核心 NCSA；zoo/权重受限部分另核 |
+| §6.1.8 | ERLE 与有效单讲区间 | 本仓库可运行基线 | `aec.py::erle_db` | 双讲排除、收敛段、固定延迟 |
 
-## 明确不做的事
+## WPE、盲分离与空间混合
 
-- 不为只出现名字、但没有唯一官方来源的项目创建假链接或同名占位实现；例如在确认具体官方仓库前，
-  `DNNBeamformer` 只作为方法类别讨论。
-- 不把第三方仓库的演示指标抄成统一排行榜；数据、阵列、采样率、因果性和评分脚本不同便不能横比。
-- 不提交模型权重、语料、录音和下载缓存。获得它们时仍需分别核对许可、隐私和再分发条件。
+| 正文或研究范围 | 算法/机制 | 覆盖状态 | 教学入口或主清单 ID：官方源码入口 | 关键边界 |
+|---|---|---|---|---|
+| §7.1 | 离线单/多通道 WPE | 本仓库可运行基线 | `dereverberation.py::offline_wpe`；外部对照 `nara_wpe` | 保护延迟、有效历史；数值对照见研究记录 |
+| §7.1.3 | 逐帧在线 WPE | 外部参考实现 | `nara_wpe`：`nara_wpe/wpe.py::OnlineWPE` | 旧状态输出后更新、启动与重置 |
+| §7.1.3；研究扩展：增强 W03 | 块在线/递推 WPE | 外部参考实现 | `nara_wpe`：`nara_wpe/tf_wpe.py` | 历史窗口不同于新块、接口限制 |
+| §7.1.3 | DNN-WPE | 外部参考实现 | `espnet`：`espnet2/enh/layers/dnn_wpe.py` | 功率网络不自动保证因果 |
+| §7.1.3 | WPD | 外部参考实现 | `espnet`：`espnet2/enh/layers/beamformer.py` WPD 分支 | 当前约束、延迟历史与功率 |
+| 研究扩展：增强 W06 | AR-FastMNMF | 原理索引 | `fastmnmf_author`：`src/` 受限来源索引 | 学术研究限制，未纳入通用源码集合 |
+| §8.1 | SI-SDR | 本仓库可运行基线 | `separation.py::si_sdr` | 零均值、零能量、参考目标 |
+| §8.1 | 小源数 PIT 排列枚举 | 本仓库可运行基线 | `separation.py::pit_permutation` | 阶乘成本，不是长期身份关联 |
+| §8.1；研究扩展：增强 B01 | FDICA | 外部参考实现 | `ssspy`：`ssspy/bss/fdica.py` | 跨频排列与尺度恢复 |
+| §8.1 | AuxIVA 迭代投影 | 外部参考实现 | `ssspy`：`ssspy/bss/iva.py` | IP1/IP2、源模型、初始化 |
+| 研究扩展：增强 B02 | IVA 迭代源导向 ISS | 外部参考实现 | `ssspy`：同文件 ISS 选项 | 与 IP 不同，固定 ISS1/ISS2 |
+| 研究扩展：增强 B02 | projection-back | 外部参考实现 | `ssspy`：`ssspy/algorithm/` | SI-SDR 通过不能证明尺度恢复 |
+| 研究扩展：增强 B03 | OverIVA | 外部参考实现 | `piva`：`piva/auxiva.py` | 过定源数、背景模型；GPL |
+| 研究扩展：增强 B03 | FIVE | 外部参考实现 | `piva`：`piva/five.py` | 单目标提取不等于全部分离 |
+| §8.1 | ILRMA | 外部参考实现 | `ssspy`：`ssspy/bss/ilrma.py` | NMF 基数与局部最优 |
+| §8.1 | 满秩 MNMF | 外部参考实现 | `ssspy`：`ssspy/bss/mnmf.py::GaussMNMF` | 欠定模型不保证可辨识 |
+| §8.1；研究扩展：增强 B06 | FastMNMF | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/bss/fastmnmf.py` | 与受限作者整库许可分开 |
+| 研究扩展：增强 B06 | FastMNMF2 | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/bss/fastmnmf2.py` | 参数化、参考麦源图像 |
+| §8.1 | TRINICON | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/bss/trinicon.py` | 该实现固定两个输出 |
+| §8.1 | cACGMM | 外部参考实现 | `pb_bss`：`pb_bss/distribution/cacgmm.py` | 方向外积不保留原功率 |
+| §8.1 | GSS 活动约束分离 | 外部参考实现 | `gss`：`gss/core/enhancer.py` | RTTM、WPE、聚类、波束共同验收 |
+| 研究扩展：增强 B10 | GPU-GSS 批处理 | 外部参考实现 | `gss`：`gss/core/`、`recipes/` | CUDA/CuPy、批量、显存 |
+| 研究扩展：增强 B10 | CuPy WPE 子实现 | 外部参考实现 | `wpe_gpu`：`wpe/` | GSS 子集，不覆盖全部在线接口 |
+
+## 神经分离、条件提取与生成
+
+| 正文或研究范围 | 算法/机制 | 覆盖状态 | 教学入口或主清单 ID：官方源码入口 | 关键边界 |
+|---|---|---|---|---|
+| §8.1 | Conv-TasNet | 外部参考实现 | `asteroid`：`asteroid/models/conv_tasnet.py` | 因果卷积、归一化与权重配置 |
+| §8.1 | DPRNN | 外部参考实现 | `asteroid`：`asteroid/models/dprnn_tasnet.py` | 双路径方向、重叠重构 |
+| §8.1 | SepFormer | 外部参考实现 | `speechbrain`：`speechbrain/lobes/models/dual_path.py` | 未来信息、整句归一化、峰值内存 |
+| §8.1 | 离线 TF-GridNet | 外部参考实现 | `espnet`：`espnet2/enh/separator/tfgridnet_separator.py` | 固定通道数，不保证任意阵列 |
+| §8.1 | S4M 骨干 | 外部参考实现 | `s4m`：`S4M.py`、`s4.py` | 缺完整训练入口/checkpoint，不是完整训练复现 |
+| 研究扩展：增强 N06 | SPMamba | 外部参考实现 | `spmamba`：`audio_train.py`、`look2hear/` | 双向上下文与 CUDA 算子 |
+| 研究扩展：增强 N07 | Mamba-TasNet/Dual-Path Mamba | 外部参考实现 | `mamba_tasnet`：`train_wsj0mix.py`、`modules/` | 配置变体、GPL、WSJ0 许可分别固定 |
+| §8.1 | SpeakerBeam 方法 | 原理索引 | 增强 N08 原论文与注册模型 | 目标缺席、注册泄漏、设备失配 |
+| 研究扩展：增强 N08 | BUTSpeechFIT/speakerbeam 软件 | 明确排除 | `speakerbeam`：`LICENSE.txt` | 评估协议限制修改和再分发 |
+| §8.1；研究扩展：增强 N09 | 连续语音分离 CSS | 外部参考实现 | `notsofar1`：`css/css.py`、`css/css_with_conformer/separate.py` | 窗口、跨块排列、槽位、配置；不执行资产下载 |
+| §13.3；研究扩展：增强 N10 | SGMSE+ | 外部参考实现 | `sgmse`：`enhancement.py`、`sgmse/model.py` | 采样器、权重和语料另核 |
+| §13.3；研究扩展：增强 N10 | StoRM | 外部参考实现 | `storm`：`enhancement.py`、`sgmse/model.py` | 再生成不等于 SGMSE 推理流程 |
+| §13.3；研究扩展：增强 N11 | ArrayDPS | 外部参考实现 | `arraydps`：`separate.py`、`src/sampler.py` | 传播模型、先验、WSJ 录音权利 |
+| §8.1；研究扩展：增强 N12 | AudioSep | 外部参考实现 | `audiosep`：`pipeline.py` | 默认单声道 32 kHz，不是注册语音 TSE |
+
+## 追踪、关联与控制
+
+| 正文或研究范围 | 算法/机制 | 覆盖状态 | 教学入口或主清单 ID：官方源码入口 | 关键边界 |
+|---|---|---|---|---|
+| §9.2 | 角度—角速度 Kalman | 本仓库可运行基线 | `tracking.py::ConstantVelocityKalman` | 最短角差、Joseph 更新、Q 的离散化 |
+| §9.2 | EKF | 外部参考实现 | `filterpy`：`filterpy/kalman/EKF.py` | 观测雅可比、角度残差 |
+| §9.2 | UKF | 外部参考实现 | `filterpy`：`filterpy/kalman/UKF.py` | sigma 点、圆周均值 |
+| §9.2；研究扩展：空间 §40 | IMM | 外部参考实现 | `filterpy`：`filterpy/kalman/IMM.py` | 同维同义状态与模式转移 |
+| §9.3 | 圆周 SIR 粒子滤波 | 本仓库可运行基线 | `tracking.py::CircularParticleFilter` | 对数权重、多峰均值无定义 |
+| §9.3 | 系统重采样 | 本仓库可运行基线 | `tracking.py::systematic_resample` | 权重归一、随机种子 |
+| §9.3；研究扩展：空间 §33 | 最近邻关联 | 外部参考实现 | `stonesoup`：`stonesoup/dataassociator/neighbour.py` | 单轨最近不等于全局最优 |
+| §9.3；研究扩展：空间 §33 | GNN 全局关联 | 外部参考实现 | `stonesoup`：同文件 | 全局分配、一对一与门控 |
+| §9.3；研究扩展：空间 §33 | PDA | 外部参考实现 | `stonesoup`：`stonesoup/dataassociator/probability.py` | 漏检、检测概率、杂波密度 |
+| §9.3 | JPDA | 外部参考实现 | `stonesoup`：同文件 `JPDA` | 联合事件，不自动维护说话人身份 |
+| §9.3 | GM-PHD | 外部参考实现 | `stonesoup`：`stonesoup/updater/pointprocess.py::PHDUpdater` | 权重和是期望人数 |
+| §9.3；研究扩展：空间 §34 | 高斯混合剪枝/合并 | 外部参考实现 | `stonesoup`：`stonesoup/mixturereducer/gaussianmixture.py` | 删去强度、出生覆盖 |
+| §9.3 | MHT | 原理索引 | 正文关联历史模型 | 假设截断与资源 |
+| §9.3 | CPHD | 原理索引 | 正文目标数分布 | 基类文字不证明有实现 |
+| §9.3 | LMB | 原理索引 | 正文标签多伯努利模型 | 标签、存在性 |
+| §9.3 | δ-GLMB | 原理索引 | 正文标签随机有限集 | PHD 分量命名不等于 GLMB |
+| §9.3 | 检测前追踪 TBD | 原理索引 | 正文弱证据模型 | 硬阈值峰不能替代原输入 |
+| §9.3 | OSPA | 外部参考实现 | `stonesoup`：`stonesoup/metricgenerator/ospametric.py` | 截断、阶数、单位；不直接评价身份 |
+| §9.4 | 轨迹到波束预测/限速 | 原理索引 | 正文控制接口 | 观测龄期、失效与最大角速度 |
+
+## 连续音频、噪声控制与部署
+
+| 正文或研究范围 | 算法/机制 | 覆盖状态 | 教学入口或主清单 ID：官方源码入口 | 关键边界 |
+|---|---|---|---|---|
+| §10.1.2、§10.3.3 | 环形缓冲与预卷 | 本仓库可运行基线 | `engineering.py::RingBuffer` | Python 教学容器不是无锁硬实时队列 |
+| §10.1.1 | 截止期限/队列模拟 | 本仓库可运行基线 | `engineering.py::simulate_deadline_queue` | 等待、计算与排队分别计量 |
+| §10.1.2 | PortAudio 回调/时间戳 | 外部参考实现 | `portaudio`：`include/portaudio.h`、`examples/` | 不阻塞、不分配；ADC/DAC 时钟核对 |
+| §10.1.2；工业 I02 | ALSA PCM 状态恢复 | 外部参考实现 | `alsa-lib`：`src/pcm/pcm.c`、`test/pcm.c` | xrun、挂起、移除分别处理 |
+| §10.1.2；工业 I03 | PipeWire AEC 四流路由 | 外部参考实现 | `pipewire`：`src/modules/module-echo-cancel.c` | 播放参考完整，避免无意双重 AEC |
+| §10.2.1 | SRO 线性拟合 | 本仓库可运行基线 | `engineering.py::estimate_sro_ppm` | 初始时差与斜率分开 |
+| §10.2.1 | 线性插值 SRO 补偿 | 本仓库可运行基线 | `engineering.py::resample_sro_to_reference` | 不含抗混叠与真实异步控制 |
+| §10.2.1 | libsamplerate 连续 SRC | 外部参考实现 | `libsamplerate`：`src/samplerate.c` | 速率比、消耗量与状态 |
+| §10.2.1 | SpeexDSP 连续 SRC | 外部参考实现 | `speexdsp`：`libspeexdsp/resample.c` | 质量档、通道一致性 |
+| §10.3.1 | 谱减 | 原理索引 | 正文幅度/功率谱减 | 音乐噪声、噪声估计 |
+| §10.3.1 | MMSE-STSA | 原理索引 | 正文谱幅度目标 | 不等于 Speex 修改后的响度域增益 |
+| §10.3.1 | MMSE-LSA | 原理索引 | 正文对数谱幅度目标 | 注释可选式不是默认完整实现 |
+| §10.3.1；研究扩展：空间 §53 | WebRTC 分位数噪声估计 | 外部参考实现 | `webrtc`：`modules/audio_processing/ns/quantile_noise_estimator.cc` | 不自动命名为 MCRA/IMCRA |
+| §10.3.2；研究扩展：空间 §53 | WebRTC NS 语音概率估计 | 外部参考实现 | `webrtc`：`modules/audio_processing/ns/speech_probability_estimator.cc` | 不等同传统 VAD API |
+| §10.3.1 | RNNoise | 外部参考实现 | `rnnoise`：`src/denoise.c` | DSP/神经状态、训练域和模型 |
+| §10.3.1；工业 I09 | DeepFilterNet 深度滤波 | 外部参考实现 | `deepfilternet`：`DeepFilterNet/df/`、`libDF/src/` | 48 kHz、阶数、前瞻与延迟 |
+| 研究扩展：工业 I09 | DeepFilterNet LADSPA | 外部参考实现 | `deepfilternet`：`ladspa/` | 无前瞻仍有 STFT/宿主延迟 |
+| §10.3.3 | 能量迟滞/挂起 VAD | 本仓库可运行基线 | `engineering.py::HysteresisVAD` | 能量门限，不是神经概率 |
+| §10.3.3 | 峰值保护 AGC | 本仓库可运行基线 | `engineering.py::PeakProtectAGC` | 不代表完整响度/限幅器 |
+| §10.3.2；工业 I06 | WebRTC 传统 VAD | 外部参考实现 | `webrtc`：`common_audio/vad/webrtc_vad.c` | int16 单声道与合法 10/20/30 ms |
+| §10.3.2；工业 I07 | WebRTC AGC2 | 外部参考实现 | `webrtc`：`modules/audio_processing/gain_controller2.h` | 数字增益与输入音量分开 |
+| §10.3.2；工业 I08 | Silero VAD 流式状态 | 外部参考实现 | `silero-vad`：`src/silero_vad/utils_vad.py` | 16 kHz/512、8 kHz/256；会话隔离 |
+| §10.4.1 | Q1.15 量化 | 本仓库可运行基线 | `engineering.py::q15_quantize` | 最近偶数舍入与饱和 |
+| §10.4.1 | Q15 宽累加点积 | 本仓库可运行基线 | `engineering.py::q15_dot` | 不默认与截位 DSP 逐位相同 |
+| §10.4.1；工业 I15 | CMSIS-DSP Q15 FIR | 外部参考实现 | `cmsis_dsp`：`Source/FilteringFunctions/arm_fir_q15.c` | 系数、状态、内核变体与周期 |
+| §10.4.1 | PTQ 校准量化流程 | 原理索引 | 正文部署路线 | 内核存在不代表模型校准完成 |
+| §10.4.1 | QAT 量化感知训练 | 原理索引 | 正文训练路线 | 不把量化推理内核当完整训练器 |
+| §10.4.1；工业 I16 | CMSIS-NN 量化内核 | 外部参考实现 | `cmsis-nn`：`Include/arm_nnfunctions.h` | 零点、尺度、scratch、指令集 |
+| §10.9；工业 I17 | TFLM tensor arena | 外部参考实现 | `tflite-micro`：`tensorflow/lite/micro/recording_micro_interpreter.h` | 模型大小不同于 arena/栈/缓存 |
+| §10.9；工业 I17 | TFLM micro_speech 前端 | 外部参考实现 | `tflite-micro`：`tensorflow/lite/micro/examples/micro_speech/` | 关键词例子不是阵列系统 |
+| §10.9；工业 I18 | ONNX Runtime 流式执行 | 外部参考实现 | `onnxruntime`：`include/onnxruntime/core/session/onnxruntime_c_api.h` | 算子集、EP、线程池与循环状态 |
+| §10.9.1；工业 I10 | XMOS AEC/ADEC | 外部参考实现 | `lib-voice`：`lib_voice/src/aec/`、`lib_voice/api/adec/` | fwk_voice 已迁移；商用硬件限制 |
+| §10.9.1；工业 I11 | XMOS IC | 外部参考实现 | `lib-voice`：`lib_voice/src/ic/` | 240 点步长/512 点分析、泄漏 |
+| §10.9.1；工业 I11 | XMOS VNR | 外部参考实现 | `lib-voice`：`lib_voice/src/vnr/` | 比值控制不是无误活动判决 |
+| §10.9.1；工业 I12 | XMOS NS | 外部参考实现 | `lib-voice`：`lib_voice/src/ns/` | 元数据和词尾保留 |
+| §10.9.1；工业 I12 | XMOS AGC | 外部参考实现 | `lib-voice`：`lib_voice/src/agc/` | 活动/回声状态与增益共同测试 |
+| §10.9.1；工业 I13 | SOF 固定 FIR 波束 | 外部参考实现 | `sof`：`src/audio/tdfb/tdfb_generic.c` | 滤波组/方向，不是 SCM 自适应 MVDR |
+| §10.9.1；工业 I14 | SOF 固件 SRC | 外部参考实现 | `sof`：`src/audio/src/` | 固定比转换不等于异步补偿 |
+| §10.7 | 分布式阵列同步/融合 | 原理索引 | 正文分布式模型 | SRO 拟合不是完整网络系统 |
+| §10.10 | 遥测记录校验 | 本仓库可运行基线 | `engineering.py::validate_telemetry`、`telemetry_schema.json` | 留存、隐私、统计窗、时钟域 |
+
+## 任务评分与排除范围
+
+| 正文或研究范围 | 算法/机制 | 覆盖状态 | 教学入口或主清单 ID：官方源码入口 | 关键边界 |
+|---|---|---|---|---|
+| §10.5；工业 I19 | DNSMOS | 外部参考实现 | `dns-challenge`：`DNSMOS/dnsmos_local.py` | 模型/个人化/窗口；不是受试者 MOS |
+| §6.1.8、§10.5 | AECMOS | 外部参考实现 | `aec-challenge`：`AECMOS/AECMOS_local/` | 三路对应、场景、裁段规则 |
+| §11.2 | cpWER | 外部参考实现 | `meeteval`：`meeteval/wer/wer/cp.py` | 会话级说话人排列 |
+| §11.2 | ORC-WER | 外部参考实现 | `meeteval`：`meeteval/wer/wer/orc.py` | 参考片段到流映射 |
+| §11.2 | MIMO-WER | 外部参考实现 | `meeteval`：`meeteval/wer/wer/mimo.py` | 流顺序、允许映射 |
+| §11.2 | DI-cpWER | 外部参考实现 | `meeteval`：`meeteval/wer/wer/di_cp.py` | 不可与 sa-WER 互换 |
+| §13.7；工业 I21 | tcpWER | 外部参考实现 | `meeteval`：`meeteval/wer/wer/time_constrained.py` | 时间约束、容差和词时间戳 |
+| §13.7；工业 I21 | CHiME-8 文本规范化/评分 | 外部参考实现 | `chime-utils`：`chime_utils/`、`tests/test_normalizer.py` | 届次、划分、缺失场景与数据许可 |
+| §11.2 | sa-WER 说话人归属口径 | 原理索引 | 正文指标区别 | 不声称锁定 MeetEval 覆盖全部定义 |
+| §5.9 | 未指定实现的“DNNBeamformer” | 明确排除 | 无唯一算法/项目身份 | 具体网络需按模型和官方实现另登记 |
+
+## 未完成项怎样保留
+
+外部参考实现可以存在构建失败、兼容性问题或算法缺陷；CSSM/WAVES/TOPS 的静态问题与 WPE 已完成的合成数值对照应分别阅读，不能把项目数量当成通过率。只有骨干结构时，覆盖的是结构源码，不是完整训练、checkpoint 推理或论文表格。
+
+原理索引明确保留下一步所需证据：唯一作者实现、明确许可、原模型配置，或与正文模型一致的最小代码。不得仅因为框架大、copyleft 或权重未授权就将许可明确的源码降为“没有实现”；也不得因同名函数存在就将整个算法家族标为已覆盖。
+
+本仓库不提交下载缓存、模型权重、语料或录音。独立上游工作目录的取得、许可保留与未执行项目按来源状态记录报告。算法、源码或排除范围变化时，同步修改本表、研究说明、来源清单和真实验证记录。

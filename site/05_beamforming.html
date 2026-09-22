@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 5 章 · 波束形成 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="aea756f1a7d4"><style>
+<meta name="source-digest" content="9187099fc571"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -13,7 +13,7 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .side a{color:#2f6db3;text-decoration:none}.side a:hover{text-decoration:underline}
 .side .chap{margin:10px 0 2px;font-weight:700}.side .chap.cur{color:#c0392b}
 .side ul{margin:2px 0 6px;padding-left:16px;color:#666}.side li{margin:2px 0}
-.main{flex:1;min-width:0;padding:28px 36px;background:#fff}
+.main{flex:1;min-width:0;padding:28px 36px;background:#fff;overflow-wrap:anywhere}
 .main p{margin:0 0 1.05em}.main li>p{margin:.35em 0}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
 table{border-collapse:collapse;margin:14px 0;max-width:100%}
@@ -25,6 +25,7 @@ pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:a
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
 mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
 .pn a{color:#2f6db3;text-decoration:none}.pn .off{color:#aaa}
 .foot{color:#888;font-size:13px;margin:20px 0 40px}
@@ -82,7 +83,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a></div>
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
-<div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
+<div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div>
+<div class="chap"><a href="research/index.html">源码研究</a></div></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
 <li><a href="05_beamforming.html#sec-u-5b20e7dd9d">5. 波束形成（Beamforming）</a></li>
@@ -107,7 +109,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是教程正文第 5 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
-<p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="./04_doa-estimation.html">第 4 章 · 声源定位（DOA 估计）</a> ｜ 下一篇：<a href="./06_aec.html">第 6 章 · 声学回声消除（AEC）</a></p>
+<p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="04_doa-estimation.html">第 4 章 · 声源定位（DOA 估计）</a> ｜ 下一篇：<a href="06_aec.html">第 6 章 · 声学回声消除（AEC）</a></p>
 </blockquote>
 <hr />
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-5b20e7dd9d">5. 波束形成（Beamforming）</h1>
@@ -126,10 +128,12 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><strong>定向点干扰</strong>：竞争说话人、电视 → 在干扰方向形成零陷。</li>
 </ul>
 <p>前两类噪声分别用白噪声增益的线性量 $G_{\mathrm{WNG}}$ 和指向因数 $Q$ 衡量；换成 dB 后分别记为 $\mathrm{WNG}_{\mathrm{dB}}$ 和指向性指数 DI。DSB、超指向、WNG 约束和对角加载都可在这两个指标下比较：</p>
-<p>$$G_{\mathrm{WNG}}=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\vec{w}},\quad
-\mathrm{WNG}_{\mathrm{dB}}=10\log_{10}G_{\mathrm{WNG}},\qquad
-Q=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\mathbf{\Gamma}\vec{w}},\quad
-\mathrm{DI}=10\log_{10}Q\text{。}\tag{5-1}$$</p>
+<p>$$\begin{aligned}
+G_{\mathrm{WNG}}&=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\vec{w}},&
+\mathrm{WNG}_{\mathrm{dB}}&=10\log_{10}G_{\mathrm{WNG}},\\
+Q&=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\mathbf{\Gamma}\vec{w}},&
+\mathrm{DI}&=10\log_{10}Q\text{。}
+\end{aligned}\tag{5-1}$$</p>
 <p>$G_{\mathrm{WNG}}$ 是阵列对<strong>通道独立白噪声</strong>的输出 SNR 线性增益，$Q$ 是指定弥散场模型下的输出 SNR 线性增益；式(5-1)明确区分了线性量和 dB 量。无失真约束下两个线性量的分子恒为 1，只需比较分母。4 元 $\lambda/2$ 线阵的算例见算例 2-2。图 15 的纵轴标成 WNG (dB) 和 DI (dB)，分别对应 $\mathrm{WNG}_{\mathrm{dB}}$ 与 DI。</p>
 <p>弥散场有两种常用理想模型：<strong>球面各向同性</strong>假定声音从三维各方向等概率到达，相干系数为 $\mathrm{sinc}$ 形；<strong>柱面各向同性</strong>只对水平面方位角积分，相干系数为零阶贝塞尔函数 $J_0(2\pi f d/c)$。<a href="https://israelcohen.com/wp-content/uploads/2018/05/JASA_Nov2008.pdf" title="citation">Habets, JASA 2008</a> 实际会议室中的说话人、反射和设备噪声通常不满足严格的柱面各向同性分布，应由测得的空间相干性或验证集结果选择模型，不能仅凭场景名称判定。</p>
 <p><strong>时域还是频域实现？</strong> 本章公式写在频域，每个频点各有一组权重 $\vec{w}(k)$。短时傅里叶变换（Short-Time Fourier Transform，STFT）把宽带语音分解为一组近似窄带的问题（§2.5），逐频点求解后再逆变换。</p>
@@ -187,7 +191,11 @@ Q=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\mathbf{\Gamma}\vec{w}},\quad
 <p><strong>算例 5-1：超指向权重与 $\mathrm{WNG}_{\mathrm{dB}}$</strong></p>
 <p><strong>题设</strong>：2 麦小间距 $d=0.05\lambda$，弥散噪声相干矩阵 $\mathbf{\Gamma} = \begin{bmatrix}1 & \mathrm{sinc}(0.1)\\ \mathrm{sinc}(0.1) & 1\end{bmatrix}$（§5.1：$[\mathbf{\Gamma}]_{ij} = \mathrm{sinc}(2d_{ij}/\lambda)$，这里 $\mathrm{sinc}(x) = \sin(\pi x)/(\pi x)$，$\mathrm{sinc}(0.1) = \dfrac{\sin(0.1\pi)}{0.1\pi} \approx 0.9836$）。超指向权重 $\vec{w}_{SD} = \dfrac{\mathbf{\Gamma}^{-1}\vec{a}}{\vec{a}^H\mathbf{\Gamma}^{-1}\vec{a}}$（§5.3）。</p>
 <p><strong>第 1 步：检查 $\mathbf{\Gamma}$ 的病态程度</strong></p>
-<p>$$\det\mathbf{\Gamma} = 1 - 0.9836^2 = 0.0325,\qquad \mathbf{\Gamma}^{-1} = \frac{1}{0.0325}\begin{bmatrix}1 & -0.9836\\ -0.9836 & 1\end{bmatrix} \approx \begin{bmatrix}30.80 & -30.29\\ -30.29 & 30.80\end{bmatrix}$$</p>
+<p>$$\begin{aligned}
+\det\mathbf{\Gamma} &= 1 - 0.9836^2 = 0.0325,\\
+\mathbf{\Gamma}^{-1} &= \frac{1}{0.0325}\begin{bmatrix}1 & -0.9836\\ -0.9836 & 1\end{bmatrix}\\
+&\approx \begin{bmatrix}30.80 & -30.29\\ -30.29 & 30.80\end{bmatrix}.
+\end{aligned}$$</p>
 <p>两麦噪声的相干系数为 $\rho=0.9836$，所以 $\mathbf{\Gamma}$ 接近奇异，逆矩阵元素达到 30 量级。后续求得的权重会相应放大。</p>
 <p><strong>第 2 步：正横指向的退化情形</strong></p>
 <p>若 $\theta_0 = 0°$，则 $\vec{a}_0 = [1, 1]^\top$ 恰好是 $\mathbf{\Gamma}$ 的特征向量（$\mathbf{\Gamma}\vec{a}_0 = (1+\rho)\vec{a}_0$），于是 $\mathbf{\Gamma}^{-1}\vec{a}_0 = \vec{a}_0/(1+\rho) \propto \vec{a}_0$，归一化后</p>
@@ -203,7 +211,10 @@ Q=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\mathbf{\Gamma}\vec{w}},\quad
 <p>$$\vec{w}^H\vec{a} = \underbrace{(0.5000+2.3559\mathrm{j})}_{w_1^*\cdot a_1} + \underbrace{(0.5000-2.3559\mathrm{j})}_{w_2^*\cdot a_2} = 1\ \checkmark$$</p>
 <p>每一项的模长都是 2.41，而两项虚部 $\mp2.356\mathrm{j}$ 相消后留下单位目标响应。权重分量明显大于最终目标响应，因此很小的通道误差也会破坏这种相消关系。</p>
 <p><strong>第 5 步：算 $\mathrm{WNG}_{\mathrm{dB}}$，看代价</strong></p>
-<p>$$\|\vec{w}\|^2 = 2.41^2 + 2.41^2 \approx 11.60,\qquad \mathrm{WNG}_{\mathrm{dB}} = 10\log_{10}\frac{1}{11.60} \approx \mathbf{-10.6\ dB}$$</p>
+<p>$$\begin{aligned}
+\|\vec{w}\|^2 &= 2.41^2 + 2.41^2 \approx 11.60,\\
+\mathrm{WNG}_{\mathrm{dB}} &= 10\log_{10}\frac{1}{11.60} \approx \mathbf{-10.6\ dB}.
+\end{aligned}$$</p>
 <p>对照：同一指向的 DSB 有 $\mathrm{WNG}_{\mathrm{dB}}=+3.0$ dB。负的 $\mathrm{WNG}_{\mathrm{dB}}$ 表示独立的阵元自噪声被权重能量放大；本例 $\|\vec w\|^2\approx11.6$，即相对单麦高约 10.6 dB。作为交换，在本例的理想各向同性弥散场、紧凑双麦端射模型下，指向因数 $Q=1/(\vec w^H\mathbf\Gamma\vec w)\approx3.97$，所以 $\mathrm{DI}\approx+6.0$ dB。这个结果依赖模型和极限条件，不是任意双麦几何、频率与噪声场的保证。</p>
 <p><strong>第 6 步：通道失配的影响</strong></p>
 <p>给麦 2 加 1% 的增益失配，即把 $\vec{a}$ 的第二分量乘以 1.01：</p>
@@ -548,7 +559,10 @@ Q=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\mathbf{\Gamma}\vec{w}},\quad
 <p>此时 $\|\vec{w}\|^2=1$，$\mathrm{WNG}_{\mathrm{dB}}=0$ dB，比 DSB 的 +3 dB 低 3 dB。2 个麦和 2 条独立约束使权重由约束唯一确定，没有剩余自由度再根据 $\mathbf R$ 调整白噪声输出。</p>
 <p>相比之下，算例 5-2 的 MVDR 只约束目标，得到 $\mathrm{WNG}_{\mathrm{dB}}=+0.39$ dB 和干扰方向 −23.8 dB。LCMV 适合方向先验可靠且需要硬约束的情形；MVDR 根据估计协方差自适应抑制干扰。两者的选择还取决于方向误差和协方差估计质量。</p>
 <p>多通道维纳滤波（Multichannel Wiener Filter，简称 MWF）直接在均方误差准则下权衡目标失真与残余噪声；MVDR 则施加硬的无失真约束，两者不能一般性地视为同一个解。语音失真加权多通道维纳滤波（Speech Distortion Weighted MWF，简称 SDW-MWF）写成</p>
-<p>$$J(\vec{w}) = E\{|n_{out}|^2\} + \frac{1}{\mu}\,E\{|s_{out}-s_{ref}|^2\}\quad\Rightarrow\quad \vec{w}_{SDW} = \big(\mathbf{R}_{ss} + \mu\mathbf{R}_{nn}\big)^{-1}\mathbf{R}_{ss}\,\vec{e}_r\text{。}\tag{5-5}$$</p>
+<p>$$\begin{aligned}
+J(\vec{w}) &= E\{|n_{out}|^2\} + \frac{1}{\mu}\,E\{|s_{out}-s_{ref}|^2\},\\
+\Rightarrow\quad \vec{w}_{SDW} &= \big(\mathbf{R}_{ss} + \mu\mathbf{R}_{nn}\big)^{-1}\mathbf{R}_{ss}\,\vec{e}_r\text{。}
+\end{aligned}\tag{5-5}$$</p>
 <ul>
 <li>$\mathbf{R}_{ss}, \mathbf{R}_{nn}$：目标与噪声协方差矩阵；$\vec{e}_r$：参考麦选择向量（第 $r$ 位为 1 的单位向量，即“以第 $r$ 个麦收到的目标为基准”）；</li>
 <li>$\mu=1$ 是普通 MWF；$\mu>1$ 更重视噪声项，抑制增强而目标失真通常增大；$\mu\lt 1$ 更重视目标保真。令 $\mu\to\infty$ 时权重趋近零，并不趋近 MVDR。只有秩一目标模型 $\mathbf R_{ss}=\phi_s\vec a\vec a^H$ 且参考麦归一化 $a_r=1$ 时，才有
@@ -623,17 +637,31 @@ $$\vec w_{SDW}=\frac{\phi_s q}{\mu+\phi_s q}\,\vec w_{MVDR},\qquad q=\vec a^H\ma
 <p><strong>预备数字</strong>：$\psi_{60} = \pi\sin60° = 2.7207$ rad（155.9°），$\vec{a}(0°) = [1,\ 1]^\top$，$\vec{a}(60°) = [1,\ e^{+\mathrm{j}2.7207}]^\top = [1,\ -0.9127+0.4086\mathrm{j}]^\top$。</p>
 <p><strong>第 1 步：上支路（延迟求和）漏进多少干扰</strong></p>
 <p>上支路权重 $\vec{w}_u = [0.5,\ 0.5]^\top$。目标方向增益 $\vec{w}_u^H\vec{a}(0°) = 1$ ✓（无失真）；60° 方向的泄漏增益：</p>
-<p>$$g_u = \vec{w}_u^H\vec{a}(60°) = \tfrac{1}{2}\big(1 + e^{+\mathrm{j}2.7207}\big) = 0.0436+0.2043\mathrm{j},\qquad |g_u| = |\cos\tfrac{\psi}{2}| = 0.2089\ (\text{−13.6 dB})$$</p>
+<p>$$\begin{aligned}
+g_u &= \vec{w}_u^H\vec{a}(60°) = \tfrac{1}{2}\big(1 + e^{+\mathrm{j}2.7207}\big)\\
+&= 0.0436+0.2043\mathrm{j},\\
+|g_u| &= |\cos\tfrac{\psi}{2}| = 0.2089\ (\text{−13.6 dB}).
+\end{aligned}$$</p>
 <p>干扰在目标支路里还残留约 21% 的幅度——这就是图17 中“$d$ = 目标 + 漏入噪声”里那部分“漏入噪声”。</p>
 <p><strong>第 2 步：下支路把目标陷掉、只留干扰</strong></p>
 <p>验证阻塞：$\mathbf{B}^H\vec{a}(0°) = 1\times1 + (-1)\times1 = 0$ ✓。目标方向被精确陷掉，下支路里没有目标。这是整个结构的关键前提；§5.6 所说的“阻塞矩阵失配”，就是指这个 0 在实际中保不住。</p>
 <p>干扰在下支路的增益为</p>
-<p>$$g_\ell = \mathbf{B}^H\vec{a}(60°) = 1 - e^{+\mathrm{j}2.7207} = 1.9127-0.4086\mathrm{j},\qquad |g_\ell| = 2|\sin\tfrac{\psi}{2}| = 1.9559$$</p>
+<p>$$\begin{aligned}
+g_\ell &= \mathbf{B}^H\vec{a}(60°) = 1 - e^{+\mathrm{j}2.7207}\\
+&= 1.9127-0.4086\mathrm{j},\\
+|g_\ell| &= 2|\sin\tfrac{\psi}{2}| = 1.9559.
+\end{aligned}$$</p>
 <p>两路相减反而把干扰放大了近 2 倍（因为 60° 方向上两麦相位差 155.9°，接近反相，相减近乎同相叠加）——没关系，它只是一份“干扰参考样本”。</p>
 <p><strong>第 3 步：拿一个具体快拍走一遍</strong></p>
 <p>设该频点目标谱 $s = 1$、干扰谱 $i = 1$（都是标量复数），则阵列快拍：</p>
 <p>$$\vec{x} = \vec{a}(0°)\cdot 1 + \vec{a}(60°)\cdot 1 = \begin{bmatrix}2.0000\\ 0.0873+0.4086\mathrm{j}\end{bmatrix}$$</p>
-<p>上支路输出：$d = \vec{w}_u^H\vec{x} = \dfrac{2.0000 + 0.0873+0.4086\mathrm{j}}{2} = 1.0436+0.2043\mathrm{j} = \underbrace{1}_{s} + \underbrace{(0.0436+0.2043\mathrm{j})}_{g_u\cdot i}$；（花括号下第二项即泄漏项 $g_u\cdot i$。）</p>
+<p>上支路输出：</p>
+<p>$$\begin{aligned}
+d &= \vec{w}_u^H\vec{x} = \dfrac{2.0000 + 0.0873+0.4086\mathrm{j}}{2}\\
+&= 1.0436+0.2043\mathrm{j}\\
+&= \underbrace{1}_{s} + \underbrace{(0.0436+0.2043\mathrm{j})}_{g_u\cdot i}.
+\end{aligned}$$</p>
+<p>花括号下第二项即泄漏项 $g_u\cdot i$。</p>
 <p>下支路输出：$u = \mathbf{B}^H\vec{x} = 2.0000 - (0.0873+0.4086\mathrm{j}) = 1.9127-0.4086\mathrm{j}$（$= g_\ell\cdot i$，纯干扰，目标分量为 0）。</p>
 <p><strong>第 4 步：自适应滤波器学出的那个系数</strong></p>
 <p>对消器要减掉的正是泄漏项 $g_u\cdot i$，而它手里只有 $u = g_\ell\cdot i$，所以最优系数：</p>
@@ -710,8 +738,10 @@ $$\hat{\Phi}_{nn}(k) = \frac{1}{M}\sum_{i=1}^{M}\Phi_{x_ix_i}(k)\;-\;\frac{2}{M(
 <p>神经网络最适合先解决解析波束形成中难估计的统计量，而不是把多个模型名称并列成性能等级。以掩码波束形成为例，固定频点 $k$，多通道观测为 $\vec x(k,n)\in\mathbb C^M$，网络输出目标掩码 $m_s(k,n)$ 和噪声掩码 $m_n(k,n)$。一个可复现的处理顺序如下。</p>
 <ol>
 <li><strong>掩码到空间协方差矩阵（Spatial Covariance Matrix，SCM）</strong>：
-$$\hat{\mathbf R}_{ss}(k)=\frac{\sum_n m_s(k,n)\vec x(k,n)\vec x^H(k,n)}{\sum_n m_s(k,n)+\epsilon},\quad
-\hat{\mathbf R}_{nn}(k)=\frac{\sum_n m_n(k,n)\vec x(k,n)\vec x^H(k,n)}{\sum_n m_n(k,n)+\epsilon}。$$
+$$\begin{aligned}
+\hat{\mathbf R}_{ss}(k)&=\frac{\sum_n m_s(k,n)\vec x(k,n)\vec x^H(k,n)}{\sum_n m_s(k,n)+\epsilon},\\
+\hat{\mathbf R}_{nn}(k)&=\frac{\sum_n m_n(k,n)\vec x(k,n)\vec x^H(k,n)}{\sum_n m_n(k,n)+\epsilon}。
+\end{aligned}$$
 分母只做掩码权重归一化；$\epsilon$ 防止整段掩码接近零。协方差是否使用未来帧决定这一步能否在线运行。</li>
 <li><strong>SCM 到约束向量或广义特征向量</strong>：在秩一目标近似下，可取 $\hat{\mathbf R}_{ss}$ 的主特征向量并按参考麦归一化，得到相对传递函数 $\hat{\vec a}$。MVDR 再用式(5-3)求权重。另一条路线直接解
 $$\hat{\mathbf R}_{ss}\vec w_{GEV}=\lambda_{\max}\hat{\mathbf R}_{nn}\vec w_{GEV}，$$
@@ -723,9 +753,15 @@ $$\hat{\mathbf R}_{ss}\vec w_{GEV}=\lambda_{\max}\hat{\mathbf R}_{nn}\vec w_{GEV
 <p>若目标掩码把干扰大量计入 $\hat{\mathbf R}_{ss}$，RTF 会偏移，上述无失真条件只对错误的 $\hat{\vec a}$ 成立。</p>
 <p>端到端网络也可以直接估计复数权重、时域滤波器或输出波形。它不再自动满足无失真、WNG 或因果约束，必须把阵列泛化、前瞻帧数、目标失真和目标硬件上的资源消耗列入评测。若与 ASR 联合训练，还应固定后端识别器和评分脚本，同时报告前端信号指标与词错误率（Word Error Rate，WER）。<a href="https://doi.org/10.1109/TASLP.2022.3229261" title="citation">Gu et al., IEEE/ACM TASLP 2023</a></p>
 <span id="sec-16" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-5fd4cffa34">可执行基线与上线检查</h3>
-<p><a href="../codes/array_tutorial/beamforming.py"><code>beamforming.py</code></a> 提供 DSB、弥散场相干矩阵、加载超指向/MVDR、LCMV、GSC 阻塞矩阵和 Wiener 增益的原创 NumPy 基线。权重约定统一为输出 $Y=\vec w^H\vec x$，多通道谱形状统一为 <code>通道 × 频点 × 帧</code>；逐频点权重为 <code>频点 × 通道</code>。函数用线性方程求解代替显式求逆；未加载协方差病态、LCMV 约束不独立或空统计量都会报错。正文算例的 DSB 单位响应、Capon 数值、MVDR 权重、LCMV 双约束、GSC 阻塞和 Wiener 增益由 <a href="../tests/test_codes_doa_beam.py"><code>test_codes_doa_beam.py</code></a> 独立回归，串联示例见 <a href="../codes/examples/ch02_05_baselines.py"><code>ch02_05_baselines.py</code></a>。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/beamforming.py"><code>beamforming.py</code></a> 提供 DSB、弥散场相干矩阵、加载超指向/MVDR、LCMV、GSC 阻塞矩阵和 Wiener 增益的原创 NumPy 基线。权重约定统一为输出 $Y=\vec w^H\vec x$，多通道谱形状统一为 <code>通道 × 频点 × 帧</code>；逐频点权重为 <code>频点 × 通道</code>。函数用线性方程求解代替显式求逆；未加载协方差病态、LCMV 约束不独立或空统计量都会报错。正文算例的 DSB 单位响应、Capon 数值、MVDR 权重、LCMV 双约束、GSC 阻塞和 Wiener 增益由 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_doa_beam.py"><code>test_codes_doa_beam.py</code></a> 独立回归，串联示例见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/ch02_05_baselines.py"><code>ch02_05_baselines.py</code></a>。</p>
 <p>这些函数是公式基线，不是完整设备状态机。实时实现还要记录 STFT 窗长和帧移、分数延时滤波器、固定传播补偿、参考通道、SCM 遗忘因子、VAD/SPP 门控、权值更新周期和输出限幅。每次更新后检查条件数、$|\vec w^H\vec a-1|$、WNG 和输出峰值；空掩码或病态矩阵出现时，应在“保持上一组已验证权值、增加已标明口径的加载、退回 DSB”之间预先规定顺序。目标泄漏时应冻结噪声 SCM 或 GSC 自适应支路，并记录触发原因，不能只在输出失真后重新初始化。</p>
-<p>第三方项目只作索引，不复制源码。核实于 2026-09-22 的官方参考包括：<a href="https://docs.pytorch.org/audio/main/tutorials/mvdr_tutorial.html">torchaudio MVDR 教程</a>及其<a href="https://github.com/pytorch/audio/blob/main/examples/tutorials/mvdr_tutorial.py">官方示例源码</a>（<a href="https://github.com/pytorch/audio/blob/main/LICENSE" title="citation">BSD-2-Clause</a>）。该教程链接指向 nightly 文档，页面当日打印的版本为 torchaudio <code>2.11.0a0+2470b9c</code>；官方仓库当日 <code>main</code> 的完整提交为 <code>b85c99ccac635a06b1afaf5284bf4c1a00c1f9b5</code>，两者不能当成同一个稳定发行版。官方主页还说明 torchaudio 自 2.8 起进入维护阶段，部分 API 在 2.8 弃用并于 2.9 移除，因此复现应固定实际验证版本。<a href="https://github.com/espnet/espnet/blob/master/espnet2/enh/layers/beamformer.py">ESPnet beamformer</a>采用 Apache-2.0，当日发布页显示 v.202609；<a href="https://github.com/speechbrain/speechbrain">SpeechBrain</a>采用 Apache-2.0。完整 GEV+BAN、WPD、神经掩码、球谐径向滤波、MCRA/IMCRA 与 OM-LSA 需要额外算法和依赖，本轮不把它们伪装成本书已经覆盖的最小实现。</p>
+<p>外部波束实现按完整提交号保存在 <code>codes/upstream/_downloads/</code>，取得源码后的构建、数值回归和设备测试分别记录。版本与许可见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json"><code>SOURCES.lock.json</code></a>，扩展实验和源码阅读顺序见<a href="research/01_spatial_and_tracking.html">空间处理与追踪研究</a>。TorchAudio 的 <code>examples/tutorials/mvdr_tutorial.py</code>、ESPnet 的 <code>espnet2/enh/layers/beamformer.py</code> 分别连接掩码、协方差、参考通道与输出波形；复现应使用锁定源码及相容依赖，不能把浮动 nightly 文档当作稳定发行版契约。</p>
+<p>球阵还多了一层编码误差。<code>sound_field_analysis/process.py::spatFT</code> 计算球谐系数，<code>gen.py::radial_filter</code> 控制径向补偿；Politis 的 <code>arraySHTfiltersMeas_regLS.m</code> 用实测响应设计编码滤波器，<code>sphMVDR.m</code>、<code>sphLCMV.m</code> 在球谐域求权重。先用已知平面波检查实/复球谐、归一化、通道排列和余纬角，再增加阶数测量每阶噪声放大。只检查旋转后的图形，没有检查径向滤波后的 WNG，仍可能在低频得到不可用的输出。<a href="https://appliedacousticschalmers.github.io/sound_field_analysis-py/reference.html" title="citation">sfa 官方接口</a>；<a href="https://github.com/polarch/Spherical-Array-Processing" title="citation">Politis 作者实现</a>。</p>
+<p>需要 C/C++ 实现时，可沿 SAF 的 <code>saf_sh</code>、<code>array2sh</code>、<code>beamformer</code>、<code>powermap</code> 阅读从球谐计算到块处理的过程。CBLAS/LAPACK、FFT 后端、SIMD 与编译器浮点选项都应记录，随后在目标硬件上测最慢帧耗时和内存。SAF 核心模块为 ISC，可选 <code>saf_tracker</code> 和 <code>saf_hades</code> 为 GPLv2，不能把整个仓库概括成同一宽松许可证。<a href="https://github.com/leomccormack/Spatial_Audio_Framework" title="citation">SAF 官方模块与许可说明</a>。以上源码核实于 2026-09-22。</p>
+<p>工业声源成像的目标也要与语音增强分开。Acoular 的 <code>BeamformerDamas</code>、<code>BeamformerCleansc</code> 和 <code>BeamformerCMF</code> 处理点扩散函数或互谱矩阵，输出声源功率分布；评测重点包括校准、区域积分、流场和运动模型。它们不直接产生保持目标语音的波形。研究文档给出了相同数据下比较常规成像、反卷积与协方差拟合的最小实验，不能仅以图中峰更尖判定方法更好。<a href="https://acoular.org/acoular/api_ref/generated/acoular.fbeamform.html" title="citation">Acoular 官方接口</a>。</p>
+<p>GEV、BAN、RTF 和 MWF 的函数不能只按名称替换。pb_bss 的 <code>get_gev_vector</code> 给最大信噪比方向，<code>blind_analytic_normalization</code> 再确定功率尺度；BAN 不需要真实目标导向，也不普遍保证目标单位响应。ESPnet 的 <code>get_rtf</code> 明确没有在函数内部完成参考通道归一化，后续调用者应检查参考响应接近零时的行为。<a href="https://github.com/fgnt/pb_bss/blob/master/pb_bss/extraction/beamformer.py" title="citation">pb_bss 波束实现</a>；<a href="https://github.com/espnet/espnet/blob/master/espnet2/enh/layers/beamformer.py" title="citation">ESPnet 波束实现</a>。</p>
+<p>一般 SDW-MWF 与秩一化简尤其需要区分。取噪声 SCM 为单位阵，目标 SCM 为 <code>diag(2,1)</code>，噪声权重为 1，参考麦为第一通道：一般线性方程的首项解为 <code>2/(2+1)=2/3</code>。pb_bss <code>get_wmwf_vector</code> 使用目标秩一条件下的迹化简，此输入得到 <code>2/(1+2+1)=1/2</code>。若把目标 SCM 改为 <code>diag(2,0)</code>，两者才在此例同为 <code>2/3</code>。这是本书依据源码作的手算边界例，不是外部包运行报告；全秩模型可阅读 ESPnet <code>get_sdw_mwf_vector</code>，并显式决定是否启用低秩近似。</p>
+<p>§5.7 的噪声估计也需要同样的区分。MCRA 用局部最小值控制递归更新，IMCRA 进一步引入两阶段平滑与最小值搜索，OM-LSA 根据语音存在不确定性形成对数谱幅度增益。Cohen 的<a href="https://israelcohen.com/software/" title="citation">官方软件页</a>介绍了 MATLAB OM-LSA/IMCRA，但本次未取得可核验版本与许可的下载包。已下载的 WebRTC 则可从 <code>quantile_noise_estimator.cc</code>、<code>noise_estimator.cc</code>、<code>speech_probability_estimator.cc</code> 阅读分位数跟踪和语音概率控制；它们不是 IMCRA 或 OM-LSA 的逐式实现。研究文档为这些算法分别给出噪声阶跃、持续弱语音、启动和零输入的检查方案。</p>
 <span id="sec-17" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-5-10">5.10 波束形成算法总对比</h2>
 <p>不同方法的混响抑制量不能脱离阵列、数据、因果性和指标压成星级。下表只比较可由定义确定的目标、输入与失败条件；运算量仍要按通道数、频点数、滤波长度和实现测量。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -829,12 +865,24 @@ $$\mathrm{NR}_{ref}=10\log_{10}\frac{\vec e_r^H\mathbf R_{nn}\vec e_r}{\vec w^H\
 </blockquote>
 <span id="sec-19" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-5-11">5.11 本章练习</h2>
 <ol>
-<li>DSB 增益与 WNG 上限：4 麦均匀线阵、DSB 指向目标，白噪声增益是多少 dB？再用柯西-施瓦茨不等式说明：任何满足无失真约束（$\vec{w}^H\vec{a}=1$）的权重，$G_{\mathrm{WNG}}$ 都不超过 4。（参考答案：$\mathrm{WNG}_{\mathrm{dB}}=10\log_{10}4\approx$<strong>6 dB</strong>；$1=|\vec{w}^H\vec{a}|\le\|\vec{w}\|\|\vec{a}\|=\|\vec{w}\|\sqrt4$，故 $G_{\mathrm{WNG}}=1/\|\vec{w}\|^2\le4$——等号在 $\vec{w}\propto\vec{a}$ 即 DSB 时成立，完整两步见 §5.2 的上限推导。）</li>
-<li>GSC 阻塞失配：沿用算例 5-3 的 2 麦阵，若目标实际偏到 2°（DOA 估计差 2°），下支路会漏进多少目标功率？自适应对消器会如何处理这部分泄漏，输出会出现什么变化？（参考答案：$\mathbf{B}^H\vec{a}(2°)\approx0.0060-0.1094\mathrm{j}$，模约为 0.1096，漏进约 <strong>1.2%</strong> 的目标功率（见算例第 6 步）；下支路的目标与上支路相关，对消器会把它也当干扰抵消，导致目标语音衰减或断续。对策见 §5.6 末。）</li>
+<li>
+<p>DSB 增益与 WNG 上限：4 麦均匀线阵、DSB 指向目标，白噪声增益是多少 dB？再用柯西-施瓦茨不等式说明：任何满足无失真约束（$\vec{w}^H\vec{a}=1$）的权重，$G_{\mathrm{WNG}}$ 都不超过 4。</p>
+<p><strong>参考答案</strong>：</p>
+<p>$$\mathrm{WNG}_{\mathrm{dB}}=10\log_{10}4\approx6\ \mathrm{dB}.$$</p>
+<p>柯西-施瓦茨不等式给出</p>
+<p>$$\begin{aligned}
+    1&=|\vec{w}^H\vec{a}|\le\|\vec{w}\|\|\vec{a}\|=\|\vec{w}\|\sqrt4,\\
+    G_{\mathrm{WNG}}&=1/\|\vec{w}\|^2\le4.
+    \end{aligned}$$</p>
+<p>等号在 $\vec{w}\propto\vec{a}$ 即 DSB 时成立，完整两步见 §5.2 的上限推导。</p>
+</li>
+<li>
+<p>GSC 阻塞失配：沿用算例 5-3 的 2 麦阵，若目标实际偏到 2°（DOA 估计差 2°），下支路会漏进多少目标功率？自适应对消器会如何处理这部分泄漏，输出会出现什么变化？（参考答案：$\mathbf{B}^H\vec{a}(2°)\approx0.0060-0.1094\mathrm{j}$，模约为 0.1096，漏进约 <strong>1.2%</strong> 的目标功率（见算例第 6 步）；下支路的目标与上支路相关，对消器会把它也当干扰抵消，导致目标语音衰减或断续。对策见 §5.6 末。）</p>
+</li>
 </ol>
 <hr />
 <blockquote>
-<p>📄 本篇信息：配图 3 张 ｜ <a href="./index.html">回首页</a></p>
+<p>📄 本篇信息：配图 3 张 ｜ <a href="index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="04_doa-estimation.html">← 上一篇</a></span><span><a href="06_aec.html">下一篇 →</a></span></div>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>

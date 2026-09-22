@@ -20,7 +20,10 @@
 
 **信号模型**。先把播放链路近似成有限长、线性、时不变系统。麦克风录到的信号可以写成三项之和：
 
-$$d(n) = s(n) + (x*h)(n) + v(n),\qquad (x*h)(n)=\sum_{\ell=0}^{L-1}h[\ell]x[n-\ell]\text{。}\tag{6-1}$$
+$$\begin{aligned}
+d(n) &= s(n) + (x*h)(n) + v(n),\\
+(x*h)(n)&=\sum_{\ell=0}^{L-1}h[\ell]x[n-\ell]\text{。}
+\end{aligned}\tag{6-1}$$
 
 其中，$d(n)$ 是第 $n$ 个采样时刻的麦克风样本；$s(n)$ 是需要保留的近端语音；$x(n)$ 是设备保存的远端播放参考；$h[\ell]$ 是长度为 $L$ 的线性回声路径冲激响应，$\ell$ 是抽头索引；$v(n)$ 是环境噪声，$*$ 表示卷积。短时间内采用固定的 $h[\ell]$；若要显式描述路径随时间变化，可写成 $h_n[\ell]$。AEC 要估计并减去 $x*h$，同时尽量保留 $s$。
 
@@ -105,19 +108,30 @@ $$\hat{\vec{w}}(n+1)=[0,\ 0,\ 0]^\top+\Delta\vec w\approx[0.267,\ 0.133,\ -0.133
 
 **第 4 步：用更新后的系数重算回声副本**。
 
-$$\hat y'(n)=\hat{\vec{w}}^\top(n+1)\vec{x}(n)=0.267\times1+0.133\times0.5+(-0.133)\times(-0.5)\approx0.267+0.067+0.067\approx0.4$$
+$$\begin{aligned}
+\hat y'(n)&=\hat{\vec{w}}^\top(n+1)\vec{x}(n)\\
+&=0.267\times1+0.133\times0.5+(-0.133)\times(-0.5)\\
+&\approx0.267+0.067+0.067\approx0.4
+\end{aligned}$$
 
 新残差 $e'(n)=0.8-0.4=0.4$。把更新式代回残差可得 $e'(n)\approx(1-\mu)\,e(n)$，因此 $\mu=0.5$ 时同一帧的后验残差减半；$\mu=1$ 时到达该帧的瞬时最优。连续输入上的多次更新使滤波器逐步收敛。
 
 > **$e'\approx(1-\mu)e$ 的推导。** 把更新式代回**同一帧**的残差：
 >
-> $$e'(n)=d-\hat{\vec{w}}^\top(n+1)\vec{x}=[d-\hat{\vec{w}}^\top(n)\vec{x}]-\mu\,e(n)\,\frac{\vec{x}^\top\vec{x}}{\|\vec{x}\|^2+\varepsilon}=e(n)\left[1-\mu\,\frac{\|\vec{x}\|^2}{\|\vec{x}\|^2+\varepsilon}\right]$$
+> $$\begin{aligned}e'(n)&=d-\hat{\vec{w}}^\top(n+1)\vec{x}\\&=[d-\hat{\vec{w}}^\top(n)\vec{x}]-\mu\,e(n)\,\frac{\vec{x}^\top\vec{x}}{\|\vec{x}\|^2+\varepsilon}\\&=e(n)\left[1-\mu\,\frac{\|\vec{x}\|^2}{\|\vec{x}\|^2+\varepsilon}\right]\end{aligned}$$
 >
 > $\varepsilon\ll\|\vec{x}\|^2$ 时方括号约等于 $(1-\mu)$，即 $e'(n)\approx(1-\mu)e(n)$。$\mu=1$ 时 $e'\approx0$，只表示本帧给定 $\vec{x}$ 下的瞬时最优；下一帧输入变化后仍需继续更新。$\mu=0.5$ 时本帧残差减半。$\mu=1.8$ 时 $e'\approx-0.8e$，残差变号且幅度仍为原来的 80%；$\mu=2$ 对应幅度不减的临界情况。
 
 **第二个手算例**（换一组数，验证“减半”不是巧合）：$\vec{x}=[0.8,-0.4,0.4]^\top$，$d=0.6$，$\hat{\vec{w}}(n)=0$，$\mu=0.5$。
 
-$\|\vec{x}\|^2=0.64+0.16+0.16=0.96$，更新量 $=0.5\times0.6/0.96\times\vec{x}=[0.25,-0.125,0.125]^\top$。重算得到 $\hat y'=0.25\times0.8+(-0.125)\times(-0.4)+0.125\times0.4=0.2+0.05+0.05=0.3$，新残差为 $0.6-0.3=0.3$。
+$\|\vec{x}\|^2=0.64+0.16+0.16=0.96$，更新量 $=0.5\times0.6/0.96\times\vec{x}=[0.25,-0.125,0.125]^\top$。重算得到
+
+$$\begin{aligned}
+\hat y'&=0.25\times0.8+(-0.125)\times(-0.4)+0.125\times0.4\\
+&=0.2+0.05+0.05=0.3\text{，}
+\end{aligned}$$
+
+新残差为 $0.6-0.3=0.3$。
 
 残差同样减半，说明规律 $e'\approx(1-\mu)e$ 与这组具体数字无关。
 
@@ -213,7 +227,10 @@ $$\frac{\partial}{\partial\Psi}\left(\frac{|E|^2}{\Psi}+\log\Psi\right)=-\frac{|
 
 $$K_m=\frac{0.6\times2}{2^2\times0.6+0.4}=\frac{1.2}{2.8}\approx0.4286,$$
 
-$$W_m=0.2+0.4286\times1.0\approx0.6286,\qquad P_m=(1-0.4286\times2)0.6\approx0.0857。$$
+$$\begin{aligned}
+W_m&=0.2+0.4286\times1.0\approx0.6286,\\
+P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
+\end{aligned}$$
 
 用更新后的系数回看该观测，残差为 $1.4-2\times0.6286\approx0.1429$；它是后验检查，不应代替式(6-3)中用于更新的先验残差。若 $\Psi_m\to\infty$，则 $K_m\to0$，路径几乎不更新；若理想化地令 $\Psi_m\to0$ 且 $X_m\ne0$，标量模型会令 $K_m\to1/X_m$、$P_m\to0$。实际系统存在模型失配和数值误差，需要为方差设置正下限，不能把 $P_m=0$ 当作永久确定。
 
@@ -635,7 +652,22 @@ pAEC（个性化 AEC，personalized AEC）在 §6.1.6 定义。注册语音和�
 
 自动测试见 [`tests/test_codes_aec_wpe_sep_track.py`](../tests/test_codes_aec_wpe_sep_track.py)，覆盖零能量参考、已知路径收敛、路径突变、冻结更新以及双讲样本不进入 ERLE。接入设备时还必须增加参考断流、纯延迟超过滤波器覆盖范围、削波、多参考高度相关、块边界和长时路径漂移测试；异常时的安全回退是冻结自适应更新或旁路线性抵消，而不是继续用不可信残差更新。
 
-WebRTC AEC3 属于完整工业实现层级，包含参考缓冲、延迟处理、快慢滤波器、残余抑制和舒适噪声；本书只索引 §6.1.9 固定提交的官方源码，不复制其实现。PBFDAF/MDF、FDKF、神经 DTD、DeepVQE、个性化 AEC 与 GEIC 也只给原始论文或官方项目入口。评估这些实现时应固定源码提交、许可证、构建选项、采样率、声道数、帧长、参考抽头、允许延迟、状态重置规则和测试取点；模型权重与挑战赛数据还需分别核对再分发许可。不能用本节教学 NLMS 的结果替代这些系统的验收。
+外部源码按完整提交保存在 `codes/upstream/_downloads/` 的相应项目目录中，具体获取状态见[代码获取说明](../codes/upstream/README.md)。该目录是按需取得的参考源码，教学算法与第三方代码各自保留来源和许可。研究细节见 [AEC 源码研究](../codes/research/02_aec_wpe_separation.md#aec)，其中逐项列出信号接口、读码顺序、状态参数、最小实验与失效实验。
+
+| 方法或组件 | 应从哪段源码读起 | 它实际解决什么 | 复现时单独检查 |
+|---|---|---|---|
+| MDF/PBFDAF 与 AUMDF | SpeexDSP `libspeexdsp/mdf.c`，从 `speex_echo_state_init_mc()` 到 `speex_echo_cancellation()` | 把长路径拆成频域分区，并调度约束和更新 | 重叠保存有效区、FFT 归一化、分区历史、块尾 |
+| 连续自适应控制 | 同文件的学习率与比例更新段 | 根据残余回声、双讲和噪声调节学习率 | Speex 此处不使用独立的二值 DTD，不能套用固定冻结语义 |
+| AEC3 线性路径与延迟 | WebRTC `aec3/echo_canceller3.cc`、`block_processor.cc`、`subtractor.cc`、`render_delay_controller.cc` | 组织参考、时间对齐和线性回声抵消 | 渲染/采集调用顺序、断流、路径变化与重置 |
+| AEC3 残余抑制 | `residual_echo_estimator.cc`、`suppression_gain.cc`、`comfort_noise_generator.cc` | 估计未抵消回声、施加增益并控制输出噪声表现 | 同时保存线性残差和最终输出，避免抑制掩盖失配 |
+| DTLN-aec | 作者仓库 `run_aec.py` 与两阶段模型输入/输出 | 用麦克风和播放参考联合估计近端语音 | 采样率、循环状态、块拼接、TFLite 与权重许可 |
+| NKF-AEC | 作者仓库 `src/nkf.py`，仅作来源索引 | 学习卡尔曼更新增益，仍是线性 AEC | 16 kHz、参考延迟补偿；未确认再分发许可 |
+| Meta-AF | `metaaf/filter.py`、`core.py` 与更新器 | 学习滤波器更新规则并管理分块状态 | 核心库与 `zoo/`、权重采用不同许可证 |
+| 原始 FDKF/PFDKF、NeuralKalman、DeepVQE | 本章原论文与研究文档的结构对应说明 | 分别改变状态统计、学习递推或联合增强 | 未确认的作者官方完整软件不能由同名第三方复现替代 |
+
+SpeexDSP 的 `mdf.c` 文件头直接说明 AUMDF 与连续学习率控制，并引用 Soo–Pang 的 MDF 和 Valin 的双讲学习率论文；因此 MDF、DTD 控制与残余抑制应分别检查。FDKF 则需要显式核对状态转移、过程噪声、观测噪声和增益递推，不能因为某库含频域 AEC，就把它列为 FDKF 的实现。[SpeexDSP 官方源码](https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/mdf.c)、[WebRTC AEC3 固定版本](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/)
+
+最小的工业对照实验可以保持输入录音不变，依次检查参考正常、固定延迟、参考丢块和路径突变四种情况。每种情况同时记录线性段回声、线性残差、抑制后输出、更新控制与恢复时间。双讲段另看近端语音损伤；只看最终能量降低，不能区分成功抵消和过度抑制。外部系统还应固定源码、构建选项、帧长、参考抽头、允许延迟和状态重置规则，不能用本节教学 NLMS 的测试代替这些验收。
 
 #### 6.1.17 常见误区与自测题
 

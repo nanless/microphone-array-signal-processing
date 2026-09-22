@@ -9,8 +9,9 @@
   3. 跨篇 .md 链改成合订本内部锚点；分章导航块和页脚行删除；图片
      ../figures/ 原样透传（combined.html 与 figures/ 同处仓库根的
      相邻目录，相对关系成立；单发 HTML 给别人会缺图，要分发请发 PDF）。
-  4. 写 dist/combined.html（中间产物，git 忽略），调 Chrome 无头打印成
-     临时 PDF；页数和末页通过检查后原子替换发布件，再用 pypdf 原子写入三级书签。
+  4. 在 dist/ 中写临时 HTML 并打印临时 PDF，检查页数、末页、公式文本和打印尺度，
+     再写三级书签并校验链接。全部通过后成对替换正式 HTML/PDF；可捕获的发布异常
+     会恢复旧文件，不承诺断电时的原子性。
 
 用法（仓库根目录）：
     .venv/bin/python scripts/build_pdf.py                 # 全量：HTML + PDF + 书签
@@ -44,6 +45,11 @@ from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlparse
 
+try:
+    from scripts import build_site
+except ModuleNotFoundError:  # 直接执行脚本时使用同目录模块。
+    import build_site
+
 ROOT = Path(__file__).parent.parent
 SRC = ROOT / "chapters"
 OUT = ROOT / "dist"
@@ -75,7 +81,7 @@ PDF_THIRD_LEVEL_CHAPTER_IDS = {
 
 CSS = """
 @page{size:A4;margin:16mm 15mm 18mm}
-body{font-family:"STHeiti","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;max-width:860px;margin:0 auto;padding:24px}
+body{font-family:"STHeiti","Hiragino Sans GB","Microsoft YaHei",sans-serif;font-size:16px;line-height:1.75;color:#1a1a2e;max-width:860px;margin:0 auto;padding:24px}
 p{margin:0 0 .85em}li>p{margin:.3em 0}
 img{max-width:100%;height:auto;display:block;margin:12px auto}
 table{border-collapse:collapse;margin:12px 0;display:block;overflow-x:visible;max-width:100%}
@@ -100,6 +106,8 @@ h3{font-size:16.5px}h4{font-size:15px}
 .toc .subsec{font-size:11.5px;color:#555;padding-left:18px}
 .anchor-alias{display:none}
 .book-end{text-align:center;color:#777;margin:36px 0 8px;font-size:13px}
+/* MathJax 的 serif 中文回退在部分 macOS 字体中会生成部首码位的 ToUnicode。 */
+mjx-mtext>mjx-utext{font-family:MJXZERO,"STHeiti","Hiragino Sans GB","Microsoft YaHei",sans-serif!important}
 @media print{
 body{max-width:none;margin:0;padding:0}
 .chap{page-break-before:always}
@@ -107,9 +115,12 @@ table{display:table;width:100%}
 thead{display:table-header-group}
 tr{break-inside:avoid}
 td,th{word-break:break-word}
-h2,h3,h4{break-after:avoid}
+h1,h2,h3,h4{break-after:avoid}
+.chap>h1{margin:0 0 3mm;line-height:1.3}
+.chap>h2:first-of-type{margin-top:3mm;margin-bottom:2mm;line-height:1.3}
 blockquote,pre{break-inside:avoid}
-img{max-height:92vh;object-fit:contain}
+/* A4 可用高度为 263 mm；紧凑的章/首节标题和图外间距共占约 33 mm。 */
+img{max-height:225mm;object-fit:contain}
 th,code,pre,blockquote{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 """
@@ -212,6 +223,8 @@ def source_digest():
     """发布输入的稳定摘要；避免把生成物自身所在提交写回生成物造成循环漂移。"""
     digest = hashlib.sha256()
     paths = sorted(SRC.glob("*.md"))
+    paths += [ROOT / "codes" / "research" / name for name, _ in build_site.RESEARCH]
+    paths += [ROOT / "scripts" / "build_site.py"]
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "make_figures.py",
               ROOT / "scripts" / "make_aec_figures.py", ROOT / "requirements.txt"]
@@ -259,15 +272,26 @@ def rewrite_book_links(html):
         repl, html, flags=re.S)
 
 
-def rewrite_repository_links(html):
+def rewrite_repository_links(html, source_path=None):
     """把源码相对链接改为可移植的仓库链接，避免 PDF 泄露构建机路径。"""
-    return re.sub(
-        r'href="(?:\.\./)+(codes|tests)/([^"]+)"',
-        lambda match: (
-            f'href="{REPOSITORY_BLOB_BASE}{match.group(1)}/{match.group(2)}"'
-        ),
-        html,
-    )
+    source_path = source_path or SRC / "00_overview.md"
+    chapters = {(SRC / name).resolve(): i for i, (name, _) in enumerate(CHAPTERS)}
+
+    def transform(href):
+        parsed, target = build_site.local_link_target(href, source_path)
+        if target is None:
+            return href
+        if target in chapters and not parsed.query:
+            idx = chapters[target]
+            fragment = parsed.fragment
+            if not fragment or fragment == "sec-1":
+                return f"#ch-{idx}"
+            if re.fullmatch(r"sec-(?:\d+(?:-\d+)*|u-[0-9a-f]{10}(?:-\d+)?)", fragment):
+                return f"#ch-{idx}-{fragment}"
+            raise ValueError(f"合订本无法映射章节锚点：{target.name}#{fragment}")
+        return build_site.repository_url(parsed, target)
+
+    return build_site.rewrite_href_targets(html, transform)
 
 
 def remove_page_info(html):
@@ -324,10 +348,8 @@ def build_html(build_date=None):
                     f'{m.group(2)}</{m.group(1)}>')
 
         html = re.sub(r"<(h[1-4])>(.*?)</\1>", tag_source_heading, html, flags=re.S)
-        html = re.sub(r"\.md((?:#[^\"')\s]*)?)([\"')])",
-                      lambda m: ".html" + m.group(1) + m.group(2), html)
+        html = rewrite_repository_links(html, SRC / fname)
         html = rewrite_book_links(html)
-        html = rewrite_repository_links(html)
         # 每篇开头的引用块都是分篇导航。用位置边界删除，不依赖某一种中文句式。
         html = re.sub(
             r"^\s*(?:<blockquote>.*?</blockquote>\s*)+(?:<hr\s*/?>\s*)?",
@@ -565,6 +587,33 @@ def contains_unrendered_math(text):
     )
 
 
+def validate_pdf_text_codepoints(text):
+    """与发布门禁相同地拒绝 CJK 部首错误映射，不修改提取文本或 PDF。"""
+    radicals = re.findall(r"[\u2e80-\u2eff\u2f00-\u2fdf]", text)
+    if radicals:
+        codes = sorted({f"U+{ord(character):04X}" for character in radicals})
+        raise SystemExit(f"PDF 文本层含部首类错误码位：{codes}；请检查字体回退与 ToUnicode")
+
+
+def validate_pdf_body_scale(reader):
+    """拒绝 Chrome 因过宽内容而缩小整书；CSS 正文固定为 16 px。"""
+    samples = []
+    for page_number, page in enumerate(reader.pages, 1):
+        def inspect(text, cm, tm, _font, font_size):
+            # 长中文正文排除数学上下标、图像、旋转标签及其他字号。
+            if (abs(font_size - 16) < 0.01 and
+                    len(re.findall(r"[\u4e00-\u9fff]", text)) >= 8 and
+                    abs(cm[1]) < 1e-6 and abs(tm[1]) < 1e-6):
+                samples.append((page_number, abs(cm[0] * tm[0])))
+        page.extract_text(visitor_text=inspect)
+    if not samples:
+        raise SystemExit("PDF 缺少可检查缩放比例的 16 px 中文正文，不能确认打印尺度")
+    # CSS 96 px/in 到 PDF 72 pt/in 正常为 0.75；仅为浮点取整留少量余地。
+    too_small = [(page, round(scale, 4)) for page, scale in samples if scale < 0.74]
+    if too_small:
+        raise SystemExit(f"PDF 正文被额外缩小（正常 px→pt 比例为 0.75）：{too_small[:5]}；请检查过宽公式或表格")
+
+
 def print_pdf(combined, pdf, timeout_min_pages=100):
     chrome = find_chrome()
     if not Path(chrome).exists():
@@ -622,6 +671,8 @@ def print_pdf(combined, pdf, timeout_min_pages=100):
             raise SystemExit("PDF 末页未检测到固定结束标记，疑似截断")
         if contains_unrendered_math("\n".join(page_texts)):
             raise SystemExit("PDF 文本层含未渲染的公式源码；保留原发布件")
+        validate_pdf_text_codepoints("\n".join(page_texts))
+        validate_pdf_body_scale(reader)
         os.replace(tmp_pdf, pdf)
     finally:
         tmp_pdf.unlink(missing_ok=True)
@@ -703,39 +754,51 @@ def main(argv=None):
     combined = OUT / "combined.html"
     pdf = OUT / "microphone-array-tutorial.pdf"
     outline = None
-    if not args.pdf_only:
-        check_figures()
-        page, outline = build_html(args.build_date)
-        fd, tmp_name = tempfile.mkstemp(prefix="combined-", suffix=".html", dir=OUT)
-        os.close(fd)
-        tmp_html = Path(tmp_name)
-        try:
+    tmp_html = None
+    tmp_pdf = None
+    try:
+        if not args.pdf_only:
+            check_figures()
+            page, outline = build_html(args.build_date)
+            fd, tmp_name = tempfile.mkstemp(prefix="combined-", suffix=".html", dir=OUT)
+            os.close(fd)
+            tmp_html = Path(tmp_name)
             tmp_html.write_text(page, encoding="utf-8")
-            os.replace(tmp_html, combined)
-        finally:
+        if args.html_only:
+            build_site.publish_files([(tmp_html, combined)])
+            print("saved", combined, "html only, skip printing")
+            return
+        if args.pdf_only:
+            html = combined.read_text(encoding="utf-8")
+            embedded_digest = digest_from_html(html)
+            current_digest = source_digest()
+            if embedded_digest != current_digest:
+                raise SystemExit(
+                    "--pdf-only 拒绝使用陈旧 combined.html："
+                    f"内嵌摘要 {embedded_digest or '缺失'}，当前源文件 {current_digest}。"
+                    "请先运行完整构建或 --html-only。")
+            outline = outline_from_html(html)
+            subsec_count = sum(len(subsecs) for _, _, secs in outline
+                               for _title, _sid, subsecs in secs)
+            print(f"--pdf-only：从 HTML 反推 {len(outline)} 篇、"
+                  f"{sum(len(s) for _, _, s in outline)} 节、{subsec_count} 子节")
+        fd, tmp_name = tempfile.mkstemp(prefix="validated-", suffix=".pdf", dir=OUT)
+        os.close(fd)
+        tmp_pdf = Path(tmp_name)
+        # 临时 HTML 与正式 HTML 同目录，图片相对路径保持一致。
+        print_pdf(tmp_html or combined, tmp_pdf, args.min_pages)
+        if not args.no_bookmarks:
+            add_bookmarks(tmp_pdf, outline)
+        validate_pdf_links(tmp_pdf)
+        replacements = [] if tmp_html is None else [(tmp_html, combined)]
+        replacements.append((tmp_pdf, pdf))
+        build_site.publish_files(replacements)
+        print("saved", pdf)
+    finally:
+        if tmp_html is not None:
             tmp_html.unlink(missing_ok=True)
-        print("saved", combined, combined.stat().st_size // 1024, "KB")
-    if args.html_only:
-        print("html only, skip printing")
-        return
-    if args.pdf_only and outline is None:
-        html = combined.read_text(encoding="utf-8")
-        embedded_digest = digest_from_html(html)
-        current_digest = source_digest()
-        if embedded_digest != current_digest:
-            raise SystemExit(
-                "--pdf-only 拒绝使用陈旧 combined.html："
-                f"内嵌摘要 {embedded_digest or '缺失'}，当前源文件 {current_digest}。"
-                "请先运行完整构建或 --html-only。")
-        outline = outline_from_html(html)
-        subsec_count = sum(len(subsecs) for _, _, secs in outline
-                           for _title, _sid, subsecs in secs)
-        print(f"--pdf-only：从 HTML 反推 {len(outline)} 篇、"
-              f"{sum(len(s) for _, _, s in outline)} 节、{subsec_count} 子节")
-    print_pdf(combined, pdf, args.min_pages)
-    if not args.no_bookmarks:
-        add_bookmarks(pdf, outline)
-    validate_pdf_links(pdf)
+        if tmp_pdf is not None:
+            tmp_pdf.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":

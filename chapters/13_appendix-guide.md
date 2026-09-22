@@ -175,8 +175,20 @@ VarArray 把 TAC、Conformer 分离和通道间相位差特征用于几何无关
 | $\mathrm{ERLE}=10\log_{10}\dfrac{\sum_n|y(n)|^2}{\sum_n|e_{\mathrm{echo}}(n)|^2}$ | 同一远端单讲窗口内的回声返回损失增强；$y=x*h$ 为消除前回声，$e_{\mathrm{echo}}$ 为消除后回声分量 | §6.1 |
 | $X(n,f)=E(n,f)+\sum_{k=\Delta}^{\Delta+K-1}G^*(k,f)X(n-k,f)$ | 单通道记法下的 WPE 预测模型；多通道时 $G$ 与历史观测为向量 | §7.1 |
 | KF 五步 | 预测-更新-增益循环；圆周角新息先做 wrap，浮点实现可用 Joseph 协方差更新 | §9.2 |
-| $D_{t\vert t-1}(\vec x)=\gamma_t(\vec x)+\int p_S(\vec\xi)f_{t\vert t-1}(\vec x\mid\vec\xi)D_{t-1}(\vec\xi)\,d\vec\xi$ | PHD 预测：新生目标强度加存活目标的状态转移 | 式(9-9) |
-| $D_t=(1-p_D)D^-+\sum_{z\in Z_t}\dfrac{p_Dg(z\mid x)D^-}{\kappa(z)+\int p_Dg(z\mid\xi)D^-(\xi)d\xi}$ | PHD 更新：漏检项加每条观测的“目标/杂波”归一化贡献 | 式(9-10) |
+
+**PHD 预测，见式(9-9)**：新生目标强度加存活目标的状态转移。
+
+$$\begin{aligned}
+D_{t\vert t-1}(\vec x)&=\gamma_t(\vec x)\\
+&\quad+\int p_S(\vec\xi)f_{t\vert t-1}(\vec x\mid\vec\xi)D_{t-1}(\vec\xi)\,d\vec\xi.
+\end{aligned}$$
+
+**PHD 更新，见式(9-10)**：漏检项加每条观测的“目标/杂波”归一化贡献。
+
+$$\begin{aligned}
+D_t&=(1-p_D)D^-\\
+&\quad+\sum_{z\in Z_t}\dfrac{p_Dg(z\mid x)D^-}{\kappa(z)+\int p_Dg(z\mid\xi)D^-(\xi)d\xi}.
+\end{aligned}$$
 
 ### 13.6 思考与练习
 
@@ -330,6 +342,10 @@ VarArray 把 TAC、Conformer 分离和通道间相位差特征用于几何无关
 ```
 
 第 10 章示例使用确定性输入，覆盖 SRO 直线拟合与线性重采样、VAD 迟滞与 hangover、峰值保护 AGC、固定容量环形缓冲、deadline/队列模拟和 Q1.15 饱和量化。线性重采样、Python 环形缓冲和调度模拟都是教学基线，不应替换带抗混叠滤波的流式重采样器、无锁实时队列或目标系统测量。
+
+继续做设备实验时，可按[工业实现研究](../codes/research/03_industrial_deployment.md)选择 21 项中的一个主题：采集与路由、连续重采样、VAD/AGC/NS、DSP 固件、模型运行时或评分。先固定源码提交，再记录依赖、编译、模型、声学输入和故障状态；“已下载”只能说明源码在本机，不能代替“已编译、已运行、已测量”。
+
+会议识别复现还要固定数据准备与文本规范化。CHiME-8 的官方 `chime-utils` 提供 SegLST 转写格式、该届规范化及 cpWER/tcpWER 评分；其中缺失场景的忽略选项会改变实际计分范围。应保留每个场景的输入文件数、失败数和最终参与评分的清单，并先用正确转写、说话人交换、漏词和时间戳偏移的小夹具检查评分口径。[CHiME-8 官方评分实现](https://github.com/chimechallenge/chime-utils/tree/152882404f572d40769ef02bf91c5a9a9cfc9c78 "citation")
 
 绘图脚本都在 `scripts/` 里。在仓库根目录跑两个命令，结果进 `figures/`，共 33 张图：
 

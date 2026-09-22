@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 4 章 · 声源定位（DOA 估计） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="aea756f1a7d4"><style>
+<meta name="source-digest" content="9187099fc571"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -13,7 +13,7 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .side a{color:#2f6db3;text-decoration:none}.side a:hover{text-decoration:underline}
 .side .chap{margin:10px 0 2px;font-weight:700}.side .chap.cur{color:#c0392b}
 .side ul{margin:2px 0 6px;padding-left:16px;color:#666}.side li{margin:2px 0}
-.main{flex:1;min-width:0;padding:28px 36px;background:#fff}
+.main{flex:1;min-width:0;padding:28px 36px;background:#fff;overflow-wrap:anywhere}
 .main p{margin:0 0 1.05em}.main li>p{margin:.35em 0}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
 table{border-collapse:collapse;margin:14px 0;max-width:100%}
@@ -25,6 +25,7 @@ pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:a
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
 mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
 .pn a{color:#2f6db3;text-decoration:none}.pn .off{color:#aaa}
 .foot{color:#888;font-size:13px;margin:20px 0 40px}
@@ -79,7 +80,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a></div>
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
-<div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
+<div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div>
+<div class="chap"><a href="research/index.html">源码研究</a></div></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
 <li><a href="04_doa-estimation.html#sec-u-e4b7b5c5da">4. 声源定位（波达方向，Direction of Arrival，DOA）</a></li>
@@ -101,7 +103,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是教程正文第 4 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
-<p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="./03_array-geometry.html">第 3 章 · 阵列几何形态</a> ｜ 下一篇：<a href="./05_beamforming.html">第 5 章 · 波束形成</a></p>
+<p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="03_array-geometry.html">第 3 章 · 阵列几何形态</a> ｜ 下一篇：<a href="05_beamforming.html">第 5 章 · 波束形成</a></p>
 </blockquote>
 <hr />
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-e4b7b5c5da">4. 声源定位（波达方向，Direction of Arrival，DOA）</h1>
@@ -513,8 +515,18 @@ $$\mathbf R=\begin{bmatrix}1&-\mathrm j&-1\\\mathrm j&1&-\mathrm j\\-1&\mathrm j
 $$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$</p>
 <p>两个内积<strong>精确为零</strong>——MUSIC 伪谱的分母 $\vec{a}^H\mathbf{E}_n\mathbf{E}_n^H\vec{a}=|0|^2+|0|^2=0$，因此理想无噪模型下真实方向的谱值趋于无穷大。</p>
 <p><strong>第 6 步：对照——候选方向不匹配时投影非零</strong>。试 $\theta=30°$：$\psi=\pi\sin30°=\pi/2$，$\vec{a}(30°)=[1,\ e^{+\mathrm{j}\pi/2},\ e^{+\mathrm{j}\pi}]^\top=[1,\ \mathrm{j},\ -1]^\top$。逐个算：</p>
-<p>$$\vec{a}^H(30°)\,\vec{e}_2=\frac{1}{\sqrt2}\big(1\times1+(-\mathrm{j})\times(-1)+(-1)\times0\big)=\frac{1+\mathrm{j}}{\sqrt2}\ \Rightarrow\ \Big|\frac{1+\mathrm{j}}{\sqrt2}\Big|^2=1$$
-$$\vec{a}^H(30°)\,\vec{e}_3=\frac{1}{\sqrt6}\big(1\times1+(-\mathrm{j})\times1+(-1)\times(-2)\big)=\frac{3-\mathrm{j}}{\sqrt6}\ \Rightarrow\ \Big|\frac{3-\mathrm{j}}{\sqrt6}\Big|^2=\frac53$$</p>
+<p>$$\begin{aligned}
+\vec{a}^H(30°)\,\vec{e}_2
+&=\frac{1}{\sqrt2}\big(1\times1+(-\mathrm{j})\times(-1)+(-1)\times0\big)\\
+&=\frac{1+\mathrm{j}}{\sqrt2},\\
+\Big|\frac{1+\mathrm{j}}{\sqrt2}\Big|^2&=1.
+\end{aligned}$$</p>
+<p>$$\begin{aligned}
+\vec{a}^H(30°)\,\vec{e}_3
+&=\frac{1}{\sqrt6}\big(1\times1+(-\mathrm{j})\times1+(-1)\times(-2)\big)\\
+&=\frac{3-\mathrm{j}}{\sqrt6},\\
+\Big|\frac{3-\mathrm{j}}{\sqrt6}\Big|^2&=\frac53.
+\end{aligned}$$</p>
 <p>分母 $=1+\frac53=\frac83\approx2.667\ne0$，伪谱 $P_{MU}(30°)=\dfrac{1}{8/3}=\dfrac38=0.375$。0° 处在理想无噪模型下趋于无穷大，而 30° 处是有限值 0.375；数值上对应“匹配方向的噪声子空间投影为零，不匹配方向的投影非零”。实际有限快拍和噪声会使峰值有限。</p>
 <p><strong>能力</strong>：在高 SNR、快拍充分、源数正确、标定准确且没有未处理相干多径时，MUSIC 的谱峰可窄于同一阵列的常规波束主瓣。这种超分辨能力仍依赖孔径和阵列几何：孔径决定不同方向导向矢量的可区分程度，SNR、快拍数、源间隔和模型失配共同决定有限数据下能否分开近邻源。</p>
 <p><strong>三个适用边界</strong>：
@@ -611,9 +623,13 @@ $$\vec{a}^H(30°)\,\vec{e}_3=\frac{1}{\sqrt6}\big(1\times1+(-\mathrm{j})\times1+
 <p><strong>球面 SRP 图 + 等变 CNN 的使用边界</strong>：它解决的是把经纬度球面图直接送入平面 CNN 时邻域畸变、极区采样和旋转模式不一致的问题。相对解析 SRP 基线，它不替换麦对几何累积，而是在二十面体网格上学习空间响应的球面局部模式。</p>
 <p>成立条件是阵列坐标与声速模型已知、训练与推理使用兼容的球面采样，并且训练数据覆盖部署时的声源数、混响和噪声。</p>
 <p>最小比较应在同一批多通道数据上生成相同分辨率的 SRP-PHAT 球面图，以直接取峰为基线，再训练 icoDOA，并在未参与训练的旋转和房间上用同一角误差与检出规则比较。若没有这些数据覆盖或算力，解析 SRP-PHAT 更适合作为可解释基线。算法定义、60 个离散旋转等变性和 soft-argmax 输出见 <a href="https://doi.org/10.1109/TASLP.2022.3224282" title="citation">Díaz-Guerra、Miguel 与 Beltrán 的原论文</a>。</p>
-<p>官方 <a href="https://github.com/DavidDiazGuerra/icoDOA" title="citation">icoDOA 代码仓库</a>给出的最小入口是 <code>1sourceTracking_icoCNN.py</code>。README 记录的验证环境为 Python 3.8.1、PyTorch 1.8.1，并依赖 gpuRIR；合成训练需准备 LibriSpeech，实录测试需准备 LOCATA，输入图分辨率由脚本参数 <code>r</code> 控制，预训练模型和对应结果位于 <code>models/</code>、<code>results/</code>。这些版本和路径是仓库的复现口径，不是对其他版本的兼容性保证。该仓库采用 <a href="https://github.com/DavidDiazGuerra/icoDOA/blob/master/LICENSE" title="citation">AGPL-3.0</a>，并明确定位为论文复现代码而非通用软件库；本书只给官方链接，不复制其源码。许可证与环境信息核实于 2026-09-22，当日 <code>master</code> 的完整提交为 <code>04d1a89594c78ae3cf42f07d94c3737bdc1f7c82</code>；实际使用前仍应复查目标提交及模型、数据集的附加条款。</p>
+<p>官方 <a href="https://github.com/DavidDiazGuerra/icoDOA" title="citation">icoDOA 代码仓库</a>给出的最小入口是 <code>1sourceTracking_icoCNN.py</code>。README 记录的验证环境为 Python 3.8.1、PyTorch 1.8.1，并依赖 gpuRIR；合成训练需准备 LibriSpeech，实录测试需准备 LOCATA，输入图分辨率由脚本参数 <code>r</code> 控制，预训练模型和对应结果位于 <code>models/</code>、<code>results/</code>。这些版本和路径是仓库的复现口径，不是对其他版本的兼容性保证。</p>
+<p>该仓库采用 <a href="https://github.com/DavidDiazGuerra/icoDOA/blob/master/LICENSE" title="citation">AGPL-3.0</a>，并明确定位为论文复现代码而非通用软件库。本书将固定版本源码保留在独立的 <code>codes/upstream/_downloads/icodoa/</code> 研究目录，保留上游许可，不将其改标为本书教学代码的许可，也不把模型或录音授权与源码授权合并。许可证与环境信息核实于 2026-09-22，完整提交为 <code>04d1a89594c78ae3cf42f07d94c3737bdc1f7c82</code>；取得源码不代表本机已经完成训练或论文复现。</p>
 <p><strong>数据驱动结果的比较范围</strong>：定位网络必须在相同数据集、阵列、信噪比、混响、训练数据和误差指标下比较。上表只归纳输入与输出形式，不给出跨论文排名。卷积空间谱定位可参见 Chakrabarty &amp; Habets <a href="https://doi.org/10.1109/JSTSP.2019.2901664" title="citation">期刊论文</a>；IPDnet 见 Wang、Yang 与 Li 的 <a href="https://doi.org/10.1109/TASLP.2024.3507560" title="citation">IEEE/ACM TASLP 2024 正式论文</a>；ACCDOA 见 <a href="https://doi.org/10.1109/ICASSP39728.2021.9413609" title="citation">Shimada et al., ICASSP 2021</a>。使用时还需评估标注成本、跨房间泛化和模型复杂度。</p>
 <p><strong>SELD（声事件定位与检测，sound event localization and detection）</strong>同时估计事件类别、方向和活动时段。STARSS23 是 DCASE 2023 Task 3 使用的带距离元数据示例；当届正式输出并未要求距离。任务定义、划分和指标应按<a href="https://dcase.community/challenge2023/task-sound-event-localization-and-detection-evaluated-in-real-spatial-sound-scenes">当届官方任务页</a>核对，不能把某一届设置外推为长期不变的“前沿”。</p>
+<p>这些方法的源码也应分别阅读。IPDnet 的作者实现位于 <code>Audio-WestlakeU/FN-SSL</code> 的 <code>IPDnet/</code>，固定与可变阵列网络分别在 <code>FixedAarryIPDnet.py</code>、<code>VariableArrayIPDnet.py</code>，训练入口是 <code>runIPDnetOn.py</code>/<code>runIPDnetOff.py</code>；先检查阵列、麦对顺序与相位标签，再读网络。DCASE2022 基线则通过 <code>seldnet_model.py</code> 与 <code>cls_data_generator.py</code> 连接 multi-ACCDOA 输出和 ADPIT 训练标签，不能直接把模型轨号当作第 9 章的持久身份。<a href="https://github.com/Audio-WestlakeU/FN-SSL/tree/76fcb281be92caf068c712dfb015e354f437260f/IPDnet" title="citation">IPDnet 作者目录</a>；<a href="https://github.com/sharathadavanne/seld-dcase2022" title="citation">DCASE2022 官方基线</a>。</p>
+<p>最小输出检查可以先做手算：单轨二维 ACCDOA 预测 <code>(0.433,0.25)</code> 的方向仍是 30°，模却只有 0.5；角度正确不表示活动判定一定通过。再放入两个同类别同时发声的方向，单轨输出无法表示二者，需要多轨输出、允许的标签置换与重复预测合并。换到 DCASE2025 基线时，每轨的第三个音频输出是距离，不是旧三维方向中的 z 分量；把它一起归一化会混淆方向和距离。<a href="https://github.com/partha2409/DCASE2025_seld_baseline/blob/42a48b6456b73be35ad0e1a9ffeb6ceef83ae0bd/model.py" title="citation">DCASE2025 输出层</a>。</p>
+<p>上述三个基线的固定提交、读码顺序、数据条件、最小实验和许可缺口分别记录在<a href="research/01_spatial_and_tracking.html">空间处理研究文档</a>。IPDnet 根 README 仅给出 MIT 字样，两个 DCASE 基线在本次检查中未建立明确再分发授权，因此暂保留官方源码索引，不自动复制；不能把这一限制误写成“没有官方实现”。</p>
 <blockquote>
 <p><strong>DCASE 任务变化（核实于 2026-09-21）</strong></p>
 <ul>
@@ -676,9 +692,47 @@ $$\vec{a}^H(30°)\,\vec{e}_3=\frac{1}{\sqrt6}\big(1\times1+(-\mathrm{j})\times1+
 <p>若真实位置落在格点之间，应做局部细化或连续优化，不能把粗网格误差归因于观测噪声。球面波下联合估计角度与距离的宽带最大似然模型可参见 <a href="https://doi.org/10.1109/TSP.2002.800420" title="citation">Chen、Hudson 与 Yao 2002</a>。</p>
 <p><strong>距离不可观测边界</strong>：当 $r\to\infty$ 时，$d_m-d_2\to-x_m\sin\theta$，对 $r$ 的导数趋近 0；不同大距离候选的 TDOA 因而趋于同一平面波值。此时表中同角度的失配差会继续缩小，距离维度形成平坦谷。孔径很小、带宽或 SNR 不足、通道相位未标定时也会出现相同现象；算法应报告距离低置信度或只输出 DOA，而不是把搜索边界当成可靠距离。</p>
 <span id="sec-14" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-4-7-2">4.7.2 可执行基线的输入契约、回退与外部实现边界</h3>
-<p>本书的原创 NumPy 基线位于 <a href="../codes/array_tutorial/doa.py"><code>doa.py</code></a>。<code>gcc_phat</code> 对应 §4.2，返回的正时延严格表示 $\tau_{12}=t_1-t_2$；它使用零填充线性相关、物理时延裁剪和可选三点插值。<code>srp_phat</code> 对应式(4-1)，输入多通道谱的形状固定为 <code>通道 × 频点 × 帧</code>。<code>bartlett_spectrum</code>、<code>capon_spectrum</code>、<code>music_spectrum</code> 和 <code>esprit_ula</code> 分别对应 §4.5、§4.6；平面波和近场导向矢量来自 <a href="../codes/array_tutorial/geometry.py"><code>geometry.py</code></a>。完整小例与手算回归见 <a href="../codes/examples/ch02_05_baselines.py"><code>ch02_05_baselines.py</code></a> 和 <a href="../tests/test_codes_doa_beam.py"><code>test_codes_doa_beam.py</code></a>。</p>
+<p>本书的原创 NumPy 基线位于 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/doa.py"><code>doa.py</code></a>。<code>gcc_phat</code> 对应 §4.2，返回的正时延严格表示 $\tau_{12}=t_1-t_2$；它使用零填充线性相关、物理时延裁剪和可选三点插值。<code>srp_phat</code> 对应式(4-1)，输入多通道谱的形状固定为 <code>通道 × 频点 × 帧</code>。<code>bartlett_spectrum</code>、<code>capon_spectrum</code>、<code>music_spectrum</code> 和 <code>esprit_ula</code> 分别对应 §4.5、§4.6；平面波和近场导向矢量来自 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/geometry.py"><code>geometry.py</code></a>。完整小例与手算回归见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/ch02_05_baselines.py"><code>ch02_05_baselines.py</code></a> 和 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_doa_beam.py"><code>test_codes_doa_beam.py</code></a>。</p>
 <p>接入实际录音时还要固定 WAV 数值口径、采样率、通道顺序、麦克风坐标及单位、参考麦、坐标轴、声速和时间戳。GCC 必须按物理孔径裁剪 lag，并同时输出峰值、峰背比和有效频带；SRP 还要记录阵元对、二维或三维搜索范围、网格单位、插值和粗到细规则。扫描谱要记录快拍窗口、频带合并、源数、选峰间距和加载口径。Capon/MUSIC/MVDR 使用厄米线性求解或 <code>eigh</code>，不显式形成矩阵逆；协方差奇异且没有加载时，示例代码会报错，调用方应明确选择增加快拍、相对加载、保持上次可靠估计或退回 SRP/Bartlett，不能把 NaN 当成方向。</p>
-<p>本书不复制第三方定位代码。核实于 2026-09-22 的官方索引包括：<a href="https://github.com/LCAV/pyroomacoustics">pyroomacoustics</a>（MIT；发布页当日显示 v0.10.1，书中 NormMUSIC 仍固定为 0.10.0 口径）、<a href="https://github.com/introlab/odas">ODAS</a>（MIT；面向嵌入式定位、追踪、分离和后处理，复现时应固定完整提交号）以及前述 icoDOA（AGPL-3.0）。CSSM、WAVES、TOPS、FRIDA、原子范数、SBL 和神经定位涉及额外优化器、训练数据或许可证，本轮只保留原论文与官方仓库索引，不把第三方实现改写成来源不清的“简化版”。</p>
+<p>定位源码分为本书教学实现和按完整提交号取得的外部参考。后者保存在 <code>codes/upstream/_downloads/</code> 的独立工作目录；版本、代码许可与入口见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json"><code>SOURCES.lock.json</code></a>，具体阅读步骤和验证方案见<a href="research/01_spatial_and_tracking.html">空间处理与追踪研究</a>。取得源码、运行一次示例和复现论文结论应分别记录。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">本章方法</th>
+<th scope="col">外部源码入口</th>
+<th scope="col">读码时先核对什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AIC/MDL、空间平滑、root-MUSIC</td>
+<td>doatools 的 <code>estimation/source_number.py</code>、<code>preprocessing.py</code>、<code>music.py</code></td>
+<td>特征值排序、有效快拍数、子阵数与长度、半波长默认间距</td>
+</tr>
+<tr>
+<td>CSSM、WAVES、TOPS</td>
+<td>pyroomacoustics 的 <code>doa/cssm.py</code>、<code>waves.py</code>、<code>tops.py</code></td>
+<td>初始峰、参考频点、频点筛选与协方差是否同步、迭代停止</td>
+</tr>
+<tr>
+<td>FRIDA</td>
+<td>pyroomacoustics 的 <code>doa/frida.py</code> 与 <code>tools_fri_doa_plane.py</code>；原论文库 <code>LCAV/FRIDA</code> 的 <code>doa/fri.py</code></td>
+<td>协方差可见度、连续角恢复、截断阶数、随机初值和重建残差</td>
+</tr>
+<tr>
+<td>分层 SRP 与持续定位</td>
+<td>ODAS 的 <code>src/module/mod_ssl.c</code>、<code>src/signal/scan.c</code> 及设备配置</td>
+<td>粗细网格、保留候选数、麦对筛选、插值与几何坐标</td>
+</tr>
+<tr>
+<td>组稀疏与协方差匹配</td>
+<td>doatools 的 <code>estimation/sparse.py</code></td>
+<td>快拍模型与功率模型的区别、正则参数、字典归一化和求解器状态</td>
+</tr>
+</tbody>
+</table></div>
+<p>这些实现不能共用一个未经转换的角度和数组约定。例如本书麦位置为 <code>通道 × 空间维度</code>，pyroomacoustics 为 <code>空间维度 × 通道</code>；doatools 的 root-MUSIC 还要求 ULA，不能因它不扫描角度就用于任意阵列。定位输出应保留源数未满足、统计无效、优化不可行和峰歧义等状态，不应始终给一个看似确定的角度。</p>
+<p>固定版本也可能有实现缺陷。研究文档登记了 pyroomacoustics 0.10.0 的 CSSM/WAVES 频点剔除与协方差下标对应、TOPS 真实 FFT bin 与列表下标对应的静态疑点，并给出最小下标推演；尚未完成外部包完整声学回归，因此不把这些入口写成已经通过设备验收的实现。原子范数、SBL 和神经定位则仍需按具体论文确认优化器、模型、训练数据与许可。来源为 <a href="https://morriswmz.github.io/doatools.py/references/doatools.estimation.html" title="citation">doatools 作者文档</a>、<a href="https://github.com/LCAV/pyroomacoustics" title="citation">pyroomacoustics 官方仓库</a>、<a href="https://github.com/introlab/odas" title="citation">ODAS 官方仓库</a>，源码核实于 2026-09-22。</p>
 <span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-8">4.8 定位算法总对比</h2>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -777,7 +831,7 @@ $$\vec{a}^H(30°)\,\vec{e}_3=\frac{1}{\sqrt6}\big(1\times1+(-\mathrm{j})\times1+
 </ol>
 <hr />
 <blockquote>
-<p>📄 本篇信息：配图 5 张 ｜ <a href="./index.html">回首页</a></p>
+<p>📄 本篇信息：配图 5 张 ｜ <a href="index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="03_array-geometry.html">← 上一篇</a></span><span><a href="05_beamforming.html">下一篇 →</a></span></div>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 10 章 · 工程实现、评测与产业实践 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="aea756f1a7d4"><style>
+<meta name="source-digest" content="9187099fc571"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -13,7 +13,7 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .side a{color:#2f6db3;text-decoration:none}.side a:hover{text-decoration:underline}
 .side .chap{margin:10px 0 2px;font-weight:700}.side .chap.cur{color:#c0392b}
 .side ul{margin:2px 0 6px;padding-left:16px;color:#666}.side li{margin:2px 0}
-.main{flex:1;min-width:0;padding:28px 36px;background:#fff}
+.main{flex:1;min-width:0;padding:28px 36px;background:#fff;overflow-wrap:anywhere}
 .main p{margin:0 0 1.05em}.main li>p{margin:.35em 0}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
 table{border-collapse:collapse;margin:14px 0;max-width:100%}
@@ -25,6 +25,7 @@ pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:a
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
 mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
 .pn a{color:#2f6db3;text-decoration:none}.pn .off{color:#aaa}
 .foot{color:#888;font-size:13px;margin:20px 0 40px}
@@ -85,7 +86,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ul>
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
-<div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
+<div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div>
+<div class="chap"><a href="research/index.html">源码研究</a></div></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
 <li><a href="10_engineering-practice.html#sec-u-5a84f59f93">10. 工程实现、评测与产业实践</a></li>
@@ -113,7 +115,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是教程第 10 章。前后篇见下方导航。</p>
-<p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="./09_source-tracking.html">第 9 章 · 声源追踪</a> ｜ 下一篇：<a href="./11_selection-guide.html">第 11 章 · 总结与选型指南</a></p>
+<p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="09_source-tracking.html">第 9 章 · 声源追踪</a> ｜ 下一篇：<a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></p>
 </blockquote>
 <hr />
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-5a84f59f93">10. 工程实现、评测与产业实践</h1>
@@ -219,8 +221,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>同一帧内有多个模块串行执行时，它们的计算时间要相加；并行分支取耗时最长的关键分支；流水重叠的等待只沿关键路径计一次。在线 WPE 只使用历史帧时，本身不需要未来帧，但其分帧、平滑和实现缓冲仍可能产生延迟。</p>
 <p>可把第 $p$ 条路径写成</p>
 <p>$$
-L_p=L_{\text{lookahead}}+L_{\text{buffer}}+L_{\text{compute}}+L_{\text{schedule}}+L_{\text{decode}},
-\qquad L_{\text{e2e}}=\max_p L_p .
+\begin{aligned}
+L_p&=L_{\text{lookahead}}+L_{\text{buffer}}+L_{\text{compute}}+L_{\text{schedule}}+L_{\text{decode}},\\
+L_{\text{e2e}}&=\max_p L_p .
+\end{aligned}
 \tag{10-1}
 $$</p>
 <p><img alt="图25 延迟预算示意" src="../figures/fig25_latency_budget.png" onerror="this.alt+='（图缺失）'" /></p>
@@ -232,8 +236,9 @@ $$</p>
 <p>延迟报告不能只有平均值。稳定运行阶段至少给出中位数（p50）与尾延迟（如 p95、p99）、样本数和测量时长；冷启动另报模型加载、内存分配和状态填充所需时间。若系统存在不同设备、网络或调度模式，应分别报告，而不是把所有样本混成一个分位数。测量点也要写清，例如“音频驱动时间戳 → 第一块可播放增强 PCM”与“音频入口 → 首个 ASR token”是两条不同关键路径。</p>
 <span id="sec-4" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-1-2">10.1.2 实时回调只搬运数据</h3>
 <p>声卡回调线程的首要目标是按时交付下一块音频。回调中临时分配大数组、等待互斥锁、访问磁盘、打印日志或执行时间不确定的模型推理，都可能让驱动错过期限。常见结构是：回调只复制交织或非交织样本、记录设备时间戳和状态位，再把固定大小的数据块写入预分配的环形缓冲；工作线程从缓冲读取并执行 AEC、波束和后端。回调与工作线程的时钟、缓冲单位和丢帧策略必须写清。</p>
-<p>环形缓冲已满时，系统需要事先选择“丢最旧块”“丢新块”或“降级处理”。任何一种策略都会改变输出：丢块破坏连续状态，等待会阻塞采集，积压则增大延迟。本书的 <a href="../codes/array_tutorial/engineering.py"><code>RingBuffer</code></a> 采用“丢最旧样本”的可见基线，并累计 <code>dropped</code>；它用来说明容量和溢出语义，不是无锁实时队列。</p>
-<p><a href="../codes/array_tutorial/engineering.py"><code>simulate_deadline_queue</code></a> 用一条串行工作队列区分三件事：处理完成晚于本帧期限、队列达到高水位、容量已满而丢帧。平均 RTF 小于 1 仍可能出现其中任何一种。正式设备还要记录驱动报告的 underrun/overrun（合称 xrun）、线程优先级、CPU 频率策略和并发负载。</p>
+<p>环形缓冲已满时，系统需要事先选择“丢最旧块”“丢新块”或“降级处理”。任何一种策略都会改变输出：丢块破坏连续状态，等待会阻塞采集，积压则增大延迟。本书的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>RingBuffer</code></a> 采用“丢最旧样本”的可见基线，并累计 <code>dropped</code>；它用来说明容量和溢出语义，不是无锁实时队列。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>simulate_deadline_queue</code></a> 用一条串行工作队列区分三件事：处理完成晚于本帧期限、队列达到高水位、容量已满而丢帧。平均 RTF 小于 1 仍可能出现其中任何一种。正式设备还要记录驱动报告的 underrun/overrun（合称 xrun）、线程优先级、CPU 频率策略和并发负载。</p>
+<p>Linux 的 ALSA（Advanced Linux Sound Architecture，先进 Linux 声音架构）还区分具体恢复原因：<code>-EPIPE</code> 表示上溢或下溢，<code>-ESTRPIPE</code> 与挂起有关，<code>-ENODEV</code> 可表示设备移除；某些回声参考设备在关联播放未启动时会返回 <code>-ENODATA</code>。这些状态不能统一解释为“再读一次”。恢复后要记录丢样，并通知依赖连续历史的 AEC、重采样器及后端。<a href="https://www.alsa-project.org/alsa-doc/alsa-lib/pcm.html" title="citation">ALSA PCM 官方接口说明</a></p>
 <p>参考接口可按下表检查：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -324,7 +329,8 @@ $$</p>
 <p>互相关峰漂移、相位漂移或专用导频都可用于估计。更新周期和允许残差应由最长连续运行时间、相干性要求及任务指标反推，不宜照搬固定 ppm 门限。</p>
 <p>能够共享硬件时钟时，应优先消除 SRO 来源；不能共享时钟时，再评估在线补偿。</p>
 <p>初始时差表现为整条“延迟—时间”曲线的截距，稳定 SRO 表现为斜率，偶发丢样则表现为阶跃。三者不能只靠首尾两个点可靠区分。工程上可分块估计互相关峰，先检查峰值置信度，再对可信的“时间—相对延迟”点做直线拟合；残差中若出现近似一个或多个采样间隔的突跳，应先查丢样和时间戳，而不是把所有变化都拟合成 ppm。</p>
-<p><a href="../codes/array_tutorial/engineering.py"><code>estimate_sro_ppm</code></a> 把相对延迟定义为“参考时间减设备时间”，再拟合截距和斜率；正斜率表示设备采样率较高，与 <a href="../codes/array_tutorial/engineering.py"><code>resample_sro_to_reference</code></a> 的符号一致。若横轴使用参考时间，精确斜率为 $\varepsilon/(1+\varepsilon)$；函数按小偏移的一阶近似把斜率乘 $10^6$ 报为 ppm，在音频设备常见的几十至数百 ppm 范围内用于教学。要求更高时应反解 $\varepsilon=s/(1-s)$，其中 $s$ 是拟合斜率。重采样函数用线性插值演示长度和方向；线性插值没有足够的带外抑制，只适合教学检查。设备实现要换成有抗混叠滤波和跨块状态的异步采样率转换器，并测量补偿后的相位残差。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>estimate_sro_ppm</code></a> 把相对延迟定义为“参考时间减设备时间”，再拟合截距和斜率；正斜率表示设备采样率较高，与 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>resample_sro_to_reference</code></a> 的符号一致。若横轴使用参考时间，精确斜率为 $\varepsilon/(1+\varepsilon)$；函数按小偏移的一阶近似把斜率乘 $10^6$ 报为 ppm，在音频设备常见的几十至数百 ppm 范围内用于教学。要求更高时应反解 $\varepsilon=s/(1-s)$，其中 $s$ 是拟合斜率。重采样函数用线性插值演示长度和方向；线性插值没有足够的带外抑制，只适合教学检查。设备实现要换成有抗混叠滤波和跨块状态的异步采样率转换器，并测量补偿后的相位残差。</p>
+<p>连续流可对照 libsamplerate 的 <code>src_process</code> 或 SpeexDSP 的重采样接口。以 libsamplerate 为例，比例定义为“输出速率/输入速率”；设备快 100 ppm 时，转到参考时钟的比例约为 $1/1.0001=0.99990001$。每次调用还会返回实际消耗的输入帧数和生成的输出帧数，调用方必须保留未消耗输入，不能假设一进一出或每块重新创建转换器。<a href="https://libsndfile.github.io/libsamplerate/api_full.html" title="citation">libsamplerate Full API</a></p>
 <span id="sec-7" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-2-2">10.2.2 增益变化与 AEC</h3>
 <p>AEC 前的时变增益会改变它要辨识的等效回声路径。设计时应记录每一级增益位于参考取点之前还是之后，并确保 AEC 能获知或跟踪这些变化。常见做法是：AEC 收敛和双讲期间保持前置增益稳定；发生削波风险时允许保护性衰减，同时重置或减小自适应步长。锁定时间、解锁条件和允许步进都应通过本机回声路径和双讲集确定，不存在通用的秒数或 dB 阈值。</p>
 <p>阵列标定应覆盖相对增益、相位/时延和麦克风坐标。位置误差造成的相位误差为</p>
@@ -433,8 +439,10 @@ $$</p>
 <p>阈值需要在指定误唤醒率下报告漏唤醒率，不能只给一个孤立分数。</p>
 <span id="sec-11" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-3-3">10.3.3 VAD 与 AGC 的最小可运行基线</h3>
 <p>能量 VAD 虽然简单，却能把控制逻辑讲清。启动阈值应高于继续阈值，避免能量在单一阈值附近来回切换；hangover 在能量下降后继续保持若干帧，减少词尾被截断。预卷缓存解决的是词首：VAD 刚触发时，把触发前保留的短时音频一并送给后端。三个时间量都要换算成帧数，并在短词、长停顿和脉冲噪声上分别验证。</p>
-<p><a href="../codes/array_tutorial/engineering.py"><code>HysteresisVAD</code></a> 输入线性均方能量，不接受 dB 阈值；把 dBFS 门限传给它会造成口径错误。<code>hangover_frames=2</code> 表示首次跌破继续阈值的两帧仍保持活动，第三帧才关闭。该基线没有噪声自适应、频带特征和神经网络，也不自行保存预卷；预卷可用 <a href="../codes/array_tutorial/engineering.py"><code>RingBuffer</code></a> 保留触发前的固定帧数，并在 VAD 由假变真时先取出缓存。</p>
-<p>AGC 要区分“把正常语音逐渐推向目标电平”和“立刻避免削波”。增益上升可以缓慢释放，增益下降需要更快；即使平滑状态来不及下降，当前块也要受安全上限约束。<a href="../codes/array_tutorial/engineering.py"><code>PeakProtectAGC</code></a> 给出这种峰值保护基线。它不估计响度，也不能修复模拟前端已经发生的削波。验收时要同时画输入电平、增益、输出峰值和削波比例，并在 AEC 双讲期间检查增益变化是否破坏回声路径模型。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>HysteresisVAD</code></a> 输入线性均方能量，不接受 dB 阈值；把 dBFS 门限传给它会造成口径错误。<code>hangover_frames=2</code> 表示首次跌破继续阈值的两帧仍保持活动，第三帧才关闭。该基线没有噪声自适应、频带特征和神经网络，也不自行保存预卷；预卷可用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>RingBuffer</code></a> 保留触发前的固定帧数，并在 VAD 由假变真时先取出缓存。</p>
+<p>AGC 要区分“把正常语音逐渐推向目标电平”和“立刻避免削波”。增益上升可以缓慢释放，增益下降需要更快；即使平滑状态来不及下降，当前块也要受安全上限约束。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>PeakProtectAGC</code></a> 给出这种峰值保护基线。它不估计响度，也不能修复模拟前端已经发生的削波。验收时要同时画输入电平、增益、输出峰值和削波比例，并在 AEC 双讲期间检查增益变化是否破坏回声路径模型。</p>
+<p>实际 VAD 接口也有不同的输入协议。WebRTC 传统 VAD 使用合法采样率下的 16 位单声道 PCM 和 10、20、30 ms 帧；Silero 核实的 ONNX 包装器使用 16 kHz/512 点或 8 kHz/256 点，均为 32 ms，并保留跨块状态。10 ms 的声卡回调不能直接当成任意模型的一次输入，需要先缓冲到合法块长，再把决策映射回采集时间轴。<a href="https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/common_audio/vad/include/webrtc_vad.h" title="citation">WebRTC VAD 接口</a>、<a href="https://github.com/snakers4/silero-vad/blob/60b7ffa243625ebdc1070275a29f18c87843786a/src/silero_vad/utils_vad.py" title="citation">Silero 包装器源码</a></p>
+<p>跨块状态要与会话绑定。每块重置会改变模型行为，多条独立会话共享状态会相互干扰。阈值、最短语音、静音等待和前后填充也要分开调节；降低语音概率阈值并不能自动补回已经丢失的词首音频。工业 VAD、WebRTC AGC2 和 DeepFilterNet 的源码阅读顺序及故障试验见<a href="research/03_industrial_deployment.html#2-噪声语音活动与增益">工业实现研究中的控制与增强部分</a>。</p>
 <span id="sec-12" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-4">10.4 定点化、算力与功耗预算</h2>
 <span id="sec-13" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-4-1">10.4.1 从浮点实现到目标芯片</h3>
 <p>定点化要检查四件事：</p>
@@ -446,8 +454,9 @@ $$</p>
 </ul>
 <p>协方差矩阵求解与 WPE 线性方程组尤其要观察条件数；对角加载能改善数值稳定性，但加载量应相对矩阵尺度定义。32 位或更宽的累加器可以减少乘加溢出，不能保证病态矩阵求解正确。</p>
 <p>训练后量化（Post-Training Quantization，PTQ）先用校准数据确定量化尺度；量化感知训练（Quantization-Aware Training，QAT）在训练中模拟量化误差。选哪一种应由目标芯片的算子、代表性数据上的任务指标和最不利输入测试决定。不能预先承诺固定的指标下降量或加速倍数。</p>
-<p>定点格式还要明确舍入和饱和规则。本书的 <a href="../codes/array_tutorial/engineering.py"><code>q15_quantize</code></a> 把 $[-1,1)$ 映射到有符号 Q1.15：乘 $32768$、按最近偶数舍入，再饱和到 $[-32768,32767]$。因此 $-1$ 可以精确表示，$+1$ 只能饱和为 $32767/32768$。<a href="../codes/array_tutorial/engineering.py"><code>q15_dot</code></a> 用 64 位整数累加乘积，只在输出时除以 $2^{15}$、按最近偶数舍入并饱和；目标 DSP 若使用不同累加位宽或逐乘积舍入，就不应期待 bit-exact 相同。测试既要覆盖正常小数，也要覆盖 $\pm1$、超范围输入和累加器极值；不能只比较平均误差。</p>
+<p>定点格式还要明确舍入和饱和规则。本书的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>q15_quantize</code></a> 把 $[-1,1)$ 映射到有符号 Q1.15：乘 $32768$、按最近偶数舍入，再饱和到 $[-32768,32767]$。因此 $-1$ 可以精确表示，$+1$ 只能饱和为 $32767/32768$。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>q15_dot</code></a> 用 64 位整数累加乘积，只在输出时除以 $2^{15}$、按最近偶数舍入并饱和；目标 DSP 若使用不同累加位宽或逐乘积舍入，就不应期待 bit-exact 相同。测试既要覆盖正常小数，也要覆盖 $\pm1$、超范围输入和累加器极值；不能只比较平均误差。</p>
 <p>SIMD（单指令多数据）优化从数据布局开始。连续的频点、通道或抽头便于向量加载，跨步访问和频繁转置会抵消乘加加速。报告 SIMD 收益时要写明标量基线、指令集、编译选项、数组对齐、块尺寸、线程数和是否包含格式转换。运行时派发还要保留标量回退，并让两条路径通过同一组数值容差或 bit-exact 测试；“编译器打开了向量化”不能代替这些检查。</p>
+<p>CMSIS-DSP 的 <code>arm_fir_q15</code> 是具体对照：源码说明了 1.15 乘法、64 位累加和输出截位/饱和，而本书 <code>q15_dot</code> 采用最近偶数舍入。两者都称 Q15，却不应默认逐位相同；快速版、标量版和向量版也要绑定内核及编译宏分别检查。先用脉冲、满幅和余数块长验证，再报告目标芯片周期数。<a href="https://github.com/ARM-software/CMSIS-DSP/blob/83a2d7bc98c81b4bbe4a6f48b1f2ecf179868a0b/Source/FilteringFunctions/arm_fir_q15.c" title="citation">CMSIS-DSP FIR 源码</a></p>
 <span id="sec-14" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-4-2">10.4.2 不混用指令数、乘加次数和实时因子</h3>
 <ul>
 <li>每秒乘加次数（Multiply-Accumulate Operations per Second，MAC/s）或每秒百万次乘加（Million MAC/s，MMAC/s）适合描述已经明确算子图和计数规则的算法计算量。</li>
@@ -537,6 +546,8 @@ $$</p>
 <p>ITU-T 已于 2024 年 1 月 5 日撤销 <a href="https://www.itu.int/rec/T-REC-P.862/en" title="citation">P.862（PESQ）</a>，并在官方页面指向 <a href="https://www.itu.int/rec/T-REC-P.863/en" title="citation">P.863（POLQA）</a>。因此，PESQ 适合在必须对照旧论文时按原条件复现；新的标准合规性表述不应把 P.862 写成现行建议书。P.863 是现行的客观语音质量建议书，但其适用范围和版本仍需随正式报告记录。</p>
 <p><a href="https://www.itu.int/rec/T-REC-P.835/en" title="citation">ITU-T P.835（07/2026）</a>用于对含噪语音处理系统做主观听测，分别评价语音信号（Signal，SIG）、背景噪声（Background，BAK）和总体效果（Overall，OVRL）。它适合区分“噪声是否减弱”和“语音是否受损”，但不能直接评价 DOA、轨迹身份或空间位置。正式报告应写明标准版本、听测材料、听众筛选、播放设备和统计区间。</p>
 <p><a href="https://www.itu.int/rec/T-REC-P.566/en" title="citation">ITU-T P.566（07/2026）</a>的官方条目将其列为“已生效，待发布”（in force / to be published）的单端机器学习多维语音质量模型。在正式文本发布前，本书不从二手资料扩写输出维度或评分细则。P.566 的单端客观预测不能代替 P.835 主观听测，也不评价 DOA、轨迹或空间位置。</p>
+<p>公开评分代码可帮助固定执行口径。DNS Challenge 的 <code>DNSMOS/dnsmos_local.py</code> 提供本地质量预测，AEC Challenge 的 <code>AECMOS/AECMOS_local/</code> 提供回声相关评分；前者还区分普通和个性化模式。需要同时锁定模型摘要、采样率、裁段、短文件处理与聚合方式。模型预测分不是实际听众 MOS，也不能代替任务识别指标。<a href="https://github.com/microsoft/DNS-Challenge/tree/591184a9fcb2cbdec02520fed81a32bbbf9d73ff/DNSMOS" title="citation">DNSMOS 本地说明</a>、<a href="https://github.com/microsoft/AEC-Challenge/tree/6c633d0a9d2a143a0e364899b91b06f127315b18/AECMOS" title="citation">AECMOS 本地说明</a></p>
+<p>AECMOS 官方为 2021/2022 测试集规定了收敛段后的评分范围，近端单讲、远端单讲和双讲的裁取方式不同。使用别的测试集时，应按该测试集规则定义区间，不能直接沿用旧届剪裁。逐文件失败、静音输出和缺失场景也要计入报告，避免只汇总成功评分的子集。</p>
 <span id="sec-16" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-6">10.6 数据、仿真与复现</h2>
 <p>公开数据集适合建立可复现基线，不能代替目标设备录音。选择数据时要核对采样率、麦克风几何、房间、说话人数、重叠率、参考真值和许可证。训练、调参、最终测试应按房间或说话人隔离，避免相邻片段泄漏。</p>
 <p>录音和声纹还要有数据治理清单：</p>
@@ -640,7 +651,7 @@ room = pra.ShoeBox(
 <p>低功耗常驻任务和高算力按需任务可以分开：例如 KWS 在低功耗处理器上运行，唤醒后再启动 ASR 或分离网络。但 AEC、波束、WPE 是否常驻取决于是否需要持续边播边听、录音或通话，不应把“唤醒前关闭完整前端”写成固定方案。</p>
 <p>端侧、云侧或混合部署要比较隐私、断网可用性、网络尾延迟、更新能力和能耗。对品牌产品的实现方式没有公开证据时，只能写成候选架构，不能当作产品事实。</p>
 <span id="sec-20" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-9-1">10.9.1 开源实现怎样用作工程对照</h3>
-<p>开源项目解决的是链路中的不同部分，不能因为都能处理音频就横向替换。下面只列本书正文能够说明用途和边界的项目；固定来源、提交、许可证和核实日期统一记录在 <a href="../codes/SOURCES.lock.json"><code>codes/SOURCES.lock.json</code></a>，代码、模型权重和数据集许可证分别检查。</p>
+<p>开源项目解决的是链路中的不同部分，不能因为都能处理音频就横向替换。下面只列本书正文能够说明用途和边界的项目；固定来源、提交、许可证和核实日期统一记录在 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json"><code>codes/SOURCES.lock.json</code></a>，代码、模型权重和数据集许可证分别检查。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
@@ -672,13 +683,52 @@ room = pra.ShoeBox(
 </tr>
 <tr>
 <td><a href="https://github.com/microsoft/onnxruntime/tree/48795e0281bcaa6b3b63b28af5e078b4c41e995f">ONNX Runtime 固定源码快照</a></td>
-<td>模型执行、执行提供程序和量化后的设备部署；链接固定到本轮核实的完整提交，不把未发布版本写成正式发布</td>
+<td>模型执行、执行提供程序和量化后的设备部署；链接固定到 2026-09-22 核实的完整提交，属于源码快照</td>
 <td>它是运行时，不定义 NS、分离或波束算法的训练目标</td>
 </tr>
 </tbody>
 </table></div>
-<p>WebRTC 与 PortAudio 规模较大，本仓库不复制其源码。需要对照时按锁定清单获取，并在隔离环境构建。<code>codes/array_tutorial/</code> 中的程序是本书教学基线，作用是复算约定和边界；它们不冒充上游项目，也不构成产品性能承诺。</p>
+<p>更多可直接阅读的工业实现包括以下几组，完整提交、许可和获取状态由 <code>codes/</code> 统一记录。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">实现层</th>
+<th scope="col">官方项目与源码入口</th>
+<th scope="col">接入时要固定的条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Linux 音频与 AEC 路由</td>
+<td>ALSA <code>src/pcm/</code>；PipeWire <code>src/modules/module-echo-cancel.c</code></td>
+<td>设备、period/buffer、时间戳；capture/source/sink/playback 四流与播放参考</td>
+</tr>
+<tr>
+<td>流式重采样</td>
+<td>libsamplerate <code>src/samplerate.c</code>；SpeexDSP <code>libspeexdsp/resample.c</code></td>
+<td>速率比例、滤波质量、跨块状态、实际消费/输出帧数</td>
+</tr>
+<tr>
+<td>VAD、AGC 与神经 NS</td>
+<td>WebRTC <code>common_audio/vad/</code>、<code>agc2/</code>；Silero <code>utils_vad.py</code>；DeepFilterNet <code>libDF/</code>、<code>ladspa/</code></td>
+<td>PCM 幅度、合法块长、会话状态、前瞻、模型和取点</td>
+</tr>
+<tr>
+<td>DSP 固件</td>
+<td>XMOS <code>lib_voice</code> 的 AEC/ADEC、IC/VNR、NS/AGC；SOF <code>src/audio/tdfb/</code></td>
+<td>几何、系数、通道、调度、工具链、固件拓扑与硬件适用范围</td>
+</tr>
+<tr>
+<td>MCU 推理</td>
+<td>CMSIS-NN <code>Source/</code>；TensorFlow Lite Micro <code>micro_speech/</code></td>
+<td>整数量化、算子、临时内存、tensor arena、特征前端</td>
+</tr>
+</tbody>
+</table></div>
+<p><a href="research/03_industrial_deployment.html">工业实现研究文档</a>逐项给出 21 个实现主题的源码入口、状态和参数、故障注入及验收方法，核实日期为 2026-09-22。XMOS 的旧 <code>fwk_voice</code> 已迁移到 <code>lib_voice</code>；该库使用 XMOS Public Licence v1，商用硬件范围和特殊用途条款应按原许可判断，不能把可获取源码等同于跨平台宽松许可。<a href="https://github.com/xmos/fwk_voice" title="citation">XMOS 官方迁移说明</a>、<a href="https://github.com/xmos/lib_voice/blob/c9f1a9bf95cd88c7950adf4bf631c217f900ad25/LICENSE.rst" title="citation">lib_voice 许可</a></p>
+<p>上游源码按锁定清单独立获取到被 Git 忽略的 <code>codes/upstream/_downloads/</code>，保留原许可证和版本；是否已下载以本机获取记录为准。代码、权重和数据分别管理。<code>codes/array_tutorial/</code> 中的程序是本书教学基线，作用是复算约定和边界；下载上游源码本身也不意味着已经完成依赖安装、编译和目标设备验证。</p>
 <p>模型落地时还要固定输入采样率、通道顺序、块长、动态轴、归一化、状态张量、算子集、运行时版本和线程配置。冷启动测量包含模型读取、图优化、权重上传和首轮内核准备；稳定运行延迟要在 warm-up 后另测。更新模型前保存可回滚版本，并用同一硬件、同一数据和同一计时范围比较。</p>
+<p>在 ONNX Runtime 中，算子内部线程数与图节点之间的并行是两个参数；线程自旋也会影响功耗。多模型并发时，应测各会话线程池的竞争和音频期限，不能直接复制单模型离线计时的最佳设置。对于 TensorFlow Lite Micro，模型文件大小也不等于内存占用：tensor arena 中的持久、临时和可复用张量之外，还可能有音频缓存和栈。<a href="https://onnxruntime.ai/docs/performance/tune-performance/threading.html" title="citation">ONNX Runtime 线程说明</a>、<a href="https://github.com/tensorflow/tflite-micro/blob/9f638f18154dff868e7053572f089be845b2fbdf/tensorflow/lite/micro/docs/memory_management.md" title="citation">TFLM 内存说明</a></p>
 <span id="sec-21" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-10">10.10 联调与验收</h2>
 <p>联调应按依赖关系排查，不必强行把所有模块串成一个固定顺序。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -733,7 +783,7 @@ room = pra.ShoeBox(
 </tbody>
 </table></div>
 <p>每个验收阈值都应包含测量条件、统计量和样本量。例如“角误差小于 5°”还要说明声源角度分布、距离、房间、信噪比，以及该数值是均值还是某个分位数。教程中的算例只能用于验证计算，不能直接作为产品验收阈值。</p>
-<p>在线监控应记录足以定位故障、但不默认保存原始语音的字段。本书给出的 <a href="../codes/engineering/telemetry_schema.json"><code>telemetry_schema.json</code></a> 采用以下口径；它是最小示例，不含用户身份、转写文本或原始音频。</p>
+<p>在线监控应记录足以定位故障、但不默认保存原始语音的字段。本书给出的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/engineering/telemetry_schema.json"><code>telemetry_schema.json</code></a> 采用以下口径；它是最小示例，不含用户身份、转写文本或原始音频。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
@@ -820,7 +870,7 @@ room = pra.ShoeBox(
 </ol>
 <hr />
 <blockquote>
-<p>📄 <a href="./index.html">回首页</a></p>
+<p>📄 <a href="index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="09_source-tracking.html">← 上一篇</a></span><span><a href="11_selection-guide.html">下一篇 →</a></span></div>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 B · 路径地图与练习 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="aea756f1a7d4"><style>
+<meta name="source-digest" content="9187099fc571"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -13,7 +13,7 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .side a{color:#2f6db3;text-decoration:none}.side a:hover{text-decoration:underline}
 .side .chap{margin:10px 0 2px;font-weight:700}.side .chap.cur{color:#c0392b}
 .side ul{margin:2px 0 6px;padding-left:16px;color:#666}.side li{margin:2px 0}
-.main{flex:1;min-width:0;padding:28px 36px;background:#fff}
+.main{flex:1;min-width:0;padding:28px 36px;background:#fff;overflow-wrap:anywhere}
 .main p{margin:0 0 1.05em}.main li>p{margin:.35em 0}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
 table{border-collapse:collapse;margin:14px 0;max-width:100%}
@@ -25,6 +25,7 @@ pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:a
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
 mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
 .pn a{color:#2f6db3;text-decoration:none}.pn .off{color:#aaa}
 .foot{color:#888;font-size:13px;margin:20px 0 40px}
@@ -72,7 +73,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="13_appendix-guide.html#sec-13-5">13.5 核心公式速查卡</a></li>
 <li><a href="13_appendix-guide.html#sec-13-6">13.6 思考与练习</a></li>
 <li><a href="13_appendix-guide.html#sec-13-7">13.7 复现说明</a></li>
-</ul></nav>
+</ul>
+<div class="chap"><a href="research/index.html">源码研究</a></div></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
 <li><a href="13_appendix-guide.html#sec-u-636d9cd65b">附录 B：学习路径、领域地图、排错、练习与复现</a></li>
@@ -87,7 +89,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是附录 B（正文共 11 章，另有附录 A/B），可独立查阅，前后篇见下方导航。</p>
-<p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="./12_appendix-symbols-math.html">附录 A · 符号术语数学</a> ｜ 下一篇：（无）</p>
+<p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a> ｜ 下一篇：（无）</p>
 </blockquote>
 <hr />
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-636d9cd65b">附录 B：学习路径、领域地图、排错、练习与复现</h1>
@@ -407,18 +409,18 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>预测-更新-增益循环；圆周角新息先做 wrap，浮点实现可用 Joseph 协方差更新</td>
 <td>§9.2</td>
 </tr>
-<tr>
-<td>$D_{t\vert t-1}(\vec x)=\gamma_t(\vec x)+\int p_S(\vec\xi)f_{t\vert t-1}(\vec x\mid\vec\xi)D_{t-1}(\vec\xi)\,d\vec\xi$</td>
-<td>PHD 预测：新生目标强度加存活目标的状态转移</td>
-<td>式(9-9)</td>
-</tr>
-<tr>
-<td>$D_t=(1-p_D)D^-+\sum_{z\in Z_t}\dfrac{p_Dg(z\mid x)D^-}{\kappa(z)+\int p_Dg(z\mid\xi)D^-(\xi)d\xi}$</td>
-<td>PHD 更新：漏检项加每条观测的“目标/杂波”归一化贡献</td>
-<td>式(9-10)</td>
-</tr>
 </tbody>
 </table></div>
+<p><strong>PHD 预测，见式(9-9)</strong>：新生目标强度加存活目标的状态转移。</p>
+<p>$$\begin{aligned}
+D_{t\vert t-1}(\vec x)&=\gamma_t(\vec x)\\
+&\quad+\int p_S(\vec\xi)f_{t\vert t-1}(\vec x\mid\vec\xi)D_{t-1}(\vec\xi)\,d\vec\xi.
+\end{aligned}$$</p>
+<p><strong>PHD 更新，见式(9-10)</strong>：漏检项加每条观测的“目标/杂波”归一化贡献。</p>
+<p>$$\begin{aligned}
+D_t&=(1-p_D)D^-\\
+&\quad+\sum_{z\in Z_t}\dfrac{p_Dg(z\mid x)D^-}{\kappa(z)+\int p_Dg(z\mid\xi)D^-(\xi)d\xi}.
+\end{aligned}$$</p>
 <span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-13-6">13.6 思考与练习</h2>
 <p>练习按章节排列。修改脚本参数时，应同时记录随机种子、实验条件和输出指标。数值题附参考答案，综合题附思路提示。</p>
 <p><strong>练习涉及的绘图函数</strong>（做题时打开对应函数按题面改参数就行）：</p>
@@ -604,6 +606,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 .venv/bin/python -m codes.examples.ch10_engineering_baselines
 </code></pre>
 <p>第 10 章示例使用确定性输入，覆盖 SRO 直线拟合与线性重采样、VAD 迟滞与 hangover、峰值保护 AGC、固定容量环形缓冲、deadline/队列模拟和 Q1.15 饱和量化。线性重采样、Python 环形缓冲和调度模拟都是教学基线，不应替换带抗混叠滤波的流式重采样器、无锁实时队列或目标系统测量。</p>
+<p>继续做设备实验时，可按<a href="research/03_industrial_deployment.html">工业实现研究</a>选择 21 项中的一个主题：采集与路由、连续重采样、VAD/AGC/NS、DSP 固件、模型运行时或评分。先固定源码提交，再记录依赖、编译、模型、声学输入和故障状态；“已下载”只能说明源码在本机，不能代替“已编译、已运行、已测量”。</p>
+<p>会议识别复现还要固定数据准备与文本规范化。CHiME-8 的官方 <code>chime-utils</code> 提供 SegLST 转写格式、该届规范化及 cpWER/tcpWER 评分；其中缺失场景的忽略选项会改变实际计分范围。应保留每个场景的输入文件数、失败数和最终参与评分的清单，并先用正确转写、说话人交换、漏词和时间戳偏移的小夹具检查评分口径。<a href="https://github.com/chimechallenge/chime-utils/tree/152882404f572d40769ef02bf91c5a9a9cfc9c78" title="citation">CHiME-8 官方评分实现</a></p>
 <p>绘图脚本都在 <code>scripts/</code> 里。在仓库根目录跑两个命令，结果进 <code>figures/</code>，共 33 张图：</p>
 <pre><code class="language-bash">.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32（回声消除专题）
@@ -614,7 +618,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>正文中引用的定量结果应追溯到相应论文、标准或本仓库脚本，并同时记录数据、通道、参数和指标口径。不同实验条件下的数值不直接排名。</p>
 <hr />
 <blockquote>
-<p>📄 本篇信息：配图 0 张 ｜ <a href="./index.html">回首页</a></p>
+<p>📄 本篇信息：配图 0 张 ｜ <a href="index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="12_appendix-symbols-math.html">← 上一篇</a></span><span><a href="index.html">回首页 →</a></span></div>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>

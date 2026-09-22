@@ -222,7 +222,7 @@ VarArray 的正式论文发表于 ICASSP 2022（pp. 6027–6031，DOI [10.1109/I
 
 **深度分离的结构选择**。卷积、循环网络、注意力和状态空间模型都可以作为分离骨干。S4M 改变的是编码器—分离器—解码器中的时序建模骨干：多尺度表示送入结构化状态空间块，而不是仅更换损失函数。
 
-论文实验使用已知的两个输出源和监督干净参考，官方仓库给出训练入口。未知源数、无监督会议录音或任意麦克风阵列不属于这项结果的直接覆盖范围。论文把该结构称为流式分离的潜在方案，但没有报告严格因果实现的前瞻样本数、首帧延迟或端到端延迟。
+论文实验使用已知的两个输出源和监督干净参考。核实至 2026-09-22，官方仓库提供 `S4M.py`、`s4.py` 等模型结构文件，但没有完整的数据准备、训练入口和配套 checkpoint，不能把可读的骨干代码写成已经可复现整套训练。未知源数、无监督会议录音或任意麦克风阵列不属于这项结果的直接覆盖范围。论文把该结构称为流式分离的潜在方案，但没有报告严格因果实现的前瞻样本数、首帧延迟或端到端延迟。[S4M 固定版本](https://github.com/JusperLee/S4M/tree/4990b3fe9d7391e59d652c5a7d2803d1354fd0ae)
 
 部署前仍需检查双向上下文与缓冲。选择时不要只看单个榜单分数，还要检查模型是否使用整句上下文、块边界如何处理、状态能否在流式推理中延续，以及计算量和内存怎样随语句长度变化。生成式方法还要检查采样步数和语音幻觉。
 
@@ -244,7 +244,24 @@ TSE 的身份泄漏、注册信道和声纹保护测试，不能由文本查询�
 
 联合示例用 `.venv/bin/python -m codes.examples.ch06_09_baselines` 运行，测试见 [`tests/test_codes_aec_wpe_sep_track.py`](../tests/test_codes_aec_wpe_sep_track.py)。测试覆盖输出交换、静音参考和静音估计拒绝、SCM 厄米性、MVDR 无失真约束，以及目标或干扰掩码为空时回退参考麦。实际评测还必须固定去均值、时延/增益对齐、静音段、截断长度和输入基线；秩亏 SCM、单通道输入、$N>M$、跨块换人及 STFT 重构均需单独测试。教学版 MVDR 在目标或干扰统计不可用时退回参考麦克风，不应把这一回退的输出解释成成功分离。
 
-AuxIVA/ILRMA 的完整数值实现应使用 `piva` 等上游项目；MNMF、TRINICON、CHiME GSS/GPU-GSS、Asteroid/SpeechBrain/ESPnet 中的 Conv-TasNet、DPRNN、SepFormer，以及 S4M、SpeakerBeam 和 AudioSep 均只索引论文官方仓库，不在本书复制。使用时记录提交或发布版、许可证、训练/测试数据版本、预训练权重许可、采样率、源数、因果/前瞻设置、块状态、指标脚本、硬件和峰值内存。cACGMM 的正文伪代码用于解释依赖关系，不是生产 GSS；若没有空分量重置、对数域后验和收敛检查，不能把它列为可复现基线。
+本章的外部实现已经按具体算法定位，不能把“正文尚未实现”写成“没有可用源码”。[盲分离与 GSS 研究](../codes/research/02_aec_wpe_separation.md#bss)和[神经分离研究](../codes/research/02_aec_wpe_separation.md#neural)进一步列出读码顺序、状态、最小实验与失败条件。
+
+| 方法 | 已定位的源码入口 | 复现与工业使用的主要限制 |
+|---|---|---|
+| AuxIVA、ILRMA | pyroomacoustics `bss/auxiva.py`、`ilrma.py`；ssspy `bss/iva.py`、`ilrma.py` | 区分 IP/ISS 更新、源数条件、功率下限和 projection-back |
+| MNMF、FastMNMF/FastMNMF2 | ssspy `bss/mnmf.py`；pyroomacoustics `bss/fastmnmf.py`、`fastmnmf2.py` | 固定初值、NMF 基数、空间模型、参考麦与重构尺度 |
+| TRINICON | pyroomacoustics `bss/trinicon.py` | 此实现固定两个输出，不能当作任意源数版本；块长和滤波器长度分开 |
+| cACGMM | pb_bss `distribution/cacgmm.py` | 方向归一、空分量、密度数值稳定与功率 SCM 分开检查 |
+| GPU-GSS | `gss/core/enhancer.py` → `gss/wpe/` → `gss/cacgmm/` → `gss/beamformer/` | 需活动标注、同步多通道音频及匹配的 CUDA/CuPy；活动错误会传播 |
+| Conv-TasNet、DPRNN | Asteroid `models/conv_tasnet.py`、`dprnn_tasnet.py` | 配套 recipe、编码窗、归一化、源数、循环方向和权重 |
+| SepFormer | SpeechBrain `lobes/models/dual_path.py` 与 WSJ0Mix 分离 recipe | 双路径注意力和整句上下文不能直接当作流式状态 |
+| TF-GridNet | ESPnet `enh/separator/tfgridnet_separator.py` | 此类明确为离线，固定输入麦数；单/多通道版本分别核对 |
+| S4M、SPMamba、Mamba-TasNet | 各作者模型/训练目录，详见研究文档 | 三者不是同一算法；S4M 训练资产不完整，双向模型使用未来上下文 |
+| SpeakerBeam、AudioSep | 注册语音条件模型、`pipeline.py` 等各自入口 | 身份条件与文本类别条件不同；代码、权重和数据许可分别核对 |
+
+FastMNMF 的可用实现还体现了许可需要逐来源检查：作者 `SoundSourceSeparation` 整库限定学术研究，而 pyroomacoustics 的 `fastmnmf.py` 文件有独立 MIT 许可。SpeakerBeam 作者仓库采用内部评估协议，限制修改与再分发，不能把它与 MIT/Apache-2.0 项目统一称为可自由纳入产品的开源代码。[FastMNMF 文件许可](https://github.com/LCAV/pyroomacoustics/blob/v0.10.0/pyroomacoustics/bss/fastmnmf.py)、[作者仓库许可](https://github.com/sekiguchi92/SoundSourceSeparation/blob/897fe87fea3d85a243d8a3fd36c2232bb0548ad3/LICENSE)、[SpeakerBeam 评估协议](https://github.com/BUTSpeechFIT/speakerbeam/blob/91af02cc617afa35fedfbdbf32533012cd0a8672/LICENSE.txt)
+
+最小的源码复现实验应先选固定两源、两麦、同一 STFT 与参考麦，记录解混/SCM、代价、尺度恢复和 SI-SDR；再分别改变源数、混响、初始化及片段长度。CSS 还需测试跨块换人和静音后重新出现，不能让每块用真实答案独立排列后再拼接。cACGMM 的正文伪代码仅解释依赖关系；完整实现中的空分量处理、对数域计算与收敛检查仍须核对。
 
 > **练习 8-1（自测三题）**
 >

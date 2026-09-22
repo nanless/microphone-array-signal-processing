@@ -95,7 +95,12 @@ $$\hat{\vec{s}}^-_t=\begin{bmatrix}1&1\\0&1\end{bmatrix}\begin{bmatrix}30\\0.5\e
 
 再乘 $\mathbf{F}^{\top}=\begin{bmatrix}1&0\\1&1\end{bmatrix}$：
 
-$$\mathbf{F}\mathbf{P}_{t-1}\mathbf{F}^{\top}=\begin{bmatrix}4&0.25\\0&0.25\end{bmatrix}\begin{bmatrix}1&0\\1&1\end{bmatrix}=\begin{bmatrix}4\times1+0.25\times1 & 4\times0+0.25\times1\\ 0\times1+0.25\times1 & 0\times0+0.25\times1\end{bmatrix}=\begin{bmatrix}4.25&0.25\\0.25&0.25\end{bmatrix}$$
+$$\begin{aligned}
+\mathbf{F}\mathbf{P}_{t-1}\mathbf{F}^{\top}
+&=\begin{bmatrix}4&0.25\\0&0.25\end{bmatrix}\begin{bmatrix}1&0\\1&1\end{bmatrix}\\
+&=\begin{bmatrix}4\times1+0.25\times1 & 4\times0+0.25\times1\\ 0\times1+0.25\times1 & 0\times0+0.25\times1\end{bmatrix}\\
+&=\begin{bmatrix}4.25&0.25\\0.25&0.25\end{bmatrix}.
+\end{aligned}$$
 
 左上角从 4 增加到 4.25，因为角速度的不确定度会在预测后传播到角度。再加上 $\mathbf Q$：
 
@@ -186,23 +191,54 @@ $$w_i=\exp\!\left(-\frac{(x_i-\theta^{obs})^2}{2\sigma^2}\right)=\exp\!\left(-\f
 | 35 | 16 | $\exp(-0.32)=0.7261$ |
 | 40 | 81 | $\exp(-1.62)=0.1979$ |
 
-权重和 $=0.4868+0.7261+0.8353+0.9802+0.9802+1.0000+0.9802+0.9231+0.7261+0.1979=7.8359$。
+权重和为
+
+$$\begin{aligned}
+\sum_{i=1}^{10}w_i
+&=0.4868+0.7261+0.8353+0.9802+0.9802\\
+&\quad+1.0000+0.9802+0.9231+0.7261+0.1979\\
+&=7.8359.
+\end{aligned}$$
 
 **第 2 步：归一化权重**
 
-$$\tilde w_i=\frac{w_i}{7.8359}\;\Rightarrow\;[0.0621,\ 0.0927,\ 0.1066,\ 0.1251,\ 0.1251,\ 0.1276,\ 0.1251,\ 0.1178,\ 0.0927,\ 0.0253]$$
+$$\tilde w_i=\frac{w_i}{7.8359}$$
+
+逐项归一化后得到：
+
+| 粒子序号 $i$ | 角度 $x_i$（度） | 归一化权重 $\tilde w_i$ |
+|---|---|---|
+| 1 | 25 | 0.0621 |
+| 2 | 27 | 0.0927 |
+| 3 | 28 | 0.1066 |
+| 4 | 30 | 0.1251 |
+| 5 | 30 | 0.1251 |
+| 6 | 31 | 0.1276 |
+| 7 | 32 | 0.1251 |
+| 8 | 33 | 0.1178 |
+| 9 | 35 | 0.0927 |
+| 10 | 40 | 0.0253 |
 
 校验：归一化权重之和为 1。40° 是一个远离当前观测的**粒子**，不是观测野点；它的权重较小，只说明当前高斯似然会压低不符合观测的候选状态，不能证明粒子滤波对错误观测鲁棒。
 
 **第 3 步：计算有效粒子数** $N_{eff}$
 
-$$N_{eff}=\frac{1}{\sum_{i=1}^{10}\tilde w_i^2}=\frac{1}{0.0621^2+0.0927^2+0.1066^2+0.1251^2+\cdots+0.0253^2}=\frac{1}{0.1101}\approx9.08$$
+$$\begin{aligned}
+N_{eff}&=\frac{1}{\sum_{i=1}^{10}\tilde w_i^2}\\
+&=\frac{1}{0.0621^2+0.0927^2+0.1066^2+0.1251^2+\cdots+0.0253^2}\\
+&=\frac{1}{0.1101}\approx9.08.
+\end{aligned}$$
 
 若 10 个粒子权重相等，$N_{eff}=10$；若全部权重集中在一个粒子上，$N_{eff}=1$，称为**粒子退化**。本例得到 9.08。常见实现会在 $N_{eff}$ 低于给定阈值时触发重采样，例如 $N/2$；阈值需要结合粒子数和任务验证。
 
 **第 4 步：在重采样前计算本帧估计**
 
-$$\hat\theta=\sum_{i=1}^{10}\tilde w_i\,x_i=0.0621\times25+0.0927\times27+0.1066\times28+0.1251\times30+\cdots+0.0253\times40\approx30.65°$$
+$$\begin{aligned}
+\hat\theta&=\sum_{i=1}^{10}\tilde w_i\,x_i\\
+&=0.0621\times25+0.0927\times27+0.1066\times28\\
+&\quad+0.1251\times30+\cdots+0.0253\times40\\
+&\approx30.65°.
+\end{aligned}$$
 
 不加权的平均为 31.1°，加权估计约为 30.65°。这个后验均值必须用重采样前的粒子和归一化权重计算。重采样后权重重置为 $1/N$，不能把旧权重再乘到新粒子上；重采样后取均值只是在有限样本下近似同一后验。
 
@@ -210,7 +246,22 @@ $$\hat\theta=\sum_{i=1}^{10}\tilde w_i\,x_i=0.0621\times25+0.0927\times27+0.1066
 
 系统重采样按归一化权重重新抽取 10 个粒子，允许高权重粒子重复出现，并把新权重统一重置为 $1/10$。
 
-先计算累积和 $[0.0621,\ 0.1548,\ 0.2614,\ 0.3865,\ 0.5116,\ 0.6392,\ 0.7643,\ 0.8821,\ 0.9747,\ 1.0000]$，再从 $[0,0.1)$ 取起点 $u_0=0.0637$，以 0.1 为间隔得到 10 个采样点。对应的新粒子群为：
+先计算归一化权重的累积和：
+
+| 粒子序号 $i$ | 累积和 $\sum_{j=1}^{i}\tilde w_j$ |
+|---|---|
+| 1 | 0.0621 |
+| 2 | 0.1548 |
+| 3 | 0.2614 |
+| 4 | 0.3865 |
+| 5 | 0.5116 |
+| 6 | 0.6392 |
+| 7 | 0.7643 |
+| 8 | 0.8821 |
+| 9 | 0.9747 |
+| 10 | 1.0000 |
+
+再从 $[0,0.1)$ 取起点 $u_0=0.0637$，以 0.1 为间隔得到 10 个采样点。对应的新粒子群为：
 
 $$[27,\ 28,\ 30,\ 30,\ 30,\ 31,\ 32,\ 32,\ 33,\ 35]$$
 
@@ -277,10 +328,12 @@ $$D_{t|t-1}(x)=\int p_S(x')f_t(x\mid x')D_{t-1}(x')\,dx'+\gamma_t(x)\text{。}\t
 其中 $p_S$ 是存活概率，$f_t$ 是状态转移密度，$\gamma_t$ 是新生目标强度。给定本帧观测集合 $Z_t$，标准 PHD 更新为
 
 $$
-D_t(x)=[1-p_D(x)]D_{t|t-1}(x)
-+\sum_{z\in Z_t}
+\begin{aligned}
+D_t(x)&=[1-p_D(x)]D_{t|t-1}(x)\\
+&\quad+\sum_{z\in Z_t}
 \frac{p_D(x)g_t(z\mid x)D_{t|t-1}(x)}
 {\kappa_t(z)+\int p_D(\xi)g_t(z\mid\xi)D_{t|t-1}(\xi)\,d\xi}.
+\end{aligned}
 \tag{9-10}$$
 
 $p_D$ 是检测概率，$g_t(z\mid x)$ 是目标在状态 $x$ 时产生观测 $z$ 的似然，$\kappa_t(z)$ 是杂波强度。第一项保留可能漏检的目标；求和中的每个分母比较“该观测来自杂波”与“来自任一目标”的解释，因此杂波强度越大，单条观测增加的目标强度越少。
@@ -299,7 +352,13 @@ $p_D$ 是检测概率，$g_t(z\mid x)$ 是目标在状态 $x$ 时产生观测 $z
 
 联合示例用 `.venv/bin/python -m codes.examples.ch06_09_baselines` 运行，测试见 [`tests/test_codes_aec_wpe_sep_track.py`](../tests/test_codes_aec_wpe_sep_track.py)。测试覆盖 $179^\circ$ 与 $-179^\circ$ 的最短新息、缺测时角度方差增长、Joseph 更新后的对称半正定性、远距离高置信观测的对数权重、退化权重的系统重采样，以及对称后验下未定义的圆周均值。教学 Kalman 类的过程噪声矩阵 $Q$ 已按一次预测间隔离散化；若 `dt` 改变，不能继续照搬同一个 $Q$。粒子后验的圆周合向量接近零时，代码会明确报错，而不是返回由浮点残差决定的任意角度。设备只搜索有限扇区时不得使用圆周环绕；还需测试迟到/乱序观测、长缺测、错误时间戳、野点门控、目标交叉、轨迹出生/确认/删除、ID 重用和消息超时。无有效观测时应只预测并增大不确定度，超过有效期后回到搜索模式。
 
-EKF/UKF、IMM、完整 JPDA/MHT、SMC/GM-PHD、CPHD、LMB/$\delta$-GLMB、检测前追踪与神经 SELD/ACCDOA 属于成熟库或论文官方实现层级，本书不复制其大型实现。可从 Stone Soup、FilterPy 或作者仓库核对具体算法，但正式采用前必须确认版本、许可证、坐标与时间单位、出生/存活/漏检/杂波模型、门控和剪枝规则、随机种子及评测协议。论文伪代码或两网格 PHD 手算不能替代这些工程契约。
+进一步的实现可按 FilterPy 和 Stone Soup 的固定版本阅读，源码工作目录、许可和入口由 [`SOURCES.lock.json`](../codes/SOURCES.lock.json) 管理。FilterPy 的 `kalman/EKF.py`、`UKF.py`、`IMM.py` 分别定位非线性更新和运动模型切换；Stone Soup 的 `dataassociator/probability.py::JPDA` 处理联合关联，`updater/pointprocess.py::PHDUpdater` 配合 `mixturereducer/gaussianmixture.py::GaussianMixtureReducer` 完成 GM-PHD 更新与分量合并、剪枝。具体阅读顺序、实验输入和失败情况见[空间处理与追踪研究](../codes/research/01_spatial_and_tracking.md)。
+
+把位置追踪例子改成麦克风方向追踪时，至少要重写三处。观测模型应输出方位角或方向单位向量，不能继续使用二维位置残差；门控距离要使用相应协方差与角度环绕；杂波强度必须与观测空间的测度一致，例如每弧度的预期假峰数。检测概率还要反映说话人静默和定位器漏检，不能直接照搬雷达示例。
+
+GM-PHD 的高斯权重和表示期望目标数，不要求归一到 1。出生分布没有覆盖某个方向时，新目标可能一直不能形成足够强的分量；剪枝阈值过高则会删掉弱源，因此应记录每帧删去的总强度质量。JPDA 也需要明确漏检事件和一对一约束；在两人交叉时，软关联可能混合轨迹，并不自动保持说话人身份。[Stone Soup JPDA 教程源码](https://github.com/dstl/Stone-Soup/blob/main/docs/tutorials/08_JPDATutorial.py "citation")；[GM-PHD 官方教程](https://stonesoup.readthedocs.io/en/v1.9.1/auto_tutorials/filters/GMPHDTutorial.html "citation")，核实于 2026-09-22。
+
+MHT、CPHD、LMB/$\delta$-GLMB 和检测前追踪仍须按具体论文及实现分别审查。某个库的基类说明提到这些家族，不等于该版本已实现全部算法；给 PHD 分量附加临时标签也不等于实现了 GLMB。正式采用前还需验证出生/存活/漏检模型、假设截断、身份切换和运行成本。
 
 ### 9.4 定位、追踪与波束形成的接口
 
@@ -325,7 +384,10 @@ EKF/UKF、IMM、完整 JPDA/MHT、SMC/GM-PHD、CPHD、LMB/$\delta$-GLMB、检测
 
 多目标结果可用最优子模式分配距离（optimal subpattern assignment，OSPA）评价。若真值集 $X$ 有 $m$ 个目标，估计集 $Y$ 有 $n\ge m$ 个目标，截断距离为 $c$，阶数为 $p$，则
 
-$$d_p^{(c)}(X,Y)=\left[\frac{1}{n}\left(\min_{\pi}\sum_{i=1}^{m}\min\{c,d(x_i,y_{\pi(i)})\}^p+c^p(n-m)\right)\right]^{1/p}\text{。}\tag{9-11}$$
+$$d_p^{(c)}(X,Y)=\left[\begin{aligned}
+&\frac{1}{n}\min_{\pi}\sum_{i=1}^{m}\min\{c,d(x_i,y_{\pi(i)})\}^p\\
+&\quad+\frac{c^p(n-m)}{n}
+\end{aligned}\right]^{1/p}\text{。}\tag{9-11}$$
 
 式(9-11)先写 $n\ge m$；若 $m>n$，交换 $X,Y$ 的角色，因此距离保持对称。边界约定是 $d_p^{(c)}(\varnothing,\varnothing)=0$；若仅一侧为空、另一侧非空，则距离为 $c$。
 
@@ -341,7 +403,14 @@ OSPA 不保留身份，所以身份切换要另报身份切换次数（Identity 
 
 1. KF 手算＋静默外推：沿用算例 9-1 的末态（估计 $[30.72,\ 0.513]^{\top}$，协方差左上角 3.705）。假设接下来两帧说话人静默、无观测，只做预测不做更新：手算两帧后的角度估计与角度方差，并说明波束应使用哪个方向。
 
-    **答案要点**：每帧角度 $+0.513°$，两帧后约 31.75°；在本题给定的 $\mathbf F$ 与 $\mathbf Q$ 下，角度方差约按 3.705→4.49→5.80 增长，完整协方差依次约为 $\begin{bmatrix}4.49&0.47\\0.47&0.27\end{bmatrix}$ 和 $\begin{bmatrix}5.80&0.74\\0.74&0.28\end{bmatrix}$。波束可暂时使用外推值。
+    **答案要点**：每帧角度 $+0.513°$，两帧后约 31.75°；在本题给定的 $\mathbf F$ 与 $\mathbf Q$ 下，角度方差约按 3.705→4.49→5.80 增长。一次预测和两次预测后的完整协方差依次约为
+
+    $$\begin{aligned}
+    \text{一次预测：}&\quad\begin{bmatrix}4.49&0.47\\0.47&0.27\end{bmatrix},\\
+    \text{两次预测：}&\quad\begin{bmatrix}5.80&0.74\\0.74&0.28\end{bmatrix}.
+    \end{aligned}$$
+
+    波束可暂时使用外推值。
 
     若目标允许的最大角速度为 $\omega_{\max}$，帧间隔为 $\Delta t$，单帧转角限值应与 $\omega_{\max}\Delta t$ 同量级，再根据允许跟随延迟和机械转速标定；不能在没有帧率时固定写成 3～5°/帧。
 

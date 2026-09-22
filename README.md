@@ -4,6 +4,8 @@
 
 正文提供关键公式推导、可复算例子、适用边界、33 张脚本生成的图，以及与各章公式对应的 NumPy/标准库教学代码。
 
+[源码研究手册](codes/research/README.md) 进一步展开算法实现、工业配置和复现实验，分为空间处理与追踪、AEC/WPE/分离、工业部署与评测三篇专题，另附源码复现方法。官方实现固定提交，取得的源码保存在 `codes/upstream/_downloads/` 的独立工作树中。
+
 English version: [README_EN.md](./README_EN.md)
 
 ## 目录结构
@@ -13,8 +15,9 @@ English version: [README_EN.md](./README_EN.md)
 | `chapters/` | 教程正文 14 篇 Markdown（`00_overview.md` 是入口，`01`～`11` 是 11 章正文，`12`/`13` 是附录 A/B） |
 | `figures/` | 33 张插图（`fig01`～`fig33_*.png`），全部由脚本生成、可复现 |
 | `codes/` | 教学算法、章节例子、工业实现小工具、第三方官方源码索引与精确版本锁定；覆盖表见 `codes/COVERAGE.md` |
+| `codes/research/` | 详细源码研究手册：算法步骤、状态与配置、代码入口、失败实验和工业复现 |
 | `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
-| `site/` | 多级页面站（`index.html` 首页 + 13 个内容页，构建产物，可再生） |
+| `site/` | 多级页面站（首页 + 13 个教程内容页，另有 `research/` 下 5 个研究手册页；构建产物，可再生） |
 | `dist/` | 合订 PDF（`microphone-array-tutorial.pdf`，导读、11 章正文和 2 篇附录均有顶级书签）与合订 HTML 中间产物 |
 
 ## 章节导览
@@ -68,6 +71,16 @@ python3 -m venv .venv
 .venv/bin/python -m unittest discover -s tests -v
 .venv/bin/python scripts/quality_check.py
 ```
+
+获取官方参考源码并核对本地状态（需要 Git，获取时需要网络）：
+
+```bash
+.venv/bin/python codes/upstream/fetch_upstreams.py --all --report tmp/source-acquisition.json
+.venv/bin/python codes/upstream/fetch_upstreams.py --verify --report tmp/source-verification.json
+```
+
+工具保留独立仓库和许可证，省略常见模型/音频资产，不安装或运行上游程序。源码核对与论文复现分别记录，
+具体范围见 [获取工具说明](codes/upstream/README.md)。
 
 ## 学习路径
 

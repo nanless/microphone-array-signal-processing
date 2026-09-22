@@ -64,8 +64,10 @@
 可把第 $p$ 条路径写成
 
 $$
-L_p=L_{\text{lookahead}}+L_{\text{buffer}}+L_{\text{compute}}+L_{\text{schedule}}+L_{\text{decode}},
-\qquad L_{\text{e2e}}=\max_p L_p .
+\begin{aligned}
+L_p&=L_{\text{lookahead}}+L_{\text{buffer}}+L_{\text{compute}}+L_{\text{schedule}}+L_{\text{decode}},\\
+L_{\text{e2e}}&=\max_p L_p .
+\end{aligned}
 \tag{10-1}
 $$
 
@@ -90,6 +92,8 @@ WPE 历史帧、追踪状态、递归协方差和因果 AGC 时间常数是历�
 环形缓冲已满时，系统需要事先选择“丢最旧块”“丢新块”或“降级处理”。任何一种策略都会改变输出：丢块破坏连续状态，等待会阻塞采集，积压则增大延迟。本书的 [`RingBuffer`](../codes/array_tutorial/engineering.py) 采用“丢最旧样本”的可见基线，并累计 `dropped`；它用来说明容量和溢出语义，不是无锁实时队列。
 
 [`simulate_deadline_queue`](../codes/array_tutorial/engineering.py) 用一条串行工作队列区分三件事：处理完成晚于本帧期限、队列达到高水位、容量已满而丢帧。平均 RTF 小于 1 仍可能出现其中任何一种。正式设备还要记录驱动报告的 underrun/overrun（合称 xrun）、线程优先级、CPU 频率策略和并发负载。
+
+Linux 的 ALSA（Advanced Linux Sound Architecture，先进 Linux 声音架构）还区分具体恢复原因：`-EPIPE` 表示上溢或下溢，`-ESTRPIPE` 与挂起有关，`-ENODEV` 可表示设备移除；某些回声参考设备在关联播放未启动时会返回 `-ENODATA`。这些状态不能统一解释为“再读一次”。恢复后要记录丢样，并通知依赖连续历史的 AEC、重采样器及后端。[ALSA PCM 官方接口说明](https://www.alsa-project.org/alsa-doc/alsa-lib/pcm.html "citation")
 
 参考接口可按下表检查：
 
@@ -136,6 +140,8 @@ $$
 初始时差表现为整条“延迟—时间”曲线的截距，稳定 SRO 表现为斜率，偶发丢样则表现为阶跃。三者不能只靠首尾两个点可靠区分。工程上可分块估计互相关峰，先检查峰值置信度，再对可信的“时间—相对延迟”点做直线拟合；残差中若出现近似一个或多个采样间隔的突跳，应先查丢样和时间戳，而不是把所有变化都拟合成 ppm。
 
 [`estimate_sro_ppm`](../codes/array_tutorial/engineering.py) 把相对延迟定义为“参考时间减设备时间”，再拟合截距和斜率；正斜率表示设备采样率较高，与 [`resample_sro_to_reference`](../codes/array_tutorial/engineering.py) 的符号一致。若横轴使用参考时间，精确斜率为 $\varepsilon/(1+\varepsilon)$；函数按小偏移的一阶近似把斜率乘 $10^6$ 报为 ppm，在音频设备常见的几十至数百 ppm 范围内用于教学。要求更高时应反解 $\varepsilon=s/(1-s)$，其中 $s$ 是拟合斜率。重采样函数用线性插值演示长度和方向；线性插值没有足够的带外抑制，只适合教学检查。设备实现要换成有抗混叠滤波和跨块状态的异步采样率转换器，并测量补偿后的相位残差。
+
+连续流可对照 libsamplerate 的 `src_process` 或 SpeexDSP 的重采样接口。以 libsamplerate 为例，比例定义为“输出速率/输入速率”；设备快 100 ppm 时，转到参考时钟的比例约为 $1/1.0001=0.99990001$。每次调用还会返回实际消耗的输入帧数和生成的输出帧数，调用方必须保留未消耗输入，不能假设一进一出或每块重新创建转换器。[libsamplerate Full API](https://libsndfile.github.io/libsamplerate/api_full.html "citation")
 
 #### 10.2.2 增益变化与 AEC
 
@@ -196,6 +202,10 @@ KWS 是否绕过 VAD、是否持续运行、从 AEC 后还是增强后取信号�
 
 AGC 要区分“把正常语音逐渐推向目标电平”和“立刻避免削波”。增益上升可以缓慢释放，增益下降需要更快；即使平滑状态来不及下降，当前块也要受安全上限约束。[`PeakProtectAGC`](../codes/array_tutorial/engineering.py) 给出这种峰值保护基线。它不估计响度，也不能修复模拟前端已经发生的削波。验收时要同时画输入电平、增益、输出峰值和削波比例，并在 AEC 双讲期间检查增益变化是否破坏回声路径模型。
 
+实际 VAD 接口也有不同的输入协议。WebRTC 传统 VAD 使用合法采样率下的 16 位单声道 PCM 和 10、20、30 ms 帧；Silero 核实的 ONNX 包装器使用 16 kHz/512 点或 8 kHz/256 点，均为 32 ms，并保留跨块状态。10 ms 的声卡回调不能直接当成任意模型的一次输入，需要先缓冲到合法块长，再把决策映射回采集时间轴。[WebRTC VAD 接口](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/common_audio/vad/include/webrtc_vad.h "citation")、[Silero 包装器源码](https://github.com/snakers4/silero-vad/blob/60b7ffa243625ebdc1070275a29f18c87843786a/src/silero_vad/utils_vad.py "citation")
+
+跨块状态要与会话绑定。每块重置会改变模型行为，多条独立会话共享状态会相互干扰。阈值、最短语音、静音等待和前后填充也要分开调节；降低语音概率阈值并不能自动补回已经丢失的词首音频。工业 VAD、WebRTC AGC2 和 DeepFilterNet 的源码阅读顺序及故障试验见[工业实现研究中的控制与增强部分](../codes/research/03_industrial_deployment.md#2-噪声语音活动与增益)。
+
 ### 10.4 定点化、算力与功耗预算
 
 #### 10.4.1 从浮点实现到目标芯片
@@ -214,6 +224,8 @@ AGC 要区分“把正常语音逐渐推向目标电平”和“立刻避免削�
 定点格式还要明确舍入和饱和规则。本书的 [`q15_quantize`](../codes/array_tutorial/engineering.py) 把 $[-1,1)$ 映射到有符号 Q1.15：乘 $32768$、按最近偶数舍入，再饱和到 $[-32768,32767]$。因此 $-1$ 可以精确表示，$+1$ 只能饱和为 $32767/32768$。[`q15_dot`](../codes/array_tutorial/engineering.py) 用 64 位整数累加乘积，只在输出时除以 $2^{15}$、按最近偶数舍入并饱和；目标 DSP 若使用不同累加位宽或逐乘积舍入，就不应期待 bit-exact 相同。测试既要覆盖正常小数，也要覆盖 $\pm1$、超范围输入和累加器极值；不能只比较平均误差。
 
 SIMD（单指令多数据）优化从数据布局开始。连续的频点、通道或抽头便于向量加载，跨步访问和频繁转置会抵消乘加加速。报告 SIMD 收益时要写明标量基线、指令集、编译选项、数组对齐、块尺寸、线程数和是否包含格式转换。运行时派发还要保留标量回退，并让两条路径通过同一组数值容差或 bit-exact 测试；“编译器打开了向量化”不能代替这些检查。
+
+CMSIS-DSP 的 `arm_fir_q15` 是具体对照：源码说明了 1.15 乘法、64 位累加和输出截位/饱和，而本书 `q15_dot` 采用最近偶数舍入。两者都称 Q15，却不应默认逐位相同；快速版、标量版和向量版也要绑定内核及编译宏分别检查。先用脉冲、满幅和余数块长验证，再报告目标芯片周期数。[CMSIS-DSP FIR 源码](https://github.com/ARM-software/CMSIS-DSP/blob/83a2d7bc98c81b4bbe4a6f48b1f2ecf179868a0b/Source/FilteringFunctions/arm_fir_q15.c "citation")
 
 #### 10.4.2 不混用指令数、乘加次数和实时因子
 
@@ -257,6 +269,10 @@ ITU-T 已于 2024 年 1 月 5 日撤销 [P.862（PESQ）](https://www.itu.int/re
 [ITU-T P.835（07/2026）](https://www.itu.int/rec/T-REC-P.835/en "citation")用于对含噪语音处理系统做主观听测，分别评价语音信号（Signal，SIG）、背景噪声（Background，BAK）和总体效果（Overall，OVRL）。它适合区分“噪声是否减弱”和“语音是否受损”，但不能直接评价 DOA、轨迹身份或空间位置。正式报告应写明标准版本、听测材料、听众筛选、播放设备和统计区间。
 
 [ITU-T P.566（07/2026）](https://www.itu.int/rec/T-REC-P.566/en "citation")的官方条目将其列为“已生效，待发布”（in force / to be published）的单端机器学习多维语音质量模型。在正式文本发布前，本书不从二手资料扩写输出维度或评分细则。P.566 的单端客观预测不能代替 P.835 主观听测，也不评价 DOA、轨迹或空间位置。
+
+公开评分代码可帮助固定执行口径。DNS Challenge 的 `DNSMOS/dnsmos_local.py` 提供本地质量预测，AEC Challenge 的 `AECMOS/AECMOS_local/` 提供回声相关评分；前者还区分普通和个性化模式。需要同时锁定模型摘要、采样率、裁段、短文件处理与聚合方式。模型预测分不是实际听众 MOS，也不能代替任务识别指标。[DNSMOS 本地说明](https://github.com/microsoft/DNS-Challenge/tree/591184a9fcb2cbdec02520fed81a32bbbf9d73ff/DNSMOS "citation")、[AECMOS 本地说明](https://github.com/microsoft/AEC-Challenge/tree/6c633d0a9d2a143a0e364899b91b06f127315b18/AECMOS "citation")
+
+AECMOS 官方为 2021/2022 测试集规定了收敛段后的评分范围，近端单讲、远端单讲和双讲的裁取方式不同。使用别的测试集时，应按该测试集规则定义区间，不能直接沿用旧届剪裁。逐文件失败、静音输出和缺失场景也要计入报告，避免只汇总成功评分的子集。
 
 ### 10.6 数据、仿真与复现
 
@@ -353,11 +369,25 @@ room = pra.ShoeBox(
 | [PortAudio 19.7.0 固定提交](https://github.com/PortAudio/portaudio/tree/3f7bee79a65327d2e0965e8a74299723ed6f072d) | 跨平台设备枚举、阻塞与回调式音频输入输出；该提交按官方 Release Notes 定位 | 不负责跨设备同步、重采样、AEC 或波束形成 |
 | [pyroomacoustics 0.10.0 发布记录](https://pypi.org/project/pyroomacoustics/0.10.0/) | 房间、RIR、DOA 与波束的 Python 原型 | 仿真通过不等于目标设备达到实时性或实录效果 |
 | [nara_wpe 0.0.11 发布记录](https://pypi.org/project/nara-wpe/0.0.11/) | 离线、块在线和递归 WPE 的接口对照 | 安装命令不能证明所选接口因果，也不能证明当前 Python 环境兼容 |
-| [ONNX Runtime 固定源码快照](https://github.com/microsoft/onnxruntime/tree/48795e0281bcaa6b3b63b28af5e078b4c41e995f) | 模型执行、执行提供程序和量化后的设备部署；链接固定到本轮核实的完整提交，不把未发布版本写成正式发布 | 它是运行时，不定义 NS、分离或波束算法的训练目标 |
+| [ONNX Runtime 固定源码快照](https://github.com/microsoft/onnxruntime/tree/48795e0281bcaa6b3b63b28af5e078b4c41e995f) | 模型执行、执行提供程序和量化后的设备部署；链接固定到 2026-09-22 核实的完整提交，属于源码快照 | 它是运行时，不定义 NS、分离或波束算法的训练目标 |
 
-WebRTC 与 PortAudio 规模较大，本仓库不复制其源码。需要对照时按锁定清单获取，并在隔离环境构建。`codes/array_tutorial/` 中的程序是本书教学基线，作用是复算约定和边界；它们不冒充上游项目，也不构成产品性能承诺。
+更多可直接阅读的工业实现包括以下几组，完整提交、许可和获取状态由 `codes/` 统一记录。
+
+| 实现层 | 官方项目与源码入口 | 接入时要固定的条件 |
+|---|---|---|
+| Linux 音频与 AEC 路由 | ALSA `src/pcm/`；PipeWire `src/modules/module-echo-cancel.c` | 设备、period/buffer、时间戳；capture/source/sink/playback 四流与播放参考 |
+| 流式重采样 | libsamplerate `src/samplerate.c`；SpeexDSP `libspeexdsp/resample.c` | 速率比例、滤波质量、跨块状态、实际消费/输出帧数 |
+| VAD、AGC 与神经 NS | WebRTC `common_audio/vad/`、`agc2/`；Silero `utils_vad.py`；DeepFilterNet `libDF/`、`ladspa/` | PCM 幅度、合法块长、会话状态、前瞻、模型和取点 |
+| DSP 固件 | XMOS `lib_voice` 的 AEC/ADEC、IC/VNR、NS/AGC；SOF `src/audio/tdfb/` | 几何、系数、通道、调度、工具链、固件拓扑与硬件适用范围 |
+| MCU 推理 | CMSIS-NN `Source/`；TensorFlow Lite Micro `micro_speech/` | 整数量化、算子、临时内存、tensor arena、特征前端 |
+
+[工业实现研究文档](../codes/research/03_industrial_deployment.md)逐项给出 21 个实现主题的源码入口、状态和参数、故障注入及验收方法，核实日期为 2026-09-22。XMOS 的旧 `fwk_voice` 已迁移到 `lib_voice`；该库使用 XMOS Public Licence v1，商用硬件范围和特殊用途条款应按原许可判断，不能把可获取源码等同于跨平台宽松许可。[XMOS 官方迁移说明](https://github.com/xmos/fwk_voice "citation")、[lib_voice 许可](https://github.com/xmos/lib_voice/blob/c9f1a9bf95cd88c7950adf4bf631c217f900ad25/LICENSE.rst "citation")
+
+上游源码按锁定清单独立获取到被 Git 忽略的 `codes/upstream/_downloads/`，保留原许可证和版本；是否已下载以本机获取记录为准。代码、权重和数据分别管理。`codes/array_tutorial/` 中的程序是本书教学基线，作用是复算约定和边界；下载上游源码本身也不意味着已经完成依赖安装、编译和目标设备验证。
 
 模型落地时还要固定输入采样率、通道顺序、块长、动态轴、归一化、状态张量、算子集、运行时版本和线程配置。冷启动测量包含模型读取、图优化、权重上传和首轮内核准备；稳定运行延迟要在 warm-up 后另测。更新模型前保存可回滚版本，并用同一硬件、同一数据和同一计时范围比较。
+
+在 ONNX Runtime 中，算子内部线程数与图节点之间的并行是两个参数；线程自旋也会影响功耗。多模型并发时，应测各会话线程池的竞争和音频期限，不能直接复制单模型离线计时的最佳设置。对于 TensorFlow Lite Micro，模型文件大小也不等于内存占用：tensor arena 中的持久、临时和可复用张量之外，还可能有音频缓存和栈。[ONNX Runtime 线程说明](https://onnxruntime.ai/docs/performance/tune-performance/threading.html "citation")、[TFLM 内存说明](https://github.com/tensorflow/tflite-micro/blob/9f638f18154dff868e7053572f089be845b2fbdf/tensorflow/lite/micro/docs/memory_management.md "citation")
 
 ### 10.10 联调与验收
 

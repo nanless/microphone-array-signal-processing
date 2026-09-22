@@ -30,10 +30,12 @@ $$a_m(f,\theta)=e^{+\mathrm j2\pi f(m-1)d\sin\theta/c},\qquad m=1,\ldots,M\text{
 
 前两类噪声分别用白噪声增益的线性量 $G_{\mathrm{WNG}}$ 和指向因数 $Q$ 衡量；换成 dB 后分别记为 $\mathrm{WNG}_{\mathrm{dB}}$ 和指向性指数 DI。DSB、超指向、WNG 约束和对角加载都可在这两个指标下比较：
 
-$$G_{\mathrm{WNG}}=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\vec{w}},\quad
-\mathrm{WNG}_{\mathrm{dB}}=10\log_{10}G_{\mathrm{WNG}},\qquad
-Q=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\mathbf{\Gamma}\vec{w}},\quad
-\mathrm{DI}=10\log_{10}Q\text{。}\tag{5-1}$$
+$$\begin{aligned}
+G_{\mathrm{WNG}}&=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\vec{w}},&
+\mathrm{WNG}_{\mathrm{dB}}&=10\log_{10}G_{\mathrm{WNG}},\\
+Q&=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\mathbf{\Gamma}\vec{w}},&
+\mathrm{DI}&=10\log_{10}Q\text{。}
+\end{aligned}\tag{5-1}$$
 
 $G_{\mathrm{WNG}}$ 是阵列对**通道独立白噪声**的输出 SNR 线性增益，$Q$ 是指定弥散场模型下的输出 SNR 线性增益；式(5-1)明确区分了线性量和 dB 量。无失真约束下两个线性量的分子恒为 1，只需比较分母。4 元 $\lambda/2$ 线阵的算例见算例 2-2。图 15 的纵轴标成 WNG (dB) 和 DI (dB)，分别对应 $\mathrm{WNG}_{\mathrm{dB}}$ 与 DI。
 
@@ -107,7 +109,11 @@ $$\min_{\vec{w}}\ \vec{w}^H\mathbf{\Gamma}\vec{w} \quad \text{s.t.}\ \ \vec{w}^H
 
 **第 1 步：检查 $\mathbf{\Gamma}$ 的病态程度**
 
-$$\det\mathbf{\Gamma} = 1 - 0.9836^2 = 0.0325,\qquad \mathbf{\Gamma}^{-1} = \frac{1}{0.0325}\begin{bmatrix}1 & -0.9836\\ -0.9836 & 1\end{bmatrix} \approx \begin{bmatrix}30.80 & -30.29\\ -30.29 & 30.80\end{bmatrix}$$
+$$\begin{aligned}
+\det\mathbf{\Gamma} &= 1 - 0.9836^2 = 0.0325,\\
+\mathbf{\Gamma}^{-1} &= \frac{1}{0.0325}\begin{bmatrix}1 & -0.9836\\ -0.9836 & 1\end{bmatrix}\\
+&\approx \begin{bmatrix}30.80 & -30.29\\ -30.29 & 30.80\end{bmatrix}.
+\end{aligned}$$
 
 两麦噪声的相干系数为 $\rho=0.9836$，所以 $\mathbf{\Gamma}$ 接近奇异，逆矩阵元素达到 30 量级。后续求得的权重会相应放大。
 
@@ -139,7 +145,10 @@ $$\vec{w}^H\vec{a} = \underbrace{(0.5000+2.3559\mathrm{j})}_{w_1^*\cdot a_1} + \
 
 **第 5 步：算 $\mathrm{WNG}_{\mathrm{dB}}$，看代价**
 
-$$\|\vec{w}\|^2 = 2.41^2 + 2.41^2 \approx 11.60,\qquad \mathrm{WNG}_{\mathrm{dB}} = 10\log_{10}\frac{1}{11.60} \approx \mathbf{-10.6\ dB}$$
+$$\begin{aligned}
+\|\vec{w}\|^2 &= 2.41^2 + 2.41^2 \approx 11.60,\\
+\mathrm{WNG}_{\mathrm{dB}} &= 10\log_{10}\frac{1}{11.60} \approx \mathbf{-10.6\ dB}.
+\end{aligned}$$
 
 对照：同一指向的 DSB 有 $\mathrm{WNG}_{\mathrm{dB}}=+3.0$ dB。负的 $\mathrm{WNG}_{\mathrm{dB}}$ 表示独立的阵元自噪声被权重能量放大；本例 $\|\vec w\|^2\approx11.6$，即相对单麦高约 10.6 dB。作为交换，在本例的理想各向同性弥散场、紧凑双麦端射模型下，指向因数 $Q=1/(\vec w^H\mathbf\Gamma\vec w)\approx3.97$，所以 $\mathrm{DI}\approx+6.0$ dB。这个结果依赖模型和极限条件，不是任意双麦几何、频率与噪声场的保证。
 
@@ -454,7 +463,10 @@ $\vec{w}=\mathbf{C}(\mathbf{C}^H\mathbf{C})^{-1}\vec{f}$ 取逆矩阵第一列�
 
 多通道维纳滤波（Multichannel Wiener Filter，简称 MWF）直接在均方误差准则下权衡目标失真与残余噪声；MVDR 则施加硬的无失真约束，两者不能一般性地视为同一个解。语音失真加权多通道维纳滤波（Speech Distortion Weighted MWF，简称 SDW-MWF）写成
 
-$$J(\vec{w}) = E\{|n_{out}|^2\} + \frac{1}{\mu}\,E\{|s_{out}-s_{ref}|^2\}\quad\Rightarrow\quad \vec{w}_{SDW} = \big(\mathbf{R}_{ss} + \mu\mathbf{R}_{nn}\big)^{-1}\mathbf{R}_{ss}\,\vec{e}_r\text{。}\tag{5-5}$$
+$$\begin{aligned}
+J(\vec{w}) &= E\{|n_{out}|^2\} + \frac{1}{\mu}\,E\{|s_{out}-s_{ref}|^2\},\\
+\Rightarrow\quad \vec{w}_{SDW} &= \big(\mathbf{R}_{ss} + \mu\mathbf{R}_{nn}\big)^{-1}\mathbf{R}_{ss}\,\vec{e}_r\text{。}
+\end{aligned}\tag{5-5}$$
 
 - $\mathbf{R}_{ss}, \mathbf{R}_{nn}$：目标与噪声协方差矩阵；$\vec{e}_r$：参考麦选择向量（第 $r$ 位为 1 的单位向量，即“以第 $r$ 个麦收到的目标为基准”）；
 - $\mu=1$ 是普通 MWF；$\mu>1$ 更重视噪声项，抑制增强而目标失真通常增大；$\mu<1$ 更重视目标保真。令 $\mu\to\infty$ 时权重趋近零，并不趋近 MVDR。只有秩一目标模型 $\mathbf R_{ss}=\phi_s\vec a\vec a^H$ 且参考麦归一化 $a_r=1$ 时，才有
@@ -509,7 +521,11 @@ Frost 用投影更新实现时域 LCMV；下一节的 GSC 用固定支路和阻�
 
 上支路权重 $\vec{w}_u = [0.5,\ 0.5]^\top$。目标方向增益 $\vec{w}_u^H\vec{a}(0°) = 1$ ✓（无失真）；60° 方向的泄漏增益：
 
-$$g_u = \vec{w}_u^H\vec{a}(60°) = \tfrac{1}{2}\big(1 + e^{+\mathrm{j}2.7207}\big) = 0.0436+0.2043\mathrm{j},\qquad |g_u| = |\cos\tfrac{\psi}{2}| = 0.2089\ (\text{−13.6 dB})$$
+$$\begin{aligned}
+g_u &= \vec{w}_u^H\vec{a}(60°) = \tfrac{1}{2}\big(1 + e^{+\mathrm{j}2.7207}\big)\\
+&= 0.0436+0.2043\mathrm{j},\\
+|g_u| &= |\cos\tfrac{\psi}{2}| = 0.2089\ (\text{−13.6 dB}).
+\end{aligned}$$
 
 干扰在目标支路里还残留约 21% 的幅度——这就是图17 中“$d$ = 目标 + 漏入噪声”里那部分“漏入噪声”。
 
@@ -519,7 +535,11 @@ $$g_u = \vec{w}_u^H\vec{a}(60°) = \tfrac{1}{2}\big(1 + e^{+\mathrm{j}2.7207}\bi
 
 干扰在下支路的增益为
 
-$$g_\ell = \mathbf{B}^H\vec{a}(60°) = 1 - e^{+\mathrm{j}2.7207} = 1.9127-0.4086\mathrm{j},\qquad |g_\ell| = 2|\sin\tfrac{\psi}{2}| = 1.9559$$
+$$\begin{aligned}
+g_\ell &= \mathbf{B}^H\vec{a}(60°) = 1 - e^{+\mathrm{j}2.7207}\\
+&= 1.9127-0.4086\mathrm{j},\\
+|g_\ell| &= 2|\sin\tfrac{\psi}{2}| = 1.9559.
+\end{aligned}$$
 
 两路相减反而把干扰放大了近 2 倍（因为 60° 方向上两麦相位差 155.9°，接近反相，相减近乎同相叠加）——没关系，它只是一份“干扰参考样本”。
 
@@ -529,7 +549,15 @@ $$g_\ell = \mathbf{B}^H\vec{a}(60°) = 1 - e^{+\mathrm{j}2.7207} = 1.9127-0.4086
 
 $$\vec{x} = \vec{a}(0°)\cdot 1 + \vec{a}(60°)\cdot 1 = \begin{bmatrix}2.0000\\ 0.0873+0.4086\mathrm{j}\end{bmatrix}$$
 
-上支路输出：$d = \vec{w}_u^H\vec{x} = \dfrac{2.0000 + 0.0873+0.4086\mathrm{j}}{2} = 1.0436+0.2043\mathrm{j} = \underbrace{1}_{s} + \underbrace{(0.0436+0.2043\mathrm{j})}_{g_u\cdot i}$；（花括号下第二项即泄漏项 $g_u\cdot i$。）
+上支路输出：
+
+$$\begin{aligned}
+d &= \vec{w}_u^H\vec{x} = \dfrac{2.0000 + 0.0873+0.4086\mathrm{j}}{2}\\
+&= 1.0436+0.2043\mathrm{j}\\
+&= \underbrace{1}_{s} + \underbrace{(0.0436+0.2043\mathrm{j})}_{g_u\cdot i}.
+\end{aligned}$$
+
+花括号下第二项即泄漏项 $g_u\cdot i$。
 
 下支路输出：$u = \mathbf{B}^H\vec{x} = 2.0000 - (0.0873+0.4086\mathrm{j}) = 1.9127-0.4086\mathrm{j}$（$= g_\ell\cdot i$，纯干扰，目标分量为 0）。
 
@@ -651,8 +679,10 @@ $$p(\kappa,\Omega) = \sum_{n=0}^{N}\sum_{m=-n}^{n} b_n(\kappa r)\,Y_n^m(\Omega)\
 神经网络最适合先解决解析波束形成中难估计的统计量，而不是把多个模型名称并列成性能等级。以掩码波束形成为例，固定频点 $k$，多通道观测为 $\vec x(k,n)\in\mathbb C^M$，网络输出目标掩码 $m_s(k,n)$ 和噪声掩码 $m_n(k,n)$。一个可复现的处理顺序如下。
 
 1. **掩码到空间协方差矩阵（Spatial Covariance Matrix，SCM）**：
-$$\hat{\mathbf R}_{ss}(k)=\frac{\sum_n m_s(k,n)\vec x(k,n)\vec x^H(k,n)}{\sum_n m_s(k,n)+\epsilon},\quad
-\hat{\mathbf R}_{nn}(k)=\frac{\sum_n m_n(k,n)\vec x(k,n)\vec x^H(k,n)}{\sum_n m_n(k,n)+\epsilon}。$$
+$$\begin{aligned}
+\hat{\mathbf R}_{ss}(k)&=\frac{\sum_n m_s(k,n)\vec x(k,n)\vec x^H(k,n)}{\sum_n m_s(k,n)+\epsilon},\\
+\hat{\mathbf R}_{nn}(k)&=\frac{\sum_n m_n(k,n)\vec x(k,n)\vec x^H(k,n)}{\sum_n m_n(k,n)+\epsilon}。
+\end{aligned}$$
 分母只做掩码权重归一化；$\epsilon$ 防止整段掩码接近零。协方差是否使用未来帧决定这一步能否在线运行。
 2. **SCM 到约束向量或广义特征向量**：在秩一目标近似下，可取 $\hat{\mathbf R}_{ss}$ 的主特征向量并按参考麦归一化，得到相对传递函数 $\hat{\vec a}$。MVDR 再用式(5-3)求权重。另一条路线直接解
 $$\hat{\mathbf R}_{ss}\vec w_{GEV}=\lambda_{\max}\hat{\mathbf R}_{nn}\vec w_{GEV}，$$
@@ -673,7 +703,19 @@ $$\hat{\mathbf R}_{ss}\vec w_{GEV}=\lambda_{\max}\hat{\mathbf R}_{nn}\vec w_{GEV
 
 这些函数是公式基线，不是完整设备状态机。实时实现还要记录 STFT 窗长和帧移、分数延时滤波器、固定传播补偿、参考通道、SCM 遗忘因子、VAD/SPP 门控、权值更新周期和输出限幅。每次更新后检查条件数、$|\vec w^H\vec a-1|$、WNG 和输出峰值；空掩码或病态矩阵出现时，应在“保持上一组已验证权值、增加已标明口径的加载、退回 DSB”之间预先规定顺序。目标泄漏时应冻结噪声 SCM 或 GSC 自适应支路，并记录触发原因，不能只在输出失真后重新初始化。
 
-第三方项目只作索引，不复制源码。核实于 2026-09-22 的官方参考包括：[torchaudio MVDR 教程](https://docs.pytorch.org/audio/main/tutorials/mvdr_tutorial.html)及其[官方示例源码](https://github.com/pytorch/audio/blob/main/examples/tutorials/mvdr_tutorial.py)（[BSD-2-Clause](https://github.com/pytorch/audio/blob/main/LICENSE "citation")）。该教程链接指向 nightly 文档，页面当日打印的版本为 torchaudio `2.11.0a0+2470b9c`；官方仓库当日 `main` 的完整提交为 `b85c99ccac635a06b1afaf5284bf4c1a00c1f9b5`，两者不能当成同一个稳定发行版。官方主页还说明 torchaudio 自 2.8 起进入维护阶段，部分 API 在 2.8 弃用并于 2.9 移除，因此复现应固定实际验证版本。[ESPnet beamformer](https://github.com/espnet/espnet/blob/master/espnet2/enh/layers/beamformer.py)采用 Apache-2.0，当日发布页显示 v.202609；[SpeechBrain](https://github.com/speechbrain/speechbrain)采用 Apache-2.0。完整 GEV+BAN、WPD、神经掩码、球谐径向滤波、MCRA/IMCRA 与 OM-LSA 需要额外算法和依赖，本轮不把它们伪装成本书已经覆盖的最小实现。
+外部波束实现按完整提交号保存在 `codes/upstream/_downloads/`，取得源码后的构建、数值回归和设备测试分别记录。版本与许可见 [`SOURCES.lock.json`](../codes/SOURCES.lock.json)，扩展实验和源码阅读顺序见[空间处理与追踪研究](../codes/research/01_spatial_and_tracking.md)。TorchAudio 的 `examples/tutorials/mvdr_tutorial.py`、ESPnet 的 `espnet2/enh/layers/beamformer.py` 分别连接掩码、协方差、参考通道与输出波形；复现应使用锁定源码及相容依赖，不能把浮动 nightly 文档当作稳定发行版契约。
+
+球阵还多了一层编码误差。`sound_field_analysis/process.py::spatFT` 计算球谐系数，`gen.py::radial_filter` 控制径向补偿；Politis 的 `arraySHTfiltersMeas_regLS.m` 用实测响应设计编码滤波器，`sphMVDR.m`、`sphLCMV.m` 在球谐域求权重。先用已知平面波检查实/复球谐、归一化、通道排列和余纬角，再增加阶数测量每阶噪声放大。只检查旋转后的图形，没有检查径向滤波后的 WNG，仍可能在低频得到不可用的输出。[sfa 官方接口](https://appliedacousticschalmers.github.io/sound_field_analysis-py/reference.html "citation")；[Politis 作者实现](https://github.com/polarch/Spherical-Array-Processing "citation")。
+
+需要 C/C++ 实现时，可沿 SAF 的 `saf_sh`、`array2sh`、`beamformer`、`powermap` 阅读从球谐计算到块处理的过程。CBLAS/LAPACK、FFT 后端、SIMD 与编译器浮点选项都应记录，随后在目标硬件上测最慢帧耗时和内存。SAF 核心模块为 ISC，可选 `saf_tracker` 和 `saf_hades` 为 GPLv2，不能把整个仓库概括成同一宽松许可证。[SAF 官方模块与许可说明](https://github.com/leomccormack/Spatial_Audio_Framework "citation")。以上源码核实于 2026-09-22。
+
+工业声源成像的目标也要与语音增强分开。Acoular 的 `BeamformerDamas`、`BeamformerCleansc` 和 `BeamformerCMF` 处理点扩散函数或互谱矩阵，输出声源功率分布；评测重点包括校准、区域积分、流场和运动模型。它们不直接产生保持目标语音的波形。研究文档给出了相同数据下比较常规成像、反卷积与协方差拟合的最小实验，不能仅以图中峰更尖判定方法更好。[Acoular 官方接口](https://acoular.org/acoular/api_ref/generated/acoular.fbeamform.html "citation")。
+
+GEV、BAN、RTF 和 MWF 的函数不能只按名称替换。pb_bss 的 `get_gev_vector` 给最大信噪比方向，`blind_analytic_normalization` 再确定功率尺度；BAN 不需要真实目标导向，也不普遍保证目标单位响应。ESPnet 的 `get_rtf` 明确没有在函数内部完成参考通道归一化，后续调用者应检查参考响应接近零时的行为。[pb_bss 波束实现](https://github.com/fgnt/pb_bss/blob/master/pb_bss/extraction/beamformer.py "citation")；[ESPnet 波束实现](https://github.com/espnet/espnet/blob/master/espnet2/enh/layers/beamformer.py "citation")。
+
+一般 SDW-MWF 与秩一化简尤其需要区分。取噪声 SCM 为单位阵，目标 SCM 为 `diag(2,1)`，噪声权重为 1，参考麦为第一通道：一般线性方程的首项解为 `2/(2+1)=2/3`。pb_bss `get_wmwf_vector` 使用目标秩一条件下的迹化简，此输入得到 `2/(1+2+1)=1/2`。若把目标 SCM 改为 `diag(2,0)`，两者才在此例同为 `2/3`。这是本书依据源码作的手算边界例，不是外部包运行报告；全秩模型可阅读 ESPnet `get_sdw_mwf_vector`，并显式决定是否启用低秩近似。
+
+§5.7 的噪声估计也需要同样的区分。MCRA 用局部最小值控制递归更新，IMCRA 进一步引入两阶段平滑与最小值搜索，OM-LSA 根据语音存在不确定性形成对数谱幅度增益。Cohen 的[官方软件页](https://israelcohen.com/software/ "citation")介绍了 MATLAB OM-LSA/IMCRA，但本次未取得可核验版本与许可的下载包。已下载的 WebRTC 则可从 `quantile_noise_estimator.cc`、`noise_estimator.cc`、`speech_probability_estimator.cc` 阅读分位数跟踪和语音概率控制；它们不是 IMCRA 或 OM-LSA 的逐式实现。研究文档为这些算法分别给出噪声阶跃、持续弱语音、启动和零输入的检查方案。
 
 ### 5.10 波束形成算法总对比
 
@@ -713,7 +755,21 @@ $$\mathrm{NR}_{ref}=10\log_{10}\frac{\vec e_r^H\mathbf R_{nn}\vec e_r}{\vec w^H\
 
 ### 5.11 本章练习
 
-1. DSB 增益与 WNG 上限：4 麦均匀线阵、DSB 指向目标，白噪声增益是多少 dB？再用柯西-施瓦茨不等式说明：任何满足无失真约束（$\vec{w}^H\vec{a}=1$）的权重，$G_{\mathrm{WNG}}$ 都不超过 4。（参考答案：$\mathrm{WNG}_{\mathrm{dB}}=10\log_{10}4\approx$**6 dB**；$1=|\vec{w}^H\vec{a}|\le\|\vec{w}\|\|\vec{a}\|=\|\vec{w}\|\sqrt4$，故 $G_{\mathrm{WNG}}=1/\|\vec{w}\|^2\le4$——等号在 $\vec{w}\propto\vec{a}$ 即 DSB 时成立，完整两步见 §5.2 的上限推导。）
+1. DSB 增益与 WNG 上限：4 麦均匀线阵、DSB 指向目标，白噪声增益是多少 dB？再用柯西-施瓦茨不等式说明：任何满足无失真约束（$\vec{w}^H\vec{a}=1$）的权重，$G_{\mathrm{WNG}}$ 都不超过 4。
+
+    **参考答案**：
+
+    $$\mathrm{WNG}_{\mathrm{dB}}=10\log_{10}4\approx6\ \mathrm{dB}.$$
+
+    柯西-施瓦茨不等式给出
+
+    $$\begin{aligned}
+    1&=|\vec{w}^H\vec{a}|\le\|\vec{w}\|\|\vec{a}\|=\|\vec{w}\|\sqrt4,\\
+    G_{\mathrm{WNG}}&=1/\|\vec{w}\|^2\le4.
+    \end{aligned}$$
+
+    等号在 $\vec{w}\propto\vec{a}$ 即 DSB 时成立，完整两步见 §5.2 的上限推导。
+
 2. GSC 阻塞失配：沿用算例 5-3 的 2 麦阵，若目标实际偏到 2°（DOA 估计差 2°），下支路会漏进多少目标功率？自适应对消器会如何处理这部分泄漏，输出会出现什么变化？（参考答案：$\mathbf{B}^H\vec{a}(2°)\approx0.0060-0.1094\mathrm{j}$，模约为 0.1096，漏进约 **1.2%** 的目标功率（见算例第 6 步）；下支路的目标与上支路相关，对消器会把它也当干扰抵消，导致目标语音衰减或断续。对策见 §5.6 末。）
 
 ---

@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""把 chapters/ 14 篇 Markdown 建成多级页面静态站，输出到 site/。
+"""把 chapters/ 14 篇及 codes/research/ 5 篇 Markdown 建成静态站。
 
 用法（报告根目录）：
     .venv/bin/python scripts/build_site.py
 
 产物：site/index.html（首页）+ site/01..13_*.html（13 篇正文），
+另有 site/research/index.html 和 4 篇独立研究页。
 左侧边栏 = 首页 + 13 篇 + 每篇的二级及以下小节锚点，顶部面包屑，
 文末上一篇/下一篇（首页不输出该盒）。图片直接引用 ../figures/（不复制）。
 数学公式用 MathJax CDN 渲染（离线时显示源码，页面顶部有提示）。
@@ -13,10 +14,12 @@ import os
 import re
 import tempfile
 import hashlib
+import shutil
+from html import escape, unescape
 from collections import Counter
 from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import quote, unquote, urlparse, urlsplit, urlunsplit
 
 ROOT = Path(__file__).parent.parent
 SRC = ROOT / "chapters"
@@ -38,6 +41,14 @@ CHAPTERS = [
     ("13_appendix-guide.md", "附录 B · 路径地图与练习"),
 ]
 HOME_FNAME = "00_overview.md"
+RESEARCH = [
+    ("README.md", "源码研究导读"),
+    ("01_spatial_and_tracking.md", "空间处理与追踪源码研究"),
+    ("02_aec_wpe_separation.md", "AEC、WPE 与分离源码研究"),
+    ("03_industrial_deployment.md", "工业音频实现研究"),
+    ("04_source_reproduction.md", "源码获取与独立复现记录"),
+]
+REPOSITORY_BLOB_BASE = "https://github.com/nanless/microphone-array-signal-processing/blob/main/"
 LABEL_BY_FNAME = {f: l for f, l in CHAPTERS}
 LABEL_BY_FNAME[HOME_FNAME] = "🏠 导读与导航（首页）"
 
@@ -53,7 +64,7 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .side a{color:#2f6db3;text-decoration:none}.side a:hover{text-decoration:underline}
 .side .chap{margin:10px 0 2px;font-weight:700}.side .chap.cur{color:#c0392b}
 .side ul{margin:2px 0 6px;padding-left:16px;color:#666}.side li{margin:2px 0}
-.main{flex:1;min-width:0;padding:28px 36px;background:#fff}
+.main{flex:1;min-width:0;padding:28px 36px;background:#fff;overflow-wrap:anywhere}
 .main p{margin:0 0 1.05em}.main li>p{margin:.35em 0}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
 table{border-collapse:collapse;margin:14px 0;max-width:100%}
@@ -65,6 +76,7 @@ pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:a
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
 mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
 .pn a{color:#2f6db3;text-decoration:none}.pn .off{color:#aaa}
 .foot{color:#888;font-size:13px;margin:20px 0 40px}
@@ -92,7 +104,7 @@ window.MathJax = {{tex: {{inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], displayM
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
  onerror="document.getElementById('offnote').style.display='block';document.getElementById('offnote').textContent='公式渲染脚本加载失败：当前显示的是公式源码。';"></script>
 </head><body id="top"><a class="skip-link" href="#main-content">跳到正文</a>
-<header class="topbar"><a href="index.html">🏠 首页</a> &nbsp;/&nbsp; {crumb}</header>
+<header class="topbar"><a href="{home_href}">🏠 首页</a> &nbsp;/&nbsp; {crumb}</header>
 <div class="wrap"><nav class="side" aria-label="全书目录">{sidebar}</nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录">{toc}</nav></details>
@@ -108,13 +120,14 @@ def clean_label(text):
     text = re.sub(r"!\[.*?\]\(.*?\)", "", text)
     text = re.sub(r"[`*_~]", "", text)
     text = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", text)
-    return text.strip()
+    return re.sub(r"\s+", " ", text).strip()
 
 
 def source_digest():
     """站点正文与构建器的稳定摘要，用于拒绝陈旧生成物。"""
     digest = hashlib.sha256()
     paths = sorted(SRC.glob("*.md"))
+    paths += [ROOT / "codes" / "research" / name for name, _ in RESEARCH]
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "make_figures.py",
               ROOT / "scripts" / "make_aec_figures.py", ROOT / "requirements.txt"]
@@ -241,9 +254,65 @@ def validate_url_schemes(html):
             raise ValueError(f"不安全或不支持的 {attribute} 协议：{scheme}")
 
 
-def render(md_text):
+def source_outputs():
+    """显式发布清单：未发布的源码不能仅按后缀猜成 HTML。"""
+    return {
+        **{(SRC / name).resolve(): name.replace(".md", ".html")
+           for name, _ in CHAPTERS},
+        (SRC / HOME_FNAME).resolve(): "index.html",
+        **{(ROOT / "codes" / "research" / name).resolve():
+           "research/" + ("index.html" if name == "README.md" else name.replace(".md", ".html"))
+           for name, _ in RESEARCH},
+    }
+
+
+def local_link_target(href, source_path):
+    """返回 URI 与仓库内绝对目标；外部 URI、页内锚点和越界路径不解析。"""
+    parsed = urlsplit(href)
+    if parsed.scheme or parsed.netloc or not parsed.path:
+        return parsed, None
+    target = (Path(source_path).parent / unquote(parsed.path)).resolve()
+    if not target.is_relative_to(ROOT.resolve()):
+        return parsed, None
+    return parsed, target
+
+
+def repository_url(parsed, target):
+    path = quote(target.relative_to(ROOT.resolve()).as_posix(), safe="/")
+    return urlunsplit(("https", "github.com",
+                      "/nanless/microphone-array-signal-processing/blob/main/" + path,
+                      parsed.query, parsed.fragment))
+
+
+def rewrite_href_targets(html, transform):
+    """仅改真正链接的 href，不改外部网址、文本或代码中的 .md。"""
+    def replace(match):
+        value = transform(unescape(match.group(3)))
+        return match.group(1) + match.group(2) + escape(value, quote=True) + match.group(2)
+    return re.sub(r'(<a\b[^>]*?\bhref=)([\"\'])(.*?)\2', replace, html, flags=re.S)
+
+
+def rewrite_site_links(html, source_path):
+    outputs = source_outputs()
+    current = outputs.get(Path(source_path).resolve(), "index.html")
+
+    def transform(href):
+        parsed, target = local_link_target(href, source_path)
+        if target is None:
+            return href
+        if target in outputs:
+            relative = os.path.relpath(outputs[target], Path(current).parent).replace(os.sep, "/")
+            return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
+        return repository_url(parsed, target)
+
+    return rewrite_href_targets(html, transform)
+
+
+def render(md_text, source_path=None):
     """返回 (html, 标题数)；主标识稳定，并保留旧 sec-N 别名。"""
     import markdown
+    source_path = Path(source_path) if source_path is not None else SRC / HOME_FNAME
+    is_research = source_path.resolve().parent == (ROOT / "codes" / "research").resolve()
     records = heading_records(parse_headings(md_text))
     # 数学段暂存：防 markdown 吃下划线、防浏览器吞 <，转完再贴回
     repo = []
@@ -260,6 +329,7 @@ def render(md_text):
     html = re.sub(r"@@MATH(\d+)@@", lambda m: repo[int(m.group(1))], html)
     validate_url_schemes(html)
     counter = [0]
+    research_slugs = Counter()
 
     def repl(m):
         counter[0] += 1
@@ -267,6 +337,13 @@ def render(md_text):
         _level, _text, primary, legacy = records[counter[0] - 1]
         alias = ("" if primary == legacy else
                  f'<span id="{legacy}" class="anchor-alias" aria-hidden="true"></span>')
+        if is_research:
+            # 保留 Markdown/GitHub 风格的研究页深链，同时沿用站点目录标识。
+            slug = re.sub(r"\s+", "-", re.sub(r"[^\w\s-]", "", _text.lower()))
+            research_slugs[slug] += 1
+            if research_slugs[slug] > 1:
+                slug += f"-{research_slugs[slug] - 1}"
+            alias += f'<span id="{escape(slug, quote=True)}" class="anchor-alias" aria-hidden="true"></span>'
         return f'{alias}<{tag} id="{primary}">{inner}</{tag}>'
 
     html = re.sub(r"<(h[1-4])>(.*?)</\1>", repl, html, flags=re.S)
@@ -280,10 +357,7 @@ def render(md_text):
         html,
         flags=re.S,
     )
-    # md 内链 .md → .html；00 首页 → index.html
-    html = re.sub(r"\.md((?:#[^\"')\s]*)?)([\"')])",
-                  lambda m: ".html" + m.group(1) + m.group(2), html)
-    html = html.replace(HOME_FNAME.replace(".md", ".html"), "index.html")
+    html = rewrite_site_links(html, source_path)
 
     # 导航链文 guilty .md 后缀 → 篇名（F21）
     def nav_text(m):
@@ -304,10 +378,11 @@ def render(md_text):
     # 表格里的裸文件名（01_xxx.md）也改成可点链接
     def bare_link(m):
         pre, fname = m.group(1), m.group(2)
+        prefix = "../" if is_research else ""
         if fname == HOME_FNAME:
-            return f'{pre}<a href="index.html">{fname}</a>'
+            return f'{pre}<a href="{prefix}index.html">{fname}</a>'
         if fname in LABEL_BY_FNAME:
-            return f'{pre}<a href="{fname.replace(".md", ".html")}">{fname}</a>'
+            return f'{pre}<a href="{prefix}{fname.replace(".md", ".html")}">{fname}</a>'
         return m.group(0)
 
     html = re.sub(r'(^|[\s>(])((?:0\d|1\d)_[^<\s)"]+\.md)', bare_link, html)
@@ -355,22 +430,79 @@ def sidebar_with_anchors(current, heads):
             parts.append(lst)
         else:
             parts.append(f'<div class="chap"><a href="{html_name}">{label}</a></div>')
+    parts.append('<div class="chap"><a href="research/index.html">源码研究</a></div>')
     return "\n".join(parts)
+
+
+def research_sidebar(current, heads):
+    parts = ['<div class="chap"><a href="../index.html">🏠 导读与导航（首页）</a></div>']
+    for fname, label in RESEARCH:
+        html_name = "index.html" if fname == "README.md" else fname.replace(".md", ".html")
+        if fname == current:
+            parts.append(f'<div class="chap cur" aria-current="page">{label}</div>')
+            parts.append(sub_list(html_name, heads)[0])
+        else:
+            parts.append(f'<div class="chap"><a href="{html_name}">{label}</a></div>')
+    for fname, label in CHAPTERS:
+        parts.append(f'<div class="chap"><a href="../{fname.replace(".md", ".html")}">{label}</a></div>')
+    return "\n".join(parts)
+
+
+def publish_files(replacements, removals=()):
+    """替换失败时恢复整批旧文件；不承诺断电或进程强杀时的原子性。"""
+    replacements = [(Path(source), Path(target)) for source, target in replacements]
+    targets = [target for _, target in replacements] + [Path(path) for path in removals]
+    if not targets:
+        return
+    if len(set(targets)) != len(targets):
+        raise ValueError("发布目标重复")
+    backup_dir = Path(tempfile.mkdtemp(prefix=".publish-backup-", dir=targets[0].parent))
+    snapshots = []
+    preserve_backup = False
+    try:
+        for index, target in enumerate(targets):
+            backup = backup_dir / str(index) if target.exists() else None
+            if backup is not None:
+                shutil.copy2(target, backup)
+            snapshots.append((target, backup))
+        try:
+            for source, target in replacements:
+                os.replace(source, target)
+            for target in removals:
+                Path(target).unlink()
+        except BaseException:
+            failures = []
+            for target, backup in snapshots:
+                try:
+                    if backup is None:
+                        target.unlink(missing_ok=True)
+                    else:
+                        shutil.copy2(backup, target)
+                except OSError as error:
+                    failures.append(f"{target}: {error}")
+            if failures:
+                preserve_backup = True
+                raise RuntimeError(f"发布恢复失败，备份保留在 {backup_dir}：{failures}")
+            raise
+    finally:
+        if not preserve_backup:
+            shutil.rmtree(backup_dir)
 
 
 def main():
     names = [f for f, _ in CHAPTERS]
-    expected = {"index.html", *(name.replace(".md", ".html") for name in names)}
+    expected = set(source_outputs().values())
     with tempfile.TemporaryDirectory(prefix=".site-build-", dir=ROOT) as tmp:
         temp_out = Path(tmp)
         build_digest = source_digest()
         home_md = (SRC / HOME_FNAME).read_text(encoding="utf-8")
         home_heads = parse_headings(home_md)
-        home_html, home_n = render(home_md)
+        home_html, home_n = render(home_md, SRC / HOME_FNAME)
         assert home_n == len(home_heads), f"首页锚点 {home_n} vs 标题 {len(home_heads)}"
         toc, _ = sub_list("index.html", home_heads)
         (temp_out / "index.html").write_text(PAGE.format(
             title="导读与导航", css=CSS, crumb="导读与导航",
+            home_href="index.html",
             source_digest=build_digest,
             sidebar=sidebar_with_anchors(None, home_heads), toc=toc,
             body=home_html, pn=""), encoding="utf-8")
@@ -378,7 +510,7 @@ def main():
             md = (SRC / fname).read_text(encoding="utf-8")
             heads = parse_headings(md)
             html_name = fname.replace(".md", ".html")
-            body, n = render(md)
+            body, n = render(md, SRC / fname)
             assert n == len(heads), f"{fname}: 锚点 {n} vs 标题 {len(heads)}"
             body, heads = promote_content_headings(body, heads)
             toc, _ = sub_list(html_name, heads, include_level1=True)
@@ -389,18 +521,31 @@ def main():
             pn = f'<div class="pn"><span>{prev}</span><span>{nxt}</span></div>'
             (temp_out / html_name).write_text(PAGE.format(
                 title=label, css=CSS, crumb=label,
+                home_href="index.html",
                 source_digest=build_digest,
                 sidebar=sidebar_with_anchors(fname, heads), toc=toc,
                 body=body, pn=pn), encoding="utf-8")
-        built = {path.name for path in temp_out.glob("*.html")}
+        (temp_out / "research").mkdir()
+        for fname, label in RESEARCH:
+            source = ROOT / "codes" / "research" / fname
+            md = source.read_text(encoding="utf-8")
+            heads = parse_headings(md)
+            body, n = render(md, source)
+            assert n == len(heads), f"{fname}: 锚点 {n} vs 标题 {len(heads)}"
+            html_name = "index.html" if fname == "README.md" else fname.replace(".md", ".html")
+            (temp_out / "research" / html_name).write_text(PAGE.format(
+                title=label, css=CSS, crumb=label, home_href="../index.html",
+                source_digest=build_digest, sidebar=research_sidebar(fname, heads),
+                toc=sub_list(html_name, heads)[0], body=body, pn=""), encoding="utf-8")
+        built = {path.relative_to(temp_out).as_posix() for path in temp_out.rglob("*.html")}
         if built != expected:
             raise SystemExit(f"站点产物集合异常：期望 {sorted(expected)}，实际 {sorted(built)}")
         OUT.mkdir(exist_ok=True)
-        for name in sorted(expected):
-            os.replace(temp_out / name, OUT / name)
-        for stale in OUT.glob("*.html"):
-            if stale.name not in expected:
-                stale.unlink()
+        (OUT / "research").mkdir(exist_ok=True)
+        stale = [path for path in OUT.glob("*.html") if path.name not in expected]
+        stale += [path for path in (OUT / "research").glob("*.html")
+                  if "research/" + path.name not in expected]
+        publish_files([(temp_out / name, OUT / name) for name in sorted(expected)], stale)
     print("DONE", len(expected), "pages")
 
 

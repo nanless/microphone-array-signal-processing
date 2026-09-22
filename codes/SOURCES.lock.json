@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "verified_at": "2026-09-22",
-  "notes": "Code licenses only. Model, dataset, media, dependency and trademark terms must be checked separately.",
+  "notes": "Fixed source revisions for independent local research checkouts. Acquisition does not mean runtime validation or redistribution permission. LFS objects, submodules and common model/audio/archive files are omitted in new sparse working trees; upstream Git objects can still contain embedded assets. Code, models and datasets retain their respective terms.",
   "projects": [
     {
       "id": "pyroomacoustics",
@@ -11,7 +11,22 @@
       "license": "MIT",
       "fetch_enabled": true,
       "scope": "room simulation, STFT, DOA, beamforming, BSS",
-      "note": "The book's optional reproduction environment and this source revision are pinned to 0.10.0. Current main was separately inspected at ff7d61f219e4eb41489963c4bb5f57bea5bc2c69."
+      "note": "The book's optional reproduction environment and this source revision are pinned to 0.10.0. Current main was separately inspected at ff7d61f219e4eb41489963c4bb5f57bea5bc2c69. CSSM/WAVES/TOPS static indexing concerns are documented in codes/research/01_spatial_and_tracking.md; acquisition is not numerical validation.",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "pyroomacoustics/room.py",
+        "pyroomacoustics/transform/stft.py",
+        "pyroomacoustics/doa/music.py",
+        "pyroomacoustics/doa/normmusic.py",
+        "pyroomacoustics/doa/srp.py",
+        "pyroomacoustics/doa/cssm.py",
+        "pyroomacoustics/doa/waves.py",
+        "pyroomacoustics/doa/tops.py",
+        "pyroomacoustics/doa/frida.py",
+        "pyroomacoustics/doa/tools_fri_doa_plane.py",
+        "pyroomacoustics/beamforming.py",
+        "LICENSE"
+      ]
     },
     {
       "id": "odas",
@@ -19,7 +34,18 @@
       "revision": "bcb845434495e293df3d48f1203b7a86e1852449",
       "license": "MIT",
       "fetch_enabled": true,
-      "scope": "real-time localization, tracking, separation and post-filtering"
+      "scope": "real-time localization, tracking, separation and post-filtering",
+      "acquisition": "independent_source_checkout",
+      "note": "Hierarchical grids, microphone directivity and lifecycle controls must be validated for the target device.",
+      "entrypoints": [
+        "src/module/mod_ssl.c",
+        "src/module/mod_sst.c",
+        "src/module/mod_sss.c",
+        "src/signal/scan.c",
+        "src/system/freq2xcorr.c",
+        "src/system/particle2particle.c",
+        "LICENSE"
+      ]
     },
     {
       "id": "nara_wpe",
@@ -29,40 +55,73 @@
       "license": "MIT",
       "fetch_enabled": true,
       "scope": "offline, block-online and frame-online WPE",
-      "note": "Annotated tag v0.0.11 peels to this commit. Current main was separately inspected at 5fbfc3639274e5a70dffcf08e20615a38c372ebb."
+      "note": "Annotated tag v0.0.11 peels to this commit. Current main was separately inspected at 5fbfc3639274e5a70dffcf08e20615a38c372ebb.",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "LICENSE",
+        "nara_wpe/wpe.py",
+        "nara_wpe/tf_wpe.py"
+      ]
     },
     {
       "id": "asteroid",
       "url": "https://github.com/asteroid-team/asteroid.git",
       "revision": "fce87469132760fbab41c20616ea0f0e079aad38",
       "license": "MIT",
-      "fetch_enabled": false,
-      "scope": "deep source separation framework"
+      "fetch_enabled": true,
+      "scope": "deep source separation framework",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "LICENSE",
+        "asteroid/models/conv_tasnet.py",
+        "asteroid/models/dprnn_tasnet.py"
+      ]
     },
     {
       "id": "speechbrain",
       "url": "https://github.com/speechbrain/speechbrain.git",
       "revision": "89ead74d163463d30c62329a09cfdb4c54f5abc1",
       "license": "Apache-2.0",
-      "fetch_enabled": false,
-      "scope": "speech enhancement and separation recipes"
+      "fetch_enabled": true,
+      "scope": "speech enhancement and separation recipes",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "LICENSE",
+        "speechbrain/lobes/models/dual_path.py",
+        "recipes/WSJ0Mix/separation"
+      ]
     },
     {
       "id": "espnet",
       "url": "https://github.com/espnet/espnet.git",
       "revision": "be79590bb2ff26ffb01bc825c5f68cb9418b7f0d",
       "license": "Apache-2.0",
-      "fetch_enabled": false,
-      "scope": "speech enhancement, separation, dereverberation and end-to-end systems"
+      "fetch_enabled": true,
+      "scope": "speech enhancement, separation, dereverberation and end-to-end systems",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "LICENSE",
+        "espnet2/enh/layers/dnn_wpe.py",
+        "espnet2/enh/layers/beamformer.py",
+        "espnet2/enh/separator/tfgridnet_separator.py"
+      ]
     },
     {
       "id": "webrtc",
       "url": "https://webrtc.googlesource.com/src",
       "revision": "0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e",
       "license": "BSD-3-Clause",
-      "fetch_enabled": false,
+      "fetch_enabled": true,
       "scope": "AEC3 and real-time audio processing",
-      "note": "This is the AEC3 revision cited in the book. Current main was separately inspected at a3553f1c82a5580c91ad1f82baab4b11ed4b34b6. The canonical build uses depot_tools and additional dependency metadata; this lock is not a complete checkout recipe."
+      "note": "This is the AEC3 revision cited in the book. Current main was separately inspected at a3553f1c82a5580c91ad1f82baab4b11ed4b34b6. The canonical build uses depot_tools and additional dependency metadata; this lock is not a complete checkout recipe.",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "LICENSE",
+        "modules/audio_processing/aec3/echo_canceller3.cc",
+        "modules/audio_processing/aec3/subtractor.cc",
+        "modules/audio_processing/aec3/residual_echo_estimator.cc",
+        "modules/audio_processing/aec3/suppression_gain.cc"
+      ]
     },
     {
       "id": "speexdsp",
@@ -70,7 +129,13 @@
       "revision": "8e29a256ef0235ebbe7fcb8417b5ac7731eb8307",
       "license": "BSD-3-Clause",
       "fetch_enabled": true,
-      "scope": "AEC, preprocessing and resampling"
+      "scope": "AEC, preprocessing and resampling",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "COPYING",
+        "libspeexdsp/mdf.c",
+        "libspeexdsp/preprocess.c"
+      ]
     },
     {
       "id": "rnnoise",
@@ -79,7 +144,12 @@
       "license": "BSD-3-Clause",
       "fetch_enabled": true,
       "scope": "neural noise suppression",
-      "note": "Training data and model artifacts require separate review."
+      "note": "Training data and model artifacts require separate review.",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "COPYING",
+        "src/denoise.c"
+      ]
     },
     {
       "id": "portaudio",
@@ -89,7 +159,13 @@
       "license": "MIT",
       "fetch_enabled": true,
       "scope": "cross-platform real-time audio I/O",
-      "note": "The official release notes map 19.7.0 to this commit. Current main was separately inspected at 17967f32de95f2179e7f7caa9632a79c5d59a2ea."
+      "note": "The official release notes map 19.7.0 to this commit. Current main was separately inspected at 17967f32de95f2179e7f7caa9632a79c5d59a2ea. 2026-09-22 local pinned source entrypoints checked.",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "include/portaudio.h",
+        "examples",
+        "src/common"
+      ]
     },
     {
       "id": "cmsis_dsp",
@@ -97,113 +173,723 @@
       "revision": "83a2d7bc98c81b4bbe4a6f48b1f2ecf179868a0b",
       "license": "Apache-2.0",
       "fetch_enabled": true,
-      "scope": "embedded DSP kernels"
+      "scope": "embedded DSP kernels",
+      "acquisition": "independent_source_checkout",
+      "note": "2026-09-22 pinned local Q15 FIR source checked: accumulator, truncation/saturation and MVE conditional path are distinct from tutorial ties-to-even rounding.",
+      "entrypoints": [
+        "Source/FilteringFunctions/arm_fir_q15.c",
+        "Include/dsp/filtering_functions.h"
+      ]
     },
     {
       "id": "onnxruntime",
       "url": "https://github.com/microsoft/onnxruntime.git",
       "revision": "48795e0281bcaa6b3b63b28af5e078b4c41e995f",
       "license": "MIT",
-      "fetch_enabled": false,
-      "scope": "edge and mobile model inference"
+      "fetch_enabled": true,
+      "scope": "edge and mobile model inference",
+      "acquisition": "independent_source_checkout",
+      "note": "2026-09-22 local pinned C API checked; execution providers, model artifacts, thread configuration and hardware measurements remain separate deployment inputs.",
+      "entrypoints": [
+        "include/onnxruntime/core/session/onnxruntime_c_api.h",
+        "onnxruntime/core/providers",
+        "onnxruntime/core/session"
+      ]
     },
     {
       "id": "icodoa",
       "url": "https://github.com/DavidDiazGuerra/icoDOA.git",
       "revision": "04d1a89594c78ae3cf42f07d94c3737bdc1f7c82",
       "license": "AGPL-3.0",
-      "fetch_enabled": false,
+      "fetch_enabled": true,
       "scope": "research reproduction for icosahedral CNN-based DOA",
-      "note": "Index only because AGPL obligations and the historical Python/PyTorch/gpuRIR/icoCNN stack need a separate compatibility review."
+      "note": "Independent source study; AGPL obligations and historical Python/PyTorch/gpuRIR/icoCNN compatibility require review. Model weights and corpus rights are separate from source licensing.",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "1sourceTracking_icoCNN.py",
+        "acousticTrackingModels.py",
+        "acousticTrackingModules.py",
+        "acousticTrackingDataset.py",
+        "acousticTrackingLearners.py",
+        "LICENSE"
+      ]
     },
     {
       "id": "torchaudio",
       "url": "https://github.com/pytorch/audio.git",
       "revision": "b85c99ccac635a06b1afaf5284bf4c1a00c1f9b5",
       "license": "BSD-2-Clause",
-      "fetch_enabled": false,
+      "fetch_enabled": true,
       "scope": "official SoudenMVDR tutorial and audio transforms",
-      "note": "The cited main/nightly documentation is in maintenance phase and is not a stable-release compatibility promise."
+      "note": "The cited main/nightly documentation is in maintenance phase and is not a stable-release compatibility promise.",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "examples/tutorials/mvdr_tutorial.py",
+        "examples/dnn_beamformer/model.py",
+        "src/torchaudio/functional/functional.py",
+        "src/torchaudio/transforms/_multi_channel.py",
+        "LICENSE"
+      ]
     },
     {
       "id": "piva",
       "url": "https://github.com/fakufaku/piva.git",
       "revision": "7fa273e9aa597aba57067aef2e7b6c999dadef26",
       "license": "GPL-3.0",
-      "fetch_enabled": false,
+      "fetch_enabled": true,
       "scope": "AuxIVA, OverIVA, FIVE and related blind source separation",
-      "note": "Index only because source or binary redistribution has GPL obligations; native dependencies require separate review."
+      "note": "Index only because source or binary redistribution has GPL obligations; native dependencies require separate review.",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "LICENSE",
+        "piva/auxiva.py",
+        "piva/five.py"
+      ]
     },
     {
       "id": "meeteval",
       "url": "https://github.com/fgnt/meeteval.git",
       "revision": "6e3dc81284f2d6928f7ef9e620fd3b6906daa429",
       "license": "MIT",
-      "fetch_enabled": false,
+      "fetch_enabled": true,
       "scope": "cpWER, ORC-WER, MIMO-WER and DI-cpWER meeting evaluation",
-      "note": "Input transcripts and challenge datasets retain their own terms."
+      "note": "Input transcripts and challenge datasets retain their own terms. 2026-09-22 pinned local algorithm documentation and scoring entrypoints checked.",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "doc/algorithms.md",
+        "meeteval/wer/wer/cp.py",
+        "meeteval/wer/wer/orc.py",
+        "meeteval/wer/wer/time_constrained.py",
+        "meeteval/wer/preprocess.py"
+      ]
     },
     {
       "id": "filterpy",
       "url": "https://github.com/rlabbe/filterpy.git",
       "revision": "3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33",
       "license": "MIT",
-      "fetch_enabled": false,
-      "scope": "Kalman, EKF, UKF and particle-filter references"
+      "fetch_enabled": true,
+      "scope": "Kalman, EKF, UKF and particle-filter references",
+      "acquisition": "independent_source_checkout",
+      "note": "Angle residuals, timestamps and discrete process noise require explicit adaptation.",
+      "entrypoints": [
+        "filterpy/kalman/kalman_filter.py",
+        "filterpy/kalman/EKF.py",
+        "filterpy/kalman/UKF.py",
+        "filterpy/kalman/IMM.py",
+        "filterpy/monte_carlo/resampling.py",
+        "LICENSE"
+      ]
     },
     {
       "id": "stonesoup",
       "url": "https://github.com/dstl/Stone-Soup.git",
       "revision": "8d1edeb07ef8505ed065cbef435cfb5e517d9bdc",
       "license": "MIT",
-      "fetch_enabled": false,
+      "fetch_enabled": true,
       "scope": "state estimation and multi-target tracking framework",
-      "note": "Externally linked sample data is not covered automatically by the code license."
+      "note": "Externally linked sample data is not covered automatically by the code license. Point-process base-class documentation does not imply every named RFS filter is implemented.",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "stonesoup/dataassociator/neighbour.py",
+        "stonesoup/dataassociator/probability.py",
+        "stonesoup/updater/pointprocess.py",
+        "stonesoup/hypothesiser/gaussianmixture.py",
+        "stonesoup/mixturereducer/gaussianmixture.py",
+        "stonesoup/metricgenerator/ospametric.py",
+        "docs/tutorials/08_JPDATutorial.py",
+        "LICENSE"
+      ]
     },
     {
       "id": "s4m",
       "url": "https://github.com/JusperLee/S4M.git",
       "revision": "4990b3fe9d7391e59d652c5a7d2803d1354fd0ae",
       "license": "MIT",
-      "fetch_enabled": false,
+      "fetch_enabled": true,
       "scope": "state-space speech separation research code",
-      "note": "No complete training entry point, checkpoint, or dataset is bundled; upstream components and datasets need separate review."
+      "note": "No complete training entry point, checkpoint, or dataset is bundled; upstream components and datasets need separate review.",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "LICENSE",
+        "S4M.py",
+        "s4.py"
+      ]
     },
     {
       "id": "audiosep",
       "url": "https://github.com/audio-agi/audiosep.git",
       "revision": "944583f18b84589dc965de3ad77525c945334252",
       "license": "MIT",
-      "fetch_enabled": false,
+      "fetch_enabled": true,
       "scope": "language-queried universal sound separation",
-      "note": "The main checkpoint and evaluation media do not inherit a clearly stated redistribution grant from the code license."
+      "note": "The main checkpoint and evaluation media do not inherit a clearly stated redistribution grant from the code license.",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "LICENSE",
+        "pipeline.py"
+      ]
     },
     {
       "id": "sgmse",
       "url": "https://github.com/sp-uhh/sgmse.git",
       "revision": "1961cf4483e37df1bb92ccf0eb8b28bf6f44cb0e",
       "license": "MIT",
-      "fetch_enabled": false,
+      "fetch_enabled": true,
       "scope": "score-based speech enhancement and dereverberation",
-      "note": "Hosted checkpoints and every training dataset require separate permission review."
+      "note": "Hosted checkpoints and every training dataset require separate permission review.",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "LICENSE",
+        "enhancement.py",
+        "sgmse/model.py"
+      ]
     },
     {
       "id": "storm",
       "url": "https://github.com/sp-uhh/storm.git",
       "revision": "257e9636a7251ca40aa200753d5c0fe918e31879",
       "license": "MIT",
-      "fetch_enabled": false,
+      "fetch_enabled": true,
       "scope": "regression plus diffusion speech enhancement",
-      "note": "Hosted checkpoints and every training dataset require separate permission review."
+      "note": "Hosted checkpoints and every training dataset require separate permission review.",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "LICENSE",
+        "enhancement.py",
+        "sgmse/model.py"
+      ]
     },
     {
       "id": "arraydps",
       "url": "https://github.com/ArrayDPS/ArrayDPS.git",
       "revision": "750ac2b7c75458f4ca5bad203dafda528f575e55",
       "license": "MIT",
-      "fetch_enabled": false,
+      "fetch_enabled": true,
       "scope": "diffusion-prior unsupervised multichannel blind separation",
-      "note": "The checkpoint has no separate redistribution statement; SMS-WSJ generation code does not grant rights to the underlying WSJ audio."
+      "note": "The checkpoint has no separate redistribution statement; SMS-WSJ generation code does not grant rights to the underlying WSJ audio.",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "LICENSE",
+        "separate.py",
+        "src/sampler.py"
+      ]
+    },
+    {
+      "id": "doatools",
+      "url": "https://github.com/morriswmz/doatools.py.git",
+      "revision": "9469db201e0418aef6b97583ef54b6fec2769502",
+      "license": "MIT",
+      "scope": "root-MUSIC、空间平滑、源数估计、稀疏协方差定位、统计下界",
+      "fetch_enabled": true,
+      "note": "作者维护的理论研究工具；需要逐方法核对阵列和角度约定，求解器成功不等于DOA正确。",
+      "entrypoints": [
+        "doatools/estimation/music.py",
+        "doatools/estimation/preprocessing.py",
+        "doatools/estimation/source_number.py",
+        "doatools/estimation/sparse.py",
+        "LICENSE.md"
+      ]
+    },
+    {
+      "id": "sound-field-analysis",
+      "url": "https://github.com/AppliedAcousticsChalmers/sound_field_analysis-py.git",
+      "revision": "4b03ee123d98370c55f744c4f8d7c955fbc099f1",
+      "license": "MIT",
+      "scope": "球谐变换、径向滤波、球阵声场分析",
+      "fetch_enabled": true,
+      "note": "当前仓库MIT；旧论文可能描述早期GPL版本，许可绑定此提交。SOFA/HRIR与录音数据分别核对。",
+      "entrypoints": [
+        "sound_field_analysis/gen.py",
+        "sound_field_analysis/process.py",
+        "sound_field_analysis/sph.py",
+        "LICENSE"
+      ]
+    },
+    {
+      "id": "spherical-array-processing",
+      "url": "https://github.com/polarch/Spherical-Array-Processing.git",
+      "revision": "f192aac652b023ee4ab8673adce20ec13bf5450c",
+      "license": "BSD-3-Clause",
+      "scope": "球阵理论/实测编码、SH-MVDR/LCMV/MUSIC/ESPRIT、弥散度",
+      "fetch_enabled": true,
+      "note": "MATLAB；大多数函数另依赖作者Array-Response-Simulator和Spherical-Harmonic-Transform；Eigenmike测量文件与代码许可分开核对。",
+      "entrypoints": [
+        "TEST_SCRIPTS.m",
+        "arraySHTfiltersTheory_softLim.m",
+        "arraySHTfiltersMeas_regLS.m",
+        "sphMVDR.m",
+        "sphLCMV.m",
+        "sphMUSIC.m",
+        "sphESPRIT.m",
+        "LICENSE.md"
+      ]
+    },
+    {
+      "id": "spatial-audio-framework",
+      "url": "https://github.com/leomccormack/Spatial_Audio_Framework.git",
+      "revision": "18fd5aba46e20787b51f28f7197a68506c965c07",
+      "license": "ISC core; GPL-2.0 optional modules",
+      "scope": "C/C++球谐处理、array2sh、波束、声场功率图、可选粒子追踪",
+      "fetch_enabled": true,
+      "note": "只下载研究。核心ISC，saf_tracker/saf_hades等可选模块GPLv2；第三方BLAS/FFT/HRIR许可单独核对，不能把整个仓库标成纯ISC。",
+      "entrypoints": [
+        "framework/modules/saf_sh/saf_sh.h",
+        "examples/src/array2sh/array2sh.c",
+        "examples/src/beamformer/beamformer.c",
+        "examples/src/powermap/powermap.c",
+        "LICENSE.md"
+      ]
+    },
+    {
+      "id": "frida-original",
+      "url": "https://github.com/LCAV/FRIDA.git",
+      "revision": "ff5d51e498805b862c342dd216ccfffb22444b7f",
+      "license": "MIT",
+      "scope": "FRIDA原论文仿真、分辨率与录音实验",
+      "fetch_enabled": true,
+      "note": "旧Python2.7实验环境；录音另存Zenodo，取得源码不表示已取得录音许可或完成论文复现，不运行安装脚本。",
+      "entrypoints": [
+        "doa/fri.py",
+        "figure_doa_synthetic.py",
+        "figure_doa_separation.py",
+        "figure_doa_experiment.py",
+        "LICENSE"
+      ]
+    },
+    {
+      "id": "acoular",
+      "url": "https://github.com/acoular/acoular.git",
+      "revision": "13d3d7df74ac1a8135c7ec71da098cbbc03d8652",
+      "license": "BSD-3-Clause",
+      "scope": "工业声源成像：DAMAS、CLEAN-SC、CMF、移动/旋转源",
+      "fetch_enabled": true,
+      "note": "声源功率图不等于增强语音；测量校准、流场模型、FFT口径和数据许可另核对。",
+      "entrypoints": [
+        "acoular/fbeamform.py",
+        "acoular/tbeamform.py",
+        "LICENSE"
+      ]
+    },
+    {
+      "id": "lib-voice",
+      "url": "https://github.com/xmos/lib_voice.git",
+      "revision": "c9f1a9bf95cd88c7950adf4bf631c217f900ad25",
+      "license": "XMOS Public Licence v1",
+      "scope": "AEC/ADEC、IC/VNR、NS/AGC 与 xcore.ai 固件控制",
+      "fetch_enabled": true,
+      "note": "2026-09-22 官方 README、LICENSE.rst 和 git ls-remote 已核实；README v1.1.0；fwk_voice 已迁移至此。商用限定 XMOS 设备，特殊用途另有条款；本地获取保留原许可，不将其当作跨硬件宽松许可证。需要 XTC Tools 15.3.1、Python 3.11、lib_xcore_math 等依赖。",
+      "entrypoints": [
+        "lib_voice/api/aec",
+        "lib_voice/src/aec",
+        "lib_voice/api/adec",
+        "lib_voice/src/ic",
+        "lib_voice/src/vnr",
+        "lib_voice/src/ns",
+        "lib_voice/src/agc"
+      ]
+    },
+    {
+      "id": "sof",
+      "url": "https://github.com/thesofproject/sof.git",
+      "revision": "b6c6a05d52536313fe8e8752b1c4e069b1cc4002",
+      "license": "BSD-3-Clause and per-file licenses",
+      "scope": "DSP 固件中的固定时域波束、采样率转换和拓扑",
+      "fetch_enabled": true,
+      "note": "2026-09-22 官方源目录、LICENCE 和 git ls-remote 已核实；总体许可不能覆盖所有依赖，需保留逐文件声明；运行还需目标 DSP、工具链、拓扑及固件配置。",
+      "entrypoints": [
+        "src/audio/tdfb",
+        "src/audio/tdfb/tdfb_generic.c",
+        "src/audio/src",
+        "LICENCE"
+      ]
+    },
+    {
+      "id": "alsa-lib",
+      "url": "https://github.com/alsa-project/alsa-lib.git",
+      "revision": "f84cd4ced7b36fddb8e4ee24404cf7c091d27020",
+      "license": "LGPL-2.1; see individual file notices",
+      "scope": "Linux PCM 配置、时间戳、xrun 与设备恢复",
+      "fetch_enabled": true,
+      "note": "2026-09-22 官方 PCM 文档、COPYING 和 git ls-remote 已核实；运行要求 Linux 音频设备。源码本地阅读与 LGPL 库的产品链接/再分发条件分开核对。",
+      "entrypoints": [
+        "src/pcm/pcm.c",
+        "test/pcm.c",
+        "COPYING"
+      ]
+    },
+    {
+      "id": "pipewire",
+      "url": "https://github.com/PipeWire/pipewire.git",
+      "revision": "62316ae8cf659ca8e5f1ee866ae743d2438d47a4",
+      "license": "MIT; plugins and dependencies separately",
+      "scope": "Linux 音频图、AEC 四流路由、插件及调度",
+      "fetch_enabled": true,
+      "note": "2026-09-22 官方 GitHub 镜像、COPYING、1.6.9 在线文档和 git ls-remote 已核实；开发上游位于 https://gitlab.freedesktop.org/pipewire/pipewire/；WebRTC AEC 后端另有依赖和许可。",
+      "entrypoints": [
+        "src/modules/module-echo-cancel.c",
+        "spa/plugins/aec/aec-webrtc.cpp",
+        "COPYING"
+      ]
+    },
+    {
+      "id": "deepfilternet",
+      "url": "https://github.com/Rikorose/DeepFilterNet.git",
+      "revision": "d375b2d8309e0935d165700c91da9de862a99c31",
+      "license": "Apache-2.0 OR MIT",
+      "scope": "48 kHz 深度滤波增强、Rust 推理、LADSPA/PipeWire 集成",
+      "fetch_enabled": true,
+      "note": "2026-09-22 作者官方源码、双许可与 git ls-remote 已核实；下载代码不自动安装 Rust/Python 依赖，也不下载外部训练语料；模型配置和权重摘要应单独记录。",
+      "entrypoints": [
+        "DeepFilterNet/df",
+        "libDF/src",
+        "ladspa",
+        "LICENSE"
+      ]
+    },
+    {
+      "id": "silero-vad",
+      "url": "https://github.com/snakers4/silero-vad.git",
+      "revision": "60b7ffa243625ebdc1070275a29f18c87843786a",
+      "license": "MIT",
+      "scope": "8/16 kHz 状态化神经 VAD 与分段后处理",
+      "fetch_enabled": true,
+      "note": "2026-09-22 官方源码、许可证与 git ls-remote 已核实；OnnxWrapper 的 16 kHz/512 点或 8 kHz/256 点块需保留状态。模型、运行时和数据仍需记录版本及摘要；高采样率便捷抽点不替代抗混叠转换。",
+      "entrypoints": [
+        "src/silero_vad/utils_vad.py",
+        "src/silero_vad",
+        "LICENSE"
+      ]
+    },
+    {
+      "id": "libsamplerate",
+      "url": "https://github.com/libsndfile/libsamplerate.git",
+      "revision": "0844c208f683527c08ea8a80acc13b398aa9c8bf",
+      "license": "BSD-2-Clause",
+      "scope": "有状态采样率转换、连续流消费/输出长度管理",
+      "fetch_enabled": true,
+      "note": "2026-09-22 官方 README（0.2.2）、Full API、许可与 git ls-remote 已核实；锁定的是源码快照，不把 README 版本号等同于发布标签。",
+      "entrypoints": [
+        "src/samplerate.c",
+        "src",
+        "examples",
+        "tests",
+        "COPYING"
+      ]
+    },
+    {
+      "id": "tflite-micro",
+      "url": "https://github.com/tensorflow/tflite-micro.git",
+      "revision": "9f638f18154dff868e7053572f089be845b2fbdf",
+      "license": "Apache-2.0",
+      "scope": "MCU/DSP 推理、micro_speech、tensor arena 与内存记录",
+      "fetch_enabled": true,
+      "note": "2026-09-22 官方模型示例、内存文档、许可证与 git ls-remote 已核实；源码下载不含自动执行第三方依赖获取；模型与训练音频另列来源。",
+      "entrypoints": [
+        "tensorflow/lite/micro/examples/micro_speech",
+        "tensorflow/lite/micro/docs/memory_management.md",
+        "tensorflow/lite/micro/recording_micro_interpreter.h"
+      ]
+    },
+    {
+      "id": "cmsis-nn",
+      "url": "https://github.com/ARM-software/CMSIS-NN.git",
+      "revision": "1e52d6833aecc075a487005fc16e75ce4c255182",
+      "license": "Apache-2.0",
+      "scope": "Arm Cortex-M 量化神经内核与 TFLM 对照",
+      "fetch_enabled": true,
+      "note": "2026-09-22 官方 README、量化一致性说明、许可与 git ls-remote 已核实；目标内核支持、编译宏及 scratch 缓冲需独立验收。",
+      "entrypoints": [
+        "Include/arm_nnfunctions.h",
+        "Source",
+        "Tests/UnitTest"
+      ]
+    },
+    {
+      "id": "dns-challenge",
+      "url": "https://github.com/microsoft/DNS-Challenge.git",
+      "revision": "591184a9fcb2cbdec02520fed81a32bbbf9d73ff",
+      "license": "MIT for code (LICENSE-CODE); data terms separate",
+      "scope": "DNSMOS/pDNSMOS 本地评分和 DNS 数据生成说明",
+      "fetch_enabled": true,
+      "note": "2026-09-22 官方 DNSMOS 本地入口、LICENSE-CODE、主 LICENSE 和 git ls-remote 已核实；代码、模型、下载数据不可混用一个许可声明；不执行数据下载脚本。",
+      "entrypoints": [
+        "DNSMOS/dnsmos_local.py",
+        "DNSMOS/README.md",
+        "LICENSE-CODE",
+        "LICENSE"
+      ]
+    },
+    {
+      "id": "aec-challenge",
+      "url": "https://github.com/microsoft/AEC-Challenge.git",
+      "revision": "6c633d0a9d2a143a0e364899b91b06f127315b18",
+      "license": "MIT for repository code; assets separately",
+      "scope": "AECMOS 本地推理、AEC 公开基线与测试集规则",
+      "fetch_enabled": true,
+      "note": "2026-09-22 官方 README、AECMOS 本地说明、许可与 git ls-remote 已核实；Web API 不再更新。2021/2022 评分裁段规则不外推到其他年份；数据和模型分别记录。",
+      "entrypoints": [
+        "AECMOS/AECMOS_local",
+        "AECMOS/README.md",
+        "baseline",
+        "datasets"
+      ]
+    },
+    {
+      "id": "chime-utils",
+      "url": "https://github.com/chimechallenge/chime-utils.git",
+      "revision": "152882404f572d40769ef02bf91c5a9a9cfc9c78",
+      "license": "MIT",
+      "scope": "CHiME-8 DASR 数据清单、文本规范化和会议评分",
+      "fetch_enabled": true,
+      "note": "2026-09-22 挑战赛官方仓库、README Scoring、MIT 与 git ls-remote 已核实；数据生成命令会另行下载语料，源码获取时不执行；cpWER/tcpWER、缺场景策略及评测范围必须绑定该届任务。",
+      "entrypoints": [
+        "chime_utils",
+        "tests/test_normalizer.py",
+        "README.md",
+        "DATAPREP.md"
+      ]
+    },
+    {
+      "id": "ssspy",
+      "url": "https://github.com/tky823/ssspy.git",
+      "revision": "38b9389e8b1914422561f1936d9b28d042d62d2c",
+      "license": "Apache-2.0",
+      "scope": "FDICA, IVA, ILRMA, MNMF, FastMNMF and cACGMM",
+      "fetch_enabled": true,
+      "note": "NumPy-based implementations and notebooks; no model weights required for classical BSS.",
+      "entrypoints": [
+        "LICENSE",
+        "ssspy/bss/iva.py",
+        "ssspy/bss/fdica.py",
+        "ssspy/bss/ilrma.py",
+        "ssspy/bss/mnmf.py"
+      ]
+    },
+    {
+      "id": "pb_bss",
+      "url": "https://github.com/fgnt/pb_bss.git",
+      "revision": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+      "license": "MIT",
+      "scope": "cACGMM, spatial mixture models and beamforming",
+      "fetch_enabled": true,
+      "note": "Statistical model toolkit; speaker activities and a complete GSS pipeline are separate inputs/components.",
+      "entrypoints": [
+        "LICENSE",
+        "pb_bss/distribution/cacgmm.py"
+      ]
+    },
+    {
+      "id": "gss",
+      "url": "https://github.com/desh2608/gss.git",
+      "revision": "10fad18cae85e2e4342c77421abc70c9c5da23ed",
+      "license": "MIT",
+      "scope": "GPU guided source separation and meeting recipes",
+      "fetch_enabled": true,
+      "note": "Requires compatible CuPy/CUDA, Lhotse manifests or multichannel audio plus RTTM. Dataset permissions are separate.",
+      "entrypoints": [
+        "LICENSE",
+        "gss/core/enhancer.py",
+        "gss/cacgmm",
+        "gss/beamformer",
+        "gss/wpe",
+        "recipes"
+      ]
+    },
+    {
+      "id": "wpe_gpu",
+      "url": "https://github.com/desh2608/wpe.git",
+      "revision": "bd2857b5b8de36df4f436a93574c088bea142042",
+      "license": "MIT",
+      "scope": "CuPy subset of nara_wpe for GSS inference",
+      "fetch_enabled": true,
+      "note": "Only the GSS-relevant WPE subset, not every nara_wpe online interface. Requires matching CUDA/CuPy.",
+      "entrypoints": [
+        "LICENSE",
+        "wpe"
+      ]
+    },
+    {
+      "id": "dtln_aec",
+      "url": "https://github.com/breizhn/DTLN-aec.git",
+      "revision": "9d24e128b4f409db18227b8babb343016625921f",
+      "license": "MIT",
+      "scope": "Dual-signal neural AEC inference",
+      "fetch_enabled": true,
+      "note": "MIT applies to code; TFLite models and sample audio need separate asset review. Acquisition must not run inference or install dependencies.",
+      "entrypoints": [
+        "LICENSE",
+        "run_aec.py"
+      ]
+    },
+    {
+      "id": "speakerbeam",
+      "url": "https://github.com/BUTSpeechFIT/speakerbeam.git",
+      "revision": "91af02cc617afa35fedfbdbf32533012cd0a8672",
+      "license": "LicenseRef-BUT-NTT-Evaluation",
+      "scope": "Target speaker extraction using enrollment speech",
+      "fetch_enabled": false,
+      "note": "LICENSE.txt grants internal evaluation and restricts redistribution and modification. Source index only; not represented as freely redistributable open source.",
+      "entrypoints": [
+        "LICENSE.txt",
+        "src/models/convtasnet_informed.py",
+        "src/models/adapt_layers.py",
+        "src/datasets/librimix_informed.py",
+        "egs/libri2mix"
+      ]
+    },
+    {
+      "id": "metaaf",
+      "url": "https://github.com/adobe-research/MetaAF.git",
+      "revision": "56c4665bdc51c2e0595a7c0cd9b1266408adceff",
+      "license": "LicenseRef-NCSA-and-Adobe-Research",
+      "scope": "Learned adaptive-filter optimizers; AEC, WPE and beamforming research",
+      "fetch_enabled": true,
+      "note": "Acquire only metaaf/ (UIUC/NCSA, metaaf/LICENSE) and the root README. zoo/ and weights under Adobe Research License are not included. Building or executing this core has not been validated.",
+      "entrypoints": [
+        "metaaf/LICENSE",
+        "metaaf/filter.py",
+        "metaaf/core.py",
+        "metaaf/optimizer_gru.py",
+        "metaaf/meta.py",
+        "README.md"
+      ],
+      "source_paths": [
+        "metaaf/",
+        "README.md"
+      ]
+    },
+    {
+      "id": "fastmnmf_author",
+      "url": "https://github.com/sekiguchi92/SoundSourceSeparation.git",
+      "revision": "897fe87fea3d85a243d8a3fd36c2232bb0548ad3",
+      "license": "LicenseRef-Academic-Research-Only",
+      "scope": "FastMNMF1/2, AR-FastMNMF2 and joint source separation/dereverberation",
+      "fetch_enabled": false,
+      "note": "Author license permits academic research at universities/research institutions and disallows commercial or industrial use/modification without permission. Permissively licensed FastMNMF alternatives exist in pyroomacoustics and ssspy.",
+      "entrypoints": [
+        "LICENSE",
+        "src"
+      ]
+    },
+    {
+      "id": "spmamba",
+      "url": "https://github.com/JusperLee/SPMamba.git",
+      "revision": "f939f60a10db8a66aa69ec09685684307af47412",
+      "license": "Apache-2.0",
+      "scope": "TF-GridNet-related bidirectional Mamba speech separation",
+      "fetch_enabled": true,
+      "note": "Official training/inference code. Bidirectionality uses future context; Mamba CUDA dependencies, weights and data permissions are separate.",
+      "entrypoints": [
+        "LICENSE",
+        "audio_train.py",
+        "audio_test.py",
+        "configs",
+        "look2hear"
+      ]
+    },
+    {
+      "id": "mamba_tasnet",
+      "url": "https://github.com/xi-j/Mamba-TasNet.git",
+      "revision": "a35c692f27213781a11b1606c375cda1e1f0fb62",
+      "license": "GPL-3.0",
+      "scope": "Mamba-TasNet and Dual-Path Mamba",
+      "fetch_enabled": true,
+      "note": "Independent source checkout under GPL-3.0. Weights, data and redistribution obligations remain separate; no training/inference executed.",
+      "entrypoints": [
+        "LICENSE",
+        "train_wsj0mix.py",
+        "hparams/WSJ0Mix",
+        "modules",
+        "inference.ipynb"
+      ]
+    },
+    {
+      "id": "nkf_aec",
+      "url": "https://github.com/fjiang9/NKF-AEC.git",
+      "revision": "8ac58fb8fb9ced48579f9aa310745c54f98d7e1f",
+      "license": "NOASSERTION",
+      "scope": "Linear neural Kalman AEC, 16 kHz inference",
+      "fetch_enabled": false,
+      "note": "Official inference source and checkpoint, but no separate redistributable source license confirmed. Requires reference delay compensation; distinct from NeuralKalman.",
+      "entrypoints": [
+        "README.md",
+        "src/nkf.py"
+      ]
+    },
+    {
+      "id": "fn-ssl-ipdnet",
+      "url": "https://github.com/Audio-WestlakeU/FN-SSL.git",
+      "revision": "76fcb281be92caf068c712dfb015e354f437260f",
+      "license": "MIT stated in README; complete license text and third-party notices not established",
+      "scope": "Official FN-SSL and IPDnet direct-path inter-channel phase difference estimation",
+      "fetch_enabled": false,
+      "note": "Author README states MIT but full license terms and acknowledged Cross3D/icoCNN-derived simulation code notices require further verification before automatic redistribution. Index-only; checkpoints and LibriSpeech/Noise92/LOCATA/RealMAN data are separate. IPDnet fixed-array filename is literally FixedAarryIPDnet.py.",
+      "entrypoints": [
+        "README.md",
+        "IPDnet/README.md",
+        "IPDnet/FixedAarryIPDnet.py",
+        "IPDnet/VariableArrayIPDnet.py",
+        "IPDnet/Module.py",
+        "IPDnet/Opt.py",
+        "IPDnet/Simu.py",
+        "IPDnet/runIPDnetOn.py",
+        "IPDnet/runIPDnetOff.py"
+      ]
+    },
+    {
+      "id": "dcase2022-seld",
+      "url": "https://github.com/sharathadavanne/seld-dcase2022.git",
+      "revision": "c8adb1d3a5a35de2d6c7b6d19e01ad455eef3986",
+      "license": "No explicit redistribution license established from inspected official tree and source header",
+      "scope": "DCASE2022 Task3 multi-ACCDOA/ADPIT and SALSA-lite SELD baseline",
+      "fetch_enabled": false,
+      "note": "Official challenge-linked baseline. Index-only while licensing remains unestablished; public visibility is not blanket redistribution permission. STARSS22 recording rights separate. Default quick_test is a smoke run, not paper reproduction.",
+      "entrypoints": [
+        "README.md",
+        "parameters.py",
+        "seldnet_model.py",
+        "train_seldnet.py",
+        "cls_feature_class.py",
+        "cls_data_generator.py",
+        "SELD_evaluation_metrics.py"
+      ]
+    },
+    {
+      "id": "dcase2025-stereo-seld",
+      "url": "https://github.com/partha2409/DCASE2025_seld_baseline.git",
+      "revision": "42a48b6456b73be35ad0e1a9ffeb6ceef83ae0bd",
+      "license": "No explicit redistribution license established from inspected official tree and source header",
+      "scope": "DCASE2025 Task3 stereo azimuth/distance SELD; optional audiovisual onscreen/offscreen classification",
+      "fetch_enabled": false,
+      "note": "Index-only. This two-channel task is not the same 3D multi-channel setting as DCASE2022. Source model.py uses bidirectional GRU; online causality is not established. Data/model rights separate.",
+      "entrypoints": [
+        "README.md",
+        "model.py",
+        "main.py",
+        "parameters.py",
+        "loss.py",
+        "inference.py",
+        "metrics.py"
+      ]
+    },
+    {
+      "id": "notsofar1",
+      "url": "https://github.com/microsoft/NOTSOFAR1-Challenge.git",
+      "revision": "6f58e08b008f7530ba4141f0aeb02447c70b6fd7",
+      "license": "MIT code; DATA_LICENSE and dataset-version restrictions separate",
+      "fetch_enabled": true,
+      "scope": "Continuous speech separation training and inference for NOTSOFAR-1 meetings",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "LICENSE",
+        "DATA_LICENSE",
+        "run_inference.py",
+        "run_training_css_local.py",
+        "css/training/train.py",
+        "css/training/conformer_wrapper.py"
+      ],
+      "note": "Source inspection only. Inference entrypoint automatically downloads models/data; it is not executed. README warns dev-set-2 is challenge-only and removed for legal reasons. Dataset availability/terms do not follow code MIT license."
     }
   ]
 }

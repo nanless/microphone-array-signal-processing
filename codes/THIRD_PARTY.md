@@ -1,54 +1,94 @@
 # 第三方实现与工业生态索引
 
-以下条目均指向维护者的官方仓库，并固定到 2026-09-22 核实的完整提交。固定提交用于定位本轮调查所见
-代码，不表示本书替这些项目承诺兼容性、安全性或长期维护。许可证列只概括**代码仓库**；模型权重、
-训练集、测试集、示例录音和商标需分别检查。
+核实日期：2026-09-22。此索引包含 56 个官方项目；本次已在 `codes/upstream/_downloads/` 取得并核验 50 个独立源码工作区，另 6 项仅登记来源。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。
 
-| 项目 | 本书中的用途 | 核实提交 | 代码许可证 | 本仓库处理方式 |
-|---|---|---|---|---|
-| [pyroomacoustics](https://github.com/LCAV/pyroomacoustics) | 房间仿真、STFT、DOA、波束和 BSS 参考 | 0.10.0：`0dd39f2614b7fc44b2cc63dbe7d60f4641068890` | MIT | 可按需获取；与正文复现包一致 |
-| [ODAS](https://github.com/introlab/odas) | C 语言实时定位、追踪、分离与后滤波链 | `bcb845434495e293df3d48f1203b7a86e1852449` | MIT | 可按需获取；设备配置与阵列标定另做 |
-| [nara_wpe](https://github.com/fgnt/nara_wpe) | 离线、块在线和逐帧在线 WPE 参考 | 0.0.11：`a166779cca2088817e330481bd20af1a2c598555` | MIT | 可按需获取；与正文示例包一致 |
-| [Asteroid](https://github.com/asteroid-team/asteroid) | 深度语音分离训练与评测框架 | `fce87469132760fbab41c20616ea0f0e079aad38` | MIT | 大型框架，只索引 |
-| [SpeechBrain](https://github.com/speechbrain/speechbrain) | 语音增强、分离和训练配方参考 | `89ead74d163463d30c62329a09cfdb4c54f5abc1` | Apache-2.0 | 大型框架，只索引 |
-| [ESPnet](https://github.com/espnet/espnet) | WPE、分离、增强与端到端语音系统参考 | `be79590bb2ff26ffb01bc825c5f68cb9418b7f0d` | Apache-2.0 | 大型框架，只索引 |
-| [WebRTC](https://webrtc.googlesource.com/src) | AEC3、噪声抑制、增益控制和实时音频链 | AEC3 正文：`0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e` | BSD-3-Clause | 大型多仓构建，只索引；当前主线快照另记入锁文件说明 |
-| [SpeexDSP](https://gitlab.xiph.org/xiph/speexdsp) | 经典 AEC、预处理和重采样工程参考 | `8e29a256ef0235ebbe7fcb8417b5ac7731eb8307` | BSD-3-Clause | 可按需获取 |
-| [RNNoise](https://gitlab.xiph.org/xiph/rnnoise) | 轻量循环神经网络降噪参考 | `70f1d256acd4b34a572f999a05c87bf00b67730d` | BSD-3-Clause | 可按需获取；训练数据与模型文件另核对 |
-| [PortAudio](https://github.com/PortAudio/portaudio) | 跨平台音频设备与回调线程接口 | 19.7.0：`3f7bee79a65327d2e0965e8a74299723ed6f072d` | MIT | 可按需获取；遵守回调实时约束 |
-| [CMSIS-DSP](https://github.com/ARM-software/CMSIS-DSP) | Arm MCU/DSP 上的滤波、FFT 和矩阵内核 | `83a2d7bc98c81b4bbe4a6f48b1f2ecf179868a0b` | Apache-2.0 | 可按需获取；目标核与编译选项另验收 |
-| [ONNX Runtime](https://github.com/microsoft/onnxruntime) | 边缘推理、线程和移动端部署参考 | `48795e0281bcaa6b3b63b28af5e078b4c41e995f` | MIT | 大型项目，只索引；模型算子和许可证另核对 |
-| [icoDOA](https://github.com/DavidDiazGuerra/icoDOA) | 二十面体卷积网络 DOA 论文复现 | `04d1a89594c78ae3cf42f07d94c3737bdc1f7c82` | AGPL-3.0 | 只索引；历史 Python/PyTorch/gpuRIR/icoCNN 环境与许可义务另核对 |
-| [torchaudio](https://github.com/pytorch/audio) | 官方 SoudenMVDR 教程和音频变换参考 | `b85c99ccac635a06b1afaf5284bf4c1a00c1f9b5` | BSD-2-Clause | 只索引；正文链接为 main/nightly，项目已进入维护阶段，不当作稳定 API 承诺 |
-| [piva](https://github.com/fakufaku/piva) | AuxIVA、OverIVA、FIVE 等盲源分离 | `7fa273e9aa597aba57067aef2e7b6c999dadef26` | GPL-3.0 | 只索引；源码/二进制分发义务和原生依赖另核对 |
-| [MeetEval](https://github.com/fgnt/meeteval) | cpWER、ORC-WER、MIMO-WER、DI-cpWER 会议评分 | `6e3dc81284f2d6928f7ef9e620fd3b6906daa429` | MIT | 只索引；转写和挑战数据许可另核对 |
-| [FilterPy](https://github.com/rlabbe/filterpy) | Kalman、EKF、UKF、粒子滤波参考 | `3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33` | MIT | 只索引；与本书角度环绕接口不同 |
-| [Stone Soup](https://github.com/dstl/Stone-Soup) | 状态估计和多目标追踪框架 | `8d1edeb07ef8505ed065cbef435cfb5e517d9bdc` | MIT | 只索引；外链示例数据另核对 |
-| [S4M](https://github.com/JusperLee/S4M) | 状态空间语音分离论文代码 | `4990b3fe9d7391e59d652c5a7d2803d1354fd0ae` | MIT | 只索引；没有完整训练入口、权重或数据 |
-| [AudioSep](https://github.com/audio-agi/audiosep) | 自然语言查询的通用声音分离 | `944583f18b84589dc965de3ad77525c945334252` | MIT | 只索引；主权重未见独立再分发许可，评测媒体另核对 |
-| [SGMSE+](https://github.com/sp-uhh/sgmse) | 基于分数/扩散的增强与去混响 | `1961cf4483e37df1bb92ccf0eb8b28bf6f44cb0e` | MIT | 只索引；托管权重和各训练集另核对 |
-| [StoRM](https://github.com/sp-uhh/storm) | 回归加扩散的增强与去混响 | `257e9636a7251ca40aa200753d5c0fe918e31879` | MIT | 只索引；托管权重和各训练集另核对 |
-| [ArrayDPS](https://github.com/ArrayDPS/ArrayDPS) | 扩散先验驱动的无监督多通道盲分离 | `750ac2b7c75458f4ca5bad203dafda528f575e55` | MIT | 只索引；checkpoint 许可未单列，WSJ 原始语料权利不随代码转移 |
+“已取得”只说明来源、提交、工作区状态和指定入口符合清单，不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
-## 怎么选参考实现
+## 官方源码与用途
 
-先确定要复现的层级。只核对式子时，优先运行本仓库的小规模 NumPy 基线；研究论文系统时，选择论文
-作者或项目维护者的实现，并固定提交、配置、模型和数据划分；设备实时链路则要从音频 I/O、时钟、
-回调线程和遥测开始，不能先在离线脚本上得到一个实时系数就结束。
+项目链接定位官方仓库的已核实版本。表中的许可证仅概括相应代码范围；依赖、模型、录音和数据集分别检查。
 
-PortAudio 的官方回调接口明确要求避免内存分配、锁、文件和网络等可能无界阻塞的操作。把 NumPy 教学
-函数直接放入音频回调，通常会违反这一约束。可行结构是：回调只搬运固定大小缓冲和记录轻量时间戳，
-处理线程消费缓冲；队列积压、欠载、超期和重同步都进入遥测。
+| 项目与固定版本 | 对应算法或工程功能 | 代码许可摘要 | 本地获取范围 |
+|---|---|---|---|
+| [pyroomacoustics](https://github.com/LCAV/pyroomacoustics/tree/0dd39f2614b7fc44b2cc63dbe7d60f4641068890) | 房间仿真、STFT、DOA、波束与盲分离 | MIT | 已取得独立源码 |
+| [odas](https://github.com/introlab/odas/tree/bcb845434495e293df3d48f1203b7a86e1852449) | 定位、追踪、分离与后滤波的实时 C 链路 | MIT | 已取得独立源码 |
+| [nara_wpe](https://github.com/fgnt/nara_wpe/tree/a166779cca2088817e330481bd20af1a2c598555) | 离线、块在线和逐帧在线 WPE | MIT | 已取得独立源码 |
+| [asteroid](https://github.com/asteroid-team/asteroid/tree/fce87469132760fbab41c20616ea0f0e079aad38) | Conv-TasNet、DPRNN 与训练配方 | MIT | 已取得独立源码 |
+| [speechbrain](https://github.com/speechbrain/speechbrain/tree/89ead74d163463d30c62329a09cfdb4c54f5abc1) | SepFormer、增强与分离训练配方 | Apache-2.0 | 已取得独立源码 |
+| [espnet](https://github.com/espnet/espnet/tree/be79590bb2ff26ffb01bc825c5f68cb9418b7f0d) | WPE、波束、TF-GridNet 与语音系统 | Apache-2.0 | 已取得独立源码 |
+| [webrtc](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e) | AEC3、NS、VAD、AGC2 及音频处理状态 | BSD-3-Clause | 已取得独立源码 |
+| [speexdsp](https://gitlab.xiph.org/xiph/speexdsp/-/tree/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307) | MDF 回声消除、预处理及重采样 | BSD-3-Clause | 已取得独立源码 |
+| [rnnoise](https://gitlab.xiph.org/xiph/rnnoise/-/tree/70f1d256acd4b34a572f999a05c87bf00b67730d) | 循环网络降噪 | BSD-3-Clause | 已取得独立源码 |
+| [portaudio](https://github.com/PortAudio/portaudio/tree/3f7bee79a65327d2e0965e8a74299723ed6f072d) | 设备输入输出、回调与流状态 | MIT | 已取得独立源码 |
+| [cmsis_dsp](https://github.com/ARM-software/CMSIS-DSP/tree/83a2d7bc98c81b4bbe4a6f48b1f2ecf179868a0b) | FFT、滤波与矩阵运算内核 | Apache-2.0 | 已取得独立源码 |
+| [onnxruntime](https://github.com/microsoft/onnxruntime/tree/48795e0281bcaa6b3b63b28af5e078b4c41e995f) | 算子、执行提供程序与线程调度 | MIT | 已取得独立源码 |
+| [icodoa](https://github.com/DavidDiazGuerra/icoDOA/tree/04d1a89594c78ae3cf42f07d94c3737bdc1f7c82) | 二十面体卷积定位及追踪 | AGPL-3.0 | 已取得独立源码 |
+| [torchaudio](https://github.com/pytorch/audio/tree/b85c99ccac635a06b1afaf5284bf4c1a00c1f9b5) | SoudenMVDR 教程与多通道接口 | BSD-2-Clause | 已取得独立源码 |
+| [piva](https://github.com/fakufaku/piva/tree/7fa273e9aa597aba57067aef2e7b6c999dadef26) | AuxIVA、OverIVA、FIVE 与更新规则 | GPL-3.0 | 已取得独立源码 |
+| [meeteval](https://github.com/fgnt/meeteval/tree/6e3dc81284f2d6928f7ef9e620fd3b6906daa429) | 说话人、排列及时间约束的会议评分 | MIT | 已取得独立源码 |
+| [filterpy](https://github.com/rlabbe/filterpy/tree/3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33) | KF、EKF、UKF、IMM 与重采样 | MIT | 已取得独立源码 |
+| [stonesoup](https://github.com/dstl/Stone-Soup/tree/8d1edeb07ef8505ed065cbef435cfb5e517d9bdc) | 多目标关联、点过程与 OSPA | MIT | 已取得独立源码 |
+| [s4m](https://github.com/JusperLee/S4M/tree/4990b3fe9d7391e59d652c5a7d2803d1354fd0ae) | 状态空间分离模型；不是完整训练配方 | MIT | 已取得独立源码 |
+| [audiosep](https://github.com/audio-agi/audiosep/tree/944583f18b84589dc965de3ad77525c945334252) | 文本查询条件的声音分离 | MIT | 已取得独立源码 |
+| [sgmse](https://github.com/sp-uhh/sgmse/tree/1961cf4483e37df1bb92ccf0eb8b28bf6f44cb0e) | 分数模型语音增强与去混响 | MIT | 已取得独立源码 |
+| [storm](https://github.com/sp-uhh/storm/tree/257e9636a7251ca40aa200753d5c0fe918e31879) | 回归与扩散的两阶段增强 | MIT | 已取得独立源码 |
+| [arraydps](https://github.com/ArrayDPS/ArrayDPS/tree/750ac2b7c75458f4ca5bad203dafda528f575e55) | 扩散先验多通道盲分离 | MIT | 已取得独立源码 |
+| [doatools](https://github.com/morriswmz/doatools.py/tree/9469db201e0418aef6b97583ef54b6fec2769502) | 源数估计、root-MUSIC、稀疏定位与下界 | MIT | 已取得独立源码 |
+| [sound-field-analysis](https://github.com/AppliedAcousticsChalmers/sound_field_analysis-py/tree/4b03ee123d98370c55f744c4f8d7c955fbc099f1) | 球谐变换、径向滤波及球阵声场 | MIT | 已取得独立源码 |
+| [spherical-array-processing](https://github.com/polarch/Spherical-Array-Processing/tree/f192aac652b023ee4ab8673adce20ec13bf5450c) | 球谐编码、SH-MVDR/LCMV/MUSIC/ESPRIT | BSD-3-Clause | 已取得独立源码 |
+| [spatial-audio-framework](https://github.com/leomccormack/Spatial_Audio_Framework/tree/18fd5aba46e20787b51f28f7197a68506c965c07) | C/C++ 球阵处理、功率图与可选追踪 | ISC core; GPL-2.0 optional modules | 已取得独立源码 |
+| [frida-original](https://github.com/LCAV/FRIDA/tree/ff5d51e498805b862c342dd216ccfffb22444b7f) | FRIDA 原论文仿真和录音实验 | MIT | 已取得独立源码 |
+| [acoular](https://github.com/acoular/acoular/tree/13d3d7df74ac1a8135c7ec71da098cbbc03d8652) | DAMAS、CLEAN-SC、CMF 与移动声源成像 | BSD-3-Clause | 已取得独立源码 |
+| [lib-voice](https://github.com/xmos/lib_voice/tree/c9f1a9bf95cd88c7950adf4bf631c217f900ad25) | XMOS AEC、IC、NS、AGC 语音前端 | XMOS Public Licence v1 | 已取得独立源码 |
+| [sof](https://github.com/thesofproject/sof/tree/b6c6a05d52536313fe8e8752b1c4e069b1cc4002) | DSP 固件、拓扑与音频缓冲 | BSD-3-Clause and per-file licenses | 已取得独立源码 |
+| [alsa-lib](https://github.com/alsa-project/alsa-lib/tree/f84cd4ced7b36fddb8e4ee24404cf7c091d27020) | PCM 设备、采样格式及环形缓冲 | LGPL-2.1; see individual file notices | 已取得独立源码 |
+| [pipewire](https://github.com/PipeWire/pipewire/tree/62316ae8cf659ca8e5f1ee866ae743d2438d47a4) | 图调度、时钟域及低延迟音频 | MIT; plugins and dependencies separately | 已取得独立源码 |
+| [deepfilternet](https://github.com/Rikorose/DeepFilterNet/tree/d375b2d8309e0935d165700c91da9de862a99c31) | 深度滤波、流式状态与 LADSPA | Apache-2.0 OR MIT | 已取得独立源码 |
+| [silero-vad](https://github.com/snakers4/silero-vad/tree/60b7ffa243625ebdc1070275a29f18c87843786a) | 神经 VAD 与固定块状态 | MIT | 已取得独立源码 |
+| [libsamplerate](https://github.com/libsndfile/libsamplerate/tree/0844c208f683527c08ea8a80acc13b398aa9c8bf) | 有状态采样率转换 | BSD-2-Clause | 已取得独立源码 |
+| [tflite-micro](https://github.com/tensorflow/tflite-micro/tree/9f638f18154dff868e7053572f089be845b2fbdf) | 静态内存与 MCU 推理 | Apache-2.0 | 已取得独立源码 |
+| [cmsis-nn](https://github.com/ARM-software/CMSIS-NN/tree/1e52d6833aecc075a487005fc16e75ce4c255182) | 量化神经算子 | Apache-2.0 | 已取得独立源码 |
+| [dns-challenge](https://github.com/microsoft/DNS-Challenge/tree/591184a9fcb2cbdec02520fed81a32bbbf9d73ff) | 降噪挑战配方及 DNSMOS | MIT for code (LICENSE-CODE); data terms separate | 已取得独立源码 |
+| [aec-challenge](https://github.com/microsoft/AEC-Challenge/tree/6c633d0a9d2a143a0e364899b91b06f127315b18) | 回声挑战与 AECMOS | MIT for repository code; assets separately | 已取得独立源码 |
+| [chime-utils](https://github.com/chimechallenge/chime-utils/tree/152882404f572d40769ef02bf91c5a9a9cfc9c78) | 会议数据整理、活动与评测工具 | MIT | 已取得独立源码 |
+| [ssspy](https://github.com/tky823/ssspy/tree/38b9389e8b1914422561f1936d9b28d042d62d2c) | FDICA、IVA、ILRMA、MNMF 与尺度恢复 | Apache-2.0 | 已取得独立源码 |
+| [pb_bss](https://github.com/fgnt/pb_bss/tree/10acc347fc9ea21e3d312806a0bd751d0d0af183) | 空间聚类、GEV、BAN 与波束参考 | MIT | 已取得独立源码 |
+| [gss](https://github.com/desh2608/gss/tree/10fad18cae85e2e4342c77421abc70c9c5da23ed) | 活动引导分离及 GPU 批处理 | MIT | 已取得独立源码 |
+| [wpe_gpu](https://github.com/desh2608/wpe/tree/bd2857b5b8de36df4f436a93574c088bea142042) | CuPy 离线 WPE 与 GPU-GSS 去混响 | MIT | 已取得独立源码 |
+| [dtln_aec](https://github.com/breizhn/DTLN-aec/tree/9d24e128b4f409db18227b8babb343016625921f) | 双信号处理域的神经 AEC | MIT | 已取得独立源码 |
+| [speakerbeam](https://github.com/BUTSpeechFIT/speakerbeam/tree/91af02cc617afa35fedfbdbf32533012cd0a8672) | 目标说话人提取的受限评测实现 | LicenseRef-BUT-NTT-Evaluation | 仅来源索引 |
+| [metaaf](https://github.com/adobe-research/MetaAF/tree/56c4665bdc51c2e0595a7c0cd9b1266408adceff) | 可学习更新规则的核心库 | LicenseRef-NCSA-and-Adobe-Research | 已取得 metaaf/ 核心与 README |
+| [fastmnmf_author](https://github.com/sekiguchi92/SoundSourceSeparation/tree/897fe87fea3d85a243d8a3fd36c2232bb0548ad3) | FastMNMF 与自回归联合模型的作者实验 | LicenseRef-Academic-Research-Only | 仅来源索引 |
+| [spmamba](https://github.com/JusperLee/SPMamba/tree/f939f60a10db8a66aa69ec09685684307af47412) | 空间域与时序状态空间分离 | Apache-2.0 | 已取得独立源码 |
+| [mamba_tasnet](https://github.com/xi-j/Mamba-TasNet/tree/a35c692f27213781a11b1606c375cda1e1f0fb62) | Mamba 与 TasNet 分离实现 | GPL-3.0 | 已取得独立源码 |
+| [nkf_aec](https://github.com/fjiang9/NKF-AEC/tree/8ac58fb8fb9ced48579f9aa310745c54f98d7e1f) | 神经 Kalman AEC 作者研究代码 | NOASSERTION | 仅来源索引 |
+| [fn-ssl-ipdnet](https://github.com/Audio-WestlakeU/FN-SSL/tree/76fcb281be92caf068c712dfb015e354f437260f) | 直接路径 IPD 估计与定位 | MIT stated in README; complete license text and third-party notices not established | 仅来源索引 |
+| [dcase2022-seld](https://github.com/sharathadavanne/seld-dcase2022/tree/c8adb1d3a5a35de2d6c7b6d19e01ad455eef3986) | multi-ACCDOA、ADPIT 与 SELD | No explicit redistribution license established from inspected official tree and source header | 仅来源索引 |
+| [dcase2025-stereo-seld](https://github.com/partha2409/DCASE2025_seld_baseline/tree/42a48b6456b73be35ad0e1a9ffeb6ceef83ae0bd) | 双通道方位/距离与视听 SELD | No explicit redistribution license established from inspected official tree and source header | 仅来源索引 |
+| [notsofar1](https://github.com/microsoft/NOTSOFAR1-Challenge/tree/6f58e08b008f7530ba4141f0aeb02447c70b6fd7) | 连续语音分离训练、会议推理与转写基线 | MIT code; DATA_LICENSE and dataset-version restrictions separate | 已取得独立源码 |
 
-WebRTC AEC3 是带延迟估计、双讲/近端检测、状态控制、线性与非线性处理的系统，不等于把 NLMS 换成
-更长滤波器。RNNoise 是降噪参考，不替代播放参考驱动的 AEC。ODAS 提供完整空间音频链路，但阵列坐标、
-设备通道顺序和现场标定仍决定结果是否可信。
+## 不能混同的许可范围
 
-## 许可证和分发检查
+- **MetaAF**：仅取得 `metaaf/` 核心及 README。核心许可为 University of Illinois/NCSA；`zoo/` 和权重的 Adobe Research License 单独处理，未随核心下载。核心可读不等于任务配方和模型已经齐备。
+- **Spatial Audio Framework**：核心 ISC，部分可选模块 GPL-2.0。不能用核心许可描述全部模块。
+- **icoDOA、piva、Mamba-TasNet、ALSA**：已取得各自许可下的独立源码用于研究；AGPL/GPL/LGPL 的义务不能因放在下载目录而消失。这里没有把这些项目合并或重新授权为本书代码。
+- **SpeakerBeam、FastMNMF 作者整库**：所核实实现分别有评测或学术用途限制，未自动获取。算法本身与某一实现的限制要分开；FastMNMF 另有已取得的 pyroomacoustics 实现。
+- **NKF-AEC、FN-SSL/IPDnet、DCASE 2022/2025 基线**：完整授权依据或第三方声明尚未建立，保留官方源码定位，不从“公开可见”推断完整使用与分发权限。
+- **NOTSOFAR-1、DNS、AEC 和 CHiME**：代码与数据的条款分开。NOTSOFAR-1 的 README 还对 dev-set-2 作了移除及用途说明，不能只看根目录数据许可便假定所有历史版本均可取得。推理脚本可能自动下载模型和数据，本次未执行。
+- **S4M、AudioSep、SGMSE、StoRM、ArrayDPS**：取得模型定义或推理代码，不等于取得完整训练配方、检查点与训练语料。是否因果及运行速度也必须绑定配置再测。
 
-1. 先读目标提交内的 `LICENSE`、`COPYING`、`NOTICE`，再读依赖和子模块的许可。
-2. 代码、权重、数据和示例媒体分别登记；不要从代码许可证推断权重或数据的权限。
-3. 若要复制源码进本仓库，保留原始许可和版权声明，记录修改；当前仓库自身还没有明确根许可证，
-   因而本书默认只提供链接和按需获取工具。
-4. AGPL、非商业、研究限定、无许可证或来源不唯一的项目只作索引，除非维护者先确定兼容的分发方案。
-5. 上线前重新核实版本和许可证；本表的日期不是永久结论。
+上述判断绑定表中提交。若要重新分发或用于产品，应读取相应提交的 LICENSE、COPYING、NOTICE、文件头及依赖许可；本表不是法律意见。本仓库尚无明确根许可证，不能据此替任何来源授予新的权利。
+
+## 本地源码怎样保存
+
+获取工具只处理锁定清单中的匿名 HTTPS 地址和完整提交号。下载目录被 Git 忽略，因此源码确实存在本机 `codes/` 下，但不会随主仓库普通提交一起上传。其他读者可用同一清单和获取命令重建这些独立目录；原始许可文件保留在各目录内。
+
+新的工作区使用稀疏检出，跳过常见音频、模型和压缩包扩展名，不拉取 LFS 对象或子模块。扩展名过滤不等于识别了所有数据，Git 对象中也可能包含上游内嵌资产。既有完整工作区保留，不为了统一目录形态覆盖或删除其中内容。
+
+WebRTC 等大型项目当前只有主源码工作区，未运行其多仓依赖工具；CMSIS、SOF 与推理运行时也没有进行目标板编译。源码入口已核对与依赖齐全是两个不同结论。
+
+## 运行验证的范围
+
+[SOURCE_STATUS.json](SOURCE_STATUS.json) 由源码核对工具生成，其中 `execution: not_run` 表示该工具不执行外部项目。方法级实验另行记录：本次已运行 [WPE 对照](examples/compare_wpe_reference.py)，对照的是 nara_wpe 0.0.11 的离线有效帧计算，不是对整个项目或语音质量的认证。
+
+设备链路应依次检查采集时钟、播放参考、缓冲状态、算法状态与输出评分。回调线程不能直接承担不受控的 NumPy 分配、锁、文件或网络操作；工业实现的细节见[部署研究](research/03_industrial_deployment.md)和[复现步骤](research/04_source_reproduction.md)。

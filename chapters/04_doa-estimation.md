@@ -501,8 +501,19 @@ $$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$
 
 **第 6 步：对照——候选方向不匹配时投影非零**。试 $\theta=30°$：$\psi=\pi\sin30°=\pi/2$，$\vec{a}(30°)=[1,\ e^{+\mathrm{j}\pi/2},\ e^{+\mathrm{j}\pi}]^\top=[1,\ \mathrm{j},\ -1]^\top$。逐个算：
 
-$$\vec{a}^H(30°)\,\vec{e}_2=\frac{1}{\sqrt2}\big(1\times1+(-\mathrm{j})\times(-1)+(-1)\times0\big)=\frac{1+\mathrm{j}}{\sqrt2}\ \Rightarrow\ \Big|\frac{1+\mathrm{j}}{\sqrt2}\Big|^2=1$$
-$$\vec{a}^H(30°)\,\vec{e}_3=\frac{1}{\sqrt6}\big(1\times1+(-\mathrm{j})\times1+(-1)\times(-2)\big)=\frac{3-\mathrm{j}}{\sqrt6}\ \Rightarrow\ \Big|\frac{3-\mathrm{j}}{\sqrt6}\Big|^2=\frac53$$
+$$\begin{aligned}
+\vec{a}^H(30°)\,\vec{e}_2
+&=\frac{1}{\sqrt2}\big(1\times1+(-\mathrm{j})\times(-1)+(-1)\times0\big)\\
+&=\frac{1+\mathrm{j}}{\sqrt2},\\
+\Big|\frac{1+\mathrm{j}}{\sqrt2}\Big|^2&=1.
+\end{aligned}$$
+
+$$\begin{aligned}
+\vec{a}^H(30°)\,\vec{e}_3
+&=\frac{1}{\sqrt6}\big(1\times1+(-\mathrm{j})\times1+(-1)\times(-2)\big)\\
+&=\frac{3-\mathrm{j}}{\sqrt6},\\
+\Big|\frac{3-\mathrm{j}}{\sqrt6}\Big|^2&=\frac53.
+\end{aligned}$$
 
 分母 $=1+\frac53=\frac83\approx2.667\ne0$，伪谱 $P_{MU}(30°)=\dfrac{1}{8/3}=\dfrac38=0.375$。0° 处在理想无噪模型下趋于无穷大，而 30° 处是有限值 0.375；数值上对应“匹配方向的噪声子空间投影为零，不匹配方向的投影非零”。实际有限快拍和噪声会使峰值有限。
 
@@ -601,11 +612,19 @@ MUSIC、ESPRIT 的基本推导采用窄带假设：在单个频点内，导向�
 
 最小比较应在同一批多通道数据上生成相同分辨率的 SRP-PHAT 球面图，以直接取峰为基线，再训练 icoDOA，并在未参与训练的旋转和房间上用同一角误差与检出规则比较。若没有这些数据覆盖或算力，解析 SRP-PHAT 更适合作为可解释基线。算法定义、60 个离散旋转等变性和 soft-argmax 输出见 [Díaz-Guerra、Miguel 与 Beltrán 的原论文](https://doi.org/10.1109/TASLP.2022.3224282 "citation")。
 
-官方 [icoDOA 代码仓库](https://github.com/DavidDiazGuerra/icoDOA "citation")给出的最小入口是 `1sourceTracking_icoCNN.py`。README 记录的验证环境为 Python 3.8.1、PyTorch 1.8.1，并依赖 gpuRIR；合成训练需准备 LibriSpeech，实录测试需准备 LOCATA，输入图分辨率由脚本参数 `r` 控制，预训练模型和对应结果位于 `models/`、`results/`。这些版本和路径是仓库的复现口径，不是对其他版本的兼容性保证。该仓库采用 [AGPL-3.0](https://github.com/DavidDiazGuerra/icoDOA/blob/master/LICENSE "citation")，并明确定位为论文复现代码而非通用软件库；本书只给官方链接，不复制其源码。许可证与环境信息核实于 2026-09-22，当日 `master` 的完整提交为 `04d1a89594c78ae3cf42f07d94c3737bdc1f7c82`；实际使用前仍应复查目标提交及模型、数据集的附加条款。
+官方 [icoDOA 代码仓库](https://github.com/DavidDiazGuerra/icoDOA "citation")给出的最小入口是 `1sourceTracking_icoCNN.py`。README 记录的验证环境为 Python 3.8.1、PyTorch 1.8.1，并依赖 gpuRIR；合成训练需准备 LibriSpeech，实录测试需准备 LOCATA，输入图分辨率由脚本参数 `r` 控制，预训练模型和对应结果位于 `models/`、`results/`。这些版本和路径是仓库的复现口径，不是对其他版本的兼容性保证。
+
+该仓库采用 [AGPL-3.0](https://github.com/DavidDiazGuerra/icoDOA/blob/master/LICENSE "citation")，并明确定位为论文复现代码而非通用软件库。本书将固定版本源码保留在独立的 `codes/upstream/_downloads/icodoa/` 研究目录，保留上游许可，不将其改标为本书教学代码的许可，也不把模型或录音授权与源码授权合并。许可证与环境信息核实于 2026-09-22，完整提交为 `04d1a89594c78ae3cf42f07d94c3737bdc1f7c82`；取得源码不代表本机已经完成训练或论文复现。
 
 **数据驱动结果的比较范围**：定位网络必须在相同数据集、阵列、信噪比、混响、训练数据和误差指标下比较。上表只归纳输入与输出形式，不给出跨论文排名。卷积空间谱定位可参见 Chakrabarty & Habets [期刊论文](https://doi.org/10.1109/JSTSP.2019.2901664 "citation")；IPDnet 见 Wang、Yang 与 Li 的 [IEEE/ACM TASLP 2024 正式论文](https://doi.org/10.1109/TASLP.2024.3507560 "citation")；ACCDOA 见 [Shimada et al., ICASSP 2021](https://doi.org/10.1109/ICASSP39728.2021.9413609 "citation")。使用时还需评估标注成本、跨房间泛化和模型复杂度。
 
 **SELD（声事件定位与检测，sound event localization and detection）**同时估计事件类别、方向和活动时段。STARSS23 是 DCASE 2023 Task 3 使用的带距离元数据示例；当届正式输出并未要求距离。任务定义、划分和指标应按[当届官方任务页](https://dcase.community/challenge2023/task-sound-event-localization-and-detection-evaluated-in-real-spatial-sound-scenes)核对，不能把某一届设置外推为长期不变的“前沿”。
+
+这些方法的源码也应分别阅读。IPDnet 的作者实现位于 `Audio-WestlakeU/FN-SSL` 的 `IPDnet/`，固定与可变阵列网络分别在 `FixedAarryIPDnet.py`、`VariableArrayIPDnet.py`，训练入口是 `runIPDnetOn.py`/`runIPDnetOff.py`；先检查阵列、麦对顺序与相位标签，再读网络。DCASE2022 基线则通过 `seldnet_model.py` 与 `cls_data_generator.py` 连接 multi-ACCDOA 输出和 ADPIT 训练标签，不能直接把模型轨号当作第 9 章的持久身份。[IPDnet 作者目录](https://github.com/Audio-WestlakeU/FN-SSL/tree/76fcb281be92caf068c712dfb015e354f437260f/IPDnet "citation")；[DCASE2022 官方基线](https://github.com/sharathadavanne/seld-dcase2022 "citation")。
+
+最小输出检查可以先做手算：单轨二维 ACCDOA 预测 `(0.433,0.25)` 的方向仍是 30°，模却只有 0.5；角度正确不表示活动判定一定通过。再放入两个同类别同时发声的方向，单轨输出无法表示二者，需要多轨输出、允许的标签置换与重复预测合并。换到 DCASE2025 基线时，每轨的第三个音频输出是距离，不是旧三维方向中的 z 分量；把它一起归一化会混淆方向和距离。[DCASE2025 输出层](https://github.com/partha2409/DCASE2025_seld_baseline/blob/42a48b6456b73be35ad0e1a9ffeb6ceef83ae0bd/model.py "citation")。
+
+上述三个基线的固定提交、读码顺序、数据条件、最小实验和许可缺口分别记录在[空间处理研究文档](../codes/research/01_spatial_and_tracking.md)。IPDnet 根 README 仅给出 MIT 字样，两个 DCASE 基线在本次检查中未建立明确再分发授权，因此暂保留官方源码索引，不自动复制；不能把这一限制误写成“没有官方实现”。
 
 > **DCASE 任务变化（核实于 2026-09-21）**
 >
@@ -665,7 +684,19 @@ $$J(r,\theta)=\sqrt{\frac{1}{3}\sum_{m=1}^{3}\left(\frac{\delta_m(r,\theta)-\del
 
 接入实际录音时还要固定 WAV 数值口径、采样率、通道顺序、麦克风坐标及单位、参考麦、坐标轴、声速和时间戳。GCC 必须按物理孔径裁剪 lag，并同时输出峰值、峰背比和有效频带；SRP 还要记录阵元对、二维或三维搜索范围、网格单位、插值和粗到细规则。扫描谱要记录快拍窗口、频带合并、源数、选峰间距和加载口径。Capon/MUSIC/MVDR 使用厄米线性求解或 `eigh`，不显式形成矩阵逆；协方差奇异且没有加载时，示例代码会报错，调用方应明确选择增加快拍、相对加载、保持上次可靠估计或退回 SRP/Bartlett，不能把 NaN 当成方向。
 
-本书不复制第三方定位代码。核实于 2026-09-22 的官方索引包括：[pyroomacoustics](https://github.com/LCAV/pyroomacoustics)（MIT；发布页当日显示 v0.10.1，书中 NormMUSIC 仍固定为 0.10.0 口径）、[ODAS](https://github.com/introlab/odas)（MIT；面向嵌入式定位、追踪、分离和后处理，复现时应固定完整提交号）以及前述 icoDOA（AGPL-3.0）。CSSM、WAVES、TOPS、FRIDA、原子范数、SBL 和神经定位涉及额外优化器、训练数据或许可证，本轮只保留原论文与官方仓库索引，不把第三方实现改写成来源不清的“简化版”。
+定位源码分为本书教学实现和按完整提交号取得的外部参考。后者保存在 `codes/upstream/_downloads/` 的独立工作目录；版本、代码许可与入口见 [`SOURCES.lock.json`](../codes/SOURCES.lock.json)，具体阅读步骤和验证方案见[空间处理与追踪研究](../codes/research/01_spatial_and_tracking.md)。取得源码、运行一次示例和复现论文结论应分别记录。
+
+| 本章方法 | 外部源码入口 | 读码时先核对什么 |
+|---|---|---|
+| AIC/MDL、空间平滑、root-MUSIC | doatools 的 `estimation/source_number.py`、`preprocessing.py`、`music.py` | 特征值排序、有效快拍数、子阵数与长度、半波长默认间距 |
+| CSSM、WAVES、TOPS | pyroomacoustics 的 `doa/cssm.py`、`waves.py`、`tops.py` | 初始峰、参考频点、频点筛选与协方差是否同步、迭代停止 |
+| FRIDA | pyroomacoustics 的 `doa/frida.py` 与 `tools_fri_doa_plane.py`；原论文库 `LCAV/FRIDA` 的 `doa/fri.py` | 协方差可见度、连续角恢复、截断阶数、随机初值和重建残差 |
+| 分层 SRP 与持续定位 | ODAS 的 `src/module/mod_ssl.c`、`src/signal/scan.c` 及设备配置 | 粗细网格、保留候选数、麦对筛选、插值与几何坐标 |
+| 组稀疏与协方差匹配 | doatools 的 `estimation/sparse.py` | 快拍模型与功率模型的区别、正则参数、字典归一化和求解器状态 |
+
+这些实现不能共用一个未经转换的角度和数组约定。例如本书麦位置为 `通道 × 空间维度`，pyroomacoustics 为 `空间维度 × 通道`；doatools 的 root-MUSIC 还要求 ULA，不能因它不扫描角度就用于任意阵列。定位输出应保留源数未满足、统计无效、优化不可行和峰歧义等状态，不应始终给一个看似确定的角度。
+
+固定版本也可能有实现缺陷。研究文档登记了 pyroomacoustics 0.10.0 的 CSSM/WAVES 频点剔除与协方差下标对应、TOPS 真实 FFT bin 与列表下标对应的静态疑点，并给出最小下标推演；尚未完成外部包完整声学回归，因此不把这些入口写成已经通过设备验收的实现。原子范数、SBL 和神经定位则仍需按具体论文确认优化器、模型、训练数据与许可。来源为 [doatools 作者文档](https://morriswmz.github.io/doatools.py/references/doatools.estimation.html "citation")、[pyroomacoustics 官方仓库](https://github.com/LCAV/pyroomacoustics "citation")、[ODAS 官方仓库](https://github.com/introlab/odas "citation")，源码核实于 2026-09-22。
 
 ### 4.8 定位算法总对比
 

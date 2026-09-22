@@ -1,0 +1,253 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>源码获取与独立复现记录 · 麦克风阵列信号处理教程</title>
+<meta name="source-digest" content="9187099fc571"><style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
+.topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
+.topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
+a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
+.skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
+.skip-link:focus{top:8px}
+.wrap{display:flex;max-width:1280px;margin:0 auto}
+.side{width:300px;flex-shrink:0;padding:20px 14px;position:sticky;top:47px;height:calc(100vh - 47px);overflow-y:auto;background:#fff;border-right:1px solid #e5e8ee;font-size:13.5px}
+.side a{color:#2f6db3;text-decoration:none}.side a:hover{text-decoration:underline}
+.side .chap{margin:10px 0 2px;font-weight:700}.side .chap.cur{color:#c0392b}
+.side ul{margin:2px 0 6px;padding-left:16px;color:#666}.side li{margin:2px 0}
+.main{flex:1;min-width:0;padding:28px 36px;background:#fff;overflow-wrap:anywhere}
+.main p{margin:0 0 1.05em}.main li>p{margin:.35em 0}
+.main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
+table{border-collapse:collapse;margin:14px 0;max-width:100%}
+.table-scroll{max-width:100%;overflow-x:auto}
+.table-scroll:focus-visible{outline:3px solid #e67e22;outline-offset:2px}
+th,td{border:1px solid #dfe3ea;padding:6px 10px;font-size:14px;text-align:left}
+th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;font-size:13.5px}
+pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
+pre code{background:none;color:inherit;padding:0}
+blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
+mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
+.pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
+.pn a{color:#2f6db3;text-decoration:none}.pn .off{color:#aaa}
+.foot{color:#888;font-size:13px;margin:20px 0 40px}
+h1{font-size:26px;border-bottom:2px solid #1a1a2e;padding-bottom:8px}
+h2{font-size:21px;margin-top:34px;border-bottom:1px solid #e5e8ee;padding-bottom:6px}
+h3{font-size:17px;margin-top:24px}
+h4{font-size:15.5px;margin-top:20px;color:#333}
+.toc-mobile{display:none;margin:0 0 16px;border:1px solid #e5e8ee;border-radius:8px;padding:10px 14px;background:#f7fafd;font-size:14px}
+.toc-mobile summary{cursor:pointer;font-weight:700}
+.toc-mobile ul{padding-left:18px;margin:8px 0 2px}.toc-mobile a{color:#2f6db3;text-decoration:none}
+.topbtn{position:fixed;bottom:20px;right:20px;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px;opacity:.75}
+.offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
+.anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
+@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}}
+@media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
+</style>
+<script>
+window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']]}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
+ onerror="document.getElementById('offnote').style.display='block';document.getElementById('offnote').textContent='公式渲染脚本加载失败：当前显示的是公式源码。';"></script>
+</head><body id="top"><a class="skip-link" href="#main-content">跳到正文</a>
+<header class="topbar"><a href="../index.html">🏠 首页</a> &nbsp;/&nbsp; 源码获取与独立复现记录</header>
+<div class="wrap"><nav class="side" aria-label="全书目录"><div class="chap"><a href="../index.html">🏠 导读与导航（首页）</a></div>
+<div class="chap"><a href="index.html">源码研究导读</a></div>
+<div class="chap"><a href="01_spatial_and_tracking.html">空间处理与追踪源码研究</a></div>
+<div class="chap"><a href="02_aec_wpe_separation.html">AEC、WPE 与分离源码研究</a></div>
+<div class="chap"><a href="03_industrial_deployment.html">工业音频实现研究</a></div>
+<div class="chap cur" aria-current="page">源码获取与独立复现记录</div>
+<ul>
+<li><a href="04_source_reproduction.html#sec-u-630cc32c87">1. 先确定复现对象</a></li>
+<li><a href="04_source_reproduction.html#sec-u-c8f62b2f38">2. 固定提交与本地文件</a></li>
+<li><a href="04_source_reproduction.html#sec-u-2dd95e0690">3. 对齐数据接口</a></li>
+<li><a href="04_source_reproduction.html#sec-u-46be873389">4. 每类算法怎样做独立实验</a></li>
+<li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-0da64dca27">定位与波束</a></li>
+<li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-02d03cc4b3">AEC 与去混响</a></li>
+<li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-95c8e317da">盲分离与神经系统</a></li>
+<li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-e6bb371bcc">跟踪与工程处理</a></li>
+<li><a href="04_source_reproduction.html#sec-u-96ac81c5a8">5. 记录结果的必要字段</a></li>
+<li><a href="04_source_reproduction.html#sec-u-56cf8b0bbf">6. 何时可以进入设备比较</a></li>
+</ul>
+<div class="chap"><a href="../01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
+<div class="chap"><a href="../02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
+<div class="chap"><a href="../03_array-geometry.html">第 3 章 · 阵列几何形态</a></div>
+<div class="chap"><a href="../04_doa-estimation.html">第 4 章 · 声源定位（DOA 估计）</a></div>
+<div class="chap"><a href="../05_beamforming.html">第 5 章 · 波束形成</a></div>
+<div class="chap"><a href="../06_aec.html">第 6 章 · 声学回声消除（AEC）</a></div>
+<div class="chap"><a href="../07_wpe-dereverberation.html">第 7 章 · 去混响（WPE）</a></div>
+<div class="chap"><a href="../08_speech-separation.html">第 8 章 · 语音分离</a></div>
+<div class="chap"><a href="../09_source-tracking.html">第 9 章 · 声源追踪</a></div>
+<div class="chap"><a href="../10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a></div>
+<div class="chap"><a href="../11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
+<div class="chap"><a href="../12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
+<div class="chap"><a href="../13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
+<main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
+<details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
+<li><a href="04_source_reproduction.html#sec-u-630cc32c87">1. 先确定复现对象</a></li>
+<li><a href="04_source_reproduction.html#sec-u-c8f62b2f38">2. 固定提交与本地文件</a></li>
+<li><a href="04_source_reproduction.html#sec-u-2dd95e0690">3. 对齐数据接口</a></li>
+<li><a href="04_source_reproduction.html#sec-u-46be873389">4. 每类算法怎样做独立实验</a></li>
+<li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-0da64dca27">定位与波束</a></li>
+<li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-02d03cc4b3">AEC 与去混响</a></li>
+<li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-95c8e317da">盲分离与神经系统</a></li>
+<li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-e6bb371bcc">跟踪与工程处理</a></li>
+<li><a href="04_source_reproduction.html#sec-u-96ac81c5a8">5. 记录结果的必要字段</a></li>
+<li><a href="04_source_reproduction.html#sec-u-56cf8b0bbf">6. 何时可以进入设备比较</a></li>
+</ul></nav></details>
+<span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="取得源码后怎样复现" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-515383f30b">取得源码后怎样复现</h1>
+<span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="1-先确定复现对象" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-630cc32c87">1. 先确定复现对象</h2>
+<p>一次复现至少要固定一个算法、一个实现版本、一个输入配置和一个评价问题。以 MVDR 为例，
+“复现波束形成”还不够明确；可以改成“给定二通道目标导向矢量和噪声协方差，验证权重满足单位目标响应，
+并核对输出噪声功率是否与闭式解一致”。神经掩码估计、音频读写和识别后端可以在下一层实验中接入。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">复现层次</th>
+<th scope="col">必要输入</th>
+<th scope="col">输出与验收</th>
+<th scope="col">不能由这一层推出的结论</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>算式</td>
+<td>小矩阵、向量、确定性序列</td>
+<td>与手算或独立解析结果相符</td>
+<td>完整论文系统有效</td>
+</tr>
+<tr>
+<td>模块</td>
+<td>音频、采样率、配置、连续状态</td>
+<td>保持输入输出约定，故障实验符合预期</td>
+<td>设备实时性或端到端质量</td>
+</tr>
+<tr>
+<td>论文实验</td>
+<td>数据划分、权重、配置、评分版本</td>
+<td>按原文统计口径报告结果和偏差</td>
+<td>另一房间/阵列具有同等表现</td>
+</tr>
+<tr>
+<td>设备链路</td>
+<td>硬件、驱动、固件、参考取点、时钟、功耗状态</td>
+<td>连续运行、延迟、语音损伤、异常恢复</td>
+<td>所有产品场景均已覆盖</td>
+</tr>
+</tbody>
+</table></div>
+<span id="sec-3" class="anchor-alias" aria-hidden="true"></span><span id="2-固定提交与本地文件" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-c8f62b2f38">2. 固定提交与本地文件</h2>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json">锁定清单</a> 保存官方仓库地址和完整 Git 提交。获取工具检出独立仓库，
+保留许可证与作者声明，不安装依赖，也不启动维护者的训练或构建程序。</p>
+<p>在本仓库根目录执行：</p>
+<pre><code class="language-bash">.venv/bin/python codes/upstream/fetch_upstreams.py --list
+.venv/bin/python codes/upstream/fetch_upstreams.py --all --report tmp/source-acquisition.json
+.venv/bin/python codes/upstream/fetch_upstreams.py --verify --report tmp/source-verification.json
+</code></pre>
+<p>已有目录只有在来源、提交、工作树和入口文件都符合清单时才能通过核对。发现本地修改或错误版本时，
+工具会保留现场并报错；应先检查修改归属，再决定建立另一个下载目录。不要把未完成目录当成可用实现。</p>
+<p>新下载使用稀疏工作树，跳过常见音频、权重、二进制库和压缩包扩展名。它不会递归取得子模块或下载 LFS 大对象。
+该策略不能识别所有资产：文本文件也可能包含模型系数，Git 对象库也可能保留上游跟踪的资源。
+此前已经存在的工作树原样保留，其资产范围不由新下载规则追溯保证。若复现确实需要被省略的文件，
+应先读上游对应资产说明，再在独立环境中按其方法取得。</p>
+<p>本地下载目录位于 <code>codes/upstream/_downloads/</code>，被本仓库 Git 忽略。提交本书时提交获取工具和锁定信息，
+这些上游工作树仍各自保留原始历史和许可。</p>
+<span id="sec-4" class="anchor-alias" aria-hidden="true"></span><span id="3-对齐数据接口" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-2dd95e0690">3. 对齐数据接口</h2>
+<p>本书 STFT、定位和通用协方差接口采用 <code>C × F × T</code>：通道、频点、帧；WPE 和分离模块采用 <code>F × C × T</code>。
+从前一组转到后一组使用 <code>spectrum.transpose(1, 0, 2)</code>。外部库还可能使用 <code>T × F × C</code>。
+维度大小相同也可能掩盖轴序错误，因此适配层应把轴变换写成显式操作，并用各维大小不相等的输入验证。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">项目</th>
+<th scope="col">记录内容</th>
+<th scope="col">最小检查</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>时域输入</td>
+<td>通道顺序、数值范围、采样率、起始时戳</td>
+<td>一个通道给脉冲，其余静音，检查通道混排</td>
+</tr>
+<tr>
+<td>STFT</td>
+<td>窗函数、窗长、FFT 长度、帧移、中心填充、单边谱规则</td>
+<td>完整分析/合成后检查有效区间与边缘误差</td>
+</tr>
+<tr>
+<td>时延与相位</td>
+<td>互相关定义、FFT 正负号、角度方向、导向向量</td>
+<td>人为延迟已知样点，检查符号与相位一致</td>
+</tr>
+<tr>
+<td>协方差</td>
+<td>轴序、共轭位置、权重归一化、加载和功率下限</td>
+<td>检查厄米性、半正定与缩放响应</td>
+</tr>
+<tr>
+<td>波束输出</td>
+<td>参考通道、权重内积、频点缩放</td>
+<td>检查目标约束和已知干扰方向的响应</td>
+</tr>
+<tr>
+<td>分离输出</td>
+<td>源数、排列、尺度恢复、截断长度</td>
+<td>用已知两源交换输出，验证评分排列处理</td>
+</tr>
+<tr>
+<td>在线状态</td>
+<td>上一帧滤波器、噪声功率、循环网络状态、缓冲和采样相位</td>
+<td>连续输入与分块输入对照；新音频流必须重新初始化</td>
+</tr>
+</tbody>
+</table></div>
+<p>正确的对照顺序是先检查约定，再检查目标函数，最后比较波形或指标。不同版本的正则化和停止条件会造成
+合理差异；应报告差异来源，不能只按一个固定绝对误差阈值判断所有浮点结果。</p>
+<span id="sec-5" class="anchor-alias" aria-hidden="true"></span><span id="4-每类算法怎样做独立实验" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-46be873389">4. 每类算法怎样做独立实验</h2>
+<span id="sec-6" class="anchor-alias" aria-hidden="true"></span><span id="定位与波束" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-0da64dca27">定位与波束</h3>
+<p>先用双阵元、单平面波和无噪声输入核对方向。把入射角从正方向改为负方向，再改变阵元顺序，
+预期结果必须按坐标约定变化。之后增加一个已知干扰源，分别检查源数假设、协方差秩和扫描网格。</p>
+<p>MVDR/LCMV 可以用小矩阵直接代入约束。含特征分解的外部实现要允许特征向量整体复相位不唯一，
+因此比较投影矩阵、约束残差或输出功率比逐元素比较特征向量更合适。宽带方法还要核对每个实际 FFT 频点
+与工作数组索引的映射，尤其是删除频带、采用稀疏频点或选择参考频率时。</p>
+<span id="sec-7" class="anchor-alias" aria-hidden="true"></span><span id="aec-与去混响" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-02d03cc4b3">AEC 与去混响</h3>
+<p>AEC 先给确定的短 FIR 回声路径，保留播放参考，单独划出收敛段和远端单讲评分段。
+再加入近端语音、固定延迟、路径突变和非线性四种改变，每次只改一种。
+ERLE 不能把双讲中的近端语音解释成残余回声，也不能用参考全静音的片段计算有效消除量。</p>
+<p>WPE 首先验证延迟回归向量、复共轭和加权正规方程。离线与在线实现因可用帧不同，不应被要求逐样点相同。
+比较时记录保护延迟、滤波阶数、初始化、功率估计是否用了未来信息，以及输出相对参考的固定时延。</p>
+<span id="sec-8" class="anchor-alias" aria-hidden="true"></span><span id="盲分离与神经系统" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-95c8e317da">盲分离与神经系统</h3>
+<p>盲分离先在两通道两源的已知混合上检查尺度和排列，再改变源数、输入秩或混响长度。
+如果迭代目标应单调，检查的是同一目标、同一归一化下的变化；不要把一项代理目标下降解释成 SI-SDR 必然提高。</p>
+<p>神经系统还需固定 checkpoint、特征归一化、模型状态、分块长度和推理设备。训练入口存在只能说明仓库
+提供训练程序；没有训练数据权限、配置与权重版本，仍不能声称论文实验已经复现。只下载结构代码时应明确记录。</p>
+<span id="sec-9" class="anchor-alias" aria-hidden="true"></span><span id="跟踪与工程处理" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-e6bb371bcc">跟踪与工程处理</h3>
+<p>跟踪器用匀速轨迹、跨越角度边界、连续缺测、两个目标交叉和误检分别测试。数据关联正确率与定位误差分开统计；
+把两条轨迹身份交换后，平均位置误差可能仍很小。粒子滤波需要固定种子，并记录重采样条件。</p>
+<p>音频工程接口至少测试静音、过载、丢帧、设备断开、采样率切换和队列积压。离线算法测试不能代替回调线程测试。
+连续重采样必须保留滤波历史和分数相位；逐块重新初始化会在块边界产生跳变，即使每块单独看起来正常。</p>
+<span id="sec-10" class="anchor-alias" aria-hidden="true"></span><span id="5-记录结果的必要字段" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-96ac81c5a8">5. 记录结果的必要字段</h2>
+<p>下面是一份记录结构示例，不含虚构运行结果：</p>
+<pre><code class="language-json">{
+  &quot;algorithm&quot;: &quot;method and variant&quot;,
+  &quot;source_revision&quot;: &quot;full Git SHA&quot;,
+  &quot;configuration&quot;: &quot;path and content hash&quot;,
+  &quot;input&quot;: {&quot;sample_rate_hz&quot;: null, &quot;channels&quot;: null, &quot;dataset_split&quot;: null},
+  &quot;environment&quot;: {&quot;python&quot;: null, &quot;dependencies&quot;: null, &quot;hardware&quot;: null},
+  &quot;alignment&quot;: {&quot;delay_samples&quot;: null, &quot;reference_channel&quot;: null, &quot;gain_rule&quot;: null},
+  &quot;random_seed&quot;: null,
+  &quot;evaluation&quot;: {&quot;metric&quot;: null, &quot;regions&quot;: null, &quot;aggregation&quot;: null},
+  &quot;status&quot;: &quot;not_run&quot;,
+  &quot;measurements&quot;: null
+}
+</code></pre>
+<p><code>null</code> 表示这份结构尚未填入实验条件，不是测量得到零。研究记录可以保留未执行状态；正文性能表只引用
+条件齐全的真实结果。最终记录同时保留成功和失败实验，失败原因写到具体输入或依赖，不用删除记录制造全通过状态。</p>
+<span id="sec-11" class="anchor-alias" aria-hidden="true"></span><span id="6-何时可以进入设备比较" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-56cf8b0bbf">6. 何时可以进入设备比较</h2>
+<p>只有两套候选实现使用同一输入、评分区域和延迟口径，性能比较才有明确含义。硬件上再分别测量启动加载、
+稳定运行、最慢帧、峰值内存和功耗状态；平均实时系数小于一仍可能发生连续帧超期。</p>
+<p>实际设备的验收条件由产品覆盖距离、房间、声音类型和可接受损伤决定。本书的手算输入与教学示例用于检验算法，
+它们不能直接成为出厂阈值。工业项目的具体入口和测量方法见 <a href="03_industrial_deployment.html">工业部署与评测</a>。</p>
+<footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
+</main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
+<script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>
+</body></html>

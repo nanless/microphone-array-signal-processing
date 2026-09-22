@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 8 章 · 语音分离 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="aea756f1a7d4"><style>
+<meta name="source-digest" content="9187099fc571"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -13,7 +13,7 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .side a{color:#2f6db3;text-decoration:none}.side a:hover{text-decoration:underline}
 .side .chap{margin:10px 0 2px;font-weight:700}.side .chap.cur{color:#c0392b}
 .side ul{margin:2px 0 6px;padding-left:16px;color:#666}.side li{margin:2px 0}
-.main{flex:1;min-width:0;padding:28px 36px;background:#fff}
+.main{flex:1;min-width:0;padding:28px 36px;background:#fff;overflow-wrap:anywhere}
 .main p{margin:0 0 1.05em}.main li>p{margin:.35em 0}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
 table{border-collapse:collapse;margin:14px 0;max-width:100%}
@@ -25,6 +25,7 @@ pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:a
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
 mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
 .pn a{color:#2f6db3;text-decoration:none}.pn .off{color:#aaa}
 .foot{color:#888;font-size:13px;margin:20px 0 40px}
@@ -66,7 +67,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a></div>
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
-<div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
+<div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div>
+<div class="chap"><a href="research/index.html">源码研究</a></div></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
 <li><a href="08_speech-separation.html#sec-u-7c0095c9a8">8. 语音分离</a></li>
@@ -75,7 +77,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是教程正文第 8 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
-<p>🏠 首页导读：<a href="./index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="./07_wpe-dereverberation.html">第 7 章 · 去混响（WPE）</a> ｜ 下一篇：<a href="./09_source-tracking.html">第 9 章 · 声源追踪</a></p>
+<p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="07_wpe-dereverberation.html">第 7 章 · 去混响（WPE）</a> ｜ 下一篇：<a href="09_source-tracking.html">第 9 章 · 声源追踪</a></p>
 </blockquote>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-7c0095c9a8">8. 语音分离</h1>
 <p>第 7 章讨论单个声源的混响拖尾，本章讨论多个说话人同时发声时的混合与分离。主要方法包括免训练盲源分离（Blind Source Separation，BSS）、导引源分离（Guided Source Separation，GSS）和深度分离；§8.2再说明这些方法在前端系统中的顺序。</p>
@@ -336,7 +338,7 @@ $$</p>
 </table></div>
 <p>比较分离数字时要对齐采样率、<code>min</code>/<code>max</code> 混合方式、静态或动态混合、源数、评测脚本和指标名称。分离文献中的 SI-SNR 常采用与 SI-SDR 相同的正交投影公式，二者在相同去均值与数值实现下可以相等；也有代码把均值处理、截断长度或稳定项写得不同。不能笼统地说两者固定相差若干 dB。引用 SI-SNRi 或 SI-SDRi 时，应给出实现或至少说明是否去均值，并始终用同一指标计算输入基线和输出结果。</p>
 <p><strong>深度分离的结构选择</strong>。卷积、循环网络、注意力和状态空间模型都可以作为分离骨干。S4M 改变的是编码器—分离器—解码器中的时序建模骨干：多尺度表示送入结构化状态空间块，而不是仅更换损失函数。</p>
-<p>论文实验使用已知的两个输出源和监督干净参考，官方仓库给出训练入口。未知源数、无监督会议录音或任意麦克风阵列不属于这项结果的直接覆盖范围。论文把该结构称为流式分离的潜在方案，但没有报告严格因果实现的前瞻样本数、首帧延迟或端到端延迟。</p>
+<p>论文实验使用已知的两个输出源和监督干净参考。核实至 2026-09-22，官方仓库提供 <code>S4M.py</code>、<code>s4.py</code> 等模型结构文件，但没有完整的数据准备、训练入口和配套 checkpoint，不能把可读的骨干代码写成已经可复现整套训练。未知源数、无监督会议录音或任意麦克风阵列不属于这项结果的直接覆盖范围。论文把该结构称为流式分离的潜在方案，但没有报告严格因果实现的前瞻样本数、首帧延迟或端到端延迟。<a href="https://github.com/JusperLee/S4M/tree/4990b3fe9d7391e59d652c5a7d2803d1354fd0ae">S4M 固定版本</a></p>
 <p>部署前仍需检查双向上下文与缓冲。选择时不要只看单个榜单分数，还要检查模型是否使用整句上下文、块边界如何处理、状态能否在流式推理中延续，以及计算量和内存怎样随语句长度变化。生成式方法还要检查采样步数和语音幻觉。</p>
 <p>近期模型若没有在相同数据、采样率、混合方式和评测脚本下比较，本章不按论文年份或模型名称给出性能排序。</p>
 <p>目标说话人提取（target speaker extraction，TSE）不要求输出所有声源，而是用注册语音、视觉或方向等与目标说话人绑定的条件提取一条音轨。声纹网络可把注册语音变成定长嵌入，再将其广播到混合语音的各帧；嵌入可在编码器入口拼接，也可用逐层缩放与偏置调制（FiLM）或交叉注意力注入。</p>
@@ -345,9 +347,72 @@ $$</p>
 <p>文本查询通用声音分离是另一项任务：查询词描述“警报声”“狗叫”等声音类别，不保证对应某个可注册的说话人。对比语言—音频预训练（Contrastive Language-Audio Pretraining，CLAP）可提供文本与音频嵌入，但 CLAP 本身不是分离器；实际系统还需要用查询嵌入控制掩码或波形生成模块。</p>
 <p>见 <a href="https://arxiv.org/abs/2206.04769" title="citation">CLAP</a>与使用语言查询的 AudioSep。AudioSep 已正式发表于 <em>IEEE/ACM Transactions on Audio, Speech, and Language Processing</em>, vol. 33, pp. 458–471，DOI <a href="https://doi.org/10.1109/TASLP.2024.3520017">10.1109/TASLP.2024.3520017</a>；<a href="https://github.com/audio-agi/audiosep">官方仓库</a>提供模型与推理入口。</p>
 <p>TSE 的身份泄漏、注册信道和声纹保护测试，不能由文本查询分离的类别级结果替代。</p>
-<p><strong>可执行分离基线与代码边界。</strong> <a href="../codes/array_tutorial/separation.py"><code>codes/array_tutorial/separation.py</code></a> 提供四个只依赖 NumPy 的小模块：<code>si_sdr()</code> 接收等长一维估计与参考；<code>pit_permutation()</code> 接收 <code>(源, 样本)</code> 数组并枚举排列，返回“第几个输出对应第几个参考”的元组和平均 SI-SDR；<code>masked_spatial_covariance()</code> 接收 <code>(频点, 通道, 帧)</code> 复谱与 <code>(频点, 帧)</code> 非负掩码；<code>mask_mvdr_2x2()</code> 用目标 SCM 的主特征向量估计相对传递函数，再以干扰 SCM 求两麦 MVDR，返回 <code>(频点, 帧)</code> 输出和 <code>(频点, 2)</code> 权重。</p>
-<p>联合示例用 <code>.venv/bin/python -m codes.examples.ch06_09_baselines</code> 运行，测试见 <a href="../tests/test_codes_aec_wpe_sep_track.py"><code>tests/test_codes_aec_wpe_sep_track.py</code></a>。测试覆盖输出交换、静音参考和静音估计拒绝、SCM 厄米性、MVDR 无失真约束，以及目标或干扰掩码为空时回退参考麦。实际评测还必须固定去均值、时延/增益对齐、静音段、截断长度和输入基线；秩亏 SCM、单通道输入、$N>M$、跨块换人及 STFT 重构均需单独测试。教学版 MVDR 在目标或干扰统计不可用时退回参考麦克风，不应把这一回退的输出解释成成功分离。</p>
-<p>AuxIVA/ILRMA 的完整数值实现应使用 <code>piva</code> 等上游项目；MNMF、TRINICON、CHiME GSS/GPU-GSS、Asteroid/SpeechBrain/ESPnet 中的 Conv-TasNet、DPRNN、SepFormer，以及 S4M、SpeakerBeam 和 AudioSep 均只索引论文官方仓库，不在本书复制。使用时记录提交或发布版、许可证、训练/测试数据版本、预训练权重许可、采样率、源数、因果/前瞻设置、块状态、指标脚本、硬件和峰值内存。cACGMM 的正文伪代码用于解释依赖关系，不是生产 GSS；若没有空分量重置、对数域后验和收敛检查，不能把它列为可复现基线。</p>
+<p><strong>可执行分离基线与代码边界。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/separation.py"><code>codes/array_tutorial/separation.py</code></a> 提供四个只依赖 NumPy 的小模块：<code>si_sdr()</code> 接收等长一维估计与参考；<code>pit_permutation()</code> 接收 <code>(源, 样本)</code> 数组并枚举排列，返回“第几个输出对应第几个参考”的元组和平均 SI-SDR；<code>masked_spatial_covariance()</code> 接收 <code>(频点, 通道, 帧)</code> 复谱与 <code>(频点, 帧)</code> 非负掩码；<code>mask_mvdr_2x2()</code> 用目标 SCM 的主特征向量估计相对传递函数，再以干扰 SCM 求两麦 MVDR，返回 <code>(频点, 帧)</code> 输出和 <code>(频点, 2)</code> 权重。</p>
+<p>联合示例用 <code>.venv/bin/python -m codes.examples.ch06_09_baselines</code> 运行，测试见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_wpe_sep_track.py"><code>tests/test_codes_aec_wpe_sep_track.py</code></a>。测试覆盖输出交换、静音参考和静音估计拒绝、SCM 厄米性、MVDR 无失真约束，以及目标或干扰掩码为空时回退参考麦。实际评测还必须固定去均值、时延/增益对齐、静音段、截断长度和输入基线；秩亏 SCM、单通道输入、$N>M$、跨块换人及 STFT 重构均需单独测试。教学版 MVDR 在目标或干扰统计不可用时退回参考麦克风，不应把这一回退的输出解释成成功分离。</p>
+<p>本章的外部实现已经按具体算法定位，不能把“正文尚未实现”写成“没有可用源码”。<a href="research/02_aec_wpe_separation.html#bss">盲分离与 GSS 研究</a>和<a href="research/02_aec_wpe_separation.html#neural">神经分离研究</a>进一步列出读码顺序、状态、最小实验与失败条件。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">方法</th>
+<th scope="col">已定位的源码入口</th>
+<th scope="col">复现与工业使用的主要限制</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AuxIVA、ILRMA</td>
+<td>pyroomacoustics <code>bss/auxiva.py</code>、<code>ilrma.py</code>；ssspy <code>bss/iva.py</code>、<code>ilrma.py</code></td>
+<td>区分 IP/ISS 更新、源数条件、功率下限和 projection-back</td>
+</tr>
+<tr>
+<td>MNMF、FastMNMF/FastMNMF2</td>
+<td>ssspy <code>bss/mnmf.py</code>；pyroomacoustics <code>bss/fastmnmf.py</code>、<code>fastmnmf2.py</code></td>
+<td>固定初值、NMF 基数、空间模型、参考麦与重构尺度</td>
+</tr>
+<tr>
+<td>TRINICON</td>
+<td>pyroomacoustics <code>bss/trinicon.py</code></td>
+<td>此实现固定两个输出，不能当作任意源数版本；块长和滤波器长度分开</td>
+</tr>
+<tr>
+<td>cACGMM</td>
+<td>pb_bss <code>distribution/cacgmm.py</code></td>
+<td>方向归一、空分量、密度数值稳定与功率 SCM 分开检查</td>
+</tr>
+<tr>
+<td>GPU-GSS</td>
+<td><code>gss/core/enhancer.py</code> → <code>gss/wpe/</code> → <code>gss/cacgmm/</code> → <code>gss/beamformer/</code></td>
+<td>需活动标注、同步多通道音频及匹配的 CUDA/CuPy；活动错误会传播</td>
+</tr>
+<tr>
+<td>Conv-TasNet、DPRNN</td>
+<td>Asteroid <code>models/conv_tasnet.py</code>、<code>dprnn_tasnet.py</code></td>
+<td>配套 recipe、编码窗、归一化、源数、循环方向和权重</td>
+</tr>
+<tr>
+<td>SepFormer</td>
+<td>SpeechBrain <code>lobes/models/dual_path.py</code> 与 WSJ0Mix 分离 recipe</td>
+<td>双路径注意力和整句上下文不能直接当作流式状态</td>
+</tr>
+<tr>
+<td>TF-GridNet</td>
+<td>ESPnet <code>enh/separator/tfgridnet_separator.py</code></td>
+<td>此类明确为离线，固定输入麦数；单/多通道版本分别核对</td>
+</tr>
+<tr>
+<td>S4M、SPMamba、Mamba-TasNet</td>
+<td>各作者模型/训练目录，详见研究文档</td>
+<td>三者不是同一算法；S4M 训练资产不完整，双向模型使用未来上下文</td>
+</tr>
+<tr>
+<td>SpeakerBeam、AudioSep</td>
+<td>注册语音条件模型、<code>pipeline.py</code> 等各自入口</td>
+<td>身份条件与文本类别条件不同；代码、权重和数据许可分别核对</td>
+</tr>
+</tbody>
+</table></div>
+<p>FastMNMF 的可用实现还体现了许可需要逐来源检查：作者 <code>SoundSourceSeparation</code> 整库限定学术研究，而 pyroomacoustics 的 <code>fastmnmf.py</code> 文件有独立 MIT 许可。SpeakerBeam 作者仓库采用内部评估协议，限制修改与再分发，不能把它与 MIT/Apache-2.0 项目统一称为可自由纳入产品的开源代码。<a href="https://github.com/LCAV/pyroomacoustics/blob/v0.10.0/pyroomacoustics/bss/fastmnmf.py">FastMNMF 文件许可</a>、<a href="https://github.com/sekiguchi92/SoundSourceSeparation/blob/897fe87fea3d85a243d8a3fd36c2232bb0548ad3/LICENSE">作者仓库许可</a>、<a href="https://github.com/BUTSpeechFIT/speakerbeam/blob/91af02cc617afa35fedfbdbf32533012cd0a8672/LICENSE.txt">SpeakerBeam 评估协议</a></p>
+<p>最小的源码复现实验应先选固定两源、两麦、同一 STFT 与参考麦，记录解混/SCM、代价、尺度恢复和 SI-SDR；再分别改变源数、混响、初始化及片段长度。CSS 还需测试跨块换人和静音后重新出现，不能让每块用真实答案独立排列后再拼接。cACGMM 的正文伪代码仅解释依赖关系；完整实现中的空分量处理、对数域计算与收敛检查仍须核对。</p>
 <blockquote>
 <p><strong>练习 8-1（自测三题）</strong></p>
 <ol>
@@ -368,16 +433,16 @@ $$</p>
 </blockquote>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-8-2">8.2 处理模块的顺序</h2>
 <p>回声、混响和多说话人混合对应不同的信号模型。以下顺序由参考可用性、空间相位保持和统计量依赖关系决定，接口定义见 §10.1。</p>
-<p>一种较完整的音频主链见<a href="./10_engineering-practice.html#sec-10-1">第 10 章 §10.1</a>：<strong>采集 → AEC → WPE → 解析波束形成 → 单通道增强</strong>。定位/追踪、说话人分割/GSS/SCM 是为解析波束提供条件的支路；神经或 CSS 分离则是从多通道特征到单通道/多流输出的替代音频路径，不与 GSS 掩码或解析波束合并成一个黑箱。项目只启用满足输入条件且能改善目标指标的模块。</p>
+<p>一种较完整的音频主链见<a href="10_engineering-practice.html#sec-10-1">第 10 章 §10.1</a>：<strong>采集 → AEC → WPE → 解析波束形成 → 单通道增强</strong>。定位/追踪、说话人分割/GSS/SCM 是为解析波束提供条件的支路；神经或 CSS 分离则是从多通道特征到单通道/多流输出的替代音频路径，不与 GSS 掩码或解析波束合并成一个黑箱。项目只启用满足输入条件且能改善目标指标的模块。</p>
 <ol>
-<li><strong>启用声学回声消除（Acoustic Echo Cancellation，AEC）时先处理回声</strong>：回声参考与麦克风回声之间的线性关系可能被后续自适应波束、非线性增益或单通道增强改变，见<a href="./10_engineering-practice.html#sec-10-1">第 10 章 §10.1</a>；</li>
+<li><strong>启用声学回声消除（Acoustic Echo Cancellation，AEC）时先处理回声</strong>：回声参考与麦克风回声之间的线性关系可能被后续自适应波束、非线性增益或单通道增强改变，见<a href="10_engineering-practice.html#sec-10-1">第 10 章 §10.1</a>；</li>
 <li><strong>多通道 WPE 通常在波束之前</strong>：晚期混响会污染波束形成所需的协方差估计。WPE 是线性处理，但各通道的预测滤波器不同，不能笼统保证所有跨通道相位关系完全不变。应验证处理后的目标相对传递函数和协方差是否仍适用于后续波束；</li>
-<li><strong>定位/追踪给波束指方向</strong>：MVDR/GEV 要目标方向或掩码才能成形，先有方向、再有波束（见<a href="./05_beamforming.html">第 5 章</a>与<a href="./09_source-tracking.html">第 9 章</a>）；</li>
+<li><strong>定位/追踪给波束指方向</strong>：MVDR/GEV 要目标方向或掩码才能成形，先有方向、再有波束（见<a href="05_beamforming.html">第 5 章</a>与<a href="09_source-tracking.html">第 9 章</a>）；</li>
 <li><strong>diarization 在 GSS 聚类之前、掩码在 MVDR 之前</strong>：diarization 提供“谁在何时说话”的标注，用于约束 cACGMM 的跨频点置换；掩码随后用于估计目标和噪声协方差，再计算波束权重（见 §5.4 和 §8.1）；</li>
 <li><strong>DNN 的位置由输出决定</strong>：逐通道改写复谱或波形的网络可能破坏跨通道相位，通常放在波束形成后的单通道链路；只输出共享掩码、协方差或 WPE 功率先验的网络可以放在多通道算法内部；联合多通道网络则可能同时完成分离和波束形成。还要单独检查网络是否使用未来帧。</li>
 </ol>
 <p>对于“逐通道线性前端—波束形成—单通道增强”这类实现，逐通道处理通常位于前端，单通道增强位于波束形成之后。若神经网络只估计解析算法所需的统计量，或本身联合建模多通道相位，则不受这个顺序限制。</p>
-<p><strong>本章模块与图 23 的对应关系</strong>（图的信号取点与启用条件见<a href="./10_engineering-practice.html#sec-10-1">第 10 章 §10.1</a>）：</p>
+<p><strong>本章模块与图 23 的对应关系</strong>（图的信号取点与启用条件见<a href="10_engineering-practice.html#sec-10-1">第 10 章 §10.1</a>）：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
@@ -417,7 +482,7 @@ $$</p>
 <p>回声、混响和分离使用不同的参考与统计假设，模块顺序需要服从这些条件。下一章讨论如何把逐帧定位结果连接成连续轨迹。</p>
 <hr />
 <blockquote>
-<p>📄 本篇信息：配图 0 张 ｜ <a href="./index.html">回首页</a></p>
+<p>📄 本篇信息：配图 0 张 ｜ <a href="index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="07_wpe-dereverberation.html">← 上一篇</a></span><span><a href="09_source-tracking.html">下一篇 →</a></span></div>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>

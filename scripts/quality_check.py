@@ -68,6 +68,16 @@ EXPECTED_SECTION_COUNT = 81
 EXPECTED_SUBSECTION_COUNT = 21
 EXPECTED_OUTLINE_ITEM_COUNT = 116
 EXPECTED_FIGURE_NUMBERS = set(range(1, 34))
+# 研究附站使用独立显式清单，不挤占 14 篇教程或 116 项 PDF 大纲基线。
+# 此清单不能从构建器或待检 HTML 反推。
+EXPECTED_RESEARCH_PAGES = (
+    ("README.md", "index.html"),
+    ("01_spatial_and_tracking.md", "01_spatial_and_tracking.html"),
+    ("02_aec_wpe_separation.md", "02_aec_wpe_separation.html"),
+    ("03_industrial_deployment.md", "03_industrial_deployment.html"),
+    ("04_source_reproduction.md", "04_source_reproduction.html"),
+)
+EXPECTED_RESEARCH_PAGE_COUNT = 5
 ALLOWED_LINK_SCHEMES = {"http", "https", "mailto"}
 COLLOQUIAL_REVIEW = re.compile(
     r"乱飞|跳格子|翻车|掉链子|猪队友|吃进去|喂给|神经网络接管|记死|照抄"
@@ -562,7 +572,6 @@ def check_site(errors: list[str]):
     pages = sorted(SITE.glob("*.html"))
     if len(pages) != 14:
         fail(errors, f"站点页面数应为 14，实际 {len(pages)}")
-    parsed = {}
     documents = {path.name: path.read_text(encoding="utf-8")
                  for path in CHAPTERS.glob("*.md")}
     source_by_page = {"index.html": "00_overview.md"}
@@ -609,31 +618,14 @@ def check_site(errors: list[str]):
             for issue in site_nav_fragment_issues(
                     path.name, source_name, documents[source_name], parser.nav_links):
                 fail(errors, f"站点导航不完整：{path.name}: {issue}")
+            for issue in external_markdown_link_issues(documents[source_name], parser.links):
+                fail(errors, f"{path.name}: {issue}")
             actual_images = Counter(src for src, _alt in parser.images)
             if actual_images != expected_images:
                 fail(errors, f"站点图片与源 Markdown 不一致：{path.name}: "
                      f"实际 {dict(actual_images)}，应为 {dict(expected_images)}")
-        parsed[path.name] = parser
-    for name, parser in parsed.items():
-        for href in parser.links:
-            url = urlparse(href)
-            if url.scheme or href.startswith("mailto:"):
-                continue
-            target_name = unquote(url.path) or name
-            target = SITE / target_name
-            if not target.exists():
-                fail(errors, f"站内链接目标不存在：{name} -> {href}")
-                continue
-            if url.fragment and target.suffix == ".html":
-                target_parser = parsed.get(target.name)
-                if target_parser and url.fragment not in target_parser.ids:
-                    fail(errors, f"站内锚点不存在：{name} -> {href}")
-        for src, alt in parser.images:
-            url = urlparse(src)
-            if not url.scheme and not (SITE / unquote(url.path)).resolve().exists():
-                fail(errors, f"站点图片不存在：{name} -> {src}")
-            if alt is None or not alt.strip():
-                fail(errors, f"站点图片缺少非空替代文本：{name} -> {src}")
+    # 研究目录与教程目录存在同名 index.html，须按完整目标路径查片段。
+    check_site_links(errors)
 
     ordered = ["index.html"] + [
         f"{index:02d}_{slug}.html" for index, slug in (
@@ -654,6 +646,114 @@ def check_site(errors: list[str]):
         if not match or match.groups() != expected:
             actual = match.groups() if match else "缺失"
             fail(errors, f"上一篇/下一篇导航顺序错误：{name}: {actual}，应为 {expected}")
+
+
+def external_markdown_link_issues(source: str, links: list[str]):
+    """外部 Markdown 来源必须仍是原 URL，不得按本地文档规则改为 HTML。"""
+    import markdown
+    source_parser = PageParser()
+    source_parser.feed(markdown.markdown(strip_fenced_code(source), extensions=["tables"]))
+    expected = Counter(href for href in source_parser.links
+                       if urlparse(href).scheme in {"https", "http"}
+                       and unquote(urlparse(href).path).lower().endswith(".md"))
+    missing = expected - Counter(links)
+    return [f"外部 Markdown 链接被改写或遗漏：{href}" for href in missing]
+
+
+def check_research_site(errors: list[str]):
+    research_root = ROOT / "codes" / "research"
+    output_root = SITE / "research"
+    expected_names = {output for _source, output in EXPECTED_RESEARCH_PAGES}
+    actual_names = {path.relative_to(output_root).as_posix()
+                    for path in output_root.rglob("*.html")}
+    if actual_names != expected_names:
+        fail(errors, f"研究页面集不符合独立基线：缺失 {sorted(expected_names - actual_names)}，"
+             f"多出 {sorted(actual_names - expected_names)}")
+    if len(actual_names) != EXPECTED_RESEARCH_PAGE_COUNT:
+        fail(errors, f"研究页面数应为 {EXPECTED_RESEARCH_PAGE_COUNT}，实际 {len(actual_names)}")
+    expected_digest = site_source_digest()
+    for source_name, output_name in EXPECTED_RESEARCH_PAGES:
+        source_path = research_root / source_name
+        path = output_root / output_name
+        if not source_path.is_file():
+            fail(errors, f"研究源文档缺失：{source_name}")
+            continue
+        if not path.is_file():
+            continue  # 页面集差异已记录缺页，不用缺页触发文件读取异常。
+        source = source_path.read_text(encoding="utf-8")
+        text = path.read_text(encoding="utf-8")
+        parser = PageParser()
+        parser.feed(text)
+        prefix = f"research/{output_name}"
+        if parser.source_digest != expected_digest:
+            fail(errors, f"研究页面不是当前源文件生成：{prefix}")
+        if parser.h1_count != 1 or parser.html_lang != "zh-CN":
+            fail(errors, f"研究页面须有唯一 h1 和 zh-CN 语言：{prefix}")
+        duplicates = [key for key, count in Counter(parser.ids).items() if count > 1]
+        if duplicates:
+            fail(errors, f"研究页面重复 HTML id：{prefix}: {duplicates[:5]}")
+        if any(right > left + 1 for left, right in
+               zip(parser.heading_levels, parser.heading_levels[1:])):
+            fail(errors, f"研究页面标题层级跳级：{prefix}")
+        for landmark in ("header", "main", "footer", "nav"):
+            if not parser.tags[landmark]:
+                fail(errors, f"研究页面缺少 {landmark} 语义地标：{prefix}")
+        if parser.th_without_scope:
+            fail(errors, f"研究页面表头缺少 scope：{prefix}")
+        if ("main-content" not in parser.ids or "#main-content" not in parser.links
+                or ":focus-visible" not in text):
+            fail(errors, f"研究页面缺少键盘跳转或焦点样式：{prefix}")
+        if text.count('aria-current="page"') != 1:
+            fail(errors, f"研究页面须有唯一当前导航项：{prefix}")
+        expected_ids = {primary for _level, _title, primary in semantic_heading_ids(source)}
+        if expected_ids - set(parser.ids):
+            fail(errors, f"研究页面缺少源标题锚点：{prefix}: "
+                 f"{sorted(expected_ids - set(parser.ids))[:5]}")
+        for issue in site_nav_fragment_issues(output_name, source_name, source, parser.nav_links):
+            fail(errors, f"研究页面导航不完整：{prefix}: {issue}")
+        for issue in external_markdown_link_issues(source, parser.links):
+            fail(errors, f"{prefix}: {issue}")
+
+
+def check_site_links(errors: list[str]):
+    """跨全部教程/研究页面核对 URL、文件和片段，不使用易冲突的 basename。"""
+    parsed = {}
+    for path in SITE.rglob("*.html"):
+        parser = PageParser()
+        parser.feed(path.read_text(encoding="utf-8"))
+        parsed[path.resolve()] = parser
+    for path, parser in parsed.items():
+        name = path.relative_to(SITE.resolve()).as_posix()
+        for issue in url_scheme_issues(parser.links + [src for src, _alt in parser.images]):
+            fail(errors, f"站点链接协议错误：{name}: {issue}")
+        for href in parser.links:
+            url = urlparse(href)
+            if url.scheme or url.netloc:
+                continue
+            target = ((SITE / unquote(url.path).lstrip("/")) if url.path.startswith("/")
+                      else (path.parent / unquote(url.path)) if url.path else path).resolve()
+            if not target.is_file():
+                fail(errors, f"站内链接目标不存在：{name} -> {href}")
+                continue
+            if target.suffix.lower() == ".html" and url.fragment:
+                if target not in parsed:
+                    extra = PageParser()
+                    extra.feed(target.read_text(encoding="utf-8"))
+                    # 外部目录的本地 HTML 也必须核对，且避免边遍历边改字典。
+                    target_ids = extra.ids
+                else:
+                    target_ids = parsed[target].ids
+                if unquote(url.fragment) not in target_ids:
+                    fail(errors, f"站内锚点不存在：{name} -> {href}")
+        for src, alt in parser.images:
+            url = urlparse(src)
+            if not url.scheme and not url.netloc:
+                target = (SITE / unquote(url.path).lstrip("/") if url.path.startswith("/")
+                          else path.parent / unquote(url.path))
+                if not target.resolve().is_file():
+                    fail(errors, f"站点图片不存在：{name} -> {src}")
+            if alt is None or not alt.strip():
+                fail(errors, f"站点图片缺少非空替代文本：{name} -> {src}")
 
 
 def check_combined_html(errors: list[str]):
@@ -708,6 +808,8 @@ def check_combined_html(errors: list[str]):
 def source_digest():
     digest = hashlib.sha256()
     paths = sorted(CHAPTERS.glob("*.md"))
+    paths += [ROOT / "codes" / "research" / name for name, _ in EXPECTED_RESEARCH_PAGES]
+    paths += [ROOT / "scripts" / "build_site.py"]
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
               ("build_pdf.py", "make_figures.py", "make_aec_figures.py")]
@@ -723,6 +825,7 @@ def source_digest():
 def site_source_digest():
     digest = hashlib.sha256()
     paths = sorted(CHAPTERS.glob("*.md"))
+    paths += [ROOT / "codes" / "research" / name for name, _ in EXPECTED_RESEARCH_PAGES]
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
               ("build_site.py", "make_figures.py", "make_aec_figures.py")]
@@ -847,6 +950,7 @@ def main():
     check_sources(errors, notices)
     check_figures(errors)
     check_site(errors)
+    check_research_site(errors)
     check_combined_html(errors)
     check_pdf(errors, notices)
     for item in notices:
