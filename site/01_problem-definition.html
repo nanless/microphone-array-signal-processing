@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 1 章 · 问题定义与双耳启示 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="80cb834cf708"><style>
+<meta name="source-digest" content="3ffa19bfc241"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -205,7 +205,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>解析模型负责约束和可解释边界，数据驱动方法可补足难以精确建模的细节。</p>
 <p>第 2 章将从传播时延出发，把这些空间差异写成阵列信号模型。</p>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-f7a201edb9">本章练习</h2>
-<p>下面两题可用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 复算。程序输出按 E01-01、E01-02 标识，不需要下载数据。这里的数字是本书推导，不是设备实测。</p>
+<p>下面三题可用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 复算。程序输出按 E01-01～E01-03 标识，不需要下载数据。这里的数字是本书推导，不是设备实测。</p>
 <p><strong>E01-01：四只麦不一定得到 6 dB。</strong> 目标已经对齐，各路噪声功率均为 1，任意两路噪声的相关系数均为 $\rho$。对四路信号取平均，分别计算 $\rho=0、0.5、1$ 时的输出噪声功率和 SNR 改善量。为什么完全相同的噪声不会被平均消除？</p>
 <p><strong>参考答案</strong>：四个对角项贡献 4，十二个非对角项贡献 $12\rho$；平均权重的乘积均为 $1/16$，所以输出噪声功率为 $(4+12\rho)/16=(1+3\rho)/4$。目标响应仍为 1，SNR 改善量是该噪声功率倒数的 $10\log_{10}$。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -238,6 +238,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>E01-02：更轻的声音是否一定更干净？</strong> 对序列 $[0,1,0,-1]$ 整体乘 0.5，计算均方功率比和电平变化。如果目标与噪声同时乘 0.5，SNR 会提高吗？</p>
 <p><strong>参考答案</strong>：原均方功率为 $2/4=0.5$，缩放后为 $0.5/4=0.125$，功率比为 0.25。因此电平变化为 $10\log_{10}0.25=20\log_{10}0.5\approx-6.02$ dB。目标与噪声功率同时缩小到四分之一，SNR 不变。</p>
 <p>比较处理前后音频时，应保留共同的幅度尺度；若分别归一化到同一峰值，这项整体增益变化就会被隐藏。这里的 dB 是相对功率变化，不是声压级 dB SPL。</p>
+<p><strong>E01-03：噪声较大的麦应当占多少权重？</strong> 两路目标已经对齐且幅度相同，噪声互不相关，功率分别为 1 和 4。用实权重 $w_1,w_2$ 相加，要求 $w_1+w_2=1$。先算等权平均的输出噪声，再求使输出噪声最小的权重。</p>
+<p><strong>参考答案</strong>：等权平均的输出噪声为 $(1+4)/4=1.25$。将 $w_2=1-w_1$ 代入，输出噪声变为 $w_1^2+4(1-w_1)^2$；对 $w_1$ 求导得 $10w_1-8=0$，所以权重为 $[0.8,0.2]^\top$，输出噪声为 $0.8^2+4\times0.2^2=0.8$。</p>
+<p>两种权重的目标响应都是 1，因此后者相对等权平均的 SNR 改善为 $10\log_{10}(1.25/0.8)\approx1.94$ dB。它甚至优于只取噪声功率为 1 的第一路，但不是多加一只麦就必有这一收益：本题依赖独立噪声、准确功率估计和目标对齐。第 5 章的 MVDR 将这一思路推广到复权重与相关噪声。</p>
 <p>可在<a href="research/05_exercises_and_audio.html">章节代码练习与音频实验</a>中试听“单麦输入”和“对齐后平均”。文件共用增益，使用本书合成的谐波音和独立噪声，不是真人语音；先从低播放音量开始。听音用于观察差别，不能替代本题的功率计算。</p>
 <hr />
 <blockquote>

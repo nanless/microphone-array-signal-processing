@@ -298,9 +298,13 @@ $$\hat{\mathbf{R}}_{\mathrm{shrink}}(f_k)=(1-\rho)\hat{\mathbf{R}}(f_k)+\rho\fra
 
 第二类处理是用时频掩码为快拍加权，分别估计目标或噪声协方差（§8.1）。掩码可以减少干扰泄漏，但也会减少有效样本数，仍须检查矩阵的条件数并配合加载。
 
-**本书代码采用的数组与流式约定。** [`spectral.py`](../codes/array_tutorial/spectral.py) 中的 STFT 固定输出 `通道数 × 频点数 × 帧数`，即 $M\times F\times L$；[`covariance.py`](../codes/array_tutorial/covariance.py) 再把它变成 $F$ 个 $M\times M$ 空间二阶矩。示例使用前向变换 $e^{-\mathrm j2\pi ft}$、周期 Hann 窗和加权重叠相加。`center=True` 会在两端补半窗，因此离线重构可对齐原波形；实时系统不能据此把延迟写成零，还要把首帧等待、窗长、帧移、分块缓存和可能的前瞻一并计入端到端延迟。
+**本书代码采用的数组与流式约定。** [`spectral.py`](../codes/array_tutorial/spectral.py) 中的 STFT 固定输出 `通道数 × 频点数 × 帧数`，即 $M\times F\times L$；[`covariance.py`](../codes/array_tutorial/covariance.py) 再把它变成 $F$ 个 $M\times M$ 空间二阶矩。示例使用前向变换 $e^{-\mathrm j2\pi ft}$、周期 Hann 窗和加权重叠相加。
 
-协方差实现同时给出批量估计和指数递归更新。掩码在某个频点的权重和为零时，代码会报错，而不是用 $\varepsilon$ 伪造一个无统计依据的矩阵；有限精度造成的非厄米残差会被对称化。需要加载时采用无量纲相对口径 $\alpha\operatorname{tr}(\hat{\mathbf R})\mathbf I/M$。上线还应记录遗忘因子、VAD/SPP 更新门控、每频点有效权重、条件数以及回退方式；这些参数共同决定跟踪速度，不能只记录“用了 MVDR”。可运行的端到端小例见 [`ch02_05_baselines.py`](../codes/examples/ch02_05_baselines.py)，解析边界测试见 [`test_codes_doa_beam.py`](../tests/test_codes_doa_beam.py)。
+`center=True` 会在两端补半窗，因此离线重构可对齐原波形；实时系统不能据此把延迟写成零，还要把首帧等待、窗长、帧移、分块缓存和可能的前瞻一并计入端到端延迟。
+
+协方差实现同时给出批量估计和指数递归更新。掩码在某个频点的权重和为零时，代码会报错，而不是用 $\varepsilon$ 伪造一个无统计依据的矩阵；有限精度造成的非厄米残差会被对称化。需要加载时采用无量纲相对口径 $\alpha\operatorname{tr}(\hat{\mathbf R})\mathbf I/M$。
+
+上线还应记录遗忘因子、VAD/SPP 更新门控、每频点有效权重、条件数以及回退方式；这些参数共同决定跟踪速度，不能只记录“用了 MVDR”。可运行的端到端小例见 [`ch02_05_baselines.py`](../codes/examples/ch02_05_baselines.py)，解析边界测试见 [`test_codes_doa_beam.py`](../tests/test_codes_doa_beam.py)。
 
 **语音信号对阵列处理的影响**：
 
@@ -489,7 +493,7 @@ $$\frac{e^{-\mathrm{j}2\pi f\|\vec{p}-\vec{r}_m\|/c}}{\|\vec{p}-\vec{r}_m\|}\tex
 
     参考答案：方差与 SNR 成反比，标准差缩小 $\sqrt{10}\approx3.16$ 倍，约为 $1.2°/3.16\approx0.38°$。在该模型里，独立快拍数与 SNR 成乘积关系，两种变化对下界的影响相同。增加观测时间不需要提高单帧 SNR，却会增加等待时间；声源移动或统计量变化时，也不能把更多帧当作同一方向的独立快拍。因此要按延迟预算和场景平稳性选择，而不能断言增加快拍总是更合算。
 
-以下三题的复算入口为 [`exercises_spatial.py`](../codes/examples/exercises_spatial.py)，结果采用稳定标识 E02-01～E02-03。
+以下五题的复算入口为 [`exercises_spatial.py`](../codes/examples/exercises_spatial.py)，结果采用稳定标识 E02-01～E02-05。
 
 **E02-01：同一段录音为什么有两种帧数？** 对 8 kHz、1 s 的信号，取窗长 256 点、帧移 64 点，分别使用 `center=False` 和 `center=True`。再对其中同一个 256 点窗做 256 点与 512 点实 FFT。哪些输出数量改变，哪些物理信息没有增加？
 
@@ -506,6 +510,29 @@ $$\frac{e^{-\mathrm{j}2\pi f\|\vec{p}-\vec{r}_m\|/c}}{\|\vec{p}-\vec{r}_m\|}\tex
 **参考答案**：居中并保留原长度时，双精度实现的最大绝对重建误差应小于 $10^{-12}$。不居中时，第一点只被 Hann 窗的零端点覆盖，合成分母为零，本书实现会拒绝输出而不是把错误样本补成零。
 
 需要检查的是每个保留样本的窗平方和是否非零，不能只看“重叠了 75%”。[SciPy 的 NOLA 条件说明](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.check_NOLA.html "citation")给出这一归一化分母。这个实验只验证分析与合成的一致性，不证明修改过频谱后仍无失真，也不代表居中处理适合零前瞻实时系统。
+
+**E02-04：掩码总和非零，协方差就可逆吗？** 两通道的三帧快拍为 $[1,0]^\top$、$[0,1]^\top$、$[1,1]^\top$。按 $\sum_tq_t\vec x_t\vec x_t^H/\sum_tq_t$ 计算加权二阶矩，分别取掩码 $[1,0,1]$ 和 $[1,0,0]$。再将第一组权重全部乘 2，结果是否改变？
+
+**参考答案**：第一组保留首、末两帧，外积相加再除以 2，得到
+
+$$\mathbf R_A=\begin{bmatrix}1&1/2\\1/2&1/2\end{bmatrix},\qquad
+\mathbf R_B=\begin{bmatrix}1&0\\0&0\end{bmatrix}.$$
+
+$\mathbf R_A$ 的行列式为 $1/4$、秩为 2；$\mathbf R_B$ 的行列式为 0、秩为 1。所有权重同时乘 2 时，分子与分母等比放大，$\mathbf R_A$ 不变。权重集中程度可用本题的辅助量 $L_w=(\sum_tq_t)^2/\sum_tq_t^2$ 比较，两组分别为 2 和 1。
+
+$L_w$ 只描述权重分布，不自动等于统计独立的快拍数，也不保证满秩：即使均匀保留很多帧，若它们彼此成比例，协方差仍可能秩一。全零掩码没有可用统计量，本书代码会拒绝计算，而不是仅在分母加一个小数后宣称得到有效协方差。
+
+**E02-05：递归协方差启动时为何偏小？** 固定快拍 $\vec x=[1,2]^\top$，从零矩阵开始，使用 $\mathbf S_t=0.5\mathbf S_{t-1}+0.5\vec x\vec x^H$。计算前三步的矩阵和累计权重，再按累计权重归一化。
+
+**参考答案**：外积为 $\mathbf Q=\begin{bmatrix}1&2\\2&4\end{bmatrix}$。第一步为 $0.5\mathbf Q$；第二步为 $(0.5^2+0.5)\mathbf Q=0.75\mathbf Q$；第三步为 $(0.5^3+0.5^2+0.5)\mathbf Q=0.875\mathbf Q$。
+
+| 步数 $t$ | 累计权重 $b_t=1-2^{-t}$ | 未归一化矩阵 | $\mathbf S_t/b_t$ |
+|---|---|---|---|
+| 1 | 0.500 | $0.500\mathbf Q$ | $\mathbf Q$ |
+| 2 | 0.750 | $0.750\mathbf Q$ | $\mathbf Q$ |
+| 3 | 0.875 | $0.875\mathbf Q$ | $\mathbf Q$ |
+
+这是零初始化造成的权重总和不足，不是信号功率随时间上升。归一化修正这一尺度，却不会增加独立观测，也不会把本题的秩一矩阵变成可逆矩阵。有跳帧、可变遗忘因子或掩码时，应按实际更新递推累计权重，不能继续照搬 $1-2^{-t}$。
 
 [音频实验总览](../codes/research/05_exercises_and_audio.md)提供已知采样率与通道顺序的 WAV，可用同一分析/合成参数检查边缘重建；比较时保留原长度，不把端点丢失误认为降噪效果。
 

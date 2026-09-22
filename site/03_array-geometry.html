@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 3 章 · 阵列几何形态 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="80cb834cf708"><style>
+<meta name="source-digest" content="3ffa19bfc241"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -371,13 +371,51 @@ $$d\theta = \frac{343\times10\times10^{-6}}{0.04\times1} \approx 0.0858\ \text{r
 <p>答案要点：8 kHz 波长约 4.3 cm，半波长约 2.1 cm，小于 3.75 cm 相邻麦距，已经不满足全视场无混叠的充分条件。圆阵是否在某一转向出现等高歧义，要看完整几何和宽带融合，不能只套 ULA 的单一栅瓣角公式。挡板会以频率和方向相关的方式改变幅相响应；若模型使用得当，这些额外差异可帮助消歧，但它不是固定地把低频下限移动某个倍频程。</p>
 </li>
 </ol>
-<p>下面两题使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 复算，分别把差分位置和反三角函数的边界写成可检查的输出。</p>
+<p>下面四题使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 复算，检查差分位置、反三角函数边界、角度约定和远场近似误差。</p>
 <p><strong>E03-01：差分位置相同，观测次数也相同吗？</strong> 对位置 $\{0,1,2,3,4,5\}$ 和 $\{0,1,2,3,7,11\}$，枚举全部有序麦对，包括同一麦与自身配对。计算每个差分滞后的重数，并检查重数之和。位置单位为半波长。</p>
 <p><strong>参考答案</strong>：两种布局都有 $6\times6=36$ 个有序麦对，零滞后的重数均为 6。均匀阵的滞后从 −5 到 5，重数依次为 $1,2,3,4,5,6,5,4,3,2,1$，共 11 个不同位置。</p>
 <p>嵌套阵的滞后连续覆盖 −11 到 11，共 23 个；正滞后 1～11 的重数依次为 $3,2,1,2,1,1,1,1,1,1,1$，负滞后与之对称。相同滞后的样本可以平均，但不同麦对可能共享同一通道，不能据重数直接假定它们统计独立，更不能把 23 个差分位置当作 23 路原始录音。</p>
 <p><strong>E03-02：把越界时延与大角度误差分开。</strong> 麦距 4 cm、声速 343 m/s，真角取 0° 和 85°。分别给真实时延加、减 10 μs，用完整反正弦反算；若反正弦输入超出 $[-1,1]$，应如何记录？</p>
 <p><strong>参考答案</strong>：正横的真实时延为零，两个估计角分别约为 −4.92°、+4.92°。85° 时的真实时延约为 116.17 μs；减去 10 μs 后约为 65.57°，增加 10 μs 则超过最大时延 $0.04/343\approx116.62$ μs，无实数方向可解。保留更多位计算，再将角度舍入到两位小数。</p>
 <p>代码将越界结果记为 <code>valid=false</code>、角度为 <code>null</code>，不把它悄悄夹到 90°。系统可以另设夹限策略，但必须保留越界标记；夹限输出是恢复动作，不是一次准确的方向观测。</p>
+<p><strong>E03-03：同一方向为什么会有两个方位角数字？</strong> 已知方向单位向量 $\vec u=[-1/2,-1/\sqrt2,1/2]^\top$。按本书约定——方位角零点为 $+y$、正角转向 $+x$——反算方位角与俯仰角，并将角度重新代回方向向量。再与从 $+x$ 朝 $+y$ 计角的常见数学约定比较。</p>
+<p><strong>参考答案</strong>：本书使用 $u_x=\sin\theta\cos\varphi$、$u_y=\cos\theta\cos\varphi$、$u_z=\sin\varphi$，因此 $\theta=\operatorname{atan2}(u_x,u_y)\approx-144.74^\circ$，$\varphi=\arcsin(1/2)=30^\circ$。代回后恢复原来的三个分量，双精度程序的最大绝对误差小于 $10^{-14}$。</p>
+<p>从 $+x$ 计角时，$\alpha=\operatorname{atan2}(u_y,u_x)\approx-125.26^\circ$；它与本书的关系是 $\theta=90^\circ-\alpha$，再将角度折回选定的 $360^\circ$ 区间。两者描述同一方向，不能混用数值与导向模型。<a href="https://numpy.org/doc/2.0/reference/generated/numpy.atan2.html" title="citation">NumPy 的 atan2 文档</a>明确规定第一个参数通常对应纵坐标、第二个对应横坐标；函数不会替调用者选择本书的角度零点。</p>
+<p><strong>E03-04：球面波何时足够接近平面波？</strong> 三只麦位于 $(-0.05,0)$、$(0,0)$、$(0.05,0)$ m，中心麦作参考，声速为 343 m/s。声源方向为本书方位角 $30^\circ$，距中心分别为 0.2、0.5、2、20 m。用真实距离差与平面投影分别计算相对时延，比较三通道时延误差的均方根，并换算为 4 kHz 的相位误差。</p>
+<p><strong>参考答案</strong>：声源位置为 $(r/2,\sqrt3r/2)$，真实距离为 $d_m=\sqrt{r^2-2rx_m\sin30^\circ+x_m^2}$，相对时延为 $(d_m-r)/343$；平面近似为 $-x_m\sin30^\circ/343$。在 $r=0.2$ m 时，真实相对路程约为 $[29.129,0,-19.722]$ mm，平面模型为 $[25,0,-25]$ mm。</p>
+<p>三通道误差先平方、取平均再开方；参考麦的零误差也计入分母 3。相位误差采用未绕回的 $360f\Delta\tau$，不能先折回 $[-180^\circ,180^\circ)$ 再比较模型。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">声源距离 / m</th>
+<th scope="col">时延误差均方根 / μs</th>
+<th scope="col">4 kHz 相位误差均方根 / °</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.2</td>
+<td>11.28</td>
+<td>16.24</td>
+</tr>
+<tr>
+<td>0.5</td>
+<td>4.47</td>
+<td>6.44</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1.12</td>
+<td>1.61</td>
+</tr>
+<tr>
+<td>20</td>
+<td>0.11</td>
+<td>0.16</td>
+</tr>
+</tbody>
+</table></div>
+<p>近场还存在幅度差。在 0.2 m 处，以中心麦归一化的幅度约为 $[0.8729,1,1.1094]$，并非全为 1。距离增大时，本例的相位和幅度都逐渐接近平面模型；是否可以忽略误差取决于频带与容差，不能把表中的某个距离当作所有阵列的统一边界。这是本书自由场几何计算，未模拟反射、挡板或麦克风指向性。</p>
 <p>更多跨章练习和音频条件见<a href="research/05_exercises_and_audio.html">实验总览</a>。其中整数延迟音频只提供已知通道时差，没有模拟某一真实麦克风外壳；不能由该样本推断挡板收益或阵列标定精度。</p>
 <hr />
 <blockquote>

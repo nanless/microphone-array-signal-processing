@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 11 章 · 总结与选型指南 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="80cb834cf708"><style>
+<meta name="source-digest" content="3ffa19bfc241"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -76,6 +76,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-b0ff923d28">题 3：跨时钟车载阵列</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-65c140a10b">题 4：把空间带宽、同步与延迟放进同一张选型表</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-b2f4d38876">题 5：评分覆盖与电池预算（E11-02）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-994102bab0">题 6：平均文件分数与合并计数（E11-03）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-67b9b2107f">题 7：p99 为什么还需要注明计算方法（E11-04）</a></li>
 <li><a href="11_selection-guide.html#sec-11-7">11.7 后续阅读</a></li>
 </ul>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
@@ -95,6 +97,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-b0ff923d28">题 3：跨时钟车载阵列</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-65c140a10b">题 4：把空间带宽、同步与延迟放进同一张选型表</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-b2f4d38876">题 5：评分覆盖与电池预算（E11-02）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-994102bab0">题 6：平均文件分数与合并计数（E11-03）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-67b9b2107f">题 7：p99 为什么还需要注明计算方法（E11-04）</a></li>
 <li><a href="11_selection-guide.html#sec-11-7">11.7 后续阅读</a></li>
 </ul></nav></details>
 <blockquote>
@@ -365,7 +369,14 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </table></div>
 <p>可以先建立最小基线，再一次增加一个模块。增加模块后要同时检查收益、语音损伤、延迟、功耗和失败样例。</p>
 <p>如果 WPE 没有改善目标房间的结果，或分离网络虽然提高了尺度不变信号失真比（Scale-Invariant Signal-to-Distortion Ratio，SI-SDR）却增加了内容错误，就不应因为流程图里画了它而保留。</p>
-<p>开源实现也要按任务筛选。项目名称不能代替算法条件：PortAudio 解决设备输入输出，不解决跨设备同步；ONNX Runtime 执行模型，不规定模型训练目标；pyroomacoustics 适合房间与阵列原型，不证明目标设备实时；WebRTC AEC3 可以对照实时回声链路，但其内部参数不是其他产品的默认值。选择开源项目时应把规范仓库、固定提交或发布、许可证、支持平台、输入输出契约、维护状态和最小测试一起写入方案，详见 §10.9.1 与 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json"><code>codes/SOURCES.lock.json</code></a>。</p>
+<p>开源实现也要按任务筛选。项目名称不能代替算法条件：</p>
+<ul>
+<li>PortAudio 解决设备输入输出，不解决跨设备同步。</li>
+<li>ONNX Runtime 执行模型，不规定模型训练目标。</li>
+<li>pyroomacoustics 适合房间与阵列原型，不证明目标设备实时。</li>
+<li>WebRTC AEC3 可以对照实时回声链路，但其内部参数不是其他产品的默认值。</li>
+</ul>
+<p>选择开源项目时应把规范仓库、固定提交或发布、许可证、支持平台、输入输出契约、维护状态和最小测试一起写入方案，详见 §10.9.1 与 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json"><code>codes/SOURCES.lock.json</code></a>。</p>
 <p>本书按 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/COVERAGE.md"><code>codes/COVERAGE.md</code></a> 将算法分为“本仓库可运行基线、外部参考实现、原理索引、明确排除”四种状态。适配器只是调用外部实现的一种方式，不是第五种覆盖状态。教学实现通过单元测试，只能说明约定和边界算例正确；它没有经过目标设备的实时、长稳和主观听测，不能直接标成工业实现。</p>
 <p>工程选型还要把“源码能获取”与“接口能接入、平台能编译、设备能通过验收”分开。Linux 会议终端可研究 ALSA/PipeWire 的设备和参考路由；Cortex-M 端侧模型可研究 TFLM/CMSIS-NN 的算子与内存；XMOS 或 SOF 固件则需要对应硬件、工具链及拓扑。每条候选都应补一项故障试验，例如拔插后恢复、参考切换、跨块状态清零、缓冲不足或线程过载，具体入口见<a href="research/03_industrial_deployment.html">工业部署研究</a>。</p>
 <p><strong>完整决策例：未知参会者的连续转写</strong>。假设会议中共有 2～6 名未注册说话人，人数随时间变化，但任一时刻最多两人同时说话。系统要连续输出全部内容给 ASR，并要求端到端延迟可测但尚未给定阈值。先用硬约束筛选，再进入实测：</p>
@@ -445,7 +456,16 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>同一设备示意电池为 3.7 V、2000 mAh，可用能量系数为 0.8；低功耗状态为 0.2 W、占时间 10%，处理状态为 1.2 W、占时间 90%。估计平均功率和续航。这里的输入是预算示意，不是某产品规格。</p>
 <p><strong>答案要点</strong>：评分覆盖为 $8/10=80\%$，3.8 只能标成成功子集的平均分；应保留总数 10、成功数 8、失败数 2、失败原因和各场景分布。缺失项不能擅自填 0 分，也不能悄悄从完整测试集删除；是否判整次评测无效应遵守预先规定的规则。</p>
 <p>容量先换成 $2$ Ah，标称能量为 $3.7\times2=7.4$ Wh，可用能量为 $7.4\times0.8=5.92$ Wh。平均功率为 $0.2\times0.1+1.2\times0.9=1.10$ W，续航约 $5.92/1.10=5.38$ h。<code>E11-02</code> 输出这组中间值；温度、老化和状态转换消耗没有单独建模，所以它是估计，不是续航验收。</p>
-<span id="sec-13" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-11-7">11.7 后续阅读</h2>
+<span id="sec-13" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-994102bab0">题 6：平均文件分数与合并计数（E11-03）</h3>
+<p>两个文件分别有 10、90 个参考词，替换、删除和插入的错误数之和分别为 1、45。先计算各文件 WER，再比较“每个文件等权平均”和“先合并错误数与参考词数”的结果。假设两文件都成功评分，分词与文本规范化完全一致。</p>
+<p><strong>答案要点</strong>：两文件的 WER 为 $1/10=10\%$ 和 $45/90=50\%$。文件等权的宏平均为 $(10\%+50\%)/2=30\%$；合并计数为 $(1+45)/(10+90)=46\%$，相当于按参考词数加权。</p>
+<p>两个值回答不同问题：前者给每个文件同样权重，后者给每个参考词同样权重。不能把宏平均写成合并计数 WER，也不能在比较模型时临时更换聚合方式。实际评测还要按任务固定说话人/会话归属、空参考文件与失败文件的处理方式；本题没有计算语音转写或多人排列。</p>
+<span id="sec-14" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-67b9b2107f">题 7：p99 为什么还需要注明计算方法（E11-04）</h3>
+<p>20 个示意延迟按升序为 $[1,2,\ldots,19,100]$ ms。采用最近秩定义：对分位数比例 $q>0$，取升序数组中从 1 开始数的第 $\lceil nq\rceil$ 项。计算 p50、p95、p99，再与 NumPy 的 <code>method="linear"</code> 比较。</p>
+<p><strong>答案要点</strong>：最近秩为 $\lceil20\times0.50\rceil=10$、$\lceil20\times0.95\rceil=19$、$\lceil20\times0.99\rceil=20$，得到 10、19、100 ms。</p>
+<p>线性插值则在从 0 开始的位置 $q(n-1)$ 取值：p50 位于 9.5，得到 10.5 ms；p95 位于 18.05，在 19 与 100 ms 间插值，得到 $19+0.05\times81=23.05$ ms；p99 位于 18.81，得到 $19+0.81\times81=84.61$ ms。<a href="https://numpy.org/doc/stable/reference/generated/numpy.quantile.html" title="citation">NumPy 分位数文档的 Notes 小节</a>给出该插值定义，核实于 2026-09-22。</p>
+<p>两组结果来自不同的报告约定。预先选定方法，连同样本数、测量时长与测点一起记录；不要用仅 20 个样本宣称已经稳定估计实际系统的 99% 尾部。两种计算都不能补回未观测到的罕见卡顿。</p>
+<span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-11-7">11.7 后续阅读</h2>
 <p>要实现算法，可回到第 4～9 章查看定位、波束、AEC、WPE、分离和追踪。要制定整机预算和验收计划，见<a href="10_engineering-practice.html">第 10 章</a>。<a href="12_appendix-symbols-math.html">附录 A</a>汇总符号与数学工具，<a href="13_appendix-guide.html">附录 B</a>给出进一步阅读、练习和排错入口。</p>
 <hr />
 <blockquote>

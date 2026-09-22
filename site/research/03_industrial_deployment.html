@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>工业音频实现研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="80cb834cf708"><style>
+<meta name="source-digest" content="3ffa19bfc241"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -227,7 +227,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="sec-28" class="anchor-alias" aria-hidden="true"></span><span id="6-怎样把项目变成可执行实验" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-0c2074e6e4">6. 怎样把项目变成可执行实验</h2>
 <p>每次只选一条具体链。例如 Linux 会议终端可以从 ALSA/PortAudio 采集、PipeWire 或应用内 AEC、固定波束、单通道 NS、VAD/AGC 与后端开始。若图中同时出现 PipeWire 和应用内 AEC，应先明确谁负责消回声及谁取得播放参考。</p>
 <p>实验记录至少保存：源码提交、模型摘要、依赖和编译参数、设备与固件、声学条件、通道与时钟、数据集划分、块长、状态初始化/重置、指标、逐文件结果和资源测量。状态相关的回归要同时覆盖整段、分块、暂停恢复与故障注入；算法单元测试不能代替它们。</p>
-<p>块长不同需要适配，但不必等待所有块长的最小公倍数。以 16 kHz 为例，10 ms 采集块是 160 点，15 ms 处理步长是 240 点，32 ms VAD 块是 512 点；三者最小公倍数为 7680 点，即 480 ms。若先攒满这 480 ms 才启动全部模块，会人为增加很大等待。连续队列可以在各消费者凑齐自身输入时立即调用，并保留剩余样本；VAD 的控制输出按时间戳使用。验收要检查每个消费者收到的样本无重无漏，以及输出决策对应哪个时间区间。这是缓冲调度算例，不表示上述不同硬件实现应直接串接。</p>
+<p>块长不同需要适配，但不必等待所有块长的最小公倍数。以 16 kHz 为例，10 ms 采集块是 160 点，15 ms 处理步长是 240 点，32 ms VAD 块是 512 点；三者最小公倍数为 7680 点，即 480 ms。若先攒满这 480 ms 才启动全部模块，会人为增加很大等待。</p>
+<p>连续队列可以在各消费者凑齐自身输入时立即调用，并保留剩余样本；VAD 的控制输出按时间戳使用。验收要检查每个消费者收到的样本无重无漏，以及输出决策对应哪个时间区间。这是缓冲调度算例，不表示上述不同硬件实现应直接串接。</p>
+<p>本书的<a href="../10_engineering-practice.html#sec-10-11">工程练习 E10-07～08</a>给出字节口径与消费索引。运行 <code>.venv/bin/python -m codes.examples.exercises_engineering</code> 后，E10-08 中的 <code>events</code> 记录左闭右开的输入索引和回调轮次，<code>leftovers</code> 记录余量。两条消费者首次分别在 20、40 ms 得到合法块；这里假设各回调完整交付、计算耗时为零，不把它称为设备延迟实测。</p>
+<p>真实回调还应区分采集首样本时间、回调开始时间和播放首样本时间。<a href="https://files.portaudio.com/docs/v19-doxydocs/structPaStreamCallbackTimeInfo.html">PortAudio 的 PaStreamCallbackTimeInfo</a>把三者分别放在 <code>inputBufferAdcTime</code>、<code>currentTime</code>、<code>outputBufferDacTime</code> 中，单位为秒，使用所属流的时间基准。它们不能未经校准就与另一设备的时钟相减。量化、时间戳与样本消费属于接口条件；更新模型或运行时版本时，也应保留这些对照。该接口文档核实于 2026-09-22。</p>
 <p>本目录给出的是实现阅读和实验设计。源码实际获取状态见 <code>codes/upstream/</code> 的下载记录；构建、运行及目标硬件验收仍按各实验的真实记录报告。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>

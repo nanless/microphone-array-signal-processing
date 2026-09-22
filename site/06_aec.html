@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 6 章 · 声学回声消除（AEC） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="80cb834cf708"><style>
+<meta name="source-digest" content="3ffa19bfc241"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -240,12 +240,14 @@ d(n) &= s(n) + (x*h)(n) + v(n),\\
 <p>分区 $p$ 使用延迟了 $p$ 个块的参考 $X(k,m-p)$；若省略该下标，公式就只描述单分区 FDAF。与时域 NLMS 相比，分子仍是“误差 × 参考共轭”，分母仍做参考功率归一；$E(k,m)$ 是用旧滤波器得到的先验误差。文献和代码也会为每个分区维护独立平滑功率，比较实现时必须核对归一化定义。更新后若执行梯度约束，应对每个 $W_p$ 的更新量做 IFFT、清零循环卷积对应的无效时域部分，再 FFT 回频域。以 $N=128$、8 kHz 为例，每秒更新约 $8000/128\approx62$ 次；每次更新同时利用 128 个新样本，整体乘法量见算例 6-2。</p>
 </blockquote>
 <p><strong>子带自适应</strong>：分析滤波器组把信号分成多个子带。带内频谱较平坦，有利于收敛；降采样也会缩短各带滤波器并降低计算量。临界采样时子带间存在混叠，严格重建需要带间交叉滤波器补偿（Gilloire &amp; Vetterli, <em>IEEE Trans. Signal Processing</em> 1992）。<a href="https://infoscience.epfl.ch/record/34234/files/GilloireV88.pdf" title="citation">Gilloire &amp; Vetterli 1992</a></p>
-<p><strong>IPNLMS：按稀疏度分配步长</strong>。真实回声路径通常由直达声和少数强反射贡献主要能量，其余抽头较小。NLMS 对所有抽头使用同类更新；比例归一化最小均方（Proportionate Normalized Least-Mean-Square，PNLMS；Duttweiler 2000）与改进比例归一化最小均方（Improved Proportionate Normalized Least-Mean-Square，IPNLMS；Benesty &amp; Gay，ICASSP 2002）按系数当前幅度分配更新量，使较大的系数优先收敛。按 Benesty 与 Gay 的常用参数化，混合系数 $\alpha\in[-1,1]$：$\alpha=-1$ 退化为 NLMS，$\alpha=1$ 对应纯比例更新，$\alpha=0$ 对两部分等权混合。不同文献可能改写参数，比较数值前要先核对定义。声学回声路径通常不如网络回声路径稀疏，因此 IPNLMS 的收益需在实际路径上验证。</p>
+<p><strong>IPNLMS：按稀疏度分配步长</strong>。真实回声路径通常由直达声和少数强反射贡献主要能量，其余抽头较小。NLMS 对所有抽头使用同类更新；比例归一化最小均方（Proportionate Normalized Least-Mean-Square，PNLMS；Duttweiler 2000）与改进比例归一化最小均方（Improved Proportionate Normalized Least-Mean-Square，IPNLMS；Benesty &amp; Gay，ICASSP 2002）按系数当前幅度分配更新量，使较大的系数优先收敛。</p>
+<p>按 Benesty 与 Gay 的常用参数化，混合系数 $\alpha\in[-1,1]$：$\alpha=-1$ 退化为 NLMS，$\alpha=1$ 对应纯比例更新，$\alpha=0$ 对两部分等权混合。不同文献可能改写参数，比较数值前要先核对定义。声学回声路径通常不如网络回声路径稀疏，因此 IPNLMS 的收益需在实际路径上验证。</p>
 <p><strong>递归最小二乘与卡尔曼方法</strong>。递归最小二乘（Recursive Least Squares，RLS）用带遗忘的最小二乘代替随机梯度，标准全矩阵实现复杂度为 $O(L^2)$。遗忘因子 $\lambda$ 越小，历史样本衰减越快，路径变化后适应得更快，但稳态估计方差也更大。有效记忆长度常用 $1/(1-\lambda)$ 粗略估计：$\lambda=0.99$ 约为 100 个样本，$\lambda=0.999$ 约为 1000 个样本。<a href="https://www.thinkmind.org/articles/tele_v10_n34_2017_2.pdf" title="citation">Elisei-Iliescu et al. 2017（AEC 自适应算法综述）</a></p>
 <p><strong>频域卡尔曼滤波</strong>（Frequency-Domain Kalman Filter，FDKF）把每个频点的回声路径系数当作随时间缓慢变化的状态。卡尔曼增益的作用类似自适应步长，但只有在状态模型、过程噪声方差和观测噪声方差与实际相符时才是相应模型下的最小均方误差增益。双讲时，如果观测噪声估计能及时包含近端语音能量，增益会减小；估计滞后或模型失配时仍可能误更新，所以工程实现通常还会结合双讲检测或增益上限。</p>
 <p>FDKF 把回声路径作为状态变量，其状态方程和观测方程可写为（实际在频域逐频点计算，此处用时域记号示意）：</p>
 <p>$$\vec{h}(n) = a\,\vec{h}(n-1) + \Delta\vec{h}(n),\qquad d(n) = \vec{x}^{\top}(n)\,\vec{h}(n) + s(n) + v(n)$$</p>
-<p>第一行是<strong>状态方程</strong>：上一时刻的路径乘状态转移因子 $a$，再加过程噪声 $\Delta\vec{h}$，用来描述缓慢漂移和偶发突变。第二行是<strong>观测方程</strong>：麦克风信号由参考经过路径滤波后，再叠加近端语音和噪声。对应 §9.2 的卡尔曼递推，状态是 $\vec{h}$，观测是 $d$，近端语音与噪声合并为观测噪声。双讲时观测噪声估计增大，卡尔曼增益随之减小；路径变化使预测误差增大时，增益会上升以加快重新收敛。每个频点还需维护误差方差或协方差，因此计算量高于普通 PBFDAF。</p>
+<p>第一行是<strong>状态方程</strong>：上一时刻的路径乘状态转移因子 $a$，再加过程噪声 $\Delta\vec{h}$，用来描述缓慢漂移和偶发突变。第二行是<strong>观测方程</strong>：麦克风信号由参考经过路径滤波后，再叠加近端语音和噪声。对应 §9.2 的卡尔曼递推，状态是 $\vec{h}$，观测是 $d$，近端语音与噪声合并为观测噪声。</p>
+<p>双讲时观测噪声估计增大，卡尔曼增益随之减小；路径变化使预测误差增大时，增益会上升以加快重新收敛。每个频点还需维护误差方差或协方差，因此计算量高于普通 PBFDAF。</p>
 <p>逐频点写完整的一次递推。省略频点下标，$W_{m-1}$ 是上一块的路径系数，$P_{m-1}$ 是其误差方差，$a$ 是状态转移因子，$\Phi_m$ 和 $\Psi_m$ 分别是过程噪声与观测噪声方差：</p>
 <p>$$\begin{aligned}
 \hat W_m^-&=aW_{m-1},& P_m^-&=|a|^2P_{m-1}+\Phi_m,\\
@@ -476,7 +478,14 @@ P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 </tr>
 </tbody>
 </table></div>
-<p><strong>按设备条件选型</strong>：耳机和手表受算力、内存与功耗限制，可比较端侧小模型与传统频域方案；音箱和会议终端可评估 PBFDAF 或 FDKF 加神经后滤波；双讲条件复杂且需要保留递推诊断量时，可进一步评估神经卡尔曼；需要只保留注册用户时再评估 pAEC。语音助手还要单独验证用户插话（barge-in）时的近端保护。无论采用哪条路线，系统设计仍需处理 §6.1.9 所列的参考、延迟、双讲和残余回声问题。</p>
+<p><strong>按设备条件选型</strong>：</p>
+<ul>
+<li>耳机和手表受算力、内存与功耗限制，可比较端侧小模型与传统频域方案；</li>
+<li>音箱和会议终端可评估 PBFDAF 或 FDKF 加神经后滤波；</li>
+<li>双讲条件复杂且需要保留递推诊断量时，可进一步评估神经卡尔曼；</li>
+<li>需要只保留注册用户时再评估 pAEC。</li>
+</ul>
+<p>语音助手还要单独验证用户插话（barge-in）时的近端保护。无论采用哪条路线，系统设计仍需处理 §6.1.9 所列的参考、延迟、双讲和残余回声问题。</p>
 <span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-6-1-7">6.1.7 阵列中的 AEC：与波束形成的三种顺序</h3>
 <p>多麦克风设备里，AEC 与波束形成（第 5 章）谁先做，是系统级的架构决策，教科书上三种排法：</p>
 <ol>
@@ -659,7 +668,8 @@ P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 </table></div>
 <p>是否启用去相关，应根据目标节目材料在工作频带内的相干函数、相关矩阵条件数和路径估计稳定性判断。确定候选方法后，逐步增加处理强度，并同时复测远端单讲残余、近端单讲失真、双讲质量和主观音质；处理强度的上限由项目听测与任务指标共同决定。</p>
 <blockquote>
-<p><strong>多参考相关性的数字例子。</strong> 两路参考的归一化相关系数为 $\rho$ 时，理想化的 $2\times2$ 相关矩阵条件数为 $(1+\rho)/(1-\rho)$。$\rho=0.95$ 时条件数为 39，$\rho=0.6$ 时降为 4。这个计算说明去相关能改善可辨识性，但不能直接换算成固定的 ERLE 增益；实际收益还取决于声道内容、回声路径、去相关失真和估计器。</p>
+<p><strong>多参考相关性的数字例子。</strong> 两路等功率参考的归一化相关矩阵为 $\begin{bmatrix}1&\rho\\\rho^*&1\end{bmatrix}$。本书由其特征方程得到特征值 $1\pm|\rho|$；当 $|\rho|\lt 1$ 时，二范数条件数为 $(1+|\rho|)/(1-|\rho|)$。$\rho=0.95$ 和 $\rho=-0.95$ 都得到 39，$|\rho|=0.6$ 时降为 4；$|\rho|=1$ 时矩阵奇异。</p>
+<p>反相参考与同相参考一样可能缺少独立信息，不能因相关系数为负就判断容易辨识。去相关能改善条件数，但不能直接换算成固定的 ERLE 增益；实际收益还取决于声道内容、回声路径、去相关失真和估计器。</p>
 </blockquote>
 <span id="sec-13" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-6-1-11">6.1.11 播放链参考抽头位置及其对 ERLE 的影响</h3>
 <p>播放链路是一串变换：应用音源 → 混音 → 音效/均衡（Equalization，EQ）→ 自动增益控制（Automatic Gain Control，AGC）/动态范围压缩（Dynamic Range Compression，DRC）→ 限幅 → 重采样 → 编解码 → 数模转换器（Digital-to-Analog Converter，DAC）→ 功放 → 扬声器。</p>
@@ -949,7 +959,8 @@ P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 </tr>
 </tbody>
 </table></div>
-<p>D1～D3检查参考、延迟和双讲控制；D4用于判断非线性残余；D5～D6检查近端语音和舒适噪声；D7～D8检查长时漂移和链路切换。ITU-T 已于 2024 年 1 月 5 日删除 P.862、P.862.1、P.862.2 和 P.862.3，并指向 P.863、P.863.1 与 P.863.2；因此 PESQ 只宜用于需要延续既有 P.862 基线的历史回归，新测试应先确认 P.863 的带宽、预处理和适用条件。<a href="https://www.itu.int/rec/T-REC-P.862" title="citation">ITU-T P.862 状态页</a>、<a href="https://www.itu.int/rec/T-REC-P.863-201803-I" title="citation">ITU-T P.863</a></p>
+<p>D1～D3检查参考、延迟和双讲控制；D4用于判断非线性残余；D5～D6检查近端语音和舒适噪声；D7～D8检查长时漂移和链路切换。</p>
+<p>ITU-T 已于 2024 年 1 月 5 日删除 P.862、P.862.1、P.862.2 和 P.862.3，并指向 P.863、P.863.1 与 P.863.2；因此 PESQ 只宜用于需要延续既有 P.862 基线的历史回归，新测试应先确认 P.863 的带宽、预处理和适用条件。<a href="https://www.itu.int/rec/T-REC-P.862" title="citation">ITU-T P.862 状态页</a>、<a href="https://www.itu.int/rec/T-REC-P.863-201803-I" title="citation">ITU-T P.863</a></p>
 <blockquote>
 <p><strong>采样率偏移（Sample Rate Offset，SRO）。</strong> 播放与采集时钟相差 10 ppm 时，16 kHz 下每秒相差 $16000\times10^{-5}=0.16$ 个采样；1 小时累积 576 个采样，即 36 ms。延迟重搜只能重新选择整数或分数延迟，不能消除持续增长的速率差；长通话通常要估计 SRO 并对参考做重采样补偿。若硬件允许，共用时钟可以从源头消除该偏移。</p>
 </blockquote>
@@ -1244,8 +1255,8 @@ P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 <li>播放参考先进入历史缓冲和延迟搜索，对齐参考参与自适应滤波，麦克风减去回声估计形成线性残差；残余估计控制后续抑制，舒适噪声用于缓和背景突变。refined/coarse 更新和输出选择必须按固定版本源码检查，见 §6.1.9。</li>
 <li>ERLE 度量规定远端单讲窗口的回声能量衰减；平均意见分（Mean Opinion Score，MOS）来自规定协议下的真人评分；AECMOS 是模型预测的回声和其他可闻退化分。双讲输出包含应保留的近端语音，直接拿总输出功率计算 ERLE 会混淆回声泄漏与近端保留。</li>
 </ol>
-<p><strong>可运行练习 E06-01～E06-03</strong></p>
-<p>下面三题由 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_enhancement.py"><code>exercises_enhancement.py</code></a> 的 <code>run_exercises()</code> 复算。在仓库根目录运行 <code>.venv/bin/python -m codes.examples.exercises_enhancement</code>，按稳定 ID 查 JSON 结果。音频与共同播放增益见<a href="research/05_exercises_and_audio.html">练习及音频手册</a>。这些数例不替代设备收敛或听感评测。</p>
+<p><strong>可运行练习 E06-01～E06-05</strong></p>
+<p>下面五题由 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_enhancement.py"><code>exercises_enhancement.py</code></a> 的 <code>run_exercises()</code> 复算。在仓库根目录运行 <code>.venv/bin/python -m codes.examples.exercises_enhancement</code>，按稳定 ID 查 JSON 结果。音频与共同播放增益见<a href="research/05_exercises_and_audio.html">练习及音频手册</a>。这些数例不替代设备收敛或听感评测。</p>
 <ul>
 <li>
 <p><strong>E06-01：脉冲是否能让全部抽头收敛？</strong> 取 $x=[1,0,0]$、$d=[0.8,-0.2,0.1]$，3 抽头、零初值、$\mu=0.5$、$\varepsilon=0$。逐样本写回归向量、先验残差和最终抽头。</p>
@@ -1259,6 +1270,16 @@ P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 <p><strong>E06-03：双讲冻结保护了什么？</strong> 令 $x=[1,1,1,1]$、$d=[1,1,2,2]$，单抽头初值 0.9，$\mu=0.5$、$\varepsilon=0$；后两样本是已知双讲。比较后两样本冻结与持续更新，并只在前两样本计算 ERLE。</p>
 <p><strong>解答</strong>：前两次权重更新为 0.95、0.975。冻结后的残差为 $[0.1,0.05,1.025,1.025]$；继续更新会得到 1.4875、1.74375，把近端成分错误计入路径。前两样本残差均方为 $(0.1^2+0.05^2)/2=0.00625$，ERLE 约为 22.04 dB。</p>
 <p>本题真值双讲标记是人为给定的控制输入，不是双讲检测器；这两个启动样本只用于检验算术，不能作为稳态 ERLE。</p>
+</li>
+<li>
+<p><strong>E06-04：相减为什么反而更响？</strong> 在单频点上，真实回声为非零 $y$，副本为 $e^{\mathrm j\phi}y$，两者幅度相同。分别取相位误差 0°、60°、180°，计算残余能量与原回声能量之比及理想 ERLE。</p>
+<p><strong>解答</strong>：本书从复数减法得到 $|y-e^{\mathrm j\phi}y|^2/|y|^2=2-2\cos\phi$。三个能量比分别是 0、1、4；理想 ERLE 分别为正无穷、0 dB、约 −6.02 dB。180° 副本其实是 $-y$，相减得到 $2y$，所以能量翻为四倍。</p>
+<p>这是已知副本的代数检查，不是自适应器收敛结果。代码用 <code>null</code> 表示零残差对应的无限理想分数，避免在 JSON 中写非有限数字；真实系统还受噪声、量化和模型误差限制。</p>
+</li>
+<li>
+<p><strong>E06-05：噪声底能否掩盖继续改善的回声抵消？</strong> 取 $y=[1,1,-1,-1]/2$、$v=[1,-1,1,-1]/20$，麦克风为 $d=y+v$。理想抵消后只剩 $e=v$，计算麦克风输入/输出能量比。</p>
+<p><strong>解答</strong>：$y^\top v=0$，$\|y\|^2=1$、$\|v\|^2=0.01$，故输入能量为 1.01、输出为 0.01，$10\log_{10}(101)\approx20.04$ dB。此时真实回声残余为零，但含背景噪声的输入/输出测量仍为有限值。</p>
+<p>本书使用正交序列使交叉项精确为零；普通短录音不保证该条件。这个数字是含噪取点的测量结果，不是回声分量 ERLE 的理论上限，也不是设备只能抵消约 20 dB 的证据。</p>
 </li>
 </ul>
 <span id="sec-20" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-6-1-18">6.1.18 延伸阅读</h3>

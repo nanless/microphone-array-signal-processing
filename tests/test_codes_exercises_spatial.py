@@ -17,9 +17,11 @@ class SpatialExerciseTest(unittest.TestCase):
     def setUpClass(cls):
         cls.results = run_exercises()
 
-    def test_registry_has_twelve_finite_json_results(self):
+    def test_registry_has_twenty_finite_json_results(self):
         expected = {"E01-01", "E01-02", "E02-01", "E02-02", "E02-03", "E03-01",
-                    "E03-02", "E04-01", "E04-02", "E04-03", "E05-01", "E05-02"}
+                    "E03-02", "E04-01", "E04-02", "E04-03", "E05-01", "E05-02",
+                    "E01-03", "E02-04", "E02-05", "E03-03", "E03-04", "E04-04",
+                    "E05-03", "E05-04"}
         self.assertEqual(set(self.results), expected)
         json.dumps(self.results, allow_nan=False)
 

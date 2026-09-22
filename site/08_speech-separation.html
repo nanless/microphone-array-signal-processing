@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 8 章 · 语音分离 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="80cb834cf708"><style>
+<meta name="source-digest" content="3ffa19bfc241"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -154,7 +154,8 @@ $$</p>
 <p>这个例子说明 PIT 解决的是“输出槽位没有固定说话人标签”，并不自动解决未知人数或跨长录音的身份保持。逐帧独立选择排列会让同一输出在相邻帧换人；整句级置换不变训练（utterance-level PIT，uPIT）在整句上只选一次排列，可减少这种帧间交换。</p>
 <p>只有当总目标确实分解成式(8-3)这种“每个输出—参考对各贡献一个代价，再把所选代价相加”的形式时，才能把 $N\times N$ 成对损失矩阵交给线性指派算法求最小总代价。若损失含有跨输出耦合项、集合级正则项或共同解码约束，就不能直接用匈牙利算法代替全排列目标。<a href="https://doi.org/10.1109/ICASSP.2017.7952154">PIT 正式论文</a>、<a href="https://doi.org/10.1109/TASLP.2017.2648230">uPIT 正式论文</a>。</p>
 <p><strong>四类经典 BSS 方法</strong>。以下按模型假设、计算代价和失效条件比较 AuxIVA、ILRMA、MNMF 与 TRINICON。</p>
-<p><strong>AuxIVA（辅助函数型独立向量分析，Auxiliary-function IVA，Ono 2011）</strong>。它假设不同说话人统计独立，并联合建模同一说话人在各频点的分量。频域 ICA 在各频点独立求解，可能得到不同的输出排列；IVA 利用跨频点包络相关性缓解该置换问题。AuxIVA 使用辅助函数进行闭式更新，不需要设置梯度步长，目标函数在理论条件下单调下降。标准实现仍是整段迭代，在线版本需要递推改写；强混响、说话人包络高度相关和短语音都会削弱统计独立性或估计稳定性。它常作为免训练分离基线。</p>
+<p><strong>AuxIVA（辅助函数型独立向量分析，Auxiliary-function IVA，Ono 2011）</strong>。它假设不同说话人统计独立，并联合建模同一说话人在各频点的分量。频域 ICA 在各频点独立求解，可能得到不同的输出排列；IVA 利用跨频点包络相关性缓解该置换问题。AuxIVA 使用辅助函数进行闭式更新，不需要设置梯度步长，目标函数在理论条件下单调下降。</p>
+<p>标准实现仍是整段迭代，在线版本需要递推改写；强混响、说话人包络高度相关和短语音都会削弱统计独立性或估计稳定性。它常作为免训练分离基线。</p>
 <p><strong>ILRMA（独立低秩矩阵分析，Independent Low-rank Matrix Analysis）</strong>。ILRMA 在独立性假设之外，再用非负矩阵分解（Nonnegative Matrix Factorization，NMF）表示每个源的低秩功率谱，并联合优化解混矩阵与谱模型。它增加了基数、迭代次数等超参数，计算量和初始化敏感性也高于 AuxIVA。复杂音乐、重叠笑声和强混响可能不满足低秩或独立性假设，需用目标数据验证。</p>
 <p><strong>MNMF（多通道 NMF，Multichannel NMF）</strong>。MNMF 同样使用低秩源谱模型，但以满秩空间协方差描述传播，不要求方阵解混矩阵可逆，因此可以表示欠定混合。谱基、激活和空间协方差需要联合做最大似然估计，参数较多、迭代较慢且对初值敏感。实践中可用 AuxIVA 或 ILRMA 结果初始化。其计算量通常更适合离线分析或伪标签生成。</p>
 <p><strong>TRINICON（三重 N 卷积混合盲分离，TRIple-N ICA for CONvolutive mixtures）</strong>直接优化时域解混滤波器，用二阶去相关和高阶独立性处理卷积混合，因此不依赖逐频点瞬时混合近似。代价是滤波器与统计窗口较长、优化量大，声源或房间变化时还要重新适应。滤波器长度决定能表示多长的卷积逆，但不等于端到端延迟：因果 FIR 可逐样本输出，块实现的额外等待由分块、缓冲、FFT 和是否使用未来样本决定。</p>
@@ -198,6 +199,7 @@ $$</p>
 <p>以 16 kHz 采样、512 点窗、128 点帧移为例，每秒有 125 帧，30 s 上下文含 3750 帧和 257 个非负频点，约 96 万个时频点。这个换算只给出待处理样本数，不能保证 EM 在固定次数内收敛。实现应监测对数似然相对变化，并设置最大迭代次数；空分量、近奇异 $\mathbf B_n$ 和低能量时频点还需要正则化或重置。</p>
 <p>掩码换成目标协方差时，用</p>
 <p>$$\mathbf R_{\mathrm{tar}}(f)=\frac{\sum_k\gamma(f,k)\mathbf Y(f,k)\mathbf Y^H(f,k)}{\sum_k\gamma(f,k)+\varepsilon}\text{。}\tag{8-5}$$</p>
+<p>式(8-5)展示分母加正数的稳定化写法；无稳定项且权重和非零时，它是加权平均。教学函数 <code>masked_spatial_covariance()</code> 采用另一种明确口径：分母为 $\max(\sum_k\gamma,\varepsilon)$，只在权重和低于地板时改变归一化。两种写法不能在极小权重下当成数值相同，练习 E08-05 给出差别；空掩码在教学代码中返回零矩阵，不能解释为可靠的噪声估计。</p>
 <p>噪声协方差可用相应的非目标掩码估计。软权重的有效样本数不是“$\gamma>0.8$ 的帧数”，而可用 Kish 公式近似：</p>
 <p>$$N_{\mathrm{eff}}(f)=\frac{\left(\sum_k\gamma(f,k)\right)^2}{\sum_k\gamma^2(f,k)}.$$</p>
 <p>例如 900 帧权重全为 1 时 $N_{\mathrm{eff}}=900$；若权重集中在少数帧，有效样本数会明显更小。</p>
@@ -370,6 +372,7 @@ $$</p>
 <li><code>masked_spatial_covariance()</code> 接收 <code>(频点, 通道, 帧)</code> 复谱与 <code>(频点, 帧)</code> 非负掩码；<code>epsilon</code> 必须是有限正数，空掩码返回零矩阵而不是 NaN。</li>
 <li><code>mask_mvdr_2x2()</code> 用目标 SCM 的主特征向量估计相对传递函数，再以干扰 SCM 求两麦 MVDR，返回 <code>(频点, 帧)</code> 输出和 <code>(频点, 2)</code> 权重。</li>
 </ul>
+<p>两麦 MVDR 先按每频点所有通道共同的实部/虚部峰值缩放观测，再计算统计量；解方程前还按干扰 SCM 的平均对角元素归一化。共同尺度会在 MVDR 的分子、分母中抵消，输出再恢复原尺度，因此不能用带绝对功率尺度的固定分母阈值决定旁路。目标或干扰掩码权重不足、零能量或求解失败仍退回参考麦；不把这些情形计为成功分离。</p>
 <p>联合示例用 <code>.venv/bin/python -m codes.examples.ch06_09_baselines</code> 运行，测试见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_wpe_sep_track.py"><code>tests/test_codes_aec_wpe_sep_track.py</code></a>。测试覆盖输出交换、静音参考和静音估计拒绝、SCM 厄米性、MVDR 无失真约束，以及目标或干扰掩码为空时回退参考麦。实际评测还必须固定去均值、时延/增益对齐、静音段、截断长度和输入基线；秩亏 SCM、单通道输入、$N>M$、跨块换人及 STFT 重构均需单独测试。教学版 MVDR 在目标或干扰统计不可用时退回参考麦克风，不应把这一回退的输出解释成成功分离。</p>
 <p>本章的外部实现已经按具体算法定位，不能把“正文尚未实现”写成“没有可用源码”。<a href="research/02_aec_wpe_separation.html#bss">盲分离与 GSS 研究</a>和<a href="research/02_aec_wpe_separation.html#neural">神经分离研究</a>进一步列出读码顺序、状态、最小实验与失败条件。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -452,8 +455,8 @@ $$</p>
 </li>
 </ol>
 </blockquote>
-<p><strong>可运行练习 E08-01～E08-03</strong></p>
-<p>运行 <code>.venv/bin/python -m codes.examples.exercises_enhancement</code> 复算以下三题。逐题结果和代码见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_enhancement.py"><code>exercises_enhancement.py</code></a>，合成混合与已知矩阵解混音频见<a href="research/05_exercises_and_audio.html">练习及音频手册</a>。</p>
+<p><strong>可运行练习 E08-01～E08-05</strong></p>
+<p>运行 <code>.venv/bin/python -m codes.examples.exercises_enhancement</code> 复算以下五题。逐题结果和代码见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_enhancement.py"><code>exercises_enhancement.py</code></a>，合成混合与已知矩阵解混音频见<a href="research/05_exercises_and_audio.html">练习及音频手册</a>。</p>
 <ul>
 <li>
 <p><strong>E08-01：尺度不变是否意味着时移不变？</strong> 取零均值 $s=[1,0,-1,0]$、$u=[0,1,0,-1]$，$\hat s=s+0.1u$。分别计算原幅度、两信号同乘 $10^{-5}$、把干净 $s$ 循环右移一采样后的 SI-SDR。</p>
@@ -469,6 +472,16 @@ $$</p>
 <p><strong>E08-03：已知混合矩阵为何仍可能不稳？</strong> 令两源组成 $S$，两麦观测 $X=AS$，其中 $A=\begin{bmatrix}1&0.5\\0.5&1\end{bmatrix}$。用线性方程求解恢复 $S$，再给单个观测列加上 $[0.01,-0.01]^\top$。将两个非对角元素改成 0.99 后重复。</p>
 <p><strong>解答</strong>：第一种矩阵特征值为 1.5、0.5，二范数条件数为 3；观测误差恢复为 $[0.02,-0.02]^\top$。第二种特征值为 1.99、0.01，条件数为 199，同一误差恢复为 $[1,-1]^\top$。无噪声且矩阵准确时，两者都可在浮点误差内恢复源；噪声和矩阵误差会暴露病态风险。</p>
 <p>这里直接给定了 $A$，因此只是已知瞬时混合的代数实验，不是 ICA、IVA 或其他盲分离算法，也不代表实际卷积房间中的性能。</p>
+</li>
+<li>
+<p><strong>E08-04：分开了是否就恢复了参考麦的幅度？</strong> 沿用 E08-03 的 $A$ 和 E08-01 的两源 $s,u$。人为指定解混矩阵 $W=\operatorname{diag}(2,-3)A^{-1}$，计算原始输出和以第一支麦克风为参考的回投影。</p>
+<p><strong>解答</strong>：$WA=\operatorname{diag}(2,-3)$，所以原输出为 $[2s,-3u]^\top$。逆解混矩阵为 $W^{-1}=A\operatorname{diag}(1/2,-1/3)$，第一行为 $[1/2,-1/6]$。逐路相乘后恢复 $[s,0.5u]^\top$，二者之和恰为第一支麦克风的无噪混合 $s+0.5u$。</p>
+<p>回投影恢复的是参考麦上的各源图像，不是把每个源都归一成干声。原输出虽然增益和极性不同，对各自非零参考的理想 SI-SDR 都可为正无穷；尺度不敏感的评分不能验证绝对增益。该题给定 $W$，只检验回投影代数，不宣称实现了盲分离。</p>
+</li>
+<li>
+<p><strong>E08-05：所有掩码乘同一个数，SCM 一定不变吗？</strong> 单通道两帧复谱简化为 $[2,4]$，两帧权重相同，取教学函数分母地板 $\varepsilon=10^{-12}$。分别令每个权重为 1、2、$\varepsilon/2$、$\varepsilon/4$。</p>
+<p><strong>解答</strong>：每个权重为 $a$ 时，分子为 $a(2^2+4^2)=20a$，分母为 $\max(2a,\varepsilon)$。四种结果依次是 10、10、10、5；前两项的共同尺度被分母抵消，最后一项已经进入地板区。</p>
+<p>若改用式(8-5)的加性稳定项，$a=\varepsilon/2$ 时分母为 $2\varepsilon$，结果是 5，而非教学地板实现的 10。这是本书针对数值约定的手算。极小掩码说明统计支持不足；归一化后得到有限矩阵，不代表它能可靠估计目标方向或噪声功率。</p>
 </li>
 </ul>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-8-2">8.2 处理模块的顺序</h2>

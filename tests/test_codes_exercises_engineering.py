@@ -13,8 +13,9 @@ class EngineeringExerciseTests(unittest.TestCase):
         cls.results = run_exercises()
 
     def test_ids_and_strict_json(self):
-        expected = {f"E10-{i:02}" for i in range(1, 7)}
-        expected |= {"E11-01", "E11-02", "E12-01", "E12-02", "E12-03", "E13-01"}
+        expected = {f"E10-{i:02}" for i in range(1, 13)}
+        expected |= {f"E11-{i:02}" for i in range(1, 5)}
+        expected |= {"E12-01", "E12-02", "E12-03", "E13-01"}
         self.assertEqual(set(self.results), expected)
         json.dumps(self.results, allow_nan=False)
 

@@ -24,9 +24,11 @@ def gcc_phat(
     """Estimate ``tau12 = t1 - t2`` using ``ifft(X1 * conj(X2))``.
 
     Returns ``(tau_seconds, peak_value, lags_seconds, correlation)``.  The
-    signals are zero-padded so the reported sequence is a linear, not circular,
-    correlation.  Optional three-point interpolation is local and does not
-    change the physical lag search range.
+    FFT padding covers the unweighted linear-correlation support.  PHAT's
+    nonlinear spectral normalization does not retain that finite support:
+    the result is a sampled periodic inverse transform restricted to physical
+    lags, and changing the FFT length can change its values.  Optional
+    three-point interpolation is local and does not change the lag search range.
     """
     first = np.asarray(x1, dtype=float)
     second = np.asarray(x2, dtype=float)
@@ -145,7 +147,10 @@ def capon_spectrum(
     candidates = _steering_rows(steering, matrix.shape[0])
     solved = np.linalg.solve(matrix, candidates.T)
     denominator = np.einsum("km,mk->k", candidates.conj(), solved)
-    if np.any(denominator.real <= 0.0) or np.any(np.abs(denominator.imag) > 1e-8):
+    # The quadratic form scales inversely with covariance power, so the
+    # imaginary round-off tolerance must use its own real-valued scale.
+    if (np.any(denominator.real <= 0.0)
+            or np.any(np.abs(denominator.imag) > 1e-8 * np.abs(denominator.real))):
         raise np.linalg.LinAlgError("Capon denominator is not positive real")
     return 1.0 / denominator.real
 
@@ -227,8 +232,10 @@ def _load_covariance(
             raise np.linalg.LinAlgError("non-positive covariance scale cannot be loaded relatively")
         matrix = matrix + relative_diagonal_loading * scale * np.eye(matrix.shape[0])
     eigenvalues = np.linalg.eigvalsh(matrix)
-    eigenvalue_scale = max(float(np.max(np.abs(eigenvalues))), 1.0)
-    if eigenvalues[0] < -1e-10 * eigenvalue_scale:
+    eigenvalue_scale = float(np.max(np.abs(eigenvalues)))
+    if eigenvalue_scale == 0.0:
+        raise np.linalg.LinAlgError("zero covariance has no invertible noise model")
+    if eigenvalues[0] / eigenvalue_scale < -1e-10:
         raise np.linalg.LinAlgError("covariance must be positive semidefinite")
     condition = np.linalg.cond(matrix)
     if not np.isfinite(condition) or condition > condition_limit:

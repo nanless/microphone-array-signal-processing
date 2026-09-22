@@ -33,7 +33,7 @@
   "listening": "Start at low device volume. No automatic playback. No formal listening study performed.",
   "generator_inputs": {
     "codes/examples/generate_audio_samples.py": "1c147326676a980c823ae90e455b823472e443b0c5d2774951fe2d36ed2b7d9c",
-    "codes/array_tutorial/audio_samples.py": "320278fb7152de97b2c5b65d36dfb2156cf4194c1beb0cf16381cd8e247ff2ae",
+    "codes/array_tutorial/audio_samples.py": "bcba814d6b9126d3baf46ef9f08818a63f7dac16b03404c6fdda8b4b1fa847f8",
     "codes/array_tutorial/aec.py": "199483d53bcce69373fa4f5dff8cb184a17c43836db3952f1a611f45e5267d4a",
     "codes/array_tutorial/dereverberation.py": "99a1429c5bbe3f8a98dc754bbfaabdd9f27ec7216b04696379d7e5922469f360",
     "codes/array_tutorial/spectral.py": "81b7bda66a3b9eeae915ddff53224316f21a9a46a48781208f9edcd49b5ad92b",
@@ -160,6 +160,88 @@
       },
       "limits": "Equal-power stereo panning; not a physical moving-source array recording and not valid DOA ground truth.",
       "common_export_gain": 1.0
+    },
+    "correlation": {
+      "parameters": {
+        "seed": 20260923,
+        "noise_std_each_channel": 0.07,
+        "model": "Both target channels are already aligned; average weights [0.5, 0.5].",
+        "noise_correlations": {
+          "independent": 0,
+          "common": 1
+        },
+        "expected_noise_power_ratios": {
+          "independent": 0.5,
+          "common": 1
+        },
+        "reference": "correlation_reference, no delay; score all samples",
+        "algorithm_delay_samples": 0
+      },
+      "limits": "Population variances predict 3.0103 dB and 0 dB; one finite realization is not a statistical performance estimate.",
+      "common_export_gain": 1.0
+    },
+    "polarity": {
+      "parameters": {
+        "channel_gains": [
+          1,
+          -0.9
+        ],
+        "channel_order": [
+          "normal",
+          "inverted_0.9"
+        ],
+        "uncorrected_target_gain": 0.05,
+        "corrected_target_gain": 0.95,
+        "relative_amplitude_db": -25.575072019056577,
+        "reference": "polarity_reference, no delay; no gain fitting when scoring",
+        "algorithm_delay_samples": 0
+      },
+      "limits": "Known polarity correction, not blind calibration. Array WAV is raw stereo; compare mono averages to study cancellation.",
+      "common_export_gain": 1.0
+    },
+    "conditioning": {
+      "parameters": {
+        "seed": 20260923,
+        "rng_order": "after correlation noise draw (2, 32000)",
+        "well_matrix": [
+          [
+            1.0,
+            0.5
+          ],
+          [
+            0.5,
+            1.0
+          ]
+        ],
+        "ill_matrix": [
+          [
+            1.0,
+            0.99
+          ],
+          [
+            0.99,
+            1.0
+          ]
+        ],
+        "noise_std_each_channel": 0.003,
+        "same_noise_in_both_inputs": true,
+        "condition_numbers_2norm": [
+          3.0,
+          199.0
+        ],
+        "reference": "conditioning_reference; compare each source channel without delay or gain fitting",
+        "input_channel_order": [
+          "microphone1",
+          "microphone2"
+        ],
+        "output_and_reference_channel_order": [
+          "source1",
+          "source2"
+        ],
+        "algorithm_delay_samples": 0
+      },
+      "limits": "Both mixing matrices are known; this is inverse-problem noise amplification, not blind separation or a benchmark of AuxIVA.",
+      "common_export_gain": 0.6882001719162989
     }
   },
   "files": [
@@ -461,6 +543,175 @@
       "rms": 0.10604359044764208,
       "common_export_gain": 1.0,
       "quantization_max_abs_error": 1.5258679693486155e-05
+    },
+    {
+      "file": "correlation_reference.wav",
+      "sha256": "c70d7b31a1dcdd7cd763fb65e204d959818db754bf505c8d1d4fbaacdbb1a0e6",
+      "group": "correlation",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.405517578125,
+      "rms": 0.14996833373517848,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258540274315502e-05
+    },
+    {
+      "file": "correlation_single.wav",
+      "sha256": "277a806531c1156217dacd3b5c22c4546bd2441b8a468078a9ed09d62dd63e18",
+      "group": "correlation",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.571685791015625,
+      "rms": 0.16539857374968434,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258290218395087e-05
+    },
+    {
+      "file": "correlation_independent.wav",
+      "sha256": "edf597ab17b57dc343530b8d71cc1cadd58c5642f7478f227cc09400bb638d04",
+      "group": "correlation",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.53515625,
+      "rms": 0.15795283708152044,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258012205490723e-05
+    },
+    {
+      "file": "correlation_common.wav",
+      "sha256": "277a806531c1156217dacd3b5c22c4546bd2441b8a468078a9ed09d62dd63e18",
+      "group": "correlation",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.571685791015625,
+      "rms": 0.16539857374968434,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258290218395087e-05
+    },
+    {
+      "file": "polarity_reference.wav",
+      "sha256": "c70d7b31a1dcdd7cd763fb65e204d959818db754bf505c8d1d4fbaacdbb1a0e6",
+      "group": "polarity",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.405517578125,
+      "rms": 0.14996833373517848,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258540274315502e-05
+    },
+    {
+      "file": "polarity_array.wav",
+      "sha256": "f3e63a6f2f0cec46ff5d7c6b1cad161bb3e59080f152ecc40aa80221f01ffe0f",
+      "group": "polarity",
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.405517578125,
+      "rms": 0.1426671930686806,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258540274315502e-05
+    },
+    {
+      "file": "polarity_uncorrected.wav",
+      "sha256": "4f315eb577f980d964487fc80a8ecdb43f0b3f248191de46d51c5c0bf0cc1c9c",
+      "group": "polarity",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.020263671875,
+      "rms": 0.007498350081082134,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.525863752577239e-05
+    },
+    {
+      "file": "polarity_corrected.wav",
+      "sha256": "a05b5fedb4abede5f99999883f0295a73157c96377fee0af42e5432456fe1916",
+      "group": "polarity",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.38525390625,
+      "rms": 0.14247010072523103,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5256244801420404e-05
+    },
+    {
+      "file": "conditioning_reference.wav",
+      "sha256": "504283e9b1b5c0d846d7d9af850d2fbfb77a2876086162e275277a7ec34550ff",
+      "group": "conditioning",
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.279083251953125,
+      "rms": 0.10320828537234884,
+      "common_export_gain": 0.6882001719162989,
+      "quantization_max_abs_error": 1.5258644697452306e-05
+    },
+    {
+      "file": "conditioning_well_input.wav",
+      "sha256": "db182681816db5df84abb8fa1f3516d4e08ac84d504fdc82f164831c4ea0051b",
+      "group": "conditioning",
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.416290283203125,
+      "rms": 0.11540486521929373,
+      "common_export_gain": 0.6882001719162989,
+      "quantization_max_abs_error": 1.525842208825734e-05
+    },
+    {
+      "file": "conditioning_ill_input.wav",
+      "sha256": "1fb3e0bd29fef79c96d0866fd6bb1a58de10c0e4bd18263ae29a2063bb792090",
+      "group": "conditioning",
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.5506591796875,
+      "rms": 0.14524562797762564,
+      "common_export_gain": 0.6882001719162989,
+      "quantization_max_abs_error": 1.5258714106652915e-05
+    },
+    {
+      "file": "conditioning_well_output.wav",
+      "sha256": "598364bc89b3037a1c541dd246097bb126471574a9c52719c77a2d69b2b51bf1",
+      "group": "conditioning",
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.2845458984375,
+      "rms": 0.10323656787346863,
+      "common_export_gain": 0.6882001719162989,
+      "quantization_max_abs_error": 1.5258354845962274e-05
+    },
+    {
+      "file": "conditioning_ill_output.wav",
+      "sha256": "d6899d6c5d837464fb965187ceb9ee629a1a58861ae680ed7955d965fd96f172",
+      "group": "conditioning",
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.79998779296875,
+      "rms": 0.17833129631558983,
+      "common_export_gain": 0.6882001719162989,
+      "quantization_max_abs_error": 1.5258137621848578e-05
     }
   ]
 }

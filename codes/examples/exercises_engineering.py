@@ -1,4 +1,4 @@
-"""Twelve deterministic engineering/mathematics exercises, Chapters 10–13.
+"""Twenty deterministic engineering/mathematics exercises, Chapters 10–13.
 
 Run with ``python -m codes.examples.exercises_engineering``. No hardware,
 network, playback, or file writes are performed. Values are teaching inputs,
@@ -8,6 +8,7 @@ not measured product performance. Audio samples have a separate generator.
 from __future__ import annotations
 
 import json
+import math
 
 import numpy as np
 
@@ -16,6 +17,26 @@ from codes.array_tutorial.engineering import (
     HysteresisVAD, PeakProtectAGC, RingBuffer, estimate_sro_ppm,
     q15_quantize, simulate_deadline_queue,
 )
+
+
+def block_consumption(input_block: int, consumer_block: int, callbacks: int) -> dict:
+    """Track half-open sample ranges; this models buffering, not CPU timing.
+
+    Callback 1 delivers [0, input_block) at input_block / sample_rate seconds.
+    Every complete consumer block is consumed immediately; the remainder stays.
+    """
+    for value in (input_block, consumer_block, callbacks):
+        if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+            raise ValueError("block sizes and callback count must be positive integers")
+    consumed, events, leftovers = 0, [], []
+    for callback in range(1, callbacks + 1):
+        available = callback * input_block
+        while available - consumed >= consumer_block:
+            events.append({"callback": callback, "start": consumed,
+                           "stop": consumed + consumer_block})
+            consumed += consumer_block
+        leftovers.append(available - consumed)
+    return {"events": events, "leftovers": leftovers, "consumed": consumed}
 
 
 def run_exercises() -> dict:
@@ -55,6 +76,49 @@ def run_exercises() -> dict:
         gains.append(float(gain))
         peaks.append(float(np.max(np.abs(output))))
     results["E10-06"] = {"gains": gains, "output_peaks": peaks}
+    results["E10-07"] = {
+        "scalar_samples": 160 * 4, "bytes_per_callback": 160 * 4 * 2,
+        "duration_ms": 160 / 16000 * 1000, "bytes_per_second": 16000 * 4 * 2,
+    }
+    results["E10-08"] = {
+        "input_block": 160, "sample_rate_hz": 16000,
+        "common_multiple_samples": math.lcm(160, 240, 512),
+        "consumers": {str(size): block_consumption(160, size, 48)
+                      for size in (240, 512)},
+    }
+    correct_gain, reversed_gain = (1 + .9) / 2, (1 - .9) / 2
+    results["E10-09"] = {
+        "correct_target_gain": correct_gain, "reversed_target_gain": reversed_gain,
+        "relative_target_level_db": 20 * math.log10(reversed_gain / correct_gain),
+    }
+    smoothing = {}
+    for interval_ms, steps in ((10, 32), (32, 10)):
+        coefficient = -math.expm1(-interval_ms / 100)
+        remaining = 1.
+        for _ in range(steps):
+            remaining *= 1 - coefficient
+        smoothing[str(interval_ms)] = {"coefficient": coefficient, "steps": steps,
+                                      "remaining_error_fraction": remaining}
+    results["E10-10"] = {"time_constant_ms": 100, "duration_ms": 320,
+                         "updates": smoothing}
+    direction = np.array([1., 0., 0.])
+    displacements = np.array([[.0005, 0., 0.], [0., .0005, 0.]])
+    projected = displacements @ direction
+    results["E10-11"] = {
+        "projected_displacements_m": projected.tolist(),
+        "phase_errors_deg": (360 * 4000 * projected / 343).tolist(),
+    }
+    clock_times = np.arange(6.)
+    known_step = np.where(clock_times >= 3, .001, 0.)
+    stepped_delays = 100e-6 * clock_times + known_step
+    biased_ppm, biased_offset = estimate_sro_ppm(clock_times, stepped_delays)
+    corrected_ppm, corrected_offset = estimate_sro_ppm(clock_times, stepped_delays - known_step)
+    results["E10-12"] = {
+        "times_s": clock_times.tolist(), "delays_ms": (stepped_delays * 1000).tolist(),
+        "whole_fit_ppm": biased_ppm, "whole_fit_offset_ms": biased_offset * 1000,
+        "known_step_removed_ppm": corrected_ppm,
+        "known_step_removed_offset_ms": corrected_offset * 1000,
+    }
     base_latency = sum([16, 8, 22, 5, 70])
     results["E11-01"] = {
         "alias_boundary_hz": 343 / (.04 * 2),
@@ -69,6 +133,21 @@ def run_exercises() -> dict:
         "average_power_w": average_power,
         "nominal_energy_wh": 3.7 * 2,
         "estimated_runtime_h": 3.7 * 2 * .8 / average_power,
+    }
+    reference_words, errors = np.array([10, 90]), np.array([1, 45])
+    results["E11-03"] = {
+        "reference_words": reference_words.tolist(), "errors": errors.tolist(),
+        "per_file_wer": (errors / reference_words).tolist(),
+        "macro_average_wer": float(np.mean(errors / reference_words)),
+        "pooled_wer": float(errors.sum() / reference_words.sum()),
+    }
+    latencies = np.array([*range(1, 20), 100.])
+    probabilities = (.5, .95, .99)
+    ranks = [math.ceil(p * len(latencies)) for p in probabilities]
+    results["E11-04"] = {
+        "latencies_ms": latencies.tolist(), "nearest_ranks": ranks,
+        "nearest_rank_ms": [float(np.sort(latencies)[rank - 1]) for rank in ranks],
+        "linear_interpolation_ms": np.quantile(latencies, probabilities, method="linear").tolist(),
     }
     x, h = np.array([1., 2.]), np.array([1., .5])
     results["E12-01"] = {

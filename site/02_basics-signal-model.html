@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 2 章 · 声音到达阵列时发生了什么 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="80cb834cf708"><style>
+<meta name="source-digest" content="3ffa19bfc241"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -288,8 +288,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>$$\hat{\mathbf{R}}_{\mathrm{shrink}}(f_k)=(1-\rho)\hat{\mathbf{R}}(f_k)+\rho\frac{\operatorname{tr}\hat{\mathbf{R}}(f_k)}{M}\mathbf{I}\text{，}$$</p>
 <p>其中 $0\le\rho\le1$，用于在样本统计量和各向同性先验之间折中；§5.4 的对角加载与它目标相近。</p>
 <p>第二类处理是用时频掩码为快拍加权，分别估计目标或噪声协方差（§8.1）。掩码可以减少干扰泄漏，但也会减少有效样本数，仍须检查矩阵的条件数并配合加载。</p>
-<p><strong>本书代码采用的数组与流式约定。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/spectral.py"><code>spectral.py</code></a> 中的 STFT 固定输出 <code>通道数 × 频点数 × 帧数</code>，即 $M\times F\times L$；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/covariance.py"><code>covariance.py</code></a> 再把它变成 $F$ 个 $M\times M$ 空间二阶矩。示例使用前向变换 $e^{-\mathrm j2\pi ft}$、周期 Hann 窗和加权重叠相加。<code>center=True</code> 会在两端补半窗，因此离线重构可对齐原波形；实时系统不能据此把延迟写成零，还要把首帧等待、窗长、帧移、分块缓存和可能的前瞻一并计入端到端延迟。</p>
-<p>协方差实现同时给出批量估计和指数递归更新。掩码在某个频点的权重和为零时，代码会报错，而不是用 $\varepsilon$ 伪造一个无统计依据的矩阵；有限精度造成的非厄米残差会被对称化。需要加载时采用无量纲相对口径 $\alpha\operatorname{tr}(\hat{\mathbf R})\mathbf I/M$。上线还应记录遗忘因子、VAD/SPP 更新门控、每频点有效权重、条件数以及回退方式；这些参数共同决定跟踪速度，不能只记录“用了 MVDR”。可运行的端到端小例见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/ch02_05_baselines.py"><code>ch02_05_baselines.py</code></a>，解析边界测试见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_doa_beam.py"><code>test_codes_doa_beam.py</code></a>。</p>
+<p><strong>本书代码采用的数组与流式约定。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/spectral.py"><code>spectral.py</code></a> 中的 STFT 固定输出 <code>通道数 × 频点数 × 帧数</code>，即 $M\times F\times L$；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/covariance.py"><code>covariance.py</code></a> 再把它变成 $F$ 个 $M\times M$ 空间二阶矩。示例使用前向变换 $e^{-\mathrm j2\pi ft}$、周期 Hann 窗和加权重叠相加。</p>
+<p><code>center=True</code> 会在两端补半窗，因此离线重构可对齐原波形；实时系统不能据此把延迟写成零，还要把首帧等待、窗长、帧移、分块缓存和可能的前瞻一并计入端到端延迟。</p>
+<p>协方差实现同时给出批量估计和指数递归更新。掩码在某个频点的权重和为零时，代码会报错，而不是用 $\varepsilon$ 伪造一个无统计依据的矩阵；有限精度造成的非厄米残差会被对称化。需要加载时采用无量纲相对口径 $\alpha\operatorname{tr}(\hat{\mathbf R})\mathbf I/M$。</p>
+<p>上线还应记录遗忘因子、VAD/SPP 更新门控、每频点有效权重、条件数以及回退方式；这些参数共同决定跟踪速度，不能只记录“用了 MVDR”。可运行的端到端小例见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/ch02_05_baselines.py"><code>ch02_05_baselines.py</code></a>，解析边界测试见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_doa_beam.py"><code>test_codes_doa_beam.py</code></a>。</p>
 <p><strong>语音信号对阵列处理的影响</strong>：</p>
 <ol>
 <li>语音既含低频基频及谐波，也含更高频的辅音和摩擦音；具体频带随说话人、发音和采集链路变化。谐波结构会让互相关出现周期性假峰，因此 TDOA 算法常做宽带加权（§4.2）。</li>
@@ -413,7 +415,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>参考答案：方差与 SNR 成反比，标准差缩小 $\sqrt{10}\approx3.16$ 倍，约为 $1.2°/3.16\approx0.38°$。在该模型里，独立快拍数与 SNR 成乘积关系，两种变化对下界的影响相同。增加观测时间不需要提高单帧 SNR，却会增加等待时间；声源移动或统计量变化时，也不能把更多帧当作同一方向的独立快拍。因此要按延迟预算和场景平稳性选择，而不能断言增加快拍总是更合算。</p>
 </li>
 </ol>
-<p>以下三题的复算入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a>，结果采用稳定标识 E02-01～E02-03。</p>
+<p>以下五题的复算入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a>，结果采用稳定标识 E02-01～E02-05。</p>
 <p><strong>E02-01：同一段录音为什么有两种帧数？</strong> 对 8 kHz、1 s 的信号，取窗长 256 点、帧移 64 点，分别使用 <code>center=False</code> 和 <code>center=True</code>。再对其中同一个 256 点窗做 256 点与 512 点实 FFT。哪些输出数量改变，哪些物理信息没有增加？</p>
 <p><strong>参考答案</strong>：不居中时为 $(8000-256)/64+1=122$ 帧。居中时两端各补 128 点，为 $(8256-256)/64+1=126$ 帧。两种 FFT 的单边频点数分别是 $256/2+1=129$ 和 $512/2+1=257$。FFT 补零改变网格密度，不增加观测时长；端点补零增加的帧也不是新录到的独立声音。</p>
 <p><strong>E02-02：用复数协方差检查通道顺序。</strong> 各路功率为 2，麦 1 相位超前麦 2 为 30°。构造两帧 $\vec x$ 和 $-\vec x$，使样本均值为零，计算二阶矩、特征值和交换通道后的非对角相位。</p>
@@ -422,6 +424,45 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>E02-03：窗重叠足够，为什么首点仍可能无法恢复？</strong> 用固定种子 20260922 生成 8 kHz、1 s 的零均值高斯样本，周期 Hann 窗长 256 点、帧移 64 点，完成 STFT/iSTFT 往返。比较居中与不居中两种边界处理。</p>
 <p><strong>参考答案</strong>：居中并保留原长度时，双精度实现的最大绝对重建误差应小于 $10^{-12}$。不居中时，第一点只被 Hann 窗的零端点覆盖，合成分母为零，本书实现会拒绝输出而不是把错误样本补成零。</p>
 <p>需要检查的是每个保留样本的窗平方和是否非零，不能只看“重叠了 75%”。<a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.check_NOLA.html" title="citation">SciPy 的 NOLA 条件说明</a>给出这一归一化分母。这个实验只验证分析与合成的一致性，不证明修改过频谱后仍无失真，也不代表居中处理适合零前瞻实时系统。</p>
+<p><strong>E02-04：掩码总和非零，协方差就可逆吗？</strong> 两通道的三帧快拍为 $[1,0]^\top$、$[0,1]^\top$、$[1,1]^\top$。按 $\sum_tq_t\vec x_t\vec x_t^H/\sum_tq_t$ 计算加权二阶矩，分别取掩码 $[1,0,1]$ 和 $[1,0,0]$。再将第一组权重全部乘 2，结果是否改变？</p>
+<p><strong>参考答案</strong>：第一组保留首、末两帧，外积相加再除以 2，得到</p>
+<p>$$\mathbf R_A=\begin{bmatrix}1&1/2\\1/2&1/2\end{bmatrix},\qquad
+\mathbf R_B=\begin{bmatrix}1&0\\0&0\end{bmatrix}.$$</p>
+<p>$\mathbf R_A$ 的行列式为 $1/4$、秩为 2；$\mathbf R_B$ 的行列式为 0、秩为 1。所有权重同时乘 2 时，分子与分母等比放大，$\mathbf R_A$ 不变。权重集中程度可用本题的辅助量 $L_w=(\sum_tq_t)^2/\sum_tq_t^2$ 比较，两组分别为 2 和 1。</p>
+<p>$L_w$ 只描述权重分布，不自动等于统计独立的快拍数，也不保证满秩：即使均匀保留很多帧，若它们彼此成比例，协方差仍可能秩一。全零掩码没有可用统计量，本书代码会拒绝计算，而不是仅在分母加一个小数后宣称得到有效协方差。</p>
+<p><strong>E02-05：递归协方差启动时为何偏小？</strong> 固定快拍 $\vec x=[1,2]^\top$，从零矩阵开始，使用 $\mathbf S_t=0.5\mathbf S_{t-1}+0.5\vec x\vec x^H$。计算前三步的矩阵和累计权重，再按累计权重归一化。</p>
+<p><strong>参考答案</strong>：外积为 $\mathbf Q=\begin{bmatrix}1&2\\2&4\end{bmatrix}$。第一步为 $0.5\mathbf Q$；第二步为 $(0.5^2+0.5)\mathbf Q=0.75\mathbf Q$；第三步为 $(0.5^3+0.5^2+0.5)\mathbf Q=0.875\mathbf Q$。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">步数 $t$</th>
+<th scope="col">累计权重 $b_t=1-2^{-t}$</th>
+<th scope="col">未归一化矩阵</th>
+<th scope="col">$\mathbf S_t/b_t$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>0.500</td>
+<td>$0.500\mathbf Q$</td>
+<td>$\mathbf Q$</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0.750</td>
+<td>$0.750\mathbf Q$</td>
+<td>$\mathbf Q$</td>
+</tr>
+<tr>
+<td>3</td>
+<td>0.875</td>
+<td>$0.875\mathbf Q$</td>
+<td>$\mathbf Q$</td>
+</tr>
+</tbody>
+</table></div>
+<p>这是零初始化造成的权重总和不足，不是信号功率随时间上升。归一化修正这一尺度，却不会增加独立观测，也不会把本题的秩一矩阵变成可逆矩阵。有跳帧、可变遗忘因子或掩码时，应按实际更新递推累计权重，不能继续照搬 $1-2^{-t}$。</p>
 <p><a href="research/05_exercises_and_audio.html">音频实验总览</a>提供已知采样率与通道顺序的 WAV，可用同一分析/合成参数检查边缘重建；比较时保留原长度，不把端点丢失误认为降噪效果。</p>
 <hr />
 <blockquote>

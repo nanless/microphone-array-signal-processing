@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>空间处理与追踪源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="80cb834cf708"><style>
+<meta name="source-digest" content="3ffa19bfc241"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -276,7 +276,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>建议用 8 元 ULA、两条完全相关的平面波，先检查未经平滑的信号协方差秩，再取 3 个长度为 6 的子阵比较。平滑能改善特定模型的秩，但付出有效孔径和可处理源数的代价。非均匀阵、挡板方向响应或未知互耦不满足相同平移流形时，不能直接滑动矩阵下标冒充空间平滑。</p>
 <span id="sec-11" class="anchor-alias" aria-hidden="true"></span><span id="定位算法和搜索加速" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-df9f7dd673">定位算法和搜索加速</h2>
 <span id="sec-12" class="anchor-alias" aria-hidden="true"></span><span id="7-gcc-phat-与物理时延裁剪" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-4f17d81ab8">7. GCC-PHAT 与物理时延裁剪</h3>
-<p>对应 §4.2。本书 <code>doa.py::gcc_phat</code> 明确正时延约定、线性相关和三点插值；ODAS 的 <code>src/signal/xcorr.c</code>、<code>src/system/freq2xcorr.c</code> 可作为块处理参考。PHAT 消除互谱幅度权重，但低能量频点的相位会变得不可靠，因此归一化下限与有效频点筛选都是算法的一部分。</p>
+<p>对应 §4.2。本书 <code>doa.py::gcc_phat</code> 明确正时延约定、FFT 补零、物理 lag 截取和三点插值；ODAS 的 <code>src/signal/xcorr.c</code>、<code>src/system/freq2xcorr.c</code> 可作为块处理参考。补零到两段长度之和减一只保证未加权互相关的有限长度等价；PHAT 归一化改变频谱后，逆变换不再保证相同的有限支撑，FFT 长度仍可能改变相关值。PHAT 消除互谱幅度权重，但低能量频点的相位会变得不可靠，因此归一化下限与有效频点筛选都是算法的一部分。</p>
 <p>建议给一个 0.5 ms 延迟的宽带源，随后改成单频正弦、两源和静音。分别报告主峰、次峰、峰背比和最大允许 lag。亚采样插值只细化相关峰形，不能凭空恢复窄带信号缺少的可辨识信息。先固定通道号，再固定 <code>t_1-t_2</code> 的方向，避免定位后又人工翻转符号。</p>
 <span id="sec-13" class="anchor-alias" aria-hidden="true"></span><span id="8-srp-phat-与近场三维网格" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-14096ab533">8. SRP-PHAT 与近场三维网格</h3>
 <p>对应 §4.3、§4.7.1。先读本书 <code>doa.py::srp_phat</code>，再读 pyroomacoustics 的 <code>doa/srp.py</code>，理解麦对证据如何按候选传播时延相加。这里的两份代码作为远场方向 SRP 参考；近场三维 SRP 则保留正文球面传播与角度—距离网格的原理索引，不能仅因外部 API 列出 <code>mode='near'</code> 和 <code>r</code> 就标成已取得该变体实现。</p>

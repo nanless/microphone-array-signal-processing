@@ -1,4 +1,4 @@
-"""Explicit cross-module, chapter and research inventory for 36 exercises."""
+"""Explicit cross-module, chapter and research inventory for 60 exercises."""
 
 import json
 import re
@@ -13,14 +13,17 @@ EXPECTED = {
     "spatial": {
         "E01-01", "E01-02", "E02-01", "E02-02", "E02-03", "E03-01",
         "E03-02", "E04-01", "E04-02", "E04-03", "E05-01", "E05-02",
+        "E01-03", "E02-04", "E02-05", "E03-03", "E03-04", "E04-04", "E05-03", "E05-04",
     },
     "enhancement": {
         "E06-01", "E06-02", "E06-03", "E07-01", "E07-02", "E07-03",
         "E08-01", "E08-02", "E08-03", "E09-01", "E09-02", "E09-03",
+        "E06-04", "E06-05", "E07-04", "E07-05", "E08-04", "E08-05", "E09-04", "E09-05",
     },
     "engineering": {
         "E10-01", "E10-02", "E10-03", "E10-04", "E10-05", "E10-06",
         "E11-01", "E11-02", "E12-01", "E12-02", "E12-03", "E13-01",
+        "E10-07", "E10-08", "E10-09", "E10-10", "E10-11", "E10-12", "E11-03", "E11-04",
     },
 }
 MODULES = {"spatial": exercises_spatial, "enhancement": exercises_enhancement,
@@ -43,9 +46,9 @@ class ExerciseCatalogTest(unittest.TestCase):
     def setUpClass(cls):
         cls.results = {name: module.run_exercises() for name, module in MODULES.items()}
 
-    def test_independent_inventory_has_36_unique_ids(self):
-        self.assertEqual(len(ALL_IDS), 36)
-        self.assertEqual(sum(map(len, EXPECTED.values())), 36)
+    def test_independent_inventory_has_60_unique_ids(self):
+        self.assertEqual(len(ALL_IDS), 60)
+        self.assertEqual(sum(map(len, EXPECTED.values())), 60)
 
     def test_each_module_returns_exact_assigned_ids(self):
         for name, results in self.results.items():
@@ -68,7 +71,7 @@ class ExerciseCatalogTest(unittest.TestCase):
                 text = chapters[0].read_text(encoding="utf-8")
                 self.assertRegex(text, rf"\b{re.escape(exercise_id)}\b")
 
-    def test_chapter_and_research_inventories_cover_exactly_36_ids(self):
+    def test_chapter_and_research_inventories_cover_exactly_60_ids(self):
         chapters = "\n".join(path.read_text(encoding="utf-8")
                              for path in (ROOT / "chapters").glob("*.md"))
         research = (ROOT / "codes/research/05_exercises_and_audio.md").read_text(encoding="utf-8")

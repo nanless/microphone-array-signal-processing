@@ -65,8 +65,8 @@ class AudioQualityTest(unittest.TestCase):
     def assert_rejected(self, text):
         self.assertTrue(any(text in error for error in self.errors()), text)
 
-    def test_real_23_sample_fixture_passes_without_writes(self):
-        self.assertEqual(len(self.manifest["files"]), 23)
+    def test_real_36_sample_fixture_passes_without_writes(self):
+        self.assertEqual(len(self.manifest["files"]), 36)
         before = {p.relative_to(self.root): hashlib.sha256(p.read_bytes()).hexdigest()
                   for p in self.root.rglob("*") if p.is_file()}
         self.assertEqual(self.errors(), [])
@@ -102,6 +102,18 @@ class AudioQualityTest(unittest.TestCase):
         self.save_manifest()
         self.assert_rejected("音频尺寸不符")
 
+    def test_incorrect_rate_duration_rms_and_group_are_rejected(self):
+        original = dict(self.manifest['files'][0])
+        for field, value, error in [('sample_rate_hz', 8000, '采样率或时长'),
+                                    ('duration_s', 99, '采样率或时长'),
+                                    ('rms', .7, 'RMS 不符'),
+                                    ('rms', float('nan'), 'RMS 不符'),
+                                    ('group', 'aec', '分组归属')]:
+            with self.subTest(field=field, value=value):
+                self.manifest['files'][0] = {**original, field: value}
+                self.save_manifest()
+                self.assert_rejected(error)
+
     def test_missing_generator_provenance_is_rejected(self):
         self.manifest["generator_inputs"] = {}
         self.save_manifest()
@@ -111,6 +123,19 @@ class AudioQualityTest(unittest.TestCase):
         self.manifest["files"][0]["common_export_gain"] *= .5
         self.save_manifest()
         self.assert_rejected("音频比较组增益不一致")
+
+    def test_nonfinite_peak_and_consistently_invalid_gain_are_rejected(self):
+        self.manifest['files'][0]['peak'] = float('nan')
+        self.save_manifest()
+        self.assert_rejected('音频峰值不符')
+        group = self.manifest['files'][0]['group']
+        for gain in (-1, 0, 2, float('inf')):
+            self.manifest['groups'][group]['common_export_gain'] = gain
+            for record in self.manifest['files']:
+                if record['group'] == group:
+                    record['common_export_gain'] = gain
+            self.save_manifest()
+            self.assert_rejected('音频比较组增益非法')
 
     def test_invalid_quantization_error_is_rejected(self):
         self.manifest["files"][0]["quantization_max_abs_error"] = 1 / 32768

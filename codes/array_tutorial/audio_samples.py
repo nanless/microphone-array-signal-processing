@@ -80,7 +80,7 @@ def _tone(t: np.ndarray, frequency: float) -> np.ndarray:
 
 
 def build_cases() -> dict:
-    """Return six independent experiments with model parameters and references.
+    """Return nine independent experiments with model parameters and references.
 
     Each entry has ``signals`` (filename stem -> CxN array), ``parameters`` and
     ``limits``. Signals are pre-export floats; no group uses peak matching.
@@ -120,6 +120,16 @@ def build_cases() -> dict:
     damaged[(t >= .9) & (t < 1.)] = 0
     clipped = np.clip(3 * target, -.3, .3) / 3
     pan = np.linspace(0, np.pi / 2, t.size)
+    # Separate streams keep the first six experiments unchanged when adding cases.
+    contrast_rng = np.random.default_rng(SEED + 1)
+    independent_noise = .07 * contrast_rng.standard_normal((2, t.size))
+    independent_mean = target + independent_noise.mean(axis=0)
+    common_mean = target + independent_noise[0]
+    polarity_array = np.vstack((target, -.9 * target))
+    measurement_noise = .003 * contrast_rng.standard_normal(sources.shape)
+    well = np.array([[1., .5], [.5, 1.]])
+    ill = np.array([[1., .99], [.99, 1.]])
+    well_input, ill_input = well @ sources + measurement_noise, ill @ sources + measurement_noise
     return {
         'spatial': {
             'signals': {'spatial_reference': delay_samples(target, 3),
@@ -165,6 +175,42 @@ def build_cases() -> dict:
             'signals': {'tracking_pan': np.vstack((np.cos(pan)*target, np.sin(pan)*target))},
             'parameters': {'left_gain': 'cos(phi)', 'right_gain': 'sin(phi)', 'phi_range_rad': [0, np.pi/2]},
             'limits': 'Equal-power stereo panning; not a physical moving-source array recording and not valid DOA ground truth.'},
+        'correlation': {
+            'signals': {'correlation_reference': target,
+                        'correlation_single': target + independent_noise[0],
+                        'correlation_independent': independent_mean,
+                        'correlation_common': common_mean},
+            'parameters': {'seed': SEED + 1, 'noise_std_each_channel': .07,
+                           'model': 'Both target channels are already aligned; average weights [0.5, 0.5].',
+                           'noise_correlations': {'independent': 0, 'common': 1},
+                           'expected_noise_power_ratios': {'independent': .5, 'common': 1},
+                           'reference': 'correlation_reference, no delay; score all samples',
+                           'algorithm_delay_samples': 0},
+            'limits': 'Population variances predict 3.0103 dB and 0 dB; one finite realization is not a statistical performance estimate.'},
+        'polarity': {
+            'signals': {'polarity_reference': target, 'polarity_array': polarity_array,
+                        'polarity_uncorrected': polarity_array.mean(axis=0),
+                        'polarity_corrected': (polarity_array[0] - polarity_array[1]) / 2},
+            'parameters': {'channel_gains': [1, -.9], 'channel_order': ['normal', 'inverted_0.9'],
+                           'uncorrected_target_gain': .05, 'corrected_target_gain': .95,
+                           'relative_amplitude_db': float(20*np.log10(.05/.95)),
+                           'reference': 'polarity_reference, no delay; no gain fitting when scoring',
+                           'algorithm_delay_samples': 0},
+            'limits': 'Known polarity correction, not blind calibration. Array WAV is raw stereo; compare mono averages to study cancellation.'},
+        'conditioning': {
+            'signals': {'conditioning_reference': sources,
+                        'conditioning_well_input': well_input, 'conditioning_ill_input': ill_input,
+                        'conditioning_well_output': np.linalg.solve(well, well_input),
+                        'conditioning_ill_output': np.linalg.solve(ill, ill_input)},
+            'parameters': {'seed': SEED + 1, 'rng_order': 'after correlation noise draw (2, 32000)',
+                           'well_matrix': well.tolist(), 'ill_matrix': ill.tolist(),
+                           'noise_std_each_channel': .003, 'same_noise_in_both_inputs': True,
+                           'condition_numbers_2norm': [3., 199.],
+                           'reference': 'conditioning_reference; compare each source channel without delay or gain fitting',
+                           'input_channel_order': ['microphone1', 'microphone2'],
+                           'output_and_reference_channel_order': ['source1', 'source2'],
+                           'algorithm_delay_samples': 0},
+            'limits': 'Both mixing matrices are known; this is inverse-problem noise amplification, not blind separation or a benchmark of AuxIVA.'},
     }
 
 

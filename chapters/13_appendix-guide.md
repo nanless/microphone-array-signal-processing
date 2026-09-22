@@ -15,7 +15,7 @@
 3. **原始论文**：Capon（1969）、Griffiths & Jim GSC（1982，*An Alternative Approach to Linearly Constrained Adaptive Beamforming*, IEEE Trans. Antennas Propag. 30(1):27–34）、Schmidt MUSIC（1986）、Roy & Kailath ESPRIT（1989）、Allen & Berkley 镜像法（1979）、Nakatani et al. WPE（IEEE TASLP 2010）、Pal & Vaidyanathan 嵌套阵（IEEE TSP 2010）。
 4. **回声消除**：Hänsler & Schmidt, *Acoustic Echo and Noise Control*（Wiley 2004）；近年进展看 ICASSP AEC Challenge 系列报告。
 5. **DNN 方向**：Chakrabarty & Habets（IEEE JSTSP 2019）、Gu et al. 全神经波束形成（IEEE/ACM TASLP, vol.31, pp.849–862, DOI 10.1109/TASLP.2022.3229261）。
-6. **实验顺序**：先运行 `codes/` 中只依赖 NumPy 的教学实现，核对手算、数组维度和边界；再用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线；运行 `scripts/` 中的两个绘图脚本，复现 34 张图；随后选择与研究任务匹配的公开数据和固定版本参考系统；最后在可用的多通道硬件上验证实时性、同步和标定。数据集、框架和硬件只是候选工具，应根据任务与许可证选择。
+6. **实验顺序**：先运行 `codes/` 中只依赖 NumPy 的教学实现，核对手算、数组维度和边界；再用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线；运行 `scripts/` 中的两个绘图脚本，复现 35 张图；随后选择与研究任务匹配的公开数据和固定版本参考系统；最后在可用的多通道硬件上验证实时性、同步和标定。数据集、框架和硬件只是候选工具，应根据任务与许可证选择。
 
 ### 13.2 领域地图：教材、会议、期刊与挑战赛
 
@@ -76,7 +76,9 @@ DCASE 2024 Task 3 的官方任务页明确将开发集和评测集称为 STARSS2
 
 3. **目标说话人提取（Target Speaker Extraction，TSE）**：系统用注册语音、视觉或方向提示描述目标说话人，再从混合语音中提取相应音轨。AR 眼镜阵列和手机结构辅助方向提取提供了不同的条件输入形式。
 
-    [SonicSieve, CHI 2026](https://doi.org/10.1145/3772318.3790376 "citation") TEA-PSE（ICASSP 2022，DOI 10.1109/ICASSP43922.2022.9747765；后续版本 arXiv:2303.07704）和 [CIENet](https://ieeexplore.ieee.org/document/10284995/ "citation") 等方法从注册语音提取说话人嵌入，再通过条件注入或帧级对齐估计目标掩码。
+    TEA-PSE（ICASSP 2022，DOI 10.1109/ICASSP43922.2022.9747765；后续版本 arXiv:2303.07704）和 [CIENet](https://ieeexplore.ieee.org/document/10284995/ "citation") 使用注册语音提供说话人条件，再通过条件注入或帧级对齐提取目标。
+
+    SonicSieve 采用另一种线索：被动声学微结构改变方向相关响应，让神经网络利用方向特征提取语音，不是由注册声纹指定身份。它依赖对应的声学结构与训练数据，不能当作任意手机加软件即可获得的效果。原论文为 CHI 2026；本书仅说明方法条件，不转引摘要中的性能数字。[作者机构项目页](https://www.witechlab.com/sonicsieve.html "citation")、[作者论文 v3，2026-02-11，摘要与方法部分](https://arxiv.org/abs/2504.10793v3 "citation")（核实：2026-09-22）。
 
     §6.1.6 的个性化 AEC 与这类条件提取方法相关，但训练目标和回声参考结构仍需分别定义。
 
@@ -149,7 +151,11 @@ VarArray 把 TAC、Conformer 分离和通道间相位差特征用于几何无关
 
     若线性路径已收敛而仍有与播放相关的非线性残余，再评估非线性处理（NLP）或学习型 AEC（§6.1）。
 
-6. **SRP-PHAT 出现镜像假峰** → 间距超过半波长出现栅瓣（§2.6），或墙面的强反射形成了“镜像声源”——先检查无混叠带宽，再考虑限制搜索空间。
+6. **SRP-PHAT 出现镜像假峰**：先区分三种原因，不能把所有对称峰都归于麦间距。
+
+    - 几何不可辨识：线阵可能存在前后或锥面歧义，平面阵可能存在上下镜像；增加频带未必能消除相同 TDOA，见 §3.1。
+    - 空间混叠：检查工作频率、间距与转向；超过半波长失去全视场无混叠保证，但并非每个方向必然出现等高栅瓣，见 §2.6 和本附录练习 2。
+    - 多径反射：强反射可能形成镜像声源峰，应结合直达声可见性、搜索区域与房间条件判断。限制搜索空间需要明确的场景先验，不能仅为删除不喜欢的峰。
 
 7. **多麦录音各通道逐渐错位** → 先区分固定的初始时差、独立丢样和 SRO。单设备可让通道共享采样时钟；分布式设备无法共享时钟时，要估计相对采样率并重采样。PDM/TDM 是接口形式，不自动保证跨设备同步（§10.2）。
 
@@ -352,9 +358,15 @@ D_t&=(1-p_D)D^-\\
 
 运行 `.venv/bin/python -m codes.examples.exercises_engineering` 中的 `E13-01` 可复核这组数字。实际试听使用[音频实验手册](../codes/research/05_exercises_and_audio.md)列出的较长素材。比较残余回声电平或 AGC 行为时，不能先分别拉到同一峰值再宣称电平没有变化；若只比较音色，可另建等响度试听版本，但仍保留未经该处理的评分输入。
 
+![图35 相关噪声、极性错误和病态求逆的合成音频反例](../figures/fig35_audio_counterexamples.png)
+
+图 35 读取 16 kHz、PCM16 导出文件，每组使用共同增益，随机种子 20260923，时长 2 s。**(a)** 两路目标已对齐，噪声标准差均为 0.07；独立噪声平均后误差 RMS 下降，复制相同噪声则不下降。**(b)** 输入目标增益为 1 与 −0.9；极性未纠正时平均只保留 0.05 倍目标，已知纠正后为 0.95 倍。波形展示 500～510 ms。
+
+**(c)** 两个已知混合矩阵的二范数条件数分别为 3、199，同一输入噪声标准差为 0.003。每一路恢复结果与对应源参考逐样本相减，统计全段 RMS，不拟合额外时延或增益。柱形表示同一固定随机样本，不代表统计均值；不同子图条件不同，不能跨组排名。模型、矩阵及 13 个对照文件见[音频手册第 9～11 节](../codes/research/05_exercises_and_audio.md)。
+
 ### 13.7 复现说明
 
-下面先运行代码基线的单元测试和第 10 章示例，再重新生成全部 34 张图：
+下面先运行代码基线的单元测试和第 10 章示例，再重新生成全部 35 张图：
 
 ```bash
 .venv/bin/python -m unittest tests.test_codes_engineering -v
@@ -368,11 +380,11 @@ D_t&=(1-p_D)D^-\\
 
 会议识别复现还要固定数据准备与文本规范化。CHiME-8 的官方 `chime-utils` 提供 SegLST 转写格式、该届规范化及 cpWER/tcpWER 评分；其中缺失场景的忽略选项会改变实际计分范围。应保留每个场景的输入文件数、失败数和最终参与评分的清单，并先用正确转写、说话人交换、漏词和时间戳偏移的小夹具检查评分口径。[CHiME-8 官方评分实现](https://github.com/chimechallenge/chime-utils/tree/152882404f572d40769ef02bf91c5a9a9cfc9c78 "citation")
 
-绘图脚本都在 `scripts/` 里。图 34 读取合成音频，因此先生成音频，再运行两个绘图脚本；图片写入 `figures/`，共 34 张：
+绘图脚本都在 `scripts/` 里。图 34、35 读取合成音频，因此先生成音频，再运行两个绘图脚本；图片写入 `figures/`，共 35 张：
 
 ```bash
 .venv/bin/python codes/examples/generate_audio_samples.py
-.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～34
+.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～35
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32（回声消除专题）
 ```
 
@@ -386,4 +398,4 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`，其余不变�
 
 ---
 
-> 📄 本篇信息：配图 0 张 ｜ [回首页](./00_overview.md)
+> 📄 本篇信息：配图 1 张（图35） ｜ [回首页](./00_overview.md)

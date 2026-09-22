@@ -291,13 +291,13 @@
 
 ## 章节代码练习与音频映射
 
-新增 36 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 229 行算法统计。三个模块均提供 `run_exercises()`，返回可序列化为 JSON 的结果；各 12 道题的回归测试独立于外部源码取得状态。
+60 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 229 行算法统计。三个模块均提供 `run_exercises()`，返回可序列化为 JSON 的结果；各 20 道题的回归测试独立于外部源码取得状态。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
 
 | 章节与稳定 ID | 练习入口 | 回归测试 |
 |---|---|---|
-| 第 1～5 章：`E01-01`～`E01-02`、`E02-01`～`E02-03`、`E03-01`～`E03-02`、`E04-01`～`E04-03`、`E05-01`～`E05-02`（12 题） | [exercises_spatial.py](examples/exercises_spatial.py) | [test_codes_exercises_spatial.py](../tests/test_codes_exercises_spatial.py) |
-| 第 6～9 章：每章 `E06-01`～`E06-03`、`E07-01`～`E07-03`、`E08-01`～`E08-03`、`E09-01`～`E09-03`（12 题） | [exercises_enhancement.py](examples/exercises_enhancement.py) | [test_codes_exercises_enhancement.py](../tests/test_codes_exercises_enhancement.py) |
-| 第 10～11 章、附录 A/B：`E10-01`～`E10-06`、`E11-01`～`E11-02`、`E12-01`～`E12-03`、`E13-01`（12 题） | [exercises_engineering.py](examples/exercises_engineering.py) | [test_codes_exercises_engineering.py](../tests/test_codes_exercises_engineering.py) |
+| 第 1～5 章：`E01-01`～`E01-03`、`E02-01`～`E02-05`、`E03-01`～`E03-04`、`E04-01`～`E04-04`、`E05-01`～`E05-04`（20 题） | [exercises_spatial.py](examples/exercises_spatial.py) | [test_codes_exercises_spatial.py](../tests/test_codes_exercises_spatial.py) |
+| 第 6～9 章：每章 `E06-01`～`E06-05`、`E07-01`～`E07-05`、`E08-01`～`E08-05`、`E09-01`～`E09-05`（20 题） | [exercises_enhancement.py](examples/exercises_enhancement.py) | [test_codes_exercises_enhancement.py](../tests/test_codes_exercises_enhancement.py) |
+| 第 10～11 章、附录 A/B：`E10-01`～`E10-12`、`E11-01`～`E11-04`、`E12-01`～`E12-03`、`E13-01`（20 题） | [exercises_engineering.py](examples/exercises_engineering.py) | [test_codes_exercises_engineering.py](../tests/test_codes_exercises_engineering.py) |
 
 在仓库根目录使用模块入口：
 
@@ -307,7 +307,7 @@
 .venv/bin/python -m codes.examples.exercises_engineering
 ```
 
-题目、答案和 6 组、23 个合成音频的对应关系见[练习与音频实验](research/05_exercises_and_audio.md)。音频由 [generate_audio_samples.py](examples/generate_audio_samples.py) 生成，参数和摘要见 [MANIFEST.json](audio/MANIFEST.json)；它们只展示特定条件下的现象，不作为完整算法、工业性能或自然语音听测的新增覆盖证据。
+题目、答案和 9 组、36 个合成音频的对应关系见[练习与音频实验](research/05_exercises_and_audio.md)。音频由 [generate_audio_samples.py](examples/generate_audio_samples.py) 生成，参数和摘要见 [MANIFEST.json](audio/MANIFEST.json)；它们只展示特定条件下的现象，不作为完整算法、工业性能或自然语音听测的新增覆盖证据。
 
 ## 未完成项怎样保留
 
@@ -315,4 +315,4 @@
 
 原理索引明确保留下一步所需证据：唯一作者实现、明确许可、原模型配置，或与正文模型一致的最小代码。不得仅因为框架大、copyleft 或权重未授权就将许可明确的源码降为“没有实现”；也不得因同名函数存在就将整个算法家族标为已覆盖。
 
-本仓库不提交下载缓存、模型权重、第三方语料或录音；`audio/` 中的 23 个文件是本书自行合成的教学样本。独立上游工作目录的取得、许可保留与未执行项目按来源状态记录报告。算法、源码或排除范围变化时，同步修改本表、研究说明、来源清单和真实验证记录。
+本仓库不提交下载缓存、模型权重、第三方语料或录音；`audio/` 中的 36 个文件是本书自行合成的教学样本。独立上游工作目录的取得、许可保留与未执行项目按来源状态记录报告。算法、源码或排除范围变化时，同步修改本表、研究说明、来源清单和真实验证记录。

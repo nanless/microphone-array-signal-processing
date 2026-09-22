@@ -69,7 +69,7 @@ EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 84
 EXPECTED_SUBSECTION_COUNT = 21
 EXPECTED_OUTLINE_ITEM_COUNT = 119
-EXPECTED_FIGURE_NUMBERS = set(range(1, 35))
+EXPECTED_FIGURE_NUMBERS = set(range(1, 36))
 # 研究附站使用独立显式清单，不挤占 14 篇教程或 119 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
@@ -513,7 +513,7 @@ def figure_inventory_issues(references, png_names):
             issues.append(f"图号与文件名不匹配：alt 图{alt_match.group(1)} -> {name}")
     if numbers != EXPECTED_FIGURE_NUMBERS:
         issues.append(
-            f"正文图号应为 1..34：缺失 {sorted(EXPECTED_FIGURE_NUMBERS - numbers)}，"
+            f"正文图号应为 1..35：缺失 {sorted(EXPECTED_FIGURE_NUMBERS - numbers)}，"
             f"多出 {sorted(numbers - EXPECTED_FIGURE_NUMBERS)}")
     for number, names in names_by_number.items():
         if len(names) > 1:
@@ -562,16 +562,16 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_figures.py" if number <= 25 or number in (33, 34)
+            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
                 fail(errors, f"PNG 溯源失效：figures/{name}: {issue}")
-            if number == 34:
+            if number in (34, 35):
                 expected = hashlib.sha256((ROOT / "codes/audio/MANIFEST.json").read_bytes()).hexdigest()
                 with Image.open(path) as image:
                     if image.info.get("AudioManifestDigest") != expected:
-                        fail(errors, "图 34 音频清单摘要失效")
+                        fail(errors, f"图 {number} 音频清单摘要失效")
         except Exception as exc:
             fail(errors, f"图片无法解码：figures/{name}: {exc}")
 
@@ -962,6 +962,10 @@ EXPECTED_AUDIO_STEMS = {
     "wpe_dry", "wpe_reverberant", "wpe_output", "separation_source1", "separation_source2",
     "separation_mixture", "separation_recovered1", "separation_recovered2",
     "engineering_reference", "engineering_clipped", "engineering_low_level", "engineering_dropout", "tracking_pan",
+    "correlation_reference", "correlation_single", "correlation_independent", "correlation_common",
+    "polarity_reference", "polarity_array", "polarity_uncorrected", "polarity_corrected",
+    "conditioning_reference", "conditioning_well_input", "conditioning_ill_input",
+    "conditioning_well_output", "conditioning_ill_output",
 }
 
 
@@ -972,11 +976,12 @@ def check_audio(errors):
         manifest = json.loads((root / "MANIFEST.json").read_text())
         records = manifest["files"]
         names = {stem + ".wav" for stem in EXPECTED_AUDIO_STEMS}
-        if len(records) != 23 or {r["file"] for r in records} != names:
-            fail(errors, "音频清单必须包含独立基线的 23 个 WAV")
+        if len(records) != 36 or {r["file"] for r in records} != names:
+            fail(errors, "音频清单必须包含独立基线的 36 个 WAV")
         if {p.name for p in root.glob("*.wav")} != names or {p.name for p in (SITE / "audio").glob("*.wav")} != names:
             fail(errors, "源音频或站点音频文件集合不符")
-        if set(manifest["groups"]) != {"spatial", "aec", "wpe", "separation", "engineering", "tracking"}:
+        if set(manifest["groups"]) != {"spatial", "aec", "wpe", "separation", "engineering", "tracking",
+                                      "correlation", "polarity", "conditioning"}:
             fail(errors, "音频实验组不符")
         expected_inputs = {"codes/examples/generate_audio_samples.py", "codes/array_tutorial/audio_samples.py",
                            "codes/array_tutorial/aec.py", "codes/array_tutorial/dereverberation.py",
@@ -1002,11 +1007,22 @@ def check_audio(errors):
                 if (wav.getframerate(), wav.getsampwidth(), wav.getcomptype()) != (16000, 2, "NONE"):
                     fail(errors, f"音频格式不符：{name}")
                 raw = wav.readframes(frames)
+            if record["sample_rate_hz"] != 16000 or record["duration_s"] != frames / 16000:
+                fail(errors, f"音频清单采样率或时长不符：{name}")
+            expected_group = name.split("_", 1)[0]
+            if record["group"] != expected_group:
+                fail(errors, f"音频分组归属不符：{name}")
             if len(raw) != frames * channels * 2 or frames != record["samples"] or channels != record["channels"]:
                 fail(errors, f"音频尺寸不符：{name}")
             samples = np.frombuffer(raw, dtype="<i2").astype(float) / 32768
-            if np.max(np.abs(samples)) > .80002 or abs(float(np.max(np.abs(samples))) - record["peak"]) > 1e-15:
+            measured_rms = float(np.sqrt(np.mean(samples**2)))
+            if not np.isfinite(record["rms"]) or abs(measured_rms - record["rms"]) > 1e-15:
+                fail(errors, f"音频 RMS 不符：{name}")
+            if (not np.isfinite(record["peak"]) or np.max(np.abs(samples)) > .80002
+                    or abs(float(np.max(np.abs(samples))) - record["peak"]) > 1e-15):
                 fail(errors, f"音频峰值不符：{name}")
+            if not np.isfinite(record["common_export_gain"]) or not 0 < record["common_export_gain"] <= 1:
+                fail(errors, f"音频比较组增益非法：{name}")
             if record["common_export_gain"] != manifest["groups"][record["group"]]["common_export_gain"]:
                 fail(errors, f"音频比较组增益不一致：{name}")
             if not 0 <= record["quantization_max_abs_error"] <= .5/32768 + 1e-15:
@@ -1020,7 +1036,7 @@ def check_audio(errors):
                     self.players.append(dict(attrs))
         parser = AudioParser()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
-        if len(parser.players) != 23 or {p.get("src") for p in parser.players} != {"../audio/" + n for n in names}:
+        if len(parser.players) != 36 or {p.get("src") for p in parser.players} != {"../audio/" + n for n in names}:
             fail(errors, "试听控件集合不符")
         for player in parser.players:
             if "autoplay" in player or "controls" not in player or player.get("preload") != "none" or not player.get("aria-label"):

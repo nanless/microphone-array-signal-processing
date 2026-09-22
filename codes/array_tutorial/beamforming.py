@@ -75,7 +75,10 @@ def mvdr_weights(
         loaded = _load_covariance(matrix, relative_diagonal_loading, condition_limit)
         solved = np.linalg.solve(loaded, vector)
         denominator = np.vdot(vector, solved)
-        if denominator.real <= 0.0 or abs(denominator.imag) > 1e-8:
+        # A covariance rescaling also rescales this quadratic form. Judge its
+        # round-off imaginary component relatively, not in absolute units.
+        if (denominator.real <= 0.0
+                or abs(denominator.imag) > 1e-8 * abs(denominator.real)):
             raise np.linalg.LinAlgError("MVDR normalization is not positive real")
         result[index] = solved / denominator.real
     return result[0] if single else result
@@ -107,7 +110,11 @@ def lcmv_weights(
     relative_diagonal_loading: float = 0.0,
     condition_limit: float = 1e12,
 ) -> np.ndarray:
-    """Return the minimum-power vector satisfying ``C.H @ w = f``."""
+    """Return the minimum-power vector satisfying ``C.H @ w = f``.
+
+    The output responses ``w.H @ C`` are therefore ``conj(f)``.  Pass the
+    conjugate of the desired responses when they are not real-valued.
+    """
     matrix = _load_covariance(covariance, relative_diagonal_loading, condition_limit)
     c = np.asarray(constraints, dtype=complex)
     f = np.asarray(responses, dtype=complex)
@@ -183,8 +190,10 @@ def _load_covariance(
             raise np.linalg.LinAlgError("non-positive covariance scale cannot be loaded relatively")
         matrix = matrix + relative_diagonal_loading * scale * np.eye(matrix.shape[0])
     eigenvalues = np.linalg.eigvalsh(matrix)
-    eigenvalue_scale = max(float(np.max(np.abs(eigenvalues))), 1.0)
-    if eigenvalues[0] < -1e-10 * eigenvalue_scale:
+    eigenvalue_scale = float(np.max(np.abs(eigenvalues)))
+    if eigenvalue_scale == 0.0:
+        raise np.linalg.LinAlgError("zero covariance has no invertible noise model")
+    if eigenvalues[0] / eigenvalue_scale < -1e-10:
         raise np.linalg.LinAlgError("covariance must be positive semidefinite")
     condition = np.linalg.cond(matrix)
     if not np.isfinite(condition) or condition > condition_limit:

@@ -74,7 +74,11 @@ def pit_permutation(estimates: np.ndarray, references: np.ndarray) -> tuple[tupl
 
 
 def masked_spatial_covariance(spectrum: np.ndarray, mask: np.ndarray, *, epsilon: float = 1e-12) -> np.ndarray:
-    """Estimate ``(F,M,M)`` SCMs from ``spectrum=(F,M,T)`` and ``mask=(F,T)``."""
+    """Estimate ``(F,M,M)`` SCMs from ``spectrum=(F,M,T)`` and ``mask=(F,T)``.
+
+    The denominator is ``max(sum(mask), epsilon)``, not an additive epsilon.
+    Thus ordinary mask rescaling is invariant only above the denominator floor.
+    """
 
     x = np.asarray(spectrum)
     weights = np.asarray(mask, dtype=float)
@@ -100,18 +104,32 @@ def mask_mvdr_2x2(
 
     The target steering vector is the principal eigenvector of the target SCM,
     normalized to reference microphone 0.  Frequencies with unusable statistics
-    fall back to selecting microphone 0.
+    fall back to selecting microphone 0. Statistics use a common per-frequency
+    input scale, which cancels from the MVDR weights; output retains input scale.
     """
 
     x = np.asarray(spectrum)
-    if x.ndim != 3 or x.shape[1] != 2:
+    if x.ndim != 3 or x.shape[1] != 2 or any(size == 0 for size in x.shape):
         raise ValueError("spectrum must have shape (F,2,T)")
+    if not np.all(np.isfinite(x)):
+        raise ValueError("spectrum must be finite")
     if not np.isfinite(diagonal_loading) or diagonal_loading < 0.0:
         raise ValueError("diagonal_loading must be finite and non-negative")
     target_weights = np.asarray(target_mask, dtype=float)
     interference_weights = np.asarray(interference_mask, dtype=float)
-    target = masked_spatial_covariance(x, target_mask)
-    interference = masked_spatial_covariance(x, interference_mask)
+    # Avoid squaring extreme but finite STFT amplitudes. Real/imaginary peak
+    # also avoids overflow in abs(complex) near the floating-point limit.
+    input_scale = np.maximum(np.max(np.abs(x.real), axis=(1, 2)),
+                             np.max(np.abs(x.imag), axis=(1, 2)))
+    common_scale = np.where(input_scale > 0, input_scale, 1.0)[:, None, None]
+    # Complex division may form 1/common_scale internally, overflowing for
+    # subnormal scales even though each desired component ratio is bounded.
+    # Divide the real components directly so no reciprocal is materialized.
+    normalized = np.empty(x.shape, dtype=np.complex128)
+    normalized.real = x.real / common_scale
+    normalized.imag = x.imag / common_scale
+    target = masked_spatial_covariance(normalized, target_mask)
+    interference = masked_spatial_covariance(normalized, interference_mask)
     output = np.empty((x.shape[0], x.shape[2]), dtype=np.complex128)
     beam_weights = np.empty((x.shape[0], 2), dtype=np.complex128)
     fallback = np.array([1.0 + 0j, 0j])
@@ -139,13 +157,15 @@ def mask_mvdr_2x2(
                 beam_weights[frequency] = fallback
                 output[frequency] = x[frequency, 0]
                 continue
-            loaded = noise + diagonal_loading * scale * np.eye(2)
+            loaded = noise / scale + diagonal_loading * np.eye(2)
             try:
                 inverse_steering = np.linalg.solve(loaded, steering)
                 denominator = np.vdot(steering, inverse_steering)
-                weight = inverse_steering / denominator if abs(denominator) > 1e-12 else fallback
+                weight = (inverse_steering / denominator
+                          if np.isfinite(denominator) and denominator.real > 0
+                          else fallback)
             except np.linalg.LinAlgError:
                 weight = fallback
         beam_weights[frequency] = weight
-        output[frequency] = weight.conj() @ x[frequency]
+        output[frequency] = (weight.conj() @ normalized[frequency]) * input_scale[frequency]
     return output, beam_weights

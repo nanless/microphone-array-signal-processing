@@ -150,7 +150,16 @@ class CircularParticleFilter:
         return float(np.rad2deg(np.angle(vector)))
 
     def resample_if_needed(self, rng: np.random.Generator, threshold: float | None = None) -> bool:
+        """Resample when ESS is below a finite threshold in ``[0, N]``.
+
+        Zero disables resampling. Invalid thresholds leave state and RNG intact.
+        """
         limit = self.particles.size / 2.0 if threshold is None else threshold
+        if (isinstance(limit, (bool, np.bool_))
+                or not isinstance(limit, (int, float, np.integer, np.floating))
+                or not np.isfinite(limit)
+                or not 0 <= limit <= self.particles.size):
+            raise ValueError("threshold must be a finite scalar between zero and particle count")
         if self.effective_sample_size >= limit:
             return False
         indices = systematic_resample(self.weights, rng)

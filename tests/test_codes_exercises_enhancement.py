@@ -16,7 +16,7 @@ class TestEnhancementExercises(unittest.TestCase):
         cls.results = run_exercises()
 
     def test_stable_ids_and_serialization(self):
-        self.assertEqual(set(self.results),{f'E{chapter:02d}-{exercise:02d}' for chapter in range(6,10) for exercise in range(1,4)})
+        self.assertEqual(set(self.results),{f'E{chapter:02d}-{exercise:02d}' for chapter in range(6,10) for exercise in range(1,6)})
         json.dumps(self.results,allow_nan=False)
         self.assertEqual(self.results,run_exercises())
 

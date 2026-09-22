@@ -16,7 +16,9 @@
 
 阵列坐标约定为：麦 1 位于 $x=0$，麦 2 位于 $+x$；正横为 0°，正角朝麦 2；$\vec u$ 从阵列指向声源，传播方向为 $-\vec u$。
 
-**字母复用**（与 §2.3 一致）：受文献惯例所限，$k$ 可表示频点索引、波数或 WPE 的滞后帧号；$D$ 可表示阵列孔径或 PHD 强度函数；$\lambda$ 可表示波长、WPE 功率谱或矩阵特征值；$K$ 可表示声源数或 WPE 预测阶数；$s$ 可表示源信号或追踪状态。具体含义以所在公式的定义为准。需要区分 STFT 网格时，本书用 $k$ 表示频点索引、$f_k=kf_s/N$ 表示对应的 Hz 频率、$\ell$ 表示帧索引；连续时间仍用 $t$，离散采样索引用 $n$。
+**字母复用**（与 §2.3 一致）：受文献惯例所限，$k$ 可表示频点索引、波数或 WPE 的滞后帧号；$D$ 可表示阵列孔径或 PHD 强度函数；$\lambda$ 可表示波长、WPE 功率谱或矩阵特征值；$K$ 可表示声源数或 WPE 预测阶数；$s$ 可表示源信号或追踪状态。具体含义以所在公式的定义为准。
+
+需要区分 STFT 网格时，本书用 $k$ 表示频点索引、$f_k=kf_s/N$ 表示对应的 Hz 频率、$\ell$ 表示帧索引；连续时间仍用 $t$，离散采样索引用 $n$。
 
 | 符号 | 含义 |
 |---|---|
@@ -45,7 +47,7 @@
 | $\tau_{ij}$，TDOA | $\tau_{ij}=t_i-t_j$；到达时间差（Time Difference of Arrival，TDOA）。远场下 $\tau_{m1}=-(\vec r_m-\vec r_1)^\top\vec u/c$ |
 | $T_{60}$，DRR，$d_c$ | 混响时间、直达混响比（Direct-to-Reverberant Ratio，DRR；dB 域读数）、临界距离 |
 | WNG，DI，HPBW，SLL | 白噪声增益（White Noise Gain，WNG）、指向性指数（Directivity Index，DI）、半功率波束宽度（Half-Power Beamwidth，HPBW）、旁瓣电平（Side-Lobe Level，SLL） |
-| RTF | 相对传递函数（Relative Transfer Function，RTF） |
+| RTF | 波束与空间模型中指相对传递函数（Relative Transfer Function）；工程与选型中指实时因子（Real-Time Factor），即处理耗时/音频时长。两者同缩写、不同量，按章节语境区分 |
 | $h(n)$，$\hat{\vec{w}}$，ERLE | 回声路径、AEC 自适应滤波器、回声返回损失增强（Echo Return Loss Enhancement，ERLE） |
 | $G(k,f)$, $\Delta$, $K$ | WPE 预测系数（本书为滞后 $k$、频点 $f$ 的系数）、保护延迟、预测阶数 |
 | PHD/RFS | 概率假设密度（Probability Hypothesis Density，PHD）/随机有限集（Random Finite Set，RFS） |

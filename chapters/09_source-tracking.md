@@ -147,13 +147,13 @@ $$\hat{\vec{s}}_t=\begin{bmatrix}30.5\\0.5\end{bmatrix}+\begin{bmatrix}0.148\\0.
 
 **第 5 步：更新的不确定度** $\mathbf{P}_t=(\mathbf{I}-\mathbf{K}_t\mathbf{H})\mathbf{P}^-_t$
 
-先算 $\mathbf{K}_t\mathbf{H}=\begin{bmatrix}0.148\\0.0085\end{bmatrix}[1,\ 0]=\begin{bmatrix}0.148&0\\0.0085&0\end{bmatrix}$，于是
+计算协方差时保留未舍入的增益 $\mathbf K=[4.35,0.25]^\top/29.35$。前面显示的 0.148 和 0.0085 只用于展示，不能再当成精确数代入。于是
 
-$$\mathbf{I}-\mathbf{K}_t\mathbf{H}=\begin{bmatrix}1-0.148&0\\-0.0085&1\end{bmatrix}=\begin{bmatrix}0.852&0\\-0.0085&1\end{bmatrix}$$
+$$\mathbf{I}-\mathbf{K}_t\mathbf{H}=\begin{bmatrix}25/29.35&0\\-0.25/29.35&1\end{bmatrix}$$
 
-$$\mathbf{P}_t=\begin{bmatrix}0.852&0\\-0.0085&1\end{bmatrix}\begin{bmatrix}4.35&0.25\\0.25&0.26\end{bmatrix}=\begin{bmatrix}3.705&0.213\\0.213&0.258\end{bmatrix}$$
+$$\mathbf{P}_t=\begin{bmatrix}25/29.35&0\\-0.25/29.35&1\end{bmatrix}\begin{bmatrix}4.35&0.25\\0.25&0.26\end{bmatrix}\approx\begin{bmatrix}3.705&0.213\\0.213&0.258\end{bmatrix}$$
 
-（第一行：$0.852\times4.35=3.705$，$0.852\times0.25=0.213$；第二行：$-0.0085\times4.35+1\times0.25=0.213$，$-0.0085\times0.25+1\times0.26=0.258$。）
+逐项计算得到 $P_{11}=25\times4.35/29.35\approx3.705281$，$P_{12}=P_{21}=25\times0.25/29.35\approx0.212947$，$P_{22}=0.26-0.25^2/29.35\approx0.257871$；上面的矩阵最后才舍入到三位小数。若提前用 0.852 计算，$0.852\times4.35=3.7062$，会改变显示的末位，且两条路径计算的非对角项可能不再相等。
 
 角度方差从 4.35 降到 3.71（标准差约 1.93°）。在线性模型、协方差和卡尔曼增益满足本节条件时，观测更新降低或保持估计协方差；错误观测或错误噪声模型仍可能让真实误差增大。
 
@@ -362,7 +362,9 @@ $p_D$ 是检测概率，$g_t(z\mid x)$ 是目标在状态 $x$ 时产生观测 $z
 
 粒子或高斯混合只是表示和计算强度函数的不同方法。目标数由强度积分估计，位置再从峰或聚类中心提取。[PHD 原始论文](https://doi.org/10.1109/TAES.2003.1261119 "citation")；音频视觉粒子实现见 [Liu et al. 2019](https://openresearch.surrey.ac.uk/esploro/outputs/journalArticle/Audio-Visual-Particle-Flow-SMC-PHD-Filtering-for/99513411302346 "citation")。
 
-多目标追踪还要估计观测与轨迹的对应关系以及目标数。JPDA 和 MHT 显式处理关联；PHD 传播随机有限集的一阶强度；LMB 保留目标标签；检测前追踪保留未越过检测阈值的弱证据。最优子模式分配距离（Optimal Subpattern Assignment，OSPA）同时度量定位误差和目标数误差，但不评价身份连续性。
+多目标追踪还要估计观测与轨迹的对应关系以及目标数。JPDA 和 MHT 显式处理关联；PHD 传播随机有限集的一阶强度；LMB 保留目标标签；检测前追踪保留未越过检测阈值的弱证据。
+
+最优子模式分配距离（Optimal Subpattern Assignment，OSPA）同时度量定位误差和目标数误差，但不评价身份连续性。
 
 **可执行单目标基线与高级算法边界。** [`codes/array_tutorial/tracking.py`](../codes/array_tutorial/tracking.py) 提供常速度角度 Kalman 滤波器、$[-180^\circ,180^\circ)$ 环绕、系统重采样和圆周角 SIR 粒子滤波器。
 
@@ -374,13 +376,17 @@ $p_D$ 是检测概率，$g_t(z\mid x)$ 是目标在状态 $x$ 时产生观测 $z
 
 教学 Kalman 类的过程噪声矩阵 $Q$ 已按一次预测间隔离散化；若 `dt` 改变，不能继续照搬同一个 $Q$。粒子后验的圆周合向量接近零时，代码会明确报错，而不是返回由浮点残差决定的任意角度。
 
+如何重算 $Q$ 取决于过程噪声模型，练习 E09-04 比较两种不同定义。粒子重采样阈值则按有效粒子数的同一尺度指定：`resample_if_needed()` 接受 $[0,N]$ 内有限实数，0 表示关闭，默认是 $N/2$；布尔值、数组、负数、超过粒子数或非有限值均报错，且不改变粒子和随机数状态。
+
 设备只搜索有限扇区时不得使用圆周环绕；还需测试迟到/乱序观测、长缺测、错误时间戳、野点门控、目标交叉、轨迹出生/确认/删除、ID 重用和消息超时。无有效观测时只预测并传播协方差，超过有效期后回到搜索模式，不能把外推方向当作新观测。
 
 进一步的实现可按 FilterPy 和 Stone Soup 的固定版本阅读，源码工作目录、许可和入口由 [`SOURCES.lock.json`](../codes/SOURCES.lock.json) 管理。FilterPy 的 `kalman/EKF.py`、`UKF.py`、`IMM.py` 分别定位非线性更新和运动模型切换；Stone Soup 的 `dataassociator/probability.py::JPDA` 处理联合关联，`updater/pointprocess.py::PHDUpdater` 配合 `mixturereducer/gaussianmixture.py::GaussianMixtureReducer` 完成 GM-PHD 更新与分量合并、剪枝。具体阅读顺序、实验输入和失败情况见[空间处理与追踪研究](../codes/research/01_spatial_and_tracking.md)。
 
 把位置追踪例子改成麦克风方向追踪时，至少要重写三处。观测模型应输出方位角或方向单位向量，不能继续使用二维位置残差；门控距离要使用相应协方差与角度环绕；杂波强度必须与观测空间的测度一致，例如每弧度的预期假峰数。检测概率还要反映说话人静默和定位器漏检，不能直接照搬雷达示例。
 
-GM-PHD 的高斯权重和表示期望目标数，不要求归一到 1。出生分布没有覆盖某个方向时，新目标可能一直不能形成足够强的分量；剪枝阈值过高则会删掉弱源，因此应记录每帧删去的总强度质量。JPDA 也需要明确漏检事件和一对一约束；在两人交叉时，软关联可能混合轨迹，并不自动保持说话人身份。[Stone Soup JPDA 教程源码](https://github.com/dstl/Stone-Soup/blob/main/docs/tutorials/08_JPDATutorial.py "citation")；[GM-PHD 官方教程](https://stonesoup.readthedocs.io/en/v1.9.1/auto_tutorials/filters/GMPHDTutorial.html "citation")，核实于 2026-09-22。
+GM-PHD 的高斯权重和表示期望目标数，不要求归一到 1。出生分布没有覆盖某个方向时，新目标可能一直不能形成足够强的分量；剪枝阈值过高则会删掉弱源，因此应记录每帧删去的总强度质量。
+
+JPDA 也需要明确漏检事件和一对一约束；在两人交叉时，软关联可能混合轨迹，并不自动保持说话人身份。[Stone Soup JPDA 教程源码](https://github.com/dstl/Stone-Soup/blob/main/docs/tutorials/08_JPDATutorial.py "citation")；[GM-PHD 官方教程](https://stonesoup.readthedocs.io/en/v1.9.1/auto_tutorials/filters/GMPHDTutorial.html "citation")，核实于 2026-09-22。
 
 MHT、CPHD、LMB/$\delta$-GLMB 和检测前追踪仍须按具体论文及实现分别审查。某个库的基类说明提到这些家族，不等于该版本已实现全部算法；给 PHD 分量附加临时标签也不等于实现了 GLMB。正式采用前还需验证出生/存活/漏检模型、假设截断、身份切换和运行成本。
 
@@ -456,9 +462,9 @@ OSPA 不保留身份，所以身份切换要另报身份切换次数（Identity 
 
     单帧转角限值可以 $\omega_{\max}\Delta t$ 为物理起点，5 帧累计上限为 $5\omega_{\max}\Delta t$；超过保持时间或不确定度阈值后，应降低波束更新置信度或回到搜索模式。
 
-**可运行练习 E09-01～E09-03**
+**可运行练习 E09-01～E09-05**
 
-运行 `.venv/bin/python -m codes.examples.exercises_enhancement`，源码见 [`exercises_enhancement.py`](../codes/examples/exercises_enhancement.py)。这三题使用方向数值，不通过左右声道音量模拟阵列定位；后者的声像不能代替麦克风传播时延模型。
+运行 `.venv/bin/python -m codes.examples.exercises_enhancement`，源码见 [`exercises_enhancement.py`](../codes/examples/exercises_enhancement.py)。这五题使用方向数值，不通过左右声道音量模拟阵列定位；后者的声像不能代替麦克风传播时延模型。
 
 - **E09-01：把“每帧”改为“每秒”。** 初态 $[30^\circ,5^\circ/\mathrm s]$，$P=\operatorname{diag}(4,1)$；每 0.1 s 预测一次，采用已为此间隔离散化的 $Q=\operatorname{diag}(0.1,0.01)$。连续两次缺测，求状态和协方差。
 
@@ -480,6 +486,26 @@ OSPA 不保留身份，所以身份切换要另报身份切换次数（Identity 
     **解答**：平方和为 $0.01+0.04+0.36+0.01=0.42$，有效粒子数约 2.381，大于 2，因此阈值判决不触发。CDF 为 $[0.1,0.3,0.9,1]$，四个位置约为 0.15924、0.40924、0.65924、0.90924，对应索引 `[1,2,2,3]`。代码起点来自 NumPy `default_rng(0)` 的首个随机数除以 4。
 
     重采样后四个新粒子权重均为 0.25。该过程重新分配有限计算样本，没有增加观测信息，不能把单次均值变化解释成精度必然提高。[Stone Soup 官方系统重采样教程](https://stonesoup.readthedocs.io/en/v1.5/auto_tutorials/sampling/ResamplingTutorial.html)。
+
+- **E09-04：同样叫“白噪声”，为什么 $Q$ 不同？** 状态为 $[\theta,\dot\theta]^\top$，单位为度、度/秒，间隔 $\Delta t=0.1$ s。比较连续白角加速度的强度 $q=2\ \mathrm{deg}^2/\mathrm s^3$，以及每个间隔内恒定、跨间隔独立的随机角加速度方差 $\sigma_a^2=4\ \mathrm{deg}^2/\mathrm s^4$。
+
+    **解答**：连续模型通过积分传播噪声。令 $u$ 表示噪声作用到区间终点的剩余时间，则贡献方向为 $[u,1]^\top$；对 $u\in[0,\Delta t]$ 积分，得到
+
+    $$\begin{aligned}
+    Q_c&=q\int_0^{\Delta t}\begin{bmatrix}u^2&u\\u&1\end{bmatrix}du\\
+    &=q\begin{bmatrix}\Delta t^3/3&\Delta t^2/2\\\Delta t^2/2&\Delta t\end{bmatrix}\\
+    &\approx\begin{bmatrix}0.000666667&0.01\\0.01&0.2\end{bmatrix}。
+    \end{aligned}$$
+
+    逐段恒定模型中，一次角加速度使角度、角速度分别改变 $a\Delta t^2/2$、$a\Delta t$，所以 $G=[\Delta t^2/2,\Delta t]^\top$，$Q_d=\sigma_a^2GG^\top=\begin{bmatrix}0.0001&0.002\\0.002&0.04\end{bmatrix}$。各矩阵左上、右上、右下的单位分别为度²、度²/秒、度²/秒²。
+
+    两个输入参数的单位和随机过程不同，不能用相同数值替换后判断哪个滤波器“更好”。更改帧间隔时，应沿所选模型重新计算；本题使用本书手算，定义和公式可与 [FilterPy 官方 `Q_continuous_white_noise()`、`Q_discrete_white_noise()` 源码](https://filterpy.readthedocs.io/en/latest/_modules/filterpy/common/discretization.html)核对，核实于 2026-09-22。
+
+- **E09-05：环绕新息怎样影响门控？** 预测角 179°、观测角 −179°，新息方差为 $S=4\ \mathrm{deg}^2$。本题规定平方马氏距离门限为 9，比较直接相减和圆周环绕后的判决。
+
+    **解答**：直接相减为 −358°，平方马氏距离为 $358^2/4=32041$，被拒绝。环绕后的新息是 +2°，距离为 $2^2/4=1$，被接受。这里 $S=HP^-H^\top+R$ 包含预测和测量两部分，不能只用测量方差代替。
+
+    门限 9 只是本题输入，不是任意 DOA 误差分布下的通用判据。有限搜索扇区不能强行环绕；迟到观测应先按测量时间处理，不能仅靠放宽门限补偿时间戳错误。
 
 ---
 

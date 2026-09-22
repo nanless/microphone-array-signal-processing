@@ -18,10 +18,10 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from codes.array_tutorial.beamforming import mvdr_weights
-from codes.array_tutorial.covariance import spatial_covariance
+from codes.array_tutorial.beamforming import lcmv_weights, mvdr_weights
+from codes.array_tutorial.covariance import recursive_covariance, spatial_covariance
 from codes.array_tutorial.doa import gcc_phat, music_spectrum
-from codes.array_tutorial.geometry import plane_wave_steering
+from codes.array_tutorial.geometry import direction_vector, near_field_steering, plane_wave_delays, plane_wave_steering
 from codes.array_tutorial.spectral import istft, stft
 
 SEED = 20260922
@@ -181,14 +181,129 @@ def mvdr_loading_tradeoff() -> dict:
     return {"cases": rows, "dsb_wng_linear": 2.0}
 
 
+def unequal_noise_average() -> dict:
+    """E01-03: aligned unit target and independent noise variances 1 and 4."""
+    covariance = np.diag([1., 4.])
+    equal = np.ones(2) / 2
+    inverse_variance = mvdr_weights(covariance, np.ones(2))
+    equal_power = float(equal @ covariance @ equal)
+    optimal_power = float(np.vdot(inverse_variance, covariance @ inverse_variance).real)
+    return {"equal_noise_power": equal_power, "weighted_noise_power": optimal_power,
+            "weights": inverse_variance.real.tolist(),
+            "gain_over_equal_db": float(10 * np.log10(equal_power / optimal_power))}
+
+
+def masked_snapshot_rank() -> dict:
+    """E02-04: uncentered moments; mask support is not a rank guarantee."""
+    spectra = np.array([[1., 0., 1.], [0., 1., 1.]])[:, None, :]
+    rows = []
+    for weights in (np.array([1., 0., 1.]), np.array([1., 0., 0.])):
+        covariance = spatial_covariance(spectra, weights=weights)[0]
+        doubled = spatial_covariance(spectra, weights=2 * weights)[0]
+        rows.append({"weights": weights.tolist(), "matrix": covariance.real.tolist(),
+                     "weight_concentration_count": float(weights.sum()**2 / (weights @ weights)),
+                     "rank": int(np.linalg.matrix_rank(covariance)),
+                     "rescale_error": float(np.max(np.abs(covariance - doubled)))})
+    return {"snapshots": spectra[:, 0].tolist(), "cases": rows}
+
+
+def recursive_startup() -> dict:
+    """E02-05: fixed snapshot isolates zero-initialization weight mass."""
+    snapshot = np.array([[1.], [2.]])
+    matrix = np.zeros((1, 2, 2), dtype=complex)
+    rows = []
+    for step in range(1, 4):
+        matrix = recursive_covariance(matrix, snapshot, forgetting_factor=.5)
+        mass = 1 - .5**step
+        rows.append({"step": step, "weight_mass": mass,
+                     "raw_matrix": matrix[0].real.tolist(),
+                     "normalized_matrix": (matrix[0] / mass).real.tolist()})
+    return {"forgetting_factor": .5, "cases": rows}
+
+
+def azimuth_roundtrip() -> dict:
+    """E03-03: +y broadside, positive azimuth toward +x, upper hemisphere."""
+    unit = np.array([-.5, -np.sqrt(.5), .5])
+    azimuth = np.arctan2(unit[0], unit[1])
+    elevation = np.arcsin(unit[2])
+    recovered = direction_vector(azimuth, elevation)
+    return {"direction": unit.tolist(), "azimuth_deg": float(np.rad2deg(azimuth)),
+            "elevation_deg": float(np.rad2deg(elevation)),
+            "positive_x_convention_deg": float(np.rad2deg(np.arctan2(unit[1], unit[0]))),
+            "recovered_direction": recovered.tolist()}
+
+
+def near_to_far_error() -> dict:
+    """E03-04: reference is centre microphone; compare distance and gain errors."""
+    positions = np.array([[-.05, 0.], [0., 0.], [.05, 0.]])
+    angle = np.pi / 6
+    far_delay = plane_wave_delays(positions, angle, reference=1)
+    rows = []
+    for radius in (.2, .5, 2., 20.):
+        source = radius * direction_vector(angle)
+        distances = np.linalg.norm(source - positions, axis=1)
+        delays = (distances - distances[1]) / 343
+        gain = np.abs(near_field_steering(positions, source, [4000.], reference=1)[0])
+        rows.append({"distance_m": radius, "relative_distance_mm": ((distances - distances[1])*1000).tolist(),
+                     "delay_rms_error_us": float(np.sqrt(np.mean((delays-far_delay)**2))*1e6),
+                     "phase_rms_error_deg_at_4khz": float(np.sqrt(np.mean((delays-far_delay)**2))*4000*360),
+                     "relative_amplitudes": gain.tolist()})
+    return {"reference_channel_zero_based": 1, "azimuth_deg": 30., "cases": rows}
+
+
+def coherent_spatial_smoothing() -> dict:
+    """E04-04: local two-subarray derivation, not a general smoothing API."""
+    vectors = np.exp(1j*np.pi*np.arange(4)[:, None]*np.array([-.5, .5])[None, :])
+    coherent = vectors @ np.ones((2, 2)) @ vectors.conj().T
+    smoothed = (coherent[:3, :3] + coherent[1:, 1:]) / 2
+    return {"original_eigenvalues": np.linalg.eigvalsh(coherent).tolist(),
+            "smoothed_matrix_real": smoothed.real.tolist(),
+            "smoothed_eigenvalues": np.linalg.eigvalsh(smoothed).tolist(),
+            "subarray_count": 2, "subarray_channels": 3,
+            "original_aperture_in_spacings": 3, "smoothed_aperture_in_spacings": 2}
+
+
+def beam_output_noise() -> dict:
+    """E05-03: separate input noise estimate from DSB residual-noise PSD."""
+    weight = np.ones(3) / 3
+    noise_covariance = .7 * np.eye(3) + .3 * np.ones((3, 3))
+    noise_output = float(weight @ noise_covariance @ weight)
+    total_output = 3 + noise_output
+    input_noise_estimate = 4 - 3.3
+    residual_estimate = input_noise_estimate * float(weight @ weight)
+    return {"per_channel_noise_true": 1., "per_channel_noise_estimate": input_noise_estimate,
+            "true_output_noise": noise_output, "total_output_power": total_output,
+            "independent_model_output_noise_estimate": residual_estimate,
+            "oracle_gain": 1-noise_output/total_output,
+            "independent_model_gain": 1-residual_estimate/total_output}
+
+
+def complex_constraint_response() -> dict:
+    """E05-04: C.H w=f implies the actual response vector is conj(f)."""
+    constraints = np.eye(2, dtype=complex)
+    desired = np.array([1., 1.j])
+    wrong = lcmv_weights(np.eye(2), constraints, desired)
+    correct = lcmv_weights(np.eye(2), constraints, desired.conj())
+    wrong_response = wrong.conj() @ constraints
+    correct_response = correct.conj() @ constraints
+    return {"desired_response_real": desired.real.tolist(), "desired_response_imag": desired.imag.tolist(),
+            "unconjugated_f_response_imag": wrong_response.imag.tolist(),
+            "correct_weight_real": correct.real.tolist(), "correct_weight_imag": correct.imag.tolist(),
+            "correct_response_real": correct_response.real.tolist(), "correct_response_imag": correct_response.imag.tolist()}
+
+
 def run_exercises() -> dict:
-    """Return twelve JSON-serializable results; no downloads, training or playback."""
+    """Return twenty JSON-serializable results; no downloads, training or playback."""
     functions = {
         "E01-01": correlated_noise, "E01-02": amplitude_and_power,
         "E02-01": stft_framing, "E02-02": complex_covariance, "E02-03": stft_roundtrip,
         "E03-01": difference_coarray, "E03-02": endfire_error,
         "E04-01": gcc_sign_and_silence, "E04-02": coherent_source_rank, "E04-03": spatial_alias,
         "E05-01": mwf_rank_condition, "E05-02": mvdr_loading_tradeoff,
+        "E01-03": unequal_noise_average, "E02-04": masked_snapshot_rank,
+        "E02-05": recursive_startup, "E03-03": azimuth_roundtrip,
+        "E03-04": near_to_far_error, "E04-04": coherent_spatial_smoothing,
+        "E05-03": beam_output_noise, "E05-04": complex_constraint_response,
     }
     return {identifier: function() for identifier, function in functions.items()}
 

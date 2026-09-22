@@ -47,7 +47,9 @@ MUSIC 还要满足 $K<M$，否则没有非零维噪声子空间可供正交检�
 
 **方法 2：信息准则（AIC/MDL）**。增加候选源数通常会改善数据拟合，同时也会增加模型复杂度。AIC（Akaike information criterion，赤池信息准则）和 MDL（minimum description length，最小描述长度）用不同的复杂度惩罚项平衡这两部分，并取准则值最小的候选 $K$。[Wax 与 Kailath 的阵列源数信息准则原文，式(7)–(8)](https://doi.org/10.1109/TASSP.1985.1164557 "citation")给出了白噪声、独立快拍模型下基于最小特征值算术均值与几何均值之比的打分式。实现时必须核对复/实数据、快拍数和惩罚项口径；低 SNR、快拍不足、彩色噪声或相干源导致的信号协方差降秩都会造成误判。
 
-信噪比高、快拍充足时，可以先看特征间隙；需要自动选择 $K$ 时可用 MDL，并用特征值谱交叉检查。相干源场景还存在一个实际循环：空间平滑要按候选源数选择子阵长度，而源数又要从平滑后的谱估计。可先给出源数上界 $K_{\max}$，对候选 $K$ 和子阵长度联合扫描，再检查结果对参数是否稳定。对 $M$ 元均匀线阵（Uniform Linear Array，ULA）做前向空间平滑时，若切成 $L$ 个长度为 $P=M-L+1$ 的重叠子阵，要分辨 $K$ 个完全相干源，至少需要 $L\ge K$ 且 $P>K$。这两个条件同时限制可分辨源数和剩余有效孔径。[Shan、Wax 与 Kailath 的空间平滑分析](https://doi.org/10.1109/TASSP.1985.1164649 "citation")。
+信噪比高、快拍充足时，可以先看特征间隙；需要自动选择 $K$ 时可用 MDL，并用特征值谱交叉检查。
+
+相干源场景还存在一个实际循环：空间平滑要按候选源数选择子阵长度，而源数又要从平滑后的谱估计。可先给出源数上界 $K_{\max}$，对候选 $K$ 和子阵长度联合扫描，再检查结果对参数是否稳定。对 $M$ 元均匀线阵（Uniform Linear Array，ULA）做前向空间平滑时，若切成 $L$ 个长度为 $P=M-L+1$ 的重叠子阵，要分辨 $K$ 个完全相干源，至少需要 $L\ge K$ 且 $P>K$。这两个条件同时限制可分辨源数和剩余有效孔径。[Shan、Wax 与 Kailath 的空间平滑分析](https://doi.org/10.1109/TASSP.1985.1164649 "citation")。
 
 > 子空间法需要源数，GCC-PHAT 不需要。下一节先从双通道时延估计讲起。
 
@@ -92,6 +94,8 @@ $$R_{x_1x_2}(\tau) = \int \Phi(f)\,X_1(f)X_2^*(f)\,e^{\mathrm{j}2\pi f\tau}df, \
 **图示说明**：图33(a)给出零填充整数延迟信号；(b)按定义逐个 lag 直接求和；(c)计算频域乘积 $X_1X_2^*$；(d)用零填充 FFT 和 IFFT 得到线性互相关。时域与频域由独立代码计算，图中给出最大数值误差。该图对应 $\Phi(f)=1$ 的普通互相关，不包含 PHAT 加权。
 
 **线性相关与补零**：FFT 算的是**圆周相关**（序列尾部会卷绕到开头），帧不够长时两端的 $R(\tau)$ 会被卷绕项污染；工程上补零到 $N\ge N_1+N_2-1$（两帧长度之和减一）再做 FFT。下文 8 点手算例因脉冲远离边缘、考察点无混叠，所以未补零也能得到相同结果；一般输入仍须补零。
+
+这项有限长度等价针对未加权互谱 $X_1X_2^*$。PHAT 再除以互谱幅度后，逆变换一般不再具有原来长度的有限支撑；补零可以加密频率采样、减轻周期边界影响，但不能据此称为精确的有限长线性互相关。比较实现时须记录 FFT 长度、加权和保留的 lag 范围。图 33 的严格时域等价不应外推为任意 PHAT 权重下的同一有限求和式。
 
 **符号说明**：这里的 $R(\tau)$ 是时延 $\tau$ 的标量互相关函数；后文 §4.5 起的 $\hat{\mathbf{R}}(f_k)$ 是频点 $f_k$ 上的 $M\times M$ 协方差矩阵，以黑体和估计符号相区别。
 
@@ -314,12 +318,17 @@ $$u_z=\pm\sqrt{1-0.75}=\pm0.5$$
 
 $\pm$ 号**无法由数据决定**：三只麦共面，平面上下两侧镜像的方向产生完全相同的 TDOA——这正是 §3.1 所说平面阵“上下镜像模糊”的具体实例。取上半球 $u_z=+0.5$。
 
-**第 5 步：合成方位角与俯仰角**。把 $\vec{u}=(-0.5,\,-0.7071,\,0.5)$ 投到阵列平面内：
+**第 5 步：合成方位角与俯仰角**。本书从 $+y$ 正横方向起算，朝 $+x$ 为正，因此三维单位方向写成
 
-$$\varphi=\mathrm{atan2}(u_y,\,u_x)=\mathrm{atan2}(-0.7071,\,-0.5)=-125.26°\text{。}$$（即 $234.74°$。）
-俯仰角 $\phi_{\mathrm{el}}=\arcsin(u_z)=\arcsin(0.5)=30°$。
+$$\vec u=[\cos\phi_{\mathrm{el}}\sin\theta,\ \cos\phi_{\mathrm{el}}\cos\theta,\ \sin\phi_{\mathrm{el}}]^\top。$$
 
-（$\mathrm{atan2}$ 是带象限判断的反正切：$\arctan(0.7071/0.5)=\arctan(1.4142)=54.74°$，因 $u_x,u_y$ 同为负，落在第三象限，即 $54.74°-180°=-125.26°$。）
+代入 $\vec u=(-0.5,-\sqrt{1/2},0.5)$，方位角应交换通常数学坐标中的两个参数：
+
+$$\theta=\mathrm{atan2}(u_x,u_y)=\mathrm{atan2}(-0.5,-\sqrt{1/2})\approx-144.74°。$$
+
+俯仰角为 $\phi_{\mathrm{el}}=\arcsin(u_z)=30°$。回代得到 $u_x=\cos30°\sin(-144.74°)\approx-0.5$、$u_y=\cos30°\cos(-144.74°)\approx-0.7071$。
+
+若改从 $+x$ 轴逆时针量角，才使用 $\varphi=\mathrm{atan2}(u_y,u_x)\approx-125.26°$。两种角描述同一方向，但零点与正向不同；转换关系为 $\theta=90°-\varphi$ 后按 $360°$ 取模。不能将后一数值直接传给本书的导向矢量函数。[NumPy 的 atan2 参数定义](https://numpy.org/doc/2.0/reference/generated/numpy.atan2.html "citation")明确第一参数对应常规坐标的纵坐标，第二参数对应横坐标。
 
 **第 6 步：代回几何模型验证**。把这个方向代回平面波公式 $c\tau_{i1}=-\vec{u}\cdot\vec{r}_i$：
 
@@ -609,7 +618,7 @@ MUSIC、ESPRIT 的基本推导采用窄带假设：在单个频点内，导向�
 | 球面 SRP 图 + 等变 CNN | icoDOA：二十面体 CNN 骨干 × soft-argmax 连续方向回归 | 先把多麦对信息形成二十面体网格上的 SRP-PHAT 图；网络对正二十面体的 60 个离散旋转对称保持等变，再用 soft-argmax 把末层球面分布变成连续三维方向 | 这 60 个离散旋转近似而不等于任意连续三维旋转；收益须在同一数据和网格上与直接取 SRP 峰比较 |
 | 直达声 IPD 估计 | IPDnet（IEEE/ACM TASLP，2024）：交替窄带/全带层 × 多轨直达声 IPD 输出 | 从多通道谱估计多个声源的直达声麦间相位差（DP-IPD），再结合已知阵列几何转换为位置；原文还给出可变麦数与拓扑的训练方式 | 不是“粗分类＋细回归”；跨房间和跨阵列结果须按原文数据及未见阵列设置核对 |
 | 相位图分类 | Chakrabarty & Habets 2017/2019：CNN 骨干 × 多标签方位类别输出 | 多通道 STFT 相位图 → CNN 的 sigmoid 方位类别后验；原文把方位离散成类别，并在已知声源数时取后验最高的若干类，不是连续 DOA 回归 | 可输出多个离散方向；类别间距限制输出网格，性能数字只适用于原论文的数据、阵列和噪声条件 |
-| 序列模型 | CRNN/Transformer 骨干 × ACCDOA 输出格式（ACCDOA = activity-coupled Cartesian DOA，活动耦合笛卡尔方向） | 向量长度表示活动强度，方向表示 DOA；例如 30°、活动值 0.9 时，二维示意输出为 $0.9(\cos30°,\sin30°)=(0.78,0.45)$ | 原始 ACCDOA 每类每帧一条向量，不能表示同类同时多源；multi-ACCDOA 用多轨输出处理该情况 |
+| 序列模型 | CRNN/Transformer 骨干 × ACCDOA 输出格式（ACCDOA = activity-coupled Cartesian DOA，活动耦合笛卡尔方向） | 向量长度表示活动强度，方向表示 DOA；此处沿用外部笛卡尔示意从 $+x$ 朝 $+y$ 计角的约定，30°、活动值 0.9 的输出为 $0.9(\cos30°,\sin30°)\approx(0.78,0.45)$，同一方向在本书角度约定下为 60° | 原始 ACCDOA 每类每帧一条向量，不能表示同类同时多源；multi-ACCDOA 用多轨输出处理该情况 |
 
 **球面 SRP 图 + 等变 CNN 的使用边界**：它解决的是把经纬度球面图直接送入平面 CNN 时邻域畸变、极区采样和旋转模式不一致的问题。相对解析 SRP 基线，它不替换麦对几何累积，而是在二十面体网格上学习空间响应的球面局部模式。
 
@@ -625,9 +634,13 @@ MUSIC、ESPRIT 的基本推导采用窄带假设：在单个频点内，导向�
 
 **SELD（声事件定位与检测，sound event localization and detection）**同时估计事件类别、方向和活动时段。STARSS23 是 DCASE 2023 Task 3 使用的带距离元数据示例；当届正式输出并未要求距离。任务定义、划分和指标应按[当届官方任务页](https://dcase.community/challenge2023/task-sound-event-localization-and-detection-evaluated-in-real-spatial-sound-scenes)核对，不能把某一届设置外推为长期不变的“前沿”。
 
-这些方法的源码也应分别阅读。IPDnet 的作者实现位于 `Audio-WestlakeU/FN-SSL` 的 `IPDnet/`，固定与可变阵列网络分别在 `FixedAarryIPDnet.py`、`VariableArrayIPDnet.py`，训练入口是 `runIPDnetOn.py`/`runIPDnetOff.py`；先检查阵列、麦对顺序与相位标签，再读网络。DCASE2022 基线则通过 `seldnet_model.py` 与 `cls_data_generator.py` 连接 multi-ACCDOA 输出和 ADPIT 训练标签，不能直接把模型轨号当作第 9 章的持久身份。[IPDnet 作者目录](https://github.com/Audio-WestlakeU/FN-SSL/tree/76fcb281be92caf068c712dfb015e354f437260f/IPDnet "citation")；[DCASE2022 官方基线](https://github.com/sharathadavanne/seld-dcase2022 "citation")。
+这些方法的源码也应分别阅读。IPDnet 的作者实现位于 `Audio-WestlakeU/FN-SSL` 的 `IPDnet/`，固定与可变阵列网络分别在 `FixedAarryIPDnet.py`、`VariableArrayIPDnet.py`，训练入口是 `runIPDnetOn.py`/`runIPDnetOff.py`；先检查阵列、麦对顺序与相位标签，再读网络。[IPDnet 作者目录](https://github.com/Audio-WestlakeU/FN-SSL/tree/76fcb281be92caf068c712dfb015e354f437260f/IPDnet "citation")。
 
-最小输出检查可以先做手算：单轨二维 ACCDOA 预测 `(0.433,0.25)` 的方向仍是 30°，模却只有 0.5；角度正确不表示活动判定一定通过。再放入两个同类别同时发声的方向，单轨输出无法表示二者，需要多轨输出、允许的标签置换与重复预测合并。换到 DCASE2025 基线时，每轨的第三个音频输出是距离，不是旧三维方向中的 z 分量；把它一起归一化会混淆方向和距离。[DCASE2025 输出层](https://github.com/partha2409/DCASE2025_seld_baseline/blob/42a48b6456b73be35ad0e1a9ffeb6ceef83ae0bd/model.py "citation")。
+DCASE2022 基线则通过 `seldnet_model.py` 与 `cls_data_generator.py` 连接 multi-ACCDOA 输出和 ADPIT 训练标签，不能直接把模型轨号当作第 9 章的持久身份。[DCASE2022 官方基线](https://github.com/sharathadavanne/seld-dcase2022 "citation")。
+
+最小输出检查可以先做手算：单轨二维 ACCDOA 预测 `(0.433,0.25)`，按上表从 $+x$ 朝 $+y$ 计角的约定，其方向约为 30°；换成本书从 $+y$ 朝 $+x$ 计角，用 $90°$ 减去外部方位角，得到约 60°。向量的模约为 0.5，角度正确不表示活动判定一定通过。再放入两个同类别同时发声的方向，单轨输出无法表示二者，需要多轨输出、允许的标签置换与重复预测合并。
+
+换到 DCASE2025 基线时，每轨的第三个音频输出是距离，不是旧三维方向中的 z 分量；把它一起归一化会混淆方向和距离。[DCASE2025 输出层](https://github.com/partha2409/DCASE2025_seld_baseline/blob/42a48b6456b73be35ad0e1a9ffeb6ceef83ae0bd/model.py "citation")。
 
 上述三个基线的固定提交、读码顺序、数据条件、最小实验和许可缺口分别记录在[空间处理研究文档](../codes/research/01_spatial_and_tracking.md)。IPDnet 根 README 仅给出 MIT 字样，两个 DCASE 基线在本次检查中未建立明确再分发授权，因此暂保留官方源码索引，不自动复制；不能把这一限制误写成“没有官方实现”。
 
@@ -685,9 +698,13 @@ $$J(r,\theta)=\sqrt{\frac{1}{3}\sum_{m=1}^{3}\left(\frac{\delta_m(r,\theta)-\del
 
 #### 4.7.2 可执行基线的输入契约、回退与外部实现边界
 
-本书的原创 NumPy 基线位于 [`doa.py`](../codes/array_tutorial/doa.py)。`gcc_phat` 对应 §4.2，返回的正时延严格表示 $\tau_{12}=t_1-t_2$；它使用零填充线性相关、物理时延裁剪和可选三点插值。`srp_phat` 对应式(4-1)，输入多通道谱的形状固定为 `通道 × 频点 × 帧`。`bartlett_spectrum`、`capon_spectrum`、`music_spectrum` 和 `esprit_ula` 分别对应 §4.5、§4.6；平面波和近场导向矢量来自 [`geometry.py`](../codes/array_tutorial/geometry.py)。完整小例与手算回归见 [`ch02_05_baselines.py`](../codes/examples/ch02_05_baselines.py) 和 [`test_codes_doa_beam.py`](../tests/test_codes_doa_beam.py)。
+本书的原创 NumPy 基线位于 [`doa.py`](../codes/array_tutorial/doa.py)。`gcc_phat` 对应 §4.2，返回的正时延严格表示 $\tau_{12}=t_1-t_2$；它对输入补零、计算 PHAT 加权的周期逆变换，再截取物理时延范围，可选三点插值。有限补零只对未加权互相关保证线性相关等价，不能为 PHAT 保证有限支撑。
 
-接入实际录音时还要固定 WAV 数值口径、采样率、通道顺序、麦克风坐标及单位、参考麦、坐标轴、声速和时间戳。GCC 必须按物理孔径裁剪 lag，并同时输出峰值、峰背比和有效频带；SRP 还要记录阵元对、二维或三维搜索范围、网格单位、插值和粗到细规则。扫描谱要记录快拍窗口、频带合并、源数、选峰间距和加载口径。Capon/MUSIC/MVDR 使用厄米线性求解或 `eigh`，不显式形成矩阵逆；协方差奇异且没有加载时，示例代码会报错，调用方应明确选择增加快拍、相对加载、保持上次可靠估计或退回 SRP/Bartlett，不能把 NaN 当成方向。
+`srp_phat` 对应式(4-1)，输入多通道谱的形状固定为 `通道 × 频点 × 帧`。`bartlett_spectrum`、`capon_spectrum`、`music_spectrum` 和 `esprit_ula` 分别对应 §4.5、§4.6；平面波和近场导向矢量来自 [`geometry.py`](../codes/array_tutorial/geometry.py)。完整小例与手算回归见 [`ch02_05_baselines.py`](../codes/examples/ch02_05_baselines.py) 和 [`test_codes_doa_beam.py`](../tests/test_codes_doa_beam.py)。
+
+接入实际录音时还要固定 WAV 数值口径、采样率、通道顺序、麦克风坐标及单位、参考麦、坐标轴、声速和时间戳。GCC 必须按物理孔径裁剪 lag，并同时输出峰值、峰背比和有效频带；SRP 还要记录阵元对、二维或三维搜索范围、网格单位、插值和粗到细规则。扫描谱要记录快拍窗口、频带合并、源数、选峰间距和加载口径。
+
+Capon/MUSIC/MVDR 使用厄米线性求解或 `eigh`，不显式形成矩阵逆；协方差奇异且没有加载时，示例代码会报错，调用方应明确选择增加快拍、相对加载、保持上次可靠估计或退回 SRP/Bartlett，不能把 NaN 当成方向。
 
 定位源码分为本书教学实现和按完整提交号取得的外部参考。后者保存在 `codes/upstream/_downloads/` 的独立工作目录；版本、代码许可与入口见 [`SOURCES.lock.json`](../codes/SOURCES.lock.json)，具体阅读步骤和验证方案见[空间处理与追踪研究](../codes/research/01_spatial_and_tracking.md)。取得源码、运行一次示例和复现论文结论应分别记录。
 
@@ -752,7 +769,7 @@ $$J(r,\theta)=\sqrt{\frac{1}{3}\sum_{m=1}^{3}\left(\frac{\delta_m(r,\theta)-\del
 
     条件不同，Fisher 信息和常数系数也会变化，因此不能仅凭名义带宽和一个 SNR 数字给出唯一答案。
 
-以下三题用 [`exercises_spatial.py`](../codes/examples/exercises_spatial.py) 复算。它们分别检查时延符号、统计秩和几何歧义，不把谱峰尖锐程度当作准确性的唯一依据。
+以下四题用 [`exercises_spatial.py`](../codes/examples/exercises_spatial.py) 复算。它们检查时延符号、统计秩、几何歧义和空间平滑，不把谱峰尖锐程度当作准确性的唯一依据。
 
 **E04-01：交换两段录音，延迟应怎样变化？** 16 kHz 下，让麦 1 比麦 2 晚 3 点，零填充而不循环移动信号。对单脉冲和固定种子宽带噪声各算一次 GCC-PHAT，再交换两通道。静音输入应返回哪个方向？
 
@@ -773,6 +790,17 @@ $$J(r,\theta)=\sqrt{\frac{1}{3}\sum_{m=1}^{3}\left(\frac{\delta_m(r,\theta)-\del
 **参考答案**：相邻相位分别为 $-\pi$、$+\pi$，复指数相同，两个导向矢量均为 $[1,-1,1,-1]^\top$。所以两个候选的噪声子空间投影相同；本书用 $10^{-15}$ 限制伪谱分母，二者均达到约 $10^{15}$。这个数由数值保护决定，不是置信度，也不是信噪比。
 
 更密的角度扫描或更尖的谱峰不能分开完全相同的观测模型。需要改变几何、引入其他频率或限定已知可见区域；限定区域所用的先验也应随结果说明。
+
+**E04-04：空间平滑怎样恢复两维信号子空间？** 沿用 E04-02 的完全相干双源，截取麦 1～3 与麦 2～4 的两个子阵协方差，再等权平均。计算平滑矩阵与特征值，并比较处理前后的孔径。复算入口仍为 [`exercises_spatial.py`](../codes/examples/exercises_spatial.py)。
+
+**参考答案**：两个源的合成导向为 $[2,0,-2,0]^\top$。两个子阵的向量分别为 $[2,0,-2]^\top$ 和 $[0,-2,0]^\top$，外积平均得到
+
+$$\mathbf R_{\mathrm{sm}}=
+\begin{bmatrix}2&0&-2\\0&2&0\\-2&0&2\end{bmatrix}。$$
+
+向量 $[1,0,1]^\top$、$[0,1,0]^\top$、$[1,0,-1]^\top$ 分别给出特征值 0、2、4。原矩阵只有特征值 8 非零，平滑后恢复两个非零特征值；物理源数始终为 2。
+
+原孔径为 $3d$，平滑后为 $2d$，所以恢复秩并不保留全部孔径。记子阵数量为 $L$、物理源数为 $K$、每个子阵的麦数为 $P$，本例满足 $L=2\ge K=2$、$P=3>K$；任意非均匀阵不能只滑动矩阵下标套用。代码在本题中直接平均两个子矩阵，不提供通用空间平滑器。[doatools 官方接口](https://morriswmz.github.io/doatools.py/references/doatools.estimation.preprocessing.html "citation")同样区分子阵数量与输出矩阵维数。
 
 ---
 

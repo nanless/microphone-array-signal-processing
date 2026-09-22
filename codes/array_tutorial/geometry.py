@@ -89,6 +89,8 @@ def near_field_steering(
 
     With ``include_amplitude=True``, component ``m`` is scaled by
     ``distance(reference) / distance(m)``.  All reference components are one.
+    ``minimum_distance`` is a finite non-negative exclusion radius in metres;
+    a source exactly on a microphone is rejected even when that radius is zero.
     """
     microphones = validate_positions(positions)
     source = np.asarray(source_position, dtype=float)
@@ -99,6 +101,8 @@ def near_field_steering(
         raise ValueError("reference microphone is out of range")
     if not np.isfinite(sound_speed) or sound_speed <= 0.0:
         raise ValueError("sound_speed must be positive")
+    if not np.isfinite(minimum_distance) or minimum_distance < 0.0:
+        raise ValueError("minimum_distance must be finite and non-negative")
     distances = np.linalg.norm(source - microphones, axis=1)
     if np.any(distances <= minimum_distance):
         raise ValueError("point source is too close to a microphone")

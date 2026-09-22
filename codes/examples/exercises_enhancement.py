@@ -11,12 +11,12 @@ import numpy as np
 
 from codes.array_tutorial.aec import erle_db, nlms
 from codes.array_tutorial.dereverberation import offline_wpe
-from codes.array_tutorial.separation import pit_permutation, si_sdr
+from codes.array_tutorial.separation import masked_spatial_covariance, pit_permutation, si_sdr
 from codes.array_tutorial.tracking import ConstantVelocityKalman, systematic_resample, wrap_angle
 
 
 def run_exercises() -> dict:
-    """Return twelve JSON-safe exercises with stable IDs and stated inputs."""
+    """Return twenty JSON-safe exercises with stable IDs and stated inputs."""
     results = {}
     x = np.array([1., 0., 0.])
     d = np.array([.8, -.2, .1])
@@ -80,6 +80,65 @@ def run_exercises() -> dict:
     first_position=float(np.random.default_rng(0).random()/4)
     ancestors=systematic_resample(particle_weights,rng)
     results['E09-03'] = dict(weights=particle_weights.tolist(), effective_sample_size=float(1/np.sum(particle_weights**2)), default_resampling_threshold=2., threshold_would_resample=bool(1/np.sum(particle_weights**2)<2), demonstration_forces_resampling=True, first_position=first_position, ancestors_zero_based=ancestors.tolist(), seed=0)
+
+    phases = np.array([0., 60., 180.])
+    residual_ratio = np.abs(1 - np.exp(1j*np.deg2rad(phases)))**2
+    results['E06-04'] = dict(phase_degrees=phases.tolist(), residual_energy_ratio=residual_ratio.tolist(),
+                            erle_db=[None, float(-10*np.log10(residual_ratio[1])), float(-10*np.log10(residual_ratio[2]))],
+                            zero_phase_note='Exact zero residual has infinite ideal ERLE; null avoids non-finite JSON.')
+    echo = np.array([1., 1., -1., -1.]) / 2
+    noise = np.array([1., -1., 1., -1.]) / 20
+    results['E06-05'] = dict(echo_energy=float(echo@echo), noise_energy=float(noise@noise),
+                            cross_inner_product=float(echo@noise),
+                            measured_input_output_ratio_db=erle_db(echo+noise, noise),
+                            echo_component_residual_energy=0.)
+
+    record_a = np.array([[1., 1., 1., 1.]], dtype=complex)
+    record_b = np.array([[1., 1., 1., 2.]], dtype=complex)
+    options = dict(taps=1, delay=1, iterations=1, diagonal_loading=0)
+    result_a = offline_wpe(record_a, **options)
+    result_b = offline_wpe(record_b, **options)
+    results['E07-04'] = dict(record_a=record_a.real.tolist(), record_b=record_b.real.tolist(),
+                            common_prefix_frames=3, output_a=result_a.real.tolist(), output_b=result_b.real.tolist(),
+                            first_valid_difference=float((result_b-result_a)[0,1].real), causal=False)
+    correlation = np.array([[2.,0.,1.,0.], [0.,1.,0.,0.], [1.,0.,2.,0.], [0.,0.,0.,1.]])
+    steering = np.array([1.,1.,0.,0.])
+    inverse_steering = np.linalg.solve(correlation, steering)
+    wpd = inverse_steering / (steering@inverse_steering)
+    current_only = np.array([1/3,2/3,0.,0.])
+    results['E07-05'] = dict(covariance=correlation.tolist(), weights=wpd.tolist(),
+                            constraint=float(wpd@steering), objective=float(wpd@correlation@wpd),
+                            current_only_objective=float(current_only@correlation@current_only))
+
+    mixing = np.array([[1.,.5],[.5,1.]])
+    demixing = np.diag([2.,-3.]) @ np.linalg.inv(mixing)
+    separated = demixing @ mixing @ references
+    projection_factors = np.linalg.inv(demixing)[0]
+    projected = projection_factors[:,None] * separated
+    results['E08-04'] = dict(mixing=mixing.tolist(), demixing=demixing.tolist(),
+                            projection_factors=projection_factors.tolist(),
+                            raw_outputs=separated.tolist(), reference_images=projected.tolist(), blind=False)
+    epsilon = 1e-12
+    spectrum = np.array([[[2.,4.]]], dtype=complex)
+    mask_scales = [1., 2., epsilon/2, epsilon/4]
+    covariances = [float(masked_spatial_covariance(spectrum, np.full((1,2), scale), epsilon=epsilon)[0,0,0].real)
+                  for scale in mask_scales]
+    results['E08-05'] = dict(epsilon=epsilon, equal_mask_weights=mask_scales, floored_covariance=covariances,
+                            additive_epsilon_covariance_at_floor=5.)
+
+    dt, density, acceleration_variance = .1, 2., 4.
+    continuous = density*np.array([[dt**3/3,dt**2/2],[dt**2/2,dt]])
+    impulse = np.array([dt**2/2,dt])
+    discrete = acceleration_variance*np.outer(impulse,impulse)
+    results['E09-04'] = dict(dt_seconds=dt, continuous_density=density, acceleration_variance=acceleration_variance,
+                            continuous_Q=continuous.tolist(), piecewise_constant_Q=discrete.tolist())
+    raw_innovation, innovation_variance, gate = -358., 4., 9.
+    wrapped = wrap_angle(raw_innovation)
+    results['E09-05'] = dict(raw_innovation=raw_innovation, wrapped_innovation=wrapped,
+                            raw_squared_mahalanobis=raw_innovation**2/innovation_variance,
+                            wrapped_squared_mahalanobis=wrapped**2/innovation_variance,
+                            example_gate=gate, raw_accepted=bool(raw_innovation**2/innovation_variance<=gate),
+                            wrapped_accepted=bool(wrapped**2/innovation_variance<=gate))
     return results
 
 

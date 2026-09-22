@@ -195,7 +195,8 @@ class BeamformingTest(unittest.TestCase):
         np.testing.assert_allclose(blocker.conj().T @ blocker, np.eye(1), atol=1e-12)
 
     def test_wiener_gain_matches_chapter_example_and_floor(self):
-        self.assertAlmostEqual(wiener_gain(4.0, 0.7), 0.825)
+        self.assertAlmostEqual(wiener_gain(53 / 15, 8 / 15), 45 / 53)
+        self.assertAlmostEqual(wiener_gain(53 / 15, 7 / 30), 99 / 106)
         np.testing.assert_allclose(
             wiener_gain([1.0, 1.0], [2.0, 0.5], gain_floor=0.1), [0.1, 0.5]
         )

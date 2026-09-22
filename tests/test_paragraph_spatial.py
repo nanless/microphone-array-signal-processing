@@ -1,6 +1,8 @@
 """Render actual chapter passages in memory; never rewrite publication outputs."""
 from html.parser import HTMLParser
+import math
 from pathlib import Path
+import re
 import unittest
 
 from scripts.build_site import render
@@ -101,6 +103,66 @@ class SpatialParagraphTest(unittest.TestCase):
     def test_decimal_prose_is_not_a_list(self):
         _, lists = rendered_lists("频率为 3.4 kHz。距离为 0.05 m。", ROOT / "chapters/example.md")
         self.assertEqual(lists, [])
+
+    def test_mask_beamforming_keeps_math_and_explanation_inside_three_steps(self):
+        source, path = chapter_fragment(
+            "05_beamforming.md", "一个可复现的处理顺序如下。", "**两麦小例子**"
+        )
+        html, lists = rendered_lists(source, path)
+        self.assertEqual([len(items) for items in lists], [3])
+        self.assertIn(r"\hat{\mathbf R}_{ss}(k)", lists[0][0])
+        self.assertIn("零掩码拥有统计依据", lists[0][0])
+        self.assertIn(r"\lambda_{\max}", lists[0][1])
+        self.assertIn("尺度规则", lists[0][1])
+        self.assertIn("滤波与检查", lists[0][2])
+        self.assertGreaterEqual(html.count("<p>"), 6)
+        self.assertNotIn("<pre>", html)
+
+    def test_reviewed_topic_changes_are_separate_rendered_paragraphs(self):
+        checks = [
+            ("02_basics-signal-model.md", "周期 Hann 窗", "会在两端补半窗"),
+            ("02_basics-signal-model.md", "需要加载时采用", "上线还应记录"),
+            ("04_doa-estimation.md", "信噪比高、快拍充足时", "相干源场景还存在"),
+            ("04_doa-estimation.md", "这些方法的源码也应分别阅读", "DCASE2022 基线则通过"),
+            ("04_doa-estimation.md", "最小输出检查可以先做手算", "换到 DCASE2025 基线时"),
+            ("04_doa-estimation.md", "本书的原创 NumPy 基线位于", "对应式(4-1)"),
+            ("04_doa-estimation.md", "接入实际录音时还要固定", "Capon/MUSIC/MVDR 使用"),
+            ("05_beamforming.md", "§5.7 的噪声估计也需要", "Cohen 的"),
+            ("05_beamforming.md", "以参考麦选择向量", "分子、分母要用同一频带"),
+        ]
+        for filename, first, second in checks:
+            path = ROOT / "chapters" / filename
+            html, _ = render(path.read_text(encoding="utf-8"), path)
+            paragraphs = re.findall(r"<p>(.*?)</p>", html, flags=re.S)
+            with self.subTest(filename=filename, first=first):
+                containing_first = [p for p in paragraphs if first in p]
+                containing_second = [p for p in paragraphs if second in p]
+                self.assertTrue(containing_first)
+                self.assertTrue(containing_second)
+                self.assertFalse(any(second in p for p in containing_first))
+
+    def test_noise_reduction_formula_has_its_own_block(self):
+        source, path = chapter_fragment(
+            "05_beamforming.md", "上表“目标保持条件”", "#### 延伸阅读"
+        )
+        html, _ = render(source, path)
+        paragraphs = re.findall(r"<p>(.*?)</p>", html, flags=re.S)
+        self.assertEqual(len(paragraphs), 3)
+        self.assertIn(r"\mathrm{NR}_{ref}", paragraphs[1])
+        self.assertIn("分子、分母", paragraphs[2])
+
+    def test_accdoa_external_and_book_azimuths_are_complementary(self):
+        source = (ROOT / "chapters/04_doa-estimation.md").read_text(encoding="utf-8")
+        self.assertIn("同一方向在本书角度约定下为 60°", source)
+        self.assertIn("用 $90°$ 减去外部方位角，得到约 60°", source)
+        # The published three-decimal vector is rounded, not an exact 30-degree ray.
+        x, y = .433, .25
+        external = math.degrees(math.atan2(y, x))
+        book = math.degrees(math.atan2(x, y))
+        self.assertAlmostEqual(external + book, 90)
+        self.assertLess(abs(external - 30), .001)
+        self.assertLess(abs(book - 60), .001)
+        self.assertLess(abs(math.hypot(x, y) - .5), .0001)
 
 
 if __name__ == "__main__":

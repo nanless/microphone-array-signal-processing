@@ -65,6 +65,8 @@ WebRTC 的 [`modules/audio_processing/aec3/`](https://webrtc.googlesource.com/sr
 
 最小实验把线性抵消器输出固定，只扫描后处理强度，分别试听和计量回声泄漏、近端语音损伤及噪声起伏。失败实验让低电平近端辅音与残余回声同时出现，检查词尾是否被截断。此类错误不能靠远端单讲 ERLE 发现，必须同时报告双讲语音的保真与任务指标。
 
+本书的 [E06-04、E06-05](../../chapters/06_aec.md#sec-6-1-17)补充两个可运行的取点检查：同幅副本若反相，相减会把回声能量增为四倍；背景噪声保留时，麦克风输入/输出能量比仍可能为有限值，即使回声分量已经完全抵消。这些是给定模型下的代数结果，不是对 RES 的设备性能测量。运行入口为 [`exercises_enhancement.py`](../examples/exercises_enhancement.py)，固定检查见 [`test_codes_enhancement_round2.py`](../../tests/test_codes_enhancement_round2.py)。
+
 ### A08　PNLMS/IPNLMS、子带与非线性路径模型
 
 比例归一化更新改变抽头间的学习分配；子带滤波改变输入相关性与每带更新问题；Volterra、Hammerstein、Wiener 或级联模型改变可表示的输入—回声关系。它们解决的困难不同，不能看见“频域”或“非线性”标签就视作同一种加速方案。出处与模型讨论见 [§6.1.3](../../chapters/06_aec.md#sec-6-1-3)和[§6.1.4](../../chapters/06_aec.md#sec-6-1-4)。
@@ -117,6 +119,8 @@ WebRTC 的 [`modules/audio_processing/aec3/`](https://webrtc.googlesource.com/sr
 
 八组对照中，完整历史后的帧最大绝对复数误差约为 `2.69e-15`，最大相对 L2 误差约为 `5.28e-16`。开头 4 帧不参与比较：教学实现旁路，上游允许零补历史后滤波。这是合成复谱上回归求解的一致性检查，不是语音质量、公开数据集或实时性测量；随机复谱不对应任何指定采样率与声学房间。
 
+教学练习 E07-04 另用前缀相同、末帧不同的四帧记录检查未来依赖：一轮离线 WPE 的首个有效输出从 0 变为 −1/9。其回归量虽只含历史，系数却使用整段统计；这说明“预测索引只向过去”不足以证明端到端因果。该题没有使用居中功率平滑，也不把未变化的某个单例当作一般因果性证明。
+
 ### W02　逐帧递推 WPE
 
 `nara_wpe/wpe.py` 的 `OnlineWPE` 保存逆相关矩阵、预测抽头、功率和输入缓冲；`step_frame()` 接收 `(频点, 通道)`。该实现先由旧状态输出当前预测残差，再更新状态，这与每次对增长的整段录音重新运行离线 `wpe()`不同。原理出处为[Kinoshita 等，Interspeech 2017](https://www.isca-archive.org/interspeech_2017/kinoshita17_interspeech.html)。
@@ -141,6 +145,8 @@ WPD 把当前帧与历史帧一起放入无失真滤波问题。它的约束只�
 
 读码时先查 `wpd` 分支怎样构造延迟堆叠，再查功率倒数、参考通道和解线性方程。最小实验用正文块对角协方差验证历史权重为零，再加入当前—历史互相关；失败实验使功率权重接近零或增大历史阶数至统计量不足。WPD 与串联 WPE→MVDR 的计算和假设有关联，但不能把两个独立增益相加当作联合结果。
 
+E07-05 已把第二种情形写成四维可执行手算：当前—历史相关使权重为 `[0.4, 0.6, -0.2, 0]`，无失真约束为 1。给定协方差上的目标值为 0.6，强制历史权重为零时为 2/3。这里比较的是同一矩阵下两个约束集合的最小值，不是音频去混响或识别收益；逐行求解见 [第 7 章练习](../../chapters/07_wpe-dereverberation.md#sec-7-1-2)。
+
 ### W06　AR-FastMNMF 与联合去混响/分离
 
 AR-FastMNMF 把自回归混响模型和多源空间/谱模型联合估计，避免把分离与拖尾建模视作互不影响的两个估计问题。[ICASSP 2021 论文](https://ieeexplore.ieee.org/document/9414857)与[作者 `SoundSourceSeparation`](https://github.com/sekiguchi92/SoundSourceSeparation/tree/897fe87fea3d85a243d8a3fd36c2232bb0548ad3)中的 `src/`用于研究模型更新顺序；`FastBSSD.py`还将 AR、MA、ARMA 等模型区分。
@@ -162,6 +168,8 @@ AR-FastMNMF 把自回归混响模型和多源空间/谱模型联合估计，避�
 AuxIVA 用一个源跨频点的联合模型约束依赖，辅助函数更新避免手工选择普通梯度步长。迭代投影（IP）与迭代源导向（ISS）是不同更新实现，应分别记录，而不是都写成“用了 IVA”。[ssspy `bss/iva.py`](https://github.com/tky823/ssspy/blob/38b9389e8b1914422561f1936d9b28d042d62d2c/ssspy/bss/iva.py)给出 IP1、IP2、ISS1、ISS2 与 IPA 的选项，[Ono 2011 原论文](https://doi.org/10.1109/ASPAA.2011.6082320)说明辅助函数思想。
 
 读码顺序为源代价 → 加权 SCM → 空间更新 → 归一化 → projection-back。最小实验采用确定混合和已知两源，固定初值比较代价与分离；失败实验使用秩亏混合。恢复参考麦的尺度需要独立步骤，SI-SDR 对尺度不敏感，不能用其通过来证明波形幅度已经恢复。
+
+E08-04 对人为指定的解混矩阵演示回投影：原输出 `[2s, -3u]` 乘参考麦系数 `[1/2, -1/6]` 后成为 `[s, 0.5u]`。它恢复参考麦源图像而非统一干声尺度，且不把给定解混矩阵的代数操作冒充 AuxIVA 估计。E08-05 则单独检查掩码 SCM 的分母地板：普通正比例缩放不改变平均值，进入地板后不再保持该性质。两题的输入、答案和边界见 [第 8 章练习](../../chapters/08_speech-separation.md#sec-8-1)。
 
 ### B03　OverIVA、FIVE 与过定提取
 

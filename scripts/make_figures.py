@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""生成教程插图 27 张（图 1~25、图 33~34；图 26~32 见 make_aec_figures.py）。
+"""生成教程插图 28 张（图 1~25、图 33~35；图 26~32 见 make_aec_figures.py）。
 
 用法（仓库根目录）：
-    .venv/bin/python scripts/make_figures.py      # 图 1~25、图 33~34 → figures/
+    .venv/bin/python scripts/make_figures.py      # 图 1~25、图 33~35 → figures/
 """
 from pathlib import Path
 import hashlib
@@ -2657,6 +2657,59 @@ def fig_audio_examples():
     save(fig, 'fig34_audio_examples.png', {'AudioManifestDigest': hashlib.sha256(manifest.read_bytes()).hexdigest()})
 
 
+def fig_audio_counterexamples():
+    """Measure exported PCM; show three separate failure mechanisms, not a ranking."""
+    import json
+    import wave
+    root = Path(__file__).resolve().parents[1] / 'codes/audio'
+    manifest = root / 'MANIFEST.json'
+    records = {item['file']: item for item in json.loads(manifest.read_text())['files']}
+
+    def read(stem):
+        path = root / (stem + '.wav')
+        if hashlib.sha256(path.read_bytes()).hexdigest() != records[path.name]['sha256']:
+            raise ValueError(f'音频文件与清单不符：{stem}')
+        with wave.open(str(path), 'rb') as wav:
+            return np.frombuffer(wav.readframes(wav.getnframes()), dtype='<i2').reshape(-1, wav.getnchannels()).T / 32768
+
+    fig, axes = plt.subplots(3, 1, figsize=(9.5, 8.8))
+    reference = read('correlation_reference')
+    errors = [np.sqrt(np.mean((read('correlation_' + name)-reference)**2))
+              for name in ('single', 'independent', 'common')]
+    for index, (value, color, hatch) in enumerate(zip(errors, [C_MAIN, C_BLUE, C_ORANGE], ['', '//', 'xx'])):
+        axes[0].bar(index, value, color=color, hatch=hatch, edgecolor='white', width=.55)
+        axes[0].text(index, value+.003, f'{value:.4f}', ha='center')
+    axes[0].set(xticks=range(3), xticklabels=['单麦', '两路独立噪声平均', '两路相同噪声平均'],
+                ylim=(0, max(errors)*1.4), ylabel='误差 RMS / 满量程',
+                title='(a) 已对齐目标：同组相减参考，无时延或增益拟合')
+    sl = slice(8000, 8160)
+    for stem, label, style in [('polarity_reference', '目标参考', '-'),
+                               ('polarity_corrected', '已知极性纠正后平均', '--'),
+                               ('polarity_uncorrected', '接反后直接平均', ':')]:
+        axes[1].plot(np.arange(sl.start, sl.stop)/16000*1000, read(stem)[0, sl], style, label=label)
+    axes[1].set(xlabel='时间 (ms)', ylabel='PCM 幅度 / 满量程',
+                title='(b) 通道增益 1 与 −0.9：平均目标增益从 0.95 降至 0.05')
+    axes[1].legend(loc='upper right', ncol=3, fontsize=11)
+    low, high = axes[1].get_ylim()
+    axes[1].set_ylim(low, high+.6*(high-low))
+    reference = read('conditioning_reference')
+    for offset, case, label, color, hatch in [(-.18, 'well', 'κ₂=3', C_BLUE, '//'),
+                                            (.18, 'ill', 'κ₂=199', C_ORANGE, 'xx')]:
+        error = np.sqrt(np.mean((read(f'conditioning_{case}_output')-reference)**2, axis=1))
+        axes[2].bar(np.arange(2)+offset, error, .36, label=label, color=color, hatch=hatch, edgecolor='white')
+    axes[2].set(xticks=[0, 1], xticklabels=['源 1', '源 2'], ylabel='恢复误差 RMS / 满量程',
+                title='(c) 同一输入噪声，已知矩阵求解；两路各自对参考评分')
+    axes[2].legend(loc='upper center', ncol=2)
+    low, high = axes[2].get_ylim()
+    axes[2].set_ylim(0, high*1.45)
+    for ax in axes:
+        ax.grid(axis='y', ls=':', alpha=.35)
+        ax.set_axisbelow(True)
+    fig.suptitle('图35  三种合成反例：相关噪声、极性错误与病态求逆', fontsize=FS_SUP)
+    fig.tight_layout(rect=(0, 0, 1, .96), h_pad=1.6)
+    save(fig, 'fig35_audio_counterexamples.png', {'AudioManifestDigest': hashlib.sha256(manifest.read_bytes()).hexdigest()})
+
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -2686,6 +2739,7 @@ def main():
     fig_latency_budget()
     fig_gcc_two_ways()
     fig_audio_examples()
+    fig_audio_counterexamples()
     print("ALL DONE")
 
 

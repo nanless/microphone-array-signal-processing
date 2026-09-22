@@ -3,6 +3,8 @@
 These functions are deliberately small enough to audit against the equations in
 the tutorial.  They are teaching references, not audio-driver or production DSP
 replacements.  Time is always the last array axis unless stated otherwise.
+PCM and delay inputs must be finite real numeric arrays; complex, boolean,
+string, and object arrays are rejected before conversion to float64.
 """
 
 from __future__ import annotations
@@ -33,8 +35,23 @@ def _integer(value: int, name: str, minimum: int = 0) -> int:
     return result
 
 
+def _finite_real_array(values: np.ndarray | list[float], name: str) -> np.ndarray:
+    """Reject complex/non-numeric input before any potentially lossy cast."""
+    original = np.asarray(values)
+    if original.dtype.kind not in "iuf":
+        raise ValueError(f"{name} must contain real numeric values")
+    try:
+        with np.errstate(over="raise", invalid="raise"):
+            array = original.astype(float)
+    except (FloatingPointError, OverflowError, ValueError) as error:
+        raise ValueError(f"{name} must be representable as finite float64 values") from error
+    if not np.all(np.isfinite(array)):
+        raise ValueError(f"{name} must contain only finite values")
+    return array
+
+
 def _finite_1d(values: np.ndarray | list[float], name: str) -> np.ndarray:
-    array = np.asarray(values, dtype=float)
+    array = _finite_real_array(values, name)
     if array.ndim != 1:
         raise ValueError(f"{name} must be one-dimensional")
     if not np.all(np.isfinite(array)):
@@ -55,13 +72,52 @@ def estimate_sro_ppm(times_s: np.ndarray, delays_s: np.ndarray) -> tuple[float, 
     delays = _finite_1d(delays_s, "delays_s")
     if times.size != delays.size or times.size < 2:
         raise ValueError("times_s and delays_s must have the same length >= 2")
-    centered = times - np.mean(times)
+    # Translate before scaling, so large absolute timestamps do not erase
+    # their small, representable increments. Half-summing the endpoints also
+    # avoids overflow when a range spans large values of opposite signs.
+    time_origin = float(np.min(times)) / 2 + float(np.max(times)) / 2
+    delay_origin = float(np.min(delays)) / 2 + float(np.max(delays)) / 2
+    shifted_times = times - time_origin
+    shifted_delays = delays - delay_origin
+    time_scale = float(np.max(np.abs(shifted_times)))
+    delay_scale = float(np.max(np.abs(shifted_delays)))
+    if time_scale == 0.0:
+        raise ValueError("times_s must contain at least two distinct times")
+    normalized_times = shifted_times / time_scale
+    normalized_delays = shifted_delays / delay_scale if delay_scale else shifted_delays
+    mean_time = float(np.mean(normalized_times))
+    mean_delay = float(np.mean(normalized_delays))
+    centered = normalized_times - mean_time
     denominator = float(centered @ centered)
     if denominator == 0.0:
         raise ValueError("times_s must contain at least two distinct times")
-    slope = float(centered @ (delays - np.mean(delays)) / denominator)
-    intercept = float(np.mean(delays) - slope * np.mean(times))
-    return slope * 1e6, intercept
+    normalized_slope = float(centered @ (normalized_delays - mean_delay) / denominator)
+    # Combine scale exponents explicitly; delay_scale/time_scale may overflow
+    # or underflow even when the final ppm is representable.
+    delay_mantissa, delay_exponent = math.frexp(delay_scale)
+    time_mantissa, time_exponent = math.frexp(time_scale)
+    try:
+        ppm = math.ldexp(normalized_slope * delay_mantissa / time_mantissa * 1e6,
+                         delay_exponent - time_exponent)
+        # Undo both translations. Combine in scaled delay units before the
+        # final multiplication, avoiding overflowing intermediate intercept
+        # terms that can cancel. As with every line fit, extrapolation to
+        # time zero may have much lower precision than the fitted slope.
+        output_scale = max(abs(delay_origin), delay_scale)
+        if output_scale:
+            intercept = math.fsum((
+                delay_origin / output_scale,
+                delay_scale / output_scale * mean_delay,
+                -(delay_scale / output_scale) * normalized_slope
+                * (mean_time + time_origin / time_scale),
+            )) * output_scale
+        else:
+            intercept = 0.0
+    except OverflowError as error:
+        raise ValueError("SRO fit is outside finite float64 range") from error
+    if not math.isfinite(ppm) or not math.isfinite(intercept):
+        raise ValueError("SRO fit is outside finite float64 range")
+    return ppm, intercept
 
 
 def resample_sro_to_reference(samples: np.ndarray, relative_sro_ppm: float) -> np.ndarray:
@@ -71,7 +127,7 @@ def resample_sro_to_reference(samples: np.ndarray, relative_sro_ppm: float) -> n
     sample-rate conversion needs a band-limited filter and streaming state.
     """
 
-    signal = np.asarray(samples, dtype=float)
+    signal = _finite_real_array(samples, "samples")
     if signal.ndim not in (1, 2) or signal.shape[-1] < 2:
         raise ValueError("samples must have shape (time,) or (channel, time), with time >= 2")
     if signal.size == 0 or not np.all(np.isfinite(signal)):
@@ -115,7 +171,7 @@ class HysteresisVAD:
             raise ValueError("thresholds require on_threshold >= off_threshold >= 0")
 
     def update(self, frame: np.ndarray) -> bool:
-        samples = np.asarray(frame, dtype=float)
+        samples = _finite_real_array(frame, "frame")
         if samples.size == 0 or not np.all(np.isfinite(samples)):
             raise ValueError("frame must be non-empty and finite")
         # Compare RMS rather than squaring raw amplitudes: finite large samples
@@ -161,7 +217,7 @@ class PeakProtectAGC:
             raise ValueError("attack and release must be in (0, 1]")
 
     def process(self, block: np.ndarray) -> tuple[np.ndarray, float]:
-        samples = np.asarray(block, dtype=float)
+        samples = _finite_real_array(block, "block")
         if samples.size == 0 or not np.all(np.isfinite(samples)):
             raise ValueError("block must be non-empty and finite")
         peak = float(np.max(np.abs(samples)))
@@ -263,7 +319,7 @@ def simulate_deadline_queue(
 def q15_quantize(values: np.ndarray) -> np.ndarray:
     """Round to nearest-even and saturate to signed Q1.15 integers."""
 
-    array = np.asarray(values, dtype=float)
+    array = _finite_real_array(values, "values")
     if not np.all(np.isfinite(array)):
         raise ValueError("values must be finite")
     scaled = np.rint(np.clip(array, -1.0, 1.0) * 32768.0)

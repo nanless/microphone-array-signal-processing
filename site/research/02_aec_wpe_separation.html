@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AEC、WPE 与分离源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="80cb834cf708"><style>
+<meta name="source-digest" content="3ffa19bfc241"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -247,6 +247,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="sec-10" class="anchor-alias" aria-hidden="true"></span><span id="a07-resnlp-与近端保护" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-698f93a038">A07　RES/NLP 与近端保护</h3>
 <p>残余回声抑制（RES）或非线性后处理（NLP）根据未消除回声的估计给输出施加增益。线性路径失配、扬声器非线性与延迟错位都能形成残余，但需要不同诊断。AEC3 的 <code>residual_echo_estimator.cc</code> 和 <code>suppression_gain.cc</code> 可用于区分估计器与执行增益；Speex 的 <a href="https://github.com/xiph/speexdsp/blob/master/libspeexdsp/preprocess.c"><code>preprocess.c</code></a>则展示预处理与残余回声信息的连接。</p>
 <p>最小实验把线性抵消器输出固定，只扫描后处理强度，分别试听和计量回声泄漏、近端语音损伤及噪声起伏。失败实验让低电平近端辅音与残余回声同时出现，检查词尾是否被截断。此类错误不能靠远端单讲 ERLE 发现，必须同时报告双讲语音的保真与任务指标。</p>
+<p>本书的 <a href="../06_aec.html#sec-6-1-17">E06-04、E06-05</a>补充两个可运行的取点检查：同幅副本若反相，相减会把回声能量增为四倍；背景噪声保留时，麦克风输入/输出能量比仍可能为有限值，即使回声分量已经完全抵消。这些是给定模型下的代数结果，不是对 RES 的设备性能测量。运行入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_enhancement.py"><code>exercises_enhancement.py</code></a>，固定检查见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_enhancement_round2.py"><code>test_codes_enhancement_round2.py</code></a>。</p>
 <span id="sec-11" class="anchor-alias" aria-hidden="true"></span><span id="a08-pnlmsipnlms子带与非线性路径模型" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-a845a457fb">A08　PNLMS/IPNLMS、子带与非线性路径模型</h3>
 <p>比例归一化更新改变抽头间的学习分配；子带滤波改变输入相关性与每带更新问题；Volterra、Hammerstein、Wiener 或级联模型改变可表示的输入—回声关系。它们解决的困难不同，不能看见“频域”或“非线性”标签就视作同一种加速方案。出处与模型讨论见 <a href="../06_aec.html#sec-6-1-3">§6.1.3</a>和<a href="../06_aec.html#sec-6-1-4">§6.1.4</a>。</p>
 <p>最小复现应每次只改一项：同一线性 FIR 比例分配实验；同一有色参考子带实验；固定路径中插入软饱和的非线性实验。分别记录抽头模型、带间延迟和非线性阶数。失败实验用未见的扬声器削波强度，检查高阶模型过拟合和计算增长。本书没有把这些类别全部伪装成已有工业实现；没有唯一对应源码时明确保留模型与选型依据。</p>
@@ -273,6 +274,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>本书另提供已执行的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/compare_wpe_reference.py">独立实现对照</a>。它使用 nara-wpe 0.0.11 的原始 <code>wpe_v6()</code> 与教学 <code>offline_wpe()</code>比较，固定种子 20260922、复谱形状 <code>(4, 2, 192)</code>、2 个预测抽头、3 帧保护延迟、有效历史统计、无功率平滑且关闭对角加载。两麦、单麦、通道交换和整体缩放四种输入，各运行 1 次和 3 次迭代。</p>
 <p>2026-09-22 的本机对照环境为 macOS arm64、Python 3.13.12、NumPy 2.5.3，输入与求解使用 <code>complex128</code>。脚本输出运行环境，便于区分后续平台或线性代数库带来的末位舍入差异；本次没有计时或硬件速度比较。</p>
 <p>八组对照中，完整历史后的帧最大绝对复数误差约为 <code>2.69e-15</code>，最大相对 L2 误差约为 <code>5.28e-16</code>。开头 4 帧不参与比较：教学实现旁路，上游允许零补历史后滤波。这是合成复谱上回归求解的一致性检查，不是语音质量、公开数据集或实时性测量；随机复谱不对应任何指定采样率与声学房间。</p>
+<p>教学练习 E07-04 另用前缀相同、末帧不同的四帧记录检查未来依赖：一轮离线 WPE 的首个有效输出从 0 变为 −1/9。其回归量虽只含历史，系数却使用整段统计；这说明“预测索引只向过去”不足以证明端到端因果。该题没有使用居中功率平滑，也不把未变化的某个单例当作一般因果性证明。</p>
 <span id="sec-19" class="anchor-alias" aria-hidden="true"></span><span id="w02-逐帧递推-wpe" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-737de64b9e">W02　逐帧递推 WPE</h3>
 <p><code>nara_wpe/wpe.py</code> 的 <code>OnlineWPE</code> 保存逆相关矩阵、预测抽头、功率和输入缓冲；<code>step_frame()</code> 接收 <code>(频点, 通道)</code>。该实现先由旧状态输出当前预测残差，再更新状态，这与每次对增长的整段录音重新运行离线 <code>wpe()</code>不同。原理出处为<a href="https://www.isca-archive.org/interspeech_2017/kinoshita17_interspeech.html">Kinoshita 等，Interspeech 2017</a>。</p>
 <p>最小实验逐帧输入一个固定记录并保留状态，再检查把同一帧流分成不同外层批次是否改变结果。失败实验中途错误重建 <code>OnlineWPE</code>，查看启动段反复出现；另测静音、设备重启和房间突变。遗忘因子与功率估计共同决定跟踪，不应仅报告 <code>taps</code> 和 <code>delay</code>。</p>
@@ -285,6 +287,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="sec-22" class="anchor-alias" aria-hidden="true"></span><span id="w05-wpd同时利用当前通道与延迟历史" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-1910126ff5">W05　WPD：同时利用当前通道与延迟历史</h3>
 <p>WPD 把当前帧与历史帧一起放入无失真滤波问题。它的约束只施加在扩展向量的当前目标分量，历史部分用于削弱可预测晚期混响。出处为<a href="https://arxiv.org/abs/1908.02710">Nakatani 与 Kinoshita</a>；实现入口为 <a href="https://github.com/espnet/espnet/blob/master/espnet2/enh/layers/beamformer.py">ESPnet <code>beamformer.py</code></a> 的 WPD 相关函数及 <code>dnn_beamformer.py</code> 的类型选择。</p>
 <p>读码时先查 <code>wpd</code> 分支怎样构造延迟堆叠，再查功率倒数、参考通道和解线性方程。最小实验用正文块对角协方差验证历史权重为零，再加入当前—历史互相关；失败实验使功率权重接近零或增大历史阶数至统计量不足。WPD 与串联 WPE→MVDR 的计算和假设有关联，但不能把两个独立增益相加当作联合结果。</p>
+<p>E07-05 已把第二种情形写成四维可执行手算：当前—历史相关使权重为 <code>[0.4, 0.6, -0.2, 0]</code>，无失真约束为 1。给定协方差上的目标值为 0.6，强制历史权重为零时为 2/3。这里比较的是同一矩阵下两个约束集合的最小值，不是音频去混响或识别收益；逐行求解见 <a href="../07_wpe-dereverberation.html#sec-7-1-2">第 7 章练习</a>。</p>
 <span id="sec-23" class="anchor-alias" aria-hidden="true"></span><span id="w06-ar-fastmnmf-与联合去混响分离" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-3798ef1cef">W06　AR-FastMNMF 与联合去混响/分离</h3>
 <p>AR-FastMNMF 把自回归混响模型和多源空间/谱模型联合估计，避免把分离与拖尾建模视作互不影响的两个估计问题。<a href="https://ieeexplore.ieee.org/document/9414857">ICASSP 2021 论文</a>与<a href="https://github.com/sekiguchi92/SoundSourceSeparation/tree/897fe87fea3d85a243d8a3fd36c2232bb0548ad3">作者 <code>SoundSourceSeparation</code></a>中的 <code>src/</code>用于研究模型更新顺序；<code>FastBSSD.py</code>还将 AR、MA、ARMA 等模型区分。</p>
 <p>作者仓库仅允许规定范围内的学术研究，工业用途或修改需额外许可，因此本书不把它作为可自由纳入产品的代码。最小复现应先用单源/无混响退化例，再与相同 STFT、相同初始化的级联方案比较；失败实验测欠定混合、近共线通道和移动源。联合优化增加了参数和局部最优，模型更复杂不自动保证结果更好。</p>
@@ -296,6 +299,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="sec-26" class="anchor-alias" aria-hidden="true"></span><span id="b02-auxivaipiss-与尺度恢复" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-0718656403">B02　AuxIVA、IP、ISS 与尺度恢复</h3>
 <p>AuxIVA 用一个源跨频点的联合模型约束依赖，辅助函数更新避免手工选择普通梯度步长。迭代投影（IP）与迭代源导向（ISS）是不同更新实现，应分别记录，而不是都写成“用了 IVA”。<a href="https://github.com/tky823/ssspy/blob/38b9389e8b1914422561f1936d9b28d042d62d2c/ssspy/bss/iva.py">ssspy <code>bss/iva.py</code></a>给出 IP1、IP2、ISS1、ISS2 与 IPA 的选项，<a href="https://doi.org/10.1109/ASPAA.2011.6082320">Ono 2011 原论文</a>说明辅助函数思想。</p>
 <p>读码顺序为源代价 → 加权 SCM → 空间更新 → 归一化 → projection-back。最小实验采用确定混合和已知两源，固定初值比较代价与分离；失败实验使用秩亏混合。恢复参考麦的尺度需要独立步骤，SI-SDR 对尺度不敏感，不能用其通过来证明波形幅度已经恢复。</p>
+<p>E08-04 对人为指定的解混矩阵演示回投影：原输出 <code>[2s, -3u]</code> 乘参考麦系数 <code>[1/2, -1/6]</code> 后成为 <code>[s, 0.5u]</code>。它恢复参考麦源图像而非统一干声尺度，且不把给定解混矩阵的代数操作冒充 AuxIVA 估计。E08-05 则单独检查掩码 SCM 的分母地板：普通正比例缩放不改变平均值，进入地板后不再保持该性质。两题的输入、答案和边界见 <a href="../08_speech-separation.html#sec-8-1">第 8 章练习</a>。</p>
 <span id="sec-27" class="anchor-alias" aria-hidden="true"></span><span id="b03-overivafive-与过定提取" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-9634a3665c">B03　OverIVA、FIVE 与过定提取</h3>
 <p>麦克风数多于目标源数时，OverIVA 利用低维目标子空间与背景模型，FIVE 面向单目标提取，不必总是先做任意降维再调用方阵 IVA。<a href="https://github.com/fakufaku/piva">piva 官方仓库</a>包含这些方法；<a href="https://github.com/LCAV/pyroomacoustics/blob/v0.10.0/pyroomacoustics/bss/auxiva.py">pyroomacoustics <code>auxiva.py</code></a>也需查看 <code>n_src</code> 分支，确认当前算法实际的源数条件。</p>
 <p>最小实验保持两源、从两麦增加到四麦，比较背景建模与直接选两麦。失败实验把实际第三个强源误当背景，检查目标提取质量与输出身份。piva 为 GPL-3.0，本书将其与宽松许可证实现分别列出，不能把不同分发条件合并成一个“免训练库”。</p>

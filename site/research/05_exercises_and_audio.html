@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>章节代码练习与音频实验 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="80cb834cf708"><style>
+<meta name="source-digest" content="3ffa19bfc241"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -67,7 +67,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="05_exercises_and_audio.html#sec-u-d52fa2b46b">6. 已知矩阵解混</a></li>
 <li><a href="05_exercises_and_audio.html#sec-u-45f1a7d705">7. 失真、低电平和丢帧</a></li>
 <li><a href="05_exercises_and_audio.html#sec-u-2aaae2c854">8. 双声道声像与真实方向</a></li>
-<li><a href="05_exercises_and_audio.html#sec-u-bd8220d8c5">9. 从合成样本走到真实录音</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-14f6d4b845">9. 相关噪声不会因重复采样而减半</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-faf7fa8cd2">10. 极性接反与目标抵消</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-75802f79f5">11. 可逆矩阵也会放大噪声</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-815e941b8d">12. 从合成样本走到真实录音</a></li>
 </ul>
 <div class="chap"><a href="../01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
 <div class="chap"><a href="../02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
@@ -92,11 +95,14 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="05_exercises_and_audio.html#sec-u-d52fa2b46b">6. 已知矩阵解混</a></li>
 <li><a href="05_exercises_and_audio.html#sec-u-45f1a7d705">7. 失真、低电平和丢帧</a></li>
 <li><a href="05_exercises_and_audio.html#sec-u-2aaae2c854">8. 双声道声像与真实方向</a></li>
-<li><a href="05_exercises_and_audio.html#sec-u-bd8220d8c5">9. 从合成样本走到真实录音</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-14f6d4b845">9. 相关噪声不会因重复采样而减半</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-faf7fa8cd2">10. 极性接反与目标抵消</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-75802f79f5">11. 可逆矩阵也会放大噪声</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-815e941b8d">12. 从合成样本走到真实录音</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="章节代码练习与音频实验" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-c621965c02">章节代码练习与音频实验</h1>
 <p>先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。</p>
-<p>本页对应 36 道稳定编号代码题。原有练习题号保持不变；E01-01 表示第 1 章第 1 道新增代码练习，不表示全书原有第 1 题。</p>
+<p>本页对应 60 道稳定编号代码题。原有练习题号保持不变；E01-01 表示第 1 章第 1 道代码练习，不表示全书原有第 1 题。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="1-按章节运行" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-08633b42fc">1. 按章节运行</h2>
 <p>在仓库根目录执行，依赖沿用本书 NumPy 环境：</p>
 <pre><code class="language-bash">.venv/bin/python -m codes.examples.exercises_spatial
@@ -115,58 +121,58 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </thead>
 <tbody>
 <tr>
-<td>第 1 章 E01-01～02</td>
-<td>相关噪声、幅度和功率</td>
+<td>第 1 章 E01-01～03</td>
+<td>相关噪声、幅度和功率、不等噪声方差</td>
 <td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py">空间练习</a></td>
 </tr>
 <tr>
-<td>第 2 章 E02-01～03</td>
-<td>帧数、复协方差、边缘重建</td>
+<td>第 2 章 E02-01～05</td>
+<td>帧数、复协方差、边缘重建、有效权重与递推启动</td>
 <td>同上</td>
 </tr>
 <tr>
-<td>第 3 章 E03-01～02</td>
-<td>差集重数、端射角误差</td>
+<td>第 3 章 E03-01～04</td>
+<td>差集重数、端射角误差、三维方位与近远场</td>
 <td>同上</td>
 </tr>
 <tr>
-<td>第 4 章 E04-01～03</td>
-<td>延迟正号、相干源秩、栅瓣歧义</td>
+<td>第 4 章 E04-01～04</td>
+<td>延迟正号、相干源秩、栅瓣歧义、空间平滑</td>
 <td>同上</td>
 </tr>
 <tr>
-<td>第 5 章 E05-01～02</td>
-<td>秩一条件、MVDR 加载和 WNG</td>
+<td>第 5 章 E05-01～04</td>
+<td>秩一条件、MVDR 加载、输出残噪、复响应约束</td>
 <td>同上</td>
 </tr>
 <tr>
-<td>第 6 章 E06-01～03</td>
-<td>NLMS 更新、滤长不足、双讲评分</td>
+<td>第 6 章 E06-01～05</td>
+<td>NLMS 更新、滤长不足、双讲、错误副本与噪声底</td>
 <td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_enhancement.py">增强练习</a></td>
 </tr>
 <tr>
-<td>第 7 章 E07-01～03</td>
-<td>有效帧、复数预测、秩亏加载</td>
+<td>第 7 章 E07-01～05</td>
+<td>有效帧、复数预测、秩亏加载、离线因果性、WPD</td>
 <td>同上</td>
 </tr>
 <tr>
-<td>第 8 章 E08-01～03</td>
-<td>SI-SDR、排列、已知矩阵解混</td>
+<td>第 8 章 E08-01～05</td>
+<td>SI-SDR、排列、已知解混、回投影与掩码地板</td>
 <td>同上</td>
 </tr>
 <tr>
-<td>第 9 章 E09-01～03</td>
-<td>缺测预测、角度环绕、有效粒子数</td>
+<td>第 9 章 E09-01～05</td>
+<td>缺测、环绕、粒子、两类过程噪声与新息门控</td>
 <td>同上</td>
 </tr>
 <tr>
-<td>第 10 章 E10-01～06</td>
-<td>时钟、VAD、缓冲、期限、定点、增益</td>
+<td>第 10 章 E10-01～12</td>
+<td>时钟、VAD、缓冲、期限、定点、增益、帧/字节与块适配</td>
 <td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_engineering.py">工程练习</a></td>
 </tr>
 <tr>
-<td>第 11 章 E11-01～02</td>
-<td>资源约束、失败率统计</td>
+<td>第 11 章 E11-01～04</td>
+<td>资源约束、失败率统计、WER 聚合与延迟分位数</td>
 <td>同上</td>
 </tr>
 <tr>
@@ -182,7 +188,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tbody>
 </table></div>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><span id="2-试听前的约定" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-6681deb280">2. 试听前的约定</h2>
-<p>23 个样本均为本书数学合成，不是真人语音或实测房间。听到的谐波音、噪声和声像变化用于分辨计算操作，不能据此评价可懂度、语音自然度、识别准确率或真实设备性能。没有执行正式听音实验或给出 MOS。</p>
+<p>36 个样本均为本书数学合成，不是真人语音或实测房间。听到的谐波音、噪声和声像变化用于分辨计算操作，不能据此评价可懂度、语音自然度、识别准确率或真实设备性能。没有执行正式听音实验或给出 MOS。</p>
 <p>每组文件共用一个增益，导出峰值不超过约 0.8；设备播放音量不由文件保证。请从低音量开始，不要为了听残差而立即把音量调高。播放器不自动播放，不做单个文件的响度匹配。</p>
 <p>数值评分应读回 WAV，固定通道、参考、时段和时延。清单中的参考只对本组数学模型有意义。AEC 采用已知双讲时段冻结，不是检测器；分离采用已知矩阵求逆，不是盲分离；双声道声像不是阵列 DOA 真值。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/audio/MANIFEST.json">音频清单</a> 给出逐文件哈希、幅度、量化误差及源码摘要。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/generate_audio_samples.py">生成器</a>可重建全部文件；无须下载外部音频。</p>
@@ -229,7 +235,31 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="sec-9" class="anchor-alias" aria-hidden="true"></span><span id="8-双声道声像与真实方向" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-2aaae2c854">8. 双声道声像与真实方向</h2>
 <p><a href="../audio/tracking_pan.wav">等功率双声道声像移动</a><audio class="audio-sample" controls preload="none" aria-label="等功率双声道声像移动" src="../audio/tracking_pan.wav">请使用上方 WAV 链接下载。</audio></p>
 <p>左右增益分别为 <code>cos(phi)</code> 和 <code>sin(phi)</code>，phi 从 0 变到 π/2，因此两通道平方和等于原信号平方。耳机中听到的左右移动由增益控制产生，不包含传播时延、头相关传递函数或房间变化，不能拿来测 DOA 跟踪误差。E09 的轨迹练习使用另行定义的角度观测与真值。</p>
-<span id="sec-10" class="anchor-alias" aria-hidden="true"></span><span id="9-从合成样本走到真实录音" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-bd8220d8c5">9. 从合成样本走到真实录音</h2>
+<span id="sec-10" class="anchor-alias" aria-hidden="true"></span><span id="9-相关噪声不会因重复采样而减半" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-14f6d4b845">9. 相关噪声不会因重复采样而减半</h2>
+<p>两路目标已经对齐，权重各为 0.5。本组只改变噪声关系：独立版为两个独立生成的零均值高斯序列，同噪声版把第一路噪声原样复制到第二路。每路噪声标准差均为 0.07；随机种子为 20260923，时长 2 s，采样率 16 kHz。</p>
+<p>独立情况下，平均噪声的总体方差为 $(0.07^2+0.07^2)/4=0.00245$；完全相同时为 $0.07^2=0.0049$。因此相对单麦的理论噪声功率改善分别为 3.0103 dB 和 0 dB。有限样本的前一个数值会波动，后一个对照则逐样本等于单麦。本书仿真不把一次随机实现当作普遍性能曲线。</p>
+<p><a href="../audio/correlation_reference.wav">对齐目标参考</a><audio class="audio-sample" controls preload="none" aria-label="对齐目标参考" src="../audio/correlation_reference.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../audio/correlation_single.wav">单麦目标加噪声</a><audio class="audio-sample" controls preload="none" aria-label="单麦目标加噪声" src="../audio/correlation_single.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../audio/correlation_independent.wav">独立噪声两路平均</a><audio class="audio-sample" controls preload="none" aria-label="独立噪声两路平均" src="../audio/correlation_independent.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../audio/correlation_common.wav">相同噪声两路平均</a><audio class="audio-sample" controls preload="none" aria-label="相同噪声两路平均" src="../audio/correlation_common.wav">请使用上方 WAV 链接下载。</audio></p>
+<p>对应 E01-01、E01-03。读回 PCM 后，逐文件减去同组参考，比较全段误差均方，不做时延或增益拟合。同噪声平均与单麦应完全相同；不要为了“听出不同”调高音量。这个例子没有定向干扰或弥散声场，不能替代 DI 测量。</p>
+<span id="sec-11" class="anchor-alias" aria-hidden="true"></span><span id="10-极性接反与目标抵消" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-faf7fa8cd2">10. 极性接反与目标抵消</h2>
+<p>两路无噪声、无相对时延的输入为 $x_1=s$、$x_2=-0.9s$。直接平均得到 $(s-0.9s)/2=0.05s$；已知第二路接反，先乘 −1 再平均得到 $0.95s$。错误输出相对纠正输出的电平为 $20\log_{10}(0.05/0.95)\approx-25.58$ dB。全部输出保留同一导出增益，未把安静的输出单独放大。</p>
+<p><a href="../audio/polarity_reference.wav">极性实验目标参考</a><audio class="audio-sample" controls preload="none" aria-label="极性实验目标参考" src="../audio/polarity_reference.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../audio/polarity_array.wav">一路接反的两通道输入</a><audio class="audio-sample" controls preload="none" aria-label="一路接反的两通道输入" src="../audio/polarity_array.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../audio/polarity_uncorrected.wav">未纠正极性的平均输出</a><audio class="audio-sample" controls preload="none" aria-label="未纠正极性的平均输出" src="../audio/polarity_uncorrected.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../audio/polarity_corrected.wav">已知极性纠正后的平均输出</a><audio class="audio-sample" controls preload="none" aria-label="已知极性纠正后的平均输出" src="../audio/polarity_corrected.wav">请使用上方 WAV 链接下载。</audio></p>
+<p>对应 E10-09。双通道输入在播放器中按左右声道呈现，不等于算法平均，也不保证任何播放设备上都发生声学抵消；应比较两个单通道平均输出。这里已知故障位置，没有实现自动极性检测；实际幅相失配也未必能用一个负号修正。</p>
+<span id="sec-12" class="anchor-alias" aria-hidden="true"></span><span id="11-可逆矩阵也会放大噪声" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-75802f79f5">11. 可逆矩阵也会放大噪声</h2>
+<p>参考文件两路分别是 173 Hz 和 293 Hz 基频的调幅谐波。两种已知矩阵为 <code>A₁=[[1,0.5],[0.5,1]]</code> 和 <code>A₂=[[1,0.99],[0.99,1]]</code>。在两组麦克风混合中加入完全相同的两路噪声，每路标准差 0.003，再分别求解各自矩阵。不交换输出排列，不拟合额外增益，输出第一、二路与参考第一、二路逐一比较。</p>
+<p>对形式为 <code>[[1,a],[a,1]]</code> 的矩阵，两个正特征值是 $1+a$、$1-a$，所以二范数条件数分别是 3、199。恢复误差的第一路为 $(n_1-a n_2)/(1-a^2)$；第二路为 $(n_2-a n_1)/(1-a^2)$。因此接近 $a=1$ 时，两路小幅输入误差可以被明显放大。条件数是最坏方向的相对敏感度，不等于这个随机样本的 RMS 放大倍数。<a href="https://numpy.org/doc/stable/reference/generated/numpy.linalg.cond.html">NumPy <code>cond</code> 二范数定义</a></p>
+<p><a href="../audio/conditioning_reference.wav">两路原始源参考</a><audio class="audio-sample" controls preload="none" aria-label="两路原始源参考" src="../audio/conditioning_reference.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../audio/conditioning_well_input.wav">条件数 3 的含噪混合</a><audio class="audio-sample" controls preload="none" aria-label="条件数 3 的含噪混合" src="../audio/conditioning_well_input.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../audio/conditioning_ill_input.wav">条件数 199 的含噪混合</a><audio class="audio-sample" controls preload="none" aria-label="条件数 199 的含噪混合" src="../audio/conditioning_ill_input.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../audio/conditioning_well_output.wav">条件数 3 的已知矩阵恢复</a><audio class="audio-sample" controls preload="none" aria-label="条件数 3 的已知矩阵恢复" src="../audio/conditioning_well_output.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../audio/conditioning_ill_output.wav">条件数 199 的已知矩阵恢复</a><audio class="audio-sample" controls preload="none" aria-label="条件数 199 的已知矩阵恢复" src="../audio/conditioning_ill_output.wav">请使用上方 WAV 链接下载。</audio></p>
+<p>对应 E08-03、E12-03。参考、两种混合和两种恢复共用同一增益；强噪声恢复结果可能决定全组衰减量，实际值见清单。两路参考是源信号，两路输入是麦克风信号，不能因为都是双通道就直接逐路比较输入与参考。这个实验不是 AuxIVA、ILRMA 或神经分离的效果评测，也不能说明正则化一定无损。</p>
+<span id="sec-13" class="anchor-alias" aria-hidden="true"></span><span id="12-从合成样本走到真实录音" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-815e941b8d">12. 从合成样本走到真实录音</h2>
 <p>真实录音至少要说明录音授权、设备、通道顺序、采样率、阵列几何、播放参考取点及参考用途。近讲通道不自动等于干净评分参考。公开可下载也不自动意味着可再分发，本页没有复制任何外部录音。</p>
 <p>边缘 STFT 重建需要非零窗乘积累加支持，见 <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.check_NOLA.html">SciPy NOLA 定义</a>。样本文件使用<a href="https://docs.python.org/3/library/wave.html">标准库 wave 的无压缩 PCM 接口</a>。资料核实日期为 2026-09-22；样本全部由本书生成，以上文档不是音频来源。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>

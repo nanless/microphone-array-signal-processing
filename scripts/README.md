@@ -5,8 +5,8 @@
 运行时间取决于处理器、操作系统、Python 与依赖版本和当前负载。若要报告耗时，应同时记录这些条件、运行次数和统计方式。
 
 ```bash
-.venv/bin/python codes/examples/generate_audio_samples.py  # 先生成 6 组、23 个合成 WAV 及清单
-.venv/bin/python scripts/make_figures.py      # 生成图 1～25、图 33～34 → figures/
+.venv/bin/python codes/examples/generate_audio_samples.py  # 先生成 9 组、36 个合成 WAV 及清单
+.venv/bin/python scripts/make_figures.py      # 生成图 1～25、图 33～35 → figures/
 .venv/bin/python scripts/make_aec_figures.py  # 生成图 26～32（回声消除专题）→ figures/
 .venv/bin/python scripts/build_site.py        # 14 个教程页 + 6 个研究页，共 20 页 → site/
 .venv/bin/python scripts/build_pdf.py         # 合订 chapters/ → dist/combined.html → dist/microphone-array-tutorial.pdf（需 Chrome）
@@ -20,15 +20,15 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 
 | 脚本 | 作用 | 输出 |
 |---|---|---|
-| `../codes/examples/generate_audio_samples.py` | 生成 6 组、23 个合成音频文件；清单记录参数、共同增益和摘要。`--check` 只检查现有生成物 | `codes/audio/*.wav`、`codes/audio/MANIFEST.json` |
-| `make_figures.py` | 生成图 1～25 和图 33～34。只用 numpy 和 matplotlib，不依赖 scipy；随机种子固定。图 34 读取已生成的音频，必须先运行音频生成器。图 13 的蒙特卡洛统计耗时最长 | `figures/fig01`～`fig25_*.png`、`fig33_*`、`fig34_*` |
+| `../codes/examples/generate_audio_samples.py` | 生成 9 组、36 个合成音频文件；清单记录参数、共同增益和摘要。`--check` 只检查现有生成物 | `codes/audio/*.wav`、`codes/audio/MANIFEST.json` |
+| `make_figures.py` | 生成图 1～25 和图 33～35。只用 numpy 和 matplotlib，不依赖 scipy；随机种子固定。图 34、35 读取已生成的音频，必须先运行音频生成器。图 13 的蒙特卡洛统计耗时最长 | `figures/fig01`～`fig25_*.png`、`fig33_*`、`fig34_*`、`fig35_*` |
 | `make_aec_figures.py` | 7 张回声消除专题图（建模/结构/NLMS/冻结/延迟双讲/非线性/混合选型）。风格与上一个脚本统一（六色/五级字号/dpi150） | `figures/fig26~fig32_*.png` |
 | `renumber2.py` | 已退役。单篇长文时代的图号整理工具，留作存档，平时不用跑 | 无 |
 | `build_site.py` | 建站脚本。读 `chapters/` 14 篇 Markdown 和 `codes/research/` 6 篇研究文档，左侧边栏可跳章节、研究页与小节。编号小节使用 `sec-x-y` 稳定标识，并保留旧 `sec-N` 别名。图片直接引用 `figures/`，数学公式使用固定版本的 MathJax 3.2.2 在线渲染 | `site/*.html`（14 个教程页）及 `site/research/*.html`（6 个研究页） |
 | `build_pdf.py` | 合订本脚本。14 篇合成带封面、三级目录的单页 HTML，再调 Chrome 无头打印成 A4 PDF，最后写篇/节/指定子节三级书签；第三级收入第 6、7 章的源 h4。输出先写临时文件，校验后再替换发布件。常用 flag：`--html-only`、`--pdf-only`、`--no-bookmarks`、`--build-date YYYY-MM-DD` | `dist/combined.html`（中间产物） + `dist/microphone-array-tutorial.pdf` |
-| `quality_check.py` | 发布门禁。用独立基线检查 14 篇/84 节/21 个指定子节/34 图，核对图号、alt、公式编号与引用、小节语义链接、PNG 绘图脚本摘要、网页导航和 PDF 三级书签。确定性问题阻断发布，高风险口语只提醒人工复核 | 通过、失败清单，以及不阻断发布的人工复核与可访问性提示 |
+| `quality_check.py` | 发布门禁。用独立基线检查 14 篇/84 节/21 个指定子节/35 图，核对图号、alt、公式编号与引用、小节语义链接、PNG 绘图脚本摘要、网页导航和 PDF 三级书签。确定性问题阻断发布，高风险口语只提醒人工复核 | 通过、失败清单，以及不阻断发布的人工复核与可访问性提示 |
 
-改图练习（如附录 B 习题）应使用脚本副本或独立输出目录，记录改变的参数，不覆盖本书的发布图。新增 36 道可运行题使用三个模块入口：
+改图练习（如附录 B 习题）应使用脚本副本或独立输出目录，记录改变的参数，不覆盖本书的发布图。新增 60 道可运行题使用三个模块入口：
 
 ```bash
 .venv/bin/python -m codes.examples.exercises_spatial
@@ -52,10 +52,10 @@ PDF 正文固定为 16 px，打印后检查长中文正文的变换矩阵：正�
 
 **PDF 可访问性限制**：当前 PDF 由 Chrome 打印生成，保留可搜索文本、`zh-CN` 语言信息和三级书签，但不保证包含 PDF 结构标签或可靠的辅助技术阅读顺序。`quality_check.py` 会披露这一限制而不让现有构建无条件失败；交付时不能把该提示表述为“PDF 可访问性已完整验收”。
 
-**独立结构基线**：发布门禁的独立结构基线为 14 个顶级书签、84 个二级书签、21 个三级书签，共 119 个大纲项，以及图 1～34。它还检查图号与 alt、公式编号与引用、小节语义链接、每个源 h2/h3/h4 标题是否真的出现在当前页导航中（源 h1 可排除），以及 PNG 中的 `SourceScript` 和完整 `SourceScriptDigest`。
+**独立结构基线**：发布门禁的独立结构基线为 14 个顶级书签、84 个二级书签、21 个三级书签，共 119 个大纲项，以及图 1～35。它还检查图号与 alt、公式编号与引用、小节语义链接、每个源 h2/h3/h4 标题是否真的出现在当前页导航中（源 h1 可排除），以及 PNG 中的 `SourceScript` 和完整 `SourceScriptDigest`。
 
 修改绘图脚本后未重画的 PNG 会使门禁失败；高风险口语命中只输出人工复核提示。
 
 **失败时保留旧产物**：完整 PDF 构建先在临时 HTML/PDF 上完成打印、书签和链接校验，再替换正式文件。站点批量替换与 PDF 双文件替换发生可捕获异常时，会恢复已有文件并移除本批新建文件；若恢复也失败，会保留备份目录并报告路径。这不是断电、进程强杀或文件系统损坏时的原子发布保证。`--html-only` 只替换 HTML；旧 PDF 的摘要会与新 HTML 不同，必须继续生成 PDF 后再发布。
 
-**扩展依赖**：`pyroomacoustics==0.10.0`（房间声学仿真库）只用于第 10 章示例和附录 B 的房间仿真练习；运行 `.venv/bin/pip install pyroomacoustics==0.10.0` 安装。不装也能生成正文的 34 张图。固定版本说明见[官方 PyPI 页面](https://pypi.org/project/pyroomacoustics/0.10.0/)。
+**扩展依赖**：`pyroomacoustics==0.10.0`（房间声学仿真库）只用于第 10 章示例和附录 B 的房间仿真练习；运行 `.venv/bin/pip install pyroomacoustics==0.10.0` 安装。不装也能生成正文的 35 张图。固定版本说明见[官方 PyPI 页面](https://pypi.org/project/pyroomacoustics/0.10.0/)。
