@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码研究导读 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="7dad810a9a67"><style>
+<meta name="source-digest" content="1c057bc95262"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -87,6 +87,13 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json">SOURCES.lock.json</a>，逐算法覆盖状态见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/COVERAGE.md">COVERAGE.md</a>。
 同名算法在不同项目中可能采用不同归一化、频谱轴序和输出参考通道，不能直接比较两个函数的数组而不检查约定。</p>
 <p>本手册包括本页入口和以下 5 篇专题，共 6 个网页；与 14 个教程页合计为 20 页。</p>
+<p>锁表登记 69 个上游项目，其中 63 个已在本机取得源码并核对，6 个只保留来源索引。
+空间部分补 SBL、RobustSBL、在线子带 GSC、SMP-PHAT 与多帧关联；增强部分补在线 WPE 接口对照、
+DNN 自适应控制和长序列分离；工程部分补重采样、响度、STOI/ESTOI、ViSQOL、文件帧读写与块浮点。
+这份清单仍含未运行和仅原理说明的方法；具体条件与方法级结果以各专题为准。</p>
+<p>已执行的工业三库接口实验与 SBL 合成输入实验提供原创调用程序及<a href="04_source_reproduction.html">运行记录</a>。
+报告区分正常检查、状态重置反例和达到迭代上限；SMP-PHAT 的实际编译运行另记录了负时延索引转换导致的数值失败。
+这些小规模接口对照不等于论文全量复现或设备验收。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
@@ -119,7 +126,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <tr>
 <td><a href="05_exercises_and_audio.html">练习与音频实验</a></td>
 <td>第 1～11 章、附录 A/B</td>
-<td>61 道代码练习、36 个合成音频，以及 DEMAND 真实录音摘录与派生音频的复算、许可和解释边界</td>
+<td>67 道代码练习、40 个合成音频，以及 DEMAND 真实录音摘录与派生音频的复算、许可和解释边界</td>
 </tr>
 </tbody>
 </table></div>

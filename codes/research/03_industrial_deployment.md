@@ -201,3 +201,123 @@ Sound Open Firmware（SOF）将波束形成放入 DSP 固件及拓扑系统。�
 真实回调还应区分采集首样本时间、回调开始时间和播放首样本时间。[PortAudio 的 PaStreamCallbackTimeInfo](https://files.portaudio.com/docs/v19-doxydocs/structPaStreamCallbackTimeInfo.html)把三者分别放在 `inputBufferAdcTime`、`currentTime`、`outputBufferDacTime` 中，单位为秒，使用所属流的时间基准。它们不能未经校准就与另一设备的时钟相减。量化、时间戳与样本消费属于接口条件；更新模型或运行时版本时，也应保留这些对照。该接口文档核实于 2026-09-22。
 
 本目录给出的是实现阅读和实验设计。源码实际获取状态见 `codes/upstream/` 的下载记录；构建、运行及目标硬件验收仍按各实验的真实记录报告。
+
+## 7. 重采样、测量与数值接口的独立对照
+
+下面六项分别补充采样率转换、响度测量、全参考评分、文件输入输出和块浮点运算。它们不组成一套必须串接的前端，也不都属于阵列算法。固定源码说明了可以研究什么；本节的输入与验收步骤是建议实验，不是已经取得的设备或语音质量结果。
+
+### I22：libsoxr 的比率、渐变与输出延迟
+
+libsoxr 是可独立使用的 SoX 重采样库。本书核对了[官方 SourceForge 的 0.1.3 提交](https://sourceforge.net/p/soxr/code/ci/945b592b70470e29f917f4de89b4281fbbd540c0/tree/)，其完整提交与 `chirlu/soxr` 镜像相同。阅读顺序是 `src/soxr.h` 的接口约定、`examples/5-variable-rate.c` 的可变比率示例，再到 `src/` 的滤波实现。[许可文件](https://sourceforge.net/p/soxr/code/ci/945b592b70470e29f917f4de89b4281fbbd540c0/tree/LICENCE)采用 LGPL-2.1-or-later，并要求另看 `pffft.c` 的文件内声明；源码可本地研究，不意味着静态链接或重新分发没有义务。
+
+与 I04 的 libsamplerate 对照时，先核对比例方向。libsamplerate 的 `src_ratio` 是输出速率除以输入速率；libsoxr 的 `soxr_set_io_ratio` 使用输入/输出比。设备快 100 ppm、转到参考时钟时，两者分别为约 0.99990001 和 1.0001。`soxr_create` 则直接接受输入、输出两个速率，不需要把比率当采样率传进去。
+
+可变比率需选择 `SOXR_VR`。官方示例先按将使用的最大输入/输出比创建状态，再设置当前比率；`slew_len` 描述用多少个**输出样本**渐变到新比率，0 表示立即改变。输出 16 kHz 时，160 个输出样本对应 10 ms 的比率过渡；这只是控制参数换算，不证明设备时钟已经估计准确。[固定可变比率示例，第 37～66 行](https://github.com/chirlu/soxr/blob/945b592b70470e29f917f4de89b4281fbbd540c0/examples/5-variable-rate.c)
+
+连续调用还要分别累计实际输入消耗量 `idone`、实际输出量 `odone`，保留未消费输入。结束时以 `in=NULL` 表明不再有输入，并继续取出尾部；输入长度为 0 本身没有这个结束含义。`soxr_delay` 返回当前以输出样本计的延迟，不能直接当成毫秒；它也不包含驱动、线程和下游等待。[API 头文件](https://github.com/chirlu/soxr/blob/945b592b70470e29f917f4de89b4281fbbd540c0/src/soxr.h)
+
+整段与分块对照必须显式统一质量、相位响应、输入输出格式及线程配置。该版本的 `soxr_create` 默认 HQ，而 `soxr_oneshot` 默认 LQ；若保留各自默认值，波形差异不能直接归因于分块状态。整数量化输出还要固定抖动选项，避免把随机化误差误判为状态不连续。
+
+建议先固定 48 kHz→16 kHz、双通道浮点输入、同一质量配置。一路给脉冲，另一路给有明确频率的正弦，分别按整段和不等长块送入，记录消费区间、总输出长度、尾部及延迟。再在同一连续状态上加入比率阶跃和渐变，检查通道间相位关系；高于输出奈奎斯特频率的输入用于观察抗混叠行为，不能只检查文件头是否写成 16 kHz。
+
+构建需要 C 编译器、CMake 和构建工具，OpenMP/SIMD 路径按配置选择。官方 `INSTALL` 给出构建与测试入口，但编译器、CMake 兼容性和测试结果仍须实际记录；取得源码不等于这些步骤已经通过。
+
+本书于 2026-09-22 实际构建并运行了 I22、I23、I26 的三个固定库。环境为 macOS arm64、Apple clang 21.0.0、CMake 4.3.2；采用 Release 静态库与独立构建目录，没有安装到系统或教学虚拟环境。soxr 关闭 OpenMP 和 SIMD 分支，libsndfile 关闭外部压缩编解码后端；旧构建文件通过命令行 `CMAKE_POLICY_VERSION_MINIMUM=3.5` 兼容，未修改上游源码。三个工作树在构建前后均通过来源、提交与干净状态核查。运行入口为[隔离构建脚本](../examples/run_industrial_interfaces.py)，调用[原创 C 实验程序](../examples/industrial_interfaces.c)；[原始报告](../reports/industrial_interfaces.json)绑定源码提交、实验程序与运行脚本摘要、构建选项和日志摘要。
+
+重采样输入为 1 s、48 kHz 双通道：左声道在零起始帧 12000 放幅度 0.5 的脉冲，右声道为幅度 0.1、频率 1 kHz 的正弦。输出为 16 kHz，显式使用交织双精度浮点、HQ、质量标志 0 和单线程，每次输出缓冲限为 113 帧。整段供给、每块 127 帧和每块 509 帧均保持同一状态，按 `idone` 保留未消费输入，最后以 `in=NULL` 排空。
+
+| 输入供给方式 | 排空前输出帧数 | 排空补出帧数 | 总输出帧数 | 相对整段的最大绝对差 |
+|---|---:|---:|---:|---:|
+| 整段 | 15471 | 529 | 16000 | 0 |
+| 127 帧块 | 15659 | 341 | 16000 | 0 |
+| 509 帧块 | 15622 | 378 | 16000 | 0 |
+
+排空后的输出延迟均为 0。排空前的不同积压量与供给/输出缓冲方式有关，不是三个不同的固定算法延迟。脉冲峰落在输出帧 4000，符合 $12000\times16000/48000=4000$；右声道在半开区间 `[320,15680)` 与解析正弦的最大绝对差约为 $6.84\times10^{-8}$，没有拟合时移或增益。整段供给触发 141 次部分消费，说明实验确实经过了保留输入余量的分支。
+
+反例在输入帧 24000 处未排空就调用 `soxr_clear`，最终只有 15566 帧，比连续处理少 434 帧。把两路输出按现有数组下标直接比较，共同长度内的最大绝对差约为 0.07669；这里已丢失待输出样本，因此该数只用于发现协议错误，不能解释为对齐后的音质损失。该实验没有测可变比率、抗混叠频响、设备时钟闭环或实时截止期；这些仍需单独实验。
+
+### I23：libebur128 的响度与真峰值
+
+峰值保护 AGC 限制样本幅度，却不等于按感知响度调节音量。`jiixyj/libebur128` 提供响度和峰值测量，入口为 [`ebur128/ebur128.h`](https://github.com/jiixyj/libebur128/blob/67b33abe1558160ed76ada1322329b0e9e058b02/ebur128/ebur128.h) 与 `ebur128/ebur128.c`。锁定快照的版本宏为 1.2.6，根 [`COPYING`](https://github.com/jiixyj/libebur128/blob/67b33abe1558160ed76ada1322329b0e9e058b02/COPYING)为 MIT；实现和模式应绑定该提交，不因库名含 R128 就宣称所有配置已通过标准认证。
+
+瞬时响度、短期响度和积分响度使用不同统计窗口；响度范围描述随时间变化的离散程度，采样峰值与真峰值则检查幅度。接口中积分响度以 LUFS（Loudness Units relative to Full Scale，相对数字满刻度的响度单位）返回；`ebur128_true_peak` 返回线性幅度，若转成 dBTP（decibels True Peak，真峰值分贝），需对相对满刻度幅度取 $20\log_{10}$。两种结果不能互相替代，也都不是未经声学校准即可得到的 dB SPL。
+
+先用 `ebur128_init` 选择所需测量模式，再连续送入交织音频。`ebur128_add_frames_*` 的数量是每通道时间帧数，而非所有通道的标量数之和。通道角色影响测量：头文件的默认映射按常见节目声道设置，不能把阵列的四路原始麦克风直接当成四个节目声道。单路增强输出可单独测量；比较多个麦克风时应使用各自的单通道测量状态，而不是任意套用环绕声布局。
+
+积分门控会影响哪些时间段进入统计；全静音等无有效能量的情况可能返回负无穷。调用者应同时保留状态、有效时长和失败或无定义原因，不能把负无穷替换为 0 LUFS 后参加平均。真峰值用于估计重建波形的幅度，可能高于已存样本的最大绝对值；采样峰值不越界不能单独证明重建后有足够余量。
+
+建议输入一段足够长、幅度稳定且通过门控的非静音信号，再整体乘以 0.5。在门控保留区域相同的前提下，本书代数预期响度下降 $20\log_{10}2\approx6.0206$ LU，采样峰值和真峰值的线性值均减半。另测全静音、短文件、逐块清状态和错误通道映射，并分别保存结果；这些输入检验测量协议，不构成主观听测。
+
+核心库用 C/CMake 构建，不需要神经模型。实际测试目录由根 `CMakeLists.txt` 指向 `test/`；文件读取示例所需依赖与核心测量分开核对。开启测试、编译成功、运行测试及取得标准测试音频是不同步骤，不因生成了库文件就把全部测试标为通过。
+
+本书实际运行的合成测量采用 48 kHz、10 s、1 kHz 单声道正弦，显式把通道设为 `CENTER`，模式为 `I | TRUE_PEAK`。幅度 0.1 和 0.05 的积分响度分别为 −23.00360 LUFS、−29.02420 LUFS，相差 −6.020599913 LU，与独立代数预期 $20\log_{10}(0.5)$ 一致。两档信号均远高于绝对门限，保持相同有效门控区域；不能据此认为任意含静音或近门限节目减半都会得到相同的积分响度变化。
+
+保持状态、每次送入 127 帧，与整段送入的积分响度差为 0 LU；采样峰值分别为 0.1、0.05，估计真峰值约为 0.1000000015、0.0500000007，线性比均为 0.5。全静音返回负无穷，报告将它记录为 `null`，同时保留 `negative_infinity_no_gated_energy` 原因；静音的两个峰值均为 0。原始值与构建条件见同一份[工业接口报告](../reports/industrial_interfaces.json)。这组结果验证幅度缩放、连续状态和失败值处理，不构成 EBU 标准测试集认证、主观听测或任意文件格式的验收。
+
+### I24：pystoi 的 STOI、ESTOI 与无效评分
+
+第 10 章列出的短时客观可懂度 STOI 可以通过 `mpariente/pystoi` 的 Python 实现研究。它支持普通 STOI 和扩展 STOI（Extended Short-Time Objective Intelligibility，ESTOI），入口均在 [`pystoi/stoi.py`](https://github.com/mpariente/pystoi/blob/74872b000753a7a42ff51aa0868af8c82c7f9053/pystoi/stoi.py)。这是软件作者维护的 Python 实现；[README](https://github.com/mpariente/pystoi/blob/74872b000753a7a42ff51aa0868af8c82c7f9053/README.md)另说明 MATLAB 测试来源于 Cees Taal 的代码，不应把两种实现的作者与环境混同。
+
+该提交 `setup.py` 标为 0.4.1，Python 核心按根 `LICENSE` 的 MIT 条款提供，运行依赖 NumPy 和 SciPy。Octave/MATLAB 对照测试有额外依赖和测试文件，不是安装 Python 核心后自动完成的验证。本书源码获取范围、测试资产和实际运行环境分别登记。
+
+输入是一维、等长度的干净参考与处理后语音，二者采样率和时间对齐口径必须一致。实现内部先转到 10 kHz，再按参考进行静音帧筛除、短时分析和频带处理。`extended=False` 与 `extended=True` 使用不同的归一化与相关性计算步骤，结果应分别命名，不能在同一列中混写成 STOI。
+
+需要额外检查返回值是否确实来自有效评分。该提交在去除静音后不足 30 个 STFT 帧时发出 `RuntimeWarning`，随后返回 `1e-5`。这个数是实现的失败返回值，不是测得“可懂度极低”的有效结果。评分程序应捕获并记录警告、文件 ID、长度与原因，在总文件数中保留这次失败；不能通过丢弃警告或只检查结果有限就让它进入平均值。
+
+建议先准备授权清楚且有干净参考的自然语音，分别比较自身、已知加噪版本、静音输出与错位版本，并记录普通/扩展模式、SciPy 版本和对齐方式。另用短输入验证无效评分是否被识别。自身对照只是接口检查，不能代替与原作者实现的独立数值对照；STOI 也不是逐词识别正确率，合成正弦不能用来报告自然语音可懂度。
+
+### I25：ViSQOL 的模式、模型与构建依赖
+
+Google 的 ViSQOL（Virtual Speech Quality Objective Listener）是全参考音频质量估计器：先比较干净参考与退化信号的时频结构，再映射为客观听音质量预测分（Mean Opinion Score—Listening Quality Objective，MOS-LQO）。它需要参考，和 I19 的无参考质量预测解决不同的输入条件；它不是 POLQA 的实现，也不替代受试者 MOS。[固定 README 的 Guidelines、License 与 FAQ](https://github.com/google/visqol/blob/38d0b0163e441047d4429bf07ad09e5b9031d02c/README.md)
+
+该实现的 audio 模式使用 48 kHz 输入，speech 模式使用 16 kHz 输入。多通道会下混为单声道再比较，因此分数不能证明阵列方向、双耳线索或空间声场保持。speech 模式还需记录语音活动筛选、映射模型，以及是否选择 scaled/unscaled 映射；模式不同的分数不能直接混排。
+
+质量映射依赖模型。源码目录 `src/`、协议目录 `src/proto/` 和 Python 接口足以研究调用过程，却不足以证明已经具备评分条件。`model/` 中的 TFLite 文件与文本 SVR 参数都属于模型资产，不能只因扩展名为 `.txt` 就将其当作没有模型内容的普通说明。若获取时排除了模型和 `testdata/`，报告中须明确写源码范围，之后按资产来源和许可补齐，不能运行到缺文件再把它称为算法失败。
+
+构建从根 `WORKSPACE` 和 `BUILD` 阅读。该提交的 [WORKSPACE](https://github.com/google/visqol/blob/38d0b0163e441047d4429bf07ad09e5b9031d02c/WORKSPACE)会引入 TensorFlow 2.11.0 对应提交及 protobuf、pybind11、Abseil、LIBSVM、Armadillo、PFFFT 等依赖。README 的 Bazel 命令是构建入口，不是“只需一个小型 Python 包”的保证；包内源码量、依赖下载量、构建缓存与运行内存需要分开记录。
+
+根 `LICENSE` 对该项目代码采用 Apache-2.0，不能以此替全部外部依赖和录音授予许可。建议先核对模型摘要、模式和依赖，再用同一批参考—退化文件对生成逐文件及逐片段结果。参考错配、静音过多、采样率错误和短文件应有明确失败或排除记录，不悄悄变成高低分。
+
+官方 FAQ 指出，它原本针对编解码和网络退化，移用于降噪、前处理及生成类失真时表现并不一致。因此正式设备结论仍需目标数据、主观听测和识别指标共同验证；不能用一个质量预测分证明内容未改变。
+
+### I26：libsndfile 的帧数、幅度转换与短读
+
+算法读到的数组取决于文件解码接口。`libsndfile/libsndfile` 提供多种音频格式的 C 读写接口，本书使用它研究输入输出协议，不把它计作定位或增强算法。入口为 `include/sndfile.h`、`src/sndfile.c`、`src/pcm.c` 与测试目录；[官方 API](https://libsndfile.github.io/libsndfile/api.html)把标量项数、时间帧数和原始字节数分成不同函数族。
+
+例如，双通道文件读取 160 个时间帧时，`sf_readf_float(...,160)` 需要容纳 320 个浮点数；对应的 `sf_read_float` 请求量是 320，而不是 160。返回值同样沿用所选接口的单位。读到尾部时，返回量可能小于请求量，未用缓冲还可能被补零；应只将实际返回的帧标为录音内容，不能把补零区当成真实采样时间继续更新统计量。
+
+文件编码与数组类型也要分开。PCM16 WAV 可以读成浮点数组，但原始量化精度仍是 16 位。浮点归一化、写回整数时的舍入/削波、通道顺序和字节序都应显式记录；不要由 Python 或 C 数组类型反推原始设备分辨率。跨库对照应先检查 PCM 端点和简单脉冲，再比较复杂语音输出。
+
+建议构造左右通道脉冲位置及符号不同的小型 WAV，逐块读取并核对交织顺序，再用不能整除文件长度的块长检查最后一次返回值。另比较 PCM16 的最小/最大码字、浮点读取与写回结果，记录是否启用归一化和削波。该实验能发现接口差错，不证明 ADC 的动态范围或实际声压正确。
+
+锁定源码的 `CMakeLists.txt` 版本字段为 1.2.2；[根许可](https://github.com/libsndfile/libsndfile/blob/b9103bd48b6c8fb517ae737fe3baee0c718b804c/COPYING)与 [sndfile.c 文件头](https://github.com/libsndfile/libsndfile/blob/b9103bd48b6c8fb517ae737fe3baee0c718b804c/src/sndfile.c)给出 LGPL-2.1-or-later。CMake 或 Autotools 构建可按用途选择功能；PCM/WAV 读写不要求启用全部压缩编解码后端，Ogg/Vorbis/FLAC/Opus/MPEG 和设备播放工具的依赖则另行核对。文件读写成功不能替代设备采集验证。
+
+本书实际写入的 PCM16 WAV 为 16 kHz、7 帧、2 通道，按每行一帧、左声道在前排列如下；它只测试整数端点、符号、通道交织与短读，不是语音样本。
+
+```text
+-32768      0
+     0  32767
+ 16384 -16384
+     1     -1
+ 12345 -23456
+     0   1000
+ 32767 -32768
+```
+
+用 `sf_writef_short` 写入，再分别重开文件读取：每次请求 3 帧的 `sf_readf_short` 返回 `3,3,1,0`；每次请求 6 个标量项的 `sf_read_short` 返回 `6,6,2,0`。实际有效标量均与输入逐项相等，累计分别为 7 帧与 14 项。另一次显式启用归一化的 `sf_readf_double` 读回与整数除以 32768 完全一致，最大绝对差为 0；正端点为 0.999969482421875，不是 1。
+
+独立验证没有再次调用 libsndfile：运行脚本使用 Python 标准库 `wave` 与小端整数解码核对 WAV 编码、7 帧长度、双通道次序和全部 14 个码字。该检查与[独立失败用例测试](../../tests/test_codes_industrial_interfaces.py)共同覆盖帧/项误用、分块丢失、静音误记为零和报告来源失配。实验 WAV 与完整日志留在忽略的独立构建目录，摘要保存在[原始报告](../reports/industrial_interfaces.json)中；本书没有据此声称其他文件编码、削波策略或设备采集也已验证。
+
+### I27：lib_xcore_math 的块浮点与参考内核
+
+XMOS `lib_voice` 的底层依赖不是任意最新版数学库。锁定的 [`lib_voice/lib_build_info.cmake`](https://github.com/xmos/lib_voice/blob/c9f1a9bf95cd88c7950adf4bf631c217f900ad25/lib_voice/lib_build_info.cmake)明确要求 `lib_xcore_math(v3.0.0)`；本书按此固定到 `16130be45c4002a1f875a4b06ff68d2065cd8c69`。该库提供向量运算、块浮点、快速傅里叶变换（FFT）、离散余弦变换（Discrete Cosine Transform，DCT）与滤波，补充 I15 的 Q15 内核对照，不是一套独立的完整语音前端。
+
+块浮点把一组整数尾数与一个共享指数一起保存。示意地，尾数 `[-16384,8192]` 与指数 −15 表示实值 `[-0.5,0.25]`。相同整数数组配不同指数会代表不同幅度，因此对照时不能只比较尾数字节。
+
+位余量（headroom）描述还能左移多少位而不溢出，用来选择运算缩放；为了避免溢出而右移又会损失低位精度。这与“全部模块固定使用同一 Q15 小数位数”不同。
+
+源码阅读可从 `lib_xcore_math/api/` 进入 `src/bfp/`、`src/fft/` 与 `src/filter/`，再比较 `src/arch/ref/` 和目标架构实现。[构建文件](https://github.com/xmos/lib_xcore_math/blob/16130be45c4002a1f875a4b06ff68d2065cd8c69/lib_xcore_math/lib_build_info.cmake)区分参考 C、XS3 汇编及其他架构路径；FFT 查找表也有使用内置表与重新生成的选项。必须保存指数、长度、表配置、架构和编译选项，不能只记录函数名。
+
+建议先用上述两点向量及小幅脉冲，按指数还原实值后与独立浮点计算比较；再加入接近满幅、余数长度、大小量混合与 FFT 往返。测试应同时观察输出指数、舍入误差、饱和和状态，不把“多数样本相近”当成全部边界正确。参考 C 路径通过后，仍需在目标板运行相同输入并另测周期和内存；主机仿真耗时不能推算目标 VPU 的实时性。
+
+[README](https://github.com/xmos/lib_xcore_math/blob/16130be45c4002a1f875a4b06ff68d2065cd8c69/README.rst)指定 XTC Tools 15.3.1，并说明原生构建的 VPU 仿真范围限制。[LICENSE.rst](https://github.com/xmos/lib_xcore_math/blob/16130be45c4002a1f875a4b06ff68d2065cd8c69/LICENSE.rst)为 XMOS Public Licence v1，商业硬件和特殊用途条件不能省略。取得这个依赖也不表示 `lib_voice` 的工具链、模型生成依赖和目标硬件已经全部齐备。

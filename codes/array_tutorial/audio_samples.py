@@ -80,7 +80,7 @@ def _tone(t: np.ndarray, frequency: float) -> np.ndarray:
 
 
 def build_cases() -> dict:
-    """Return nine independent experiments with model parameters and references.
+    """Return ten experiments with model parameters and references.
 
     Each entry has ``signals`` (filename stem -> CxN array), ``parameters`` and
     ``limits``. Signals are pre-export floats; no group uses peak matching.
@@ -130,6 +130,13 @@ def build_cases() -> dict:
     well = np.array([[1., .5], [.5, 1.]])
     ill = np.array([[1., .99], [.99, 1.]])
     well_input, ill_input = well @ sources + measurement_noise, ill @ sources + measurement_noise
+    # Exactly 1000 periods. No taper: preserve sinusoidal orthogonality over
+    # the scoring interval. This is an analytic fixture, not a listening test.
+    nonlinear_reference = .4 * np.sin(2 * np.pi * 500 * t)
+    nonlinear_echo = nonlinear_reference + 2 * nonlinear_reference**3
+    best_linear_gain = float(nonlinear_reference @ nonlinear_echo
+                             / (nonlinear_reference @ nonlinear_reference))
+    nonlinear_estimate = best_linear_gain * nonlinear_reference
     return {
         'spatial': {
             'signals': {'spatial_reference': delay_samples(target, 3),
@@ -211,6 +218,20 @@ def build_cases() -> dict:
                            'output_and_reference_channel_order': ['source1', 'source2'],
                            'algorithm_delay_samples': 0},
             'limits': 'Both mixing matrices are known; this is inverse-problem noise amplification, not blind separation or a benchmark of AuxIVA.'},
+        'nonlinear': {
+            'signals': {'nonlinear_reference': nonlinear_reference,
+                        'nonlinear_echo': nonlinear_echo,
+                        'nonlinear_estimate': nonlinear_estimate,
+                        'nonlinear_residual': nonlinear_echo - nonlinear_estimate},
+            'parameters': {'sample_rate_hz': SAMPLE_RATE, 'samples': t.size,
+                           'frequency_hz': 500, 'amplitude': .4, 'cubic_coefficient': 2.,
+                           'model': 'd=x+2*x**3; best whole-segment scalar least-squares fit g*x',
+                           'fit_gain': best_linear_gain, 'analysis_interval_samples': [0, t.size],
+                           'reference': 'nonlinear_echo for echo-power ratio; nonlinear_reference is playback',
+                           'taper': 'none; 1000 complete periods', 'algorithm_delay_samples': 0,
+                           'noise': 'none', 'near_end': 'none', 'randomness': 'none'},
+            'limits': 'Steady sinusoid, memoryless cubic distortion and batch scalar projection; '
+                      'not NLMS convergence, a measured loudspeaker or speech-quality evaluation.'},
     }
 
 

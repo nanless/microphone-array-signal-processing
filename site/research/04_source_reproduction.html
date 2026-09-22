@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码获取与独立复现记录 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="7dad810a9a67"><style>
+<meta name="source-digest" content="1c057bc95262"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -67,6 +67,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-95c8e317da">盲分离与神经系统</a></li>
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-e6bb371bcc">跟踪与工程处理</a></li>
 <li><a href="04_source_reproduction.html#sec-u-96ac81c5a8">5. 记录结果的必要字段</a></li>
+<li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-ac4d3025b1">工程接口实验与待扩展的评分检查</a></li>
+<li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-88c5e110dd">已执行实验与可重跑入口</a></li>
 <li><a href="04_source_reproduction.html#sec-u-56cf8b0bbf">6. 何时可以进入设备比较</a></li>
 </ul>
 <div class="chap"><a href="05_exercises_and_audio.html">章节代码练习与音频实验</a></div>
@@ -94,6 +96,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-95c8e317da">盲分离与神经系统</a></li>
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-e6bb371bcc">跟踪与工程处理</a></li>
 <li><a href="04_source_reproduction.html#sec-u-96ac81c5a8">5. 记录结果的必要字段</a></li>
+<li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-ac4d3025b1">工程接口实验与待扩展的评分检查</a></li>
+<li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-88c5e110dd">已执行实验与可重跑入口</a></li>
 <li><a href="04_source_reproduction.html#sec-u-56cf8b0bbf">6. 何时可以进入设备比较</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="取得源码后怎样复现" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-515383f30b">取得源码后怎样复现</h1>
@@ -229,6 +233,147 @@ ERLE 不能把双讲中的近端语音解释成残余回声，也不能用参考
 <p>音频工程接口至少测试静音、过载、丢帧、设备断开、采样率切换和队列积压。离线算法测试不能代替回调线程测试。
 连续重采样必须保留滤波历史和分数相位；逐块重新初始化会在块边界产生跳变，即使每块单独看起来正常。</p>
 <span id="sec-10" class="anchor-alias" aria-hidden="true"></span><span id="5-记录结果的必要字段" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-96ac81c5a8">5. 记录结果的必要字段</h2>
+<p>获取、构建和数值实验分开记录。以下是本机截至 2026-09-23 的状态，不是推荐配置的性能表：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">对象</th>
+<th scope="col">源码</th>
+<th scope="col">依赖/构建</th>
+<th scope="col">模块与数值检查</th>
+<th scope="col">设备</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>nara-wpe 0.0.11 离线与在线接口</td>
+<td>已核对固定提交与文件摘要</td>
+<td>已有可选 Python 环境；非本次安装</td>
+<td>手算与接口对照见下文；不代表语音质量复现</td>
+<td>未测</td>
+</tr>
+<tr>
+<td>libsoxr、libebur128、libsndfile</td>
+<td>已核对固定提交</td>
+<td>原源码隔离构建静态库；未安装系统依赖</td>
+<td>分块/排空/重置、半幅响度/静音、PCM16 短读与独立读回通过</td>
+<td>未测</td>
+</tr>
+<tr>
+<td>pystoi</td>
+<td>已取得 Python 核心</td>
+<td>项目环境缺 SciPy，未安装</td>
+<td>未运行；短片段行为来自源码核查</td>
+<td>不适用</td>
+</tr>
+<tr>
+<td>ViSQOL</td>
+<td>已取得源码子集</td>
+<td>未安装 Bazel，未取模型和大型依赖</td>
+<td>未运行</td>
+<td>未测</td>
+</tr>
+<tr>
+<td>SBL</td>
+<td>已核对固定提交与核心文件摘要</td>
+<td>现有 Python/NumPy，无新增依赖</td>
+<td>五组单次合成实验已运行；两组达到迭代上限，未记作收敛</td>
+<td>未测</td>
+</tr>
+<tr>
+<td>SMP-PHAT</td>
+<td>已核对固定提交，算法源码未修改</td>
+<td>隔离 FFTW 浮点库；直接编译原 C 核心，未用 x86 专用构建选项</td>
+<td>已运行但数值等价失败；本机负浮点时延转无符号索引错误</td>
+<td>未测</td>
+</tr>
+<tr>
+<td>RobustSBL、BTK</td>
+<td>已取得固定源码</td>
+<td>MATLAB 或旧构建条件分别见空间研究</td>
+<td>未运行</td>
+<td>未测</td>
+</tr>
+<tr>
+<td>DNN 控制 AEC、联合 AEC/NR、NBSS</td>
+<td>已取得源码子集</td>
+<td>训练/推理依赖、数据和权重未齐备</td>
+<td>未运行</td>
+<td>未测</td>
+</tr>
+<tr>
+<td>lib_xcore_math v3.0.0</td>
+<td>已取得，与 lib_voice 依赖一致</td>
+<td>未配置 XTC 与目标板</td>
+<td>未运行宿主参考或 VPU 内核</td>
+<td>未测</td>
+</tr>
+</tbody>
+</table></div>
+<p>“未运行”不同于“运行失败”；“存在编译器”也不同于“依赖验证通过”。获取工具报告中的 <code>execution: not_run</code>
+始终描述获取工具自身没有执行上游代码，具体方法的实验结果保存在独立研究记录，不反写成整个项目已通过。</p>
+<span id="sec-11" class="anchor-alias" aria-hidden="true"></span><span id="工程接口实验与待扩展的评分检查" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-ac4d3025b1">工程接口实验与待扩展的评分检查</h3>
+<p>前两条已实际运行；响度的半幅、分块与静音检查也已完成。STOI/ViSQOL 评分器仍未运行，
+下面第三条中对应它们的步骤只是实验设计，不预填得分。</p>
+<ol>
+<li>
+<p><strong>连续重采样</strong>：用 48 kHz 双通道已知脉冲与 1 kHz 正弦输入，显式固定浮点格式、质量档和线程数，转为 16 kHz。
+   分别按整段、127 帧和 509 帧供给，记录每次 <code>idone/odone</code>，未消费的输入留到下次；结束时排空尾部。</p>
+<p>比较同一质量配置的有效输出长度和对齐后误差，再做中途清状态的反例。libsoxr 的 <code>soxr_delay</code> 以输出样本计，
+不直接当毫秒。<code>soxr_oneshot</code> 默认 LQ、流式创建默认 HQ，若不显式对齐，差异可能来自滤波质量而非状态错误。
+固定速率比实验也不证明时钟漂移闭环已完成。<a href="https://github.com/chirlu/soxr/blob/945b592b70470e29f917f4de89b4281fbbd540c0/src/soxr.h">固定 API</a></p>
+</li>
+<li>
+<p><strong>文件帧与标量项</strong>：构造 7 帧、2 通道 PCM16，左右通道在不同时刻分别放正负脉冲，另含 −32768 和 32767 端点。
+   每次请求 3 帧，检查返回计数依次为 3、3、1、0；按帧读取应累计 7，按标量项读取应累计 14。</p>
+<p>浮点归一转换在相应模式下应为 PCM 整数除以 32768，因此正端点小于 1。记录实际读取模式和文件编码，
+不把末块缓冲未覆盖的部分算进录音，也不把浮点 API 返回解释成原文件为浮点编码。
+<a href="https://libsndfile.github.io/libsndfile/api.html">libsndfile API</a></p>
+</li>
+<li>
+<p><strong>评分失败处理</strong>：给评分器分别传入已对齐活动语音、长度不符、全静音和过短活动片段。
+   检查输出值、警告和失败原因；无效结果用 <code>null</code> 与原因字段表示，不填 0 或最低分加入均值。</p>
+<p>pystoi 去静音后不足 30 个 STFT 帧会发警告并返回 <code>1e-5</code>，因此单凭“返回了有限数”不能判定评分有效；
+应按警告和有效输入条件判断，不能仅按数值等于 <code>1e-5</code> 一刀切。响度全静音的负无穷也应单独表达。
+ViSQOL 还需固定 speech/audio 模式、采样率和映射模型，不能混合不同模式的分数。
+<a href="https://github.com/mpariente/pystoi/blob/74872b000753a7a42ff51aa0868af8c82c7f9053/pystoi/stoi.py">pystoi 固定实现</a></p>
+</li>
+</ol>
+<span id="sec-12" class="anchor-alias" aria-hidden="true"></span><span id="已执行实验与可重跑入口" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-88c5e110dd">已执行实验与可重跑入口</h3>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/run_industrial_interfaces.py">工业接口程序</a>在独立临时目录编译三库，
+随后调用<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/industrial_interfaces.c">原创 C 夹具</a>。它不下载或安装依赖，
+要求先取得锁定源码，并已具备 CMake 与 clang。构建关闭可选编解码器、OpenMP 和 soxr SIMD 路径，
+因此结论限定于记录的标量、单线程配置。</p>
+<pre><code class="language-bash">.venv/bin/python codes/examples/run_industrial_interfaces.py --report tmp/industrial-rerun.json
+.venv/bin/python codes/examples/reproduce_sbl_reference.py --output tmp/sbl-rerun.json
+</code></pre>
+<p>工业输入为 48 kHz、双通道、1 s：一通道在第 12000 帧放幅度 0.5 的脉冲，另一通道放幅度 0.1 的
+1 kHz 正弦。显式 HQ 配置重采样到 16 kHz，整段及 127/509 帧供给均得到 16000 帧，
+同索引最大差均为 0。排空前尚有 529、341、378 帧，说明输入已经消费完不等于输出已经齐备。</p>
+<p>中途在输入第 24000 帧清状态而不排空，最终只得到 15566 帧。这个反例反映历史与待输出数据丢失，
+不把时移主导的同索引波形差解释成音质损伤指标。</p>
+<p>响度使用另一段 48 kHz、单通道 CENTER、10 s 正弦，
+幅度从 0.1 变为 0.05 后下降 6.0206 LU；静音记录为 <code>null</code> 并保留无有效门控能量的原因。</p>
+<p>PCM16 的七帧双通道读回得到帧数 3/3/1/0、标量项数 6/6/2/0，归一化误差为 0。
+完整条件和原始数值见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/reports/industrial_interfaces.json">工业报告</a>及<a href="03_industrial_deployment.html">工业研究</a>。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/reproduce_sbl_reference.py">SBL 程序</a>实际调用独立目录中未改动的作者实现，
+以四麦、200 个快拍、1° 网格核对两源定位。标准条件得到 −30°、30°；将两源均移出网格 0.5° 后，
+各有 0.5° 网格误差。低信噪比和源数错设的两组达到 1000 次上限，仍作为未收敛结果保存。
+五组共享基础随机输入，每组只有一次实现，不给成功率或普遍优劣排名。
+输入轴、解析总体谱、逐次更新量及峰缺失处理见<a href="01_spatial_and_tracking.html">空间研究</a>
+和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/reports/sbl_reference.json">SBL 报告</a>。</p>
+<p>SMP-PHAT 的原版复现发现了失败：在本机 Apple clang/arm64 上，固定 <code>system.c</code> 第 588、824 行
+先把负的舍入时延转为 <code>unsigned int</code>，再与中心索引相加，不能得到理论需要的负偏移。
+例如整数部分 −6 不在无符号整数的表示范围内；这不是按模回绕的整数到整数转换。
+该转换属于语言未定义行为，其他编译器上的偶然结果不能作为可移植保证。
+<a href="https://clang.llvm.org/docs/UsersManual.html">Clang 官方手册的浮点到整数溢出说明</a></p>
+<p>因此，程序能完成编译、两个方法在选定输入上恰好给出同一峰，并不等于全方向分数与推导相符。
+实验保留原版失败，再用上游实际查表索引配合独立离散傅里叶求和定位误差来源；没有修改上游算法后
+将其结果冒充原版通过。完整输入、依赖、判据与诊断见<a href="01_spatial_and_tracking.html">空间研究</a>。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/compare_wpe_reference.py">离线 WPE 对照</a>只比较对齐的有效历史帧；
+<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/compare_online_wpe_reference.py">在线 WPE 对照</a>核对三个接口的实际抽头时间点及连续状态。
+配置、预期值和实测数字见<a href="02_aec_wpe_separation.html">增强研究</a>。它们不测试真实房间的去混响质量，
+也不要求离线估计器与逐帧估计器在不同统计窗口下输出相同。</p>
 <p>下面是一份记录结构示例，不含虚构运行结果：</p>
 <pre><code class="language-json">{
   &quot;algorithm&quot;: &quot;method and variant&quot;,
@@ -245,7 +390,7 @@ ERLE 不能把双讲中的近端语音解释成残余回声，也不能用参考
 </code></pre>
 <p><code>null</code> 表示这份结构尚未填入实验条件，不是测量得到零。研究记录可以保留未执行状态；正文性能表只引用
 条件齐全的真实结果。最终记录同时保留成功和失败实验，失败原因写到具体输入或依赖，不用删除记录制造全通过状态。</p>
-<span id="sec-11" class="anchor-alias" aria-hidden="true"></span><span id="6-何时可以进入设备比较" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-56cf8b0bbf">6. 何时可以进入设备比较</h2>
+<span id="sec-13" class="anchor-alias" aria-hidden="true"></span><span id="6-何时可以进入设备比较" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-56cf8b0bbf">6. 何时可以进入设备比较</h2>
 <p>只有两套候选实现使用同一输入、评分区域和延迟口径，性能比较才有明确含义。硬件上再分别测量启动加载、
 稳定运行、最慢帧、峰值内存和功耗状态；平均实时系数小于一仍可能发生连续帧超期。</p>
 <p>实际设备的验收条件由产品覆盖距离、房间、声音类型和可接受损伤决定。本书的手算输入与教学示例用于检验算法，

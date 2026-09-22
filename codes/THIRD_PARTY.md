@@ -1,10 +1,25 @@
 # 第三方实现与工业生态索引
 
-核实日期：2026-09-22。此索引包含 56 个官方项目；本次已在 `codes/upstream/_downloads/` 取得并核验 50 个独立源码工作区，另 6 项仅登记来源。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。
+核实日期：2026-09-22。此索引包含 69 个上游项目；已在 `codes/upstream/_downloads/` 取得并核验 63 个独立源码工作区，另 6 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。
 
 “已取得”只说明来源、提交、工作区状态和指定入口符合清单，不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
 ## 官方源码与用途
+
+`examples/compare_online_wpe_reference.py` 中的 `NumpyOnlineWPE011` 是对 nara-wpe 0.0.11
+`OnlineWPE` 和正数求逆保护行为的精简适配，保留缓冲顺序及更新口径，用于版本对照而非独立推导证明。
+该改编范围保留 Communications Engineering Group, Paderborn University 的 2018 年版权与
+[完整 MIT 声明](licenses/nara_wpe_MIT.txt)；脚本注明来源、改编内容和固定版本。
+这份上游许可不等于为本仓库其他原创文件选择统一许可证。GPL 空间算法仍只在独立下载目录中调用，
+没有复制进教学包。
+
+SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构建依赖，不另计为一种空间算法，
+也不计入上面的 69 项 Git 源码索引。官方归档为
+[`fftw-3.3.10.tar.gz`](https://fftw.org/pub/fftw/fftw-3.3.10.tar.gz)，SHA-256 为
+`56c932549852cddcfafdab3820b0200c7742675be92179e59e6215b340e26467`。
+归档的 `COPYRIGHT` 与 `kernel/alloc.c` 声明 GPL-2.0-or-later；`api/fftw3.h` 单独采用 BSD 两条款文本，
+不能把头文件的许可推广到整库。源码、许可文件与编译产物只保存在本地隔离目录，不随本书提交分发；
+运行报告另记实际链接库的版本与摘要。
 
 项目链接定位官方仓库的已核实版本。表中的许可证仅概括相应代码范围；依赖、模型、录音和数据集分别检查。
 
@@ -66,6 +81,28 @@
 | [dcase2022-seld](https://github.com/sharathadavanne/seld-dcase2022/tree/c8adb1d3a5a35de2d6c7b6d19e01ad455eef3986) | multi-ACCDOA、ADPIT 与 SELD | No explicit redistribution license established from inspected official tree and source header | 仅来源索引 |
 | [dcase2025-stereo-seld](https://github.com/partha2409/DCASE2025_seld_baseline/tree/42a48b6456b73be35ad0e1a9ffeb6ceef83ae0bd) | 双通道方位/距离与视听 SELD | No explicit redistribution license established from inspected official tree and source header | 仅来源索引 |
 | [notsofar1](https://github.com/microsoft/NOTSOFAR1-Challenge/tree/6f58e08b008f7530ba4141f0aeb02447c70b6fd7) | 连续语音分离训练、会议推理与转写基线 | MIT code; DATA_LICENSE and dataset-version restrictions separate | 已取得独立源码 |
+
+### 空间、控制与工程补充
+
+以下源码用于填补明确的算法或接口缺项，不代表已经通过构建或论文复现。完整提交见锁表；libsoxr 使用官方 SourceForge Git 的 0.1.3 解引用提交。
+
+| 项目与固定版本 | 对应算法或工程功能 | 代码许可摘要 | 本地获取范围 |
+|---|---|---|---|
+| [sbl](https://github.com/gerstoft/SBL/tree/d4bba35e9b60907d3024473ba5a41046450baae0) | 多快拍、多频稀疏贝叶斯定位 | GPL-3.0 | 已取得独立源码 |
+| [robustsbl](https://github.com/NoiseLabUCSD/RobustSBL/tree/d746266a1336d4467f60b6f7b7e8b4695a01d26d) | Gauss、t、Huber、Tyler 损失的稳健 SBL | MIT | 已取得独立源码 |
+| [btk20](https://github.com/kkumatani/distant_speech_recognition/tree/feff19ec8bcb770f6530fe280dc3ccafc2f5984a) | 子带 LMS/RLS 广义旁瓣抵消 | MIT; retain per-file notices | 已取得独立源码 |
+| [smpphat](https://github.com/FrancoisGrondin/smpphat/tree/6fd33e6eb3251078a4cd9793dde909e2500265cc) | 合并等效麦对的 SRP-PHAT 加速 | GPL-3.0 | 已取得独立源码；本机负时延索引移植缺陷见空间研究，未通过数值复现 |
+| [libsoxr](https://sourceforge.net/p/soxr/code/ci/945b592b70470e29f917f4de89b4281fbbd540c0/tree/) | 连续与可变比率重采样 | LGPL-2.1-or-later; embedded PFFFT terms separate | 已取得独立源码 |
+| [libebur128](https://github.com/jiixyj/libebur128/tree/67b33abe1558160ed76ada1322329b0e9e058b02) | 响度和真峰值测量 | MIT | 已取得独立源码 |
+| [pystoi](https://github.com/mpariente/pystoi/tree/74872b000753a7a42ff51aa0868af8c82c7f9053) | STOI 与 ESTOI 可懂度评分 | MIT for Python core; MATLAB test notices separate | 已取得源码子集 |
+| [visqol](https://github.com/google/visqol/tree/38d0b0163e441047d4429bf07ad09e5b9031d02c) | 全参考语音/音频质量预测 | Apache-2.0 | 已取得源码子集 |
+| [libsndfile](https://github.com/libsndfile/libsndfile/tree/b9103bd48b6c8fb517ae737fe3baee0c718b804c) | PCM/WAV 与音频文件读写 | LGPL-2.1-or-later; dependencies separately | 已取得独立源码 |
+| [lib-xcore-math](https://github.com/xmos/lib_xcore_math/tree/16130be45c4002a1f875a4b06ff68d2065cd8c69) | 块浮点、FFT 与滤波内核 | XMOS Public Licence v1 | 已取得独立源码 |
+| [e2e-ad-aec](https://github.com/ThomasHaubner/e2e_dnn_ad_control_for_lin_aec/tree/7a003133d742698de7acba9510d9586d7d57a584) | DNN 控制线性 CTF 回声消除 | BSD-4-Clause | 已取得源码子集 |
+| [integrated-aec-nr](https://github.com/Arnout-Roebben/Integrated_AEC_NR/tree/23c6b567c7863a8ee9bafd38bad0d3ff2f25e185) | 联合与级联多通道 AEC/降噪 | MIT for code; recording permissions separate | 已取得源码子集 |
+| [nbss](https://github.com/Audio-WestlakeU/NBSS/tree/cc42fc8ad2e6642c09b8f4169a85b4766dc22b7e) | OnlineSpatialNet 长序列多通道增强 | MIT | 已取得源码子集 |
+
+`e2e-ad-aec` 保留 BSD-4-Clause 的广告署名条款；不能简写成三条款 BSD。`integrated-aec-nr` 的 MIT 代码许可不覆盖 VCTK/MYRiAD 录音，本地未取 `Audio/`；其许可文件名为 `LICENSE.md`。`pystoi` 仅取 Python 核心与根说明，未取得 MATLAB 测试资产。`visqol` 未取 `model/`、`testdata/`，也未启动 Bazel 拉取依赖，因此此源码子集不是完整可运行的评分包。`lib-xcore-math` 保留 XMOS 硬件使用限制，不能概括为任意硬件上的自由商用库。
 
 ## 真实录音的数据许可
 

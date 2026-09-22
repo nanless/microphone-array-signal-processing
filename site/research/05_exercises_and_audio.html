@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>章节代码练习与音频实验 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="7dad810a9a67"><style>
+<meta name="source-digest" content="1c057bc95262"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -71,6 +71,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="05_exercises_and_audio.html#sec-u-faf7fa8cd2">10. 极性接反与目标抵消</a></li>
 <li><a href="05_exercises_and_audio.html#sec-u-75802f79f5">11. 可逆矩阵也会放大噪声</a></li>
 <li><a href="05_exercises_and_audio.html#sec-u-74856fabf5">12. R01：真实河流录音中的通道相关项</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-d9868c73a8">13. 非线性回声：基频拟合正确仍有残差</a></li>
 </ul>
 <div class="chap"><a href="../01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
 <div class="chap"><a href="../02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
@@ -99,10 +100,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="05_exercises_and_audio.html#sec-u-faf7fa8cd2">10. 极性接反与目标抵消</a></li>
 <li><a href="05_exercises_and_audio.html#sec-u-75802f79f5">11. 可逆矩阵也会放大噪声</a></li>
 <li><a href="05_exercises_and_audio.html#sec-u-74856fabf5">12. R01：真实河流录音中的通道相关项</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-d9868c73a8">13. 非线性回声：基频拟合正确仍有残差</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="章节代码练习与音频实验" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-c621965c02">章节代码练习与音频实验</h1>
 <p>先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。</p>
-<p>本页对应 61 道稳定编号代码题，以及独立的真实录音练习 R01。原有练习题号保持不变；E01-01 表示第 1 章第 1 道代码练习，不表示全书原有第 1 题。第 3～11 节是数学合成实验，第 12 节使用另行授权的真实同步录音。</p>
+<p>本页对应 67 道稳定编号代码题，以及独立的真实录音练习 R01。原有练习题号保持不变；E01-01 表示第 1 章第 1 道代码练习，不表示全书原有第 1 题。第 3～11 节与第 13 节是数学合成实验，第 12 节使用另行授权的真实同步录音。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="1-按章节运行" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-08633b42fc">1. 按章节运行</h2>
 <p>在仓库根目录执行，依赖沿用本书 NumPy 环境：</p>
 <pre><code class="language-bash">.venv/bin/python -m codes.examples.exercises_spatial
@@ -126,28 +128,28 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py">空间练习</a></td>
 </tr>
 <tr>
-<td>第 2 章 E02-01～05</td>
-<td>帧数、复协方差、边缘重建、有效权重与递推启动</td>
+<td>第 2 章 E02-01～06</td>
+<td>帧数、复协方差、边缘重建、有效权重、递推启动与整体权重缩放</td>
 <td>同上</td>
 </tr>
 <tr>
-<td>第 3 章 E03-01～04</td>
-<td>差集重数、端射角误差、三维方位与近远场</td>
+<td>第 3 章 E03-01～05</td>
+<td>差集重数、端射角误差、三维方位、近远场与实增益相减反例</td>
 <td>同上</td>
 </tr>
 <tr>
-<td>第 4 章 E04-01～05</td>
-<td>延迟正号、相干源秩、栅瓣歧义、空间平滑、MDL 候选评分</td>
+<td>第 4 章 E04-01～06</td>
+<td>延迟正号、相干源秩、栅瓣歧义、空间平滑、MDL 评分及重复抽样</td>
 <td>同上</td>
 </tr>
 <tr>
-<td>第 5 章 E05-01～04</td>
-<td>秩一条件、MVDR 加载、输出残噪、复响应约束</td>
+<td>第 5 章 E05-01～05</td>
+<td>秩一条件、MVDR 加载、输出残噪、复响应约束与有限干扰抑制</td>
 <td>同上</td>
 </tr>
 <tr>
-<td>第 6 章 E06-01～05</td>
-<td>NLMS 更新、滤长不足、双讲、错误副本与噪声底</td>
+<td>第 6 章 E06-01～06</td>
+<td>NLMS 更新、滤长不足、双讲、错误副本、噪声底与非线性残留</td>
 <td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_enhancement.py">增强练习</a></td>
 </tr>
 <tr>
@@ -156,8 +158,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>同上</td>
 </tr>
 <tr>
-<td>第 8 章 E08-01～05</td>
-<td>SI-SDR、排列、已知解混、回投影与掩码地板</td>
+<td>第 8 章 E08-01～06</td>
+<td>SI-SDR、排列、已知解混、回投影、掩码地板与跨块身份切换</td>
 <td>同上</td>
 </tr>
 <tr>
@@ -188,7 +190,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tbody>
 </table></div>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><span id="2-合成音频试听前的约定" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-2769596ee0">2. 合成音频试听前的约定</h2>
-<p>本节及第 3～11 节的 36 个样本均为本书数学合成，不是真人语音或实测房间。听到的谐波音、噪声和声像变化用于分辨计算操作，不能据此评价可懂度、语音自然度、识别准确率或真实设备性能。没有执行正式听音实验或给出 MOS。</p>
+<p>第 3～11 节与第 13 节的 40 个样本均为本书数学合成，不是真人语音或实测房间。听到的谐波音、噪声和声像变化用于分辨计算操作，不能据此评价可懂度、语音自然度、识别准确率或真实设备性能。没有执行正式听音实验或给出 MOS。</p>
 <p>每组文件共用一个增益，导出峰值不超过约 0.8；设备播放音量不由文件保证。请从低音量开始，不要为了听残差而立即把音量调高。播放器不自动播放，不做单个文件的响度匹配。</p>
 <p>数值评分应读回 WAV，固定通道、参考、时段和时延。清单中的参考只对本组数学模型有意义。AEC 采用已知双讲时段冻结，不是检测器；分离采用已知矩阵求逆，不是盲分离；双声道声像不是阵列 DOA 真值。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/audio/MANIFEST.json">音频清单</a> 给出逐文件哈希、幅度、量化误差及源码摘要。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/generate_audio_samples.py">生成器</a>可重建全部文件；无须下载外部音频。</p>
@@ -310,6 +312,48 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>先调低播放音量，并用相同设备音量比较三个单声道文件。16 通道输入不依赖浏览器自动混音来验收；本书没有执行正式听音评价，也不以环境标签保证片段经过人工无语音听辨。</p>
 <p><strong>复算。</strong> 在仓库根目录运行 <code>.venv/bin/python codes/examples/prepare_real_recordings.py --check</code>，离线核对固定 PCM 摘要、派生 WAV、清单与全部指标；检查不重写文件。完整数据条件、逐块答案和显式下载/重建命令见<a href="../real_audio/README.md">真实录音说明</a>。原始归档约 98.7 MB，只保存在不进入 Git 的下载目录；本书纳入的四个 WAV 共 6,080,176 字节。</p>
 <p>本节说明的是一个未校准真实阵列片段的二阶统计关系，不能外推为全部河流环境、任意阵列或语音算法的性能。资料与数据核实日期为 2026-09-22。</p>
+<span id="sec-14" class="anchor-alias" aria-hidden="true"></span><span id="13-非线性回声基频拟合正确仍有残差" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-d9868c73a8">13. 非线性回声：基频拟合正确仍有残差</h2>
+<p>固定线性时不变滤波器在稳态下不能生成输入中没有的频率。Speex 官方回声消除说明的 Troubleshooting 段明确提醒，扬声器非线性失真不属于其线性自适应滤波器可表示的模型；Interspeech 2021 AEC Challenge 原文 §2.2 也在合成条件中单列非线性。下面用本书自行构造的三次模型复算这个限制，不复现挑战赛数据或成绩。<a href="https://www.speex.org/docs/manual/speex-manual/node7.html">Speex 官方说明</a>、<a href="https://www.microsoft.com/en-us/research/uploads/prod/2021/08/245_Full-Paper.pdf">挑战赛原文 §2.2</a></p>
+<p><strong>输入与口径。</strong> 16 kHz 采样，$N=32000$，$n=0,\ldots,N-1$。播放参考是 $x[n]=0.4\sin(2\pi500n/16000)$，麦克风只有回声 $d[n]=x[n]+2x^3[n]$。没有近端、噪声、传播时延或随机输入；系数 2 对应本例的数字幅度单位，不是实测扬声器参数。分析全段半开区间 <code>[0,32000)</code>，不去均值、不加窗、不对齐或重拟合额外增益。</p>
+<p><strong>计算。</strong> 用 $\sin^3\omega=(3\sin\omega-\sin3\omega)/4$ 展开，得到 $d=0.496\sin\omega-0.032\sin3\omega$。这段恰含 1000 个基频周期，两项正交。全段最佳标量最小二乘拟合为 $\hat d=gx$，其中 $g=\sum xd/\sum x^2=1.24$；所以 $\hat d=0.496\sin\omega$，残差 $e=d-\hat d=-0.032\sin3\omega$。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">量（量化前解析值）</th>
+<th scope="col" style="text-align: right;">结果</th>
+<th scope="col">怎样复算</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>最佳拟合增益</td>
+<td style="text-align: right;">1.24</td>
+<td>$0.496/0.4$</td>
+</tr>
+<tr>
+<td>回声功率</td>
+<td style="text-align: right;">0.123520</td>
+<td>$(0.496^2+0.032^2)/2$</td>
+</tr>
+<tr>
+<td>残差功率</td>
+<td style="text-align: right;">0.000512</td>
+<td>$0.032^2/2$</td>
+</tr>
+<tr>
+<td>该无噪远端单讲段的 ERLE</td>
+<td style="text-align: right;">23.8247 dB</td>
+<td>$10\log_{10}(0.123520/0.000512)$</td>
+</tr>
+</tbody>
+</table></div>
+<p>功率以数字满刻度幅度平方为单位。表中使用未量化信号；PCM16 读回会有半个量化步长以内的逐样本舍入误差。四个 WAV 共用增益 1，没有把残差单独放大。图 36 从实际 PCM 读取前 8 ms 波形，以及全段 DFT 的 500 Hz、1500 Hz 单边峰值幅度；它们不是 PSD 或带参考的 dBFS 数值。</p>
+<p><a href="../audio/nonlinear_reference.wav">500 Hz 播放参考</a><audio class="audio-sample" controls preload="none" aria-label="500 Hz 播放参考" src="../audio/nonlinear_reference.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../audio/nonlinear_echo.wav">三次非线性回声</a><audio class="audio-sample" controls preload="none" aria-label="三次非线性回声" src="../audio/nonlinear_echo.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../audio/nonlinear_estimate.wav">最佳标量线性估计</a><audio class="audio-sample" controls preload="none" aria-label="最佳标量线性估计" src="../audio/nonlinear_estimate.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../audio/nonlinear_residual.wav">相减后的三次谐波残差</a><audio class="audio-sample" controls preload="none" aria-label="相减后的三次谐波残差" src="../audio/nonlinear_residual.wav">请使用上方 WAV 链接下载。</audio></p>
+<p>对应 E06-06；运行增强练习查看计算结果，再读回音频核对。先调低设备音量，以相同音量比较。本组没有淡入淡出，保留完整整数周期以核对正交分解；不拿播放起止边界评价听感。</p>
+<p>这个例子不是 NLMS 收敛实验，也不是任意线性时变处理器的性能上限。对稳态单频输入，固定线性时不变滤波器只能改变同一频率的幅度与相位，不能消除这里独立的三次谐波；有限长滤波器的启动瞬态另当别论。非线性残余存在不代表必须使用神经网络，带已知非线性基函数的模型也可能表示它。真实宽带语音、时变路径、背景噪声和双讲仍需另外实验。资料核实日期：2026-09-22。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

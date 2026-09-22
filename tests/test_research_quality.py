@@ -68,7 +68,7 @@ class ResearchQualityTests(unittest.TestCase):
         self.assertEqual(quality.EXPECTED_SECTION_COUNT, 85)
         self.assertEqual(quality.EXPECTED_SUBSECTION_COUNT, 21)
         self.assertEqual(quality.EXPECTED_OUTLINE_ITEM_COUNT, 120)
-        self.assertEqual(quality.EXPECTED_FIGURE_NUMBERS, set(range(1, 36)))
+        self.assertEqual(quality.EXPECTED_FIGURE_NUMBERS, set(range(1, 37)))
         self.assertEqual(quality.EXPECTED_RESEARCH_PAGE_COUNT, 6)
         self.assertEqual(quality.EXPECTED_RESEARCH_PAGES, (
             ("README.md", "index.html"),

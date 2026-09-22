@@ -10,6 +10,7 @@
     "float_dtype": "float64"
   },
   "synthetic_signal": {
+    "applies_to": "harmonic targets in groups other than nonlinear; see each group for noise and transforms",
     "duration_s": 2,
     "base_frequencies_hz": [
       173,
@@ -32,12 +33,12 @@
   "pcm": "signed little-endian 16-bit, round-to-nearest-even; no dither; no per-file normalization",
   "listening": "Start at low device volume. No automatic playback. No formal listening study performed.",
   "generator_inputs": {
-    "codes/examples/generate_audio_samples.py": "1c147326676a980c823ae90e455b823472e443b0c5d2774951fe2d36ed2b7d9c",
-    "codes/array_tutorial/audio_samples.py": "bcba814d6b9126d3baf46ef9f08818a63f7dac16b03404c6fdda8b4b1fa847f8",
-    "codes/array_tutorial/aec.py": "199483d53bcce69373fa4f5dff8cb184a17c43836db3952f1a611f45e5267d4a",
+    "codes/examples/generate_audio_samples.py": "242d0a64a2761518f5ebe9045bd01bf042012db9b9d37963b295338a2de200ac",
+    "codes/array_tutorial/audio_samples.py": "ab905441cd0d5dabcaf73ad720490f3c169321401236d38a9e0d36d911ae2e78",
+    "codes/array_tutorial/aec.py": "d2b23b7fb16f146f26d644726ed6a83c8f189d09d00402c73be9b1e4e1ae2769",
     "codes/array_tutorial/dereverberation.py": "99a1429c5bbe3f8a98dc754bbfaabdd9f27ec7216b04696379d7e5922469f360",
-    "codes/array_tutorial/spectral.py": "81b7bda66a3b9eeae915ddff53224316f21a9a46a48781208f9edcd49b5ad92b",
-    "codes/array_tutorial/conventions.py": "6c935a23ca9c8d366a3d55aa2b21e8a4aa373f1dc53364608c609c06b277e921"
+    "codes/array_tutorial/spectral.py": "9b7c3d3e2b936fdfa793f372e5d258788a4b43b9536294c231019454bfcb45c6",
+    "codes/array_tutorial/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385"
   },
   "groups": {
     "spatial": {
@@ -242,6 +243,29 @@
       },
       "limits": "Both mixing matrices are known; this is inverse-problem noise amplification, not blind separation or a benchmark of AuxIVA.",
       "common_export_gain": 0.6882001719162989
+    },
+    "nonlinear": {
+      "parameters": {
+        "sample_rate_hz": 16000,
+        "samples": 32000,
+        "frequency_hz": 500,
+        "amplitude": 0.4,
+        "cubic_coefficient": 2.0,
+        "model": "d=x+2*x**3; best whole-segment scalar least-squares fit g*x",
+        "fit_gain": 1.2400000000000004,
+        "analysis_interval_samples": [
+          0,
+          32000
+        ],
+        "reference": "nonlinear_echo for echo-power ratio; nonlinear_reference is playback",
+        "taper": "none; 1000 complete periods",
+        "algorithm_delay_samples": 0,
+        "noise": "none",
+        "near_end": "none",
+        "randomness": "none"
+      },
+      "limits": "Steady sinusoid, memoryless cubic distortion and batch scalar projection; not NLMS convergence, a measured loudspeaker or speech-quality evaluation.",
+      "common_export_gain": 1.0
     }
   },
   "files": [
@@ -360,7 +384,7 @@
       "peak": 0.2027587890625,
       "rms": 0.03877643886963648,
       "common_export_gain": 1.0,
-      "quantization_max_abs_error": 1.5257870710334853e-05
+      "quantization_max_abs_error": 1.5257870710341792e-05
     },
     {
       "file": "aec_unfrozen.wav",
@@ -373,7 +397,7 @@
       "peak": 0.27447509765625,
       "rms": 0.04237169258960369,
       "common_export_gain": 1.0,
-      "quantization_max_abs_error": 1.5257004838772903e-05
+      "quantization_max_abs_error": 1.5257004838759025e-05
     },
     {
       "file": "wpe_dry.wav",
@@ -712,6 +736,58 @@
       "rms": 0.17833129631558983,
       "common_export_gain": 0.6882001719162989,
       "quantization_max_abs_error": 1.5258137621848578e-05
+    },
+    {
+      "file": "nonlinear_reference.wav",
+      "sha256": "ad640a128dcf593108915ce6e871382fe2efc6dc8f720ae838553f7f46c0e4bc",
+      "group": "nonlinear",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.399993896484375,
+      "rms": 0.28283635747753527,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.4459489095730582e-05
+    },
+    {
+      "file": "nonlinear_echo.wav",
+      "sha256": "74897dc3f77bc889bba1557956e953b0f3ec3bc29d73d39b3456f8ef9d43bbbf",
+      "group": "nonlinear",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.52801513671875,
+      "rms": 0.35145053521056974,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5136718749975131e-05
+    },
+    {
+      "file": "nonlinear_estimate.wav",
+      "sha256": "edb533f7cdf92093ee518cee37255ff6ff9b69eb1178e41fb36a3e11ca04ba8a",
+      "group": "nonlinear",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.496002197265625,
+      "rms": 0.3507327393204151,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.3561922558746886e-05
+    },
+    {
+      "file": "nonlinear_residual.wav",
+      "sha256": "80a87dabc9305d3b8b82265477c6774f86ae84a2645d7d1047f010450cc0d17f",
+      "group": "nonlinear",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.032012939453125,
+      "rms": 0.02262762019121208,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.3891607433980102e-05
     }
   ]
 }

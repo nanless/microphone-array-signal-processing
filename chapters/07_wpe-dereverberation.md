@@ -55,7 +55,7 @@ $$X(n,f) = E(n,f) + \sum_{k=\Delta}^{\Delta+K-1} G^*(k,f)\,X(n-k,f)\text{。}\ta
 
 ![图24 WPE 的帧结构](../figures/fig24_wpe_frames.png)
 
-图24 使用与 `nara_wpe` 一致的索引：$\Delta=3$、$K=5$ 时，受保护而不参与预测的是 $t-1$、$t-2$；五个预测帧依次为 $t-3$ 到 $t-7$。统一写成
+图24 使用与 `nara_wpe 0.0.11` 离线 `build_y_tilde()` 一致的索引：$\Delta=3$、$K=5$ 时，受保护而不参与预测的是 $t-1$、$t-2$；五个预测帧依次为 $t-3$ 到 $t-7$。统一写成
 
 $$\hat r(t)=\sum_{q=0}^{K-1}G_q^*X(t-\Delta-q).$$
 
@@ -303,7 +303,11 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 
 上述 `wpe()` 会在已给整段数据上交替估计，属于离线调用。
 
-逐帧递推可从 `nara_wpe/wpe.py` 的 `OnlineWPE.step_frame()` 阅读：输入一帧 `(频点, 通道)`，对象跨调用保存逆相关矩阵、预测抽头、功率和历史缓冲。先产生当前输出，再更新状态，才符合本节三帧例子的时间顺序。若每个音频块重新创建对象，就会反复经历启动阶段。
+逐帧递推可从 `nara_wpe/wpe.py` 的 `OnlineWPE.step_frame()` 阅读：输入一帧 `(频点, 通道)`，对象跨调用保存逆相关矩阵、预测抽头、功率和历史缓冲。它先产生当前输出，再更新状态；若每个音频块重新创建对象，就会反复经历启动阶段。
+
+这里必须把“更新顺序”和“`delay` 参数对应哪个历史帧”分开核对。0.0.11 版三个接口的同名参数并不对应同一时间戳：取帧 `[10,20,30,40]`，在零起始 $t=3$ 令 `taps=1`、`delay=1`、固定预测抽头为 1，离线 `build_y_tilde()` 取 30，即 $X_{t-1}$；无状态 `online_wpe_step()` 取 20，即 $X_{t-2}$；有状态 `OnlineWPE.step_frame()` 在写入 40 前从旧缓冲取 10，即 $X_{t-3}$。
+
+三者残差依次为 10、20、30。图24和本章公式对应第一种离线索引，不能把逐帧接口的 `delay=1`直接改写成书中的 $\Delta=1$。
 
 同一文件的 `OnlineWPE.step_block()`要求包含指定历史长度的缓冲形状；锁定版本 `_get_prediction()`还注明只支持 `block_shift=1`。它不能被当作任意帧移的块处理器。TensorFlow 路线在 `tf_wpe.py` 中另有 `block_wpe_step()` 和 `recursive_wpe()`，依赖、状态和接口也不同。[`nara_wpe` NumPy 源码](https://github.com/fgnt/nara_wpe/blob/a166779cca2088817e330481bd20af1a2c598555/nara_wpe/wpe.py)、[TensorFlow 源码](https://github.com/fgnt/nara_wpe/blob/a166779cca2088817e330481bd20af1a2c598555/nara_wpe/tf_wpe.py)
 
@@ -359,7 +363,7 @@ $$\bar{\vec w}=[1/3,2/3,0,0]^\top，$$
 | 实现 | 主要源码 | 与教学基线的差别 | 最小核对实验 |
 |---|---|---|---|
 | nara_wpe 离线/MIMO | `nara_wpe/wpe.py` 的 `build_y_tilde()`、`wpe_v6()`等 | 更多求解与统计区间实现 | 单抽头手算、多通道历史排列、零功率与短输入 |
-| nara_wpe 逐帧 | 同文件 `OnlineWPE` | 保留递推状态，每次处理一帧 | 同一帧流按不同外层批次输入，检查是否误重置 |
+| nara_wpe 逐帧 | 同文件 `OnlineWPE` | 保留递推状态，每次处理一帧；0.0.11 的 `delay` 时间戳与离线接口不同 | 固定抽头手算实际历史帧；同一帧流按不同外层批次输入，检查是否误重置 |
 | nara_wpe 块/递推 TensorFlow | `nara_wpe/tf_wpe.py` | 显式块统计与递推接口 | 对照帧时间戳，检查历史窗口和新输入是否混淆 |
 | ESPnet DNN-WPE | `espnet2/enh/layers/dnn_wpe.py`、`wpe.py`、`mask_estimator.py` | 网络估计掩码/功率，解析层解预测滤波 | 先用固定正数功率核对求解，再接 checkpoint；测未来帧依赖 |
 | ESPnet WPD | `espnet2/enh/layers/beamformer.py`、`dnn_beamformer.py` 的 WPD 分支 | 在当前通道和历史上联合做无失真滤波 | 复算正文历史权重为零的退化例，再加入当前—历史相关 |
@@ -372,6 +376,10 @@ ESPnet 的 DNN-WPE 外层输入为 `(批, 帧, 通道, 频点)`，内部才转�
 本书另提供[独立实现数值对照](../codes/examples/compare_wpe_reference.py)：把教学版 `offline_wpe()` 与未经修改的 `nara-wpe 0.0.11` 的 `wpe_v6()` 比较。固定复数随机输入、预测阶数 2、保护延迟 3，检查单通道、双通道、通道置换和整体缩放，每种分别迭代 1 次和 3 次。两种实现对启动帧的处理不同，因此只比较零起始索引 $t=4$ 起的有效预测区间；本次 8 组检查的最大绝对误差约为 $2.7\times10^{-15}$。
 
 [完整参数与误差口径](../codes/research/02_aec_wpe_separation.md#wpe)说明为何要对齐统计区间和功率下限。该检查验证复数代数、维度和迭代口径，不是语音质量、流式延迟或论文全量实验的复现。
+
+[在线接口与状态对照](../codes/examples/compare_online_wpe_reference.py)先手算上述三个固定索引，再以保留上游缓冲顺序的精简 NumPy 适配参考逐帧对照锁定源码。适配部分随附原始版权与 MIT 声明；独立期望另由实数、复数启动例的分数手算给出，不用两个相关实现彼此一致代替独立验证。
+
+固定种子、48 帧、2 个频点、1 个通道、2 抽头、`delay=2`、遗忘因子 0.95 时，NumPy 与上游连续输出的最大绝对误差为 $2.4\times10^{-15}$。同一对象在第 24 帧外层分块不改变输出；若第 24 帧重建对象，差异从该帧开始，最大绝对差约为 2.56。后一个数值只说明状态丢失会改变这组合成复谱，不表示 2.56 是任何语音指标。
 
 #### 7.1.1 $\Delta$ 与 $K$ 的参数换算
 

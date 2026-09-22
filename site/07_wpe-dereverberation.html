@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 7 章 · 去混响（WPE） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="7dad810a9a67"><style>
+<meta name="source-digest" content="1c057bc95262"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -149,7 +149,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>$G(k,f)$：预测滤波器系数；$\Delta$：保护延迟，求和的 $k$ 从 $\Delta$ 起算，因此跳过最近 $\Delta-1$ 帧；$K$：预测阶数，决定使用多少个历史帧。$\Delta$ 和 $K$ 没有脱离帧移、数据量和目标失真指标的通用默认值。</li>
 </ul>
 <p><img alt="图24 WPE 的帧结构" src="../figures/fig24_wpe_frames.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图24 使用与 <code>nara_wpe</code> 一致的索引：$\Delta=3$、$K=5$ 时，受保护而不参与预测的是 $t-1$、$t-2$；五个预测帧依次为 $t-3$ 到 $t-7$。统一写成</p>
+<p>图24 使用与 <code>nara_wpe 0.0.11</code> 离线 <code>build_y_tilde()</code> 一致的索引：$\Delta=3$、$K=5$ 时，受保护而不参与预测的是 $t-1$、$t-2$；五个预测帧依次为 $t-3$ 到 $t-7$。统一写成</p>
 <p>$$\hat r(t)=\sum_{q=0}^{K-1}G_q^*X(t-\Delta-q).$$</p>
 <p>因此 $q=0$ 对应 $t-\Delta$，不是保护区的一部分。该预测式只含历史样本；批处理还是在线处理，则取决于 $G_q$ 和功率统计是否使用未来帧。</p>
 <p><strong>算例 7-1：WPE 的一步直觉数值例（单通道、单频点）</strong></p>
@@ -300,7 +300,9 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 </code></pre>
 <p>其中 $Y$ 是复数 STFT。后两轴为通道 $D$、帧 $T$，其余前轴可用于频点等维度；0.0.11 版 <code>help(wpe)</code> 标注为 <code>(..., D, T)</code>。</p>
 <p>上述 <code>wpe()</code> 会在已给整段数据上交替估计，属于离线调用。</p>
-<p>逐帧递推可从 <code>nara_wpe/wpe.py</code> 的 <code>OnlineWPE.step_frame()</code> 阅读：输入一帧 <code>(频点, 通道)</code>，对象跨调用保存逆相关矩阵、预测抽头、功率和历史缓冲。先产生当前输出，再更新状态，才符合本节三帧例子的时间顺序。若每个音频块重新创建对象，就会反复经历启动阶段。</p>
+<p>逐帧递推可从 <code>nara_wpe/wpe.py</code> 的 <code>OnlineWPE.step_frame()</code> 阅读：输入一帧 <code>(频点, 通道)</code>，对象跨调用保存逆相关矩阵、预测抽头、功率和历史缓冲。它先产生当前输出，再更新状态；若每个音频块重新创建对象，就会反复经历启动阶段。</p>
+<p>这里必须把“更新顺序”和“<code>delay</code> 参数对应哪个历史帧”分开核对。0.0.11 版三个接口的同名参数并不对应同一时间戳：取帧 <code>[10,20,30,40]</code>，在零起始 $t=3$ 令 <code>taps=1</code>、<code>delay=1</code>、固定预测抽头为 1，离线 <code>build_y_tilde()</code> 取 30，即 $X_{t-1}$；无状态 <code>online_wpe_step()</code> 取 20，即 $X_{t-2}$；有状态 <code>OnlineWPE.step_frame()</code> 在写入 40 前从旧缓冲取 10，即 $X_{t-3}$。</p>
+<p>三者残差依次为 10、20、30。图24和本章公式对应第一种离线索引，不能把逐帧接口的 <code>delay=1</code>直接改写成书中的 $\Delta=1$。</p>
 <p>同一文件的 <code>OnlineWPE.step_block()</code>要求包含指定历史长度的缓冲形状；锁定版本 <code>_get_prediction()</code>还注明只支持 <code>block_shift=1</code>。它不能被当作任意帧移的块处理器。TensorFlow 路线在 <code>tf_wpe.py</code> 中另有 <code>block_wpe_step()</code> 和 <code>recursive_wpe()</code>，依赖、状态和接口也不同。<a href="https://github.com/fgnt/nara_wpe/blob/a166779cca2088817e330481bd20af1a2c598555/nara_wpe/wpe.py"><code>nara_wpe</code> NumPy 源码</a>、<a href="https://github.com/fgnt/nara_wpe/blob/a166779cca2088817e330481bd20af1a2c598555/nara_wpe/tf_wpe.py">TensorFlow 源码</a></p>
 <p><strong>DNN 与 WPE 的位置</strong>。神经网络可以预测干净复谱、时频掩码或 WPE 所需的功率 $\lambda$。常见位置取决于网络输出：</p>
 <ul>
@@ -376,8 +378,8 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 <tr>
 <td>nara_wpe 逐帧</td>
 <td>同文件 <code>OnlineWPE</code></td>
-<td>保留递推状态，每次处理一帧</td>
-<td>同一帧流按不同外层批次输入，检查是否误重置</td>
+<td>保留递推状态，每次处理一帧；0.0.11 的 <code>delay</code> 时间戳与离线接口不同</td>
+<td>固定抽头手算实际历史帧；同一帧流按不同外层批次输入，检查是否误重置</td>
 </tr>
 <tr>
 <td>nara_wpe 块/递推 TensorFlow</td>
@@ -409,6 +411,8 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 <p>工程比较应固定通道数、上下文长度、硬件、计时范围和实际因果条件。训练权重、语料和 CUDA 环境是独立前提；取得源代码并不表示训练或设备实时性已经验证。</p>
 <p>本书另提供<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/compare_wpe_reference.py">独立实现数值对照</a>：把教学版 <code>offline_wpe()</code> 与未经修改的 <code>nara-wpe 0.0.11</code> 的 <code>wpe_v6()</code> 比较。固定复数随机输入、预测阶数 2、保护延迟 3，检查单通道、双通道、通道置换和整体缩放，每种分别迭代 1 次和 3 次。两种实现对启动帧的处理不同，因此只比较零起始索引 $t=4$ 起的有效预测区间；本次 8 组检查的最大绝对误差约为 $2.7\times10^{-15}$。</p>
 <p><a href="research/02_aec_wpe_separation.html#wpe">完整参数与误差口径</a>说明为何要对齐统计区间和功率下限。该检查验证复数代数、维度和迭代口径，不是语音质量、流式延迟或论文全量实验的复现。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/compare_online_wpe_reference.py">在线接口与状态对照</a>先手算上述三个固定索引，再以保留上游缓冲顺序的精简 NumPy 适配参考逐帧对照锁定源码。适配部分随附原始版权与 MIT 声明；独立期望另由实数、复数启动例的分数手算给出，不用两个相关实现彼此一致代替独立验证。</p>
+<p>固定种子、48 帧、2 个频点、1 个通道、2 抽头、<code>delay=2</code>、遗忘因子 0.95 时，NumPy 与上游连续输出的最大绝对误差为 $2.4\times10^{-15}$。同一对象在第 24 帧外层分块不改变输出；若第 24 帧重建对象，差异从该帧开始，最大绝对差约为 2.56。后一个数值只说明状态丢失会改变这组合成复谱，不表示 2.56 是任何语音指标。</p>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-7-1-1">7.1.1 $\Delta$ 与 $K$ 的参数换算</h3>
 <p>先把帧数换成物理时间。若帧移为 $H$ ms，最近的预测帧是 $t-\Delta$，其时延为 $\Delta H$；$K$ 个预测帧从 $t-\Delta$ 到 $t-(\Delta+K-1)$，最远时延为 $(\Delta+K-1)H$。这个索引关系比“$\Delta+K$ 帧”少一帧，因为起点已算入 $K$ 个样本。</p>
 <p>以图 21 的本书仿真为例：采样率 16 kHz，短时傅里叶变换（Short-Time Fourier Transform，STFT）窗长 512 点（32 ms），帧移 128 点（8 ms），$\Delta=6$、$K=10$、交替迭代 3 次。因此使用 $t-6$ 到 $t-15$ 的十帧：最近预测帧延迟 $6\times8=48$ ms，最远为 $15\times8=120$ ms。这些数值只是图 21 的可复现配置，不是会议室、教室或其他房间的通用起点。</p>

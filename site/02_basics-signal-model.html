@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 2 章 · 声音到达阵列时发生了什么 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="7dad810a9a67"><style>
+<meta name="source-digest" content="1c057bc95262"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -99,7 +99,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>本书取声速 $c\approx343$ m/s，这是约 20°C 干空气中的常用近似；温度、湿度和气体成分改变时，声速也会改变。<a href="https://doi.org/10.1121/1.405827" title="citation">Cramer 1993 给出湿空气声速计算式及适用范围，JASA 93(5)</a>。</p>
 <p>两个相距 4 cm 的麦克风，当声音沿两麦连线的方向传来时，先到近麦、后到远麦，时差幅值最大，约为 $0.04/343\approx0.116$ ms。当声音垂直于连线传来时，两麦同时收到，时差为零。这个到达时间差称为<strong>到达时间差（Time Difference of Arrival，TDOA）</strong>。</p>
 <p><strong>坐标、方向和时差约定。</strong> 把麦 1 放在 $x=0$，麦 2 放在 $x=d>0$；正横方向为 $\theta=0°$，正角朝 $+x$、即麦 2 一侧。单位向量 $\vec u(\theta)$ 从阵列指向声源，声波实际传播方向为 $-\vec u$。到达时刻之差统一定义为 $\tau_{ij}=t_i-t_j$。因此正角时波前先到麦 2，有 $t_2\lt t_1$，即 $\tau_{21}\lt 0$、$\tau_{12}>0$。</p>
-<p>平面波下，麦 1 与麦 2 的路程差幅值为 $d\sin\theta$（图2），所以带符号的麦对时差为</p>
+<p>平面波下，麦 1 相对麦 2 的带符号路程差为 $d\sin\theta$（图2），所以带符号的麦对时差为</p>
 <p>$$\tau_{12}=t_1-t_2=\frac{d\sin\theta}{c},\qquad \tau_{21}=-\frac{d\sin\theta}{c}\text{。}$$</p>
 <p>其中 $d$ 为两麦间距（m），$\theta$ 为声源方向角，$c$ 为声速。只讨论大小时可写 $|\tau_{12}|=d|\sin\theta|/c$；不能把无符号“时差”直接代入需要方向的公式。</p>
 <p><strong>全书角度约定（后文凡涉角度一律沿用）</strong>：$\theta$ 从<strong>正横方向</strong>（broadside，垂直于两麦连线的方向）起算。正横 $\theta=0°$ 时两麦同时收到波前，时差为零；<strong>端射方向</strong>（endfire，沿两麦连线）$\theta=\pm90°$ 时路程差幅值为 $d$、时差幅值最大。有些文献从阵列轴起算，此时关系写成 $\Delta\tau=d\cos\theta/c$。比较公式前应先统一角度零点和正方向；两种起算方式相差 90°。</p>
@@ -151,7 +151,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>$$x_m(t) = s(t - \tau_{m1}) + n_m(t)\text{。}$$</p>
 <ul>
 <li>$x_m(t)$：第 $m$ 路录音波形——这是<strong>你实际拿到的数据</strong>；下标 $m$ 表示“第几个麦克风”，$t$ 是时间；</li>
-<li>$s(t)$：声源发出的原始信号——<strong>你想恢复的东西</strong>；注意它不带下标 $m$，因为远场平面波假设下各麦收到的是同一个 $s(t)$，只是时间有先后；</li>
+<li>$s(t)$：麦 1 处的理想直达目标分量，源端到参考麦的公共传播延迟和幅度衰减已经吸收入其中。它不带下标 $m$，因为等幅远场模型把其余通道写成它的相对时移，而不是声源端原波形的直接副本；</li>
 <li>$\tau_{m1}$：第 $m$ 个麦相对麦 1 的带符号到达时延（秒），它由声源方向决定，可为负数；</li>
 <li>$n_m(t)$：第 $m$ 路的噪声。</li>
 </ul>
@@ -161,7 +161,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>$$s(t-\tau)\ \xrightarrow{\mathcal{F}}\ S(f)\,e^{-\mathrm{j}2\pi f\tau}$$</p>
 <p>箭头上的 $\mathcal F$ 表示傅里叶变换。</p>
 <p>左边表示时域延迟 $\tau$ 秒，右边表示频域中乘以复相位因子。频域形式便于把宽带信号分频点处理，也便于将卷积近似为乘法，因此许多阵列算法采用 STFT 实现；这种近似的边界见 §2.5。</p>
-<p>这个 $e^{-\mathrm{j}2\pi f\tau}$ 到底是什么？<strong>它是复平面上一个长度为 1 的箭头，从正实轴出发顺时针转过角度 $2\pi f\tau$</strong>（图4(b)）。其中 $\mathrm{j}$ 是虚数单位（$\mathrm{j}^2=-1$）；$e$ 的复指数由欧拉公式定义：$e^{\mathrm{j}\phi} = \cos\phi + \mathrm{j}\sin\phi$；有些书把 $2\pi f$ 写成 $\omega$（角频率），两者是一回事。直觉检验：延迟恰好等于一个周期（$\tau = 1/f$）时转过整整一圈 $2\pi$——波形平移一个周期后与原波形重合，箭头也转回原地，两边对上了 ✓。</p>
+<p>这个 $e^{-\mathrm{j}2\pi f\tau}$ 到底是什么？<strong>它是复平面上一个长度为 1 的箭头，从正实轴出发顺时针转过角度 $2\pi f\tau$</strong>（图4(b)）。其中 $\mathrm{j}$ 是虚数单位（$\mathrm{j}^2=-1$）；$e$ 的复指数由欧拉公式定义：$e^{\mathrm{j}\phi} = \cos\phi + \mathrm{j}\sin\phi$；有些书把 $2\pi f$ 写成 $\omega$（角频率），两者是一回事。</p>
+<p>直觉检验：延迟恰好等于一个周期（$\tau = 1/f$）时转过整整一圈 $2\pi$——波形平移一个周期后与原波形重合，箭头也转回原地，两边对上了 ✓。</p>
 <p><img alt="图4 时延为什么变成复数相位" src="../figures/fig04_delay_phase.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图 4 的三幅子图采用同一组参数：4 cm 麦距、声速 343 m/s、端射方向，因此 $\tau=d/c\approx0.1166$ ms。时域波形右移约 0.117 ms；1 kHz 复相量顺时针旋转约 $2\pi\times1000\times0.1166\text{ ms}\approx42°$；相位—频率图的斜率为 $-2\pi\tau$，2 kHz 处约为 −84°。§4.2 的 GCC-PHAT 正是利用这项关系估计时延。</p>
 <p>图 4（c）还说明，同一时延引起的相位旋转与频率成正比。相位展开后，直线斜率为 $-2\pi\tau$；实际数据中的相位缠绕、噪声和混响会使估计更复杂。</p>
@@ -290,7 +291,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>第二类处理是用时频掩码为快拍加权，分别估计目标或噪声协方差（§8.1）。掩码可以减少干扰泄漏，但也会减少有效样本数，仍须检查矩阵的条件数并配合加载。</p>
 <p><strong>本书代码采用的数组与流式约定。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/spectral.py"><code>spectral.py</code></a> 中的 STFT 固定输出 <code>通道数 × 频点数 × 帧数</code>，即 $M\times F\times L$；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/covariance.py"><code>covariance.py</code></a> 再把它变成 $F$ 个 $M\times M$ 空间二阶矩。示例使用前向变换 $e^{-\mathrm j2\pi ft}$、周期 Hann 窗和加权重叠相加。</p>
 <p><code>center=True</code> 会在两端补半窗，因此离线重构可对齐原波形；实时系统不能据此把延迟写成零，还要把首帧等待、窗长、帧移、分块缓存和可能的前瞻一并计入端到端延迟。</p>
-<p>协方差实现同时给出批量估计和指数递归更新。掩码在某个频点的权重和为零时，代码会报错，而不是用 $\varepsilon$ 伪造一个无统计依据的矩阵；有限精度造成的非厄米残差会被对称化。需要加载时采用无量纲相对口径 $\alpha\operatorname{tr}(\hat{\mathbf R})\mathbf I/M$。</p>
+<p>协方差实现同时给出批量估计和指数递归更新。掩码在某个频点全为零时，代码会报错，而不是用 $\varepsilon$ 伪造一个无统计依据的矩阵。非零掩码先除以该频点的最大权重，再累积归一化二阶矩；这个共同缩放不改变估计值，却避免把很小的权重单位误判成没有数据。</p>
+<p>有限精度造成的非厄米残差会被对称化；中间计算超出浮点数范围时明确报错。需要加载时采用无量纲相对口径 $\alpha\operatorname{tr}(\hat{\mathbf R})\mathbf I/M$。权重可归一化不代表独立快拍充足，还需检查秩、权重集中程度和模型条件。</p>
 <p>上线还应记录遗忘因子、VAD/SPP 更新门控、每频点有效权重、条件数以及回退方式；这些参数共同决定跟踪速度，不能只记录“用了 MVDR”。可运行的端到端小例见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/ch02_05_baselines.py"><code>ch02_05_baselines.py</code></a>，解析边界测试见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_doa_beam.py"><code>test_codes_doa_beam.py</code></a>。</p>
 <p><strong>真实录音 R01：忽略通道交叉项会怎样？</strong> <a href="https://zenodo.org/records/1227121" title="citation">DEMAND 数据库</a>的 NRIVER 场景提供真实同步环境噪声。本书取其 16 kHz 版本前 10 s，即各通道样本 <code>[0,160000)</code>，分别平均通道 1～2 和 1～16。</p>
 <p>16 只麦克风由同一设备采集，原始通道增益未经彼此校准；没有干净语音参考或声源位置真值。数据及本书派生音频按 CC BY-SA 3.0 分发，作者、采集条件、几何和修改说明见<a href="real_audio/README.md">真实录音说明</a>。</p>
@@ -363,7 +365,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>度量三：指向性指数 DI（抗混响/抗弥散噪声）</strong>。充分弥散的晚期混响常近似为从各方向入射的声场；实际风噪通常由局部湍流激发，不能无条件按弥散场处理。DI 表示在指定的各向同性弥散场模型下，波束对目标方向的信噪比改善。它由主瓣方向增益的平方除以全空间平均增益的平方，再取对数：</p>
 <p>$$\mathrm{DI} = 10\log_{10}\frac{4\pi\,|B(\Omega_0)|^2}{\int_{4\pi} |B(\Omega)|^2\,\mathrm{d}\Omega}\text{。}$$</p>
 <p>$\Omega=(\theta,\phi)$ 表示三维方向，$B(\Omega)$ 是该方向上的复响应，$\Omega_0$ 是目标方向；$\mathrm{d}\Omega$ 是立体角微元，整个球面的立体角为 $4\pi$。分母对波束图在整个球面上积分，表示弥散场中各方向输入的总贡献。只有波束图轴对称时，才能把 $B(\Omega)$ 简写为单角变量。</p>
-<p>DI = 0 dB 表示没有方向选择性；DI 越大，能量越集中于目标方向。超指向波束形成（§5.3）的目标之一就是提高这一指标。</p>
+<p>DI = 0 dB 表示所选目标方向的功率响应等于全空间平均功率响应。全向波束满足这一条件，但非全向波束在某个方向也可能满足它，所以仅凭一个 DI 数字不能判断整个波束图是否平坦。对固定的目标方向，DI 越大，表示该方向相对弥散场平均响应的增益越大。超指向波束形成（§5.3）的目标之一就是提高这一指标。</p>
 <p><strong>度量四：白噪增益 WNG（抗自身噪声/稳健性）</strong>。每个麦克风自己有底噪（热噪声），各通道互相独立。波束权重把它们合起来时会放大多少倍？这就是 WNG：</p>
 <p>$$\mathrm{WNG} = 10\log_{10}\frac{|\vec{w}^H\vec{a}(\theta)|^2}{\|\vec{w}\|^2}\text{。}$$</p>
 <p>分子是目标方向的增益平方，分母是权重自身的能量。无失真约束下，WNG 为负表示输出白噪声功率高于单通道参考。</p>
@@ -407,11 +409,15 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>这组数只说明：在本例的窄带、无偏估计和白噪声模型内，低信噪比会显著抬高方差下界。实际误差还受混响、失配、源相关性和估计器偏差影响。</p>
 <p><strong>算例 2-2：DI 与 WNG 的数字感</strong>（4 元半波线阵，两个 6 dB）</p>
 <p>阵列配置——4 麦、间距 $\lambda/2$、孔径 $1.5\lambda$；延迟求和（DSB，Delay-and-Sum Beamforming）指向正横。</p>
-<p>上面四个度量还只有公式没有数字，拿这个最小例子建立量级感：
-- <strong>WNG</strong>：DSB 恰好达到上限（§5.2 有证明），$\mathrm{WNG} = 10\log_{10}M = 10\log_{10}4 \approx$ <strong>6 dB</strong>；
-- <strong>DI</strong>：把 DSB 波束图按定义式在整个球面上数值积分，得 $\mathrm{DI} \approx$ <strong>6 dB</strong>，这里采用 3D 各向同性弥散场口径。</p>
-<p>对 $\lambda/2$ 间距的线阵，DI 与 WNG 的数值恰好相等。原因是弥散场噪声在两麦间的相关系数正比于 $\mathrm{sinc}(2\pi d/\lambda)$，$d=\lambda/2$ 时恰好为 0，即各麦的弥散噪声互不相关，统计性质与自噪声一致。</p>
-<p>口径注：此处 $\mathrm{sinc}$ 取 $\sin x/x$ 定义；§5.1 用归一化定义 $\sin(\pi x)/(\pi x)$，同一物理量在该口径下写作 $\mathrm{sinc}(1)=0$。两种写法只差自变量里的 $\pi$，对照时应先换算。</p>
+<p>这个例子用同一组权重比较 WNG 与 DI：</p>
+<ul>
+<li><strong>WNG</strong>：DSB 恰好达到上限（§5.2 有证明），$\mathrm{WNG} = 10\log_{10}M = 10\log_{10}4 \approx$ <strong>6 dB</strong>；</li>
+<li>
+<p><strong>DI</strong>：把 DSB 波束图按定义式在整个球面上数值积分，得 $\mathrm{DI} \approx$ <strong>6 dB</strong>，这里采用 3D 各向同性弥散场口径。</p>
+<p>对 $\lambda/2$ 间距的线阵，DI 与 WNG 的数值恰好相等。相距 $q$ 个阵元间隔的两麦，其弥散场相干系数为 $\mathrm{sinc}(q\pi)$；整数 $q\ne0$ 时为 0，所以该频点的弥散噪声空间二阶矩与等功率白噪声成同比例。这里比较的是二阶空间统计量，不是声场的所有统计性质。</p>
+<p>口径注：此处 $\mathrm{sinc}$ 取 $\sin x/x$ 定义；§5.1 用归一化定义 $\sin(\pi x)/(\pi x)$，相邻麦的同一物理量在该口径下写作 $\mathrm{sinc}(1)=0$。两种写法只差自变量里的 $\pi$，对照时应先换算。</p>
+</li>
+</ul>
 <p>量级结论：在本例的半波间距、空间白噪声近似下，4 元 DSB 的 WNG 和 DI 都是 6 dB。若针对某个弥散噪声模型提高 DI，权重通常会变得更敏感，WNG 可能下降；具体上限取决于阵列几何、频率、噪声相关矩阵和稳健性约束，不能只由麦克风数给出。</p>
 <p>上述度量基于远场平面波模型。声源进入近场后，导向模型、搜索空间和定位参数都要加入距离维度。</p>
 <span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-2-7">2.7 小结：声源走近了，平面波不够用——近场要换的三样东西</h2>
@@ -444,7 +450,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>参考答案：方差与 SNR 成反比，标准差缩小 $\sqrt{10}\approx3.16$ 倍，约为 $1.2°/3.16\approx0.38°$。在该模型里，独立快拍数与 SNR 成乘积关系，两种变化对下界的影响相同。增加观测时间不需要提高单帧 SNR，却会增加等待时间；声源移动或统计量变化时，也不能把更多帧当作同一方向的独立快拍。因此要按延迟预算和场景平稳性选择，而不能断言增加快拍总是更合算。</p>
 </li>
 </ol>
-<p>以下五题的复算入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a>，结果采用稳定标识 E02-01～E02-05。</p>
+<p>以下六题的复算入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a>，结果采用稳定标识 E02-01～E02-06。</p>
 <p><strong>E02-01：同一段录音为什么有两种帧数？</strong> 对 8 kHz、1 s 的信号，取窗长 256 点、帧移 64 点，分别使用 <code>center=False</code> 和 <code>center=True</code>。再对其中同一个 256 点窗做 256 点与 512 点实 FFT。哪些输出数量改变，哪些物理信息没有增加？</p>
 <p><strong>参考答案</strong>：不居中时为 $(8000-256)/64+1=122$ 帧。居中时两端各补 128 点，为 $(8256-256)/64+1=126$ 帧。两种 FFT 的单边频点数分别是 $256/2+1=129$ 和 $512/2+1=257$。FFT 补零改变网格密度，不增加观测时长；端点补零增加的帧也不是新录到的独立声音。</p>
 <p><strong>E02-02：用复数协方差检查通道顺序。</strong> 各路功率为 2，麦 1 相位超前麦 2 为 30°。构造两帧 $\vec x$ 和 $-\vec x$，使样本均值为零，计算二阶矩、特征值和交换通道后的非对角相位。</p>
@@ -492,6 +498,13 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tbody>
 </table></div>
 <p>这是零初始化造成的权重总和不足，不是信号功率随时间上升。归一化修正这一尺度，却不会增加独立观测，也不会把本题的秩一矩阵变成可逆矩阵。有跳帧、可变遗忘因子或掩码时，应按实际更新递推累计权重，不能继续照搬 $1-2^{-t}$。</p>
+<p><strong>E02-06：掩码很小，是否意味着没有数据？</strong> 沿用 E02-04 的三帧 $[1,0]^\top$、$[0,1]^\top$、$[1,1]^\top$，令掩码为 $a[1,0,1]$，分别取 $a=10^{-200},1,10^{200}$。计算归一化二阶矩，并说明为什么全零掩码必须另行处理。</p>
+<p><strong>参考答案</strong>：对任意 $a>0$，加权外积之和与权重之和分别为</p>
+<p>$$\sum_t q_t\vec x_t\vec x_t^H=a\begin{bmatrix}2&1\\1&1\end{bmatrix},\qquad \sum_t q_t=2a。$$</p>
+<p>相除后，三种尺度都得到</p>
+<p>$$\mathbf R=\frac{1}{2a}\,a\begin{bmatrix}2&1\\1&1\end{bmatrix}=\begin{bmatrix}1&1/2\\1/2&1/2\end{bmatrix}。$$</p>
+<p>直接把原始权重和与固定小数比较，会把第一组误判为没有数据；先除以最大权重后，三组掩码都变为 $[1,0,1]$，再累积即可。</p>
+<p>全零掩码无法执行这项归一化，也没有可用观测权重，因此本书代码拒绝计算。共同缩放保持的是这三个既定快拍的加权结果，不会增加独立样本，也不会提高源数估计的可信度。结果与独立手算逐元素比较，双精度绝对误差应小于 $10^{-14}$。</p>
 <p><a href="research/05_exercises_and_audio.html">音频实验总览</a>提供已知采样率与通道顺序的 WAV，可用同一分析/合成参数检查边缘重建；比较时保留原长度，不把端点丢失误认为降噪效果。</p>
 <hr />
 <blockquote>

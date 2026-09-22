@@ -15,7 +15,7 @@
 3. **原始论文**：Capon（1969）、Griffiths & Jim GSC（1982，*An Alternative Approach to Linearly Constrained Adaptive Beamforming*, IEEE Trans. Antennas Propag. 30(1):27–34）、Schmidt MUSIC（1986）、Roy & Kailath ESPRIT（1989）、Allen & Berkley 镜像法（1979）、Nakatani et al. WPE（IEEE TASLP 2010）、Pal & Vaidyanathan 嵌套阵（IEEE TSP 2010）。
 4. **回声消除**：Hänsler & Schmidt, *Acoustic Echo and Noise Control*（Wiley 2004）；近年进展看 ICASSP AEC Challenge 系列报告。
 5. **DNN 方向**：Chakrabarty & Habets（IEEE JSTSP 2019）、Gu et al. 全神经波束形成（IEEE/ACM TASLP, vol.31, pp.849–862, DOI 10.1109/TASLP.2022.3229261）。
-6. **实验顺序**：先运行 `codes/` 中只依赖 NumPy 的教学实现，核对手算、数组维度和边界；再用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线；运行 `scripts/` 中的两个绘图脚本，复现 35 张图；随后选择与研究任务匹配的公开数据和固定版本参考系统；最后在可用的多通道硬件上验证实时性、同步和标定。数据集、框架和硬件只是候选工具，应根据任务与许可证选择。
+6. **实验顺序**：先运行 `codes/` 中只依赖 NumPy 的教学实现，核对手算、数组维度和边界；再用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线；运行 `scripts/` 中的两个绘图脚本，复现 36 张图；随后选择与研究任务匹配的公开数据和固定版本参考系统；最后在可用的多通道硬件上验证实时性、同步和标定。数据集、框架和硬件只是候选工具，应根据任务与许可证选择。
 
 ### 13.2 领域地图：教材、会议、期刊与挑战赛
 
@@ -256,6 +256,7 @@ D_t&=(1-p_D)D^-\\
 5. 打开 `fig_gcc_phat`，逐步增加噪声并比较 PHAT 与普通互相关。记录每个随机种子、信号谱和混响条件下的峰值误差，不预设固定 SNR 崩溃点。
 
     **提示**：PHAT 去掉幅度谱着色，可能让峰变尖，也可能在低信噪比频带放大相位噪声。它的优势取决于源谱、噪声谱和反射结构。
+
 6. 在 `fig_doa_spectrum()` 中把两源间隔从 50° 缩到 15°、8°，观察 Bartlett、Capon、MUSIC 的谱峰。
 
     **比较基准**：8 元半波 ULA 的离散阵因子 HPBW 近似为 $0.886\lambda/(Md)\approx12.7°$；用物理跨度 $D=(M-1)d=3.5\lambda$ 得到的 $\lambda/D\approx16.4°$ 只是孔径尺度。
@@ -267,6 +268,7 @@ D_t&=(1-p_D)D^-\\
 7. 从拉格朗日函数推出 MVDR 闭式解，再回 §5.4 对答案。
 
     **提示**：构造实值函数 $L=\vec{w}^H\mathbf{R}_{nn}\vec{w}+2\operatorname{Re}\{\lambda^*(\vec{w}^H\vec{a}-1)\}$，对 $\vec{w}^*$ 求导，得到 $\vec{w}\propto\mathbf{R}_{nn}^{-1}\vec{a}$，再代入约束定比例系数。
+
 8. 在 `fig_wng_di()` 中把麦距从 4 cm 改成 2 cm 与 8 cm，画出 WNG、DI 和协方差条件数，再比较有无对角加载。记录脚本实际输出，不预设某个频率的固定 dB 数。
 
     **解释重点**：低频 $kd$ 很小时，各阵元观测接近相同，弥散噪声相干矩阵容易病态；超指向解需要大幅度、相互抵消的权重，因而 WNG 下降。增大间距可能改善低频条件数，也可能在高频引入空间混叠，不能只看一端。
@@ -360,13 +362,17 @@ D_t&=(1-p_D)D^-\\
 
 ![图35 相关噪声、极性错误和病态求逆的合成音频反例](../figures/fig35_audio_counterexamples.png)
 
-图 35 读取 16 kHz、PCM16 导出文件，每组使用共同增益，随机种子 20260923，时长 2 s。**(a)** 两路目标已对齐，噪声标准差均为 0.07；独立噪声平均后误差 RMS 下降，复制相同噪声则不下降。**(b)** 输入目标增益为 1 与 −0.9；极性未纠正时平均只保留 0.05 倍目标，已知纠正后为 0.95 倍。波形展示 500～510 ms。
+图 35 读取 16 kHz、PCM16 导出文件，每组使用共同增益，随机种子 20260923，时长 2 s。
+
+**(a)** 两路目标已对齐，噪声标准差均为 0.07；独立噪声平均后误差 RMS 下降，复制相同噪声则不下降。
+
+**(b)** 输入目标增益为 1 与 −0.9；极性未纠正时平均只保留 0.05 倍目标，已知纠正后为 0.95 倍。波形展示 500～510 ms。
 
 **(c)** 两个已知混合矩阵的二范数条件数分别为 3、199，同一输入噪声标准差为 0.003。每一路恢复结果与对应源参考逐样本相减，统计全段 RMS，不拟合额外时延或增益。柱形表示同一固定随机样本，不代表统计均值；不同子图条件不同，不能跨组排名。模型、矩阵及 13 个对照文件见[音频手册第 9～11 节](../codes/research/05_exercises_and_audio.md)。
 
 ### 13.7 复现说明
 
-下面先运行代码基线的单元测试和第 10 章示例，再重新生成全部 35 张图：
+下面先运行代码基线的单元测试和第 10 章示例，再重新生成全部 36 张图：
 
 ```bash
 .venv/bin/python -m unittest tests.test_codes_engineering -v
@@ -380,11 +386,11 @@ D_t&=(1-p_D)D^-\\
 
 会议识别复现还要固定数据准备与文本规范化。CHiME-8 的官方 `chime-utils` 提供 SegLST 转写格式、该届规范化及 cpWER/tcpWER 评分；其中缺失场景的忽略选项会改变实际计分范围。应保留每个场景的输入文件数、失败数和最终参与评分的清单，并先用正确转写、说话人交换、漏词和时间戳偏移的小夹具检查评分口径。[CHiME-8 官方评分实现](https://github.com/chimechallenge/chime-utils/tree/152882404f572d40769ef02bf91c5a9a9cfc9c78 "citation")
 
-绘图脚本都在 `scripts/` 里。图 34、35 读取合成音频，因此先生成音频，再运行两个绘图脚本；图片写入 `figures/`，共 35 张：
+绘图脚本都在 `scripts/` 里。图 34～36 读取合成音频，因此先生成音频，再运行两个绘图脚本；图片写入 `figures/`，共 36 张：
 
 ```bash
 .venv/bin/python codes/examples/generate_audio_samples.py
-.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～35
+.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32（回声消除专题）
 ```
 

@@ -16,7 +16,7 @@ from codes.array_tutorial.tracking import ConstantVelocityKalman, systematic_res
 
 
 def run_exercises() -> dict:
-    """Return twenty JSON-safe exercises with stable IDs and stated inputs."""
+    """Return twenty-two JSON-safe exercises with stable IDs and stated inputs."""
     results = {}
     x = np.array([1., 0., 0.])
     d = np.array([.8, -.2, .1])
@@ -93,6 +93,26 @@ def run_exercises() -> dict:
                             measured_input_output_ratio_db=erle_db(echo+noise, noise),
                             echo_component_residual_energy=0.)
 
+    sample_rate, sample_count, tone_hz = 16000, 32000, 500
+    samples = np.arange(sample_count)
+    reference = .4 * np.sin(2 * np.pi * tone_hz * samples / sample_rate)
+    nonlinear_echo = reference + 2 * reference**3
+    scalar_gain = float(reference @ nonlinear_echo / (reference @ reference))
+    linear_estimate = scalar_gain * reference
+    nonlinear_residual = nonlinear_echo - linear_estimate
+    frequencies = [tone_hz, 3 * tone_hz]
+    amplitudes = [float(2 / sample_count * abs(
+        nonlinear_residual @ np.exp(-2j * np.pi * frequency * samples / sample_rate)
+    )) for frequency in frequencies]
+    results['E06-06'] = dict(
+        sample_rate_hz=sample_rate, samples=sample_count, cycles=tone_hz*sample_count//sample_rate,
+        reference_amplitude=.4, tone_hz=tone_hz, cubic_coefficient=2.,
+        least_squares_gain=scalar_gain, echo_power=float(np.mean(nonlinear_echo**2)),
+        residual_power=float(np.mean(nonlinear_residual**2)),
+        erle_db=erle_db(nonlinear_echo, nonlinear_residual),
+        residual_frequencies_hz=frequencies, residual_amplitudes=amplitudes,
+        model='d=x+2*x^3; estimate=g*x; no propagation, near-end speech or noise')
+
     record_a = np.array([[1., 1., 1., 1.]], dtype=complex)
     record_b = np.array([[1., 1., 1., 2.]], dtype=complex)
     options = dict(taps=1, delay=1, iterations=1, diagonal_loading=0)
@@ -125,6 +145,30 @@ def run_exercises() -> dict:
                   for scale in mask_scales]
     results['E08-05'] = dict(epsilon=epsilon, equal_mask_weights=mask_scales, floored_covariance=covariances,
                             additive_epsilon_covariance_at_floor=5.)
+
+    block_outputs = [
+        np.stack([target + .1*orthogonal, orthogonal + .1*target]),
+        np.stack([orthogonal + .1*target, target + .1*orthogonal]),
+    ]
+    block_permutations = []
+    block_scores = []
+    aligned_blocks = []
+    for block in block_outputs:
+        permutation, score = pit_permutation(block, references)
+        block_permutations.append(list(permutation))
+        block_scores.append(score)
+        aligned_blocks.append(block[np.argsort(permutation)])
+    long_references = np.tile(references, (1, len(block_outputs)))
+    raw_streams = np.concatenate(block_outputs, axis=1)
+    aligned_streams = np.concatenate(aligned_blocks, axis=1)
+    results['E08-06'] = dict(
+        block_output_to_reference=block_permutations,
+        block_mean_si_sdr_db=block_scores,
+        raw_concatenated_si_sdr_db=[si_sdr(raw_streams[index], long_references[index])
+                                    for index in range(references.shape[0])],
+        aligned_concatenated_si_sdr_db=[si_sdr(aligned_streams[index], long_references[index])
+                                        for index in range(references.shape[0])],
+        oracle_alignment=True)
 
     dt, density, acceleration_variance = .1, 2., 4.
     continuous = density*np.array([[dt**3/3,dt**2/2],[dt**2/2,dt]])

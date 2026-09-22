@@ -14,9 +14,29 @@ SPEED_OF_SOUND = 343.0
 FOURIER_EXPONENT_SIGN = -1
 
 
+def finite_real_array(value, name: str = "input") -> np.ndarray:
+    """Validate numeric real input before conversion; never discard imaginary data."""
+    original = np.asarray(value)
+    if original.dtype.kind not in "iuf":
+        raise ValueError(f"{name} must contain real numeric values, not complex, bool or text")
+    with np.errstate(over="ignore", invalid="ignore"):
+        array = np.asarray(original, dtype=float)
+    if not np.all(np.isfinite(array)):
+        raise ValueError(f"{name} must be finite and representable as float64")
+    return array
+
+
+def finite_real_scalar(value, name: str = "input") -> float:
+    """Return one finite real number; singleton vectors are not scalars."""
+    array = finite_real_array(value, name)
+    if array.ndim != 0:
+        raise ValueError(f"{name} must be a scalar")
+    return float(array)
+
+
 def validate_waveforms(waveforms: np.ndarray) -> np.ndarray:
     """Return finite real waveforms with shape ``channels x samples``."""
-    array = np.asarray(waveforms, dtype=float)
+    array = finite_real_array(waveforms, "waveforms")
     if array.ndim == 1:
         array = array[np.newaxis, :]
     if array.ndim != 2 or array.shape[0] < 1 or array.shape[1] < 1:
@@ -38,7 +58,7 @@ def validate_cft(spectra: np.ndarray) -> np.ndarray:
 
 def validate_positions(positions: np.ndarray) -> np.ndarray:
     """Validate microphone coordinates with shape ``channels x dimension``."""
-    array = np.asarray(positions, dtype=float)
+    array = finite_real_array(positions, "positions")
     if array.ndim != 2 or array.shape[0] < 1 or array.shape[1] not in (2, 3):
         raise ValueError("positions must have shape channels x 2 or channels x 3")
     if not np.all(np.isfinite(array)):
@@ -48,7 +68,7 @@ def validate_positions(positions: np.ndarray) -> np.ndarray:
 
 def validate_frequencies(frequencies_hz: np.ndarray) -> np.ndarray:
     """Validate a non-negative one-dimensional physical-frequency grid."""
-    array = np.atleast_1d(np.asarray(frequencies_hz, dtype=float))
+    array = np.atleast_1d(finite_real_array(frequencies_hz, "frequencies_hz"))
     if array.ndim != 1 or array.size < 1:
         raise ValueError("frequencies_hz must be one-dimensional and non-empty")
     if not np.all(np.isfinite(array)) or np.any(array < 0.0):
@@ -61,4 +81,7 @@ def hermitian_part(matrix: np.ndarray) -> np.ndarray:
     array = np.asarray(matrix, dtype=complex)
     if array.ndim < 2 or array.shape[-1] != array.shape[-2]:
         raise ValueError("matrix must be square on its last two axes")
-    return 0.5 * (array + np.swapaxes(array.conj(), -1, -2))
+    if not np.all(np.isfinite(array)):
+        raise ValueError("matrix contains NaN or infinity")
+    # Divide before adding: two valid values near float64's limit must not overflow.
+    return 0.5 * array + 0.5 * np.swapaxes(array.conj(), -1, -2)

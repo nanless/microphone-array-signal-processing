@@ -159,6 +159,8 @@ $$
 
 连续流可对照 libsamplerate 的 `src_process` 或 SpeexDSP 的重采样接口。以 libsamplerate 为例，比例定义为“输出速率/输入速率”；设备快 100 ppm 时，转到参考时钟的比例约为 $1/1.0001=0.99990001$。每次调用还会返回实际消耗的输入帧数和生成的输出帧数，调用方必须保留未消耗输入，不能假设一进一出或每块重新创建转换器。[libsamplerate Full API](https://libsndfile.github.io/libsamplerate/api_full.html "citation")
 
+换用另一库时要重新检查比例方向。libsoxr 的 `soxr_set_io_ratio` 使用“输入/输出”比，同一 100 ppm 算例应设为 1.0001，而非 0.99990001。其渐变长度以输出样本数计，滤波延迟也应从输出样本换算到时间；创建状态、切换比率与排空尾部是不同操作。[libsoxr 固定可变比率示例](https://sourceforge.net/p/soxr/code/ci/945b592b70470e29f917f4de89b4281fbbd540c0/tree/examples/5-variable-rate.c "citation")
+
 #### 10.2.2 增益变化与 AEC
 
 AEC 前的时变增益会改变它要辨识的等效回声路径。设计时应记录每一级增益位于参考取点之前还是之后，并确保 AEC 能获知或跟踪这些变化。常见做法是：AEC 收敛和双讲期间保持前置增益稳定；发生削波风险时允许保护性衰减，同时重置或减小自适应步长。锁定时间、解锁条件和允许步进都应通过本机回声路径和双讲集确定，不存在通用的秒数或 dB 阈值。
@@ -227,6 +229,8 @@ KWS 是否绕过 VAD、是否持续运行、从 AEC 后还是增强后取信号�
 [`HysteresisVAD`](../codes/array_tutorial/engineering.py) 输入线性均方能量，不接受 dB 阈值；把 dBFS 门限传给它会造成口径错误。`hangover_frames=2` 表示首次跌破继续阈值的两帧仍保持活动，第三帧才关闭。该基线没有噪声自适应、频带特征和神经网络，也不自行保存预卷；预卷可用 [`RingBuffer`](../codes/array_tutorial/engineering.py) 保留触发前的固定帧数，并在 VAD 由假变真时先取出缓存。
 
 AGC 要区分“把正常语音逐渐推向目标电平”和“立刻避免削波”。增益上升可以缓慢释放，增益下降需要更快；即使平滑状态来不及下降，当前块也要受安全上限约束。[`PeakProtectAGC`](../codes/array_tutorial/engineering.py) 给出这种峰值保护基线。它不估计响度，也不能修复模拟前端已经发生的削波。验收时要同时画输入电平、增益、输出峰值和削波比例，并在 AEC 双讲期间检查增益变化是否破坏回声路径模型。
+
+需要比较输出响度时，可以另用 libebur128 测量响度与真峰值。响度按频率加权和时间统计得到，不等于当前块的最大样本；真峰值估计重建波形的幅度，也可能高于采样峰值。测量模式、通道角色、门控和无有效能量的处理须固定，数字域响度与峰值都不能未经播放校准就换成声压级。[libebur128 固定 API](https://github.com/jiixyj/libebur128/blob/67b33abe1558160ed76ada1322329b0e9e058b02/ebur128/ebur128.h "citation")
 
 实际 VAD 接口也有不同的输入协议。WebRTC 传统 VAD 使用合法采样率下的 16 位单声道 PCM 和 10、20、30 ms 帧；Silero 核实的 ONNX 包装器使用 16 kHz/512 点或 8 kHz/256 点，均为 32 ms，并保留跨块状态。10 ms 的声卡回调不能直接当成任意模型的一次输入，需要先缓冲到合法块长，再把决策映射回采集时间轴。[WebRTC VAD 接口](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/common_audio/vad/include/webrtc_vad.h "citation")、[Silero 包装器源码](https://github.com/snakers4/silero-vad/blob/60b7ffa243625ebdc1070275a29f18c87843786a/src/silero_vad/utils_vad.py "citation")
 
@@ -305,6 +309,10 @@ ITU-T 已于 2024 年 1 月 5 日撤销 [P.862（PESQ）](https://www.itu.int/re
 公开评分代码可帮助固定执行口径。DNS Challenge 的 `DNSMOS/dnsmos_local.py` 提供本地质量预测，AEC Challenge 的 `AECMOS/AECMOS_local/` 提供回声相关评分；前者还区分普通和个性化模式。需要同时锁定模型摘要、采样率、裁段、短文件处理与聚合方式。模型预测分不是实际听众 MOS，也不能代替任务识别指标。[DNSMOS 本地说明](https://github.com/microsoft/DNS-Challenge/tree/591184a9fcb2cbdec02520fed81a32bbbf9d73ff/DNSMOS "citation")、[AECMOS 本地说明](https://github.com/microsoft/AEC-Challenge/tree/6c633d0a9d2a143a0e364899b91b06f127315b18/AECMOS "citation")
 
 AECMOS 官方为 2021/2022 测试集规定了收敛段后的评分范围，近端单讲、远端单讲和双讲的裁取方式不同。使用别的测试集时，应按该测试集规则定义区间，不能直接沿用旧届剪裁。逐文件失败、静音输出和缺失场景也要计入报告，避免只汇总成功评分的子集。
+
+全参考指标还要求干净参考与处理后信号的采样率、时间轴和评分区域一致。pystoi 提供普通 STOI 与扩展 STOI（Extended Short-Time Objective Intelligibility，ESTOI），两种模式应分别报告。锁定实现对去静音后不足 30 个 STFT 帧的输入发出警告并返回 `1e-5`；这是无效评分的返回值，不能当成有效低分加入平均。[pystoi 固定实现，第 64～70 行](https://github.com/mpariente/pystoi/blob/74872b000753a7a42ff51aa0868af8c82c7f9053/pystoi/stoi.py "citation")
+
+ViSQOL（Virtual Speech Quality Objective Listener）则比较参考与退化信号的时频结构，输出客观听音质量预测分（Mean Opinion Score—Listening Quality Objective，MOS-LQO）。该实现区分 48 kHz 的 audio 模式与 16 kHz 的 speech 模式，并将多通道下混单声道；因此不能用它证明阵列方向或双耳线索保持。它不是 POLQA 实现，模型预测也不能代替受试者评分；模式、映射模型和适用失真范围都要记录。[ViSQOL 固定说明的 Guidelines 与 FAQ](https://github.com/google/visqol/blob/38d0b0163e441047d4429bf07ad09e5b9031d02c/README.md "citation")
 
 本书的音频示例用于辨认时延、拖尾、削波和增益等现象，不是标准主观评分材料。试听前先降低播放音量，确认没有异常峰值，再比较同一输入的参考、受扰和处理后版本。对同组文件施加共同线性增益，可以保留它们的相对电平；各文件分别峰值归一化会抹去衰减或增益差异。若为了比较音色而另做响度匹配，应把该版本和原始测量版本分开保存，并记录匹配方法。
 
@@ -412,12 +420,19 @@ room = pra.ShoeBox(
 | 实现层 | 官方项目与源码入口 | 接入时要固定的条件 |
 |---|---|---|
 | Linux 音频与 AEC 路由 | ALSA `src/pcm/`；PipeWire `src/modules/module-echo-cancel.c` | 设备、period/buffer、时间戳；capture/source/sink/playback 四流与播放参考 |
-| 流式重采样 | libsamplerate `src/samplerate.c`；SpeexDSP `libspeexdsp/resample.c` | 速率比例、滤波质量、跨块状态、实际消费/输出帧数 |
+| 文件输入输出 | libsndfile `include/sndfile.h`、`src/sndfile.c` | 时间帧/标量项、PCM 编码与数组类型、浮点归一化、末块短读 |
+| 流式重采样 | libsamplerate `src/samplerate.c`；SpeexDSP `libspeexdsp/resample.c`；libsoxr `src/soxr.h` | 速率比例方向、滤波质量、跨块状态、消费/输出量、排空与延迟 |
 | VAD、AGC 与神经 NS | WebRTC `common_audio/vad/`、`agc2/`；Silero `utils_vad.py`；DeepFilterNet `libDF/`、`ladspa/` | PCM 幅度、合法块长、会话状态、前瞻、模型和取点 |
 | DSP 固件 | XMOS `lib_voice` 的 AEC/ADEC、IC/VNR、NS/AGC；SOF `src/audio/tdfb/` | 几何、系数、通道、调度、工具链、固件拓扑与硬件适用范围 |
 | MCU 推理 | CMSIS-NN `Source/`；TensorFlow Lite Micro `micro_speech/` | 整数量化、算子、临时内存、tensor arena、特征前端 |
+| 块浮点内核 | XMOS `lib_xcore_math` 的 `src/bfp/`、`src/fft/`、`src/arch/ref/` | 尾数与共享指数、headroom、目标架构；版本按 lib_voice 依赖固定 |
+| 电平与质量测量 | libebur128 `ebur128/`；pystoi `pystoi/stoi.py`；ViSQOL `src/` | 响度/真峰值与质量分分开；参考、模式、模型、有效帧与失败记录 |
 
-[工业实现研究文档](../codes/research/03_industrial_deployment.md)逐项给出 21 个实现主题的源码入口、状态和参数、故障注入及验收方法，核实日期为 2026-09-22。XMOS 的旧 `fwk_voice` 已迁移到 `lib_voice`；该库使用 XMOS Public Licence v1，商用硬件范围和特殊用途条款应按原许可判断，不能把可获取源码等同于跨平台宽松许可。[XMOS 官方迁移说明](https://github.com/xmos/fwk_voice "citation")、[lib_voice 许可](https://github.com/xmos/lib_voice/blob/c9f1a9bf95cd88c7950adf4bf631c217f900ad25/LICENSE.rst "citation")
+[工业实现研究文档](../codes/research/03_industrial_deployment.md)逐项给出 27 个实现主题的源码入口、状态和参数、故障注入及验收方法，核实日期为 2026-09-22。XMOS 的旧 `fwk_voice` 已迁移到 `lib_voice`；该库使用 XMOS Public Licence v1，商用硬件范围和特殊用途条款应按原许可判断，不能把可获取源码等同于跨平台宽松许可。[XMOS 官方迁移说明](https://github.com/xmos/fwk_voice "citation")、[lib_voice 许可](https://github.com/xmos/lib_voice/blob/c9f1a9bf95cd88c7950adf4bf631c217f900ad25/LICENSE.rst "citation")
+
+文件和评分接口也可能改变结论。例如 libsndfile 的 `sf_readf_*` 返回时间帧数，`sf_read_*` 返回通道展开后的标量项数；最后一块不足请求长度时，只能按实际返回量更新录音时长与算法状态。评分器则要同时保留失败数和模型资产状态，不能把“源码可以导入”写成“已经能评分”。这些独立对照的输入与建议试验见研究文档，不表示本书已完成对应设备验收。[libsndfile 官方读写接口](https://libsndfile.github.io/libsndfile/api.html "citation")
+
+本书已运行三库的[工业接口实验](../codes/research/04_source_reproduction.md)：48 kHz 双通道输入重采样到 16 kHz，保留同一状态并排空尾部后，整段与 127/509 帧分块输出相同；中途清状态且不排空则少了 434 个输出帧。另以七帧双通道 PCM16 检查短读，按帧请求三帧时返回 3、3、1、0，按标量项请求六项时返回 6、6、2、0。程序与原始报告均可重跑，这些结果不代表设备回调期限或断连恢复已经通过。
 
 上游源码按锁定清单独立获取到被 Git 忽略的 `codes/upstream/_downloads/`，保留原许可证和版本；是否已下载以本机获取记录为准。代码、权重和数据分别管理。`codes/array_tutorial/` 中的程序是本书教学基线，作用是复算约定和边界；下载上游源码本身也不意味着已经完成依赖安装、编译和目标设备验证。
 

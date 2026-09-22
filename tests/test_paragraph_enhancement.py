@@ -88,7 +88,7 @@ class EnhancementParagraphTest(unittest.TestCase):
             ("06_aec.md", "D1～D3检查参考", "> **采样率偏移", "ITU-T 已于"),
             ("08_speech-separation.md", "**AuxIVA（", "**ILRMA（", "标准实现仍是整段迭代"),
             ("09_source-tracking.md", "多目标追踪还要估计", "**可执行单目标基线", "最优子模式分配距离"),
-            ("09_source-tracking.md", "GM-PHD 的高斯权重和", "MHT、CPHD、LMB/", "JPDA 也需要明确"),
+            ("09_source-tracking.md", "GM-PHD 的高斯权重和", "MHT 已有可阅读的受限参考", "JPDA 也需要明确"),
         ]
         for filename, start, end, second_start in cases:
             with self.subTest(filename=filename, start=start):

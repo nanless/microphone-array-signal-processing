@@ -49,7 +49,7 @@ Speex 的 `mdf.c` 注释明确采用交替更新的 MDF（AUMDF）。它调度�
 
 ### A05　DTD：二值判决与连续自适应控制
 
-双讲检测（DTD）用于保护近端语音，不直接生成回声副本。Geigel、归一化相关和相干性方法依赖不同假设；高参考相关性可以是残余回声，也可能伴随路径失配。Speex 的 [`mdf.c`](https://github.com/xiph/speexdsp/blob/master/libspeexdsp/mdf.c)明确使用连续变化学习率，而非独立的二值 DTD。[Valin 2007 原论文](https://people.xiph.org/~jm/papers/valin_taslp2006.pdf)解释它如何利用残余回声和干扰估计。
+双讲检测（DTD）用于保护近端语音，不直接生成回声副本。Geigel、归一化相关和相干性方法依赖不同假设；高参考相关性可以是残余回声，也可能伴随路径失配。Speex 的 [`mdf.c`](https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/mdf.c)明确使用连续变化学习率，而非独立的二值 DTD。[Valin 2007 原论文](https://people.xiph.org/~jm/papers/valin_taslp2006.pdf)解释它如何利用残余回声和干扰估计。
 
 最小实验由远端单讲、双讲、近端单讲与静音四段组成，分别保存检测量、步长与系数误差。失败实验保持远端播放同时改变路径，比较“误判双讲导致冻结”和“漏判双讲导致误更新”。即使两者输出能量相近，恢复办法也不同。不要仅用一个总体准确率验收 DTD。
 
@@ -61,11 +61,11 @@ WebRTC 的 [`modules/audio_processing/aec3/`](https://webrtc.googlesource.com/sr
 
 ### A07　RES/NLP 与近端保护
 
-残余回声抑制（RES）或非线性后处理（NLP）根据未消除回声的估计给输出施加增益。线性路径失配、扬声器非线性与延迟错位都能形成残余，但需要不同诊断。AEC3 的 `residual_echo_estimator.cc` 和 `suppression_gain.cc` 可用于区分估计器与执行增益；Speex 的 [`preprocess.c`](https://github.com/xiph/speexdsp/blob/master/libspeexdsp/preprocess.c)则展示预处理与残余回声信息的连接。
+残余回声抑制（RES）或非线性后处理（NLP）根据未消除回声的估计给输出施加增益。线性路径失配、扬声器非线性与延迟错位都能形成残余，但需要不同诊断。AEC3 的 `residual_echo_estimator.cc` 和 `suppression_gain.cc` 可用于区分估计器与执行增益；Speex 的 [`preprocess.c`](https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/preprocess.c)则展示预处理与残余回声信息的连接。
 
 最小实验把线性抵消器输出固定，只扫描后处理强度，分别试听和计量回声泄漏、近端语音损伤及噪声起伏。失败实验让低电平近端辅音与残余回声同时出现，检查词尾是否被截断。此类错误不能靠远端单讲 ERLE 发现，必须同时报告双讲语音的保真与任务指标。
 
-本书的 [E06-04、E06-05](../../chapters/06_aec.md#sec-6-1-17)补充两个可运行的取点检查：同幅副本若反相，相减会把回声能量增为四倍；背景噪声保留时，麦克风输入/输出能量比仍可能为有限值，即使回声分量已经完全抵消。这些是给定模型下的代数结果，不是对 RES 的设备性能测量。运行入口为 [`exercises_enhancement.py`](../examples/exercises_enhancement.py)，固定检查见 [`test_codes_enhancement_round2.py`](../../tests/test_codes_enhancement_round2.py)。
+本书的 [E06-04～E06-06](../../chapters/06_aec.md#sec-6-1-17)补充三个可运行的取点检查：同幅副本若反相，相减会把回声能量增为四倍；背景噪声保留时，麦克风输入/输出能量比仍可能为有限值，即使回声分量已经完全抵消；纯 500 Hz 参考经过三次非线性后还会留下线性参考不能生成的 1500 Hz 分量。这些是给定模型下的代数结果，不是对 RES 的设备性能测量。运行入口为 [`exercises_enhancement.py`](../examples/exercises_enhancement.py)，固定检查见 [`test_codes_enhancement_round2.py`](../../tests/test_codes_enhancement_round2.py)与[`test_codes_exercises_enhancement.py`](../../tests/test_codes_exercises_enhancement.py)。
 
 ### A08　PNLMS/IPNLMS、子带与非线性路径模型
 
@@ -103,13 +103,25 @@ WebRTC 的 [`modules/audio_processing/aec3/`](https://webrtc.googlesource.com/sr
 
 核心 `metaaf/` 使用 University of Illinois/NCSA 许可，`zoo/` 与权重使用 Adobe Research License，整库不得统一记成 MIT 或可自由商用。复现需要匹配 JAX、Haiku 与任务数据，分别记录训练时展开长度和推理时状态。失败实验更换路径速度、频谱及幅度尺度，检查学习更新规则的训练域依赖；本书只索引受限制部分。
 
+### A14　学习步长控制的线性 CTF-AEC
+
+[Haubner 等的官方实现](https://github.com/ThomasHaubner/e2e_dnn_ad_control_for_lin_aec/tree/7a003133d742698de7acba9510d9586d7d57a584)没有让网络直接合成最终语音，而是保留卷积传递函数（Convolutive Transfer Function，CTF）线性回声模型，用网络给频率选择性步长和误差归一化项生成掩码。[TASLP 论文](https://doi.org/10.1109/TASLP.2023.3325923)说明训练目标；源码从 `main_train.py` 进入，再沿 [`libPython/class_frontend.py`](https://github.com/ThomasHaubner/e2e_dnn_ad_control_for_lin_aec/blob/7a003133d742698de7acba9510d9586d7d57a584/libPython/class_frontend.py) 的逐帧循环读到 [`class_aec_ctf.py`](https://github.com/ThomasHaubner/e2e_dnn_ad_control_for_lin_aec/blob/7a003133d742698de7acba9510d9586d7d57a584/libPython/class_aec_ctf.py) 的 `update_filter()`，可直接观察“学习控制器改变哪一个自适应量”。
+
+代码使用 BSD 4-Clause 许可证，但当前仓库没有预训练 checkpoint；README 要求用户准备 `train_data.h5` 与 `test_data.h5`。固定版本的前端把 `center_stft=True`，并在每个序列的 `forward_batch()` 中重新初始化 AEC 参数，因此源码中的逐帧循环不等于可以任意切块、跨调用续算的部署接口。复现先固定参考对齐、CTF 长度、GRU 初值和序列边界，再比较固定路径、路径突变、双讲、播放静音与参考时移下的步长掩码、滤波器误差和近端损伤；没有训练资产时只读算法路径，不声称得到论文性能。
+
+### A15　联合 AEC/NR 与处理顺序
+
+[Integrated_AEC_NR 官方 MATLAB 实现](https://github.com/Arnout-Roebben/Integrated_AEC_NR/tree/23c6b567c7863a8ee9bafd38bad0d3ff2f25e185)在一般多麦、多扬声器设置下比较 MWF、扩展 MWF、AEC→NR、NR→AEC 与扩展 NR→AEC→后滤波。[论文](https://doi.org/10.1109/TASLPRO.2025.3648802)讨论线性相关参考情形。读码从 `Main.m` 进入 [`Util/Process/process.m`](https://github.com/Arnout-Roebben/Integrated_AEC_NR/blob/23c6b567c7863a8ee9bafd38bad0d3ff2f25e185/Util/Process/process.m)，再分别进入 `process_AEC.m`、`process_NR.m`、`process_MWFext.m`、`process_NRext.m` 与 `process_PF.m`；文件名大小写以仓库的 [`ReadMe.md`](https://github.com/Arnout-Roebben/Integrated_AEC_NR/blob/23c6b567c7863a8ee9bafd38bad0d3ff2f25e185/ReadMe.md) 为准。
+
+代码为 MIT，官方说明使用 MATLAB R2024a。这个实现接收已经分解的 $s,n,e_s,e_n,l_s,l_n$，并在 `process.m` 中直接由干净期望语音 `s_f` 与干净回声 `es_f` 生成活动判决；这是用于受控比较的预言信息，不是实际设备可直接取得的输入。最小实验应先按原始分量重现各顺序，再把两路扬声器参考设为相关或秩亏，并以估计活动替换预言活动。`Audio/sig.mat` 的语音来自另行许可的数据，代码 MIT 不能替代音频许可；本书只取得源码，不把示例数据视为随代码自由再分发。
+
 <a id="wpe"></a>
 
 ## 3. WPE 与联合卷积滤波
 
 ### W01　离线 WPE 与 MIMO-WPE
 
-延迟线性预测使用历史多通道复谱解释当前晚期混响，功率权重防止高能量帧完全支配回归。多通道版本的每频点回归维度为“通道数 × 抽头数”，样本不足和共线性会使方程病态。教学入口是 [dereverberation.py](../array_tutorial/dereverberation.py)，参考实现是 [nara_wpe `wpe.py`](https://github.com/fgnt/nara_wpe/blob/master/nara_wpe/wpe.py) 的 `build_y_tilde()` 与 `wpe_v6()` 等实现。
+延迟线性预测使用历史多通道复谱解释当前晚期混响，功率权重防止高能量帧完全支配回归。多通道版本的每频点回归维度为“通道数 × 抽头数”，样本不足和共线性会使方程病态。教学入口是 [dereverberation.py](../array_tutorial/dereverberation.py)，参考实现是 [nara_wpe `wpe.py`](https://github.com/fgnt/nara_wpe/blob/a166779cca2088817e330481bd20af1a2c598555/nara_wpe/wpe.py) 的 `build_y_tilde()` 与 `wpe_v6()` 等实现。
 
 读码时核对历史排序、保护延迟、统计有效区、复共轭与功率下限。最小实验先复算正文单抽头正规方程，再把单通道扩成两个完全相同通道；失败实验使用短于历史窗口的记录、静音频点和病态 SCM。库的稳定求解策略不能替代明确的旁路条件。[原始 MIMO-WPE 论文](https://doi.org/10.1109/TASL.2012.2210879)定义了希望保留的早期成分。
 
@@ -125,23 +137,29 @@ WebRTC 的 [`modules/audio_processing/aec3/`](https://webrtc.googlesource.com/sr
 
 `nara_wpe/wpe.py` 的 `OnlineWPE` 保存逆相关矩阵、预测抽头、功率和输入缓冲；`step_frame()` 接收 `(频点, 通道)`。该实现先由旧状态输出当前预测残差，再更新状态，这与每次对增长的整段录音重新运行离线 `wpe()`不同。原理出处为[Kinoshita 等，Interspeech 2017](https://www.isca-archive.org/interspeech_2017/kinoshita17_interspeech.html)。
 
-最小实验逐帧输入一个固定记录并保留状态，再检查把同一帧流分成不同外层批次是否改变结果。失败实验中途错误重建 `OnlineWPE`，查看启动段反复出现；另测静音、设备重启和房间突变。遗忘因子与功率估计共同决定跟踪，不应仅报告 `taps` 和 `delay`。
+锁定的 0.0.11 版不能把三个接口的同名 `delay` 直接当作同一个时间索引。单频点、单通道、单抽头取帧 `[10,20,30,40]`，在 $t=3$ 令 `delay=1`、固定预测抽头为 1：离线 `build_y_tilde()` 取 $X_{t-1}=30$，残差为 10；无状态 `online_wpe_step()` 取 $X_{t-2}=20$，残差为 20；有状态 `OnlineWPE.step_frame()` 在写入当前帧前从旧缓冲取 $X_{t-3}=10$，残差为 30。这是该固定版本的接口行为，不是 WPE 理论规定必须相差两帧。
+
+[在线接口对照](../examples/compare_online_wpe_reference.py)先按数组切片手算上述三项，再用一份精简的 NumPy 适配参考与未修改的 0.0.11 源码逐帧比较。参考程序保留该版本的缓冲顺序和数值保护规则，随附上游 MIT 声明；程序间一致性用于确认版本行为，独立期望来自抽头手算及另行用分数复算的实数、复数启动例。
+
+固定种子 20260922、形状 `(48,2,1)`（帧、频点、通道）、2 抽头、`delay=2`、遗忘因子 0.95 时，NumPy 递推与上游连续输出的最大绝对误差为 `2.39e-15`。同一对象处理整段或外层分成两块，输出最大差为 0；在零起始第 24 帧重建对象，差异从第 24 帧立即出现，整段最大绝对差约为 2.56。数值为无单位合成复谱上的状态回归，不是语音质量或实时性测量。
+
+最小实验逐帧输入一个固定记录并保留状态，再检查把同一帧流分成不同外层批次是否改变结果。失败实验中途错误重建 `OnlineWPE`，查看启动段反复出现；另测静音、设备重启和房间突变。遗忘因子与功率估计共同决定跟踪，不应仅报告 `taps` 和 `delay`；换版本或接口时还必须重新核对 `delay` 对应的实际时间戳。
 
 ### W03　块在线 WPE 与接口中的限制
 
-`OnlineWPE.step_block()`处理已有历史缓冲形状的块；当前检出源码的 `_get_prediction()`还注明只支持 `block_shift=1`。TensorFlow 路线另有 `tf_wpe.py` 中的 `block_wpe_step()`、`recursive_wpe()`，二者不应凭名字直接互换。见[nara_wpe 官方源码](https://github.com/fgnt/nara_wpe/blob/master/nara_wpe/tf_wpe.py)。
+`OnlineWPE.step_block()`处理已有历史缓冲形状的块；当前检出源码的 `_get_prediction()`还注明只支持 `block_shift=1`。TensorFlow 路线另有 `tf_wpe.py` 中的 `block_wpe_step()`、`recursive_wpe()`，二者不应凭名字直接互换。见[nara_wpe 固定版本源码](https://github.com/fgnt/nara_wpe/blob/a166779cca2088817e330481bd20af1a2c598555/nara_wpe/tf_wpe.py)。
 
 最小复现要先确认块是“送入模型的新样本”还是“含全部历史的窗口”，再比较输出时间戳。失败实验把窗口长度误当帧移，检查是否重复消费或跳过帧。计算实时性时分别报块等待、历史上下文、STFT 和计算时间；有历史记忆不意味着必须等待同样长的未来数据。
 
 ### W04　DNN-WPE：掩码或功率网络与解析求解器
 
-[ESPnet `DNN_WPE`](https://github.com/espnet/espnet/blob/master/espnet2/enh/layers/dnn_wpe.py)先估计掩码并形成跨通道功率，再调用 `wpe_one_iteration()`。外层输入为 `(批, 帧, 通道, 频点)`，内部转成 `(批, 频点, 通道, 帧)`。应把 `dnn_wpe.py`、`mask_estimator.py` 和 `wpe.py` 连起来读，才能知道网络实际改了哪个统计量。
+[ESPnet `DNN_WPE`](https://github.com/espnet/espnet/blob/be79590bb2ff26ffb01bc825c5f68cb9418b7f0d/espnet2/enh/layers/dnn_wpe.py)先估计掩码并形成跨通道功率，再调用 `wpe_one_iteration()`。外层输入为 `(批, 帧, 通道, 频点)`，内部转成 `(批, 频点, 通道, 帧)`。应把 `dnn_wpe.py`、`mask_estimator.py` 和 `wpe.py` 连起来读，才能知道网络实际改了哪个统计量。
 
 最小实验用已知正数功率替换网络输出，检查解析求解，再接入固定 checkpoint。失败实验把掩码设为全零或加入未来语音，验证功率下限与非因果泄漏。该类支持不同掩码估计器，不能仅凭 `iterations=1` 就宣称在线；需要核查网络方向、统计窗口和 padding。
 
 ### W05　WPD：同时利用当前通道与延迟历史
 
-WPD 把当前帧与历史帧一起放入无失真滤波问题。它的约束只施加在扩展向量的当前目标分量，历史部分用于削弱可预测晚期混响。出处为[Nakatani 与 Kinoshita](https://arxiv.org/abs/1908.02710)；实现入口为 [ESPnet `beamformer.py`](https://github.com/espnet/espnet/blob/master/espnet2/enh/layers/beamformer.py) 的 WPD 相关函数及 `dnn_beamformer.py` 的类型选择。
+WPD 把当前帧与历史帧一起放入无失真滤波问题。它的约束只施加在扩展向量的当前目标分量，历史部分用于削弱可预测晚期混响。出处为[Nakatani 与 Kinoshita](https://arxiv.org/abs/1908.02710)；实现入口为 [ESPnet `beamformer.py`](https://github.com/espnet/espnet/blob/be79590bb2ff26ffb01bc825c5f68cb9418b7f0d/espnet2/enh/layers/beamformer.py) 的 WPD 相关函数及 `dnn_beamformer.py` 的类型选择。
 
 读码时先查 `wpd` 分支怎样构造延迟堆叠，再查功率倒数、参考通道和解线性方程。最小实验用正文块对角协方差验证历史权重为零，再加入当前—历史互相关；失败实验使功率权重接近零或增大历史阶数至统计量不足。WPD 与串联 WPE→MVDR 的计算和假设有关联，但不能把两个独立增益相加当作联合结果。
 
@@ -163,13 +181,15 @@ AR-FastMNMF 把自回归混响模型和多源空间/谱模型联合估计，避�
 
 最小实验对双源多频点混合故意交换部分频点的输出；即使每频点都完成分离，重构波形仍不属于单一说话人。失败实验让两个声源的包络很相似，检查基于相关性的排列方法。频点排列与最终两个输出槽位对参考的 PIT 排列是两个不同问题。
 
+教学函数 `pit_permutation()` 为便于逐项核对而枚举全排列，只接受不超过 8 个源；这个上限是教学实现的资源边界，不是 PIT 定义的源数限制。对成对代价可加的目标，更多源应使用线性指派求解器；含跨输出耦合项的集合目标则不能直接这样替换。
+
 ### B02　AuxIVA、IP、ISS 与尺度恢复
 
 AuxIVA 用一个源跨频点的联合模型约束依赖，辅助函数更新避免手工选择普通梯度步长。迭代投影（IP）与迭代源导向（ISS）是不同更新实现，应分别记录，而不是都写成“用了 IVA”。[ssspy `bss/iva.py`](https://github.com/tky823/ssspy/blob/38b9389e8b1914422561f1936d9b28d042d62d2c/ssspy/bss/iva.py)给出 IP1、IP2、ISS1、ISS2 与 IPA 的选项，[Ono 2011 原论文](https://doi.org/10.1109/ASPAA.2011.6082320)说明辅助函数思想。
 
 读码顺序为源代价 → 加权 SCM → 空间更新 → 归一化 → projection-back。最小实验采用确定混合和已知两源，固定初值比较代价与分离；失败实验使用秩亏混合。恢复参考麦的尺度需要独立步骤，SI-SDR 对尺度不敏感，不能用其通过来证明波形幅度已经恢复。
 
-E08-04 对人为指定的解混矩阵演示回投影：原输出 `[2s, -3u]` 乘参考麦系数 `[1/2, -1/6]` 后成为 `[s, 0.5u]`。它恢复参考麦源图像而非统一干声尺度，且不把给定解混矩阵的代数操作冒充 AuxIVA 估计。E08-05 则单独检查掩码 SCM 的分母地板：普通正比例缩放不改变平均值，进入地板后不再保持该性质。两题的输入、答案和边界见 [第 8 章练习](../../chapters/08_speech-separation.md#sec-8-1)。
+E08-04 对人为指定的解混矩阵演示回投影：原输出 `[2s, -3u]` 乘参考麦系数 `[1/2, -1/6]` 后成为 `[s, 0.5u]`。它恢复参考麦源图像而非统一干声尺度，且不把给定解混矩阵的代数操作冒充 AuxIVA 估计。E08-05 单独检查掩码 SCM 的分母地板；E08-06 则把第二块的两个输出槽位交换，展示“每块 PIT 都是 20 dB”仍不能保证直接拼接后的说话人身份连续。三题的输入、答案和边界见 [第 8 章练习](../../chapters/08_speech-separation.md#sec-8-1)。
 
 ### B03　OverIVA、FIVE 与过定提取
 
@@ -225,25 +245,25 @@ GPU-GSS 把频点、段及相同目标的计算合并，提高 GPU 利用率。�
 
 ### N01　Conv-TasNet：编码窗、TCN 与因果配置
 
-Conv-TasNet 学习短窗编码/解码器，并在编码域估计掩码。[正式论文](https://doi.org/10.1109/TASLP.2019.2915167)与[Asteroid `models/conv_tasnet.py`](https://github.com/asteroid-team/asteroid/blob/master/asteroid/models/conv_tasnet.py)用于核对前端和 TCN 分离器；还要读 `masknn/` 中的卷积、归一化和因果开关。
+Conv-TasNet 学习短窗编码/解码器，并在编码域估计掩码。[正式论文](https://doi.org/10.1109/TASLP.2019.2915167)与[Asteroid `models/conv_tasnet.py`](https://github.com/asteroid-team/asteroid/blob/fce87469132760fbab41c20616ea0f0e079aad38/asteroid/models/conv_tasnet.py)用于核对前端和 TCN 分离器；还要读 `masknn/` 中的卷积、归一化和因果开关。
 
 最小复现先固定源数与官方 recipe，记录采样率、编码核、步长、堆叠次数和 normalization。失败实验改变未来帧但保留过去，检查所谓因果配置是否真的不改变过去输出；另以短于编码窗的音频检查 padding。只提供网络构造类并不意味着已有匹配的训练权重。
 
 ### N02　DPRNN：块内、块间与重叠重构
 
-DPRNN 把长序列划成重叠块，分开处理局部和跨块关系。[论文](https://doi.org/10.1109/ICASSP40776.2020.9054266)与[Asteroid `models/dprnn_tasnet.py`](https://github.com/asteroid-team/asteroid/blob/master/asteroid/models/dprnn_tasnet.py)需结合双路径 mask 网络阅读。块大小、块间循环方向和归一化决定能否在线。
+DPRNN 把长序列划成重叠块，分开处理局部和跨块关系。[论文](https://doi.org/10.1109/ICASSP40776.2020.9054266)与[Asteroid `models/dprnn_tasnet.py`](https://github.com/asteroid-team/asteroid/blob/fce87469132760fbab41c20616ea0f0e079aad38/asteroid/models/dprnn_tasnet.py)需结合双路径 mask 网络阅读。块大小、块间循环方向和归一化决定能否在线。
 
 最小实验用脉冲或已知索引序列检查分块/合并是否保留顺序，再做双源分离。失败实验在跨块边界换人，并测极短、非整块长度的输入。DPRNN 的分块主要是建模和计算设计，不能据此自动宣称它已经解决长会议的输出身份连续性。
 
 ### N03　SepFormer：双路径注意力与整句上下文
 
-SepFormer 把双路径中的序列模型换为注意力结构。[正式论文](https://doi.org/10.1109/ICASSP39728.2021.9413901)与[SpeechBrain `lobes/models/dual_path.py`](https://github.com/speechbrain/speechbrain/blob/develop/speechbrain/lobes/models/dual_path.py)应配合 `recipes/WSJ0Mix/separation/` 中的配置及训练入口阅读。配置、模型与 checkpoint 必须匹配。
+SepFormer 把双路径中的序列模型换为注意力结构。[正式论文](https://doi.org/10.1109/ICASSP39728.2021.9413901)与[SpeechBrain `lobes/models/dual_path.py`](https://github.com/speechbrain/speechbrain/blob/89ead74d163463d30c62329a09cfdb4c54f5abc1/speechbrain/lobes/models/dual_path.py)应配合 `recipes/WSJ0Mix/separation/` 中的配置及训练入口阅读。配置、模型与 checkpoint 必须匹配。
 
 最小复现只使用一个固定公开模型的匹配采样率与源数；失败实验延长音频，记录内存和输出槽位变化。注意力读到未来、全局归一化读完整句以及外层分块拼接分别检查。模型名和“低 RTF”不能代替前瞻、首帧时间和长录音峰值内存。
 
 ### N04　TF-GridNet：频率、时间与多通道输入
 
-[ESPnet `tfgridnet_separator.py`](https://github.com/espnet/espnet/blob/master/espnet2/enh/separator/tfgridnet_separator.py)明确标为离线 `TFGridNet`，输入可为 `(批, 样本, 麦克风)`，固定 `n_imics`。其短时变换、频率/时间建模和注意力应与[论文](https://doi.org/10.1109/ICASSP49357.2023.10094992)及多通道扩展分开核对。
+[ESPnet `tfgridnet_separator.py`](https://github.com/espnet/espnet/blob/be79590bb2ff26ffb01bc825c5f68cb9418b7f0d/espnet2/enh/separator/tfgridnet_separator.py)明确标为离线 `TFGridNet`，输入可为 `(批, 样本, 麦克风)`，固定 `n_imics`。其短时变换、频率/时间建模和注意力应与[论文](https://doi.org/10.1109/ICASSP49357.2023.10094992)及多通道扩展分开核对。
 
 最小实验从官方配置检查输入标准差归一化、参考麦、输出源数和 STFT 长度；失败实验交换或缺失一个麦克风、改变阵列几何，并用静音检测归一化稳定性。源码的不同版本/变体不能共用一句“TF-GridNet 支持任意阵列”。推理返回多个单通道波形，也不等于每个输出永久绑定一个身份。
 
@@ -277,7 +297,7 @@ CSS 在长录音上产生若干不重叠输出流，活动人数与槽位对应�
 
 NOTSOFAR-1 的固定源码从 `run_training_css_local.py` 进入 `css/training/train.py`，网络封装位于 `css/training/conformer_wrapper.py`；推理入口 [`run_inference.py`](https://github.com/microsoft/NOTSOFAR1-Challenge/blob/6f58e08b008f7530ba4141f0aeb02447c70b6fd7/run_inference.py)按配置选择单通道或多通道会话，再调用完整流水线。其默认调试配置虽只筛选一个会话，入口仍先请求下载整个指定开发集和模型，因此不能把直接运行脚本当成无下载的最小检查。本书已取得并核对源码入口，未执行这些自动下载或训练；数据、模型、识别后端与计算资源仍是额外前提。
 
-最小复现需要同一长录音的窗口、步幅、重叠匹配、泄漏处理及最终评分规则；不能仅对每块分别取最优 PIT 后拼接。失败实验在静音之后更换说话人，让输出槽位交换，检查跨块匹配是否误连。cpWER、ORC-WER 和说话人归属 WER 的映射对象不同，应连同分段与转录协议固定。
+最小复现需要同一长录音的窗口、步幅、重叠匹配、泄漏处理及最终评分规则；不能仅对每块分别取最优 PIT 后拼接。E08-06 是一个不依赖模型权重的四点序列反例：两块各自的最优 PIT 都为 20 dB，第二块交换槽位后直接拼接的两条长流却都约为 −3.69 dB。失败实验还应在静音之后更换说话人，检查跨块匹配是否误连。cpWER、ORC-WER 和说话人归属 WER 的映射对象不同，应连同分段与转录协议固定。
 
 ### N10　SGMSE+、StoRM 与扩散迭代
 
@@ -296,6 +316,12 @@ NOTSOFAR-1 的固定源码从 `run_training_css_local.py` 进入 `css/training/t
 [AudioSep 官方仓库](https://github.com/audio-agi/audiosep/tree/944583f18b84589dc965de3ad77525c945334252)的 `pipeline.py`先用 `build_audiosep()`加载分离模型和 CLAP 查询编码器，再由 `separate_audio()`将文本条件送入分离器。[正式论文](https://doi.org/10.1109/TASLP.2024.3520017)的目标是文本查询声音分离，不能代替注册语音 TSE 的身份评测。锁定入口会将音频转为单声道 32 kHz，不能把原始多通道空间信息保留作为默认假设。
 
 最小复现用同一音频改变查询词并保存实际重采样参数、配置、checkpoint 与分块开关。失败实验查询录音中不存在的声音，以及两个同类声源，观察误提取和身份歧义；导出 `int16` 前还应检查浮点幅度，避免超范围转换带来的失真被误认为模型失真。代码 MIT 与托管主模型、媒体数据的许可分别记录，本书未运行该权重的推理。
+
+### N13　Online SpatialNet：因果网络与跨调用状态
+
+[NBSS 官方仓库](https://github.com/Audio-WestlakeU/NBSS/tree/cc42fc8ad2e6642c09b8f4169a85b4766dc22b7e)中的 [`models/arch/OnlineSpatialNet.py`](https://github.com/Audio-WestlakeU/NBSS/blob/cc42fc8ad2e6642c09b8f4169a85b4766dc22b7e/models/arch/OnlineSpatialNet.py)实现面向静止与移动说话人的多通道长时增强，论文比较在线掩码注意力、Retention 与 Mamba 时序模块。[论文预印本](https://arxiv.org/abs/2403.07675)说明算法设计；源码末尾还给出固定配置的因果前缀自测，用来检查附加未来帧是否改变既有前缀。本书当前环境没有 PyTorch、Mamba 与 CUDA，未实际运行这项自测，不能把源码中的测试代码当作本书已复现实验。训练入口还要结合 `SharedTrainer.py`、`configs/onlineSpatialNet.yaml`、数据加载器和 `generate_rirs.py` 阅读。
+
+该仓库为 MIT，但运行依赖 PyTorch、Lightning、`mamba-ssm`、`causal-conv1d` 及相应 CUDA 环境。更重要的是，顶层 `OnlineSpatialNet.forward()` 调用每一层时传入的 `state` 为 `None`，没有把 `CausalConv1d` 等子层的状态作为顶层输入输出暴露。因此“网络是因果的”“整段计算量随长度近似线性”和“任意外层块可连续续算”是三个不同命题；固定版本不能仅凭类名证明第三项。最小实验应比较整段、任意分块且保留状态、每块重置三种输出，再测 251/1000/1024 帧、静止/移动源、麦数变化和无 Mamba/CUDA 的 CPU 路径；没有显式跨调用状态时应记录不等价，而不是用每块真实参考重排掩盖边界差异。
 
 ## 6. 复现实验的共同记录表
 

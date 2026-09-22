@@ -5,6 +5,11 @@ from __future__ import annotations
 import itertools
 import numpy as np
 
+from .conventions import finite_real_array, finite_real_scalar
+
+
+MAX_EXHAUSTIVE_PIT_SOURCES = 8
+
 
 def si_sdr(estimate: np.ndarray, reference: np.ndarray, *, zero_mean: bool = True, epsilon: float = 1e-12) -> float:
     """Compute SI-SDR with a relative energy floor and no time alignment.
@@ -15,13 +20,14 @@ def si_sdr(estimate: np.ndarray, reference: np.ndarray, *, zero_mean: bool = Tru
     the positive cap, not infinity. See Le Roux et al. (ICASSP 2019), eq. (3--5).
     """
 
-    estimate = np.asarray(estimate, dtype=float)
-    reference = np.asarray(reference, dtype=float)
+    estimate = finite_real_array(estimate, "estimate")
+    reference = finite_real_array(reference, "reference")
     if estimate.ndim != 1 or estimate.shape != reference.shape or estimate.size == 0:
         raise ValueError("estimate and reference must be equal-length 1-D arrays")
     if not np.all(np.isfinite(estimate)) or not np.all(np.isfinite(reference)):
         raise ValueError("estimate and reference must be finite")
-    if not np.isfinite(epsilon) or not 0.0 < epsilon < 1.0:
+    epsilon = finite_real_scalar(epsilon, "epsilon")
+    if not 0.0 < epsilon < 1.0:
         raise ValueError("epsilon must be finite and between zero and one")
     estimate_peak = float(np.max(np.abs(estimate)))
     reference_peak = float(np.max(np.abs(reference)))
@@ -49,15 +55,19 @@ def si_sdr(estimate: np.ndarray, reference: np.ndarray, *, zero_mean: bool = Tru
 
 
 def pit_permutation(estimates: np.ndarray, references: np.ndarray) -> tuple[tuple[int, ...], float]:
-    """Find the output-to-reference permutation maximizing summed SI-SDR."""
+    """Find the best SI-SDR permutation by enumeration for at most eight sources."""
 
-    estimates = np.asarray(estimates, dtype=float)
-    references = np.asarray(references, dtype=float)
-    if estimates.ndim != 2 or estimates.shape != references.shape:
+    estimates = finite_real_array(estimates, "estimates")
+    references = finite_real_array(references, "references")
+    if estimates.ndim != 2 or estimates.shape != references.shape or estimates.shape[1] == 0:
         raise ValueError("estimates and references must have shape (source, sample)")
     count = estimates.shape[0]
     if count == 0:
         raise ValueError("PIT requires at least one source")
+    if count > MAX_EXHAUSTIVE_PIT_SOURCES:
+        raise ValueError(
+            f"teaching PIT exhaustively enumerates at most {MAX_EXHAUSTIVE_PIT_SOURCES} sources"
+        )
     scores = np.empty((count, count))
     for output in range(count):
         for reference in range(count):
@@ -81,16 +91,24 @@ def masked_spatial_covariance(spectrum: np.ndarray, mask: np.ndarray, *, epsilon
     """
 
     x = np.asarray(spectrum)
-    weights = np.asarray(mask, dtype=float)
+    weights = finite_real_array(mask, "mask")
     if x.ndim != 3 or weights.shape != (x.shape[0], x.shape[2]):
         raise ValueError("expected spectrum (F,M,T) and mask (F,T)")
     if not np.all(np.isfinite(x)) or not np.all(np.isfinite(weights)) or np.any(weights < 0):
         raise ValueError("spectrum must be finite and mask weights finite and non-negative")
-    if not np.isfinite(epsilon) or epsilon <= 0.0:
+    epsilon = finite_real_scalar(epsilon, "epsilon")
+    if epsilon <= 0.0:
         raise ValueError("epsilon must be finite and positive")
-    numerator = np.einsum("ft,fmt,fnt->fmn", weights, x, x.conj())
-    denominator = np.sum(weights, axis=1)[:, None, None]
-    return numerator / np.maximum(denominator, epsilon)
+    with np.errstate(over="ignore", invalid="ignore"):
+        numerator = np.einsum("ft,fmt,fnt->fmn", weights, x, x.conj())
+        denominator = np.sum(weights, axis=1)[:, None, None]
+    if not np.all(np.isfinite(numerator)) or not np.all(np.isfinite(denominator)):
+        raise ValueError("masked SCM accumulation exceeds the float64 range")
+    with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+        covariance = numerator / np.maximum(denominator, epsilon)
+    if not np.all(np.isfinite(covariance)):
+        raise ValueError("masked SCM result exceeds the float64 range")
+    return covariance
 
 
 def mask_mvdr_2x2(
@@ -113,10 +131,11 @@ def mask_mvdr_2x2(
         raise ValueError("spectrum must have shape (F,2,T)")
     if not np.all(np.isfinite(x)):
         raise ValueError("spectrum must be finite")
-    if not np.isfinite(diagonal_loading) or diagonal_loading < 0.0:
+    diagonal_loading = finite_real_scalar(diagonal_loading, "diagonal_loading")
+    if diagonal_loading < 0.0:
         raise ValueError("diagonal_loading must be finite and non-negative")
-    target_weights = np.asarray(target_mask, dtype=float)
-    interference_weights = np.asarray(interference_mask, dtype=float)
+    target_weights = finite_real_array(target_mask, "target_mask")
+    interference_weights = finite_real_array(interference_mask, "interference_mask")
     # Avoid squaring extreme but finite STFT amplitudes. Real/imaginary peak
     # also avoids overflow in abs(complex) near the floating-point limit.
     input_scale = np.maximum(np.max(np.abs(x.real), axis=(1, 2)),

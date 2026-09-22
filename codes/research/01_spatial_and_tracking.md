@@ -23,8 +23,14 @@
 | spatial-audio-framework | `18fd5aba46e20787b51f28f7197a68506c965c07` | 核心 ISC；`saf_tracker`、`saf_hades` 等可选模块 GPLv2，BLAS/FFT 后端另有条款 |
 | frida-original | `ff5d51e498805b862c342dd216ccfffb22444b7f` | MIT；原实验采用 Python 2.7，录音另外获取并核对许可 |
 | acoular | `13d3d7df74ac1a8135c7ec71da098cbbc03d8652` | BSD-3-Clause；声学校准和测量文件需单独确认 |
+| sbl | `d4bba35e9b60907d3024473ba5a41046450baae0` | GPL-3.0；Python/MATLAB，旧 Python 演示不构成现代环境兼容性保证 |
+| robustsbl | `d746266a1336d4467f60b6f7b7e8b4695a01d26d` | MIT；MATLAB，部分模式和数据生成使用统计工具箱函数 |
+| btk20 | `feff19ec8bcb770f6530fe280dc3ccafc2f5984a` | 根许可 MIT；C++/Python，GSL、SWIG、libsndfile 等依赖分别核对 |
+| smpphat | `6fd33e6eb3251078a4cd9793dde909e2500265cc` | GPL-3.0；C/FFTW 单精度库，固定构建文件含 x86 SIMD 选项 |
 
 许可证依据为各官方仓库的 [doatools LICENSE](https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/LICENSE.md)、[sfa LICENSE](https://github.com/AppliedAcousticsChalmers/sound_field_analysis-py/blob/4b03ee123d98370c55f744c4f8d7c955fbc099f1/LICENSE)、[Politis LICENSE](https://github.com/polarch/Spherical-Array-Processing/blob/f192aac652b023ee4ab8673adce20ec13bf5450c/LICENSE.md)、[SAF LICENSE](https://github.com/leomccormack/Spatial_Audio_Framework/blob/18fd5aba46e20787b51f28f7197a68506c965c07/LICENSE.md)、[FRIDA LICENSE](https://github.com/LCAV/FRIDA/blob/ff5d51e498805b862c342dd216ccfffb22444b7f/LICENSE) 和 [Acoular LICENSE](https://github.com/acoular/acoular/blob/13d3d7df74ac1a8135c7ec71da098cbbc03d8652/LICENSE)。这些条款只用于说明相应项目的源码，不能替本书所有者选择发布许可证。
+
+SBL、RobustSBL、BTK 和 SMP-PHAT 的依据分别是固定提交的 [SBL LICENSE](https://github.com/gerstoft/SBL/blob/d4bba35e9b60907d3024473ba5a41046450baae0/LICENSE)、[RobustSBL LICENSE](https://github.com/NoiseLabUCSD/RobustSBL/blob/d746266a1336d4467f60b6f7b7e8b4695a01d26d/LICENSE)、[BTK LICENSE](https://github.com/kkumatani/distant_speech_recognition/blob/feff19ec8bcb770f6530fe280dc3ccafc2f5984a/LICENSE) 和 [SMP-PHAT LICENSE](https://github.com/FrancoisGrondin/smpphat/blob/6fd33e6eb3251078a4cd9793dde909e2500265cc/LICENSE)。独立上游目录不改变本书代码许可；取得状态以 [SOURCE_STATUS.json](../SOURCE_STATUS.json) 为准，下面没有运行记录的实验均为建议方案。
 
 ## 基础模型、统计估计与校准
 
@@ -48,7 +54,7 @@
 
 ### 4. 批处理、加权与递推空间协方差
 
-对应 §2.5、§5.4、§5.9。本书 `covariance.py` 先验证每个频点的矩阵厄米性、非负二次型和权重归一化。掩码协方差以掩码和为有效权重；当分母近零时应报告统计无效。递推方式还需保留历史权重，否则启动阶段统计与稳态统计的尺度可能不同。
+对应 §2.5、§5.4、§5.9。本书 `covariance.py` 的回归测试检查矩阵厄米性、非负二次型和权重归一化。掩码协方差按掩码和归一化；全零权重表示没有可用统计，接口明确拒绝。非零掩码整体乘同一正数不会改变归一化二阶矩，所以不能仅因绝对掩码和很小就判断无效；实现先按最大权重缩放以避免上下溢。E02-06 用 $10^{-200},1,10^{200}$ 三种共同尺度验证这一点，但缩放不增加独立样本，也不改善统计置信度。递推方式还需保留历史权重，否则启动阶段统计与稳态统计的尺度可能不同。
 
 实验将同一组快拍分别整体处理和分块递推，比较约定一致时的结果；再给全零掩码、单个快拍和完全相关通道。工业中同时记录有效快拍数、条件数、遗忘因子和目标泄漏检测。矩阵维度正确、求解没有报错，仍不足以证明它描述的是噪声而非目标。
 
@@ -62,7 +68,11 @@ E04-05 使用指定谱 $[9,4,1.1,0.9]$ 和 $N=100$，四个 MDL 总分为约 171
 
 公式核查使用 Wax 与 Kailath 的 *Determining the number of signals by information theoretic criteria*，ICASSP **1984**，§II～IV、式(10)～(15)，[DOI](https://doi.org/10.1109/ICASSP.1984.1172389)及[作者上传原文](https://www.researchgate.net/profile/Mati-Wax/publication/3177764_Detection_of_signals_by_information_theoretic_criteria/links/56cacde408aee3cee54041cd/Detection-of-signals-by-information-theoretic-criteria.pdf)。[1985 年期刊论文](https://doi.org/10.1109/TASSP.1985.1164557)另题为 *Detection of signals by information theoretic criteria*；ResearchGate 的该期刊条目挂载的是 1984 年会议稿，引用定位以 PDF 的实际版本为准。核查日期：2026-09-22。
 
-建议用已知白噪声方差的双源模型，改变快拍数、源强比和源相关性，报告源数正确率而非只展示一次输出。重叠 STFT 帧不天然独立，把帧数全部当成独立快拍会改变惩罚口径；有色噪声也可能被误识别为额外声源。源数检测应有时间迟滞，避免每帧改变下游子空间维度。
+E04-06 已加入实际重复抽样，入口为 [`mdl_repeated_trials.py`](../examples/mdl_repeated_trials.py)，也由 `exercises_spatial.py` 执行。四麦半波长线阵，1000 Hz、343 m/s、两源 $\pm30^\circ$；每组 200 次独立圆对称复高斯快拍试验，使用 PCG64 与 `SeedSequence([20260922, 组编号])`。七组分别改变快拍数 100/16、每源功率 1/0.1、独立/完全相干源，以及无源时白噪声/协方差为 $\operatorname{diag}(9,4,1,1)$ 的有色噪声。白噪声每通道方差为 1；按阵列平均功率定义的双源 SNR 为 3.01/−6.99 dB。源和噪声每次重新生成，协方差不减样本均值、不加载；这里没有波形、STFT 或音频采样率。
+
+完整计数与逐条件 Wilson 95% 比例区间见 [§4.10 的 E04-06](../../chapters/04_doa-estimation.md#sec-4-10)。NumPy 2.5.3 下，独立双源功率 1、100 快拍的 200 次均输出 2，而降至 16 快拍时为 163 次；有色纯噪声的 200 次均输出 2，尽管物理源数为 0。相干双源有 199 次输出 1，这与总体信号秩 1 一致，但不等于检出两个物理源。区间只描述指定条件下输出与物理源数相符的重复事件，不是单次 MDL 置信度；全相符也不保证以后不失败。[区间公式：NIST/SEMATECH §7.2.4.1](https://itl.nist.gov/div898/handbook/prc/section2/prc241.htm)。
+
+这组实验没有检验重叠 STFT 帧、不同源强比、真实房间或时间迟滞。重叠帧不天然独立，把帧数全部当成独立快拍会改变评分口径；工程中的源数检测还应评估迟滞，避免每帧改变下游子空间维度。不能由本书七组数学仿真推出真实录音检测率。
 
 ### 6. 前向与前后向空间平滑
 
@@ -99,6 +109,30 @@ E04-05 使用指定谱 $[9,4,1.1,0.9]$ 和 $N=100$，四个 MDL 总分为约 171
 这是 SRP 搜索加速的补充研究。固定几何与频点后，SRP 映射矩阵可先做截断 SVD；在线把 PHAT 观测投影到低维空间，再搜索候选方向。保留秩控制近似误差与每帧成本；多源扩展还需逐次投影已解释的分量。[单源原论文](https://arxiv.org/abs/1811.11785)、[多源原论文](https://sls.csail.mit.edu/publications/2019/Grondin_Interspeech-2019.PDF)。
 
 最小实验应先对同一个 SRP 矩阵比较完整乘法与截断乘法，测量分数误差，再比较 DOA；不能只报告投影速度。高频、复杂几何、较密网格可能改变所需秩。本文尚未确认与这两篇论文唯一对应且许可明确的作者实现，因此此项保留原理索引，不以普通 SVD 库替代算法源码。
+
+#### SMP-PHAT：合并重复基线，而非截断矩阵
+
+另一条降低 SRP 运算量的路线是合并麦对的 PHAT 互谱。SMP-PHAT（Steered response power by Merging Pairs with PHAse Transform）利用远场下相同基线的时延相同：基线向量相同的麦对先在频域求和，再共用一次逆变换和时延查表；向量相反时，先取相应互谱的共轭。只有长度相同且相互平行才满足这一条件，不能把所有平行麦对合并。[Grondin 等 2022 预印本，§3 算法2～3](https://arxiv.org/html/2203.14409v1)。
+
+官方 `smpphat` 的阅读顺序为 `demo/ssl.c` → `src/system.c::scmphat_call` → `smp_construct/smp_call`；同文件的 `srp_construct/srp_call` 提供未合并对照，`src/signal.c` 定义阵列和方向数据。输入须保持录音通道与坐标次序一致，候选方向用三维单位向量，几何长度与声速采用相容单位。输出是候选方向及评分，不是经过校准的方向概率。[固定提交算法源码](https://github.com/FrancoisGrondin/smpphat/blob/6fd33e6eb3251078a4cd9793dde909e2500265cc/src/system.c)。
+
+固定版本有三项复现条件：
+
+1. `CMakeLists.txt` 要求 `pkg-config` 和 `fftw3f`，并硬编码 `USE_SIMD`、`-msse3`、`-ffast-math`。非 x86 环境需要另行适配并记录补丁，不能把作者的硬件测速直接移到另一平台。
+2. `wav_construct` 直接读取固定头结构，只接受 16 位 PCM；它不是通用 RIFF 块解析器。运行前检查 WAV 头、通道数、采样率和数据区，不能仅凭文件扩展名判断相容。
+3. `smp_construct` 的合并容差为 `1e-5`，论文算法文本给出 `1e-4`。实现把同一常数用于基线长度差与点积残差，改变坐标单位可能改变分组；应保存实际坐标单位、容差和分组结果。
+
+本书于 2026-09-23 实际编译并调用上述固定提交，使用 Apple clang 21、arm64 与 FFTW 3.3.10 单精度静态库。编译直接使用未修改的 `system.c`、`signal.c`，不经过硬编码 x86 选项的上游 CMake；这只改变构建入口，不修补算法。两个处理对象按“创建、调用、复制结果、销毁”的顺序分别运行，因为上游析构函数会执行全局 `fftwf_cleanup`，不能让另一个对象的计划跨过该调用继续存活。[FFTW 计划生命周期说明](https://fftw.org/fftw3_doc/Using-Plans.html)。
+
+输入为半径 0.032 m 的四麦菱形、16 kHz 采样率、声速 343 m/s、64 点原频谱与 4 倍插值，扫描 24 个相隔 15° 的水平单位向量。0° 指向 +y，正角转向 +x，真值为 45°。DC 为 1，正频率 bin1～31 为单位幅度 PHAT 互谱，原 Nyquist bin32 置零，保证实信号频谱端点约定成立。逆变换不归一化，分数不是概率。固定输入、完整逐方向结果和源码摘要见 [运行报告](../reports/smpphat_reference.json)。
+
+规则菱形的 6 个麦对合并为 4 组；将第四麦沿 y 移动 0.5 mm 后，分组变为 6 组。独立的有符号时延查表与直接离散傅里叶求和确认，规则几何下理论 SRP/SMP 分数最大差约为 $1.99\times10^{-13}$。但原 C 程序的最大差为 76.5567，SRP、SMP 相对正确基线的最大误差分别为 95.1649、171.7215。两者的峰方向碰巧都是 45°，不能据此判定等价检查通过。
+
+问题位于 `system.c` 的两处查表索引：负的 `roundf` 结果先被转换成 `unsigned int`，随后才加中心偏移。该浮点值不在无符号类型的表示范围内，行为未定义；本机编译结果将负值转成 0。例如应取索引 3 的一项实际取了中心索引 9，规则案例共有 66 项 SRP 索引不符。使用程序实际索引再做独立傅里叶求和，SRP/SMP 分数误差仅约 $3.35\times10^{-5}$/$2.36\times10^{-5}$，因而将主要差异定位到查表而非变换约定。[Clang 浮点转换说明](https://clang.llvm.org/docs/UsersManual.html)。
+
+扰动阵列的原 C 程序虽然给出 SRP 与 SMP 逐点相同的分数，两者相对正确基线仍有约 96.0504 的最大误差。这也说明两个程序互相吻合不能替代独立基线。当前报告明确记为 `failed_portability`，保留未修改的上游源码；不能把这一版本视为已经验证的 ARM 定位实现。
+
+实验使用合成远场互谱，不含真实录音、噪声、混响或运行速度评测。近场时，相同基线处于不同位置会产生不同距离差，合并不再有远场等价保证；无重复基线的阵列可能没有节省。后续速度测试仍需分别记录初始化、逐帧耗时、内存与浮点选项。
 
 ### 11. Bartlett 与 Capon 空间谱
 
@@ -154,19 +188,74 @@ E04-05 使用指定谱 $[9,4,1.1,0.9]$ 和 $N=100$，四个 MDL 总分为约 171
 
 建议先用落格点双源，再把源移到相邻格点中间，比较支持泄漏和正则参数敏感性。求解器返回可行解、峰数达到要求，只表示数值过程完成。工程记录应包括字典归一化、正则目标、求解器版本、终止容差、迭代次数和残差；可行性约束太严时应保留失败状态。
 
+#### 多快拍、多频稀疏贝叶斯学习
+
+稀疏贝叶斯学习（Sparse Bayesian Learning，SBL）在候选方向上估计源功率超参数，与前面的组稀疏罚项不是同一个求解器。作者 `gerstoft/SBL` 提供 `SBL_MF_Python/sbl.py::SBL`，MATLAB 对应 `SBL_MF_matlab/SBL_v4.m`；演示从 `Beamforming_demo.m` 开始读，参数定义见 `SBLSet.m`。[Gerstoft 等 2016 原论文](https://doi.org/10.1109/LSP.2016.2598550)、[固定 Python 核心](https://github.com/gerstoft/SBL/blob/d4bba35e9b60907d3024473ba5a41046450baae0/SBL_MF_Python/sbl.py)。
+
+Python 核心输入字典 `A` 为 `M × G × F`，观测 `Y` 为 `M × L × F`；`G` 是候选方向数，`L` 是快拍数。与本文通用的 `M × F × T` 相比，最后两轴要交换。字典承载传播相位约定，不能只转换数组形状而不核对角度零点和复指数符号。返回值为候选功率 `gamma` 和迭代报告，不直接是角度。
+
+沿源码阅读时，依次检查样本二阶矩、功率初始化、相对功率剪枝、逐频求解、功率更新和噪声更新。`options.Nsource` 用于选峰，噪声估计的分母为 `M−Nsource`；该实现需要给定源数且满足相应维数条件，不能称为“自动免源数”。每频噪声模型为标量乘单位阵，空间有色噪声不属于这个模型。
+
+核心 Python 文件依赖 NumPy；完整演示与 MATLAB 环境分别检查。作者 README 说明 Python 版本自 2020 年夏后未使用，旧示例中的外部数据链接也不属于已取得的代码。工业使用还要记录有效频带、共同方向支持的时间跨度、字典归一化、剪枝阈值、停止误差和最大迭代数；运动中的声源不一定满足同一批快拍共享支持的假设。
+
+本书已用 [SBL 复现脚本](../examples/reproduce_sbl_reference.py)实际调用上述固定 Python 核心，没有复制或改写上游 GPL 算法。2026-09-22 的执行环境为 Python 3.13.12、NumPy 2.5.3、macOS arm64；[逐例 JSON 报告](../reports/sbl_reference.json)保存上游提交、核心与调用脚本的 SHA-256、环境、完整功率谱、实际迭代误差序列和协方差。运行前检查上游 `HEAD`、受 Git 跟踪文件的修改状态及核心文件摘要，不把未跟踪文件也称为已经核查。
+
+实验使用 4 麦均匀线阵，声速 343 m/s、频率 1000 Hz、间距 0.1715 m，候选范围 −80°～80°、步长 1°。采用本书 0° 为宽侧、正角朝 +x 的约定，字典第 $m$ 个阵元为 $e^{+j\pi m\sin\theta}$，每列平方范数为 4。源快拍为两个相互独立的单位功率圆对称复高斯序列，共 200 帧；这些是窄带复数样本，不是音频录音，因而没有音频采样率或 STFT 窗参数。
+
+随机种子为 20260922，各条件共享底层源与白噪声随机样本，没有逐次归一化。基本条件的每麦噪声方差为 0.02，总源功率与噪声功率的总体比为 $2/0.02=100$，即 20 dB；低信噪比条件仅将该方差改为 20，即 −10 dB。有色条件仅将噪声相关矩阵改成 $[0.9^{|i-j|}]$，仍保持每麦方差 0.02。停止条件为相对功率更新小于 $10^{-5}$，最多 1000 次更新；剪枝比为 $10^{-4}$、固定点参数为 1。完整参数见脚本与报告。
+
+| 条件 | 真方向（°） | SBL 峰方向（°） | 更新次数 | 停止原因 |
+|---|---|---|---|---|
+| 网格上、20 dB 白噪声 | −30，30 | −30，30 | 309 | 满足更新阈值 |
+| 两个真角均平移 0.5° | −29.5，30.5 | −30，31 | 168 | 满足更新阈值 |
+| −10 dB 白噪声 | −30，30 | −21，31 | 1000 | 达到次数上限 |
+| 20 dB 空间有色噪声 | −30，30 | −30，30 | 259 | 满足更新阈值 |
+| 同一基本输入，错设源数为 1 | −30，30 | 30 | 1000 | 达到次数上限 |
+
+独立校验没有用 SBL 自身生成期望值：±30° 的导向列可手算为 `[1,−j,−1,j]` 与 `[1,j,−1,−j]`，两列正交；基本条件的总体协方差特征值因此为 4.02、4.02、0.02、0.02。逐通道、逐快拍的标量求和与矩阵乘法所得样本二阶矩最大差小于 $8\times10^{-15}$。方向峰另由严格局部极大值检查，峰不足时不补索引 0；错设一个源的结果保留漏源数，不计算容易误导的双源平均误差。上游报告的迭代字段从 0 开始，本表用实际执行次数，即该字段加 1。
+
+离网格样例的两个峰各偏离真值 0.5°，说明这次输出仍受离散候选限制。有色样例这次找对两个网格点，却不能证明白噪声模型对有色噪声普遍有效。低信噪比与错设源数两行没有满足停止阈值，不能称为收敛解。报告还保留同一输入、同一假定源数的 MUSIC 峰值；这些单次、配对结果不构成成功率估计、论文性能复现或算法优劣排名。达到小更新误差本身也不证明方向正确。
+
+取得锁定源码后，可在仓库根目录执行；没有源码时程序明确报错，不自动联网或安装依赖：
+
+```bash
+.venv/bin/python codes/examples/reproduce_sbl_reference.py --output codes/reports/sbl_reference.json
+.venv/bin/python -m unittest tests.test_codes_sbl_reference -v
+```
+
+#### RobustSBL：异常快拍的损失函数选择
+
+少量大幅快拍可能主导普通二阶矩。RobustSBL 根据快拍相对当前散布矩阵的距离调整权重，再更新方向功率；Gauss 模式使用普通权重，t、Huber 和 Tyler 模式对大距离观测采用不同权重。它改变的是统计损失和更新中的快拍权重，不是简单把输入限幅。[Mecklenbräuker 等 2024，Signal Processing 220，109461，§3～4](https://doi.org/10.1016/j.sigpro.2024.109461)；[作者公开稿 §III-B～E](https://arxiv.org/html/2301.06213v2)。
+
+机构仓库 `NoiseLabUCSD/RobustSBL` 的入口为 `_common/SBL_v5p12.m::SBL_v5p12`，参数由 `_common/SBLSet.m` 定义。函数输入仍为字典 `M × G × F` 与快拍 `M × L × F`；第一个输出是峰索引 `Ilocs`，不是残留头注所写的功率向量。阅读时沿 `method` 检查 `SBL-G`、`SBL-T`、`SBL-H`、`SBL-Tyl`，同时核对 `upar`、已知源数、选峰间隔与迭代报告。[固定作者源码](https://github.com/NoiseLabUCSD/RobustSBL/blob/d746266a1336d4467f60b6f7b7e8b4695a01d26d/_common/SBL_v5p12.m)。
+
+`SingleMC_SNR_fixedDOA.m` 和 `SingleMC_SNR_randomDOA.m` 是实验入口；固定角脚本当前只执行 `for isnr=6`，直接运行不等于复现完整 SNR 曲线。Huber 参数计算和部分数据生成调用 `chi2inv`、`chi2cdf`、`chi2rnd`，需要相应 MATLAB 统计功能。Tyler 与 t 损失的一致性辅助函数在核心文件尾部，不是另一个待下载工具包。Tyler 主要确定散布形状，比较功率尺度前还须核对归一化。
+
+最小实验建议在同一组窄带双源快拍上先保留 Gaussian 对照，再按明确比例和幅度加入异常快拍，比较 Gauss 与 Huber 模式。每个条件保留相同基底样本，记录异常位置、损失参数、检测失败、角误差和迭代数；重复次数及区间算法随结果报告。该方案尚未执行，也不能把模型中的异常快拍直接称为真实风噪、削波或混响录音。
+
 ## 波束、球阵与工业声源成像
 
 ### 20. DSB、超指向与加载 MVDR
 
 对应 §5.2～5.4。本书 `beamforming.py` 给出从固定权重到估计噪声协方差的最小路径。对角加载改变的是矩阵的特征值和权重范数；以均值特征值归一化的加载系数与直接添加绝对功率不能混用。每次设计都同时输出目标响应、WNG 和噪声输出。
 
+E05-05 给出已执行的有限 INR 反例：半波长双麦、目标 0°、干扰 30°、白噪声方差 1。线性 INR 为 1、10、100 时，干扰方向响应分别为 −9.03、−23.84、−43.10 dB，真正零点分别为 44.82°、32.03°、30.21°。这是指定理想协方差的单频手算，不是语音实验；有限噪声下的 MVDR 抑制不能写成指定方向的精确硬零陷。代码与解析式分别求零点，独立回归见 `test_codes_spatial_round3.py`。DSB 归一化另覆盖导向尺度 $10^{-200}$ 与 $10^{200}$，先缩放再计算范数，避免有限输入平方溢出后悄悄返回零权重。
+
 建议使用 §5.3 的双麦解析协方差，增加增益误差与相位误差，按加载强度画出失真和降噪的关系。工业策略需要无效协方差检测、上一组权重保留、权重平滑和输出限幅。求解成功不能替代目标保持检验；过度加载时接近固定波束是可以解释的设计结果。
 
 ### 21. LCMV、Frost 与 GSC
 
-对应 §5.5～5.6。LCMV 直接求满足多个线性约束的最小功率解；Frost 在时域抽头空间投影更新以保持约束；GSC 用固定支路和阻塞后的自适应支路实现同类约束结构。本书当前只给 LCMV 闭式解与 GSC 阻塞基线，没有完整 Frost 或持续自适应 GSC 产品实现。
+对应 §5.5～5.6。LCMV 直接求满足多个线性约束的最小功率解；Frost 在时域抽头空间投影更新以保持约束；GSC 用固定支路和阻塞后的自适应支路实现同类约束结构。本书教学包只给 LCMV 闭式解与 GSC 阻塞基线；持续自适应 GSC 可另读 BTK2.0，不能把其子带实现直接登记为正文时域 Frost。
 
 最小实验先检查约束矩阵独立性和阻塞残差，再将目标方向偏移少量，测量目标泄漏到参考支路后被抵消的程度。工业中冻结条件、步长、滤波长度、双讲/活动控制和状态复位必须与滤波器一起审查。约束保持不等于目标真实方向仍在约束集合中。
+
+BTK2.0 是 Kumatani、McDonough 等作者的空间信号处理工具箱。固定 `btk20` 源码先读 `btk20_src/unit_test/test_online_beamforming.py::online_beamforming`，再读 `btk20_src/lib/pybeamformer.py::SubbandGSCLMSBeamformer` 与 `SubbandGSCRLSBeamformer`；C++ 对应入口包括 `btk20_src/beamformer/beamformer.{h,cc}::SubbandGSCRLS`。这些类包含跨帧自适应状态，不只是构造一个阻塞矩阵。[固定 Python 更新器](https://github.com/kkumatani/distant_speech_recognition/blob/feff19ec8bcb770f6530fe280dc3ccafc2f5984a/btk20_src/lib/pybeamformer.py)。
+
+演示输入是逐通道音频、阵列位置、带时间标记的目标方向和分析/合成滤波器组系数。示例声速常数为 `343740.0`，与毫米制坐标配套；本书米制坐标必须转换。滤波器组的子带数、抽取率、原型滤波器长度决定时频处理与等待，不能直接沿用本书 Hann STFT 的帧数和延迟。
+
+构建文件默认目标 Python 2.7，要求 SWIG 3、GSL、NumPy 和 libsndfile，CUDA 9 为可选；部分 Python 算法还使用 SciPy 或 pygsl。旧环境说明不能当作现代 Python 或目标设备的相容性保证。滤波器系数演示通过 `pickle` 载入，只应使用自己生成或可信来源的文件，不能为方便运行而加载不可信二进制对象。[固定构建条件](https://github.com/kkumatani/distant_speech_recognition/blob/feff19ec8bcb770f6530fe280dc3ccafc2f5984a/btk20_src/CMakeLists.txt)、[固定在线演示](https://github.com/kkumatani/distant_speech_recognition/blob/feff19ec8bcb770f6530fe280dc3ccafc2f5984a/btk20_src/unit_test/test_online_beamforming.py)。
+
+建议先对同一混合录音保留固定支路输出，再开启 LMS/RLS 自适应，分别检查目标参考的增益、干扰残差与权重范数；第二组只将控制方向偏移 2°，比较持续更新与明确冻结区间。合成输入须保存各源分量、共同延迟和增益，指标对齐后计算。上述 BTK 构建和数值实验未在本书执行，不能称为已经完成产品验收。
 
 ### 22. 最坏情形稳健波束与 WNG 约束
 
@@ -228,6 +317,8 @@ Acoular 的 `BeamformerCMF` 直接拟合 CSM 的空间模型；`BeamformerSODIX`
 
 对应 §9.2。本书 `tracking.py` 提供角度—角速度 KF；FilterPy 的 `kalman/` 和 Stone Soup 的 `predictor/kalman.py`、`updater/kalman.py` 提供不同非线性扩展。EKF 在当前状态线性化观测，UKF 传播一组 sigma 点，二者都需要与观测空间一致的均值和残差函数。
 
+本书平面方位以 $+y$ 为零点、向 $+x$ 为正，所以位置观测函数是 `atan2(x-x0, y-y0)`，例如相对位置 `(1,2)` 对应 26.565°。常见数学极角接口按 `atan2(y,x)` 使用时必须转换。教学追踪接口的角度、状态、协方差和重采样权重要求有限实数；复数、布尔、字符串和对象数组不通过先强制转浮点来接受。无效标量观测或预测参数在修改状态、消耗随机数之前拒绝。
+
 建议给 $179°$ 与 $-179°$ 的相邻观测、长期缺测和非等间隔时间戳；在笛卡尔状态到方位角观测时，检查零距离附近的雅可比与方位角环绕。过程噪声必须随时间模型离散化。预测方差增大不等于应该不断增加“目标存在概率”，运动不确定性和存在性是不同状态。
 
 ### 32. SIR 粒子滤波与重采样
@@ -252,7 +343,15 @@ Acoular 的 `BeamformerCMF` 直接拟合 CSM 的空间模型；`BeamformerSODIX`
 
 对应 §9.3 的进阶分类。MHT 保留多条关联历史，CPHD 还传播目标数分布，LMB/GLMB 显式保留标签，检测前追踪输入未经过硬阈值的弱信号证据。它们解决的缺口不同，不能作为同一个“高级追踪器”接口随意替换。
 
-建议统一设计两人交叉、出生、长静默和强反射四段序列，分别评价身份切换、漏检、虚警、人数和成本。具体实现需要版本对应的出生/消亡、假设截断、门控与观测模型。本文没有为所有这些家族核实唯一作者实现，因此保留原理索引；Stone Soup 的基类文字提及 CPHD，也不能自动证明当前锁定版本实现了 CPHD。
+Stone Soup 固定版本实际包含滑窗多帧分配形式的 MHT 参考。阅读顺序是 `docs/examples/dataassociation/mht_example.py` → `stonesoup/hypothesiser/mfa.py::MFAHypothesiser` → `stonesoup/dataassociator/mfa/__init__.py::MFADataAssociator` → 同目录 `_step.py`。假设器给每个分量延续观测索引历史与权重，关联器优化多帧分配后执行 N-scan 剪枝；这比仅在基类注释中提到方法名称多了实际计算。[固定 MHT 示例](https://github.com/dstl/Stone-Soup/blob/8d1edeb07ef8505ed065cbef435cfb5e517d9bdc/docs/examples/dataassociation/mht_example.py)。
+
+该 MIT 参考实现需要额外安装 OR-Tools；`_step.py` 的最大迭代数为 10，相对原始—对偶间隙门限为 0.02，代码将代价差除以当前最佳原始代价 `bestPrimalCost`，并非直接比较未归一化的差。示例使用长度为 3 的滑窗、二维位置/速度状态与方位/距离观测，预置三个目标且没有出生或消亡。它说明如何推迟关联决定，不是已经完成的声学多说话人系统，也不保证所有输入下得到精确全局最优。声学适配仍需角度环绕、每弧度杂波密度、静默期漏检和轨迹管理。[固定分配求解器](https://github.com/dstl/Stone-Soup/blob/8d1edeb07ef8505ed065cbef435cfb5e517d9bdc/stonesoup/dataassociator/mfa/_step.py)。
+
+最小实验建议从同目录 `MFA_example.py` 的两目标交叉场景开始，保持观测集合不变，比较滑窗 1 与 3 的分支数量、延迟决策、身份交换和计算量，再插入连续缺测。出生和长静默应作为额外实验单独报告，不能由固定目标示例推断已经支持。这里仅完成源码检查，未运行 OR-Tools 实验。
+
+CPHD、LMB/GLMB 另有 [Ba Tuong Vo 的作者 MATLAB 工具包](https://ba-tuong.vo-au.com/codes.html)，页面列出相应滤波器及 OSPA/OSPA²，并明确面向 academic/research 使用。该可变 ZIP 页面没有提供本书所需的固定提交和完整通用再分发许可，故保留受限来源索引，不复制或改称许可完备的开源集合。作者提供代码与本书已经取得可分发实现是两个判断。
+
+检测前追踪仍保留原理索引。对其他家族，也不能从 Stone Soup 的基类文字推断其实现了 CPHD，或从 PHD 分量上的临时标签推断其实现了 GLMB。两人交叉、出生、长静默和强反射应分别评价身份切换、漏检、虚警、人数和成本；输入定位峰不符合点目标观测模型时，还要调整似然与杂波模型。
 
 ### 36. OSPA、身份连续性与波束控制接口
 

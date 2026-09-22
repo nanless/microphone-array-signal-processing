@@ -5,9 +5,9 @@ import unittest
 import numpy as np
 
 from codes.examples.exercises_enhancement import run_exercises
-from codes.array_tutorial.aec import nlms
+from codes.array_tutorial.aec import erle_db, nlms
 from codes.array_tutorial.dereverberation import offline_wpe
-from codes.array_tutorial.separation import masked_spatial_covariance, si_sdr
+from codes.array_tutorial.separation import masked_spatial_covariance, pit_permutation, si_sdr
 
 
 class TestEnhancementExercises(unittest.TestCase):
@@ -16,7 +16,10 @@ class TestEnhancementExercises(unittest.TestCase):
         cls.results = run_exercises()
 
     def test_stable_ids_and_serialization(self):
-        self.assertEqual(set(self.results),{f'E{chapter:02d}-{exercise:02d}' for chapter in range(6,10) for exercise in range(1,6)})
+        expected = {f'E{chapter:02d}-{exercise:02d}'
+                    for chapter in range(6, 10)
+                    for exercise in range(1, 7 if chapter in (6, 8) else 6)}
+        self.assertEqual(set(self.results), expected)
         json.dumps(self.results,allow_nan=False)
         self.assertEqual(self.results,run_exercises())
 
@@ -32,6 +35,16 @@ class TestEnhancementExercises(unittest.TestCase):
         np.testing.assert_allclose(result['frozen_weights'],[.975])
         np.testing.assert_allclose(result['active_weights'],[1.74375])
         self.assertAlmostEqual(result['valid_erle_db'],10*np.log10(160),places=9)
+
+    def test_nonlinear_echo_leaves_third_harmonic(self):
+        result = self.results['E06-06']
+        self.assertEqual(result['cycles'], 1000)
+        self.assertAlmostEqual(result['least_squares_gain'], 1.24, places=13)
+        self.assertAlmostEqual(result['echo_power'], .12352, places=13)
+        self.assertAlmostEqual(result['residual_power'], .000512, places=13)
+        expected_erle = 10*np.log10((.12352 + 1e-15) / (.000512 + 1e-15))
+        self.assertAlmostEqual(result['erle_db'], expected_erle, places=12)
+        np.testing.assert_allclose(result['residual_amplitudes'], [0, .032], atol=2e-15)
 
     def test_wpe_index_and_conjugate(self):
         result=self.results['E07-01']
@@ -68,6 +81,15 @@ class TestEnhancementExercises(unittest.TestCase):
         np.testing.assert_allclose(result['near_singular_recovered_error'],[1,-1])
         self.assertLess(result['reconstruction_max_error'],1e-12)
 
+    def test_blockwise_pit_does_not_fix_stream_identity(self):
+        result = self.results['E08-06']
+        self.assertEqual(result['block_output_to_reference'], [[0, 1], [1, 0]])
+        np.testing.assert_allclose(result['block_mean_si_sdr_db'], [20, 20])
+        np.testing.assert_allclose(result['raw_concatenated_si_sdr_db'],
+                                   [-3.690010652078401, -3.690010652078401])
+        np.testing.assert_allclose(result['aligned_concatenated_si_sdr_db'], [20, 20])
+        self.assertTrue(result['oracle_alignment'])
+
     def test_kalman_seconds_and_angle_wrap(self):
         history=self.results['E09-01']['predictions']
         np.testing.assert_allclose(history[0]['state'],[30.5,5])
@@ -94,6 +116,36 @@ class TestEnhancementInvalidInputs(unittest.TestCase):
                 with self.assertRaises(ValueError):nlms([1,1],[1,1],1,epsilon=value)
                 with self.assertRaises(ValueError):nlms([1,1],[1,1],1,initial_weights=[value])
 
+    def test_real_interfaces_reject_complex_without_discarding_it(self):
+        complex_vector = np.array([1 + 1j, -1 + 0j])
+        real_vector = np.array([1., -1.])
+        with self.assertRaises(ValueError):
+            nlms(complex_vector, real_vector, 1)
+        with self.assertRaises(ValueError):
+            erle_db(complex_vector, real_vector)
+        with self.assertRaises(ValueError):
+            si_sdr(complex_vector, real_vector)
+        with self.assertRaises(ValueError):
+            pit_permutation(complex_vector[None], real_vector[None])
+
+    def test_extreme_finite_aec_inputs_remain_defined(self):
+        with np.errstate(all='raise'):
+            residual, echo_hat, weights = nlms([1e308], [1e308], 1)
+            np.testing.assert_array_equal(residual, [1e308])
+            np.testing.assert_array_equal(echo_hat, [0.])
+            np.testing.assert_array_equal(weights, [.5])
+            self.assertAlmostEqual(erle_db([1e308, -1e308], [1e307, -1e307]), 20.)
+            residual, echo_hat, weights = nlms(
+                [1e-320], [1.], 1, step_size=0., initial_weights=[1e308])
+            self.assertTrue(np.all(np.isfinite([*residual, *echo_hat, *weights])))
+            self.assertAlmostEqual(echo_hat[0], 1e308 * 1e-320)
+            np.testing.assert_array_equal(weights, [1e308])
+
+    def test_exhaustive_pit_has_explicit_teaching_limit(self):
+        signals = np.tile(np.array([1., -1.]), (9, 1))
+        with self.assertRaisesRegex(ValueError, 'at most 8 sources'):
+            pit_permutation(signals, signals)
+
     def test_nlms_integer_length_and_zero_energy(self):
         for length in [True,1.5,0]:
             with self.assertRaises(ValueError):nlms([1],[1],length)
@@ -113,6 +165,15 @@ class TestEnhancementInvalidInputs(unittest.TestCase):
         for value in [0,-1,np.nan,np.inf]:
             with self.assertRaises(ValueError):masked_spatial_covariance(np.ones((1,2,3),complex),np.zeros((1,3)),epsilon=value)
         np.testing.assert_array_equal(masked_spatial_covariance(np.ones((1,2,3),complex),np.zeros((1,3))),np.zeros((1,2,2)))
+
+    def test_scm_rejects_nonfinite_accumulation_or_output(self):
+        with np.errstate(all='raise'):
+            with self.assertRaisesRegex(ValueError, 'accumulation exceeds'):
+                masked_spatial_covariance(
+                    np.full((1, 1, 2), 1e200, dtype=complex), np.ones((1, 2)))
+            with self.assertRaisesRegex(ValueError, 'accumulation exceeds'):
+                masked_spatial_covariance(
+                    np.ones((1, 1, 2), dtype=complex), np.full((1, 2), 1e308))
 
     def test_si_sdr_independent_scaling_and_nonorthogonal_error(self):
         reference=np.array([1.,-1.,1.,-1.])

@@ -126,7 +126,8 @@ class SpatialParagraphTest(unittest.TestCase):
             ("04_doa-estimation.md", "这些方法的源码也应分别阅读", "DCASE2022 基线则通过"),
             ("04_doa-estimation.md", "最小输出检查可以先做手算", "换到 DCASE2025 基线时"),
             ("04_doa-estimation.md", "本书的原创 NumPy 基线位于", "对应式(4-1)"),
-            ("04_doa-estimation.md", "接入实际录音时还要固定", "Capon/MUSIC/MVDR 使用"),
+            ("04_doa-estimation.md", "接入实际录音时还要固定", "Capon/MVDR 使用"),
+            ("04_doa-estimation.md", "Capon/MVDR 使用", "MUSIC 使用厄米特征分解"),
             ("05_beamforming.md", "§5.7 的噪声估计也需要", "Cohen 的"),
             ("05_beamforming.md", "以参考麦选择向量", "分子、分母要用同一频带"),
         ]
@@ -150,6 +151,26 @@ class SpatialParagraphTest(unittest.TestCase):
         self.assertEqual(len(paragraphs), 3)
         self.assertIn(r"\mathrm{NR}_{ref}", paragraphs[1])
         self.assertIn("分子、分母", paragraphs[2])
+
+    def test_music_and_nearfield_formula_belongs_to_third_step(self):
+        for start, end, formula, explanation in (
+                ("**思想三步**", "**第 2 步为什么成立**", r"\tag{4-3}", "正交检验的含义"),
+                ("**锚点算法：角度 × 距离球面扫描。**", "实际 SRP 或宽带最大似然",
+                 r"J(r,\theta)", "分母为 3")):
+            source, path = chapter_fragment("04_doa-estimation.md", start, end)
+            html, lists = rendered_lists(start+source, path)
+            self.assertEqual([len(items) for items in lists], [3])
+            self.assertIn(formula, lists[0][2])
+            self.assertIn(explanation, lists[0][2])
+            self.assertNotIn("<pre>", html)
+
+    def test_rank_one_mwf_relation_stays_in_its_parameter_item(self):
+        source, path = chapter_fragment("05_beamforming.md", "- $\\mathbf{R}_{ss},", "前文给出的是 LCMV")
+        html, lists = rendered_lists("- $\\mathbf{R}_{ss},"+source, path)
+        self.assertEqual([len(items) for items in lists], [2])
+        self.assertIn(r"\frac{\phi_s q}{\mu+\phi_s q}", lists[0][1])
+        self.assertIn("目标协方差满秩", lists[0][1])
+        self.assertNotIn("<pre>", html)
 
     def test_accdoa_external_and_book_azimuths_are_complementary(self):
         source = (ROOT / "chapters/04_doa-estimation.md").read_text(encoding="utf-8")

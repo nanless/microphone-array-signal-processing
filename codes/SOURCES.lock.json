@@ -890,6 +890,259 @@
         "css/training/conformer_wrapper.py"
       ],
       "note": "Source inspection only. Inference entrypoint automatically downloads models/data; it is not executed. README warns dev-set-2 is challenge-only and removed for legal reasons. Dataset availability/terms do not follow code MIT license."
+    },
+    {
+      "id": "sbl",
+      "url": "https://github.com/gerstoft/SBL.git",
+      "revision": "d4bba35e9b60907d3024473ba5a41046450baae0",
+      "license": "GPL-3.0",
+      "fetch_enabled": true,
+      "scope": "Multi-snapshot multi-frequency SBL",
+      "acquisition": "independent_source_checkout",
+      "note": "Requires known source count; Python compatibility not validated.",
+      "entrypoints": [
+        "LICENSE",
+        "SBL_MF_Python/sbl.py",
+        "SBL_MF_matlab/SBL_v4.m"
+      ]
+    },
+    {
+      "id": "robustsbl",
+      "url": "https://github.com/NoiseLabUCSD/RobustSBL.git",
+      "revision": "d746266a1336d4467f60b6f7b7e8b4695a01d26d",
+      "license": "MIT",
+      "fetch_enabled": true,
+      "scope": "Robust SBL with Gaussian, t, Huber and Tyler losses",
+      "acquisition": "independent_source_checkout",
+      "note": "MATLAB statistics functions required; example single-SNR loop is not a complete paper curve.",
+      "entrypoints": [
+        "LICENSE",
+        "_common/SBL_v5p12.m",
+        "_common/SBLSet.m",
+        "SingleMC_SNR_fixedDOA.m"
+      ]
+    },
+    {
+      "id": "btk20",
+      "url": "https://github.com/kkumatani/distant_speech_recognition.git",
+      "revision": "feff19ec8bcb770f6530fe280dc3ccafc2f5984a",
+      "license": "MIT; retain per-file notices",
+      "fetch_enabled": true,
+      "scope": "Subband LMS/RLS GSC",
+      "acquisition": "independent_source_checkout",
+      "note": "Legacy Python 2.7/SWIG3/GSL build. Coordinates in millimetres. Does not establish a time-domain Frost implementation.",
+      "entrypoints": [
+        "LICENSE",
+        "btk20_src/lib/pybeamformer.py",
+        "btk20_src/beamformer/beamformer.cc",
+        "btk20_src/unit_test/test_online_beamforming.py"
+      ]
+    },
+    {
+      "id": "smpphat",
+      "url": "https://github.com/FrancoisGrondin/smpphat.git",
+      "revision": "6fd33e6eb3251078a4cd9793dde909e2500265cc",
+      "license": "GPL-3.0",
+      "fetch_enabled": true,
+      "scope": "SRP-PHAT acceleration by merging equivalent microphone pairs",
+      "acquisition": "independent_source_checkout",
+      "note": "Far-field equal-length parallel baselines; not SVD-PHAT. Hardcoded SSE3 flags and fixed 44-byte WAV parser require care.",
+      "entrypoints": [
+        "LICENSE",
+        "src/system.c",
+        "src/signal.c",
+        "demo/ssl.c",
+        "demo/test.c"
+      ]
+    },
+    {
+      "id": "libsoxr",
+      "url": "https://git.code.sf.net/p/soxr/code",
+      "revision": "945b592b70470e29f917f4de89b4281fbbd540c0",
+      "license": "LGPL-2.1-or-later; embedded PFFFT terms separate",
+      "fetch_enabled": true,
+      "scope": "Stateful and variable-rate resampling",
+      "acquisition": "independent_source_checkout",
+      "note": "Release 0.1.3 peeled commit. Streaming HQ and oneshot LQ defaults differ. Explicit quality and flush protocol required.",
+      "entrypoints": [
+        "LICENCE",
+        "src/soxr.h",
+        "src/soxr.c",
+        "examples/5-variable-rate.c"
+      ]
+    },
+    {
+      "id": "libebur128",
+      "url": "https://github.com/jiixyj/libebur128.git",
+      "revision": "67b33abe1558160ed76ada1322329b0e9e058b02",
+      "license": "MIT",
+      "fetch_enabled": true,
+      "scope": "Loudness and true-peak measurement",
+      "acquisition": "independent_source_checkout",
+      "note": "Fixed source snapshot; all-silence loudness is not a valid finite score. Frames differ from interleaved scalar samples.",
+      "entrypoints": [
+        "COPYING",
+        "ebur128/ebur128.h",
+        "ebur128/ebur128.c",
+        "test"
+      ]
+    },
+    {
+      "id": "pystoi",
+      "url": "https://github.com/mpariente/pystoi.git",
+      "revision": "74872b000753a7a42ff51aa0868af8c82c7f9053",
+      "license": "MIT for Python core; MATLAB test notices separate",
+      "fetch_enabled": true,
+      "scope": "STOI and ESTOI",
+      "acquisition": "independent_source_checkout",
+      "note": "Software-author implementation, not original-paper authors' Python package. Requires SciPy. Too-short active audio returns 1e-5 plus warning; do not aggregate sentinel.",
+      "entrypoints": [
+        "LICENSE",
+        "pystoi/stoi.py",
+        "pystoi/utils.py",
+        "setup.py"
+      ],
+      "source_paths": [
+        "LICENSE",
+        "README.md",
+        "setup.py",
+        "pystoi"
+      ]
+    },
+    {
+      "id": "visqol",
+      "url": "https://github.com/google/visqol.git",
+      "revision": "38d0b0163e441047d4429bf07ad09e5b9031d02c",
+      "license": "Apache-2.0",
+      "fetch_enabled": true,
+      "scope": "Full-reference speech/audio quality prediction",
+      "acquisition": "independent_source_checkout",
+      "note": "Bazel and large dependency graph; model/testdata directories excluded. Speech/audio modes and scaled mapping must be fixed. Downmix cannot assess spatial fidelity.",
+      "entrypoints": [
+        "LICENSE",
+        "README.md",
+        "WORKSPACE",
+        "src/visqol_api.cc",
+        "src/include/visqol_api.h"
+      ],
+      "source_paths": [
+        "LICENSE",
+        "README.md",
+        "WORKSPACE",
+        "BUILD",
+        "src",
+        "python",
+        "scripts",
+        "setup.py",
+        ".bazelrc",
+        ".bazelversion",
+        "pybind11_fixdistutils.patch"
+      ]
+    },
+    {
+      "id": "libsndfile",
+      "url": "https://github.com/libsndfile/libsndfile.git",
+      "revision": "b9103bd48b6c8fb517ae737fe3baee0c718b804c",
+      "license": "LGPL-2.1-or-later; dependencies separately",
+      "fetch_enabled": true,
+      "scope": "PCM/WAV and audio file input/output",
+      "acquisition": "independent_source_checkout",
+      "note": "Fixed snapshot, not assumed release tag. Respect returned frame count; float output does not imply float file encoding.",
+      "entrypoints": [
+        "COPYING",
+        "include/sndfile.h",
+        "src/sndfile.c",
+        "src/pcm.c",
+        "tests"
+      ]
+    },
+    {
+      "id": "lib-xcore-math",
+      "url": "https://github.com/xmos/lib_xcore_math.git",
+      "revision": "16130be45c4002a1f875a4b06ff68d2065cd8c69",
+      "license": "XMOS Public Licence v1",
+      "fetch_enabled": true,
+      "scope": "Block floating point, FFT and filter primitives",
+      "acquisition": "independent_source_checkout",
+      "note": "v3.0.0 required by locked lib_voice. Commercial hardware restrictions; reference C is not target VPU timing.",
+      "entrypoints": [
+        "LICENSE.rst",
+        "lib_xcore_math/api",
+        "lib_xcore_math/src/bfp",
+        "lib_xcore_math/src/arch/ref",
+        "lib_xcore_math/lib_build_info.cmake"
+      ]
+    },
+    {
+      "id": "e2e-ad-aec",
+      "url": "https://github.com/ThomasHaubner/e2e_dnn_ad_control_for_lin_aec.git",
+      "revision": "7a003133d742698de7acba9510d9586d7d57a584",
+      "license": "BSD-4-Clause",
+      "fetch_enabled": true,
+      "scope": "DNN adaptive control of linear CTF AEC",
+      "acquisition": "independent_source_checkout",
+      "note": "Advertising acknowledgement retained. data directory excluded; no checkpoint. center=True STFT is not an arbitrary-block streaming API.",
+      "entrypoints": [
+        "LICENSE",
+        "README.md",
+        "main_train.py",
+        "libPython/class_frontend.py",
+        "libPython/class_aec_ctf.py"
+      ],
+      "source_paths": [
+        "LICENSE",
+        "README.md",
+        "main_train.py",
+        "libPython",
+        "conda_env_dnn_aec.yml"
+      ]
+    },
+    {
+      "id": "integrated-aec-nr",
+      "url": "https://github.com/Arnout-Roebben/Integrated_AEC_NR.git",
+      "revision": "23c6b567c7863a8ee9bafd38bad0d3ff2f25e185",
+      "license": "MIT for code; recording permissions separate",
+      "fetch_enabled": true,
+      "scope": "Joint and cascaded multichannel AEC/noise reduction",
+      "acquisition": "independent_source_checkout",
+      "note": "MATLAB R2024a experiment uses decomposed clean signals and oracle VAD. Audio directory excluded; not deployable capture-only frontend.",
+      "entrypoints": [
+        "LICENSE.md",
+        "ReadMe.md",
+        "Main.m",
+        "Util/Process/process.m"
+      ],
+      "source_paths": [
+        "LICENSE.md",
+        "ReadMe.md",
+        "Main.m",
+        "Util"
+      ]
+    },
+    {
+      "id": "nbss",
+      "url": "https://github.com/Audio-WestlakeU/NBSS.git",
+      "revision": "cc42fc8ad2e6642c09b8f4169a85b4766dc22b7e",
+      "license": "MIT",
+      "fetch_enabled": true,
+      "scope": "OnlineSpatialNet long-sequence multichannel enhancement",
+      "acquisition": "independent_source_checkout",
+      "note": "Causal architecture does not establish state continuity across arbitrary forward calls; Torch/Lightning/Mamba/CUDA and weights are separate prerequisites.",
+      "entrypoints": [
+        "LICENSE",
+        "README.md",
+        "models/arch/OnlineSpatialNet.py"
+      ],
+      "source_paths": [
+        "LICENSE",
+        "README.md",
+        "models",
+        "configs",
+        "requirements.txt",
+        "SharedTrainer.py",
+        "data_loaders",
+        "generate_rirs.py"
+      ]
     }
   ]
 }

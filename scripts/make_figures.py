@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""生成教程插图 28 张（图 1~25、图 33~35；图 26~32 见 make_aec_figures.py）。
+"""生成教程插图 29 张（图 1~25、图 33~36；图 26~32 见 make_aec_figures.py）。
 
 用法（仓库根目录）：
-    .venv/bin/python scripts/make_figures.py      # 图 1~25、图 33~35 → figures/
+    .venv/bin/python scripts/make_figures.py      # 图 1~25、图 33~36 → figures/
 """
 from pathlib import Path
 import hashlib
@@ -2710,6 +2710,64 @@ def fig_audio_counterexamples():
     save(fig, 'fig35_audio_counterexamples.png', {'AudioManifestDigest': hashlib.sha256(manifest.read_bytes()).hexdigest()})
 
 
+def nonlinear_echo_measurements():
+    """Read fixed PCM files; return full-segment Fourier amplitudes and power.
+
+    The 2 s segment has an integer number of periods, so 2*|DFT[k]|/N is
+    the one-sided peak amplitude at the non-DC, non-Nyquist tone bins.
+    """
+    import json
+    import wave
+    root = Path(__file__).resolve().parents[1] / 'codes/audio'
+    manifest = root / 'MANIFEST.json'
+    records = {item['file']: item for item in json.loads(manifest.read_text())['files']}
+    data = {}
+    for name in ('reference', 'echo', 'estimate', 'residual'):
+        path = root / f'nonlinear_{name}.wav'
+        if hashlib.sha256(path.read_bytes()).hexdigest() != records[path.name]['sha256']:
+            raise ValueError(f'音频文件与清单不符：{path.name}')
+        with wave.open(str(path), 'rb') as wav:
+            if (wav.getframerate(), wav.getnchannels(), wav.getsampwidth(), wav.getnframes()) != (16000, 1, 2, 32000):
+                raise ValueError('非线性例需要 16 kHz 单声道、32000 点 PCM16')
+            samples = np.frombuffer(wav.readframes(32000), dtype='<i2').astype(float) / 32768
+        amplitudes = 2 * np.abs(np.fft.rfft(samples)[[1000, 3000]]) / samples.size
+        data[name] = {'samples': samples, 'amplitudes': amplitudes,
+                      'power': float(np.mean(samples**2))}
+    return data, hashlib.sha256(manifest.read_bytes()).hexdigest()
+
+
+def fig_nonlinear_echo():
+    """Show the unmodelled third harmonic without changing residual gain."""
+    data, digest = nonlinear_echo_measurements()
+    fig, axes = plt.subplots(2, 1, figsize=(9.5, 6.5))
+    labels = [('echo', '非线性回声', '-', C_MAIN),
+              ('estimate', '最佳标量线性估计', '--', C_BLUE),
+              ('residual', '相减后的残差', ':', C_RED)]
+    for name, label, style, color in labels:
+        axes[0].plot(np.arange(128) / 16, data[name]['samples'][:128], style,
+                     label=label, color=color, linewidth=1.7)
+    axes[0].set(xlabel='时间 (ms)', ylabel='PCM 幅度 / 满量程', ylim=(-.6, .85),
+                title='(a) 前 8 ms；三条曲线保留同一增益，残差未单独放大')
+    axes[0].legend(ncol=3, loc='upper right', fontsize=11)
+    for index, (name, label, _style, color) in enumerate(labels):
+        values = data[name]['amplitudes']
+        positions = np.arange(2) + (index - 1) * .24
+        axes[1].bar(positions, values, .23, label=label, color=color,
+                    hatch=('', '//', 'xx')[index], edgecolor='white')
+        for position, value in zip(positions, values):
+            axes[1].text(position, value + .016, f'{value:.4f}', ha='center', fontsize=11)
+    axes[1].set(xticks=[0, 1], xticklabels=['500 Hz（基频）', '1500 Hz（三次谐波）'],
+                ylabel='单边峰值幅度 / 满量程', ylim=(0, .7),
+                title='(b) 全段 2 s 的 DFT；整数周期、无窗，数值来自 PCM 读回')
+    axes[1].legend(ncol=3, loc='upper right', fontsize=11)
+    for ax in axes:
+        ax.grid(axis='y', ls=':', alpha=.35)
+        ax.set_axisbelow(True)
+    fig.suptitle('图36  三次非线性留下线性估计无法表示的谐波（合成反例）', fontsize=FS_SUP)
+    fig.tight_layout(rect=(0, 0, 1, .95), h_pad=1.6)
+    save(fig, 'fig36_nonlinear_echo.png', {'AudioManifestDigest': digest})
+
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -2740,6 +2798,7 @@ def main():
     fig_gcc_two_ways()
     fig_audio_examples()
     fig_audio_counterexamples()
+    fig_nonlinear_echo()
     print("ALL DONE")
 
 

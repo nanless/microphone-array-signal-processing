@@ -686,9 +686,15 @@ pAEC（个性化 AEC，personalized AEC）在 §6.1.6 定义。注册语音和�
 | DTLN-aec | 作者仓库 `run_aec.py` 与两阶段模型输入/输出 | 用麦克风和播放参考联合估计近端语音 | 采样率、循环状态、块拼接、TFLite 与权重许可 |
 | NKF-AEC | 作者仓库 `src/nkf.py`，仅作来源索引 | 学习卡尔曼更新增益，仍是线性 AEC | 16 kHz、参考延迟补偿；未确认再分发许可 |
 | Meta-AF | `metaaf/filter.py`、`core.py` 与更新器 | 学习滤波器更新规则并管理分块状态 | 核心库与 `zoo/`、权重采用不同许可证 |
+| 学习步长控制 CTF-AEC | `main_train.py` → `libPython/class_frontend.py` → `class_aec_ctf.py` | 保留线性 CTF 回声模型，由 DNN 控制频率选择性步长与误差归一化 | 无预训练 checkpoint；序列边界重置状态，`center_stft=True`，不能直接当作跨块流式接口 |
+| Integrated AEC/NR | `Main.m` → `Util/Process/process.m` → 各 AEC、NR、MWF 与后滤模块 | 在多麦、多扬声器模型中比较联合设计和 AEC/NR 顺序 | MATLAB R2024a；原实验用干净语音与干净回声生成预言活动判决 |
 | 原始 FDKF/PFDKF、NeuralKalman、DeepVQE | 本章原论文与研究文档的结构对应说明 | 分别改变状态统计、学习递推或联合增强 | 未确认的作者官方完整软件不能由同名第三方复现替代 |
 
 SpeexDSP 的 `mdf.c` 文件头直接说明 AUMDF 与连续学习率控制，并引用 Soo–Pang 的 MDF 和 Valin 的双讲学习率论文；因此 MDF、DTD 控制与残余抑制应分别检查。FDKF 则需要显式核对状态转移、过程噪声、观测噪声和增益递推，不能因为某库含频域 AEC，就把它列为 FDKF 的实现。[SpeexDSP 官方源码](https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/mdf.c)、[WebRTC AEC3 固定版本](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/)
+
+学习步长控制的[官方固定版本](https://github.com/ThomasHaubner/e2e_dnn_ad_control_for_lin_aec/tree/7a003133d742698de7acba9510d9586d7d57a584)适合回答“网络究竟替换了什么”：线性回声估计仍由 CTF 自适应滤波器完成，网络输出用于调节更新。源码逐帧运行，不等于部署接口已经支持任意分块续算；前端使用居中 STFT，并在每个序列重新初始化滤波器。没有匹配训练数据和权重时，只能核对结构与状态，不能把论文结果写成本仓库实测。
+
+[Integrated_AEC_NR 固定版本](https://github.com/Arnout-Roebben/Integrated_AEC_NR/tree/23c6b567c7863a8ee9bafd38bad0d3ff2f25e185)可用于比较 AEC→NR、NR→AEC 和联合扩展结构，但 [`Util/Process/process.m`](https://github.com/Arnout-Roebben/Integrated_AEC_NR/blob/23c6b567c7863a8ee9bafd38bad0d3ff2f25e185/Util/Process/process.m)直接由分解后的干净期望语音与干净回声生成活动判决。这是受控研究条件，不是设备输入。源码采用 MIT；仓库的 [`ReadMe.md`](https://github.com/Arnout-Roebben/Integrated_AEC_NR/blob/23c6b567c7863a8ee9bafd38bad0d3ff2f25e185/ReadMe.md)另列示例音频来源，代码许可不能替代音频许可。
 
 最小的工业对照实验可以保持输入录音不变，依次检查参考正常、固定延迟、参考丢块和路径突变四种情况。每种情况同时记录线性段回声、线性残差、抑制后输出、更新控制与恢复时间。双讲段另看近端语音损伤；只看最终能量降低，不能区分成功抵消和过度抑制。外部系统还应固定源码、构建选项、帧长、参考抽头、允许延迟和状态重置规则，不能用本节教学 NLMS 的测试代替这些验收。
 
@@ -744,9 +750,9 @@ SpeexDSP 的 `mdf.c` 文件头直接说明 AUMDF 与连续学习率控制，并�
 15. 播放参考先进入历史缓冲和延迟搜索，对齐参考参与自适应滤波，麦克风减去回声估计形成线性残差；残余估计控制后续抑制，舒适噪声用于缓和背景突变。refined/coarse 更新和输出选择必须按固定版本源码检查，见 §6.1.9。
 16. ERLE 度量规定远端单讲窗口的回声能量衰减；平均意见分（Mean Opinion Score，MOS）来自规定协议下的真人评分；AECMOS 是模型预测的回声和其他可闻退化分。双讲输出包含应保留的近端语音，直接拿总输出功率计算 ERLE 会混淆回声泄漏与近端保留。
 
-**可运行练习 E06-01～E06-05**
+**可运行练习 E06-01～E06-06**
 
-下面五题由 [`exercises_enhancement.py`](../codes/examples/exercises_enhancement.py) 的 `run_exercises()` 复算。在仓库根目录运行 `.venv/bin/python -m codes.examples.exercises_enhancement`，按稳定 ID 查 JSON 结果。音频与共同播放增益见[练习及音频手册](../codes/research/05_exercises_and_audio.md)。这些数例不替代设备收敛或听感评测。
+下面六题由 [`exercises_enhancement.py`](../codes/examples/exercises_enhancement.py) 的 `run_exercises()` 复算。在仓库根目录运行 `.venv/bin/python -m codes.examples.exercises_enhancement`，按稳定 ID 查 JSON 结果。音频与共同播放增益见[练习及音频手册](../codes/research/05_exercises_and_audio.md)。这些数例不替代设备收敛或听感评测。
 
 - **E06-01：脉冲是否能让全部抽头收敛？** 取 $x=[1,0,0]$、$d=[0.8,-0.2,0.1]$，3 抽头、零初值、$\mu=0.5$、$\varepsilon=0$。逐样本写回归向量、先验残差和最终抽头。
 
@@ -773,6 +779,20 @@ SpeexDSP 的 `mdf.c` 文件头直接说明 AUMDF 与连续学习率控制，并�
     **解答**：$y^\top v=0$，$\|y\|^2=1$、$\|v\|^2=0.01$，故输入能量为 1.01、输出为 0.01，$10\log_{10}(101)\approx20.04$ dB。此时真实回声残余为零，但含背景噪声的输入/输出测量仍为有限值。
 
     本书使用正交序列使交叉项精确为零；普通短录音不保证该条件。这个数字是含噪取点的测量结果，不是回声分量 ERLE 的理论上限，也不是设备只能抵消约 20 dB 的证据。
+
+- **E06-06：纯单频参考经过三次非线性后，最佳线性副本还剩什么？** 采样率为 16 kHz，取 32000 点、500 Hz、幅度 0.4 的参考 $x[n]=0.4\sin\theta_n$，其中 $\theta_n=2\pi(500)n/16000$。令麦克风中的纯远端回声为 $d[n]=x[n]+2x^3[n]$，没有传播滤波、近端语音或噪声。用整段最小二乘标量 $g=\langle x,d\rangle/\langle x,x\rangle$ 构造线性副本 $\hat d=gx$，求残差和 ERLE。
+
+    **解答**：由 $\sin^3\theta=(3\sin\theta-\sin3\theta)/4$，有
+
+    $$d[n]=0.496\sin\theta_n-0.032\sin3\theta_n\text{。}$$
+
+    两秒记录恰含 1000 个 500 Hz 周期，500 Hz 与 1500 Hz 正弦在这个窗口内正交。因此 $g=0.496/0.4=1.24$，$\hat d[n]=0.496\sin\theta_n$，残差为 $e[n]=-0.032\sin3\theta_n$。理论功率为 $P_d=(0.496^2+0.032^2)/2=0.12352$、$P_e=0.032^2/2=0.000512$，所以
+
+    $$\mathrm{ERLE}=10\log_{10}(P_d/P_e)=10\log_{10}(241.25)\approx23.8247\ \mathrm{dB}\text{。}$$
+
+    ![图36 单频三次非线性在线性投影后的残差](../figures/fig36_nonlinear_echo.png)
+
+    图36(a)比较回声、共同最小二乘增益得到的线性副本与残差；图36(b)读取配套 PCM 后显示 500 Hz 和 1500 Hz 的离散周期幅度。上面的功率和 ERLE 来自未量化解析序列，PCM 读回值会有量化误差。本题的标量估计不是在线自适应器，但它给出了所有线性时不变滤波器都无法跨频率产生 1500 Hz 分量的稳态反例；改变输入频谱、非线性或统计窗口后，数值不会保持不变。
 
 #### 6.1.18 延伸阅读
 

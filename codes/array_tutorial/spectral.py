@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from .conventions import validate_cft, validate_waveforms
+from .conventions import finite_real_array, finite_real_scalar, validate_cft, validate_waveforms
 
 
 def periodic_hann(length: int) -> np.ndarray:
@@ -20,7 +20,7 @@ def _window_array(window: str | np.ndarray, n_fft: int) -> np.ndarray:
             raise ValueError("only the 'hann' named window is supported")
         result = periodic_hann(n_fft)
     else:
-        result = np.asarray(window, dtype=float)
+        result = finite_real_array(window, "window")
         if result.shape != (n_fft,):
             raise ValueError("window must contain n_fft samples")
     if not np.all(np.isfinite(result)) or not np.any(np.abs(result) > 0.0):
@@ -54,8 +54,11 @@ def stft(
     spectra = np.empty((signals.shape[0], n_fft // 2 + 1, frame_count), dtype=complex)
     for frame in range(frame_count):
         start = frame * hop_length
-        segment = padded[:, start : start + n_fft] * analysis_window
-        spectra[:, :, frame] = np.fft.rfft(segment, n=n_fft, axis=1)
+        with np.errstate(over="ignore", invalid="ignore"):
+            segment = padded[:, start : start + n_fft] * analysis_window
+            spectra[:, :, frame] = np.fft.rfft(segment, n=n_fft, axis=1)
+    if not np.all(np.isfinite(spectra)):
+        raise ValueError("STFT exceeds floating-point range")
     return spectra
 
 
@@ -76,6 +79,11 @@ def istft(
     boundary value.
     """
     coefficients = validate_cft(spectra)
+    if isinstance(n_fft, (bool, np.bool_)) or not isinstance(n_fft, (int, np.integer)) or n_fft < 2:
+        raise ValueError("n_fft must be an integer of at least two")
+    denominator_floor = finite_real_scalar(denominator_floor, "denominator_floor")
+    if denominator_floor <= 0.0:
+        raise ValueError("denominator_floor must be positive")
     if coefficients.shape[1] != n_fft // 2 + 1:
         raise ValueError("frequency dimension does not match n_fft")
     if not isinstance(hop_length, (int, np.integer)) or not 0 < hop_length <= n_fft:
@@ -89,8 +97,11 @@ def istft(
     for frame in range(coefficients.shape[2]):
         start = frame * hop_length
         segment = np.fft.irfft(coefficients[:, :, frame], n=n_fft, axis=1)
-        output[:, start : start + n_fft] += segment * synthesis_window
-        denominator[start : start + n_fft] += synthesis_window**2
+        with np.errstate(over="ignore", invalid="ignore"):
+            output[:, start : start + n_fft] += segment * synthesis_window
+            denominator[start : start + n_fft] += synthesis_window**2
+    if not np.all(np.isfinite(output)) or not np.all(np.isfinite(denominator)):
+        raise ValueError("overlap-add accumulation exceeds floating-point range")
     pad = n_fft // 2 if center else 0
     stop = output_length - pad if center else output_length
     output = output[:, pad:stop]
@@ -102,4 +113,8 @@ def istft(
         denominator = denominator[:length]
     if denominator.size and np.any(denominator <= denominator_floor):
         raise ValueError("window and hop leave samples without synthesis support")
-    return output / denominator[None, :]
+    with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+        result = output / denominator[None, :]
+    if not np.all(np.isfinite(result)):
+        raise ValueError("reconstructed signal exceeds floating-point range")
+    return result

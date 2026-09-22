@@ -4,18 +4,27 @@ from __future__ import annotations
 
 import numpy as np
 
-from .conventions import hermitian_part, validate_cft, validate_frequencies, validate_positions
+from .conventions import finite_real_array, hermitian_part, validate_cft, validate_frequencies, validate_positions
 
 
 def dsb_weights(steering: np.ndarray) -> np.ndarray:
     """Return distortionless delay-and-sum weights ``a / (a.H @ a)``."""
     a = np.asarray(steering, dtype=complex)
-    if a.ndim not in (1, 2) or not np.all(np.isfinite(a)):
+    if a.ndim not in (1, 2) or min(a.shape) < 1 or not np.all(np.isfinite(a)):
         raise ValueError("steering must be channels or frequency x channels")
-    denominator = np.sum(np.abs(a) ** 2, axis=-1, keepdims=True)
-    if np.any(denominator <= 0.0):
+    scale = np.max(np.maximum(np.abs(a.real), np.abs(a.imag)), axis=-1, keepdims=True)
+    if np.any(scale == 0.0):
         raise ValueError("steering vector must be non-zero")
-    return a / denominator
+    # Divide real and imaginary parts separately: complex division can form
+    # an overflowing reciprocal even when both components are representable.
+    normalized = a.real / scale + 1j * (a.imag / scale)
+    denominator = np.sum(np.abs(normalized) ** 2, axis=-1, keepdims=True)
+    reduced = normalized / denominator
+    with np.errstate(over="ignore", invalid="ignore"):
+        result = reduced.real / scale + 1j * (reduced.imag / scale)
+    if not np.all(np.isfinite(result)):
+        raise ValueError("DSB weights exceed floating-point range")
+    return result
 
 
 def apply_beamformer(spectra: np.ndarray, weights: np.ndarray) -> np.ndarray:
@@ -159,7 +168,7 @@ def wiener_gain(
 ) -> np.ndarray:
     """Return ``max(1 - noise/output, gain_floor)`` element by element."""
     output, noise = np.broadcast_arrays(
-        np.asarray(output_power, dtype=float), np.asarray(noise_power, dtype=float)
+        finite_real_array(output_power, "output_power"), finite_real_array(noise_power, "noise_power")
     )
     if not np.all(np.isfinite(output)) or not np.all(np.isfinite(noise)):
         raise ValueError("power arrays must be finite")

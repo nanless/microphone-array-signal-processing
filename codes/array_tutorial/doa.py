@@ -10,7 +10,7 @@ import math
 
 import numpy as np
 
-from .conventions import hermitian_part, validate_cft, validate_frequencies
+from .conventions import finite_real_array, hermitian_part, validate_cft, validate_frequencies
 from .geometry import plane_wave_delays
 
 
@@ -85,8 +85,8 @@ def gcc_phat(
     lags, and changing the FFT length can change its values.  Optional
     three-point interpolation is local and does not change the lag search range.
     """
-    first = np.asarray(x1, dtype=float)
-    second = np.asarray(x2, dtype=float)
+    first = finite_real_array(x1, "x1")
+    second = finite_real_array(x2, "x2")
     if first.ndim != 1 or second.ndim != 1 or first.size < 1 or second.size < 1:
         raise ValueError("x1 and x2 must be non-empty one-dimensional signals")
     if not np.all(np.isfinite(first)) or not np.all(np.isfinite(second)):
@@ -142,7 +142,7 @@ def srp_phat(
         raise ValueError("epsilon must be finite and positive")
     x = validate_cft(spectra)
     frequencies = validate_frequencies(frequencies_hz)
-    candidates = np.atleast_1d(np.asarray(candidate_azimuths_rad, dtype=float))
+    candidates = np.atleast_1d(finite_real_array(candidate_azimuths_rad, "candidate_azimuths_rad"))
     if frequencies.size != x.shape[1]:
         raise ValueError("frequencies_hz does not match the STFT frequency axis")
     if candidates.ndim != 1 or not np.all(np.isfinite(candidates)) or candidates.size < 1:

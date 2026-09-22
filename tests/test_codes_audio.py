@@ -43,7 +43,7 @@ class AudioSamplesTest(unittest.TestCase):
         pan = cases['tracking']['signals']['tracking_pan']
         np.testing.assert_allclose(np.sum(pan**2, axis=0), sep['separation_source1']**2, atol=1e-15)
         files, groups = prepare_exports(cases)
-        self.assertEqual(len(files), 36)
+        self.assertEqual(len(files), 40)
         for blob, info in files.values():
             self.assertEqual(info['common_export_gain'], groups[info['group']]['common_export_gain'])
             self.assertLess(info['peak'], .801)
@@ -52,7 +52,7 @@ class AudioSamplesTest(unittest.TestCase):
     def test_manifest_check_detects_modified_audio(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            self.assertEqual(generate(root)['files'], 36)
+            self.assertEqual(generate(root)['files'], 40)
             self.assertTrue(generate(root, check=True)['checked'])
             (root/'spatial_reference.wav').write_bytes(b'not a WAV')
             with self.assertRaisesRegex(ValueError, 'audio content differs'):
@@ -121,6 +121,31 @@ class AudioSamplesTest(unittest.TestCase):
         for name, gain in [('corrected', .95), ('uncorrected', .05)]:
             self.assertLessEqual(np.max(np.abs(decoded[name]-gain*decoded['reference'])),
                                  (1+gain)*.5/32768 + 1e-15)
+
+    def test_nonlinear_projection_matches_independent_trigonometric_identity(self):
+        case = build_cases()['nonlinear']
+        signals = case['signals']
+        phase = 2*np.pi*500*np.arange(32000)/16000
+        fundamental, third = np.sin(phase), np.sin(3*phase)
+        # Independent phase multiplication order accumulates float64 roundoff
+        # over 1000 periods; 1e-12 remains far below one PCM quantization step.
+        np.testing.assert_allclose(signals['nonlinear_echo'], .496*fundamental-.032*third, atol=1e-12, rtol=0)
+        np.testing.assert_allclose(signals['nonlinear_estimate'], .496*fundamental, atol=1e-12, rtol=0)
+        np.testing.assert_allclose(signals['nonlinear_residual'], -.032*third, atol=1e-12, rtol=0)
+        self.assertAlmostEqual(case['parameters']['fit_gain'], 1.24, places=13)
+        self.assertAlmostEqual(np.mean(signals['nonlinear_echo']**2), .12352, places=13)
+        self.assertAlmostEqual(np.mean(signals['nonlinear_residual']**2), .000512, places=13)
+
+    def test_nonlinear_pcm_retains_common_gain_and_harmonic_amplitudes(self):
+        files, groups = prepare_exports()
+        self.assertEqual(groups['nonlinear']['common_export_gain'], 1.)
+        for name, expected in [('reference', [.4, 0]), ('echo', [.496, .032]),
+                               ('estimate', [.496, 0]), ('residual', [0, .032])]:
+            _, decoded = read_pcm16(files[f'nonlinear_{name}.wav'][0])
+            self.assertEqual(decoded.shape, (1, 32000))
+            amplitude = 2*np.abs(np.fft.rfft(decoded[0])[[1000, 3000]])/32000
+            # DFT amplitude error <= twice the pointwise rounding bound.
+            np.testing.assert_allclose(amplitude, expected, atol=1/32768, rtol=0)
 
 
 if __name__ == '__main__':

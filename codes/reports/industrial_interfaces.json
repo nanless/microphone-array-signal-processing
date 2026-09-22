@@ -1,0 +1,342 @@
+{
+  "schema_version": 1,
+  "status": "passed",
+  "sources": {
+    "libsoxr": {
+      "revision": "945b592b70470e29f917f4de89b4281fbbd540c0",
+      "origin": "https://git.code.sf.net/p/soxr/code",
+      "initial_status": "source_verified",
+      "final_status": "source_verified"
+    },
+    "libebur128": {
+      "revision": "67b33abe1558160ed76ada1322329b0e9e058b02",
+      "origin": "https://github.com/jiixyj/libebur128.git",
+      "initial_status": "source_verified",
+      "final_status": "source_verified"
+    },
+    "libsndfile": {
+      "revision": "b9103bd48b6c8fb517ae737fe3baee0c718b804c",
+      "origin": "https://github.com/libsndfile/libsndfile.git",
+      "initial_status": "source_verified",
+      "final_status": "source_verified"
+    }
+  },
+  "scope": "Synthetic native interface invariants; not standards certification, device audio or real-time benchmarking",
+  "artifacts": {
+    "harness": {
+      "path": "codes/examples/industrial_interfaces.c",
+      "sha256": "baba551caa63a4d81d4b56a2f8867c8a23ca3676f4417c7f3ee7ef75ef4dfd34"
+    },
+    "runner": {
+      "path": "codes/examples/run_industrial_interfaces.py",
+      "sha256": "e17563deebbdcf0567e13afc6dc87ff10a21c3f2ddd420dc1e4fca298830b2e0"
+    }
+  },
+  "environment": {
+    "python": "3.13.12",
+    "system": "Darwin",
+    "release": "25.6.0",
+    "machine": "arm64",
+    "cmake": "cmake version 4.3.2",
+    "compiler": "Apple clang version 21.0.0 (clang-2100.1.1.101)"
+  },
+  "work_directory": "tmp/industrial-interfaces-k_m8qaav",
+  "commands": [
+    {
+      "argv": [
+        "cmake",
+        "--version"
+      ],
+      "returncode": 0,
+      "log": "tmp/industrial-interfaces-k_m8qaav/cmake-version.log",
+      "log_sha256": "49da5b8c6869fe4b385bd4d095bf446bc9e6f32d0f6a86b437022e99e19f4ef7"
+    },
+    {
+      "argv": [
+        "clang",
+        "--version"
+      ],
+      "returncode": 0,
+      "log": "tmp/industrial-interfaces-k_m8qaav/compiler-version.log",
+      "log_sha256": "55f7662ee66d47566d9f08f35a12158ac9588e4852f788eed57fa3bf625c9a5d"
+    },
+    {
+      "argv": [
+        "cmake",
+        "-S",
+        "${REPO_ROOT}/codes/upstream/_downloads/libsoxr",
+        "-B",
+        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/libsoxr",
+        "-G",
+        "Unix Makefiles",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DBUILD_SHARED_LIBS=OFF",
+        "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
+        "-DCMAKE_C_COMPILER=clang",
+        "-DBUILD_TESTS=OFF",
+        "-DBUILD_EXAMPLES=OFF",
+        "-DWITH_OPENMP=OFF",
+        "-DWITH_LSR_BINDINGS=OFF",
+        "-DWITH_CR32S=OFF",
+        "-DWITH_CR64S=OFF",
+        "-DWITH_PFFFT=OFF"
+      ],
+      "returncode": 0,
+      "log": "tmp/industrial-interfaces-k_m8qaav/libsoxr-configure.log",
+      "log_sha256": "20a9fe65329951630fcfa96f0bd772feb4c92344e7746e9f81796bf9d9d54ba1"
+    },
+    {
+      "argv": [
+        "cmake",
+        "--build",
+        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/libsoxr",
+        "--parallel",
+        "2"
+      ],
+      "returncode": 0,
+      "log": "tmp/industrial-interfaces-k_m8qaav/libsoxr-build.log",
+      "log_sha256": "ba1633faa9ed6c27f8410a809ffd136903543a74ca4979cbef4ab0e8873910e8"
+    },
+    {
+      "argv": [
+        "cmake",
+        "-S",
+        "${REPO_ROOT}/codes/upstream/_downloads/libebur128",
+        "-B",
+        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/libebur128",
+        "-G",
+        "Unix Makefiles",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DBUILD_SHARED_LIBS=OFF",
+        "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
+        "-DCMAKE_C_COMPILER=clang",
+        "-DENABLE_TESTS=OFF",
+        "-DENABLE_FUZZER=OFF"
+      ],
+      "returncode": 0,
+      "log": "tmp/industrial-interfaces-k_m8qaav/libebur128-configure.log",
+      "log_sha256": "83e3e1fde5c69a39ac537d0d661ba982b84e715eab8df8f58e2c2b715582e22c"
+    },
+    {
+      "argv": [
+        "cmake",
+        "--build",
+        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/libebur128",
+        "--parallel",
+        "2"
+      ],
+      "returncode": 0,
+      "log": "tmp/industrial-interfaces-k_m8qaav/libebur128-build.log",
+      "log_sha256": "9f5c70975e9b6ecf5a7eb81f3d110c1af64a2399f5e1ca7cdb2a70e26aa34b2e"
+    },
+    {
+      "argv": [
+        "cmake",
+        "-S",
+        "${REPO_ROOT}/codes/upstream/_downloads/libsndfile",
+        "-B",
+        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/libsndfile",
+        "-G",
+        "Unix Makefiles",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DBUILD_SHARED_LIBS=OFF",
+        "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
+        "-DCMAKE_C_COMPILER=clang",
+        "-DBUILD_TESTING=OFF",
+        "-DBUILD_PROGRAMS=OFF",
+        "-DBUILD_EXAMPLES=OFF",
+        "-DENABLE_EXTERNAL_LIBS=OFF",
+        "-DENABLE_MPEG=OFF",
+        "-DENABLE_CPACK=OFF"
+      ],
+      "returncode": 0,
+      "log": "tmp/industrial-interfaces-k_m8qaav/libsndfile-configure.log",
+      "log_sha256": "aa0f5632b36f73cb822a8580dd8f97d5826ac0a5868e9df1962f126051d3d61c"
+    },
+    {
+      "argv": [
+        "cmake",
+        "--build",
+        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/libsndfile",
+        "--parallel",
+        "2"
+      ],
+      "returncode": 0,
+      "log": "tmp/industrial-interfaces-k_m8qaav/libsndfile-build.log",
+      "log_sha256": "ba719934930fbaa494614f66f293bfe7e79c146ec1e8fe9e6a0390e82b2264f8"
+    },
+    {
+      "argv": [
+        "clang",
+        "-std=c99",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "${REPO_ROOT}/codes/examples/industrial_interfaces.c",
+        "-I",
+        "${REPO_ROOT}/codes/upstream/_downloads/libsoxr/src",
+        "-I",
+        "${REPO_ROOT}/codes/upstream/_downloads/libebur128/ebur128",
+        "-I",
+        "${REPO_ROOT}/codes/upstream/_downloads/libsndfile/include",
+        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/libsoxr/src/libsoxr.a",
+        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/libebur128/libebur128.a",
+        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/libsndfile/libsndfile.a",
+        "-lm",
+        "-o",
+        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/industrial_interfaces"
+      ],
+      "returncode": 0,
+      "log": "tmp/industrial-interfaces-k_m8qaav/harness-build.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/industrial_interfaces",
+        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/fixture_pcm16.wav"
+      ],
+      "returncode": 0,
+      "log": "tmp/industrial-interfaces-k_m8qaav/harness-run.log",
+      "log_sha256": "c1a6e0a64dc7a1a541682de58458d5a2771e393f8d28a64cff00e0369af80e0c"
+    }
+  ],
+  "measurements": {
+    "library_versions": {
+      "soxr": "libsoxr-0.1.3",
+      "ebur128": "1.2.6",
+      "sndfile": "libsndfile-1.2.2"
+    },
+    "src": {
+      "input_frames": 48000,
+      "channels": 2,
+      "input_rate_hz": 48000,
+      "output_rate_hz": 16000,
+      "duration_seconds": 1,
+      "left_impulse_amplitude": 0.5,
+      "left_impulse_input_frame": 12000,
+      "right_sine_amplitude": 0.1,
+      "right_sine_frequency_hz": 1000,
+      "alignment": "No fitted shift or gain; compare native sample indices after full flush",
+      "reset_comparison_scope": "Clear discards pending output; unequal lengths and equal-index differences are not aligned quality scores",
+      "io": "FLOAT64 interleaved",
+      "quality": "HQ, flags=0",
+      "threads": 1,
+      "output_capacity_per_call": 113,
+      "whole": {
+        "output_frames": 16000,
+        "before_flush_frames": 15471,
+        "flush_frames": 529,
+        "input_calls": 142,
+        "flush_calls": 6,
+        "partial_consumption_calls": 141,
+        "delay_before_flush_output_samples": 529,
+        "delay_after_flush_output_samples": 0
+      },
+      "chunk127": {
+        "output_frames": 16000,
+        "before_flush_frames": 15659,
+        "flush_frames": 341,
+        "input_calls": 378,
+        "flush_calls": 5,
+        "partial_consumption_calls": 0,
+        "delay_before_flush_output_samples": 341,
+        "delay_after_flush_output_samples": 0
+      },
+      "chunk509": {
+        "output_frames": 16000,
+        "before_flush_frames": 15622,
+        "flush_frames": 378,
+        "input_calls": 189,
+        "flush_calls": 5,
+        "partial_consumption_calls": 94,
+        "delay_before_flush_output_samples": 378,
+        "delay_after_flush_output_samples": 0
+      },
+      "clear_at_input_frame_24000_without_flush": {
+        "output_frames": 15566,
+        "before_flush_frames": 15132,
+        "flush_frames": 434,
+        "input_calls": 378,
+        "flush_calls": 5,
+        "partial_consumption_calls": 0,
+        "delay_before_flush_output_samples": 434,
+        "delay_after_flush_output_samples": 0
+      },
+      "chunk127_max_abs_error": 0,
+      "chunk509_max_abs_error": 0,
+      "reset_equal_index_overlap_max_abs_difference": 0.07669072598218918,
+      "impulse_output_peak_frame": 4000,
+      "sine_max_abs_error_frames_320_to_15680": 6.839585714970497e-08
+    },
+    "loudness": {
+      "sample_rate_hz": 48000,
+      "frames": 480000,
+      "frequency_hz": 1000,
+      "channel_role": "CENTER",
+      "mode": "I | TRUE_PEAK",
+      "amplitudes": [
+        0.1,
+        0.05
+      ],
+      "full_lufs": -23.003598650247532,
+      "half_lufs": -29.024198563527158,
+      "half_minus_full_lu": -6.020599913279625,
+      "chunk127_minus_whole_lu": 0,
+      "full_sample_peak": 0.1,
+      "half_sample_peak": 0.05,
+      "full_true_peak": 0.10000000149011612,
+      "half_true_peak": 0.05000000074505806,
+      "silence_lufs": null,
+      "silence_reason": "negative_infinity_no_gated_energy",
+      "silence_sample_peak": 0,
+      "silence_true_peak": 0
+    },
+    "pcm16": {
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "frames": 7,
+      "frame_read_counts": [
+        3,
+        3,
+        1,
+        0
+      ],
+      "item_read_counts": [
+        6,
+        6,
+        2,
+        0
+      ],
+      "float_max_abs_error": 0,
+      "pcm_interleaved": [
+        -32768,
+        0,
+        0,
+        32767,
+        16384,
+        -16384,
+        1,
+        -1,
+        12345,
+        -23456,
+        0,
+        1000,
+        32767,
+        -32768
+      ]
+    }
+  },
+  "independent_wave_check": {
+    "decoder": "Python stdlib wave + struct <14h",
+    "status": "passed",
+    "sha256": "e98a6eb3c274d78ded5f02fe54317b097f4cb8df245d5e87316a5d3c92c218b2"
+  },
+  "binary_sha256": "1086f50e392938bea4fa7a5290cb22c73c47565ab526965e75b51a67c8c0fa80",
+  "static_library_sha256": {
+    "libsoxr": "0ec62d7d26bc2f020c62af453371e0b37a0ad75b5f21b30063460b023dfcce5e",
+    "libebur128": "bc758978c65ee9b1366462021e722b406e09253ef8354ee9f7c00cc5320d83dc",
+    "libsndfile": "351f273629f65f8219da37b10f0c224a1a02bfbac04a4af49d4c7be040ea1ca6"
+  },
+  "callback_trace_rows": 1109,
+  "finished_at_utc": "2026-09-22T15:40:43.008467+00:00"
+}

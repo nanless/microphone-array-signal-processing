@@ -357,14 +357,14 @@ class BuildHelpersTest(unittest.TestCase):
         )
 
     def test_figure_semantics_accept_any_reuse_and_reject_mismatch_or_orphan(self):
-        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 36)]
+        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 37)]
         refs.extend([("图1 复用", "fig01_x.png", 1),
                      ("图23 复用", "fig23_x.png", 23)])
-        names = [f"fig{i:02d}_x.png" for i in range(1, 36)]
+        names = [f"fig{i:02d}_x.png" for i in range(1, 37)]
         self.assertEqual(quality_check.figure_inventory_issues(refs, names), [])
         bad_refs = list(refs)
         bad_refs[0] = ("图2 错配", "fig01_x.png", 1)
-        issues = quality_check.figure_inventory_issues(bad_refs, names + ["fig36_orphan.png"])
+        issues = quality_check.figure_inventory_issues(bad_refs, names + ["fig37_orphan.png"])
         self.assertTrue(any("不匹配" in item for item in issues))
         self.assertTrue(any("孤立 PNG" in item for item in issues))
 
@@ -406,6 +406,16 @@ class BuildHelpersTest(unittest.TestCase):
         issues = quality_check.section_reference_issues(bad)
         self.assertTrue(any("未指向语义片段" in item for item in issues))
         self.assertTrue(any("引用不存在" in item for item in issues))
+
+    def test_section_references_distinguish_external_citations_from_book(self):
+        documents = {'04_x.md': '## 章\n### 4.2 GCC\n'
+                     '[NIST §7.2.4.1](https://example.org/manual.htm "citation")\n'
+                     '[原论文 §2.2](https://example.org/paper.pdf)\n'
+                     '[§9.9](04_x.md#sec-9-9) 与 §8.8\n'}
+        issues = quality_check.section_reference_issues(documents)
+        self.assertFalse(any('7.2.4.1' in item or '§2.2' in item for item in issues))
+        self.assertTrue(any('§9.9' in item for item in issues))
+        self.assertTrue(any('§8.8' in item for item in issues))
 
     def test_section_semantics_rejects_wrong_chapter_and_duplicate_number(self):
         documents = {

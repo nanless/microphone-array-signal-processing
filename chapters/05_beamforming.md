@@ -252,7 +252,7 @@ $\lambda$ 是复标量拉格朗日乘子。后两项互为共轭，所以 $L$ �
 
 $$\frac{\partial L}{\partial \vec{w}^*} = \mathbf{R}_{nn}\vec{w} - \lambda\vec{a} = \vec{0}\quad\Rightarrow\quad \vec{w} = \lambda\,\mathbf{R}_{nn}^{-1}\vec{a}$$
 
-物理读法：**最优权重与经噪声协方差白化后的导向矢量成比例**。$\mathbf{R}_{nn}^{-1}$ 根据噪声空间相关结构调整各方向的响应，比例系数再由无失真约束确定。
+物理读法：**最优权重与经噪声逆协方差加权后的导向矢量成比例**。$\mathbf{R}_{nn}^{-1}$ 根据噪声空间相关结构调整各方向的响应，比例系数再由无失真约束确定。这里不能把 $\mathbf R_{nn}^{-1}$ 本身叫作白化矩阵：对正定噪声协方差，常用的厄米白化矩阵是 $\mathbf R_{nn}^{-1/2}$，因为它把噪声协方差变成单位阵；直接乘逆矩阵后，噪声协方差仍是 $\mathbf R_{nn}^{-1}$。
 
 **第 3 步：用约束确定倍数。** 把结果代回无失真约束 $\vec{w}^H\vec{a}=1$：
 
@@ -338,10 +338,10 @@ $|\vec{w}^H\vec{a}_i| = \dfrac{\sqrt{2}}{22} \approx 0.0643$，即 **−23.8 dB*
 | 角度 | 增益 (dB) | 含义 |
 |---|---|---|
 | $0°$ | **0.00** | 无失真约束保持单位响应 |
-| $+30°$ | **−23.84** | 零陷正对干扰 |
+| $+30°$ | **−23.84** | 干扰方向受到抑制，但响应不为零 |
 | $+15°$ | −5.05 | 过渡带，被连带压低 |
 | $-30°$ | +2.61 | 无干扰一侧被抬高 |
-| $+45°$ | −8.62 | 远旁瓣残余 |
+| $+45°$ | −8.62 | 离开最深抑制方向后响应回升 |
 
 读图：0° 处因无失真约束保持 0 dB，30° 干扰方向的响应为 −23.8 dB；波束图不再左右对称。干扰一侧（+$\theta$）整体降低，而 −30° 附近增益升高 2.6 dB。该权重是在本例协方差与单位目标响应约束下使输出功率最小的解；协方差或干扰方向改变后，曲线也会改变。
 
@@ -432,7 +432,7 @@ $$L=\vec w^H\mathbf R\vec w+\vec\lambda^H(\vec f-\mathbf C^H\vec w)+(\vec f^H-\v
 
 $$\vec\lambda=(\mathbf C^H\mathbf R^{-1}\mathbf C)^{-1}\vec f。$$
 
-再代回就得到式(5-4)。原先只写 $\vec\lambda^H(\mathbf C^H\vec w-\vec f)$ 时，该项不含 $\vec w^*$，不能导出下一步；必须保留与之成对的共轭项。除 $M\times M$ 的 $\mathbf R$ 外，还要对 $K_c\times K_c$ 的约束矩阵求逆。
+再代回就得到式(5-4)。拉格朗日函数必须保留成对的共轭约束项，才能保持为实数，并在对 $\vec w^*$ 求导时得到正确的约束贡献。除 $M\times M$ 的 $\mathbf R$ 外，还要对 $K_c\times K_c$ 的约束矩阵求逆。
 
 > **维度核对**：约束有 $K_c$ 条，$\vec f$ 和 $\vec\lambda$ 都是 $K_c\times1$ 向量；$\mathbf C$ 是 $M\times K_c$，所以 $\mathbf C^H\vec w$ 与 $\vec f$ 维度一致。矩阵 $\mathbf C^H\mathbf R^{-1}\mathbf C$ 为 $K_c\times K_c$。若 $\mathbf C$ 满列秩，$K_c$ 条独立复线性约束把可调子空间的复维数从 $M$ 降为 $M-K_c$；$K_c=M$ 时，权重通常由约束唯一确定。
 
@@ -472,9 +472,12 @@ J(\vec{w}) &= E\{|n_{out}|^2\} + \frac{1}{\mu}\,E\{|s_{out}-s_{ref}|^2\},\\
 \end{aligned}\tag{5-5}$$
 
 - $\mathbf{R}_{ss}, \mathbf{R}_{nn}$：目标与噪声协方差矩阵；$\vec{e}_r$：参考麦选择向量（第 $r$ 位为 1 的单位向量，即“以第 $r$ 个麦收到的目标为基准”）；
+
 - $\mu=1$ 是普通 MWF；$\mu>1$ 更重视噪声项，抑制增强而目标失真通常增大；$\mu<1$ 更重视目标保真。令 $\mu\to\infty$ 时权重趋近零，并不趋近 MVDR。只有秩一目标模型 $\mathbf R_{ss}=\phi_s\vec a\vec a^H$ 且参考麦归一化 $a_r=1$ 时，才有
-$$\vec w_{SDW}=\frac{\phi_s q}{\mu+\phi_s q}\,\vec w_{MVDR},\qquad q=\vec a^H\mathbf R_{nn}^{-1}\vec a\text{。}$$
-此时 SDW-MWF 是 MVDR 输出再乘一个标量 Wiener 增益，并在 $\mu\to0^+$ 时趋近 MVDR。目标协方差满秩时没有这个简单关系。[Doclo, Spriet, Wouters & Moonen, *Speech Communication*, vol.49, p.636, 2007](https://hal.science/hal-00499178v1/document "citation")
+
+    $$\vec w_{SDW}=\frac{\phi_s q}{\mu+\phi_s q}\,\vec w_{MVDR},\qquad q=\vec a^H\mathbf R_{nn}^{-1}\vec a\text{。}$$
+
+    此时 SDW-MWF 是 MVDR 输出再乘一个标量 Wiener 增益，并在 $\mu\to0^+$ 时趋近 MVDR。目标协方差满秩时没有这个简单关系。[Doclo, Spriet, Wouters & Moonen, *Speech Communication*, vol.49, p.636, 2007](https://hal.science/hal-00499178v1/document "citation")
 
 前文给出的是 LCMV 的频域闭式解。Frost 算法是它的一种经典时域在线实现；下面给出更新式，并与 GSC 的结构对照。
 
@@ -729,9 +732,15 @@ $$p(\kappa,\Omega) = \sum_{n=0}^{N}\sum_{m=-n}^{n} b_n(\kappa r)\,Y_n^m(\Omega)\
 
 [`beamforming.py`](../codes/array_tutorial/beamforming.py) 提供 DSB、弥散场相干矩阵、加载超指向/MVDR、LCMV、GSC 阻塞矩阵和 Wiener 增益的原创 NumPy 基线。权重约定统一为输出 $Y=\vec w^H\vec x$，多通道谱形状统一为 `通道 × 频点 × 帧`；逐频点权重为 `频点 × 通道`。函数用线性方程求解代替显式求逆；未加载协方差病态、LCMV 约束不独立或空统计量都会报错。正文算例的 DSB 单位响应、Capon 数值、MVDR 权重、LCMV 双约束、GSC 阻塞和 Wiener 增益由 [`test_codes_doa_beam.py`](../tests/test_codes_doa_beam.py) 独立回归，串联示例见 [`ch02_05_baselines.py`](../codes/examples/ch02_05_baselines.py)。
 
+DSB 对非零导向矢量计算 $\vec a/(\vec a^H\vec a)$；实现先按最大分量缩放，再归一化，以免极大或极小的有限输入在平方时溢出或下溢。若结果本身超出浮点范围则报错，而不是返回貌似有效的零权重。Wiener 增益中的功率必须为有限非负实数，不能把复数功率的虚部丢掉后继续运行；相关边界回归见 [`test_codes_spatial_round3.py`](../tests/test_codes_spatial_round3.py)。
+
 这些函数是公式基线，不是完整设备状态机。实时实现还要记录 STFT 窗长和帧移、分数延时滤波器、固定传播补偿、参考通道、SCM 遗忘因子、VAD/SPP 门控、权值更新周期和输出限幅。每次更新后检查条件数、$|\vec w^H\vec a-1|$、WNG 和输出峰值；空掩码或病态矩阵出现时，应在“保持上一组已验证权值、增加已标明口径的加载、退回 DSB”之间预先规定顺序。目标泄漏时应冻结噪声 SCM 或 GSC 自适应支路，并记录触发原因，不能只在输出失真后重新初始化。
 
 外部波束实现按完整提交号保存在 `codes/upstream/_downloads/`，取得源码后的构建、数值回归和设备测试分别记录。版本与许可见 [`SOURCES.lock.json`](../codes/SOURCES.lock.json)，扩展实验和源码阅读顺序见[空间处理与追踪研究](../codes/research/01_spatial_and_tracking.md)。TorchAudio 的 `examples/tutorials/mvdr_tutorial.py`、ESPnet 的 `espnet2/enh/layers/beamformer.py` 分别连接掩码、协方差、参考通道与输出波形；复现应使用锁定源码及相容依赖，不能把浮动 nightly 文档当作稳定发行版契约。
+
+持续自适应 GSC 可读 BTK2.0 的 `btk20_src/lib/pybeamformer.py::SubbandGSCLMSBeamformer` 和 `SubbandGSCRLSBeamformer`，由 `unit_test/test_online_beamforming.py` 连接逐通道音频、滤波器组、方向控制和输出。这些类保留跨帧更新状态，补充了本书只生成阻塞矩阵的教学基线；其子带实现不能直接当作 §5.5 的时域 Frost。[固定 BTK 作者源码](https://github.com/kkumatani/distant_speech_recognition/blob/feff19ec8bcb770f6530fe280dc3ccafc2f5984a/btk20_src/lib/pybeamformer.py "citation")。
+
+BTK 示例声速取 `343740.0`，与毫米坐标配套；本书米制阵列不能直接代入。构建默认 Python 2.7，并要求 SWIG、GSL、NumPy 和 libsndfile，不能仅凭根目录 MIT 许可或示例存在便认为可在现代环境直接运行。研究文档分别列出构建前提和目标偏移、更新冻结的最小实验；这些上游数值实验尚未执行。
 
 球阵还多了一层编码误差。`sound_field_analysis/process.py::spatFT` 计算球谐系数，`gen.py::radial_filter` 控制径向补偿；Politis 的 `arraySHTfiltersMeas_regLS.m` 用实测响应设计编码滤波器，`sphMVDR.m`、`sphLCMV.m` 在球谐域求权重。先用已知平面波检查实/复球谐、归一化、通道排列和余纬角，再增加阶数测量每阶噪声放大。只检查旋转后的图形，没有检查径向滤波后的 WNG，仍可能在低频得到不可用的输出。[sfa 官方接口](https://appliedacousticschalmers.github.io/sound_field_analysis-py/reference.html "citation")；[Politis 作者实现](https://github.com/polarch/Spherical-Array-Processing "citation")。
 
@@ -808,7 +817,7 @@ $$\mathrm{NR}_{ref}=10\log_{10}\frac{\vec e_r^H\mathbf R_{nn}\vec e_r}{\vec w^H\
 
     泄漏目标与固定支路输出相关，自适应对消器可能将这部分目标一并消除，造成目标衰减；实际程度还取决于自适应滤波器和更新门控。保护措施见 §5.6 末。
 
-下面四题由 [`exercises_spatial.py`](../codes/examples/exercises_spatial.py) 输出权重、响应或功率，用来检查实现所需的模型条件。
+下面五题由 [`exercises_spatial.py`](../codes/examples/exercises_spatial.py) 输出权重、响应或功率，用来检查实现所需的模型条件。
 
 **E05-01：一般 MWF 为什么不能总用秩一公式？** 噪声协方差为 $\mathbf I$，参考麦选择向量为 $[1,0]^\top$，噪声权重为 1。分别取目标协方差 $\operatorname{diag}(2,1)$ 和 $\operatorname{diag}(2,0)$，比较一般 MWF 线性方程与目标秩一时的迹化简。
 
@@ -840,7 +849,24 @@ $$\mathbf R_{nn}=\begin{bmatrix}11&-10\mathrm j\\10\mathrm j&11\end{bmatrix}.$$
 
 这里的两列是坐标基向量，用来隔离接口的共轭问题，不是某个阵列的两个物理方向。一般约束矩阵仍需检查列独立性和可行性；复数响应检查也不能代替几何、时延和通道顺序检查。
 
-从单频权重走到波形还需要逐频点处理与 iSTFT。可先用[音频实验总览](../codes/research/05_exercises_and_audio.md)中的对齐平均样本检查通道、增益和参考时延，再搭建自适应波束实验。总览中的对齐平均不是 MVDR 输出，不能把它的听感或误差写成 E05-02 的实验结果。
+**E05-05：干扰方向的抑制为何不等于精确零陷？** 沿用算例 5-2 的半波长双麦，目标为 0°，干扰为 30°，独立白噪声方差为 1。令线性干扰噪声比为 $\beta$，因此 $\mathbf R_{nn}=\beta\vec a_i\vec a_i^H+\mathbf I$。分别取 $\beta=1,10,100$，计算干扰方向复响应，以及 $-90^\circ$ 至 $90^\circ$ 内真正的零点位置。
+
+**参考答案**：将该协方差代入 MVDR 并约去公共因子，得到
+
+$$\vec w=\left[\frac12+\frac{\mathrm j\beta}{2(\beta+1)},\frac12-\frac{\mathrm j\beta}{2(\beta+1)}\right]^\top,\qquad
+B(30^\circ)=\frac{1+\mathrm j}{2(\beta+1)}。$$
+
+对任意有限 $\beta$，该复响应都不为零。再记相位差为 $\psi=\pi\sin\theta$，由 $w_1^*+w_2^*e^{\mathrm j\psi}=0$ 得 $e^{\mathrm j\psi}=-w_1^*/w_2^*$。两权重模相等，所以本例确有单位圆上的解；其相位为 $\psi_0=\pi-2\arctan[\beta/(\beta+1)]$，于是 $\theta_0=\arcsin(\psi_0/\pi)$。
+
+| 线性 INR $\beta$ | 30° 方向幅度响应（dB） | 精确零点 $\theta_0$ |
+|---:|---:|---:|
+| 1 | −9.03 | 44.82° |
+| 10 | −23.84 | 32.03° |
+| 100 | −43.10 | 30.21° |
+
+这些是本书单频模型的计算结果，脚本使用未舍入权重再求零点，最后保留两位小数。增大 INR 时，零点向 30° 靠近，干扰方向响应趋于零；有限白噪声下，MVDR 仍在干扰抑制与权重范数之间折中。这里存在精确零点依赖双麦权重的等模结构，不能外推为任意阵列、任意噪声模型必有零点。若要在指定方向强制为零，应直接施加 LCMV 约束。
+
+从单频权重走到波形还需要逐频点处理与 iSTFT。可先用[音频实验总览](../codes/research/05_exercises_and_audio.md)中的对齐平均样本检查通道、增益和参考时延，再搭建自适应波束实验。总览中的对齐平均不是 MVDR 输出，不能把它的听感或误差写成 E05-02 或 E05-05 的实验结果。
 
 ---
 

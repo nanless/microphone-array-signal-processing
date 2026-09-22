@@ -17,7 +17,9 @@
 - 声源数会随时间变化；
 - 到达方向（Direction of Arrival，DOA）与笛卡尔位置之间是非线性关系。
 
-若状态为平面位置与速度 $[x,y,\dot x,\dot y]$，阵列中心为 $(x_0,y_0)$，则观测函数为 $\theta=\operatorname{atan2}(y-y_0,x-x_0)$。
+若状态为平面位置与速度 $[x,y,\dot x,\dot y]$，阵列中心为 $(x_0,y_0)$，沿用第 2～5 章从 $+y$ 轴向 $+x$ 轴为正的方位角约定，则观测函数为 $\theta=\operatorname{atan2}(x-x_0,y-y_0)$。这里 `atan2` 的第一个参数是正弦分量，第二个是余弦分量；不能直接照搬以 $+x$ 轴为零点的数学极角顺序。
+
+例如阵列中心在原点，声源在 $(1\ \mathrm m,2\ \mathrm m)$ 时，本书方位角是 $\operatorname{atan2}(1,2)\approx26.565^\circ$；交换参数得到 $\operatorname{atan2}(2,1)\approx63.435^\circ$，那是另一套零点约定。两者都能描述位置，但定位、追踪与波束控制必须先统一约定，不能直接互传。
 
 单个固定阵列的一次方位观测不能确定距离。令阵列中心为 $(0,0)$，声源在 $(1\ \mathrm m,1\ \mathrm m)$ 与 $(2\ \mathrm m,2\ \mathrm m)$ 时都得到 $45^\circ$；沿同一射线缩放位置不会改变 `atan2` 的结果。
 
@@ -174,7 +176,7 @@ $$\mathbf{P}_t=\begin{bmatrix}25/29.35&0\\-0.25/29.35&1\end{bmatrix}\begin{bmatr
 
 两模型例子可使用静止与匀速模型；转移矩阵的对角元素表示保持当前运动模式的概率。IMM 的转移概率和各模型过程噪声需要用目标运动数据标定。0.95 或 0.9 只能作为示例，实际数值不能脱离帧率和目标运动数据直接照搬。
 
-**EKF 与 UKF**：EKF 对 $\theta=\operatorname{atan2}(y-y_0,x-x_0)$ 求雅可比，并在当前估计附近做一阶线性化；估计偏离真实状态较大时，线性化误差可能导致发散。标准对称或缩放 UKF 不显式求导，而是将 $2L+1$ 个 sigma 点通过原始非线性观测函数，再重构均值与协方差；减少 sigma 点的变体使用不同构造。计算量要按状态维数、sigma 点数、观测维数和矩阵实现估算，不能只按“UKF”名称排序。
+**EKF 与 UKF**：EKF 对 $\theta=\operatorname{atan2}(x-x_0,y-y_0)$ 求雅可比，并在当前估计附近做一阶线性化；估计偏离真实状态较大时，线性化误差可能导致发散。标准对称或缩放 UKF 不显式求导，而是将 $2L+1$ 个 sigma 点通过原始非线性观测函数，再重构均值与协方差；减少 sigma 点的变体使用不同构造。计算量要按状态维数、sigma 点数、观测维数和矩阵实现估算，不能只按“UKF”名称排序。
 
 **算例 9-2：10 个粒子的一轮加权与重采样**
 
@@ -388,7 +390,9 @@ GM-PHD 的高斯权重和表示期望目标数，不要求归一到 1。出生�
 
 JPDA 也需要明确漏检事件和一对一约束；在两人交叉时，软关联可能混合轨迹，并不自动保持说话人身份。[Stone Soup JPDA 教程源码](https://github.com/dstl/Stone-Soup/blob/main/docs/tutorials/08_JPDATutorial.py "citation")；[GM-PHD 官方教程](https://stonesoup.readthedocs.io/en/v1.9.1/auto_tutorials/filters/GMPHDTutorial.html "citation")，核实于 2026-09-22。
 
-MHT、CPHD、LMB/$\delta$-GLMB 和检测前追踪仍须按具体论文及实现分别审查。某个库的基类说明提到这些家族，不等于该版本已实现全部算法；给 PHD 分量附加临时标签也不等于实现了 GLMB。正式采用前还需验证出生/存活/漏检模型、假设截断、身份切换和运行成本。
+MHT 已有可阅读的受限参考：Stone Soup 的 `docs/examples/dataassociation/mht_example.py` 使用 `MFAHypothesiser` 延续多帧观测历史，再由 `MFADataAssociator` 做滑窗多帧分配和 N-scan 剪枝。该示例需要 OR-Tools，使用三帧窗口、预置三个目标及方位/距离观测，没有出生或消亡，不能直接代表变人数的声学追踪。[固定 MHT 示例](https://github.com/dstl/Stone-Soup/blob/8d1edeb07ef8505ed065cbef435cfb5e517d9bdc/docs/examples/dataassociation/mht_example.py "citation")。可先用相同观测比较窗口 1 与 3，再检查交叉和缺测；本书未执行这一上游实验。
+
+CPHD、LMB/$\delta$-GLMB 可在 [Vo 作者 MATLAB 工具包页面](https://ba-tuong.vo-au.com/codes.html "citation")找到研究代码来源，但页面限定 academic/research 使用，不能把它写成已确认通用再分发许可的源码。检测前追踪也仍需匹配具体观测模型。某个库的基类说明提到这些家族，不等于该版本已实现全部算法；给 PHD 分量附加临时标签也不等于实现了 GLMB。正式采用前仍要验证出生/存活/漏检模型、假设截断、身份切换和运行成本。
 
 ### 9.4 定位、追踪与波束形成的接口
 

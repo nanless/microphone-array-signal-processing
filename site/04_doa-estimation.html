@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 4 章 · 声源定位（DOA 估计） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="7dad810a9a67"><style>
+<meta name="source-digest" content="1c057bc95262"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -74,6 +74,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="04_doa-estimation.html#sec-4-8">4.8 定位算法总对比</a></li>
 <li><a href="04_doa-estimation.html#sec-4-9">4.9 本章练习</a></li>
 <li><a href="04_doa-estimation.html#sec-4-10">4.10 MDL 源数估计：逐候选评分与数值例</a></li>
+<li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-467e2bd676">重复抽样：把模型失败与有限样本误差分开</a></li>
 </ul>
 <div class="chap"><a href="05_beamforming.html">第 5 章 · 波束形成</a></div>
 <div class="chap"><a href="06_aec.html">第 6 章 · 声学回声消除（AEC）</a></div>
@@ -104,6 +105,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="04_doa-estimation.html#sec-4-8">4.8 定位算法总对比</a></li>
 <li><a href="04_doa-estimation.html#sec-4-9">4.9 本章练习</a></li>
 <li><a href="04_doa-estimation.html#sec-4-10">4.10 MDL 源数估计：逐候选评分与数值例</a></li>
+<li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-467e2bd676">重复抽样：把模型失败与有限样本误差分开</a></li>
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是教程正文第 4 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
@@ -211,7 +213,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <tr>
 <td>互相关 CC</td>
 <td>$\Phi=1$</td>
-<td>抗噪差，峰被噪声淹没</td>
+<td>不作频谱加权，峰形受源的自相关与噪声统计影响；是否优于 PHAT 取决于信号带宽与噪声条件</td>
 </tr>
 <tr>
 <td>Roth</td>
@@ -464,33 +466,42 @@ $$\frac{c\tau_{31}}{d}=\frac{0.0282975}{0.04}=0.7074\approx\frac{\sqrt2}{2}\quad
 <p>§4.5 说 Capon 谱“更尖”，尖多少？用一个 $2\times2$ 的例子把两种谱在同一组数据上各算两个点。</p>
 <p><strong>设定</strong>：$M=2$ 麦，间距 $d=\lambda/2$；单源在 $\theta=0°$（正横方向），信号功率归一为 1，各麦独立白噪声功率 $\sigma^2=0.25$（SNR $=10\lg(1/0.25)\approx6$ dB）。导向矢量（§2.6 相位差公式的 $M=2$ 版本）：</p>
 <p>$$\vec{a}(\theta)=[1,\ e^{+\mathrm{j}\pi\sin\theta}]^\top\text{。}$$（横写加 $^\top$ 与列向量等价，省版面。）</p>
-<p><strong>第 1 步：写出协方差矩阵</strong>。源在正横、两麦同相（$\sin0°=0$，$\vec{a}=[1,1]^\top$），于是 $\hat{\mathbf{R}}=\vec{a}\vec{a}^H+\sigma^2\mathbf{I}$：非对角元 $=1\times1=1$（两麦信号的互相关系数），对角元 $=$ 信号 1 $+$ 噪声 0.25：</p>
+<p><strong>第 1 步：写出协方差矩阵</strong>。源在正横、两麦同相（$\sin0°=0$，$\vec{a}=[1,1]^\top$），于是 $\hat{\mathbf{R}}=\vec{a}\vec{a}^H+\sigma^2\mathbf{I}$：非对角元 $=1\times1=1$（两麦的二阶互矩，尚未除以各自标准差），对角元 $=$ 信号 1 $+$ 噪声 0.25：</p>
 <p>$$\hat{\mathbf{R}}=\begin{bmatrix}1.25 & 1\\ 1 & 1.25\end{bmatrix}$$</p>
 <p><strong>第 2 步：Bartlett 谱读两个点</strong>。$P_B(\theta)=\vec{a}^H\hat{\mathbf{R}}\vec{a}$。</p>
 <ul>
-<li>源方向 $\theta=0°$：$\vec{a}=[1,1]^\top$，$P_B=$ 四个元素之和 $=1.25+1+1+1.25=\mathbf{4.5}$（功率展开读：对角自功率 $2\times1.25=2.5$，非对角互功率 $2\times1=2$——峰值里一半是各麦自己的音量，一半是两麦齐唱的功劳）；</li>
+<li>源方向 $\theta=0°$：$\vec{a}=[1,1]^\top$，$P_B=$ 四个元素之和 $=1.25+1+1+1.25=\mathbf{4.5}$，其中对角自功率贡献 $2\times1.25=2.5$，非对角互功率贡献 $2\times1=2$；</li>
 <li>错开方向 $\theta=30°$：$\vec{a}=[1,\ +\mathrm{j}]^\top$。先算 $\hat{\mathbf{R}}\vec{a}=[1.25+\mathrm{j},\ 1+1.25\mathrm{j}]^\top$，再左乘 $\vec{a}^H=[1,\ -\mathrm{j}]$：$P_B=(1.25+\mathrm{j})-\mathrm{j}(1+1.25\mathrm{j})=2.5$。虚部精确相消，符合厄米二次型为实数的自检。</li>
 </ul>
-<p>峰/旁比 $=4.5/2.5=1.8$，约 2.6 dB；30° 处仍为峰值的 56%，说明这个两阵元示例的主峰较宽。</p>
+<p>源方向与 30° 候选方向的谱值比 $=4.5/2.5=1.8$，约 2.6 dB；30° 处仍为峰值的 56%，说明这个两阵元示例的主峰较宽。这里只比较两个方向，不把 30° 误称为旁瓣峰。</p>
 <p><strong>第 3 步：Capon 谱读同样两个点</strong>。先求逆：$\det\hat{\mathbf{R}}=1.25^2-1^2=0.5625$，</p>
 <p>$$\hat{\mathbf{R}}^{-1}=\frac{1}{0.5625}\begin{bmatrix}1.25 & -1\\ -1 & 1.25\end{bmatrix}$$</p>
 <ul>
 <li>源方向 $\theta=0°$：$\vec{a}^H\hat{\mathbf{R}}^{-1}\vec{a}=\dfrac{1.25-1-1+1.25}{0.5625}=\dfrac{0.5}{0.5625}\approx0.889$，$P_C=1/0.889=\mathbf{1.125}$；</li>
 <li>错开方向 $\theta=30°$：$\hat{\mathbf R}^{-1}\vec a=[1.25-\mathrm j,\,-1+1.25\mathrm j]^\top/0.5625$，再左乘 $\vec a^H=[1,-\mathrm j]$，得 $\vec{a}^H\hat{\mathbf{R}}^{-1}\vec{a}=2.5/0.5625\approx4.444$，所以 $P_C=\mathbf{0.225}$。</li>
 </ul>
-<p>峰/旁比 $=1.125/0.225=\mathbf{5.0}$，约 7.0 dB——30° 处只剩峰值的 20%。</p>
-<p><strong>为什么 Capon 更尖</strong>：Bartlett 在 30° 候选方向计算固定导向矢量的二次型，不会根据观测协方差主动抑制 0° 强源；Capon 则在 30° 保持无失真响应的同时最小化总输出功率。对这个例子，协方差逆使最优权重在 0° 强源方向形成零陷，从而降低其泄漏。$M=2$ 最多提供一个独立零陷约束；阵元增多会增加空间自由度，但实际零陷数和谱峰形状仍受约束数、快拍数和模型失配影响。</p>
+<p>源方向与 30° 候选方向的谱值比 $=1.125/0.225=\mathbf{5.0}$，约 7.0 dB；30° 处只剩峰值的 20%。</p>
+<p><strong>为什么这个例子的 Capon 对比更明显</strong>：Bartlett 在 30° 候选方向计算固定导向矢量的二次型，不会根据观测协方差主动抑制 0° 强源；Capon 则在 30° 保持无失真响应的同时最小化总输出功率。代入本例得到权重 $[0.5-0.4\mathrm j,-0.4+0.5\mathrm j]^\top$，对 0° 的复响应为 $0.1-0.1\mathrm j$，功率响应为 0.02。因此这里是降低强源泄漏，而不是在 0° 形成精确零点。</p>
+<p>保留一条目标无失真约束后，$M=2$ 最多再施加一条独立零陷约束；Capon 没有显式施加这条约束。阵元增多会增加空间自由度，但实际抑制深度和谱峰形状仍受约束数、快拍数和模型失配影响。</p>
 <blockquote>
 <p>扫描类方法的分辨率受阵列孔径和频率限制。§4.6 的 MUSIC 与 ESPRIT 可在模型匹配时获得更窄的峰，但对源数、标定误差和相干源更敏感。</p>
 </blockquote>
 <span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-6">4.6 子空间类：MUSIC 与 ESPRIT</h2>
 <span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-442f837dd2">MUSIC（多重信号分类，Schmidt, 1986）</h3>
-<p><strong>思想三步</strong>：
-1. 由数据估协方差矩阵 $\hat{\mathbf{R}}$ 并特征分解：前 $K$ 个大特征值张成<strong>信号子空间</strong> $\mathbf{E}_s$，其余 $M-K$ 个小特征值张成<strong>噪声子空间</strong> $\mathbf{E}_n$（$K$ 为源数）；
-2. 利用模型关键性质——<strong>真实方向上的导向矢量与噪声子空间正交</strong>；
-3. 构造伪谱，分母在真实 DOA 处趋零，出现尖峰：</p>
+<p><strong>思想三步</strong>：</p>
+<ol>
+<li>
+<p>由数据估协方差矩阵 $\hat{\mathbf{R}}$ 并特征分解：前 $K$ 个大特征值张成<strong>信号子空间</strong> $\mathbf{E}_s$，其余 $M-K$ 个小特征值张成<strong>噪声子空间</strong> $\mathbf{E}_n$（$K$ 为源数）；</p>
+</li>
+<li>
+<p>利用模型关键性质——<strong>真实方向上的导向矢量与噪声子空间正交</strong>；</p>
+</li>
+<li>
+<p>构造伪谱，分母在真实 DOA 处趋零，出现尖峰：</p>
 <p>$$P_{MU}(\theta) = \frac{1}{\vec{a}^H(\theta)\,\mathbf{E}_n\mathbf{E}_n^H\,\vec{a}(\theta)}\text{。}\tag{4-3}$$</p>
 <p>正交检验的含义是：候选导向矢量若属于信号子空间，它在理想噪声子空间上的投影为零，伪谱分母趋近零；候选方向不匹配时，该投影通常非零，伪谱保持有限。</p>
+</li>
+</ol>
 <p><strong>第 2 步为什么成立</strong>：信号模型下协方差矩阵是 $\mathbf{R} = \mathbf{A}\mathbf{S}\mathbf{A}^H + \sigma^2\mathbf{I}$，其中 $\mathbf{A}$ 是 $M\times K$ 的导向矢量矩阵、$\mathbf{S}$ 是 $K\times K$ 的源协方差矩阵。</p>
 <p>只有当 $K\lt M$、$\mathbf A$ 列满秩且 $\mathbf S$ 满秩时，$\mathbf{A}\mathbf{S}\mathbf{A}^H$ 的秩才等于 $K$，其列空间才等于 $\operatorname{span}(\mathbf A)$。空间白噪声项 $\sigma^2\mathbf I$ 只平移特征值，不改变特征向量；其余 $M-K$ 个特征向量因此与真实导向矢量正交。</p>
 <p>相干源使 $\mathbf S$ 降秩，彩色噪声也不再只平移特征值。这两种情况都破坏上述论证。<a href="https://doi.org/10.1109/TAP.1986.1143830" title="citation">Schmidt 的 MUSIC 原始论文</a>。</p>
@@ -671,12 +682,18 @@ $$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$<
 <p>相当于约 $11.3\ \mu$s；在 4 kHz（$\lambda\approx85.8$ mm）处对应约 $16.2°$ 的均方根相位误差。</p>
 <p><strong>锚点算法：角度 × 距离球面扫描。</strong> 为把“加入距离维度”变成可复算步骤，仍取上面的 3 麦阵列，并假定单个点声源、自由场、已知声速 $c=343$ m/s、通道同步且已校准；这个最小例只用 TDOA，不使用 $1/d_m$ 幅度线索。对候选 $(r,\theta)$：</p>
 <ol>
-<li>把候选点写成 $\vec p(r,\theta)=(r\sin\theta,r\cos\theta)$；</li>
-<li>计算到第 $m$ 个麦的距离 $d_m(r,\theta)=\|\vec p(r,\theta)-[x_m,0]^\top\|$，并以中心麦 $m=2$ 为参考，得到相对路程差 $\delta_m=d_m-d_2$；</li>
-<li>将观测相对路程差记作 $\delta_m^{\rm obs}$，对每个候选计算 TDOA 均方根失配</li>
-</ol>
+<li>
+<p>把候选点写成 $\vec p(r,\theta)=(r\sin\theta,r\cos\theta)$；</p>
+</li>
+<li>
+<p>计算到第 $m$ 个麦的距离 $d_m(r,\theta)=\|\vec p(r,\theta)-[x_m,0]^\top\|$，并以中心麦 $m=2$ 为参考，得到相对路程差 $\delta_m=d_m-d_2$；</p>
+</li>
+<li>
+<p>将观测相对路程差记作 $\delta_m^{\rm obs}$，对每个候选计算 TDOA 均方根失配</p>
 <p>$$J(r,\theta)=\sqrt{\frac{1}{3}\sum_{m=1}^{3}\left(\frac{\delta_m(r,\theta)-\delta_m^{\rm obs}}{c}\right)^2}\text{，}$$</p>
 <p>这里把参考麦 $m=2$ 的恒零项 $\delta_2-\delta_2^{\rm obs}=0$ 也计入三通道均方根，所以分母为 3。若只对两个非参考麦取均方根，分母应改为 2，$J$ 的数值会整体乘以 $\sqrt{3/2}$，但最小点不变。</p>
+</li>
+</ol>
 <p>实际 SRP 或宽带最大似然会用多频复数观测和噪声权重打分；这里的 $J$ 只用于手算几何核心。算法选择 $J$ 最小的网格点。</p>
 <p>真值 $(0.20\text{ m},30°)$ 给出 $\boldsymbol\delta^{\rm obs}=[29.13,0,-19.72]$ mm，即相对时延约 $[84.9,0,-57.5]$ μs。取角度网格 $\{20°,30°,40°\}$、距离网格 $\{0.20,0.50,2.00\}$ m，逐格代入上式：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -716,7 +733,8 @@ $$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$<
 <p>本书的原创 NumPy 基线位于 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/doa.py"><code>doa.py</code></a>。<code>gcc_phat</code> 对应 §4.2，返回的正时延严格表示 $\tau_{12}=t_1-t_2$；它对输入补零、计算 PHAT 加权的周期逆变换，再截取物理时延范围，可选三点插值。有限补零只对未加权互相关保证线性相关等价，不能为 PHAT 保证有限支撑。</p>
 <p><code>srp_phat</code> 对应式(4-1)，输入多通道谱的形状固定为 <code>通道 × 频点 × 帧</code>。<code>bartlett_spectrum</code>、<code>capon_spectrum</code>、<code>music_spectrum</code> 和 <code>esprit_ula</code> 分别对应 §4.5、§4.6；平面波和近场导向矢量来自 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/geometry.py"><code>geometry.py</code></a>。完整小例与手算回归见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/ch02_05_baselines.py"><code>ch02_05_baselines.py</code></a> 和 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_doa_beam.py"><code>test_codes_doa_beam.py</code></a>。</p>
 <p>接入实际录音时还要固定 WAV 数值口径、采样率、通道顺序、麦克风坐标及单位、参考麦、坐标轴、声速和时间戳。GCC 必须按物理孔径裁剪 lag，并同时输出峰值、峰背比和有效频带；SRP 还要记录阵元对、二维或三维搜索范围、网格单位、插值和粗到细规则。扫描谱要记录快拍窗口、频带合并、源数、选峰间距和加载口径。</p>
-<p>Capon/MUSIC/MVDR 使用厄米线性求解或 <code>eigh</code>，不显式形成矩阵逆；协方差奇异且没有加载时，示例代码会报错，调用方应明确选择增加快拍、相对加载、保持上次可靠估计或退回 SRP/Bartlett，不能把 NaN 当成方向。</p>
+<p>Capon/MVDR 使用线性求解，不显式形成矩阵逆；协方差奇异或超过接口的条件数上限且没有适当加载时，示例代码会报错。调用方应明确选择增加快拍、相对加载、保持上次可靠估计或退回 SRP/Bartlett，不能把 NaN 当成方向。</p>
+<p>MUSIC 使用厄米特征分解 <code>eigh</code>，不需要协方差可逆。例如无噪声单源的秩一协方差仍可用于已知源数的理想子空间演示，不能一概要求先加载。能完成特征分解也不证明真实源数、白噪声或非相干模型成立；这些前提仍需单独检查。</p>
 <p>定位源码分为本书教学实现和按完整提交号取得的外部参考。后者保存在 <code>codes/upstream/_downloads/</code> 的独立工作目录；版本、代码许可与入口见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json"><code>SOURCES.lock.json</code></a>，具体阅读步骤和验证方案见<a href="research/01_spatial_and_tracking.html">空间处理与追踪研究</a>。取得源码、运行一次示例和复现论文结论应分别记录。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -752,10 +770,26 @@ $$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$<
 <td>doatools 的 <code>estimation/sparse.py</code></td>
 <td>快拍模型与功率模型的区别、正则参数、字典归一化和求解器状态</td>
 </tr>
+<tr>
+<td>多快拍、多频 SBL</td>
+<td>作者 SBL 的 <code>SBL_MF_Python/sbl.py::SBL</code> 与 <code>SBL_MF_matlab/SBL_v4.m</code></td>
+<td>字典、快拍轴顺序、给定源数、剪枝与噪声方差更新</td>
+</tr>
+<tr>
+<td>合并麦对的 SMP-PHAT</td>
+<td>作者 <code>smpphat</code> 的 <code>src/system.c::smp_construct/smp_call</code></td>
+<td>远场、等长平行基线、反向共轭、坐标单位与分组容差</td>
+</tr>
 </tbody>
 </table></div>
 <p>这些实现不能共用一个未经转换的角度和数组约定。例如本书麦位置为 <code>通道 × 空间维度</code>，pyroomacoustics 为 <code>空间维度 × 通道</code>；doatools 的 root-MUSIC 还要求 ULA，不能因它不扫描角度就用于任意阵列。定位输出应保留源数未满足、统计无效、优化不可行和峰歧义等状态，不应始终给一个看似确定的角度。</p>
-<p>固定版本也可能有实现缺陷。研究文档登记了 pyroomacoustics 0.10.0 的 CSSM/WAVES 频点剔除与协方差下标对应、TOPS 真实 FFT bin 与列表下标对应的静态疑点，并给出最小下标推演；尚未完成外部包完整声学回归，因此不把这些入口写成已经通过设备验收的实现。原子范数、SBL 和神经定位则仍需按具体论文确认优化器、模型、训练数据与许可。来源为 <a href="https://morriswmz.github.io/doatools.py/references/doatools.estimation.html" title="citation">doatools 作者文档</a>、<a href="https://github.com/LCAV/pyroomacoustics" title="citation">pyroomacoustics 官方仓库</a>、<a href="https://github.com/introlab/odas" title="citation">ODAS 官方仓库</a>，源码核实于 2026-09-22。</p>
+<p>固定版本也可能有实现缺陷。研究文档登记了 pyroomacoustics 0.10.0 的 CSSM/WAVES 频点剔除与协方差下标对应、TOPS 真实 FFT bin 与列表下标对应的静态疑点，并给出最小下标推演；尚未完成外部包完整声学回归，因此不把这些入口写成已经通过设备验收的实现。原子范数和神经定位则仍需按具体论文确认优化器、模型、训练数据与许可。来源为 <a href="https://morriswmz.github.io/doatools.py/references/doatools.estimation.html" title="citation">doatools 作者文档</a>、<a href="https://github.com/LCAV/pyroomacoustics" title="citation">pyroomacoustics 官方仓库</a>、<a href="https://github.com/introlab/odas" title="citation">ODAS 官方仓库</a>，源码核实于 2026-09-22。</p>
+<p>SBL 作者实现输入为 <code>通道 × 候选方向 × 频点</code> 的字典，以及 <code>通道 × 快拍 × 频点</code> 的观测，不能直接传入本书 <code>通道 × 频点 × 帧</code> 的 STFT。其 <code>Nsource</code> 参与选峰和噪声估计，因而不是免源数方案。遇到异常大幅快拍时，RobustSBL 提供 Gauss、t、Huber、Tyler 损失的对照入口；不同模式改变快拍权重，不代表能修正错误几何或任意空间有色噪声。<a href="https://github.com/gerstoft/SBL/blob/d4bba35e9b60907d3024473ba5a41046450baae0/SBL_MF_Python/sbl.py" title="citation">固定 SBL 核心</a>；<a href="https://github.com/NoiseLabUCSD/RobustSBL/blob/d746266a1336d4467f60b6f7b7e8b4695a01d26d/_common/SBL_v5p12.m" title="citation">RobustSBL 作者实现</a>。</p>
+<p>SMP-PHAT（Steered response power by Merging Pairs with PHAse Transform）适合有重复基线的远场阵列。它先合并等长平行麦对的互谱，反向基线取共轭，再减少逆变换和时延查表次数；这不是 SVD 的低秩近似。近场下相同基线位于不同位置时，其距离差不再普遍相等，不能沿用这一合并保证。<a href="https://arxiv.org/html/2203.14409v1" title="citation">2022 预印本 §3</a>。</p>
+<p>本书在 Apple clang/arm64 上编译该固定版本后，发现负时延转无符号查表索引的实现问题，原版全方向分数未通过独立数值对照。它不推翻等效麦对合并的数学条件，但说明不能直接把这个版本当成已验证的可移植实现。具体反例和未改动源码的运行记录见<a href="research/01_spatial_and_tracking.html">空间研究文档</a>。</p>
+<p>上述 SBL 与 SMP-PHAT 代码为 GPL-3.0，RobustSBL 为 MIT；模型、录音与依赖另行核对。SMP 固定构建含 x86 SIMD 选项，RobustSBL 部分模式需要 MATLAB 统计功能。入口、版本、实际运行结果及仍未执行的范围分别见<a href="research/01_spatial_and_tracking.html">空间研究文档</a>，不能把源码可读写成实验已通过。</p>
+<p>本书的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/reproduce_sbl_reference.py">SBL 合成实验</a>使用四麦半波距线阵、200 个复高斯快拍、−80°～80° 的 1° 网格和已知两源数。在总源功率相对单麦白噪声功率为 20 dB 时，一次固定随机输入得到 −30°、30° 两个正确网格峰；低至 −10 dB 的对照则得到 −21°、31°，且达到 1000 次迭代上限。</p>
+<p>这里的停止判据是功率超参数的相对变化，不是定位正确性。每组只有一次实现，各条件共享基础随机输入，不能据此估计成功率；离网格、有色噪声和源数错设的完整结果见研究文档。</p>
 <span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-8">4.8 定位算法总对比</h2>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -958,6 +992,78 @@ g_k&=\left(\prod_{i=k+1}^{M}\hat\lambda_i\right)^{1/(M-k)}。
 <p><strong>参考答案</strong>：原谱选 2；全为 1 时所有拟合项为零，惩罚最小的 $k=0$ 胜出。共同正尺度在 $a_k/g_k$ 中约去，所以缩放后评分和选择应在浮点误差内不变。零特征值使几何均值和对数不满足本节定义，本书接口明确拒绝；对角加载会改变谱和准则结果，不能不加说明地当作原算法的数值修补。</p>
 <p>复算入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 的 <code>E04-05</code>；通用教学接口是 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/doa.py"><code>doa.py::mdl_source_count</code></a>。它接受任意顺序的严格正实特征值，内部排序但不修改输入，返回所选源数和 $k=0$ 至 $M-1$ 的全部评分。实现直接用对数求几何均值，并在每个尾部内用最大对数平移后求算术均值的对数，避免先连乘或把极小特征值除到零。独立测试用高精度标量计算核对本表，并覆盖尺度、排序、纯噪声、秩亏和样本数错误。</p>
 <p>实际工程还要区分三类失效：空间有色噪声使尾部不平；完全相干源使信号协方差降秩；重叠 STFT 帧使独立快拍假设不成立。不能把帧数直接当成有效独立样本数，也不能随意用窗口时长替代 $N$。平滑、白化或有效样本数校正需要另行验证模型；本节代码不自动执行这些步骤，不以一次选对源数证明长期检测可靠。</p>
+<span id="sec-18" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-467e2bd676">重复抽样：把模型失败与有限样本误差分开</h3>
+<p><strong>E04-06：真正减少快拍后，MDL 会怎样变化？</strong> 使用四麦均匀线阵，$f=1000$ Hz、$c=343$ m/s、间距 $d=0.1715$ m，即半波长；两源方向为 $-30^\circ,+30^\circ$。分别改变独立快拍数 $N$、每源功率 $p$、源间相关性和噪声空间协方差。每个条件重新生成 200 次观测，统计输出 $k=0,1,2,3$ 的次数，不沿用上一题的固定特征值。</p>
+<p>这是本书的窄带数学仿真，不是真实录音或语音质量测试。每个复高斯变量用两份独立标准正态数 $u,v$ 构造 $(u+\mathrm jv)/\sqrt2$，使总复数功率为 1。白噪声条件下，每通道噪声功率为 1；独立双源的每源功率为 $p$，所以按阵列平均功率定义的 SNR 为 $10\log_{10}(2p)$，$p=1$ 时为 3.01 dB，$p=0.1$ 时为 −6.99 dB。完全相干条件令两源使用同一个随机序列，仍各有功率 1，但各通道叠加功率不再相同，不能把阵列平均 SNR 写成每通道 SNR。</p>
+<p>每次直接计算已知零均值模型的 $\hat{\mathbf R}=\mathbf X\mathbf X^H/N$，不减样本均值、不加载、不作特征值下限处理。输入是独立复快拍，因此没有音频采样率、窗长和帧移。程序按条件编号使用 <code>SeedSequence([20260922, 条件编号])</code> 与 PCG64，编号按下表从 0 开始；每次试验都重新抽取源和噪声。以下结果实运行于 NumPy 2.5.3，统计次数保留整数，比例与区间保留一位小数。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">条件</th>
+<th scope="col" style="text-align: right;">$N$</th>
+<th scope="col">总体协方差特征值（降序）</th>
+<th scope="col">200 次中输出 $[0,1,2,3]$ 的次数</th>
+<th scope="col">与物理源数相符的比例；95% 区间</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>独立双源，$p=1$</td>
+<td style="text-align: right;">$100$</td>
+<td>$[5,5,1,1]$</td>
+<td>$[0,0,200,0]$</td>
+<td>100.0%；[98.1%, 100.0%]</td>
+</tr>
+<tr>
+<td>独立双源，$p=1$</td>
+<td style="text-align: right;">$16$</td>
+<td>$[5,5,1,1]$</td>
+<td>$[4,19,163,14]$</td>
+<td>81.5%；[75.5%, 86.3%]</td>
+</tr>
+<tr>
+<td>独立双源，$p=0.1$</td>
+<td style="text-align: right;">$100$</td>
+<td>$[1.4,1.4,1,1]$</td>
+<td>$[199,1,0,0]$</td>
+<td>0.0%；[0.0%, 1.9%]</td>
+</tr>
+<tr>
+<td>独立双源，$p=0.1$</td>
+<td style="text-align: right;">$16$</td>
+<td>$[1.4,1.4,1,1]$</td>
+<td>$[192,7,1,0]$</td>
+<td>0.5%；[0.1%, 2.8%]</td>
+</tr>
+<tr>
+<td>完全相干双源，$p=1$</td>
+<td style="text-align: right;">$100$</td>
+<td>$[9,1,1,1]$</td>
+<td>$[0,199,1,0]$</td>
+<td>0.5%；[0.1%, 2.8%]</td>
+</tr>
+<tr>
+<td>无源、空间白噪声</td>
+<td style="text-align: right;">$100$</td>
+<td>$[1,1,1,1]$</td>
+<td>$[200,0,0,0]$</td>
+<td>100.0%；[98.1%, 100.0%]</td>
+</tr>
+<tr>
+<td>无源、空间有色噪声</td>
+<td style="text-align: right;">$100$</td>
+<td>$[9,4,1,1]$</td>
+<td>$[0,0,200,0]$</td>
+<td>0.0%；[0.0%, 1.9%]</td>
+</tr>
+</tbody>
+</table></div>
+<p>最后一行的噪声协方差为 $\operatorname{diag}(9,4,1,1)$，没有加入任何声源，因此与物理源数相符应指输出 0；不能把输出 2 当成成功检测了两个声源。</p>
+<p>每行区间使用二项比例的双侧 Wilson 95% 区间，计算对象是这个条件下“输出恰好等于物理源数”的重复试验事件；它不是单次 MDL 的后验概率，也不是七个条件同时覆盖的区间。公式依据 <a href="https://itl.nist.gov/div898/handbook/prc/section2/prc241.htm" title="citation">NIST/SEMATECH 手册 §7.2.4.1</a>。即便 200 次全相符，区间下限仍小于 100%，不能声称以后绝不会出错。</p>
+<p><strong>参考答案与解释</strong>：先不运行随机试验，也能核对总体谱。两列导向矢量各有平方范数 4，内积为零；独立源的信号协方差因此有两个非零特征值 $4p$，加单位白噪声后为 $[1+4p,1+4p,1,1]$。完全相干时，信号变为 $(\vec a_1+\vec a_2)s$，平方范数为 8，信号秩只有 1，所以总体谱为 $[9,1,1,1]$。物理声源数 2 与可分辨信号秩 1 不是同一件事。</p>
+<p>再看随机表：第一、二行只改变快拍数，较短窗口出现漏检与过检。第三、四行的源功率较弱，有限样本下拟合改善常不足以抵消惩罚；100 个快拍仍远不足以保证检出。一次或少数次偶然输出 2 不能证明更短窗口更好。</p>
+<p>第五行的相干模型与第七行的有色噪声已经违背用该 MDL 估计物理源数的前提，增加快拍不能自动修复这种模型失配。表格只说明这些指定条件，不给出一般声源检测率，也没有检验重叠 STFT 帧的影响。</p>
+<p>运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/mdl_repeated_trials.py"><code>mdl_repeated_trials.py</code></a> 可单独复算全部条件，用 <code>--trials</code> 和 <code>--seed</code> 修改试验次数与种子；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 的 <code>E04-06</code> 也会实际执行默认 7×200 次并输出相同结构。输出保留总体谱、模型是否满足物理源数解释的前提、完整计数、比例区间、种子和软件版本；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_mdl_repeated.py"><code>test_codes_mdl_repeated.py</code></a> 另用标量算术—几何均值式核对实际抽样后的评分，并检查总体谱与区间，不把硬编码一次随机计数当作算法正确性的证明。</p>
 <hr />
 <blockquote>
 <p>📄 本篇信息：配图 5 张 ｜ <a href="index.html">回首页</a></p>

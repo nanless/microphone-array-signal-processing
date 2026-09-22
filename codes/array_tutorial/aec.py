@@ -8,6 +8,42 @@ from __future__ import annotations
 
 import numpy as np
 
+from .conventions import finite_real_array, finite_real_scalar
+
+
+def _scaled_dot(left: np.ndarray, right: np.ndarray) -> float:
+    """Compute a real dot product without overflowing removable scale factors."""
+
+    left_scale = float(np.max(np.abs(left)))
+    right_scale = float(np.max(np.abs(right)))
+    if left_scale == 0.0 or right_scale == 0.0:
+        return 0.0
+    unit_dot = float((left / left_scale) @ (right / right_scale))
+    left_mantissa, left_exponent = np.frexp(left_scale)
+    right_mantissa, right_exponent = np.frexp(right_scale)
+    return float(np.ldexp(
+        unit_dot * left_mantissa * right_mantissa,
+        int(left_exponent + right_exponent),
+    ))
+
+
+def _log10_mean_square_plus_floor(values: np.ndarray, floor: float) -> tuple[float, float]:
+    """Return ``log10(mean(values**2) + floor)`` and the unfloored log power.
+
+    Scaling before squaring keeps the calculation defined for finite float64
+    inputs close to either end of the representable range.
+    """
+
+    scale = float(np.max(np.abs(values)))
+    if scale == 0.0:
+        return float(np.log10(floor)), -np.inf
+    normalized_power = float(np.mean((values / scale) ** 2))
+    log_power = 2.0 * float(np.log10(scale)) + float(np.log10(normalized_power))
+    log_floor = float(np.log10(floor))
+    larger = max(log_power, log_floor)
+    log_total = larger + float(np.log10(1.0 + 10.0 ** (-abs(log_power - log_floor))))
+    return log_total, log_power
+
 
 def nlms(
     reference: np.ndarray,
@@ -26,17 +62,19 @@ def nlms(
     The final weights use the ordering ``[x[n], x[n-1], ...]``.
     """
 
-    x = np.asarray(reference, dtype=float)
-    d = np.asarray(microphone, dtype=float)
+    x = finite_real_array(reference, "reference")
+    d = finite_real_array(microphone, "microphone")
     if x.ndim != 1 or d.ndim != 1 or x.shape != d.shape:
         raise ValueError("reference and microphone must be equal-length 1-D arrays")
     if not np.all(np.isfinite(x)) or not np.all(np.isfinite(d)):
         raise ValueError("reference and microphone must be finite")
     if isinstance(filter_length, (bool, np.bool_)) or not isinstance(filter_length, (int, np.integer)) or filter_length <= 0:
         raise ValueError("filter_length must be a positive integer")
+    step_size = finite_real_scalar(step_size, "step_size")
+    epsilon = finite_real_scalar(epsilon, "epsilon")
     if not 0.0 <= step_size < 2.0:
         raise ValueError("step_size must satisfy 0 <= step_size < 2")
-    if not np.isfinite(epsilon) or epsilon < 0:
+    if epsilon < 0:
         raise ValueError("epsilon must be finite and non-negative")
 
     frozen = np.zeros(x.size, dtype=bool) if freeze is None else np.asarray(freeze, dtype=bool)
@@ -45,7 +83,7 @@ def nlms(
     if initial_weights is None:
         weights = np.zeros(filter_length, dtype=float)
     else:
-        weights = np.asarray(initial_weights, dtype=float).copy()
+        weights = finite_real_array(initial_weights, "initial_weights").copy()
         if weights.shape != (filter_length,):
             raise ValueError("initial_weights has the wrong length")
         if not np.all(np.isfinite(weights)):
@@ -56,11 +94,38 @@ def nlms(
     echo_hat = np.empty_like(d)
     for n in range(x.size):
         regression = padded[n : n + filter_length][::-1]
-        echo_hat[n] = weights @ regression
-        residual[n] = d[n] - echo_hat[n]
-        energy = float(regression @ regression)
-        if not frozen[n] and energy > 0.0:
-            weights += step_size * residual[n] * regression / (energy + epsilon)
+        scale = float(np.max(np.abs(regression)))
+        if scale == 0.0:
+            echo_hat[n] = 0.0
+            residual[n] = d[n]
+            continue
+
+        try:
+            with np.errstate(over="raise", invalid="raise", divide="raise", under="ignore"):
+                echo_hat[n] = _scaled_dot(weights, regression)
+                residual[n] = d[n] - echo_hat[n]
+        except FloatingPointError as error:
+            raise ValueError("NLMS prediction exceeds the float64 range") from error
+
+        if frozen[n] or step_size == 0.0:
+            continue
+        normalized = regression / scale
+        normalized_energy = float(normalized @ normalized)
+        with np.errstate(over="ignore", invalid="ignore", divide="ignore", under="ignore"):
+            normalized_epsilon = (epsilon / scale) / scale
+        try:
+            with np.errstate(over="raise", invalid="raise", divide="raise", under="ignore"):
+                if np.isinf(normalized_epsilon):
+                    update = step_size * (residual[n] * regression) / epsilon
+                else:
+                    update = (step_size * (residual[n] / scale) * normalized
+                              / (normalized_energy + normalized_epsilon))
+                candidate = weights + update
+        except FloatingPointError as error:
+            raise ValueError("NLMS weight update exceeds the float64 range") from error
+        if not np.all(np.isfinite(candidate)):
+            raise ValueError("NLMS weight update exceeds the float64 range")
+        weights = candidate
     return residual, echo_hat, weights
 
 
@@ -78,13 +143,14 @@ def erle_db(
     responsible for excluding convergence transients and near-end-only regions.
     """
 
-    d = np.asarray(microphone, dtype=float)
-    e = np.asarray(residual, dtype=float)
+    d = finite_real_array(microphone, "microphone")
+    e = finite_real_array(residual, "residual")
     if d.ndim != 1 or d.shape != e.shape:
         raise ValueError("microphone and residual must be equal-length 1-D arrays")
     if not np.all(np.isfinite(d)) or not np.all(np.isfinite(e)):
         raise ValueError("microphone and residual must be finite")
-    if not np.isfinite(epsilon) or epsilon <= 0.0:
+    epsilon = finite_real_scalar(epsilon, "epsilon")
+    if epsilon <= 0.0:
         raise ValueError("epsilon must be finite and positive")
     valid = np.ones(d.size, dtype=bool) if valid_mask is None else np.asarray(valid_mask, dtype=bool).copy()
     if valid.shape != d.shape:
@@ -96,8 +162,8 @@ def erle_db(
         valid &= ~double_talk
     if not np.any(valid):
         raise ValueError("ERLE requires at least one valid far-end single-talk sample")
-    input_power = float(np.mean(d[valid] ** 2))
-    residual_power = float(np.mean(e[valid] ** 2))
-    if input_power <= epsilon:
+    input_total_log, input_power_log = _log10_mean_square_plus_floor(d[valid], epsilon)
+    residual_total_log, _ = _log10_mean_square_plus_floor(e[valid], epsilon)
+    if input_power_log <= np.log10(epsilon):
         raise ValueError("ERLE is undefined without far-end input energy")
-    return float(10.0 * np.log10((input_power + epsilon) / (residual_power + epsilon)))
+    return float(10.0 * (input_total_log - residual_total_log))

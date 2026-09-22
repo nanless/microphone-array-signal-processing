@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 11 章 · 总结与选型指南 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="7dad810a9a67"><style>
+<meta name="source-digest" content="1c057bc95262"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -379,6 +379,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>选择开源项目时应把规范仓库、固定提交或发布、许可证、支持平台、输入输出契约、维护状态和最小测试一起写入方案，详见 §10.9.1 与 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json"><code>codes/SOURCES.lock.json</code></a>。</p>
 <p>本书按 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/COVERAGE.md"><code>codes/COVERAGE.md</code></a> 将算法分为“本仓库可运行基线、外部参考实现、原理索引、明确排除”四种状态。适配器只是调用外部实现的一种方式，不是第五种覆盖状态。教学实现通过单元测试，只能说明约定和边界算例正确；它没有经过目标设备的实时、长稳和主观听测，不能直接标成工业实现。</p>
 <p>工程选型还要把“源码能获取”与“接口能接入、平台能编译、设备能通过验收”分开。Linux 会议终端可研究 ALSA/PipeWire 的设备和参考路由；Cortex-M 端侧模型可研究 TFLM/CMSIS-NN 的算子与内存；XMOS 或 SOF 固件则需要对应硬件、工具链及拓扑。每条候选都应补一项故障试验，例如拔插后恢复、参考切换、跨块状态清零、缓冲不足或线程过载，具体入口见<a href="research/03_industrial_deployment.html">工业部署研究</a>。</p>
+<p>候选的输入输出与评分工具同样需要筛选。libsoxr、libsamplerate 的比例协议不能照搬；libsndfile 的时间帧数不能当成通道标量数；libebur128 的响度与真峰值也不是语音质量分。</p>
+<p>有干净参考时才可按相应条件使用 STOI/ESTOI 或 ViSQOL，静音过多、有效帧不足、参考错配及模型缺失必须进入失败记录。各接口的固定版本与边界见<a href="10_engineering-practice.html#sec-10-9">第 10 章工程对照</a>。</p>
 <p><strong>完整决策例：未知参会者的连续转写</strong>。假设会议中共有 2～6 名未注册说话人，人数随时间变化，但任一时刻最多两人同时说话。系统要连续输出全部内容给 ASR，并要求端到端延迟可测但尚未给定阈值。先用硬约束筛选，再进入实测：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>

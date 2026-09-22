@@ -23,6 +23,7 @@ from codes.array_tutorial.covariance import recursive_covariance, spatial_covari
 from codes.array_tutorial.doa import gcc_phat, mdl_source_count, music_spectrum
 from codes.array_tutorial.geometry import direction_vector, near_field_steering, plane_wave_delays, plane_wave_steering
 from codes.array_tutorial.spectral import istft, stft
+from codes.examples.mdl_repeated_trials import run_experiment as mdl_repeated_trials
 
 SEED = 20260922
 
@@ -321,8 +322,64 @@ def complex_constraint_response() -> dict:
             "correct_response_real": correct_response.real.tolist(), "correct_response_imag": correct_response.imag.tolist()}
 
 
+def mask_common_scale() -> dict:
+    """E02-06: common nonzero mask scale is not statistical confidence."""
+    spectra = np.array([[1., 0., 1.], [0., 1., 1.]])[:, None, :]
+    expected = np.array([[1., .5], [.5, .5]])
+    rows = []
+    for scale in (1e-200, 1., 1e200):
+        matrix = spatial_covariance(spectra, weights=scale*np.array([1., 0., 1.]))[0]
+        rows.append({"weight_scale": scale, "matrix_real": matrix.real.tolist(),
+                     "max_abs_error": float(np.max(np.abs(matrix-expected)))})
+    try:
+        spatial_covariance(spectra, weights=np.zeros(3))
+    except ValueError:
+        rejected = True
+    else:
+        rejected = False
+    return {"cases": rows, "zero_mask_rejected": rejected}
+
+
+def differential_gain_pattern() -> dict:
+    """E03-05: unequal real gains do not preserve a broadside null."""
+    phase = 2*np.pi*1000*.01/343
+    rows = []
+    for gain in (0., .5, 1.):
+        rows.append({"gain": gain,
+                     "front_amplitude": float(abs(1-gain*np.exp(1j*phase))),
+                     "back_amplitude": float(abs(1-gain*np.exp(-1j*phase))),
+                     "broadside_amplitude": abs(1-gain)})
+    return {"frequency_hz": 1000., "spacing_m": .01, "sound_speed_m_s": 343.,
+            "cases": rows, "delayed_front_amplitude": float(abs(1-np.exp(2j*phase))),
+            "delayed_back_amplitude": 0.}
+
+
+def mvdr_finite_noise_null() -> dict:
+    """E05-05: finite INR leaves residual response at the interferer."""
+    target = np.ones(2, dtype=complex)
+    interferer = np.array([1., 1j])
+    rows = []
+    for inr in (1., 10., 100.):
+        covariance = inr*np.outer(interferer, interferer.conj()) + np.eye(2)
+        weights = mvdr_weights(covariance, target)
+        response = np.vdot(weights, interferer)
+        # With this phase convention, exp(j*psi)=-conj(w0)/conj(w1).
+        null_phase = np.angle(-weights[0].conjugate()/weights[1].conjugate())
+        null_angle = np.arcsin(null_phase/np.pi)
+        null_steering = np.array([1., np.exp(1j*np.pi*np.sin(null_angle))])
+        rows.append({"inr_linear": inr, "weights_real": weights.real.tolist(),
+                     "weights_imag": weights.imag.tolist(),
+                     "interferer_response_real": float(response.real),
+                     "interferer_response_imag": float(response.imag),
+                     "interferer_response_db": float(20*np.log10(abs(response))),
+                     "null_angle_deg": float(np.rad2deg(null_angle)),
+                     "null_response_amplitude": float(abs(np.vdot(weights, null_steering)))})
+    return {"target_angle_deg": 0., "interferer_angle_deg": 30.,
+            "spacing_wavelengths": .5, "white_noise_variance": 1., "cases": rows}
+
+
 def run_exercises() -> dict:
-    """Return twenty-one JSON-serializable results; no downloads, training or playback."""
+    """Return twenty-five JSON results, including 7 x 200 MDL resampling trials."""
     functions = {
         "E01-01": correlated_noise, "E01-02": amplitude_and_power,
         "E02-01": stft_framing, "E02-02": complex_covariance, "E02-03": stft_roundtrip,
@@ -334,6 +391,8 @@ def run_exercises() -> dict:
         "E03-04": near_to_far_error, "E04-04": coherent_spatial_smoothing,
         "E05-03": beam_output_noise, "E05-04": complex_constraint_response,
         "E04-05": mdl_candidate_scores,
+        "E02-06": mask_common_scale, "E03-05": differential_gain_pattern,
+        "E04-06": mdl_repeated_trials, "E05-05": mvdr_finite_noise_null,
     }
     return {identifier: function() for identifier, function in functions.items()}
 

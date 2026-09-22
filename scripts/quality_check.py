@@ -69,7 +69,7 @@ EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 85
 EXPECTED_SUBSECTION_COUNT = 21
 EXPECTED_OUTLINE_ITEM_COUNT = 120
-EXPECTED_FIGURE_NUMBERS = set(range(1, 36))
+EXPECTED_FIGURE_NUMBERS = set(range(1, 37))
 # 研究附站使用独立显式清单，不挤占 14 篇教程或 120 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
@@ -364,7 +364,10 @@ def section_reference_issues(documents: dict[str, str]):
             issues.append(f"小节编号重复：{number}: {names}")
     for name, original in documents.items():
         text = strip_fenced_code(original)
-        for match in re.finditer(r"§\s*(\d+(?:\.\d+)+)", text):
+        # Section numbers inside absolute web citations belong to that source,
+        # not to this book. Keep local-link labels and surrounding prose checked.
+        internal_text = re.sub(r'\[[^\]]+\]\(https?://[^\s)]+(?:\s+"[^"]*")?\)', '', text)
+        for match in re.finditer(r"§\s*(\d+(?:\.\d+)+)", internal_text):
             if match.group(1) not in sections:
                 issues.append(f"小节引用不存在：{name}: §{match.group(1)}")
         link_re = re.compile(r"\[([^\]]+)\]\((?:\./)?([^\s)#]+\.md)(#[^\s)]+)?\)")
@@ -513,7 +516,7 @@ def figure_inventory_issues(references, png_names):
             issues.append(f"图号与文件名不匹配：alt 图{alt_match.group(1)} -> {name}")
     if numbers != EXPECTED_FIGURE_NUMBERS:
         issues.append(
-            f"正文图号应为 1..35：缺失 {sorted(EXPECTED_FIGURE_NUMBERS - numbers)}，"
+            f"正文图号应为 1..36：缺失 {sorted(EXPECTED_FIGURE_NUMBERS - numbers)}，"
             f"多出 {sorted(numbers - EXPECTED_FIGURE_NUMBERS)}")
     for number, names in names_by_number.items():
         if len(names) > 1:
@@ -562,12 +565,12 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35)
+            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
                 fail(errors, f"PNG 溯源失效：figures/{name}: {issue}")
-            if number in (34, 35):
+            if number in (34, 35, 36):
                 expected = hashlib.sha256((ROOT / "codes/audio/MANIFEST.json").read_bytes()).hexdigest()
                 with Image.open(path) as image:
                     if image.info.get("AudioManifestDigest") != expected:
@@ -967,6 +970,7 @@ EXPECTED_AUDIO_STEMS = {
     "polarity_reference", "polarity_array", "polarity_uncorrected", "polarity_corrected",
     "conditioning_reference", "conditioning_well_input", "conditioning_ill_input",
     "conditioning_well_output", "conditioning_ill_output",
+    "nonlinear_reference", "nonlinear_echo", "nonlinear_estimate", "nonlinear_residual",
 }
 
 
@@ -1058,12 +1062,12 @@ def check_audio(errors):
         manifest = json.loads((root / "MANIFEST.json").read_text())
         records = manifest["files"]
         names = {stem + ".wav" for stem in EXPECTED_AUDIO_STEMS}
-        if len(records) != 36 or {r["file"] for r in records} != names:
-            fail(errors, "音频清单必须包含独立基线的 36 个 WAV")
+        if len(records) != 40 or {r["file"] for r in records} != names:
+            fail(errors, "音频清单必须包含独立基线的 40 个 WAV")
         if {p.name for p in root.glob("*.wav")} != names or {p.name for p in (SITE / "audio").glob("*.wav")} != names:
             fail(errors, "源音频或站点音频文件集合不符")
         if set(manifest["groups"]) != {"spatial", "aec", "wpe", "separation", "engineering", "tracking",
-                                      "correlation", "polarity", "conditioning"}:
+                                      "correlation", "polarity", "conditioning", "nonlinear"}:
             fail(errors, "音频实验组不符")
         expected_inputs = {"codes/examples/generate_audio_samples.py", "codes/array_tutorial/audio_samples.py",
                            "codes/array_tutorial/aec.py", "codes/array_tutorial/dereverberation.py",
@@ -1119,7 +1123,7 @@ def check_audio(errors):
         parser = AudioParser()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         synthetic_players = [p for p in parser.players if (p.get("src") or "").startswith("../audio/")]
-        if len(synthetic_players) != 36 or {p.get("src") for p in synthetic_players} != {"../audio/" + n for n in names}:
+        if len(synthetic_players) != 40 or {p.get("src") for p in synthetic_players} != {"../audio/" + n for n in names}:
             fail(errors, "试听控件集合不符")
         for player in parser.players:
             if "autoplay" in player or "controls" not in player or player.get("preload") != "none" or not player.get("aria-label"):

@@ -78,6 +78,8 @@ $$
 
 只有当总目标确实分解成式(8-3)这种“每个输出—参考对各贡献一个代价，再把所选代价相加”的形式时，才能把 $N\times N$ 成对损失矩阵交给线性指派算法求最小总代价。若损失含有跨输出耦合项、集合级正则项或共同解码约束，就不能直接用匈牙利算法代替全排列目标。[PIT 正式论文](https://doi.org/10.1109/ICASSP.2017.7952154)、[uPIT 正式论文](https://doi.org/10.1109/TASLP.2017.2648230)。
 
+教学函数 `pit_permutation()` 为了让读者直接核对每种排列，采用全排列枚举并把源数上限设为 8；其计算量随 $N!$ 增长。超过 8 个源时，该函数明确拒绝运行。若目标确实满足上一段的成对可加条件，应改用线性指派求解器，而不是放宽枚举上限。
+
 **四类经典 BSS 方法**。以下按模型假设、计算代价和失效条件比较 AuxIVA、ILRMA、MNMF 与 TRINICON。
 
 **AuxIVA（辅助函数型独立向量分析，Auxiliary-function IVA，Ono 2011）**。它假设不同说话人统计独立，并联合建模同一说话人在各频点的分量。频域 ICA 在各频点独立求解，可能得到不同的输出排列；IVA 利用跨频点包络相关性缓解该置换问题。AuxIVA 使用辅助函数进行闭式更新，不需要设置梯度步长，目标函数在理论条件下单调下降。
@@ -154,7 +156,7 @@ $$N_{\mathrm{eff}}(f)=\frac{\left(\sum_k\gamma(f,k)\right)^2}{\sum_k\gamma^2(f,k
 
 例如 900 帧权重全为 1 时 $N_{\mathrm{eff}}=900$；若权重集中在少数帧，有效样本数会明显更小。
 
-估计 $M\times M$ 协方差不仅需要样本数大于矩阵维度，还要覆盖足够多的独立空间状态；高度相关的连续帧不能当作同等数量的独立快照。工程上应检查 $N_{\mathrm{eff}}$、矩阵条件数，并在必要时做对角加载。
+由 $N$ 个秩一外积相加得到的 $M\times M$ 协方差，其秩至多为 $\min(N,M)$。满秩估计至少需要 $M$ 个线性独立的非零快照；$N\ge M$ 只是必要条件，不是充分条件。Kish $N_{\mathrm{eff}}$ 只是软权重集中程度的近似，$N_{\mathrm{eff}}\ge M$ 也不能保证快照张成 $\mathbb C^M$。高度相关的连续帧不能当作同等数量的独立空间状态；工程上还应检查矩阵秩或条件数，并在必要时做对角加载。
 
 说话人活动标注用于限制各簇可出现的时间区间，从而减少跨频点置换。见 [cACGMM 原始工作](https://doi.org/10.1109/EUSIPCO.2016.7760429)（Ito et al., EUSIPCO 2016, pp. 1153–1157）与 [GSS 原始论文](https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf)。
 
@@ -233,6 +235,7 @@ VarArray 的正式论文发表于 ICASSP 2022（pp. 6027–6031，DOI [10.1109/I
 | 双路径注意力 | SepFormer（Subakan et al., 2021） | 在双路径结构中用 Transformer 替换 RNN | 核对源数、数据生成、模型版本和 SI-SNRi 实现 | 注意力内存随序列长度增长，长句通常需分块。见 [SepFormer 正式论文](https://doi.org/10.1109/ICASSP39728.2021.9413901) |
 | 状态空间 | S4M（Chen et al., 2023） | 用多尺度编码和结构化状态空间块替换分离骨干中的循环或注意力时序建模 | 原文使用固定两源的 WSJ0-2Mix、LibriMix 与 LRS2-Mix；核对 8/16 kHz 数据版本、源数和官方配置 | 状态递推提供长程建模的另一种实现，但原论文未验证严格因果的前瞻量与端到端延迟。见 [Interspeech 2023 正式论文](https://doi.org/10.21437/Interspeech.2023-696) 与[官方复现仓库](https://github.com/JusperLee/S4M) |
 | 时频网格 | TF-GridNet（Wang et al., 2023） | 在时频域分别建模时间、频率与跨帧关系，并结合子带长短期记忆网络（Long Short-Term Memory，LSTM）和注意力 | 会议版是单通道分离，原文主表使用 SI-SDRi；多通道混响扩展是另一模型与实验设置 | 整句注意力需要改造后才能流式运行。见[单通道会议正式论文](https://doi.org/10.1109/ICASSP49357.2023.10094992)与[多通道混响期刊扩展](https://doi.org/10.1109/TASLP.2023.3304482 "citation") |
+| 长时多通道因果网络 | Online SpatialNet（Quan & Li, 2024） | 用在线掩码注意力、Retention 或 Mamba 沿时间建模，同时保留多通道空间特征 | 核对静止/移动源、麦数、训练配置、CUDA/Mamba 依赖和跨调用状态接口 | 源码附有固定配置的因果前缀自测，但顶层 `forward()` 不暴露跨调用状态，不能直接推定任意块续算等价。见[论文预印本](https://arxiv.org/abs/2403.07675)与[固定源码](https://github.com/Audio-WestlakeU/NBSS/blob/cc42fc8ad2e6642c09b8f4169a85b4766dc22b7e/models/arch/OnlineSpatialNet.py) |
 
 比较分离数字时要对齐采样率、`min`/`max` 混合方式、静态或动态混合、源数、评测脚本和指标名称。分离文献中的 SI-SNR 常采用与 SI-SDR 相同的正交投影公式，二者在相同去均值与数值实现下可以相等；也有代码把均值处理、截断长度或稳定项写得不同。不能笼统地说两者固定相差若干 dB。引用 SI-SNRi 或 SI-SDRi 时，应给出实现或至少说明是否去均值，并始终用同一指标计算输入基线和输出结果。
 
@@ -241,6 +244,8 @@ VarArray 的正式论文发表于 ICASSP 2022（pp. 6027–6031，DOI [10.1109/I
 论文实验使用已知的两个输出源和监督干净参考。核实至 2026-09-22，官方仓库提供 `S4M.py`、`s4.py` 等模型结构文件，但没有完整的数据准备、训练入口和配套 checkpoint，不能把可读的骨干代码写成已经可复现整套训练。未知源数、无监督会议录音或任意麦克风阵列不属于这项结果的直接覆盖范围。论文把该结构称为流式分离的潜在方案，但没有报告严格因果实现的前瞻样本数、首帧延迟或端到端延迟。[S4M 固定版本](https://github.com/JusperLee/S4M/tree/4990b3fe9d7391e59d652c5a7d2803d1354fd0ae)
 
 部署前仍需检查双向上下文与缓冲。选择时不要只看单个榜单分数，还要检查模型是否使用整句上下文、块边界如何处理、状态能否在流式推理中延续，以及计算量和内存怎样随语句长度变化。生成式方法还要检查采样步数和语音幻觉。
+
+因果性也不能替代状态接口检查。Online SpatialNet 的固定源码末尾写有“前 1000 帧输入”和“同一输入再附加 24 帧”的前缀一致性自测，但本书当前环境没有 PyTorch、Mamba 与 CUDA，未实际运行这项检查。顶层 `forward()` 调用子层时传入 `state=None`，没有把卷积或 Retention 状态作为顶层输入输出返回；所以即使固定配置的前缀自测通过，也只能说明该次整段计算没有读取未来帧，不能说明应用把录音任意切块并分别调用时会得到相同结果。部署测试要另做整段、跨块保留状态和逐块重置三路比较。[NBSS 固定版本](https://github.com/Audio-WestlakeU/NBSS/tree/cc42fc8ad2e6642c09b8f4169a85b4766dc22b7e)
 
 近期模型若没有在相同数据、采样率、混合方式和评测脚本下比较，本章不按论文年份或模型名称给出性能排序。
 
@@ -280,6 +285,7 @@ TSE 的身份泄漏、注册信道和声纹保护测试，不能由文本查询�
 | SepFormer | SpeechBrain `lobes/models/dual_path.py` 与 WSJ0Mix 分离 recipe | 双路径注意力和整句上下文不能直接当作流式状态 |
 | TF-GridNet | ESPnet `enh/separator/tfgridnet_separator.py` | 此类明确为离线，固定输入麦数；单/多通道版本分别核对 |
 | S4M、SPMamba、Mamba-TasNet | 各作者模型/训练目录，详见研究文档 | 三者不是同一算法；S4M 训练资产不完整，双向模型使用未来上下文 |
+| Online SpatialNet | NBSS `models/arch/OnlineSpatialNet.py`、`SharedTrainer.py` 与 `configs/onlineSpatialNet.yaml` | 依赖 PyTorch/Mamba/CUDA；因果前缀与跨调用状态连续性分别检查 |
 | SpeakerBeam、AudioSep | 注册语音条件模型、`pipeline.py` 等各自入口 | 身份条件与文本类别条件不同；代码、权重和数据许可分别核对 |
 
 FastMNMF 的可用实现还体现了许可需要逐来源检查：作者 `SoundSourceSeparation` 整库限定学术研究，而 pyroomacoustics 的 `fastmnmf.py` 文件有独立 MIT 许可。SpeakerBeam 作者仓库采用内部评估协议，限制修改与再分发，不能把它与 MIT/Apache-2.0 项目统一称为可自由纳入产品的开源代码。[FastMNMF 文件许可](https://github.com/LCAV/pyroomacoustics/blob/v0.10.0/pyroomacoustics/bss/fastmnmf.py)、[作者仓库许可](https://github.com/sekiguchi92/SoundSourceSeparation/blob/897fe87fea3d85a243d8a3fd36c2232bb0548ad3/LICENSE)、[SpeakerBeam 评估协议](https://github.com/BUTSpeechFIT/speakerbeam/blob/91af02cc617afa35fedfbdbf32533012cd0a8672/LICENSE.txt)
@@ -300,9 +306,9 @@ FastMNMF 的可用实现还体现了许可需要逐来源检查：作者 `SoundS
 >
 >     **答案要点**：目标协方差 $\mathbf R_{\mathrm{tar}}$ 与干扰协方差 $\mathbf R_{\mathrm{int}}$；二分类例子可分别用 $\gamma$ 与 $1-\gamma$ 加权，多说话人加环境噪声时应按模型分别定义非目标掩码，不能把 $1-\gamma$ 一律解释成纯噪声。
 
-**可运行练习 E08-01～E08-05**
+**可运行练习 E08-01～E08-06**
 
-运行 `.venv/bin/python -m codes.examples.exercises_enhancement` 复算以下五题。逐题结果和代码见 [`exercises_enhancement.py`](../codes/examples/exercises_enhancement.py)，合成混合与已知矩阵解混音频见[练习及音频手册](../codes/research/05_exercises_and_audio.md)。
+运行 `.venv/bin/python -m codes.examples.exercises_enhancement` 复算以下六题。逐题结果和代码见 [`exercises_enhancement.py`](../codes/examples/exercises_enhancement.py)，合成混合与已知矩阵解混音频见[练习及音频手册](../codes/research/05_exercises_and_audio.md)。
 
 - **E08-01：尺度不变是否意味着时移不变？** 取零均值 $s=[1,0,-1,0]$、$u=[0,1,0,-1]$，$\hat s=s+0.1u$。分别计算原幅度、两信号同乘 $10^{-5}$、把干净 $s$ 循环右移一采样后的 SI-SDR。
 
@@ -332,7 +338,13 @@ FastMNMF 的可用实现还体现了许可需要逐来源检查：作者 `SoundS
 
     **解答**：每个权重为 $a$ 时，分子为 $a(2^2+4^2)=20a$，分母为 $\max(2a,\varepsilon)$。四种结果依次是 10、10、10、5；前两项的共同尺度被分母抵消，最后一项已经进入地板区。
 
-    若改用式(8-5)的加性稳定项，$a=\varepsilon/2$ 时分母为 $2\varepsilon$，结果是 5，而非教学地板实现的 10。这是本书针对数值约定的手算。极小掩码说明统计支持不足；归一化后得到有限矩阵，不代表它能可靠估计目标方向或噪声功率。
+    若改用式(8-5)的加性稳定项，$a=\varepsilon/2$ 时分母为 $2\varepsilon$，结果是 5，而非教学地板实现的 10。这是本书针对数值约定的手算。最后两项只说明共同缩放已经触及本函数的绝对分母地板，不能仅凭权重的绝对尺度断定统计支持是否充足；统计支持还要结合归一化权重的分布、非零快照数量、$N_{\mathrm{eff}}$、矩阵秩与条件数判断。
+
+- **E08-06：每块 PIT 都是 20 dB，直接拼接为何仍会换人？** 沿用 E08-01 的 $s,u$。第一块输出为 $[s+0.1u,u+0.1s]$，第二块把两个槽位交换为 $[u+0.1s,s+0.1u]$。分别对两块独立做 PIT，再把原始固定槽位直接拼接；最后使用每块的真实参考排列对齐后再拼接。
+
+    **解答**：两块的最优“输出到参考”排列分别为 `[0,1]` 和 `[1,0]`，每块的平均 SI-SDR 都是 20 dB。若把固定的输出槽 0 和槽 1 直接跨块拼接，各自前半段属于一个说话人、后半段属于另一个说话人；对整段固定参考评分时，两路均约为 −3.6900 dB。按每块真实参考排列重排后，两条长流都回到 20 dB。
+
+    这里的重排使用了真实参考，是评分用的预言信息，不是部署算法。可用系统还要从重叠区、说话人嵌入、活动状态或其他连续性线索估计跨块对应，并在静音后重新出现和三人以上重叠时检查误连。本题只证明“逐块最优 PIT 分数”不能证明长录音身份连续。
 
 ### 8.2 处理模块的顺序
 
@@ -342,11 +354,13 @@ FastMNMF 的可用实现还体现了许可需要逐来源检查：作者 `SoundS
 
 1. **启用声学回声消除（Acoustic Echo Cancellation，AEC）时先处理回声**：回声参考与麦克风回声之间的线性关系可能被后续自适应波束、非线性增益或单通道增强改变，见[第 10 章 §10.1](./10_engineering-practice.md#sec-10-1)；
 2. **多通道 WPE 通常在波束之前**：晚期混响会污染波束形成所需的协方差估计。WPE 是线性处理，但各通道的预测滤波器不同，不能笼统保证所有跨通道相位关系完全不变。应验证处理后的目标相对传递函数和协方差是否仍适用于后续波束；
-3. **定位/追踪给波束指方向**：MVDR/GEV 要目标方向或掩码才能成形，先有方向、再有波束（见[第 5 章](./05_beamforming.md)与[第 9 章](./09_source-tracking.md)）；
+3. **导向或掩码给解析波束提供目标统计量**：DSB 和导向型 MVDR 可由定位/追踪提供方向或相对传递函数；掩码 MVDR 可从目标 SCM 提取相对传递函数，GEV 则直接由目标/干扰 SCM 求广义特征向量，二者都不必先得到显式 DOA。定位仍可作为稳定的方向先验或控制支路（见[第 5 章](./05_beamforming.md)与[第 9 章](./09_source-tracking.md)）；
 4. **diarization 在 GSS 聚类之前、掩码在 MVDR 之前**：diarization 提供“谁在何时说话”的标注，用于约束 cACGMM 的跨频点置换；掩码随后用于估计目标和噪声协方差，再计算波束权重（见 §5.4 和 §8.1）；
 5. **DNN 的位置由输出决定**：逐通道改写复谱或波形的网络可能破坏跨通道相位，通常放在波束形成后的单通道链路；只输出共享掩码、协方差或 WPE 功率先验的网络可以放在多通道算法内部；联合多通道网络则可能同时完成分离和波束形成。还要单独检查网络是否使用未来帧。
 
 对于“逐通道线性前端—波束形成—单通道增强”这类实现，逐通道处理通常位于前端，单通道增强位于波束形成之后。若神经网络只估计解析算法所需的统计量，或本身联合建模多通道相位，则不受这个顺序限制。
+
+AEC 与降噪的顺序也不是脱离统计假设的固定结论。[Integrated_AEC_NR 固定实现](https://github.com/Arnout-Roebben/Integrated_AEC_NR/tree/23c6b567c7863a8ee9bafd38bad0d3ff2f25e185)同时提供 AEC→NR、NR→AEC 与联合扩展结构，适合在相同输入下比较顺序；但其 `process.m` 用干净期望语音和干净回声产生预言活动判决。把结论移到实际设备前，必须改用可取得的活动估计，并重新测试参考相关、非平稳噪声、双讲和路径变化。
 
 **本章模块与图 23 的对应关系**（图的信号取点与启用条件见[第 10 章 §10.1](./10_engineering-practice.md#sec-10-1)）：
 

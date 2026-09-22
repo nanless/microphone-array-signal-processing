@@ -4,11 +4,14 @@ from __future__ import annotations
 
 import numpy as np
 
+from .conventions import finite_real_array, finite_real_scalar
+
 
 def wrap_angle(angle: float | np.ndarray) -> float | np.ndarray:
     """Map degrees to ``[-180, 180)``."""
 
-    wrapped = (np.asarray(angle) + 180.0) % 360.0 - 180.0
+    # Reduce before adding 180 so large finite angles cannot overflow.
+    wrapped = (finite_real_array(angle, "angle") % 360.0 + 180.0) % 360.0 - 180.0
     return float(wrapped) if wrapped.ndim == 0 else wrapped
 
 
@@ -21,9 +24,9 @@ class ConstantVelocityKalman:
     """
 
     def __init__(self, state: np.ndarray, covariance: np.ndarray, process_noise: np.ndarray):
-        self.state = np.asarray(state, dtype=float).copy()
-        self.covariance = np.asarray(covariance, dtype=float).copy()
-        self.process_noise = np.asarray(process_noise, dtype=float).copy()
+        self.state = finite_real_array(state, "state").copy()
+        self.covariance = finite_real_array(covariance, "covariance").copy()
+        self.process_noise = finite_real_array(process_noise, "process_noise").copy()
         if self.state.shape != (2,) or self.covariance.shape != (2, 2) or self.process_noise.shape != (2, 2):
             raise ValueError("state must be (2,), covariance and process_noise must be (2,2)")
         if not all(np.all(np.isfinite(value)) for value in (self.state, self.covariance, self.process_noise)):
@@ -35,6 +38,7 @@ class ConstantVelocityKalman:
                 raise ValueError(f"{name} must be positive semidefinite")
 
     def predict(self, dt: float) -> np.ndarray:
+        dt = finite_real_scalar(dt, "dt")
         if not np.isfinite(dt) or dt <= 0.0:
             raise ValueError("dt must be finite and positive")
         transition = np.array([[1.0, dt], [0.0, 1.0]])
@@ -45,6 +49,8 @@ class ConstantVelocityKalman:
         return self.state.copy()
 
     def update(self, angle: float, measurement_variance: float) -> np.ndarray:
+        angle = finite_real_scalar(angle, "angle")
+        measurement_variance = finite_real_scalar(measurement_variance, "measurement_variance")
         if not np.isfinite(angle) or not np.isfinite(measurement_variance) or measurement_variance <= 0:
             raise ValueError("angle must be finite and measurement_variance positive")
         observation = np.array([[1.0, 0.0]])
@@ -67,7 +73,7 @@ class ConstantVelocityKalman:
 def systematic_resample(weights: np.ndarray, rng: np.random.Generator) -> np.ndarray:
     """Return systematic-resampling ancestor indices."""
 
-    weights = np.asarray(weights, dtype=float)
+    weights = finite_real_array(weights, "weights")
     if weights.ndim != 1 or weights.size == 0 or np.any(weights < 0):
         raise ValueError("weights must be a non-empty non-negative vector")
     total = float(np.sum(weights))
@@ -84,13 +90,16 @@ class CircularParticleFilter:
     """Angle-only SIR particle filter with a Gaussian-plus-uniform likelihood."""
 
     def __init__(self, particles: np.ndarray):
-        self.particles = np.asarray(particles, dtype=float).copy()
+        self.particles = finite_real_array(particles, "particles").copy()
         if self.particles.ndim != 1 or self.particles.size == 0 or not np.all(np.isfinite(self.particles)):
             raise ValueError("particles must be a non-empty finite vector")
         self.particles = wrap_angle(self.particles)
         self.weights = np.full(self.particles.size, 1.0 / self.particles.size)
 
     def predict(self, angular_velocity: float, dt: float, process_std: float, rng: np.random.Generator) -> None:
+        angular_velocity = finite_real_scalar(angular_velocity, "angular_velocity")
+        dt = finite_real_scalar(dt, "dt")
+        process_std = finite_real_scalar(process_std, "process_std")
         if not all(np.isfinite(value) for value in (angular_velocity, dt, process_std)) or dt <= 0 or process_std < 0:
             raise ValueError("velocity, dt and process_std must be finite; dt positive and std non-negative")
         self.particles = wrap_angle(
@@ -98,6 +107,9 @@ class CircularParticleFilter:
         )
 
     def update(self, observation: float, observation_std: float, *, clutter_probability: float = 0.05) -> None:
+        observation = finite_real_scalar(observation, "observation")
+        observation_std = finite_real_scalar(observation_std, "observation_std")
+        clutter_probability = finite_real_scalar(clutter_probability, "clutter_probability")
         if (
             not np.isfinite(observation)
             or not np.isfinite(observation_std)

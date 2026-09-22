@@ -1,4 +1,4 @@
-"""Explicit cross-module, chapter and research inventory for 61 exercises."""
+"""Explicit cross-module, chapter and research inventory for 67 exercises."""
 
 import json
 import re
@@ -14,11 +14,13 @@ EXPECTED = {
         "E01-01", "E01-02", "E02-01", "E02-02", "E02-03", "E03-01",
         "E03-02", "E04-01", "E04-02", "E04-03", "E05-01", "E05-02",
         "E01-03", "E02-04", "E02-05", "E03-03", "E03-04", "E04-04", "E05-03", "E05-04", "E04-05",
+        "E02-06", "E03-05", "E04-06", "E05-05",
     },
     "enhancement": {
         "E06-01", "E06-02", "E06-03", "E07-01", "E07-02", "E07-03",
         "E08-01", "E08-02", "E08-03", "E09-01", "E09-02", "E09-03",
         "E06-04", "E06-05", "E07-04", "E07-05", "E08-04", "E08-05", "E09-04", "E09-05",
+        "E06-06", "E08-06",
     },
     "engineering": {
         "E10-01", "E10-02", "E10-03", "E10-04", "E10-05", "E10-06",
@@ -46,9 +48,9 @@ class ExerciseCatalogTest(unittest.TestCase):
     def setUpClass(cls):
         cls.results = {name: module.run_exercises() for name, module in MODULES.items()}
 
-    def test_independent_inventory_has_61_unique_ids(self):
-        self.assertEqual(len(ALL_IDS), 61)
-        self.assertEqual(sum(map(len, EXPECTED.values())), 61)
+    def test_independent_inventory_has_67_unique_ids(self):
+        self.assertEqual(len(ALL_IDS), 67)
+        self.assertEqual(sum(map(len, EXPECTED.values())), 67)
 
     def test_each_module_returns_exact_assigned_ids(self):
         for name, results in self.results.items():
@@ -71,7 +73,7 @@ class ExerciseCatalogTest(unittest.TestCase):
                 text = chapters[0].read_text(encoding="utf-8")
                 self.assertRegex(text, rf"\b{re.escape(exercise_id)}\b")
 
-    def test_chapter_and_research_inventories_cover_exactly_61_ids(self):
+    def test_chapter_and_research_inventories_cover_exactly_67_ids(self):
         chapters = "\n".join(path.read_text(encoding="utf-8")
                              for path in (ROOT / "chapters").glob("*.md"))
         research = (ROOT / "codes/research/05_exercises_and_audio.md").read_text(encoding="utf-8")
