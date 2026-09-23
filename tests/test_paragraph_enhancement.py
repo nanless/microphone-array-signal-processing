@@ -83,7 +83,7 @@ class EnhancementParagraphTest(unittest.TestCase):
 
     def test_reviewed_explanations_keep_distinct_paragraphs(self):
         cases = [
-            ("06_aec.md", "**IPNLMS：", "**递归最小二乘（Recursive Least Squares，RLS）为什么与 NLMS 不同。**", "本书沿用", 7),
+            ("06_aec.md", "#### IPNLMS：", "**两抽头手算。**", "比例归一化最小均方", 8),
             ("06_aec.md", "第一行描述路径的漂移或突变", "下式是便于复算", "同写为", 4),
             ("06_aec.md", "D1～D3检查参考", "> **采样率偏移", "ITU-T 已于", 3),
             ("08_speech-separation.md", "**AuxIVA（", "**ILRMA（", "标准实现仍是整段迭代", 2),

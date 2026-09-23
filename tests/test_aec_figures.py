@@ -14,10 +14,12 @@ import scripts.make_aec_figures as aec_figures
 from scripts.make_aec_figures import (
     FS,
     SOURCE_SCRIPT,
+    adaptive_state_example,
     block_erle,
     causal_delay,
     colored_x,
     figure_metadata,
+    haar_delay_example,
     mask_metric_intervals,
     nlms_adaptation_trace,
     nlms_run,
@@ -26,7 +28,7 @@ from scripts.make_aec_figures import (
 
 
 class AecFiguresTest(unittest.TestCase):
-    def test_figures_26_to_32_fit_final_width_and_keep_key_text_readable(self):
+    def test_aec_figures_fit_final_width_and_keep_key_text_readable(self):
         builders = [
             aec_figures.fig_problem,
             aec_figures.fig_concept,
@@ -35,6 +37,8 @@ class AecFiguresTest(unittest.TestCase):
             aec_figures.fig_delay_dtd,
             aec_figures.fig_nonlinear,
             aec_figures.fig_hybrid,
+            aec_figures.fig_haar_crossband,
+            aec_figures.fig_adaptive_state_examples,
         ]
         figures = {}
 
@@ -46,7 +50,7 @@ class AecFiguresTest(unittest.TestCase):
                 for builder in builders:
                     builder()
 
-            self.assertEqual(len(figures), 7)
+            self.assertEqual(len(figures), 9)
             for name, figure in figures.items():
                 with self.subTest(figure=name):
                     self.assertLessEqual(figure.get_size_inches()[0], 10.0)
@@ -143,9 +147,43 @@ class AecFiguresTest(unittest.TestCase):
                                 for text in figures["fig29_aec_erle_freeze.png"].axes[-1].texts))
             self.assertTrue(any("非语音" in text.get_text()
                                 for text in figures["fig30_aec_delay_dtd.png"].axes[-1].texts))
+
+            figure37 = figures["fig37_aec_subband.png"]
+            self.assertEqual(len(figure37.axes), 2)
+            self.assertEqual(figure37.axes[1].get_xlabel(), "输出采样索引 n（采样）")
+            self.assertEqual(figure37.axes[1].get_ylabel(), "输出幅度（无量纲）")
+            self.assertEqual(len(figure37.axes[1].patches), 8)
+
+            figure38 = figures["fig38_aec_four_methods.png"]
+            self.assertEqual(len(figure38.axes), 3)
+            self.assertEqual(figure38.axes[0].get_ylabel(), "归一化份额 g（无量纲）")
+            self.assertEqual(figure38.axes[1].get_ylabel(), "P 元素（本例无量纲）")
+            self.assertEqual(figure38.axes[2].get_ylabel(), "K，X=1（无量纲）")
         finally:
             for figure in figures.values():
                 plt.close(figure)
+
+    def test_haar_delay_crossband_matches_direct_time_domain_impulse(self):
+        x, bands, complete, diagonal_only = haar_delay_example()
+
+        np.testing.assert_array_equal(x, [1.0, 0.0, 0.0, 0.0])
+        np.testing.assert_allclose(bands[:, 0], [2**-0.5, 2**-0.5], atol=1e-15)
+        np.testing.assert_allclose(complete, np.r_[0.0, x[:-1]], atol=1e-15)
+        np.testing.assert_allclose(diagonal_only, [0.0, 0.5, 0.0, 0.5], atol=1e-15)
+        self.assertGreater(np.max(np.abs(complete - diagonal_only)), 0.49)
+
+    def test_advanced_state_figure_uses_independent_fraction_checks(self):
+        kappas, gains, rls_matrices, kalman_gains = adaptive_state_example()
+
+        np.testing.assert_array_equal(kappas, [-1.0, 0.0, 1.0])
+        np.testing.assert_allclose(gains, [[1/2, 1/2], [13/20, 7/20], [4/5, 1/5]])
+        np.testing.assert_allclose(gains.sum(axis=1), 1.0)
+        np.testing.assert_allclose(rls_matrices[0], np.eye(2))
+        np.testing.assert_allclose(rls_matrices[1], [[2/3, 0], [0, 2]])
+        np.testing.assert_allclose(rls_matrices[2], [[20/19, -16/19], [-16/19, 28/19]])
+        for matrix in rls_matrices:
+            self.assertTrue(np.all(np.linalg.eigvalsh(matrix) > 0))
+        np.testing.assert_allclose(kalman_gains, [1/2, 1/11, 4/5])
 
     def test_causal_delay_zero_fills_instead_of_wrapping(self):
         x = np.array([1.0, 2.0, 3.0, 4.0])

@@ -28,7 +28,10 @@ class RLSState:
 
     ``initial_regularization`` is the scale of the initial normal matrix,
     not the initial inverse covariance. Its reciprocal is ``P[-1]``'s diagonal.
-    This implementation uses ``O(L**2)`` storage and work per accepted sample.
+    This teaching implementation uses ``O(L**2)`` storage. Its RLS algebra
+    takes ``O(L**2)`` work per accepted sample, but the explicit Cholesky
+    positive-definiteness check below costs ``O(L**3)``. It is not a
+    long-filter real-time implementation.
     ``reset()`` restores the constructor's coefficients, inverse matrix and
     reference history. Public array properties return copies.
     """
@@ -163,8 +166,16 @@ class RLSState:
                 # Algebraically symmetric. Averaging only removes round-off
                 # asymmetry; it is not a positive-definiteness repair.
                 candidate_p = 0.5 * candidate_p + 0.5 * candidate_p.T
-                if np.any(np.diag(candidate_p) <= 0.0):
-                    raise ValueError("RLS inverse covariance lost a positive diagonal")
+                # Positive diagonal entries do not imply that the whole
+                # inverse correlation matrix is positive definite. This
+                # costly check is deliberate in a short-filter teaching
+                # implementation; it does not repair an unstable update.
+                try:
+                    np.linalg.cholesky(candidate_p)
+                except np.linalg.LinAlgError as exc:
+                    raise ValueError(
+                        "RLS inverse covariance lost positive definiteness"
+                    ) from exc
                 weights = candidate_weights
                 p = candidate_p
 

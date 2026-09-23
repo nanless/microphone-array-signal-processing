@@ -43,7 +43,7 @@ class AudioSamplesTest(unittest.TestCase):
         pan = cases['tracking']['signals']['tracking_pan']
         np.testing.assert_allclose(np.sum(pan**2, axis=0), sep['separation_source1']**2, atol=1e-15)
         files, groups = prepare_exports(cases)
-        self.assertEqual(len(files), 44)
+        self.assertEqual(len(files), 55)
         for blob, info in files.values():
             self.assertEqual(info['common_export_gain'], groups[info['group']]['common_export_gain'])
             self.assertLess(info['peak'], .801)
@@ -52,7 +52,7 @@ class AudioSamplesTest(unittest.TestCase):
     def test_manifest_check_detects_modified_audio(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            self.assertEqual(generate(root)['files'], 44)
+            self.assertEqual(generate(root)['files'], 55)
             self.assertTrue(generate(root, check=True)['checked'])
             (root/'spatial_reference.wav').write_bytes(b'not a WAV')
             with self.assertRaisesRegex(ValueError, 'audio content differs'):
@@ -111,6 +111,41 @@ class AudioSamplesTest(unittest.TestCase):
             a = matrix[0][1]
             self.assertAlmostEqual((1+a)/(1-a), expected, places=10)
         self.assertEqual(params['condition_numbers_2norm'], [3., 199.])
+
+    def test_aec_methods_share_input_and_known_piecewise_path(self):
+        case = build_cases()['aec_methods']
+        signals, params = case['signals'], case['parameters']
+        x = signals['aec_methods_reference']
+        true_echo = signals['aec_methods_true_echo']
+        microphone = signals['aec_methods_microphone']
+        change = params['path_change_sample']
+        before = np.convolve(x, params['path_before'])[:len(x)]
+        after = np.convolve(x, params['path_after'])[:len(x)]
+        np.testing.assert_allclose(true_echo[:change], before[:change], rtol=0, atol=1e-15)
+        np.testing.assert_allclose(true_echo[change:], after[change:], rtol=0, atol=1e-15)
+        self.assertEqual(change, 6000)
+        self.assertEqual(len(x), 12000)
+        self.assertTrue(.0048 < np.std(microphone - true_echo) < .0052)
+        for name in ('nlms', 'ipnlms', 'rls', 'kalman'):
+            residual = signals[f'aec_methods_{name}_residual']
+            self.assertEqual(residual.shape, x.shape)
+            self.assertTrue(np.all(np.isfinite(residual)))
+        _, groups = prepare_exports({'aec_methods': case})
+        self.assertEqual(groups['aec_methods']['common_export_gain'], 1.0)
+
+    def test_subband_audio_is_known_path_not_trained_residual(self):
+        case = build_cases()['aec_subband']
+        signals = case['signals']
+        x = signals['aec_subband_reference']
+        echo = signals['aec_subband_true_echo']
+        diagonal = signals['aec_subband_diagonal_model']
+        missing = signals['aec_subband_missing_cross_terms']
+        np.testing.assert_allclose(echo, np.r_[0., x[:-1]], rtol=0, atol=5e-16)
+        np.testing.assert_allclose(missing, echo - diagonal, rtol=0, atol=1e-15)
+        self.assertGreater(float(np.mean(missing**2)), 0)
+        self.assertIn('NOT been adapted', case['limits'])
+        _, groups = prepare_exports({'aec_subband': case})
+        self.assertEqual(groups['aec_subband']['common_export_gain'], 1.)
 
     def test_exported_polarity_gain_is_not_peak_normalized(self):
         files, _ = prepare_exports()

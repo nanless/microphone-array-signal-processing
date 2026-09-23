@@ -53,6 +53,8 @@ Speex 的 `mdf.c` 注释明确采用交替更新的 MDF（AUMDF）。它调度�
 
 RLS 对 $L$ 抽头需要 $L\times L$ 逆相关状态，常规每样本更新为 $O(L^2)$；参考长时间为零时，按遗忘递推仍会放大逆相关状态。双讲时继续更新会把近端语音混进路径拟合，冻结更新又可能漏掉同时发生的回声路径变化。因此遗忘因子、路径突变检测和双讲控制必须一起观察，不能只报一条收敛曲线。平方根、QR 与 Householder 是数值稳定性路线，不表示它们都与原递推有相同运算量。[MathWorks 官方 RLSFilter 文档](https://www.mathworks.com/help/dsp/ref/dsp.rlsfilter-system-object.html)给出这些方法和锁定系数接口；它只证明工具箱提供 RLS，不证明 MathWorks 的 [AEC 示例](https://www.mathworks.com/help/audio/ug/acoustic-echo-cancellation-aec.html)采用了 RLS。
 
+本仓库的短实数 RLS 为防止浮点更新后逆相关矩阵失去正定性，**每个已接纳样本**另用 Cholesky 检查整矩阵，实际教学代码因此含 $O(L^3)$ 检查成本；上段 $O(L^2)$ 只指矩阵求逆引理更新的代数主项。不可用这份安全检查开启后的运行耗时代表优化的工业 RLS。[固定种子、分段真值的 RLS/Kalman 对照](../examples/aec_rls_kalman_comparison.py)报告先验回声预测误差、路径误差及 Kalman 增益，不把已知近端注入时的总残差功率误称为 ERLE。
+
 **快 RLS 不等于普通频域 NLMS。** 频域多抽头 NLMS/PBFDAF 使用参考能量归一化梯度；经典 RLS 使用输入相关矩阵的逆来改变更新方向。Schneider 与 Kellermann 的 [GFDAF 分析，2016，§3～4](https://doi.org/10.1186/s13634-015-0302-2)把该类广义频域算法联系到**块 RLS 的近似**，而不是证明所有 PBFDAF 都是精确 RLS。面向长回声路径还有 [Cioffi 与 Kailath 1984 的快速横向滤波器](https://doi.org/10.1109/TASSP.1984.1164334)及 [Slock 与 Maouche 1994 的 FFT/低位移秩 RLS](https://doi.org/10.1016/0165-1684(94)90018-3)等结构化路线；名称里的“快速”必须回到各论文的输入模型、初始化与复杂度条件核实，不可把本书全矩阵 RLS 的 $O(L^2)$ 原样用于这些变体。
 
 **Kalman 的额外模型。** [正文式(6-8)～式(6-10)](../../chapters/06_aec.md#sec-6-1-3)把真实路径当作变化状态，用过程协方差 $Q$ 描述路径不确定度，用观测方差 $\Psi$ 描述近端语音和其他干扰；$P$ 是路径估计误差协方差，不是 RLS 定义下的逆参考相关矩阵。固定已知 $Q,\Psi$ 时可以复算增益，但残差变大本身不能证明应增大 $Q$：双讲和路径突变都会增大残差，前者通常要求减少对麦克风观测的信任，后者可能要求提高对新路径的适应。将 $A=I,\Psi=1,P_n^-=P_{n-1}/\lambda$ 特设于完整矩阵 Kalman，才与普通遗忘 RLS 的增益同式；这等价于依赖当前 $P$ 的 $Q_n=(\lambda^{-1}-1)P_{n-1}$，不是任意固定过程噪声 Kalman。
@@ -181,7 +183,7 @@ cmake --build /private/tmp/speexdsp-aec-20260923 --parallel 4
 .venv/bin/python -m codes.examples.aec_doubletalk_experiment --speex-library /private/tmp/speexdsp-aec-20260923/libspeexdsp.dylib
 ```
 
-**已知近端注入：严格合成与半合成两种检查（2026-09-23 已运行）。** 真实双讲没有干净分量，故另用[式(6-13)](../../chapters/06_aec.md#sec-6-1-16)定义两次独立运行的输出增量 $\Delta$、投影增益 $g_{\Delta}$ 和不拟合时移/增益的相对平方误差 $E_{\Delta}$。每一对运行都使用同一播放参考、各自新建的状态和完全相同的输入长度；第二次麦克风 PCM 比第一次恰好多一个已知的 $s$。即使如此，自适应器状态和预处理也可随 $s$ 改变，所以 $\Delta$ 不是算法内部单独输出的“近端声道”。$E_{\Delta}$ 是无量纲的逐样本误差，越小表示这项增量越接近原注入信号；它不是双讲 ERLE 或主观音质分。
+**已知近端注入：严格合成与半合成两种检查（2026-09-23 已运行）。** 真实双讲没有干净分量，故另用[式(6-14)](../../chapters/06_aec.md#sec-6-1-16)定义两次独立运行的输出增量 $\Delta$、投影增益 $g_{\Delta}$ 和不拟合时移/增益的相对平方误差 $E_{\Delta}$。每一对运行都使用同一播放参考、各自新建的状态和完全相同的输入长度；第二次麦克风 PCM 比第一次恰好多一个已知的 $s$。即使如此，自适应器状态和预处理也可随 $s$ 改变，所以 $\Delta$ 不是算法内部单独输出的“近端声道”。$E_{\Delta}$ 是无量纲的逐样本误差，越小表示这项增量越接近原注入信号；它不是双讲 ERLE 或主观音质分。
 
 严格合成夹具读 `codes/audio/aec_far.wav`、`aec_near.wav`、`aec_microphone.wav`，逐一核对清单中的 SHA-256。三路均为 16 kHz、32000 点 PCM16；近端只在 `[19200,28800)` 非零。令 $d_1$ 为已量化麦克风、$s$ 为已量化近端，取 $d_0=d_1-s$，先在 32 位整数中检查范围，再转回 PCM16，因此输入等式在 PCM 域精确成立；$d_0$ 不宣称等于未量化 FIR 真值。固定 `[9600,17600)` 为远端单讲检查区、`[19200,28800)` 为双讲评分区、`[28800,32000)` 为恢复观察区。教学 NLMS 用 32 抽头、步长 0.4、$\varepsilon=10^{-8}$；双讲冻结使用已知真值掩码，不是检测器。SpeexDSP 仍为 160 点帧、4096 点滤波覆盖和独立状态。
 
@@ -253,6 +255,10 @@ PATH=/path/to/depot_tools:$PATH DEPOT_TOOLS_UPDATE=0 \
 ### A08　PNLMS/IPNLMS、子带与非线性路径模型
 
 比例归一化更新改变抽头间的学习分配；子带滤波改变输入相关性与每带更新问题；Volterra、Hammerstein、Wiener 或级联模型改变可表示的输入—回声关系。它们解决的困难不同，不能看见“频域”或“非线性”标签就视作同一种加速方案。出处与模型讨论见 [§6.1.3](../../chapters/06_aec.md#sec-6-1-3)和[§6.1.4](../../chapters/06_aec.md#sec-6-1-4)。
+
+本书新增[实数 IPNLMS 状态](../array_tutorial/aec_ipnlms.py)：每次由旧权重构造抽头份额，按式(6-4)计算先验误差和同时更新；$\kappa=-1$ 与 NLMS 逐步对齐还须把 NLMS 正则项设为 $L\delta$。零初值、$\kappa=1$ 时所有比例份额均为零，这个失败边界有[独立测试](../../tests/test_codes_aec_ipnlms_subband.py)。[两带 Haar 代码](../array_tutorial/aec_subband.py)把两抽头已知时域路径精确改写成当前/历史块的 $2\times2$ 交叉带矩阵；另有只使用同带历史的对角子带 NLMS。前者不是自适应，后者不是一般房间路径的精确表示，也不是 Lee–Gan NSAF。[锚点输出](../examples/aec_ipnlms_subband_demo.py)和[章节 E06-11～18](../examples/aec_advanced_exercises.py)可独立复算。
+
+固定在本仓库的 pyroomacoustics v0.10.0 源码还含 [`adaptive/subband_lms.py`](https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/adaptive/subband_lms.py)；该文件是**另一种实现入口**，不能把其演示中由子带模型合成的目标信号当作任意时域房间卷积的独立验证。一般临界抽样子带建模需检查交叉项，[Gilloire–Vetterli 1992 原论文](https://doi.org/10.1109/78.149989)是依据；[Lee–Gan 2004 NSAF 原论文](https://doi.org/10.1109/LSP.2004.833445)的子带误差更新全带抽头，结构与本书两带对角状态不同。图37和[四个子带结构音频](05_exercises_and_audio.md#16-两带-haar-的交叉项音频)是已知路径的代数模型；[另七个 WAV](05_exercises_and_audio.md#15-同源短路径-aec-的线性残差)对比时域 NLMS、IPNLMS、RLS 和矩阵 Kalman，不含子带自适应输出。
 
 最小复现应每次只改一项：同一线性 FIR 比例分配实验；同一有色参考子带实验；固定路径中插入软饱和的非线性实验。分别记录抽头模型、带间延迟和非线性阶数。失败实验用未见的扬声器削波强度，检查高阶模型过拟合和计算增长。本书没有把这些类别全部伪装成已有工业实现；没有唯一对应源码时明确保留模型与选型依据。
 

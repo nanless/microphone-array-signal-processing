@@ -45,7 +45,7 @@ EXPECTED_SECTION_COUNTS = {
 # 第 6、7 章的源 h4 单独进入合订目录和 PDF 第三级书签。此表是独立发布
 # 基线，不从构建脚本或待检产物反推。
 EXPECTED_SUBSECTION_COUNTS = {
-    "06_aec.md": 18,
+    "06_aec.md": 22,
     "07_wpe-dereverberation.md": 3,
 }
 # 上表为独立发布基线，不从待检 HTML 或构建器反推。
@@ -67,10 +67,10 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 86
-EXPECTED_SUBSECTION_COUNT = 21
-EXPECTED_OUTLINE_ITEM_COUNT = 121
-EXPECTED_FIGURE_NUMBERS = set(range(1, 37))
-# 研究附站使用独立显式清单，不挤占 14 篇教程或 121 项 PDF 大纲基线。
+EXPECTED_SUBSECTION_COUNT = 25
+EXPECTED_OUTLINE_ITEM_COUNT = 125
+EXPECTED_FIGURE_NUMBERS = set(range(1, 39))
+# 研究附站使用独立显式清单，不挤占 14 篇教程或 125 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
     ("README.md", "index.html"),
@@ -516,7 +516,7 @@ def figure_inventory_issues(references, png_names):
             issues.append(f"图号与文件名不匹配：alt 图{alt_match.group(1)} -> {name}")
     if numbers != EXPECTED_FIGURE_NUMBERS:
         issues.append(
-            f"正文图号应为 1..36：缺失 {sorted(EXPECTED_FIGURE_NUMBERS - numbers)}，"
+            f"正文图号应为 1..38：缺失 {sorted(EXPECTED_FIGURE_NUMBERS - numbers)}，"
             f"多出 {sorted(numbers - EXPECTED_FIGURE_NUMBERS)}")
     for number, names in names_by_number.items():
         if len(names) > 1:
@@ -974,6 +974,11 @@ EXPECTED_AUDIO_STEMS = {
     "conditioning_well_output", "conditioning_ill_output",
     "nonlinear_reference", "nonlinear_echo", "nonlinear_estimate", "nonlinear_residual",
     "fractional_reference", "fractional_array", "fractional_unaligned", "fractional_aligned",
+    "aec_methods_reference", "aec_methods_true_echo", "aec_methods_microphone",
+    "aec_methods_nlms_residual",
+    "aec_methods_ipnlms_residual", "aec_methods_rls_residual", "aec_methods_kalman_residual",
+    "aec_subband_reference", "aec_subband_true_echo", "aec_subband_diagonal_model",
+    "aec_subband_missing_cross_terms",
 }
 
 
@@ -1065,15 +1070,18 @@ def check_audio(errors):
         manifest = json.loads((root / "MANIFEST.json").read_text())
         records = manifest["files"]
         names = {stem + ".wav" for stem in EXPECTED_AUDIO_STEMS}
-        if len(records) != 44 or {r["file"] for r in records} != names:
-            fail(errors, "音频清单必须包含独立基线的 44 个 WAV")
+        if len(records) != 55 or {r["file"] for r in records} != names:
+            fail(errors, "音频清单必须包含独立基线的 55 个 WAV")
         if {p.name for p in root.glob("*.wav")} != names or {p.name for p in (SITE / "audio").glob("*.wav")} != names:
             fail(errors, "源音频或站点音频文件集合不符")
-        if set(manifest["groups"]) != {"spatial", "aec", "wpe", "separation", "engineering", "tracking",
+        if set(manifest["groups"]) != {"spatial", "aec", "aec_methods", "aec_subband", "wpe", "separation", "engineering", "tracking",
                                       "correlation", "polarity", "conditioning", "nonlinear", "fractional_array"}:
             fail(errors, "音频实验组不符")
         expected_inputs = {"codes/examples/generate_audio_samples.py", "codes/array_tutorial/audio_samples.py",
-                           "codes/array_tutorial/aec.py", "codes/array_tutorial/dereverberation.py",
+                           "codes/array_tutorial/aec.py", "codes/array_tutorial/aec_ipnlms.py",
+                           "codes/array_tutorial/aec_rls.py", "codes/array_tutorial/aec_kalman_matrix.py",
+                           "codes/array_tutorial/aec_subband.py",
+                           "codes/array_tutorial/dereverberation.py",
                            "codes/array_tutorial/spectral.py", "codes/array_tutorial/conventions.py",
                            "codes/array_tutorial/geometry.py"}
         if set(manifest["generator_inputs"]) != expected_inputs:
@@ -1099,7 +1107,9 @@ def check_audio(errors):
                 raw = wav.readframes(frames)
             if record["sample_rate_hz"] != 16000 or record["duration_s"] != frames / 16000:
                 fail(errors, f"音频清单采样率或时长不符：{name}")
-            expected_group = "fractional_array" if name.startswith("fractional_") else name.split("_", 1)[0]
+            expected_group = ("fractional_array" if name.startswith("fractional_") else
+                              "aec_methods" if name.startswith("aec_methods_") else
+                              "aec_subband" if name.startswith("aec_subband_") else name.split("_", 1)[0])
             if record["group"] != expected_group:
                 fail(errors, f"音频分组归属不符：{name}")
             if len(raw) != frames * channels * 2 or frames != record["samples"] or channels != record["channels"]:
@@ -1127,7 +1137,7 @@ def check_audio(errors):
         parser = AudioParser()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         synthetic_players = [p for p in parser.players if (p.get("src") or "").startswith("../audio/")]
-        if len(synthetic_players) != 44 or {p.get("src") for p in synthetic_players} != {"../audio/" + n for n in names}:
+        if len(synthetic_players) != 55 or {p.get("src") for p in synthetic_players} != {"../audio/" + n for n in names}:
             fail(errors, "试听控件集合不符")
         for player in parser.players:
             if "autoplay" in player or "controls" not in player or player.get("preload") != "none" or not player.get("aria-label"):

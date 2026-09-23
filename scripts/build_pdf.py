@@ -135,10 +135,12 @@ mjx-mtext>mjx-utext{font-family:MJXZERO,"STHeiti","Hiragino Sans GB","Microsoft 
 @media print{
 body{max-width:none;margin:0;padding:0}
 .chap{page-break-before:always}
-table{display:table;width:100%}
+table{display:table;width:100%;table-layout:fixed}
 thead{display:table-header-group}
 tr{break-inside:avoid}
-td,th{word-break:break-word}
+td,th{word-break:break-word;overflow-wrap:anywhere}
+/* MathJax 的行内长式与展示式均需留在 A4 正文宽度内。 */
+mjx-container{font-size:80%!important;max-width:100%}
 h1,h2,h3,h4{break-after:avoid}
 .chap>h1{margin:0 0 3mm;line-height:1.3}
 .chap>h2:first-of-type{margin-top:3mm;margin-bottom:2mm;line-height:1.3}
@@ -754,7 +756,7 @@ def print_pdf(combined, pdf, timeout_min_pages=100):
 
 
 def check_figures():
-    """合订前检查：正文引用的图必须存在、非空，并覆盖 36 个唯一文件。"""
+    """合订前检查：正文引用的图必须存在、非空，并覆盖 38 个唯一文件。"""
     missing = []
     refs = set()
     for fname, _ in CHAPTERS:
@@ -766,8 +768,8 @@ def check_figures():
                 missing.append(f"{fname}: {m.group(1)}")
     if missing:
         raise SystemExit("缺图，中止：\n" + "\n".join(missing))
-    if len(refs) != 36:
-        raise SystemExit(f"唯一图片数异常：期望 36，实际 {len(refs)}")
+    if len(refs) != 38:
+        raise SystemExit(f"唯一图片数异常：期望 38，实际 {len(refs)}")
     print(f"图片检查通过（{len(CHAPTERS)} 篇、{len(refs)} 张唯一图片）")
 
 

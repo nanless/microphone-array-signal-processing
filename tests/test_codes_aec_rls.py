@@ -179,6 +179,32 @@ class TestRLSState(unittest.TestCase):
         np.testing.assert_array_equal(state.inverse_covariance, np.eye(2))
         np.testing.assert_array_equal(state.history, [0])
 
+    def test_positive_diagonal_alone_does_not_certify_matrix(self):
+        state = RLSState(2, forgetting_factor=1.0)
+        # Simulate a corrupted state: both diagonals are positive, but the
+        # matrix has eigenvalues 3 and -1. A zero regressor exposes whether
+        # the full-matrix guard is actually exercised, without cancellation.
+        state._inverse_covariance = np.array([[1., 2.], [2., 1.]])
+        before = state.inverse_covariance
+        with self.assertRaisesRegex(ValueError, "positive definiteness"):
+            state.process([0.], [0.])
+        np.testing.assert_array_equal(state.inverse_covariance, before)
+        np.testing.assert_array_equal(state.weights, [0., 0.])
+        np.testing.assert_array_equal(state.history, [0.])
+
+    def test_near_collinear_reference_and_silence_keep_positive_matrix(self):
+        # A highly correlated reference and subsequent silence are a useful
+        # pressure case for forgetting and roundoff, not a timing benchmark.
+        rng = np.random.default_rng(20260924)
+        x = np.cumsum(rng.normal(scale=1e-3, size=128))
+        x = np.r_[x, np.zeros(128)]
+        d = np.convolve(x, [0.7, -0.2, 0.1], mode="full")[:len(x)]
+        state = RLSState(3, forgetting_factor=0.99,
+                         initial_regularization=0.5)
+        state.process(x, d)
+        np.linalg.cholesky(state.inverse_covariance)
+        self.assertTrue(np.all(np.isfinite(state.weights)))
+
     def test_convenience_function_and_demo(self):
         e, y, w = rls([1, 1], [1, 2], 2, forgetting_factor=0.5)
         np.testing.assert_allclose(e, [1, 4 / 3], atol=1e-14)

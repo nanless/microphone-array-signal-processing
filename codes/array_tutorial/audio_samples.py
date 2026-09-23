@@ -12,6 +12,10 @@ import wave
 import numpy as np
 
 from .aec import nlms
+from .aec_ipnlms import ipnlms
+from .aec_rls import rls
+from .aec_kalman_matrix import KalmanAECState
+from .aec_subband import haar_synthesize, two_tap_subband_outputs
 from .dereverberation import offline_wpe
 from .geometry import plane_wave_delays
 from .spectral import stft, istft
@@ -81,7 +85,7 @@ def _tone(t: np.ndarray, frequency: float) -> np.ndarray:
 
 
 def build_cases() -> dict:
-    """Return eleven experiments with model parameters and references.
+    """Return thirteen experiments with model parameters and references.
 
     Each entry has ``signals`` (filename stem -> CxN array), ``parameters`` and
     ``limits``. Signals are pre-export floats; no group uses peak matching.
@@ -138,6 +142,40 @@ def build_cases() -> dict:
     best_linear_gain = float(nonlinear_reference @ nonlinear_echo
                              / (nonlinear_reference @ nonlinear_reference))
     nonlinear_estimate = best_linear_gain * nonlinear_reference
+    # A short, deliberately synthetic, shared-input AEC contrast. Use a new
+    # stream so earlier fixtures and their PCM bytes do not change. The path
+    # changes at exactly sample 6000; the microphone has known echo plus
+    # independent background noise, never near-end speech.
+    method_rng = np.random.default_rng(SEED + 3)
+    method_samples = 12000
+    method_reference = .12 * method_rng.standard_normal(method_samples)
+    method_reference += .09 * np.sin(2 * np.pi * 310 * np.arange(method_samples) / SAMPLE_RATE)
+    method_path_before = np.array([.65, 0., -.2, 0.])
+    method_path_after = np.array([.1, -.45, 0., .5])
+    method_change = 6000
+    method_before = np.convolve(method_reference, method_path_before)[:method_samples]
+    method_after = np.convolve(method_reference, method_path_after)[:method_samples]
+    method_echo = method_before.copy()
+    method_echo[method_change:] = method_after[method_change:]
+    method_background = .005 * method_rng.standard_normal(method_samples)
+    method_microphone = method_echo + method_background
+    method_nlms, _, _ = nlms(method_reference, method_microphone, 4, step_size=.4)
+    method_ipnlms, _, _ = ipnlms(method_reference, method_microphone, 4,
+                                step_size=.4, kappa=0.,
+                                denominator_floor=1e-8, gain_floor=1e-8)
+    method_rls, _, _ = rls(method_reference, method_microphone, 4,
+                           forgetting_factor=.995, initial_regularization=1.)
+    method_kalman = KalmanAECState(
+        4, transition=1., process_covariance=np.eye(4) * 1e-5,
+        observation_variance=.0025, initial_covariance=np.eye(4),
+    ).process_block(method_reference, method_microphone)['prior_error']
+    # A separate exact model-identification contrast, not an adaptive run.
+    subband_rng = np.random.default_rng(SEED + 4)
+    subband_reference = .12 * subband_rng.standard_normal(8000)
+    subband_reference += .08 * np.sin(2 * np.pi * 2100 * np.arange(8000) / SAMPLE_RATE)
+    _, subband_diagonal_bands, subband_echo = two_tap_subband_outputs(
+        subband_reference, [0., 1.])
+    subband_diagonal = haar_synthesize(subband_diagonal_bands)
     # Four-microphone far-field example. A separate RNG leaves all older
     # experiments unchanged. Linear interpolation defines the fractional-
     # sample signal model; the corresponding alignment uses the same model.
@@ -194,6 +232,57 @@ def build_cases() -> dict:
                            'oracle_freeze_interval_s': [1.2, 1.8],
                            'far_end_only_scoring_interval_s': [.6, 1.1], 'algorithm_delay_samples': 0},
             'limits': 'Exactly matched linear path, known double-talk mask (not an implemented DTD); no real-room ERLE claim.'},
+        'aec_methods': {
+            'signals': {
+                'aec_methods_reference': method_reference,
+                'aec_methods_true_echo': method_echo,
+                'aec_methods_microphone': method_microphone,
+                'aec_methods_nlms_residual': method_nlms,
+                'aec_methods_ipnlms_residual': method_ipnlms,
+                'aec_methods_rls_residual': method_rls,
+                'aec_methods_kalman_residual': method_kalman,
+            },
+            'parameters': {
+                'seed': SEED + 3, 'sample_rate_hz': SAMPLE_RATE,
+                'samples': method_samples, 'path_change_sample': method_change,
+                'path_before': method_path_before.tolist(),
+                'path_after': method_path_after.tolist(),
+                'reference': 'seeded white Gaussian std 0.12 plus 310 Hz sine amplitude 0.09',
+                'microphone_model': 'causal 4-tap FIR, path selected per output sample, plus independent Gaussian background noise std 0.005; no near end',
+                'background_noise_seed': SEED + 3,
+                'nlms': {'step_size': .4, 'epsilon': 1e-8},
+                'ipnlms': {'step_size': .4, 'kappa': 0., 'denominator_floor': 1e-8,
+                           'gain_floor': 1e-8},
+                'rls': {'forgetting_factor': .995, 'initial_regularization': 1.},
+                'kalman': {'transition': 1., 'process_covariance_diagonal': 1e-5,
+                           'observation_variance': .0025, 'initial_covariance_diagonal': 1.},
+                'score_windows_samples': {'before_change': [3000, 6000],
+                                          'immediate_after_change': [6000, 6200],
+                                          'after_change': [9000, 12000]},
+                'algorithm_delay_samples': 0,
+                'output': 'causal prior linear residual before each sample update',
+            },
+            'limits': 'Seeded mathematical signal and exactly known 4-tap path; single run, no near end, '
+                      'DTD, real loudspeaker, room or subjective speech test. Do not rank industrial AEC from these WAVs.',
+        },
+        'aec_subband': {
+            'signals': {
+                'aec_subband_reference': subband_reference,
+                'aec_subband_true_echo': subband_echo,
+                'aec_subband_diagonal_model': subband_diagonal,
+                'aec_subband_missing_cross_terms': subband_echo - subband_diagonal,
+            },
+            'parameters': {
+                'seed': SEED + 4, 'sample_rate_hz': SAMPLE_RATE, 'samples': 8000,
+                'reference': 'seeded Gaussian std 0.12 plus 2100 Hz sine amplitude 0.08',
+                'path': [0., 1.], 'analysis': 'nonoverlapping orthonormal two-sample Haar',
+                'model': 'known current/previous block 2x2 crossband matrices; diagonal_model removes exact off-diagonal terms',
+                'near_end': 'none', 'noise': 'none', 'algorithm_delay_samples': 0,
+                'score_interval_samples': [0, 8000],
+            },
+            'limits': 'Known-path system representation only; diagonal model has NOT been adapted or fitted. '
+                      'The difference is missing cross terms, not a measured AEC residual or subband ERLE.',
+        },
         'wpe': {
             'signals': {'wpe_dry': dry, 'wpe_reverberant': reverberant, 'wpe_output': wpe},
             'parameters': {'echo_delays_samples': [0, 640, 1280], 'echo_gains': [1, .6, .3],

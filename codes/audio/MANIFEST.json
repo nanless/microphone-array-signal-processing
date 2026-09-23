@@ -10,7 +10,7 @@
     "float_dtype": "float64"
   },
   "synthetic_signal": {
-    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear and fractional_array; see each group for noise and transforms",
+    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods and aec_subband; see each group for noise and transforms",
     "duration_s": 2,
     "base_frequencies_hz": [
       173,
@@ -33,9 +33,13 @@
   "pcm": "signed little-endian 16-bit, round-to-nearest-even; no dither; no per-file normalization",
   "listening": "Start at low device volume. No automatic playback. No formal listening study performed.",
   "generator_inputs": {
-    "codes/examples/generate_audio_samples.py": "f9e62b470b3b937a4279707afba0f0590e2c48872b89e7838aa66037c21319cb",
-    "codes/array_tutorial/audio_samples.py": "acf3b270c96a2e9a03f1c91ead3a29da3161ca415467cd6b429b9ba041dc09f1",
+    "codes/examples/generate_audio_samples.py": "4b9b01d85f7161f4d4bcdcda96c2c6de724ec95c063434012fb96c6c5aadc8b7",
+    "codes/array_tutorial/audio_samples.py": "7a8132b1cecffe851cb9ca3afc4508cf0386c23805df75003d41cb7bfa910071",
     "codes/array_tutorial/aec.py": "70d69fcd523cff3028162a221d71ea6bd2254979dfe37479ad26f77ab74a5a7e",
+    "codes/array_tutorial/aec_ipnlms.py": "86422a00df25293176e0bde8193c7e05ac7a1e5703660b56907024985978c0d4",
+    "codes/array_tutorial/aec_rls.py": "f13c2018297e46f0b393ef52e04fad5f1d48ede00de8b37a80a4abf597a9305d",
+    "codes/array_tutorial/aec_kalman_matrix.py": "9feedf2058d0aad0996565048988894cf63199719112f46700a43ba9d9bb97b6",
+    "codes/array_tutorial/aec_subband.py": "ccc7125c2f432205d8f2ac9c38ecc4b308ee36fc722b846c4edbc7b6320b6941",
     "codes/array_tutorial/dereverberation.py": "5f7bfae766930bcd8b468e39e1e0e5c516fd38d1b0e2af95999872a10df42e2a",
     "codes/array_tutorial/spectral.py": "9b7c3d3e2b936fdfa793f372e5d258788a4b43b9536294c231019454bfcb45c6",
     "codes/array_tutorial/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385",
@@ -136,6 +140,90 @@
         "algorithm_delay_samples": 0
       },
       "limits": "Exactly matched linear path, known double-talk mask (not an implemented DTD); no real-room ERLE claim.",
+      "common_export_gain": 1.0
+    },
+    "aec_methods": {
+      "parameters": {
+        "seed": 20260925,
+        "sample_rate_hz": 16000,
+        "samples": 12000,
+        "path_change_sample": 6000,
+        "path_before": [
+          0.65,
+          0.0,
+          -0.2,
+          0.0
+        ],
+        "path_after": [
+          0.1,
+          -0.45,
+          0.0,
+          0.5
+        ],
+        "reference": "seeded white Gaussian std 0.12 plus 310 Hz sine amplitude 0.09",
+        "microphone_model": "causal 4-tap FIR, path selected per output sample, plus independent Gaussian background noise std 0.005; no near end",
+        "background_noise_seed": 20260925,
+        "nlms": {
+          "step_size": 0.4,
+          "epsilon": 1e-08
+        },
+        "ipnlms": {
+          "step_size": 0.4,
+          "kappa": 0.0,
+          "denominator_floor": 1e-08,
+          "gain_floor": 1e-08
+        },
+        "rls": {
+          "forgetting_factor": 0.995,
+          "initial_regularization": 1.0
+        },
+        "kalman": {
+          "transition": 1.0,
+          "process_covariance_diagonal": 1e-05,
+          "observation_variance": 0.0025,
+          "initial_covariance_diagonal": 1.0
+        },
+        "score_windows_samples": {
+          "before_change": [
+            3000,
+            6000
+          ],
+          "immediate_after_change": [
+            6000,
+            6200
+          ],
+          "after_change": [
+            9000,
+            12000
+          ]
+        },
+        "algorithm_delay_samples": 0,
+        "output": "causal prior linear residual before each sample update"
+      },
+      "limits": "Seeded mathematical signal and exactly known 4-tap path; single run, no near end, DTD, real loudspeaker, room or subjective speech test. Do not rank industrial AEC from these WAVs.",
+      "common_export_gain": 1.0
+    },
+    "aec_subband": {
+      "parameters": {
+        "seed": 20260926,
+        "sample_rate_hz": 16000,
+        "samples": 8000,
+        "reference": "seeded Gaussian std 0.12 plus 2100 Hz sine amplitude 0.08",
+        "path": [
+          0.0,
+          1.0
+        ],
+        "analysis": "nonoverlapping orthonormal two-sample Haar",
+        "model": "known current/previous block 2x2 crossband matrices; diagonal_model removes exact off-diagonal terms",
+        "near_end": "none",
+        "noise": "none",
+        "algorithm_delay_samples": 0,
+        "score_interval_samples": [
+          0,
+          8000
+        ]
+      },
+      "limits": "Known-path system representation only; diagonal model has NOT been adapted or fitted. The difference is missing cross terms, not a measured AEC residual or subband ERLE.",
       "common_export_gain": 1.0
     },
     "wpe": {
@@ -503,6 +591,149 @@
       "rms": 0.04237169258960369,
       "common_export_gain": 1.0,
       "quantization_max_abs_error": 1.5257004838759025e-05
+    },
+    {
+      "file": "aec_methods_reference.wav",
+      "sha256": "9cb3aec38d69928fff21fbba39884ed5ee28a9e7016c80f64659aed06ceef37e",
+      "group": "aec_methods",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 12000,
+      "duration_s": 0.75,
+      "peak": 0.5733642578125,
+      "rms": 0.13617087802551178,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258394703759892e-05
+    },
+    {
+      "file": "aec_methods_true_echo.wav",
+      "sha256": "b7cdac9b5585f4044787b7cf00ac681392a209f0afc1f9baaa6e71f93cffe772",
+      "group": "aec_methods",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 12000,
+      "duration_s": 0.75,
+      "peak": 0.32568359375,
+      "rms": 0.08514094171652847,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258619631797893e-05
+    },
+    {
+      "file": "aec_methods_microphone.wav",
+      "sha256": "38364e987bfae278f7fc348e84b25acdb152bbdf9d6dc8d76840ae24cbf61665",
+      "group": "aec_methods",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 12000,
+      "duration_s": 0.75,
+      "peak": 0.324951171875,
+      "rms": 0.08527692476039503,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258727394914032e-05
+    },
+    {
+      "file": "aec_methods_nlms_residual.wav",
+      "sha256": "4e7b648b98dcba0fce7c8832140e8f72fdd89e14fd4a3cea328359f2befeb436",
+      "group": "aec_methods",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 12000,
+      "duration_s": 0.75,
+      "peak": 0.152069091796875,
+      "rms": 0.006700504726824705,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258649701704527e-05
+    },
+    {
+      "file": "aec_methods_ipnlms_residual.wav",
+      "sha256": "17cbc89058cd4e0a89c60e7d6a3c7d40422856b3e009df7d07265fa4a32ac4aa",
+      "group": "aec_methods",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 12000,
+      "duration_s": 0.75,
+      "peak": 0.151458740234375,
+      "rms": 0.006723758387679982,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258187372163556e-05
+    },
+    {
+      "file": "aec_methods_rls_residual.wav",
+      "sha256": "b764496e5e482afe7cf35b53f075c0abb3c8c2ef981e6d754526aacdf756983d",
+      "group": "aec_methods",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 12000,
+      "duration_s": 0.75,
+      "peak": 0.234893798828125,
+      "rms": 0.012376640504744846,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258776317646217e-05
+    },
+    {
+      "file": "aec_methods_kalman_residual.wav",
+      "sha256": "15c42c15a18fc0af34e9ef008e311b9607d7bac67c55e0bf9971bf3510d0be5d",
+      "group": "aec_methods",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 12000,
+      "duration_s": 0.75,
+      "peak": 0.203277587890625,
+      "rms": 0.009549591316831217,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258097919933211e-05
+    },
+    {
+      "file": "aec_subband_reference.wav",
+      "sha256": "7b795598f7bde6b3d5c0e80fbf7486dcf2904e466d4a1a878f06b9cc260453bf",
+      "group": "aec_subband",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 8000,
+      "duration_s": 0.5,
+      "peak": 0.556488037109375,
+      "rms": 0.13325397794077287,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5256587004630617e-05
+    },
+    {
+      "file": "aec_subband_true_echo.wav",
+      "sha256": "5fe55a3f60d40211205ac4f53294d8faebfec17519c84cc2ca6c71bdce22ff8c",
+      "group": "aec_subband",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 8000,
+      "duration_s": 0.5,
+      "peak": 0.556488037109375,
+      "rms": 0.13322518062706062,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5256587004686128e-05
+    },
+    {
+      "file": "aec_subband_diagonal_model.wav",
+      "sha256": "3525907e0e7577d93fc313dc11a8660cda31eb950cdf4fb870c809dea337b6ac",
+      "group": "aec_subband",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 8000,
+      "duration_s": 0.5,
+      "peak": 0.36962890625,
+      "rms": 0.09389838642456813,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.525835883331439e-05
+    },
+    {
+      "file": "aec_subband_missing_cross_terms.wav",
+      "sha256": "40897609a1de56367034f61751f3967579b28f8495f9e7eeb9326969ecd05e68",
+      "group": "aec_subband",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 8000,
+      "duration_s": 0.5,
+      "peak": 0.38067626953125,
+      "rms": 0.09449125375302098,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5257896972861729e-05
     },
     {
       "file": "wpe_dry.wav",

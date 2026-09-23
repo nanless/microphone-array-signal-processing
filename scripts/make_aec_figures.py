@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-"""回声消除专题插图（入门导向，7 张）：图 26~32。
+"""回声消除专题插图：图 26～32、37～38。
 
 用法（仓库根目录）：
-    .venv/bin/python scripts/make_aec_figures.py  # 图 26~32 → figures/
+    .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～38 → figures/
 函数与图号对照：fig_problem→图26、fig_concept→图27、fig_nlms→图28、
-fig_erle→图29、fig_delay_dtd→图30、fig_nonlinear→图31、fig_hybrid→图32。
+fig_erle→图29、fig_delay_dtd→图30、fig_nonlinear→图31、fig_hybrid→图32、
+fig_haar_crossband→图37、fig_adaptive_state_examples→图38。
 """
 import hashlib
 import os
@@ -555,6 +556,183 @@ def fig_hybrid():
     )
     save(fig, "fig32_aec_hybrid_select.png")
 
+
+def haar_delay_example():
+    """两带正交 Haar、一拍纯延迟：返回完整与仅对角子带映射。
+
+    分析使用相邻两点求和/差并除以 sqrt(2)，合成使用其转置。
+    子带索引 m 的负时刻输入为零。仅对角映射保留精确的 G00、G11，
+    丢弃 G01、G10；它不是训练后独立子带自适应器的性能结果。
+    """
+    x = np.array([1.0, 0.0, 0.0, 0.0])
+    u = np.vstack(((x[::2] + x[1::2]) / np.sqrt(2.0),
+                   (x[::2] - x[1::2]) / np.sqrt(2.0)))
+    previous = np.pad(u[:, :-1], ((0, 0), (1, 0)))
+    y_band = np.vstack((
+        (previous[0] - previous[1] + u[0] + u[1]) / 2,
+        (previous[0] - previous[1] - u[0] - u[1]) / 2,
+    ))
+    diagonal_band = np.vstack((
+        (previous[0] + u[0]) / 2,
+        -(previous[1] + u[1]) / 2,
+    ))
+
+    def synthesize(bands):
+        result = np.empty(x.size)
+        result[::2] = (bands[0] + bands[1]) / np.sqrt(2.0)
+        result[1::2] = (bands[0] - bands[1]) / np.sqrt(2.0)
+        return result
+
+    return x, u, synthesize(y_band), synthesize(diagonal_band)
+
+
+def fig_haar_crossband():
+    """图37：PR 滤波器组与一拍延迟后的交叉带项分开解释。"""
+    x, _u, full, diagonal = haar_delay_example()
+    fig = plt.figure(figsize=(9.8, 7.5), layout="constrained")
+    fig.suptitle("图37 两带 Haar：完美重建不等于逐带回声路径等价", fontsize=FS_SUP)
+    grid = fig.add_gridspec(2, 1, height_ratios=(1.05, 1.0))
+
+    ax = fig.add_subplot(grid[0])
+    ax.set_title("(a) 真实一拍延迟在子带域需要同带项和交叉带项", fontsize=FS_TITLE)
+    ax.set_xlim(0, 10); ax.set_ylim(0, 4.4); ax.axis("off")
+
+    def box(left, bottom, width, height, label, fill):
+        ax.add_patch(Rectangle((left, bottom), width, height,
+                               fc=fill, ec=C_MAIN, lw=1.4))
+        ax.text(left + width / 2, bottom + height / 2, label,
+                ha="center", va="center", fontsize=FS_SMALL, color=C_MAIN)
+
+    def arrow(start, end, color=C_BLUE):
+        ax.add_patch(FancyArrowPatch(start, end, arrowstyle="-|>",
+                                     mutation_scale=15, color=color, lw=1.8))
+
+    box(0.1, 2.05, 1.15, 0.95, "播放参考\nx[n]", "#f6e5db")
+    box(1.8, 2.05, 1.55, 0.95, "两带 Haar\n分析 + ↓2", "#dbe9f6")
+    box(3.9, 1.78, 2.45, 1.5, "一拍路径的子带映射\nG₀₀、G₁₁ + G₀₁、G₁₀\n（含交叉带项）", "#e8f6db")
+    box(6.9, 2.05, 1.55, 0.95, "两带 Haar\n合成 + ↑2", "#dbe9f6")
+    box(9.0, 2.05, 0.9, 0.95, "回声\ny[n]", "#f6dbdb")
+    for start, end in [((1.25, 2.52), (1.8, 2.52)),
+                       ((3.35, 2.52), (3.9, 2.52)),
+                       ((6.35, 2.52), (6.9, 2.52)),
+                       ((8.45, 2.52), (9.0, 2.52))]:
+        arrow(start, end)
+    ax.text(5.0, 1.35,
+            r"$G_{01}=(1-z^{-1})/2,\quad G_{10}=(z^{-1}-1)/2$：两项一般不为零",
+            ha="center", va="center", fontsize=FS_SMALL, color=C_RED)
+    ax.text(5.0, 0.65,
+            "分析后立即合成可完美重建 x；中间加入延迟路径后，不能只保留 G₀₀、G₁₁。",
+            ha="center", va="center", fontsize=FS_SMALL, color=C_MAIN)
+
+    ax = fig.add_subplot(grid[1])
+    ax.set_title("(b) 单位脉冲 x=[1,0,0,0]，真实路径 y[n]=x[n−1]", fontsize=FS_TITLE)
+    positions = np.arange(x.size)
+    ax.bar(positions - 0.17, full, width=0.31, color="0.25", edgecolor="black",
+           label="完整子带映射＝直接延迟")
+    ax.bar(positions + 0.17, diagonal, width=0.31, color="white", edgecolor=C_BLUE,
+           hatch="///", lw=1.4, label="仅保留精确同带项")
+    ax.set_xticks(positions)
+    ax.set_xlabel("输出采样索引 n（采样）", fontsize=FS_LABEL)
+    ax.set_ylabel("输出幅度（无量纲）", fontsize=FS_LABEL)
+    ax.set_ylim(-0.1, 1.25)
+    ax.legend(fontsize=FS_SMALL, ncols=2, loc="upper right")
+    ax.grid(axis="y", ls=":", alpha=0.5)
+    ax.tick_params(labelsize=FS_TINY)
+    ax.text(0.02, 0.9,
+            "完整：[0,1,0,0]；仅同带：[0,0.5,0,0.5]\n"
+            "后者是删去交叉项的模型示意，不是训练后的 AEC 残差。",
+            transform=ax.transAxes, fontsize=FS_SMALL, va="top", color=C_MAIN,
+            bbox=dict(fc="white", ec="0.7", alpha=0.95))
+    save(fig, "fig37_aec_subband.png")
+
+
+def adaptive_state_example():
+    """图38 的精确小例数据；三种方法的纵轴不作为彼此性能比较。"""
+    weights = np.array([0.8, 0.2])
+    kappas = np.array([-1.0, 0.0, 1.0])
+    gains = np.array([
+        (1 - kappa) / (2 * weights.size)
+        + (1 + kappa) * np.abs(weights) / (2 * np.sum(np.abs(weights)))
+        for kappa in kappas
+    ])
+    p_initial = np.eye(2)
+    p_after_first = np.diag([2 / 3, 2.0])
+    p_after_second = np.array([[20, -16], [-16, 28]], dtype=float) / 19
+    rls_matrices = np.stack((p_initial, p_after_first, p_after_second))
+    # 标量 X=1；三组条件分别是常规、假定观测方差增大、假定先验方差增大。
+    prior_variances = np.array([1.0, 1.0, 4.0])
+    observation_variances = np.array([1.0, 10.0, 1.0])
+    kalman_gains = prior_variances / (prior_variances + observation_variances)
+    return kappas, gains, rls_matrices, kalman_gains
+
+
+def fig_adaptive_state_examples():
+    """图38：抽头分配、逆相关状态及假设统计量如何改变更新。"""
+    kappas, gains, rls_matrices, kalman_gains = adaptive_state_example()
+    fig = plt.figure(figsize=(9.8, 8.2), layout="constrained")
+    fig.suptitle("图38 IPNLMS、RLS 与 Kalman：三种不同的更新状态", fontsize=FS_SUP)
+    grid = fig.add_gridspec(2, 2, height_ratios=(1.0, 1.15))
+
+    ax = fig.add_subplot(grid[0, :])
+    ax.set_title("(a) IPNLMS：同一权重 ŵ=[0.8,0.2]，κ 改变两个抽头的更新份额", fontsize=FS_TITLE)
+    positions = np.arange(kappas.size)
+    ax.bar(positions - 0.18, gains[:, 0], width=0.34, color=C_BLUE,
+           edgecolor="black", label="抽头 0 的 g₀")
+    ax.bar(positions + 0.18, gains[:, 1], width=0.34, color="white",
+           edgecolor=C_RED, hatch="///", lw=1.4, label="抽头 1 的 g₁")
+    ax.set_xticks(positions, ["κ=−1（均匀）", "κ=0（混合）", "κ=1（纯比例）"])
+    ax.set_ylabel("归一化份额 g（无量纲）", fontsize=FS_LABEL)
+    ax.set_ylim(0, 1.0)
+    ax.legend(fontsize=FS_SMALL, ncols=2)
+    ax.grid(axis="y", ls=":", alpha=0.5)
+    ax.tick_params(labelsize=FS_TINY)
+    ax.text(0.99, 0.91, "本例 εg→0；只表示单步份额，不是长期收敛结果。",
+            transform=ax.transAxes, fontsize=FS_SMALL, ha="right", va="top",
+            bbox=dict(fc="white", ec="0.7", alpha=0.95))
+
+    ax = fig.add_subplot(grid[1, 0])
+    ax.set_title("(b) RLS：P 是逆参考相关矩阵", fontsize=FS_TITLE)
+    steps = np.arange(3)
+    for row, col, label, color, style, marker in [
+        (0, 0, "P₀₀", C_BLUE, "-", "o"),
+        (1, 1, "P₁₁", C_RED, "--", "s"),
+        (0, 1, "P₀₁", C_GREEN, "-.", "^"),
+    ]:
+        ax.plot(steps, rls_matrices[:, row, col], color=color,
+                ls=style, marker=marker, lw=1.8, ms=7, label=label)
+    ax.set_xticks(steps, ["初始", "第 0 步后", "第 1 步后"])
+    ax.set_ylabel("P 元素（本例无量纲）", fontsize=FS_LABEL)
+    ax.set_ylim(-1.05, 2.6)
+    ax.legend(fontsize=FS_SMALL, ncols=3, loc="upper right")
+    ax.grid(ls=":", alpha=0.5)
+    ax.tick_params(labelsize=FS_TINY)
+    ax.text(0.02, 0.08,
+            r"$\lambda=1/2,\ P_{-1}=I,\ \mathbf{x}_0=[1,0],\ \mathbf{x}_1=[1,1]$",
+            transform=ax.transAxes, fontsize=FS_SMALL, va="bottom",
+            bbox=dict(fc="white", ec="0.7", alpha=0.95))
+
+    ax = fig.add_subplot(grid[1, 1])
+    ax.set_title("(c) Kalman：已给定方差时的增益", fontsize=FS_TITLE)
+    labels = ["基准\n" + r"$P^-=1,\ \Psi=1$",
+              "假定双讲\n" + r"$P^-=1,\ \Psi=10$",
+              "假定突变\n" + r"$P^-=4,\ \Psi=1$"]
+    bars = ax.bar(np.arange(3), kalman_gains, width=0.58,
+                  color=["0.35", "white", "white"], edgecolor="black",
+                  hatch=["", "///", "xxx"], lw=1.4)
+    for bar, gain in zip(bars, kalman_gains):
+        ax.text(bar.get_x() + bar.get_width() / 2, gain + 0.035,
+                f"{gain:.3f}", ha="center", fontsize=FS_SMALL)
+    ax.set_xticks(np.arange(3), labels)
+    ax.set_ylabel("K，X=1（无量纲）", fontsize=FS_LABEL)
+    ax.set_ylim(0, 1.08)
+    ax.grid(axis="y", ls=":", alpha=0.5)
+    ax.tick_params(labelsize=FS_TINY)
+    ax.text(0.03, 0.95, "Ψ 与 " + r"$P^-$" + " 均人为指定；本图不实现双讲或突变检测。",
+            transform=ax.transAxes, fontsize=FS_SMALL, va="top",
+            bbox=dict(fc="white", ec="0.7", alpha=0.95))
+    save(fig, "fig38_aec_four_methods.png")
+
 if __name__ == "__main__":
     fig_problem(); fig_concept(); fig_nlms(); fig_erle(); fig_delay_dtd(); fig_nonlinear(); fig_hybrid()
+    fig_haar_crossband(); fig_adaptive_state_examples()
     print("ALL DONE")
