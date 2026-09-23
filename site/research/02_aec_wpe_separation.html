@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AEC、WPE 与分离源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="b962773fed1b"><style>
+<meta name="source-digest" content="97cc224428a3"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -315,7 +315,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>WebRTC 与 SpeexDSP 锁定源码分别以 BSD-3-Clause 许可登记在<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/THIRD_PARTY.md">第三方清单</a>；本书 NumPy 基线是原创教学代码。WebRTC 完整构建还需要其依赖元数据，Speex 的可选预处理器也不等于核心 AUMDF。RNNoise 虽在外部清单中，但<a href="https://github.com/xiph/rnnoise">官方 README</a>定义它为单输入噪声抑制，示例使用 48 kHz 单声道原始 PCM；它没有播放参考，不能当作 AEC3 或 Speex 的同类替代。锁定版 <code>autogen.sh</code> 会调用下载模型的脚本；源码核对不等于已取得模型，更不等于已完成构建或执行。</p>
 <p><strong>同输入、同取点的三系统对照实验设计（尚未完成）。</strong> 先选 16 kHz、单播放参考、单麦克风的 PCM，固定同一参考抽头、增益和无削波输入。用已知 FIR 生成纯回声及独立近端信号，保存两者和加和后的麦克风波形。前者用于检查算法接口和真值分量；真实设备数据则用于检查模型外的非线性、驱动与时钟问题，不能以本仓库的 DEMAND 环境噪声摘录代替有播放参考的 AEC 录音。</p>
 <p>真实配对录音可从 <a href="https://github.com/microsoft/AEC-Challenge/blob/6c633d0a9d2a143a0e364899b91b06f127315b18/datasets/README.md">Microsoft AEC Challenge 固定版数据说明</a>按需寻找同一 GUID 的 <code>*_farend_singletalk_lpb.wav</code> 与 <code>*_farend_singletalk_mic.wav</code>；双讲和移动场景有对应 <code>*_doubletalk_lpb.wav</code>、<code>*_doubletalk_mic.wav</code> 及 <code>*_with_movement_*</code>。这里的 <code>lpb</code> 是 Windows 播放环回，不是扬声器端子电压；官方还提示部分计算机虽使用 raw mode，收放链仍可能有 DSP。</p>
-<p>外部样本要先核查数据来源、使用及再分发条款，再保存原文件摘要、配对 GUID、采样率、裁剪区间和实际参考抽头。本书不下载或再分发这些录音，也没有独立的近端干净语音和回声分量真值；可报告注明噪声底的远端单讲输入/输出功率近似、听测和自动评分，不能把它们写成真值 ERLE。<a href="https://github.com/microsoft/AEC-Challenge/blob/6c633d0a9d2a143a0e364899b91b06f127315b18/README.md#dataset-licenses">项目数据许可说明</a>与代码 MIT 许可分列。</p>
+<p>外部样本要先核查数据来源、使用及再分发条款，再保存原文件摘要、配对 GUID、采样率、裁剪区间和实际参考抽头。本书按需把两对录音下载到本机 Git 忽略缓存，不在仓库再分发，也没有独立的近端干净语音和回声分量真值；可报告注明噪声底的远端单讲输入/输出功率近似、听测和自动评分，不能把它们写成真值 ERLE。<a href="https://github.com/microsoft/AEC-Challenge/blob/6c633d0a9d2a143a0e364899b91b06f127315b18/README.md#dataset-licenses">项目数据许可说明</a>与代码 MIT 许可分列。</p>
 <ol>
 <li>
 <p>对同一底稿分别构造远端单讲稳态、双讲、近端单讲、沉默、路径突变、固定参考延迟和一次参考丢块；每种条件只改一个因素，记录起止采样索引。测试 SRO 时另加长时、已测或明确合成的两时钟输入，不把固定时移当成速率偏移。</p>
@@ -369,7 +369,96 @@ cmake -S codes/upstream/_downloads/speexdsp -B /private/tmp/speexdsp-aec-2026092
 cmake --build /private/tmp/speexdsp-aec-20260923 --parallel 4
 .venv/bin/python codes/examples/aec_real_pair_experiment.py --speex-library /private/tmp/speexdsp-aec-20260923/libspeexdsp.dylib
 </code></pre>
-<p>此实验验证了固定版本、固定真实配对输入、严格帧协议下的接口可运行性和三个参考条件的数字功率变化。原录音没有独立的干净回声、干净近端或噪声分量；即使官方标作远端单讲，本书也未逐秒人工标注说话、噪声或主观听感。因此不能由功率比推出真值 ERLE、近端保护、感知质量、实时资源、设备时钟漂移，或 WebRTC/教学 NLMS 的相对优劣。完整三系统同输入比较及真实设备验收仍未执行；<a href="04_source_reproduction.html">运行状态表</a>按实现分别记录。</p>
+<p>此实验验证了固定版本、固定真实配对输入、严格帧协议下的接口可运行性和三个参考条件的数字功率变化。原录音没有独立的干净回声、干净近端或噪声分量；即使官方标作远端单讲，本书也未逐秒人工标注说话、噪声或主观听感。因此不能由功率比推出真值 ERLE、近端保护、感知质量、实时资源、设备时钟漂移，或 WebRTC/教学 NLMS 的相对优劣。</p>
+<p><strong>真实双讲的第二组接口检查（2026-09-23 已运行）。</strong> 同一固定版中另取 GUID <code>-2jLGNCgf0WDpKMY2iup7g</code> 的 <code>doubletalk_lpb</code> 与 <code>doubletalk_mic</code>。两份原 WAV 的 SHA-256 分别是 <code>790203e68cc8cc9b02becc4efefbde0ddf962fff4d223608b00ffc8b2682ed71</code>、<code>4e7e35290d763d2d22173976c2cfd46739c9afe76729a0c283c1b69609f22041</code>；均为 16 kHz、单声道、PCM16。参考 196186 点、麦克风 196320 点，共同截为 196160 点完整 10 ms 帧，不插值、不时移。参考全段没有满幅样本，麦克风有 1 个满幅样本；全段数字 RMS 分别为 0.05574、0.02760。官方<a href="https://github.com/microsoft/AEC-Challenge/blob/6c633d0a9d2a143a0e364899b91b06f127315b18/datasets/README.md">数据说明</a>将 <code>doubletalk</code> 标为双讲且无路径变化；这不是本书对该片段每一帧的人工语音标注。</p>
+<p>固定 <code>[0,3)</code> s 为适应期、<code>[3,8)</code> s 为评分区，三个条件都从新状态运行同一 Speex 同步核心。库与远端单讲实验相同，参数仍是 160 点帧、4096 点滤波覆盖。评分区的麦克风数字 RMS 是 0.03860；正确参考、零参考、故意晚 1 秒参考的输入/输出总功率变化分别是 2.234、2.204、2.200 dB，正确参考的输出相对零参考仅低 0.029 dB。这个很小的差别不能被解释为“已消掉的回声量”：近端语音、回声和噪声在麦克风里不可分，三种控制的输出哈希和未舍入数字由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_doubletalk_experiment.py">双讲脚本</a>给出。此处也未完成盲听，不能称近端音质已经验证。</p>
+<p>复做时把上述两只原 WAV 放到 <code>codes/upstream/_downloads/aec-challenge/datasets/real/</code>，脚本在读取前核查摘要，再运行：</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.examples.aec_doubletalk_experiment --speex-library /private/tmp/speexdsp-aec-20260923/libspeexdsp.dylib
+</code></pre>
+<p><strong>已知近端注入：严格合成与半合成两种检查（2026-09-23 已运行）。</strong> 真实双讲没有干净分量，故另用<a href="../06_aec.html#sec-6-1-16">式(6-9)</a>定义两次独立运行的输出增量 $\Delta$、投影增益 $g_{\Delta}$ 和不拟合时移/增益的相对平方误差 $E_{\Delta}$。每一对运行都使用同一播放参考、各自新建的状态和完全相同的输入长度；第二次麦克风 PCM 比第一次恰好多一个已知的 $s$。即使如此，自适应器状态和预处理也可随 $s$ 改变，所以 $\Delta$ 不是算法内部单独输出的“近端声道”。$E_{\Delta}$ 是无量纲的逐样本误差，越小表示这项增量越接近原注入信号；它不是双讲 ERLE 或主观音质分。</p>
+<p>严格合成夹具读 <code>codes/audio/aec_far.wav</code>、<code>aec_near.wav</code>、<code>aec_microphone.wav</code>，逐一核对清单中的 SHA-256。三路均为 16 kHz、32000 点 PCM16；近端只在 <code>[19200,28800)</code> 非零。令 $d_1$ 为已量化麦克风、$s$ 为已量化近端，取 $d_0=d_1-s$，先在 32 位整数中检查范围，再转回 PCM16，因此输入等式在 PCM 域精确成立；$d_0$ 不宣称等于未量化 FIR 真值。固定 <code>[9600,17600)</code> 为远端单讲检查区、<code>[19200,28800)</code> 为双讲评分区、<code>[28800,32000)</code> 为恢复观察区。教学 NLMS 用 32 抽头、步长 0.4、$\varepsilon=10^{-8}$；双讲冻结使用已知真值掩码，不是检测器。SpeexDSP 仍为 160 点帧、4096 点滤波覆盖和独立状态。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">输入和实现</th>
+<th scope="col">播放参考</th>
+<th scope="col" style="text-align: right;">$g_{\Delta}$</th>
+<th scope="col" style="text-align: right;">$E_{\Delta}$</th>
+<th scope="col">能说明什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>合成；NLMS 真值冻结</td>
+<td>正确</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">0</td>
+<td>冻结且两臂状态相同，输出增量按代数逐样本等于已知近端</td>
+</tr>
+<tr>
+<td>合成；NLMS 持续更新</td>
+<td>正确</td>
+<td style="text-align: right;">0.936</td>
+<td style="text-align: right;">0.322</td>
+<td>近端参与更新后，两臂滤波状态不同</td>
+</tr>
+<tr>
+<td>合成；Speex 同步核心</td>
+<td>正确</td>
+<td style="text-align: right;">0.878</td>
+<td style="text-align: right;">0.208</td>
+<td>含核心预处理、连续更新和量化的总增量</td>
+</tr>
+<tr>
+<td>合成；Speex 同步核心</td>
+<td>全零</td>
+<td style="text-align: right;">0.879</td>
+<td style="text-align: right;">0.204</td>
+<td>没有播放参考时也出现近似增量偏差，不能全归于回声路径</td>
+</tr>
+</tbody>
+</table></div>
+<p>第二种夹具从<a href="https://github.com/microsoft/AEC-Challenge/blob/6c633d0a9d2a143a0e364899b91b06f127315b18/datasets/README.md">同一 GUID 的官方固定版数据</a>取远端单讲 <code>lpb</code>/<code>mic</code> 配对，再取另一次 <code>nearend_singletalk_mic.wav</code>。该近端原文件 SHA-256 为 <code>192291e973b7dee519102f30ae75e4209712ce55d02f55a9020a7c3b37a1d0e0</code>，只有本机缓存；它是单讲麦克风录音，含本底噪声，不是干净语音。把它的 <code>[48000,128000)</code> 样本以 1.0 的 PCM 增益叠到远端单讲麦克风的同位置，参考不变；不重采样、不错位、不按峰值重新归一化，32 位整数加法确认未溢出。叠加波形全段峰值为 13633 PCM 计数。前 3 s 为适应期，评分 <code>[3,8)</code> s，恢复观察 <code>[8,11)</code> s。它是两次录音的<strong>半合成叠加</strong>，不能冒称同一时刻的真实双讲。</p>
+<p>已知近端波形在评分区间的平方和必须大于零，否则 $g_{\Delta}$、$E_{\Delta}$ 均无定义。注入在 3 s、8 s 直接切换而没有淡入淡出，边界附近可能包含拼接瞬态；本实验只检验固定外加波形的增量，不作为自然双讲听感或总体性能证据。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">半合成输入、Speex 同步核心</th>
+<th scope="col" style="text-align: right;">$g_{\Delta}$</th>
+<th scope="col" style="text-align: right;">$E_{\Delta}$</th>
+<th scope="col" style="text-align: right;"><code>[8,11)</code> s 两次输出差的 RMS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>正确参考</td>
+<td style="text-align: right;">0.922</td>
+<td style="text-align: right;">0.140</td>
+<td style="text-align: right;">111.04 PCM 计数</td>
+</tr>
+<tr>
+<td>全零参考</td>
+<td style="text-align: right;">0.923</td>
+<td style="text-align: right;">0.128</td>
+<td style="text-align: right;">5.62 PCM 计数</td>
+</tr>
+</tbody>
+</table></div>
+<p>两张表的输入条件不同，<strong>不能横向排算法名次</strong>。恢复区间没有外加近端，仍有输出差，说明先前注入改变了后续处理状态或其输出；没有独立回声真值时不能把 111.04 计数直接解释为“恢复期回声”。锁定版 <a href="https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/mdf.c">Speex <code>mdf.c</code></a>还对麦克风做 DC 陷波、预加重、输出去加重和 PCM 转换，这解释了零参考控制也不能简单视作原样旁路。完整未舍入结果与输入、输出摘要可由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_controlled_doubletalk.py">受控脚本</a>复算；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_controlled_doubletalk.py">测试</a>另检查 PCM 加法、已知区间及指标算术，但不替代完整接口实验。复做命令为：</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.examples.aec_controlled_doubletalk \
+  --speex-library /private/tmp/speexdsp-aec-20260923/libspeexdsp.dylib \
+  --include-real-hybrid
+</code></pre>
+<p><strong>WebRTC AEC3 对照的已核实入口与未完成项。</strong> 固定源码提交 <code>0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e</code> 的官方 <a href="https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/rtc_tools/BUILD.gn"><code>audioproc_f</code></a> 可接受 <code>--i=&lt;mic.wav&gt;</code>、<code>--ri=&lt;lpb.wav&gt;</code>，用 <code>--o=&lt;final.wav&gt;</code> 保存最终输出，并用 <code>--linear_aec_output=&lt;linear.wav&gt;</code> 导出 16 kHz 线性段。为了与 Speex 的“同帧先参考、后采集”一致，须给 <code>--custom_call_order_file</code> 一个内容为 <code>rc</code> 的文本文件；<a href="https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/test/wav_based_simulator.cc">WAV 模拟器源码</a>的默认顺序反而是 <code>cr</code>。建议显式设置 <code>--fixed_interface=true --aec=1 --agc=0 --agc2=0 --ns=0 --hpf=0 --ts=0 --stream_delay=0</code>，并保留完整构建选项、日志、输出 PCM 摘要；<code>stream_delay=0</code> 只是离线缓冲假设，<code>hpf=0</code> 也不保证关闭 AEC3 内部强制高通。最终输出与 Speex 核心线性输出不是同一处理取点，须分列而不能排性能名次。</p>
+<p>当前本机只有 136 MB WebRTC 主源码的稀疏检出，没有 <code>build/</code>、<code>buildtools/</code>、<code>third_party/</code>、GN、Ninja 与 <code>gclient</code>；<code>xcodebuild -version</code> 也表明仅安装了 Command Line Tools，缺少官方 macOS 构建前提中的完整 Xcode。因此官方 <code>audioproc_f</code> <strong>尚未构建或运行</strong>；本节没有 WebRTC AEC3 数值，也没有同输入、同取点的三系统性能结论。要真正构建，需按<a href="https://webrtc.googlesource.com/src/+/main/docs/native-code/development/README.md">官方构建说明</a>在独立忽略目录取得 depot_tools 与完整依赖，固定 <code>gclient sync</code> 到上述源码提交，启用 <code>rtc_enable_protobuf=true</code> 与 <code>rtc_include_tests=true</code> 后构建 <code>rtc_tools:audioproc_f</code>；完整检出是数 GB 级，不应把当前稀疏源码说成已满足前提。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec3_offline_compare.py">AEC3 离线适配器</a>已固定两对录音的摘要、裁剪、<code>rc</code> 调用顺序及线性/最终双取点；只有传入官方已构建程序才会运行，缺程序直接报错，且不把两种输出混成一个分数。示例调用：</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.examples.aec3_offline_compare \
+  --audioproc /path/to/pinned/webrtc/out/Release/audioproc_f \
+  --output-dir codes/upstream/_downloads/aec3-comparison-20260923
+</code></pre>
+<p>须另外保存 GN 构建参数与编译日志，程序文件 SHA-256 本身不能证明它来自指定源码提交。完整三系统比较及真实设备验收仍未完成；<a href="04_source_reproduction.html">运行状态表</a>按实现分别记录。</p>
+<p><strong>本机设备链路的只读核查（2026-09-23）。</strong> macOS <code>system_profiler SPAudioDataType -detailLevel full</code> 仅列出 MacBook Air 内置麦克风（1 路输入、48 kHz）和内置扬声器（2 路输出、48 kHz）；FFmpeg 的 AVFoundation 设备枚举仅显示内置麦克风，没有播放回环采集端点。CoreAudio 只读查询还给出两个设备 ID 71、76，均报告 <code>main</code> 时钟域和 <code>bltn</code> 内置传输类型。这些只说明系统报告它们属于同一域，不是两个独立设备的采样时钟漂移实测。</p>
+<p>本次未发出探测音、打开麦克风录音或取得硬件时间戳，因此尚未验证数字播放参考是否对应真实声学播放、回声路径、端到端延迟、丢块或音频质量。内置全双工链路即使完成短时探测，也不能代替两个独立 USB 时钟域的长时漂移测试。进行实际链路验收时，应在获得录音环境许可后使用低电平非语音探测声，记录播放/采集时间戳、缓冲事件和分窗延迟，并将录音限制在本机忽略缓存；独立时钟偏移另需两个设备及足够长的连续记录。</p>
 <span id="sec-11" class="anchor-alias" aria-hidden="true"></span><span id="a08-pnlmsipnlms子带与非线性路径模型" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-a845a457fb">A08　PNLMS/IPNLMS、子带与非线性路径模型</h3>
 <p>比例归一化更新改变抽头间的学习分配；子带滤波改变输入相关性与每带更新问题；Volterra、Hammerstein、Wiener 或级联模型改变可表示的输入—回声关系。它们解决的困难不同，不能看见“频域”或“非线性”标签就视作同一种加速方案。出处与模型讨论见 <a href="../06_aec.html#sec-6-1-3">§6.1.3</a>和<a href="../06_aec.html#sec-6-1-4">§6.1.4</a>。</p>
 <p>最小复现应每次只改一项：同一线性 FIR 比例分配实验；同一有色参考子带实验；固定路径中插入软饱和的非线性实验。分别记录抽头模型、带间延迟和非线性阶数。失败实验用未见的扬声器削波强度，检查高阶模型过拟合和计算增长。本书没有把这些类别全部伪装成已有工业实现；没有唯一对应源码时明确保留模型与选型依据。</p>

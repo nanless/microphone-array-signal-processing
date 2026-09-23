@@ -11,6 +11,8 @@ import numpy as np
 from codes.examples.aec_real_pair_experiment import (
     load_pinned_pair, peak_lag, power_ratio_db, speex_linear_aec,
 )
+from codes.examples.aec_doubletalk_experiment import load_doubletalk
+from codes.examples.aec3_offline_compare import command, run as run_aec3
 
 
 class RealPairExperimentTests(unittest.TestCase):
@@ -41,6 +43,27 @@ class RealPairExperimentTests(unittest.TestCase):
             speex_linear_aec(Path("/nonexistent/libspeexdsp.dylib"),
                              np.zeros(161, dtype=np.int16),
                              np.zeros(161, dtype=np.int16))
+
+    def test_doubletalk_rejects_unpinned_or_lfs_audio(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "-2jLGNCgf0WDpKMY2iup7g_doubletalk_lpb.wav"
+            path.write_text("version https://git-lfs.github.com/spec/v1\n")
+            with self.assertRaisesRegex(ValueError, "LFS pointer"):
+                load_doubletalk(Path(directory))
+
+    def test_aec3_adapter_pins_order_and_separate_taps(self) -> None:
+        args = command(Path("/tmp/audioproc_f"), Path("/tmp/mic.wav"),
+                       Path("/tmp/lpb.wav"), Path("/tmp/final.wav"),
+                       Path("/tmp/linear.wav"), Path("/tmp/rc.txt"))
+        self.assertIn("--custom_call_order_file=/tmp/rc.txt", args)
+        self.assertIn("--linear_aec_output=/tmp/linear.wav", args)
+        self.assertIn("--o=/tmp/final.wav", args)
+        self.assertIn("--stream_delay=0", args)
+
+    def test_aec3_adapter_does_not_fake_missing_binary(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaises(FileNotFoundError):
+                run_aec3(Path(directory) / "missing-audioproc_f", Path(directory) / "out")
 
 
 if __name__ == "__main__":

@@ -134,7 +134,7 @@
 | 研究扩展：增强 A01 | 泄漏 NLMS | 原理索引 | 泄漏更新说明 | 教学函数没有泄漏参数 |
 | §6.1.3 | 单块 FDAF | 原理索引 | 正文频域卷积与约束 | 分区 MDF 不覆盖所有单块变体 |
 | §6.1.3 | MDF/PBFDAF 分区结构 | 外部参考实现 | `speexdsp`：`libspeexdsp/mdf.c`；`examples/aec_algorithm_minicases.py` 仅分区卷积手算 | 实际为 AUMDF；教学小例不含自适应更新或完整 PBFDAF |
-| §6.1.3；研究扩展：增强 A03 | AUMDF 约束调度 | 外部参考实现 | `speexdsp`：同文件；真实配对接口实验见 `examples/aec_real_pair_experiment.py` | 约束调度不同于梯度更新；单对录音功率变化不证明抽头真值或设备性能 |
+| §6.1.3；研究扩展：增强 A03 | AUMDF 约束调度 | 外部参考实现 | `speexdsp`：同文件；真实配对与已知近端注入实验见 `examples/aec_real_pair_experiment.py`、`examples/aec_doubletalk_experiment.py`、`examples/aec_controlled_doubletalk.py` | 约束调度不同于梯度更新；真实双讲没有分量真值，半合成输出增量也不是近端保留率 |
 | §6.1.3 | PNLMS | 原理索引 | 正文比例更新 | Speex 控制不代表全部变体 |
 | §6.1.3 | IPNLMS | 原理索引 | 正文式(6-4)；`examples/aec_algorithm_minicases.py` 单步小例 | 小例仅核抽头分配，不是收敛复现；比例/均匀项与路径稀疏度 |
 | §6.1.3 | 子带自适应 AEC | 原理索引 | 正文子带结构 | 混叠、带间延迟、更新率 |
@@ -147,7 +147,7 @@
 | §6.1.5 | 相关/相干性 DTD | 原理索引 | 正文统计控制 | Benesty NCC 用参考与麦克风归一化相关；参考与残差相关另有失配含义 |
 | §6.1.5 | 连续可变学习率 | 外部参考实现 | `speexdsp`：`libspeexdsp/mdf.c` | 不是独立二值 DTD |
 | §6.1.9 | AEC3 参考延迟控制 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/echo_path_delay_estimator.cc`、`render_delay_controller.cc` | 降采样匹配滤波估滞后；与 refined/coarse 线性滤波器分工不同 |
-| §6.1.9 | AEC3 线性抵消 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/subtractor.cc` | 保留线性输出取点 |
+| §6.1.9 | AEC3 线性抵消 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/subtractor.cc`；官方 WAV 入口的待运行适配器 `examples/aec3_offline_compare.py` | 保留线性输出取点；缺完整 Xcode 与 WebRTC 依赖，尚无本机 AEC3 输出 |
 | §6.1.9、§6.1.13 | AEC3 残余回声估计 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/residual_echo_estimator.cc` | 与执行抑制增益分开 |
 | §6.1.9、§6.1.13 | AEC3 抑制增益 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/suppression_gain.cc` | 近端损伤与回声泄漏分别计量 |
 | §6.1.9 | AEC3 舒适噪声 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/comfort_noise_generator.cc` | 不掩盖滤波器未收敛 |

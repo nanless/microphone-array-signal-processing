@@ -101,8 +101,8 @@ WPE 首先验证延迟回归向量、复共轭和加权正规方程。离线与�
 | nara-wpe 0.0.11 离线与在线接口 | 已核对固定提交与文件摘要 | 已有可选 Python 环境；非本次安装 | 手算与接口对照见下文；不代表语音质量复现 | 未测 |
 | libsoxr、libebur128、libsndfile | 已核对固定提交 | 原源码隔离构建静态库；未安装系统依赖 | 分块/排空/重置、半幅响度/静音、PCM16 短读与独立读回通过 | 未测 |
 | libsamplerate 0.2.2 变比接口 | 已核对固定提交 | 原源码隔离构建静态库；未安装系统依赖 | [两段已知时钟偏差实验](../examples/run_libsamplerate_sro.py)通过，逐调用核对消费量和尾部排空；时钟估计闭环与抗混叠未测 | 未测 |
-| SpeexDSP AUMDF 同步 AEC | 已核对固定提交 `8e29a256ef0235ebbe7fcb8417b5ac7731eb8307` | macOS arm64 / AppleClang 21，CMake Release 浮点共享库已构建；采样率显式设为并读回 16 kHz | [一对官方真实播放环回/麦克风录音的三种参考条件](02_aec_wpe_separation.md#aec)已运行；正确配对、零参考、晚 1 秒参考的输入/输出功率变化分别为 5.57、3.95、−0.23 dB；无干净真值，不记作真值 ERLE | 未测 |
-| WebRTC AEC3、PipeWire AEC 后端 | 已核对固定源码与接口 | WebRTC 完整依赖和 PipeWire 系统后端版本未构建核定 | 未在真实配对录音上运行；不能与上行 Speex 结果排性能名次 | 未测 |
+| SpeexDSP AUMDF 同步 AEC | 已核对固定提交 `8e29a256ef0235ebbe7fcb8417b5ac7731eb8307` | macOS arm64 / AppleClang 21，CMake Release 浮点共享库已构建；采样率显式设为并读回 16 kHz | [远端单讲与双讲两对官方真实配对、合成真值及半合成已知近端注入](02_aec_wpe_separation.md#aec)均已运行；真实双讲三种参考的输入/输出总功率变化分别为 2.234、2.204、2.200 dB；合成注入的输出增量投影增益为 0.878、半合成为 0.922，均另有零参考控制，不记作双讲 ERLE 或近端保留率 | 未测 |
+| WebRTC AEC3、PipeWire AEC 后端 | 已核对固定源码与接口，明确官方 `audioproc_f` 的逐帧调用顺序和线性导出入口 | 本机 WebRTC 仅 136 MB 稀疏主源码，缺完整 Xcode、GN、Ninja、gclient 及依赖；PipeWire 系统后端版本未构建核定 | 未在真实配对或受控注入录音上运行；没有 AEC3 数值，不能与上行 Speex 结果排性能名次 | 内置麦克风与扬声器报告同一 CoreAudio 时钟域；未播放／录音实测 |
 | pystoi | 已取得 Python 核心 | 项目环境缺 SciPy，未安装 | 未运行；短片段行为来自源码核查 | 不适用 |
 | ViSQOL | 已取得源码子集 | 未安装 Bazel，未取模型和大型依赖 | 未运行 | 未测 |
 | SBL | 已核对固定提交与核心文件摘要 | 现有 Python/NumPy，无新增依赖 | 五组单次合成实验已运行；两组达到迭代上限，未记作收敛 | 未测 |
