@@ -35,7 +35,7 @@ The [source research handbook](codes/research/README.md) explains implementation
 | Ch 3 | `chapters/03_array-geometry.md` | Linear/circular/spherical/sparse arrays, endfire sensitivity, calibration | Intermediate |
 | Ch 4 | `chapters/04_doa-estimation.md` | GCC-PHAT, SRP, TDOA geometry, Bartlett/Capon, MUSIC/ESPRIT, broadband focusing, DNN localization, CRLB | Advanced |
 | Ch 5 | `chapters/05_beamforming.md` | DSB, superdirective, MVDR, LCMV, GSC, SPP, postfilters, spherical harmonics, DNN beamforming | Advanced |
-| Ch 6 | `chapters/06_aec.md` | NLMS/FDKF/PBFDAF, double-talk, nonlinear echo, hybrid neural AEC, AEC3 | Advanced |
+| Ch 6 | `chapters/06_aec.md` | NLMS/RLS/Kalman/FDKF/PBFDAF, double-talk, nonlinear echo, hybrid neural AEC, AEC3 | Advanced |
 | Ch 7 | `chapters/07_wpe-dereverberation.md` | WPE derivation, Δ/K selection, online WPE, worked examples | Intermediate |
 | Ch 8 | `chapters/08_speech-separation.md` | Mixing model, BSS, GSS, deep separation, TSE, continuous meeting separation, datasets | Intermediate |
 | Ch 9 | `chapters/09_source-tracking.md` | Kalman worked example, particle filtering, PHD tracking, localization–tracking–beamforming interface | Intermediate |
@@ -72,8 +72,8 @@ python3 -m venv .venv
 .venv/bin/python scripts/build_site.py
 # Open site/index.html in a browser (double-click works; formulas need internet for MathJax)
 
-# 5. Build the combined PDF (outputs dist/microphone-array-tutorial.pdf; requires Google Chrome locally,
-#    set CHROME_BIN env var on non-macOS)
+# 5. Build the combined PDF (uses bundled MathJax 3.2.2 resources offline;
+#    requires local Google Chrome; set CHROME_BIN on non-macOS)
 .venv/bin/python scripts/build_pdf.py
 # For a reproducible cover date, add --build-date YYYY-MM-DD or set SOURCE_DATE_EPOCH
 

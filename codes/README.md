@@ -4,8 +4,8 @@
 可直接装进产品的音频前端。实时音频线程、设备驱动、线程调度、定点优化、模型权重和现场标定仍需按
 第 10 章单独完成。
 
-外部研究代码由 [锁定清单](SOURCES.lock.json) 管理：69 个项目中，63 个已在本机的
-`upstream/_downloads/` 取得，另 6 个保留来源索引。独立源码目录被 Git 忽略，不会随本书提交上传。
+外部研究代码由 [锁定清单](SOURCES.lock.json) 管理：73 个项目中，63 个已在本机的
+`upstream/_downloads/` 取得，另 10 个保留来源索引。本轮离线核验有 62 项通过，AEC Challenge 工作区的 5 个真实录音文件处于本地修改状态，未把该项记为通过；见 [SOURCE_STATUS.json](SOURCE_STATUS.json)。独立源码目录被 Git 忽略，不会随本书提交上传。
 取得代码、完成构建和复现数值是不同状态，见[复现记录说明](research/04_source_reproduction.md)。
 
 已有可选 nara-wpe 0.0.11 环境时，可运行
@@ -49,6 +49,8 @@ SMP-PHAT 可用 `.venv/bin/python codes/examples/reproduce_smpphat_reference.py 
 .venv/bin/python codes/examples/ch02_05_baselines.py
 .venv/bin/python codes/examples/ch06_09_baselines.py
 .venv/bin/python codes/examples/ch10_engineering_baselines.py
+.venv/bin/python -m codes.examples.aec_rls_demo
+.venv/bin/python -m codes.examples.aec_kalman_matrix_demo
 .venv/bin/python -m codes.examples.exercises_spatial
 .venv/bin/python -m codes.examples.exercises_enhancement
 .venv/bin/python -m codes.examples.exercises_engineering
@@ -58,7 +60,9 @@ SMP-PHAT 可用 `.venv/bin/python codes/examples/reproduce_smpphat_reference.py 
 例子只使用确定性输入，随机输入会固定种子。函数拒绝维度、单位或参数范围明显错误的输入；这类检查是
 为了尽早暴露口径错误，不表示代码已经达到产品级防御能力。
 
-三个 `exercises_` 模块分别有 26、22、20 道题，AEC 边界小例另有 4 道，共 72 道，使用 `E01-01` 至 `E13-01` 等稳定题号，不改原有练习编号。前三个模块的 `run_exercises()` 与 AEC 小例的 `run_demo()` 均返回可序列化为 JSON 的计算结果，导入模块不会执行练习。题目与测试映射见 [COVERAGE.md](COVERAGE.md)，逐题入口与音频对照见[练习与音频实验](research/05_exercises_and_audio.md)。练习数量与算法数量分开统计；MDL 和流式 NLMS 状态另有可运行教学实现，当前基线算法共 42 行。
+三个 `exercises_` 模块分别有 26、22、20 道题，AEC 边界小例另有 4 道，共 72 道，使用 `E01-01` 至 `E13-01` 等稳定题号，不改原有练习编号。前三个模块的 `run_exercises()` 与 AEC 小例的 `run_demo()` 均返回可序列化为 JSON 的计算结果，导入模块不会执行练习。题目与测试映射见 [COVERAGE.md](COVERAGE.md)，逐题入口与音频对照见[练习与音频实验](research/05_exercises_and_audio.md)。练习数量与算法数量分开统计；MDL、流式 NLMS、逐样本 RLS 和短 FIR 矩阵 Kalman 等另有可运行教学实现，当前基线算法共 45 行。
+
+第 6 章新增的 [RLS 两抽头演示](examples/aec_rls_demo.py)与[矩阵 Kalman 两抽头演示](examples/aec_kalman_matrix_demo.py)只核算带已知参数的状态递推；[研究手册 A04](research/02_aec_wpe_separation.md#aec)逐项列出外部 RLS、FDKF/PBFDKF 与商业 Kalman 模块的源码入口、许可及尚未完成的对照实验。教学代码不含延迟搜索、双讲检测、残余抑制或设备接入。
 
 ## 合成音频与图 34～36
 

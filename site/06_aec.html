@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 6 章 · 声学回声消除（AEC） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="97cc224428a3"><style>
+<meta name="source-digest" content="edfa06348b2e"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -63,7 +63,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="06_aec.html#sec-6-1">6.1 AEC 的模型、算法与实现</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-6-1-1">6.1.1 回声从哪来：系统模型与四种场景</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-6-1-2">6.1.2 线性自适应滤波：NLMS 回顾</a></li>
-<li>&nbsp;&nbsp;<a href="06_aec.html#sec-6-1-3">6.1.3 工程化自适应：频域、子带、比例、卡尔曼</a></li>
+<li>&nbsp;&nbsp;<a href="06_aec.html#sec-6-1-3">6.1.3 工程化自适应：频域、子带、比例、RLS 与卡尔曼</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-6-1-4">6.1.4 非线性回声：模型失配与处理方法</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-6-1-5">6.1.5 双讲检测与自适应控制</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-6-1-6">6.1.6 学习型 AEC</a></li>
@@ -94,7 +94,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="06_aec.html#sec-6-1">6.1 AEC 的模型、算法与实现</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-6-1-1">6.1.1 回声从哪来：系统模型与四种场景</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-6-1-2">6.1.2 线性自适应滤波：NLMS 回顾</a></li>
-<li>&nbsp;&nbsp;<a href="06_aec.html#sec-6-1-3">6.1.3 工程化自适应：频域、子带、比例、卡尔曼</a></li>
+<li>&nbsp;&nbsp;<a href="06_aec.html#sec-6-1-3">6.1.3 工程化自适应：频域、子带、比例、RLS 与卡尔曼</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-6-1-4">6.1.4 非线性回声：模型失配与处理方法</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-6-1-5">6.1.5 双讲检测与自适应控制</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-6-1-6">6.1.6 学习型 AEC</a></li>
@@ -217,12 +217,13 @@ d(n) &= s(n) + (x*h)(n) + v(n),\\
 <p>$\varepsilon$ 防止静默时分母趋近于零。固定下限与随参考功率缩放的正则项使用不同量纲和归一化口径，不能照搬同一个数值。可扫描静音、低电平参考和正常播放三类输入，选择既不在静音时产生大更新、又不过度减慢小信号收敛的取值。</p>
 <p><strong>收敛还需要充分激励</strong>。NLMS 每步只能沿当前输入方向 $\vec{x}(n)$ 修正（见算例 6-1 第 3 步）。纯音或窄带参考不能充分激励所有滤波器系数，未被激励的方向会收敛得很慢。调试时可用已知宽带测试信号检查滤波器是否能辨识目标路径；这项测试不能代替真实节目内容上的收敛与双讲验证。</p>
 <p>单位脉冲是一个容易混淆的边界例子。对 $L$ 抽头回归器，单个单位脉冲会依次产生 $L$ 个标准基向量，因此方向并不缺失；但每个方向只更新一次。若 $\mu=0.5$、初值为零且忽略非零 $\varepsilon$ 的微小影响，每个抽头只走到真实值的一半。要继续逼近真实路径，需要重复脉冲或其他持续激励；输入归零后应按上面的零能量规则跳过更新。</p>
-<span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-6-1-3">6.1.3 工程化自适应：频域、子带、比例、卡尔曼</h3>
+<span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-6-1-3">6.1.3 工程化自适应：频域、子带、比例、RLS 与卡尔曼</h3>
 <p><strong>时域实现的计算量</strong>。若每个样本重新计算长度 $L$ 的参考能量，时域 NLMS 的滤波、更新和能量求和各约需 $L$ 次乘法，即朴素实现约 $3L$ 次。参考窗口每次只移入、移出一个样本时，也可递推能量 $p_n=p_{n-1}+x[n]^2-x[n-L]^2$，使这一项每样本只需常数次运算；滤波与更新仍约需 $2L$ 次乘法。</p>
 <p>$L=1024$、8 kHz 时，朴素口径约为 2500 万次乘法/秒，能量递推口径的主要项约为 1600 万次/秒；两者都不含内存访问和控制开销。能量递推需按启动零填充初始化，并在长时浮点运行中定期核对直接求和，避免累计舍入误差。</p>
 <p>48 kHz、4096 抽头时主要项达到每秒数亿次；抽头越多、输入频谱越不均匀，收敛通常越慢。常见改进包括频域分块、子带处理、比例步长和卡尔曼估计。</p>
 <p>以 $L=3$、参考样本依次为 $1,2,3,4$ 为例，前一窗口能量 $1^2+2^2+3^2=14$；移入 4、移出 1 后得到 $14+4^2-1^2=29$，与直接计算 $2^2+3^2+4^2=29$ 一致。递推只减少分母的重复求和，不减少回声估计和系数更新的 $L$ 个抽头运算。</p>
 <p><strong>分区块频域自适应滤波（Partitioned-Block Frequency-Domain Adaptive Filtering，PBFDAF）</strong>。它沿用多延迟块频域（Multidelay Block Frequency-Domain，MDF）方法的思路，把 $L$ 个抽头分成 $P=\lceil L/N\rceil$ 个长度为 $N$ 的分区，并用长度 $2N$ 的快速傅里叶变换（Fast Fourier Transform，FFT）完成重叠保存卷积。</p>
+<p>有时同一更新被称为“频域多抽头 NLMS”：固定一个频点，抽头是当前及过去 $P-1$ 个参考<strong>块</strong>的频谱值，分别对应长时域滤波器的 $P$ 个分区。它不是本节前面那个每来一个时域样本就更新一次的 $L$ 抽头 NLMS；也不能仅凭“频域多抽头”四个字断定使用了哪种分块、窗函数和误差约束。</p>
 <p>每块的频域滤波和梯度相关都要遍历 $P$ 个分区，因此不能只写成 $O((L/N)\log N)$。忽略实现常数时，无梯度约束版本每个新样本约为 $O(\log N+L/N)$；若每个分区都做时域梯度约束，还会增加约 $O((L/N)\log N)$。FFT 的固定成本随块长对数增长，分区乘法则随 $L/N$ 线性增长。</p>
 <p>具体倍数还取决于实数或复数 FFT、频谱共轭对称复用、功率估计、约束频率以及一次乘加如何计数，不能脱离这些约定比较。<a href="https://homes.esat.kuleuven.be/~dspuser/DSP-CIS/2018-2019/material/chapter13.pdf" title="citation">KU Leuven DSP-CIS 讲义第 13 章</a></p>
 <p><strong>算例 6-2：PBFDAF 的乘法计数</strong>（$L=1024$、$N=128$、8 kHz，看“一个数量级”是怎么省出来的）</p>
@@ -241,22 +242,36 @@ d(n) &= s(n) + (x*h)(n) + v(n),\\
 </ul>
 <p>在上述未复用共轭对称的上界口径下，无约束版约为 224 次实乘法/样本，逐分区每块约束版约为 736 次。与朴素时域 NLMS 的 3072 次相比，乘法计数约差 14 倍和 4.2 倍；与递推能量版本的 $2L=2048$ 次主要项相比，约差 9.1 倍和 2.8 倍。前者的频域变换按完整复 FFT 上界估算，后者未计标量运算，两边都不是优化实现的实测速度，不应把这些比值当作公平的产品性能排名。</p>
 <p>这些数不能当作实 FFT 库的操作数或实测速度。若约束不是每块、每分区都执行，平均开销会降低，报告时要注明约束周期。</p>
+<p>以上倍数只针对本算例的<strong>逐样本时域 NLMS</strong>。若比较对象已经采用相同块长、分区数、FFT 长度、归一化和约束策略的频域多抽头 NLMS，它与这里的 PBFDAF 执行同类运算，不能因为名称不同而宣称 PBFDAF 另有计算量或延迟收益。短分区可能减少未分区长块频域方法等待输入成块的时间；端到端延迟仍要计入缓冲和调度。<a href="https://www.mathworks.com/help/dsp/ref/dsp.frequencydomainadaptivefilter-system-object.html" title="citation">MathWorks 频域自适应滤波算法说明</a>分别列出分区与非分区、约束与非约束实现。</p>
 <p>块长 $N=128$、采样率 8 kHz 时，每块含 16 ms 新数据；实际算法延迟由重叠保存、调度方式和系统缓冲共同决定，不能仅凭“两个块”固定写成 32 ms。滤波器加长时，时域复杂度按 $L$ 增长，而分区频域方法的主要项按 $L/N$ 增长，因此长回声路径更适合用分区频域实现。<a href="https://doi.org/10.1109/29.103078" title="citation">Soo &amp; Pang 1990</a></p>
 <p><strong>算例 6-3：两个样本一块，为什么要丢掉前半块。</strong> 本书取 $N=2$、$P=2$、路径 $h=[1,2\mid3,4]$、参考 $x=[1,2,3,4]$，负时间样本为零。直接按式(6-1)卷积，前四个回声样本依次为 $[1,4,10,20]$。竖线只标示两段抽头的分区边界，不表示时域路径在这里中断。</p>
 <p>第 0 块把两点新参考 $[1,2]$ 接在两点历史零之后，形成四点输入 $[0,0,1,2]$。它与首分区 $[1,2,0,0]$ 作四点循环卷积，只保留后两点 $[1,4]$；更早的分区历史为零。</p>
 <p>第 1 块的四点输入是 $[1,2,3,4]$。它与首分区的四点循环卷积为 $[9,4,7,10]$，其中前两点已受到循环折回影响，必须丢弃。</p>
 <p>后两点 $[7,10]$ 加上<strong>上一参考块</strong> $[0,0,1,2]$ 与第二分区 $[3,4,0,0]$ 的有效后两点 $[3,10]$，得到 $[10,20]$。若第二分区错用当前块，或把前两点当作线性卷积结果，答案都会错。配套代码只复算这一段分区卷积，不冒充完整自适应 PBFDAF；误差反馈还须按下式另行处理。</p>
 <blockquote>
-<p><strong>PBFDAF 更新式。</strong> 记第 $m$ 块、第 $k$ 个频点的参考谱为 $X(k,m)$，第 $p$ 个分区的滤波器谱为 $W_p(k,m)$，误差谱为 $E(k,m)$，其中 $p=0,\ldots,P-1$。$\mu$ 是块更新步长，$\delta>0$ 是防止参考功率为零时除零的归一化地板。一种按全部分区参考功率归一化的更新写成</p>
-<p>$$W_p(k,m+1)=W_p(k,m)+\mu\,\frac{E(k,m)\,X^*(k,m-p)}{\sum_{q=0}^{P-1}|X(k,m-q)|^2+\delta}\text{。}\tag{6-3}$$</p>
+<p><strong>PBFDAF 更新式。</strong> 记第 $m$ 块、第 $k$ 个频点的参考谱为 $X(k,m)$，第 $p$ 个分区的滤波器谱为 $W_p(k,m)$，误差谱为 $E(k,m)$，其中 $p=0,\ldots,P-1$。$\mu$ 是块更新步长，$\delta>0$ 是防止参考功率为零时除零的归一化地板。一种按全部分区参考功率归一化的<strong>候选更新</strong>写成</p>
+<p>$$\widetilde W_p(k,m+1)=W_p(k,m)+\mu\,\frac{E(k,m)\,X^*(k,m-p)}{\sum_{q=0}^{P-1}|X(k,m-q)|^2+\delta}\text{。}\tag{6-3}$$</p>
 <p>分区 $p$ 使用延迟了 $p$ 个块的参考 $X(k,m-p)$；若省略该下标，公式就只描述单分区 FDAF。与时域 NLMS 相比，分子仍是“误差 × 参考共轭”，分母仍做参考功率归一。</p>
 <p>实际重叠保存实现只把每块线性卷积的后 $N$ 个输出作为有效残差。以上面 $N=2$ 的第 1 块为例，若两个有效先验误差为 $[e_2,e_3]$，构造四点误差谱时先排成 $[0,0,e_2,e_3]$ 再做 FFT；不能把循环污染区的输出当成新观测。这里的 $E(k,m)$ 是用旧滤波器产生的这类先验误差谱。文献和代码也会为每个分区维护独立平滑功率，比较实现时必须核对归一化定义。</p>
-<p>若执行时域梯度约束，应对更新量做 IFFT、清零循环相关对应的无效抽头，再 FFT 回频域；完全不约束的版本可能有不同的稳态权重和误差，不能只比较上面的乘法计数。以 $N=128$、8 kHz 为例，每秒更新约 $8000/128\approx62.5$ 次；每次更新同时利用 128 个新样本，整体乘法量见算例 6-2。<a href="https://course.ece.cmu.edu/~ece792/handouts/Shynk92.pdf" title="citation">Shynk，<em>IEEE Signal Processing Magazine</em> 1992，§IV</a>讨论频域更新的循环相关与梯度约束。</p>
+<p>无梯度约束时，式(6-3)的候选值就是下一块权重 $W_p(k,m+1)$。若执行时域梯度约束，须对同一分区全部频点的候选权重做 IFFT、清零无效的后 $N$ 个时域抽头，再 FFT 回频域，才得到下一块权重；这一步不能靠单个频点独立完成。完全不约束的版本可能有不同的稳态权重和误差，不能只比较上面的乘法计数。以 $N=128$、8 kHz 为例，每秒更新约 $8000/128\approx62.5$ 次；每次更新同时利用 128 个新样本，整体乘法量见算例 6-2。<a href="https://course.ece.cmu.edu/~ece792/handouts/Shynk92.pdf" title="citation">Shynk，<em>IEEE Signal Processing Magazine</em> 1992，§IV</a>讨论频域更新的循环相关与梯度约束。</p>
 </blockquote>
+<p><strong>与频域多抽头 NLMS 的对应关系。</strong> 固定频点 $k$，把参考历史排成复数列向量 $\mathbf X_m(k)=[X(k,m),X(k,m-1),\ldots,X(k,m-P+1)]^\mathsf T$，把分区权重排成同为 $P\times1$ 的 $\mathbf W_m(k)=[W_0(k,m),\ldots,W_{P-1}(k,m)]^\mathsf T$。取有效输出前的原始块预测谱是 $\mathbf W_m(k)^\mathsf T\mathbf X_m(k)$；还须经 IFFT、舍弃前 $N$ 点，才得到本块的有效预测输出。式(6-3)逐分区合起来可写为</p>
+<p>$$\widetilde{\mathbf W}_{m+1}(k)=\mathbf W_m(k)+\mu\frac{\mathbf X_m^*(k)E(k,m)}{\|\mathbf X_m(k)\|_2^2+\delta}\text{。}$$</p>
+<p>这里 $*$ 对向量逐元素取共轭，预测采用转置而非共轭转置，因此更新中的参考要取共轭。这只是式(6-3)的向量重写，不是另一种算法。例如某一频点有 $P=2$、$\mathbf X=[1,2]^\mathsf T$、先验误差谱 $E=0.3$、$\mu=0.5$、$\delta=1$，分母为 $1^2+2^2+1=6$，两个分区的更新量分别为 $0.5\times0.3\times1/6=0.025$ 和 $0.5\times0.3\times2/6=0.05$。这些无量纲数只是核对式(6-3)的单频点算术，不代表由真实块信号形成的完整共轭对称频谱。</p>
+<p><strong>同一个具体实现需要的条件。</strong> 两种叫法都用 $N$ 点新样本、$2N$ 点重叠保存变换，历史频谱抽头对应同一条 $L$ 抽头时域 FIR 的 $P$ 个分区，并使用相同的有效误差、功率分母、步长与约束策略时，预测和更新才逐块对应。</p>
+<p>固定每个分区只有前 $N$ 个有效时域系数时，频域乘积之和经 IFFT、丢掉前 $N$ 个受循环折回影响的样本，后 $N$ 个输出与直接时域线性卷积相同；算例 6-3 已用 $N=P=2$ 复算输出关系。这里的相同是本书对齐约定下的代数关系，不保证不同 FFT 库的浮点结果逐位一致。<a href="https://course.ece.cmu.edu/~ece792/handouts/Shynk92.pdf" title="citation">Shynk 1992，§IV</a>给出重叠保存、有效区误差与约束的关系。</p>
+<p><strong>同形更新式不保证运行轨迹相同。</strong> 复现时还须核对 FFT 正反变换的缩放、块边界和初始历史、瞬时或平滑功率、$\delta$ 与 $\mu$ 的实际尺度、双讲时的冻结或连续控制，以及梯度约束的时机。</p>
+<p>重叠保存先在时域取后 $N$ 个有效残差，再将 $[0_N,e_{\mathrm{valid}}]$ 变换成 $E$；不能用未经有效区选择的整块循环卷积频谱直接作 $D-\hat Y$。若定义 $D=\operatorname{FFT}([0_N,d_{\mathrm{valid}}])$、$\hat Y'=\operatorname{FFT}([0_N,\hat y_{\mathrm{valid}}])$，其中 $d_{\mathrm{valid}}$ 是本块的有效麦克风观测，$\hat y_{\mathrm{valid}}$ 是有效回声预测，才有 $E=D-\hat Y'$。无梯度约束仍是合法变体，但其循环相关更新和稳态行为可能不同于约束版。<a href="https://course.ece.cmu.edu/~ece792/handouts/Shynk92.pdf" title="citation">Shynk 1992，§IV、图 5 及式(30)</a>。</p>
+<p><strong>算例 6-3 的自适应补充：两块更新怎样处理非法抽头。</strong> 另取 $N=P=2$、$L=4$、$\mu=0.5$、$\delta=1$，初始权重和负时间参考全零；参考 $x=[1,0,0,0]$、麦克风观测 $d=[1,0,2,0]$。这是为核对式(6-3)设计的无量纲输入，不是声学传播测量；第二块的 $d=[2,0]$ 也不被解释成固定物理回声路径的输出。</p>
+<p>第 0 块的重叠保存输入为 $[0,0,1,0]$，其四点 FFT 为 $X_0=[1,-1,1,-1]$。旧权重全零，有效误差为 $[1,0]$，所以 $E_0=X_0$；每频点分母为 $|X_0|^2+\delta=2$。更新第一分区的四个频点后再 IFFT，时域候选为 $[0.25,0,0,0]$；第二分区此时没有历史参考，仍为零。</p>
+<p>第 1 块新参考全零，但重叠保存输入是 $[1,0,0,0]$，故 $X_1=[1,1,1,1]$，历史 $X_0$ 仍须保留。先验预测为零，有效误差 $[2,0]$ 对应 $E_1=[2,-2,2,-2]$；每频点分母是 $|X_1|^2+|X_0|^2+\delta=3$。式(6-3)使第一分区的候选时域系数成为 $[0.25,0,1/3,0]$，第二分区成为 $[1/3,0,0,0]$。</p>
+<p>第一分区的第 3 个位置是循环相关带来的<strong>非法抽头</strong>，逐分区梯度约束把各分区后 $N$ 点清零，最终 $L$ 抽头路径为 $[0.25,0\mid1/3,0]$。如果不做约束，候选中的 $1/3$ 会保留，不能再把这个频域状态直接称为四抽头 FIR。可运行版本和独立手算测试见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_partitioned_demo.py">分区自适应实验</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_partitioned.py">测试</a>；它只实现式(6-3)的瞬时功率教学变体，不复现 SpeexDSP 的 AUMDF 控制。</p>
+<p>另有一种“频域多抽头”指一般窗函数下的短时傅里叶变换（Short-Time Fourier Transform，STFT）域跨帧滤波。若每个频点只使用同频点的过去帧，忽略窗函数与下采样导致的跨频带项，更新式仍可能与式(6-3)同形，却未必能逐样本表示同一条时域 FIR。是否需要跨频带滤波取决于分析、合成窗和具体误差容许范围；因此应比较预测输出及误差构造，而不是只比较名称。<a href="https://webee.technion.ac.il/Sites/People/IsraelCohen/Publications/TASL_May2007.pdf" title="citation">Avargel 与 Cohen，<em>IEEE Transactions on Audio, Speech, and Language Processing</em> 15(4)，2007，§II</a>。</p>
+<p>MDF、PBFDAF 指向分区块频域结构，不保证所有论文或产品都采用式(6-3)这一种功率归一化与步长控制。Páez Borrallo 与 García Otero 的 <a href="https://www.sciencedirect.com/science/article/pii/016516849290077A" title="citation">1992 年 PBFDAF 原论文摘要</a>就说明其更新还考虑输入谱均匀度。上述等价判断只针对已明确输入、误差、归一化和控制方式的具体实现，不能扩展成所有同名变体完全一致。</p>
 <p><strong>子带自适应</strong>先用分析滤波器组把参考和麦克风信号分带，再在各带降采样、估计回声，最后合成输出。降采样减少每秒更新次数；各带的输入谱通常比全带平坦，但分带滤波、跨带耦合和合成延迟也有代价。</p>
 <p>关键不能把“滤波器组可完美重建”与“用独立子带滤波器可精确表示回声路径”混为一谈。即使分析—合成滤波器组对未处理信号可重建，临界采样后的回声系统在某些条件下仍需要交叉子带滤波器来表示。只看未滤波的降采样示意：$\cos(2\pi n/8)$ 与 $\cos(2\pi3n/8)$ 隔点取样后都变为 $\cos(\pi m/2)$；实际分析滤波器会抑制混叠，不能拿这个示意直接计算系统的残余回声。比较实现时要核对滤波器组、降采样率、跨带项和总延迟。<a href="https://doi.org/10.1109/78.149989" title="citation">Gilloire 与 Vetterli，<em>IEEE Transactions on Signal Processing</em> 40(8), 1992</a></p>
-<p><strong>IPNLMS：按稀疏度分配步长</strong>。真实回声路径通常由直达声和少数强反射贡献主要能量，其余抽头较小。NLMS 对所有抽头使用同类更新；比例归一化最小均方（Proportionate Normalized Least-Mean-Square，PNLMS；Duttweiler 2000）与改进比例归一化最小均方（Improved Proportionate Normalized Least-Mean-Square，IPNLMS；Benesty &amp; Gay，ICASSP 2002）按系数当前幅度分配更新量，使较大的系数优先收敛。</p>
-<p>用 $\kappa\in[-1,1]$ 表示混合系数，$\delta>0$ 防止更新分母为零，$\varepsilon_g>0$ 防止比例项分母为零。一种常用写法是</p>
+<p><strong>IPNLMS：按稀疏度分配步长</strong>。真实回声路径通常由直达声和少数强反射贡献主要能量，其余抽头较小。NLMS 对所有抽头使用同类更新；比例归一化最小均方（Proportionate Normalized Least-Mean-Square，PNLMS；<a href="https://doi.org/10.1109/89.861368" title="citation">Duttweiler，<em>IEEE Transactions on Speech and Audio Processing</em> 2000</a>）与改进比例归一化最小均方（Improved Proportionate Normalized Least-Mean-Square，IPNLMS；<a href="https://doi.org/10.1109/ICASSP.2002.5744994" title="citation">Benesty 与 Gay，ICASSP 2002</a>）按系数当前幅度分配更新量。稀疏路径上的强抽头可能更快收敛，分散路径不能沿用这一结论。</p>
+<p>本书沿用 <a href="https://www.eurasip.org/Proceedings/Eusipco/Eusipco2004/defevent/papers/cr1026.pdf" title="citation">Benesty 等 EUSIPCO 2004 表 1</a>的一类混合参数化，不把下式冒称为 2002 年原论文的逐字原式。用 $\kappa\in[-1,1]$ 表示混合系数，$\delta>0$ 防止更新分母为零，$\varepsilon_g>0$ 防止比例项分母为零：</p>
 <p>$$\begin{aligned}
 g_l&=\frac{1-\kappa}{2L}
     +\frac{(1+\kappa)|\hat w_l|}
@@ -267,38 +282,92 @@ g_l&=\frac{1-\kappa}{2L}
                 {\vec x^{\top}G\vec x+\delta}.
 \end{aligned}\tag{6-4}$$</p>
 <p>这里 $g_l$ 是第 $l$ 个抽头的非负权重，$G=\operatorname{diag}(g_0,\ldots,g_{L-1})$；$G$ 调整更新方向和归一化，而不改变回声副本的卷积定义。</p>
-<p>$\kappa=-1$ 时各 $g_l=1/L$，更新退化为带相应正则项的 NLMS。$\kappa=1$ 时只剩比例项；零初值下它会全部为零而无法起步，实际实现须保留均匀分量或权重下限。不同文献可能使用 $\alpha$ 并改变归一化，比较参数前要先核对定义。<a href="https://www.eurasip.org/Proceedings/Eusipco/Eusipco2004/defevent/papers/cr1026.pdf" title="citation">Benesty 等，EUSIPCO 2004，表 1</a></p>
+<p>$\kappa=-1$ 时各 $g_l=1/L$，式(6-4)的分子、分母同乘 $L$ 后，正则项变成 $L\delta$；因此与式(6-2)的 NLMS 逐步等价还要求 $\varepsilon_{\mathrm{NLMS}}=L\delta_{\mathrm{IPNLMS}}$（或两者都忽略正则项），不能给两个地板相同数值就宣称完全等价。$\kappa=1$ 时只剩比例项；零初值下它会全部为零而无法起步，实际实现须保留均匀分量或权重下限。不同文献可能使用 $\alpha$ 并改变归一化，比较参数前要先核对定义。</p>
 <p><strong>两抽头手算。</strong> 设 $\hat{\vec w}=[0.8,0.2]^\top$、$\vec x=[1,1]^\top$、$d=1.2$、$\mu=1$，则先验残差 $e=1.2-(0.8+0.2)=0.2$。忽略极小的正则项，$\kappa=0$ 时 $g=[0.65,0.35]$，更新量为 $[0.13,0.07]^\top$；$\kappa=-1$ 时 $g=[0.5,0.5]$，更新量为 $[0.10,0.10]^\top$。</p>
 <p>这个单步例子只说明权重如何分配，不证明长期收敛优劣；声学路径是否足够稀疏还需用目标录音检验。</p>
-<p><strong>递归最小二乘与卡尔曼方法。</strong> 递归最小二乘（Recursive Least Squares，RLS）不只沿当前样本的梯度走一步，而是递推求解带遗忘的加权最小二乘。对时刻 $n$，目标函数为</p>
-<p>$$J_n(\vec w)=\sum_{i=0}^{n}\lambda^{n-i}[d(i)-\vec w^{\top}\vec x(i)]^2,\qquad 0\lt \lambda\leq1\text{。}\tag{6-5}$$</p>
-<p>$\lambda$ 越小，旧样本权重衰减越快，对路径变化可能反应更快，但噪声下的估计方差也会增大。单抽头、两个参考都为 1、两个观测分别为 1 和 3 时，$\lambda=1$ 给出 $w=(1+3)/2=2$，$\lambda=0.5$ 给出 $w=(0.5\times1+3)/1.5=7/3$。此例只是加权目标的精确解，不是 AEC 性能实测。</p>
-<p>若持续有输入，$1/(1-\lambda)$ 可粗略表示指数权重的记忆样本数，例如 $\lambda=0.99$ 约为 100；它不是固定时长，采样率和分块方式都会改变对应时间。标准全矩阵 RLS 每样本 $O(L^2)$，长回声路径下还须处理输入病态、协方差初始化和数值稳定性。<a href="https://www.thinkmind.org/articles/tele_v10_n34_2017_2.pdf" title="citation">Elisei-Iliescu 等，2017 年 AEC 自适应算法综述</a></p>
-<p><strong>频域卡尔曼滤波</strong>（Frequency-Domain Kalman Filter，FDKF）把每个频点的回声路径系数当作随时间缓慢变化的状态。卡尔曼增益的作用类似自适应步长，但只有在状态模型、过程噪声方差和观测噪声方差与实际相符时才是相应模型下的最小均方误差增益。双讲时，如果观测噪声估计能及时包含近端语音能量，增益会减小；估计滞后或模型失配时仍可能误更新，所以工程实现通常还会结合双讲检测或增益上限。</p>
-<p>FDKF 把回声路径作为状态变量，其状态方程和观测方程可写为（实际在频域逐频点计算，此处用时域记号示意）：</p>
-<p>$$\vec{h}(n) = a\,\vec{h}(n-1) + \Delta\vec{h}(n),\qquad d(n) = \vec{x}^{\top}(n)\,\vec{h}(n) + s(n) + v(n)$$</p>
-<p>第一行是<strong>状态方程</strong>：上一时刻的路径乘状态转移因子 $a$，再加过程噪声 $\Delta\vec{h}$，用来描述缓慢漂移和偶发突变。第二行是<strong>观测方程</strong>：麦克风信号由参考经过路径滤波后，再叠加近端语音和噪声。对应 §9.2 的卡尔曼递推，状态是 $\vec{h}$，观测是 $d$，近端语音与噪声合并为观测噪声。</p>
-<p>双讲时，若观测噪声估计 $\Psi_m$ 随近端语音能量增大，卡尔曼增益会减小。路径变化后，先验残差 $E_m$ 可能增大，但下文式(6-6)中的增益并不直接依赖 $E_m$；只有过程噪声、误差协方差或状态重置策略相应调整时，增益才可能上升并加快重新收敛。每个频点还需维护误差方差或协方差，因此计算量高于普通 PBFDAF。</p>
-<p>逐频点写完整的一次递推。省略频点下标，$W_{m-1}$ 是上一块的路径系数，$P_{m-1}$ 是其误差方差，$a$ 是状态转移因子，$\Phi_m$ 和 $\Psi_m$ 分别是过程噪声与观测噪声方差：</p>
+<p><strong>递归最小二乘（Recursive Least Squares，RLS）为什么与 NLMS 不同。</strong> NLMS 在当前误差的梯度方向走一步；RLS 则把先前参考与麦克风观测形成的相关矩阵压缩成持续更新的状态，求指数加权最小二乘解。以下先限于实数、单播放参考、单麦克风、长度 $L$ 的因果 FIR；$\vec x_n=[x[n],x[n-1],\ldots,x[n-L+1]]^\top$ 已与麦克风 $d_n$ 对齐，预测是 $\vec w^\top\vec x_n$。近端语音若包含在 $d_n$ 中，会进入拟合目标，RLS 本身并不知道哪一部分是回声。</p>
+<p>有限的初始逆相关矩阵需要一个相应的初始约束。设初始权重 $\vec w_{-1}$、$R_{-1}=\delta I$、$P_{-1}=R_{-1}^{-1}=\delta^{-1}I$，其中 $\delta>0$；若每个已接纳的样本都执行一次更新，则本书采用的目标是</p>
+<p>$$\begin{aligned}
+J_n(\vec w)={}&\sum_{i=0}^{n}\lambda^{n-i}
+  (d_i-\vec w^\top\vec x_i)^2\\
+&+\lambda^{n+1}\delta\|\vec w-\vec w_{-1}\|_2^2,
+\qquad 0\lt \lambda\leq1\text{。}
+\end{aligned}\tag{6-5}$$</p>
+<p>式(6-5)第二项不是可随意省略的装饰：它使数据不足、参考只激励部分方向时仍有唯一解。若删掉该项而继续用有限 $P_{-1}$ 递推，前几个样本的结果就不再是所声称目标的精确解。$\delta$ 越大，初始路径约束越强、初始逆相关矩阵越小；它与 NLMS 分母的 $\varepsilon$ 不是同一个参数。<a href="https://www.mathworks.com/help/dsp/ref/dsp.rlsfilter-system-object.html" title="citation">MathWorks <code>dsp.RLSFilter</code> 的 <code>InitialInverseCovariance</code> 与递推定义</a>给出同类初始化接口。</p>
+<p>对式(6-5)求梯度并令其为零，得到 $R_n\vec w_n=\vec p_n$。逐项把旧样本的权重乘 $\lambda$，就有</p>
+<p>$$\begin{aligned}
+R_n&=\lambda R_{n-1}+\vec x_n\vec x_n^\top,\quad R_{-1}=\delta I,\\
+\vec p_n&=\lambda\vec p_{n-1}+\vec x_n d_n,\quad
+ \vec p_{-1}=\delta\vec w_{-1},\\
+P_n&=R_n^{-1},\quad\vec w_n=P_n\vec p_n\text{。}
+\end{aligned}\tag{6-6}$$</p>
+<p>不必每个样本重新求逆。令 $q_n=P_{n-1}\vec x_n$，对 $R_n=\lambda R_{n-1}+\vec x_n\vec x_n^\top$ 使用矩阵求逆引理，并把式(6-6)的 $\vec p_n$ 代回，可得到等价递推：</p>
+<p>$$\begin{aligned}
+q_n&=P_{n-1}\vec x_n,\\
+K_n&=\frac{q_n}{\lambda+\vec x_n^\top q_n},\\
+\hat y_n^-&=\vec w_{n-1}^\top\vec x_n,\\
+e_n^-&=d_n-\hat y_n^-,\\
+\vec w_n&=\vec w_{n-1}+K_ne_n^-,\\
+P_n&=\lambda^{-1}(P_{n-1}-K_n\vec x_n^\top P_{n-1})\text{。}
+\end{aligned}\tag{6-7}$$</p>
+<p>这里 $K_n$ 是 $L\times1$ 更新增益，$P_n$ 是 $L\times L$ 逆相关矩阵；$e_n^-$ 是用<strong>更新前</strong>权重计算的先验残差。只算 $q_n$、外积和权重更新时，每样本主要成本为 $O(L^2)$、仅存 $P$ 就需 $O(L^2)$ 空间。式(6-7)的实数转置约定不能未经检查就套到复数频域：要先固定预测采用 $\vec w^H\vec x$ 还是 $\vec w^\top\vec x$，再处理增益和误差的共轭。<a href="https://www.mathworks.com/help/dsp/ref/dsp.rlsfilter-system-object.html#mw_30d6a484-c829-4d2c-ae58-2c3e2f26092b" title="citation">MathWorks 官方算法式</a>可用于核对常规 RLS 更新；本书式(6-5)的初始化项和以下数字由本书推导。</p>
+<p><strong>两抽头锚点手算。</strong> 取 $L=2$、$\lambda=1/2$、$\delta=1$、$\vec w_{-1}=0$，故 $P_{-1}=I$。顺序输入 $\vec x_0=[1,0]^\top,d_0=1$ 与 $\vec x_1=[1,1]^\top,d_1=2$；第二个回归向量可由连续参考 $x[0]=x[1]=1$ 产生。这是无量纲算术例，不是实录回声或收敛性能结果。</p>
+<p>第 0 步有 $q_0=[1,0]^\top$、分母 $1/2+1=3/2$、$K_0=[2/3,0]^\top$。先验预测为零、$e_0^-=1$，所以 $\vec w_0=[2/3,0]^\top$、$P_0=\operatorname{diag}(2/3,2)$。第二个对角元从 1 变为 2，是未受参考激励方向的旧信息被遗忘，不表示那里已量到新的路径。</p>
+<p>第 1 步 $q_1=P_0\vec x_1=[2/3,2]^\top$，分母 $1/2+2/3+2=19/6$，因此 $K_1=[4/19,12/19]^\top$。先验预测 $2/3$、残差 $4/3$，得到 $\vec w_1=[18/19,16/19]^\top$ 与 $P_1=\bigl[\begin{smallmatrix}20&-16\\-16&28\end{smallmatrix}\bigr]/19$；中途保持分数，最后才按需舍入。</p>
+<p>再走一条<strong>独立的批量路线</strong>：式(6-5)在第 1 步给 $R_1=\bigl[\begin{smallmatrix}7/4&1\\1&5/4\end{smallmatrix}\bigr]$、$\vec p_1=[5/2,2]^\top$。直接解 $R_1\vec w=\vec p_1$ 得 $[18/19,16/19]^\top$，其逆也等于上段的 $P_1$。这验证两步递推与指定的<strong>含初始约束</strong>目标一致；换遗忘因子、删去初始项、加入近端语音或让参考秩亏，不能沿用这两个系数。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_rls_demo.py">可运行逐样本示例</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_rls.py">批量独立测试</a>复算此例。</p>
+<p><strong>遗忘、双讲与工程边界。</strong> 对无限长、每步都接纳的序列，指数权重总和趋近 $1/(1-\lambda)$；$\lambda=0.99$ 时约为 100 个单位权重的总量，不是 100 个统计独立样本。若输入独立同分布，权重平方和给出的等效样本数趋近 $(1+\lambda)/(1-\lambda)\approx199$；时间跨度还须乘每次更新的实际采样或块间隔。减小 $\lambda$ 能更快淡忘旧路径，也放大噪声和近端干扰的影响。<a href="https://www.mathworks.com/help/ident/ref/recursiveleastsquaresestimator.html" title="citation">MathWorks 在线估计文档</a>给出遗忘因子的时间尺度解释；这里的权重和及等效样本数是本书求和。</p>
+<p>双讲时，$d_n$ 中的近端语音进入 $e_n^-$，式(6-7)仍会更新；已知双讲区间可以冻结更新作受控对照，但实际设备须另测检测器、更新恢复及近端损伤。</p>
+<p>参考为零时 $K_n=0$，常规递推仍会把 $P$ 除以 $\lambda$；长静音可能使逆相关状态膨胀，需要限幅、重置或按实现定义暂停遗忘。</p>
+<p>浮点舍入还可能让 $P$ 失去对称性或正定性；Householder、QR 或平方根实现是数值方案，不能与普通 RLS 混为“更快”的同义词。</p>
+<p>对 $L=4096$，单个 float64 的 $P$ 已有 $4096^2\times8=128$ MiB，尚未计多通道、历史和工作缓冲。长路径通常先考虑分区、子带或其他结构化近似，再测实际设备资源。<a href="https://www.mathworks.com/help/dsp/ref/dsp.rlsfilter-system-object.html" title="citation">MathWorks <code>dsp.RLSFilter</code> 的方法选项</a>列出常规、Householder、滑动窗与 QR；选择这些方法不等于 MathWorks 的 AEC 示例本身用了 RLS。</p>
+<p><strong>卡尔曼路径估计与频域卡尔曼滤波（Frequency-Domain Kalman Filter，FDKF）。</strong> 卡尔曼模型明确区分两种不确定性：回声路径自身怎样变化，以及麦克风观测里有多少路径不能解释的近端语音和噪声。增益像自适应步长，但“最小均方误差”只在选定的线性状态、二阶统计量和估计类别下成立，不能保证任意双讲或扬声器非线性下最优。FDKF 将这类状态递推放到块频域；“每频点一个系数”只是后面的标量对角近似，完整分区结构还含分区、参考通道及其协方差。<a href="https://doi.org/10.1016/j.sigpro.2005.09.013" title="citation">Enzner 与 Vary 2006 原论文</a>与<a href="https://homepages.ruhr-uni-bochum.de/gerald.enzner/StateSpaceFDAF.html" title="citation">作者对状态空间 FDAF 的说明</a>均不支持把一般频域 NLMS 直接改名为精确 Kalman。</p>
+<p>为先看清状态含义，取已对齐、实数、长度 $L$ 的时域 FIR 作模型；$\vec h_n$ 是当前真实回声路径，$a$ 是标量状态转移因子，$\Delta\vec h_n$ 是零均值过程扰动，$s_n$ 是近端语音，$v_n$ 是其他加性观测噪声：</p>
+<p>$$\begin{aligned}
+\vec h_n&=a\vec h_{n-1}+\Delta\vec h_n,\\
+d_n&=\vec x_n^\top\vec h_n+s_n+v_n\text{。}
+\end{aligned}\tag{6-8}$$</p>
+<p>第一行描述路径的漂移或突变；第二行指出麦克风为何不等于回声副本。过程协方差 $Q=\operatorname{Cov}(\Delta\vec h_n)$ 与观测方差 $\Psi=\operatorname{Var}(s_n+v_n)$ 不是同一种噪声；$\Psi$ 也不要与上面 RLS 的参考相关矩阵 $R_n$ 混淆。</p>
+<p>同写为 $P$ 的两个状态也不同：式(6-6)中它是样本相关矩阵的逆，式(6-9)与式(6-10)中它是路径估计误差协方差；只有下文限定条件成立时，两套递推才可作代数对应。</p>
+<p>增大 $Q$ 表示更不信任旧路径，增大 $\Psi$ 表示更不信任这次麦克风观测。实际近端语音有时间相关性，路径突变也未必符合平稳随机模型；式(6-8)只是估计器的工作假设，不是真实声场的完整生成式。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/aec_kalman_matrix.py">两抽头矩阵 Kalman 教学实现</a>使用此实数约定，而不是把它冒称为完整 FDKF。</p>
+<p>双讲时，若观测噪声估计 $\Psi_m$ 随近端语音能量增大，卡尔曼增益会减小。路径变化后，先验残差 $E_m$ 可能增大，但下文式(6-9)中的增益并不直接依赖 $E_m$；只有过程噪声、误差协方差或状态重置策略相应调整时，增益才可能上升并加快重新收敛。每个频点还需维护误差方差或协方差，因此同等频域卷积结构之外另有统计量的计算与存储；不能不指定近似形式就报一个统一复杂度。</p>
+<p>下式是便于复算的逐频点<strong>标量近似</strong>，不是完整分区 FDKF 的跨频点、跨分区协方差递推。假设已对齐的参考 $X_m$ 已知，状态扰动与观测扰动为零均值、彼此及与先验状态误差不相关；$P_{m-1}\geq0$、过程方差 $\Phi_m\geq0$、观测方差 $\Psi_m>0$，且所用二阶矩与该模型相符。</p>
+<p>在这些条件下，增益是只用当前复数创新、不另用其共轭的最小均方误差<strong>复线性</strong>增益。若相关复数变量进一步联合为圆对称（proper）复高斯，或全部变量是实数高斯，它也是相应条件均方误差意义下的最优增益。非圆对称复高斯可能需要同时利用创新及其共轭，不能套用这一最优性结论；<a href="https://www.commsp.ee.ic.ac.uk/~mandic/research/WL_Complex_Stuff/Dini_Mandic_Augmented_Kalman_Filter_Analysis_SSPD_2010.pdf" title="citation">Dini 与 Mandic 2010 的广义复卡尔曼分析</a>给出这一边界。下面省略频点下标，$W_{m-1}$ 是上一块的路径系数，$P_{m-1}$ 是其误差方差，$a$ 是状态转移因子：</p>
 <p>$$\begin{aligned}
 \hat W_m^-&=aW_{m-1},& P_m^-&=|a|^2P_{m-1}+\Phi_m,\\
 E_m&=D_m-X_m\hat W_m^-,& K_m&=\frac{P_m^-X_m^*}{|X_m|^2P_m^-+\Psi_m},\\
 W_m&=\hat W_m^-+K_mE_m,& P_m&=(1-K_mX_m)P_m^-.
-\end{aligned}\tag{6-6}$$</p>
+\end{aligned}\tag{6-9}$$</p>
 <p>前两式先预测路径和不确定度；协方差传播使用 $|a|^2$，因为复数状态模型的一般形式是 $APA^H+Q$。中间两式根据先验残差计算增益；最后两式更新系数和误差方差。标量复数模型中 $K_mX_m$ 为实数且位于 0 与 1 之间。实际分区频域实现还要处理矩阵协方差、块卷积约束和频点平滑。<a href="https://doi.org/10.1016/j.sigpro.2005.09.013" title="citation">Enzner &amp; Vary 2006</a></p>
-<p>若暂时固定 $W$，并把残差视为零均值圆对称复高斯变量，单帧负对数似然中与 $\Psi$ 有关的部分为 $|E|^2/\Psi+\log\Psi$。正确的导数是</p>
-<p>$$\frac{\partial}{\partial\Psi}\left(\frac{|E|^2}{\Psi}+\log\Psi\right)=-\frac{|E|^2}{\Psi^2}+\frac{1}{\Psi}.$$</p>
-<p>令它为零得到单帧极大似然估计 $\hat\Psi=|E|^2$。单帧估计波动很大，还把未建模回声混入“观测噪声”，所以实际系统会做时间平滑、双讲判决或由网络估计 $\Psi$，不能直接把当前 $|E|^2$ 当成准确的近端语音功率。</p>
+<p><strong>观测方差不是残差平方。</strong> 若假定路径 $W$ 精确已知，且残差完全由零均值圆对称复高斯观测噪声产生，单帧负对数似然的相关项才是 $|E|^2/\Psi+\log\Psi$，其单帧极大似然解为 $\hat\Psi=|E|^2$。这组假设恰恰排除了需要估计的路径不确定度，不能直接用于式(6-9)的 Kalman 创新。</p>
+<p>在式(6-9)的模型下，创新方差是 $S=|X|^2P^-+\Psi$。若把 $P^-$ 和 $X$ 当作已知，且仍只用一帧圆对称复高斯创新，则对 $\Psi\geq0$ 的受限极大似然解为 $\max(0,|E|^2-|X|^2P^-)$；它仍会把路径失配、双讲、噪声和单帧随机波动混在一起。工程实现需另估计或控制 $Q$、$\Psi$，并检查双讲和路径突变的不同征兆；不能把当前 $|E|^2$ 宣称为测得的近端语音功率。</p>
 <p>最小数例取 $X=1$、$P^-=1$。远端单讲时若 $\Psi=0.01$，$K=1/1.01\approx0.990$，残差的大部分用于更新；双讲时若 $\Psi=10$，$K=1/11\approx0.091$，同一残差下的更新量约为前者的 9.2%。这说明软门控会缩小更新，但并没有严格冻结。</p>
-<p>另固定 $X=1$、$P^-=1$、$\Psi=1$，无论先验残差为 0 还是 10，增益都为 $K=1/2$。若路径突变检测后把预测方差调整为 $P^-=4$，在其余条件不变时才得到 $K=4/5$。这是式(6-6)的代入，不表示实际检测器一定能正确区分路径突变与双讲；两者都可能增大残差，却需要不同的更新控制。</p>
+<p>另固定 $X=1$、$P^-=1$、$\Psi=1$，无论先验残差为 0 还是 10，增益都为 $K=1/2$。若路径突变检测后把预测方差调整为 $P^-=4$，在其余条件不变时才得到 $K=4/5$。这是式(6-9)的代入，不表示实际检测器一定能正确区分路径突变与双讲；两者都可能增大残差，却需要不同的更新控制。</p>
 <p><strong>完整的一轮标量递推。</strong> 取实数特例 $W_{m-1}=0.2$、$P_{m-1}=0.5$、$a=1$、$\Phi_m=0.1$、$X_m=2$、$D_m=1.4$、$\Psi_m=0.4$。预测得到 $\hat W_m^-=0.2$、$P_m^-=0.6$；先验残差 $E_m=1.4-2\times0.2=1.0$。于是</p>
 <p>$$K_m=\frac{0.6\times2}{2^2\times0.6+0.4}=\frac{1.2}{2.8}\approx0.4286,$$</p>
 <p>$$\begin{aligned}
 W_m&=0.2+0.4286\times1.0\approx0.6286,\\
 P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 \end{aligned}$$</p>
-<p>用更新后的系数回看该观测，残差为 $1.4-2\times0.6286\approx0.1429$；它是后验检查，不应代替式(6-6)中用于更新的先验残差。若 $\Psi_m\to\infty$，则 $K_m\to0$，路径几乎不更新；若理想化地令 $\Psi_m\to0$ 且 $X_m\ne0$，标量模型会令 $K_m\to1/X_m$、$P_m\to0$。实际系统存在模型失配和数值误差，需要为方差设置正下限，不能把 $P_m=0$ 当作永久确定。</p>
-<p><strong>分区块频域卡尔曼滤波</strong>（Partitioned-Block Frequency-Domain Kalman Filter，PBFDKF）还要把长回声路径分区并维护跨分区状态统计量；不能把上述单频点、单状态演示直接当作完整 PBFDKF 的计算量或稳定性证明。Zhu 等（Interspeech 2021，§2–3）的具体推导针对双声道声学回声消除，并比较保留不同协方差子矩阵的两种简化；跨分区和跨声道相关如何近似，会改变估计与资源开销。<a href="https://www.isca-archive.org/interspeech_2021/zhu21d_interspeech.pdf" title="citation">Zhu 等原论文</a></p>
+<p>用更新后的系数回看该观测，残差为 $1.4-2\times0.6286\approx0.1429$；它是后验检查，不应代替式(6-9)中用于更新的先验残差。若 $\Psi_m\to\infty$，则 $K_m\to0$，路径几乎不更新；若理想化地令 $\Psi_m\to0$ 且 $X_m\ne0$，标量模型会令 $K_m\to1/X_m$、$P_m\to0$。实际系统存在模型失配和数值误差，需要为方差设置正下限，不能把 $P_m=0$ 当作永久确定。</p>
+<p>不提前舍入时，上例的精确分数是 $P^-=3/5$、$E^-=1$、创新方差 $S=14/5$、$K=3/7$、$W=22/35$、$P=3/35$、后验残差 $1/7$。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_kalman_scalar_demo.py">标量递推代码</a>逐项输出这些量，并用相同 $X$ 与先验把 $\Psi$ 从 $0.4$ 改为 $4$：增益由 $3/7$ 降到 $3/16$，后验权重从 $22/35$ 变为 $31/80$。这只验证<strong>假定观测方差已知</strong>时的代数响应，不是程序成功检测到了双讲。</p>
+<p>另取复数 $X=i$、$P^-=\Psi=1$，式(6-9)给 $K=-i/2$；若漏掉共轭，会得到错误的 $+i/2$。上述三项有<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_kalman_scalar_demo.py">独立分数与边界测试</a>，仍不能代替完整 FDKF 或 PBFDKF 的协方差、分区和声学验证。</p>
+<p><strong>矩阵状态说明标量近似舍掉了什么。</strong> 对实数路径状态，令 $A$ 是 $L\times L$ 转移矩阵、$Q$ 是过程协方差，观测仍为标量 $d_n$。先预测，再用先验创新更新：</p>
+<p>$$\begin{aligned}
+\hat{\vec h}_n^-&=A\hat{\vec h}_{n-1},\\
+P_n^-&=AP_{n-1}A^\top+Q,\\
+S_n&=\vec x_n^\top P_n^-\vec x_n+\Psi,\\
+K_n&=P_n^-\vec x_n/S_n,\\
+\hat{\vec h}_n&=\hat{\vec h}_n^-+K_n(d_n-\vec x_n^\top\hat{\vec h}_n^-),\\
+P_n&=(I-K_n\vec x_n^\top)P_n^-
+ (I-K_n\vec x_n^\top)^\top\\
+&\quad+K_n\Psi K_n^\top\text{。}
+\end{aligned}\tag{6-10}$$</p>
+<p>最后一行是 Joseph 协方差形式；当增益精确且计算无舍入时，它与简写的 $(I-K_n\vec x_n^\top)P_n^-$ 等价。近似增益或有限精度下，Joseph 形式更明确保留非负协方差结构；这不保证所有错误的 $Q$、$\Psi$ 或增益都能被修复。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/aec_kalman_matrix.py">矩阵教学代码</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_kalman_matrix.py">独立测试</a>仅实现短实数 FIR，不含 FFT、分区约束或统计量在线估计。</p>
+<p><strong>两维协方差手算。</strong> 取 $A=I$、$Q=0$、$\Psi=1$、$\hat{\vec h}^-=0$、$P^-=\operatorname{diag}(1,4)$、$\vec x=[1,1]^\top$、$d=3$。式(6-10)给 $S=1+4+1=6$、$K=[1/6,2/3]^\top$、$\hat{\vec h}=[1/2,2]^\top$，Joseph 更新得到 $P=\bigl[\begin{smallmatrix}5/6&-2/3\\-2/3&4/3\end{smallmatrix}\bigr]$。虽然先验是对角矩阵，同一次观测同时约束两个抽头，后验立刻出现非零交叉协方差。</p>
+<p>下一次若参考回归向量是 $[-1,1]^\top$、其余预测条件不变，完整创新方差为 $[-1,1]P[-1,1]^\top+1=9/2$；把 $P$ 的非对角项直接丢掉则只得 $19/6$。这证明<strong>对角近似会改变下一次增益的分母</strong>，不证明完整矩阵算法在任意录音上必优。数例与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_kalman_matrix_demo.py">逐步输出</a>采用同一抽头顺序和无量纲值；实际频域分区还需有效区投影、复数共轭和频点/分区结构。</p>
+<p><strong>RLS 与 Kalman 何时同式。</strong> 在式(6-10)取静态路径 $A=I$、$\Psi=1$，并人为令每次预测协方差 $P_n^-=P_{n-1}/\lambda$，则 $K_n=P_{n-1}\vec x_n/(\lambda+\vec x_n^\top P_{n-1}\vec x_n)$，恰是式(6-7)的增益。这相当于每次使用依赖当前后验协方差的 $Q_n=(\lambda^{-1}-1)P_{n-1}$；$\lambda=1$ 时 $Q_n=0$。这是本书在指定归一化下的代数对应，不表示任意固定 $Q$ 的 Kalman、FDKF 或 PBFDKF 只是 RLS 改名；两者还可能采用不同的观测模型、变换约束和双讲控制。</p>
+<p><strong>分区块频域卡尔曼滤波</strong>（Partitioned-Block Frequency-Domain Kalman Filter，PBFDKF）把长回声路径分区，状态和协方差还要考虑分区及多播放通道。Kuech、Mabande 与 Enzner 的 ICASSP 2014 状态空间架构是分区方法的原始依据之一；不能把本书单频点、单状态演示直接当作该完整算法。<a href="https://doi.org/10.1109/ICASSP.2014.6853806" title="citation">原论文 DOI 10.1109/ICASSP.2014.6853806</a>。</p>
+<p>Zhu 等的 Interspeech 2021 双声道推导分别讨论精确分区递推与两种协方差简化：VD-PBFDKF 只保留同播放声道、同分区的块；SD-PBFDKF 在同分区还保留跨播放声道的块，两者都舍去某些跨分区相关。保留项不同，矩阵乘法和统计近似就不同；论文图 4～5 的结果只属于其给定双声道、块长、路径及双讲条件。<a href="https://www.isca-archive.org/interspeech_2021/zhu21d_interspeech.pdf" title="citation">Zhu 等，§2～3、图 4～5</a>。公开的第三方短代码可辅助读递推，但其后滤、启发式门控和许可必须分别核对，见<a href="research/02_aec_wpe_separation.html#aec">研究手册 A04</a>。</p>
 <p><strong>方法对比。</strong> 下表比较模型和资源依赖，不给没有共同输入、路径、收敛目标与实现条件支撑的“快、中、慢”排名。若要比较实际收敛，需在同一播放参考、回声路径、双讲安排和统计窗口上运行各实现，并分别报告初始收敛、突变恢复与稳态误差。图32给出排障流程，而不是算法性能排序。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -319,15 +388,15 @@ P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 <td>路径较短，或资源允许逐样本更新</td>
 </tr>
 <tr>
-<td>IPNLMS</td>
-<td>$O(L)$，另有比例权重计算</td>
+<td>比例更新</td>
+<td>IPNLMS：$O(L)$，另有比例权重计算</td>
 <td>稀疏路径可能更快；稠密尾声不能照搬该趋势</td>
 <td>仍需双讲控制</td>
 <td>有明显强抽头且已测得收益</td>
 </tr>
 <tr>
-<td>PBFDAF</td>
-<td>无约束约 $O(\log N+L/N)$；逐分区约束另加 $O((L/N)\log N)$</td>
+<td>分区频域</td>
+<td>PBFDAF：无约束约 $O(\log N+L/N)$；逐分区约束另加 $O((L/N)\log N)$</td>
 <td>频点归一化、块长和梯度约束</td>
 <td>需二值或连续控制</td>
 <td>长路径且可接受分块处理</td>
@@ -348,7 +417,7 @@ P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 </tr>
 <tr>
 <td>频域卡尔曼 FDKF</td>
-<td>分区滤波外另维护状态统计量</td>
+<td>频域滤波外另维护状态统计量</td>
 <td>过程/观测噪声估计与状态模型</td>
 <td>增益可软门控，但不自动识别双讲</td>
 <td>路径变化且统计模型可校验</td>
@@ -359,7 +428,7 @@ P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 <p><strong>非线性回声与双讲控制（§6.1.4～§6.1.5）</strong></p>
 <span id="sec-6" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-6-1-4">6.1.4 非线性回声：模型失配与处理方法</h3>
 <p><strong>非线性从哪来</strong>。微型扬声器的悬边与磁路在大振幅下不再线性（悬边变硬、音圈跑出匀强磁场区），功放或数字播放链在大音量下可能削顶（clipping），机壳与结构件也可能随声压振动产生二次辐射。Birkett &amp; Goubran（WASPAA 1995）实测讨论了免提终端中的非线性回声，Klippel（JAES 2006）从扬声器物理模型分析了相关机制。这里不作“最早提出”的优先权判断。</p>
-<p><strong>平台从哪里来</strong>。线性滤波器只能估计播放参考的线性组合。扬声器软削波产生的谐波和互调分量不在这个线性子空间内，因此即使路径估计已经收敛，残差仍会保留非线性分量。</p>
+<p><strong>平台从哪里来</strong>。线性滤波器只能估计播放参考历史样本的线性组合。扬声器失真若产生该组合无法表示的谐波或互调分量，即使线性路径估计已收敛，这些分量仍会留在残差；E06-06 的单频输入和三次项给出一个可复算例子。这不是“凡有非线性必有残余”的定理：若参考样本只取 $\{-1,1\}$，则 $x^3=x$，该输入上的三次映射也能由线性增益表示。能否抵消取决于实际参考集合、路径长度和失真模型。</p>
 <p>图 19（a）用一组独立定量仿真展示这项能力边界，图 31 则用另一组受控仿真和静态映射检查同一机制。两图都取 3 s 输入、256 抽头、步长 0.3 和驱动系数 1.1。</p>
 <p>两图的随机种子、参考序列边界成形方式、具体输入和路径实现不同，属于两次独立单次仿真，ERLE 数值不能横向比较。每个平台高度只属于各自图示配置，不能外推为某类设备固定的 ERLE 上限。</p>
 <p><img alt="图19 AEC 的能力边界与算法版图" src="../figures/fig19_aec_landscape.png" onerror="this.alt+='（图缺失）'" /></p>
@@ -377,8 +446,8 @@ P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 \hat y(n)
 &=\sum_{i=0}^{L-1}w_i x(n-i)\\
 &\quad+\sum_{0\leq i\leq j\lt L}q_{ij}x(n-i)x(n-j).
-\end{aligned}\tag{6-7}$$</p>
-<p>线性部分有 $L$ 个系数，二阶部分有 $L(L+1)/2$ 个；$L=256$ 时仅二阶部分就有 32,896 个。式(6-7)直接把 $q_{ij}$ 定义为独立的上三角系数；若从完整对称核 $H$ 改写，非对角项应取 $q_{ij}=H_{ij}+H_{ji}=2H_{ij}$，对角项仍是 $q_{ii}=H_{ii}$，不能简单删除下三角而不合并交叉项。</p>
+\end{aligned}\tag{6-11}$$</p>
+<p>线性部分有 $L$ 个系数，二阶部分有 $L(L+1)/2$ 个；$L=256$ 时仅二阶部分就有 32,896 个。式(6-11)直接把 $q_{ij}$ 定义为独立的上三角系数；若从完整对称核 $H$ 改写，非对角项应取 $q_{ij}=H_{ij}+H_{ji}=2H_{ij}$，对角项仍是 $q_{ii}=H_{ii}$，不能简单删除下三角而不合并交叉项。</p>
 <p>限制核的跨度、秩或保留的交互项可降低资源需求，却也改变可表达的失真。二阶模型不能自动处理所有非线性：纯单频输入的平方只有直流和二次谐波，不能生成练习 E06-06 中三次项的三次谐波。<a href="https://www.eurasip.org/Proceedings/Ext/NSIP99/Nsip99/papers/146.pdf" title="citation">Stenger 与 Rabenstein，NSIP 1999，§3.1 式(1)–(2)</a></p>
 <p>级联模型要按处理顺序区分：Hammerstein 是静态非线性后接线性动态（$N\to L$），Wiener 是线性动态后接静态非线性（$L\to N$），Wiener–Hammerstein 则是 $L\to N\to L$。如果失真发生在扬声器前、声学传播在后，$N\to L$ 可以作为候选；实际扬声器和播放链可能更复杂，不能仅凭框图确定结构。Nollett 与 Jones（NSIP 1997，§2）研究的是 Wiener–Hammerstein 结构，而不是上述两段模型；其摘要报告在论文测得的扬声器信号条件下，相对线性基线改善 8.4 dB。<a href="https://www.iwaenc.org/proceedings/1997/nsip97/pdf/author/ns970521.pdf" title="citation">Nollett 与 Jones 1997</a></p>
 <p>这个数值与论文中的输入、失真模型、路径和统计口径绑定。当真实失真偏离模型假设时，需要重新测量收益。</p>
@@ -539,7 +608,7 @@ P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 </li>
 <li>
 <p><strong>BF→AEC（波束后单 AEC）</strong>：线性 AEC 从每个麦克风一路减少为波束输出的一路；实际节省量还要扣除波束处理和共享计算。</p>
-<p>频域波束权重变化时，第 $k$ 个频点的等效回声传递函数为 $H_{\mathrm{eff}}(k,n)=\sum_m w_m^*(k,n)H_m(k,n)$；若采用固定时域 FIR 波束器，则相应形式是各路波束 FIR 与 $h_m$ 卷积后求和。</p>
+<p>在忽略跨频带耦合的同频带窄带近似下，频域波束权重变化时可写 $H_{\mathrm{eff}}(k,n)\approx\sum_m w_m^*(k,n)H_m(k,n)$。一般 STFT 分析、合成窗未必允许把整条时域回声路径精确写成逐频点乘法，时变权重也不对应一条固定的线性时不变路径；<a href="https://webee.technion.ac.il/Sites/People/IsraelCohen/Publications/TASL_May2007.pdf" title="citation">Avargel 与 Cohen 2007，§II</a>给出跨频带项的来源。若采用固定时域 FIR 波束器，则相应的精确线性时不变形式是各路波束 FIR 与 $h_m$ 卷积后求和。</p>
 <p>权重变化会使等效路径变化，AEC 需要重新跟踪，暂态可能出现回声泄漏。暂时保持波束权重可以减小该变化，但会降低追踪灵活性；</p>
 </li>
 <li>
@@ -594,10 +663,10 @@ P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 <p>逐通道线性 AEC 的主要计算量随麦克风数 $M$ 近似线性增长；放在波束后的单通道处理只运行一路，但会面对等效路径随波束权重变化的问题。两种结构应分别在目标实现上测量资源，并检查波束切换期间的回声泄漏。</p>
 <span id="sec-10" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-6-1-8">6.1.8 评测体系与工程验收清单</h3>
 <p><strong>客观指标与适用边界</strong>。ERLE（echo return loss enhancement，回声返回损失增强）应在远端单讲的同一统计窗口内计算：</p>
-<p>$$\mathrm{ERLE}=10\log_{10}\frac{\sum_n |y(n)|^2}{\sum_n |e_{\mathrm{echo}}(n)|^2}\text{。}\tag{6-8}$$</p>
+<p>$$\mathrm{ERLE}=10\log_{10}\frac{\sum_n |y(n)|^2}{\sum_n |e_{\mathrm{echo}}(n)|^2}\text{。}\tag{6-12}$$</p>
 <p>其中 $y$ 是进入消除器前的真实回声分量，$e_{\mathrm{echo}}$ 是消除后的回声分量；在线性路径模型下才有 $y=x*h$。</p>
 <p>真实录音通常不能直接分离这两项。测试时可用远端单讲录音，以 AEC 输入和输出功率近似，但背景噪声会给分母设置下限。报告中应注明采样率、统计窗口、是否去除初始收敛段，以及输出是否包含残余抑制。</p>
-<p>双讲时若只有混合输入和最终输出，二者总功率之比不再表示回声衰减；应改用双讲回声和近端语音质量指标。若合成数据另有干净回声及残余回声分量真值，式(6-8)仍可对这些分量单独计算，但必须说明取得真值的办法。图 18、图 19（a）、图 29 和图 31 来自不同仿真配置，数值不能横向比较。</p>
+<p>双讲时若只有混合输入和最终输出，二者总功率之比不再表示回声衰减；应改用双讲回声和近端语音质量指标。若合成数据另有干净回声及残余回声分量真值，式(6-12)仍可对这些分量单独计算，但必须说明取得真值的办法。图 18、图 19（a）、图 29 和图 31 来自不同仿真配置，数值不能横向比较。</p>
 <blockquote>
 <p><strong>ERLE 换算。</strong> 若残余回声能量与输入回声能量之比为 0.0063，ERLE 为 $10\log_{10}(1/0.0063)\approx22$ dB；比值为 0.0001 时，ERLE 为 40 dB。双讲段的输出还含近端语音，不能把总输出能量直接代入 ERLE 分母。</p>
 </blockquote>
@@ -641,7 +710,7 @@ P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 </ol>
 <span id="sec-12" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-6-1-10">6.1.10 多参考 AEC 模型与去相关选型</h3>
 <p>单参考 AEC 假设只有一路播放；立体声外放、双扬声器和多分区播放属于多参考问题。模型是否可辨识取决于参考声道之间的相关性和各条回声路径，不能用固定 ERLE 损失概括。</p>
-<p><strong>三种多参考模型</strong>：</p>
+<p><strong>三种多参考实现组织</strong>。前两行都估计单个麦克风的多路播放回声，差别在系数怎样更新，不能把它们当作两种不同的物理传播模型：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
@@ -654,18 +723,18 @@ P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 </thead>
 <tbody>
 <tr>
-<td>独立单声道（dual-mono）</td>
-<td>各参考分别运行单参考 AEC，再合成估计回声</td>
-<td>参考强相关时仍可能得到不唯一的路径估计</td>
-<td>近似随参考路数增加</td>
-<td>参考内容近似独立，并已验证合成残差</td>
+<td>逐参考分支、共享总残差</td>
+<td>各分支预测先相加，再以同一个 $e=d-\sum_r\hat y_r$ 更新各分支；可用各路自己的归一化分母</td>
+<td>忽略跨参考统计量时，强相关输入仍会使路径估计病态</td>
+<td>滤波与状态近似随参考路数增加</td>
+<td>单个麦克风接收多路播放，需核对总残差与更新控制</td>
 </tr>
 <tr>
 <td>联合 MISO（多输入单输出，Multiple-Input Single-Output）</td>
-<td>多路参考联合估计到一个麦克风的多条路径</td>
-<td>仍受参考相关矩阵条件数限制</td>
-<td>同时维护多组路径和交叉统计量</td>
-<td>单个麦克风接收多路播放回声</td>
+<td>拼接多路参考回归向量，以总预测与共同残差联合估计多条路径</td>
+<td>仍受拼接参考相关矩阵条件数限制</td>
+<td>同时维护多组路径；全矩阵方法还维护交叉统计量</td>
+<td>需要显式处理参考间相关性时</td>
 </tr>
 <tr>
 <td>MIMO 阵列联合</td>
@@ -677,6 +746,8 @@ P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 </tbody>
 </table></div>
 <p>参考声道越多，待估参数越多；声道内容越相关，正常方程越接近奇异。去相关用于改善相关矩阵的条件数。</p>
+<p><strong>为什么不能把两个单参考输出直接相加。</strong> 本书取无噪声、单抽头、同一参考 $x_1=x_2=x$，麦克风观测 $d=x$。若让两个单参考滤波器各自用完整的 $d$ 当目标，它们都可能得到系数 1；合成预测为 $x+x=2x$，总残差反而是 $-x$。</p>
+<p>正确的多参考误差先减去<strong>两路预测之和</strong>，即 $e=d-\hat h_1x_1-\hat h_2x_2$；此例只要求 $\hat h_1+\hat h_2=1$，能完全抵消当前回声，却无法由完全相同的两路参考唯一辨识各自路径。参考内容后来若改变，这种非唯一性还会影响预测。<a href="https://www.iwaenc.org/proceedings/1997/iwaenc97/pdf/scan/ae970002.pdf" title="citation">Gilloire，IWAENC 1997，§2</a>给出共同残差与立体声相关性的原始模型。</p>
 <p><strong>去相关方法对照</strong>（以立体声 AEC 为例）：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -721,7 +792,7 @@ P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 </blockquote>
 <span id="sec-13" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-6-1-11">6.1.11 播放链参考抽头位置及其对 ERLE 的影响</h3>
 <p>播放链路是一串变换：应用音源 → 混音 → 音效/均衡（Equalization，EQ）→ 自动增益控制（Automatic Gain Control，AGC）/动态范围压缩（Dynamic Range Compression，DRC）→ 限幅 → 重采样 → 编解码 → 数模转换器（Digital-to-Analog Converter，DAC）→ 功放 → 扬声器。</p>
-<p>参考抽头越早，抽头之后未反映在参考中的处理越多。固定线性变换可以并入等效回声路径；时变增益、削波、丢帧和编解码伪影则可能造成难以稳定建模的残余。</p>
+<p>参考抽头越早，抽头之后未反映在参考中的处理越多。固定、线性时不变、因果且能在<strong>已对齐的同一采样时钟</strong>上用有限长 FIR 表示的处理，可以并入式(6-1)的等效路径；跨独立时钟的重采样或持续采样率偏移不能直接并入同一固定 FIR，需检查 §6.1.13 的 SRO 诊断。时变增益、削波、丢帧和编解码伪影也可能造成难以稳定建模的残余。</p>
 <p><strong>抽头点对照表</strong>（T1 最早、T5 最晚；实际系统可能只能访问其中一部分）：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -981,8 +1052,8 @@ P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 <td>D5</td>
 <td>断续/闷罐/背景声突然消失</td>
 <td>NLP 过度抑制</td>
-<td>旁路 NLP，对比适用版本的 ITU-T P.863、AECMOS Other 维和听测；历史回归若保留 PESQ，须固定 P.862 实现与带宽口径</td>
-<td>旁路后语音改善 → 减小 NLP 抑制量</td>
+<td>旁路 NLP；有独立、时间匹配的干净近端参考且满足标准适用条件时才评估 ITU-T P.863；无此真值时看 AECMOS Other 维、盲听和任务指标。历史回归若保留 PESQ，须固定 P.862 实现与带宽口径</td>
+<td>旁路后语音改善 → 检查近端损伤并减小过强抑制</td>
 </tr>
 <tr>
 <td>D6</td>
@@ -1009,6 +1080,7 @@ P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 </table></div>
 <p>D1～D3检查参考、延迟和双讲控制；D4用于判断非线性残余；D5～D6检查近端语音和舒适噪声；D7～D8检查长时漂移和链路切换。</p>
 <p>ITU-T 已于 2024 年 1 月 5 日删除 P.862、P.862.1、P.862.2 和 P.862.3，并指向 P.863、P.863.1 与 P.863.2；因此 PESQ 只宜用于需要延续既有 P.862 基线的历史回归，新测试应先确认 P.863 的带宽、预处理和适用条件。<a href="https://www.itu.int/rec/T-REC-P.862" title="citation">ITU-T P.862 状态页</a>、<a href="https://www.itu.int/rec/T-REC-P.863-201803-I" title="citation">ITU-T P.863</a></p>
+<p>本书使用的真实 AEC Challenge 播放环回与麦克风配对录音没有独立干净近端语音真值，不能直接对它们计算 P.863 的近端语音质量。<a href="https://www.itu.int/rec/T-REC-P.863.1-201906-I" title="citation">ITU-T P.863.1</a>要求按参考语音与退化语音的规定条件使用该指标；AECMOS 自动分数也不能代替真人听测。</p>
 <blockquote>
 <p><strong>采样率偏移（Sample Rate Offset，SRO）。</strong> 播放与采集时钟相差 10 ppm 时，16 kHz 下每秒相差 $16000\times10^{-5}=0.16$ 个采样；1 小时累积 576 个采样，即 36 ms。延迟重搜只能重新选择整数或分数延迟，不能消除持续增长的速率差；长通话通常要估计 SRO 并对参考做重采样补偿。若硬件允许，共用时钟可以从源头消除该偏移。</p>
 </blockquote>
@@ -1196,6 +1268,20 @@ P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 <pre><code class="language-bash">.venv/bin/python -m codes.examples.aec_algorithm_minicases
 </code></pre>
 <p>这些输出是无量纲固定算例，不是完整自适应 PBFDAF、真实录音实验或工业性能测试；相应独立测试在 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_minicases.py"><code>test_codes_aec_minicases.py</code></a>。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/aec_partitioned.py">分区自适应教学实现</a>另把式(6-3)接成有状态的预测—有效区残差—逐频归一化更新—可选时域梯度约束。它只接收完整的 $N$ 样本块，<code>freeze</code> 是调用方给定的每块布尔控制；没有双讲检测、延迟搜索、残余抑制或实时设备接口。运行两块手算：</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.examples.aec_partitioned_demo
+</code></pre>
+<p>输出同时保留<strong>更新前</strong>回声预测与残差、约束前候选系数和约束后路径，便于核对上面的非法抽头。测试还检查已知 FIR 的直接时域卷积、短末分区补零、跨调用状态与冻结更新；这不是在真实语音上测出的 ERLE、延迟或收敛速度。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_partitioned.py">教学实现测试</a>与<a href="https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/mdf.c">外部 AUMDF 源码</a>须按不同证据级别阅读。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/aec_rls.py">逐样本全矩阵 RLS</a>保存抽头、逆相关矩阵与跨块参考历史；它返回更新前的回声估计和残差。调用方给定的 <code>freeze</code> 会跳过该样本的拟合与遗忘，却继续推进参考历史；未冻结的零参考仍按式(6-7)遗忘。两抽头演示同时输出递推值和独立批量求解，测试还核对切块等价、冻结、重置与非法输入：</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.examples.aec_rls_demo
+</code></pre>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/aec_kalman_matrix.py">实数短 FIR 全矩阵 Kalman</a>另维护完整路径误差协方差，以 Joseph 形式执行式(6-10)。其 <code>freeze</code> 仍作状态预测和参考历史推进，只跳过麦克风观测更新；若状态转移系数不为 1，冻结并不意味着权重按位保持。两抽头演示输出非对角协方差及丢弃它后的下一步创新方差；这只是已知 $Q,\Psi$ 的算术验证，不是频域分区 AEC：</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.examples.aec_kalman_matrix_demo
+</code></pre>
+<p>式(6-9)的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_kalman_scalar_demo.py">单频点卡尔曼数例</a>另可运行：</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.examples.aec_kalman_scalar_demo
+</code></pre>
+<p>它固定已知状态和噪声方差，展示实数、复数与较大观测方差三种代入；不包含完整频域滤波器的分区状态、方差估计或双讲判决。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_kalman_scalar_demo.py">独立测试</a>核对分数结果，不把这一个标量更新列为已复现的 FDKF 工业算法。</p>
 <p><code>erle_db()</code> 用 <code>double_talk_mask</code> 明确排除双讲样本；调用者还需用 <code>valid_mask</code> 排除初始收敛段、近端单讲和静音段。函数在输入、输出平均功率上都加上正的 <code>epsilon</code> 地板，因此完美抵消也会报告有限的、随地板而变的 dB 数值，不能把这个上限解释成设备噪声底。该实现用于核对式(6-2)的抽头顺序、冻结语义和指标窗口，不包含延迟搜索、非线性处理、舒适噪声或实时音频接口。</p>
 <p>自动测试见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_wpe_sep_track.py"><code>tests/test_codes_aec_wpe_sep_track.py</code></a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_streaming.py">流式边界测试</a>，覆盖零能量参考、已知路径、路径突变、冻结更新、跨块一致性、空块与复位以及双讲样本不进入 ERLE。接入设备时还必须增加参考断流、纯延迟超过滤波器覆盖范围、削波、多参考高度相关和长时路径漂移测试；异常时的安全回退是冻结自适应更新或旁路线性抵消，而不是继续用不可信残差更新。</p>
 <p>外部源码按完整提交保存在 <code>codes/upstream/_downloads/</code> 的相应项目目录中，具体获取状态见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/upstream/README.md">代码获取说明</a>。该目录是按需取得的参考源码，教学算法与第三方代码各自保留来源和许可。研究细节见 <a href="research/02_aec_wpe_separation.html#aec">AEC 源码研究</a>，其中逐项列出信号接口、读码顺序、状态参数、最小实验与失效实验。</p>
@@ -1274,7 +1360,7 @@ P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 <p>SpeexDSP 的 <code>mdf.c</code> 文件头直接说明 AUMDF 与连续学习率控制，并引用 Soo–Pang 的 MDF 和 Valin 的双讲学习率论文；因此 MDF、DTD 控制与残余抑制应分别检查。FDKF 则需要显式核对状态转移、过程噪声、观测噪声和增益递推，不能因为某库含频域 AEC，就把它列为 FDKF 的实现。<a href="https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/mdf.c">SpeexDSP 官方源码</a>、<a href="https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/">WebRTC AEC3 固定版本</a></p>
 <p><strong>三类实现不能只按“消得更干净”排序。</strong> 本书 <code>NLMSState</code> 接受连续的等长参考与麦克风数组，需要调用者提供冻结掩码和已对齐参考，适合核对抽头、块边界与算法算术。</p>
 <p>锁定版 WebRTC 通过音频处理模块（Audio Processing Module，APM）接入：应用约每 10 ms 交付播放与采集帧，先调用 <code>ProcessReverseStream()</code> 交播放参考，在处理对应采集帧前按缓冲时间设置 <code>set_stream_delay_ms()</code>，再调用 <code>ProcessStream()</code>。APM 外部帧长与 AEC3 内部的 64 样本处理块是不同层级；<code>set_stream_delay_ms()</code> 也不是房间传播时延或回声滤波器长度。<a href="https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/api/audio/audio_processing.h">WebRTC APM 固定版本接口</a>。</p>
-<p>SpeexDSP 的同步 <code>speex_echo_cancellation()</code> 由应用提供已对应的播放帧，不再额外放入两帧播放缓冲；异步 <code>speex_echo_playback()</code>/<code>speex_echo_capture()</code> 自带两帧缓冲，但实际声卡延迟不一定等于该假设。多通道时先核对交织顺序与该版本异步辅助函数的通道跨度。</p>
+<p>SpeexDSP 的同步 <code>speex_echo_cancellation()</code> 由应用提供已对应的播放帧，不再额外放入两帧播放缓冲；异步 <code>speex_echo_playback()</code>/<code>speex_echo_capture()</code> 自带两帧缓冲，但实际声卡延迟不一定等于该假设。锁定版异步辅助函数只按单通道 <code>frame_size</code> 复制和排队，不能直接作为多通道交织帧的安全接口；多通道应显式配对后使用同步接口，或自行按完整通道跨度管理缓冲。<a href="https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/mdf.c#L687-733" title="citation">SpeexDSP 固定版 <code>mdf.c</code> 异步函数</a>。</p>
 <p><code>speex_echo_cancellation()</code> 给出核心 MDF 输出；如需预处理器利用残余回声估计，须用 <code>SPEEX_PREPROCESS_SET_ECHO_STATE</code> 绑定回声状态，并把预处理后的输出另存为第二个取点。<a href="https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/include/speex/speex_echo.h">SpeexDSP 固定版接口</a>、<a href="https://www.speex.org/docs/manual/speex-manual/node7.html">官方手册 §6</a>。</p>
 <p>教学 NLMS 提供可解释的线性基线，WebRTC AEC3 与 SpeexDSP 还包含各自的延迟缓冲、更新控制与可选或内置后处理。若只拿 AEC3 最终输出与教学 NLMS 的线性残差计算输入/输出能量比，前者更安静也不能单独证明其线性回声路径估计更准。</p>
 <p>同条件实验应锁定播放参考抽头、输入 PCM、采样率、增益、有效采样窗口和状态重置，分别记录远端单讲回声泄漏、双讲近端损伤、路径突变恢复、参考丢块、资源消耗及端到端延迟。取得不到的内部线性取点要标为“未取得”，不能用最终输出冒名顶替。</p>
@@ -1292,20 +1378,21 @@ P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 \Delta[n]&=A(x,d_0+s)[n]-A(x,d_0)[n],\\
 g_{\Delta}&=\frac{\sum_{n\in W}\Delta[n]s[n]}{\sum_{n\in W}s[n]^2},\\
 E_{\Delta}&=\frac{\sum_{n\in W}(\Delta[n]-s[n])^2}{\sum_{n\in W}s[n]^2}.
-\end{aligned}\tag{6-9}
+\end{aligned}\tag{6-13}
 $$</p>
 <p>$g_{\Delta}=1$ 且 $E_{\Delta}=0$ 表示这两个输出之差在该区间逐样本等于注入波形；只看 $g_{\Delta}$ 不能发现额外失真。若算法状态随 $s$ 改变，$\Delta$ 还包含状态变化造成的回声残余差异，不能叫“分离出的近端语音”，也不能把 $E_{\Delta}$ 叫作双讲 ERLE。</p>
 <p>两个比值都要求评分区间内 $\sum_{n\in W}s[n]^2>0$；若已知注入信号在该区间全为零，实验应报无效，而不是把分母加一个小数后继续评分。</p>
 <p>第一组使用本书 2 s 合成样本：已量化麦克风减去已量化近端，再把近端原样加回，PCM 域相加严格成立且无削波。近端只在 <code>[1.2,1.8)</code> s 非零。</p>
-<p>教学 NLMS 两次都按已知掩码冻结时，式(6-9)给出 $g_{\Delta}=1$、$E_{\Delta}=0$；继续更新则为 0.936 和 0.322。相同夹具交给 SpeexDSP 同步核心，正确参考下为 0.878 和 0.208；零参考对照为 0.879 和 0.204。</p>
+<p>教学 NLMS 两次都按已知掩码冻结时，式(6-13)给出 $g_{\Delta}=1$、$E_{\Delta}=0$；继续更新则为 0.936 和 0.322。相同夹具交给 SpeexDSP 同步核心，正确参考下为 0.878 和 0.208；零参考对照为 0.879 和 0.204。</p>
 <p>后两项接近，不能把增量偏差全归于回声滤波：Speex 核心自身还执行 DC 陷波、预加重、去加重和 PCM 量化。这组近端是合成谐波，不是真人语音或实测房间。</p>
 <p>第二组把 Microsoft AEC Challenge 同一 GUID 的另一次真实近端单讲麦克风录音，按 PCM 原样叠加到真实远端单讲麦克风的 <code>[3,8)</code> s；播放参考不变，叠加前后都从新状态运行。它是<strong>半合成双讲</strong>，不是官方同时录制的真实双讲，也不具备干净近端语音真值。</p>
 <p>注入在 3 s 和 8 s 处直接切入、切出，没有淡入淡出；两个边界附近可能产生拼接瞬态。因此这一组用于检验固定波形的输出增量，不把它当作自然双讲的听感样本或泛化性能。</p>
 <p>Speex 正确参考下 $g_{\Delta}=0.922$、$E_{\Delta}=0.140$；零参考对照为 0.923、0.128。这里只能说已知外加波形经过两次运行后的输出增量与原波形有差异，不能据此断定真实近端语音的主观保真。</p>
 <p>原始录音摘要、无削波检查、恢复区间和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_controlled_doubletalk.py">可运行脚本</a>见<a href="research/02_aec_wpe_separation.html#aec">研究记录</a>。</p>
 <p><strong>与 WebRTC AEC3 的对照边界。</strong> 固定版本的官方 <code>audioproc_f</code> 可分别输出 AEC3 的线性段和最终段。其 WAV 模拟器默认先处理采集帧再处理播放帧；对同帧 Speex 同步接口作比较时，需要显式改为先播放参考、后采集。</p>
-<p>两者还要核对流延迟设置、额外高通、取点和输出采样率，不能把 AEC3 最终输出与 Speex 核心输出的功率差解释成线性滤波器优劣。本机稀疏 WebRTC 源码缺完整构建依赖，<strong>AEC3 尚未实际运行</strong>；具体参数与<a href="research/02_aec_wpe_separation.html#aec">官方源码入口</a>列在研究记录。</p>
-<p>本仓库已运行上述两组 SpeexDSP 真实配对接口实验，但<strong>尚未</strong>完成 WebRTC AEC3、SpeexDSP 与教学 NLMS 的同输入、同取点性能比较，也没有把无播放参考的 DEMAND 环境录音称为 AEC 实录。</p>
+<p>两者还要核对流延迟设置、额外高通、取点和输出采样率，不能把 AEC3 最终输出与 Speex 核心输出的功率差解释成线性滤波器优劣。本机已从固定提交构建官方 <code>audioproc_f</code>，按同帧先参考后采集、0 ms 报告流延迟，在上述两对真实录音上分别保存线性和最终输出；详细构建参数与输出摘要见<a href="research/02_aec_wpe_separation.html#aec">研究记录</a>。</p>
+<p>同一评分区间内，AEC3 的远端单讲线性/最终输出相对麦克风输入分别下降 7.685/15.731 dB；真实双讲分别下降 3.384/3.851 dB。这些是<strong>总数字功率变化，不是真值 ERLE</strong>；双讲没有独立干净近端真值，因而也不能由“更安静”推断近端保真。</p>
+<p>本仓库已运行上述两组 SpeexDSP 和 AEC3 的真实配对接口实验，但<strong>尚未</strong>完成 AEC3、SpeexDSP 与教学 NLMS 的同输入、同取点性能比较，也没有把无播放参考的 DEMAND 环境录音称为 AEC 实录。</p>
 <p>设备链路方面，目前只枚举到本机内置麦克风与扬声器；端点存在不等于已经测过声学回路、实际参考抽头或独立设备时钟漂移。实机验收须另记录播放和录制的时间戳、参考位置、缓冲事件与听测条件。</p>
 <p>学习步长控制的<a href="https://github.com/ThomasHaubner/e2e_dnn_ad_control_for_lin_aec/tree/7a003133d742698de7acba9510d9586d7d57a584">官方固定版本</a>适合回答“网络究竟替换了什么”：线性回声估计仍由 CTF 自适应滤波器完成，网络输出用于调节更新。源码逐帧运行，不等于部署接口已经支持任意分块续算；前端使用居中 STFT，并在每个序列重新初始化滤波器。没有匹配训练数据和权重时，只能核对结构与状态，不能把论文结果写成本仓库实测。</p>
 <p><a href="https://github.com/Arnout-Roebben/Integrated_AEC_NR/tree/23c6b567c7863a8ee9bafd38bad0d3ff2f25e185">Integrated_AEC_NR 固定版本</a>可用于比较 AEC→NR、NR→AEC 和联合扩展结构，但 <a href="https://github.com/Arnout-Roebben/Integrated_AEC_NR/blob/23c6b567c7863a8ee9bafd38bad0d3ff2f25e185/Util/Process/process.m"><code>Util/Process/process.m</code></a>直接由分解后的干净期望语音与干净回声生成活动判决。这是受控研究条件，不是设备输入。源码采用 MIT；仓库的 <a href="https://github.com/Arnout-Roebben/Integrated_AEC_NR/blob/23c6b567c7863a8ee9bafd38bad0d3ff2f25e185/ReadMe.md"><code>ReadMe.md</code></a>另列示例音频来源，代码许可不能替代音频许可。</p>
@@ -1333,7 +1420,7 @@ $$</p>
 <li>已知残余能量比 0.0063 与 0.0001，分别算出 ERLE。</li>
 <li>写出 Geigel 判决的参考历史窗，并解释阈值 0.5 对应的线路回声假设为什么不能直接当作声学 AEC 的固定阈值。</li>
 <li>对着图31 说清非线性平台从哪来。</li>
-<li>按算例 6-2 的计数规则比较时域 NLMS、无约束 PBFDAF 和逐分区约束 PBFDAF。</li>
+<li>按算例 6-2 的计数规则比较时域 NLMS、无约束 PBFDAF 和逐分区约束 PBFDAF；再说明为什么这些比值不能用于比较同配置的频域多抽头 NLMS 与 PBFDAF。</li>
 <li>在 SER=-20 dB 下算一笔减法与乘法的账。</li>
 <li>为 A3、A4 和 A6 分别写出测试输入、取点、统计量与项目阈值来源。</li>
 <li>说清双讲冻结与连续小步长的取舍。</li>
@@ -1352,7 +1439,7 @@ $$</p>
 <li>$10\log_{10}(1/0.0063)=22.0066\ldots$ dB，约 22.0 dB；$10\log_{10}(1/0.0001)=40$ dB。两个比值必须来自远端单讲回声能量。</li>
 <li>参考窗为 $x_a(n),\ldots,x_a(n-L+1)$，取其中绝对值最大者。线路中的约 6 dB 衰减给出约 0.5 幅度比；声学多径可叠加，路径增益也不同，不能沿用同一阈值，见 §6.1.5。</li>
 <li>图31的非线性映射产生线性参考组合无法完全表示的分量；路径估计收敛后这些分量仍留在残差。平台随输入、非线性强度、路径及统计窗口而变，不是设备类别的固定上限。</li>
-<li>全复数计数口径下，NLMS 为 3072 次实乘法/样本；无约束 PBFDAF 为 $28672/128=224$；逐分区约束为 $94208/128=736$。两项比值约为 13.7 和 4.17。该计算未计实际 FFT 库优化、控制模块和内存访问，不能当作实测加速比。</li>
+<li>全复数计数口径下，逐样本时域 NLMS 为 3072 次实乘法/样本；无约束 PBFDAF 为 $28672/128=224$；逐分区约束为 $94208/128=736$。两项比值约为 13.7 和 4.17。相同分区、变换、归一化与约束的频域多抽头 NLMS 就是这里的 PBFDAF 更新，不存在由改名带来的第二份加速收益。该计算未计实际 FFT 库优化、控制模块和内存访问，不能当作实测加速比。</li>
 <li>SER 为 −20 dB 意味着回声能量是近端的 100 倍。相位正确的 $0.9y$ 副本留下 $0.1y$，残余回声能量变为原来的 0.01，理想残余 SER 到 0 dB；统一乘增益会同时缩放近端和回声，SER 不变。存在相位误差时要重新计算复数差。</li>
 <li>A3 用固定远端单讲数据，在线性段和最终段分别取点并报告同窗口残余；A4 用规定 SER 与双讲区间的数据，同时报告近端损伤、回声和系数稳定性；A6 使用随机化、盲听的样本和播放协议，报告所选主观统计量。阈值来自明确版本的标准或目标设备历史基线，本题没有通用合格数字。</li>
 <li>冻结可以阻止检测到的双讲进入梯度，但期间路径变化也不能跟踪；小步长保留跟踪能力，也保留误更新风险。两者都需要检查检测滞后、错误判决和双讲结束后的恢复。</li>
@@ -1419,7 +1506,7 @@ $$</p>
 <ol>
 <li><strong>Hänsler &amp; Schmidt, <em>Acoustic Echo and Noise Control</em>（Wiley 2004）</strong>——AEC 领域的经典大部头，从自适应理论到免提终端工程全覆盖。<a href="https://onlinelibrary.wiley.com/doi/book/10.1002/0471678406" title="citation">Wiley 在线版</a></li>
 <li><strong>Benesty, Gänsler, Morgan, Sondhi &amp; Gay, <em>Advances in Network and Acoustic Echo Cancellation</em>（Springer 2001）</strong>——可用于阅读频域自适应与立体声 AEC 的背景；IPNLMS 参见前文所列的 2002 年方法与 2004 年参数化，不能把 2001 年著作当成它的原始出处。</li>
-<li><strong>Enzner et al., <em>Acoustic Echo Control</em>（Elsevier 2014）</strong>——IEEE SPM 经典综述的扩展版，卡尔曼路线讲得最透。</li>
+<li><strong>Enzner、Buchner、Favrot 与 Kuech，<em>Acoustic Echo Control</em>（Elsevier 2014）</strong>——载于 <em>Academic Press Library in Signal Processing</em> 第 4 卷、第 30 章，807～877 页；该书 4.30.2～4.30.6 小节分别讨论抵消与后滤、多通道、非线性和真实系统应用。<a href="https://www.sciencedirect.com/science/article/pii/B9780123965011000303" title="citation">出版社章节页</a></li>
 <li><strong>Breining et al., IEEE SPM 1999</strong>——四大难点的经典出处，一节一引，入门必读（链接见 §6.1.1）。</li>
 <li>中文参考：《语音识别服务实战》第 3.4 节，侧重工程实现。</li>
 </ol>

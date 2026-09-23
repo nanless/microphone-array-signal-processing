@@ -29,11 +29,17 @@ NLMS 以参考回归向量的能量归一化更新幅度，便于在不同播放
 
 读码顺序为：参考延迟向量 → 回声估计 → 误差 → 归一化分母 → 冻结条件 → 系数更新。最小实验使用已知短 FIR；先让近端静音检查系数，再在中段加入近端信号并冻结更新。失败实验把纯延迟移到滤波器长度之外：继续增加迭代次数不能恢复不在模型内的抽头。泄漏系数扫描应另报系数偏差，不能只看输出噪声降低。
 
-### A02　FDAF、MDF、PBFDAF 与重叠保存
+### A02　FDAF、频域多抽头 NLMS、MDF/PBFDAF 与重叠保存
 
-单块频域滤波把长卷积转成 FFT 乘法；MDF/PBFDAF 把长路径分成多个短分区，在保持较短输入块的同时覆盖长尾。频域乘法天然计算循环卷积，所以丢弃无效输出区与限制滤波器有效时域长度是算法的一部分。[Soo 与 Pang 原论文](https://doi.org/10.1109/29.103078)和 [SpeexDSP `libspeexdsp/mdf.c`](https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/mdf.c)用于分别阅读结构与工程实现；具体检出版本以锁定清单为准。
+单块频域滤波把长卷积转成 FFT 乘法；MDF/PBFDAF 把长路径分成多个短分区，在保持较短输入块的同时覆盖长尾。固定一个频点，若“频域多抽头 NLMS”的 $P$ 个抽头正是当前和过去 $P-1$ 个参考块，且采用[正文式(6-3)](../../chapters/06_aec.md#sec-6-1-3)的同一误差谱和归一化分母，那么它与该式的 PBFDAF 更新逐分量相同，不另列为一种算法。名称本身不保证论文与产品使用相同步长；[Páez Borrallo 与 García Otero 的 1992 年 PBFDAF 原论文摘要](https://www.sciencedirect.com/science/article/pii/016516849290077A)说明该版本还考虑输入谱均匀度。
 
-建议沿 `speex_echo_state_init_mc()`、`speex_echo_cancellation()` 阅读分区数量、参考频谱历史、估计输出、误差频谱和梯度约束。最小实验先关闭更新，把已知 FIR 分区后与直接线性卷积逐样本比较，再启用更新。失败实验分别移除重叠保存的丢弃区、时域约束，观察块边界误差。不要把两种约束错误误判成步长过大。
+频域乘法计算循环卷积，因此重叠保存输出只保留有效区；若要求每个分区始终对应固定长度的时域 FIR，还要检查权重初始化及梯度约束。无梯度约束是可研究的合法变体，不等于连有效输出区也可以省略。[Shynk 1992，§IV、图 5 与式(30)](https://course.ece.cmu.edu/~ece792/handouts/Shynk92.pdf)明确区分有效区误差与梯度约束；[Soo 与 Pang 原论文](https://doi.org/10.1109/29.103078)和 [SpeexDSP `libspeexdsp/mdf.c`](https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/mdf.c)可分别阅读结构与工程实现，具体检出版本以锁定清单为准。
+
+读码时沿 `speex_echo_state_init_mc()`、`speex_echo_cancellation()` 检查分区数量、参考频谱历史、估计输出、误差频谱和梯度约束。若要比较两个都叫“频域多抽头 NLMS”或 PBFDAF 的实现，应逐项核对块长、FFT 标度、块边界、初值、有效区误差的补零位置、瞬时或平滑功率、归一化地板、步长/双讲控制及约束频率；只看到相同的 $E X^*/(\sum|X|^2+\delta)$ 不足以断定逐块权重轨迹相同。同配置时，也不存在由重命名带来的运算量或延迟优势；正文算例 6-2 的倍数是相对逐样本**时域** NLMS。
+
+最小实验先关闭更新，把已知 FIR 分区后与直接线性卷积逐样本比较，再启用更新并保存每块权重。故障注入分别测试不丢弃循环卷积的无效输出区，以及关闭梯度约束：前者会破坏对应位置的线性卷积输出；后者可能改变权重轨迹和稳态误差，却不保证每组输入都出现块边界错误。另需区分一般 STFT 域同频带跨帧滤波：任意分析、合成窗下，忽略跨频带项未必与重叠保存的全带时域 FIR 逐样本等价，见 [Avargel 与 Cohen 2007，§II](https://webee.technion.ac.il/Sites/People/IsraelCohen/Publications/TASL_May2007.pdf)。
+
+上述最小实验现有[教学实现](../array_tutorial/aec_partitioned.py)、[两块手算演示](../examples/aec_partitioned_demo.py)与[独立测试](../../tests/test_codes_aec_partitioned.py)：$N=P=2$ 时，第 1 块第一分区候选的非法第 3 个时域抽头为 $1/3$，约束后归零，第二分区合法首抽头保留 $1/3$。测试另以直接时域卷积校验固定已知路径，并覆盖跨块状态、零参考、短末分区、冻结和数值溢出。这证明教学代码在这些输入下遵循本书约定，不是 Speex AUMDF 的复现，也未提供真实语音收敛或实时性对比。
 
 ### A03　AUMDF、分区约束调度与比例分配
 
@@ -41,11 +47,36 @@ Speex 的 `mdf.c` 注释明确采用交替更新的 MDF（AUMDF）。它调度�
 
 读代码中的 `proportional adaptation rate` 与 `MDF / AUMDF` 段落时，区分“某个分区是否施加约束”和“该分区是否做梯度更新”。最小实验使用相同长度、相同总能量的稀疏与稠密 FIR，记录相对系数误差和每块耗时。失败实验在大抽头位置突变后检查小抽头是否迟迟得不到足够更新。不要把 Speex 的这一具体控制器直接称作所有 PNLMS/IPNLMS 变体的实现。
 
-### A04　FDKF、PBFDKF 与对角近似
+### A04　RLS、Kalman、FDKF 与分区状态空间 AEC
 
-频域卡尔曼滤波（FDKF）把路径系数当作随时间变化的状态，把近端语音与噪声视为观测干扰，通过误差统计调节更新增益。分区块频域变体（PBFDKF）还需管理跨分区状态。Zhu 等的 [Interspeech 2021 原论文](https://www.isca-archive.org/interspeech_2021/zhu21d_interspeech.pdf)针对双声道声学回声消除，给出精确递推及保留不同协方差子矩阵的两种简化；它们减少矩阵计算，也改变统计近似。不能用普通 NLMS 的步长参数代替解释。
+**先分清估计目标。** [正文式(6-5)～式(6-7)](../../chapters/06_aec.md#sec-6-1-3)的实数时域 RLS 维护指数加权参考相关矩阵的逆，精确求解含指定初值约束的加权最小二乘。它用当前样本的先验残差更新路径，并不识别近端语音。有限的 $P_{-1}=\delta^{-1}I$ 与目标里的 $\lambda^{n+1}\delta\|w-w_{-1}\|^2$ 必须配套；只写未正则化的目标、却用有限初始逆矩阵，前几个样本就不等价。教学[逐样本实现](../array_tutorial/aec_rls.py)、[两抽头演示](../examples/aec_rls_demo.py)和[独立批量最小二乘测试](../../tests/test_codes_aec_rls.py)可核对这个对应关系，均不是产品级 AEC。
 
-原始依据为 [Enzner 与 Vary，Signal Processing 2006](https://doi.org/10.1016/j.sigpro.2005.09.013)。本次未确认该原始方法具有可自由再分发的作者官方完整软件，因此保留原理索引，不能把 WebRTC AEC3 或 SpeexDSP 自动标作 FDKF。复现应记录状态转移、过程/观测噪声估计、增益下限、约束、分区和重置。最小实验先固定已知噪声统计，再改变回声路径；失败实验故意低估双讲干扰方差，检查增益与系数误更新。
+RLS 对 $L$ 抽头需要 $L\times L$ 逆相关状态，常规每样本更新为 $O(L^2)$；参考长时间为零时，按遗忘递推仍会放大逆相关状态。双讲时继续更新会把近端语音混进路径拟合，冻结更新又可能漏掉同时发生的回声路径变化。因此遗忘因子、路径突变检测和双讲控制必须一起观察，不能只报一条收敛曲线。平方根、QR 与 Householder 是数值稳定性路线，不表示它们都与原递推有相同运算量。[MathWorks 官方 RLSFilter 文档](https://www.mathworks.com/help/dsp/ref/dsp.rlsfilter-system-object.html)给出这些方法和锁定系数接口；它只证明工具箱提供 RLS，不证明 MathWorks 的 [AEC 示例](https://www.mathworks.com/help/audio/ug/acoustic-echo-cancellation-aec.html)采用了 RLS。
+
+**快 RLS 不等于普通频域 NLMS。** 频域多抽头 NLMS/PBFDAF 使用参考能量归一化梯度；经典 RLS 使用输入相关矩阵的逆来改变更新方向。Schneider 与 Kellermann 的 [GFDAF 分析，2016，§3～4](https://doi.org/10.1186/s13634-015-0302-2)把该类广义频域算法联系到**块 RLS 的近似**，而不是证明所有 PBFDAF 都是精确 RLS。面向长回声路径还有 [Cioffi 与 Kailath 1984 的快速横向滤波器](https://doi.org/10.1109/TASSP.1984.1164334)及 [Slock 与 Maouche 1994 的 FFT/低位移秩 RLS](https://doi.org/10.1016/0165-1684(94)90018-3)等结构化路线；名称里的“快速”必须回到各论文的输入模型、初始化与复杂度条件核实，不可把本书全矩阵 RLS 的 $O(L^2)$ 原样用于这些变体。
+
+**Kalman 的额外模型。** [正文式(6-8)～式(6-10)](../../chapters/06_aec.md#sec-6-1-3)把真实路径当作变化状态，用过程协方差 $Q$ 描述路径不确定度，用观测方差 $\Psi$ 描述近端语音和其他干扰；$P$ 是路径估计误差协方差，不是 RLS 定义下的逆参考相关矩阵。固定已知 $Q,\Psi$ 时可以复算增益，但残差变大本身不能证明应增大 $Q$：双讲和路径突变都会增大残差，前者通常要求减少对麦克风观测的信任，后者可能要求提高对新路径的适应。将 $A=I,\Psi=1,P_n^-=P_{n-1}/\lambda$ 特设于完整矩阵 Kalman，才与普通遗忘 RLS 的增益同式；这等价于依赖当前 $P$ 的 $Q_n=(\lambda^{-1}-1)P_{n-1}$，不是任意固定过程噪声 Kalman。
+
+两个层次的可运行核查彼此独立：[式(6-9)单复频点演示](../examples/aec_kalman_scalar_demo.py)与[分数测试](../../tests/test_codes_aec_kalman_scalar_demo.py)给出 $K=3/7$、后验路径 $22/35$、方差 $3/35$；把已知 $\Psi$ 从 $0.4$ 改为 $4$，增益变为 $3/16$，复数 $X=i$ 时 $K=-i/2$。[两抽头实数矩阵演示](../examples/aec_kalman_matrix_demo.py)与[独立测试](../../tests/test_codes_aec_kalman_matrix.py)用 Joseph 形式核对 $P^-=\operatorname{diag}(1,4)$、$x=[1,1]^\top$、$\Psi=1$ 时的 $K=[1/6,2/3]^\top$ 和后验非对角项 $-2/3$。第二步将状态协方差强行改成对角，创新方差会从 $9/2$ 误成 $19/6$。它说明**近似改变计算**，并不测得真实录音性能；两个实现都不含 FFT、分区、在线噪声估计、延迟搜索、双讲检测或残余抑制。
+
+**从矩阵 Kalman 到 FDKF/PBFDKF。** [Enzner 与 Vary，Signal Processing 2006，§2～4](https://doi.org/10.1016/j.sigpro.2005.09.013)建立声学状态空间频域滤波；[作者说明](https://homepages.ruhr-uni-bochum.de/gerald.enzner/StateSpaceFDAF.html)明确它是对精确 Kalman 的近似，并区分线性抵消输出和依据状态不确定度形成的后滤波输出。读论文时要跟踪频域路径状态、线性卷积有效区、观测扰动与状态协方差的近似，不能见到单频点式(6-9)就声称复现原论文。分区延伸可从 [Kuech、Mabande 与 Enzner，ICASSP 2014](https://doi.org/10.1109/ICASSP.2014.6853806)查起。[Zhu 等，Interspeech 2021，§2～3、图 4～5](https://www.isca-archive.org/interspeech_2021/zhu21d_interspeech.pdf)的 VD-PBFDKF 只保留同参考声道、同分区的协方差块；SD-PBFDKF 在同分区还保留不同参考声道间的块，两者仍丢弃跨分区块。多麦、多播放参考时，“对角”必须说明是频点、分区、声道还是矩阵元素层面的对角。论文实验的排序不自动外推到其他房间或双讲安排。
+
+**可读源码的精确入口与边界。** 下表按 [锁定版本](../SOURCES.lock.json) 指向实际算法入口；“仅索引”表示本书尚未下载、运行或验证该方法的数值输出，源码可见不等于获得示例音频或模型权重的再分发权。
+
+| 来源与入口 | 实际实现/值得看的状态 | 已核实的缺口 |
+|---|---|---|
+| [pyroomacoustics v0.10.0 `adaptive/rls.py`](https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/adaptive/rls.py) | MIT；通用实数 RLS 与 BlockRLS，已取得源码 | BlockRLS 按块末更新；无播放延迟、DTD、RES，不是完整 AEC |
+| [pyaec `time_domain_adaptive_filters/rls.py`](https://github.com/ewan-xu/pyaec/blob/5b9c02c57075d790b7df8652884618189d49bbc4/time_domain_adaptive_filters/rls.py) | Apache-2.0；时域逆矩阵引理，另有时域 Kalman 与频域 FDKF/PFDKF 教学入口 | 仅索引；RLS 的循环末尾样本覆盖、频域代码旧版 `np.complex` 与跨块状态需另测；无完整前端 |
+| [MetaAF `metaaf/optimizer_rls.py`](https://github.com/adobe-research/MetaAF/blob/56c4665bdc51c2e0595a7c0cd9b1266408adceff/metaaf/optimizer_rls.py) | 通用 JAX 复数频域、每频点矩阵 RLS 更新器；核心库源码已取得 | AEC 的 [`zoo/aec/`](https://github.com/adobe-research/MetaAF/tree/56c4665bdc51c2e0595a7c0cd9b1266408adceff/zoo/aec) 配方含 Kalman/RLS 基线但本地未取得；zoo 与权重受单独 Adobe Research License 约束 |
+| [echocatzh/PFDKF `pfdkf.py`](https://github.com/echocatzh/PFDKF/blob/7c8c86b5691966c330015d8e0960db0733b4844f/pfdkf.py) | MIT；独立作者的分区频域 Kalman 演示 | 仅索引；默认 `res=True` 带残余处理，输出不能充当纯线性误差；不是 2014 年原作者官方实现 |
+| [Subband_Kalman_AEC `main.m`、`saf_kalman.m`](https://github.com/changxuding/Subband_Kalman_AEC/tree/f0c4f7030769d94dea2da3c814837448f171d422) | MIT 代码；MATLAB 子带 Kalman、平方根、信息及平方根信息形式 | 仅索引；需要 MATLAB 与配套参数，默认可含后滤，附带录音权利独立核查 |
+| [nay0648/bssaec2020 `SimulatedExperiment/`](https://github.com/nay0648/bssaec2020/tree/a3f52249ee61f19e2369823f65c6c31392dcf042/SimulatedExperiment) | 作者的 Aux-ICA/加权 RLS MATLAB 仿真线索 | 无明确再分发许可，仅保留索引；其逐样本矩阵求逆不是本书 $O(L^2)$ 逆矩阵引理实现，也不是下述完整挑战赛 C++ 系统 |
+
+**工业证据不能越级。** [Wang 等的 AEC Challenge 论文，2021，§2、§4.1、表 1～2](https://arxiv.org/pdf/2102.08551)明确报告“GCC-PHAT 延迟补偿 → 频域加权 RLS 线性抵消 → Deep-FSMN 残余抑制”的参赛系统；其 wRLS 用 20 ms 帧、10 ms 帧移、320 点 DFT、5 个频域抽头，平滑参数 0.8、形状参数 0.2。文中 0.61 ms/帧来自内部 C++/SSE2、Surface Laptop i5-8350U 1.9 GHz 上**整链**平均计时，其中 0.19 ms 属于延迟补偿与 wRLS、0.42 ms 属于残余抑制；网络输入还用一帧未来上下文。论文也报告双讲近端语音可能被过抑制。这证明该团队做过有实现和计时的挑战赛系统，不证明内部 C++ 源码公开或商业产品已经部署，也不能把系统分数归给 RLS 单模块。
+
+[DSP Concepts 的 `SbKalmanAEC4RefV1` 官方模块文档](https://documentation.dspconcepts.com/awe-designer/8.D.2.7/sbkalmanaec4refv1)则是商业软件功能证据：WOLA 复数子带输入、多麦及至多四参考相关模块，提供 `resetP`、`masterReset`、`freeze`、权重、`P` 和 `PXTerm` 调试输出；默认残余噪声抑制开启。它说明产品文档确实提供 Kalman-based AEC 模块，但页面不是可再分发的完整算法源码，不能断言与 Enzner 2006 或本书式(6-10)逐式一致，更不能由输出安静判断线性滤波器更优。WebRTC AEC3 与 SpeexDSP 的锁定源码另见 A03/A06；没有实现级证据时，不把两者改称 RLS 或 Kalman。
+
+**公平复现实验顺序。** 先用长度 2 的已知 FIR 检查抽头顺序、先验输出、RLS 正则化与矩阵 Kalman 交叉协方差；再给同一长 FIR、同一随机种子和共同的参考/观测输入，分别记录权重误差、线性输出残差、运算量及资源。下一轮只改变一种条件：参考由宽带变窄带、插入已知双讲、改变真实路径、加入参考错位，或打开后滤。RLS 的 $\lambda$ 与 Kalman 的 $Q,\Psi$ 是不同模型参数，不用数值相等来定义“公平”。先在真值已知的合成段计算回声分量 ERLE 和近端保留，再在真实配对录音报告输入/输出能量与可获得的近端质量；真实配对录音没有干净回声和近端真值时，不能把总功率比冒充双讲 ERLE。每个结果同时标明线性段还是含后滤最终输出、冻结/门控来源、路径突变时间、FFT/分区与因果延迟、随机重复次数和离散程度。本节尚无这些外部 RLS/FDKF 实现的同条件声学性能测量，因此不提供伪造的统一排名。
 
 ### A05　DTD：二值判决与连续自适应控制
 
@@ -59,7 +90,9 @@ WebRTC 的 [`modules/audio_processing/aec3/`](https://webrtc.googlesource.com/sr
 
 锁定版的延迟估计器先对麦克风信号作通道混合及降采样，再用参考缓冲上的匹配滤波器（matched filter）估计时差，并聚合候选滞后；`render_delay_controller.cc` 将估计转换为参考缓冲延迟。`subtractor.cc` 的 refined/coarse 双滤波器负责线性回声估计与更新，不是两套用于比较不同候选延迟的滤波器。源码入口分别见 [`echo_path_delay_estimator.cc`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/echo_path_delay_estimator.cc)和 [`render_delay_controller.cc`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/render_delay_controller.cc)。
 
-应用接入点是 [Audio Processing Module（APM）接口](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/api/audio/audio_processing.h)，不能从内部 `subtractor.cc` 直接推断上层调用协议。固定头文件要求约 10 ms 的线性 PCM 帧：启用 `config.echo_canceller.enabled` 后，将远端播放帧交给 `ProcessReverseStream()`，处理近端帧前按设备时间设置 `set_stream_delay_ms()`，再调用 `ProcessStream()`。`int16` 接口按通道交织，浮点接口按通道分列；这些格式要用不同通道的已知脉冲检查。APM 对外可接受的采样率范围与锁定 AEC3 内部 `aec3_common.h` 的 16、32、48 kHz 分带速率不是同一层约束；内部每块 64 个最低频带样本，也不等于要求应用每次只交 64 点。
+应用接入点是 [Audio Processing Module（APM）接口](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/api/audio/audio_processing.h)，不能从内部 `subtractor.cc` 直接推断上层调用协议。固定头文件要求约 10 ms 的线性 PCM 帧：启用 `config.echo_canceller.enabled` 后，将远端播放帧交给 `ProcessReverseStream()`，处理近端帧前按设备时间设置 `set_stream_delay_ms()`，再调用 `ProcessStream()`。`int16` 接口按通道交织，浮点接口按通道分列；这些格式要用不同通道的已知脉冲检查。
+
+这个提交的 `int16` 接口只接受 8、16、32、48 kHz，且采集输入、输出与播放反向流的采样率必须相同，输出布局还须与采集输入一致；浮点接口才允许头文件所述较宽的合法采样率范围及不同的输入、输出布局。应用拿到 44.1 kHz 的整数 PCM，不能仅把采样率写入配置就交给 `int16` 接口，须先转换到受支持的速率，或按浮点接口的要求准备数据。APM 外部接口限制与锁定 AEC3 内部 `aec3_common.h` 的 16、32、48 kHz 分带速率不是同一层约束；内部每块 64 个最低频带样本，也不等于要求应用每次只交 64 点。[固定版头文件的 `Initialize()` 约束与 `NativeRate` 枚举](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/api/audio/audio_processing.h#509)
 
 `set_stream_delay_ms()` 报告的是播放帧进入 APM 到硬件实际播放、以及麦克风采样到采集帧进入 APM 的缓冲时间之和，不是房间传播时间或滤波器尾长。固定版 [`audio_processing_impl.cc`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/audio_processing_impl.cc) 的 `set_stream_delay_ms()` 把负值截到 0 ms、超过 500 ms 的值截到 500 ms，并返回 `kBadStreamParameterWarning`。接入层应保存输入参数、返回码、`stream_delay_ms()` 读回值与两路硬件时间戳；无线或外接播放的延迟若超出该范围，不能只按传入值解释后续对齐结果。500 ms 是这个提交的接口行为，不是声学路径或其他 AEC 的通用限值。
 
@@ -89,7 +122,9 @@ WebRTC 的 [`modules/audio_processing/aec3/`](https://webrtc.googlesource.com/sr
 |---|---|---|
 | 本书 `NLMSState` | 等长实数参考与麦克风一维数组；保留参考历史和抽头；`freeze` 由调用者给出 | 没有内部延迟搜索、DTD、RES 或重采样；可用已知延迟和真值冻结建立算术基线，不能冒充设备方案 |
 | WebRTC AEC3，经 APM 接入 | 约 10 ms 播放/采集帧；APM 调用、配置、参考缓冲及内部双滤波状态跨帧保留 | 上层报告流延迟，内部估计参考滞后；开启导出标志后用公开接口取得 16 kHz 线性段，最终输出另存 |
-| SpeexDSP AUMDF | `spx_int16_t` 麦克风和播放帧；回声状态、频域分区与参考历史跨帧保留；多通道用 `speex_echo_state_init_mc()` | 同步 `speex_echo_cancellation()` 不额外加入两帧播放缓冲；异步 `playback/capture` 接口自带两帧缓冲但可能与真实声卡不符；连续学习率而非二值 DTD，预处理残余抑制须另绑 `echo_state` |
+| SpeexDSP AUMDF | `spx_int16_t` 麦克风和播放帧；回声状态、频域分区与参考历史跨帧保留；多通道用 `speex_echo_state_init_mc()` | 同步 `speex_echo_cancellation()` 不额外加入两帧播放缓冲；固定版异步 `playback/capture` 辅助函数只按单通道帧宽搬运，不可直接接多通道交织帧；连续学习率而非二值 DTD，预处理残余抑制须另绑 `echo_state` |
+
+上表的异步限制来自锁定提交 `8e29a256ef0235ebbe7fcb8417b5ac7731eb8307` 的[`mdf.c` 实际缓冲操作](https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/mdf.c#L687-733)：`speex_echo_playback()` 每次只复制 `frame_size` 个标量样本，`speex_echo_capture()` 欠载时也只复制 `frame_size` 个输出样本，未按扬声器或麦克风通道数扩展。多通道应由应用按完整交织帧维护参考队列，再把已对应的播放帧交给 `speex_echo_cancellation()`；本书尚未运行这一多通道设备接口实验。
 
 WebRTC 与 SpeexDSP 锁定源码分别以 BSD-3-Clause 许可登记在[第三方清单](../THIRD_PARTY.md)；本书 NumPy 基线是原创教学代码。WebRTC 完整构建还需要其依赖元数据，Speex 的可选预处理器也不等于核心 AUMDF。RNNoise 虽在外部清单中，但[官方 README](https://github.com/xiph/rnnoise)定义它为单输入噪声抑制，示例使用 48 kHz 单声道原始 PCM；它没有播放参考，不能当作 AEC3 或 Speex 的同类替代。锁定版 `autogen.sh` 会调用下载模型的脚本；源码核对不等于已取得模型，更不等于已完成构建或执行。
 
@@ -146,7 +181,7 @@ cmake --build /private/tmp/speexdsp-aec-20260923 --parallel 4
 .venv/bin/python -m codes.examples.aec_doubletalk_experiment --speex-library /private/tmp/speexdsp-aec-20260923/libspeexdsp.dylib
 ```
 
-**已知近端注入：严格合成与半合成两种检查（2026-09-23 已运行）。** 真实双讲没有干净分量，故另用[式(6-9)](../../chapters/06_aec.md#sec-6-1-16)定义两次独立运行的输出增量 $\Delta$、投影增益 $g_{\Delta}$ 和不拟合时移/增益的相对平方误差 $E_{\Delta}$。每一对运行都使用同一播放参考、各自新建的状态和完全相同的输入长度；第二次麦克风 PCM 比第一次恰好多一个已知的 $s$。即使如此，自适应器状态和预处理也可随 $s$ 改变，所以 $\Delta$ 不是算法内部单独输出的“近端声道”。$E_{\Delta}$ 是无量纲的逐样本误差，越小表示这项增量越接近原注入信号；它不是双讲 ERLE 或主观音质分。
+**已知近端注入：严格合成与半合成两种检查（2026-09-23 已运行）。** 真实双讲没有干净分量，故另用[式(6-13)](../../chapters/06_aec.md#sec-6-1-16)定义两次独立运行的输出增量 $\Delta$、投影增益 $g_{\Delta}$ 和不拟合时移/增益的相对平方误差 $E_{\Delta}$。每一对运行都使用同一播放参考、各自新建的状态和完全相同的输入长度；第二次麦克风 PCM 比第一次恰好多一个已知的 $s$。即使如此，自适应器状态和预处理也可随 $s$ 改变，所以 $\Delta$ 不是算法内部单独输出的“近端声道”。$E_{\Delta}$ 是无量纲的逐样本误差，越小表示这项增量越接近原注入信号；它不是双讲 ERLE 或主观音质分。
 
 严格合成夹具读 `codes/audio/aec_far.wav`、`aec_near.wav`、`aec_microphone.wav`，逐一核对清单中的 SHA-256。三路均为 16 kHz、32000 点 PCM16；近端只在 `[19200,28800)` 非零。令 $d_1$ 为已量化麦克风、$s$ 为已量化近端，取 $d_0=d_1-s$，先在 32 位整数中检查范围，再转回 PCM16，因此输入等式在 PCM 域精确成立；$d_0$ 不宣称等于未量化 FIR 真值。固定 `[9600,17600)` 为远端单讲检查区、`[19200,28800)` 为双讲评分区、`[28800,32000)` 为恢复观察区。教学 NLMS 用 32 抽头、步长 0.4、$\varepsilon=10^{-8}$；双讲冻结使用已知真值掩码，不是检测器。SpeexDSP 仍为 160 点帧、4096 点滤波覆盖和独立状态。
 
@@ -176,17 +211,40 @@ cmake --build /private/tmp/speexdsp-aec-20260923 --parallel 4
 
 **WebRTC AEC3 对照的已核实入口与未完成项。** 固定源码提交 `0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e` 的官方 [`audioproc_f`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/rtc_tools/BUILD.gn) 可接受 `--i=<mic.wav>`、`--ri=<lpb.wav>`，用 `--o=<final.wav>` 保存最终输出，并用 `--linear_aec_output=<linear.wav>` 导出 16 kHz 线性段。为了与 Speex 的“同帧先参考、后采集”一致，须给 `--custom_call_order_file` 一个内容为 `rc` 的文本文件；[WAV 模拟器源码](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/test/wav_based_simulator.cc)的默认顺序反而是 `cr`。建议显式设置 `--fixed_interface=true --aec=1 --agc=0 --agc2=0 --ns=0 --hpf=0 --ts=0 --stream_delay=0`，并保留完整构建选项、日志、输出 PCM 摘要；`stream_delay=0` 只是离线缓冲假设，`hpf=0` 也不保证关闭 AEC3 内部强制高通。最终输出与 Speex 核心线性输出不是同一处理取点，须分列而不能排性能名次。
 
-当前本机只有 136 MB WebRTC 主源码的稀疏检出，没有 `build/`、`buildtools/`、`third_party/`、GN、Ninja 与 `gclient`；`xcodebuild -version` 也表明仅安装了 Command Line Tools，缺少官方 macOS 构建前提中的完整 Xcode。因此官方 `audioproc_f` **尚未构建或运行**；本节没有 WebRTC AEC3 数值，也没有同输入、同取点的三系统性能结论。要真正构建，需按[官方构建说明](https://webrtc.googlesource.com/src/+/main/docs/native-code/development/README.md)在独立忽略目录取得 depot_tools 与完整依赖，固定 `gclient sync` 到上述源码提交，启用 `rtc_enable_protobuf=true` 与 `rtc_include_tests=true` 后构建 `rtc_tools:audioproc_f`；完整检出是数 GB 级，不应把当前稀疏源码说成已满足前提。
+**本机固定版本构建与运行（2026-09-23）。** Xcode 27.0（27A266a）的许可及首次启动组件已由用户同意并完成。本书在独立的 Git 忽略目录 `codes/upstream/_downloads/webrtc_aec3_checkout/` 用官方 depot_tools 提交 `db1dc923aa3c34fa748015e8c7a435d955b4c105` 执行 `gclient sync --revision src@0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e --nohooks --noprehooks --no-history -j 4`；随后核对 `src` 的 HEAD 为该提交，未修改已跟踪上游源码。原先 136 MB 的稀疏检出仍单独保留，不冒充完整依赖。上游 `runhooks` 已安装编译器和符号工具，但因随后开始下载与本实验无关的大型视频测试资源而中止；不能称为完整 hooks 通过。
+
+构建参数为 `is_debug=false rtc_include_tests=true rtc_enable_protobuf=true target_cpu="arm64" use_custom_libcxx=false mac_sdk_path="/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk"`；目标 `rtc_tools:audioproc_f` 构建成功，程序 SHA-256 为 `82f8eebaf574eb10fdee695ee7ea05a54418300a045a3ffb0de8f4c78f4592d3`。其中后两个参数是本机兼容设置：固定版自带 libc++ 在 Xcode 27 SDK 下编译报 `INFINITY` 未声明，固定版 `ld64.lld` 读取 27.0 SDK 的 `.tbd` 时又因 `arm64e.x1` 报未知架构；改用系统 libc++ 与本机已有的 15.4 SDK 后成功。它们不改变 WebRTC 源码，但此二进制不是上游默认 GN 参数的构建。下方给出构建与运行命令；程序摘要本身不能证明源码出处。
+
+在完整检出目录的 `src/` 下，构建命令为：
+
+```bash
+PATH=/path/to/depot_tools:$PATH DEPOT_TOOLS_UPDATE=0 \
+  buildtools/mac/gn gen out/aec3 \
+  --args='is_debug=false rtc_include_tests=true rtc_enable_protobuf=true target_cpu="arm64" use_custom_libcxx=false mac_sdk_path="/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk"'
+PATH=/path/to/depot_tools:$PATH DEPOT_TOOLS_UPDATE=0 \
+  autoninja -C out/aec3 -j 4 rtc_tools:audioproc_f
+```
+
+`/path/to/depot_tools` 需替换为上述固定提交的本地目录；第二次运行 `gn gen` 会覆盖同一 `out/aec3` 的构建配置，复做前应检查已有目录用途。编译成功只证明这一工具在这套环境可构建，不证明整套 WebRTC 目标、全部 hooks 或其他 SDK 组合通过。
 
 [AEC3 离线适配器](../examples/aec3_offline_compare.py)已固定两对录音的摘要、裁剪、`rc` 调用顺序及线性/最终双取点；只有传入官方已构建程序才会运行，缺程序直接报错，且不把两种输出混成一个分数。示例调用：
 
 ```bash
 .venv/bin/python -m codes.examples.aec3_offline_compare \
-  --audioproc /path/to/pinned/webrtc/out/Release/audioproc_f \
-  --output-dir codes/upstream/_downloads/aec3-comparison-20260923
+  --audioproc codes/upstream/_downloads/webrtc_aec3_checkout/src/out/aec3/audioproc_f \
+  --output-dir codes/upstream/_downloads/aec3-comparison-new-run
 ```
 
-须另外保存 GN 构建参数与编译日志，程序文件 SHA-256 本身不能证明它来自指定源码提交。完整三系统比较及真实设备验收仍未完成；[运行状态表](04_source_reproduction.md)按实现分别记录。
+本次对两对真实录音分别从全新状态运行，16 kHz、单声道 PCM16，每帧 160 点、同帧先参考后采集；评分前 3 s 只用于适应。表中数字为 $10\log_{10}(P_{\mathrm{mic}}/P_{\mathrm{out}})$，功率按相同窗口的 PCM16 归一化样本平方均值计算。它是**总数字功率变化，不是真值 ERLE**。
+
+| 原始录音与评分半开区间 | AEC3 线性输出 | AEC3 最终输出 |
+|---|---:|---:|
+| 远端单讲，`[48000,188320)` 点（`[3,11.77)` s） | 7.685 dB | 15.731 dB |
+| 双讲，`[48000,128000)` 点（`[3,8)` s） | 3.384 dB | 3.851 dB |
+
+线性输出 WAV 的 SHA-256 依次为 `6022c2a5354c9f760a3cac54e8e8ac9c63c1aec7bd16f3f2275f7257f27abc4e`、`9ca8a7e81bc7c07e8b4cf337832de20ff0cea5b94e3e937d7bbcb870baed8fab`；最终输出依次为 `cece4d1134285b5fe251a999d5b8915642753b1be19e63a72882d1e2e624944d`、`adcdd3b2d98181d0a9ae4c7d9a85181aa39c9bc2a50d4b51acb9a428df60c5b4`。录音原件及输出位于 Git 忽略缓存，输入摘要由适配器逐次检查；复做时须使用新的输出目录，避免覆盖旧实验。
+
+远端单讲最终输出比线性输出的功率降得更多，符合两个取点包含不同处理的事实，却不能把差额全部归因于残余回声抑制。双讲录音没有独立干净近端或干净回声真值，因此 3.384/3.851 dB 既不证明近端保护，也不证明双讲回声抑制量。这里没有同输入、同取点的 AEC3、SpeexDSP 和教学 NLMS 性能排序，也没有真实设备声学回路或时钟漂移测量；[运行状态表](04_source_reproduction.md)按实现分别记录。
 
 **本机设备链路的只读核查（2026-09-23）。** macOS `system_profiler SPAudioDataType -detailLevel full` 仅列出 MacBook Air 内置麦克风（1 路输入、48 kHz）和内置扬声器（2 路输出、48 kHz）；FFmpeg 的 AVFoundation 设备枚举仅显示内置麦克风，没有播放回环采集端点。CoreAudio 只读查询还给出两个设备 ID 71、76，均报告 `main` 时钟域和 `bltn` 内置传输类型。这些只说明系统报告它们属于同一域，不是两个独立设备的采样时钟漂移实测。
 

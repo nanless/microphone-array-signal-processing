@@ -1,6 +1,6 @@
 # 第三方实现与工业生态索引
 
-核实日期：2026-09-22。此索引包含 69 个上游项目；已在 `codes/upstream/_downloads/` 取得并核验 63 个独立源码工作区，另 6 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 73 个上游项目；已在 `codes/upstream/_downloads/` 取得 63 个独立源码工作区；本轮离线核验 62 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 10 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”只说明来源、提交、工作区状态和指定入口符合清单，不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -14,7 +14,7 @@
 没有复制进教学包。
 
 SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构建依赖，不另计为一种空间算法，
-也不计入上面的 69 项 Git 源码索引。官方归档为
+也不计入上面的 73 项 Git 源码索引。官方归档为
 [`fftw-3.3.10.tar.gz`](https://fftw.org/pub/fftw/fftw-3.3.10.tar.gz)，SHA-256 为
 `56c932549852cddcfafdab3820b0200c7742675be92179e59e6215b340e26467`。
 归档的 `COPYRIGHT` 与 `kernel/alloc.c` 声明 GPL-2.0-or-later；`api/fftw3.h` 单独采用 BSD 两条款文本，
@@ -25,7 +25,7 @@ SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构�
 
 | 项目与固定版本 | 对应算法或工程功能 | 代码许可摘要 | 本地获取范围 |
 |---|---|---|---|
-| [pyroomacoustics](https://github.com/LCAV/pyroomacoustics/tree/0dd39f2614b7fc44b2cc63dbe7d60f4641068890) | 房间仿真、STFT、DOA、波束与盲分离 | MIT | 已取得独立源码 |
+| [pyroomacoustics](https://github.com/LCAV/pyroomacoustics/tree/0dd39f2614b7fc44b2cc63dbe7d60f4641068890) | 房间仿真、STFT、DOA、波束、盲分离及通用 RLS/BlockRLS 自适应滤波；后者不是完整 AEC 链路 | MIT | 已取得独立源码 |
 | [odas](https://github.com/introlab/odas/tree/bcb845434495e293df3d48f1203b7a86e1852449) | 定位、追踪、分离与后滤波的实时 C 链路 | MIT | 已取得独立源码 |
 | [nara_wpe](https://github.com/fgnt/nara_wpe/tree/a166779cca2088817e330481bd20af1a2c598555) | 离线、块在线和逐帧在线 WPE | MIT | 已取得独立源码 |
 | [asteroid](https://github.com/asteroid-team/asteroid/tree/fce87469132760fbab41c20616ea0f0e079aad38) | Conv-TasNet、DPRNN 与训练配方 | MIT | 已取得独立源码 |
@@ -72,11 +72,15 @@ SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构�
 | [wpe_gpu](https://github.com/desh2608/wpe/tree/bd2857b5b8de36df4f436a93574c088bea142042) | CuPy 离线 WPE 与 GPU-GSS 去混响 | MIT | 已取得独立源码 |
 | [dtln_aec](https://github.com/breizhn/DTLN-aec/tree/9d24e128b4f409db18227b8babb343016625921f) | 双信号处理域的神经 AEC | MIT | 已取得独立源码 |
 | [speakerbeam](https://github.com/BUTSpeechFIT/speakerbeam/tree/91af02cc617afa35fedfbdbf32533012cd0a8672) | 目标说话人提取的受限评测实现 | LicenseRef-BUT-NTT-Evaluation | 仅来源索引 |
-| [metaaf](https://github.com/adobe-research/MetaAF/tree/56c4665bdc51c2e0595a7c0cd9b1266408adceff) | 可学习更新规则的核心库 | LicenseRef-NCSA-and-Adobe-Research | 已取得 metaaf/ 核心与 README |
+| [metaaf](https://github.com/adobe-research/MetaAF/tree/56c4665bdc51c2e0595a7c0cd9b1266408adceff) | 可学习更新规则及通用频域 RLS 的核心库；AEC Kalman/RLS 基线另在 `zoo/aec/` | 核心 University of Illinois/NCSA；`zoo/` Adobe Research License | 已取得 metaaf/ 核心与 README；未取得 zoo/ |
 | [fastmnmf_author](https://github.com/sekiguchi92/SoundSourceSeparation/tree/897fe87fea3d85a243d8a3fd36c2232bb0548ad3) | FastMNMF 与自回归联合模型的作者实验 | LicenseRef-Academic-Research-Only | 仅来源索引 |
 | [spmamba](https://github.com/JusperLee/SPMamba/tree/f939f60a10db8a66aa69ec09685684307af47412) | 空间域与时序状态空间分离 | Apache-2.0 | 已取得独立源码 |
 | [mamba_tasnet](https://github.com/xi-j/Mamba-TasNet/tree/a35c692f27213781a11b1606c375cda1e1f0fb62) | Mamba 与 TasNet 分离实现 | GPL-3.0 | 已取得独立源码 |
 | [nkf_aec](https://github.com/fjiang9/NKF-AEC/tree/8ac58fb8fb9ced48579f9aa310745c54f98d7e1f) | 神经 Kalman AEC 作者研究代码 | NOASSERTION | 仅来源索引 |
+| [pyaec](https://github.com/ewan-xu/pyaec/tree/5b9c02c57075d790b7df8652884618189d49bbc4) | 时域 RLS、Kalman 与频域 FDKF/PFDKF 的教学代码；不含完整产品前端 | Apache-2.0；演示音频另核 | 仅来源索引，未运行 |
+| [echocatzh/PFDKF](https://github.com/echocatzh/PFDKF/tree/7c8c86b5691966c330015d8e0960db0733b4844f) | 分块频域 Kalman 演示；默认输出含残余处理，并非单独的线性误差 | MIT；演示音频另核 | 仅来源索引，未运行 |
+| [Subband_Kalman_AEC](https://github.com/changxuding/Subband_Kalman_AEC/tree/f0c4f7030769d94dea2da3c814837448f171d422) | MATLAB 子带 Kalman、平方根及信息形式；部分默认输出含非线性后处理 | MIT 代码；附带录音许可另核 | 仅来源索引，未运行 |
+| [bssaec2020](https://github.com/nay0648/bssaec2020/tree/a3f52249ee61f19e2369823f65c6c31392dcf042) | 作者 MATLAB Aux-ICA/加权 RLS 仿真；不是完整工业 C++ 实现 | 未发现明确再分发许可；附带音频与 PESQ 文件另核 | 仅来源索引，不下载、不再分发 |
 | [fn-ssl-ipdnet](https://github.com/Audio-WestlakeU/FN-SSL/tree/76fcb281be92caf068c712dfb015e354f437260f) | 直接路径 IPD 估计与定位 | MIT stated in README; complete license text and third-party notices not established | 仅来源索引 |
 | [dcase2022-seld](https://github.com/sharathadavanne/seld-dcase2022/tree/c8adb1d3a5a35de2d6c7b6d19e01ad455eef3986) | multi-ACCDOA、ADPIT 与 SELD | No explicit redistribution license established from inspected official tree and source header | 仅来源索引 |
 | [dcase2025-stereo-seld](https://github.com/partha2409/DCASE2025_seld_baseline/tree/42a48b6456b73be35ad0e1a9ffeb6ceef83ae0bd) | 双通道方位/距离与视听 SELD | No explicit redistribution license established from inspected official tree and source header | 仅来源索引 |
@@ -112,7 +116,8 @@ DEMAND v1.0 的 NRIVER 河流场景来自 [Zenodo 1227121](https://zenodo.org/re
 
 ## 不能混同的许可范围
 
-- **MetaAF**：仅取得 `metaaf/` 核心及 README。核心许可为 University of Illinois/NCSA；`zoo/` 和权重的 Adobe Research License 单独处理，未随核心下载。核心可读不等于任务配方和模型已经齐备。
+- **MetaAF**：仅取得 `metaaf/` 核心及 README。核心许可为 University of Illinois/NCSA；[`zoo/`](https://github.com/adobe-research/MetaAF/blob/56c4665bdc51c2e0595a7c0cd9b1266408adceff/zoo/README.md)、任务配方和权重另受其 [Adobe Research License](https://github.com/adobe-research/MetaAF/blob/56c4665bdc51c2e0595a7c0cd9b1266408adceff/zoo/LICENSE) 约束，限非商业研究、教学与测试，不能据此用于商业产品开发，未随核心下载。核心里的 `optimizer_rls.py` 是通用更新器；`zoo/aec/` 的 Kalman/RLS 基线不能因此算作已经取得或运行。
+- **RLS/Kalman AEC 示例**：pyroomacoustics 的 RLS/BlockRLS 是通用滤波器，不提供 AEC 所需的播放参考对齐、双讲保护和残余回声抑制。pyaec、PFDKF、Subband_Kalman_AEC 是可研究的算法演示，不能由代码可见推断工业部署；它们的示例录音许可应逐项另核。bssaec2020 没有查到明确源码再分发许可，维持只登记不下载，其仓库 README 中还有 Interspeech 2020 退稿通知，不能称作该会议已接收实现。
 - **Spatial Audio Framework**：核心 ISC，部分可选模块 GPL-2.0。不能用核心许可描述全部模块。
 - **icoDOA、piva、Mamba-TasNet、ALSA**：已取得各自许可下的独立源码用于研究；AGPL/GPL/LGPL 的义务不能因放在下载目录而消失。这里没有把这些项目合并或重新授权为本书代码。
 - **SpeakerBeam、FastMNMF 作者整库**：所核实实现分别有评测或学术用途限制，未自动获取。算法本身与某一实现的限制要分开；FastMNMF 另有已取得的 pyroomacoustics 实现。

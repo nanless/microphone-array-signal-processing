@@ -39,7 +39,7 @@ English version: [README_EN.md](./README_EN.md)
 | 第 3 章 | `chapters/03_array-geometry.md` | 线阵、圆阵、球阵、稀疏阵，端射灵敏度与阵列校准 | 进阶 |
 | 第 4 章 | `chapters/04_doa-estimation.md` | GCC-PHAT、SRP、几何解算、Bartlett/Capon、MUSIC/ESPRIT、宽带聚焦、DNN 定位、CRLB | 较难 |
 | 第 5 章 | `chapters/05_beamforming.md` | DSB、超指向、MVDR、LCMV、GSC、SPP、后置滤波、球谐、DNN 波束 | 较难 |
-| 第 6 章 | `chapters/06_aec.md` | NLMS/FDKF/PBFDAF、双讲检测、非线性、混合神经 AEC、AEC3 | 较难 |
+| 第 6 章 | `chapters/06_aec.md` | NLMS/RLS/Kalman/FDKF/PBFDAF、双讲检测、非线性、混合神经 AEC、AEC3 | 较难 |
 | 第 7 章 | `chapters/07_wpe-dereverberation.md` | WPE 原理与推导、Δ/K 选择、在线 WPE、手算例 | 进阶 |
 | 第 8 章 | `chapters/08_speech-separation.md` | 混合模型、BSS、GSS、深度分离、TSE、连续会议分离与数据集 | 进阶 |
 | 第 9 章 | `chapters/09_source-tracking.md` | KF 手算、粒子滤波、PHD 多目标、定位—追踪—波束接口 | 进阶 |
@@ -75,8 +75,8 @@ python3 -m venv .venv
 .venv/bin/python scripts/build_site.py
 # 浏览器打开 site/index.html（双击即可；公式需联网加载 MathJax 渲染）
 
-# 5. 生成合订 PDF（输出 dist/microphone-array-tutorial.pdf，需本机装有 Google Chrome，
-#    非 macOS 可用 CHROME_BIN 环境变量指定 Chrome 路径）
+# 5. 生成合订 PDF（公式资源已固定在 scripts/vendor/mathjax-3.2.2/，无需联网；
+#    需本机装有 Google Chrome，非 macOS 可用 CHROME_BIN 指定 Chrome 路径）
 .venv/bin/python scripts/build_pdf.py
 # 需要可复现的封面日期时，加 --build-date YYYY-MM-DD，或设置 SOURCE_DATE_EPOCH
 

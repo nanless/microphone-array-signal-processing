@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>导读与导航 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="97cc224428a3"><style>
+<meta name="source-digest" content="edfa06348b2e"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -295,7 +295,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="sec-10" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-eaccb0e42d"><a href="06_aec.html">06 · 声学回声消除 AEC</a></h3>
 <p>11 张图（图18～20、图26～32、图36，另引用图23），较难。专讲回声消除这一件事，图 18、图 26～32 解释回声模型、收敛与工程条件，图 36 展示非线性残留的可复算反例。</p>
 <p>AEC（声学回声消除）处理设备自己播放、又被自身麦克风收进来的声音。能预测回声波形时可估计后相减，这是本章区分减法处理与增益抑制的起点。</p>
-<p>NLMS（归一化最小均方自适应滤波）给出基础更新式。PBFDAF（分块频域自适应滤波）、子带方法、IPNLMS 和 FDKF（频域卡尔曼滤波）用于降低长回声路径的计算量或改善收敛。扬声器非线性会限制线性 AEC，需根据失真来源增加非线性模型或神经网络。DTD（双讲检测）用于控制近端和远端同时活动时的自适应更新。</p>
+<p>NLMS（归一化最小均方自适应滤波）给出基础更新式。PBFDAF（分区块频域自适应滤波）把长路径分区，按频点使用多个历史参考块更新；在第 6 章规定的同一分块、误差和归一化口径下，它就是频域多抽头 NLMS 的具体实现，不是与之并列的新算法。子带方法、IPNLMS 和 FDKF（频域卡尔曼滤波）改变信号表示、系数分配或状态估计。扬声器非线性会限制线性 AEC，需根据失真来源增加非线性模型或神经网络。DTD（双讲检测）用于控制近端和远端同时活动时的自适应更新。</p>
 <p>AEC 与其他模块的参考关系见 §10.1 和图 23。评测要同时考虑远端单讲时的 ERLE、双讲稳定性、近端语音损伤和主观听测；ERLE 高并不能证明近端语音无损。WebRTC AEC3 可作为公开实现参考。</p>
 <p>读者应能确定回声参考取点，解释 AEC 与波束顺序的条件，并为线性路径、非线性失真和双讲分别选择验证方法。</p>
 <span id="sec-11" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-526b37e71a"><a href="07_wpe-dereverberation.html">07 · 去混响 WPE</a></h3>

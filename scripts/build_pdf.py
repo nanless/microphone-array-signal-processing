@@ -21,7 +21,7 @@
     CHROME_BIN=/path/to/chrome .venv/bin/python scripts/build_pdf.py  # 非 macOS
 
 依赖：markdown、pypdf（根 README 依赖行）；Chrome（macOS 默认路径，余者走环境变量
-或 which 回退）。公式经固定版本 MathJax 3.2.2 渲染——构建机必须联网。
+或 which 回退）。PDF 公式使用仓库内固定版本 MathJax 3.2.2 与 WOFF 字体，构建不联网。
 
 已知边界（诚实写在前面）：
   - PDF 书签与合订本 TOC 包含篇/节两级；第 6、7 章再收入源 h4 作为第三级。
@@ -53,6 +53,29 @@ except ModuleNotFoundError:  # 直接执行脚本时使用同目录模块。
 ROOT = Path(__file__).parent.parent
 SRC = ROOT / "chapters"
 OUT = ROOT / "dist"
+MATHJAX_DIR = ROOT / "scripts" / "vendor" / "mathjax-3.2.2"
+MATHJAX_SCRIPT = MATHJAX_DIR / "tex-mml-chtml.js"
+MATHJAX_FONT_DIR = MATHJAX_DIR / "output" / "chtml" / "fonts" / "woff-v2"
+MATHJAX_SCRIPT_SHA256 = "300480069078b5892d2363a2b65e2dfbbf30fe5c80f83edbfecf4610fd093862"
+MATHJAX_BOLDSYMBOL = MATHJAX_DIR / "input" / "tex" / "extensions" / "boldsymbol.js"
+MATHJAX_BOLDSYMBOL_SHA256 = "d6771fee0772db2657796c8d0e20e1878bb3237f6d3ed1e828e1834a4ff743ca"
+
+
+def check_mathjax_assets():
+    """Require the exact local script and complete CHTML font family."""
+
+    if not MATHJAX_SCRIPT.is_file():
+        raise SystemExit(f"缺少本地 MathJax：{MATHJAX_SCRIPT}")
+    if hashlib.sha256(MATHJAX_SCRIPT.read_bytes()).hexdigest() != MATHJAX_SCRIPT_SHA256:
+        raise SystemExit("本地 MathJax 脚本摘要不符；不能打印 PDF")
+    if (not MATHJAX_BOLDSYMBOL.is_file() or
+            hashlib.sha256(MATHJAX_BOLDSYMBOL.read_bytes()).hexdigest() != MATHJAX_BOLDSYMBOL_SHA256):
+        raise SystemExit("本地 MathJax boldsymbol 扩展缺失或摘要不符；不能打印 PDF")
+    fonts = sorted(MATHJAX_FONT_DIR.glob("MathJax_*.woff"))
+    if len(fonts) != 23 or any(path.stat().st_size == 0 for path in fonts):
+        raise SystemExit("本地 MathJax WOFF 字体不完整；不能打印 PDF")
+    if not (MATHJAX_DIR / "LICENSE").is_file():
+        raise SystemExit("本地 MathJax 许可文本缺失；不能打印 PDF")
 
 CHAPTERS = [
     ("00_overview.md", "导读与导航"),
@@ -226,6 +249,7 @@ def source_digest():
     paths = sorted(SRC.glob("*.md"))
     paths += [ROOT / "codes" / "research" / name for name, _ in build_site.RESEARCH]
     paths += [ROOT / "scripts" / "build_site.py"]
+    paths += sorted(path for path in MATHJAX_DIR.rglob("*") if path.is_file())
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "make_figures.py",
               ROOT / "scripts" / "make_aec_figures.py", ROOT / "requirements.txt"]
@@ -334,6 +358,7 @@ def resolve_build_date(explicit=None):
 
 
 def build_html(build_date=None):
+    check_mathjax_assets()
     """合 14 篇为单页 HTML。返回 (page, outline)，outline 为
     [(章label, 章id, [(节title, 节id, [(子节title, 子节id), ...]), ...]), ...]，
     供印刷目录和书签定位用。"""
@@ -438,8 +463,8 @@ def build_html(build_date=None):
              f'共 14 篇：导读、11 章正文、2 篇附录</div></div>')
     page = ("<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\">"
             f"<title>麦克风阵列信号处理教程（合订本）</title><style>{CSS}</style>"
-            "<script>\nwindow.MathJax = {tex: {inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], displayMath: [['$$', '$$']]}};\n</script>"
-            "<script defer src=\"https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js\"></script>"
+            "<script>\nwindow.MathJax = {tex: {inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], displayMath: [['$$', '$$']]}, chtml: {fontURL: '../scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2'}};\n</script>"
+            "<script defer src=\"../scripts/vendor/mathjax-3.2.2/tex-mml-chtml.js\"></script>"
             "</head><body>" + cover + "\n".join(toc) + "\n".join(body_parts)
             + '</body></html>')
     n_secs = sum(len(s) for _, _, s in outline)
@@ -612,6 +637,26 @@ def validate_pdf_text_codepoints(text):
         raise SystemExit(f"PDF 文本层含部首类错误码位：{codes}；请检查字体回退与 ToUnicode")
 
 
+def validate_pdf_math_example(text, type3_glyph_counts):
+    """Reject a print with missing MathJax glyph fonts on the AEC hand example.
+
+    Chrome embeds CHTML WOFF glyphs as Type3 fonts without usable ToUnicode,
+    so successful formulas may *not* appear in extracted text. The canary page
+    must instead contain both populated math font subsets. We also separately
+    reject raw TeX and inspect the rendered page during release QA.
+    """
+
+    start = text.find("不提前舍入时，上例的精确分数")
+    end = text.find("分区块频域卡尔曼滤波", start)
+    if start < 0 or end < 0:
+        raise SystemExit("PDF 数学字形探针的正文边界缺失；不能验收公式")
+    if len(type3_glyph_counts) < 2 or sum(type3_glyph_counts) < 150:
+        raise SystemExit(
+            f"PDF 数学字形探针的字形子集不完整：{type3_glyph_counts}；"
+            "疑似 MathJax 字体尚未就绪，保留原发布件"
+        )
+
+
 def validate_pdf_body_scale(reader):
     """拒绝 Chrome 因过宽内容而缩小整书；CSS 正文固定为 16 px。"""
     samples = []
@@ -645,7 +690,9 @@ def print_pdf(combined, pdf, timeout_min_pages=100):
         with tempfile.TemporaryDirectory() as udd, tempfile.TemporaryFile(mode="w+") as log:
             proc = subprocess.Popen(
                 [chrome, "--headless", "--disable-gpu", "--no-sandbox",
+                 "--allow-file-access-from-files",
                  f"--user-data-dir={udd}", "--timeout=180000",
+                 "--virtual-time-budget=30000",
                  f"--print-to-pdf={tmp_pdf}", "--no-pdf-header-footer",
                  combined.as_uri()], stdout=log, stderr=subprocess.STDOUT, text=True)
             deadline, last_size, stable_since = time.time() + 600, -1, None
@@ -688,6 +735,15 @@ def print_pdf(combined, pdf, timeout_min_pages=100):
             raise SystemExit("PDF 末页未检测到固定结束标记，疑似截断")
         if contains_unrendered_math("\n".join(page_texts)):
             raise SystemExit("PDF 文本层含未渲染的公式源码；保留原发布件")
+        math_page = next((i for i, page_text in enumerate(page_texts)
+                          if "不提前舍入时，上例的精确分数" in page_text), None)
+        if math_page is None:
+            raise SystemExit("PDF 数学字形探针的正文边界缺失；不能验收公式")
+        fonts = reader.pages[math_page]["/Resources"].get("/Font", {})
+        type3_glyph_counts = [len(font.get_object().get("/CharProcs", {}))
+                              for font in fonts.values()
+                              if font.get_object().get("/Subtype") == "/Type3"]
+        validate_pdf_math_example("\n".join(page_texts), type3_glyph_counts)
         validate_pdf_text_codepoints("\n".join(page_texts))
         validate_pdf_body_scale(reader)
         os.replace(tmp_pdf, pdf)
@@ -767,6 +823,7 @@ def main(argv=None):
     ap.add_argument("--min-pages", type=int, default=100, help="PDF 页数下限（默认 100）")
     ap.add_argument("--build-date", help="封面构建日期 YYYY-MM-DD；也可设置 SOURCE_DATE_EPOCH")
     args = ap.parse_args(argv)
+    check_mathjax_assets()
     OUT.mkdir(exist_ok=True)
     combined = OUT / "combined.html"
     pdf = OUT / "microphone-array-tutorial.pdf"

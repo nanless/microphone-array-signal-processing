@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码获取与独立复现记录 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="97cc224428a3"><style>
+<meta name="source-digest" content="edfa06348b2e"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -274,11 +274,18 @@ ERLE 不能把双讲中的近端语音解释成残余回声，也不能用参考
 <td>未测</td>
 </tr>
 <tr>
-<td>WebRTC AEC3、PipeWire AEC 后端</td>
+<td>WebRTC AEC3</td>
 <td>已核对固定源码与接口，明确官方 <code>audioproc_f</code> 的逐帧调用顺序和线性导出入口</td>
-<td>本机 WebRTC 仅 136 MB 稀疏主源码，缺完整 Xcode、GN、Ninja、gclient 及依赖；PipeWire 系统后端版本未构建核定</td>
-<td>未在真实配对或受控注入录音上运行；没有 AEC3 数值，不能与上行 Speex 结果排性能名次</td>
-<td>内置麦克风与扬声器报告同一 CoreAudio 时钟域；未播放／录音实测</td>
+<td>固定提交完整依赖已同步；Xcode 27.0 与本机 15.4 SDK 下构建 <code>rtc_tools:audioproc_f</code> 成功，视频资源下载钩子未全部完成；构建参数与摘要见增强研究 A06</td>
+<td>两对真实配对录音的线性/最终输出均已离线运行，数字仅为总功率变化；没有干净近端/回声真值，不能作 ERLE 或算法性能排名</td>
+<td>未播放／录音实测，未验证实机声学回路和时钟漂移</td>
+</tr>
+<tr>
+<td>PipeWire AEC 后端</td>
+<td>已核对固定源码和接口</td>
+<td>系统后端版本未构建核定</td>
+<td>未在本机运行</td>
+<td>不适用于仅凭当前 macOS 端点枚举得出设备链路结论</td>
 </tr>
 <tr>
 <td>pystoi</td>

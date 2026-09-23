@@ -1,6 +1,6 @@
 # 工业音频实现：从采集、状态到部署和评分
 
-原核实日期：2026-09-22；AEC 接口 I03/I05 复核日期：2026-09-23。对应正文第 10、11 章和附录 B。这里讨论本书算法进入连续音频系统后需要补上的部分：驱动、参考路由、跨块状态、定点内核、模型运行时和评分器。每项的完整提交以 [`SOURCES.lock.json`](../SOURCES.lock.json) 为准；网页文档版本只说明核实依据，不自动等于本机安装版本。
+原核实日期：2026-09-22；AEC 接口 I03/I05 与评分 I20 复核日期：2026-09-23。对应正文第 10、11 章和附录 B。这里讨论本书算法进入连续音频系统后需要补上的部分：驱动、参考路由、跨块状态、定点内核、模型运行时和评分器。每项的完整提交以 [`SOURCES.lock.json`](../SOURCES.lock.json) 为准；网页文档版本只说明核实依据，不自动等于本机安装版本。
 
 除明确写出输入、环境和实测值的本地接口实验外，下面的试验是建议执行的设备验收步骤，不是已经测得的产品结果。源码下载、依赖安装、编译、运行、声学测量是不同状态。没有硬件、模型或数据时，可以完成源码核对，但不能把该项标成已经通过设备验收。
 
@@ -32,7 +32,11 @@ PipeWire 官方开发仓库位于 freedesktop GitLab，`PipeWire/pipewire` 是�
 
 测试会议语音、通知声和音乐是否都进入参考；切换默认扬声器后再次检查。用断开参考和改变播放延迟的试验观察 AEC 恢复。系统已启用 AEC 时，应用再启用一套 AEC 会改变输入统计与近端损伤，应设置单套与双套处理对照，不能只检查虚拟麦克风能否出现。
 
-若应用直接接入锁定版 WebRTC APM，而不是使用 PipeWire 虚拟设备，应按 [`api/audio/audio_processing.h`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/api/audio/audio_processing.h)区分两路：启用 AEC 后，将送往播放硬件的参考帧交给 `ProcessReverseStream()`，每次处理采集帧前按硬件时间设置 `set_stream_delay_ms()`，再调用 `ProcessStream()`。APM 对外按约 10 ms 线性 PCM 帧工作；有符号 16 位接口通道交织，浮点接口按通道分列。该延迟参数由参考进入 APM 后至实际播放、以及麦克风采样后至进入 APM 的缓冲时间构成，不能用房间传播时间或录音文件头里的采样率代替。
+若应用直接接入锁定版 WebRTC APM，而不是使用 PipeWire 虚拟设备，应按 [`api/audio/audio_processing.h`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/api/audio/audio_processing.h)区分两路：启用 AEC 后，将送往播放硬件的参考帧交给 `ProcessReverseStream()`，每次处理采集帧前按硬件时间设置 `set_stream_delay_ms()`，再调用 `ProcessStream()`。APM 对外按约 10 ms 线性 PCM 帧工作；有符号 16 位接口通道交织，浮点接口按通道分列。
+
+固定提交 `0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e` 的 `int16` 接口限用 8、16、32、48 kHz，并要求采集输入、输出和播放反向流同速，采集输出布局与输入一致；浮点接口允许更广的合法速率和不同布局。44.1 kHz 整数 PCM 不能直接按 `int16` 接口送入，应先转换或改按浮点接口准备。[头文件 `Initialize()` 约束及 `NativeRate` 枚举](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/api/audio/audio_processing.h#509)
+
+`set_stream_delay_ms()` 的参数由参考进入 APM 后至实际播放、以及麦克风采样后至进入 APM 的缓冲时间构成，不能用房间传播时间或录音文件头里的采样率代替。
 
 固定版 [`audio_processing_impl.cc`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/audio_processing_impl.cc) 对超出 0～500 ms 的延迟值截断并返回警告；记录调用参数、返回码和 `stream_delay_ms()` 读回值，才能知道真正送入 AEC 的值。要比较线性抵消与最终输出，配置 `echo_canceller.export_linear_aec_output=true`，在 `ProcessStream()` 后调用 `GetLinearAecOutput()` 并检查返回值。该公开取点约为 10 ms、16 kHz；与最终输出对齐时不能把它按输入设备采样率直接拼接。两套 AEC 并开时，两边都要记录实际获得的参考与处理取点；只看到虚拟设备存在并不能证明应用内 APM 收到了正确参考。接口细节另见[增强研究 A06](02_aec_wpe_separation.md#a06-aec3-的延迟线性抵消残余抑制与舒适噪声)。
 
@@ -65,13 +69,13 @@ PipeWire 官方开发仓库位于 freedesktop GitLab，`PipeWire/pipewire` 是�
 
 SpeexDSP 的 `libspeexdsp/resample.c`、`include/speex/speex_resampler.h` 是另一组连续重采样入口。`libspeexdsp/mdf.c` 提供分块频域回声处理，可与第 6 章教学 NLMS 对照。代码根许可为 BSD-3-Clause，版本和提交沿用锁定清单。重采样器和回声消除器是两个独立状态；取得 SpeexDSP 源码不表示一打开 AEC 就自动纠正播放/采集采样率偏移。
 
-重采样配置包括输入/输出速率、通道数、质量档位、整数或浮点输入，以及每次调用的输入/输出长度。AEC 的帧长、滤波覆盖长度、采样率和播放参考缓冲另行固定；两者共享“连续状态”要求，但不能共用一个模糊的延迟参数。[固定版 AEC 头文件](https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/include/speex/speex_echo.h)说明 `speex_echo_cancellation()`由应用交付已经对应的播放帧，不额外加入两帧播放缓冲；`speex_echo_playback()`/`speex_echo_capture()`供异步输入使用，内部预留两帧，实际声卡延迟不一定相等。[官方手册](https://www.speex.org/docs/manual/speex-manual/node7.html)明确要求回声进入麦克风前，对应播放帧已到达回声消除器，过长的额外延迟还会占用滤波器覆盖长度。
+重采样配置包括输入/输出速率、通道数、质量档位、整数或浮点输入，以及每次调用的输入/输出长度。AEC 的帧长、滤波覆盖长度、采样率和播放参考缓冲另行固定；两者共享“连续状态”要求，但不能共用一个模糊的延迟参数。[固定版 AEC 头文件](https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/include/speex/speex_echo.h)说明 `speex_echo_cancellation()`由应用交付已经对应的播放帧，不额外加入两帧播放缓冲；`speex_echo_playback()`/`speex_echo_capture()`为异步辅助入口，内部预留两帧，实际声卡延迟不一定相等。[官方手册](https://www.speex.org/docs/manual/speex-manual/node7.html)明确要求回声进入麦克风前，对应播放帧已到达回声消除器，过长的额外延迟还会占用滤波器覆盖长度。
 
 这一固定提交的 `mdf.c` 初始化时将采样率置为 **8000 Hz**；16 kHz 输入不能只设置 WAV 文件头。创建状态后要用 `speex_echo_ctl(..., SPEEX_ECHO_SET_SAMPLING_RATE, &rate)` 显式设置，再用 `SPEEX_ECHO_GET_SAMPLING_RATE` 读回验证。[源码初始化与控制分支](https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/mdf.c)。上游 `testecho.c` 只演示接口，循环不核对每次 `fread` 的短读和文件结束；严谨评分应自己验证完整帧数、输入长度及尾部处理。本书的[真实配对 Speex 实验](02_aec_wpe_separation.md#aec)使用严格 PCM16 帧驱动，已在 macOS arm64 上运行，但不代表异步接口或设备链路也已通过。
 
-多通道使用 `speex_echo_state_init_mc(frame_size, filter_length, nb_mic, nb_speakers)`。固定版 [`mdf.c`](https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/mdf.c) 的同步路径分别按 `i*K+speak`、`i*C+chan` 读取交织的扬声器与麦克风通道；异步 `playback/capture` 辅助函数却只按 `frame_size` 个标量样本搬运缓冲，未在该路径乘通道跨度。因此不能未经验证就把多通道交织帧交给异步辅助函数。
+多通道使用 `speex_echo_state_init_mc(frame_size, filter_length, nb_mic, nb_speakers)`。固定提交 `8e29a256ef0235ebbe7fcb8417b5ac7731eb8307` 的 [`mdf.c`](https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/mdf.c#L687-733) 同步路径分别按 `i*K+speak`、`i*C+chan` 读取交织的扬声器与麦克风通道；异步 `speex_echo_playback()` 每次却只复制 `frame_size` 个标量播放样本，`speex_echo_capture()` 在参考欠载时也只复制 `frame_size` 个输出样本，均未按通道数扩展。因此该固定版异步辅助函数**不能直接接多通道交织帧**，否则参考缓冲和欠载输出可能只覆盖部分通道；这不是 `speex_echo_state_init_mc()` 已提供完整多通道异步队列的证据。
 
-对多通道先用应用显式对齐的 `speex_echo_cancellation()`，并以各通道在**不同采样索引**的单脉冲检查映射；给所有通道相同脉冲无法检出通道交换。该提交的 `SPEEX_ECHO_GET_IMPULSE_RESPONSE` 路径还标注多通道未实现，不能把返回的单一路径数据当作多通道真值。
+对多通道先由应用按完整交织帧维护参考队列，再用显式对齐的 `speex_echo_cancellation()`；以各通道在**不同采样索引**的单脉冲检查映射，给所有通道相同脉冲无法检出通道交换。该提交的 `SPEEX_ECHO_GET_IMPULSE_RESPONSE` 路径还标注多通道未实现，不能把返回的单一路径数据当作多通道真值。本书已运行的真实配对 Speex 实验只有单播放、单麦克风同步接口，未验证多通道或异步设备链路。
 
 异步单通道路径也不能只按“内置两帧缓冲”理解。`mdf.c` 的 `speex_echo_playback()` 在首次采集调用前可丢弃播放帧；`speex_echo_capture()` 在参考缓冲欠载时直接复制麦克风输入到输出，并发出告警。[固定版 `mdf.c` 的异步入口](https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/mdf.c)
 
@@ -209,7 +213,11 @@ Sound Open Firmware（SOF）将波束形成放入 DSP 固件及拓扑系统。�
 
 `microsoft/AEC-Challenge` 的 [`AECMOS/AECMOS_local/`](https://github.com/microsoft/AEC-Challenge/tree/6c633d0a9d2a143a0e364899b91b06f127315b18/AECMOS/AECMOS_local)提供 ONNX 模型与本地推理。官方 [AECMOS 说明](https://github.com/microsoft/AEC-Challenge/tree/6c633d0a9d2a143a0e364899b91b06f127315b18/AECMOS)区分回声与其他损伤，并说明 Web API 不再更新。源码根许可为 MIT；模型及挑战数据的来源仍须单列。
 
-固定远端参考、麦克风、处理后信号的对应关系、文件长度、采样率和模型版本。2021/2022 测试文件含收敛段，官方说明按单讲/双讲情形裁取评分区域；这些规则绑定相应测试集，不是所有 AEC 文件的通用剪裁法。
+固定远端参考、麦克风、处理后信号的对应关系、文件长度、原始采样率和模型版本。固定提交 `6c633d0a9d2a143a0e364899b91b06f127315b18` 的[本地 `aecmos.py`](https://github.com/microsoft/AEC-Challenge/blob/6c633d0a9d2a143a0e364899b91b06f127315b18/AECMOS/AECMOS_local/aecmos.py#L60-L81)用 `librosa.load(..., sr=模型采样率)` 读入三路音频，会自动重采样，并默认混成单声道；默认 `mono=True` 的行为见 [`librosa.load` 0.9.1 文档](https://librosa.org/doc-playground/0.9.1/generated/librosa.load.html)。随后三路各取共同最短长度，`run()` 对达到 20 s 的输入只保留**最前 20 s**。不能仅凭原文件头或成功返回分数，认定模型评分了原始采样率、全部通道和整段录音。
+
+用于 Interspeech 2021 或 ICASSP 2022 测试集时，应先按[官方 AECMOS 说明](https://github.com/microsoft/AEC-Challenge/blob/6c633d0a9d2a143a0e364899b91b06f127315b18/AECMOS/README.md)在**原始时间轴上对三路同步裁取**实际评分区：远端单讲取后半段，双讲取末尾 `(时长秒数−15)/2` 秒，近端单讲取全段。这些规则只属于相应测试集，不是所有 AEC 文件的通用剪裁法。
+
+裁取后核对三路采样率、通道混合、重采样和共同长度，再检查送入模型的片段是否超过 20 s；超出时须另行定义并验证分段及聚合口径，不能把默认脚本返回的首 20 s 分数称为整段评分。上述是固定源码的接口核对和建议评分流程，本书尚未运行 AECMOS 模型或取得其分数。
 
 分别保存远端单讲、近端单讲和双讲评分。用参考错配、固定延迟、近端削弱和静音输出检查评分流程是否揭示明显错误。不要把高 ERLE 当成 AECMOS 或近端保真已经通过，也不能把评分模型测出的变化写成人类听众的实测差值。
 

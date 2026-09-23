@@ -9,7 +9,7 @@
 - **原理索引**：已有原理或来源依据，但尚未形成唯一、许可明确且承担对应计算的源码映射；代码可见而许可不明时也保留此状态，并说明原因。
 - **明确排除**：指定软件的身份或许可不满足本书当前收录方式；不表示删除相应方法的学术讨论。
 
-算法表共 242 行：本仓库可运行基线 42 行、外部参考实现 144 行、原理索引 54 行、明确排除 2 行。练习映射单独计数，不因题数增加算法行；MDL 属于本地基线，SBL、在线子带 GSC 和滑窗多帧 MHT 已补外部入口。覆盖表仍有原理索引，不表示全书全部算法已经运行。
+算法表共 245 行：本仓库可运行基线 45 行、外部参考实现 145 行、原理索引 53 行、明确排除 2 行。练习映射单独计数，不因题数增加算法行；MDL 属于本地基线，SBL、在线子带 GSC 和滑窗多帧 MHT 已补外部入口。覆盖表仍有原理索引，不表示全书全部算法已经运行。
 
 源码取得与入口核对见 [SOURCE_STATUS.json](SOURCE_STATUS.json)；该文件中的依赖验证和执行字段未开展时为 `not_run`，不承载方法级数值实验结果。实际运行及数值对照见[复现记录](research/04_source_reproduction.md)、[增强研究记录](research/02_aec_wpe_separation.md)和 [WPE 独立对照脚本](examples/compare_wpe_reference.py)。工业三库与 SBL 的限定实验保存在 `reports/`；实际调用外部代码不将它改列为本仓库教学基线。覆盖状态不是测试结果。完整提交、官方地址、许可与来源 ID 见 [SOURCES.lock.json](SOURCES.lock.json)。教学路径相对于 [array_tutorial/](array_tutorial/)；外部路径相对于对应项目根，出现“同文件”时仅继承上一行文件，不继承其算法或验证结论。
 
@@ -133,13 +133,16 @@
 | §6.1.16 | 流式 NLMS 状态 | 本仓库可运行基线 | `aec.py::NLMSState`、`examples/aec_streaming_demo.py` | 跨块同时续接抽头与 $L-1$ 个参考历史；不含 DTD、延迟搜索或实时接口 |
 | 研究扩展：增强 A01 | 泄漏 NLMS | 原理索引 | 泄漏更新说明 | 教学函数没有泄漏参数 |
 | §6.1.3 | 单块 FDAF | 原理索引 | 正文频域卷积与约束 | 分区 MDF 不覆盖所有单块变体 |
-| §6.1.3 | MDF/PBFDAF 分区结构 | 外部参考实现 | `speexdsp`：`libspeexdsp/mdf.c`；`examples/aec_algorithm_minicases.py` 仅分区卷积手算 | 实际为 AUMDF；教学小例不含自适应更新或完整 PBFDAF |
+| §6.1.3 | MDF/PBFDAF 分区结构（同配置频域多抽头 NLMS） | 本仓库可运行基线 | `aec_partitioned.py::PartitionedFDAFState`、`examples/aec_partitioned_demo.py`；外部 Speex 对照另见 AUMDF 行 | 瞬时功率式(6-3)、有效区、可选梯度约束与跨块状态；不含自动 DTD、延迟搜索或产品级控制；同一结构不重复算算法 |
 | §6.1.3；研究扩展：增强 A03 | AUMDF 约束调度 | 外部参考实现 | `speexdsp`：同文件；真实配对与已知近端注入实验见 `examples/aec_real_pair_experiment.py`、`examples/aec_doubletalk_experiment.py`、`examples/aec_controlled_doubletalk.py` | 约束调度不同于梯度更新；真实双讲没有分量真值，半合成输出增量也不是近端保留率 |
 | §6.1.3 | PNLMS | 原理索引 | 正文比例更新 | Speex 控制不代表全部变体 |
 | §6.1.3 | IPNLMS | 原理索引 | 正文式(6-4)；`examples/aec_algorithm_minicases.py` 单步小例 | 小例仅核抽头分配，不是收敛复现；比例/均匀项与路径稀疏度 |
 | §6.1.3 | 子带自适应 AEC | 原理索引 | 正文子带结构 | 混叠、带间延迟、更新率 |
-| §6.1.3 | FDKF | 原理索引 | 增强 A04 原论文 | AEC3/Speex 不自动归为卡尔曼 |
-| §6.1.3 | 分区 FDKF | 原理索引 | 增强 A04 分区状态模型 | 跨分区相关、对角近似 |
+| §6.1.3 | 常规实数时域 RLS | 本仓库可运行基线 | `aec_rls.py::RLSState`、`examples/aec_rls_demo.py`、`test_codes_aec_rls.py`；A04 另列 pyroomacoustics、pyaec、MetaAF 源码 | 含初始约束的指数加权最小二乘；逆相关矩阵 $O(L^2)$，无自动 DTD、延迟搜索或 RES |
+| §6.1.3；研究扩展：增强 A04 | 快/块/广义频域 RLS | 外部参考实现 | `pyroomacoustics`：`adaptive/rls.py` 的 BlockRLS；`metaaf`：`optimizer_rls.py`；GFDAF 论文另见 A04 | BlockRLS 和 GFDAF 不是本书逐样本精确 RLS 的改名；MetaAF 核心与 AEC zoo 许可不同 |
+| §6.1.3 | 短实数 FIR 矩阵 Kalman | 本仓库可运行基线 | `aec_kalman_matrix.py::KalmanAECState`、`examples/aec_kalman_matrix_demo.py`、`test_codes_aec_kalman_matrix.py` | 已知 $Q,\Psi$ 的 Joseph 协方差更新，未估计噪声或实现频域分区 |
+| §6.1.3 | FDKF | 原理索引 | 增强 A04 原论文；`examples/aec_kalman_scalar_demo.py` 仅核式(6-9)单频点递推；`pyaec` 教学源码另见 A04 | 标量算术不是完整频域滤波、分区状态或方差估计；AEC3/Speex 不自动归为卡尔曼 |
+| §6.1.3 | 分区 FDKF 与 VD/SD-PBFDKF | 外部参考实现 | 增强 A04 原论文；`echocatzh-pfdkf`、`subband-kalman-aec` 源码仅索引 | 第三方示例非原论文官方实现，尚未同条件运行；跨分区/跨声道协方差与默认后滤须分别核对 |
 | §6.1.4 | Volterra 非线性 AEC | 原理索引 | 正文路径模型 | 阶数、过拟合、未见削波 |
 | §6.1.4 | Hammerstein 非线性路径 | 原理索引 | 正文级联模型 | 非线性位于线性动态系统之前 |
 | §6.1.4 | Wiener 非线性路径 | 原理索引 | 正文级联模型 | 非线性位于线性动态系统之后 |
@@ -147,7 +150,7 @@
 | §6.1.5 | 相关/相干性 DTD | 原理索引 | 正文统计控制 | Benesty NCC 用参考与麦克风归一化相关；参考与残差相关另有失配含义 |
 | §6.1.5 | 连续可变学习率 | 外部参考实现 | `speexdsp`：`libspeexdsp/mdf.c` | 不是独立二值 DTD |
 | §6.1.9 | AEC3 参考延迟控制 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/echo_path_delay_estimator.cc`、`render_delay_controller.cc` | 降采样匹配滤波估滞后；与 refined/coarse 线性滤波器分工不同 |
-| §6.1.9 | AEC3 线性抵消 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/subtractor.cc`；官方 WAV 入口的待运行适配器 `examples/aec3_offline_compare.py` | 保留线性输出取点；缺完整 Xcode 与 WebRTC 依赖，尚无本机 AEC3 输出 |
+| §6.1.9 | AEC3 线性抵消 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/subtractor.cc`；官方 WAV 入口的已运行适配器 `examples/aec3_offline_compare.py` | 固定提交的 `audioproc_f` 已在两对真实录音上分别导出线性/最终 WAV；仅测总功率变化，未测真值 ERLE、近端保真或设备链路，见研究手册 A06 |
 | §6.1.9、§6.1.13 | AEC3 残余回声估计 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/residual_echo_estimator.cc` | 与执行抑制增益分开 |
 | §6.1.9、§6.1.13 | AEC3 抑制增益 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/suppression_gain.cc` | 近端损伤与回声泄漏分别计量 |
 | §6.1.9 | AEC3 舒适噪声 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/comfort_noise_generator.cc` | 不掩盖滤波器未收敛 |
@@ -311,7 +314,7 @@
 
 ## 章节代码练习与音频映射
 
-72 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 242 行算法统计。三个 `exercises_` 模块各自提供 `run_exercises()`，原有 26/22/20 道题；AEC 小实验另由 `aec_algorithm_minicases.py::run_demo()` 提供 4 道，全部结果均可序列化为 JSON。练习回归测试独立于外部源码取得状态。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
+72 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 245 行算法统计。三个 `exercises_` 模块各自提供 `run_exercises()`，原有 26/22/20 道题；AEC 小实验另由 `aec_algorithm_minicases.py::run_demo()` 提供 4 道，全部结果均可序列化为 JSON。练习回归测试独立于外部源码取得状态。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
 
 | 章节与稳定 ID | 练习入口 | 回归测试 |
 |---|---|---|

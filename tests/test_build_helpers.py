@@ -135,6 +135,15 @@ class BuildHelpersTest(unittest.TestCase):
         self.assertFalse(quality_check.bookmark_title_matches_page(
             title, "7.1.2 在线 WPE 的递推更新"))
 
+    def test_pdf_math_probe_rejects_silent_missing_glyphs(self):
+        beginning = "不提前舍入时，上例的精确分数"
+        ending = "分区块频域卡尔曼滤波"
+        build_pdf.validate_pdf_math_example(beginning + "  、 、 、 " + ending, [115, 74])
+        with self.assertRaisesRegex(SystemExit, "数学字形探针"):
+            build_pdf.validate_pdf_math_example(beginning + "  、 、 、 " + ending, [74])
+        with self.assertRaisesRegex(SystemExit, "正文边界缺失"):
+            build_pdf.validate_pdf_math_example("没有目标算例", [115, 74])
+
     def test_locate_falls_back_to_unique_title_prefix(self):
         pages = ["目录", "4.2 GCC-PHAT：\n对齐两段录音"]
         self.assertEqual(

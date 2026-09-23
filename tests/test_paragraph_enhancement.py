@@ -81,22 +81,22 @@ class EnhancementParagraphTest(unittest.TestCase):
         for item, label in zip(items, labels):
             self.assertTrue(item["text"].strip().startswith(label), item["text"])
 
-    def test_reviewed_explanations_render_as_two_distinct_paragraphs(self):
+    def test_reviewed_explanations_keep_distinct_paragraphs(self):
         cases = [
-            ("06_aec.md", "**IPNLMS：", "**递归最小二乘与卡尔曼方法**", "按 Benesty 与 Gay"),
-            ("06_aec.md", "第一行是**状态方程**", "逐频点写完整", "双讲时观测噪声估计增大"),
-            ("06_aec.md", "D1～D3检查参考", "> **采样率偏移", "ITU-T 已于"),
-            ("08_speech-separation.md", "**AuxIVA（", "**ILRMA（", "标准实现仍是整段迭代"),
-            ("09_source-tracking.md", "多目标追踪还要估计", "**可执行单目标基线", "最优子模式分配距离"),
-            ("09_source-tracking.md", "GM-PHD 的高斯权重和", "MHT 已有可阅读的受限参考", "JPDA 也需要明确"),
+            ("06_aec.md", "**IPNLMS：", "**递归最小二乘（Recursive Least Squares，RLS）为什么与 NLMS 不同。**", "本书沿用", 7),
+            ("06_aec.md", "第一行描述路径的漂移或突变", "下式是便于复算", "同写为", 4),
+            ("06_aec.md", "D1～D3检查参考", "> **采样率偏移", "ITU-T 已于", 3),
+            ("08_speech-separation.md", "**AuxIVA（", "**ILRMA（", "标准实现仍是整段迭代", 2),
+            ("09_source-tracking.md", "多目标追踪还要估计", "**可执行单目标基线", "最优子模式分配距离", 2),
+            ("09_source-tracking.md", "GM-PHD 的高斯权重和", "MHT 已有可阅读的受限参考", "JPDA 也需要明确", 2),
         ]
-        for filename, start, end, second_start in cases:
+        for filename, start, end, second_start, expected_paragraphs in cases:
             with self.subTest(filename=filename, start=start):
                 source, path = self.passage(filename, start, end)
                 html, _ = build_site.render(source, path)
                 parser = ParagraphParser()
                 parser.feed(html)
-                self.assertEqual(len(parser.paragraphs), 2)
+                self.assertEqual(len(parser.paragraphs), expected_paragraphs)
                 self.assertNotIn(second_start, parser.paragraphs[0])
                 self.assertTrue(parser.paragraphs[1].startswith(second_start))
 
@@ -121,7 +121,7 @@ class EnhancementParagraphTest(unittest.TestCase):
     def test_dtd_five_methods_and_their_continuations(self):
         source, path = self.passage("06_aec.md", "**常见 DTD 方法**", "> **Geigel 判决")
         items = self.render_items(source, path)
-        self.assert_labels(items, ["Geigel 能量比较", "互相关 /", "频域 NCC", "相干函数法", "双滤波器法"])
+        self.assert_labels(items, ["Geigel 幅度比较", "互相关 /", "频域 NCC", "相干函数法", "双滤波器法"])
         self.assertEqual(items[0]["paragraphs"], 3)
         self.assertIn("经典示例阈值", items[0]["text"])
         self.assertEqual(items[4]["paragraphs"], 3)
@@ -142,7 +142,8 @@ class EnhancementParagraphTest(unittest.TestCase):
         self.assert_labels(items, ["AEC→BF", "BF→AEC", "联合优化"])
         self.assertEqual(items[0]["paragraphs"], 2)
         self.assertEqual(items[1]["paragraphs"], 3)
-        self.assertIn("等效回声传递函数", items[1]["text"])
+        self.assertIn("同频带窄带近似", items[1]["text"])
+        self.assertIn(r"H_{\mathrm{eff}}", items[1]["text"])
         self.assertNotIn("联合优化", items[1]["text"])
 
     def test_gss_three_parts_and_equation_stays_in_first_item(self):

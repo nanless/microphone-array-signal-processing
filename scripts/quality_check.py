@@ -821,6 +821,8 @@ def source_digest():
     paths = sorted(CHAPTERS.glob("*.md"))
     paths += [ROOT / "codes" / "research" / name for name, _ in EXPECTED_RESEARCH_PAGES]
     paths += [ROOT / "scripts" / "build_site.py"]
+    paths += sorted(path for path in (ROOT / "scripts" / "vendor" / "mathjax-3.2.2").rglob("*")
+                    if path.is_file())
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
               ("build_pdf.py", "make_figures.py", "make_aec_figures.py")]

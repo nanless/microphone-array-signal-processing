@@ -38,6 +38,7 @@
 | 项目说明源文件 | `README.md`、`README_EN.md`、`scripts/README.md` | 项目入口、英文说明、构建说明 | 直接修改；中英文共有信息要同步 |
 | 绘图源文件 | `scripts/make_figures.py`、`scripts/make_aec_figures.py` | 生成全部插图 | 图有问题时修改这里，不手工修 PNG |
 | 构建源文件 | `scripts/build_site.py`、`scripts/build_pdf.py` | 生成站点、合订 HTML 和 PDF | 页面结构或渲染有问题时修改这里 |
+| PDF 公式第三方资源 | `scripts/vendor/mathjax-3.2.2/` | 固定版本的 MathJax 脚本、按需扩展和字体 | 保留上游许可及来源摘要；更新版本时同步更新构建核验与渲染抽查，不手改压缩脚本或字体 |
 | 插图生成物 | `figures/fig*.png` | 正文插图 | 由绘图脚本生成，不直接编辑 |
 | 站点生成物 | `site/*.html`、`site/research/*.html` | 14 篇教程与 6 篇研究手册页面 | 由 `build_site.py` 生成，不直接编辑 |
 | 合订生成物 | `dist/combined.html`、`dist/microphone-array-tutorial.pdf` | 合订 HTML 和 PDF | 由 `build_pdf.py` 生成，不直接编辑 |
@@ -60,7 +61,8 @@
 ```
 
 只改文字时不必重画图片。改了绘图脚本，要生成并检查相关图片；改了正文、导航或构建脚本，要重新
-生成受影响的 HTML 和 PDF。若本机缺少 Chrome、依赖、联网条件或权限，应记录未完成的验证及原因，
+生成受影响的 HTML 和 PDF。PDF 公式依赖仓库内 MathJax 资源，无需联网；站点公式目前仍需联网。
+若本机缺少 Chrome、依赖、必要的联网条件或权限，应记录未完成的验证及原因，
 不能声称已经验收。
 
 ## 2. 规则优先级、授权与范围控制
