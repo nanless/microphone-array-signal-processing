@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 import matplotlib.pyplot as plt
 from matplotlib.text import Text
+from matplotlib.patches import FancyArrowPatch
 from PIL import Image
 import scripts.make_aec_figures as aec_figures
 
@@ -79,6 +80,14 @@ class AecFiguresTest(unittest.TestCase):
             self.assertEqual(figure26.axes[0].get_xlabel(), "抽头索引 ℓ（采样）")
             self.assertEqual(len(figure26.axes), 3)
             self.assertEqual(figure26.axes[0].get_subplotspec().colspan.stop, 2)
+            self.assertTrue(any("非语音" in line.get_label()
+                                for line in figure26.axes[1].get_lines()))
+
+            figure27 = figures["fig27_aec_concept.png"]
+            dtd_inputs = [patch for patch in figure27.axes[0].patches
+                          if isinstance(patch, FancyArrowPatch)
+                          and patch.get_edgecolor() == aec_figures.matplotlib.colors.to_rgba(aec_figures.C_PURPLE)]
+            self.assertGreaterEqual(len(dtd_inputs), 2)
 
             figure28 = figures["fig28_aec_nlms.png"]
             path_axis = next(axis for axis in figure28.axes if axis.get_title().startswith("(a)"))
@@ -126,6 +135,14 @@ class AecFiguresTest(unittest.TestCase):
             figure32 = figures["fig32_aec_hybrid_select.png"]
             self.assertEqual(len(figure32.axes), 1)
             self.assertFalse(figure32.axes[0].tables)
+            control_inputs = [patch for patch in figure32.axes[0].patches
+                              if isinstance(patch, FancyArrowPatch)
+                              and patch.get_edgecolor() == aec_figures.matplotlib.colors.to_rgba(aec_figures.C_PURPLE)]
+            self.assertEqual(len(control_inputs), 2)
+            self.assertTrue(any("非语音" in text.get_text()
+                                for text in figures["fig29_aec_erle_freeze.png"].axes[-1].texts))
+            self.assertTrue(any("非语音" in text.get_text()
+                                for text in figures["fig30_aec_delay_dtd.png"].axes[-1].texts))
         finally:
             for figure in figures.values():
                 plt.close(figure)
@@ -162,6 +179,21 @@ class AecFiguresTest(unittest.TestCase):
         for scale in (1e-9, 1e9):
             _, scaled = block_erle(scale * echo, scale * residual, blk=400)
             np.testing.assert_allclose(scaled, reference, atol=1e-12)
+
+    def test_block_erle_keeps_extreme_finite_power_ratio(self):
+        for scale in (1e200, 1e-200):
+            with self.subTest(scale=scale):
+                # Independent amplitude-ratio oracle: 20 log10(10) = 20 dB.
+                _, erle = block_erle(np.full(4, scale),
+                                     np.full(4, scale / 10), blk=2)
+                np.testing.assert_allclose(erle, [20., 20.], atol=1e-11)
+
+    def test_block_erle_rejects_complex_or_nonfinite_input(self):
+        for echo in ([1 + 0j], [float("nan")], [float("inf")], [True]):
+            with self.subTest(echo=echo), self.assertRaises(ValueError):
+                block_erle(echo, [1.], blk=1)
+        with self.assertRaises(ValueError):
+            block_erle([1.], [1.], blk=True)
 
     def test_block_erle_preserves_zero_power_semantics(self):
         echo = np.r_[np.ones(400), np.zeros(800)]
@@ -214,6 +246,22 @@ class AecFiguresTest(unittest.TestCase):
             nlms_adaptation_trace(x, d, taps=2, freeze=np.zeros(3, dtype=bool))
         with self.assertRaises(ValueError):
             nlms_adaptation_trace(x, d, taps=2, true_path=np.ones(3))
+
+    def test_nlms_trace_rejects_lookalike_invalid_inputs(self):
+        for kwargs in (
+            {"x": [1 + 0j], "d": [1.]},
+            {"x": [1.], "d": [1 + 0j]},
+            {"x": [float("nan")], "d": [1.]},
+            {"x": [1.], "d": [1.], "freeze": [float("nan")]},
+            {"x": [1.], "d": [1.], "freeze": [1]},
+            {"x": [1.], "d": [1.], "true_path": [1 + 0j]},
+            {"x": [1.], "d": [1.], "mu": 2.},
+            {"x": [1.], "d": [1.], "mu": 1 + 0j},
+            {"x": [1.], "d": [1.], "taps": True},
+            {"x": [1.], "d": [1.], "snapshot_interval": True},
+        ):
+            with self.subTest(kwargs=kwargs), self.assertRaises(ValueError):
+                nlms_adaptation_trace(**kwargs)
 
     def test_nlms_multitap_current_first_regressor_converges(self):
         rng = np.random.default_rng(6101)

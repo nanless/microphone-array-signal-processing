@@ -1,6 +1,6 @@
 # AEC、去混响与语音分离：算法、工业实现与源码研究
 
-核实日期：2026-09-22。对应正文 [§6.1](../../chapters/06_aec.md#sec-6-1)、[§7.1](../../chapters/07_wpe-dereverberation.md#sec-7-1) 与 [§8.1～§8.2](../../chapters/08_speech-separation.md#sec-8-1)。本篇按处理对象分开说明算法、源码位置和复现实验；正式版本和许可边界由 [SOURCES.lock.json](../SOURCES.lock.json) 固定。
+原核实日期：2026-09-22；AEC 工业接口与配对数据说明复核日期：2026-09-23。对应正文 [§6.1](../../chapters/06_aec.md#sec-6-1)、[§7.1](../../chapters/07_wpe-dereverberation.md#sec-7-1) 与 [§8.1～§8.2](../../chapters/08_speech-separation.md#sec-8-1)。本篇按处理对象分开说明算法、源码位置和复现实验；正式版本和许可边界由 [SOURCES.lock.json](../SOURCES.lock.json) 固定。
 
 “外部实现”表示可以找到承担该算法计算的代码，不表示本书已经训练、编译或测完该系统。本篇实际运行的结果单独列出，包括[教学基线测试](../../tests/test_codes_aec_wpe_sep_track.py)与 W01 的独立实现对照；未附执行结果的外部实验均为复现设计。外部代码、权重和数据分别遵守各自条款。
 
@@ -41,31 +41,100 @@ Speex 的 `mdf.c` 注释明确采用交替更新的 MDF（AUMDF）。它调度�
 
 读代码中的 `proportional adaptation rate` 与 `MDF / AUMDF` 段落时，区分“某个分区是否施加约束”和“该分区是否做梯度更新”。最小实验使用相同长度、相同总能量的稀疏与稠密 FIR，记录相对系数误差和每块耗时。失败实验在大抽头位置突变后检查小抽头是否迟迟得不到足够更新。不要把 Speex 的这一具体控制器直接称作所有 PNLMS/IPNLMS 变体的实现。
 
-### A04　FDKF、PFDKF 与对角近似
+### A04　FDKF、PBFDKF 与对角近似
 
-频域卡尔曼滤波（FDKF）把路径系数当作随时间变化的状态，把近端语音与噪声视为观测干扰，通过误差统计调节更新增益。分区 FDKF 还需管理跨分区状态。工程简化常省略部分频点或系数间相关性，减少矩阵计算；这改变了统计近似，不能用普通 NLMS 的步长参数代替解释。
+频域卡尔曼滤波（FDKF）把路径系数当作随时间变化的状态，把近端语音与噪声视为观测干扰，通过误差统计调节更新增益。分区块频域变体（PBFDKF）还需管理跨分区状态。Zhu 等的 [Interspeech 2021 原论文](https://www.isca-archive.org/interspeech_2021/zhu21d_interspeech.pdf)针对双声道声学回声消除，给出精确递推及保留不同协方差子矩阵的两种简化；它们减少矩阵计算，也改变统计近似。不能用普通 NLMS 的步长参数代替解释。
 
 原始依据为 [Enzner 与 Vary，Signal Processing 2006](https://doi.org/10.1016/j.sigpro.2005.09.013)。本次未确认该原始方法具有可自由再分发的作者官方完整软件，因此保留原理索引，不能把 WebRTC AEC3 或 SpeexDSP 自动标作 FDKF。复现应记录状态转移、过程/观测噪声估计、增益下限、约束、分区和重置。最小实验先固定已知噪声统计，再改变回声路径；失败实验故意低估双讲干扰方差，检查增益与系数误更新。
 
 ### A05　DTD：二值判决与连续自适应控制
 
-双讲检测（DTD）用于保护近端语音，不直接生成回声副本。Geigel、归一化相关和相干性方法依赖不同假设；高参考相关性可以是残余回声，也可能伴随路径失配。Speex 的 [`mdf.c`](https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/mdf.c)明确使用连续变化学习率，而非独立的二值 DTD。[Valin 2007 原论文](https://people.xiph.org/~jm/papers/valin_taslp2006.pdf)解释它如何利用残余回声和干扰估计。
+双讲检测（DTD）用于保护近端语音，不直接生成回声副本。Geigel、归一化相关和相干性方法依赖不同假设；高参考相关性可以是残余回声，也可能伴随路径失配。二值 DTD 决定是否冻结更新，只是控制方案之一。锁定版 Speex [`mdf.c`](https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/mdf.c)的文件头明确说明没有独立的显式双讲判决，而是根据残余回声、双讲和背景噪声连续调节学习率；[Valin 2007 原论文](https://people.xiph.org/~jm/papers/valin_taslp2006.pdf)解释该更新控制。WebRTC AEC3 的 `subtractor.cc` 则分别计算 refined、coarse 滤波器的更新增益，不能把两者直接改写为同一个“检测到双讲便冻结”的接口。
 
 最小实验由远端单讲、双讲、近端单讲与静音四段组成，分别保存检测量、步长与系数误差。失败实验保持远端播放同时改变路径，比较“误判双讲导致冻结”和“漏判双讲导致误更新”。即使两者输出能量相近，恢复办法也不同。不要仅用一个总体准确率验收 DTD。
 
 ### A06　AEC3 的延迟、线性抵消、残余抑制与舒适噪声
 
-WebRTC 的 [`modules/audio_processing/aec3/`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/)是按模块读工业 AEC 的入口。阅读顺序建议为 `echo_canceller3.cc` → `block_processor.cc` → `render_delay_buffer.cc`/`render_delay_controller.cc` → `subtractor.cc` → `residual_echo_estimator.cc` → `suppression_gain.cc` → `comfort_noise_generator.cc`。这些模块共同处理参考到达、线性残差、剩余回声估计与抑制听感。
+WebRTC 的 [`modules/audio_processing/aec3/`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/)是按模块读工业 AEC 的入口。阅读顺序建议为 `echo_canceller3.cc` → `block_processor.cc` → `render_delay_buffer.cc`/`render_delay_controller.cc` → `echo_path_delay_estimator.cc` → `subtractor.cc` → `residual_echo_estimator.cc` → `suppression_gain.cc` → `comfort_noise_generator.cc`。这些模块分别处理参考缓冲、延迟、线性残差、剩余回声估计和输出抑制。
 
-复现应先使用工程自带测试和录制/回放入口，固定 APM 配置、采样率、帧组织、输入电平、延迟设置以及参考和采集调用次序。最小实验只更改参考延迟；失败实验引入一次参考丢块，观察延迟状态、线性残差和后滤输出。最终输出安静不等于线性滤波器收敛，至少保留线性段与抑制后两个取点。
+锁定版的延迟估计器先对麦克风信号作通道混合及降采样，再用参考缓冲上的匹配滤波器（matched filter）估计时差，并聚合候选滞后；`render_delay_controller.cc` 将估计转换为参考缓冲延迟。`subtractor.cc` 的 refined/coarse 双滤波器负责线性回声估计与更新，不是两套用于比较不同候选延迟的滤波器。源码入口分别见 [`echo_path_delay_estimator.cc`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/echo_path_delay_estimator.cc)和 [`render_delay_controller.cc`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/render_delay_controller.cc)。
+
+应用接入点是 [Audio Processing Module（APM）接口](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/api/audio/audio_processing.h)，不能从内部 `subtractor.cc` 直接推断上层调用协议。固定头文件要求约 10 ms 的线性 PCM 帧：启用 `config.echo_canceller.enabled` 后，将远端播放帧交给 `ProcessReverseStream()`，处理近端帧前按设备时间设置 `set_stream_delay_ms()`，再调用 `ProcessStream()`。`int16` 接口按通道交织，浮点接口按通道分列；这些格式要用不同通道的已知脉冲检查。APM 对外可接受的采样率范围与锁定 AEC3 内部 `aec3_common.h` 的 16、32、48 kHz 分带速率不是同一层约束；内部每块 64 个最低频带样本，也不等于要求应用每次只交 64 点。
+
+`set_stream_delay_ms()` 报告的是播放帧进入 APM 到硬件实际播放、以及麦克风采样到采集帧进入 APM 的缓冲时间之和，不是房间传播时间或滤波器尾长。固定版 [`audio_processing_impl.cc`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/audio_processing_impl.cc) 的 `set_stream_delay_ms()` 把负值截到 0 ms、超过 500 ms 的值截到 500 ms，并返回 `kBadStreamParameterWarning`。接入层应保存输入参数、返回码、`stream_delay_ms()` 读回值与两路硬件时间戳；无线或外接播放的延迟若超出该范围，不能只按传入值解释后续对齐结果。500 ms 是这个提交的接口行为，不是声学路径或其他 AEC 的通用限值。
+
+线性段并非只能从内部调试转储取得。固定版公开的 `Config::EchoCanceller::export_linear_aec_output` 默认 `false`；需要线性取点时须在配置 AEC 时设为 `true`。处理采集帧后调用 `GetLinearAecOutput()` 并检查布尔返回值，可取得最近约 10 ms、16 kHz 的线性 AEC 输出；头文件说明多通道采集时返回其单声道表示。它与公开 `ProcessStream()` 的最终输出可能采用不同采样率及取点，必须按对应采样区间对齐后比较。若所用构建或接入层没有成功导出，记录“线性取点未取得”及配置、返回值，而不是用最终输出冒名顶替。入口见[固定版公开头文件的配置与接口](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/api/audio/audio_processing.h)和[`audio_processing_impl.cc` 的缓冲分配与返回实现](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/audio_processing_impl.cc)。
+
+复现应先使用工程自带测试和录制/回放入口，固定 APM 配置、采样率、帧组织、输入电平、延迟设置以及参考和采集调用次序。最小实验只更改参考延迟；失败实验引入一次参考丢块，观察延迟状态、线性残差和最终输出。固定版 `block_processor.cc` 在尚无播放参考时跳过采集处理；参考缓冲下溢时重置延迟控制器，溢出时刷新缓冲并重置。这些状态需要与队列事件和输出一起记录，不能把恢复期的原始或强抑制输出误判为稳态 AEC 性能。[固定版 `block_processor.cc`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/block_processor.cc)
+
+| 征兆 | 先观察什么 | 区分实验与应调整的部分 |
+|---|---|---|
+| 开始处理就有大量残余 | 播放帧是否先进入 APM、流延迟返回码与读回值、线性段输出 | 给已知宽带参考施加固定时移，检查对齐及滤波器覆盖；先修参考取点、时间戳或缓冲，不先调残余抑制 |
+| 长时间运行后逐渐变差 | 分窗估计参考—麦克风滞后、硬件时间戳、队列占用与丢帧事件 | 滞后稳定但偏大先查固定错位与覆盖长度；持续斜率提示采样率偏移，需共享时钟或估计速率并连续重采样；阶跃且伴队列异常先查丢帧/设备切换 |
+| 最终输出安静但线性段仍有明显回声 | 同一区间的 `GetLinearAecOutput()` 与 `ProcessStream()` 输出、近端语音损伤 | 后级抑制可能掩盖线性失配；先查参考完整性、延迟和更新控制，再单独调抑制器 |
+
+分窗滞后估计需要充分激励的参考；周期节目、多径和近端语音会制造错误峰值。应把滞后轨迹与设备时间戳和缓冲事件联合判断，不能把单次互相关峰当作物理时钟真值。AEC3 的 `HasClockdrift()` 是状态判别，`block_processor.cc` 将它传给回声路径控制；这条路径没有把两个独立设备的 PCM 自动重采样到同一速率。[固定版 `render_delay_controller.cc`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/render_delay_controller.cc)、[固定版 `block_processor.cc`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/block_processor.cc)
 
 ### A07　RES/NLP 与近端保护
 
-残余回声抑制（RES）或非线性后处理（NLP）根据未消除回声的估计给输出施加增益。线性路径失配、扬声器非线性与延迟错位都能形成残余，但需要不同诊断。AEC3 的 `residual_echo_estimator.cc` 和 `suppression_gain.cc` 可用于区分估计器与执行增益；Speex 的 [`preprocess.c`](https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/preprocess.c)则展示预处理与残余回声信息的连接。
+残余回声抑制（RES）或非线性后处理（NLP）根据未消除回声的估计给输出施加增益。线性路径失配、扬声器非线性与延迟错位都能形成残余，但需要不同诊断。AEC3 的 `residual_echo_estimator.cc` 和 `suppression_gain.cc` 分别估计残余和计算增益。Speex 的 [`preprocess.c`](https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/preprocess.c)只有在预处理器绑定回声状态后，才通过 `speex_echo_get_residual()` 取得残余估计；[官方手册 §6.2](https://www.speex.org/docs/manual/speex-manual/node7.html)给出 `speex_preprocess_ctl(preprocess_state, SPEEX_PREPROCESS_SET_ECHO_STATE, echo_state)`。因此应把 `speex_echo_cancellation()` 的输出和再经 `speex_preprocess_run()` 的输出分开保存；后者的变化包含预处理器作用，不能全部归功于 MDF 线性抵消。
 
 最小实验把线性抵消器输出固定，只扫描后处理强度，分别试听和计量回声泄漏、近端语音损伤及噪声起伏。失败实验让低电平近端辅音与残余回声同时出现，检查词尾是否被截断。此类错误不能靠远端单讲 ERLE 发现，必须同时报告双讲语音的保真与任务指标。
 
 本书的 [E06-04～E06-06](../../chapters/06_aec.md#sec-6-1-17)补充三个可运行的取点检查：同幅副本若反相，相减会把回声能量增为四倍；背景噪声保留时，麦克风输入/输出能量比仍可能为有限值，即使回声分量已经完全抵消；纯 500 Hz 参考经过三次非线性后还会留下线性参考不能生成的 1500 Hz 分量。这些是给定模型下的代数结果，不是对 RES 的设备性能测量。运行入口为 [`exercises_enhancement.py`](../examples/exercises_enhancement.py)，固定检查见 [`test_codes_enhancement_round2.py`](../../tests/test_codes_enhancement_round2.py)与[`test_codes_exercises_enhancement.py`](../../tests/test_codes_exercises_enhancement.py)。
+
+**三种实现的接口与状态对照。** 下表对应固定版本，解释怎样准备对照输入；表中的方法状态不是性能排名。Speex 的 10～20 ms 帧与 100～500 ms 滤波长度来自[固定头文件的接口说明](https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/include/speex/speex_echo.h)，只是该接口给出的建议量级，设备仍需按实测路径配置。
+
+| 实现 | 输入与持续状态 | 延迟、双讲和残余处理 |
+|---|---|---|
+| 本书 `NLMSState` | 等长实数参考与麦克风一维数组；保留参考历史和抽头；`freeze` 由调用者给出 | 没有内部延迟搜索、DTD、RES 或重采样；可用已知延迟和真值冻结建立算术基线，不能冒充设备方案 |
+| WebRTC AEC3，经 APM 接入 | 约 10 ms 播放/采集帧；APM 调用、配置、参考缓冲及内部双滤波状态跨帧保留 | 上层报告流延迟，内部估计参考滞后；开启导出标志后用公开接口取得 16 kHz 线性段，最终输出另存 |
+| SpeexDSP AUMDF | `spx_int16_t` 麦克风和播放帧；回声状态、频域分区与参考历史跨帧保留；多通道用 `speex_echo_state_init_mc()` | 同步 `speex_echo_cancellation()` 不额外加入两帧播放缓冲；异步 `playback/capture` 接口自带两帧缓冲但可能与真实声卡不符；连续学习率而非二值 DTD，预处理残余抑制须另绑 `echo_state` |
+
+WebRTC 与 SpeexDSP 锁定源码分别以 BSD-3-Clause 许可登记在[第三方清单](../THIRD_PARTY.md)；本书 NumPy 基线是原创教学代码。WebRTC 完整构建还需要其依赖元数据，Speex 的可选预处理器也不等于核心 AUMDF。RNNoise 虽在外部清单中，但[官方 README](https://github.com/xiph/rnnoise)定义它为单输入噪声抑制，示例使用 48 kHz 单声道原始 PCM；它没有播放参考，不能当作 AEC3 或 Speex 的同类替代。锁定版 `autogen.sh` 会调用下载模型的脚本；源码核对不等于已取得模型，更不等于已完成构建或执行。
+
+**同输入、同取点的三系统对照实验设计（尚未完成）。** 先选 16 kHz、单播放参考、单麦克风的 PCM，固定同一参考抽头、增益和无削波输入。用已知 FIR 生成纯回声及独立近端信号，保存两者和加和后的麦克风波形。前者用于检查算法接口和真值分量；真实设备数据则用于检查模型外的非线性、驱动与时钟问题，不能以本仓库的 DEMAND 环境噪声摘录代替有播放参考的 AEC 录音。
+
+真实配对录音可从 [Microsoft AEC Challenge 固定版数据说明](https://github.com/microsoft/AEC-Challenge/blob/6c633d0a9d2a143a0e364899b91b06f127315b18/datasets/README.md)按需寻找同一 GUID 的 `*_farend_singletalk_lpb.wav` 与 `*_farend_singletalk_mic.wav`；双讲和移动场景有对应 `*_doubletalk_lpb.wav`、`*_doubletalk_mic.wav` 及 `*_with_movement_*`。这里的 `lpb` 是 Windows 播放环回，不是扬声器端子电压；官方还提示部分计算机虽使用 raw mode，收放链仍可能有 DSP。
+
+外部样本要先核查数据来源、使用及再分发条款，再保存原文件摘要、配对 GUID、采样率、裁剪区间和实际参考抽头。本书不下载或再分发这些录音，也没有独立的近端干净语音和回声分量真值；可报告注明噪声底的远端单讲输入/输出功率近似、听测和自动评分，不能把它们写成真值 ERLE。[项目数据许可说明](https://github.com/microsoft/AEC-Challenge/blob/6c633d0a9d2a143a0e364899b91b06f127315b18/README.md#dataset-licenses)与代码 MIT 许可分列。
+
+1. 对同一底稿分别构造远端单讲稳态、双讲、近端单讲、沉默、路径突变、固定参考延迟和一次参考丢块；每种条件只改一个因素，记录起止采样索引。测试 SRO 时另加长时、已测或明确合成的两时钟输入，不把固定时移当成速率偏移。
+
+2. 三路保持各自合法帧协议：教学 `NLMSState.process()` 用显式真值冻结作为理想控制对照，再做不冻结反例；Speex 固定 `frame_size`、`filter_length`、采样率和同步 API，异步 API 另组测试其两帧缓冲；WebRTC 固定 APM 配置、`ProcessReverseStream()` 与 `ProcessStream()` 调用次序和按 HAL 时间定义的 `set_stream_delay_ms()`。输入转换到整数 PCM 时检查量化和削波，不能让三路使用不同增益。
+
+3. 保存麦克风输入、播放参考、各实现的线性抵消输出和最终输出。WebRTC 先开启线性段导出，再检查 `GetLinearAecOutput()` 返回值；未取得时注明原因和缺失区间，只比较可观察的最终输出。Speex 分开“仅 MDF”和“MDF 加预处理”，教学 NLMS 没有最终后滤输出。远端单讲可在合成真值上计算回声分量 ERLE；真实录音无干净回声真值时只能报告注明噪声底的输入/输出功率近似，不将它命名为真值 ERLE。
+
+4. 双讲报告近端语音损伤与回声泄漏，路径突变报告恢复时间和失败次数；CPU 时间、峰值内存与端到端延迟在同一硬件、相同构建与线程条件下分别测量。先检查各系统是否处理了相同采样区间和固定时移，再讨论相对趋势；不同取点、额外预处理或缺失结果的行不排统一名次。
+
+**已运行：一对真实录音上的 SpeexDSP 同步 AEC（2026-09-23）。** 使用 Microsoft AEC Challenge 固定提交 `6c633d0a9d2a143a0e364899b91b06f127315b18` 的 `datasets/real/-0AcvGNEdEK-DQGxWmtq2Q_farend_singletalk_{lpb,mic}.wav`。同一 GUID 是官方远端单讲配对；`lpb` 是 Windows 播放环回，`mic` 是麦克风录音，不是干净回声真值。
+
+两文件都是单声道、16 kHz、PCM16，分别有 188320 与 188480 个样本。文件 SHA-256 分别为 `9b204ad5473726526d14830103e53647897699ef89d49624964b7f2449040426` 与 `6b4c3e01b969c5cad91f248ff967cfa03df6554f3a060d6e5b06b7d20341bba6`。原始文件仅在 Git 忽略缓存中，处理输出默认不落盘；脚本仅允许把可选试听 WAV 写到同一缓存，不随本书再分发。[官方数据说明](https://github.com/microsoft/AEC-Challenge/blob/6c633d0a9d2a143a0e364899b91b06f127315b18/datasets/README.md)与[数据许可段](https://github.com/microsoft/AEC-Challenge/blob/6c633d0a9d2a143a0e364899b91b06f127315b18/README.md#dataset-licenses)不能被代码 MIT 许可替代。
+
+对两路共同的 `[0,188320)` 样本按原样逐帧输入，舍弃麦克风末尾 160 个样本；不重采样、不时移、不调增益。锁定版 SpeexDSP `8e29a256ef0235ebbe7fcb8417b5ac7731eb8307` 在 macOS arm64 / AppleClang 21 上以 CMake `Release`、共享库、浮点配置构建，库 SHA-256 为 `c3e70172a3a9bf60b60bfd0bddfd58550a1899fef09078a9c7d5270d4a12105d`。
+
+使用同步 `speex_echo_cancellation()`，每帧 160 样本，滤波覆盖 4096 样本（256 ms）；初始化后显式设置并读回 16 kHz。没有调用异步缓冲接口或 Speex 预处理器。`[16000,64000)` 的归一化互相关诊断峰在正 498 样本（约 31.1 ms，相关系数 0.260），只用于报告，不用它挪动音频；它并非硬件时钟或纯声学传播时延的测量。
+
+固定 `[0,48000)` 为收敛区，评分区为 `[48000,188320)`，数字功率比定义为 $10\log_{10}(\sum d[n]^2/\sum e[n]^2)$，各条件使用相同评分样本。零参考控制从头重置一套 Speex 状态；“晚 1 秒参考”控制在参考前填 16000 个零，再接原参考的前段，也重新建状态。
+
+| 输入到同一 Speex 同步接口 | 评分区输入/输出数字功率变化 | 解释限制 |
+|---|---:|---|
+| 正确配对参考 | 5.57 dB | 核心 AUMDF 输出；不是干净回声真值 ERLE |
+| 全零参考 | 3.95 dB | 即使无参考，处理链也改变输出，不能把 5.57 dB 全归给路径抵消 |
+| 故意晚 1 秒的错误参考 | −0.23 dB | 错配时本片段输出能量略增；不是所有设备的普遍增益 |
+
+正确配对输出相对零参考输出的数字功率再低 1.62 dB。正确配对的 8 个完整 1 秒评分块各自为 4.55、4.99、5.42、6.41、5.19、5.79、5.61、6.38 dB；它们是同一录音相邻区间，不是八次独立实验，整段的 5.57 dB 应先合并线性功率再取对数。三路输出的 PCM SHA-256 及未舍入数值由[可运行脚本](../examples/aec_real_pair_experiment.py)打印。复做前先阅读数据来源及使用条款，再在仓库根目录按需把官方固定版的两只 Git LFS 对象取到忽略缓存；脚本会核对完整 SHA-256，若下载到的只是 131 字节指针会拒绝：
+
+```bash
+mkdir -p codes/upstream/_downloads/aec-challenge/datasets/real
+curl -fL 'https://media.githubusercontent.com/media/microsoft/AEC-Challenge/6c633d0a9d2a143a0e364899b91b06f127315b18/datasets/real/-0AcvGNEdEK-DQGxWmtq2Q_farend_singletalk_lpb.wav' -o codes/upstream/_downloads/aec-challenge/datasets/real/-0AcvGNEdEK-DQGxWmtq2Q_farend_singletalk_lpb.wav
+curl -fL 'https://media.githubusercontent.com/media/microsoft/AEC-Challenge/6c633d0a9d2a143a0e364899b91b06f127315b18/datasets/real/-0AcvGNEdEK-DQGxWmtq2Q_farend_singletalk_mic.wav' -o codes/upstream/_downloads/aec-challenge/datasets/real/-0AcvGNEdEK-DQGxWmtq2Q_farend_singletalk_mic.wav
+cmake -S codes/upstream/_downloads/speexdsp -B /private/tmp/speexdsp-aec-20260923 -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DUSE_FIXED_POINT=OFF
+cmake --build /private/tmp/speexdsp-aec-20260923 --parallel 4
+.venv/bin/python codes/examples/aec_real_pair_experiment.py --speex-library /private/tmp/speexdsp-aec-20260923/libspeexdsp.dylib
+```
+
+此实验验证了固定版本、固定真实配对输入、严格帧协议下的接口可运行性和三个参考条件的数字功率变化。原录音没有独立的干净回声、干净近端或噪声分量；即使官方标作远端单讲，本书也未逐秒人工标注说话、噪声或主观听感。因此不能由功率比推出真值 ERLE、近端保护、感知质量、实时资源、设备时钟漂移，或 WebRTC/教学 NLMS 的相对优劣。完整三系统同输入比较及真实设备验收仍未执行；[运行状态表](04_source_reproduction.md)按实现分别记录。
 
 ### A08　PNLMS/IPNLMS、子带与非线性路径模型
 

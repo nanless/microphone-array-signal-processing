@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>章节代码练习与音频实验 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5a44d84ec0bb"><style>
+<meta name="source-digest" content="b962773fed1b"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -106,11 +106,12 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="章节代码练习与音频实验" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-c621965c02">章节代码练习与音频实验</h1>
 <p>先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。</p>
-<p>本页对应 68 道稳定编号代码题，以及独立的真实录音练习 R01。原有练习题号保持不变；E01-01 表示第 1 章第 1 道代码练习，不表示全书原有第 1 题。第 3～11、13～14 节是数学合成实验，第 12 节使用另行授权的真实同步录音。</p>
+<p>本页对应 72 道稳定编号代码题，以及独立的真实录音练习 R01。原有练习题号保持不变；E01-01 表示第 1 章第 1 道代码练习，不表示全书原有第 1 题。E06-07～E06-10 是仅输出 JSON 的无量纲 AEC 边界题，不对应新增音频；其余音频映射不变。第 3～11、13～14 节是数学合成实验，第 12 节使用另行授权的真实同步录音。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="1-按章节运行" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-08633b42fc">1. 按章节运行</h2>
 <p>在仓库根目录执行，依赖沿用本书 NumPy 环境：</p>
 <pre><code class="language-bash">.venv/bin/python -m codes.examples.exercises_spatial
 .venv/bin/python -m codes.examples.exercises_enhancement
+.venv/bin/python -m codes.examples.aec_algorithm_minicases
 .venv/bin/python -m codes.examples.exercises_engineering
 .venv/bin/python codes/examples/generate_audio_samples.py --check
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
@@ -140,7 +141,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>同上</td>
 </tr>
 <tr>
-<td>第 4 章 E04-01～06</td>
+<td>第 4 章 E04-01～07</td>
 <td>延迟正号、相干源秩、栅瓣歧义、空间平滑、MDL 评分及重复抽样</td>
 <td>同上</td>
 </tr>
@@ -150,9 +151,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>同上</td>
 </tr>
 <tr>
-<td>第 6 章 E06-01～06</td>
-<td>NLMS 更新、滤长不足、双讲、错误副本、噪声底与非线性残留</td>
-<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_enhancement.py">增强练习</a></td>
+<td>第 6 章 E06-01～10</td>
+<td>NLMS 更新、滤长不足、双讲、错误副本、噪声底、非线性残留；分区卷积、IPNLMS、Geigel 与负极性延迟的边界手算</td>
+<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_enhancement.py">增强练习</a>（01～06）；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_algorithm_minicases.py">AEC 小例</a>（07～10）</td>
 </tr>
 <tr>
 <td>第 7 章 E07-01～05</td>

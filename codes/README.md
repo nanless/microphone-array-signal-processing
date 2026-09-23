@@ -58,7 +58,7 @@ SMP-PHAT 可用 `.venv/bin/python codes/examples/reproduce_smpphat_reference.py 
 例子只使用确定性输入，随机输入会固定种子。函数拒绝维度、单位或参数范围明显错误的输入；这类检查是
 为了尽早暴露口径错误，不表示代码已经达到产品级防御能力。
 
-三个 `exercises_` 模块分别有 26、22、20 道题，共 68 道，使用 `E01-01` 至 `E13-01` 等稳定题号，不改原有练习编号。每个模块的 `run_exercises()` 返回可序列化为 JSON 的计算结果，导入模块不会执行练习。题目与测试映射见 [COVERAGE.md](COVERAGE.md)，逐题入口与音频对照见[练习与音频实验](research/05_exercises_and_audio.md)。练习数量与算法数量分开统计；MDL 另有可运行教学实现，当前基线算法共 41 行。
+三个 `exercises_` 模块分别有 26、22、20 道题，AEC 边界小例另有 4 道，共 72 道，使用 `E01-01` 至 `E13-01` 等稳定题号，不改原有练习编号。前三个模块的 `run_exercises()` 与 AEC 小例的 `run_demo()` 均返回可序列化为 JSON 的计算结果，导入模块不会执行练习。题目与测试映射见 [COVERAGE.md](COVERAGE.md)，逐题入口与音频对照见[练习与音频实验](research/05_exercises_and_audio.md)。练习数量与算法数量分开统计；MDL 和流式 NLMS 状态另有可运行教学实现，当前基线算法共 42 行。
 
 ## 合成音频与图 34～36
 
@@ -91,6 +91,10 @@ SMP-PHAT 可用 `.venv/bin/python codes/examples/reproduce_smpphat_reference.py 
 ```
 
 归档默认保存在不进入 Git 的 `codes/upstream/_downloads/demand/`。已有文件若摘要不符会被拒绝，不会被静默覆盖。完整输入口径、10 个连续 1 s 子段结果和限制见[数据说明](real_audio/README.md)及[练习手册](research/05_exercises_and_audio.md)。
+
+## 真实成对 AEC 录音实验 R02
+
+[aec_real_pair_experiment.py](examples/aec_real_pair_experiment.py)对 Microsoft AEC Challenge 官方固定版的一对播放环回/麦克风录音运行 SpeexDSP 同步 AEC，并分别设置正确、全零和故意晚 1 秒的参考。录音没有独立干净回声真值；报告的是固定评分区的输入/输出数字功率变化，不是真值 ERLE。[完整文件摘要、构建命令、数值和限制](research/02_aec_wpe_separation.md#aec)保存在研究记录。真实众包录音的再分发授权尚不明确，因此原文件和可选处理后 WAV 只放在 Git 忽略缓存中，不纳入本仓库的 44 个合成音频或 DEMAND 的 4 个已授权 WAV。
 
 ## 如何把公式和程序对上
 

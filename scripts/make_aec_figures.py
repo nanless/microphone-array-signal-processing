@@ -8,6 +8,7 @@ fig_erle→图29、fig_delay_dtd→图30、fig_nonlinear→图31、fig_hybrid→
 """
 import hashlib
 import os
+import sys
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -15,6 +16,10 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Circle, FancyArrowPatch
 from matplotlib import gridspec
 from pathlib import Path
+
+# Direct ``python scripts/make_aec_figures.py`` must see the repository package.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from codes.array_tutorial.conventions import finite_real_array, finite_real_scalar
 
 OUT = Path(os.environ.get("AEC_FIGURE_DIR", Path(__file__).parent.parent / "figures"))
 OUT.mkdir(exist_ok=True)
@@ -92,25 +97,30 @@ def nlms_adaptation_trace(
     每个快照都在相应样本的更新之前记录，所以第 0 个快照严格表示
     全零初值。若提供 ``true_path``，同时返回归一化系数欧氏失配（dB）。
     """
-    x = np.asarray(x, dtype=float)
-    d = np.asarray(d, dtype=float)
+    x = finite_real_array(x, "x")
+    d = finite_real_array(d, "d")
     if x.ndim != 1 or d.ndim != 1 or x.shape != d.shape:
         raise ValueError("x 与 d 必须是同长度一维数组")
-    if not isinstance(taps, (int, np.integer)) or taps <= 0:
+    if isinstance(taps, (bool, np.bool_)) or not isinstance(taps, (int, np.integer)) or taps <= 0:
         raise ValueError("taps 必须是正整数")
-    if not isinstance(snapshot_interval, (int, np.integer)) or snapshot_interval <= 0:
+    if (isinstance(snapshot_interval, (bool, np.bool_))
+            or not isinstance(snapshot_interval, (int, np.integer))
+            or snapshot_interval <= 0):
         raise ValueError("snapshot_interval 必须是正整数")
+    mu = finite_real_scalar(mu, "mu")
+    if not 0 <= mu < 2:
+        raise ValueError("mu 必须满足 0 <= mu < 2")
     if freeze is not None:
-        freeze = np.asarray(freeze, dtype=bool)
-        if freeze.shape != x.shape:
-            raise ValueError("freeze 必须与 x 同形")
+        freeze = np.asarray(freeze)
+        if freeze.dtype.kind != "b" or freeze.shape != x.shape:
+            raise ValueError("freeze 必须是与 x 同形的布尔数组")
     if true_path is not None:
-        true_path = np.asarray(true_path, dtype=float)
+        true_path = finite_real_array(true_path, "true_path")
         if true_path.shape != (taps,):
             raise ValueError("true_path 的长度必须等于 taps")
         path_power = float(true_path @ true_path)
-        if path_power <= 0:
-            raise ValueError("true_path 的能量必须为正")
+        if not np.isfinite(path_power) or path_power <= 0:
+            raise ValueError("true_path 的能量必须为有限正数")
 
     N = len(x)
     w = np.zeros(taps)
@@ -124,10 +134,18 @@ def nlms_adaptation_trace(
             snapshot_samples.append(n)
             if true_path is not None:
                 mismatch.append(10 * np.log10(float((true_path - w) @ (true_path - w)) / path_power))
-        y = float(w @ X)
-        e[n] = d[n] - y
-        if freeze is None or not freeze[n]:
-            w = w + mu * e[n] * X / (float(X @ X) + 1e-6)
+        with np.errstate(over="raise", invalid="raise"):
+            try:
+                y = float(w @ X)
+                e[n] = d[n] - y
+            except FloatingPointError as error:
+                raise ValueError("NLMS 预测超出 float64 范围") from error
+        if mu != 0 and (freeze is None or not freeze[n]):
+            with np.errstate(over="raise", invalid="raise"):
+                try:
+                    w = w + mu * e[n] * X / (float(X @ X) + 1e-6)
+                except FloatingPointError as error:
+                    raise ValueError("NLMS 更新超出 float64 范围") from error
     return (
         e,
         np.asarray(snaps),
@@ -143,24 +161,29 @@ def nlms_run(x, d, taps=128, mu=0.5, freeze=None):
 
 def block_erle(echo, e, blk=400):
     """按完整块计算功率比 ERLE；零功率保留其数学语义而不加绝对地板。"""
-    echo = np.asarray(echo)
-    e = np.asarray(e)
+    echo = finite_real_array(echo, "echo")
+    e = finite_real_array(e, "e")
     if echo.shape != e.shape or echo.ndim != 1:
         raise ValueError("echo 与 e 必须是同长度一维数组")
-    if not isinstance(blk, (int, np.integer)) or blk <= 0:
+    if isinstance(blk, (bool, np.bool_)) or not isinstance(blk, (int, np.integer)) or blk <= 0:
         raise ValueError("blk 必须是正整数")
+    def log_power(block):
+        scale = float(np.max(np.abs(block)))
+        if scale == 0:
+            return -np.inf
+        normalized = block / scale
+        return 2 * np.log10(scale) + np.log10(float(np.mean(normalized * normalized)))
+
     starts = range(0, len(echo) - blk + 1, blk)
-    te = np.array([np.mean(echo[i:i+blk] ** 2) for i in starts])
-    starts = range(0, len(e) - blk + 1, blk)
-    re = np.array([np.mean(e[i:i+blk] ** 2) for i in starts])
-    tc = np.array([i / FS for i in range(0, len(echo) - blk + 1, blk)])
-    ratio = np.full(te.shape, np.nan, dtype=float)
-    np.divide(te, re, out=ratio, where=(te > 0) & (re > 0))
-    ratio[(te > 0) & (re == 0)] = np.inf
-    ratio[(te == 0) & (re > 0)] = 0.0
-    # 0/0 没有定义，保留 NaN；正数/0 为 +inf，0/正数为 -inf dB。
-    with np.errstate(divide="ignore", invalid="ignore"):
-        erle = 10 * np.log10(ratio)
+    tc = np.array([i / FS for i in starts])
+    erle = np.empty(tc.shape)
+    for index, start in enumerate(starts):
+        input_log = log_power(echo[start:start+blk])
+        residual_log = log_power(e[start:start+blk])
+        if input_log == -np.inf and residual_log == -np.inf:
+            erle[index] = np.nan
+        else:
+            erle[index] = 10 * (input_log - residual_log)
     return tc, erle
 
 def mask_metric_intervals(times, values, intervals):
@@ -199,9 +222,8 @@ def fig_problem():
     ax.set_title("(b) 卷积把声音拖长：x → 回声", fontsize=FS_TITLE)
     ax.plot(t, x, color=C_BLUE, lw=1, label="远端 x(n)")
     ax.plot(t, echo, color=C_BLUE, ls="--", lw=1, label="回声 x*h")
-    ax.plot(t, s, color=C_RED, lw=1, label="近端 s(n)")
+    ax.plot(t, s, color=C_RED, lw=1, label="合成近端干扰 s(n)（非语音）")
     ax.axvspan(0.8, 1.2, color=C_RED, alpha=0.10)
-    ax.text(1.0, ax.get_ylim()[1]*0.9 if len(ax.get_ylim()) else 1, "近端说话段", ha="center", fontsize=FS_SMALL, color=C_RED)
     ax.set_xlim(0, 1.6); ax.set_xlabel("时间 (s)", fontsize=FS_LABEL); ax.set_ylabel("归一化幅度", fontsize=FS_LABEL)
     ax.legend(fontsize=FS_SMALL); ax.grid(ls=":", alpha=0.5); ax.tick_params(labelsize=FS_TINY)
     ax = fig.add_subplot(gs[1, 1])
@@ -217,7 +239,7 @@ def fig_problem():
 def fig_concept():
     fig, ax = plt.subplots(figsize=(9.8, 5.4), layout="constrained")
     fig.suptitle("图27 AEC 结构：根据播放参考估计回声，再从麦克风信号中相减", fontsize=FS_SUP)
-    ax.set_xlim(0, 11); ax.set_ylim(0, 6); ax.axis("off")
+    ax.set_xlim(0, 11); ax.set_ylim(-0.55, 6); ax.axis("off")
     def box(x, y, w, h, text, fc):
         ax.add_patch(Rectangle((x, y), w, h, fc=fc, ec="k", lw=1.2))
         ax.text(x + w/2, y + h/2, text, ha="center", va="center", fontsize=FS_SMALL, color=C_MAIN)
@@ -239,16 +261,23 @@ def fig_concept():
     arrow((7.3, 1.0), (8.02, 2.72), C_BLUE)
     arrow((7.3, 3.2), (7.75, 3.2), C_BLUE)
     arrow((8.65, 3.2), (9.1, 3.2), C_GREEN, w=2.0)
+    # DTD 的两路观测输入与下方的残差反馈是不同支路。
+    ax.plot([1.25, 1.25, 8.1], [3.9, 5.72, 5.72], color=C_PURPLE, lw=1.2)
+    arrow((8.1, 5.72), (8.1, 5.5), C_PURPLE)
+    ax.plot([6.35, 6.35, 9.25], [3.9, 4.28, 4.28], color=C_PURPLE, lw=1.2)
+    arrow((9.25, 4.28), (9.25, 4.6), C_PURPLE)
     # 残差 e 沿底部返回滤波器更新端；DTD 控制反馈支路上的开关。
     ax.plot([9.9, 9.9, 9.15], [2.5, 0.18, 0.18], color=C_BLUE, lw=1.4)
     ax.add_patch(Rectangle((8.35, 0.03), 0.8, 0.3, fc="white", ec=C_RED, lw=1.2, zorder=4))
     ax.plot([8.48, 8.98], [0.29, 0.08], color=C_RED, lw=1.6, zorder=5)
     ax.plot([3.7, 8.35], [0.18, 0.18], color=C_BLUE, lw=1.4)
     arrow((3.7, 0.18), (3.7, 0.4), C_BLUE)
-    ax.text(8.4, 0.36, "残差 e 驱动更新", fontsize=FS_SMALL, color=C_BLUE, ha="center")
+    ax.annotate("残差 e 驱动更新", xy=(7.8, 0.18), xytext=(6.8, -0.4),
+                fontsize=FS_SMALL, color=C_BLUE, ha="center",
+                arrowprops=dict(arrowstyle="->", color=C_BLUE, lw=1.1))
     arrow((8.8, 4.6), (8.75, 0.33), C_RED, ls="--", w=1.8)
-    ax.annotate("估计回声路径", xy=(3.7, 1.0), xytext=(0.7, 0.35), fontsize=FS_SMALL + 2, color=C_PURPLE,
-                arrowprops=dict(arrowstyle="->", color=C_PURPLE, lw=1.8, connectionstyle="arc3,rad=-0.25"))
+    ax.annotate("估计回声路径", xy=(2.68, 1.0), xytext=(0.7, 0.35), fontsize=FS_SMALL + 2, color=C_PURPLE,
+                arrowprops=dict(arrowstyle="->", color=C_PURPLE, lw=1.8))
     save(fig, "fig27_aec_concept.png")
 
 # ---- 图28：NLMS 路径估计 ----
@@ -293,7 +322,7 @@ def fig_nlms():
     ax.grid(ls=":", alpha=0.5)
     ax.text(0.99, -6.0, "系数欧氏失配与残余功率采用不同加权；\n这里只比较下降/上升趋势，不作等量换算", fontsize=FS_SMALL, color=C_MAIN, ha="right",
             bbox=dict(fc="white", ec="0.7", alpha=0.9))
-    ax = axes[2]; ax.set_title("(c) 步长 μ：增大可加快收敛，也会增大波动", fontsize=FS_TITLE)
+    ax = axes[2]; ax.set_title("(c) 步长 μ：无噪声模型中的有限时段收敛", fontsize=FS_TITLE)
     step_styles = [(0.2, C_BLUE, "-", "o"), (0.5, C_ORANGE, "--", "s"),
                    (1.0, C_RED, "-.", "^")]
     for mu, c, ls, marker in step_styles:
@@ -303,13 +332,13 @@ def fig_nlms():
                 markevery=8, label=f"μ={mu}")
     ax.set_xlabel("时间 (s)", fontsize=FS_LABEL); ax.set_ylabel("ERLE (dB)", fontsize=FS_LABEL)
     ax.legend(fontsize=FS_SMALL); ax.grid(ls=":", alpha=0.5); ax.tick_params(labelsize=FS_TINY)
-    ax.text(0.05, 0.08, "本图只比较 μ=0.2、0.5、1.0。\n"
-            "实际步长需按输入相关性、失配和双讲条件验证。",
+    ax.text(0.05, 0.08, "本图只比较 μ=0.2、0.5、1.0 的暂态。\n"
+            "无近端噪声，不据此判断稳态失调。",
             transform=ax.transAxes, fontsize=FS_SMALL, color=C_RED,
             bbox=dict(fc="white", ec="0.8", alpha=0.85))
     save(fig, "fig28_aec_nlms.png")
 
-# ---- 图29：ERLE + 双讲冻结 ----
+# ---- 图29：ERLE + 合成近端干扰时的真值冻结 ----
 def fig_erle():
     N = int(1.6 * FS); taps = 128
     h = np.exp(-np.arange(taps) / 25) * np.random.default_rng(2901).standard_normal(taps)
@@ -325,7 +354,7 @@ def fig_erle():
     env_scale = max(float(np.max(env)) for env in envs)
     envs = [env / max(env_scale, 1e-12) for env in envs]
     fig = plt.figure(figsize=(9.8, 8.5), layout="constrained")
-    fig.suptitle("图29 NLMS 收敛与双讲冻结", fontsize=FS_SUP)
+    fig.suptitle("图29 NLMS 收敛与合成近端干扰时的冻结", fontsize=FS_SUP)
     gs = gridspec.GridSpec(4, 1, figure=fig, height_ratios=[0.7, 0.7, 0.7, 1.5])
     labels = ["参考 x", "麦克风 d", "残差 e"]
     colors = [C_BLUE, C_RED, C_GREEN]
@@ -343,9 +372,9 @@ def fig_erle():
     ax = fig.add_subplot(gs[3]); ax.set_title("ERLE 只在远端单讲区评价", fontsize=FS_TITLE)
     erle_view = erle.copy()
     erle_view[(tcc >= 0.8) & (tcc < 1.2)] = np.nan
-    ax.plot(tcc, erle_view, color=C_BLUE, lw=1.6, label="ERLE（双讲区不绘制）")
+    ax.plot(tcc, erle_view, color=C_BLUE, lw=1.6, label="ERLE（干扰段不绘制）")
     ax.axvspan(0.8, 1.2, color=C_RED, alpha=0.10)
-    ax.text(1.0, np.nanmax(erle_view)*0.88, "双讲区的残差含近端语音\nERLE 不能评价回声抵消量", ha="center", fontsize=FS_SMALL + 1, color=C_RED,
+    ax.text(1.0, np.nanmax(erle_view)*0.88, "合成近端干扰段（非语音）\nERLE 不评价回声抵消量", ha="center", fontsize=FS_SMALL + 1, color=C_RED,
             bbox=dict(fc="white", ec=C_RED, lw=0.7, alpha=0.9, boxstyle="round,pad=0.3"))
     ax.annotate(f"收敛后 ERLE≈{plateau:.0f} dB", xy=(0.62, plateau), xytext=(0.35, plateau+6),
                 fontsize=FS_LABEL, color=C_BLUE,
@@ -355,7 +384,7 @@ def fig_erle():
     ax.grid(ls=":", alpha=0.5); ax.tick_params(labelsize=FS_TINY)
     save(fig, "fig29_aec_erle_freeze.png")
 
-# ---- 图30：延迟 × 双讲 ----
+# ---- 图30：延迟 × 合成近端干扰 ----
 def fig_delay_dtd():
     N = int(1.6 * FS); taps = 128; delay = 300
     h = np.exp(-np.arange(taps) / 25) * np.random.default_rng(3001).standard_normal(taps)
@@ -384,7 +413,7 @@ def fig_delay_dtd():
         fig.add_subplot(grid[1, 0]),
         fig.add_subplot(grid[1, 1]),
     ]
-    fig.suptitle("图30 延迟对齐与双讲冻结", fontsize=FS_SUP)
+    fig.suptitle("图30 延迟对齐与合成近端干扰时的冻结", fontsize=FS_SUP)
     ax = axes[0]; ax.set_title("(a) 参考—麦克风有符号互相关", fontsize=FS_TITLE)
     seg = 4000
     corr = np.correlate(d[:seg], x[:seg], mode="full")
@@ -414,11 +443,11 @@ def fig_delay_dtd():
     ax.axvspan(0.8, 1.2, color=C_RED, alpha=0.08)
     ax.set_ylim(-10, 40); ax.set_xlabel("时间 (s)", fontsize=FS_LABEL); ax.set_ylabel("ERLE (dB)", fontsize=FS_LABEL)
     ax.legend(fontsize=FS_SMALL); ax.grid(ls=":", alpha=0.5); ax.tick_params(labelsize=FS_TINY)
-    ax = axes[2]; ax.set_title("(c) 双讲冻结与恢复", fontsize=FS_TITLE)
-    ax.plot(tcc, er_align_view, color=C_BLUE, lw=1.6, label="双讲时冻结更新")
-    ax.plot(tcc, er_nof_view, color=C_RED, lw=1.4, ls="--", label="双讲时继续更新")
+    ax = axes[2]; ax.set_title("(c) 近端干扰时的更新与恢复", fontsize=FS_TITLE)
+    ax.plot(tcc, er_align_view, color=C_BLUE, lw=1.6, label="干扰时冻结更新")
+    ax.plot(tcc, er_nof_view, color=C_RED, lw=1.4, ls="--", label="干扰时继续更新")
     ax.axvspan(0.8, 1.2, color=C_RED, alpha=0.10)
-    ax.text(1.0, -5, "残差含近端语音\nERLE 无定义", ha="center", fontsize=FS_SMALL, color=C_RED)
+    ax.text(1.0, -5, "合成近端干扰段（非语音）\nERLE 不用于评估回声", ha="center", fontsize=FS_SMALL, color=C_RED)
     ax.set_ylim(-10, 40); ax.set_xlabel("时间 (s)", fontsize=FS_LABEL); ax.set_ylabel("ERLE (dB)", fontsize=FS_LABEL)
     ax.legend(fontsize=FS_SMALL); ax.grid(ls=":", alpha=0.5); ax.tick_params(labelsize=FS_TINY)
     save(fig, "fig30_aec_delay_dtd.png")
@@ -499,11 +528,15 @@ def fig_hybrid():
     box(2.6, 0.9, 1.8, 1.2, "延迟估计与对齐\n得到 x_a(n)", "#dbe9f6")
     arrow((2.1, 1.5), (2.6, 1.5), C_BLUE)
     arrow((3.5, 2.1), (3.9, 3.2), C_BLUE)
-    # 某些学习型后处理同时使用对齐参考；虚线表示可选输入，而非必需主链。
-    ax.plot([4.4, 9.0, 9.0], [1.5, 1.5, 3.2], color=C_BLUE, lw=1.0, ls=":")
-    ax.text(6.8, 1.68, "可选：对齐参考 x_a(n) 作为学习模型的条件输入",
-            ha="center", fontsize=FS_SMALL, color=C_BLUE)
+    # 可选条件参考从对齐框下缘绕行，避开下方更新控制的观测与输出箭头。
+    ax.plot([3.5, 3.5, 9.0, 9.0], [0.9, -0.12, -0.12, 3.2],
+            color=C_BLUE, lw=1.0, ls=":")
+    ax.text(9.5, 1.85, "可选：x_a 作为\n学习模型输入",
+            ha="left", fontsize=FS_SMALL, color=C_BLUE)
     box(5.0, 0.35, 2.0, 0.85, "DTD 与步长控制", "#f6e5db")
+    # 此框示意用对齐参考及线性残差统计来约束更新；不是唯一的 DTD 判据。
+    arrow((4.4, 1.5), (5.0, 0.78), C_PURPLE)
+    arrow((6.4, 3.2), (6.4, 1.2), C_PURPLE)
     arrow((6.0, 1.2), (4.5, 3.2), C_ORANGE)
     ax.text(3.4, 5.75, "线性 AEC 同时接收麦克风信号 d(n)\n和对齐参考 x_a(n)",
             fontsize=FS_SMALL, color=C_BLUE, ha="center")

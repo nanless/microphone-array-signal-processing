@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码研究导读 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5a44d84ec0bb"><style>
+<meta name="source-digest" content="b962773fed1b"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -94,6 +94,7 @@ DNN 自适应控制和长序列分离；工程部分补重采样、响度、STOI
 <p>已执行的工业三库接口实验与 SBL 合成输入实验提供原创调用程序及<a href="04_source_reproduction.html">运行记录</a>。
 报告区分正常检查、状态重置反例和达到迭代上限；SMP-PHAT 的实际编译运行另记录了负时延索引转换导致的数值失败。
 这些小规模接口对照不等于论文全量复现或设备验收。</p>
+<p>增强篇还记录了固定版 SpeexDSP 在一对真实播放环回/麦克风录音上的同步 AEC 实验，以及零参考和错位参考控制；只把它记作该接口在该片段上的观察，不外推为真值 ERLE、双讲保护或设备验收。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
@@ -126,7 +127,7 @@ DNN 自适应控制和长序列分离；工程部分补重采样、响度、STOI
 <tr>
 <td><a href="05_exercises_and_audio.html">练习与音频实验</a></td>
 <td>第 1～11 章、附录 A/B</td>
-<td>68 道代码练习、44 个合成音频，以及 DEMAND 真实录音摘录与派生音频的复算、许可和解释边界</td>
+<td>72 道代码练习、44 个合成音频，以及 DEMAND 真实录音摘录与派生音频的复算、许可和解释边界</td>
 </tr>
 </tbody>
 </table></div>

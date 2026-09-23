@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码获取与独立复现记录 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5a44d84ec0bb"><style>
+<meta name="source-digest" content="b962773fed1b"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -264,6 +264,20 @@ ERLE 不能把双讲中的近端语音解释成残余回声，也不能用参考
 <td>已核对固定提交</td>
 <td>原源码隔离构建静态库；未安装系统依赖</td>
 <td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/run_libsamplerate_sro.py">两段已知时钟偏差实验</a>通过，逐调用核对消费量和尾部排空；时钟估计闭环与抗混叠未测</td>
+<td>未测</td>
+</tr>
+<tr>
+<td>SpeexDSP AUMDF 同步 AEC</td>
+<td>已核对固定提交 <code>8e29a256ef0235ebbe7fcb8417b5ac7731eb8307</code></td>
+<td>macOS arm64 / AppleClang 21，CMake Release 浮点共享库已构建；采样率显式设为并读回 16 kHz</td>
+<td><a href="02_aec_wpe_separation.html#aec">一对官方真实播放环回/麦克风录音的三种参考条件</a>已运行；正确配对、零参考、晚 1 秒参考的输入/输出功率变化分别为 5.57、3.95、−0.23 dB；无干净真值，不记作真值 ERLE</td>
+<td>未测</td>
+</tr>
+<tr>
+<td>WebRTC AEC3、PipeWire AEC 后端</td>
+<td>已核对固定源码与接口</td>
+<td>WebRTC 完整依赖和 PipeWire 系统后端版本未构建核定</td>
+<td>未在真实配对录音上运行；不能与上行 Speex 结果排性能名次</td>
 <td>未测</td>
 </tr>
 <tr>

@@ -30,11 +30,12 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 | `build_pdf.py` | 合订本脚本。14 篇合成带封面、三级目录的单页 HTML，再调 Chrome 无头打印成 A4 PDF，最后写篇/节/指定子节三级书签；第三级收入第 6、7 章的源 h4。输出先写临时文件，校验后再替换发布件。常用 flag：`--html-only`、`--pdf-only`、`--no-bookmarks`、`--build-date YYYY-MM-DD` | `dist/combined.html`（中间产物） + `dist/microphone-array-tutorial.pdf` |
 | `quality_check.py` | 发布门禁。用独立基线检查 14 篇/86 节/21 个指定子节/36 图，核对图号、alt、公式编号与引用、小节语义链接、PNG 绘图脚本摘要、网页导航和 PDF 三级书签。确定性问题阻断发布，高风险口语只提醒人工复核 | 通过、失败清单，以及不阻断发布的人工复核与可访问性提示 |
 
-改图练习（如附录 B 习题）应使用脚本副本或独立输出目录，记录改变的参数，不覆盖本书的发布图。68 道可运行题使用三个模块入口：
+改图练习（如附录 B 习题）应使用脚本副本或独立输出目录，记录改变的参数，不覆盖本书的发布图。72 道可运行题使用三个练习模块和一个 AEC 边界小例入口：
 
 ```bash
 .venv/bin/python -m codes.examples.exercises_spatial
 .venv/bin/python -m codes.examples.exercises_enhancement
+.venv/bin/python -m codes.examples.aec_algorithm_minicases
 .venv/bin/python -m codes.examples.exercises_engineering
 ```
 

@@ -1,11 +1,12 @@
-"""Explicit cross-module, chapter and research inventory for 68 exercises."""
+"""Explicit cross-module, chapter and research inventory for 72 exercises."""
 
 import json
 import re
 import unittest
 from pathlib import Path
 
-from codes.examples import exercises_engineering, exercises_enhancement, exercises_spatial
+from codes.examples import (aec_algorithm_minicases, exercises_engineering,
+                            exercises_enhancement, exercises_spatial)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,14 +23,22 @@ EXPECTED = {
         "E06-04", "E06-05", "E07-04", "E07-05", "E08-04", "E08-05", "E09-04", "E09-05",
         "E06-06", "E08-06",
     },
+    "aec_minicases": {"E06-07", "E06-08", "E06-09", "E06-10"},
     "engineering": {
         "E10-01", "E10-02", "E10-03", "E10-04", "E10-05", "E10-06",
         "E11-01", "E11-02", "E12-01", "E12-02", "E12-03", "E13-01",
         "E10-07", "E10-08", "E10-09", "E10-10", "E10-11", "E10-12", "E11-03", "E11-04",
     },
 }
-MODULES = {"spatial": exercises_spatial, "enhancement": exercises_enhancement,
-           "engineering": exercises_engineering}
+AEC_CASE_KEYS = {"E06-07": "overlap_save", "E06-08": "ipnlms",
+                 "E06-09": "geigel", "E06-10": "delay_polarity"}
+RUNNERS = {"spatial": exercises_spatial.run_exercises,
+           "enhancement": exercises_enhancement.run_exercises,
+           "engineering": exercises_engineering.run_exercises,
+           "aec_minicases": lambda: {
+               exercise_id: aec_algorithm_minicases.run_demo()[case_key]
+               for exercise_id, case_key in AEC_CASE_KEYS.items()
+           }}
 ALL_IDS = set().union(*EXPECTED.values())
 
 
@@ -46,11 +55,11 @@ def documented_ids(text):
 class ExerciseCatalogTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.results = {name: module.run_exercises() for name, module in MODULES.items()}
+        cls.results = {name: run() for name, run in RUNNERS.items()}
 
-    def test_independent_inventory_has_68_unique_ids(self):
-        self.assertEqual(len(ALL_IDS), 68)
-        self.assertEqual(sum(map(len, EXPECTED.values())), 68)
+    def test_independent_inventory_has_72_unique_ids(self):
+        self.assertEqual(len(ALL_IDS), 72)
+        self.assertEqual(sum(map(len, EXPECTED.values())), 72)
 
     def test_each_module_returns_exact_assigned_ids(self):
         for name, results in self.results.items():
@@ -73,7 +82,7 @@ class ExerciseCatalogTest(unittest.TestCase):
                 text = chapters[0].read_text(encoding="utf-8")
                 self.assertRegex(text, rf"\b{re.escape(exercise_id)}\b")
 
-    def test_chapter_and_research_inventories_cover_exactly_68_ids(self):
+    def test_chapter_and_research_inventories_cover_exactly_72_ids(self):
         chapters = "\n".join(path.read_text(encoding="utf-8")
                              for path in (ROOT / "chapters").glob("*.md"))
         research = (ROOT / "codes/research/05_exercises_and_audio.md").read_text(encoding="utf-8")

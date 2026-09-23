@@ -1,6 +1,6 @@
 # 算法—源码—验证覆盖表
 
-核实日期：2026-09-22。本表覆盖正文定义、推导或用于选型的方法，以及三篇研究文档中明确说明收录理由的扩展。每行限定具体计算步骤、算法变体或工业机制；同一算法的教学实现与外部对照不重复登记成不同状态。
+核实日期：2026-09-23（本轮复核 AEC 相关行；其余行沿用原核实记录）。本表覆盖正文定义、推导或用于选型的方法，以及三篇研究文档中明确说明收录理由的扩展。每行限定具体计算步骤、算法变体或工业机制；同一算法的教学实现与外部对照不重复登记成不同状态。
 
 四种覆盖状态：
 
@@ -9,7 +9,7 @@
 - **原理索引**：已有原理或来源依据，但尚未形成唯一、许可明确且承担对应计算的源码映射；代码可见而许可不明时也保留此状态，并说明原因。
 - **明确排除**：指定软件的身份或许可不满足本书当前收录方式；不表示删除相应方法的学术讨论。
 
-算法表共 241 行：本仓库可运行基线 41 行、外部参考实现 144 行、原理索引 54 行、明确排除 2 行。练习映射单独计数，不因题数增加算法行；MDL 属于本地基线，SBL、在线子带 GSC 和滑窗多帧 MHT 已补外部入口。覆盖表仍有原理索引，不表示全书全部算法已经运行。
+算法表共 242 行：本仓库可运行基线 42 行、外部参考实现 144 行、原理索引 54 行、明确排除 2 行。练习映射单独计数，不因题数增加算法行；MDL 属于本地基线，SBL、在线子带 GSC 和滑窗多帧 MHT 已补外部入口。覆盖表仍有原理索引，不表示全书全部算法已经运行。
 
 源码取得与入口核对见 [SOURCE_STATUS.json](SOURCE_STATUS.json)；该文件中的依赖验证和执行字段未开展时为 `not_run`，不承载方法级数值实验结果。实际运行及数值对照见[复现记录](research/04_source_reproduction.md)、[增强研究记录](research/02_aec_wpe_separation.md)和 [WPE 独立对照脚本](examples/compare_wpe_reference.py)。工业三库与 SBL 的限定实验保存在 `reports/`；实际调用外部代码不将它改列为本仓库教学基线。覆盖状态不是测试结果。完整提交、官方地址、许可与来源 ID 见 [SOURCES.lock.json](SOURCES.lock.json)。教学路径相对于 [array_tutorial/](array_tutorial/)；外部路径相对于对应项目根，出现“同文件”时仅继承上一行文件，不继承其算法或验证结论。
 
@@ -130,22 +130,23 @@
 |---|---|---|---|---|
 | §6.1.2 | LMS | 原理索引 | 正文梯度更新 | 教学 NLMS 不是固定步长 LMS |
 | §6.1.2 | NLMS | 本仓库可运行基线 | `aec.py::nlms` | 外部冻结掩码、零参考、有限 FIR |
+| §6.1.16 | 流式 NLMS 状态 | 本仓库可运行基线 | `aec.py::NLMSState`、`examples/aec_streaming_demo.py` | 跨块同时续接抽头与 $L-1$ 个参考历史；不含 DTD、延迟搜索或实时接口 |
 | 研究扩展：增强 A01 | 泄漏 NLMS | 原理索引 | 泄漏更新说明 | 教学函数没有泄漏参数 |
 | §6.1.3 | 单块 FDAF | 原理索引 | 正文频域卷积与约束 | 分区 MDF 不覆盖所有单块变体 |
-| §6.1.3 | MDF/PBFDAF 分区结构 | 外部参考实现 | `speexdsp`：`libspeexdsp/mdf.c` | 实际为 AUMDF；重叠保存与约束 |
-| §6.1.3；研究扩展：增强 A03 | AUMDF 约束调度 | 外部参考实现 | `speexdsp`：同文件 | 约束调度不同于梯度更新 |
+| §6.1.3 | MDF/PBFDAF 分区结构 | 外部参考实现 | `speexdsp`：`libspeexdsp/mdf.c`；`examples/aec_algorithm_minicases.py` 仅分区卷积手算 | 实际为 AUMDF；教学小例不含自适应更新或完整 PBFDAF |
+| §6.1.3；研究扩展：增强 A03 | AUMDF 约束调度 | 外部参考实现 | `speexdsp`：同文件；真实配对接口实验见 `examples/aec_real_pair_experiment.py` | 约束调度不同于梯度更新；单对录音功率变化不证明抽头真值或设备性能 |
 | §6.1.3 | PNLMS | 原理索引 | 正文比例更新 | Speex 控制不代表全部变体 |
-| §6.1.3 | IPNLMS | 原理索引 | 正文改进比例更新 | 比例/均匀项与路径稀疏度 |
+| §6.1.3 | IPNLMS | 原理索引 | 正文式(6-4)；`examples/aec_algorithm_minicases.py` 单步小例 | 小例仅核抽头分配，不是收敛复现；比例/均匀项与路径稀疏度 |
 | §6.1.3 | 子带自适应 AEC | 原理索引 | 正文子带结构 | 混叠、带间延迟、更新率 |
 | §6.1.3 | FDKF | 原理索引 | 增强 A04 原论文 | AEC3/Speex 不自动归为卡尔曼 |
 | §6.1.3 | 分区 FDKF | 原理索引 | 增强 A04 分区状态模型 | 跨分区相关、对角近似 |
 | §6.1.4 | Volterra 非线性 AEC | 原理索引 | 正文路径模型 | 阶数、过拟合、未见削波 |
 | §6.1.4 | Hammerstein 非线性路径 | 原理索引 | 正文级联模型 | 非线性位于线性动态系统之前 |
 | §6.1.4 | Wiener 非线性路径 | 原理索引 | 正文级联模型 | 非线性位于线性动态系统之后 |
-| §6.1.5 | Geigel DTD | 原理索引 | 正文判决模型 | 电平与路径变化 |
-| §6.1.5 | 相关/相干性 DTD | 原理索引 | 正文统计控制 | 路径失配可能被误判双讲 |
+| §6.1.5 | Geigel DTD | 原理索引 | 正文判决模型；`examples/aec_algorithm_minicases.py` 反例 | 多径误判、零参考禁判；小例不是产品检测器 |
+| §6.1.5 | 相关/相干性 DTD | 原理索引 | 正文统计控制 | Benesty NCC 用参考与麦克风归一化相关；参考与残差相关另有失配含义 |
 | §6.1.5 | 连续可变学习率 | 外部参考实现 | `speexdsp`：`libspeexdsp/mdf.c` | 不是独立二值 DTD |
-| §6.1.9 | AEC3 参考延迟控制 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/render_delay_controller.cc` | 缓冲、调用次序、丢块与重对齐 |
+| §6.1.9 | AEC3 参考延迟控制 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/echo_path_delay_estimator.cc`、`render_delay_controller.cc` | 降采样匹配滤波估滞后；与 refined/coarse 线性滤波器分工不同 |
 | §6.1.9 | AEC3 线性抵消 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/subtractor.cc` | 保留线性输出取点 |
 | §6.1.9、§6.1.13 | AEC3 残余回声估计 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/residual_echo_estimator.cc` | 与执行抑制增益分开 |
 | §6.1.9、§6.1.13 | AEC3 抑制增益 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/suppression_gain.cc` | 近端损伤与回声泄漏分别计量 |
@@ -158,7 +159,7 @@
 | §6.1.6 | Deep Adaptive AEC | 原理索引 | 增强 A12 原论文 | 学习更新系统不等于 NS 分支 |
 | §6.1.6 | DeepVQE | 原理索引 | 增强 A12 原论文 | 联合任务、参考和训练目标 |
 | 研究扩展：增强 A13 | Meta-AF 核心更新器 | 外部参考实现 | `metaaf`：`metaaf/filter.py`、`metaaf/core.py`、`metaaf/meta.py` | 核心 NCSA；zoo/权重受限部分另核 |
-| §6.1.8 | ERLE 与有效单讲区间 | 本仓库可运行基线 | `aec.py::erle_db` | 双讲排除、收敛段、固定延迟 |
+| §6.1.8 | ERLE 与有效单讲区间 | 本仓库可运行基线 | `aec.py::erle_db` | 双讲排除、收敛段、固定延迟；正功率地板使完美抵消读数有限 |
 
 ## WPE、盲分离与空间混合
 
@@ -310,12 +311,12 @@
 
 ## 章节代码练习与音频映射
 
-68 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 241 行算法统计。三个模块均提供 `run_exercises()`，返回可序列化为 JSON 的结果；26/22/20 道题的回归测试独立于外部源码取得状态。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
+72 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 242 行算法统计。三个 `exercises_` 模块各自提供 `run_exercises()`，原有 26/22/20 道题；AEC 小实验另由 `aec_algorithm_minicases.py::run_demo()` 提供 4 道，全部结果均可序列化为 JSON。练习回归测试独立于外部源码取得状态。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
 
 | 章节与稳定 ID | 练习入口 | 回归测试 |
 |---|---|---|
 | 第 1～5 章：`E01-01`～`E01-03`、`E02-01`～`E02-06`、`E03-01`～`E03-05`、`E04-01`～`E04-07`、`E05-01`～`E05-05`（26 题） | [exercises_spatial.py](examples/exercises_spatial.py)；E04-06 另有 [MDL 重复实验](examples/mdl_repeated_trials.py) | [test_codes_exercises_spatial.py](../tests/test_codes_exercises_spatial.py)、[独立重复实验测试](../tests/test_codes_mdl_repeated.py) |
-| 第 6～9 章：`E06-01`～`E06-06`、`E07-01`～`E07-05`、`E08-01`～`E08-06`、`E09-01`～`E09-05`（22 题） | [exercises_enhancement.py](examples/exercises_enhancement.py) | [test_codes_exercises_enhancement.py](../tests/test_codes_exercises_enhancement.py) |
+| 第 6～9 章：`E06-01`～`E06-10`、`E07-01`～`E07-05`、`E08-01`～`E08-06`、`E09-01`～`E09-05`（26 题） | [exercises_enhancement.py](examples/exercises_enhancement.py)（原有 22 题）；[AEC 四个边界小例](examples/aec_algorithm_minicases.py)（`E06-07`→`overlap_save`、`E06-08`→`ipnlms`、`E06-09`→`geigel`、`E06-10`→`delay_polarity`） | [test_codes_exercises_enhancement.py](../tests/test_codes_exercises_enhancement.py)、[test_codes_aec_minicases.py](../tests/test_codes_aec_minicases.py) |
 | 第 10～11 章、附录 A/B：`E10-01`～`E10-12`、`E11-01`～`E11-04`、`E12-01`～`E12-03`、`E13-01`（20 题） | [exercises_engineering.py](examples/exercises_engineering.py) | [test_codes_exercises_engineering.py](../tests/test_codes_exercises_engineering.py) |
 
 在仓库根目录使用模块入口：
@@ -323,6 +324,7 @@
 ```bash
 .venv/bin/python -m codes.examples.exercises_spatial
 .venv/bin/python -m codes.examples.exercises_enhancement
+.venv/bin/python -m codes.examples.aec_algorithm_minicases
 .venv/bin/python -m codes.examples.exercises_engineering
 ```
 
@@ -337,4 +339,4 @@
 本仓库不提交下载缓存、模型权重或未经授权的第三方语料；`audio/` 中的 44 个文件是本书自行合成的教学样本，`real_audio/` 中另有许可明确的 DEMAND 小型摘录和派生文件，不包含完整下载归档。独立上游工作目录的取得、许可保留与未执行项目按来源状态记录报告。算法、源码或排除范围变化时，同步修改本表、研究说明、来源清单和真实验证记录。
 
 
-真实数据练习 R01 使用 [prepare_real_recordings.py](examples/prepare_real_recordings.py) 与 [real_recordings.py](array_tutorial/real_recordings.py)，测试见 [test_codes_real_recordings.py](../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 68 道合成/手算代码题。数据来源和许可另见 [real_audio/](real_audio/README.md)。
+真实数据练习 R01 使用 [prepare_real_recordings.py](examples/prepare_real_recordings.py) 与 [real_recordings.py](array_tutorial/real_recordings.py)，测试见 [test_codes_real_recordings.py](../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 72 道合成/手算代码题。数据来源和许可另见 [real_audio/](real_audio/README.md)。

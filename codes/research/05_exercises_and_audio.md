@@ -2,7 +2,7 @@
 
 先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。
 
-本页对应 68 道稳定编号代码题，以及独立的真实录音练习 R01。原有练习题号保持不变；E01-01 表示第 1 章第 1 道代码练习，不表示全书原有第 1 题。第 3～11、13～14 节是数学合成实验，第 12 节使用另行授权的真实同步录音。
+本页对应 72 道稳定编号代码题，以及独立的真实录音练习 R01。原有练习题号保持不变；E01-01 表示第 1 章第 1 道代码练习，不表示全书原有第 1 题。E06-07～E06-10 是仅输出 JSON 的无量纲 AEC 边界题，不对应新增音频；其余音频映射不变。第 3～11、13～14 节是数学合成实验，第 12 节使用另行授权的真实同步录音。
 
 ## 1. 按章节运行
 
@@ -11,6 +11,7 @@
 ```bash
 .venv/bin/python -m codes.examples.exercises_spatial
 .venv/bin/python -m codes.examples.exercises_enhancement
+.venv/bin/python -m codes.examples.aec_algorithm_minicases
 .venv/bin/python -m codes.examples.exercises_engineering
 .venv/bin/python codes/examples/generate_audio_samples.py --check
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
@@ -21,9 +22,9 @@
 | 第 1 章 E01-01～03 | 相关噪声、幅度和功率、不等噪声方差 | [空间练习](../examples/exercises_spatial.py) |
 | 第 2 章 E02-01～06 | 帧数、复协方差、边缘重建、有效权重、递推启动与整体权重缩放 | 同上 |
 | 第 3 章 E03-01～05 | 差集重数、端射角误差、三维方位、近远场与实增益相减反例 | 同上 |
-| 第 4 章 E04-01～06 | 延迟正号、相干源秩、栅瓣歧义、空间平滑、MDL 评分及重复抽样 | 同上 |
+| 第 4 章 E04-01～07 | 延迟正号、相干源秩、栅瓣歧义、空间平滑、MDL 评分及重复抽样 | 同上 |
 | 第 5 章 E05-01～05 | 秩一条件、MVDR 加载、输出残噪、复响应约束与有限干扰抑制 | 同上 |
-| 第 6 章 E06-01～06 | NLMS 更新、滤长不足、双讲、错误副本、噪声底与非线性残留 | [增强练习](../examples/exercises_enhancement.py) |
+| 第 6 章 E06-01～10 | NLMS 更新、滤长不足、双讲、错误副本、噪声底、非线性残留；分区卷积、IPNLMS、Geigel 与负极性延迟的边界手算 | [增强练习](../examples/exercises_enhancement.py)（01～06）；[AEC 小例](../examples/aec_algorithm_minicases.py)（07～10） |
 | 第 7 章 E07-01～05 | 有效帧、复数预测、秩亏加载、离线因果性、WPD | 同上 |
 | 第 8 章 E08-01～06 | SI-SDR、排列、已知解混、回投影、掩码地板与跨块身份切换 | 同上 |
 | 第 9 章 E09-01～05 | 缺测、环绕、粒子、两类过程噪声与新息门控 | 同上 |

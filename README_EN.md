@@ -2,7 +2,9 @@
 
 A beginner-friendly Chinese tutorial on microphone array signal processing at graduate-entry level. It starts with “why use an array of microphones” and covers DOA estimation, beamforming, acoustic echo cancellation (AEC), dereverberation (WPE), speech separation, source tracking, engineering practice, and system selection.
 
-The tutorial provides key derivations, reproducible numerical examples, validity limits, 36 script-generated figures, and NumPy/standard-library teaching code mapped to the equations. It adds 68 executable exercises and 44 synthetic audio files in 11 groups; see [exercises and audio experiments](codes/research/05_exercises_and_audio.md) for inputs, answers and listening conditions. These 44 files are not natural speech or formal listening-test data. A separate set of 4 WAV files contains a real 16-channel DEMAND river-noise excerpt and three derivatives under CC BY-SA 3.0, for noise-power and interchannel-correlation experiments.
+The tutorial provides key derivations, reproducible numerical examples, validity limits, 36 script-generated figures, and NumPy/standard-library teaching code mapped to the equations. It adds 72 executable exercises and 44 synthetic audio files in 11 groups; see [exercises and audio experiments](codes/research/05_exercises_and_audio.md) for inputs, answers and listening conditions. The four additional AEC boundary exercises have no associated audio and are not hardware benchmarks. These 44 files are not natural speech or formal listening-test data. A separate set of 4 WAV files contains a real 16-channel DEMAND river-noise excerpt and three derivatives under CC BY-SA 3.0, for noise-power and interchannel-correlation experiments.
+
+Chapter 6 also reports a [SpeexDSP AEC interface experiment](codes/research/02_aec_wpe_separation.md#aec) on one real Microsoft AEC Challenge loopback/microphone pair, with zero-reference and misaligned-reference controls. The crowd recordings are not redistributed here; the measured input/output power change is neither clean-component ERLE nor a device-performance ranking.
 
 The [source research handbook](codes/research/README.md) explains implementation steps, industrial configuration and reproduction experiments across spatial processing and tracking, AEC/WPE/separation, and deployment and evaluation. Two further guides cover source reproduction and exercises with audio experiments. Official revisions are pinned; acquired sources reside in independent working trees under `codes/upstream/_downloads/`.
 
@@ -57,6 +59,7 @@ python3 -m venv .venv
 .venv/bin/python codes/examples/ch10_engineering_baselines.py
 .venv/bin/python -m codes.examples.exercises_spatial
 .venv/bin/python -m codes.examples.exercises_enhancement
+.venv/bin/python -m codes.examples.aec_algorithm_minicases
 .venv/bin/python -m codes.examples.exercises_engineering
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 
