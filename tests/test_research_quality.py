@@ -66,9 +66,9 @@ class ResearchQualityTests(unittest.TestCase):
     def test_explicit_baselines_preserve_tutorial_pdf_and_figure_counts(self):
         self.assertEqual(quality.EXPECTED_CHAPTER_COUNT, 14)
         self.assertEqual(quality.EXPECTED_SECTION_COUNT, 86)
-        self.assertEqual(quality.EXPECTED_SUBSECTION_COUNT, 25)
-        self.assertEqual(quality.EXPECTED_OUTLINE_ITEM_COUNT, 125)
-        self.assertEqual(quality.EXPECTED_FIGURE_NUMBERS, set(range(1, 39)))
+        self.assertEqual(quality.EXPECTED_SUBSECTION_COUNT, 27)
+        self.assertEqual(quality.EXPECTED_OUTLINE_ITEM_COUNT, 127)
+        self.assertEqual(quality.EXPECTED_FIGURE_NUMBERS, set(range(1, 40)))
         self.assertEqual(quality.EXPECTED_RESEARCH_PAGE_COUNT, 6)
         self.assertEqual(quality.EXPECTED_RESEARCH_PAGES, (
             ("README.md", "index.html"),

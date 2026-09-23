@@ -2,7 +2,7 @@
 
 一套写给初学者和入门研究生的麦克风阵列信号处理中文教程。从“为什么摆一群麦克风”讲到定位（DOA）、波束形成、回声消除（AEC）、去混响（WPE）、语音分离、声源追踪，一直到工程实现与选型。
 
-正文提供关键公式推导、可复算例子、适用边界、38 张脚本生成的图，以及与各章公式对应的 NumPy/标准库教学代码。
+正文提供关键公式推导、可复算例子、适用边界、39 张脚本生成的图，以及与各章公式对应的 NumPy/标准库教学代码。
 
 全书有 82 道可运行代码练习和 13 组、共 55 个合成音频文件；输入、答案与试听条件见[练习与音频实验](codes/research/05_exercises_and_audio.md)。第 6 章 E06-07～20 是模型与边界手算，另有两组**参数不完全相同**的 AEC 合成音频；不能用音频替代题目真值。这 55 个音频不是自然语音或正式听测数据。
 
@@ -19,7 +19,7 @@ English version: [README_EN.md](./README_EN.md)
 | 目录/文件 | 说明 |
 |---|---|
 | `chapters/` | 教程正文 14 篇 Markdown（`00_overview.md` 是入口，`01`～`11` 是 11 章正文，`12`/`13` 是附录 A/B） |
-| `figures/` | 38 张插图（`fig01`～`fig38_*.png`），全部由脚本生成、可复现 |
+| `figures/` | 39 张插图（`fig01`～`fig39_*.png`），全部由脚本生成、可复现 |
 | `codes/` | 教学算法、章节例子、工业实现小工具、第三方官方源码索引与精确版本锁定；覆盖表见 `codes/COVERAGE.md` |
 | `codes/audio/` | 13 组、55 个本书合成的 WAV 及参数、摘要清单，由脚本生成，不直接编辑 |
 | `codes/real_audio/` | DEMAND 真实同步录音摘录、派生均值、独立清单与数据许可；不是合成数据 |
@@ -27,7 +27,7 @@ English version: [README_EN.md](./README_EN.md)
 | `codes/reports/` | 工业接口与空间算法的小规模运行报告；与源码获取状态、论文全量评测分开 |
 | `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
 | `site/` | 20 个网页：14 个教程页（含首页）及 `research/` 下 6 个研究手册页；构建产物，可再生 |
-| `dist/` | 合订 PDF（`microphone-array-tutorial.pdf`）与合订 HTML；PDF 含 14 个顶级、86 个二级、25 个三级书签，共 125 个 |
+| `dist/` | 合订 PDF（`microphone-array-tutorial.pdf`）与合订 HTML；PDF 含 14 个顶级、86 个二级、27 个三级书签，共 127 个 |
 
 ## 章节导览
 
@@ -67,7 +67,7 @@ python3 -m venv .venv
 .venv/bin/python -m codes.examples.exercises_engineering
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 
-# 3. 先生成 55 个音频，再生成 38 张图（图 34～36 读取生成的音频）
+# 3. 先生成 55 个音频，再生成 39 张图（图 34～36 读取生成的音频）
 .venv/bin/python codes/examples/generate_audio_samples.py
 .venv/bin/python scripts/make_figures.py
 .venv/bin/python scripts/make_aec_figures.py
@@ -99,7 +99,7 @@ python3 -m venv .venv
 
 ## 学习路径
 
-- **路径 A（零基础入门，2～3 周）**：导读 → 01 → 11.1/11.3 → 02/03 → 04（GCC+SRP）→ 05（DSB+MVDR）→ 06/07/08 → 09 → 运行 `codes/examples/` 并复现 38 张图。
+- **路径 A（零基础入门，2～3 周）**：导读 → 01 → 11.1/11.3 → 02/03 → 04（GCC+SRP）→ 05（DSB+MVDR）→ 06/07/08 → 09 → 运行 `codes/examples/` 并复现 39 张图。
 - **路径 B（工程实现，1 周精读）**：11.1/11.2/11.3 定 A/B/C 方案 → 05/06/07/08 → 10 全读 → 运行第 10 章工程基线 → 输出延迟/同步/标定三张预算表。
 - **路径 C（研究前沿）**：02（CRLB）→ 03（稀疏阵）→ 04/05 前沿 → 06/07/08 → 13.3 八条前沿 + 13.6 练习。
 

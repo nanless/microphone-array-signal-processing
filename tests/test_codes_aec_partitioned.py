@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 
 from codes.array_tutorial.aec_partitioned import PartitionedFDAFState
-from codes.examples.aec_partitioned_demo import run_demo
+from codes.examples.aec_partitioned_demo import run_demo, run_identifiability_demo
 
 
 class TestPartitionedFDAFState(unittest.TestCase):
@@ -166,6 +166,61 @@ class TestPartitionedDemo(unittest.TestCase):
         self.assertEqual(result["residual"], [1., 0., 2., 0.])
         self.assertAlmostEqual(result["candidate_second_block"][0][2], 1 / 3)
         self.assertIn("not Speex", result["scope"])
+
+    def test_frequency_preconditioner_differs_from_scalar_block_nlms(self):
+        # Independent four-point DFT oracle for chapter 6, example 6-4.
+        x = np.array([0., 0., 1., 2.])
+        e = np.array([0., 0., 1., 0.])
+        spectrum = np.fft.fft(x)
+        error = np.fft.fft(e)
+        np.testing.assert_allclose(spectrum, [3, -1 + 2j, -1, -1 - 2j])
+        np.testing.assert_allclose(error, [1, -1, 1, -1])
+        candidate = np.fft.ifft(np.conj(spectrum) * error
+                                / (np.abs(spectrum) ** 2 + 1)).real
+        np.testing.assert_allclose(candidate,
+                                   [1 / 30, 1 / 30, -2 / 15, 11 / 30], atol=1e-14)
+        raw = np.fft.ifft(np.conj(spectrum) * error).real
+        np.testing.assert_allclose(raw, [1, 0, 0, 2], atol=1e-14)
+        state = PartitionedFDAFState(2, 2, step_size=1., epsilon=1.)
+        state.process([1., 2.], [1., 0.])
+        np.testing.assert_allclose(state.fir_weights, [1 / 30, 1 / 30], atol=1e-14)
+
+    def test_valid_error_selection_is_not_raw_spectrum_subtraction(self):
+        # N=2, one legal FIR partition; direct circular convolution is an
+        # independent oracle for the chapter 6 perfect-path counterexample.
+        x = np.array([1., 2., 3., 4.])
+        taps = np.array([1., 2., 0., 0.])
+        circular = np.fft.ifft(np.fft.fft(x) * np.fft.fft(taps)).real
+        np.testing.assert_allclose(circular, [9., 4., 7., 10.], atol=1e-14)
+        microphone_valid = np.array([7., 10.])
+        true_error = microphone_valid - circular[2:]
+        np.testing.assert_allclose(true_error, [0., 0.], atol=1e-14)
+        wrong_error_spectrum = np.fft.fft([0., 0., *microphone_valid]) - np.fft.fft(circular)
+        np.testing.assert_allclose(np.fft.ifft(wrong_error_spectrum).real,
+                                   [-9., -4., 0., 0.], atol=1e-14)
+
+    def test_two_point_stft_one_sample_delay_needs_cross_frequency(self):
+        # Frames [1,2] and [3,5], exact delay y[n]=x[n-1].
+        previous = np.fft.fft([1., 2.])
+        current = np.fft.fft([3., 5.])
+        correct_zero_bin = 2. + 3.  # y frame is [2,3].
+        reconstructed = .5 * (previous[0] - previous[1]
+                               + current[0] + current[1])
+        self.assertAlmostEqual(reconstructed.real, correct_zero_bin)
+        self.assertNotAlmostEqual(.5 * (previous[0] + current[0]).real,
+                                  correct_zero_bin)
+
+    def test_identifiability_demo_has_frozen_broadband_holdout(self):
+        result = run_identifiability_demo()
+        white = result["conditions"]["white_training"]
+        tone = result["conditions"]["tone_training"]
+        self.assertEqual(result["seed"], 2094)
+        self.assertEqual(result["holdout_samples"], 1024)
+        self.assertLess(white["relative_path_error"], 1e-10)
+        self.assertLess(white["frozen_broadband_holdout_residual_mse"], 1e-20)
+        self.assertLess(tone["training_tail_residual_mse"], 1e-7)
+        self.assertGreater(tone["relative_path_error"], .5)
+        self.assertGreater(tone["frozen_broadband_holdout_residual_mse"], .01)
 
 
 if __name__ == "__main__":

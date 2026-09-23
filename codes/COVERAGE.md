@@ -133,7 +133,7 @@
 | §6.1.16 | 流式 NLMS 状态 | 本仓库可运行基线 | `aec.py::NLMSState`、`examples/aec_streaming_demo.py` | 跨块同时续接抽头与 $L-1$ 个参考历史；不含 DTD、延迟搜索或实时接口 |
 | 研究扩展：增强 A01 | 泄漏 NLMS | 原理索引 | 泄漏更新说明 | 教学函数没有泄漏参数 |
 | §6.1.3 | 单块 FDAF | 原理索引 | 正文频域卷积与约束 | 分区 MDF 不覆盖所有单块变体 |
-| §6.1.3 | MDF/PBFDAF 分区结构（同配置频域多抽头 NLMS） | 本仓库可运行基线 | `aec_partitioned.py::PartitionedFDAFState`、`examples/aec_partitioned_demo.py`；外部 Speex 对照另见 AUMDF 行 | 瞬时功率式(6-3)、有效区、可选梯度约束与跨块状态；不含自动 DTD、延迟搜索或产品级控制；同一结构不重复算算法 |
+| §6.1.3 | MDF/PBFDAF 分区结构（同配置频域多抽头 NLMS） | 本仓库可运行基线 | `aec_partitioned.py::PartitionedFDAFState`、`examples/aec_partitioned_demo.py`（手算、频点反例与冻结宽带留出实验）、`examples/aec_pbfdaf_real_pair_compare.py`（两对固定真实配对录音与三种参考控制）；外部 Speex 对照另见 AUMDF 行 | 瞬时功率式(6-3)、有效区、可选梯度约束与跨块状态；真实录音结果含负值，只是总功率变化；不含自动 DTD、延迟搜索或产品级控制；同一结构不重复算算法 |
 | §6.1.3；研究扩展：增强 A03 | AUMDF 约束调度 | 外部参考实现 | `speexdsp`：同文件；真实配对与已知近端注入实验见 `examples/aec_real_pair_experiment.py`、`examples/aec_doubletalk_experiment.py`、`examples/aec_controlled_doubletalk.py` | 约束调度不同于梯度更新；真实双讲没有分量真值，半合成输出增量也不是近端保留率 |
 | §6.1.3 | PNLMS | 原理索引 | 正文比例更新 | Speex 控制不代表全部变体 |
 | §6.1.3 后续 IPNLMS 专题 | IPNLMS | 本仓库可运行基线 | `aec_ipnlms.py::IPNLMSState`、`examples/aec_ipnlms_subband_demo.py`、`examples/aec_advanced_exercises.py`；`examples/aec_algorithm_minicases.py` 保留旧一步小例 | 实数单参考、先验残差、跨块状态；强抽头比例份额不保证稀疏/稠密任意条件下更快；外部给冻结掩码 |

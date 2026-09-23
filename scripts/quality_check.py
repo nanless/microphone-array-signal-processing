@@ -45,7 +45,7 @@ EXPECTED_SECTION_COUNTS = {
 # 第 6、7 章的源 h4 单独进入合订目录和 PDF 第三级书签。此表是独立发布
 # 基线，不从构建脚本或待检产物反推。
 EXPECTED_SUBSECTION_COUNTS = {
-    "06_aec.md": 22,
+    "06_aec.md": 24,
     "07_wpe-dereverberation.md": 3,
 }
 # 上表为独立发布基线，不从待检 HTML 或构建器反推。
@@ -67,10 +67,10 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 86
-EXPECTED_SUBSECTION_COUNT = 25
-EXPECTED_OUTLINE_ITEM_COUNT = 125
-EXPECTED_FIGURE_NUMBERS = set(range(1, 39))
-# 研究附站使用独立显式清单，不挤占 14 篇教程或 125 项 PDF 大纲基线。
+EXPECTED_SUBSECTION_COUNT = 27
+EXPECTED_OUTLINE_ITEM_COUNT = 127
+EXPECTED_FIGURE_NUMBERS = set(range(1, 40))
+# 研究附站使用独立显式清单，不挤占 14 篇教程或 127 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
     ("README.md", "index.html"),
@@ -516,7 +516,7 @@ def figure_inventory_issues(references, png_names):
             issues.append(f"图号与文件名不匹配：alt 图{alt_match.group(1)} -> {name}")
     if numbers != EXPECTED_FIGURE_NUMBERS:
         issues.append(
-            f"正文图号应为 1..38：缺失 {sorted(EXPECTED_FIGURE_NUMBERS - numbers)}，"
+            f"正文图号应为 1..39：缺失 {sorted(EXPECTED_FIGURE_NUMBERS - numbers)}，"
             f"多出 {sorted(numbers - EXPECTED_FIGURE_NUMBERS)}")
     for number, names in names_by_number.items():
         if len(names) > 1:

@@ -15,7 +15,7 @@
 3. **原始论文**：Capon（1969）、Griffiths & Jim GSC（1982，*An Alternative Approach to Linearly Constrained Adaptive Beamforming*, IEEE Trans. Antennas Propag. 30(1):27–34）、Schmidt MUSIC（1986）、Roy & Kailath ESPRIT（1989）、Allen & Berkley 镜像法（1979）、Nakatani et al. WPE（IEEE TASLP 2010）、Pal & Vaidyanathan 嵌套阵（IEEE TSP 2010）。
 4. **回声消除**：Hänsler & Schmidt, *Acoustic Echo and Noise Control*（Wiley 2004）；近年进展看 ICASSP AEC Challenge 系列报告。
 5. **DNN 方向**：Chakrabarty & Habets（IEEE JSTSP 2019）、Gu et al. 全神经波束形成（IEEE/ACM TASLP, vol.31, pp.849–862, DOI 10.1109/TASLP.2022.3229261）。
-6. **实验顺序**：先运行 `codes/` 中只依赖 NumPy 的教学实现，核对手算、数组维度和边界；再用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线；运行 `scripts/` 中的两个绘图脚本，复现 38 张图；随后选择与研究任务匹配的公开数据和固定版本参考系统；最后在可用的多通道硬件上验证实时性、同步和标定。数据集、框架和硬件只是候选工具，应根据任务与许可证选择。
+6. **实验顺序**：先运行 `codes/` 中只依赖 NumPy 的教学实现，核对手算、数组维度和边界；再用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线；运行 `scripts/` 中的两个绘图脚本，复现 39 张图；随后选择与研究任务匹配的公开数据和固定版本参考系统；最后在可用的多通道硬件上验证实时性、同步和标定。数据集、框架和硬件只是候选工具，应根据任务与许可证选择。
 
 ### 13.2 领域地图：教材、会议、期刊与挑战赛
 
@@ -372,7 +372,7 @@ D_t&=(1-p_D)D^-\\
 
 ### 13.7 复现说明
 
-下面先运行代码基线的单元测试和第 10 章示例，再重新生成全部 38 张图：
+下面先运行代码基线的单元测试和第 10 章示例，再重新生成全部 39 张图：
 
 ```bash
 .venv/bin/python -m unittest tests.test_codes_engineering -v
@@ -386,12 +386,12 @@ D_t&=(1-p_D)D^-\\
 
 会议识别复现还要固定数据准备与文本规范化。CHiME-8 的官方 `chime-utils` 提供 SegLST 转写格式、该届规范化及 cpWER/tcpWER 评分；其中缺失场景的忽略选项会改变实际计分范围。应保留每个场景的输入文件数、失败数和最终参与评分的清单，并先用正确转写、说话人交换、漏词和时间戳偏移的小夹具检查评分口径。[CHiME-8 官方评分实现](https://github.com/chimechallenge/chime-utils/tree/152882404f572d40769ef02bf91c5a9a9cfc9c78 "citation")
 
-绘图脚本都在 `scripts/` 里。图 34～36 和图 37～38 读取或复算指定教学数据，因此先生成音频，再运行两个绘图脚本；图片写入 `figures/`，共 38 张：
+绘图脚本都在 `scripts/` 里。图 34～36 和图 37～38 读取或复算指定教学数据，图 39 是算法流程图；先生成音频，再运行两个绘图脚本。图片写入 `figures/`，共 39 张：
 
 ```bash
 .venv/bin/python codes/examples/generate_audio_samples.py
 .venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36
-.venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～38（回声消除专题）
+.venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～39（回声消除专题）
 ```
 
 Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`，其余不变。

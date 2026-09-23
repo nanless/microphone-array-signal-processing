@@ -39,6 +39,7 @@ class AecFiguresTest(unittest.TestCase):
             aec_figures.fig_hybrid,
             aec_figures.fig_haar_crossband,
             aec_figures.fig_adaptive_state_examples,
+            aec_figures.fig_pbfdaf_flow,
         ]
         figures = {}
 
@@ -50,7 +51,7 @@ class AecFiguresTest(unittest.TestCase):
                 for builder in builders:
                     builder()
 
-            self.assertEqual(len(figures), 9)
+            self.assertEqual(len(figures), 10)
             for name, figure in figures.items():
                 with self.subTest(figure=name):
                     self.assertLessEqual(figure.get_size_inches()[0], 10.0)
@@ -159,6 +160,31 @@ class AecFiguresTest(unittest.TestCase):
             self.assertEqual(figure38.axes[0].get_ylabel(), "归一化份额 g（无量纲）")
             self.assertEqual(figure38.axes[1].get_ylabel(), "P 元素（本例无量纲）")
             self.assertEqual(figure38.axes[2].get_ylabel(), "K，X=1（无量纲）")
+
+            figure39 = figures["fig39_aec_pbfdaf_flow.png"]
+            self.assertEqual(len(figure39.axes), 2)
+            prediction, update = figure39.axes
+            prediction_text = "\n".join(text.get_text() for text in prediction.texts)
+            update_text = "\n".join(text.get_text() for text in update.texts)
+            for expected in ("线性等效路径", "参考谱移位历史", "本块开始的旧权重",
+                             "舍弃前 $N$ 点", "$e_m=d_m-\\hat y_m$"):
+                self.assertIn(expected, prediction_text)
+            for expected in ("前置 $N$ 个零", "共轭与逐频功率", "后 $N$ 点→FFT",
+                             "外部冻结控制", "参考历史仍移位", "补位也清零"):
+                self.assertIn(expected, update_text)
+            control_arrows = [patch for patch in update.patches
+                              if isinstance(patch, FancyArrowPatch)
+                              and patch.get_edgecolor() ==
+                              aec_figures.matplotlib.colors.to_rgba(aec_figures.C_PURPLE)]
+            self.assertGreaterEqual(len(control_arrows), 2)
+            figure39.canvas.draw()
+            for axis in figure39.axes:
+                for text in axis.texts:
+                    extent = text.get_window_extent()
+                    self.assertGreaterEqual(extent.x0, figure39.bbox.x0 - 2)
+                    self.assertLessEqual(extent.x1, figure39.bbox.x1 + 2)
+                    self.assertGreaterEqual(extent.y0, figure39.bbox.y0 - 2)
+                    self.assertLessEqual(extent.y1, figure39.bbox.y1 + 2)
         finally:
             for figure in figures.values():
                 plt.close(figure)

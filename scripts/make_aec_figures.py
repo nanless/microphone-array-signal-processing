@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-"""回声消除专题插图：图 26～32、37～38。
+"""回声消除专题插图：图 26～32、37～39。
 
 用法（仓库根目录）：
-    .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～38 → figures/
+    .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～39 → figures/
 函数与图号对照：fig_problem→图26、fig_concept→图27、fig_nlms→图28、
 fig_erle→图29、fig_delay_dtd→图30、fig_nonlinear→图31、fig_hybrid→图32、
-fig_haar_crossband→图37、fig_adaptive_state_examples→图38。
+fig_haar_crossband→图37、fig_adaptive_state_examples→图38、
+fig_pbfdaf_flow→图39。
 """
 import hashlib
 import os
@@ -732,7 +733,137 @@ def fig_adaptive_state_examples():
             bbox=dict(fc="white", ec="0.7", alpha=0.95))
     save(fig, "fig38_aec_four_methods.png")
 
+
+def fig_pbfdaf_flow():
+    """图39：一块 PBFDAF 的先验预测与更新；两种半块操作分开画。"""
+    fig = plt.figure(figsize=(9.8, 10.2), layout="constrained")
+    fig.suptitle("图39 PBFDAF：参考历史、有效输出与受控权重更新", fontsize=FS_SUP)
+    grid = fig.add_gridspec(2, 1, height_ratios=(1.02, 1.0))
+    prediction_ax = fig.add_subplot(grid[0])
+    update_ax = fig.add_subplot(grid[1])
+
+    def setup(axis, title):
+        axis.set_title(title, fontsize=FS_TITLE, pad=11)
+        axis.set_xlim(0, 14)
+        axis.set_ylim(0, 6.4)
+        axis.axis("off")
+
+    def box(axis, x, y, width, height, label, fill, *, edge=C_MAIN):
+        axis.add_patch(Rectangle((x, y), width, height, fc=fill, ec=edge, lw=1.25))
+        axis.text(x + width / 2, y + height / 2, label,
+                  ha="center", va="center", fontsize=FS_SMALL, color=C_MAIN)
+
+    def arrow(axis, start, end, *, color=C_BLUE, style="-", width=1.7):
+        axis.add_patch(FancyArrowPatch(start, end, arrowstyle="-|>",
+                                        mutation_scale=14, color=color,
+                                        lw=width, linestyle=style))
+
+    setup(prediction_ax, "(a) 旧权重先预测；仅循环卷积的后 N 点是本块有效输出")
+    box(prediction_ax, 0.2, 4.8, 1.7, 0.95,
+        "播放参考 $x[n]$\n已对齐本块 $b_m$", "#f6e5db")
+    box(prediction_ax, 2.25, 4.8, 2.4, 0.95,
+        "线性等效路径 $h$\n扬声器—房间—麦克风", "#dbe9f6")
+    box(prediction_ax, 5.0, 4.8, 1.55, 0.95, "真实回声\n$r_m$", "#f6dbdb")
+    box(prediction_ax, 6.9, 4.8, 2.05, 0.95,
+        "麦克风叠加\n$r_m+s_m+v_m$", "#f6dbdb")
+    box(prediction_ax, 9.3, 4.8, 1.35, 0.95, "麦克风\n$d_m$", "#f6dbdb")
+    for start, end in [((1.9, 5.275), (2.25, 5.275)),
+                       ((4.65, 5.275), (5.0, 5.275)),
+                       ((6.55, 5.275), (6.9, 5.275)),
+                       ((8.95, 5.275), (9.3, 5.275))]:
+        arrow(prediction_ax, start, end)
+    prediction_ax.text(7.925, 6.02, "近端 $s_m$、噪声 $v_m$",
+                       ha="center", fontsize=FS_SMALL, color=C_RED)
+    arrow(prediction_ax, (7.925, 5.94), (7.925, 5.75), color=C_RED)
+
+    box(prediction_ax, 0.2, 2.35, 2.05, 0.96,
+        "上一块＋本块\n$u_m=[b_{m-1},b_m]$", "#f6e5db")
+    box(prediction_ax, 2.47, 2.35, 1.1, 0.96,
+        "$2N$ 点\nFFT", "#dbe9f6")
+    box(prediction_ax, 3.75, 2.35, 2.25, 0.96,
+        "参考谱移位历史\n" r"$X_m,\ldots,X_{m-P+1}$", "#dbe9f6")
+    box(prediction_ax, 6.35, 2.35, 2.68, 0.96,
+        "各分区乘积求和\n" r"$Q_m=\sum_p W_pX_{m-p}$", "#e8f6db")
+    box(prediction_ax, 9.35, 2.35, 1.1, 0.96,
+        "$2N$ 点\nIFFT", "#dbe9f6")
+    box(prediction_ax, 10.78, 2.35, 2.1, 0.96,
+        "舍弃前 $N$ 点\n取后 $N$ 点 " r"$\hat y_m$", "#e8f6db")
+    for start, end in [((2.25, 2.83), (2.47, 2.83)),
+                       ((3.57, 2.83), (3.75, 2.83)),
+                       ((6.0, 2.83), (6.35, 2.83)),
+                       ((9.03, 2.83), (9.35, 2.83)),
+                       ((10.45, 2.83), (10.78, 2.83))]:
+        arrow(prediction_ax, start, end)
+    # 同一个播放参考分出声学回路和算法参考；移位历史不受冻结控制。
+    arrow(prediction_ax, (1.05, 4.8), (1.05, 3.31))
+    box(prediction_ax, 6.6, 3.72, 2.18, 0.67,
+        "本块开始的旧权重 $W_p(m)$", "#f3f0fa")
+    arrow(prediction_ax, (7.69, 3.72), (7.69, 3.31), color=C_PURPLE)
+    prediction_ax.add_patch(Circle((11.2, 0.98), 0.30,
+                                   fc="white", ec=C_MAIN, lw=1.35))
+    prediction_ax.text(11.2, 0.98, "−", ha="center", va="center",
+                       fontsize=FS_LABEL + 4, color=C_MAIN)
+    prediction_ax.text(12.05, 0.98, r"$e_m=d_m-\hat y_m$",
+                       va="center", fontsize=FS_SMALL, color=C_MAIN)
+    arrow(prediction_ax, (11.8, 2.35), (11.35, 1.25), color=C_GREEN)
+    prediction_ax.plot([10.65, 13.45, 13.45, 11.2],
+                       [5.275, 5.275, 1.68, 1.68], color=C_RED, lw=1.45)
+    arrow(prediction_ax, (11.2, 1.68), (11.2, 1.29), color=C_RED)
+    arrow(prediction_ax, (11.5, 0.98), (11.95, 0.98), color=C_GREEN)
+    prediction_ax.text(0.2, 0.28,
+                       "频谱符号省略频点 $k$；前 $N$ 点只因循环折回而弃用。\n"
+                       "等效路径 $h$ 含器件的小信号响应，不等于纯房间脉冲响应。",
+                       fontsize=FS_SMALL, color="0.28", va="bottom")
+
+    setup(update_ax, "(b) 有效误差驱动下一块的候选权重；冻结只阻止更新")
+    box(update_ax, 0.2, 4.72, 1.55, 0.88,
+        "有效误差\n$e_m$", "#e8f6db")
+    box(update_ax, 2.12, 4.72, 2.0, 0.88,
+        "前置 $N$ 个零\n$[0_N,e_m]$", "#dbe9f6")
+    box(update_ax, 4.48, 4.72, 1.58, 0.88,
+        "$2N$ 点 FFT\n得到 $E_m$", "#dbe9f6")
+    arrow(update_ax, (1.75, 5.16), (2.12, 5.16), color=C_GREEN)
+    arrow(update_ax, (4.12, 5.16), (4.48, 5.16), color=C_GREEN)
+
+    box(update_ax, 0.2, 2.7, 1.92, 0.99,
+        "已移位参考历史\n" r"$X_m,\ldots,X_{m-P+1}$", "#dbe9f6")
+    box(update_ax, 2.5, 2.7, 2.43, 0.99,
+        "共轭与逐频功率\n" r"$D=\sum_q|X_{m-q}|^2+\delta$", "#dbe9f6")
+    box(update_ax, 5.28, 2.7, 1.57, 0.99,
+        "候选更新量\n" r"$\mu X_{m-p}^*E_m/D$", "#e8f6db")
+    box(update_ax, 7.2, 2.7, 1.78, 0.99,
+        "加旧权重\n" r"$\widetilde W_p$", "#e8f6db")
+    box(update_ax, 9.36, 2.7, 2.30, 0.99,
+        "若约束：IFFT→清零\n后 $N$ 点→FFT", "#f3f0fa")
+    box(update_ax, 12.0, 2.7, 1.65, 0.99,
+        "下一块权重\n$W_p(m+1)$", "#e8f6db")
+    for start, end in [((2.12, 3.195), (2.5, 3.195)),
+                       ((4.93, 3.195), (5.28, 3.195)),
+                       ((6.85, 3.195), (7.2, 3.195)),
+                       ((8.98, 3.195), (9.36, 3.195)),
+                       ((11.66, 3.195), (12.0, 3.195))]:
+        arrow(update_ax, start, end)
+    arrow(update_ax, (5.27, 4.72), (5.75, 3.69), color=C_GREEN)
+    box(update_ax, 7.25, 1.20, 1.73, 0.67,
+        "旧权重 $W_p(m)$", "#f3f0fa")
+    arrow(update_ax, (8.115, 1.87), (8.115, 2.7), color=C_PURPLE)
+    box(update_ax, 7.45, 4.72, 2.20, 0.88,
+        "外部冻结控制\n仅关闭权重更新", "#f6e5db")
+    arrow(update_ax, (8.05, 4.72), (6.13, 3.69),
+          color=C_PURPLE, style="--", width=1.8)
+    # 不执行投影时直接提交候选；冻结时保留旧权重，均不停止参考历史移位。
+    update_ax.plot([8.98, 10.52, 12.83], [2.88, 1.86, 1.86],
+                   color="0.35", lw=1.3, linestyle="--")
+    arrow(update_ax, (12.83, 1.86), (12.83, 2.7),
+          color="0.35", style="--", width=1.3)
+    update_ax.text(10.55, 1.48, "不约束：直接提交候选",
+                   ha="center", fontsize=FS_SMALL, color="0.28")
+    update_ax.text(0.2, 0.55,
+                   "冻结：$W_p(m+1)=W_p(m)$，参考历史仍移位；末分区不足 $N$ 个真实抽头时，补位也清零。",
+                   fontsize=FS_SMALL, color="0.28")
+    save(fig, "fig39_aec_pbfdaf_flow.png")
+
 if __name__ == "__main__":
     fig_problem(); fig_concept(); fig_nlms(); fig_erle(); fig_delay_dtd(); fig_nonlinear(); fig_hybrid()
-    fig_haar_crossband(); fig_adaptive_state_examples()
+    fig_haar_crossband(); fig_adaptive_state_examples(); fig_pbfdaf_flow()
     print("ALL DONE")
