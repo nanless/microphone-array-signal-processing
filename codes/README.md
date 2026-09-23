@@ -61,7 +61,7 @@ SMP-PHAT 可用 `.venv/bin/python codes/examples/reproduce_smpphat_reference.py 
 例子只使用确定性输入，随机输入会固定种子。函数拒绝维度、单位或参数范围明显错误的输入；这类检查是
 为了尽早暴露口径错误，不表示代码已经达到产品级防御能力。
 
-三个 `exercises_` 模块分别有 26、22、20 道题，AEC 边界小例另有 4 道，四种方法进阶手算另有 8 道，共 80 道，使用 `E01-01` 至 `E13-01` 等稳定题号，不改原有练习编号。前三个模块的 `run_exercises()` 与 AEC 小例、进阶题的入口均返回可序列化为 JSON 的计算结果，导入模块不会执行练习。题目与测试映射见 [COVERAGE.md](COVERAGE.md)，逐题入口与音频对照见[练习与音频实验](research/05_exercises_and_audio.md)。练习数量与算法数量分开统计；MDL、流式 NLMS、逐样本 RLS 和短 FIR 矩阵 Kalman 等另有可运行教学实现，算法统计仍以覆盖表为准。
+三个 `exercises_` 模块分别有 26、22、20 道题，AEC 边界小例另有 4 道，进阶手算另有 10 道，共 82 道，使用 `E01-01` 至 `E13-01` 等稳定题号，不改原有练习编号。前三个模块的 `run_exercises()` 与 AEC 小例、进阶题的入口均返回可序列化为 JSON 的计算结果，导入模块不会执行练习。题目与测试映射见 [COVERAGE.md](COVERAGE.md)，逐题入口与音频对照见[练习与音频实验](research/05_exercises_and_audio.md)。练习数量与算法数量分开统计；MDL、流式 NLMS、逐样本 RLS 和短 FIR 矩阵 Kalman 等另有可运行教学实现，算法统计仍以覆盖表为准。
 
 第 6 章新增的 [RLS 两抽头演示](examples/aec_rls_demo.py)与[矩阵 Kalman 两抽头演示](examples/aec_kalman_matrix_demo.py)只核算带已知参数的状态递推；[研究手册 A04](research/02_aec_wpe_separation.md#aec)逐项列出外部 RLS、FDKF/PBFDKF 与商业 Kalman 模块的源码入口、许可及尚未完成的对照实验。教学代码不含延迟搜索、双讲检测、残余抑制或设备接入。
 

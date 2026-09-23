@@ -1,4 +1,4 @@
-"""Exact, dimensionless answer key for E06-11..E06-18.
+"""Exact, dimensionless answer key for E06-11..E06-20.
 
 The cases are deliberately tiny. They verify algebra and model boundaries,
 not speech quality, detector performance, or industrial AEC throughput.
@@ -57,6 +57,15 @@ def run_exercises() -> dict:
     complete_s = sum(second_reference[i] * projected[i] for i in range(2)) + 1
     diagonal_s = complete_covariance[0][0] + complete_covariance[1][1] + 1
 
+    # E06-19: first zero-weight crossband update, using u0=sqrt(2), u1=0.
+    crossband_denominator = F(3)
+    first_low_to_low = F(1, 3)
+    first_low_to_high = F(-1, 3)
+
+    # E06-20: the fourth physical tap may reach the block two steps back.
+    physical_taps = 4
+    block_taps = physical_taps // 2 + 1
+
     return {
         "E06-11": {"input_high_band": high_input, "echo_high_band": high_output,
                    "scope": "two-band Haar, one-sample delay; not a room measurement"},
@@ -85,6 +94,16 @@ def run_exercises() -> dict:
                    "normal_determinant": float(determinant)},
         "E06-18": {"complete_innovation_variance": float(complete_s),
                    "diagonal_only_innovation_variance": float(diagonal_s)},
+        "E06-19": {"first_block_denominator": float(crossband_denominator),
+                   "low_input_to_low_output_weight": float(first_low_to_low),
+                   "low_input_to_high_output_weight": float(first_low_to_high),
+                   "high_input_weights": [0., 0.],
+                   "scope": "zero-weight first block of two-band Haar full-crossband NLMS"},
+        "E06-20": {"physical_taps": physical_taps,
+                   "minimum_block_taps": block_taps,
+                   "unconstrained_crossband_weights": 4 * block_taps,
+                   "minimum_pairing_wait_samples": 1,
+                   "scope": "two-band Haar block FIR, not an industrial cost benchmark"},
     }
 
 

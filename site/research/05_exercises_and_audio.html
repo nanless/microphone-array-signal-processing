@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>章节代码练习与音频实验 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="646d3b121777"><style>
+<meta name="source-digest" content="f48af7feff0a"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -110,7 +110,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="章节代码练习与音频实验" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-c621965c02">章节代码练习与音频实验</h1>
 <p>先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。</p>
-<p>本页对应 80 道稳定编号代码题，以及独立的真实录音练习 R01。原有练习题号保持不变；E01-01 表示第 1 章第 1 道代码练习，不表示全书原有第 1 题。E06-07～E06-18 是无量纲 AEC 模型与边界题，其中 E06-11～18 可用新增的精确答案程序核对；第 15、16 节另给两组相关但参数不同的合成音频，不能把 WAV 直接当作题目真值。第 3～11、13～16 节是数学合成实验，第 12 节使用另行授权的真实同步录音。</p>
+<p>本页对应 82 道稳定编号代码题，以及独立的真实录音练习 R01。原有练习题号保持不变；E01-01 表示第 1 章第 1 道代码练习，不表示全书原有第 1 题。E06-07～E06-20 是无量纲 AEC 模型与边界题，其中 E06-11～20 可用精确答案程序核对；第 15、16 节另给两组相关但参数不同的合成音频，不能把 WAV 直接当作题目真值。第 3～11、13～16 节是数学合成实验，第 12 节使用另行授权的真实同步录音。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="1-按章节运行" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-08633b42fc">1. 按章节运行</h2>
 <p>在仓库根目录执行，依赖沿用本书 NumPy 环境：</p>
 <pre><code class="language-bash">.venv/bin/python -m codes.examples.exercises_spatial
@@ -118,6 +118,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 .venv/bin/python -m codes.examples.aec_algorithm_minicases
 .venv/bin/python -m codes.examples.aec_advanced_exercises
 .venv/bin/python -m codes.examples.aec_ipnlms_subband_demo
+.venv/bin/python -m codes.examples.aec_crossband_demo
 .venv/bin/python -m codes.examples.aec_rls_kalman_comparison
 .venv/bin/python -m codes.examples.exercises_engineering
 .venv/bin/python codes/examples/generate_audio_samples.py --check
@@ -158,9 +159,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>同上</td>
 </tr>
 <tr>
-<td>第 6 章 E06-01～18</td>
-<td>NLMS、分区卷积、子带交叉项、IPNLMS 正则项、RLS 遗忘与批量核对、Kalman 双讲与协方差；另含回声模型边界</td>
-<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_enhancement.py">增强练习</a>（01～06）；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_algorithm_minicases.py">AEC 小例</a>（07～10）；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_advanced_exercises.py">四法练习</a>（11～18）</td>
+<td>第 6 章 E06-01～20</td>
+<td>NLMS、分区卷积、子带交叉项及全交叉更新、IPNLMS 正则项、RLS 遗忘与批量核对、Kalman 双讲与协方差；另含回声模型边界</td>
+<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_enhancement.py">增强练习</a>（01～06）；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_algorithm_minicases.py">AEC 小例</a>（07～10）；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_advanced_exercises.py">进阶手算</a>（11～20）</td>
 </tr>
 <tr>
 <td>第 7 章 E07-01～05</td>
@@ -430,15 +431,15 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td><a href="../audio/aec_methods_ipnlms_residual.wav">IPNLMS 先验残差</a><audio class="audio-sample" controls preload="none" aria-label="IPNLMS 先验残差" src="../audio/aec_methods_ipnlms_residual.wav">请使用上方 WAV 链接下载。</audio></td>
-<td>逐样本式(6-4)</td>
+<td>逐样本式(6-5)</td>
 </tr>
 <tr>
 <td><a href="../audio/aec_methods_rls_residual.wav">RLS 先验残差</a><audio class="audio-sample" controls preload="none" aria-label="RLS 先验残差" src="../audio/aec_methods_rls_residual.wav">请使用上方 WAV 链接下载。</audio></td>
-<td>逐样本式(6-7)</td>
+<td>逐样本式(6-8)</td>
 </tr>
 <tr>
 <td><a href="../audio/aec_methods_kalman_residual.wav">Kalman 先验残差</a><audio class="audio-sample" controls preload="none" aria-label="Kalman 先验残差" src="../audio/aec_methods_kalman_residual.wav">请使用上方 WAV 链接下载。</audio></td>
-<td>短实数 FIR 的式(6-10)，不是完整 FDKF</td>
+<td>短实数 FIR 的式(6-11)，不是完整 FDKF</td>
 </tr>
 </tbody>
 </table></div>
@@ -482,7 +483,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>本例的 RLS 和 Kalman 在稳定窗口的线性回声误差较小，但以固定参数在突变后的 200 点内恢复较慢。IPNLMS 在这组四抽头路径上没有显示普遍领先；路径稀疏度、输入谱、各方法参数和窗口都会改变结果。表只支持<strong>这一次、这些条件</strong>下的对照。若要测双讲、长回声路径、子带滤波器组延迟或真实设备时钟漂移，需另建有相应真值与时序记录的实验；本组 WAV 不提供这些结论。试听前先调低音量，残差更安静也不是近端保真证据，因为本组根本没有近端语音。</p>
 <span id="sec-17" class="anchor-alias" aria-hidden="true"></span><span id="16-两带-haar-的交叉项音频" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-b41d17b2cd">16. 两带 Haar 的交叉项音频</h2>
 <p>第 6 章图37和 E06-11～12 的四点手算足以证明表示能力差异；本组把同一<strong>一采样延迟模型</strong>延长到 8000 点（16 kHz、0.5 s），便于检查音频和导出链。参考信号用独立种子 20260926 生成：标准差 0.12 的高斯序列加幅度 0.08、频率 2100 Hz 的正弦。真实路径固定为 $h=[0,1]$，负时间补零。没有近端、背景噪声、扬声器或房间测量。</p>
-<p>本书的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/aec_subband.py">两带代码</a>先计算精确当前/历史块 $2\times2$ 映射，再<strong>直接删去已知矩阵的非对角项</strong>形成受限模型。这不是运行并训练对角子带 NLMS 后得到的输出，不能用其差额声称自适应子带 AEC 的残差或 ERLE。四个文件采用相同导出增益 1，没有逐文件峰值归一化：</p>
+<p>本书的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/aec_subband.py">两带代码</a>先计算精确当前/历史块 $2\times2$ 映射，再<strong>直接删去已知矩阵的非对角项</strong>形成受限模型。这不是运行并训练对角或全交叉子带 NLMS 后得到的输出，不能用其差额声称自适应子带 AEC 的残差或 ERLE。四个文件采用相同导出增益 1，没有逐文件峰值归一化：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
@@ -510,6 +511,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tbody>
 </table></div>
 <p>在全部 <code>[0,8000)</code> 点、量化前 float64 值上，已知真回声与受限模型输出之差的均方为约 $0.008929$，真实回声本身的均方约 $0.017749$，单位为归一化数字幅度平方。两个数只是本次固定输入的代数结果；高频、块边界与同带/交叉带项的关系比一个总功率比更重要。实际工程子带滤波器组常使用更长原型和不同抽取率，其延迟、混叠与最佳对角近似均不能由本组推断。试听前先调低设备音量。</p>
+<p>另一个<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_crossband_demo.py">全交叉自适应演示</a>使用不同的无量纲合成输入：固定随机种子 20260923，2000 个标准正态块值各重复成两个时域样本；一拍延迟为真路径，先用 1500 块训练，后 500 块冻结权重。它的留出集全交叉残差均方在这组 float64 输出中为 0，对角残差约 $0.489674$；该数字不对应上表四个 WAV，也不是实机 ERLE。要试听<strong>自适应</strong>输出，必须从同一实验的参考、麦克风、估计与残差重新生成并保留统一导出增益，不能借用已知矩阵删项的文件。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

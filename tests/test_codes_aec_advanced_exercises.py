@@ -1,4 +1,4 @@
-"""Independent fraction and analytic expectations for E06-11..E06-18."""
+"""Independent fraction and analytic expectations for E06-11..E06-20."""
 import json
 import math
 import unittest
@@ -9,7 +9,7 @@ from codes.examples.aec_advanced_exercises import run_exercises
 class AdvancedAECExercisesTest(unittest.TestCase):
     def test_stable_ids_and_json(self):
         result = run_exercises()
-        self.assertEqual(list(result), [f"E06-{n:02d}" for n in range(11, 19)])
+        self.assertEqual(list(result), [f"E06-{n:02d}" for n in range(11, 21)])
         json.dumps(result, allow_nan=False)
 
     def test_haar_and_diagonal_model_are_distinct(self):
@@ -45,6 +45,16 @@ class AdvancedAECExercisesTest(unittest.TestCase):
         self.assertAlmostEqual(row["oracle_high_variance_weight"], 10 / 11 + 23 / 1221)
         self.assertEqual(result["E06-18"]["complete_innovation_variance"], 4.5)
         self.assertAlmostEqual(result["E06-18"]["diagonal_only_innovation_variance"], 19 / 6)
+
+    def test_crossband_hand_step_and_block_cost(self):
+        result = run_exercises()
+        row = result["E06-19"]
+        self.assertEqual(row["first_block_denominator"], 3)
+        self.assertAlmostEqual(row["low_input_to_low_output_weight"], 1 / 3)
+        self.assertAlmostEqual(row["low_input_to_high_output_weight"], -1 / 3)
+        self.assertEqual(row["high_input_weights"], [0, 0])
+        self.assertEqual(result["E06-20"]["minimum_block_taps"], 3)
+        self.assertEqual(result["E06-20"]["unconstrained_crossband_weights"], 12)
 
 
 if __name__ == "__main__":

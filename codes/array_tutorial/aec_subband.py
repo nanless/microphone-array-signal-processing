@@ -3,8 +3,9 @@
 The unitary block Haar bank is deliberately tiny so every term can be checked
 by hand. A one-sample physical echo delay becomes a 2x2 *cross-band* system,
 even though the analysis/synthesis bank itself is exactly invertible. The
-diagonal subband NLMS below is a distinct approximation, not the exact model
-for an arbitrary time-domain FIR or a production oversampled filter bank.
+diagonal subband NLMS below is a distinct approximation. The full-crossband
+state can identify the exact two-band representation of a finite FIR, but is
+not a production oversampled filter bank or Lee--Gan NSAF.
 """
 
 from __future__ import annotations
@@ -66,6 +67,33 @@ def two_tap_crossband_matrices(taps: np.ndarray) -> tuple[np.ndarray, np.ndarray
     if not (np.all(np.isfinite(a0)) and np.all(np.isfinite(a1))):
         raise ValueError("crossband matrices exceed float64 range")
     return a0, a1
+
+
+def fir_crossband_matrices(taps: np.ndarray) -> np.ndarray:
+    """Exact Haar block-FIR representation of a causal real time-domain FIR.
+
+    Return ``G[k, output_band, input_band]`` for current block ``k=0``
+    through the oldest needed block. Negative-time input is zero. The number
+    of block taps is ``ceil((len(taps)+1)/2)``; a time FIR of length ``L``
+    can cross the preceding two-sample block boundary even at its last tap.
+    """
+
+    h = finite_real_array(taps, "taps")
+    if h.ndim != 1 or not h.size:
+        raise ValueError("taps must be a nonempty 1-D array")
+    block_taps = (h.size + 2) // 2
+    phase_matrices = np.zeros((block_taps, 2, 2), dtype=float)
+    for delay, coefficient in enumerate(h):
+        for output_phase in range(2):
+            input_phase = (output_phase - delay) % 2
+            block_delay = (delay + input_phase - output_phase) // 2
+            phase_matrices[block_delay, output_phase, input_phase] += coefficient
+    haar = np.array([[1.0, 1.0], [1.0, -1.0]]) / np.sqrt(2.0)
+    with np.errstate(over="ignore", invalid="ignore"):
+        matrices = haar @ phase_matrices @ haar
+    if not np.all(np.isfinite(matrices)):
+        raise ValueError("crossband matrices exceed float64 range")
+    return matrices
 
 
 def two_tap_subband_outputs(
@@ -176,6 +204,94 @@ class HaarDiagonalSubbandNLMSState:
         if not (np.all(np.isfinite(weights)) and np.all(np.isfinite(errors))
                 and np.all(np.isfinite(predictions))):
             raise ValueError("subband NLMS intermediate exceeds float64 range")
+        self._weights = weights
+        if self.num_taps > 1:
+            self._history = joined[:, -(self.num_taps - 1):].copy()
+        return errors, predictions
+
+
+class HaarCrossbandNLMSState:
+    """Two-band full-crossband block NLMS for one aligned playback reference.
+
+    ``weights[output_band, input_band, block_delay]`` includes all four
+    input/output-band paths. ``num_taps`` is measured in *two-sample blocks*.
+    Calls contain complete sample pairs; ``freeze`` has one Boolean per pair.
+    A frozen block still advances the reference history, but does not adapt.
+    This is a small pedagogical critical-sampling bank, not an NSAF update.
+    """
+
+    def __init__(self, num_taps: int, *, step_size: float = 0.5,
+                 epsilon: float = 1e-8) -> None:
+        if (isinstance(num_taps, (bool, np.bool_))
+                or not isinstance(num_taps, (int, np.integer)) or num_taps <= 0):
+            raise ValueError("num_taps must be a positive integer")
+        mu = finite_real_scalar(step_size, "step_size")
+        epsilon = finite_real_scalar(epsilon, "epsilon")
+        if not 0.0 <= mu < 2.0 or epsilon <= 0.0:
+            raise ValueError("require 0 <= step_size < 2 and epsilon > 0")
+        self.num_taps = int(num_taps)
+        self.step_size = mu
+        self.epsilon = epsilon
+        self.reset()
+
+    @property
+    def weights(self) -> np.ndarray:
+        """Copy of the ``(2 outputs, 2 inputs, num_taps)`` weights."""
+
+        return self._weights.copy()
+
+    @property
+    def history(self) -> np.ndarray:
+        """Copy of ``(2 input bands, num_taps-1)`` oldest-first history."""
+
+        return self._history.copy()
+
+    def reset(self) -> None:
+        self._weights = np.zeros((2, 2, self.num_taps), dtype=float)
+        self._history = np.zeros((2, self.num_taps - 1), dtype=float)
+
+    def process(self, reference: np.ndarray, microphone: np.ndarray, *,
+                freeze: np.ndarray | None = None) -> tuple[np.ndarray, np.ndarray]:
+        x = finite_real_array(reference, "reference")
+        d = finite_real_array(microphone, "microphone")
+        if x.ndim != 1 or d.ndim != 1 or x.shape != d.shape or x.size % 2:
+            raise ValueError("reference and microphone must be equal even-length 1-D arrays")
+        blocks = x.size // 2
+        if freeze is None:
+            frozen = np.zeros(blocks, dtype=bool)
+        else:
+            frozen = np.asarray(freeze)
+            if frozen.dtype.kind != "b" or frozen.shape != (blocks,):
+                raise ValueError("freeze must be a Boolean array with one entry per two-sample block")
+
+        x_bands = haar_analyze(x)
+        d_bands = haar_analyze(d)
+        joined = np.concatenate((self._history, x_bands.T), axis=1)
+        weights = self._weights.copy()
+        error_bands = np.empty_like(d_bands)
+        prediction_bands = np.empty_like(d_bands)
+        try:
+            with np.errstate(over="raise", invalid="raise", divide="raise",
+                             under="ignore"):
+                for block in range(blocks):
+                    regressor = joined[:, block:block + self.num_taps][:, ::-1]
+                    prediction = np.einsum("ijk,jk->i", weights, regressor)
+                    error = d_bands[block] - prediction
+                    prediction_bands[block] = prediction
+                    error_bands[block] = error
+                    if not frozen[block] and self.step_size and np.any(regressor):
+                        denominator = np.sum(regressor * regressor) + self.epsilon
+                        if not (np.isfinite(denominator) and denominator > 0):
+                            raise ValueError("crossband NLMS normalization exceeds float64 range")
+                        weights += (self.step_size * error[:, None, None]
+                                    * regressor[None, :, :] / denominator)
+                errors = haar_synthesize(error_bands)
+                predictions = haar_synthesize(prediction_bands)
+        except FloatingPointError as exc:
+            raise ValueError("crossband NLMS intermediate exceeds float64 range") from exc
+        if not (np.all(np.isfinite(weights)) and np.all(np.isfinite(errors))
+                and np.all(np.isfinite(predictions))):
+            raise ValueError("crossband NLMS intermediate exceeds float64 range")
         self._weights = weights
         if self.num_taps > 1:
             self._history = joined[:, -(self.num_taps - 1):].copy()

@@ -2,7 +2,7 @@
 
 先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。
 
-本页对应 80 道稳定编号代码题，以及独立的真实录音练习 R01。原有练习题号保持不变；E01-01 表示第 1 章第 1 道代码练习，不表示全书原有第 1 题。E06-07～E06-18 是无量纲 AEC 模型与边界题，其中 E06-11～18 可用新增的精确答案程序核对；第 15、16 节另给两组相关但参数不同的合成音频，不能把 WAV 直接当作题目真值。第 3～11、13～16 节是数学合成实验，第 12 节使用另行授权的真实同步录音。
+本页对应 82 道稳定编号代码题，以及独立的真实录音练习 R01。原有练习题号保持不变；E01-01 表示第 1 章第 1 道代码练习，不表示全书原有第 1 题。E06-07～E06-20 是无量纲 AEC 模型与边界题，其中 E06-11～20 可用精确答案程序核对；第 15、16 节另给两组相关但参数不同的合成音频，不能把 WAV 直接当作题目真值。第 3～11、13～16 节是数学合成实验，第 12 节使用另行授权的真实同步录音。
 
 ## 1. 按章节运行
 
@@ -14,6 +14,7 @@
 .venv/bin/python -m codes.examples.aec_algorithm_minicases
 .venv/bin/python -m codes.examples.aec_advanced_exercises
 .venv/bin/python -m codes.examples.aec_ipnlms_subband_demo
+.venv/bin/python -m codes.examples.aec_crossband_demo
 .venv/bin/python -m codes.examples.aec_rls_kalman_comparison
 .venv/bin/python -m codes.examples.exercises_engineering
 .venv/bin/python codes/examples/generate_audio_samples.py --check
@@ -27,7 +28,7 @@
 | 第 3 章 E03-01～05 | 差集重数、端射角误差、三维方位、近远场与实增益相减反例 | 同上 |
 | 第 4 章 E04-01～07 | 延迟正号、相干源秩、栅瓣歧义、空间平滑、MDL 评分及重复抽样 | 同上 |
 | 第 5 章 E05-01～05 | 秩一条件、MVDR 加载、输出残噪、复响应约束与有限干扰抑制 | 同上 |
-| 第 6 章 E06-01～18 | NLMS、分区卷积、子带交叉项、IPNLMS 正则项、RLS 遗忘与批量核对、Kalman 双讲与协方差；另含回声模型边界 | [增强练习](../examples/exercises_enhancement.py)（01～06）；[AEC 小例](../examples/aec_algorithm_minicases.py)（07～10）；[四法练习](../examples/aec_advanced_exercises.py)（11～18） |
+| 第 6 章 E06-01～20 | NLMS、分区卷积、子带交叉项及全交叉更新、IPNLMS 正则项、RLS 遗忘与批量核对、Kalman 双讲与协方差；另含回声模型边界 | [增强练习](../examples/exercises_enhancement.py)（01～06）；[AEC 小例](../examples/aec_algorithm_minicases.py)（07～10）；[进阶手算](../examples/aec_advanced_exercises.py)（11～20） |
 | 第 7 章 E07-01～05 | 有效帧、复数预测、秩亏加载、离线因果性、WPD | 同上 |
 | 第 8 章 E08-01～06 | SI-SDR、排列、已知解混、回投影、掩码地板与跨块身份切换 | 同上 |
 | 第 9 章 E09-01～05 | 缺测、环绕、粒子、两类过程噪声与新息门控 | 同上 |
@@ -278,9 +279,9 @@ STFT 窗长 512、帧移 128，居中补边；离线 WPE 使用 4 个抽头、3 
 | [已知真值回声](../audio/aec_methods_true_echo.wav) | 仅用于受控评分；算法不读取它 |
 | [麦克风输入](../audio/aec_methods_microphone.wav) | 已知回声加背景噪声 |
 | [NLMS 先验残差](../audio/aec_methods_nlms_residual.wav) | 逐样本式(6-2) |
-| [IPNLMS 先验残差](../audio/aec_methods_ipnlms_residual.wav) | 逐样本式(6-4) |
-| [RLS 先验残差](../audio/aec_methods_rls_residual.wav) | 逐样本式(6-7) |
-| [Kalman 先验残差](../audio/aec_methods_kalman_residual.wav) | 短实数 FIR 的式(6-10)，不是完整 FDKF |
+| [IPNLMS 先验残差](../audio/aec_methods_ipnlms_residual.wav) | 逐样本式(6-5) |
+| [RLS 先验残差](../audio/aec_methods_rls_residual.wav) | 逐样本式(6-8) |
+| [Kalman 先验残差](../audio/aec_methods_kalman_residual.wav) | 短实数 FIR 的式(6-11)，不是完整 FDKF |
 
 **评分口径。** 以下数字在量化前的 float64 序列上计算。令 $y$ 为已知回声、$d$ 为麦克风、$e_a$ 为算法 $a$ 的先验残差，则算法预测的线性回声为 $\hat y_a=d-e_a$；表中的误差是 $\operatorname{mean}_{n\in I}(y[n]-\hat y_a[n])^2$，单位为归一化数字幅度的平方。它排除了麦克风背景噪声真值，不能直接等同于播放 WAV 的残差功率。三段半开样本区间分别为 `[3000,6000)`、`[6000,6200)`、`[9000,12000)`；中间的 200 点单独检查突变后的短暂恢复。所有行是同一个随机实现、没有重复抽样或误差区间。数字保留约三位有效数；不能把条件不同的现有论文结果拼入此表。
 
@@ -297,7 +298,7 @@ STFT 窗长 512、帧移 128，居中补边；离线 WPE 使用 4 个抽头、3 
 
 第 6 章图37和 E06-11～12 的四点手算足以证明表示能力差异；本组把同一**一采样延迟模型**延长到 8000 点（16 kHz、0.5 s），便于检查音频和导出链。参考信号用独立种子 20260926 生成：标准差 0.12 的高斯序列加幅度 0.08、频率 2100 Hz 的正弦。真实路径固定为 $h=[0,1]$，负时间补零。没有近端、背景噪声、扬声器或房间测量。
 
-本书的[两带代码](../array_tutorial/aec_subband.py)先计算精确当前/历史块 $2\times2$ 映射，再**直接删去已知矩阵的非对角项**形成受限模型。这不是运行并训练对角子带 NLMS 后得到的输出，不能用其差额声称自适应子带 AEC 的残差或 ERLE。四个文件采用相同导出增益 1，没有逐文件峰值归一化：
+本书的[两带代码](../array_tutorial/aec_subband.py)先计算精确当前/历史块 $2\times2$ 映射，再**直接删去已知矩阵的非对角项**形成受限模型。这不是运行并训练对角或全交叉子带 NLMS 后得到的输出，不能用其差额声称自适应子带 AEC 的残差或 ERLE。四个文件采用相同导出增益 1，没有逐文件峰值归一化：
 
 | 文件 | 解释 |
 |---|---|
@@ -307,3 +308,5 @@ STFT 窗长 512、帧移 128，居中补边；离线 WPE 使用 4 个抽头、3 
 | [缺失交叉项](../audio/aec_subband_missing_cross_terms.wav) | 前两种模型输出相减，仅用于结构核对 |
 
 在全部 `[0,8000)` 点、量化前 float64 值上，已知真回声与受限模型输出之差的均方为约 $0.008929$，真实回声本身的均方约 $0.017749$，单位为归一化数字幅度平方。两个数只是本次固定输入的代数结果；高频、块边界与同带/交叉带项的关系比一个总功率比更重要。实际工程子带滤波器组常使用更长原型和不同抽取率，其延迟、混叠与最佳对角近似均不能由本组推断。试听前先调低设备音量。
+
+另一个[全交叉自适应演示](../examples/aec_crossband_demo.py)使用不同的无量纲合成输入：固定随机种子 20260923，2000 个标准正态块值各重复成两个时域样本；一拍延迟为真路径，先用 1500 块训练，后 500 块冻结权重。它的留出集全交叉残差均方在这组 float64 输出中为 0，对角残差约 $0.489674$；该数字不对应上表四个 WAV，也不是实机 ERLE。要试听**自适应**输出，必须从同一实验的参考、麦克风、估计与残差重新生成并保留统一导出增益，不能借用已知矩阵删项的文件。
