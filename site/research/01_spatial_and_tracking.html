@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>空间处理与追踪源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="45eb4bf2e043"><style>
+<meta name="source-digest" content="5756010aab11"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -25,7 +25,7 @@ th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
-mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
+mjx-container[jax="CHTML"]{font-size:110%!important;overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
 mjx-assistive-mml{width:1px!important;height:1px!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
@@ -215,7 +215,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><span id="固定版本和源码许可" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-edf4b8ff8e">固定版本和源码许可</h2>
 <p>完整提交及入口保存在 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json">总锁定清单</a> 中。下表的日期是核实日，不表示项目当天发布了新版。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">项目 ID</th>
 <th scope="col">固定提交</th>
@@ -351,13 +351,13 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>对应 §4.6。本书 <code>esprit_ula</code> 实现最小二乘旋转矩阵；外部阅读入口为 doatools <code>estimation/esprit.py</code>。LS 只把一侧当作拟合目标，TLS 同时考虑两侧子空间块误差；两者都依赖平移不变子阵，不能对任意几何直接使用。</p>
 <p>建议用固定波长改变间距，检查旋转特征值相位到角度的反解；交换两个子阵后，应先解释相位符号变化再转换角度。TLS 的矩阵划分和截断秩需与源码接口一致。存在近场曲率、位置误差或相干源时，低残差不保证真实方向正确。</p>
 <span id="sec-21" class="anchor-alias" aria-hidden="true"></span><span id="15-cssm-宽带聚焦" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-f81f3017be">15. CSSM 宽带聚焦</h3>
-<p>对应 §4.6.1。固定 pyroomacoustics 的 <code>doa/cssm.py</code> 先为各频带产生候选峰，选参考频点，构造聚焦矩阵并循环聚合协方差。源码入口依次为 <code>_process</code>、<code>_coherent_sum</code>、继承的子空间分解。<a href="https://doi.org/10.1109/TASSP.1985.1164667">Wang–Kaveh 原文</a>。</p>
+<p>对应 <a href="../04_doa-estimation.html#sec-u-08146bdaaf">§4.6 的宽带聚焦</a>。固定 pyroomacoustics 的 <code>doa/cssm.py</code> 先为各频带产生候选峰，选参考频点，构造聚焦矩阵并循环聚合协方差。源码入口依次为 <code>_process</code>、<code>_coherent_sum</code>、继承的子空间分解。<a href="https://doi.org/10.1109/TASSP.1985.1164667">Wang–Kaveh 原文</a>。</p>
 <p>建议固定一组双源频域快拍，改变初值、参考频点和迭代数，报告方向误差与聚焦矩阵条件数。被剔除的频点必须与协方差、权重和候选峰同步筛选。固定 0.10.0 版本的这个关联存在静态疑点，见末节；因此可读源码不意味着该版本所有边界输入已验收。</p>
 <span id="sec-22" class="anchor-alias" aria-hidden="true"></span><span id="16-waves-加权信号子空间" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-cda6f81e9e">16. WAVES 加权信号子空间</h3>
-<p>对应 §4.6.1。<code>doa/waves.py</code> 将各频带聚焦后的信号子空间按特征值相关权重拼接，再对拼接矩阵做 SVD。它与 CSSM 的区别在聚合对象和权重，不是简单把 CSSM 改名；初始化、频点剔除和噪声特征值估计都影响结果。<a href="https://doi.org/10.1109/78.950774">Di Claudio–Parisi 原文</a>。</p>
+<p>对应 <a href="../04_doa-estimation.html#sec-u-08146bdaaf">§4.6 的宽带聚焦</a>。<code>doa/waves.py</code> 将各频带聚焦后的信号子空间按特征值相关权重拼接，再对拼接矩阵做 SVD。它与 CSSM 的区别在聚合对象和权重，不是简单把 CSSM 改名；初始化、频点剔除和噪声特征值估计都影响结果。<a href="https://doi.org/10.1109/78.950774">Di Claudio–Parisi 原文</a>。</p>
 <p>建议让部分频点只包含噪声，检查权重是否减弱该频点影响；再设强弱源功率差，观察弱源是否被压掉。阅读 <code>_construct_waves_matrix</code> 时逐项追踪 <code>freq_bins[j]</code> 与 <code>C_hat[j]</code> 的对应。WAVES 与 CSSM 相同的频点筛选疑点也列在末节。</p>
 <span id="sec-23" class="anchor-alias" aria-hidden="true"></span><span id="17-tops-投影子空间正交性检验" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-86835e9f15">17. TOPS 投影子空间正交性检验</h3>
-<p>对应 §4.6.1。<code>doa/tops.py</code> 为每个方向组合跨频子空间正交性矩阵，以最小奇异值构造谱；它不依赖 CSSM 的初始方向聚焦，但仍依赖正确的源数和多个频点。<a href="https://doi.org/10.1109/TSP.2006.872581">Yoon–Kaplan–McClellan 原文</a>。</p>
+<p>对应 <a href="../04_doa-estimation.html#sec-u-08146bdaaf">§4.6 的宽带聚焦</a>。<code>doa/tops.py</code> 为每个方向组合跨频子空间正交性矩阵，以最小奇异值构造谱；它不依赖 CSSM 的初始方向聚焦，但仍依赖正确的源数和多个频点。<a href="https://doi.org/10.1109/TSP.2006.872581">Yoon–Kaplan–McClellan 原文</a>。</p>
 <p>建议至少用两个不连续频点，并移动参考频点的位置，检查输出是否对频点排列保持相同物理含义。排列频点不会改变声场，但若代码错误地把“频点列表下标”当成“FFT bin 编号”，结果会改变。固定版本的具体静态索引证据列在末节；生产选型前需完整数值反例和修复后回归。</p>
 <span id="sec-24" class="anchor-alias" aria-hidden="true"></span><span id="18-frida-连续角度恢复" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-d2ce7266a5">18. FRIDA 连续角度恢复</h3>
 <p>对应 §4.7。pyroomacoustics 的 <code>doa/frida.py</code> 组织协方差可见度与恢复过程，<code>doa/tools_fri_doa_plane.py</code> 实现映射与多频重建。先理解去除自功率后的互谱观测，再读 <code>max_four</code>、<code>max_ini</code>、<code>max_iter</code>、<code>G_iter</code> 与 <code>signal_type</code>，不能只调整一个“精度”参数。<a href="https://doi.org/10.1109/ICASSP.2017.7952744">原论文</a>。</p>
@@ -374,7 +374,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>实验使用 4 麦均匀线阵，声速 343 m/s、频率 1000 Hz、间距 0.1715 m，候选范围 −80°～80°、步长 1°。采用本书 0° 为宽侧、正角朝 +x 的约定，字典第 $m$ 个阵元为 $e^{+j\pi m\sin\theta}$，每列平方范数为 4。源快拍为两个相互独立的单位功率圆对称复高斯序列，共 200 帧；这些是窄带复数样本，不是音频录音，因而没有音频采样率或 STFT 窗参数。</p>
 <p>随机种子为 20260922，各条件共享底层源与白噪声随机样本，没有逐次归一化。基本条件的每麦噪声方差为 0.02，总源功率与噪声功率的总体比为 $2/0.02=100$，即 20 dB；低信噪比条件仅将该方差改为 20，即 −10 dB。有色条件仅将噪声相关矩阵改成 $[0.9^{|i-j|}]$，仍保持每麦方差 0.02。停止条件为相对功率更新小于 $10^{-5}$，最多 1000 次更新；剪枝比为 $10^{-4}$、固定点参数为 1。完整参数见脚本与报告。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">条件</th>
 <th scope="col">真方向（°）</th>
@@ -557,7 +557,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="sec-64" class="anchor-alias" aria-hidden="true"></span><span id="可复算的工程配置与验收记录" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-b28005a110">可复算的工程配置与验收记录</h2>
 <p>以下是独立实验设计，不是已测性能表。每次只改变一个条件，保存随机种子、输入、真值、源代码提交和实际依赖版本。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">实验</th>
 <th scope="col">固定输入建议</th>
@@ -608,7 +608,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="sec-65" class="anchor-alias" aria-hidden="true"></span><span id="固定版本的源码审查疑点" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-03df0aa16c">固定版本的源码审查疑点</h2>
 <p>下列是对已下载 pyroomacoustics 0.10.0 源码的静态审查与最小下标推演，尚未运行该外部包的完整声学反例。它们用于限定采用范围，不据此推断原始论文有误。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">ID</th>
 <th scope="col">精确位置与证据</th>

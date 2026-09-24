@@ -2,6 +2,7 @@
 
 from html.parser import HTMLParser
 from pathlib import Path
+import re
 import unittest
 
 from scripts import build_site
@@ -177,13 +178,21 @@ class EnhancementParagraphTest(unittest.TestCase):
 
     def test_eight_research_directions_preserve_arraydps(self):
         source, path = self.passage("13_appendix-guide.md", "### 13.3", "#### 13.3.1")
-        items = self.render_items(source, path)
-        self.assert_labels(items, ["预训练模型", "阵列无关", "目标说话人提取", "生成式语音增强", "TF-GridNet", "几何无关前端", "CHiME-9", "扩散先验"])
-        self.assertIn("FlowSep", items[3]["text"])
-        self.assertIn("DiCoW", items[6]["text"])
-        self.assertIn("ArrayDPS", items[7]["text"])
-        self.assertIn("不是由注册声纹指定身份", items[2]["text"])
-        self.assertIn("最小复现", items[7]["text"])
+        headings = re.findall(r"(?m)^#### (研究方向[一二三四五六七八]：[^\n]+)$", source)
+        sections = re.split(r"(?m)^#### 研究方向[一二三四五六七八]：[^\n]+\n", source)[1:]
+        labels = ["预训练模型", "阵列无关", "目标说话人提取", "生成式语音增强",
+                  "TF-GridNet", "几何无关前端", "CHiME-9", "扩散先验"]
+        self.assertEqual(len(headings), 8)
+        self.assertEqual(len(sections), 8)
+        for heading, label in zip(headings, labels):
+            self.assertIn(label, heading)
+        html, _ = build_site.render(source, path)
+        self.assertEqual(html.count("<h4"), 8, "Each independent direction needs a navigation heading")
+        self.assertIn("FlowSep", sections[3])
+        self.assertIn("DiCoW", sections[6])
+        self.assertIn("ArrayDPS", sections[7])
+        self.assertIn("不是由注册声纹指定身份", sections[2])
+        self.assertIn("最小复现", sections[7])
 
     def test_eight_debugging_cases_and_continuations(self):
         source, path = self.passage("13_appendix-guide.md", "### 13.4", "### 13.5")

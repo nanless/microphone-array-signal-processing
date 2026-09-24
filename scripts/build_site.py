@@ -78,7 +78,7 @@ th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
-mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
+mjx-container[jax="CHTML"]{font-size:110%!important;overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
 mjx-assistive-mml{width:1px!important;height:1px!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
@@ -534,7 +534,7 @@ def render(md_text, source_path=None):
         return f'{alias}<{tag} id="{primary}">{inner}</{tag}>'
 
     html = re.sub(r"<(h[1-4])>(.*?)</\1>", repl, html, flags=re.S)
-    html = re.sub(r'<th(?![^>]*\bscope=)([^>]*)>',
+    html = re.sub(r'<th(?=[\s>])(?![^>]*\bscope=)([^>]*)>',
                   r'<th scope="col"\1>', html, flags=re.S)
     # 保留 table 原生语义；横向滚动由可聚焦的外层区域承担，键盘用户也能操作宽表。
     html = re.sub(

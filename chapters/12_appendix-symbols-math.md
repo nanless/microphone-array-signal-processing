@@ -28,10 +28,10 @@
 | $\vec u(\theta)$ | 从阵列指向声源的单位向量；声波传播方向为 $-\vec u$ |
 | $\vec{r}_m$, $\vec{p}$ | 第 $m$ 个麦克风的位置向量、声源位置向量 |
 | $t$, $n$, $k$, $\ell$, $T$ | 连续时间、离散采样索引、频点索引、帧索引、用于统计的快拍数；WPE 等局部公式若复用 $k$ 作滞后号，会在公式旁重新定义 |
-| $\psi$ | 相邻两麦的相位差，$\psi=\frac{2\pi d}{\lambda}(\sin\theta-\sin\theta_0)$（§2.6、§5.2） |
+| $\psi$ | 相邻两麦在指向补偿后的残余相位差（§2.6、§5.2） |
 | $\vec{a}(\theta)$, $\vec{w}$ | 导向矢量、波束权重 |
 | $\hat{\mathbf{R}}$, $\mathbf{R}_{nn}$, $\mathbf{R}_{ss}$ | 空间协方差矩阵、噪声协方差矩阵、目标协方差矩阵 |
-| $\mathbf{\Gamma}$ | 弥散噪声相干矩阵，$[\mathbf{\Gamma}]_{ij}=\mathrm{sinc}(2fd_{ij}/c)$（§5.1；球面各向同性口径。声音只从水平面来时对应形状是零阶贝塞尔 $J_0$，见§5.1 第三段） |
+| $\mathbf{\Gamma}$ | 球面各向同性弥散噪声场的相干矩阵；水平面入射模型另见 §5.1 |
 | $\mathbf{E}_n$（$\mathbf{E}_s$） | 噪声（信号）子空间的特征向量基（§4.6） |
 | $\sigma^2$ | 噪声方差/功率（白噪声下协方差为 $\sigma^2\mathbf{I}$） |
 | $\mathbf{C}$, $\vec{f}$ | LCMV 约束矩阵与约束值向量，$\mathbf{C}^H\vec{w}=\vec{f}$（§5.5） |
@@ -51,6 +51,18 @@
 | $h(n)$，$\hat{\vec{w}}$，ERLE | 回声路径、AEC 自适应滤波器、回声返回损失增强（Echo Return Loss Enhancement，ERLE） |
 | $G(k,f)$, $\Delta$, $K$ | WPE 预测系数（本书为滞后 $k$、频点 $f$ 的系数）、保护延迟、预测阶数 |
 | PHD/RFS | 概率假设密度（Probability Hypothesis Density，PHD）/随机有限集（Random Finite Set，RFS） |
+
+表中 $\psi$ 的“残余”是相对于目标指向 $\theta_0$ 而言：来自 $\theta$ 的波先按 $\theta_0$ 补偿，之后相邻两麦还相差
+
+$$\psi=\frac{2\pi d}{\lambda}(\sin\theta-\sin\theta_0)\text{。}$$
+
+这里 $d/\lambda$ 和正弦差都无量纲，所以 $\psi$ 的单位是弧度。$\theta=\theta_0$ 时残余相位为零，各通道在目标方向对齐；偏离目标方向时，残余相位决定主瓣、零点和旁瓣的位置（§5.2）。
+
+球面各向同性弥散噪声模型下，第 $i,j$ 个麦克风的相干系数写成
+
+$$[\mathbf{\Gamma}]_{ij}=\operatorname{sinc}\!\left(\frac{2fd_{ij}}{c}\right),\qquad \operatorname{sinc}(x)=\frac{\sin(\pi x)}{\pi x}\text{。}$$
+
+$d_{ij}$ 是两麦间距，$f$ 是 Hz 频率，$c$ 是声速；当 $i=j$ 或 $f=0$ 时取极限值 1。这一形状依赖声源从三维球面各方向入射的假设。若声源只从水平面各方向入射，相应形状为零阶贝塞尔函数 $J_0(2\pi f d_{ij}/c)$；两种声场不能混为同一个矩阵模型（§5.1）。
 
 3 分钟手算（12.1）：在无失真归一化、各通道自噪声独立且等功率时，$M=6$ 的 DSB WNG 是多少 dB？$2\times2$ 对角协方差 $\mathrm{diag}(4, 1)$ 的特征值是哪两个数？
 

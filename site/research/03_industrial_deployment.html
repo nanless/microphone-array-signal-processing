@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>工业音频实现研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="45eb4bf2e043"><style>
+<meta name="source-digest" content="5756010aab11"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -25,7 +25,7 @@ th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
-mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
+mjx-container[jax="CHTML"]{font-size:110%!important;overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
 mjx-assistive-mml{width:1px!important;height:1px!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
@@ -177,7 +177,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>本书另以<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/run_libsamplerate_sro.py">可重跑的 C 接口实验</a>核对一个受限情形。输入是 10 s 的单通道数学合成脉冲：参考时钟 16 kHz，设备时钟在前 5 s 快 100 ppm（16 001.6 样本/s），后 5 s 快 150 ppm（16 002.4 样本/s），脉冲发生于参考时间 1、3、4、6、8、9 s。按两段时钟积分并四舍五入，设备共生成 160 020 帧；从独立时钟算式可得 1～9 s 两个脉冲的未校正相对偏移增量为 16 帧。设备采样率在本实验中是<strong>事先给定的真值</strong>，并非由音频估计。</p>
 <p>锁定 <code>libsamplerate</code> 0.2.2、提交 <code>0844c208f683527c08ea8a80acc13b398aa9c8bf</code>，本机 macOS arm64、Apple clang 21.0.0、CMake 4.3.2，仅在临时目录构建静态库；<code>SRC_SINC_MEDIUM_QUALITY</code>、257 帧输入块、64 帧输出缓冲、浮点单通道、状态跨块保留。未校正组的比例始终为 1；校正组在两段分别传入 <code>16000/16001.6≈0.99990001</code> 和 <code>16000/16002.4≈0.99985002</code>。两组最后一个输入块都设 <code>end_of_input=1</code>，随后继续取尽尾部。该实验使用 <code>SRC_DATA.src_ratio</code> 的跨调用平滑，不测试 <code>src_set_ratio</code> 的突变控制。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">对照</th>
 <th scope="col" style="text-align: right;">输出总帧数</th>
@@ -211,7 +211,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>另一个<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/sro_closed_loop_demo.py">估计—补偿—核查小实验</a>只用 Python 标准库，不需要下载上游源码或连接声卡。它生成 12 s 的解析合成波形与<strong>精确的逐样本合成时间戳</strong>：参考为 2 000 Hz，设备为 2 000.3 Hz（+150 ppm），首样本在参考零点后 2 ms 到达，物理设备索引 12 000 的样本被删去。参考序号 $n$ 的名义时刻为 $n/2000$，未缺样设备序号 $n$ 的时刻为 $0.002+n/2000.3$ s，因此前 2 s 的九个锚点按本书延迟约定给出截距 $-2$ ms、斜率 $150\times10^{-6}/(1+150\times10^{-6})$。示例的标准库直线拟合一阶读数为 149.9775 ppm，按 $s/(1-s)$ 反解为 150 ppm；截距另报初始偏移 2 ms。先从相邻时间戳识别倍数间隔并恢复物理索引，再拟合<strong>缺样之前</strong>的锚点，避免把缺样阶跃误认成稳定 SRO。</p>
 <p>校准使用设备索引 0～4 000 的锚点；之后才把后续样本送入保留上个设备样本与输出相位的线性插值器，从参考索引 4 500 开始输出。257 样本输入块下，缺口使参考索引 12 002、12 003 标为无效，没有跨缺口连线。以解析参考波形计算无量纲幅值平方的均方误差（MSE），结果如下；未校正组直接按接收序号与参考序号比较，所以同时包含初始偏移、速率积累与缺样后的序号错位。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">参考样本区间</th>
 <th scope="col" style="text-align: right;">有效校正样本数</th>
@@ -341,7 +341,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>本书于 2026-09-22 实际构建并运行了 I22、I23、I26 的三个固定库。环境为 macOS arm64、Apple clang 21.0.0、CMake 4.3.2；采用 Release 静态库与独立构建目录，没有安装到系统或教学虚拟环境。soxr 关闭 OpenMP 和 SIMD 分支，libsndfile 关闭外部压缩编解码后端；旧构建文件通过命令行 <code>CMAKE_POLICY_VERSION_MINIMUM=3.5</code> 兼容，未修改上游源码。三个工作树在构建前后均通过来源、提交与干净状态核查。运行入口为<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/run_industrial_interfaces.py">隔离构建脚本</a>，调用<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/industrial_interfaces.c">原创 C 实验程序</a>；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/reports/industrial_interfaces.json">原始报告</a>绑定源码提交、实验程序与运行脚本摘要、构建选项和日志摘要。</p>
 <p>重采样输入为 1 s、48 kHz 双通道：左声道在零起始帧 12000 放幅度 0.5 的脉冲，右声道为幅度 0.1、频率 1 kHz 的正弦。输出为 16 kHz，显式使用交织双精度浮点、HQ、质量标志 0 和单线程，每次输出缓冲限为 113 帧。整段供给、每块 127 帧和每块 509 帧均保持同一状态，按 <code>idone</code> 保留未消费输入，最后以 <code>in=NULL</code> 排空。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">输入供给方式</th>
 <th scope="col" style="text-align: right;">排空前输出帧数</th>
@@ -380,7 +380,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>本书在同一固定提交上另运行了一个受控探针，不把已知速率当成盲估计结果。名义输入为 48 kHz，前 5 s 的设备速率为 $48000(1+100\times10^{-6})=48004.8$ Hz，后 5 s 为 $48000(1+150\times10^{-6})=48007.2$ Hz；所以两段输入各有 $240024$、$240036$ 帧，合计 $480060$ 帧。输出参考速率为 16 kHz。两通道以交织双精度输入：左路在真实时间 1～9 s 各放一个 0.5 幅度脉冲，右路按逐输入样本的真实时间生成幅度 0.1、3 kHz 正弦。时间标记的输入索引由上述两段时钟直接计算，不由 libsoxr 输出反推。</p>
 <p>以 <code>SOXR_HQ | SOXR_VR</code> 创建状态，输入/输出最大比率设为 $48007.2/16000=3.00045$，当前比率先设为 $48004.8/16000=3.0003$。只有累计输出达到帧 80000 时才发出第二次 <code>soxr_set_io_ratio</code>；输出缓冲在边界前截断，避免一次调用跨过控制时刻。比较三种控制：继续保持 3.0003、立即切到 3.00045、用 160 个<strong>输出帧</strong>渐变到 3.00045。还用 320 帧渐变检验控制长度；160/320 帧在 16 kHz 下分别为 10/20 ms。本题的两档 ppm 与给定时间标记只是合成真值，未经过设备时钟估计器。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">控制方式</th>
 <th scope="col" style="text-align: right;">排空后输出帧数</th>

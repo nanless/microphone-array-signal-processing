@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 2 章 · 声音到达阵列时发生了什么 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="45eb4bf2e043"><style>
+<meta name="source-digest" content="5756010aab11"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -25,7 +25,7 @@ th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
-mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
+mjx-container[jax="CHTML"]{font-size:110%!important;overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
 mjx-assistive-mml{width:1px!important;height:1px!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
@@ -271,11 +271,30 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>（此式默认声源全向辐射，即指向性因子 $Q=1$；若声源有指向性（如人声朝前更响），把 $Q$ 乘进根号内的分子：$d_c \approx 0.057\sqrt{QV/T_{60}}$。）</p>
 <p><strong>临界距离公式的推导</strong>（四步）：</p>
 <ol>
-<li><strong>直达声的声强与能量密度</strong>：全向声源的功率 $W$ 均匀分布在半径 $r$ 的球面上，声强为 $I_d=W/(4\pi r^2)$，单位是 W/m²。对向外传播的平面波局部近似，能量密度为 $E_d=I_d/c=W/(4\pi r^2c)$，单位是 J/m³；</li>
-<li><strong>混响声能量密度</strong>：房间里的混响能量不断被墙面吸收、又不断被声源补充，稳态扩散场中的能量密度为 $E_r=4W/(cA)$（$A$ 是赛宾吸声量），与位置无关；</li>
-<li><strong>令两个能量密度相等</strong>（临界距离的定义）：$\dfrac{W}{4\pi r^2c} = \dfrac{4W}{cA}$；$W$ 和 $c$ 消去后，$d_c = \sqrt{\dfrac{A}{16\pi}}$；</li>
-<li><strong>代入赛宾公式</strong> $A = \dfrac{0.161V}{T_{60}}$：$d_c = \sqrt{\dfrac{0.161V}{16\pi\,T_{60}}} = \sqrt{0.00321\,\dfrac{V}{T_{60}}} \approx 0.057\sqrt{\dfrac{V}{T_{60}}}$。</li>
+<li>
+<p><strong>求直达声能量密度。</strong> 全向声源的功率 $W$ 均匀分布在半径 $r$ 的球面上，声强为 $I_d=W/(4\pi r^2)$，单位是 W/m²。对向外传播的波作局部平面波近似，再除以声速，得到能量密度 $E_d=I_d/c=W/(4\pi r^2c)$，单位是 J/m³。</p>
+</li>
+<li>
+<p><strong>求混响声能量密度。</strong> 房间里的混响能量不断被墙面吸收，又不断由声源补充。稳态扩散场中的能量密度为 $E_r=4W/(cA)$，其中 $A$ 是赛宾吸声量；该理想模型把它视为不随位置变化。下面的说明框解释分子中的 4。</p>
+</li>
+<li>
+<p><strong>令两种能量密度相等。</strong> 在临界距离 $r=d_c$ 处，$E_d=E_r$。将上面两式代入，先消去共同的声源功率 $W$ 与声速 $c$，再解 $d_c^2$：</p>
+<p>$$\begin{aligned}
+    \frac{W}{4\pi d_c^2c}&=\frac{4W}{cA},\\
+    \frac{1}{4\pi d_c^2}&=\frac4A,\\
+    d_c^2&=\frac{A}{16\pi}\text{。}
+    \end{aligned}$$</p>
+</li>
+<li>
+<p><strong>代入赛宾公式。</strong> 由 $T_{60}=0.161V/A$ 得 $A=0.161V/T_{60}$。代入上一步，最后才开平方：</p>
+<p>$$\begin{aligned}
+    d_c&=\sqrt{\frac{0.161V}{16\pi T_{60}}},\\
+    &=\sqrt{0.00320\,\frac{V}{T_{60}}},\\
+    &\approx0.057\sqrt{\frac{V}{T_{60}}}\ \text{m}\text{。}
+    \end{aligned}$$</p>
+</li>
 </ol>
+<p>这里把 $V$ 的数值按 m³、$T_{60}$ 的数值按 s 代入，结果才按 m 读取；写成带量纲的等式时，赛宾常数 $0.161$ 的单位是 s/m。</p>
 <blockquote>
 <p><strong>可跳过：弥散能量式中 4 从哪里来（$4W/(cA)$）</strong>：稳态能量平衡是“注入功率 $=$ 吸收功率”。墙面每秒吸收的功率 $=$ 能量密度 $E$ $\times$ 声速 $c$ $\times$ 有效吸收面积。关键一步：各向同性声场中，只有面向墙面方向的能量流才会被吸收，对半球方向平均后有效因子恰为 $1/4$（各向同性场向墙面投影平均带来的 $1/4$ 因子，直觉版的严格说法见上），于是吸收功率 $=E\cdot cA/4$。令它等于注入功率 $W$，解得 $E=4W/(cA)$。与上一步平均自由程里的 4 是同一个几何根源：都是“各向同性场向一面墙投影”带来的 $1/4$。</p>
 <p><strong>常数 0.057 的来源</strong>：$0.161/(16\pi)\approx0.003203$，再开平方得到 $0.0566\approx0.057$。因此该常数同时包含赛宾公式中的 0.161 和球面扩散项 $16\pi$。</p>
@@ -342,7 +361,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>16 只麦克风由同一设备采集，原始通道增益未经彼此校准；没有干净语音参考或声源位置真值。数据及本书派生音频按 CC BY-SA 3.0 分发，作者、采集条件、几何和修改说明见<a href="real_audio/README.md">真实录音说明</a>。</p>
 <p>PCM 整数除以 32768 后，直接计算未去均值的二阶矩 $R_{ij}=T^{-1}\sum_n x_i[n]x_j[n]$，这里 $T=160000$。等权平均功率包含全部 $R_{ij}$；若只保留对角项，就得到“交叉项为零”的预测。这个预测仍保留各通道自身功率，不另行假设麦克风等增益。非零均值下，统计独立也不自动意味着二阶交叉项为零。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">使用通道</th>
 <th scope="col" style="text-align: right;">仅对角项预测功率</th>
@@ -383,8 +402,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><strong>主瓣（main lobe）</strong>：想听的方向上拱起的那个大峰。峰顶增益 0 dB（无失真通过）；</li>
 <li><strong>旁瓣（side lobes）</strong>：主瓣两侧一连串越来越矮的小峰——它们是其他方向的声音<strong>漏进来的通道</strong>；</li>
 <li><strong>零点（nulls）</strong>：瓣与瓣之间的深谷——这些方向上各麦信号恰好相消干涉，几乎完全听不到；</li>
-<li>为什么长这样：同相叠加形成峰、反相抵消形成谷——完整推导（等比数列求和）见 §5.2，此处先会读图。</li>
 </ul>
+<p>同相叠加形成峰，反相抵消形成谷；等比数列求和得到完整阵因子，见 §5.2。图 7（a）先帮助读者辨认这些结构，后面再计算其宽度和电平。</p>
 <p><img alt="图7 波束图解剖与栅瓣" src="../figures/fig07_beampattern_anatomy.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图 7（a）标出主瓣、旁瓣、零点和半功率宽度；数值结果约为 14.8°，离散 ULA 近似为 14.7°。图 7（b）把间距增至 $\lambda$，在 −7.7° 出现与主瓣等高的栅瓣。</p>
 <h3 id="sec-2-6-1">2.6.1 半功率波束宽度：主瓣有多宽</h3>
@@ -523,7 +542,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>E02-05：递归协方差启动时为何偏小？</strong> 固定快拍 $\vec x=[1,2]^\top$，从零矩阵开始，使用 $\mathbf S_t=0.5\mathbf S_{t-1}+0.5\vec x\vec x^H$。计算前三步的矩阵和累计权重，再按累计权重归一化。</p>
 <p><strong>参考答案</strong>：外积为 $\mathbf Q=\begin{bmatrix}1&2\\2&4\end{bmatrix}$。第一步为 $0.5\mathbf Q$；第二步为 $(0.5^2+0.5)\mathbf Q=0.75\mathbf Q$；第三步为 $(0.5^3+0.5^2+0.5)\mathbf Q=0.875\mathbf Q$。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">步数 $t$</th>
 <th scope="col">累计权重 $b_t=1-2^{-t}$</th>

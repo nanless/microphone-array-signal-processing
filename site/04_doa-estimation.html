@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 4 章 · 声源定位（DOA 估计） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="45eb4bf2e043"><style>
+<meta name="source-digest" content="5756010aab11"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -25,7 +25,7 @@ th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
-mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
+mjx-container[jax="CHTML"]{font-size:110%!important;overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
 mjx-assistive-mml{width:1px!important;height:1px!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
@@ -67,7 +67,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="04_doa-estimation.html#sec-4-6">4.6 子空间类：MUSIC 与 ESPRIT</a></li>
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-5d3aebe0fb">窄带方法一：MUSIC（多重信号分类，Schmidt, 1986）</a></li>
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-e9bdae6530">窄带方法二：ESPRIT（借助旋转不变技术估计信号参数，Estimation of Signal Parameters via Rotational Invariance Techniques）</a></li>
-<li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-4-6-1">4.6.1 宽带聚焦：跨频率合并子空间信息</a></li>
+<li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-08146bdaaf">宽带聚焦：跨频率合并子空间信息</a></li>
 <li><a href="04_doa-estimation.html#sec-4-7">4.7 稀疏重构、学习式定位与实现边界</a></li>
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-648f9c44e7">稀疏与连续参数方法：角度网格从哪里来</a></li>
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-66b28c2c82">学习式定位：输入特征、输出形式与泛化</a></li>
@@ -103,7 +103,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="04_doa-estimation.html#sec-4-6">4.6 子空间类：MUSIC 与 ESPRIT</a></li>
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-5d3aebe0fb">窄带方法一：MUSIC（多重信号分类，Schmidt, 1986）</a></li>
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-e9bdae6530">窄带方法二：ESPRIT（借助旋转不变技术估计信号参数，Estimation of Signal Parameters via Rotational Invariance Techniques）</a></li>
-<li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-4-6-1">4.6.1 宽带聚焦：跨频率合并子空间信息</a></li>
+<li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-08146bdaaf">宽带聚焦：跨频率合并子空间信息</a></li>
 <li><a href="04_doa-estimation.html#sec-4-7">4.7 稀疏重构、学习式定位与实现边界</a></li>
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-648f9c44e7">稀疏与连续参数方法：角度网格从哪里来</a></li>
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-66b28c2c82">学习式定位：输入特征、输出形式与泛化</a></li>
@@ -213,7 +213,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>本例的 PHAT 结果</strong>：$|G[k]|=6$ 在所有频点相等，所以归一化不改变相对频谱。PHAT 谱 $\Psi[k]=G[k]/|G[k]|=[1,-\mathrm{j},-1,\mathrm{j},1,-\mathrm{j},-1,\mathrm{j}]$，IDFT 在 $\tau=2$ 处为 1，其余位置为 0。理想单时延、无噪条件下峰位不变；实际数据中，PHAT 改变各频点权重，峰位仍会受噪声和混响影响。</p>
 <p>核心是加权函数 $\Phi(f)$ 的选择：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">加权</th>
 <th scope="col">公式</th>
@@ -291,7 +291,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>设定</strong>：平面 4 麦矩形阵，坐标 $\vec{r}_1=(0,0)$、$\vec{r}_2=(4\,\text{cm},0)$、$\vec{r}_3=(0,3\,\text{cm})$、$\vec{r}_4=(4\,\text{cm},3\,\text{cm})$；真实声源在 $\vec{p}=(2\,\text{m},\,1.5\,\text{m})$；声速 $c=343$ m/s，采样率 $f_s=16$ kHz（1 个采样点 $=1/f_s=62.5\,\mu$s，折合成路程 $c/f_s=343/16000=0.0214375$ m——后文所有“采样点”都靠这个数换算）。</p>
 <p><strong>第 1 步：算出几何真值</strong>。声源在 $\vec{p}$，各麦到声源的距离由勾股定理（$d_i=\|\vec{p}-\vec{r}_i\|$）：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">麦 $i$</th>
 <th scope="col">算式</th>
@@ -333,7 +333,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ul>
 <p><strong>第 3 步：对比表</strong>（单位均为采样点；“错位” = 候选点预测值 − 真值）：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">麦对 $(i,j)$</th>
 <th scope="col">真值 = A 的预测</th>
@@ -410,12 +410,12 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>§4.4 给出了方程组 $\|\vec{p}-\vec{r}_i\|-\|\vec{p}-\vec{r}_1\|=c\tau_{i1}$。远场条件下它退化为非常简单的几何：每对麦给出方向的一个“方向余弦”分量。用具体数字走一遍。</p>
 <p><strong>设定</strong>：3 麦直角布置，$\vec{r}_1=(0,0)$（参考麦）、$\vec{r}_2=(4\,\text{cm},0)$、$\vec{r}_3=(0,4\,\text{cm})$；测得 $\tau_{21}=+0.0583$ ms、$\tau_{31}=+0.0825$ ms（按 §4.4 的约定，$\tau_{i1}$ = 声波到麦 $i$ 的路程减去到麦 1 的路程，再除以 $c$）。求声源方向。</p>
 <p><strong>第 1 步：时延折成路程差</strong>。</p>
-<p>$$c\tau_{21}=343\times0.0583\times10^{-3}=0.0199969\ \text{m}\approx2.00\ \text{cm}$$
-$$c\tau_{31}=343\times0.0825\times10^{-3}=0.0282975\ \text{m}\approx2.83\ \text{cm}$$</p>
+<p>$$c\tau_{21}=343\times0.0583\times10^{-3}=0.0199969\ \text{m}\approx2.00\ \text{cm}$$</p>
+<p>$$c\tau_{31}=343\times0.0825\times10^{-3}=0.0282975\ \text{m}\approx2.83\ \text{cm}$$</p>
 <p>物理读法：声波到麦 2 比到麦 1 多走约 2.00 cm，到麦 3 比到麦 1 多走约 2.83 cm。</p>
 <p><strong>第 2 步：除以间距，得方向余弦的绝对值</strong>。远场平面波假设下，麦 1–2 连线（$x$ 轴）方向上的路程差就是 $d\,|u_x|$（$u_x$ 是声源方向单位向量 $\vec{u}$ 在 $x$ 轴上的分量，即“方向余弦”），于是：</p>
-<p>$$\frac{c\tau_{21}}{d}=\frac{0.0199969}{0.04}=0.4999\approx0.5\quad\Rightarrow\quad \theta_x=\arcsin(0.5)=30.0°$$
-$$\frac{c\tau_{31}}{d}=\frac{0.0282975}{0.04}=0.7074\approx\frac{\sqrt2}{2}\quad\Rightarrow\quad \theta_y=\arcsin(0.7074)\approx45.0°$$</p>
+<p>$$\frac{c\tau_{21}}{d}=\frac{0.0199969}{0.04}=0.4999\approx0.5\quad\Rightarrow\quad \theta_x=\arcsin(0.5)=30.0°$$</p>
+<p>$$\frac{c\tau_{31}}{d}=\frac{0.0282975}{0.04}=0.7074\approx\frac{\sqrt2}{2}\quad\Rightarrow\quad \theta_y=\arcsin(0.7074)\approx45.0°$$</p>
 <p>（这里 $\theta_x$ 是从麦 1–2 连线的<strong>正横方向</strong>起算的角度，与 §4.2 的约定一致。给定的两个 $\tau$ 本身是四舍五入过的：精确的 30° 对应 $\tau_{21}=0.058309$ ms，精确的 45° 对应 $\tau_{31}=0.082461$ ms，保留 3 位有效数字正是题给数值。）</p>
 <p><strong>第 3 步：定符号</strong>。方向余弦的符号由时延的正负直接读出：$\tau_{21}>0$ 说明声波到麦 2 的路程<strong>更长</strong>，即声源在麦 1 那一侧、沿 $-x$ 方向；同理声源沿 $-y$ 方向。所以</p>
 <p>$$u_x=-0.5,\qquad u_y=-\frac{\sqrt2}{2}\approx-0.7071$$</p>
@@ -505,7 +505,7 @@ $$\frac{c\tau_{31}}{d}=\frac{0.0282975}{0.04}=0.7074\approx\frac{\sqrt2}{2}\quad
 <p>扫描类方法的分辨率受阵列孔径和频率限制。§4.6 的 MUSIC 与 ESPRIT 可在模型匹配时获得更窄的峰，但对源数、标定误差和相干源更敏感。</p>
 </blockquote>
 <span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-6">4.6 子空间类：MUSIC 与 ESPRIT</h2>
-<p>本节先在单个频点分别讲 MUSIC 的正交检验和 ESPRIT 的子阵移位关系，二者都需要源数、有效协方差和相应阵列条件。随后 §4.6.1 才讨论宽带语音怎样合并多个频点；宽带聚焦不能代替前两种窄带方法各自的输入检查。</p>
+<p>本节先在单个频点分别讲 MUSIC 的正交检验和 ESPRIT 的子阵移位关系，二者都需要源数、有效协方差和相应阵列条件。随后讨论宽带语音怎样合并多个频点；宽带聚焦不能代替前两种窄带方法各自的输入检查。</p>
 <span id="sec-u-442f837dd2" class="anchor-alias" aria-hidden="true"></span><span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-5d3aebe0fb">窄带方法一：MUSIC（多重信号分类，Schmidt, 1986）</h3>
 <p><strong>思想三步</strong>：</p>
 <ol>
@@ -543,9 +543,7 @@ $$\frac{c\tau_{31}}{d}=\frac{0.0282975}{0.04}=0.7074\approx\frac{\sqrt2}{2}\quad
 <p>代入 $\theta=0°$（$\sin\theta=0$）：$\vec{a}(0°)=[1,\ 1,\ 1]^\top$——正横方向声波同时到达三只麦，相位全同，符合直觉 ✓。</p>
 <p><strong>第 2 步：写出无噪声协方差矩阵</strong>。无噪声时快拍 $\vec{x}=\vec{a}\,s$，于是 $\mathbf{R}=E\{\vec{x}\vec{x}^H\}=\vec{a}\vec{a}^H\cdot E\{|s|^2\}$，取信号功率归一（$E\{|s|^2\}=1$）即 $\mathbf{R}=\vec{a}\vec{a}^H$。第 $m$ 行第 $n$ 列为 $e^{\mathrm{j}(m-n)\pi\sin\theta}$：</p>
 <p>$$\mathbf{R}=\begin{bmatrix}1 & e^{-\mathrm{j}\pi\sin\theta} & e^{-\mathrm{j}2\pi\sin\theta}\\ e^{+\mathrm{j}\pi\sin\theta} & 1 & e^{-\mathrm{j}\pi\sin\theta}\\ e^{+\mathrm{j}2\pi\sin\theta} & e^{+\mathrm{j}\pi\sin\theta} & 1\end{bmatrix}\ \xrightarrow{\ \theta=0°\ }\ \begin{bmatrix}1&1&1\\1&1&1\\1&1&1\end{bmatrix}$$</p>
-<p>若改用 $\theta=30°$，则 $\psi=\pi/2$，
-$$\mathbf R=\begin{bmatrix}1&-\mathrm j&-1\\\mathrm j&1&-\mathrm j\\-1&\mathrm j&1\end{bmatrix}\text{。}$$
-这能直接检查复协方差的两个性质：$R_{nm}=R_{mn}^*$，所以 $\mathbf R=\mathbf R^H$；对角元是各通道功率，必须为非负实数。</p>
+<p>以下第 3～6 步始终固定真实声源在 $0°$，使用右侧的全 1 协方差矩阵。第 6 步只改变候选方向的导向矢量；观测数据及其协方差不随扫描角重新估计。</p>
 <p><strong>第 3 步：口算特征值</strong>。两个事实就够：①$\mathbf{R}=\vec{a}\vec{a}^H$ 是<strong>秩 1</strong> 矩阵（每一列都是 $\vec{a}$ 的倍数——这里三列完全相同），秩 1 意味着只有一个非零特征值；②特征值之和 = 矩阵的迹（对角线之和）$=1+1+1=3$。所以三个特征值必是</p>
 <p>$$\lambda_1=3,\qquad \lambda_2=\lambda_3=0\text{。}$$</p>
 <p>此处的 $\lambda$ 表示矩阵特征值，不是波长；字母复用见 §2.3。</p>
@@ -554,8 +552,8 @@ $$\mathbf R=\begin{bmatrix}1&-\mathrm j&-1\\\mathrm j&1&-\mathrm j\\-1&\mathrm j
 <p>$$\vec{e}_2=\frac{1}{\sqrt2}\begin{bmatrix}1\\-1\\0\end{bmatrix},\qquad \vec{e}_3=\frac{1}{\sqrt6}\begin{bmatrix}1\\1\\-2\end{bmatrix}$$</p>
 <p>验证 $\mathbf{R}\vec{e}_2$：每一行都是 $1\times1+1\times(-1)+1\times0=0$，再除以 $\sqrt2$ 仍是 0 ✓；$\mathbf{R}\vec{e}_3$：每行 $1+1-2=0$ ✓；且 $\vec{e}_2^H\vec{e}_3=(1\times1+(-1)\times1+0\times(-2))/\sqrt{12}=0$ ✓。$\{\vec{e}_2,\vec{e}_3\}$ 张成噪声子空间 $\mathbf{E}_n$。</p>
 <p><strong>第 5 步：见证正交性</strong>。拿真实方向 $\theta=0°$ 的导向矢量与噪声子空间做内积：</p>
-<p>$$\vec{a}^H(0°)\,\vec{e}_2=\frac{1}{\sqrt2}(1\times1+1\times(-1)+1\times0)=0$$
-$$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$</p>
+<p>$$\vec{a}^H(0°)\,\vec{e}_2=\frac{1}{\sqrt2}(1\times1+1\times(-1)+1\times0)=0$$</p>
+<p>$$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$</p>
 <p>两个内积<strong>精确为零</strong>——MUSIC 伪谱的分母 $\vec{a}^H\mathbf{E}_n\mathbf{E}_n^H\vec{a}=|0|^2+|0|^2=0$，因此理想无噪模型下真实方向的谱值趋于无穷大。</p>
 <p><strong>第 6 步：对照——候选方向不匹配时投影非零</strong>。试 $\theta=30°$：$\psi=\pi\sin30°=\pi/2$，$\vec{a}(30°)=[1,\ e^{+\mathrm{j}\pi/2},\ e^{+\mathrm{j}\pi}]^\top=[1,\ \mathrm{j},\ -1]^\top$。逐个算：</p>
 <p>$$\begin{aligned}
@@ -571,6 +569,9 @@ $$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$<
 \Big|\frac{3-\mathrm{j}}{\sqrt6}\Big|^2&=\frac53.
 \end{aligned}$$</p>
 <p>分母 $=1+\frac53=\frac83\approx2.667\ne0$，伪谱 $P_{MU}(30°)=\dfrac{1}{8/3}=\dfrac38=0.375$。0° 处在理想无噪模型下趋于无穷大，而 30° 处是有限值 0.375；数值上对应“匹配方向的噪声子空间投影为零，不匹配方向的投影非零”。实际有限快拍和噪声会使峰值有限。</p>
+<p>如果<strong>真实声源</strong>改到 $30°$，才应重新由 $\vec a(30°)=[1,\mathrm j,-1]^\top$ 构造观测协方差：</p>
+<p>$$\mathbf R(30°)=\vec a(30°)\vec a^H(30°)=\begin{bmatrix}1&-\mathrm j&-1\\\mathrm j&1&-\mathrm j\\-1&\mathrm j&1\end{bmatrix}\text{。}$$</p>
+<p>它仍是秩 1、厄米且半正定的矩阵，特征值也为 $3,0,0$，但三列不相同，噪声子空间也要重新求。例如上面针对 $0°$ 选出的 $\vec e_2$ 满足 $\vec a^H(30°)\vec e_2=(1+\mathrm j)/\sqrt2\ne0$，因此不能沿用它作新矩阵的噪声特征向量。矩阵的对角元为非负实数，非对角元满足 $R_{nm}=R_{mn}^*$；这一检查不要求三列相同。</p>
 <p><strong>能力</strong>：在高 SNR、快拍充分、源数正确、标定准确且没有未处理相干多径时，MUSIC 的谱峰可窄于同一阵列的常规波束主瓣。这种超分辨能力仍依赖孔径和阵列几何：孔径决定不同方向导向矢量的可区分程度，SNR、快拍数、源间隔和模型失配共同决定有限数据下能否分开近邻源。</p>
 <p><strong>三个适用边界</strong>：</p>
 <ul>
@@ -613,7 +614,7 @@ $$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$<
 <blockquote>
 <p>MUSIC 与 ESPRIT 的上述推导基于窄带模型。宽带语音需要在频率维度合并信息，下一节讨论相干与非相干宽带处理。</p>
 </blockquote>
-<span id="sec-11" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-4-6-1">4.6.1 宽带聚焦：跨频率合并子空间信息</h3>
+<span id="sec-4-6-1" class="anchor-alias" aria-hidden="true"></span><span id="sec-11" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-08146bdaaf">宽带聚焦：跨频率合并子空间信息</h3>
 <p>MUSIC、ESPRIT 的基本推导采用窄带假设：在单个频点内，导向矢量 $\vec{a}(f,\theta)$ 固定。宽带语音的波长随频率变化，同一个物理方向在不同频点对应不同的阵列流形。NormMUSIC 在各频点独立计算伪谱后再合并，不能利用跨频率的相干信息。聚焦类方法先把不同频点的导向矢量映射到共同的参考频率，再合并协方差并进行特征分解。</p>
 <p><strong>聚焦矩阵的思想</strong>。选定参考频率 $f_0$ 后，对每个频点 $f_j$ 构造变换矩阵 $\mathbf{T}(f_j)$，使选定角度集合上的 $\mathbf{T}(f_j)\vec{a}(f_j,\theta)\approx\vec{a}(f_0,\theta)$。各频点协方差经 $\mathbf{T}\hat{\mathbf{R}}(f_j)\mathbf{T}^H$ 变换后再合并。</p>
 <p>CSSM（coherent signal-subspace method，相干信号子空间方法）是代表方法；经典构造通常依赖初始 DOA 或聚焦角集合，初值偏差会造成聚焦损失。<a href="https://doi.org/10.1109/TASSP.1985.1164667" title="citation">Wang 与 Kaveh 的 CSSM 原始论文</a>。</p>
@@ -641,7 +642,7 @@ $$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$<
 <h3 id="sec-u-66b28c2c82">学习式定位：输入特征、输出形式与泛化</h3>
 <p><strong>DNN 定位</strong>：网络用带方向标签的多通道数据学习噪声、混响与直达声线索之间的映射。训练规模、房间覆盖范围和阵列几何决定其泛化边界。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">路线</th>
 <th scope="col">代表（骨干 × 输出格式）</th>
@@ -732,7 +733,7 @@ $$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$<
 <p>实际 SRP 或宽带最大似然会用多频复数观测和噪声权重打分；这里的 $J$ 只用于手算几何核心。算法选择 $J$ 最小的网格点。</p>
 <p>真值 $(0.20\text{ m},30°)$ 给出 $\boldsymbol\delta^{\rm obs}=[29.13,0,-19.72]$ mm，即相对时延约 $[84.9,0,-57.5]$ μs。取角度网格 $\{20°,30°,40°\}$、距离网格 $\{0.20,0.50,2.00\}$ m，逐格代入上式：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col" style="text-align: right;">距离 $r$</th>
 <th scope="col" style="text-align: right;">$\theta=20°$</th>
@@ -772,7 +773,7 @@ $$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$<
 <p>MUSIC 使用厄米特征分解 <code>eigh</code>，不需要协方差可逆。例如无噪声单源的秩一协方差仍可用于已知源数的理想子空间演示，不能一概要求先加载。能完成特征分解也不证明真实源数、白噪声或非相干模型成立；这些前提仍需单独检查。</p>
 <p>定位源码分为本书教学实现和按完整提交号取得的外部参考。后者保存在 <code>codes/upstream/_downloads/</code> 的独立工作目录；版本、代码许可与入口见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json"><code>SOURCES.lock.json</code></a>，具体阅读步骤和验证方案见<a href="research/01_spatial_and_tracking.html">空间处理与追踪研究</a>。取得源码、运行一次示例和复现论文结论应分别记录。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">本章方法</th>
 <th scope="col">外部源码入口</th>
@@ -830,7 +831,7 @@ $$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$<
 <p>这里的停止判据是功率超参数的相对变化，不是定位正确性。每组只有一次实现，各条件共享基础随机输入，不能据此估计成功率；离网格、有色噪声和源数错设的完整结果见研究文档。</p>
 <span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-8">4.8 定位算法总对比</h2>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">方法</th>
 <th scope="col">主要输入与输出</th>
@@ -863,7 +864,7 @@ $$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$<
 <td>否；找多峰需规则</td>
 <td>导向模型已知</td>
 <td>主瓣宽、旁瓣或失配形成假峰</td>
-<td>$O(TM^2+N_{\rm grid}M^2)$</td>
+<td>建协方差 + 扫描；见下文</td>
 </tr>
 <tr>
 <td>Capon</td>
@@ -908,6 +909,9 @@ $$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$<
 </tbody>
 </table></div>
 <p>表中的复杂度只列主导运算量，不等同于延迟、内存或功耗。不同方法的分辨率和鲁棒性不能脱离阵列、SNR、混响、快拍数、搜索网格与训练数据排成统一星级。</p>
+<p>以 Bartlett 行为例，若有 $T$ 个快拍、每个快拍 $M$ 通道，逐帧形成 $\vec x\vec x^H$ 并累加协方差，需要约 $O(TM^2)$ 次标量运算。再对 $N_{\rm grid}$ 个候选方向逐一计算 $\vec a^H\hat{\mathbf R}\vec a$，直接用稠密矩阵—向量乘法时，每个方向约 $O(M^2)$，合计约 $O(N_{\rm grid}M^2)$。因此表中“建协方差 + 扫描”对应</p>
+<p>$$O(TM^2+N_{\rm grid}M^2)\text{。}$$</p>
+<p>这是朴素稠密实现的量级，不包括生成导向矢量、找峰和数据搬运；利用阵列结构或复用中间量时，实现代价会改变。</p>
 <p><strong>Cramér–Rao 下界（CRLB）的适用口径</strong>。CRLB 给出指定观测模型下无偏估计量的方差下界。对已知波形、加性白噪声中的时延估计，Fisher 信息随线性 SNR、观测量以及信号的均方根带宽平方增加，因此时延方差下界随这些量减小。</p>
 <p>精确系数取决于单通道还是双通道模型、SNR 定义、单边或双边谱、波形是否已知以及是否同时估计未知幅度等条件。条件未写全时，不能把某个系数或微秒数当成通用下界。</p>
 <p>对 DOA 而言，还要通过阵列几何的雅可比把时延下界换成角度下界。定性上，SNR、有效带宽、快拍数和有效孔径增大通常会降低方差，端射方向和退化阵列几何会放大误差。</p>
@@ -928,7 +932,7 @@ $$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$<
 <p><strong>选峰与失败定义。</strong> 在 $-60°$～$60°$ 的 $0.5°$ 网格上，Bartlett、相对加载 $10^{-6}$ 的 Capon，以及已告知真实源数 $K=2$ 的 MUSIC 各求一条谱。每条谱只选最高的两个局部峰，二者至少相隔 $3°$；把较小的估计角与较小真角配对，较大的与较大的配对。</p>
 <p>两个误差都不超过 $3°$ 才算成功。只有一个可选峰、选出两个但至少一个超出容差、求谱失败分别记为“峰不足”“位置不匹配”“算法异常”；三类失败均计入 200 次分母。这个规则给所有算法两个峰的数目先验，不检验自动源数估计。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">配置</th>
 <th scope="col">方法</th>
@@ -1018,7 +1022,7 @@ g_k&=\left(\prod_{i=k+1}^{M}\hat\lambda_i\right)^{1/(M-k)}。
 <p><strong>算例 4-5：为什么选择两个源，而不是三个？</strong> 给定四麦、$N=100$ 和样本特征值 $[9,4,1.1,0.9]$，功率单位统一为任意参考单位。这是一组为手算指定的输入，不是真实录音或论文性能数据；不需要假设某个阵列几何、采样率或 SNR 来执行此评分，也不能由这四个数反推出这些条件。</p>
 <p>以 $k=1$ 为例，剩下 $4,1.1,0.9$，故 $a_1=6/3=2$、$g_1=(4\times1.1\times0.9)^{1/3}\approx1.582092$。拟合项为 $100\times3\times\ln\bigl(2/(3.96)^{1/3}\bigr)\approx70.319752$，惩罚项为 $\tfrac12\times1\times7\times\ln100\approx16.118096$，合计约 86.437847。表中计算使用未舍入中间值，最后统一保留六位小数。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">候选 $k$</th>
 <th scope="col" style="text-align: right;">$a_k$</th>
@@ -1075,7 +1079,7 @@ g_k&=\left(\prod_{i=k+1}^{M}\hat\lambda_i\right)^{1/(M-k)}。
 <p>这是本书的窄带数学仿真，不是真实录音或语音质量测试。每个复高斯变量用两份独立标准正态数 $u,v$ 构造 $(u+\mathrm jv)/\sqrt2$，使总复数功率为 1。白噪声条件下，每通道噪声功率为 1；独立双源的每源功率为 $p$，所以按阵列平均功率定义的 SNR 为 $10\log_{10}(2p)$，$p=1$ 时为 3.01 dB，$p=0.1$ 时为 −6.99 dB。完全相干条件令两源使用同一个随机序列，仍各有功率 1，但各通道叠加功率不再相同，不能把阵列平均 SNR 写成每通道 SNR。</p>
 <p>每次直接计算已知零均值模型的 $\hat{\mathbf R}=\mathbf X\mathbf X^H/N$，不减样本均值、不加载、不作特征值下限处理。输入是独立复快拍，因此没有音频采样率、窗长和帧移。程序按条件编号使用 <code>SeedSequence([20260922, 条件编号])</code> 与 PCG64，编号按下表从 0 开始；每次试验都重新抽取源和噪声。以下结果实运行于 NumPy 2.5.3，统计次数保留整数，比例与区间保留一位小数。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">条件</th>
 <th scope="col" style="text-align: right;">$N$</th>
@@ -1146,7 +1150,7 @@ g_k&=\left(\prod_{i=k+1}^{M}\hat\lambda_i\right)^{1/(M-k)}。
 <p>前面的整数点脉冲适合检查 GCC 的正负号，但物理阵列的时差通常不是整数采样。这里另外给出一组可核验的四麦数学合成音频。</p>
 <p>四个麦克风在 $x=0,0.04,0.08,0.12$ m，$y=0$；正横为 $0^\circ$，声源方位为 $30^\circ$，声速取 343 m/s，采样率为 16 kHz。远场平面波从 $+x$ 一侧先到达麦 4，再到达麦 1；相邻时差的绝对值为 $0.04\sin30^\circ/343=58.3090\ \mu\mathrm{s}$，相当于 $0.932945$ 个采样点。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">麦克风</th>
 <th scope="col" style="text-align: right;">相对麦 1 的到达时差／$\mu$s</th>

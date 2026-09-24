@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>章节代码练习与音频实验 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="45eb4bf2e043"><style>
+<meta name="source-digest" content="5756010aab11"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -25,7 +25,7 @@ th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
-mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
+mjx-container[jax="CHTML"]{font-size:110%!important;overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
 mjx-assistive-mml{width:1px!important;height:1px!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
@@ -137,7 +137,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 </code></pre>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">章节与题目</th>
 <th scope="col">重点</th>
@@ -297,7 +297,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>计算口径。</strong> PCM 整数除以 32768 得到数字幅度，未中心化二阶矩为 $R_{ij}=T^{-1}\sum_n x_i[n]x_j[n]$。平均后的未量化功率是 $P_{\mathrm{mean}}=M^{-2}\sum_{i,j}R_{ij}$；删去非对角项后的预测为 $P_{\mathrm{diag}}=M^{-2}\sum_iR_{ii}$。它保留每路实际功率，因此不额外假设麦克风等增益；只有交叉项可忽略时，两种计算才一致。保留非零均值时，仅说“统计独立”不足以保证二阶交叉项为零。</p>
 <p>全组导出增益为 1，不去均值、不时移、不逐文件归一化。平均结果按最近偶数舍入到 PCM16，再读回计算 $P_{\mathrm{PCM}}$；每个样本量化误差最多半个 PCM 整数单位。以下功率单位均为数字满刻度幅度平方，不是声压平方。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">量</th>
 <th scope="col" style="text-align: right;">两通道</th>
@@ -346,7 +346,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>输入与口径。</strong> 16 kHz 采样，$N=32000$，$n=0,\ldots,N-1$。播放参考是 $x[n]=0.4\sin(2\pi500n/16000)$，麦克风只有回声 $d[n]=x[n]+2x^3[n]$。没有近端、噪声、传播时延或随机输入；系数 2 对应本例的数字幅度单位，不是实测扬声器参数。分析全段半开区间 <code>[0,32000)</code>，不去均值、不加窗、不对齐或重拟合额外增益。</p>
 <p><strong>计算。</strong> 用 $\sin^3\omega=(3\sin\omega-\sin3\omega)/4$ 展开，得到 $d=0.496\sin\omega-0.032\sin3\omega$。这段恰含 1000 个基频周期，两项正交。全段最佳标量最小二乘拟合为 $\hat d=gx$，其中 $g=\sum xd/\sum x^2=1.24$；所以 $\hat d=0.496\sin\omega$，残差 $e=d-\hat d=-0.032\sin3\omega$。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">量（量化前解析值）</th>
 <th scope="col" style="text-align: right;">结果</th>
@@ -387,7 +387,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>这组音频对应第 4 章的 E04-07，不是把上一节双麦整数时差换个文件名。四麦均匀线阵的坐标为 $[0,0.04,0.08,0.12]$ m，正横为 $0^\circ$，固定方向 $30^\circ$，声速 343 m/s，采样率 16 kHz。相邻通道在该方向的到达时差为 $-58.3090\ \mu\mathrm{s}$，约 $-0.932945$ 采样点；第四麦相对第一麦早到约 $2.798834$ 点。为避免合成音频在时间零点前开始，合成器加了约 2 ms 的共同固定传播时延；该共同项不改变通道间时差。</p>
 <p>输入是 383 Hz 的六谐波音，加一个标准差 0.04 的固定种子宽带序列；四通道再分别加标准差 0.02 的独立传感器噪声。种子为 20260924。模型在离散源序列上用线性插值实现分数点传播，越出 2 s 范围补零；对齐时又按已知几何做一次因果线性插值。导出采用一组共同增益，本次为 1；无单文件峰值匹配、增益拟合或时移拟合。它是可控的远场平面波练习，不是实测房间，也不包含方向估计误差。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">文件</th>
 <th scope="col" style="text-align: right;">通道</th>
@@ -424,7 +424,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>这一组是第 6 章四类方法的<strong>已知模型、单次合成</strong>对照，不是自然语音或实际声学录音。采样率 16 kHz，长度 12000 点（0.75 s），参考由种子 20260925 的高斯序列（标准差 0.12）加 310 Hz 正弦（幅度 0.09）组成。前 6000 点采用四抽头路径 $[0.65,0,-0.2,0]$，从第 6000 点起改为 $[0.1,-0.45,0,0.5]$；麦克风还加独立的零均值高斯背景噪声，生成标准差 0.005。没有近端语音或双讲。</p>
 <p>所有算法读相同的参考和麦克风序列，输出<strong>每次更新前</strong>的因果线性残差，没有另外的延迟或事后增益拟合。NLMS 与 IPNLMS 都用四抽头、步长 0.4；IPNLMS 取 $\kappa=0$。RLS 每样本遗忘因子为 0.995、初始正则量为 1；实数矩阵 Kalman 取状态转移 1、$Q=10^{-5}I$、$\Psi=0.0025$、初始 $P=I$。这些参数是教学演示的固定选择，不能由表中数字推断最优调参或工业排名。全部输入参数、导出共同增益和逐文件摘要见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/audio/MANIFEST.json">清单</a>的 <code>aec_methods</code> 组；本组实际共同导出增益为 1，不逐文件归一化。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">文件</th>
 <th scope="col">作用</th>
@@ -463,7 +463,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </table></div>
 <p><strong>评分口径。</strong> 以下数字在量化前的 float64 序列上计算。令 $y$ 为已知回声、$d$ 为麦克风、$e_a$ 为算法 $a$ 的先验残差，则算法预测的线性回声为 $\hat y_a=d-e_a$；表中的误差是 $\operatorname{mean}_{n\in I}(y[n]-\hat y_a[n])^2$，单位为归一化数字幅度的平方。它排除了麦克风背景噪声真值，不能直接等同于播放 WAV 的残差功率。三段半开样本区间分别为 <code>[3000,6000)</code>、<code>[6000,6200)</code>、<code>[9000,12000)</code>；中间的 200 点单独检查突变后的短暂恢复。所有行是同一个随机实现、没有重复抽样或误差区间。数字保留约三位有效数；不能把条件不同的现有论文结果拼入此表。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">方法</th>
 <th scope="col" style="text-align: right;">突变前误差均方</th>
@@ -503,7 +503,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>第 6 章图37和 E06-11～12 的四点手算足以证明表示能力差异；本组把同一<strong>一采样延迟模型</strong>延长到 8000 点（16 kHz、0.5 s），便于检查音频和导出链。参考信号用独立种子 20260926 生成：标准差 0.12 的高斯序列加幅度 0.08、频率 2100 Hz 的正弦。真实路径固定为 $h=[0,1]$，负时间补零。没有近端、背景噪声、扬声器或房间测量。</p>
 <p>本书的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/aec_subband.py">两带代码</a>先计算精确当前/历史块 $2\times2$ 映射，再<strong>直接删去已知矩阵的非对角项</strong>形成受限模型。这不是运行并训练对角或全交叉子带 NLMS 后得到的输出，不能用其差额声称自适应子带 AEC 的残差或 ERLE。四个文件采用相同导出增益 1，没有逐文件峰值归一化：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">文件</th>
 <th scope="col">解释</th>
@@ -533,7 +533,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="sec-18" class="anchor-alias" aria-hidden="true"></span><span id="17-六位置房间响应与定位" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-a1ffe26f4e">17. 六位置房间响应与定位</h2>
 <p>这组样本对应<a href="../13_appendix-guide.html">附录 B 第 16 题</a>，与主清单的 60 个合成 WAV 分开保存。<a href="../room_audio/MANIFEST.json">参数和逐文件摘要</a>记录固定的 12 m × 10 m × 6 m 房间、4 麦方阵、16 kHz、pyroomacoustics 0.10.0、镜像阶数 40、每位置独立的 1 s 白高斯噪声和全部 18 个 PCM16 文件。六个位置中四个用于近/远、左/右成对观察，另两个由种子 20260924 固定。三类音频使用<strong>同一个</strong>导出增益 0.1516968997435788，不对源、直达或完整输出分别归一化，也不补偿传播延迟。直达文件与完整文件各含按清单顺序排列的四个麦克风通道。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">声源位置</th>
 <th scope="col">源（1 通道）</th>
@@ -586,7 +586,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>这组对应<a href="../10_engineering-practice.html#sec-10-3-2">第 10 章 §10.3.2</a>和 E10-13。采样率 16 kHz、时长 2 s；目标是 173 Hz 基频的六谐波合成音，最初 0.4 s 静音，起音使用 20 ms 平滑。种子 20260927 产生标准差 0.07 的独立白高斯噪声。它不是语音、真实环境噪声或经声压校准的录音。</p>
 <p>生成器使用 512 点周期 Hann 窗、128 点帧移、居中 STFT 和加权重叠相加。已知前 0.4 s 只有噪声，取完全落在此前奏内的 47 帧（帧索引 2～48）逐频点平均 $|Y|^2$，得到固定噪声功率估计。功率谱减的超减系数为 1；地板分别为观测功率的 0 和 0.04，保留带噪复谱的相位。这里的“噪声专用”区间由合成真值指定，不含自动语音检测或在线噪声跟踪。五个 PCM16 文件使用同一个导出增益 1，不做时移或逐文件电平匹配；完整参数、摘要和量化误差见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/audio/MANIFEST.json">音频清单</a>的 <code>spectral_subtraction</code> 组。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">文件</th>
 <th scope="col">听与算的对象</th>

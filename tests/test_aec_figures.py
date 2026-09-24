@@ -166,10 +166,11 @@ class AecFiguresTest(unittest.TestCase):
             prediction, update = figure39.axes
             prediction_text = "\n".join(text.get_text() for text in prediction.texts)
             update_text = "\n".join(text.get_text() for text in update.texts)
-            for expected in ("线性等效路径", "参考谱移位历史", "本块开始的旧权重",
-                             "舍弃前 $N$ 点", "$e_m=d_m-\\hat y_m$"):
+            for expected in ("线性等效路径", "参考谱历史", "旧权重 $W_p(m)$",
+                             "舍前 $N$ 点", "$e_m=d_m-\\hat y_m$",
+                             "$Q_m=\\sum_pW_pX_{m-p}$"):
                 self.assertIn(expected, prediction_text)
-            for expected in ("前置 $N$ 个零", "共轭与逐频功率", "后 $N$ 点→FFT",
+            for expected in ("前置 $N$ 个零", "归一化分母", "清零后 $N$ 点",
                              "外部冻结控制", "参考历史仍移位", "补位也清零"):
                 self.assertIn(expected, update_text)
             control_arrows = [patch for patch in update.patches

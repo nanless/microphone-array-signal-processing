@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 3 章 · 阵列几何形态 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="45eb4bf2e043"><style>
+<meta name="source-digest" content="5756010aab11"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -25,7 +25,7 @@ th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
-mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
+mjx-container[jax="CHTML"]{font-size:110%!important;overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
 mjx-assistive-mml{width:1px!important;height:1px!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
@@ -146,8 +146,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>端射摆法利用延迟与相减形成前后不对称；正横摆法则把主轴放在麦克风连线的垂直方向。</p>
 <p>双麦只有 1 个独立时延观测。在预先限定声源位于某个平面或半空间时，它可以估计一维入射角并形成固定波束；若要在三维空间同时求方位和俯仰，一个时延方程不够，同一时延对应绕阵列轴的一圈方向，形成锥面模糊。增加阵元并改变几何后，覆盖范围、歧义形式和端射灵敏度也会变化。</p>
 <p><strong>多麦形态对比</strong>：</p>
+<p>读表时先分清三个问题：<strong>覆盖</strong>说明阵列几何能观测哪些方向，<strong>优缺点</strong>说明同一几何在哪些条件下容易辨向或失效，<strong>典型应用</strong>只举安装场景，不代表该形态在应用中总是性能最优。表内“可测方位和俯仰”仍以阵列标定、同步和足够的信噪比为前提。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">形态</th>
 <th scope="col">覆盖</th>
@@ -201,6 +202,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 </tbody>
 </table></div>
+<p>例如，会议设备若只需判断桌面周围的<strong>水平 360° 方位</strong>，可先考虑圆阵；若还要分辨声源在阵列平面上方还是下方，单层圆阵的纯时延观测存在镜像歧义，应增加非共面阵元、挡板信息或场景先验。</p>
+<p>跨房间多设备协同是另一类任务：长基线可能改善几何灵敏度，但必须先把跨设备时钟偏移和位置误差纳入预算。这些例子用任务条件筛选结构，并非表中形态的性能排名。</p>
 <p><em>MUSIC 是多重信号分类（Multiple Signal Classification），ESPRIT 是借助旋转不变技术估计信号参数（Estimation of Signal Parameters via Rotational Invariance Techniques）；本章只指出其几何前提，算法见 §4.6。</em></p>
 <p><strong>读表时要区分两种几何歧义</strong>。线阵只有沿阵列轴的位置投影信息，因此同一组时延对应以阵列轴为轴的锥面；把麦继续加在同一直线上，能提高阵列增益和估计精度，却不能消除这类锥面模糊。非共线的平面阵能同时估计两个方向余弦，但若阵列两侧都开放，平面法向两侧的镜像方向仍可能产生相同时延，需要挡板、幅度模型或半空间先验消歧。</p>
 <p>端射分辨率下降是另一类问题。若用 $\Delta\tau=d\sin\theta/c$ 表示时差幅值随角度的局部关系，则 $\theta\to\pm90°$ 时导数趋近于零，同样的时延误差会对应更大的角度区间；这与 §2.6 CRB 中 $\cos\theta\to0$ 时下界发散一致。</p>
@@ -231,9 +234,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>第 1 步：相邻麦距</strong>。6 个麦均匀分布在圆周上，相邻两麦的连线是正六边形的一条边。相邻麦距</p>
 <p>$$d = 2r\sin\frac{\pi}{6} = 2\times0.0375\times0.5 = 0.0375\ \text{m} = 3.75\ \text{cm}$$</p>
 <p>正六边形的边长恰好等于半径——这是 6 麦圆环特有的整齐性质。</p>
-<p><strong>第 2 步：相邻间距的保守检查</strong>。对均匀线阵，全视场无空间混叠的充分安全线是 $d \le \lambda/2$（§2.6）。圆阵不是一条周期均匀线阵，这里只把相邻弦长代入同一条件，作为保守的设计检查；超过该频率表示不再得到全视场无歧义保证，不表示每个转向都必然出现等高栅瓣。代入：</p>
-<p>$$f_{\max} = \frac{c}{2d} = \frac{343}{2\times0.0375} \approx 4573\ \text{Hz} \approx 4.6\ \text{kHz}$$</p>
-<p>因此，按相邻间距的半波长充分条件，这个阵列约在 4.6 kHz 以下满足全视场无混叠要求。16 kHz 采样时，4.6～8 kHz 频段不再得到这一保证。</p>
+<p><strong>第 2 步：相邻间距的保守检查</strong>。对均匀线阵，常用的半波长安全线是 $d\le\lambda/2$；若把两端射方向也纳入闭区间，等号仍有一对歧义（§2.6）。圆阵不是一条周期均匀线阵；此处只用相邻弦长做保守检查，先给出容易复算的频率尺度，再核对完整圆阵的导向矢量。代入：</p>
+<p>$$f_{\rm check} = \frac{c}{2d} = \frac{343}{2\times0.0375} \approx 4573\ \text{Hz} \approx 4.6\ \text{kHz}$$</p>
+<p>因此，按相邻间距的半波长充分条件，约 4.6 kHz 以下可通过这一保守检查。16 kHz 采样时，4.6～8 kHz 频段不再由这条条件保证；这不表示 4.6 kHz 是圆阵的精确混叠截止频率。</p>
+<p>对本例这种<strong>理想规则六边形、窄带平面波</strong>阵列，更精确的无歧义分析需要比较完整的六维导向矢量，而不能只看一对相邻麦。<a href="https://doi.org/10.1109/LSP.2022.3224834" title="citation">Tucker、Zhao、Ahmad 与 Potter 的原始研究，<em>Alias-Free Arrays</em>，IEEE Signal Processing Letters 2022，§V-B</a>给出规则六边形在完整单侧方向域上的临界相邻间距 $d=\lambda/\sqrt3\approx0.577\lambda$。本例 $d=3.75$ cm，对应频率 $f=c/(\sqrt3d)\approx5.28$ kHz；临界点存在相位歧义，该值讨论的是理想相位流形的歧义边界，不能据此保证有噪声、混响和通道失配时仍能准确定位。</p>
+<p>阵列平面上下两侧的镜像时延歧义与上述单侧方向域内的窄带相位混叠是不同问题，即使频率低于 4.6 kHz 也仍可能存在。</p>
 <p>可选措施包括降低高频子带权重、采用非均匀间距以减弱周期性歧义，以及定位时主要使用无混叠频段、增强时再利用高频信息。</p>
 <p><strong>第 3 步：波长与孔径的比</strong>。阵列孔径（阵列的最大尺寸）$D = 2r = 7.5$ cm。</p>
 <ul>
@@ -312,7 +317,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>下表汇总不同失配首先影响的量、误差尺度和补偿方法。</p>
 <span id="sec-14" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-3-4-4">3.4.4 失配灵敏度表：先坏哪、坏多少</h3>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">失配类型</th>
 <th scope="col">典型量级</th>
@@ -379,7 +384,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </li>
 <li>
 <p>栅瓣与挡板二选一：7.5 cm 环径的 6 麦圆环（§3.2 算例 3-3），若把工作频率推到 8 kHz，会发生什么？挡板（规律 3）又是在补哪一段的短板？</p>
-<p>答案要点：8 kHz 波长约 4.3 cm，半波长约 2.1 cm，小于 3.75 cm 相邻麦距，已经不满足全视场无混叠的充分条件。圆阵是否在某一转向出现等高歧义，要看完整几何和宽带融合，不能只套 ULA 的单一栅瓣角公式。挡板会以频率和方向相关的方式改变幅相响应；若模型使用得当，这些额外差异可帮助消歧，但它不是固定地把低频下限移动某个倍频程。</p>
+<p>答案要点：8 kHz 波长约 4.3 cm，半波长约 2.1 cm，小于 3.75 cm 相邻麦距，已经不满足全视场无混叠的半波长充分条件；对理想规则六边形，它也高于 §3.2 算出的约 5.28 kHz 完整单侧方向域无歧义边界，因此存在某些同相位的方向对。某个指定转向是否出现等高歧义，仍须检查完整几何，不能只套 ULA 的栅瓣角公式；宽带融合可能帮助区分单频点歧义。挡板会以频率和方向相关的方式改变幅相响应；若模型使用得当，这些额外差异可帮助消歧，但它不是固定地把低频下限移动某个倍频程。</p>
 </li>
 </ol>
 <p>下面六题使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 复算，检查差分位置、反三角函数边界、角度约定、远场近似误差、双麦相减响应和通道复增益标定。第七题用独立的协同阵脚本，避免把“差集长度”误当作有效虚拟协方差。</p>
@@ -396,7 +401,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>参考答案</strong>：声源位置为 $(r/2,\sqrt3r/2)$，真实距离为 $d_m=\sqrt{r^2-2rx_m\sin30^\circ+x_m^2}$，相对时延为 $(d_m-r)/343$；平面近似为 $-x_m\sin30^\circ/343$。在 $r=0.2$ m 时，真实相对路程约为 $[29.129,0,-19.722]$ mm，平面模型为 $[25,0,-25]$ mm。</p>
 <p>三通道误差先平方、取平均再开方；参考麦的零误差也计入分母 3。相位误差采用未绕回的 $360f\Delta\tau$，不能先折回 $[-180^\circ,180^\circ)$ 再比较模型。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">声源距离 / m</th>
 <th scope="col">时延误差均方根 / μs</th>
@@ -430,7 +435,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>E03-05：前后对称为什么不一定是 8 字形？</strong> 两个理想全向麦间距 1 cm，声速 343 m/s，频率 1 kHz。先计算不加电延迟的 $y=x_1-gx_2$，分别取 $g=0,0.5,1$，比较前端射、后端射和正横的幅度。再令 $g=1$，给后路增加 $d/c$ 延迟，比较两个端射方向。</p>
 <p><strong>参考答案</strong>：令 $p=2\pi fd/c\approx0.18318$ rad。不加电延迟时，两个端射方向幅度相同，平方均为 $1+g^2-2g\cos p$；正横幅度为 $|1-g|$。按未舍入的 $p$ 计算，最后保留四位小数：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">实增益 $g$</th>
 <th scope="col" style="text-align: right;">前端射幅度</th>

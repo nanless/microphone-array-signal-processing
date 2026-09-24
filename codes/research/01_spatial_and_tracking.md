@@ -164,19 +164,19 @@ E04-06 已加入实际重复抽样，入口为 [`mdl_repeated_trials.py`](../exa
 
 ### 15. CSSM 宽带聚焦
 
-对应 §4.6.1。固定 pyroomacoustics 的 `doa/cssm.py` 先为各频带产生候选峰，选参考频点，构造聚焦矩阵并循环聚合协方差。源码入口依次为 `_process`、`_coherent_sum`、继承的子空间分解。[Wang–Kaveh 原文](https://doi.org/10.1109/TASSP.1985.1164667)。
+对应 [§4.6 的宽带聚焦](../../chapters/04_doa-estimation.md#sec-u-08146bdaaf)。固定 pyroomacoustics 的 `doa/cssm.py` 先为各频带产生候选峰，选参考频点，构造聚焦矩阵并循环聚合协方差。源码入口依次为 `_process`、`_coherent_sum`、继承的子空间分解。[Wang–Kaveh 原文](https://doi.org/10.1109/TASSP.1985.1164667)。
 
 建议固定一组双源频域快拍，改变初值、参考频点和迭代数，报告方向误差与聚焦矩阵条件数。被剔除的频点必须与协方差、权重和候选峰同步筛选。固定 0.10.0 版本的这个关联存在静态疑点，见末节；因此可读源码不意味着该版本所有边界输入已验收。
 
 ### 16. WAVES 加权信号子空间
 
-对应 §4.6.1。`doa/waves.py` 将各频带聚焦后的信号子空间按特征值相关权重拼接，再对拼接矩阵做 SVD。它与 CSSM 的区别在聚合对象和权重，不是简单把 CSSM 改名；初始化、频点剔除和噪声特征值估计都影响结果。[Di Claudio–Parisi 原文](https://doi.org/10.1109/78.950774)。
+对应 [§4.6 的宽带聚焦](../../chapters/04_doa-estimation.md#sec-u-08146bdaaf)。`doa/waves.py` 将各频带聚焦后的信号子空间按特征值相关权重拼接，再对拼接矩阵做 SVD。它与 CSSM 的区别在聚合对象和权重，不是简单把 CSSM 改名；初始化、频点剔除和噪声特征值估计都影响结果。[Di Claudio–Parisi 原文](https://doi.org/10.1109/78.950774)。
 
 建议让部分频点只包含噪声，检查权重是否减弱该频点影响；再设强弱源功率差，观察弱源是否被压掉。阅读 `_construct_waves_matrix` 时逐项追踪 `freq_bins[j]` 与 `C_hat[j]` 的对应。WAVES 与 CSSM 相同的频点筛选疑点也列在末节。
 
 ### 17. TOPS 投影子空间正交性检验
 
-对应 §4.6.1。`doa/tops.py` 为每个方向组合跨频子空间正交性矩阵，以最小奇异值构造谱；它不依赖 CSSM 的初始方向聚焦，但仍依赖正确的源数和多个频点。[Yoon–Kaplan–McClellan 原文](https://doi.org/10.1109/TSP.2006.872581)。
+对应 [§4.6 的宽带聚焦](../../chapters/04_doa-estimation.md#sec-u-08146bdaaf)。`doa/tops.py` 为每个方向组合跨频子空间正交性矩阵，以最小奇异值构造谱；它不依赖 CSSM 的初始方向聚焦，但仍依赖正确的源数和多个频点。[Yoon–Kaplan–McClellan 原文](https://doi.org/10.1109/TSP.2006.872581)。
 
 建议至少用两个不连续频点，并移动参考频点的位置，检查输出是否对频点排列保持相同物理含义。排列频点不会改变声场，但若代码错误地把“频点列表下标”当成“FFT bin 编号”，结果会改变。固定版本的具体静态索引证据列在末节；生产选型前需完整数值反例和修复后回归。
 

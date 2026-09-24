@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 8 章 · 语音分离 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="45eb4bf2e043"><style>
+<meta name="source-digest" content="5756010aab11"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -25,7 +25,7 @@ th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
-mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
+mjx-container[jax="CHTML"]{font-size:110%!important;overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
 mjx-assistive-mml{width:1px!important;height:1px!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
@@ -130,7 +130,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>GSS 和部分深度方法先由 cACGMM 或网络估计时频掩码，再用原始 $\mathbf X\mathbf X^H$ 加权计算目标与干扰 SCM，做法见 §5.4。</p>
 <p>波束形成一次输出通常针对一个目标，但可以用不同导向或掩码构造多组权重，分别输出多个人的信号。因此“波束形成”和“语音分离”不是互斥方法：GSS 正是先估掩码，再为每个目标计算一组波束权重。下面按解混矩阵、空间聚类和监督学习三条路线比较。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">路线</th>
 <th scope="col">代表</th>
@@ -190,7 +190,7 @@ $$</p>
 <p>AEC 与降噪的顺序也不是脱离统计假设的固定结论。<a href="https://github.com/Arnout-Roebben/Integrated_AEC_NR/tree/23c6b567c7863a8ee9bafd38bad0d3ff2f25e185">Integrated_AEC_NR 固定实现</a>同时提供 AEC→NR、NR→AEC 与联合扩展结构，适合在相同输入下比较顺序；但其 <code>process.m</code> 用干净期望语音和干净回声产生预言活动判决。把结论移到实际设备前，必须改用可取得的活动估计，并重新测试参考相关、非平稳噪声、双讲和路径变化。</p>
 <p><strong>本章模块与图 23 的对应关系</strong>（图的信号取点与启用条件见<a href="10_engineering-practice.html#sec-10-1">第 10 章 §10.1</a>）：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">本章模块</th>
 <th scope="col">图 23 中的位置</th>
@@ -237,6 +237,11 @@ $$</p>
 <p><strong>BSS 的排列与尺度歧义</strong>。若 $\mathbf W(f)$ 能把混合信号分开，交换 $\mathbf W$ 的两行只会交换两个输出；把某一行乘非零复数，也不会破坏输出间的统计独立性。因此 BSS 只能在排列和复尺度因子意义下恢复声源。IVA、ILRMA 用跨频点结构缓解频点间排列错乱，但仍要固定输出尺度。方阵情形可令 $\hat{\mathbf A}(f)=\mathbf W^{-1}(f)$，选参考麦克风 $r$，再做</p>
 <p>$$\tilde Y_n(f,k)=\hat A_{rn}(f)Y_n(f,k).$$</p>
 <p>这一步称为回投影（projection back）：它把第 $n$ 个分离输出恢复到参考通道上的幅度和相位尺度。回投影不能修复分离错误，也不能保证不同时间块中的说话人编号一致；连续录音仍要做跨块排列对齐。</p>
+<p><strong>两频点的排列小例。</strong> 假设每个频点已经各自分出槽位 1、槽位 2 两路，但槽位编号在不同频点之间没有说话人身份含义。取两帧，频点 $f_1$ 的槽位 1、2 幅度序列分别为 $[2,0.5]$、$[0.5,2]$；频点 $f_2$ 也出现这两条序列。这里的数字是人为给出的非负幅度，不是语音录音或 AuxIVA 的运行输出。</p>
+<p>用一个说明跨频点耦合的球对称源先验作检查：设两频点的联合复谱向量满足示意密度 $p(\vec y)\propto\exp(-\|\vec y\|_2)$，其负对数中与排列有关的部分就是范数。把候选的同一路输出在一帧的两频点组成 $\vec y_n(k)$，计算局部代价 $C=\sum_{k=1}^{2}\sum_{n=1}^{2}\|\vec y_n(k)\|_2$。这项代价只用候选输出自身，不读取说话人身份或干净参考。</p>
+<p>两频点保持槽位 1 对 1、2 对 2 时，每帧的两个范数是 $\sqrt{2^2+2^2}=2\sqrt2$ 与 $\sqrt{0.5^2+0.5^2}=1/\sqrt2$，两帧合计 $C=5\sqrt2\approx7.071$。</p>
+<p>若只交换 $f_2$ 的两个槽位，每帧两路都变成 $[2,0.5]$ 或 $[0.5,2]$，各有范数 $\sqrt{4.25}$；合计 $C=4\sqrt{4.25}\approx8.246$。因此这个选定的<strong>联合代价</strong>偏好前一种跨频点排列。对固定的逐频解混矩阵做行交换不会改变行列式的绝对值，所以在这种只比较排列的演示中，其行列式项也不能区分两种方案。</p>
+<p>完整 AuxIVA 也不能预先拿到这两条已分离的幅度序列；它要从混合复谱迭代估计逐频解混矩阵，并同时处理复尺度、初始化和局部最优。两人的跨频包络若高度相似，本例的差异可能消失。该数例只展示 IVA 利用跨频点结构缓解排列歧义的一个机制，不是一次 AuxIVA 参数更新或分离性能实验。<a href="https://doi.org/10.1109/ASPAA.2011.6082320" title="citation">AuxIVA 原始论文</a>给出完整辅助函数更新。</p>
 <p><strong>BSS 方法的规模例子</strong>。以下计算用于说明参数量和迭代规模；性能数字必须以各论文的测试集和评测脚本为准。</p>
 <p>AuxIVA 的规模例子：2 源 2 麦、8 kHz、3 s 语音，STFT 取 256 点窗和 64 点帧移。名义帧率为 $8000/64=125$ 帧/s，3 s 约为 375 帧。</p>
 <p>若不补零、从首样本开始取完整窗，精确帧数是 $\lfloor(24000-256)/64\rfloor+1=372$。非负频点数为 $256/2+1=129$；每个频点维护一个 $2\times2$ 解混矩阵，所以参数数目为 $129\times2\times2=516$ 个复数。</p>
@@ -310,7 +315,7 @@ $$</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/gss_teaching_demo.py">固定脚本</a>用种子 20260924 合成 16 kHz、2 s 的<strong>两条独立高斯测试波形</strong>，并给它们设置已知活动区间。第一路在麦 0 直接到达、麦 1 晚 2 个采样；第二路相反，另加每麦独立均方根约 0.003 的高斯噪声。STFT 窗长 256 点、帧移 128 点，活动按帧中心给出。</p>
 <p>这个合成阵列没有房间混响，因此演示时旁路 WPE；代码可显式调用本书的离线 WPE 实现，但<strong>本实验没有据此验证 WPE</strong>。说话人活动作为外部输入提供，不是从混合录音自动识别。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">同一目标、同一评分区间 $[0.2,1.45)$ s</th>
 <th scope="col" style="text-align: right;">去均值 SI-SDR（dB）</th>
@@ -357,7 +362,7 @@ $$</p>
 <p>若其中任一项不同，SI-SDRi、SI-SNRi 或 WER 数字不能直接横向排名。</p>
 <p><strong>数据集口径速查</strong>：下表先回答“选择哪个数据集”。它们的录音来源、通道和任务不同，没有可横向排名的统一性能数字。随后逐个列出复现实验必须交代的口径。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">数据集</th>
 <th scope="col">首要用途</th>
@@ -400,7 +405,8 @@ $$</p>
 <p><strong>REVERB。</strong> 仿真部分的混响时间约分 0.25 / 0.5 / 0.7 s 三档，另有以 MC-WSJ-AV 为基础的真实房间录音；基线语音来自 WSJCAM0。存在 8 通道、2 通道及单通道设置。比较 WPE 时，应同时写通道数、识别器、测试子集，以及 WER 的绝对值或相对变化。</p>
 <p><strong>CHiME-5。</strong> 录音来自真实家庭的厨房、餐厅和客厅，包含自然混响和生活噪声。每场有 6 台 Kinect，每台 4 个同步麦克风；每位参与者还佩戴双耳麦。6 台设备不能缩写成“6 麦阵列”，双耳录音用于辅助转写和时间对齐，不是干净评分参考。<a href="https://www.chimechallenge.org/challenges/chime5/overview" title="citation">CHiME-5 官方数据说明</a></p>
 <p><strong>CHiME-6。</strong> 该版本重新对齐了 CHiME-5 的部分录音，必须写明具体版本和划分。总计 32 个物理通道，其中 6 台四麦阵列给出 24 通道，4 套双耳设备给出 8 通道。Track 2 中双耳通道只允许用于同步，不能用于分割、增强或识别；报告 GSS 还须注明实际选用哪些阵列、日志输入、打分集和原论文表号。<a href="https://www.chimechallenge.org/challenges/chime6/track2_data" title="citation">CHiME-6 Track 2 官方数据规则</a></p>
-<p><strong>WHAMR。</strong> 使用合成房间冲激响应，$T_{60}$ 的低、中、高混响档分别从 0.1～0.3 s、0.2～0.6 s、0.4～1.0 s 均匀采样；这三档表示混响程度，不表示房间大小。提供 8 kHz / 16 kHz、min（截短对齐）/ max（全长）版本；基础是 WSJ0-2mix 加 WHAM 噪声。报告时写清源数、目标是无混响还是带混响语音，以及 SI-SDRi 实现。<a href="https://doi.org/10.1109/ICASSP40776.2020.9053327" title="citation">WHAMR 正式论文 §2 与表 1</a></p>
+<p><strong>WHAMR。</strong> 使用合成房间冲激响应，$T_{60}$ 的低、中、高混响档分别从 0.1～0.3 s、0.2～0.6 s、0.4～1.0 s 均匀采样；这三档表示混响程度，不表示房间大小。</p>
+<p>数据以 WSJ0-2mix 加 WHAM 噪声为基础，提供 8 kHz / 16 kHz、min（截短对齐）/ max（全长）版本。报告时写清源数、目标是无混响还是带混响语音，以及 SI-SDRi 实现。<a href="https://doi.org/10.1109/ICASSP40776.2020.9053327" title="citation">WHAMR 正式论文 §2 与表 1</a></p>
 <p><strong>WSJ0-2mix / 3mix。</strong> 近场干声直接叠加，无另加噪声或混响。具有 8 kHz / 16 kHz、min（按最短源截断）/ max（全长补零）版本，常用划分为 30 小时训练、10 小时验证、5 小时测试。引用时写清源数、静态还是动态混合、min/max 和指标实现。</p>
 <p><strong>LibriMix。</strong> clean 版无额外污染，noisy 版叠加 WHAM 环境噪声；提供 8 kHz / 16 kHz、train-100/train-360、min/max 等版本。SparseLibriMix 是另行发布的稀疏重叠测试集。跨语料实验须同时注明训练集、测试集、噪声版本及是否使用 SparseLibriMix。<a href="https://arxiv.org/abs/2005.11262" title="citation">LibriMix 论文</a>与<a href="https://github.com/JorisCos/LibriMix" title="citation">官方生成仓库</a></p>
 <p><strong>LibriCSS。</strong> 将 LibriSpeech 语音从扬声器在真实会议室回放，用 7 通道圆阵录制。共 10 个约 1 h 会话，每个分为 6 个约 10 min 小会话；0S、0L、10%、20%、30%、40% 表示不同重叠条件，0S 与 0L 虽都无重叠，句间静音长度却不同。报告连续分离或识别时须写明条件、分块、跨块排列、输出流数和说话人分配规则。<a href="https://doi.org/10.1109/ICASSP40776.2020.9053426" title="citation">LibriCSS 正式论文</a></p>
@@ -420,7 +426,7 @@ $$</p>
 <p><strong>时频稀疏性与掩码</strong>：在某些语音混合中，同一时频点往往由一个声源占优，文献将这种近似称为 W-不重叠正交性（W-disjoint orthogonality，WDO）。掩码方法可以据此估计每个时频点属于各声源的权重。说话人在同一时频区域强烈重叠时，WDO 近似变差。波束形成的区别不是“对整个频带统一加权”：宽带 STFT 波束形成通常在每个频点使用一组复权重，利用通道间的幅度和相位关系做空间选择。</p>
 <p><strong>深度分离的几类结构</strong>。下表只比较建模方式。原论文的指标、数据生成和评测代码并不完全相同，不在表中按单个 dB 数排名。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">结构</th>
 <th scope="col">代表</th>
@@ -500,7 +506,7 @@ $$</p>
 <p>联合示例用 <code>.venv/bin/python -m codes.examples.ch06_09_baselines</code> 运行，测试见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_wpe_sep_track.py"><code>tests/test_codes_aec_wpe_sep_track.py</code></a>。测试覆盖输出交换、静音参考和静音估计拒绝、SCM 厄米性、MVDR 无失真约束，以及目标或干扰掩码为空时回退参考麦。实际评测还必须固定去均值、时延/增益对齐、静音段、截断长度和输入基线；秩亏 SCM、单通道输入、$N>M$、跨块换人及 STFT 重构均需单独测试。教学版 MVDR 在目标或干扰统计不可用时退回参考麦克风，不应把这一回退的输出解释成成功分离。</p>
 <p>本章的外部实现已经按具体算法定位，不能把“正文尚未实现”写成“没有可用源码”。<a href="research/02_aec_wpe_separation.html#bss">盲分离与 GSS 研究</a>和<a href="research/02_aec_wpe_separation.html#neural">神经分离研究</a>进一步列出读码顺序、状态、最小实验与失败条件。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">方法</th>
 <th scope="col">已定位的源码入口</th>
@@ -571,7 +577,7 @@ $$</p>
 <p>本书仿真采用两路独立高斯随机载波乘不同的八段固定包络，各路按自身标准差归一；随机种子 2468、采样率 8 kHz、每路 32000 点，观测为 $\left[\begin{smallmatrix}1&0.9\\0.8&1\end{smallmatrix}\right]\mathbf s$，矩阵条件数约 12.24。无噪声、无混响。周期 Hann 窗长 256 点、帧移 64 点、中心补零，整段运行 30 次 IP 迭代。</p>
 <p>评分参考是两路在<strong>麦克风 0 上的源图像</strong> $s_1$ 与 $0.9s_2$，并非统一干声；使用整段去均值、无时延对齐的 SI-SDR。输入基线为同一麦克风 0 混合波形分别对两个源图像评分，输出用真实参考只做离线 PIT 评分。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">数学合成输入</th>
 <th scope="col" style="text-align: right;">输入两路 SI-SDR / dB</th>

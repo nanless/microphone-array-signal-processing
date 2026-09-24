@@ -1719,7 +1719,8 @@ def fig_wpe():
     wpe_quiet_db = quiet_energy_ratio_db(Xd)
     rev_nmse_db = scale_aligned_spectral_nmse_db(Yc_aligned, Yr, active)
     wpe_nmse_db = scale_aligned_spectral_nmse_db(Yc_aligned, Xd, active)
-    fig = plt.figure(figsize=(9.5, 13.5), layout="constrained")
+    # 保持三谱图的纵横比，同时缩小源画布；A4 等宽嵌入时字号随之增大。
+    fig = plt.figure(figsize=(8.2, 11.65), layout="constrained")
     grid = fig.add_gridspec(4, 1, height_ratios=[1, 1, 1, 0.12])
     axes = np.array([fig.add_subplot(grid[index, 0]) for index in range(3)])
     footer = fig.add_subplot(grid[3, 0])
@@ -1736,9 +1737,11 @@ def fig_wpe():
         mesh = ax.pcolormesh(tms, fk, Sdb, cmap="viridis", shading="auto",
                              vmin=-55, vmax=0)
         ax.set_ylim(0, 2.5); ax.set_xlabel("时间 (ms)", fontsize=FS_LABEL)
-        ax.text(0.98, 0.04, "高频无能量故全黑", transform=ax.transAxes, fontsize=FS_TINY, color="white", ha="right", va="bottom")
         ax.set_ylabel("频率 (kHz)", fontsize=FS_LABEL)
         ax.set_title(title, fontsize=FS_TITLE)
+    axes[0].text(0.98, 0.94, "三图的高频暗区：合成信号能量很低",
+                 transform=axes[0].transAxes, fontsize=FS_SMALL, color="white",
+                 ha="right", va="top")
     axes[1].text(0.03, 0.05,
                  f"静音帧能量占比 {rev_quiet_db:.1f} dB\n对齐参考活跃帧 NMSE {rev_nmse_db:.1f} dB",
                  transform=axes[1].transAxes, fontsize=FS_TINY, color="white", va="bottom",

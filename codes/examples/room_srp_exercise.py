@@ -301,18 +301,20 @@ def plot_results(report: dict, path: Path) -> None:
         bars = ax.bar(x, data, width=0.68, color="#96b4cf", edgecolor="#182c3a")
         for bar, hatch in zip(bars, hatches):
             bar.set_hatch(hatch)
-        ax.set_ylabel(ylabel)
+        ax.set_ylabel(ylabel, fontsize=11)
+        ax.tick_params(axis="y", labelsize=10)
         ax.grid(axis="y", alpha=0.25)
         ax.set_axisbelow(True)
     axes[0].axhline(0, color="#182c3a", linewidth=0.8)
     axes[1].axhline(report["target_t60_s"], color="#b3453d", linestyle="--",
                     linewidth=1.5, label="0.6 s design target")
-    axes[1].legend(loc="upper right")
+    axes[1].legend(loc="upper right", fontsize=10)
     axes[1].set_ylim(0, max(report["target_t60_s"] * 1.14,
                              max(values[1]) * 1.1))
     axes[2].set_ylim(0, max(values[2]) * 1.3)
-    axes[2].set_xticks(x, labels, fontsize=8)
-    fig.suptitle("Six positions in one fixed synthetic room (pyroomacoustics 0.10.0)")
+    axes[2].set_xticks(x, labels, fontsize=10)
+    fig.suptitle("Six positions in one fixed synthetic room (pyroomacoustics 0.10.0)",
+                 fontsize=12)
     fig.savefig(path, dpi=180)
     plt.close(fig)
 

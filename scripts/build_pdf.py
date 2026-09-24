@@ -115,6 +115,8 @@ CSS = """
 @page{size:A4;margin:16mm 15mm 18mm}
 body{font-family:"STHeiti","Hiragino Sans GB","Microsoft YaHei",sans-serif;font-size:16px;line-height:1.75;color:#1a1a2e;max-width:860px;margin:0 auto;padding:24px}
 p{margin:0 0 .85em;break-inside:avoid;orphans:2;widows:2}li>p{margin:.3em 0}
+p:has(+ p > mjx-container[display="true"]){break-after:avoid;page-break-after:avoid}
+p:has(> mjx-container[display="true"]){break-before:avoid;page-break-before:avoid}
 img{max-width:100%;height:auto;display:block;margin:12px auto}
 table{border-collapse:collapse;margin:12px 0;display:block;overflow-x:visible;max-width:100%}
 th,td{border:1px solid #dfe3ea;padding:5px 9px;font-size:13.5px;text-align:left}
@@ -141,6 +143,7 @@ h3{font-size:16.5px}h4{font-size:15px}
 .book-ending{break-inside:avoid;page-break-inside:avoid}
 /* MathJax 的 serif 中文回退在部分 macOS 字体中会生成部首码位的 ToUnicode。 */
 mjx-mtext>mjx-utext{font-family:MJXZERO,"STHeiti","Hiragino Sans GB","Microsoft YaHei",sans-serif!important}
+body mjx-assistive-mml{width:1px!important;max-width:1px!important;min-width:0!important;height:1px!important;overflow:hidden!important}
 @media print{
 body{max-width:none;margin:0;padding:0}
 .chap{page-break-before:always}
@@ -149,7 +152,7 @@ thead{display:table-header-group}
 tr{break-inside:avoid}
 td,th{word-break:break-word;overflow-wrap:anywhere}
 /* MathJax 的行内长式与展示式均需留在 A4 正文宽度内。 */
-mjx-container{font-size:80%!important;max-width:100%}
+mjx-container{font-size:100%!important;max-width:100%}
 h1,h2,h3,h4{break-after:avoid}
 /* The CRB worked example otherwise starts with one orphan setup line on p52. */
 #ch-2-sec-2-6-7{break-before:page;page-break-before:always}

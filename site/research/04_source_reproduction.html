@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码获取与独立复现记录 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="45eb4bf2e043"><style>
+<meta name="source-digest" content="5756010aab11"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -25,7 +25,7 @@ th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
-mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
+mjx-container[jax="CHTML"]{font-size:110%!important;overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
 mjx-assistive-mml{width:1px!important;height:1px!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
@@ -106,7 +106,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 “复现波束形成”还不够明确；可以改成“给定二通道目标导向矢量和噪声协方差，验证权重满足单位目标响应，
 并核对输出噪声功率是否与闭式解一致”。神经掩码估计、音频读写和识别后端可以在下一层实验中接入。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">复现层次</th>
 <th scope="col">必要输入</th>
@@ -162,7 +162,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 从前一组转到后一组使用 <code>spectrum.transpose(1, 0, 2)</code>。外部库还可能使用 <code>T × F × C</code>。
 维度大小相同也可能掩盖轴序错误，因此适配层应把轴变换写成显式操作，并用各维大小不相等的输入验证。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">项目</th>
 <th scope="col">记录内容</th>
@@ -235,7 +235,7 @@ ERLE 不能把双讲中的近端语音解释成残余回声，也不能用参考
 <span id="sec-10" class="anchor-alias" aria-hidden="true"></span><span id="5-记录结果的必要字段" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-96ac81c5a8">5. 记录结果的必要字段</h2>
 <p>获取、构建和数值实验分开记录。以下是本机截至 2026-09-23 的状态，不是推荐配置的性能表：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">对象</th>
 <th scope="col">源码</th>

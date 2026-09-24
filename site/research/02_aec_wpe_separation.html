@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AEC、WPE 与分离源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="45eb4bf2e043"><style>
+<meta name="source-digest" content="5756010aab11"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -25,7 +25,7 @@ th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
-mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
+mjx-container[jax="CHTML"]{font-size:110%!important;overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
 mjx-assistive-mml{width:1px!important;height:1px!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
@@ -182,7 +182,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="1-先确定信号接口和要解决的问题" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-a50069874f">1. 先确定信号接口和要解决的问题</h2>
 <p>AEC 使用已知播放参考，估计并减去由它产生的声学回声；WPE 使用麦克风自己的延迟历史，预测晚期混响；盲分离依靠独立性、源谱或空间模型区分多个未知声源；监督分离还需要训练参考或目标条件。把这些模块都称作“消噪”，会遗漏不同的输入和验收条件。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">任务</th>
 <th scope="col">必需输入</th>
@@ -257,7 +257,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>从矩阵 Kalman 到 FDKF/PBFDKF。</strong> <a href="https://doi.org/10.1016/j.sigpro.2005.09.013">Enzner 与 Vary，Signal Processing 2006，§2～4</a>建立声学状态空间频域滤波；<a href="https://homepages.ruhr-uni-bochum.de/gerald.enzner/StateSpaceFDAF.html">作者说明</a>明确它是对精确 Kalman 的近似，并区分线性抵消输出和依据状态不确定度形成的后滤波输出。读论文时要跟踪频域路径状态、线性卷积有效区、观测扰动与状态协方差的近似，不能见到单频点式(6-10)就声称复现原论文。分区延伸可从 <a href="https://doi.org/10.1109/ICASSP.2014.6853806">Kuech、Mabande 与 Enzner，ICASSP 2014</a>查起。<a href="https://www.isca-archive.org/interspeech_2021/zhu21d_interspeech.pdf">Zhu 等，Interspeech 2021，§2～3、图 4～5</a>的 VD-PBFDKF 只保留同参考声道、同分区的协方差块；SD-PBFDKF 在同分区还保留不同参考声道间的块，两者仍丢弃跨分区块。多麦、多播放参考时，“对角”必须说明是频点、分区、声道还是矩阵元素层面的对角。论文实验的排序不自动外推到其他房间或双讲安排。</p>
 <p><strong>可读源码的精确入口与边界。</strong> 下表按 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json">锁定版本</a> 指向实际算法入口；“仅索引”表示本书尚未下载、运行或验证该方法的数值输出，源码可见不等于获得示例音频或模型权重的再分发权。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">来源与入口</th>
 <th scope="col">实际实现/值得看的状态</th>
@@ -313,7 +313,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>线性段并非只能从内部调试转储取得。固定版公开的 <code>Config::EchoCanceller::export_linear_aec_output</code> 默认 <code>false</code>；需要线性取点时须在配置 AEC 时设为 <code>true</code>。处理采集帧后调用 <code>GetLinearAecOutput()</code> 并检查布尔返回值，可取得最近约 10 ms、16 kHz 的线性 AEC 输出；头文件说明多通道采集时返回其单声道表示。它与公开 <code>ProcessStream()</code> 的最终输出可能采用不同采样率及取点，必须按对应采样区间对齐后比较。若所用构建或接入层没有成功导出，记录“线性取点未取得”及配置、返回值，而不是用最终输出冒名顶替。入口见<a href="https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/api/audio/audio_processing.h">固定版公开头文件的配置与接口</a>和<a href="https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/audio_processing_impl.cc"><code>audio_processing_impl.cc</code> 的缓冲分配与返回实现</a>。</p>
 <p>复现应先使用工程自带测试和录制/回放入口，固定 APM 配置、采样率、帧组织、输入电平、延迟设置以及参考和采集调用次序。最小实验只更改参考延迟；失败实验引入一次参考丢块，观察延迟状态、线性残差和最终输出。固定版 <code>block_processor.cc</code> 在尚无播放参考时跳过采集处理；参考缓冲下溢时重置延迟控制器，溢出时刷新缓冲并重置。这些状态需要与队列事件和输出一起记录，不能把恢复期的原始或强抑制输出误判为稳态 AEC 性能。<a href="https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/block_processor.cc">固定版 <code>block_processor.cc</code></a></p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">征兆</th>
 <th scope="col">先观察什么</th>
@@ -345,7 +345,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>本书的 <a href="../06_aec.html#sec-6-16">E06-04～E06-06</a>补充三个可运行的取点检查：同幅副本若反相，相减会把回声能量增为四倍；背景噪声保留时，麦克风输入/输出能量比仍可能为有限值，即使回声分量已经完全抵消；纯 500 Hz 参考经过三次非线性后还会留下线性参考不能生成的 1500 Hz 分量。这些是给定模型下的代数结果，不是对 RES 的设备性能测量。运行入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_enhancement.py"><code>exercises_enhancement.py</code></a>，固定检查见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_enhancement_round2.py"><code>test_codes_enhancement_round2.py</code></a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_exercises_enhancement.py"><code>test_codes_exercises_enhancement.py</code></a>。</p>
 <p><strong>三种实现的接口与状态对照。</strong> 下表对应固定版本，解释怎样准备对照输入；表中的方法状态不是性能排名。Speex 的 10～20 ms 帧与 100～500 ms 滤波长度来自<a href="https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/include/speex/speex_echo.h">固定头文件的接口说明</a>，只是该接口给出的建议量级，设备仍需按实测路径配置。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">实现</th>
 <th scope="col">输入与持续状态</th>
@@ -395,7 +395,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>使用同步 <code>speex_echo_cancellation()</code>，每帧 160 样本，滤波覆盖 4096 样本（256 ms）；初始化后显式设置并读回 16 kHz。没有调用异步缓冲接口或 Speex 预处理器。<code>[16000,64000)</code> 的归一化互相关诊断峰在正 498 样本（约 31.1 ms，相关系数 0.260），只用于报告，不用它挪动音频；它并非硬件时钟或纯声学传播时延的测量。</p>
 <p>固定 <code>[0,48000)</code> 为收敛区，评分区为 <code>[48000,188320)</code>，数字功率比定义为 $10\log_{10}(\sum d[n]^2/\sum e[n]^2)$，各条件使用相同评分样本。零参考控制从头重置一套 Speex 状态；“晚 1 秒参考”控制在参考前填 16000 个零，再接原参考的前段，也重新建状态。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">输入到同一 Speex 同步接口</th>
 <th scope="col" style="text-align: right;">评分区输入/输出数字功率变化</th>
@@ -437,7 +437,7 @@ cmake --build /private/tmp/speexdsp-aec-20260923 --parallel 4
 <p><strong>同两对真实配对录音上的教学 PBFDAF 对照（2026-09-24 已运行）。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_pbfdaf_real_pair_compare.py">离线脚本</a>只读取上述固定 SHA-256 的 <code>lpb</code>/<code>mic</code>，将 PCM16 原样除以 32768 转为 float64；不重采样、不时移、不调增益、不量化输出，也不保存录音。每种参考条件都从零权重与零历史的新状态运行。参数在评分前固定为 $N=160$、$2N=320$、$P=26$、$L=4160$、$\mu=0.3$、$\delta=0.05$，每块投影合法抽头；没有双讲冻结、延迟估计或后滤。这一 $\mu,\delta$ 沿用教学合成实验，<strong>不是</strong>在真实评分区选出的最优参数。</p>
 <p>与现有 Speex 记录的长度口径须分清：传给锁定版 <code>speex_echo_state_init()</code> 的请求长度是 4096，而 <code>mdf.c</code> 将其上取整为 $\lceil4096/160\rceil=26$ 个分区，即 4160 个系数位置。本教学实现设为 4160 是匹配<strong>分区容量</strong>，并不使两种更新律、输入处理或输出量化相同。两份 WAV 仅截到共同的完整 160 点块；单讲取 <code>[0,188320)</code>、双讲取 <code>[0,196160)</code>。单讲沿用 <code>[0,48000)</code> 适应与 <code>[48000,188320)</code> 评分；双讲沿用 <code>[0,48000)</code> 适应与 <code>[48000,128000)</code> 评分。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">官方录音和评分区</th>
 <th scope="col">参考条件</th>
@@ -484,7 +484,7 @@ cmake --build /private/tmp/speexdsp-aec-20260923 --parallel 4
 <p><strong>已知近端注入：严格合成与半合成两种检查（2026-09-23 已运行）。</strong> 真实双讲没有干净分量，故另用<a href="../06_aec.html#sec-6-15">式(6-15)</a>定义两次独立运行的输出增量 $\Delta$、投影增益 $g_{\Delta}$ 和不拟合时移/增益的相对平方误差 $E_{\Delta}$。每一对运行都使用同一播放参考、各自新建的状态和完全相同的输入长度；第二次麦克风 PCM 比第一次恰好多一个已知的 $s$。即使如此，自适应器状态和预处理也可随 $s$ 改变，所以 $\Delta$ 不是算法内部单独输出的“近端声道”。$E_{\Delta}$ 是无量纲的逐样本误差，越小表示这项增量越接近原注入信号；它不是双讲 ERLE 或主观音质分。</p>
 <p>严格合成夹具读 <code>codes/audio/aec_far.wav</code>、<code>aec_near.wav</code>、<code>aec_microphone.wav</code>，逐一核对清单中的 SHA-256。三路均为 16 kHz、32000 点 PCM16；近端只在 <code>[19200,28800)</code> 非零。令 $d_1$ 为已量化麦克风、$s$ 为已量化近端，取 $d_0=d_1-s$，先在 32 位整数中检查范围，再转回 PCM16，因此输入等式在 PCM 域精确成立；$d_0$ 不宣称等于未量化 FIR 真值。固定 <code>[9600,17600)</code> 为远端单讲检查区、<code>[19200,28800)</code> 为双讲评分区、<code>[28800,32000)</code> 为恢复观察区。教学 NLMS 用 32 抽头、步长 0.4、$\varepsilon=10^{-8}$；双讲冻结使用已知真值掩码，不是检测器。SpeexDSP 仍为 160 点帧、4096 点滤波覆盖和独立状态。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">输入和实现</th>
 <th scope="col">播放参考</th>
@@ -527,7 +527,7 @@ cmake --build /private/tmp/speexdsp-aec-20260923 --parallel 4
 <p>第二种夹具从<a href="https://github.com/microsoft/AEC-Challenge/blob/6c633d0a9d2a143a0e364899b91b06f127315b18/datasets/README.md">同一 GUID 的官方固定版数据</a>取远端单讲 <code>lpb</code>/<code>mic</code> 配对，再取另一次 <code>nearend_singletalk_mic.wav</code>。该近端原文件 SHA-256 为 <code>192291e973b7dee519102f30ae75e4209712ce55d02f55a9020a7c3b37a1d0e0</code>，只有本机缓存；它是单讲麦克风录音，含本底噪声，不是干净语音。把它的 <code>[48000,128000)</code> 样本以 1.0 的 PCM 增益叠到远端单讲麦克风的同位置，参考不变；不重采样、不错位、不按峰值重新归一化，32 位整数加法确认未溢出。叠加波形全段峰值为 13633 PCM 计数。前 3 s 为适应期，评分 <code>[3,8)</code> s，恢复观察 <code>[8,11)</code> s。它是两次录音的<strong>半合成叠加</strong>，不能冒称同一时刻的真实双讲。</p>
 <p>已知近端波形在评分区间的平方和必须大于零，否则 $g_{\Delta}$、$E_{\Delta}$ 均无定义。注入在 3 s、8 s 直接切换而没有淡入淡出，边界附近可能包含拼接瞬态；本实验只检验固定外加波形的增量，不作为自然双讲听感或总体性能证据。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">半合成输入、Speex 同步核心</th>
 <th scope="col" style="text-align: right;">$g_{\Delta}$</th>
@@ -573,7 +573,7 @@ PATH=/path/to/depot_tools:$PATH DEPOT_TOOLS_UPDATE=0 \
 </code></pre>
 <p>本次对两对真实录音分别从全新状态运行，16 kHz、单声道 PCM16，每帧 160 点、同帧先参考后采集；评分前 3 s 只用于适应。表中数字为 $10\log_{10}(P_{\mathrm{mic}}/P_{\mathrm{out}})$，功率按相同窗口的 PCM16 归一化样本平方均值计算。它是<strong>总数字功率变化，不是真值 ERLE</strong>。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">原始录音与评分半开区间</th>
 <th scope="col" style="text-align: right;">AEC3 线性输出</th>
@@ -597,7 +597,7 @@ PATH=/path/to/depot_tools:$PATH DEPOT_TOOLS_UPDATE=0 \
 <p>远端单讲最终输出比线性输出的功率降得更多，符合两个取点包含不同处理的事实，却不能把差额全部归因于残余回声抑制。双讲录音没有独立干净近端或干净回声分量真值，因此 3.384/3.851 dB 既不证明近端保护，也不证明双讲回声抑制量。真实配对录音仍不能给出真值性能排序，也没有设备声学回路或时钟漂移测量；<a href="04_source_reproduction.html">运行状态表</a>按实现分别记录。</p>
 <p><strong>已运行：合成真值 PCM 的同输入接口对照（2026-09-24）。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_same_input_truth.py">脚本</a>固定 16 kHz、6 s、随机种子 20260924、五抽头声学路径 <code>[0.70, 0, -0.25, 0, 0.12]</code>，无背景噪声，在 <code>[3,4)</code> s 以 PCM 精确相加注入已知近端。教学 NLMS 用 32 抽头、0.4 步长和真值冻结；Speex 同步核心用 160 点帧及 4096 点请求长度；AEC3 从新状态分别导出线性段和最终段。远端单讲只评分 <code>[2,3)</code> s，近端注入只评分 <code>[3,4)</code> s。二进制摘要由脚本核对，临时 WAV 不留在发布树。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">输出取点</th>
 <th scope="col" style="text-align: right;">独立脉冲测得固定输出延迟（样本）</th>
@@ -779,7 +779,7 @@ PATH=/path/to/depot_tools:$PATH DEPOT_TOOLS_UPDATE=0 \
 <p>该仓库为 MIT，但运行依赖 PyTorch、Lightning、<code>mamba-ssm</code>、<code>causal-conv1d</code> 及相应 CUDA 环境。更重要的是，顶层 <code>OnlineSpatialNet.forward()</code> 调用每一层时传入的 <code>state</code> 为 <code>None</code>，没有把 <code>CausalConv1d</code> 等子层的状态作为顶层输入输出暴露。因此“网络是因果的”“整段计算量随长度近似线性”和“任意外层块可连续续算”是三个不同命题；固定版本不能仅凭类名证明第三项。最小实验应比较整段、任意分块且保留状态、每块重置三种输出，再测 251/1000/1024 帧、静止/移动源、麦数变化和无 Mamba/CUDA 的 CPU 路径；没有显式跨调用状态时应记录不等价，而不是用每块真实参考重排掩盖边界差异。</p>
 <span id="sec-51" class="anchor-alias" aria-hidden="true"></span><span id="6-复现实验的共同记录表" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-604eb85ad9">6. 复现实验的共同记录表</h2>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">记录组</th>
 <th scope="col">必须写出的内容</th>

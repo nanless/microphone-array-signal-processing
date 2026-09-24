@@ -241,7 +241,10 @@ $$r=1\times0.8\times1.0+4\times0.5\times0.6+1\times0.4\times0.2=2.08，$$
 
 **多通道版（MIMO-WPE，Yoshioka & Nakatani 2012）**：预测第 $m$ 个通道的当前帧时，使用所有 $M$ 个通道的历史帧：
 
-$$X_m(n,f) = E_m(n,f) + \sum_{m'=1}^{M}\sum_{k=\Delta}^{\Delta+K-1} G^*_{m,m'}(k,f)\,X_{m'}(n-k,f)$$。
+$$\begin{aligned}
+X_m(n,f)&=E_m(n,f)\\
+&\quad+\sum_{m'=1}^{M}\sum_{k=\Delta}^{\Delta+K-1} G^*_{m,m'}(k,f)\,X_{m'}(n-k,f)\text{。}
+\end{aligned}\tag{7-4}$$
 
 每个滞后 $k$ 对应一个 $M\times M$ 系数矩阵。把 $K$ 个滞后的所有通道历史堆叠后，回归向量长度为 $MK$，联合系数可写成 $MK\times M$。因此每个频点的正规方程矩阵是 $MK\times MK$，而不是单通道的 $K\times K$。
 
@@ -249,13 +252,15 @@ $$X_m(n,f) = E_m(n,f) + \sum_{m'=1}^{M}\sum_{k=\Delta}^{\Delta+K-1} G^*_{m,m'}(k
 
 晚期混响会同时出现在多个麦克风上，但幅度和相位不同，多通道观测因此提供额外空间信息。相对收益取决于混响、阵列和数据长度，具体数字应查原论文的实验条件。[Yoshioka & Nakatani 2012](https://doi.org/10.1109/TASL.2012.2210879 "citation")
 
-![图21 WPE 去混响效果](../figures/fig21_wpe.png)
+**图21 的仿真输入与读图口径。** 本书仿真使用 16 kHz、1.4 s 的合成输入和随机种子 21001。房间脉冲响应的直达延迟为 10 ms，晚期随机尾设 $T_{60}=0.6$ s、直达混响比（Direct-to-Reverberant Ratio，DRR）为 6 dB。
 
-图21 的横轴约为 0～1400 ms，纵轴约为 0～2.5 kHz，颜色表示相对能量的 dB 值。三幅语谱图在显示前都已补偿合成路径的 10 ms 直达传播时延，因此横轴表示同一对齐时间基准。
+分析采用 512 点 Hann 窗、128 点帧移；单通道 WPE 取 $\Delta=6$、$K=10$，迭代 3 次。三图使用同一个谱幅参考。
 
-本书仿真使用 16 kHz、1.4 s 的合成输入和随机种子 21001；房间脉冲响应的直达延迟为 10 ms，晚期随机尾设 $T_{60}=0.6$ s、直达混响比（Direct-to-Reverberant Ratio，DRR）为 6 dB。分析采用 512 点 Hann 窗、128 点帧移；单通道 WPE 取 $\Delta=6$、$K=10$，迭代 3 次。三图使用同一个谱幅参考。
+三幅语谱图在显示前都已补偿合成路径的 10 ms 直达传播时延，因此横轴表示同一对齐时间基准。横轴约为 0～1400 ms，纵轴约为 0～2.5 kHz，颜色表示相对能量的 dB 值。
 
 （a）给出无混响参考；（b）加入合成混响后，音节结束处出现横向拖尾；（c）经本书单通道 WPE 示例处理后，拖尾减弱但仍有残留。
+
+![图21 WPE 去混响效果](../figures/fig21_wpe.png)
 
 脚本按对齐后的无混响参考帧功率定义活动帧和安静帧，随后报告安静帧能量占比，以及活动帧相对该对齐参考、经复增益校准后的谱域归一化均方误差（Normalized Mean Square Error，NMSE）。前者下降而后者增大时，说明去拖尾与语音损伤之间存在权衡。
 
@@ -277,11 +282,17 @@ WPE → GSS → MVDR/GEV 也可不使用神经分离网络，见第 8 章。Raj 
 
 在线实现还要处理初始化、矩阵正则化、静音冻结和路径突变，不能只把批处理迭代次数改成 1。DNN-WPE 可以用网络估计 $\lambda$，但是否优于传统估计取决于训练数据与测试房间是否匹配。
 
-**三帧因果递推小例。** 对单频点、单抽头实数特例，令 $\Delta=3$，连续观测 $X_0,\ldots,X_5=[1,2,1,0.8,1.6,1.0]$。从实际帧 $t=3$ 开始，历史回归量为 $x_t=X_{t-3}$；待更新的三组 $(x_t,X_t)$ 依次为 $(1,0.8),(2,1.6),(1,1.0)$。固定遗忘因子 $\alpha=0.5$、$\lambda_t=1$，并按
+**三帧因果递推小例。** 对单频点、单抽头实数特例，令 $\Delta=3$，连续观测 $X_0,\ldots,X_5=[1,2,1,0.8,1.6,1.0]$。从实际帧 $t=3$ 开始，历史回归量为 $x_t=X_{t-3}$；待更新的三组 $(x_t,X_t)$ 依次为 $(1,0.8),(2,1.6),(1,1.0)$。固定遗忘因子 $\alpha=0.5$、$\lambda_t=1$，按式(7-5)递推：
 
-$$R_t=\alpha R_{t-1}+x_t^2/\lambda_t,\qquad r_t=\alpha r_{t-1}+x_tX_t/\lambda_t,\qquad g_t=r_t/(R_t+\delta)$$
+$$\begin{aligned}
+R_t&=\alpha R_{t-1}+x_t^2/\lambda_t,\\
+r_t&=\alpha r_{t-1}+x_tX_t/\lambda_t,\\
+g_t&=r_t/(R_t+\delta)\text{。}
+\end{aligned}\tag{7-5}$$
 
-递推。本例为便于手算取 $\delta=0$，在首个有效帧前初始化 $R_2=r_2=0$：
+式中 $R_t$ 是累计的加权历史能量，$r_t$ 是历史与当前观测的加权互相关，$g_t$ 是供下一帧使用的实数预测系数；$\alpha\in[0,1]$ 是遗忘因子，$\delta\ge0$ 是与 $R_t$ 同量纲的正则项。式(7-5)仅针对本例的单频点、单抽头实数模型；复数和多通道版须按式(7-3)、式(7-4)处理共轭与矩阵维度。
+
+本例为便于手算取 $\delta=0$，在首个有效帧前初始化 $R_2=r_2=0$：
 
 1. 第 1 次更新（$t=3$）：$R_3=1$，$r_3=0.8$，$g_3=0.8$；
 2. 第 2 次更新（$t=4$）：$R_4=0.5\times1+4=4.5$，$r_4=0.5\times0.8+3.2=3.6$，$g_4=0.8$；
@@ -348,9 +359,14 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 
 卷积功率最小无失真响应（Weighted Power minimization Distortionless response，WPD）把多帧、多通道滤波写进同一个无失真最小功率问题，可同时处理去混响与波束形成。它不是简单串联两个现成模块，也不能用条件不同的 WPE、MPDR 数字相加预测收益。
 
-把当前多通道帧及延迟历史堆成 $\bar{\vec x}_t=[\vec x_t^\top,\vec x_{t-\Delta}^\top,\ldots]^\top$，并把目标导向约束扩展为 $\bar{\vec v}=[\vec v^\top,\vec0^\top,\ldots]^\top$。在加权协方差 $\bar{\mathbf R}=\sum_t\bar{\vec x}_t\bar{\vec x}_t^H/\lambda_t$ 下，解为
+把当前多通道帧及延迟历史堆成 $\bar{\vec x}_t=[\vec x_t^\top,\vec x_{t-\Delta}^\top,\ldots]^\top$，并把目标导向约束扩展为 $\bar{\vec v}=[\vec v^\top,\vec0^\top,\ldots]^\top$。令 $\lambda_t>0$，用同一组时帧构造加权协方差 $\bar{\mathbf R}=\sum_t\bar{\vec x}_t\bar{\vec x}_t^H/\lambda_t$。WPD 的目标是
 
-$$\bar{\vec w}_{\mathrm{WPD}}=\frac{\bar{\mathbf R}^{-1}\bar{\vec v}}{\bar{\vec v}^H\bar{\mathbf R}^{-1}\bar{\vec v}}。$$
+$$\min_{\bar{\vec w}}\ \bar{\vec w}^H\bar{\mathbf R}\bar{\vec w}
+\quad\text{s.t.}\quad \bar{\vec w}^H\bar{\vec v}=1\text{。}\tag{7-6}$$
+
+当 $\bar{\mathbf R}$ 正定时，对式(7-6)作与 §5.4 相同的复数拉格朗日求导，先得到 $\bar{\mathbf R}\bar{\vec w}=\eta\bar{\vec v}$；再代入约束求出 $\eta=1/(\bar{\vec v}^H\bar{\mathbf R}^{-1}\bar{\vec v})$，于是
+
+$$\bar{\vec w}_{\mathrm{WPD}}=\frac{\bar{\mathbf R}^{-1}\bar{\vec v}}{\bar{\vec v}^H\bar{\mathbf R}^{-1}\bar{\vec v}}\text{。}\tag{7-7}$$
 
 最小维度检查：2 麦、1 个历史块时，$\bar{\vec x}$ 和 $\bar{\vec w}$ 都有 4 个元素。若 $\bar{\mathbf R}=\operatorname{diag}(2,1,4,4)$、$\vec v=[1,1]^\top$，则扩展约束向量为 $\bar{\vec v}=[1,1,0,0]^\top$。
 
@@ -495,7 +511,7 @@ ESPnet 的 DNN-WPE 外层输入为 `(批, 帧, 通道, 频点)`，内部才转�
 
     本书的这个反例直接运行 `offline_wpe()`，各功率均高于下限。第 1 帧的回归量没有未来样本，但它使用的系数由整段录音估计，因此整个处理不是因果的。这里没有采用图21的居中平滑，单靠全段统计已经会产生未来依赖；单个输入未发现变化，也不能证明另一实现一定因果。
 
-- **E07-05：WPD 的历史权重什么时候不为零？** 取当前两麦及一个历史块组成四维向量，扩展导向为 $\bar v=[1,1,0,0]^\top$。给定加权协方差
+- **E07-05：WPD 的历史权重什么时候不为零？** 按式(7-6)、式(7-7)，取当前两麦及一个历史块组成四维向量，扩展导向为 $\bar v=[1,1,0,0]^\top$。给定加权协方差
 
     $$\bar R=\begin{bmatrix}2&0&1&0\\0&1&0&0\\1&0&2&0\\0&0&0&1\end{bmatrix}，$$
 

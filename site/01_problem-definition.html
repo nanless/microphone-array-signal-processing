@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 1 章 · 问题定义与双耳启示 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="45eb4bf2e043"><style>
+<meta name="source-digest" content="5756010aab11"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -25,7 +25,7 @@ th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
-mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
+mjx-container[jax="CHTML"]{font-size:110%!important;overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
 mjx-assistive-mml{width:1px!important;height:1px!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
@@ -107,7 +107,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <h3 id="sec-u-2fa0be7e3b">空间处理的三项任务</h3>
 <p>下面三项是阵列空间处理的核心任务：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">任务</th>
 <th scope="col">类比</th>
@@ -132,6 +132,13 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 </tbody>
 </table></div>
+<p>把表中的问题落实到一段四路麦克风录音，三项任务的输入和输出分别是：</p>
+<ul>
+<li><strong>定位</strong>读入同步的多路信号，输出一个或多个候选方向；某些方法还给出用于排序的方向分数，但分数不一定是校准过的置信度。</li>
+<li><strong>波束形成</strong>利用目标方向和多路信号，产生一条更偏向该方向的输出音频。</li>
+<li><strong>追踪</strong>把连续时刻的定位结果接起来，估计目标是否移动，以及何时应保持上次方向或重新捕获。</li>
+</ul>
+<p>定位结果可控制波束，但三项任务的输出不相同，不能用波束输出音量替代定位误差或追踪身份正确率。</p>
 <p>它们没有覆盖开头的全部问题。设备自己的回声由声学回声消除（Acoustic Echo Cancellation，AEC）处理，房间拖尾由去混响处理，多人同时说话还需要语音分离；这些任务分别在第 6～8 章展开。</p>
 <p>定位、波束形成和追踪回答的问题不同，对应的评价指标也不同。下面先计算最基础的白噪声阵列增益。</p>
 <h3 id="sec-u-783265321c">三类阵列收益与白噪声增益</h3>
@@ -176,7 +183,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>双耳线索与阵列方法的对应关系</strong></p>
 <p>下表列出双耳听觉现象与阵列处理方法之间的联系：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">人类的办法</th>
 <th scope="col">机器阵列的对应技术（术语先不用记）</th>
@@ -219,7 +226,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>E01-01：四只麦不一定得到 6 dB。</strong> 目标已经对齐，各路噪声功率均为 1，任意两路噪声的相关系数均为 $\rho$。对四路信号取平均，分别计算 $\rho=0、0.5、1$ 时的输出噪声功率和 SNR 改善量。为什么完全相同的噪声不会被平均消除？</p>
 <p><strong>参考答案</strong>：四个对角项贡献 4，十二个非对角项贡献 $12\rho$；平均权重的乘积均为 $1/16$，所以输出噪声功率为 $(4+12\rho)/16=(1+3\rho)/4$。目标响应仍为 1，SNR 改善量是该噪声功率倒数的 $10\log_{10}$。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">噪声相关系数 $\rho$</th>
 <th scope="col">输出噪声功率</th>

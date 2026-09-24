@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 9 章 · 声源追踪 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="45eb4bf2e043"><style>
+<meta name="source-digest" content="5756010aab11"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -25,7 +25,7 @@ th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
-mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
+mjx-container[jax="CHTML"]{font-size:110%!important;overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
 mjx-assistive-mml{width:1px!important;height:1px!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
@@ -108,7 +108,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <hr />
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-6521bc6f00">9. 声源追踪</h1>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-9-1">9.1 问题与声学特殊性</h2>
-<p>声源追踪持续估计运动声源状态 $\vec{s}_t=[\theta_t,\dot\theta_t,\ddot\theta_t]^\top$，其中三项分别为角度、角速度和角加速度。它把含噪且可能间断的逐帧定位结果融合成连续轨迹，再为波束形成提供抖动较小的因果方向估计。<a href="https://www.locata.lms.tf.fau.de/" title="citation">LOCATA 声源定位与追踪挑战</a>包含静止或运动的声源与阵列录音，并提供光学动捕真值；使用时要按任务编号区分单源/多源、静止/运动和阵列配置，数据选择的一般原则见 §10.6。</p>
+<p>声源追踪把含噪且可能间断的逐帧定位结果融合成连续轨迹，再为波束形成提供抖动较小的因果方向估计。状态要随观测和任务选择：只跟踪方位时可用 $[\theta_t,\dot\theta_t]^\top$；需要描述加速可加入 $\ddot\theta_t$；要跟踪平面位置则可用 $[x_t,y_t,\dot x_t,\dot y_t]^\top$。角度状态的分量分别以角度、角速度和角加速度为单位，位置状态则要另定坐标系和速度单位。</p>
+<p><a href="https://www.locata.lms.tf.fau.de/" title="citation">LOCATA 声源定位与追踪挑战</a>包含静止或运动的声源与阵列录音，并提供光学动捕真值；使用时要按任务编号区分单源/多源、静止/运动和阵列配置，数据选择的一般原则见 §10.6。</p>
 <p>声学追踪有四个特点：</p>
 <ul>
 <li>说话人停顿会造成间歇观测，需要语音活动检测（Voice Activity Detection，VAD）门控和轨迹维持；</li>
@@ -211,9 +212,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>角度方差从 4.35 降到 3.71（标准差约 1.93°）。在线性模型、协方差和卡尔曼增益满足本节条件时，观测更新降低或保持估计协方差；错误观测或错误噪声模型仍可能让真实误差增大。</p>
 <p>若下一帧说话人停顿没有观测，就只做第 1、2 步：本例角度方差再次增大，波束指向维持外推，这就是“静默保持”（§9.4）。</p>
 <p>算例 9-1说明了单步卡尔曼递推。下表比较常见单目标追踪方法的假设、计算量和适用条件。</p>
-<p>α-β / α-β-γ 滤波器采用固定更新增益，因而在线更新可以不反复求解 Riccati 递推。如果模型、采样周期和噪声统计恒定，且固定增益取为对应卡尔曼滤波的稳态增益，它可以等价于该模型下的稳态卡尔曼滤波。经验选取的固定增益则不保证这种最优性；模型或噪声条件变化时，固定增益也不会自行重新适配。α-β 的稳态关系见 <a href="https://doi.org/10.1155/2012/870890" title="citation">Ekstrand, <em>Some Aspects on Filter Design for Target Tracking</em>, §9.1</a>；α-β-γ 的增益稳定性和优化条件见 <a href="https://doi.org/10.9746/sicetr1965.38.361" title="citation">Kosuge 与 Ito, <em>Stability of an α-β-γ Filter and Optimal Gains</em>, 2002</a>。</p>
+<p>α-β / α-β-γ 滤波器采用固定更新增益，因而在线更新可以不反复求解 Riccati 递推。如果模型、采样周期和噪声统计恒定，且固定增益取为对应卡尔曼滤波的稳态增益，它可以等价于该模型下的稳态卡尔曼滤波。</p>
+<p>经验选取的固定增益不保证这种最优性；模型或噪声条件变化时，固定增益也不会自行重新适配。α-β 的稳态关系见 <a href="https://doi.org/10.1155/2012/870890" title="citation">Ekstrand, <em>Some Aspects on Filter Design for Target Tracking</em>, §9.1</a>；α-β-γ 的增益稳定性和优化条件见 <a href="https://doi.org/10.9746/sicetr1965.38.361" title="citation">Kosuge 与 Ito, <em>Stability of an α-β-γ Filter and Optimal Gains</em>, 2002</a>。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">方法</th>
 <th scope="col">原理</th>
@@ -281,7 +283,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>$$w_i=\exp\!\left(-\frac{(x_i-\theta^{obs})^2}{2\sigma^2}\right)=\exp\!\left(-\frac{(x_i-31)^2}{50}\right)$$</p>
 <p>逐个计算（$(x_i-31)^2$ 先列出来）：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">粒子 $x_i$</th>
 <th scope="col">$(x_i-31)^2$</th>
@@ -352,7 +354,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>$$\tilde w_i=\frac{w_i}{7.8359}$$</p>
 <p>逐项归一化后得到：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">粒子序号 $i$</th>
 <th scope="col">角度 $x_i$（度）</th>
@@ -432,7 +434,7 @@ N_{eff}&=\frac{1}{\sum_{i=1}^{10}\tilde w_i^2}\\
 <p>系统重采样按归一化权重重新抽取 10 个粒子，允许高权重粒子重复出现，并把新权重统一重置为 $1/10$。</p>
 <p>先计算归一化权重的累积和：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">粒子序号 $i$</th>
 <th scope="col">累积和 $\sum_{j=1}^{i}\tilde w_j$</th>
@@ -504,7 +506,7 @@ N_{eff}&=\frac{1}{\sum_{i=1}^{10}\tilde w_i^2}\\
 <h3 id="sec-9-3-1">9.3.1 数据关联与目标数</h3>
 <p>多目标追踪需要同时解决观测与轨迹的<strong>数据关联</strong>，并估计当前的<strong>声源数量</strong>。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">方法族</th>
 <th scope="col">代表</th>
@@ -555,7 +557,11 @@ N_{eff}&=\frac{1}{\sum_{i=1}^{10}\tilde w_i^2}\\
 <p><strong>三帧关联辅助例子</strong>。设两条匀速轨迹的预测角分别为 A：$20^\circ,30^\circ,40^\circ$，B：$60^\circ,50^\circ,40^\circ$；三帧观测依次为 $(22^\circ,58^\circ)$、$(15^\circ,31^\circ,48^\circ)$、$(39^\circ,41^\circ)$。假设独立高斯角度误差的标准差 $\sigma=3^\circ$。为先算清最小 JPDA 归一化，暂时假设第一、三帧没有漏检和杂波，且两个全局关联事件先验相同。</p>
 <p>第一帧“顺接”事件的似然正比于 $\exp[-(2^2+(-2)^2)/(2\times3^2)]=e^{-8/18}\approx0.641$；“交换”事件的残差为 $38^\circ,-38^\circ$，似然约为 $e^{-2888/18}$，归一化后的顺接概率在所示精度下为 1。</p>
 <p>第三帧两条预测都为 $40^\circ$，两个交换事件的残差平方和都为 $(-1)^2+1^2=2$，似然都为 $e^{-2/18}\approx0.895$。归一化后两个全局事件各为 0.5，因此每条轨迹关联到 $39^\circ$ 或 $41^\circ$ 的边缘概率也各为 0.5。</p>
-<p>第二帧多出的 $15^\circ$ 只有在给定检测概率、杂波空间密度和漏检模型后才能得到完整概率；仅比较残差时，近邻两对的代价为 $5/18\approx0.278$，但这不是完整 JPDA 后验。</p>
+<p>第二帧多出的 $15^\circ$ 只有在给定检测概率、杂波空间密度和漏检模型后才能得到完整概率；仅比较残差时，近邻两对的指数代价为 $(1^2+(-2)^2)/18=5/18\approx0.278$，但这不是完整 JPDA 后验。</p>
+<p>为把这一帧也算完，另设每条轨迹的检测概率 $p_D=0.9$，三个观测处的 Poisson 杂波强度均为 $\kappa=0.01\ \mathrm{deg}^{-1}$，角度似然为 $g(z\mid\theta)=\exp[-(z-\theta)^2/18]/(3\sqrt{2\pi})\ \mathrm{deg}^{-1}$。这组值只是本书算例的输入，不是设备标定值。相对“全部观测来自杂波”的公共因子，一个合法联合事件若有 $d$ 条轨迹被检出、$2-d$ 条漏检，其未归一化权重为 $p_D^d(1-p_D)^{2-d}\prod_{(i,j)\in A}g(z_j\mid\theta_i)/\kappa(z_j)$；$A$ 必须一对一，未分配观测按杂波处理。</p>
+<p>例如 A 配 $31^\circ$ 的似然比为 $g(31\mid30)/\kappa\approx12.579$，B 配 $48^\circ$ 的比为 $g(48\mid50)/\kappa\approx10.648$。两条都检出的事件权重为 $0.9^2\times12.579\times10.648\approx108.499$；“仅 A 配 $31^\circ$”的权重为 $0.9\times0.1\times12.579\approx1.132$；“仅 B 配 $48^\circ$”为 $0.1\times0.9\times10.648\approx0.958$。</p>
+<p>枚举两条轨迹各自漏检或配给三条观测、再排除两轨占用同一观测的情况，共有 $4^2-3=13$ 个合法事件。全部权重之和约为 $110.600$；上述三个事件的归一化概率依次约为 $0.9810$、$0.0102$、$0.0087$，其余十个事件合计约为 $0.0001$。</p>
+<p>把包含同一轨迹关联的事件概率相加，A 配 $31^\circ$ 的边缘概率约为 $0.9912$，B 配 $48^\circ$ 的边缘概率约为 $0.9897$。$15^\circ$ 观测在本模型中几乎都由杂波解释；若改变 $p_D$ 或 $\kappa$，这些概率也会改变。</p>
 <p>JPDA 在每帧枚举满足一对一约束、漏检和杂波模型的联合事件，再把事件概率边缘化到每条轨迹；交叉处的两条轨迹可能因共享两个观测而向同一均值靠拢。<a href="https://doi.org/10.1109/JOE.1983.1145560">JPDA 原始论文</a>。</p>
 <p>MHT 把第三帧的两种全局历史都暂时保留，等后续观测拉开后再按累计似然和剪枝规则决策，因此更能延迟身份决定，但假设树会增长。<a href="https://doi.org/10.1109/TAC.1979.1102177">MHT 原始论文</a>。这个例子只比较关联机制；实际概率还必须包含检测概率、杂波强度和门控归一化。</p>
 <p>LMB/δ-GLMB 为目标维护标签，可输出带身份的轨迹。检测前追踪直接递推定位谱，保留未越过检测阈值的弱证据。</p>
@@ -595,7 +601,7 @@ D_t(x)&=[1-p_D(x)]D_{t|t-1}(x)\\
 <p>去掉标签后，观测位置集合与真值集合都是 $\{39^\circ,41^\circ\}$，按后文式(9-11)取任何正的 $p,c$，该集合的 OSPA 仍为 0。这里算的是<strong>未滤波的观测集合</strong>；滤波后的两条角度还有非零位置误差，不能把两者混称为零误差。</p>
 <p>下表逐帧比较最小代价关联结果与“用真值标签做关联”的诊断对照。真值标签只用于评价和对照更新，不进入最小代价关联的代价。角度误差是滤波后轨迹 A、B 各自相对其真值的最短圆周角绝对误差；方差是最小代价关联轨迹 A 的角度方差，数值保留两位小数。运行命令为 <code>.venv/bin/python -m codes.examples.tracking_crossing_dropout_demo</code>，独立手算检验见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_tracking_crossing_dropout.py"><code>test_codes_tracking_crossing_dropout.py</code></a>。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">t（s）</th>
 <th scope="col">观测与真标签</th>
@@ -660,7 +666,7 @@ D_t(x)&=[1-p_D(x)]D_{t|t-1}(x)\\
 <p>追踪器兼有因果滤波和预测作用：它减小 DOA 抖动，并在目标短时静默时外推方向。图 23 中，定位与追踪只向解析波束形成器提供方向，不直接控制 GSS 掩码；VAD、远端活动和双讲检测通过控制面约束状态更新。</p>
 <p>波束方向的变化上限应按帧率、目标最大转速和允许跟随延迟确定。静默超时或唤醒词触发时还需保持或重置状态，避免定位与波束权重相互影响而振荡。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">追踪输出字段</th>
 <th scope="col">含义与单位</th>

@@ -38,7 +38,7 @@ English version: [README_EN.md](./README_EN.md)
 | `codes/reports/` | 工业接口与空间算法的小规模运行报告；与源码获取状态、论文全量评测分开 |
 | `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
 | `site/` | 20 个网页：14 个教程页（含首页）及 `research/` 下 6 个研究手册页；构建产物，可再生 |
-| `dist/` | 合订 PDF（`microphone-array-tutorial.pdf`）与合订 HTML；PDF 含 14 个顶级、119 个二级、121 个三级书签，共 254 个 |
+| `dist/` | 合订 PDF（`microphone-array-tutorial.pdf`）与合订 HTML；PDF 含 14 个顶级、119 个二级、129 个三级书签，共 262 个 |
 
 ## 章节导览
 

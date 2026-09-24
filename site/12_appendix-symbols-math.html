@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 A · 符号术语数学 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="45eb4bf2e043"><style>
+<meta name="source-digest" content="5756010aab11"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -25,7 +25,7 @@ th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
-mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
+mjx-container[jax="CHTML"]{font-size:110%!important;overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
 mjx-assistive-mml{width:1px!important;height:1px!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
@@ -123,7 +123,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>字母复用</strong>（与 §2.3 一致）：受文献惯例所限，$k$ 可表示频点索引、波数或 WPE 的滞后帧号；$D$ 可表示阵列孔径或 PHD 强度函数；$\lambda$ 可表示波长、WPE 功率谱或矩阵特征值；$K$ 可表示声源数或 WPE 预测阶数；$s$ 可表示源信号或追踪状态。具体含义以所在公式的定义为准。</p>
 <p>需要区分 STFT 网格时，本书用 $k$ 表示频点索引、$f_k=kf_s/N$ 表示对应的 Hz 频率、$\ell$ 表示帧索引；连续时间仍用 $t$，离散采样索引用 $n$。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">符号</th>
 <th scope="col">含义</th>
@@ -156,7 +156,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>$\psi$</td>
-<td>相邻两麦的相位差，$\psi=\frac{2\pi d}{\lambda}(\sin\theta-\sin\theta_0)$（§2.6、§5.2）</td>
+<td>相邻两麦在指向补偿后的残余相位差（§2.6、§5.2）</td>
 </tr>
 <tr>
 <td>$\vec{a}(\theta)$, $\vec{w}$</td>
@@ -168,7 +168,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>$\mathbf{\Gamma}$</td>
-<td>弥散噪声相干矩阵，$[\mathbf{\Gamma}]_{ij}=\mathrm{sinc}(2fd_{ij}/c)$（§5.1；球面各向同性口径。声音只从水平面来时对应形状是零阶贝塞尔 $J_0$，见§5.1 第三段）</td>
+<td>球面各向同性弥散噪声场的相干矩阵；水平面入射模型另见 §5.1</td>
 </tr>
 <tr>
 <td>$\mathbf{E}_n$（$\mathbf{E}_s$）</td>
@@ -248,13 +248,19 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 </tbody>
 </table></div>
+<p>表中 $\psi$ 的“残余”是相对于目标指向 $\theta_0$ 而言：来自 $\theta$ 的波先按 $\theta_0$ 补偿，之后相邻两麦还相差</p>
+<p>$$\psi=\frac{2\pi d}{\lambda}(\sin\theta-\sin\theta_0)\text{。}$$</p>
+<p>这里 $d/\lambda$ 和正弦差都无量纲，所以 $\psi$ 的单位是弧度。$\theta=\theta_0$ 时残余相位为零，各通道在目标方向对齐；偏离目标方向时，残余相位决定主瓣、零点和旁瓣的位置（§5.2）。</p>
+<p>球面各向同性弥散噪声模型下，第 $i,j$ 个麦克风的相干系数写成</p>
+<p>$$[\mathbf{\Gamma}]_{ij}=\operatorname{sinc}\!\left(\frac{2fd_{ij}}{c}\right),\qquad \operatorname{sinc}(x)=\frac{\sin(\pi x)}{\pi x}\text{。}$$</p>
+<p>$d_{ij}$ 是两麦间距，$f$ 是 Hz 频率，$c$ 是声速；当 $i=j$ 或 $f=0$ 时取极限值 1。这一形状依赖声源从三维球面各方向入射的假设。若声源只从水平面各方向入射，相应形状为零阶贝塞尔函数 $J_0(2\pi f d_{ij}/c)$；两种声场不能混为同一个矩阵模型（§5.1）。</p>
 <p>3 分钟手算（12.1）：在无失真归一化、各通道自噪声独立且等功率时，$M=6$ 的 DSB WNG 是多少 dB？$2\times2$ 对角协方差 $\mathrm{diag}(4, 1)$ 的特征值是哪两个数？</p>
 <p>答案：$10\log_{10}6\approx7.8$ dB；对角阵的特征值就是对角元 4 和 1。这里的特征向量是两条传感器空间坐标轴，不一定对应真实空间中的两个入射方向。</p>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-12-2">12.2 术语词典</h2>
 <p>下表按主题解释正文和相关文献中常见的术语。</p>
 <span id="sec-4" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-e2e1cb6329">信号与数学基础</h3>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">术语</th>
 <th scope="col">解释</th>
@@ -345,7 +351,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </table></div>
 <span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-6c0ad368cf">房间声学</h3>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">术语</th>
 <th scope="col">解释</th>
@@ -380,7 +386,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </table></div>
 <span id="sec-6" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-e6ba229b05">自适应滤波、增强与分离</h3>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">术语</th>
 <th scope="col">解释</th>
@@ -403,7 +409,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </table></div>
 <span id="sec-7" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-41074552da">波束形成与阵列度量</h3>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">术语</th>
 <th scope="col">解释</th>
@@ -486,7 +492,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </table></div>
 <span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-9dd3091211">定位与追踪</h3>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">术语</th>
 <th scope="col">解释</th>
@@ -573,7 +579,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </table></div>
 <span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-91410707a4">系统与硬件</h3>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">术语</th>
 <th scope="col">解释</th>
@@ -699,7 +705,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>能量比用 $10\log_{10}(\cdot)$，幅度比用 $20\log_{10}(\cdot)$。系数相差一倍，是因为相同阻抗下功率与幅度平方成正比。</p>
 <p>因此，同一物理变化用两种比值表示时，dB 数相同：幅度变为 0.5 时功率变为 0.25，$20\log_{10}0.5=10\log_{10}0.25\approx-6$ dB。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">dB</th>
 <th scope="col">幅度比</th>

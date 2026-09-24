@@ -736,7 +736,8 @@ def fig_adaptive_state_examples():
 
 def fig_pbfdaf_flow():
     """图39：一块 PBFDAF 的先验预测与更新；两种半块操作分开画。"""
-    fig = plt.figure(figsize=(9.8, 10.2), layout="constrained")
+    # 保持流程图纵横比，使 A4 等宽嵌入后的框字和注记更大。
+    fig = plt.figure(figsize=(8.2, 8.54), layout="constrained")
     fig.suptitle("图39 PBFDAF：参考历史、有效输出与受控权重更新", fontsize=FS_SUP)
     grid = fig.add_gridspec(2, 1, height_ratios=(1.02, 1.0))
     prediction_ax = fig.add_subplot(grid[0])
@@ -760,9 +761,9 @@ def fig_pbfdaf_flow():
 
     setup(prediction_ax, "(a) 旧权重先预测；仅循环卷积的后 N 点是本块有效输出")
     box(prediction_ax, 0.2, 4.8, 1.7, 0.95,
-        "播放参考 $x[n]$\n已对齐本块 $b_m$", "#f6e5db")
+        "播放参考\n$x[n],\\,b_m$", "#f6e5db")
     box(prediction_ax, 2.25, 4.8, 2.4, 0.95,
-        "线性等效路径 $h$\n扬声器—房间—麦克风", "#dbe9f6")
+        "线性等效路径\n$h$", "#dbe9f6")
     box(prediction_ax, 5.0, 4.8, 1.55, 0.95, "真实回声\n$r_m$", "#f6dbdb")
     box(prediction_ax, 6.9, 4.8, 2.05, 0.95,
         "麦克风叠加\n$r_m+s_m+v_m$", "#f6dbdb")
@@ -777,17 +778,17 @@ def fig_pbfdaf_flow():
     arrow(prediction_ax, (7.925, 5.94), (7.925, 5.75), color=C_RED)
 
     box(prediction_ax, 0.2, 2.35, 2.05, 0.96,
-        "上一块＋本块\n$u_m=[b_{m-1},b_m]$", "#f6e5db")
+        "两块参考\n$u_m$", "#f6e5db")
     box(prediction_ax, 2.47, 2.35, 1.1, 0.96,
         "$2N$ 点\nFFT", "#dbe9f6")
     box(prediction_ax, 3.75, 2.35, 2.25, 0.96,
-        "参考谱移位历史\n" r"$X_m,\ldots,X_{m-P+1}$", "#dbe9f6")
+        "参考谱历史\n" r"$X_m,\ldots$", "#dbe9f6")
     box(prediction_ax, 6.35, 2.35, 2.68, 0.96,
-        "各分区乘积求和\n" r"$Q_m=\sum_p W_pX_{m-p}$", "#e8f6db")
+        "分区乘积求和\n" r"$Q_m$", "#e8f6db")
     box(prediction_ax, 9.35, 2.35, 1.1, 0.96,
         "$2N$ 点\nIFFT", "#dbe9f6")
     box(prediction_ax, 10.78, 2.35, 2.1, 0.96,
-        "舍弃前 $N$ 点\n取后 $N$ 点 " r"$\hat y_m$", "#e8f6db")
+        "舍前 $N$ 点\n取后 $N$ 点", "#e8f6db")
     for start, end in [((2.25, 2.83), (2.47, 2.83)),
                        ((3.57, 2.83), (3.75, 2.83)),
                        ((6.0, 2.83), (6.35, 2.83)),
@@ -797,7 +798,7 @@ def fig_pbfdaf_flow():
     # 同一个播放参考分出声学回路和算法参考；移位历史不受冻结控制。
     arrow(prediction_ax, (1.05, 4.8), (1.05, 3.31))
     box(prediction_ax, 6.6, 3.72, 2.18, 0.67,
-        "本块开始的旧权重 $W_p(m)$", "#f3f0fa")
+        "旧权重 $W_p(m)$", "#f3f0fa")
     arrow(prediction_ax, (7.69, 3.72), (7.69, 3.31), color=C_PURPLE)
     prediction_ax.add_patch(Circle((11.2, 0.98), 0.30,
                                    fc="white", ec=C_MAIN, lw=1.35))
@@ -811,8 +812,8 @@ def fig_pbfdaf_flow():
     arrow(prediction_ax, (11.2, 1.68), (11.2, 1.29), color=C_RED)
     arrow(prediction_ax, (11.5, 0.98), (11.95, 0.98), color=C_GREEN)
     prediction_ax.text(0.2, 0.28,
-                       "频谱符号省略频点 $k$；前 $N$ 点只因循环折回而弃用。\n"
-                       "等效路径 $h$ 含器件的小信号响应，不等于纯房间脉冲响应。",
+                       "$u_m=[b_{m-1},b_m]$；$Q_m=\\sum_pW_pX_{m-p}$；后 $N$ 点为 $\\hat y_m$。\n"
+                       "频点 $k$ 省略；前 $N$ 点因循环折回而弃用。$h$ 含器件的小信号响应。",
                        fontsize=FS_SMALL, color="0.28", va="bottom")
 
     setup(update_ax, "(b) 有效误差驱动下一块的候选权重；冻结只阻止更新")
@@ -826,15 +827,15 @@ def fig_pbfdaf_flow():
     arrow(update_ax, (4.12, 5.16), (4.48, 5.16), color=C_GREEN)
 
     box(update_ax, 0.2, 2.7, 1.92, 0.99,
-        "已移位参考历史\n" r"$X_m,\ldots,X_{m-P+1}$", "#dbe9f6")
+        "参考谱历史\n" r"$X_m,\ldots$", "#dbe9f6")
     box(update_ax, 2.5, 2.7, 2.43, 0.99,
-        "共轭与逐频功率\n" r"$D=\sum_q|X_{m-q}|^2+\delta$", "#dbe9f6")
+        "归一化分母\n$D$", "#dbe9f6")
     box(update_ax, 5.28, 2.7, 1.57, 0.99,
-        "候选更新量\n" r"$\mu X_{m-p}^*E_m/D$", "#e8f6db")
+        "候选更新量\n$\\Delta W_p$", "#e8f6db")
     box(update_ax, 7.2, 2.7, 1.78, 0.99,
         "加旧权重\n" r"$\widetilde W_p$", "#e8f6db")
     box(update_ax, 9.36, 2.7, 2.30, 0.99,
-        "若约束：IFFT→清零\n后 $N$ 点→FFT", "#f3f0fa")
+        "若约束：时域投影\n清零后 $N$ 点", "#f3f0fa")
     box(update_ax, 12.0, 2.7, 1.65, 0.99,
         "下一块权重\n$W_p(m+1)$", "#e8f6db")
     for start, end in [((2.12, 3.195), (2.5, 3.195)),
@@ -859,7 +860,8 @@ def fig_pbfdaf_flow():
     update_ax.text(10.55, 1.48, "不约束：直接提交候选",
                    ha="center", fontsize=FS_SMALL, color="0.28")
     update_ax.text(0.2, 0.55,
-                   "冻结：$W_p(m+1)=W_p(m)$，参考历史仍移位；末分区不足 $N$ 个真实抽头时，补位也清零。",
+                   "$D=\\sum_q|X_{m-q}|^2+\\delta$，$\\Delta W_p=\\mu X_{m-p}^*E_m/D$。\n"
+                   "冻结时保留旧权重，参考历史仍移位；末分区的补位也清零。",
                    fontsize=FS_SMALL, color="0.28")
     save(fig, "fig39_aec_pbfdaf_flow.png")
 

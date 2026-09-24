@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>导读与导航 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="45eb4bf2e043"><style>
+<meta name="source-digest" content="5756010aab11"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -25,7 +25,7 @@ th{background:#f0f4f9}code{background:#f0f3f7;padding:1px 5px;border-radius:4px;
 pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:auto}
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
-mjx-container[jax="CHTML"]{overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
+mjx-container[jax="CHTML"]{font-size:110%!important;overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
 mjx-assistive-mml{width:1px!important;height:1px!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
@@ -136,7 +136,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <hr />
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-06e6cf7b78">2. 14 个文件一览</h2>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">编号</th>
 <th scope="col">文件</th>
@@ -320,7 +320,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>多人追踪还会用到 IMM（交互多模型）、PHD（概率假设密度）、LMB 和 TBD（检测前追踪）。§9.4 讨论定位与波束之间的反馈；更新限幅、静默保持和重置条件都应由目标运动与帧率确定。</p>
 <p>完成本章后，读者应能说明追踪器在定位与波束之间传递什么状态，比较单目标与多目标方法，并设置方向更新、静默保持和重捕获条件。</p>
 <span id="sec-14" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-12c1de60a0"><a href="10_engineering-practice.html">10 · 工程实现、评测与产业实践</a></h3>
-<p>新图 1 张（图25），另引用图23，进阶。图 23 是参考依赖图，不表示每个项目都要启用全部模块。第 10 章按启用条件说明 AEC、WPE、定位、波束、NS 和后端的取点关系，并把延迟分为前瞻、缓冲、计算、调度和解码关键路径。</p>
+<p>本章的图 25 展示端到端延迟关键路径，另引用图 23 的参考依赖关系。图 23 不表示每个项目都要启用全部模块。第 10 章按启用条件说明 AEC、WPE、定位、波束、NS 和后端的取点关系，并把延迟分为前瞻、缓冲、计算、调度和解码关键路径。</p>
 <p>硬件部分区分数字样本格式、模拟动态范围、初始时差和 SRO（采样率偏移）。资源预算分别使用 MAC/s、MIPS、RTF、峰值内存和功耗，续航用 Wh 与整机平均功率计算。</p>
 <p>评测部分说明 SI-SDR、STOI、PESQ/POLQA、WER/CER、OSPA 与主观听测各自回答什么问题。</p>
 <p>本章结束时，读者应能编制延迟、同步和标定预算，选择与任务相符的评测指标，并列出部署时还需验证的资源与故障状态。</p>
@@ -373,7 +373,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <hr />
 <span id="sec-23" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-191b6e8069">6. 插图地图：39 张图在哪篇</h2>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
+<thead>
 <tr>
 <th scope="col">图</th>
 <th scope="col">文件</th>

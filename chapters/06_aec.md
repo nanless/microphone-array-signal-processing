@@ -349,12 +349,18 @@ SpeexDSP、WebRTC AEC3 虽有分区结构，也有不同的功率估计及更新
 
 **算例 6-4：逐频归一化为什么不等于时域 NLMS。** 取更小的单分区问题：$N=2$、$P=1$、初值全零、$\mu=\delta=1$，当前重叠保存输入 $u=[0,0,1,2]$，有效麦克风块 $d=[1,0]$。旧权重为零，所以有效先验误差也是 $e=[1,0]$。按 NumPy 所用的正变换负指数、逆变换除以 4 的约定，四点谱和候选更新逐项为：
 
-| $k$ | $X(k)$ | $E(k)$ | $|X(k)|^2+1$ | $X^*(k)E(k)/(\lvert X(k)\rvert^2+1)$ |
+| $k$ | $X(k)$ | $E(k)$ | $|X(k)|^2+1$ | 候选更新量 |
 |---:|---:|---:|---:|---:|
 | 0 | $3$ | $1$ | $10$ | $3/10$ |
 | 1 | $-1+2\mathrm j$ | $-1$ | $6$ | $(1+2\mathrm j)/6$ |
 | 2 | $-1$ | $1$ | $2$ | $-1/2$ |
 | 3 | $-1-2\mathrm j$ | $-1$ | $6$ | $(1-2\mathrm j)/6$ |
+
+最后一列逐频计算的是
+
+$$\Delta W(k)=\frac{X^*(k)E(k)}{|X(k)|^2+1}\text{。}$$
+
+这里的分母按本例 $\delta=1$ 计算；分子中的星号表示对参考谱取复共轭。例如 $k=1$ 时，$X^*(1)=-1-2\mathrm j$，乘 $E(1)=-1$ 得 $1+2\mathrm j$，再除以 6，得到表中的 $(1+2\mathrm j)/6$。
 
 对最后一列作四点 IFFT，候选时域系数为 $[1/30,1/30,-2/15,11/30]$；将后两点清零后，合法的两抽头成为 $[1/30,1/30]$。若先不逐频除以不同的分母，$\operatorname{IFFT}(X^*E)=[1,0,0,2]$，合法梯度是 $[1,0]$；无论再除以哪一个**共同标量**，第二个合法抽头仍为零。
 
@@ -448,9 +454,13 @@ W_{i,j,k}[m+1]&=W_{i,j,k}[m]
 
 两点 Haar 没有工业原型滤波器组的频率选择性；真实设计还需检查抽取混叠、过采样、滤波器组延迟、路径变化、双讲冻结和异步采样。
 
-本书的[两带教学实现](../codes/array_tutorial/aec_subband.py)因此保留三种**不同用途**：已知路径的精确交叉矩阵用于验证代数；未知路径的对角 NLMS 用作受限反例；未知路径的全交叉 NLMS 用于辨识这个两带模型。不能把第一项的真值输出与第二、三项的训练后残差直接当成公平性能对比。完美重建只检查**不处理时**能否还原信号，不检查回声路径是否可由逐带 FIR 表示。
+本书的[两带教学实现](../codes/array_tutorial/aec_subband.py)保留三种**不同用途**：已知路径的精确交叉矩阵用于验证代数；未知路径的对角 NLMS 用作受限反例；未知路径的全交叉 NLMS 用于辨识这个两带模型。
 
-另一条路线——归一化子带自适应滤波（Normalized Subband Adaptive Filter，NSAF）——用子带误差更新**全带**抽头，并不等于式(6-4)的“每个输出带一行块 FIR”。[Lee 与 Gan，*IEEE Signal Processing Letters* 2004](https://doi.org/10.1109/LSP.2004.833445 "citation")及[同作者原始会议全文 §1～3](https://www.eurasip.org/Proceedings/Eusipco/Eusipco2004/defevent/papers/cr1587.pdf "citation")可核对此结构差异。固定版 pyroomacoustics 的 [`adaptive/subband_lms.py`](https://pyroomacoustics.readthedocs.io/en/stable/pyroomacoustics.adaptive.subband_lms.html)可作为另一种接口线索，但其示例目标信号由子带模型合成，不能用它验证任意时域房间路径的对角近似。
+第一项使用已知真值，第二、三项必须从数据更新权重，所以不能把第一项的真值输出与后两项的训练后残差直接当成公平性能对比。完美重建只检查**不处理时**能否还原信号，不检查回声路径是否可由逐带 FIR 表示。
+
+归一化子带自适应滤波（Normalized Subband Adaptive Filter，NSAF）走另一条路线：它用子带误差更新**全带**抽头，并不等于式(6-4)的“每个输出带一行块 FIR”。[Lee 与 Gan，*IEEE Signal Processing Letters* 2004](https://doi.org/10.1109/LSP.2004.833445 "citation")及[同作者原始会议全文 §1～3](https://www.eurasip.org/Proceedings/Eusipco/Eusipco2004/defevent/papers/cr1587.pdf "citation")可核对这一结构差异。
+
+固定版 pyroomacoustics 的 [`adaptive/subband_lms.py`](https://pyroomacoustics.readthedocs.io/en/stable/pyroomacoustics.adaptive.subband_lms.html)可作为接口线索，但其示例目标信号由子带模型合成，不能用它验证任意时域房间路径的对角近似。
 
 ![图37 两带子带模型中的交叉项](../figures/fig37_aec_subband.png)
 

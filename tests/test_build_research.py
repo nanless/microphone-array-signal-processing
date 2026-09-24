@@ -152,7 +152,7 @@ class ResearchBuildTest(unittest.TestCase):
         self.assertIn("background:#fff;overflow-wrap:anywhere}", build_site.CSS)
         self.assertIn('pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}', build_site.CSS)
         self.assertIn(".table-scroll{max-width:100%;overflow-x:auto}", build_site.CSS)
-        self.assertIn('mjx-container[jax="CHTML"]{overflow-x:auto;', build_site.CSS)
+        self.assertIn('mjx-container[jax="CHTML"]{font-size:110%!important;overflow-x:auto;', build_site.CSS)
         self.assertIn("border-radius:8px;overflow-x:auto}", build_site.CSS)
 
     def test_heading_whitespace_has_one_canonical_anchor(self):
@@ -160,6 +160,14 @@ class ResearchBuildTest(unittest.TestCase):
         self.assertEqual(build_site.clean_label(" A01\u3000NLMS   与输入 "), plain)
         self.assertEqual(build_site.heading_anchor("A01\u3000NLMS   与输入", 1),
                          build_site.heading_anchor(plain, 1))
+
+    def test_table_header_scope_keeps_thead_semantics(self):
+        html = self.render("| 名称 | 数值 |\n|---|---|\n| 示例 | 1 |",
+                           ROOT / "chapters" / "03_array-geometry.md")
+        self.assertIn("<thead>", html)
+        self.assertIn("</thead>", html)
+        self.assertEqual(html.count('<th scope="col">'), 2)
+        self.assertNotIn('scope="col"ead', html)
 
     def render(self, markdown, source):
         return build_site.render(markdown, source)[0]
