@@ -314,6 +314,13 @@ class ResearchBuildTest(unittest.TestCase):
                             self.assertEqual(target.read_bytes(), (ROOT / "codes/real_audio" / target.name).read_bytes())
                             self.assertFalse(uri.fragment)
                             continue
+                        if target.parent in {(output / "gss_audio").resolve(),
+                                             (output / "moving_audio").resolve()}:
+                            source = ROOT / "codes" / target.parent.name / target.name
+                            self.assertTrue(target.is_file())
+                            self.assertEqual(target.read_bytes(), source.read_bytes())
+                            self.assertFalse(uri.fragment)
+                            continue
                         if target.suffix == ".wav":
                             self.assertEqual(target.parent, (output / "audio").resolve())
                             self.assertTrue(target.is_file())

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 9 章 · 声源追踪 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="3c17a2f82b74"><style>
+<meta name="source-digest" content="cb929281331d"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -65,9 +65,18 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="09_source-tracking.html#sec-u-6521bc6f00">9. 声源追踪</a></li>
 <li><a href="09_source-tracking.html#sec-9-1">9.1 问题与声学特殊性</a></li>
 <li><a href="09_source-tracking.html#sec-9-2">9.2 单目标追踪</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-2-1">9.2.1 卡尔曼预测、观测更新与角度边界</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-2-2">9.2.2 算例 9-1：卡尔曼滤波单步复算</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-2-3">9.2.3 运动模型切换与非线性观测</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-2-4">9.2.4 算例 9-2：粒子加权与重采样</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-2-5">9.2.5 单目标追踪仿真与缺测边界</a></li>
 <li><a href="09_source-tracking.html#sec-9-3">9.3 多目标追踪</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-3-1">9.3.1 数据关联与目标数</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-3-2">9.3.2 三帧关联手算与 PHD 强度</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-3-3">9.3.3 可执行基线与双目标交叉实验</a></li>
 <li><a href="09_source-tracking.html#sec-9-4">9.4 定位、追踪与波束形成的接口</a></li>
-<li><a href="09_source-tracking.html#sec-u-f7a201edb9">本章练习</a></li>
+<li><a href="09_source-tracking.html#sec-9-5">9.5 自由场移动声源的双麦音频与传播真值</a></li>
+<li><a href="09_source-tracking.html#sec-9-6">9.6 本章练习</a></li>
 </ul>
 <div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a></div>
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
@@ -79,9 +88,18 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="09_source-tracking.html#sec-u-6521bc6f00">9. 声源追踪</a></li>
 <li><a href="09_source-tracking.html#sec-9-1">9.1 问题与声学特殊性</a></li>
 <li><a href="09_source-tracking.html#sec-9-2">9.2 单目标追踪</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-2-1">9.2.1 卡尔曼预测、观测更新与角度边界</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-2-2">9.2.2 算例 9-1：卡尔曼滤波单步复算</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-2-3">9.2.3 运动模型切换与非线性观测</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-2-4">9.2.4 算例 9-2：粒子加权与重采样</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-2-5">9.2.5 单目标追踪仿真与缺测边界</a></li>
 <li><a href="09_source-tracking.html#sec-9-3">9.3 多目标追踪</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-3-1">9.3.1 数据关联与目标数</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-3-2">9.3.2 三帧关联手算与 PHD 强度</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-3-3">9.3.3 可执行基线与双目标交叉实验</a></li>
 <li><a href="09_source-tracking.html#sec-9-4">9.4 定位、追踪与波束形成的接口</a></li>
-<li><a href="09_source-tracking.html#sec-u-f7a201edb9">本章练习</a></li>
+<li><a href="09_source-tracking.html#sec-9-5">9.5 自由场移动声源的双麦音频与传播真值</a></li>
+<li><a href="09_source-tracking.html#sec-9-6">9.6 本章练习</a></li>
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是教程正文第 9 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
@@ -106,6 +124,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>EKF 用该观测函数的雅可比做一阶线性化。标准对称或缩放无迹变换的 UKF 通常传播 $2L+1$ 个 sigma 点；对位置—速度状态 $[x,y,\dot x,\dot y]^\top$，状态维数 $L=4$，因此是 9 个点。单纯方位—角速度状态只有 $L=2$，对应 5 个点。也有单纯形、球面径向等减少点数的变体，不能把 $2L+1$ 写成所有 UKF 的定义。</p>
 <p>近距离或声源越过阵列附近时非线性更强，应比较 UKF、粒子滤波或其他非线性方法，而不是直接套用线性卡尔曼滤波（Kalman Filter，KF）。</p>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-9-2">9.2 单目标追踪</h2>
+<h3 id="sec-9-2-1">9.2.1 卡尔曼预测、观测更新与角度边界</h3>
 <p>状态与观测模型写为</p>
 <p>$$\vec{s}_t=\mathbf F\vec{s}_{t-1}+\vec v_t,\qquad \vec z_t=\mathbf H\vec s_t+\vec w_t\text{。}\tag{9-1}$$</p>
 <p>其中 $\mathbf F$ 描述匀速或匀加速运动，$\vec v_t$ 是未建模运动造成的过程噪声。若状态维数为 $d$、观测维数为 $p$，则过程噪声协方差 $\mathbf Q=E[\vec v_t\vec v_t^\top]\in\mathbb R^{d\times d}$，观测噪声协方差 $\mathbf R=E[\vec w_t\vec w_t^\top]\in\mathbb R^{p\times p}$。</p>
@@ -146,7 +165,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>式(9-6)便于手算；浮点实现可使用数值上更稳健的 Joseph 形式</p>
 <p>$$\mathbf P_t=(\mathbf I-\mathbf K_t\mathbf H)\mathbf P_t^-(\mathbf I-\mathbf K_t\mathbf H)^\top+\mathbf K_t\mathbf R\mathbf K_t^\top\text{。}\tag{9-8}$$</p>
 <p>式(9-6)与式(9-8)在精确算术和标准卡尔曼增益下等价。Joseph 形式把两个半正定项相加，更不容易因舍入误差得到不对称或负方差；实现中仍应检查 $\mathbf P_t$ 的对称性和最小特征值。</p>
-<p><strong>算例 9-1：卡尔曼滤波单步数值例（跟住一个正在转头的说话人）</strong></p>
+<h3 id="sec-9-2-2">9.2.2 算例 9-1：卡尔曼滤波单步复算</h3>
+<p>以下数字描述一个正在转头的说话人。</p>
 <p>下面用一组数值复算式(9-2)至式(9-6)。状态向量取 §9.1 三维状态的二维简化版 $\vec{s}=[\theta,\dot\theta]^{\top}$，单位分别为度和度/帧。该模型省略加速度，适合运动较平缓的示例；频繁机动时可改用含加速度的模型或后文的 IMM。已知：</p>
 <ul>
 <li>上一帧估计：$\hat{\vec{s}}_{t-1}=[30,\ 0.5]^{\top}$（目标在 30°，每帧向右走 0.5°）；</li>
@@ -246,10 +266,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 </tbody>
 </table></div>
+<h3 id="sec-9-2-3">9.2.3 运动模型切换与非线性观测</h3>
 <p><strong>IMM 的模型切换</strong>：IMM 并行运行静止、匀速或加速等运动模型，再根据各模型的新息似然更新权重。它适合包含启动、停止和匀速段的轨迹。</p>
 <p>两模型例子可使用静止与匀速模型；转移矩阵的对角元素表示保持当前运动模式的概率。IMM 的转移概率和各模型过程噪声需要用目标运动数据标定。0.95 或 0.9 只能作为示例，实际数值不能脱离帧率和目标运动数据直接照搬。</p>
 <p><strong>EKF 与 UKF</strong>：EKF 对 $\theta=\operatorname{atan2}(x-x_0,y-y_0)$ 求雅可比，并在当前估计附近做一阶线性化；估计偏离真实状态较大时，线性化误差可能导致发散。标准对称或缩放 UKF 不显式求导，而是将 $2L+1$ 个 sigma 点通过原始非线性观测函数，再重构均值与协方差；减少 sigma 点的变体使用不同构造。计算量要按状态维数、sigma 点数、观测维数和矩阵实现估算，不能只按“UKF”名称排序。</p>
-<p><strong>算例 9-2：10 个粒子的一轮加权与重采样</strong></p>
+<h3 id="sec-9-2-4">9.2.4 算例 9-2：粒子加权与重采样</h3>
 <p>卡尔曼滤波用均值和协方差表示单峰高斯后验。<strong>粒子滤波</strong>（particle filter，PF）用 $N$ 个带权样本近似后验，可以表达偏斜或多峰分布。它并不会自动抵抗观测野点：若似然模型把野点当成高置信观测，粒子权重仍会被错误观测拉偏。鲁棒性来自观测门控、重尾似然或“目标加均匀杂波”的混合似然。下面用 10 个粒子演示加权与重采样。</p>
 <p>设本帧 10 个粒子的角度猜测（单位：度）为：</p>
 <p>$$x_1,\dots,x_{10}=[25,\ 27,\ 28,\ 30,\ 30,\ 31,\ 32,\ 33,\ 35,\ 40]$$</p>
@@ -464,6 +485,7 @@ N_{eff}&=\frac{1}{\sum_{i=1}^{10}\tilde w_i^2}\\
 <p>30° 和 32° 的粒子被重复抽取，25° 和 40° 的粒子未被抽中。重采样是随机过程，不按单个粒子的权重机械排序；31° 虽有最高单粒子权重，本次仍只保留一份。下一帧先按运动模型传播粒子，再根据新观测重新计算权重。</p>
 <p>粒子滤波依次执行状态传播、似然加权、归一化和按需重采样。它能表示多峰后验，但观测野点仍需门控或杂波似然处理。</p>
 <p>抗野点技巧包括观测门控、混合似然和辅助粒子滤波（Auxiliary Particle Filter，APF）。门控阈值不能只照搬固定的 $3\sigma$，应结合观测误差分布和漏检代价标定。</p>
+<h3 id="sec-9-2-5">9.2.5 单目标追踪仿真与缺测边界</h3>
 <p>图22(a) 为序贯重要性重采样粒子滤波（Sequential Importance Resampling Particle Filter，SIR-PF）递推估计 DOA 的本书仿真。配置如下：</p>
 <ul>
 <li><strong>真值与观测</strong>：真值是 $60^\circ+40^\circ\sin(2\pi t/120)$ 的正弦轨迹；逐帧观测加标准差 $7^\circ$ 的高斯噪声，并将约 20% 帧替换为 $0^\circ$～$120^\circ$ 均匀野点；</li>
@@ -478,6 +500,7 @@ N_{eff}&=\frac{1}{\sum_{i=1}^{10}\tilde w_i^2}\\
 <p>图22（b）在 −25° 和 +40° 附近设置两个强度峰，用于说明多目标强度函数。峰数只能近似用于提取人数，严格定义见 §9.3。</p>
 <p>单目标追踪由预测和观测更新组成。线性高斯条件下可使用卡尔曼滤波；非线性、多峰或重尾观测可考虑 UKF 或粒子滤波。粒子滤波仍需门控或杂波似然处理野点，IMM 用于多运动模型切换，VAD 用于控制无观测时的更新。</p>
 <span id="sec-4" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-9-3">9.3 多目标追踪</h2>
+<h3 id="sec-9-3-1">9.3.1 数据关联与目标数</h3>
 <p>多目标追踪需要同时解决观测与轨迹的<strong>数据关联</strong>，并估计当前的<strong>声源数量</strong>。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -527,6 +550,7 @@ N_{eff}&=\frac{1}{\sum_{i=1}^{10}\tilde w_i^2}\\
 </tr>
 </tbody>
 </table></div>
+<h3 id="sec-9-3-2">9.3.2 三帧关联手算与 PHD 强度</h3>
 <p><strong>三帧关联辅助例子</strong>。设两条匀速轨迹的预测角分别为 A：$20^\circ,30^\circ,40^\circ$，B：$60^\circ,50^\circ,40^\circ$；三帧观测依次为 $(22^\circ,58^\circ)$、$(15^\circ,31^\circ,48^\circ)$、$(39^\circ,41^\circ)$。假设独立高斯角度误差的标准差 $\sigma=3^\circ$。为先算清最小 JPDA 归一化，暂时假设第一、三帧没有漏检和杂波，且两个全局关联事件先验相同。</p>
 <p>第一帧“顺接”事件的似然正比于 $\exp[-(2^2+(-2)^2)/(2\times3^2)]=e^{-8/18}\approx0.641$；“交换”事件的残差为 $38^\circ,-38^\circ$，似然约为 $e^{-2888/18}$，归一化后的顺接概率在所示精度下为 1。</p>
 <p>第三帧两条预测都为 $40^\circ$，两个交换事件的残差平方和都为 $(-1)^2+1^2=2$，似然都为 $e^{-2/18}\approx0.895$。归一化后两个全局事件各为 0.5，因此每条轨迹关联到 $39^\circ$ 或 $41^\circ$ 的边缘概率也各为 0.5。</p>
@@ -555,6 +579,7 @@ D_t(x)&=[1-p_D(x)]D_{t|t-1}(x)\\
 <p>粒子或高斯混合只是表示和计算强度函数的不同方法。目标数由强度积分估计，位置再从峰或聚类中心提取。<a href="https://doi.org/10.1109/TAES.2003.1261119" title="citation">PHD 原始论文</a>；音频视觉粒子实现见 <a href="https://openresearch.surrey.ac.uk/esploro/outputs/journalArticle/Audio-Visual-Particle-Flow-SMC-PHD-Filtering-for/99513411302346" title="citation">Liu et al. 2019</a>。</p>
 <p>多目标追踪还要估计观测与轨迹的对应关系以及目标数。JPDA 和 MHT 显式处理关联；PHD 传播随机有限集的一阶强度；LMB 保留目标标签；检测前追踪保留未越过检测阈值的弱证据。</p>
 <p>最优子模式分配距离（Optimal Subpattern Assignment，OSPA）同时度量定位误差和目标数误差，但不评价身份连续性。</p>
+<h3 id="sec-9-3-3">9.3.3 可执行基线与双目标交叉实验</h3>
 <p><strong>可执行单目标基线与高级算法边界。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/tracking.py"><code>codes/array_tutorial/tracking.py</code></a> 提供常速度角度 Kalman 滤波器、$[-180^\circ,180^\circ)$ 环绕、系统重采样和圆周角 SIR 粒子滤波器。</p>
 <p><code>ConstantVelocityKalman</code> 的状态单位是 <code>[度, 度/秒]</code>；每帧先用实际秒数 <code>dt</code> 调用 <code>predict()</code>，有观测时再以角度方差调用 <code>update()</code>，缺测时不调用更新。协方差使用 Joseph 形式。它与算例9-1的“度/帧”不同，比较前应转换状态、转移矩阵及过程噪声单位。</p>
 <p><code>CircularParticleFilter</code> 用最短圆周角差的高斯目标项与均匀杂波项混合更新权重，按有效粒子数决定是否系统重采样；它只估计单个圆周角，不包含速度粒子、有限扇区反射或轨迹身份。该高斯项是小角度误差模型，不是一般宽分布的严格环绕正态密度。</p>
@@ -690,7 +715,17 @@ D_t(x)&=[1-p_D(x)]D_{t|t-1}(x)\\
 <p>若状态是完整圆周方位，应使用 $d(\theta_1,\theta_2)=\min(|\theta_1-\theta_2|,360^\circ-|\theta_1-\theta_2|)$；图22的 $0^\circ$～$120^\circ$ 有限扇区不是圆周，不能套用环绕距离。</p>
 <p>OSPA 不保留身份，所以身份切换要另报身份切换次数（Identity Switch，ID switch）等轨迹指标。</p>
 <p>这个定义来自 Schuhmacher、Vo 与 Vo 的 OSPA 原始论文（IEEE TSP 56(8), 2008, pp. 3447–3457，<a href="https://doi.org/10.1109/TSP.2008.920469" title="citation">DOI 10.1109/TSP.2008.920469</a>）。截断距离 $c$ 同时限制单个定位误差并设定漏检/虚警的惩罚尺度，因此比较系统时必须使用相同的 $p$、$c$、坐标和角度环绕约定。</p>
-<span id="sec-6" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-f7a201edb9">本章练习</h2>
+<h2 id="sec-9-5">9.5 自由场移动声源的双麦音频与传播真值</h2>
+<p>前文的<a href="audio/tracking_pan.wav">声像移动试听</a><audio class="audio-sample" controls preload="none" aria-label="声像移动试听" src="audio/tracking_pan.wav">请使用上方 WAV 链接下载。</audio>只改变左右声道增益，不包含阵列传播时差。为让读者听到并复算真实传播<strong>模型</strong>下的两麦差异，本书另生成一组<a href="moving_audio/MANIFEST.json">独立的自由场合成样本</a>：<a href="moving_audio/source.wav">原始两音调源</a><audio class="audio-sample" controls preload="none" aria-label="原始两音调源" src="moving_audio/source.wav">请使用上方 WAV 链接下载。</audio>、<a href="moving_audio/static_array.wav">固定在起点的双麦输出</a><audio class="audio-sample" controls preload="none" aria-label="固定在起点的双麦输出" src="moving_audio/static_array.wav">请使用上方 WAV 链接下载。</audio>、<a href="moving_audio/moving_array.wav">沿直线运动的双麦输出</a><audio class="audio-sample" controls preload="none" aria-label="沿直线运动的双麦输出" src="moving_audio/moving_array.wav">请使用上方 WAV 链接下载。</audio>。它们是数学合成信号，不是真实语音、房间录音或 LOCATA 数据，也不计入主清单的 60 个 WAV。</p>
+<p>几何与时间口径固定如下：采样率 16 kHz，持续 2 s；两麦坐标分别为 $(-0.05,0)$ m、$(0.05,0)$ m。声源从 $(-0.8,1.5)$ m 出发，以 $(0.8,0)$ m/s 匀速运动，声速取 343 m/s。设发射时刻为 $u$，麦克风 $m$ 的接收时刻为 $t$，则本书求解</p>
+<p>$$t=u+\frac{\|\vec p_0+\vec v u-\vec m_m\|}{c},\qquad
+x_m(t)=\frac{1\ \mathrm m}{\|\vec p_0+\vec v u-\vec m_m\|}\,s(u)\text{。}\tag{9-12}$$</p>
+<p>每个接收样本都在相应的迟滞发射时刻求源信号，并用距离倒数表示自由场声压衰减；$s(u)$ 是 220 Hz 和 320 Hz 两个正弦分量加 20 ms 平滑起始的确定性测试波形。这一模型自然包含因运动导致的传播时延变化。生成代码检验了方程残差，并对三份 WAV 采用同一个导出增益，没有逐文件峰值匹配。</p>
+<p>每 160 点保存一次轨迹真值。方位角从 $+y$ 轴向 $+x$ 轴为正，起点为约 $-28.07^\circ$，第 0.99 s 为约 $-0.31^\circ$，末段第 1.99 s 为约 $+27.83^\circ$。</p>
+<p>把同一发射时刻到麦 1、麦 0 的传播时间之差定义为有符号 TDOA，起点为约 $+0.0001372$ s（$+2.19$ 采样），末段为约 $-0.0001361$ s（$-2.18$ 采样）。左侧声源更靠近麦 0，因而麦 1 的到达更晚；穿过正前方后符号反转。</p>
+<p>清单中的时间格点按声源轨迹的全局时钟取样；同一行 TDOA 比较的是该时刻发出的波到两麦的传播时间，并非两麦在同一采样索引处的波形峰差。逐帧值、坐标、统一增益及各文件摘要保存在清单中。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_moving_source.py">静止解析极限和符号测试</a>独立核对<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/moving_source_audio.py">生成器</a>。</p>
+<p>这里没有墙面反射、空气吸收、声源和麦克风指向性，也没有多人交叉或活动缺测。听到的音高、声像和电平变化不能直接当作某个 DOA 追踪器的准确率；若要评价追踪，还需对输出运行固定定位器，按相同时间戳比较逐帧误差和漏检，并另报波束控制滞后。真实移动录音可另按 <a href="https://www.locata.lms.tf.fau.de/tasks/" title="citation">LOCATA 官方任务说明</a>选择任务 3（静止阵列、单移动说话人），明确使用的录音和真值版本。</p>
+<span id="sec-u-f7a201edb9" class="anchor-alias" aria-hidden="true"></span><span id="sec-6" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-9-6">9.6 本章练习</h2>
 <ol>
 <li>
 <p>KF 手算＋静默外推：沿用算例 9-1 的末态（估计 $[30.72,\ 0.513]^{\top}$，协方差左上角 3.705）。假设接下来两帧说话人静默、无观测，只做预测不做更新：手算两帧后的角度估计与角度方差，并说明波束应使用哪个方向。</p>

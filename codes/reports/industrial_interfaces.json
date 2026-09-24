@@ -25,11 +25,11 @@
   "artifacts": {
     "harness": {
       "path": "codes/examples/industrial_interfaces.c",
-      "sha256": "baba551caa63a4d81d4b56a2f8867c8a23ca3676f4417c7f3ee7ef75ef4dfd34"
+      "sha256": "0c71ef70e0ed2f7e59c6613e72b35dc13f3d963ca02a4b16da90c0e3a479bff8"
     },
     "runner": {
       "path": "codes/examples/run_industrial_interfaces.py",
-      "sha256": "e17563deebbdcf0567e13afc6dc87ff10a21c3f2ddd420dc1e4fca298830b2e0"
+      "sha256": "8987cc4809369444aa79450fef7a3c1aa2743910271f98debc717dc56783a7b2"
     }
   },
   "environment": {
@@ -38,9 +38,9 @@
     "release": "25.6.0",
     "machine": "arm64",
     "cmake": "cmake version 4.3.2",
-    "compiler": "Apple clang version 21.0.0 (clang-2100.1.1.101)"
+    "compiler": "Apple clang version 21.0.0 (clang-2100.3.34.2)"
   },
-  "work_directory": "tmp/industrial-interfaces-k_m8qaav",
+  "work_directory": "tmp/industrial-interfaces-uk5j68qc",
   "commands": [
     {
       "argv": [
@@ -48,7 +48,7 @@
         "--version"
       ],
       "returncode": 0,
-      "log": "tmp/industrial-interfaces-k_m8qaav/cmake-version.log",
+      "log": "tmp/industrial-interfaces-uk5j68qc/cmake-version.log",
       "log_sha256": "49da5b8c6869fe4b385bd4d095bf446bc9e6f32d0f6a86b437022e99e19f4ef7"
     },
     {
@@ -57,8 +57,8 @@
         "--version"
       ],
       "returncode": 0,
-      "log": "tmp/industrial-interfaces-k_m8qaav/compiler-version.log",
-      "log_sha256": "55f7662ee66d47566d9f08f35a12158ac9588e4852f788eed57fa3bf625c9a5d"
+      "log": "tmp/industrial-interfaces-uk5j68qc/compiler-version.log",
+      "log_sha256": "d23e1e266991777af51323c8a611147c28082ac12f936caa38bc345779f78483"
     },
     {
       "argv": [
@@ -66,7 +66,7 @@
         "-S",
         "${REPO_ROOT}/codes/upstream/_downloads/libsoxr",
         "-B",
-        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/libsoxr",
+        "${REPO_ROOT}/tmp/industrial-interfaces-uk5j68qc/libsoxr",
         "-G",
         "Unix Makefiles",
         "-DCMAKE_BUILD_TYPE=Release",
@@ -82,19 +82,19 @@
         "-DWITH_PFFFT=OFF"
       ],
       "returncode": 0,
-      "log": "tmp/industrial-interfaces-k_m8qaav/libsoxr-configure.log",
-      "log_sha256": "20a9fe65329951630fcfa96f0bd772feb4c92344e7746e9f81796bf9d9d54ba1"
+      "log": "tmp/industrial-interfaces-uk5j68qc/libsoxr-configure.log",
+      "log_sha256": "98936d0b39506fd16de2aa7d9f057a2a8e38785dc12684e2f82fd46a22c31d56"
     },
     {
       "argv": [
         "cmake",
         "--build",
-        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/libsoxr",
+        "${REPO_ROOT}/tmp/industrial-interfaces-uk5j68qc/libsoxr",
         "--parallel",
         "2"
       ],
       "returncode": 0,
-      "log": "tmp/industrial-interfaces-k_m8qaav/libsoxr-build.log",
+      "log": "tmp/industrial-interfaces-uk5j68qc/libsoxr-build.log",
       "log_sha256": "ba1633faa9ed6c27f8410a809ffd136903543a74ca4979cbef4ab0e8873910e8"
     },
     {
@@ -103,7 +103,7 @@
         "-S",
         "${REPO_ROOT}/codes/upstream/_downloads/libebur128",
         "-B",
-        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/libebur128",
+        "${REPO_ROOT}/tmp/industrial-interfaces-uk5j68qc/libebur128",
         "-G",
         "Unix Makefiles",
         "-DCMAKE_BUILD_TYPE=Release",
@@ -114,19 +114,19 @@
         "-DENABLE_FUZZER=OFF"
       ],
       "returncode": 0,
-      "log": "tmp/industrial-interfaces-k_m8qaav/libebur128-configure.log",
-      "log_sha256": "83e3e1fde5c69a39ac537d0d661ba982b84e715eab8df8f58e2c2b715582e22c"
+      "log": "tmp/industrial-interfaces-uk5j68qc/libebur128-configure.log",
+      "log_sha256": "517408240d62fd4acb1dcc8a6ca0aa4fe9c4ba686bd43e6ca89e221edb1a1a3d"
     },
     {
       "argv": [
         "cmake",
         "--build",
-        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/libebur128",
+        "${REPO_ROOT}/tmp/industrial-interfaces-uk5j68qc/libebur128",
         "--parallel",
         "2"
       ],
       "returncode": 0,
-      "log": "tmp/industrial-interfaces-k_m8qaav/libebur128-build.log",
+      "log": "tmp/industrial-interfaces-uk5j68qc/libebur128-build.log",
       "log_sha256": "9f5c70975e9b6ecf5a7eb81f3d110c1af64a2399f5e1ca7cdb2a70e26aa34b2e"
     },
     {
@@ -135,7 +135,7 @@
         "-S",
         "${REPO_ROOT}/codes/upstream/_downloads/libsndfile",
         "-B",
-        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/libsndfile",
+        "${REPO_ROOT}/tmp/industrial-interfaces-uk5j68qc/libsndfile",
         "-G",
         "Unix Makefiles",
         "-DCMAKE_BUILD_TYPE=Release",
@@ -150,20 +150,20 @@
         "-DENABLE_CPACK=OFF"
       ],
       "returncode": 0,
-      "log": "tmp/industrial-interfaces-k_m8qaav/libsndfile-configure.log",
-      "log_sha256": "aa0f5632b36f73cb822a8580dd8f97d5826ac0a5868e9df1962f126051d3d61c"
+      "log": "tmp/industrial-interfaces-uk5j68qc/libsndfile-configure.log",
+      "log_sha256": "be73b89df02228c93a4635c7362327209f5a7b601d1ff946a4e8e61e6d780b52"
     },
     {
       "argv": [
         "cmake",
         "--build",
-        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/libsndfile",
+        "${REPO_ROOT}/tmp/industrial-interfaces-uk5j68qc/libsndfile",
         "--parallel",
         "2"
       ],
       "returncode": 0,
-      "log": "tmp/industrial-interfaces-k_m8qaav/libsndfile-build.log",
-      "log_sha256": "ba719934930fbaa494614f66f293bfe7e79c146ec1e8fe9e6a0390e82b2264f8"
+      "log": "tmp/industrial-interfaces-uk5j68qc/libsndfile-build.log",
+      "log_sha256": "e212422e3a26fcbab43d37d7c7c9025c406fedbc58b47f34a5699f23f8f55eaf"
     },
     {
       "argv": [
@@ -179,25 +179,25 @@
         "${REPO_ROOT}/codes/upstream/_downloads/libebur128/ebur128",
         "-I",
         "${REPO_ROOT}/codes/upstream/_downloads/libsndfile/include",
-        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/libsoxr/src/libsoxr.a",
-        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/libebur128/libebur128.a",
-        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/libsndfile/libsndfile.a",
+        "${REPO_ROOT}/tmp/industrial-interfaces-uk5j68qc/libsoxr/src/libsoxr.a",
+        "${REPO_ROOT}/tmp/industrial-interfaces-uk5j68qc/libebur128/libebur128.a",
+        "${REPO_ROOT}/tmp/industrial-interfaces-uk5j68qc/libsndfile/libsndfile.a",
         "-lm",
         "-o",
-        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/industrial_interfaces"
+        "${REPO_ROOT}/tmp/industrial-interfaces-uk5j68qc/industrial_interfaces"
       ],
       "returncode": 0,
-      "log": "tmp/industrial-interfaces-k_m8qaav/harness-build.log",
+      "log": "tmp/industrial-interfaces-uk5j68qc/harness-build.log",
       "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
       "argv": [
-        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/industrial_interfaces",
-        "${REPO_ROOT}/tmp/industrial-interfaces-k_m8qaav/fixture_pcm16.wav"
+        "${REPO_ROOT}/tmp/industrial-interfaces-uk5j68qc/industrial_interfaces",
+        "${REPO_ROOT}/tmp/industrial-interfaces-uk5j68qc/fixture_pcm16.wav"
       ],
       "returncode": 0,
-      "log": "tmp/industrial-interfaces-k_m8qaav/harness-run.log",
-      "log_sha256": "c1a6e0a64dc7a1a541682de58458d5a2771e393f8d28a64cff00e0369af80e0c"
+      "log": "tmp/industrial-interfaces-uk5j68qc/harness-run.log",
+      "log_sha256": "30ed1e73def3dfc2a0ea167d755d1bc3f1631cbb89745e8451f6651b07c3ef6f"
     }
   ],
   "measurements": {
@@ -289,7 +289,146 @@
       "silence_lufs": null,
       "silence_reason": "negative_infinity_no_gated_energy",
       "silence_sample_peak": 0,
-      "silence_true_peak": 0
+      "silence_true_peak": 0,
+      "intersample_12khz": {
+        "amplitude": 0.95,
+        "frequency_hz": 12000,
+        "phase_rad": 0.7853981633974483,
+        "fade_samples_each_end": 4800,
+        "sample_peak": 0.6717514422061978,
+        "true_peak": 0.9463711977005005,
+        "chunk127_true_peak": 0.9463711977005005
+      }
+    },
+    "variable_ratio": {
+      "input_frames": 480060,
+      "channels": 2,
+      "output_rate_hz": 16000,
+      "first_device_rate_hz": 48004.8,
+      "second_device_rate_hz": 48007.2,
+      "change_at_output_frame": 80000,
+      "initial_input_output_ratio": 3.0003,
+      "final_input_output_ratio": 3.00045,
+      "slew_output_frames": 160,
+      "marker_input_frames": [
+        48005,
+        96010,
+        144014,
+        192019,
+        240024,
+        288031,
+        336038,
+        384046,
+        432053
+      ],
+      "constant_100ppm": {
+        "output_frames": 160004,
+        "before_flush_frames": 159356,
+        "flush_frames": 648,
+        "consumed_input_frames": 480060,
+        "input_calls": 1412,
+        "flush_calls": 7,
+        "partial_consumption_calls": 1411,
+        "delay_after_flush_output_samples": 100,
+        "marker_output_frames": [
+          16002,
+          32002,
+          48002,
+          64002,
+          80002,
+          96003,
+          112004,
+          128005,
+          144005
+        ]
+      },
+      "step_150ppm": {
+        "output_frames": 160000,
+        "before_flush_frames": 159439,
+        "flush_frames": 561,
+        "consumed_input_frames": 480060,
+        "input_calls": 1413,
+        "flush_calls": 6,
+        "partial_consumption_calls": 1412,
+        "delay_after_flush_output_samples": 100,
+        "marker_output_frames": [
+          16002,
+          32002,
+          48002,
+          64002,
+          80002,
+          96002,
+          112002,
+          128002,
+          144002
+        ]
+      },
+      "slew_150ppm": {
+        "output_frames": 160000,
+        "before_flush_frames": 159439,
+        "flush_frames": 561,
+        "consumed_input_frames": 480060,
+        "input_calls": 1413,
+        "flush_calls": 6,
+        "partial_consumption_calls": 1412,
+        "delay_after_flush_output_samples": 100,
+        "marker_output_frames": [
+          16002,
+          32002,
+          48002,
+          64002,
+          80002,
+          96002,
+          112002,
+          128002,
+          144002
+        ]
+      },
+      "slew_150ppm_chunk127": {
+        "output_frames": 160000,
+        "before_flush_frames": 159800,
+        "flush_frames": 200,
+        "consumed_input_frames": 480060,
+        "input_calls": 3781,
+        "flush_calls": 3,
+        "partial_consumption_calls": 1,
+        "delay_after_flush_output_samples": 100,
+        "marker_output_frames": [
+          16002,
+          32002,
+          48002,
+          64002,
+          80002,
+          96002,
+          112002,
+          128002,
+          144002
+        ]
+      },
+      "slew320_150ppm": {
+        "output_frames": 160000,
+        "before_flush_frames": 159439,
+        "flush_frames": 561,
+        "consumed_input_frames": 480060,
+        "input_calls": 1413,
+        "flush_calls": 6,
+        "partial_consumption_calls": 1412,
+        "delay_after_flush_output_samples": 100,
+        "marker_output_frames": [
+          16002,
+          32002,
+          48002,
+          64002,
+          80002,
+          96002,
+          112002,
+          128002,
+          144002
+        ]
+      },
+      "chunk127_max_abs_error": 0,
+      "step_vs_slew_equal_index_max_abs_difference": 0.0006246231496334076,
+      "step_vs_slew320_equal_index_max_abs_difference": 0.001245994120836258
     },
     "pcm16": {
       "sample_rate_hz": 16000,
@@ -331,12 +470,12 @@
     "status": "passed",
     "sha256": "e98a6eb3c274d78ded5f02fe54317b097f4cb8df245d5e87316a5d3c92c218b2"
   },
-  "binary_sha256": "1086f50e392938bea4fa7a5290cb22c73c47565ab526965e75b51a67c8c0fa80",
+  "binary_sha256": "6a4e10d2644e3f4517acb528f8077d1e3d5ded5d848cd940e0fd5e4341d58484",
   "static_library_sha256": {
-    "libsoxr": "0ec62d7d26bc2f020c62af453371e0b37a0ad75b5f21b30063460b023dfcce5e",
-    "libebur128": "bc758978c65ee9b1366462021e722b406e09253ef8354ee9f7c00cc5320d83dc",
-    "libsndfile": "351f273629f65f8219da37b10f0c224a1a02bfbac04a4af49d4c7be040ea1ca6"
+    "libsoxr": "6e408e966eb1ece099cb0158313e602428ac49237bab3bbe1bda2c716ff939ec",
+    "libebur128": "538c62c0285f7c6c0308740a2961a3d7d2c484681b82480f6f205dabb4e39c9e",
+    "libsndfile": "b7f2678e90d0574a9a93adbcbf6a9010bfcc72d3b1756c1d857bd99f490b5263"
   },
-  "callback_trace_rows": 1109,
-  "finished_at_utc": "2026-09-22T15:40:43.008467+00:00"
+  "callback_trace_rows": 10569,
+  "finished_at_utc": "2026-09-24T05:05:00.730369+00:00"
 }

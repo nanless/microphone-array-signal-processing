@@ -16,7 +16,8 @@ from unittest.mock import patch
 import wave
 
 from codes.examples.run_industrial_interfaces import (
-    DEFAULT_REPORT, ROOT, digest, record_final_source_status, validate_measurements, verify_wave,
+    DEFAULT_REPORT, ROOT, digest, record_final_source_status, validate_measurements,
+    validate_variable_ratio_trace, verify_wave,
 )
 
 
@@ -34,7 +35,33 @@ def valid_fixture():
                      "full_sample_peak": 0.1, "half_sample_peak": 0.05,
                      "full_true_peak": 0.1, "half_true_peak": 0.05,
                      "silence_lufs": None, "silence_reason": "negative_infinity_no_gated_energy",
-                     "silence_sample_peak": 0, "silence_true_peak": 0},
+                     "silence_sample_peak": 0, "silence_true_peak": 0,
+                     "intersample_12khz": {"frequency_hz": 12000, "fade_samples_each_end": 4800,
+                                            "phase_rad": math.pi/4,
+                                            "sample_peak": .95/math.sqrt(2),
+                                            "true_peak": .94637, "chunk127_true_peak": .94637}},
+        "variable_ratio": {
+            "input_frames": 480060, "change_at_output_frame": 80000,
+            "slew_output_frames": 160, "initial_input_output_ratio": 48004.8/16000,
+            "final_input_output_ratio": 48007.2/16000,
+            "marker_input_frames": [round(48004.8*s) if s <= 5 else
+                                    240024+round(48007.2*(s-5)) for s in range(1, 10)],
+            "constant_100ppm": {"consumed_input_frames": 480060, "output_frames": 160004,
+                                "before_flush_frames": 160000, "flush_frames": 4,
+                                "delay_after_flush_output_samples": 100,
+                                "marker_output_frames": [16002,32002,48002,64002,80002,
+                                                         96003,112004,128005,144005]},
+            **{name: {"consumed_input_frames": 480060, "output_frames": 160000,
+                      "before_flush_frames": 159900, "flush_frames": 100,
+                      "delay_after_flush_output_samples": 100,
+                      "marker_output_frames": [16002,32002,48002,64002,80002,
+                                               96002,112002,128002,144002]}
+               for name in ("step_150ppm", "slew_150ppm", "slew_150ppm_chunk127",
+                            "slew320_150ppm")},
+            "chunk127_max_abs_error": 0,
+            "step_vs_slew_equal_index_max_abs_difference": .0006,
+            "step_vs_slew320_equal_index_max_abs_difference": .0012,
+        },
         "pcm16": {"frame_read_counts": [3, 3, 1, 0], "item_read_counts": [6, 6, 2, 0],
                   "pcm_interleaved": [-32768, 0, 0, 32767, 16384, -16384, 1, -1,
                                       12345, -23456, 0, 1000, 32767, -32768],
@@ -70,6 +97,41 @@ class TestIndustrialAcceptance(unittest.TestCase):
         data["loudness"]["half_lufs"] = -20 + 10 * math.log10(0.5)
         with self.assertRaisesRegex(ValueError, "half-amplitude"):
             validate_measurements(data)
+
+    def test_intersample_peak_needs_interpolation_and_continuous_state(self):
+        for field, bad in (("sample_peak", .95), ("true_peak", .67),
+                           ("chunk127_true_peak", .8)):
+            with self.subTest(field=field):
+                data = valid_fixture()
+                data["loudness"]["intersample_12khz"][field] = bad
+                with self.assertRaisesRegex(ValueError, "peak|sinusoid"):
+                    validate_measurements(data)
+
+    def test_variable_ratio_wrong_direction_or_missing_marker_fails(self):
+        for field, bad in (("final_input_output_ratio", 1/3.00045),
+                           ("marker_input_frames", [0]*9)):
+            with self.subTest(field=field):
+                data = valid_fixture()
+                data["variable_ratio"][field] = bad
+                with self.assertRaisesRegex(ValueError, "variable-ratio"):
+                    validate_measurements(data)
+
+    def test_variable_ratio_trace_reconciles_input_and_output(self):
+        data = valid_fixture()
+        for name in ("constant_100ppm", "step_150ppm", "slew_150ppm",
+                     "slew_150ppm_chunk127", "slew320_150ppm"):
+            data["variable_ratio"][name]["input_calls"] = 1
+            data["variable_ratio"][name]["flush_calls"] = 1
+        lines = ["case,phase,input_position_frames,idone_frames,odone_frames,delay_output_samples"]
+        for name, out in (("vr_constant100ppm", 160004), ("vr_step150ppm", 160000),
+                          ("vr_slew160", 160000), ("vr_slew160_chunk127", 160000),
+                          ("vr_slew320", 160000)):
+            flush = 4 if name == "vr_constant100ppm" else 100
+            lines.extend((f"{name},input,0,480060,{out-flush},100",
+                          f"{name},flush,480060,0,{flush},100"))
+        validate_variable_ratio_trace("\n".join(lines), data)
+        with self.assertRaisesRegex(ValueError, "trace totals"):
+            validate_variable_ratio_trace("\n".join(lines).replace("480060,159900", "480059,159900"), data)
 
     def test_silence_cannot_be_zero_lufs_or_unexplained_null(self):
         for value, reason in ((0, "negative_infinity_no_gated_energy"), (None, "")):

@@ -1,4 +1,4 @@
-"""Twenty-one deterministic engineering/mathematics exercises, Chapters 10–13.
+"""Twenty-five deterministic engineering/mathematics exercises, Chapters 10–13.
 
 Run with ``python -m codes.examples.exercises_engineering``. No hardware,
 network, playback, or file writes are performed. Values are teaching inputs,
@@ -37,6 +37,34 @@ def block_consumption(input_block: int, consumer_block: int, callbacks: int) -> 
             consumed += consumer_block
         leftovers.append(available - consumed)
     return {"events": events, "leftovers": leftovers, "consumed": consumed}
+
+
+def coupled_resource_budget() -> dict:
+    """E10-14: serial work, in-flight storage, and repeated-schedule energy."""
+    costs = [4., 4., 25., 4., 4., 4.]
+    period = 10.
+    finish = 0.
+    timeline = []
+    for index, duration in enumerate(costs):
+        arrival = index * period
+        start = max(arrival, finish)
+        finish = start + duration
+        timeline.append({"arrival_ms": arrival, "start_ms": start,
+                         "finish_ms": finish, "response_ms": finish-arrival})
+    queue = simulate_deadline_queue(np.asarray(costs), period, 3)
+    frame_kib = 4 * 160 * 4 / 1024
+    state_kib = 400 + 200 + 60
+    active_fraction = sum(costs) / (period * len(costs))
+    average_power = 1.2 * active_fraction + .2 * (1-active_fraction)
+    return {"frame_period_ms": period, "processing_ms": costs, "timeline": timeline,
+            "offered_work_rtf": active_fraction, **queue,
+            "frame_kib": frame_kib, "state_kib": state_kib,
+            "peak_memory_kib": state_kib + 3 * frame_kib,
+            "memory_limit_kib": 700., "sample_max_response_ms": max(row["response_ms"] for row in timeline),
+            "active_power_w": 1.2, "idle_power_w": .2,
+            "average_power_w_if_schedule_repeats": average_power,
+            "estimated_runtime_h_if_schedule_repeats": 3.7 * 2 * .8 / average_power,
+            "model_scope": "constructed six-frame serial schedule; no device timing or stable p99"}
 
 
 def run_exercises() -> dict:
@@ -119,6 +147,7 @@ def run_exercises() -> dict:
         "known_step_removed_ppm": corrected_ppm,
         "known_step_removed_offset_ms": corrected_offset * 1000,
     }
+    results["E10-14"] = coupled_resource_budget()
     base_latency = sum([16, 8, 22, 5, 70])
     results["E11-01"] = {
         "alias_boundary_hz": 343 / (.04 * 2),
@@ -149,6 +178,40 @@ def run_exercises() -> dict:
         "nearest_rank_ms": [float(np.sort(latencies)[rank - 1]) for rank in ranks],
         "linear_interpolation_ms": np.quantile(latencies, probabilities, method="linear").tolist(),
     }
+    ring_candidates = []
+    for microphones in (4, 6):
+        nearest_spacing = 2 * .04 * math.sin(math.pi / microphones)
+        adjacent_boundary = 343 / (2 * nearest_spacing)
+        ring_candidates.append({"microphones": microphones,
+                                "nearest_neighbor_spacing_m": nearest_spacing,
+                                "adjacent_pair_boundary_hz": adjacent_boundary,
+                                "passes_adjacent_4khz_screen": adjacent_boundary >= 4000})
+    results["E11-05"] = {"ring_radius_m": .04, "screen_frequency_hz": 4000,
+                         "playback_aec_required": True, "candidates": ring_candidates,
+                         "scope": "adjacent-pair spacing screen, not global circular-array alias guarantee"}
+    meeting_cases = []
+    for name, errors, latency, streams in (("single_beam", 25, 90, 1),
+                                           ("beam_plus_wpe", 20, 115, 1),
+                                           ("two_stream_separator", None, 180, 2)):
+        meeting_cases.append({"name": name, "errors_per_100_reference_words": errors,
+                              "wer": errors / 100 if errors is not None else None,
+                              "score_protocol": ("same_reference_single_output_wer"
+                                                 if streams == 1 else
+                                                 "undefined_until_multistream_protocol_is_fixed"),
+                              "latency_ms": latency,
+                              "output_streams": streams,
+                              "passes_hard_limits": latency <= 150 and streams == 1})
+    results["E11-06"] = {"reference_words": 100, "latency_limit_ms": 150,
+                         "required_output_streams": 1, "candidates": meeting_cases,
+                         "scope": "constructed single-output word counts; no comparable multistream score or population ranking"}
+    results["E11-07"] = {"relative_sro_ppm": 80., "allowed_drift_ms": .1,
+                         "initial_offset_ms": 2., "candidates": [
+                             {"realignment_interval_s": interval,
+                              "drift_ms": 80e-6 * interval * 1000,
+                              "passes_drift_limit": 80e-6 * interval * 1000 <= .1}
+                             for interval in (10., 1.)],
+                         "maximum_interval_s": .0001 / 80e-6,
+                         "scope": "known constant SRO, no dropped samples or timestamp noise"}
     x, h = np.array([1., 2.]), np.array([1., .5])
     results["E12-01"] = {
         "linear": np.convolve(x, h).tolist(),

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 3 章 · 阵列几何形态 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="3c17a2f82b74"><style>
+<meta name="source-digest" content="cb929281331d"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -62,9 +62,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-83d5019885">算例 3-2 端射灵敏度——同一个 10 μs 误差在不同方向的影响</a></li>
 <li><a href="03_array-geometry.html#sec-3-2">3.2 四条设计规律</a></li>
 <li><a href="03_array-geometry.html#sec-3-3">3.3 稀疏阵列与差分协同阵</a></li>
-<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-5834a7d67e">协同阵的概念：从麦的位置到麦对的间距</a></li>
-<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-20a0d88f74">协方差为什么能当虚拟观测</a></li>
-<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-d14b5899a5">代价与边界：差分空缺、宽带和混响</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-3-3-1">3.3.1 协同阵的概念：从麦的位置到麦对的间距</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-3-3-2">3.3.2 物理协方差怎样给出虚拟滞后</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-3-3-3">3.3.3 代价与边界：差分空缺、宽带和混响</a></li>
 <li><a href="03_array-geometry.html#sec-3-4">3.4 阵列校准：麦克风个个不一样时怎么办</a></li>
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-3-4-1">3.4.1 增益相位自校准：利用未知声源的多位置观测</a></li>
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-3-4-2">3.4.2 互耦补偿：把串音矩阵抵消掉</a></li>
@@ -91,9 +91,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-83d5019885">算例 3-2 端射灵敏度——同一个 10 μs 误差在不同方向的影响</a></li>
 <li><a href="03_array-geometry.html#sec-3-2">3.2 四条设计规律</a></li>
 <li><a href="03_array-geometry.html#sec-3-3">3.3 稀疏阵列与差分协同阵</a></li>
-<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-5834a7d67e">协同阵的概念：从麦的位置到麦对的间距</a></li>
-<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-20a0d88f74">协方差为什么能当虚拟观测</a></li>
-<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-d14b5899a5">代价与边界：差分空缺、宽带和混响</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-3-3-1">3.3.1 协同阵的概念：从麦的位置到麦对的间距</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-3-3-2">3.3.2 物理协方差怎样给出虚拟滞后</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-3-3-3">3.3.3 代价与边界：差分空缺、宽带和混响</a></li>
 <li><a href="03_array-geometry.html#sec-3-4">3.4 阵列校准：麦克风个个不一样时怎么办</a></li>
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-3-4-1">3.4.1 增益相位自校准：利用未知声源的多位置观测</a></li>
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-3-4-2">3.4.2 互耦补偿：把串音矩阵抵消掉</a></li>
@@ -254,7 +254,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>§3.3 转向非均匀稀疏阵，说明怎样用差分协同阵扩展虚拟孔径。</p>
 </blockquote>
 <span id="sec-6" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-3-3">3.3 稀疏阵列与差分协同阵</h2>
-<span id="sec-7" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-5834a7d67e">协同阵的概念：从麦的位置到麦对的间距</h3>
+<span id="sec-u-5834a7d67e" class="anchor-alias" aria-hidden="true"></span><span id="sec-7" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-3-3-1">3.3.1 协同阵的概念：从麦的位置到麦对的间距</h3>
 <p>均匀线阵若要在整个可视角域避免栅瓣，阵元间距需不大于半波长（§2.6）。在给定麦克风数量下，这一条件限制了物理孔径。</p>
 <p><strong>稀疏阵列（sparse array）</strong>相对于一个明确的密集参考网格，只启用其中一部分候选位置；“麦克风少”或“位置不均匀”本身都不足以构成这个定义。常见设计包括非均匀的嵌套阵、互质阵和删减阵，也可能保留等间距但存在空位。利用麦克风对的位置差，可以构造比物理阵元集合更长的虚拟阵列。</p>
 <p><strong>核心概念：差分协同阵（difference co-array）</strong>。理想远场窄带模型下，协方差矩阵第 $i,j$ 个元素的相位由麦 $i$ 与麦 $j$ 的位置差决定。收集所有麦对的位置差，就得到差分协同阵。</p>
@@ -262,16 +262,19 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>这 23 个数是连续的<strong>有符号差分滞后</strong>，不是 23 路彼此独立的物理快拍。若按滞后平均、构造 Toeplitz 虚拟协方差并做空间平滑，可得到比物理阵更长的虚拟 ULA。</p>
 <p>在模型和秩条件满足时，部分协同阵方法可能估计多于物理麦数的非相干源。可分辨源数仍取决于连续单侧滞后长度、重构方法、平滑后的矩阵维数、信噪比和快拍数，不能直接等同于 23。</p>
 <p>差分集合只给出虚拟阵列的位置。要把这些位置用于子空间估计，还需要从协方差中构造相应的二阶统计量。</p>
-<span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-20a0d88f74">协方差为什么能当虚拟观测</h3>
-<p><strong>为什么协方差能提供虚拟滞后观测</strong>：对互不相干的远场源，$\mathbf{R}$ 的第 $i,j$ 个元素是各源功率乘相位项 $e^{-j2\pi f(\tau_i-\tau_j)}$ 的和，只依赖两麦位置差。相同位置差的麦对可做平均，降低估计方差；不同位置差提供不同滞后。</p>
+<span id="sec-u-20a0d88f74" class="anchor-alias" aria-hidden="true"></span><span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-3-3-2">3.3.2 物理协方差怎样给出虚拟滞后</h3>
+<p>对互不相干的远场源，$\mathbf{R}$ 的第 $i,j$ 个元素是各源功率乘相位项 $e^{-j2\pi f(\tau_i-\tau_j)}$ 的和，只依赖两麦位置差。相同位置差的麦对可做平均，降低估计方差；不同位置差提供不同滞后。</p>
 <p>把协方差元素按滞后重排后，可把连续的一段滞后解释为虚拟 ULA 的二阶统计量。它不是原始阵列快拍，因此标准 MUSIC 不能不经处理直接套用。通常还需 Toeplitz 重构、直接协同阵处理或空间平滑，才能形成满足子空间方法要求的虚拟协方差。</p>
-<p>相干源、宽带混响、有限快拍和有洞差集都会降低可用秩和自由度。</p>
+<p>例如，取物理阵元位置 $\{0,1,3\}$（单位为半波长），一个正横 $0°$ 源和一个 $+30°$ 源各有单位功率，互不相关，各麦另加功率 $0.1$ 的独立噪声。按 §2.3 的正相位约定，第 $m$ 个导向分量为 $a_m(\theta)=e^{\mathrm j\pi p_m\sin\theta}$。若有符号滞后定义为 $\ell=p_i-p_j$，总体协方差给出</p>
+<p>$$r[0]=2.1,\quad r[1]=1+\mathrm j,\quad r[2]=0,\quad r[3]=1-\mathrm j,\quad r[-\ell]=r[\ell]^*\text{。}$$</p>
+<p>这些滞后可排列成位置 $\{0,1,2,3\}$ 的 $4\times4$ Toeplitz 矩阵 $T_{ij}=r[i-j]$。本例的特征值为 $0.1,0.1,4.1,4.1$，与两个独立源及正噪声功率一致；虚拟四阵元并不代表物理系统多录到一路独立波形。逐项重排和一个有限样本反例见本章 E03-07。</p>
+<p>相干源、宽带混响、有限快拍和有洞差集都会降低可用秩和自由度。有限样本的滞后平均即使由合法的物理样本协方差出发，也不保证直接填成的 Toeplitz 矩阵半正定；构造可供子空间方法使用的虚拟协方差，需要检查秩与半正定性或采用有此保证的专门平滑构造。<a href="https://doi.org/10.1109/TSP.2010.2049264" title="citation">Pal 与 Vaidyanathan 原论文第 IV 节</a>提出的协同阵空间平滑与任意填表并非同一操作。</p>
 <p>可以把它理解为重新整理“麦对间距表”：相同间距的观测合并，不同间距按顺序排成一条虚拟标尺。标尺更长，潜在孔径更大；但只有完成统计重构并满足秩条件后，这些滞后才会转化为可用的子空间自由度。</p>
 <p><img alt="图10 稀疏阵列与差分协同阵" src="../figures/fig10_sparse_array.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图 10 左侧比较均匀、嵌套和互质三种摆法，横轴单位是半波长；右侧枚举所有有序麦对的位置差，得到有符号差分位置（也称有符号滞后）。均匀阵有 11 个连续滞后，图中的嵌套阵有 23 个连续滞后，互质阵覆盖范围更大但中间有空缺。连续滞后数描述虚拟孔径结构，不应直接写成 MUSIC 可分辨的源数。</p>
 <p>这种虚拟观测依赖统计重构和秩条件；差分集合中的空缺、宽带信号和混响都会限制可用自由度。</p>
-<span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-d14b5899a5">代价与边界：差分空缺、宽带和混响</h3>
-<p><strong>代价与边界</strong>：协同阵使用的是二阶统计量，需要专门的协同阵 MUSIC、Toeplitz 重构、空间平滑或稀疏重构。差分滞后中的洞还会使可用连续虚拟孔径缩短，插值或矩阵补全又会引入额外假设。</p>
+<span id="sec-u-d14b5899a5" class="anchor-alias" aria-hidden="true"></span><span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-3-3-3">3.3.3 代价与边界：差分空缺、宽带和混响</h3>
+<p>协同阵使用的是二阶统计量，需要专门的协同阵 MUSIC、Toeplitz 重构、空间平滑或稀疏重构。差分滞后中的洞还会使可用连续虚拟孔径缩短，插值或矩阵补全又会引入额外假设。</p>
 <p>嵌套阵与互质阵最初主要在窄带阵列模型下发展，原始方法见 <a href="https://doi.org/10.1109/TSP.2010.2049264" title="citation">Pal 与 Vaidyanathan 的嵌套阵论文</a>与 <a href="https://doi.org/10.1109/TSP.2010.2089682" title="citation">Vaidyanathan 与 Pal 的互质阵论文</a>。</p>
 <p>语音宽带、混响和频率相关阵列流形会增加处理难度。因此实际使用前应在目标频带和房间条件下验证，不能只按理论差集长度选型。</p>
 <p>稀疏阵与分布式阵不是同一概念。稀疏阵强调只占用密集候选网格中的部分位置，位置可以非均匀，也可以是带空位的等间距子集；分布式阵由多个独立设备组成，除了几何布局，还要处理节点标定、独立时钟和通信。</p>
@@ -279,18 +282,18 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="sec-10" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-3-4">3.4 阵列校准：麦克风个个不一样时怎么办</h2>
 <p>前面的理想公式假设各通道增益和相位一致、阵元位置准确，并忽略壳体散射、声学耦合和电串扰。实际偏差会使导向模型与观测不匹配。本节把常见偏差写进模型，再说明怎样测量和补偿。</p>
 <span id="sec-11" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-3-4-1">3.4.1 增益相位自校准：利用未知声源的多位置观测</h3>
-<p><strong>1. 增益相位自校准的思想</strong>。把每只麦的响应误差写成一个复数：增益误差是幅度缩放，相位误差是额外旋转，合起来第 $m$ 路的实际增益是 $(1+\Delta g_m)e^{\mathrm{j}\Delta\phi_m}$，理想值是 1。</p>
+<p>把每只麦的响应误差写成一个复数：增益误差是幅度缩放，相位误差是额外旋转，合起来第 $m$ 路的实际增益是 $(1+\Delta g_m)e^{\mathrm{j}\Delta\phi_m}$，理想值是 1。</p>
 <p>导向矢量 $\vec{a}(\theta)$ 的每个分量都会乘上这个误差，因此 MUSIC 谱峰会变宽或偏移，波束零陷也会变浅。麦克风阵列实测校准的一个原始例子见 <a href="https://doi.org/10.1109/TSA.2004.834459" title="citation">Sachar、Silverman 与 Patterson 2005，IEEE Transactions on Speech and Audio Processing，13(1):42–52</a>。</p>
 <p>自校准可以不用已知方向的专用声源。常见做法是交替估计：先固定通道误差估方向，再固定方向估各麦的复增益，循环到目标函数收敛。</p>
 <p>这种方法依赖可辨识条件。若只有一个固定方向，声源相位、传播相位和麦克风相位误差可能互相混淆；加入多个充分分散的方向、频点或几何约束后，才有机会分离这些未知量。具体需要多少方向取决于模型参数和约束，不能用一条固定数字概括。</p>
 <p>复增益标定处理单通道幅相偏差；跨通道电串扰可在一定线性近似下写成频率相关混合矩阵，壳体散射则通常还随入射方向变化。</p>
 <span id="sec-12" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-3-4-2">3.4.2 互耦补偿：把串音矩阵抵消掉</h3>
-<p><strong>2. 耦合与串扰补偿</strong>。电路走线或器件间的线性串扰，在近似不随声源方向变化时可写成频率相关矩阵 $\mathbf{C}(f)$，实际导向矢量变为 $\mathbf{C}(f)\vec{a}(f,\theta)$。</p>
+<p>电路走线或器件间的线性串扰，在近似不随声源方向变化时可写成频率相关矩阵 $\mathbf{C}(f)$，实际导向矢量变为 $\mathbf{C}(f)\vec{a}(f,\theta)$。</p>
 <p>壳体绕射和散射直接改变声场，通常应写成方向相关的实测流形 $\vec a_{\rm meas}(f,\theta)$，或在确有依据时用 $\mathbf C(f,\theta)\vec a(f,\theta)$ 表示，不能无条件并入固定 $\mathbf C(f)$。可用已知方向的测量拟合模型，也可直接把实测阵列流形存入系统。</p>
 <p>若对固定混合矩阵显式求逆，$\mathbf{C}(f)$ 条件数很大时会放大噪声，因此通常需要正则化，而不是无条件左乘精确逆矩阵。依赖深零陷的差分或超指向设计通常比 DSB 更容易受失配影响。</p>
 <p>耦合矩阵描述通道间混合，但不能替代麦克风坐标标定。位置误差会直接改变传播相位。</p>
 <span id="sec-13" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-3-4-3">3.4.3 位置自标定：有锚测绘、无锚边走边建图</h3>
-<p><strong>3. 位置自标定</strong>。8 kHz 的波长约为 4.3 cm，2 mm 位置误差对应的相位误差为 $2\pi\times0.002/0.0429\approx0.29$ rad，即约 17°；低频下同一位置误差造成的相位偏差较小。</p>
+<p>8 kHz 的波长约为 4.3 cm，2 mm 位置误差对应的相位误差为 $2\pi\times0.002/0.0429\approx0.29$ rad，即约 17°；低频下同一位置误差造成的相位偏差较小。</p>
 <p>位置标定有两类方法：</p>
 <ul>
 <li><strong>有锚点标定</strong>：在多个已知位置播放信号，由 TDOA 反解麦克风坐标；</li>
@@ -300,7 +303,6 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>分布式阵列还需同时估计节点时钟关系（§10.2），否则 TDOA 会包含系统偏差。</p>
 <p>下表汇总不同失配首先影响的量、误差尺度和补偿方法。</p>
 <span id="sec-14" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-3-4-4">3.4.4 失配灵敏度表：先坏哪、坏多少</h3>
-<p><strong>4. 失配灵敏度表</strong>：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
@@ -372,7 +374,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>答案要点：8 kHz 波长约 4.3 cm，半波长约 2.1 cm，小于 3.75 cm 相邻麦距，已经不满足全视场无混叠的充分条件。圆阵是否在某一转向出现等高歧义，要看完整几何和宽带融合，不能只套 ULA 的单一栅瓣角公式。挡板会以频率和方向相关的方式改变幅相响应；若模型使用得当，这些额外差异可帮助消歧，但它不是固定地把低频下限移动某个倍频程。</p>
 </li>
 </ol>
-<p>下面六题使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 复算，检查差分位置、反三角函数边界、角度约定、远场近似误差、双麦相减响应和通道复增益标定。</p>
+<p>下面六题使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 复算，检查差分位置、反三角函数边界、角度约定、远场近似误差、双麦相减响应和通道复增益标定。第七题用独立的协同阵脚本，避免把“差集长度”误当作有效虚拟协方差。</p>
 <p><strong>E03-01：差分位置相同，观测次数也相同吗？</strong> 对位置 $\{0,1,2,3,4,5\}$ 和 $\{0,1,2,3,7,11\}$，枚举全部有序麦对，包括同一麦与自身配对。计算每个差分滞后的重数，并检查重数之和。位置单位为半波长。</p>
 <p><strong>参考答案</strong>：两种布局都有 $6\times6=36$ 个有序麦对，零滞后的重数均为 6。均匀阵的滞后从 −5 到 5，重数依次为 $1,2,3,4,5,6,5,4,3,2,1$，共 11 个不同位置。</p>
 <p>嵌套阵的滞后连续覆盖 −11 到 11，共 23 个；正滞后 1～11 的重数依次为 $3,2,1,2,1,1,1,1,1,1,1$，负滞后与之对称。相同滞后的样本可以平均，但不同麦对可能共享同一通道，不能据重数直接假定它们统计独立，更不能把 23 个差分位置当作 23 路原始录音。</p>
@@ -459,6 +461,19 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>参考答案：复增益与错误角度。</strong> 两次计算都得到 $g=q_\theta/(a_2/a_1)=1.2e^{\mathrm j30°}=1.03923+0.6\mathrm j$。将麦 2 除以这个复增益后，相对相位回到 $\pm45°$。若忽略相位校准，把测得的 $75°$ 全当作几何相位，则 $\sin\hat\theta=75°/90°=5/6$，得到 $\hat\theta\approx56.44°$，相对真实 $30°$ 偏了约 $26.44°$。</p>
 <p><strong>参考答案：可辨识边界。</strong> 仅有第一条方向未知的 $q=1.2e^{\mathrm j75°}$ 时，$(\theta=30°,\arg g=30°)$ 和 $(\theta=0°,\arg g=75°)$ 都能解释它，幅度同为 $1.2$。本题一个方向<strong>已知</strong>的无噪声观测其实足以求双麦相对复增益；第二个已知方向用于检查“复增益不随方向变化”这一假设。</p>
 <p>若声源方向未知，仅增加任意方向的观测而不加几何、频率或校准约束，也不能保证唯一分开方向和相位误差。实测中壳体散射可能使误差随方向变化，需按 §3.4 测量阵列流形，不能用这一个固定 $g$ 外推。</p>
+<p><a id="e03-07"></a></p>
+<p><strong>E03-07：从三麦协方差构造虚拟四阵元统计量。</strong> 物理位置为 $p=\{0,1,3\}$，单位为半波长。两个互不相关的远场窄带源分别在 $0°$ 和 $+30°$，各有单位功率；独立通道噪声功率为 $0.1$。按 $a_m(\theta)=e^{\mathrm j\pi p_m\sin\theta}$、$R_{ij}=E[X_iX_j^*]$ 和 $\ell=p_i-p_j$，先算有符号滞后 $r[0],r[\pm1],r[\pm2],r[\pm3]$，再按 $T_{ij}=r[i-j]$ 写出连续位置 $0,1,2,3$ 的虚拟 Toeplitz 矩阵，检查共轭对称、特征值与物理通道数。</p>
+<p><strong>参考答案：总体协方差。</strong> 两个导向矢量是 $[1,1,1]^\top$ 和 $[1,\mathrm j,-\mathrm j]^\top$。例如 $R_{10}=1+\mathrm j$，因为 $p_1-p_0=1$；$R_{21}=0$，因为相应滞后为 2、两个源的相位项相消。因此 $r[0]=2.1$，$r[1]=1+\mathrm j$，$r[2]=0$，$r[3]=1-\mathrm j$，负滞后由共轭得到。</p>
+<p>$$\mathbf T=\begin{bmatrix}
+2.1&1-\mathrm j&0&1+\mathrm j\\
+1+\mathrm j&2.1&1-\mathrm j&0\\
+0&1+\mathrm j&2.1&1-\mathrm j\\
+1-\mathrm j&0&1+\mathrm j&2.1
+\end{bmatrix}\text{。}$$</p>
+<p>它等于两个四维导向矢量的外积之和加 $0.1\mathbf I$。这两个向量彼此正交、平方范数均为 4，故特征值是 $4.1,4.1,0.1,0.1$；四维只是二阶统计量的索引长度，物理录音仍只有三路。</p>
+<p><strong>参考答案：有限样本反例。</strong> 改取一次物理快拍 $\vec x=[1,0,1]^\top$，样本协方差 $\vec x\vec x^H$ 的特征值为 $2,0,0$，是合法半正定矩阵。按相同滞后平均，$r[0]=2/3$、$r[\pm3]=1$、其余滞后为零；直接填成的 $4\times4$ Toeplitz 矩阵有特征值 $5/3,2/3,2/3,-1/3$，已不再半正定。</p>
+<p>不能把这种任意填表直接交给 MUSIC 当作有效协方差；要检查矩阵性质，或采用文献中有半正定保证的协同阵空间平滑构造。</p>
+<p>先从上面的外积与滞后手算，再运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/coarray_covariance_exercise.py">E03-07 脚本</a> 核对两组特征值。它只复算窄带二阶统计量，没有生成四通道声音，也没有证明三只麦在任何 SNR 或快拍数下都能分辨四个声源。<a href="https://doi.org/10.1109/TSP.2010.2049264" title="citation">Pal 与 Vaidyanathan 2010 第 IV 节</a>给出利用嵌套阵二阶统计量与空间平滑估计方向的原始方法。</p>
 <p>更多跨章练习和音频条件见<a href="research/05_exercises_and_audio.html">实验总览</a>。其中整数延迟音频只提供已知通道时差，没有模拟某一真实麦克风外壳；不能由该样本推断挡板收益或阵列标定精度。</p>
 <hr />
 <blockquote>

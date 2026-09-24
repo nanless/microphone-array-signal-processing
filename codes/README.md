@@ -26,6 +26,8 @@ SMP-PHAT 可用 `.venv/bin/python codes/examples/reproduce_smpphat_reference.py 
 因此默认保存失败报告并返回非零状态；`--allow-known-portability-failure` 只允许收集诊断时返回零，
 不改变报告中的失败结论，也不修补上游源码。
 
+为复核这处移植问题，可用 `.venv/bin/python codes/examples/reproduce_smpphat_portable_overlay.py --fftw-prefix /path/to/fftw-prefix --output tmp/smpphat-overlay.json`。脚本只在临时副本修改两处有符号索引转换，原锁定工作树不变；[适配报告](reports/smpphat_portable_overlay.json)通过两组合成四麦的独立 DFT 检查，原版报告仍保持失败。
+
 ## 目录
 
 | 路径 | 内容 |

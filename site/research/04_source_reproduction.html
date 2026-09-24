@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码获取与独立复现记录 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="3c17a2f82b74"><style>
+<meta name="source-digest" content="cb929281331d"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -310,9 +310,9 @@ ERLE 不能把双讲中的近端语音解释成残余回声，也不能用参考
 </tr>
 <tr>
 <td>SMP-PHAT</td>
-<td>已核对固定提交，算法源码未修改</td>
-<td>隔离 FFTW 浮点库；直接编译原 C 核心，未用 x86 专用构建选项</td>
-<td>已运行但数值等价失败；本机负浮点时延转无符号索引错误</td>
+<td>已核对固定提交；原版未修改</td>
+<td>隔离 FFTW 浮点库；直接编译原 C 核心；另在临时副本做两处有符号索引适配</td>
+<td>原版数值等价失败；隔离适配版在两组合成四麦输入通过独立 DFT 对照</td>
 <td>未测</td>
 </tr>
 <tr>
@@ -398,6 +398,7 @@ ViSQOL 还需固定 speech/audio 模式、采样率和映射模型，不能混�
 <p>因此，程序能完成编译、两个方法在选定输入上恰好给出同一峰，并不等于全方向分数与推导相符。
 实验保留原版失败，再用上游实际查表索引配合独立离散傅里叶求和定位误差来源；没有修改上游算法后
 将其结果冒充原版通过。完整输入、依赖、判据与诊断见<a href="01_spatial_and_tracking.html">空间研究</a>。</p>
+<p>2026-09-24 又以<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/reproduce_smpphat_portable_overlay.py">独立隔离脚本</a>在临时副本上仅改两处负时延索引转换，保持固定上游目录不动。两组合成四麦输入的全方向分数相对独立 DFT 最大误差均小于 $2\times10^{-4}$；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/reports/smpphat_portable_overlay.json">适配报告</a>单列为 <code>passed_patched_teaching_case</code>。该结论不改变<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/reports/smpphat_reference.json">未修补原版报告</a>的 <code>failed_portability</code> 状态，也未测试真实录音和运行时间。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/compare_wpe_reference.py">离线 WPE 对照</a>只比较对齐的有效历史帧；
 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/compare_online_wpe_reference.py">在线 WPE 对照</a>核对三个接口的实际抽头时间点及连续状态。
 配置、预期值和实测数字见<a href="02_aec_wpe_separation.html">增强研究</a>。它们不测试真实房间的去混响质量，

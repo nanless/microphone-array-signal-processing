@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 B · 路径地图与练习 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="3c17a2f82b74"><style>
+<meta name="source-digest" content="cb929281331d"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -70,10 +70,17 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="13_appendix-guide.html#sec-13-1">13.1 研究生学习路径</a></li>
 <li><a href="13_appendix-guide.html#sec-13-2">13.2 领域地图：教材、会议、期刊与挑战赛</a></li>
 <li><a href="13_appendix-guide.html#sec-13-3">13.3 研究前沿速览（2024—）</a></li>
-<li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-u-b74f82c81d">专栏：神经网络前端的泛化失配与四类对策</a></li>
+<li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-13-3-1">13.3.1 神经网络前端的泛化失配与四类对策</a></li>
 <li><a href="13_appendix-guide.html#sec-13-4">13.4 常见问题与调试指南</a></li>
 <li><a href="13_appendix-guide.html#sec-13-5">13.5 核心公式速查卡</a></li>
 <li><a href="13_appendix-guide.html#sec-13-6">13.6 思考与练习</a></li>
+<li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-13-6-1">13.6.1 基础与几何：第 1～3 章的题 1～4</a></li>
+<li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-13-6-2">13.6.2 定位与波束：第 4、5 章的题 5～8</a></li>
+<li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-13-6-3">13.6.3 增强、分离与追踪：第 6～9 章的题 9～13</a></li>
+<li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-13-6-4">13.6.4 工程预算与方案选型：题 14～15</a></li>
+<li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-13-6-5">13.6.5 房间仿真：第 16 题的输入、测量和结果</a></li>
+<li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-13-6-6">13.6.6 公开系统复核：题 17</a></li>
+<li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-13-6-7">13.6.7 补充计算：试听归一化</a></li>
 <li><a href="13_appendix-guide.html#sec-13-7">13.7 复现说明</a></li>
 </ul>
 <div class="chap"><a href="research/index.html">源码研究</a></div></nav>
@@ -83,10 +90,17 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="13_appendix-guide.html#sec-13-1">13.1 研究生学习路径</a></li>
 <li><a href="13_appendix-guide.html#sec-13-2">13.2 领域地图：教材、会议、期刊与挑战赛</a></li>
 <li><a href="13_appendix-guide.html#sec-13-3">13.3 研究前沿速览（2024—）</a></li>
-<li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-u-b74f82c81d">专栏：神经网络前端的泛化失配与四类对策</a></li>
+<li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-13-3-1">13.3.1 神经网络前端的泛化失配与四类对策</a></li>
 <li><a href="13_appendix-guide.html#sec-13-4">13.4 常见问题与调试指南</a></li>
 <li><a href="13_appendix-guide.html#sec-13-5">13.5 核心公式速查卡</a></li>
 <li><a href="13_appendix-guide.html#sec-13-6">13.6 思考与练习</a></li>
+<li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-13-6-1">13.6.1 基础与几何：第 1～3 章的题 1～4</a></li>
+<li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-13-6-2">13.6.2 定位与波束：第 4、5 章的题 5～8</a></li>
+<li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-13-6-3">13.6.3 增强、分离与追踪：第 6～9 章的题 9～13</a></li>
+<li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-13-6-4">13.6.4 工程预算与方案选型：题 14～15</a></li>
+<li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-13-6-5">13.6.5 房间仿真：第 16 题的输入、测量和结果</a></li>
+<li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-13-6-6">13.6.6 公开系统复核：题 17</a></li>
+<li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-13-6-7">13.6.7 补充计算：试听归一化</a></li>
 <li><a href="13_appendix-guide.html#sec-13-7">13.7 复现说明</a></li>
 </ul></nav></details>
 <blockquote>
@@ -224,7 +238,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>本节把正文中的经典方法与 2024 年以来若干公开研究方向相连。具体成绩只在原论文的数据、实现和评测条件下成立；带日程的内容以对应挑战赛官方页面为准。</p>
 <ol>
 <li>
-<p><strong>预训练模型用作远场识别后端</strong>：CHiME-7/8（2023/2024）部分参赛系统使用 Whisper、WavLM 等预训练模型作为识别后端，也有系统保留 GSS（导引源分离，详见 §8.1）和解析波束。这些参赛系统只能说明相应架构在该届数据和评测中被实现，不能据此断言整个领域已转向某一种架构。<a href="https://arxiv.org/abs/2507.18161" title="citation">CHiME-7/8 综述预印本，arXiv:2507.18161</a></p>
+<p><strong>预训练模型用作远场识别后端</strong>：CHiME-7/8（2023/2024）部分参赛系统使用 Whisper、WavLM 等预训练模型作为识别后端，也有系统保留 GSS（导引源分离，详见 §8.4）和解析波束。这些参赛系统只能说明相应架构在该届数据和评测中被实现，不能据此断言整个领域已转向某一种架构。<a href="https://arxiv.org/abs/2507.18161" title="citation">CHiME-7/8 综述预印本，arXiv:2507.18161</a></p>
 </li>
 <li>
 <p><strong>阵列无关（array-agnostic）系统</strong>：CHiME-8 的 DASR 系统报告描述了不固定阵列拓扑的设计。其泛化范围只能以报告中的训练阵列、测试设备、任务和打分脚本为边界。<a href="https://www.isca-archive.org/chime_2024/cornell24_chime.html" title="citation">CHiME-8 DASR</a></p>
@@ -233,7 +247,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>目标说话人提取（Target Speaker Extraction，TSE）</strong>：系统用注册语音、视觉或方向提示描述目标说话人，再从混合语音中提取相应音轨。AR 眼镜阵列和手机结构辅助方向提取提供了不同的条件输入形式。</p>
 <p>TEA-PSE（ICASSP 2022，DOI 10.1109/ICASSP43922.2022.9747765；后续版本 arXiv:2303.07704）和 <a href="https://ieeexplore.ieee.org/document/10284995/" title="citation">CIENet</a> 使用注册语音提供说话人条件，再通过条件注入或帧级对齐提取目标。</p>
 <p>SonicSieve 采用另一种线索：被动声学微结构改变方向相关响应，让神经网络利用方向特征提取语音，不是由注册声纹指定身份。它依赖对应的声学结构与训练数据，不能当作任意手机加软件即可获得的效果。原论文为 CHI 2026；本书仅说明方法条件，不转引摘要中的性能数字。<a href="https://www.witechlab.com/sonicsieve.html" title="citation">作者机构项目页</a>、<a href="https://arxiv.org/abs/2504.10793v3" title="citation">作者论文 v3，2026-02-11，摘要与方法部分</a>（核实：2026-09-22）。</p>
-<p>§6.1.6 的个性化 AEC 与这类条件提取方法相关，但训练目标和回声参考结构仍需分别定义。</p>
+<p>§6.5 的个性化 AEC 与这类条件提取方法相关，但训练目标和回声参考结构仍需分别定义。</p>
 </li>
 <li>
 <p><strong>生成式语音增强与推理加速</strong>：SGMSE+（Richter et al., IEEE/ACM TASLP 2023）在复数 STFT 域使用基于随机微分方程的扩散模型；StoRM（Lemercier et al., IEEE/ACM TASLP 2023）把判别式回归与生成过程结合，以减少采样负担。<a href="https://github.com/sp-uhh/sgmse" title="citation">SGMSE+ 代码与论文</a>、<a href="https://github.com/sp-uhh/storm" title="citation">StoRM 代码与论文</a>。</p>
@@ -257,7 +271,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>最小复现可沿用官方 SMS-WSJ 配置：两名说话人、3 通道、8 kHz，先下载作者提供的单说话人扩散模型，再运行 <code>separate.py</code>，设置 <code>num_speakers=2</code>、<code>n_channels=3</code>、<code>num_steps=400</code>，将输出与其 IVA 初始化按同一 SI-SDR 实现比较，同时记录总耗时和峰值显存。官方说明要求显存大于 7 GB；400 步扩散采样还嵌套相对 RIR 优化，因此它是离线研究候选，不应直接列入低延迟流式基线。<a href="https://proceedings.mlr.press/v267/xu25f.html" title="citation">ArrayDPS 论文（PMLR 267）</a>、<a href="https://github.com/ArrayDPS/ArrayDPS" title="citation">官方实现与复现命令</a>。</p>
 </li>
 </ol>
-<span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-b74f82c81d">专栏：神经网络前端的泛化失配与四类对策</h3>
+<span id="sec-u-b74f82c81d" class="anchor-alias" aria-hidden="true"></span><span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-13-3-1">13.3.1 神经网络前端的泛化失配与四类对策</h3>
 <p>本专栏解释阵列或房间改变后性能下降的原因，并展开 13.3 第 2、6 条涉及的四类对策。</p>
 <p>神经网络前端可能在训练阵列和房间上表现良好，换到新的几何、声学条件或任务后却明显退化，这就是<strong>泛化失配</strong>。下面把失配分为阵列、声学、任务与数据三类，再从数据、表示、训练和部署四方面讨论缓解方法。</p>
 <p><strong>失配三源</strong>：</p>
@@ -508,6 +522,7 @@ D_t&=(1-p_D)D^-\\
 </table></div>
 <p>动手题用的绘图函数都在 <code>scripts/</code> 里，具体对应关系见上表。第 16 题还要安装 pyroomacoustics 0.10.0；它是房间声学仿真的扩展依赖，命令见该题和项目 README。</p>
 <p>章内还有带稳定编号 <code>E01-01</code> 等的计算练习，由<a href="research/05_exercises_and_audio.html">练习与音频实验手册</a>统一索引。附录原有题号仍用于下面的 1～17 题；不要把两个编号系统按顺序相加。工程练习 E10、选型练习 E11 和数学练习 E12 的运行入口是 <code>codes/examples/exercises_engineering.py</code>，可先手算再比对输出。</p>
+<h3 id="sec-13-6-1">13.6.1 基础与几何：第 1～3 章的题 1～4</h3>
 <p><strong>第 1 章（问题定义）</strong></p>
 <ol>
 <li>
@@ -534,6 +549,7 @@ D_t&=(1-p_D)D^-\\
 <p><strong>提示</strong>：它可作为参考通道，并新增从中心到各环麦的基线；“到各环麦距离相等”描述的是几何布局，不表示任意入射方向下都与环麦等相位。固定半径时增加环上麦数会缩短相邻间距，但不会增加最大孔径。</p>
 </li>
 </ol>
+<h3 id="sec-13-6-2">13.6.2 定位与波束：第 4、5 章的题 5～8</h3>
 <p><strong>第 4 章（定位）</strong></p>
 <ol start="5">
 <li>
@@ -557,6 +573,7 @@ D_t&=(1-p_D)D^-\\
 <p><strong>解释重点</strong>：低频 $kd$ 很小时，各阵元观测接近相同，弥散噪声相干矩阵容易病态；超指向解需要大幅度、相互抵消的权重，因而 WNG 下降。增大间距可能改善低频条件数，也可能在高频引入空间混叠，不能只看一端。</p>
 </li>
 </ol>
+<h3 id="sec-13-6-3">13.6.3 增强、分离与追踪：第 6～9 章的题 9～13</h3>
 <p><strong>第 7 章（去混响）</strong></p>
 <ol start="9">
 <li>
@@ -613,6 +630,7 @@ D_t&=(1-p_D)D^-\\
 <p><strong>提示</strong>：当前图用橙色竖线标出重采样帧，用紫色叉号标出反射粒子比例不低于 5% 的帧，但没有绘制 <code>n_eff</code> 或反射比例曲线；需要曲线时应增加子图。只改一处噪声参数是观测模型失配实验。粒子数增加是否改善结果，应由这些记录判断。</p>
 </li>
 </ol>
+<h3 id="sec-13-6-4">13.6.4 工程预算与方案选型：题 14～15</h3>
 <p><strong>第 10 章（工程实现）</strong></p>
 <ol start="14">
 <li>
@@ -628,7 +646,7 @@ D_t&=(1-p_D)D^-\\
 <p><strong>提示</strong>：按 §11.1 的六个问题补齐条件；检查分布式 SRO 风险（§10.2）、低频噪声下超指向的 WNG、AEC 参考是否覆盖车机实际播放处理，以及连续对话期间哪些模块需要保持运行。功耗预算见 §10.4 和 §10.9。</p>
 </li>
 </ol>
-<p><strong>综合</strong></p>
+<h3 id="sec-13-6-5">13.6.5 房间仿真：第 16 题的输入、测量和结果</h3>
 <ol start="16">
 <li>
 <p><strong>确定性房间仿真：距离、DRR 与定位误差。</strong> 用 pyroomacoustics 0.10.0 生成目标 $T_{60}=0.6$ s 的房间冲激响应（RIR），再用本书的 SRP-PHAT 教学实现估计单声源方向。先运行 <code>.venv/bin/python -m codes.examples.room_srp_exercise --check</code>：这一步只检查配置，不需要安装 pyroomacoustics，也没有运行房间仿真。</p>
@@ -724,11 +742,15 @@ D_t&=(1-p_D)D^-\\
 <p>距离变化也改变了声源相对墙面的位置和反射路径，这两个成对条件不足以估计跨房间、跨方向的平均因果效应。另两个随机位置同时改变距离与方向，更不能凭六点的总体相关性归因于距离。临界距离只给 DRR 量级参考，定位误差不保证在那里出现拐点。</p>
 <p>脚本未加入麦克风失配、加性噪声、声源高度变化或真实房间扩散结构；讨论这些因素时须另做控制实验。<code>--check</code> 的输出只有配置，没有上述仿真指标。</p>
 </li>
+</ol>
+<h3 id="sec-13-6-6">13.6.6 公开系统复核：题 17</h3>
+<ol start="17">
 <li>
 <p><strong>（研究拓展）</strong>读一篇 CHiME-8 参赛系统报告（见 §13.3 引用），按报告实际结构画出前端流程图，与本书图23 对照。</p>
 <p>逐项标出定位、分割、GSS/波束、增强和 ASR 后端是否存在，不先假定高排名系统都采用同一架构；再说明其阵列无关设计依赖哪些训练数据或解析模块。</p>
 </li>
 </ol>
+<h3 id="sec-13-6-7">13.6.7 补充计算：试听归一化</h3>
 <p><strong>E13-01：试听归一化会隐藏什么。</strong> 两段四点信号分别为 $a=[0,0.4,-0.4,0]$、$b=[0,0.2,-0.2,0]$，仅用于手算，不应当作可听语料。求两者电平差，再比较“共同乘 2”和“各自除以自身峰值”两种处理。</p>
 <p>答案：$b$ 的幅度是 $a$ 的一半，电平低 $20\log_{10}2\approx6.0206$ dB。共同乘 2 后，两者峰值是 0.8 和 0.4，原来的比例保留。各自除以自身峰值后，都变成 $[0,1,-1,0]$，差值为零，衰减被归一化消除了。</p>
 <p>运行 <code>.venv/bin/python -m codes.examples.exercises_engineering</code> 中的 <code>E13-01</code> 可复核这组数字。实际试听使用<a href="research/05_exercises_and_audio.html">音频实验手册</a>列出的较长素材。比较残余回声电平或 AGC 行为时，不能先分别拉到同一峰值再宣称电平没有变化；若只比较音色，可另建等响度试听版本，但仍保留未经该处理的评分输入。</p>

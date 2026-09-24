@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>空间处理与追踪源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="3c17a2f82b74"><style>
+<meta name="source-digest" content="cb929281331d"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -336,6 +336,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>规则菱形的 6 个麦对合并为 4 组；将第四麦沿 y 移动 0.5 mm 后，分组变为 6 组。独立的有符号时延查表与直接离散傅里叶求和确认，规则几何下理论 SRP/SMP 分数最大差约为 $1.99\times10^{-13}$。但原 C 程序的最大差为 76.5567，SRP、SMP 相对正确基线的最大误差分别为 95.1649、171.7215。两者的峰方向碰巧都是 45°，不能据此判定等价检查通过。</p>
 <p>问题位于 <code>system.c</code> 的两处查表索引：负的 <code>roundf</code> 结果先被转换成 <code>unsigned int</code>，随后才加中心偏移。该浮点值不在无符号类型的表示范围内，行为未定义；本机编译结果将负值转成 0。例如应取索引 3 的一项实际取了中心索引 9，规则案例共有 66 项 SRP 索引不符。使用程序实际索引再做独立傅里叶求和，SRP/SMP 分数误差仅约 $3.35\times10^{-5}$/$2.36\times10^{-5}$，因而将主要差异定位到查表而非变换约定。<a href="https://clang.llvm.org/docs/UsersManual.html">Clang 浮点转换说明</a>。</p>
 <p>扰动阵列的原 C 程序虽然给出 SRP 与 SMP 逐点相同的分数，两者相对正确基线仍有约 96.0504 的最大误差。这也说明两个程序互相吻合不能替代独立基线。当前报告明确记为 <code>failed_portability</code>，保留未修改的上游源码；不能把这一版本视为已经验证的 ARM 定位实现。</p>
+<p><strong>隔离适配实验（2026-09-24 已运行）。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/reproduce_smpphat_portable_overlay.py">适配脚本</a>先核对锁定工作树摘要，再只在临时目录复制源码，把 <code>system.c</code> 两处 <code>roundf</code> 的结果先转为有符号整数，保留原工作树不变。对上述规则菱形与 0.5 mm 扰动阵列，适配版的 6 个麦对分别合并为 4/6 组；两组的 SRP 与 SMP 峰都在第 3 个候选方向（45°），相对独立有符号查表和直接 DFT 的最大绝对误差分别不超过 $1.34\times10^{-5}$/$1.77\times10^{-5}$，两种 C 分数之间的最大差不超过 $3.10\times10^{-5}$。逐项数据、补丁表达式、原始与适配后摘要见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/reports/smpphat_portable_overlay.json">适配报告</a>。这只验证指定的两组远场合成互谱，不把原版失败改写为通过，也不说明真实录音准确率、其他几何或运算速度。</p>
 <p>实验使用合成远场互谱，不含真实录音、噪声、混响或运行速度评测。近场时，相同基线处于不同位置会产生不同距离差，合并不再有远场等价保证；无重复基线的阵列可能没有节省。后续速度测试仍需分别记录初始化、逐帧耗时、内存与浮点选项。</p>
 <span id="sec-17" class="anchor-alias" aria-hidden="true"></span><span id="11-bartlett-与-capon-空间谱" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-ae43274b28">11. Bartlett 与 Capon 空间谱</h3>
 <p>对应 §4.5。本书 <code>bartlett_spectrum</code> 计算候选响应下的输出功率；<code>capon_spectrum</code> 通过协方差线性求解计算自适应谱。两者共享导向矢量，但归一化和权重不同。外部交叉入口为 Acoular <code>fbeamform.py</code> 的 <code>BeamformerBase</code>、<code>BeamformerCapon</code>，其声压成像口径不应直接混入本书的单位幅度谱。</p>
@@ -477,7 +478,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>本书平面方位以 $+y$ 为零点、向 $+x$ 为正，所以位置观测函数是 <code>atan2(x-x0, y-y0)</code>，例如相对位置 <code>(1,2)</code> 对应 26.565°。常见数学极角接口按 <code>atan2(y,x)</code> 使用时必须转换。教学追踪接口的角度、状态、协方差和重采样权重要求有限实数；复数、布尔、字符串和对象数组不通过先强制转浮点来接受。无效标量观测或预测参数在修改状态、消耗随机数之前拒绝。</p>
 <p>建议给 $179°$ 与 $-179°$ 的相邻观测、长期缺测和非等间隔时间戳；在笛卡尔状态到方位角观测时，检查零距离附近的雅可比与方位角环绕。过程噪声必须随时间模型离散化。预测方差增大不等于应该不断增加“目标存在概率”，运动不确定性和存在性是不同状态。</p>
 <span id="sec-42" class="anchor-alias" aria-hidden="true"></span><span id="32-sir-粒子滤波与重采样" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-c96c7f9e8c">32. SIR 粒子滤波与重采样</h3>
-<p>对应 §9.3。先读本书 <code>CircularParticleFilter</code> 和 <code>systematic_resample</code>，再读 ODAS <code>src/system/particle2particle.c</code> 与 <code>src/module/mod_sst.c</code> 中的持续状态管理。权重应由一致的似然和杂波模型形成，极小概率在对数域计算；重采样只是分配粒子数量，不创造观测信息。</p>
+<p>对应 §9.2.4。先读本书 <code>CircularParticleFilter</code> 和 <code>systematic_resample</code>，再读 ODAS <code>src/system/particle2particle.c</code> 与 <code>src/module/mod_sst.c</code> 中的持续状态管理。权重应由一致的似然和杂波模型形成，极小概率在对数域计算；重采样只是分配粒子数量，不创造观测信息。</p>
 <p>建议固定种子比较有无重采样的有效粒子数，再用双峰对称后验检查圆周均值是否有定义。单个均值可能落在两个真实峰之间，因此多峰后验应保留峰或混合表示。工业中记录粒子数、退化阈值、扩散噪声、出生位置范围和静默保持时间，不把所有声学峰强制解释成一个人。</p>
 <span id="sec-43" class="anchor-alias" aria-hidden="true"></span><span id="33-gnnpda-与-jpda" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-fedcbffad1">33. GNN/PDA 与 JPDA</h3>
 <p>对应 §9.3。Stone Soup <code>dataassociator/neighbour.py</code> 给硬关联组件，<code>dataassociator/probability.py::JPDA</code> 根据满足一对一约束的联合事件计算边缘关联概率；<code>docs/tutorials/08_JPDATutorial.py</code> 展示如何连接预测器、假设器与更新器。<a href="https://github.com/dstl/Stone-Soup/blob/8d1edeb07ef8505ed065cbef435cfb5e517d9bdc/docs/tutorials/08_JPDATutorial.py">固定提交的 JPDA 教程源码</a>。</p>

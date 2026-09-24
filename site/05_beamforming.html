@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 5 章 · 波束形成 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="3c17a2f82b74"><style>
+<meta name="source-digest" content="cb929281331d"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -62,7 +62,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="05_beamforming.html#sec-5-1">5.1 统一问题表述</a></li>
 <li><a href="05_beamforming.html#sec-5-2">5.2 延迟求和波束形成器（Delay-and-Sum Beamformer，简称 DSB）：“合唱前先把大家对齐”</a></li>
 <li><a href="05_beamforming.html#sec-5-3">5.3 超指向的白噪声增益—指向性权衡</a></li>
-<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-a48dd5c583">专栏：差分麦克风（DMA）——从一阶心形到高阶与神经差分</a></li>
+<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-5-3-1">5.3.1 差分麦克风：从一阶心形到高阶设计</a></li>
 <li><a href="05_beamforming.html#sec-5-4">5.4 最小方差无失真响应</a></li>
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-5-4-1">5.4.1 稳健波束形成方法</a></li>
 <li><a href="05_beamforming.html#sec-5-5">5.5 线性约束最小方差（Linearly Constrained Minimum Variance，简称 LCMV）：多约束推广</a></li>
@@ -73,9 +73,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-5-7-3">5.7.3 音乐噪声与三项调节参数</a></li>
 <li><a href="05_beamforming.html#sec-5-8">5.8 球谐域波束形成（球阵专属）</a></li>
 <li><a href="05_beamforming.html#sec-5-9">5.9 深度神经网络（Deep Neural Network，简称 DNN）波束形成</a></li>
-<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-5fd4cffa34">可执行基线与上线检查</a></li>
+<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-5-9-1">5.9.1 可执行基线与上线检查</a></li>
 <li><a href="05_beamforming.html#sec-5-10">5.10 波束形成算法总对比</a></li>
-<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-38e7ff9a06">延伸阅读：Kumatani 等的 CMU 课程讲义</a></li>
+<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-5-10-1">5.10.1 延伸阅读：Kumatani 等的 CMU 课程讲义</a></li>
 <li><a href="05_beamforming.html#sec-5-11">5.11 本章练习</a></li>
 </ul>
 <div class="chap"><a href="06_aec.html">第 6 章 · 声学回声消除（AEC）</a></div>
@@ -93,7 +93,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="05_beamforming.html#sec-5-1">5.1 统一问题表述</a></li>
 <li><a href="05_beamforming.html#sec-5-2">5.2 延迟求和波束形成器（Delay-and-Sum Beamformer，简称 DSB）：“合唱前先把大家对齐”</a></li>
 <li><a href="05_beamforming.html#sec-5-3">5.3 超指向的白噪声增益—指向性权衡</a></li>
-<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-a48dd5c583">专栏：差分麦克风（DMA）——从一阶心形到高阶与神经差分</a></li>
+<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-5-3-1">5.3.1 差分麦克风：从一阶心形到高阶设计</a></li>
 <li><a href="05_beamforming.html#sec-5-4">5.4 最小方差无失真响应</a></li>
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-5-4-1">5.4.1 稳健波束形成方法</a></li>
 <li><a href="05_beamforming.html#sec-5-5">5.5 线性约束最小方差（Linearly Constrained Minimum Variance，简称 LCMV）：多约束推广</a></li>
@@ -104,9 +104,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-5-7-3">5.7.3 音乐噪声与三项调节参数</a></li>
 <li><a href="05_beamforming.html#sec-5-8">5.8 球谐域波束形成（球阵专属）</a></li>
 <li><a href="05_beamforming.html#sec-5-9">5.9 深度神经网络（Deep Neural Network，简称 DNN）波束形成</a></li>
-<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-5fd4cffa34">可执行基线与上线检查</a></li>
+<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-5-9-1">5.9.1 可执行基线与上线检查</a></li>
 <li><a href="05_beamforming.html#sec-5-10">5.10 波束形成算法总对比</a></li>
-<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-38e7ff9a06">延伸阅读：Kumatani 等的 CMU 课程讲义</a></li>
+<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-5-10-1">5.10.1 延伸阅读：Kumatani 等的 CMU 课程讲义</a></li>
 <li><a href="05_beamforming.html#sec-5-11">5.11 本章练习</a></li>
 </ul></nav></details>
 <blockquote>
@@ -269,7 +269,7 @@ Q&=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\mathbf{\Gamma}\vec{w}},&
 <li><strong>削波率与动态余量</strong>：把权重作用于代表性录音或按目标电平生成的测试信号，检查输出峰值和削波率。权重范数大时，通道叠加可能增加峰值；应预留数字动态余量，并在需要时收紧 WNG 约束；</li>
 <li><strong>通道失配灵敏度</strong>：按照麦克风数据手册、标定残差和装配误差给导向矢量逐通道施加增益、相位与位置扰动，统计目标响应 $|\vec{w}^H\vec{a}_{mis}-1|$、零陷位置与 WNG 的变化。算例 5-1 第 6 步提供了 1% 增益失配的手算；实际扰动范围和验收门限必须按设备确定。</li>
 </ol>
-<span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-a48dd5c583">专栏：差分麦克风（DMA）——从一阶心形到高阶与神经差分</h3>
+<span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-5-3-1">5.3.1 差分麦克风：从一阶心形到高阶设计</h3>
 <p>上一节末尾把 DMA 归入紧凑超指向设计。下面说明差分、延迟和均衡如何共同形成一阶方向图，以及提高阶数时为什么必须同时检查 WNG。</p>
 <p><strong>一阶差分原理</strong>：两个相距很近的麦克风接收同一远场声波时存在小的传播时延差。对其中一路施加内部延迟和增益后相减，可使某些方向相消、另一些方向保留。输出写成 $y(t)=x_1(t)-g\,x_2(t-\tau)$：$g$ 控制两路幅度与相位配比，$\tau$ 控制相减前的内部延迟；改变 $(g,\tau)$ 就会改变零点位置和指向图形状。</p>
 <p><strong>后向零点怎样变成近似心形</strong>：设端射双麦间距为 $d$，某方向的传播时延差为 $\tau_p(\theta)$。该方向的频率响应可写成</p>
@@ -415,7 +415,7 @@ Q&=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\mathbf{\Gamma}\vec{w}},&
 <p>由于阵元间距和噪声模型不同，超指向曲线不能作为与前两条曲线的同几何性能排名；该图也不能直接给出 WNG 或 DI。图中参数与算例 5-2 的 2 元阵、30° 干扰不同，零陷深度不能直接互比。</p>
 <p><strong>实现中的三个问题</strong>：</p>
 <ol>
-<li><strong>$\mathbf{R}_{nn}$ 从哪来</strong>：无目标帧估计（语音活动检测即 VAD 辅助）；语音场景经典做法是时频掩码（Time-Frequency mask，简称 TF-mask）——神经网络预测每个时频点是语音还是噪声，分别加权估出目标/噪声协方差（在 CHiME 系列远场语音识别挑战赛中验证有效的主流做法；这类掩码做法在完整系统里的效果证据见 §8.1）；</li>
+<li><strong>$\mathbf{R}_{nn}$ 从哪来</strong>：无目标帧估计（语音活动检测即 VAD 辅助）；语音场景经典做法是时频掩码（Time-Frequency mask，简称 TF-mask）——神经网络预测每个时频点是语音还是噪声，分别加权估出目标/噪声协方差（在 CHiME 系列远场语音识别挑战赛中验证有效的主流做法；这类掩码做法在完整系统里的效果证据见 §8.4）；</li>
 <li><strong>病态与对角加载</strong>：小快拍下 $\hat{\mathbf{R}}$ 可能病态，可改用 $\hat{\mathbf R}+\varepsilon\mathbf I$。它抬高小特征值并限制权重范数；与显式 WNG 约束的关系见下文，二者不能不加条件地写成同一个问题；</li>
 <li><strong>混响中的约束对象</strong>：自由场导向矢量只描述直达传播。混响房间中的目标通道还包含早期反射，因此实际目标传递向量可能与自由场模型不一致。可估计相对传递函数（Relative Transfer Function，简称 RTF），用各麦相对参考麦的目标传递函数作为约束向量；RTF 估计误差仍需通过失配仿真评估。</li>
 </ol>
@@ -747,7 +747,8 @@ d &= \vec{w}_u^H\vec{x} = \dfrac{2.0000 + 0.0873+0.4086\mathrm{j}}{2}\\
 <p>在理想球谐表示、相同阶数截断和正确旋转下，波束图可通过旋转系数转向而不改变自身形状。该性质支持高阶立体声（Higher-Order Ambisonics，简称 HOA）录音、最大 DI 波束和相位模式超指向。</p>
 <p>表示到 $N$ 阶共有 $(N+1)^2$ 个系数，因此 $M\ge(N+1)^2$ 只是阵元数量的必要条件。采样矩阵还必须满列秩，阵元布局要能稳定区分这些模式，径向响应也不能落入未正则化的深零点。高阶重建常因径向补偿和采样条件数而放大噪声。</p>
 <p>课程讲义引用的特定实验称小球阵可接近大线阵的识别性能，该结论只适用于其阵列、数据和识别器。[Kumatani et al.（出处同 §5.2 引文）]</p>
-<p><strong>圆阵的二维对应：相位模式（phase-mode / 圆谐波）处理</strong>。智能音箱的圆阵用同一思想的二维版：圆环上的声场做方位角傅里叶分解（Jacobi–Anger 展开），各阶圆谐波系数经模态补偿（除以贝塞尔函数 $J_n(\kappa r)$）后，可在模型成立的频带内合成可电子旋转的目标波束。代价与球阵同族：模态阶数受麦数限制，$J_n(\kappa r)$ 接近零时补偿会放大噪声，需要正则化和 WNG 约束。同心多环圆阵（Concentric Circular Microphone Array，同心圆麦克风阵列，CCMA）可扩展可控频带与空间自由度（Huang, Chen &amp; Benesty, <em>Insights into Frequency-Invariant Beamforming with Concentric Circular Microphone Arrays</em>, IEEE/ACM TASLP, vol.26, no.12, pp.2305–2318, DOI <a href="https://doi.org/10.1109/TASLP.2018.2862826">10.1109/TASLP.2018.2862826</a>）。</p>
+<p><strong>圆阵的二维对应：相位模式（phase-mode / 圆谐波）处理。</strong> 圆阵可把圆环上的声场做方位角傅里叶分解（Jacobi–Anger 展开）。各阶圆谐波系数经模态补偿后，可在模型成立的频带内合成能电子转向的波束。</p>
+<p>模态补偿涉及贝塞尔函数 $J_n(\kappa r)$。当它接近零时，除法会放大噪声；因此阶数不仅受麦克风数量限制，还要受正则化和 WNG 约束。同心多环圆阵（Concentric Circular Microphone Array，CCMA）提供另一种扩展可控频带和空间自由度的几何结构；具体结果见 Huang、Chen 与 Benesty，<em>Insights into Frequency-Invariant Beamforming with Concentric Circular Microphone Arrays</em>，IEEE/ACM TASLP 26(12), 2305–2318，<a href="https://doi.org/10.1109/TASLP.2018.2862826">DOI 10.1109/TASLP.2018.2862826</a>。</p>
 <p><strong>球谐域实现步骤</strong>：</p>
 <ol>
 <li><strong>设备选型</strong>：先定最高工作频率 $f_{\max}$ 与球半径 $r$，算 $\kappa r=2\pi f_{\max}r/c$；阵元数要满足 $M\ge(N+1)^2$，还要检查实际采样矩阵的秩和条件数。刚性球与开放球的径向响应不同，选型时应计算目标频带内各阶 $b_n(\kappa r)$ 的最小幅度，而不能只按麦数定阶；</li>
@@ -780,9 +781,10 @@ d &= \vec{w}_u^H\vec{x} = \dfrac{2.0000 + 0.0873+0.4086\mathrm{j}}{2}\\
 <p><strong>两麦小例子</strong>：设掩码估得 $\hat{\mathbf R}_{nn}=\operatorname{diag}(2,1)$，目标 RTF 为 $\hat{\vec a}=[1,1]^\top$。则 $\hat{\mathbf R}_{nn}^{-1}\hat{\vec a}=[0.5,1]^\top$，归一化分母为 $1.5$，所以 $\vec w_{MVDR}=[1/3,2/3]^\top$。</p>
 <p>可直接验证 $\vec w^H\hat{\vec a}=1$，输出噪声功率为 $\vec w^H\hat{\mathbf R}_{nn}\vec w=2/3$。</p>
 <p>若目标掩码把干扰大量计入 $\hat{\mathbf R}_{ss}$，RTF 会偏移，上述无失真条件只对错误的 $\hat{\vec a}$ 成立。</p>
-<p><strong>掩码尺度与空掩码的边界例子</strong>：取四帧两麦复谱 $\vec x_1=\vec x_2=[1,1]^\top$、$\vec x_3=\vec x_4=[1,-1]^\top$，目标掩码为 $[1,1,0,0]$，干扰掩码为 $[0,0,1,1]$。目标方向 $[1,1]^\top$ 与干扰方向 $[1,-1]^\top$ 正交；采用默认正对角加载 $10^{-6}$ 的两麦基线得到 $\vec w=[1/2,1/2]^\top$，输出为 $[1,1,0,0]$。把非零目标掩码的 1 全部改成 $10^{-300}$，峰值归一化后权重和输出不变；把目标掩码改成全零，则退回参考麦，输出变成 $[1,1,1,1]$。这是本书代码的确定性算例，不表明极小网络概率具有可信统计量；两组掩码只由两帧构成，也不能推断真实语音分离性能。</p>
+<p><strong>掩码尺度与空掩码的边界例子</strong>：取四帧两麦复谱 $\vec x_1=\vec x_2=[1,1]^\top$、$\vec x_3=\vec x_4=[1,-1]^\top$，目标掩码为 $[1,1,0,0]$，干扰掩码为 $[0,0,1,1]$。目标方向 $[1,1]^\top$ 与干扰方向 $[1,-1]^\top$ 正交；采用默认正对角加载 $10^{-6}$ 的两麦基线得到 $\vec w=[1/2,1/2]^\top$，输出为 $[1,1,0,0]$。把非零目标掩码的 1 全部改成 $10^{-300}$，峰值归一化后权重和输出不变；把目标掩码改成全零，则退回参考麦，输出变成 $[1,1,1,1]$。</p>
+<p>这是本书代码的确定性算例，不表明极小网络概率具有可信统计量；两组掩码只由两帧构成，也不能推断真实语音分离性能。</p>
 <p>端到端网络也可以直接估计复数权重、时域滤波器或输出波形。它不再自动满足无失真、WNG 或因果约束，必须把阵列泛化、前瞻帧数、目标失真和目标硬件上的资源消耗列入评测。若与 ASR 联合训练，还应固定后端识别器和评分脚本，同时报告前端信号指标与词错误率（Word Error Rate，WER）。<a href="https://doi.org/10.1109/TASLP.2022.3229261" title="citation">Gu et al., IEEE/ACM TASLP 2023</a></p>
-<span id="sec-16" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-5fd4cffa34">可执行基线与上线检查</h3>
+<span id="sec-16" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-5-9-1">5.9.1 可执行基线与上线检查</h3>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/beamforming.py"><code>beamforming.py</code></a> 提供 DSB、弥散场相干矩阵、加载超指向/MVDR、LCMV、GSC 阻塞矩阵和 Wiener 增益的原创 NumPy 基线。权重约定统一为输出 $Y=\vec w^H\vec x$，多通道谱形状统一为 <code>通道 × 频点 × 帧</code>；逐频点权重为 <code>频点 × 通道</code>。</p>
 <p>函数用线性方程求解代替显式求逆；未加载协方差病态、LCMV 约束不独立或空统计量都会报错。正文算例的 DSB 单位响应、Capon 数值、MVDR 权重、LCMV 双约束、GSC 阻塞和 Wiener 增益由 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_doa_beam.py"><code>test_codes_doa_beam.py</code></a> 独立回归，串联示例见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/ch02_05_baselines.py"><code>ch02_05_baselines.py</code></a>。</p>
 <p>DSB 对非零导向矢量计算 $\vec a/(\vec a^H\vec a)$；实现先按最大分量缩放，再归一化，以免极大或极小的有限输入在平方时溢出或下溢。若结果本身超出浮点范围则报错，而不是返回貌似有效的零权重。Wiener 增益中的功率必须为有限非负实数，不能把复数功率的虚部丢掉后继续运行；相关边界回归见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_spatial_round3.py"><code>test_codes_spatial_round3.py</code></a>。</p>
@@ -940,7 +942,7 @@ d &= \vec{w}_u^H\vec{x} = \dfrac{2.0000 + 0.0873+0.4086\mathrm{j}}{2}\\
 </table></div>
 <p>可先独立核对 DSB 行：正横设计使四个权重均为 $1/4$；干扰方向相邻麦的相位步进为 $\psi=2\pi(2000)(0.04)\sin40°/343$，所以干扰幅度响应为 $|\sum_{m=0}^{3}e^{\mathrm jm\psi}/4|\approx0.5241$。输出干扰加噪声功率为 $10(0.5241)^2+1/4\approx2.9973$，再代入式(5-7)得到表中 SINR。</p>
 <p>在这一组<strong>精确协方差、单频、固定几何</strong>条件下，LCMV 的干扰响应被硬约束为零，但输出 SINR 略低于 MVDR；加载使 WNG 和真实目标幅度增益回升，同时放松了干扰抑制。目标方向变化后，四种方法对设计方向的响应仍为 1，却不保证对真实方向无失真。表中数字不代表语音可懂度、统计平均或实机性能，也不能推广为固定排名。完整参数、未舍入结果和可运行计算见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/beamformer_common_input_demo.py">同输入波束对照</a>。</p>
-<span id="sec-18" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-38e7ff9a06">延伸阅读：Kumatani 等的 CMU 课程讲义</h3>
+<span id="sec-18" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-5-10-1">5.10.1 延伸阅读：Kumatani 等的 CMU 课程讲义</h3>
 <p>本章 §5.2、§5.3、§5.8 引用的是同一份 [Kumatani et al.（出处同 §5.2 引文）] CMU 远场语音识别课程讲义，其中讨论球阵、圆阵上的波束形成与识别实验。该材料是课程讲义而非期刊论文，适合用来比较算法结构与识别评测；公式与适用条件仍需回到相应原始论文核对。阅读时可围绕以下三点整理记录。</p>
 <p>第一，<strong>GEV 与 MVDR 的约束差异</strong>。GEV 最大化输出信噪比，没有无失真约束，输出尺度由后续归一化确定；MVDR 对设计导向矢量施加单位响应。阅读讲义的对比表时，应同时记录噪声抑制、目标失真、归一化方法和最终识别率，不能只比较单一分数。</p>
 <p>第二，<strong>特征波束（eigen-beam）的结构</strong>。球谐或圆谐波域中的各阶模态可分别正则化。高阶模态通常提供更细的空间变化，也更容易放大噪声；应按 WNG 预算限制其增益。该处理与阵元域对角加载都用于限制病态逆问题，但作用矩阵和参数口径不同。</p>

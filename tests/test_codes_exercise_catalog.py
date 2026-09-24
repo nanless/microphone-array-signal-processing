@@ -1,4 +1,4 @@
-"""Explicit cross-module, chapter and research inventory for 88 exercises."""
+"""Explicit cross-module, chapter and research inventory for 94 exercises."""
 
 import json
 import re
@@ -9,6 +9,8 @@ from codes.examples import (aec_advanced_exercises, aec_algorithm_minicases, exe
                             exercises_enhancement, exercises_spatial,
                             tracking_crossing_dropout_demo)
 from codes.examples.spectral_subtraction_demo import run_demo as spectral_subtraction_demo
+from codes.examples.coarray_covariance_exercise import run_exercise as coarray_exercise
+from codes.examples.doa_resolution_trials import run_experiment as doa_resolution_experiment
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -28,10 +30,13 @@ EXPECTED = {
     "aec_minicases": {"E06-07", "E06-08", "E06-09", "E06-10"},
     "aec_advanced": {f"E06-{number:02d}" for number in range(11, 21)},
     "tracking_crossing": {"E09-06"},
+    "coarray": {"E03-07"},
+    "doa_resolution": {"E04-08"},
     "engineering": {
         "E10-01", "E10-02", "E10-03", "E10-04", "E10-05", "E10-06",
         "E11-01", "E11-02", "E12-01", "E12-02", "E12-03", "E13-01",
-        "E10-07", "E10-08", "E10-09", "E10-10", "E10-11", "E10-12", "E11-03", "E11-04", "E12-04",
+        "E10-07", "E10-08", "E10-09", "E10-10", "E10-11", "E10-12", "E10-14",
+        "E11-03", "E11-04", "E11-05", "E11-06", "E11-07", "E12-04",
     },
     "spectral_subtraction": {"E10-13"},
 }
@@ -41,6 +46,8 @@ RUNNERS = {"spatial": exercises_spatial.run_exercises,
            "enhancement": exercises_enhancement.run_exercises,
            "aec_advanced": aec_advanced_exercises.run_exercises,
            "tracking_crossing": lambda: {"E09-06": tracking_crossing_dropout_demo.run_experiment()},
+           "coarray": lambda: {"E03-07": coarray_exercise()},
+           "doa_resolution": lambda: {"E04-08": doa_resolution_experiment(trials=4)},
            "engineering": exercises_engineering.run_exercises,
            "spectral_subtraction": lambda: {"E10-13": spectral_subtraction_demo()},
            "aec_minicases": lambda: {
@@ -65,9 +72,9 @@ class ExerciseCatalogTest(unittest.TestCase):
     def setUpClass(cls):
         cls.results = {name: run() for name, run in RUNNERS.items()}
 
-    def test_independent_inventory_has_88_unique_ids(self):
-        self.assertEqual(len(ALL_IDS), 88)
-        self.assertEqual(sum(map(len, EXPECTED.values())), 88)
+    def test_independent_inventory_has_94_unique_ids(self):
+        self.assertEqual(len(ALL_IDS), 94)
+        self.assertEqual(sum(map(len, EXPECTED.values())), 94)
 
     def test_each_module_returns_exact_assigned_ids(self):
         for name, results in self.results.items():
@@ -90,7 +97,7 @@ class ExerciseCatalogTest(unittest.TestCase):
                 text = chapters[0].read_text(encoding="utf-8")
                 self.assertRegex(text, rf"\b{re.escape(exercise_id)}\b")
 
-    def test_chapter_and_research_inventories_cover_exactly_88_ids(self):
+    def test_chapter_and_research_inventories_cover_exactly_94_ids(self):
         chapters = "\n".join(path.read_text(encoding="utf-8")
                              for path in (ROOT / "chapters").glob("*.md"))
         research = (ROOT / "codes/research/05_exercises_and_audio.md").read_text(encoding="utf-8")

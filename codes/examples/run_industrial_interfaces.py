@@ -92,15 +92,96 @@ def validate_measurements(data: dict) -> None:
     for kind in ("sample_peak", "true_peak"):
         if abs(loudness[f"half_{kind}"] / loudness[f"full_{kind}"] - 0.5) > 1e-12:
             raise ValueError("peak amplitude must halve")
+    peak = loudness["intersample_12khz"]
+    if (peak["frequency_hz"] != 12000 or peak["fade_samples_each_end"] != 4800
+            or abs(peak["phase_rad"] - math.pi/4) > 1e-12
+            or abs(peak["sample_peak"] - .95/math.sqrt(2)) > 1e-6):
+        raise ValueError("12 kHz sample-peak fixture disagrees with independent sinusoid")
+    if (not .94 < peak["true_peak"] < .96
+            or peak["true_peak"] <= peak["sample_peak"] + .25
+            or abs(peak["chunk127_true_peak"] - peak["true_peak"]) > 1e-10):
+        raise ValueError("inter-sample peak or continuous-state measurement mismatch")
     if loudness["silence_lufs"] is not None or loudness["silence_reason"] != "negative_infinity_no_gated_energy":
         raise ValueError("silence must remain null with its explicit non-finite reason")
     if loudness["silence_sample_peak"] != 0 or loudness["silence_true_peak"] != 0:
         raise ValueError("silence peaks must be zero")
+    vr = data["variable_ratio"]
+    if (vr["input_frames"] != 480060 or vr["change_at_output_frame"] != 80000
+            or vr["slew_output_frames"] != 160
+            or abs(vr["initial_input_output_ratio"] - 48004.8/16000) > 1e-12
+            or abs(vr["final_input_output_ratio"] - 48007.2/16000) > 1e-12):
+        raise ValueError("variable-ratio rate and output-frame control assumptions changed")
+    expected_markers = [round(48004.8 * second) if second <= 5 else
+                        240024 + round(48007.2 * (second - 5)) for second in range(1, 10)]
+    if vr["marker_input_frames"] != expected_markers:
+        raise ValueError("variable-ratio input markers disagree with independent clock formula")
+    for name in ("constant_100ppm", "step_150ppm", "slew_150ppm",
+                 "slew_150ppm_chunk127", "slew320_150ppm"):
+        case = vr[name]
+        if (case["consumed_input_frames"] != vr["input_frames"]
+                or case["flush_frames"] <= 0
+                or case["before_flush_frames"] + case["flush_frames"] != case["output_frames"]
+                or not math.isfinite(case["delay_after_flush_output_samples"])
+                or case["delay_after_flush_output_samples"] < 0):
+            raise ValueError("variable-ratio consumption, tail, or delay accounting failed")
+        if len(case["marker_output_frames"]) != 9:
+            raise ValueError("variable-ratio time markers are incomplete")
+    constant, step, slew, chunked, slew320 = (vr[key] for key in
+                                    ("constant_100ppm", "step_150ppm", "slew_150ppm",
+                                     "slew_150ppm_chunk127", "slew320_150ppm"))
+    if not 160003 <= constant["output_frames"] <= 160005 or not all(
+            159999 <= case["output_frames"] <= 160001 for case in (step, slew, chunked, slew320)):
+        raise ValueError("variable-ratio duration disagrees with two-clock arithmetic")
+    base_offset = slew["marker_output_frames"][0] - 16000
+    if (abs(slew["marker_output_frames"][-1] - 144000 - base_offset) > 1
+            or constant["marker_output_frames"][-1] - slew["marker_output_frames"][-1] < 2):
+        raise ValueError("variable-ratio marker drift was not corrected")
+    if (slew["output_frames"] != chunked["output_frames"]
+            or slew["marker_output_frames"] != chunked["marker_output_frames"]
+            or vr["chunk127_max_abs_error"] >= 1e-12):
+        raise ValueError("variable-ratio chunk continuity failed")
+    if not 1e-7 < vr["step_vs_slew_equal_index_max_abs_difference"] < .01:
+        raise ValueError("variable-ratio slew did not differ from an immediate step")
+    if not (vr["step_vs_slew_equal_index_max_abs_difference"] <
+            vr["step_vs_slew320_equal_index_max_abs_difference"] < .01):
+        raise ValueError("variable-ratio longer slew did not have a larger effect")
     pcm = data["pcm16"]
     if pcm["frame_read_counts"] != [3, 3, 1, 0] or pcm["item_read_counts"] != [6, 6, 2, 0]:
         raise ValueError("incorrect short-read counts or frame/item units")
     if tuple(pcm["pcm_interleaved"]) != PCM_EXPECTED or pcm["float_max_abs_error"] != 0:
         raise ValueError("PCM16 interleaving or exact /32768 normalization mismatch")
+
+
+def validate_variable_ratio_trace(trace: str, data: dict) -> None:
+    """Independently reconcile per-call native idone/odone with the JSON totals."""
+    names = {"vr_constant100ppm": "constant_100ppm", "vr_step150ppm": "step_150ppm",
+             "vr_slew160": "slew_150ppm", "vr_slew160_chunk127": "slew_150ppm_chunk127",
+             "vr_slew320": "slew320_150ppm"}
+    totals = {name: {"input": 0, "output": 0, "flush": 0, "calls": 0}
+              for name in names}
+    for line in trace.splitlines()[1:]:
+        fields = line.split(",")
+        if fields[0] not in names:
+            continue
+        if len(fields) != 6 or fields[1] not in ("input", "flush"):
+            raise ValueError("malformed variable-ratio callback trace")
+        name = fields[0]
+        idone, odone = int(fields[3]), int(fields[4])
+        if idone < 0 or odone < 0 or (fields[1] == "flush" and idone):
+            raise ValueError("invalid variable-ratio callback consumption")
+        totals[name]["input"] += idone
+        totals[name]["output"] += odone
+        totals[name]["calls"] += 1
+        if fields[1] == "flush":
+            totals[name]["flush"] += odone
+    for log_name, report_name in names.items():
+        actual = totals[log_name]
+        reported = data["variable_ratio"][report_name]
+        if (actual["input"] != reported["consumed_input_frames"]
+                or actual["output"] != reported["output_frames"]
+                or actual["flush"] != reported["flush_frames"]
+                or actual["calls"] != reported["input_calls"] + reported["flush_calls"]):
+            raise ValueError(f"variable-ratio trace totals disagree for {report_name}")
 
 
 def verify_wave(path: Path) -> dict:
@@ -196,6 +277,7 @@ def run(report_path: Path = DEFAULT_REPORT) -> dict:
         result = execute([str(executable), str(wav_path)], "harness-run")
         data = json.loads(result.stdout)
         validate_measurements(data)
+        validate_variable_ratio_trace(result.stderr, data)
         report["measurements"] = data
         report["independent_wave_check"] = verify_wave(wav_path)
         report["binary_sha256"] = digest(executable)

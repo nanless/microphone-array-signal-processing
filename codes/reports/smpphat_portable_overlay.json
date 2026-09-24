@@ -1,0 +1,62 @@
+{
+  "experiment": "smpphat_signed_delay_overlay",
+  "status": "passed_patched_teaching_case",
+  "upstream_revision": "6fd33e6eb3251078a4cd9793dde909e2500265cc",
+  "upstream_license": "GPL-3.0",
+  "source_file_sha256": {
+    "CMakeLists.txt": "dc3a3f5a8fbba43ae9376d3d12e03647038ec050910c74a5947673af9e2419fb",
+    "LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "src/signal.c": "8ecc5cfff260da0381daa203d5c156bf2912e7e6d11993bb6fe1473c7e7d1b8c",
+    "src/system.c": "3c5728205e50c65199f49517ce4aa553035584fa0bdc2e1066167ff74afda9c3",
+    "include/smpphat/const.h": "25f822195ea4232010ac239eabd8ec0bf9b0ef7c13e645d824a78ec0ba110b93",
+    "include/smpphat/signal.h": "d12bd67952c872dc1075c219152fc4ad9f04f6715287af5ce3b2d134d36e0fb4",
+    "include/smpphat/system.h": "121006606271acd45cf7481910a8cbb181ab24da0830843f9a9a73f41a6742c9"
+  },
+  "overlay": {
+    "file": "src/system.c",
+    "replacement_count": 2,
+    "old_expression": "((unsigned int) roundf(tdoa * (float) interpolation_rate))",
+    "new_expression": "((int) roundf(tdoa * (float) interpolation_rate))",
+    "patched_system_c_sha256": "b4be543e83960ad84c152ab126892a07093c23b49cc190df9eb5e486944b41cc",
+    "scope": "temporary copy; original source remains unchanged"
+  },
+  "dependency": {
+    "source": "provided_prefix",
+    "version": "not verified from an archive",
+    "archive_url": null,
+    "archive_sha256": null,
+    "header_sha256": "0dd1b988b681d5797aaf10c2c57c107f7dca510695e4b94b3855eb52550d282c",
+    "library_sha256": "7d5247b5e7a20d6dcb5969cddb2b80ac85dd9ba0348174f03df0e69bafb3de99"
+  },
+  "compiler": "Apple clang version 21.0.0 (clang-2100.3.34.2)",
+  "cases": [
+    {
+      "name": "regular_diamond",
+      "pair_count": 6,
+      "merged_group_count": 4,
+      "true_peak_index": 3,
+      "srp_peak_index": 3,
+      "smp_peak_index": 3,
+      "signed_lookup_mismatch_count": 0,
+      "srp_max_abs_error": 1.3357134378111368e-05,
+      "smp_max_abs_error": 1.764286577099483e-05,
+      "srp_vs_smp_max_abs": 3.100000003541936e-05
+    },
+    {
+      "name": "mic4_y_plus_0p5mm",
+      "pair_count": 6,
+      "merged_group_count": 6,
+      "true_peak_index": 3,
+      "srp_peak_index": 3,
+      "smp_peak_index": 3,
+      "signed_lookup_mismatch_count": 0,
+      "srp_max_abs_error": 1.2990852042094048e-05,
+      "smp_max_abs_error": 1.2990852042094048e-05,
+      "srp_vs_smp_max_abs": 0.0
+    }
+  ],
+  "limitations": [
+    "only two deterministic far-field four-microphone synthetic cases",
+    "does not validate unmodified upstream, real recordings, or runtime speed"
+  ]
+}

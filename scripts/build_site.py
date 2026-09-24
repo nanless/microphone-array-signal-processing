@@ -126,6 +126,9 @@ REAL_AUDIO_WAVS = {
 }
 REAL_AUDIO_FILES = REAL_AUDIO_WAVS | {"MANIFEST.json", "ATTRIBUTION.txt", "LICENSE.txt", "README.md"}
 ROOM_AUDIO_EXTRA = {"MANIFEST.json", "ROOM_RESULTS.png"}
+MOVING_AUDIO_WAVS = {"source.wav": 1, "static_array.wav": 2, "moving_array.wav": 2}
+GSS_AUDIO_WAVS = {"source_1.wav": 1, "source_2.wav": 1, "mixture.wav": 2,
+                  "enhanced_correct.wav": 1, "enhanced_missed.wav": 1}
 
 
 def stage_real_audio(source, destination):
@@ -181,6 +184,65 @@ def stage_room_audio(source, destination):
     return names
 
 
+def stage_moving_audio(source, destination):
+    """按独立清单核对连续运动合成 PCM，避免发布缺失或错配样本。"""
+    import wave
+    manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+    records = manifest["files"]
+    expected = set(MOVING_AUDIO_WAVS) | {"MANIFEST.json"}
+    if set(records) != set(MOVING_AUDIO_WAVS):
+        raise ValueError("移动声源清单文件集合不符")
+    if {path.name for path in source.iterdir() if path.is_file()} != expected:
+        raise ValueError("移动声源目录文件集合不符")
+    if (manifest["sample_rate_hz"] != 16000
+            or manifest["model"].find("free field") < 0):
+        raise ValueError("移动声源采样率或模型说明不符")
+    for name, channels in MOVING_AUDIO_WAVS.items():
+        path = source / name
+        if path.is_symlink() or hashlib.sha256(path.read_bytes()).hexdigest() != records[name]["sha256"]:
+            raise ValueError(f"移动声源音频摘要不符：{name}")
+        with wave.open(str(path), "rb") as wav:
+            if (wav.getframerate(), wav.getnchannels(), wav.getsampwidth(),
+                    wav.getnframes(), wav.getcomptype()) != (
+                        16000, channels, 2, records[name]["samples_per_channel"], "NONE"):
+                raise ValueError(f"移动声源 PCM 格式不符：{name}")
+    destination.mkdir()
+    for name in sorted(expected):
+        shutil.copy2(source / name, destination / name)
+    return expected
+
+
+def stage_gss_audio(source, destination):
+    """核对受控 GSS 教学链的五路 PCM 与可复算中间状态。"""
+    import wave
+    import zipfile
+    manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+    records = manifest["files"]
+    expected = set(GSS_AUDIO_WAVS) | {"STATE.npz", "MANIFEST.json"}
+    if (set(records) != expected - {"MANIFEST.json"}
+            or {p.name for p in source.iterdir() if p.is_file()} != expected
+            or manifest["sample_rate_hz"] != 16000):
+        raise ValueError("GSS 独立清单、文件集合或采样率不符")
+    for name in expected - {"MANIFEST.json"}:
+        path = source / name
+        if path.is_symlink() or hashlib.sha256(path.read_bytes()).hexdigest() != records[name]["sha256"]:
+            raise ValueError(f"GSS 资产摘要不符：{name}")
+        if name == "STATE.npz":
+            if not zipfile.is_zipfile(path):
+                raise ValueError("GSS 中间状态不是 NPZ")
+            continue
+        with wave.open(str(path), "rb") as wav:
+            if (wav.getframerate(), wav.getnchannels(), wav.getsampwidth(),
+                    wav.getnframes(), wav.getcomptype()) != (
+                        16000, GSS_AUDIO_WAVS[name], 2,
+                        records[name]["samples_per_channel"], "NONE"):
+                raise ValueError(f"GSS PCM 格式不符：{name}")
+    destination.mkdir()
+    for name in sorted(expected):
+        shutil.copy2(source / name, destination / name)
+    return expected
+
+
 def clean_label(text):
     text = re.sub(r"!\[.*?\]\(.*?\)", "", text)
     text = re.sub(r"[`*_~]", "", text)
@@ -197,8 +259,12 @@ def source_digest():
     paths += [ROOT / "codes" / "audio" / "MANIFEST.json"]
     paths += sorted((ROOT / "codes" / "real_audio").glob("*"))
     paths += sorted((ROOT / "codes" / "room_audio").glob("*"))
+    paths += sorted((ROOT / "codes" / "moving_audio").glob("*"))
+    paths += sorted((ROOT / "codes" / "gss_audio").glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
-    paths += [Path(__file__), ROOT / "scripts" / "make_figures.py",
+    paths += [Path(__file__), ROOT / "scripts" / "heading_aliases.py",
+              ROOT / "scripts" / "legacy_sequential_anchors.json",
+              ROOT / "scripts" / "make_figures.py",
               ROOT / "scripts" / "make_aec_figures.py", ROOT / "requirements.txt"]
     for path in paths:
         digest.update(path.relative_to(ROOT).as_posix().encode("utf-8"))
@@ -393,6 +459,12 @@ def rewrite_site_links(html, source_path):
         if target.parent == (ROOT / "codes" / "room_audio").resolve():
             relative = os.path.relpath("room_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
+        if target.parent == (ROOT / "codes" / "moving_audio").resolve() and target.name in (set(MOVING_AUDIO_WAVS) | {"MANIFEST.json"}):
+            relative = os.path.relpath("moving_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
+            return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
+        if target.parent == (ROOT / "codes" / "gss_audio").resolve() and target.name in (set(GSS_AUDIO_WAVS) | {"MANIFEST.json", "STATE.npz"}):
+            relative = os.path.relpath("gss_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
+            return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
         return repository_url(parsed, target)
 
     html = rewrite_href_targets(html, transform)
@@ -405,7 +477,7 @@ def rewrite_site_links(html, source_path):
         # input as a download link; only the explicit mono derivatives play.
         if parsed.path.endswith("real_audio/demand_nriver_16ch_10s.wav"):
             return match.group(0)
-        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio)/[a-z0-9_]+\.wav", parsed.path):
+        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|gss_audio)/[a-z0-9_]+\.wav", parsed.path):
             return match.group(0)
         safe_href = escape(href, quote=True)
         safe_label = escape(re.sub(r'<[^>]+>', '', unescape(label)), quote=True)
@@ -418,6 +490,10 @@ def render(md_text, source_path=None):
     """返回 (html, 标题数)；主标识稳定，并保留旧 sec-N 别名。"""
     import markdown
     source_path = Path(source_path) if source_path is not None else SRC / HOME_FNAME
+    try:
+        from scripts.heading_aliases import historical_aliases, has_historical_sequential_aliases
+    except ModuleNotFoundError:
+        from heading_aliases import historical_aliases, has_historical_sequential_aliases
     is_research = source_path.resolve().parent == (ROOT / "codes" / "research").resolve()
     records = heading_records(parse_headings(md_text))
     # 数学段暂存：防 markdown 吃下划线、防浏览器吞 <，转完再贴回
@@ -441,8 +517,13 @@ def render(md_text, source_path=None):
         counter[0] += 1
         tag, inner = m.group(1), m.group(2)
         _level, _text, primary, legacy = records[counter[0] - 1]
-        alias = ("" if primary == legacy else
+        alias = ("" if primary == legacy or has_historical_sequential_aliases(source_path.name) else
                  f'<span id="{legacy}" class="anchor-alias" aria-hidden="true"></span>')
+        alias += "".join(
+            f'<span id="{old}" class="anchor-alias" aria-hidden="true"></span>'
+            for old in historical_aliases(source_path.name, primary)
+            if old != primary
+        )
         if is_research:
             # 保留 Markdown/GitHub 风格的研究页深链，同时沿用站点目录标识。
             slug = re.sub(r"\s+", "-", re.sub(r"[^\w\s-]", "", _text.lower()))
@@ -672,12 +753,24 @@ def main():
         (OUT / "room_audio").mkdir(exist_ok=True)
         stale += [path for path in (OUT / "room_audio").iterdir()
                   if path.is_file() and path.name not in room_names]
+        moving_names = stage_moving_audio(ROOT / "codes/moving_audio", temp_out / "moving_audio")
+        (OUT / "moving_audio").mkdir(exist_ok=True)
+        stale += [path for path in (OUT / "moving_audio").iterdir()
+                  if path.is_file() and path.name not in moving_names]
+        gss_names = stage_gss_audio(ROOT / "codes/gss_audio", temp_out / "gss_audio")
+        (OUT / "gss_audio").mkdir(exist_ok=True)
+        stale += [path for path in (OUT / "gss_audio").iterdir()
+                  if path.is_file() and path.name not in gss_names]
         publish_files([(temp_out / name, OUT / name) for name in sorted(expected)] +
                       [(temp_out / "audio" / name, OUT / "audio" / name) for name in audio_names] +
                       [(temp_out / "real_audio" / name, OUT / "real_audio" / name)
                        for name in sorted(real_names)] +
                       [(temp_out / "room_audio" / name, OUT / "room_audio" / name)
-                       for name in sorted(room_names)], stale)
+                       for name in sorted(room_names)] +
+                      [(temp_out / "moving_audio" / name, OUT / "moving_audio" / name)
+                       for name in sorted(moving_names)] +
+                      [(temp_out / "gss_audio" / name, OUT / "gss_audio" / name)
+                       for name in sorted(gss_names)], stale)
     print("DONE", len(expected), "pages")
 
 

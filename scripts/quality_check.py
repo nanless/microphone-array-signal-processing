@@ -28,28 +28,34 @@ EDITING_MARKERS = re.compile(
 
 EXPECTED_SECTION_COUNTS = {
     "00_overview.md": 10,
-    "01_problem-definition.md": 2,
+    "01_problem-definition.md": 5,
     "02_basics-signal-model.md": 8,
     "03_array-geometry.md": 5,
     "04_doa-estimation.md": 11,
     "05_beamforming.md": 11,
-    "06_aec.md": 1,
-    "07_wpe-dereverberation.md": 1,
-    "08_speech-separation.md": 2,
-    "09_source-tracking.md": 5,
+    "06_aec.md": 17,
+    "07_wpe-dereverberation.md": 10,
+    "08_speech-separation.md": 8,
+    "09_source-tracking.md": 6,
     "10_engineering-practice.md": 12,
     "11_selection-guide.md": 7,
     "12_appendix-symbols-math.md": 4,
     "13_appendix-guide.md": 7,
 }
-# 第 6～8、10～11 章的源 h4 进入合订目录和 PDF 第三级书签。此表是独立发布
+# 第 2～6、8～13 章的源 h4 进入合订目录和 PDF 第三级书签。此表是独立发布
 # 基线，不从构建脚本或待检产物反推。
 EXPECTED_SUBSECTION_COUNTS = {
-    "06_aec.md": 24,
-    "07_wpe-dereverberation.md": 3,
-    "08_speech-separation.md": 6,
-    "10_engineering-practice.md": 11,
-    "11_selection-guide.md": 7,
+    "02_basics-signal-model.md": 8,
+    "03_array-geometry.md": 9,
+    "04_doa-estimation.md": 8,
+    "05_beamforming.md": 7,
+    "06_aec.md": 15,
+    "08_speech-separation.md": 5,
+    "09_source-tracking.md": 8,
+    "10_engineering-practice.md": 13,
+    "11_selection-guide.md": 9,
+    "12_appendix-symbols-math.md": 14,
+    "13_appendix-guide.md": 8,
 }
 # 上表为独立发布基线，不从待检 HTML 或构建器反推。
 EXPECTED_CHAPTERS = [
@@ -69,11 +75,11 @@ EXPECTED_CHAPTERS = [
     ("13_appendix-guide.md", "附录 B · 路径地图与练习"),
 ]
 EXPECTED_CHAPTER_COUNT = 14
-EXPECTED_SECTION_COUNT = 86
-EXPECTED_SUBSECTION_COUNT = 51
-EXPECTED_OUTLINE_ITEM_COUNT = 151
+EXPECTED_SECTION_COUNT = 121
+EXPECTED_SUBSECTION_COUNT = 104
+EXPECTED_OUTLINE_ITEM_COUNT = 239
 EXPECTED_FIGURE_NUMBERS = set(range(1, 40))
-# 研究附站使用独立显式清单，不挤占 14 篇教程或 150 项 PDF 大纲基线。
+# 研究附站使用独立显式清单，不挤占 14 篇教程或 239 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
     ("README.md", "index.html"),
@@ -178,6 +184,13 @@ def clean_heading_text(text: str):
     text = re.sub(r"<[^>]+>", "", text)
     text = re.sub(r"[`*_~]", "", text)
     return re.sub(r"\s+", " ", unescape(text)).strip()
+
+
+def outline_heading_text(text: str):
+    """Render heading labels independently while preserving inline code identifiers."""
+    marker = "\ue000"
+    protected = re.sub(r"`([^`]+)`", lambda match: match.group(1).replace("_", marker), text)
+    return clean_heading_text(protected).replace(marker, "_")
 
 
 def paragraph_review_candidates(text: str, min_chars: int = 280,
@@ -491,7 +504,9 @@ def expected_outline(documents=None):
         section_level = 2 if name == "00_overview.md" else 3
         children = []
         current = None
-        for level, title, _primary in headings:
+        raw_headings = markdown_headings(documents[name])
+        for (level, _title, _primary), (_raw_level, raw_title) in zip(headings, raw_headings):
+            title = outline_heading_text(raw_title)
             if level == section_level:
                 current = [title, []]
                 children.append(current)
@@ -829,7 +844,8 @@ def source_digest():
     digest = hashlib.sha256()
     paths = sorted(CHAPTERS.glob("*.md"))
     paths += [ROOT / "codes" / "research" / name for name, _ in EXPECTED_RESEARCH_PAGES]
-    paths += [ROOT / "scripts" / "build_site.py"]
+    paths += [ROOT / "scripts" / "build_site.py", ROOT / "scripts" / "heading_aliases.py",
+              ROOT / "scripts" / "legacy_sequential_anchors.json"]
     paths += sorted(path for path in (ROOT / "scripts" / "vendor" / "mathjax-3.2.2").rglob("*")
                     if path.is_file())
     paths += sorted((ROOT / "figures").glob("fig*.png"))
@@ -852,9 +868,12 @@ def site_source_digest():
     paths += [ROOT / "codes" / "audio" / "MANIFEST.json"]
     paths += sorted((ROOT / "codes" / "real_audio").glob("*"))
     paths += sorted((ROOT / "codes" / "room_audio").glob("*"))
+    paths += sorted((ROOT / "codes" / "moving_audio").glob("*"))
+    paths += sorted((ROOT / "codes" / "gss_audio").glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
-              ("build_site.py", "make_figures.py", "make_aec_figures.py")]
+              ("build_site.py", "heading_aliases.py", "legacy_sequential_anchors.json",
+               "make_figures.py", "make_aec_figures.py")]
     paths.append(ROOT / "requirements.txt")
     for path in paths:
         digest.update(path.relative_to(ROOT).as_posix().encode("utf-8"))
@@ -922,7 +941,14 @@ def check_pdf(errors: list[str], notices: list[str]):
     mark_info = root.get("/MarkInfo")
     is_marked = bool(mark_info and mark_info.get_object().get("/Marked"))
     if not is_marked or not root.get("/StructTreeRoot"):
-        notices.append("PDF 未包含完整结构标签；当前 Chrome 打印链只验收语言、文本层和书签，不能据此声称阅读顺序已通过")
+        fail(errors, "PDF 缺少结构标签根节点；检查 Chrome 导出与书签写入")
+    else:
+        structure = root["/StructTreeRoot"].get_object()
+        if not structure.get("/K") or not structure.get("/ParentTree"):
+            fail(errors, "PDF 结构树缺少内容或父树")
+        if not any("/StructParents" in page for page in reader.pages):
+            fail(errors, "PDF 页面未连接到结构树")
+        notices.append("PDF 已包含结构标签；尚未完成 PDF/UA、公式辅助文本与辅助技术阅读顺序的完整验收")
     width = float(reader.pages[0].mediabox.width)
     height = float(reader.pages[0].mediabox.height)
     if abs(width - 595.28) > 2 or abs(height - 841.89) > 2:
@@ -1071,7 +1097,12 @@ def check_real_audio(errors):
                     self.items.append(dict(attrs))
         parser = Players()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
-        real = [p for p in parser.items if not (p.get("src") or "").startswith("../audio/")]
+        allowed_audio_roots = ("../audio/", "../real_audio/", "../room_audio/",
+                               "../gss_audio/", "../moving_audio/")
+        if any(not (p.get("src") or "").startswith(allowed_audio_roots)
+               for p in parser.items):
+            fail(errors, "未知试听控件来源")
+        real = [p for p in parser.items if (p.get("src") or "").startswith("../real_audio/")]
         if len(real) != 3 or {p.get("src") for p in real} != {
                 "../real_audio/" + name for name, channels in EXPECTED_REAL_AUDIO_CHANNELS.items() if channels == 1}:
             fail(errors, "真实录音试听控件集合不符")
@@ -1137,6 +1168,86 @@ def check_room_audio(errors):
             raise ValueError("附录站点未发布房间图或音频清单")
     except Exception as exc:
         fail(errors, f"房间合成样本检查失败：{exc}")
+
+
+def check_moving_audio(errors):
+    """独立核对移动声源三组 PCM、真值清单和网页副本。"""
+    source, published = ROOT / "codes/moving_audio", SITE / "moving_audio"
+    expected_channels = {"source.wav": 1, "static_array.wav": 2, "moving_array.wav": 2}
+    expected = set(expected_channels) | {"MANIFEST.json"}
+    try:
+        manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+        if (set(manifest["files"]) != set(expected_channels)
+                or manifest["sample_rate_hz"] != 16000
+                or "free field" not in manifest["model"]
+                or len(manifest["truth"]["time_seconds"]) < 100):
+            raise ValueError("清单模型、真值或样本集合不符")
+        for folder in (source, published):
+            if {path.name for path in folder.iterdir() if path.is_file()} != expected:
+                raise ValueError(f"文件集合不符：{folder}")
+        for name in expected:
+            original, copy = source / name, published / name
+            if original.is_symlink() or copy.is_symlink() or original.read_bytes() != copy.read_bytes():
+                raise ValueError(f"网页副本与源文件不一致：{name}")
+        for name, channels in expected_channels.items():
+            record = manifest["files"][name]
+            path = source / name
+            if hashlib.sha256(path.read_bytes()).hexdigest() != record["sha256"]:
+                raise ValueError(f"WAV 摘要不符：{name}")
+            with wave.open(str(path), "rb") as wav:
+                if (wav.getframerate(), wav.getsampwidth(), wav.getnchannels(),
+                        wav.getnframes(), wav.getcomptype()) != (
+                            16000, 2, channels, record["samples_per_channel"], "NONE"):
+                    raise ValueError(f"WAV 格式不符：{name}")
+        page = (SITE / "09_source-tracking.html").read_text(encoding="utf-8")
+        for name in expected_channels:
+            if f'src="moving_audio/{name}"' not in page:
+                raise ValueError(f"第 9 章缺少 {name} 的试听控件")
+        if 'href="moving_audio/MANIFEST.json"' not in page:
+            raise ValueError("第 9 章缺少移动声源真值清单链接")
+    except Exception as exc:
+        fail(errors, f"移动声源合成样本检查失败：{exc}")
+
+
+def check_gss_audio(errors):
+    """独立核对教学 GSS 的五路 PCM、状态文件和站点副本。"""
+    import zipfile
+    source, published = ROOT / "codes/gss_audio", SITE / "gss_audio"
+    channels = {"source_1.wav": 1, "source_2.wav": 1, "mixture.wav": 2,
+                "enhanced_correct.wav": 1, "enhanced_missed.wav": 1}
+    expected = set(channels) | {"MANIFEST.json", "STATE.npz"}
+    try:
+        manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+        if (set(manifest["files"]) != expected - {"MANIFEST.json"}
+                or manifest["sample_rate_hz"] != 16000):
+            raise ValueError("GSS 清单集合或采样率不符")
+        for folder in (source, published):
+            if {path.name for path in folder.iterdir() if path.is_file()} != expected:
+                raise ValueError(f"GSS 文件集合不符：{folder}")
+        for name in expected:
+            original, copy = source / name, published / name
+            if original.is_symlink() or copy.is_symlink() or original.read_bytes() != copy.read_bytes():
+                raise ValueError(f"GSS 站点副本不符：{name}")
+            if name != "MANIFEST.json" and hashlib.sha256(original.read_bytes()).hexdigest() != manifest["files"][name]["sha256"]:
+                raise ValueError(f"GSS 资产摘要不符：{name}")
+        if not zipfile.is_zipfile(source / "STATE.npz"):
+            raise ValueError("GSS 中间状态不是 NPZ")
+        for name, n_channels in channels.items():
+            record = manifest["files"][name]
+            with wave.open(str(source / name), "rb") as wav:
+                if (wav.getframerate(), wav.getsampwidth(), wav.getnchannels(),
+                        wav.getnframes(), wav.getcomptype()) != (
+                            16000, 2, n_channels, record["samples_per_channel"], "NONE"):
+                    raise ValueError(f"GSS PCM 格式不符：{name}")
+        page = (SITE / "08_speech-separation.html").read_text(encoding="utf-8")
+        for name in channels:
+            if f'src="gss_audio/{name}"' not in page:
+                raise ValueError(f"第 8 章缺少 {name} 的试听控件")
+        for name in ("MANIFEST.json", "STATE.npz"):
+            if f'href="gss_audio/{name}"' not in page:
+                raise ValueError(f"第 8 章缺少 GSS {name} 链接")
+    except Exception as exc:
+        fail(errors, f"GSS 教学样本检查失败：{exc}")
 
 
 def check_audio(errors):
@@ -1216,7 +1327,10 @@ def check_audio(errors):
         parser = AudioParser()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         synthetic_players = [p for p in parser.players if (p.get("src") or "").startswith("../audio/")]
-        if len(synthetic_players) != 60 or {p.get("src") for p in synthetic_players} != {"../audio/" + n for n in names}:
+        expected_players = Counter({"../audio/" + n: 1 for n in names})
+        # The moving-source comparison repeats the existing panning sample.
+        expected_players["../audio/tracking_pan.wav"] += 1
+        if Counter(p.get("src") for p in synthetic_players) != expected_players:
             fail(errors, "试听控件集合不符")
         for player in parser.players:
             if "autoplay" in player or "controls" not in player or player.get("preload") != "none" or not player.get("aria-label"):
@@ -1235,6 +1349,8 @@ def main():
     check_audio(errors)
     check_real_audio(errors)
     check_room_audio(errors)
+    check_moving_audio(errors)
+    check_gss_audio(errors)
     check_combined_html(errors)
     check_pdf(errors, notices)
     for item in notices:

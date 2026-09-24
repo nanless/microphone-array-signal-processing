@@ -1,0 +1,69 @@
+{
+  "scope": "original NumPy two-microphone cACGMM EM, activity gating, target/non-target SCM and mask-MVDR on synthetic anechoic noise-like sources; not official GPU-GSS or speech",
+  "sample_rate_hz": 16000,
+  "seed": 20260924,
+  "stft": {
+    "n_fft": 256,
+    "hop": 128,
+    "center": true
+  },
+  "sources": "two independent seeded Gaussian sequences with 30 ms onset/offset; first active [0.1,1.5) s, second [0.5,1.9) s",
+  "array": "two microphones; source 1 direct at mic 0 and delayed two samples at mic 1; source 2 reversed; independent microphone noise RMS 0.003",
+  "wpe": "bypassed because the fixture contains no reverberation; code can optionally call the independent offline WPE teaching implementation",
+  "cacgmm_iterations": 8,
+  "shape_loading": 0.02,
+  "correct_shape_resets": 0,
+  "low_energy_bins": 0,
+  "correct_mask_sum_max_error": 2.220446049250313e-16,
+  "inactive_target_max_posterior": 0.0,
+  "silent_frame_background_min_posterior": 1.0,
+  "scored_interval_seconds": [
+    0.2,
+    1.45
+  ],
+  "si_sdr_db": {
+    "reference_mic0": 1.2803283205764548,
+    "correct_activity_output": 13.76197656995226
+  },
+  "activity_error": {
+    "missed_target_interval_seconds": [
+      0.1,
+      1.5
+    ],
+    "correct_output_scored_si_sdr_db": 13.76197656995226,
+    "missed_output_scored_si_sdr_db": 1.2803283205764548,
+    "missed_target_max_posterior": 0.0
+  },
+  "limits": "one deterministic room-free mixture, external near-oracle activity, reference microphone 0, no diarization, room, real meeting, ASR or WER; single-case SI-SDR is not a general performance claim",
+  "common_export_gain": 0.6393429966975921,
+  "files": {
+    "source_1.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sha256": "6e3333c7dc244d2a09d9342dd9df0fd76ae35ef1cfbcd0d5f1637a0e4a366644"
+    },
+    "source_2.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sha256": "82d7c5b07a588fbd7a1dff6223453cf4cc7490e8dca4c22c1196b5692907f600"
+    },
+    "mixture.wav": {
+      "channels": 2,
+      "samples_per_channel": 32000,
+      "sha256": "2e826e6f4b66f8e33d56c045da35cc937549cbf6d0124bfbb779079a273aec5b"
+    },
+    "enhanced_correct.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sha256": "13e818538c51c00296c8a04682d9903c09c3e0495b357e57d5994a70134da567"
+    },
+    "enhanced_missed.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sha256": "ebfad9f73fdf061140f04917e1449b1d47187728bccba3c9fe332a60901ee247"
+    },
+    "STATE.npz": {
+      "sha256": "39c263a5c47b91c4272fe3c33e530da4b33b37b14bf08b48842befd2ff26d87c"
+    }
+  }
+}

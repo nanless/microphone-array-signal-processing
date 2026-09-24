@@ -24,7 +24,8 @@
 或 which 回退）。PDF 公式使用仓库内固定版本 MathJax 3.2.2 与 WOFF 字体，构建不联网。
 
 已知边界（诚实写在前面）：
-  - PDF 书签与合订本 TOC 包含篇/节两级；第 6～8、10～11 章再收入源 h4 作为第三级。
+  - PDF 书签与合订本 TOC 包含篇/节两级；第 2～6、8～13 章的源 h4 作为第三级。
+  - Chrome 输出结构标签；克隆页面写书签以保留标签。仍需人工检查公式辅助文本和阅读顺序。
   - 页眉页脚关闭（--no-pdf-header-footer），PDF 内无页码——Chrome 无头打印不支持
     CSS 生成页码，要页码得换 WeasyPrint/Prince 链路。
   - 节书签定位靠"节标题文本首次出现页"逐章顺序搜索，标题串进正文会指偏，
@@ -47,8 +48,10 @@ from urllib.parse import urlparse
 
 try:
     from scripts import build_site
+    from scripts.heading_aliases import historical_aliases, has_historical_sequential_aliases
 except ModuleNotFoundError:  # 直接执行脚本时使用同目录模块。
     import build_site
+    from heading_aliases import historical_aliases, has_historical_sequential_aliases
 
 ROOT = Path(__file__).parent.parent
 SRC = ROOT / "chapters"
@@ -94,11 +97,14 @@ CHAPTERS = [
     ("13_appendix-guide.md", "附录 B · 路径地图与练习"),
 ]
 
-# 独立算法、工业实验与可直接练习的源 h4 纳入第三级导航；其余章节
-# 仍停在篇/节两级，避免把普通段首说明塞入印刷目录。
+# 独立算法、工业实验与可直接练习的源 h4 纳入第三级导航。
 PDF_THIRD_LEVEL_FILES = {
+    "02_basics-signal-model.md", "03_array-geometry.md",
+    "04_doa-estimation.md", "05_beamforming.md",
     "06_aec.md", "07_wpe-dereverberation.md", "08_speech-separation.md",
-    "10_engineering-practice.md", "11_selection-guide.md",
+    "09_source-tracking.md", "10_engineering-practice.md",
+    "11_selection-guide.md", "12_appendix-symbols-math.md",
+    "13_appendix-guide.md",
 }
 PDF_THIRD_LEVEL_CHAPTER_IDS = {
     f"ch-{index}" for index, (name, _label) in enumerate(CHAPTERS)
@@ -145,6 +151,8 @@ td,th{word-break:break-word;overflow-wrap:anywhere}
 /* MathJax 的行内长式与展示式均需留在 A4 正文宽度内。 */
 mjx-container{font-size:80%!important;max-width:100%}
 h1,h2,h3,h4{break-after:avoid}
+/* The CRB worked example otherwise starts with one orphan setup line on p52. */
+#ch-2-sec-2-6-7{break-before:page;page-break-before:always}
 .chap>h1{margin:0 0 3mm;line-height:1.3}
 .chap>h2:first-of-type{margin-top:3mm;margin-bottom:2mm;line-height:1.3}
 blockquote,pre{break-inside:avoid}
@@ -253,7 +261,8 @@ def source_digest():
     digest = hashlib.sha256()
     paths = sorted(SRC.glob("*.md"))
     paths += [ROOT / "codes" / "research" / name for name, _ in build_site.RESEARCH]
-    paths += [ROOT / "scripts" / "build_site.py"]
+    paths += [ROOT / "scripts" / "build_site.py", ROOT / "scripts" / "heading_aliases.py",
+              ROOT / "scripts" / "legacy_sequential_anchors.json"]
     paths += sorted(path for path in MATHJAX_DIR.rglob("*") if path.is_file())
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "make_figures.py",
@@ -392,8 +401,13 @@ def build_html(build_date=None):
             primary = (base if used_heading_ids[base] == 1 else
                        f"{base}-{used_heading_ids[base]}")
             legacy = f"sec-{source_heading[0]}"
-            alias = ("" if primary == legacy else
+            alias = ("" if primary == legacy or has_historical_sequential_aliases(fname) else
                      f'<span id="ch-{i}-{legacy}" class="anchor-alias"></span>')
+            alias += "".join(
+                f'<span id="ch-{i}-{old}" class="anchor-alias"></span>'
+                for old in historical_aliases(fname, primary)
+                if old != primary
+            )
             return (f'{alias}<{m.group(1)} id="ch-{i}-{primary}">'
                     f'{m.group(2)}</{m.group(1)}>')
 
@@ -559,8 +573,9 @@ def add_bookmarks(pdf_path, outline):
     ch_labels = [label for label, _, _ in outline]
     toc_pages = {i for i, t in enumerate(texts)
                  if sum(1 for label in ch_labels if norm(label) in norm(t)) >= 3}
-    writer = PdfWriter()
-    writer.append(reader)
+    # Chrome 的 PDF 页面含结构标签；append(reader) 会丢掉文档根的
+    # StructTreeRoot 和每页的 StructParents。完整克隆后再追加书签。
+    writer = PdfWriter(clone_from=reader)
     writer.add_metadata({
         "/Title": "麦克风阵列信号处理教程",
         "/Subject": "从阵列摆位到工程选型",
@@ -607,7 +622,8 @@ def add_bookmarks(pdf_path, outline):
     try:
         with open(tmp_path, "wb") as f:
             writer.write(f)
-        PdfReader(str(tmp_path))
+        tagged = PdfReader(str(tmp_path))
+        validate_pdf_structure_tags(tagged)
         os.replace(tmp_path, pdf_path)
     finally:
         tmp_path.unlink(missing_ok=True)
@@ -639,6 +655,22 @@ def contains_unrendered_math(text):
             text,
         )
     )
+
+
+def validate_pdf_structure_tags(reader):
+    """确认 Chrome 结构树在加书签前后均存在；不等同 PDF/UA 验证。"""
+    root = reader.trailer["/Root"]
+    mark_info = root.get("/MarkInfo")
+    if not mark_info or not bool(mark_info.get_object().get("/Marked")):
+        raise SystemExit("PDF 缺少 /MarkInfo /Marked；不能验收结构标签")
+    tree = root.get("/StructTreeRoot")
+    if not tree:
+        raise SystemExit("PDF 缺少 /StructTreeRoot；不能验收结构标签")
+    structure = tree.get_object()
+    if not structure.get("/K") or not structure.get("/ParentTree"):
+        raise SystemExit("PDF 结构树缺少内容或父树；不能验收标签关系")
+    if not any("/StructParents" in page for page in reader.pages):
+        raise SystemExit("PDF 页面缺少 /StructParents；结构树未连接到页面")
 
 
 def validate_pdf_text_codepoints(text):
@@ -705,7 +737,8 @@ def print_pdf(combined, pdf, timeout_min_pages=100):
                  "--allow-file-access-from-files",
                  f"--user-data-dir={udd}", "--timeout=180000",
                  "--virtual-time-budget=30000",
-                 f"--print-to-pdf={tmp_pdf}", "--no-pdf-header-footer",
+                 "--export-tagged-pdf", f"--print-to-pdf={tmp_pdf}",
+                 "--no-pdf-header-footer",
                  combined.as_uri()], stdout=log, stderr=subprocess.STDOUT, text=True)
             deadline, last_size, stable_since = time.time() + 600, -1, None
             while time.time() < deadline:
@@ -735,6 +768,7 @@ def print_pdf(combined, pdf, timeout_min_pages=100):
         try:
             from pypdf import PdfReader
             reader = PdfReader(str(tmp_pdf))
+            validate_pdf_structure_tags(reader)
             npages = len(reader.pages)
             page_texts = [page.extract_text() or "" for page in reader.pages]
             last_text = page_texts[-1]

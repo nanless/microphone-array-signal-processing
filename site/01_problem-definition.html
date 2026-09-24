@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 1 章 · 问题定义与双耳启示 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="3c17a2f82b74"><style>
+<meta name="source-digest" content="cb929281331d"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -55,6 +55,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap cur" aria-current="page">第 1 章 · 问题定义与双耳启示</div>
 <ul>
 <li><a href="01_problem-definition.html#sec-u-5cd90bfd4e">1. 从一个生活场景出发：问题定义</a></li>
+<li><a href="01_problem-definition.html#sec-u-05ec932a34">客厅里的远场语音问题</a></li>
+<li><a href="01_problem-definition.html#sec-u-2fa0be7e3b">空间处理的三项任务</a></li>
+<li><a href="01_problem-definition.html#sec-u-783265321c">三类阵列收益与白噪声增益</a></li>
 <li><a href="01_problem-definition.html#sec-1-1">1.1 双耳听觉的三类定位线索</a></li>
 <li><a href="01_problem-definition.html#sec-u-f7a201edb9">本章练习</a></li>
 </ul>
@@ -74,6 +77,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
 <li><a href="01_problem-definition.html#sec-u-5cd90bfd4e">1. 从一个生活场景出发：问题定义</a></li>
+<li><a href="01_problem-definition.html#sec-u-05ec932a34">客厅里的远场语音问题</a></li>
+<li><a href="01_problem-definition.html#sec-u-2fa0be7e3b">空间处理的三项任务</a></li>
+<li><a href="01_problem-definition.html#sec-u-783265321c">三类阵列收益与白噪声增益</a></li>
 <li><a href="01_problem-definition.html#sec-1-1">1.1 双耳听觉的三类定位线索</a></li>
 <li><a href="01_problem-definition.html#sec-u-f7a201edb9">本章练习</a></li>
 </ul></nav></details>
@@ -84,7 +90,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <hr />
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-5cd90bfd4e">1. 从一个生活场景出发：问题定义</h1>
 <p>本章从客厅里的远场语音交互出发，依次说明空间处理的三项任务、阵列增益的不同度量，以及双耳听觉为机器阵列提供的线索。</p>
-<p><strong>客厅里那句“今天天气怎么样”</strong></p>
+<h2 id="sec-u-05ec932a34">客厅里的远场语音问题</h2>
 <p>想象你坐在客厅里，对 3 米外的智能音箱说“今天天气怎么样”。音箱要听清这句话，需要处理四类干扰：</p>
 <ol>
 <li><strong>环境噪声</strong>：空调声、车声；</li>
@@ -94,7 +100,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ol>
 <p>人的听觉系统会合并双耳线索来定位和选择性聆听。机器可以用<strong>一组麦克风</strong>观测类似的空间差异：每个麦克风处于不同位置，同一声音到达它们的<strong>时间、强度略有不同</strong>。这些差异包含方向信息，也使系统能够优先保留某个方向的声音。</p>
 <p>这些干扰的结构不同，不能用同一个“降噪增益”概括。先区分阵列空间处理承担的任务，再分别定义收益。</p>
-<p><strong>空间处理的三项任务</strong></p>
+<h2 id="sec-u-2fa0be7e3b">空间处理的三项任务</h2>
 <p>下面三项是阵列空间处理的核心任务：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -124,7 +130,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </table></div>
 <p>它们没有覆盖开头的全部问题。设备自己的回声由声学回声消除（Acoustic Echo Cancellation，AEC）处理，房间拖尾由去混响处理，多人同时说话还需要语音分离；这些任务分别在第 6～8 章展开。</p>
 <p>定位、波束形成和追踪回答的问题不同，对应的评价指标也不同。下面先计算最基础的白噪声阵列增益。</p>
-<p><strong>三类阵列收益</strong></p>
+<h2 id="sec-u-783265321c">三类阵列收益与白噪声增益</h2>
 <p>麦克风阵列最容易算清的一项理论收益，是对白噪声的<strong>阵列增益</strong>：$M$ 元延迟求和阵列在理想条件下可得到 $10\log_{10}M$ dB。功率 2 倍约为 3 dB，10 倍为 10 dB；4 麦约为 6 dB，8 麦约为 9 dB。</p>
 <p>这个结果要求各通道噪声互不相关、目标可按远场平面波对齐，而且各麦克风的增益和相位一致。<a href="https://course.ece.cmu.edu/~ece792/handouts/KumataniEtAl12.pdf" title="citation">Kumatani–McDonough–Raj《Microphone Array Processing for Distant Speech Recognition》CMU 课程讲义，2012</a></p>
 <p>定向干扰、弥散混响和模型失配不能直接并入这一个数字。它们要分别检查零陷、DI 与稳健性，具体收益随场景变化。</p>

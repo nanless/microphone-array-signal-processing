@@ -91,7 +91,7 @@ class EnhancementParagraphTest(unittest.TestCase):
 
     def test_reviewed_explanations_keep_distinct_paragraphs(self):
         cases = [
-            ("06_aec.md", "#### IPNLMS：", "**两抽头手算。**", "比例归一化最小均方", 8),
+            ("06_aec.md", "#### 6.2.4 IPNLMS：", "**两抽头手算。**", "比例归一化最小均方", 8),
             ("06_aec.md", "第一行描述路径的漂移或突变", "下式是便于复算", "同写为", 4),
             ("06_aec.md", "D1～D3检查参考", "> **采样率偏移", "ITU-T 已于", 3),
             ("08_speech-separation.md", "**AuxIVA（", "**ILRMA（", "标准实现仍是整段迭代", 2),
@@ -110,7 +110,7 @@ class EnhancementParagraphTest(unittest.TestCase):
 
     def test_device_selection_and_wpe_directions_are_four_item_lists(self):
         cases = [
-            ("06_aec.md", "**按设备条件选型**", "#### 6.1.7",
+            ("06_aec.md", "**按设备条件选型**", "### 6.6",
              ["耳机和手表", "音箱和会议终端", "双讲条件复杂", "需要只保留注册用户"],
              "语音助手还要单独验证"),
             ("07_wpe-dereverberation.md", "WPE 的改进主要围绕四个限制展开", "参数设置应先",
@@ -145,7 +145,7 @@ class EnhancementParagraphTest(unittest.TestCase):
         self.assertNotIn("无量纲", items[3]["text"])
 
     def test_three_aec_beamforming_orders(self):
-        source, path = self.passage("06_aec.md", "#### 6.1.7", "**联合分析**")
+        source, path = self.passage("06_aec.md", "### 6.6", "**联合分析**")
         items = self.render_items(source, path)
         self.assert_labels(items, ["AEC→BF", "BF→AEC", "联合优化"])
         self.assertEqual(items[0]["paragraphs"], 2)
@@ -176,7 +176,7 @@ class EnhancementParagraphTest(unittest.TestCase):
             self.assertNotIn(r"\tag{8-4}", item["text"])
 
     def test_eight_research_directions_preserve_arraydps(self):
-        source, path = self.passage("13_appendix-guide.md", "### 13.3", "#### 专栏：")
+        source, path = self.passage("13_appendix-guide.md", "### 13.3", "#### 13.3.1")
         items = self.render_items(source, path)
         self.assert_labels(items, ["预训练模型", "阵列无关", "目标说话人提取", "生成式语音增强", "TF-GridNet", "几何无关前端", "CHiME-9", "扩散先验"])
         self.assertIn("FlowSep", items[3]["text"])

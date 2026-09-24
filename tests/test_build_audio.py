@@ -50,7 +50,8 @@ class AudioQualityTest(unittest.TestCase):
             '<audio controls preload="none" aria-label="试听样本" '
             f'src="../audio/{escape(record["file"], quote=True)}"></audio>'
             for record in self.manifest["files"]
-        ), encoding="utf-8")
+        ) + '\n<audio controls preload="none" aria-label="声像移动复听" '
+            'src="../audio/tracking_pan.wav"></audio>', encoding="utf-8")
 
     def errors(self):
         errors = []

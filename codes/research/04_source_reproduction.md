@@ -107,7 +107,7 @@ WPE 首先验证延迟回归向量、复共轭和加权正规方程。离线与�
 | pystoi | 已取得 Python 核心 | 项目环境缺 SciPy，未安装 | 未运行；短片段行为来自源码核查 | 不适用 |
 | ViSQOL | 已取得源码子集 | 未安装 Bazel，未取模型和大型依赖 | 未运行 | 未测 |
 | SBL | 已核对固定提交与核心文件摘要 | 现有 Python/NumPy，无新增依赖 | 五组单次合成实验已运行；两组达到迭代上限，未记作收敛 | 未测 |
-| SMP-PHAT | 已核对固定提交，算法源码未修改 | 隔离 FFTW 浮点库；直接编译原 C 核心，未用 x86 专用构建选项 | 已运行但数值等价失败；本机负浮点时延转无符号索引错误 | 未测 |
+| SMP-PHAT | 已核对固定提交；原版未修改 | 隔离 FFTW 浮点库；直接编译原 C 核心；另在临时副本做两处有符号索引适配 | 原版数值等价失败；隔离适配版在两组合成四麦输入通过独立 DFT 对照 | 未测 |
 | RobustSBL、BTK | 已取得固定源码 | MATLAB 或旧构建条件分别见空间研究 | 未运行 | 未测 |
 | DNN 控制 AEC、联合 AEC/NR、NBSS | 已取得源码子集 | 训练/推理依赖、数据和权重未齐备 | 未运行 | 未测 |
 | lib_xcore_math v3.0.0 | 已取得，与 lib_voice 依赖一致 | 未配置 XTC 与目标板 | 未运行宿主参考或 VPU 内核 | 未测 |
@@ -183,6 +183,8 @@ SMP-PHAT 的原版复现发现了失败：在本机 Apple clang/arm64 上，固�
 因此，程序能完成编译、两个方法在选定输入上恰好给出同一峰，并不等于全方向分数与推导相符。
 实验保留原版失败，再用上游实际查表索引配合独立离散傅里叶求和定位误差来源；没有修改上游算法后
 将其结果冒充原版通过。完整输入、依赖、判据与诊断见[空间研究](01_spatial_and_tracking.md)。
+
+2026-09-24 又以[独立隔离脚本](../examples/reproduce_smpphat_portable_overlay.py)在临时副本上仅改两处负时延索引转换，保持固定上游目录不动。两组合成四麦输入的全方向分数相对独立 DFT 最大误差均小于 $2\times10^{-4}$；[适配报告](../reports/smpphat_portable_overlay.json)单列为 `passed_patched_teaching_case`。该结论不改变[未修补原版报告](../reports/smpphat_reference.json)的 `failed_portability` 状态，也未测试真实录音和运行时间。
 
 [离线 WPE 对照](../examples/compare_wpe_reference.py)只比较对齐的有效历史帧；
 [在线 WPE 对照](../examples/compare_online_wpe_reference.py)核对三个接口的实际抽头时间点及连续状态。

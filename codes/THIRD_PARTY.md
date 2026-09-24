@@ -95,7 +95,7 @@ SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构�
 | [sbl](https://github.com/gerstoft/SBL/tree/d4bba35e9b60907d3024473ba5a41046450baae0) | 多快拍、多频稀疏贝叶斯定位 | GPL-3.0 | 已取得独立源码 |
 | [robustsbl](https://github.com/NoiseLabUCSD/RobustSBL/tree/d746266a1336d4467f60b6f7b7e8b4695a01d26d) | Gauss、t、Huber、Tyler 损失的稳健 SBL | MIT | 已取得独立源码 |
 | [btk20](https://github.com/kkumatani/distant_speech_recognition/tree/feff19ec8bcb770f6530fe280dc3ccafc2f5984a) | 子带 LMS/RLS 广义旁瓣抵消 | MIT; retain per-file notices | 已取得独立源码 |
-| [smpphat](https://github.com/FrancoisGrondin/smpphat/tree/6fd33e6eb3251078a4cd9793dde909e2500265cc) | 合并等效麦对的 SRP-PHAT 加速 | GPL-3.0 | 已取得独立源码；本机负时延索引移植缺陷见空间研究，未通过数值复现 |
+| [smpphat](https://github.com/FrancoisGrondin/smpphat/tree/6fd33e6eb3251078a4cd9793dde909e2500265cc) | 合并等效麦对的 SRP-PHAT 加速 | GPL-3.0 | 已取得独立源码；未改原版在本机数值失败，临时两行适配版的合成案例通过；原版与适配版报告分开保存 |
 | [libsoxr](https://sourceforge.net/p/soxr/code/ci/945b592b70470e29f917f4de89b4281fbbd540c0/tree/) | 连续与可变比率重采样 | LGPL-2.1-or-later; embedded PFFFT terms separate | 已取得独立源码 |
 | [libebur128](https://github.com/jiixyj/libebur128/tree/67b33abe1558160ed76ada1322329b0e9e058b02) | 响度和真峰值测量 | MIT | 已取得独立源码 |
 | [pystoi](https://github.com/mpariente/pystoi/tree/74872b000753a7a42ff51aa0868af8c82c7f9053) | STOI 与 ESTOI 可懂度评分 | MIT for Python core; MATLAB test notices separate | 已取得源码子集 |

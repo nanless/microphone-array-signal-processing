@@ -119,9 +119,9 @@ class BuildHelpersTest(unittest.TestCase):
             '<div class="chap" id="ch-6"><h1>AEC</h1>'
             '<h2 id="ch-6-sec-6-1">问题</h2>'
             '<h3 id="ch-6-sec-u-a">FDKF</h3></div>'
-            '<div class="chap" id="ch-5"><h1>波束</h1>'
-            '<h2 id="ch-5-sec-5-1">问题</h2>'
-            '<h3 id="ch-5-sec-u-b">局部说明</h3></div>'
+            '<div class="chap" id="ch-1"><h1>问题定义</h1>'
+            '<h2 id="ch-1-sec-1-1">双耳</h2>'
+            '<h3 id="ch-1-sec-u-b">局部说明</h3></div>'
             '<div class="chap" id="ch-10"><h1>工程</h1>'
             '<h2 id="ch-10-sec-10-1">采样时钟</h2>'
             '<h3 id="ch-10-sec-u-c">漂移实验</h3></div></body>'
@@ -130,7 +130,7 @@ class BuildHelpersTest(unittest.TestCase):
             build_pdf.outline_from_html(html),
             [
                 ("AEC", "ch-6", [("问题", "ch-6-sec-6-1", [("FDKF", "ch-6-sec-u-a")])]),
-                ("波束", "ch-5", [("问题", "ch-5-sec-5-1", [])]),
+                ("问题定义", "ch-1", [("双耳", "ch-1-sec-1-1", [])]),
                 ("工程", "ch-10", [("采样时钟", "ch-10-sec-10-1", [("漂移实验", "ch-10-sec-u-c")])]),
             ],
         )
@@ -248,6 +248,14 @@ class BuildHelpersTest(unittest.TestCase):
         self.assertIn('id="sec-2" class="anchor-alias"', html)
         self.assertEqual(html.count("<h2"), 1)
         self.assertEqual(html.count("<h3"), 1)
+
+    def test_restructured_chapter_keeps_old_semantic_anchor(self):
+        html, _ = build_site.render(
+            "## AEC\n### 6.2 工程化自适应\n",
+            ROOT / "chapters/06_aec.md",
+        )
+        self.assertIn('id="sec-6-2"', html)
+        self.assertIn('id="sec-6-1-3" class="anchor-alias"', html)
 
     def test_math_shielding_preserves_fenced_and_inline_code(self):
         source = ('```python\na = "$x<y$"\n```\n'

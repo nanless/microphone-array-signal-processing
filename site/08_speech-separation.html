@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 8 章 · 语音分离 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="3c17a2f82b74"><style>
+<meta name="source-digest" content="cb929281331d"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -63,13 +63,18 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <ul>
 <li><a href="08_speech-separation.html#sec-u-7c0095c9a8">8. 语音分离</a></li>
 <li><a href="08_speech-separation.html#sec-8-1">8.1 多说话人语音分离：鸡尾酒会问题</a></li>
-<li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-8-1-1">8.1.1 经典盲源分离：AuxIVA、ILRMA、MNMF 与 TRINICON</a></li>
-<li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-8-1-2">8.1.2 GSS：活动导引、空间聚类与波束形成</a></li>
-<li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-8-1-3">8.1.3 分离指标与数据集口径</a></li>
-<li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-8-1-4">8.1.4 连续语音分离与深度模型</a></li>
-<li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-8-1-5">8.1.5 教学代码与源码复现</a></li>
-<li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-8-1-6">8.1.6 练习与可复算答案</a></li>
 <li><a href="08_speech-separation.html#sec-8-2">8.2 处理模块的顺序</a></li>
+<li><a href="08_speech-separation.html#sec-8-3">8.3 经典盲源分离：AuxIVA、ILRMA、MNMF 与 TRINICON</a></li>
+<li><a href="08_speech-separation.html#sec-8-4">8.4 GSS：活动导引、空间聚类与波束形成</a></li>
+<li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-8-4-1">8.4.1 输入、空间模型与完整处理链</a></li>
+<li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-8-4-2">8.4.2 活动约束下的 EM 迭代</a></li>
+<li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-8-4-3">8.4.3 活动门控手算与错误标注反例</a></li>
+<li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-8-4-4">8.4.4 协方差、波束权重与适用边界</a></li>
+<li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-8-4-5">8.4.5 可运行的 cACGMM—SCM—MVDR 受控链</a></li>
+<li><a href="08_speech-separation.html#sec-8-5">8.5 分离指标与数据集口径</a></li>
+<li><a href="08_speech-separation.html#sec-8-6">8.6 连续语音分离与深度模型</a></li>
+<li><a href="08_speech-separation.html#sec-8-7">8.7 教学代码与源码复现</a></li>
+<li><a href="08_speech-separation.html#sec-8-8">8.8 练习与可复算答案</a></li>
 </ul>
 <div class="chap"><a href="09_source-tracking.html">第 9 章 · 声源追踪</a></div>
 <div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a></div>
@@ -81,13 +86,18 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
 <li><a href="08_speech-separation.html#sec-u-7c0095c9a8">8. 语音分离</a></li>
 <li><a href="08_speech-separation.html#sec-8-1">8.1 多说话人语音分离：鸡尾酒会问题</a></li>
-<li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-8-1-1">8.1.1 经典盲源分离：AuxIVA、ILRMA、MNMF 与 TRINICON</a></li>
-<li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-8-1-2">8.1.2 GSS：活动导引、空间聚类与波束形成</a></li>
-<li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-8-1-3">8.1.3 分离指标与数据集口径</a></li>
-<li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-8-1-4">8.1.4 连续语音分离与深度模型</a></li>
-<li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-8-1-5">8.1.5 教学代码与源码复现</a></li>
-<li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-8-1-6">8.1.6 练习与可复算答案</a></li>
 <li><a href="08_speech-separation.html#sec-8-2">8.2 处理模块的顺序</a></li>
+<li><a href="08_speech-separation.html#sec-8-3">8.3 经典盲源分离：AuxIVA、ILRMA、MNMF 与 TRINICON</a></li>
+<li><a href="08_speech-separation.html#sec-8-4">8.4 GSS：活动导引、空间聚类与波束形成</a></li>
+<li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-8-4-1">8.4.1 输入、空间模型与完整处理链</a></li>
+<li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-8-4-2">8.4.2 活动约束下的 EM 迭代</a></li>
+<li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-8-4-3">8.4.3 活动门控手算与错误标注反例</a></li>
+<li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-8-4-4">8.4.4 协方差、波束权重与适用边界</a></li>
+<li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-8-4-5">8.4.5 可运行的 cACGMM—SCM—MVDR 受控链</a></li>
+<li><a href="08_speech-separation.html#sec-8-5">8.5 分离指标与数据集口径</a></li>
+<li><a href="08_speech-separation.html#sec-8-6">8.6 连续语音分离与深度模型</a></li>
+<li><a href="08_speech-separation.html#sec-8-7">8.7 教学代码与源码复现</a></li>
+<li><a href="08_speech-separation.html#sec-8-8">8.8 练习与可复算答案</a></li>
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是教程正文第 8 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
@@ -166,7 +176,57 @@ $$</p>
 <p>这个例子说明 PIT 解决的是“输出槽位没有固定说话人标签”，并不自动解决未知人数或跨长录音的身份保持。逐帧独立选择排列会让同一输出在相邻帧换人；整句级置换不变训练（utterance-level PIT，uPIT）在整句上只选一次排列，可减少这种帧间交换。</p>
 <p>只有当总目标确实分解成式(8-3)这种“每个输出—参考对各贡献一个代价，再把所选代价相加”的形式时，才能把 $N\times N$ 成对损失矩阵交给线性指派算法求最小总代价。若损失含有跨输出耦合项、集合级正则项或共同解码约束，就不能直接用匈牙利算法代替全排列目标。<a href="https://doi.org/10.1109/ICASSP.2017.7952154">PIT 正式论文</a>、<a href="https://doi.org/10.1109/TASLP.2017.2648230">uPIT 正式论文</a>。</p>
 <p>教学函数 <code>pit_permutation()</code> 为了让读者直接核对每种排列，采用全排列枚举并把源数上限设为 8；其计算量随 $N!$ 增长。超过 8 个源时，该函数明确拒绝运行。若目标确实满足上一段的成对可加条件，应改用线性指派求解器，而不是放宽枚举上限。</p>
-<span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-8-1-1">8.1.1 经典盲源分离：AuxIVA、ILRMA、MNMF 与 TRINICON</h3>
+<span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-8-2">8.2 处理模块的顺序</h2>
+<p>回声、混响和多说话人混合对应不同的信号模型。以下顺序由参考可用性、空间相位保持和统计量依赖关系决定，接口定义见 §10.1。</p>
+<p>一种较完整的音频主链见<a href="10_engineering-practice.html#sec-10-1">第 10 章 §10.1</a>：<strong>采集 → AEC → WPE → 解析波束形成 → 单通道增强</strong>。定位/追踪、说话人分割/GSS/SCM 是为解析波束提供条件的支路；神经或 CSS 分离则是从多通道特征到单通道/多流输出的替代音频路径，不与 GSS 掩码或解析波束合并成一个黑箱。项目只启用满足输入条件且能改善目标指标的模块。</p>
+<ol>
+<li><strong>启用声学回声消除（Acoustic Echo Cancellation，AEC）时先处理回声</strong>：回声参考与麦克风回声之间的线性关系可能被后续自适应波束、非线性增益或单通道增强改变，见<a href="10_engineering-practice.html#sec-10-1">第 10 章 §10.1</a>；</li>
+<li><strong>多通道 WPE 通常在波束之前</strong>：晚期混响会污染波束形成所需的协方差估计。WPE 是线性处理，但各通道的预测滤波器不同，不能笼统保证所有跨通道相位关系完全不变。应验证处理后的目标相对传递函数和协方差是否仍适用于后续波束；</li>
+<li><strong>导向或掩码给解析波束提供目标统计量</strong>：DSB 和导向型 MVDR 可由定位/追踪提供方向或相对传递函数；掩码 MVDR 可从目标 SCM 提取相对传递函数，GEV 则直接由目标/干扰 SCM 求广义特征向量，二者都不必先得到显式 DOA。定位仍可作为稳定的方向先验或控制支路（见<a href="05_beamforming.html">第 5 章</a>与<a href="09_source-tracking.html">第 9 章</a>）；</li>
+<li><strong>diarization 在 GSS 聚类之前、掩码在 MVDR 之前</strong>：diarization 提供“谁在何时说话”的标注，用于约束 cACGMM 的跨频点置换；掩码随后用于估计目标和噪声协方差，再计算波束权重（见 §5.4 和 §8.4）；</li>
+<li><strong>DNN 的位置由输出决定</strong>：逐通道改写复谱或波形的网络可能破坏跨通道相位，通常放在波束形成后的单通道链路；只输出共享掩码、协方差或 WPE 功率先验的网络可以放在多通道算法内部；联合多通道网络则可能同时完成分离和波束形成。还要单独检查网络是否使用未来帧。</li>
+</ol>
+<p>对于“逐通道线性前端—波束形成—单通道增强”这类实现，逐通道处理通常位于前端，单通道增强位于波束形成之后。若神经网络只估计解析算法所需的统计量，或本身联合建模多通道相位，则不受这个顺序限制。</p>
+<p>AEC 与降噪的顺序也不是脱离统计假设的固定结论。<a href="https://github.com/Arnout-Roebben/Integrated_AEC_NR/tree/23c6b567c7863a8ee9bafd38bad0d3ff2f25e185">Integrated_AEC_NR 固定实现</a>同时提供 AEC→NR、NR→AEC 与联合扩展结构，适合在相同输入下比较顺序；但其 <code>process.m</code> 用干净期望语音和干净回声产生预言活动判决。把结论移到实际设备前，必须改用可取得的活动估计，并重新测试参考相关、非平稳噪声、双讲和路径变化。</p>
+<p><strong>本章模块与图 23 的对应关系</strong>（图的信号取点与启用条件见<a href="10_engineering-practice.html#sec-10-1">第 10 章 §10.1</a>）：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">本章模块</th>
+<th scope="col">图 23 中的位置</th>
+<th scope="col">作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>diarization / GSS</td>
+<td>“说话人分割 → GSS/cACGMM 掩码”支路</td>
+<td>diarization 约束活动时间与跨频点置换；它不直接输出 SCM 或音频</td>
+</tr>
+<tr>
+<td>目标/干扰 SCM 与解析波束</td>
+<td>“GSS 掩码 + 同阶段 WPE 输出未方向归一 STFT → SCM → DSB/MVDR/GEV”支路</td>
+<td>掩码只给权重，SCM 仍由 $\mathbf Y\mathbf Y^H$ 加权计算；不能改用单位向量 $\mathbf z$</td>
+</tr>
+<tr>
+<td>神经分离 / CSS</td>
+<td>WPE 后的替代音频路径，可绕过解析波束后接单通道增强</td>
+<td>是否输出固定多流、使用未来上下文和跨块排列，都要单独说明</td>
+</tr>
+<tr>
+<td>DNN 后滤波 / DNN 后端</td>
+<td>波束形成或分离后的单通道增强或后端</td>
+<td>独立改写复谱的网络通常放在多通道 WPE/MVDR 之后，以免破坏空间相位</td>
+</tr>
+<tr>
+<td>降噪（Noise Suppression，NS）/自动增益控制（Automatic Gain Control，AGC）/语音活动检测（VAD）/关键词检出（Keyword Spotting，KWS）</td>
+<td>单通道增强与可选 KWS 旁路；VAD 属控制面</td>
+<td>各模块按目标任务启用，不在本章展开</td>
+</tr>
+</tbody>
+</table></div>
+<p>回声、混响和分离使用不同的参考与统计假设，模块顺序需要服从这些条件。下一章讨论如何把逐帧定位结果连接成连续轨迹。</p>
+<span id="sec-8-1-1" class="anchor-alias" aria-hidden="true"></span><span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-8-3">8.3 经典盲源分离：AuxIVA、ILRMA、MNMF 与 TRINICON</h2>
 <p>以下按模型假设、计算代价和失效条件比较四类 BSS 方法。</p>
 <p><strong>AuxIVA（辅助函数型独立向量分析，Auxiliary-function IVA，Ono 2011）</strong>。它假设不同说话人统计独立，并联合建模同一说话人在各频点的分量。频域 ICA 在各频点独立求解，可能得到不同的输出排列；IVA 利用跨频点包络相关性缓解该置换问题。AuxIVA 使用辅助函数进行闭式更新，不需要设置梯度步长，目标函数在理论条件下单调下降。</p>
 <p>标准实现仍是整段迭代，在线版本需要递推改写；强混响、说话人包络高度相关和短语音都会削弱统计独立性或估计稳定性。它常作为免训练分离基线。</p>
@@ -183,7 +243,8 @@ $$</p>
 <p>ILRMA 在同一 2 源 2 麦例子中，还要为每个源维护 NMF 基矩阵和激活矩阵。若每源取 2 个基，沿用上述不补零的 372 帧，则矩阵尺寸分别为 $129\times2$ 和 $2\times372$，并与解混矩阵交替更新。基数、迭代次数和初值都会影响计算量与结果。语音与音乐是否满足同样的低秩假设，需要分别验证。见 <a href="https://doi.org/10.1109/TASLP.2016.2577880">ILRMA 原始论文</a>（Kitamura et al., IEEE/ACM TASLP 24(9), 2016, pp. 1626–1641）。</p>
 <p>MNMF 可以表示 3 个说话人、2 个麦克风的欠定混合。每个频点、每个源对应一个 $2\times2$ Hermitian 空间协方差；129 个频点和 3 个源共需 387 个协方差矩阵，还要联合估计谱基和激活。计算量和局部最优问题使初始化十分重要，AuxIVA 或 ILRMA 结果可作为初值。见 <a href="https://doi.org/10.1109/TASL.2013.2239990">MNMF 原始论文</a>（Sawada et al., IEEE TASL 21(5), 2013, pp. 971–982）。</p>
 <p>TRINICON 的长度换算可以这样看：8 kHz 下，0.5 s 对应 4000 个采样，但这不表示解混滤波器必须取 4000 点，也不表示算法延迟就是 0.5 s。实际长度是在可表示的卷积范围、估计方差、计算量和块实现之间折中。例如 1024 点与 2048 点分别覆盖 128 ms 和 256 ms 的滤波器记忆；系统仍要单独报告块大小、帧移、前视和输入输出缓冲，才能得到算法延迟。见 <a href="https://ieeexplore.ieee.org/document/1414341">TRINICON 原始论文</a>（Buchner et al., 2005）。</p>
-<span id="sec-4" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-8-1-2">8.1.2 GSS：活动导引、空间聚类与波束形成</h3>
+<span id="sec-8-1-2" class="anchor-alias" aria-hidden="true"></span><span id="sec-4" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-8-4">8.4 GSS：活动导引、空间聚类与波束形成</h2>
+<h3 id="sec-8-4-1">8.4.1 输入、空间模型与完整处理链</h3>
 <p><strong>GSS（导引源分离，guided source separation）</strong>在 CHiME-5/6 的真实晚宴多通道任务中得到广泛使用（Boeddeker et al., CHiME-5 2018；CHiME-8 任务设置已经变化，引用时应按当届规则）。先说明原论文的活动标注来源，再写聚类与波束的依赖关系：</p>
 <ol>
 <li>
@@ -199,6 +260,7 @@ $$</p>
 <p><strong>级联</strong>：WPE 去混响 → GSS 得到掩码 → 掩码估计目标/非目标协方差 → MVDR/GEV 波束形成。MVDR 是最小方差无失真响应，GEV 是广义特征值波束形成，见 §5.4。GSS 论文在 CHiME-5 的特定阵列、赛方时间标注和开发集上报告了识别结果；引用数字时必须同时给出原文表号、阵列配置、标注来源、打分集和基线，不能把它当成自动 diarization 的整链成绩。<a href="https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf" title="citation">GSS 原始论文 §3.2、式(5)～(8)和表1～2</a></p>
 </li>
 </ol>
+<h3 id="sec-8-4-2">8.4.2 活动约束下的 EM 迭代</h3>
 <p><strong>紧凑实现顺序</strong>。下面的伪代码强调依赖关系，不替代具体实现中的复数矩阵更新式。</p>
 <ol>
 <li>从 WPE 输出 $\mathbf Y$ 中剔除 $\|\mathbf Y\|_2\le\varepsilon_E$ 的点；对其余点计算严格单位向量 $\mathbf z=\mathbf Y/\|\mathbf Y\|_2$。给 $J$ 位说话人各设一个分量，并增加背景噪声分量 $j=0$；说话人的活动指示 $a_j(k)$ 由时间标注给出，噪声始终取 $a_0(k)=1$。活动标注约束混合权重，$\mathbf B_j$ 另用单位阵或空间统计量初始化，不能把活动标注当作形状矩阵。</li>
@@ -207,12 +269,14 @@ $$</p>
 <li>重复 E/M 步，直到对数似然相对变化小于预设阈值，或达到最大迭代次数；报告实际迭代数、停止条件和重置次数。</li>
 <li>将后验作为掩码，但用同一 WPE 阶段、未做方向归一化的 $\mathbf Y\mathbf Y^H$ 按式(8-5)估计目标/非目标 SCM，再计算每个目标的 MVDR 或 GEV 权重。对于一个目标，非目标掩码包含其余说话人与背景噪声；这里不能把单位向量 $\mathbf z$ 的外积误当成带功率信息的 SCM。</li>
 </ol>
+<h3 id="sec-8-4-3">8.4.3 活动门控手算与错误标注反例</h3>
 <p><strong>活动门控的最小算例</strong>：只看一个频点的相邻两帧，并按“说话人 1、说话人 2、背景噪声”排列。假设混合权重为 $[0.5,0.3,0.2]$，三个分量在这两帧观测上的相对密度都为 $[2,1,1]$。第一帧的活动指示为 $[1,0,1]$，E 步的未归一化分数为 $[1,0,0.2]$，总和为 $1.2$，后验为 $[5/6,0,1/6]$。第二帧两位说话人都静音，活动指示为 $[0,0,1]$，分数为 $[0,0,0.2]$，后验为 $[0,0,1]$。</p>
 <p>这些密度是题目给定的相对数值，只检验 E 步归一化；它们不是从录音拟合出的 cACG 密度，也不构成分离性能实验。完整手算及代码见练习 E08-07。</p>
 <p><strong>活动错误的三帧反例</strong>。再固定 $\pi=[0.4,0.4,0.2]$，顺序仍为“说话人 1、说话人 2、背景噪声”。三帧的相对空间密度依次是 $[8,1,1]$、$[1,8,1]$、$[1,1,1]$；真实说话人活动依次是“仅说话人 1、仅说话人 2、两人都静音”。正确标注下，首帧说话人 1 的分数为 $0.4\times8=3.2$，背景分数为 $0.2$，故其后验为 $3.2/(3.2+0.2)=16/17\approx0.9412$。</p>
 <p>若漏标首帧的说话人 1，门控会把其后验强制置零，无论该分量的固定空间密度多高。若把第三帧的说话人 1 错标为活动，其后验会从 0 变成 $0.4/(0.4+0.2)=2/3$，本应占 1 的背景后验变为 $1/3$。</p>
 <p>这组数字由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/gss_activity_error_demo.py"><code>gss_activity_error_demo.py</code></a>和独立分数测试复算，只描述<strong>固定密度、固定权重时的 E 步</strong>。完整 GSS 还会让错误活动参与参数更新，并经 SCM、波束形成影响音频；上述后验变化不能直接换算成 SI-SDR 或 WER 的变化。原论文的活动门控见<a href="https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf" title="citation">Boeddeker 等 §3.2、式(5)～(8)</a>。</p>
 <p>活动标注只限制允许的簇，不会自动修复错误分割。如果目标说话人在所选片段内始终活动，目标与恒活动噪声类仍可能交换标签；原论文通过扩展目标片段前后的上下文，让目标类出现静音帧来降低这种置换风险，不能保证完全消除。短活动段、空分量或近奇异形状矩阵还需要正则化和失败检测。<a href="https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf" title="citation">原始论文 §3.2、图 3、式(5)～(8)</a></p>
+<h3 id="sec-8-4-4">8.4.4 协方差、波束权重与适用边界</h3>
 <p><strong>GSS 的源数与计算规模</strong>：输入通常是一段包含重叠语音的会议录音。cACGMM 的分量数通常由日志或系统配置预先给定；它不会仅凭式(8-4)可靠推断未知说话人数。</p>
 <p>$M\ge2$ 才有跨通道方向信息。当 $N\le M$ 时，掩码波束形成通常还有空间自由度；当 $N>M$ 时，仍可为每个已知目标估计掩码和 SCM，但分离依赖时频占优、活动标注与数据量，不能获得方阵解混的可逆性保证。</p>
 <p>WPE 先减弱晚期混响；cACGMM 在目标段附近的上下文上做 EM 聚类，为每个时频点输出说话人后验掩码；目标和非目标掩码分别用于估计 SCM，再计算 MVDR 或 GEV 权重。</p>
@@ -224,7 +288,8 @@ $$</p>
 <p>噪声协方差可用相应的非目标掩码估计。软权重的有效样本数不是“$\gamma>0.8$ 的帧数”，而可用 Kish 公式近似：</p>
 <p>$$N_{\mathrm{eff}}(f)=\frac{\left(\sum_k\gamma(f,k)\right)^2}{\sum_k\gamma^2(f,k)}.$$</p>
 <p>例如 900 帧权重全为 1 时 $N_{\mathrm{eff}}=900$；若权重集中在少数帧，有效样本数会明显更小。</p>
-<p>由 $N$ 个秩一外积相加得到的 $M\times M$ 协方差，其秩至多为 $\min(N,M)$。满秩估计至少需要 $M$ 个线性独立的非零快照；$N\ge M$ 只是必要条件，不是充分条件。Kish $N_{\mathrm{eff}}$ 只是软权重集中程度的近似，$N_{\mathrm{eff}}\ge M$ 也不能保证快照张成 $\mathbb C^M$。高度相关的连续帧不能当作同等数量的独立空间状态；工程上还应检查矩阵秩或条件数，并在必要时做对角加载。</p>
+<p>由 $N$ 个秩一外积相加得到的 $M\times M$ 协方差，其秩至多为 $\min(N,M)$。满秩估计至少需要 $M$ 个线性独立的非零快照；$N\ge M$ 只是必要条件，不是充分条件。Kish $N_{\mathrm{eff}}$ 只是软权重集中程度的近似，$N_{\mathrm{eff}}\ge M$ 也不能保证快照张成 $\mathbb C^M$。</p>
+<p>高度相关的连续帧不能当作同等数量的独立空间状态；工程上还应检查矩阵秩或条件数，并在必要时做对角加载。</p>
 <p>说话人活动标注用于限制各簇可出现的时间区间，从而减少跨频点置换。见 <a href="https://doi.org/10.1109/EUSIPCO.2016.7760429">cACGMM 原始工作</a>（Ito et al., EUSIPCO 2016, pp. 1153–1157）与 <a href="https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf">GSS 原始论文</a>。</p>
 <p><strong>掩码到波束权重的小例子</strong>。以下实数向量只是 WPE 输出复数 STFT 的简化手算。两个时频快照取 $\mathbf Y_1=[1,1]^\top$、$\mathbf Y_2=[1,-1]^\top$，目标掩码为 $\gamma=[0.9,0.1]$。因为权重和为 1，目标协方差为</p>
 <p>$$
@@ -235,7 +300,42 @@ $$</p>
 <p>随后可从 $\mathbf R_{\mathrm{tar}}$ 估计目标相对传递函数，并与 $\mathbf R_{\mathrm{int}}$ 一起计算 MVDR。GEV 则直接求矩阵对 $(\mathbf R_{\mathrm{tar}},\mathbf R_{\mathrm{int}})$ 的主广义特征向量，并需另做尺度归一化。</p>
 <p>真实的“目标 + 多个说话人 + 环境噪声”并非二分类，$1-\gamma$ 会把所有非目标成分合在一起，不能解释成纯噪声掩码。实际实现还要检查有效样本数、条件数和对角加载。<a href="https://doi.org/10.1109/ICASSP.2016.7471664" title="citation">掩码波束形成实例</a>。</p>
 <p>定位结果可以给分离提供方向先验；分离网络输出的掩码又能用于估计 MVDR 的目标与干扰协方差。</p>
-<span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-8-1-3">8.1.3 分离指标与数据集口径</h3>
+<h3 id="sec-8-4-5">8.4.5 可运行的 cACGMM—SCM—MVDR 受控链</h3>
+<p>前面的三帧例子只计算固定密度的 E 步。本书另提供原创 NumPy <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/gss_teaching.py">教学整链</a>：逐频点把两麦复谱严格归一化为单位向量，使用说话人活动和恒活动背景类对复角中心高斯混合模型（cACGMM）进行 8 轮 E/M 迭代；各类形状矩阵采用迹归一化与正定加载，空类显式重置。然后用未做方向归一化的原始复谱和后验掩码计算目标/非目标 SCM，最终使用两麦 MVDR 输出目标复谱。</p>
+<p>低能量点归入背景；代码同时返回掩码、SCM、权重、低能量点数和重置次数，便于核查每一步。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/gss_teaching_demo.py">固定脚本</a>用种子 20260924 合成 16 kHz、2 s 的<strong>两条独立高斯测试波形</strong>，并给它们设置已知活动区间。第一路在麦 0 直接到达、麦 1 晚 2 个采样；第二路相反，另加每麦独立均方根约 0.003 的高斯噪声。STFT 窗长 256 点、帧移 128 点，活动按帧中心给出。</p>
+<p>这个合成阵列没有房间混响，因此演示时旁路 WPE；代码可显式调用本书的离线 WPE 实现，但<strong>本实验没有据此验证 WPE</strong>。说话人活动作为外部输入提供，不是从混合录音自动识别。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">同一目标、同一评分区间 $[0.2,1.45)$ s</th>
+<th scope="col" style="text-align: right;">去均值 SI-SDR（dB）</th>
+<th scope="col">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>参考麦 0 的混合输入</td>
+<td style="text-align: right;">1.28</td>
+<td>含另一合成源和独立噪声</td>
+</tr>
+<tr>
+<td>正确活动标注的输出</td>
+<td style="text-align: right;">13.76</td>
+<td>受控单次合成运行；不代表真实会议录音</td>
+</tr>
+<tr>
+<td>目标活动全部漏标的输出</td>
+<td style="text-align: right;">1.28</td>
+<td>目标后验被门控为零，教学波束回退参考麦</td>
+</tr>
+</tbody>
+</table></div>
+<p>这一组数字只说明在给定模型、固定输入和已知活动下，整条教学链能产生可复核音频；不能推断在其他说话人、房间或活动标注上必有 12.48 dB 的改善。</p>
+<p>所有说话人静音的帧上，背景后验为 1；错误标注条件下目标后验为 0。正确条件下本次形状矩阵重置次数为 0，后验每点求和与 1 的最大差约为 $2.22\times10^{-16}$。这些数值可由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_gss_teaching.py">独立测试</a>和<a href="gss_audio/STATE.npz">完整状态文件</a>复算。</p>
+<p><a href="gss_audio/source_1.wav">第一路源</a><audio class="audio-sample" controls preload="none" aria-label="第一路源" src="gss_audio/source_1.wav">请使用上方 WAV 链接下载。</audio>、<a href="gss_audio/source_2.wav">第二路源</a><audio class="audio-sample" controls preload="none" aria-label="第二路源" src="gss_audio/source_2.wav">请使用上方 WAV 链接下载。</audio>、<a href="gss_audio/mixture.wav">混合双麦</a><audio class="audio-sample" controls preload="none" aria-label="混合双麦" src="gss_audio/mixture.wav">请使用上方 WAV 链接下载。</audio>、<a href="gss_audio/enhanced_correct.wav">正确活动输出</a><audio class="audio-sample" controls preload="none" aria-label="正确活动输出" src="gss_audio/enhanced_correct.wav">请使用上方 WAV 链接下载。</audio>及<a href="gss_audio/enhanced_missed.wav">漏标输出</a><audio class="audio-sample" controls preload="none" aria-label="漏标输出" src="gss_audio/enhanced_missed.wav">请使用上方 WAV 链接下载。</audio>都按同一增益导出，文件摘要和精确参数见<a href="gss_audio/MANIFEST.json">独立清单</a>。这五个 WAV 不并入本书主清单的 60 个样本。</p>
+<p>官方 <a href="https://github.com/desh2608/gss/tree/10fad18cae85e2e4342c77421abc70c9c5da23ed">GPU-GSS 固定源码</a>还包含 CuPy、Lhotse/RTTM、分段上下文及完整会议处理；本机未运行其官方整链，也没有使用 CHiME 语料或计算 WER。本段的教学结果不能充当 Boeddeker 等原论文的复现成绩。<a href="https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf" title="citation">GSS 原论文 §3.1～§3.3</a>。</p>
+<span id="sec-8-1-3" class="anchor-alias" aria-hidden="true"></span><span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-8-5">8.5 分离指标与数据集口径</h2>
 <p>常用的尺度不变信号失真比（scale-invariant signal-to-distortion ratio，SI-SDR）把等长实数估计信号 $\hat s$ 投影到非零参考 $s$ 上，再比较投影能量与正交残差能量。采用去均值口径时，应先分别去掉两信号的均值：</p>
 <p>$$\begin{aligned}
 \alpha&=\frac{\langle\hat s,s\rangle}{\|s\|^2},\qquad s_{\mathrm{tar}}=\alpha s,\\
@@ -315,7 +415,7 @@ $$</p>
 </tbody>
 </table></div>
 <p>REVERB 主要用于去混响与识别，CHiME-5/6 用于真实重叠语音的分离与识别，WHAMR 同时包含噪声、混响和重叠，WSJ0-2mix/3mix 是干净混合基准，LibriMix 还可检查跨数据集泛化，LibriCSS 则把问题扩展到连续会议。CHiME-6 重新对齐了 CHiME-5 的部分录音，引用结果时不能把两个版本混为同一数据版本。<a href="https://www.chimechallenge.org/challenges/chime6" title="citation">CHiME-6 官方说明</a>。不同数据集的数字不能直接比较。</p>
-<span id="sec-6" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-8-1-4">8.1.4 连续语音分离与深度模型</h3>
+<span id="sec-8-1-4" class="anchor-alias" aria-hidden="true"></span><span id="sec-6" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-8-6">8.6 连续语音分离与深度模型</h2>
 <p><strong>连续语音分离（Continuous Speech Separation，CSS）</strong>不能把整句分离器机械地逐块调用。长录音中的活动人数会变化，同一输出槽位还可能在相邻块交换说话人。</p>
 <p>实现需明确四件事：</p>
 <ol>
@@ -392,11 +492,11 @@ $$</p>
 <p>近期模型若没有在相同数据、采样率、混合方式和评测脚本下比较，本章不按论文年份或模型名称给出性能排序。</p>
 <p>目标说话人提取（target speaker extraction，TSE）不要求输出所有声源，而是用注册语音、视觉或方向等与目标说话人绑定的条件提取一条音轨。声纹网络可把注册语音变成定长嵌入，再将其广播到混合语音的各帧；嵌入可在编码器入口拼接，也可用逐层缩放与偏置调制（FiLM）或交叉注意力注入。</p>
 <p>嵌入维度、注册时长和余弦阈值由具体模型和训练数据决定，不存在跨模型通用的“同人区间”。部署时要验证注册信道失配、非目标泄漏、目标误抑制和首帧延迟。</p>
-<p>§6.1.6 的 pAEC 也使用声纹条件，但训练目标还包含回声消除。见 <a href="https://arxiv.org/abs/1705.10687" title="citation">SpeakerBeam/TSE 系列</a>；声纹嵌入的端侧存储、加密和删除要求见 §6.1.14。</p>
+<p>§6.5 的 pAEC 也使用声纹条件，但训练目标还包含回声消除。见 <a href="https://arxiv.org/abs/1705.10687" title="citation">SpeakerBeam/TSE 系列</a>；声纹嵌入的端侧存储、加密和删除要求见 §6.13。</p>
 <p>文本查询通用声音分离是另一项任务：查询词描述“警报声”“狗叫”等声音类别，不保证对应某个可注册的说话人。对比语言—音频预训练（Contrastive Language-Audio Pretraining，CLAP）可提供文本与音频嵌入，但 CLAP 本身不是分离器；实际系统还需要用查询嵌入控制掩码或波形生成模块。</p>
 <p>见 <a href="https://arxiv.org/abs/2206.04769" title="citation">CLAP</a>与使用语言查询的 AudioSep。AudioSep 已正式发表于 <em>IEEE/ACM Transactions on Audio, Speech, and Language Processing</em>, vol. 33, pp. 458–471，DOI <a href="https://doi.org/10.1109/TASLP.2024.3520017">10.1109/TASLP.2024.3520017</a>；<a href="https://github.com/audio-agi/audiosep">官方仓库</a>提供模型与推理入口。</p>
 <p>TSE 的身份泄漏、注册信道和声纹保护测试，不能由文本查询分离的类别级结果替代。</p>
-<span id="sec-7" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-8-1-5">8.1.5 教学代码与源码复现</h3>
+<span id="sec-8-1-5" class="anchor-alias" aria-hidden="true"></span><span id="sec-7" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-8-7">8.7 教学代码与源码复现</h2>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/separation.py"><code>codes/array_tutorial/separation.py</code></a> 提供五个只依赖 NumPy 的小模块：</p>
 <ul>
 <li><code>si_sdr()</code> 接收等长一维估计与参考。先各自按峰值缩放再去均值，避免绝对幅度引起溢出；能量下限是估计能量乘 <code>epsilon</code>，而不是固定绝对能量。默认 <code>epsilon=1e-12</code> 时，完美和正交样本分别返回约 +120/−120 dB 的有限边界值；这些上限不是测量精度。零信号及去均值后为零的信号明确报错。</li>
@@ -476,7 +576,8 @@ $$</p>
 </tbody>
 </table></div>
 <p>FastMNMF 的可用实现还体现了许可需要逐来源检查：作者 <code>SoundSourceSeparation</code> 整库限定学术研究，而 pyroomacoustics 的 <code>fastmnmf.py</code> 文件有独立 MIT 许可。SpeakerBeam 作者仓库采用内部评估协议，限制修改与再分发，不能把它与 MIT/Apache-2.0 项目统一称为可自由纳入产品的开源代码。<a href="https://github.com/LCAV/pyroomacoustics/blob/v0.10.0/pyroomacoustics/bss/fastmnmf.py">FastMNMF 文件许可</a>、<a href="https://github.com/sekiguchi92/SoundSourceSeparation/blob/897fe87fea3d85a243d8a3fd36c2232bb0548ad3/LICENSE">作者仓库许可</a>、<a href="https://github.com/BUTSpeechFIT/speakerbeam/blob/91af02cc617afa35fedfbdbf32533012cd0a8672/LICENSE.txt">SpeakerBeam 评估协议</a></p>
-<p><strong>已运行的 AuxIVA 盲估计最小实验</strong>。本书的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/reproduce_auxiva_reference.py"><code>reproduce_auxiva_reference.py</code></a>直接从锁定的 <a href="https://github.com/tky823/ssspy/blob/38b9389e8b1914422561f1936d9b28d042d62d2c/ssspy/bss/iva.py" title="citation">ssspy <code>bss/iva.py</code></a> 调用 <code>AuxLaplaceIVA</code> 的 IP 更新。混合矩阵只用于合成两麦观测和制作参考，未传给估计器；它接收的只有混合 STFT，自己估计逐频解混矩阵。输出经参考麦 0 回投影和 iSTFT 后才评分。测试运行命令为 <code>.venv/bin/python -m codes.examples.reproduce_auxiva_reference</code>；源码必须先按<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json">锁表</a>取得到隔离目录。</p>
+<p><strong>已运行的 AuxIVA 盲估计最小实验</strong>。本书的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/reproduce_auxiva_reference.py"><code>reproduce_auxiva_reference.py</code></a>直接从锁定的 <a href="https://github.com/tky823/ssspy/blob/38b9389e8b1914422561f1936d9b28d042d62d2c/ssspy/bss/iva.py" title="citation">ssspy <code>bss/iva.py</code></a> 调用 <code>AuxLaplaceIVA</code> 的 IP 更新。混合矩阵只用于合成两麦观测和制作参考，未传给估计器；它接收的只有混合 STFT，自己估计逐频解混矩阵。输出经参考麦 0 回投影和 iSTFT 后才评分。</p>
+<p>测试运行命令为 <code>.venv/bin/python -m codes.examples.reproduce_auxiva_reference</code>；源码必须先按<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json">锁表</a>取得到隔离目录。</p>
 <p>本书仿真采用两路独立高斯随机载波乘不同的八段固定包络，各路按自身标准差归一；随机种子 2468、采样率 8 kHz、每路 32000 点，观测为 $\left[\begin{smallmatrix}1&0.9\\0.8&1\end{smallmatrix}\right]\mathbf s$，矩阵条件数约 12.24。无噪声、无混响。周期 Hann 窗长 256 点、帧移 64 点、中心补零，整段运行 30 次 IP 迭代。</p>
 <p>评分参考是两路在<strong>麦克风 0 上的源图像</strong> $s_1$ 与 $0.9s_2$，并非统一干声；使用整段去均值、无时延对齐的 SI-SDR。输入基线为同一麦克风 0 混合波形分别对两个源图像评分，输出用真实参考只做离线 PIT 评分。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -508,7 +609,7 @@ $$</p>
 <p>把随机包络例子的混合矩阵第二行改成与第一行相同，会使观测秩从 2 降为 1；锁定实现本机在该输入上以 <code>LinAlgError: Singular matrix</code> 失败。即使某实现返回两路数值输出，只有一路独立观测也不足以凭这套方阵盲解混模型辨识两个任意独立源。</p>
 <p>该脚本没有语音语料、房间卷积或设备录音；它证明了<strong>一次数学输入上的盲估计链</strong>，没有复现 Ono 论文的语音指标或任何工业实时性。<a href="https://doi.org/10.1109/ASPAA.2011.6082320" title="citation">原始 AuxIVA 论文</a>。</p>
 <p>后续完整实验还应分别改变混响、初始化及片段长度，在相同统计口径下记录失败次数。CSS 还需测试跨块换人和静音后重新出现，不能让每块用真实答案独立排列后再拼接。cACGMM 的正文伪代码仅解释依赖关系；完整实现中的空分量处理、对数域计算与收敛检查仍须核对。</p>
-<span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-8-1-6">8.1.6 练习与可复算答案</h3>
+<span id="sec-8-1-6" class="anchor-alias" aria-hidden="true"></span><span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-8-8">8.8 练习与可复算答案</h2>
 <blockquote>
 <p><strong>练习 8-1（自测三题）</strong></p>
 <ol>
@@ -565,56 +666,6 @@ $$</p>
 <p>本题给的是固定相对密度，只检验式(8-4)之后的活动门控与 E 步归一化。它没有估计 cACG 形状矩阵、执行 M 步或输出分离音频；后验属于背景类也不证明目标语音已被正确分离。代码中 <code>speaker_activity</code> 只输入两位说话人的标记，背景活动由函数自动补上。见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_enhancement.py"><code>exercises_enhancement.py</code></a> 中的 <code>E08-07</code>。</p>
 </li>
 </ul>
-<span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-8-2">8.2 处理模块的顺序</h2>
-<p>回声、混响和多说话人混合对应不同的信号模型。以下顺序由参考可用性、空间相位保持和统计量依赖关系决定，接口定义见 §10.1。</p>
-<p>一种较完整的音频主链见<a href="10_engineering-practice.html#sec-10-1">第 10 章 §10.1</a>：<strong>采集 → AEC → WPE → 解析波束形成 → 单通道增强</strong>。定位/追踪、说话人分割/GSS/SCM 是为解析波束提供条件的支路；神经或 CSS 分离则是从多通道特征到单通道/多流输出的替代音频路径，不与 GSS 掩码或解析波束合并成一个黑箱。项目只启用满足输入条件且能改善目标指标的模块。</p>
-<ol>
-<li><strong>启用声学回声消除（Acoustic Echo Cancellation，AEC）时先处理回声</strong>：回声参考与麦克风回声之间的线性关系可能被后续自适应波束、非线性增益或单通道增强改变，见<a href="10_engineering-practice.html#sec-10-1">第 10 章 §10.1</a>；</li>
-<li><strong>多通道 WPE 通常在波束之前</strong>：晚期混响会污染波束形成所需的协方差估计。WPE 是线性处理，但各通道的预测滤波器不同，不能笼统保证所有跨通道相位关系完全不变。应验证处理后的目标相对传递函数和协方差是否仍适用于后续波束；</li>
-<li><strong>导向或掩码给解析波束提供目标统计量</strong>：DSB 和导向型 MVDR 可由定位/追踪提供方向或相对传递函数；掩码 MVDR 可从目标 SCM 提取相对传递函数，GEV 则直接由目标/干扰 SCM 求广义特征向量，二者都不必先得到显式 DOA。定位仍可作为稳定的方向先验或控制支路（见<a href="05_beamforming.html">第 5 章</a>与<a href="09_source-tracking.html">第 9 章</a>）；</li>
-<li><strong>diarization 在 GSS 聚类之前、掩码在 MVDR 之前</strong>：diarization 提供“谁在何时说话”的标注，用于约束 cACGMM 的跨频点置换；掩码随后用于估计目标和噪声协方差，再计算波束权重（见 §5.4 和 §8.1）；</li>
-<li><strong>DNN 的位置由输出决定</strong>：逐通道改写复谱或波形的网络可能破坏跨通道相位，通常放在波束形成后的单通道链路；只输出共享掩码、协方差或 WPE 功率先验的网络可以放在多通道算法内部；联合多通道网络则可能同时完成分离和波束形成。还要单独检查网络是否使用未来帧。</li>
-</ol>
-<p>对于“逐通道线性前端—波束形成—单通道增强”这类实现，逐通道处理通常位于前端，单通道增强位于波束形成之后。若神经网络只估计解析算法所需的统计量，或本身联合建模多通道相位，则不受这个顺序限制。</p>
-<p>AEC 与降噪的顺序也不是脱离统计假设的固定结论。<a href="https://github.com/Arnout-Roebben/Integrated_AEC_NR/tree/23c6b567c7863a8ee9bafd38bad0d3ff2f25e185">Integrated_AEC_NR 固定实现</a>同时提供 AEC→NR、NR→AEC 与联合扩展结构，适合在相同输入下比较顺序；但其 <code>process.m</code> 用干净期望语音和干净回声产生预言活动判决。把结论移到实际设备前，必须改用可取得的活动估计，并重新测试参考相关、非平稳噪声、双讲和路径变化。</p>
-<p><strong>本章模块与图 23 的对应关系</strong>（图的信号取点与启用条件见<a href="10_engineering-practice.html#sec-10-1">第 10 章 §10.1</a>）：</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
-<th scope="col"ead>
-<tr>
-<th scope="col">本章模块</th>
-<th scope="col">图 23 中的位置</th>
-<th scope="col">作用</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>diarization / GSS</td>
-<td>“说话人分割 → GSS/cACGMM 掩码”支路</td>
-<td>diarization 约束活动时间与跨频点置换；它不直接输出 SCM 或音频</td>
-</tr>
-<tr>
-<td>目标/干扰 SCM 与解析波束</td>
-<td>“GSS 掩码 + 同阶段 WPE 输出未方向归一 STFT → SCM → DSB/MVDR/GEV”支路</td>
-<td>掩码只给权重，SCM 仍由 $\mathbf Y\mathbf Y^H$ 加权计算；不能改用单位向量 $\mathbf z$</td>
-</tr>
-<tr>
-<td>神经分离 / CSS</td>
-<td>WPE 后的替代音频路径，可绕过解析波束后接单通道增强</td>
-<td>是否输出固定多流、使用未来上下文和跨块排列，都要单独说明</td>
-</tr>
-<tr>
-<td>DNN 后滤波 / DNN 后端</td>
-<td>波束形成或分离后的单通道增强或后端</td>
-<td>独立改写复谱的网络通常放在多通道 WPE/MVDR 之后，以免破坏空间相位</td>
-</tr>
-<tr>
-<td>降噪（Noise Suppression，NS）/自动增益控制（Automatic Gain Control，AGC）/语音活动检测（VAD）/关键词检出（Keyword Spotting，KWS）</td>
-<td>单通道增强与可选 KWS 旁路；VAD 属控制面</td>
-<td>各模块按目标任务启用，不在本章展开</td>
-</tr>
-</tbody>
-</table></div>
-<p>回声、混响和分离使用不同的参考与统计假设，模块顺序需要服从这些条件。下一章讨论如何把逐帧定位结果连接成连续轨迹。</p>
 <hr />
 <blockquote>
 <p>📄 本篇信息：配图 0 张 ｜ <a href="index.html">回首页</a></p>

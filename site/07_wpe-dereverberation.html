@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 7 章 · 去混响（WPE） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="3c17a2f82b74"><style>
+<meta name="source-digest" content="cb929281331d"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -61,10 +61,16 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap cur" aria-current="page">第 7 章 · 去混响（WPE）</div>
 <ul>
 <li><a href="07_wpe-dereverberation.html#sec-u-4a68625d05">7. 去混响（WPE）</a></li>
-<li><a href="07_wpe-dereverberation.html#sec-7-1">7.1 WPE 去混响</a></li>
-<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-7-1-1">7.1.1 $\Delta$ 与 $K$ 的参数换算</a></li>
-<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-7-1-2">7.1.2 常见错误与练习</a></li>
-<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-7-1-3">7.1.3 研究方向</a></li>
+<li><a href="07_wpe-dereverberation.html#sec-7-1">7.1 问题、模型与直觉算例</a></li>
+<li><a href="07_wpe-dereverberation.html#sec-7-2">7.2 离线 WPE：交替估计预测器与语音功率</a></li>
+<li><a href="07_wpe-dereverberation.html#sec-7-3">7.3 多通道 WPE</a></li>
+<li><a href="07_wpe-dereverberation.html#sec-7-4">7.4 在线 WPE 的因果更新</a></li>
+<li><a href="07_wpe-dereverberation.html#sec-7-5">7.5 narawpe 的接口与时间索引</a></li>
+<li><a href="07_wpe-dereverberation.html#sec-7-6">7.6 与其他模块组合及失效边界</a></li>
+<li><a href="07_wpe-dereverberation.html#sec-7-7">7.7 可执行教学基线与复现实验</a></li>
+<li><a href="07_wpe-dereverberation.html#sec-7-8">7.8 保护延迟与预测抽头数的参数换算</a></li>
+<li><a href="07_wpe-dereverberation.html#sec-7-9">7.9 常见错误与练习</a></li>
+<li><a href="07_wpe-dereverberation.html#sec-7-10">7.10 研究方向</a></li>
 </ul>
 <div class="chap"><a href="08_speech-separation.html">第 8 章 · 语音分离</a></div>
 <div class="chap"><a href="09_source-tracking.html">第 9 章 · 声源追踪</a></div>
@@ -76,10 +82,16 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
 <li><a href="07_wpe-dereverberation.html#sec-u-4a68625d05">7. 去混响（WPE）</a></li>
-<li><a href="07_wpe-dereverberation.html#sec-7-1">7.1 WPE 去混响</a></li>
-<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-7-1-1">7.1.1 $\Delta$ 与 $K$ 的参数换算</a></li>
-<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-7-1-2">7.1.2 常见错误与练习</a></li>
-<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-7-1-3">7.1.3 研究方向</a></li>
+<li><a href="07_wpe-dereverberation.html#sec-7-1">7.1 问题、模型与直觉算例</a></li>
+<li><a href="07_wpe-dereverberation.html#sec-7-2">7.2 离线 WPE：交替估计预测器与语音功率</a></li>
+<li><a href="07_wpe-dereverberation.html#sec-7-3">7.3 多通道 WPE</a></li>
+<li><a href="07_wpe-dereverberation.html#sec-7-4">7.4 在线 WPE 的因果更新</a></li>
+<li><a href="07_wpe-dereverberation.html#sec-7-5">7.5 narawpe 的接口与时间索引</a></li>
+<li><a href="07_wpe-dereverberation.html#sec-7-6">7.6 与其他模块组合及失效边界</a></li>
+<li><a href="07_wpe-dereverberation.html#sec-7-7">7.7 可执行教学基线与复现实验</a></li>
+<li><a href="07_wpe-dereverberation.html#sec-7-8">7.8 保护延迟与预测抽头数的参数换算</a></li>
+<li><a href="07_wpe-dereverberation.html#sec-7-9">7.9 常见错误与练习</a></li>
+<li><a href="07_wpe-dereverberation.html#sec-7-10">7.10 研究方向</a></li>
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是教程正文第 7 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
@@ -87,7 +99,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </blockquote>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-4a68625d05">7. 去混响（WPE）</h1>
 <p>第 6 章处理设备播放声返回麦克风形成的回声。本章讨论房间混响的晚期拖尾及 WPE 去混响。多说话人分离、掩码估计和完整处理顺序见第 8 章。</p>
-<span id="sec-2" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-7-1">7.1 WPE 去混响</h2>
+<span id="sec-2" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-7-1">7.1 问题、模型与直觉算例</h2>
 <p>声学回声消除（Acoustic Echo Cancellation，AEC）处理已知播放参考产生的回声；加权预测误差法（Weighted Prediction Error，WPE）利用语音跨帧预测结构估计晚期混响。保护延迟用来减少对直达声和早期反射的损伤，但不能保证它们完全不受影响；估计误差、过小的保护延迟和模型失配都可能产生语音失真。</p>
 <p>去混响有三条常见路线：<strong>波束形成</strong>（第 5 章，利用空间选择性压低弥散混响）、<strong>盲逆滤波或线性预测</strong>，以及神经网络谱增强。本节重点介绍 WPE。WPE 既指它采用的加权预测误差准则，也常用来指基于该准则的去混响算法。</p>
 <p><strong>WPE 之前的三类方法</strong>。多通道逆滤波、倒谱分离和谱方差抑制分别依赖已知路径、倒谱域可分性或晚期混响功率估计。它们的假设和局限有助于理解 WPE 的设计。</p>
@@ -216,7 +228,8 @@ $$</p>
 <p>$$E=(1.0-0.31)+(0.5-0.22)\mathrm{j}=0.69+0.28\mathrm{j}。$$</p>
 <p>输入与输出的幅度分别为 $|X|=\sqrt{1.25}\approx1.118$、$|E|=\sqrt{0.4761+0.0784}\approx0.745$；能量从 1.25 降到约 0.55，相差约 3.5 dB。</p>
 <p>本例的能量变化约为 3.5 dB，小于算例 7-1 的约 4.7 dB。两组系数为人为设定，差异不能作为一般性能结论。</p>
-<p>固定 $K=2$ 时，$\Delta$ 从 2 增至 3 并没有减少预测帧数量，仍使用两帧；它只是排除更多靠近当前帧的样本，并把长度相同的历史窗整体移远。$\Delta$ 的选择见 §7.1.1。</p>
+<p>固定 $K=2$ 时，$\Delta$ 从 2 增至 3 并没有减少预测帧数量，仍使用两帧；它只是排除更多靠近当前帧的样本，并把长度相同的历史窗整体移远。$\Delta$ 的选择见 §7.8。</p>
+<h2 id="sec-7-2">7.2 离线 WPE：交替估计预测器与语音功率</h2>
 <p><strong>交替估计 $G$ 与 $\lambda$（Nakatani et al., 2010）</strong>。假设早期成分 $E$ 服从零均值复高斯分布，方差 $\lambda(n,f)$ 随时间变化；这里的 $\lambda$ 表示第 $n$ 帧的功率谱。时变方差使不同能量的语音帧获得不同权重，减少高能量帧对估计的支配。下面在固定频点 $f$ 上写出从最大似然到加权最小二乘的推导。<a href="https://doi.org/10.1109/TASL.2010.2052251" title="citation">Nakatani et al., IEEE TASLP 2010</a></p>
 <p><strong>中间行 1——写出似然</strong>：各帧独立，观测 $X(n)$ 在给定 $G$、$\lambda(n)$ 下服从均值为预测值 $\sum_k G^*(k)X(n-k)$、方差为 $\lambda(n)$ 的复高斯，总似然是各帧密度连乘：</p>
 <p>$$p(X\mid G,\lambda)=\prod_n \frac{1}{\pi\lambda(n)}\exp\!\left(-\frac{|X(n)-\sum_k G^*(k)X(n-k)|^2}{\lambda(n)}\right)$$。</p>
@@ -262,6 +275,7 @@ $$</p>
 <p>$$r=1\times0.8\times1.0+4\times0.5\times0.6+1\times0.4\times0.2=2.08，$$</p>
 <p>因此 $\hat g=2.08/1.80\approx1.156$。该人为数例中的 $\hat g$ 大于 1，不代表一般路径系数范围。</p>
 <p>若所有权重都为 1，则 $R=1.05$、$r=1.18$、$\hat g\approx1.124$。较大的第二帧权重使估计更接近该帧对应的比值。$K>1$ 时，同样的加权关系写成矩阵正规方程。</p>
+<h2 id="sec-7-3">7.3 多通道 WPE</h2>
 <p><strong>多通道版（MIMO-WPE，Yoshioka &amp; Nakatani 2012）</strong>：预测第 $m$ 个通道的当前帧时，使用所有 $M$ 个通道的历史帧：</p>
 <p>$$X_m(n,f) = E_m(n,f) + \sum_{m'=1}^{M}\sum_{k=\Delta}^{\Delta+K-1} G^*_{m,m'}(k,f)\,X_{m'}(n-k,f)$$。</p>
 <p>每个滞后 $k$ 对应一个 $M\times M$ 系数矩阵。把 $K$ 个滞后的所有通道历史堆叠后，回归向量长度为 $MK$，联合系数可写成 $MK\times M$。因此每个频点的正规方程矩阵是 $MK\times MK$，而不是单通道的 $K\times K$。</p>
@@ -277,6 +291,7 @@ $$</p>
 <p><strong>与其他模块的组合</strong>：WPE 可先减弱晚期混响，掩码 MVDR 再抑制噪声与定向干扰。Drude et al.（Interspeech 2018）在其测试条件下报告了联合系统相对单模块的改善。<a href="https://www.isca-archive.org/interspeech_2018/drude18_interspeech.html" title="citation">Interspeech 2018 论文</a></p>
 <p>WPE → GSS → MVDR/GEV 也可不使用神经分离网络，见第 8 章。Raj et al.（Interspeech 2023）展示了 GSS 的 GPU 并行实现；速度比较只能按其论文的硬件、数据、代码版本和计时范围解读，不将加速倍数外推到其他实现。</p>
 <p>开源实现 <code>nara_wpe</code> 的离线与在线接口需要分开选择。</p>
+<h2 id="sec-7-4">7.4 在线 WPE 的因果更新</h2>
 <p><strong>在线版</strong>分为按块更新和逐帧递推两类。块在线 WPE 在最近一段历史上估计统计量；递推 WPE 用遗忘因子逐帧更新相关矩阵和滤波器。<a href="https://www.isca-archive.org/interspeech_2017/kinoshita17_interspeech.html" title="citation">在线 WPE</a></p>
 <p>短块提供的有效样本较少，$\lambda$ 和相关矩阵的方差更大；块过长又会增加等待时间，并使旧房间统计占比过高。</p>
 <p>在线实现还要处理初始化、矩阵正则化、静音冻结和路径突变，不能只把批处理迭代次数改成 1。DNN-WPE 可以用网络估计 $\lambda$，但是否优于传统估计取决于训练数据与测试房间是否匹配。</p>
@@ -292,6 +307,7 @@ $$</p>
 <p>这个例子只演示因果统计量顺序，不包含交替更新的功率估计。$\lambda_t$ 也必须只用当前与历史信息，不能沿用图21的居中平滑。</p>
 <p>$\alpha\to1$ 记忆更长但跟踪更慢，$\alpha\to0$ 跟踪更快但估计方差增大，实际实现还需 $\delta>0$ 和静音冻结。<a href="https://groups.uni-paderborn.de/nt/pubs/2018/ITG_2018_Drude_Paper.pdf" title="citation">Drude et al., 2018，§4.2～§4.3</a>、<a href="https://www.isca-archive.org/interspeech_2017/kinoshita17_interspeech.html" title="citation">Kinoshita et al., Interspeech 2017</a></p>
 <p>帧移为 8 ms 时，0.25 s 约含 31 帧，2 s 含 250 帧。这个换算可以用来估计统计样本量和块等待时间，但不能单独决定参数。起始值应在目标数据上同时检查拖尾衰减、语音失真、计算量和端到端延迟，再调整块长、遗忘因子、预测阶数和正则化强度。</p>
+<h2 id="sec-7-5">7.5 <code>nara_wpe</code> 的接口与时间索引</h2>
 <p><strong>开源实现 <code>nara_wpe</code></strong> 是常用的 MIMO-WPE 参考实现。下面固定 PyPI 0.0.11 版；其他版本的轴序和在线接口应重新检查。</p>
 <pre><code class="language-bash">pip install nara-wpe==0.0.11
 </code></pre>
@@ -305,6 +321,7 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 <p>这里必须把“更新顺序”和“<code>delay</code> 参数对应哪个历史帧”分开核对。0.0.11 版三个接口的同名参数并不对应同一时间戳：取帧 <code>[10,20,30,40]</code>，在零起始 $t=3$ 令 <code>taps=1</code>、<code>delay=1</code>、固定预测抽头为 1，离线 <code>build_y_tilde()</code> 取 30，即 $X_{t-1}$；无状态 <code>online_wpe_step()</code> 取 20，即 $X_{t-2}$；有状态 <code>OnlineWPE.step_frame()</code> 在写入 40 前从旧缓冲取 10，即 $X_{t-3}$。</p>
 <p>三者残差依次为 10、20、30。图24和本章公式对应第一种离线索引，不能把逐帧接口的 <code>delay=1</code>直接改写成书中的 $\Delta=1$。</p>
 <p>同一文件的 <code>OnlineWPE.step_block()</code>要求包含指定历史长度的缓冲形状；锁定版本 <code>_get_prediction()</code>还注明只支持 <code>block_shift=1</code>。它不能被当作任意帧移的块处理器。TensorFlow 路线在 <code>tf_wpe.py</code> 中另有 <code>block_wpe_step()</code> 和 <code>recursive_wpe()</code>，依赖、状态和接口也不同。<a href="https://github.com/fgnt/nara_wpe/blob/a166779cca2088817e330481bd20af1a2c598555/nara_wpe/wpe.py"><code>nara_wpe</code> NumPy 源码</a>、<a href="https://github.com/fgnt/nara_wpe/blob/a166779cca2088817e330481bd20af1a2c598555/nara_wpe/tf_wpe.py">TensorFlow 源码</a></p>
+<h2 id="sec-7-6">7.6 与其他模块组合及失效边界</h2>
 <p><strong>DNN 与 WPE 的位置</strong>。神经网络可以预测干净复谱、时频掩码或 WPE 所需的功率 $\lambda$。常见位置取决于网络输出：</p>
 <ul>
 <li>网络若对每个通道独立做波形或复谱映射，可能改变跨通道相位关系，通常放在多通道 WPE 和波束形成之后；</li>
@@ -356,9 +373,11 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 <p>延迟历史与当前晚期混响之间存在可利用相关性时，历史权重才会参与去混响。</p>
 <p>该模型还假设希望保留的早期目标可由当前块的导向向量描述、$\lambda_t>0$ 且加载后的协方差可逆；若 $\lambda_t$ 或协方差使用未来帧，所得实现仍是离线的。</p>
 <p>原始 WPD 工作见 Nakatani 与 Kinoshita 2019，后续因式分解工作说明了它与 WPE、波束形成的关系。<a href="https://arxiv.org/abs/1908.02710" title="citation">Nakatani &amp; Kinoshita, EUSIPCO 2019</a>、<a href="https://doi.org/10.1109/ICASSP40776.2020.9054393" title="citation">Boeddeker et al., ICASSP 2020</a></p>
+<h2 id="sec-7-7">7.7 可执行教学基线与复现实验</h2>
 <p><strong>可执行 WPE 基线。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/dereverberation.py"><code>codes/array_tutorial/dereverberation.py</code></a> 提供只依赖 NumPy 的最小离线 WPE。<code>offline_wpe()</code> 接收复数 STFT，单通道轴序为 <code>(频点, 帧)</code>，多通道轴序为 <code>(频点, 通道, 帧)</code>，输出保持相同形状；它实现保护延迟、按滞后堆叠多通道历史、共享功率权重、相对对角加载和复共轭预测。计算前逐频点以共同幅度归一化各通道和各帧，输出再恢复原幅度，以免极小或极大但有限的输入在平方时下溢或上溢。</p>
 <p><code>taps=0</code>、迭代次数为零、记录短于首个有效回归帧或整个频点为零时直接旁路。输入各维不能为空、数值必须有限；阶数、延迟和迭代次数必须为整数，功率下限必须是有限正数。输入必须是复谱，不能把幅度谱传入后再补相位。</p>
-<p>默认调用仍只返回谱数组。设 <code>return_diagnostics=True</code> 时另返回逐频点诊断：加载后正规矩阵在各轮中的最小数值秩、最大条件数、进入最小范数最小二乘回退的次数，以及未求解时的旁路原因。数值秩依赖浮点精度和矩阵尺度，不是语音质量或混响强度评分。当前基线在 <code>np.linalg.solve</code> 抛出奇异矩阵错误后用 <code>np.linalg.lstsq</code> 求最小范数解；它不会自行增加加载、减小 $K$ 或根据音质旁路。调用方应检查诊断和参考信号，在需要时调整加载、阶数或旁路策略；求得有限残差不等于保住了直达声。</p>
+<p>默认调用仍只返回谱数组。设 <code>return_diagnostics=True</code> 时另返回逐频点诊断：加载后正规矩阵在各轮中的最小数值秩、最大条件数、进入最小范数最小二乘回退的次数，以及未求解时的旁路原因。数值秩依赖浮点精度和矩阵尺度，不是语音质量或混响强度评分。</p>
+<p>当前基线在 <code>np.linalg.solve</code> 抛出奇异矩阵错误后用 <code>np.linalg.lstsq</code> 求最小范数解；它不会自行增加加载、减小 $K$ 或根据音质旁路。调用方应检查诊断和参考信号，在需要时调整加载、阶数或旁路策略；求得有限残差不等于保住了直达声。</p>
 <p><strong>可预测目标的反例</strong>：取一个频点、单通道六帧全为 $1+0j$，设 $K=2$、$\Delta=1$、迭代一次、对角加载为零。有效帧 $n=2,3,4,5$ 的历史向量全为 $[1,1]^\top$，所以 $\mathbf R=4\begin{bmatrix}1&1\\1&1\end{bmatrix}$、$\vec r=[4,4]^\top$；$\mathbf R$ 的秩为 1。最小范数解 $\vec g=[1/2,1/2]^\top$ 把这些帧预测为 1，残差为零（双精度实现中约在 $10^{-16}$ 量级）。前两帧因缺少完整历史而原样保留。</p>
 <p>该输入没有给出晚期混响真值，却会使可预测的目标分量几乎消失，故不能把残差小解读为去混响成功。若为改善数值条件而加对角加载，也仍须检查目标失真；正则化不能单独证明模型的声学假设成立。</p>
 <p>联合示例用 <code>.venv/bin/python -m codes.examples.ch06_09_baselines</code> 运行，边界测试见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_wpe_sep_track.py"><code>tests/test_codes_aec_wpe_sep_track.py</code></a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_wpe_mask_diagnostics.py"><code>tests/test_codes_wpe_mask_diagnostics.py</code></a>。测试固定检查 $K=0$、短输入、全零频点、单抽头复共轭方向、多通道形状、整体幅度缩放等变性、秩亏诊断与非零微小掩码。实际音频管线还要自行固定 STFT 的窗、帧移、<code>center</code>/补零约定与 ISTFT 长度，并测试短语音、静音权重、病态矩阵、通道交换及块边界。</p>
@@ -421,11 +440,11 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 <p>两组输出在第 30 帧之前逐样本相同；第 30 帧的最大差为 $|5+2\mathrm j|=\sqrt{29}\approx5.385$，之后的最大差约为 1.261。当前帧计算时两次运行的旧状态和历史回归量相同，所以当帧输出差由输入改变量直接给出；后续差异还包含状态更新的影响。</p>
 <p>将原始 48 帧分成 48 个单帧块、<code>7+13+5+23</code> 帧四块或 <code>30+18</code> 帧两块，调用同一对象的 <code>step_frame()</code>，与整段逐帧调用逐样本完全相同。这些“块”只是外层调用分组，<strong>不是</strong> <code>OnlineWPE.step_block()</code> 所要求的历史窗口。</p>
 <p>作为相反对照，锁定版离线 <code>wpe_v6()</code> 用全段统计、一次迭代处理同一对输入时，第 30 帧以前的输出最大差约为 0.210。实验只验证固定复谱和固定实现的时间依赖；它没有 STFT 波形分帧、端到端延迟或去混响音质数据。<a href="https://github.com/fgnt/nara_wpe/blob/a166779cca2088817e330481bd20af1a2c598555/nara_wpe/wpe.py">逐帧接口源码</a>与<a href="https://www.isca-archive.org/interspeech_2017/kinoshita17_interspeech.pdf" title="citation">Kinoshita 等 2017 年论文 §3</a>分别给出此版本接口和在线短数据统计问题。</p>
-<span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-7-1-1">7.1.1 $\Delta$ 与 $K$ 的参数换算</h3>
+<span id="sec-7-1-1" class="anchor-alias" aria-hidden="true"></span><span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-7-8">7.8 保护延迟与预测抽头数的参数换算</h2>
 <p>先把帧数换成物理时间。若帧移为 $H$ ms，最近的预测帧是 $t-\Delta$，其时延为 $\Delta H$；$K$ 个预测帧从 $t-\Delta$ 到 $t-(\Delta+K-1)$，最远时延为 $(\Delta+K-1)H$。这个索引关系比“$\Delta+K$ 帧”少一帧，因为起点已算入 $K$ 个样本。</p>
 <p>以图 21 的本书仿真为例：采样率 16 kHz，短时傅里叶变换（Short-Time Fourier Transform，STFT）窗长 512 点（32 ms），帧移 128 点（8 ms），$\Delta=6$、$K=10$、交替迭代 3 次。因此使用 $t-6$ 到 $t-15$ 的十帧：最近预测帧延迟 $6\times8=48$ ms，最远为 $15\times8=120$ ms。这些数值只是图 21 的可复现配置，不是会议室、教室或其他房间的通用起点。</p>
 <p>选参时，先对 $\Delta$ 扫描并检查直达声和早期成分的失真；再在数据量足够的条件下增大 $K$，检查晚期拖尾、矩阵条件数、计算量和下游任务指标。增大 $K$ 会增加参数量，在短语音或强噪声下反而可能使估计不稳定。$T_{60}$ 只描述整体衰减时间，不能单独决定 $\Delta$、$K$ 或迭代次数。</p>
-<span id="sec-4" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-7-1-2">7.1.2 常见错误与练习</h3>
+<span id="sec-7-1-2" class="anchor-alias" aria-hidden="true"></span><span id="sec-4" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-7-9">7.9 常见错误与练习</h2>
 <p><strong>五项常见错误</strong>：</p>
 <ol>
 <li>取 $\Delta=0$，使回归器包含当前帧，允许恒等或近恒等的退化预测，而不只是“多减一点直达声”；</li>
@@ -503,7 +522,7 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 <p>该矩阵特征值为 1、1、1、3，正定性和约束都可独立检查。这是本书给定协方差的优化手算，不是语音质量实验，也不将目标值下降当作普遍去混响收益。模型出处见 <a href="https://arxiv.org/pdf/1908.02710">Nakatani 与 Kinoshita，§II、§IV</a>。</p>
 </li>
 </ul>
-<span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-7-1-3">7.1.3 研究方向</h3>
+<span id="sec-7-1-3" class="anchor-alias" aria-hidden="true"></span><span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-7-10">7.10 研究方向</h2>
 <p>WPE 的改进主要围绕四个限制展开：</p>
 <ul>
 <li>分布式阵列需要按通道到达时延调整预测延迟；</li>

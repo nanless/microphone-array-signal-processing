@@ -2,7 +2,7 @@
 
 先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。
 
-本页对应 88 道稳定编号代码题，以及独立的真实录音练习 R01。原有练习题号保持不变；E01-01 表示第 1 章第 1 道代码练习，不表示全书原有第 1 题。E06-07～E06-20 是无量纲 AEC 模型与边界题，其中 E06-11～20 可用精确答案程序核对；第 15、16 节另给两组相关但参数不同的合成音频，不能把 WAV 直接当作题目真值。第 3～11、13～16、18 节对应 60 个数学合成样本，第 17 节是单独清单管理的 18 个房间白噪声合成样本；第 12 节使用另行授权的真实同步录音。
+本页对应 94 道稳定编号代码题，以及独立的真实录音练习 R01。原有练习题号保持不变；E01-01 表示第 1 章第 1 道代码练习，不表示全书原有第 1 题。E06-07～E06-20 是无量纲 AEC 模型与边界题，其中 E06-11～20 可用精确答案程序核对；第 15、16 节另给两组相关但参数不同的合成音频，不能把 WAV 直接当作题目真值。第 3～11、13～16、18 节对应 60 个数学合成样本，第 17 节是单独清单管理的 18 个房间白噪声合成样本；第 12 节使用另行授权的真实同步录音。
 
 ## 1. 按章节运行
 
@@ -19,6 +19,8 @@
 .venv/bin/python -m codes.examples.exercises_engineering
 .venv/bin/python -m codes.examples.tracking_crossing_dropout_demo
 .venv/bin/python -m codes.examples.spectral_subtraction_demo
+.venv/bin/python -m codes.examples.coarray_covariance_exercise
+.venv/bin/python -m codes.examples.doa_resolution_trials
 .venv/bin/python codes/examples/generate_audio_samples.py --check
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 ```
@@ -27,25 +29,29 @@
 |---|---|---|
 | 第 1 章 E01-01～03 | 相关噪声、幅度和功率、不等噪声方差 | [空间练习](../examples/exercises_spatial.py) |
 | 第 2 章 E02-01～06 | 帧数、复协方差、边缘重建、有效权重、递推启动与整体权重缩放 | 同上 |
-| 第 3 章 E03-01～06 | 差集重数、端射角误差、三维方位、近远场、实增益相减与复增益标定反例 | 同上 |
-| 第 4 章 E04-01～07、E04-09 | 延迟正号、相干源秩、栅瓣歧义、空间平滑、MDL 评分与重复抽样、ESPRIT 最小二乘 | 同上 |
+| 第 3 章 E03-01～07 | 差集重数、端射角误差、三维方位、近远场、复增益标定及物理协方差到虚拟协同阵 | [空间练习](../examples/exercises_spatial.py)（01～06）；[协同阵 E03-07](../examples/coarray_covariance_exercise.py) |
+| 第 4 章 E04-01～09 | 延迟正号、相干源秩、栅瓣歧义、空间平滑、MDL、双源分辨率重复抽样与 ESPRIT 最小二乘 | [空间练习](../examples/exercises_spatial.py)（01～07、09）；[分辨率 E04-08](../examples/doa_resolution_trials.py) |
 | 第 5 章 E05-01～05 | 秩一条件、MVDR 加载、输出残噪、复响应约束与有限干扰抑制 | 同上 |
 | 第 6 章 E06-01～20 | NLMS、分区卷积、子带交叉项及全交叉更新、IPNLMS 正则项、RLS 遗忘与批量核对、Kalman 双讲与协方差；另含回声模型边界 | [增强练习](../examples/exercises_enhancement.py)（01～06）；[AEC 小例](../examples/aec_algorithm_minicases.py)（07～10）；[进阶手算](../examples/aec_advanced_exercises.py)（11～20） |
 | 第 7 章 E07-01～05 | 有效帧、复数预测、秩亏加载、离线因果性、WPD | 同上 |
 | 第 8 章 E08-01～07 | SI-SDR、排列、已知解混、回投影、掩码地板、跨块身份与 GSS 静音门控 | 同上 |
 | 第 9 章 E09-01～06 | 缺测、环绕、粒子、两类过程噪声、新息门控与交叉身份错配 | [增强练习](../examples/exercises_enhancement.py)（01～05）；[追踪交叉与限速](../examples/tracking_crossing_dropout_demo.py)（06） |
-| 第 10 章 E10-01～13 | 时钟、VAD、缓冲、期限、定点、增益、帧/字节、块适配与功率谱减 | [工程练习](../examples/exercises_engineering.py)（01～12）；[谱减演示](../examples/spectral_subtraction_demo.py)（13） |
-| 第 11 章 E11-01～04 | 资源约束、失败率统计、WER 聚合与延迟分位数 | 同上 |
+| 第 10 章 E10-01～14 | 时钟、VAD、缓冲、期限、定点、增益、帧/字节、块适配、功率谱减与全链资源预算 | [工程练习](../examples/exercises_engineering.py)（01～12、14）；[谱减演示](../examples/spectral_subtraction_demo.py)（13） |
+| 第 11 章 E11-01～07 | 资源约束、失败率统计、WER 聚合、延迟分位数和三个场景选型决策 | [工程练习](../examples/exercises_engineering.py) |
 | 附录 A E12-01～04 | 卷积、复二阶矩、秩亏最小二乘、空间白化与 PHAT 的区别 | 同上 |
 | 附录 B E13-01 | 同组共同增益与独立归一化 | 同上 |
 
 E03-06 用两次已知方向的窄带复谱比复算固定通道增益，再用方向未知的单次观测展示不可辨识性；题目与逐步答案见[第 3 章](../../chapters/03_array-geometry.md#e03-06)。E08-07 给固定混合权重和空间密度，复算恒活动背景类在全员静音时的后验，见[第 8 章](../../chapters/08_speech-separation.md#e08-07)。两题都是确定性数学输入，不附会成已测阵列标定或完整 GSS 分离音频；现有 60 个 WAV 不提供这两题的真值。
 
-E04-09 在[第 4 章 §4.6](../../chapters/04_doa-estimation.md#sec-4-6)先从两行子阵写出单源最小二乘正规方程，再用扰动后的第三个子空间分量核对旋转因子、残差和角度。理想向量给出 $30^\circ$、零残差；扰动向量给出约 $28.90^\circ$、残差范数 $0.1$。两个数字由明确给定的复向量计算，不是快拍数、SNR 或算法方差的实测结果。双源分辨率的重复独立抽样与区间报告尚未完成，不计入题数。
+E03-07 从三只物理麦的位置 $\{0,1,3\}$ 和给定协方差出发，按有符号差分滞后平均，构造四阶虚拟 Toeplitz 矩阵；单快拍反例提醒读者，物理协方差半正定不保证填出的虚拟矩阵也半正定。题干、手算与限制见[第 3 章](../../chapters/03_array-geometry.md#e03-07)，可运行入口为[协同阵练习](../examples/coarray_covariance_exercise.py)。虚拟滞后不是四只独立采集麦克风。
+
+E04-09 在[第 4 章 §4.6](../../chapters/04_doa-estimation.md#sec-4-6)先从两行子阵写出单源最小二乘正规方程，再用扰动后的第三个子空间分量核对旋转因子、残差和角度。理想向量给出 $30^\circ$、零残差；扰动向量给出约 $28.90^\circ$、残差范数 $0.1$。两个数字由明确给定的复向量计算，不是快拍数、SNR 或算法方差的实测结果。E04-08 已用 200 次独立双源复谱抽样比较 Bartlett、Capon 和 MUSIC；每种条件保留成功/失败计数与 Wilson 区间，见[第 4 章](../../chapters/04_doa-estimation.md#e04-08)与[脚本](../examples/doa_resolution_trials.py)。该结果只适用于固定的八麦窄带阵列、网格和源数条件。
 
 E12-04 在[附录 A](../../chapters/12_appendix-symbols-math.md#sec-12-4)比较空间矩阵白化和 GCC-PHAT 的频谱相位加权：$R_{nn}=\operatorname{diag}(4,1)$ 时可取 $W=\operatorname{diag}(0.5,1)$，得到 $WR_{nn}W^H=I$，而导向矢量 $[1,1]^\top$ 要同步变为 $[0.5,1]^\top$。对一个复数互谱除以其模只得到标量相位，不能完成这项跨通道协方差变换。运行[工程练习](../examples/exercises_engineering.py)查看矩阵乘法输出。
 
-E09-06 使用确定性角度观测：交叉帧两轨均预测 $40^\circ$，B 的 $39^\circ$ 先于 A 的 $41^\circ$ 输入。两种一对一配对的平方残差和均为 $2\ \mathrm{deg}^2$；指定并列规则产生两次身份错配，但未滤波观测集合的 OSPA 为 0。另从 $P_0=I$、$Q=\operatorname{diag}(0.1,0.01)$ 出发连续预测两次，角度方差为 $2.10$、$5.21\ \mathrm{deg}^2$；每秒最多转 $5^\circ$ 的控制角为 $25^\circ$、$30^\circ$。这些答案可由[独立测试](../../tests/test_codes_tracking_crossing_dropout.py)逐项复核，适用边界见[第 9 章练习](../../chapters/09_source-tracking.md#sec-6)；它没有语音或设备 WAV，不应借用追踪试听样本作身份真值。
+E09-06 使用确定性角度观测：交叉帧两轨均预测 $40^\circ$，B 的 $39^\circ$ 先于 A 的 $41^\circ$ 输入。两种一对一配对的平方残差和均为 $2\ \mathrm{deg}^2$；指定并列规则产生两次身份错配，但未滤波观测集合的 OSPA 为 0。另从 $P_0=I$、$Q=\operatorname{diag}(0.1,0.01)$ 出发连续预测两次，角度方差为 $2.10$、$5.21\ \mathrm{deg}^2$；每秒最多转 $5^\circ$ 的控制角为 $25^\circ$、$30^\circ$。这些答案可由[独立测试](../../tests/test_codes_tracking_crossing_dropout.py)逐项复核，适用边界见[第 9 章练习](../../chapters/09_source-tracking.md#sec-9-6)；它没有语音或设备 WAV，不应借用追踪试听样本作身份真值。
+
+E10-14 把六帧的服务时间、队列容量、内存与示意电池功耗放在同一预算中。平均 RTF 为 0.75，但六帧有三次超过 10 ms 期限；峰值 667.5 KiB、示意平均功耗 0.95 W，不能用平均吞吐合格推出尾延迟合格。E11-05～07 分别用圆阵间距、会议单路延迟和车载时钟偏移做“先硬约束后软指标”的具名候选筛选。输入与完整答案见[第 10 章](../../chapters/10_engineering-practice.md#sec-10-4-3)、[第 11 章](../../chapters/11_selection-guide.md#sec-11-6)及[工程练习代码](../examples/exercises_engineering.py)。这些数值是教学条件，不是设备验收。
 
 ## 2. 合成音频试听前的约定
 
@@ -355,3 +361,15 @@ STFT 窗长 512、帧移 128，居中补边；离线 WPE 使用 4 个抽头、3 
 先用 E10-13 的单频点手算核对 $D=4$、两个扣噪功率 $5$ 与 $-3$，再运行 [`spectral_subtraction_demo.py`](../examples/spectral_subtraction_demo.py)核对输出功率 $5$ 与 $0.04$。随后读取五个 WAV，在 `[0,6400)` 前奏上比较同增益数字 RMS：本次固定随机样本约为带噪 $0.06974$、4% 地板 $0.04037$、零地板 $0.03806$。这些值属于这一组有限长度、一个随机种子的样本，不是多次实验的均值；地板较低导致残留功率较低也不证明语音更清晰。后 1.6 s 则要同时听目标音色与残留，不能只比较静音段能量。
 
 零地板可把若干时频格压到零，可能留下听起来颗粒化的“音乐噪声”；固定谱地板缓和深度抑制，也会保留更多噪声。该现象的原始方法依据是 [Boll 1979，IEEE TASSP，式(2)～(5)](https://doi.org/10.1109/TASSP.1979.1163209)；本组只展示一个教学配置，没有正式听测。MMSE-STSA、MMSE-LSA、WebRTC NS 或 RNNoise 的噪声估计、统计目标与控制状态均不同，不能把这些 WAV 当作它们的运行结果。原 55 个 WAV 在新增此组后仍保持逐文件字节不变。
+
+## 19. 活动导引的 GSS 教学链：五个独立样本
+
+[独立清单](../gss_audio/MANIFEST.json)记录 2 s、16 kHz、固定种子的两源双麦数学合成输入、共同导出增益、音频摘要及 SI-SDR 评分区间；[中间状态](../gss_audio/STATE.npz)保存活动、后验掩码、空间协方差和权重。五个 WAV 不计入主清单的 60 个。依次比较[第一路源](../gss_audio/source_1.wav)、[第二路源](../gss_audio/source_2.wav)、[双麦混合](../gss_audio/mixture.wav)、[正确活动输出](../gss_audio/enhanced_correct.wav)与[目标全漏标输出](../gss_audio/enhanced_missed.wav)。
+
+这一组的去均值 SI-SDR 在参考麦为 1.28 dB，正确活动输出为 13.76 dB；目标全漏标时按代码约定旁路回参考麦。它只显示给定合成模型和外部活动标签的处理链能运行，以及活动错误会破坏目标输出。无混响输入中 WPE 旁路；官方 CuPy/Lhotse GPU-GSS 与 CHiME 语料均未运行，不把这组数字当作原论文复现成绩。公式、完整条件和失效边界见[第 8 章 §8.4.5](../../chapters/08_speech-separation.md#sec-8-4-5)及[源码](../examples/gss_teaching_demo.py)。
+
+## 20. 自由场移动声源：三路独立样本
+
+[原始两音调源](../moving_audio/source.wav)、[固定位置双麦](../moving_audio/static_array.wav)和[连续移动双麦](../moving_audio/moving_array.wav)共用导出增益。独立[轨迹与音频清单](../moving_audio/MANIFEST.json)保存声源线性轨迹、每 10 ms 的方位和双麦传播时差真值、迟滞发射时间方程的数值残差，以及逐 WAV 摘要。三路文件也不计入主 60 个样本。
+
+这里的双麦差异来自传播距离与传播时差，而[第 8 节的声像移动](../audio/tracking_pan.wav)仅调左右增益。自由场模型没有反射、头部传递函数、麦克风指向性或设备时钟偏差；源信号是合成纯音，不是真人语音。试听只能帮助定位模型差异，角度与 TDOA 要按清单和[第 9 章 §9.5](../../chapters/09_source-tracking.md#sec-9-5)的公式、代码计算，不能由左右声像直接判断定位误差。

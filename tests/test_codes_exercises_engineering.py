@@ -13,8 +13,8 @@ class EngineeringExerciseTests(unittest.TestCase):
         cls.results = run_exercises()
 
     def test_ids_and_strict_json(self):
-        expected = {f"E10-{i:02}" for i in range(1, 13)}
-        expected |= {f"E11-{i:02}" for i in range(1, 5)}
+        expected = {f"E10-{i:02}" for i in range(1, 13)} | {"E10-14"}
+        expected |= {f"E11-{i:02}" for i in range(1, 8)}
         expected |= {"E12-01", "E12-02", "E12-03", "E12-04", "E13-01"}
         self.assertEqual(set(self.results), expected)
         json.dumps(self.results, allow_nan=False)
@@ -48,6 +48,38 @@ class EngineeringExerciseTests(unittest.TestCase):
         self.assertEqual(result["coverage"], .8)
         self.assertAlmostEqual(result["average_power_w"], 1.1)
         self.assertAlmostEqual(result["estimated_runtime_h"], 5.38181818181818)
+
+    def test_coupled_resource_budget_has_independent_timeline(self):
+        row = self.results["E10-14"]
+        self.assertEqual([r["start_ms"] for r in row["timeline"]], [0, 10, 20, 45, 49, 53])
+        self.assertEqual([r["finish_ms"] for r in row["timeline"]], [4, 14, 45, 49, 53, 57])
+        self.assertEqual([r["response_ms"] for r in row["timeline"]], [4, 4, 25, 19, 13, 7])
+        self.assertEqual((row["processed"], row["dropped"], row["deadline_misses"]), (6, 0, 3))
+        self.assertEqual((row["queue_high_water"], row["max_wait_ms"]), (3, 15))
+        self.assertEqual(row["offered_work_rtf"], .75)
+        self.assertEqual(row["frame_kib"], 2.5)
+        self.assertEqual(row["peak_memory_kib"], 667.5)
+        self.assertEqual(row["average_power_w_if_schedule_repeats"], .95)
+        self.assertAlmostEqual(row["estimated_runtime_h_if_schedule_repeats"], 5.92 / .95)
+
+    def test_three_selection_cases_apply_hard_limits_before_scores(self):
+        terminal = self.results["E11-05"]["candidates"]
+        self.assertEqual([r["passes_adjacent_4khz_screen"] for r in terminal], [False, True])
+        self.assertAlmostEqual(terminal[0]["nearest_neighbor_spacing_m"], .04 * 2**.5)
+        self.assertAlmostEqual(terminal[1]["nearest_neighbor_spacing_m"], .04)
+        meeting = self.results["E11-06"]["candidates"]
+        self.assertEqual([r["wer"] for r in meeting], [.25, .20, None])
+        self.assertEqual([r["errors_per_100_reference_words"] for r in meeting],
+                         [25, 20, None])
+        self.assertEqual([r["score_protocol"] for r in meeting[:2]],
+                         ["same_reference_single_output_wer"] * 2)
+        self.assertEqual(meeting[2]["score_protocol"],
+                         "undefined_until_multistream_protocol_is_fixed")
+        self.assertEqual([r["passes_hard_limits"] for r in meeting], [True, True, False])
+        vehicle = self.results["E11-07"]
+        self.assertEqual([r["drift_ms"] for r in vehicle["candidates"]], [.8, .08])
+        self.assertEqual([r["passes_drift_limit"] for r in vehicle["candidates"]], [False, True])
+        self.assertEqual(vehicle["maximum_interval_s"], 1.25)
 
     def test_linear_and_circular_convolution(self):
         result = self.results["E12-01"]
