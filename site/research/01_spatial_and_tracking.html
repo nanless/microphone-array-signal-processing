@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>空间处理与追踪源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5756010aab11"><style>
+<meta name="source-digest" content="b74df4f08677"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -226,7 +226,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <tr>
 <td>pyroomacoustics</td>
 <td><code>0dd39f2614b7fc44b2cc63dbe7d60f4641068890</code></td>
-<td>MIT；本书原有 0.10.0 版本，算法与 C++ 房间模拟器的依赖不同</td>
+<td>MIT；本书使用 0.10.0 版本，算法与 C++ 房间模拟器的依赖不同</td>
 </tr>
 <tr>
 <td>doatools</td>
@@ -312,7 +312,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>对应 §4.2。本书 <code>doa.py::gcc_phat</code> 明确正时延约定、FFT 补零、物理 lag 截取和三点插值；ODAS 的 <code>src/signal/xcorr.c</code>、<code>src/system/freq2xcorr.c</code> 可作为块处理参考。补零到两段长度之和减一只保证未加权互相关的有限长度等价；PHAT 归一化改变频谱后，逆变换不再保证相同的有限支撑，FFT 长度仍可能改变相关值。PHAT 消除互谱幅度权重，但低能量频点的相位会变得不可靠，因此归一化下限与有效频点筛选都是算法的一部分。</p>
 <p>建议给一个 0.5 ms 延迟的宽带源，随后改成单频正弦、两源和静音。分别报告主峰、次峰、峰背比和最大允许 lag。亚采样插值只细化相关峰形，不能凭空恢复窄带信号缺少的可辨识信息。先固定通道号，再固定 <code>t_1-t_2</code> 的方向，避免定位后又人工翻转符号。</p>
 <span id="sec-13" class="anchor-alias" aria-hidden="true"></span><span id="8-srp-phat-与近场三维网格" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-14096ab533">8. SRP-PHAT 与近场三维网格</h3>
-<p>对应 §4.3、§4.7.1。先读本书 <code>doa.py::srp_phat</code>，再读 pyroomacoustics 的 <code>doa/srp.py</code>，理解麦对证据如何按候选传播时延相加。这里的两份代码作为远场方向 SRP 参考；近场三维 SRP 则保留正文球面传播与角度—距离网格的原理索引，不能仅因外部 API 列出 <code>mode='near'</code> 和 <code>r</code> 就标成已取得该变体实现。</p>
+<p>对应 §4.3、§4.7 的“近场模型失配”。先读本书 <code>doa.py::srp_phat</code>，再读 pyroomacoustics 的 <code>doa/srp.py</code>，理解麦对证据如何按候选传播时延相加。这里的两份代码作为远场方向 SRP 参考；近场三维 SRP 则保留正文球面传播与角度—距离网格的原理索引，不能仅因外部 API 列出 <code>mode='near'</code> 和 <code>r</code> 就标成已取得该变体实现。</p>
 <p>锁定版本 pyroomacoustics 0.10.0 的静态调用链有明确限制。<code>doa/srp.py</code> 构造函数把 <code>mode/r</code> 传给 <code>DOA.__init__</code>，但 <code>doa/doa.py:289</code> 创建 <code>ModeVector(self.L, self.fs, self.nfft, self.c, self.grid)</code> 时没有传 <code>mode</code>，因此该对象仍采用第 32 行的默认 <code>mode='far'</code>。同时，候选 <code>r</code> 仅保存到 <code>self.r</code>，第 234～280 行的 <code>GridCircle/GridSphere</code> 构造没有把它形成距离维；<code>srp.py:116</code> 的评分随后直接使用这个 <code>self.mode_vec</code>。<a href="https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/doa/doa.py">固定提交 DOA 构造与导向源码</a>；<a href="https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/doa/srp.py">固定提交 SRP 评分源码</a>。</p>
 <p>据此，即使构造参数写为 <code>mode='near', r=np.array([2.0])</code>，也没有将近场选项传入实际相位表。这一<strong>近场 API 判断</strong>来自默认参数、调用实参与网格构造的静态核对；附录 B 实际运行的是本书远场 SRP 教学实现与上游房间 RIR，不构成上游近场接口的声学数值验证。若要实现近场搜索，必须另行构造包含距离的候选位置，并使球面传播时延进入 SRP 评分；不能仅补传一个 <code>mode</code> 参数就宣称完整三维搜索已完成。</p>
 <p>建议在真值落格点、落在格点之间、落在搜索区外三个条件下比较峰值。源在区外时，算法仍可能返回边界上的最大值，因此“找到峰”不等于位置可信。部署时缓存静态时延表、限制重复麦对、记录选峰间距，并在阵列几何或采样率变化后重建表。</p>
@@ -499,7 +499,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>对应 §9.3～9.4。OSPA 在同一坐标和截断距离下同时惩罚位置与目标数误差；身份连续性应另外评价。将 DOA 转换为波束控制时还需预测到播放或采集消费时刻，记录 <code>measurement_time</code>、<code>publish_time</code>、<code>track_id</code>、协方差与有效期。</p>
 <p>建议先复算正文 30°/70° 对单真值 32° 的 OSPA，再交换两条轨迹 ID：位置指标可能完全不变，身份连续性已经出错。控制器按最大角速度和时间间隔限速，在过期观测、长静默或身份不确定时降低更新可信度。轨迹 ID 不等于永久说话人身份；单凭声学位置不能维持跨房间身份。</p>
 <span id="sec-47" class="anchor-alias" aria-hidden="true"></span><span id="37-tdoa-非线性最小二乘与可观测性" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-6cecb2857f">37. TDOA 非线性最小二乘与可观测性</h3>
-<p>对应 §4.4、§4.7.1。TDOA 几何定位将每条观测与候选位置产生的距离差比较，按观测协方差加权，使用雅可比求局部位置更新。输入除了 TDOA，还需要明确参考麦和共享参考引入的误差相关性；输出应包含残差、局部条件性和解是否位于搜索域。</p>
+<p>对应 §4.4、§4.7 的“近场模型失配”。TDOA 几何定位将每条观测与候选位置产生的距离差比较，按观测协方差加权，使用雅可比求局部位置更新。输入除了 TDOA，还需要明确参考麦和共享参考引入的误差相关性；输出应包含残差、局部条件性和解是否位于搜索域。</p>
 <p>最小检查先用正文三麦近场几何复算距离差，再用有限差分独立检查雅可比。把源逐步移远，距离方向的敏感度会减小；算法收敛到一个距离不意味着距离已可观测。工业中至少保留多个初值或粗网格初始化，识别镜像多解与边界解。本文未将一般优化器索引成完整声学定位实现，具体模型与本书 §4.4 的原始论文一致。</p>
 <span id="sec-48" class="anchor-alias" aria-hidden="true"></span><span id="38-随机源确定源与非相关源-crb" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-53d2c627e9">38. 随机源、确定源与非相关源 CRB</h3>
 <p>对应 §4.8。doatools <code>performance/crb.py</code> 的 <code>crb_sto_farfield_1d</code>、<code>crb_det_farfield_1d</code>、<code>crb_stouc_farfield_1d</code> 对应不同观测统计模型。CRB 是在参数模型、噪声和正则条件下的估计方差下界，不是从输入录音直接产生方向的算法，也不是混响房间的实测误差预测器。<a href="https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/performance/crb.py">作者源码</a>。</p>

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>导读与导航 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5756010aab11"><style>
+<meta name="source-digest" content="b74df4f08677"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -493,7 +493,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>fig16_beampattern</td>
 <td>05</td>
 <td>指定模型仿真</td>
-<td>三条曲线保持目标方向单位响应；DSB/MVDR 用 $d=\lambda/2$，超指向用 $d=0.2\lambda$，MVDR 干扰方向为 20°</td>
+<td>三条曲线保持目标方向单位响应；DSB/MVDR 用 $d=\lambda/2$，超指向用 $d=0.2\lambda$，MVDR 干扰方向为 20°；条件不同，不可横向按曲线高低排名</td>
 </tr>
 <tr>
 <td>图17</td>
@@ -683,11 +683,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 </code></pre>
 <p>再运行第 13.7 节列出的绘图命令，可重新生成 39 张图；运行时间取决于机器。具体构建步骤和错误处理见 <code>scripts/README.md</code>。Windows 上需把命令中的 <code>.venv/bin/python</code> 换成 <code>.venv\Scripts\python</code>。</p>
-<p>另有 94 道带答案的<a href="research/05_exercises_and_audio.html">章节代码练习与音频实验</a>，从第 1 章到附录 B 使用 E01-01 等稳定编号。第 6 章 E06-07～E06-20 包含算法边界手算与子带、IPNLMS、RLS、Kalman 的小规模复算。每道题对应输入、执行代码和可核查结果，不替代原有练习题号。</p>
+<p>另有 94 道带答案的<a href="research/05_exercises_and_audio.html">章节代码练习与音频实验</a>，从第 1 章到附录 B 使用 E01-01 等稳定编号。第 6 章 E06-07～E06-20 包含算法边界手算与子带、IPNLMS、RLS、Kalman 的小规模复算。每道题对应输入、执行代码和可核查结果；附录 B 的 1～17 题另用一套编号。</p>
 <p>60 个 WAV 样本由本书合成，分为 14 组，覆盖对齐平均、四麦分数采样时差、AEC、WPE、已知矩阵解混、工程失真、双声道声像，以及相关噪声、极性错误、病态求逆、非线性回声、四种 AEC 自适应方法、两带跨项和功率谱减。先运行 <code>codes/examples/generate_audio_samples.py</code>，再按手册比较参考、输入和输出；网页提供不自动播放的试听控件。</p>
 <p>另有独立清单管理的 <a href="gss_audio/MANIFEST.json">GSS 五路合成音频与中间状态</a>、<a href="moving_audio/MANIFEST.json">自由场移动声源三路音频与轨迹真值</a>，以及附录 B 六位置房间题的 18 个白噪声合成 WAV。三套补充资产均不计入主清单 60 个样本。</p>
-<p>三组反例见附录 B 图 35，非线性残留见第 6 章图 36。图 37 解释两带子带模型的交叉项；图 38 分别展示 IPNLMS、RLS 和 Kalman 的受控状态变化，三幅子图不构成性能排名。图 39 展示 AEC 方法的选择流程。</p>
-<p>对应的 AEC 合成音频在研究手册第 15～16 节；谱减试听与前奏数字在第 18 节。这些音频与图 39 的流程图分别用于听辨和选型。</p>
+<p>三组反例见附录 B 图 35，非线性残留见第 6 章图 36。图 37 解释两带子带模型的交叉项；图 38 分别展示 IPNLMS、RLS 和卡尔曼滤波的受控状态变化，三幅子图不构成性能排名。图 39 展示分区块频域自适应滤波（PBFDAF）如何用播放参考的历史块预测回声、计算残差并更新滤波器。</p>
+<p>对应的 AEC 合成音频在研究手册第 15～16 节；谱减试听与前奏数字在第 18 节。音频可用于听辨指定合成条件下的差别，图 39 则用于核对 PBFDAF 的信号与更新路径。</p>
 <p>真实录音另存于 <code>codes/real_audio/</code>：DEMAND 河流场景的 10 s、16 通道摘录，以及单麦、双麦平均、16 麦平均三个派生文件。数据采用 CC BY-SA 3.0，来源、许可和修改记录随文件保留。该实验检验实际通道间的相关项，不提供干净语音参考或语音增强分数。</p>
 <p><img alt="图34 合成音频的波形与分段能量" src="../figures/fig34_audio_examples.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图 34 直接读取已导出的 PCM：<strong>(a)</strong> 在 500～520 ms 对比晚到 3 个采样的参考、单麦与对齐平均；<strong>(b)</strong> 用 20 ms 块 RMS 标出 1.2～1.8 s 的已知双讲冻结；<strong>(c)</strong> 对比含 40 ms、80 ms 副本的输入、离线 WPE 和无回声参考。三组均为 16 kHz 合成信号，每组共用导出增益，不作单文件峰值归一化。</p>

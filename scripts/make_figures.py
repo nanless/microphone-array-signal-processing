@@ -399,7 +399,7 @@ def fig_near_far_field():
 
 
 # ----------------------------------------------------------------------
-# 图16 波束图对比：DSB vs MVDR vs 超指向 (模拟)
+# 图16：三条曲线使用两种阵距，图内直接标明比较条件。
 # ----------------------------------------------------------------------
 def fig_beampatterns():
     M, d = 8, 0.5
@@ -420,9 +420,9 @@ def fig_beampatterns():
     w_sd, _ = distortionless_weights(G, a0_sd, diagonal_loading=1e-6)
     fig, axes = plt.subplots(1, 2, figsize=(9.5, 5.4), subplot_kw=dict(polar=True))
     fig.subplots_adjust(wspace=0.12)
-    curves = [("DSB 延迟求和 (d=λ/2)", w_ds, d, C_BLUE, "-"),
-              ("MVDR 干扰零陷20° (d=λ/2)", w_mvdr, d, C_RED, "--"),
-              (r"超指向 (d=0.2λ, 加载 $10^{-6}$)", w_sd, d_sd, C_GREEN, ":")]
+    curves = [("DSB：8 麦，d=0.5λ", w_ds, d, C_BLUE, "-"),
+              ("MVDR：8 麦，d=0.5λ", w_mvdr, d, C_RED, "--"),
+              (r"超指向：8 麦，d=0.2λ", w_sd, d_sd, C_GREEN, ":")]
     for ax, (title, ymax) in zip(axes, [("线性幅度", None), ("dB 刻度", 40)]):
         for name, w, dd, c, ls in curves:
             A = ula_steering(dd * m, th)
@@ -450,13 +450,13 @@ def fig_beampatterns():
         ax.legend(loc="lower center", bbox_to_anchor=(0.5, -0.22), fontsize=FS_SMALL + 0.5, framealpha=0.95)
     # 在 dB 图上用箭头标出 20° 处 MVDR 零陷（标签外移至图外空白，引线指回零陷坑）
     ax_db = axes[1]
-    ax_db.annotate("MVDR 零陷 @20°", xy=(np.deg2rad(20), 2),
+    ax_db.annotate("MVDR：20° 方向的零陷", xy=(np.deg2rad(20), 2),
                    xytext=(np.deg2rad(76), 37.5), fontsize=FS_SMALL, color=C_RED,
                    bbox=dict(fc="white", ec=C_RED, lw=0.7, alpha=0.9, boxstyle="round,pad=0.25"),
                    arrowprops=dict(arrowstyle="->", color=C_RED, lw=1.5,
                                    connectionstyle="arc3,rad=-0.1"))
-    fig.suptitle("图16  8元ULA 0°指向波束图：DSB/MVDR 用 d=λ/2，超指向用 d=0.2λ\n"
-                 r"（各曲线保持目标方向单位响应；MVDR 干扰=20°；超指向相对对角加载=$10^{-6}$；模拟）",
+    fig.suptitle("图16  8 麦线阵的三种波束：两种阵距，不能作为同条件性能排名\n"
+                 r"DSB/MVDR：$d=0.5\lambda$；超指向：$d=0.2\lambda$；目标方向 0°、响应均为 1；MVDR 干扰 20°",
                  fontsize=12.3)
     fig.tight_layout(rect=(0, 0, 1, 0.90))
     save(fig, "fig16_beampattern.png")
@@ -1071,8 +1071,8 @@ def fig_pipeline():
         "ssl": "声源定位\nSSL / DOA", "tracking": "轨迹预测\n状态+协方差",
         "diarization": "说话人分割\n活动标注", "gss_mask": "GSS / cACG\n掩码",
         "scm": "目标/干扰\nSCM",
-        "far_end": "远端播放", "render": "播放处理\nEQ / 音量",
-        "render_tap": "render tap\nAEC 参考", "speaker": "DAC / 功放\n扬声器",
+        "far_end": "远端播放", "render": "播放处理\n均衡/音量",
+        "render_tap": "播放参考\n供回声消除", "speaker": "数模转换\n功放/扬声器",
     }
     colors = {
         "capture": "#dbe9f6", "aec": "#dbe9f6", "wpe": "#dbe9f6",

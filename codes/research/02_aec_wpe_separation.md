@@ -43,7 +43,7 @@ NLMS 以参考回归向量的能量归一化更新幅度，便于在不同播放
 
 最小实验先关闭更新，把已知 FIR 分区后与直接线性卷积逐样本比较，再启用更新并保存每块权重。故障注入分别测试不丢弃循环卷积的无效输出区，以及关闭梯度约束：前者会破坏对应位置的线性卷积输出；后者可能改变权重轨迹和稳态误差，却不保证每组输入都出现块边界错误。另需区分一般 STFT 域同频带跨帧滤波：任意分析、合成窗下，忽略跨频带项未必与重叠保存的全带时域 FIR 逐样本等价，见 [Avargel 与 Cohen 2007，§II](https://webee.technion.ac.il/Sites/People/IsraelCohen/Publications/TASL_May2007.pdf)。
 
-上述最小实验现有[教学实现](../array_tutorial/aec_partitioned.py)、[两块手算及辨识演示](../examples/aec_partitioned_demo.py)与[独立测试](../../tests/test_codes_aec_partitioned.py)：$N=P=2$ 时，第 1 块第一分区候选的非法第 3 个时域抽头为 $1/3$，约束后归零，第二分区合法首抽头保留 $1/3$。测试另以直接时域卷积校验固定已知路径，并覆盖跨块状态、零参考、短末分区、冻结和数值溢出。新增的固定种子实验先分别用白噪声或纯音训练，再冻结路径，用同一宽带参考检验；纯音训练残差小但留出残差大，展示“消掉训练信号”与“辨识真实路径”不同。这些证据只证明教学代码在指定合成输入下遵循本书约定，不是 Speex AUMDF 的复现，也未提供真实语音收敛或实时性对比。
+上述最小实验现有[教学实现](../array_tutorial/aec_partitioned.py)、[两块手算及辨识演示](../examples/aec_partitioned_demo.py)与[独立测试](../../tests/test_codes_aec_partitioned.py)：$N=P=2$ 时，第 1 块第一分区候选的非法第 3 个时域抽头为 $1/3$，约束后归零，第二分区合法首抽头保留 $1/3$。测试另以直接时域卷积校验固定已知路径，并覆盖跨块状态、零参考、短末分区、冻结和数值溢出。固定种子实验先分别用白噪声或纯音训练，再冻结路径，用同一宽带参考检验；纯音训练残差小但留出残差大，展示“消掉训练信号”与“辨识真实路径”不同。这些证据只证明教学代码在指定合成输入下遵循本书约定，不是 Speex AUMDF 的复现，也未提供真实语音收敛或实时性对比。
 
 算例 6-2 的 224/736 次每样本只计全复频点模型下的变换、预测复乘和梯度复乘；逐块、逐分区重算 $|X|^2$ 又分别至少增加 32 次/样本。求和、除法、步长缩放及内存访问仍未计。教学代码还为输出约束前诊断系数做逐分区 IFFT，即使关闭投影也执行，故上述理论账不能作为该 Python 程序的测时结果。
 
@@ -320,7 +320,7 @@ $g_\Delta$ 和 $E_\Delta$ 按第 6 章式(6-15)的已知近端注入增量定义
 
 [NKF-AEC 官方仓库](https://github.com/fjiang9/NKF-AEC/tree/8ac58fb8fb9ced48579f9aa310745c54f98d7e1f)与[论文](https://arxiv.org/abs/2207.11388)给出利用神经网络估计更新增益的路线。仓库明确说明这是线性回声抵消，输入采样率为 16 kHz，显著延迟需要预先补偿。代码入口为 `src/nkf.py`；要追踪网络循环状态和频域滤波状态，而非只观察最后一个波形。
 
-最小实验在已对齐的参考上比较固定路径和突变路径；失败实验加入未建模非线性与参考时移，检查线性限制和对齐依赖。当前没有确认可授予本书再分发权利的独立许可证，因此保留来源与论文索引，不复制源码和 checkpoint。NKF-AEC 与 ASRU 2023 的 NeuralKalman 是不同工作，名称不能混用。
+最小实验在已对齐的参考上比较固定路径和突变路径；失败实验加入未建模非线性与参考时移，检查线性限制和对齐依赖。当前没有确认可授予本书再分发权利的独立许可证，因此保留来源与论文索引，不复制源码和已训练模型参数文件（checkpoint）。NKF-AEC 与 ASRU 2023 的 NeuralKalman 是不同工作，名称不能混用。
 
 ### A12　NeuralKalman、Deep Adaptive AEC 与 DeepVQE
 
@@ -344,7 +344,7 @@ $g_\Delta$ 和 $E_\Delta$ 按第 6 章式(6-15)的已知近端注入增量定义
 
 [Integrated_AEC_NR 官方 MATLAB 实现](https://github.com/Arnout-Roebben/Integrated_AEC_NR/tree/23c6b567c7863a8ee9bafd38bad0d3ff2f25e185)在一般多麦、多扬声器设置下比较 MWF、扩展 MWF、AEC→NR、NR→AEC 与扩展 NR→AEC→后滤波。[论文](https://doi.org/10.1109/TASLPRO.2025.3648802)讨论线性相关参考情形。读码从 `Main.m` 进入 [`Util/Process/process.m`](https://github.com/Arnout-Roebben/Integrated_AEC_NR/blob/23c6b567c7863a8ee9bafd38bad0d3ff2f25e185/Util/Process/process.m)，再分别进入 `process_AEC.m`、`process_NR.m`、`process_MWFext.m`、`process_NRext.m` 与 `process_PF.m`；文件名大小写以仓库的 [`ReadMe.md`](https://github.com/Arnout-Roebben/Integrated_AEC_NR/blob/23c6b567c7863a8ee9bafd38bad0d3ff2f25e185/ReadMe.md) 为准。
 
-代码为 MIT，官方说明使用 MATLAB R2024a。这个实现接收已经分解的 $s,n,e_s,e_n,l_s,l_n$，并在 `process.m` 中直接由干净期望语音 `s_f` 与干净回声 `es_f` 生成活动判决；这是用于受控比较的预言信息，不是实际设备可直接取得的输入。最小实验应先按原始分量重现各顺序，再把两路扬声器参考设为相关或秩亏，并以估计活动替换预言活动。`Audio/sig.mat` 的语音来自另行许可的数据，代码 MIT 不能替代音频许可；本书只取得源码，不把示例数据视为随代码自由再分发。
+代码为 MIT，官方说明使用 MATLAB R2024a。这个实现接收已经分解的 $s,n,e_s,e_n,l_s,l_n$，并在 `process.m` 中直接由干净期望语音 `s_f` 与干净回声 `es_f` 生成活动判决；这是依赖干净真值的理想活动判决，不是实际设备可直接取得的输入。最小实验应先按原始分量重现各顺序，再把两路扬声器参考设为相关或秩亏，并以估计活动替换理想活动判决。`Audio/sig.mat` 的语音来自另行许可的数据，代码 MIT 不能替代音频许可；本书只取得源码，不把示例数据视为随代码自由再分发。
 
 <a id="wpe"></a>
 

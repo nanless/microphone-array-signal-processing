@@ -14,9 +14,9 @@
 
 第 6 章还记录了一对 Microsoft AEC Challenge 真实播放环回/麦克风录音上的 [SpeexDSP AEC 接口实验](codes/research/02_aec_wpe_separation.md#aec)，含零参考和错位参考对照。该众包录音未随仓库再分发；报告的是本片段输入/输出功率变化，不是真值 ERLE 或设备性能排名。
 
-新增的可复核专题包括[同输入波束比较](codes/examples/beamformer_common_input_demo.py)、[锁定版 AuxIVA 盲估计](codes/examples/reproduce_auxiva_reference.py)、[GSS 活动错标](codes/examples/gss_activity_error_demo.py)、[同一合成真值上的 AEC 接口对照](codes/examples/aec_same_input_truth.py)及[在线 WPE 时间边界](codes/examples/wpe_temporal_contract.py)。各实验分别限定于解析单频、数学合成混合、固定密度 E 步、合成 PCM 或复谱，不构成真实语音或设备效果排名。
+可复核专题包括[同输入波束比较](codes/examples/beamformer_common_input_demo.py)、[锁定版 AuxIVA 盲估计](codes/examples/reproduce_auxiva_reference.py)、[GSS 活动错标](codes/examples/gss_activity_error_demo.py)、[同一合成真值上的 AEC 接口对照](codes/examples/aec_same_input_truth.py)及[在线 WPE 时间边界](codes/examples/wpe_temporal_contract.py)。各实验分别限定于解析单频、数学合成混合、固定密度 E 步、合成 PCM 或复谱，不构成真实语音或设备效果排名。
 
-后续实验补齐了[协同阵协方差重构](codes/examples/coarray_covariance_exercise.py)、[双源分辨率重复抽样](codes/examples/doa_resolution_trials.py)、[GSS 受控完整教学子链](codes/examples/gss_teaching_demo.py)、[自动双讲检测](codes/examples/aec_dtd_demo.py)、[连续移动双麦音频](codes/examples/moving_source_audio.py)及[SMP-PHAT 的隔离可移植适配](codes/examples/reproduce_smpphat_portable_overlay.py)。每项结果及未运行的官方整链边界见对应章节和研究手册。
+其他实验包括[协同阵协方差重构](codes/examples/coarray_covariance_exercise.py)、[双源分辨率重复抽样](codes/examples/doa_resolution_trials.py)、[GSS 受控完整教学子链](codes/examples/gss_teaching_demo.py)、[自动双讲检测](codes/examples/aec_dtd_demo.py)、[连续移动双麦音频](codes/examples/moving_source_audio.py)及[SMP-PHAT 的隔离可移植适配](codes/examples/reproduce_smpphat_portable_overlay.py)。每项结果及未运行的官方整链边界见对应章节和研究手册。
 
 [第 9 章追踪实验](codes/examples/tracking_crossing_dropout_demo.py)用确定性角度观测展示交叉时位置集合正确而身份错配，并复算缺测协方差与波束限速滞后；它不是语音录音或完整多目标追踪系统。
 
@@ -38,7 +38,7 @@ English version: [README_EN.md](./README_EN.md)
 | `codes/reports/` | 工业接口与空间算法的小规模运行报告；与源码获取状态、论文全量评测分开 |
 | `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
 | `site/` | 20 个网页：14 个教程页（含首页）及 `research/` 下 6 个研究手册页；构建产物，可再生 |
-| `dist/` | 合订 PDF（`microphone-array-tutorial.pdf`）与合订 HTML；PDF 含 14 个顶级、119 个二级、129 个三级书签，共 262 个 |
+| `dist/` | 合订 PDF（`microphone-array-tutorial.pdf`）与合订 HTML；PDF 含 14 个顶级、119 个二级、140 个三级书签，共 273 个 |
 
 ## 章节导览
 
@@ -57,7 +57,7 @@ English version: [README_EN.md](./README_EN.md)
 | 第 10 章 | `chapters/10_engineering-practice.md` | 参考链路、关键路径延迟、SRO/标定、资源预算与评测 | 进阶 |
 | 第 11 章 | `chapters/11_selection-guide.md` | 条件化选型、场景约束、可验证规格与练习 | 入门 |
 | 附录 A | `chapters/12_appendix-symbols-math.md` | 符号表、术语定义、预备数学速览 | 查阅 |
-| 附录 B | `chapters/13_appendix-guide.md` | 学习路径、领域地图、研究前沿、排错、原有 17 道练习与新增代码练习、复现说明 | 查阅 |
+| 附录 B | `chapters/13_appendix-guide.md` | 学习路径、领域地图、研究前沿、排错、17 道书面练习与配套代码练习、复现说明 | 查阅 |
 
 ## 快速开始
 

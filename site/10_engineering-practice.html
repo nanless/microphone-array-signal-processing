@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 10 章 · 工程实现、评测与产业实践 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5756010aab11"><style>
+<meta name="source-digest" content="b74df4f08677"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -197,7 +197,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>神经或连续语音分离（Continuous Speech Separation，CSS）是 WPE 后绕过解析波束的替代音频路径，不与“GSS 掩码—SCM—波束”合并成一个模块。</p>
 <p>若它输出多条语流，后续的单通道 NS/AGC 与识别须按每条输出流分别配置，或先按任务选出一路；不能把多路直接当作一条单声道信号送入后端。若网络本身已完成抑噪或电平处理，还要通过对照决定是否保留相应后处理。</p>
 <p><img alt="图23 前端处理参考链路" src="../figures/fig23_pipeline.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图 23 按较完整的语音交互系统绘制。远端音频先经过混音、均衡和音量控制；AEC 的 render tap 取在这些播放处理之后、DAC/功放之前，扬声器经房间和机壳耦合回麦克风形成声学回路。虚线表示活动控制，实线表示音频、特征或统计量依赖。</p>
+<p>图 23 按较完整的语音交互系统绘制。远端音频先经过混音、均衡和音量控制；AEC 使用的<strong>播放参考取点</strong>位于这些处理之后、数模转换器（Digital-to-Analog Converter，DAC）和功率放大器之前。这样，参考信号包含实际播放时的混音与电平变化。</p>
+<p>扬声器发出的声音经房间和机壳耦合回麦克风，形成需要消除的声学回声。图中虚线表示活动控制，实线表示音频、特征或统计量的依赖关系。</p>
 <p>确定任务后，可按下面条件省去模块或改变控制路径：</p>
 <ul>
 <li>设备不播放声音，或不需要边播边听时，可以不启用 AEC。</li>
@@ -258,7 +259,7 @@ L_{\text{e2e}}&=\max_p L_p .
 $$</p>
 <p><img alt="图25 延迟预算示意" src="../figures/fig25_latency_budget.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图 25(a) 把“采集/帧就绪等待”示意为 32 ms，再与未来帧前瞻 16 ms、首个判决确认 25 ms、计算 14 ms 和调度 6 ms 组成一条 93 ms 的示例关键路径。这里的 32 ms 是工作表示例，不等同于 STFT 窗长，也不是所有 32 ms 窗都会增加 32 ms 算法等待；窗的左右对齐、声卡周期、帧移和模块何时开始计算都会改变实际值。</p>
-<p>图 25(b) 另行区分三条口径：连续增强音频只计其实际前瞻、缓冲、计算与调度；首个 KWS/ASR 判决还可能等待确认窗；端点 hangover 只延后“语音结束”事件，不应自动计入连续音频或首个判决。</p>
+<p>图 25(b) 另行区分三条口径：连续增强音频只计其实际前瞻、缓冲、计算与调度；首个 KWS/ASR 判决还可能等待确认窗；<strong>语音结束保持时间</strong>是检测到能量下降后，仍等待一段时间才宣布语音结束，它只延后结束事件，不应自动计入连续音频或首个判决。例如额外保持 200 ms 会让结束事件晚 200 ms，不表示此前每一块增强音频都晚 200 ms。</p>
 <p>WPE 历史帧、追踪状态、递归协方差和因果 AGC 时间常数是历史状态，不能机械当作未来等待。</p>
 <p>这些数字只说明记账方法，没有包含图外可能存在的解码和交互延迟。实际系统应在声学输入与最终输出之间记录时间戳或回采脉冲，分别测量冷启动、稳定运行和最不利调度条件。</p>
 <p>把 STFT 窗长从 32 ms 改为 16 ms，也不等于必然省下 16 ms：只有依赖完整窗或未来样本的等待发生变化，关键路径才会缩短。</p>
@@ -274,7 +275,7 @@ $$</p>
 </ul>
 <p>回调与工作线程的时钟、缓冲单位和丢帧策略必须写清。这是一种参考结构，不表示所有实时 DSP 都只能在回调外执行；有界、预分配且能满足期限的小型处理也可以在回调中完成。</p>
 <p>环形缓冲已满时，系统需要事先选择“丢最旧块”“丢新块”或“降级处理”。任何一种策略都会改变输出：丢块破坏连续状态，等待会阻塞采集，积压则增大延迟。本书的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>RingBuffer</code></a> 采用“丢最旧样本”的可见基线，并累计 <code>dropped</code>；它用来说明容量和溢出语义，不是无锁实时队列。</p>
-<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>simulate_deadline_queue</code></a> 用一条串行工作队列区分三件事：处理完成晚于本帧期限、队列达到高水位、容量已满而丢帧。平均 RTF 小于 1 仍可能出现其中任何一种。正式设备还要记录驱动报告的 underrun/overrun（合称 xrun）、线程优先级、CPU 频率策略和并发负载。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>simulate_deadline_queue</code></a> 用一条串行工作队列区分三件事：处理完成晚于本帧期限、队列达到高水位、容量已满而丢帧。平均 RTF 小于 1 仍可能出现其中任何一种。正式设备还要记录<strong>播放下溢</strong>（下一块音频未及时送到设备，underrun）和<strong>采集上溢</strong>（采集数据未及时取走，overrun）；驱动常把两者合称 <code>xrun</code>。线程优先级、CPU 频率策略和并发负载也应一同记录。</p>
 <p>Linux 的 ALSA（Advanced Linux Sound Architecture，先进 Linux 声音架构）还区分具体恢复原因：<code>-EPIPE</code> 表示上溢或下溢，<code>-ESTRPIPE</code> 与挂起有关，<code>-ENODEV</code> 可表示设备移除；某些回声参考设备在关联播放未启动时会返回 <code>-ENODATA</code>。这些状态不能统一解释为“再读一次”。恢复后要记录丢样，并通知依赖连续历史的 AEC、重采样器及后端。<a href="https://www.alsa-project.org/alsa-doc/alsa-lib/pcm.html" title="citation">ALSA PCM 官方接口说明</a></p>
 <p>参考接口可按下表检查：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -298,9 +299,9 @@ $$</p>
 <tr>
 <td>AEC</td>
 <td>本机播放可能进入麦克风</td>
-<td>麦克风；播放处理之后、DAC/功放之前的 render tap；远端活动/双讲状态</td>
+<td>麦克风；播放处理之后、数模转换器/功放之前的播放参考；远端活动/双讲状态</td>
 <td>回声减弱的麦克风信号、残余回声与适配状态</td>
-<td>参考是否覆盖混音/EQ/音量、参考—麦克风整体延迟、削波、双讲稳定性</td>
+<td>参考是否覆盖混音、均衡和音量变化；参考—麦克风整体延迟、削波、双讲稳定性</td>
 </tr>
 <tr>
 <td>WPE</td>
@@ -458,6 +459,7 @@ $$</p>
 </tbody>
 </table></div>
 <p>MMSE-STSA 和 MMSE-LSA 不是同一目标：前者估计短时谱幅度，后者在对数谱幅度域定义误差。噪声估计也不必“只在 VAD 判无话时更新”。最小统计量、软语音存在概率和神经网络软掩码都能在语音段缓慢更新；关键是避免把语音持续吸收到噪声模型中。</p>
+<p>表中的<strong>子空间法</strong>先把多个频点或多个时刻的观测组织成向量，再从这些向量的协方差中寻找变化明显的方向。例如二维观测若有一个方向的方差远大于另一个方向，可以尝试把前者作为主要信号成分、削弱后者。这个判断需要信号与噪声在统计结构上可区分；两者落在相同方向，或观测太少以致协方差不稳定时，不能仅凭“保留较大特征值”分出语音。这里的二维例子只解释处理思路，不是语音子空间法的完整实现。</p>
 <span id="sec-10" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-3-2">10.3.2 功率谱减：一个频点怎样算到输出</h3>
 <p>先固定模型：单通道观测 $y[n]=s[n]+v[n]$，噪声在一小段时间内近似平稳；已经知道开头哪些帧只有噪声。对周期 Hann 窗、512 点短时傅里叶变换（STFT）和 128 点帧移，记频点 $f$、帧 $t$ 的复系数为 $Y_{f,t}$。本书在完整落入噪声段的帧集合 $\mathcal N$ 上，按同一窗和 FFT 归一化口径平均 $|Y|^2$，得到固定的逐频点噪声功率估计 $D_f$。这是<strong>已知噪声段</strong>的教学条件，不是自动检测无语音帧。</p>
 <p>本书演示的功率谱减、相对观测功率的谱地板和复系数重建定义为</p>
@@ -555,7 +557,7 @@ $$</p>
 <p>VAD 的迟滞、挂起和预卷缓存应由语料中的短词、停顿和噪声脉冲调节。</p>
 <p>KWS 是否绕过 VAD、是否持续运行、从 AEC 后还是增强后取信号，取决于功耗和训练域。设置 KWS 阈值时，还要在指定误唤醒率下报告漏唤醒率，不能只给一个孤立分数。</p>
 <span id="sec-12" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-3-4">10.3.4 VAD 与 AGC 的最小可运行基线</h3>
-<p>能量 VAD 虽然简单，却能把控制逻辑讲清。启动阈值应高于继续阈值，避免能量在单一阈值附近来回切换；hangover 在能量下降后继续保持若干帧，减少词尾被截断。预卷缓存解决的是词首：VAD 刚触发时，把触发前保留的短时音频一并送给后端。三个时间量都要换算成帧数，并在短词、长停顿和脉冲噪声上分别验证。</p>
+<p>能量 VAD 虽然简单，却能把控制逻辑讲清。启动阈值应高于继续阈值，避免能量在单一阈值附近来回切换；语音结束保持时间（hangover）让判决在能量下降后继续保持若干帧，减少词尾被截断。预卷缓存解决的是词首：VAD 刚触发时，把触发前保留的短时音频一并送给后端。三个时间量都要换算成帧数，并在短词、长停顿和脉冲噪声上分别验证。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>HysteresisVAD</code></a> 输入线性均方能量，不接受 dB 阈值；把 dBFS 门限传给它会造成口径错误。<code>hangover_frames=2</code> 表示首次跌破继续阈值的两帧仍保持活动，第三帧才关闭。该基线没有噪声自适应、频带特征和神经网络，也不自行保存预卷；预卷可用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>RingBuffer</code></a> 保留触发前的固定帧数，并在 VAD 由假变真时先取出缓存。</p>
 <p>AGC 要区分“把正常语音逐渐推向目标电平”和“立刻避免削波”。增益上升可以缓慢释放，增益下降需要更快；即使平滑状态来不及下降，当前块也要受安全上限约束。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>PeakProtectAGC</code></a> 给出这种峰值保护基线。</p>
 <p>它不估计响度，也不能修复模拟前端已经发生的削波。验收时要同时画输入电平、增益、输出峰值和削波比例，并在 AEC 双讲期间检查增益变化是否破坏回声路径模型。</p>
@@ -685,7 +687,8 @@ $$</p>
 </tr>
 </tbody>
 </table></div>
-<p>计算量之和为 $45$ ms，观测的六帧音频长 $60$ ms，因而示意平均 RTF 为 $45/60=0.75$。帧 2 的 25 ms 服务使帧 3、4 等待；$t=40$ ms 时在途帧最多为 3，最大等待为 15 ms，六帧虽全被接收，却有 3 帧错过期限。</p>
+<p>表中的时间可逐行复算。记第 $i$ 帧的到达、开始、完成和服务时长为 $a_i,b_i,c_i,s_i$。一条不能抢占的串行工作线程满足 $b_i=\max(a_i,c_{i-1})$、$c_i=b_i+s_i$；从到达到完成的响应时长是 $c_i-a_i$。帧 3 在 30 ms 到达，但帧 2 要到 45 ms 才完成，所以帧 3 从 45 ms 处理到 49 ms，响应为 $49-30=19$ ms。帧 4 在 40 ms 到达，等帧 3 到 49 ms 结束后再处理 4 ms，响应为 $53-40=13$ ms。</p>
+<p>计算量之和为 $45$ ms，观测的六帧音频长 $60$ ms，因而示意平均 RTF 为 $45/60=0.75$。在 $t=40$ ms 新帧到达后，帧 2 正在处理、帧 3 和帧 4 等待，恰有 3 帧在途。帧 3 的等待最长，为 $45-30=15$ ms。六帧虽然全部被接收，仍有帧 2、3、4 共 3 帧错过各自到达后 10 ms 的期限。</p>
 <p>六个响应样本中的最大值为 25 ms；不能把这么短的构造序列说成已测得稳定 p99。增加队列容量只能减少溢出，不能让已逾期的帧重新准时。</p>
 <p>若常驻状态分别占 400、200、60 KiB，且每个在途帧使用四通道 $\times160$ 样本 $\times4$ B $=2560$ B $=2.5$ KiB，三个在途帧共 7.5 KiB。这里明确假设三块状态同时驻留且帧内存彼此独立，峰值为 $400+200+60+7.5=667.5$ KiB，低于示意 700 KiB 上限；真实程序还要计入线程栈、对齐、库工作区及共享缓冲区的实际生命周期。</p>
 <p>只有<strong>假设这六帧模式长期重复</strong>且线程服务时间等于高功耗时间，才可用 $45/60=75\%$ 作功率占空比。若负载端活动/空闲功率为 1.2/0.2 W，则平均为 $1.2\times0.75+0.2\times0.25=0.95$ W；3.7 V、2 Ah、可交付比例 0.8 给出 $5.92/0.95\approx6.23$ h。功率假设与帧截止期假设彼此独立，续航估算合格也不能抵消三次逾期。完整输入和逐帧结果见 E10-14，复算入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_engineering.py"><code>exercises_engineering.py</code></a>。</p>
@@ -718,7 +721,7 @@ $$</p>
 <tr>
 <td>说话人分割</td>
 <td>分割错误率（Diarization Error Rate，DER）、Jaccard 错误率（Jaccard Error Rate，JER）</td>
-<td>必须固定 collar、重叠计分、参考区域和评分工具版本；分割正确不等于分离内容正确</td>
+<td>必须固定说话起止边界的容差时长（collar）、多人重叠片段怎样计分、参考区域和评分工具版本；分割正确不等于分离内容正确</td>
 </tr>
 <tr>
 <td>增强</td>
@@ -888,7 +891,9 @@ room = pra.ShoeBox(
 </tr>
 </tbody>
 </table></div>
-<p>更多可直接阅读的工业实现包括以下几组，完整提交、许可和获取状态由 <code>codes/</code> 统一记录。</p>
+<p>更多可直接阅读的工业实现包括以下几组。下表保留源码中的英文路径和接口名，方便查找；完整提交、许可和获取状态由 <code>codes/</code> 统一记录。</p>
+<p>PipeWire 的 <code>capture/source/sink/playback</code> 依次是麦克风采集、应用读取、应用播放和实际播放四条流。XMOS 的 ADEC 负责围绕 AEC 的延迟估计与控制；IC 是干扰消除，VNR 是语音与噪声比估计。</p>
+<p><code>tensor arena</code> 是微控制器运行模型时预留的内存区；<code>headroom</code> 是定点数在溢出前还能向左移动的位数。具体接口见<a href="research/03_industrial_deployment.html">工业部署研究</a>。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
 <tr>
@@ -944,7 +949,9 @@ room = pra.ShoeBox(
 <p>文件和评分接口也可能改变结论。例如 libsndfile 的 <code>sf_readf_*</code> 返回时间帧数，<code>sf_read_*</code> 返回通道展开后的标量项数；最后一块不足请求长度时，只能按实际返回量更新录音时长与算法状态。评分器则要同时保留失败数和模型资产状态，不能把“源码可以导入”写成“已经能评分”。这些独立对照的输入与建议试验见研究文档，不表示本书已完成对应设备验收。<a href="https://libsndfile.github.io/libsndfile/api.html" title="citation">libsndfile 官方读写接口</a></p>
 <p>本书已运行三库的<a href="research/04_source_reproduction.html">工业接口实验</a>：48 kHz 双通道输入重采样到 16 kHz，保留同一状态并排空尾部后，整段与 127/509 帧分块输出相同；中途清状态且不排空则少了 434 个输出帧。另以七帧双通道 PCM16 检查短读，按帧请求三帧时返回 3、3、1、0，按标量项请求六项时返回 6、6、2、0。程序与原始报告均可重跑，这些结果不代表设备回调期限或断连恢复已经通过。</p>
 <p>上游源码按锁定清单独立获取到被 Git 忽略的 <code>codes/upstream/_downloads/</code>，保留原许可证和版本；是否已下载以本机获取记录为准。代码、权重和数据分别管理。<code>codes/array_tutorial/</code> 中的程序是本书教学基线，作用是复算约定和边界；下载上游源码本身也不意味着已经完成依赖安装、编译和目标设备验证。</p>
-<p>模型落地时还要固定输入采样率、通道顺序、块长、动态轴、归一化、状态张量、算子集、运行时版本和线程配置。冷启动测量包含模型读取、图优化、权重上传和首轮内核准备；稳定运行延迟要在 warm-up 后另测。更新模型前保存可回滚版本，并用同一硬件、同一数据和同一计时范围比较。</p>
+<p>在设备上运行模型时，还要固定输入采样率、通道顺序、块长、动态轴、归一化、状态张量、算子集、运行时版本和线程配置。</p>
+<p>冷启动测量包含模型读取、图优化、权重上传和首轮内核准备；稳定运行延迟要在<strong>预热</strong>之后另测。预热是先用与正式测量相同的输入形状运行若干次，使首次初始化不混入稳定阶段的耗时；预热次数和是否计入报告都要说明。</p>
+<p>更新模型前保存可回滚版本，并用同一硬件、同一数据和同一计时范围比较。</p>
 <p>在 ONNX Runtime 中，算子内部线程数与图节点之间的并行是两个参数；线程自旋也会影响功耗。多模型并发时，应测各会话线程池的竞争和音频期限，不能直接复制单模型离线计时的最佳设置。对于 TensorFlow Lite Micro，模型文件大小也不等于内存占用：tensor arena 中的持久、临时和可复用张量之外，还可能有音频缓存和栈。<a href="https://onnxruntime.ai/docs/performance/tune-performance/threading.html" title="citation">ONNX Runtime 线程说明</a>、<a href="https://github.com/tensorflow/tflite-micro/blob/9f638f18154dff868e7053572f089be845b2fbdf/tensorflow/lite/micro/docs/memory_management.md" title="citation">TFLM 内存说明</a></p>
 <span id="sec-22" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-10">10.10 联调与验收</h2>
 <p>联调应按依赖关系排查，不必强行把所有模块串成一个固定顺序。</p>

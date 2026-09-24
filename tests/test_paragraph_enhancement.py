@@ -177,7 +177,7 @@ class EnhancementParagraphTest(unittest.TestCase):
             self.assertNotIn(r"\tag{8-4}", item["text"])
 
     def test_eight_research_directions_preserve_arraydps(self):
-        source, path = self.passage("13_appendix-guide.md", "### 13.3", "#### 13.3.1")
+        source, path = self.passage("13_appendix-guide.md", "### 13.3", "#### 专题：神经网络前端")
         headings = re.findall(r"(?m)^#### (研究方向[一二三四五六七八]：[^\n]+)$", source)
         sections = re.split(r"(?m)^#### 研究方向[一二三四五六七八]：[^\n]+\n", source)[1:]
         labels = ["预训练模型", "阵列无关", "目标说话人提取", "生成式语音增强",

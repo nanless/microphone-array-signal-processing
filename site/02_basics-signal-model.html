@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 2 章 · 声音到达阵列时发生了什么 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5756010aab11"><style>
+<meta name="source-digest" content="b74df4f08677"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -155,7 +155,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <ol>
 <li>球面波到达阵列<strong>中心</strong>与到达最远阵元的路程不一样。把中心到最远阵元的距离记作 $a$；中心对称阵列有 $a=D/2$。由勾股定理，额外路程是 $\sqrt{r^2+a^2}-r$。</li>
 <li>$r \gg a$ 时用近似 $\sqrt{1+x}\approx 1+x/2$ 展开：$\sqrt{r^2+a^2}-r \approx \dfrac{a^2}{2r}$。</li>
-<li>工程约定：只要这个“球面弯曲造成的误差”小于约十六分之一波长（$\lambda/16$，相位误差约 22.5°，平面波假设就足够准），就算远场：$\dfrac{a^2}{2r} \le \dfrac{\lambda}{16}\;\Rightarrow\; r \ge \dfrac{8a^2}{\lambda}$。只有在 $a=D/2$ 时，这才化为 $r\ge\dfrac{2D^2}{\lambda}$。</li>
+<li>本节选 $\lambda/16$（相位误差约 22.5°）作为示例容限：当球面弯曲造成的路程误差不超过它时，记作满足这项相位检查，即 $\dfrac{a^2}{2r} \le \dfrac{\lambda}{16}\;\Rightarrow\; r \ge \dfrac{8a^2}{\lambda}$。只有在 $a=D/2$ 时，这才化为 $r\ge\dfrac{2D^2}{\lambda}$。波束零陷等任务可能需要更小的误差容限，还须单独检查幅度差。</li>
 </ol>
 <blockquote>
 <p><strong>泰勒展开的中间步</strong>：先提出 $r^2$：$\sqrt{r^2+a^2}-r = r\left[\sqrt{1+x}-1\right]$，其中 $x=(a/r)^2$。当 $x\ll1$ 时，$\sqrt{1+x}\approx1+x/2$，因此路程差近似为 $r\cdot x/2=a^2/(2r)$。中心对称孔径代入 $a=D/2$ 后才得到 $D^2/(8r)$。</p>
@@ -171,12 +171,12 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <blockquote>
 <p><strong>符号约定（全书通用）</strong>：标量用普通斜体，如 $s$、$\tau$、$\theta$、$\sigma^2$；向量用头顶箭头，如 $\vec{x}$、$\vec{a}$、$\vec{w}$（默认列向量，零向量记 $\vec{0}$）；矩阵用加粗大写，如 $\mathbf{R}$、$\mathbf{C}$、$\mathbf{\Gamma}$、$\mathbf{E}_n$。</p>
 <p>再认几枚上标：$^H$ 是共轭转置（频域复数用）、$^\top$ 是转置（时域实数用）、$^*$ 是共轭、$^{-1}$ 是逆；$\hat{\ }$ 表示估计值，$\|\cdot\|$ 为范数、$|\cdot|$ 为幅度。</p>
-<p><strong>标量上标星号 vs 向量上标 H</strong>：单个复数取共轭用上标星号（如 $X_2^*$），整列向量转置再共轭用上标 H（如 $\vec{x}^H$）——后文凡见上标 H 都是向量/矩阵操作，凡见上标星号都是标量操作，对上号就不会认错。</p>
+<p><strong>标量上标星号与向量上标 H</strong>：单个复数取共轭用上标星号（如 $X_2^*$），整列向量先转置再共轭用上标 H（如 $\vec{x}^H$）。读后面的公式时，先确认所操作的是单个复数还是整列向量。</p>
 <p><strong>大写谱值仍可为标量</strong>：语音文献习惯用 $X(f)$、$X(f_k,\ell)$ 这类大写字母表示某一物理频率或时频点上的复数谱值。它们是标量，不是矩阵；本书沿用这一惯例，并在首次出现处注明。</p>
 <p><strong>字母复用</strong>：受文献惯例所限，$k$ 可表示频点索引、波数或 WPE 的滞后帧号；$D$ 可表示阵列孔径或 PHD 强度函数；$\lambda$ 可表示波长、WPE 功率谱或矩阵特征值；$K$ 可表示声源数或 WPE 预测阶数；$s$ 可表示源信号或追踪状态。每个符号以所在公式的定义为准。</p>
 <p><strong>频率与帧索引</strong>：本章的连续频率统一记作 $f$，单位 Hz；DFT/STFT 的频点索引记作 $k$，其物理频率为 $f_k=kf_s/N$；帧索引记作 $\ell$。文献中常见的 $\vec x(f,t)$ 是简写，本书需要区分离散网格时写成 $\vec x(f_k,\ell)$。复指数 $e^{-\mathrm j2\pi f\tau}$ 中必须代入 Hz 频率 $f$ 或 $f_k$，不能直接代入无量纲索引 $k$。</p>
 </blockquote>
-<p>本节只做一件事：把 §2.1 那句“同一声音到达各麦有先有后”一步步写成可以计算的式子。分三步走，每一步都交代“为什么”。</p>
+<p>§2.1 得到了各麦到达时刻之差。下面先写每路麦克风的波形，再把时延转成频域相位，最后将多路式子合成一个向量式。</p>
 <p><strong>第一步：时域模型——每个麦克风一个式子</strong></p>
 <p>远场、单声源时，先把各麦相对麦 1 的到达时延定义为 $\tau_{m1}=t_m-t_1$。由 §2.1 的方向约定，</p>
 <p>$$\tau_{m1}=-\frac{(\vec r_m-\vec r_1)^\top\vec u}{c}\text{。}$$</p>
@@ -195,7 +195,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>箭头上的 $\mathcal F$ 表示傅里叶变换。</p>
 <p>左边表示时域延迟 $\tau$ 秒，右边表示频域中乘以复相位因子。频域形式便于把宽带信号分频点处理，也便于将卷积近似为乘法，因此许多阵列算法采用 STFT 实现；这种近似的边界见 §2.5。</p>
 <p>这个 $e^{-\mathrm{j}2\pi f\tau}$ 到底是什么？<strong>它是复平面上一个长度为 1 的箭头，从正实轴出发顺时针转过角度 $2\pi f\tau$</strong>（图4(b)）。其中 $\mathrm{j}$ 是虚数单位（$\mathrm{j}^2=-1$）；$e$ 的复指数由欧拉公式定义：$e^{\mathrm{j}\phi} = \cos\phi + \mathrm{j}\sin\phi$；有些书把 $2\pi f$ 写成 $\omega$（角频率），两者是一回事。</p>
-<p>直觉检验：延迟恰好等于一个周期（$\tau = 1/f$）时转过整整一圈 $2\pi$——波形平移一个周期后与原波形重合，箭头也转回原地，两边对上了 ✓。</p>
+<p>可以用一个周期检查：若 $\tau=1/f$，相位转过整整一圈 $2\pi$；周期信号平移一个周期后与原波形重合，复相量也回到原位置。</p>
 <p><img alt="图4 时延为什么变成复数相位" src="../figures/fig04_delay_phase.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图 4 的三幅子图采用同一组参数：4 cm 麦距、声速 343 m/s、端射方向，因此 $\tau=d/c\approx0.1166$ ms。时域波形右移约 0.117 ms；1 kHz 复相量顺时针旋转约 $2\pi\times1000\times0.1166\text{ ms}\approx42°$；相位—频率图的斜率为 $-2\pi\tau$，2 kHz 处约为 −84°。§4.2 的 GCC-PHAT 正是利用这项关系估计时延。</p>
 <p>图 4（c）还说明，同一时延引起的相位旋转与频率成正比。相位展开后，直线斜率为 $-2\pi\tau$；实际数据中的相位缠绕、噪声和混响会使估计更复杂。</p>
@@ -312,7 +312,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="sec-6" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-2-5">2.5 数据怎么组织：STFT、快拍与协方差矩阵</h2>
 <p>后面的算法反复出现三个词——STFT、快拍、协方差矩阵，先在这里一次讲清。</p>
 <h3 id="sec-2-5-1">2.5.1 从波形到逐频点的短时谱</h3>
-<p><strong>STFT（短时傅里叶变换，Short-Time Fourier Transform）</strong>把波形切成重叠短帧，每帧加窗后做快速傅里叶变换（Fast Fourier Transform，FFT），得到时间—频率复数网格，即语谱图（图 6（a）（b））。每个时频点同时包含幅度与相位。</p>
+<p><strong>短时傅里叶变换（Short-Time Fourier Transform，STFT）</strong>把波形切成重叠短帧，每帧加窗后做快速傅里叶变换（Fast Fourier Transform，FFT），得到时间—频率复数网格。每个网格点同时包含幅度与相位；图 6（b）这样的语谱图只把其中的幅度或功率画成颜色，相位没有直接显示。</p>
 <p>增强或波束示例可用 32 ms 窗、8 ms 帧移；自动语音识别（Automatic Speech Recognition，ASR）前端常见另一组设置为 25 ms/10 ms。比较文献时应核对采样率、窗函数、窗长和帧移。</p>
 <p>为什么需要这张表？因为 STFT 把宽带语音分解为一组<strong>近似窄带</strong>问题。时延 $\tau$ 对应的相位旋转 $2\pi f_k\tau$ 随频率变化，因此第 $k$ 个频点要使用自己的 $\vec a(f_k,\theta)$。</p>
 <p>把卷积在每个时频点写成 $\vec{x}(f_k,\ell)\approx\vec{a}(f_k,\theta)s(f_k,\ell)+\vec n(f_k,\ell)$ 仍是窄带近似。窗函数会使直线卷积在 STFT 中产生频带内和跨频带项，长房间响应、过短窗或频率变化过快时误差更大。第 4、5 章逐频点处理时，需把窗长与有效冲激响应长度纳入验证。</p>
@@ -333,6 +333,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>$$\hat{\mathbf{R}}(f_k) = \frac{1}{L}\sum_{\ell=1}^{L} \vec{x}(f_k,\ell)\,\vec{x}^H(f_k,\ell)\text{。}\tag{2-2}$$</p>
 <p>式(2-2)没有减去样本均值，严格说是未中心化的样本二阶矩；当 STFT 快拍在所用时间段内可视为零均值，或已经去均值时，它才等于样本协方差。阵列文献常把两者都简称为空间协方差，使用实现或论文时要核对其定义。</p>
 <p>$\hat{\mathbf{R}}$ 是 $M\times M$ 的复数矩阵，第 $m,n$ 个元素记录麦 $m$ 与麦 $n$ 在该频点上的相关幅度与相位差。Capon、MVDR、MUSIC 都以它为输入；MUSIC 再用特征分解把观测空间分成信号子空间和噪声子空间。</p>
+<p>先用一帧两麦数据看清矩阵中的四个数。若该频点的快拍为 $\vec x=[1,2\mathrm j]^\top$，则它的外积是</p>
+<p>$$\vec x\vec x^H=\begin{bmatrix}1&-2\mathrm j\\2\mathrm j&4\end{bmatrix}\text{。}$$</p>
+<p>对角线上的 1 和 4 是两路谱值的模平方，因而都是非负实数；右上角的 $-2\mathrm j$ 与左下角的 $2\mathrm j$ 互为共轭，记录这帧的跨通道相位关系。这只是单帧外积，秩为 1；式(2-2)还要把同频点的多帧外积平均，才能估计该时间段的空间二阶矩。</p>
 <p>只有在窄带远场模型正确、$K\lt M$、导向矩阵与源协方差均满秩、噪声为空间白噪声且快拍足够多时，才可把高于噪声底的 $K$ 个特征值解释成 $K$ 个声源。相干反射、彩色噪声、有限快拍和阵列失配都会破坏这种分组。</p>
 <p><img alt="图6 从波形到协方差矩阵" src="../figures/fig06_stft_cov.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图 6（a）（b）来自单通道示意语音，用来解释分帧和时频点。图 6（c）（d）是另一组独立的 8 麦、2 个互不相干窄带源加空间白噪声理论例，并非由（a）（b）的单通道波形累积得到。</p>
@@ -355,7 +358,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><code>center=True</code> 会在两端补半窗，因此离线重构可对齐原波形；实时系统不能据此把延迟写成零，还要把首帧等待、窗长、帧移、分块缓存和可能的前瞻一并计入端到端延迟。</p>
 <p>协方差实现同时给出批量估计和指数递归更新。掩码在某个频点全为零时，代码会报错，而不是用 $\varepsilon$ 伪造一个无统计依据的矩阵。非零掩码先除以该频点的最大权重，再累积归一化二阶矩；这个共同缩放不改变估计值，却避免把很小的权重单位误判成没有数据。</p>
 <p>有限精度造成的非厄米残差会被对称化；中间计算超出浮点数范围时明确报错。需要加载时采用无量纲相对口径 $\alpha\operatorname{tr}(\hat{\mathbf R})\mathbf I/M$。权重可归一化不代表独立快拍充足，还需检查秩、权重集中程度和模型条件。</p>
-<p>上线还应记录遗忘因子、VAD/SPP 更新门控、每频点有效权重、条件数以及回退方式；这些参数共同决定跟踪速度，不能只记录“用了 MVDR”。可运行的端到端小例见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/ch02_05_baselines.py"><code>ch02_05_baselines.py</code></a>，解析边界测试见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_doa_beam.py"><code>test_codes_doa_beam.py</code></a>。</p>
+<p>实际运行时还应记录遗忘因子、根据语音活动和语音存在概率决定何时更新的规则、每频点有效权重、条件数，以及估计失败时采用的处理方式。这些设置共同决定统计量跟随声场变化的速度，不能只记录“用了 MVDR”。可运行的小例见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/ch02_05_baselines.py"><code>ch02_05_baselines.py</code></a>，边界检查见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_doa_beam.py"><code>test_codes_doa_beam.py</code></a>。</p>
 <h3 id="sec-2-5-3">2.5.3 真实录音：交叉项为何不能随意省去</h3>
 <p><strong>真实录音 R01：忽略通道交叉项会怎样？</strong> <a href="https://zenodo.org/records/1227121" title="citation">DEMAND 数据库</a>的 NRIVER 场景提供真实同步环境噪声。本书取其 16 kHz 版本前 10 s，即各通道样本 <code>[0,160000)</code>，分别平均通道 1～2 和 1～16。</p>
 <p>16 只麦克风由同一设备采集，原始通道增益未经彼此校准；没有干净语音参考或声源位置真值。数据及本书派生音频按 CC BY-SA 3.0 分发，作者、采集条件、几何和修改说明见<a href="real_audio/README.md">真实录音说明</a>。</p>

@@ -19,6 +19,8 @@ HISTORICAL_SECTION_IDS = {
         "sec-u-442f837dd2": "sec-u-5d3aebe0fb",  # MUSIC 旧标题
         "sec-u-8dda6571c9": "sec-u-e9bdae6530",  # ESPRIT 旧标题
         "sec-4-6-1": "sec-u-08146bdaaf",  # 原 4.6.1 宽带聚焦
+        "sec-4-7-1": "sec-u-00305faff5",  # 近场模型失配
+        "sec-4-7-2": "sec-u-374bae76e9",  # 可执行基线与外部实现
     },
     "03_array-geometry.md": {
         "sec-u-5834a7d67e": "sec-3-3-1",
@@ -46,7 +48,8 @@ HISTORICAL_SECTION_IDS = {
         "sec-u-38edc89a29": "sec-u-f9e36547b8",  # 有状态重采样旧标题
     },
     "13_appendix-guide.md": {
-        "sec-u-b74f82c81d": "sec-13-3-1",
+        "sec-u-b74f82c81d": "sec-u-36ad23ae3f",
+        "sec-13-3-1": "sec-u-36ad23ae3f",
     },
 }
 

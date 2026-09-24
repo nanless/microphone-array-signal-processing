@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码获取与独立复现记录 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5756010aab11"><style>
+<meta name="source-digest" content="b74df4f08677"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -225,7 +225,7 @@ ERLE 不能把双讲中的近端语音解释成残余回声，也不能用参考
 <span id="sec-8" class="anchor-alias" aria-hidden="true"></span><span id="盲分离与神经系统" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-95c8e317da">盲分离与神经系统</h3>
 <p>盲分离先在两通道两源的已知混合上检查尺度和排列，再改变源数、输入秩或混响长度。
 如果迭代目标应单调，检查的是同一目标、同一归一化下的变化；不要把一项代理目标下降解释成 SI-SDR 必然提高。</p>
-<p>神经系统还需固定 checkpoint、特征归一化、模型状态、分块长度和推理设备。训练入口存在只能说明仓库
+<p>神经网络系统还需固定已训练模型的参数文件（源码常称 <code>checkpoint</code>）、特征归一化、模型状态、分块长度和推理设备。训练入口存在只能说明仓库
 提供训练程序；没有训练数据权限、配置与权重版本，仍不能声称论文实验已经复现。只下载结构代码时应明确记录。</p>
 <span id="sec-9" class="anchor-alias" aria-hidden="true"></span><span id="跟踪与工程处理" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-e6bb371bcc">跟踪与工程处理</h3>
 <p>跟踪器用匀速轨迹、跨越角度边界、连续缺测、两个目标交叉和误检分别测试。数据关联正确率与定位误差分开统计；

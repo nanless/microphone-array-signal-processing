@@ -121,7 +121,7 @@ class SpatialParagraphTest(unittest.TestCase):
     def test_reviewed_topic_changes_are_separate_rendered_paragraphs(self):
         checks = [
             ("02_basics-signal-model.md", "周期 Hann 窗", "会在两端补半窗"),
-            ("02_basics-signal-model.md", "需要加载时采用", "上线还应记录"),
+            ("02_basics-signal-model.md", "需要加载时采用", "实际运行时还应记录"),
             ("04_doa-estimation.md", "信噪比高、快拍充足时", "相干源场景还存在"),
             ("04_doa-estimation.md", "这些方法的源码也应分别阅读", "DCASE2022 基线则通过"),
             ("04_doa-estimation.md", "最小输出检查可以先做手算", "换到 DCASE2025 基线时"),
@@ -199,7 +199,7 @@ class SpatialParagraphTest(unittest.TestCase):
 
     def test_accdoa_external_and_book_azimuths_are_complementary(self):
         source = (ROOT / "chapters/04_doa-estimation.md").read_text(encoding="utf-8")
-        self.assertIn("同一方向在本书角度约定下为 60°", source)
+        self.assertIn("同一方向记为 60°", source)
         self.assertIn("用 $90°$ 减去外部方位角，得到约 60°", source)
         # The published three-decimal vector is rounded, not an exact 30-degree ray.
         x, y = .433, .25

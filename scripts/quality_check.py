@@ -51,12 +51,12 @@ EXPECTED_SUBSECTION_COUNTS = {
     "04_doa-estimation.md": 11,
     "05_beamforming.md": 7,
     "06_aec.md": 15,
-    "08_speech-separation.md": 5,
-    "09_source-tracking.md": 8,
+    "08_speech-separation.md": 9,
+    "09_source-tracking.md": 9,
     "10_engineering-practice.md": 13,
     "11_selection-guide.md": 9,
     "12_appendix-symbols-math.md": 14,
-    "13_appendix-guide.md": 16,
+    "13_appendix-guide.md": 22,
 }
 # 上表为独立发布基线，不从待检 HTML 或构建器反推。
 EXPECTED_CHAPTERS = [
@@ -77,10 +77,10 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 119
-EXPECTED_SUBSECTION_COUNT = 129
-EXPECTED_OUTLINE_ITEM_COUNT = 262
+EXPECTED_SUBSECTION_COUNT = 140
+EXPECTED_OUTLINE_ITEM_COUNT = 273
 EXPECTED_FIGURE_NUMBERS = set(range(1, 40))
-# 研究附站使用独立显式清单，不挤占 14 篇教程或 262 项 PDF 大纲基线。
+# 研究附站使用独立显式清单，不挤占 14 篇教程或 273 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
     ("README.md", "index.html"),

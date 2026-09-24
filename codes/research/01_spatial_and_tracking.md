@@ -16,7 +16,7 @@
 
 | 项目 ID | 固定提交 | 代码许可与额外前提 |
 |---|---|---|
-| pyroomacoustics | `0dd39f2614b7fc44b2cc63dbe7d60f4641068890` | MIT；本书原有 0.10.0 版本，算法与 C++ 房间模拟器的依赖不同 |
+| pyroomacoustics | `0dd39f2614b7fc44b2cc63dbe7d60f4641068890` | MIT；本书使用 0.10.0 版本，算法与 C++ 房间模拟器的依赖不同 |
 | doatools | `9469db201e0418aef6b97583ef54b6fec2769502` | MIT；理论研究工具，稀疏求解需另核优化器 |
 | sound-field-analysis | `4b03ee123d98370c55f744c4f8d7c955fbc099f1` | MIT；当前代码许可不应从介绍早期版本的论文反推；SOFA/HRIR 数据另外核对 |
 | spherical-array-processing | `f192aac652b023ee4ab8673adce20ec13bf5450c` | BSD-3-Clause；MATLAB，另依赖作者的阵列响应和球谐变换库 |
@@ -92,7 +92,7 @@ E04-06 已加入实际重复抽样，入口为 [`mdl_repeated_trials.py`](../exa
 
 ### 8. SRP-PHAT 与近场三维网格
 
-对应 §4.3、§4.7.1。先读本书 `doa.py::srp_phat`，再读 pyroomacoustics 的 `doa/srp.py`，理解麦对证据如何按候选传播时延相加。这里的两份代码作为远场方向 SRP 参考；近场三维 SRP 则保留正文球面传播与角度—距离网格的原理索引，不能仅因外部 API 列出 `mode='near'` 和 `r` 就标成已取得该变体实现。
+对应 §4.3、§4.7 的“近场模型失配”。先读本书 `doa.py::srp_phat`，再读 pyroomacoustics 的 `doa/srp.py`，理解麦对证据如何按候选传播时延相加。这里的两份代码作为远场方向 SRP 参考；近场三维 SRP 则保留正文球面传播与角度—距离网格的原理索引，不能仅因外部 API 列出 `mode='near'` 和 `r` 就标成已取得该变体实现。
 
 锁定版本 pyroomacoustics 0.10.0 的静态调用链有明确限制。`doa/srp.py` 构造函数把 `mode/r` 传给 `DOA.__init__`，但 `doa/doa.py:289` 创建 `ModeVector(self.L, self.fs, self.nfft, self.c, self.grid)` 时没有传 `mode`，因此该对象仍采用第 32 行的默认 `mode='far'`。同时，候选 `r` 仅保存到 `self.r`，第 234～280 行的 `GridCircle/GridSphere` 构造没有把它形成距离维；`srp.py:116` 的评分随后直接使用这个 `self.mode_vec`。[固定提交 DOA 构造与导向源码](https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/doa/doa.py)；[固定提交 SRP 评分源码](https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/doa/srp.py)。
 
@@ -371,7 +371,7 @@ CPHD、LMB/GLMB 另有 [Ba Tuong Vo 的作者 MATLAB 工具包](https://ba-tuong
 
 ### 37. TDOA 非线性最小二乘与可观测性
 
-对应 §4.4、§4.7.1。TDOA 几何定位将每条观测与候选位置产生的距离差比较，按观测协方差加权，使用雅可比求局部位置更新。输入除了 TDOA，还需要明确参考麦和共享参考引入的误差相关性；输出应包含残差、局部条件性和解是否位于搜索域。
+对应 §4.4、§4.7 的“近场模型失配”。TDOA 几何定位将每条观测与候选位置产生的距离差比较，按观测协方差加权，使用雅可比求局部位置更新。输入除了 TDOA，还需要明确参考麦和共享参考引入的误差相关性；输出应包含残差、局部条件性和解是否位于搜索域。
 
 最小检查先用正文三麦近场几何复算距离差，再用有限差分独立检查雅可比。把源逐步移远，距离方向的敏感度会减小；算法收敛到一个距离不意味着距离已可观测。工业中至少保留多个初值或粗网格初始化，识别镜像多解与边界解。本文未将一般优化器索引成完整声学定位实现，具体模型与本书 §4.4 的原始论文一致。
 

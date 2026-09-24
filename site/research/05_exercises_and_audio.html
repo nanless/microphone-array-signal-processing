@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>章节代码练习与音频实验 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5756010aab11"><style>
+<meta name="source-digest" content="b74df4f08677"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -118,7 +118,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="章节代码练习与音频实验" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-c621965c02">章节代码练习与音频实验</h1>
 <p>先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。</p>
-<p>本页对应 94 道稳定编号代码题，以及独立的真实录音练习 R01。原有练习题号保持不变；E01-01 表示第 1 章第 1 道代码练习，不表示全书原有第 1 题。E06-07～E06-20 是无量纲 AEC 模型与边界题，其中 E06-11～20 可用精确答案程序核对；第 15、16 节另给两组相关但参数不同的合成音频，不能把 WAV 直接当作题目真值。第 3～11、13～16、18 节对应 60 个数学合成样本，第 17 节是单独清单管理的 18 个房间白噪声合成样本；第 12 节使用另行授权的真实同步录音。</p>
+<p>本页索引 94 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
+<p>E06-07～E06-20 使用无量纲回声模型检查 AEC 的计算与边界，其中 E06-11～20 可用精确答案程序核对。第 15、16 节另提供参数不同的合成音频；试听文件本身不是题目真值。</p>
+<p>第 3～11、13～16、18 节对应主清单的 60 个数学合成样本。第 17 节的 18 个房间白噪声合成样本使用独立清单；第 12 节使用另行授权的真实同步录音。三类音频的来源和可作的比较不同，试听前先查看各节的条件。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="1-按章节运行" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-08633b42fc">1. 按章节运行</h2>
 <p>在仓库根目录执行，依赖沿用本书 NumPy 环境：</p>
 <pre><code class="language-bash">.venv/bin/python -m codes.examples.exercises_spatial
@@ -616,7 +618,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tbody>
 </table></div>
 <p>先用 E10-13 的单频点手算核对 $D=4$、两个扣噪功率 $5$ 与 $-3$，再运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/spectral_subtraction_demo.py"><code>spectral_subtraction_demo.py</code></a>核对输出功率 $5$ 与 $0.04$。随后读取五个 WAV，在 <code>[0,6400)</code> 前奏上比较同增益数字 RMS：本次固定随机样本约为带噪 $0.06974$、4% 地板 $0.04037$、零地板 $0.03806$。这些值属于这一组有限长度、一个随机种子的样本，不是多次实验的均值；地板较低导致残留功率较低也不证明语音更清晰。后 1.6 s 则要同时听目标音色与残留，不能只比较静音段能量。</p>
-<p>零地板可把若干时频格压到零，可能留下听起来颗粒化的“音乐噪声”；固定谱地板缓和深度抑制，也会保留更多噪声。该现象的原始方法依据是 <a href="https://doi.org/10.1109/TASSP.1979.1163209">Boll 1979，IEEE TASSP，式(2)～(5)</a>；本组只展示一个教学配置，没有正式听测。MMSE-STSA、MMSE-LSA、WebRTC NS 或 RNNoise 的噪声估计、统计目标与控制状态均不同，不能把这些 WAV 当作它们的运行结果。原 55 个 WAV 在新增此组后仍保持逐文件字节不变。</p>
+<p>零地板可把若干时频格压到零，可能留下听起来颗粒化的“音乐噪声”；固定谱地板缓和深度抑制，也会保留更多噪声。该现象的原始方法依据是 <a href="https://doi.org/10.1109/TASSP.1979.1163209">Boll 1979，IEEE TASSP，式(2)～(5)</a>；本组只展示一个教学配置，没有正式听测。MMSE-STSA、MMSE-LSA、WebRTC NS 或 RNNoise 的噪声估计、统计目标与控制状态均不同，不能把这些 WAV 当作它们的运行结果。主清单统一索引 60 个 WAV，各组的条件与文件摘要见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/audio/MANIFEST.json">参数清单</a>。</p>
 <span id="sec-20" class="anchor-alias" aria-hidden="true"></span><span id="19-活动导引的-gss-教学链五个独立样本" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-3b5c67a714">19. 活动导引的 GSS 教学链：五个独立样本</h2>
 <p><a href="../gss_audio/MANIFEST.json">独立清单</a>记录 2 s、16 kHz、固定种子的两源双麦数学合成输入、共同导出增益、音频摘要及 SI-SDR 评分区间；<a href="../gss_audio/STATE.npz">中间状态</a>保存活动、后验掩码、空间协方差和权重。五个 WAV 不计入主清单的 60 个。依次比较<a href="../gss_audio/source_1.wav">第一路源</a><audio class="audio-sample" controls preload="none" aria-label="第一路源" src="../gss_audio/source_1.wav">请使用上方 WAV 链接下载。</audio>、<a href="../gss_audio/source_2.wav">第二路源</a><audio class="audio-sample" controls preload="none" aria-label="第二路源" src="../gss_audio/source_2.wav">请使用上方 WAV 链接下载。</audio>、<a href="../gss_audio/mixture.wav">双麦混合</a><audio class="audio-sample" controls preload="none" aria-label="双麦混合" src="../gss_audio/mixture.wav">请使用上方 WAV 链接下载。</audio>、<a href="../gss_audio/enhanced_correct.wav">正确活动输出</a><audio class="audio-sample" controls preload="none" aria-label="正确活动输出" src="../gss_audio/enhanced_correct.wav">请使用上方 WAV 链接下载。</audio>与<a href="../gss_audio/enhanced_missed.wav">目标全漏标输出</a><audio class="audio-sample" controls preload="none" aria-label="目标全漏标输出" src="../gss_audio/enhanced_missed.wav">请使用上方 WAV 链接下载。</audio>。</p>
 <p>这一组的去均值 SI-SDR 在参考麦为 1.28 dB，正确活动输出为 13.76 dB；目标全漏标时按代码约定旁路回参考麦。它只显示给定合成模型和外部活动标签的处理链能运行，以及活动错误会破坏目标输出。无混响输入中 WPE 旁路；官方 CuPy/Lhotse GPU-GSS 与 CHiME 语料均未运行，不把这组数字当作原论文复现成绩。公式、完整条件和失效边界见<a href="../08_speech-separation.html#sec-8-4-5">第 8 章 §8.4.5</a>及<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/gss_teaching_demo.py">源码</a>。</p>

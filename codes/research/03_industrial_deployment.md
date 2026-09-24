@@ -200,7 +200,9 @@ Sound Open Firmware（SOF）将波束形成放入 DSP 固件及拓扑系统。�
 
 `tensorflow/tflite-micro` 的 [`tensorflow/lite/micro/examples/micro_speech/`](https://github.com/tensorflow/tflite-micro/tree/9f638f18154dff868e7053572f089be845b2fbdf/tensorflow/lite/micro/examples/micro_speech)提供关键词任务入口。它是低资源运行时的例子，不是麦克风阵列的完整处理链。代码许可为 Apache-2.0，模型与训练音频各自记录来源。
 
-[内存管理文档](https://github.com/tensorflow/tflite-micro/blob/9f638f18154dff868e7053572f089be845b2fbdf/tensorflow/lite/micro/docs/memory_management.md)将 tensor arena 分为非持久 head、临时分配和持久 tail。模型文件大小不是运行内存；音频缓存、特征缓存和栈也不一定全部位于 arena。应固定模型 schema、算子 resolver、arena、前端特征和状态寿命。
+TensorFlow Lite Micro 要求调用方先划出一块内存，供推理时的张量和临时计算使用；这块预留区称为 `tensor arena`。例如模型文件即使只占 100 KiB，运行时仍可能需要另一块内存保存中间张量，不能直接用文件大小估算内存上限。这里的 100 KiB 仅为说明两种内存不是同一个量，并非该项目的实测配置。
+
+[内存管理文档](https://github.com/tensorflow/tflite-micro/blob/9f638f18154dff868e7053572f089be845b2fbdf/tensorflow/lite/micro/docs/memory_management.md)把这块区域分成可复用的非持久 `head`、临时分配区和存放持久数据的 `tail`。模型文件大小不是运行内存；音频缓存、特征缓存和线程栈也不一定全部位于这块区域。复现时应固定模型格式版本（schema）、算子注册器（resolver）、预留区大小、音频特征和状态保留时长。
 
 采用 recording allocator 或对应版本的内存记录 API 测高水位，再以故意缩小 arena 的试验确认错误路径。连续运行要覆盖暂停恢复和输入溢出；仅成功识别一段内嵌样本不能证明实时采集正确。
 

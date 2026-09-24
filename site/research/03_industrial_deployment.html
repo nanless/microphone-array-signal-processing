@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>工业音频实现研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5756010aab11"><style>
+<meta name="source-digest" content="b74df4f08677"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -298,7 +298,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>先以固定整数输入比较参考内核，再比较完整特征与 logits，最后在目标音频测漏报/误报。对不支持算子和临时缓冲不足应显式失败，不能静默换一个数值协议不同的实现。</p>
 <span id="sec-22" class="anchor-alias" aria-hidden="true"></span><span id="i17tensorflow-lite-micro-的内存与音频前端" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-2e4e51b507">I17：TensorFlow Lite Micro 的内存与音频前端</h3>
 <p><code>tensorflow/tflite-micro</code> 的 <a href="https://github.com/tensorflow/tflite-micro/tree/9f638f18154dff868e7053572f089be845b2fbdf/tensorflow/lite/micro/examples/micro_speech"><code>tensorflow/lite/micro/examples/micro_speech/</code></a>提供关键词任务入口。它是低资源运行时的例子，不是麦克风阵列的完整处理链。代码许可为 Apache-2.0，模型与训练音频各自记录来源。</p>
-<p><a href="https://github.com/tensorflow/tflite-micro/blob/9f638f18154dff868e7053572f089be845b2fbdf/tensorflow/lite/micro/docs/memory_management.md">内存管理文档</a>将 tensor arena 分为非持久 head、临时分配和持久 tail。模型文件大小不是运行内存；音频缓存、特征缓存和栈也不一定全部位于 arena。应固定模型 schema、算子 resolver、arena、前端特征和状态寿命。</p>
+<p>TensorFlow Lite Micro 要求调用方先划出一块内存，供推理时的张量和临时计算使用；这块预留区称为 <code>tensor arena</code>。例如模型文件即使只占 100 KiB，运行时仍可能需要另一块内存保存中间张量，不能直接用文件大小估算内存上限。这里的 100 KiB 仅为说明两种内存不是同一个量，并非该项目的实测配置。</p>
+<p><a href="https://github.com/tensorflow/tflite-micro/blob/9f638f18154dff868e7053572f089be845b2fbdf/tensorflow/lite/micro/docs/memory_management.md">内存管理文档</a>把这块区域分成可复用的非持久 <code>head</code>、临时分配区和存放持久数据的 <code>tail</code>。模型文件大小不是运行内存；音频缓存、特征缓存和线程栈也不一定全部位于这块区域。复现时应固定模型格式版本（schema）、算子注册器（resolver）、预留区大小、音频特征和状态保留时长。</p>
 <p>采用 recording allocator 或对应版本的内存记录 API 测高水位，再以故意缩小 arena 的试验确认错误路径。连续运行要覆盖暂停恢复和输入溢出；仅成功识别一段内嵌样本不能证明实时采集正确。</p>
 <span id="sec-23" class="anchor-alias" aria-hidden="true"></span><span id="i18onnx-runtime-的线程提供程序与状态" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-3b3d8bde5a">I18：ONNX Runtime 的线程、提供程序与状态</h3>
 <p>本书已锁定 <code>microsoft/onnxruntime</code>，核心 C API 在 <code>include/onnxruntime/core/session/onnxruntime_c_api.h</code>，许可为 MIT。执行提供程序、模型算子集、动态轴、输入归一化和循环状态必须和源码版本一起记录。</p>

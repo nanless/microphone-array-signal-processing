@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码研究导读 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5756010aab11"><style>
+<meta name="source-digest" content="b74df4f08677"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -87,15 +87,15 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json">SOURCES.lock.json</a>，逐算法覆盖状态见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/COVERAGE.md">COVERAGE.md</a>。
 同名算法在不同项目中可能采用不同归一化、频谱轴序和输出参考通道，不能直接比较两个函数的数组而不检查约定。</p>
 <p>本手册包括本页入口和以下 5 篇专题，共 6 个网页；与 14 个教程页合计为 20 页。</p>
-<p>锁表登记 73 个上游项目，其中 66 个已有本地工作区；本轮离线核验 65 项通过，AEC Challenge 的真实录音文件有本地变动、未计通过，另 7 项只保留来源索引。
-空间部分补 SBL、RobustSBL、在线子带 GSC、SMP-PHAT 与多帧关联；增强部分补在线 WPE 接口对照、
-DNN 自适应控制和长序列分离；工程部分补重采样、响度、STOI/ESTOI、ViSQOL、文件帧读写与块浮点。
-这份清单仍含未运行和仅原理说明的方法；具体条件与方法级结果以各专题为准。</p>
+<p>锁表登记 73 个上游项目，其中 66 个已有本地工作区。截至 2026-09-24，离线核验 65 项通过；AEC Challenge 的真实录音文件有本地变动，未计通过。另 7 项只保留来源索引。</p>
+<p>空间篇讨论 SBL、RobustSBL、在线子带 GSC、SMP-PHAT 与多帧关联；增强篇讨论在线 WPE 接口对照、DNN 自适应控制和长序列分离；工程篇讨论重采样、响度、STOI/ESTOI、ViSQOL、文件帧读写与块浮点。</p>
+<p>这份清单仍含未运行和仅原理说明的方法；具体条件与方法级结果以各专题为准。</p>
 <p>已执行的工业三库接口实验与 SBL 合成输入实验提供原创调用程序及<a href="04_source_reproduction.html">运行记录</a>。
 报告区分正常检查、状态重置反例和达到迭代上限；SMP-PHAT 的实际编译运行另记录了负时延索引转换导致的数值失败。
 这些小规模接口对照不等于论文全量复现或设备验收。</p>
 <p>增强篇还记录了固定版 SpeexDSP 在一对真实播放环回/麦克风录音上的同步 AEC 实验，以及零参考和错位参考控制；只把它记作该接口在该片段上的观察，不外推为真值 ERLE、双讲保护或设备验收。</p>
-<p>这一轮又完成了第 5 章同输入解析波束对照、第 6 章合成真值 AEC 接口对照、第 7 章在线 WPE 时间边界、第 8 章锁定版 AuxIVA 盲估计与 GSS 活动错标，以及附录 B 六位置房间仿真。房间题另有<a href="../room_audio/MANIFEST.json">18 个白噪声合成 WAV 和一张结果图</a>，与主清单的 60 个样本分别管理。每项均给出固定输入、实际运行入口和失效或解释边界；解析与合成结果不充当真实语音、硬件或完整会议分离流水线的性能数字。</p>
+<p>读者还可复算第 5 章同输入解析波束对照、第 6 章合成真值 AEC 接口对照、第 7 章在线 WPE 时间边界、第 8 章锁定版 AuxIVA 盲估计与 GSS 活动错标，以及附录 B 六位置房间仿真。</p>
+<p>房间题另有<a href="../room_audio/MANIFEST.json">18 个白噪声合成 WAV 和一张结果图</a>，与主清单的 60 个样本分别管理。每项均给出固定输入、实际运行入口和失效或解释边界；解析与合成结果不充当真实语音、硬件或完整会议分离流水线的性能数字。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
 <tr>
@@ -128,7 +128,7 @@ DNN 自适应控制和长序列分离；工程部分补重采样、响度、STOI
 <tr>
 <td><a href="05_exercises_and_audio.html">练习与音频实验</a></td>
 <td>第 1～11 章、附录 A/B</td>
-<td>88 道代码练习、60 个合成音频、另 18 个房间合成音频，以及 DEMAND 真实录音摘录与派生音频的复算、许可和解释边界</td>
+<td>94 道代码练习、60 个合成音频、另 18 个房间合成音频，以及 DEMAND 真实录音摘录与派生音频的复算、许可和解释边界</td>
 </tr>
 </tbody>
 </table></div>

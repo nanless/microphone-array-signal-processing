@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 6 章 · 声学回声消除（AEC） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5756010aab11"><style>
+<meta name="source-digest" content="b74df4f08677"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -145,9 +145,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-44e7e35bd3">6. 声学回声消除（Acoustic Echo Cancellation，AEC）</h1>
 <p>第 4、5 章和第 9 章讨论声源方向、波束和轨迹。本章转向设备播放声返回麦克风所形成的回声。混响拖尾和多说话人混合分别见第 7、8 章。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-6-1">6.1 回声模型与基础自适应滤波</h2>
-<p><strong>问题</strong>：音箱放音乐时，扬声器的声音经房间反射回到自己的麦克风。回声相对近端语音的强弱取决于播放音量、距离、房间和器件耦合；当回声占优时，唤醒和通话都会受到影响。</p>
+<p><strong>问题</strong>：音箱放音乐时，播放声既可能直接传到设备的麦克风，也可能经过墙面反射或机壳耦合后被录到。回声相对近端语音的强弱取决于播放音量、距离、房间和器件耦合；当回声占优时，唤醒和通话都会受到影响。</p>
 <p>回声有一个可利用的条件：设备保存着播放信号 $x(n)$。未知的是播放信号经过扬声器、房间和麦克风之后形成的回声路径。本节先建立线性近似，再讨论非线性、双讲、残余抑制以及它与波束形成的顺序。</p>
-<p><strong>线性模型与自适应滤波（§6.1.1～§6.2）</strong></p>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-6-1-1">6.1.1 回声从哪来：系统模型与四种场景</h3>
 <p><strong>信号模型</strong>。先把播放链路近似成有限长、线性、时不变系统。麦克风录到的信号可以写成三项之和：</p>
 <p>$$\begin{aligned}
@@ -545,7 +544,7 @@ W_{i,j,k}[m+1]&=W_{i,j,k}[m]
 <p>冻结某块时，只跳过权重更新，仍把该块参考推进历史；这里的冻结标记由调用方提供，<strong>没有</strong>实现双讲检测。两点成块必须等第二个样本到来，因果流至少有一个采样的成块等待；代码要求调用方对齐播放与麦克风时间轴。</p>
 <p><strong>一步手算。</strong> 仍用 $x=[1,1\mid0,0]$、$d=[0,1\mid1,0]$，令 $K=2$、$W=0$、$\mu=1$、$\varepsilon=1$。第 0 块只有 $U_{0,0}=\sqrt2$ 非零，$\vec v_0=[1/\sqrt2,-1/\sqrt2]^\top$；先验预测为零，分母是 $1+(\sqrt2)^2=3$。于是 $W_{0,0,0}=1/3$、$W_{1,0,0}=-1/3$，其余仍零。</p>
 <p>第 1 块当前参考为零，但历史 $U_{0,1}=\sqrt2$：先验预测仍为零，更新后 $W_{0,0,1}=W_{1,0,1}=1/3$。</p>
-<p>高输出带确实从<strong>低输入带</strong>学到系数；这些权重是两块数据后的状态，不能把本轮先验残差误写为训练后的低误差。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_crossband_demo.py">完整可运行输出</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_crossband.py">独立测试</a>复算此例。</p>
+<p>高输出带确实从<strong>低输入带</strong>学到系数；这些权重是两块数据后的状态，不能把当前块更新前的残差误写为训练后的低误差。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_crossband_demo.py">完整可运行输出</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_crossband.py">独立测试</a>复算此例。</p>
 <p><strong>结构反例与留出验证。</strong> 用随机种子 20260923 生成 2000 个独立标准正态块值，每值在时域重复两次；物理路径固定为一拍延迟，$h=[0,1]$。前 1500 块训练，后 500 块冻结权重作留出测试；两模型同取 $K=2$、$\mu=0.5$、$\varepsilon=0.05$。</p>
 <p>量化前 float64 值上，真实回声均方约 $0.989129$，全交叉残差均方在该构造中为 $0$（浮点输出），对角残差均方约 $0.489674$。重复样本对使输入高带恒零，对角模型无法预测由块边界延迟产生的高带；这验证<strong>该输入和该路径的表示能力</strong>，不是一般语音收敛速度、设备 ERLE 或双讲质量排名。训练和留出共享同一条固定路径与参考序列，留出块的权重不再更新，参数、随机种子和计算代码都在<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_crossband_demo.py">演示</a>中。</p>
 <p><strong>代价与边界。</strong> 全交叉状态有 $4K$ 个实系数，时域物理路径只有 $L$ 个；除结构约束外，额外自由度可能在有限、相关或噪声数据上难以辨识。</p>
@@ -752,7 +751,6 @@ K_m&=P_m^-H_m^H(H_mP_m^-H_m^H+\Psi_m)^{-1},\\
 </tbody>
 </table></div>
 <p>§6.1.1～§6.2 建立了线性回声模型，并比较了 NLMS、分区频域方法、比例步长和频域卡尔曼滤波。常用的输入/输出功率近似 ERLE 应在远端单讲统计；线性滤波只能处理参考可表示的线性回声，参考抽头位置和双讲控制还需另行设计。</p>
-<p><strong>非线性回声与双讲控制（§6.3～§6.4）</strong></p>
 <span id="sec-6-1-4" class="anchor-alias" aria-hidden="true"></span><span id="sec-12" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-6-3">6.3 非线性回声：模型失配与处理方法</h2>
 <p><strong>非线性从哪来</strong>。微型扬声器的悬边与磁路在大振幅下不再线性（悬边变硬、音圈跑出匀强磁场区），功放或数字播放链在大音量下可能削顶（clipping），机壳与结构件也可能随声压振动产生二次辐射。Birkett &amp; Goubran（WASPAA 1995）实测讨论了免提终端中的非线性回声，Klippel（JAES 2006）从扬声器物理模型分析了相关机制。这里不作“最早提出”的优先权判断。</p>
 <p><strong>平台从哪里来</strong>。线性滤波器只能估计播放参考历史样本的线性组合。扬声器失真若产生该组合无法表示的谐波或互调分量，即使线性路径估计已收敛，这些分量仍会留在残差；E06-06 的单频输入和三次项给出一个可复算例子。</p>
@@ -807,7 +805,7 @@ K_m&=P_m^-H_m^H(H_mP_m^-H_m^H+\Psi_m)^{-1},\\
 <li>
 <p><strong>双滤波器法</strong>：前台滤波器负责输出，后台滤波器用更大的步长寻找新路径。后台并不是“不怕双讲”；双讲时照常大步更新同样会偏离真实路径，所以它也要根据双讲置信度缩小步长或冻结。</p>
 <p>只有当后台滤波器在一段保持时间内持续得到更小的远端单讲残差，才把系数复制到前台。切换判决需要门限和迟滞，避免两套滤波器来回切换。</p>
-<p>WebRTC AEC3 的 refined/coarse 结构采用了相近的快慢滤波思路，但具体更新和切换规则以对应版本源码为准。</p>
+<p>WebRTC AEC3 的精细与粗略两组滤波器采用了相近的快慢滤波思路，但具体更新和切换规则以对应版本源码为准（两组的源码名称和分工见 §6.8）。</p>
 </li>
 </ol>
 <blockquote>
@@ -1057,7 +1055,6 @@ K_m&=P_m^-H_m^H(H_mP_m^-H_m^H+\Psi_m)^{-1},\\
 <li><strong>双讲期质量</strong>：同时评估近端语音损伤和残余回声。阈值要绑定具体标准版本、测试序列和目标设备基线；自动指标可用于固定版本的回归测试，不能替代真人听测。</li>
 </ol>
 <p>§6.5～§6.7比较了混合式、端到端和神经卡尔曼方案，并说明了阵列中的模块顺序和评测口径。线性 ERLE、最终输出质量和近端语音损伤应分别报告；AEC 放在波束形成之后时，还需验证波束权重变化造成的路径突变。</p>
-<p><strong>系统实现与验收（§6.8～§6.17）</strong></p>
 <span id="sec-6-1-9" class="anchor-alias" aria-hidden="true"></span><span id="sec-17" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-6-8">6.8 WebRTC AEC3 的结构与排障</h2>
 <p><strong>完整 AEC 的通用系统功能</strong>（图20（a）给出部分信号流；下列功能不表示 WebRTC AEC3 为每项都设置独立的二值模块）：</p>
 <ol>
@@ -1072,9 +1069,9 @@ K_m&=P_m^-H_m^H(H_mP_m^-H_m^H+\Psi_m)^{-1},\\
 <p><strong>WebRTC AEC3 架构示例</strong>。AEC3 的内部模块和参数会随源码版本及构建配置变化，下面依据 WebRTC 官方源码提交 <code>0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e</code> 说明一种开源实现的分工，不把内部常数当作产品规格：</p>
 <ul>
 <li><strong>分块流水处理</strong>：采集和参考按内部子块推进。子块大小、采样率转换和缓冲共同决定延迟，需针对所用源码版本实测；</li>
-<li><strong>Render Buffer</strong>：保存远端参考历史，为延迟估计和路径滤波提供候选数据。所需覆盖范围由播放、采集和传输链路的实测延迟及抖动确定；</li>
-<li><strong>降采样参考—采集延迟估计</strong>：锁定版本的 <code>echo_path_delay_estimator.cc</code> 对降采样的播放与采集数据运行匹配滤波，再由 lag 聚合器选择延迟；<code>block_processor.cc</code>据此调整参考缓冲。它不是比较下述 refined/coarse 两个消除滤波器的残差来搜索延迟；路径或输出设备切换后还要检查缓冲和重新对齐过程；</li>
-<li><strong>refined/coarse 双滤波器</strong>：两组滤波器使用不同更新增益。该版本的 <code>echo_remover.cc</code> 比较 refined/coarse 残差功率、回声功率等量来选择线性输出并平滑切换；<code>subtractor.cc</code> 在 coarse 连续较差时还会用 refined 系数重置它。这是线性回声抵消和更新控制，不是上条的延迟候选搜索，也不能概括成检测到双讲就统一冻结；</li>
+<li><strong>播放参考历史缓冲区（源码名 Render Buffer）</strong>：保存已经送入系统的远端参考，为延迟估计和路径滤波提供可回看的一段数据。所需覆盖范围由播放、采集和传输链路的实测延迟及抖动确定；</li>
+<li><strong>降采样参考—采集延迟估计</strong>：锁定版本的 <code>echo_path_delay_estimator.cc</code> 对降采样的播放与采集数据运行匹配滤波，再由时延汇总模块（源码名 lag aggregator）汇总候选时延；<code>block_processor.cc</code> 据此调整参考缓冲。这里是在寻找参考与采集信号之间的时间差，并不是比较下述两组消除滤波器的残差来搜索延迟。路径或输出设备切换后还要检查缓冲和重新对齐过程；</li>
+<li><strong>精细与粗略两组消除滤波器（源码名 refined/coarse）</strong>：这两个名称标识 AEC3 内部两组滤波器，并不表示输出音质可以只凭名称判断。两组采用不同的更新增益。该版本的 <code>echo_remover.cc</code> 比较两组的残差功率、回声功率等量来选择线性输出并平滑切换；<code>subtractor.cc</code> 在粗略组连续较差时还会用精细组系数重置它。这属于线性回声抵消与更新控制，和上一项的参考时延搜索是两个问题，也不能概括成检测到双讲就统一冻结；</li>
 <li><strong>频域抑制器和舒适噪声</strong>：线性部分之后按频带控制残余回声，并在需要时生成与背景相符的舒适噪声。具体增益规则应以所用版本源码和目标设备测试为准。<a href="https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/echo_path_delay_estimator.cc" title="citation">WebRTC <code>echo_path_delay_estimator.cc</code></a>、<a href="https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/block_processor.cc" title="citation"><code>block_processor.cc</code></a>、<a href="https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/subtractor.cc" title="citation"><code>subtractor.cc</code></a>、<a href="https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/echo_remover.cc" title="citation"><code>echo_remover.cc</code></a>。</li>
 </ul>
 <p><strong>线性输出不是只能靠内部日志取得。</strong> 在上述锁定版本，公开配置 <code>EchoCanceller::export_linear_aec_output</code> 默认关闭；启用后，经 APM 处理可调用 <code>GetLinearAecOutput()</code> 并检查其布尔返回值。该接口导出约 10 ms、16 kHz、单声道的线性段数据，比较最终输出前须按采样率、通道及处理延迟对齐。失败返回不能用全零代替成功输出。</p>
@@ -1723,13 +1720,13 @@ K_m&=P_m^-H_m^H(H_mP_m^-H_m^H+\Psi_m)^{-1},\\
 <td>学习步长控制 CTF-AEC</td>
 <td><code>main_train.py</code> → <code>libPython/class_frontend.py</code> → <code>class_aec_ctf.py</code></td>
 <td>保留线性 CTF 回声模型，由 DNN 控制频率选择性步长与误差归一化</td>
-<td>无预训练 checkpoint；序列边界重置状态，<code>center_stft=True</code>，不能直接当作跨块流式接口</td>
+<td>无预训练模型参数文件；序列边界重置状态，<code>center_stft=True</code>，不能直接当作跨块流式接口</td>
 </tr>
 <tr>
 <td>Integrated AEC/NR</td>
 <td><code>Main.m</code> → <code>Util/Process/process.m</code> → 各 AEC、NR、MWF 与后滤模块</td>
 <td>在多麦、多扬声器模型中比较联合设计和 AEC/NR 顺序</td>
-<td>MATLAB R2024a；原实验用干净语音与干净回声生成预言活动判决</td>
+<td>MATLAB R2024a；用干净语音与回声真值作理想活动判决，实际设备不可得</td>
 </tr>
 <tr>
 <td>原始 FDKF/PBFDKF、NeuralKalman、DeepVQE</td>
@@ -1961,7 +1958,7 @@ $$</p>
 <p>逐通道 AEC 保持每路声学路径与波束权重解耦，但需要更多状态和计算；波束后 AEC 只运行一路，但要跟踪等效路径变化；联合方法利用共同统计模型，代价是更复杂的统计量和约束。按 §6.6 的输入条件选择并测试。</p>
 </li>
 <li>
-<p>播放参考先进入历史缓冲和延迟搜索，对齐参考参与自适应滤波，麦克风减去回声估计形成线性残差；残余估计控制后续抑制，舒适噪声用于缓和背景突变。refined/coarse 更新和输出选择必须按固定版本源码检查，见 §6.8。</p>
+<p>播放参考先进入历史缓冲和延迟搜索，对齐参考参与自适应滤波，麦克风减去回声估计形成线性残差；残余估计控制后续抑制，舒适噪声用于缓和背景突变。精细与粗略两组滤波器的更新和输出选择必须按固定版本源码检查，见 §6.8。</p>
 </li>
 <li>
 <p>ERLE 度量规定远端单讲窗口的回声能量衰减；平均意见分（Mean Opinion Score，MOS）来自规定协议下的真人评分；AECMOS 是模型预测的回声和其他可闻退化分。双讲输出包含应保留的近端语音，直接拿总输出功率计算 ERLE 会混淆回声泄漏与近端保留。</p>

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 9 章 · 声源追踪 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5756010aab11"><style>
+<meta name="source-digest" content="b74df4f08677"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -72,7 +72,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-2-5">9.2.5 单目标追踪仿真与缺测边界</a></li>
 <li><a href="09_source-tracking.html#sec-9-3">9.3 多目标追踪</a></li>
 <li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-3-1">9.3.1 数据关联与目标数</a></li>
-<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-3-2">9.3.2 三帧关联手算与 PHD 强度</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-3-2">9.3.2 三帧关联手算与方法概览</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-u-175f2c0587">PHD 强度：人数期望与单帧更新</a></li>
 <li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-3-3">9.3.3 可执行基线与双目标交叉实验</a></li>
 <li><a href="09_source-tracking.html#sec-9-4">9.4 定位、追踪与波束形成的接口</a></li>
 <li><a href="09_source-tracking.html#sec-9-5">9.5 自由场移动声源的双麦音频与传播真值</a></li>
@@ -95,7 +96,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-2-5">9.2.5 单目标追踪仿真与缺测边界</a></li>
 <li><a href="09_source-tracking.html#sec-9-3">9.3 多目标追踪</a></li>
 <li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-3-1">9.3.1 数据关联与目标数</a></li>
-<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-3-2">9.3.2 三帧关联手算与 PHD 强度</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-3-2">9.3.2 三帧关联手算与方法概览</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-u-175f2c0587">PHD 强度：人数期望与单帧更新</a></li>
 <li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-9-3-3">9.3.3 可执行基线与双目标交叉实验</a></li>
 <li><a href="09_source-tracking.html#sec-9-4">9.4 定位、追踪与波束形成的接口</a></li>
 <li><a href="09_source-tracking.html#sec-9-5">9.5 自由场移动声源的双麦音频与传播真值</a></li>
@@ -122,7 +124,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>单个固定阵列的一次方位观测不能确定距离。令阵列中心为 $(0,0)$，声源在 $(1\ \mathrm m,1\ \mathrm m)$ 与 $(2\ \mathrm m,2\ \mathrm m)$ 时都得到 $45^\circ$；沿同一射线缩放位置不会改变 <code>atan2</code> 的结果。</p>
 <p>连续仅测方位观测只有在已知运动约束和足够的阵列—声源相对运动使系统可观测时，才可能逐步估计距离。否则，即使用扩展卡尔曼滤波（Extended Kalman Filter，EKF）或无迹卡尔曼滤波（Unscented Kalman Filter，UKF），径向位置仍不能由滤波器自行产生。</p>
 <p>位置级追踪通常还要引入已知中心不同的多个阵列、到达时间差（Time Difference of Arrival，TDOA）或距离观测，或利用满足可观测条件的移动阵列轨迹。<a href="https://doi.org/10.1080/00207178908559665" title="citation">仅测方位可观测性分析</a>。</p>
-<p>EKF 用该观测函数的雅可比做一阶线性化。标准对称或缩放无迹变换的 UKF 通常传播 $2L+1$ 个 sigma 点；对位置—速度状态 $[x,y,\dot x,\dot y]^\top$，状态维数 $L=4$，因此是 9 个点。单纯方位—角速度状态只有 $L=2$，对应 5 个点。也有单纯形、球面径向等减少点数的变体，不能把 $2L+1$ 写成所有 UKF 的定义。</p>
+<p>EKF 用该观测函数的雅可比做一阶线性化。UKF 的另一种办法是：在当前估计的均值周围选出少量代表性状态点，把每个点分别代入原来的非线性观测函数，再由变换后的点重算均值和协方差。这些代表性点称为 sigma 点，并不是另外观测到的声源。</p>
+<p>标准对称或缩放无迹变换的 UKF 通常传播 $2L+1$ 个 sigma 点；对位置—速度状态 $[x,y,\dot x,\dot y]^\top$，状态维数 $L=4$，因此是 9 个点。单纯方位—角速度状态只有 $L=2$，对应 5 个点。也有单纯形、球面径向等减少点数的变体，不能把 $2L+1$ 写成所有 UKF 的定义。</p>
 <p>近距离或声源越过阵列附近时非线性更强，应比较 UKF、粒子滤波或其他非线性方法，而不是直接套用线性卡尔曼滤波（Kalman Filter，KF）。</p>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-9-2">9.2 单目标追踪</h2>
 <h3 id="sec-9-2-1">9.2.1 卡尔曼预测、观测更新与角度边界</h3>
@@ -553,7 +556,7 @@ N_{eff}&=\frac{1}{\sum_{i=1}^{10}\tilde w_i^2}\\
 </tr>
 </tbody>
 </table></div>
-<h3 id="sec-9-3-2">9.3.2 三帧关联手算与 PHD 强度</h3>
+<h3 id="sec-9-3-2">9.3.2 三帧关联手算与方法概览</h3>
 <p><strong>三帧关联辅助例子</strong>。设两条匀速轨迹的预测角分别为 A：$20^\circ,30^\circ,40^\circ$，B：$60^\circ,50^\circ,40^\circ$；三帧观测依次为 $(22^\circ,58^\circ)$、$(15^\circ,31^\circ,48^\circ)$、$(39^\circ,41^\circ)$。假设独立高斯角度误差的标准差 $\sigma=3^\circ$。为先算清最小 JPDA 归一化，暂时假设第一、三帧没有漏检和杂波，且两个全局关联事件先验相同。</p>
 <p>第一帧“顺接”事件的似然正比于 $\exp[-(2^2+(-2)^2)/(2\times3^2)]=e^{-8/18}\approx0.641$；“交换”事件的残差为 $38^\circ,-38^\circ$，似然约为 $e^{-2888/18}$，归一化后的顺接概率在所示精度下为 1。</p>
 <p>第三帧两条预测都为 $40^\circ$，两个交换事件的残差平方和都为 $(-1)^2+1^2=2$，似然都为 $e^{-2/18}\approx0.895$。归一化后两个全局事件各为 0.5，因此每条轨迹关联到 $39^\circ$ 或 $41^\circ$ 的边缘概率也各为 0.5。</p>
@@ -567,6 +570,8 @@ N_{eff}&=\frac{1}{\sum_{i=1}^{10}\tilde w_i^2}\\
 <p>LMB/δ-GLMB 为目标维护标签，可输出带身份的轨迹。检测前追踪直接递推定位谱，保留未越过检测阈值的弱证据。</p>
 <p>把连续定位谱接入 TBD 前，应先在独立验证集上校准“谱值—似然或似然比”的映射，并固定角度网格、归一化、温度缩放、声源数先验、信噪比与混响条件。网络 softmax 分数只在其类别集合内归一化，不能自动跨帧比较；出生、存活、漏检和杂波参数也要与同一标定口径匹配。若这些条件变化，应重新标定或把分数仅作为特征输入，而不是直接解释为概率。</p>
 <p>活动耦合笛卡尔 DOA（Activity-Coupled Cartesian DOA，ACCDOA）把向量方向编码为 DOA、向量长度编码为活动强度。它本身是逐帧声事件定位与检测的输出表示，不等同于追踪器；只有结合时序模型、平滑和身份关联后，才形成轨迹。</p>
+<p>PHD 的人数含义、递推和最小手算单独放在下一小节，便于与前面的逐帧数据关联方法对照。</p>
+<h3 id="sec-u-175f2c0587">PHD 强度：人数期望与单帧更新</h3>
 <p>PHD 强度 $D_t(x)$ 也不是“某处有人”的普通概率密度。它在区域 $A$ 上的积分表示该区域内目标数的期望，因而总目标数估计来自 $\hat N_t=\int D_t(x)\,dx$，再按整数规则取值。目标位置通常从强度峰或聚类中心提取；“峰数就是人数”只是实现近似。PHD 避免显式枚举观测—目标关联，但只传播一阶矩，不保留目标身份，也不能完整描述目标间相关性。</p>
 <p>下面的递推针对标准独立点目标模型：各目标独立演化，检测事件相互独立，每个被检测目标每帧至多产生一条观测，杂波是与目标观测独立的 Poisson 随机有限集，并忽略由既有目标衍生新目标（spawning）的过程，只用 $\gamma_t$ 表示自发出生；为得到下面的标准闭式更新，还采用 Poisson 型预测多目标分布近似。PHD 的预测式为</p>
 <p>$$D_{t|t-1}(x)=\int p_S(x')f_t(x\mid x')D_{t-1}(x')\,dx'+\gamma_t(x)\text{。}\tag{9-9}$$</p>
@@ -675,9 +680,14 @@ D_t(x)&=[1-p_D(x)]D_{t|t-1}(x)\\
 </thead>
 <tbody>
 <tr>
-<td><code>frame_id</code> / 坐标系</td>
+<td>坐标系标识（代码中可叫 <code>frame_id</code>）</td>
 <td>阵列坐标、设备坐标或世界坐标；角度零点与正方向</td>
-<td>与导向矢量使用同一坐标约定</td>
+<td>与导向矢量使用同一坐标约定；此处的 <code>frame_id</code> 不是音频帧序号</td>
+</tr>
+<tr>
+<td>音频帧序号</td>
+<td>这次定位所用音频块在录音中的次序</td>
+<td>便于回查输入；不能代替下面的采样时间戳</td>
 </tr>
 <tr>
 <td><code>measurement_time</code></td>

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 A · 符号术语数学 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5756010aab11"><style>
+<meta name="source-digest" content="b74df4f08677"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -192,7 +192,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>$\Phi(f)$</td>
-<td>GCC 加权函数（§4.2） vs 功率谱（§5.7），语境区分</td>
+<td>在 §4.2 表示 GCC 的频率加权函数；在 §5.7 表示功率谱。两处符号相同，含义须根据所在公式区分。</td>
 </tr>
 <tr>
 <td>$\mathbf{P}$, $\mathbf{K}$, $\mathbf{Q}$, $\mathbf{F}$, $\mathbf{H}$</td>
@@ -774,7 +774,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>若协方差奇异，不能直接使用这一逆矩阵形式；需另行处理秩或加载。LCMV 把标量约束和乘子换成向量形式（§5.5）。</p>
 <p><strong>Wirtinger 求导。</strong> 对实值目标函数，可在 Wirtinger 微积分中把 $\vec{w}$ 和 $\vec{w}^*$ 视为形式上独立的变量，对 $\vec{w}^*$ 求偏导并令其为零。§5.4 给出了与实部、虚部分别求导等价的完整推导。</p>
 <h3 id="sec-12-3-7">12.3.7 特征值分解</h3>
-<p>对 Hermitian 协方差矩阵可写 $\mathbf{R}=\mathbf{E}\boldsymbol\Lambda\mathbf{E}^H$。特征向量是传感器观测空间中的正交主轴，特征值表示沿这些主轴的能量；它们通常不等于真实空间中的 DOA。</p>
+<p>对厄米（Hermitian）协方差矩阵可写 $\mathbf{R}=\mathbf{E}\boldsymbol\Lambda\mathbf{E}^H$。特征向量是传感器观测空间中的正交主轴，特征值表示沿这些主轴的能量；它们通常不等于真实空间中的 DOA。</p>
 <p>MUSIC（§4.6）在独立源、白噪声和模型正确等条件下，把较大的特征值所张成的空间解释为信号子空间，把噪声底对应的空间解释为噪声子空间。</p>
 <p>3 分钟手算（12.3）：协方差 $\begin{bmatrix}4&0\\0&1\end{bmatrix}$ 的特征值和特征向量各是什么？若两个共轭对称的非对角元都变成 0.5，哪个特征值变大？</p>
 <p>答案：特征值为 4 和 1，对应特征向量可取 $[1,0]^{\top}$ 和 $[0,1]^{\top}$。非对角元都变为 0.5 后，两个特征值为 $(5\pm\sqrt{10})/2$，约 4.08 和 0.92；通道相关性使特征值间隔增大。</p>

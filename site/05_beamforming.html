@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 5 章 · 波束形成 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5756010aab11"><style>
+<meta name="source-digest" content="b74df4f08677"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -116,7 +116,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <hr />
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-5b20e7dd9d">5. 波束形成（Beamforming）</h1>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-5-1">5.1 统一问题表述</h2>
-<p>波束形成器对 $M$ 路信号做线性组合（频域）：</p>
+<p>先看一个可观察的问题：同一句话到达不同麦克风的时刻略有差别。若直接相加，目标声音可能相互抵消；若先补齐这段时差，再相加，目标可以保留，而其他方向的声音不一定也能对齐。这就是最简单的波束形成。</p>
+<p>在频域中，把第 $n$ 帧、第 $k$ 个频点的 $M$ 路麦克风复数谱排成列向量 $\vec x(k,n)\in\mathbb C^{M\times1}$。同样长度的权重列向量记为 $\vec w(k,n)$；上标 $H$ 表示先对各元素取复共轭，再转置。输出是一个复数谱值：</p>
 <p>$$y(k,n) = \vec{w}^H(k,n)\,\vec{x}(k,n)\text{。}$$</p>
 <p>本章沿用第 2 章的几何约定，并把相位符号写全：均匀线阵的麦 1 在左端、位置为 $x_1=0$，麦 2 及后续阵元沿 $+x$ 方向排列；正角声源位于 $+x$ 一侧，单位向量 $\vec u$ 从阵列指向声源。到达时刻差定义为 $\tau_{ij}=t_i-t_j$。因此正角远场声源先到达右侧阵元，$\tau_{21}=-d\sin\theta/c$；以麦 1 为相位参考时，</p>
 <p>$$a_m(f,\theta)=e^{+\mathrm j2\pi f(m-1)d\sin\theta/c},\qquad m=1,\ldots,M\text{。}$$</p>
@@ -156,16 +157,15 @@ Q&=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\mathbf{\Gamma}\vec{w}},&
 </ol>
 <p><strong>波束图的等比数列推导</strong>：</p>
 <ol>
-<li>把波束指向 $\theta_0$ 后，去测另一个方向 $\theta$ 的输出：各通道先按 $\theta_0$ 补偿相位，再求和。记相邻两麦的<strong>残余相位差</strong> $\psi = \dfrac{2\pi d}{\lambda}(\sin\theta - \sin\theta_0)$，则第 $m$ 个麦在求和时带着因子 $e^{\mathrm{j}m\psi}$；</li>
+<li>把波束指向 $\theta_0$ 后，去测另一个方向 $\theta$ 的响应：各通道先按 $\theta_0$ 补偿相位，再求和。记相邻两麦的<strong>残余相位差</strong> $\psi = \dfrac{2\pi d}{\lambda}(\sin\theta - \sin\theta_0)$。为写求和式，这里临时把麦克风编号改为 $m=0,1,\ldots,M-1$（对应前文的第 $m+1$ 支麦），第 $m$ 项带着因子 $e^{\mathrm{j}m\psi}$；</li>
 <li>
-<p>输出幅度就是等比数列求和（公比 $e^{\mathrm{j}\psi}$）：</p>
-<p>$$B(\psi) = \sum_{m=0}^{M-1} e^{\mathrm{j}m\psi} = e^{\mathrm{j}(M-1)\psi/2}\,\frac{\sin(M\psi/2)}{\sin(\psi/2)}$$</p>
+<p>先不除以麦克风数，得到未归一化的阵因子：</p>
+<p>$$B_{\rm raw}(\psi) = \sum_{m=0}^{M-1} e^{\mathrm{j}m\psi} = e^{\mathrm{j}(M-1)\psi/2}\,\frac{\sin(M\psi/2)}{\sin(\psi/2)}\text{。}$$</p>
 </li>
 <li>
-<p>取模：$|B| = \left|\dfrac{\sin(M\psi/2)}{\sin(\psi/2)}\right|$。$\psi=0$（即 $\theta=\theta_0$）时分子分母都趋于零，取极限得最大值 $M$。离开目标方向后，该比值随 $\psi$ 周期变化，形成主瓣、零点和旁瓣；</p>
-</li>
-<li>
-<p>主瓣边缘：第一个零点在 $M\psi/2 = \pi$，即 $\psi = 2\pi/M$。</p>
+<p>本节的 DSB 权重含 $1/M$，所以<strong>实际单位响应的波束</strong>是 $B_{\rm DSB}=B_{\rm raw}/M$。在 $\psi=0$（即 $\theta=\theta_0$）处，上式的分子、分母都为零，要取极限：未归一化阵因子为 $M$，实际 DSB 响应为 $M/M=1$。</p>
+<p>例如两麦对准目标时，未归一化求和得到 2，等权平均得到 1。离开目标方向后，$|B_{\rm DSB}|=\left|\sin(M\psi/2)/(M\sin(\psi/2))\right|$ 随 $\psi$ 变化，形成主瓣、零点和旁瓣。
+4. 主瓣边缘：第一个零点在 $M\psi/2 = \pi$，即 $\psi = 2\pi/M$。</p>
 <p>正横附近用 $\sin\theta\approx\theta$，并把主瓣内离散阵因子近似为连续孔径时，“零点到零点”宽度约为 $2\lambda/(Md)$，半功率宽度约为 $0.886\lambda/(Md)$；斜指向时还要按 §2.6 除以 $\cos\theta_0$。后一个系数是充分大 $M$、正横小角度下的近似值，小阵列应直接从上式数值求半功率点。</p>
 <p>这里的 $Md$ 来自 $M$ 项离散阵因子，不等于阵列首尾的物理跨度 $D=(M-1)d$。用 $\lambda/D$ 表示的是孔径尺度估计；两者只在 $M$ 较大时接近，小阵列中必须说明采用哪一种口径。两种写法都表达同一趋势：阵元数或间距增大、波长减小时，主瓣变窄。</p>
 </li>
@@ -253,8 +253,17 @@ Q&=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\mathbf{\Gamma}\vec{w}},&
 <td>−18.5 dB</td>
 <td>−24.6 dB</td>
 </tr>
+<tr>
+<td>DI</td>
+<td>+3.0 dB</td>
+<td>+5.9 dB</td>
+<td>+6.0 dB</td>
+<td>+6.0 dB</td>
+<td>+6.0 dB</td>
+</tr>
 </tbody>
 </table></div>
+<p>表中 DI 按同一权重和同一 $\mathbf\Gamma$ 代入式(5-1)计算；例如 $d=0.05\lambda$ 时，$Q\approx3.97$，所以 $10\log_{10}Q\approx6.0$ dB。间距从 $0.05\lambda$ 缩到 $0.01\lambda$，DI 在表中精度下仍约 6.0 dB，而 WNG 从 −10.6 dB 降至 −24.6 dB。这说明继续缩小间距并未在此模型中带来同等幅度的指向性收益。</p>
 <p>在本例的双麦端射模型中，间距减半时权重模长近似翻倍，$\mathrm{WNG}_{\mathrm{dB}}$ 约降低 6 dB；这一近似来自权重随 $\lambda/d$ 增长、白噪声输出功率随 $(\lambda/d)^2$ 增长。表中数值只对应所列理想模型，实际设计还要加入通道失配、自噪声与阵列几何误差。</p>
 <p><img alt="图15 WNG–DI 权衡" src="../figures/fig15_wng_di.png" onerror="this.alt+='（图缺失）'" /></p>
 <p><strong>图示说明</strong>：图 15 使用半径 4 cm 的 6 元均匀圆阵；六边形相邻阵元的弦长也为 4 cm。导向矢量与三维各向同性弥散场相干矩阵都由同一组二维阵元坐标计算。</p>
@@ -413,7 +422,7 @@ Q&=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\mathbf{\Gamma}\vec{w}},&
 <p><img alt="图16 波束图对比" src="../figures/fig16_beampattern.png" onerror="this.alt+='（图缺失）'" /></p>
 <p><strong>图示说明</strong>：图 16 的三组权重都满足目标方向单位响应。线性幅度图保留这一绝对响应，dB 图以目标响应为 0 dB 参考，并截断到 −40 dB。</p>
 <p>DSB 与 MVDR 使用 8 元、$d=\lambda/2$，MVDR 协方差模型含 20° 定向干扰。超指向使用另一个 $d=0.2\lambda$ 的紧凑阵列和相对对角加载 $10^{-6}$。</p>
-<p>由于阵元间距和噪声模型不同，超指向曲线不能作为与前两条曲线的同几何性能排名；该图也不能直接给出 WNG 或 DI。图中参数与算例 5-2 的 2 元阵、30° 干扰不同，零陷深度不能直接互比。</p>
+<p>由于阵元间距和噪声模型不同，超指向曲线只展示另一套阵列在同一角度坐标下的响应形状，不能据三条曲线的高低给算法排名；该图也不能直接给出 WNG 或 DI。图中参数与算例 5-2 的 2 元阵、30° 干扰不同，零陷深度不能直接互比。</p>
 <p><strong>实现中的三个问题</strong>：</p>
 <ol>
 <li><strong>$\mathbf{R}_{nn}$ 从哪来</strong>：无目标帧估计（语音活动检测即 VAD 辅助）；语音场景经典做法是时频掩码（Time-Frequency mask，简称 TF-mask）——神经网络预测每个时频点是语音还是噪声，分别加权估出目标/噪声协方差（在 CHiME 系列远场语音识别挑战赛中验证有效的主流做法；这类掩码做法在完整系统里的效果证据见 §8.4）；</li>
@@ -533,7 +542,7 @@ Q&=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\mathbf{\Gamma}\vec{w}},&
 </tr>
 </tbody>
 </table></div>
-<p>使用该表时，应先用 §5.3 的四项诊断量确定主要误差来源，再分别验证候选方法。每次改变稳健化参数，都应重新测量 WNG、目标响应、噪声输出和任务指标。</p>
+<p>使用该表时，应先按本小节表前列出的 A～D 四类误差逐项排查，再分别验证候选方法。每次改变稳健化参数，都应重新测量 WNG、目标响应、噪声输出和任务指标。</p>
 <p>MVDR 的闭式解依赖准确的协方差和约束向量。对角加载、最差情况优化、特征空间投影、协方差重构与空间平滑分别针对不同误差来源，选择前应先确定失配模型。</p>
 <span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-5-5">5.5 线性约束最小方差（Linearly Constrained Minimum Variance，简称 LCMV）：多约束推广</h2>
 <p>多个线性约束写成矩阵形式 $\mathbf{C}^H\vec{w}=\vec{f}$（$\mathbf{C}$：约束矩阵，每列是一个约束方向/约束向量；$\vec{f}$：对应的约束值向量），LCMV 闭式解为：</p>

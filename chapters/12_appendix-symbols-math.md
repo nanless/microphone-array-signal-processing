@@ -37,7 +37,7 @@
 | $\mathbf{C}$, $\vec{f}$ | LCMV 约束矩阵与约束值向量，$\mathbf{C}^H\vec{w}=\vec{f}$（§5.5） |
 | $\vec{e}_r$ | 参考麦选择向量（第 $r$ 位为 1 的单位向量，见§5.5 参考麦选择，MWF/SDW 用） |
 | $\mathbf{B}$ | GSC 阻塞矩阵，满足 $\mathbf{B}^H\vec{a}(\theta_0)=\vec{0}$（§5.6） |
-| $\Phi(f)$ | GCC 加权函数（§4.2） vs 功率谱（§5.7），语境区分 |
+| $\Phi(f)$ | 在 §4.2 表示 GCC 的频率加权函数；在 §5.7 表示功率谱。两处符号相同，含义须根据所在公式区分。 |
 | $\mathbf{P}$, $\mathbf{K}$, $\mathbf{Q}$, $\mathbf{F}$, $\mathbf{H}$ | 卡尔曼滤波：误差协方差、卡尔曼增益、过程噪声协方差、状态转移、观测矩阵（§9.2） |
 | $V$, $A$, $S$, $\bar\alpha$ | 房间体积、等效吸声面积、总表面积、平均吸声系数（§2.4） |
 | $\mu_{\mathrm{NLMS}}$ | 归一化最小均方（Normalized Least Mean Squares，NLMS）步长（§6.1）；理想化独立性假设下常讨论 $0<\mu<2$，实际取值还受输入相关性、正则项和时变路径影响 |
@@ -285,7 +285,7 @@ $$L=\vec{w}^H\mathbf{R}\vec{w}+2\operatorname{Re}\!\left\{\lambda^*(\vec{w}^H\ve
 
 #### 12.3.7 特征值分解
 
-对 Hermitian 协方差矩阵可写 $\mathbf{R}=\mathbf{E}\boldsymbol\Lambda\mathbf{E}^H$。特征向量是传感器观测空间中的正交主轴，特征值表示沿这些主轴的能量；它们通常不等于真实空间中的 DOA。
+对厄米（Hermitian）协方差矩阵可写 $\mathbf{R}=\mathbf{E}\boldsymbol\Lambda\mathbf{E}^H$。特征向量是传感器观测空间中的正交主轴，特征值表示沿这些主轴的能量；它们通常不等于真实空间中的 DOA。
 
 MUSIC（§4.6）在独立源、白噪声和模型正确等条件下，把较大的特征值所张成的空间解释为信号子空间，把噪声底对应的空间解释为噪声子空间。
 

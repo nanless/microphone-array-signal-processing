@@ -154,8 +154,6 @@ td,th{word-break:break-word;overflow-wrap:anywhere}
 /* MathJax 的行内长式与展示式均需留在 A4 正文宽度内。 */
 mjx-container{font-size:100%!important;max-width:100%}
 h1,h2,h3,h4{break-after:avoid}
-/* The CRB worked example otherwise starts with one orphan setup line on p52. */
-#ch-2-sec-2-6-7{break-before:page;page-break-before:always}
 .chap>h1{margin:0 0 3mm;line-height:1.3}
 .chap>h2:first-of-type{margin-top:3mm;margin-bottom:2mm;line-height:1.3}
 blockquote,pre{break-inside:avoid}
