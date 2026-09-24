@@ -20,6 +20,10 @@
 | KWS / ASR | 关键词唤醒（Keyword Spotting）/自动语音识别（Automatic Speech Recognition） |
 | SRO | 采样率偏移（Sampling Rate Offset） |
 | RTF | 实时因子（Real-Time Factor） |
+| STFT | 短时傅里叶变换（Short-Time Fourier Transform）：把波形变成逐帧、逐频点的复系数；多通道时逐通道计算 |
+| GSS | 导引源分离（Guided Source Separation）：用已知说话人活动引导多通道掩码估计 |
+| cACGMM | 复角中心高斯混合模型（Complex Angular Central Gaussian Mixture Model）：GSS 中估计空间掩码的一种模型 |
+| SCM | 空间协方差矩阵（Spatial Covariance Matrix）：本章的 GSS 支路用多通道复系数及掩码估计，供解析波束计算权重 |
 
 本章中的 RTF 均指实时因子；波束形成中的“目标相对传递函数”（relative transfer function）不缩写为 RTF，以免混淆。
 
@@ -282,9 +286,7 @@ WPE 正是利用语音及其晚期混响的统计关系估计预测滤波器，�
 
 VAD 的迟滞、挂起和预卷缓存应由语料中的短词、停顿和噪声脉冲调节。
 
-KWS 是否绕过 VAD、是否持续运行、从 AEC 后还是增强后取信号，取决于功耗和训练域。
-
-阈值需要在指定误唤醒率下报告漏唤醒率，不能只给一个孤立分数。
+KWS 是否绕过 VAD、是否持续运行、从 AEC 后还是增强后取信号，取决于功耗和训练域。设置 KWS 阈值时，还要在指定误唤醒率下报告漏唤醒率，不能只给一个孤立分数。
 
 #### 10.3.4 VAD 与 AGC 的最小可运行基线
 
@@ -302,7 +304,9 @@ AGC 要区分“把正常语音逐渐推向目标电平”和“立刻避免削�
 
 对 10 s 信号的两端各加 100 ms 平滑渐变后，锁定 libebur128 的 4 倍插值器实际返回采样峰 0.671751、估计真峰 0.946371；后者是**该库有限长滤波器的估计值**，不是把解析上界精确重建成 0.95。若让正弦从第一点突起，滤波起始瞬态可能抬高库估计，不适合用来检验纯正弦的采样间峰值。输入与独立手算见[工业接口研究 I23](../codes/research/03_industrial_deployment.md#i23libebur128-的响度与真峰值)。
 
-实际 VAD 接口也有不同的输入协议。WebRTC 传统 VAD 使用合法采样率下的 16 位单声道 PCM 和 10、20、30 ms 帧；Silero 核实的 ONNX 包装器使用 16 kHz/512 点或 8 kHz/256 点，均为 32 ms，并保留跨块状态。10 ms 的声卡回调不能直接当成任意模型的一次输入，需要先缓冲到合法块长，再把决策映射回采集时间轴。[WebRTC VAD 接口](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/common_audio/vad/include/webrtc_vad.h "citation")、[Silero 包装器源码](https://github.com/snakers4/silero-vad/blob/60b7ffa243625ebdc1070275a29f18c87843786a/src/silero_vad/utils_vad.py "citation")
+实际 VAD 接口有不同的输入协议。WebRTC 传统 VAD 使用合法采样率下的 16 位单声道 PCM 和 10、20、30 ms 帧；Silero 核实的 ONNX 包装器使用 16 kHz/512 点或 8 kHz/256 点，均为 32 ms，并保留跨块状态。[WebRTC VAD 接口](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/common_audio/vad/include/webrtc_vad.h "citation")、[Silero 包装器源码](https://github.com/snakers4/silero-vad/blob/60b7ffa243625ebdc1070275a29f18c87843786a/src/silero_vad/utils_vad.py "citation")
+
+因此，10 ms 的声卡回调不能直接当成任意模型的一次输入。接入前要按所选接口缓冲到合法块长，并记录判决对应的采集时间；否则 32 ms 块的输出可能被错误标成最后一次 10 ms 回调的即时结果。
 
 跨块状态要与会话绑定。每块重置会改变模型行为，多条独立会话共享状态会相互干扰。阈值、最短语音、静音等待和前后填充也要分开调节；降低语音概率阈值并不能自动补回已经丢失的词首音频。工业 VAD、WebRTC AGC2 和 DeepFilterNet 的源码阅读顺序及故障试验见[工业实现研究中的控制与增强部分](../codes/research/03_industrial_deployment.md#2-噪声语音活动与增益)。
 

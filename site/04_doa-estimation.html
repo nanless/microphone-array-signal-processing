@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 4 章 · 声源定位（DOA 估计） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="cb929281331d"><style>
+<meta name="source-digest" content="45eb4bf2e043"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -65,10 +65,13 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="04_doa-estimation.html#sec-4-4">4.4 两阶段法的几何解算</a></li>
 <li><a href="04_doa-estimation.html#sec-4-5">4.5 波束扫描类：Bartlett 与 Capon</a></li>
 <li><a href="04_doa-estimation.html#sec-4-6">4.6 子空间类：MUSIC 与 ESPRIT</a></li>
-<li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-442f837dd2">MUSIC（多重信号分类，Schmidt, 1986）</a></li>
-<li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-8dda6571c9">ESPRIT（借助旋转不变技术估计信号参数，Estimation of Signal Parameters via Rotational Invariance Techniques）</a></li>
+<li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-5d3aebe0fb">窄带方法一：MUSIC（多重信号分类，Schmidt, 1986）</a></li>
+<li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-e9bdae6530">窄带方法二：ESPRIT（借助旋转不变技术估计信号参数，Estimation of Signal Parameters via Rotational Invariance Techniques）</a></li>
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-4-6-1">4.6.1 宽带聚焦：跨频率合并子空间信息</a></li>
 <li><a href="04_doa-estimation.html#sec-4-7">4.7 稀疏重构、学习式定位与实现边界</a></li>
+<li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-648f9c44e7">稀疏与连续参数方法：角度网格从哪里来</a></li>
+<li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-66b28c2c82">学习式定位：输入特征、输出形式与泛化</a></li>
+<li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-60260ccada">任务和数据：不同届 DCASE 的输出不能混用</a></li>
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-4-7-1">4.7.1 近场模型失配：角度相同，距离仍会改变导向矢量</a></li>
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-4-7-2">4.7.2 可执行基线的输入契约、回退与外部实现边界</a></li>
 <li><a href="04_doa-estimation.html#sec-4-8">4.8 定位算法总对比</a></li>
@@ -98,10 +101,13 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="04_doa-estimation.html#sec-4-4">4.4 两阶段法的几何解算</a></li>
 <li><a href="04_doa-estimation.html#sec-4-5">4.5 波束扫描类：Bartlett 与 Capon</a></li>
 <li><a href="04_doa-estimation.html#sec-4-6">4.6 子空间类：MUSIC 与 ESPRIT</a></li>
-<li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-442f837dd2">MUSIC（多重信号分类，Schmidt, 1986）</a></li>
-<li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-8dda6571c9">ESPRIT（借助旋转不变技术估计信号参数，Estimation of Signal Parameters via Rotational Invariance Techniques）</a></li>
+<li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-5d3aebe0fb">窄带方法一：MUSIC（多重信号分类，Schmidt, 1986）</a></li>
+<li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-e9bdae6530">窄带方法二：ESPRIT（借助旋转不变技术估计信号参数，Estimation of Signal Parameters via Rotational Invariance Techniques）</a></li>
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-4-6-1">4.6.1 宽带聚焦：跨频率合并子空间信息</a></li>
 <li><a href="04_doa-estimation.html#sec-4-7">4.7 稀疏重构、学习式定位与实现边界</a></li>
+<li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-648f9c44e7">稀疏与连续参数方法：角度网格从哪里来</a></li>
+<li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-66b28c2c82">学习式定位：输入特征、输出形式与泛化</a></li>
+<li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-60260ccada">任务和数据：不同届 DCASE 的输出不能混用</a></li>
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-4-7-1">4.7.1 近场模型失配：角度相同，距离仍会改变导向矢量</a></li>
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-4-7-2">4.7.2 可执行基线的输入契约、回退与外部实现边界</a></li>
 <li><a href="04_doa-estimation.html#sec-4-8">4.8 定位算法总对比</a></li>
@@ -167,7 +173,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>连续时间形式写成积分，见下文的快速实现公式。</p>
 <p>两边是同一个相关函数，只是计算路线不同。本文把 $\tau_{12}>0$ 定义为“信号到麦 1 比到麦 2 晚”，即 $x_1(t)=x_2(t-\tau_{12})$。在这个定义下，<code>ifft(X1·conj(X2))</code> 的峰位是 $+\tau_{12}$；若交换两路，峰位变成 $-\tau_{12}$。实现和论文若采用不同的信号次序或相关定义，符号也会随之改变。</p>
 </blockquote>
-<p><strong>频域实现：用一次 IFFT 计算整条相关曲线</strong>。两路信号为 $x_1,x_2$，$X_1(f)$、$X_2(f)$ 是它们在第 $f$ 个频点上的复数谱值，都是标量。运算顺序是先对 $X_2(f)$ 取共轭得到 $X_2^*(f)$，再与 $X_1(f)$ 逐频点相乘：</p>
+<p><strong>频域实现：用一次 IFFT 计算整条相关曲线</strong>。两路信号为 $x_1,x_2$，$X_1(f)$、$X_2(f)$ 是它们在物理频率 $f$（单位 Hz）处的复数谱值，都是标量。离散实现使用第 $k$ 个频点及对应频率 $f_k=kf_s/N$，不能把无量纲索引 $k$ 直接代入 $2\pi f\tau$。</p>
+<p>运算顺序是先对 $X_2(f)$ 取共轭得到 $X_2^*(f)$，再与 $X_1(f)$ 逐频点相乘：</p>
 <p>$$R_{x_1x_2}(\tau) = \int \Phi(f)\,X_1(f)X_2^*(f)\,e^{\mathrm{j}2\pi f\tau}df, \qquad \hat\tau = \arg\max_\tau R(\tau)\text{。}$$</p>
 <p>代码里就是 <code>ifft(Φ·X1·conj(X2))</code> 后找最大值索引。快速傅里叶变换（Fast Fourier Transform，FFT）负责计算整条相关曲线，$\arg\max$ 负责从曲线上读峰位，两者是前后两步。</p>
 <p>复杂度从 $O(N^2)$ 降到 $O(N\log N)$。实际加速比还取决于帧长、补零长度、FFT 库和硬件，不能只由渐近复杂度给出固定倍数。</p>
@@ -498,7 +505,8 @@ $$\frac{c\tau_{31}}{d}=\frac{0.0282975}{0.04}=0.7074\approx\frac{\sqrt2}{2}\quad
 <p>扫描类方法的分辨率受阵列孔径和频率限制。§4.6 的 MUSIC 与 ESPRIT 可在模型匹配时获得更窄的峰，但对源数、标定误差和相干源更敏感。</p>
 </blockquote>
 <span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-6">4.6 子空间类：MUSIC 与 ESPRIT</h2>
-<span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-442f837dd2">MUSIC（多重信号分类，Schmidt, 1986）</h3>
+<p>本节先在单个频点分别讲 MUSIC 的正交检验和 ESPRIT 的子阵移位关系，二者都需要源数、有效协方差和相应阵列条件。随后 §4.6.1 才讨论宽带语音怎样合并多个频点；宽带聚焦不能代替前两种窄带方法各自的输入检查。</p>
+<span id="sec-u-442f837dd2" class="anchor-alias" aria-hidden="true"></span><span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-5d3aebe0fb">窄带方法一：MUSIC（多重信号分类，Schmidt, 1986）</h3>
 <p><strong>思想三步</strong>：</p>
 <ol>
 <li>
@@ -587,7 +595,7 @@ $$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$<
 <p>本书把“NormMUSIC”限定为 pyroomacoustics 0.10.0 中 <code>frequency_normalization=True</code> 的实现口径：各频点伪谱先归一化，再沿频率轴平均。<a href="https://pyroomacoustics.readthedocs.io/en/pypi-release/pyroomacoustics.doa.normmusic.html" title="citation">pyroomacoustics 0.10.0 NormMUSIC 官方文档</a>。其他论文或软件的同名实现可能采用不同归一化，比较前应核对源码。频率归一化会削弱不同频点绝对峰高的差异，但也可能把纯噪声频点放大，因此仍需按信噪比或峰背比筛选频点。</p>
 <p><strong>宽带合并前的频点筛选</strong>：归一化伪谱接近平坦时，该频点提供的方向信息有限。可按信噪比、谱峰与背景之比或统计可靠度选择频点；门限应在目标数据集上验证，不能把某个经验值当作通用标准。</p>
 </blockquote>
-<span id="sec-10" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-8dda6571c9">ESPRIT（借助旋转不变技术估计信号参数，Estimation of Signal Parameters via Rotational Invariance Techniques）</h3>
+<span id="sec-u-8dda6571c9" class="anchor-alias" aria-hidden="true"></span><span id="sec-10" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-e9bdae6530">窄带方法二：ESPRIT（借助旋转不变技术估计信号参数，Estimation of Signal Parameters via Rotational Invariance Techniques）</h3>
 <p>先看单源情形：两个平移子阵接收的信号子空间只差一个由子阵位移决定的相位因子，求出该因子即可反演方向，不需要逐角度扫描。</p>
 <p>多源时，每个源对应 $\boldsymbol\Psi$ 的一个特征值。具体地，$\mathbf{E}_{s2} = \mathbf{E}_{s1}\boldsymbol\Psi$，其中 $\mathbf{E}_{s1}$、$\mathbf{E}_{s2}$ 是两个子阵的信号子空间，$\boldsymbol\Psi$ 是二者之间的旋转矩阵；其特征值相位由子阵位移和 DOA 决定。</p>
 <p>ESPRIT 的优点是免谱搜索。它仍需准确知道两子阵的相对位移与取向，并要求阵列具有平移不变结构。相干源需要先做去相关处理，宽带或球阵扩展也会受混响和模型误差影响。<a href="https://doi.org/10.1109/29.32276" title="citation">Roy 与 Kailath 的 ESPRIT 原始论文</a>。</p>
@@ -618,6 +626,8 @@ $$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$<
 <p>子空间法完成宽带扩展后，§4.7 转向稀疏重构与数据驱动定位。</p>
 </blockquote>
 <span id="sec-12" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-7">4.7 稀疏重构、学习式定位与实现边界</h2>
+<p>先看离散网格、连续参数和学习式定位分别改变了哪一步。随后 §4.7.1 检查这些方法也可能遇到的近场模型失配，§4.7.2 说明本书代码与外部实现的输入和验证边界。</p>
+<h3 id="sec-u-648f9c44e7">稀疏与连续参数方法：角度网格从哪里来</h3>
 <p><strong>稀疏重构</strong>：把角度网格化（$N_{\mathrm{grid}}\gg M$ 个候选方向），每个方向摆一个“模板”（导向矢量）。真实信号只来自其中少数几个方向，因此“用模板拼出观测数据”的系数向量是稀疏的，绝大多数位置为零。用 $\ell_1$ 正则或稀疏贝叶斯学习（SBL，sparse Bayesian learning，稀疏贝叶斯学习）估计少数非零位置，即得 DOA。</p>
 <p>不同算法不能共用“单快拍、超分辨、免源数估计”这一组无条件标签。例如 <a href="https://doi.org/10.1109/TSP.2005.850882" title="citation">L1-SVD 原论文</a>先用奇异值分解汇总多个时间或频率样本，再做稀疏重构；SBL 的输入统计量、超参数和选峰规则又不同。</p>
 <p>稀疏先验可在条件合适时产生窄于常规波束的峰，也可不显式预设源数，但结果仍受正则强度、信噪比、样本数和停止或选峰规则影响。共同代价是优化开销与离散网格失配。</p>
@@ -628,6 +638,7 @@ $$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$<
 <li><strong>原子范数</strong>（atomic norm）把连续频率或角度上的复指数导向矢量集合定义为“原子”，用这些原子的最小加权组合解释观测。对满足结构条件的线阵模型可转化为半定规划，定义与条件见 <a href="https://doi.org/10.1109/TIT.2013.2277451" title="citation">Tang 等 2013</a>及其阵列扩展 <a href="https://doi.org/10.1109/TSP.2015.2420541" title="citation">Yang 与 Xie 2015</a>。</li>
 </ul>
 <p>两类方法避免了预设角度网格的量化误差，但仍有阵列结构、最小间隔、样本数和噪声条件，计算量也通常高于固定网格扫描。实时性、精度和源数条件必须绑定到具体实现与数据，不能用统一的 1° 门限选择算法。</p>
+<h3 id="sec-u-66b28c2c82">学习式定位：输入特征、输出形式与泛化</h3>
 <p><strong>DNN 定位</strong>：网络用带方向标签的多通道数据学习噪声、混响与直达声线索之间的映射。训练规模、房间覆盖范围和阵列几何决定其泛化边界。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -678,6 +689,7 @@ $$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$<
 <p>该仓库采用 <a href="https://github.com/DavidDiazGuerra/icoDOA/blob/master/LICENSE" title="citation">AGPL-3.0</a>，并明确定位为论文复现代码而非通用软件库。本书将固定版本源码保留在独立的 <code>codes/upstream/_downloads/icodoa/</code> 研究目录，保留上游许可，不将其改标为本书教学代码的许可，也不把模型或录音授权与源码授权合并。许可证与环境信息核实于 2026-09-22，完整提交为 <code>04d1a89594c78ae3cf42f07d94c3737bdc1f7c82</code>；取得源码不代表本机已经完成训练或论文复现。</p>
 <p><strong>数据驱动结果的比较范围</strong>：定位网络必须在相同数据集、阵列、信噪比、混响、训练数据和误差指标下比较。上表只归纳输入与输出形式，不给出跨论文排名。使用时还需评估标注成本、跨房间泛化和模型复杂度。</p>
 <p>卷积空间谱定位可参见 Chakrabarty &amp; Habets <a href="https://doi.org/10.1109/JSTSP.2019.2901664" title="citation">期刊论文</a>；IPDnet 见 Wang、Yang 与 Li 的 <a href="https://doi.org/10.1109/TASLP.2024.3507560" title="citation">IEEE/ACM TASLP 2024 正式论文</a>；ACCDOA 见 <a href="https://doi.org/10.1109/ICASSP39728.2021.9413609" title="citation">Shimada et al., ICASSP 2021</a>。</p>
+<h3 id="sec-u-60260ccada">任务和数据：不同届 DCASE 的输出不能混用</h3>
 <p><strong>SELD（声事件定位与检测，sound event localization and detection）</strong>同时估计事件类别、方向和活动时段。STARSS23 是 DCASE 2023 Task 3 使用的带距离元数据示例；当届正式输出并未要求距离。任务定义、划分和指标应按<a href="https://dcase.community/challenge2023/task-sound-event-localization-and-detection-evaluated-in-real-spatial-sound-scenes">当届官方任务页</a>核对，不能把某一届设置外推为长期不变的“前沿”。</p>
 <p>这些方法的源码也应分别阅读。IPDnet 的作者实现位于 <code>Audio-WestlakeU/FN-SSL</code> 的 <code>IPDnet/</code>，固定与可变阵列网络分别在 <code>FixedAarryIPDnet.py</code>、<code>VariableArrayIPDnet.py</code>，训练入口是 <code>runIPDnetOn.py</code>/<code>runIPDnetOff.py</code>；先检查阵列、麦对顺序与相位标签，再读网络。<a href="https://github.com/Audio-WestlakeU/FN-SSL/tree/76fcb281be92caf068c712dfb015e354f437260f/IPDnet" title="citation">IPDnet 作者目录</a>。</p>
 <p>DCASE2022 基线则通过 <code>seldnet_model.py</code> 与 <code>cls_data_generator.py</code> 连接 multi-ACCDOA 输出和 ADPIT 训练标签，不能直接把模型轨号当作第 9 章的持久身份。<a href="https://github.com/sharathadavanne/seld-dcase2022" title="citation">DCASE2022 官方基线</a>。</p>
@@ -1195,7 +1207,7 @@ g_k&=\left(\prod_{i=k+1}^{M}\hat\lambda_i\right)^{1/(M-k)}。
 </li>
 </ol>
 <p>以下四题用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 复算。它们检查时延符号、统计秩、几何歧义和空间平滑，不把谱峰尖锐程度当作准确性的唯一依据。</p>
-<p>ESPRIT 最小二乘练习 E04-09 随推导放在 <a href="#sec-u-8dda6571c9">§4.6 的 ESPRIT 小节</a>；分辨率重复试验 E04-08 放在 <a href="#sec-4-8-1">§4.8.1</a>；MDL 练习 E04-05、E04-06 随完整算例放在 <a href="#sec-4-9">§4.9</a>；四麦音频练习 E04-07 放在 <a href="#sec-4-10">§4.10</a>。题号保持稳定，建议先读对应专题，再做本节综合练习。</p>
+<p>ESPRIT 最小二乘练习 E04-09 随推导放在 <a href="#sec-u-e9bdae6530">§4.6 的 ESPRIT 小节</a>；分辨率重复试验 E04-08 放在 <a href="#sec-4-8-1">§4.8.1</a>；MDL 练习 E04-05、E04-06 随完整算例放在 <a href="#sec-4-9">§4.9</a>；四麦音频练习 E04-07 放在 <a href="#sec-4-10">§4.10</a>。题号保持稳定，建议先读对应专题，再做本节综合练习。</p>
 <p><strong>E04-01：交换两段录音，延迟应怎样变化？</strong> 16 kHz 下，让麦 1 比麦 2 晚 3 点，零填充而不循环移动信号。对单脉冲和固定种子宽带噪声各算一次 GCC-PHAT，再交换两通道。静音输入应返回哪个方向？</p>
 <p><strong>参考答案</strong>：$\tau_{12}=3/16000=187.5$ μs，交换后为 −187.5 μs。两类输入都应得到 +3、−3 点；零能量输入没有可辨的相关峰，本书函数会明确报错，不能把首个搜索点当成方向。</p>
 <p>这个 3 点延迟至少对应 $343\times187.5\,\mu\mathrm{s}=6.43$ cm 的麦距，不能把它再代入 4 cm 双麦反算实数角度。本题隔离代码符号与零输入行为，不模拟混响或亚采样误差。</p>

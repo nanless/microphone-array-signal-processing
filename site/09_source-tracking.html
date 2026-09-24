@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 9 章 · 声源追踪 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="cb929281331d"><style>
+<meta name="source-digest" content="45eb4bf2e043"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -210,7 +210,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>逐项计算得到 $P_{11}=25\times4.35/29.35\approx3.705281$，$P_{12}=P_{21}=25\times0.25/29.35\approx0.212947$，$P_{22}=0.26-0.25^2/29.35\approx0.257871$；上面的矩阵最后才舍入到三位小数。若提前用 0.852 计算，$0.852\times4.35=3.7062$，会改变显示的末位，且两条路径计算的非对角项可能不再相等。</p>
 <p>角度方差从 4.35 降到 3.71（标准差约 1.93°）。在线性模型、协方差和卡尔曼增益满足本节条件时，观测更新降低或保持估计协方差；错误观测或错误噪声模型仍可能让真实误差增大。</p>
 <p>若下一帧说话人停顿没有观测，就只做第 1、2 步：本例角度方差再次增大，波束指向维持外推，这就是“静默保持”（§9.4）。</p>
-<p>算例 9-1说明了单步卡尔曼递推。下表比较常见单目标追踪方法的假设、计算量和适用条件。其中，α-β 滤波器所说的“免 Riccati 迭代”，是把第 2、3、5 步的不确定度递推（Riccati 方程）换成固定增益。</p>
+<p>算例 9-1说明了单步卡尔曼递推。下表比较常见单目标追踪方法的假设、计算量和适用条件。</p>
+<p>α-β / α-β-γ 滤波器采用固定更新增益，因而在线更新可以不反复求解 Riccati 递推。如果模型、采样周期和噪声统计恒定，且固定增益取为对应卡尔曼滤波的稳态增益，它可以等价于该模型下的稳态卡尔曼滤波。经验选取的固定增益则不保证这种最优性；模型或噪声条件变化时，固定增益也不会自行重新适配。α-β 的稳态关系见 <a href="https://doi.org/10.1155/2012/870890" title="citation">Ekstrand, <em>Some Aspects on Filter Design for Target Tracking</em>, §9.1</a>；α-β-γ 的增益稳定性和优化条件见 <a href="https://doi.org/10.9746/sicetr1965.38.361" title="citation">Kosuge 与 Ito, <em>Stability of an α-β-γ Filter and Optimal Gains</em>, 2002</a>。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
@@ -231,10 +232,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>α-β / α-β-γ</td>
-<td>稳态增益卡尔曼</td>
-<td>免 Riccati 迭代</td>
-<td>增益非最优</td>
-<td>嵌入式</td>
+<td>用固定增益修正位置、速度（及加速度）预测</td>
+<td>在线不必反复求 Riccati 递推</td>
+<td>经验增益未必最优；统计条件变化时不能自行适配</td>
+<td>采样周期和运动条件较稳定、资源受限的单目标追踪</td>
 </tr>
 <tr>
 <td><strong>卡尔曼滤波 KF</strong></td>
@@ -717,12 +718,14 @@ D_t(x)&=[1-p_D(x)]D_{t|t-1}(x)\\
 <p>这个定义来自 Schuhmacher、Vo 与 Vo 的 OSPA 原始论文（IEEE TSP 56(8), 2008, pp. 3447–3457，<a href="https://doi.org/10.1109/TSP.2008.920469" title="citation">DOI 10.1109/TSP.2008.920469</a>）。截断距离 $c$ 同时限制单个定位误差并设定漏检/虚警的惩罚尺度，因此比较系统时必须使用相同的 $p$、$c$、坐标和角度环绕约定。</p>
 <h2 id="sec-9-5">9.5 自由场移动声源的双麦音频与传播真值</h2>
 <p>前文的<a href="audio/tracking_pan.wav">声像移动试听</a><audio class="audio-sample" controls preload="none" aria-label="声像移动试听" src="audio/tracking_pan.wav">请使用上方 WAV 链接下载。</audio>只改变左右声道增益，不包含阵列传播时差。为让读者听到并复算真实传播<strong>模型</strong>下的两麦差异，本书另生成一组<a href="moving_audio/MANIFEST.json">独立的自由场合成样本</a>：<a href="moving_audio/source.wav">原始两音调源</a><audio class="audio-sample" controls preload="none" aria-label="原始两音调源" src="moving_audio/source.wav">请使用上方 WAV 链接下载。</audio>、<a href="moving_audio/static_array.wav">固定在起点的双麦输出</a><audio class="audio-sample" controls preload="none" aria-label="固定在起点的双麦输出" src="moving_audio/static_array.wav">请使用上方 WAV 链接下载。</audio>、<a href="moving_audio/moving_array.wav">沿直线运动的双麦输出</a><audio class="audio-sample" controls preload="none" aria-label="沿直线运动的双麦输出" src="moving_audio/moving_array.wav">请使用上方 WAV 链接下载。</audio>。它们是数学合成信号，不是真实语音、房间录音或 LOCATA 数据，也不计入主清单的 60 个 WAV。</p>
-<p>几何与时间口径固定如下：采样率 16 kHz，持续 2 s；两麦坐标分别为 $(-0.05,0)$ m、$(0.05,0)$ m。声源从 $(-0.8,1.5)$ m 出发，以 $(0.8,0)$ m/s 匀速运动，声速取 343 m/s。设发射时刻为 $u$，麦克风 $m$ 的接收时刻为 $t$，则本书求解</p>
+<p>几何与时间口径固定如下：采样率 16 kHz，持续 2 s；两麦坐标分别为 $(-0.05,0)$ m、$(0.05,0)$ m。声源从 $(-0.8,1.5)$ m 出发，以 $(0.8,0)$ m/s 匀速运动，声速取 343 m/s。</p>
+<p>设发射时刻为 $u$，麦克风 $m$ 的接收时刻为 $t$，则本书求解</p>
 <p>$$t=u+\frac{\|\vec p_0+\vec v u-\vec m_m\|}{c},\qquad
 x_m(t)=\frac{1\ \mathrm m}{\|\vec p_0+\vec v u-\vec m_m\|}\,s(u)\text{。}\tag{9-12}$$</p>
 <p>每个接收样本都在相应的迟滞发射时刻求源信号，并用距离倒数表示自由场声压衰减；$s(u)$ 是 220 Hz 和 320 Hz 两个正弦分量加 20 ms 平滑起始的确定性测试波形。这一模型自然包含因运动导致的传播时延变化。生成代码检验了方程残差，并对三份 WAV 采用同一个导出增益，没有逐文件峰值匹配。</p>
-<p>每 160 点保存一次轨迹真值。方位角从 $+y$ 轴向 $+x$ 轴为正，起点为约 $-28.07^\circ$，第 0.99 s 为约 $-0.31^\circ$，末段第 1.99 s 为约 $+27.83^\circ$。</p>
-<p>把同一发射时刻到麦 1、麦 0 的传播时间之差定义为有符号 TDOA，起点为约 $+0.0001372$ s（$+2.19$ 采样），末段为约 $-0.0001361$ s（$-2.18$ 采样）。左侧声源更靠近麦 0，因而麦 1 的到达更晚；穿过正前方后符号反转。</p>
+<p>每 160 点保存一次轨迹真值。方位角从 $+y$ 轴向 $+x$ 轴为正。起点横坐标为 $-0.8$ m，故 $\theta_0=\arctan(-0.8/1.5)\approx-28.07^\circ$。</p>
+<p>在 $u=0.99$ s，横坐标 $-0.8+0.8\times0.99=-0.008$ m，方位角约 $-0.31^\circ$；末段 $u=1.99$ s 的横坐标是 $0.792$ m，方位角约 $+27.83^\circ$。这些时刻属于保存的轨迹格点；声音到达麦克风的接收时刻还要加传播时延。</p>
+<p>把同一发射时刻到麦 1、麦 0 的传播时间之差定义为有符号 TDOA：$\tau_{1-0}(u)=[r_1(u)-r_0(u)]/343$，其中 $r_m$ 是声源到麦 $m$ 的距离。起点声源在左侧，更靠近麦 0，所以 $r_1-r_0>0$，麦 1 的到达更晚。按上述坐标代入距离公式，起点约为 $+0.0001372$ s，乘以 16000 后是 $+2.19$ 采样；末段声源已在右侧，约为 $-0.0001361$ s，即 $-2.18$ 采样。两侧符号相反，不能只报 TDOA 的绝对值。</p>
 <p>清单中的时间格点按声源轨迹的全局时钟取样；同一行 TDOA 比较的是该时刻发出的波到两麦的传播时间，并非两麦在同一采样索引处的波形峰差。逐帧值、坐标、统一增益及各文件摘要保存在清单中。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_moving_source.py">静止解析极限和符号测试</a>独立核对<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/moving_source_audio.py">生成器</a>。</p>
 <p>这里没有墙面反射、空气吸收、声源和麦克风指向性，也没有多人交叉或活动缺测。听到的音高、声像和电平变化不能直接当作某个 DOA 追踪器的准确率；若要评价追踪，还需对输出运行固定定位器，按相同时间戳比较逐帧误差和漏检，并另报波束控制滞后。真实移动录音可另按 <a href="https://www.locata.lms.tf.fau.de/tasks/" title="citation">LOCATA 官方任务说明</a>选择任务 3（静止阵列、单移动说话人），明确使用的录音和真值版本。</p>
 <span id="sec-u-f7a201edb9" class="anchor-alias" aria-hidden="true"></span><span id="sec-6" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-9-6">9.6 本章练习</h2>

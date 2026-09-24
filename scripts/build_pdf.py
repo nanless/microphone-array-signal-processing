@@ -99,7 +99,7 @@ CHAPTERS = [
 
 # 独立算法、工业实验与可直接练习的源 h4 纳入第三级导航。
 PDF_THIRD_LEVEL_FILES = {
-    "02_basics-signal-model.md", "03_array-geometry.md",
+    "01_problem-definition.md", "02_basics-signal-model.md", "03_array-geometry.md",
     "04_doa-estimation.md", "05_beamforming.md",
     "06_aec.md", "07_wpe-dereverberation.md", "08_speech-separation.md",
     "09_source-tracking.md", "10_engineering-practice.md",

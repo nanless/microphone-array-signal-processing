@@ -28,7 +28,7 @@ EDITING_MARKERS = re.compile(
 
 EXPECTED_SECTION_COUNTS = {
     "00_overview.md": 10,
-    "01_problem-definition.md": 5,
+    "01_problem-definition.md": 3,
     "02_basics-signal-model.md": 8,
     "03_array-geometry.md": 5,
     "04_doa-estimation.md": 11,
@@ -42,12 +42,13 @@ EXPECTED_SECTION_COUNTS = {
     "12_appendix-symbols-math.md": 4,
     "13_appendix-guide.md": 7,
 }
-# 第 2～6、8～13 章的源 h4 进入合订目录和 PDF 第三级书签。此表是独立发布
+# 第 1～6、8～13 章的源 h4 进入合订目录和 PDF 第三级书签。此表是独立发布
 # 基线，不从构建脚本或待检产物反推。
 EXPECTED_SUBSECTION_COUNTS = {
-    "02_basics-signal-model.md": 8,
-    "03_array-geometry.md": 9,
-    "04_doa-estimation.md": 8,
+    "01_problem-definition.md": 3,
+    "02_basics-signal-model.md": 16,
+    "03_array-geometry.md": 12,
+    "04_doa-estimation.md": 11,
     "05_beamforming.md": 7,
     "06_aec.md": 15,
     "08_speech-separation.md": 5,
@@ -75,11 +76,11 @@ EXPECTED_CHAPTERS = [
     ("13_appendix-guide.md", "附录 B · 路径地图与练习"),
 ]
 EXPECTED_CHAPTER_COUNT = 14
-EXPECTED_SECTION_COUNT = 121
-EXPECTED_SUBSECTION_COUNT = 104
-EXPECTED_OUTLINE_ITEM_COUNT = 239
+EXPECTED_SECTION_COUNT = 119
+EXPECTED_SUBSECTION_COUNT = 121
+EXPECTED_OUTLINE_ITEM_COUNT = 254
 EXPECTED_FIGURE_NUMBERS = set(range(1, 40))
-# 研究附站使用独立显式清单，不挤占 14 篇教程或 239 项 PDF 大纲基线。
+# 研究附站使用独立显式清单，不挤占 14 篇教程或 254 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
     ("README.md", "index.html"),
@@ -917,6 +918,12 @@ def pdf_page_is_empty(extracted_text: str, image_count: int) -> bool:
     return not extracted_text.strip() and image_count == 0
 
 
+def pdf_page_is_sparse(extracted_text: str, image_count: int, page_no: int) -> bool:
+    """Catch near-empty body pages left by a split closing paragraph or callout."""
+    visible = re.sub(r"\s+", "", extracted_text)
+    return page_no > 5 and image_count == 0 and 0 < len(visible) < 120
+
+
 def check_pdf(errors: list[str], notices: list[str]):
     path = DIST / "microphone-array-tutorial.pdf"
     if not path.exists():
@@ -959,6 +966,8 @@ def check_pdf(errors: list[str], notices: list[str]):
         extracted.append(page_text)
         if not page_text.strip() and pdf_page_is_empty(page_text, len(page.images)):
             fail(errors, f"PDF 第 {page_no} 页没有正文或图片；检查章末装饰线与强制分页")
+        if pdf_page_is_sparse(page_text, len(page.images), page_no):
+            fail(errors, f"PDF 第 {page_no} 页只有少量正文且无图片；检查孤立转场、末段与强制分页")
         for ref in page.get("/Annots", []):
             obj = ref.get_object()
             action = obj.get("/A")

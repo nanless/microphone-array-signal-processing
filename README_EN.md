@@ -34,7 +34,7 @@ The [source research handbook](codes/research/README.md) explains implementation
 | `codes/reports/` | Small-scale industrial-interface and spatial-algorithm run reports, separate from source acquisition and full paper benchmarks |
 | `scripts/` | Plotting and build scripts (`make_figures.py`, `make_aec_figures.py`, `build_site.py`, `build_pdf.py`; see `scripts/README.md`) |
 | `site/` | 20 pages: 14 tutorial pages (including the homepage) and 6 handbook pages under `research/`; reproducible build output |
-| `dist/` | Combined PDF (`microphone-array-tutorial.pdf`) and HTML; the PDF has 239 bookmarks: 14 top-level, 121 second-level and 104 third-level |
+| `dist/` | Combined PDF (`microphone-array-tutorial.pdf`) and HTML; the PDF has 254 bookmarks: 14 top-level, 119 second-level and 121 third-level |
 
 ## Chapters
 

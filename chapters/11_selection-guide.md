@@ -18,6 +18,8 @@
 | NS / VAD | 噪声抑制（Noise Suppression）/语音活动检测（Voice Activity Detection） |
 | RTF | 实时因子（Real-Time Factor） |
 | SRO | 采样率偏移（Sampling Rate Offset） |
+| CSS | 连续语音分离（Continuous Speech Separation）：连续输出少量语流，并处理跨块拼接 |
+| TSE | 目标说话人提取（Target Speaker Extraction）：按注册语音、视觉或方向条件提取指定目标 |
 
 各定位、波束和追踪算法的全称在首次出现处给出。
 
@@ -37,10 +39,16 @@
 
 ### 11.2 按条件选择模块
 
+先把表中常用方法名与任务对应起来：
+
+- 广义互相关相位变换（Generalized Cross-Correlation with Phase Transform，GCC-PHAT）从麦克风对估计相对时延；导向响应功率相位变换（Steered Response Power with Phase Transform，SRP-PHAT）在候选方向或位置上汇总多麦克风对的证据。
+- 多重信号分类（Multiple Signal Classification，MUSIC）用噪声子空间与候选方向导向矢量的正交关系搜索谱峰；旋转不变子空间法（Estimation of Signal Parameters via Rotational Invariance Techniques，ESPRIT）用信号子空间及平移不变子阵解算方向。两者都要检查源数、快拍数和阵列模型。
+- 最小方差无失真响应（Minimum Variance Distortionless Response，MVDR）在目标无失真约束下减小输出功率；线性约束最小方差（Linearly Constrained Minimum Variance，LCMV）可同时施加多条方向或响应约束。协方差估计和导向失配会影响两者。
+
 | 决策对象 | 适合先尝试的方案 | 何时换方案 | 同时检查的风险 |
 |---|---|---|---|
-| 单源 DOA | 广义互相关相位变换（Generalized Cross-Correlation with Phase Transform，GCC-PHAT）或导向响应功率相位变换（Steered Response Power with Phase Transform，SRP-PHAT）基线 | 需要更高分辨率且协方差条件满足时，评估多重信号分类（Multiple Signal Classification，MUSIC）或旋转不变子空间（Estimation of Signal Parameters via Rotational Invariance Techniques，ESPRIT）；复杂混响下可评估学习方法 | 阵列歧义、混响、宽带融合、虚警 |
-| 固定方向增强 | 延时求和或固定超指向（superdirective）波束 | 噪声场变化且统计量可估计时，评估最小方差无失真响应（Minimum Variance Distortionless Response，MVDR）或线性约束最小方差（Linearly Constrained Minimum Variance，LCMV）波束形成 | 白噪声增益、方向失配、标定 |
+| 单源 DOA | GCC-PHAT 或 SRP-PHAT 基线 | 需要更高分辨率且协方差条件满足时，评估 MUSIC 或 ESPRIT；复杂混响下可评估学习方法 | 阵列歧义、混响、宽带融合、虚警 |
+| 固定方向增强 | 延时求和或固定超指向（superdirective）波束 | 噪声场变化且统计量可估计时，评估 MVDR 或 LCMV 波束形成 | 白噪声增益、方向失配、标定 |
 | 自适应波束 | MVDR 或 LCMV 加稳健化 | 目标相对传递函数或导向矢量难以估计时，评估掩码辅助或联合模型 | 协方差秩、对角加载、目标泄漏 |
 | 晚期混响 | 先用关闭 WPE 的基线 | 晚期混响确实限制词错误率（Word Error Rate，WER）、可懂度或听感时启用 WPE | 预测延迟、阶数、直达声损伤 |
 | 本机回声 | 有播放泄漏时启用 AEC | 非线性扬声器、路径变化或多扬声器时增加相应建模 | 参考取点、整体延迟、双讲 |

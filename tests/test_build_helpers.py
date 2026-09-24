@@ -37,6 +37,12 @@ class BuildHelpersTest(unittest.TestCase):
         self.assertFalse(quality_check.pdf_page_is_empty('一行正文', 0))
         self.assertFalse(quality_check.pdf_page_is_empty('', 1))
 
+    def test_sparse_pdf_page_catches_orphan_without_flagging_figures(self):
+        self.assertTrue(quality_check.pdf_page_is_sparse('章末一句转场。', 0, 233))
+        self.assertFalse(quality_check.pdf_page_is_sparse('章末一句转场。', 1, 233))
+        self.assertFalse(quality_check.pdf_page_is_sparse('章末一句转场。', 0, 3))
+        self.assertFalse(quality_check.pdf_page_is_sparse('正文' * 60, 0, 233))
+
     def test_book_end_stays_with_final_paragraph(self):
         html = '<p>前段</p>\n<p>最后一段。</p>\n<hr />\n'
         result = build_pdf.append_book_end(html)
@@ -122,6 +128,9 @@ class BuildHelpersTest(unittest.TestCase):
             '<div class="chap" id="ch-1"><h1>问题定义</h1>'
             '<h2 id="ch-1-sec-1-1">双耳</h2>'
             '<h3 id="ch-1-sec-u-b">局部说明</h3></div>'
+            '<div class="chap" id="ch-7"><h1>去混响</h1>'
+            '<h2 id="ch-7-sec-7-1">模型</h2>'
+            '<h3 id="ch-7-sec-u-d">局部说明</h3></div>'
             '<div class="chap" id="ch-10"><h1>工程</h1>'
             '<h2 id="ch-10-sec-10-1">采样时钟</h2>'
             '<h3 id="ch-10-sec-u-c">漂移实验</h3></div></body>'
@@ -130,7 +139,8 @@ class BuildHelpersTest(unittest.TestCase):
             build_pdf.outline_from_html(html),
             [
                 ("AEC", "ch-6", [("问题", "ch-6-sec-6-1", [("FDKF", "ch-6-sec-u-a")])]),
-                ("问题定义", "ch-1", [("双耳", "ch-1-sec-1-1", [])]),
+                ("问题定义", "ch-1", [("双耳", "ch-1-sec-1-1", [("局部说明", "ch-1-sec-u-b")])]),
+                ("去混响", "ch-7", [("模型", "ch-7-sec-7-1", [("局部说明", "ch-7-sec-u-d")])]),
                 ("工程", "ch-10", [("采样时钟", "ch-10-sec-10-1", [("漂移实验", "ch-10-sec-u-c")])]),
             ],
         )

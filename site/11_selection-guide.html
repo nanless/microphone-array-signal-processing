@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 11 章 · 总结与选型指南 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="cb929281331d"><style>
+<meta name="source-digest" content="45eb4bf2e043"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -145,6 +145,14 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>SRO</td>
 <td>采样率偏移（Sampling Rate Offset）</td>
 </tr>
+<tr>
+<td>CSS</td>
+<td>连续语音分离（Continuous Speech Separation）：连续输出少量语流，并处理跨块拼接</td>
+</tr>
+<tr>
+<td>TSE</td>
+<td>目标说话人提取（Target Speaker Extraction）：按注册语音、视觉或方向条件提取指定目标</td>
+</tr>
 </tbody>
 </table></div>
 <p>各定位、波束和追踪算法的全称在首次出现处给出。</p>
@@ -170,6 +178,12 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </li>
 </ol>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-11-2">11.2 按条件选择模块</h2>
+<p>先把表中常用方法名与任务对应起来：</p>
+<ul>
+<li>广义互相关相位变换（Generalized Cross-Correlation with Phase Transform，GCC-PHAT）从麦克风对估计相对时延；导向响应功率相位变换（Steered Response Power with Phase Transform，SRP-PHAT）在候选方向或位置上汇总多麦克风对的证据。</li>
+<li>多重信号分类（Multiple Signal Classification，MUSIC）用噪声子空间与候选方向导向矢量的正交关系搜索谱峰；旋转不变子空间法（Estimation of Signal Parameters via Rotational Invariance Techniques，ESPRIT）用信号子空间及平移不变子阵解算方向。两者都要检查源数、快拍数和阵列模型。</li>
+<li>最小方差无失真响应（Minimum Variance Distortionless Response，MVDR）在目标无失真约束下减小输出功率；线性约束最小方差（Linearly Constrained Minimum Variance，LCMV）可同时施加多条方向或响应约束。协方差估计和导向失配会影响两者。</li>
+</ul>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
 <tr>
@@ -182,14 +196,14 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <tbody>
 <tr>
 <td>单源 DOA</td>
-<td>广义互相关相位变换（Generalized Cross-Correlation with Phase Transform，GCC-PHAT）或导向响应功率相位变换（Steered Response Power with Phase Transform，SRP-PHAT）基线</td>
-<td>需要更高分辨率且协方差条件满足时，评估多重信号分类（Multiple Signal Classification，MUSIC）或旋转不变子空间（Estimation of Signal Parameters via Rotational Invariance Techniques，ESPRIT）；复杂混响下可评估学习方法</td>
+<td>GCC-PHAT 或 SRP-PHAT 基线</td>
+<td>需要更高分辨率且协方差条件满足时，评估 MUSIC 或 ESPRIT；复杂混响下可评估学习方法</td>
 <td>阵列歧义、混响、宽带融合、虚警</td>
 </tr>
 <tr>
 <td>固定方向增强</td>
 <td>延时求和或固定超指向（superdirective）波束</td>
-<td>噪声场变化且统计量可估计时，评估最小方差无失真响应（Minimum Variance Distortionless Response，MVDR）或线性约束最小方差（Linearly Constrained Minimum Variance，LCMV）波束形成</td>
+<td>噪声场变化且统计量可估计时，评估 MVDR 或 LCMV 波束形成</td>
 <td>白噪声增益、方向失配、标定</td>
 </tr>
 <tr>

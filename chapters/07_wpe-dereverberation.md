@@ -168,17 +168,17 @@ $$E=(1.0-0.31)+(0.5-0.22)\mathrm{j}=0.69+0.28\mathrm{j}。$$
 
 **交替估计 $G$ 与 $\lambda$（Nakatani et al., 2010）**。假设早期成分 $E$ 服从零均值复高斯分布，方差 $\lambda(n,f)$ 随时间变化；这里的 $\lambda$ 表示第 $n$ 帧的功率谱。时变方差使不同能量的语音帧获得不同权重，减少高能量帧对估计的支配。下面在固定频点 $f$ 上写出从最大似然到加权最小二乘的推导。[Nakatani et al., IEEE TASLP 2010](https://doi.org/10.1109/TASL.2010.2052251 "citation")
 
-**中间行 1——写出似然**：各帧独立，观测 $X(n)$ 在给定 $G$、$\lambda(n)$ 下服从均值为预测值 $\sum_k G^*(k)X(n-k)$、方差为 $\lambda(n)$ 的复高斯，总似然是各帧密度连乘：
+**中间行 1——写出条件似然**：当前帧的预测值使用过去帧，因此这里不能把整段观测直接说成无条件独立。固定起始历史帧，只对历史窗完整的有效帧 $n\in\mathcal V$ 计算：给定历史回归向量 $\vec x(n)$、$G$ 和 $\lambda(n)$，把创新 $E(n)=X(n)-\sum_kG^*(k)X(n-k)$ 建模为零均值、方差为 $\lambda(n)$ 的复高斯。再假定这些创新在给定历史时按时间条件独立，链式法则给出有效帧的条件似然：
 
-$$p(X\mid G,\lambda)=\prod_n \frac{1}{\pi\lambda(n)}\exp\!\left(-\frac{|X(n)-\sum_k G^*(k)X(n-k)|^2}{\lambda(n)}\right)$$。
+$$p\bigl(X_{\mathcal V}\mid X_{\mathrm{history}},G,\lambda\bigr)=\prod_{n\in\mathcal V} \frac{1}{\pi\lambda(n)}\exp\!\left(-\frac{|X(n)-\sum_k G^*(k)X(n-k)|^2}{\lambda(n)}\right)$$。
 
 **中间行 2——取负对数**：最大化似然等价于最小化负对数似然。去掉与 $G$ 无关的常数后，权重 $1/\lambda(n)$ 直接来自高斯密度指数项的分母：
 
-$$-\log p = \sum_n \frac{|X(n)-\sum_k G^*(k)X(n-k)|^2}{\lambda(n)} + \sum_n\log\lambda(n) + \mathrm{const}$$。
+$$-\log p = \sum_{n\in\mathcal V} \frac{|X(n)-\sum_k G^*(k)X(n-k)|^2}{\lambda(n)} + \sum_{n\in\mathcal V}\log\lambda(n) + \mathrm{const}$$。
 
 固定 $\lambda$ 时第二项是常数，最小化第一项就是**加权最小二乘**。用后文的历史向量 $\vec x(n)$ 和系数向量 $\vec g$ 可写成
 
-$$\hat{\vec g}=\arg\min_{\vec g}\sum_n\frac{|X(n)-\vec g^H\vec x(n)|^2}{\lambda(n)}\text{。}\tag{7-2}$$
+$$\hat{\vec g}=\arg\min_{\vec g}\sum_{n\in\mathcal V}\frac{|X(n)-\vec g^H\vec x(n)|^2}{\lambda(n)}\text{。}\tag{7-2}$$
 
 **中间行 3——对 $G$ 求导得正规方程**：把历史帧排成向量 $\vec{x}(n)=[X(n-\Delta),\dots,X(n-\Delta-K+1)]^\top$，记 $\vec{g}=[G(\Delta),\dots,G(\Delta+K-1)]^\top$。求和式可写成 $E(n)=X(n)-\vec{g}^H\vec{x}(n)$，其中上标 $H$ 表示共轭转置。
 
@@ -288,6 +288,10 @@ $$R_t=\alpha R_{t-1}+x_t^2/\lambda_t,\qquad r_t=\alpha r_{t-1}+x_tX_t/\lambda_t,
 3. 第 3 次更新（$t=5$）：$R_5=0.5\times4.5+1=3.25$，$r_5=0.5\times3.6+1=2.8$，$g_5\approx0.8615$。
 
 流式输出应先用上一帧已有的 $g_{t-1}$ 预测当前拖尾，再用当前 $(x_t,X_t)$ 更新出 $g_t$ 供下一帧使用；初始化阶段可旁路。
+
+按此顺序，第一个有效帧 $t=3$ 尚无估计器，旁路输出 $E_3=X_3=0.8$；更新后 $g_3=0.8$。第 $t=4$ 帧先输出 $E_4=X_4-g_3x_4=1.6-0.8\times2=0$，随后得到 $g_4=0.8$。第 $t=5$ 帧先输出 $E_5=X_5-g_4x_5=1.0-0.8\times1=0.2$，再更新到 $g_5\approx0.8615$。
+
+若反过来使用当帧刚算出的 $g_t$ 评分，会把当前观测同时用于拟合和输出，便不是这里定义的先输出、后更新流程。
 
 这个例子只演示因果统计量顺序，不包含交替更新的功率估计。$\lambda_t$ 也必须只用当前与历史信息，不能沿用图21的居中平滑。
 

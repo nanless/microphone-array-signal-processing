@@ -227,7 +227,11 @@ dB 练习：① 功率先乘 4 再乘 2，总增益是多少 dB？② 电压增�
 
 卷积 $y=x*h$ 表示信号 $x$ 经过线性时不变系统 $h$ 后的输出；在固定声源和接收位置的近似下，$h$ 可以取房间脉冲响应（§2.4）。
 
+对离散时间序列，$y[n]=\sum_k h[k]x[n-k]$。先选定输出时刻 $n$，再把各个过去输入 $x[n-k]$ 乘上对应路径系数 $h[k]$ 并相加；附录练习 E12-01 用两个抽头逐项计算。
+
 相关 $R(\tau)$ 衡量两段信号在相对位移 $\tau$ 下的相似度；峰值位置可作为时延候选（§4.2）。
+
+对于实值录音，本书的时延次序是 $R_{12}[\tau]=\sum_n x_1[n]x_2[n-\tau]$。第一路比第二路晚到时，峰在正 $\tau$；交换两个通道，峰位的符号随之交换。频域相关式须对第二路的复谱取共轭，不能只凭“相关”一词猜测符号。
 
 傅里叶变换把线性卷积转成频域乘法，配合快速傅里叶变换可降低长卷积的计算量，但分帧、补零和重叠相加仍要按实现条件处理。
 
@@ -243,7 +247,9 @@ dB 练习：① 功率先乘 4 再乘 2，总增益是多少 dB？② 电压增�
 
 $$\min_{\vec{x}}\|\mathbf{A}\vec{x}-\vec{b}\|^2\text{。}$$
 
-当 $\mathbf A$ 满列秩时，$\hat{\vec{x}}=(\mathbf{A}^H\mathbf{A})^{-1}\mathbf{A}^H\vec{b}$。这是闭式表达式，不是要求程序显式求逆；即使满列秩，形成 $\mathbf A^H\mathbf A$ 也会把二范数条件数平方，因而 QR/SVD 通常更适合作为数值求解入口。
+把残差平方展开为 $(\mathbf A\vec x-\vec b)^H(\mathbf A\vec x-\vec b)$，对 $\vec x^*$ 求驻点得到正规方程 $\mathbf A^H\mathbf A\hat{\vec x}=\mathbf A^H\vec b$。当 $\mathbf A$ 满列秩时，$\hat{\vec{x}}=(\mathbf{A}^H\mathbf{A})^{-1}\mathbf{A}^H\vec{b}$。
+
+这是闭式表达式，不是要求程序显式求逆；即使满列秩，形成 $\mathbf A^H\mathbf A$ 也会把二范数条件数平方，因而 QR/SVD 通常更适合作为数值求解入口。
 
 秩不足时最小二乘解可能不唯一，Moore–Penrose 伪逆给出其中范数最小的一解。`numpy.linalg.lstsq` 同时返回秩与奇异值，便于检查可辨识性；不能只看到残差很小就认定参数唯一。[NumPy 最小二乘接口说明](https://numpy.org/doc/stable/reference/generated/numpy.linalg.lstsq.html "citation")。12.4 的 E12-03 给出两列完全相关的例子。
 
@@ -259,7 +265,9 @@ $$L=\vec{w}^H\mathbf{R}\vec{w}+2\operatorname{Re}\!\left\{\lambda^*(\vec{w}^H\ve
 
 **第 3 步：写出比例关系。** 乘子的命名可吸收共轭与负号，因此得到 $\vec w\propto\mathbf R^{-1}\vec a$。
 
-**第 4 步：代回约束。** 用 $\vec w^H\vec a=1$ 定出比例系数，即得 §5.4 式(5-3)。LCMV 把标量约束和乘子换成向量形式（§5.5）。
+**第 4 步：代回约束。** 写 $\vec w=\kappa\mathbf R^{-1}\vec a$，则 $\vec w^H\vec a=\kappa^*\vec a^H\mathbf R^{-1}\vec a=1$。若 $\mathbf R$ 厄米正定，分母 $q=\vec a^H\mathbf R^{-1}\vec a$ 是正实数，所以 $\kappa=1/q$，得到 $\vec w=\mathbf R^{-1}\vec a/(\vec a^H\mathbf R^{-1}\vec a)$，即 §5.4 式(5-3)。
+
+若协方差奇异，不能直接使用这一逆矩阵形式；需另行处理秩或加载。LCMV 把标量约束和乘子换成向量形式（§5.5）。
 
 **Wirtinger 求导。** 对实值目标函数，可在 Wirtinger 微积分中把 $\vec{w}$ 和 $\vec{w}^*$ 视为形式上独立的变量，对 $\vec{w}^*$ 求偏导并令其为零。§5.4 给出了与实部、虚部分别求导等价的完整推导。
 
@@ -339,7 +347,6 @@ $$
 PHAT 的运算对象却是**一个频点的一对通道的互功率谱**：当 $G_{12}(f)\ne0$ 时，$G_{12}(f)/|G_{12}(f)|$ 是一个模为 1 的复数，不会把两路快拍分别乘上 $1/2$ 和 $1$。例如两路确定的复频谱值为 $X_1=2$、$X_2=1$ 时，互谱为 2，PHAT 后为 1，但这不是把噪声协方差变成单位阵。
 
 本题两路噪声互不相关，理论噪声互功率谱为 0；此时 PHAT 还须跳过或保护分母，更不能从零互谱推得 $\mathbf W$。这反驳了“PHAT 等于空间白化”的说法，但不否定 PHAT 在时延估计中抑制源谱幅度影响的用途。复算入口为 [`exercises_engineering.py`](../codes/examples/exercises_engineering.py) 的 `E12-04`。
-
 
 ---
 

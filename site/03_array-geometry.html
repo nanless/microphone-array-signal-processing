@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 3 章 · 阵列几何形态 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="cb929281331d"><style>
+<meta name="source-digest" content="45eb4bf2e043"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -61,6 +61,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-1d1a0d7440">算例 3-1 双麦耳机的差分——1 cm 间距怎么做心形指向</a></li>
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-83d5019885">算例 3-2 端射灵敏度——同一个 10 μs 误差在不同方向的影响</a></li>
 <li><a href="03_array-geometry.html#sec-3-2">3.2 四条设计规律</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-3-2-1">3.2.1 先看孔径、方向、挡板和麦数</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-3-2-2">3.2.2 算例 3-3：6 麦圆环的数字</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-3-2-3">3.2.3 算例 3-4：ULA 主瓣宽度计算</a></li>
 <li><a href="03_array-geometry.html#sec-3-3">3.3 稀疏阵列与差分协同阵</a></li>
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-3-3-1">3.3.1 协同阵的概念：从麦的位置到麦对的间距</a></li>
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-3-3-2">3.3.2 物理协方差怎样给出虚拟滞后</a></li>
@@ -90,6 +93,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-1d1a0d7440">算例 3-1 双麦耳机的差分——1 cm 间距怎么做心形指向</a></li>
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-83d5019885">算例 3-2 端射灵敏度——同一个 10 μs 误差在不同方向的影响</a></li>
 <li><a href="03_array-geometry.html#sec-3-2">3.2 四条设计规律</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-3-2-1">3.2.1 先看孔径、方向、挡板和麦数</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-3-2-2">3.2.2 算例 3-3：6 麦圆环的数字</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-3-2-3">3.2.3 算例 3-4：ULA 主瓣宽度计算</a></li>
 <li><a href="03_array-geometry.html#sec-3-3">3.3 稀疏阵列与差分协同阵</a></li>
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-3-3-1">3.3.1 协同阵的概念：从麦的位置到麦对的间距</a></li>
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-3-3-2">3.3.2 物理协方差怎样给出虚拟滞后</a></li>
@@ -212,13 +218,15 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>误差约 19.4°。微分式在足够小的误差下仍说明灵敏度按 $1/\cos\theta$ 增大，但不能把 85° 处的 10 μs 线性外推成 56° 并当作精确误差。实际可用角域由允许误差、信噪比、快拍数和几何共同决定，不存在统一的“端点扣掉 30°”规则。</p>
 <p>端射方向的非线性算例说明，阵列灵敏度随入射角变化。下面把几何设计中最常用的四条规律集中列出。</p>
 <span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-3-2">3.2 四条设计规律</h2>
+<p>以下四条是筛选阵列形态时的检查顺序，不是四种互不相关的性能分数。先看孔径与频带，再看方向覆盖、壳体影响和麦数带来的收益；两道算例随后展示数量级与近似边界。</p>
+<h3 id="sec-3-2-1">3.2.1 先看孔径、方向、挡板和麦数</h3>
 <ol>
 <li><strong>常规波束的分辨率尺度由孔径与波长之比决定</strong>（约 $\lambda/D$）：7 cm 级圆阵在 1 kHz 的这个尺度已经超过线阵的整个可视角域，方向选择性很弱；到 4 kHz 才进入几十度量级（见算例 3-3）。高频虽然能提供更大的电尺寸，却也更容易遇到空间混叠、传播衰减和阵列失配。设计时必须把这些因素一起考虑。</li>
 <li><strong>圆阵与线阵各有适用方向</strong>：线阵在正横附近投影孔径最大，转向端射时灵敏度下降；圆阵在水平面各方位的几何更均衡。球阵还可提供俯仰信息。哪一种识别率更高，取决于尺寸、挡板、房间、算法和评测方向分布，不能只按阵形下结论。<a href="https://course.ece.cmu.edu/~ece792/handouts/KumataniEtAl12.pdf" title="citation">Kumatani–McDonough–Raj《Microphone Array Processing for Distant Speech Recognition》CMU 课程讲义，2012</a></li>
 <li><strong>挡板效应必须纳入导向模型</strong>：麦克风装在刚性圆柱或球体上时，绕射和散射会改变跨通道的幅相响应。某些频段和方向上，它能增加可辨的幅相差；另一些位置也可能出现阴影或共振。因此应使用相应的解析散射模型或实测阵列流形，不能把挡板一概等效为固定倍数的“虚拟孔径”。</li>
 <li><strong>麦克风数量没有通用最优值</strong>：增加麦克风通常能提高统计稳定性和可控自由度，但收益取决于是否同时增加孔径、噪声相关性、带宽、算法和计算预算。对独立等功率自噪声，理想 DSB 的 WNG 为 $10\log_{10}M$，麦数翻倍增加约 3 dB；这只是特定噪声模型下的基准，不能单独决定产品所需的麦克风数量。</li>
 </ol>
-<p><strong>算例 3-3：6 麦圆环的数字</strong></p>
+<h3 id="sec-3-2-2">3.2.2 算例 3-3：6 麦圆环的数字</h3>
 <p>考虑一个用于教学的 6 麦均匀圆环，环径取 7.5 cm，即半径 $r = 3.75$ cm。这个尺寸只用于展示计算方法，不对应某一款产品；声速取 $c = 343$ m/s。</p>
 <p><strong>第 1 步：相邻麦距</strong>。6 个麦均匀分布在圆周上，相邻两麦的连线是正六边形的一条边。相邻麦距</p>
 <p>$$d = 2r\sin\frac{\pi}{6} = 2\times0.0375\times0.5 = 0.0375\ \text{m} = 3.75\ \text{cm}$$</p>
@@ -238,7 +246,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>4 kHz：$\lambda/D \approx 1.14$ rad $\approx 66°$，对应主瓣宽度量级 $\approx 0.886\lambda/D \approx 58°$（借用线阵公式估量级，圆阵精确系数不同）——进入「几十度」的量级，总算能分出「大概在哪一边」。</li>
 </ul>
 <p><strong>结论</strong>：4 kHz 时阵列的电尺寸接近 1，常规波束已可能呈现几十度量级的方向选择性；1 kHz 时电尺寸只有约 0.22，常规波束很宽。子空间估计或学习方法能在合适条件下利用微弱的跨通道差异，但不会凭空增加观测信息；低信噪比、强混响或模型失配时，低频方向仍难估。</p>
-<p><strong>算例 3-4：ULA 主瓣宽度计算</strong></p>
+<h3 id="sec-3-2-3">3.2.3 算例 3-4：ULA 主瓣宽度计算</h3>
 <p>取一条 4 麦 ULA（等间距直线排列的阵列），间距 $d = 3$ cm，指向正横。首末阵元的物理跨度为 $(M-1)d=9$ cm；§2.6 从离散阵因子推得的窄主瓣近似则是</p>
 <p>$$\mathrm{HPBW} \approx \frac{0.886\,\lambda}{Md}\ \text{rad}$$</p>
 <p>这里的 $Md=12$ cm 来自 Dirichlet 核的近似尺度，不等于物理跨度。对小阵列要保留这个区别；该式是式(2-3)在正横方向 $\cos\theta_0=1$ 的形式。</p>

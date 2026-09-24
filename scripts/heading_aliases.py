@@ -15,6 +15,10 @@ HISTORICAL_SEQUENTIAL_IDS = json.loads(
 )
 
 HISTORICAL_SECTION_IDS = {
+    "04_doa-estimation.md": {
+        "sec-u-442f837dd2": "sec-u-5d3aebe0fb",  # MUSIC 旧标题
+        "sec-u-8dda6571c9": "sec-u-e9bdae6530",  # ESPRIT 旧标题
+    },
     "03_array-geometry.md": {
         "sec-u-5834a7d67e": "sec-3-3-1",
         "sec-u-20a0d88f74": "sec-3-3-2",

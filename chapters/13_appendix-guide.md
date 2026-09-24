@@ -11,11 +11,17 @@
 下面的阅读与实验顺序从经典模型开始，再过渡到公开基线、数据集和硬件实验。
 
 1. **基础阅读**：Van Veen & Buckley, *Beamforming: A Versatile Approach to Spatial Filtering*（IEEE ASSP Mag. 1988）；Krim & Viberg, *Two Decades of Array Signal Processing*（IEEE SPM 1996）。
-2. **语音场景**：Kumatani et al., *Microphone Array Processing for Distant Speech Recognition*；Gannot et al., *A Consolidated Perspective on Multimicrophone Speech Enhancement and Source Separation*（IEEE/ACM TASLP 2017）。
+2. **语音场景**：Kumatani、McDonough 与 Raj, [*Microphone Array Processing for Distant Speech Recognition: From Close-Talking Microphones to Far-Field Sensors*](https://doi.org/10.1109/MSP.2012.2205285)（*IEEE Signal Processing Magazine* 29(6):127–140，2012）；Gannot et al., *A Consolidated Perspective on Multimicrophone Speech Enhancement and Source Separation*（IEEE/ACM TASLP 2017）。Kumatani 等另有题名前半段相同的 *Towards Real-World Deployment*，查找时不能省略副标题。
 3. **原始论文**：Capon（1969）、Griffiths & Jim GSC（1982，*An Alternative Approach to Linearly Constrained Adaptive Beamforming*, IEEE Trans. Antennas Propag. 30(1):27–34）、Schmidt MUSIC（1986）、Roy & Kailath ESPRIT（1989）、Allen & Berkley 镜像法（1979）、Nakatani et al. WPE（IEEE TASLP 2010）、Pal & Vaidyanathan 嵌套阵（IEEE TSP 2010）。
 4. **回声消除**：Hänsler & Schmidt, *Acoustic Echo and Noise Control*（Wiley 2004）；近年进展看 ICASSP AEC Challenge 系列报告。
-5. **DNN 方向**：Chakrabarty & Habets（IEEE JSTSP 2019）、Gu et al. 全神经波束形成（IEEE/ACM TASLP, vol.31, pp.849–862, DOI 10.1109/TASLP.2022.3229261）。
-6. **实验顺序**：先运行 `codes/` 中只依赖 NumPy 的教学实现，核对手算、数组维度和边界；再用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线；运行 `scripts/` 中的两个绘图脚本，复现 39 张图；随后选择与研究任务匹配的公开数据和固定版本参考系统；最后在可用的多通道硬件上验证实时性、同步和标定。数据集、框架和硬件只是候选工具，应根据任务与许可证选择。
+5. **DNN 方向**：Chakrabarty 与 Habets, [*Multi-Speaker DOA Estimation Using Deep Convolutional Networks Trained With Noise Signals*](https://doi.org/10.1109/JSTSP.2019.2901664)（*IEEE JSTSP* 13(1):8–21，2019）；Gu et al. 全神经波束形成（IEEE/ACM TASLP, vol.31, pp.849–862, DOI 10.1109/TASLP.2022.3229261）。
+6. **实验顺序**：每一步增加一种新的验证条件，前一步的可复算结果应留作后一步的对照。
+
+    1. 运行 `codes/` 中只依赖 NumPy 的教学实现，核对手算结果、数组维度和退化边界。
+    2. 在隔离环境中用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线，记录房间、阵列和随机种子。
+    3. 运行 `scripts/` 中的两个绘图脚本，按当前参数复现 39 张编号图，并逐图核对正文条件。
+    4. 按研究任务选择公开数据和固定版本参考系统，分别核对代码、模型与数据的许可和评测口径。
+    5. 在可用的多通道硬件上测实时性、同步和标定；仿真结果不能代替设备测量。
 
 ### 13.2 领域地图：教材、会议、期刊与挑战赛
 
@@ -187,13 +193,36 @@ VarArray 把 TAC、Conformer 分离和通道间相位差特征用于几何无关
 | $\lvert B(\theta)\rvert = \left\lvert\frac{\sin(M\psi/2)}{M\sin(\psi/2)}\right\rvert$ | 等权 ULA 的归一化阵因子，$\psi=2\pi d(\sin\theta-\sin\theta_0)/\lambda$ | §5.2 |
 | $\vec{w}_{SD}=\dfrac{\mathbf{\Gamma}^{-1}\vec{a}}{\vec{a}^H\mathbf{\Gamma}^{-1}\vec{a}}$ | 超指向：在无失真约束下最小化弥散噪声输出 | §5.3 |
 | $\vec{w}_{MVDR} = \mathbf{R}_{nn}^{-1}\vec{a}/(\vec{a}^H\mathbf{R}_{nn}^{-1}\vec{a})$ | 最小方差无失真 | §5.4 |
-| $\vec{w}_{LCMV}=\mathbf{R}^{-1}\mathbf{C}(\mathbf{C}^H\mathbf{R}^{-1}\mathbf{C})^{-1}\vec{f}$ | 多约束最小方差解 | §5.5 |
-| $\vec{w}_{SDW} = (\mathbf{R}_{ss}{+}\mu\mathbf{R}_{nn})^{-1}\mathbf{R}_{ss}\vec{e}_r$ | 失真可调维纳滤波 | §5.5 |
+| LCMV 权重，见式(5-4) | 多约束最小方差解；完整表达式和符号在表后单列 | §5.5 |
+| SDW-MWF 权重，见式(5-5) | 失真可调维纳滤波；完整表达式和符号在表后单列 | §5.5 |
 | $e=d-y$ | GSC 中固定波束输出 $d$ 减去自适应抵消输出 $y$；在阻塞矩阵理想、支路自由度足够且优化收敛时与相应 LCMV 等价 | §5.6 |
 | NLMS 更新式 | AEC 自适应滤波 | §6.1 |
 | $\mathrm{ERLE}=10\log_{10}\dfrac{\sum_n|y(n)|^2}{\sum_n|e_{\mathrm{echo}}(n)|^2}$ | 同一远端单讲窗口内的回声返回损失增强；$y=x*h$ 为消除前回声，$e_{\mathrm{echo}}$ 为消除后回声分量 | §6.1 |
-| $X(n,f)=E(n,f)+\sum_{k=\Delta}^{\Delta+K-1}G^*(k,f)X(n-k,f)$ | 单通道记法下的 WPE 预测模型；多通道时 $G$ 与历史观测为向量 | §7.1 |
+| WPE 预测模型，见式(7-1) | 当前观测分成预测残响和早期成分；完整表达式在表后单列 | §7.1 |
 | KF 五步 | 预测-更新-增益循环；圆周角新息先做 wrap，浮点实现可用 Joseph 协方差更新 | §9.2 |
+
+表中三个较长的表达式单独列出，以便在网页和 A4 页面上读清上下标。这里沿用对应章节的定义与成立条件，没有重新给公式编号。
+
+**LCMV 权重，见式(5-4)**：$\mathbf R$ 为用于最小化输出功率的协方差矩阵；$\mathbf C$ 的列是各约束导向向量，$\vec f$ 给出对应响应。若所需逆矩阵不存在，须回到 §5.5 检查约束是否独立及正则化条件。
+
+$$
+\vec w_{LCMV}
+=\mathbf R^{-1}\mathbf C
+\left(\mathbf C^H\mathbf R^{-1}\mathbf C\right)^{-1}\vec f .
+$$
+
+**SDW-MWF 权重，见式(5-5)**：$\mathbf R_{ss}$、$\mathbf R_{nn}$ 分别是目标与噪声协方差矩阵，$\vec e_r$ 选出参考麦；$\mu>0$ 调节噪声惩罚与目标失真。它不是一般条件下的 MVDR 解，具体目标函数和秩一特例见 §5.5。
+
+$$
+\vec w_{SDW}
+=\left(\mathbf R_{ss}+\mu\mathbf R_{nn}\right)^{-1}\mathbf R_{ss}\vec e_r .
+$$
+
+**WPE 预测模型，见式(7-1)**：$X(n,f)$ 是当前帧第 $f$ 个频点的观测；$G^*(k,f)X(n-k,f)$ 用过去帧预测晚期混响，$E(n,f)$ 是保留的早期成分。$\Delta$ 为预测延迟，$K$ 为抽头数；多通道时系数和历史观测改为向量，见 §7.1。
+
+$$
+X(n,f)=E(n,f)+\sum_{k=\Delta}^{\Delta+K-1}G^*(k,f)X(n-k,f) .
+$$
 
 **PHD 预测，见式(9-9)**：新生目标强度加存活目标的状态转移。
 
@@ -429,7 +458,7 @@ D_t&=(1-p_D)D^-\\
 
 ### 13.7 复现说明
 
-下面先运行代码基线的单元测试和第 10 章示例，再重新生成全部 39 张图：
+先运行代码基线的单元测试和第 10 章示例，核对确定性输出：
 
 ```bash
 .venv/bin/python -m unittest tests.test_codes_engineering -v
@@ -439,7 +468,7 @@ D_t&=(1-p_D)D^-\\
 
 第 10 章示例使用确定性输入，覆盖 SRO 直线拟合与线性重采样、VAD 迟滞与 hangover、峰值保护 AGC、固定容量环形缓冲、deadline/队列模拟和 Q1.15 饱和量化。线性重采样、Python 环形缓冲和调度模拟都是教学基线，不应替换带抗混叠滤波的流式重采样器、无锁实时队列或目标系统测量。
 
-继续做设备实验时，可按[工业实现研究](../codes/research/03_industrial_deployment.md)选择 21 项中的一个主题：采集与路由、连续重采样、VAD/AGC/NS、DSP 固件、模型运行时或评分。先固定源码提交，再记录依赖、编译、模型、声学输入和故障状态；“已下载”只能说明源码在本机，不能代替“已编译、已运行、已测量”。
+继续做设备实验时，可按[工业实现研究](../codes/research/03_industrial_deployment.md)的 I01～I27 选择一个主题，例如采集与路由、连续重采样、VAD/AGC/NS、DSP 固件、模型运行时或评分。先固定源码提交，再记录依赖、编译、模型、声学输入和故障状态；“已下载”只能说明源码在本机，不能代替“已编译、已运行、已测量”。
 
 会议识别复现还要固定数据准备与文本规范化。CHiME-8 的官方 `chime-utils` 提供 SegLST 转写格式、该届规范化及 cpWER/tcpWER 评分；其中缺失场景的忽略选项会改变实际计分范围。应保留每个场景的输入文件数、失败数和最终参与评分的清单，并先用正确转写、说话人交换、漏词和时间戳偏移的小夹具检查评分口径。[CHiME-8 官方评分实现](https://github.com/chimechallenge/chime-utils/tree/152882404f572d40769ef02bf91c5a9a9cfc9c78 "citation")
 
@@ -457,8 +486,6 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`，其余不变�
 
 代码基线只依赖 `numpy`；绘图脚本依赖 `numpy` 和 `matplotlib`，并使用固定随机种子，因此相同环境和参数下应得到相同结果。每个脚本生成哪些图、练习需要哪些扩展依赖，见 `scripts/README.md`；代码覆盖范围、上游来源和许可证见 `codes/README.md`、`codes/COVERAGE.md` 与 `codes/SOURCES.lock.json`。
 
-正文中引用的定量结果应追溯到相应论文、标准或本仓库脚本，并同时记录数据、通道、参数和指标口径。不同实验条件下的数值不直接排名。
-
 ---
 
-> 📄 本篇信息：配图 1 张（图35） ｜ [回首页](./00_overview.md)
+> 📄 本篇信息：编号图 1 张（图35），另有房间题结果图 ｜ [回首页](./00_overview.md)
