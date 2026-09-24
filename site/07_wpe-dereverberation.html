@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 7 章 · 去混响（WPE） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="28a7db6b0401"><style>
+<meta name="source-digest" content="3c17a2f82b74"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -254,8 +254,8 @@ $$</p>
 <li>达到预设迭代次数，或目标函数相对变化低于预先声明的阈值时停止。报告结果时同时给出迭代次数/停止阈值、功率下限、平滑方式和 $\epsilon$。</li>
 </ol>
 <p>边界检查包括：$K=0$ 时输出应退化为输入；全零频点不应求逆；把输入整体乘以常数时，采用上述相对加载的滤波器形状不应因绝对幅度而改变。</p>
-<p><strong>算例 7-3：加权最小二乘求解器的手算（单抽头 $K=1$、3 帧）</strong></p>
-<p>取单频点、$K=1$，只估计一个抽头 $g=G(\Delta)$。3 帧观测为 $X=[1.0,\ 0.6,\ 0.2]$，历史样本为 $x=[0.8,\ 0.5,\ 0.4]$，权重 $w(n)=1/\lambda(n)=[1,\ 4,\ 1]$。</p>
+<p><strong>算例 7-3：加权最小二乘求解器的手算（单抽头 $K=1$、3 个有效帧）</strong></p>
+<p>取单频点、$K=1$、保护延迟 $\Delta=3$，只估计一个抽头 $g=G(3)$。从零开始计帧，完整六帧观测依次为 $X(0{:}5)=[0.8,\ 0.5,\ 0.4,\ 1.0,\ 0.6,\ 0.2]$。最早有效帧是 $n=3$；在 $n=3,4,5$，当前观测 $X(n)=[1.0,\ 0.6,\ 0.2]$，历史样本 $x(n)=X(n-3)=[0.8,\ 0.5,\ 0.4]$，权重 $w(n)=1/\lambda(n)=[1,\ 4,\ 1]$。前三帧只提供历史，不进入本例的三个正规方程求和项。</p>
 <p>为简化运算，本例使用实数。要求闭式解 $\hat g$。</p>
 <p>标量正规方程为 $R\,g=r$，其中 $R=\sum w x^2$、$r=\sum w x X$。代入可得</p>
 <p>$$R=1\times0.64+4\times0.25+1\times0.16=1.80，$$</p>
@@ -358,7 +358,10 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 <p>原始 WPD 工作见 Nakatani 与 Kinoshita 2019，后续因式分解工作说明了它与 WPE、波束形成的关系。<a href="https://arxiv.org/abs/1908.02710" title="citation">Nakatani &amp; Kinoshita, EUSIPCO 2019</a>、<a href="https://doi.org/10.1109/ICASSP40776.2020.9054393" title="citation">Boeddeker et al., ICASSP 2020</a></p>
 <p><strong>可执行 WPE 基线。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/dereverberation.py"><code>codes/array_tutorial/dereverberation.py</code></a> 提供只依赖 NumPy 的最小离线 WPE。<code>offline_wpe()</code> 接收复数 STFT，单通道轴序为 <code>(频点, 帧)</code>，多通道轴序为 <code>(频点, 通道, 帧)</code>，输出保持相同形状；它实现保护延迟、按滞后堆叠多通道历史、共享功率权重、相对对角加载和复共轭预测。计算前逐频点以共同幅度归一化各通道和各帧，输出再恢复原幅度，以免极小或极大但有限的输入在平方时下溢或上溢。</p>
 <p><code>taps=0</code>、迭代次数为零、记录短于首个有效回归帧或整个频点为零时直接旁路。输入各维不能为空、数值必须有限；阶数、延迟和迭代次数必须为整数，功率下限必须是有限正数。输入必须是复谱，不能把幅度谱传入后再补相位。</p>
-<p>联合示例用 <code>.venv/bin/python -m codes.examples.ch06_09_baselines</code> 运行，边界测试见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_wpe_sep_track.py"><code>tests/test_codes_aec_wpe_sep_track.py</code></a>。测试固定检查 $K=0$、短输入、全零频点、单抽头复共轭方向、多通道形状和整体幅度缩放等变性。实际音频管线还要自行固定 STFT 的窗、帧移、<code>center</code>/补零约定与 ISTFT 长度，并测试短语音、静音权重、病态矩阵、通道交换及块边界。求解失败时应增加加载、降低 $K$ 或旁路该频点，不能输出 NaN。</p>
+<p>默认调用仍只返回谱数组。设 <code>return_diagnostics=True</code> 时另返回逐频点诊断：加载后正规矩阵在各轮中的最小数值秩、最大条件数、进入最小范数最小二乘回退的次数，以及未求解时的旁路原因。数值秩依赖浮点精度和矩阵尺度，不是语音质量或混响强度评分。当前基线在 <code>np.linalg.solve</code> 抛出奇异矩阵错误后用 <code>np.linalg.lstsq</code> 求最小范数解；它不会自行增加加载、减小 $K$ 或根据音质旁路。调用方应检查诊断和参考信号，在需要时调整加载、阶数或旁路策略；求得有限残差不等于保住了直达声。</p>
+<p><strong>可预测目标的反例</strong>：取一个频点、单通道六帧全为 $1+0j$，设 $K=2$、$\Delta=1$、迭代一次、对角加载为零。有效帧 $n=2,3,4,5$ 的历史向量全为 $[1,1]^\top$，所以 $\mathbf R=4\begin{bmatrix}1&1\\1&1\end{bmatrix}$、$\vec r=[4,4]^\top$；$\mathbf R$ 的秩为 1。最小范数解 $\vec g=[1/2,1/2]^\top$ 把这些帧预测为 1，残差为零（双精度实现中约在 $10^{-16}$ 量级）。前两帧因缺少完整历史而原样保留。</p>
+<p>该输入没有给出晚期混响真值，却会使可预测的目标分量几乎消失，故不能把残差小解读为去混响成功。若为改善数值条件而加对角加载，也仍须检查目标失真；正则化不能单独证明模型的声学假设成立。</p>
+<p>联合示例用 <code>.venv/bin/python -m codes.examples.ch06_09_baselines</code> 运行，边界测试见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_wpe_sep_track.py"><code>tests/test_codes_aec_wpe_sep_track.py</code></a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_wpe_mask_diagnostics.py"><code>tests/test_codes_wpe_mask_diagnostics.py</code></a>。测试固定检查 $K=0$、短输入、全零频点、单抽头复共轭方向、多通道形状、整体幅度缩放等变性、秩亏诊断与非零微小掩码。实际音频管线还要自行固定 STFT 的窗、帧移、<code>center</code>/补零约定与 ISTFT 长度，并测试短语音、静音权重、病态矩阵、通道交换及块边界。</p>
 <p>该基线是整段离线估计，不宣称因果或实时。离线、在线、学习功率与联合滤波的源代码入口分别如下，完整读码顺序和失效实验见 <a href="research/02_aec_wpe_separation.html#wpe">WPE 源码研究</a>。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>

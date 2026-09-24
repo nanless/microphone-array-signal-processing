@@ -4,9 +4,9 @@
 
 正文提供关键公式推导、可复算例子、适用边界、39 张脚本生成的图，以及与各章公式对应的 NumPy/标准库教学代码。
 
-全书有 85 道可运行代码练习和 13 组、共 55 个合成音频文件；输入、答案与试听条件见[练习与音频实验](codes/research/05_exercises_and_audio.md)。第 6 章 E06-07～20 是模型与边界手算，另有两组**参数不完全相同**的 AEC 合成音频；不能用音频替代题目真值。这 55 个音频不是自然语音或正式听测数据。
+全书有 88 道可运行代码练习和 14 组、共 60 个合成音频文件；输入、答案与试听条件见[练习与音频实验](codes/research/05_exercises_and_audio.md)。第 6 章 E06-07～20 是模型与边界手算，另有两组**参数不完全相同**的 AEC 合成音频；不能用音频替代题目真值。这 60 个音频不是自然语音或正式听测数据。
 
-附录 B 另有[六位置房间题](chapters/13_appendix-guide.md)的 18 个白噪声合成 WAV 和一张实算结果图，保存在独立的 [room_audio 清单](codes/room_audio/MANIFEST.json)下；它们不计入上面的 55 个音频。
+附录 B 另有[六位置房间题](chapters/13_appendix-guide.md)的 18 个白噪声合成 WAV 和一张实算结果图，保存在独立的 [room_audio 清单](codes/room_audio/MANIFEST.json)下；它们不计入上面的 60 个音频。
 
 另有 DEMAND 河流场景的真实 16 通道录音摘录及 3 个派生 WAV，共 4 个文件，独立标注 CC BY-SA 3.0 数据许可；实验只分析噪声功率与通道相关性。
 
@@ -27,13 +27,13 @@ English version: [README_EN.md](./README_EN.md)
 | `chapters/` | 教程正文 14 篇 Markdown（`00_overview.md` 是入口，`01`～`11` 是 11 章正文，`12`/`13` 是附录 A/B） |
 | `figures/` | 39 张插图（`fig01`～`fig39_*.png`），全部由脚本生成、可复现 |
 | `codes/` | 教学算法、章节例子、工业实现小工具、第三方官方源码索引与精确版本锁定；覆盖表见 `codes/COVERAGE.md` |
-| `codes/audio/` | 13 组、55 个本书合成的 WAV 及参数、摘要清单，由脚本生成，不直接编辑 |
+| `codes/audio/` | 14 组、60 个本书合成的 WAV 及参数、摘要清单，由脚本生成，不直接编辑 |
 | `codes/real_audio/` | DEMAND 真实同步录音摘录、派生均值、独立清单与数据许可；不是合成数据 |
 | `codes/research/` | 详细源码研究手册：算法步骤、状态与配置、代码入口、失败实验和工业复现 |
 | `codes/reports/` | 工业接口与空间算法的小规模运行报告；与源码获取状态、论文全量评测分开 |
 | `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
 | `site/` | 20 个网页：14 个教程页（含首页）及 `research/` 下 6 个研究手册页；构建产物，可再生 |
-| `dist/` | 合订 PDF（`microphone-array-tutorial.pdf`）与合订 HTML；PDF 含 14 个顶级、86 个二级、50 个三级书签，共 150 个 |
+| `dist/` | 合订 PDF（`microphone-array-tutorial.pdf`）与合订 HTML；PDF 含 14 个顶级、86 个二级、51 个三级书签，共 151 个 |
 
 ## 章节导览
 
@@ -72,7 +72,7 @@ python3 -m venv .venv
 .venv/bin/python -m codes.examples.exercises_engineering
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 
-# 3. 先生成 55 个音频，再生成 39 张图（图 34～36 读取生成的音频）
+# 3. 先生成 60 个音频，再生成 39 张图（图 34～36 读取生成的音频）
 .venv/bin/python codes/examples/generate_audio_samples.py
 .venv/bin/python scripts/make_figures.py
 .venv/bin/python scripts/make_aec_figures.py

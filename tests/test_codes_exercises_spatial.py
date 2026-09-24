@@ -17,12 +17,12 @@ class SpatialExerciseTest(unittest.TestCase):
     def setUpClass(cls):
         cls.results = run_exercises()
 
-    def test_registry_has_twenty_seven_finite_json_results(self):
+    def test_registry_has_twenty_eight_finite_json_results(self):
         expected = {"E01-01", "E01-02", "E02-01", "E02-02", "E02-03", "E03-01",
                     "E03-02", "E04-01", "E04-02", "E04-03", "E05-01", "E05-02",
                     "E01-03", "E02-04", "E02-05", "E03-03", "E03-04", "E04-04",
                     "E05-03", "E05-04", "E04-05", "E02-06", "E03-05", "E03-06",
-                    "E04-06", "E04-07", "E05-05"}
+                    "E04-06", "E04-07", "E04-09", "E05-05"}
         self.assertEqual(set(self.results), expected)
         json.dumps(self.results, allow_nan=False)
 
@@ -118,6 +118,25 @@ class SpatialExerciseTest(unittest.TestCase):
         expected = abs(math.sin(2*phase) / (4*math.sin(phase/2)))
         self.assertAlmostEqual(row["ideal_unaligned_amplitude"], expected, places=13)
         self.assertAlmostEqual(row["ideal_aligned_amplitude"], 1., places=13)
+
+    def test_esprit_least_squares_hand_matrix_and_perturbation(self):
+        cases = self.results["E04-09"]["subspace_cases"]
+        ideal, perturbed = cases
+        self.assertEqual([row["label"] for row in cases], ["ideal", "perturbed"])
+        self.assertEqual([row["first_conjugate_norm"] for row in cases], [2., 2.])
+        np.testing.assert_allclose(
+            [[row["first_conjugate_second_real"], row["first_conjugate_second_imag"]]
+             for row in cases], [[0., 2.], [.1, 1.9]], atol=1e-15)
+        np.testing.assert_allclose(
+            [[row["rotation_real"], row["rotation_imag"]] for row in cases],
+            [[0., 1.], [.05, .95]], atol=1e-15)
+        self.assertAlmostEqual(ideal["residual_norm"], 0.)
+        self.assertAlmostEqual(perturbed["residual_norm"], .1)
+        self.assertAlmostEqual(ideal["angle_deg"], 30.)
+        expected_angle = math.degrees(math.asin(math.atan2(.95, .05) / math.pi))
+        self.assertAlmostEqual(perturbed["angle_deg"], expected_angle)
+        for row in cases:
+            self.assertAlmostEqual(row["api_angle_deg"], row["angle_deg"])
 
     def test_coherent_rank_preserves_physical_source_count(self):
         row = self.results["E04-02"]

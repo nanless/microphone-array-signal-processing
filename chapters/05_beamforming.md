@@ -708,11 +708,13 @@ $$p(\kappa,\Omega) = \sum_{n=0}^{N}\sum_{m=-n}^{n} b_n(\kappa r)\,Y_n^m(\Omega)\
 1. **掩码到空间协方差矩阵（Spatial Covariance Matrix，SCM）**：
 
     $$\begin{aligned}
-    \hat{\mathbf R}_{ss}(k)&=\frac{\sum_n m_s(k,n)\vec x(k,n)\vec x^H(k,n)}{\sum_n m_s(k,n)+\epsilon},\\
-    \hat{\mathbf R}_{nn}(k)&=\frac{\sum_n m_n(k,n)\vec x(k,n)\vec x^H(k,n)}{\sum_n m_n(k,n)+\epsilon}。
+    \hat{\mathbf R}_{ss}(k)&=\frac{\sum_n m_s(k,n)\vec x(k,n)\vec x^H(k,n)}{\max\{\sum_n m_s(k,n),\epsilon\}},\\
+    \hat{\mathbf R}_{nn}(k)&=\frac{\sum_n m_n(k,n)\vec x(k,n)\vec x^H(k,n)}{\max\{\sum_n m_n(k,n),\epsilon\}}。
     \end{aligned}$$
 
-    分母做掩码权重归一化；$\epsilon$ 只保护数值，不能使零掩码拥有统计依据。本书代码会拒绝权重和过小的频点，调用方须选择保持权重或其他明确回退。协方差是否使用未来帧决定这一步能否在线运行。
+    分母做掩码权重归一化；$\epsilon$ 只保护数值，不能使零掩码拥有统计依据。直接调用本书的 `masked_spatial_covariance()` 时，掩码和低于 $\epsilon$ 会使协方差随掩码整体缩小。两麦 `mask_mvdr_2x2()` 则先在每个频点分别用目标和干扰掩码的最大值归一化，再估计协方差；因此统一缩小非零掩码不会触发绝对权重和阈值。
+
+    掩码全零或统计量、求解不可用时，该函数回退到参考麦；它不检查原始掩码的置信程度。实际系统若要拒绝低可信度频点，须在归一化前定义有效支持量与阈值，并规定保持已验证权重或旁路等策略。协方差是否使用未来帧决定这一步能否在线运行。
 
 2. **SCM 到约束向量或广义特征向量**：在秩一目标近似下，可取 $\hat{\mathbf R}_{ss}$ 的主特征向量并按参考麦归一化，得到相对传递函数 $\hat{\vec a}$。MVDR 再用式(5-3)求权重。另一条路线直接解
 
@@ -727,6 +729,8 @@ $$p(\kappa,\Omega) = \sum_{n=0}^{N}\sum_{m=-n}^{n} b_n(\kappa r)\,Y_n^m(\Omega)\
 可直接验证 $\vec w^H\hat{\vec a}=1$，输出噪声功率为 $\vec w^H\hat{\mathbf R}_{nn}\vec w=2/3$。
 
 若目标掩码把干扰大量计入 $\hat{\mathbf R}_{ss}$，RTF 会偏移，上述无失真条件只对错误的 $\hat{\vec a}$ 成立。
+
+**掩码尺度与空掩码的边界例子**：取四帧两麦复谱 $\vec x_1=\vec x_2=[1,1]^\top$、$\vec x_3=\vec x_4=[1,-1]^\top$，目标掩码为 $[1,1,0,0]$，干扰掩码为 $[0,0,1,1]$。目标方向 $[1,1]^\top$ 与干扰方向 $[1,-1]^\top$ 正交；采用默认正对角加载 $10^{-6}$ 的两麦基线得到 $\vec w=[1/2,1/2]^\top$，输出为 $[1,1,0,0]$。把非零目标掩码的 1 全部改成 $10^{-300}$，峰值归一化后权重和输出不变；把目标掩码改成全零，则退回参考麦，输出变成 $[1,1,1,1]$。这是本书代码的确定性算例，不表明极小网络概率具有可信统计量；两组掩码只由两帧构成，也不能推断真实语音分离性能。
 
 端到端网络也可以直接估计复数权重、时域滤波器或输出波形。它不再自动满足无失真、WNG 或因果约束，必须把阵列泛化、前瞻帧数、目标失真和目标硬件上的资源消耗列入评测。若与 ASR 联合训练，还应固定后端识别器和评分脚本，同时报告前端信号指标与词错误率（Word Error Rate，WER）。[Gu et al., IEEE/ACM TASLP 2023](https://doi.org/10.1109/TASLP.2022.3229261 "citation")
 

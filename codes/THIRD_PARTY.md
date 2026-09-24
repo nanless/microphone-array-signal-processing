@@ -1,6 +1,6 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 73 个上游项目；已在 `codes/upstream/_downloads/` 取得 65 个独立源码工作区，其中 pyaec 与 PFDKF 于 2026-09-24 按固定提交新增稀疏源码和许可文件。本轮离线核验 64 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 8 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 73 个上游项目；已在 `codes/upstream/_downloads/` 取得 66 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。本轮离线核验 65 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 7 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”只说明来源、提交、工作区状态和指定入口符合清单，不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -79,7 +79,7 @@ SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构�
 | [nkf_aec](https://github.com/fjiang9/NKF-AEC/tree/8ac58fb8fb9ced48579f9aa310745c54f98d7e1f) | 神经 Kalman AEC 作者研究代码 | NOASSERTION | 仅来源索引 |
 | [pyaec](https://github.com/ewan-xu/pyaec/tree/5b9c02c57075d790b7df8652884618189d49bbc4) | 时域 RLS、Kalman 与频域 FDKF/PFDKF 的教学代码；不含完整产品前端 | Apache-2.0；演示音频另核 | 已取得稀疏源码及许可，未运行 |
 | [echocatzh/PFDKF](https://github.com/echocatzh/PFDKF/tree/7c8c86b5691966c330015d8e0960db0733b4844f) | 分块频域 Kalman 演示；默认输出含残余处理，并非单独的线性误差 | MIT；演示音频另核 | 已取得稀疏源码及许可，未运行 |
-| [Subband_Kalman_AEC](https://github.com/changxuding/Subband_Kalman_AEC/tree/f0c4f7030769d94dea2da3c814837448f171d422) | MATLAB 子带 Kalman、平方根及信息形式；部分默认输出含非线性后处理 | MIT 代码；附带录音许可另核 | 仅来源索引，未运行 |
+| [Subband_Kalman_AEC](https://github.com/changxuding/Subband_Kalman_AEC/tree/f0c4f7030769d94dea2da3c814837448f171d422) | MATLAB 子带 Kalman、平方根及信息形式；部分默认输出含非线性后处理 | MIT 代码；附带录音许可另核 | 已取得指定 `.m` 源码、README 和许可，未取得音频或 `.mat`，未运行 |
 | [bssaec2020](https://github.com/nay0648/bssaec2020/tree/a3f52249ee61f19e2369823f65c6c31392dcf042) | 作者 MATLAB Aux-ICA/加权 RLS 仿真；不是完整工业 C++ 实现 | 未发现明确再分发许可；附带音频与 PESQ 文件另核 | 仅来源索引，不下载、不再分发 |
 | [fn-ssl-ipdnet](https://github.com/Audio-WestlakeU/FN-SSL/tree/76fcb281be92caf068c712dfb015e354f437260f) | 直接路径 IPD 估计与定位 | MIT stated in README; complete license text and third-party notices not established | 仅来源索引 |
 | [dcase2022-seld](https://github.com/sharathadavanne/seld-dcase2022/tree/c8adb1d3a5a35de2d6c7b6d19e01ad455eef3986) | multi-ACCDOA、ADPIT 与 SELD | No explicit redistribution license established from inspected official tree and source header | 仅来源索引 |

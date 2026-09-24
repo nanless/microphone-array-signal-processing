@@ -225,7 +225,7 @@ $$\mathrm{HPBW} \approx \frac{0.886\times0.0429}{0.12} \approx 0.317\ \text{rad}
 
 **1. 增益相位自校准的思想**。把每只麦的响应误差写成一个复数：增益误差是幅度缩放，相位误差是额外旋转，合起来第 $m$ 路的实际增益是 $(1+\Delta g_m)e^{\mathrm{j}\Delta\phi_m}$，理想值是 1。
 
-导向矢量 $\vec{a}(\theta)$ 的每个分量都会乘上这个误差，因此 MUSIC 谱峰会变宽或偏移，波束零陷也会变浅。麦克风阵列实测校准的一个原始例子见 [Sachar、Silverman 与 Patterson 2004](https://doi.org/10.1109/TSA.2004.834459 "citation")。
+导向矢量 $\vec{a}(\theta)$ 的每个分量都会乘上这个误差，因此 MUSIC 谱峰会变宽或偏移，波束零陷也会变浅。麦克风阵列实测校准的一个原始例子见 [Sachar、Silverman 与 Patterson 2005，IEEE Transactions on Speech and Audio Processing，13(1):42–52](https://doi.org/10.1109/TSA.2004.834459 "citation")。
 
 自校准可以不用已知方向的专用声源。常见做法是交替估计：先固定通道误差估方向，再固定方向估各麦的复增益，循环到目标函数收敛。
 

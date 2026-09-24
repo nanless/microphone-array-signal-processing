@@ -15,7 +15,7 @@ class EngineeringExerciseTests(unittest.TestCase):
     def test_ids_and_strict_json(self):
         expected = {f"E10-{i:02}" for i in range(1, 13)}
         expected |= {f"E11-{i:02}" for i in range(1, 5)}
-        expected |= {"E12-01", "E12-02", "E12-03", "E13-01"}
+        expected |= {"E12-01", "E12-02", "E12-03", "E12-04", "E13-01"}
         self.assertEqual(set(self.results), expected)
         json.dumps(self.results, allow_nan=False)
 
@@ -72,6 +72,17 @@ class EngineeringExerciseTests(unittest.TestCase):
         np.testing.assert_allclose(result["common_peaks"], [.8, .4])
         self.assertAlmostEqual(result["amplitude_difference_db"], 6.020599913279624)
         self.assertEqual(result["separately_normalized_difference"], 0.)
+
+    def test_spatial_whitening_is_not_scalar_phat(self):
+        row = self.results["E12-04"]
+        np.testing.assert_allclose(row["noise_covariance"], [[4., 0.], [0., 1.]])
+        np.testing.assert_allclose(row["whitening_matrix"], [[.5, 0.], [0., 1.]])
+        np.testing.assert_allclose(row["whitened_covariance"], np.eye(2))
+        np.testing.assert_allclose(row["whitened_steering"], [.5, 1.])
+        np.testing.assert_allclose(row["raw_eigenvalues"], [1., 4.])
+        np.testing.assert_allclose(row["whitened_eigenvalues"], [1., 1.])
+        self.assertEqual(row["one_nonzero_cross_spectrum_phat"], 1.)
+        self.assertEqual(row["theoretical_noise_cross_spectrum"], 0.)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 3 章 · 阵列几何形态 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="28a7db6b0401"><style>
+<meta name="source-digest" content="3c17a2f82b74"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -280,7 +280,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>前面的理想公式假设各通道增益和相位一致、阵元位置准确，并忽略壳体散射、声学耦合和电串扰。实际偏差会使导向模型与观测不匹配。本节把常见偏差写进模型，再说明怎样测量和补偿。</p>
 <span id="sec-11" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-3-4-1">3.4.1 增益相位自校准：利用未知声源的多位置观测</h3>
 <p><strong>1. 增益相位自校准的思想</strong>。把每只麦的响应误差写成一个复数：增益误差是幅度缩放，相位误差是额外旋转，合起来第 $m$ 路的实际增益是 $(1+\Delta g_m)e^{\mathrm{j}\Delta\phi_m}$，理想值是 1。</p>
-<p>导向矢量 $\vec{a}(\theta)$ 的每个分量都会乘上这个误差，因此 MUSIC 谱峰会变宽或偏移，波束零陷也会变浅。麦克风阵列实测校准的一个原始例子见 <a href="https://doi.org/10.1109/TSA.2004.834459" title="citation">Sachar、Silverman 与 Patterson 2004</a>。</p>
+<p>导向矢量 $\vec{a}(\theta)$ 的每个分量都会乘上这个误差，因此 MUSIC 谱峰会变宽或偏移，波束零陷也会变浅。麦克风阵列实测校准的一个原始例子见 <a href="https://doi.org/10.1109/TSA.2004.834459" title="citation">Sachar、Silverman 与 Patterson 2005，IEEE Transactions on Speech and Audio Processing，13(1):42–52</a>。</p>
 <p>自校准可以不用已知方向的专用声源。常见做法是交替估计：先固定通道误差估方向，再固定方向估各麦的复增益，循环到目标函数收敛。</p>
 <p>这种方法依赖可辨识条件。若只有一个固定方向，声源相位、传播相位和麦克风相位误差可能互相混淆；加入多个充分分散的方向、频点或几何约束后，才有机会分离这些未知量。具体需要多少方向取决于模型参数和约束，不能用一条固定数字概括。</p>
 <p>复增益标定处理单通道幅相偏差；跨通道电串扰可在一定线性近似下写成频率相关混合矩阵，壳体散射则通常还随入射方向变化。</p>

@@ -18,6 +18,7 @@ from .aec_kalman_matrix import KalmanAECState
 from .aec_subband import haar_synthesize, two_tap_subband_outputs
 from .dereverberation import offline_wpe
 from .geometry import plane_wave_delays
+from .noise_suppression import power_spectral_subtraction
 from .spectral import stft, istft
 
 SAMPLE_RATE = 16000
@@ -195,6 +196,28 @@ def build_cases() -> dict:
         np.interp(t - (arrivals[0] - arrival), t, channel, left=0., right=0.)
         for arrival, channel in zip(arrivals, fractional_array)
     ]), axis=0)
+    subtraction_rng = np.random.default_rng(SEED + 5)
+    subtraction_clean = target.copy()
+    noise_only_samples = 6400
+    subtraction_clean[:noise_only_samples] = 0.
+    subtraction_clean[noise_only_samples:noise_only_samples + 320] *= (
+        np.sin(np.linspace(0., np.pi / 2, 320, endpoint=False)) ** 2
+    )
+    subtraction_noise = .07 * subtraction_rng.standard_normal(t.size)
+    subtraction_noisy = subtraction_clean + subtraction_noise
+    subtraction_spectrum = stft(subtraction_noisy, n_fft=512, hop_length=128)[0]
+    centers = np.arange(subtraction_spectrum.shape[1]) * 128
+    noise_frames = np.flatnonzero((centers >= 256) & (centers + 256 <= noise_only_samples))
+    subtraction_soft, subtraction_noise_power = power_spectral_subtraction(
+        subtraction_spectrum, noise_frames, floor_ratio=.04
+    )
+    subtraction_zero, _ = power_spectral_subtraction(
+        subtraction_spectrum, noise_frames, floor_ratio=0.
+    )
+    subtraction_soft_audio = istft(subtraction_soft[None], n_fft=512, hop_length=128,
+                                   length=t.size)[0]
+    subtraction_zero_audio = istft(subtraction_zero[None], n_fft=512, hop_length=128,
+                                   length=t.size)[0]
     return {
         'spatial': {
             'signals': {'spatial_reference': delay_samples(target, 3),
@@ -359,6 +382,28 @@ def build_cases() -> dict:
                            'noise': 'none', 'near_end': 'none', 'randomness': 'none'},
             'limits': 'Steady sinusoid, memoryless cubic distortion and batch scalar projection; '
                       'not NLMS convergence, a measured loudspeaker or speech-quality evaluation.'},
+        'spectral_subtraction': {
+            'signals': {'spectral_clean': subtraction_clean,
+                        'spectral_noise': subtraction_noise,
+                        'spectral_noisy': subtraction_noisy,
+                        'spectral_floor04': subtraction_soft_audio,
+                        'spectral_floor00': subtraction_zero_audio},
+            'parameters': {'seed': SEED + 5, 'sample_rate_hz': SAMPLE_RATE,
+                           'samples': t.size, 'noise_only_samples': noise_only_samples,
+                           'noise_only_stft_frame_indices': noise_frames.tolist(),
+                           'noise_model': 'independent white Gaussian, standard deviation 0.07',
+                           'clean_model': '173 Hz six-harmonic synthetic tone, silent for first 0.4 s, 20 ms squared-sine onset',
+                           'stft': {'n_fft': 512, 'hop_length': 128, 'window': 'periodic Hann',
+                                    'center': True, 'weighted_overlap_add': True},
+                           'noise_estimation': 'per-bin arithmetic mean of |Y|^2 over complete noise-only frames',
+                           'mean_noise_power_sum': float(np.sum(subtraction_noise_power)),
+                           'oversubtraction': 1., 'floor_ratios': [0., .04],
+                           'spectral_floor_reference': 'fraction of observed noisy-bin power',
+                           'noisy_phase_retained': True, 'algorithm_delay_samples': 'offline STFT demonstration; no online latency claim',
+                           'reference': 'spectral_clean; no delay or gain fitting; first 0.4 s is noise-only'},
+            'limits': 'Single seeded mathematical tone plus stationary Gaussian noise; fixed oracle-marked noise-only preamble. '
+                      'The zero-floor output may make sparse tonal residuals audible; no human listening study, '
+                      'natural speech, VAD, adaptive noise tracker, MMSE-STSA or MMSE-LSA.'},
     }
 
 

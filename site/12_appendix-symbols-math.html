@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 A · 符号术语数学 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="28a7db6b0401"><style>
+<meta name="source-digest" content="3c17a2f82b74"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -294,8 +294,12 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>带约束求极值的标准工具：“约束写成等式加到目标里，再求导令零”，MVDR 的闭式解就是这么推的（§5.4）</td>
 </tr>
 <tr>
-<td>白化（whitening）</td>
-<td>调整各频率分量的幅度，使其贡献更均衡。GCC-PHAT 通过幅度归一化主要保留互功率谱相位，可减弱源谱着色，但不会消除反射产生的多径相位（§4.2）</td>
+<td>GCC-PHAT 频谱相位加权</td>
+<td>每个频点把非零互功率谱 $G_{12}(f)$ 除以 $|G_{12}(f)|$，使其模为 1、保留相位；零模频点须跳过或作数值保护。它改变时延估计中的频率权重，不能据此声称麦克风间噪声已被空间白化（§4.2）。<a href="https://doi.org/10.1109/TASSP.1976.1162830" title="citation">Knapp 与 Carter 的 GCC 原始论文</a></td>
+</tr>
+<tr>
+<td>空间噪声白化（spatial noise whitening）</td>
+<td>在同一频点、正定噪声协方差 $\mathbf R_{nn}$ 已知时，对通道快拍施加矩阵 $\mathbf W$，使 $\mathbf W\mathbf R_{nn}\mathbf W^H=\mathbf I$；导向矢量也须改为 $\mathbf W\vec a$。它处理的是通道间的噪声协方差，不能与 GCC-PHAT 的逐频点标量加权混用。估计误差或病态矩阵需另行处理（E12-04）。</td>
 </tr>
 <tr>
 <td>sinc 函数</td>
@@ -459,8 +463,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>利用方向或说话人活动信息引导空间聚类与波束形成的分离方法；常用 cACGMM 估计时频掩码，并用活动标注约束输出排列（§8.1）</td>
 </tr>
 <tr>
-<td>WDO（W-不相关正交）</td>
-<td>一种近似假设：不同说话人的主要能量在时频平面上较少重叠。假设接近成立时，可通过逐时频点估计主导声源来构造分离掩码；强混响或多人同时发声会削弱这一近似（§8.1）</td>
+<td>WDO（W-不重叠正交性，W-disjoint orthogonality）</td>
+<td>近似认为不同源在时频平面的非零支撑较少重叠，从而可逐时频点选取主导声源；它强于“互不相关”。例如两组系数 $[1,1]$ 与 $[1,-1]$ 的内积为 0，但两个位置都同时非零，故不能由正交或零互协方差推出 WDO。强混响或多人同时发声会削弱这一近似（§8.1）。<a href="https://doi.org/10.1109/TSP.2004.828896" title="citation">Yılmaz 与 Rickard 原始论文</a></td>
 </tr>
 </tbody>
 </table></div>
@@ -757,7 +761,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>两者都可抬高小特征值，但会改变最优权重和指向性。报告参数时必须说明采用哪一种口径，不能只写一个无单位的“$\varepsilon$”。</p>
 <p>附录 B 第 8 题可比较加载前后的 WNG、DI 与条件数；数值由脚本参数决定，不预设固定区间。</p>
 <span id="sec-11" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-12-4">12.4 计算练习</h2>
-<p>三题都可通过 <code>.venv/bin/python -m codes.examples.exercises_engineering</code> 复算。代码中的数组是本书构造的输入，答案先由短序列求和或代数得到，再与实现比较。</p>
+<p>四题都可通过 <code>.venv/bin/python -m codes.examples.exercises_engineering</code> 复算。代码中的数组是本书构造的输入，答案先由短序列求和或代数得到，再与实现比较。</p>
 <p><strong>E12-01：FFT 乘法为什么需要补零。</strong> 取 $x=[1,2]$、$h=[1,0.5]$，下标都从 0 开始。求完整线性卷积，再比较 FFT 长度为 2 和 3 时的结果。</p>
 <p>线性卷积逐点为 $y_0=1\times1=1$、$y_1=1\times0.5+2\times1=2.5$、$y_2=2\times0.5=1$，共 $2+2-1=3$ 点。</p>
 <p>FFT 长度为 2 时，频域相乘给出的是 2 点循环卷积，第三点绕回第零点，结果为 $[1+1,2.5]=[2,2.5]$。补零到 3 点或更长，才可容纳这次完整线性卷积；FFT 长度不必是 2 的幂，但不同长度的执行效率可能不同。</p>
@@ -778,6 +782,18 @@ $$</p>
 <p>求所有满足 $\mathbf A\vec x=\vec b$ 的解，并找出范数最小者。<code>numpy.linalg.lstsq</code> 应报告多大的秩？</p>
 <p>第二行是第一行的两倍，只有 $x_1+x_2=2$ 这一条独立约束，所以所有解可写成 $[t,2-t]^\top$。范数平方为 $t^2+(2-t)^2=2(t-1)^2+2$，在 $t=1$ 取最小值；最小范数解为 $[1,1]^\top$，秩为 1。奇异值理论上为 $\sqrt{10}$ 和 0，浮点运算可能把后者算成接近零的数，因此还要记录判秩容差。</p>
 <p>残差为零只说明输入方程被满足，没有说明两个参数可分别辨认。增加重复行不会改变这一点，需要新增独立观测或明确的先验约束。</p>
+<p><strong>E12-04：频谱相位加权能使空间噪声白化吗？</strong> 在一个固定频点，设两麦噪声零均值，协方差为 $\mathbf R_{nn}=\operatorname{diag}(4,1)$，两个通道的噪声功率单位相同。求一个对角白化矩阵 $\mathbf W$，算出白化后的噪声协方差；若目标导向矢量原为 $\vec a=[1,1]^\top$，处理后应使用哪一个导向矢量？最后判断只对互功率谱作 PHAT 加权能否得到同样的结果。</p>
+<p>第一路噪声功率是第二路的 4 倍，所以把第一路幅度乘 $1/2$，第二路保持原样：</p>
+<p>$$
+\mathbf W=\begin{bmatrix}1/2&0\\0&1\end{bmatrix},\quad
+\mathbf W\mathbf R_{nn}\mathbf W^H
+=\begin{bmatrix}(1/2)^2\!\times4&0\\0&1^2\!\times1\end{bmatrix}
+=\mathbf I,\quad
+\mathbf W\vec a=\begin{bmatrix}1/2\\1\end{bmatrix}。
+$$</p>
+<p>这里两个特征值由 $4,1$ 变为 $1,1$，但目标导向矢量也改变了。若用白化后的数据与原导向矢量 $[1,1]^\top$ 匹配，空间模型就不一致。这个矩阵例子由本书构造，并非实测噪声。</p>
+<p>PHAT 的运算对象却是<strong>一个频点的一对通道的互功率谱</strong>：当 $G_{12}(f)\ne0$ 时，$G_{12}(f)/|G_{12}(f)|$ 是一个模为 1 的复数，不会把两路快拍分别乘上 $1/2$ 和 $1$。例如两路确定的复频谱值为 $X_1=2$、$X_2=1$ 时，互谱为 2，PHAT 后为 1，但这不是把噪声协方差变成单位阵。</p>
+<p>本题两路噪声互不相关，理论噪声互功率谱为 0；此时 PHAT 还须跳过或保护分母，更不能从零互谱推得 $\mathbf W$。这反驳了“PHAT 等于空间白化”的说法，但不否定 PHAT 在时延估计中抑制源谱幅度影响的用途。复算入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_engineering.py"><code>exercises_engineering.py</code></a> 的 <code>E12-04</code>。</p>
 <hr />
 <blockquote>
 <p>📄 本篇信息：配图 0 张 ｜ <a href="index.html">回首页</a></p>

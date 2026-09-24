@@ -1,4 +1,4 @@
-"""Twenty deterministic engineering/mathematics exercises, Chapters 10–13.
+"""Twenty-one deterministic engineering/mathematics exercises, Chapters 10–13.
 
 Run with ``python -m codes.examples.exercises_engineering``. No hardware,
 network, playback, or file writes are performed. Values are teaching inputs,
@@ -170,6 +170,21 @@ def run_exercises() -> dict:
         "solution": solution.tolist(), "rank": int(rank),
         "singular_values": singular_values.tolist(),
         "residual_norm": float(np.linalg.norm(a @ solution - b)),
+    }
+    noise_covariance = np.diag([4., 1.])
+    whitening = np.diag([.5, 1.])
+    steering = np.ones(2)
+    whitened_covariance = whitening @ noise_covariance @ whitening.conj().T
+    cross_spectrum = (2 + 0j) * (1 + 0j).conjugate()
+    results["E12-04"] = {
+        "noise_covariance": noise_covariance.tolist(),
+        "whitening_matrix": whitening.tolist(),
+        "whitened_covariance": whitened_covariance.tolist(),
+        "whitened_steering": (whitening @ steering).tolist(),
+        "raw_eigenvalues": np.linalg.eigvalsh(noise_covariance).tolist(),
+        "whitened_eigenvalues": np.linalg.eigvalsh(whitened_covariance).tolist(),
+        "one_nonzero_cross_spectrum_phat": float((cross_spectrum / abs(cross_spectrum)).real),
+        "theoretical_noise_cross_spectrum": 0.,
     }
     first, second = np.array([0., .4, -.4, 0.]), np.array([0., .2, -.2, 0.])
     common_gain = .8 / max(np.max(np.abs(first)), np.max(np.abs(second)))

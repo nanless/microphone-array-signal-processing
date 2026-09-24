@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 B · 路径地图与练习 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="28a7db6b0401"><style>
+<meta name="source-digest" content="3c17a2f82b74"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -718,7 +718,7 @@ D_t&=(1-p_D)D^-\\
 <p>最后一行 DRR 的未舍入值为 −0.00304 dB，接近零。六个由仿真 RIR 估得的 $T_{60}$ 在约 0.546～0.563 s，低于 Sabine 反推时设定的 0.6 s；目标参数不能替代实际 RIR 的衰减估计。</p>
 <p><strong>镜像阶数检查。</strong> 默认脚本对固定近左位置另算 32 阶结果，并与 40 阶比较：四麦 $T_{60}$ 中位数相差约 $2.08\times10^{-6}$ s，DRR 中位数相差约 $7.55\times10^{-7}$ dB，低于本题自定的 0.02 s 与 0.5 dB 判据。本书还实际以 <code>--max-order 48</code> 重跑六个位置：与 40 阶相比，六个位置的 $T_{60}$ 中位数变化都小于 $10^{-6}$ s，DRR 中位数变化都小于 $10^{-6}$ dB，1° 网格的方位估计不变。这些比较说明所列指标对 40～48 阶的截断不敏感，不证明频谱细节或其他几何设置也已收敛；改变房间、源位或指标后须重新检查。</p>
 <p><strong>本题试听样本。</strong> 仓库已将六组源信号、四麦完整房间输出和四麦仅直达输出，共 18 个 PCM WAV 单独保存在 <code>codes/room_audio/</code>，参数、共同增益、种子和逐文件摘要见<a href="room_audio/MANIFEST.json">房间音频清单</a>；<a href="research/05_exercises_and_audio.html#17-六位置房间响应与定位">逐组试听入口</a>列出全部文件。</p>
-<p>每组使用与定位估计相同的固定白高斯噪声输入；全部文件采用同一个显式增益，不逐文件峰值归一化，保留传播时延和增益差异。文件是数学合成白噪声，不是真实语音或实测房间录音；试听前先降低播放音量。它们与已有 55 个 <code>codes/audio/</code> 样本分别管理。</p>
+<p>每组使用与定位估计相同的固定白高斯噪声输入；全部文件采用同一个显式增益，不逐文件峰值归一化，保留传播时延和增益差异。文件是数学合成白噪声，不是真实语音或实测房间录音；试听前先降低播放音量。它们与主清单的 60 个 <code>codes/audio/</code> 样本分别管理。</p>
 <p>若要重新生成到个人实验目录，先在装有锁定版 pyroomacoustics 0.10.0 的隔离环境中运行 <code>python -m codes.examples.room_srp_exercise --run --audio-dir /tmp/room-srp-audio-new</code>；为防覆盖，该目录必须尚不存在。</p>
 <p><strong>解读边界。</strong> 固定的 $\pm30°$ 条件分别在 1 m 与 2.5 m 比较；这间合成房间中，远位置的 DRR 较低，绝对 DOA 误差由 1° 变成 2°。</p>
 <p>距离变化也改变了声源相对墙面的位置和反射路径，这两个成对条件不足以估计跨房间、跨方向的平均因果效应。另两个随机位置同时改变距离与方向，更不能凭六点的总体相关性归因于距离。临界距离只给 DRR 量级参考，定位误差不保证在那里出现拐点。</p>

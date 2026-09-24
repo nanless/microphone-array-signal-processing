@@ -337,6 +337,11 @@ def remove_page_info(html):
     return re.sub(r"<p>📄 本篇信息.*?</p>", "", html, flags=re.S)
 
 
+def strip_terminal_rule(html):
+    """Omit decorative chapter-end rules before the forced next-page break."""
+    return re.sub(r"(?:\s*<hr\s*/?>\s*)+$", "", html, flags=re.I)
+
+
 def append_book_end(html):
     """Keep the final paragraph and end marker together, not on a marker-only page."""
     pattern = r'(<p>(?:(?!<p>).)*?</p>\s*(?:<hr\s*/?>\s*)?)$'
@@ -401,6 +406,8 @@ def build_html(build_date=None):
             "", html, flags=re.S)
         # 篇末“本篇信息”位于引用块中；整块删除，避免只删段落后留下空色条。
         html = remove_page_info(html)
+        # 章末水平线若刚好溢到下一页，会独占一张空白纸；分篇已有新章标题。
+        html = strip_terminal_rule(html)
         # 外层已经提供篇标题，删掉源文重复标题。导读以 h2 为节；其余篇章
         # 原文以 h2 作篇标题、h3 作节标题，因此在合订本里提升一级。
         # 外层已提供篇标题；保留原标题 id 作隐藏别名，

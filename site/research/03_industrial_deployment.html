@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>工业音频实现研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="28a7db6b0401"><style>
+<meta name="source-digest" content="3c17a2f82b74"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -243,6 +243,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>Speex 文件头说明其 AUMDF 通过连续学习率提高双讲鲁棒性，没有独立二值 DTD。若还要使用残余回声抑制，<a href="https://www.speex.org/docs/manual/speex-manual/node7.html">官方手册</a>要求将回声状态通过 <code>SPEEX_PREPROCESS_SET_ECHO_STATE</code> 绑定到预处理器；固定版 <code>preprocess.c</code> 才会读取 <code>speex_echo_get_residual()</code>。比较算法时应保留核心 MDF 输出和预处理后输出两个取点，不能用后者的安静程度倒推线性抽头收敛。</p>
 <p>用跨块脉冲检查重采样边界连续性；先以各通道不同索引的脉冲检查交换、漏通道和交织顺序，再用共同输入检查跨通道相位一致性。AEC 另测参考领先/滞后、远端单讲、双讲、路径突变与异步缓冲欠载，记录每次调用的真实播放参考索引。重采样波形连续不能代替消回声验收；三种 AEC 的同输入对照口径见<a href="02_aec_wpe_separation.html#aec">增强研究 A07</a>。</p>
 <span id="sec-8" class="anchor-alias" aria-hidden="true"></span><span id="2-噪声语音活动与增益" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-35a3d281af">2. 噪声、语音活动与增益</h2>
+<p>第 10 章<a href="../10_engineering-practice.html#sec-10-3-2">功率谱减手算与 E10-13</a>先固定噪声专用帧、逐频点平均噪声功率和相对观测功率的谱地板；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/noise_suppression.py">本书实现</a>只承担这一可复算基线。下面的 WebRTC VAD、DeepFilterNet 和模型运行时具有不同的状态与训练假设，不能拿本书谱减的固定噪声估计和单次合成试听推断它们的质量或计算量。谱减仍需在目标输入上单独核验噪声估计失配、音乐噪声、任务损伤和跨块处理；当前 WAV 不含真实语音或设备采集。</p>
 <span id="sec-9" class="anchor-alias" aria-hidden="true"></span><span id="i06webrtc-传统-vad" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-b73874ddcd">I06：WebRTC 传统 VAD</h3>
 <p>入口为 <a href="https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/common_audio/vad/include/webrtc_vad.h"><code>common_audio/vad/include/webrtc_vad.h</code></a>，核心判断位于同目录的 <code>webrtc_vad.c</code> 和 <code>vad_core.c</code>。它与 APM 中的其他语音概率估计器不同；移植时必须写明具体接口，不能统称“WebRTC VAD”。WebRTC 源码使用 BSD-3-Clause，并保留相关第三方声明。</p>
 <p>接口接受受支持采样率下的有符号 16 位单声道 PCM，帧长必须通过 <code>WebRtcVad_ValidRateAndFrameLength</code> 检查；常用合法帧为 10、20、30 ms。16 kHz 下分别是 160、320、480 个样本。模式控制检测的积极程度，不是以 dB 表示的能量门限。</p>

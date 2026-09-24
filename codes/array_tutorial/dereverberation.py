@@ -2,7 +2,25 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import numpy as np
+
+
+@dataclass(frozen=True)
+class WPEFrequencyDiagnostic:
+    """Numerical status for one frequency across all requested iterations.
+
+    ``min_rank`` and ``max_condition_number`` refer to the loaded normal
+    matrix. They describe numerical identifiability, not speech quality.
+    ``None`` means that no normal equation was solved at this frequency.
+    """
+
+    frequency: int
+    min_rank: int | None
+    max_condition_number: float | None
+    least_squares_count: int
+    bypass_reason: str | None
 
 
 def offline_wpe(
@@ -13,13 +31,18 @@ def offline_wpe(
     iterations: int = 3,
     diagonal_loading: float = 1e-6,
     power_floor: float = 1e-5,
-) -> np.ndarray:
+    return_diagnostics: bool = False,
+) -> np.ndarray | tuple[np.ndarray, tuple[WPEFrequencyDiagnostic, ...]]:
     """Apply a compact single- or multi-channel offline WPE baseline.
 
     Input is ``(frequency, frame)`` or ``(frequency, channel, frame)``.
     Output has the same shape.  ``taps=0`` and records shorter than the first
     valid regression frame are passed through.  This batch routine uses the
-    entire recording and is therefore not causal.
+    entire recording and is therefore not causal. By default the return value
+    remains the output array. With ``return_diagnostics=True`` it is
+    ``(output, diagnostics)`` with one status record per frequency. A singular
+    loaded normal matrix falls back to a minimum-norm least-squares solution;
+    that numerical fit does not establish that the removed signal was reverb.
     """
 
     original = np.asarray(spectrum)
@@ -33,8 +56,15 @@ def offline_wpe(
         raise ValueError("require taps >= 0, delay >= 1, iterations >= 0")
     if not np.isfinite(diagonal_loading) or not np.isfinite(power_floor) or diagonal_loading < 0 or power_floor <= 0:
         raise ValueError("loading must be non-negative and power_floor positive")
+    if not isinstance(return_diagnostics, (bool, np.bool_)):
+        raise ValueError("return_diagnostics must be a boolean")
     if taps == 0 or iterations == 0:
-        return original.copy()
+        result = original.copy()
+        if not return_diagnostics:
+            return result
+        reason = "zero_taps" if taps == 0 else "zero_iterations"
+        return result, tuple(WPEFrequencyDiagnostic(f, None, None, 0, reason)
+                             for f in range(original.shape[0]))
 
     squeeze = original.ndim == 2
     y = original[:, None, :] if squeeze else original
@@ -42,17 +72,28 @@ def offline_wpe(
     frequencies, channels, frames = y.shape
     first = delay + taps - 1
     if frames <= first:
-        return original.copy()
+        result = original.copy()
+        if not return_diagnostics:
+            return result
+        return result, tuple(WPEFrequencyDiagnostic(f, None, None, 0, "short_record")
+                             for f in range(frequencies))
 
     output = y.copy()
+    diagnostics: list[WPEFrequencyDiagnostic] = []
     dimension = channels * taps
     for frequency in range(frequencies):
         raw = y[frequency]
+        min_rank: int | None = None
+        max_condition_number: float | None = None
+        least_squares_count = 0
+        bypass_reason: str | None = None
         # A common amplitude scale leaves the WPE solution unchanged. Divide
         # components separately: complex division can overflow its reciprocal
         # even when every desired ratio is bounded (subnormal input levels).
         input_scale = float(max(np.max(np.abs(raw.real)), np.max(np.abs(raw.imag))))
         if input_scale == 0.0:
+            if return_diagnostics:
+                diagnostics.append(WPEFrequencyDiagnostic(frequency, None, None, 0, "zero_input"))
             continue
         observed = np.empty_like(raw)
         observed.real = raw.real / input_scale
@@ -94,6 +135,7 @@ def offline_wpe(
                 raise ValueError("WPE normal equations exceed the float64 range")
             if trace == 0.0 and np.all(history == 0):
                 current = observed.copy()
+                bypass_reason = "zero_history"
                 break
             if trace <= np.finfo(float).tiny:
                 raise ValueError("WPE history energy is too small to solve reliably")
@@ -102,9 +144,16 @@ def offline_wpe(
                     loaded = correlation + diagonal_loading * trace / dimension * np.eye(dimension)
             except FloatingPointError as error:
                 raise ValueError("WPE diagonal loading exceeds the float64 range") from error
+            if return_diagnostics:
+                rank = int(np.linalg.matrix_rank(loaded))
+                condition = float(np.linalg.cond(loaded))
+                min_rank = rank if min_rank is None else min(min_rank, rank)
+                max_condition_number = (condition if max_condition_number is None
+                                        else max(max_condition_number, condition))
             try:
                 predictor = np.linalg.solve(loaded, cross)
             except np.linalg.LinAlgError:
+                least_squares_count += 1
                 predictor = np.linalg.lstsq(loaded, cross, rcond=None)[0]
             if not np.all(np.isfinite(predictor)):
                 raise ValueError("WPE predictor is not finite")
@@ -130,5 +179,11 @@ def offline_wpe(
             raise ValueError("WPE output exceeds the float64 range") from error
         if not np.all(np.isfinite(output[frequency])):
             raise ValueError("WPE output exceeds the float64 range")
+        if return_diagnostics:
+            diagnostics.append(WPEFrequencyDiagnostic(frequency, min_rank,
+                                                       max_condition_number,
+                                                       least_squares_count,
+                                                       bypass_reason))
 
-    return output[:, 0, :] if squeeze else output
+    result = output[:, 0, :] if squeeze else output
+    return (result, tuple(diagnostics)) if return_diagnostics else result

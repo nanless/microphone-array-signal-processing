@@ -590,7 +590,19 @@ $$\theta=\arcsin\!\left(\frac{\arg\Psi}{\pi}\right)\text{。}$$
 
 $\theta=0°$ 时 $\Psi=1$，反演得 0°；$\theta=30°$ 时 $\Psi=+\mathrm j$、$\arg\Psi=+\pi/2$，反演得 30°。
 
-不能对 $\arg\Psi$ 取绝对值，否则会丢失左右方向的符号。若交换两子阵的次序，$\Psi$ 变为共轭，反演式中的符号也要同时改变。
+不能对 $\arg\Psi$ 取绝对值，否则会丢失左右方向的符号。在此理想、单位模的移位关系中，若交换两子阵的次序，旋转因子变为共轭，反演式中的符号也要同时改变。
+
+实际估计到的信号子空间会有误差，移位后的两段通常不能精确相等。单源时把两段看作列向量 $\vec e_1,\vec e_2$，选择复数 $\hat\Psi$ 使 $\|\vec e_2-\vec e_1\hat\Psi\|_2^2$ 最小。展开平方并对 $\hat\Psi^*$ 求导，得到 $\vec e_1^H\vec e_1\hat\Psi=\vec e_1^H\vec e_2$；只要 $\vec e_1\ne\vec0$，解为 $\hat\Psi=(\vec e_1^H\vec e_2)/(\vec e_1^H\vec e_1)$。
+
+多源时，对应目标是 $\min_{\boldsymbol\Psi}\|\mathbf E_{s2}-\mathbf E_{s1}\boldsymbol\Psi\|_F^2$。若 $\mathbf E_{s1}$ 满列秩，可解正规方程；病态时应检查奇异值，而不能盲目求逆。[Roy 与 Kailath 的 ESPRIT 原始论文](https://doi.org/10.1109/29.32276 "citation")。
+
+**E04-09：用两行子阵手算 ESPRIT 最小二乘解。** 先用本书构造的理想信号子空间向量 $\vec e=[1,\mathrm j,-1]^\top$，令 $\vec e_1=[e_1,e_2]^\top$、$\vec e_2=[e_2,e_3]^\top$；再把第三项改为 $-0.9+0.1\mathrm j$，其余两项不变。两次分别计算 $\vec e_1^H\vec e_1$、$\vec e_1^H\vec e_2$、$\hat\Psi$、残差范数和反演方向。取 $d=\lambda/2$，数字只代表子空间扰动的教学示例，不代表某个快拍数或 SNR 下的统计误差。
+
+**参考答案**：两次都有 $\vec e_1=[1,\mathrm j]^\top$，故分母为 $1+|\mathrm j|^2=2$。理想情形分子是 $1^*\mathrm j+(\mathrm j)^*(-1)=2\mathrm j$，于是 $\hat\Psi=\mathrm j$，残差为 0，方向为 $\arcsin((\pi/2)/\pi)=30°$。
+
+扰动后分子是 $\mathrm j+(-\mathrm j)(-0.9+0.1\mathrm j)=0.1+1.9\mathrm j$，故 $\hat\Psi=0.05+0.95\mathrm j$。残差向量为 $[-0.05+0.05\mathrm j,\,0.05+0.05\mathrm j]^\top$，范数为 $\sqrt{0.01}=0.1$；相位约 $86.987°$，方向约 $28.90°$。
+
+这说明最小二乘只能拟合被扰动的移位关系，不保证角度仍精确。若交换子阵次序，新的最小二乘因子一般**不等于**原因子的共轭（分母也会改变），但这里其相位变号；反演公式须同时改变符号。代码入口为 [`exercises_spatial.py`](../codes/examples/exercises_spatial.py) 的 `E04-09`，并用 [`doa.py::esprit_ula`](../codes/array_tutorial/doa.py) 核对由这两个向量构造的协方差。
 
 上式还假定相位没有空间混叠。$d>\lambda/2$ 时，主值相位可能对应多个角度，必须限制搜索区间或使用额外频率消歧。
 
@@ -937,7 +949,7 @@ $$\begin{aligned}
 
 以下四题用 [`exercises_spatial.py`](../codes/examples/exercises_spatial.py) 复算。它们检查时延符号、统计秩、几何歧义和空间平滑，不把谱峰尖锐程度当作准确性的唯一依据。
 
-MDL 练习 E04-05、E04-06 随完整算例放在 [§4.9](#sec-4-9)；四麦音频练习 E04-07 放在 [§4.10](#sec-4-10)。题号保持稳定，建议先读对应专题，再做本节综合练习。
+ESPRIT 最小二乘练习 E04-09 随推导放在 [§4.6](#sec-4-6)；MDL 练习 E04-05、E04-06 随完整算例放在 [§4.9](#sec-4-9)；四麦音频练习 E04-07 放在 [§4.10](#sec-4-10)。题号保持稳定，建议先读对应专题，再做本节综合练习。
 
 **E04-01：交换两段录音，延迟应怎样变化？** 16 kHz 下，让麦 1 比麦 2 晚 3 点，零填充而不循环移动信号。对单脉冲和固定种子宽带噪声各算一次 GCC-PHAT，再交换两通道。静音输入应返回哪个方向？
 

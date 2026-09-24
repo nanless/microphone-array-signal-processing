@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 10 章 · 工程实现、评测与产业实践 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="28a7db6b0401"><style>
+<meta name="source-digest" content="3c17a2f82b74"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -72,8 +72,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-2-2">10.2.2 增益变化与 AEC</a></li>
 <li><a href="10_engineering-practice.html#sec-10-3">10.3 NS、控制信号与唤醒分支</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-3-1">10.3.1 单通道 NS 的方法和边界</a></li>
-<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-3-2">10.3.2 控制状态不能只看一个 VAD 比特</a></li>
-<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-3-3">10.3.3 VAD 与 AGC 的最小可运行基线</a></li>
+<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-3-2">10.3.2 功率谱减：一个频点怎样算到输出</a></li>
+<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-3-3">10.3.3 控制状态不能只看一个 VAD 比特</a></li>
+<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-3-4">10.3.4 VAD 与 AGC 的最小可运行基线</a></li>
 <li><a href="10_engineering-practice.html#sec-10-4">10.4 定点化、算力与功耗预算</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-4-1">10.4.1 从浮点实现到目标芯片</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-4-2">10.4.2 不混用指令数、乘加次数和实时因子</a></li>
@@ -102,8 +103,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-2-2">10.2.2 增益变化与 AEC</a></li>
 <li><a href="10_engineering-practice.html#sec-10-3">10.3 NS、控制信号与唤醒分支</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-3-1">10.3.1 单通道 NS 的方法和边界</a></li>
-<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-3-2">10.3.2 控制状态不能只看一个 VAD 比特</a></li>
-<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-3-3">10.3.3 VAD 与 AGC 的最小可运行基线</a></li>
+<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-3-2">10.3.2 功率谱减：一个频点怎样算到输出</a></li>
+<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-3-3">10.3.3 控制状态不能只看一个 VAD 比特</a></li>
+<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-3-4">10.3.4 VAD 与 AGC 的最小可运行基线</a></li>
 <li><a href="10_engineering-practice.html#sec-10-4">10.4 定点化、算力与功耗预算</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-4-1">10.4.1 从浮点实现到目标芯片</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-4-2">10.4.2 不混用指令数、乘加次数和实时因子</a></li>
@@ -417,7 +419,49 @@ $$</p>
 </tbody>
 </table></div>
 <p>MMSE-STSA 和 MMSE-LSA 不是同一目标：前者估计短时谱幅度，后者在对数谱幅度域定义误差。噪声估计也不必“只在 VAD 判无话时更新”。最小统计量、软语音存在概率和神经网络软掩码都能在语音段缓慢更新；关键是避免把语音持续吸收到噪声模型中。</p>
-<span id="sec-10" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-3-2">10.3.2 控制状态不能只看一个 VAD 比特</h3>
+<span id="sec-10" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-3-2">10.3.2 功率谱减：一个频点怎样算到输出</h3>
+<p>先固定模型：单通道观测 $y[n]=s[n]+v[n]$，噪声在一小段时间内近似平稳；已经知道开头哪些帧只有噪声。对周期 Hann 窗、512 点短时傅里叶变换（STFT）和 128 点帧移，记频点 $f$、帧 $t$ 的复系数为 $Y_{f,t}$。本书在完整落入噪声段的帧集合 $\mathcal N$ 上，按同一窗和 FFT 归一化口径平均 $|Y|^2$，得到固定的逐频点噪声功率估计 $D_f$。这是<strong>已知噪声段</strong>的教学条件，不是自动检测无语音帧。</p>
+<p>本书演示的功率谱减、相对观测功率的谱地板和复系数重建定义为</p>
+<p>$$
+\begin{aligned}
+D_f&=\frac{1}{|\mathcal N|}\sum_{t\in\mathcal N}|Y_{f,t}|^2,\\
+\widehat P_{f,t}&=\max\!\left(|Y_{f,t}|^2-\alpha D_f,\;\beta |Y_{f,t}|^2\right),\\
+\widehat X_{f,t}&=\begin{cases}
+\sqrt{\widehat P_{f,t}/|Y_{f,t}|^2}\,Y_{f,t},&|Y_{f,t}|^2>0,\\
+0,&|Y_{f,t}|^2=0.
+\end{cases}
+\end{aligned}
+\tag{10-4}
+$$</p>
+<p>这里 $\alpha\ge0$ 是过减系数，$0\le\beta\le1$ 是<strong>相对带噪频点功率</strong>的地板比例；$\beta=0.04$ 意味着正功率频点的最小<strong>幅度</strong>增益为 $\sqrt{0.04}=0.2$。重建保留带噪相位；零系数没有相位，因此保持为零，不能凭谱地板捏造一个任意相位。逐帧逆变换后，按窗平方权重重叠相加。Boll 的<a href="https://doi.org/10.1109/TASSP.1979.1163209" title="citation">原始谱减论文</a>讨论从无语音段估计噪声；Berouti、Schwartz 与 Makhoul 的<a href="https://doi.org/10.1109/ICASSP.1979.1170788" title="citation">功率过减与谱地板论文</a>讨论残余音乐噪声。本书选择 $\beta|Y|^2$ 作为容易复算的地板口径；引用论文的其他地板定义或数值不能直接当作本实现的参数。</p>
+<p><strong>锚点手算。</strong> 某频点的已知噪声帧系数为 $2$，故 $D=|2|^2=4$。另两帧的带噪系数为 $3$ 和 $1$，取 $\alpha=1$、$\beta=0.04$。前一帧功率是 $9$，相减得 $9-4=5$，地板为 $0.04\times9=0.36$，故输出功率 $5$、幅度 $\sqrt5\approx2.2361$；后一帧功率是 $1$，相减得 $-3$，地板为 $0.04$，故输出功率 $0.04$、幅度 $0.2$。两帧原相位均为零；若原系数改成 $3\mathrm j$ 和 $1\mathrm j$，输出相应为 $\sqrt5\mathrm j$ 和 $0.2\mathrm j$。不能把功率相减误写成幅度 $3-2=1$。这个手算只证明式(10-4)的数值约定；若噪声统计随时间改变或噪声段混入目标，$D$ 就会失配。</p>
+<p>运行<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/spectral_subtraction_demo.py">谱减练习代码</a>可复算同一频点的两个带噪帧；另运行<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/generate_audio_samples.py">统一音频生成器</a>可重建<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/audio/MANIFEST.json">五个试听文件及参数清单</a>：合成谐波目标、独立高斯噪声、带噪输入、$\beta=0.04$ 输出和 $\beta=0$ 输出。16 kHz、2 s 输入的前 0.4 s 仅有噪声，47 个完整落在该段的 STFT 帧估计 $D_f$；两种处理使用同一输入、同一固定噪声估计和同组共同导出增益。</p>
+<p>先降低播放音量，再比较<a href="audio/spectral_noisy.wav">带噪输入</a><audio class="audio-sample" controls preload="none" aria-label="带噪输入" src="audio/spectral_noisy.wav">请使用上方 WAV 链接下载。</audio>、<a href="audio/spectral_floor04.wav">有地板输出</a><audio class="audio-sample" controls preload="none" aria-label="有地板输出" src="audio/spectral_floor04.wav">请使用上方 WAV 链接下载。</audio>与<a href="audio/spectral_floor00.wav">零地板输出</a><audio class="audio-sample" controls preload="none" aria-label="零地板输出" src="audio/spectral_floor00.wav">请使用上方 WAV 链接下载。</audio>。离散随机残余频点可能听成短促的调性噪声，但这组数学合成信号没有经过人耳听测，不能据此报告语音可懂度、MOS 或产品降噪性能。</p>
+<p>在生成器的<strong>浮点波形</strong>上计算前 6400 个样本的均方根值，得到下表；三者的共同 WAV 导出增益为 1，表内按四位小数舍入。输入只有噪声，所以这里没有“语音保真”可比。$\beta=0$ 的前奏数值比 $\beta=0.04$ 更低，只说明这个固定输入的平均剩余幅度较低，不能推出音乐噪声更少。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">前奏版本</th>
+<th scope="col" style="text-align: right;">均方根幅度（数字满幅为 1）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>带噪输入</td>
+<td style="text-align: right;">0.0697</td>
+</tr>
+<tr>
+<td>$\beta=0.04$ 输出</td>
+<td style="text-align: right;">0.0404</td>
+</tr>
+<tr>
+<td>$\beta=0$ 输出</td>
+<td style="text-align: right;">0.0381</td>
+</tr>
+</tbody>
+</table></div>
+<p>谱减的关键边界是估计误差：噪声上升时旧 $D_f$ 偏低，会留下残余；目标误入估计段时 $D_f$ 偏高，会损伤目标。较大的 $\alpha$ 或较小的 $\beta$ 可能减少持续噪声却造成时频斑点；地板也会保留噪声，不能称为无失真解。此实现没有自适应噪声追踪、语音存在概率或 Ephraim–Malah 的 MMSE-STSA/LSA 统计估计器。它是可复算的谱减基线，不能用其输出冒充这些方法。</p>
+<span id="sec-11" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-3-3">10.3.3 控制状态不能只看一个 VAD 比特</h3>
 <p>控制状态需要涵盖近端语音、远端播放和双讲。下表列出这些状态下的更新条件；具体实现可以使用离散状态，也可以使用连续的活动概率。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -469,7 +513,7 @@ $$</p>
 <p>VAD 的迟滞、挂起和预卷缓存应由语料中的短词、停顿和噪声脉冲调节。</p>
 <p>KWS 是否绕过 VAD、是否持续运行、从 AEC 后还是增强后取信号，取决于功耗和训练域。</p>
 <p>阈值需要在指定误唤醒率下报告漏唤醒率，不能只给一个孤立分数。</p>
-<span id="sec-11" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-3-3">10.3.3 VAD 与 AGC 的最小可运行基线</h3>
+<span id="sec-12" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-3-4">10.3.4 VAD 与 AGC 的最小可运行基线</h3>
 <p>能量 VAD 虽然简单，却能把控制逻辑讲清。启动阈值应高于继续阈值，避免能量在单一阈值附近来回切换；hangover 在能量下降后继续保持若干帧，减少词尾被截断。预卷缓存解决的是词首：VAD 刚触发时，把触发前保留的短时音频一并送给后端。三个时间量都要换算成帧数，并在短词、长停顿和脉冲噪声上分别验证。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>HysteresisVAD</code></a> 输入线性均方能量，不接受 dB 阈值；把 dBFS 门限传给它会造成口径错误。<code>hangover_frames=2</code> 表示首次跌破继续阈值的两帧仍保持活动，第三帧才关闭。该基线没有噪声自适应、频带特征和神经网络，也不自行保存预卷；预卷可用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>RingBuffer</code></a> 保留触发前的固定帧数，并在 VAD 由假变真时先取出缓存。</p>
 <p>AGC 要区分“把正常语音逐渐推向目标电平”和“立刻避免削波”。增益上升可以缓慢释放，增益下降需要更快；即使平滑状态来不及下降，当前块也要受安全上限约束。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>PeakProtectAGC</code></a> 给出这种峰值保护基线。</p>
@@ -477,8 +521,8 @@ $$</p>
 <p>需要比较输出响度时，可以另用 libebur128 测量响度与真峰值。响度按频率加权和时间统计得到，不等于当前块的最大样本；真峰值估计重建波形的幅度，也可能高于采样峰值。测量模式、通道角色、门控和无有效能量的处理须固定，数字域响度与峰值都不能未经播放校准就换成声压级。<a href="https://github.com/jiixyj/libebur128/blob/67b33abe1558160ed76ada1322329b0e9e058b02/ebur128/ebur128.h" title="citation">libebur128 固定 API</a></p>
 <p>实际 VAD 接口也有不同的输入协议。WebRTC 传统 VAD 使用合法采样率下的 16 位单声道 PCM 和 10、20、30 ms 帧；Silero 核实的 ONNX 包装器使用 16 kHz/512 点或 8 kHz/256 点，均为 32 ms，并保留跨块状态。10 ms 的声卡回调不能直接当成任意模型的一次输入，需要先缓冲到合法块长，再把决策映射回采集时间轴。<a href="https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/common_audio/vad/include/webrtc_vad.h" title="citation">WebRTC VAD 接口</a>、<a href="https://github.com/snakers4/silero-vad/blob/60b7ffa243625ebdc1070275a29f18c87843786a/src/silero_vad/utils_vad.py" title="citation">Silero 包装器源码</a></p>
 <p>跨块状态要与会话绑定。每块重置会改变模型行为，多条独立会话共享状态会相互干扰。阈值、最短语音、静音等待和前后填充也要分开调节；降低语音概率阈值并不能自动补回已经丢失的词首音频。工业 VAD、WebRTC AGC2 和 DeepFilterNet 的源码阅读顺序及故障试验见<a href="research/03_industrial_deployment.html#2-噪声语音活动与增益">工业实现研究中的控制与增强部分</a>。</p>
-<span id="sec-12" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-4">10.4 定点化、算力与功耗预算</h2>
-<span id="sec-13" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-4-1">10.4.1 从浮点实现到目标芯片</h3>
+<span id="sec-13" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-4">10.4 定点化、算力与功耗预算</h2>
+<span id="sec-14" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-4-1">10.4.1 从浮点实现到目标芯片</h3>
 <p>定点化要检查四件事：</p>
 <ul>
 <li>数值范围；</li>
@@ -493,7 +537,7 @@ $$</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>q15_dot</code></a> 用 64 位整数累加乘积，只在输出时除以 $2^{15}$、按最近偶数舍入并饱和；目标 DSP 若使用不同累加位宽或逐乘积舍入，就不应期待 bit-exact 相同。测试既要覆盖正常小数，也要覆盖 $\pm1$、超范围输入和累加器极值；不能只比较平均误差。实数 PCM 接口还应在类型转换前拒绝意外的复数输入，不能把丢弃虚部后的数组当作原始信号。</p>
 <p>SIMD（单指令多数据）优化从数据布局开始。连续的频点、通道或抽头便于向量加载，跨步访问和频繁转置会抵消乘加加速。报告 SIMD 收益时要写明标量基线、指令集、编译选项、数组对齐、块尺寸、线程数和是否包含格式转换。运行时派发还要保留标量回退，并让两条路径通过同一组数值容差或 bit-exact 测试；“编译器打开了向量化”不能代替这些检查。</p>
 <p>CMSIS-DSP 的 <code>arm_fir_q15</code> 是具体对照：源码说明了 1.15 乘法、64 位累加和输出截位/饱和，而本书 <code>q15_dot</code> 采用最近偶数舍入。两者都称 Q15，却不应默认逐位相同；快速版、标量版和向量版也要绑定内核及编译宏分别检查。先用脉冲、满幅和余数块长验证，再报告目标芯片周期数。<a href="https://github.com/ARM-software/CMSIS-DSP/blob/83a2d7bc98c81b4bbe4a6f48b1f2ecf179868a0b/Source/FilteringFunctions/arm_fir_q15.c" title="citation">CMSIS-DSP FIR 源码</a></p>
-<span id="sec-14" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-4-2">10.4.2 不混用指令数、乘加次数和实时因子</h3>
+<span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-4-2">10.4.2 不混用指令数、乘加次数和实时因子</h3>
 <ul>
 <li>每秒乘加次数（Multiply-Accumulate Operations per Second，MAC/s）或每秒百万次乘加（Million MAC/s，MMAC/s）适合描述已经明确算子图和计数规则的算法计算量。</li>
 <li>每秒百万条指令（Millions of Instructions per Second，MIPS）依赖指令集、并行宽度、存储访问和编译器。同一算法在不同处理器上的 MIPS 不可直接比较。</li>
@@ -527,10 +571,10 @@ $$</p>
 <p>电池容量应换算为能量。若标称电压为 $V$、容量为 $C_{\mathrm{Ah}}$，标称能量近似为 $E=VC_{\mathrm{Ah}}\ \mathrm{Wh}$，其中 Wh（watt-hour）表示瓦时。续航估算为</p>
 <p>$$
 t\approx\frac{E\,\eta}{P_{\text{avg}}},
-\tag{10-4}
+\tag{10-5}
 $$</p>
-<p>式(10-4)约定 $P_{\text{avg}}$ 是各工作状态按占空比加权后、在稳压与转换电路<strong>输出端</strong>测得的整机负载平均功率；$\eta$ 才可同时计入电池可用容量比例、从电池到负载的转换效率及老化裕量。若功率仪测的是<strong>电池端输入功率</strong>，转换损耗已经包含在 $P_{\text{avg}}$ 中，$\eta$ 不应再次计入转换效率。应记录电压、测点、各状态功率与占空比；只给毫安时（mAh）而不给这些条件，无法推出可验收的续航。</p>
-<span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-5">10.5 评测体系</h2>
+<p>式(10-5)约定 $P_{\text{avg}}$ 是各工作状态按占空比加权后、在稳压与转换电路<strong>输出端</strong>测得的整机负载平均功率；$\eta$ 才可同时计入电池可用容量比例、从电池到负载的转换效率及老化裕量。若功率仪测的是<strong>电池端输入功率</strong>，转换损耗已经包含在 $P_{\text{avg}}$ 中，$\eta$ 不应再次计入转换效率。应记录电压、测点、各状态功率与占空比；只给毫安时（mAh）而不给这些条件，无法推出可验收的续航。</p>
+<span id="sec-16" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-5">10.5 评测体系</h2>
 <p>每项指标只能回答一部分问题。面向完整系统的评测通常还需覆盖任务效果、语音质量、稳定性、资源占用和长时间运行。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -589,7 +633,7 @@ $$</p>
 <p>ViSQOL（Virtual Speech Quality Objective Listener）则比较参考与退化信号的时频结构，输出客观听音质量预测分（Mean Opinion Score—Listening Quality Objective，MOS-LQO）。该实现区分 48 kHz 的 audio 模式与 16 kHz 的 speech 模式，并将多通道下混单声道；因此不能用它证明阵列方向或双耳线索保持。它不是 POLQA 实现，模型预测也不能代替受试者评分；模式、映射模型和适用失真范围都要记录。<a href="https://github.com/google/visqol/blob/38d0b0163e441047d4429bf07ad09e5b9031d02c/README.md" title="citation">ViSQOL 固定说明的 Guidelines 与 FAQ</a></p>
 <p>本书的音频示例用于辨认时延、拖尾、削波和增益等现象，不是标准主观评分材料。试听前先降低播放音量，确认没有异常峰值，再比较同一输入的参考、受扰和处理后版本。对同组文件施加共同线性增益，可以保留它们的相对电平；各文件分别峰值归一化会抹去衰减或增益差异。若为了比较音色而另做响度匹配，应把该版本和原始测量版本分开保存，并记录匹配方法。</p>
 <p>数值评分应使用规定的原始数据、对齐和增益规则，不能直接把试听归一化后的文件当作评分输入。合成谐波或噪声只检验信号处理现象，不包含自然语言内容，不能由此报告语音 MOS、可懂度或 WER。材料来源、参数及章节练习见<a href="research/05_exercises_and_audio.html">练习与音频实验手册</a>。</p>
-<span id="sec-16" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-6">10.6 数据、仿真与复现</h2>
+<span id="sec-17" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-6">10.6 数据、仿真与复现</h2>
 <p>公开数据集适合建立可复现基线，不能代替目标设备录音。选择数据时要核对采样率、麦克风几何、房间、说话人数、重叠率、参考真值和许可证。训练、调参、最终测试应按房间或说话人隔离，避免相邻片段泄漏。</p>
 <p>录音和声纹还要有数据治理清单：</p>
 <ul>
@@ -625,7 +669,7 @@ room = pra.ShoeBox(
 <li>材料模型、随机种子与噪声生成方法；</li>
 <li>pyroomacoustics 版本和拟合方法。</li>
 </ul>
-<span id="sec-17" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-7">10.7 分布式阵列</h2>
+<span id="sec-18" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-7">10.7 分布式阵列</h2>
 <p>分布式系统要分别解决三类问题：</p>
 <ol>
 <li><strong>时间轴</strong>：初始时差、SRO、丢包和网络抖动要分开估计。长录音首尾对齐只能发现累计误差，不能代替运行时监测。</li>
@@ -633,7 +677,7 @@ room = pra.ShoeBox(
 <li><strong>融合</strong>：集中式波束需要传多通道信号或统计量，对同步和带宽要求高；通道选择和识别结果融合要求较低，但损失空间信息。应把弱节点加入后的退化列为测试项。</li>
 </ol>
 <p>验收阈值应由网络带宽、最长会话和目标任务确定。例如，要求一小时内相位相干的系统与只做句级识别的系统，对残余 SRO 的要求不会相同。</p>
-<span id="sec-18" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-8">10.8 阵列形态与场景约束</h2>
+<span id="sec-19" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-8">10.8 阵列形态与场景约束</h2>
 <p>公开产品的麦克风数量、位置和算法会随硬件版本及地区型号变化。若没有可追溯的一手资料，不应从拆解照片推断算法链。本教程因此只讨论可迁移的设计条件：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -687,11 +731,11 @@ room = pra.ShoeBox(
 <p>表示到 $N$ 阶的完整球谐系数共有 $(N+1)^2$ 个，因此离散阵元数至少要能支撑相应的空间采样；实际还要留出几何和数值稳定性余量。</p>
 <p>可用阶数在高频受阵元空间混叠限制，在低频又受 $kr$ 较小和径向滤波噪声放大限制。不能用 $N=\lceil kr\rceil+1$ 一条式子替代完整设计，也不能把“某阶需要多少系数”直接等同于任意摆放的同数麦克风一定可用。</p>
 <p>三个非共点麦克风已经构成阵列。若几何非共线，它们能提供二维空间信息；若接近共线，则某些方向存在镜像或条件数问题。手机的主要限制通常是孔径小、结构遮挡和工作模式变化，而不是“三麦构不成阵列”。</p>
-<span id="sec-19" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-9">10.9 从模型到设备</h2>
+<span id="sec-20" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-9">10.9 从模型到设备</h2>
 <p>部署前先固定输入尺寸、算子版本、量化方式和线程配置，再测算力与内存。模型参数从 32 位浮点量化到 8 位整数时，参数存储在理想情况下约缩小四倍；端到端速度取决于硬件是否有相应整数内核、访存和算子融合，不能据此承诺“快四倍”。</p>
 <p>低功耗常驻任务和高算力按需任务可以分开：例如 KWS 在低功耗处理器上运行，唤醒后再启动 ASR 或分离网络。但 AEC、波束、WPE 是否常驻取决于是否需要持续边播边听、录音或通话，不应把“唤醒前关闭完整前端”写成固定方案。</p>
 <p>端侧、云侧或混合部署要比较隐私、断网可用性、网络尾延迟、更新能力和能耗。对品牌产品的实现方式没有公开证据时，只能写成候选架构，不能当作产品事实。</p>
-<span id="sec-20" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-9-1">10.9.1 开源实现怎样用作工程对照</h3>
+<span id="sec-21" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-9-1">10.9.1 开源实现怎样用作工程对照</h3>
 <p>开源项目解决的是链路中的不同部分，不能因为都能处理音频就横向替换。下面只列本书正文能够说明用途和边界的项目；固定来源、提交、许可证和核实日期统一记录在 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json"><code>codes/SOURCES.lock.json</code></a>，代码、模型权重和数据集许可证分别检查。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -787,7 +831,7 @@ room = pra.ShoeBox(
 <p>上游源码按锁定清单独立获取到被 Git 忽略的 <code>codes/upstream/_downloads/</code>，保留原许可证和版本；是否已下载以本机获取记录为准。代码、权重和数据分别管理。<code>codes/array_tutorial/</code> 中的程序是本书教学基线，作用是复算约定和边界；下载上游源码本身也不意味着已经完成依赖安装、编译和目标设备验证。</p>
 <p>模型落地时还要固定输入采样率、通道顺序、块长、动态轴、归一化、状态张量、算子集、运行时版本和线程配置。冷启动测量包含模型读取、图优化、权重上传和首轮内核准备；稳定运行延迟要在 warm-up 后另测。更新模型前保存可回滚版本，并用同一硬件、同一数据和同一计时范围比较。</p>
 <p>在 ONNX Runtime 中，算子内部线程数与图节点之间的并行是两个参数；线程自旋也会影响功耗。多模型并发时，应测各会话线程池的竞争和音频期限，不能直接复制单模型离线计时的最佳设置。对于 TensorFlow Lite Micro，模型文件大小也不等于内存占用：tensor arena 中的持久、临时和可复用张量之外，还可能有音频缓存和栈。<a href="https://onnxruntime.ai/docs/performance/tune-performance/threading.html" title="citation">ONNX Runtime 线程说明</a>、<a href="https://github.com/tensorflow/tflite-micro/blob/9f638f18154dff868e7053572f089be845b2fbdf/tensorflow/lite/micro/docs/memory_management.md" title="citation">TFLM 内存说明</a></p>
-<span id="sec-21" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-10">10.10 联调与验收</h2>
+<span id="sec-22" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-10">10.10 联调与验收</h2>
 <p>联调应按依赖关系排查，不必强行把所有模块串成一个固定顺序。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <th scope="col"ead>
@@ -927,11 +971,11 @@ room = pra.ShoeBox(
 </tr>
 </tbody>
 </table></div>
-<span id="sec-22" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-11">10.11 本章练习</h2>
-<p>以下十二题的输入均为本书构造的教学数据。先手算，再运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_engineering.py"><code>exercises_engineering.py</code></a>：</p>
+<span id="sec-23" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-11">10.11 本章练习</h2>
+<p>以下十三题的输入均为本书构造的教学数据。先手算，再运行前十二题的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_engineering.py"><code>exercises_engineering.py</code></a>：</p>
 <pre><code class="language-bash">.venv/bin/python -m codes.examples.exercises_engineering
 </code></pre>
-<p>程序按稳定编号输出中间量和结果；它不访问声卡，也不代表硬件性能测量。</p>
+<p>第十三题运行独立的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/spectral_subtraction_demo.py"><code>spectral_subtraction_demo.py</code></a>。两种程序按稳定编号输出中间量和结果；它们不访问声卡，也不代表硬件性能测量。</p>
 <p><strong>E10-01：把初始错位与 SRO 分开。</strong> 在参考时间 $[0,10,20]$ s 测得相对延迟 $[2,3,4]$ ms。按 §10.2 的一阶模型求截距、ppm、600 s 累积漂移，以及设备转到参考速率所需的“输出/输入”比例。</p>
 <p>答案：斜率为 $(4-2)\ \mathrm{ms}/20\ \mathrm{s}=10^{-4}$，即 100 ppm；截距为 2 ms。累计漂移约 $10^{-4}\times600=0.06$ s，即 60 ms，不含初始的 2 ms；比例约 $1/1.0001=0.99990001$。这组点恰好共线，不能据此认为实录估计也没有噪声，或首尾两点足以识别丢样。</p>
 <p><strong>E10-02：VAD 的迟滞与两帧挂起。</strong> 帧长 160 点、采样率 16 kHz，启动/继续能量阈值为 0.08/0.03，挂起为 2 帧，初始不活动。六帧均方能量依次为 $[0,0.09,0.04,0,0,0]$。写出六个活动标志及挂起时间。</p>
@@ -1017,7 +1061,7 @@ g_{k+1}&=g_k+\alpha_g(g_\star-g_k),\\
 \alpha_g&=1-e^{-\Delta t/\tau_g},\qquad
 g_k-g_\star=e^{-k\Delta t/\tau_g}(g_0-g_\star).
 \end{aligned}
-\tag{10-5}
+\tag{10-6}
 $$</p>
 <p>这是因为一次更新后误差乘 $1-\alpha_g$，连续 $k$ 次则乘 $(1-\alpha_g)^k$。因此两种系数分别为 $1-e^{-0.1}\approx0.095163$、$1-e^{-0.32}\approx0.273851$；经过 32 次和 10 次更新后，都保留 $e^{-3.2}\approx0.040762$，即约 4.0762% 的初始误差。</p>
 <p><code>PeakProtectAGC</code> 接受的 attack/release 是每次调用的平滑比例，不是秒数。输入电平变化、攻击与释放切换或安全限幅触发时，固定 $g_\star$ 的推导不再描述全部过程，不能因此要求任意分块的 AGC 波形完全相同。</p>
@@ -1026,7 +1070,9 @@ $$</p>
 <p><strong>E10-12：把一次跳变拟合成 SRO 会怎样。</strong> 在参考时间 $[0,1,2,3,4,5]$ s 观察到延迟 $[0,0.1,0.2,1.3,1.4,1.5]$ ms。已知真实漂移斜率为 100 ppm，而 3 s 起额外出现 1 ms 阶跃。先直接拟合全部点，再减去已知阶跃拟合；比较结果。</p>
 <p>时间均值为 2.5 s，延迟均值为 0.75 ms。中心化时间平方和为 $17.5\ \mathrm{s}^2$，时间与延迟乘积和为 $6.25\ \mathrm{ms}\cdot\mathrm{s}$，直接拟合斜率为 $6.25/17.5\approx0.357143$ ms/s，即约 357.143 ppm；截距为 $0.75-0.357143\times2.5\approx-0.142857$ ms。</p>
 <p>减去后半段已知的 1 ms 阶跃，六点恢复到每秒增加 0.1 ms，拟合得到 100 ppm 和零截距。这里人为提供了阶跃时刻与大小，不是一个自动丢样检测算法。实际阶跃也可能来自时间戳或重新对齐，必须结合采集事件记录判断原因。</p>
-<span id="sec-23" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-12">10.12 本章小结</h2>
+<p><strong>E10-13：功率谱减与地板。</strong> 一个频点的噪声专用帧复系数是 $2$，后续两帧带噪系数分别是 $3$、$1$。按式(10-4)取 $\alpha=1$、$\beta=0.04$，求噪声功率估计、两个输出功率和幅度；再把 $\beta$ 改为零，求第二个输出。说明零观测系数应怎样处理，及为什么这个计算不等于 MMSE-STSA。</p>
+<p>答案：$D=4$；带噪功率依次为 $9$、$1$，扣噪值为 $5$、$-3$，地板为 $0.36$、$0.04$，所以输出功率为 $5$、$0.04$，输出幅度为 $\sqrt5\approx2.2361$、$0.2$。零地板时第二个输出为零；若原带噪复系数本身为零，直接输出零，因为相位未定义。代码还给出同一合成输入在三个版本的噪声专用前奏中的均方根值；它们是单次有种子的波形数值，不能拿来证明自然语音的质量排序。MMSE-STSA 要基于语音与噪声的概率模型最小化谱幅度误差，本题没有这些步骤。</p>
+<span id="sec-24" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-12">10.12 本章小结</h2>
 <ol>
 <li>图 23 是参考依赖图，不是所有设备必须执行的固定流水线。</li>
 <li>延迟、算力和续航必须在目标硬件上按明确口径测量；窗口长度、MIPS 和 mAh 不能互相替代。</li>

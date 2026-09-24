@@ -98,6 +98,8 @@ Speex 文件头说明其 AUMDF 通过连续学习率提高双讲鲁棒性，没�
 
 ## 2. 噪声、语音活动与增益
 
+第 10 章[功率谱减手算与 E10-13](../../chapters/10_engineering-practice.md#sec-10-3-2)先固定噪声专用帧、逐频点平均噪声功率和相对观测功率的谱地板；[本书实现](../array_tutorial/noise_suppression.py)只承担这一可复算基线。下面的 WebRTC VAD、DeepFilterNet 和模型运行时具有不同的状态与训练假设，不能拿本书谱减的固定噪声估计和单次合成试听推断它们的质量或计算量。谱减仍需在目标输入上单独核验噪声估计失配、音乐噪声、任务损伤和跨块处理；当前 WAV 不含真实语音或设备采集。
+
 ### I06：WebRTC 传统 VAD
 
 入口为 [`common_audio/vad/include/webrtc_vad.h`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/common_audio/vad/include/webrtc_vad.h)，核心判断位于同目录的 `webrtc_vad.c` 和 `vad_core.c`。它与 APM 中的其他语音概率估计器不同；移植时必须写明具体接口，不能统称“WebRTC VAD”。WebRTC 源码使用 BSD-3-Clause，并保留相关第三方声明。

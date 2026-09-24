@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 5 章 · 波束形成 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="28a7db6b0401"><style>
+<meta name="source-digest" content="3c17a2f82b74"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -762,10 +762,11 @@ d &= \vec{w}_u^H\vec{x} = \dfrac{2.0000 + 0.0873+0.4086\mathrm{j}}{2}\\
 <li>
 <p><strong>掩码到空间协方差矩阵（Spatial Covariance Matrix，SCM）</strong>：</p>
 <p>$$\begin{aligned}
-    \hat{\mathbf R}_{ss}(k)&=\frac{\sum_n m_s(k,n)\vec x(k,n)\vec x^H(k,n)}{\sum_n m_s(k,n)+\epsilon},\\
-    \hat{\mathbf R}_{nn}(k)&=\frac{\sum_n m_n(k,n)\vec x(k,n)\vec x^H(k,n)}{\sum_n m_n(k,n)+\epsilon}。
+    \hat{\mathbf R}_{ss}(k)&=\frac{\sum_n m_s(k,n)\vec x(k,n)\vec x^H(k,n)}{\max\{\sum_n m_s(k,n),\epsilon\}},\\
+    \hat{\mathbf R}_{nn}(k)&=\frac{\sum_n m_n(k,n)\vec x(k,n)\vec x^H(k,n)}{\max\{\sum_n m_n(k,n),\epsilon\}}。
     \end{aligned}$$</p>
-<p>分母做掩码权重归一化；$\epsilon$ 只保护数值，不能使零掩码拥有统计依据。本书代码会拒绝权重和过小的频点，调用方须选择保持权重或其他明确回退。协方差是否使用未来帧决定这一步能否在线运行。</p>
+<p>分母做掩码权重归一化；$\epsilon$ 只保护数值，不能使零掩码拥有统计依据。直接调用本书的 <code>masked_spatial_covariance()</code> 时，掩码和低于 $\epsilon$ 会使协方差随掩码整体缩小。两麦 <code>mask_mvdr_2x2()</code> 则先在每个频点分别用目标和干扰掩码的最大值归一化，再估计协方差；因此统一缩小非零掩码不会触发绝对权重和阈值。</p>
+<p>掩码全零或统计量、求解不可用时，该函数回退到参考麦；它不检查原始掩码的置信程度。实际系统若要拒绝低可信度频点，须在归一化前定义有效支持量与阈值，并规定保持已验证权重或旁路等策略。协方差是否使用未来帧决定这一步能否在线运行。</p>
 </li>
 <li>
 <p><strong>SCM 到约束向量或广义特征向量</strong>：在秩一目标近似下，可取 $\hat{\mathbf R}_{ss}$ 的主特征向量并按参考麦归一化，得到相对传递函数 $\hat{\vec a}$。MVDR 再用式(5-3)求权重。另一条路线直接解</p>
@@ -779,6 +780,7 @@ d &= \vec{w}_u^H\vec{x} = \dfrac{2.0000 + 0.0873+0.4086\mathrm{j}}{2}\\
 <p><strong>两麦小例子</strong>：设掩码估得 $\hat{\mathbf R}_{nn}=\operatorname{diag}(2,1)$，目标 RTF 为 $\hat{\vec a}=[1,1]^\top$。则 $\hat{\mathbf R}_{nn}^{-1}\hat{\vec a}=[0.5,1]^\top$，归一化分母为 $1.5$，所以 $\vec w_{MVDR}=[1/3,2/3]^\top$。</p>
 <p>可直接验证 $\vec w^H\hat{\vec a}=1$，输出噪声功率为 $\vec w^H\hat{\mathbf R}_{nn}\vec w=2/3$。</p>
 <p>若目标掩码把干扰大量计入 $\hat{\mathbf R}_{ss}$，RTF 会偏移，上述无失真条件只对错误的 $\hat{\vec a}$ 成立。</p>
+<p><strong>掩码尺度与空掩码的边界例子</strong>：取四帧两麦复谱 $\vec x_1=\vec x_2=[1,1]^\top$、$\vec x_3=\vec x_4=[1,-1]^\top$，目标掩码为 $[1,1,0,0]$，干扰掩码为 $[0,0,1,1]$。目标方向 $[1,1]^\top$ 与干扰方向 $[1,-1]^\top$ 正交；采用默认正对角加载 $10^{-6}$ 的两麦基线得到 $\vec w=[1/2,1/2]^\top$，输出为 $[1,1,0,0]$。把非零目标掩码的 1 全部改成 $10^{-300}$，峰值归一化后权重和输出不变；把目标掩码改成全零，则退回参考麦，输出变成 $[1,1,1,1]$。这是本书代码的确定性算例，不表明极小网络概率具有可信统计量；两组掩码只由两帧构成，也不能推断真实语音分离性能。</p>
 <p>端到端网络也可以直接估计复数权重、时域滤波器或输出波形。它不再自动满足无失真、WNG 或因果约束，必须把阵列泛化、前瞻帧数、目标失真和目标硬件上的资源消耗列入评测。若与 ASR 联合训练，还应固定后端识别器和评分脚本，同时报告前端信号指标与词错误率（Word Error Rate，WER）。<a href="https://doi.org/10.1109/TASLP.2022.3229261" title="citation">Gu et al., IEEE/ACM TASLP 2023</a></p>
 <span id="sec-16" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-5fd4cffa34">可执行基线与上线检查</h3>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/beamforming.py"><code>beamforming.py</code></a> 提供 DSB、弥散场相干矩阵、加载超指向/MVDR、LCMV、GSC 阻塞矩阵和 Wiener 增益的原创 NumPy 基线。权重约定统一为输出 $Y=\vec w^H\vec x$，多通道谱形状统一为 <code>通道 × 频点 × 帧</code>；逐频点权重为 <code>频点 × 通道</code>。</p>

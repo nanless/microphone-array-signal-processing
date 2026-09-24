@@ -1,4 +1,4 @@
-"""Explicit cross-module, chapter and research inventory for 85 exercises."""
+"""Explicit cross-module, chapter and research inventory for 88 exercises."""
 
 import json
 import re
@@ -8,6 +8,7 @@ from pathlib import Path
 from codes.examples import (aec_advanced_exercises, aec_algorithm_minicases, exercises_engineering,
                             exercises_enhancement, exercises_spatial,
                             tracking_crossing_dropout_demo)
+from codes.examples.spectral_subtraction_demo import run_demo as spectral_subtraction_demo
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -16,7 +17,7 @@ EXPECTED = {
         "E01-01", "E01-02", "E02-01", "E02-02", "E02-03", "E03-01",
         "E03-02", "E04-01", "E04-02", "E04-03", "E05-01", "E05-02",
         "E01-03", "E02-04", "E02-05", "E03-03", "E03-04", "E04-04", "E05-03", "E05-04", "E04-05",
-        "E02-06", "E03-05", "E03-06", "E04-06", "E04-07", "E05-05",
+        "E02-06", "E03-05", "E03-06", "E04-06", "E04-07", "E04-09", "E05-05",
     },
     "enhancement": {
         "E06-01", "E06-02", "E06-03", "E07-01", "E07-02", "E07-03",
@@ -30,8 +31,9 @@ EXPECTED = {
     "engineering": {
         "E10-01", "E10-02", "E10-03", "E10-04", "E10-05", "E10-06",
         "E11-01", "E11-02", "E12-01", "E12-02", "E12-03", "E13-01",
-        "E10-07", "E10-08", "E10-09", "E10-10", "E10-11", "E10-12", "E11-03", "E11-04",
+        "E10-07", "E10-08", "E10-09", "E10-10", "E10-11", "E10-12", "E11-03", "E11-04", "E12-04",
     },
+    "spectral_subtraction": {"E10-13"},
 }
 AEC_CASE_KEYS = {"E06-07": "overlap_save", "E06-08": "ipnlms",
                  "E06-09": "geigel", "E06-10": "delay_polarity"}
@@ -40,6 +42,7 @@ RUNNERS = {"spatial": exercises_spatial.run_exercises,
            "aec_advanced": aec_advanced_exercises.run_exercises,
            "tracking_crossing": lambda: {"E09-06": tracking_crossing_dropout_demo.run_experiment()},
            "engineering": exercises_engineering.run_exercises,
+           "spectral_subtraction": lambda: {"E10-13": spectral_subtraction_demo()},
            "aec_minicases": lambda: {
                exercise_id: aec_algorithm_minicases.run_demo()[case_key]
                for exercise_id, case_key in AEC_CASE_KEYS.items()
@@ -62,9 +65,9 @@ class ExerciseCatalogTest(unittest.TestCase):
     def setUpClass(cls):
         cls.results = {name: run() for name, run in RUNNERS.items()}
 
-    def test_independent_inventory_has_85_unique_ids(self):
-        self.assertEqual(len(ALL_IDS), 85)
-        self.assertEqual(sum(map(len, EXPECTED.values())), 85)
+    def test_independent_inventory_has_88_unique_ids(self):
+        self.assertEqual(len(ALL_IDS), 88)
+        self.assertEqual(sum(map(len, EXPECTED.values())), 88)
 
     def test_each_module_returns_exact_assigned_ids(self):
         for name, results in self.results.items():
@@ -87,7 +90,7 @@ class ExerciseCatalogTest(unittest.TestCase):
                 text = chapters[0].read_text(encoding="utf-8")
                 self.assertRegex(text, rf"\b{re.escape(exercise_id)}\b")
 
-    def test_chapter_and_research_inventories_cover_exactly_85_ids(self):
+    def test_chapter_and_research_inventories_cover_exactly_88_ids(self):
         chapters = "\n".join(path.read_text(encoding="utf-8")
                              for path in (ROOT / "chapters").glob("*.md"))
         research = (ROOT / "codes/research/05_exercises_and_audio.md").read_text(encoding="utf-8")

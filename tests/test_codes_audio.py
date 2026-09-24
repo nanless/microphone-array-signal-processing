@@ -4,7 +4,7 @@ from pathlib import Path
 
 import numpy as np
 
-from codes.array_tutorial.audio_samples import (delay_samples, pcm16_bytes, read_pcm16,
+from codes.array_tutorial.audio_samples import (SEED, delay_samples, pcm16_bytes, read_pcm16,
                                                build_cases, prepare_exports)
 from codes.examples.generate_audio_samples import generate
 
@@ -43,7 +43,8 @@ class AudioSamplesTest(unittest.TestCase):
         pan = cases['tracking']['signals']['tracking_pan']
         np.testing.assert_allclose(np.sum(pan**2, axis=0), sep['separation_source1']**2, atol=1e-15)
         files, groups = prepare_exports(cases)
-        self.assertEqual(len(files), 55)
+        self.assertEqual(len(files), 60)
+        self.assertEqual(len(groups), 14)
         for blob, info in files.values():
             self.assertEqual(info['common_export_gain'], groups[info['group']]['common_export_gain'])
             self.assertLess(info['peak'], .801)
@@ -52,7 +53,7 @@ class AudioSamplesTest(unittest.TestCase):
     def test_manifest_check_detects_modified_audio(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            self.assertEqual(generate(root)['files'], 55)
+            self.assertEqual(generate(root)['files'], 60)
             self.assertTrue(generate(root, check=True)['checked'])
             (root/'spatial_reference.wav').write_bytes(b'not a WAV')
             with self.assertRaisesRegex(ValueError, 'audio content differs'):
@@ -203,6 +204,19 @@ class AudioSamplesTest(unittest.TestCase):
         self.assertEqual(groups['fractional_array']['parameters']['azimuth_deg'], 30.)
         _, decoded = read_pcm16(files['fractional_array.wav'][0])
         self.assertEqual(decoded.shape, (4, 32000))
+
+    def test_spectral_subtraction_audio_uses_independent_seed_and_common_gain(self):
+        case = build_cases()['spectral_subtraction']
+        signals = case['signals']
+        expected_noise = .07 * np.random.default_rng(SEED + 5).standard_normal(32000)
+        np.testing.assert_array_equal(signals['spectral_noise'], expected_noise)
+        np.testing.assert_array_equal(signals['spectral_noisy'],
+                                      signals['spectral_clean'] + expected_noise)
+        self.assertTrue(np.all(signals['spectral_clean'][:6400] == 0))
+        files, groups = prepare_exports({'spectral_subtraction': case})
+        self.assertEqual(len(files), 5)
+        self.assertEqual(groups['spectral_subtraction']['common_export_gain'], 1.)
+        self.assertTrue(all(info['common_export_gain'] == 1. for _, info in files.values()))
 
 
 if __name__ == '__main__':

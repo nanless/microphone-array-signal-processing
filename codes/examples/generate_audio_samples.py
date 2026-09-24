@@ -21,6 +21,7 @@ INPUTS = ['codes/examples/generate_audio_samples.py', 'codes/array_tutorial/audi
           'codes/array_tutorial/aec.py', 'codes/array_tutorial/aec_ipnlms.py',
           'codes/array_tutorial/aec_rls.py', 'codes/array_tutorial/aec_kalman_matrix.py',
           'codes/array_tutorial/aec_subband.py',
+          'codes/array_tutorial/noise_suppression.py',
           'codes/array_tutorial/dereverberation.py',
           'codes/array_tutorial/spectral.py', 'codes/array_tutorial/conventions.py',
           'codes/array_tutorial/geometry.py']
@@ -34,7 +35,7 @@ def generate(destination: Path, check: bool = False) -> dict:
     manifest = {'schema_version': 1, 'seed': SEED, 'origin': 'original deterministic mathematical synthesis',
                 'environment': {'python': platform.python_version(), 'numpy': np.__version__,
                                 'system': platform.system(), 'machine': platform.machine(), 'float_dtype': 'float64'},
-                'synthetic_signal': {'applies_to': '173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods and aec_subband; see each group for noise and transforms',
+                'synthetic_signal': {'applies_to': '173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband and spectral_subtraction; see each group for noise and transforms',
                                      'duration_s': 2, 'base_frequencies_hz': [173, 293],
                                      'harmonic_numbers': [1, 2, 3, 4, 5, 6], 'harmonic_amplitude': '1/(4*k)',
                                      'envelope': '0.3+0.7*sin(2*pi*2*t)^2', 'fade_duration_s': .02,

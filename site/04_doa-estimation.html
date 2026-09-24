@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 4 章 · 声源定位（DOA 估计） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="28a7db6b0401"><style>
+<meta name="source-digest" content="3c17a2f82b74"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -588,7 +588,13 @@ $$\vec{a}^H(0°)\,\vec{e}_3=\frac{1}{\sqrt6}(1\times1+1\times1+1\times(-2))=0$$<
 <p><strong>算例：ESPRIT 最小数字链（$M=3$、$d=\lambda/2$）</strong>：子阵 1 取麦 {1,2}，子阵 2 取麦 {2,3}。在本章导向矢量约定下，旋转因子为 $\Psi=e^{+\mathrm{j}\pi\sin\theta}$，因此反演式是</p>
 <p>$$\theta=\arcsin\!\left(\frac{\arg\Psi}{\pi}\right)\text{。}$$</p>
 <p>$\theta=0°$ 时 $\Psi=1$，反演得 0°；$\theta=30°$ 时 $\Psi=+\mathrm j$、$\arg\Psi=+\pi/2$，反演得 30°。</p>
-<p>不能对 $\arg\Psi$ 取绝对值，否则会丢失左右方向的符号。若交换两子阵的次序，$\Psi$ 变为共轭，反演式中的符号也要同时改变。</p>
+<p>不能对 $\arg\Psi$ 取绝对值，否则会丢失左右方向的符号。在此理想、单位模的移位关系中，若交换两子阵的次序，旋转因子变为共轭，反演式中的符号也要同时改变。</p>
+<p>实际估计到的信号子空间会有误差，移位后的两段通常不能精确相等。单源时把两段看作列向量 $\vec e_1,\vec e_2$，选择复数 $\hat\Psi$ 使 $\|\vec e_2-\vec e_1\hat\Psi\|_2^2$ 最小。展开平方并对 $\hat\Psi^*$ 求导，得到 $\vec e_1^H\vec e_1\hat\Psi=\vec e_1^H\vec e_2$；只要 $\vec e_1\ne\vec0$，解为 $\hat\Psi=(\vec e_1^H\vec e_2)/(\vec e_1^H\vec e_1)$。</p>
+<p>多源时，对应目标是 $\min_{\boldsymbol\Psi}\|\mathbf E_{s2}-\mathbf E_{s1}\boldsymbol\Psi\|_F^2$。若 $\mathbf E_{s1}$ 满列秩，可解正规方程；病态时应检查奇异值，而不能盲目求逆。<a href="https://doi.org/10.1109/29.32276" title="citation">Roy 与 Kailath 的 ESPRIT 原始论文</a>。</p>
+<p><strong>E04-09：用两行子阵手算 ESPRIT 最小二乘解。</strong> 先用本书构造的理想信号子空间向量 $\vec e=[1,\mathrm j,-1]^\top$，令 $\vec e_1=[e_1,e_2]^\top$、$\vec e_2=[e_2,e_3]^\top$；再把第三项改为 $-0.9+0.1\mathrm j$，其余两项不变。两次分别计算 $\vec e_1^H\vec e_1$、$\vec e_1^H\vec e_2$、$\hat\Psi$、残差范数和反演方向。取 $d=\lambda/2$，数字只代表子空间扰动的教学示例，不代表某个快拍数或 SNR 下的统计误差。</p>
+<p><strong>参考答案</strong>：两次都有 $\vec e_1=[1,\mathrm j]^\top$，故分母为 $1+|\mathrm j|^2=2$。理想情形分子是 $1^*\mathrm j+(\mathrm j)^*(-1)=2\mathrm j$，于是 $\hat\Psi=\mathrm j$，残差为 0，方向为 $\arcsin((\pi/2)/\pi)=30°$。</p>
+<p>扰动后分子是 $\mathrm j+(-\mathrm j)(-0.9+0.1\mathrm j)=0.1+1.9\mathrm j$，故 $\hat\Psi=0.05+0.95\mathrm j$。残差向量为 $[-0.05+0.05\mathrm j,\,0.05+0.05\mathrm j]^\top$，范数为 $\sqrt{0.01}=0.1$；相位约 $86.987°$，方向约 $28.90°$。</p>
+<p>这说明最小二乘只能拟合被扰动的移位关系，不保证角度仍精确。若交换子阵次序，新的最小二乘因子一般<strong>不等于</strong>原因子的共轭（分母也会改变），但这里其相位变号；反演公式须同时改变符号。代码入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 的 <code>E04-09</code>，并用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/doa.py"><code>doa.py::esprit_ula</code></a> 核对由这两个向量构造的协方差。</p>
 <p>上式还假定相位没有空间混叠。$d>\lambda/2$ 时，主值相位可能对应多个角度，必须限制搜索区间或使用额外频率消歧。</p>
 <blockquote>
 <p>MUSIC 与 ESPRIT 的上述推导基于窄带模型。宽带语音需要在频率维度合并信息，下一节讨论相干与非相干宽带处理。</p>
@@ -1106,7 +1112,7 @@ g_k&=\left(\prod_{i=k+1}^{M}\hat\lambda_i\right)^{1/(M-k)}。
 </li>
 </ol>
 <p>以下四题用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 复算。它们检查时延符号、统计秩、几何歧义和空间平滑，不把谱峰尖锐程度当作准确性的唯一依据。</p>
-<p>MDL 练习 E04-05、E04-06 随完整算例放在 <a href="#sec-4-9">§4.9</a>；四麦音频练习 E04-07 放在 <a href="#sec-4-10">§4.10</a>。题号保持稳定，建议先读对应专题，再做本节综合练习。</p>
+<p>ESPRIT 最小二乘练习 E04-09 随推导放在 <a href="#sec-4-6">§4.6</a>；MDL 练习 E04-05、E04-06 随完整算例放在 <a href="#sec-4-9">§4.9</a>；四麦音频练习 E04-07 放在 <a href="#sec-4-10">§4.10</a>。题号保持稳定，建议先读对应专题，再做本节综合练习。</p>
 <p><strong>E04-01：交换两段录音，延迟应怎样变化？</strong> 16 kHz 下，让麦 1 比麦 2 晚 3 点，零填充而不循环移动信号。对单脉冲和固定种子宽带噪声各算一次 GCC-PHAT，再交换两通道。静音输入应返回哪个方向？</p>
 <p><strong>参考答案</strong>：$\tau_{12}=3/16000=187.5$ μs，交换后为 −187.5 μs。两类输入都应得到 +3、−3 点；零能量输入没有可辨的相关峰，本书函数会明确报错，不能把首个搜索点当成方向。</p>
 <p>这个 3 点延迟至少对应 $343\times187.5\,\mu\mathrm{s}=6.43$ cm 的麦距，不能把它再代入 4 cm 双麦反算实数角度。本题隔离代码符号与零输入行为，不模拟混响或亚采样误差。</p>

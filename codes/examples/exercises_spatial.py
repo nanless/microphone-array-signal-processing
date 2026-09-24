@@ -20,7 +20,7 @@ if str(ROOT) not in sys.path:
 
 from codes.array_tutorial.beamforming import lcmv_weights, mvdr_weights
 from codes.array_tutorial.covariance import recursive_covariance, spatial_covariance
-from codes.array_tutorial.doa import gcc_phat, mdl_source_count, music_spectrum
+from codes.array_tutorial.doa import esprit_ula, gcc_phat, mdl_source_count, music_spectrum
 from codes.array_tutorial.geometry import direction_vector, near_field_steering, plane_wave_delays, plane_wave_steering
 from codes.array_tutorial.spectral import istft, stft
 from codes.examples.mdl_repeated_trials import run_experiment as mdl_repeated_trials
@@ -433,8 +433,36 @@ def four_mic_fractional_delay() -> dict:
             "model_scope": "ideal pure-tone phasor; WAV additionally uses broadband noise, linear interpolation and PCM16"}
 
 
+def esprit_least_squares_small() -> dict:
+    """E04-09: two-row single-source LS rotation, with a stated subspace perturbation."""
+    cases = []
+    for label, third in (("ideal", -1.0 + 0j), ("perturbed", -0.9 + 0.1j)):
+        signal = np.array([1.0, 1j, third])
+        first, second = signal[:-1], signal[1:]
+        denominator = np.vdot(first, first)
+        numerator = np.vdot(first, second)
+        rotation, *_ = np.linalg.lstsq(first[:, None], second, rcond=None)
+        rotation = complex(rotation[0])
+        residual = second - first * rotation
+        # This constructed covariance has signal as its top eigenvector, not a
+        # finite-snapshot performance distribution.
+        covariance = np.outer(signal, signal.conj()) + .1 * np.eye(3)
+        api_angle = esprit_ula(covariance, source_count=1,
+                               spacing_m=343 / 2000, frequency_hz=1000)[0]
+        cases.append({"label": label, "first_conjugate_norm": float(denominator.real),
+                      "first_conjugate_second_real": float(numerator.real),
+                      "first_conjugate_second_imag": float(numerator.imag),
+                      "rotation_real": rotation.real, "rotation_imag": rotation.imag,
+                      "residual_norm": float(np.linalg.norm(residual)),
+                      "rotation_phase_deg": float(np.rad2deg(np.angle(rotation))),
+                      "angle_deg": float(np.rad2deg(np.arcsin(np.angle(rotation) / np.pi))),
+                      "api_angle_deg": float(np.rad2deg(api_angle))})
+    return {"spacing_wavelengths": .5, "subspace_cases": cases,
+            "model_scope": "constructed narrowband subspaces; perturbation is not a sampled SNR claim"}
+
+
 def run_exercises() -> dict:
-    """Return twenty-seven JSON results, including 7 x 200 MDL resampling trials."""
+    """Return twenty-eight JSON results, including 7 x 200 MDL resampling trials."""
     functions = {
         "E01-01": correlated_noise, "E01-02": amplitude_and_power,
         "E02-01": stft_framing, "E02-02": complex_covariance, "E02-03": stft_roundtrip,
@@ -450,6 +478,7 @@ def run_exercises() -> dict:
         "E03-06": complex_gain_calibration,
         "E04-06": mdl_repeated_trials, "E05-05": mvdr_finite_noise_null,
         "E04-07": four_mic_fractional_delay,
+        "E04-09": esprit_least_squares_small,
     }
     return {identifier: function() for identifier, function in functions.items()}
 

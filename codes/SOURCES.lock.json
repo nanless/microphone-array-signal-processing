@@ -856,8 +856,17 @@
       "revision": "f0c4f7030769d94dea2da3c814837448f171d422",
       "license": "MIT for code; bundled test-audio provenance and rights separate",
       "scope": "MATLAB subband Kalman, square-root Kalman, information and square-root information AEC demonstrations",
-      "fetch_enabled": false,
-      "note": "Official repository, source and license checked 2026-09-23. Requires MATLAB and bundled win_para_update.mat; main.m selects the variants. saf_kalman.m enables a residual nonlinear processor by default, so its output is not only the linear Kalman error. README notes weak high-frequency performance in some cases. Bundled ReSpeaker and AEC-Challenge audio is not covered here by a verified data license. Source indexed only; no run or device validation claimed.",
+      "fetch_enabled": true,
+      "note": "Official repository, source and MIT license checked 2026-09-24. Fetch only the fixed-commit MATLAB source, LICENSE and README into the ignored independent checkout; exclude test_audio and bundled win_para_update.mat because their rights are not established here. Requires MATLAB and win_para_update.mat for the upstream main.m demonstration, so this source-only checkout is not runnable as-is. saf_kalman.m enables a residual nonlinear processor by default, so its output is not only the linear Kalman error. README notes weak high-frequency performance in some cases. No run or device validation claimed.",
+      "source_paths": [
+        "LICENSE",
+        "README.md",
+        "main.m",
+        "saf_kalman.m",
+        "saf_sr_kalman.m",
+        "saf_if.m",
+        "saf_sr_if.m"
+      ],
       "entrypoints": [
         "LICENSE",
         "README.md",
@@ -865,8 +874,7 @@
         "saf_kalman.m",
         "saf_sr_kalman.m",
         "saf_if.m",
-        "saf_sr_if.m",
-        "win_para_update.mat"
+        "saf_sr_if.m"
       ]
     },
     {

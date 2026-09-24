@@ -25,6 +25,18 @@ quality_check = load("quality_check", ROOT / "scripts" / "quality_check.py")
 
 
 class BuildHelpersTest(unittest.TestCase):
+    def test_terminal_rule_is_removed_without_touching_internal_section_rule(self):
+        html = '<p>定义</p><hr />\n<p>章末正文</p>\n<hr />\n'
+        self.assertEqual(build_pdf.strip_terminal_rule(html),
+                         '<p>定义</p><hr />\n<p>章末正文</p>')
+        self.assertEqual(build_pdf.strip_terminal_rule('<p>无结尾线</p>'),
+                         '<p>无结尾线</p>')
+
+    def test_empty_pdf_page_distinguishes_text_and_image_pages(self):
+        self.assertTrue(quality_check.pdf_page_is_empty(' \n ', 0))
+        self.assertFalse(quality_check.pdf_page_is_empty('一行正文', 0))
+        self.assertFalse(quality_check.pdf_page_is_empty('', 1))
+
     def test_book_end_stays_with_final_paragraph(self):
         html = '<p>前段</p>\n<p>最后一段。</p>\n<hr />\n'
         result = build_pdf.append_book_end(html)

@@ -168,6 +168,9 @@ def mask_mvdr_2x2(
     Each non-empty mask is scaled by its own per-frequency maximum before its
     SCM is formed, so a common positive change in mask values does not by itself
     trigger the absolute denominator floor used by ``masked_spatial_covariance``.
+    There is no confidence threshold on the original mask mass: even uniformly
+    tiny but nonzero masks can produce weights. A zero mask, zero usable target
+    or interference statistic, or failed solve selects reference microphone 0.
     """
 
     x = np.asarray(spectrum)

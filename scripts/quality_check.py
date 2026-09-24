@@ -48,7 +48,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "06_aec.md": 24,
     "07_wpe-dereverberation.md": 3,
     "08_speech-separation.md": 6,
-    "10_engineering-practice.md": 10,
+    "10_engineering-practice.md": 11,
     "11_selection-guide.md": 7,
 }
 # 上表为独立发布基线，不从待检 HTML 或构建器反推。
@@ -70,8 +70,8 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 86
-EXPECTED_SUBSECTION_COUNT = 50
-EXPECTED_OUTLINE_ITEM_COUNT = 150
+EXPECTED_SUBSECTION_COUNT = 51
+EXPECTED_OUTLINE_ITEM_COUNT = 151
 EXPECTED_FIGURE_NUMBERS = set(range(1, 40))
 # 研究附站使用独立显式清单，不挤占 14 篇教程或 150 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
@@ -893,6 +893,11 @@ def pdf_outline_tree(items):
     return result
 
 
+def pdf_page_is_empty(extracted_text: str, image_count: int) -> bool:
+    """Flag a page with neither searchable text nor raster content."""
+    return not extracted_text.strip() and image_count == 0
+
+
 def check_pdf(errors: list[str], notices: list[str]):
     path = DIST / "microphone-array-tutorial.pdf"
     if not path.exists():
@@ -924,7 +929,10 @@ def check_pdf(errors: list[str], notices: list[str]):
         fail(errors, f"PDF 纸型不是 A4：{width:.1f}×{height:.1f} pt")
     extracted = []
     for page_no, page in enumerate(reader.pages, 1):
-        extracted.append(page.extract_text() or "")
+        page_text = page.extract_text() or ""
+        extracted.append(page_text)
+        if not page_text.strip() and pdf_page_is_empty(page_text, len(page.images)):
+            fail(errors, f"PDF 第 {page_no} 页没有正文或图片；检查章末装饰线与强制分页")
         for ref in page.get("/Annots", []):
             obj = ref.get_object()
             action = obj.get("/A")
@@ -989,6 +997,7 @@ EXPECTED_AUDIO_STEMS = {
     "aec_methods_ipnlms_residual", "aec_methods_rls_residual", "aec_methods_kalman_residual",
     "aec_subband_reference", "aec_subband_true_echo", "aec_subband_diagonal_model",
     "aec_subband_missing_cross_terms",
+    "spectral_clean", "spectral_noise", "spectral_noisy", "spectral_floor04", "spectral_floor00",
 }
 
 
@@ -1137,12 +1146,13 @@ def check_audio(errors):
         manifest = json.loads((root / "MANIFEST.json").read_text())
         records = manifest["files"]
         names = {stem + ".wav" for stem in EXPECTED_AUDIO_STEMS}
-        if len(records) != 55 or {r["file"] for r in records} != names:
-            fail(errors, "音频清单必须包含独立基线的 55 个 WAV")
+        if len(records) != 60 or {r["file"] for r in records} != names:
+            fail(errors, "音频清单必须包含独立基线的 60 个 WAV")
         if {p.name for p in root.glob("*.wav")} != names or {p.name for p in (SITE / "audio").glob("*.wav")} != names:
             fail(errors, "源音频或站点音频文件集合不符")
         if set(manifest["groups"]) != {"spatial", "aec", "aec_methods", "aec_subband", "wpe", "separation", "engineering", "tracking",
-                                      "correlation", "polarity", "conditioning", "nonlinear", "fractional_array"}:
+                                      "correlation", "polarity", "conditioning", "nonlinear", "fractional_array",
+                                      "spectral_subtraction"}:
             fail(errors, "音频实验组不符")
         expected_inputs = {"codes/examples/generate_audio_samples.py", "codes/array_tutorial/audio_samples.py",
                            "codes/array_tutorial/aec.py", "codes/array_tutorial/aec_ipnlms.py",
@@ -1150,7 +1160,8 @@ def check_audio(errors):
                            "codes/array_tutorial/aec_subband.py",
                            "codes/array_tutorial/dereverberation.py",
                            "codes/array_tutorial/spectral.py", "codes/array_tutorial/conventions.py",
-                           "codes/array_tutorial/geometry.py"}
+                           "codes/array_tutorial/geometry.py",
+                           "codes/array_tutorial/noise_suppression.py"}
         if set(manifest["generator_inputs"]) != expected_inputs:
             fail(errors, "音频生成来源清单不完整")
         for name, expected in manifest["generator_inputs"].items():
@@ -1174,7 +1185,8 @@ def check_audio(errors):
                 raw = wav.readframes(frames)
             if record["sample_rate_hz"] != 16000 or record["duration_s"] != frames / 16000:
                 fail(errors, f"音频清单采样率或时长不符：{name}")
-            expected_group = ("fractional_array" if name.startswith("fractional_") else
+            expected_group = ("spectral_subtraction" if name.startswith("spectral_") else
+                              "fractional_array" if name.startswith("fractional_") else
                               "aec_methods" if name.startswith("aec_methods_") else
                               "aec_subband" if name.startswith("aec_subband_") else name.split("_", 1)[0])
             if record["group"] != expected_group:
@@ -1204,7 +1216,7 @@ def check_audio(errors):
         parser = AudioParser()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         synthetic_players = [p for p in parser.players if (p.get("src") or "").startswith("../audio/")]
-        if len(synthetic_players) != 55 or {p.get("src") for p in synthetic_players} != {"../audio/" + n for n in names}:
+        if len(synthetic_players) != 60 or {p.get("src") for p in synthetic_players} != {"../audio/" + n for n in names}:
             fail(errors, "试听控件集合不符")
         for player in parser.players:
             if "autoplay" in player or "controls" not in player or player.get("preload") != "none" or not player.get("aria-label"):
