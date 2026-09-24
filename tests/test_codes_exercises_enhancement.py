@@ -7,7 +7,8 @@ import numpy as np
 from codes.examples.exercises_enhancement import run_exercises
 from codes.array_tutorial.aec import erle_db, nlms
 from codes.array_tutorial.dereverberation import offline_wpe
-from codes.array_tutorial.separation import masked_spatial_covariance, pit_permutation, si_sdr
+from codes.array_tutorial.separation import (guided_activity_posterior,
+                                             masked_spatial_covariance, pit_permutation, si_sdr)
 
 
 class TestEnhancementExercises(unittest.TestCase):
@@ -18,7 +19,7 @@ class TestEnhancementExercises(unittest.TestCase):
     def test_stable_ids_and_serialization(self):
         expected = {f'E{chapter:02d}-{exercise:02d}'
                     for chapter in range(6, 10)
-                    for exercise in range(1, 7 if chapter in (6, 8) else 6)}
+                    for exercise in range(1, 7 if chapter == 6 else 8 if chapter == 8 else 6)}
         self.assertEqual(set(self.results), expected)
         json.dumps(self.results,allow_nan=False)
         self.assertEqual(self.results,run_exercises())
@@ -89,6 +90,29 @@ class TestEnhancementExercises(unittest.TestCase):
                                    [-3.690010652078401, -3.690010652078401])
         np.testing.assert_allclose(result['aligned_concatenated_si_sdr_db'], [20, 20])
         self.assertTrue(result['oracle_alignment'])
+
+    def test_gss_activity_has_a_background_route_for_silence(self):
+        result = self.results['E08-07']
+        self.assertEqual(result['unnormalized_scores'], [[1., 0., .2], [0., 0., .2]])
+        np.testing.assert_allclose(result['posterior'], [[5/6, 0, 1/6], [0, 0, 1]], atol=1e-15)
+        self.assertEqual(result['no_background_silent_frame_denominator'], 0.)
+
+    def test_gss_activity_rejects_missing_background_and_bad_activity(self):
+        likelihoods = [[2., 1., 1.], [2., 1., 1.]]
+        for weights, activity in [
+            ([.5, .3, 0.], [[1, 0], [0, 0]]),
+            ([.5, .3, .2], [[1, 2], [0, 0]]),
+            ([.5, .3, .2], [[1, 0], [0, np.nan]]),
+        ]:
+            with self.subTest(weights=weights, activity=activity):
+                with self.assertRaises(ValueError):
+                    guided_activity_posterior(weights, likelihoods, activity)
+        with self.assertRaises(ValueError):
+            guided_activity_posterior([.5, .3, .2], [[2., 1., 0.]], [[1, 0]])
+        with np.errstate(all='raise'):
+            posterior = guided_activity_posterior(
+                [1e308, 1e-308, 1e-308], [[1e308, 1e-308, 1e-308]], [[0, 0]])
+        np.testing.assert_array_equal(posterior, [[0., 0., 1.]])
 
     def test_kalman_seconds_and_angle_wrap(self):
         history=self.results['E09-01']['predictions']

@@ -125,6 +125,7 @@ REAL_AUDIO_WAVS = {
     "demand_nriver_mean02_10s.wav", "demand_nriver_mean16_10s.wav",
 }
 REAL_AUDIO_FILES = REAL_AUDIO_WAVS | {"MANIFEST.json", "ATTRIBUTION.txt", "LICENSE.txt", "README.md"}
+ROOM_AUDIO_EXTRA = {"MANIFEST.json", "ROOM_RESULTS.png"}
 
 
 def stage_real_audio(source, destination):
@@ -150,6 +151,36 @@ def stage_real_audio(source, destination):
     return REAL_AUDIO_FILES.copy()
 
 
+def stage_room_audio(source, destination):
+    """Stage the separately generated, fixed-room synthetic experiment."""
+    manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+    records = manifest["files"]
+    names = [record["file"] for record in records]
+    if (len(records) != 18 or len(names) != len(set(names)) or
+            any(not re.fullmatch(r"[a-z0-9_]+\.wav", name) for name in names)):
+        raise ValueError("房间音频清单必须列出18个安全且不重复的WAV文件")
+    roles = {(record["case"], record["role"]) for record in records}
+    cases = {record["case"] for record in records}
+    if len(cases) != 6 or roles != {(case, role) for case in cases
+                                     for role in ("source", "direct", "full")}:
+        raise ValueError("房间音频必须为六组源/直达/完整三联样本")
+    names = set(names) | ROOM_AUDIO_EXTRA
+    if {path.name for path in source.iterdir() if path.is_file()} != names:
+        raise ValueError("房间音频目录文件集合与清单不符")
+    if not (source / "ROOM_RESULTS.png").read_bytes().startswith(b"\x89PNG\r\n\x1a\n"):
+        raise ValueError("房间结果图不是 PNG")
+    for record in records:
+        path = source / record["file"]
+        if path.is_symlink() or hashlib.sha256(path.read_bytes()).hexdigest() != record["sha256"]:
+            raise ValueError(f"房间音频摘要不符：{path.name}")
+    destination.mkdir()
+    for name in sorted(names):
+        if (source / name).is_symlink():
+            raise ValueError("房间样本发布文件不能为符号链接")
+        shutil.copy2(source / name, destination / name)
+    return names
+
+
 def clean_label(text):
     text = re.sub(r"!\[.*?\]\(.*?\)", "", text)
     text = re.sub(r"[`*_~]", "", text)
@@ -165,6 +196,7 @@ def source_digest():
     paths += sorted((ROOT / "codes" / "audio").glob("*.wav"))
     paths += [ROOT / "codes" / "audio" / "MANIFEST.json"]
     paths += sorted((ROOT / "codes" / "real_audio").glob("*"))
+    paths += sorted((ROOT / "codes" / "room_audio").glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "make_figures.py",
               ROOT / "scripts" / "make_aec_figures.py", ROOT / "requirements.txt"]
@@ -329,6 +361,18 @@ def rewrite_href_targets(html, transform):
     return re.sub(r'(<a\b[^>]*?\bhref=)([\"\'])(.*?)\2', replace, html, flags=re.S)
 
 
+def rewrite_room_image_src(html, source_path, current):
+    """Keep the supplementary room chart inside the published site bundle."""
+    def replace(match):
+        parsed, target = local_link_target(unescape(match.group(3)), source_path)
+        if target == (ROOT / "codes" / "room_audio" / "ROOM_RESULTS.png").resolve():
+            relative = os.path.relpath("room_audio/ROOM_RESULTS.png", Path(current).parent).replace(os.sep, "/")
+            value = urlunsplit(("", "", relative, parsed.query, parsed.fragment))
+            return match.group(1) + match.group(2) + escape(value, quote=True) + match.group(2)
+        return match.group(0)
+    return re.sub(r'(<img\b[^>]*?\bsrc=)(["\x27])(.*?)\2', replace, html, flags=re.S)
+
+
 def rewrite_site_links(html, source_path):
     outputs = source_outputs()
     current = outputs.get(Path(source_path).resolve(), "index.html")
@@ -346,9 +390,13 @@ def rewrite_site_links(html, source_path):
         if target.parent == (ROOT / "codes" / "real_audio").resolve() and target.name in REAL_AUDIO_FILES:
             relative = os.path.relpath("real_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
+        if target.parent == (ROOT / "codes" / "room_audio").resolve():
+            relative = os.path.relpath("room_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
+            return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
         return repository_url(parsed, target)
 
     html = rewrite_href_targets(html, transform)
+    html = rewrite_room_image_src(html, source_path, current)
     # Only generated local WAV links gain controls; no autoplay and no remote media.
     def player(match):
         href, label = unescape(match.group(1)), match.group(2)
@@ -620,10 +668,16 @@ def main():
         (OUT / "real_audio").mkdir(exist_ok=True)
         stale += [path for path in (OUT / "real_audio").iterdir()
                   if path.is_file() and path.name not in real_names]
+        room_names = stage_room_audio(ROOT / "codes/room_audio", temp_out / "room_audio")
+        (OUT / "room_audio").mkdir(exist_ok=True)
+        stale += [path for path in (OUT / "room_audio").iterdir()
+                  if path.is_file() and path.name not in room_names]
         publish_files([(temp_out / name, OUT / name) for name in sorted(expected)] +
                       [(temp_out / "audio" / name, OUT / "audio" / name) for name in audio_names] +
                       [(temp_out / "real_audio" / name, OUT / "real_audio" / name)
-                       for name in sorted(real_names)], stale)
+                       for name in sorted(real_names)] +
+                      [(temp_out / "room_audio" / name, OUT / "room_audio" / name)
+                       for name in sorted(room_names)], stale)
     print("DONE", len(expected), "pages")
 
 

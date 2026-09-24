@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 9 章 · 声源追踪 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5d23d343bd67"><style>
+<meta name="source-digest" content="28a7db6b0401"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -103,7 +103,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>单个固定阵列的一次方位观测不能确定距离。令阵列中心为 $(0,0)$，声源在 $(1\ \mathrm m,1\ \mathrm m)$ 与 $(2\ \mathrm m,2\ \mathrm m)$ 时都得到 $45^\circ$；沿同一射线缩放位置不会改变 <code>atan2</code> 的结果。</p>
 <p>连续仅测方位观测只有在已知运动约束和足够的阵列—声源相对运动使系统可观测时，才可能逐步估计距离。否则，即使用扩展卡尔曼滤波（Extended Kalman Filter，EKF）或无迹卡尔曼滤波（Unscented Kalman Filter，UKF），径向位置仍不能由滤波器自行产生。</p>
 <p>位置级追踪通常还要引入已知中心不同的多个阵列、到达时间差（Time Difference of Arrival，TDOA）或距离观测，或利用满足可观测条件的移动阵列轨迹。<a href="https://doi.org/10.1080/00207178908559665" title="citation">仅测方位可观测性分析</a>。</p>
-<p>EKF 用该观测函数的雅可比做一阶线性化。标准对称或缩放无迹变换的 UKF 通常传播 $2L+1$ 个 sigma 点；对位置—速度状态 $[x,y,\dot x,\dot y]^\top$，状态维数 $L=4$，因此是 9 个点。单纯方位—角速度状态只有 $L=2$，对应 5 个点。也有单纯形、球面径向等减少点数的变体，不能把 $2L+1$ 写成所有 UKF 的定义。近距离或声源越过阵列附近时非线性更强，应比较 UKF、粒子滤波或其他非线性方法，而不是直接套用线性卡尔曼滤波（Kalman Filter，KF）。</p>
+<p>EKF 用该观测函数的雅可比做一阶线性化。标准对称或缩放无迹变换的 UKF 通常传播 $2L+1$ 个 sigma 点；对位置—速度状态 $[x,y,\dot x,\dot y]^\top$，状态维数 $L=4$，因此是 9 个点。单纯方位—角速度状态只有 $L=2$，对应 5 个点。也有单纯形、球面径向等减少点数的变体，不能把 $2L+1$ 写成所有 UKF 的定义。</p>
+<p>近距离或声源越过阵列附近时非线性更强，应比较 UKF、粒子滤波或其他非线性方法，而不是直接套用线性卡尔曼滤波（Kalman Filter，KF）。</p>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-9-2">9.2 单目标追踪</h2>
 <p>状态与观测模型写为</p>
 <p>$$\vec{s}_t=\mathbf F\vec{s}_{t-1}+\vec v_t,\qquad \vec z_t=\mathbf H\vec s_t+\vec w_t\text{。}\tag{9-1}$$</p>
@@ -530,7 +531,8 @@ N_{eff}&=\frac{1}{\sum_{i=1}^{10}\tilde w_i^2}\\
 <p>第一帧“顺接”事件的似然正比于 $\exp[-(2^2+(-2)^2)/(2\times3^2)]=e^{-8/18}\approx0.641$；“交换”事件的残差为 $38^\circ,-38^\circ$，似然约为 $e^{-2888/18}$，归一化后的顺接概率在所示精度下为 1。</p>
 <p>第三帧两条预测都为 $40^\circ$，两个交换事件的残差平方和都为 $(-1)^2+1^2=2$，似然都为 $e^{-2/18}\approx0.895$。归一化后两个全局事件各为 0.5，因此每条轨迹关联到 $39^\circ$ 或 $41^\circ$ 的边缘概率也各为 0.5。</p>
 <p>第二帧多出的 $15^\circ$ 只有在给定检测概率、杂波空间密度和漏检模型后才能得到完整概率；仅比较残差时，近邻两对的代价为 $5/18\approx0.278$，但这不是完整 JPDA 后验。</p>
-<p>JPDA 在每帧枚举满足一对一约束、漏检和杂波模型的联合事件，再把事件概率边缘化到每条轨迹；交叉处的两条轨迹可能因共享两个观测而向同一均值靠拢。MHT 则把第三帧的两种全局历史都暂时保留，等后续观测拉开后再按累计似然和剪枝规则决策，因此更能延迟身份决定，但假设树会增长。这个例子只比较关联机制；实际概率还必须包含检测概率、杂波强度和门控归一化。<a href="https://doi.org/10.1109/JOE.1983.1145560">JPDA 原始论文</a>、<a href="https://doi.org/10.1109/TAC.1979.1102177">MHT 原始论文</a>。</p>
+<p>JPDA 在每帧枚举满足一对一约束、漏检和杂波模型的联合事件，再把事件概率边缘化到每条轨迹；交叉处的两条轨迹可能因共享两个观测而向同一均值靠拢。<a href="https://doi.org/10.1109/JOE.1983.1145560">JPDA 原始论文</a>。</p>
+<p>MHT 把第三帧的两种全局历史都暂时保留，等后续观测拉开后再按累计似然和剪枝规则决策，因此更能延迟身份决定，但假设树会增长。<a href="https://doi.org/10.1109/TAC.1979.1102177">MHT 原始论文</a>。这个例子只比较关联机制；实际概率还必须包含检测概率、杂波强度和门控归一化。</p>
 <p>LMB/δ-GLMB 为目标维护标签，可输出带身份的轨迹。检测前追踪直接递推定位谱，保留未越过检测阈值的弱证据。</p>
 <p>把连续定位谱接入 TBD 前，应先在独立验证集上校准“谱值—似然或似然比”的映射，并固定角度网格、归一化、温度缩放、声源数先验、信噪比与混响条件。网络 softmax 分数只在其类别集合内归一化，不能自动跨帧比较；出生、存活、漏检和杂波参数也要与同一标定口径匹配。若这些条件变化，应重新标定或把分数仅作为特征输入，而不是直接解释为概率。</p>
 <p>活动耦合笛卡尔 DOA（Activity-Coupled Cartesian DOA，ACCDOA）把向量方向编码为 DOA、向量长度编码为活动强度。它本身是逐帧声事件定位与检测的输出表示，不等同于追踪器；只有结合时序模型、平滑和身份关联后，才形成轨迹。</p>
@@ -560,6 +562,66 @@ D_t(x)&=[1-p_D(x)]D_{t|t-1}(x)\\
 <p>教学 Kalman 类的过程噪声矩阵 $Q$ 已按一次预测间隔离散化；若 <code>dt</code> 改变，不能继续照搬同一个 $Q$。粒子后验的圆周合向量接近零时，代码会明确报错，而不是返回由浮点残差决定的任意角度。</p>
 <p>如何重算 $Q$ 取决于过程噪声模型，练习 E09-04 比较两种不同定义。粒子重采样阈值则按有效粒子数的同一尺度指定：<code>resample_if_needed()</code> 接受 $[0,N]$ 内有限实数，0 表示关闭，默认是 $N/2$；布尔值、数组、负数、超过粒子数或非有限值均报错，且不改变粒子和随机数状态。</p>
 <p>设备只搜索有限扇区时不得使用圆周环绕；还需测试迟到/乱序观测、长缺测、错误时间戳、野点门控、目标交叉、轨迹出生/确认/删除、ID 重用和消息超时。无有效观测时只预测并传播协方差，超过有效期后回到搜索模式，不能把外推方向当作新观测。</p>
+<p><strong>本书合成实验：两目标交叉、短暂缺测与控制限速。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/tracking_crossing_dropout_demo.py"><code>tracking_crossing_dropout_demo.py</code></a> 使用确定的角度观测，不生成语音或设备录音。为便于手算，每步间隔刻意取 1 s；两条轨迹初态分别为 $[20^\circ,+10^\circ/\mathrm s]$、$[60^\circ,-10^\circ/\mathrm s]$，初始协方差都是 $I$，每步过程噪声 $Q=\operatorname{diag}(0.1,0.01)$，角度观测方差为 $1\ \mathrm{deg}^2$。这些是实验指定的滤波参数，并非从真实定位器标定得到。</p>
+<p>示例在 15° 门内穷举两轨与最多两条观测的一对一配对，优先关联最多的门内观测，再选择圆周角残差平方和最小者；若代价完全相等，按轨迹和观测输入顺序决定。</p>
+<p>这个两轨最小代价关联是全局最近邻（Global Nearest Neighbour，GNN）分配的教学缩例，不实现 JPDA、MHT、轨迹出生或删除。Stone Soup 固定版本的 <code>neighbour.py</code> 区分逐次贪心的 <code>NearestNeighbour</code> 与联合分配的 <code>GlobalNearestNeighbour</code>；本例只复算后一类的两轨分配思想，没有调用该框架的假设器和轨迹管理。<a href="https://github.com/dstl/Stone-Soup/blob/8d1edeb07ef8505ed065cbef435cfb5e517d9bdc/stonesoup/dataassociator/neighbour.py" title="citation">Stone Soup 固定源码</a>。</p>
+<p>第 2 s，两轨按匀速模型都预测到 $40^\circ$，输入顺序是 B 的 $39^\circ$、A 的 $41^\circ$。两种一对一配对的残差平方和同为 $1^2+1^2=2\ \mathrm{deg}^2$。示例的并列代价规则于是把 B 的观测给轨迹 A，把 A 的观测给轨迹 B；这一帧有两次标签错配。</p>
+<p>去掉标签后，观测位置集合与真值集合都是 $\{39^\circ,41^\circ\}$，按后文式(9-11)取任何正的 $p,c$，该集合的 OSPA 仍为 0。这里算的是<strong>未滤波的观测集合</strong>；滤波后的两条角度还有非零位置误差，不能把两者混称为零误差。</p>
+<p>下表逐帧比较最小代价关联结果与“用真值标签做关联”的诊断对照。真值标签只用于评价和对照更新，不进入最小代价关联的代价。角度误差是滤波后轨迹 A、B 各自相对其真值的最短圆周角绝对误差；方差是最小代价关联轨迹 A 的角度方差，数值保留两位小数。运行命令为 <code>.venv/bin/python -m codes.examples.tracking_crossing_dropout_demo</code>，独立手算检验见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_tracking_crossing_dropout.py"><code>test_codes_tracking_crossing_dropout.py</code></a>。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">t（s）</th>
+<th scope="col">观测与真标签</th>
+<th scope="col">分配至 A/B</th>
+<th scope="col" style="text-align: right;">错配数</th>
+<th scope="col" style="text-align: right;">硬关联角误差 A/B（度）</th>
+<th scope="col" style="text-align: right;">真值关联角误差 A/B（度）</th>
+<th scope="col" style="text-align: right;">A 角度方差（度²）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 s</td>
+<td>30°(A)、50°(B)</td>
+<td>A / B</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.00 / 0.00</td>
+<td style="text-align: right;">0.00 / 0.00</td>
+<td style="text-align: right;">0.68</td>
+</tr>
+<tr>
+<td>2 s</td>
+<td>39°(B)、41°(A)</td>
+<td>B / A</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1.68 / 1.68</td>
+<td style="text-align: right;">0.32 / 0.32</td>
+<td style="text-align: right;">0.68</td>
+</tr>
+<tr>
+<td>3 s</td>
+<td>30°(B)，A 静默</td>
+<td>缺测 / B</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00 / 0.36</td>
+<td style="text-align: right;">1.00 / 0.36</td>
+<td style="text-align: right;">1.80</td>
+</tr>
+<tr>
+<td>4 s</td>
+<td>60°(A)、20°(B)</td>
+<td>A / B</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.28 / 0.18</td>
+<td style="text-align: right;">0.28 / 0.18</td>
+<td style="text-align: right;">0.79</td>
+</tr>
+</tbody>
+</table></div>
+<p>第 3 s 轨迹 A 只预测，角度方差从上一帧约 $0.68\ \mathrm{deg}^2$ 增到 $1.80\ \mathrm{deg}^2$；第 4 s 再得到 A 的观测后下降到约 $0.79\ \mathrm{deg}^2$。这只是预置轨迹的短时维持与重新配对：代码没有判断说话人是否离开房间，也没有实现出生、删除或永久身份确认。第 2 s 的错配由完全并列的角度代价与指定输入顺序造成；它说明单靠这一帧角度无法判定身份，不能据此推出这一关联规则在所有交叉场景都会错，也不能把真值关联诊断当成可部署算法。</p>
+<p>脚本另用一条没有观测的轨迹检查控制延迟。初态 $[20^\circ,10^\circ/\mathrm s]$、$P_0=I$，只按上述 $Q$ 预测两次，则角度依次为 $30^\circ,40^\circ$；由 $P_1^-=F I F^\top+Q$ 得角度方差 $2.10\ \mathrm{deg}^2$，第二次预测为 $2.10+2(1.00)+1.01+0.10=5.21\ \mathrm{deg}^2$。</p>
+<p>若波束方向从 $20^\circ$ 起，每秒最多转 $5^\circ$，两次只能走到 $25^\circ,30^\circ$，相对预测方向分别滞后 $5^\circ,10^\circ$。这个数例量化了限速代价，不包含定位计算、消息传输或实际波束权重切换的延迟；设备应按真实帧间隔、目标运动与可接受滞后重新选限速值。</p>
 <p>进一步的实现可按 FilterPy 和 Stone Soup 的固定版本阅读，源码工作目录、许可和入口由 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json"><code>SOURCES.lock.json</code></a> 管理。FilterPy 的 <code>kalman/EKF.py</code>、<code>UKF.py</code>、<code>IMM.py</code> 分别定位非线性更新和运动模型切换；Stone Soup 的 <code>dataassociator/probability.py::JPDA</code> 处理联合关联，<code>updater/pointprocess.py::PHDUpdater</code> 配合 <code>mixturereducer/gaussianmixture.py::GaussianMixtureReducer</code> 完成 GM-PHD 更新与分量合并、剪枝。具体阅读顺序、实验输入和失败情况见<a href="research/01_spatial_and_tracking.html">空间处理与追踪研究</a>。</p>
 <p>把位置追踪例子改成麦克风方向追踪时，至少要重写三处。观测模型应输出方位角或方向单位向量，不能继续使用二维位置残差；门控距离要使用相应协方差与角度环绕；杂波强度必须与观测空间的测度一致，例如每弧度的预期假峰数。检测概率还要反映说话人静默和定位器漏检，不能直接照搬雷达示例。</p>
 <p>GM-PHD 的高斯权重和表示期望目标数，不要求归一到 1。出生分布没有覆盖某个方向时，新目标可能一直不能形成足够强的分量；剪枝阈值过高则会删掉弱源，因此应记录每帧删去的总强度质量。</p>
@@ -656,8 +718,8 @@ D_t(x)&=[1-p_D(x)]D_{t|t-1}(x)\\
 <p>单帧转角限值可以 $\omega_{\max}\Delta t$ 为物理起点，5 帧累计上限为 $5\omega_{\max}\Delta t$；超过保持时间或不确定度阈值后，应降低波束更新置信度或回到搜索模式。</p>
 </li>
 </ol>
-<p><strong>可运行练习 E09-01～E09-05</strong></p>
-<p>运行 <code>.venv/bin/python -m codes.examples.exercises_enhancement</code>，源码见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_enhancement.py"><code>exercises_enhancement.py</code></a>。这五题使用方向数值，不通过左右声道音量模拟阵列定位；后者的声像不能代替麦克风传播时延模型。</p>
+<p><strong>可运行练习 E09-01～E09-06</strong></p>
+<p>E09-01～E09-05 运行 <code>.venv/bin/python -m codes.examples.exercises_enhancement</code>，源码见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_enhancement.py"><code>exercises_enhancement.py</code></a>；E09-06 使用本节的交叉实验脚本。这些练习使用方向数值，不通过左右声道音量模拟阵列定位；后者的声像不能代替麦克风传播时延模型。</p>
 <ul>
 <li>
 <p><strong>E09-01：把“每帧”改为“每秒”。</strong> 初态 $[30^\circ,5^\circ/\mathrm s]$，$P=\operatorname{diag}(4,1)$；每 0.1 s 预测一次，采用已为此间隔离散化的 $Q=\operatorname{diag}(0.1,0.01)$。连续两次缺测，求状态和协方差。</p>
@@ -692,6 +754,11 @@ D_t(x)&=[1-p_D(x)]D_{t|t-1}(x)\\
 <p><strong>E09-05：环绕新息怎样影响门控？</strong> 预测角 179°、观测角 −179°，新息方差为 $S=4\ \mathrm{deg}^2$。本题规定平方马氏距离门限为 9，比较直接相减和圆周环绕后的判决。</p>
 <p><strong>解答</strong>：直接相减为 −358°，平方马氏距离为 $358^2/4=32041$，被拒绝。环绕后的新息是 +2°，距离为 $2^2/4=1$，被接受。这里 $S=HP^-H^\top+R$ 包含预测和测量两部分，不能只用测量方差代替。</p>
 <p>门限 9 只是本题输入，不是任意 DOA 误差分布下的通用判据。有限搜索扇区不能强行环绕；迟到观测应先按测量时间处理，不能仅靠放宽门限补偿时间戳错误。</p>
+</li>
+<li>
+<p><strong>E09-06：交叉时为什么位置对了，身份仍可能错？</strong> 两轨都预测 $40^\circ$，先到的观测是 B 的 $39^\circ$，后到的是 A 的 $41^\circ$。按本节最小代价关联的并列代价规则分配，求两种一对一配对的平方残差和、错配数，以及无标签观测集对真值集的 OSPA。再从初态 $[20^\circ,10^\circ/\mathrm s]$、$P_0=I$ 出发，只预测两次且每步采用 $Q=\operatorname{diag}(0.1,0.01)$、$\Delta t=1$ s；求角度方差和最大 $5^\circ/\mathrm s$ 的波束控制角度。</p>
+<p><strong>解答</strong>：两个配对的代价均为 $1^2+1^2=2\ \mathrm{deg}^2$，按给定输入顺序会把 B 的观测配给 A、A 的观测配给 B，产生两次标签错配。观测集与真值集均为 $\{39^\circ,41^\circ\}$，因此无标签观测集 OSPA 为 0；这不表示滤波轨迹无误差或身份正确。</p>
+<p>两次无观测预测的角度方差为 $2.10,5.21\ \mathrm{deg}^2$；方向预测为 $30^\circ,40^\circ$，限速后的波束方向为 $25^\circ,30^\circ$。本题没有模拟说话人出生、删除、真实声场与设备时延，不能把单次并列代价当作方法的普遍错误率。</p>
 </li>
 </ul>
 <hr />

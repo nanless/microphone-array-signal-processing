@@ -109,13 +109,17 @@ class BuildHelpersTest(unittest.TestCase):
             '<h3 id="ch-6-sec-u-a">FDKF</h3></div>'
             '<div class="chap" id="ch-5"><h1>波束</h1>'
             '<h2 id="ch-5-sec-5-1">问题</h2>'
-            '<h3 id="ch-5-sec-u-b">局部说明</h3></div></body>'
+            '<h3 id="ch-5-sec-u-b">局部说明</h3></div>'
+            '<div class="chap" id="ch-10"><h1>工程</h1>'
+            '<h2 id="ch-10-sec-10-1">采样时钟</h2>'
+            '<h3 id="ch-10-sec-u-c">漂移实验</h3></div></body>'
         )
         self.assertEqual(
             build_pdf.outline_from_html(html),
             [
                 ("AEC", "ch-6", [("问题", "ch-6-sec-6-1", [("FDKF", "ch-6-sec-u-a")])]),
                 ("波束", "ch-5", [("问题", "ch-5-sec-5-1", [])]),
+                ("工程", "ch-10", [("采样时钟", "ch-10-sec-10-1", [("漂移实验", "ch-10-sec-u-c")])]),
             ],
         )
 

@@ -265,7 +265,9 @@ def fig_geometries():
         ax.set_title(t, fontsize=11)
         ax.set_aspect("equal")
         ax.grid(True, ls=":", alpha=0.5)
-        ax.tick_params(labelsize=7)
+        # These panels compare layouts, not measurements. Numeric ticks would
+        # imply a shared physical length scale that the panels do not have.
+        ax.set_xticks([]); ax.set_yticks([])
     # (a) endfire
     ax = axes[0, 0]
     ax.scatter([-2, 2], [0, 0], s=180, c=C_BLUE, zorder=5, marker="o", edgecolors="k")
@@ -332,7 +334,8 @@ def fig_geometries():
     ax.plot(0.13 * 1.21 ** (tt_g / np.deg2rad(42)) * np.cos(tt_g),
             0.13 * 1.21 ** (tt_g / np.deg2rad(42)) * np.sin(tt_g),
             ls="--", color="gray", lw=0.9, alpha=0.8)
-    ax.scatter(r_g * np.cos(th_g), r_g * np.sin(th_g), s=150, c=C_BLUE, zorder=5, edgecolors="k")
+    ax.scatter(r_g * np.cos(th_g), r_g * np.sin(th_g),
+               s=np.linspace(48, 120, len(k)), c=C_BLUE, zorder=5, edgecolors="k")
     ax.text(0, -1.55, "对数螺旋 $r_k=r_0\\,a^k$", ha="center", fontsize=FS_SMALL, color=C_MAIN)
     ax.set_xlim(-1.5, 1.5); ax.set_ylim(-1.8, 1.5)
     # (h) distributed
@@ -343,7 +346,7 @@ def fig_geometries():
     ax.plot(*np.vstack([conv, conv[0]]).T, ls="--", color="gray")
     ax.set_xlim(-1.8, 3.8); ax.set_ylim(-0.8, 3.4)
     fig.suptitle("图8  常见麦克风阵列几何形态示意", fontsize=14, y=1.0)
-    fig.text(0.5, 0.01, "(a)(b) 平行线表示平面波波前，箭头表示传播方向；同一双麦基线只改变入射方向。其余平面子图为无量纲示意。",
+    fig.text(0.5, 0.01, "(a)(b) 平行线为波前，箭头为传播方向；各平面子图只比较几何形态，坐标不代表统一的米制尺度。",
              ha="center", fontsize=FS_SMALL, color="0.3")
     fig.tight_layout(rect=(0, 0.04, 1, 0.98))
     save(fig, "fig08_geometries.png")
@@ -1063,7 +1066,7 @@ def fig_pipeline():
     labels = {
         "capture": "多通道采集\n同步/标定", "aec": "AEC\n回声消除",
         "wpe": "WPE\n去混响", "bf": "波束形成\nMVDR / GEV",
-        "ns": "NS + AGC\n单通道增强", "backend": "KWS / ASR",
+        "ns": "NS + AGC\n逐流可选", "backend": "KWS / ASR\n逐流或选流",
         "neural_separator": "神经/CSS\n分离旁路",
         "ssl": "声源定位\nSSL / DOA", "tracking": "轨迹预测\n状态+协方差",
         "diarization": "说话人分割\n活动标注", "gss_mask": "GSS / cACG\n掩码",
@@ -1140,7 +1143,7 @@ def fig_pipeline():
 
     ax.text(7.15, 7.82, "活动标注→掩码；WPE 未方向归一 STFT→SCM",
             color=C_PURPLE, fontsize=FS_SMALL, ha="center")
-    ax.text(8.75, 0.02, "神经/CSS 分离旁路解析波束",
+    ax.text(8.75, 0.02, "神经/CSS 旁路解析波束；多路输出分别处理，网络已增强时可跳过 NS",
             color=C_GREEN, fontsize=FS_SMALL, ha="center")
 
     control_y = 3.85

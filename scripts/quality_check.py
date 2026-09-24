@@ -42,11 +42,14 @@ EXPECTED_SECTION_COUNTS = {
     "12_appendix-symbols-math.md": 4,
     "13_appendix-guide.md": 7,
 }
-# 第 6、7 章的源 h4 单独进入合订目录和 PDF 第三级书签。此表是独立发布
+# 第 6～8、10～11 章的源 h4 进入合订目录和 PDF 第三级书签。此表是独立发布
 # 基线，不从构建脚本或待检产物反推。
 EXPECTED_SUBSECTION_COUNTS = {
     "06_aec.md": 24,
     "07_wpe-dereverberation.md": 3,
+    "08_speech-separation.md": 6,
+    "10_engineering-practice.md": 10,
+    "11_selection-guide.md": 7,
 }
 # 上表为独立发布基线，不从待检 HTML 或构建器反推。
 EXPECTED_CHAPTERS = [
@@ -67,10 +70,10 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 86
-EXPECTED_SUBSECTION_COUNT = 27
-EXPECTED_OUTLINE_ITEM_COUNT = 127
+EXPECTED_SUBSECTION_COUNT = 50
+EXPECTED_OUTLINE_ITEM_COUNT = 150
 EXPECTED_FIGURE_NUMBERS = set(range(1, 40))
-# 研究附站使用独立显式清单，不挤占 14 篇教程或 127 项 PDF 大纲基线。
+# 研究附站使用独立显式清单，不挤占 14 篇教程或 150 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
     ("README.md", "index.html"),
@@ -449,6 +452,10 @@ def expected_site_content(name: str, source: str):
     ids = {primary for _level, _title, primary in semantic_heading_ids(source)}
     images = Counter(f"../figures/{figure_name}"
                      for _alt, figure_name, _number in extract_figure_references(source))
+    if name == "13_appendix-guide.md":
+        if not re.search(r"!\[[^\]]+\]\(\.\./codes/room_audio/ROOM_RESULTS\.png\)", source):
+            raise ValueError("附录 B 缺少房间仿真补充图源引用")
+        images["room_audio/ROOM_RESULTS.png"] += 1
     return ids, images
 
 
@@ -798,6 +805,8 @@ def check_combined_html(errors: list[str]):
             f"../figures/{figure_name}"
             for _alt, figure_name, _number in extract_figure_references(documents[name])
         )
+        if name == "13_appendix-guide.md":
+            expected_images["../codes/room_audio/ROOM_RESULTS.png"] += 1
     missing_ids = sorted(expected_ids - ids)
     if missing_ids:
         fail(errors, f"dist/combined.html 缺少源章节或小节：{missing_ids[:8]}")
@@ -842,6 +851,7 @@ def site_source_digest():
     paths += sorted((ROOT / "codes" / "audio").glob("*.wav"))
     paths += [ROOT / "codes" / "audio" / "MANIFEST.json"]
     paths += sorted((ROOT / "codes" / "real_audio").glob("*"))
+    paths += sorted((ROOT / "codes" / "room_audio").glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
               ("build_site.py", "make_figures.py", "make_aec_figures.py")]
@@ -1063,6 +1073,63 @@ def check_real_audio(errors):
         fail(errors, f"真实录音检查失败：{exc}")
 
 
+def check_room_audio(errors):
+    """Independently verify the 18 generated room WAVs and staged site assets."""
+    import numpy as np
+    root, published = ROOT / "codes/room_audio", SITE / "room_audio"
+    try:
+        manifest = json.loads((root / "MANIFEST.json").read_text(encoding="utf-8"))
+        records = manifest["files"]
+        names = [record["file"] for record in records]
+        cases = {record["case"] for record in records}
+        roles = {(record["case"], record["role"]) for record in records}
+        expected = set(names) | {"MANIFEST.json", "ROOM_RESULTS.png"}
+        if (len(records) != 18 or len(set(names)) != 18 or len(cases) != 6 or
+                roles != {(case, role) for case in cases
+                          for role in ("source", "direct", "full")} or
+                any(not re.fullmatch(r"[a-z0-9_]+\.wav", name) for name in names)):
+            raise ValueError("房间合成音频必须是六组三联、共18个安全文件名")
+        for folder in (root, published):
+            if {path.name for path in folder.iterdir() if path.is_file()} != expected:
+                raise ValueError(f"房间样本文件集合不符：{folder}")
+        if (manifest["provenance"] != "mathematically synthesized white Gaussian noise, not recorded speech"
+                or manifest["pyroomacoustics_version"] != "0.10.0"
+                or manifest["sample_rate_hz"] != 16000
+                or manifest["max_order"] != 40
+                or not 0 < manifest["common_gain"] < 1):
+            raise ValueError("房间样本来源、版本或共同增益不符")
+        for name in expected:
+            source, copy = root / name, published / name
+            if source.is_symlink() or copy.is_symlink() or source.read_bytes() != copy.read_bytes():
+                raise ValueError(f"房间站点副本不符：{name}")
+        png = (root / "ROOM_RESULTS.png").read_bytes()
+        if (not png.startswith(b"\x89PNG\r\n\x1a\n") or
+                int.from_bytes(png[16:20], "big") < 1200 or
+                int.from_bytes(png[20:24], "big") < 1000):
+            raise ValueError("房间结果图格式或尺寸不符")
+        for record in records:
+            path = root / record["file"]
+            if hashlib.sha256(path.read_bytes()).hexdigest() != record["sha256"]:
+                raise ValueError(f"房间 WAV 摘要不符：{path.name}")
+            channels = 1 if record["role"] == "source" else 4
+            with wave.open(str(path), "rb") as wav:
+                if (wav.getframerate(), wav.getsampwidth(), wav.getcomptype(),
+                        wav.getnchannels(), wav.getnframes()) != (
+                            16000, 2, "NONE", channels, record["frames"]):
+                    raise ValueError(f"房间 WAV 格式不符：{path.name}")
+                samples = wav.readframes(wav.getnframes())
+            pcm = np.frombuffer(samples, dtype="<i2").astype(np.int32)
+            if (record["channels"] != channels or record["frames"] < 16000 or
+                    np.max(np.abs(pcm)) > 26215):
+                raise ValueError(f"房间 WAV 通道、长度或峰值不符：{path.name}")
+        appendix = (SITE / "13_appendix-guide.html").read_text(encoding="utf-8")
+        if ('src="room_audio/ROOM_RESULTS.png"' not in appendix or
+                'href="room_audio/MANIFEST.json"' not in appendix):
+            raise ValueError("附录站点未发布房间图或音频清单")
+    except Exception as exc:
+        fail(errors, f"房间合成样本检查失败：{exc}")
+
+
 def check_audio(errors):
     """Independent published PCM inventory, provenance, format and player checks."""
     root = ROOT / "codes/audio"
@@ -1155,6 +1222,7 @@ def main():
     check_research_site(errors)
     check_audio(errors)
     check_real_audio(errors)
+    check_room_audio(errors)
     check_combined_html(errors)
     check_pdf(errors, notices)
     for item in notices:

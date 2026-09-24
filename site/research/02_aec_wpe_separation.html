@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AEC、WPE 与分离源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5d23d343bd67"><style>
+<meta name="source-digest" content="28a7db6b0401"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -177,7 +177,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="02_aec_wpe_separation.html#sec-u-604eb85ad9">6. 复现实验的共同记录表</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="aec去混响与语音分离算法工业实现与源码研究" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-bc69826562">AEC、去混响与语音分离：算法、工业实现与源码研究</h1>
-<p>原核实日期：2026-09-22；AEC 工业接口与配对数据说明复核日期：2026-09-23。对应正文 <a href="../06_aec.html#sec-6-1">§6.1</a>、<a href="../07_wpe-dereverberation.html#sec-7-1">§7.1</a> 与 <a href="../08_speech-separation.html#sec-8-1">§8.1～§8.2</a>。本篇按处理对象分开说明算法、源码位置和复现实验；正式版本和许可边界由 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json">SOURCES.lock.json</a> 固定。</p>
+<p>原核实日期：2026-09-22；AEC 工业接口与配对数据说明复核日期：2026-09-23；BSS/GSS 源码入口与实验复核日期：2026-09-24。对应正文 <a href="../06_aec.html#sec-6-1">§6.1</a>、<a href="../07_wpe-dereverberation.html#sec-7-1">§7.1</a> 与 <a href="../08_speech-separation.html#sec-8-1">§8.1～§8.2</a>。本篇按处理对象分开说明算法、源码位置和复现实验；正式版本和许可边界由 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json">SOURCES.lock.json</a> 固定。</p>
 <p>“外部实现”表示可以找到承担该算法计算的代码，不表示本书已经训练、编译或测完该系统。本篇实际运行的结果单独列出，包括<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_wpe_sep_track.py">教学基线测试</a>与 W01 的独立实现对照；未附执行结果的外部实验均为复现设计。外部代码、权重和数据分别遵守各自条款。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="1-先确定信号接口和要解决的问题" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-a50069874f">1. 先确定信号接口和要解决的问题</h2>
 <p>AEC 使用已知播放参考，估计并减去由它产生的声学回声；WPE 使用麦克风自己的延迟历史，预测晚期混响；盲分离依靠独立性、源谱或空间模型区分多个未知声源；监督分离还需要训练参考或目标条件。把这些模块都称作“消噪”，会遗漏不同的输入和验收条件。</p>
@@ -371,7 +371,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </table></div>
 <p>上表的异步限制来自锁定提交 <code>8e29a256ef0235ebbe7fcb8417b5ac7731eb8307</code> 的<a href="https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/mdf.c#L687-733"><code>mdf.c</code> 实际缓冲操作</a>：<code>speex_echo_playback()</code> 每次只复制 <code>frame_size</code> 个标量样本，<code>speex_echo_capture()</code> 欠载时也只复制 <code>frame_size</code> 个输出样本，未按扬声器或麦克风通道数扩展。多通道应由应用按完整交织帧维护参考队列，再把已对应的播放帧交给 <code>speex_echo_cancellation()</code>；本书尚未运行这一多通道设备接口实验。</p>
 <p>WebRTC 与 SpeexDSP 锁定源码分别以 BSD-3-Clause 许可登记在<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/THIRD_PARTY.md">第三方清单</a>；本书 NumPy 基线是原创教学代码。WebRTC 完整构建还需要其依赖元数据，Speex 的可选预处理器也不等于核心 AUMDF。RNNoise 虽在外部清单中，但<a href="https://github.com/xiph/rnnoise">官方 README</a>定义它为单输入噪声抑制，示例使用 48 kHz 单声道原始 PCM；它没有播放参考，不能当作 AEC3 或 Speex 的同类替代。锁定版 <code>autogen.sh</code> 会调用下载模型的脚本；源码核对不等于已取得模型，更不等于已完成构建或执行。</p>
-<p><strong>同输入、同取点的三系统对照实验设计（尚未完成）。</strong> 先选 16 kHz、单播放参考、单麦克风的 PCM，固定同一参考抽头、增益和无削波输入。用已知 FIR 生成纯回声及独立近端信号，保存两者和加和后的麦克风波形。前者用于检查算法接口和真值分量；真实设备数据则用于检查模型外的非线性、驱动与时钟问题，不能以本仓库的 DEMAND 环境噪声摘录代替有播放参考的 AEC 录音。</p>
+<p><strong>同输入对照的设计与后续扩展。</strong> 已按下述设计中的单一固定声学路径和已知近端注入，运行<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_same_input_truth.py">合成真值接口实验</a>；结果和不同输出取点的限制见本节后文。其余路径突变、参考丢块、设备时钟与资源消耗仍是待执行实验。基础输入选 16 kHz、单播放参考、单麦克风 PCM，固定同一参考抽头、增益和无削波输入；用已知 FIR 生成纯回声及独立近端信号，保存两者和加和后的麦克风波形。真实设备数据用于检查模型外的非线性、驱动与时钟问题，不能以本仓库的 DEMAND 环境噪声摘录代替有播放参考的 AEC 录音。</p>
 <p>真实配对录音可从 <a href="https://github.com/microsoft/AEC-Challenge/blob/6c633d0a9d2a143a0e364899b91b06f127315b18/datasets/README.md">Microsoft AEC Challenge 固定版数据说明</a>按需寻找同一 GUID 的 <code>*_farend_singletalk_lpb.wav</code> 与 <code>*_farend_singletalk_mic.wav</code>；双讲和移动场景有对应 <code>*_doubletalk_lpb.wav</code>、<code>*_doubletalk_mic.wav</code> 及 <code>*_with_movement_*</code>。这里的 <code>lpb</code> 是 Windows 播放环回，不是扬声器端子电压；官方还提示部分计算机虽使用 raw mode，收放链仍可能有 DSP。</p>
 <p>外部样本要先核查数据来源、使用及再分发条款，再保存原文件摘要、配对 GUID、采样率、裁剪区间和实际参考抽头。本书按需把两对录音下载到本机 Git 忽略缓存，不在仓库再分发，也没有独立的近端干净语音和回声分量真值；可报告注明噪声底的远端单讲输入/输出功率近似、听测和自动评分，不能把它们写成真值 ERLE。<a href="https://github.com/microsoft/AEC-Challenge/blob/6c633d0a9d2a143a0e364899b91b06f127315b18/README.md#dataset-licenses">项目数据许可说明</a>与代码 MIT 许可分列。</p>
 <ol>
@@ -593,7 +593,50 @@ PATH=/path/to/depot_tools:$PATH DEPOT_TOOLS_UPDATE=0 \
 </tbody>
 </table></div>
 <p>线性输出 WAV 的 SHA-256 依次为 <code>6022c2a5354c9f760a3cac54e8e8ac9c63c1aec7bd16f3f2275f7257f27abc4e</code>、<code>9ca8a7e81bc7c07e8b4cf337832de20ff0cea5b94e3e937d7bbcb870baed8fab</code>；最终输出依次为 <code>cece4d1134285b5fe251a999d5b8915642753b1be19e63a72882d1e2e624944d</code>、<code>adcdd3b2d98181d0a9ae4c7d9a85181aa39c9bc2a50d4b51acb9a428df60c5b4</code>。录音原件及输出位于 Git 忽略缓存，输入摘要由适配器逐次检查；复做时须使用新的输出目录，避免覆盖旧实验。</p>
-<p>远端单讲最终输出比线性输出的功率降得更多，符合两个取点包含不同处理的事实，却不能把差额全部归因于残余回声抑制。双讲录音没有独立干净近端或干净回声真值，因此 3.384/3.851 dB 既不证明近端保护，也不证明双讲回声抑制量。这里没有同输入、同取点的 AEC3、SpeexDSP 和教学 NLMS 性能排序，也没有真实设备声学回路或时钟漂移测量；<a href="04_source_reproduction.html">运行状态表</a>按实现分别记录。</p>
+<p>远端单讲最终输出比线性输出的功率降得更多，符合两个取点包含不同处理的事实，却不能把差额全部归因于残余回声抑制。双讲录音没有独立干净近端或干净回声分量真值，因此 3.384/3.851 dB 既不证明近端保护，也不证明双讲回声抑制量。真实配对录音仍不能给出真值性能排序，也没有设备声学回路或时钟漂移测量；<a href="04_source_reproduction.html">运行状态表</a>按实现分别记录。</p>
+<p><strong>已运行：合成真值 PCM 的同输入接口对照（2026-09-24）。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_same_input_truth.py">脚本</a>固定 16 kHz、6 s、随机种子 20260924、五抽头声学路径 <code>[0.70, 0, -0.25, 0, 0.12]</code>，无背景噪声，在 <code>[3,4)</code> s 以 PCM 精确相加注入已知近端。教学 NLMS 用 32 抽头、0.4 步长和真值冻结；Speex 同步核心用 160 点帧及 4096 点请求长度；AEC3 从新状态分别导出线性段和最终段。远端单讲只评分 <code>[2,3)</code> s，近端注入只评分 <code>[3,4)</code> s。二进制摘要由脚本核对，临时 WAV 不留在发布树。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">输出取点</th>
+<th scope="col" style="text-align: right;">独立脉冲测得固定输出延迟（样本）</th>
+<th scope="col" style="text-align: right;">延迟对齐后回声输入功率／总输出功率（dB）</th>
+<th scope="col" style="text-align: right;">注入增量增益 $g_\Delta$</th>
+<th scope="col" style="text-align: right;">增量误差 $E_\Delta$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>教学 NLMS 的线性残差</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">79.27</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">约 0</td>
+</tr>
+<tr>
+<td>Speex 同步核心输出</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">37.12</td>
+<td style="text-align: right;">0.982</td>
+<td style="text-align: right;">0.027</td>
+</tr>
+<tr>
+<td>AEC3 导出线性段</td>
+<td style="text-align: right;">64</td>
+<td style="text-align: right;">60.58</td>
+<td style="text-align: right;">0.964</td>
+<td style="text-align: right;">0.241</td>
+</tr>
+<tr>
+<td>AEC3 最终输出</td>
+<td style="text-align: right;">128</td>
+<td style="text-align: right;">30.63</td>
+<td style="text-align: right;">0.193</td>
+<td style="text-align: right;">0.763</td>
+</tr>
+</tbody>
+</table></div>
+<p>$g_\Delta$ 和 $E_\Delta$ 按第 6 章式(6-15)的已知近端注入增量定义；回声功率比的分母是<strong>总输出功率</strong>，不能称为干净回声分量 ERLE。未按独立脉冲测出的固定延迟对齐时，AEC3 线性段的 $g_\Delta=0.199$；这主要说明样本索引比较必须记录输出延迟。各行的输出阶段和控制条件不同，表格只检查接口与指标口径，不给三系统排名。注入前后分开运行也使增量包含内部状态差异，不能把它全解释为近端保留率。</p>
 <p><strong>本机设备链路的只读核查（2026-09-23）。</strong> macOS <code>system_profiler SPAudioDataType -detailLevel full</code> 仅列出 MacBook Air 内置麦克风（1 路输入、48 kHz）和内置扬声器（2 路输出、48 kHz）；FFmpeg 的 AVFoundation 设备枚举仅显示内置麦克风，没有播放回环采集端点。CoreAudio 只读查询还给出两个设备 ID 71、76，均报告 <code>main</code> 时钟域和 <code>bltn</code> 内置传输类型。这些只说明系统报告它们属于同一域，不是两个独立设备的采样时钟漂移实测。</p>
 <p>本次未发出探测音、打开麦克风录音或取得硬件时间戳，因此尚未验证数字播放参考是否对应真实声学播放、回声路径、端到端延迟、丢块或音频质量。内置全双工链路即使完成短时探测，也不能代替两个独立 USB 时钟域的长时漂移测试。进行实际链路验收时，应在获得录音环境许可后使用低电平非语音探测声，记录播放/采集时间戳、缓冲事件和分窗延迟，并将录音限制在本机忽略缓存；独立时钟偏移另需两个设备及足够长的连续记录。</p>
 <span id="sec-11" class="anchor-alias" aria-hidden="true"></span><span id="a08-pnlmsipnlms子带与非线性路径模型" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-a845a457fb">A08　PNLMS/IPNLMS、子带与非线性路径模型</h3>
@@ -640,6 +683,7 @@ PATH=/path/to/depot_tools:$PATH DEPOT_TOOLS_UPDATE=0 \
 <p>最小实验逐帧输入一个固定记录并保留状态，再检查把同一帧流分成不同外层批次是否改变结果。失败实验中途错误重建 <code>OnlineWPE</code>，查看启动段反复出现；另测静音、设备重启和房间突变。遗忘因子与功率估计共同决定跟踪，不应仅报告 <code>taps</code> 和 <code>delay</code>；换版本或接口时还必须重新核对 <code>delay</code> 对应的实际时间戳。</p>
 <span id="sec-22" class="anchor-alias" aria-hidden="true"></span><span id="w03-块在线-wpe-与接口中的限制" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-49f4460e24">W03　块在线 WPE 与接口中的限制</h3>
 <p><code>OnlineWPE.step_block()</code>处理已有历史缓冲形状的块；当前检出源码的 <code>_get_prediction()</code>还注明只支持 <code>block_shift=1</code>。TensorFlow 路线另有 <code>tf_wpe.py</code> 中的 <code>block_wpe_step()</code>、<code>recursive_wpe()</code>，二者不应凭名字直接互换。见<a href="https://github.com/fgnt/nara_wpe/blob/a166779cca2088817e330481bd20af1a2c598555/nara_wpe/tf_wpe.py">nara_wpe 固定版本源码</a>。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/wpe_temporal_contract.py">在线时间边界实验</a>使用锁定的 nara-wpe 0.0.11 <code>OnlineWPE.step_frame</code>，在同一状态中处理固定的 48 帧、2 频点、1 通道复谱，设 2 抽头、<code>delay=2</code>、<code>alpha=0.95</code>，只将第 30 帧两个频点各增加 $5+2j$。在线输出的更早前缀最大差为 0，当帧差的最大模为 $\sqrt{29}$，后续最大差约 1.261。将外层调用分成 48 个单帧块、<code>7+13+5+23</code> 或 <code>30+18</code>，都与整段逐帧调用按位相同；这只检查同一对象的状态连续性，外层分组不等于 <code>step_block</code> 的历史窗口。离线 <code>wpe_v6</code> 用全段统计和一次迭代时，受未来帧扰动的前缀最大差为 0.210。本实验是固定复谱的接口检查，没有 STFT 波形、语音质量或端到端延迟结论。</p>
 <p>最小复现要先确认块是“送入模型的新样本”还是“含全部历史的窗口”，再比较输出时间戳。失败实验把窗口长度误当帧移，检查是否重复消费或跳过帧。计算实时性时分别报块等待、历史上下文、STFT 和计算时间；有历史记忆不意味着必须等待同样长的未来数据。</p>
 <span id="sec-23" class="anchor-alias" aria-hidden="true"></span><span id="w04-dnn-wpe掩码或功率网络与解析求解器" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-1555628bd8">W04　DNN-WPE：掩码或功率网络与解析求解器</h3>
 <p><a href="https://github.com/espnet/espnet/blob/be79590bb2ff26ffb01bc825c5f68cb9418b7f0d/espnet2/enh/layers/dnn_wpe.py">ESPnet <code>DNN_WPE</code></a>先估计掩码并形成跨通道功率，再调用 <code>wpe_one_iteration()</code>。外层输入为 <code>(批, 帧, 通道, 频点)</code>，内部转成 <code>(批, 频点, 通道, 帧)</code>。应把 <code>dnn_wpe.py</code>、<code>mask_estimator.py</code> 和 <code>wpe.py</code> 连起来读，才能知道网络实际改了哪个统计量。</p>
@@ -661,6 +705,8 @@ PATH=/path/to/depot_tools:$PATH DEPOT_TOOLS_UPDATE=0 \
 <p>AuxIVA 用一个源跨频点的联合模型约束依赖，辅助函数更新避免手工选择普通梯度步长。迭代投影（IP）与迭代源导向（ISS）是不同更新实现，应分别记录，而不是都写成“用了 IVA”。<a href="https://github.com/tky823/ssspy/blob/38b9389e8b1914422561f1936d9b28d042d62d2c/ssspy/bss/iva.py">ssspy <code>bss/iva.py</code></a>给出 IP1、IP2、ISS1、ISS2 与 IPA 的选项，<a href="https://doi.org/10.1109/ASPAA.2011.6082320">Ono 2011 原论文</a>说明辅助函数思想。</p>
 <p>读码顺序为源代价 → 加权 SCM → 空间更新 → 归一化 → projection-back。最小实验采用确定混合和已知两源，固定初值比较代价与分离；失败实验使用秩亏混合。恢复参考麦的尺度需要独立步骤，SI-SDR 对尺度不敏感，不能用其通过来证明波形幅度已经恢复。</p>
 <p>E08-04 对人为指定的解混矩阵演示回投影：原输出 <code>[2s, -3u]</code> 乘参考麦系数 <code>[1/2, -1/6]</code> 后成为 <code>[s, 0.5u]</code>。它恢复参考麦源图像而非统一干声尺度，且不把给定解混矩阵的代数操作冒充 AuxIVA 估计。E08-05 单独检查掩码 SCM 的分母地板；E08-06 则把第二块的两个输出槽位交换，展示“每块 PIT 都是 20 dB”仍不能保证直接拼接后的说话人身份连续。三题的输入、答案和边界见 <a href="../08_speech-separation.html#sec-8-1">第 8 章练习</a>。</p>
+<p><strong>已执行：固定源码的 AuxIVA 盲估计。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/reproduce_auxiva_reference.py"><code>reproduce_auxiva_reference.py</code></a>从隔离工作树调用锁定 ssspy 提交 <code>38b9389e8b1914422561f1936d9b28d042d62d2c</code> 的 <code>AuxLaplaceIVA</code>，核对提交和干净工作树后才导入；该源的许可为 Apache-2.0。估计器只接收 <code>(通道, 频点, 帧)</code> 的两麦混合谱；已知矩阵只用于合成和评测。输入是种子 2468 的两路独立高斯载波乘不同八段包络，8 kHz、4 s、瞬时满秩矩阵 $[[1,0.9],[0.8,1]]$，无噪声和混响。周期 Hann 256 点窗、64 点帧移、中心补零，IP 30 次，参考麦 0 回投影与完整 iSTFT。STFT 往返最大绝对差为 $2.7\times10^{-15}$；PIT 只用于离线评测。目标为各源在参考麦的图像，整段去均值、不做时移或增益对齐，平均 SI-SDR 从输入的 −0.02 dB 到输出的 37.25 dB，SI-SDRi 为 37.27 dB；输出/参考 RMS 比分别为 0.999、0.999。ssspy 内部目标值从 568.99 变为 −8.69，不能与其他输入的目标值直接比。</p>
+<p>同一配置应用在本书已有两路数学谐波 WAV 上，输出平均 SI-SDR 为 0.14 dB，平均 SI-SDRi 也是 0.14 dB（保留两位小数），回投影后两路 RMS 比为 0.536、1.674；这组输入不能称为成功分离。两种输入的采样率、源统计和混合矩阵都不同，不能据两行证明算法的普遍优劣。把第一组的两麦混合矩阵改为秩 1 后，锁定实现运行时报告 <code>LinAlgError: Singular matrix</code>；这只是一个结构与数值边界，不代表所有奇异输入的错误形式。三项均为单次确定实验，未给语音、房间、分离成功率或设备延迟结论。原始 AuxIVA 依据是<a href="https://doi.org/10.1109/ASPAA.2011.6082320">Ono 2011, WASPAA, pp. 189–192</a>；本书调用的具体更新与回投影实现见 <a href="https://github.com/tky823/ssspy/blob/38b9389e8b1914422561f1936d9b28d042d62d2c/ssspy/bss/iva.py">ssspy 固定源码</a>。</p>
 <span id="sec-29" class="anchor-alias" aria-hidden="true"></span><span id="b03-overivafive-与过定提取" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-9634a3665c">B03　OverIVA、FIVE 与过定提取</h3>
 <p>麦克风数多于目标源数时，OverIVA 利用低维目标子空间与背景模型，FIVE 面向单目标提取，不必总是先做任意降维再调用方阵 IVA。<a href="https://github.com/fakufaku/piva">piva 官方仓库</a>包含这些方法；<a href="https://github.com/LCAV/pyroomacoustics/blob/v0.10.0/pyroomacoustics/bss/auxiva.py">pyroomacoustics <code>auxiva.py</code></a>也需查看 <code>n_src</code> 分支，确认当前算法实际的源数条件。</p>
 <p>最小实验保持两源、从两麦增加到四麦，比较背景建模与直接选两麦。失败实验把实际第三个强源误当背景，检查目标提取质量与输出身份。piva 为 GPL-3.0，本书将其与宽松许可证实现分别列出，不能把不同分发条件合并成一个“免训练库”。</p>
@@ -678,10 +724,12 @@ PATH=/path/to/depot_tools:$PATH DEPOT_TOOLS_UPDATE=0 \
 <p>最小实验以双源卷积混合检查滤波器长度、块长、在线重叠、离线内迭代和遗忘设置；失败实验在第三源出现或路径变化后检查重适应。滤波器覆盖的历史长度、每次读入块与首个可用输出的等待应分开计量。该具体实现存在于本地源码缓存，因此不应继续把 TRINICON 写成完全没有可用代码的原理索引。</p>
 <span id="sec-34" class="anchor-alias" aria-hidden="true"></span><span id="b08-cacgmm方向统计活动约束与数值稳定" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-3023cd7bdf">B08　cACGMM：方向统计、活动约束与数值稳定</h3>
 <p>复角中心高斯混合（cACGMM）对单位化的复向量建模，得到方向上的软聚类。<a href="https://doi.org/10.1109/EUSIPCO.2016.7760429">Ito 等原论文</a>与<a href="https://github.com/fgnt/pb_bss/blob/10acc347fc9ea21e3d312806a0bd751d0d0af183/pb_bss/distribution/cacgmm.py">pb_bss <code>distribution/cacgmm.py</code></a>是模型和 EM 入口。继续看底层 cACG 密度、固定点更新和排列工具，不能仅复制 E 步。</p>
-<p>最小实验先用两个不同复方向生成单位向量，检查后验归一和分量置换，再用未归一的原 STFT 构造 SCM。失败实验含低能量点、空活动分量和近奇异形状矩阵。用于聚类的方向外积没有原始功率，不能直接当作波束形成的功率 SCM。</p>
+<p>最小实验先用两个不同复方向生成单位向量，检查后验归一和分量置换，再用未归一的原 STFT 构造 SCM。失败实验含低能量点、空活动分量和近奇异形状矩阵。用于聚类的方向外积没有原始功率，不能直接当作波束形成的功率 SCM。<a href="../08_speech-separation.html#e08-07">第 8 章 E08-07</a>先固定相对密度，只复算活动门控的 E 步；它不代替形状矩阵估计或完整分离实验。</p>
 <span id="sec-35" class="anchor-alias" aria-hidden="true"></span><span id="b09-gss活动日志wpe聚类与波束形成" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-30dd276a58">B09　GSS：活动日志、WPE、聚类与波束形成</h3>
-<p>GSS 用说话人活动约束空间聚类，随后由掩码估计 SCM 并生成每个目标的音频。它不等于只运行 cACGMM；活动标注、上下文和目标选择共同决定系统。<a href="https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf">原始 CHiME-5 工作</a>与<a href="https://www.isca-archive.org/interspeech_2023/raj23_interspeech.pdf">GPU-GSS 论文</a>应按各自实验解释。</p>
+<p>GSS 用说话人活动约束空间聚类，随后由掩码估计 SCM 并生成每个目标的音频。它不等于只运行 cACGMM；活动标注、上下文和目标选择共同决定系统。Boeddeker 等的原始 CHiME-5 实验使用挑战组织者提供的说话人时间标注；换成自动 diarization 时，要另外计入活动错漏及其对分离和识别的影响。<a href="https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf">原始论文 §3.2、图 3、式(5)～(8)</a>与<a href="https://www.isca-archive.org/interspeech_2023/raj23_interspeech.pdf">GPU-GSS 论文</a>应按各自实验解释。</p>
+<p>原始模型在说话人分量之外增加始终活动的背景噪声类。各分量的混合权重乘活动指示和空间密度后再归一化；全员静音时，背景类让分母保持正值。背景类与连续活动的目标说话人仍可交换标签，原论文用目标片段外的上下文增加目标静音帧来降低风险。读码时检查：背景类在所有帧是否启用、全员静音帧是否得到背景后验、非目标掩码是否包含其他说话人与背景，以及上下文和说话人标签如何对应。最小手算见<a href="../08_speech-separation.html#e08-07">第 8 章 E08-07</a>，对应教学函数为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/separation.py"><code>guided_activity_posterior()</code></a>；该函数只实现固定密度的门控归一，不估计 cACGMM 参数。</p>
 <p>读 <a href="https://github.com/desh2608/gss/tree/10fad18cae85e2e4342c77421abc70c9c5da23ed"><code>desh2608/gss</code></a>时，从 <code>gss/core/enhancer.py</code> 串到 <code>gss/wpe/</code>、<code>gss/cacgmm/</code> 和 <code>gss/beamformer/</code>，再看 <code>recipes/</code> 的清单生成。最小实验是一段同步多通道 WAV 加 RTTM；失败实验平移 RTTM、删除短活动或把噪声当成说话人。需分别报告活动错误和分离错误，不能全部归因于波束。</p>
+<p><strong>已执行：固定密度的活动错标敏感性。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/gss_activity_error_demo.py"><code>gss_activity_error_demo.py</code></a>沿用教学版 <code>guided_activity_posterior()</code>，只取一个频点和三帧，分量为两位说话人加恒活动背景。权重 $[0.4,0.4,0.2]$，相对密度依次为 $[8,1,1]$、$[1,8,1]$、$[1,1,1]$；真实活动是“仅 1、仅 2、全静音”。正确标注时首帧说话人 1 的后验是 $16/17$；漏标后必为 0。第三帧若错误标注说话人 1 活动，其后验从 0 变为 $2/3$，背景从 1 降到 $1/3$。这些是固定权重/密度的 E 步后验，不包含 cACG 参数估计、WPE、SCM、MVDR、音频或 WER；不能作为完整 GSS 的活动错误性能曲线。该对照由<a href="https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf">原论文 §3.2 式(5)～(8)</a>的门控公式导出，脚本计算与独立分数测试一致。GPU-GSS 的 CuPy/Lhotse 整链在本机尚未运行。</p>
 <span id="sec-36" class="anchor-alias" aria-hidden="true"></span><span id="b10-gpu-gss-的批处理与资源边界" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-46f9265e88">B10　GPU-GSS 的批处理与资源边界</h3>
 <p>GPU-GSS 把频点、段及相同目标的计算合并，提高 GPU 利用率。批处理策略会同时影响上下文复用、显存与输出片段，<code>max-batch-duration</code>、<code>max-segment-length</code> 和 <code>context-duration</code>是不同参数。<a href="https://github.com/desh2608/gss/blob/10fad18cae85e2e4342c77421abc70c9c5da23ed/README.md">官方使用说明</a>给出 Lhotse、CuPy 与 CUDA 前提。</p>
 <p>最小实验保持音频/活动/算法迭代相同，只改变批处理量，检查音频和时间戳一致性；失败实验增加通道数与长段，记录峰值显存和 OOM 前的工作点。论文加速数值依赖指定硬件与基线，不应转写成所有会议录音的固定倍数。独立 <a href="https://github.com/desh2608/wpe/tree/bd2857b5b8de36df4f436a93574c088bea142042">CuPy WPE 子项目</a>只包含 GSS 需要的 WPE 子集，不能代替 nara_wpe 全部在线接口。</p>

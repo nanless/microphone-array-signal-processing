@@ -825,8 +825,8 @@
       "revision": "5b9c02c57075d790b7df8652884618189d49bbc4",
       "license": "Apache-2.0",
       "scope": "Educational time-domain RLS/Kalman and frequency-domain FDKF/PFDKF AEC examples",
-      "fetch_enabled": false,
-      "note": "Official repository and license checked 2026-09-23. Minimal research examples, not a complete AEC frontend or the original FDKF authors' implementation; no delay search, double-talk controller or residual suppressor. Legacy np.complex in FDKF/PFDKF requires compatibility checking with modern NumPy. Requirements mention librosa and pyroomacoustics; sample-audio rights are separate. Source indexed only; no build or numerical reproduction claimed.",
+      "fetch_enabled": true,
+      "note": "Official repository and license checked 2026-09-23. Minimal research examples, not a complete AEC frontend or the original FDKF authors' implementation; no delay search, double-talk controller or residual suppressor. Legacy np.complex in FDKF/PFDKF requires compatibility checking with modern NumPy. Requirements mention librosa and pyroomacoustics; sample-audio rights are separate. Sparse source acquisition does not claim build or numerical reproduction.",
       "entrypoints": [
         "LICENSE",
         "README.md",
@@ -842,8 +842,8 @@
       "revision": "7c8c86b5691966c330015d8e0960db0733b4844f",
       "license": "MIT",
       "scope": "Educational partitioned-block frequency-domain Kalman AEC with optional residual processing",
-      "fetch_enabled": false,
-      "note": "Official repository, source and license checked 2026-09-23. README credits pyaec for filter/update API and lists an unconstrained version as unfinished; it is not an original-paper implementation or an industrial frontend. NumPy is required; soundfile is used by its script demo. The default res=True output includes extra residual processing, so it is not the bare linear prediction error. Demo WAV rights are separate; no local run claimed.",
+      "fetch_enabled": true,
+      "note": "Official repository, source and license checked 2026-09-23. README credits pyaec for filter/update API and lists an unconstrained version as unfinished; it is not an original-paper implementation or an industrial frontend. NumPy is required; soundfile is used by its script demo. The default res=True output includes extra residual processing, so it is not the bare linear prediction error. Demo WAV rights are separate; sparse source acquisition does not claim a local run.",
       "entrypoints": [
         "LICENSE",
         "README.md",

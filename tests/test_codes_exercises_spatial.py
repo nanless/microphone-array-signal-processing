@@ -17,11 +17,12 @@ class SpatialExerciseTest(unittest.TestCase):
     def setUpClass(cls):
         cls.results = run_exercises()
 
-    def test_registry_has_twenty_six_finite_json_results(self):
+    def test_registry_has_twenty_seven_finite_json_results(self):
         expected = {"E01-01", "E01-02", "E02-01", "E02-02", "E02-03", "E03-01",
                     "E03-02", "E04-01", "E04-02", "E04-03", "E05-01", "E05-02",
                     "E01-03", "E02-04", "E02-05", "E03-03", "E03-04", "E04-04",
-                    "E05-03", "E05-04", "E04-05", "E02-06", "E03-05", "E04-06", "E04-07", "E05-05"}
+                    "E05-03", "E05-04", "E04-05", "E02-06", "E03-05", "E03-06",
+                    "E04-06", "E04-07", "E05-05"}
         self.assertEqual(set(self.results), expected)
         json.dumps(self.results, allow_nan=False)
 
@@ -82,6 +83,23 @@ class SpatialExerciseTest(unittest.TestCase):
         self.assertAlmostEqual(rows[2]["estimated_angle_deg"], expected)
         self.assertFalse(rows[3]["valid"])
         self.assertIsNone(rows[3]["estimated_angle_deg"])
+
+    def test_known_direction_gain_calibration_and_unknown_direction_ambiguity(self):
+        result = self.results["E03-06"]
+        plus, minus = result["cases"]
+        self.assertAlmostEqual(result["spacing_m"], 343 / 4000)
+        self.assertAlmostEqual(plus["measured_ratio_phase_deg"], 75)
+        self.assertAlmostEqual(minus["measured_ratio_phase_deg"], -15)
+        for row, corrected_phase in ((plus, 45), (minus, -45)):
+            self.assertAlmostEqual(row["estimated_relative_gain_real"], 0.6 * math.sqrt(3))
+            self.assertAlmostEqual(row["estimated_relative_gain_imag"], 0.6)
+            self.assertAlmostEqual(row["corrected_ratio_phase_deg"], corrected_phase)
+        self.assertAlmostEqual(result["wrong_angle_deg_if_gain_phase_ignored"],
+                               math.degrees(math.asin(5 / 6)))
+        alternative = result["unknown_single_direction_alternative"]
+        self.assertEqual(alternative["angle_deg"], 0)
+        self.assertAlmostEqual(alternative["relative_gain_phase_deg"], 75)
+        self.assertAlmostEqual(alternative["relative_gain_amplitude"], 1.2)
 
     def test_gcc_sign_silence_and_geometry(self):
         row = self.results["E04-01"]

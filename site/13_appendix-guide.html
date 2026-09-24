@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 B · 路径地图与练习 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5d23d343bd67"><style>
+<meta name="source-digest" content="28a7db6b0401"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -361,8 +361,13 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>§2.6</td>
 </tr>
 <tr>
+<td>HPBW、DI、WNG</td>
+<td>分别按主瓣两个半功率点、全空间方向响应平均、独立等功率通道噪声定义；见式(2-3)～式(2-5)</td>
+<td>§2.6</td>
+</tr>
+<tr>
 <td>CRB 公式</td>
-<td>给定统计模型与正则条件下，无偏 DOA 估计方差的下界</td>
+<td>给定统计模型与正则条件下，无偏 DOA 估计方差的下界；见式(2-6)</td>
 <td>§2.6</td>
 </tr>
 <tr>
@@ -626,15 +631,98 @@ D_t&=(1-p_D)D^-\\
 <p><strong>综合</strong></p>
 <ol start="16">
 <li>
-<p>用 pyroomacoustics 0.10.0 生成目标 $T_{60}=0.6$ s 的房间 RIR，跑 SRP-PHAT，并在多个距离、方向和随机声源位置上重复实验。用 <code>.venv/bin/pip install pyroomacoustics==0.10.0</code> 安装该扩展依赖。</p>
-<p><strong>实验要求</strong>：</p>
-<ul>
-<li>吸声系数由房间体积、表面积与目标 $T_{60}$ 反算；</li>
-<li>镜像阶数提高到结果收敛，并在代码中写入实际计算值；</li>
-<li>画出定位误差、DRR 与距离三者的关系；</li>
-<li>分别报告目标 $T_{60}$ 与由生成 RIR 测得的 $T_{60}$，并注明拟合区间和实际安装版本。</li>
-</ul>
-<p>临界距离给出 DRR 量级参考，但定位误差不保证在该处出现清晰拐点。</p>
+<p><strong>确定性房间仿真：距离、DRR 与定位误差。</strong> 用 pyroomacoustics 0.10.0 生成目标 $T_{60}=0.6$ s 的房间冲激响应（RIR），再用本书的 SRP-PHAT 教学实现估计单声源方向。先运行 <code>.venv/bin/python -m codes.examples.room_srp_exercise --check</code>：这一步只检查配置，不需要安装 pyroomacoustics，也没有运行房间仿真。</p>
+<p><strong>输入与口径。</strong> 房间为 $12\times10\times6$ m 的长方体，阵列中心在 $(6,5,3)$ m，四麦位于该中心的水平面上，偏移分别为 $(\pm0.03,\pm0.03)$ m。声速 $343$ m/s，采样率 16 kHz。角度以 $+y$ 为 0°，朝 $+x$ 为正。</p>
+<p>声源与阵列同高：四个固定条件为距离 1 m、2.5 m 各配 $-30°$、$+30°$；另有两个用 PCG64 种子 20260924 从距离 1～2.5 m、方向 $-60°$～$+60°$ 分别均匀抽取的位置。每个条件用独立、固定种子的 1 s 白高斯噪声作激励，不叠加环境噪声；这是一间理想合成房间中的六个位置，不是六次独立房间实测。</p>
+<p><strong>从目标到 RIR。</strong> 对三维房间体积 $V$、总表面积 $S$，脚本按 pyroomacoustics 0.10.0 的 <code>inverse_sabine</code> 口径计算均匀墙面能量吸收系数 $\alpha=24\ln(10)V/(cST_{60})$，并核对该函数给出的建议镜像阶数。本题 $V=720\ \mathrm{m^3}$，$S=2(12\cdot10+12\cdot6+10\cdot6)=504\ \mathrm{m^2}$，故 $\alpha=24\ln(10)\cdot720/(343\cdot504\cdot0.6)\approx0.38360$。</p>
+<p>按该版本源码的镜像覆盖口径，最小的两边组合尺度为 $60/\sqrt{136}\approx5.145$ m，建议阶数 $\lceil343\cdot0.6/(60/\sqrt{136})-1\rceil=40$；由于天花板函数会受舍入影响，运行时仍以未舍入数计算。镜像法关闭随机扰动、射线追踪和空气吸收；实际使用的阶数单独写进结果。</p>
+<p>这里的 $\alpha$ 和“目标 0.6 s”都只是建模输入，不能写成已实现的衰减时间。公式口径可对照<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json">固定版本源码清单</a>中锁定的 pyroomacoustics <code>acoustics.py</code> 的 <code>inverse_sabine</code>。</p>
+<p><strong>运行与作图。</strong> 在单独的虚拟环境安装 <code>pyroomacoustics==0.10.0</code> 和绘图依赖，再从仓库根目录用该环境的 Python 运行 <code>python -m codes.examples.room_srp_exercise --run --plot /tmp/room_srp_exercise.png</code>；这里的 <code>python</code> 指隔离环境的解释器，不要求改变仓库 <code>.venv</code>。<code>--run</code> 输出逐位置 JSON，图按六个位置分别画四麦 DRR 中位数、由 $T_{20}$ 外推的 $T_{60}$ 与 DOA 绝对误差；每个位置标明距离和角度，避免相同距离、近乎相同 DRR 的左右对称点在散点图中重叠。</p>
+<p>定位脚本用 512 点 Hann 窗、128 点帧移、300～2000 Hz 频带，在 $-80°$ 到 $+80°$ 的 1° 网格扫描；报告 $|\hat\theta-\theta|$，故网格量化与近场/远场模型差异均计入误差。四麦最远间距为 $0.06\sqrt2\approx0.0849$ m，低于 2 kHz 对应的半波长 $343/(2\cdot2000)=0.08575$ m，这控制了所用频带内的空间混叠。</p>
+<p><strong>DRR 怎样算。</strong> 每个位置、每只麦分别生成完整 RIR 与“墙面能量吸收率设为 1、仍保留相同镜像阶数”的直达声 RIR。两者的几何、采样率、RIR 长度与 pyroomacoustics 默认的 10 Hz 零相位高通边界一致；完全吸收的墙面使非零阶镜像声能为零。然后以 $h_\mathrm{full}-h_\mathrm{direct}$ 得到反射分量，计算 $\mathrm{DRR}=10\log_{10}(\sum h_\mathrm{direct}^2/\sum(h_\mathrm{full}-h_\mathrm{direct})^2)$。</p>
+<p>只用零阶镜像生成较短的 RIR 再补零，会使两条 RIR 在不同长度下分别经历零相位滤波，差中可能混入滤波边界效应；处理位置与默认参数见<a href="https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/room.py#L2348-L2432">固定版 <code>room.py</code> 的 RIR 构建代码</a>及<a href="https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/parameters.py#L185-L195">默认参数</a>。四麦 DRR 先各自计算，再取中位数；中位数并非把四麦能量先合并后计算的 DRR。</p>
+<p><strong>混响时间怎样算。</strong> 从完整 RIR 的 Schroeder 倒向能量积分曲线，在 $-5$ 到 $-25$ dB 区间拟合 dB 对时间的直线，按斜率外推至 $-60$ dB；本题将它称为“$T_{20}$ 外推的 $T_{60}$”，不是实测房间混响时间。逐麦值与中位数都保留，区间不够时脚本报错。</p>
+<p>以 1 m、$-30°$ 条件的第 1 只麦为例，本书仿真的直达 RIR 能量约为 0.96774，反射 RIR 能量约为 0.24448，因而该麦 DRR 为 $10\log_{10}(0.96774/0.24448)\approx5.975$ dB；四麦 DRR 的中位数为 5.755 dB。同一只麦的 $-5$～$-25$ dB 拟合斜率约为 $-109.682$ dB/s，故外推 $T_{60}=-60/(-109.682)\approx0.547$ s。计算先用未舍入值，下面仅展示约数。</p>
+<p><strong>本书仿真结果。</strong> 2026 年 9 月 24 日用 pyroomacoustics 0.10.0、Python 3.13.12、NumPy 2.5.3、SciPy 1.18.1 实际运行脚本；镜像阶数为 40，声学和定位条件均如上，<code>PRA_NUM_THREADS=2</code>。表中的 $T_{60}$、DRR 都是四麦逐麦指标的中位数；方位估计按 1° 网格输出。为免把近似值当作精确值，下表距离、真方位、$T_{60}$、DRR 和绝对误差均保留三位小数。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">声源位置</th>
+<th scope="col" style="text-align: right;">距离 (m)</th>
+<th scope="col" style="text-align: right;">真方位 (°)</th>
+<th scope="col" style="text-align: right;">$T_{20}$ 外推 $T_{60}$ (s)</th>
+<th scope="col" style="text-align: right;">DRR (dB)</th>
+<th scope="col" style="text-align: right;">SRP 方位 (°)</th>
+<th scope="col" style="text-align: right;">绝对误差 (°)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>固定近左</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">−30.000</td>
+<td style="text-align: right;">0.546</td>
+<td style="text-align: right;">5.755</td>
+<td style="text-align: right;">−29</td>
+<td style="text-align: right;">1.000</td>
+</tr>
+<tr>
+<td>固定近右</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">+30.000</td>
+<td style="text-align: right;">0.546</td>
+<td style="text-align: right;">5.755</td>
+<td style="text-align: right;">+29</td>
+<td style="text-align: right;">1.000</td>
+</tr>
+<tr>
+<td>固定远左</td>
+<td style="text-align: right;">2.500</td>
+<td style="text-align: right;">−30.000</td>
+<td style="text-align: right;">0.553</td>
+<td style="text-align: right;">−2.113</td>
+<td style="text-align: right;">−32</td>
+<td style="text-align: right;">2.000</td>
+</tr>
+<tr>
+<td>固定远右</td>
+<td style="text-align: right;">2.500</td>
+<td style="text-align: right;">+30.000</td>
+<td style="text-align: right;">0.553</td>
+<td style="text-align: right;">−2.113</td>
+<td style="text-align: right;">+32</td>
+<td style="text-align: right;">2.000</td>
+</tr>
+<tr>
+<td>种子位置 1</td>
+<td style="text-align: right;">1.099</td>
+<td style="text-align: right;">−41.244</td>
+<td style="text-align: right;">0.555</td>
+<td style="text-align: right;">4.866</td>
+<td style="text-align: right;">−40</td>
+<td style="text-align: right;">1.244</td>
+</tr>
+<tr>
+<td>种子位置 2</td>
+<td style="text-align: right;">1.973</td>
+<td style="text-align: right;">+2.396</td>
+<td style="text-align: right;">0.563</td>
+<td style="text-align: right;">−0.003</td>
+<td style="text-align: right;">+3</td>
+<td style="text-align: right;">0.604</td>
+</tr>
+</tbody>
+</table></div>
+<p><img alt="本题六个声源位置的房间仿真结果，依次比较 DRR、T20 外推混响时间与 SRP-PHAT 方位绝对误差" src="room_audio/ROOM_RESULTS.png" onerror="this.alt+='（图缺失）'" /></p>
+<p>这张本题补充图的上、中、下栏分别用 dB、s、角度表示四麦 DRR 中位数、$T_{20}$ 外推的 $T_{60}$ 中位数和 SRP-PHAT 方位绝对误差。横轴标明六个已经固定的声源位置、距离与真方位；中栏虚线是 0.6 s 建模目标。图仅表示这一间合成房间的六个源位，不代表跨房间的统计分布。</p>
+<p>最后一行 DRR 的未舍入值为 −0.00304 dB，接近零。六个由仿真 RIR 估得的 $T_{60}$ 在约 0.546～0.563 s，低于 Sabine 反推时设定的 0.6 s；目标参数不能替代实际 RIR 的衰减估计。</p>
+<p><strong>镜像阶数检查。</strong> 默认脚本对固定近左位置另算 32 阶结果，并与 40 阶比较：四麦 $T_{60}$ 中位数相差约 $2.08\times10^{-6}$ s，DRR 中位数相差约 $7.55\times10^{-7}$ dB，低于本题自定的 0.02 s 与 0.5 dB 判据。本书还实际以 <code>--max-order 48</code> 重跑六个位置：与 40 阶相比，六个位置的 $T_{60}$ 中位数变化都小于 $10^{-6}$ s，DRR 中位数变化都小于 $10^{-6}$ dB，1° 网格的方位估计不变。这些比较说明所列指标对 40～48 阶的截断不敏感，不证明频谱细节或其他几何设置也已收敛；改变房间、源位或指标后须重新检查。</p>
+<p><strong>本题试听样本。</strong> 仓库已将六组源信号、四麦完整房间输出和四麦仅直达输出，共 18 个 PCM WAV 单独保存在 <code>codes/room_audio/</code>，参数、共同增益、种子和逐文件摘要见<a href="room_audio/MANIFEST.json">房间音频清单</a>；<a href="research/05_exercises_and_audio.html#17-六位置房间响应与定位">逐组试听入口</a>列出全部文件。</p>
+<p>每组使用与定位估计相同的固定白高斯噪声输入；全部文件采用同一个显式增益，不逐文件峰值归一化，保留传播时延和增益差异。文件是数学合成白噪声，不是真实语音或实测房间录音；试听前先降低播放音量。它们与已有 55 个 <code>codes/audio/</code> 样本分别管理。</p>
+<p>若要重新生成到个人实验目录，先在装有锁定版 pyroomacoustics 0.10.0 的隔离环境中运行 <code>python -m codes.examples.room_srp_exercise --run --audio-dir /tmp/room-srp-audio-new</code>；为防覆盖，该目录必须尚不存在。</p>
+<p><strong>解读边界。</strong> 固定的 $\pm30°$ 条件分别在 1 m 与 2.5 m 比较；这间合成房间中，远位置的 DRR 较低，绝对 DOA 误差由 1° 变成 2°。</p>
+<p>距离变化也改变了声源相对墙面的位置和反射路径，这两个成对条件不足以估计跨房间、跨方向的平均因果效应。另两个随机位置同时改变距离与方向，更不能凭六点的总体相关性归因于距离。临界距离只给 DRR 量级参考，定位误差不保证在那里出现拐点。</p>
+<p>脚本未加入麦克风失配、加性噪声、声源高度变化或真实房间扩散结构；讨论这些因素时须另做控制实验。<code>--check</code> 的输出只有配置，没有上述仿真指标。</p>
 </li>
 <li>
 <p><strong>（研究拓展）</strong>读一篇 CHiME-8 参赛系统报告（见 §13.3 引用），按报告实际结构画出前端流程图，与本书图23 对照。</p>

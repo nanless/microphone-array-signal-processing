@@ -354,6 +354,41 @@ def differential_gain_pattern() -> dict:
             "delayed_back_amplitude": 0.}
 
 
+def complex_gain_calibration() -> dict:
+    """E03-06: known-angle relative calibration; one unknown angle is ambiguous."""
+    sound_speed = 343.
+    frequency = 1000.
+    spacing = sound_speed / (4 * frequency)
+    positions = np.array([[0., 0.], [spacing, 0.]])
+    true_relative_gain = 1.2 * np.exp(1j * np.pi / 6)
+    rows = []
+    for angle_deg in (30., -30.):
+        steering = plane_wave_steering(positions, [frequency], np.deg2rad(angle_deg))[0]
+        measured = np.array([1., true_relative_gain * steering[1]])
+        ratio = measured[1] / measured[0]
+        estimated_gain = ratio / steering[1]
+        corrected_ratio = ratio / estimated_gain
+        rows.append({"known_angle_deg": angle_deg,
+                     "measured_ratio_real": float(ratio.real),
+                     "measured_ratio_imag": float(ratio.imag),
+                     "measured_ratio_phase_deg": float(np.rad2deg(np.angle(ratio))),
+                     "estimated_relative_gain_real": float(estimated_gain.real),
+                     "estimated_relative_gain_imag": float(estimated_gain.imag),
+                     "corrected_ratio_phase_deg": float(np.rad2deg(np.angle(corrected_ratio)))})
+    phase_if_gain_ignored = np.angle(rows[0]["measured_ratio_real"]
+                                     + 1j * rows[0]["measured_ratio_imag"])
+    phase_per_unit_sine = 2 * np.pi * frequency * spacing / sound_speed
+    wrong_angle = np.rad2deg(np.arcsin(phase_if_gain_ignored / phase_per_unit_sine))
+    return {"frequency_hz": frequency, "spacing_m": spacing,
+            "sound_speed_m_s": sound_speed, "gain_amplitude": 1.2,
+            "gain_phase_deg": 30., "cases": rows,
+            "wrong_angle_deg_if_gain_phase_ignored": float(wrong_angle),
+            "unknown_single_direction_alternative": {
+                "angle_deg": 0., "relative_gain_amplitude": 1.2,
+                "relative_gain_phase_deg": 75.},
+            "model_scope": "ideal narrowband, noiseless, synchronized two-channel phasors"}
+
+
 def mvdr_finite_noise_null() -> dict:
     """E05-05: finite INR leaves residual response at the interferer."""
     target = np.ones(2, dtype=complex)
@@ -399,7 +434,7 @@ def four_mic_fractional_delay() -> dict:
 
 
 def run_exercises() -> dict:
-    """Return twenty-six JSON results, including 7 x 200 MDL resampling trials."""
+    """Return twenty-seven JSON results, including 7 x 200 MDL resampling trials."""
     functions = {
         "E01-01": correlated_noise, "E01-02": amplitude_and_power,
         "E02-01": stft_framing, "E02-02": complex_covariance, "E02-03": stft_roundtrip,
@@ -412,6 +447,7 @@ def run_exercises() -> dict:
         "E05-03": beam_output_noise, "E05-04": complex_constraint_response,
         "E04-05": mdl_candidate_scores,
         "E02-06": mask_common_scale, "E03-05": differential_gain_pattern,
+        "E03-06": complex_gain_calibration,
         "E04-06": mdl_repeated_trials, "E05-05": mvdr_finite_noise_null,
         "E04-07": four_mic_fractional_delay,
     }

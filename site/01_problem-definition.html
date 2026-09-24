@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 1 章 · 问题定义与双耳启示 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5d23d343bd67"><style>
+<meta name="source-digest" content="28a7db6b0401"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -234,7 +234,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 </tbody>
 </table></div>
-<p>相关系数为 1 时，四路噪声也同相相加，平均后原样保留。这个等相关模型用于隔离噪声相关性的影响；真实弥散场的相关性还随频率和麦间距变化，不能用一个固定 $\rho$ 描述整段语音。</p>
+<p>相关系数为 1 时，四路噪声也同相相加，平均后原样保留。$\rho$ 不能任意取值：这个四路等相关矩阵的特征值是 $1+3\rho$（一次）和 $1-\rho$（三次）。噪声协方差必须半正定，所以 $-1/3\le\rho\le1$；超出范围时，公式甚至可能给出负噪声功率，已不对应可能的噪声模型。</p>
+<p>这个等相关模型用于隔离噪声相关性的影响。真实弥散场的相关性还随频率和麦间距变化，不能用一个固定 $\rho$ 描述整段语音。</p>
 <p><strong>E01-02：更轻的声音是否一定更干净？</strong> 对序列 $[0,1,0,-1]$ 整体乘 0.5，计算均方功率比和电平变化。如果目标与噪声同时乘 0.5，SNR 会提高吗？</p>
 <p><strong>参考答案</strong>：原均方功率为 $2/4=0.5$，缩放后为 $0.5/4=0.125$，功率比为 0.25。因此电平变化为 $10\log_{10}0.25=20\log_{10}0.5\approx-6.02$ dB。目标与噪声功率同时缩小到四分之一，SNR 不变。</p>
 <p>比较处理前后音频时，应保留共同的幅度尺度；若分别归一化到同一峰值，这项整体增益变化就会被隐藏。这里的 dB 是相对功率变化，不是声压级 dB SPL。</p>

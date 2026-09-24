@@ -2,7 +2,7 @@
 
 先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。
 
-本页对应 82 道稳定编号代码题，以及独立的真实录音练习 R01。原有练习题号保持不变；E01-01 表示第 1 章第 1 道代码练习，不表示全书原有第 1 题。E06-07～E06-20 是无量纲 AEC 模型与边界题，其中 E06-11～20 可用精确答案程序核对；第 15、16 节另给两组相关但参数不同的合成音频，不能把 WAV 直接当作题目真值。第 3～11、13～16 节是数学合成实验，第 12 节使用另行授权的真实同步录音。
+本页对应 85 道稳定编号代码题，以及独立的真实录音练习 R01。原有练习题号保持不变；E01-01 表示第 1 章第 1 道代码练习，不表示全书原有第 1 题。E06-07～E06-20 是无量纲 AEC 模型与边界题，其中 E06-11～20 可用精确答案程序核对；第 15、16 节另给两组相关但参数不同的合成音频，不能把 WAV 直接当作题目真值。第 3～11、13～16 节对应原有 55 个数学合成样本，第 17 节是单独清单管理的 18 个房间白噪声合成样本；第 12 节使用另行授权的真实同步录音。
 
 ## 1. 按章节运行
 
@@ -17,6 +17,7 @@
 .venv/bin/python -m codes.examples.aec_crossband_demo
 .venv/bin/python -m codes.examples.aec_rls_kalman_comparison
 .venv/bin/python -m codes.examples.exercises_engineering
+.venv/bin/python -m codes.examples.tracking_crossing_dropout_demo
 .venv/bin/python codes/examples/generate_audio_samples.py --check
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 ```
@@ -25,17 +26,21 @@
 |---|---|---|
 | 第 1 章 E01-01～03 | 相关噪声、幅度和功率、不等噪声方差 | [空间练习](../examples/exercises_spatial.py) |
 | 第 2 章 E02-01～06 | 帧数、复协方差、边缘重建、有效权重、递推启动与整体权重缩放 | 同上 |
-| 第 3 章 E03-01～05 | 差集重数、端射角误差、三维方位、近远场与实增益相减反例 | 同上 |
+| 第 3 章 E03-01～06 | 差集重数、端射角误差、三维方位、近远场、实增益相减与复增益标定反例 | 同上 |
 | 第 4 章 E04-01～07 | 延迟正号、相干源秩、栅瓣歧义、空间平滑、MDL 评分及重复抽样 | 同上 |
 | 第 5 章 E05-01～05 | 秩一条件、MVDR 加载、输出残噪、复响应约束与有限干扰抑制 | 同上 |
 | 第 6 章 E06-01～20 | NLMS、分区卷积、子带交叉项及全交叉更新、IPNLMS 正则项、RLS 遗忘与批量核对、Kalman 双讲与协方差；另含回声模型边界 | [增强练习](../examples/exercises_enhancement.py)（01～06）；[AEC 小例](../examples/aec_algorithm_minicases.py)（07～10）；[进阶手算](../examples/aec_advanced_exercises.py)（11～20） |
 | 第 7 章 E07-01～05 | 有效帧、复数预测、秩亏加载、离线因果性、WPD | 同上 |
-| 第 8 章 E08-01～06 | SI-SDR、排列、已知解混、回投影、掩码地板与跨块身份切换 | 同上 |
-| 第 9 章 E09-01～05 | 缺测、环绕、粒子、两类过程噪声与新息门控 | 同上 |
+| 第 8 章 E08-01～07 | SI-SDR、排列、已知解混、回投影、掩码地板、跨块身份与 GSS 静音门控 | 同上 |
+| 第 9 章 E09-01～06 | 缺测、环绕、粒子、两类过程噪声、新息门控与交叉身份错配 | [增强练习](../examples/exercises_enhancement.py)（01～05）；[追踪交叉与限速](../examples/tracking_crossing_dropout_demo.py)（06） |
 | 第 10 章 E10-01～12 | 时钟、VAD、缓冲、期限、定点、增益、帧/字节与块适配 | [工程练习](../examples/exercises_engineering.py) |
 | 第 11 章 E11-01～04 | 资源约束、失败率统计、WER 聚合与延迟分位数 | 同上 |
 | 附录 A E12-01～03 | 卷积、复二阶矩、秩亏最小二乘 | 同上 |
 | 附录 B E13-01 | 同组共同增益与独立归一化 | 同上 |
+
+E03-06 用两次已知方向的窄带复谱比复算固定通道增益，再用方向未知的单次观测展示不可辨识性；题目与逐步答案见[第 3 章](../../chapters/03_array-geometry.md#e03-06)。E08-07 给固定混合权重和空间密度，复算恒活动背景类在全员静音时的后验，见[第 8 章](../../chapters/08_speech-separation.md#e08-07)。两题都是确定性数学输入，不附会成已测阵列标定或完整 GSS 分离音频；现有 55 个 WAV 不提供这两题的真值。
+
+E09-06 使用确定性角度观测：交叉帧两轨均预测 $40^\circ$，B 的 $39^\circ$ 先于 A 的 $41^\circ$ 输入。两种一对一配对的平方残差和均为 $2\ \mathrm{deg}^2$；指定并列规则产生两次身份错配，但未滤波观测集合的 OSPA 为 0。另从 $P_0=I$、$Q=\operatorname{diag}(0.1,0.01)$ 出发连续预测两次，角度方差为 $2.10$、$5.21\ \mathrm{deg}^2$；每秒最多转 $5^\circ$ 的控制角为 $25^\circ$、$30^\circ$。这些答案可由[独立测试](../../tests/test_codes_tracking_crossing_dropout.py)逐项复核，适用边界见[第 9 章练习](../../chapters/09_source-tracking.md#sec-6)；它没有语音或设备 WAV，不应借用追踪试听样本作身份真值。
 
 ## 2. 合成音频试听前的约定
 
@@ -310,3 +315,20 @@ STFT 窗长 512、帧移 128，居中补边；离线 WPE 使用 4 个抽头、3 
 在全部 `[0,8000)` 点、量化前 float64 值上，已知真回声与受限模型输出之差的均方为约 $0.008929$，真实回声本身的均方约 $0.017749$，单位为归一化数字幅度平方。两个数只是本次固定输入的代数结果；高频、块边界与同带/交叉带项的关系比一个总功率比更重要。实际工程子带滤波器组常使用更长原型和不同抽取率，其延迟、混叠与最佳对角近似均不能由本组推断。试听前先调低设备音量。
 
 另一个[全交叉自适应演示](../examples/aec_crossband_demo.py)使用不同的无量纲合成输入：固定随机种子 20260923，2000 个标准正态块值各重复成两个时域样本；一拍延迟为真路径，先用 1500 块训练，后 500 块冻结权重。它的留出集全交叉残差均方在这组 float64 输出中为 0，对角残差约 $0.489674$；该数字不对应上表四个 WAV，也不是实机 ERLE。要试听**自适应**输出，必须从同一实验的参考、麦克风、估计与残差重新生成并保留统一导出增益，不能借用已知矩阵删项的文件。
+
+## 17. 六位置房间响应与定位
+
+这组样本对应[附录 B 第 16 题](../../chapters/13_appendix-guide.md)，与上面 55 个合成 WAV 分开保存。[参数和逐文件摘要](../room_audio/MANIFEST.json)记录固定的 12 m × 10 m × 6 m 房间、4 麦方阵、16 kHz、pyroomacoustics 0.10.0、镜像阶数 40、每位置独立的 1 s 白高斯噪声和全部 18 个 PCM16 文件。六个位置中四个用于近/远、左/右成对观察，另两个由种子 20260924 固定。三类音频使用**同一个**导出增益 0.1516968997435788，不对源、直达或完整输出分别归一化，也不补偿传播延迟。直达文件与完整文件各含按清单顺序排列的四个麦克风通道。
+
+| 声源位置 | 源（1 通道） | 仅直达（4 通道） | 完整房间（4 通道） |
+|---|---|---|---|
+| 近左，1 m、−30° | [源](../room_audio/fixed_near_left_source.wav) | [直达](../room_audio/fixed_near_left_direct.wav) | [完整](../room_audio/fixed_near_left_full.wav) |
+| 近右，1 m、+30° | [源](../room_audio/fixed_near_right_source.wav) | [直达](../room_audio/fixed_near_right_direct.wav) | [完整](../room_audio/fixed_near_right_full.wav) |
+| 远左，2.5 m、−30° | [源](../room_audio/fixed_far_left_source.wav) | [直达](../room_audio/fixed_far_left_direct.wav) | [完整](../room_audio/fixed_far_left_full.wav) |
+| 远右，2.5 m、+30° | [源](../room_audio/fixed_far_right_source.wav) | [直达](../room_audio/fixed_far_right_direct.wav) | [完整](../room_audio/fixed_far_right_full.wav) |
+| 种子位置 1，约 1.10 m、−41.24° | [源](../room_audio/seeded_1_source.wav) | [直达](../room_audio/seeded_1_direct.wav) | [完整](../room_audio/seeded_1_full.wav) |
+| 种子位置 2，约 1.97 m、+2.40° | [源](../room_audio/seeded_2_source.wav) | [直达](../room_audio/seeded_2_direct.wav) | [完整](../room_audio/seeded_2_full.wav) |
+
+先把源与仅直达输出的起点和电平关系看清，再比较同位置的完整房间尾部；多通道文件应逐麦读取，不依赖浏览器自动下混。由于白噪声并非语音，不从试听推断语音可懂度、自然度或 WPE/AEC 性能。脚本用同长度、同高通边界的直达和完整 RIR 计算 DRR，并给出六位置实际仿真的 $T_{20}$ 外推 $T_{60}$ 与 SRP-PHAT 方位误差；逐步计算和边界解释见附录。可单独打开[三栏结果图](../room_audio/ROOM_RESULTS.png)，其三幅量分别是四麦 DRR 中位数、外推混响时间中位数和方位绝对误差，不能跨量纲比较柱高。
+
+这 18 个文件是**合成白噪声**，不是实测房间或真人录音。结果图和音频由[同一脚本](../examples/room_srp_exercise.py)生成；在已安装锁定 pyroomacoustics 的隔离环境中可用 `--run --plot 新图路径 --audio-dir 新目录` 重新导出，两个路径都应先指向不存在的临时位置，再根据清单核对摘要。站点副本由构建脚本按清单验证后发布，不修改原有 55 个 WAV 的清单。

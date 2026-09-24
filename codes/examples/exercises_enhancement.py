@@ -11,12 +11,13 @@ import numpy as np
 
 from codes.array_tutorial.aec import erle_db, nlms
 from codes.array_tutorial.dereverberation import offline_wpe
-from codes.array_tutorial.separation import masked_spatial_covariance, pit_permutation, si_sdr
+from codes.array_tutorial.separation import (guided_activity_posterior,
+                                             masked_spatial_covariance, pit_permutation, si_sdr)
 from codes.array_tutorial.tracking import ConstantVelocityKalman, systematic_resample, wrap_angle
 
 
 def run_exercises() -> dict:
-    """Return twenty-two JSON-safe exercises with stable IDs and stated inputs."""
+    """Return twenty-three JSON-safe exercises with stable IDs and stated inputs."""
     results = {}
     x = np.array([1., 0., 0.])
     d = np.array([.8, -.2, .1])
@@ -169,6 +170,22 @@ def run_exercises() -> dict:
         aligned_concatenated_si_sdr_db=[si_sdr(aligned_streams[index], long_references[index])
                                         for index in range(references.shape[0])],
         oracle_alignment=True)
+
+    # One GSS E step with fixed spatial likelihoods. The background class is
+    # always active, so a frame without a speaking person still normalizes.
+    mixture_weights = np.array([.5, .3, .2])
+    likelihoods = np.array([[2., 1., 1.], [2., 1., 1.]])
+    activity = np.array([[1, 0], [0, 0]])
+    posterior = guided_activity_posterior(mixture_weights, likelihoods, activity)
+    results['E08-07'] = dict(
+        class_order=['speaker_1', 'speaker_2', 'background'],
+        mixture_weights=mixture_weights.tolist(),
+        spatial_likelihoods=likelihoods.tolist(),
+        speaker_activity=activity.tolist(),
+        unnormalized_scores=[[1., 0., .2], [0., 0., .2]],
+        posterior=posterior.tolist(),
+        no_background_silent_frame_denominator=0.,
+        note='Fixed likelihoods test gating and normalization only; no cACGMM or WER evaluation.')
 
     dt, density, acceleration_variance = .1, 2., 4.
     continuous = density*np.array([[dt**3/3,dt**2/2],[dt**2/2,dt]])

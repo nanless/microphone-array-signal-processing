@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 2 章 · 声音到达阵列时发生了什么 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5d23d343bd67"><style>
+<meta name="source-digest" content="28a7db6b0401"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -243,7 +243,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </blockquote>
 <p>图 5（b）的指数包络把名义 $T_{60}$ 设为 0.5 s；加入固定随机尾和早期反射后，<a href="https://doi.org/10.1121/1.1909343" title="citation">Schroeder 剩余能量积分</a>曲线最接近 −60 dB 的位置约为 0.514 s。因此 0.5 s 是生成模型的名义参数，不表示该固定样例恰好在 0.500 s 穿过 −60 dB。</p>
 <p>这里直接寻找 −60 dB 交点，只用于核对这条合成曲线。实测应按场所选择 ISO 3382 的相应分册，常对衰减曲线的 −5～−25 dB（$T_{20}$）或 −5～−35 dB（$T_{30}$）区间回归，再外推到 60 dB。</p>
-<p>图 5（c）是设定 $d_c=1.0$ m 的归一化示例。在该模型中，3 m 处的 DRR 为 $-20\log_{10}(3/1)\approx-9.5$ dB，表示混响能量高于直达声；这个数不能外推到未测量的房间。实际 $d_c$ 还随体积、吸声量和声源指向性变化。DRR 可作为距离估计的声学线索，但也会受房间和声源级别影响。</p>
+<p>图 5（c）是设定 $d_c=1.0$ m 的归一化示例。在该模型中，3 m 处的 DRR 为 $-20\log_{10}(3/1)\approx-9.5$ dB，表示混响能量高于直达声；这个数不能外推到未测量的房间。实际 $d_c$ 还随体积、吸声量和声源指向性变化。</p>
+<p>DRR 可作为距离估计的声学线索，但必须同时考虑房间和声源指向性。在上述线性模型中，直达声与混响声能量都正比于声源功率 $W$，两者相除后 $W$ 抵消，因此只把声源整体调大并不会改变 DRR。若从含噪或发生削波的录音估计 DRR，测得的比值还可能受噪声和非线性影响。</p>
 <p><strong>仿真怎么造混响</strong>：镜像法（Image Method，镜像声源法）把墙面反射等效为镜像声源的叠加，算法定义见 <a href="https://doi.org/10.1121/1.382599" title="citation">Allen 与 Berkley 1979 原论文</a>。开源库 pyroomacoustics 可生成给定房间和阵列的 RIR；本书固定链接到 <a href="https://pypi.org/project/pyroomacoustics/0.10.0/" title="citation">pyroomacoustics 0.10.0 的 PyPI 发布页</a>，示例接口以该版本为准。不同版本的接口、默认值或依赖可能变化，复现时应记录实际安装版本。</p>
 <p><strong>反过来，怎么实测一个房间的混响</strong>：拍手或爆破气球后观察衰减只能作粗略估计。更可控的做法是<strong>指数正弦扫频（Exponential Sine Sweep，ESS）</strong>：播放频率指数上升的已知扫频，录音后反卷积得到 RIR，方法见 <a href="https://aes.org/publications/elibrary-page/?id=10211" title="citation">Farina 2000，AES Convention Paper 5093</a>。</p>
 <p>在系统近似时不变、没有削波且扫频长度足够时，ESS 可将若干谐波失真成分与线性 RIR 在反卷积结果中分开。环境噪声、削波、时变非线性和播放/录音链路的频响仍会影响测量。</p>
@@ -345,7 +346,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>度量一：主瓣宽度 HPBW（分辨率，Half-Power Beam Width）</strong>。主瓣两侧功率降到峰值一半的两个点之间的夹角，就是半功率波束宽度。</p>
 <p><strong>半功率点与 −3 dB 点</strong>：功率减半为 $10\log_{10}0.5=-3.01$ dB。波束图若按幅度绘制，半功率对应幅度 $1/\sqrt{2}\approx0.707$，同样得到 $20\log_{10}0.707=-3.01$ dB。因此“半功率点”和“−3 dB 点”指同一位置（图 7（a）的红色双箭头）。幅度减半则是 −6 dB，对应功率变为四分之一。</p>
 <p>对常规波束扫描而言，HPBW 可用来估计角分辨率：两个源的间隔小于主瓣宽度时，扫描谱往往难以形成两个清楚峰值。对 $M$ 元、等权、等间距 ULA，其离散阵因子给出的宽阵列近似为</p>
-<p>$$\mathrm{HPBW} \approx \frac{0.886\,\lambda}{Md\cos\theta_0}\ \text{rad}\text{。}$$</p>
+<p>$$\mathrm{HPBW} \approx \frac{0.886\,\lambda}{Md\cos\theta_0}\ \text{rad}\text{。}\tag{2-3}$$</p>
 <blockquote>
 <p><strong>可跳过：系数 0.886 从哪里来</strong>：均匀线阵的归一化阵因子是 Dirichlet 核 $\dfrac{\sin(M\psi/2)}{M\sin(\psi/2)}$（§5.2 的等比数列求和结果），其中 $\psi=2\pi d(\sin\theta-\sin\theta_0)/\lambda$。半功率点要求幅度 $=1/\sqrt2$，即 $|\sin(M\psi/2)/(M\psi/2)|\approx1/\sqrt2$（大 $M$ 时分母 $\sin(\psi/2)\approx\psi/2$）。</p>
 <p>解 $\sin x/x=1/\sqrt2$ 得 $x\approx1.3916$（$x=M\psi/2$），于是单边 $\psi_{3dB}=2\times1.3916/M=2.7832/M$；双边宽度换算到 $\sin\theta$ 域再除以 $\cos\theta_0$（$\mathrm{d}\sin\theta$ 微分带来 $1/\cos\theta_0$），得 $\mathrm{HPBW}=2\times1.3916/(\pi)\times\lambda/(Md\cos\theta_0)$，而 $2\times1.3916/\pi=0.8859\approx0.886$。</p>
@@ -357,7 +358,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <blockquote>
 <p><strong>孔径尺度的明细</strong>：$0.886\times0.343/0.07\approx4.34$ rad。这个量已超过线阵的 180° 可视范围，说明窄主瓣近似不适用；正确结论是“该物理孔径在 1 kHz 几乎没有方向选择能力”，而不是把 249° 当成可测的 HPBW。</p>
 </blockquote>
-<p><strong>度量二：旁瓣电平 SLL（泄漏）</strong>。SLL 是最高可见旁瓣相对主瓣的电平。均匀加权的延迟求和波束形成器（Delay-and-Sum Beamformer，DSB，详见 §5.2）在阵元数较多、可见角域包含第一旁瓣时，最高旁瓣趋近 −13.26 dB，对应功率比约 $10^{-13.26/10}\approx0.047$。定向干扰位于旁瓣方向时仍会进入输出；加窗权重（例如汉明权重）可降低旁瓣，代价是主瓣变宽。MVDR 则可根据噪声协方差在干扰方向自适应形成零陷（§5.4）。</p>
+<p><strong>度量二：旁瓣电平 SLL（泄漏）</strong>。SLL 是最高可见旁瓣相对主瓣的电平。均匀加权的延迟求和波束形成器（Delay-and-Sum Beamformer，DSB，详见 §5.2）在阵元数较多、可见角域包含第一旁瓣时，最高旁瓣趋近 −13.26 dB，对应功率比约 $10^{-13.26/10}\approx0.047$。</p>
+<p>定向干扰位于旁瓣方向时仍会进入输出。加窗权重（例如汉明权重）可降低旁瓣，代价是主瓣变宽；MVDR 可根据噪声协方差在干扰方向自适应形成零陷（§5.4）。</p>
 <p>阵元数和转向范围会改变实际 SLL。图 7（a）的 8 麦半波线阵指向 30°，精确离散阵因子在可见角域的最高旁瓣约为 −12.8 dB。若改成 4 麦半波线阵并指向正横，最高可见旁瓣约为 −11.3 dB；同样正横指向的 2 麦半波线阵在可见角域没有旁瓣，也就不能给它套一个 −13 dB 的 SLL。</p>
 <blockquote>
 <p><strong>可跳过：−13.26 dB 与 4 麦结果从哪里来</strong>：阵元数较多时，均匀加权阵因子在主瓣及第一旁瓣附近近似为 $\sin x/x$。第一个旁瓣的极值位置约 $x=4.4934$（满足 $\tan x=x$），幅度比 $|\sin x/x|\approx0.2172$，所以电平趋近 $20\log_{10}0.2172\approx-13.26$ dB。</p>
@@ -365,11 +367,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>直觉上，等权矩形窗的傅里叶变换是 sinc，旁瓣是 sinc 振铃的第一个波峰，高度由 sinc 包络 $1/x$ 决定。加窗（汉明等）相当于把矩形边沿削薄，振铃随之降低。</p>
 </blockquote>
 <p><strong>度量三：指向性指数 DI（抗混响/抗弥散噪声）</strong>。充分弥散的晚期混响常近似为从各方向入射的声场；实际风噪通常由局部湍流激发，不能无条件按弥散场处理。DI 表示在指定的各向同性弥散场模型下，波束对目标方向的信噪比改善。它由主瓣方向增益的平方除以全空间平均增益的平方，再取对数：</p>
-<p>$$\mathrm{DI} = 10\log_{10}\frac{4\pi\,|B(\Omega_0)|^2}{\int_{4\pi} |B(\Omega)|^2\,\mathrm{d}\Omega}\text{。}$$</p>
+<p>$$\mathrm{DI} = 10\log_{10}\frac{4\pi\,|B(\Omega_0)|^2}{\int_{4\pi} |B(\Omega)|^2\,\mathrm{d}\Omega}\text{。}\tag{2-4}$$</p>
 <p>$\Omega=(\theta,\phi)$ 表示三维方向，$B(\Omega)$ 是该方向上的复响应，$\Omega_0$ 是目标方向；$\mathrm{d}\Omega$ 是立体角微元，整个球面的立体角为 $4\pi$。分母对波束图在整个球面上积分，表示弥散场中各方向输入的总贡献。只有波束图轴对称时，才能把 $B(\Omega)$ 简写为单角变量。</p>
 <p>DI = 0 dB 表示所选目标方向的功率响应等于全空间平均功率响应。全向波束满足这一条件，但非全向波束在某个方向也可能满足它，所以仅凭一个 DI 数字不能判断整个波束图是否平坦。对固定的目标方向，DI 越大，表示该方向相对弥散场平均响应的增益越大。超指向波束形成（§5.3）的目标之一就是提高这一指标。</p>
 <p><strong>度量四：白噪增益 WNG（抗自身噪声/稳健性）</strong>。每个麦克风自己有底噪（热噪声），各通道互相独立。波束权重把它们合起来时会放大多少倍？这就是 WNG：</p>
-<p>$$\mathrm{WNG} = 10\log_{10}\frac{|\vec{w}^H\vec{a}(\theta)|^2}{\|\vec{w}\|^2}\text{。}$$</p>
+<p>$$\mathrm{WNG} = 10\log_{10}\frac{|\vec{w}^H\vec{a}(\theta)|^2}{\|\vec{w}\|^2}\text{。}\tag{2-5}$$</p>
 <p>分子是目标方向的增益平方，分母是权重自身的能量。无失真约束下，WNG 为负表示输出白噪声功率高于单通道参考。</p>
 <p>超指向设计在低频可能产生较大的正负权重，使通道增益、相位和位置失配显著改变主瓣或零陷。单位幅度导向矢量下的 WNG 上限是 $10\log_{10}M$，DSB 达到该上限（§5.2）。</p>
 <p>DI 与 WNG 的定义及其在阵列设计中的用法可参见 <a href="https://doi.org/10.1007/978-3-662-04619-7" title="citation">Brandstein 与 Ward 编《Microphone Arrays》，第 2 章，2001</a>。引用这些指标时仍须说明声场模型、导向归一化和积分范围。</p>
@@ -391,7 +393,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>精度理论下界（CRB）</strong>（统计内容较重，第一遍可跳过，§4 用到时再回）：克拉美－罗界（Cramér–Rao Bound）是在给定观测模型和正则条件下，对无偏波达方向（Direction of Arrival，DOA）估计器方差的下界。</p>
 <p>下面的显式式子采用单源、窄带、确定性信号模型。每个快拍的未知复幅度作为干扰参数；阵列是 $M$ 元均匀线阵（Uniform Linear Array，ULA）、间距为 $d$；共有 $T$ 个独立快拍；噪声为各阵元方差均为 $\sigma^2$ 的圆对称复白高斯噪声。</p>
 <p>这里的单阵元线性 SNR 定义为 $\mathrm{SNR}=\sum_{t=1}^{T}|s_t|^2/(T\sigma^2)$。在这些约定下可得到下式。改变复/实噪声、已知/未知幅度或 SNR 定义会改变常数，推导口径见 <a href="https://doi.org/10.1109/29.17564" title="citation">Stoica 与 Nehorai 1989</a>：</p>
-<p>$$\mathrm{CRB}(\theta) = \frac{6}{T \cdot \mathrm{SNR} \cdot M(M^2-1) \cdot \left(\frac{2\pi d}{\lambda}\right)^2 \cos^2\theta}\quad(\text{rad}^2)\text{。}$$</p>
+<p>$$\mathrm{CRB}(\theta) = \frac{6}{T \cdot \mathrm{SNR} \cdot M(M^2-1) \cdot \left(\frac{2\pi d}{\lambda}\right)^2 \cos^2\theta}\quad(\text{rad}^2)\text{。}\tag{2-6}$$</p>
 <p>误差方差与 SNR、快拍数和阵元位置的二阶矩成反比，并在端射方向（$\cos\theta\to0$）发散。</p>
 <ul>
 <li>固定间距 $d$ 并增加阵元时，$M(M^2-1)d^2$ 约按 $M^3d^2$ 增长。</li>

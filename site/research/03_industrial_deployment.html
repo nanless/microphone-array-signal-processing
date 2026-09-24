@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>工业音频实现研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5d23d343bd67"><style>
+<meta name="source-digest" content="28a7db6b0401"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -204,6 +204,33 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </table></div>
 <p>表中的“部分消费”由每次 <code>input_frames_used &lt; input_frames</code> 计数，两组实际累计消耗均为 160 020 输入帧；输出计数、比例和排空顺序还由逐调用记录独立检查。校正组总帧数比 10 s×16 kHz 少 1 帧，不能因为内部六个标记对齐就写成输出长度严格等于 160 000。此处只观察孤立脉冲峰值位置，没有拟合固定时移或增益；脉冲之间的波形、带外抑制和听感不是表中测量项。</p>
 <p>运行命令是 <code>.venv/bin/python codes/examples/run_libsamplerate_sro.py</code>。脚本先核对本地上游提交及范围，完成临时构建后输出 JSON；源文件、二进制输出和调用轨迹均不进入发布仓库。对应<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_libsamplerate_sro.py">独立算式与接口失败用例测试</a>检查错误比率、丢失输入、过早结束与遗漏排空。实际设备仍需另测 SRO 估计误差、比例更新伪影、抗混叠、时间戳闭环和长时队列稳定；本实验不能代表这些项目通过。</p>
+<p>另一个<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/sro_closed_loop_demo.py">估计—补偿—核查小实验</a>只用 Python 标准库，不需要下载上游源码或连接声卡。它生成 12 s 的解析合成波形与<strong>精确的逐样本合成时间戳</strong>：参考为 2 000 Hz，设备为 2 000.3 Hz（+150 ppm），首样本在参考零点后 2 ms 到达，物理设备索引 12 000 的样本被删去。参考序号 $n$ 的名义时刻为 $n/2000$，未缺样设备序号 $n$ 的时刻为 $0.002+n/2000.3$ s，因此前 2 s 的九个锚点按本书延迟约定给出截距 $-2$ ms、斜率 $150\times10^{-6}/(1+150\times10^{-6})$。示例的标准库直线拟合一阶读数为 149.9775 ppm，按 $s/(1-s)$ 反解为 150 ppm；截距另报初始偏移 2 ms。先从相邻时间戳识别倍数间隔并恢复物理索引，再拟合<strong>缺样之前</strong>的锚点，避免把缺样阶跃误认成稳定 SRO。</p>
+<p>校准使用设备索引 0～4 000 的锚点；之后才把后续样本送入保留上个设备样本与输出相位的线性插值器，从参考索引 4 500 开始输出。257 样本输入块下，缺口使参考索引 12 002、12 003 标为无效，没有跨缺口连线。以解析参考波形计算无量纲幅值平方的均方误差（MSE），结果如下；未校正组直接按接收序号与参考序号比较，所以同时包含初始偏移、速率积累与缺样后的序号错位。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<th scope="col"ead>
+<tr>
+<th scope="col">参考样本区间</th>
+<th scope="col" style="text-align: right;">有效校正样本数</th>
+<th scope="col" style="text-align: right;">未校正 MSE</th>
+<th scope="col" style="text-align: right;">校正后 MSE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5 000～10 999，缺样前</td>
+<td style="text-align: right;">6 000</td>
+<td style="text-align: right;">0.02869</td>
+<td style="text-align: right;">0.000002773</td>
+</tr>
+<tr>
+<td>13 000～21 999，缺样后</td>
+<td style="text-align: right;">9 000</td>
+<td style="text-align: right;">0.02131</td>
+<td style="text-align: right;">0.000002477</td>
+</tr>
+</tbody>
+</table></div>
+<p>运行 <code>python3 codes/examples/sro_closed_loop_demo.py</code> 即得到参数、估计、缺口和逐段 JSON；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_sro_closed_loop.py">独立单元测试</a>核对解析斜率、2 ms 截距、单点缺样、跨块相位及 257/509 样本分块一致性。这里是无时间戳噪声、恒定速率且合成波形可解析的教学闭环；MSE 还包括线性插值误差，不可解释为纯时间残差。本实验不验证实际声卡、盲音频估计、抗混叠、动态比例更新或长时队列稳定。上述 libsamplerate 实验验证真实 C 接口的有状态调用，但使用已知比率；两者共同仍不能替代设备验收。</p>
 <p>锁定版 WebRTC AEC3 的 <a href="https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/render_delay_controller.cc"><code>render_delay_controller.cc</code></a>提供 <code>HasClockdrift()</code>，<code>block_processor.cc</code> 将该状态传给回声路径控制。检测到延迟轨迹变化、调节参考缓冲或重置路径状态，不等于已经把两个独立设备时钟重采样到同一速率。若产品跨时钟域采集与播放，应在输入时间戳、长期参考队列和补偿前后残余上验证 SRO 闭环；本书已运行的已知比率重采样实验也不替代这一设备验收。</p>
 <span id="sec-7" class="anchor-alias" aria-hidden="true"></span><span id="i05speexdsp-的流式转换与回声缓冲" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-1336ddbb4b">I05：SpeexDSP 的流式转换与回声缓冲</h3>
 <p>SpeexDSP 的 <code>libspeexdsp/resample.c</code>、<code>include/speex/speex_resampler.h</code> 是另一组连续重采样入口。<code>libspeexdsp/mdf.c</code> 提供分块频域回声处理，可与第 6 章教学 NLMS 对照。代码根许可为 BSD-3-Clause，版本和提交沿用锁定清单。重采样器和回声消除器是两个独立状态；取得 SpeexDSP 源码不表示一打开 AEC 就自动纠正播放/采集采样率偏移。</p>

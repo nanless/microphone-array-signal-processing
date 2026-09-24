@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 3 章 · 阵列几何形态 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5d23d343bd67"><style>
+<meta name="source-digest" content="28a7db6b0401"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -241,7 +241,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>算例 3-4：ULA 主瓣宽度计算</strong></p>
 <p>取一条 4 麦 ULA（等间距直线排列的阵列），间距 $d = 3$ cm，指向正横。首末阵元的物理跨度为 $(M-1)d=9$ cm；§2.6 从离散阵因子推得的窄主瓣近似则是</p>
 <p>$$\mathrm{HPBW} \approx \frac{0.886\,\lambda}{Md}\ \text{rad}$$</p>
-<p>这里的 $Md=12$ cm 来自 Dirichlet 核的近似尺度，不等于物理跨度。对小阵列要保留这个区别。</p>
+<p>这里的 $Md=12$ cm 来自 Dirichlet 核的近似尺度，不等于物理跨度。对小阵列要保留这个区别；该式是式(2-3)在正横方向 $\cos\theta_0=1$ 的形式。</p>
 <p><strong>1 kHz</strong>：波长 $\lambda = 343/1000 = 0.343$ m。若强行代入窄主瓣近似，会得到 $0.886\times0.343/0.12\approx2.53$ rad，但这个数不是该阵列的 HPBW。直接计算精确阵因子：端射处 $\psi=2\pi d/\lambda\approx0.550$ rad，</p>
 <p>$$\left|B(90°)\right|=\left|\frac{\sin(M\psi/2)}{M\sin(\psi/2)}\right|\approx0.821，$$</p>
 <p>即 $20\log_{10}0.821\approx-1.71$ dB。从 $-90°$ 到 $90°$ 都没有降到 −3 dB，所以本例在 1 kHz 下<strong>没有可定义的 −3 dB 主瓣宽度</strong>。</p>
@@ -372,7 +372,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>答案要点：8 kHz 波长约 4.3 cm，半波长约 2.1 cm，小于 3.75 cm 相邻麦距，已经不满足全视场无混叠的充分条件。圆阵是否在某一转向出现等高歧义，要看完整几何和宽带融合，不能只套 ULA 的单一栅瓣角公式。挡板会以频率和方向相关的方式改变幅相响应；若模型使用得当，这些额外差异可帮助消歧，但它不是固定地把低频下限移动某个倍频程。</p>
 </li>
 </ol>
-<p>下面五题使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 复算，检查差分位置、反三角函数边界、角度约定、远场近似误差和双麦相减响应。</p>
+<p>下面六题使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 复算，检查差分位置、反三角函数边界、角度约定、远场近似误差、双麦相减响应和通道复增益标定。</p>
 <p><strong>E03-01：差分位置相同，观测次数也相同吗？</strong> 对位置 $\{0,1,2,3,4,5\}$ 和 $\{0,1,2,3,7,11\}$，枚举全部有序麦对，包括同一麦与自身配对。计算每个差分滞后的重数，并检查重数之和。位置单位为半波长。</p>
 <p><strong>参考答案</strong>：两种布局都有 $6\times6=36$ 个有序麦对，零滞后的重数均为 6。均匀阵的滞后从 −5 到 5，重数依次为 $1,2,3,4,5,6,5,4,3,2,1$，共 11 个不同位置。</p>
 <p>嵌套阵的滞后连续覆盖 −11 到 11，共 23 个；正滞后 1～11 的重数依次为 $3,2,1,2,1,1,1,1,1,1,1$，负滞后与之对称。相同滞后的样本可以平均，但不同麦对可能共享同一通道，不能据重数直接假定它们统计独立，更不能把 23 个差分位置当作 23 路原始录音。</p>
@@ -451,6 +451,14 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </table></div>
 <p>只有最后一行在正横有零点。额外给后路延迟 $d/c$ 后，前方响应为 $|1-e^{-\mathrm j2p}|=2\sin p\approx0.3643$，后方为 0。相对于单麦的幅度尺度保持不变，不分别把每行归一化到峰值。</p>
 <p>本题展示增益和延迟怎样改变理想模型的对称性，不是实测零陷深度。有限通道失配、反射与高频下的小间距近似误差仍须单独验证。</p>
+<p><a id="e03-06"></a></p>
+<p><strong>E03-06：方向误差还是通道相位误差？</strong> 两只同步麦克风位于 $x_1=0$、$x_2=d=8.575$ cm，声速为 $343$ m/s，频率为 $1$ kHz。按 §2.3 的约定，麦 1 是参考通道；麦 2 有未知但在两次观测间不变的相对复增益 $g$。</p>
+<p>用两个方向已知的窄带校准声源，分别置于 $+30°$ 与 $-30°$。设源在麦 1 的复幅度为 $b_\theta$，测得两麦复谱之比 $q_\theta=X_2/X_1$ 分别为 $1.2e^{\mathrm j75°}$ 和 $1.2e^{-\mathrm j15°}$。</p>
+<p>先根据方向求两次理想导向比 $a_2/a_1$，再分别由 $q_\theta$ 算出 $g$。如果误把 $g$ 当成 1，只凭 $+30°$ 那次测得的相位反算方向，会得到多少度？最后说明为什么一条<strong>方向未知</strong>的观测不能同时确定方向与通道相位误差。先手算，再运行 <code>E03-06</code>；本题没有录音噪声、房间反射或设备漂移。</p>
+<p><strong>参考答案：几何相位。</strong> $d=\lambda/4$，故 $\psi(\theta)=2\pi fd\sin\theta/c=(\pi/2)\sin\theta$。两已知方向的几何相位分别为 $+45°$ 和 $-45°$，理想导向比分别为 $e^{\mathrm j45°}$ 和 $e^{-\mathrm j45°}$。$q_\theta$ 中的公共源幅度 $b_\theta$ 已经约掉，不要求两次播放同样响。</p>
+<p><strong>参考答案：复增益与错误角度。</strong> 两次计算都得到 $g=q_\theta/(a_2/a_1)=1.2e^{\mathrm j30°}=1.03923+0.6\mathrm j$。将麦 2 除以这个复增益后，相对相位回到 $\pm45°$。若忽略相位校准，把测得的 $75°$ 全当作几何相位，则 $\sin\hat\theta=75°/90°=5/6$，得到 $\hat\theta\approx56.44°$，相对真实 $30°$ 偏了约 $26.44°$。</p>
+<p><strong>参考答案：可辨识边界。</strong> 仅有第一条方向未知的 $q=1.2e^{\mathrm j75°}$ 时，$(\theta=30°,\arg g=30°)$ 和 $(\theta=0°,\arg g=75°)$ 都能解释它，幅度同为 $1.2$。本题一个方向<strong>已知</strong>的无噪声观测其实足以求双麦相对复增益；第二个已知方向用于检查“复增益不随方向变化”这一假设。</p>
+<p>若声源方向未知，仅增加任意方向的观测而不加几何、频率或校准约束，也不能保证唯一分开方向和相位误差。实测中壳体散射可能使误差随方向变化，需按 §3.4 测量阵列流形，不能用这一个固定 $g$ 外推。</p>
 <p>更多跨章练习和音频条件见<a href="research/05_exercises_and_audio.html">实验总览</a>。其中整数延迟音频只提供已知通道时差，没有模拟某一真实麦克风外壳；不能由该样本推断挡板收益或阵列标定精度。</p>
 <hr />
 <blockquote>

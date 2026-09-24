@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 11 章 · 总结与选型指南 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5d23d343bd67"><style>
+<meta name="source-digest" content="28a7db6b0401"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -455,9 +455,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>代码复算 E11-01</strong>：运行 <code>.venv/bin/python -m codes.examples.exercises_engineering</code>，核对 <code>alias_boundary_hz=4287.5</code>、<code>drift_300s_ms=24</code>、<code>maximum_alignment_interval_s=1.25</code> 和两条延迟。只要其中一个硬约束不满足，就不能用另一个指标的收益抵消。该练习验证算术和筛选逻辑，没有测量设备延迟。</p>
 <span id="sec-12" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-b2f4d38876">题 5：评分覆盖与电池预算（E11-02）</h3>
 <p>候选模型计划评测 10 个文件，只有 8 个成功评分，成功文件的平均分为 3.8。能否直接报告“完整测试集得分 3.8”？应同时给出哪些数量？</p>
-<p>同一设备示意电池为 3.7 V、2000 mAh，可用能量系数为 0.8；低功耗状态为 0.2 W、占时间 10%，处理状态为 1.2 W、占时间 90%。估计平均功率和续航。这里的输入是预算示意，不是某产品规格。</p>
+<p>同一设备示意电池为 3.7 V、2000 mAh，电池可用容量、老化裕量及电池至负载的转换效率合计系数为 0.8；<strong>在转换电路输出端</strong>测得的整机负载功率，低功耗状态为 0.2 W、占时间 10%，处理状态为 1.2 W、占时间 90%。估计负载平均功率和续航。这里的输入是预算示意，不是某产品规格；若改在电池端测功率，转换效率不能再计入系数。</p>
 <p><strong>答案要点</strong>：评分覆盖为 $8/10=80\%$，3.8 只能标成成功子集的平均分；应保留总数 10、成功数 8、失败数 2、失败原因和各场景分布。缺失项不能擅自填 0 分，也不能悄悄从完整测试集删除；是否判整次评测无效应遵守预先规定的规则。</p>
-<p>容量先换成 $2$ Ah，标称能量为 $3.7\times2=7.4$ Wh，可用能量为 $7.4\times0.8=5.92$ Wh。平均功率为 $0.2\times0.1+1.2\times0.9=1.10$ W，续航约 $5.92/1.10=5.38$ h。<code>E11-02</code> 输出这组中间值；温度、老化和状态转换消耗没有单独建模，所以它是估计，不是续航验收。</p>
+<p>容量先换成 $2$ Ah，标称能量为 $3.7\times2=7.4$ Wh；按题设综合系数，<strong>可交付负载</strong>的估算能量为 $7.4\times0.8=5.92$ Wh。负载平均功率为 $0.2\times0.1+1.2\times0.9=1.10$ W，续航约 $5.92/1.10=5.38$ h。<code>E11-02</code> 输出这组中间值；温度、各因素随电流的变化和状态转换消耗没有单独建模，所以它是估计，不是续航验收。</p>
 <span id="sec-13" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-994102bab0">题 6：平均文件分数与合并计数（E11-03）</h3>
 <p>两个文件分别有 10、90 个参考词，替换、删除和插入的错误数之和分别为 1、45。先计算各文件 WER，再比较“每个文件等权平均”和“先合并错误数与参考词数”的结果。假设两文件都成功评分，分词与文本规范化完全一致。</p>
 <p><strong>答案要点</strong>：两文件的 WER 为 $1/10=10\%$ 和 $45/90=50\%$。文件等权的宏平均为 $(10\%+50\%)/2=30\%$；合并计数为 $(1+45)/(10+90)=46\%$，相当于按参考词数加权。</p>

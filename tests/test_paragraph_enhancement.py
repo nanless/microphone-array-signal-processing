@@ -16,6 +16,7 @@ class ListParser(HTMLParser):
         self.lists = []
         self.open_lists = []
         self.open_items = []
+        self.open_paragraphs = []
 
     def handle_starttag(self, tag, attrs):
         if tag in ("ol", "ul"):
@@ -23,21 +24,28 @@ class ListParser(HTMLParser):
             self.lists.append(record)
             self.open_lists.append(record)
         elif tag == "li":
-            item = {"text": "", "paragraphs": 0}
+            item = {"text": "", "paragraphs": 0, "paragraph_texts": []}
             self.open_lists[-1]["items"].append(item)
             self.open_items.append(item)
         elif tag == "p" and self.open_items:
-            self.open_items[-1]["paragraphs"] += 1
+            item = self.open_items[-1]
+            item["paragraphs"] += 1
+            item["paragraph_texts"].append("")
+            self.open_paragraphs.append(item)
 
     def handle_endtag(self, tag):
         if tag in ("ol", "ul"):
             self.open_lists.pop()
         elif tag == "li":
             self.open_items.pop()
+        elif tag == "p" and self.open_paragraphs:
+            self.open_paragraphs.pop()
 
     def handle_data(self, data):
         for item in self.open_items:
             item["text"] += data
+        if self.open_paragraphs:
+            self.open_paragraphs[-1]["paragraph_texts"][-1] += data
 
 
 class ParagraphParser(HTMLParser):
@@ -150,10 +158,20 @@ class EnhancementParagraphTest(unittest.TestCase):
         source, path = self.passage("08_speech-separation.md", "**GSS（导引源分离", "**紧凑实现顺序**")
         items = self.render_items(source, path)
         self.assert_labels(items, ["cACGMM 空间聚类", "导引（Guided）", "级联"])
-        self.assertEqual(items[0]["paragraphs"], 3)
-        self.assertIn(r"\tag{8-4}", items[0]["text"])
-        self.assertIn("其中", items[0]["text"])
-        self.assertIn("正定的形状矩阵", items[0]["text"])
+        paragraphs = items[0]["paragraph_texts"]
+        anchors = (
+            "cACGMM 空间聚类",
+            r"\tag{8-4}",
+            "正定的形状矩阵",
+            "混合模型的后验概率",
+        )
+        positions = [next(i for i, paragraph in enumerate(paragraphs) if anchor in paragraph)
+                     for anchor in anchors]
+        self.assertEqual(positions, sorted(set(positions)), "The four explanation tasks need distinct ordered paragraphs")
+        self.assertTrue(paragraphs[positions[1]].strip().startswith("$$"), "The cACG density needs its own math block")
+        self.assertTrue(paragraphs[positions[1]].strip().endswith("$$"))
+        self.assertIn("其中", paragraphs[positions[2]])
+        self.assertIn("软时频掩码", paragraphs[positions[3]])
         for item in items[1:]:
             self.assertNotIn(r"\tag{8-4}", item["text"])
 

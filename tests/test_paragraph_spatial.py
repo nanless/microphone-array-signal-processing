@@ -146,11 +146,36 @@ class SpatialParagraphTest(unittest.TestCase):
         source, path = chapter_fragment(
             "05_beamforming.md", "上表“目标保持条件”", "#### 延伸阅读"
         )
-        html, _ = render(source, path)
+        html, _ = render("上表“目标保持条件”" + source, path)
         paragraphs = re.findall(r"<p>(.*?)</p>", html, flags=re.S)
-        self.assertEqual(len(paragraphs), 3)
-        self.assertIn(r"\mathrm{NR}_{ref}", paragraphs[1])
-        self.assertIn("分子、分母", paragraphs[2])
+        def paragraph_index(needle):
+            matches = [index for index, paragraph in enumerate(paragraphs) if needle in paragraph]
+            self.assertEqual(len(matches), 1, f"Expected one paragraph containing {needle}")
+            return matches[0]
+
+        intro = paragraph_index("目标保持条件")
+        nr_formula = paragraph_index(r"\tag{5-6}")
+        nr_explanation = paragraph_index("分子、分母要用同一频带")
+        example = paragraph_index("同输入算例：零陷")
+        example_conditions = paragraph_index("设计使用精确的干扰加噪声协方差")
+        sinr_definition = paragraph_index("真实目标输出信干噪比按同一功率口径计算")
+        sinr_formula = paragraph_index(r"\tag{5-7}")
+        hand_check = paragraph_index("可先独立核对 DSB 行")
+        boundary = paragraph_index("表中数字不代表语音可懂度")
+
+        self.assertEqual(
+            [intro, nr_formula, nr_explanation, example, example_conditions,
+             sinr_definition, sinr_formula, hand_check, boundary],
+            sorted({intro, nr_formula, nr_explanation, example, example_conditions,
+                    sinr_definition, sinr_formula, hand_check, boundary}),
+            "Baseline, formulas, conditions, hand check and boundary must stay in distinct ordered paragraphs",
+        )
+        self.assertTrue(paragraphs[nr_formula].strip().startswith("$$"))
+        self.assertTrue(paragraphs[nr_formula].strip().endswith("$$"))
+        self.assertTrue(paragraphs[sinr_formula].strip().startswith("$$"))
+        self.assertTrue(paragraphs[sinr_formula].strip().endswith("$$"))
+        self.assertLess(html.index(r"\tag{5-7}"), html.index("<table>"))
+        self.assertLess(html.index("</table>"), html.index("可先独立核对 DSB 行"))
 
     def test_music_and_nearfield_formula_belongs_to_third_step(self):
         for start, end, formula, explanation in (

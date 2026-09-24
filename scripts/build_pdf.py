@@ -24,7 +24,7 @@
 或 which 回退）。PDF 公式使用仓库内固定版本 MathJax 3.2.2 与 WOFF 字体，构建不联网。
 
 已知边界（诚实写在前面）：
-  - PDF 书签与合订本 TOC 包含篇/节两级；第 6、7 章再收入源 h4 作为第三级。
+  - PDF 书签与合订本 TOC 包含篇/节两级；第 6～8、10～11 章再收入源 h4 作为第三级。
   - 页眉页脚关闭（--no-pdf-header-footer），PDF 内无页码——Chrome 无头打印不支持
     CSS 生成页码，要页码得换 WeasyPrint/Prince 链路。
   - 节书签定位靠"节标题文本首次出现页"逐章顺序搜索，标题串进正文会指偏，
@@ -94,9 +94,12 @@ CHAPTERS = [
     ("13_appendix-guide.md", "附录 B · 路径地图与练习"),
 ]
 
-# 第 6、7 章的源 h4 是较长算法章中不可省略的导航层。其余章节仍停在篇/节两级，
-# 避免把算例和局部说明无差别塞入印刷目录与 PDF 书签。
-PDF_THIRD_LEVEL_FILES = {"06_aec.md", "07_wpe-dereverberation.md"}
+# 独立算法、工业实验与可直接练习的源 h4 纳入第三级导航；其余章节
+# 仍停在篇/节两级，避免把普通段首说明塞入印刷目录。
+PDF_THIRD_LEVEL_FILES = {
+    "06_aec.md", "07_wpe-dereverberation.md", "08_speech-separation.md",
+    "10_engineering-practice.md", "11_selection-guide.md",
+}
 PDF_THIRD_LEVEL_CHAPTER_IDS = {
     f"ch-{index}" for index, (name, _label) in enumerate(CHAPTERS)
     if name in PDF_THIRD_LEVEL_FILES
@@ -413,7 +416,7 @@ def build_html(build_date=None):
                            f"</h{int(m.group(1)) - 1}>"),
                 html, flags=re.S)
 
-        # h2 进入目录和 PDF 书签；第 6、7 章的 h3 作为其前一 h2 的子节。
+        # h2 进入目录和 PDF 书签；指定章节的 h3 作为其前一 h2 的子节。
         secs = []
 
         def tag_outline_heading(m):
@@ -441,7 +444,7 @@ def build_html(build_date=None):
             html = append_book_end(html)
         body_parts.append(f'<div class="chap" id="ch-{i}"><h1>{label}</h1>{html}</div>')
         outline.append((label, f"ch-{i}", secs))
-    # 篇/节目录；第 6、7 章再显示第三级子节。
+    # 篇/节目录；指定章节再显示第三级子节。
     toc = ['<section class="toc-page"><h1>目录</h1><ul class="toc">']
     for label, cid, secs in outline:
         toc.append(f"<li><a href=\"#{cid}\">{label}</a>")

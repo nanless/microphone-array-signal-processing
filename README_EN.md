@@ -2,9 +2,15 @@
 
 A beginner-friendly Chinese tutorial on microphone array signal processing at graduate-entry level. It starts with “why use an array of microphones” and covers DOA estimation, beamforming, acoustic echo cancellation (AEC), dereverberation (WPE), speech separation, source tracking, engineering practice, and system selection.
 
-The tutorial provides key derivations, reproducible numerical examples, validity limits, 38 script-generated figures, and NumPy/standard-library teaching code mapped to the equations. It adds 80 executable exercises and 55 synthetic audio files in 13 groups; see [exercises and audio experiments](codes/research/05_exercises_and_audio.md) for inputs, answers and listening conditions. Chapter 6 exercises E06-07–18 are dimensionless model checks; two additional AEC audio groups use related but not identical parameters and are not substitutes for the exercise answers. These 55 files are not natural speech or formal listening-test data. A separate set of 4 WAV files contains a real 16-channel DEMAND river-noise excerpt and three derivatives under CC BY-SA 3.0, for noise-power and interchannel-correlation experiments.
+The tutorial provides key derivations, reproducible numerical examples, validity limits, 39 script-generated figures, and NumPy/standard-library teaching code mapped to the equations. It includes 85 executable exercises and 55 synthetic audio files in 13 groups; see [exercises and audio experiments](codes/research/05_exercises_and_audio.md) for inputs, answers and listening conditions. Chapter 6 exercises E06-07–20 are dimensionless model checks; two AEC audio groups use related but not identical parameters and are not substitutes for the exercise answers. These 55 files are not natural speech or formal listening-test data. A separate set of 4 WAV files contains a real 16-channel DEMAND river-noise excerpt and three derivatives under CC BY-SA 3.0, for noise-power and interchannel-correlation experiments.
+
+Appendix B also has [18 separate synthetic room WAVs](codes/room_audio/MANIFEST.json) across six source positions and one chart from the executed simulation. They contain white noise, not recorded speech, and are separate from the 55 main synthetic files.
 
 Chapter 6 also reports a [SpeexDSP AEC interface experiment](codes/research/02_aec_wpe_separation.md#aec) on one real Microsoft AEC Challenge loopback/microphone pair, with zero-reference and misaligned-reference controls. The crowd recordings are not redistributed here; the measured input/output power change is neither clean-component ERLE nor a device-performance ranking.
+
+Additional reproducible studies cover a [common-input beamformer comparison](codes/examples/beamformer_common_input_demo.py), [pinned AuxIVA blind estimation](codes/examples/reproduce_auxiva_reference.py), [GSS activity-label errors](codes/examples/gss_activity_error_demo.py), [AEC interfaces on one synthetic known-component input](codes/examples/aec_same_input_truth.py), and [online WPE temporal behavior](codes/examples/wpe_temporal_contract.py). Their scopes are respectively a single-frequency model, mathematical synthetic mixtures, a fixed-density E-step, synthetic PCM, and complex STFT data; they do not rank real-speech or device performance.
+
+The [Chapter 9 tracking experiment](codes/examples/tracking_crossing_dropout_demo.py) uses deterministic angle detections to show that a correct unlabelled location set can coincide with wrong track identities. It also calculates covariance growth during missing observations and lag from a beam steering speed limit; it is not a speech recording or a complete multi-target tracker.
 
 The [source research handbook](codes/research/README.md) explains implementation steps, industrial configuration and reproduction experiments across spatial processing and tracking, AEC/WPE/separation, and deployment and evaluation. Two further guides cover source reproduction and exercises with audio experiments. Official revisions are pinned; acquired sources reside in independent working trees under `codes/upstream/_downloads/`.
 
@@ -23,7 +29,7 @@ The [source research handbook](codes/research/README.md) explains implementation
 | `codes/reports/` | Small-scale industrial-interface and spatial-algorithm run reports, separate from source acquisition and full paper benchmarks |
 | `scripts/` | Plotting and build scripts (`make_figures.py`, `make_aec_figures.py`, `build_site.py`, `build_pdf.py`; see `scripts/README.md`) |
 | `site/` | 20 pages: 14 tutorial pages (including the homepage) and 6 handbook pages under `research/`; reproducible build output |
-| `dist/` | Combined PDF (`microphone-array-tutorial.pdf`) and HTML; the PDF has 127 bookmarks: 14 top-level, 86 second-level and 27 third-level |
+| `dist/` | Combined PDF (`microphone-array-tutorial.pdf`) and HTML; the PDF has 150 bookmarks: 14 top-level, 86 second-level and 50 third-level |
 
 ## Chapters
 
@@ -42,7 +48,7 @@ The [source research handbook](codes/research/README.md) explains implementation
 | Ch 10 | `chapters/10_engineering-practice.md` | Reference pipeline, critical-path latency, SRO/calibration, resource budgets, evaluation | Intermediate |
 | Ch 11 | `chapters/11_selection-guide.md` | Conditional selection, scenario constraints, verifiable specifications, exercises | Beginner |
 | App A | `chapters/12_appendix-symbols-math.md` | Symbols, terminology, math refresher | Reference |
-| App B | `chapters/13_appendix-guide.md` | Learning paths, field map, research frontier, debugging, the original 17 exercises plus a new code exercise, reproduction guide | Reference |
+| App B | `chapters/13_appendix-guide.md` | Learning paths, field map, research frontier, debugging, the original 17 exercises and cross-chapter code exercises, reproduction guide | Reference |
 
 ## Quick start
 
@@ -50,8 +56,7 @@ The [source research handbook](codes/research/README.md) explains implementation
 # 1. Virtualenv and dependencies
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-# Optional: Ch. 10 and Appendix B exercise 16 target pyroomacoustics 0.10.0
-.venv/bin/pip install pyroomacoustics==0.10.0
+# Optional room simulation uses pyroomacoustics 0.10.0 in a separate environment; see scripts/README.md
 
 # 2. Run the equation-level teaching baselines and their regression tests
 .venv/bin/python codes/examples/ch02_05_baselines.py

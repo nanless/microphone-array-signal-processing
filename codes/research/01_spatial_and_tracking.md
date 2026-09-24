@@ -46,6 +46,8 @@ SBL、RobustSBL、BTK 和 SMP-PHAT 的依据分别是固定提交的 [SBL LICENS
 
 建议先用无反射房间验证首达时刻和距离衰减，再只留一面反射墙验证镜像路径长度，最后增加高阶反射检查能量衰减。训练数据应改变房间、源位和通道扰动，并留下未见房间做测试。单独调整 `max_order` 不等价于准确控制某个实测房间的混响时间。
 
+附录 B 第 16 题现已用锁定 pyroomacoustics 0.10.0 在隔离环境中实际运行[六位置房间脚本](../examples/room_srp_exercise.py)，并保存[18 个合成白噪声 WAV 与参数清单](../room_audio/MANIFEST.json)。该版本逐条 RIR 默认使用 10 Hz 零相位高通；若用较短的零阶直达 RIR 补零后去减高阶完整 RIR，高通边界差会混入“反射能量”。脚本以相同镜像阶数和长度，令直达对照房间墙面完全吸收，并用原始单直达镜像源及同长度滤波独立核对。六位置 $T_{20}$ 外推 $T_{60}$ 为约 0.546～0.563 s，低于反推设计值 0.6 s；定位误差为约 0.604～2°。这些数是一个房间、一次固定输入的仿真，不是实测 T60 或跨房间 SRP 准确率。图、逐麦 DRR 和阶数收敛检查见[附录题目](../../chapters/13_appendix-guide.md)。
+
 ### 3. STFT 与加权重叠相加重构
 
 对应 §2.5。本书 `spectral.py` 用于检查窗、帧移和边界补齐；外部阅读入口是 pyroomacoustics 的 `transform/stft.py`。分析窗和合成窗的乘积经过移位相加应形成非零、可补偿的包络。输出长度、启动补零和尾帧补齐应和原始采样时间一起记录。
@@ -94,7 +96,7 @@ E04-06 已加入实际重复抽样，入口为 [`mdl_repeated_trials.py`](../exa
 
 锁定版本 pyroomacoustics 0.10.0 的静态调用链有明确限制。`doa/srp.py` 构造函数把 `mode/r` 传给 `DOA.__init__`，但 `doa/doa.py:289` 创建 `ModeVector(self.L, self.fs, self.nfft, self.c, self.grid)` 时没有传 `mode`，因此该对象仍采用第 32 行的默认 `mode='far'`。同时，候选 `r` 仅保存到 `self.r`，第 234～280 行的 `GridCircle/GridSphere` 构造没有把它形成距离维；`srp.py:116` 的评分随后直接使用这个 `self.mode_vec`。[固定提交 DOA 构造与导向源码](https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/doa/doa.py)；[固定提交 SRP 评分源码](https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/doa/srp.py)。
 
-据此，即使构造参数写为 `mode='near', r=np.array([2.0])`，也没有将近场选项传入实际相位表。上述判断来自默认参数、调用实参与网格构造的静态核对，本次没有运行上游包或声学数值实验。若要实现近场搜索，必须另行构造包含距离的候选位置，并使球面传播时延进入 SRP 评分；不能仅补传一个 `mode` 参数就宣称完整三维搜索已完成。
+据此，即使构造参数写为 `mode='near', r=np.array([2.0])`，也没有将近场选项传入实际相位表。这一**近场 API 判断**来自默认参数、调用实参与网格构造的静态核对；附录 B 实际运行的是本书远场 SRP 教学实现与上游房间 RIR，不构成上游近场接口的声学数值验证。若要实现近场搜索，必须另行构造包含距离的候选位置，并使球面传播时延进入 SRP 评分；不能仅补传一个 `mode` 参数就宣称完整三维搜索已完成。
 
 建议在真值落格点、落在格点之间、落在搜索区外三个条件下比较峰值。源在区外时，算法仍可能返回边界上的最大值，因此“找到峰”不等于位置可信。部署时缓存静态时延表、限制重复麦对、记录选峰间距，并在阵列几何或采样率变化后重建表。
 
@@ -241,6 +243,8 @@ Python 核心输入字典 `A` 为 `M × G × F`，观测 `Y` 为 `M × L × F`�
 
 E05-05 给出已执行的有限 INR 反例：半波长双麦、目标 0°、干扰 30°、白噪声方差 1。线性 INR 为 1、10、100 时，干扰方向响应分别为 −9.03、−23.84、−43.10 dB，真正零点分别为 44.82°、32.03°、30.21°。这是指定理想协方差的单频手算，不是语音实验；有限噪声下的 MVDR 抑制不能写成指定方向的精确硬零陷。代码与解析式分别求零点，独立回归见 `test_codes_spatial_round3.py`。DSB 归一化另覆盖导向尺度 $10^{-200}$ 与 $10^{200}$，先缩放再计算范数，避免有限输入平方溢出后悄悄返回零权重。
 
+新增[同输入波束对照](../examples/beamformer_common_input_demo.py)把四麦 DSB、MVDR、相对加载为 1 的 MVDR 和 LCMV 放在同一 2 kHz、同一解析干扰加噪声协方差下。设计目标 0°、真实目标 10°、干扰 40°，同时报告真实目标幅度增益、干扰响应、WNG 和输出 SINR；结果表及独立 DSB 几何级数核对见正文 §5.10 与 `tests/test_codes_beamformer_common_input.py`。这只比较一个精确模型，没有快拍随机性、混响或语音质量；后续可在固定随机种子下增加多次协方差估计，并分别记录样本数、失败次数和离散程度。
+
 建议使用 §5.3 的双麦解析协方差，增加增益误差与相位误差，按加载强度画出失真和降噪的关系。工业策略需要无效协方差检测、上一组权重保留、权重平滑和输出限幅。求解成功不能替代目标保持检验；过度加载时接近固定波束是可以解释的设计结果。
 
 ### 21. LCMV、Frost 与 GSC
@@ -329,9 +333,13 @@ Acoular 的 `BeamformerCMF` 直接拟合 CSM 的空间模型；`BeamformerSODIX`
 
 ### 33. GNN/PDA 与 JPDA
 
-对应 §9.3。Stone Soup `dataassociator/neighbour.py` 给硬关联组件，`dataassociator/probability.py::JPDA` 根据满足一对一约束的联合事件计算边缘关联概率；`docs/tutorials/08_JPDATutorial.py` 展示如何连接预测器、假设器与更新器。[官方 JPDA 教程源码](https://github.com/dstl/Stone-Soup/blob/main/docs/tutorials/08_JPDATutorial.py)。
+对应 §9.3。Stone Soup `dataassociator/neighbour.py` 给硬关联组件，`dataassociator/probability.py::JPDA` 根据满足一对一约束的联合事件计算边缘关联概率；`docs/tutorials/08_JPDATutorial.py` 展示如何连接预测器、假设器与更新器。[固定提交的 JPDA 教程源码](https://github.com/dstl/Stone-Soup/blob/8d1edeb07ef8505ed065cbef435cfb5e517d9bdc/docs/tutorials/08_JPDATutorial.py)。
 
 建议沿用正文两轨三观测例，比较最近邻与 JPDA 在杂波靠近某条轨迹时的分配，再设置两人交叉。门控先减少不可行配对，检测概率和杂波密度再决定事件权重；几何最近不等于语音身份正确。角度观测的杂波密度单位是每度或每弧度，不能直接填位置空间每平方米的数值。
+
+本书已运行的最小交叉反例见[两轨交叉、缺测和限速脚本](../examples/tracking_crossing_dropout_demo.py)与第 9 章 §9.3。输入是无随机性的五帧角度数列，间隔人为设成 1 s；两轨在第 2 s 都预测 $40^\circ$，观测依次为 B 的 $39^\circ$、A 的 $41^\circ$。两种一对一分配的角残差平方和都为 $2\ \mathrm{deg}^2$，指定的并列规则使该帧两条身份都错配；未滤波的观测集合与真值集合相同，集合 OSPA 为 0。硬关联更新后的 A/B 角误差均为 $1.68^\circ$，使用真值标签作诊断关联时均为 $0.32^\circ$。这些数值分别测量身份、集合位置和滤波位置，不能互换。
+
+第 3 s A 无观测时只预测，角度方差由约 $0.68$ 增至 $1.80\ \mathrm{deg}^2$；另一个纯缺测的控制缩例从 $20^\circ$ 起、目标速度 $10^\circ/\mathrm s$，当波束每秒最多转 $5^\circ$ 时两秒后滞后 $10^\circ$。脚本未实现 JPDA、轨迹出生或身份确认，真值标签不参与盲关联。下一轮应在真实帧率、标注说话人身份和可复现角度观测上分别统计 ID 错配、位置误差、缺测持续时间与控制滞后，并给出重复序列的离散程度。
 
 ### 34. GM-PHD 与高斯混合缩减
 
@@ -499,7 +507,7 @@ pb_bss `get_wmwf_vector` 实际计算 `Phi/(mu+trace(Phi))` 的参考列，其�
 
 这些源码问题不要求修改下载的上游仓库来“让演示通过”。如需修复，应创建保留原始许可证与提交号的独立补丁、列出改动原因，并采用理想多频输入及真实录音双重回归。未完成修复和回归前，不把这三个固定版本实现列作设备可直接采用的已验证定位器。
 
-本机实际运行检查记录：2026-09-22，在仓库 `.venv` 中分别尝试导入固定版本 doatools 的 `RootMUSIC1D` 和 FilterPy 的 `KalmanFilter`，两次均在导入阶段因缺少 `scipy` 失败，未进入数值计算。计划的独立输入分别为六元半波距阵、30° 单源协方差，以及先验均值 2、方差 4、观测 3、观测方差 1 的标量更新；后者手算后验为 2.8 与 0.8。这些预期值不是已取得的外部运行结果。当前也未安装 pyroomacoustics，CSSM/WAVES/TOPS 只完成上表所列静态核查。
+本机实际运行检查记录：2026-09-22，在仓库 `.venv` 中分别尝试导入固定版本 doatools 的 `RootMUSIC1D` 和 FilterPy 的 `KalmanFilter`，两次均在导入阶段因缺少 `scipy` 失败，未进入数值计算。计划的独立输入分别为六元半波距阵、30° 单源协方差，以及先验均值 2、方差 4、观测 3、观测方差 1 的标量更新；后者手算后验为 2.8 与 0.8。这些预期值不是已取得的外部运行结果。2026-09-24 已在**独立临时环境**安装 pyroomacoustics 0.10.0 并实际运行上述房间 RIR；仓库 `.venv` 未因此改变。CSSM/WAVES/TOPS 仍只完成上表所列静态核查，不能以房间 RIR 运行替代它们的定位接口验证。
 
 另一个版本相容性检查是 doatools `estimation/music.py:153` 使用 `np.complex_`，需在其依赖支持的 NumPy 版本中运行或准备独立兼容补丁；本文未修改外部工作目录或共享依赖来绕过这些条件。
 

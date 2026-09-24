@@ -22,15 +22,16 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 | 脚本 | 作用 | 输出 |
 |---|---|---|
 | `../codes/examples/generate_audio_samples.py` | 生成 13 组、55 个合成音频文件；清单记录参数、共同增益和摘要。`--check` 只检查现有生成物 | `codes/audio/*.wav`、`codes/audio/MANIFEST.json` |
+| `../codes/examples/room_srp_exercise.py` | `--check` 只核几何；可选 pyroomacoustics 0.10.0 的 `--run` 实算六位置 RIR、T60、DRR 和 SRP，`--audio-dir` 与 `--plot` 可在新目录生成独立样本与补充图 | `codes/room_audio/` 已收入 18 个合成 WAV、清单及 `ROOM_RESULTS.png`；重生成时先输出到另一个新目录核对 |
 | `../codes/examples/prepare_real_recordings.py` | 默认及 `--check` 均离线只读；`--prepare` 从固定本地归档重建；`--download` 显式获取约 99 MB 归档并重建 | `codes/real_audio/`：4 个 WAV、清单；署名与许可独立保留 |
 | `make_figures.py` | 生成图 1～25 和图 33～36。只用 numpy 和 matplotlib，不依赖 scipy；随机种子固定。图 34～36 读取已生成的音频，必须先运行音频生成器。图 13 的蒙特卡洛统计耗时最长 | `figures/fig01`～`fig25_*.png`、`fig33_*`～`fig36_*` |
 | `make_aec_figures.py` | 10 张回声消除专题图（原 7 张另加两带子带、IPNLMS/RLS/Kalman 状态图及 PBFDAF 流程图）。风格与上一个脚本统一（六色/五级字号/dpi150） | `figures/fig26`～`fig32_*`、`fig37`～`fig39_*` |
 | `renumber2.py` | 已退役。单篇长文时代的图号整理工具，留作存档，平时不用跑 | 无 |
-| `build_site.py` | 建站脚本。读 `chapters/` 14 篇 Markdown 和 `codes/research/` 6 篇研究文档，左侧边栏可跳章节、研究页与小节。编号小节使用 `sec-x-y` 稳定标识，并保留旧 `sec-N` 别名。图片直接引用 `figures/`，数学公式使用固定版本的 MathJax 3.2.2 在线渲染 | `site/*.html`（14 个教程页）及 `site/research/*.html`（6 个研究页） |
-| `build_pdf.py` | 合订本脚本。14 篇合成带封面、三级目录的单页 HTML，再调 Chrome 无头打印成 A4 PDF，最后写篇/节/指定子节三级书签；第三级收入第 6、7 章的源 h4。输出先写临时文件，校验后再替换发布件。常用 flag：`--html-only`、`--pdf-only`、`--no-bookmarks`、`--build-date YYYY-MM-DD` | `dist/combined.html`（中间产物） + `dist/microphone-array-tutorial.pdf` |
-| `quality_check.py` | 发布门禁。用独立基线检查 14 篇/86 节/27 个指定子节/39 图，核对图号、alt、公式编号与引用、小节语义链接、PNG 绘图脚本摘要、网页导航和 PDF 三级书签。确定性问题阻断发布，高风险口语只提醒人工复核 | 通过、失败清单，以及不阻断发布的人工复核与可访问性提示 |
+| `build_site.py` | 建站脚本。读 `chapters/` 14 篇 Markdown 和 `codes/research/` 6 篇研究文档，左侧边栏可跳章节、研究页与小节。编号小节使用 `sec-x-y` 稳定标识，并保留旧 `sec-N` 别名。编号图片直接引用 `figures/`，房间补充图与 WAV 经清单核验后复制；数学公式使用固定版本的 MathJax 3.2.2 在线渲染 | `site/*.html`（14 个教程页）、`site/research/*.html`（6 个研究页）及 `site/room_audio/` |
+| `build_pdf.py` | 合订本脚本。14 篇合成带封面、三级目录的单页 HTML，再调 Chrome 无头打印成 A4 PDF，最后写篇/节/指定子节三级书签；第三级收入第 6、7、8、10、11 章的源 h4。输出先写临时文件，校验后再替换发布件。常用 flag：`--html-only`、`--pdf-only`、`--no-bookmarks`、`--build-date YYYY-MM-DD` | `dist/combined.html`（中间产物） + `dist/microphone-array-tutorial.pdf` |
+| `quality_check.py` | 发布门禁。用独立基线检查 14 篇/86 节/50 个指定子节/39 图，核对图号、alt、公式编号与引用、小节语义链接、PNG 绘图脚本摘要、网页导航和 PDF 三级书签。确定性问题阻断发布，高风险口语只提醒人工复核 | 通过、失败清单，以及不阻断发布的人工复核与可访问性提示 |
 
-改图练习（如附录 B 习题）应使用脚本副本或独立输出目录，记录改变的参数，不覆盖本书的发布图。80 道可运行题使用三个原有练习模块、AEC 边界小例和四法练习入口：
+改图练习（如附录 B 习题）应使用脚本副本或独立输出目录，记录改变的参数，不覆盖本书的发布图。84 道稳定编号可运行题使用三个原有练习模块、AEC 边界小例和四法练习入口；附录 B 第 16 题另有需 pyroomacoustics 0.10.0 的房间仿真脚本：
 
 ```bash
 .venv/bin/python -m codes.examples.exercises_spatial
@@ -38,9 +39,14 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 .venv/bin/python -m codes.examples.aec_algorithm_minicases
 .venv/bin/python -m codes.examples.aec_advanced_exercises
 .venv/bin/python -m codes.examples.exercises_engineering
+.venv/bin/python -m codes.examples.room_srp_exercise --check
 ```
 
-题号、答案和音频对照见[练习与音频实验](../codes/research/05_exercises_and_audio.md)。`codes/audio/` 的音频为 16 kHz、PCM16 的本书合成信号，每组共用一个增益，不逐文件归一化；不能用这些短样例声称自然语音质量或正式听测结果。`codes/real_audio/` 另含 DEMAND 真实环境录音摘录与派生文件，建站时复制到独立的 `site/real_audio/`，同时保留清单、署名和许可。16 通道输入仅供下载分析，三个单通道派生文件提供不自动播放的试听控件。
+题号、答案和音频对照见[练习与音频实验](../codes/research/05_exercises_and_audio.md)。`codes/audio/` 的 55 个音频为 16 kHz、PCM16 的本书合成信号，每组共用一个增益，不逐文件归一化；不能用这些短样例声称自然语音质量或正式听测结果。
+
+`codes/room_audio/` 另外保存 18 个白噪声房间样本，建站时核对并复制到 `site/room_audio/`，不混用清单。
+
+`codes/real_audio/` 另含 DEMAND 真实环境录音摘录与派生文件，建站时复制到独立的 `site/real_audio/`，同时保留清单、署名和许可。16 通道输入仅供下载分析，三个单通道派生文件提供不自动播放的试听控件。
 
 研究页入口为 `site/research/index.html`，对应 `codes/research/README.md`；其余五页保留研究文件名。研究页与正文互链，源码及未生成网页的代码文档链接指向 GitHub 中的原文件，不把 `.md` 猜成不存在的 `.html`。外部链接不改写。
 
@@ -50,7 +56,7 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 
 **发布与验收说明**
 
-**书签与人工抽查**：合订本 PDF 顶层是导读、11 章正文和 2 篇附录，第二层来自各篇实际小节；第 6 章的 24 个源 h4 和第 7 章的 3 个源 h4 作为第三级书签，并保持在各自父节之下。
+**书签与人工抽查**：合订本 PDF 顶层是导读、11 章正文和 2 篇附录，第二层来自各篇实际小节；第 6、7、8、10、11 章分别有 24、3、6、10、7 个源 h4 作为第三级书签，并保持在各自父节之下。
 
 合订本用 `scripts/vendor/mathjax-3.2.2/` 内固定版本的主脚本、`boldsymbol` 按需扩展和 23 个 WOFF 字体离线排版。构建前核对脚本摘要与资源完整性；打印后检查未渲染 TeX 和 AEC 算例页的数学字形子集。Chrome 将这些数学字形嵌为缺少可靠 ToUnicode 映射的 Type3 字体，因此文本提取时公式可能为空，即使画面正常；正式发布前仍须打开 PDF，抽查公式、宽表、长代码块、图片和分页是否存在半渲染、溢出或裁切。
 
@@ -58,7 +64,7 @@ PDF 正文固定为 16 px，打印后检查长中文正文的变换矩阵：正�
 
 **PDF 可访问性限制**：当前 PDF 由 Chrome 打印生成，保留可搜索文本、`zh-CN` 语言信息和三级书签，但不保证包含 PDF 结构标签或可靠的辅助技术阅读顺序。`quality_check.py` 会披露这一限制而不让现有构建无条件失败；交付时不能把该提示表述为“PDF 可访问性已完整验收”。
 
-**独立结构基线**：发布门禁的独立结构基线为 14 个顶级书签、86 个二级书签、27 个三级书签，共 127 个大纲项，以及图 1～39。它还检查图号与 alt、公式编号与引用、小节语义链接、每个源 h2/h3/h4 标题是否真的出现在当前页导航中（源 h1 可排除），以及 PNG 中的 `SourceScript` 和完整 `SourceScriptDigest`。
+**独立结构基线**：发布门禁的独立结构基线为 14 个顶级书签、86 个二级书签、50 个三级书签，共 150 个大纲项，以及图 1～39。它还检查图号与 alt、公式编号与引用、小节语义链接、每个源 h2/h3/h4 标题是否真的出现在当前页导航中（源 h1 可排除），以及 PNG 中的 `SourceScript` 和完整 `SourceScriptDigest`。
 
 修改绘图脚本后未重画的 PNG 会使门禁失败；高风险口语命中只输出人工复核提示。
 
@@ -66,4 +72,14 @@ PDF 正文固定为 16 px，打印后检查长中文正文的变换矩阵：正�
 
 `--html-only` 只替换 HTML；旧 PDF 的摘要会与新 HTML 不同，必须继续生成 PDF 后再发布。
 
-**扩展依赖**：`pyroomacoustics==0.10.0`（房间声学仿真库）只用于第 10 章示例和附录 B 的房间仿真练习；运行 `.venv/bin/pip install pyroomacoustics==0.10.0` 安装。不装也能生成正文的 39 张图。固定版本说明见[官方 PyPI 页面](https://pypi.org/project/pyroomacoustics/0.10.0/)。
+**扩展依赖**：`pyroomacoustics==0.10.0`（房间声学仿真库）只用于第 10 章示例和附录 B 的房间仿真练习。可用另建的临时虚拟环境安装并运行房间脚本，保留仓库 `.venv` 的主依赖集；本轮实测使用 Python 3.13.12。没有该依赖仍能生成正文的 39 张编号图，已随仓附录 B 的补充结果图和 18 个房间 WAV 可直接查阅。固定版本说明见[官方 PyPI 页面](https://pypi.org/project/pyroomacoustics/0.10.0/)。
+
+在有 Python 3.13 的 macOS/Linux 主机上，可从仓库根目录用新目录复算，不覆盖本书样本：
+
+```bash
+python3.13 -m venv /tmp/masp-room-pra
+/tmp/masp-room-pra/bin/python -m pip install pyroomacoustics==0.10.0 matplotlib
+PRA_NUM_THREADS=2 /tmp/masp-room-pra/bin/python -m codes.examples.room_srp_exercise --run --plot /tmp/masp-room-result.png --audio-dir /tmp/masp-room-audio-new
+```
+
+目标图文件及音频目录应事先不存在。重跑后用新目录清单的 SHA-256 对照 `codes/room_audio/MANIFEST.json`，并记录 Python、NumPy、SciPy、pyroomacoustics 与线程数；跨平台绘图字体可能改变 PNG 字节，数值和 WAV 应分别核查。

@@ -66,8 +66,8 @@ class ResearchQualityTests(unittest.TestCase):
     def test_explicit_baselines_preserve_tutorial_pdf_and_figure_counts(self):
         self.assertEqual(quality.EXPECTED_CHAPTER_COUNT, 14)
         self.assertEqual(quality.EXPECTED_SECTION_COUNT, 86)
-        self.assertEqual(quality.EXPECTED_SUBSECTION_COUNT, 27)
-        self.assertEqual(quality.EXPECTED_OUTLINE_ITEM_COUNT, 127)
+        self.assertEqual(quality.EXPECTED_SUBSECTION_COUNT, 50)
+        self.assertEqual(quality.EXPECTED_OUTLINE_ITEM_COUNT, 150)
         self.assertEqual(quality.EXPECTED_FIGURE_NUMBERS, set(range(1, 40)))
         self.assertEqual(quality.EXPECTED_RESEARCH_PAGE_COUNT, 6)
         self.assertEqual(quality.EXPECTED_RESEARCH_PAGES, (
@@ -166,7 +166,24 @@ class PublishedResearchQualityTests(unittest.TestCase):
             with patch.object(quality, "SITE", site):
                 quality.check_site(errors)
                 quality.check_research_site(errors)
+                quality.check_room_audio(errors)
             self.assertEqual(errors, [])
+
+    def test_room_asset_check_rejects_changed_published_wav(self):
+        from scripts import build_site
+        with tempfile.TemporaryDirectory() as directory:
+            site = Path(directory) / "site"
+            with patch.object(build_site, "OUT", site), redirect_stdout(io.StringIO()):
+                build_site.main()
+            published = site / "room_audio" / "fixed_near_left_source.wav"
+            data = bytearray(published.read_bytes())
+            data[-1] ^= 1
+            published.write_bytes(data)
+            errors = []
+            with patch.object(quality, "SITE", site):
+                quality.check_room_audio(errors)
+            self.assertTrue(any("房间合成样本检查失败" in issue and
+                                "fixed_near_left_source.wav" in issue for issue in errors))
 
 
 if __name__ == "__main__":

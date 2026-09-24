@@ -75,7 +75,9 @@ $\vec{w}_{DSB} = \frac{1}{M}\vec{a}(\theta_0)$：按导向矢量把各通道时�
 
     这里的 $Md$ 来自 $M$ 项离散阵因子，不等于阵列首尾的物理跨度 $D=(M-1)d$。用 $\lambda/D$ 表示的是孔径尺度估计；两者只在 $M$ 较大时接近，小阵列中必须说明采用哪一种口径。两种写法都表达同一趋势：阵元数或间距增大、波长减小时，主瓣变窄。
 
-均匀加权等价于空间域的矩形窗。其第一旁瓣随 $M$ 增大才趋近相对主瓣约 −13.26 dB；例如按上面的离散阵因子复算，$M=3,4,8,16$ 时约为 −9.54、−11.30、−12.80、−13.15 dB，$M=2$ 则没有常规意义下的旁瓣。因此小阵列不能直接套用“−13 dB”。非均匀加权（如 Dolph–Chebyshev 加权）可按设计值降低旁瓣，但会展宽主瓣；因此必须在旁瓣电平、主瓣宽度和有效孔径之间权衡。
+均匀加权等价于空间域的矩形窗。其第一旁瓣随 $M$ 增大才趋近相对主瓣约 −13.26 dB；例如按上面的离散阵因子复算，$M=3,4,8,16$ 时约为 −9.54、−11.30、−12.80、−13.15 dB，$M=2$ 则没有常规意义下的旁瓣。因此小阵列不能直接套用“−13 dB”。
+
+非均匀加权（如 Dolph–Chebyshev 加权）可按设计值降低旁瓣，但会展宽主瓣；因此必须在旁瓣电平、主瓣宽度和有效孔径之间权衡。
 
 **WNG 上限是怎么算出来的**（两步，柯西-施瓦茨不等式）：
 
@@ -730,7 +732,9 @@ $$p(\kappa,\Omega) = \sum_{n=0}^{N}\sum_{m=-n}^{n} b_n(\kappa r)\,Y_n^m(\Omega)\
 
 #### 可执行基线与上线检查
 
-[`beamforming.py`](../codes/array_tutorial/beamforming.py) 提供 DSB、弥散场相干矩阵、加载超指向/MVDR、LCMV、GSC 阻塞矩阵和 Wiener 增益的原创 NumPy 基线。权重约定统一为输出 $Y=\vec w^H\vec x$，多通道谱形状统一为 `通道 × 频点 × 帧`；逐频点权重为 `频点 × 通道`。函数用线性方程求解代替显式求逆；未加载协方差病态、LCMV 约束不独立或空统计量都会报错。正文算例的 DSB 单位响应、Capon 数值、MVDR 权重、LCMV 双约束、GSC 阻塞和 Wiener 增益由 [`test_codes_doa_beam.py`](../tests/test_codes_doa_beam.py) 独立回归，串联示例见 [`ch02_05_baselines.py`](../codes/examples/ch02_05_baselines.py)。
+[`beamforming.py`](../codes/array_tutorial/beamforming.py) 提供 DSB、弥散场相干矩阵、加载超指向/MVDR、LCMV、GSC 阻塞矩阵和 Wiener 增益的原创 NumPy 基线。权重约定统一为输出 $Y=\vec w^H\vec x$，多通道谱形状统一为 `通道 × 频点 × 帧`；逐频点权重为 `频点 × 通道`。
+
+函数用线性方程求解代替显式求逆；未加载协方差病态、LCMV 约束不独立或空统计量都会报错。正文算例的 DSB 单位响应、Capon 数值、MVDR 权重、LCMV 双约束、GSC 阻塞和 Wiener 增益由 [`test_codes_doa_beam.py`](../tests/test_codes_doa_beam.py) 独立回归，串联示例见 [`ch02_05_baselines.py`](../codes/examples/ch02_05_baselines.py)。
 
 DSB 对非零导向矢量计算 $\vec a/(\vec a^H\vec a)$；实现先按最大分量缩放，再归一化，以免极大或极小的有限输入在平方时溢出或下溢。若结果本身超出浮点范围则报错，而不是返回貌似有效的零权重。Wiener 增益中的功率必须为有限非负实数，不能把复数功率的虚部丢掉后继续运行；相关边界回归见 [`test_codes_spatial_round3.py`](../tests/test_codes_spatial_round3.py)。
 
@@ -742,15 +746,23 @@ DSB 对非零导向矢量计算 $\vec a/(\vec a^H\vec a)$；实现先按最大�
 
 BTK 示例声速取 `343740.0`，与毫米坐标配套；本书米制阵列不能直接代入。构建默认 Python 2.7，并要求 SWIG、GSL、NumPy 和 libsndfile，不能仅凭根目录 MIT 许可或示例存在便认为可在现代环境直接运行。研究文档分别列出构建前提和目标偏移、更新冻结的最小实验；这些上游数值实验尚未执行。
 
-球阵还多了一层编码误差。`sound_field_analysis/process.py::spatFT` 计算球谐系数，`gen.py::radial_filter` 控制径向补偿；Politis 的 `arraySHTfiltersMeas_regLS.m` 用实测响应设计编码滤波器，`sphMVDR.m`、`sphLCMV.m` 在球谐域求权重。先用已知平面波检查实/复球谐、归一化、通道排列和余纬角，再增加阶数测量每阶噪声放大。只检查旋转后的图形，没有检查径向滤波后的 WNG，仍可能在低频得到不可用的输出。[sfa 官方接口](https://appliedacousticschalmers.github.io/sound_field_analysis-py/reference.html "citation")；[Politis 作者实现](https://github.com/polarch/Spherical-Array-Processing "citation")。
+球阵还多了一层编码误差。`sound_field_analysis/process.py::spatFT` 计算球谐系数，`gen.py::radial_filter` 控制径向补偿；Politis 的 `arraySHTfiltersMeas_regLS.m` 用实测响应设计编码滤波器，`sphMVDR.m`、`sphLCMV.m` 在球谐域求权重。[sfa 官方接口](https://appliedacousticschalmers.github.io/sound_field_analysis-py/reference.html "citation")；[Politis 作者实现](https://github.com/polarch/Spherical-Array-Processing "citation")。
+
+先用已知平面波检查实/复球谐、归一化、通道排列和余纬角，再增加阶数测量每阶噪声放大。只检查旋转后的图形，没有检查径向滤波后的 WNG，仍可能在低频得到不可用的输出。
 
 需要 C/C++ 实现时，可沿 SAF 的 `saf_sh`、`array2sh`、`beamformer`、`powermap` 阅读从球谐计算到块处理的过程。CBLAS/LAPACK、FFT 后端、SIMD 与编译器浮点选项都应记录，随后在目标硬件上测最慢帧耗时和内存。SAF 核心模块为 ISC，可选 `saf_tracker` 和 `saf_hades` 为 GPLv2，不能把整个仓库概括成同一宽松许可证。[SAF 官方模块与许可说明](https://github.com/leomccormack/Spatial_Audio_Framework "citation")。以上源码核实于 2026-09-22。
 
-工业声源成像的目标也要与语音增强分开。Acoular 的 `BeamformerDamas`、`BeamformerCleansc` 和 `BeamformerCMF` 处理点扩散函数或互谱矩阵，输出声源功率分布；评测重点包括校准、区域积分、流场和运动模型。它们不直接产生保持目标语音的波形。研究文档给出了相同数据下比较常规成像、反卷积与协方差拟合的最小实验，不能仅以图中峰更尖判定方法更好。[Acoular 官方接口](https://acoular.org/acoular/api_ref/generated/acoular.fbeamform.html "citation")。
+工业声源成像的目标也要与语音增强分开。Acoular 的 `BeamformerDamas`、`BeamformerCleansc` 和 `BeamformerCMF` 处理点扩散函数或互谱矩阵，输出声源功率分布；它们不直接产生保持目标语音的波形。[Acoular 官方接口](https://acoular.org/acoular/api_ref/generated/acoular.fbeamform.html "citation")。
 
-GEV、BAN、RTF 和 MWF 的函数不能只按名称替换。pb_bss 的 `get_gev_vector` 给最大信噪比方向，`blind_analytic_normalization` 再确定功率尺度；BAN 不需要真实目标导向，也不普遍保证目标单位响应。ESPnet 的 `get_rtf` 明确没有在函数内部完成参考通道归一化，后续调用者应检查参考响应接近零时的行为。[pb_bss 波束实现](https://github.com/fgnt/pb_bss/blob/master/pb_bss/extraction/beamformer.py "citation")；[ESPnet 波束实现](https://github.com/espnet/espnet/blob/master/espnet2/enh/layers/beamformer.py "citation")。
+成像评测重点包括校准、区域积分、流场和运动模型。研究文档给出了相同数据下比较常规成像、反卷积与协方差拟合的最小实验，不能仅以图中峰更尖判定方法更好。
 
-一般 SDW-MWF 与秩一化简尤其需要区分。取噪声 SCM 为单位阵，目标 SCM 为 `diag(2,1)`，噪声权重为 1，参考麦为第一通道：一般线性方程的首项解为 `2/(2+1)=2/3`。pb_bss `get_wmwf_vector` 使用目标秩一条件下的迹化简，此输入得到 `2/(1+2+1)=1/2`。若把目标 SCM 改为 `diag(2,0)`，两者才在此例同为 `2/3`。这是本书依据源码作的手算边界例，不是外部包运行报告；全秩模型可阅读 ESPnet `get_sdw_mwf_vector`，并显式决定是否启用低秩近似。
+GEV、BAN、RTF 和 MWF 的函数不能只按名称替换。pb_bss 的 `get_gev_vector` 给最大信噪比方向，`blind_analytic_normalization` 再确定功率尺度；BAN 不需要真实目标导向，也不普遍保证目标单位响应。[pb_bss 固定提交的波束实现](https://github.com/fgnt/pb_bss/blob/10acc347fc9ea21e3d312806a0bd751d0d0af183/pb_bss/extraction/beamformer.py "citation")。
+
+ESPnet 的 `get_rtf` 明确没有在函数内部完成参考通道归一化，后续调用者应检查参考响应接近零时的行为。[ESPnet 固定提交的波束实现](https://github.com/espnet/espnet/blob/be79590bb2ff26ffb01bc825c5f68cb9418b7f0d/espnet2/enh/layers/beamformer.py "citation")。
+
+一般 SDW-MWF 与秩一化简尤其需要区分。取噪声 SCM 为单位阵，目标 SCM 为 `diag(2,1)`，噪声权重为 1，参考麦为第一通道：一般线性方程的首项解为 `2/(2+1)=2/3`。pb_bss `get_wmwf_vector` 使用目标秩一条件下的迹化简，此输入得到 `2/(1+2+1)=1/2`。若把目标 SCM 改为 `diag(2,0)`，两者才在此例同为 `2/3`。
+
+这是本书依据源码作的手算边界例，不是外部包运行报告；全秩模型可阅读 ESPnet `get_sdw_mwf_vector`，并显式决定是否启用低秩近似。
 
 §5.7 的噪声估计也需要同样的区分。MCRA 用局部最小值控制递归更新，IMCRA 进一步引入两阶段平滑与最小值搜索，OM-LSA 根据语音存在不确定性形成对数谱幅度增益。
 
@@ -776,9 +788,28 @@ Cohen 的[官方软件页](https://israelcohen.com/software/ "citation")介绍�
 
 上表“目标保持条件”列只说明算法约束，并不是目标失真的数值。若要量化目标损伤，必须先固定基线。以参考麦选择向量 $\vec e_r$ 为基线，噪声降低量定义为
 
-$$\mathrm{NR}_{ref}=10\log_{10}\frac{\vec e_r^H\mathbf R_{nn}\vec e_r}{\vec w^H\mathbf R_{nn}\vec w}\text{。}$$
+$$\mathrm{NR}_{ref}=10\log_{10}\frac{\vec e_r^H\mathbf R_{nn}\vec e_r}{\vec w^H\mathbf R_{nn}\vec w}\text{。}\tag{5-6}$$
 
 分子、分母要用同一频带和统计窗口。若以 DSB 为基线，就把分子换成 DSB 的输出噪声功率并明确标注。存在导向失配时，只报 NR 会掩盖目标衰减，还应同时报告 $|\vec w^H\vec a_{true}-1|$，或报告相对同一参考麦的输出 SNR 改善。
+
+**同输入算例：零陷、WNG 与目标损伤一起看。** 取四麦 ULA，横坐标为 $[0,0.04,0.08,0.12]$ m，方位角从正横 $+y$ 起算。声速为 343 m/s，只在 2 kHz 这一频点比较。设计目标在 $0°$，实际目标在 $10°$，干扰在 $40°$；目标功率为 1、干扰功率为 10，各麦独立白噪声功率为 1，并假定目标、干扰与噪声两两不相关。
+
+设计使用精确的干扰加噪声协方差 $\mathbf R_{in}=10\vec a_{40}\vec a_{40}^H+\mathbf I$，不混入目标；这里没有随机快拍、混响或语音波形。各方法使用**同一** $\mathbf R_{in}$ 与设计导向 $\vec a_0$。LCMV 额外要求 $\vec w^H\vec a_{40}=0$；“加载 MVDR”的相对加载量为 1，即设计时对角线上加 $11\mathbf I$，评分时仍使用原来的声场协方差 $\mathbf R_{in}$。
+
+参考麦的输入信干噪比为 $10\log_{10}(1/11)\approx-10.41$ dB。表中真实目标幅度增益为 $20\log_{10}|\vec w^H\vec a_{10}|$，WNG 为 $10\log_{10}(1/\|\vec w\|^2)$。真实目标输出信干噪比按同一功率口径计算：
+
+$$\mathrm{SINR}_{out}=10\log_{10}\frac{1\cdot|\vec w^H\vec a_{10}|^2}{10|\vec w^H\vec a_{40}|^2+\|\vec w\|^2}\text{。}\tag{5-7}$$
+
+| 方法 | 真实目标增益（dB） | 干扰幅度响应 $|\vec w^H\vec a_{40}|$ | WNG（dB） | 输出 SINR（dB） |
+|---|---:|---:|---:|---:|
+| DSB | −0.35 | 0.5241 | 6.02 | −5.12 |
+| MVDR | −1.90 | 0.0175 | 4.70 | 2.76 |
+| 加载 MVDR | −1.46 | 0.1534 | 5.27 | 1.28 |
+| LCMV | −1.96 | 0（解析约束） | 4.63 | 2.66 |
+
+可先独立核对 DSB 行：正横设计使四个权重均为 $1/4$；干扰方向相邻麦的相位步进为 $\psi=2\pi(2000)(0.04)\sin40°/343$，所以干扰幅度响应为 $|\sum_{m=0}^{3}e^{\mathrm jm\psi}/4|\approx0.5241$。输出干扰加噪声功率为 $10(0.5241)^2+1/4\approx2.9973$，再代入式(5-7)得到表中 SINR。
+
+在这一组**精确协方差、单频、固定几何**条件下，LCMV 的干扰响应被硬约束为零，但输出 SINR 略低于 MVDR；加载使 WNG 和真实目标幅度增益回升，同时放松了干扰抑制。目标方向变化后，四种方法对设计方向的响应仍为 1，却不保证对真实方向无失真。表中数字不代表语音可懂度、统计平均或实机性能，也不能推广为固定排名。完整参数、未舍入结果和可运行计算见[同输入波束对照](../codes/examples/beamformer_common_input_demo.py)。
 
 #### 延伸阅读：Kumatani 等的 CMU 课程讲义
 

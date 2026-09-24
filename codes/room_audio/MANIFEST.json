@@ -1,0 +1,312 @@
+{
+  "provenance": "mathematically synthesized white Gaussian noise, not recorded speech",
+  "pyroomacoustics_version": "0.10.0",
+  "numpy_version": "2.5.3",
+  "sample_rate_hz": 16000,
+  "pcm": "signed little-endian 16-bit, interleaved",
+  "source_duration_s": 1.0,
+  "max_order": 40,
+  "room_dimensions_m": [
+    12.0,
+    10.0,
+    6.0
+  ],
+  "microphones_m": [
+    [
+      5.97,
+      4.97,
+      3.0
+    ],
+    [
+      6.03,
+      4.97,
+      3.0
+    ],
+    [
+      5.97,
+      5.03,
+      3.0
+    ],
+    [
+      6.03,
+      5.03,
+      3.0
+    ]
+  ],
+  "sound_speed_m_s": 343.0,
+  "target_t60_s": 0.6,
+  "wall_energy_absorption_full": 0.3836043470210822,
+  "wall_energy_absorption_direct": 1.0,
+  "rir_highpass_enabled": true,
+  "rir_highpass_cutoff_hz": 10.0,
+  "source_and_microphone_clocks_aligned": true,
+  "propagation_delay_and_gain_compensated": false,
+  "channel_length_handling": "trailing zeros pad each channel to the longest convolution",
+  "normalization": "one common gain for all source/full/direct files; no per-file peak scaling",
+  "common_gain": 0.1516968997435788,
+  "maximum_pre_gain_peak": 5.273674025983931,
+  "maximum_post_gain_peak": 0.8,
+  "excitation": "1 s independent PCG64 standard-normal float64 per case",
+  "cases": [
+    {
+      "name": "fixed_near_left",
+      "source_m": [
+        5.5,
+        5.866025403784438,
+        3.0
+      ],
+      "excitation_seed_sequence": [
+        20260924,
+        1
+      ],
+      "source_float64_le_sha256": "c88444aed6f98186807e17534ac609c85fa609f7edc320ff531d13c6709282d1"
+    },
+    {
+      "name": "fixed_near_right",
+      "source_m": [
+        6.5,
+        5.866025403784438,
+        3.0
+      ],
+      "excitation_seed_sequence": [
+        20260924,
+        2
+      ],
+      "source_float64_le_sha256": "2570f1db81d23c2f11aedc1205b9eb7558b758961d5720dfb1f859fbfd309136"
+    },
+    {
+      "name": "fixed_far_left",
+      "source_m": [
+        4.75,
+        7.165063509461097,
+        3.0
+      ],
+      "excitation_seed_sequence": [
+        20260924,
+        3
+      ],
+      "source_float64_le_sha256": "f497f440c5eddb7288473de2cb1fb1a2fae294e3b0479a24eba4a0eaa4dc833f"
+    },
+    {
+      "name": "fixed_far_right",
+      "source_m": [
+        7.25,
+        7.165063509461097,
+        3.0
+      ],
+      "excitation_seed_sequence": [
+        20260924,
+        4
+      ],
+      "source_float64_le_sha256": "96c46c686ddd4caaabf35c9d2930d37b270bc7659b8bba21b0f07c4b8b434286"
+    },
+    {
+      "name": "seeded_1",
+      "source_m": [
+        5.275539245158092,
+        5.826275487565342,
+        3.0
+      ],
+      "excitation_seed_sequence": [
+        20260924,
+        5
+      ],
+      "source_float64_le_sha256": "9e15a5efbfc0bd1a9df59fecbf24ed4f3fda41075aff415bb3997c2d41dcd503"
+    },
+    {
+      "name": "seeded_2",
+      "source_m": [
+        6.082455650414081,
+        6.970819691383463,
+        3.0
+      ],
+      "excitation_seed_sequence": [
+        20260924,
+        6
+      ],
+      "source_float64_le_sha256": "a2b16ea789b6b3fcfe04398a272f103f4e9ec162a5879e38e9357f4f05fbd685"
+    }
+  ],
+  "files": [
+    {
+      "case": "fixed_near_left",
+      "role": "source",
+      "file": "fixed_near_left_source.wav",
+      "channels": 1,
+      "frames": 16000,
+      "peak_before_gain": 4.11995082330482,
+      "peak_after_gain": 0.6249837669913463,
+      "sha256": "b9959b4c530c25d5051ee7b392665190780bf11e3e65fca6db017ebca28d8279"
+    },
+    {
+      "case": "fixed_near_left",
+      "role": "full",
+      "file": "fixed_near_left_full.wav",
+      "channels": 4,
+      "frames": 38497,
+      "peak_before_gain": 5.159972669142041,
+      "peak_after_gain": 0.7827518566704469,
+      "sha256": "a19a86e4d001834d7963a5f04a2017a9da68c88e7987128cbfbd322adf7604f6"
+    },
+    {
+      "case": "fixed_near_left",
+      "role": "direct",
+      "file": "fixed_near_left_direct.wav",
+      "channels": 4,
+      "frames": 38497,
+      "peak_before_gain": 4.051638798576734,
+      "peak_after_gain": 0.6146210446248889,
+      "sha256": "a9fe3258c83c065369d53807666ee3152b0155fdbe5c18df96bb1aac0112f83f"
+    },
+    {
+      "case": "fixed_near_right",
+      "role": "source",
+      "file": "fixed_near_right_source.wav",
+      "channels": 1,
+      "frames": 16000,
+      "peak_before_gain": 3.87783443058951,
+      "peak_after_gain": 0.5882554608393349,
+      "sha256": "02334850c6df9bad91c9cf3238002335d42975d4cc482f5cdc1a92dc51b6d46d"
+    },
+    {
+      "case": "fixed_near_right",
+      "role": "full",
+      "file": "fixed_near_right_full.wav",
+      "channels": 4,
+      "frames": 38497,
+      "peak_before_gain": 5.273674025983931,
+      "peak_after_gain": 0.8,
+      "sha256": "30f060a8b27ca9a58c982df92bb2cab613cadd20ea2dfa53886081d33771ba8a"
+    },
+    {
+      "case": "fixed_near_right",
+      "role": "direct",
+      "file": "fixed_near_right_direct.wav",
+      "channels": 4,
+      "frames": 38497,
+      "peak_before_gain": 4.086260824485141,
+      "peak_after_gain": 0.6198730986180361,
+      "sha256": "9000bb2aafd07cdaa2dec4d54de55071540bf11e7629c8f5c49ddd1622061480"
+    },
+    {
+      "case": "fixed_far_left",
+      "role": "source",
+      "file": "fixed_far_left_source.wav",
+      "channels": 1,
+      "frames": 16000,
+      "peak_before_gain": 4.133069152732317,
+      "peak_after_gain": 0.6269737768953125,
+      "sha256": "4e8ae9185de24749ebedfcdaab0db04682cf430484a6e716a130312135628ae6"
+    },
+    {
+      "case": "fixed_far_left",
+      "role": "full",
+      "file": "fixed_far_left_full.wav",
+      "channels": 4,
+      "frames": 38532,
+      "peak_before_gain": 2.83760423881653,
+      "peak_after_gain": 0.4304557657277054,
+      "sha256": "62d85dbf77df0af27e6ce67e505ed9290b38a72d2953a0ebe41655a7755381a5"
+    },
+    {
+      "case": "fixed_far_left",
+      "role": "direct",
+      "file": "fixed_far_left_direct.wav",
+      "channels": 4,
+      "frames": 38532,
+      "peak_before_gain": 1.6098005049169788,
+      "peak_after_gain": 0.24420174580155346,
+      "sha256": "f72bb7aa3fbd23d29d404f6c045f3537e95de957aac017234daed00c87013e4a"
+    },
+    {
+      "case": "fixed_far_right",
+      "role": "source",
+      "file": "fixed_far_right_source.wav",
+      "channels": 1,
+      "frames": 16000,
+      "peak_before_gain": 3.8416141599735836,
+      "peak_after_gain": 0.5827609580790254,
+      "sha256": "98a9c2b66a93aee06a7766c617a7b741e0f0af185f947482367a33013fc49dbb"
+    },
+    {
+      "case": "fixed_far_right",
+      "role": "full",
+      "file": "fixed_far_right_full.wav",
+      "channels": 4,
+      "frames": 38532,
+      "peak_before_gain": 2.944140351698729,
+      "peak_after_gain": 0.4466169637626669,
+      "sha256": "0266ee0f6e72ecead6aec3c7b5dbfa1df1af370c2368878891c5c9a1126aa647"
+    },
+    {
+      "case": "fixed_far_right",
+      "role": "direct",
+      "file": "fixed_far_right_direct.wav",
+      "channels": 4,
+      "frames": 38532,
+      "peak_before_gain": 1.6354486981032137,
+      "peak_after_gain": 0.2480924971919297,
+      "sha256": "80af5652564d75ee2c82ba9593ffa0dcaa765d256f8101030df8e7097d93a262"
+    },
+    {
+      "case": "seeded_1",
+      "role": "source",
+      "file": "seeded_1_source.wav",
+      "channels": 1,
+      "frames": 16000,
+      "peak_before_gain": 4.125785666097439,
+      "peak_after_gain": 0.6258688945534777,
+      "sha256": "a917bd7f29074e78a39888d3cf9b8bef7890082989285279d38bf81b7777bb48"
+    },
+    {
+      "case": "seeded_1",
+      "role": "full",
+      "file": "seeded_1_full.wav",
+      "channels": 4,
+      "frames": 38507,
+      "peak_before_gain": 4.671417834942339,
+      "peak_after_gain": 0.708639602967614,
+      "sha256": "e86224265cdf01d0e7dc356969020c6fa500f8b29298578cb4223d2224673659"
+    },
+    {
+      "case": "seeded_1",
+      "role": "direct",
+      "file": "seeded_1_direct.wav",
+      "channels": 4,
+      "frames": 38507,
+      "peak_before_gain": 4.027280212681183,
+      "peak_after_gain": 0.6109259226623962,
+      "sha256": "9e9a3cdd9eeaa3fa5b4bb67144a19b382f597a715488acb1d1a6dbaad3298685"
+    },
+    {
+      "case": "seeded_2",
+      "role": "source",
+      "file": "seeded_2_source.wav",
+      "channels": 1,
+      "frames": 16000,
+      "peak_before_gain": 4.187523036944801,
+      "peak_after_gain": 0.6352342623093421,
+      "sha256": "258598f2af81f3d46503a0879895a643153fd2e619de792d1bb55f22d7a6e0c2"
+    },
+    {
+      "case": "seeded_2",
+      "role": "full",
+      "file": "seeded_2_full.wav",
+      "channels": 4,
+      "frames": 38478,
+      "peak_before_gain": 3.183186543743359,
+      "peak_after_gain": 0.4828795299913454,
+      "sha256": "a22cac3ecfa4e1ff169c793f4c96dd78f30d56e5e4212f6fd15726c02df9f37a"
+    },
+    {
+      "case": "seeded_2",
+      "role": "direct",
+      "file": "seeded_2_direct.wav",
+      "channels": 4,
+      "frames": 38478,
+      "peak_before_gain": 2.1727487071154306,
+      "peak_after_gain": 0.32959924279127994,
+      "sha256": "a15c7206eb09b0176bc7eb54619b23891606748e9e17ef439aebd10e1019e367"
+    }
+  ]
+}

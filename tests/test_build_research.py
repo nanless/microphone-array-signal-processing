@@ -1,6 +1,7 @@
 """Research publishing regressions; no network, browser or final output writes."""
 import contextlib
 import io
+import json
 import re
 import tempfile
 import unittest
@@ -21,6 +22,7 @@ class Links(HTMLParser):
         super().__init__()
         self.hrefs = []
         self.ids = set()
+        self.images = []
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
@@ -28,6 +30,8 @@ class Links(HTMLParser):
             self.ids.add(attrs["id"])
         if tag == "a" and "href" in attrs:
             self.hrefs.append(attrs["href"])
+        if tag == "img" and "src" in attrs:
+            self.images.append((attrs["src"], attrs.get("alt")))
 
 
 class ResearchBuildTest(unittest.TestCase):
@@ -264,12 +268,24 @@ class ResearchBuildTest(unittest.TestCase):
             output = Path(temporary) / "site"
             with mock.patch.object(build_site, "OUT", output), contextlib.redirect_stdout(io.StringIO()):
                 build_site.main()
+            room_source = ROOT / "codes" / "room_audio"
+            room_manifest = json.loads((room_source / "MANIFEST.json").read_text(encoding="utf-8"))
+            room_names = {record["file"] for record in room_manifest["files"]}
+            self.assertEqual(len(room_names), 18)
+            room_names.update({"MANIFEST.json", "ROOM_RESULTS.png"})
+            self.assertEqual({path.name for path in (output / "room_audio").iterdir()}, room_names)
+            for name in room_names:
+                with self.subTest(room_asset=name):
+                    self.assertEqual((output / "room_audio" / name).read_bytes(),
+                                     (room_source / name).read_bytes())
             pages = {}
             for path in output.rglob("*.html"):
                 parser = Links()
                 parser.feed(path.read_text(encoding="utf-8"))
                 pages[path.resolve()] = parser
             self.assertEqual(len(pages), 20)
+            room_links = set()
+            room_images = set()
             for path, parsed in pages.items():
                 if path.parent.name == "research":
                     self.assertIn("../index.html", parsed.hrefs)
@@ -281,6 +297,13 @@ class ResearchBuildTest(unittest.TestCase):
                         continue
                     target = (path.parent / unquote(uri.path)).resolve() if uri.path else path
                     with self.subTest(page=path.name, href=href):
+                        if target.parent == (output / "room_audio").resolve():
+                            self.assertIn(target.name, room_names)
+                            self.assertTrue(target.is_file())
+                            self.assertEqual(target.read_bytes(), (room_source / target.name).read_bytes())
+                            self.assertFalse(uri.fragment)
+                            room_links.add(target.name)
+                            continue
                         if target.parent == (output / "real_audio").resolve():
                             self.assertIn(target.name, {
                                 "demand_nriver_16ch_10s.wav", "demand_nriver_ch01_10s.wav",
@@ -299,6 +322,20 @@ class ResearchBuildTest(unittest.TestCase):
                         self.assertIn(target, pages)
                         if uri.fragment:
                             self.assertIn(unquote(uri.fragment), pages[target].ids)
+                for src, alt in parsed.images:
+                    uri = urlsplit(src)
+                    if uri.scheme or uri.netloc:
+                        continue
+                    target = (path.parent / unquote(uri.path)).resolve()
+                    if target.parent == (output / "room_audio").resolve():
+                        with self.subTest(page=path.name, image=src):
+                            self.assertEqual(target.name, "ROOM_RESULTS.png")
+                            self.assertTrue(alt and alt.strip())
+                            self.assertEqual(target.read_bytes(),
+                                             (room_source / "ROOM_RESULTS.png").read_bytes())
+                            room_images.add(target.name)
+            self.assertEqual(room_links, room_names)
+            self.assertEqual(room_images, {"ROOM_RESULTS.png"})
 
 
 if __name__ == "__main__":

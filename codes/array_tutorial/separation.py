@@ -11,6 +11,47 @@ from .conventions import finite_real_array, finite_real_scalar
 MAX_EXHAUSTIVE_PIT_SOURCES = 8
 
 
+def guided_activity_posterior(
+    mixture_weights: np.ndarray,
+    spatial_likelihoods: np.ndarray,
+    speaker_activity: np.ndarray,
+) -> np.ndarray:
+    """One guided-mixture E step with an always-active background class.
+
+    ``mixture_weights`` has shape ``(speakers + 1,)`` and ends with the
+    background weight. ``spatial_likelihoods`` has shape ``(frames, speakers
+    + 1)``; ``speaker_activity`` has shape ``(frames, speakers)`` with binary
+    values. The result is a posterior per frame and class. This checks only
+    activity gating and normalization, not cACGMM density estimation or EM.
+    """
+
+    weights = finite_real_array(mixture_weights, "mixture_weights")
+    likelihoods = finite_real_array(spatial_likelihoods, "spatial_likelihoods")
+    activity_input = np.asarray(speaker_activity)
+    activity = (activity_input.astype(float) if activity_input.dtype.kind == "b"
+                else finite_real_array(activity_input, "speaker_activity"))
+    if weights.ndim != 1 or weights.size < 2:
+        raise ValueError("mixture_weights must contain speakers and one background class")
+    if likelihoods.ndim != 2 or likelihoods.shape[1] != weights.size or likelihoods.shape[0] == 0:
+        raise ValueError("spatial_likelihoods must have shape (frames, classes)")
+    if activity.shape != (likelihoods.shape[0], weights.size - 1):
+        raise ValueError("speaker_activity must have shape (frames, speakers)")
+    if (np.any(weights < 0) or weights[-1] <= 0 or
+            np.any(likelihoods <= 0) or np.any((activity != 0) & (activity != 1))):
+        raise ValueError("weights must be non-negative with positive background; likelihoods positive; activity binary")
+
+    allowed = np.concatenate((activity.astype(bool), np.ones((activity.shape[0], 1), dtype=bool)), axis=1)
+    # Log scores avoid overflowing when a valid finite prior and likelihood
+    # are multiplied. A zero speaker prior remains an inactive component.
+    log_scores = np.full(likelihoods.shape, -np.inf)
+    positive = weights > 0
+    log_scores[:, positive] = np.log(weights[positive])[None, :] + np.log(likelihoods[:, positive])
+    log_scores[~allowed] = -np.inf
+    maximum = np.max(log_scores, axis=1, keepdims=True)
+    unnormalized = np.exp(log_scores - maximum)
+    return unnormalized / np.sum(unnormalized, axis=1, keepdims=True)
+
+
 def si_sdr(estimate: np.ndarray, reference: np.ndarray, *, zero_mean: bool = True, epsilon: float = 1e-12) -> float:
     """Compute SI-SDR with a relative energy floor and no time alignment.
 
