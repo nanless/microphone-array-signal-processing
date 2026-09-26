@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 3 章 · 阵列几何形态 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="b74df4f08677"><style>
+<meta name="source-digest" content="8c33d8040161"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -375,7 +375,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>用若干已知方向复测主瓣、旁瓣和零陷。</li>
 </ol>
 <p>若设备结构、温度或节点位置会变化，还要定义重新标定的触发条件。采用逐只通道修正、整机流形查表还是在线联合估计，取决于硬件一致性、存储、算力和使用环境。</p>
-<p>标定结果不能只保存一组没有上下文的复数。最小标定记录应包括设备或阵列序列号、麦克风通道顺序、坐标系与长度单位、参考麦克风、采样率、频率网格、复增益或实测流形、测量温湿度、测量日期、算法版本和原始记录校验值。加载时先核对通道数、设备身份、坐标维度和频率网格；任一项不匹配时应拒绝套用，而不是截断或重排数组。产线验收还要用未参与拟合的方向复测目标响应、旁瓣或零陷，并把允许误差写成设备规格，而不是沿用某个教学算例的门限。</p>
+<p>标定结果不能只保存一组没有上下文的复数。最小标定记录应包括设备或阵列序列号、麦克风通道顺序、坐标系与长度单位、参考麦克风、采样率、频率网格、复增益或实测流形、测量温湿度、测量日期、算法版本和原始记录校验值。</p>
+<p>加载时先核对通道数、设备身份、坐标维度和频率网格；任一项不匹配时应拒绝套用，而不是截断或重排数组。</p>
+<p>产线验收还要用未参与拟合的方向复测目标响应、旁瓣或零陷，并把允许误差写成设备规格，而不是沿用某个教学算例的门限。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/geometry.py"><code>geometry.py</code></a> 提供统一的平面波和球面波导向矢量，正角、参考麦克风和声速约定与 §2.1 一致。它是校准前后的共同计算基线，不包含针对某种硬件的自动校准器。对应测试会检查正角时 $\tau_{21}\lt 0$、导向相位为正，以及近场幅度和传播距离；这样可在替换实测流形前先排除坐标轴、通道顺序和傅里叶符号错误。</p>
 <p>几何决定可观测的空间信息，标定决定理论模型能否用于实测数据。第 4 章将从 GCC-PHAT 开始介绍声源定位算法。</p>
 <span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-f7a201edb9">本章练习</h2>

@@ -105,6 +105,21 @@ class BuildHelpersTest(unittest.TestCase):
             '<a href="https://example.com/a">a</a>',
         )
 
+    def test_exercise_links_are_namespaced_and_unknown_ids_rejected(self):
+        chapter = build_pdf.SRC / "06_aec.md"
+        self.assertEqual(
+            build_pdf.rewrite_repository_links('<a href="#e06-21">练习</a>', chapter),
+            '<a href="#ch-6-e06-21">练习</a>')
+        self.assertEqual(
+            build_pdf.rewrite_book_links('<a href="06_aec.html#e06-21">练习</a>'),
+            '<a href="#ch-6-e06-21">练习</a>')
+        with self.assertRaisesRegex(ValueError, "无法映射章节锚点"):
+            build_pdf.rewrite_repository_links('<a href="#e06-99">错链</a>', chapter)
+        html, _ = build_pdf.build_html("2026-09-26")
+        self.assertIn('id="ch-6-e06-21"', html)
+        self.assertIn('href="#ch-6-e06-21"', html)
+        self.assertNotIn('id="e06-21"', html)
+
     def test_page_info_block_removal_pattern_does_not_leave_empty_quote(self):
         html = '<hr><blockquote>\n<p>📄 <a href="#ch-0">回首页</a></p>\n</blockquote>'
         cleaned = build_pdf.remove_page_info(html)
@@ -400,10 +415,10 @@ class BuildHelpersTest(unittest.TestCase):
         )
 
     def test_figure_semantics_accept_any_reuse_and_reject_mismatch_or_orphan(self):
-        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 40)]
+        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 41)]
         refs.extend([("图1 复用", "fig01_x.png", 1),
                      ("图23 复用", "fig23_x.png", 23)])
-        names = [f"fig{i:02d}_x.png" for i in range(1, 40)]
+        names = [f"fig{i:02d}_x.png" for i in range(1, 41)]
         self.assertEqual(quality_check.figure_inventory_issues(refs, names), [])
         bad_refs = list(refs)
         bad_refs[0] = ("图2 错配", "fig01_x.png", 1)

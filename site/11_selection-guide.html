@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 11 章 · 总结与选型指南 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="b74df4f08677"><style>
+<meta name="source-digest" content="8c33d8040161"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -80,6 +80,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-b2f4d38876">题 5：评分覆盖与电池预算（E11-02）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-994102bab0">题 6：平均文件分数与合并计数（E11-03）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-67b9b2107f">题 7：p99 为什么还需要注明计算方法（E11-04）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-7ef9cfea65">题 8：零次失败能证明多低的风险（E11-08）</a></li>
 <li><a href="11_selection-guide.html#sec-11-7">11.7 后续阅读</a></li>
 </ul>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
@@ -103,6 +104,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-b2f4d38876">题 5：评分覆盖与电池预算（E11-02）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-994102bab0">题 6：平均文件分数与合并计数（E11-03）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-67b9b2107f">题 7：p99 为什么还需要注明计算方法（E11-04）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-7ef9cfea65">题 8：零次失败能证明多低的风险（E11-08）</a></li>
 <li><a href="11_selection-guide.html#sec-11-7">11.7 后续阅读</a></li>
 </ul></nav></details>
 <blockquote>
@@ -525,6 +527,17 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>答案要点</strong>：最近秩为 $\lceil20\times0.50\rceil=10$、$\lceil20\times0.95\rceil=19$、$\lceil20\times0.99\rceil=20$，得到 10、19、100 ms。</p>
 <p>线性插值则在从 0 开始的位置 $q(n-1)$ 取值：p50 位于 9.5，得到 10.5 ms；p95 位于 18.05，在 19 与 100 ms 间插值，得到 $19+0.05\times81=23.05$ ms；p99 位于 18.81，得到 $19+0.81\times81=84.61$ ms。<a href="https://numpy.org/doc/stable/reference/generated/numpy.quantile.html" title="citation">NumPy 分位数文档的 Notes 小节</a>给出该插值定义，核实于 2026-09-22。</p>
 <p>两组结果来自不同的报告约定。预先选定方法，连同样本数、测量时长与测点一起记录；不要用仅 20 个样本宣称已经稳定估计实际系统的 99% 尾部。两种计算都不能补回未观测到的罕见卡顿。</p>
+<h3 id="sec-u-7ef9cfea65">题 8：零次失败能证明多低的风险（E11-08）</h3>
+<p>一次独立会话中，只要发生截止期违约就算失败。事先固定相同测试条件，独立重复 $n$ 次，假设各次失败概率同为 $p$。现在观察到零次失败；分别取 $n=20,100,1000$，求失败概率的单侧 95% 精确二项上界。若希望该上界不超过 1%，至少需要多少次零失败试验？</p>
+<p><strong>答案要点</strong>：一次成功概率为 $1-p$；独立的 $n$ 次全部成功概率相乘，得到 $(1-p)^n$。把这次观察的尾概率设为 $\alpha=0.05$ 并反解：</p>
+<p>$$\begin{aligned}
+(1-p_{\mathrm U})^n&=\alpha,\\
+p_{\mathrm U}&=1-\alpha^{1/n}.
+\end{aligned}\tag{11-1}$$</p>
+<p>$n=20$ 时 $p_{\mathrm U}=1-0.05^{1/20}\approx13.9108\%$；100 次时约 2.9513%，1000 次时约 0.2991%。所有组的观察失败率都为 0，但支持的风险上界不同。公式是本书从二项分布零计数概率反解的单侧界；<a href="https://itl.nist.gov/div898/handbook/prc/section2/prc241.htm">NIST 精确二项区间说明</a>提供一般计数情形的背景，其双侧公式分配 $\alpha/2$，不能直接把本题的单侧 0.05 换成 0.025 而仍称同一上界。</p>
+<p>要求 $1-0.05^{1/n}\le0.01$，等价于 $0.05^{1/n}\ge0.99$。取对数得到 $\ln(0.05)/n\ge\ln(0.99)$；两侧涉及负数，整理为 $n\ge\ln(0.05)/\ln(0.99)\approx298.073$，向上取整为 299。该预定试验设计下，299 次零失败才满足这一上界条件；不能不停测试直到某一段碰巧没有失败，再只汇报那一段。</p>
+<p>这里“95%”描述重复使用该构造程序时的覆盖性质，不是在观察后断言“固定的真实 $p$ 有 95% 概率落在区间内”。同一录音的连续帧常相关，不能把 1000 帧当作 1000 次独立会话；每个场景失败概率不同，也不能未经说明套用相同 $p$ 的模型。实际验收应预先定义失败、独立试验单元、场景抽样和停止规则，并保留失败数及分母。</p>
+<p>运行 <code>.venv/bin/python -m codes.examples.tracking_time_exercises</code>，核对<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/tracking_time_exercises.py">脚本</a>中的 <code>E11-08</code>。实现使用 <code>log1p</code>、<code>expm1</code> 减轻小上界的相减精度损失；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_time_state_exercises.py">测试</a>再把上界代回 $(1-p)^n=0.05$，并检查 298 与 299 的边界。本题只检查统计推理，没有宣称某设备通过了验收。</p>
 <span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-11-7">11.7 后续阅读</h2>
 <p>要实现算法，可回到第 4～9 章查看定位、波束、AEC、WPE、分离和追踪。要制定整机预算和验收计划，见<a href="10_engineering-practice.html">第 10 章</a>。<a href="12_appendix-symbols-math.html">附录 A</a>汇总符号与数学工具，<a href="13_appendix-guide.html">附录 B</a>给出进一步阅读、练习和排错入口。</p>
 <hr />

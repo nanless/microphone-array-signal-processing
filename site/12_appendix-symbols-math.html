@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 A · 符号术语数学 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="b74df4f08677"><style>
+<meta name="source-digest" content="8c33d8040161"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -418,7 +418,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <tbody>
 <tr>
 <td>导向矢量 $\vec{a}(\theta)$</td>
-<td>“如果声音从 θ 来，各麦应该是什么相位”的标准答案向量（§2.3）</td>
+<td>指定频率和声源方向或位置时，各通道相对参考的复响应向量，包含幅度与相位；理想远场、同增益全向麦模型常简化为仅有相位差，近场与实测流形还要保留幅度差（§2.3）</td>
 </tr>
 <tr>
 <td>转向（steering）</td>
@@ -466,7 +466,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>相干源</td>
-<td>内容高度相关的多个源（直达声 + 强反射）。MUSIC 遇相干源会失效（§4.6）</td>
+<td>在所分析频点，完全相干的多个源分量互为固定复数倍，使源协方差降秩；未去相关的标准 MUSIC 因此失去相应信号子空间条件。高度相关但非完全相干时未必严格降秩，却可能更难在有限快拍下分辨；空间平滑可在满足阵列与维数条件时改善这一问题（§4.6）</td>
 </tr>
 <tr>
 <td>空间平滑</td>

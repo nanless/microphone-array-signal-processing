@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 5 章 · 波束形成 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="b74df4f08677"><style>
+<meta name="source-digest" content="8c33d8040161"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -199,7 +199,7 @@ Q&=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\mathbf{\Gamma}\vec{w}},&
 \mathbf{\Gamma}^{-1} &= \frac{1}{0.0325}\begin{bmatrix}1 & -0.9836\\ -0.9836 & 1\end{bmatrix}\\
 &\approx \begin{bmatrix}30.80 & -30.29\\ -30.29 & 30.80\end{bmatrix}.
 \end{aligned}$$</p>
-<p>两麦噪声的相干系数为 $\rho=0.9836$，所以 $\mathbf{\Gamma}$ 接近奇异，逆矩阵元素达到 30 量级。后续求得的权重会相应放大。</p>
+<p>两麦噪声的相干系数为 $\rho=0.9836$，所以 $\mathbf{\Gamma}$ 接近奇异，逆矩阵元素达到 30 量级。但最终权重还要除以无失真归一化分母，不能仅凭逆矩阵元素大就判定权重一定大；还要看导向矢量在各特征方向上的投影。下面先看正横方向的反例，再看端射方向的放大。</p>
 <p><strong>第 2 步：正横指向的退化情形</strong></p>
 <p>若 $\theta_0 = 0°$，则 $\vec{a}_0 = [1, 1]^\top$ 恰好是 $\mathbf{\Gamma}$ 的特征向量（$\mathbf{\Gamma}\vec{a}_0 = (1+\rho)\vec{a}_0$），于是 $\mathbf{\Gamma}^{-1}\vec{a}_0 = \vec{a}_0/(1+\rho) \propto \vec{a}_0$，归一化后</p>
 <p>$$\vec{w}_{SD} = [0.5,\ 0.5]^\top = \vec{w}_{DSB},\qquad \mathrm{WNG}_{\mathrm{dB}} = +3.0\ \mathrm{dB}$$</p>
@@ -380,7 +380,7 @@ Q&=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\mathbf{\Gamma}\vec{w}},&
 <p>$$\vec{w}^H\vec{a}_i = (0.5-\tfrac{5}{11}\mathrm{j})\cdot1 + (0.5+\tfrac{5}{11}\mathrm{j})(+\mathrm{j}) = \frac{1}{22}(1+\mathrm{j}) \approx 0.0455+0.0455\mathrm{j}$$</p>
 <p>$|\vec{w}^H\vec{a}_i| = \dfrac{\sqrt{2}}{22} \approx 0.0643$，即 <strong>−23.8 dB</strong>。干扰幅度约为输入阵元响应的 $1/15.6$，输出干扰功率 $10\times0.0643^2 \approx 0.041$，低于输出白噪声功率 $\|\vec{w}\|^2 \approx 0.913$。</p>
 <p><strong>为什么不是精确的 0？</strong> MVDR 只显式约束目标方向，不强制干扰方向响应为零。干扰的空间相关信息包含在 $\mathbf{R}_{nn}$ 的非对角元中；本例 INR 为 10，优化得到约 −24 dB 的残余响应，INR 增大时该响应继续降低并趋近零。若必须在已知方向形成精确零陷，应使用 §5.5 的 LCMV 约束。</p>
-<p><strong>第 6 步：检查波束图的五个方向</strong>（$|B(\theta)| = |\vec{w}^H\vec{a}(\theta)|$，完整曲线见图16）：</p>
+<p><strong>第 6 步：检查波束图的五个方向</strong>（$|B(\theta)| = |\vec{w}^H\vec{a}(\theta)|$）：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
 <tr>
@@ -1044,6 +1044,41 @@ B(30^\circ)=\frac{1+\mathrm j}{2(\beta+1)}。$$</p>
 </tbody>
 </table></div>
 <p>这些是本书单频模型的计算结果，脚本使用未舍入权重再求零点，最后保留两位小数。增大 INR 时，零点向 30° 靠近，干扰方向响应趋于零；有限白噪声下，MVDR 仍在干扰抑制与权重范数之间折中。这里存在精确零点依赖双麦权重的等模结构，不能外推为任意阵列、任意噪声模型必有零点。若要在指定方向强制为零，应直接施加 LCMV 约束。</p>
+<p><strong>E05-06：白噪声增益如何限制最坏导向误差？</strong> 名义导向为 $\vec a_0=[1,1]^\top$，比较 $\vec w_A=[0.5,0.5]^\top$ 与 $\vec w_B=[2,-1]^\top$。两者都满足 $\vec w^H\vec a_0=1$。真实导向为 $\vec a_0+\vec e$，只知道复向量误差满足 $\|\vec e\|_2\le\epsilon=0.02$。求目标复响应偏离 1 的上界，并构造达到上界的误差。</p>
+<p><strong>第一步：把响应误差写成内积。</strong> 名义响应为 1，因此 $\vec w^H(\vec a_0+\vec e)-1=\vec w^H\vec e$。柯西-施瓦茨不等式给出 $|\vec w^H\vec e|\le\|\vec w\|_2\|\vec e\|_2\le\epsilon\|\vec w\|_2$。再用单位名义响应下 $G_{\mathrm{WNG}}=1/\|\vec w\|_2^2$，响应误差界也可写成 $\epsilon/\sqrt{G_{\mathrm{WNG}}}$。</p>
+<p><strong>第二步：逐项计算。</strong> A 的权重平方范数为 $0.25+0.25=0.5$；B 为 $4+1=5$。两者对理想目标的响应相同，权重范数却相差 $\sqrt{10}$ 倍。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">权重</th>
+<th scope="col" style="text-align: right;">线性 WNG</th>
+<th scope="col" style="text-align: right;">WNG／dB</th>
+<th scope="col" style="text-align: right;">复响应误差上界</th>
+<th scope="col" style="text-align: right;">可保证的响应幅度下界</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A：等权平均</td>
+<td style="text-align: right;">2.0</td>
+<td style="text-align: right;">3.0103</td>
+<td style="text-align: right;">0.014142</td>
+<td style="text-align: right;">0.985858</td>
+</tr>
+<tr>
+<td>B：差分示例</td>
+<td style="text-align: right;">0.2</td>
+<td style="text-align: right;">−6.9897</td>
+<td style="text-align: right;">0.044721</td>
+<td style="text-align: right;">0.955279</td>
+</tr>
+</tbody>
+</table></div>
+<p>最后一列使用反三角不等式 $|1+\vec w^H\vec e|\ge\max(0,1-\epsilon\|\vec w\|_2)$。这是幅度保证，不能直接当成功率百分比；若需要功率下界，应再平方。</p>
+<p><strong>第三步：构造最坏方向。</strong> 取 $\vec e=-\epsilon\vec w/\|\vec w\|_2$，其范数正好为 $\epsilon$，且 $\vec w^H\vec e=-\epsilon\|\vec w\|_2$，所以表中两个界都能达到。A 对应 $\vec e\approx[-0.014142,-0.014142]^\top$，B 对应 $[-0.017889,0.008944]^\top$。同样大小的向量误差，在差分权重下造成更大的目标响应变化。</p>
+<p><strong>边界。</strong> 这里允许任意复数范数球内的误差；真实的角度偏差、共同增益漂移或设备标定残差可能只占其中很小的结构化子集。因此这个界可以保守，不能把 $\epsilon=0.02$ 直接解释成“每只麦误差 2%”或“方向误差 0.02 rad”。B 是隔离范数效应的代数例子，不是声称某种阵列的最优超指向解。</p>
+<p>这条推导把 §5.2 的 WNG 与 §5.4.1 的球形不确定集联系起来；<a href="https://users.aalto.fi/~vorobys1/RobBeamformer.pdf" title="citation">Vorobyov、Gershman 与 Luo 2003，§III-A、式(18)–(25)</a>讨论用此类集合构造最坏情况约束。该论文的鲁棒优化还需联合选择权重，不能把本题对既定权重的误差界当成完整求解器。数值由 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/spatial_precision_exercises.py"><code>spatial_precision_exercises.py</code></a> 的 <code>E05-06</code> 输出，测试直接验证构造误差达到手算界。</p>
+<p><strong>实现边界检查。</strong> 数学式成立不意味着任意有限浮点输入都能直接计算。<code>mvdr_weights</code> 和 <code>capon_spectrum</code> 在求解、二次型归一化或最终结果超出浮点范围时明确报错；<code>apply_beamformer</code> 也拒绝非有限输出。例如 $\mathbf R=\mathbf I_2$、$\vec a=[10^{200},10^{200}]^\top$ 的数学 MVDR 权重是 $[5\times10^{-201},5\times10^{-201}]^\top$，但未缩放的二次型会溢出。本书接口拒绝这一输入，避免用无穷大作分母后静默返回零权重；它没有承诺支持全部可表示的极端尺度。回归见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_spatial_precision.py"><code>test_codes_spatial_precision.py</code></a>，也保留较大但可正常计算的尺度检查。</p>
 <p>从单频权重走到波形还需要逐频点处理与 iSTFT。可先用<a href="research/05_exercises_and_audio.html">音频实验总览</a>中的对齐平均样本检查通道、增益和参考时延，再搭建自适应波束实验。总览中的对齐平均不是 MVDR 输出，不能把它的听感或误差写成 E05-02 或 E05-05 的实验结果。</p>
 <hr />
 <blockquote>

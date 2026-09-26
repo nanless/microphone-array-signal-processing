@@ -36,10 +36,16 @@ def apply_beamformer(spectra: np.ndarray, weights: np.ndarray) -> np.ndarray:
     if w.ndim == 1:
         if w.shape != (x.shape[0],):
             raise ValueError("one-dimensional weights must match channel count")
-        return np.einsum("c,cft->ft", w.conj(), x)
-    if w.shape != (x.shape[1], x.shape[0]):
-        raise ValueError("weights must have shape frequency x channels")
-    return np.einsum("fc,cft->ft", w.conj(), x)
+        contraction = "c,cft->ft"
+    else:
+        if w.shape != (x.shape[1], x.shape[0]):
+            raise ValueError("weights must have shape frequency x channels")
+        contraction = "fc,cft->ft"
+    with np.errstate(over="ignore", invalid="ignore"):
+        output = np.einsum(contraction, w.conj(), x)
+    if not np.all(np.isfinite(output)):
+        raise ValueError("beamformer output exceeds floating-point range")
+    return output
 
 
 def diffuse_coherence(
@@ -82,14 +88,20 @@ def mvdr_weights(
     result = np.empty_like(vectors)
     for index, (matrix, vector) in enumerate(zip(matrices, vectors)):
         loaded = _load_covariance(matrix, relative_diagonal_loading, condition_limit)
-        solved = np.linalg.solve(loaded, vector)
-        denominator = np.vdot(vector, solved)
+        with np.errstate(over="ignore", invalid="ignore"):
+            solved = np.linalg.solve(loaded, vector)
+            denominator = np.vdot(vector, solved)
+        if not np.all(np.isfinite(solved)) or not np.isfinite(denominator):
+            raise ValueError("MVDR solve or normalization exceeds floating-point range")
         # A covariance rescaling also rescales this quadratic form. Judge its
         # round-off imaginary component relatively, not in absolute units.
         if (denominator.real <= 0.0
                 or abs(denominator.imag) > 1e-8 * abs(denominator.real)):
             raise np.linalg.LinAlgError("MVDR normalization is not positive real")
-        result[index] = solved / denominator.real
+        with np.errstate(over="ignore", invalid="ignore"):
+            result[index] = solved / denominator.real
+        if not np.all(np.isfinite(result[index])):
+            raise ValueError("MVDR weights exceed floating-point range")
     return result[0] if single else result
 
 

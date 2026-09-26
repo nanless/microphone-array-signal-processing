@@ -5,7 +5,7 @@
     .venv/bin/python scripts/build_site.py
 
 产物：site/index.html（首页）+ site/01..13_*.html（13 篇正文），
-另有 site/research/index.html 和 5 篇独立研究页、60 个合成 WAV 和 4 个真实录音/派生 WAV。
+另有 site/research/index.html 和 5 篇独立研究页、64 个合成 WAV 和 4 个真实录音/派生 WAV。
 左侧边栏 = 首页 + 13 篇 + 每篇的二级及以下小节锚点，顶部面包屑，
 文末上一篇/下一篇（首页不输出该盒）。图片直接引用 ../figures/（不复制）。
 数学公式用 MathJax CDN 渲染（离线时显示源码，页面顶部有提示）。

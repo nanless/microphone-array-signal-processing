@@ -1217,6 +1217,63 @@
         "data_loaders",
         "generate_rirs.py"
       ]
+    },
+    {
+      "id": "streamfm",
+      "url": "https://github.com/sp-uhh/streamfm.git",
+      "revision": "ab2700c1154acc5c2ce67a5344182028336413f5",
+      "verified_at": "2026-09-26",
+      "license": "AGPL-3.0; weights and datasets separately",
+      "fetch_enabled": true,
+      "scope": "streamable generative speech restoration with flow matching; stage-specific state interfaces",
+      "acquisition": "independent_source_checkout",
+      "source_paths": [
+        "README.md",
+        "LICENSE",
+        "requirements.txt",
+        "sgmse/",
+        "config/",
+        "inference.py",
+        "train.py"
+      ],
+      "entrypoints": [
+        "README.md",
+        "LICENSE",
+        "sgmse/backbones/streaming_unet.py",
+        "sgmse/util/solvers.py",
+        "inference.py"
+      ],
+      "note": "Official author repository. Only source and notices retained locally; no weights or data acquired. Static state-interface defects are documented separately; no inference or streaming runtime claim."
+    },
+    {
+      "id": "fastenhancer",
+      "url": "https://github.com/aask1357/fastenhancer.git",
+      "revision": "f85223bd546b27f39dc0744e0310dcd246f750a4",
+      "verified_at": "2026-09-26",
+      "license": "MIT; released weights and datasets separately",
+      "fetch_enabled": true,
+      "scope": "single-channel streaming noise suppression; implementation-aware architecture and ONNX state interfaces",
+      "acquisition": "independent_source_checkout",
+      "source_paths": [
+        "README.md",
+        "LICENSE",
+        "models/",
+        "functional/",
+        "onnx/",
+        "configs/",
+        "wrappers/",
+        "utils/",
+        "scripts/",
+        "docs/"
+      ],
+      "entrypoints": [
+        "README.md",
+        "LICENSE",
+        "models/fastenhancer/default/model.py",
+        "scripts/test_onnx.py",
+        "scripts/export_onnx.py"
+      ],
+      "note": "Official author repository. Source inspection only. Not AEC, WPE or microphone-array separation; no inherited benchmark or device-real-time claim. The onnx directory contains binary models and is intentionally absent after asset filtering; ONNX API entrypoints are scripts/test_onnx.py and scripts/export_onnx.py."
     }
   ]
 }

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 6 章 · 声学回声消除（AEC） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="b74df4f08677"><style>
+<meta name="source-digest" content="8c33d8040161"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -173,7 +173,7 @@ d(n) &= s(n) + (x*h)(n) + v(n),\\
 <ol>
 <li><strong>冲激响应长</strong>：回声路径覆盖时间增加时，时域滤波器需要更多抽头，计算量增加，收敛也可能变慢；§6.2 说明分区频域方案怎样降低长滤波器的计算量；</li>
 <li><strong>非线性</strong>：微型扬声器与功放在大音量下可能产生线性卷积无法表示的分量，具体模型和参考取点见 §6.3；</li>
-<li><strong>双讲</strong>：参考与目标同时存在，近端语音会使自适应更新产生偏差，见 §6.4；</li>
+<li><strong>双讲</strong>：参考与目标同时存在，近端语音进入瞬时梯度，增大更新波动；若它与参考相关，还会改变总体最优解。不能把这两种影响都称为统计偏差，见 §6.4 与 E06-21；</li>
 <li><strong>路径时变</strong>：人走动、门开关、设备被挪动都会改变等效路径 $h_n[\ell]$；参考具有足够激励时，滤波器需要更新以跟踪这些变化。<a href="https://doi.org/10.1109/79.774933" title="citation">Breining et al., IEEE Signal Processing Magazine 1999</a></li>
 </ol>
 <blockquote>
@@ -640,7 +640,7 @@ d_n&=\vec x_n^\top\vec h_n+s_n+v_n\text{。}
 E_m&=D_m-X_m\hat W_m^-,& K_m&=\frac{P_m^-X_m^*}{|X_m|^2P_m^-+\Psi_m},\\
 W_m&=\hat W_m^-+K_mE_m,& P_m&=(1-K_mX_m)P_m^-.
 \end{aligned}\tag{6-10}$$</p>
-<p>前两式先预测路径和不确定度；协方差传播使用 $|a|^2$，因为复数状态模型的一般形式是 $APA^H+Q$。中间两式根据先验残差计算增益；最后两式更新系数和误差方差。标量复数模型中 $K_mX_m$ 为实数且位于 0 与 1 之间。</p>
+<p>前两式先预测路径和不确定度；协方差传播使用 $|a|^2$，因为复数状态模型的一般形式是 $APA^H+Q$。中间两式分别计算先验残差，以及由参考、先验方差和观测方差决定的增益；残差通过 $K_mE_m$ 决定系数的本次改变量。最后两式更新系数和误差方差。标量复数模型中 $K_mX_m$ 为实数且位于 0 与 1 之间。</p>
 <p>实际分区频域实现还要处理矩阵协方差、块卷积约束和频点平滑，不能把上面的标量递推直接复制成完整系统。<a href="https://doi.org/10.1016/j.sigpro.2005.09.013" title="citation">Enzner 与 Vary 2006</a></p>
 <p><strong>观测方差不是残差平方。</strong> 若假定路径 $W$ 精确已知，且残差完全由零均值圆对称复高斯观测噪声产生，单帧负对数似然的相关项才是 $|E|^2/\Psi+\log\Psi$，其单帧极大似然解为 $\hat\Psi=|E|^2$。这组假设恰恰排除了需要估计的路径不确定度，不能直接用于式(6-10)的 Kalman 创新。</p>
 <p>在式(6-10)的模型下，创新方差是 $S=|X|^2P^-+\Psi$。若把 $P^-$ 和 $X$ 当作已知，且仍只用一帧圆对称复高斯创新，则对 $\Psi\geq0$ 的受限极大似然解为 $\max(0,|E|^2-|X|^2P^-)$；它仍会把路径失配、双讲、噪声和单帧随机波动混在一起。工程实现需另估计或控制 $Q$、$\Psi$，并检查双讲和路径突变的不同征兆；不能把当前 $|E|^2$ 宣称为测得的近端语音功率。</p>
@@ -786,6 +786,7 @@ K_m&=P_m^-H_m^H(H_mP_m^-H_m^H+\Psi_m)^{-1},\\
 <p><strong>学习型残余抑制。</strong> 深度神经网络（Deep Neural Network，DNN）可以从数据学习残余抑制，适用条件和验证方法见 §6.5。它与改变参考取点、显式建模并非互斥；评估时要分别报告线性副本和最终输出。</p>
 <span id="sec-6-1-5" class="anchor-alias" aria-hidden="true"></span><span id="sec-13" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-6-4">6.4 双讲检测与自适应控制</h2>
 <p>双讲时，残差同时包含路径失配和近端语音。若仍按普通 NLMS 更新，近端语音会进入梯度并使路径估计偏离。双讲检测（Double-Talk Detection，DTD）用于降低步长或冻结更新。门限过于敏感会延迟路径跟踪，门限过于迟钝则可能导致误更新。</p>
+<p>这里的“偏离”首先指一次有限数据更新的变化，不等同于总体最优解必然有偏。在线性模型 $d=\vec x^\top\vec h+s$ 下，若近端项与整个参考回归向量不相关，最小均方目标的总体最优路径仍可等于 $\vec h$；近端项却会使瞬时梯度更不稳定。若二者相关，最优路径也会把相关近端成分吸收进去。<a href="https://www.iwaenc.org/proceedings/2001/main/data/benesty.pdf">Benesty 与 Gänsler 2001，§2</a>给出 Wiener–Hopf 起点；<a href="#e06-21">本章 E06-21</a>展开正规方程并用四点序列区分批量正交和在线漂移。该结论不承诺任意步长、时变路径或归一化更新的均值收敛。</p>
 <p><strong>常见 DTD 方法</strong>（DTD = 双讲检测，double-talk detection；NCC = 归一化互相关，normalized cross-correlation）：</p>
 <ol>
 <li>
@@ -2083,6 +2084,54 @@ $$</p>
 <p><strong>解答</strong>：$K=\lfloor4/2\rfloor+1=3$，四条输入—输出带路径各有 3 个权重，共 $4K=12$ 个，而物理 FIR 只有 4 个抽头。收到块内第一个样本后，还须等第二个样本，因此至少有 1 个原采样的成块等待；滤波器组和设备链路可能再增加延迟。这个抽头与等待计数不能代替设备上的乘法、内存或端到端时延测量。</p>
 </li>
 </ul>
+<p><a id="e06-21"></a></p>
+<p><strong>E06-21：参考与近端正交，为什么在线系数仍会移动？</strong> 所有数值均为无量纲教学序列。取单抽头真实路径 $h=0.8$、参考 $x=[1,1,-1,-1]$、近端 $s=[0.5,-0.5,0.5,-0.5]$，令 $d=hx+s$。先算整段最小二乘路径，再从正确初值 $w_{-1}=0.8$ 开始，按式(6-2)取 $\mu=0.5,\varepsilon=0$ 逐样本更新；本题每个参考样本平方都为 1，故不发生零分母。</p>
+<p><strong>先区分总体方程。</strong> 假设路径固定、二阶矩存在，$R_{xx}=E[\vec x\vec x^\top]$ 可逆。把 $d=\vec x^\top\vec h+s$ 代入均方误差的正规方程，有</p>
+<p>$$\begin{aligned}
+R_{xx}\vec w_\star&=E[\vec x d]=R_{xx}\vec h+E[\vec x s],\\
+\vec w_\star&=\vec h+R_{xx}^{-1}E[\vec x s].
+\end{aligned}\tag{6-16}$$</p>
+<p>若已去均值，不相关给出 $E[\vec x s]=0$；未去均值时要直接检查这个交叉二阶矩，不能只检查协方差。式(6-16)是本书从上述模型的展开，不是任意在线自适应器的收敛定理。</p>
+<p><strong>再算有限批量。</strong> $x^\top s=0.5-0.5-0.5+0.5=0$，$x^\top x=4$，$d=[1.3,0.3,-0.3,-1.3]$，所以 $w_{\mathrm{batch}}=x^\top d/4=3.2/4=0.8$。</p>
+<p><strong>最后按时间更新。</strong> 每一步使用更新前的权重算 $e_n=d_n-w_{n-1}x_n$，再算 $w_n=w_{n-1}+0.5x_ne_n$：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">样本 $n$</th>
+<th scope="col" style="text-align: right;">先验误差 $e_n$</th>
+<th scope="col" style="text-align: right;">权重改变量</th>
+<th scope="col" style="text-align: right;">更新后 $w_n$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td style="text-align: right;">0.50000</td>
+<td style="text-align: right;">0.25000</td>
+<td style="text-align: right;">1.05000</td>
+</tr>
+<tr>
+<td>1</td>
+<td style="text-align: right;">−0.75000</td>
+<td style="text-align: right;">−0.37500</td>
+<td style="text-align: right;">0.67500</td>
+</tr>
+<tr>
+<td>2</td>
+<td style="text-align: right;">0.37500</td>
+<td style="text-align: right;">−0.18750</td>
+<td style="text-align: right;">0.48750</td>
+</tr>
+<tr>
+<td>3</td>
+<td style="text-align: right;">−0.81250</td>
+<td style="text-align: right;">0.40625</td>
+<td style="text-align: right;">0.89375</td>
+</tr>
+</tbody>
+</table></div>
+<p>这些小数在本题中均为精确值。批量正交没有让每个 $x_ns_n$ 为零，在线算法又在中途改变权重，所以末值不必等于批量解。一次末值偏离不能证明统计期望有偏。反例若改成 $s=0.25x$，批量解即变为 $0.8+0.25=1.05$：参考相关的近端成分无法仅凭这个模型与回声区分。冻结会保留旧路径，也会推迟真正路径变化的跟踪。</p>
+<p>运行入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/enhancement_step_exercises.py">enhancement_step_exercises.py</a> 的 <code>E06-21</code>；代码调用本书 NLMS，并以独立分数递推测试逐样本结果。</p>
 <span id="sec-6-1-18" class="anchor-alias" aria-hidden="true"></span><span id="sec-26" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-6-17">6.17 延伸阅读</h2>
 <ol>
 <li><strong>Hänsler &amp; Schmidt, <em>Acoustic Echo and Noise Control</em>（Wiley 2004）</strong>——AEC 领域的经典大部头，从自适应理论到免提终端工程全覆盖。<a href="https://onlinelibrary.wiley.com/doi/book/10.1002/0471678406" title="citation">Wiley 在线版</a></li>

@@ -85,8 +85,53 @@ def _tone(t: np.ndarray, frequency: float) -> np.ndarray:
     return envelope * sum(np.sin(2*np.pi*frequency*k*t) / k for k in range(1, 7)) / 4
 
 
+def clock_drift_case() -> dict:
+    """Two co-located ideal sensors, sampled by clocks differing by 100 ppm.
+
+    Equal sample indices are paired despite representing different physical
+    times. The oracle is an analytic common-clock target, NOT a resampler.
+    """
+    duration = 8.0
+    epsilon = 100e-6
+    index = np.arange(int(duration * SAMPLE_RATE))
+    time = index / SAMPLE_RATE
+    fast_time = index / (SAMPLE_RATE * (1 + epsilon))
+
+    def source(t):
+        fade = np.minimum(np.clip(t / .02, 0, 1),
+                          np.clip((duration - t) / .02, 0, 1))
+        return fade * (.18 * np.sin(2 * np.pi * 500 * t)
+                       + .18 * np.sin(2 * np.pi * 1500 * t))
+
+    reference = source(time)
+    fast = source(fast_time)
+    return {
+        'signals': {'clock_reference': reference,
+                    'clock_array': np.vstack((reference, fast)),
+                    'clock_index_mean': (reference + fast) / 2,
+                    'clock_oracle_mean': reference.copy()},
+        'parameters': {
+            'sample_rate_hz': SAMPLE_RATE, 'duration_s': duration,
+            'actual_clock_rates_hz': [SAMPLE_RATE, SAMPLE_RATE * (1 + epsilon)],
+            'relative_rate_ppm': 100.0, 'samples_per_channel': index.size,
+            'frequencies_hz': [500, 1500], 'amplitudes': [.18, .18],
+            'source': 'sum of two continuous sinusoids with 20 ms linear edge fades',
+            'sampling_times': 't1=n/fs, t2=n/(fs*(1+100e-6)); n starts at zero',
+            'time_difference_seconds': 't1-t2=t1*epsilon/(1+epsilon)',
+            'per_tone_interior_envelope_ratio': 'abs(cos(pi*f*(t1-t2)))',
+            'channel_order': ['nominal_clock', 'fast_clock'],
+            'export_time_axis': 'Both sample sequences stored at nominal 16000 Hz; fast channel is intentionally not time-corrected',
+            'oracle': 'Analytically evaluate both sensors at t1; no estimated clock, interpolation or resampling algorithm',
+            'geometry': 'co-located omnidirectional ideal sensors; zero propagation difference',
+            'alignment': 'same physical start; no post-hoc delay or gain fitting',
+            'seed': None,
+        },
+        'limits': 'Mathematical clock-only counterexample, no noise, room, speech or device data. '
+                  'Oracle is the ideal common-clock target, not measured compensation performance.'}
+
+
 def build_cases() -> dict:
-    """Return thirteen experiments with model parameters and references.
+    """Return fifteen experiments with model parameters and references.
 
     Each entry has ``signals`` (filename stem -> CxN array), ``parameters`` and
     ``limits``. Signals are pre-export floats; no group uses peak matching.
@@ -219,6 +264,7 @@ def build_cases() -> dict:
     subtraction_zero_audio = istft(subtraction_zero[None], n_fft=512, hop_length=128,
                                    length=t.size)[0]
     return {
+        'clock_drift': clock_drift_case(),
         'spatial': {
             'signals': {'spatial_reference': delay_samples(target, 3),
                         'spatial_array': microphones, 'spatial_mic1': microphones[0],

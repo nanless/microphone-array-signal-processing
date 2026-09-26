@@ -1,4 +1,4 @@
-"""Explicit cross-module, chapter and research inventory for 94 exercises."""
+"""Explicit cross-module, chapter and research inventory for 106 exercises."""
 
 import json
 import re
@@ -8,6 +8,7 @@ from pathlib import Path
 from codes.examples import (aec_advanced_exercises, aec_algorithm_minicases, exercises_engineering,
                             exercises_enhancement, exercises_spatial,
                             tracking_crossing_dropout_demo)
+from codes.examples import spatial_precision_exercises, enhancement_step_exercises, tracking_time_exercises
 from codes.examples.spectral_subtraction_demo import run_demo as spectral_subtraction_demo
 from codes.examples.coarray_covariance_exercise import run_exercise as coarray_exercise
 from codes.examples.doa_resolution_trials import run_experiment as doa_resolution_experiment
@@ -15,6 +16,9 @@ from codes.examples.doa_resolution_trials import run_experiment as doa_resolutio
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = {
+    "spatial_precision": {"E02-07", "E04-10", "E05-06"},
+    "enhancement_steps": {"E06-21", "E07-06", "E08-08", "E08-09", "E08-10"},
+    "time_state": {"E09-07", "E09-08", "E10-15", "E11-08"},
     "spatial": {
         "E01-01", "E01-02", "E02-01", "E02-02", "E02-03", "E03-01",
         "E03-02", "E04-01", "E04-02", "E04-03", "E05-01", "E05-02",
@@ -42,7 +46,10 @@ EXPECTED = {
 }
 AEC_CASE_KEYS = {"E06-07": "overlap_save", "E06-08": "ipnlms",
                  "E06-09": "geigel", "E06-10": "delay_polarity"}
-RUNNERS = {"spatial": exercises_spatial.run_exercises,
+RUNNERS = {"spatial_precision": spatial_precision_exercises.run_exercises,
+           "enhancement_steps": enhancement_step_exercises.run_exercises,
+           "time_state": tracking_time_exercises.run_exercises,
+           "spatial": exercises_spatial.run_exercises,
            "enhancement": exercises_enhancement.run_exercises,
            "aec_advanced": aec_advanced_exercises.run_exercises,
            "tracking_crossing": lambda: {"E09-06": tracking_crossing_dropout_demo.run_experiment()},
@@ -72,9 +79,9 @@ class ExerciseCatalogTest(unittest.TestCase):
     def setUpClass(cls):
         cls.results = {name: run() for name, run in RUNNERS.items()}
 
-    def test_independent_inventory_has_94_unique_ids(self):
-        self.assertEqual(len(ALL_IDS), 94)
-        self.assertEqual(sum(map(len, EXPECTED.values())), 94)
+    def test_independent_inventory_has_106_unique_ids(self):
+        self.assertEqual(len(ALL_IDS), 106)
+        self.assertEqual(sum(map(len, EXPECTED.values())), 106)
 
     def test_each_module_returns_exact_assigned_ids(self):
         for name, results in self.results.items():
@@ -97,7 +104,7 @@ class ExerciseCatalogTest(unittest.TestCase):
                 text = chapters[0].read_text(encoding="utf-8")
                 self.assertRegex(text, rf"\b{re.escape(exercise_id)}\b")
 
-    def test_chapter_and_research_inventories_cover_exactly_94_ids(self):
+    def test_chapter_and_research_inventories_cover_exactly_106_ids(self):
         chapters = "\n".join(path.read_text(encoding="utf-8")
                              for path in (ROOT / "chapters").glob("*.md"))
         research = (ROOT / "codes/research/05_exercises_and_audio.md").read_text(encoding="utf-8")

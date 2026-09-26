@@ -43,8 +43,8 @@ class AudioSamplesTest(unittest.TestCase):
         pan = cases['tracking']['signals']['tracking_pan']
         np.testing.assert_allclose(np.sum(pan**2, axis=0), sep['separation_source1']**2, atol=1e-15)
         files, groups = prepare_exports(cases)
-        self.assertEqual(len(files), 60)
-        self.assertEqual(len(groups), 14)
+        self.assertEqual(len(files), 64)
+        self.assertEqual(len(groups), 15)
         for blob, info in files.values():
             self.assertEqual(info['common_export_gain'], groups[info['group']]['common_export_gain'])
             self.assertLess(info['peak'], .801)
@@ -53,7 +53,7 @@ class AudioSamplesTest(unittest.TestCase):
     def test_manifest_check_detects_modified_audio(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            self.assertEqual(generate(root)['files'], 60)
+            self.assertEqual(generate(root)['files'], 64)
             self.assertTrue(generate(root, check=True)['checked'])
             (root/'spatial_reference.wav').write_bytes(b'not a WAV')
             with self.assertRaisesRegex(ValueError, 'audio content differs'):

@@ -42,6 +42,8 @@ $$\mathbf{a}(f,\theta) = [1,\, e^{+\mathrm{j}2\pi f d\sin\theta/c},\, e^{+\mathr
 
 最小方差无失真响应（Minimum Variance Distortionless Response，MVDR）和广义特征值（Generalized Eigenvalue，GEV）波束形成直接使用空间协方差矩阵（Spatial Covariance Matrix，SCM）；MNMF 也以源相关的 SCM 描述传播。观测 SCM 可写成 $\mathbf{R}(f,k)=E[\mathbf{X}\mathbf{X}^H]\approx\mathbf{A}\mathbf{R}_s\mathbf{A}^H+\mathbf{R}_v$。
 
+这个相加式假定当前统计区间内传播矩阵可视为固定，且 $E[\mathbf S\mathbf V^H]=0$；否则展开外积还会出现 $\mathbf A E[\mathbf S\mathbf V^H]$ 及其共轭转置。这里的 $R$ 是未减均值的二阶矩；只有信号已去均值或均值为零时，才与严格定义的协方差相等。源之间是否相关体现在 $R_s$ 的非对角项，不能再无条件把它写成对角矩阵。
+
 复角中心高斯混合模型（Complex Angular Central Gaussian Mixture Model，cACGMM）先把每个观测归一化到复单位球面，拟合只描述方向分布的形状矩阵。它不把未归一化的观测功率 SCM 直接当作概率密度。
 
 GSS 和部分深度方法先由 cACGMM 或网络估计时频掩码，再用原始 $\mathbf X\mathbf X^H$ 加权计算目标与干扰 SCM，做法见 §5.4。
@@ -118,7 +120,9 @@ AEC 与降噪的顺序也不是脱离统计假设的固定结论。[Integrated_A
 
 标准实现仍是整段迭代，在线版本需要递推改写；强混响、说话人包络高度相关和短语音都会削弱统计独立性或估计稳定性。它常作为免训练分离基线。
 
-**ILRMA（独立低秩矩阵分析，Independent Low-rank Matrix Analysis）**。ILRMA 在独立性假设之外，再用非负矩阵分解（Nonnegative Matrix Factorization，NMF）表示每个源的低秩功率谱，并联合优化解混矩阵与谱模型。它增加了基数、迭代次数等超参数，计算量和初始化敏感性也高于 AuxIVA。复杂音乐、重叠笑声和强混响可能不满足低秩或独立性假设，需用目标数据验证。
+一次迭代怎样真正改变解混矩阵，见[练习 E08-08](#e08-08)：先用跨频点输出范数形成权重，再解线性方程，最后按加权二次型归一化。它把下面的排列直觉接到可计算的迭代投影步骤。
+
+**ILRMA（独立低秩矩阵分析，Independent Low-rank Matrix Analysis）**。ILRMA 在独立性假设之外，再用非负矩阵分解（Nonnegative Matrix Factorization，NMF）表示每个源的低秩功率谱，并联合优化解混矩阵与谱模型。它增加了基数、谱参数及其交替更新；具体成本和初始化敏感性取决于配置，不能仅凭方法名断言总高于 AuxIVA。复杂音乐、重叠笑声和强混响可能不满足低秩或独立性假设，需用目标数据验证。[E08-09](#e08-09)用两频点、两帧的乘法解释“谱基”和“激活”，并说明分解的尺度歧义。
 
 **MNMF（多通道 NMF，Multichannel NMF）**。MNMF 同样使用低秩源谱模型，但以满秩空间协方差描述传播，不要求方阵解混矩阵可逆，因此可以表示欠定混合。谱基、激活和空间协方差需要联合做最大似然估计，参数较多、迭代较慢且对初值敏感。实践中可用 AuxIVA 或 ILRMA 结果初始化。其计算量通常更适合离线分析或伪标签生成。
 
@@ -244,6 +248,8 @@ $$
 若这个二分类例子中用 $1-\gamma=[0.1,0.9]$ 估计干扰协方差，则 $\mathbf R_{\mathrm{int}}=\begin{bmatrix}1&-0.8\\-0.8&1\end{bmatrix}$。正的非对角项表示目标快照中两通道同相成分占优，负的非对角项表示干扰快照中反相成分占优。
 
 随后可从 $\mathbf R_{\mathrm{tar}}$ 估计目标相对传递函数，并与 $\mathbf R_{\mathrm{int}}$ 一起计算 MVDR。GEV 则直接求矩阵对 $(\mathbf R_{\mathrm{tar}},\mathbf R_{\mathrm{int}})$ 的主广义特征向量，并需另做尺度归一化。
+
+本例还可以算到输出：目标矩阵的主特征方向为 $[1,1]^\top$，以第一麦归一后取 $\vec v=[1,1]^\top$。干扰矩阵满足 $R_{\mathrm{int}}\vec v=0.2\vec v$，所以 $R_{\mathrm{int}}^{-1}\vec v=5\vec v$，MVDR 分母为 10，权重为 $[0.5,0.5]^\top$；对两个快照的输出分别是 1 和 0。完整特征值、GEV 比值及尺度边界见 [E08-10](#e08-10)。
 
 真实的“目标 + 多个说话人 + 环境噪声”并非二分类，$1-\gamma$ 会把所有非目标成分合在一起，不能解释成纯噪声掩码。实际实现还要检查有效样本数、条件数和对角加载。[掩码波束形成实例](https://doi.org/10.1109/ICASSP.2016.7471664 "citation")。
 
@@ -515,6 +521,58 @@ FastMNMF 的可用实现还体现了许可需要逐来源检查：作者 `SoundS
 
     本题给的是固定相对密度，只检验式(8-4)之后的活动门控与 E 步归一化。它没有估计 cACG 形状矩阵、执行 M 步或输出分离音频；后验属于背景类也不证明目标语音已被正确分离。代码中 `speaker_activity` 只输入两位说话人的标记，背景活动由函数自动补上。见 [`exercises_enhancement.py`](../codes/examples/exercises_enhancement.py) 中的 `E08-07`。
 
+
+<a id="e08-08"></a>
+
+**E08-08：AuxIVA 怎样更新一个解混行？** 在确定混合 $N=M$ 下，固定频点的解混矩阵 $W_f$ 第 $n$ 行写作 $\vec w_{nf}^H$，输出为 $y_{nf}(t)=\vec w_{nf}^H\vec x_f(t)$。选用球对称 Laplace 源模型的 $p(\vec y)\propto\exp(-2\|\vec y\|_2)$ 尺度约定，先固定本轮跨频点范数，形成加权二阶矩，再作迭代投影（Iterative Projection，IP）：
+
+$$\begin{aligned}
+r_n(t)&=\sqrt{\sum_f|y_{nf}(t)|^2},\\
+V_{nf}&=\frac1T\sum_{t=1}^{T}\frac{\vec x_f(t)\vec x_f^H(t)}{r_n(t)},\\
+\vec u&=(W_fV_{nf})^{-1}\vec e_n,\\
+\vec w_{nf}&=\frac{\vec u}{\sqrt{\vec u^H V_{nf}\vec u}}.
+\end{aligned}\tag{8-7}$$
+
+这里 $T$ 为统计帧数，$\vec e_n$ 为第 $n$ 项为 1 的 $M$ 维基向量，$V_{nf}$ 为 $M\times M$ Hermitian 矩阵；使用求解器解方程，不显式形成矩阵逆。需有 $r_n(t)>0$、正定的 $V_{nf}$ 和可逆 $W_f$。每更新一行就把 $\vec w_{nf}^H$ 写回 $W_f$，后续行读取已更新的矩阵，而本轮权重保持固定；静音地板、加载和初始化是另外的实现选择。
+
+这一路线来自 [Ono 2011](https://doi.org/10.1109/ASPAA.2011.6082320)，可对读 [pyroomacoustics v0.10.0 的 `auxiva.py`](https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/bss/auxiva.py)。该实现的 Laplace 分母使用 $2r_n(t)$，与式(8-7)有整体尺度差异：$V$ 减半时，归一后的解混列放大 $\sqrt2$，方向不变；不能用未回投影的幅度逐项声称两种约定相同。
+
+**题目与手算。** 只复算 IP 子步骤，给定 $W=I_2$、$V=\left[\begin{smallmatrix}2&1\\1&2\end{smallmatrix}\right]$，更新第一行。消元求 $2u_1+u_2=1$、$u_1+2u_2=0$，得 $u=[2/3,-1/3]^\top$。因为 $Vu=e_1$，二次型 $u^\top Vu=u_1=2/3$，故
+
+$$\vec w=[\sqrt{2/3},-1/\sqrt6]^\top\approx[0.81650,-0.40825]^\top.$$
+
+直接代回有 $\vec w^\top V\vec w=1$；$V$ 的特征值为 1、3，满足正定条件。它不是欧氏长度归一，$\vec w^\top\vec w=5/6$。复数情形存入矩阵行时必须共轭，不能把列 $\vec w$ 原样当行。
+
+本题的 $V$ 是已给定的正定输入，未从语音运行范数估计、所有行更新或回投影，因此只验证 IP 子步骤；源码和独立复数检查见 [enhancement_step_exercises.py](../codes/examples/enhancement_step_exercises.py) 的 `E08-08`。秩亏、零范数和源数大于麦数不满足本题前提，不能原样求解。
+
+<a id="e08-09"></a>
+
+**E08-09：ILRMA 的谱基与激活具体相乘得到什么？** 对某一个源，以频点为行、时间为列，设非负谱基 $B$ 和激活 $H$ 为
+
+$$B=\begin{bmatrix}1&0.2\\0.5&1\end{bmatrix},\qquad
+H=\begin{bmatrix}2&0.5\\0.1&3\end{bmatrix}.$$
+
+独立低秩谱模型的功率参数为
+
+$$\lambda_{nft}=\sum_{k=1}^{K}B_{nfk}H_{nkt},\qquad B_{nfk},H_{nkt}\geq0.\tag{8-8}$$
+
+每个 $B$ 列规定一个跨频率的谱形，每个 $H$ 行规定该谱形随时间的强度。四个输出逐项为 $1\times2+0.2\times0.1=2.02$、$1\times0.5+0.2\times3=1.10$、$0.5\times2+1\times0.1=1.10$、$0.5\times0.5+1\times3=3.25$，因此 $\lambda=BH=\left[\begin{smallmatrix}2.02&1.10\\1.10&3.25\end{smallmatrix}\right]$。
+
+这是预测功率，不是带相位的复谱；不能直接对 $BH$ 作逆 STFT 得到声源。把 $B$ 第一列乘以 2、$H$ 第一行除以 2，功率矩阵不变，说明两因子有尺度歧义。若只保留第一项，预测为 $\left[\begin{smallmatrix}2&0.5\\1&0.25\end{smallmatrix}\right]$，其行列式为零、秩为 1；原例使用两个基只是演示乘法，在 $2\times2$ 里并没有强制低于满秩。真实大谱图取较小 $K$ 才形成更强的结构限制。
+
+方法定义见 [Kitamura 等 2016](https://doi.org/10.1109/TASLP.2016.2577880)；本题不执行基、激活与解混矩阵的交替优化，也不证明增加基数总会改善分离。代码对应 `E08-09`。
+
+<a id="e08-10"></a>
+
+**E08-10：从两张掩码 SCM 一直算到 MVDR 与 GEV。** 沿用 §8.4.4 的两个快照和掩码，取 $R_{\mathrm{tar}}=\left[\begin{smallmatrix}1&0.8\\0.8&1\end{smallmatrix}\right]$、$R_{\mathrm{int}}=\left[\begin{smallmatrix}1&-0.8\\-0.8&1\end{smallmatrix}\right]$。求两矩阵的同相、反相特征值，MVDR 权重与输出，再求主广义特征值。
+
+**先找空间方向。** 对 $v_+=[1,1]^\top$，目标/干扰的特征值分别为 1.8、0.2；对 $v_-=[1,-1]^\top$，则为 0.2、1.8。两矩阵都正定，且条件数均为 $1.8/0.2=9$。
+
+**再施加目标约束。** 选 $v=v_+$ 表示以第一麦为参考的目标相对传递函数。由 $R_{\mathrm{int}}u=v$ 得 $u=5v$，分母 $v^Hu=10$，所以 $w=u/10=[0.5,0.5]^\top$。检验 $w^Hv=1$；对快照 $[1,1]^\top$ 输出 1，对 $[1,-1]^\top$ 输出 0。按给定 SCM，目标输出功率 $w^HR_{\mathrm{tar}}w=0.9$，干扰输出功率 $w^HR_{\mathrm{int}}w=0.1$。
+
+**最后核对 GEV。** 两个方向的广义特征值分别为 $1.8/0.2=9$、$0.2/1.8=1/9$，故主方向也是 $v_+$。GEV 本身只决定方向，直接用 $v_+$ 会把目标输出变成 2；另施加 $w^Hv=1$ 后才与本例 MVDR 的尺度一致。比值 9 不表示已经测到真实录音改善 9 倍；这里只有两个给定快照、软掩码和已选目标方向。一般 SCM 未必共享特征向量，不能外推为 GEV 与 MVDR 总相同。代码对应 `E08-10`。
+
+上述三题与 E06-21、E07-06 共同运行：`.venv/bin/python -m codes.examples.enhancement_step_exercises`。检验见 [test_codes_enhancement_steps.py](../tests/test_codes_enhancement_steps.py)。
 
 ---
 > 📄 本篇信息：配图 0 张 ｜ [回首页](./00_overview.md)

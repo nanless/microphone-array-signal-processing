@@ -32,10 +32,15 @@ class ConstantVelocityKalman:
         if not all(np.all(np.isfinite(value)) for value in (self.state, self.covariance, self.process_noise)):
             raise ValueError("state and covariance inputs must be finite")
         for name, matrix in (("covariance", self.covariance), ("process_noise", self.process_noise)):
-            if not np.allclose(matrix, matrix.T, atol=1e-12):
+            scale = float(np.max(np.abs(matrix)))
+            normalized = matrix / scale if scale else matrix
+            if not np.allclose(normalized, normalized.T, rtol=0.0, atol=1e-12):
                 raise ValueError(f"{name} must be symmetric")
-            if np.min(np.linalg.eigvalsh(matrix)) < -1e-12:
+            symmetric = 0.5 * normalized + 0.5 * normalized.T
+            if np.min(np.linalg.eigvalsh(symmetric)) < -1e-12:
                 raise ValueError(f"{name} must be positive semidefinite")
+            # Accepted roundoff asymmetry must not enter later state updates.
+            matrix[:] = 0.5 * matrix + 0.5 * matrix.T
 
     def predict(self, dt: float) -> np.ndarray:
         dt = finite_real_scalar(dt, "dt")

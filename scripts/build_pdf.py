@@ -154,6 +154,8 @@ td,th{word-break:break-word;overflow-wrap:anywhere}
 /* MathJax 的行内长式与展示式均需留在 A4 正文宽度内。 */
 mjx-container{font-size:100%!important;max-width:100%}
 h1,h2,h3,h4{break-after:avoid}
+/* 第10章末尾四条总结作为一个完整列表，避免仅末两条占据下一页。 */
+#ch-10-sec-10-12+ol{break-inside:avoid;page-break-inside:avoid}
 .chap>h1{margin:0 0 3mm;line-height:1.3}
 .chap>h2:first-of-type{margin-top:3mm;margin-bottom:2mm;line-height:1.3}
 blockquote,pre{break-inside:avoid}
@@ -291,6 +293,15 @@ def heading_anchor(text, fallback_index):
     return f"sec-{fallback_index}"
 
 
+def is_exercise_anchor(fragment, source_path):
+    """仅接受目标源文实际声明的稳定练习 ID，避免把拼错链接带入 PDF。"""
+    if not re.fullmatch(r"e\d{2}-\d{2}", fragment):
+        return False
+    return bool(re.search(
+        rf'<a\s+id=[\"\']{re.escape(fragment)}[\"\']\s*>',
+        Path(source_path).read_text(encoding="utf-8")))
+
+
 def rewrite_book_links(html):
     """把分篇链接改成合订本内部链接，兼容新旧标识。"""
     def repl(m):
@@ -303,6 +314,8 @@ def rewrite_book_links(html):
         elif re.fullmatch(r"sec-(?:\d+(?:-\d+)*|u-[0-9a-f]{10}(?:-\d+)?)", fragment):
             # sec-1 是分篇页标题；合订时该重复标题被外层 ch-N 标题替代。
             target = f"ch-{idx}" if fragment == "sec-1" else f"ch-{idx}-{fragment}"
+        elif is_exercise_anchor(fragment, SRC / CHAPTERS[idx][0]):
+            target = f"ch-{idx}-{fragment}"
         else:
             raise ValueError(f"合订本无法映射章节锚点：{fname}#{fragment}")
         return f'<a href="#{target}">{text}</a>'
@@ -332,6 +345,8 @@ def rewrite_repository_links(html, source_path=None):
             if not fragment or fragment == "sec-1":
                 return f"#ch-{idx}"
             if re.fullmatch(r"sec-(?:\d+(?:-\d+)*|u-[0-9a-f]{10}(?:-\d+)?)", fragment):
+                return f"#ch-{idx}-{fragment}"
+            if is_exercise_anchor(fragment, target):
                 return f"#ch-{idx}-{fragment}"
             raise ValueError(f"合订本无法映射章节锚点：{target.name}#{fragment}")
         return build_site.repository_url(parsed, target)
@@ -412,6 +427,9 @@ def build_html(build_date=None):
             return (f'{alias}<{m.group(1)} id="ch-{i}-{primary}">'
                     f'{m.group(2)}</{m.group(1)}>')
 
+        html = re.sub(
+            r'(<a\s+id=[\"\'])(e\d{2}-\d{2})([\"\']\s*>)',
+            lambda m: f'{m.group(1)}ch-{i}-{m.group(2)}{m.group(3)}', html)
         html = re.sub(r"<(h[1-4])>(.*?)</\1>", tag_source_heading, html, flags=re.S)
         html = rewrite_repository_links(html, SRC / fname)
         html = rewrite_book_links(html)
@@ -780,8 +798,13 @@ def print_pdf(combined, pdf, timeout_min_pages=100):
             raise SystemExit(f"PDF 页数异常（{npages} 页），疑似截断")
         if "全书完" not in last_text:
             raise SystemExit("PDF 末页未检测到固定结束标记，疑似截断")
-        if contains_unrendered_math("\n".join(page_texts)):
-            raise SystemExit("PDF 文本层含未渲染的公式源码；保留原发布件")
+        raw_math_pages = [(i + 1, page_text) for i, page_text in enumerate(page_texts)
+                          if contains_unrendered_math(page_text)]
+        if raw_math_pages:
+            samples = [f"p{number}: " + " | ".join(
+                line for line in page_text.splitlines() if contains_unrendered_math(line))
+                for number, page_text in raw_math_pages[:5]]
+            raise SystemExit("PDF 文本层含未渲染的公式源码；保留原发布件\n" + "\n".join(samples))
         math_page = next((i for i, page_text in enumerate(page_texts)
                           if "不提前舍入时，上例的精确分数" in page_text), None)
         if math_page is None:
@@ -801,7 +824,7 @@ def print_pdf(combined, pdf, timeout_min_pages=100):
 
 
 def check_figures():
-    """合订前检查：正文引用的图必须存在、非空，并覆盖 39 个唯一文件。"""
+    """合订前检查：正文引用的图必须存在、非空，并覆盖 40 个唯一文件。"""
     missing = []
     refs = set()
     for fname, _ in CHAPTERS:
@@ -813,8 +836,8 @@ def check_figures():
                 missing.append(f"{fname}: {m.group(1)}")
     if missing:
         raise SystemExit("缺图，中止：\n" + "\n".join(missing))
-    if len(refs) != 39:
-        raise SystemExit(f"唯一图片数异常：期望 39，实际 {len(refs)}")
+    if len(refs) != 40:
+        raise SystemExit(f"唯一图片数异常：期望 40，实际 {len(refs)}")
     print(f"图片检查通过（{len(CHAPTERS)} 篇、{len(refs)} 张唯一图片）")
 
 

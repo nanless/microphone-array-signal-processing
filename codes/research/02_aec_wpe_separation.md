@@ -1,6 +1,6 @@
 # AEC、去混响与语音分离：算法、工业实现与源码研究
 
-原核实日期：2026-09-22；AEC 工业接口与配对数据说明复核日期：2026-09-23；BSS/GSS 源码入口与实验复核日期：2026-09-24。对应正文 [第 6 章](../../chapters/06_aec.md)、[第 7 章](../../chapters/07_wpe-dereverberation.md) 与 [第 8 章](../../chapters/08_speech-separation.md)。本篇按处理对象分开说明算法、源码位置和复现实验；正式版本和许可边界由 [SOURCES.lock.json](../SOURCES.lock.json) 固定。
+原核实日期：2026-09-22；AEC 工业接口与配对数据说明复核日期：2026-09-23；BSS/GSS 源码入口与实验复核日期：2026-09-24；推导练习与 Stream.FM 静态审查日期：2026-09-26。对应正文 [第 6 章](../../chapters/06_aec.md)、[第 7 章](../../chapters/07_wpe-dereverberation.md) 与 [第 8 章](../../chapters/08_speech-separation.md)。本篇按处理对象分开说明算法、源码位置和复现实验；正式版本和许可边界由 [SOURCES.lock.json](../SOURCES.lock.json) 固定。
 
 “外部实现”表示可以找到承担该算法计算的代码，不表示本书已经训练、编译或测完该系统。本篇实际运行的结果单独列出，包括[教学基线测试](../../tests/test_codes_aec_wpe_sep_track.py)与 W01 的独立实现对照；未附执行结果的外部实验均为复现设计。外部代码、权重和数据分别遵守各自条款。
 
@@ -28,6 +28,8 @@ AEC 使用已知播放参考，估计并减去由它产生的声学回声；WPE 
 NLMS 以参考回归向量的能量归一化更新幅度，便于在不同播放电平间控制步长。泄漏更新额外把滤波器向零收缩，可以限制系数长期漂移，也会引入稳态偏差。它们都要求参考确实覆盖产生回声的播放内容。正文推导与可运行入口是 [§6.1.2](../../chapters/06_aec.md#sec-6-1-2) 和 [aec.py](../array_tutorial/aec.py) 的 `nlms()`。
 
 读码顺序为：参考延迟向量 → 回声估计 → 误差 → 归一化分母 → 冻结条件 → 系数更新。最小实验使用已知短 FIR；先让近端静音检查系数，再在中段加入近端信号并冻结更新。失败实验把纯延迟移到滤波器长度之外：继续增加迭代次数不能恢复不在模型内的抽头。泄漏系数扫描应另报系数偏差，不能只看输出噪声降低。
+
+已执行的 [E06-21](../../chapters/06_aec.md#e06-21)将“统计偏差”与“有限样本在线漂移”分开：四点参考与近端精确正交，批量路径为 0.8，但从正确初值开始的四次 NLMS 更新末值为 0.89375；把近端改成参考的 0.25 倍后，批量路径为 1.05。这是确定序列上的解析反例，不能把一次末值偏离解释成算法期望有偏。
 
 ### A02　FDAF、频域多抽头 NLMS、MDF/PBFDAF 与重叠保存
 
@@ -364,6 +366,8 @@ $g_\Delta$ 和 $E_\Delta$ 按第 6 章式(6-15)的已知近端注入增量定义
 
 教学练习 E07-04 另用前缀相同、末帧不同的四帧记录检查未来依赖：一轮离线 WPE 的首个有效输出从 0 变为 −1/9。其回归量虽只含历史，系数却使用整段统计；这说明“预测索引只向过去”不足以证明端到端因果。该题没有使用居中功率平滑，也不把未变化的某个单例当作一般因果性证明。
 
+共享功率的模型约束另见 [E07-06](../../chapters/07_wpe-dereverberation.md#e07-06)：球形协方差 $\lambda I_M$ 的负对数似然含 $M\log\lambda$，所以最优功率是跨通道平方模的均值。两通道残差 $[1+\mathrm j,2]$ 给功率 3，只把第二路幅度乘以 2 后变为 9；它说明通道增益失配会影响共享权重，不是运行了房间去混响的质量比较。
+
 ### W02　逐帧递推 WPE
 
 `nara_wpe/wpe.py` 的 `OnlineWPE` 保存逆相关矩阵、预测抽头、功率和输入缓冲；`step_frame()` 接收 `(频点, 通道)`。该实现先由旧状态输出当前预测残差，再更新状态，这与每次对增长的整段录音重新运行离线 `wpe()`不同。原理出处为[Kinoshita 等，Interspeech 2017](https://www.isca-archive.org/interspeech_2017/kinoshita17_interspeech.html)。
@@ -428,6 +432,8 @@ E08-04 对人为指定的解混矩阵演示回投影：原输出 `[2s, -3u]` 乘
 
 同一配置应用在本书已有两路数学谐波 WAV 上，输出平均 SI-SDR 为 0.14 dB，平均 SI-SDRi 也是 0.14 dB（保留两位小数），回投影后两路 RMS 比为 0.536、1.674；这组输入不能称为成功分离。两种输入的采样率、源统计和混合矩阵都不同，不能据两行证明算法的普遍优劣。把第一组的两麦混合矩阵改为秩 1 后，锁定实现运行时报告 `LinAlgError: Singular matrix`；这只是一个结构与数值边界，不代表所有奇异输入的错误形式。三项均为单次确定实验，未给语音、房间、分离成功率或设备延迟结论。原始 AuxIVA 依据是[Ono 2011, WASPAA, pp. 189–192](https://doi.org/10.1109/ASPAA.2011.6082320)；本书调用的具体更新与回投影实现见 [ssspy 固定源码](https://github.com/tky823/ssspy/blob/38b9389e8b1914422561f1936d9b28d042d62d2c/ssspy/bss/iva.py)。
 
+[E08-08](../../chapters/08_speech-separation.md#e08-08)补充已运行的一行 IP 手算：给定正定 $V$，先解 $WV u=e_n$，再归一化到 $w^HVw=1$，写回矩阵时使用共轭行。它与完整 AuxIVA 运行分开记录，并用复数矩阵、整体协方差缩放、单通道与秩亏边界测试；不同 Laplace 范数尺度可能改变未回投影幅度。
+
 ### B03　OverIVA、FIVE 与过定提取
 
 麦克风数多于目标源数时，OverIVA 利用低维目标子空间与背景模型，FIVE 面向单目标提取，不必总是先做任意降维再调用方阵 IVA。[piva 官方仓库](https://github.com/fakufaku/piva)包含这些方法；[pyroomacoustics `auxiva.py`](https://github.com/LCAV/pyroomacoustics/blob/v0.10.0/pyroomacoustics/bss/auxiva.py)也需查看 `n_src` 分支，确认当前算法实际的源数条件。
@@ -439,6 +445,8 @@ E08-04 对人为指定的解混矩阵演示回投影：原输出 `[2s, -3u]` 乘
 ILRMA 把独立向量分析与非负矩阵分解（NMF）结合，让每个源的频谱功率具有低秩结构。[Kitamura 等原论文](https://doi.org/10.1109/TASLP.2016.2577880)、[pyroomacoustics `bss/ilrma.py`](https://github.com/LCAV/pyroomacoustics/blob/v0.10.0/pyroomacoustics/bss/ilrma.py)和[ssspy `bss/ilrma.py`](https://github.com/tky823/ssspy/blob/38b9389e8b1914422561f1936d9b28d042d62d2c/ssspy/bss/ilrma.py)分别提供模型定义和可检查实现。
 
 读码先辨认频率基与时间激活的维度，再读乘法更新、空间解混、功率下限与尺度补偿。最小实验固定初值扫描 NMF 基数；失败实验取很短的记录和近似相同的两个源谱，观察模型不能唯一解释混合。基数增加可能拟合噪声与样本波动，不能仅凭训练代价更低认定分离更好。
+
+[E08-09](../../chapters/08_speech-separation.md#e08-09)给出谱基乘时间激活的四个数字，并复算两因子互补缩放不改变功率。固定 ssspy 版本还值得用实际赋值核对文档：`ILRMABase` 初始化在 `partitioning=False` 时把 `basis` 建成 `(源, 频点, 基)`、`activation` 建成 `(源, 基, 帧)`，`reconstruct_nmf()` 实际执行 `T @ V`；该方法 docstring 的两项形状说明却与这些角色不符。此处以初始化和实际乘法为依据，不沿用那段形状注释，也没有修改上游文件。
 
 ### B05　MNMF 的满秩空间协方差
 
@@ -565,6 +573,47 @@ NOTSOFAR-1 的固定源码从 `run_training_css_local.py` 进入 `css/training/t
 [NBSS 官方仓库](https://github.com/Audio-WestlakeU/NBSS/tree/cc42fc8ad2e6642c09b8f4169a85b4766dc22b7e)中的 [`models/arch/OnlineSpatialNet.py`](https://github.com/Audio-WestlakeU/NBSS/blob/cc42fc8ad2e6642c09b8f4169a85b4766dc22b7e/models/arch/OnlineSpatialNet.py)实现面向静止与移动说话人的多通道长时增强，论文比较在线掩码注意力、Retention 与 Mamba 时序模块。[论文预印本](https://arxiv.org/abs/2403.07675)说明算法设计；源码末尾还给出固定配置的因果前缀自测，用来检查附加未来帧是否改变既有前缀。本书当前环境没有 PyTorch、Mamba 与 CUDA，未实际运行这项自测，不能把源码中的测试代码当作本书已复现实验。训练入口还要结合 `SharedTrainer.py`、`configs/onlineSpatialNet.yaml`、数据加载器和 `generate_rirs.py` 阅读。
 
 该仓库为 MIT，但运行依赖 PyTorch、Lightning、`mamba-ssm`、`causal-conv1d` 及相应 CUDA 环境。更重要的是，顶层 `OnlineSpatialNet.forward()` 调用每一层时传入的 `state` 为 `None`，没有把 `CausalConv1d` 等子层的状态作为顶层输入输出暴露。因此“网络是因果的”“整段计算量随长度近似线性”和“任意外层块可连续续算”是三个不同命题；固定版本不能仅凭类名证明第三项。最小实验应比较整段、任意分块且保留状态、每块重置三种输出，再测 251/1000/1024 帧、静止/移动源、麦数变化和无 Mamba/CUDA 的 CPU 路径；没有显式跨调用状态时应记录不等价，而不是用每块真实参考重排掩盖边界差异。
+
+<a id="streamfm"></a>
+
+### N14　Stream.FM：多阶段生成与逐帧状态
+
+**收录理由与证据版本。** N10 中的多次神经网络求解增加推理成本；Stream.FM 研究如何在逐帧处理时保存各求解阶段的历史，并结合较少的函数求值次数。它解决包含去混响在内的单通道语音恢复问题；此处不把它当作有播放参考的 AEC、多说话人分离器或 WPE 的同义名称。技术依据为 [Stream.FM 预印本 v3，2026-04-21，§II～III 与补充材料 S.VIII](https://arxiv.org/html/2512.19442v3)。截至 2026-09-26，作者固定版 README 列其为 TASLP 2026 并给出 DOI `10.1109/TASLPRO.2026.3696215`，arXiv 版本说明仍写 submitted；本节不据此猜测正式卷页。
+
+**区分两种时间。** 音频帧索引 $t$ 表示录音向前推进；流匹配中的 $\tau\in[0,1]$ 表示同一帧由初始随机状态向恢复状态的求解进度。帧 $t$ 的某个求解阶段需要此前音频帧在相应阶段的网络历史；不能让所有阶段共用一份被依次覆盖的卷积缓冲。对照论文 §III-A 的缓冲图和 S.VIII-A 的函数式状态接口，逐项登记状态归属、读写时刻和重置范围。
+
+**固定源码怎样实现训练与离线推理。** 官方代码锁定为 [`ab2700c1154acc5c2ce67a5344182028336413f5`](https://github.com/sp-uhh/streamfm/tree/ab2700c1154acc5c2ce67a5344182028336413f5)，本地位置为 `codes/upstream/_downloads/streamfm/`。下面的结论来自对该提交实际源码的阅读，不是性能复现。
+
+`FlowModel` 的训练代码取同一高斯随机样本 $Z$，构造 $X_0=Y+\sigma_yZ$ 和 $X_1=X+\sigma_xZ$，再以 $X_\tau=(1-\tau)X_0+\tau X_1$ 为网络输入之一，速度目标为 $X_1-X_0$。这里 $X$ 是干净训练特征，$Y$ 是受损特征；部署时并没有干净 $X$。使用相同随机样本耦合两端是训练定义的一部分，不能把两端独立采样后仍声称完全复现此实现。
+
+`enhance_from_features()` 从 $Y+\sigma_yZ$ 出发，把网络封装给 `solve_ode()`，随后经特征逆变换输出波形。`solve_ode()` 对 Euler 每步调用一次网络；一般显式 Runge–Kutta 的每步有多个 stage，不能把参数 `N` 一概当作网络调用总数。这个现成入口按完整特征张量求解，没有通过顶层输入输出传递逐帧骨干状态；README 也明确将 `inference.py` 标为离线推理，并另行指向骨干 `init_state()` / `forward_step()`。
+
+| 固定源码入口 | 要核对的具体对象 | 与设备集成的关系 |
+|---|---|---|
+| `config/streamfm_derev.yaml` | `FlowModel`、16 kHz、单空间通道、512 点窗、256 点帧移、平方根 Hann、256 个保留频点 | 32 ms 窗和 16 ms 帧移是配置换算，不能单独证明设备总延迟；最高 Nyquist 点被裁去，逆变换补回 |
+| `sgmse/model.py` 的 `FlowModel` | 共享噪声、速度目标、特征预处理、随机初始化、逆变换 | 训练参考和推理可用输入分开；随机种子与权重、配置一起固定 |
+| `sgmse/util/solvers.py` | `get_butcher_tableau()`、`_solver_step_rk()`、`solve_ode()` | 总网络调用由步数和每步阶段数共同决定；学习型系数与任务、模型绑定 |
+| `sgmse/backbones/streaming_unet.py` | `CausalNCSNpp` 及各子层的 `init_state()` / `forward_step()` | 逐层追踪状态形状和寿命，检查整段/逐帧等价；不能只检查函数名称存在 |
+| `fit_rk_scheme.py` 与 `config/LRK5_streamfm_derev.yaml` | 学习求解器的独立入口与配置 | 不是普通模型训练器的同一个调用；本书未执行拟合 |
+
+**已执行的静态检查揭示两个接口问题。** 本书的 [AST 检查脚本](../examples/streamfm_source_audit.py)只解析语法树，不导入 PyTorch、不运行上游代码；[生成报告](./STREAMFM_SOURCE_AUDIT.json)固定了提交和被读文件的 SHA-256。上游文件没有被本书修改。
+
+1. `CausalResnetBlockBigGANpp.init_state()` 在第 672 行返回 5 元组，而 `forward_step()` 第 683 行将传入 `state` 解包成 6 项。若原样把这个初始化结果交给这个方法并执行到该行，就会出现元组长度不匹配。报告证明的是这两个方法的直接契约冲突，不证明所有模型配置都经过此路径。
+
+2. `CausalConv2d.forward_step()` 第 899～900 行读取 `self.depthwise_separable` 与 `self.pointwise_conv`；同一类的直接属性赋值中没有这两个名字。相邻的 `CausalDecoupledConv2d` 是另一个类，不能因为那里定义了 `pointwise_conv` 就视为前一个类也有。静态结果提示默认构造路径需核查；AST 不建立继承、外部注入或运行可达性，因此本书不把它写成已执行的异常栈。
+
+此外，卷积逐帧路径将 `x[0,:,:,0]` 放入不含 batch 维的历史，并只生成一个输出帧。复现应明确限制并检查 batch=1、time=1，不能把离线批量或多帧输入直接传入后，以形状未报错证明全部数据被处理。修复或适配时应另存补丁与来源，先验证状态契约，再谈速度；本书本次没有替上游修复或推理。
+
+只读复做：`.venv/bin/python -m codes.examples.streamfm_source_audit`。源码不存在时需先用本书固定版本获取工具取得；摘要不匹配时脚本拒绝套用旧结论。普通测试使用独立合法、非法及相似但无关的语法夹具，不联网，不依赖下载缓存。
+
+**怎样设计可运行的下一步。** 以下是复现实验设计，尚未执行，也没有生成该模型的试听输出。
+
+- 先记录匹配的权重、配置、求解器、随机输入和预处理摘要，再用相同随机张量比较整段因果前向、逐帧保留状态、逐帧重置状态三种结果。每种结果都保存逐帧误差，不能只比较最终音频长度。实现中的上述接口问题解决前，不把该检查标为通过。
+- 用单脉冲、全静音、短于窗长的输入及非整帧尾部检查启动、补零与排空。再固定录音前缀、只改变未来帧，检查因果前缀是否保持；每个求解阶段有单独状态和相同随机性。
+- 对去混响任务，用有可用参考、明确直达时移的配对数据同时测早期目标损伤和尾部变化；对比 WPE 时写清 Stream.FM 单通道与 WPE 所用通道数，禁止把不同输入条件排列成统一排名。
+- 在目标设备逐帧计时，包含所有网络调用、特征变换、状态搬移和音频缓冲；分别报告预热、持续运行、峰值内存和超出帧移预算的次数。`torch.compile` 或 CUDA graphs 的存在不保证当前设备实时；论文 GPU 结果也不等于手机 CPU 或麦克风固件结果。
+
+**许可和当前完成范围。** 固定版采用 AGPL-3.0；代码仅在 Git 忽略的独立本地源码目录获取，本书的原创 AST 工具和摘要报告不包含上游算法实现。权重、数据和示例音频没有随本次代码审查取得或再分发。已完成的是固定源码阅读和静态契约检查；依赖构建、训练、推理、音频质量和实时性均未运行。这使读者能知道后续工作应从哪个具体接口开始，也避免把论文演示当作当前缓存已经可运行的完整产品。
 
 ## 6. 复现实验的共同记录表
 

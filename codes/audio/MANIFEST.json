@@ -10,7 +10,7 @@
     "float_dtype": "float64"
   },
   "synthetic_signal": {
-    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband and spectral_subtraction; see each group for noise and transforms",
+    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband spectral_subtraction and clock_drift; see each group for noise and transforms",
     "duration_s": 2,
     "base_frequencies_hz": [
       173,
@@ -33,8 +33,8 @@
   "pcm": "signed little-endian 16-bit, round-to-nearest-even; no dither; no per-file normalization",
   "listening": "Start at low device volume. No automatic playback. No formal listening study performed.",
   "generator_inputs": {
-    "codes/examples/generate_audio_samples.py": "e161d99a9a60ebb14390320a7a22f84a7489759ca7bba410644f5ca2eca81afc",
-    "codes/array_tutorial/audio_samples.py": "6b38b0d332de967ff5312c5eaf450d899216ae02a74a652cd77e6d9836d52b26",
+    "codes/examples/generate_audio_samples.py": "1c7e668374a68fdd6cc48befc698f1271f5269e2b4fa0c371ae29e0c5da6affa",
+    "codes/array_tutorial/audio_samples.py": "5378934891bc7e0b896d50246230966a4fdcc79841eb3d0655ac0db2d296f8a3",
     "codes/array_tutorial/aec.py": "70d69fcd523cff3028162a221d71ea6bd2254979dfe37479ad26f77ab74a5a7e",
     "codes/array_tutorial/aec_ipnlms.py": "86422a00df25293176e0bde8193c7e05ac7a1e5703660b56907024985978c0d4",
     "codes/array_tutorial/aec_rls.py": "f13c2018297e46f0b393ef52e04fad5f1d48ede00de8b37a80a4abf597a9305d",
@@ -47,6 +47,41 @@
     "codes/array_tutorial/geometry.py": "7e9c33e90101c41441cde659d288f0aa25be141e9cdbaaa9fcabee54b285f72a"
   },
   "groups": {
+    "clock_drift": {
+      "parameters": {
+        "sample_rate_hz": 16000,
+        "duration_s": 8.0,
+        "actual_clock_rates_hz": [
+          16000,
+          16001.6
+        ],
+        "relative_rate_ppm": 100.0,
+        "samples_per_channel": 128000,
+        "frequencies_hz": [
+          500,
+          1500
+        ],
+        "amplitudes": [
+          0.18,
+          0.18
+        ],
+        "source": "sum of two continuous sinusoids with 20 ms linear edge fades",
+        "sampling_times": "t1=n/fs, t2=n/(fs*(1+100e-6)); n starts at zero",
+        "time_difference_seconds": "t1-t2=t1*epsilon/(1+epsilon)",
+        "per_tone_interior_envelope_ratio": "abs(cos(pi*f*(t1-t2)))",
+        "channel_order": [
+          "nominal_clock",
+          "fast_clock"
+        ],
+        "export_time_axis": "Both sample sequences stored at nominal 16000 Hz; fast channel is intentionally not time-corrected",
+        "oracle": "Analytically evaluate both sensors at t1; no estimated clock, interpolation or resampling algorithm",
+        "geometry": "co-located omnidirectional ideal sensors; zero propagation difference",
+        "alignment": "same physical start; no post-hoc delay or gain fitting",
+        "seed": null
+      },
+      "limits": "Mathematical clock-only counterexample, no noise, room, speech or device data. Oracle is the ideal common-clock target, not measured compensation performance.",
+      "common_export_gain": 1.0
+    },
     "spatial": {
       "parameters": {
         "delay_samples": 3,
@@ -490,6 +525,58 @@
     }
   },
   "files": [
+    {
+      "file": "clock_reference.wav",
+      "sha256": "fd61dec9d3a815e57ae15e2435325848641ceb5c37ba5cddae46cdf5f2ed060b",
+      "group": "clock_drift",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 128000,
+      "duration_s": 8.0,
+      "peak": 0.27655029296875,
+      "rms": 0.17969844408054994,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5227067718032172e-05
+    },
+    {
+      "file": "clock_array.wav",
+      "sha256": "19753848ccd2b79605577e772745cbcaf7b22e1b0e7b8f5fbd871fcb7ad3b47a",
+      "group": "clock_drift",
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples": 128000,
+      "duration_s": 8.0,
+      "peak": 0.277130126953125,
+      "rms": 0.17970362108210078,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5241710352775772e-05
+    },
+    {
+      "file": "clock_index_mean.wav",
+      "sha256": "2eb73f9cf15e8709edac5040b2255d5749f89fa5bf7428421cc13cd16df86738",
+      "group": "clock_drift",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 128000,
+      "duration_s": 8.0,
+      "peak": 0.276824951171875,
+      "rms": 0.1379964329805893,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258751123667369e-05
+    },
+    {
+      "file": "clock_oracle_mean.wav",
+      "sha256": "fd61dec9d3a815e57ae15e2435325848641ceb5c37ba5cddae46cdf5f2ed060b",
+      "group": "clock_drift",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 128000,
+      "duration_s": 8.0,
+      "peak": 0.27655029296875,
+      "rms": 0.17969844408054994,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5227067718032172e-05
+    },
     {
       "file": "spatial_reference.wav",
       "sha256": "c14777eadb3b479b6ca7c0efbcc4b565020c474c104aaae28ff78e57541a30bf",

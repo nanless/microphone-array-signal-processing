@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""生成教程插图 29 张（图 1~25、图 33~36；图 26~32 见 make_aec_figures.py）。
+"""生成教程插图 30 张（图 1~25、图 33~36、40；图 26~32、37~39 见 make_aec_figures.py）。
 
 用法（仓库根目录）：
-    .venv/bin/python scripts/make_figures.py      # 图 1~25、图 33~36 → figures/
+    .venv/bin/python scripts/make_figures.py      # 图 1~25、图 33~36、40 → figures/
 """
 from pathlib import Path
 import hashlib
@@ -940,10 +940,10 @@ def fig_tracking():
     N = 200
     est, n_eff, resampled, reflection_fraction = particle_filter_doa(
         obs, rng, n_particles=N)
-    fig, axes = plt.subplots(1, 2, figsize=(9.5, 5.4))
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 6.4))
     axes[0].plot(t, obs, ".", color="gray", ms=4, label="DOA观测（含噪声和均匀杂波）")
     axes[0].plot(t, true, color="k", lw=2, label="真实轨迹")
-    axes[0].plot(t, est, color=C_RED, lw=1.6, label="混合似然粒子滤波估计")
+    axes[0].plot(t, est, color=C_RED, lw=1.6, ls="--", label="混合似然粒子滤波估计")
     axes[0].plot(t[resampled], est[resampled], "|", color=C_ORANGE, ms=7,
                  label=r"重采样 ($N_\mathrm{eff}<N/2$)")
     boundary_active = reflection_fraction >= 0.05
@@ -951,7 +951,10 @@ def fig_tracking():
                  ms=5, label="反射粒子比例≥5%")
     axes[0].axvspan(48, 57, color=C_PURPLE, alpha=0.12, label="连续 10 帧缺测")
     axes[0].set_xlabel("帧"); axes[0].set_ylabel("方位角 (°)")
-    axes[0].legend(fontsize=FS_SMALL + 1, loc="lower left", framealpha=0.95); axes[0].grid(ls=":", alpha=0.5)
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, fontsize=FS_SMALL, loc="lower center", ncol=2,
+               bbox_to_anchor=(.5, .015), framealpha=.95)
+    axes[0].grid(ls=":", alpha=0.5)
     axes[0].set_title("(a) 单说话人追踪：匀速状态模型在缺测段只做预测\n"
                       "（200 粒子；高斯目标+均匀杂波似然；0～120°镜面反射边界）", fontsize=FS_TITLE)
     ax = axes[1]
@@ -971,7 +974,7 @@ def fig_tracking():
     ax.set_title("(b) 两目标 PHD 强度示意：曲线积分=2\n（角度约定：−90°～+90°）", fontsize=FS_TITLE)
     ax.grid(ls=":", alpha=0.5)
     fig.suptitle("图22  声源追踪示意（模拟）", fontsize=FS_SUP)
-    fig.tight_layout()
+    fig.tight_layout(rect=(0, .24, 1, .96))
     save(fig, "fig22_tracking.png")
 
 
@@ -2782,6 +2785,61 @@ def fig_nonlinear_echo():
     save(fig, 'fig36_nonlinear_echo.png', {'AudioManifestDigest': digest})
 
 
+def clock_drift_measurements():
+    """Measure PCM frame power; compare to a separate analytic clock model."""
+    import json
+    import wave
+    root = OUT.parent / 'codes' / 'audio'
+    manifest = root / 'MANIFEST.json'
+    records = {r['file']: r for r in json.loads(manifest.read_text())['files']}
+    decoded = {}
+    for name in ('reference', 'index_mean', 'oracle_mean'):
+        path = root / f'clock_{name}.wav'
+        if hashlib.sha256(path.read_bytes()).hexdigest() != records[path.name]['sha256']:
+            raise ValueError('clock PCM does not match manifest')
+        with wave.open(str(path), 'rb') as wav:
+            if (wav.getframerate(), wav.getnchannels(), wav.getsampwidth(), wav.getnframes()) != (16000, 1, 2, 128000):
+                raise ValueError('clock example requires 8 seconds of mono 16 kHz PCM16')
+            decoded[name] = np.frombuffer(wav.readframes(128000), dtype='<i2').astype(float) / 32768
+    # Interior 20 ms blocks exclude both 20 ms edge fades.
+    centers = (np.arange(2, 399) + .5) * .02
+    powers = {name: np.mean(x.reshape(400, 320)[2:399] ** 2, axis=1)
+              for name, x in decoded.items()}
+    return centers, powers, hashlib.sha256(manifest.read_bytes()).hexdigest()
+
+
+def fig_clock_drift():
+    centers, powers, digest = clock_drift_measurements()
+    t = np.linspace(0, 8, 1601)
+    delay = t * 1e-4 / 1.0001
+    fig, axes = plt.subplots(3, 1, figsize=(9.5, 8.3))
+    axes[0].plot(t, delay * 16000, color=C_BLUE, lw=2)
+    axes[0].set(xlabel='名义时间 (s)', ylabel='时间差 × 16 kHz (样点)',
+                title='(a) 同一索引对应不同采样时刻；100 ppm 持续累积')
+    for f, color, style in [(500, C_BLUE, '-'), (1500, C_RED, '--')]:
+        envelope = np.abs(np.cos(np.pi * f * delay))
+        axes[1].plot(t, envelope, color=color, ls=style, label=f'{f} Hz 解析包络', lw=1.8)
+    axes[1].set(xlabel='名义时间 (s)', ylabel='单频幅度比 (无量纲)', ylim=(-.03, 1.08),
+                title='(b) 相位差随时间增大；两路平均可抵消同一个目标')
+    axes[1].text(6.3, .40, '500 Hz：实线', color=C_BLUE)
+    axes[1].text(5.4, 1.025, '1500 Hz：虚线', color=C_RED)
+    axes[2].plot(centers, powers['index_mean'] / powers['reference'],
+                 color=C_RED, label='未同步均值：PCM 20 ms 功率比')
+    axes[2].plot(centers, powers['oracle_mean'] / powers['reference'],
+                 color=C_GREEN, ls='--', label='理想共同时钟：PCM 功率比')
+    axes[2].set(xlabel='名义时间 (s)', ylabel='相对参考功率 (无量纲)', ylim=(-.03, 1.15),
+                title='(c) 双音合成 WAV 读回；排除两端淡入淡出，不拟合时延或增益')
+    axes[2].text(.3, 1.05, '理想共同时钟：PCM 功率比（虚线）', color=C_GREEN)
+    axes[2].text(4.9, .24, '未同步均值：PCM 20 ms 功率比', color=C_RED)
+    for ax in axes:
+        ax.grid(ls=':', alpha=.35)
+        ax.set_xlim(0, 8)
+    fig.suptitle('图40  先对齐起点仍会失步：采样时钟偏差的双麦反例\n'
+                 '500 / 1500 Hz；16 kHz；8 s；100 ppm；共址、无噪声数学模型', fontsize=FS_SUP)
+    fig.tight_layout(rect=(0, 0, 1, .94), h_pad=1.5)
+    save(fig, 'fig40_clock_drift.png', {'AudioManifestDigest': digest})
+
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -2813,6 +2871,7 @@ def main():
     fig_audio_examples()
     fig_audio_counterexamples()
     fig_nonlinear_echo()
+    fig_clock_drift()
     print("ALL DONE")
 
 

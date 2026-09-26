@@ -1,0 +1,45 @@
+{
+  "upstream_commit": "ab2700c1154acc5c2ce67a5344182028336413f5",
+  "relative_source": "sgmse/backbones/streaming_unet.py",
+  "source_sha256": "d88c7bb526a97ae11d3cdede0e03e81b7c6e38cd2c6ad92296a37f974668d80a",
+  "observations": {
+    "resnet_init_tuple_returns": [
+      {
+        "line": 672,
+        "arity": 5
+      }
+    ],
+    "resnet_step_state_unpacks": [
+      {
+        "line": 683,
+        "arity": 6
+      }
+    ],
+    "resnet_direct_contract_mismatch": true,
+    "conv_step_selected_attribute_reads": [
+      {
+        "attribute": "depthwise_separable",
+        "line": 899
+      },
+      {
+        "attribute": "pointwise_conv",
+        "line": 900
+      }
+    ],
+    "conv_local_assigned_attributes": [
+      "Tbuf",
+      "dilation",
+      "in_channels",
+      "kernel_size",
+      "out_channels",
+      "pad_freq",
+      "stride",
+      "time_padding"
+    ],
+    "conv_selected_reads_without_local_assignment": [
+      "depthwise_separable",
+      "pointwise_conv"
+    ],
+    "scope": "static AST only; no inference; inherited/dynamic assignments and reachability not established"
+  }
+}

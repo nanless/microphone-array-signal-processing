@@ -258,13 +258,15 @@ TensorFlow Lite Micro 要求调用方先划出一块内存，供推理时的张�
 
 同一入口的 E10-14 把六帧串行计算、在途容量、同时驻留内存和重复模式下的功率估算连起来；[第 10 章完整手算](../../chapters/10_engineering-practice.md#sec-10-4-3)给出每帧完成时间。第 11 章 E11-05～07 则分别以周向阵列的相邻间距筛查、单路会议链的输出/延迟硬约束和跨时钟漂移为候选过滤题。这四题的数字都是本书指定的教学输入，代码通过算术与约束，不代表源码已在某款设备通过资源或声学验收。
 
+新增[状态与时间练习](../examples/tracking_time_exercises.py)把两个容易混淆的工程条件单独复算：E10-15 逐帧记录 VAD 预卷、触发和结束保持，输出片段采样区间 `[160,1120)`，避免触发帧重复；E11-08 从零失败的二项概率推导单侧风险上界，区分“没有观察到失败”和“风险已足够低”。它们与第 9 章 E09-08 的状态时间戳一起构成接口检查，均未使用真实设备或将连续相关帧当作独立试验。
+
 真实回调还应区分采集首样本时间、回调开始时间和播放首样本时间。[PortAudio 的 PaStreamCallbackTimeInfo](https://files.portaudio.com/docs/v19-doxydocs/structPaStreamCallbackTimeInfo.html)把三者分别放在 `inputBufferAdcTime`、`currentTime`、`outputBufferDacTime` 中，单位为秒，使用所属流的时间基准。它们不能未经校准就与另一设备的时钟相减。量化、时间戳与样本消费属于接口条件；更新模型或运行时版本时，也应保留这些对照。该接口文档核实于 2026-09-22。
 
 本目录给出的是实现阅读和实验设计。源码实际获取状态见 `codes/upstream/` 的下载记录；构建、运行及目标硬件验收仍按各实验的真实记录报告。
 
 ## 7. 重采样、测量与数值接口的独立对照
 
-下面六项分别补充采样率转换、响度测量、全参考评分、文件输入输出和块浮点运算。它们不组成一套必须串接的前端，也不都属于阵列算法。固定源码说明了可以研究什么；本节的输入与验收步骤是建议实验，不是已经取得的设备或语音质量结果。
+下面六项分别补充采样率转换、响度测量、全参考评分、文件输入输出和块浮点运算。它们不组成一套必须串接的前端，也不都属于阵列算法。固定源码说明了可以研究什么；未附运行记录的输入与验收步骤属于建议实验；I22、I23、I26 附有各自的主机执行记录，应按记录中的输入、版本和指标解释，不外推为设备或语音质量验收。
 
 ### I22：libsoxr 的比率、渐变与输出延迟
 
@@ -408,3 +410,18 @@ XMOS `lib_voice` 的底层依赖不是任意最新版数学库。锁定的 [`lib
 建议先用上述两点向量及小幅脉冲，按指数还原实值后与独立浮点计算比较；再加入接近满幅、余数长度、大小量混合与 FFT 往返。测试应同时观察输出指数、舍入误差、饱和和状态，不把“多数样本相近”当成全部边界正确。参考 C 路径通过后，仍需在目标板运行相同输入并另测周期和内存；主机仿真耗时不能推算目标 VPU 的实时性。
 
 [README](https://github.com/xmos/lib_xcore_math/blob/16130be45c4002a1f875a4b06ff68d2065cd8c69/README.rst)指定 XTC Tools 15.3.1，并说明原生构建的 VPU 仿真范围限制。[LICENSE.rst](https://github.com/xmos/lib_xcore_math/blob/16130be45c4002a1f875a4b06ff68d2065cd8c69/LICENSE.rst)为 XMOS Public Licence v1，商业硬件和特殊用途条件不能省略。取得这个依赖也不表示 `lib_voice` 的工具链、模型生成依赖和目标硬件已经全部齐备。
+
+
+### I28：FastEnhancer 的显式流式状态与单通道降噪
+
+FastEnhancer 用于单通道神经语音增强。[官方固定 README](https://github.com/aask1357/fastenhancer/blob/f85223bd546b27f39dc0744e0310dcd246f750a4/README.md)将项目论文标为 ICASSP 2026 已接收，并明确其模型按噪声抑制训练；本文只核对固定代码的接口，不转录跨数据集性能或实时性排名。源码提交为 `f85223bd546b27f39dc0744e0310dcd246f750a4`，已按[MIT 许可](https://github.com/aask1357/fastenhancer/blob/f85223bd546b27f39dc0744e0310dcd246f750a4/LICENSE)获取至 `codes/upstream/_downloads/fastenhancer/`，核对日期为 2026-09-26。
+
+**模型算什么。** 默认实现 `models/fastenhancer/default/model.py` 中，`RNNFormerBlock` 组合时间递归状态与频率注意力；`ONNXModel.forward` 对实部/虚部表示的频谱先做幅度压缩，再预测复数掩码并执行复数乘法，最后还原压缩。它返回增强频谱和更新后的模型缓存。目录中还有 `noncausal` 等变体，不能只看到项目名称含 streaming 就把每种配置都当成相同因果结构。[固定模型源码](https://github.com/aask1357/fastenhancer/blob/f85223bd546b27f39dc0744e0310dcd246f750a4/models/fastenhancer/default/model.py)
+
+**每块带什么状态。** `scripts/export_onnx.py::Model.forward` 的接口包含 `wav_in`、STFT 缓存、逆 STFT 缓存及模型缓存；返回本块波形与全部新缓存。实际推理示例 `scripts/test_onnx.py` 从会话输入名寻找 `cache_in_*`，会话起点初始化为零，每次调用后把输出缓存传给下一块。逐块清零会破坏连续流语义；换会话时忘记清零又会把旧状态带入新会话。[导出包装器](https://github.com/aask1357/fastenhancer/blob/f85223bd546b27f39dc0744e0310dcd246f750a4/scripts/export_onnx.py)、[推理循环](https://github.com/aask1357/fastenhancer/blob/f85223bd546b27f39dc0744e0310dcd246f750a4/scripts/test_onnx.py)
+
+推理脚本默认 16 kHz、`n_fft=512`、`hop_size=256`，后者对应每步 16 ms；实际运行须与导出模型配置相符。脚本在结尾补零以排出状态，拼接输出后裁去 `n_fft-hop_size=256` 点，再取原输入长度。这个 16 ms 裁剪是默认配置的离线对齐操作，不能代替采集、凑块、模型计算、排队和播放共同构成的端到端延迟。其 RTF 计时包围 Python 推理循环并含循环开销，不能把项目表中的数字移植到另一机器。
+
+**怎样设计最小核查。** 取得明确来源的同版本权重后，先固定单通道 WAV、模型摘要、块长、ONNX Runtime 版本、线程数和执行后端。对照官方导出器的 `--test-streaming` 路径，检查整段与保留缓存的逐块输出是否在相同对齐、尾部排空和裁剪下相符；再故意逐块清零，观察边界差异。容差须按数据类型和运行时预先确定，不能假设不同内核必然逐位一致。最后分别测启动、稳态、停流排空与新会话重置。
+
+本次只读取并保存了源码，没有取得权重、导出 ONNX 或执行推理，所以没有本书测得的质量分、RTF 或音频输出。该接口没有播放参考，也没有 WPE 的延迟多通道预测器；不能将它计作 AEC 或 WPE 实现。将其接在波束输出后作单通道 NS 是可研究的系统组合，仍须独立检查前端输出分布、目标失真和端到端任务指标。

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 2 章 · 声音到达阵列时发生了什么 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="b74df4f08677"><style>
+<meta name="source-digest" content="8c33d8040161"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -582,6 +582,33 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>$$\mathbf R=\frac{1}{2a}\,a\begin{bmatrix}2&1\\1&1\end{bmatrix}=\begin{bmatrix}1&1/2\\1/2&1/2\end{bmatrix}。$$</p>
 <p>直接把原始权重和与固定小数比较，会把第一组误判为没有数据；先除以最大权重后，三组掩码都变为 $[1,0,1]$，再累积即可。</p>
 <p>全零掩码无法执行这项归一化，也没有可用观测权重，因此本书代码拒绝计算。共同缩放保持的是这三个既定快拍的加权结果，不会增加独立样本，也不会提高源数估计的可信度。结果与独立手算逐元素比较，双精度绝对误差应小于 $10^{-14}$。</p>
+<p><strong>E02-07：同一个遗忘因子，为什么换帧移后响应变慢？</strong> 每次实际更新采用 $\mathbf S_t=\alpha\mathbf S_{t-1}+(1-\alpha)\mathbf Q_t$，$\mathbf Q_t$ 是当前快拍外积。固定 $\alpha=0.98$，比较更新间隔 $H=8$ ms 和 16 ms 时，旧状态的贡献衰减到初始值 $1/e$ 所需的时间。若希望两者都具有 0.4 s 时间常数，应各取多大的 $\alpha$？</p>
+<p><strong>参考答案：先从更新次数换到时间。</strong> 经过 $k$ 次更新，旧状态系数为 $\alpha^k$。令连续时间指数包络满足 $\alpha^{t/H}=e^{-t/T}$，两边取对数并约去 $t$，得到 $T=-H/\ln\alpha$。这里 $H,T$ 都用秒，$\alpha$ 无量纲；$T$ 表示指数包络的时间常数，实际更新仍发生在离散时刻。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col" style="text-align: right;">实际更新间隔 $H$</th>
+<th scope="col" style="text-align: right;">固定 $\alpha=0.98$ 的时间常数 $T$</th>
+<th scope="col" style="text-align: right;">保持 $T=0.4$ s 所需 $\alpha=e^{-H/T}$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">0.008 s</td>
+<td style="text-align: right;">0.395987 s</td>
+<td style="text-align: right;">0.980199</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.016 s</td>
+<td style="text-align: right;">0.791973 s</td>
+<td style="text-align: right;">0.960789</td>
+</tr>
+</tbody>
+</table></div>
+<p>第二行每秒只更新第一行的一半次数；每次遗忘量却相同，所以旧状态在物理时间上保留得更久。保持 0.4 s 时，两组在该时刻都保留 $e^{-1}\approx0.367879$ 的旧状态贡献。</p>
+<p><strong>不要把时间常数当成独立样本数。</strong> 稳态指数权重 $q_k=(1-\alpha)\alpha^k$ 满足 $\sum_{k=0}^{\infty}q_k=1$、$\sum_{k=0}^{\infty}q_k^2=(1-\alpha)/(1+\alpha)$，所以 E02-04 的权重集中度为 $L_w=(1+\alpha)/(1-\alpha)=99$。只有被加权统计量彼此独立、方差相同等条件成立时，才可用它解释平均估计量的方差缩减；重叠 STFT 帧通常不能直接视为 99 个独立快拍。</p>
+<p>遇到 VAD 冻结、跳帧或可变帧移，要按实际更新间隔解释遗忘时间。冻结期间不执行递推，旧状态也就不会按墙钟时间自动衰减。零初始化的权重不足仍按 E02-05 处理，不能靠时间常数换算消除。</p>
+<p>这道题由 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/spatial_precision_exercises.py"><code>spatial_precision_exercises.py</code></a> 的 <code>E02-07</code> 复算；全部数值来自本书几何级数推导，无随机抽样。脚本保留未舍入值，上表显示六位小数。</p>
 <p><a href="research/05_exercises_and_audio.html">音频实验总览</a>提供已知采样率与通道顺序的 WAV，可用同一分析/合成参数检查边缘重建；比较时保留原长度，不把端点丢失误认为降噪效果。</p>
 <hr />
 <blockquote>

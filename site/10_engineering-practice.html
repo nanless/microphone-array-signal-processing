@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 10 章 · 工程实现、评测与产业实践 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="b74df4f08677"><style>
+<meta name="source-digest" content="8c33d8040161"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -258,8 +258,8 @@ L_{\text{e2e}}&=\max_p L_p .
 \tag{10-1}
 $$</p>
 <p><img alt="图25 延迟预算示意" src="../figures/fig25_latency_budget.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图 25(a) 把“采集/帧就绪等待”示意为 32 ms，再与未来帧前瞻 16 ms、首个判决确认 25 ms、计算 14 ms 和调度 6 ms 组成一条 93 ms 的示例关键路径。这里的 32 ms 是工作表示例，不等同于 STFT 窗长，也不是所有 32 ms 窗都会增加 32 ms 算法等待；窗的左右对齐、声卡周期、帧移和模块何时开始计算都会改变实际值。</p>
-<p>图 25(b) 另行区分三条口径：连续增强音频只计其实际前瞻、缓冲、计算与调度；首个 KWS/ASR 判决还可能等待确认窗；<strong>语音结束保持时间</strong>是检测到能量下降后，仍等待一段时间才宣布语音结束，它只延后结束事件，不应自动计入连续音频或首个判决。例如额外保持 200 ms 会让结束事件晚 200 ms，不表示此前每一块增强音频都晚 200 ms。</p>
+<p>图 25 的关键路径条形把“采集/帧就绪等待”示意为 32 ms，再与未来帧前瞻 16 ms、首个判决确认 25 ms、计算 14 ms 和调度 6 ms 组成一条 93 ms 的示例关键路径。这里的 32 ms 是工作表示例，不等同于 STFT 窗长，也不是所有 32 ms 窗都会增加 32 ms 算法等待；窗的左右对齐、声卡周期、帧移和模块何时开始计算都会改变实际值。</p>
+<p>图 25 的底部说明另行区分三条口径：连续增强音频只计其实际前瞻、缓冲、计算与调度；首个 KWS/ASR 判决还可能等待确认窗；<strong>语音结束保持时间</strong>是检测到能量下降后，仍等待一段时间才宣布语音结束，它只延后结束事件，不应自动计入连续音频或首个判决。例如额外保持 200 ms 会让结束事件晚 200 ms，不表示此前每一块增强音频都晚 200 ms。</p>
 <p>WPE 历史帧、追踪状态、递归协方差和因果 AGC 时间常数是历史状态，不能机械当作未来等待。</p>
 <p>这些数字只说明记账方法，没有包含图外可能存在的解码和交互延迟。实际系统应在声学输入与最终输出之间记录时间戳或回采脉冲，分别测量冷启动、稳定运行和最不利调度条件。</p>
 <p>把 STFT 窗长从 32 ms 改为 16 ms，也不等于必然省下 16 ms：只有依赖完整窗或未来样本的等待发生变化，关键路径才会缩短。</p>
@@ -381,6 +381,10 @@ $$</p>
 </ol>
 <p>互相关峰漂移、相位漂移或专用导频都可用于估计。更新周期和允许残差应由最长连续运行时间、相干性要求及任务指标反推，不宜照搬固定 ppm 门限。</p>
 <p>能够共享硬件时钟时，应优先消除 SRO 来源；不能共享时钟时，再评估在线补偿。</p>
+<p><strong>把时钟漂移变成可听、可查的样本。</strong> 图 40 和主音频清单的 <code>clock_drift</code> 组使用标称 16 kHz、设备快 100 ppm、8 s 的确定性合成信号。两设备在各自的精确采样时刻对同一个连续信号求值，没有用左右声道电平差替代采样时刻差。以参考索引对应的 8 s 作换算，另一设备同索引时刻为 $8/(1+100\times10^{-6})$ s，差约 0.79992 ms，约为 12.799 个参考采样；实际文件末样本早于 8 s，逐样本真值以清单为准。</p>
+<p><img alt="图40：采样率偏移的时间漂移与未同步求平均" src="../figures/fig40_clock_drift.png" onerror="this.alt+='（图缺失）'" /></p>
+<p>图 40：16 kHz、100 ppm、8 s 数学合成例子；各文件采用同一导出增益。参考信号、双设备采样、未对齐均值与理想同步均值用于区分时钟误差和空间噪声。请结合<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/audio/MANIFEST.json">音频清单</a>读取参数。</p>
+<p>同索引直接求平均时，时差随时间增加，频率越高，同一时差对应的相位差越大；局部相消不能解释成已经消除了环境噪声。理想同步均值使用已知连续信号与时钟真值，表示准确重采样所要达到的目标，<strong>并非已经实现的盲 SRO 估计器或补偿器输出</strong>。因此试听比较只能说明失同步的后果，不能据此报告某补偿算法的性能；下文另有实际估计与插值的闭环例子。</p>
 <p>初始时差表现为整条“延迟—时间”曲线的截距，稳定 SRO 表现为斜率，偶发丢样则表现为阶跃。三者不能只靠首尾两个点可靠区分。工程上可分块估计互相关峰，先检查峰值置信度，再对可信的“时间—相对延迟”点做直线拟合；残差中若出现近似一个或多个采样间隔的突跳，应先查丢样和时间戳，而不是把所有变化都拟合成 ppm。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>estimate_sro_ppm</code></a> 把相对延迟定义为“参考时间减设备时间”，再拟合截距和斜率；正斜率表示设备采样率较高，与 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>resample_sro_to_reference</code></a> 的符号一致。</p>
 <p>若横轴使用参考时间，精确斜率为 $\varepsilon/(1+\varepsilon)$；函数按小偏移的一阶近似把斜率乘 $10^6$ 报为 ppm。要求更高时应反解 $\varepsilon=s/(1-s)$，其中 $s$ 是拟合斜率。例如 $s=0.0001$ 的一阶报告是 100 ppm，精确反解约为 100.010 ppm。截距描述初始错位，不进入这个速率换算。</p>
@@ -558,7 +562,8 @@ $$</p>
 <p>KWS 是否绕过 VAD、是否持续运行、从 AEC 后还是增强后取信号，取决于功耗和训练域。设置 KWS 阈值时，还要在指定误唤醒率下报告漏唤醒率，不能只给一个孤立分数。</p>
 <span id="sec-12" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-3-4">10.3.4 VAD 与 AGC 的最小可运行基线</h3>
 <p>能量 VAD 虽然简单，却能把控制逻辑讲清。启动阈值应高于继续阈值，避免能量在单一阈值附近来回切换；语音结束保持时间（hangover）让判决在能量下降后继续保持若干帧，减少词尾被截断。预卷缓存解决的是词首：VAD 刚触发时，把触发前保留的短时音频一并送给后端。三个时间量都要换算成帧数，并在短词、长停顿和脉冲噪声上分别验证。</p>
-<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>HysteresisVAD</code></a> 输入线性均方能量，不接受 dB 阈值；把 dBFS 门限传给它会造成口径错误。<code>hangover_frames=2</code> 表示首次跌破继续阈值的两帧仍保持活动，第三帧才关闭。该基线没有噪声自适应、频带特征和神经网络，也不自行保存预卷；预卷可用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>RingBuffer</code></a> 保留触发前的固定帧数，并在 VAD 由假变真时先取出缓存。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>HysteresisVAD</code></a> 的 <code>update(frame)</code> 输入是波形样本，内部计算均方根后与门限平方根比较；构造参数 <code>on_threshold</code>、<code>off_threshold</code> 则是线性均方能量，不接受 dB 阈值；把 dBFS 门限传给它会造成口径错误。<code>hangover_frames=2</code> 表示首次跌破继续阈值的两帧仍保持活动，第三帧才关闭。例如恒定幅度 0.3 的一帧，均方能量为 $0.3^2=0.09$，可跨过 0.08 的启动阈值；直接把标量 0.09 当作波形输入只得到 $0.09^2=0.0081$，不会启动。</p>
+<p>该基线没有噪声自适应、频带特征和神经网络，也不自行保存预卷；预卷可用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>RingBuffer</code></a> 保留触发前的固定帧数，并在 VAD 由假变真时先取出缓存。</p>
 <p>AGC 要区分“把正常语音逐渐推向目标电平”和“立刻避免削波”。增益上升可以缓慢释放，增益下降需要更快；即使平滑状态来不及下降，当前块也要受安全上限约束。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/engineering.py"><code>PeakProtectAGC</code></a> 给出这种峰值保护基线。</p>
 <p>它不估计响度，也不能修复模拟前端已经发生的削波。验收时要同时画输入电平、增益、输出峰值和削波比例，并在 AEC 双讲期间检查增益变化是否破坏回声路径模型。</p>
 <p>需要比较输出响度时，可以另用 libebur128 测量响度与真峰值。响度按频率加权和时间统计得到，不等于当前块的最大样本；真峰值估计重建波形的幅度，也可能高于采样峰值。测量模式、通道角色、门控和无有效能量的处理须固定，数字域响度与峰值都不能未经播放校准就换成声压级。<a href="https://github.com/jiixyj/libebur128/blob/67b33abe1558160ed76ada1322329b0e9e058b02/ebur128/ebur128.h" title="citation">libebur128 固定 API</a></p>
@@ -1094,7 +1099,7 @@ room = pra.ShoeBox(
 </tbody>
 </table></div>
 <span id="sec-23" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-11">10.11 本章练习</h2>
-<p>以下十四题的输入均为本书构造的教学数据。先手算，再运行 E10-01～12 与 E10-14 的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_engineering.py"><code>exercises_engineering.py</code></a>：</p>
+<p>以下十五题的输入均为本书构造的教学数据。先手算，再运行 E10-01～12 与 E10-14 的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_engineering.py"><code>exercises_engineering.py</code></a>：</p>
 <pre><code class="language-bash">.venv/bin/python -m codes.examples.exercises_engineering
 </code></pre>
 <p>E10-13 运行独立的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/spectral_subtraction_demo.py"><code>spectral_subtraction_demo.py</code></a>。两种程序按稳定编号输出中间量和结果；它们不访问声卡，也不代表硬件性能测量。</p>
@@ -1198,6 +1203,11 @@ $$</p>
 <p><strong>E10-14：平均算得过来，六帧为何仍错过期限？</strong> 按 §10.4.3 的到达时间、服务耗时、在途容量、状态内存和功率假设，先逐帧写出开始与完成时间，再求平均 RTF、最大响应、错过期限数、队列高水位、峰值内存及重复工作模式下的续航。若把在途容量缩成两帧，哪些新风险必须重新计算？</p>
 <p><strong>参考答案</strong>：逐帧开始时间为 $[0,10,20,45,49,53]$ ms，完成时间为 $[4,14,45,49,53,57]$ ms；服务总计 45 ms，六帧音频长 60 ms，RTF 为 0.75，但最大响应 25 ms、三帧超过 10 ms 期限。$t=40$ ms 时有三帧在途，容量 3 恰够；峰值内存为 $667.5$ KiB，示意续航约 $6.23$ h。</p>
 <p>容量缩为 2 后，$t=40$ ms 的新到达帧可能被丢弃；不能沿用容量 3 的完成时间、功率占空比和丢帧数，应重新模拟队列。示例代码输出容量 3 的完整时间线，不把六帧最大值称作稳定 p99，也不把预算数字称作芯片测量。</p>
+<p><strong>E10-15：预卷、触发帧和结束保持怎样拼成一个片段？</strong> 16 kHz 音频每帧 160 点，即 10 ms。启动/继续能量阈值为 0.08/0.03，结束保持为两帧，触发前缓存两帧。十帧从 0 编号，均方能量依次为 $[0,0.01,0.04,0.09,0.04,0,0,0,0,0]$。每帧用幅度为能量平方根的常数波形构造。求 VAD 活动帧、最终片段的采样区间、触发可用时刻和结束事件时刻。</p>
+<p><strong>参考答案</strong>：帧 2 的 0.04 只能达到继续阈值，不能启动。帧 3 的 0.09 启动，帧 4 保持活动；帧 5、6 消耗两次结束保持，帧 7 才关闭。活动标记为 <code>[假,假,假,真,真,真,真,假,假,假]</code>。</p>
+<p>触发时先取出缓存中的帧 1、2，再追加触发帧 3 一次，之后保留帧 4、5、6。输出帧号为 <code>[1,2,3,4,5,6]</code>，对应半开采样区间 $[160,1120)$，长度 $1120-160=960$ 点，即 60 ms。若先把帧 3 入缓存又单独追加，会重复触发帧；若拿关闭的帧 7 作片段末帧，则额外保留了一帧。</p>
+<p>帧 3 完整到达时是 40 ms，启动事件此时可用；帧 7 完整到达时是 80 ms，结束事件此时可用。被保留音频的结束边界却是 70 ms。预卷保存的是此前已采集的声音，事件可用时刻与片段时轴不同，不能把两帧预卷自动当作每个连续音频块又增加 20 ms 延迟。</p>
+<p>运行 <code>.venv/bin/python -m codes.examples.tracking_time_exercises</code> 可检查上述逐帧结果，见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/tracking_time_exercises.py">代码</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_time_state_exercises.py">边界测试</a>。流开始后立刻触发时，只能使用实际存在的历史；输入终止时仍活动的片段标成“尚未观察到结束事件”，不伪造 VAD 关闭。本题验证缓冲和事件语义，常数波形不用于评价真实语音检出率。</p>
 <span id="sec-24" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-12">10.12 本章小结</h2>
 <ol>
 <li>图 23 是参考依赖图，不是所有设备必须执行的固定流水线。</li>

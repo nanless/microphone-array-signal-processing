@@ -1,6 +1,6 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 73 个上游项目；已在 `codes/upstream/_downloads/` 取得 66 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。本轮离线核验 65 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 7 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 75 个上游项目；已在 `codes/upstream/_downloads/` 取得 68 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。2026-09-26 离线核验 67 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 7 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”只说明来源、提交、工作区状态和指定入口符合清单，不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -14,7 +14,7 @@
 没有复制进教学包。
 
 SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构建依赖，不另计为一种空间算法，
-也不计入上面的 73 项 Git 源码索引。官方归档为
+也不计入上面的 75 项 Git 源码索引。官方归档为
 [`fftw-3.3.10.tar.gz`](https://fftw.org/pub/fftw/fftw-3.3.10.tar.gz)，SHA-256 为
 `56c932549852cddcfafdab3820b0200c7742675be92179e59e6215b340e26467`。
 归档的 `COPYRIGHT` 与 `kernel/alloc.c` 声明 GPL-2.0-or-later；`api/fftw3.h` 单独采用 BSD 两条款文本，
@@ -133,10 +133,19 @@ DEMAND v1.0 的 NRIVER 河流场景来自 [Zenodo 1227121](https://zenodo.org/re
 
 新的工作区使用稀疏检出，跳过常见音频、模型和压缩包扩展名，不拉取 LFS 对象或子模块。扩展名过滤不等于识别了所有数据，Git 对象中也可能包含上游内嵌资产。既有完整工作区保留，不为了统一目录形态覆盖或删除其中内容。
 
-WebRTC 等大型项目当前只有主源码工作区，未运行其多仓依赖工具；CMSIS、SOF 与推理运行时也没有进行目标板编译。源码入口已核对与依赖齐全是两个不同结论。
+通用获取器只检出 WebRTC 主源码；另一次专用构建已同步必要依赖并生成 `audioproc_f`，实际运行边界见[复现手册](research/04_source_reproduction.md)。两种目录用途不能混写。CMSIS、SOF 与推理运行时没有进行目标板编译；源码入口核对仍不等于设备链路验收。
 
 ## 运行验证的范围
 
 [SOURCE_STATUS.json](SOURCE_STATUS.json) 由源码核对工具生成，其中 `execution: not_run` 表示该工具不执行外部项目。方法级实验另行记录：本次已运行 [WPE 对照](examples/compare_wpe_reference.py)，对照的是 nara_wpe 0.0.11 的离线有效帧计算，不是对整个项目或语音质量的认证。
 
 设备链路应依次检查采集时钟、播放参考、缓冲状态、算法状态与输出评分。回调线程不能直接承担不受控的 NumPy 分配、锁、文件或网络操作；工业实现的细节见[部署研究](research/03_industrial_deployment.md)和[复现步骤](research/04_source_reproduction.md)。
+
+## 2026-09-26 流式算法补充
+
+| 固定作者仓库 | 用途 | 许可与取得范围 | 验证边界 |
+|---|---|---|---|
+| [Stream.FM](https://github.com/sp-uhh/streamfm/tree/ab2700c1154acc5c2ce67a5344182028336413f5) | 流匹配语音恢复、逐步状态接口 | AGPL-3.0；独立源码与许可，未取权重/数据 | 源码检查，非完整推理运行；状态接口疑点见增强研究 |
+| [FastEnhancer](https://github.com/aask1357/fastenhancer/tree/f85223bd546b27f39dc0744e0310dcd246f750a4) | 单通道流式降噪、显式ONNX状态 | MIT；独立源码与许可，模型二进制未取 | 非AEC/WPE，不引用设备性能；实现说明见工业研究 |
+
+两项均保存在忽略的独立下载目录，不随本书提交重新分发。上游 `onnx/` 模型目录被二进制筛选省略，实际API入口是 `scripts/test_onnx.py` 和 `scripts/export_onnx.py`。代码许可不替代权重和数据条款。

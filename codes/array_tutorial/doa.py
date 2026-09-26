@@ -239,14 +239,21 @@ def capon_spectrum(
     """Evaluate the Capon spectrum using a linear solve, never an explicit inverse."""
     matrix = _load_covariance(covariance, relative_diagonal_loading, condition_limit)
     candidates = _steering_rows(steering, matrix.shape[0])
-    solved = np.linalg.solve(matrix, candidates.T)
-    denominator = np.einsum("km,mk->k", candidates.conj(), solved)
+    with np.errstate(over="ignore", invalid="ignore"):
+        solved = np.linalg.solve(matrix, candidates.T)
+        denominator = np.einsum("km,mk->k", candidates.conj(), solved)
+    if not np.all(np.isfinite(solved)) or not np.all(np.isfinite(denominator)):
+        raise ValueError("Capon solve or denominator exceeds floating-point range")
     # The quadratic form scales inversely with covariance power, so the
     # imaginary round-off tolerance must use its own real-valued scale.
     if (np.any(denominator.real <= 0.0)
             or np.any(np.abs(denominator.imag) > 1e-8 * np.abs(denominator.real))):
         raise np.linalg.LinAlgError("Capon denominator is not positive real")
-    return 1.0 / denominator.real
+    with np.errstate(over="ignore", invalid="ignore"):
+        spectrum = 1.0 / denominator.real
+    if not np.all(np.isfinite(spectrum)):
+        raise ValueError("Capon spectrum exceeds floating-point range")
+    return spectrum
 
 
 def music_spectrum(

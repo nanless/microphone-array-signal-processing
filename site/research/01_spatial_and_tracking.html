@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>空间处理与追踪源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="b74df4f08677"><style>
+<meta name="source-digest" content="8c33d8040161"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -477,9 +477,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>对应 §9.2。本书 <code>tracking.py</code> 提供角度—角速度 KF；FilterPy 的 <code>kalman/</code> 和 Stone Soup 的 <code>predictor/kalman.py</code>、<code>updater/kalman.py</code> 提供不同非线性扩展。EKF 在当前状态线性化观测，UKF 传播一组 sigma 点，二者都需要与观测空间一致的均值和残差函数。</p>
 <p>本书平面方位以 $+y$ 为零点、向 $+x$ 为正，所以位置观测函数是 <code>atan2(x-x0, y-y0)</code>，例如相对位置 <code>(1,2)</code> 对应 26.565°。常见数学极角接口按 <code>atan2(y,x)</code> 使用时必须转换。教学追踪接口的角度、状态、协方差和重采样权重要求有限实数；复数、布尔、字符串和对象数组不通过先强制转浮点来接受。无效标量观测或预测参数在修改状态、消耗随机数之前拒绝。</p>
 <p>建议给 $179°$ 与 $-179°$ 的相邻观测、长期缺测和非等间隔时间戳；在笛卡尔状态到方位角观测时，检查零距离附近的雅可比与方位角环绕。过程噪声必须随时间模型离散化。预测方差增大不等于应该不断增加“目标存在概率”，运动不确定性和存在性是不同状态。</p>
+<p><a href="../09_source-tracking.html#sec-9-6">E09-08</a>补充状态所属时刻、发布时刻与消费时刻的区别：从 1.00 s 状态预测至 1.08 s，同时传播均值与协方差；不是把旧原始观测当作当前观测更新。对乱序融合，可读 <a href="https://stonesoup.readthedocs.io/en/v1.9.1/auto_examples/oosm/KalmanFilterOOSMExample.html">Stone Soup 1.9.1 固定延迟示例</a>，区分等待重排、忽略旧数据和按到达顺序直接处理的后果。本书未实现通用乱序融合器。</p>
 <span id="sec-42" class="anchor-alias" aria-hidden="true"></span><span id="32-sir-粒子滤波与重采样" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-c96c7f9e8c">32. SIR 粒子滤波与重采样</h3>
 <p>对应 §9.2.4。先读本书 <code>CircularParticleFilter</code> 和 <code>systematic_resample</code>，再读 ODAS <code>src/system/particle2particle.c</code> 与 <code>src/module/mod_sst.c</code> 中的持续状态管理。权重应由一致的似然和杂波模型形成，极小概率在对数域计算；重采样只是分配粒子数量，不创造观测信息。</p>
 <p>建议固定种子比较有无重采样的有效粒子数，再用双峰对称后验检查圆周均值是否有定义。单个均值可能落在两个真实峰之间，因此多峰后验应保留峰或混合表示。工业中记录粒子数、退化阈值、扩散噪声、出生位置范围和静默保持时间，不把所有声学峰强制解释成一个人。</p>
+<p><a href="../09_source-tracking.html#sec-9-6">E09-07</a>给出两次独立观测的权重递推：不重采样时，旧权重必须进入新后验。<code>tracking_time_exercises.py</code> 的两粒子例子从 <code>[0.5,0.5]</code> 经 <code>[0.622459,0.377541]</code> 变为 <code>[0.731059,0.268941]</code>；每次覆盖为似然会抹掉历史证据。一般重要性提议还需密度比，见 <a href="https://stonesoup.readthedocs.io/en/v1.9.1/auto_tutorials/04_ParticleFilter.html">Stone Soup 1.9.1 权重推导</a>。该确定性例子检验概率递推，不评价真实定位性能。</p>
 <span id="sec-43" class="anchor-alias" aria-hidden="true"></span><span id="33-gnnpda-与-jpda" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-fedcbffad1">33. GNN/PDA 与 JPDA</h3>
 <p>对应 §9.3。Stone Soup <code>dataassociator/neighbour.py</code> 给硬关联组件，<code>dataassociator/probability.py::JPDA</code> 根据满足一对一约束的联合事件计算边缘关联概率；<code>docs/tutorials/08_JPDATutorial.py</code> 展示如何连接预测器、假设器与更新器。<a href="https://github.com/dstl/Stone-Soup/blob/8d1edeb07ef8505ed065cbef435cfb5e517d9bdc/docs/tutorials/08_JPDATutorial.py">固定提交的 JPDA 教程源码</a>。</p>
 <p>建议沿用正文两轨三观测例，比较最近邻与 JPDA 在杂波靠近某条轨迹时的分配，再设置两人交叉。门控先减少不可行配对，检测概率和杂波密度再决定事件权重；几何最近不等于语音身份正确。角度观测的杂波密度单位是每度或每弧度，不能直接填位置空间每平方米的数值。</p>
@@ -519,7 +521,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>最小实验先合成已知两麦时延的单个平面波，检查预测相位差与几何字典匹配的符号；再加入第二个源、换麦间距和调换通道。若交换麦顺序却不更新字典，错误方向来自接口失配，不能据此衡量网络泛化。记录源数、频带、阵列适配方式、输出轨数和活动阈值，且把未见房间与未见阵列分开评价。根 README 写 MIT，但当前未核实完整许可及其致谢的 Cross3D/icoCNN 派生仿真部分声明，因此暂不自动下载；模型和 LibriSpeech、Noise92、LOCATA、RealMAN 数据另核授权。</p>
 <span id="sec-53" class="anchor-alias" aria-hidden="true"></span><span id="43-accdoa活动与方向共用一个向量" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-17869a65d7">43. ACCDOA：活动与方向共用一个向量</h3>
 <p>对应 §4.7。<a href="https://doi.org/10.1109/ICASSP39728.2021.9413609">Shimada 等 ICASSP 2021 原文</a>定义每类每帧的活动耦合方向输出。训练标签在事件不活动时为零向量，活动时为单位笛卡尔方向；预测向量的模用于活动判定，归一化后的方向用于定位。预测模不是自动校准过的存在概率，也不是声源距离。</p>
-<p>最小手算令二维示意标签为 30° 的单位向量 <code>(0.866,0.5)</code>，预测为 <code>(0.433,0.25)</code>，模为 0.5，但方向仍为 30°。活动判定是否通过取决于明确的阈值及 <code>&gt;</code>/<code>&gt;=</code> 约定；不能因角度正确就忽略漏检。真实三维任务应保留 z 分量。再设置同类别同时出现在 30° 与 90°：单向量不能无损表示两个方向，这正是 multi-ACCDOA 要解决的输出容量问题，而非增加网络参数即可消除的问题。</p>
+<p>最小手算沿用本书 $+y$ 为零点、向 $+x$ 为正的约定，二维 30° 单位标签为 $(\sin30^\circ,\cos30^\circ)=(0.5,\sqrt3/2)$，预测为 $(0.25,\sqrt3/4)$。预测模是 $\sqrt{0.25^2+(\sqrt3/4)^2}=0.5$，方向仍由 <code>atan2(x,y)</code> 得到 30°。若上游数据以 $+x$ 为零点并用 <code>atan2(y,x)</code>，要先转换坐标再比较；不能把其 <code>(0.866,0.5)</code> 向量直接代入本书约定后仍称 30°。活动判定是否通过取决于明确的阈值及 <code>&gt;</code>/<code>&gt;=</code> 约定；不能因角度正确就忽略漏检。真实三维任务应保留 z 分量。再设置同类别同时出现在 30° 与 90°：单向量不能无损表示两个方向，这正是 multi-ACCDOA 要解决的输出容量问题，而非增加网络参数即可消除的问题。</p>
 <p>可对照 <a href="https://github.com/sharathadavanne/seld-dcase2022/blob/c8adb1d3a5a35de2d6c7b6d19e01ad455eef3986/seldnet_model.py">DCASE2022 官方基线模型</a>的单/多轨输出和特征生成阅读，但它是后续届次实现，不等于已经复现 2021 原论文。模型结构、训练集合和评价指标都应随所用基线记录。</p>
 <span id="sec-54" class="anchor-alias" aria-hidden="true"></span><span id="44-multi-accdoaadpit-与-dcase2022-基线" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-ba4afab0bf">44. Multi-ACCDOA、ADPIT 与 DCASE2022 基线</h3>
 <p>对应 §4.7。<a href="https://arxiv.org/abs/2110.07124">Multi-ACCDOA 原论文</a>用多条活动耦合方向轨道表示同类重叠源；辅助重复排列不变训练（ADPIT）构造多种合法标签排列，使固定轨号不必永久对应同一实例。训练时的轨道置换不自动提供跨帧身份，因此这种输出不能直接替代第 9 章的持久轨迹 ID。</p>

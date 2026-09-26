@@ -54,7 +54,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "08_speech-separation.md": 9,
     "09_source-tracking.md": 9,
     "10_engineering-practice.md": 13,
-    "11_selection-guide.md": 9,
+    "11_selection-guide.md": 10,
     "12_appendix-symbols-math.md": 14,
     "13_appendix-guide.md": 22,
 }
@@ -77,9 +77,9 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 119
-EXPECTED_SUBSECTION_COUNT = 140
-EXPECTED_OUTLINE_ITEM_COUNT = 273
-EXPECTED_FIGURE_NUMBERS = set(range(1, 40))
+EXPECTED_SUBSECTION_COUNT = 141
+EXPECTED_OUTLINE_ITEM_COUNT = 274
+EXPECTED_FIGURE_NUMBERS = set(range(1, 41))
 # 研究附站使用独立显式清单，不挤占 14 篇教程或 273 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
@@ -588,12 +588,12 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36)
+            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
                 fail(errors, f"PNG 溯源失效：figures/{name}: {issue}")
-            if number in (34, 35, 36):
+            if number in (34, 35, 36, 40):
                 expected = hashlib.sha256((ROOT / "codes/audio/MANIFEST.json").read_bytes()).hexdigest()
                 with Image.open(path) as image:
                     if image.info.get("AudioManifestDigest") != expected:
@@ -1016,6 +1016,7 @@ def check_pdf(errors: list[str], notices: list[str]):
 
 
 EXPECTED_AUDIO_STEMS = {
+    "clock_reference", "clock_array", "clock_index_mean", "clock_oracle_mean",
     "spatial_reference", "spatial_array", "spatial_mic1", "spatial_unaligned", "spatial_aligned",
     "aec_far", "aec_near", "aec_microphone", "aec_frozen", "aec_unfrozen",
     "wpe_dry", "wpe_reverberant", "wpe_output", "separation_source1", "separation_source2",
@@ -1266,13 +1267,13 @@ def check_audio(errors):
         manifest = json.loads((root / "MANIFEST.json").read_text())
         records = manifest["files"]
         names = {stem + ".wav" for stem in EXPECTED_AUDIO_STEMS}
-        if len(records) != 60 or {r["file"] for r in records} != names:
-            fail(errors, "音频清单必须包含独立基线的 60 个 WAV")
+        if len(records) != 64 or {r["file"] for r in records} != names:
+            fail(errors, "音频清单必须包含独立基线的 64 个 WAV")
         if {p.name for p in root.glob("*.wav")} != names or {p.name for p in (SITE / "audio").glob("*.wav")} != names:
             fail(errors, "源音频或站点音频文件集合不符")
         if set(manifest["groups"]) != {"spatial", "aec", "aec_methods", "aec_subband", "wpe", "separation", "engineering", "tracking",
                                       "correlation", "polarity", "conditioning", "nonlinear", "fractional_array",
-                                      "spectral_subtraction"}:
+                                      "spectral_subtraction", "clock_drift"}:
             fail(errors, "音频实验组不符")
         expected_inputs = {"codes/examples/generate_audio_samples.py", "codes/array_tutorial/audio_samples.py",
                            "codes/array_tutorial/aec.py", "codes/array_tutorial/aec_ipnlms.py",
@@ -1306,6 +1307,7 @@ def check_audio(errors):
             if record["sample_rate_hz"] != 16000 or record["duration_s"] != frames / 16000:
                 fail(errors, f"音频清单采样率或时长不符：{name}")
             expected_group = ("spectral_subtraction" if name.startswith("spectral_") else
+                              "clock_drift" if name.startswith("clock_") else
                               "fractional_array" if name.startswith("fractional_") else
                               "aec_methods" if name.startswith("aec_methods_") else
                               "aec_subband" if name.startswith("aec_subband_") else name.split("_", 1)[0])

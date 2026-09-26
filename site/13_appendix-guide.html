@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 B · 路径地图与练习 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="b74df4f08677"><style>
+<meta name="source-digest" content="8c33d8040161"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -150,7 +150,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <ol>
 <li>运行 <code>codes/</code> 中只依赖 NumPy 的教学实现，核对手算结果、数组维度和退化边界。</li>
 <li>在隔离环境中用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线，记录房间、阵列和随机种子。</li>
-<li>运行 <code>scripts/</code> 中的两个绘图脚本，按当前参数复现 39 张编号图，并逐图核对正文条件。</li>
+<li>运行 <code>scripts/</code> 中的两个绘图脚本，按当前参数复现 40 张编号图，并逐图核对正文条件。</li>
 <li>按研究任务选择公开数据和固定版本参考系统，分别核对代码、模型与数据的许可和评测口径。</li>
 <li>在可用的多通道硬件上测实时性、同步和标定；仿真结果不能代替设备测量。</li>
 </ol>
@@ -804,7 +804,7 @@ $$</p>
 <p>默认脚本对固定近左位置另算 32 阶结果，并与 40 阶比较：四麦 $T_{60}$ 中位数相差约 $2.08\times10^{-6}$ s，DRR 中位数相差约 $7.55\times10^{-7}$ dB，低于本题自定的 0.02 s 与 0.5 dB 判据。本书还实际以 <code>--max-order 48</code> 重跑六个位置：与 40 阶相比，六个位置的 $T_{60}$ 中位数变化都小于 $10^{-6}$ s，DRR 中位数变化都小于 $10^{-6}$ dB，1° 网格的方位估计不变。这些比较说明所列指标对 40～48 阶的截断不敏感，不证明频谱细节或其他几何设置也已收敛；改变房间、源位或指标后须重新检查。</p>
 <h3 id="sec-u-511d1a6b5e">第 16 题：试听文件与复现</h3>
 <p>仓库已将六组源信号、四麦完整房间输出和四麦仅直达输出，共 18 个 PCM WAV 单独保存在 <code>codes/room_audio/</code>，参数、共同增益、种子和逐文件摘要见<a href="room_audio/MANIFEST.json">房间音频清单</a>；<a href="research/05_exercises_and_audio.html#17-六位置房间响应与定位">逐组试听入口</a>列出全部文件。</p>
-<p>每组使用与定位估计相同的固定白高斯噪声输入；全部文件采用同一个显式增益，不逐文件峰值归一化，保留传播时延和增益差异。文件是数学合成白噪声，不是真实语音或实测房间录音；试听前先降低播放音量。它们与主清单的 60 个 <code>codes/audio/</code> 样本分别管理。</p>
+<p>每组使用与定位估计相同的固定白高斯噪声输入；全部文件采用同一个显式增益，不逐文件峰值归一化，保留传播时延和增益差异。文件是数学合成白噪声，不是真实语音或实测房间录音；试听前先降低播放音量。它们与主清单的 64 个 <code>codes/audio/</code> 样本分别管理。</p>
 <p>若要重新生成到个人实验目录，先在装有锁定版 pyroomacoustics 0.10.0 的隔离环境中运行 <code>python -m codes.examples.room_srp_exercise --run --audio-dir /tmp/room-srp-audio-new</code>；为防覆盖，该目录必须尚不存在。</p>
 <h3 id="sec-u-ac903dbcd8">第 16 题：能得出的结论</h3>
 <p><strong>解读边界。</strong> 固定的 $\pm30°$ 条件分别在 1 m 与 2.5 m 比较；这间合成房间中，远位置的 DRR 较低，绝对 DOA 误差由 1° 变成 2°。</p>
@@ -831,13 +831,15 @@ $$</p>
 <pre><code class="language-bash">.venv/bin/python -m unittest tests.test_codes_engineering -v
 .venv/bin/python -m codes.examples.ch10_engineering_baselines
 .venv/bin/python -m codes.examples.exercises_engineering
+.venv/bin/python -m codes.examples.tracking_time_exercises
 </code></pre>
 <p>第 10 章示例使用确定性输入，覆盖 SRO 直线拟合与线性重采样、VAD 迟滞与语音结束保持时间、峰值保护 AGC、固定容量环形缓冲、处理超时与队列模拟，以及 Q1.15 饱和量化。线性重采样、Python 环形缓冲和调度模拟都是教学基线，不应替换带抗混叠滤波的流式重采样器、无锁实时队列或目标系统测量。</p>
-<p>继续做设备实验时，可按<a href="research/03_industrial_deployment.html">工业实现研究</a>的 I01～I27 选择一个主题，例如采集与路由、连续重采样、VAD/AGC/NS、DSP 固件、模型运行时或评分。先固定源码提交，再记录依赖、编译、模型、声学输入和故障状态；“已下载”只能说明源码在本机，不能代替“已编译、已运行、已测量”。</p>
+<p>新增的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/tracking_time_exercises.py">状态与时间练习</a>分别对应 E09-07 的旧权重递推、E09-08 的测量到消费时间外推、E10-15 的预卷与结束事件、E11-08 的零失败风险上界。先按题面独立手算，再检查代码中间值；四题均有<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_time_state_exercises.py">独立边界测试</a>，不需要模型权重或声卡。</p>
+<p>继续做设备实验时，可按<a href="research/03_industrial_deployment.html">工业实现研究</a>的 I01～I28 选择一个主题，例如采集与路由、连续重采样、VAD/AGC/NS、DSP 固件、模型运行时或评分。先固定源码提交，再记录依赖、编译、模型、声学输入和故障状态；“已下载”只能说明源码在本机，不能代替“已编译、已运行、已测量”。</p>
 <p>会议识别复现还要固定数据准备与文本规范化。CHiME-8 的官方 <code>chime-utils</code> 提供 SegLST 转写格式、该届规范化及 cpWER/tcpWER 评分；其中缺失场景的忽略选项会改变实际计分范围。应保留每个场景的输入文件数、失败数和最终参与评分的清单，并先用正确转写、说话人交换、漏词和时间戳偏移的小夹具检查评分口径。<a href="https://github.com/chimechallenge/chime-utils/tree/152882404f572d40769ef02bf91c5a9a9cfc9c78" title="citation">CHiME-8 官方评分实现</a></p>
-<p>绘图脚本都在 <code>scripts/</code> 里。图 34～36 和图 37～38 读取或复算指定教学数据，图 39 是算法流程图；先生成音频，再运行两个绘图脚本。图片写入 <code>figures/</code>，共 39 张：</p>
+<p>绘图脚本都在 <code>scripts/</code> 里。图 34～36 和图 37～38 读取或复算指定教学数据，图 39 是算法流程图，图 40 复算时钟漂移音频；先生成音频，再运行两个绘图脚本。图片写入 <code>figures/</code>，共 40 张：</p>
 <pre><code class="language-bash">.venv/bin/python codes/examples/generate_audio_samples.py
-.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36
+.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～39（回声消除专题）
 </code></pre>
 <p>Windows 上把 <code>.venv/bin/python</code> 换成 <code>.venv\Scripts\python</code>，其余不变。</p>
