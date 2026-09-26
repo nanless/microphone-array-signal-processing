@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 A · 符号术语数学 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="8c33d8040161"><style>
+<meta name="source-digest" content="7474d21b9b16"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -820,6 +820,69 @@ $$</p>
 <p>这里两个特征值由 $4,1$ 变为 $1,1$，但目标导向矢量也改变了。若用白化后的数据与原导向矢量 $[1,1]^\top$ 匹配，空间模型就不一致。这个矩阵例子由本书构造，并非实测噪声。</p>
 <p>PHAT 的运算对象却是<strong>一个频点的一对通道的互功率谱</strong>：当 $G_{12}(f)\ne0$ 时，$G_{12}(f)/|G_{12}(f)|$ 是一个模为 1 的复数，不会把两路快拍分别乘上 $1/2$ 和 $1$。例如两路确定的复频谱值为 $X_1=2$、$X_2=1$ 时，互谱为 2，PHAT 后为 1，但这不是把噪声协方差变成单位阵。</p>
 <p>本题两路噪声互不相关，理论噪声互功率谱为 0；此时 PHAT 还须跳过或保护分母，更不能从零互谱推得 $\mathbf W$。这反驳了“PHAT 等于空间白化”的说法，但不否定 PHAT 在时延估计中抑制源谱幅度影响的用途。复算入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_engineering.py"><code>exercises_engineering.py</code></a> 的 <code>E12-04</code>。</p>
+<p>第 4 章 E04-11 进一步给出非对角噪声协方差与完整方向搜索：只白化协方差会得到 −4.8°，同步变换导向才得到给定的 0° 真值。那是已知噪声模型下的确定性例子，不是一般噪声中的定位精度保证。</p>
+<p><strong>E12-05：奇异协方差中，把逆换成伪逆是否总能得到 MVDR？</strong> 考虑明确的一组输入：</p>
+<p>$$\mathbf R=\begin{bmatrix}0&0\\0&1\end{bmatrix},\qquad
+\vec a=\begin{bmatrix}1\\1\end{bmatrix},\qquad
+\min_{\vec w}\ \vec w^H\mathbf R\vec w
+\quad\text{使 }\vec w^H\vec a=1\text{。}$$</p>
+<p>这里第一通道在该理想模型中完全没有噪声，第二通道噪声功率为 1；目标在两路的响应都是 1。协方差是半正定而非正定，不能直接套用第 5 章式(5-3)的可逆前提。</p>
+<p><strong>第一步：先用原问题求答案。</strong> 令权重为 $[w_1,w_2]^\top$。约束是 $w_1^*+w_2^*=1$，目标函数是 $|w_2|^2$。非负量的下界为 0；取 $w_2=0,w_1=1$ 同时满足约束并达到下界，因此 $\vec w_*=[1,0]^\top$ 是全局最优解，输出噪声功率为 0。</p>
+<p><strong>第二步：检查机械替换的结果。</strong> 本题 Moore–Penrose 伪逆为 $\mathbf R^+=\operatorname{diag}(0,1)$。若未经条件检查就用</p>
+<p>$$\vec w_+=\frac{\mathbf R^+\vec a}{\vec a^H\mathbf R^+\vec a}
+=[0,1]^\top,$$</p>
+<p>它的分母为 1，约束也确实满足，但输出噪声功率为 1。程序没有除零、没有 NaN、也没有违反名义响应，却仍然没有解对原优化问题。</p>
+<p>原因在于 $\mathbf R^+$ 把零特征值方向映射成零；而本题第一通道方向恰好可以在不付噪声代价的同时满足目标约束。机械替换把这个有用的零空间分量丢掉了。这个反例只推翻“所有奇异协方差都可以这样替换”的说法，不表示伪逆在所有波束或最小二乘问题中都无效。</p>
+<p><strong>第三步：对照正加载的极限。</strong> 对 $\delta>0$，$\mathbf R_\delta=\mathbf R+\delta\mathbf I=\operatorname{diag}(\delta,1+\delta)$ 可逆，式(5-3)给出</p>
+<p>$$\vec w_\delta
+=\frac{[1/\delta,\ 1/(1+\delta)]^\top}{1/\delta+1/(1+\delta)}
+=\begin{bmatrix}(1+\delta)/(1+2\delta)\\\delta/(1+2\delta)\end{bmatrix}\text{。}$$</p>
+<p>为了比较同一声场，仍用原始 $\mathbf R$ 评分，输出噪声功率为 $[\delta/(1+2\delta)]^2$：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">方法或加载量</th>
+<th scope="col" style="text-align: right;">第一权重</th>
+<th scope="col" style="text-align: right;">第二权重</th>
+<th scope="col" style="text-align: right;">原声场输出噪声功率</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>机械替换为伪逆</td>
+<td style="text-align: right;">0.000000</td>
+<td style="text-align: right;">1.000000</td>
+<td style="text-align: right;">1.000000</td>
+</tr>
+<tr>
+<td>$\delta=1$</td>
+<td style="text-align: right;">0.666667</td>
+<td style="text-align: right;">0.333333</td>
+<td style="text-align: right;">0.111111</td>
+</tr>
+<tr>
+<td>$\delta=0.1$</td>
+<td style="text-align: right;">0.916667</td>
+<td style="text-align: right;">0.083333</td>
+<td style="text-align: right;">0.006944</td>
+</tr>
+<tr>
+<td>$\delta=0.01$</td>
+<td style="text-align: right;">0.990196</td>
+<td style="text-align: right;">0.009804</td>
+<td style="text-align: right;">0.000096</td>
+</tr>
+<tr>
+<td>直接解原约束问题</td>
+<td style="text-align: right;">1.000000</td>
+<td style="text-align: right;">0.000000</td>
+<td style="text-align: right;">0.000000</td>
+</tr>
+</tbody>
+</table></div>
+<p>当 $\delta\to0^+$，加载解趋向 $[1,0]^\top$，并不趋向机械替换的 $[0,1]^\top$。数值截断、伪逆与加载极限是不同操作，不能仅因都涉及“小特征值”就互换。</p>
+<p><strong>工程解释。</strong> 真实麦克风一般不会拥有完全零噪声通道；这个精确半正定模型用于揭示优化前提，不能据此推荐把实际加载降到零。有限快拍、通道重复或秩约束模型都可能产生奇异样本协方差。此时应先判断目标是否含零空间分量，再选加载、明确的子空间约束或其他相应求解方法。E12-03 中伪逆给出最小范数最小二乘解的结论仍然成立，那是另一个目标函数与约束问题。</p>
+<p>本题是本书自行构造的代数反例，运行 <code>.venv/bin/python -m codes.examples.spatial_model_exercises</code> 的 <code>E12-05</code> 可核对可行性、两种输出功率与加载极限；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/spatial_model_exercises.py">源码</a>使用给定矩阵，不把反例扩写成通用奇异 MVDR 求解器。</p>
 <hr />
 <blockquote>
 <p>📄 本篇信息：配图 0 张 ｜ <a href="index.html">回首页</a></p>

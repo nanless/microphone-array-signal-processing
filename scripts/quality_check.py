@@ -54,9 +54,9 @@ EXPECTED_SUBSECTION_COUNTS = {
     "08_speech-separation.md": 9,
     "09_source-tracking.md": 9,
     "10_engineering-practice.md": 13,
-    "11_selection-guide.md": 10,
+    "11_selection-guide.md": 11,
     "12_appendix-symbols-math.md": 14,
-    "13_appendix-guide.md": 22,
+    "13_appendix-guide.md": 23,
 }
 # 上表为独立发布基线，不从待检 HTML 或构建器反推。
 EXPECTED_CHAPTERS = [
@@ -77,9 +77,9 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 119
-EXPECTED_SUBSECTION_COUNT = 141
-EXPECTED_OUTLINE_ITEM_COUNT = 274
-EXPECTED_FIGURE_NUMBERS = set(range(1, 41))
+EXPECTED_SUBSECTION_COUNT = 143
+EXPECTED_OUTLINE_ITEM_COUNT = 276
+EXPECTED_FIGURE_NUMBERS = set(range(1, 42))
 # 研究附站使用独立显式清单，不挤占 14 篇教程或 273 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
@@ -539,7 +539,7 @@ def figure_inventory_issues(references, png_names):
             issues.append(f"图号与文件名不匹配：alt 图{alt_match.group(1)} -> {name}")
     if numbers != EXPECTED_FIGURE_NUMBERS:
         issues.append(
-            f"正文图号应为 1..39：缺失 {sorted(EXPECTED_FIGURE_NUMBERS - numbers)}，"
+            f"正文图号应为 1..{max(EXPECTED_FIGURE_NUMBERS)}：缺失 {sorted(EXPECTED_FIGURE_NUMBERS - numbers)}，"
             f"多出 {sorted(numbers - EXPECTED_FIGURE_NUMBERS)}")
     for number, names in names_by_number.items():
         if len(names) > 1:
@@ -588,12 +588,12 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40)
+            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
                 fail(errors, f"PNG 溯源失效：figures/{name}: {issue}")
-            if number in (34, 35, 36, 40):
+            if number in (34, 35, 36, 40, 41):
                 expected = hashlib.sha256((ROOT / "codes/audio/MANIFEST.json").read_bytes()).hexdigest()
                 with Image.open(path) as image:
                     if image.info.get("AudioManifestDigest") != expected:
@@ -1016,6 +1016,7 @@ def check_pdf(errors: list[str], notices: list[str]):
 
 
 EXPECTED_AUDIO_STEMS = {
+    "interpolation_ideal_half", "interpolation_linear_half", "interpolation_ideal_one", "interpolation_linear_twice",
     "clock_reference", "clock_array", "clock_index_mean", "clock_oracle_mean",
     "spatial_reference", "spatial_array", "spatial_mic1", "spatial_unaligned", "spatial_aligned",
     "aec_far", "aec_near", "aec_microphone", "aec_frozen", "aec_unfrozen",
@@ -1267,13 +1268,13 @@ def check_audio(errors):
         manifest = json.loads((root / "MANIFEST.json").read_text())
         records = manifest["files"]
         names = {stem + ".wav" for stem in EXPECTED_AUDIO_STEMS}
-        if len(records) != 64 or {r["file"] for r in records} != names:
-            fail(errors, "音频清单必须包含独立基线的 64 个 WAV")
+        if len(records) != 68 or {r["file"] for r in records} != names:
+            fail(errors, "音频清单必须包含独立基线的 68 个 WAV")
         if {p.name for p in root.glob("*.wav")} != names or {p.name for p in (SITE / "audio").glob("*.wav")} != names:
             fail(errors, "源音频或站点音频文件集合不符")
         if set(manifest["groups"]) != {"spatial", "aec", "aec_methods", "aec_subband", "wpe", "separation", "engineering", "tracking",
                                       "correlation", "polarity", "conditioning", "nonlinear", "fractional_array",
-                                      "spectral_subtraction", "clock_drift"}:
+                                      "spectral_subtraction", "clock_drift", "interpolation"}:
             fail(errors, "音频实验组不符")
         expected_inputs = {"codes/examples/generate_audio_samples.py", "codes/array_tutorial/audio_samples.py",
                            "codes/array_tutorial/aec.py", "codes/array_tutorial/aec_ipnlms.py",

@@ -273,7 +273,7 @@ $$\lambda^*\,\vec{a}^H\mathbf{R}_{nn}^{-1}\vec{a} = 1。$$
 
 $$\lambda = \frac{1}{\vec{a}^H\mathbf{R}_{nn}^{-1}\vec{a}}$$
 
-协方差矩阵一般是半正定的；这里写普通逆矩阵，额外假定 $\mathbf R_{nn}$ 正定。若快拍不足或矩阵奇异，应加正则、使用降秩方法或在明确秩条件下用伪逆。正定时分母是正实数。
+协方差矩阵一般是半正定的；这里写普通逆矩阵，额外假定 $\mathbf R_{nn}$ 正定。若快拍不足或矩阵奇异，应加正则、使用降秩方法或在明确秩条件下用伪逆。正定时分母是正实数。附录 A 的 E12-05 用一个两通道反例说明：把逆机械换成伪逆，即使得到的权重满足无失真约束，也可能没有最小化原噪声功率。
 
 **第 4 步：把倍数代回第 2 步。**
 
@@ -381,7 +381,7 @@ $$\hat{\mathbf R}_{\mathrm{load}}=\hat{\mathbf R}+\alpha\,\frac{\operatorname{tr
 
 在无失真约束下，显式约束 $\|\vec w\|^2\le\delta$ 就是在设置 WNG 下限。若该约束在最优点处有效，其拉格朗日乘子会产生同形的对角加载。
 
-给定 $\delta$ 对应的 $\alpha$ 依赖 $\hat{\mathbf R}$、$\vec a$ 和频点，不能把任意加载量与任意 WNG 门限视为相同。$\alpha$ 应按协方差条件数、器件失配仿真和所需 WNG 扫描选择。[Li, Stoica & Wang, IEEE TSP 2003](https://doi.org/10.1109/TSP.2003.812831 "citation")
+给定 $\delta$ 对应的 $\alpha$ 依赖 $\hat{\mathbf R}$、$\vec a$ 和频点，不能把任意加载量与任意 WNG 门限视为相同。$\alpha$ 应按协方差条件数、器件失配仿真和所需 WNG 扫描选择。[Li, Stoica & Wang, IEEE TSP 2003](https://doi.org/10.1109/TSP.2003.812831 "citation") E05-07 给出一组可手算的协方差，从 WNG 下限反推最小加载，并检查为此增加的干扰残留。
 
 **对角加载的代价表（相对加载量 $\alpha$ 从小到大）**：
 
@@ -947,6 +947,47 @@ B(30^\circ)=\frac{1+\mathrm j}{2(\beta+1)}。$$
 这条推导把 §5.2 的 WNG 与 §5.4.1 的球形不确定集联系起来；[Vorobyov、Gershman 与 Luo 2003，§III-A、式(18)–(25)](https://users.aalto.fi/~vorobys1/RobBeamformer.pdf "citation")讨论用此类集合构造最坏情况约束。该论文的鲁棒优化还需联合选择权重，不能把本题对既定权重的误差界当成完整求解器。数值由 [`spatial_precision_exercises.py`](../codes/examples/spatial_precision_exercises.py) 的 `E05-06` 输出，测试直接验证构造误差达到手算界。
 
 **实现边界检查。** 数学式成立不意味着任意有限浮点输入都能直接计算。`mvdr_weights` 和 `capon_spectrum` 在求解、二次型归一化或最终结果超出浮点范围时明确报错；`apply_beamformer` 也拒绝非有限输出。例如 $\mathbf R=\mathbf I_2$、$\vec a=[10^{200},10^{200}]^\top$ 的数学 MVDR 权重是 $[5\times10^{-201},5\times10^{-201}]^\top$，但未缩放的二次型会溢出。本书接口拒绝这一输入，避免用无穷大作分母后静默返回零权重；它没有承诺支持全部可表示的极端尺度。回归见 [`test_codes_spatial_precision.py`](../tests/test_codes_spatial_precision.py)，也保留较大但可正常计算的尺度检查。
+
+**E05-07：给定白噪声增益要求，加载量至少应取多少？** E05-02 比较预先指定的加载量，E05-06 说明 WNG 与导向误差的关系。现在反过来设计：两麦名义目标导向为 $\vec a=[1,1]^\top$，干扰导向为 $\vec b=[1,j]^\top$，干扰功率为 10，独立白噪声每通道功率为 1。取
+
+$$\mathbf R=\mathbf I+10\vec b\vec b^H
+=\begin{bmatrix}11&-10j\\10j&11\end{bmatrix},\qquad
+\mathbf R_\varepsilon=\mathbf R+\varepsilon\mathbf I,\quad\varepsilon\ge0\text{。}$$
+
+要求名义目标响应为 1，并使**线性 WNG 至少为 1.6**，即约 2.0412 dB。这里只在这组固定协方差的加载 MVDR 权重中选取最小 $\varepsilon$，不声称已求出所有可能鲁棒约束下的最优滤波器。
+
+**第一步：把加载量写进权重。** 令 $h=11+\varepsilon$，则 $\mathbf R_\varepsilon^{-1}=(h^2-100)^{-1}\begin{bmatrix}h&10j\\-10j&h\end{bmatrix}$。代入式(5-3)时，行列式因子消去，归一化分母剩下 $2h$，得到
+
+$$\begin{aligned}
+\vec w_\varepsilon&=\begin{bmatrix}1/2+j5/(11+\varepsilon)\\1/2-j5/(11+\varepsilon)\end{bmatrix},\\
+\|\vec w_\varepsilon\|_2^2&=\frac12+\frac{50}{(11+\varepsilon)^2},\\
+G_{\mathrm{WNG}}(\varepsilon)&=\frac{1}{1/2+50/(11+\varepsilon)^2}\text{。}
+\end{aligned}\tag{5-11}$$
+
+$G_{\mathrm{WNG}}$ 是线性量；式(2-5)的 dB 表达是 $10\log_{10}G_{\mathrm{WNG}}$。两项虚部在目标响应中相消，所以 $\vec w_\varepsilon^H\vec a=1$ 始终成立。
+
+**第二步：解不等式，不靠试参数。** 因分母为正，要求 $G_{\mathrm{WNG}}\ge1.6$ 等价于
+
+$$\frac12+\frac{50}{(11+\varepsilon)^2}\le\frac{1}{1.6}=0.625
+\quad\Longrightarrow\quad(11+\varepsilon)^2\ge400
+\quad\Longrightarrow\quad\varepsilon\ge9\text{。}$$
+
+由于 $\varepsilon\ge0$，这里取正平方根。最小绝对加载为 9；若接口使用 $\mathbf R+\alpha\operatorname{tr}(\mathbf R)\mathbf I/M$，本题 $M=2$、平均对角元素为 11，因此相对加载参数为 $\alpha=9/11\approx0.818182$。绝对加载 9 与相对加载 9 是两个不同配置。
+
+**第三步：把抗误差收益和干扰代价分别算出。** 在 $\varepsilon=9$ 时，$\vec w=[0.5+0.25j,0.5-0.25j]^\top$。其范数平方为 0.625，WNG 为 1.6；干扰响应为 $\vec w^H\vec b=0.25+0.25j$，功率增益为 0.125。原声场输出噪声功率是 $10\times0.125+0.625=1.875$。
+
+| 绝对加载 $\varepsilon$ | 相对加载 $\alpha=\varepsilon/11$ | 线性 WNG | 干扰功率增益 $|\vec w^H\vec b|^2$ | 原协方差输出噪声功率 |
+|---:|---:|---:|---:|---:|
+| 0 | 0.000000 | 1.095023 | 0.004132 | 0.954545 |
+| 8 | 0.727273 | 1.566161 | 0.112188 | 1.760388 |
+| 9 | 0.818182 | 1.600000 | 0.125000 | 1.875000 |
+| 20 | 1.818182 | 1.811499 | 0.229448 | 2.846514 |
+
+评分使用**原始** $\mathbf R$，不把 $\vec w^H\mathbf R_\varepsilon\vec w$ 误称为物理噪声功率。后者多出 $\varepsilon\|\vec w\|^2$，是设计惩罚项。表中更大的 WNG 伴随更弱的干扰抑制；仅凭 WNG 增大不能说整体增强效果变好。
+
+**边界检查。** 当 $\varepsilon\to\infty$，权重趋向 $[0.5,0.5]^\top$，WNG 趋向 2。对于本题的名义导向，无失真约束与 Cauchy–Schwarz 不等式给出 $1=|\vec w^H\vec a|^2\le2\|\vec w\|^2$，因此 WNG 不可能大于 2。本题的有限加载始终留有非零虚部，所以恰好达到 2 只能取极限；要求 2.1 则没有解。一般阵列应根据实际协方差重新求解，不能沿用本题的数字 9。
+
+本题为式(5-3)与 WNG 定义的本书代数推导，复算见[`spatial_model_exercises.py`](../codes/examples/spatial_model_exercises.py)的 `E05-07`。代码实际调用 `mvdr_weights`，测试用式(5-11)及干扰响应独立核对，并包含刚低于要求的 $\varepsilon=8$ 作为反例。
 
 从单频权重走到波形还需要逐频点处理与 iSTFT。可先用[音频实验总览](../codes/research/05_exercises_and_audio.md)中的对齐平均样本检查通道、增益和参考时延，再搭建自适应波束实验。总览中的对齐平均不是 MVDR 输出，不能把它的听感或误差写成 E05-02 或 E05-05 的实验结果。
 

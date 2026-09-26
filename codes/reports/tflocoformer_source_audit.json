@@ -1,0 +1,153 @@
+{
+  "source": "https://github.com/merlresearch/tf-locoformer",
+  "revision": "7a615460d347ff7334a13dbb831d16280da72cdc",
+  "method": "AST and dimension-only replay",
+  "executed_upstream": false,
+  "files": {
+    "standalone/tflocoformer_separator.py": {
+      "sha256": "6c01fa3cd005c0da5705ebf5399c48c686aba7c0319820bece0aaefa86cc6aa2",
+      "inspection": {
+        "default_norm": {
+          "value": "rmsgrouporm",
+          "allowed": [
+            "layernorm",
+            "rmsgroupnorm"
+          ],
+          "mismatch": true,
+          "default_line": 65,
+          "assert_line": 296
+        },
+        "four_dimensional_path": {
+          "assert_line": 152,
+          "transpose_line": 153,
+          "concat_line": 155,
+          "conv_line": 91,
+          "cases": [
+            {
+              "input": [
+                2,
+                5,
+                1,
+                17
+              ],
+              "passes_axis1_assertion": false
+            },
+            {
+              "input": [
+                2,
+                1,
+                5,
+                17
+              ],
+              "passes_axis1_assertion": true,
+              "real_imag_conv_input": [
+                2,
+                10,
+                1,
+                17
+              ],
+              "matches_conv_channels": false
+            },
+            {
+              "input": [
+                2,
+                1,
+                1,
+                17
+              ],
+              "passes_axis1_assertion": true,
+              "real_imag_conv_input": [
+                2,
+                2,
+                1,
+                17
+              ],
+              "matches_conv_channels": true
+            }
+          ]
+        },
+        "scope": "static source and dimension replay only; no upstream construction or inference"
+      }
+    },
+    "espnet2/enh/separator/tflocoformer_separator.py": {
+      "sha256": "033af99d38e2df367ff64f8e54201f4dfd2abf1ca1c0e0b117f312d7d728876b",
+      "inspection": {
+        "default_norm": {
+          "value": "rmsgrouporm",
+          "allowed": [
+            "layernorm",
+            "rmsgroupnorm"
+          ],
+          "mismatch": true,
+          "default_line": 73,
+          "assert_line": 320
+        },
+        "four_dimensional_path": {
+          "assert_line": 165,
+          "transpose_line": 166,
+          "concat_line": 168,
+          "conv_line": 99,
+          "cases": [
+            {
+              "input": [
+                2,
+                5,
+                1,
+                17
+              ],
+              "passes_axis1_assertion": false
+            },
+            {
+              "input": [
+                2,
+                1,
+                5,
+                17
+              ],
+              "passes_axis1_assertion": true,
+              "real_imag_conv_input": [
+                2,
+                10,
+                1,
+                17
+              ],
+              "matches_conv_channels": false
+            },
+            {
+              "input": [
+                2,
+                1,
+                1,
+                17
+              ],
+              "passes_axis1_assertion": true,
+              "real_imag_conv_input": [
+                2,
+                2,
+                1,
+                17
+              ],
+              "matches_conv_channels": true
+            }
+          ]
+        },
+        "scope": "static source and dimension replay only; no upstream construction or inference"
+      }
+    },
+    "egs2/wsj0_2mix/enh1/separate.py": {
+      "sha256": "7e3fe24db3d4da6d0f0ff7f6a29e0129617f14d0a7f8f9a07f482eab95c175d9"
+    },
+    "egs2/whamr/enh1/conf/tuning/train_enh_tflocoformer.yaml": {
+      "sha256": "379ab49ac27c5776416fa02d08516137358cff4c0206496567f8af59ade9eada"
+    },
+    "README.md": {
+      "sha256": "6394db55bac96048a2899241e1e75800f2df2641dd51ee9a3c66c4bc7c9085db"
+    },
+    "LICENSE.md": {
+      "sha256": "0b3204d175388251410569d1e6ae8efc9e7e4ae2572ef11ace4015e0ca8d61b7"
+    },
+    "LICENSES/Apache-2.0.md": {
+      "sha256": "0b3204d175388251410569d1e6ae8efc9e7e4ae2572ef11ace4015e0ca8d61b7"
+    }
+  }
+}

@@ -292,7 +292,7 @@ DRR 可作为距离估计的声学线索，但必须同时考虑房间和声源�
 
 分帧还要单独指定端点策略。本书 [`spectral.py`](../codes/array_tutorial/spectral.py) 的默认设置 `center=True` 会在两端各补半窗，并把末端补到完整帧，因此同一段 1 s 信号得到 126 帧；设为 `center=False` 时，本例才得到 122 帧。一般长度若不能恰好覆盖，代码仍会补齐末帧，不能直接套用只取完整窗的向下取整式。
 
-信号端点补零会改变帧数；固定一帧后，把 FFT 从 512 点补到 1024 点则只加密频率网格，两者不是同一个操作。外部接口也应分别检查端点扩展和末尾补齐设置，见 [SciPy STFT 的 `boundary` 与 `padded` 定义](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.stft.html "citation")。
+信号端点补零会改变帧数；固定一帧后，把 FFT 从 512 点补到 1024 点则只加密频率网格，两者不是同一个操作。外部接口也应分别检查端点扩展和末尾补齐设置，见 [SciPy STFT 的 `boundary` 与 `padded` 定义](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.stft.html "citation")。从单边 FFT 换算功率还须处理正负频率配对、DC/Nyquist 端点与原样本长度，完整手算见 E02-08。
 
 按上述不补端点、只取完整窗的口径，1 s、4 麦录音展开为 $122\times257=31354$ 个时频点，每个点上有一个 4 维快拍向量。这就是后文协方差矩阵 $\hat{\mathbf{R}}(f_k)$ 在每个频点上平均的对象，每个频点有 122 个快拍参与平均。
 
@@ -655,6 +655,44 @@ $$\mathbf R=\frac{1}{2a}\,a\begin{bmatrix}2&1\\1&1\end{bmatrix}=\begin{bmatrix}1
 遇到 VAD 冻结、跳帧或可变帧移，要按实际更新间隔解释遗忘时间。冻结期间不执行递推，旧状态也就不会按墙钟时间自动衰减。零初始化的权重不足仍按 E02-05 处理，不能靠时间常数换算消除。
 
 这道题由 [`spatial_precision_exercises.py`](../codes/examples/spatial_precision_exercises.py) 的 `E02-07` 复算；全部数值来自本书几何级数推导，无随机抽样。脚本保留未舍入值，上表显示六位小数。
+
+**E02-08：为什么单边频谱模方之和不等于信号功率？** 取四个实样本 $x=[1,0,-1,0]$，不加窗、不减均值。使用 NumPy 默认的未归一化正向 DFT，得到 `rfft(x)=[0,2,0]`。求原四个样本的均方值；再把 FFT 补零到八点，检查均方值是否改变。
+
+**第一步：从时间域确定答案。** 均方值是 $(1^2+0^2+(-1)^2+0^2)/4=0.5$。若样本单位是 Pa，结果单位为 Pa²；若是未经声学校准的数字样本，就不能写成声压级。这里“功率”指信号均方值，不直接等于声学瓦数。
+
+**第二步：还原单边频谱没有存下来的能量。** 实输入的正负频率互为共轭，模方相等。四点完整 DFT 是 $[0,2,0,2]$；`rfft` 只存下前面三项。内部正频点要计两份；直流 DC 只计一份。偶数 FFT 长度下，Nyquist 点也只计一份，因为它已代表同一个离散频点。
+
+设原样本数为 $L$，补零后的 FFT 长度为 $N\ge L$，单边频谱为 $X_+[k]$。将 Parseval 恒等式先用于能量，再除以**原长度**，得到本书换算式：
+
+$$\begin{aligned}
+\sum_{n=0}^{L-1}|x[n]|^2
+&=\frac{1}{N}\sum_{k=0}^{\lfloor N/2\rfloor}c_k|X_+[k]|^2,\\
+P_x&=\frac{1}{NL}\sum_{k=0}^{\lfloor N/2\rfloor}c_k|X_+[k]|^2,\\
+c_k&=\begin{cases}
+1,&k=0,\ \text{或 }N\text{ 为偶数且 }k=N/2,\\
+2,&\text{其他单边频点。}
+\end{cases}
+\end{aligned}\tag{2-7}$$
+
+这里正向变换没有 $1/N$，所以 Parseval 的能量式有 $1/N$。当 $L=N=4$ 时，本题得到 $(0+2\times4+0)/16=0.5$。漏掉内部频点的两份能量会算成 0.25；把所有频点一律乘二则会在 DC 或 Nyquist 输入上算错。
+
+**第三步：逐项检查端点与补零。** 下表使用同一约定；“加权模方和”指式(2-7)的求和部分。
+
+| 输入与操作 | 原长度 $L$ | FFT 长度 $N$ | 加权模方和 | 原样本均方值 |
+|---|---:|---:|---:|---:|
+| $[1,0,-1,0]$，不补零 | 4 | 4 | 8 | 0.500000 |
+| $[1,1,1,1]$，只有 DC | 4 | 4 | 16 | 1.000000 |
+| $[1,-1,1,-1]$，只有 Nyquist | 4 | 4 | 16 | 1.000000 |
+| $[1,0,-1,0]$，尾部补四个零 | 4 | 8 | 16 | 0.500000 |
+| $[1,-1,0]$，奇数 FFT 长度 | 3 | 3 | 6 | 0.666667 |
+
+补零到八点时，单边频谱为 $[0,1+j,2,1-j,0]$，加权模方和为 $2(2+4+2)=16$；除以 $NL=32$ 仍为 0.5。若改除 $N^2=64$，得到的是“把补入的四个零也计入时长”的均方值 0.25，统计对象已经改变。
+
+奇数长度没有 Nyquist 频点。最后一行的单边频谱为 $[0,1.5+j\sqrt3/2]$，末项模方为 3，仍需乘二。不能不检查奇偶性就把 `rfft` 最后一项永远当作端点。
+
+**均方值与功率谱密度要区分。** 功率谱密度（Power Spectral Density，PSD）还含“每 Hz”的单位。矩形窗、`detrend=False`、不裁短信号时，单边周期图可写成 $S_{xx}[k]=c_k|X_+[k]|^2/(f_sL)$，将它乘频率间距 $f_s/N$ 后求和才恢复本题均方值。其他窗改变加权与归一化；不能把未校正的加窗功率直接当成原信号功率。SciPy `periodogram` 默认减均值，复现本题 DC 行时必须显式关闭该操作。
+
+接口依据为 [NumPy `rfft` 的归一化、端点与补零约定](https://numpy.org/doc/stable/reference/generated/numpy.fft.rfft.html "citation")、[SciPy `periodogram` 的单位与单边谱说明](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.periodogram.html "citation")（2026-09-26 核实）；表中数字为本书推导。运行 `.venv/bin/python -m codes.examples.spatial_model_exercises` 的 `E02-08` 可复算全部五行；[代码](../codes/examples/spatial_model_exercises.py)同时拒绝复输入被悄悄丢弃虚部，以及过短 FFT 导致输入裁切。
 
 [音频实验总览](../codes/research/05_exercises_and_audio.md)提供已知采样率与通道顺序的 WAV，可用同一分析/合成参数检查边缘重建；比较时保留原长度，不把端点丢失误认为降噪效果。
 

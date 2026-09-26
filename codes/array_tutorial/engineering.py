@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from fractions import Fraction
 import math
 from numbers import Integral, Real
 
@@ -228,7 +229,10 @@ class PeakProtectAGC:
             desired = min(self.max_gain, self.target_peak / peak)
             safety_ceiling = 1.0 / peak
         coefficient = self.attack if desired < self.gain else self.release
-        smoothed = self.gain + coefficient * (desired - self.gain)
+        # A convex combination preserves the desired gain when attack == 1.
+        # gain + (desired - gain) can erase a small but representable desired
+        # value, incorrectly muting finite high-amplitude input.
+        smoothed = (1.0 - coefficient) * self.gain + coefficient * desired
         self.gain = min(smoothed, safety_ceiling, self.max_gain)
         return samples * self.gain, self.gain
 
@@ -279,6 +283,11 @@ def simulate_deadline_queue(
     ``queue_high_water`` counts every accepted but unfinished frame, including
     the frame currently being processed.  It is not the wait-only
     ``queue_depth`` field used by the telemetry schema.
+
+    Event times are exact rational values of the supplied float64 durations.
+    A completion at an arrival is released before that arrival is admitted;
+    a completion at its deadline is on time. No tolerance hides real overruns.
+    This offline teaching model is not a real-time scheduler.
     """
 
     durations = _finite_1d(processing_ms, "processing_ms")
@@ -288,31 +297,36 @@ def simulate_deadline_queue(
         raise ValueError("processing durations must be non-negative")
     if frame_period_ms <= 0.0 or capacity_frames <= 0:
         raise ValueError("frame_period_ms and capacity_frames must be positive")
-    finish_times: list[float] = []
+    period = Fraction(frame_period_ms)
+    finish_times: list[Fraction] = []
     missed = 0
     dropped = 0
     high_water = 0
-    max_wait = 0.0
+    max_wait = Fraction(0)
     for index, duration in enumerate(durations):
-        arrival = index * float(frame_period_ms)
+        arrival = index * period
         finish_times = [finish for finish in finish_times if finish > arrival]
         if len(finish_times) >= capacity_frames:
             dropped += 1
             continue
         start = max(arrival, finish_times[-1] if finish_times else arrival)
-        finish = start + float(duration)
+        finish = start + Fraction(float(duration))
         finish_times.append(finish)
         high_water = max(high_water, len(finish_times))
         max_wait = max(max_wait, start - arrival)
-        if finish > arrival + frame_period_ms:
+        if finish > arrival + period:
             missed += 1
+    try:
+        wait_ms = float(max_wait)
+    except OverflowError as error:
+        raise ValueError("maximum queue wait is outside finite float64 range") from error
     return {
         "frames": int(durations.size),
         "processed": int(durations.size - dropped),
         "dropped": dropped,
         "deadline_misses": missed,
         "queue_high_water": high_water,
-        "max_wait_ms": max_wait,
+        "max_wait_ms": wait_ms,
     }
 
 

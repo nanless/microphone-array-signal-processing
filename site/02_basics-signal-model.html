@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 2 章 · 声音到达阵列时发生了什么 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="8c33d8040161"><style>
+<meta name="source-digest" content="7474d21b9b16"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -325,7 +325,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ul>
 <p>这个 31.25 Hz 是 DFT 网格间隔，不等于能分开两条相邻谱线的频率分辨能力；后者还取决于窗函数的主瓣宽度等条件。<a href="https://doi.org/10.1109/PROC.1978.10837" title="citation">Harris 1978</a>详细讨论了窗函数对谱分析的影响。</p>
 <p>分帧还要单独指定端点策略。本书 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/spectral.py"><code>spectral.py</code></a> 的默认设置 <code>center=True</code> 会在两端各补半窗，并把末端补到完整帧，因此同一段 1 s 信号得到 126 帧；设为 <code>center=False</code> 时，本例才得到 122 帧。一般长度若不能恰好覆盖，代码仍会补齐末帧，不能直接套用只取完整窗的向下取整式。</p>
-<p>信号端点补零会改变帧数；固定一帧后，把 FFT 从 512 点补到 1024 点则只加密频率网格，两者不是同一个操作。外部接口也应分别检查端点扩展和末尾补齐设置，见 <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.stft.html" title="citation">SciPy STFT 的 <code>boundary</code> 与 <code>padded</code> 定义</a>。</p>
+<p>信号端点补零会改变帧数；固定一帧后，把 FFT 从 512 点补到 1024 点则只加密频率网格，两者不是同一个操作。外部接口也应分别检查端点扩展和末尾补齐设置，见 <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.stft.html" title="citation">SciPy STFT 的 <code>boundary</code> 与 <code>padded</code> 定义</a>。从单边 FFT 换算功率还须处理正负频率配对、DC/Nyquist 端点与原样本长度，完整手算见 E02-08。</p>
 <p>按上述不补端点、只取完整窗的口径，1 s、4 麦录音展开为 $122\times257=31354$ 个时频点，每个点上有一个 4 维快拍向量。这就是后文协方差矩阵 $\hat{\mathbf{R}}(f_k)$ 在每个频点上平均的对象，每个频点有 122 个快拍参与平均。</p>
 <h3 id="sec-2-5-2">2.5.2 从多通道快拍到空间二阶矩</h3>
 <p><strong>快拍（snapshot，快照向量）</strong>：固定频点索引 $k$、取第 $\ell$ 帧，把 $M$ 个麦克风在该时频点 $(f_k,\ell)$ 的复数谱排成列向量 $\vec{x}(f_k,\ell)$，就是一个快拍——相当于阵列在某一短帧拍下的一张“空间照片”（图6(b) 里标的那个格子就是它）。</p>
@@ -609,6 +609,73 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>不要把时间常数当成独立样本数。</strong> 稳态指数权重 $q_k=(1-\alpha)\alpha^k$ 满足 $\sum_{k=0}^{\infty}q_k=1$、$\sum_{k=0}^{\infty}q_k^2=(1-\alpha)/(1+\alpha)$，所以 E02-04 的权重集中度为 $L_w=(1+\alpha)/(1-\alpha)=99$。只有被加权统计量彼此独立、方差相同等条件成立时，才可用它解释平均估计量的方差缩减；重叠 STFT 帧通常不能直接视为 99 个独立快拍。</p>
 <p>遇到 VAD 冻结、跳帧或可变帧移，要按实际更新间隔解释遗忘时间。冻结期间不执行递推，旧状态也就不会按墙钟时间自动衰减。零初始化的权重不足仍按 E02-05 处理，不能靠时间常数换算消除。</p>
 <p>这道题由 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/spatial_precision_exercises.py"><code>spatial_precision_exercises.py</code></a> 的 <code>E02-07</code> 复算；全部数值来自本书几何级数推导，无随机抽样。脚本保留未舍入值，上表显示六位小数。</p>
+<p><strong>E02-08：为什么单边频谱模方之和不等于信号功率？</strong> 取四个实样本 $x=[1,0,-1,0]$，不加窗、不减均值。使用 NumPy 默认的未归一化正向 DFT，得到 <code>rfft(x)=[0,2,0]</code>。求原四个样本的均方值；再把 FFT 补零到八点，检查均方值是否改变。</p>
+<p><strong>第一步：从时间域确定答案。</strong> 均方值是 $(1^2+0^2+(-1)^2+0^2)/4=0.5$。若样本单位是 Pa，结果单位为 Pa²；若是未经声学校准的数字样本，就不能写成声压级。这里“功率”指信号均方值，不直接等于声学瓦数。</p>
+<p><strong>第二步：还原单边频谱没有存下来的能量。</strong> 实输入的正负频率互为共轭，模方相等。四点完整 DFT 是 $[0,2,0,2]$；<code>rfft</code> 只存下前面三项。内部正频点要计两份；直流 DC 只计一份。偶数 FFT 长度下，Nyquist 点也只计一份，因为它已代表同一个离散频点。</p>
+<p>设原样本数为 $L$，补零后的 FFT 长度为 $N\ge L$，单边频谱为 $X_+[k]$。将 Parseval 恒等式先用于能量，再除以<strong>原长度</strong>，得到本书换算式：</p>
+<p>$$\begin{aligned}
+\sum_{n=0}^{L-1}|x[n]|^2
+&=\frac{1}{N}\sum_{k=0}^{\lfloor N/2\rfloor}c_k|X_+[k]|^2,\\
+P_x&=\frac{1}{NL}\sum_{k=0}^{\lfloor N/2\rfloor}c_k|X_+[k]|^2,\\
+c_k&=\begin{cases}
+1,&k=0,\ \text{或 }N\text{ 为偶数且 }k=N/2,\\
+2,&\text{其他单边频点。}
+\end{cases}
+\end{aligned}\tag{2-7}$$</p>
+<p>这里正向变换没有 $1/N$，所以 Parseval 的能量式有 $1/N$。当 $L=N=4$ 时，本题得到 $(0+2\times4+0)/16=0.5$。漏掉内部频点的两份能量会算成 0.25；把所有频点一律乘二则会在 DC 或 Nyquist 输入上算错。</p>
+<p><strong>第三步：逐项检查端点与补零。</strong> 下表使用同一约定；“加权模方和”指式(2-7)的求和部分。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">输入与操作</th>
+<th scope="col" style="text-align: right;">原长度 $L$</th>
+<th scope="col" style="text-align: right;">FFT 长度 $N$</th>
+<th scope="col" style="text-align: right;">加权模方和</th>
+<th scope="col" style="text-align: right;">原样本均方值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$[1,0,-1,0]$，不补零</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">0.500000</td>
+</tr>
+<tr>
+<td>$[1,1,1,1]$，只有 DC</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">1.000000</td>
+</tr>
+<tr>
+<td>$[1,-1,1,-1]$，只有 Nyquist</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">1.000000</td>
+</tr>
+<tr>
+<td>$[1,0,-1,0]$，尾部补四个零</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">0.500000</td>
+</tr>
+<tr>
+<td>$[1,-1,0]$，奇数 FFT 长度</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">0.666667</td>
+</tr>
+</tbody>
+</table></div>
+<p>补零到八点时，单边频谱为 $[0,1+j,2,1-j,0]$，加权模方和为 $2(2+4+2)=16$；除以 $NL=32$ 仍为 0.5。若改除 $N^2=64$，得到的是“把补入的四个零也计入时长”的均方值 0.25，统计对象已经改变。</p>
+<p>奇数长度没有 Nyquist 频点。最后一行的单边频谱为 $[0,1.5+j\sqrt3/2]$，末项模方为 3，仍需乘二。不能不检查奇偶性就把 <code>rfft</code> 最后一项永远当作端点。</p>
+<p><strong>均方值与功率谱密度要区分。</strong> 功率谱密度（Power Spectral Density，PSD）还含“每 Hz”的单位。矩形窗、<code>detrend=False</code>、不裁短信号时，单边周期图可写成 $S_{xx}[k]=c_k|X_+[k]|^2/(f_sL)$，将它乘频率间距 $f_s/N$ 后求和才恢复本题均方值。其他窗改变加权与归一化；不能把未校正的加窗功率直接当成原信号功率。SciPy <code>periodogram</code> 默认减均值，复现本题 DC 行时必须显式关闭该操作。</p>
+<p>接口依据为 <a href="https://numpy.org/doc/stable/reference/generated/numpy.fft.rfft.html" title="citation">NumPy <code>rfft</code> 的归一化、端点与补零约定</a>、<a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.periodogram.html" title="citation">SciPy <code>periodogram</code> 的单位与单边谱说明</a>（2026-09-26 核实）；表中数字为本书推导。运行 <code>.venv/bin/python -m codes.examples.spatial_model_exercises</code> 的 <code>E02-08</code> 可复算全部五行；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/spatial_model_exercises.py">代码</a>同时拒绝复输入被悄悄丢弃虚部，以及过短 FFT 导致输入裁切。</p>
 <p><a href="research/05_exercises_and_audio.html">音频实验总览</a>提供已知采样率与通道顺序的 WAV，可用同一分析/合成参数检查边缘重建；比较时保留原长度，不把端点丢失误认为降噪效果。</p>
 <hr />
 <blockquote>

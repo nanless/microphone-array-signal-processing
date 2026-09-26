@@ -176,7 +176,7 @@ TRINICON 的长度换算可以这样看：8 kHz 下，0.5 s 对应 $8000\times0.
 
     $$p(\mathbf z\mid\mathbf B_n)\propto \frac{1}{\det(\mathbf B_n)}\left(\mathbf z^H\mathbf B_n^{-1}\mathbf z\right)^{-M}\text{，}\qquad \|\mathbf z\|_2=1\text{。}\tag{8-4}$$
 
-    其中 $\mathbf B_n$ 是正定的形状矩阵。cAC 密度对 $\mathbf B_n$ 的正比例缩放不变，所以每次更新后必须固定尺度，例如令 $\operatorname{tr}(\mathbf B_n)=M$。式(8-4)建模的是归一化方向 $\mathbf z$ 的密度，不是 $\mathbf Y$ 的功率 SCM。
+    其中 $\mathbf B_n$ 是正定的形状矩阵。cACG 密度对 $\mathbf B_n$ 的正比例缩放不变，所以每次更新后需要选择固定尺度，例如令 $\operatorname{tr}(\mathbf B_n)=M$。这用于消除参数的尺度不唯一性，不是观测声功率的归一化。式(8-4)建模的是归一化方向 $\mathbf z$ 的密度，不是 $\mathbf Y$ 的功率 SCM。
 
     混合模型的后验概率 $\gamma_n(f,k)$ 用作软时频掩码。“免训练”只表示聚类参数在当前录音上用期望最大化（Expectation-Maximization，EM）估计，不需要预先训练分离网络；完整系统仍需活动标注。
 
@@ -193,6 +193,8 @@ TRINICON 的长度换算可以这样看：8 kHz 下，0.5 s 对应 $8000\times0.
 3. M 步按 cACG 的固定点更新形状矩阵：每个 $\mathbf z\mathbf z^H$ 外积除以当前二次型 $\mathbf z^H\mathbf B_j^{-1}\mathbf z$，再用 $\gamma_j$ 加权求和。对更新矩阵施加保持正定的正则化后，固定尺度，例如令 $\operatorname{tr}(\mathbf B_j)=M$。有效权重接近零或条件数过大时，重置该分量，不能继续求逆。
 4. 重复 E/M 步，直到对数似然相对变化小于预设阈值，或达到最大迭代次数；报告实际迭代数、停止条件和重置次数。
 5. 将后验作为掩码，但用同一 WPE 阶段、未做方向归一化的 $\mathbf Y\mathbf Y^H$ 按式(8-5)估计目标/非目标 SCM，再计算每个目标的 MVDR 或 GEV 权重。对于一个目标，非目标掩码包含其余说话人与背景噪声；这里不能把单位向量 $\mathbf z$ 的外积误当成带功率信息的 SCM。
+
+第 3 步是带当前形状矩阵的固定点迭代，不是对方向外积做一次普通平均就完成极大似然估计。一次更新与收敛后的估计也要区分。[E08-11](#e08-11)展开其中的二次型、外积和迹归一化，并用所有方向相同的输入展示奇异边界。
 
 #### 8.4.3 活动门控手算与错误标注反例
 
@@ -275,7 +277,7 @@ $$
 
 所有说话人静音的帧上，背景后验为 1；错误标注条件下目标后验为 0。正确条件下本次形状矩阵重置次数为 0，后验每点求和与 1 的最大差约为 $2.22\times10^{-16}$。这些数值可由[独立测试](../tests/test_codes_gss_teaching.py)和[完整状态文件](../codes/gss_audio/STATE.npz)复算。
 
-[第一路源](../codes/gss_audio/source_1.wav)、[第二路源](../codes/gss_audio/source_2.wav)、[混合双麦](../codes/gss_audio/mixture.wav)、[正确活动输出](../codes/gss_audio/enhanced_correct.wav)及[漏标输出](../codes/gss_audio/enhanced_missed.wav)都按同一增益导出，文件摘要和精确参数见[独立清单](../codes/gss_audio/MANIFEST.json)。这五个 WAV 不并入本书主清单的 60 个样本。
+[第一路源](../codes/gss_audio/source_1.wav)、[第二路源](../codes/gss_audio/source_2.wav)、[混合双麦](../codes/gss_audio/mixture.wav)、[正确活动输出](../codes/gss_audio/enhanced_correct.wav)及[漏标输出](../codes/gss_audio/enhanced_missed.wav)都按同一增益导出，文件摘要和精确参数见[独立清单](../codes/gss_audio/MANIFEST.json)。这五个 WAV 不并入本书主清单的 68 个样本。
 
 官方 [GPU-GSS 固定源码](https://github.com/desh2608/gss/tree/10fad18cae85e2e4342c77421abc70c9c5da23ed)还包含 CuPy、Lhotse/RTTM、分段上下文及完整会议处理；本机未运行其官方整链，也没有使用 CHiME 语料或计算 WER。本段的教学结果不能充当 Boeddeker 等原论文的复现成绩。[GSS 原论文 §3.1～§3.3](https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf "citation")。
 
@@ -364,6 +366,7 @@ VarArray 的正式论文发表于 ICASSP 2022（pp. 6027–6031，DOI [10.1109/I
 | 双路径注意力 | SepFormer（Subakan et al., 2021） | 在双路径结构中用 Transformer 替换 RNN | 核对源数、数据生成、模型版本和 SI-SNRi 实现 | 注意力内存随序列长度增长，长句通常需分块。见 [SepFormer 正式论文](https://doi.org/10.1109/ICASSP39728.2021.9413901) |
 | 状态空间 | S4M（Chen et al., 2023） | 用多尺度编码和结构化状态空间块替换分离骨干中的循环或注意力时序建模 | 原文使用固定两源的 WSJ0-2Mix、LibriMix 与 LRS2-Mix；核对 8/16 kHz 数据版本、源数和官方配置 | 状态递推提供长程建模的另一种实现，但原论文未验证严格因果的前瞻量与端到端延迟。见 [Interspeech 2023 正式论文](https://doi.org/10.21437/Interspeech.2023-696) 与[官方复现仓库](https://github.com/JusperLee/S4M) |
 | 时频网格 | TF-GridNet（Wang et al., 2023） | 在时频域分别建模时间、频率与跨帧关系，并结合子带长短期记忆网络（Long Short-Term Memory，LSTM）和注意力 | 会议版是单通道分离，原文主表使用 SI-SDRi；多通道混响扩展是另一模型与实验设置 | 整句注意力需要改造后才能流式运行。见[单通道会议正式论文](https://doi.org/10.1109/ICASSP49357.2023.10094992)与[多通道混响期刊扩展](https://doi.org/10.1109/TASLP.2023.3304482 "citation") |
+| 时频注意力与局部卷积 | TF-Locoformer（Saijo et al., 2024） | 沿频率、时间交替使用注意力，并把前馈网络改成卷积门控，直接预测单通道各源复谱 | 固定输入轴序、源数、STFT、训练任务与模型权重；源码的 Macaron 残差系数与论文有已说明的差异 | 全局归一化和无因果掩码的时间注意力使用整段上下文。见[原论文 §2](https://arxiv.org/abs/2408.03440)与[固定源码研究 N15](../codes/research/02_aec_wpe_separation.md#tflocoformer) |
 | 长时多通道因果网络 | Online SpatialNet（Quan & Li, 2024） | 用在线掩码注意力、Retention 或 Mamba 沿时间建模，同时保留多通道空间特征 | 核对静止/移动源、麦数、训练配置、CUDA/Mamba 依赖和跨调用状态接口 | 源码附有固定配置的因果前缀自测，但顶层 `forward()` 不暴露跨调用状态，不能直接推定任意块续算等价。见[论文预印本](https://arxiv.org/abs/2403.07675)与[固定源码](https://github.com/Audio-WestlakeU/NBSS/blob/cc42fc8ad2e6642c09b8f4169a85b4766dc22b7e/models/arch/OnlineSpatialNet.py) |
 
 比较分离数字时要对齐采样率、`min`/`max` 混合方式、静态或动态混合、源数、评测脚本和指标名称。分离文献中的 SI-SNR 常采用与 SI-SDR 相同的正交投影公式，二者在相同去均值与数值实现下可以相等；也有代码把均值处理、截断长度或稳定项写得不同。不能笼统地说两者固定相差若干 dB。引用 SI-SNRi 或 SI-SDRi 时，应给出实现或至少说明是否去均值，并始终用同一指标计算输入基线和输出结果。
@@ -422,6 +425,7 @@ TSE 的身份泄漏、注册信道和声纹保护测试，不能由文本查询�
 | Conv-TasNet、DPRNN | Asteroid `models/conv_tasnet.py`、`dprnn_tasnet.py` | 配套 recipe、编码窗、归一化、源数、循环方向和权重 |
 | SepFormer | SpeechBrain `lobes/models/dual_path.py` 与 WSJ0Mix 分离 recipe | 双路径注意力和整句上下文不能直接当作流式状态 |
 | TF-GridNet | ESPnet `enh/separator/tfgridnet_separator.py` | 此类明确为离线，固定输入麦数；单/多通道版本分别核对 |
+| TF-Locoformer | MERL `standalone/tflocoformer_separator.py` 与 ESPnet 适配版 | 单通道复谱映射；已执行默认参数及 4D 轴序静态检查，未运行神经网络推理，详见[研究 N15](../codes/research/02_aec_wpe_separation.md#tflocoformer) |
 | S4M、SPMamba、Mamba-TasNet | 各作者模型/训练目录，详见研究文档 | 三者不是同一算法；S4M 训练资产不完整，双向模型使用未来上下文 |
 | Online SpatialNet | NBSS `models/arch/OnlineSpatialNet.py`、`SharedTrainer.py` 与 `configs/onlineSpatialNet.yaml` | 依赖 PyTorch/Mamba/CUDA；因果前缀与跨调用状态连续性分别检查 |
 | SpeakerBeam、AudioSep | 注册语音条件模型、`pipeline.py` 等各自入口 | 身份条件与文本类别条件不同；代码、权重和数据许可分别核对 |
@@ -573,6 +577,41 @@ $$\lambda_{nft}=\sum_{k=1}^{K}B_{nfk}H_{nkt},\qquad B_{nfk},H_{nkt}\geq0.\tag{8-
 **最后核对 GEV。** 两个方向的广义特征值分别为 $1.8/0.2=9$、$0.2/1.8=1/9$，故主方向也是 $v_+$。GEV 本身只决定方向，直接用 $v_+$ 会把目标输出变成 2；另施加 $w^Hv=1$ 后才与本例 MVDR 的尺度一致。比值 9 不表示已经测到真实录音改善 9 倍；这里只有两个给定快照、软掩码和已选目标方向。一般 SCM 未必共享特征向量，不能外推为 GEV 与 MVDR 总相同。代码对应 `E08-10`。
 
 上述三题与 E06-21、E07-06 共同运行：`.venv/bin/python -m codes.examples.enhancement_step_exercises`。检验见 [test_codes_enhancement_steps.py](../tests/test_codes_enhancement_steps.py)。
+
+<a id="e08-11"></a>
+
+**E08-11：cACG 的形状更新为什么要除以二次型，又为什么没有声功率尺度？** 固定一个频点和一个混合分量，保留两帧单位方向 $z_1=[1,0]^\top,z_2=[0,1]^\top$，该分量在两帧的责任权重为 $\gamma_1=3/4,\gamma_2=1/4$，旧形状矩阵 $B^{(0)}=I_2$。其他分量的参数固定且不参与本题。求一次形状固定点更新，再计算两个方向的相对密度。
+
+**第 1 步：写出这一小步究竟优化什么。** 固定责任权重后，式(8-4)对应的加权负对数似然，除去常数，是 $\sum_t\gamma_t[\log\det B+M\log(z_t^HB^{-1}z_t)]$。对矩阵求驻点得到的等式仍在右边含 $B^{-1}$，所以用旧矩阵代入右边迭代；它不是一次求逆得到的闭式最优解。
+
+$$\begin{aligned}
+q_t^{(r)}&=z_t^H(B^{(r)})^{-1}z_t,\\
+\widetilde B^{(r+1)}
+&=\frac{M}{\sum_t\gamma_t}
+\sum_t\frac{\gamma_t}{q_t^{(r)}}z_tz_t^H,\\
+B^{(r+1)}&=\frac{M\widetilde B^{(r+1)}}{\operatorname{tr}\widetilde B^{(r+1)}}.
+\end{aligned}\tag{8-9}$$
+
+$B$ 为 $M\times M$ 复厄米正定矩阵，$z_t$ 为 $M$ 维单位列向量，$\gamma_t\ge0$ 且总质量为正。固定 $\gamma$ 是这一形状子步骤的条件；完整 cACGMM 还要更新责任权重与混合权重。该迭代依据见 [Ito 等，EUSIPCO 2016，§III-B、式(14)](https://www.eurasip.org/Proceedings/Eusipco/Eusipco2016/papers/1570256519.pdf)。
+
+**第 2 步：分别计算每帧贡献。** 旧矩阵为单位阵，所以 $q_1=q_2=1$。两帧责任权重之和为 1，外面的系数为 $M/1=2$。
+
+| 帧 | 单位方向 | 二次型 $q_t$ | 加权外积 $\gamma_tz_tz_t^H/q_t$ |
+|---|---|---:|---|
+| 1 | $[1,0]^\top$ | 1 | $\operatorname{diag}(3/4,0)$ |
+| 2 | $[0,1]^\top$ | 1 | $\operatorname{diag}(0,1/4)$ |
+
+因此 $\widetilde B^{(1)}=\operatorname{diag}(3/2,1/2)$。其迹恰为 2，本次迹归一化不改变数值。第一个方向在当前责任权重下被赋予较大的形状轴，这不是它的原始音频能量较高的证据。
+
+**第 3 步：用新形状重新读密度。** 新矩阵行列式为 $3/4$，逆矩阵为 $\operatorname{diag}(2/3,2)$。省略对两方向相同的球面归一化常数，密度因子分别为 $(4/3)(2/3)^{-2}=3$ 和 $(4/3)2^{-2}=1/3$。这些是密度的相对因子，不是两个相加为 1 的类别后验；后验还需乘各分量混合权重并跨分量归一。
+
+对任意 $c>0$，$\det(cB)=c^M\det B$，而 $z^H(cB)^{-1}z=q/c$。密度中出现的 $c^{-M}$ 与 $(1/c)^{-M}$ 恰好抵消，所以 $B$ 与 $2B$ 给相同密度。固定迹只是从这些等价矩阵里选一个代表。相反，后级原始复谱 SCM 乘以 2 会改变功率，不能把这两种尺度混为一谈。
+
+**第 4 步：不要把一步迭代误认成稳定估计。** 若继续固定本题的责任权重，下一次二次型是 $2/3,2$，未归一矩阵为 $\operatorname{diag}(9/4,1/4)$，迹归一后为 $\operatorname{diag}(1.8,0.2)$。这组只有两个正交方向且权重不均衡的数据会把形状推向边界；它不是证明已收敛的训练集。若两帧都改成 $[1,0]^\top$，第一步就得到 $\operatorname{diag}(2,0)$，虽然迹为 2，矩阵却奇异，下一轮密度没有合法逆矩阵。
+
+教学整链在归一化后使用向单位阵收缩等显式正则化，并在质量不足时重置分量；例如对最后的奇异矩阵取 $(1-0.02)B+0.02I$，特征值为 $1.98,0.02$。这样改变了无正则化迭代，必须保留参数，不能把“迹已经归一化”当成正定保证。
+
+运行 `.venv/bin/python -m codes.examples.enhancement_structure_exercises`；[原创代码](../codes/examples/enhancement_structure_exercises.py)和[独立测试](../tests/test_codes_enhancement_structure.py)检查分数结果、正比例尺度不变、复数外积的共轭以及秩亏拒绝。这里只执行形状子步骤，没有重新运行官方 GSS、生成该题音频或测量分离质量。
 
 ---
 > 📄 本篇信息：配图 0 张 ｜ [回首页](./00_overview.md)

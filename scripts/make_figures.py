@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""生成教程插图 30 张（图 1~25、图 33~36、40；图 26~32、37~39 见 make_aec_figures.py）。
+"""生成教程插图 31 张（图 1~25、图 33~36、40~41；图 26~32、37~39 见 make_aec_figures.py）。
 
 用法（仓库根目录）：
-    .venv/bin/python scripts/make_figures.py      # 图 1~25、图 33~36、40 → figures/
+    .venv/bin/python scripts/make_figures.py      # 图 1~25、图 33~36、40~41 → figures/
 """
 from pathlib import Path
 import hashlib
@@ -2840,6 +2840,63 @@ def fig_clock_drift():
     save(fig, 'fig40_clock_drift.png', {'AudioManifestDigest': digest})
 
 
+def fig_interpolation_error():
+    """Fixed-delay response from algebra, markers measured from published PCM."""
+    import json
+    import wave
+    root = Path(__file__).resolve().parents[1]
+    audio = root / 'codes/audio'
+    manifest_path = audio / 'MANIFEST.json'
+    manifest = json.loads(manifest_path.read_text())
+    params = manifest['groups']['interpolation']['parameters']
+    fs = params['sample_rate_hz']
+    start, stop = params['scoring_interval_samples']
+    n = np.arange(start, stop)
+    tones = np.array(params['frequencies_hz'])
+    amplitudes = {}
+    for label in ('ideal_half', 'linear_half', 'ideal_one', 'linear_twice'):
+        with wave.open(str(audio / f'interpolation_{label}.wav'), 'rb') as wav:
+            if (wav.getframerate(), wav.getnchannels(), wav.getsampwidth()) != (fs, 1, 2):
+                raise ValueError('Interpolation figure requires mono PCM16 at the declared rate')
+            x = np.frombuffer(wav.readframes(wav.getnframes()), dtype='<i2') / 32768
+        amplitudes[label] = np.array([2 * abs(np.sum(x[start:stop] *
+                                       np.exp(-2j*np.pi*f*n/fs))) / len(n) for f in tones])
+    f = np.linspace(0, fs/2, 801)
+    fig, axes = plt.subplots(2, 1, figsize=(9.5, 7.2))
+    axes[0].plot(f/1000, np.cos(np.pi*f/fs), color=C_BLUE, lw=2,
+                 label='一次半采样：解析幅度')
+    axes[0].plot(f/1000, np.cos(np.pi*f/fs)**2, color=C_RED, lw=2, ls='--',
+                 label='两次半采样：解析幅度')
+    ratios = []
+    for label, ref, color, marker in [('linear_half', 'ideal_half', C_BLUE, 'o'),
+                                     ('linear_twice', 'ideal_one', C_RED, 's')]:
+        ratio = amplitudes[label] / amplitudes[ref]
+        ratios.append(ratio)
+        axes[0].scatter(tones/1000, ratio, color=color, marker=marker, s=55,
+                        facecolors='white', zorder=5)
+    axes[0].set(xlabel='频率 (kHz)', ylabel='幅度比 (无量纲)', xlim=(0, 8), ylim=(-.03, 1.08),
+                title='(a) 线为解析响应；空心圆/方块为导出 PCM 的逐频幅度比')
+    axes[0].legend(loc='lower left')
+    x = np.arange(2)
+    for i, (ratio, color, hatch, label) in enumerate(zip(ratios, (C_BLUE, C_RED), ('', '//'),
+                  ('一次半采样', '两次半采样'))):
+        db = 20*np.log10(ratio)
+        axes[1].bar(x + (i-.5)*.34, db, width=.32, color=color, hatch=hatch, alpha=.8, label=label)
+        for xpos, value in zip(x+(i-.5)*.34, db):
+            axes[1].text(xpos, value-.8, f'{value:.2f} dB', ha='center', va='top')
+    axes[1].set(xticks=x, xticklabels=['500 Hz', '6000 Hz'], ylabel='幅度比的分贝值 (dB)',
+                ylim=(-20, 1), title='(b) PCM 读回：各自与同一目标时延的理想输出比较')
+    axes[1].legend(loc='lower left')
+    for ax in axes:
+        ax.grid(axis='y', ls=':', alpha=.35)
+        ax.set_axisbelow(True)
+    fig.suptitle('图41  线性插值改变高频幅度；两次半采样不等于纯一采样延迟\n'
+                 '16 kHz；500 / 6000 Hz 双音；同一导出增益；统计 0.1～1.9 s', fontsize=FS_SUP)
+    fig.tight_layout(rect=(0, 0, 1, .93), h_pad=1.8)
+    save(fig, 'fig41_interpolation_error.png',
+         {'AudioManifestDigest': hashlib.sha256(manifest_path.read_bytes()).hexdigest()})
+
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -2872,6 +2929,7 @@ def main():
     fig_audio_counterexamples()
     fig_nonlinear_echo()
     fig_clock_drift()
+    fig_interpolation_error()
     print("ALL DONE")
 
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 11 章 · 总结与选型指南 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="8c33d8040161"><style>
+<meta name="source-digest" content="7474d21b9b16"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -81,6 +81,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-994102bab0">题 6：平均文件分数与合并计数（E11-03）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-67b9b2107f">题 7：p99 为什么还需要注明计算方法（E11-04）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-7ef9cfea65">题 8：零次失败能证明多低的风险（E11-08）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-5f467b9f7e">题 9：平均错误减少，配对证据足够吗（E11-09）</a></li>
 <li><a href="11_selection-guide.html#sec-11-7">11.7 后续阅读</a></li>
 </ul>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
@@ -105,6 +106,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-994102bab0">题 6：平均文件分数与合并计数（E11-03）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-67b9b2107f">题 7：p99 为什么还需要注明计算方法（E11-04）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-7ef9cfea65">题 8：零次失败能证明多低的风险（E11-08）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-5f467b9f7e">题 9：平均错误减少，配对证据足够吗（E11-09）</a></li>
 <li><a href="11_selection-guide.html#sec-11-7">11.7 后续阅读</a></li>
 </ul></nav></details>
 <blockquote>
@@ -538,6 +540,20 @@ p_{\mathrm U}&=1-\alpha^{1/n}.
 <p>要求 $1-0.05^{1/n}\le0.01$，等价于 $0.05^{1/n}\ge0.99$。取对数得到 $\ln(0.05)/n\ge\ln(0.99)$；两侧涉及负数，整理为 $n\ge\ln(0.05)/\ln(0.99)\approx298.073$，向上取整为 299。该预定试验设计下，299 次零失败才满足这一上界条件；不能不停测试直到某一段碰巧没有失败，再只汇报那一段。</p>
 <p>这里“95%”描述重复使用该构造程序时的覆盖性质，不是在观察后断言“固定的真实 $p$ 有 95% 概率落在区间内”。同一录音的连续帧常相关，不能把 1000 帧当作 1000 次独立会话；每个场景失败概率不同，也不能未经说明套用相同 $p$ 的模型。实际验收应预先定义失败、独立试验单元、场景抽样和停止规则，并保留失败数及分母。</p>
 <p>运行 <code>.venv/bin/python -m codes.examples.tracking_time_exercises</code>，核对<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/tracking_time_exercises.py">脚本</a>中的 <code>E11-08</code>。实现使用 <code>log1p</code>、<code>expm1</code> 减轻小上界的相减精度损失；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_time_state_exercises.py">测试</a>再把上界代回 $(1-p)^n=0.05$，并检查 298 与 299 的边界。本题只检查统计推理，没有宣称某设备通过了验收。</p>
+<h3 id="sec-u-5f467b9f7e">题 9：平均错误减少，配对证据足够吗（E11-09）</h3>
+<p>事先固定六次相互独立的会话，同一会话的两个候选使用完全相同的输入、参考转写和评分规则，每次都有 100 个参考词。候选 A 的词错误总数依次为 $[12,8,20,5,15,10]$，候选 B 为 $[10,9,14,5,12,9]$；全部文件均成功评分。这些是教学计数，没有运行识别模型。</p>
+<p>先求两者的合并计数 WER、降低的百分点和相对降幅。再按预先指定的单侧问题“B 在一个非平局会话中更可能获胜吗”，做一个最小配对符号检验。零假设是：在非平局条件下，B 胜与负各有一半概率，且各会话的符号相互独立；平局保留在总数中，但不进入这次二项计数。</p>
+<p><strong>计算平均改变量。</strong> A 的错误数合计为 $12+8+20+5+15+10=70$；B 合计为 $10+9+14+5+12+9=59$。参考总词数为 $6\times100=600$，两者 WER 分别是 $70/600\approx11.6667\%$、$59/600\approx9.8333\%$。</p>
+<p>因此降低 $(70-59)/600\times100\approx1.8333$ 个百分点，相对降幅为 $(70-59)/70\approx15.7143\%$。先保留整数计数，再对最终百分数舍入，不能用已经四舍五入的 WER 反算错误数。</p>
+<p><strong>检查配对方向。</strong> 逐会话计算 A 减 B 的错误数，得到 $[2,-1,6,0,3,1]$。正数表示 B 错误更少：四胜、一负、一平。对于五个非平局会话，零假设下共有 $2^5=32$ 种等可能符号排列；至少四胜包括“恰四胜”的 $\binom54=5$ 种和“五胜”的 $\binom55=1$ 种。</p>
+<p>一般地，设 $n$ 为非平局数、$w$ 为 B 的胜数，单侧尾概率为</p>
+<p>$$
+p_{\mathrm{sign}}=\sum_{k=w}^{n}\binom nk 2^{-n}.
+\tag{11-2}
+$$</p>
+<p>本题 $p_{\mathrm{sign}}=(5+1)/32=0.1875$。配对差取符号、平局排除和零假设二项模型见 <a href="https://www.itl.nist.gov/div898/software/dataplot/refman1/auxillar/signtest.htm" title="citation">NIST 的 Sign Test 说明</a>（核实：2026-09-26）；式(11-2)按本题预定的“B 更好”方向取上尾，不能在看过结果后再挑单侧方向。</p>
+<p><strong>怎样解释。</strong> B 的合并错误数确实少 11 个，但在预先选定的 0.05 显著性水平下，这六次会话不足以拒绝“非平局胜负各半”。这不证明两个候选等效，也不否定已经观察到的下降。符号检验只计方向，一次少 1 个词和少 6 个词都算一胜，所以它检验的不是平均 WER 降幅；两种结果应同时报告，不能互相替代。</p>
+<p>运行 <code>.venv/bin/python -m codes.examples.engineering_boundary_exercises</code> 可核对 <code>E11-09</code>；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_engineering_boundaries.py">独立测试</a>枚举全部 32 种符号，而不由被测函数生成期望值。所有会话平局时，代码保留总数并返回“没有非平局配对”，不伪造一个显著性分数。实际评测应按独立会话或其他预定单元设计配对；同一长录音切成许多相关短段，不能自动增加独立证据。</p>
 <span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-11-7">11.7 后续阅读</h2>
 <p>要实现算法，可回到第 4～9 章查看定位、波束、AEC、WPE、分离和追踪。要制定整机预算和验收计划，见<a href="10_engineering-practice.html">第 10 章</a>。<a href="12_appendix-symbols-math.html">附录 A</a>汇总符号与数学工具，<a href="13_appendix-guide.html">附录 B</a>给出进一步阅读、练习和排错入口。</p>
 <hr />

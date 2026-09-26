@@ -1274,6 +1274,57 @@
         "scripts/export_onnx.py"
       ],
       "note": "Official author repository. Source inspection only. Not AEC, WPE or microphone-array separation; no inherited benchmark or device-real-time claim. The onnx directory contains binary models and is intentionally absent after asset filtering; ONNX API entrypoints are scripts/test_onnx.py and scripts/export_onnx.py."
+    },
+    {
+      "id": "stk",
+      "url": "https://github.com/thestk/stk.git",
+      "revision": "6aacd357d76250bb7da2b1ddf675651828784bbc",
+      "verified_at": "2026-09-26",
+      "license": "MIT-STK; see per-file notices",
+      "fetch_enabled": true,
+      "scope": "fixed fractional delay, linear interpolation frequency response and persistent delay-line state",
+      "acquisition": "independent_source_checkout",
+      "source_paths": [
+        "LICENSE",
+        "README.md",
+        "include/",
+        "src/"
+      ],
+      "entrypoints": [
+        "LICENSE",
+        "include/DelayL.h",
+        "src/DelayL.cpp",
+        "include/Filter.h",
+        "src/Stk.cpp"
+      ],
+      "note": "Maintainer official synthesis toolkit; only source and notices, no rawwaves or device audio. DelayL is studied as an interpolation component, not a complete array frontend."
+    },
+    {
+      "id": "tf-locoformer",
+      "url": "https://github.com/merlresearch/tf-locoformer.git",
+      "revision": "7a615460d347ff7334a13dbb831d16280da72cdc",
+      "verified_at": "2026-09-26",
+      "license": "Apache-2.0 and per-file SPDX notices; weights and data separately",
+      "fetch_enabled": true,
+      "scope": "time-frequency speech separation with attention and convolutional feed-forward blocks",
+      "acquisition": "independent_source_checkout",
+      "source_paths": [
+        "LICENSE.md",
+        "LICENSES/",
+        "README.md",
+        "requirements.txt",
+        "espnet2/",
+        "standalone/",
+        "egs2/",
+        "tests/",
+        "copy_files_to_espnet.sh"
+      ],
+      "entrypoints": [
+        "LICENSE.md",
+        "README.md",
+        "espnet2/enh/separator/tflocoformer_separator.py"
+      ],
+      "note": "MERL author repository, source only. No pretrained weights, training data, inference performance or streaming claim."
     }
   ]
 }

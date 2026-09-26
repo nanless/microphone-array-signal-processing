@@ -517,6 +517,21 @@ pb_bss `get_wmwf_vector` 实际计算 `Phi/(mu+trace(Phi))` 的参考列，其�
 
 另一个版本相容性检查是 doatools `estimation/music.py:153` 使用 `np.complex_`，需在其依赖支持的 NumPy 版本中运行或准备独立兼容补丁；本文未修改外部工作目录或共享依赖来绕过这些条件。
 
+## 从源代码接口到完整数学模型：四个确定性核对
+
+2026-09-26 新增的 [`spatial_model_exercises.py`](../examples/spatial_model_exercises.py)补充以下四道题。它们调用本仓库 NumPy 教学实现，不下载新的外部算法包，不用合成音频代替协方差真值，也不声称复现了某个产品的现场性能。运行入口为 `.venv/bin/python -m codes.examples.spatial_model_exercises`，输出完整 JSON，不改写资产。
+
+| 稳定 ID 与正文 | 先检查的模型条件 | 实际执行与独立答案 | 接到工程实现时必须保留的条件 |
+|---|---|---|---|
+| [E02-08：单边谱与功率](../../chapters/02_basics-signal-model.md) | 实样本、未缩放正向 FFT、无窗、无去均值 | 五组 DC、Nyquist、内部频点、奇数长度与补零输入；频域均方值与直接时域平方和相符 | 奇偶端点分别处理；补零保留原统计长度；PSD 还需乘 Hz 频率间距，不能与平方幅度混用 |
+| [E04-11：有色噪声 MUSIC](../../chapters/04_doa-estimation.md) | 精确已知正定噪声协方差、一个目标、三元半波距阵 | 普通、只白化协方差、完整白化三条链的峰为 29.1°、−4.8°、0.0°；用秩一投影解析式独立核对白化矩阵 | 白化矩阵必须用于全部候选导向；噪声估计不含目标、通道和频点对应；不能把此题精确结果当作估计噪声协方差后的性能 |
+| [E05-07：由 WNG 预算反推加载](../../chapters/05_beamforming.md) | 指定二通道协方差、无失真响应、线性 WNG 至少 1.6 | 最小绝对加载为 9，相对加载为 9/11；现有 `mvdr_weights` 与解析权重一致 | 记录加载参数的单位和尺度；用未加载协方差评分，分别报告干扰残留与白噪声增益 |
+| [E12-05：奇异协方差反例](../../chapters/12_appendix-symbols-math.md) | 明确的 $\mathbf R=\operatorname{diag}(0,1)$、$\vec a=[1,1]^\top$ | 机械伪逆替换给出可行但非最优的 $[0,1]^\top$；直接约束解及加载极限为 $[1,0]^\top$ | 不能从“可计算且满足响应”推出最优；须检查零空间与目标导向的关系，不泛化成“伪逆均失效” |
+
+复查代码时，特别留意行向量接口：本例候选表每一行存的是列导向的转置，所以变换写作 `dictionary @ whitener.T`。若误写成 `whitener.conj().T`，对非对角复白化矩阵会得到另一组导向。后续 MUSIC 投影再按定义共轭，不能提前多取一次共轭。
+
+FFT 接口约定由 [NumPy `rfft`](https://numpy.org/doc/stable/reference/generated/numpy.fft.rfft.html)与 [SciPy `periodogram`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.periodogram.html)官方文档核实；代码不依赖 SciPy。白化矩阵的定义另见 [MathWorks `whiteningmat`](https://www.mathworks.com/help/phased/ref/whiteningmat.html)。三处均于 2026-09-26 核实。本节其余数值为正文公开输入的本书推导；[独立测试](../../tests/test_codes_spatial_model.py)核对闭式答案、零空间反例、端点与接口拒绝行为，不能替代真实录音和有限样本实验。
+
 ## 收录边界
 
 稀疏贝叶斯定位、原子范数、完整最坏情形稳健波束以及本文未逐项收录的神经定位方法，仍需要逐论文确认代码与模型；不能用同名 GitHub 搜索结果替代作者来源。本文已分别记录实际取得的外部实现、官方实现存在但再分发许可未建立的索引、只核实到原理的算法和版本疑点。深度波束与 WPD 的完整增强链、分离及神经噪声抑制见本目录其他研究文档；同一函数在多个算法条目中被调用，不等于取得了多套独立工程系统。

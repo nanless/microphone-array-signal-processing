@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 9 章 · 声源追踪 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="8c33d8040161"><style>
+<meta name="source-digest" content="7474d21b9b16"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -258,7 +258,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>IMM 交互多模型</td>
-<td>静止、匀速、加速等多个运动模型各自运行 KF，再按新息似然加权融合</td>
+<td>按模式转移概率混合各模型初始状态，再分别预测、更新，以新息似然更新模式权重并融合</td>
 <td>可在多个预设运动模式之间平滑切换</td>
 <td>计算量随模型数增加；未包含的运动模式仍会失配，且需标定模型转移概率</td>
 <td>包含启动、停止和匀速段的机动场景</td>
@@ -273,7 +273,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tbody>
 </table></div>
 <h3 id="sec-9-2-3">9.2.3 运动模型切换与非线性观测</h3>
-<p><strong>IMM 的模型切换</strong>：IMM 并行运行静止、匀速或加速等运动模型，再根据各模型的新息似然更新权重。它适合包含启动、停止和匀速段的轨迹。</p>
+<p><strong>IMM 的模型切换</strong>：交互多模型（Interacting Multiple Model，IMM）适合包含启动、停止和匀速段的轨迹。“交互”是每次预测前，各模型都按模式转移概率接收其他模型的状态信息；并非始终让几套滤波器互不联系，到最后才平均输出。</p>
+<p>一次递推依次进行：按旧模式概率与转移矩阵求各新模式的先验概率；为每个新模式混合旧状态均值和协方差；从混合初值分别预测、更新；再用观测似然更新模式概率，融合最终估计。混合协方差须同时保留每个模型内部的误差，以及不同模型均值之间的差异。省略后一项会错误地认为“几个很确定、但互相矛盾的模型”合在一起仍很确定。<a href="#e09-09">E09-09</a>给出分数手算。</p>
 <p>两模型例子可使用静止与匀速模型；转移矩阵的对角元素表示保持当前运动模式的概率。IMM 的转移概率和各模型过程噪声需要用目标运动数据标定。0.95 或 0.9 只能作为示例，实际数值不能脱离帧率和目标运动数据直接照搬。</p>
 <p><strong>EKF 与 UKF</strong>：EKF 对 $\theta=\operatorname{atan2}(x-x_0,y-y_0)$ 求雅可比，并在当前估计附近做一阶线性化；估计偏离真实状态较大时，线性化误差可能导致发散。标准对称或缩放 UKF 不显式求导，而是将 $2L+1$ 个 sigma 点通过原始非线性观测函数，再重构均值与协方差；减少 sigma 点的变体使用不同构造。计算量要按状态维数、sigma 点数、观测维数和矩阵实现估算，不能只按“UKF”名称排序。</p>
 <h3 id="sec-9-2-4">9.2.4 算例 9-2：粒子加权与重采样</h3>
@@ -733,7 +734,7 @@ D_t(x)&=[1-p_D(x)]D_{t|t-1}(x)\\
 <p>OSPA 不保留身份，所以身份切换要另报身份切换次数（Identity Switch，ID switch）等轨迹指标。</p>
 <p>这个定义来自 Schuhmacher、Vo 与 Vo 的 OSPA 原始论文（IEEE TSP 56(8), 2008, pp. 3447–3457，<a href="https://doi.org/10.1109/TSP.2008.920469" title="citation">DOI 10.1109/TSP.2008.920469</a>）。截断距离 $c$ 同时限制单个定位误差并设定漏检/虚警的惩罚尺度，因此比较系统时必须使用相同的 $p$、$c$、坐标和角度环绕约定。</p>
 <h2 id="sec-9-5">9.5 自由场移动声源的双麦音频与传播真值</h2>
-<p>前文的<a href="audio/tracking_pan.wav">声像移动试听</a><audio class="audio-sample" controls preload="none" aria-label="声像移动试听" src="audio/tracking_pan.wav">请使用上方 WAV 链接下载。</audio>只改变左右声道增益，不包含阵列传播时差。为让读者听到并复算真实传播<strong>模型</strong>下的两麦差异，本书另生成一组<a href="moving_audio/MANIFEST.json">独立的自由场合成样本</a>：<a href="moving_audio/source.wav">原始两音调源</a><audio class="audio-sample" controls preload="none" aria-label="原始两音调源" src="moving_audio/source.wav">请使用上方 WAV 链接下载。</audio>、<a href="moving_audio/static_array.wav">固定在起点的双麦输出</a><audio class="audio-sample" controls preload="none" aria-label="固定在起点的双麦输出" src="moving_audio/static_array.wav">请使用上方 WAV 链接下载。</audio>、<a href="moving_audio/moving_array.wav">沿直线运动的双麦输出</a><audio class="audio-sample" controls preload="none" aria-label="沿直线运动的双麦输出" src="moving_audio/moving_array.wav">请使用上方 WAV 链接下载。</audio>。它们是数学合成信号，不是真实语音、房间录音或 LOCATA 数据，也不计入主清单的 60 个 WAV。</p>
+<p>前文的<a href="audio/tracking_pan.wav">声像移动试听</a><audio class="audio-sample" controls preload="none" aria-label="声像移动试听" src="audio/tracking_pan.wav">请使用上方 WAV 链接下载。</audio>只改变左右声道增益，不包含阵列传播时差。为让读者听到并复算真实传播<strong>模型</strong>下的两麦差异，本书另生成一组<a href="moving_audio/MANIFEST.json">独立的自由场合成样本</a>：<a href="moving_audio/source.wav">原始两音调源</a><audio class="audio-sample" controls preload="none" aria-label="原始两音调源" src="moving_audio/source.wav">请使用上方 WAV 链接下载。</audio>、<a href="moving_audio/static_array.wav">固定在起点的双麦输出</a><audio class="audio-sample" controls preload="none" aria-label="固定在起点的双麦输出" src="moving_audio/static_array.wav">请使用上方 WAV 链接下载。</audio>、<a href="moving_audio/moving_array.wav">沿直线运动的双麦输出</a><audio class="audio-sample" controls preload="none" aria-label="沿直线运动的双麦输出" src="moving_audio/moving_array.wav">请使用上方 WAV 链接下载。</audio>。它们是数学合成信号，不是真实语音、房间录音或 LOCATA 数据，也不计入主清单的 68 个 WAV。</p>
 <p>几何与时间口径固定如下：采样率 16 kHz，持续 2 s；两麦坐标分别为 $(-0.05,0)$ m、$(0.05,0)$ m。声源从 $(-0.8,1.5)$ m 出发，以 $(0.8,0)$ m/s 匀速运动，声速取 343 m/s。</p>
 <p>设发射时刻为 $u$，麦克风 $m$ 的接收时刻为 $t$，则本书求解</p>
 <p>$$t=u+\frac{\|\vec p_0+\vec v u-\vec m_m\|}{c},\qquad
@@ -772,7 +773,7 @@ x_m(t)=\frac{1\ \mathrm m}{\|\vec p_0+\vec v u-\vec m_m\|}\,s(u)\text{。}\tag{9
 <p>单帧转角限值可以 $\omega_{\max}\Delta t$ 为物理起点，5 帧累计上限为 $5\omega_{\max}\Delta t$；超过保持时间或不确定度阈值后，应降低波束更新置信度或回到搜索模式。</p>
 </li>
 </ol>
-<p><strong>可运行练习 E09-01～E09-08</strong></p>
+<p><strong>可运行练习 E09-01～E09-09</strong></p>
 <p>E09-01～E09-05 运行 <code>.venv/bin/python -m codes.examples.exercises_enhancement</code>，源码见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_enhancement.py"><code>exercises_enhancement.py</code></a>；E09-06 使用本节的交叉实验脚本。这些练习使用方向数值，不通过左右声道音量模拟阵列定位；后者的声像不能代替麦克风传播时延模型。</p>
 <ul>
 <li>
@@ -830,6 +831,58 @@ x_m(t)=\frac{1\ \mathrm m}{\|\vec p_0+\vec v u-\vec m_m\|}\,s(u)\text{。}\tag{9
 </li>
 </ul>
 <p>E09-07、E09-08 的复算入口为 <code>.venv/bin/python -m codes.examples.tracking_time_exercises</code>，见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/tracking_time_exercises.py">源码</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_time_state_exercises.py">独立期望值测试</a>。前者检查证据递推，后者检查时间和不确定度；都不是实际声学定位精度测试。</p>
+<p><a id="e09-09"></a></p>
+<p><strong>E09-09：IMM 为什么不能只平均两个模型的方差？</strong> 为隔离交互步骤，两模型都用同一局部展开角度作为标量状态，旧概率为 $\mu=[3/4,1/4]$，均值为 $x_1=0^\circ,x_2=10^\circ$，方差为 $P_1=1\ \mathrm{deg}^2,P_2=4\ \mathrm{deg}^2$。转移矩阵取 $T=\left[\begin{smallmatrix}0.9&0.1\\0.2&0.8\end{smallmatrix}\right]$，明确约定 $T_{ij}=\Pr(\text{新模式}=j\mid\text{旧模式}=i)$，所以<strong>每行</strong>和为 1。这里不是对真实停走过程的标定结果。</p>
+<p><strong>第 1 步：先算到达新模式的概率。</strong> 新模式 1 有两条来源，概率分别为 $(3/4)(9/10)=27/40$ 与 $(1/4)(1/5)=2/40$，合计 $c_1=29/40$。类似地 $c_2=3/40+8/40=11/40$。二者之和为 1。</p>
+<p><strong>第 2 步：条件化，再混合状态。</strong> 已知下一步选择新模式 $j$ 时，旧模式的条件概率是 $\omega_{i|j}=\mu_iT_{ij}/c_j$。对同维度、同坐标的欧氏状态，交互公式为</p>
+<p>$$\begin{aligned}
+c_j&=\sum_i\mu_iT_{ij},\qquad
+\omega_{i|j}=\frac{\mu_iT_{ij}}{c_j},\\
+x_j^0&=\sum_i\omega_{i|j}x_i,\\
+P_j^0&=\sum_i\omega_{i|j}\left[P_i+(x_i-x_j^0)(x_i-x_j^0)^\top\right].
+\end{aligned}\tag{9-14}$$</p>
+<p>标量时最后一项就是均值差的平方；向量时必须是外积，不能逐元素平方后当作完整协方差。条件概率矩阵的每一<strong>列</strong>和为 1，与转移矩阵的行归一不同。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">统计量</th>
+<th scope="col" style="text-align: right;">新模式 1</th>
+<th scope="col" style="text-align: right;">新模式 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>两个旧模式的条件权重</td>
+<td style="text-align: right;">$27/29,2/29$</td>
+<td style="text-align: right;">$3/11,8/11$</td>
+</tr>
+<tr>
+<td>混合均值（度）</td>
+<td style="text-align: right;">$20/29\approx0.689655$</td>
+<td style="text-align: right;">$80/11\approx7.272727$</td>
+</tr>
+<tr>
+<td>模型内部方差项（度²）</td>
+<td style="text-align: right;">$35/29\approx1.206897$</td>
+<td style="text-align: right;">$35/11\approx3.181818$</td>
+</tr>
+<tr>
+<td>均值分歧项（度²）</td>
+<td style="text-align: right;">$5400/841\approx6.420927$</td>
+<td style="text-align: right;">$2400/121\approx19.834711$</td>
+</tr>
+<tr>
+<td>总方差（度²）</td>
+<td style="text-align: right;">$6415/841\approx7.627824$</td>
+<td style="text-align: right;">$2785/121\approx23.016529$</td>
+</tr>
+</tbody>
+</table></div>
+<p>新模式 1 的分歧项可以直接算为 $(27/29)(0-20/29)^2+(2/29)(10-20/29)^2$。另一种独立核算是“二阶矩减均值平方”：新模式 1 的 $P_1^0=(27/29)(1+0^2)+(2/29)(4+10^2)-(20/29)^2$。两个算法都给 $6415/841$。只保留 $35/29$ 会丢掉模型间的不确定性；混合方差比两项原方差都大，并不矛盾。</p>
+<p><strong>第 3 步：把交互与观测更新分开。</strong> 完整 IMM 接下来从各自的 $(x_j^0,P_j^0)$ 出发，使用对应运动模型预测并作观测更新。假设这两套更新额外给出的观测似然为 $L_1=0.2,L_2=0.8$，则未归一新权重为 $[29/200,44/200]$，归一后 $\mu^+=[29/73,44/73]\approx[0.397260,0.602740]$。这些似然是题设，用来复算贝叶斯权重；本题没有指定状态转移、过程噪声或观测值，不能冒称已经运行了两套 KF。最终状态融合也要保留更新后均值之间的外积项。</p>
+<p><strong>边界与实现检查。</strong> 若 $T=I$，每个模型只接收自己的旧状态，交互退化为不混合；若某个 $c_j=0$，这个目的模式不可达，条件概率无定义，需禁用或按另行声明的初始化策略处理。不同状态维度的静止、匀速和加速模型不能直接平均，须先定义状态映射与被补维度的不确定度。接近 $-180^\circ/180^\circ$ 时，也不能把两个原始角度直接算术平均；需在一致局部角度图中展开，或采用适当的圆统计混合。</p>
+<p>固定 <a href="https://github.com/rlabbe/filterpy/blob/3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33/filterpy/kalman/IMM.py">FilterPy <code>IMM.py</code></a> 的 <code>predict()</code> 在传播前计算混合初值，<code>_compute_mixing_probabilities()</code> 实际执行 <code>mu @ M</code>；其类参数说明中的转移方向文字与这条赋值不一致，接入时应以明确约定和非对称矩阵小例核验，不能照抄文字后再转置一次。本书例题采用上述行转移约定，没有修改或运行该上游 IMM 类。</p>
+<p>本题运行入口为 <code>.venv/bin/python -m codes.examples.enhancement_structure_exercises</code>，见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/enhancement_structure_exercises.py">原创复算代码</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_enhancement_structure.py">独立测试</a>。测试用有理数二阶矩核对方差，另检查全概率下的总体均值/协方差不变、恒等转移和不可达模式。它验证交互算术，不验证真实 DOA 精度或机动识别率。</p>
 <hr />
 <blockquote>
 <p>📄 本篇信息：配图 2 张 ｜ <a href="index.html">回首页</a></p>

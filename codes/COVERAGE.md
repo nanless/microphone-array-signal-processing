@@ -9,7 +9,7 @@
 - **原理索引**：已有原理或来源依据，但尚未形成唯一、许可明确且承担对应计算的源码映射；代码可见而许可不明时也保留此状态，并说明原因。
 - **明确排除**：指定软件的身份或许可不满足本书当前收录方式；不表示删除相应方法的学术讨论。
 
-算法表共 250 行：本仓库可运行基线 52 行、外部参考实现 146 行、原理索引 50 行、明确排除 2 行。练习映射单独计数，不因题数增加算法行；MDL、功率谱减、受控 NCC 双讲检测与 cACGMM 教学迭代属于本地基线。覆盖表仍有原理索引，不表示全书全部算法已经运行。
+算法表共 253 行：本仓库可运行基线 53 行、外部参考实现 148 行、原理索引 50 行、明确排除 2 行。练习映射单独计数，不因题数增加算法行；MDL、功率谱减、受控 NCC 双讲检测与 cACGMM 教学迭代属于本地基线。覆盖表仍有原理索引，不表示全书全部算法已经运行。
 
 源码取得与入口核对见 [SOURCE_STATUS.json](SOURCE_STATUS.json)；该文件中的依赖验证和执行字段未开展时为 `not_run`，不承载方法级数值实验结果。实际运行及数值对照见[复现记录](research/04_source_reproduction.md)、[增强研究记录](research/02_aec_wpe_separation.md)和 [WPE 独立对照脚本](examples/compare_wpe_reference.py)。工业三库与 SBL 的限定实验保存在 `reports/`；实际调用外部代码不将它改列为本仓库教学基线。覆盖状态不是测试结果。完整提交、官方地址、许可与来源 ID 见 [SOURCES.lock.json](SOURCES.lock.json)。教学路径相对于 [array_tutorial/](array_tutorial/)；外部路径相对于对应项目根，出现“同文件”时仅继承上一行文件，不继承其算法或验证结论。
 
@@ -314,13 +314,15 @@
 | §10.5；工业 I25 | ViSQOL | 外部参考实现 | `visqol`：`src/visqol_api.cc` | MOS-LQO；16/48 kHz 模式、模型/依赖未取、下混不评空间保真 |
 | 第10章；工业 I26 | PCM/WAV 帧读写 | 外部参考实现 | `libsndfile`：`src/sndfile.c`、`src/pcm.c` | 帧数与标量数、短读、格式与浮点转换 |
 | 第10章；工业 I27 | XMOS 块浮点与底层 DSP | 外部参考实现 | `lib-xcore-math`：`lib_xcore_math/src/bfp/`、`lib_xcore_math/src/arch/ref/` | v3.0.0 随 lib_voice 固定；硬件许可、共享指数与目标周期 |
-
 | 研究扩展：增强 N14 | Stream.FM 流匹配逐帧恢复 | 外部参考实现 | `streamfm`：`sgmse/backbones/streaming_unet.py`、`sgmse/util/solvers.py` | AGPL-3.0；逐阶段状态须核对；源码接口疑点与推理未运行分别记录 |
 | 研究扩展：工业 I28 | FastEnhancer 流式单通道降噪 | 外部参考实现 | `fastenhancer`：`models/fastenhancer/default/model.py`、`scripts/test_onnx.py` | MIT源码；未取ONNX权重、未运行；不是AEC/WPE/多麦分离 |
+| 研究扩展：增强 N15 | TF-Locoformer 复谱语音分离 | 外部参考实现 | `tf-locoformer`：`standalone/tflocoformer_separator.py`、`espnet2/enh/separator/tflocoformer_separator.py` | 固定作者源码；静态接口疑点单列；无权重推理或完整训练复现 |
+| 附录B E13-02；工业 I29 | STK DelayL 固定分数延迟与连续状态 | 外部参考实现 | `stk`：`include/DelayL.h`、`src/DelayL.cpp`；`examples/run_stk_delay_probe.py` | 已运行标量接口、零/.5/1采样与分块状态；未测设备或变时延 |
+| §11.6 E11-09 | 配对符号检验 | 本仓库可运行基线 | `examples/engineering_boundary_exercises.py` | 独立配对、同一评价方向、去除平局；不据WER汇总直接推显著性 |
 
 ## 章节代码练习与音频映射
 
-106 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 250 行算法统计。补充的空间精算、增强步骤、时间状态模块分别提供3/5/4道题。三个原有 `exercises_` 模块各自提供 `run_exercises()`，分别有 28/23/25 道题；AEC 小实验另有 4 道，进阶 AEC 手算另有 10 道；E03-07、E04-08、E09-06 与 E10-13 由独立实验入口提供。E04-08 的 200 次独立双源抽样只说明固定模型中的分辨事件频率和 Wilson 区间。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
+117 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 253 行算法统计。补充的空间精算、增强步骤、时间状态模块分别提供3/5/4道题。三个原有 `exercises_` 模块各自提供 `run_exercises()`，分别有 28/23/25 道题；AEC 小实验另有 4 道，进阶 AEC 手算另有 10 道；E03-07、E04-08、E09-06 与 E10-13 由独立实验入口提供。E04-08 的 200 次独立双源抽样只说明固定模型中的分辨事件频率和 Wilson 区间。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
 
 | 章节与稳定 ID | 练习入口 | 回归测试 |
 |---|---|---|
@@ -345,9 +347,9 @@
 .venv/bin/python -m codes.examples.doa_resolution_trials
 ```
 
-题目、答案和 15 组、64 个合成音频的对应关系见[练习与音频实验](research/05_exercises_and_audio.md)。音频由 [generate_audio_samples.py](examples/generate_audio_samples.py) 生成，参数和摘要见 [MANIFEST.json](audio/MANIFEST.json)；它们只展示特定条件下的现象，不作为完整算法、工业性能或自然语音听测的新增覆盖证据。
+题目、答案和 16 组、68 个合成音频的对应关系见[练习与音频实验](research/05_exercises_and_audio.md)。音频由 [generate_audio_samples.py](examples/generate_audio_samples.py) 生成，参数和摘要见 [MANIFEST.json](audio/MANIFEST.json)；它们只展示特定条件下的现象，不作为完整算法、工业性能或自然语音听测的新增覆盖证据。
 
-另外两套独立合成资产分别是 [GSS 五路 WAV 与中间状态](gss_audio/MANIFEST.json)和[移动声源三路 WAV 与轨迹真值](moving_audio/MANIFEST.json)。它们不计入主清单的 64 个音频，也不等于真实语音或设备验证。
+另外两套独立合成资产分别是 [GSS 五路 WAV 与中间状态](gss_audio/MANIFEST.json)和[移动声源三路 WAV 与轨迹真值](moving_audio/MANIFEST.json)。它们不计入主清单的 68 个音频，也不等于真实语音或设备验证。
 
 ## 未完成项怎样保留
 
@@ -355,7 +357,16 @@
 
 原理索引明确保留下一步所需证据：唯一作者实现、明确许可、原模型配置，或与正文模型一致的最小代码。不得仅因为框架大、copyleft 或权重未授权就将许可明确的源码降为“没有实现”；也不得因同名函数存在就将整个算法家族标为已覆盖。
 
-本仓库不提交下载缓存、模型权重或未经授权的第三方语料；`audio/` 中的 64 个文件是本书自行合成的教学样本，`real_audio/` 中另有许可明确的 DEMAND 小型摘录和派生文件，不包含完整下载归档。独立上游工作目录的取得、许可保留与未执行项目按来源状态记录报告。算法、源码或排除范围变化时，同步修改本表、研究说明、来源清单和真实验证记录。
+本仓库不提交下载缓存、模型权重或未经授权的第三方语料；`audio/` 中的 68 个文件是本书自行合成的教学样本，`real_audio/` 中另有许可明确的 DEMAND 小型摘录和派生文件，不包含完整下载归档。独立上游工作目录的取得、许可保留与未执行项目按来源状态记录报告。算法、源码或排除范围变化时，同步修改本表、研究说明、来源清单和真实验证记录。
 
 
-真实数据练习 R01 使用 [prepare_real_recordings.py](examples/prepare_real_recordings.py) 与 [real_recordings.py](array_tutorial/real_recordings.py)，测试见 [test_codes_real_recordings.py](../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 106 道合成/手算代码题。数据来源和许可另见 [real_audio/](real_audio/README.md)。
+真实数据练习 R01 使用 [prepare_real_recordings.py](examples/prepare_real_recordings.py) 与 [real_recordings.py](array_tutorial/real_recordings.py)，测试见 [test_codes_real_recordings.py](../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 117 道合成/手算代码题。数据来源和许可另见 [real_audio/](real_audio/README.md)。
+
+四组模型与边界练习对应以下独立实现；主音频新增的 4 个 interpolation 文件验证固定滤波误差，不是完整采样率转换性能。
+
+| 稳定 ID | 实现 | 独立测试 |
+|---|---|---|
+| E02-08、E04-11、E05-07、E12-05 | [空间模型](examples/spatial_model_exercises.py) | [空间模型测试](../tests/test_codes_spatial_model.py) |
+| E07-07、E08-11、E09-09 | [增强结构](examples/enhancement_structure_exercises.py) | [增强结构测试](../tests/test_codes_enhancement_structure.py) |
+| E10-16、E10-17、E11-09 | [工程边界](examples/engineering_boundary_exercises.py) | [工程边界测试](../tests/test_codes_engineering_boundaries.py) |
+| E13-02 | [插值失真](examples/interpolation_exercise.py) | [插值测试](../tests/test_codes_interpolation.py) |

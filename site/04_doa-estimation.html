@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 4 章 · 声源定位（DOA 估计） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="8c33d8040161"><style>
+<meta name="source-digest" content="7474d21b9b16"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -550,7 +550,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </li>
 </ol>
 <p><strong>第 2 步为什么成立</strong>：信号模型下协方差矩阵是 $\mathbf{R} = \mathbf{A}\mathbf{S}\mathbf{A}^H + \sigma^2\mathbf{I}$，其中 $\mathbf{A}$ 是 $M\times K$ 的导向矢量矩阵、$\mathbf{S}$ 是 $K\times K$ 的源协方差矩阵。</p>
-<p>只有当 $K\lt M$、$\mathbf A$ 列满秩且 $\mathbf S$ 满秩时，$\mathbf{A}\mathbf{S}\mathbf{A}^H$ 的秩才等于 $K$，其列空间才等于 $\operatorname{span}(\mathbf A)$。空间白噪声项 $\sigma^2\mathbf I$ 只平移特征值，不改变特征向量；其余 $M-K$ 个特征向量因此与真实导向矢量正交。</p>
+<p>只有当 $K\lt M$、$\mathbf A$ 列满秩且 $\mathbf S$ 满秩时，$\mathbf{A}\mathbf{S}\mathbf{A}^H$ 的秩才等于 $K$，其列空间才等于 $\operatorname{span}(\mathbf A)$。空间白噪声项 $\sigma^2\mathbf I$ 只平移特征值，不改变特征向量；其余 $M-K$ 个特征向量因此与真实导向矢量正交。若噪声协方差已知且正定，可先白化，但必须同步变换所有候选导向；E04-11 用三条处理链具体比较遗漏这一步的后果。</p>
 <p>相干源使 $\mathbf S$ 降秩，彩色噪声也不再只平移特征值。这两种情况都破坏上述论证。<a href="https://doi.org/10.1109/TAP.1986.1143830" title="citation">Schmidt 的 MUSIC 原始论文</a>。</p>
 <p>输入的样本协方差必须是厄米半正定矩阵；秩亏不等于非法，但负特征值若超出舍入容差，就不再代表有效功率。教学 <code>music_spectrum</code> 会拒绝这类矩阵，也会拒绝全零协方差，因为此时无法由数据区分信号与噪声子空间。Bartlett 教学接口采用同样的协方差有效性检查。</p>
 <blockquote>
@@ -855,7 +855,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>否；找多峰需规则</td>
 <td>协方差可稳定求逆、导向模型准确</td>
 <td>少快拍、病态矩阵、相干多径、流形失配</td>
-<td>$O(M^3+N_{\rm grid}M^2)$</td>
+<td>求逆 $O(M^3)$；扫描 $O(N_{\rm grid}M^2)$</td>
 </tr>
 <tr>
 <td>MUSIC/root-MUSIC</td>
@@ -1222,6 +1222,67 @@ g_k&=\left(\prod_{i=k+1}^{M}\hat\lambda_i\right)^{1/(M-k)}。
 <p>对 $M$ 个同源到达时间，全部 $M(M-1)/2$ 个不重复麦对的时差只由 $M-1$ 个参考时差决定；冗余麦对可以帮助检验一致性，不等于新增同样数量的独立几何自由度。代数结构见 <a href="https://publications.idiap.ch/downloads/papers/2015/Velasco_IEEE_2015.pdf" title="citation">Velasco 等《TDOA Matrices: Algebraic Properties and their Application to Robust Denoising with Missing Data》§IV、式(1)–(2)</a>；上述小规模投影与协方差是本书自行推导，未复现该论文完整的鲁棒缺失数据算法。</p>
 <p><strong>补充检查：网格误差能不能为零？</strong> 取 $0°,2°,4°$ 三个格点，真值分别为 $2°,2.5°,3°$，理想最近格点误差依次为 $0°,0.5°,1°$；最后一项有两个同样近的格点。它们说明 2° 网格没有 2° 的误差下限，最近格点界为 1°。有噪声时选错远处峰值，则可能超过这个量化界。</p>
 <p>运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/spatial_precision_exercises.py"><code>spatial_precision_exercises.py</code></a> 的 <code>E04-10</code> 可得到原始观测、闭合残差、未舍入投影、共享参考协方差和网格反例。均为确定性代数，不是实际录音的定位精度统计。</p>
+<p><a id="e04-11"></a></p>
+<p><strong>E04-11：已知有色噪声时，只把协方差白化够不够？</strong> 附录 A 的 E12-04 已说明白化后必须同步修改导向。本题把这条规则放进完整 MUSIC 搜索，观察漏改一步会把方向推到哪里。</p>
+<p>取三元半波长间距 ULA，在一个固定频点使用 $a_m(\theta)=e^{j\pi m\sin\theta}$，$m=0,1,2$，角度从正横方向起算。目标在 0°，导向为 $\vec a=[1,1,1]^\top$，功率为 1。干扰在 30°，导向为 $\vec b=[1,j,-1]^\top$，功率为 9，另有每通道功率为 1 的独立白噪声。</p>
+<p>本题把干扰计入<strong>已知噪声协方差</strong>，只求一个目标，因此 MUSIC 的目标数固定为 $K=1$。目标、干扰与白噪声互不相关，直接使用精确总体协方差，不含有限快拍误差：</p>
+<p>$$\mathbf R_{nn}=\mathbf I+9\vec b\vec b^H
+=\begin{bmatrix}10&-9j&-9\\9j&10&-9j\\-9&9j&10\end{bmatrix},
+\qquad \mathbf R_{xx}=\vec a\vec a^H+\mathbf R_{nn}\text{。}$$</p>
+<p><strong>第一步：看清普通 MUSIC 的前提为什么失效。</strong> 因为 $\vec b^H\vec b=3$，噪声在 $\vec b$ 方向上的特征值为 $1+9\times3=28$，两个正交方向上的特征值为 1。它已经不是 $\sigma_n^2\mathbf I$。总协方差特征值约为 $1,3.630683,28.369317$；若直接把最大的一个特征向量当作唯一目标子空间，就会主要跟随强干扰。</p>
+<p><strong>第二步：把噪声的长轴缩短。</strong> 设 $\mathbf R_{nn}=\mathbf U\mathbf\Lambda\mathbf U^H$，其中三个特征值都正。取厄米白化矩阵 $\mathbf W=\mathbf U\mathbf\Lambda^{-1/2}\mathbf U^H$，并同时变换协方差与每一个候选导向：</p>
+<p>$$\begin{aligned}
+\mathbf W\mathbf R_{nn}\mathbf W^H&=\mathbf I,\\
+\mathbf R'_{xx}&=\mathbf W\mathbf R_{xx}\mathbf W^H
+=(\mathbf W\vec a)(\mathbf W\vec a)^H+\mathbf I,\\
+\vec a'(\theta)&=\mathbf W\vec a(\theta),\qquad
+P'(\theta)=\frac{1}{\|\mathbf E_n'^H\vec a'(\theta)\|_2^2}\text{。}
+\end{aligned}\tag{4-6}$$</p>
+<p>$\mathbf E_n'$ 是变换后协方差的两个噪声特征向量。式(4-6)并非只改谱计算前的一张矩阵：它把数据、目标模型和噪声内积放进同一坐标系。白化恒等式可对照<a href="https://www.mathworks.com/help/phased/ref/whiteningmat.html" title="citation">官方 <code>whiteningmat</code> 文档</a>（2026-09-26 核实）；本题三元模型及下面的反例数字由本书自行构造，不采用该页面的 MUSIC 示例结果。</p>
+<p>本题不用黑箱也能写出 $\mathbf W$。矩阵 $\mathbf P_b=\vec b\vec b^H/3$ 是投影到 $\vec b$ 的算子；其方向应缩放 $1/\sqrt{28}$，其余方向不变，所以</p>
+<p>$$\mathbf W=\mathbf I+\left(\frac{1}{\sqrt{28}}-1\right)\mathbf P_b\text{。}$$</p>
+<p>用 $q=(1-1/\sqrt{28})/3\approx0.270339$，可逐项写成</p>
+<p>$$\mathbf W=\begin{bmatrix}1-q&jq&q\\-jq&1-q&jq\\q&-jq&1-q\end{bmatrix},
+\qquad \mathbf W\vec a=[1+jq,\ 1-q,\ 1-jq]^\top\text{。}$$</p>
+<p>变换后目标不再是 $[1,1,1]^\top$。它的平方范数为 $75/28$，故 $\mathbf R'_{xx}$ 的特征值为 $1,1,1+75/28=103/28\approx3.678571$；两个相等的噪声特征值恢复了所需结构。</p>
+<p><strong>第三步：三条处理链使用同一个方向网格。</strong> 扫描 $[-80°,80°]$，步长 0.1°，每条链都取一个目标、两个噪声特征向量。候选导向保持各自自然尺度，不另作逐方向归一化。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">处理链</th>
+<th scope="col">求特征分解的矩阵</th>
+<th scope="col">搜索使用的导向</th>
+<th scope="col" style="text-align: right;">全局峰方向</th>
+<th scope="col" style="text-align: right;">峰处投影能量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>普通 MUSIC，误用白噪声前提</td>
+<td>$\mathbf R_{xx}$</td>
+<td>$\vec a(\theta)$</td>
+<td style="text-align: right;">29.1°</td>
+<td style="text-align: right;">约 0.001054</td>
+</tr>
+<tr>
+<td>只白化协方差</td>
+<td>$\mathbf R'_{xx}$</td>
+<td>$\vec a(\theta)$</td>
+<td style="text-align: right;">−4.8°</td>
+<td style="text-align: right;">约 0.070026</td>
+</tr>
+<tr>
+<td>协方差与导向同步白化</td>
+<td>$\mathbf R'_{xx}$</td>
+<td>$\mathbf W\vec a(\theta)$</td>
+<td style="text-align: right;">0.0°</td>
+<td style="text-align: right;">理论为 0，数值小于 $10^{-24}$</td>
+</tr>
+</tbody>
+</table></div>
+<p>投影能量是伪谱的分母，不是角度置信度。三条链的坐标和导向尺度不同，也不能用这些分母大小直接比较“可信程度”。代码给伪谱分母设置 $10^{-15}$ 的数值下限，避免除以零；下限产生的峰高没有统计意义。表中的小投影值由未截断的投影另外计算。</p>
+<p><strong>适用边界。</strong> 正确结果依赖于事先给定且匹配当前频点的 $\mathbf R_{nn}$。工程中须从目标不活动或独立噪声训练段估计它，保持通道顺序、阵列标定和处理增益一致。把含目标的总协方差当作噪声协方差，会把要找的方向一起压平；噪声变化、估计误差和病态特征值也不会因写出 $\mathbf W$ 自动消失。本文没有证明未知有色噪声下的源数估计已经解决。</p>
+<p>本例运行入口为 <code>.venv/bin/python -m codes.examples.spatial_model_exercises</code> 的 <code>E04-11</code>，使用<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/spatial_model_exercises.py">本书源码</a>与现有 <code>music_spectrum</code>。完整输出保留白化矩阵、特征值、网格和三个峰；测试另用上述秩一投影表达式核对矩阵，避免只靠同一特征分解程序自证正确。</p>
 <hr />
 <blockquote>
 <p>📄 本篇信息：配图 5 张 ｜ <a href="index.html">回首页</a></p>

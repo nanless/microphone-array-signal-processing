@@ -1,4 +1,4 @@
-"""Explicit cross-module, chapter and research inventory for 106 exercises."""
+"""Explicit cross-module, chapter and research inventory for 117 exercises."""
 
 import json
 import re
@@ -14,8 +14,14 @@ from codes.examples.coarray_covariance_exercise import run_exercise as coarray_e
 from codes.examples.doa_resolution_trials import run_experiment as doa_resolution_experiment
 
 
+from codes.examples import spatial_model_exercises, enhancement_structure_exercises, engineering_boundary_exercises, interpolation_exercise
+
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = {
+    "spatial_model": {"E02-08", "E04-11", "E05-07", "E12-05"},
+    "enhancement_structure": {"E07-07", "E08-11", "E09-09"},
+    "engineering_boundary": {"E10-16", "E10-17", "E11-09"},
+    "interpolation": {"E13-02"},
     "spatial_precision": {"E02-07", "E04-10", "E05-06"},
     "enhancement_steps": {"E06-21", "E07-06", "E08-08", "E08-09", "E08-10"},
     "time_state": {"E09-07", "E09-08", "E10-15", "E11-08"},
@@ -46,7 +52,11 @@ EXPECTED = {
 }
 AEC_CASE_KEYS = {"E06-07": "overlap_save", "E06-08": "ipnlms",
                  "E06-09": "geigel", "E06-10": "delay_polarity"}
-RUNNERS = {"spatial_precision": spatial_precision_exercises.run_exercises,
+RUNNERS = {"spatial_model": spatial_model_exercises.run_exercises,
+           "enhancement_structure": enhancement_structure_exercises.run_exercises,
+           "engineering_boundary": engineering_boundary_exercises.run_exercises,
+           "interpolation": interpolation_exercise.run_exercises,
+           "spatial_precision": spatial_precision_exercises.run_exercises,
            "enhancement_steps": enhancement_step_exercises.run_exercises,
            "time_state": tracking_time_exercises.run_exercises,
            "spatial": exercises_spatial.run_exercises,
@@ -79,9 +89,9 @@ class ExerciseCatalogTest(unittest.TestCase):
     def setUpClass(cls):
         cls.results = {name: run() for name, run in RUNNERS.items()}
 
-    def test_independent_inventory_has_106_unique_ids(self):
-        self.assertEqual(len(ALL_IDS), 106)
-        self.assertEqual(sum(map(len, EXPECTED.values())), 106)
+    def test_independent_inventory_has_117_unique_ids(self):
+        self.assertEqual(len(ALL_IDS), 117)
+        self.assertEqual(sum(map(len, EXPECTED.values())), 117)
 
     def test_each_module_returns_exact_assigned_ids(self):
         for name, results in self.results.items():
@@ -104,7 +114,7 @@ class ExerciseCatalogTest(unittest.TestCase):
                 text = chapters[0].read_text(encoding="utf-8")
                 self.assertRegex(text, rf"\b{re.escape(exercise_id)}\b")
 
-    def test_chapter_and_research_inventories_cover_exactly_106_ids(self):
+    def test_chapter_and_research_inventories_cover_exactly_117_ids(self):
         chapters = "\n".join(path.read_text(encoding="utf-8")
                              for path in (ROOT / "chapters").glob("*.md"))
         research = (ROOT / "codes/research/05_exercises_and_audio.md").read_text(encoding="utf-8")

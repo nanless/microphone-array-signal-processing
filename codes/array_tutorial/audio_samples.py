@@ -130,8 +130,49 @@ def clock_drift_case() -> dict:
                   'Oracle is the ideal common-clock target, not measured compensation performance.'}
 
 
+def interpolation_case() -> dict:
+    """Fixed half-sample FIR delay versus analytic, continuous-time targets.
+
+    The ideal targets are evaluated from the known source, not estimated.
+    Both linear passes have zero initial history. Score only the interior.
+    """
+    count = 2 * SAMPLE_RATE
+    index = np.arange(count)
+
+    def source(samples):
+        t = samples / SAMPLE_RATE
+        fade = np.minimum(np.clip(t / .02, 0, 1), np.clip((2 - t) / .02, 0, 1))
+        return fade * (.18 * np.sin(2 * np.pi * 500 * t)
+                       + .18 * np.sin(2 * np.pi * 6000 * t))
+
+    x = source(index)
+    first = .5 * (x + delay_samples(x, 1))
+    second = .5 * (first + delay_samples(first, 1))
+    return {
+        'signals': {'interpolation_ideal_half': source(index - .5),
+                    'interpolation_linear_half': first,
+                    'interpolation_ideal_one': source(index - 1.),
+                    'interpolation_linear_twice': second},
+        'parameters': {
+            'sample_rate_hz': SAMPLE_RATE, 'duration_s': 2., 'seed': None,
+            'source': '500 and 6000 Hz continuous sinusoids, each amplitude 0.18; 20 ms linear edge fades',
+            'frequencies_hz': [500, 6000], 'amplitudes': [.18, .18],
+            'fir_coefficients_one_pass': [.5, .5],
+            'fir_coefficients_two_passes': [.25, .5, .25],
+            'delay_samples': {'ideal_half': .5, 'linear_half': .5,
+                             'ideal_one': 1., 'linear_twice': 1.},
+            'initial_history': 'zero; source is zero outside [0, 2] seconds',
+            'scoring_interval_samples': [1600, 30400],
+            'amplitude_measurement': '2/N*abs(sum(x[n]*exp(-j*2*pi*f*n/fs))) on integer-period interior',
+            'reference': 'Compare each output to its matching ideal delay; no gain fitting or time alignment',
+            'normalization': 'one common export gain for all four files',
+        },
+        'limits': 'Mathematical fixed-delay component example, not a resampling-rate estimator, '
+                  'room, device or speech quality test. Two passes delay by one sample but are not an exact one-sample delay.'}
+
+
 def build_cases() -> dict:
-    """Return fifteen experiments with model parameters and references.
+    """Return sixteen experiments with model parameters and references.
 
     Each entry has ``signals`` (filename stem -> CxN array), ``parameters`` and
     ``limits``. Signals are pre-export floats; no group uses peak matching.
@@ -264,6 +305,7 @@ def build_cases() -> dict:
     subtraction_zero_audio = istft(subtraction_zero[None], n_fft=512, hop_length=128,
                                    length=t.size)[0]
     return {
+        'interpolation': interpolation_case(),
         'clock_drift': clock_drift_case(),
         'spatial': {
             'signals': {'spatial_reference': delay_samples(target, 3),

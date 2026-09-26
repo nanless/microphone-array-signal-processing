@@ -10,7 +10,7 @@
     "float_dtype": "float64"
   },
   "synthetic_signal": {
-    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband spectral_subtraction and clock_drift; see each group for noise and transforms",
+    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband spectral_subtraction, clock_drift and interpolation; see each group for noise and transforms",
     "duration_s": 2,
     "base_frequencies_hz": [
       173,
@@ -33,8 +33,8 @@
   "pcm": "signed little-endian 16-bit, round-to-nearest-even; no dither; no per-file normalization",
   "listening": "Start at low device volume. No automatic playback. No formal listening study performed.",
   "generator_inputs": {
-    "codes/examples/generate_audio_samples.py": "1c7e668374a68fdd6cc48befc698f1271f5269e2b4fa0c371ae29e0c5da6affa",
-    "codes/array_tutorial/audio_samples.py": "5378934891bc7e0b896d50246230966a4fdcc79841eb3d0655ac0db2d296f8a3",
+    "codes/examples/generate_audio_samples.py": "c9e01b741570365c64e35e4ea90db59e0efdb000a971c12bf10c0ad487e30671",
+    "codes/array_tutorial/audio_samples.py": "9d530096b95b96197a6e15513513496dec93c845a11d764d898817e28ee01382",
     "codes/array_tutorial/aec.py": "70d69fcd523cff3028162a221d71ea6bd2254979dfe37479ad26f77ab74a5a7e",
     "codes/array_tutorial/aec_ipnlms.py": "86422a00df25293176e0bde8193c7e05ac7a1e5703660b56907024985978c0d4",
     "codes/array_tutorial/aec_rls.py": "f13c2018297e46f0b393ef52e04fad5f1d48ede00de8b37a80a4abf597a9305d",
@@ -47,6 +47,47 @@
     "codes/array_tutorial/geometry.py": "7e9c33e90101c41441cde659d288f0aa25be141e9cdbaaa9fcabee54b285f72a"
   },
   "groups": {
+    "interpolation": {
+      "parameters": {
+        "sample_rate_hz": 16000,
+        "duration_s": 2.0,
+        "seed": null,
+        "source": "500 and 6000 Hz continuous sinusoids, each amplitude 0.18; 20 ms linear edge fades",
+        "frequencies_hz": [
+          500,
+          6000
+        ],
+        "amplitudes": [
+          0.18,
+          0.18
+        ],
+        "fir_coefficients_one_pass": [
+          0.5,
+          0.5
+        ],
+        "fir_coefficients_two_passes": [
+          0.25,
+          0.5,
+          0.25
+        ],
+        "delay_samples": {
+          "ideal_half": 0.5,
+          "linear_half": 0.5,
+          "ideal_one": 1.0,
+          "linear_twice": 1.0
+        },
+        "initial_history": "zero; source is zero outside [0, 2] seconds",
+        "scoring_interval_samples": [
+          1600,
+          30400
+        ],
+        "amplitude_measurement": "2/N*abs(sum(x[n]*exp(-j*2*pi*f*n/fs))) on integer-period interior",
+        "reference": "Compare each output to its matching ideal delay; no gain fitting or time alignment",
+        "normalization": "one common export gain for all four files"
+      },
+      "limits": "Mathematical fixed-delay component example, not a resampling-rate estimator, room, device or speech quality test. Two passes delay by one sample but are not an exact one-sample delay.",
+      "common_export_gain": 1.0
+    },
     "clock_drift": {
       "parameters": {
         "sample_rate_hz": 16000,
@@ -525,6 +566,58 @@
     }
   },
   "files": [
+    {
+      "file": "interpolation_ideal_half.wav",
+      "sha256": "b7f00ce83904e20ff0a528ab614d65335b3f1fe4634808fa25ef91311be78573",
+      "group": "interpolation",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.345428466796875,
+      "rms": 0.17879480426747554,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5255390706330179e-05
+    },
+    {
+      "file": "interpolation_linear_half.wav",
+      "sha256": "fd4806bd8f0e22b8c2fa713a879cb12470e04cb1f7baf9053107d22cef350ff9",
+      "group": "interpolation",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.241912841796875,
+      "rms": 0.1348021647239667,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258591633440788e-05
+    },
+    {
+      "file": "interpolation_ideal_one.wav",
+      "sha256": "8710810b0ec64501b37cf0e57963c8758f724555c429d075e4b1934bf720cfd2",
+      "group": "interpolation",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.3463134765625,
+      "rms": 0.17879894922521233,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5199536483462284e-05
+    },
+    {
+      "file": "interpolation_linear_twice.wav",
+      "sha256": "c0acaf861371669f580a72999055e7e8d7209e64cb5a9b092021510930e0ace4",
+      "group": "interpolation",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.1934814453125,
+      "rms": 0.12657779963665342,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5255122087658168e-05
+    },
     {
       "file": "clock_reference.wav",
       "sha256": "fd61dec9d3a815e57ae15e2435325848641ceb5c37ba5cddae46cdf5f2ed060b",

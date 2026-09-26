@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>空间处理与追踪源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="8c33d8040161"><style>
+<meta name="source-digest" content="7474d21b9b16"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -119,6 +119,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-u-d08d24175d">53. WebRTC 分位数噪声估计与语音概率控制</a></li>
 <li><a href="01_spatial_and_tracking.html#sec-u-b28005a110">可复算的工程配置与验收记录</a></li>
 <li><a href="01_spatial_and_tracking.html#sec-u-03df0aa16c">固定版本的源码审查疑点</a></li>
+<li><a href="01_spatial_and_tracking.html#sec-u-65a9bb03d9">从源代码接口到完整数学模型：四个确定性核对</a></li>
 <li><a href="01_spatial_and_tracking.html#sec-u-a16f6b51b4">收录边界</a></li>
 </ul>
 <div class="chap"><a href="02_aec_wpe_separation.html">AEC、WPE 与分离源码研究</a></div>
@@ -204,6 +205,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-u-d08d24175d">53. WebRTC 分位数噪声估计与语音概率控制</a></li>
 <li><a href="01_spatial_and_tracking.html#sec-u-b28005a110">可复算的工程配置与验收记录</a></li>
 <li><a href="01_spatial_and_tracking.html#sec-u-03df0aa16c">固定版本的源码审查疑点</a></li>
+<li><a href="01_spatial_and_tracking.html#sec-u-65a9bb03d9">从源代码接口到完整数学模型：四个确定性核对</a></li>
 <li><a href="01_spatial_and_tracking.html#sec-u-a16f6b51b4">收录边界</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="空间处理与声源追踪算法实现和工业使用条件" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-8b9c858ba6">空间处理与声源追踪：算法、实现和工业使用条件</h1>
@@ -648,6 +650,46 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>这些源码问题不要求修改下载的上游仓库来“让演示通过”。如需修复，应创建保留原始许可证与提交号的独立补丁、列出改动原因，并采用理想多频输入及真实录音双重回归。未完成修复和回归前，不把这三个固定版本实现列作设备可直接采用的已验证定位器。</p>
 <p>本机实际运行检查记录：2026-09-22，在仓库 <code>.venv</code> 中分别尝试导入固定版本 doatools 的 <code>RootMUSIC1D</code> 和 FilterPy 的 <code>KalmanFilter</code>，两次均在导入阶段因缺少 <code>scipy</code> 失败，未进入数值计算。计划的独立输入分别为六元半波距阵、30° 单源协方差，以及先验均值 2、方差 4、观测 3、观测方差 1 的标量更新；后者手算后验为 2.8 与 0.8。这些预期值不是已取得的外部运行结果。2026-09-24 已在<strong>独立临时环境</strong>安装 pyroomacoustics 0.10.0 并实际运行上述房间 RIR；仓库 <code>.venv</code> 未因此改变。CSSM/WAVES/TOPS 仍只完成上表所列静态核查，不能以房间 RIR 运行替代它们的定位接口验证。</p>
 <p>另一个版本相容性检查是 doatools <code>estimation/music.py:153</code> 使用 <code>np.complex_</code>，需在其依赖支持的 NumPy 版本中运行或准备独立兼容补丁；本文未修改外部工作目录或共享依赖来绕过这些条件。</p>
+<span id="从源代码接口到完整数学模型四个确定性核对" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-65a9bb03d9">从源代码接口到完整数学模型：四个确定性核对</h2>
+<p>2026-09-26 新增的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/spatial_model_exercises.py"><code>spatial_model_exercises.py</code></a>补充以下四道题。它们调用本仓库 NumPy 教学实现，不下载新的外部算法包，不用合成音频代替协方差真值，也不声称复现了某个产品的现场性能。运行入口为 <code>.venv/bin/python -m codes.examples.spatial_model_exercises</code>，输出完整 JSON，不改写资产。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">稳定 ID 与正文</th>
+<th scope="col">先检查的模型条件</th>
+<th scope="col">实际执行与独立答案</th>
+<th scope="col">接到工程实现时必须保留的条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../02_basics-signal-model.html">E02-08：单边谱与功率</a></td>
+<td>实样本、未缩放正向 FFT、无窗、无去均值</td>
+<td>五组 DC、Nyquist、内部频点、奇数长度与补零输入；频域均方值与直接时域平方和相符</td>
+<td>奇偶端点分别处理；补零保留原统计长度；PSD 还需乘 Hz 频率间距，不能与平方幅度混用</td>
+</tr>
+<tr>
+<td><a href="../04_doa-estimation.html">E04-11：有色噪声 MUSIC</a></td>
+<td>精确已知正定噪声协方差、一个目标、三元半波距阵</td>
+<td>普通、只白化协方差、完整白化三条链的峰为 29.1°、−4.8°、0.0°；用秩一投影解析式独立核对白化矩阵</td>
+<td>白化矩阵必须用于全部候选导向；噪声估计不含目标、通道和频点对应；不能把此题精确结果当作估计噪声协方差后的性能</td>
+</tr>
+<tr>
+<td><a href="../05_beamforming.html">E05-07：由 WNG 预算反推加载</a></td>
+<td>指定二通道协方差、无失真响应、线性 WNG 至少 1.6</td>
+<td>最小绝对加载为 9，相对加载为 9/11；现有 <code>mvdr_weights</code> 与解析权重一致</td>
+<td>记录加载参数的单位和尺度；用未加载协方差评分，分别报告干扰残留与白噪声增益</td>
+</tr>
+<tr>
+<td><a href="../12_appendix-symbols-math.html">E12-05：奇异协方差反例</a></td>
+<td>明确的 $\mathbf R=\operatorname{diag}(0,1)$、$\vec a=[1,1]^\top$</td>
+<td>机械伪逆替换给出可行但非最优的 $[0,1]^\top$；直接约束解及加载极限为 $[1,0]^\top$</td>
+<td>不能从“可计算且满足响应”推出最优；须检查零空间与目标导向的关系，不泛化成“伪逆均失效”</td>
+</tr>
+</tbody>
+</table></div>
+<p>复查代码时，特别留意行向量接口：本例候选表每一行存的是列导向的转置，所以变换写作 <code>dictionary @ whitener.T</code>。若误写成 <code>whitener.conj().T</code>，对非对角复白化矩阵会得到另一组导向。后续 MUSIC 投影再按定义共轭，不能提前多取一次共轭。</p>
+<p>FFT 接口约定由 <a href="https://numpy.org/doc/stable/reference/generated/numpy.fft.rfft.html">NumPy <code>rfft</code></a>与 <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.periodogram.html">SciPy <code>periodogram</code></a>官方文档核实；代码不依赖 SciPy。白化矩阵的定义另见 <a href="https://www.mathworks.com/help/phased/ref/whiteningmat.html">MathWorks <code>whiteningmat</code></a>。三处均于 2026-09-26 核实。本节其余数值为正文公开输入的本书推导；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_spatial_model.py">独立测试</a>核对闭式答案、零空间反例、端点与接口拒绝行为，不能替代真实录音和有限样本实验。</p>
 <span id="sec-66" class="anchor-alias" aria-hidden="true"></span><span id="收录边界" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-a16f6b51b4">收录边界</h2>
 <p>稀疏贝叶斯定位、原子范数、完整最坏情形稳健波束以及本文未逐项收录的神经定位方法，仍需要逐论文确认代码与模型；不能用同名 GitHub 搜索结果替代作者来源。本文已分别记录实际取得的外部实现、官方实现存在但再分发许可未建立的索引、只核实到原理的算法和版本疑点。深度波束与 WPD 的完整增强链、分离及神经噪声抑制见本目录其他研究文档；同一函数在多个算法条目中被调用，不等于取得了多套独立工程系统。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>

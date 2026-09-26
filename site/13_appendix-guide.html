@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 B · 路径地图与练习 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="8c33d8040161"><style>
+<meta name="source-digest" content="7474d21b9b16"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -95,6 +95,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-u-ac903dbcd8">第 16 题：能得出的结论</a></li>
 <li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-13-6-6">13.6.6 公开系统复核：题 17</a></li>
 <li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-13-6-7">13.6.7 补充计算：试听归一化</a></li>
+<li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-13-6-8">13.6.8 分数延迟：时延对了，幅度为何仍会变</a></li>
 <li><a href="13_appendix-guide.html#sec-13-7">13.7 复现说明</a></li>
 </ul>
 <div class="chap"><a href="research/index.html">源码研究</a></div></nav>
@@ -129,6 +130,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-u-ac903dbcd8">第 16 题：能得出的结论</a></li>
 <li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-13-6-6">13.6.6 公开系统复核：题 17</a></li>
 <li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-13-6-7">13.6.7 补充计算：试听归一化</a></li>
+<li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-13-6-8">13.6.8 分数延迟：时延对了，幅度为何仍会变</a></li>
 <li><a href="13_appendix-guide.html#sec-13-7">13.7 复现说明</a></li>
 </ul></nav></details>
 <blockquote>
@@ -150,7 +152,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <ol>
 <li>运行 <code>codes/</code> 中只依赖 NumPy 的教学实现，核对手算结果、数组维度和退化边界。</li>
 <li>在隔离环境中用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线，记录房间、阵列和随机种子。</li>
-<li>运行 <code>scripts/</code> 中的两个绘图脚本，按当前参数复现 40 张编号图，并逐图核对正文条件。</li>
+<li>运行 <code>scripts/</code> 中的两个绘图脚本，按当前参数复现 41 张编号图，并逐图核对正文条件。</li>
 <li>按研究任务选择公开数据和固定版本参考系统，分别核对代码、模型与数据的许可和评测口径。</li>
 <li>在可用的多通道硬件上测实时性、同步和标定；仿真结果不能代替设备测量。</li>
 </ol>
@@ -573,7 +575,7 @@ D_t&=(1-p_D)D^-\\
 </tbody>
 </table></div>
 <p>动手题用的绘图函数都在 <code>scripts/</code> 里，具体对应关系见上表。第 16 题还要安装 pyroomacoustics 0.10.0；它是房间声学仿真的扩展依赖，命令见该题和项目 README。</p>
-<p>章内还有带稳定编号 <code>E01-01</code> 等的计算练习，由<a href="research/05_exercises_and_audio.html">练习与音频实验手册</a>统一索引。下面的 1～17 题采用另一套编号，与 E 号题各自独立。工程练习 E10、选型练习 E11 和数学练习 E12 的运行入口是 <code>codes/examples/exercises_engineering.py</code>，可先手算再比对输出。</p>
+<p>章内还有带稳定编号 <code>E01-01</code> 等的计算练习，由<a href="research/05_exercises_and_audio.html">练习与音频实验手册</a>统一索引。下面的 1～17 题采用另一套编号，与 E 号题各自独立。<code>codes/examples/exercises_engineering.py</code> 覆盖工程、选型和数学的基础计算组；谱减、状态时间和事件边界等题使用各自的独立入口。请按题面或手册中的稳定 ID 选择程序，先手算再比对输出，不能把一个入口当作全部 E10、E11、E12 题的执行器。</p>
 <h3 id="sec-13-6-1">13.6.1 基础与几何：第 1～3 章的题 1～4</h3>
 <p><strong>第 1 章（问题定义）</strong></p>
 <ol>
@@ -804,7 +806,7 @@ $$</p>
 <p>默认脚本对固定近左位置另算 32 阶结果，并与 40 阶比较：四麦 $T_{60}$ 中位数相差约 $2.08\times10^{-6}$ s，DRR 中位数相差约 $7.55\times10^{-7}$ dB，低于本题自定的 0.02 s 与 0.5 dB 判据。本书还实际以 <code>--max-order 48</code> 重跑六个位置：与 40 阶相比，六个位置的 $T_{60}$ 中位数变化都小于 $10^{-6}$ s，DRR 中位数变化都小于 $10^{-6}$ dB，1° 网格的方位估计不变。这些比较说明所列指标对 40～48 阶的截断不敏感，不证明频谱细节或其他几何设置也已收敛；改变房间、源位或指标后须重新检查。</p>
 <h3 id="sec-u-511d1a6b5e">第 16 题：试听文件与复现</h3>
 <p>仓库已将六组源信号、四麦完整房间输出和四麦仅直达输出，共 18 个 PCM WAV 单独保存在 <code>codes/room_audio/</code>，参数、共同增益、种子和逐文件摘要见<a href="room_audio/MANIFEST.json">房间音频清单</a>；<a href="research/05_exercises_and_audio.html#17-六位置房间响应与定位">逐组试听入口</a>列出全部文件。</p>
-<p>每组使用与定位估计相同的固定白高斯噪声输入；全部文件采用同一个显式增益，不逐文件峰值归一化，保留传播时延和增益差异。文件是数学合成白噪声，不是真实语音或实测房间录音；试听前先降低播放音量。它们与主清单的 64 个 <code>codes/audio/</code> 样本分别管理。</p>
+<p>每组使用与定位估计相同的固定白高斯噪声输入；全部文件采用同一个显式增益，不逐文件峰值归一化，保留传播时延和增益差异。文件是数学合成白噪声，不是真实语音或实测房间录音；试听前先降低播放音量。它们与主清单的 68 个 <code>codes/audio/</code> 样本分别管理。</p>
 <p>若要重新生成到个人实验目录，先在装有锁定版 pyroomacoustics 0.10.0 的隔离环境中运行 <code>python -m codes.examples.room_srp_exercise --run --audio-dir /tmp/room-srp-audio-new</code>；为防覆盖，该目录必须尚不存在。</p>
 <h3 id="sec-u-ac903dbcd8">第 16 题：能得出的结论</h3>
 <p><strong>解读边界。</strong> 固定的 $\pm30°$ 条件分别在 1 m 与 2.5 m 比较；这间合成房间中，远位置的 DRR 较低，绝对 DOA 误差由 1° 变成 2°。</p>
@@ -826,20 +828,84 @@ $$</p>
 <p><strong>(a)</strong> 两路目标已对齐，噪声标准差均为 0.07；独立噪声平均后误差 RMS 下降，复制相同噪声则不下降。</p>
 <p><strong>(b)</strong> 输入目标增益为 1 与 −0.9；极性未纠正时平均只保留 0.05 倍目标，已知纠正后为 0.95 倍。波形展示 500～510 ms。</p>
 <p><strong>(c)</strong> 两个已知混合矩阵的二范数条件数分别为 3、199，同一输入噪声标准差为 0.003。每一路恢复结果与对应源参考逐样本相减，统计全段 RMS，不拟合额外时延或增益。柱形表示同一固定随机样本，不代表统计均值；不同子图条件不同，不能跨组排名。模型、矩阵及 13 个对照文件见<a href="research/05_exercises_and_audio.html">音频手册第 9～11 节</a>。</p>
+<h3 id="sec-13-6-8">13.6.8 分数延迟：时延对了，幅度为何仍会变</h3>
+<p><a id="e13-02"></a></p>
+<p><strong>E13-02：两次半采样插值能否代替一次整采样延迟。</strong> 在16 kHz采样率下，信号包含幅度均为0.18的500 Hz和6000 Hz正弦。用线性插值分别实现一次半采样延迟、连续两次半采样延迟。求每个频率的幅度比与分贝值，并说明两次处理后的输出能否等同于纯一采样延迟。这里研究固定时延滤波，不估计时钟速率。</p>
+<p><strong>先写一个输出样本。</strong> 设小数延迟为 $\alpha\in[0,1]$ 个采样，线性插值在当前与前一个样本之间取加权平均：$y[n]=(1-\alpha)x[n]+\alpha x[n-1]$。例如 $\alpha=0.5$、相邻两点为0.2与0.6，则输出为0.4。它利用两点间的直线近似原波形，并未知道两点之间真实的连续信号。</p>
+<p>该固定分数延迟模型及其幅度误差见Julius O. Smith III《Physical Audio Signal Processing》（2010）<a href="https://ccrma.stanford.edu/~jos/pasp/Fractional_Delay_Filtering_Linear.html">Fractional Delay Filtering by Linear Interpolation，图4.1～4.2</a>，核对日期2026-09-26。下面的双音数例与推导为本书计算。</p>
+<p>把 $x[n]=e^{j\omega n}$ 代入，$\omega=2\pi f/f_s$ 是每采样的相位增量，得</p>
+<p>$$
+\begin{aligned}
+y[n]&=e^{j\omega n}\bigl[(1-\alpha)+\alpha e^{-j\omega}\bigr],\\
+H_\alpha(e^{j\omega})&=(1-\alpha)+\alpha e^{-j\omega}.
+\end{aligned}\tag{13-3}
+$$</p>
+<p>用频响乘其复共轭，交叉项为 $2\alpha(1-\alpha)\cos\omega$，所以</p>
+<p>$$
+|H_\alpha(e^{j\omega})|^2
+=1-4\alpha(1-\alpha)\sin^2(\omega/2).\tag{13-4}
+$$</p>
+<p>当 $\alpha=0$ 或1时，没有插值误差；在直流 $\omega=0$ 处也没有幅度损失。一般频率下，式(13-4)小于1，说明它包含低通作用。这里比较的是离散时间固定延迟滤波器，不能把连续插值核的频响直接当成此二抽头滤波器的响应。</p>
+<p><strong>半采样是容易算清的一种情况。</strong> 提取公共相位后，两个相量关于该相位对称：</p>
+<p>$$
+H_{1/2}(e^{j\omega})
+=e^{-j\omega/2}\cos(\omega/2),\qquad
+H_{1/2}^2(e^{j\omega})=e^{-j\omega}\cos^2(\omega/2).\tag{13-5}
+$$</p>
+<p>在 $0\le f\lt f_s/2$ 范围，余弦为正，一次处理的相位对应半采样延迟；两次处理对应一采样延迟，但幅度又乘了一次余弦。纯一采样延迟的频响是 $e^{-j\omega}$，幅度恒为1。到奈奎斯特频率时线性插值幅度为零，零响应没有可定义的相位。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">频率</th>
+<th scope="col">$\omega/2=\pi f/f_s$</th>
+<th scope="col">一次幅度比</th>
+<th scope="col">两次幅度比</th>
+<th scope="col">一次幅度比的分贝值</th>
+<th scope="col">两次幅度比的分贝值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>500 Hz</td>
+<td>$\pi/32$</td>
+<td>0.995185</td>
+<td>0.990393</td>
+<td>−0.04 dB</td>
+<td>−0.08 dB</td>
+</tr>
+<tr>
+<td>6000 Hz</td>
+<td>$3\pi/8$</td>
+<td>0.382683</td>
+<td>0.146447</td>
+<td>−8.34 dB</td>
+<td>−16.69 dB</td>
+</tr>
+</tbody>
+</table></div>
+<p>表中幅度先以未舍入值计算，再用 $20\log_{10}|H|$ 转成dB；两次处理的dB值是一次的两倍，功率比则为幅度比的平方。例如6000 Hz一次输出正弦幅度为 $0.18\times0.382683\approx0.068883$，两次约为0.026360。500 Hz变化很小不能证明整个频带的插值都准确。</p>
+<p>还有一个不依赖正弦的检查：单位脉冲经过两次 $[1/2,1/2]$ 卷积得到 $[1/4,1/2,1/4]$；纯一采样延迟应给 $[0,1,0]$。两者中点相同，形状仍不同。</p>
+<p><img alt="图41 线性分数延迟的解析幅度与PCM测量" src="../figures/fig41_interpolation_error.png" onerror="this.alt+='（图缺失）'" /></p>
+<p>图41(a)的实线与虚线由式(13-5)计算；空心圆和方块从已导出PCM读回，分别测一次和两次处理。(b)按同一口径将PCM幅度比转成dB，柱内纹理区分两次处理。输入为2 s双音，两端各20 ms线性淡入淡出；四文件共用导出增益1，不分别归一化。</p>
+<p><strong>怎样核验音频。</strong> 对<a href="research/05_exercises_and_audio.html#22-线性分数延迟的幅度失真">四个插值对照文件</a>，只统计半开区间 $[1600,30400)$ 点，即0.1～1.9 s，避开初始化和淡入淡出。该区间包含500 Hz的900个周期和6000 Hz的10800个周期，可用 $2|\sum_n x[n]e^{-j2\pi fn/f_s}|/N$ 分别测两种频率的幅度。分母参考须是对应半采样或一采样的理想输出。</p>
+<p>运行 <code>.venv/bin/python -m codes.examples.interpolation_exercise</code>，可同时得到解析值、PCM幅度及其比值；PCM16量化使结果与解析值略有差异。理想输出由已知连续双音在目标时刻求值得到，不是从离散输入恢复出的估计。此题没有房间、噪声或真人语音，不能据音色差异给真实语音质量评分。</p>
+<p>选择分数延迟器时应按目标频带检查幅度、相位、延迟和状态，不能只核对插值位置。高阶FIR、全通或带限重采样有不同误差与代价；本题未运行这些替代方案。已实际编译的STK <code>DelayL</code> 固定接口对照及其状态重置反例见<a href="research/03_industrial_deployment.html#i29stkdelayl">工业研究I29</a>。</p>
 <span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-13-7">13.7 复现说明</h2>
 <p>先运行代码基线的单元测试和第 10 章示例，核对确定性输出：</p>
 <pre><code class="language-bash">.venv/bin/python -m unittest tests.test_codes_engineering -v
 .venv/bin/python -m codes.examples.ch10_engineering_baselines
 .venv/bin/python -m codes.examples.exercises_engineering
 .venv/bin/python -m codes.examples.tracking_time_exercises
+.venv/bin/python -m codes.examples.engineering_boundary_exercises
 </code></pre>
 <p>第 10 章示例使用确定性输入，覆盖 SRO 直线拟合与线性重采样、VAD 迟滞与语音结束保持时间、峰值保护 AGC、固定容量环形缓冲、处理超时与队列模拟，以及 Q1.15 饱和量化。线性重采样、Python 环形缓冲和调度模拟都是教学基线，不应替换带抗混叠滤波的流式重采样器、无锁实时队列或目标系统测量。</p>
 <p>新增的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/tracking_time_exercises.py">状态与时间练习</a>分别对应 E09-07 的旧权重递推、E09-08 的测量到消费时间外推、E10-15 的预卷与结束事件、E11-08 的零失败风险上界。先按题面独立手算，再检查代码中间值；四题均有<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_time_state_exercises.py">独立边界测试</a>，不需要模型权重或声卡。</p>
-<p>继续做设备实验时，可按<a href="research/03_industrial_deployment.html">工业实现研究</a>的 I01～I28 选择一个主题，例如采集与路由、连续重采样、VAD/AGC/NS、DSP 固件、模型运行时或评分。先固定源码提交，再记录依赖、编译、模型、声学输入和故障状态；“已下载”只能说明源码在本机，不能代替“已编译、已运行、已测量”。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/engineering_boundary_exercises.py">工程边界练习</a>再区分三类容易混淆的量：E10-16 的恰好完成与真正超期，E10-17 的采样时刻、回调时刻与对应输出时刻，E11-09 的平均错误下降与独立配对方向证据。它们分别用整数刻度、同一时钟的构造时间戳和全部符号排列作独立核查，不将调度模型、时间单位或教学计数写成硬件实测。</p>
+<p>继续做设备实验时，可按<a href="research/03_industrial_deployment.html">工业实现研究</a>的 I01～I29 选择一个主题，例如采集与路由、连续重采样、VAD/AGC/NS、DSP 固件、模型运行时或评分。先固定源码提交，再记录依赖、编译、模型、声学输入和故障状态；“已下载”只能说明源码在本机，不能代替“已编译、已运行、已测量”。</p>
 <p>会议识别复现还要固定数据准备与文本规范化。CHiME-8 的官方 <code>chime-utils</code> 提供 SegLST 转写格式、该届规范化及 cpWER/tcpWER 评分；其中缺失场景的忽略选项会改变实际计分范围。应保留每个场景的输入文件数、失败数和最终参与评分的清单，并先用正确转写、说话人交换、漏词和时间戳偏移的小夹具检查评分口径。<a href="https://github.com/chimechallenge/chime-utils/tree/152882404f572d40769ef02bf91c5a9a9cfc9c78" title="citation">CHiME-8 官方评分实现</a></p>
-<p>绘图脚本都在 <code>scripts/</code> 里。图 34～36 和图 37～38 读取或复算指定教学数据，图 39 是算法流程图，图 40 复算时钟漂移音频；先生成音频，再运行两个绘图脚本。图片写入 <code>figures/</code>，共 40 张：</p>
+<p>绘图脚本都在 <code>scripts/</code> 里。图 34～36 和图 37～38 读取或复算指定教学数据，图 39 是算法流程图，图 40 复算时钟漂移音频，图 41 对照线性插值的解析响应与PCM幅度；先生成音频，再运行两个绘图脚本。图片写入 <code>figures/</code>，共 41 张：</p>
 <pre><code class="language-bash">.venv/bin/python codes/examples/generate_audio_samples.py
-.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40
+.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～41
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～39（回声消除专题）
 </code></pre>
 <p>Windows 上把 <code>.venv/bin/python</code> 换成 <code>.venv\Scripts\python</code>，其余不变。</p>
@@ -847,7 +913,7 @@ $$</p>
 <p>代码基线只依赖 <code>numpy</code>；绘图脚本依赖 <code>numpy</code> 和 <code>matplotlib</code>，并使用固定随机种子，因此相同环境和参数下应得到相同结果。每个脚本生成哪些图、练习需要哪些扩展依赖，见 <code>scripts/README.md</code>；代码覆盖范围、上游来源和许可证见 <code>codes/README.md</code>、<code>codes/COVERAGE.md</code> 与 <code>codes/SOURCES.lock.json</code>。</p>
 <hr />
 <blockquote>
-<p>📄 本篇信息：编号图 1 张（图35），另有房间题结果图 ｜ <a href="index.html">回首页</a></p>
+<p>📄 本篇信息：编号图 2 张（图35、图41），另有房间题结果图 ｜ <a href="index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="12_appendix-symbols-math.html">← 上一篇</a></span><span><a href="index.html">回首页 →</a></span></div>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>

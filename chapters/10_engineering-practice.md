@@ -115,6 +115,8 @@ WPE 历史帧、追踪状态、递归协方差和因果 AGC 时间常数是历�
 
 [`simulate_deadline_queue`](../codes/array_tutorial/engineering.py) 用一条串行工作队列区分三件事：处理完成晚于本帧期限、队列达到高水位、容量已满而丢帧。平均 RTF 小于 1 仍可能出现其中任何一种。正式设备还要记录**播放下溢**（下一块音频未及时送到设备，underrun）和**采集上溢**（采集数据未及时取走，overrun）；驱动常把两者合称 `xrun`。线程优先级、CPU 频率策略和并发负载也应一同记录。
 
+同一时刻的事件需要明确先后：本书模型先释放已经完成的帧，再接收这一时刻到来的新帧；恰在期限完成算准时。若到达时刻用乘法、完成时刻用浮点累加，舍入差可能把同一边界误判为队列仍满。教学模拟内部因此用输入浮点数对应的精确有理数比较事件，不加人为宽限；E10-16 用整数时钟刻度独立复核。这种离线记账方式不用于实时音频回调。
+
 Linux 的 ALSA（Advanced Linux Sound Architecture，先进 Linux 声音架构）还区分具体恢复原因：`-EPIPE` 表示上溢或下溢，`-ESTRPIPE` 与挂起有关，`-ENODEV` 可表示设备移除；某些回声参考设备在关联播放未启动时会返回 `-ENODATA`。这些状态不能统一解释为“再读一次”。恢复后要记录丢样，并通知依赖连续历史的 AEC、重采样器及后端。[ALSA PCM 官方接口说明](https://www.alsa-project.org/alsa-doc/alsa-lib/pcm.html "citation")
 
 参考接口可按下表检查：
@@ -314,6 +316,8 @@ KWS 是否绕过 VAD、是否持续运行、从 AEC 后还是增强后取信号�
 该基线没有噪声自适应、频带特征和神经网络，也不自行保存预卷；预卷可用 [`RingBuffer`](../codes/array_tutorial/engineering.py) 保留触发前的固定帧数，并在 VAD 由假变真时先取出缓存。
 
 AGC 要区分“把正常语音逐渐推向目标电平”和“立刻避免削波”。增益上升可以缓慢释放，增益下降需要更快；即使平滑状态来不及下降，当前块也要受安全上限约束。[`PeakProtectAGC`](../codes/array_tutorial/engineering.py) 给出这种峰值保护基线。
+
+平滑更新在数学上可写成 $g+\alpha(g_\star-g)$，实现采用等价的 $(1-\alpha)g+\alpha g_\star$。当 $\alpha=1$ 时应直接得到目标增益；若旧增益远大于新增益，先做差再加回可能在浮点数中丢掉新增益，把非零输入误变成静音。程序的有限大输入测试用于核对这条数值边界，不表示实际 PCM 或模拟前端能承受这样的幅度。
 
 它不估计响度，也不能修复模拟前端已经发生的削波。验收时要同时画输入电平、增益、输出峰值和削波比例，并在 AEC 双讲期间检查增益变化是否破坏回声路径模型。
 
@@ -554,7 +558,7 @@ PipeWire 的 `capture/source/sink/playback` 依次是麦克风采集、应用读
 | 块浮点内核 | XMOS `lib_xcore_math` 的 `src/bfp/`、`src/fft/`、`src/arch/ref/` | 尾数与共享指数、headroom、目标架构；版本按 lib_voice 依赖固定 |
 | 电平与质量测量 | libebur128 `ebur128/`；pystoi `pystoi/stoi.py`；ViSQOL `src/` | 响度/真峰值与质量分分开；参考、模式、模型、有效帧与失败记录 |
 
-[工业实现研究文档](../codes/research/03_industrial_deployment.md)逐项给出 27 个实现主题的源码入口、状态和参数、故障注入及验收方法，核实日期为 2026-09-22。XMOS 的旧 `fwk_voice` 已迁移到 `lib_voice`；该库使用 XMOS Public Licence v1，商用硬件范围和特殊用途条款应按原许可判断，不能把可获取源码等同于跨平台宽松许可。[XMOS 官方迁移说明](https://github.com/xmos/fwk_voice "citation")、[lib_voice 许可](https://github.com/xmos/lib_voice/blob/c9f1a9bf95cd88c7950adf4bf631c217f900ad25/LICENSE.rst "citation")
+[工业实现研究文档](../codes/research/03_industrial_deployment.md)按采集、连续流、控制、固件、部署与评分分别给出源码入口、状态和参数、故障注入及验收方法。各项核实日期和实际运行范围随条目记录，例如 I28 的 FastEnhancer 接口核对日期为 2026-09-26；不要把文档建立日期当成全部实现的统一运行日期。XMOS 的旧 `fwk_voice` 已迁移到 `lib_voice`；该库使用 XMOS Public Licence v1，商用硬件范围和特殊用途条款应按原许可判断，不能把可获取源码等同于跨平台宽松许可。[XMOS 官方迁移说明](https://github.com/xmos/fwk_voice "citation")、[lib_voice 许可](https://github.com/xmos/lib_voice/blob/c9f1a9bf95cd88c7950adf4bf631c217f900ad25/LICENSE.rst "citation")
 
 文件和评分接口也可能改变结论。例如 libsndfile 的 `sf_readf_*` 返回时间帧数，`sf_read_*` 返回通道展开后的标量项数；最后一块不足请求长度时，只能按实际返回量更新录音时长与算法状态。评分器则要同时保留失败数和模型资产状态，不能把“源码可以导入”写成“已经能评分”。这些独立对照的输入与建议试验见研究文档，不表示本书已完成对应设备验收。[libsndfile 官方读写接口](https://libsndfile.github.io/libsndfile/api.html "citation")
 
@@ -623,13 +627,13 @@ PipeWire 的 `capture/source/sink/playback` 依次是麦克风采集、应用读
 
 ### 10.11 本章练习
 
-以下十五题的输入均为本书构造的教学数据。先手算，再运行 E10-01～12 与 E10-14 的 [`exercises_engineering.py`](../codes/examples/exercises_engineering.py)：
+以下十七题的输入均为本书构造的教学数据。先手算，再运行 E10-01～12 与 E10-14 的 [`exercises_engineering.py`](../codes/examples/exercises_engineering.py)：
 
 ```bash
 .venv/bin/python -m codes.examples.exercises_engineering
 ```
 
-E10-13 运行独立的 [`spectral_subtraction_demo.py`](../codes/examples/spectral_subtraction_demo.py)。两种程序按稳定编号输出中间量和结果；它们不访问声卡，也不代表硬件性能测量。
+E10-13 运行独立的 [`spectral_subtraction_demo.py`](../codes/examples/spectral_subtraction_demo.py)；E10-15 使用 [`tracking_time_exercises.py`](../codes/examples/tracking_time_exercises.py)，E10-16～17 使用 [`engineering_boundary_exercises.py`](../codes/examples/engineering_boundary_exercises.py)。各程序按稳定编号输出中间量和结果；它们不访问声卡，也不代表硬件性能测量。
 
 **E10-01：把初始错位与 SRO 分开。** 在参考时间 $[0,10,20]$ s 测得相对延迟 $[2,3,4]$ ms。按 §10.2 的一阶模型求截距、ppm、600 s 累积漂移，以及设备转到参考速率所需的“输出/输入”比例。
 
@@ -732,6 +736,22 @@ $$
 帧 3 完整到达时是 40 ms，启动事件此时可用；帧 7 完整到达时是 80 ms，结束事件此时可用。被保留音频的结束边界却是 70 ms。预卷保存的是此前已采集的声音，事件可用时刻与片段时轴不同，不能把两帧预卷自动当作每个连续音频块又增加 20 ms 延迟。
 
 运行 `.venv/bin/python -m codes.examples.tracking_time_exercises` 可检查上述逐帧结果，见[代码](../codes/examples/tracking_time_exercises.py)和[边界测试](../tests/test_codes_time_state_exercises.py)。流开始后立刻触发时，只能使用实际存在的历史；输入终止时仍活动的片段标成“尚未观察到结束事件”，不伪造 VAD 关闭。本题验证缓冲和事件语义，常数波形不用于评价真实语音检出率。
+
+**E10-16：恰好在下一帧到达时完成，算不算丢帧？** 一条串行线程每 0.1 ms 收到一帧，共 30 帧；容量只有 1 帧，包含正在处理者，满时丢新帧。第一帧在 0 到达，每帧期限为到达后 0.1 ms。比较服务时长恒为 0.1 ms 和恒为 0.11 ms 两种情形，计算接收数、丢帧数和期限违约数。
+
+**参考答案**：取 0.01 ms 为一个整数刻度。第一种情形每 10 刻度到一帧，每帧也用 10 刻度处理；第 $i$ 帧在 $10i$ 开始，在 $10(i+1)$ 完成，恰好是下一帧到达和本帧期限。先完成再接收，30 帧全部准时，丢帧和违约均为零。
+
+第二种情形每帧需 11 刻度。帧 0 在刻度 11 才结束，因此刻度 10 到来的帧 1 被丢弃；帧 2 在刻度 20 到来时可以开始，在 31 结束，帧 3 又被丢弃。依此交替，偶数帧 0、2、…、28 共 15 帧接收且全部超期，奇数帧共 15 帧丢弃。两个统计不能合并成“30 帧都处理失败”：一半完成得晚，另一半根本没有处理。
+
+运行 `.venv/bin/python -m codes.examples.engineering_boundary_exercises`，核对 `E10-16`。代码对输入浮点值作精确事件比较，避免 $iT$ 与反复累加 $T$ 的舍入差制造丢帧；若服务时长真比周期大，即使只差一个可表示的浮点间隔，也仍记为超期。本题只检查理想队列的边界语义，0.1 ms 是教学时钟单位，没有声卡调度或计算抖动。
+
+**E10-17：三个时间戳为什么不等于三段算法耗时？** 假设同一个双工流的时间戳可信、采集与播放均为 16 kHz。一次回调收到 160 个输入样本，并将它们按相同索引复制到本次的 160 点输出缓冲，没有额外算法延迟。已知首个输入样本的模数转换器（Analog-to-Digital Converter，ADC）采样时刻为 5.000 s，回调调用时刻为 5.015 s，首个输出样本的 DAC 时刻为 5.045 s。回调处理用时 3 ms 且按期返回。求输入在回调开始时的年龄、输出首样本还需等待的时间，以及该输入样本到对应输出样本的延迟。
+
+**参考答案**：输入年龄为 $(5.015-5.000)\times1000=15$ ms；输出提前安排量为 $(5.045-5.015)\times1000=30$ ms。由于明确了输入、输出的样本对应关系，该样本的 ADC 到 DAC 延迟为 $(5.045-5.000)\times1000=45$ ms。3 ms 计算已经发生在已给出的两个端点之间，不能再加成 48 ms；如果无法按期交付缓冲，给定的正常播放对应关系也就不能继续沿用。
+
+每块音频覆盖 $160/16000=10$ ms。若输出改为晚一块才发送，原输入样本对应下一块输出首点的 5.055 s，此时延迟为 55 ms。直接相减“当前回调的两个首样本时间戳”仍只有 45 ms，却已比较了错误的一对样本。首样本时间、块时长、计算用时和数据经过几块缓冲必须分别记录。
+
+这三个字段对应 PortAudio 的 `inputBufferAdcTime`、`currentTime`、`outputBufferDacTime`；[官方结构体说明](https://files.portaudio.com/docs/v19-doxydocs/structPaStreamCallbackTimeInfo.html "citation")规定它们以秒计并使用所属流的时间基准（核实：2026-09-26）。跨流、跨设备的时间不能未经校准直接相减；实际后端未报告的硬件延迟还需环回测量。示例 `E10-17` 将题设时刻记为整数纳秒以精确相减，这只是记录单位，不是宣称设备有纳秒精度，也不是实际调用 PortAudio 的测量结果。
 
 ### 10.12 本章小结
 

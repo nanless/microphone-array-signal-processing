@@ -1,0 +1,55 @@
+{
+  "project": "stk",
+  "revision": "6aacd357d76250bb7da2b1ddf675651828784bbc",
+  "license": "MIT-STK; see per-file notices",
+  "status": "component_numeric_check_passed",
+  "environment": {
+    "system": "Darwin",
+    "machine": "arm64",
+    "python": "3.13.12",
+    "compiler": "Apple clang version 21.0.0 (clang-2100.3.34.2)"
+  },
+  "source_files_sha256": {
+    "include/DelayL.h": "f6503770b4c653c5ce117143f047852be4f1d30d383867be4258b4f78e2e26f7",
+    "include/Filter.h": "0921c4a3730c8d0252648685d223e7949b069bf153c211a627adbf2582e1bbe0",
+    "include/Stk.h": "5dabeb49ecc1b81ea09dd2c6b1b15c126d6c6145b0cda4698f1e51432383f668",
+    "src/DelayL.cpp": "8b204bcda5235f3083bf532663a87a70d80209cd7b44932b355e022baea36828",
+    "src/Stk.cpp": "e3a9bcada15ab6e48b57965c655125013e36916d31de0b06f82c450b3d7a8091",
+    "LICENSE": "342901da98ec7c044426f3d1c2e1b8dd2ac79001e0916b49c2cf71b158b13aa5"
+  },
+  "probe_sha256": "00cf0d68ed5c99feb156d016de587d80ca9ff033aa523943ae1be27e827ea7c0",
+  "runner_sha256": "10119fce2e388277a899311c108bba27d3052c26cc95b59c33b751862e1ea2dd",
+  "compile_options": [
+    "-std=c++17",
+    "-O2"
+  ],
+  "input": {
+    "sample_rate_hz": 16000,
+    "samples": 512,
+    "amplitudes": [
+      0.18,
+      0.18
+    ],
+    "frequencies_hz": [
+      500,
+      6000
+    ],
+    "initial_history": "zero",
+    "delay_samples": [
+      0.5,
+      0.0,
+      1.0
+    ],
+    "block_size_samples": 37,
+    "seed": null,
+    "precision": "STK default double, no device audio"
+  },
+  "measurements": {
+    "analytic_max_abs_error": 0,
+    "zero_delay_max_abs_error": 0,
+    "one_delay_max_abs_error": 0,
+    "chunk37_max_abs_error": 0,
+    "reset_chunk37_max_abs_difference": 0.15191028554308142
+  },
+  "limits": "Scalar tick with preserved state; grouping loop is not StkFrames API coverage. Not a device latency, time-varying delay, speech quality or real-time benchmark."
+}

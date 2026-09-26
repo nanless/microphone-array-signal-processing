@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码获取与独立复现记录 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="8c33d8040161"><style>
+<meta name="source-digest" content="7474d21b9b16"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -70,6 +70,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-ac4d3025b1">工程接口实验与待扩展的评分检查</a></li>
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-88c5e110dd">已执行实验与可重跑入口</a></li>
 <li><a href="04_source_reproduction.html#sec-u-56cf8b0bbf">6. 何时可以进入设备比较</a></li>
+<li><a href="04_source_reproduction.html#sec-u-678e07d1d5">7. 固定延迟组件的实际接口对照</a></li>
 </ul>
 <div class="chap"><a href="05_exercises_and_audio.html">章节代码练习与音频实验</a></div>
 <div class="chap"><a href="../01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
@@ -99,6 +100,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-ac4d3025b1">工程接口实验与待扩展的评分检查</a></li>
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-88c5e110dd">已执行实验与可重跑入口</a></li>
 <li><a href="04_source_reproduction.html#sec-u-56cf8b0bbf">6. 何时可以进入设备比较</a></li>
+<li><a href="04_source_reproduction.html#sec-u-678e07d1d5">7. 固定延迟组件的实际接口对照</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="取得源码后怎样复现" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-515383f30b">取得源码后怎样复现</h1>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="1-先确定复现对象" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-630cc32c87">1. 先确定复现对象</h2>
@@ -232,6 +234,8 @@ ERLE 不能把双讲中的近端语音解释成残余回声，也不能用参考
 把两条轨迹身份交换后，平均位置误差可能仍很小。粒子滤波需要固定种子，并记录重采样条件。</p>
 <p>音频工程接口至少测试静音、过载、丢帧、设备断开、采样率切换和队列积压。离线算法测试不能代替回调线程测试。
 连续重采样必须保留滤波历史和分数相位；逐块重新初始化会在块边界产生跳变，即使每块单独看起来正常。</p>
+<p>事件边界也要有独立期望。服务时间与到达周期严格相等时，一帧完成后应立即释放容量，再接收同刻到来的帧；不能让浮点乘法与累加的舍入差制造丢帧。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/engineering_boundary_exercises.py">工程边界练习 E10-16</a>以整数刻度手算作对照，另保留略大于周期的真实超期输入。AGC 的增益下降更新则要回到解析等式：平滑系数为 1 时增益应等于目标增益；“输出有限且不削波”并不能排除数值消减导致的错误静音。</p>
+<p>外部时间戳与模型运行时也应先检查协议。<a href="03_industrial_deployment.html">工业研究 I01 与 I18</a>分别核对 PortAudio 的测点含义、ONNX Runtime 的设备缓冲绑定与同步接口。E10-17 实际运行的是构造时间戳的减法和样本映射；I18 的 GPU 绑定对照仍是实验设计。两者不能因为有可执行教学程序就统一登记为设备实验已通过。</p>
 <span id="sec-10" class="anchor-alias" aria-hidden="true"></span><span id="5-记录结果的必要字段" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-96ac81c5a8">5. 记录结果的必要字段</h2>
 <p>获取、构建和数值实验分开记录。以下是本机截至 2026-09-23 的状态，不是推荐配置的性能表：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -419,11 +423,15 @@ ViSQOL 还需固定 speech/audio 模式、采样率和映射模型，不能混�
 </code></pre>
 <p><code>null</code> 表示这份结构尚未填入实验条件，不是测量得到零。研究记录可以保留未执行状态；正文性能表只引用
 条件齐全的真实结果。最终记录同时保留成功和失败实验，失败原因写到具体输入或依赖，不用删除记录制造全通过状态。</p>
+<p>比较候选时还要保存配对关系。E11-09 用同一六次会话的两列错误计数，分别报告合并 WER、四胜一负一平，以及预定单侧符号检验的 0.1875；<a href="../11_selection-guide.html#sec-11-6">题干与推导</a>写明独立性、平局和检验对象。它只复算本书构造的统计例子，没有执行 ASR，也不把“未达到显著性”解释成两个系统等效。</p>
 <span id="sec-13" class="anchor-alias" aria-hidden="true"></span><span id="6-何时可以进入设备比较" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-56cf8b0bbf">6. 何时可以进入设备比较</h2>
 <p>只有两套候选实现使用同一输入、评分区域和延迟口径，性能比较才有明确含义。硬件上再分别测量启动加载、
 稳定运行、最慢帧、峰值内存和功耗状态；平均实时系数小于一仍可能发生连续帧超期。</p>
 <p>实际设备的验收条件由产品覆盖距离、房间、声音类型和可接受损伤决定。本书的手算输入与教学示例用于检验算法，
 它们不能直接成为出厂阈值。工业项目的具体入口和测量方法见 <a href="03_industrial_deployment.html">工业部署与评测</a>。</p>
+<span id="sec-14" class="anchor-alias" aria-hidden="true"></span><span id="7-固定延迟组件的实际接口对照" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-678e07d1d5">7. 固定延迟组件的实际接口对照</h2>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/run_stk_delay_probe.py">STK DelayL探针</a>先核对官方地址、完整提交、稀疏选择和清洁工作区，再在临时目录编译两份上游C++源文件。它把零延迟、半采样、一采样、保留状态分块和逐块清空五项分别对照解析FIR。已执行配置、零误差边界与0.1519102855的重置差异见<a href="03_industrial_deployment.html#i29stkdelayl">工业I29</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/reports/stk_delay.json">报告</a>。</p>
+<p>这项检查不下载权重、不访问音频设备，也不需要重新授权本书使用整个STK工具箱。第三方源码保留在独立的被忽略目录；提交的是本书调用探针、锁表和可复核报告。运行失败应保留实际错误与来源状态，不能用静态源码说明代替运行记录。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

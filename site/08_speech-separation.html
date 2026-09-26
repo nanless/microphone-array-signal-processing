@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 8 章 · 语音分离 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="8c33d8040161"><style>
+<meta name="source-digest" content="7474d21b9b16"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -270,7 +270,7 @@ $$</p>
 <li>
 <p><strong>cACGMM 空间聚类</strong>：记 WPE 输出、尚未做方向归一化的多通道 STFT 为 $\mathbf Y(f,k)$。先剔除 $\|\mathbf Y(f,k)\|_2\le\varepsilon_E$ 的低能量点，再对保留点严格归一化为 $\mathbf z=\mathbf Y/\|\mathbf Y\|_2$，主要保留通道间的复数比例。第 $n$ 个分量的密度满足</p>
 <p>$$p(\mathbf z\mid\mathbf B_n)\propto \frac{1}{\det(\mathbf B_n)}\left(\mathbf z^H\mathbf B_n^{-1}\mathbf z\right)^{-M}\text{，}\qquad \|\mathbf z\|_2=1\text{。}\tag{8-4}$$</p>
-<p>其中 $\mathbf B_n$ 是正定的形状矩阵。cAC 密度对 $\mathbf B_n$ 的正比例缩放不变，所以每次更新后必须固定尺度，例如令 $\operatorname{tr}(\mathbf B_n)=M$。式(8-4)建模的是归一化方向 $\mathbf z$ 的密度，不是 $\mathbf Y$ 的功率 SCM。</p>
+<p>其中 $\mathbf B_n$ 是正定的形状矩阵。cACG 密度对 $\mathbf B_n$ 的正比例缩放不变，所以每次更新后需要选择固定尺度，例如令 $\operatorname{tr}(\mathbf B_n)=M$。这用于消除参数的尺度不唯一性，不是观测声功率的归一化。式(8-4)建模的是归一化方向 $\mathbf z$ 的密度，不是 $\mathbf Y$ 的功率 SCM。</p>
 <p>混合模型的后验概率 $\gamma_n(f,k)$ 用作软时频掩码。“免训练”只表示聚类参数在当前录音上用期望最大化（Expectation-Maximization，EM）估计，不需要预先训练分离网络；完整系统仍需活动标注。</p>
 </li>
 <li>
@@ -289,6 +289,7 @@ $$</p>
 <li>重复 E/M 步，直到对数似然相对变化小于预设阈值，或达到最大迭代次数；报告实际迭代数、停止条件和重置次数。</li>
 <li>将后验作为掩码，但用同一 WPE 阶段、未做方向归一化的 $\mathbf Y\mathbf Y^H$ 按式(8-5)估计目标/非目标 SCM，再计算每个目标的 MVDR 或 GEV 权重。对于一个目标，非目标掩码包含其余说话人与背景噪声；这里不能把单位向量 $\mathbf z$ 的外积误当成带功率信息的 SCM。</li>
 </ol>
+<p>第 3 步是带当前形状矩阵的固定点迭代，不是对方向外积做一次普通平均就完成极大似然估计。一次更新与收敛后的估计也要区分。<a href="#e08-11">E08-11</a>展开其中的二次型、外积和迹归一化，并用所有方向相同的输入展示奇异边界。</p>
 <h3 id="sec-8-4-3">8.4.3 活动门控手算与错误标注反例</h3>
 <p><strong>活动门控的最小算例</strong>：只看一个频点的相邻两帧，并按“说话人 1、说话人 2、背景噪声”排列。假设混合权重为 $[0.5,0.3,0.2]$，三个分量在这两帧观测上的相对密度都为 $[2,1,1]$。第一帧的活动指示为 $[1,0,1]$，E 步的未归一化分数为 $[1,0,0.2]$，总和为 $1.2$，后验为 $[5/6,0,1/6]$。第二帧两位说话人都静音，活动指示为 $[0,0,1]$，分数为 $[0,0,0.2]$，后验为 $[0,0,1]$。</p>
 <p>这些密度是题目给定的相对数值，只检验 E 步归一化；它们不是从录音拟合出的 cACG 密度，也不构成分离性能实验。完整手算及代码见练习 E08-07。</p>
@@ -354,7 +355,7 @@ $$</p>
 </table></div>
 <p>这一组数字只说明在给定模型、固定输入和已知活动下，整条教学链能产生可复核音频；不能推断在其他说话人、房间或活动标注上必有 12.48 dB 的改善。</p>
 <p>所有说话人静音的帧上，背景后验为 1；错误标注条件下目标后验为 0。正确条件下本次形状矩阵重置次数为 0，后验每点求和与 1 的最大差约为 $2.22\times10^{-16}$。这些数值可由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_gss_teaching.py">独立测试</a>和<a href="gss_audio/STATE.npz">完整状态文件</a>复算。</p>
-<p><a href="gss_audio/source_1.wav">第一路源</a><audio class="audio-sample" controls preload="none" aria-label="第一路源" src="gss_audio/source_1.wav">请使用上方 WAV 链接下载。</audio>、<a href="gss_audio/source_2.wav">第二路源</a><audio class="audio-sample" controls preload="none" aria-label="第二路源" src="gss_audio/source_2.wav">请使用上方 WAV 链接下载。</audio>、<a href="gss_audio/mixture.wav">混合双麦</a><audio class="audio-sample" controls preload="none" aria-label="混合双麦" src="gss_audio/mixture.wav">请使用上方 WAV 链接下载。</audio>、<a href="gss_audio/enhanced_correct.wav">正确活动输出</a><audio class="audio-sample" controls preload="none" aria-label="正确活动输出" src="gss_audio/enhanced_correct.wav">请使用上方 WAV 链接下载。</audio>及<a href="gss_audio/enhanced_missed.wav">漏标输出</a><audio class="audio-sample" controls preload="none" aria-label="漏标输出" src="gss_audio/enhanced_missed.wav">请使用上方 WAV 链接下载。</audio>都按同一增益导出，文件摘要和精确参数见<a href="gss_audio/MANIFEST.json">独立清单</a>。这五个 WAV 不并入本书主清单的 60 个样本。</p>
+<p><a href="gss_audio/source_1.wav">第一路源</a><audio class="audio-sample" controls preload="none" aria-label="第一路源" src="gss_audio/source_1.wav">请使用上方 WAV 链接下载。</audio>、<a href="gss_audio/source_2.wav">第二路源</a><audio class="audio-sample" controls preload="none" aria-label="第二路源" src="gss_audio/source_2.wav">请使用上方 WAV 链接下载。</audio>、<a href="gss_audio/mixture.wav">混合双麦</a><audio class="audio-sample" controls preload="none" aria-label="混合双麦" src="gss_audio/mixture.wav">请使用上方 WAV 链接下载。</audio>、<a href="gss_audio/enhanced_correct.wav">正确活动输出</a><audio class="audio-sample" controls preload="none" aria-label="正确活动输出" src="gss_audio/enhanced_correct.wav">请使用上方 WAV 链接下载。</audio>及<a href="gss_audio/enhanced_missed.wav">漏标输出</a><audio class="audio-sample" controls preload="none" aria-label="漏标输出" src="gss_audio/enhanced_missed.wav">请使用上方 WAV 链接下载。</audio>都按同一增益导出，文件摘要和精确参数见<a href="gss_audio/MANIFEST.json">独立清单</a>。这五个 WAV 不并入本书主清单的 68 个样本。</p>
 <p>官方 <a href="https://github.com/desh2608/gss/tree/10fad18cae85e2e4342c77421abc70c9c5da23ed">GPU-GSS 固定源码</a>还包含 CuPy、Lhotse/RTTM、分段上下文及完整会议处理；本机未运行其官方整链，也没有使用 CHiME 语料或计算 WER。本段的教学结果不能充当 Boeddeker 等原论文的复现成绩。<a href="https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf" title="citation">GSS 原论文 §3.1～§3.3</a>。</p>
 <span id="sec-8-1-3" class="anchor-alias" aria-hidden="true"></span><span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-8-5">8.5 分离指标与数据集口径</h2>
 <p>常用的尺度不变信号失真比（scale-invariant signal-to-distortion ratio，SI-SDR）把等长实数估计信号 $\hat s$ 投影到非零参考 $s$ 上，再比较投影能量与正交残差能量。采用去均值口径时，应先分别去掉两信号的均值：</p>
@@ -487,6 +488,13 @@ $$</p>
 <td>整句注意力需要改造后才能流式运行。见<a href="https://doi.org/10.1109/ICASSP49357.2023.10094992">单通道会议正式论文</a>与<a href="https://doi.org/10.1109/TASLP.2023.3304482" title="citation">多通道混响期刊扩展</a></td>
 </tr>
 <tr>
+<td>时频注意力与局部卷积</td>
+<td>TF-Locoformer（Saijo et al., 2024）</td>
+<td>沿频率、时间交替使用注意力，并把前馈网络改成卷积门控，直接预测单通道各源复谱</td>
+<td>固定输入轴序、源数、STFT、训练任务与模型权重；源码的 Macaron 残差系数与论文有已说明的差异</td>
+<td>全局归一化和无因果掩码的时间注意力使用整段上下文。见<a href="https://arxiv.org/abs/2408.03440">原论文 §2</a>与<a href="research/02_aec_wpe_separation.html#tflocoformer">固定源码研究 N15</a></td>
+</tr>
+<tr>
 <td>长时多通道因果网络</td>
 <td>Online SpatialNet（Quan &amp; Li, 2024）</td>
 <td>用在线掩码注意力、Retention 或 Mamba 沿时间建模，同时保留多通道空间特征</td>
@@ -570,6 +578,11 @@ $$</p>
 <td>TF-GridNet</td>
 <td>ESPnet <code>enh/separator/tfgridnet_separator.py</code></td>
 <td>此类明确为离线，固定输入麦数；单/多通道版本分别核对</td>
+</tr>
+<tr>
+<td>TF-Locoformer</td>
+<td>MERL <code>standalone/tflocoformer_separator.py</code> 与 ESPnet 适配版</td>
+<td>单通道复谱映射；已执行默认参数及 4D 轴序静态检查，未运行神经网络推理，详见<a href="research/02_aec_wpe_separation.html#tflocoformer">研究 N15</a></td>
 </tr>
 <tr>
 <td>S4M、SPMamba、Mamba-TasNet</td>
@@ -712,6 +725,48 @@ H=\begin{bmatrix}2&0.5\\0.1&3\end{bmatrix}.$$</p>
 <p><strong>再施加目标约束。</strong> 选 $v=v_+$ 表示以第一麦为参考的目标相对传递函数。由 $R_{\mathrm{int}}u=v$ 得 $u=5v$，分母 $v^Hu=10$，所以 $w=u/10=[0.5,0.5]^\top$。检验 $w^Hv=1$；对快照 $[1,1]^\top$ 输出 1，对 $[1,-1]^\top$ 输出 0。按给定 SCM，目标输出功率 $w^HR_{\mathrm{tar}}w=0.9$，干扰输出功率 $w^HR_{\mathrm{int}}w=0.1$。</p>
 <p><strong>最后核对 GEV。</strong> 两个方向的广义特征值分别为 $1.8/0.2=9$、$0.2/1.8=1/9$，故主方向也是 $v_+$。GEV 本身只决定方向，直接用 $v_+$ 会把目标输出变成 2；另施加 $w^Hv=1$ 后才与本例 MVDR 的尺度一致。比值 9 不表示已经测到真实录音改善 9 倍；这里只有两个给定快照、软掩码和已选目标方向。一般 SCM 未必共享特征向量，不能外推为 GEV 与 MVDR 总相同。代码对应 <code>E08-10</code>。</p>
 <p>上述三题与 E06-21、E07-06 共同运行：<code>.venv/bin/python -m codes.examples.enhancement_step_exercises</code>。检验见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_enhancement_steps.py">test_codes_enhancement_steps.py</a>。</p>
+<p><a id="e08-11"></a></p>
+<p><strong>E08-11：cACG 的形状更新为什么要除以二次型，又为什么没有声功率尺度？</strong> 固定一个频点和一个混合分量，保留两帧单位方向 $z_1=[1,0]^\top,z_2=[0,1]^\top$，该分量在两帧的责任权重为 $\gamma_1=3/4,\gamma_2=1/4$，旧形状矩阵 $B^{(0)}=I_2$。其他分量的参数固定且不参与本题。求一次形状固定点更新，再计算两个方向的相对密度。</p>
+<p><strong>第 1 步：写出这一小步究竟优化什么。</strong> 固定责任权重后，式(8-4)对应的加权负对数似然，除去常数，是 $\sum_t\gamma_t[\log\det B+M\log(z_t^HB^{-1}z_t)]$。对矩阵求驻点得到的等式仍在右边含 $B^{-1}$，所以用旧矩阵代入右边迭代；它不是一次求逆得到的闭式最优解。</p>
+<p>$$\begin{aligned}
+q_t^{(r)}&=z_t^H(B^{(r)})^{-1}z_t,\\
+\widetilde B^{(r+1)}
+&=\frac{M}{\sum_t\gamma_t}
+\sum_t\frac{\gamma_t}{q_t^{(r)}}z_tz_t^H,\\
+B^{(r+1)}&=\frac{M\widetilde B^{(r+1)}}{\operatorname{tr}\widetilde B^{(r+1)}}.
+\end{aligned}\tag{8-9}$$</p>
+<p>$B$ 为 $M\times M$ 复厄米正定矩阵，$z_t$ 为 $M$ 维单位列向量，$\gamma_t\ge0$ 且总质量为正。固定 $\gamma$ 是这一形状子步骤的条件；完整 cACGMM 还要更新责任权重与混合权重。该迭代依据见 <a href="https://www.eurasip.org/Proceedings/Eusipco/Eusipco2016/papers/1570256519.pdf">Ito 等，EUSIPCO 2016，§III-B、式(14)</a>。</p>
+<p><strong>第 2 步：分别计算每帧贡献。</strong> 旧矩阵为单位阵，所以 $q_1=q_2=1$。两帧责任权重之和为 1，外面的系数为 $M/1=2$。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">帧</th>
+<th scope="col">单位方向</th>
+<th scope="col" style="text-align: right;">二次型 $q_t$</th>
+<th scope="col">加权外积 $\gamma_tz_tz_t^H/q_t$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>$[1,0]^\top$</td>
+<td style="text-align: right;">1</td>
+<td>$\operatorname{diag}(3/4,0)$</td>
+</tr>
+<tr>
+<td>2</td>
+<td>$[0,1]^\top$</td>
+<td style="text-align: right;">1</td>
+<td>$\operatorname{diag}(0,1/4)$</td>
+</tr>
+</tbody>
+</table></div>
+<p>因此 $\widetilde B^{(1)}=\operatorname{diag}(3/2,1/2)$。其迹恰为 2，本次迹归一化不改变数值。第一个方向在当前责任权重下被赋予较大的形状轴，这不是它的原始音频能量较高的证据。</p>
+<p><strong>第 3 步：用新形状重新读密度。</strong> 新矩阵行列式为 $3/4$，逆矩阵为 $\operatorname{diag}(2/3,2)$。省略对两方向相同的球面归一化常数，密度因子分别为 $(4/3)(2/3)^{-2}=3$ 和 $(4/3)2^{-2}=1/3$。这些是密度的相对因子，不是两个相加为 1 的类别后验；后验还需乘各分量混合权重并跨分量归一。</p>
+<p>对任意 $c>0$，$\det(cB)=c^M\det B$，而 $z^H(cB)^{-1}z=q/c$。密度中出现的 $c^{-M}$ 与 $(1/c)^{-M}$ 恰好抵消，所以 $B$ 与 $2B$ 给相同密度。固定迹只是从这些等价矩阵里选一个代表。相反，后级原始复谱 SCM 乘以 2 会改变功率，不能把这两种尺度混为一谈。</p>
+<p><strong>第 4 步：不要把一步迭代误认成稳定估计。</strong> 若继续固定本题的责任权重，下一次二次型是 $2/3,2$，未归一矩阵为 $\operatorname{diag}(9/4,1/4)$，迹归一后为 $\operatorname{diag}(1.8,0.2)$。这组只有两个正交方向且权重不均衡的数据会把形状推向边界；它不是证明已收敛的训练集。若两帧都改成 $[1,0]^\top$，第一步就得到 $\operatorname{diag}(2,0)$，虽然迹为 2，矩阵却奇异，下一轮密度没有合法逆矩阵。</p>
+<p>教学整链在归一化后使用向单位阵收缩等显式正则化，并在质量不足时重置分量；例如对最后的奇异矩阵取 $(1-0.02)B+0.02I$，特征值为 $1.98,0.02$。这样改变了无正则化迭代，必须保留参数，不能把“迹已经归一化”当成正定保证。</p>
+<p>运行 <code>.venv/bin/python -m codes.examples.enhancement_structure_exercises</code>；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/enhancement_structure_exercises.py">原创代码</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_enhancement_structure.py">独立测试</a>检查分数结果、正比例尺度不变、复数外积的共轭以及秩亏拒绝。这里只执行形状子步骤，没有重新运行官方 GSS、生成该题音频或测量分离质量。</p>
 <hr />
 <blockquote>
 <p>📄 本篇信息：配图 0 张 ｜ <a href="index.html">回首页</a></p>

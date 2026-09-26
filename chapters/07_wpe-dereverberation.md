@@ -394,6 +394,8 @@ $$\bar{\vec w}=[1/3,2/3,0,0]^\top，$$
 
 原始 WPD 工作见 Nakatani 与 Kinoshita 2019，后续因式分解工作说明了它与 WPE、波束形成的关系。[Nakatani & Kinoshita, EUSIPCO 2019](https://arxiv.org/abs/1908.02710 "citation")、[Boeddeker et al., ICASSP 2020](https://doi.org/10.1109/ICASSP40776.2020.9054393 "citation")
 
+这里的“联合”并不排斥分步计算。在同一组正权重、同一有效帧和同一导向约束下，可以先解多通道 WPE，再对其残差解**加权 MPDR**，得到与整块 WPD 相同的输出。关键是两步共同对应原目标，而非任意选两个模块串联。[E07-07](#e07-07)通过完整平方和一个四维例子说明这种等价，以及不同加载为什么会破坏直接比较。
+
 ### 7.7 可执行教学基线与复现实验
 
 **可执行 WPE 基线。** [`codes/array_tutorial/dereverberation.py`](../codes/array_tutorial/dereverberation.py) 提供只依赖 NumPy 的最小离线 WPE。`offline_wpe()` 接收复数 STFT，单通道轴序为 `(频点, 帧)`，多通道轴序为 `(频点, 通道, 帧)`，输出保持相同形状；它实现保护延迟、按滞后堆叠多通道历史、共享功率权重、相对对角加载和复共轭预测。计算前逐频点以共同幅度归一化各通道和各帧，输出再恢复原幅度，以免极小或极大但有限的输入在平方时下溢或上溢。
@@ -550,6 +552,51 @@ $$\begin{aligned}
 **第 3 步：改变通道增益。** 第二路乘以 2 后，残差为 $[1+\mathrm j,4]$，其功率变为 16，共享估计为 $(2+16)/2=9$；把所有通道都乘以 2 则得到 $4\times3=12$。单通道增益变化和全阵列共同缩放并不等价。共同常数缩放会让无加载正规方程的两边权重一起缩放；不均匀通道增益通常还会改变各帧相对权重。
 
 全零残差时，无约束似然把最优值推向 $\lambda\downarrow0$，没有严格正的内部极小值；逆功率不能直接取 $1/0$。实际 [`offline_wpe()`](../codes/array_tutorial/dereverberation.py)另设相对功率地板，并对完全静音频点旁路，因此实现不是无约束的逐帧极大似然。代码与独立检查见 [enhancement_step_exercises.py](../codes/examples/enhancement_step_exercises.py) 的 `E07-06`。本题只核对功率更新，不证明球形模型符合真实房间。
+
+<a id="e07-07"></a>
+
+**E07-07：把 WPD 拆成 WPE 与加权 MPDR，为什么还会得到同一个答案？** 沿用 E07-05 的四维协方差，按“当前两麦、一个延迟历史块”排列。固定所有 $\lambda_t>0$，不更新功率、不加正则化。先证明分解，再独立复算系数和一帧输出。
+
+**第 1 步：把矩阵和输出按角色拆开。** 记当前向量 $x_t\in\mathbb C^M$，延迟历史 $q_t\in\mathbb C^D$，滤波系数分别为 $w\in\mathbb C^M$ 和 $h\in\mathbb C^D$。这里 $q_t$ 包含与前文相同的保护延迟；本题 $M=D=2$。同一统计量分块为
+
+$$\bar R=\begin{bmatrix}A&B\\B^H&C\end{bmatrix},\qquad
+\bar w=\begin{bmatrix}w\\h\end{bmatrix},\qquad
+y_t=w^Hx_t+h^Hq_t.$$
+
+$A$ 是当前帧的 $M\times M$ 加权协方差，$C$ 是历史的 $D\times D$ 加权协方差，$B$ 是 $M\times D$ 当前—历史互相关。三块都用相同的 $1/\lambda_t$ 和有效帧；它们不是分别估计的噪声矩阵。
+
+**第 2 步：展开交叉项，再配成完整平方。** 令 $G=C^{-1}B^H$，形状为 $D\times M$；令 $S=A-BC^{-1}B^H$。后者称为关于历史块的 Schur 补。由于本题假定 $\bar R$ 正定，$C$ 和 $S$ 都正定。
+
+$$\begin{aligned}
+\bar w^H\bar R\bar w
+&=w^HAw+w^HBh+h^HB^Hw+h^HCh\\
+&=w^HSw+(h+Gw)^HC(h+Gw),\\
+h_\star&=-Gw,\qquad
+w_\star=\frac{S^{-1}v}{v^HS^{-1}v},\\
+y_t&=w_\star^H\bigl(x_t-G^Hq_t\bigr).
+\end{aligned}\tag{7-9}$$
+
+核对第二行时，用 $CG=B^H$ 展开平方：它产生两项原有的交叉项，额外产生 $w^HBC^{-1}B^Hw$，恰好抵消 $S$ 中被减去的项。第二项非负，而无失真约束只涉及 $w^Hv=1$，所以每个固定 $w$ 下都能取 $h=-Gw$ 把第二项降到零。剩下的就是对 $S$ 作加权 MPDR。
+
+**第 3 步：解释为什么第一步是 WPE。** $CG=B^H$ 正是以全部当前通道为输出的加权预测正规方程。把 $z_t=x_t-G^Hq_t$ 代入 $\sum_tz_tz_t^H/\lambda_t$，得到 $A-BG-G^HB^H+G^HCG=S$。因此 $S$ 是**预测残差的同权加权协方差**，而非随意指定的后级噪声协方差。这里的 $z_t$ 只是本题临时残差记号。
+
+**第 4 步：逐项代入。** 本题 $A=\operatorname{diag}(2,1)$、$B=\operatorname{diag}(1,0)$、$C=\operatorname{diag}(2,1)$、$v=[1,1]^\top$。
+
+| 中间量 | 计算 | 结果 |
+|---|---|---|
+| 预测矩阵 $G$ | 解 $CG=B^\top$ | $\operatorname{diag}(1/2,0)$ |
+| 残差统计量 $S$ | $A-BG$ | $\operatorname{diag}(3/2,1)$ |
+| 未归一方向 | $S^{-1}v$ | $[2/3,1]^\top$ |
+| 无失真分母 | $v^\top S^{-1}v$ | $5/3$ |
+| 当前与历史系数 | $w,\ -Gw$ | $[2/5,3/5]^\top,\ [-1/5,0]^\top$ |
+
+对一组额外指定的快照 $x=[2,1]^\top,q=[2,3]^\top$，WPE 残差为 $z=[1,1]^\top$，后级输出为 $2/5+3/5=1$。直接四维滤波也得到 $(2/5)2+(3/5)1-(1/5)2=1$。这个快照只检查两种表示的输出等式，不声称它单独生成了给定协方差。目标值仍为 $w^TSw=3/5$，与 E07-05 独立四维求解一致。
+
+**适用边界。** 若 $B=0$，则 $G=0$，历史不参与滤波；若 $C$ 奇异，上述求逆证明不能直接使用。本式针对固定功率的一次求解；两条迭代流水线还须使用相同的功率更新、初始化和停止条件，才可以继续比较。
+
+给整块 $\bar R$ 加 $\delta I$ 后，代数分解依然成立，但得到的是 $G_\delta=(C+\delta I)^{-1}B^H$ 和 $S_\delta=A+\delta I-BG_\delta$。只对 WPE 历史块加载，再直接用其残差的经验协方差做后级，通常不是同一个 $S_\delta$；两模块各自的相对加载也不能自动视为同一个正则化问题。因此“串联即可等价”必须连同权重、统计帧和正则化一起核对。
+
+分解依据见 [Boeddeker 等，ICASSP 2020，§4 和附录](https://arxiv.org/pdf/1910.13707)；本题的完整平方、数字和快照为本书复算。运行 `.venv/bin/python -m codes.examples.enhancement_structure_exercises`；[代码](../codes/examples/enhancement_structure_exercises.py)和[独立测试](../tests/test_codes_enhancement_structure.py)另检查复数互相关、共同缩放、零互相关与奇异矩阵。这里没有运行真实音频，也不从目标值较小推断语音质量必然更好。
 
 ### 7.10 研究方向
 

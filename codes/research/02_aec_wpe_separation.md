@@ -1,6 +1,6 @@
 # AEC、去混响与语音分离：算法、工业实现与源码研究
 
-原核实日期：2026-09-22；AEC 工业接口与配对数据说明复核日期：2026-09-23；BSS/GSS 源码入口与实验复核日期：2026-09-24；推导练习与 Stream.FM 静态审查日期：2026-09-26。对应正文 [第 6 章](../../chapters/06_aec.md)、[第 7 章](../../chapters/07_wpe-dereverberation.md) 与 [第 8 章](../../chapters/08_speech-separation.md)。本篇按处理对象分开说明算法、源码位置和复现实验；正式版本和许可边界由 [SOURCES.lock.json](../SOURCES.lock.json) 固定。
+原核实日期：2026-09-22；AEC 工业接口与配对数据说明复核日期：2026-09-23；BSS/GSS 源码入口与实验复核日期：2026-09-24；推导练习及 Stream.FM、TF-Locoformer 静态审查日期：2026-09-26。对应正文 [第 6 章](../../chapters/06_aec.md)、[第 7 章](../../chapters/07_wpe-dereverberation.md) 与 [第 8 章](../../chapters/08_speech-separation.md)。本篇按处理对象分开说明算法、源码位置和复现实验；正式版本和许可边界由 [SOURCES.lock.json](../SOURCES.lock.json) 固定。
 
 “外部实现”表示可以找到承担该算法计算的代码，不表示本书已经训练、编译或测完该系统。本篇实际运行的结果单独列出，包括[教学基线测试](../../tests/test_codes_aec_wpe_sep_track.py)与 W01 的独立实现对照；未附执行结果的外部实验均为复现设计。外部代码、权重和数据分别遵守各自条款。
 
@@ -402,6 +402,8 @@ WPD 把当前帧与历史帧一起放入无失真滤波问题。它的约束只�
 
 E07-05 已把第二种情形写成四维可执行手算：当前—历史相关使权重为 `[0.4, 0.6, -0.2, 0]`，无失真约束为 1。给定协方差上的目标值为 0.6，强制历史权重为零时为 2/3。这里比较的是同一矩阵下两个约束集合的最小值，不是音频去混响或识别收益；逐行求解见 [第 7 章练习](../../chapters/07_wpe-dereverberation.md#sec-7-9)。
 
+[E07-07](../../chapters/07_wpe-dereverberation.md#e07-07)把同一矩阵进一步分块并完成平方：历史预测 $G=C^{-1}B^H$、残差加权统计量 $S=A-BC^{-1}B^H$，再求加权 MPDR；四维解与两步输出逐项相同。这个等价要求同一功率、有效帧和约束，正则化也必须对应同一目标。[Boeddeker 等，ICASSP 2020，§4 和附录](https://arxiv.org/pdf/1910.13707)提供因式分解依据；[原创复算脚本](../examples/enhancement_structure_exercises.py)另检查复数交叉项，正文另分析加载边界。不能把它改写成任意 WPE→MVDR 都等于 WPD。
+
 ### W06　AR-FastMNMF 与联合去混响/分离
 
 AR-FastMNMF 把自回归混响模型和多源空间/谱模型联合估计，避免把分离与拖尾建模视作互不影响的两个估计问题。[ICASSP 2021 论文](https://ieeexplore.ieee.org/document/9414857)与[作者 `SoundSourceSeparation`](https://github.com/sekiguchi92/SoundSourceSeparation/tree/897fe87fea3d85a243d8a3fd36c2232bb0548ad3)中的 `src/`用于研究模型更新顺序；`FastBSSD.py`还将 AR、MA、ARMA 等模型区分。
@@ -471,6 +473,8 @@ FastMNMF 以可联合对角化的空间协方差降低反复处理满矩阵的�
 复角中心高斯混合（cACGMM）对单位化的复向量建模，得到方向上的软聚类。[Ito 等原论文](https://doi.org/10.1109/EUSIPCO.2016.7760429)与[pb_bss `distribution/cacgmm.py`](https://github.com/fgnt/pb_bss/blob/10acc347fc9ea21e3d312806a0bd751d0d0af183/pb_bss/distribution/cacgmm.py)是模型和 EM 入口。继续看底层 cACG 密度、固定点更新和排列工具，不能仅复制 E 步。
 
 最小实验先用两个不同复方向生成单位向量，检查后验归一和分量置换，再用未归一的原 STFT 构造 SCM。失败实验含低能量点、空活动分量和近奇异形状矩阵。用于聚类的方向外积没有原始功率，不能直接当作波束形成的功率 SCM。[第 8 章 E08-07](../../chapters/08_speech-separation.md#e08-07)先固定相对密度，只复算活动门控的 E 步；它不代替形状矩阵估计或完整分离实验。
+
+[E08-11](../../chapters/08_speech-separation.md#e08-11)补上固定责任权重的形状子步骤：两个正交单位方向和 $3/4,1/4$ 权重，从单位阵更新得到 $\operatorname{diag}(1.5,0.5)$，两个相对密度因子为 $3,1/3$；继续同样权重会趋向边界，不能把第一步当作收敛结果。形状矩阵的正比例尺度会在行列式和二次型中抵消，方向全部相同时迹归一也不能避免秩亏。[式(14)的原始依据](https://www.eurasip.org/Proceedings/Eusipco/Eusipco2016/papers/1570256519.pdf)、[原创计算](../examples/enhancement_structure_exercises.py)与[独立复数/尺度测试](../../tests/test_codes_enhancement_structure.py)分别给出定义、算术和实现边界；这一小题不生成 GSS 音频。
 
 ### B09　GSS：活动日志、WPE、聚类与波束形成
 
@@ -614,6 +618,57 @@ NOTSOFAR-1 的固定源码从 `run_training_css_local.py` 进入 `css/training/t
 - 在目标设备逐帧计时，包含所有网络调用、特征变换、状态搬移和音频缓冲；分别报告预热、持续运行、峰值内存和超出帧移预算的次数。`torch.compile` 或 CUDA graphs 的存在不保证当前设备实时；论文 GPU 结果也不等于手机 CPU 或麦克风固件结果。
 
 **许可和当前完成范围。** 固定版采用 AGPL-3.0；代码仅在 Git 忽略的独立本地源码目录获取，本书的原创 AST 工具和摘要报告不包含上游算法实现。权重、数据和示例音频没有随本次代码审查取得或再分发。已完成的是固定源码阅读和静态契约检查；依赖构建、训练、推理、音频质量和实时性均未运行。这使读者能知道后续工作应从哪个具体接口开始，也避免把论文演示当作当前缓存已经可运行的完整产品。
+
+<a id="tflocoformer"></a>
+
+### N15　TF-Locoformer：局部卷积、全局注意力与复谱接口
+
+**为何收录。** N04 的 TF-GridNet 同时使用循环网络与注意力；TF-Locoformer 研究在时频双路径中用卷积前馈模块提供局部关系，再用注意力建模较长关系，从而构造不含 RNN 的分离骨干。它直接预测各源复谱，不是估计 WPE 功率、AEC 更新增益或空间波束权重。[Saijo 等，IWAENC 2024，§2、图1和式(1)～(8)](https://arxiv.org/pdf/2408.03440)给出原始结构。这里收录的是结构与可检查接口，不引用条件不齐全的性能排名。
+
+**版本与资产。** 官方 [MERL 仓库](https://github.com/merlresearch/tf-locoformer/tree/7a615460d347ff7334a13dbb831d16280da72cdc)固定为 `7a615460d347ff7334a13dbb831d16280da72cdc`；源码缓存位于 `codes/upstream/_downloads/tf-locoformer/`。2026-09-26 已逐段读取 standalone 主体、ESPnet 适配入口、WHAMR/NoPE 配置、推理示例与官方测试，并核对 `LICENSE.md`、`LICENSES/Apache-2.0.md` 和 README 的归属说明。代码与其中 ESPnet 补丁采用 Apache-2.0，应保留 MERL、ESPnet 的声明。训练语料使用条件仍单独处理；本书没有取得或运行预训练权重。
+
+| 阅读入口 | 实际输入与输出 | 应检查的环节 |
+|---|---|---|
+| `standalone/tflocoformer_separator.py` 的 `TFLocoformerSeparator` | 可靠的示例接口为复谱 `[B,T,F]` → `[B,N,T,F]` | 输入是频域张量，`N` 是配置指定的输出源数；类本身没有 STFT/iSTFT |
+| 同文件 `TFLocoformerBlock` / `LocoformerBlock` | 频率路径与时间路径轮流处理隐特征 | 轴转换、局部卷积、门控、归一化、全局注意力与残差系数 |
+| `espnet2/enh/separator/tflocoformer_separator.py` | 复谱输入 → 每个源的复谱列表、原样长度、空字典 | 属于 ESPnet separator；其 docstring 中波形返回说明与实际复谱返回不同 |
+| `egs2/whamr/enh1/conf/tuning/train_enh_tflocoformer.yaml` | STFT 编解码、模型、训练损失与数据预处理配置 | 单通道、两输出、双 FFN、PIT 损失及任务目标 |
+| `tests/test_tflocoformer.py` | 随机三维复谱 → 形状断言和反向传播 | 显式传正确 `norm_type`；没有检查四维输入或默认构造 |
+| `tests/test_tflocoformer_load_pretrained_weights.py` | 另加载指定 WHAMR 权重并去掉键名前缀 | 依赖额外权重；存在测试文件不表示本书已运行 |
+
+这里 $B$ 是 batch 大小，$T$ 是 STFT 帧数，$F$ 是频点数，$N$ 是输出源数；不要把 batch 轴和麦克风轴混用。standalone 只去除了对 ESPnet 的导入，仍需 PyTorch 与 `rotary-embedding-torch` 等运行依赖，也没有独立训练配方。
+
+**沿一组尺寸读完整数据流。** 取 $B=2,T=50,F=129$，使用隐藏维度 128、两输出，以下只是源码维度复算。三维复谱先增加单通道轴，再沿通道轴拼实部和虚部，得到 `[2,2,50,129]`。3×3 编码卷积得到 `[2,128,50,129]`，随后 `GroupNorm(1,128)` 以每条样本的整个隐藏特征图作归一化。
+
+在 `tf_order="ft"` 时，频率路径把每一帧的 129 个频点看成序列，注意力输入为 `[100,129,128]`；时间路径把每个频点的 50 帧看成序列，输入为 `[258,50,128]`。两条路径的权重不同。反卷积输出四个实通道，重排为 `[2,2,2,50,129]`，最后把第三轴的实、虚两部分组成 `[2,2,50,129]` 复谱。频域结果还需匹配的 iSTFT，不能直接写成 PCM WAV。
+
+`SwiGLUConvDeconv1d` 将卷积输出分成两半：一半乘另一半经过 SiLU 的门值，再由转置卷积恢复隐藏维度。核长、步幅决定局部邻域，补零与裁剪保持原序列长度。块内 `RMSGroupNorm` 只在**每个时频点的隐藏通道组内**求 RMS；这与入口覆盖整个特征图的 `GroupNorm` 是两个不同的归一化位置。分组数必须整除隐藏维度，注意力维度必须整除头数。
+
+**配置不能只凭论文表格重建。** 固定 WHAMR YAML 使用 6 层、隐藏维度 128、4 头、4 组，两个 `swiglu_conv1d` 前馈模块，各自隐藏维度 192、核长 8、步幅 1，`flash_attention=false`。STFT 为 256 点 FFT、64 点帧移；所附完整实验配置的 `sample_rate=8000`，因此对应 32 ms 分析长度与 8 ms 帧移。这两个时间不是端到端延迟。不得把原论文表1中的核长与隐藏维度直接替换到这份权重配置后仍称为相同模型。
+
+更具体的论文—源码差异是 Macaron 两侧残差。论文式(2)、式(4)把各卷积 FFN 输出乘 $1/2$，锁定源码 `LocoformerBlock.forward()` 中直接相加。作者在源码注释中明确说明这一差异并为兼容所给权重保留实现。这里能确认的是两者计算图不同；注释中关于性能影响的说法没有在本书重新实验，不能当作普遍的等价定理。
+
+**它为何不能直接称为流式模型。** 时间注意力的 `scaled_dot_product_attention()` 没有因果掩码，入口全局归一化也读取整段统计；3×3 卷积与双侧补零另有上下文依赖。只把 `pos_enc` 从 `rope` 改为 `nope` 不会消除未来依赖，替换注意力执行内核也不改变这一事实。固定代码没有把持续音频的卷积/注意力缓存作为顶层状态输入输出。
+
+若显式形成注意力分数，时间路径每层包含约 $BHF T^2$ 个分数元素，频率路径约 $BHT F^2$ 个，其中 $H$ 为头数；这是分数张量的尺寸推算，不是当前 GPU 的峰值内存测量。内存高效内核可以避免显式存下完整分数矩阵，但不会自动把整句模型变成因果模型。长录音部署仍需设计窗口和跨窗输出排列，再单独评价边界损伤与身份连续性。
+
+**已执行：两项固定源码静态契约检查。** [原创 AST 工具](../examples/tflocoformer_source_audit.py)不导入 Torch、不执行上游模块，核对提交与七份文件摘要后检查语法树；[报告](../reports/tflocoformer_source_audit.json)记录原始行号和维度推演。常规[测试](../../tests/test_codes_tflocoformer_source_audit.py)使用独立的合法、非法和无关同名语法夹具，另验证版本或摘要改变时拒绝套用结论。
+
+1. standalone 构造函数第 65 行默认 `norm_type="rmsgrouporm"`，而 `LocoformerBlock` 第 296 行允许的键为 `layernorm`、`rmsgroupnorm`。ESPnet 适配版第 73、320 行存在同样的不一致。若依赖已成功导入、普通构造进入该检查且启用 Python 断言，这个默认值不能通过；本书未实际执行异常栈。官方 WHAMR 配置和随机输入测试显式指定 `rmsgroupnorm`，避开这一默认值问题，不能据此宣称这些配置都失败。
+
+2. 两版四维分支先断言 `input.shape[1]==1`，再 `transpose(1,2)`。如果按注释所暗示的 `[B,T,M,F]` 输入 `[2,5,1,17]`，断言检查的是 5 帧，不能通过；如果按 `[B,M,T,F]` 输入 `[2,1,5,17]`，断言通过，但转置与实虚拼接后为 `[2,10,1,17]`，不符合编码卷积要求的 2 个通道。`[2,1,1,17]` 恰可匹配通道数，不能证明任意长序列都合法。报告只是这条明确分支的尺寸推演，未运行卷积。官方三维 `[B,T,F]` 测试通过另一分支；新接入优先显式使用该单通道接口，并另测输入轴契约。
+
+只读复做命令为 `.venv/bin/python -m codes.examples.tflocoformer_source_audit`；重新生成报告才追加 `--output codes/reports/tflocoformer_source_audit.json`。摘要变化会停止检查，不会把新版本自动说成有同样问题。上游源码保持原样。
+
+**工程实验应如何逐级增加。** 以下是未执行的下一步设计，不是本书的推理成绩。
+
+- 先在隔离环境按 README 指定的 ESPnet 提交 `90eed8e53498e7af682bc6ff39d9067ae440d6a4` 和 Torch/RoPE 版本匹配依赖。`copy_files_to_espnet.sh` 会改 ESPnet 任务注册文件，应针对独立检出使用，不能直接覆盖本书另一固定 ESPnet 版本。随机三维复谱先测形状、有限值、梯度和实际源数，再考虑权重。
+- 配置、源数和参数键严格匹配后，才加载另行取得且校验摘要的权重。standalone 加载需要按官方说明处理 `separator.` 前缀；逐个核查缺失和多余键，不能以放宽匹配掩盖模型结构差异。固定随机性与评估模式，再比较两种封装输出。
+- 全静音、常量、短于分析窗和非整帧尾部应单独检查。`separate.py` 对单通道输入执行 `mix /= mix.std(axis=-1)`，没有零方差保护；全静音/常量会有除零风险，示例还硬编码 `cuda:0` 并开启输出归一化。需另写明确的静音旁路或下限策略，并记录输出增益；这些适配没有在本书对上游实施。
+- 任务定义先于性能：README 提醒 WHAMR 原 ESPnet 配方是单目标增强且不去混响，论文需要两源分离并去混响；Libri2Mix 需选择无噪声、`train-360`、8 kHz、`min` 条件。未应用对应数据准备修改时，不能把脚本运行结果当作同一论文任务。语料、训练参考、测试划分与混合生成摘要分别保留。
+- 最后才用明确目标参考计算 SI-SDR/SI-SDRi，并把前处理、iSTFT、输出长度、排列与增益放进记录。未来扰动应检查非因果前缀变化；分窗后要重新测 CSS 排列及长流身份。速度报告包含完整编解码、所有块和状态/数据搬移，不将“没有 RNN”或“可并行”写成已达到实时。
+
+本次完成范围是源码取得、方法阅读、配置对照和静态检查。当前教程环境未安装 PyTorch，依赖构建、模型构造、前向/反向、权重推理、训练、音频质量与运行速度均未执行。仓库另含 TF-Locoformer-NoPE 与 BS-Locoformer，前者已核对 `pos_enc=nope` 的分支与 WHAMR 配置，后者只登记为不同的频带拆分入口；本节没有把未逐段审查的 BS-Locoformer 说成同样完成了方法级验收。
 
 ## 6. 复现实验的共同记录表
 

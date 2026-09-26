@@ -1,6 +1,6 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 75 个上游项目；已在 `codes/upstream/_downloads/` 取得 68 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。2026-09-26 离线核验 67 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 7 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 77 个上游项目；已在 `codes/upstream/_downloads/` 取得 68 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。2026-09-26 离线核验 67 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 7 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”只说明来源、提交、工作区状态和指定入口符合清单，不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -149,3 +149,15 @@ DEMAND v1.0 的 NRIVER 河流场景来自 [Zenodo 1227121](https://zenodo.org/re
 | [FastEnhancer](https://github.com/aask1357/fastenhancer/tree/f85223bd546b27f39dc0744e0310dcd246f750a4) | 单通道流式降噪、显式ONNX状态 | MIT；独立源码与许可，模型二进制未取 | 非AEC/WPE，不引用设备性能；实现说明见工业研究 |
 
 两项均保存在忽略的独立下载目录，不随本书提交重新分发。上游 `onnx/` 模型目录被二进制筛选省略，实际API入口是 `scripts/test_onnx.py` 和 `scripts/export_onnx.py`。代码许可不替代权重和数据条款。
+
+
+## 固定分数延迟与时频分离补充
+
+2026-09-26核对并取得两项独立源码，清单总数77项；70项已有本地工作区，69项核验通过。AEC Challenge仍保留既有变动，不计通过；7项保持索引。获取报告记录源码核验，方法级结果单列。
+
+| 项目 | 许可与固定提交 | 实际范围 |
+|---|---|---|
+| [STK](https://github.com/thestk/stk/tree/6aacd357d76250bb7da2b1ddf675651828784bbc) | MIT-STK；`6aacd357d76250bb7da2b1ddf675651828784bbc` | include/src及许可；实际编译DelayL标量接口，保留状态与重置反例；未取rawwaves素材、未做设备测试 |
+| [TF-Locoformer](https://github.com/merlresearch/tf-locoformer/tree/7a615460d347ff7334a13dbb831d16280da72cdc) | Apache-2.0及逐文件许可；`7a615460d347ff7334a13dbb831d16280da72cdc` | MERL作者仓库，源码与配置；静态接口研究，未取得权重或执行推理 |
+
+本地源码位于`codes/upstream/_downloads/stk/`和`tf-locoformer/`，不随本书Git再分发。STK的许可说明保留作者声明；TF-Locoformer的模型与训练数据权利另行核对。细节见[工业I29](research/03_industrial_deployment.md#i29stkdelayl)与[增强研究](research/02_aec_wpe_separation.md)。

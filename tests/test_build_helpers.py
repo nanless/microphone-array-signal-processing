@@ -267,7 +267,10 @@ class BuildHelpersTest(unittest.TestCase):
         )
 
     def test_site_render_uses_semantic_anchor_and_keeps_legacy_alias(self):
-        html, count = build_site.render("## 篇名\n### 10.1 延迟\n")
+        # A synthetic, never-published document uses ordinal fallback aliases.
+        # The real overview now has a frozen map and must not reuse sec-2 here.
+        html, count = build_site.render("## 篇名\n### 10.1 延迟\n",
+                                       ROOT / "chapters" / "fixture.md")
         self.assertEqual(count, 2)
         self.assertIn('id="sec-10-1"', html)
         self.assertIn('id="sec-2" class="anchor-alias"', html)
@@ -415,10 +418,10 @@ class BuildHelpersTest(unittest.TestCase):
         )
 
     def test_figure_semantics_accept_any_reuse_and_reject_mismatch_or_orphan(self):
-        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 41)]
+        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 42)]
         refs.extend([("图1 复用", "fig01_x.png", 1),
                      ("图23 复用", "fig23_x.png", 23)])
-        names = [f"fig{i:02d}_x.png" for i in range(1, 41)]
+        names = [f"fig{i:02d}_x.png" for i in range(1, 42)]
         self.assertEqual(quality_check.figure_inventory_issues(refs, names), [])
         bad_refs = list(refs)
         bad_refs[0] = ("图2 错配", "fig01_x.png", 1)
