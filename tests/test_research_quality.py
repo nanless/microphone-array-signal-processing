@@ -67,8 +67,8 @@ class ResearchQualityTests(unittest.TestCase):
     def test_explicit_baselines_preserve_tutorial_pdf_and_figure_counts(self):
         self.assertEqual(quality.EXPECTED_CHAPTER_COUNT, 14)
         self.assertEqual(quality.EXPECTED_SECTION_COUNT, 121)
-        self.assertEqual(quality.EXPECTED_SUBSECTION_COUNT, 504)
-        self.assertEqual(quality.EXPECTED_OUTLINE_ITEM_COUNT, 639)
+        self.assertEqual(quality.EXPECTED_SUBSECTION_COUNT, 500)
+        self.assertEqual(quality.EXPECTED_OUTLINE_ITEM_COUNT, 635)
         self.assertEqual(quality.EXPECTED_FIGURE_NUMBERS, set(range(1, 50)))
         self.assertEqual(quality.EXPECTED_RESEARCH_PAGE_COUNT, 6)
         self.assertEqual(quality.EXPECTED_RESEARCH_PAGES, (
@@ -136,6 +136,21 @@ class ResearchQualityTests(unittest.TestCase):
 
 
 class PublishedResearchQualityTests(unittest.TestCase):
+    def test_appendix_b_room_steps_keep_original_deep_links_in_both_editions(self):
+        from scripts import build_pdf, build_site
+        source = quality.ROOT / "chapters/13_appendix-guide.md"
+        markdown = source.read_text(encoding="utf-8")
+        site_body, _heading_count = build_site.render(markdown, source)
+        combined, _outline = build_pdf.build_html(build_date="2026-09-29")
+        old_fragments = (
+            "sec-u-aeab2c07bf", "sec-u-060a92560a", "sec-u-199b14fd60",
+            "sec-u-ed97781131", "sec-u-15b2b5a118", "sec-u-7325fcb112",
+        )
+        for fragment in old_fragments:
+            with self.subTest(fragment=fragment):
+                self.assertEqual(site_body.count(f'id="{fragment}"'), 1)
+                self.assertEqual(combined.count(f'id="ch-13-{fragment}"'), 1)
+
     def test_agents_baseline_current_stale_missing_and_unrelated_numbers(self):
         current = (f"PDF 的 {quality.EXPECTED_CHAPTER_COUNT} 个章级、"
                    f"{quality.EXPECTED_SECTION_COUNT} 个节级、\n"

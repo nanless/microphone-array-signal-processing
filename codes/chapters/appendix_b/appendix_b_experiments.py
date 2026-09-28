@@ -1,8 +1,8 @@
-"""Appendix B E13-03..08: fixed-room calculations and evidence boundaries.
+"""Appendix B E13-03..10: fixed-room calculations and evidence boundaries.
 
-This module does not execute pyroomacoustics or create assets. E13-03 and
-E13-07 read the separately generated, checked-in synthetic room results and
-PCM. The other exercises use small analytic fixtures with independent answers.
+This module does not execute pyroomacoustics or create assets. E13-03,
+E13-07 and E13-09 read checked-in synthetic room results or PCM; the other
+exercises use small analytic fixtures with independent answers.
 """
 
 from __future__ import annotations
@@ -21,6 +21,7 @@ import wave
 
 import numpy as np
 
+from codes.chapters.ch02.core.spectral import stft
 from codes.chapters.ch04.core.doa import srp_phat
 
 
@@ -196,6 +197,99 @@ def room_pcm_readback(manifest: dict, results: dict) -> dict:
             "scope": "the correlation peak includes the fixed library interpolation delay; it is not propagation delay alone"}
 
 
+def room_pcm_srp_windows(manifest: dict, results: dict) -> dict:
+    """Score both time spans of all six *published PCM* room triplets.
+
+    These estimates are read back after PCM16 quantization. They are kept
+    separate from the unquantized simulation estimates in RESULTS.json.
+    """
+    sample_rate = manifest["sample_rate_hz"]
+    if sample_rate != results["sample_rate_hz"] or len(manifest["files"]) != 18:
+        raise ValueError("room manifest and result sample rate or file count disagree")
+    settings = results["doa"]
+    n_fft, hop = settings["n_fft"], settings["hop_length"]
+    frequencies = np.fft.rfftfreq(n_fft, 1.0 / sample_rate)
+    low, high = settings["frequency_band_hz"]
+    selected = (frequencies >= low) & (frequencies <= high)
+    first_angle, last_angle, step = settings["azimuth_grid_deg"]
+    grid = np.arange(first_angle, last_angle + step / 2, step, dtype=float)
+    microphones = np.asarray(manifest["microphones_m"], dtype=float)
+    records = {(item["case"], item["role"]): item for item in manifest["files"]}
+    if len(records) != 18 or len(manifest["cases"]) != 6:
+        raise ValueError("room manifest needs six distinct source/direct/full triplets")
+    report_rows = {row["name"]: row for row in results["results"]}
+    rows = []
+    for case in manifest["cases"]:
+        name = case["name"]
+        streams = {}
+        for role, channels in (("source", 1), ("direct", 4), ("full", 4)):
+            record = records[(name, role)]
+            path = ROOM / record["file"]
+            if hashlib.sha256(path.read_bytes()).hexdigest() != record["sha256"]:
+                raise ValueError(f"room PCM digest differs: {path.name}")
+            rate, pcm = _read_pcm(path)
+            if rate != sample_rate or pcm.shape != (record["frames"], channels):
+                raise ValueError(f"room PCM format differs from manifest: {path.name}")
+            streams[role] = pcm
+        if (len(streams["source"]) != sample_rate or
+                streams["direct"].shape != streams["full"].shape):
+            raise ValueError(f"room triplet duration differs: {name}")
+        full = streams["full"].T
+        scores = {}
+        for label, samples in (("first_second", full[:, :sample_rate]),
+                               ("entire_file", full)):
+            spectra = stft(samples, n_fft=n_fft, hop_length=hop, center=True)
+            score = srp_phat(spectra[:, selected], frequencies[selected],
+                             microphones, np.deg2rad(grid),
+                             sound_speed=manifest["sound_speed_m_s"])
+            index = int(np.argmax(score))
+            scores[label] = {"samples": int(samples.shape[1]),
+                             "estimated_azimuth_deg": float(grid[index]),
+                             "peak_srp_score": float(score[index])}
+        rows.append({"name": name,
+                     "source_frames": int(len(streams["source"])),
+                     "direct_frames": int(len(streams["direct"])),
+                     "full_frames": int(len(streams["full"])),
+                     "pcm_scores": scores,
+                     "unquantized_report_estimate_deg":
+                         report_rows[name]["estimated_azimuth_deg"]})
+    return {"input": "existing published PCM16 WAV, SHA-256 checked against MANIFEST.json",
+            "pcm_scale_divisor": 32768, "stft_center": True,
+            "stft_window": "periodic Hann", "n_fft": n_fft, "hop_length": hop,
+            "frequency_band_hz": [low, high],
+            "azimuth_grid_deg": [first_angle, last_angle, step],
+            "first_second_interval_samples": [0, sample_rate],
+            "cases": rows,
+            "scope": "the PCM readback estimates are separate from the unquantized room simulation report"}
+
+
+def equal_drr_different_spectra() -> dict:
+    """Two equal-energy reflection RIRs need not have the same spectrum."""
+    direct = np.array([1.0, 0.0, 0.0])
+    reflections = (np.array([0.0, 0.5, 0.5]),
+                   np.array([0.0, 0.5, -0.5]))
+    cases = []
+    for label, reflected in zip(("same_sign", "opposite_sign"), reflections):
+        full = direct + reflected
+        direct_energy = float(np.dot(direct, direct))
+        reflected_energy = float(np.dot(reflected, reflected))
+        cases.append({"name": label, "direct_rir": direct.tolist(),
+                      "reflected_rir": reflected.tolist(), "full_rir": full.tolist(),
+                      "direct_energy": direct_energy,
+                      "reflected_energy": reflected_energy,
+                      "drr_db": 10.0 * math.log10(direct_energy / reflected_energy),
+                      "reflected_dc_response": float(sum(reflected)),
+                      "reflected_nyquist_response":
+                          float(sum(value * (-1) ** index
+                                    for index, value in enumerate(reflected))),
+                      "full_dc_response": float(sum(full)),
+                      "full_nyquist_response":
+                          float(sum(value * (-1) ** index
+                                    for index, value in enumerate(full)))})
+    return {"cases": cases,
+            "scope": "equal scalar RIR energy ratios do not determine frequency response or localization"}
+
+
 def evidence_claims(*, locked: bool, license_checked: bool, obtained: bool,
                     executed: bool, scored: bool) -> list[str]:
     """Grant claims only at or below the supplied hypothetical evidence level."""
@@ -228,6 +322,8 @@ def run_exercises() -> dict:
                                          obtained=True, executed=True, scored=False),
                     "C": evidence_claims(locked=True, license_checked=True,
                                          obtained=True, executed=True, scored=True)},
+        "E13-09": room_pcm_srp_windows(manifest, results),
+        "E13-10": equal_drr_different_spectra(),
     }
 
 

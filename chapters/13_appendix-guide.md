@@ -47,7 +47,7 @@
 
 CHiME 覆盖远场、多说话人和多通道语音处理；CHiME-9 设置 MCoRec 多会话鸡尾酒会转写与会话聚类、ECHI 低延迟助听对话增强。[CHiME-10 官方任务页](https://www.chimechallenge.org/challenges/chime10/index "citation")列出 ECHI-2、URGENT、SG-TSE 三项任务；[官方日程页](https://www.chimechallenge.org/challenges/chime10/dates "citation")列出计划于 2027 年 2 月 4 日开放、提交期暂定为 2027 年 8～9 月。上述日程核实于 2026 年 9 月，参赛时应重新核对官方日期。
 
-DCASE 2026 已于 2026 年 6 月 15 日结束，并在 7 月 1 日公布结果；Task 3 是 Semantic Acoustic Imaging SELD，与 DCASE 2024 Task 3 的距离估计设置不同。以上状态核实于 2026 年 9 月，任务定义与结果见 [DCASE 2026 官方页面](https://dcase.community/challenge2026/ "citation")和[结果公告](https://dcase.community/articles/dcase2026-challenge-results-published "citation")。
+DCASE 2026 的挑战期及系统提交于 2026 年 6 月 15 日截止，并在 7 月 1 日公布结果；Task 3 是 Semantic Acoustic Imaging SELD，与 DCASE 2024 Task 3 的距离估计设置不同。以上状态核实于 2026 年 9 月，任务定义、[提交日期](https://dcase.community/challenge2026/submission "citation")与结果见 [DCASE 2026 官方页面](https://dcase.community/challenge2026/ "citation")和[结果公告](https://dcase.community/articles/dcase2026-challenge-results-published "citation")。
 
 其他公开评测包括 REVERB 去混响评测、ICASSP DNS/AEC Challenge，以及已结束的 [SPEAR Challenge 2023](https://signalprocessingsociety.org/publications-resources/data-challenges/speech-enhancement-augmented-reality-spear-challenge-2023 "citation")。SPEAR 使用头戴式 6 通道设备研究 AR 语音增强；它的年份、阵列和任务条件不应外推为当前持续榜单。
 
@@ -88,7 +88,7 @@ CHiME-8 的 DASR 系统报告描述了不固定阵列拓扑的设计。其泛化
 
 目标说话人提取（Target Speaker Extraction，TSE）用注册语音、视觉或方向提示描述目标，再从混合语音中提取相应音轨。AR 眼镜阵列和手机结构辅助方向提取提供了不同的条件输入形式。
 
-[TEA-PSE 原工作](https://doi.org/10.1109/ICASSP43922.2022.9747765 "citation")发表于 ICASSP 2022；[TEA-PSE 3.0](https://arxiv.org/abs/2303.07704 "citation")是面向后续挑战的另一个版本，不能把两者的实现或成绩混为同版。[CIENet](https://ieeexplore.ieee.org/document/10284995/ "citation")同样使用注册语音提供说话人条件，再通过条件注入或帧级对齐提取目标。
+[TEA-PSE 原工作](https://doi.org/10.1109/ICASSP43922.2022.9747765 "citation")发表于 ICASSP 2022；[TEA-PSE 3.0](https://arxiv.org/abs/2303.07704 "citation")是面向后续挑战的另一个版本，不能把两者的实现或成绩混为同版。[CIENet 原工作](https://cmsworkshops.com/ICASSP2024/view_paper.php?PaperNum=3147 "citation")发表于 ICASSP 2024。它把注册语音与混合语音的时频表示送入注意力交互，计算随帧变化的目标相关权重，进而提取目标；[作者预印本的方法说明](https://arxiv.org/abs/2402.17146 "citation")可帮助核对这一步。这里的条件不是只把整段注册语音压成一个固定向量后直接拼接到混合谱上。
 
 SonicSieve 采用另一种线索：被动声学微结构改变方向相关响应，让神经网络利用方向特征提取语音，不是由注册声纹指定身份。它依赖对应的声学结构与训练数据，不能当作任意手机加软件即可获得的效果。原论文为 CHI 2026；本书仅说明方法条件，不转引摘要中的性能数字。[作者机构项目页](https://www.witechlab.com/sonicsieve.html "citation")、[作者论文 v3，2026-02-11，摘要与方法部分](https://arxiv.org/abs/2504.10793v3 "citation")（核实：2026-09-22）。
 
@@ -122,7 +122,11 @@ Kamo et al. 在 *Computer Speech & Language* 95:101820（2026）中整理了几�
 
 CHiME-9 设置了两个输入与目标都不同的任务。MCoRec 使用房间中央的 360° 视频和音频，要求转写说话内容，并判断哪些人属于同一段会话；ECHI 则研究让佩戴者听清对话对象的低延迟增强。后一任务的[官方规则](https://www.chimechallenge.org/challenges/chime9/task2/rules "citation")要求流式处理且算法延迟至多 20 ms。两任务不能共用一张“CHiME-9 语音增强”成绩表。[CHiME-9 官方任务页](https://www.chimechallenge.org/challenges/chime9/index "citation")
 
-DiCoW（Polok et al., *Computer Speech & Language* 95:101841，2026，[DOI 10.1016/j.csl.2025.101841](https://doi.org/10.1016/j.csl.2025.101841 "citation")）针对多人混合录音中“只转写指定一人”的问题，把说话人分割给出的活动信息作为条件输入 Whisper；输出是该目标的文字，而不是分离后的干净音轨。这与先分离出波形再送入普通识别器的做法不同。[作者演示仓的原版 `v1`](https://github.com/BUTSpeechFIT/DiCoW/tree/e9326bd536bf632e823357438b210102903ba620 "citation")与[训练/推理源码仓](https://github.com/BUTSpeechFIT/TS-ASR-Whisper/tree/0ea6679d44405f5ff39188030123524686c198e9 "citation")需按版本分别阅读；演示仓当前主分支含后续版本，不可直接当作原论文实现。代码、DiCoW 权重及其依赖的 DiariZen 权重有不同许可，后者限制非商业用途；取得源码不表示权重已获许可或系统已经运行。
+DiCoW（Polok et al., *Computer Speech & Language* 95:101841，2026，[DOI 10.1016/j.csl.2025.101841](https://doi.org/10.1016/j.csl.2025.101841 "citation")）针对多人混合录音中“只转写指定一人”的问题，把说话人分割给出的活动信息作为条件输入 Whisper；输出是该目标的文字，而不是分离后的干净音轨。这与先分离出波形再送入普通识别器的做法不同。
+
+作者[演示仓固定提交](https://github.com/BUTSpeechFIT/DiCoW/tree/e9326bd536bf632e823357438b210102903ba620 "citation")内有两个不同入口：[`example.py` 使用 DiCoW v1 与 Pyannote 3.1](https://github.com/BUTSpeechFIT/DiCoW/blob/e9326bd536bf632e823357438b210102903ba620/example.py#L8-L14 "citation")，[`app.py` 使用 DiCoW v2 与 Pyannote 3.1](https://github.com/BUTSpeechFIT/DiCoW/blob/e9326bd536bf632e823357438b210102903ba620/app.py#L31-L39 "citation")；不能仅凭仓库提交号把两者叫作同版。原工作相关的[训练/推理源码仓固定版本](https://github.com/BUTSpeechFIT/TS-ASR-Whisper/tree/0ea6679d44405f5ff39188030123524686c198e9 "citation")另行锁定。演示仓后续主分支引入 DiariZen 等新依赖，不应把这套后续演示条件倒写为上述固定提交的必需条件。
+
+源码、模型和数据分开核对许可：上述代码按 Apache-2.0，[DiCoW v1 权重](https://huggingface.co/BUT-FIT/DiCoW_v1 "citation")与[DiCoW v2 权重](https://huggingface.co/BUT-FIT/DiCoW_v2 "citation")的模型卡各标 CC BY 4.0；后续演示使用的 [DiariZen 权重](https://github.com/BUTSpeechFIT/DiariZen/blob/main/MODEL_LICENSE "citation")按 CC BY-NC 4.0，不能由代码许可推断其商用权利。[Pyannote 3.1](https://huggingface.co/pyannote/speaker-diarization-3.1 "citation")模型还须核对门控获取条件与访问凭据。取得源码不表示权重已获许可或系统已经运行。
 
 复现时至少要固定分割标签的来源、目标说话人、录音片段和识别评分方式，并与不加说话人条件的识别结果对照；若分割标签错位，也要检查词漏识别。该方法不能直接当作 ECHI 的 20 ms 助听增强基线。
 
@@ -199,7 +203,7 @@ VarArray 把 TAC、Conformer 分离和通道间相位差特征用于几何无关
 
 | 公式 | 含义 | 章节 |
 |---|---|---|
-| $10\log_{10}M$ | 无失真归一化、各通道独立等功率白噪声下，$M$ 元 DSB 的 WNG（dB） | §1、§5.2 |
+| $10\log_{10}M$ | 目标导向向量各元模为 1、无失真归一化、各通道独立等功率白噪声时，$M$ 元 DSB 的 WNG（dB）；阵元响应含不等增益时不可直接套用 | §1、§5.2 |
 | $r_F=2D^2/\lambda$ | Fraunhofer 相位曲率检查尺度；不是远近场硬分界。使用平面波模型还要检查 $r\gg D$、阵元幅度差和允许的相位误差 | §2.2 |
 | $T_{60} = 0.161V/A$ | 赛宾公式：房间混响时间 | §2.4 |
 | $d_c = 0.057\sqrt{QV/T_{60}}$ | 临界距离：直达/混响相等处；$Q$ 为声源指向因子，$Q=1$ 时才化为原来的全向式 | §2.4 |
@@ -213,7 +217,7 @@ VarArray 把 TAC、Conformer 分离和通道间相位差特征用于几何无关
 | $\hat{\vec{p}} = \arg\max_{\vec{r}} \sum R^{PHAT}$ | SRP-PHAT 全阵列投票 | §4.3 |
 | $P_C = 1/(\vec{a}^H\hat{\mathbf{R}}^{-1}\vec{a})$ | Capon 谱 | §4.5 |
 | $P_{MU} = 1/(\vec{a}^H\mathbf{E}_n\mathbf{E}_n^H\vec{a})$ | MUSIC 伪谱 | §4.6 |
-| $\vec{w}_{DSB} = \vec{a}/M$ | 延迟求和波束 | §5.2 |
+| $\vec{w}_{DSB} = \vec{a}/M$ | 单位模导向向量下的延迟求和权重，此时 $\vec a^H\vec a=M$；一般导向幅度下的无失真匹配权重为 $\vec a/(\vec a^H\vec a)$ | §5.2 |
 | $\lvert B(\theta)\rvert = \left\lvert\frac{\sin(M\psi/2)}{M\sin(\psi/2)}\right\rvert$ | 等权 ULA 的归一化阵因子，$\psi=2\pi d(\sin\theta-\sin\theta_0)/\lambda$ | §5.2 |
 | $\vec{w}_{SD}=\dfrac{\mathbf{\Gamma}^{-1}\vec{a}}{\vec{a}^H\mathbf{\Gamma}^{-1}\vec{a}}$ | 超指向：在无失真约束下最小化弥散噪声输出 | §5.3 |
 | $\vec{w}_{MVDR} = \mathbf{R}_{nn}^{-1}\vec{a}/(\vec{a}^H\mathbf{R}_{nn}^{-1}\vec{a})$ | 最小方差无失真 | §5.4 |
@@ -251,8 +255,8 @@ $$
 **PHD 预测，见式(9-22)**：新生目标强度加存活目标的状态转移。
 
 $$\begin{aligned}
-D_{t\vert t-1}(\vec x)&=\gamma_t(\vec x)\\
-&\quad+\int p_S(\vec\xi)f_{t\vert t-1}(\vec x\mid\vec\xi)D_{t-1}(\vec\xi)\,d\vec\xi.
+D_{t\vert t-1}(x)&=\gamma_t(x)\\
+&\quad+\int p_S(\xi)f_{t\vert t-1}(x\mid\xi)D_{t-1}(\xi)\,d\xi.
 \end{aligned}$$
 
 **PHD 更新，见式(9-23)**：漏检项加每条观测的“目标/杂波”归一化贡献。
@@ -262,7 +266,7 @@ D_t(x)&=[1-p_D(x)]D^-(x)\\
 &\quad+\sum_{z\in Z_t}\dfrac{p_D(x)g(z\mid x)D^-(x)}{\kappa(z)+\int p_D(\xi)g(z\mid\xi)D^-(\xi)d\xi}.
 \end{aligned}$$
 
-预测式中，$D_{t-1}(\vec\xi)$ 是上一时刻在状态 $\vec\xi$ 处的目标强度，$p_S$ 是存活概率，$f_{t\vert t-1}$ 是状态转移密度，$\gamma_t$ 是新生目标强度。预测把“存活并移动的旧目标”和“新生目标”相加。
+预测式中，$x$、$\xi$ 是目标状态，可分别是单个标量或包含方位、角速度等分量的状态向量；积分遍历与状态维度相同的空间。$D_{t-1}(\xi)$ 是上一时刻在状态 $\xi$ 处的目标强度，$p_S$ 是存活概率，$f_{t\vert t-1}$ 是状态转移密度，$\gamma_t$ 是新生目标强度。预测把“存活并移动的旧目标”和“新生目标”相加。
 
 更新式中，$D^-=D_{t\vert t-1}$ 是更新前强度，$Z_t$ 是本帧观测集合，$p_D(x)$ 是状态 $x$ 处的检测概率，$g(z\mid x)$ 是目标在该状态产生观测 $z$ 的似然，$\kappa(z)$ 是该观测处的杂波强度。分母中的 $p_D(\xi)$ 必须随积分状态变化；仅在检测概率与状态无关时才能将其视为常数。分母把杂波与所有可能目标来源放在同一观测口径下比较；这些量的连续状态积分及多观测含义见 §9.3。
 
@@ -415,7 +419,7 @@ D_t(x)&=[1-p_D(x)]D^-(x)\\
 
 16. **确定性房间仿真：距离、直达声与混响声能量比、定位误差。** 用 pyroomacoustics 0.10.0 生成目标 $T_{60}=0.6$ s 的房间冲激响应（Room Impulse Response，RIR），再用本书的 SRP-PHAT 教学实现估计单声源方向。先运行 `.venv/bin/python -m codes.chapters.appendix_b.examples.room_srp_exercise --check`：这一步只检查配置，不需要安装 pyroomacoustics，也没有运行房间仿真。
 
-#### 第 16 题：输入与声学模型
+**第 16 题：输入与声学模型**
 
 房间为 $12\times10\times6$ m 的长方体，阵列中心在 $(6,5,3)$ m，四麦位于该中心的水平面上，偏移分别为 $(\pm0.03,\pm0.03)$ m。声速 $343$ m/s，采样率 16 kHz。角度以 $+y$ 为 0°，朝 $+x$ 为正。
 
@@ -433,11 +437,11 @@ $$
 
 式(13-1)中的 $\alpha$ 和“目标 0.6 s”都只是建模输入，不能写成已实现的衰减时间。公式口径可对照[固定版本源码清单](../codes/chapters/ch00/SOURCES.lock.json)中锁定的 pyroomacoustics `acoustics.py` 的 `inverse_sabine`。
 
-#### 第 16 题：运行与指标计算
+**第 16 题：运行与指标计算**
 
 在单独的虚拟环境安装 `pyroomacoustics==0.10.0` 和绘图依赖，再从仓库根目录用该环境的 Python 运行 `python -m codes.chapters.appendix_b.examples.room_srp_exercise --run --plot /tmp/room_srp_exercise.png`；这里的 `python` 指隔离环境的解释器，不要求改变仓库 `.venv`。`--run` 输出逐位置 JSON，图按六个位置分别画四麦 DRR 中位数、由 $T_{20}$ 外推的 $T_{60}$ 与 DOA 绝对误差；每个位置标明距离和角度，避免相同距离、近乎相同 DRR 的左右对称点在散点图中重叠。
 
-定位脚本用 512 点 Hann 窗、128 点帧移、300～2000 Hz 频带，在 $-80°$ 到 $+80°$ 的 1° 网格扫描；报告 $|\hat\theta-\theta|$，故网格量化与近场/远场模型差异均计入误差。四麦最远间距为 $0.06\sqrt2\approx0.0849$ m，低于 2 kHz 对应的半波长 $343/(2\cdot2000)=0.08575$ m，这控制了所用频带内的空间混叠。
+定位脚本先把 1 s 激励与四麦完整 RIR 线性卷积，**只截取每路卷积输出的半开区间 $[0,16000)$ 样本**作为 SRP 输入，而不是对导出的整段房间 WAV 扫描。它使用 512 点周期 Hann 窗、128 点帧移；本仓库 STFT 默认 `center=True`，即分析前首尾各补 256 个零。选取 300～2000 Hz 的频点，在 $-80°$ 到 $+80°$ 的 1° 网格扫描；报告 $|\hat\theta-\theta|$，故网格量化与近场/远场模型差异均计入误差。四麦最远间距为 $0.06\sqrt2\approx0.0849$ m，低于 2 kHz 对应的半波长 $343/(2\cdot2000)=0.08575$ m，这控制了所用频带内的空间混叠。
 
 直达声与混响声能量比（Direct-to-Reverberant Ratio，DRR）比较同一只麦克风接收到的直达声能量与反射声能量。每个位置、每只麦分别生成完整 RIR $h_{\mathrm{full}}[n]$，以及“墙面能量吸收率设为 1、仍保留相同镜像阶数”的直达声 RIR $h_{\mathrm{direct}}[n]$。两者的几何、采样率、RIR 长度与 pyroomacoustics 默认的 10 Hz 零相位高通边界一致；完全吸收的墙面使非零阶镜像声能为零。
 
@@ -455,7 +459,7 @@ $$
 
 以 1 m、$-30°$ 条件的第 1 只麦为例，本书仿真的直达 RIR 能量约为 0.96774，反射 RIR 能量约为 0.24448，因而该麦 DRR 为 $10\log_{10}(0.96774/0.24448)\approx5.975$ dB；四麦 DRR 的中位数为 5.755 dB。同一只麦的 $-5$～$-25$ dB 拟合斜率约为 $-109.682$ dB/s，故外推 $T_{60}=-60/(-109.682)\approx0.547$ s。计算先用未舍入值，下面仅展示约数。
 
-#### 第 16 题：六个位置的结果
+**第 16 题：六个位置的结果**
 
 **本书仿真结果。** 2026 年 9 月 24 日用 pyroomacoustics 0.10.0、Python 3.13.12、NumPy 2.5.3、SciPy 1.18.1 实际运行脚本；镜像阶数为 40，声学和定位条件均如上，`PRA_NUM_THREADS=2`。表中的 $T_{60}$、DRR 都是四麦逐麦指标的中位数；方位估计按 1° 网格输出。为免把近似值当作精确值，下表距离、真方位、$T_{60}$、DRR 和绝对误差均保留三位小数。
 
@@ -476,19 +480,21 @@ $$
 
 最后一行 DRR 的未舍入值为 −0.00304 dB，接近零。六个由仿真 RIR 估得的 $T_{60}$ 在约 0.546～0.563 s，低于 Sabine 反推时设定的 0.6 s；目标参数不能替代实际 RIR 的衰减估计。
 
-#### 第 16 题：镜像阶数检查
+**第 16 题：镜像阶数检查**
 
-默认脚本对固定近左位置另算 32 阶结果，并与 40 阶比较：四麦 $T_{60}$ 中位数相差约 $2.08\times10^{-6}$ s，DRR 中位数相差约 $7.55\times10^{-7}$ dB，低于本题自定的 0.02 s 与 0.5 dB 判据。本书还实际以 `--max-order 48` 重跑六个位置：与 40 阶相比，六个位置的 $T_{60}$ 中位数变化都小于 $10^{-6}$ s，DRR 中位数变化都小于 $10^{-6}$ dB，1° 网格的方位估计不变。这些比较说明所列指标对 40～48 阶的截断不敏感，不证明频谱细节或其他几何设置也已收敛；改变房间、源位或指标后须重新检查。
+默认脚本对固定近左位置另算 32 阶结果，并与 40 阶比较：四麦 $T_{60}$ 中位数相差约 $2.08\times10^{-6}$ s，DRR 中位数相差约 $7.54\times10^{-7}$ dB，低于本题自定的 0.02 s 与 0.5 dB 判据。这只能说明**固定近左、这两个标量指标**在 32 与 40 阶间变化很小，不能推广到六个位置，也不能证明频谱或方位估计已收敛。
 
-#### 第 16 题：试听文件与复现
+若要检查更高阶，可另用隔离环境运行 `python -m codes.chapters.appendix_b.examples.room_srp_exercise --run --max-order 48`，将新报告的六个位置逐项与固定的 40 阶[结果报告](../codes/chapters/appendix_b/room_audio/RESULTS.json)比较，记录 $T_{20}$ 外推值、DRR、方位网格输出、时长及失败项。此处给出实验步骤，不把未保存的 48 阶结果写成已验证数值；改变房间、源位或指标后也须重新检查。
+
+**第 16 题：试听文件与复现**
 
 仓库已将六组源信号、四麦完整房间输出和四麦仅直达输出，共 18 个 PCM WAV 单独保存在 `codes/chapters/appendix_b/room_audio/`，参数、共同增益、种子和逐文件摘要见[房间音频清单](../codes/chapters/appendix_b/room_audio/MANIFEST.json)；[逐组试听入口](../codes/chapters/ch00/research/05_exercises_and_audio.md#17-六位置房间响应与定位)列出全部文件。
 
-每组使用与定位估计相同的固定白高斯噪声输入；全部文件采用同一个显式增益，不逐文件峰值归一化，保留传播时延和增益差异。文件是数学合成白噪声，不是真实语音或实测房间录音；试听前先降低播放音量。它们由附录 B 的房间清单管理，与总清单记录、分章存放的 109 个主音频样本分别管理。
+每组使用与定位估计相同的固定白高斯噪声输入；全部文件采用同一个显式增益，不逐文件峰值归一化，保留传播时延和增益差异。导出的完整房间与仅直达 WAV 都按完整卷积长度保存，超过 1 s；完整房间文件含混响尾部，仅直达文件在短直达响应之后主要是补零。前述 SRP 指标只分析前 16000 个样本，试听整段 WAV 并不是同一时间窗的定位实验。文件是数学合成白噪声，不是真实语音或实测房间录音；试听前先降低播放音量。它们由附录 B 的房间清单管理，与总清单记录、分章存放的 109 个主音频样本分别管理。
 
 若要重新生成到个人实验目录，先在装有锁定版 pyroomacoustics 0.10.0 的隔离环境中运行 `python -m codes.chapters.appendix_b.examples.room_srp_exercise --run --audio-dir /tmp/room-srp-audio-new`；为防覆盖，该目录必须尚不存在。
 
-#### 第 16 题：能得出的结论
+**第 16 题：能得出的结论**
 
 **解读边界。** 固定的 $\pm30°$ 条件分别在 1 m 与 2.5 m 比较；这间合成房间中，远位置的 DRR 较低，绝对 DOA 误差由 1° 变成 2°。
 
@@ -581,9 +587,9 @@ $$
 
 **输入。** 只用第 16 题六行固定仿真表，不重新生成房间。先分别固定方位 $-30^\circ$ 与 $+30^\circ$，比较各侧 1 m 和 2.5 m 的 DRR 与绝对 DOA 误差；再查看两个种子位置。这是同一合成房间内的描述性差值，不是跨房间因果效应。
 
-左右两组近点 DRR 都为 $5.755$ dB，远点都为 $-2.113$ dB，因此各有 $\Delta\mathrm{DRR}=-2.113-5.755=-7.868$ dB。绝对误差各从 $1.000^\circ$ 变成 $2.000^\circ$，即增加 $1.000^\circ$。两侧来自镜像几何，不能作为四次独立随机重复。种子位置 1 在 $1.099$ m 时误差 $1.244^\circ$；种子位置 2 在 $1.973$ m 时误差反而是 $0.604^\circ$。这否定了“六行误差随距离严格单调增加”，却不能证明增大距离会改善定位，因为方向、墙面相对位置和反射路径也变了。
+左右两组近点 DRR 都展示为 $5.755$ dB，远点都展示为 $-2.113$ dB；直接相减展示值会得 $-7.868$ dB，但按[未舍入报告](../codes/chapters/appendix_b/room_audio/RESULTS.json)先相减再保留三位小数，两侧均为 $\Delta\mathrm{DRR}=-7.869$ dB。绝对误差各从 $1.000^\circ$ 变成 $2.000^\circ$，即增加 $1.000^\circ$。左右两侧共享一间房间且几何镜像，不能当成跨房间独立重复；但六个条件的白噪声激励各使用独立固定种子，并非四个条件复用了同一波形。故表中的近远差同时混入源波形实现和随位置改变的反射路径，不能叫“仅改变距离”的配对因果估计。种子位置 1 在 $1.099$ m 时误差 $1.244^\circ$；种子位置 2 在 $1.973$ m 时误差反而是 $0.604^\circ$。这否定了“六行误差随距离严格单调增加”，却不能证明增大距离会改善定位，因为方向、墙面相对位置和反射路径也变了。
 
-[附录 B 逐步实验](../codes/chapters/appendix_b/appendix_b_experiments.py)的 E13-03 复算两组配对差并列出种子点。若要检验距离本身的效应，需要预定同方向、相同房间与源谱、噪声、重复输入和评分规则，并逐位置记录随声源移动而改变的墙面反射路径；本题没有完成这样的因果实验。
+[附录 B 逐步实验](../codes/chapters/appendix_b/appendix_b_experiments.py)的 E13-03 复算两组位置条件差并列出种子点。若要检验距离本身的效应，需要预定同方向、同一房间、相同的随机波形与源谱、噪声、重复输入和评分规则，并逐位置记录随声源移动而改变的墙面反射路径；本题没有完成这样的控制实验。
 
 #### E13-04：四麦 DRR 的中位数能用合并能量代替吗？
 
@@ -633,11 +639,13 @@ $$
 
 #### E13-07：房间 WAV 的共同增益和峰时延各说明什么？
 
-**读现有资产。** 只检查[房间独立清单](../codes/chapters/appendix_b/room_audio/MANIFEST.json)中固定近左的三份旧 PCM16 WAV，不生成新房间。源为单通道 16000 帧；完整房间和仅直达文件均为四通道 38497 帧，采样率皆为 16 kHz。清单中的量化前最大绝对幅度按源、完整、仅直达顺序为 $4.1199508233$、$5.1599726691$、$4.0516387986$；共用增益 $g=0.1516968997435788$ 后，分别约为 $0.62498377$、$0.78275186$、$0.61462104$。PCM16 舍入后峰值略有变化；三个导出峰不相等并不表示逐文件归一化。
+**题目与格式。** 只读回[房间独立清单](../codes/chapters/appendix_b/room_audio/MANIFEST.json)中固定近左的三份已发布 PCM16 WAV，不生成新房间。核对采样率、通道数、帧数及摘要，再问这三份文件的峰值和源到麦克风的互相关峰分别能说明什么。源为单通道 16000 帧；完整房间和仅直达文件均为四通道 38497 帧，采样率皆为 16 kHz。
 
-按清单坐标，固定近左源到第 1 麦的距离约为 $1.011811$ m，单纯几何传播折合 $1.011811\times16000/343\approx47.198$ 样本。实际源与仅直达第 1 麦 PCM 的互相关主峰约在 $+87$ 样本；仿真 RIR 的分数延迟滤波器还引入固定群延迟，不能把这 87 点全部当作声学传播并乘 $c/f_s$ 报成物理距离。这段固定白噪声的相关峰也不是 SRP 的 DOA 输出。
+**共同增益。** 清单中的量化前最大绝对幅度按源、完整、仅直达顺序约为 $4.11995$、$5.15997$、$4.05164$；所有 18 份房间 WAV 共用清单所记增益 $g\approx0.151697$。三者乘以此增益后，依次约为 $0.624984$、$0.782752$、$0.614621$。精确值见清单。这些是清单记录的**PCM 量化前**数值；按 PCM16 舍入后再读回，峰值略有变化。三个导出峰不相等并不表示逐文件归一化，也不能用峰值比直接计算 RIR 的 DRR。
 
-[逐步实验](../codes/chapters/appendix_b/appendix_b_experiments.py)的 E13-07 读回格式、逐文件摘要、共同增益和四麦相对源的相关峰，不改写 18 份 WAV。本题不从 WAV 峰值比求第 16 题的 RIR DRR，也不把 PCM 的单个峰当作未经滤波的精确飞行时间。
+**时延。** 按清单坐标，固定近左源到第 1 麦的距离约为 $1.011811$ m，单纯几何传播折合 $1.011811\times16000/343\approx47.198$ 样本。已发布源 PCM 与仅直达 PCM 的四麦互相关主峰依次在 $+87,+89,+85,+86$ 样本；第一麦的 87 点约比几何传播多 40 点。所用 pyroomacoustics 分数延迟滤波器长度为 81 点，相关峰还包含该滤波器的固定群延迟，不能把 87 点全当作声学传播，再乘 $c/f_s$ 报成物理距离。该白噪声相关峰也不是 SRP 的 DOA 输出。
+
+[逐步实验](../codes/chapters/appendix_b/appendix_b_experiments.py)的 E13-07 读回格式、逐文件摘要、共同增益和四麦相对源的相关峰，不改写 18 份 WAV。本题的量化前峰值与 PCM 读回峰值需分列，单个峰也不能当作未经滤波的精确飞行时间。
 
 #### E13-08：看见开源代码就算复现论文了吗？
 
@@ -650,6 +658,40 @@ $$
 | C | 是 | 是 | 是 | 可报告此次评价与原文的实际差异；只有满足预定判据才称结果得到复现 |
 
 这是证据判定题，并非本书已运行 FlowSep、DiCoW、ArrayDPS 或全部 CHiME 系统。代码、模型权重、训练数据和评测数据的许可分别核查；仓库可读、源码已取得、入口可运行与论文同条件结果各属不同层次。[逐步实验](../codes/chapters/appendix_b/appendix_b_experiments.py)的 E13-08 只枚举上述固定字段与允许表述，不联网或执行外部项目。
+
+#### E13-09：前 1 秒与整段 PCM 作 SRP，为何不是同一结果？
+
+**题目与固定输入。** 对第 16 题已发布的六个 `*_full.wav`，先按[房间音频清单](../codes/chapters/appendix_b/room_audio/MANIFEST.json)核对文件摘要、四通道顺序、16 kHz 采样率和 PCM16 格式；把有符号样本除以 32768 读回浮点数。每个文件做两次定位：第一次只取每麦的半开区间 $[0,16000)$ 点，第二次取该 WAV 的全部帧。两次均使用本书 `stft` 的 512 点周期 Hann 窗、128 点帧移和 `center=True`（首尾各补 256 个零），选取 300～2000 Hz 内的离散频点，即 $f_k=k\cdot16000/512$ 中的 $k=10,\ldots,64$、实际为 312.5～2000 Hz；用四麦 SRP-PHAT 在 $-80^\circ$～$+80^\circ$ 的 1° 网格搜索，声速取 343 m/s。问六个位置的峰值方向如何变化，并解释可推断的范围。
+
+**计算步骤。** 对每个时间窗分别取 STFT，再逐频点、逐麦对形成 PHAT 归一化互谱；按候选方位的预测时延做相位对齐，累积所有选中频点和麦对的实部，取网格最大值的方向。两个时间窗均从**同一份已发布 PCM**取样，故文件、通道和阵列几何未变；变化的是纳入的时域样本及随之产生的频谱帧。以固定近左为例，前 16000 点的最大位置是 $-29^\circ$，整段 38497 点的最大位置是 $-35^\circ$，差为 $-6^\circ$。完整六行独立 PCM 读回结果为：
+
+| 声源位置 | 完整 WAV 帧数 | 前 1 秒 SRP 方位 | 整段 SRP 方位 | 后者减前者 |
+|---|---:|---:|---:|---:|
+| 固定近左 | 38497 | $-29^\circ$ | $-35^\circ$ | $-6^\circ$ |
+| 固定近右 | 38497 | $+29^\circ$ | $+35^\circ$ | $+6^\circ$ |
+| 固定远左 | 38532 | $-32^\circ$ | $-41^\circ$ | $-9^\circ$ |
+| 固定远右 | 38532 | $+32^\circ$ | $+39^\circ$ | $+7^\circ$ |
+| 种子位置 1 | 38507 | $-40^\circ$ | $-47^\circ$ | $-7^\circ$ |
+| 种子位置 2 | 38478 | $+3^\circ$ | $+3^\circ$ | $0^\circ$ |
+
+这是[逐步实验 E13-09](../codes/chapters/appendix_b/appendix_b_experiments.py)对发布 **PCM 量化后**波形的读回计算；第 16 题[原结果报告](../codes/chapters/appendix_b/room_audio/RESULTS.json)则来自仿真中**量化前**的完整卷积前 16000 点，两者不可不标条件地混作同一次测量。此例恰好在前 1 秒得到同样的整度网格方向，不意味着两种输入的谱和所有 SRP 分数相同。以固定近左为例，峰分数分别约为 $0.843335$ 和 $0.460251$；它是该算法的归一化扫描分数，不是目标方位为真的概率或置信度。
+
+整段 WAV 含源停止后的房间尾部和较低幅度或静默的帧；改变窗长还会改变帧数、末尾补零位置与 PHAT 权重。六行中五行的最大网格方向变化，一行未变，只能说明**这个时间窗选择对此固定仿真的定位结果有影响**。不能把方向或分数变化单独归因于距离、混响增强或量化误差，也不能当作真实房间的统计规律。对比第 16 题的已发布结果时，应采用相同的前 16000 点口径。
+
+#### E13-10：DRR 一样，反射声的频谱也一样吗？
+
+**题目与固定输入。** 构造两个长度为 3 的实数离散 RIR，直达部分都为 $h_{\mathrm d}=[1,0,0]$，反射部分分别为 $h_{\mathrm r}^{(A)}=[0,\tfrac12,\tfrac12]$ 与 $h_{\mathrm r}^{(B)}=[0,\tfrac12,-\tfrac12]$。定义完整 RIR 为 $h^{(i)}=h_{\mathrm d}+h_{\mathrm r}^{(i)}$。先用式(13-2)求两者 DRR，再分别在数字角频率 $\omega=0$ 与 $\omega=\pi$ 计算反射及完整 RIR 的频率响应。频率响应沿用 $H(e^{j\omega})=\sum_{n=0}^{2}h[n]e^{-j\omega n}$；这里的 $\pi$ 是离散时间奈奎斯特角频率，不另指定物理采样率。
+
+**第一步：算能量。** 两个反射部分的能量都为 $(1/2)^2+(1/2)^2=1/2$，直达能量均为 1。因此两者均有 $\mathrm{DRR}=10\log_{10}(1/(1/2))=10\log_{10}2\approx3.0103$ dB。符号翻转没有改变平方和，所以一个 DRR 标量分不开 A 与 B。
+
+**第二步：算两个频点。** $H_{\mathrm r}^{(A)}(e^{j\omega})=\tfrac12e^{-j\omega}+\tfrac12e^{-j2\omega}$，$H_{\mathrm r}^{(B)}(e^{j\omega})=\tfrac12e^{-j\omega}-\tfrac12e^{-j2\omega}$；直达部分在两个频点都为 1。代入 $e^{-j0}=1$、$e^{-j\pi}=-1$ 与 $e^{-j2\pi}=1$：
+
+| RIR | 反射响应 $H_{\mathrm r}(0)$ | 反射响应 $H_{\mathrm r}(\pi)$ | 完整响应 $H(0)$ | 完整响应 $H(\pi)$ |
+|---|---:|---:|---:|---:|
+| A：两个反射同号 | $1$ | $0$ | $2$ | $1$ |
+| B：第二个反射反号 | $0$ | $-1$ | $1$ | $0$ |
+
+这里的 $H(0)$ 与 $H(\pi)$ 是**带符号的实数频率响应**；若比较幅度，须另取绝对值。反射总能量相同，只约束跨全频带的平方积分，不固定每个频点的幅度与相位。因而 DRR 相同不足以保证增强、波束或定位算法的频率响应相同。[逐步实验 E13-10](../codes/chapters/appendix_b/appendix_b_experiments.py)复核能量与两个频点。本题是人为构造的短 RIR，不含真实墙面、连续衰减或噪声，不能由它计算物理 $T_{60}$ 或推断某个实际阵列的性能。
 
 ### 13.7 复现说明
 
@@ -666,7 +708,7 @@ $$
 
 第 10 章示例使用确定性输入，覆盖 SRO 直线拟合与线性重采样、VAD 迟滞与语音结束保持时间、峰值保护 AGC、固定容量环形缓冲、处理超时与队列模拟，以及 Q1.15 饱和量化。线性重采样、Python 环形缓冲和调度模拟都是教学基线，不应替换带抗混叠滤波的流式重采样器、无锁实时队列或目标系统测量。
 
-附录 B 逐步实验运行 E13-03～08 的固定手算与只读 PCM 检查。它不运行第 16 题的房间仿真，也不下载第 17 题提及的外部系统；房间仿真要按第 16 题使用隔离依赖，并区分[结果报告](../codes/chapters/appendix_b/room_audio/RESULTS.json)的实际运行证据与本书构造的数学小例。
+附录 B 逐步实验运行 E13-03～10 的固定手算与只读 PCM 检查，其中 E13-09 逐份核对房间 WAV 摘要后读取波形、重新计算两个时间窗的 SRP。它不运行第 16 题的房间仿真，也不下载第 17 题提及的外部系统；房间仿真要按第 16 题使用隔离依赖，并区分[结果报告](../codes/chapters/appendix_b/room_audio/RESULTS.json)的实际运行证据与本书构造的数学小例。
 
 新增的[状态与时间练习](../codes/chapters/ch00/cross_chapter/tracking_time_exercises.py)分别对应 E09-07 的旧权重递推、E09-08 的测量到消费时间外推、E10-15 的预卷与结束事件、E11-08 的零失败风险上界。先按题面独立手算，再检查代码中间值；四题均有[独立边界测试](../tests/test_codes_time_state_exercises.py)，不需要模型权重或声卡。
 

@@ -69,7 +69,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "10_engineering-practice.md": 47,
     "11_selection-guide.md": 29,
     "12_appendix-symbols-math.md": 27,
-    "13_appendix-guide.md": 29,
+    "13_appendix-guide.md": 25,
 }
 # 上表为独立发布基线，不从待检 HTML 或构建器反推。
 EXPECTED_CHAPTERS = [
@@ -90,10 +90,10 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 121
-EXPECTED_SUBSECTION_COUNT = 504
-EXPECTED_OUTLINE_ITEM_COUNT = 639
+EXPECTED_SUBSECTION_COUNT = 500
+EXPECTED_OUTLINE_ITEM_COUNT = 635
 EXPECTED_FIGURE_NUMBERS = set(range(1, 50))
-# 研究附站使用独立显式清单，不挤占 14 篇教程或 639 项 PDF 大纲基线。
+# 研究附站使用独立显式清单，不挤占 14 篇教程或 635 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
     ("README.md", "index.html"),

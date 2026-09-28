@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>导读与导航 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="47603b7ef500"><style>
+<meta name="source-digest" content="15ca024621fb"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -334,7 +334,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>查阅用。12.1 节是符号表。12.2 节是术语词典，按信号与数学基础、房间声学、自适应滤波与分离、波束形成与阵列度量、定位与追踪、系统与硬件分组。12.3 节介绍复数、分贝、卷积和相关、期望和协方差、最小二乘与特征分解；12.4 节用十二道代码题复算卷积、复二阶矩、秩亏最小二乘，并区分频谱相位加权与空间噪声白化。</p>
 <p>遇到未定义符号、术语或数学步骤时，可按主题查阅，无需顺序通读。</p>
 <span id="sec-17" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-ec7064739f"><a href="13_appendix-guide.html">13 · 附录 B：路径、地图、前沿、排错、练习、复现</a></h3>
-<p>查阅加动手。13.1 节是学习路径。13.2 节是教材、会议、期刊、挑战赛与历史地图。13.3 节介绍八个研究方向与泛化失配。13.4 节是排错指南，13.5 节是公式速查卡，13.6 节有 17 道综合书面题及 E13-01～08 稳定编号代码题，13.7 节说明怎样复现 49 张图；E13-02 配合图41检查插值失真，E13-03～08 复算房间结果、相位与来源证据。</p>
+<p>查阅加动手。13.1 节是学习路径。13.2 节是教材、会议、期刊、挑战赛与历史地图。13.3 节介绍八个研究方向与泛化失配。13.4 节是排错指南，13.5 节是公式速查卡，13.6 节有 17 道综合书面题及 E13-01～10 稳定编号代码题，13.7 节说明怎样复现 49 张图；E13-02 配合图41检查插值失真，E13-03～10 复算房间结果、相位与来源证据。</p>
 <p>需要查学习资料、研究方向、排错方法、练习或复现步骤时，可直接进入对应小节。</p>
 <hr />
 <span id="sec-18" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-d8087d6ad6">4. 阅读顺序</h2>
@@ -755,7 +755,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 </code></pre>
 <p>再运行第 13.7 节列出的绘图命令，可重新生成 49 张图；运行时间取决于机器。具体构建步骤和错误处理见 <code>scripts/README.md</code>。Windows 上需把命令中的 <code>.venv/bin/python</code> 换成 <code>.venv\Scripts\python</code>。</p>
-<p>另有 229 道带答案的<a href="research/05_exercises_and_audio.html">章节代码练习与音频实验</a>，从第 1 章到附录 B 使用 E01-01 等稳定编号。第 6 章 E06-07～E06-20 包含算法边界手算与子带、IPNLMS、RLS、Kalman 的小规模复算；附录 B 的 E13-03～08 复算房间结果、相位与来源证据。每道题对应输入、执行代码和可核查结果；附录 B 的 1～17 题另用一套编号。</p>
+<p>另有 231 道带答案的<a href="research/05_exercises_and_audio.html">章节代码练习与音频实验</a>，从第 1 章到附录 B 使用 E01-01 等稳定编号。第 6 章 E06-07～E06-20 包含算法边界手算与子带、IPNLMS、RLS、Kalman 的小规模复算；附录 B 的 E13-03～10 复算房间结果、相位与来源证据。每道题对应输入、执行代码和可核查结果；附录 B 的 1～17 题另用一套编号。</p>
 <p>109 个 WAV 样本由本书合成，分为 27 组，覆盖对齐平均、四麦分数采样时差、AEC、WPE、已知矩阵解混、工程失真、双声道声像，以及相关噪声、极性错误、病态求逆、非线性回声、四种 AEC 自适应方法、两带跨项、功率谱减、时钟漂移、线性插值失真、一采样对齐误差、房间衰减、双麦差分校准、纯音时差歧义、GSC 目标泄漏门控、AEC 参考断流、WPE 可预测目标损伤、整块 AGC 控制，以及第11章同一三音混合输入的3/9抽头FIR选型。先运行 <code>codes/chapters/ch00/examples/generate_audio_samples.py</code>，再按手册比较参考、输入和输出；网页提供不自动播放的试听控件。</p>
 <p>另有四套独立清单管理的合成资产：<a href="gss_audio/MANIFEST.json">GSS 五路音频与中间状态</a>、<a href="moving_audio/MANIFEST.json">自由场移动声源三路音频与轨迹真值</a>、<a href="tracking_audio/MANIFEST.json">第 9 章两路追踪音频与逐帧观测</a>，以及<a href="room_audio/MANIFEST.json">附录 B 六位置房间题的 18 个白噪声 WAV 和结果报告</a>。它们均不计入主清单 109 个样本，四套的生成模型和评分条件也不能互相替代。</p>
 <p>三组反例见附录 B 图 35，非线性残留见第 6 章图 36。图 37 解释两带子带模型的交叉项；图 38 分别展示 IPNLMS、RLS 和卡尔曼滤波的受控状态变化，三幅子图不构成性能排名。图 39 展示分区块频域自适应滤波（PBFDAF）如何用播放参考的历史块预测回声、计算残差并更新滤波器。</p>

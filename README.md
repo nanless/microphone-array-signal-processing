@@ -4,7 +4,7 @@
 
 正文提供关键公式推导、可复算例子、适用边界，以及与各章公式对应的 NumPy/标准库教学代码。
 
-全书有 229 道可运行代码练习、49 张脚本生成的图，以及 27 组共 109 个[主清单合成 WAV](codes/chapters/ch00/audio/MANIFEST.json)。[练习与音频实验手册](codes/chapters/ch00/research/05_exercises_and_audio.md)逐题列出输入、答案、试听条件与代码入口。音频是数学合成样本，不是真实语音或正式听测；第 6 章两组合成 AEC 音频的参数也不完全等同于 E06-07～20 手算题。
+全书有 231 道可运行代码练习、49 张脚本生成的图，以及 27 组共 109 个[主清单合成 WAV](codes/chapters/ch00/audio/MANIFEST.json)。[练习与音频实验手册](codes/chapters/ch00/research/05_exercises_and_audio.md)逐题列出输入、答案、试听条件与代码入口。音频是数学合成样本，不是真实语音或正式听测；第 6 章两组合成 AEC 音频的参数也不完全等同于 E06-07～20 手算题。
 
 另有四套独立管理的合成资产：[GSS 教学链](codes/chapters/ch08/gss_audio/MANIFEST.json) 5 个 WAV 与状态、[自由场移动声源](codes/chapters/ch09/moving_audio/MANIFEST.json) 3 个 WAV 与轨迹真值、[观测到追踪](codes/chapters/ch09/tracking_audio/MANIFEST.json) 2 个 WAV 与逐帧观测，以及[附录 B 房间题](codes/chapters/appendix_b/room_audio/MANIFEST.json) 18 个白噪声 WAV、结果图和[数值报告](codes/chapters/appendix_b/room_audio/RESULTS.json)。它们均不并入主 109 个样本。另有 DEMAND 真实同步录音摘录及 3 个派生 WAV，[数据说明与许可](codes/chapters/ch02/real_audio/README.md)独立保存。
 
@@ -26,7 +26,7 @@ English version: [README_EN.md](README_EN.md)
 | `codes/chapters/*/reports/` | 随算法所属章保存的小规模运行报告；与源码获取状态、论文全量评测分开 |
 | `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
 | `site/` | 20 个网页：14 个教程页（含首页）及 `research/` 下 6 个研究手册页；构建产物，可再生 |
-| `dist/` | [当前合订 PDF](dist/microphone-array-tutorial.pdf) 与可再生的合订 HTML；PDF 含 14 个顶级、121 个二级、504 个三级书签，共 639 个 |
+| `dist/` | [当前合订 PDF](dist/microphone-array-tutorial.pdf) 与可再生的合订 HTML；PDF 含 14 个顶级、121 个二级、500 个三级书签，共 635 个 |
 
 ## 章节导览
 
@@ -45,7 +45,7 @@ English version: [README_EN.md](README_EN.md)
 | 第 10 章 | `chapters/10_engineering-practice.md` | 参考链路、关键路径延迟、SRO/标定、资源预算与评测 | 进阶 |
 | 第 11 章 | `chapters/11_selection-guide.md` | 条件化选型、场景约束、可验证规格与练习 | 入门 |
 | 附录 A | `chapters/12_appendix-symbols-math.md` | 符号表、术语定义、预备数学速览 | 查阅 |
-| 附录 B | `chapters/13_appendix-guide.md` | 学习路径、领域地图、研究前沿、排错、17 道综合书面题与 E13-01～08 代码题、复现说明 | 查阅 |
+| 附录 B | `chapters/13_appendix-guide.md` | 学习路径、领域地图、研究前沿、排错、17 道综合书面题与 E13-01～10 代码题、复现说明 | 查阅 |
 
 ## 快速开始
 

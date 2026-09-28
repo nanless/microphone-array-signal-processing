@@ -1,4 +1,4 @@
-"""Independent analytic and existing-PCM checks for Appendix B E13-03..08."""
+"""Independent analytic and existing-PCM checks for Appendix B E13-03..10."""
 
 from __future__ import annotations
 
@@ -12,8 +12,9 @@ import unittest
 import numpy as np
 
 from codes.chapters.appendix_b.appendix_b_experiments import (
-    ROOM, _read_results, evidence_claims, four_mic_drr_and_convolution,
-    paired_room_comparison, room_pcm_readback, run_exercises,
+    ROOM, _read_results, equal_drr_different_spectra, evidence_claims,
+    four_mic_drr_and_convolution, paired_room_comparison, room_pcm_readback,
+    room_pcm_srp_windows, run_exercises,
     t20_from_edc_points, two_mic_srp_phase,
 )
 from codes.chapters.appendix_b.examples.room_srp_exercise import plot_results, write_results
@@ -98,8 +99,10 @@ class AppendixBExperimentsTest(unittest.TestCase):
                                        result["geometric_propagation_samples"]):
             self.assertLess(abs(observed - geometric - 40), .5)
         self.assertEqual(result["library_fractional_delay_filter_length"], 81)
+        # This is the independently fixed value of the currently published
+        # export, not an expected value copied from the manifest under test.
         self.assertAlmostEqual(result["common_export_gain_from_manifest"],
-                               .1516968997435788)
+                               .151696899534143, delta=1e-13)
         self.assertLess(max(result["pcm_peak_absolute"].values()), .801)
         corrupted = copy.deepcopy(manifest)
         next(item for item in corrupted["files"] if item["case"] == "fixed_near_left"
@@ -109,7 +112,7 @@ class AppendixBExperimentsTest(unittest.TestCase):
 
     def test_e13_08_evidence_levels_do_not_skip_stages(self):
         result = run_exercises()
-        self.assertEqual(set(result), {f"E13-{number:02d}" for number in range(3, 9)})
+        self.assertEqual(set(result), {f"E13-{number:02d}" for number in range(3, 11)})
         stages = result["E13-08"]
         self.assertTrue(stages["cases_are_hypothetical"])
         self.assertEqual([len(stages[name]) for name in "ABC"], [2, 4, 5])
@@ -121,6 +124,59 @@ class AppendixBExperimentsTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "booleans"):
             evidence_claims(locked=1, license_checked=True, obtained=False,
                             executed=False, scored=False)
+
+    def test_e13_09_published_pcm_window_changes_five_of_six_directions(self):
+        manifest = json.loads((ROOM / "MANIFEST.json").read_text(encoding="utf-8"))
+        result = room_pcm_srp_windows(manifest, _read_results())
+        self.assertEqual(result["first_second_interval_samples"], [0, 16000])
+        self.assertEqual(result["pcm_scale_divisor"], 32768)
+        self.assertTrue(result["stft_center"])
+        self.assertEqual(result["stft_window"], "periodic Hann")
+        self.assertEqual((result["n_fft"], result["hop_length"]), (512, 128))
+        self.assertEqual(result["frequency_band_hz"], [300.0, 2000.0])
+        expected = [
+            ("fixed_near_left", 38497, -29, -35, .8433347987, .4602513920),
+            ("fixed_near_right", 38497, 29, 35, .8406587686, .4611165190),
+            ("fixed_far_left", 38532, -32, -41, .6679868070, .4005346683),
+            ("fixed_far_right", 38532, 32, 39, .6645777262, .3915852496),
+            ("seeded_1", 38507, -40, -47, .8077866676, .4548248342),
+            ("seeded_2", 38478, 3, 3, .7080284069, .3815169288),
+        ]
+        for row, (name, frames, first_angle, all_angle, first_peak, all_peak) in zip(
+                result["cases"], expected, strict=True):
+            self.assertEqual((row["name"], row["source_frames"],
+                              row["direct_frames"], row["full_frames"]),
+                             (name, 16000, frames, frames))
+            short = row["pcm_scores"]["first_second"]
+            full = row["pcm_scores"]["entire_file"]
+            self.assertEqual((short["samples"], full["samples"]), (16000, frames))
+            self.assertEqual((short["estimated_azimuth_deg"],
+                              full["estimated_azimuth_deg"]), (first_angle, all_angle))
+            self.assertAlmostEqual(short["peak_srp_score"], first_peak, delta=1e-7)
+            self.assertAlmostEqual(full["peak_srp_score"], all_peak, delta=1e-7)
+            self.assertEqual(row["unquantized_report_estimate_deg"], first_angle)
+        damaged = copy.deepcopy(manifest)
+        damaged["files"][-1]["sha256"] = "0" * 64
+        with self.assertRaisesRegex(ValueError, "digest differs"):
+            room_pcm_srp_windows(damaged, _read_results())
+
+    def test_e13_10_equal_drr_does_not_fix_dc_or_nyquist_response(self):
+        same, opposite = equal_drr_different_spectra()["cases"]
+        self.assertEqual(same["direct_rir"], [1, 0, 0])
+        self.assertEqual(same["reflected_rir"], [0, .5, .5])
+        self.assertEqual(opposite["reflected_rir"], [0, .5, -.5])
+        for case in (same, opposite):
+            self.assertEqual(case["direct_energy"], 1)
+            self.assertEqual(case["reflected_energy"], .5)
+            self.assertAlmostEqual(case["drr_db"], 10 * math.log10(2))
+        self.assertEqual((same["reflected_dc_response"],
+                          same["reflected_nyquist_response"]), (1, 0))
+        self.assertEqual((opposite["reflected_dc_response"],
+                          opposite["reflected_nyquist_response"]), (0, -1))
+        self.assertEqual((same["full_dc_response"], same["full_nyquist_response"]),
+                         (2, 1))
+        self.assertEqual((opposite["full_dc_response"], opposite["full_nyquist_response"]),
+                         (1, 0))
 
     def test_existing_plot_and_result_paths_are_never_overwritten(self):
         with tempfile.TemporaryDirectory() as temporary:

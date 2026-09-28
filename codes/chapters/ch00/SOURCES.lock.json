@@ -1833,7 +1833,7 @@
       "revision": "e9326bd536bf632e823357438b210102903ba620",
       "release": "v1 branch",
       "license": "Apache-2.0 for repository source; model weights and diarization assets have separate terms",
-      "scope": "Original DiCoW v1 diarization-conditioned Whisper demo and model inference source, not current main branch SE-DiCoW",
+      "scope": "Original DiCoW diarization-conditioned Whisper source: example.py loads v1, while app.py in the same pinned commit is a v2 Web demo; not current main branch SE-DiCoW",
       "fetch_enabled": true,
       "acquisition": "independent_source_checkout",
       "source_paths": [
@@ -1854,12 +1854,13 @@
       "entrypoints": [
         "LICENSE",
         "README.md",
+        "example.py",
         "app.py",
         "modeling_dicow.py",
         "dicow_encoder.py",
         "pipeline.py"
       ],
-      "note": "Author v1 branch inspected 2026-09-28. README delegates training to TS-ASR-Whisper and states Python 3.11, FFmpeg, Pyannote diarization and Hugging Face access are needed for its demo. Source checkout excludes weights and audio; it is not a run or numerical validation. DiCoW weights are separately CC BY 4.0 and optional DiariZen weights CC BY-NC 4.0 according to the author main README, and each exact model card must be checked before use. Original paper DOI 10.1016/j.csl.2025.101841."
+      "note": "Author v1 branch inspected 2026-09-29. example.py loads BUT-FIT/DiCoW_v1, while app.py at the same revision loads BUT-FIT/DiCoW_v2; both load pyannote/speaker-diarization-3.1. requirements.txt pins pyannote.audio==3.3.2. README delegates training to TS-ASR-Whisper; Python 3.11, FFmpeg, Hugging Face access and matching weights are needed for the author examples. The v1 and v2 model cards each label weights CC BY 4.0. The pyannote/speaker-diarization-3.1 and pyannote/segmentation-3.0 model cards each label MIT, but both require acceptance of gated access conditions and an HF token. Later DiariZen weights are CC BY-NC 4.0 and are not required by these pinned example.py/app.py paths. Source checkout excludes weights and audio; it is not a run or numerical validation. Original paper DOI 10.1016/j.csl.2025.101841."
     },
     {
       "id": "ts-asr-whisper-v1",
