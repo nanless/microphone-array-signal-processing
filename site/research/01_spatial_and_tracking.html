@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>空间处理与追踪源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="253d03326f83"><style>
+<meta name="source-digest" content="d78e3fba4a0f"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -870,6 +870,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>对应 §9.3～9.4。OSPA 在同一坐标和截断距离下同时惩罚位置与目标数误差；身份连续性应另外评价。将 DOA 转换为波束控制时还需预测到播放或采集消费时刻，记录 <code>measurement_time</code>、<code>publish_time</code>、<code>track_id</code>、协方差与有效期。</p>
 <p>建议先复算正文 30°/70° 对单真值 32° 的 OSPA，再交换两条轨迹 ID：位置指标可能完全不变，身份连续性已经出错。控制器按最大角速度和时间间隔限速，在过期观测、长静默或身份不确定时降低更新可信度。轨迹 ID 不等于永久说话人身份；单凭声学位置不能维持跨房间身份。</p>
 <p>GOSPA 补充的是 OSPA 按集合基数归一后不便分解的误差解释。Rahmathullah、García-Fernández、Svensson 的<a href="https://arxiv.org/pdf/1601.05585">作者原文</a> Definition 1 要求阶数至少为 1、正截断距离，且参数 α 在 <code>(0,2]</code>；§II.B Proposition 1 在 α=2 时给出定位、漏检与虚警代价的分解。对真值 <code>{32°}</code> 和估计 <code>{30°,70°}</code>，取阶数 1、截断 10°、α=2，定位代价 2°，一个虚警代价 5°，GOSPA 为 7°；同条件 OSPA 为 6°。这是本书小例，两种指标的量值不可直接互判优劣。</p>
+<p>原论文的 arXiv 页面还指向<a href="https://github.com/abusajana/GOSPA">作者维护的 MATLAB 实现</a>。截至 2026-09-29，该仓库根目录未见 <code>LICENSE</code>，其 README 说明 <code>assign2D.m</code> 取自另一项目；这两部分的再分发授权均未在本书核实。因此它仅作原理与实现对照的来源索引，本书没有自动下载、复制、再分发或运行这份作者代码。下段固定 MIT 许可的 Stone Soup 接口和本书上面的手算小例是另外两条实现与核对路径，不能把它们的许可或运行状态移给作者仓库。</p>
 <p>固定 <code>metricgenerator/ospametric.py::GOSPAMetric</code> 把 α 固定为 2，默认距离为普通 Euclidean；方位角必须提供适合环绕的距离，不能在 ±180° 附近机械相减。输出 <code>distance</code> 取阶数根，而 <code>localisation</code>、<code>missed</code>、<code>false</code> 保留取根前的代价，因此阶数 2 时后三者是平方单位。该版本还有 <code>_SwitchingLoss</code>，但 <code>switching_penalty</code> 默认为 0；不能沿用旧版本“没有切换项”的说法，也不能把默认单帧分数称为身份连续性验收。本轮未运行该完整指标对象。</p>
 <span id="sec-47" class="anchor-alias" aria-hidden="true"></span><span id="37-tdoa-非线性最小二乘与可观测性" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-6cecb2857f">37. TDOA 非线性最小二乘与可观测性</h3>
 <p>对应 §4.4、§4.7 的“近场模型失配”。TDOA 几何定位将每条观测与候选位置产生的距离差比较，按观测协方差加权，使用雅可比求局部位置更新。输入除了 TDOA，还需要明确参考麦和共享参考引入的误差相关性；输出应包含残差、局部条件性和解是否位于搜索域。</p>

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>导读与导航 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="253d03326f83"><style>
+<meta name="source-digest" content="d78e3fba4a0f"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -309,7 +309,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>三条路线包括经典盲源分离（AuxIVA、ILRMA、MNMF、TRINICON）、GSS（导引源分离，用说话人活动标注处理输出排列）和深度分离（掩码估计、深度聚类、PIT、Conv-TasNet、状态空间模型及查询型分离）。§8.2 与图 23 说明处理顺序；§8.3、§8.4 和 §8.6 分别展开三条路线。实际模块启用条件见 §10.1。</p>
 <p>读者应能按源数、秩和统计假设区分各模型，复算 AuxIVA 的逐行投影、ILRMA 的谱更新和 MNMF 的源图像重构，解释活动信息如何影响 GSS。23道代码题进一步区分分离、尺度恢复和跨块身份；图43及四个合成音频演示仅用重叠信号作排列关联，静音时明确保留不确定性。</p>
 <span id="sec-13" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-b086da143c"><a href="09_source-tracking.html">09 · 声源追踪 Source Tracking</a></h3>
-<p>2 张图，进阶。讨论方向观测随目标运动、漏检和野点变化时，怎样估计连续轨迹。状态可以包括角度、角速度和角加速度。</p>
+<p>2 张本章新图（图 22、图 44），另引用图 23；进阶。讨论方向观测随目标运动、漏检和野点变化时，怎样估计连续轨迹。状态可以包括角度、角速度和角加速度。</p>
 <p>声音观测有四类困难：</p>
 <ul>
 <li>语音时断时续；</li>

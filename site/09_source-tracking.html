@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 9 章 · 声源追踪 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="253d03326f83"><style>
+<meta name="source-digest" content="d78e3fba4a0f"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -234,7 +234,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </table></div>
 <h3 id="sec-u-2a44ea1598">方向状态、位置状态与可观测性</h3>
 <p>声源追踪把含噪且可能间断的逐帧定位结果融合成连续轨迹，再为波束形成提供抖动较小的因果方向估计。状态要随观测和任务选择：只跟踪方位时可用 $[\theta_t,\dot\theta_t]^\top$；需要描述加速可加入 $\ddot\theta_t$；要跟踪平面位置则可用 $[x_t,y_t,\dot x_t,\dot y_t]^\top$。角度状态的分量分别以角度、角速度和角加速度为单位，位置状态则要另定坐标系和速度单位。</p>
-<p><a href="https://www.locata.lms.tf.fau.de/" title="citation">LOCATA 声源定位与追踪挑战</a>包含静止或运动的声源与阵列录音，并提供光学动捕真值；使用时要按任务编号区分单源/多源、静止/运动和阵列配置，数据选择的一般原则见 §10.6。</p>
+<p><a href="https://www.locata.lms.tf.fau.de/tasks/" title="citation">LOCATA 官方任务页</a>列出静止或运动声源与阵列的六类任务。其开发集公开多通道录音以及麦克风和声源位置真值；任务页对评测集只列出录音和麦克风位置真值，不能据此假定评测声源真值也公开。自行计算逐帧声源定位或追踪误差须选择实际带声源真值的数据，并按任务编号区分单源/多源、静止/运动和阵列配置；数据选择的一般原则见 §10.6。</p>
 <p>声学追踪有四个特点：</p>
 <ul>
 <li>说话人停顿会造成间歇观测，可用语音活动检测辅助观测门控，并需要轨迹维持；</li>
@@ -1051,7 +1051,7 @@ D_{\rm G}^p&=\min_\gamma J.
 <h3 id="sec-u-76dfa623a9">发射时刻与接收时刻</h3>
 <p>先调低播放音量。前文的声像移动样本只改变左右声道增益，不包含阵列传播时差：</p>
 <p><a href="audio/tracking_pan.wav">声像移动试听</a><audio class="audio-sample" controls preload="none" aria-label="声像移动试听" src="audio/tracking_pan.wav">请使用上方 WAV 链接下载。</audio></p>
-<p>为复算包含迟滞传播时间的教学模型下的两麦差异，另有一组<a href="moving_audio/MANIFEST.json">独立自由场样本清单</a>。以下三份都是数学合成信号，不是真实语音、房间录音或LOCATA数据，不计入主清单的98个WAV。</p>
+<p>为复算包含迟滞传播时间的教学模型下的两麦差异，另有一组<a href="moving_audio/MANIFEST.json">独立自由场样本清单</a>。以下三份都是数学合成信号，不是真实语音、房间录音或 LOCATA 数据，不计入主清单的 109 个 WAV。</p>
 <p><a href="moving_audio/source.wav">原始两音调源</a><audio class="audio-sample" controls preload="none" aria-label="原始两音调源" src="moving_audio/source.wav">请使用上方 WAV 链接下载。</audio></p>
 <p><a href="moving_audio/static_array.wav">固定在起点的双麦输出</a><audio class="audio-sample" controls preload="none" aria-label="固定在起点的双麦输出" src="moving_audio/static_array.wav">请使用上方 WAV 链接下载。</audio></p>
 <p><a href="moving_audio/moving_array.wav">沿直线运动的双麦输出</a><audio class="audio-sample" controls preload="none" aria-label="沿直线运动的双麦输出" src="moving_audio/moving_array.wav">请使用上方 WAV 链接下载。</audio></p>
@@ -1076,18 +1076,18 @@ r'_m(u)&=\vec n_m(u)^\top\vec v,\\
 <p>在 $u=0.99$ s，横坐标 $-0.8+0.8\times0.99=-0.008$ m，方位角约 $-0.31^\circ$；末段 $u=1.99$ s 的横坐标是 $0.792$ m，方位角约 $+27.83^\circ$。这些时刻属于保存的轨迹格点；声音到达麦克风的接收时刻还要加传播时延。</p>
 <p>把同一发射时刻到麦 1、麦 0 的传播时间之差定义为有符号 TDOA：$\tau_{1-0}(u)=[r_1(u)-r_0(u)]/343$，其中 $r_m$ 是声源到麦 $m$ 的距离。起点声源在左侧，更靠近麦 0，所以 $r_1-r_0>0$，麦 1 的到达更晚。按上述坐标代入距离公式，起点约为 $+0.0001372$ s，乘以 16000 后是 $+2.19$ 采样；末段声源已在右侧，约为 $-0.0001361$ s，即 $-2.18$ 采样。两侧符号相反，不能只报 TDOA 的绝对值。</p>
 <p>清单中的时间格点按声源轨迹的全局时钟取样；同一行 TDOA 比较的是该时刻发出的波到两麦的传播时间，并非两麦在同一采样索引处的波形峰差。逐帧值、坐标、统一增益及各文件摘要保存在清单中。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_moving_source.py">静止解析极限和符号测试</a>独立核对<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/examples/moving_source_audio.py">生成器</a>。</p>
-<p>这里没有墙面反射、空气吸收、声源和麦克风指向性，也没有多人交叉或活动缺测。听到的音高、声像和电平变化不能直接当作某个 DOA 追踪器的准确率；若要评价追踪，还需对输出运行固定定位器，按相同时间戳比较逐帧误差和漏检，并另报波束控制滞后。真实移动录音可另按 <a href="https://www.locata.lms.tf.fau.de/tasks/" title="citation">LOCATA 官方任务说明</a>选择任务 3（静止阵列、单移动说话人），明确使用的录音和真值版本。</p>
+<p>这里没有墙面反射、空气吸收、声源和麦克风指向性，也没有多人交叉或活动缺测。听到的音高、声像和电平变化不能直接当作某个 DOA 追踪器的准确率；若要评价追踪，还需对输出运行固定定位器，按相同时间戳比较逐帧误差和漏检，并另报波束控制滞后。真实移动录音可另按 <a href="https://www.locata.lms.tf.fau.de/tasks/" title="citation">LOCATA 官方任务说明</a>选择任务 3（静止阵列、单移动说话人）；自行逐帧评分应选择带声源位置真值的开发集，并明确录音和真值版本。</p>
 <h3 id="sec-u-666f355e22">从带噪双麦波形到定位与追踪</h3>
 <p>前一组两音调样本用于核对传播模型；下面新增的独立实验真正对波形运行定位器，再把有效观测交给 KF。两组样本不能混用评分。先调低播放音量：</p>
 <p><a href="tracking_audio/source.wav">源参考：32音调与一次静默</a><audio class="audio-sample" controls preload="none" aria-label="源参考：32音调与一次静默" src="tracking_audio/source.wav">请使用上方 WAV 链接下载。</audio></p>
 <p><a href="tracking_audio/array_noisy.wav">运动传播后的带噪双麦信号</a><audio class="audio-sample" controls preload="none" aria-label="运动传播后的带噪双麦信号" src="tracking_audio/array_noisy.wav">请使用上方 WAV 链接下载。</audio></p>
-<p>这两份都是本书数学合成 WAV，独立保存在 <code>codes/chapters/ch09/tracking_audio/</code>，不计入主98个样本或旧移动源3个文件。生成、量化、参数及逐帧结果见<a href="tracking_audio/MANIFEST.json">独立清单</a>；实现见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/core/tracking_audio.py"><code>tracking_audio.py</code></a>。</p>
+<p>这两份都是本书数学合成 WAV，独立保存在 <code>codes/chapters/ch09/tracking_audio/</code>，不计入主清单的 109 个样本或前述移动源 3 个文件。生成、量化、参数及逐帧结果见<a href="tracking_audio/MANIFEST.json">独立清单</a>；实现见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/core/tracking_audio.py"><code>tracking_audio.py</code></a>。</p>
 <p>几何、速度、声速与本节旧模型相同。采样率16 kHz、时长2 s；源由300～3400 Hz、间隔100 Hz的32条正弦等幅相加，每条幅度为 $1/\sqrt{32}$。随机生成器为PCG64、种子9001，先生成32个独立均匀相位，再按通道次序生成两路独立高斯传感器噪声，导出前标准差.01。源首尾采用20 ms线性淡入淡出；在发射时轴.8～.82 s淡出、.82～1.08 s为零、1.08～1.10 s淡入。它是带包络的多音调，不是真实语音或白噪声。</p>
 <p>两文件使用同一导出增益约0.4023136344，把共同最大峰值缩至.7，再量化为16位PCM。分析从实际PCM解码，已知共同增益只用于恢复固定RMS门限的尺度；不逐帧归一化，也不借干净参考判断活动。</p>
 <p><strong>定位与门控。</strong> 每帧512点、帧移160点，完整帧数为 $\lfloor(32000-512)/160\rfloor+1=197$。先用未加窗双通道块的所有样本计算均方根（Root Mean Square，RMS）；恢复导出前尺度后，仅RMS严格大于.04才定位。对称 Hann 窗使用 <code>numpy.hanning(512)</code>；调用 <code>gcc_phat(ch1,ch0)</code>，搜索时差限制为 $.1/343$ s，采用抛物线峰值插值。GCC-PHAT沿用第4章广义互相关相位变换的定义。</p>
 <p>按 $\tau_{1-0}=t_1-t_0$，当前几何的远场转换为 $\theta=\arcsin(-343\tau_{1-0}/.1)$。反正弦自变量超出 $[-1,1]$ 时记缺测，不强制裁成±90°。定位和RMS门控都不读取真值；有限距离与窗内运动意味着单一时差、远场角转换存在近似误差。</p>
 <p><strong>滤波取点。</strong> 首个有效方向初始化状态 $[z,0]^\top$，$P=\operatorname{diag}(4,400)$；之后每10 ms先预测，有观测才更新。角度测量方差为4度²，连续白角加速度强度为100度²/秒³，按实际.01 s重新构造 $Q$。这组 $R,Q$ 是教学指定值；重叠帧观测相关，不能把输出协方差直接解释为实测置信区间覆盖率。</p>
-<p><strong>两个时间戳。</strong> 帧起点为零起始样本 $n_0$ 时，状态对应接收窗中心；最早可用时刻采用半开区间块已采齐的边界：</p>
+<p><strong>状态与可用时刻。</strong> 帧起点为零起始样本 $n_0$ 时，状态对应接收窗中心；最早可用时刻采用半开区间块已采齐的边界：</p>
 <p>$$\begin{aligned}
 t_{\rm state}&=\frac{n_0+255.5}{16000},\\
 t_{\rm available}&=\frac{n_0+512}{16000},\\
@@ -1095,6 +1095,7 @@ t_{\rm available}&=\frac{n_0+512}{16000},\\
 &=16.03125\ \mathrm{ms}.
 \end{aligned}\tag{9-29}$$</p>
 <p>这里尚未加入定位运算、调度和播放缓冲延迟。输出是窗中心状态，不能称为采样完成时刻的零延迟方向。真值也按接收窗中心解到阵列中心的迟滞发射时刻，再计算该发射位置的方位；不能拿同数值发射时间的位置直接评分。</p>
+<p>逐帧清单另以 <code>measurement_time_s</code> 记录<strong>本帧有效观测</strong>所属的接收窗中心；有效时它等于 <code>state_time_s</code>，缺测时为 <code>null</code>。<code>last_valid_measurement_time_s</code> 保存最近一次有效观测的中心时刻，尚无有效观测时为 <code>null</code>。<code>state_time_s</code> 始终是本帧滤波或预测状态所属时刻，<code>available_time_s</code> 是整窗采齐的最早时刻；缺测后若需计算观测龄期，应从当前 <code>state_time_s</code> 减去最近有效观测时刻，不能把状态已预测到当前时刻误当作刚收到新观测。图 44 的横轴仍采用 <code>state_time_s</code>；新增字段用于核对观测龄期，不参与图中的原有评分。</p>
 <p><img alt="图44 带噪移动源的波形定位与追踪" src="../figures/fig44_tracking_audio.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图44使用上述同一组实际PCM波形处理结果：（a）比较传播真值、有效GCC方向和滤波输出；（b）显示状态时刻的角方差，缺测时只传播预测；（c）比较同一发射事件的真值时差与GCC亚采样峰，单位为采样点，左侧声源的通道1−通道0时差为正。三图横轴都是接收窗中心 <code>state_time</code>，灰区标记本次RMS门产生的缺测。</p>
 <p>图中的真值用于评分与显示，不参与定位、RMS门或KF更新。“滤波输出”含初始化帧、有效观测更新后的状态，以及缺测时的预测状态，清单逐帧保存取点类型。图中方差没有进行覆盖率校准，不能直接当作实测置信带。</p>
@@ -1153,7 +1154,7 @@ t_{\rm available}&=\frac{n_0+512}{16000},\\
 </li>
 <li>
 <p>VAD 门控＋波束限速：说话人突然静默 5 帧（无观测），追踪只做预测；第 1 问：WPE、噪声协方差和降噪器的噪声功率各应怎样更新？第 2 问：已知目标最大角速度 $\omega_{\max}$ 和帧间隔 $\Delta t$，5 帧内转角限值如何设定，之后如何处理？</p>
-<p><strong>答案要点</strong>：静音且参考能量不足时冻结 WPE 系数，避免病态统计；确认无目标语音时，可以更新噪声协方差和降噪器的噪声功率。目标语音活动时则避免把目标泄漏写入噪声统计，WPE 是否更新要按具体预测能量、统计秩、功率保护与更新策略决定，不能把目标 VAD 当成所有 WPE 的必要开关。目标刚停声时，历史缓冲仍可能含有能量。</p>
+<p><strong>答案要点</strong>：静音时若历史麦克风预测向量能量不足或统计矩阵病态，可暂停 WPE 系数更新，避免不稳定求解；确认无目标语音时，可以更新噪声协方差和降噪器的噪声功率。目标语音活动时则避免把目标泄漏写入噪声统计，WPE 是否更新要按具体预测能量、统计秩、功率保护与更新策略决定，不能把目标 VAD 当成所有 WPE 的必要开关。目标刚停声时，历史缓冲仍可能含有能量。</p>
 <p>单帧转角限值可以 $\omega_{\max}\Delta t$ 为物理起点，5 帧累计上限为 $5\omega_{\max}\Delta t$；超过保持时间或不确定度阈值后，应降低波束更新置信度或回到搜索模式。</p>
 </li>
 </ol>
@@ -1251,7 +1252,8 @@ Q_c&=q\int_0^{\Delta t}\begin{bmatrix}u^2&u\\u&1\end{bmatrix}du\\
 <p>新模式 1 的分歧项可以直接算为 $(27/29)(0-20/29)^2+(2/29)(10-20/29)^2$。另一种独立核算是“二阶矩减均值平方”：新模式 1 的 $P_1^0=(27/29)(1+0^2)+(2/29)(4+10^2)-(20/29)^2$。两个算法都给 $6415/841$。只保留 $35/29$ 会丢掉模型间的不确定性；混合方差比两项原方差都大，并不矛盾。</p>
 <p><strong>第 3 步：把交互与观测更新分开。</strong> 完整 IMM 接下来从各自的 $(x_j^0,P_j^0)$ 出发，使用对应运动模型预测并作观测更新。假设这两套更新额外给出的观测似然为 $L_1=0.2,L_2=0.8$，则未归一新权重为 $[29/200,44/200]$，归一后 $\mu^+=[29/73,44/73]\approx[0.397260,0.602740]$。这些似然是题设，用来复算贝叶斯权重；本题没有指定状态转移、过程噪声或观测值，不能冒称已经运行了两套 KF。最终状态融合也要保留更新后均值之间的外积项。</p>
 <p><strong>边界与实现检查。</strong> 若 $T=I$，每个模型只接收自己的旧状态，交互退化为不混合；若某个 $c_j=0$，这个目的模式不可达，条件概率无定义，需禁用或按另行声明的初始化策略处理。不同状态维度的静止、匀速和加速模型不能直接平均，须先定义状态映射与被补维度的不确定度。接近 $-180^\circ/180^\circ$ 时，也不能把两个原始角度直接算术平均；需在一致局部角度图中展开，或采用适当的圆统计混合。</p>
-<p>固定 <a href="https://github.com/rlabbe/filterpy/blob/3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33/filterpy/kalman/IMM.py">FilterPy <code>IMM.py</code></a> 的 <code>predict()</code> 在传播前计算混合初值，<code>_compute_mixing_probabilities()</code> 实际执行 <code>mu @ M</code>；其类参数说明中的转移方向文字与这条赋值不一致，接入时应以明确约定和非对称矩阵小例核验，不能照抄文字后再转置一次。本书例题采用上述行转移约定。固定版本的实际调用还存在无观测 <code>predict()</code> 总体混合权重与新模式先验不一致的边界；研究记录将上游原行为与独立目标计算分开，不修改上游源码，见<a href="research/01_spatial_and_tracking.html#tracking-upstream-audit">追踪实现核查</a>。</p>
+<p>固定 <a href="https://github.com/rlabbe/filterpy/blob/3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33/filterpy/kalman/IMM.py">FilterPy <code>IMM.py</code></a> 的 <code>predict()</code> 在传播前计算混合初值，<code>_compute_mixing_probabilities()</code> 实际执行 <code>mu @ M</code>；其类参数说明中的转移方向文字与这条赋值不一致。接入时应以明确约定和非对称矩阵小例核验，不可仅依据参数说明再转置矩阵。本书例题采用上述行转移约定。</p>
+<p>固定版本的实际调用还存在无观测 <code>predict()</code> 总体混合权重与新模式先验不一致的边界；研究记录将上游原行为与独立目标计算分开，不修改上游源码，见<a href="research/01_spatial_and_tracking.html#tracking-upstream-audit">追踪实现核查</a>。</p>
 <p>本题运行入口为 <code>.venv/bin/python -m codes.chapters.ch00.cross_chapter.enhancement_structure_exercises</code>，见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/enhancement_structure_exercises.py">原创复算代码</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_enhancement_structure.py">独立测试</a>。测试用有理数二阶矩核对方差，另检查全概率下的总体均值/协方差不变、恒等转移和不可达模式。它验证交互算术，不验证真实 DOA 精度或机动识别率。</p>
 <p><a id="e09-10"></a></p>
 <h3 id="sec-u-d81726d5ac">E09-10：方位观测的 EKF 一步更新</h3>

@@ -25,7 +25,7 @@
 
 声源追踪把含噪且可能间断的逐帧定位结果融合成连续轨迹，再为波束形成提供抖动较小的因果方向估计。状态要随观测和任务选择：只跟踪方位时可用 $[\theta_t,\dot\theta_t]^\top$；需要描述加速可加入 $\ddot\theta_t$；要跟踪平面位置则可用 $[x_t,y_t,\dot x_t,\dot y_t]^\top$。角度状态的分量分别以角度、角速度和角加速度为单位，位置状态则要另定坐标系和速度单位。
 
-[LOCATA 声源定位与追踪挑战](https://www.locata.lms.tf.fau.de/ "citation")包含静止或运动的声源与阵列录音，并提供光学动捕真值；使用时要按任务编号区分单源/多源、静止/运动和阵列配置，数据选择的一般原则见 §10.6。
+[LOCATA 官方任务页](https://www.locata.lms.tf.fau.de/tasks/ "citation")列出静止或运动声源与阵列的六类任务。其开发集公开多通道录音以及麦克风和声源位置真值；任务页对评测集只列出录音和麦克风位置真值，不能据此假定评测声源真值也公开。自行计算逐帧声源定位或追踪误差须选择实际带声源真值的数据，并按任务编号区分单源/多源、静止/运动和阵列配置；数据选择的一般原则见 §10.6。
 
 声学追踪有四个特点：
 
@@ -778,7 +778,7 @@ OSPA 与 GOSPA 都在同一帧无标签集合上计算，都不能证明轨迹�
 
 [声像移动试听](../codes/chapters/ch09/audio/tracking_pan.wav)
 
-为复算包含迟滞传播时间的教学模型下的两麦差异，另有一组[独立自由场样本清单](../codes/chapters/ch09/moving_audio/MANIFEST.json)。以下三份都是数学合成信号，不是真实语音、房间录音或LOCATA数据，不计入主清单的98个WAV。
+为复算包含迟滞传播时间的教学模型下的两麦差异，另有一组[独立自由场样本清单](../codes/chapters/ch09/moving_audio/MANIFEST.json)。以下三份都是数学合成信号，不是真实语音、房间录音或 LOCATA 数据，不计入主清单的 109 个 WAV。
 
 [原始两音调源](../codes/chapters/ch09/moving_audio/source.wav)
 
@@ -819,7 +819,7 @@ r'_m(u)&=\vec n_m(u)^\top\vec v,\\
 
 清单中的时间格点按声源轨迹的全局时钟取样；同一行 TDOA 比较的是该时刻发出的波到两麦的传播时间，并非两麦在同一采样索引处的波形峰差。逐帧值、坐标、统一增益及各文件摘要保存在清单中。[静止解析极限和符号测试](../tests/test_codes_moving_source.py)独立核对[生成器](../codes/chapters/ch09/examples/moving_source_audio.py)。
 
-这里没有墙面反射、空气吸收、声源和麦克风指向性，也没有多人交叉或活动缺测。听到的音高、声像和电平变化不能直接当作某个 DOA 追踪器的准确率；若要评价追踪，还需对输出运行固定定位器，按相同时间戳比较逐帧误差和漏检，并另报波束控制滞后。真实移动录音可另按 [LOCATA 官方任务说明](https://www.locata.lms.tf.fau.de/tasks/ "citation")选择任务 3（静止阵列、单移动说话人），明确使用的录音和真值版本。
+这里没有墙面反射、空气吸收、声源和麦克风指向性，也没有多人交叉或活动缺测。听到的音高、声像和电平变化不能直接当作某个 DOA 追踪器的准确率；若要评价追踪，还需对输出运行固定定位器，按相同时间戳比较逐帧误差和漏检，并另报波束控制滞后。真实移动录音可另按 [LOCATA 官方任务说明](https://www.locata.lms.tf.fau.de/tasks/ "citation")选择任务 3（静止阵列、单移动说话人）；自行逐帧评分应选择带声源位置真值的开发集，并明确录音和真值版本。
 
 
 #### 从带噪双麦波形到定位与追踪
@@ -830,7 +830,7 @@ r'_m(u)&=\vec n_m(u)^\top\vec v,\\
 
 [运动传播后的带噪双麦信号](../codes/chapters/ch09/tracking_audio/array_noisy.wav)
 
-这两份都是本书数学合成 WAV，独立保存在 `codes/chapters/ch09/tracking_audio/`，不计入主98个样本或旧移动源3个文件。生成、量化、参数及逐帧结果见[独立清单](../codes/chapters/ch09/tracking_audio/MANIFEST.json)；实现见 [`tracking_audio.py`](../codes/chapters/ch09/core/tracking_audio.py)。
+这两份都是本书数学合成 WAV，独立保存在 `codes/chapters/ch09/tracking_audio/`，不计入主清单的 109 个样本或前述移动源 3 个文件。生成、量化、参数及逐帧结果见[独立清单](../codes/chapters/ch09/tracking_audio/MANIFEST.json)；实现见 [`tracking_audio.py`](../codes/chapters/ch09/core/tracking_audio.py)。
 
 几何、速度、声速与本节旧模型相同。采样率16 kHz、时长2 s；源由300～3400 Hz、间隔100 Hz的32条正弦等幅相加，每条幅度为 $1/\sqrt{32}$。随机生成器为PCG64、种子9001，先生成32个独立均匀相位，再按通道次序生成两路独立高斯传感器噪声，导出前标准差.01。源首尾采用20 ms线性淡入淡出；在发射时轴.8～.82 s淡出、.82～1.08 s为零、1.08～1.10 s淡入。它是带包络的多音调，不是真实语音或白噪声。
 
@@ -842,7 +842,7 @@ r'_m(u)&=\vec n_m(u)^\top\vec v,\\
 
 **滤波取点。** 首个有效方向初始化状态 $[z,0]^\top$，$P=\operatorname{diag}(4,400)$；之后每10 ms先预测，有观测才更新。角度测量方差为4度²，连续白角加速度强度为100度²/秒³，按实际.01 s重新构造 $Q$。这组 $R,Q$ 是教学指定值；重叠帧观测相关，不能把输出协方差直接解释为实测置信区间覆盖率。
 
-**两个时间戳。** 帧起点为零起始样本 $n_0$ 时，状态对应接收窗中心；最早可用时刻采用半开区间块已采齐的边界：
+**状态与可用时刻。** 帧起点为零起始样本 $n_0$ 时，状态对应接收窗中心；最早可用时刻采用半开区间块已采齐的边界：
 
 $$\begin{aligned}
 t_{\rm state}&=\frac{n_0+255.5}{16000},\\
@@ -852,6 +852,8 @@ t_{\rm available}&=\frac{n_0+512}{16000},\\
 \end{aligned}\tag{9-29}$$
 
 这里尚未加入定位运算、调度和播放缓冲延迟。输出是窗中心状态，不能称为采样完成时刻的零延迟方向。真值也按接收窗中心解到阵列中心的迟滞发射时刻，再计算该发射位置的方位；不能拿同数值发射时间的位置直接评分。
+
+逐帧清单另以 `measurement_time_s` 记录**本帧有效观测**所属的接收窗中心；有效时它等于 `state_time_s`，缺测时为 `null`。`last_valid_measurement_time_s` 保存最近一次有效观测的中心时刻，尚无有效观测时为 `null`。`state_time_s` 始终是本帧滤波或预测状态所属时刻，`available_time_s` 是整窗采齐的最早时刻；缺测后若需计算观测龄期，应从当前 `state_time_s` 减去最近有效观测时刻，不能把状态已预测到当前时刻误当作刚收到新观测。图 44 的横轴仍采用 `state_time_s`；新增字段用于核对观测龄期，不参与图中的原有评分。
 
 ![图44 带噪移动源的波形定位与追踪](../figures/fig44_tracking_audio.png)
 
@@ -904,7 +906,7 @@ $$\mathrm{RMSE}_{\mathcal I}=\sqrt{\frac{1}{|\mathcal I|}\sum_{k\in\mathcal I}e_
 
 4. VAD 门控＋波束限速：说话人突然静默 5 帧（无观测），追踪只做预测；第 1 问：WPE、噪声协方差和降噪器的噪声功率各应怎样更新？第 2 问：已知目标最大角速度 $\omega_{\max}$ 和帧间隔 $\Delta t$，5 帧内转角限值如何设定，之后如何处理？
 
-    **答案要点**：静音且参考能量不足时冻结 WPE 系数，避免病态统计；确认无目标语音时，可以更新噪声协方差和降噪器的噪声功率。目标语音活动时则避免把目标泄漏写入噪声统计，WPE 是否更新要按具体预测能量、统计秩、功率保护与更新策略决定，不能把目标 VAD 当成所有 WPE 的必要开关。目标刚停声时，历史缓冲仍可能含有能量。
+    **答案要点**：静音时若历史麦克风预测向量能量不足或统计矩阵病态，可暂停 WPE 系数更新，避免不稳定求解；确认无目标语音时，可以更新噪声协方差和降噪器的噪声功率。目标语音活动时则避免把目标泄漏写入噪声统计，WPE 是否更新要按具体预测能量、统计秩、功率保护与更新策略决定，不能把目标 VAD 当成所有 WPE 的必要开关。目标刚停声时，历史缓冲仍可能含有能量。
 
     单帧转角限值可以 $\omega_{\max}\Delta t$ 为物理起点，5 帧累计上限为 $5\omega_{\max}\Delta t$；超过保持时间或不确定度阈值后，应降低波束更新置信度或回到搜索模式。
 
@@ -1026,7 +1028,9 @@ E09-07、E09-08 的复算入口为 `.venv/bin/python -m codes.chapters.ch00.cros
 
 **边界与实现检查。** 若 $T=I$，每个模型只接收自己的旧状态，交互退化为不混合；若某个 $c_j=0$，这个目的模式不可达，条件概率无定义，需禁用或按另行声明的初始化策略处理。不同状态维度的静止、匀速和加速模型不能直接平均，须先定义状态映射与被补维度的不确定度。接近 $-180^\circ/180^\circ$ 时，也不能把两个原始角度直接算术平均；需在一致局部角度图中展开，或采用适当的圆统计混合。
 
-固定 [FilterPy `IMM.py`](https://github.com/rlabbe/filterpy/blob/3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33/filterpy/kalman/IMM.py) 的 `predict()` 在传播前计算混合初值，`_compute_mixing_probabilities()` 实际执行 `mu @ M`；其类参数说明中的转移方向文字与这条赋值不一致，接入时应以明确约定和非对称矩阵小例核验，不能照抄文字后再转置一次。本书例题采用上述行转移约定。固定版本的实际调用还存在无观测 `predict()` 总体混合权重与新模式先验不一致的边界；研究记录将上游原行为与独立目标计算分开，不修改上游源码，见[追踪实现核查](../codes/chapters/ch00/research/01_spatial_and_tracking.md#tracking-upstream-audit)。
+固定 [FilterPy `IMM.py`](https://github.com/rlabbe/filterpy/blob/3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33/filterpy/kalman/IMM.py) 的 `predict()` 在传播前计算混合初值，`_compute_mixing_probabilities()` 实际执行 `mu @ M`；其类参数说明中的转移方向文字与这条赋值不一致。接入时应以明确约定和非对称矩阵小例核验，不可仅依据参数说明再转置矩阵。本书例题采用上述行转移约定。
+
+固定版本的实际调用还存在无观测 `predict()` 总体混合权重与新模式先验不一致的边界；研究记录将上游原行为与独立目标计算分开，不修改上游源码，见[追踪实现核查](../codes/chapters/ch00/research/01_spatial_and_tracking.md#tracking-upstream-audit)。
 
 本题运行入口为 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.enhancement_structure_exercises`，见[原创复算代码](../codes/chapters/ch00/cross_chapter/enhancement_structure_exercises.py)和[独立测试](../tests/test_codes_enhancement_structure.py)。测试用有理数二阶矩核对方差，另检查全概率下的总体均值/协方差不变、恒等转移和不可达模式。它验证交互算术，不验证真实 DOA 精度或机动识别率。
 

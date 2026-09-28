@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 B · 路径地图与练习 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="253d03326f83"><style>
+<meta name="source-digest" content="d78e3fba4a0f"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -506,7 +506,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>KF 五步</td>
-<td>预测-更新-增益循环；圆周角新息先做 wrap，浮点实现可用 Joseph 协方差更新</td>
+<td>状态与协方差预测→计算增益→状态与协方差更新；圆周角新息先做 wrap，浮点实现可用 Joseph 协方差更新</td>
 <td>§9.2</td>
 </tr>
 </tbody>
@@ -534,13 +534,13 @@ D_{t\vert t-1}(\vec x)&=\gamma_t(\vec x)\\
 \end{aligned}$$</p>
 <p><strong>PHD 更新，见式(9-23)</strong>：漏检项加每条观测的“目标/杂波”归一化贡献。</p>
 <p>$$\begin{aligned}
-D_t&=(1-p_D)D^-\\
-&\quad+\sum_{z\in Z_t}\dfrac{p_Dg(z\mid x)D^-}{\kappa(z)+\int p_Dg(z\mid\xi)D^-(\xi)d\xi}.
+D_t(x)&=[1-p_D(x)]D^-(x)\\
+&\quad+\sum_{z\in Z_t}\dfrac{p_D(x)g(z\mid x)D^-(x)}{\kappa(z)+\int p_D(\xi)g(z\mid\xi)D^-(\xi)d\xi}.
 \end{aligned}$$</p>
 <p>预测式中，$D_{t-1}(\vec\xi)$ 是上一时刻在状态 $\vec\xi$ 处的目标强度，$p_S$ 是存活概率，$f_{t\vert t-1}$ 是状态转移密度，$\gamma_t$ 是新生目标强度。预测把“存活并移动的旧目标”和“新生目标”相加。</p>
-<p>更新式中，$D^-=D_{t\vert t-1}$ 是更新前强度，$Z_t$ 是本帧观测集合，$p_D$ 是检测概率，$g(z\mid x)$ 是目标在状态 $x$ 时产生观测 $z$ 的似然，$\kappa(z)$ 是该观测处的杂波强度。分母把杂波与所有可能目标来源放在同一观测口径下比较；这些量的连续状态积分及多观测含义见 §9.3。</p>
+<p>更新式中，$D^-=D_{t\vert t-1}$ 是更新前强度，$Z_t$ 是本帧观测集合，$p_D(x)$ 是状态 $x$ 处的检测概率，$g(z\mid x)$ 是目标在该状态产生观测 $z$ 的似然，$\kappa(z)$ 是该观测处的杂波强度。分母中的 $p_D(\xi)$ 必须随积分状态变化；仅在检测概率与状态无关时才能将其视为常数。分母把杂波与所有可能目标来源放在同一观测口径下比较；这些量的连续状态积分及多观测含义见 §9.3。</p>
 <p><strong>单状态格演示。</strong> 假设上一时刻此格的强度为 $0.6$，存活概率 $0.9$，转移仍留在本格，新生强度 $0.26$。预测强度为 $D^-=0.26+0.9\times0.6=0.8$。</p>
-<p>若本帧只有一个观测，令 $p_D=0.75$、该格观测似然 $g=0.5$、同单位杂波强度 $\kappa=0.1$。漏检项为 $(1-0.75)\times0.8=0.2$；观测项为 $(0.75\times0.5\times0.8)/(0.1+0.75\times0.5\times0.8)=0.75$；更新强度为 $0.95$。</p>
+<p>若本帧只有一个观测，并在这一个状态格上取常数 $p_D=0.75$、该格观测似然 $g=0.5$、同单位杂波强度 $\kappa=0.1$。漏检项为 $(1-0.75)\times0.8=0.2$；观测项为 $(0.75\times0.5\times0.8)/(0.1+0.75\times0.5\times0.8)=0.75$；更新强度为 $0.95$。</p>
 <p>这是把积分退化为单格求和的本书手算，不是“该观测有 95% 概率属于目标”，也不能替代多目标、多观测的关联计算。</p>
 <span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-13-6">13.6 思考与练习</h2>
 <p>练习按学习主题排列，题 9 先用去混响图作对照，题 10～11 再回到回声消除；原有 1～17 的编号保持不变。修改脚本参数时，应同时记录随机种子、实验条件和输出指标。数值题附参考答案，综合题附思路提示。</p>

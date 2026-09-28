@@ -90,11 +90,52 @@ class TrackingAudioTests(unittest.TestCase):
         self.assertGreater(float(error.max()), 0)
         self.assertLess(float(error.max()), .03)
 
+    def test_measurement_time_tracks_only_observations_and_last_valid_is_held(self):
+        for analysis_name in ('float_analysis', 'pcm_analysis'):
+            frames = self.report[analysis_name]['frames']
+            starts = frames['start_sample']
+            valid = frames['observation_valid']
+            measured = frames['measurement_time_s']
+            last_valid = frames['last_valid_measurement_time_s']
+            self.assertEqual(len(starts), len(measured))
+            self.assertEqual(len(starts), len(last_valid))
+            previous_measurement = None
+            for index, start in enumerate(starts):
+                state_time = (start + 255.5) / 16000
+                available_time = (start + 512) / 16000
+                self.assertEqual(frames['state_time_s'][index], state_time)
+                self.assertEqual(frames['available_time_s'][index], available_time)
+                self.assertGreater(available_time, state_time)
+                if valid[index]:
+                    self.assertEqual(measured[index], state_time)
+                    previous_measurement = state_time
+                else:
+                    self.assertIsNone(measured[index])
+                self.assertEqual(last_valid[index], previous_measurement)
+
+        pcm = self.report['pcm_analysis']['frames']
+        missing = [index for index, valid in enumerate(pcm['observation_valid']) if not valid]
+        self.assertEqual(missing, list(range(82, 106)))
+        self.assertEqual(pcm['last_valid_measurement_time_s'][81], .82596875)
+        self.assertEqual([pcm['last_valid_measurement_time_s'][index] for index in missing],
+                         [.82596875] * 24)
+        self.assertEqual(pcm['state_time_s'][105], 1.06596875)
+        self.assertEqual(pcm['last_valid_measurement_time_s'][106], pcm['state_time_s'][106])
+
+    def test_no_observation_has_no_measurement_history(self):
+        frames = analyze_array(np.zeros((2, 32000)))['frames']
+        self.assertEqual(frames['state_phase'], ['uninitialized'] * 197)
+        self.assertEqual(frames['measurement_time_s'], [None] * 197)
+        self.assertEqual(frames['last_valid_measurement_time_s'], [None] * 197)
+        self.assertEqual(frames['state_time_s'][0], 255.5/16000)
+        self.assertEqual(frames['available_time_s'][0], 512/16000)
+
     def test_estimates_cannot_use_samples_after_window_end(self):
         array = read_pcm16(self.buffers['array_noisy.wav'])
         modified = array.copy(); boundary = 100*160+512; modified[:, boundary:] = 0
         alternate = analyze_array(modified, export_gain=self.report['common_export_gain'])
-        for field in ('observation_angle_deg', 'filtered_angle_deg', 'angle_variance_deg2', 'state_phase'):
+        for field in ('observation_angle_deg', 'filtered_angle_deg', 'angle_variance_deg2', 'state_phase',
+                      'measurement_time_s', 'last_valid_measurement_time_s'):
             self.assertEqual(alternate['frames'][field][:101], self.report['pcm_analysis']['frames'][field][:101])
 
     def test_gcc_sign_uses_channel1_minus_channel0(self):
@@ -110,6 +151,8 @@ class TrackingAudioTests(unittest.TestCase):
             directory = Path(name)
             metadata = generate(directory)
             self.assertEqual(set(p.name for p in directory.iterdir()), {'source.wav', 'array_noisy.wav', 'MANIFEST.json'})
+            saved = json.loads((directory/'MANIFEST.json').read_text())
+            self.assertEqual(saved['pcm_analysis']['frames']['last_valid_measurement_time_s'][105], .82596875)
             for path in SOURCE_PATHS:
                 self.assertEqual(metadata['source_sha256'][path], hashlib.sha256((ROOT/path).read_bytes()).hexdigest())
             before = {p.name: (p.read_bytes(), p.stat().st_mtime_ns) for p in directory.iterdir()}

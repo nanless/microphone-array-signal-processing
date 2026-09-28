@@ -74,11 +74,12 @@ def analyze_array(waveform, *, export_gain=1.):
     centers = (starts+(WINDOW-1)/2)/FS
     fields = {key: [] for key in ('rms_before_export', 'observation_valid', 'observation_tau10_samples',
               'observation_angle_deg', 'filtered_angle_deg', 'velocity_deg_s', 'angle_variance_deg2',
-              'state_phase', 'reason')}
+              'state_phase', 'reason', 'measurement_time_s', 'last_valid_measurement_time_s')}
     tracker = None
+    last_valid_measurement_time = None
     dt = HOP/FS
     q = 100*np.array([[dt**3/3, dt**2/2], [dt**2/2, dt]])
-    for start in starts:
+    for frame_index, start in enumerate(starts):
         block = signal[:, start:start+WINDOW]
         rms = float(np.sqrt(np.mean(block**2)))
         angle = tau = None
@@ -108,6 +109,11 @@ def analyze_array(waveform, *, export_gain=1.):
         fields['observation_valid'].append(angle is not None)
         fields['observation_tau10_samples'].append(tau)
         fields['observation_angle_deg'].append(angle)
+        measurement_time = float(centers[frame_index]) if angle is not None else None
+        if measurement_time is not None:
+            last_valid_measurement_time = measurement_time
+        fields['measurement_time_s'].append(measurement_time)
+        fields['last_valid_measurement_time_s'].append(last_valid_measurement_time)
         for key, value in (('filtered_angle_deg', None if tracker is None else tracker.state[0]),
                            ('velocity_deg_s', None if tracker is None else tracker.state[1]),
                            ('angle_variance_deg2', None if tracker is None else tracker.covariance[0, 0])):
@@ -166,6 +172,8 @@ def build_fixture():
         'pcm': '16-bit little endian; codes.chapters.ch00.core.audio_samples.pcm16_bytes; decoded /32768; export gain undone only for fixed RMS gate',
         'analysis_config': {'window_samples': WINDOW, 'hop_samples': HOP, 'window': 'numpy.hanning(512), symmetric',
             'state_timestamp': '(start_sample+255.5)/16000, receiver window center',
+            'measurement_timestamp': 'receiver window center only when GCC observation is valid; otherwise null',
+            'last_valid_measurement_timestamp': 'most recent valid GCC window center; null before initialization and unchanged across missing frames',
             'availability_timestamp': '(start_sample+512)/16000, half-open block complete',
             'lookahead_from_state_ms': 16.03125, 'rms_threshold_before_export': .04,
             'gcc': 'gcc_phat(ch1, ch0), tau10=t1-t0; max_tau=.1/343; parabolic interpolation; no truth input',

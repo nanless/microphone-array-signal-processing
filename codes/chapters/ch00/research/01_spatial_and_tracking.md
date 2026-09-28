@@ -668,6 +668,8 @@ CPHD、LMB/GLMB 另有 [Ba Tuong Vo 的作者 MATLAB 工具包](https://ba-tuong
 
 GOSPA 补充的是 OSPA 按集合基数归一后不便分解的误差解释。Rahmathullah、García-Fernández、Svensson 的[作者原文](https://arxiv.org/pdf/1601.05585) Definition 1 要求阶数至少为 1、正截断距离，且参数 α 在 `(0,2]`；§II.B Proposition 1 在 α=2 时给出定位、漏检与虚警代价的分解。对真值 `{32°}` 和估计 `{30°,70°}`，取阶数 1、截断 10°、α=2，定位代价 2°，一个虚警代价 5°，GOSPA 为 7°；同条件 OSPA 为 6°。这是本书小例，两种指标的量值不可直接互判优劣。
 
+原论文的 arXiv 页面还指向[作者维护的 MATLAB 实现](https://github.com/abusajana/GOSPA)。截至 2026-09-29，该仓库根目录未见 `LICENSE`，其 README 说明 `assign2D.m` 取自另一项目；这两部分的再分发授权均未在本书核实。因此它仅作原理与实现对照的来源索引，本书没有自动下载、复制、再分发或运行这份作者代码。下段固定 MIT 许可的 Stone Soup 接口和本书上面的手算小例是另外两条实现与核对路径，不能把它们的许可或运行状态移给作者仓库。
+
 固定 `metricgenerator/ospametric.py::GOSPAMetric` 把 α 固定为 2，默认距离为普通 Euclidean；方位角必须提供适合环绕的距离，不能在 ±180° 附近机械相减。输出 `distance` 取阶数根，而 `localisation`、`missed`、`false` 保留取根前的代价，因此阶数 2 时后三者是平方单位。该版本还有 `_SwitchingLoss`，但 `switching_penalty` 默认为 0；不能沿用旧版本“没有切换项”的说法，也不能把默认单帧分数称为身份连续性验收。本轮未运行该完整指标对象。
 
 ### 37. TDOA 非线性最小二乘与可观测性
