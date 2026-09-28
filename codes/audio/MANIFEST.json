@@ -10,7 +10,7 @@
     "float_dtype": "float64"
   },
   "synthetic_signal": {
-    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband spectral_subtraction, clock_drift and interpolation; see each group for noise and transforms",
+    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband, spectral_subtraction, clock_drift, interpolation and alignment_error; see each group for noise and transforms",
     "duration_s": 2,
     "base_frequencies_hz": [
       173,
@@ -33,8 +33,8 @@
   "pcm": "signed little-endian 16-bit, round-to-nearest-even; no dither; no per-file normalization",
   "listening": "Start at low device volume. No automatic playback. No formal listening study performed.",
   "generator_inputs": {
-    "codes/examples/generate_audio_samples.py": "c9e01b741570365c64e35e4ea90db59e0efdb000a971c12bf10c0ad487e30671",
-    "codes/array_tutorial/audio_samples.py": "9d530096b95b96197a6e15513513496dec93c845a11d764d898817e28ee01382",
+    "codes/examples/generate_audio_samples.py": "10a5be3082e798663a951fa559c7cc45299cca6d8efd9713d1c5d25c67df50d1",
+    "codes/array_tutorial/audio_samples.py": "6cf969e54fa558a363959f170e48dd96840d3f43c66775611603cddb61eb62c5",
     "codes/array_tutorial/aec.py": "70d69fcd523cff3028162a221d71ea6bd2254979dfe37479ad26f77ab74a5a7e",
     "codes/array_tutorial/aec_ipnlms.py": "86422a00df25293176e0bde8193c7e05ac7a1e5703660b56907024985978c0d4",
     "codes/array_tutorial/aec_rls.py": "f13c2018297e46f0b393ef52e04fad5f1d48ede00de8b37a80a4abf597a9305d",
@@ -47,6 +47,46 @@
     "codes/array_tutorial/geometry.py": "7e9c33e90101c41441cde659d288f0aa25be141e9cdbaaa9fcabee54b285f72a"
   },
   "groups": {
+    "alignment_error": {
+      "parameters": {
+        "exercise_id": "E01-05",
+        "sample_rate_hz": 16000,
+        "duration_s": 2.0,
+        "samples_per_channel": 32000,
+        "seed": null,
+        "source": "sum of 1000 and 4000 Hz sinusoids with 20 ms linear edge fades",
+        "frequencies_hz": [
+          1000,
+          4000
+        ],
+        "amplitudes": [
+          0.18,
+          0.18
+        ],
+        "residual_delay_samples": 1,
+        "residual_delay_seconds": 6.25e-05,
+        "channel_order": [
+          "earlier_target",
+          "target_delayed_by_one_sample"
+        ],
+        "initial_history": "zero; causal delay, no circular wrap",
+        "reference": "clean target delayed by one sample; identical to aligned output",
+        "alignment": "known one-sample delay added to channel 1; no estimated direction or delay",
+        "effective_common_delay_samples": {
+          "unaligned": 0.5,
+          "aligned": 1.0
+        },
+        "amplitude_ratio_formula": "abs(cos(pi*f/fs)) before alignment; 1 after alignment",
+        "scoring_interval_samples": [
+          1600,
+          30400
+        ],
+        "amplitude_measurement": "2/N*abs(sum(x[n]*exp(-j*2*pi*f*n/fs))) on integer-period interior",
+        "comparison": "Compare projected tone amplitudes. Do not interpret raw time-domain error across unequal delays as amplitude loss."
+      },
+      "limits": "Target-only mathematical example; no noise, HRTF, room, speech or device recording. Level changes are not SNR gains; known alignment is not an estimated algorithm result.",
+      "common_export_gain": 1.0
+    },
     "interpolation": {
       "parameters": {
         "sample_rate_hz": 16000,
@@ -566,6 +606,58 @@
     }
   },
   "files": [
+    {
+      "file": "alignment_reference.wav",
+      "sha256": "9f0774e8676a669124d9b80e776262ef97c42fedfc2b8fa1e74ddc2589406136",
+      "group": "alignment_error",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.3463134765625,
+      "rms": 0.1787980634762643,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5160710662598387e-05
+    },
+    {
+      "file": "alignment_array.wav",
+      "sha256": "feccd549bedc76f43e3270803144c6514bd1ba4dc94431e5c3e05118ceb80036",
+      "group": "alignment_error",
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.3463134765625,
+      "rms": 0.17879806350169788,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5160710662598387e-05
+    },
+    {
+      "file": "alignment_unaligned.wav",
+      "sha256": "37ef36f08781a1f823739b89e1aa6f63d672bb5ce737429ddd3419da309f6094",
+      "group": "alignment_error",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.263153076171875,
+      "rms": 0.1528673859273792,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5257105871697985e-05
+    },
+    {
+      "file": "alignment_aligned.wav",
+      "sha256": "9f0774e8676a669124d9b80e776262ef97c42fedfc2b8fa1e74ddc2589406136",
+      "group": "alignment_error",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.3463134765625,
+      "rms": 0.1787980634762643,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5160710662598387e-05
+    },
     {
       "file": "interpolation_ideal_half.wav",
       "sha256": "b7f00ce83904e20ff0a528ab614d65335b3f1fe4634808fa25ef91311be78573",

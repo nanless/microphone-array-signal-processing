@@ -277,7 +277,7 @@ $$
 
 所有说话人静音的帧上，背景后验为 1；错误标注条件下目标后验为 0。正确条件下本次形状矩阵重置次数为 0，后验每点求和与 1 的最大差约为 $2.22\times10^{-16}$。这些数值可由[独立测试](../tests/test_codes_gss_teaching.py)和[完整状态文件](../codes/gss_audio/STATE.npz)复算。
 
-[第一路源](../codes/gss_audio/source_1.wav)、[第二路源](../codes/gss_audio/source_2.wav)、[混合双麦](../codes/gss_audio/mixture.wav)、[正确活动输出](../codes/gss_audio/enhanced_correct.wav)及[漏标输出](../codes/gss_audio/enhanced_missed.wav)都按同一增益导出，文件摘要和精确参数见[独立清单](../codes/gss_audio/MANIFEST.json)。这五个 WAV 不并入本书主清单的 68 个样本。
+[第一路源](../codes/gss_audio/source_1.wav)、[第二路源](../codes/gss_audio/source_2.wav)、[混合双麦](../codes/gss_audio/mixture.wav)、[正确活动输出](../codes/gss_audio/enhanced_correct.wav)及[漏标输出](../codes/gss_audio/enhanced_missed.wav)都按同一增益导出，文件摘要和精确参数见[独立清单](../codes/gss_audio/MANIFEST.json)。这五个 WAV 不并入本书主清单的 72 个样本。
 
 官方 [GPU-GSS 固定源码](https://github.com/desh2608/gss/tree/10fad18cae85e2e4342c77421abc70c9c5da23ed)还包含 CuPy、Lhotse/RTTM、分段上下文及完整会议处理；本机未运行其官方整链，也没有使用 CHiME 语料或计算 WER。本段的教学结果不能充当 Boeddeker 等原论文的复现成绩。[GSS 原论文 §3.1～§3.3](https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf "citation")。
 

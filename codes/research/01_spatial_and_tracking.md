@@ -1,6 +1,6 @@
 # 空间处理与声源追踪：算法、实现和工业使用条件
 
-核实日期：2026-09-22。对应正文第 2～5 章和第 9 章。这里按算法的输入、计算步骤和可检查结果整理源码，既包括语音前端，也包括直接相关的球阵录音与工业噪声源成像。后两类任务的输出不同，不能把声源功率图或 Ambisonics 解码结果当成增强语音。
+基础索引核实日期：2026-09-22；第 1 章研究小节与所列听觉实验、源码入口核实于 2026-09-28。对应正文第 1～5 章和第 9 章。这里按算法的输入、计算步骤和可检查结果整理源码，既包括语音前端，也包括直接相关的球阵录音与工业噪声源成像。后两类任务的输出不同，不能把声源功率图或 Ambisonics 解码结果当成增强语音。
 
 ## 阅读与复现方式
 
@@ -31,6 +31,75 @@
 许可证依据为各官方仓库的 [doatools LICENSE](https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/LICENSE.md)、[sfa LICENSE](https://github.com/AppliedAcousticsChalmers/sound_field_analysis-py/blob/4b03ee123d98370c55f744c4f8d7c955fbc099f1/LICENSE)、[Politis LICENSE](https://github.com/polarch/Spherical-Array-Processing/blob/f192aac652b023ee4ab8673adce20ec13bf5450c/LICENSE.md)、[SAF LICENSE](https://github.com/leomccormack/Spatial_Audio_Framework/blob/18fd5aba46e20787b51f28f7197a68506c965c07/LICENSE.md)、[FRIDA LICENSE](https://github.com/LCAV/FRIDA/blob/ff5d51e498805b862c342dd216ccfffb22444b7f/LICENSE) 和 [Acoular LICENSE](https://github.com/acoular/acoular/blob/13d3d7df74ac1a8135c7ec71da098cbbc03d8652/LICENSE)。这些条款只用于说明相应项目的源码，不能替本书所有者选择发布许可证。
 
 SBL、RobustSBL、BTK 和 SMP-PHAT 的依据分别是固定提交的 [SBL LICENSE](https://github.com/gerstoft/SBL/blob/d4bba35e9b60907d3024473ba5a41046450baae0/LICENSE)、[RobustSBL LICENSE](https://github.com/NoiseLabUCSD/RobustSBL/blob/d746266a1336d4467f60b6f7b7e8b4695a01d26d/LICENSE)、[BTK LICENSE](https://github.com/kkumatani/distant_speech_recognition/blob/feff19ec8bcb770f6530fe280dc3ccafc2f5984a/LICENSE) 和 [SMP-PHAT LICENSE](https://github.com/FrancoisGrondin/smpphat/blob/6fd33e6eb3251078a4cd9793dde909e2500265cc/LICENSE)。独立上游目录不改变本书代码许可；取得状态以 [SOURCE_STATUS.json](../SOURCE_STATUS.json) 为准，下面没有运行记录的实验均为建议方案。
+
+## 第 1 章：从听觉线索到可检验的阵列任务
+
+对应[第 1 章](../../chapters/01_problem-definition.md)。本节区分三种证据：头部几何模型给出的时延、听觉实验测得的辨别能力，以及软件根据录音估计的数值。三者可以互相启发，但它们的输入、输出和误差定义不同。
+
+### 双耳时差、声级差与方向相关频谱
+
+双耳时间差（Interaural Time Difference，ITD）描述两耳信号的相对时间；双耳声级差（Interaural Level Difference，ILD）描述同一频率或指定频带中的相对声级。实际声音经过头、耳廓和躯干后，还会形成随方向变化的谱峰和谱谷。后者称为方向相关频谱线索较准确。
+
+头相关传递函数（Head-Related Transfer Function，HRTF）是每只耳朵的复数频率响应，其时域对应物是头相关脉冲响应（Head-Related Impulse Response，HRIR）。一对 HRTF 同时描述左右耳的幅度和相位，因此可用来分析 ILD、时差及频谱形状；它并不是与 ITD、ILD 互不相干的第三种传感器。固定版本 SAF 的 `HRIRs2HRTFs` 把左右 HRIR 分别变换到频域，`estimateITDs` 则从同一对 HRIR 提取一个时差，正好展示这种从完整响应到摘要量的关系。[SAF 头文件及数据维度](https://github.com/leomccormack/Spatial_Audio_Framework/blob/18fd5aba46e20787b51f28f7197a68506c965c07/framework/modules/saf_hrir/saf_hrir.h)
+
+方向谱形也不能直接从一段未知声音里无条件读出。耳边频谱同时受声源本身的频谱和传播响应影响；只有先说明已知输入、参考测量或统计假设，才能解释哪些差异来自方向。例如，单个频率的纯音不能展示完整的谱谷位置；左右各乘一个常数也只改变声级，不能模拟耳廓随频率变化的滤波。
+
+机器阵列采用同一类观测关系，但硬件响应不同。无挡板、自由场中的两个理想全向麦克风，没有人头产生的头影，也没有耳廓谱谷。若为音箱外壳、机器人头部或耳机采集多通道响应，应记录设备几何、通道顺序、校准和测量方向，再建立该设备的阵列流形；不能把一个人的 HRTF 直接作为任意麦克风阵列的导向矢量。
+
+### 几何时延、听觉阈值与数字采样分别回答什么
+
+第 1 章的 Woodworth 算例使用半径 0.0875 m、声速 343 m/s，并在正前方至正侧面的角度范围使用刚性球射线路径近似。由该章模型复算，正前方偏 1°的时差为 8.9045 μs，正侧面为 655.8154 μs。这里只保留计算中间量的额外位数，图示分别取约 9 μs 和 656 μs。这是几何模型的数值，不是人体平均值或听觉辨别阈值。
+
+在 16 kHz 数字信号里，一个采样间隔为 62.5 μs。因此上述两个时差分别对应约 0.1425 和 10.4930 个采样间隔。非整数结果没有矛盾：物理传播时延是连续的，采样间隔只是记录时间网格。能否从带限信号估计分数时延还受带宽、噪声和模型误差影响；仅把整数采样间隔缩小，不能证明定位准确率已经提高。
+
+相同的耳间距离若改成没有头部的两个自由场传感器，正侧面的最大时差由直线距离计算：`0.175 / 343` 秒，即约 510.2041 μs。两种数值不同，是因为传播模型不同。用 656 μs 合成时延的双通道文件可以说明声像时差，但在没有头部滤波时，不能声称该文件完整模拟了真实双耳录音。[模型假设研究：Aaronson 与 Hartmann，JASA 2014](https://doi.org/10.1121/1.4861243)
+
+Brughera、Dunai 与 Hartmann 的实验使用等声级耳机纯音，起止包络同步，任务是判断两个呈现区间之间的左右变化。其图 1 比较四位听者，两个最敏感听者在 1400 Hz 仍得到收敛阈值，1450 Hz 时未得到收敛阈值。论文的阈值量是两个区间的 `ΔITD`；例如一个区间右耳领先 10 μs、另一个区间左耳领先 10 μs，比较量为 20 μs。不能把它写成单次声源方位估计误差，也不能直接套用于宽带语音或高频调制包络。[原论文 §II 的 Methods、Results 与图 1](https://pmc.ncbi.nlm.nih.gov/articles/PMC3663869/)
+
+### 从产品问题确定输入、输出和验收对象
+
+下面是基于模块定义的工程分工建议，不是某一产品的性能承诺。读者应先写清最终要得到什么，再决定需要哪些模块。
+
+| 实际问题 | 需要的输入与输出 | 第一项应核对的条件 |
+|---|---|---|
+| 会议摄像头朝向正在说话的人 | 同步多路音频 → 方向候选、活动状态和连续轨迹 | 反射峰是否被当成新说话人；无声段如何保持或释放轨迹 |
+| 远处语音需要送入识别器 | 多路音频、目标控制或目标统计 → 增强音频 | 目标是否被相消；识别错误与输出失真是否改善，不能只看音量 |
+| 音箱边播放边收音 | 麦克风采集与播放参考 → 回声处理后的采集音频 | 播放参考是否可取得、是否同步；电视机声音未必有可用参考 |
+| 多人同时讲话且都要保留 | 混合音频 → 多个输出流及各自活动范围 | 输出流的说话人身份是否跨时间一致；单束目标增强不等于完整分离 |
+| 用耳机呈现一个虚拟方向 | 干声、方向和左右 HRIR → 左右耳输出 | 数据坐标及通道顺序；个体差异、耳机响应和头动是否被处理 |
+
+ODAS 是现有源码中连接声源定位、追踪与分离的入口之一。其维护者 README 把定位、追踪、分离和后滤波列为不同功能；本书固定的 `mod_ssl.c`、`mod_sst.c`、`mod_sss.c` 也分别保留这些模块。它可以帮助读者理解方向候选如何变成连续轨迹、轨迹怎样控制输出流，但取得这些 C 源文件不能证明已经在某个设备上达到实时性能。[ODAS 固定版本说明](https://github.com/introlab/odas/blob/bcb845434495e293df3d48f1203b7a86e1852449/README.md)
+
+对麦克风平均增益，还要分别记录目标与噪声。若两者都减半，输出功率都会降到四分之一，信噪比保持不变；若噪声通道相关，则四麦等权平均也不必得到 6.02 dB。第 1 章 E01-01～E01-03 已给出这两类反例与不等噪声权重计算。实际录音缺少目标和噪声的分量参考时，只能报告可测的总输出功率或其他明确指标，不能由声音变小反推 SNR 增益。
+
+### 现有官方源码怎样用于双耳研究
+
+优先复用已经取得的 Spatial Audio Framework（SAF）。本节核对的是固定提交 `18fd5aba46e20787b51f28f7197a68506c965c07` 的源码行为；尚未在本节运行其编译和音频渲染，也没有将其函数改名当成本书独立实现。相关模块源码和头文件声明 ISC 许可，其他可选模块及第三方依赖仍按上表分别核对。
+
+| 源码入口 | 实际操作 | 与本章的关系及限制 |
+|---|---|---|
+| `framework/modules/saf_hrir/saf_hrir.c::estimateITDs` | 左右 HRIR 先经 750 Hz 二阶低通，再寻找互相关最大值，换算到秒并限幅 | 是特定带宽及峰值规则的时差估计，不是 Woodworth 几何公式或听觉神经模型 |
+| 同文件 `HRIRs2HRTFs` | 对每个方向、每只耳朵作实数 FFT；FFT 长度不短于 HRIR 时补零，否则先截断 | 可以从 HRIR 检查频率响应；补零不增加测量信息，短 FFT 会丢失尾部 |
+| 同文件 `interpHRTFs` | 可直接插值复数 HRTF；提供 ITD 时走幅度与时差相关的处理分支 | 插值规则会改变幅相；要分别测中间方向与原测量方向的误差 |
+| `framework/modules/saf_hrir/saf_hrir.h` | 定义方向、左右耳、滤波器长度与输出布局 | 适配前先检查实际内存顺序，不能仅按二维数组外观猜左右声道 |
+
+`estimateITDs` 的源码先在全部互相关延迟上找最大值，再把结果限制到约 ±707.1 μs；这与“只在允许延迟区间内寻找最大值”是不同算法。其峰值索引为整数，未执行峰间插值。在 48 kHz 输入下，限幅前的时延网格间隔为约 20.8333 μs，不能因此声称能验证 9 μs 的辨别能力。[固定版本具体实现](https://github.com/leomccormack/Spatial_Audio_Framework/blob/18fd5aba46e20787b51f28f7197a68506c965c07/framework/modules/saf_hrir/saf_hrir.c)
+
+建议先用左右相同的人工脉冲、交换左右的整数延迟脉冲、近边界时延和全零输入检查符号、网格与退化输出，再使用数据集 HRIR。这里的人工脉冲用于检查软件接口，不是人体响应。全零输入和强干扰峰尤其应单列，因为函数返回的有限时差本身并不证明存在可靠的声源证据。
+
+### SOFA 数据接口与新增资源的收录边界
+
+空间定向声学格式（Spatially Oriented Format for Acoustics，SOFA）用于交换 HRTF、双耳或空间房间脉冲响应等数据。格式兼容只说明软件知道怎样组织数据；仍须读取具体文件中的坐标、采样率、接收器顺序、时延及数据许可。[SOFA 项目说明与规范入口](https://www.sofacoustics.org/mediawiki/index.php/Main_Page)
+
+读取 SOFA、按方向获取和插值左右滤波器，可阅读维护者官方实现 [libmysofa](https://github.com/hoene/libmysofa)。SOFA 项目的 [Software and APIs](https://www.sofacoustics.org/mediawiki/index.php/Software_and_APIs) 页面直接链接该实现。本书锁定版本为 v1.3.5、提交 `6cc5b15a73e9bd97810d03767082edda7f315881`，其[许可证文件](https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/LICENSE)给出三条款 BSD 条件。源码子集和许可证已取得到 `codes/upstream/_downloads/libmysofa/`，固定提交、工作树与登记入口经获取工具核对；未编译、未执行数值实验，未取得 `share/` 和 `tests/` 中的 SOFA 测量数据。
+
+官方接口文档说明 `mysofa_open` 会在读取时归一化，而 `mysofa_open_no_norm` 保留未归一化数据。研究方向间增益、ILD 或不同软件输出时，应明确实际调用和增益处理；归一化、重采样和插值都不是“原始文件完全未变”。固定版 `loudness.c` 计算一个公共缩放因子，并乘到整个 `DataIR` 数组，两耳不会在这一步各自归一化。[维护者接口说明](https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/README.md)
+
+额外延迟需单独核查。固定版 README 将浮点接口的延迟标为秒、short 接口标为采样数，但源码与 SOFA 的数据单位之间存在不一致：SOFA 将 `Data.Delay` 定义为采样数；`reader.c` 直接读取该数组，`interpolate.c` 对其取值或加权，浮点接口直接返回所得数值。重采样时 `resample.c` 按新旧采样率之比缩放延迟，而 short 接口会将插值结果再乘当前采样率。
+
+因此，不能只按 README 的“秒”注释决定补偿量，也不能忽略额外延迟。本书记录的是固定版本的静态源码矛盾，尚未用含非零 `Data.Delay`、不同输入输出采样率的文件运行验证，不据此声称端到端渲染已经正确。[SOFA 延迟定义](https://www.sofaconventions.org/mediawiki/index.php/GeneralFIR)；[固定版接口实现](https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/src/hrtf/easy.c)；[固定版重采样实现](https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/src/hrtf/resample.c)。
+
+SAF 提供听觉响应的处理函数，libmysofa 补充 SOFA 数据读取及方向查询入口，两者承担不同步骤。源码筛选保留 `src/hrtf/`、`src/hdf/`、`src/resampler/`（K-D 树源码位于 `src/hrtf/kdtree.c`）、必要构建说明、README 和许可证；省略测试和测量数据，不表示已经形成可直接重现官方测试的完整环境。重采样器与 K-D 树的原始源码声明也随文件保留。HRTF 个体化、神经插值及神经双耳渲染需要独立的数据、误差定义和渲染实验，本章不把这些方法名称堆入入门任务目录。
 
 ## 基础模型、统计估计与校准
 

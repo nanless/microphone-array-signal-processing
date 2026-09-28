@@ -5,7 +5,7 @@
     .venv/bin/python scripts/build_site.py
 
 产物：site/index.html（首页）+ site/01..13_*.html（13 篇正文），
-另有 site/research/index.html 和 5 篇独立研究页、68 个合成 WAV 和 4 个真实录音/派生 WAV。
+另有 site/research/index.html 和 5 篇独立研究页、72 个合成 WAV 和 4 个真实录音/派生 WAV。
 左侧边栏 = 首页 + 13 篇 + 每篇的二级及以下小节锚点，顶部面包屑，
 文末上一篇/下一篇（首页不输出该盒）。图片直接引用 ../figures/（不复制）。
 数学公式用 MathJax CDN 渲染（离线时显示源码，页面顶部有提示）。
@@ -91,7 +91,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .toc-mobile{display:none;margin:0 0 16px;border:1px solid #e5e8ee;border-radius:8px;padding:10px 14px;background:#f7fafd;font-size:14px}
 .toc-mobile summary{cursor:pointer;font-weight:700}
 .toc-mobile ul{padding-left:18px;margin:8px 0 2px}.toc-mobile a{color:#2f6db3;text-decoration:none}
-.topbtn{position:fixed;bottom:20px;right:20px;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px;opacity:.75}
+.topbtn{display:block;margin:20px auto;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
 @media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}}

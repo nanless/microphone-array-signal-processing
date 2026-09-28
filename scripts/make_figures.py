@@ -1790,13 +1790,23 @@ def fig_binaural():
     ax.text(3.3 * np.cos(th) + 0.05, 3.3 * np.sin(th), "声源方向", fontsize=FS_LABEL, color=C_RED)
     ax.text(-1.85, -1.35, "头影：远侧耳被头遮挡\n路程差 → 双耳时间差 ITD\n遮挡 → 双耳声级差 ILD",
             fontsize=FS_LABEL, ha="left", va="top", color=C_MAIN)
-    ax.set_xlim(-1.9, 3.6); ax.set_ylim(-2.6, 3.6)
-    ax.set_title("(a) 头 + 双耳 = 天然的 2 麦阵列（带挡板）", fontsize=11)
+    ax.set_xlim(-1.9, 3.6); ax.set_ylim(-3.4, 3.6)
+    ax.annotate("正前方 0°", xy=(0, 2.15), xytext=(0, 1.3),
+                ha="center", fontsize=FS_SMALL,
+                bbox=dict(fc="white", ec="none", alpha=0.9, pad=1),
+                arrowprops=dict(arrowstyle="->", color=C_MAIN))
+    ax.text(1.2, 1.25, r"向右为正 $\theta$", fontsize=FS_SMALL,
+            bbox=dict(fc="white", ec="none", alpha=0.9, pad=1))
+    ax.text(-1.85, -3.05, r"$\mathrm{ITD}=t_L-t_R$：右耳先到时为正", fontsize=FS_SMALL)
+    ax.set_title("(a) 俯视图：方位与到达时差的正号约定", fontsize=11)
     ax = fig.add_subplot(3, 1, 2)
     az = np.linspace(-90, 90, 400)
     a_head, c = 0.0875, 343
     itd = (a_head / c) * (np.deg2rad(az) + np.sin(np.deg2rad(az))) * 1e6
-    ax.plot(az, itd, color=C_BLUE, lw=2)
+    ax.plot(az, itd, color=C_BLUE, lw=2, label="刚性球射线近似")
+    free_itd = 2 * a_head / c * np.sin(np.deg2rad(az)) * 1e6
+    ax.plot(az, free_itd, color=C_ORANGE, lw=2, ls="--", label="无遮挡双点，间距 17.5 cm")
+    ax.legend(loc="lower right", fontsize=FS_SMALL)
     ax.axhline(0, color="k", lw=0.6)
     max_itd_us = float(itd[-1])
     ax.axhline(max_itd_us, color="gray", ls="--", lw=0.8)
@@ -1805,30 +1815,23 @@ def fig_binaural():
                 arrowprops=dict(arrowstyle="->", color="gray"))
     ax.annotate("正前方偏 1° ≈ 9 μs\n（几何换算，不是听觉阈值）", xy=(1, 9), xytext=(-64, 300), fontsize=FS_SMALL,
                 arrowprops=dict(arrowstyle="->", color=C_RED), color=C_RED)
-    ax.set_xlabel("声源方位角 (°)"); ax.set_ylabel("ITD (μs)")
-    ax.set_title("(b) 双耳时间差 ITD（Woodworth 模型）", fontsize=11)
+    ax.set_xlabel("声源方位角 θ (°)，正前方为 0°"); ax.set_ylabel("左耳减右耳到达时差 (μs)")
+    ax.set_title("(b) 球头与无遮挡双点：a = 8.75 cm，c = 343 m/s", fontsize=11)
     ax.grid(ls=":", alpha=0.5)
     ax = fig.add_subplot(3, 1, 3)
-    ax.set_xscale("log")
-    ax.set_xlim(100, 10000); ax.set_ylim(-0.45, 2.65)
-    bands = [
-        (0.15, 100, 1400, C_BLUE, "细结构 ITD\n低频主要线索"),
-        (1.15, 250, 10000, C_RED, "ILD\n高频头影通常更明显"),
-        (2.15, 1500, 10000, C_GREEN, "包络 ITD\n限有调制包络的高频声"),
+    ax.set_xlim(0, 1); ax.set_ylim(0, 1); ax.axis("off")
+    rows = [
+        (0.76, C_BLUE, "细结构 ITD", "纯音相位差；辨别能力随频率与任务变化。\n约 1.4 kHz 是特定纯音实验的结果。"),
+        (0.46, C_RED, "ILD", "比较左右耳声级；高频头影通常更明显。\n低频也可能有声级差，没有统一起始频率。"),
+        (0.16, C_GREEN, "包络 ITD", "调制高频声的包络也可携带时差。\n不能用纯音的高频限制排除这种线索。"),
     ]
-    for y, start, stop, color, label in bands:
-        ax.add_patch(plt.Rectangle(
-            (start, y - 0.32), stop - start, 0.64,
-            fc=color, ec=color, lw=1.0, alpha=0.20))
-        ax.text(np.sqrt(start * stop), y, label, ha="center", va="center",
-                fontsize=FS_SMALL, color=color, fontweight="bold")
-    ax.axvline(1400, color=C_BLUE, ls="--", lw=1)
-    ax.text(1320, 2.57, "约 1.4 kHz（非硬分界）", color=C_BLUE,
-            fontsize=FS_TINY, ha="right", va="top",
-            bbox=dict(fc="white", ec="none", alpha=0.88, pad=1.5))
-    ax.set_yticks([]); ax.set_xlabel("频率 (Hz)")
-    ax.set_title("(c) 双重理论的线索主导区（理论示意，不是人体响应曲线）", fontsize=FS_LABEL)
-    ax.grid(ls=":", alpha=0.35, which="both", axis="x")
+    for y, color, label, detail in rows:
+        ax.add_patch(plt.Rectangle((0.01, y - 0.125), 0.98, 0.25,
+                                  fc=color, ec=color, lw=1, alpha=0.10))
+        ax.text(0.04, y, label, color=color, fontsize=FS_LABEL,
+                va="center", fontweight="bold")
+        ax.text(0.24, y, detail, fontsize=FS_SMALL, va="center")
+    ax.set_title("(c) 三种实验线索：不能画成统一的频率开关", fontsize=FS_TITLE)
     fig.suptitle("图1  人类双耳定位线索：几何 ITD 与双重理论的适用边界", fontsize=13)
     fig.tight_layout()
     save(fig, "fig01_binaural.png")

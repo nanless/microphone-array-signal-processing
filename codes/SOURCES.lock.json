@@ -431,7 +431,7 @@
       "url": "https://github.com/leomccormack/Spatial_Audio_Framework.git",
       "revision": "18fd5aba46e20787b51f28f7197a68506c965c07",
       "license": "ISC core; GPL-2.0 optional modules",
-      "scope": "C/C++球谐处理、array2sh、波束、声场功率图、可选粒子追踪",
+      "scope": "C/C++球谐处理、array2sh、波束、声场功率图、可选粒子追踪；HRIR时差估计、HRTF变换及方向插值",
       "fetch_enabled": true,
       "note": "只下载研究。核心ISC，saf_tracker/saf_hades等可选模块GPLv2；第三方BLAS/FFT/HRIR许可单独核对，不能把整个仓库标成纯ISC。",
       "entrypoints": [
@@ -439,7 +439,9 @@
         "examples/src/array2sh/array2sh.c",
         "examples/src/beamformer/beamformer.c",
         "examples/src/powermap/powermap.c",
-        "LICENSE.md"
+        "LICENSE.md",
+        "framework/modules/saf_hrir/saf_hrir.c",
+        "framework/modules/saf_hrir/saf_hrir.h"
       ]
     },
     {
@@ -1325,6 +1327,34 @@
         "espnet2/enh/separator/tflocoformer_separator.py"
       ],
       "note": "MERL author repository, source only. No pretrained weights, training data, inference performance or streaming claim."
+    },
+    {
+      "id": "libmysofa",
+      "url": "https://github.com/hoene/libmysofa.git",
+      "revision": "6cc5b15a73e9bd97810d03767082edda7f315881",
+      "license": "BSD-3-Clause; third-party code notices separate",
+      "scope": "SOFA读取、HRIR方向插值、重采样与显式归一化接口；不是DOA估计器",
+      "fetch_enabled": true,
+      "note": "2026-09-28核实v1.3.5；仅获取源码与许可，不获取share/tests的SOFA测量数据，不执行上游代码。源码内嵌数据仍需单独核对；取得代码不表示构建或数值运行成功。",
+      "source_paths": [
+        "src/hrtf/",
+        "src/hdf/",
+        "src/resampler/",
+        "LICENSE",
+        "README.md",
+        "CMakeLists.txt",
+        "src/CMakeLists.txt",
+        "src/config.h.in"
+      ],
+      "entrypoints": [
+        "src/hrtf/mysofa.h",
+        "src/hrtf/easy.c",
+        "LICENSE",
+        "README.md",
+        "src/hrtf/kdtree.c",
+        "src/hrtf/loudness.c",
+        "src/hrtf/interpolate.c"
+      ]
     }
   ]
 }

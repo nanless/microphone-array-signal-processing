@@ -171,8 +171,47 @@ def interpolation_case() -> dict:
                   'room, device or speech quality test. Two passes delay by one sample but are not an exact one-sample delay.'}
 
 
+def alignment_error_case() -> dict:
+    """E01-05: one sample of residual target misalignment, without noise.
+
+    The raw channels are an undelayed target and its zero-padded delay.
+    Delay the first channel once to obtain a causal, exactly aligned pair.
+    """
+    index = np.arange(2 * SAMPLE_RATE)
+    t = index / SAMPLE_RATE
+    fade = np.minimum(np.clip(t / .02, 0, 1), np.clip((2 - t) / .02, 0, 1))
+    target = fade * (.18 * np.sin(2 * np.pi * 1000 * t)
+                     + .18 * np.sin(2 * np.pi * 4000 * t))
+    later = delay_samples(target, 1)
+    array = np.vstack((target, later))
+    aligned = (delay_samples(array[0], 1) + array[1]) / 2
+    return {
+        'signals': {'alignment_reference': later,
+                    'alignment_array': array,
+                    'alignment_unaligned': array.mean(axis=0),
+                    'alignment_aligned': aligned},
+        'parameters': {
+            'exercise_id': 'E01-05', 'sample_rate_hz': SAMPLE_RATE,
+            'duration_s': 2., 'samples_per_channel': index.size, 'seed': None,
+            'source': 'sum of 1000 and 4000 Hz sinusoids with 20 ms linear edge fades',
+            'frequencies_hz': [1000, 4000], 'amplitudes': [.18, .18],
+            'residual_delay_samples': 1, 'residual_delay_seconds': 1 / SAMPLE_RATE,
+            'channel_order': ['earlier_target', 'target_delayed_by_one_sample'],
+            'initial_history': 'zero; causal delay, no circular wrap',
+            'reference': 'clean target delayed by one sample; identical to aligned output',
+            'alignment': 'known one-sample delay added to channel 1; no estimated direction or delay',
+            'effective_common_delay_samples': {'unaligned': .5, 'aligned': 1.},
+            'amplitude_ratio_formula': 'abs(cos(pi*f/fs)) before alignment; 1 after alignment',
+            'scoring_interval_samples': [1600, 30400],
+            'amplitude_measurement': '2/N*abs(sum(x[n]*exp(-j*2*pi*f*n/fs))) on integer-period interior',
+            'comparison': 'Compare projected tone amplitudes. Do not interpret raw time-domain error across unequal delays as amplitude loss.',
+        },
+        'limits': 'Target-only mathematical example; no noise, HRTF, room, speech or device recording. '
+                  'Level changes are not SNR gains; known alignment is not an estimated algorithm result.'}
+
+
 def build_cases() -> dict:
-    """Return sixteen experiments with model parameters and references.
+    """Return seventeen experiments with model parameters and references.
 
     Each entry has ``signals`` (filename stem -> CxN array), ``parameters`` and
     ``limits``. Signals are pre-export floats; no group uses peak matching.
@@ -305,6 +344,7 @@ def build_cases() -> dict:
     subtraction_zero_audio = istft(subtraction_zero[None], n_fft=512, hop_length=128,
                                    length=t.size)[0]
     return {
+        'alignment_error': alignment_error_case(),
         'interpolation': interpolation_case(),
         'clock_drift': clock_drift_case(),
         'spatial': {
