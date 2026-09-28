@@ -387,7 +387,7 @@
       "license": "MIT",
       "scope": "root-MUSIC、空间平滑、源数估计、稀疏协方差定位、统计下界; array geometry, coarray direct augmentation/spatial smoothing and given-perturbation forward models",
       "fetch_enabled": true,
-      "note": "作者维护的理论研究工具；需要逐方法核对阵列和角度约定，求解器成功不等于DOA正确。",
+      "note": "作者维护的理论研究工具；需要逐方法核对阵列和角度约定，求解器成功不等于DOA正确。 Fixed ESPRIT default row weighting mutates overlapping views; actual LS/TLS and safe-copy diagnostic recorded in reports/doatools_esprit_reference.json (2026-09-28). resolved=True does not validate an angle.",
       "entrypoints": [
         "doatools/estimation/music.py",
         "doatools/estimation/preprocessing.py",
@@ -398,7 +398,11 @@
         "doatools/model/arrays.py",
         "doatools/model/coarray.py",
         "doatools/estimation/coarray.py",
-        "doatools/model/perturbations.py"
+        "doatools/model/perturbations.py",
+        "doatools/estimation/esprit.py",
+        "doatools/estimation/core.py",
+        "doatools/model/sources.py",
+        "doatools/utils/conversion.py"
       ]
     },
     {
@@ -1455,6 +1459,58 @@
         "proj_cm55/source/audio_enhancement_application/audio_enhancement/GeneratedSource/cy_afe_configurator_settings.h"
       ],
       "note": "Selected C/H files explicitly carry Apache-2.0 headers. Root EULA does not describe that selected subset. Wrapper, .mtbafe configuration, binary libraries, test media, and algorithm core are not fetched. Static inspection only."
+    },
+    {
+      "id": "xsrp",
+      "url": "https://github.com/egrinstein/xsrp.git",
+      "revision": "5876b760c0ead781c05d4f319ed23e302478ea2d",
+      "license": "NOASSERTION",
+      "scope": "Modular time/frequency and volumetric SRP research implementation",
+      "fetch_enabled": false,
+      "acquisition": "index_only",
+      "verified_at": "2026-09-28",
+      "note": "pyproject metadata states MIT, but no full LICENSE terms established at the fixed revision. Establish applicable full code license before automated acquisition; index only, not executed.",
+      "entrypoints": [
+        "readme.md",
+        "pyproject.toml",
+        "xsrp"
+      ],
+      "source_paths": [
+        "readme.md",
+        "pyproject.toml",
+        "xsrp"
+      ]
+    },
+    {
+      "id": "dcase2026-saiseld",
+      "url": "https://github.com/iranroman/DCASE2026_Task3_SAISELD_baseline.git",
+      "revision": "d4df66251f39e34bc0157be93858e5a68ec9d7c4",
+      "license": "NOASSERTION",
+      "scope": "Official DCASE2026 Task3 semantic acoustic imaging baseline",
+      "fetch_enabled": false,
+      "acquisition": "index_only",
+      "verified_at": "2026-09-28",
+      "note": "No applicable explicit code license established at fixed revision. Establish code license before automated acquisition; weights including UpLAM.pth separately excluded. Not executed or ranked.",
+      "entrypoints": [
+        "README.md",
+        "acoustic_features.py",
+        "augmentation.py",
+        "lam_model.py",
+        "model.py",
+        "run_inference.py",
+        "evaluate.py",
+        "train.py"
+      ],
+      "source_paths": [
+        "README.md",
+        "acoustic_features.py",
+        "augmentation.py",
+        "lam_model.py",
+        "model.py",
+        "run_inference.py",
+        "evaluate.py",
+        "train.py"
+      ]
     }
   ]
 }

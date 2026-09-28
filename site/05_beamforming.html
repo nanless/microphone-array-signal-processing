@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 5 章 · 波束形成 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="a4565e354b22"><style>
+<meta name="source-digest" content="27408f20c140"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -346,7 +346,7 @@ Q&=\frac{|\vec{w}^H\vec{a}|^2}{\vec{w}^H\mathbf{\Gamma}\vec{w}},&
 <p><strong>第 4 步：把倍数代回第 2 步。</strong></p>
 <p>$$\boxed{\ \vec{w}_{MVDR} = \frac{\mathbf{R}_{nn}^{-1}\vec{a}}{\vec{a}^H\mathbf{R}_{nn}^{-1}\vec{a}}\ }\text{。}\tag{5-3}$$</p>
 <p>正定时 $\vec a^H\mathbf R_{nn}^{-1}\vec a$ 为正实数，因此上面由 $\vec w^H\vec a=1$ 求得的乘子无需再区分共轭值。</p>
-<p>此权重代回输出功率即得式(4-2)的 Capon 谱——同一优化器的两种读法（推导见 §4.5）。</p>
+<p>此权重代回输出功率即得式(4-12)的 Capon 谱——同一优化器的两种读法（推导见 §4.5）。</p>
 <p><strong>推导关系</strong>：梯度条件给出 $\vec w\propto\mathbf R_{nn}^{-1}\vec a$，无失真约束再确定比例系数，使 $\vec w^H\vec a=1$。因此 $\mathbf R_{nn}^{-1}$ 决定噪声抑制方向，分母负责目标响应归一化。LCMV（§5.5）沿用同一二次型优化，只把一条约束推广为多条约束。</p>
 <p><strong>两个特例</strong>：白噪声下 $\mathbf{R}_{nn}\propto\mathbf{I}$，MVDR 退化为 DSB；协方差中含定向强干扰时，MVDR 会降低该方向的响应。图 16 的 MVDR 曲线使用 8 元阵和 20° 干扰，参数与下面算例 5-2 的 2 元阵、30° 干扰不同。</p>
 <p><strong>算例 5-2：2 麦 MVDR 数值推导</strong></p>

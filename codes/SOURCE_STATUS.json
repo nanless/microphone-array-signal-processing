@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "lock_sha256": "aac3b3955dffcf6033521a7ca56f5e091142d605defb175e3ee72f4638ee14c1",
+  "lock_sha256": "8817b27d6abacdac6dfe2e837c893bbf7f1152ef46b74f513d43b985345939f7",
   "projects": [
     {
       "id": "pyroomacoustics",
@@ -3197,6 +3197,16 @@
         "!**/*.weights"
       ],
       "source_selection_verified": true
+    },
+    {
+      "id": "xsrp",
+      "revision": "5876b760c0ead781c05d4f319ed23e302478ea2d",
+      "status": "index_only"
+    },
+    {
+      "id": "dcase2026-saiseld",
+      "revision": "d4df66251f39e34bc0157be93858e5a68ec9d7c4",
+      "status": "index_only"
     }
   ]
 }

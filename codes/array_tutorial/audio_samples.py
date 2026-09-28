@@ -394,8 +394,52 @@ def dma_calibration_case() -> dict:
                  'There is no additive noise, so the reported amplitude ratios are not SNR gains. No formal listening study.'}
 
 
+def doa_ambiguity_case() -> dict:
+    """Two finite stereo records with an exactly controlled steady periodic model."""
+    n = np.arange(2 * SAMPLE_RATE)
+    period = 1024
+    bins = np.arange(20, 385)
+    rng = np.random.default_rng(2026092804)
+    spectrum = np.zeros(period // 2 + 1, complex)
+    spectrum[bins] = np.exp(1j * rng.uniform(-np.pi, np.pi, bins.size))
+    # Equal spectral amplitudes, fixed independent phases; this is a multisine,
+    # not a Gaussian-noise recording or a continuous spectrum.
+    broad_period = np.fft.irfft(spectrum, n=period) * np.sqrt(period / 2)
+    tone = .2 * np.cos(2 * np.pi * 2000 * n / SAMPLE_RATE)
+    broad = .2 * broad_period[n % period]
+    envelope = np.ones(n.size)
+    fade = np.sin(np.linspace(0, np.pi/2, 320))**2
+    envelope[:320], envelope[-320:] = fade, fade[::-1]
+    signals = {}
+    for name, source in [('tone', tone), ('broadband', broad)]:
+        source = source * envelope
+        signals['doa_ambiguity_' + name] = np.vstack((delay_samples(source, 2), source))
+    return {'signals': signals, 'parameters': {
+        'sample_rate_hz': SAMPLE_RATE, 'samples': int(n.size), 'spacing_m': .2,
+        'sound_speed_m_s': 343., 'tau12_samples': 2, 'tau12_s': 2/SAMPLE_RATE,
+        'channel_order': ['microphone1_delayed_two_samples', 'microphone2_reference'],
+        'tone_frequency_hz': 2000, 'tone_amplitude': .2,
+        'broadband_model': '365 equal-amplitude periodic multisine bins; independent seeded phases',
+        'period_samples': period, 'retained_fft_bins': bins.tolist(),
+        'frequency_range_hz': [312.5, 6000.], 'seed': 2026092804,
+        'rng': 'NumPy default_rng PCG64, uniform phase [-pi, pi)',
+        'broadband_scaling': '0.2 * sqrt(1024/2) * irfft(unit-magnitude retained bins)',
+        'fade_samples': 320, 'fade': 'squared sine, endpoint included, before channel delay',
+        'delay_boundary': 'causal zero extension, output truncated to 32000 samples',
+        'score_interval_samples': [8192, 9216], 'score_fft_length': 1024,
+        'score_window': 'rectangular, one complete steady multisine period',
+        'tone_score_bins': [128], 'candidate_tau12_samples': [-6, 2],
+        'noise': 'none', 'randomness': 'fixed source phases only; no repeated-trial statistics',
+    }, 'limits': 'Mathematical equal-amplitude far-field model, no measured recording or speech. '
+       'The 2 kHz steady tone has equal phase at delays +2 and -6 samples within the physical bound. '
+       'Finite fades and record boundaries can break a full-record GCC tie; this does not make a steady pure tone globally identifiable. '
+       'The wide-band signal is a 365-line periodic multisine, not continuous white noise. '
+       'Scores use only specified bins in the steady 1024-sample segment; PCM quantization is checked separately. '
+       'No additive noise, SNR improvement or formal listening result is reported.'}
+
+
 def build_cases() -> dict:
-    """Return nineteen experiments with model parameters and references.
+    """Return twenty experiments with model parameters and references.
 
     Each entry has ``signals`` (filename stem -> CxN array), ``parameters`` and
     ``limits``. Signals are pre-export floats; no group uses peak matching.
@@ -528,6 +572,7 @@ def build_cases() -> dict:
     subtraction_zero_audio = istft(subtraction_zero[None], n_fft=512, hop_length=128,
                                    length=t.size)[0]
     return {
+        'doa_ambiguity': doa_ambiguity_case(),
         'dma_calibration': dma_calibration_case(),
         'room_decay': room_decay_case(),
         'alignment_error': alignment_error_case(),

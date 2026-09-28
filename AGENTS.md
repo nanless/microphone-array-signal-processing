@@ -30,13 +30,14 @@
 |---|---|---|---|
 | 教程源文件 | `chapters/*.md` | 导读、11 章正文和 2 篇附录 | 直接修改；改后检查跨章引用 |
 | 教学代码源文件 | `codes/array_tutorial/*.py`、`codes/examples/*.py` | 与公式对应的最小实现和可运行例子 | 直接修改；必须同步测试、算法覆盖表和对应章节 |
-| 音频生成源与生成物 | `codes/array_tutorial/audio_samples.py`、`codes/examples/generate_audio_samples.py` → `codes/audio/*.wav`、`MANIFEST.json` | 19 组、80 个数学合成音频样本及可核验参数 | 修改源代码后重新生成；禁止手改单个 WAV 或把合成数据称为真实录音 |
-| 房间仿真源与生成物 | `codes/examples/room_srp_exercise.py` → `codes/room_audio/` | 6 个源位各有源、仅直达和完整房间输出，共 18 个白噪声合成 WAV、独立清单与一张结果图 | 使用隔离的 pyroomacoustics 0.10.0 环境生成到新目录并核验后更新；不得混入主清单的 80 个样本或称作真实录音 |
+| 音频生成源与生成物 | `codes/array_tutorial/audio_samples.py`、`codes/examples/generate_audio_samples.py` → `codes/audio/*.wav`、`MANIFEST.json` | 20 组、82 个数学合成音频样本及可核验参数 | 修改源代码后重新生成；禁止手改单个 WAV 或把合成数据称为真实录音 |
+| 房间仿真源与生成物 | `codes/examples/room_srp_exercise.py` → `codes/room_audio/` | 6 个源位各有源、仅直达和完整房间输出，共 18 个白噪声合成 WAV、独立清单与一张结果图 | 使用隔离的 pyroomacoustics 0.10.0 环境生成到新目录并核验后更新；不得混入主清单的 82 个样本或称作真实录音 |
 | GSS 教学链源与生成物 | `codes/array_tutorial/gss_teaching.py`、`codes/examples/gss_teaching_demo.py` → `codes/gss_audio/` | 5 个数学合成 WAV、`STATE.npz` 和独立清单 | 重生后核对共同增益、状态摘要与评分；不把教学子链称为已运行官方 GPU/CHiME 整链 |
-| 移动声源源与生成物 | `codes/array_tutorial/moving_source.py`、`codes/examples/moving_source_audio.py` → `codes/moving_audio/` | 3 个自由场数学合成 WAV 与轨迹真值清单 | 以传播时延和距离衰减的源模型生成；不与主 80 个 WAV 混算或称为真实录音 |
+| 移动声源源与生成物 | `codes/array_tutorial/moving_source.py`、`codes/examples/moving_source_audio.py` → `codes/moving_audio/` | 3 个自由场数学合成 WAV 与轨迹真值清单 | 以传播时延和距离衰减的源模型生成；不与主 82 个 WAV 混算或称为真实录音 |
 | 真实录音与派生文件 | `codes/array_tutorial/real_recordings.py`、`codes/examples/prepare_real_recordings.py` → `codes/real_audio/` | DEMAND 真实同步录音摘录和派生文件，共 4 个 WAV | 原始归档固定摘要；截取范围、通道次序、变更和独立数据许可随资产保留；不与合成清单混用 |
 | 外部代码索引 | `codes/SOURCES.lock.json`、`codes/ARCHIVE_SOURCES.lock.json`、`codes/THIRD_PARTY.md` | 官方仓库、精确版本、许可证和使用边界 | 只记录已核实来源；不把链接或源码可见误写成可自由再分发 |
 | 源码状态生成物 | `codes/SOURCE_STATUS.json`、`codes/ARCHIVE_SOURCE_STATUS.json` | 当前锁定清单对应的本地获取与范围核对结果 | 由获取工具 `--verify --report` 生成，不手工改成成功；方法级运行另记 |
+| 图13统计生成物 | `scripts/make_figures.py` → `codes/reports/figure13_gcc_reverb.json` | 9 条件各 150 次的逐次事件、峰对比度和计数 | 与图片同次计算生成；保留共享随机性、失败和区间口径，不手改结果 |
 | 源码研究文档 | `codes/research/*.md` | 逐算法源码入口、实现差异、工业配置与复现实验 | 与正文和覆盖表互链；区分建议实验和已执行结果 |
 | 项目说明源文件 | `README.md`、`README_EN.md`、`scripts/README.md` | 项目入口、英文说明、构建说明 | 直接修改；中英文共有信息要同步 |
 | 绘图源文件 | `scripts/make_figures.py`、`scripts/make_aec_figures.py` | 生成全部插图 | 图有问题时修改这里，不手工修 PNG |
@@ -54,7 +55,7 @@
 在仓库根目录执行：
 
 ```bash
-.venv/bin/python codes/examples/generate_audio_samples.py  # 合成 80 个 WAV 与清单
+.venv/bin/python codes/examples/generate_audio_samples.py  # 合成 82 个 WAV 与清单
 .venv/bin/python -m codes.examples.gss_teaching_demo  # 独立 GSS 教学音频与状态
 .venv/bin/python -m codes.examples.moving_source_audio  # 独立连续移动双麦音频
 .venv/bin/python codes/examples/prepare_real_recordings.py --check  # 离线检查 4 个真实录音/派生 WAV
@@ -355,6 +356,8 @@ ID｜文件与行号/图号｜类别｜严重度｜证据｜修改建议｜负�
 8. **编号与引用**：算法定义、后文会再次引用的闭式解、目标函数、状态递推和评价指标定义必须编号；
    只在当前行使用的单位换算或临时代数不编号。编号统一写在公式块内，如 `\tag{5-1}`，正文写
    “见式(5-1)”。同章顺序连续，全书不得重复，所有交叉引用都必须指向实际存在的公式。
+
+引用块内的多行公式要核对实际渲染，不能让 Markdown 的 `>` 前缀进入数学内容；发现此类情况时优先把公式移为独立块，并保留前后解释的关联。
 
 网页与 A4 PDF 的公式还须按成品尺寸检查主体字号、行距和横向边界。手机窄视窗还须逐式检查主体和式号是否同时完整可见；页面没有整体横向溢出，不代表内部公式没有被滚动容器裁去。不要为了容纳少数长式把全书
 MathJax 公式统一缩到明显小于相邻正文；优先拆行、使用 `aligned` 或把解释移出窄表。上标、下标按
@@ -701,6 +704,8 @@ Chrome 标签化输出和书签处理后的结构树必须同时保留；存在 
   因果网络结构不自动证明跨调用状态可续接；评分器返回有限数也不自动证明评分有效，警告、哨兵值与有效区域要单独记录。
 - 对上游实现行为进行适配或转写时，明确改编范围并保留所需版权与许可声明，不把改名后的参考程序称为完全独立实现。
   数值期望仍需来自手算、解析边界或另一条独立计算路线；改编程序与上游一致只能证明版本行为一致。
+- 使用数组切片构造重叠子阵或滑窗时，检查其是否共享底层内存；原地缩放不得无意改写另一子阵或输入。接口的成功标志与物理有效性分别验证；对子空间与协方差方法，按适用模型为零能量、非半正定、有效秩不足和相位主值分支设置独立边界例。
+- 采用频谱补零实现实信号的周期时域插值时，须分别检查直流、偶数长度的 Nyquist 分量及逆变换的幅度尺度；用解析三角和或其他独立解析基准核对，并确认原采样网格的值保持。增加插值点不等于增加观测信息。
 - 新增、替换或删除算法时，同时检查正文、`codes/COVERAGE.md`、`codes/THIRD_PARTY.md`、锁定清单、
   示例和测试。正式交付前检查仓库中没有意外下载的第三方源码、权重、数据、凭据和许可证不明文件。
 
@@ -718,7 +723,7 @@ Chrome 标签化输出和书签处理后的结构树必须同时保留；存在 
   不直接修 WAV；改源后重建 `codes/audio/MANIFEST.json` 和受影响图、站点副本。清单记录输入摘要、环境、
   模型与参数、采样率、声道、时长、参考、时延、增益、随机种子、量化与文件摘要。
 - GSS 与自由场移动音频各有独立生成脚本、目录和清单。变更后同时核对中间状态或轨迹真值、每个 WAV 的
-  帧数/通道/摘要，以及站点副本；不能用主音频清单的 80 个文件数掩盖独立资产缺失。
+  帧数/通道/摘要，以及站点副本；不能用主音频清单的 82 个文件数掩盖独立资产缺失。
 - 不同音频组采用不同信号模型时，在清单中明确全局模板适用哪些组，其余逐组覆盖参数；不能让
   默认谐波数、包络或淡入淡出说明错误套用于新组。图读取 PCM 时区分解析值与量化后测量值。
 - 比较组使用同一显式导出增益，不逐文件峰值归一化；保留参考并说明对齐口径。检查有限性、PCM 格式、

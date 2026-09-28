@@ -257,9 +257,9 @@ class ResearchBuildTest(unittest.TestCase):
             ("4.10", "四麦亚采样时差：从几何到可听信号"),
             ("4.11", "本章练习"),
         ])
-        self.assertLess(source.index("**E04-05"), source.index("**E04-06"))
-        self.assertLess(source.index("**E04-06"), source.index("**E04-07"))
-        self.assertLess(source.index("**E04-07"), source.index("**E04-01"))
+        self.assertLess(source.index("#### E04-05"), source.index("#### E04-06"))
+        self.assertLess(source.index("#### E04-06"), source.index("#### E04-07"))
+        self.assertLess(source.index("#### E04-07"), source.index("#### E04-01"))
 
     def test_pdf_same_chapter_unknown_fragment_is_rejected(self):
         with self.assertRaises(ValueError):

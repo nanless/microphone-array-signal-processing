@@ -1,6 +1,7 @@
 import importlib.util
 import hashlib
 import inspect
+import json
 import re
 import tempfile
 import unittest
@@ -156,6 +157,34 @@ class FigureAlgorithmTest(unittest.TestCase):
         self.assertTrue(np.all(first["rate"] <= first["high"]))
         self.assertTrue(np.all(first["q1"] <= first["median"]))
         self.assertTrue(np.all(first["median"] <= first["q3"]))
+        np.testing.assert_array_equal(first["successes"], first["trial_correct"].sum(axis=-1))
+        np.testing.assert_array_equal(first["successes"] + first["failures"], 3)
+        np.testing.assert_array_equal(first["exceptions"], 0)
+        np.testing.assert_array_equal(first["seeds"], [2000, 2017, 2034])
+        np.testing.assert_allclose(first["median"], np.median(first["trial_contrasts"], axis=-1))
+
+    def test_published_gcc_trials_reproduce_counts_and_quantiles(self):
+        report = json.loads((ROOT / "codes/reports/figure13_gcc_reverb.json").read_text())
+        self.assertEqual(report["generator_sha256"],
+                         hashlib.sha256((ROOT / "scripts/make_figures.py").read_bytes()).hexdigest())
+        stats = report["statistics"]
+        correct = np.asarray(stats["trial_correct"])
+        contrasts = np.asarray(stats["trial_contrasts"])
+        self.assertEqual(correct.shape, (3, 3, 150))
+        self.assertEqual(contrasts.shape, correct.shape)
+        self.assertTrue(np.all(np.isfinite(contrasts)))
+        expected = [[150, 150, 150], [149, 148, 150], [50, 57, 68]]
+        np.testing.assert_array_equal(correct.sum(axis=-1), expected)
+        np.testing.assert_array_equal(stats["successes"], expected)
+        np.testing.assert_array_equal(np.asarray(stats["failures"]) + expected, 150)
+        np.testing.assert_array_equal(stats["exceptions"], np.zeros((3, 3)))
+        for name, percentile in (("q1", 25), ("median", 50), ("q3", 75)):
+            np.testing.assert_allclose(stats[name], np.percentile(contrasts, percentile, axis=-1))
+        for i, row in enumerate(expected):
+            for j, count in enumerate(row):
+                lo, hi = figures.wilson_interval(count, 150)
+                self.assertAlmostEqual(stats["low"][i][j], lo)
+                self.assertAlmostEqual(stats["high"][i][j], hi)
 
     def test_fft_convolve_prefix_matches_direct_linear_convolution(self):
         signal = np.array([1.0, -2.0, 0.5, 3.0])
@@ -197,6 +226,25 @@ class FigureAlgorithmTest(unittest.TestCase):
         _, _, estimate = figures.gcc_phat_interpolated(
             delayed, reference, fs, interp=32, max_tau=0.5e-3)
         self.assertAlmostEqual(estimate * fs, sample_delay, delta=1 / 32)
+
+    def test_interpolated_gcc_keeps_nyquist_and_original_sample_amplitudes(self):
+        # Zero-lag impulses give a flat half-spectrum. This finite cosine sum
+        # independently defines the periodic real interpolant, including the
+        # single old Nyquist contribution (not two ordinary-frequency copies).
+        impulse = np.array([1., 0., 0., 0.])
+        for factor in (1, 2, 3, 16):
+            lags, actual, _ = figures.gcc_phat_interpolated(
+                impulse, impulse, 1., interp=factor)
+            expected = (1 + 2 * sum(np.cos(2 * np.pi * k * lags / 8)
+                                   for k in (1, 2, 3)) + np.cos(np.pi * lags)) / 8
+            np.testing.assert_allclose(actual, expected, atol=1e-14)
+            original = np.zeros(8); original[4] = 1
+            np.testing.assert_allclose(actual[::factor], original, atol=1e-14)
+
+    def test_single_dc_bin_is_not_split_as_nyquist(self):
+        for factor in (1, 2, 3, 16):
+            _, actual, _ = figures.gcc_phat_interpolated([1.], [2.], 1., interp=factor)
+            np.testing.assert_allclose(actual, np.ones(factor), atol=1e-14)
 
     def test_bartlett_matches_explicit_quadratic_form(self):
         covariance = np.array(

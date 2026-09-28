@@ -125,7 +125,7 @@ class SpatialParagraphTest(unittest.TestCase):
             ("04_doa-estimation.md", "信噪比高、快拍充足时", "相干源场景还存在"),
             ("04_doa-estimation.md", "这些方法的源码也应分别阅读", "DCASE2022 基线则通过"),
             ("04_doa-estimation.md", "最小输出检查可以先做手算", "换到 DCASE2025 基线时"),
-            ("04_doa-estimation.md", "本书的原创 NumPy 基线位于", "对应式(4-1)"),
+            ("04_doa-estimation.md", "本书的原创 NumPy 基线位于", "是式(4-5)的远场"),
             ("04_doa-estimation.md", "接入实际录音时还要固定", "Capon/MVDR 使用"),
             ("04_doa-estimation.md", "Capon/MVDR 使用", "MUSIC 使用厄米特征分解"),
             ("05_beamforming.md", "§5.7 的噪声估计也需要", "Cohen 的"),
@@ -179,9 +179,9 @@ class SpatialParagraphTest(unittest.TestCase):
 
     def test_music_and_nearfield_formula_belongs_to_third_step(self):
         for start, end, formula, explanation in (
-                ("**思想三步**", "**第 2 步为什么成立**", r"\tag{4-3}", "正交检验的含义"),
+                ("**思想三步**", "**第 2 步为什么成立**", r"\tag{4-13}", "正交检验的含义"),
                 ("**锚点算法：角度 × 距离球面扫描。**", "实际 SRP 或宽带最大似然",
-                 r"J(r,\theta)", "分母为 3")):
+                 r"\tag{4-18}", "分母为 3")):
             source, path = chapter_fragment("04_doa-estimation.md", start, end)
             html, lists = rendered_lists(start+source, path)
             self.assertEqual([len(items) for items in lists], [3])

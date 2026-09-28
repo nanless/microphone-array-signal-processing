@@ -1,6 +1,6 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 82 个 Git 上游项目；已在 `codes/upstream/_downloads/` 取得 74 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。2026-09-28 离线核验 73 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 8 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 84 个 Git 上游项目；已在 `codes/upstream/_downloads/` 取得 74 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。2026-09-28 离线核验 73 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 10 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”只说明来源、提交、工作区状态和指定入口符合清单，不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -180,4 +180,15 @@ StructureFromSound保存在Git忽略的`codes/upstream/_downloads/structure-from
 | [HARKTOOL5 3.5.0](https://hark.jp/download/source-code/) | 独立归档锁定 README、debian 许可与变更、CMake、src、python 和两个文档源；不取生成文档目录 | HARK License v2.0，研究、开发、教育和学术用途受原文约束，商业用途另行授权；不是普通宽松开源许可。未编译或测设备 |
 | [Infineon AE 配置](https://github.com/Infineon/mtb-example-psoc-edge-ae-application/tree/955a61090acf7caddd75fc74161fc0fb40aa7ae5) | `infineon-ae-config`：仅 GeneratedSource 下配置 C/H 与根 LICENSE | 两个文件逐文件 Apache-2.0；根 EULA 保留供核对，应用包装代码、配置器项目和算法核心不在取得范围内；未构建或刷写 |
 
-HARK 不属于 Git 锁表的 82 项，另见 [ARCHIVE_SOURCES.lock.json](ARCHIVE_SOURCES.lock.json) 和由工具生成的 [ARCHIVE_SOURCE_STATUS.json](ARCHIVE_SOURCE_STATUS.json)。下载采用官方 `.dsc` 公布的固定 SHA-256，来源核实于2026-09-28；归档与源码放在忽略目录，不随本书 Git 提交重新分发。Infineon 已取得三个登记文件并通过固定提交、来源、清洁工作树和筛选范围核验；取得的配置数组不能重现闭源算法核心。
+HARK 不属于 Git 锁表的 84 项，另见 [ARCHIVE_SOURCES.lock.json](ARCHIVE_SOURCES.lock.json) 和由工具生成的 [ARCHIVE_SOURCE_STATUS.json](ARCHIVE_SOURCE_STATUS.json)。下载采用官方 `.dsc` 公布的固定 SHA-256，来源核实于2026-09-28；归档与源码放在忽略目录，不随本书 Git 提交重新分发。Infineon 已取得三个登记文件并通过固定提交、来源、清洁工作树和筛选范围核验；取得的配置数组不能重现闭源算法核心。
+
+### 第4章固定实现复核（2026-09-28）
+
+[doatools ESPRIT 实际对照](reports/doatools_esprit_reference.json)记录固定版本默认行加权在重叠切片上原地写入产生的偏差；`row_weights="none"`与独立安全复制参考分别保留。成功标志不代替方向误差检查。本书没有修改上游工作树，也不将该诊断称为整个工具包验收。
+
+| 固定来源 | 范围 | 许可与取得状态 |
+|---|---|---|
+| [X-SRP](https://github.com/egrinstein/xsrp/tree/5876b760c0ead781c05d4f319ed23e302478ea2d) | 可组合时域/频域及体积 SRP；研究手册限定当前接口 | 元数据声明 MIT，但未建立完整许可条款；仅索引，未运行 |
+| [DCASE2026 SAISELD 官方基线](https://github.com/iranroman/DCASE2026_Task3_SAISELD_baseline/tree/d4df66251f39e34bc0157be93858e5a68ec9d7c4) | 声学图、分割、追踪与事件输出链 | 固定版本未建立明确源码许可；仅索引，权重许可另核，未运行 |
+
+源码入口和版本见锁表。网站可访问、Python 包元数据的许可名称、模型权重可下载是不同事实，不能互相代替授权条款。

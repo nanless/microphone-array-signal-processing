@@ -6,6 +6,8 @@
 """
 from pathlib import Path
 import hashlib
+import json
+import platform
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -227,8 +229,10 @@ def distortionless_weights(covariance, steering, diagonal_loading=0.0):
 def gcc_phat_interpolated(x1, x2, fs, interp=16, max_tau=None):
     """用零填充互谱得到插值 GCC-PHAT。
 
-    返回时延轴（秒）、相关序列和最大峰时延。FFT 长度至少覆盖线性相关，
-    因而不会把两路信号末尾绕回开头。interp 只细化时延网格，不增加带宽。
+    返回时延轴（秒）、相关序列和最大峰时延。原 FFT 长度覆盖未加权
+    线性相关；PHAT 加权后的逆变换仍是周期函数，不保证有限支撑。
+    interp 只细化同一周期三角插值，不增加带宽或独立观测信息。
+    加长实逆变换时拆分旧 Nyquist 项，并补偿逆变换长度带来的尺度。
     """
     x1 = np.asarray(x1, dtype=float)
     x2 = np.asarray(x2, dtype=float)
@@ -241,7 +245,11 @@ def gcc_phat_interpolated(x1, x2, fs, interp=16, max_tau=None):
     cross = np.fft.rfft(x1, n_fft) * np.conj(np.fft.rfft(x2, n_fft))
     phat = cross / np.maximum(np.abs(cross), np.finfo(float).eps)
     n_interp = n_fft * interp
-    correlation = np.fft.fftshift(np.fft.irfft(phat, n=n_interp))
+    if interp > 1 and n_fft > 1 and n_fft % 2 == 0:
+        # The old self-conjugate Nyquist bin becomes a +/- frequency pair.
+        # irfft supplies its negative partner, so each member gets half.
+        phat[-1] *= 0.5
+    correlation = interp * np.fft.fftshift(np.fft.irfft(phat, n=n_interp))
     lags = (np.arange(n_interp) - n_interp // 2) / (fs * interp)
     if max_tau is not None:
         keep = np.abs(lags) <= max_tau
@@ -537,7 +545,7 @@ def fig_doa_spectrum():
     music_db = 10 * np.log10(music / music.max())
     fig, axes = plt.subplots(2, 1, figsize=(9.5, 9.0))
     axes[0].plot(th, 10 * np.log10(bart + 1e-6), color=C_BLUE, alpha=0.85, lw=1.4, label="Bartlett (常规BF)")
-    axes[0].plot(th, 10 * np.log10(capon + 1e-6), color=C_RED, lw=2.2, label="Capon/MVDR 谱")
+    axes[0].plot(th, 10 * np.log10(capon + 1e-6), color=C_RED, ls="--", lw=2.2, label="Capon/MVDR 谱")
     for s in srcs:
         axes[0].axvline(s, color="0.55", ls="--", lw=1.2, alpha=0.9)
         axes[0].plot(s, 2.2, marker=11, color="0.45", ms=10)
@@ -551,8 +559,8 @@ def fig_doa_spectrum():
         axes[1].plot(s, 2.2, marker=11, color="0.45", ms=10)
         axes[1].annotate(f"真源{s}°", xy=(s, -2), xytext=(s - 6, -8), fontsize=FS_SMALL,
                          arrowprops=dict(arrowstyle="->", color="k", lw=0.8))
-    axes[1].set_ylim(-25, 3); axes[1].set_xlabel("角度 (°)"); axes[1].set_ylabel("伪谱 (dB)")
-    axes[1].text(0.5, 0.12, "峰高不等于源功率；本图只比较峰位与谱形", transform=axes[1].transAxes,
+    axes[1].set_ylim(-25, 3); axes[1].set_xlabel("角度 (°)"); axes[1].set_ylabel("按自身峰值归一的伪谱 (dB)")
+    axes[1].text(0.5, 0.30, "峰高不等于源功率\n只比较峰位与谱形", transform=axes[1].transAxes,
                  fontsize=FS_SMALL, color=C_RED, ha="center",
                  bbox=dict(fc="white", ec=C_RED, lw=0.7, alpha=0.9, boxstyle="round,pad=0.3"))
     axes[1].legend(fontsize=FS_SMALL); axes[1].set_title("(b) MUSIC 特征结构类伪谱", fontsize=12); axes[1].grid(ls=":", alpha=0.5)
@@ -585,7 +593,8 @@ def fig_gcc_phat():
     F0 = np.fft.rfft(sig)
     x1 = np.fft.irfft(F0 * np.exp(-2j * np.pi * fr * tau_true)) + 0.05 * rng.standard_normal(n)
     x2 = sig + 0.05 * rng.standard_normal(n)
-    fig, axes = plt.subplots(3, 1, figsize=(9.5, 12.0))
+    fig, axes = plt.subplots(3, 1, figsize=(9.5, 10.5),
+                             gridspec_kw={"height_ratios": [1, 1, 0.8]})
     # (a) 两路信号：放大到亚毫秒窗口，时移肉眼可辨
     ax = axes[0]
     t0 = 2.0e-3
@@ -597,12 +606,10 @@ def fig_gcc_phat():
     ax.annotate("", xy=(2.20, 0.62), xytext=(2.20 - tau_true * 1e3, 0.62),
                 arrowprops=dict(arrowstyle="<->", color="k", lw=2.0))
     ax.text(2.20 - tau_true * 1e3 / 2, 0.68, "τ≈58 μs", ha="center", fontsize=FS_SMALL)
-    ax.set_ylim(-0.8, 0.95)
+    ax.set_ylim(-1.15, 1.15)
     ax.set_title("(a) 两路信号（放大 0.5 ms 窗口）", fontsize=FS_TITLE)
     ax.set_xlabel("时间 (ms)", fontsize=FS_LABEL)
     ax.set_ylabel("归一化幅度", fontsize=FS_LABEL)
-    ax.text(0.03, 0.05, "τ=58.3 μs < 采样间隔 62.5 μs\n（不足 1 个采样点，肉眼几乎难辨）",
-            transform=ax.transAxes, fontsize=FS_SMALL, color=C_MAIN, va="bottom")
     ax.legend(fontsize=FS_SMALL, loc="upper right"); ax.grid(ls=":", alpha=0.5)
     # (b) 对互谱做零填充，将 GCC-PHAT 的时延网格细化 16 倍。
     ax = axes[1]
@@ -627,7 +634,7 @@ def fig_gcc_phat():
             transform=ax.transAxes, fontsize=FS_TINY + 0.5, color=C_RED, va="top")
     ax.set_xlim(-500, 500)
     ax.set_title("(b) GCC-PHAT（16×时延网格插值）", fontsize=FS_TITLE)
-    ax.set_xlabel("时延 τ (μs)", fontsize=FS_LABEL); ax.set_ylabel("GCC-PHAT值", fontsize=FS_LABEL); ax.grid(ls=":", alpha=0.5)
+    ax.set_xlabel("时延 τ (μs)", fontsize=FS_LABEL); ax.set_ylabel("GCC-PHAT（保持原网格幅度）", fontsize=FS_LABEL); ax.grid(ls=":", alpha=0.5)
     # (c) 几何：θ 自正横方向（垂直于两麦连线）起算
     ax = axes[2]
     ax.scatter([0, 0.04], [0, 0], s=160, c=C_BLUE, zorder=6, edgecolors="k")
@@ -652,7 +659,7 @@ def fig_gcc_phat():
     ax.text(0.02 + 0.098 * ray[0], 0.095 * ray[1], "远场声源", fontsize=FS_LABEL, color=C_RED,
             ha="left", va="center")
     ax.set_title("(c) θ=arcsin(c·τ/d)=arcsin(0.5)=30°\n（θ 自正横方向起算）", fontsize=FS_TITLE)
-    ax.set_xlim(-0.05, 0.17); ax.set_ylim(-0.028, 0.16); ax.set_aspect("equal"); ax.axis("off")
+    ax.set_xlim(-0.05, 0.17); ax.set_ylim(-0.028, 0.13); ax.set_aspect("equal"); ax.axis("off")
     fig.suptitle("图12  GCC-PHAT 声源定位原理：亚采样时延估计（模拟）", fontsize=FS_SUP)
     fig.tight_layout()
     save(fig, "fig12_gcc_phat.png")
@@ -766,7 +773,12 @@ def fig_srp_grid():
     im = ax.pcolormesh(GX, GY, SRP, cmap="viridis", shading="auto")
     ax.scatter(mics[:, 0], mics[:, 1], s=120, c=C_BLUE, edgecolors="k", zorder=6)
     imax = np.unravel_index(np.argmax(SRP), SRP.shape)
-    ax.plot(GX[imax], GY[imax], "r*", ms=12, mec="k")
+    ax.plot(*src, marker="o", ms=9, mfc="none", mec="white", mew=1.8,
+            ls="none", label="真源 (5.500, 3.800) m")
+    ax.plot(GX[imax], GY[imax], "r*", ms=12, mec="k",
+            label=f"网格峰 ({GX[imax]:.3f}, {GY[imax]:.3f}) m")
+    ax.legend(loc="upper left", fontsize=FS_SMALL - 1,
+              facecolor="0.9", framealpha=0.95)
     ax.set_title("(b) SRP-PHAT 累积分数与峰值位置", fontsize=FS_TITLE)
     ax.set_xlim(-0.5, 7); ax.set_ylim(-0.5, 5.2); ax.set_aspect("equal")
     ax.set_xlabel("x (m)", fontsize=FS_LABEL); ax.set_ylabel("y (m)", fontsize=FS_LABEL)
@@ -1872,24 +1884,41 @@ def gcc_reverb_trial(t60, drr_db, seed, fs=16000, signal_length=16000,
 
 
 def gcc_reverb_statistics(t60_values, drr_values, trials=150):
-    """返回 T60×DRR 网格上的正确率、Wilson 区间和对比度四分位数。"""
+    """返回统计量与逐次结果；任何计算异常都中止，不静默删试次。
+
+    同一 trial 的源在九条件共用；固定 T60 改 DRR 时还共用两条随机尾
+    和截帧位置。改变 T60 会改变随机数消耗，不能称两条尾及截帧均配对。
+    """
+    if not isinstance(trials, (int, np.integer)) or trials < 1:
+        raise ValueError("trials must be a positive integer")
     t60_values = np.asarray(t60_values, dtype=float)
     drr_values = np.asarray(drr_values, dtype=float)
     shape = (drr_values.size, t60_values.size)
     rate = np.empty(shape); low = np.empty(shape); high = np.empty(shape)
     median = np.empty(shape); q1 = np.empty(shape); q3 = np.empty(shape)
+    success_count = np.empty(shape, dtype=int)
+    trial_correct = np.empty((*shape, trials), dtype=bool)
+    trial_contrasts = np.empty((*shape, trials))
+    seeds = 2000 + np.arange(trials) * 17
     for i, drr_db in enumerate(drr_values):
         for j, t60 in enumerate(t60_values):
-            results = [gcc_reverb_trial(t60, drr_db, 2000 + k * 17)[2:]
-                       for k in range(trials)]
+            results = [gcc_reverb_trial(t60, drr_db, int(seed))[2:]
+                       for seed in seeds]
             successes = int(sum(item[0] for item in results))
             lo, hi = wilson_interval(successes, trials)
             contrasts = np.asarray([item[1] for item in results])
+            success_count[i, j] = successes
+            trial_correct[i, j] = [item[0] for item in results]
+            trial_contrasts[i, j] = contrasts
             rate[i, j], low[i, j], high[i, j] = successes / trials, lo, hi
             median[i, j] = np.median(contrasts)
             q1[i, j], q3[i, j] = np.percentile(contrasts, [25, 75])
     return {"rate": rate, "low": low, "high": high,
-            "median": median, "q1": q1, "q3": q3}
+            "median": median, "q1": q1, "q3": q3,
+            "successes": success_count, "failures": trials - success_count,
+            "exceptions": np.zeros(shape, dtype=int), "trials": int(trials),
+            "trial_correct": trial_correct, "trial_contrasts": trial_contrasts,
+            "seeds": seeds}
 
 
 def fig_gcc_reverb():
@@ -1941,6 +1970,34 @@ def fig_gcc_reverb():
         axes[index].get_position().y0 - axes[index + 1].get_position().y1
         for index in range(2))
     save(fig, "fig13_gcc_reverb.png")
+    return stats
+
+
+def write_gcc_reverb_report(stats, output):
+    """保存与图13同一次计算的逐次值；仅显式生成时写入。"""
+    report = {
+        "schema_version": 1,
+        "generator": "scripts/make_figures.py::gcc_reverb_statistics",
+        "generator_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "environment": {"python": platform.python_version(), "numpy": np.__version__},
+        "configuration": {"sample_rate_hz": 16000, "signal_samples": 16000,
+            "frame_samples": 1024, "direct_delay_samples": 9, "true_gcc_lag_samples": -9,
+            "fft_samples": 4096, "search_lag_samples": [-64, 64],
+            "source_lowpass_hz": 6000, "phat_additive_epsilon": 1e-10,
+            "row_drr_db": [6.0, 0.0, -6.0], "column_t60_s": [0.1, 0.4, 0.8],
+            "success_tolerance_samples": 1, "wilson_z": 1.96,
+            "percentile_method": "numpy default linear", "additive_noise": False,
+            "source_peak_normalized": True, "frame_window": "rectangular",
+            "frame_start_min": 0, "frame_start_max_inclusive": 14974,
+            "tail_duration_factor": 1.1, "amplitude_decay_coefficient": 6.91,
+            "contrast_definition": "max(g)/(median(abs(g))+1e-12)"},
+        "randomness": "Each seed uses source seed+1000 shared across conditions. At fixed T60, DRR conditions share both random tails and frame start. Changing T60 changes RNG consumption; second tail and frame start are not paired.",
+        "model": "Finite 1 s zero-start source; causal full convolution then prefix crop; independent exponential random tails with direct energy 1 and prescribed total tail energy. Not a measured room or a controlled isolation of tail duration.",
+        "exception_policy": "Any computation exception aborts generation; no trial is omitted.",
+        "statistics": {key: value.tolist() if isinstance(value, np.ndarray) else value
+                       for key, value in stats.items()},
+    }
+    Path(output).write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
 
 
 # ----------------------------------------------------------------------
@@ -2932,7 +2989,8 @@ def main():
     fig_aec_landscape()
     fig_wpe()
     fig_binaural()
-    fig_gcc_reverb()
+    write_gcc_reverb_report(fig_gcc_reverb(),
+        Path(__file__).resolve().parents[1] / "codes/reports/figure13_gcc_reverb.json")
     fig_delay_phase()
     fig_beampattern_anatomy()
     fig_dsin_geometry()

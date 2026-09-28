@@ -260,11 +260,15 @@ E04-06 已加入实际重复抽样，入口为 [`mdl_repeated_trials.py`](../exa
 
 这组实验没有检验重叠 STFT 帧、不同源强比、真实房间或时间迟滞。重叠帧不天然独立，把帧数全部当成独立快拍会改变评分口径；工程中的源数检测还应评估迟滞，避免每帧改变下游子空间维度。不能由本书七组数学仿真推出真实录音检测率。
 
+正文还讨论特征值间隙这一辅助启发式：先明确特征值排序，再查相邻差或比的突变。它不是上述 AIC/MDL 的另一种名称，没有由惩罚似然自动得到的快拍数修正。强弱源、空间有色噪声和相干源都可能使最大的间隙不对应物理源数；本文没有把一般特征值分解函数登记为已复现的源数检测器，也未运行该启发式的成功率实验。
+
 ### 6. 前向与前后向空间平滑
 
 对应 §4.6。doatools 的 `estimation/preprocessing.py::spatial_smooth(R,l,fb)` 将平移子阵协方差平均；这里 `l` 是子阵数量，输出维度为 `M-l+1`，不是很多论文中的子阵长度定义。[作者接口与 Pillai–Kwon 文献定位](https://morriswmz.github.io/doatools.py/references/doatools.estimation.preprocessing.html)。
 
 建议用 8 元 ULA、两条完全相关的平面波，先检查未经平滑的信号协方差秩，再取 3 个长度为 6 的子阵比较。平滑能改善特定模型的秩，但付出有效孔径和可处理源数的代价。非均匀阵、挡板方向响应或未知互耦不满足相同平移流形时，不能直接滑动矩阵下标冒充空间平滑。
+
+固定函数先形成前向平均 `Rf`；`fb=True` 时再返回 `0.5*(Rf+flip(Rf).conj())`，`flip` 同时反转两轴，对应交换矩阵作用于两侧。它不另做自动源数选择，也不检查真实阵列是否满足这种对称性。此入口完成的是静态核查；本书平滑手算不能替代上游函数的运行验收。[固定预处理源码](https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/estimation/preprocessing.py)。
 
 ## 定位算法和搜索加速
 
@@ -273,6 +277,8 @@ E04-06 已加入实际重复抽样，入口为 [`mdl_repeated_trials.py`](../exa
 对应 §4.2。本书 `doa.py::gcc_phat` 明确正时延约定、FFT 补零、物理 lag 截取和三点插值；ODAS 的 `src/signal/xcorr.c`、`src/system/freq2xcorr.c` 可作为块处理参考。补零到两段长度之和减一只保证未加权互相关的有限长度等价；PHAT 归一化改变频谱后，逆变换不再保证相同的有限支撑，FFT 长度仍可能改变相关值。PHAT 消除互谱幅度权重，但低能量频点的相位会变得不可靠，因此归一化下限与有效频点筛选都是算法的一部分。
 
 建议给一个 0.5 ms 延迟的宽带源，随后改成单频正弦、两源和静音。分别报告主峰、次峰、峰背比和最大允许 lag。亚采样插值只细化相关峰形，不能凭空恢复窄带信号缺少的可辨识信息。先固定通道号，再固定 `t_1-t_2` 的方向，避免定位后又人工翻转符号。
+
+CC、Roth、SCOT 与 PHAT 改变同一互谱的频率权重。普通 CC 保留互谱幅度；Roth 用指定一路自谱作分母，交换参考路会改变权重；SCOT 使用两路自谱乘积的平方根；PHAT 使用互谱模。SCOT 若直接用单帧未经平滑的周期图，自谱乘积的平方根会等于互谱模，不能由这一次数值相同推出两种统计估计总是等价。比较时需要相同的谱平均、下限和物理时延范围。现有教学入口只实现 PHAT，另外三项按正文原理和公式阅读，未用同名函数冒充已运行实现。[Knapp–Carter 1976 原论文](https://doi.org/10.1109/TASSP.1976.1162830)。
 
 ### 8. SRP-PHAT 与近场三维网格
 
@@ -284,17 +290,23 @@ E04-06 已加入实际重复抽样，入口为 [`mdl_repeated_trials.py`](../exa
 
 建议在真值落格点、落在格点之间、落在搜索区外三个条件下比较峰值。源在区外时，算法仍可能返回边界上的最大值，因此“找到峰”不等于位置可信。部署时缓存静态时延表、限制重复麦对、记录选峰间距，并在阵列几何或采样率变化后重建表。
 
+**两个实现的分数不能直接混用。** 本书入口接收 `M×F×T` 复谱，逐帧归一化麦对互谱，再对帧、所选频点和无序麦对平均；返回的实数得分可以为负。固定 pyroomacoustics `SRP._process` 先按每通道频谱模做 PHAT，累积互谱后计算两倍麦对实部，并加上 `T*M*F` 的方向无关常数，最后除以 `T*F*P`（`P` 为麦对数）。只有所有参与项都高于各自下限、频点和帧相同、几何及相位约定对齐时，后者才等于本书分数的两倍再加 `M/P`。它们的最大值方向此时相同，绝对谱高和峰背比却不同。静音或低幅频点受不同下限处理影响，不能沿用该关系；尤其上游常数按维度加入，并非逐项实测自功率。[固定 SRP 计算入口](https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/doa/srp.py)。此处是逐式静态比较，未声称完成两包同录音的运行对照。
+
 ### 9. 分层 SRP-PHAT 与方向性麦对筛选
 
 对应 §4.3 的工程扩展。ODAS 的 `src/module/mod_ssl.c` 组织定位流水，`src/signal/scan.c`、`src/signal/spatialindex.c` 和配置中的 `scans` 描述搜索层级；配置还包含相关插值倍率 `interpRate`。分层搜索先在粗球面上找候选，再搜索附近细方向，方向响应可用于排除缺少有效声学信息的麦对。
 
 建议同一输入分别做全细网格和分层网格，比较漏峰率、最大角度误差、查表次数及内存。两源距离接近时，粗层可能合成一个峰，后面的细化无法恢复已经丢弃的区域。因此候选数量、邻域宽度和多个峰的保留规则应一起标定。依据为 [ODAS 官方源码](https://github.com/introlab/odas) 与 [Grondin–Michaud 的方法论文](https://arxiv.org/abs/1812.00115)。
 
+固定 `mod_ssl_process` 的具体链是频谱相位归一化、选定麦对乘积、频谱插值、逆变换相关、逐层评分与选峰；查下一个候选前会重置前一候选附近的相关项。`pots` 中每项为三维方向分量和评分，评分还乘以 `interpRate`，既不是米制坐标，也不是后端稳定轨迹或概率。定位输出进入 `mod_sst` 后才有另一套追踪状态；不能用单帧候选数量当成当前活跃说话人数。[固定 ODAS 定位模块](https://github.com/introlab/odas/blob/bcb845434495e293df3d48f1203b7a86e1852449/src/module/mod_ssl.c)。工程中要连同通道映射、阵列方向响应、采样率、声速、插值倍率和层级一起保存配置；本次仅静态读码，未执行设备录音流水线或宣称实时时延。
+
 ### 10. SVD-PHAT 与多源扩展
 
 这是 SRP 搜索加速的补充研究。固定几何与频点后，SRP 映射矩阵可先做截断 SVD；在线把 PHAT 观测投影到低维空间，再搜索候选方向。保留秩控制近似误差与每帧成本；多源扩展还需逐次投影已解释的分量。[单源原论文](https://arxiv.org/abs/1811.11785)、[多源原论文](https://sls.csail.mit.edu/publications/2019/Grondin_Interspeech-2019.PDF)。
 
 最小实验应先对同一个 SRP 矩阵比较完整乘法与截断乘法，测量分数误差，再比较 DOA；不能只报告投影速度。高频、复杂几何、较密网格可能改变所需秩。本文尚未确认与这两篇论文唯一对应且许可明确的作者实现，因此此项保留原理索引，不以普通 SVD 库替代算法源码。
+
+另一个可对照的作者工程是 *Steered Response Power for Sound Source Localization: A Tutorial Review* §7 的 X-SRP。它将互相关、候选空间、麦对选择和搜索过程拆成可替换模块，适合研究同一 SRP 目标下的工程取舍；不应由框架名称推断每个扩展都实现了原论文。[作者教程 §7](https://arxiv.org/html/2405.02991v2)；[固定代码入口](https://github.com/egrinstein/xsrp/tree/5876b760c0ead781c05d4f319ed23e302478ea2d/xsrp)。固定提交的 `pyproject.toml` 只声明 MIT 标识，根目录未见完整许可文本，因此本书保留官方索引和入口，未下载或执行，不能将其计作新增已取得源码。
 
 #### SMP-PHAT：合并重复基线，而非截断矩阵
 
@@ -328,11 +340,15 @@ E04-06 已加入实际重复抽样，入口为 [`mdl_repeated_trials.py`](../exa
 
 建议在同一个解析协方差上检查双麦手算，再分别缩放输入功率和导向矢量。工业成像还要记录 CSM 对角去除与功率归一化；这些设置改变幅值解释。Capon 的窄峰不自动意味着更准确，少快拍或目标流形失配会产生错误抑制。
 
+Capon 的原始出处是 *High-Resolution Frequency-Wavenumber Spectrum Analysis*（1969），原文印刷页 1410 的式(18)给出逆协方差谱，页 1412 讨论估计谱矩阵可逆所需的样本条件。[原文 PDF](https://epsc.wustl.edu/~ggeuler/reading/cam_noise_biblio/capon_1969-ieee-high-resolution_frequency-wavenumber_spectrum_analysis.pdf)。本书的样本数、加载和导向归一化须另行明确；加载后可求解并不能证明少快拍协方差已经具有充分统计精度。Bartlett/Capon 都是候选方向上的功率类量，MUSIC 则是正交性伪谱，不能把三者的峰高当成同单位功率比较。
+
 ### 12. MUSIC 与频点归一化 NormMUSIC
 
 对应 §4.6。pyroomacoustics `doa/music.py` 和 `doa/normmusic.py` 共享子空间计算；频点归一化用于改变宽带伪谱合并时各频点的影响。它们输出扫描谱和峰方向，仍需要源数、噪声子空间维度和峰间距。
 
 建议令一个频点信号很强、另一个频点很弱，比较归一化前后方向；再将弱频点换成纯噪声。按峰值归一化可能让低可靠频点获得过大权重，因此有效频带选择仍不可省略。MUSIC 的理想零分母应采用明示数值处理，不能把无穷大误认为一个有统计校准的置信度。
+
+固定 `MUSIC._compute_correlation_matricesvec` 把 `M×F×T` 输入转置为帧、频率、通道，形成每频二阶矩并对帧平均，未先减均值；`_subspace_decomposition` 利用 `eigh` 的升序结果按已给定的 `num_src` 切分。`NormMUSIC` 开启逐频最大谱值归一化，再在频率轴合并，不是对协方差白化，也不自动选择可靠频点。空间有色噪声仍会改变噪声子空间；应使用合适的噪声模型或另作预白化。[固定 MUSIC 源码](https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/doa/music.py)。这些接口本次仅静态核查。
 
 ### 13. root-MUSIC
 
@@ -340,11 +356,28 @@ E04-06 已加入实际重复抽样，入口为 [`mdl_repeated_trials.py`](../exa
 
 建议先用单源无噪协方差比较 MUSIC 扫描峰和 root-MUSIC，再加入相干双源、几何扰动和空间混叠。对共轭倒数根需按算法规则选取，不可把所有近圆根都计作声源；成功找到指定数量的根也不保证方向正确。免网格只消除了网格量化，未消除特征分解和多项式数值误差。
 
+固定 `RootMUSIC1D.estimate` 中还使用 `np.complex_` 创建系数数组，该别名已从 NumPy 2 移除；因此下面 ESPRIT 在 NumPy 2.5.3 中运行成功进入计算，不代表同一包的 root-MUSIC 相容。当前仅核实该源码调用，未在该环境实际调用 root-MUSIC；此前缺少 SciPy 的导入失败另记在末节。[固定 root-MUSIC 源码](https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/estimation/music.py)。
+
 ### 14. LS-ESPRIT、TLS-ESPRIT 与几何约定
 
 对应 §4.6。本书 `esprit_ula` 实现最小二乘旋转矩阵；外部阅读入口为 doatools `estimation/esprit.py`。LS 只把一侧当作拟合目标，TLS 同时考虑两侧子空间块误差；两者都依赖平移不变子阵，不能对任意几何直接使用。
 
 建议用固定波长改变间距，检查旋转特征值相位到角度的反解；交换两个子阵后，应先解释相位符号变化再转换角度。TLS 的矩阵划分和截断秩需与源码接口一致。存在近场曲率、位置误差或相干源时，低残差不保证真实方向正确。
+
+**固定版默认行加权的实调反例。** doatools 提交 `9469db201e0418aef6b97583ef54b6fec2769502` 的 `Esprit1D.estimate` 实际默认 `formulation='ls'`，docstring 却写 TLS；复现时必须显式给出。其第 120～125 行的 `Es1=Es[:-displacement,:]` 与 `Es2=Es[displacement:,:]` 是重叠视图，随后两次原地乘行权会相互影响。期望计算是给两块分别左乘同一对角权重矩阵；重叠内存导致其中一些原行被重复缩放，破坏本应保留的移位关系。[固定 ESPRIT 源码](https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/estimation/esprit.py)。
+
+本书于 2026-09-28 用既有独立临时环境实际调用未经修改的上游。环境为 Python 3.13.12、NumPy 2.5.3、SciPy 1.18.1、macOS arm64；缺少可选稀疏求解包的导入警告完整保留，不影响这四次 ESPRIT 调用。输入为 8 元半波距 ULA，波长 1 m、间距 0.5 m，已知源数 2、移位 1；真角为 −5°、10°，导向为 `exp(+j*pi*m*sin(theta))`。直接构造总体协方差 `R=A Aᴴ+0.1I`，每源功率为 1、每麦白噪声功率 0.1，总源功率对噪声比为 20，即约 13.01 dB。这不是有限快拍或音频实验，没有随机抽样、采样率或 STFT 参数。
+
+| 求解 | 原版 `row_weights='default'` 方向（°） | 原版 `row_weights='none'` 方向（°） | 独立安全复制后同样加权（°） |
+|---|---|---|---|
+| LS | −6.508543，11.527825 | −5，10 | −5，10 |
+| TLS | −6.478045，11.496900 | −5，10 | −5，10 |
+
+默认行权为 `[1,√2,√3,2,√3,√2,1]`。四次上游调用都返回 `resolved=True`，但两次默认加权的最大方向误差分别约 1.527825°、1.496900°；该标志不能判定方向正确。未加权两路与独立复制两路的误差均低于 `10⁻⁸` 度。独立 LS 使用 `lstsq`，TLS 使用拼接子阵的 SVD；再用解析导向列替代特征向量作为另一组参考，结果也恢复真角。解析基下的移位特征值直接为 `exp(j*pi*sin(theta))`，无需用上游输出定义答案。
+
+[执行脚本](../examples/reproduce_doatools_esprit.py)在调用前核对提交、跟踪文件状态和所调用关键源码摘要，禁止未跟踪 Python 源混入；[报告](../reports/doatools_esprit_reference.json)绑定脚本、配置与源码摘要，保留完整协方差、原版四路结果及两组独立参考。普通[离线测试](../../tests/test_codes_doatools_esprit_reference.py)只核报告和 NumPy 参考，以标量三角和、±30° 四分之一周期解析基及换基不变性独立校验，不导入外部包或联网。实际重跑需要已取得的固定源码和含 SciPy 的环境，例如本次使用的 `/private/tmp/room-pra-venv/bin/python codes/examples/reproduce_doatools_esprit.py --output codes/reports/doatools_esprit_reference.json`。
+
+本书保留原版失败，未修改上游或将独立参考包装成修复发行版。`row_weights='none'` 只是在本例中通过的明确调用配置；它与安全复制参考都不构成真实房间准确率、TLS 优于 LS、不同源数或其他几何已验证的证据。
 
 ### 15. CSSM 宽带聚焦
 
@@ -370,11 +403,21 @@ E04-06 已加入实际重复抽样，入口为 [`mdl_repeated_trials.py`](../exa
 
 建议在非均匀平面阵上放两个不落网格的独立源，固定随机种子比较重建残差和角度误差。多个随机初值增加计算成本，也可能得到不同局部结果。原论文专库 `figure_doa_synthetic.py`、`figure_doa_separation.py`、`figure_doa_experiment.py` 分别定位仿真、分辨率和录音实验；旧环境与音频获取单列，不能直接执行过时安装脚本。[原实验仓库](https://github.com/LCAV/FRIDA)。
 
+这里“任意阵列”必须加上模型范围：作者预印本 §2.1.1 的麦坐标属于二维平面，采用远场、互不相关声源的可见度模型；其式(1)～(2)把互谱写成各方向功率贡献之和。全三维球面恢复在该文 §4 列为扩展方向，固定 pyroomacoustics 的 `FRIDA._process` 也对 `dim==3` 明确报错。[作者预印本（本段节号按此稿）](https://dokmanic.ece.illinois.edu/assets/pdf/Pan2016tv.pdf)；[固定 FRIDA 接口](https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/doa/frida.py)。平面内布局可以不规则，不等于任意三维阵列、相干源或近场都适用。
+
+`signal_type='visibility'` 从选中帧的协方差取非对角元素，帧筛选受 `stft_noise_floor` 与 `stft_noise_margin` 控制；可选低秩清理还使用给定源数。`signal_type='raw'` 则先按固定表达式校正逐帧相位旋转再平均原始复谱，输入统计意义不同。论文利用更多麦对可见度讨论的源数能力，不能直接移到 raw 分支；相干源交叉项也不会因去除自功率而自动消失。固定代码的 `n_rot` docstring 写 10、构造默认却为 1，工程记录应显式保存所有实际参数。当前未运行这两种 FRIDA 接口，也未复现论文分辨率或实录数字。
+
 ### 19. 组稀疏定位与协方差稀疏匹配
 
 对应 §4.7。doatools `estimation/sparse.py` 的 `GroupSparseEstimator` 直接拟合多快拍，按候选方向共享稀疏支持；`SparseCovarianceMatching` 则拟合向量化协方差和非负源功率，要求源间不相关。前者的复幅度与后者的功率不可使用相同误差解释。[作者模型和求解接口](https://morriswmz.github.io/doatools.py/references/doatools.estimation.sparse.html)。
 
 建议先用落格点双源，再把源移到相邻格点中间，比较支持泄漏和正则参数敏感性。求解器返回可行解、峰数达到要求，只表示数值过程完成。工程记录应包括字典归一化、正则目标、求解器版本、终止容差、迭代次数和残差；可行性约束太严时应保留失败状态。
+
+固定 `GroupSparseEstimator.estimate(Y,k,l)` 接收 `M×T` 快拍；`SparseCovarianceMatching.estimate(R,k,l,...)` 接收 `M×M` 协方差，将实部与虚部分开堆叠，并在噪声未知时加入 `vec(I)` 对应的标量白噪声功率列。两者的选峰接口都仍需 `k`，不能因稀疏优化而称整套接口自动免源数。后者的 `l` 在惩罚目标、限制解的 l1 范数、限制残差 l2 范数三种 formulation 中含义不同，不能搬用同一数值。可选求解器未安装，本次未运行这两路。[固定稀疏实现](https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/estimation/sparse.py)。
+
+L1-SVD 是降维后再做稀疏拟合：固定 `preprocessing.py::l1_svd(Y,k)` 只返回前 `k` 列左奇异向量乘对应奇异值，即 `M×k` 的压缩观测，本身不输出方向或执行 l1 优化。将 `GroupSparseEstimator` 的 `n_snapshots` 设为这个保留维数，再把压缩观测送入 `estimate`，才连接组稀疏求解和选峰；这里“压缩列数”不等于原始统计快拍数。弱源可能因截断而丢失，保留维数和正则参数都需记录。[Malioutov–Cetin–Willsky 2005 原文](https://doi.org/10.1109/TSP.2005.850882)；[固定降维入口](https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/estimation/preprocessing.py)。两段外部参考源码已经取得，本书尚未运行这一组合定位链。
+
+原子范数对应连续频率或方向参数上的稀疏约束，避免直接固定一个细角度字典，但仍受阵列结构、模型阶数和求解精度约束。[Tang 等作者稿 §2、式(2.2)](https://people.eecs.berkeley.edu/~brecht/papers/12.Tang.EtAl.ctscs.pdf)与 [Yang–Xie 2015](https://doi.org/10.1109/TSP.2015.2420541)讨论的是线谱估计；与 ULA DOA 的联系需要通过空间相位到 `sin(theta)` 的映射建立，不能泛称对所有麦阵通用的网格外算法。Tang 等的恢复保证还包含分量间隔与采样条件，不能把“连续参数”解释成无限分辨率。本项保留模型索引，未确认并取得与这两篇工作唯一对应的完整官方实现，也未运行半正定规划。
 
 #### 多快拍、多频稀疏贝叶斯学习
 
@@ -563,6 +606,8 @@ CPHD、LMB/GLMB 另有 [Ba Tuong Vo 的作者 MATLAB 工具包](https://ba-tuong
 
 最小检查先用正文三麦近场几何复算距离差，再用有限差分独立检查雅可比。把源逐步移远，距离方向的敏感度会减小；算法收敛到一个距离不意味着距离已可观测。工业中至少保留多个初值或粗网格初始化，识别镜像多解与边界解。本文未将一般优化器索引成完整声学定位实现，具体模型与本书 §4.4 的原始论文一致。
 
+Chan–Ho 的 1994 方法把距离差定位整理为两阶段加权代数估计；Taylor/Foy 路线则围绕当前位置线性化距离差，再迭代更新。这是初始化与求解策略不同，不能把一般 `least_squares` 调用自动命名为 Chan 方法。[Chan–Ho 原文](https://doi.org/10.1109/78.301830)；[Foy 原文](https://doi.org/10.1109/TAES.1976.308294)。当前两项按正文原理阅读，尚未确认并取得唯一对应的作者定位实现。使用共享参考麦的 TDOA 误差往往相关，权重不能随意简化为每对独立的同方差；异常相关峰、声速错误和时间同步偏差还需要先在观测层处理。
+
 ### 38. 随机源、确定源与非相关源 CRB
 
 对应 §4.8。doatools `performance/crb.py` 的 `crb_sto_farfield_1d`、`crb_det_farfield_1d`、`crb_stouc_farfield_1d` 对应不同观测统计模型。CRB 是在参数模型、噪声和正则条件下的估计方差下界，不是从输入录音直接产生方向的算法，也不是混响房间的实测误差预测器。[作者源码](https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/performance/crb.py)。
@@ -693,6 +738,8 @@ CPHD、LMB/GLMB 另有 [Ba Tuong Vo 的作者 MATLAB 工具包](https://ba-tuong
 
 最小实验应先验证方向图旋转与标签同步，再用未见房间、阵列误差和静默输入测角度误差与失效状态。代码依赖 gpuRIR、icoCNN 和声学数据；只读到模型类不表示完整训练可复现。作者 README 明确提醒主脚本未调用的辅助功能可能未经测试，因此同一文件中的 `SELDnet` 类也不能直接等同于已经验证的 SELD 系统。AGPL 源码与模型、LibriSpeech/LOCATA 数据分别核对。
 
+这类方向图网络的输入依赖上游 SRP 图的网格、角度坐标、频带与归一化；即使输出同为三维方向，也不能直接把不同麦阵生成的任意图送入已有权重。单源方向追踪脚本不自动提供同类重叠多源的轨道容量或身份关联。本书本次未运行训练、预训练推理或 LOCATA 评分，工程复现还需固定训练划分、上下文长度、模型状态复位和前端耗时，分别核对网络耗时与端到端延迟。
+
 ### 42. FN-SSL 与 IPDnet：先估计直达声相位差
 
 对应 §4.7。Wang、Yang 与 Li 的 [IPDnet 原论文](https://doi.org/10.1109/TASLP.2024.3507560)把多个声源的直达声麦间相位差作为学习目标，再用阵列几何转换为方向；它并非直接输出一个房间无关的绝对位置。作者仓库是 [Audio-WestlakeU/FN-SSL](https://github.com/Audio-WestlakeU/FN-SSL)，本次锁定 `76fcb281be92caf068c712dfb015e354f437260f`，不是其他领域的同名 IPDNet。
@@ -700,6 +747,8 @@ CPHD、LMB/GLMB 另有 [Ba Tuong Vo 的作者 MATLAB 工具包](https://ba-tuong
 读码顺序为 `IPDnet/Opt.py` 的阵列与数据设置、`Simu.py`/`Dataset.py` 的信号与标签、`FixedAarryIPDnet.py` 和 `VariableArrayIPDnet.py` 的网络、`Module.py` 的空间处理，最后读 `runIPDnetOn.py`/`runIPDnetOff.py` 的训练和评价。固定阵列文件名确实拼作 `FixedAarryIPDnet.py`。根 README 的通用 `main.py` 命令不能直接当成 IPDnet 子目录入口。[实际目录及命令](https://github.com/Audio-WestlakeU/FN-SSL/tree/76fcb281be92caf068c712dfb015e354f437260f/IPDnet)。窄带分支沿时间处理各频点，全带分支沿频率学习相位差与频率的关系；“在线”配置还要检查具体上下文和分块延迟，不能由脚本名字推出零前视。
 
 最小实验先合成已知两麦时延的单个平面波，检查预测相位差与几何字典匹配的符号；再加入第二个源、换麦间距和调换通道。若交换麦顺序却不更新字典，错误方向来自接口失配，不能据此衡量网络泛化。记录源数、频带、阵列适配方式、输出轨数和活动阈值，且把未见房间与未见阵列分开评价。根 README 写 MIT，但当前未核实完整许可及其致谢的 Cross3D/icoCNN 派生仿真部分声明，因此暂不自动下载；模型和 LibriSpeech、Noise92、LOCATA、RealMAN 数据另核授权。
+
+原论文的直达声相位差目标与最终 DOA 评分应分别验收：预测相位轨正确并不意味着候选几何、活动判定和多源解码全都正确。作者预印本的模型图与直达声相位差定义可用于核对输出轨、频率轴和麦对轴，但论文实验数字必须绑定正式版的具体配置，不从预印本摘要迁移成工业保证。[作者预印本 §II～III](https://arxiv.org/pdf/2405.07021)。此项仅完成原文及公开源码入口核查，未运行模型。
 
 ### 43. ACCDOA：活动与方向共用一个向量
 
@@ -717,6 +766,8 @@ CPHD、LMB/GLMB 另有 [Ba Tuong Vo 的作者 MATLAB 工具包](https://ba-tuong
 
 最小实验构造一类零、一、二、三个活动方向，检查标签维度、允许的置换和解码后的源数，再让两个预测轨输出近似同方向以检查重复合并阈值。STARSS22 开发与评价划分不能混用，初始化默认的 `quick_test=True` 仅用于短流程检查，不代表完整训练或论文分数。官方页面展示的源代码未建立明确再分发许可，故只锁定索引，不自动复制；数据许可另核。
 
+评估还需同时保存角度匹配阈值、活动阈值和重复轨合并条件；降低活动阈值可能减少漏检并增加虚警。ACCDOA/Multi-ACCDOA 输出形式本身不确定这些阈值，也不使不同届次的检出、定位与关联指标可直接互换。本次未执行 2022 基线的训练、推理或评测。
+
 ### 45. DCASE2025 立体声 SELD：方位、距离与画内/画外
 
 对应 §4.7 的届次变化。[2025 官方任务页](https://dcase.community/challenge2025/task-stereo-sound-event-localization-and-detection-in-regular-video-content)与[作者基线](https://github.com/partha2409/DCASE2025_seld_baseline)规定的是双声道常规视频场景，不是 2022 的四通道三维定位。锁定提交 `42a48b6456b73be35ad0e1a9ffeb6ceef83ae0bd`。`model.py::SELDModel` 的音频输出每轨每类含 x、y 和距离；视听配置另加画内/画外输出。这里第三个量是距离，不能按旧的 xyz 方向向量求三维模。[实际输出层](https://github.com/partha2409/DCASE2025_seld_baseline/blob/42a48b6456b73be35ad0e1a9ffeb6ceef83ae0bd/model.py)。
@@ -724,6 +775,12 @@ CPHD、LMB/GLMB 另有 [Ba Tuong Vo 的作者 MATLAB 工具包](https://ba-tuong
 读码从 `parameters.py` 的任务配置到 `model.py` 的激活函数，再到 `loss.py`、`inference.py` 和 `metrics.py`；需同时确认音视频时间对齐与米制距离标签。模型包含双向 GRU，整段执行不是已验证的因果实时推理。最小实验用相同方位、不同距离的标签检查输出解释，再构造声音活动但画面中不出现的事件，确认画外不等于静默。距离误差、角度误差、事件检出与画内/画外分类应分别评价。
 
 本次未建立该仓库明确的再分发许可，只保留官方入口。数据生成器、预训练视觉模型和音视频数据另有来源及条款，不能由 baseline 的公共可见性推断全部可随书发布。
+
+**2026 届的任务变化另记。** 截至 2026-09-28，[官方 Task 3 页面](https://dcase.community/challenge2026/task-semantic-acoustic-imaging-for-sound-event-localization-and-detection-from-spatial-audio-and-audiovisual-scenes)已标为结束并提供结果入口；本书只核对任务与基线，不据此编写跨系统排名。该届转向空间音频及视听场景中的语义声学成像，开发材料包含 32 通道录音，规定评价输入为其中指定 4 通道；32 通道采集配置不能写成基线推理使用 32 路，也不能沿用 2025 的立体声标签与输出格式。
+
+官方 `iranroman/DCASE2026_Task3_SAISELD_baseline` 固定到 `d4df66251f39e34bc0157be93858e5a68ec9d7c4`。从 `acoustic_features.py` 读音频特征，沿 `lam_model.py` 的 UpLAM 到 `model.py` 的实例模型，再读 `run_inference.py` 的掩模关联和 JSON 输出、`evaluate.py` 的评测。基线把 4 路音频送入声学图预测，再把九频带图与 RGB 通道送入实例模型；纯音频配置使用零值视觉通道。按掩模 IoU 进行 Hungarian 关联是这条基线的后处理，不等于由空间图自动获得永久声源身份。[固定基线入口](https://github.com/iranroman/DCASE2026_Task3_SAISELD_baseline/tree/d4df66251f39e34bc0157be93858e5a68ec9d7c4)。
+
+该固定仓库根目录、README 和已核对模型文件未建立明确许可文本，因此仅保留索引，不复制源码或 `UpLAM.pth`；模型权重和数据许可也不由代码可见性推出。这里未运行 2025/2026 两届基线，未将不同通道、标签、数据和评分规则下的数字直接比较。
 
 ### 46. GEV：最大信噪比方向与未定尺度
 
@@ -792,7 +849,7 @@ pb_bss `get_wmwf_vector` 实际计算 `Phi/(mu+trace(Phi))` 的参考列，其�
 
 ## 固定版本的源码审查疑点
 
-下列是对已下载 pyroomacoustics 0.10.0 源码的静态审查与最小下标推演，尚未运行该外部包的完整声学反例。它们用于限定采用范围，不据此推断原始论文有误。
+下表分别记录固定 pyroomacoustics 0.10.0 的静态审查与 doatools 的方法级实调。前者尚未运行完整声学反例；后者只运行 §14 的总体协方差。它们用于限定实现采用范围，不据此推断原始论文有误。
 
 | ID | 精确位置与证据 | 最小可复核配置 | 状态及下一步 |
 |---|---|---|---|
@@ -800,10 +857,13 @@ pb_bss `get_wmwf_vector` 实际计算 `Phi/(mu+trace(Phi))` 的参考列，其�
 | SP-WAVES-01 | `pyroomacoustics/doa/waves.py:104` 同样删除频点，第 148 行仍使用 `C_hat[j]` | 同上，把首频点设为无有效峰，后两频点保持不同协方差 | 已发现；静态不一致。需独立声学回归，不能只验证维度相同 |
 | SP-TOPS-01 | `pyroomacoustics/doa/tops.py:117` 构造真实 FFT bin 差，第 136 行却使用 `Phi[k]`，且构造但未使用剔除参考频点后的 `freq` | `[10,20,30]`、参考 bin 20 时，跨频差应取 −10 和 +10；下标 0、1 对应的却是 −20 和 −19 | 已发现；静态频率映射疑点。需对照原论文实现参考频点排除与真实 bin 取值后比较全谱 |
 | SP-FRIDA-01 | `pyroomacoustics/doa/frida.py` 文档的 `n_rot` 默认值说明与构造函数值不同 | 直接比较文档默认与 `__init__` 默认，不需声学输入 | 已验证静态差异；本文要求显式记录 `n_rot`，不从旧 docstring 复制默认值 |
+| SP-ESPRIT-01 | doatools `estimation/esprit.py:120–125` 两个移位子阵共享内存，随后原地加权 | §14 同一总体协方差的 LS/TLS 默认加权、未加权与独立复制参考 | 已实际复现默认加权失败；保留原版，未加权及独立参考只在本例通过，不是上游完整验收 |
 
 这些源码问题不要求修改下载的上游仓库来“让演示通过”。如需修复，应创建保留原始许可证与提交号的独立补丁、列出改动原因，并采用理想多频输入及真实录音双重回归。未完成修复和回归前，不把这三个固定版本实现列作设备可直接采用的已验证定位器。
 
 本机实际运行检查记录：2026-09-22，在仓库 `.venv` 中分别尝试导入固定版本 doatools 的 `RootMUSIC1D` 和 FilterPy 的 `KalmanFilter`，两次均在导入阶段因缺少 `scipy` 失败，未进入数值计算。计划的独立输入分别为六元半波距阵、30° 单源协方差，以及先验均值 2、方差 4、观测 3、观测方差 1 的标量更新；后者手算后验为 2.8 与 0.8。这些预期值不是已取得的外部运行结果。2026-09-24 已在**独立临时环境**安装 pyroomacoustics 0.10.0 并实际运行上述房间 RIR；仓库 `.venv` 未因此改变。CSSM/WAVES/TOPS 仍只完成上表所列静态核查，不能以房间 RIR 运行替代它们的定位接口验证。
+
+2026-09-28 在该既有临时环境中实际执行了 §14 的 doatools ESPRIT 四路诊断，并保存独立报告；没有安装新依赖，没有修改上游源码。此次方法级计算不覆盖 root-MUSIC、稀疏求解器、FRIDA 或其他定位接口，也不改变先前两次导入失败的历史记录。源码获取状态与方法运行状态分别记录。
 
 另一个版本相容性检查是 doatools `estimation/music.py:153` 使用 `np.complex_`，需在其依赖支持的 NumPy 版本中运行或准备独立兼容补丁；本文未修改外部工作目录或共享依赖来绕过这些条件。
 
@@ -824,4 +884,4 @@ FFT 接口约定由 [NumPy `rfft`](https://numpy.org/doc/stable/reference/genera
 
 ## 收录边界
 
-稀疏贝叶斯定位、原子范数、完整最坏情形稳健波束以及本文未逐项收录的神经定位方法，仍需要逐论文确认代码与模型；不能用同名 GitHub 搜索结果替代作者来源。本文已分别记录实际取得的外部实现、官方实现存在但再分发许可未建立的索引、只核实到原理的算法和版本疑点。深度波束与 WPD 的完整增强链、分离及神经噪声抑制见本目录其他研究文档；同一函数在多个算法条目中被调用，不等于取得了多套独立工程系统。
+除 §19 已逐项列出的 SBL 与 RobustSBL 外，其他稀疏贝叶斯变体、原子范数、完整最坏情形稳健波束以及本文未逐项收录的神经定位方法，仍需要逐论文确认代码与模型；不能用同名 GitHub 搜索结果替代作者来源。本文已分别记录实际取得的外部实现、官方实现存在但再分发许可未建立的索引、只核实到原理的算法和版本疑点。深度波束与 WPD 的完整增强链、分离及神经噪声抑制见本目录其他研究文档；同一函数在多个算法条目中被调用，不等于取得了多套独立工程系统。本次没有声称穷尽定位算法领域。

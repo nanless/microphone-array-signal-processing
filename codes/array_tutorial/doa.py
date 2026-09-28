@@ -82,7 +82,9 @@ def gcc_phat(
     FFT padding covers the unweighted linear-correlation support.  Each input
     is scaled by its own peak before the FFT; ``epsilon`` is a fraction of the
     largest resulting cross-spectrum magnitude.  This keeps the PHAT result
-    invariant to a nonzero overall gain on either channel.  PHAT's
+    invariant to a positive nonzero overall gain on either channel. A polarity
+    reversal changes the signed correlation and is not covered by this invariance.
+    PHAT's
     nonlinear spectral normalization does not retain that finite support:
     the result is a sampled periodic inverse transform restricted to physical
     lags, and changing the FFT length can change its values.  Optional
@@ -294,12 +296,21 @@ def esprit_ula(
     sound_speed: float = 343.0,
     alias_tolerance: float = 1e-10,
 ) -> np.ndarray:
-    """Estimate ULA broadside azimuths with least-squares ESPRIT."""
+    """Estimate principal-branch ULA broadside azimuths with LS ESPRIT.
+
+    The selected eigenspace must be numerically separated from its complement,
+    and both shifted subarrays must retain its rank. These checks detect some
+    degeneracies; they do not establish the true source count or whiten noise.
+    For spacing > wavelength/2, physical directions can share a spatial phase:
+    the returned principal-branch representative can be aliased; this is not
+    disambiguation.
+    At half-wavelength spacing the two endfire endpoints also coincide.
+    """
     matrix = hermitian_part(np.asarray(covariance, dtype=complex))
     if matrix.ndim != 2 or matrix.shape[0] < 1 or not np.all(np.isfinite(matrix)):
         raise ValueError("covariance must be a single square matrix")
     channels = matrix.shape[0]
-    if channels < 2 or not isinstance(source_count, (int, np.integer)):
+    if channels < 2 or isinstance(source_count, (bool, np.bool_)) or not isinstance(source_count, (int, np.integer)):
         raise ValueError("ESPRIT needs at least two channels and an integer source_count")
     if not 0 < source_count < channels:
         raise ValueError("source_count must be in [1, channels - 1]")
@@ -308,15 +319,29 @@ def esprit_ula(
         raise ValueError("spacing, frequency, and sound speed must be positive")
     if not np.isfinite(alias_tolerance) or alias_tolerance < 0.0:
         raise ValueError("alias_tolerance must be finite and non-negative")
-    _, eigenvectors = np.linalg.eigh(matrix)
+    scale = float(np.max(np.maximum(np.abs(matrix.real), np.abs(matrix.imag))))
+    if scale == 0.0:
+        raise np.linalg.LinAlgError("zero covariance has no signal subspace")
+    eigenvalues, eigenvectors = np.linalg.eigh(matrix / scale)
+    spectral_scale = float(np.max(np.abs(eigenvalues)))
+    if eigenvalues[0] < -1e-10 * spectral_scale:
+        raise np.linalg.LinAlgError("covariance must be positive semidefinite")
+    tolerance = 100 * np.finfo(float).eps * channels * spectral_scale
+    if (eigenvalues[-source_count] <= tolerance
+            or eigenvalues[-source_count] - eigenvalues[-source_count-1] <= tolerance):
+        raise np.linalg.LinAlgError("selected signal dimension has no separated positive eigenspace")
     signal = eigenvectors[:, -source_count:]
-    first = signal[:-1]
-    second = signal[1:]
+    first, second = signal[:-1], signal[1:]
+    if np.linalg.matrix_rank(first) < source_count or np.linalg.matrix_rank(second) < source_count:
+        raise np.linalg.LinAlgError("shifted signal subarray is rank deficient")
     transform, *_ = np.linalg.lstsq(first, second, rcond=None)
     modes = np.linalg.eigvals(transform)
-    sine = np.angle(modes) * sound_speed / (2.0 * np.pi * frequency_hz * spacing_m)
-    if np.any(np.abs(sine) > 1.0 + alias_tolerance):
-        raise ValueError("estimated spatial phase has no unaliased physical azimuth")
+    if np.any(np.abs(modes) <= 100 * np.finfo(float).eps * max(1., np.linalg.norm(transform, 2))):
+        raise np.linalg.LinAlgError("zero shift mode has no spatial phase")
+    with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+        sine = np.angle(modes) * ((sound_speed / frequency_hz) / spacing_m) / (2.0 * np.pi)
+    if not np.all(np.isfinite(sine)) or np.any(np.abs(sine) > 1.0 + alias_tolerance):
+        raise ValueError("principal spatial phase lies outside the physical arcsine domain")
     return np.sort(np.arcsin(np.clip(sine, -1.0, 1.0)).real)
 
 
