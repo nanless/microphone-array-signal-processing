@@ -169,6 +169,8 @@ h1,h2,h3,h4{break-after:avoid}
 .chap p.keep-next,#ch-5 p:has(+table){break-after:avoid;page-break-after:avoid}
 /* 第10章末尾四条总结作为一个完整列表，避免仅末两条占据下一页。 */
 #ch-10-sec-10-12+ol{break-inside:avoid;page-break-inside:avoid}
+/* 第11章的四条试听链接在纸版紧凑逐行排列，保留链接并避免章末短节孤页。 */
+#ch-11 p:has(>a[href$=".wav"]:only-child){margin-bottom:0}
 /* 章末独立练习与研究小节从完整页开始，避免最后几行独占一页。 */
 p:has(>a#ch-8-e08-11){break-before:page;page-break-before:always}
 #ch-0-sec-u-cc2724a31a+ul{break-inside:avoid;page-break-inside:avoid}

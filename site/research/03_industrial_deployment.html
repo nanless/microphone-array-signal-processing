@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>工业音频实现研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="8ad5529242aa"><style>
+<meta name="source-digest" content="7e678a15b0f1"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -576,7 +576,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>输入是一维、等长度的干净参考与处理后语音，二者采样率和时间对齐口径必须一致。实现内部先转到 10 kHz，再按参考进行静音帧筛除、短时分析和频带处理。<code>extended=False</code> 与 <code>extended=True</code> 使用不同的归一化与相关性计算步骤，结果应分别命名，不能在同一列中混写成 STOI。</p>
 <p>需要额外检查返回值是否确实来自有效评分。该提交在去除静音后不足 30 个 STFT 帧时发出 <code>RuntimeWarning</code>，随后返回 <code>1e-5</code>。这个数是实现的失败返回值，不是测得“可懂度极低”的有效结果。评分程序应捕获并记录警告、文件 ID、长度与原因，在总文件数中保留这次失败；不能通过丢弃警告或只检查结果有限就让它进入平均值。</p>
 <span id="sec-40" class="anchor-alias" aria-hidden="true"></span><span id="原接口实跑异常哨兵与静音有限值" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-u-5a055256de">原接口实跑：异常、哨兵与静音有限值</h4>
-<p>2026-09-28在既有隔离环境实际调用固定版 <code>pystoi.stoi</code>，输入均为10 kHz、float64、一维且参考与待评分数组完全相同，不经过重采样。环境为 Python 3.13.12、NumPy 2.5.3、SciPy 1.18.1；没有安装新的共享依赖。报告区分以下三种零输入行为：</p>
+<p>2026-09-28在既有隔离环境实际调用固定版 <code>pystoi.stoi</code>，输入均为10 kHz、float64、一维且参考与待评分数组完全相同，不经过重采样。环境为 Python 3.13.12、NumPy 2.3.5、SciPy 1.17.1；没有安装新的共享依赖。报告区分以下三种零输入行为：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
 <tr>
