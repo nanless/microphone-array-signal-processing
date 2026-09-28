@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>导读与导航 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="bde473e0d8f4"><style>
+<meta name="source-digest" content="f9de5d527abe"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -460,7 +460,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>fig11_doa_spectrum</td>
 <td>04</td>
 <td>仿真</td>
-<td>指定高信噪比、充足快拍条件下的三种谱形；Capon 使用相对对角加载 $\eta=10^{-6}$；不检验分辨极限</td>
+<td>设定每阵元输入 SNR 20 dB、400 快拍、MUSIC 预先指定真实源数 $K=2$ 的三种谱形；Capon 使用相对对角加载 $\eta=10^{-6}$；不检验分辨极限或源数自动估计</td>
 </tr>
 <tr>
 <td>图12</td>
@@ -481,7 +481,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>fig14_srp_grid</td>
 <td>04</td>
 <td>仿真＋几何</td>
-<td>麦对相关响应的网格累加与双曲线交汇</td>
+<td>左侧 8×6 点阵只示意几何，右侧 90×68 网格才计算麦对响应与峰值；非退化距离差轨迹形成双曲线</td>
 </tr>
 <tr>
 <td>图15</td>
@@ -614,7 +614,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>fig33_gcc_two_ways</td>
 <td>04</td>
 <td>对照</td>
-<td>时域滑动乘加等于频域共轭乘加 IFFT，两条路算出同一条曲线、同一个峰</td>
+<td>两条 128 点输入用 256 点零填充 FFT 求互谱并做 IFFT，与时域滑动乘加得到同一条线性互相关曲线、同一个峰；PHAT 加权不在本图范围内</td>
 </tr>
 <tr>
 <td>图34</td>

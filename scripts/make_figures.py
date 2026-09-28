@@ -565,7 +565,8 @@ def fig_doa_spectrum():
     capon, _ = capon_spectrum(R, Av, relative_loading=1e-6)
     capon /= capon.max()
     evals, evecs = np.linalg.eigh(R)
-    En = evecs[:, :M - 2]
+    music_source_count = 2  # 此图把真实源数作为 MUSIC 的已知输入。
+    En = evecs[:, :M - music_source_count]
     music = 1 / np.sum(np.abs(En.conj().T @ Av) ** 2, axis=0)
     music_db = 10 * np.log10(music / music.max())
     fig, axes = plt.subplots(2, 1, figsize=(9.5, 9.0))
@@ -588,8 +589,8 @@ def fig_doa_spectrum():
     axes[1].text(0.5, 0.30, "峰高不等于源功率\n只比较峰位与谱形", transform=axes[1].transAxes,
                  fontsize=FS_SMALL, color=C_RED, ha="center",
                  bbox=dict(fc="white", ec=C_RED, lw=0.7, alpha=0.9, boxstyle="round,pad=0.3"))
-    axes[1].legend(fontsize=FS_SMALL); axes[1].set_title("(b) MUSIC 特征结构类伪谱", fontsize=12); axes[1].grid(ls=":", alpha=0.5)
-    fig.suptitle("图11  两信号源(-20°, 30°) DOA空间谱估计对比（8元ULA, 每阵元总输入SNR=20dB, 400快拍, 模拟）", fontsize=12.5)
+    axes[1].legend(fontsize=FS_SMALL); axes[1].set_title(f"(b) MUSIC（指定 K={music_source_count}）伪谱", fontsize=12); axes[1].grid(ls=":", alpha=0.5)
+    fig.suptitle("图11  两信号源(-20°, 30°) DOA空间谱估计对比（8元ULA, 每阵元设定总输入SNR=20dB, 400快拍, 模拟）", fontsize=12.5)
     fig.tight_layout()
     save(fig, "fig11_doa_spectrum.png")
 
@@ -795,7 +796,7 @@ def fig_srp_grid():
     for segment in candidate_distance_segments(mics, candidate):
         ax.plot(segment[:, 0], segment[:, 1], ls=":", color=C_ORANGE,
                 alpha=0.6, lw=1)
-    ax.legend(fontsize=FS_SMALL); ax.set_title("(a) 空间网格 + 各麦到候选点的距离线", fontsize=11)
+    ax.legend(fontsize=FS_SMALL); ax.set_title("(a) 8×6 几何示意：各麦到候选点", fontsize=11)
     ax.set_xlim(-0.5, 7); ax.set_ylim(-0.5, 5.2); ax.set_aspect("equal"); ax.grid(ls=":", alpha=0.3)
     ax.set_xlabel("x (m)", fontsize=FS_LABEL); ax.set_ylabel("y (m)", fontsize=FS_LABEL)
     ax = axes[1]
@@ -811,7 +812,7 @@ def fig_srp_grid():
             label=f"网格峰 ({GX[imax]:.3f}, {GY[imax]:.3f}) m")
     ax.legend(loc="upper left", fontsize=FS_SMALL - 1,
               facecolor="0.9", framealpha=0.95)
-    ax.set_title("(b) SRP-PHAT 累积分数与峰值位置", fontsize=FS_TITLE)
+    ax.set_title("(b) 90×68 网格：SRP-PHAT 分数", fontsize=FS_TITLE)
     ax.set_xlim(-0.5, 7); ax.set_ylim(-0.5, 5.2); ax.set_aspect("equal")
     ax.set_xlabel("x (m)", fontsize=FS_LABEL); ax.set_ylabel("y (m)", fontsize=FS_LABEL)
     fig.colorbar(im, ax=ax, shrink=0.8, label="归一化麦对 GCC 累积分数")
@@ -2753,12 +2754,15 @@ def fig_gcc_two_ways():
     axes[1, 0].legend(fontsize=FS_SMALL)
     axes[1, 0].grid(ls=":", alpha=0.5)
 
-    freq_khz = np.fft.rfftfreq(n, 1 / fs) / 1000
-    cross_spectrum = np.fft.rfft(x_late) * np.conj(np.fft.rfft(x_early))
+    linear_length = len(x_late) + len(x_early) - 1  # 本例为 255 点。
+    n_fft = 1 << (linear_length - 1).bit_length()  # 与 (d) 相同的 256 点零填充 FFT。
+    freq_khz = np.fft.rfftfreq(n_fft, 1 / fs) / 1000
+    cross_spectrum = (np.fft.rfft(x_late, n_fft)
+                      * np.conj(np.fft.rfft(x_early, n_fft)))
     cross_magnitude = np.abs(cross_spectrum)
     cross_magnitude /= np.max(cross_magnitude)
     axes[0, 1].plot(freq_khz, cross_magnitude, color=C_PURPLE, lw=1.3)
-    axes[0, 1].set_title("(c) 频域乘积 X₁·conj(X₂)", fontsize=FS_TITLE)
+    axes[0, 1].set_title(f"(c) {n_fft} 点零填充互谱（线性长度 {linear_length} 点）", fontsize=FS_TITLE)
     axes[0, 1].set_xlabel("频率 (kHz)", fontsize=FS_LABEL)
     axes[0, 1].set_ylabel("归一化互谱幅度", fontsize=FS_LABEL)
     axes[0, 1].set_xlim(0, 4.0)

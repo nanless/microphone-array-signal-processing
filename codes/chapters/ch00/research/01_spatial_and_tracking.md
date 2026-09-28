@@ -814,7 +814,7 @@ Chan–Ho 的 1994 方法把距离差定位整理为两阶段加权代数估计�
 
 ### 41. icoDOA、Cross3D 与神经方向追踪
 
-对应 §4.7、§9.3。icoDOA 的 `1sourceTracking_icoCNN.py` 是训练与测试入口；`acousticTrackingModels.py` 定义 `IcoTempCNN`、`Cross3D` 等模型，`acousticTrackingModules.py` 提供输出映射，`acousticTrackingDataset.py` 生成移动源场景。二十面体方向网格与普通平面卷积网格有不同邻接结构，方向分辨率及输出变换必须与训练时一致。[作者仓库](https://github.com/DavidDiazGuerra/icoDOA)。
+对应 §4.7、§9.3。icoDOA 的 `1sourceTracking_icoCNN.py` 是训练与测试入口；`acousticTrackingModels.py` 定义 `IcoTempCNN`、`Cross3D` 等模型，`acousticTrackingModules.py` 提供输出映射，`acousticTrackingDataset.py` 生成移动源场景。二十面体方向网格与普通平面卷积网格有不同邻接结构，方向分辨率及输出变换必须与训练时一致。[作者仓库](https://github.com/DavidDiazGuerra/icoDOA)。锁定 README 的 PyTorch 依赖条目把版本误写成“Python 1.8.1”；不能把这个文本推断成已验证的 PyTorch 1.8.1，重跑须先独立锁定可用环境。
 
 最小实验应先验证方向图旋转与标签同步，再用未见房间、阵列误差和静默输入测角度误差与失效状态。代码依赖 gpuRIR、icoCNN 和声学数据；只读到模型类不表示完整训练可复现。作者 README 明确提醒主脚本未调用的辅助功能可能未经测试，因此同一文件中的 `SELDnet` 类也不能直接等同于已经验证的 SELD 系统。AGPL 源码与模型、LibriSpeech/LOCATA 数据分别核对。
 
@@ -823,6 +823,14 @@ Chan–Ho 的 1994 方法把距离差定位整理为两阶段加权代数估计�
 固定实现中 `IcoTempCNN` 输入轴是批量、通道、时间、五个网格面片及两个面片坐标，最后经 `SoftArgMax` 输出方向坐标；`Cross3D` 则在方位—俯仰方向图上分支卷积。`CausConv1d/2d/3d` 左侧补足历史长度后裁去尾部，没有自动保存跨调用的流式历史；逐帧调用仍需调用者管理上下文。还应避开未验证的任意参数组合：这些层直接使用 `:-pad`，时间核长度为 1 时 `pad=0` 会产生空切片。该点由固定源码静态识别，未执行 Torch 模型；不否定作者使用大于 1 时间核的既定配置。
 
 ACCDOA 的向量模与方向、multi-ACCDOA 的输出槽位和持久说话人 ID 是三个不同对象。训练时允许轨道置换不会自动解决第 9 章两人交叉的身份问题；需要明确跨帧关联或身份特征后才能评价 ID 切换。有限近期候选及不纳入正文目录的原因见 §57。
+
+#### GCC 向量、GCC-PHAT 图与 STFT 相位图：三个不同的分类输入
+
+第 4 章的[学习式定位比较表](../../../../chapters/04_doa-estimation.md#sec-4-7)把输入特征和输出格式分开，不能把不同论文中的特征和网络随意拼成一项已验证系统。[Xiao 等的 ICASSP 2015 论文](https://doi.org/10.1109/ICASSP.2015.7178484)以 GCC 向量特征输入多层感知机并分类 DOA；目前直接核到的[作者机构论文页](https://experts.illinois.edu/en/publications/a-learning-based-approach-to-direction-of-arrival-estimation-in-n/)没有明确把该向量限定为 PHAT 加权，也未在此核定具体麦对构造。[Zhao 与 Ritz 的 APSIPA-ASC 2021 论文，§III 与图 5](https://www.apsipa.org/proceedings/2021/pdfs/0000974.pdf)则把共素阵的 GCC-PHAT 二维特征图送入 CNN。前者的 GCC 向量与后者的 PHAT 图不能仅凭名称互换。
+
+[Chakrabarty 与 Habets 的 IEEE JSTSP 2019 论文作者稿](https://www.audiolabs-erlangen.de/resources/aps-w23/papers/sap_Chakrabarty2019.pdf)使用多通道 STFT 相位图输入 CNN，目标是多类、多标签方位分类，不是上面两条 GCC 输入路线。作者[出版页](https://soumitrochak.netlify.app/publication/chakrabarty-2019/)虽链接一个[模型仓库](https://github.com/Soumitro-Chakrabarty/Single-speaker-localization)，但该仓库 README 对应 2017 年单源论文、声学和阵列配置也不同，且本次未核到可再分发的许可；不能把它标成 2019 年多源整链复现代码。三项在[覆盖表](../COVERAGE.md)均为“原理索引”，不是本书已经训练、运行或收录源码的模型；定向检索未核到与三篇论文逐项对应且许可明确的作者实现，并不证明此类实现不存在。
+
+若做最小实验，应固定同一组同步多通道录音、训练/验证/测试房间划分、阵列坐标、角度类别和评分协议，分别计算 GCC 向量、共素阵 GCC-PHAT 图和 STFT 相位图，再训练各自结构；解析 GCC/SRP 的同输入结果是必要基线。模型的角度误差、漏检和跨房间差异需逐项报告；本书没有这组数据和训练结果，不能用论文结论或本书合成 WAV 冒充这一比较。
 
 ### 42. FN-SSL 与 IPDnet：先估计直达声相位差
 
@@ -860,7 +868,7 @@ ACCDOA 的向量模与方向、multi-ACCDOA 的输出槽位和持久说话人 ID
 
 本次未建立该仓库明确的再分发许可，只保留官方入口。数据生成器、预训练视觉模型和音视频数据另有来源及条款，不能由 baseline 的公共可见性推断全部可随书发布。
 
-**2026 届的任务变化另记。** 截至 2026-09-28，[官方 Task 3 页面](https://dcase.community/challenge2026/task-semantic-acoustic-imaging-for-sound-event-localization-and-detection-from-spatial-audio-and-audiovisual-scenes)已标为结束并提供结果入口；本书只核对任务与基线，不据此编写跨系统排名。该届转向空间音频及视听场景中的语义声学成像，开发材料包含 32 通道录音，规定评价输入为其中指定 4 通道；32 通道采集配置不能写成基线推理使用 32 路，也不能沿用 2025 的立体声标签与输出格式。
+**2026 届的任务变化另记。** 截至 2026-09-29，[官方 Task 3 页面](https://dcase.community/challenge2026/task-semantic-acoustic-imaging-for-sound-event-localization-and-detection-from-spatial-audio-and-audiovisual-scenes)已标为结束并提供结果入口；本书只核对任务与基线，不据此编写跨系统排名。该届转向空间音频及视听场景中的语义声学成像，开发材料包含 32 通道录音，规定评价输入为其中指定 4 通道；32 通道采集配置不能写成基线推理使用 32 路，也不能沿用 2025 的立体声标签与输出格式。开发集的高分辨率参考声学图由 32 通道录音经 Latent Acoustic Mapping 超分辨方法生成，再由声事件球面多边形掩码分离；这是算法派生训练参考，并非逐像素独立实测真值。评测输入不提供这些参考图，须区分事件标注、派生强度图和模型预测图。
 
 官方 `iranroman/DCASE2026_Task3_SAISELD_baseline` 固定到 `d4df66251f39e34bc0157be93858e5a68ec9d7c4`。从 `acoustic_features.py` 读音频特征，沿 `lam_model.py` 的 UpLAM 到 `model.py` 的实例模型，再读 `run_inference.py` 的掩模关联和 JSON 输出、`evaluate.py` 的评测。基线把 4 路音频送入声学图预测，再把九频带图与 RGB 通道送入实例模型；纯音频配置使用零值视觉通道。按掩模 IoU 进行 Hungarian 关联是这条基线的后处理，不等于由空间图自动获得永久声源身份。[固定基线入口](https://github.com/iranroman/DCASE2026_Task3_SAISELD_baseline/tree/d4df66251f39e34bc0157be93858e5a68ec9d7c4)。
 

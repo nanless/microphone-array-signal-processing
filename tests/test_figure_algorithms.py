@@ -714,7 +714,7 @@ class FigureAlgorithmTest(unittest.TestCase):
         figure = self.capture_figure(figures.fig_srp_grid)
         renderer = figure.canvas.get_renderer()
         title = figure.axes[1].title
-        self.assertEqual(title.get_text(), "(b) SRP-PHAT 累积分数与峰值位置")
+        self.assertEqual(title.get_text(), "(b) 90×68 网格：SRP-PHAT 分数")
         self.assertLessEqual(title.get_window_extent(renderer).x1, figure.bbox.x1)
 
     def test_fig24_current_note_does_not_overlap_formula(self):
