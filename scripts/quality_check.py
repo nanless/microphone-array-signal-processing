@@ -42,7 +42,7 @@ EXPECTED_SECTION_COUNTS = {
     "12_appendix-symbols-math.md": 4,
     "13_appendix-guide.md": 7,
 }
-# 第 1～6、8～13 章的源 h4 进入合订目录和 PDF 第三级书签。此表是独立发布
+# 第 1～13 章的源 h4 进入合订目录和 PDF 第三级书签。此表是独立发布
 # 基线，不从构建脚本或待检产物反推。
 EXPECTED_SUBSECTION_COUNTS = {
     "01_problem-definition.md": 15,
@@ -51,6 +51,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "04_doa-estimation.md": 40,
     "05_beamforming.md": 38,
     "06_aec.md": 60,
+    "07_wpe-dereverberation.md": 48,
     "08_speech-separation.md": 9,
     "09_source-tracking.md": 9,
     "10_engineering-practice.md": 13,
@@ -77,10 +78,10 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 119
-EXPECTED_SUBSECTION_COUNT = 301
-EXPECTED_OUTLINE_ITEM_COUNT = 434
+EXPECTED_SUBSECTION_COUNT = 349
+EXPECTED_OUTLINE_ITEM_COUNT = 482
 EXPECTED_FIGURE_NUMBERS = set(range(1, 42))
-# 研究附站使用独立显式清单，不挤占 14 篇教程或 434 项 PDF 大纲基线。
+# 研究附站使用独立显式清单，不挤占 14 篇教程或 482 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
     ("README.md", "index.html"),
@@ -1034,6 +1035,8 @@ def check_pdf(errors: list[str], notices: list[str]):
 
 
 EXPECTED_AUDIO_STEMS = {
+    "wpe_predictable_target", "wpe_predictable_reverberant",
+    "wpe_predictable_oracle_inverse", "wpe_predictable_output",
     "aec_dropout_target", "aec_dropout_microphone",
     "aec_dropout_complete_reference_residual", "aec_dropout_missing_reference_residual",
     "gsc_reference", "gsc_array", "gsc_always_adapt", "gsc_gate_frozen",
@@ -1293,13 +1296,13 @@ def check_audio(errors):
         manifest = json.loads((root / "MANIFEST.json").read_text())
         records = manifest["files"]
         names = {stem + ".wav" for stem in EXPECTED_AUDIO_STEMS}
-        if len(records) != 90 or {r["file"] for r in records} != names:
-            fail(errors, "音频清单必须包含独立基线的 90 个 WAV")
+        if len(records) != 94 or {r["file"] for r in records} != names:
+            fail(errors, "音频清单必须包含独立基线的 94 个 WAV")
         if {p.name for p in root.glob("*.wav")} != names or {p.name for p in (SITE / "audio").glob("*.wav")} != names:
             fail(errors, "源音频或站点音频文件集合不符")
         if set(manifest["groups"]) != {"spatial", "aec", "aec_methods", "aec_subband", "wpe", "separation", "engineering", "tracking",
                                       "correlation", "polarity", "conditioning", "nonlinear", "fractional_array",
-                                      "spectral_subtraction", "clock_drift", "interpolation", "alignment_error", "room_decay", "dma_calibration", "doa_ambiguity", "gsc_gate", "aec_dropout"}:
+                                      "spectral_subtraction", "clock_drift", "interpolation", "alignment_error", "room_decay", "dma_calibration", "doa_ambiguity", "gsc_gate", "aec_dropout", "wpe_predictable"}:
             fail(errors, "音频实验组不符")
         expected_inputs = {"codes/examples/generate_audio_samples.py", "codes/array_tutorial/audio_samples.py",
                            "codes/array_tutorial/aec.py", "codes/array_tutorial/aec_ipnlms.py",
@@ -1332,7 +1335,8 @@ def check_audio(errors):
                 raw = wav.readframes(frames)
             if record["sample_rate_hz"] != 16000 or record["duration_s"] != frames / 16000:
                 fail(errors, f"音频清单采样率或时长不符：{name}")
-            expected_group = ("aec_dropout" if name.startswith("aec_dropout_") else
+            expected_group = ("wpe_predictable" if name.startswith("wpe_predictable_") else
+                              "aec_dropout" if name.startswith("aec_dropout_") else
                               "gsc_gate" if name.startswith("gsc_") else
                               "doa_ambiguity" if name.startswith("doa_ambiguity_") else
                               "dma_calibration" if name.startswith("dma_calibration_") else

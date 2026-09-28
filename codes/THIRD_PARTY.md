@@ -1,6 +1,6 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 88 个 Git 上游项目；已在 `codes/upstream/_downloads/` 取得 76 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。2026-09-28 离线核验 75 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 12 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 89 个 Git 上游项目；已在 `codes/upstream/_downloads/` 取得 77 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。2026-09-28 离线核验 76 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 12 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”只说明来源、提交、工作区状态和指定入口符合清单，不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -74,7 +74,7 @@ SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构�
 | [wpe_gpu](https://github.com/desh2608/wpe/tree/bd2857b5b8de36df4f436a93574c088bea142042) | CuPy 离线 WPE 与 GPU-GSS 去混响 | MIT | 已取得独立源码 |
 | [dtln_aec](https://github.com/breizhn/DTLN-aec/tree/9d24e128b4f409db18227b8babb343016625921f) | 双信号处理域的神经 AEC | MIT | 已取得独立源码 |
 | [speakerbeam](https://github.com/BUTSpeechFIT/speakerbeam/tree/91af02cc617afa35fedfbdbf32533012cd0a8672) | 目标说话人提取的受限评测实现 | LicenseRef-BUT-NTT-Evaluation | 仅来源索引 |
-| [metaaf](https://github.com/adobe-research/MetaAF/tree/56c4665bdc51c2e0595a7c0cd9b1266408adceff) | 可学习更新规则及通用频域 RLS 的核心库；AEC Kalman/RLS 基线另在 `zoo/aec/` | 核心 University of Illinois/NCSA；`zoo/` Adobe Research License | 已取得核心及 zoo/aec/ 与直接公共源码；zoo 仅限非商用研究（含教学/测试），附独立许可；未取权重、未运行网络 |
+| [metaaf](https://github.com/adobe-research/MetaAF/tree/56c4665bdc51c2e0595a7c0cd9b1266408adceff) | 可学习更新规则及通用频域 RLS 的核心库；AEC Kalman/RLS 基线另在 `zoo/aec/` | 核心 University of Illinois/NCSA；`zoo/` Adobe Research License | 已取得核心、zoo/aec/、zoo/wpe/ 与直接公共源码；zoo 仅限非商用研究（含教学/测试），附独立许可；未取权重、未运行网络 |
 | [fastmnmf_author](https://github.com/sekiguchi92/SoundSourceSeparation/tree/897fe87fea3d85a243d8a3fd36c2232bb0548ad3) | FastMNMF 与自回归联合模型的作者实验 | LicenseRef-Academic-Research-Only | 仅来源索引 |
 | [spmamba](https://github.com/JusperLee/SPMamba/tree/f939f60a10db8a66aa69ec09685684307af47412) | 空间域与时序状态空间分离 | Apache-2.0 | 已取得独立源码 |
 | [mamba_tasnet](https://github.com/xi-j/Mamba-TasNet/tree/a35c692f27213781a11b1606c375cda1e1f0fb62) | Mamba 与 TasNet 分离实现 | GPL-3.0 | 已取得独立源码 |
@@ -118,7 +118,7 @@ DEMAND v1.0 的 NRIVER 河流场景来自 [Zenodo 1227121](https://zenodo.org/re
 
 ## 不能混同的许可范围
 
-- **MetaAF**：仅取得 `metaaf/` 核心及 README。核心许可为 University of Illinois/NCSA；[`zoo/`](https://github.com/adobe-research/MetaAF/blob/56c4665bdc51c2e0595a7c0cd9b1266408adceff/zoo/README.md)、任务配方和权重另受其 [Adobe Research License](https://github.com/adobe-research/MetaAF/blob/56c4665bdc51c2e0595a7c0cd9b1266408adceff/zoo/LICENSE) 约束，限非商业研究、教学与测试，不能据此用于商业产品开发，未随核心下载。核心里的 `optimizer_rls.py` 是通用更新器；`zoo/aec/` 的 Kalman/RLS 基线不能因此算作已经取得或运行。
+- **MetaAF**：已取得 `metaaf/` 核心、`zoo/aec/`、`zoo/wpe/` 及所选公共依赖和许可。核心为 University of Illinois/NCSA；任务配方另受其 [Adobe Research License](https://github.com/adobe-research/MetaAF/blob/56c4665bdc51c2e0595a7c0cd9b1266408adceff/zoo/LICENSE) 约束，限非商业研究、教学与测试，不能由核心许可推定 zoo 可用于商业产品。核心里的 `optimizer_rls.py` 是通用更新器；AEC 与 WPE 配方的源码已取得，但未加载权重、训练或执行完整网络推理。受控原函数诊断另见增强研究 W09/W11。
 - **RLS/Kalman AEC 示例**：pyroomacoustics 的 RLS/BlockRLS 是通用滤波器，不提供 AEC 所需的播放参考对齐、双讲保护和残余回声抑制。pyaec、PFDKF、Subband_Kalman_AEC 是可研究的算法演示，不能由代码可见推断工业部署；它们的示例录音许可应逐项另核。bssaec2020 没有查到明确源码再分发许可，维持只登记不下载，其仓库 README 中还有 Interspeech 2020 退稿通知，不能称作该会议已接收实现。
 - **Spatial Audio Framework**：核心 ISC，部分可选模块 GPL-2.0。不能用核心许可描述全部模块。
 - **icoDOA、piva、Mamba-TasNet、ALSA**：已取得各自许可下的独立源码用于研究；AGPL/GPL/LGPL 的义务不能因放在下载目录而消失。这里没有把这些项目合并或重新授权为本书代码。
@@ -204,8 +204,19 @@ HARK 不属于 Git 锁表的 84 项，另见 [ARCHIVE_SOURCES.lock.json](ARCHIVE
 | [Array-Response-Simulator](https://github.com/polarch/Array-Response-Simulator/tree/1ebfb28296736c52691c63e1aa336a7bd0d6216b) | BSD-3-Clause；LICENSE、README、sphModalCoeffs及6个Bessel/Hankel函数 | 模态计算依赖闭合；未包含完整空间模拟器或测量；directional端点头注差异见研究 |
 | [iDeepPE](https://github.com/CSeIn/iDeepPE/tree/c2cdc26ddafd33bf3bda45640c06febef9092365) | 未建立明确代码许可；仅固定索引 | 不获取/训练/推理；模型和CHiME-4/DEMAND/VCTK数据许可分别核查 |
 
-SOF 的[审查程序](examples/audit_sof_tdfb_design.py)与[报告](reports/sof_tdfb_design_audit.json)读取未修改的固定源码，核对 normalized sinc 参数和 WNG 分母；数学反例是独立选择的标量/两频配置，没有执行官方 MATLAB 设计、生成 FIR 或运行固件。官网旧参数与固定版本默认值分别保存。其他外部方法的实际运行、提取调用、兼容性问题与尚未构建状态见[空间研究](research/01_spatial_and_tracking.md)，不能由75项源码核验通过推断75套算法已正确运行。
+SOF 的[审查程序](examples/audit_sof_tdfb_design.py)与[报告](reports/sof_tdfb_design_audit.json)读取未修改的固定源码，核对 normalized sinc 参数和 WNG 分母；数学反例是独立选择的标量/两频配置，没有执行官方 MATLAB 设计、生成 FIR 或运行固件。官网旧参数与固定版本默认值分别保存。其他外部方法的实际运行、提取调用、兼容性问题与尚未构建状态见[空间研究](research/01_spatial_and_tracking.md)，不能由76项源码核验通过推断76套算法已正确运行。
 
 ### 第6章评测研究补充
 
 [EC-Evaluation-Toolbox](https://github.com/ifnspaml/EC-Evaluation-Toolbox/tree/aec8873325ed8e4d93eadc53e5c0af84be4db4fd) 固定版本用于追溯 AEC/AES 评测与动态房间响应研究。2026-09-28 检查根目录及所列源文件头，未找到明确源码再分发许可，因此仅登记来源；不下载模型或数据，不称为已完整运行。其模型入口还依赖仓库未附的 `speechlightning`。原方法调用与教学例的差异见 [AEC 源码研究](research/02_aec_wpe_separation.md#aec)。
+
+
+## 第 7 章 WPE 源码复核（2026-09-28）
+
+| 来源与固定版本 | 本地取得范围及许可 | 已验证与未执行范围 |
+|---|---|---|
+| [MetaAF](https://github.com/adobe-research/MetaAF/tree/56c4665bdc51c2e0595a7c0cd9b1266408adceff) | 既有核心与声明之外，扩充 `zoo/wpe/` 四个源文件；核心 NCSA、zoo 的 Adobe 非商业研究许可分别保留 | 核心、WPE 教学研究与 AEC 的用途分别登记；原方法提取调用与静态核对见增强研究 W09/W11；未运行训练、权重或完整音频评测 |
+| [TSO-VACE-WPE](https://github.com/dreadbird06/tso_vace_wpe/tree/10ee77dd020d58af508feb77251f9353208cb33a) | MIT；15 个源码/说明/许可文件，含所选 `torch_custom` 直接依赖，排除模型与数据 | 作者实现源码已取得和核验；未安装 PyTorch、载入模型、训练、推理或核验说话人验证增益 |
+| [NTT WPE 评估包](https://www.rd.ntt/cs/team_project/media/signal/wpe/) | 官方 MATLAB p-code 评估包；[许可条件](https://www.rd.ntt/cs/team_project/media/signal/wpe/licence.html)与开放源码不同 | 仅网页资料索引；未下载程序、录音或模型，不加入 Git 源码锁表，不声称当代 MATLAB 兼容性已验证 |
+
+NARA、ESPnet、BTK20 与 GSS 的 WPE 入口已有本地固定源码。详见[增强研究 W01～W11](research/02_aec_wpe_separation.md#wpe)：实际 NumPy 调用、原函数提取、静态接口追踪、长期静音反例与尚未构建的整链分别记录。某个项目取得成功，不能推断它的全部参数、默认值或数值边界已经通过运行验证。

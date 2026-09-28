@@ -473,6 +473,52 @@ class FigureAlgorithmTest(unittest.TestCase):
         np.testing.assert_allclose(filt, scaled_filt, rtol=1e-12, atol=1e-12)
         self.assertAlmostEqual(scaled_loading, 100.0 * loading, places=12)
 
+    def test_wpe_scalar_loading_has_no_hidden_absolute_floor(self):
+        for scale in (1e-180, 1e-30, 1., 1e30, 1e180):
+            filt, loading = figures.solve_wpe_filter([[scale]], [scale])
+            self.assertAlmostEqual(filt[0].real, 1 / (1 + 1e-6), places=14)
+            self.assertAlmostEqual(loading / scale, 1e-6, places=16)
+        filt, loading = figures.solve_wpe_filter([[0.]], [0.])
+        np.testing.assert_array_equal(filt, [0.])
+        self.assertEqual(loading, 0.)
+
+    def test_wpe_figure_algorithm_preserves_extreme_input_scaling(self):
+        source = np.array([[1, .4+.2j, -.2+.1j, 1-.2j, .7, -.3j, .1+.5j]])
+        reference = figures.wpe_dereverb(source, K=1, delay=1, iters=2)
+        self.assertGreater(np.linalg.norm(reference-source), .1)
+        with np.errstate(all="raise"):
+            for scale in (1e-180, 1e180):
+                actual = figures.wpe_dereverb(scale*source, K=1, delay=1, iters=2)
+                np.testing.assert_allclose(actual/scale, reference, rtol=2e-13, atol=2e-13)
+
+    def test_wpe_subnormal_inputs_use_real_component_normalization(self):
+        filt, loading = figures.solve_wpe_filter([[1e-310]], [1e-310])
+        self.assertAlmostEqual(filt[0].real, 1/(1+1e-6), places=14)
+        self.assertGreater(loading, 0.)
+        y = np.array([[1, .4+.2j, -.2+.1j, 1-.2j, .7, -.3j, .1+.5j]])
+        ordinary = figures.wpe_dereverb(y, K=1, delay=1, iters=2)
+        tiny = figures.wpe_dereverb(y*1e-310, K=1, delay=1, iters=2)
+        scaled = tiny.real/1e-310 + 1j*(tiny.imag/1e-310)
+        np.testing.assert_allclose(scaled, ordinary, rtol=2e-12, atol=2e-12)
+
+    def test_wpe_huge_representable_loading_preserves_small_solution(self):
+        g, loading = figures.solve_wpe_filter(np.ones((2, 2)), np.ones(2), 1e308)
+        np.testing.assert_allclose(g.real/1e-308, [1., 1.], rtol=1e-14, atol=0)
+        self.assertEqual(loading, 1e308)
+        with self.assertRaises(ValueError):
+            figures.solve_wpe_filter(np.diag([-1., 3.]), np.ones(2))
+        for key in ("K", "delay", "iters"):
+            with self.assertRaises(ValueError):
+                figures.wpe_dereverb(np.ones((1, 8)), **{key: True})
+
+    def test_wpe_figure_rejects_nonfinite_and_invalid_loading(self):
+        for loading in (True, [1.], 1+0j, np.nan, np.inf, -1.):
+            with self.assertRaises(ValueError):
+                figures.solve_wpe_filter([[1.]], [1.], loading)
+        for value in (np.nan, np.inf):
+            with self.assertRaises(ValueError):
+                figures.wpe_dereverb([[value]], K=0)
+
     def test_wpe_normal_equation_preserves_complex_conjugation(self):
         rng = np.random.default_rng(612)
         regressors = (rng.normal(size=(2, 20))

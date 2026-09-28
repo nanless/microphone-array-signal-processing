@@ -769,7 +769,7 @@
       "license": "LicenseRef-NCSA-and-Adobe-Research",
       "scope": "Learned adaptive-filter optimizers; AEC, WPE and beamforming research",
       "fetch_enabled": true,
-      "note": "Core metaaf/ is UIUC/NCSA. The selected zoo/aec/ and its direct shared source dependencies use Adobe Research License: non-commercial research including teaching/testing; retain zoo/LICENSE when redistributing that selection. Source only: no weights/audio, JAX installation, training, or full inference validated. License and AEC imports checked 2026-09-28.",
+      "note": "Core metaaf/ is UIUC/NCSA. The selected zoo/aec/, zoo/wpe/ and its direct shared source dependencies use Adobe Research License: non-commercial research including teaching/testing; retain zoo/LICENSE when redistributing that selection. Source only: no weights/audio, JAX installation, training, or full inference validated. License and selected AEC/WPE imports checked 2026-09-28.",
       "entrypoints": [
         "metaaf/LICENSE",
         "metaaf/filter.py",
@@ -782,7 +782,10 @@
         "zoo/aec/aec.py",
         "zoo/aec/optimizer_kf.py",
         "zoo/aec/aec_baselines.py",
-        "zoo/aec/aec_eval.py"
+        "zoo/aec/aec_eval.py",
+        "zoo/wpe/wpe.py",
+        "zoo/wpe/wpe_eval.py",
+        "zoo/wpe/nara_wpe_eval.py"
       ],
       "source_paths": [
         "metaaf/",
@@ -792,8 +795,10 @@
         "zoo/__init__.py",
         "zoo/__config__.py",
         "zoo/metrics.py",
-        "zoo/aec/"
-      ]
+        "zoo/aec/",
+        "zoo/wpe/"
+      ],
+      "verified_at": "2026-09-28"
     },
     {
       "id": "fastmnmf_author",
@@ -1615,6 +1620,42 @@
         "07_Evaluation/audio_processing.py",
         "04_Model_Definitions/CGGN16.py"
       ]
+    },
+    {
+      "id": "tso_vace_wpe",
+      "url": "https://github.com/dreadbird06/tso_vace_wpe.git",
+      "revision": "10ee77dd020d58af508feb77251f9353208cb33a",
+      "verified_at": "2026-09-28",
+      "license": "MIT; retain LICENSE and per-file notices",
+      "fetch_enabled": true,
+      "scope": "Author VACE-WPE virtual-channel neural WPE and task-specific front end; source-only",
+      "acquisition": "independent_source_checkout",
+      "source_paths": [
+        "LICENSE",
+        "README.md",
+        "run.py",
+        "vace_wpe.py",
+        "bldnn_4M62.py",
+        "gcunet4c_4M4390.py",
+        "torch_custom/custom_layers.py",
+        "torch_custom/iterative_wpe.py",
+        "torch_custom/math_utils.py",
+        "torch_custom/neural_wpe.py",
+        "torch_custom/signal_utils.py",
+        "torch_custom/spectral_ops.py",
+        "torch_custom/stft_helper.py",
+        "torch_custom/torch_utils.py",
+        "torch_custom/wpe_th_utils.py"
+      ],
+      "entrypoints": [
+        "LICENSE",
+        "README.md",
+        "vace_wpe.py",
+        "torch_custom/wpe_th_utils.py",
+        "torch_custom/neural_wpe.py",
+        "run.py"
+      ],
+      "note": "Official Yang/Chang repository; root MIT copyright 2021 dreadbird06, selected file headers contain no conflicting license. models/ and data/ excluded; torch_custom direct local dependencies included. No model loading, PyTorch installation, training, inference or claimed ASV gain validated. Fixed README identifies TASLP 30,3144–3159(2022), DOI10.1109/TASLP.2022.3205752."
     }
   ]
 }

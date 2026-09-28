@@ -50,10 +50,11 @@ class SpectralSubtractionTest(unittest.TestCase):
     def test_new_audio_group_and_original_55_wav_byte_hashes(self):
         cases = build_cases()
         files, groups = prepare_exports(cases)
-        self.assertEqual(len(files), 90)
-        self.assertEqual(len(groups), 22)
+        self.assertEqual(len(files), 94)
+        self.assertEqual(len(groups), 23)
         old = [(name, hashlib.sha256(blob).hexdigest()) for name, (blob, _) in files.items()
-               if not name.startswith(('spectral_', 'clock_', 'interpolation_', 'alignment_', 'room_decay_', 'dma_calibration_', 'doa_ambiguity_', 'gsc_', 'aec_dropout_'))]
+               if not name.startswith(('spectral_', 'clock_', 'interpolation_', 'alignment_', 'room_decay_', 'dma_calibration_', 'doa_ambiguity_', 'gsc_', 'aec_dropout_', 'wpe_predictable_'))]
+        self.assertEqual(len(old), 55)
         aggregate = hashlib.sha256(''.join(name + digest for name, digest in sorted(old)).encode()).hexdigest()
         self.assertEqual(aggregate, 'debc8d44e275a14cc6cec77f9eb7bd27d7f98dc42652cabc8c28d533f6935540')
         case = cases['spectral_subtraction']

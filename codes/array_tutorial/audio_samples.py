@@ -598,8 +598,79 @@ def aec_dropout_case() -> dict:
                   'Float analytic checks and PCM-to-PCM scores are separate; no third-party recording.'}
 
 
+def wpe_predictable_case() -> dict:
+    """Blind prediction can attenuate a periodic target despite reducing a tail.
+
+    A known stable scalar feedback delay creates the observation. Its exact
+    oracle inverse is a diagnostic, not a blind-WPE or measured-room result.
+    """
+    count, onset, stop, path_delay = 32000, 4000, 16000, 512
+    target = np.zeros(count)
+    tone = .12 * np.sin(2 * np.pi * 1000 * np.arange(stop - onset) / SAMPLE_RATE)
+    fade = np.sin(np.linspace(0, np.pi / 2, 320))**2
+    tone[:320] *= fade
+    tone[-320:] *= fade[::-1]
+    target[onset:stop] = tone
+    observed = target.copy()
+    for n in range(path_delay, count):
+        observed[n] += .65 * observed[n - path_delay]
+    oracle = observed.copy()
+    oracle[path_delay:] -= .65 * observed[:-path_delay]
+    spectrum = stft(observed, n_fft=512, hop_length=128, center=True)[0]
+    residual = offline_wpe(spectrum, taps=1, delay=4, iterations=3,
+                           diagonal_loading=1e-6, power_floor=1e-5)
+    processed = istft(residual[None], n_fft=512, hop_length=128,
+                      center=True, length=count)[0]
+    signals = {'wpe_predictable_target': target,
+               'wpe_predictable_reverberant': observed,
+               'wpe_predictable_oracle_inverse': oracle,
+               'wpe_predictable_output': processed}
+    if max(float(np.max(np.abs(x))) for x in signals.values()) >= .8:
+        raise ValueError('predictable-WPE fixture requires common export gain 1')
+    decoded = {name: read_pcm16(pcm16_bytes(value))[1][0] for name, value in signals.items()}
+
+    def scores(values):
+        truth = values['wpe_predictable_target'][6400:14400]
+        denominator = float(truth @ truth)
+        result = {}
+        for name, value in values.items():
+            segment = value[6400:14400]
+            error = segment - truth
+            result[name] = {'steady_projection_gain': float(segment @ truth / denominator),
+                            'steady_relative_squared_reference_error': float(error @ error / denominator),
+                            'tail_mean_square': float(np.mean(value[16000:32000]**2))}
+        before = result['wpe_predictable_reverberant']['tail_mean_square']
+        after = result['wpe_predictable_output']['tail_mean_square']
+        return {'files': result, 'output_to_input_tail_power_ratio_db': float(10*np.log10(after/before))}
+
+    return {'signals': signals, 'parameters': {
+        'sample_rate_hz': SAMPLE_RATE, 'samples': count, 'duration_seconds': 2,
+        'source_frequency_hz': 1000, 'source_amplitude': .12, 'phase_at_onset_radians': 0,
+        'source_active_interval_samples': [onset, stop], 'fade_samples_each_end': 320,
+        'fade': 'sin(linspace(0,pi/2,320)) squared, endpoint included; reverse at end of active interval',
+        'model': 'x[n]=s[n]+0.65*x[n-512]; all negative-time samples zero; observation truncated to 32000 samples',
+        'feedback_coefficient': .65, 'feedback_delay_samples': path_delay,
+        'oracle_inverse': 's_oracle[n]=x[n]-0.65*x[n-512], negative-time x zero',
+        'oracle_max_abs_reference_error_float': float(np.max(np.abs(oracle-target))),
+        'stft': {'n_fft': 512, 'hop_length': 128, 'window': 'periodic Hann', 'center': True,
+                 'zero_padding_each_end': 256, 'frames': spectrum.shape[1],
+                 'istft': 'squared-window weighted overlap-add, discard initial 256 padding, return first 32000 samples'},
+        'wpe': {'taps': 1, 'delay': 4, 'iterations': 3, 'diagonal_loading': 1e-6,
+                'power_floor': 1e-5, 'statistics': 'whole-record valid-frame statistics, no temporal power smoothing'},
+        'score_windows_samples': {'steady_target': [6400, 14400], 'post_source_tail': [16000, 32000]},
+        'alignment': 'same sample origin; no fitted delay, no gain correction or separate normalization',
+        'metrics': 'steady projection gain dot(output,target)/dot(target,target); steady squared error sum((output-target)^2)/sum(target^2); tail mean square includes all samples in declared half-open window',
+        'float_truth_scores': scores(signals), 'pcm_to_pcm_reference_scores': scores(decoded),
+        'noise': 'none', 'randomness': 'none', 'algorithm_delay_samples': 'offline noncausal record; no streaming latency claim',
+        'statistics': 'one deterministic mathematical fixture; no real speech, room or listening study'},
+        'limits': 'All four mono files share export gain 1. The oracle knows the feedback path; blind WPE does not. '
+                  'The stationary target itself is predictable at the 32 ms delay, so lower tail energy does not guarantee unit target gain. '
+                  'Finite onset/fades and STFT boundary padding affect the fit. No T60, SNR, ERLE or intelligibility claim; '
+                  'tail after the two-second file is excluded. Float and PCM reference scores are reported separately.'}
+
+
 def build_cases() -> dict:
-    """Return twenty-two experiments with model parameters and references.
+    """Return twenty-three experiments with model parameters and references.
 
     Each entry has ``signals`` (filename stem -> CxN array), ``parameters`` and
     ``limits``. Signals are pre-export floats; no group uses peak matching.
@@ -732,6 +803,7 @@ def build_cases() -> dict:
     subtraction_zero_audio = istft(subtraction_zero[None], n_fft=512, hop_length=128,
                                    length=t.size)[0]
     return {
+        'wpe_predictable': wpe_predictable_case(),
         'aec_dropout': aec_dropout_case(),
         'gsc_gate': gsc_gate_case(),
         'doa_ambiguity': doa_ambiguity_case(),

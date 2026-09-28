@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/make_figures.py::gcc_reverb_statistics",
-  "generator_sha256": "f52f5de57118fe00b2f6f8d474e808315f42e228a2c78fe22a22b488f058a95e",
+  "generator_sha256": "f20c1fa1d2421af32c3fe549ef49ae2c83241fd55b511ce9ee63867a30d1e955",
   "environment": {
     "python": "3.13.12",
     "numpy": "2.5.3"

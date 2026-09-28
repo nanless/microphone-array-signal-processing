@@ -436,9 +436,15 @@ AEC 入口是 `zoo/aec/aec.py` 的任务滤波器，再看 `optimizer_kf.py` 的
 
 共享功率的模型约束另见 [E07-06](../../chapters/07_wpe-dereverberation.md#e07-06)：球形协方差 $\lambda I_M$ 的负对数似然含 $M\log\lambda$，所以最优功率是跨通道平方模的均值。两通道残差 $[1+\mathrm j,2]$ 给功率 3，只把第二路幅度乘以 2 后变为 9；它说明通道增益失配会影响共享权重，不是运行了房间去混响的质量比较。
 
+**固定版本的统计口径。** `build_y_tilde()` 按抽头再通道展开历史；`statistics_mode="valid"` 从 `delay+taps-1` 开始统计，`full` 保留零填充启动帧。预测结果仍覆盖全部输入帧。默认 `wpe` 是 `wpe_v7` 的别名；旧对照只调用 `wpe_v6`，不能由此宣称所有别名已核验。`_stable_solve()` 在直接求解失败后逐矩阵尝试最小二乘，它没有自动加入本书的相对对角加载。
+
+[`Yoshioka、Nakatani 2012` 作者全文](https://www.audiolabs-erlangen.de/resources/aps-w23/papers/sap_Yoshioka2012.pdf) §V-A、V-B 分开给出逐输出对角协方差和 scaled-identity 模型。后者共享功率，是紧凑阵列上通道功率近似同步的简化；不能从“多通道”推出真实目标的空间协方差必为球形。§VI 的脉冲响应分析还显示某些尾部能量会增加；改善早段衰减不等于每一时刻的尾部都降低。
+
+`get_power_inverse()` 先求跨通道均方模，再沿末轴作可选时间平滑。其相对下限为传入功率数组**整体最大值**的 `1e-10`；全零数组另行返回有限倒数。`wpe_v6/v7` 可一次传入所有频点，`wpe_v8` 则逐频调用，因此高动态范围输入上三者不一定等价。W11 的实际反例保留这一不利结果，不能用旧的随机输入一致性覆盖它。
+
 ### W02　逐帧递推 WPE
 
-`nara_wpe/wpe.py` 的 `OnlineWPE` 保存逆相关矩阵、预测抽头、功率和输入缓冲；`step_frame()` 接收 `(频点, 通道)`。该实现先由旧状态输出当前预测残差，再更新状态，这与每次对增长的整段录音重新运行离线 `wpe()`不同。原理出处为[Kinoshita 等，Interspeech 2017](https://www.isca-archive.org/interspeech_2017/kinoshita17_interspeech.html)。
+`nara_wpe/wpe.py` 的 `OnlineWPE` 保存逆相关矩阵、预测抽头、功率和输入缓冲；`step_frame()` 接收 `(频点, 通道)`。该实现先由旧状态输出当前预测残差，再更新状态，这与每次对增长的整段录音重新运行离线 `wpe()`不同。逐帧递推依据见[Caroselli 等，Interspeech 2017，§3](https://www.isca-archive.org/interspeech_2017/caroselli17_interspeech.pdf)及[Drude 等，ITG 2018，§4.3 式(11)～(17)](https://groups.uni-paderborn.de/nt/pubs/2018/ITG_2018_Drude_Paper.pdf)。Kinoshita 2017 的神经功率实验采用另一种分块配置，见 W04。
 
 锁定的 0.0.11 版不能把三个接口的同名 `delay` 直接当作同一个时间索引。单频点、单通道、单抽头取帧 `[10,20,30,40]`，在 $t=3$ 令 `delay=1`、固定预测抽头为 1：离线 `build_y_tilde()` 取 $X_{t-1}=30$，残差为 10；无状态 `online_wpe_step()` 取 $X_{t-2}=20$，残差为 20；有状态 `OnlineWPE.step_frame()` 在写入当前帧前从旧缓冲取 $X_{t-3}=10$，残差为 30。这是该固定版本的接口行为，不是 WPE 理论规定必须相差两帧。
 
@@ -448,6 +454,8 @@ AEC 入口是 `zoo/aec/aec.py` 的任务滤波器，再看 `optimizer_kf.py` 的
 
 最小实验逐帧输入一个固定记录并保留状态，再检查把同一帧流分成不同外层批次是否改变结果。失败实验中途错误重建 `OnlineWPE`，查看启动段反复出现；另测静音、设备重启和房间突变。遗忘因子与功率估计共同决定跟踪，不应仅报告 `taps` 和 `delay`；换版本或接口时还必须重新核对 `delay` 对应的实际时间戳。
 
+**静音状态不是永久稳定的保证。** 固定接口在无回归输入时仍让逆相关矩阵除以遗忘因子。长静音下它可能增长到非有限数；功率倒数的地板并不能限制这个状态。实际原版与本书适配对照见[静音边界实验](../examples/wpe_silence_boundary.py)及[报告](../reports/chapter07_online_wpe_silence.json)。该实验保留原版语义，不把匹配结果解释成稳定性通过；部署时应另设计状态上限、冻结或重置策略，并验证恢复帧及历史推进。
+
 ### W03　块在线 WPE 与接口中的限制
 
 `OnlineWPE.step_block()`处理已有历史缓冲形状的块；当前检出源码的 `_get_prediction()`还注明只支持 `block_shift=1`。TensorFlow 路线另有 `tf_wpe.py` 中的 `block_wpe_step()`、`recursive_wpe()`，二者不应凭名字直接互换。见[nara_wpe 固定版本源码](https://github.com/fgnt/nara_wpe/blob/a166779cca2088817e330481bd20af1a2c598555/nara_wpe/tf_wpe.py)。
@@ -456,11 +464,21 @@ AEC 入口是 `zoo/aec/aec.py` 的任务滤波器，再看 `optimizer_kf.py` 的
 
 最小复现要先确认块是“送入模型的新样本”还是“含全部历史的窗口”，再比较输出时间戳。失败实验把窗口长度误当帧移，检查是否重复消费或跳过帧。计算实时性时分别报块等待、历史上下文、STFT 和计算时间；有历史记忆不意味着必须等待同样长的未来数据。
 
+**TensorFlow 路线只完成源码阅读。** 固定 `block_wpe_step()` 默认块长 2 s，`forgetting_factor=0.7` 的更新实际是 `0.3*旧统计+0.7*当前块统计`，不是把 0.7 乘在旧统计上。块内构造历史，首部补零；相邻块不是无缝复用一条完整回归历史。系数由当前块估计并用于当前块，所以块内较早输出可能依赖较晚输入。`recursive_wpe()` 另接受逐帧功率；`only_use_final_filters=True` 会把最终系数重新应用到整段，不能当作在线输出。未安装或运行 TensorFlow，也没有把旧 TF1 风格接口写成已兼容当前框架。
+
 ### W04　DNN-WPE：掩码或功率网络与解析求解器
 
 [ESPnet `DNN_WPE`](https://github.com/espnet/espnet/blob/be79590bb2ff26ffb01bc825c5f68cb9418b7f0d/espnet2/enh/layers/dnn_wpe.py)先估计掩码并形成跨通道功率，再调用 `wpe_one_iteration()`。外层输入为 `(批, 帧, 通道, 频点)`，内部转成 `(批, 频点, 通道, 帧)`。应把 `dnn_wpe.py`、`mask_estimator.py` 和 `wpe.py` 连起来读，才能知道网络实际改了哪个统计量。
 
 最小实验用已知正数功率替换网络输出，检查解析求解，再接入固定 checkpoint。失败实验把掩码设为全零或加入未来语音，验证功率下限与非因果泄漏。该类支持不同掩码估计器，不能仅凭 `iterations=1` 就宣称在线；需要核查网络方向、统计窗口和 padding。
+
+**论文中的在线条件。** [Kinoshita 等 2017 原文](https://www.isca-archive.org/interspeech_2017/kinoshita17_interspeech.pdf) §5.1.2 使用 2 s 非重叠块，相关统计遗忘参数 0.7；STFT 为 512 点、128 点帧移，16 kHz 下分别为 32/8 ms。预测延迟 3 帧，单通道/八通道抽头数为 37/10，迭代 3 次。其网络虽有单向 LSTM，输入仍含左右各 5 帧；严格零前视不能由“单向”推出。训练目标保留早期声和背景噪声，这不是一个以干净无噪语音为目标的通用网络。
+
+**ESPnet 参数究竟在哪里生效。** 固定版默认掩码网络类型为 `blstmp`，抽头 5、延迟 3、迭代 1。掩码只在第一轮乘到观测功率上；随后跨通道平均并用外层绝对地板 `eps=1e-6` 限制。后续迭代的功率来自上轮残差，但回归目标仍是原观测。默认双向网络和全段统计均不支持直接宣称流式。
+
+`diagonal_loading`、`diag_eps`、`use_torch_solver` 虽出现在构造器并被保存，却没有在 `forward()` 读出或传给 `wpe_one_iteration()`；底层 `get_filter_matrix_conj()` 固定使用默认 `eps=1e-10` 加单位矩阵后调用 `.inverse()`。这与同仓库波束模块的开关语义不同。外层 `eps` 也不能自动当成该矩阵加载量。
+
+`MaskEstimator` 第 82 行调用非原位 `masked_fill()` 后丢弃返回值，因此该行本身没有清零掩码。外层 `DNN_WPE` 在求解后清输出 padding，不等于先从相关统计中排除补齐帧。实际调用要保证上游有效区与补零约定；`normalization=True` 的时间归一化还没有给掩码总和加正地板，全零掩码会构成除零边界。这些是固定源码与 AST 证据，本机没有执行 PyTorch 网络或权重；不能写成完整 ESPnet 推理失败率。
 
 ### W05　WPD：同时利用当前通道与延迟历史
 
@@ -472,11 +490,81 @@ E07-05 已把第二种情形写成四维可执行手算：当前—历史相关�
 
 [E07-07](../../chapters/07_wpe-dereverberation.md#e07-07)把同一矩阵进一步分块并完成平方：历史预测 $G=C^{-1}B^H$、残差加权统计量 $S=A-BC^{-1}B^H$，再求加权 MPDR；四维解与两步输出逐项相同。这个等价要求同一功率、有效帧和约束，正则化也必须对应同一目标。[Boeddeker 等，ICASSP 2020，§4 和附录](https://arxiv.org/pdf/1910.13707)提供因式分解依据；[原创复算脚本](../examples/enhancement_structure_exercises.py)另检查复数交叉项，正文另分析加载边界。不能把它改写成任意 WPE→MVDR 都等于 WPD。
 
+固定 ESPnet 的 `wpd` 分支走 `get_WPD_filter_with_rtf()`，`wpd_souden` 走 `get_WPD_filter_v2()`，二者不是同一导向估计过程。`get_covariances()` 把当前块和延迟历史按抽头优先堆成 `(btaps+1)*通道`，统计从 `bdelay+btaps-1` 起；`perform_WPD_filtering()` 再按相同排列应用。默认 `use_torchaudio_api=False` 选择 `beamformer.py`，另一路 `beamformer_th.py` 不应只凭函数同名就跳过核查。与 DNN-WPE 的未消费开关不同，WPD 分支确实传入加载参数，但加载落在估计 RTF 用的噪声矩阵还是扩展统计矩阵，要逐函数确认。本轮没有执行任一 PyTorch WPD 分支。
+
 ### W06　AR-FastMNMF 与联合去混响/分离
 
 AR-FastMNMF 把自回归混响模型和多源空间/谱模型联合估计，避免把分离与拖尾建模视作互不影响的两个估计问题。[ICASSP 2021 论文](https://ieeexplore.ieee.org/document/9414857)与[作者 `SoundSourceSeparation`](https://github.com/sekiguchi92/SoundSourceSeparation/tree/897fe87fea3d85a243d8a3fd36c2232bb0548ad3)中的 `src/`用于研究模型更新顺序；`FastBSSD.py`还将 AR、MA、ARMA 等模型区分。
 
 作者仓库仅允许规定范围内的学术研究，工业用途或修改需额外许可，因此本书不把它作为可自由纳入产品的代码。最小复现应先用单源/无混响退化例，再与相同 STFT、相同初始化的级联方案比较；失败实验测欠定混合、近共线通道和移动源。联合优化增加了参数和局部最优，模型更复杂不自动保证结果更好。
+
+### W07　MINT、倒谱与晚期谱方差：三种不同问题
+
+**已知路径的 MINT。** [Miyoshi、Kaneda 1988 作者全文](https://www.kanedayyy.jp/asp/pub/sig_ac/MINT1988paper.pdf)研究已知有限脉冲响应的多输入/输出逆滤波结构；本章最小例限定单源、多观测、通道多项式无公共零且逆滤波器长度足够。公共零、路径估计误差、近公共零以及混合后噪声会破坏精确逆或使噪声放大。互素只是存在性条件，不是良好条件数或抗噪保证。本轮已锁库中没有确认可直接映射该原始 MINT 的入口；一般矩阵逆或波束形成不算 MINT 实现。正文小例属于本书独立代数，不能称为作者软件已复现。
+
+**倒谱滤波。** [Oppenheim、Schafer、Stockham 1968 原文](https://dsp-group.mit.edu/wp-content/uploads/2024/11/nonnlinearfiltering_1968.pdf) §VI 的 Echo Removal 讨论复杂倒谱中的简单回声分离。该 MIT 文件是同年 TAU 重印本，首面注明原刊为 Proceedings of the IEEE 56(8), 1264–1291，正式 DOI 为 [10.1109/PROC.1968.6570](https://doi.org/10.1109/PROC.1968.6570)。作者说明梳状滤波需要回声时间；非等间隔回声不再有同样集中的倒谱位置。短时分块还会带来边缘误差。
+
+本章若定义实倒谱为 `IFFT(log(|X|²))`，它是 `IFFT(log|X|)` 的两倍，且不包含原相位。零谱须声明正地板；lifter 只修改倒频率系数，不能独自恢复任意房间传递函数的相位。保留观测相位属于另加的合成约定，不是无失真逆卷积证明。已锁库的 MFCC liftering 也不能直接归为去混响实现。
+
+**晚期谱方差。** [Habets、Gannot、Cohen 2009，SPL 16(9), 770–773](https://israelcohen.com/wp-content/uploads/2018/05/SPL_Sep2009.pdf) §II～IV 根据 RIR 统计模型估计晚期谱方差，并显式考虑直达声能量。模型依赖频率相关的混响时间与直混比；扩散衰减近似有混合时间和 Schroeder 频率边界。其 §V-C 配合对数谱幅度增益；不能把它与任意维纳增益或单个指数递推混为一谈。功率在一帧时移 H 秒后的指数衰减与幅度不同，见正文的独立单位换算例。
+
+固定 SpeexDSP 的 `preprocess.c` 虽保留 `SET_DEREVERB`，相关新能量更新已注释，level/decay 控制也留有重新启用提示；把零初始化估计只乘衰减不会产生晚期估计。故本轮不把该 API 登记成已工作的谱方差去混响器。三个传统路线目前分别作为原理及本书小例索引，没有新增原始软件性能声明。
+
+### W08　工业证据、BTK 和 GSS 的实际取点
+
+**可核的产品研究证据。** [Google 作者的 Google Home 2017 论文](https://www.cs.cmu.edu/~chanwook/MyPapers/b_li_interspeech_2017.pdf) §2～3、图 1 把双麦 STFT 先送进自适应 WPE，再进入 fCLP 和声学模型；[Caroselli 等同年论文](https://www.isca-archive.org/interspeech_2017/caroselli17_interspeech.pdf) §3 给多通道递推。它证明特定产品研究曾采用这一结构，不证明 2026 年产品仍使用相同版本，也不公开其量产源码。整套系统的 WER 改善不能全部归给 WPE。
+
+**作者评估包与开源实现分开。** [NTT 官方 WPE 页](https://www.rd.ntt/cs/team_project/media/signal/wpe/)提供 MATLAB p-code 评估包；[许可](https://www.rd.ntt/cs/team_project/media/signal/wpe/licence.html)限制为评估等规定用途，不是开源许可。[公布配置](https://www.rd.ntt/cs/team_project/media/signal/wpe/config.html)包含 16 kHz、8 通道、512/128 点 STFT、10 抽头、延迟 3、迭代 3，仅能证明这一例子。其 MATLAB 兼容说明涉及旧版本，不是当前兼容验证。本书只保留网页索引，不取得受限 p-code 或示例录音；NARA 是另一项 MIT 开源实现。
+
+**BTK 固定 C++ 源。** [`dereverberation.cc`](https://github.com/kkumatani/distant_speech_recognition/blob/feff19ec8bcb770f6530fe280dc3ccafc2f5984a/btk20_src/dereverberation/dereverberation.cc)中的 `SingleChannelWPEDereverberationFeature` 和 `MultiChannelWPEDereverberation` 已在缓存。上下界 `lowerN/upperN` 均包含，抽头数为 `upperN-lowerN+1`；历史按通道分组。统计从 `lowerN` 起步，较远历史不足时填零，不等于 NARA 的完整历史 `valid`。
+
+多输出版本分别估计各输出残差功率，并未共用一个通道平均方差。幅度至少取 `1e-3`，对应功率下限 `1e-6`；`loadDb` 用 `10^(loadDb/10)` 乘最大对角元素，多通道另有绝对 `diagonal_bias`。GSL Cholesky 求解之前已读取整段、迭代估计滤波器，随后重置特征流应用；类名中的 FeatureStream 不能证明逐帧在线估计。本轮只读源码，未编译 Python2/SWIG/GSL 环境。
+
+**GPU-GSS 中的 WPE 范围。** [`gss/core/enhancer.py`](https://github.com/desh2608/gss/blob/10fad18cae85e2e4342c77421abc70c9c5da23ed/gss/core/enhancer.py)默认上下文 15 s、WPE 抽头 10、延迟 2、迭代 3、功率平滑 0，STFT 为 1024/256 点；这些是该构造器默认值，recipe 可覆盖。数据从 `(通道,帧,频率)` 转入 WPE 所需的 `(频率,通道,帧)`，去混响结果再生成活动引导掩码并进入波束器。`bf_drop_context` 只在波束统计掩码处去上下文；WPE 已使用上下文，最后还要裁波形边缘。
+
+OOM 重试可以改变频率分块数。其 CuPy WPE 保留全传入数组最大功率地板，因此频率分块可能改变低功率频点的权重；这不是仅凭输出长度就能证明的数值等价。W11 在 NARA 原函数上验证相同机制，本机未运行 CuPy/GPU-GSS。独立 [`desh2608/wpe`](https://github.com/desh2608/wpe/tree/bd2857b5b8de36df4f436a93574c088bea142042)只提供 GSS 所需子集，没有 NARA 的全部在线接口。这里不扩展第 8 章的分离算法。
+
+### W09　两种可取得的神经扩展
+
+**MetaAF WPE 改更新器。** [MetaAF 原论文](https://arxiv.org/abs/2204.11942)研究学习自适应滤波更新；固定提交的 [`zoo/wpe/wpe.py`](https://github.com/adobe-research/MetaAF/blob/56c4665bdc51c2e0595a7c0cd9b1266408adceff/zoo/wpe/wpe.py)保留频域预测结构，让 GRU/FGRU 优化器生成系数更新。`WPEOLA` 从缓冲末帧的通道 0 取目标，较早 `n_taps` 帧作为输入；断言缓冲帧数等于抽头数加延迟。代码直接以 `w*d_input` 求预测，其参数约定不能直接替换成正文的共轭系数。
+
+平方根 Hann 分析窗与配对合成窗属于 OLA 配置；示例训练命令使用 512 点窗、256 点移、5 抽头、延迟 2、1/4/8 麦。内层归一损失的地板是最大目标功率的 `1e-3`，梯度特征的除法却没有同一地板；不能用损失有限推断全部特征对静音安全。REVERB 数据路径、匹配权重、JAX/Haiku 和训练环境仍是完整复现前提。核心 `metaaf/` 的 UIUC/NCSA 与 `zoo/` 的 Adobe 非商业研究许可分别保留；源码取得不表示商业授权或运行通过。
+
+`nara_wpe_eval.py::fit_nara()` 把完整历史窗传给 `OnlineWPE.step_frame()`，超出该方法文档写出的 `(频点,通道)` 输入，但固定实现的内部代码实际支持三维整窗。W11 的受控调用与直接单帧输入逐项一致，推翻了仅凭文档产生的不兼容怀疑。检查提取未修改函数、使用真实 NARA 状态类，并用已知复谱替代 STFT 边界；没有执行 JAX、真实分帧或 MetaAF 网络。
+
+**VACE-WPE 改回归输入。** [Yang、Chang 2022 正式论文](https://doi.org/10.1109/TASLP.2022.3205752)及[作者版 §II-A、图 1](https://arxiv.org/pdf/2112.13569)在单麦场景生成虚拟第二通道，再执行双通道神经 WPE；PSD 网络只看实际观测，虚拟通道不参与其共享功率估计。TSO 版本还用说话人嵌入目标微调，故声纹任务优化不等于普遍音质最优。虚拟通道没有增加独立物理传感器或真实阵列孔径。
+
+[MIT 官方源码](https://github.com/dreadbird06/tso_vace_wpe/tree/10ee77dd020d58af508feb77251f9353208cb33a)从 `VACEWPE.forward()` 读到 `wpe_mb_torch()`、PSD 的 `LstmDnnNet` 和 `VACENet`。输入为 `(批,时间)` 波形，堆成两通道后批量求解；这是离线前端。`run.py` 设置 1024/256 点 STFT、延迟 3、普通/虚拟通道抽头 30/15，并在输入上施加动态范围增益；复现时不能忽略该增益和 checkpoint 里的归一化参数。本书仅取得许可和源码依赖，不取得 `models/`、`data/` 或运行 PyTorch 推理。
+
+VACE 的 `wpe_th_utils.py` 原生复数分支逐频取时间最大功率的 `1e-10` 为地板，零 PSD 的最大值仍为零，不能保证全静音安全。历史零填充后全部帧参与统计，按抽头再通道排列。求解按 LU、`linalg.solve`、逆矩阵、伪逆依次尝试；实虚双张量分支另走 `math_utils.py`，不能以原生复数分支的检查代替它。以上仅静态核对，源码存在回退路径不代表所有奇异矩阵都返回有限正确解。
+
+两者纳入研究索引，是因为它们分别改变更新规则和回归通道，能指导一个明确消融。最小后续实验应在相同观测上对比固定/学习更新器或有/无虚拟通道，并同时记录目标失真与任务指标；这些神经实验尚未执行，不新增未经核实的优越性表。
+
+### W10　分布式阵列与 2024～2026 年候选
+
+[Lohmann 等 2023 原文](https://arxiv.org/pdf/2301.07649) §4把 TDOA 拆成整数帧、整数样本和分数样本三个部分；整数帧移只是粗补偿，精确 STFT 补偿还涉及跨频带滤波。§5 的仿真是单源、9 个分布式麦克风、16 kHz、1024/256 点 STFT；没有加性噪声。不能把只改每麦整数 `delay` 称为全部方法已复现，也不能忽略负时移或跨频带非因果抽头引入的等待。该路线解释本章“同一保护延迟不一定适合分布式阵列”的失效条件。
+
+| 候选与原文位置 | 改变哪一步；本章取舍 |
+|---|---|
+| [Lohmann 等 2024 麦克风子集，§3～4](https://arxiv.org/pdf/2401.08486) | 给非参考麦的预测系数加组稀疏项，选择子集后重跑 WPE；针对参数过多与通道质量不齐。保留研究候选，未确认可许可取得的官方完整代码，不登记运行 |
+| [Lohmann 等 2024 参考选择，§4～5](https://arxiv.org/pdf/2411.03168) | 用输出的尺度不变稀疏性分数选参考，避免仅挑低能量通道；需先计算候选参考结果，不能当作免费预处理。保留选型与消融线索，未运行 BRUDEX/TIMIT 实验 |
+| [Stream.FM 2026 正式论文](https://doi.org/10.1109/TASLPRO.2026.3696215) | 改为条件生成恢复而非修改 WPE 权重。已有 N14 逐阶段状态审计；权重与端到端流式推理未执行，不重复新列算法 |
+
+前两项缺少本书可直接运行的匹配官方配方，不新增正文大节或跨条件数字排行。对分布式算法的最小教学诊断可先固定已知时差检查回归帧；这只验证索引，不等于复现原论文的跨频带补偿、子集优化或真实房间收益。2026 年候选不以年份自动替换本章基线。
+
+### W11　固定源码诊断与检索范围
+
+本轮核实日期为 2026-09-28。[诊断脚本](../examples/audit_wpe_upstream_interfaces.py)、[JSON 报告](../reports/wpe_upstream_interfaces.json)和[离线独立测试](../../tests/test_codes_wpe_upstream_interfaces.py)绑定固定提交、所读文件摘要、脚本摘要与输入配置。脚本不下载、不改上游，也不加载神经权重；摘要不符时拒绝套用旧结论。
+
+**实际执行的 NARA 反例。** 输入为两个频点、一个通道、六帧的纯实 `complex128` 复谱：第一频点 `[1,2,1,4,2,1]`，第二频点为 `1e-8*[1,3,2,1,5,2]`；单抽头、延迟 1、一次迭代、有效历史、无平滑。`v6/v7` 的全频地板使第二频点六个逆功率都为 `6.25e8`，回归系数为 `13/20`。`v8` 逐频计算，系数为 `2940/5693`。独立分数正规方程得到同一结果；这证明处理范围会影响此输入，不说明哪一种语音质量更好。
+
+辅助 `get_power()` 对 `arange(1,13).reshape(2,1,6)` 取 `psd_context=1`，输出两行均为 `[25,34,45,58,73,90]`，对应跨频率平均而非时间平均；`psd_context=(0,2)` 则实际抛出 `ValueError`。离线主函数使用的是另一条 `get_power_inverse()` 路径，不能把辅助函数问题扩大成所有 WPE 都失败。
+
+ESPnet 的未消费开关、丢弃掩码返回及固定逆矩阵调用由 AST 检查；TensorFlow、BTK、GPU-GSS 是静态源码阅读，均未执行对应框架或原生算子。MetaAF 原函数 AST 提取加真实 NARA 状态类的调用已经执行：STFT 桩提供 `arange(1,73)` 排成一通道、八帧、九频点的复谱，逆变换桩只捕获复谱并返回占位零数组；捕获结果与直接单帧调用差为 0。占位返回不是去混响音频。主环境缺 SciPy，既有房间环境缺 click，因此本轮没有运行真实 STFT/iSTFT 或整个 MetaAF 包。长静音溢出由独立[状态边界实验](../examples/wpe_silence_boundary.py)报告，不在此重复实现。
+
+**原始证据与检索记录。** 已实际打开并读到相关算法/实验节：Yoshioka 2012 §V～VI，Kinoshita 2017 §3/5，Drude 2018 §4～7，Caroselli 2017 §3，Google Home 2017 §2～3，Nakatani/Kinoshita 2019 §II～IV，Boeddeker 2020 §4/附录，Habets 2009 §II～V，1968 同态滤波原文的 Echo Removal，以及本节列出的分布式候选。Nakatani 2010 的正式身份由 NTT 参考页与 DOI 核对，本轮未取得其完整原文，不以搜索摘要支持新增数字。
+
+检索词包括 `variance-normalized delayed linear prediction Nakatani 2010 pdf`、`NARA WPE Drude 2018`、`Habets late reverberant spectral variance 2009`、`homomorphic echo removal Oppenheim Schafer Stockham 1968`、`weighted prediction error 2024 2025 github`、`Lohmann microphone subset reference selection WPE` 和 `Task-specific Optimization Virtual Channel WPE`。搜索只用于找到原始文献、作者仓库和官方许可；未检到匹配实现不等于断言领域中不存在。此次没有搜集另一批同类库来制造“全部方法已覆盖”的印象。
 
 <a id="bss"></a>
 
@@ -650,7 +738,7 @@ NOTSOFAR-1 的固定源码从 `run_training_css_local.py` 进入 `css/training/t
 
 ### N14　Stream.FM：多阶段生成与逐帧状态
 
-**收录理由与证据版本。** N10 中的多次神经网络求解增加推理成本；Stream.FM 研究如何在逐帧处理时保存各求解阶段的历史，并结合较少的函数求值次数。它解决包含去混响在内的单通道语音恢复问题；此处不把它当作有播放参考的 AEC、多说话人分离器或 WPE 的同义名称。技术依据为 [Stream.FM 预印本 v3，2026-04-21，§II～III 与补充材料 S.VIII](https://arxiv.org/html/2512.19442v3)。截至 2026-09-26，作者固定版 README 列其为 TASLP 2026 并给出 DOI `10.1109/TASLPRO.2026.3696215`，arXiv 版本说明仍写 submitted；本节不据此猜测正式卷页。
+**收录理由与证据版本。** N10 中的多次神经网络求解增加推理成本；Stream.FM 研究如何在逐帧处理时保存各求解阶段的历史，并结合较少的函数求值次数。它解决包含去混响在内的单通道语音恢复问题；此处不把它当作有播放参考的 AEC、多说话人分离器或 WPE 的同义名称。技术依据为 [Stream.FM 作者版 v3，2026-04-21，§II～III 与补充材料 S.VIII](https://arxiv.org/html/2512.19442v3)。正式论文已刊于 [IEEE TASLP 第 34 卷，3087–3101 页，2026](https://doi.org/10.1109/TASLPRO.2026.3696215)；2026-09-28 核对出版 DOI 元数据，arXiv 的旧 submitted 文字不能覆盖正式出版身份。
 
 **区分两种时间。** 音频帧索引 $t$ 表示录音向前推进；流匹配中的 $\tau\in[0,1]$ 表示同一帧由初始随机状态向恢复状态的求解进度。帧 $t$ 的某个求解阶段需要此前音频帧在相应阶段的网络历史；不能让所有阶段共用一份被依次覆盖的卷积缓冲。对照论文 §III-A 的缓冲图和 S.VIII-A 的函数式状态接口，逐项登记状态归属、读写时刻和重置范围。
 

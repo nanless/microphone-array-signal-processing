@@ -1618,13 +1618,40 @@ def solve_wpe_filter(weighted_covariance, weighted_cross, relative_loading=1e-6)
         raise ValueError("weighted_covariance 必须是方阵")
     if weighted_cross.shape != (weighted_covariance.shape[0],):
         raise ValueError("weighted_cross 的长度必须与方阵阶数一致")
-    if relative_loading < 0:
-        raise ValueError("relative_loading 不能为负")
-    scale = np.trace(weighted_covariance).real / weighted_covariance.shape[0]
-    loading = relative_loading * max(scale, np.finfo(float).eps)
-    filt = np.linalg.solve(
-        weighted_covariance + loading * np.eye(weighted_covariance.shape[0]),
-        weighted_cross)
+    value = np.asarray(relative_loading)
+    if value.ndim != 0 or value.dtype.kind not in "iuf" or not np.isfinite(value) or value < 0:
+        raise ValueError("relative_loading 必须是有限非负实标量")
+    if weighted_cross.size == 0 or not np.all(np.isfinite(weighted_covariance)) or not np.all(np.isfinite(weighted_cross)):
+        raise ValueError("WPE 统计量必须非空且有限")
+    magnitude = max(np.max(np.abs(weighted_covariance.real)),
+                    np.max(np.abs(weighted_covariance.imag)))
+    if magnitude == 0:
+        if np.any(weighted_cross):
+            raise ValueError("零协方差不能配非零互相关")
+        return np.zeros_like(weighted_cross), 0.0
+    covariance = (weighted_covariance.real / magnitude
+                  + 1j * (weighted_covariance.imag / magnitude))
+    if not np.allclose(covariance, covariance.conj().T, rtol=1e-12, atol=1e-14):
+        raise ValueError("协方差必须是厄米矩阵")
+    if np.linalg.eigvalsh(covariance)[0] < -1e-12 * weighted_cross.size:
+        raise ValueError("协方差必须为半正定矩阵")
+    mean_diagonal = np.mean(np.diag(covariance).real)
+    if mean_diagonal <= 0:
+        raise ValueError("非零协方差必须具有正的平均对角线")
+    loading_scaled = float(value) * mean_diagonal
+    with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+        loading = loading_scaled * magnitude
+        loaded = covariance + loading_scaled * np.eye(weighted_cross.size)
+        cross = weighted_cross.real / magnitude + 1j * (weighted_cross.imag / magnitude)
+    if not np.isfinite(loading) or not np.all(np.isfinite(loaded)) or not np.all(np.isfinite(cross)):
+        raise ValueError("加载后的统计量不能由当前浮点类型表示")
+    solve_scale = max(np.max(np.abs(loaded.real)), np.max(np.abs(loaded.imag)))
+    if solve_scale > np.sqrt(np.finfo(float).max):
+        loaded = loaded.real / solve_scale + 1j * (loaded.imag / solve_scale)
+        cross = cross.real / solve_scale + 1j * (cross.imag / solve_scale)
+    filt = np.linalg.solve(loaded, cross)
+    if not np.all(np.isfinite(filt)):
+        raise ValueError("WPE 滤波器不能由当前浮点类型表示")
     return filt, float(loading)
 
 
@@ -1683,39 +1710,44 @@ def wpe_dereverb(Y, K=10, delay=3, iters=3):
     Y = np.asarray(Y, dtype=complex)
     if Y.ndim != 2:
         raise ValueError("Y 必须是 F×T 矩阵")
-    if not isinstance(K, (int, np.integer)) or K < 0:
+    if isinstance(K, (bool, np.bool_)) or not isinstance(K, (int, np.integer)) or K < 0:
         raise ValueError("K 必须为非负整数")
-    if not isinstance(delay, (int, np.integer)) or delay < 1:
+    if isinstance(delay, (bool, np.bool_)) or not isinstance(delay, (int, np.integer)) or delay < 1:
         raise ValueError("delay 必须为正整数")
-    if not isinstance(iters, (int, np.integer)) or iters < 0:
+    if isinstance(iters, (bool, np.bool_)) or not isinstance(iters, (int, np.integer)) or iters < 0:
         raise ValueError("iters 必须为非负整数")
+    if not np.all(np.isfinite(Y)):
+        raise ValueError("Y 必须只含有限复数")
     F, T = Y.shape
-    X = Y.copy()
-    if K == 0 or iters == 0 or T == 0:
-        return X
-    t0, Ypast, ycur = wpe_past_frames(Y, K, delay)
-    if T <= t0:
-        return X
-    peak_power = np.max(np.abs(Y) ** 2, axis=1, keepdims=True)
-    active = peak_power[:, 0] > 0
-    if not np.any(active):
-        return X
+    if K == 0 or iters == 0 or T == 0 or F == 0 or T <= delay + K - 1:
+        return Y.copy()
+    # 每个频点先用实部/虚部的共同尺度归一化，避免求模平方时上溢或下溢。
+    # X 与其功率共同缩放不改变正规方程；结果最后恢复原来的幅度单位。
+    scales = np.maximum(np.max(np.abs(Y.real), axis=1), np.max(np.abs(Y.imag), axis=1))
+    active = scales > 0
+    safe_scales = np.where(active, scales, 1.0)
+    normalized = Y.real / safe_scales[:, None] + 1j * (Y.imag / safe_scales[:, None])
+    X = normalized.copy()
+    t0, Ypast, ycur = wpe_past_frames(normalized, K, delay)
+    peak_power = np.max(np.abs(normalized) ** 2, axis=1, keepdims=True)
     lam_floor = 1e-5 * peak_power
     for _ in range(iters):
-        # 先按有效样本数平滑，再施加相对功率下限。这样常数功率在边缘不被零填充压低。
-        lam = smooth_power_valid(np.abs(X) ** 2, width=5)
-        lam = np.maximum(lam, lam_floor)
+        lam = np.maximum(smooth_power_valid(np.abs(X) ** 2, width=5), lam_floor)
         G = np.zeros((F, K), dtype=complex)
-        w = np.zeros_like(lam[:, t0:])
-        w[active] = 1.0 / lam[active, t0:]
         for f in np.flatnonzero(active):
-            P = Ypast[f]  # K x Tv
-            ww = w[f]
+            P = Ypast[f]
+            # 对该频点全部权重乘同一个正数，同时缩放相对加载，不改变解。
+            ww = np.min(lam[f, t0:]) / lam[f, t0:]
             Rw = (P * ww[None, :]) @ P.conj().T
             rw = (P * ww[None, :]) @ ycur[f].conj()
             G[f], _ = solve_wpe_filter(Rw, rw, relative_loading=1e-6)
         X[:, t0:] = ycur - np.einsum("fk,fkt->ft", G.conj(), Ypast)
-    return X
+    with np.errstate(over="ignore", invalid="ignore"):
+        output = X * safe_scales[:, None]
+    if not np.all(np.isfinite(output)):
+        raise ValueError("WPE 输出不能由当前浮点类型表示")
+    output[:, :t0] = Y[:, :t0]
+    return output
 
 
 def fig_wpe():
@@ -1738,9 +1770,8 @@ def fig_wpe():
     rev = np.convolve(clean, rir)[:len(clean)]
     n_fft, hop = 512, 128
     win = np.hanning(n_fft)
-    Yc, Yr = stft_analysis(clean, win, hop), stft_analysis(rev, win, hop)
-    # RIR 的直达脉冲位于 direct_index。显示仍使用未移位的干净语音，
-    # 但失真指标和活动/静音帧必须先把参考对齐到同一传播时刻。
+    Yr = stft_analysis(rev, win, hop)
+    # 参考延迟至接收时轴；麦克风及 WPE 输出不前移，传播时延仍然保留。
     clean_aligned = causal_delay(clean, direct_index)
     Yc_aligned = stft_analysis(clean_aligned, win, hop)
     prediction_order, prediction_delay = 10, 6
@@ -1758,7 +1789,7 @@ def fig_wpe():
     wpe_nmse_db = scale_aligned_spectral_nmse_db(Yc_aligned, Xd, active)
     # 保持三谱图的纵横比，同时缩小源画布；A4 等宽嵌入时字号随之增大。
     fig = plt.figure(figsize=(8.2, 11.65), layout="constrained")
-    grid = fig.add_gridspec(4, 1, height_ratios=[1, 1, 1, 0.12])
+    grid = fig.add_gridspec(4, 1, height_ratios=[1, 1, 1, 0.62])
     axes = np.array([fig.add_subplot(grid[index, 0]) for index in range(3)])
     footer = fig.add_subplot(grid[3, 0])
     footer.axis("off")
@@ -1773,25 +1804,20 @@ def fig_wpe():
         Sdb = 10 * np.log10((np.abs(S) ** 2 + 1e-16) / reference_amplitude ** 2)
         mesh = ax.pcolormesh(tms, fk, Sdb, cmap="viridis", shading="auto",
                              vmin=-55, vmax=0)
-        ax.set_ylim(0, 2.5); ax.set_xlabel("时间 (ms)", fontsize=FS_LABEL)
+        ax.set_ylim(0, 2.5); ax.set_xlabel("接收时轴上的帧起点 (ms)", fontsize=FS_LABEL)
         ax.set_ylabel("频率 (kHz)", fontsize=FS_LABEL)
         ax.set_title(title, fontsize=FS_TITLE)
     axes[0].text(0.98, 0.94, "三图的高频暗区：合成信号能量很低",
                  transform=axes[0].transAxes, fontsize=FS_SMALL, color="white",
                  ha="right", va="top")
-    axes[1].text(0.03, 0.05,
-                 f"静音帧能量占比 {rev_quiet_db:.1f} dB\n对齐参考活跃帧 NMSE {rev_nmse_db:.1f} dB",
-                 transform=axes[1].transAxes, fontsize=FS_TINY, color="white", va="bottom",
-                 bbox=dict(fc="black", ec="none", alpha=0.55, pad=2))
-    axes[2].text(0.03, 0.05,
-                 f"静音帧能量占比 {wpe_quiet_db:.1f} dB\n对齐参考活跃帧 NMSE {wpe_nmse_db:.1f} dB",
-                 transform=axes[2].transAxes, fontsize=FS_TINY, color="white", va="bottom",
-                 bbox=dict(fc="black", ec="none", alpha=0.55, pad=2))
     fig.suptitle("图21  WPE 去混响效果（本书单通道仿真）", fontsize=FS_SUP)
     footer.text(
-        0.5, 0.55,
-        "配置：16 kHz、1.4 s、种子 21001；RIR 直达延迟 10 ms、$T_{60}$=0.6 s、DRR=6 dB；\n"
-        "Hann 512 点、帧移 128 点；WPE $\\Delta$=6、$K$=10、3 次迭代；三图共用对齐时间与谱幅参考。",
+        0.5, 0.5,
+        f"安静帧能量占本信号总能量：(b) {rev_quiet_db:.2f} dB；(c) {wpe_quiet_db:.2f} dB\n"
+        f"活动帧、单一复增益对齐 NMSE：(b) {rev_nmse_db:.2f} dB；(c) {wpe_nmse_db:.2f} dB\n"
+        "以上指标统计 0～8 kHz 全部频点；图仅显示 0～2.5 kHz。\n"
+        "16 kHz、1.4 s、种子 21001；直达延迟 10 ms；衰减参数 0.6 s；DRR=6 dB。\n"
+        "对称 Hann 512 点、帧移 128 点；Δ=6、K=10、3 次迭代；三图共用谱幅参考。",
         ha="center", va="center", fontsize=FS_SMALL)
     cb = fig.colorbar(mesh, ax=axes, shrink=0.85, pad=0.015, label="相对谱能量 (dB)")
     cb.ax.tick_params(labelsize=FS_SMALL + 1)
@@ -1799,6 +1825,37 @@ def fig_wpe():
     cb.outline.set_linewidth(1.3)
     fig._footer_axis = footer
     save(fig, "fig21_wpe.png")
+    report = {
+        "schema_version": 1,
+        "generator": "scripts/make_figures.py::fig_wpe",
+        "source_sha256": source_script_digest(),
+        "data_type": "mathematical synthetic signal and impulse response; not real speech or measured RIR",
+        "parameters": {"sample_rate_hz": fs, "duration_seconds": 1.4,
+            "seed": FIGURE_SEEDS["wpe"], "rir_length_samples": L,
+            "direct_delay_samples": direct_index, "decay_parameter_seconds": T60,
+            "drr_db": drr_db, "fft_size": n_fft, "hop_samples": hop,
+            "window": "symmetric Hann (numpy.hanning)", "center": False,
+            "padding": False, "taps": prediction_order, "delay_frames": prediction_delay,
+            "iterations": 3, "power_smoothing": "5 frames centered, truncate and renormalize at boundaries",
+            "relative_power_floor": 1e-5, "relative_loading": 1e-6},
+        "time_axis": "Reference delayed 160 samples; input and output stay on receiver timeline; no propagation compensation",
+        "measurement": {"frequency_bins": int(Yr.shape[0]), "frequency_range_hz": [0, fs//2],
+            "display_frequency_range_hz": [0, 2500], "frame_count": int(Yr.shape[1]),
+            "last_frame_start_ms": float(tms[-1]), "active_frames": int(active.sum()),
+            "quiet_frames": int(quiet.sum()), "other_frames": int((~(active|quiet)).sum()),
+            "active_threshold_fraction_of_reference_peak": .10,
+            "quiet_threshold_fraction_of_reference_peak": .01,
+            "nmse_alignment": "one complex gain over all active frame-frequency coefficients"},
+        "results": {}
+    }
+    for name, spectrum, ratio, nmse in [("input", Yr, rev_quiet_db, rev_nmse_db),
+                                      ("output", Xd, wpe_quiet_db, wpe_nmse_db)]:
+        report["results"][name] = {
+            "quiet_energy": float(np.sum(np.abs(spectrum[:, quiet])**2)),
+            "total_energy": float(np.sum(np.abs(spectrum)**2)),
+            "quiet_energy_ratio_db": float(ratio), "active_scale_aligned_nmse_db": float(nmse)}
+    destination = Path(__file__).resolve().parents[1] / "codes/reports/figure21_wpe.json"
+    destination.write_text(json.dumps(report, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
 
 
 # ----------------------------------------------------------------------
@@ -2440,61 +2497,54 @@ def fig_aec_landscape():
 # 图24 WPE 的 Δ/K 延迟预测结构：只用过去帧预测当前帧（示意）
 # ----------------------------------------------------------------------
 def fig_wpe_frames():
-    K, delay = 5, 3
-    n_show = 12  # 画面上显示的过去帧数
-    fig, ax = plt.subplots(figsize=(9.5, 5.0))
-    ax.axis("off"); ax.set_xlim(0, 16.5); ax.set_ylim(0, 6)
-    bw, gap, x0, y0 = 0.95, 0.12, 0.6, 3.0
-    # 从左到右：更过去 … t-K-delay … 历史窗K … 间隔Δ … 当前帧t
-    labels = {}
-    current_note = None
-    for i in range(n_show + 1):
-        x = x0 + i * (bw + gap)
-        if i == n_show:
-            fc, ec, lw, tag = "#f6dbdb", C_RED, 2.0, "当前帧 t\n含直达/早期/晚期"
-        elif n_show - delay + 1 <= i <= n_show - 1:
-            fc, ec, lw, tag = "#eeeeee", "0.5", 1.0, None
-        elif n_show - delay - K + 1 <= i <= n_show - delay:
-            fc, ec, lw, tag = "#dbe9f6", C_BLUE, 1.6, None
-        else:
-            fc, ec, lw, tag = "#f7f7f7", "0.7", 1.0, None
-        ax.add_patch(plt.Rectangle((x, y0), bw, 1.1, fc=fc, ec=ec, lw=lw, zorder=3))
-        if i == n_show:
-            ax.text(x + bw / 2, y0 + 0.55, "t", ha="center", va="center",
-                    fontsize=FS_TITLE, color=C_RED, weight=600, zorder=4)
-            current_note = ax.text(
-                x + bw + 0.14, y0 + 0.55, tag, ha="left", va="center",
-                fontsize=FS_SMALL, color=C_RED)
-        labels[i] = x
-    i_k0, i_k1 = n_show - delay - K + 1, n_show - delay
-    x_k = (labels[i_k0] + labels[i_k1] + bw) / 2
-    # Δ=3 指“当前帧 t 与最近预测帧 t-3 的帧索引差”；中间实际跳过 t-1、t-2。
-    x_delay_left = labels[i_k1] + bw / 2
-    x_delay_right = labels[n_show] + bw / 2
-    ax.annotate("", xy=(x_delay_left, y0 + 2.05), xytext=(x_delay_right, y0 + 2.05),
-                arrowprops=dict(arrowstyle="<->", color="0.45", lw=1.4))
-    ax.text((x_delay_left + x_delay_right) / 2, y0 + 2.25,
-            f"预测延迟 Δ={delay}帧\n（跳过 t−1、t−2）", ha="center", va="bottom",
-            fontsize=FS_SMALL + 2, color="0.35")
-    ax.annotate("", xy=(labels[i_k0], y0 + 1.35), xytext=(labels[i_k1] + bw, y0 + 1.35),
-                arrowprops=dict(arrowstyle="<->", color=C_BLUE, lw=1.6))
-    ax.text(x_k, y0 + 1.6, f"历史窗 K={K}帧\n（回归器：只用过去）", ha="center", va="bottom",
-            fontsize=FS_SMALL + 2, color=C_BLUE,
-            bbox=dict(fc="white", ec=C_BLUE, lw=0.7, alpha=0.9, boxstyle="round,pad=0.25"))
-    # 预测箭头：历史窗底部 → 当前帧底部（走条带下方，不压框）
-    ax.add_patch(FancyArrowPatch((x_k, y0 - 0.12), (labels[n_show] + bw / 2, y0 - 0.12),
-                                 arrowstyle="-|>", mutation_scale=14, color=C_GREEN, lw=1.5, zorder=2))
-    formula_note = ax.text(
-        (x_k + labels[n_show]) / 2 - 0.15, y0 - 0.30,
-        r"晚期估计：$\hat y(t,f)=\sum_{k=0}^{K-1}G^*(k,f)y(t-\Delta-k,f)$" "\n"
-        r"去混响输出：$y(t,f)-\hat y(t,f)$",
-        ha="center", va="top", fontsize=FS_SMALL + 1, color=C_GREEN,
-        bbox=dict(fc="white", alpha=0.8, pad=1, ec="none"))
-    ax.text(7.4, 1.15, "回归只用过去帧；端到端仍含分帧与计算延迟", ha="center", va="center",
-            fontsize=FS_LABEL, color=C_MAIN,
-            bbox=dict(fc="#e8f6db", ec=C_GREEN, lw=0.8, alpha=0.9, boxstyle="round,pad=0.35"))
-    fig.suptitle("图24  WPE 延迟预测：Δ=3 时保护 t−1、t−2，K=5 使用 t−3…t−7", fontsize=FS_SUP)
-    fig.tight_layout(rect=(0, 0, 1, 0.90))
+    fig, (ax, support) = plt.subplots(2, 1, figsize=(9.5, 8.2),
+                                     gridspec_kw={"height_ratios": [1.4, 1]})
+    ax.axis("off"); ax.set_xlim(-.7, 7.7); ax.set_ylim(-1.65, 2.35)
+    for index, lag in enumerate(range(7, -1, -1)):
+        selected = lag >= 3
+        color = C_BLUE if selected else (C_RED if lag == 0 else "0.45")
+        ax.add_patch(plt.Rectangle((index-.43, .15), .86, .75,
+                     fc="#dbe9f6" if selected else ("#f6dbdb" if lag == 0 else "#eeeeee"),
+                     ec=color, lw=1.4, hatch="//" if lag in (1, 2) else None))
+        ax.text(index, .53, "$t$" if lag == 0 else f"$t-{lag}$",
+                ha="center", va="center", fontsize=FS_TITLE, color=color)
+        if selected:
+            ax.text(index, -.05, f"$q={lag-3}$", ha="center", va="top", fontsize=FS_SMALL)
+    ax.annotate("", xy=(-.43, 1.2), xytext=(4.43, 1.2),
+                arrowprops=dict(arrowstyle="<->", color=C_BLUE))
+    ax.text(2, 1.4, "选入回归器的 K=5 帧：从最近的 q=0 向过去排列",
+            ha="center", va="bottom", fontsize=FS_SMALL, color=C_BLUE)
+    ax.annotate("", xy=(4, 2.0), xytext=(7, 2.0),
+                arrowprops=dict(arrowstyle="<->", color="0.35"))
+    ax.text(5.5, 2.12, "帧索引差 Δ=3", ha="center", va="bottom", fontsize=FS_SMALL)
+    current_note = ax.text(7, -.08, "当前帧", ha="center", va="top",
+                           color=C_RED, fontsize=FS_SMALL)
+    ax.text(5.5, -.52, "不选 t−2、t−1", ha="center", fontsize=FS_SMALL, color="0.35")
+    formula_note = ax.text(3.5, -.9,
+        r"预测：$\hat r(t,f)=\sum_{q=0}^{K-1}G_q^*(f)X(t-\Delta-q,f)$；输出：$X(t,f)-\hat r(t,f)$",
+        ha="center", va="center", fontsize=FS_SMALL, color=C_GREEN)
+    ax.text(3.5, -1.42, "回归器只含过去帧；若用整段数据估计 G，算法仍使用未来信息。",
+            ha="center", va="center", fontsize=FS_SMALL)
+    ax.set_title("(a) 单通道索引示意：Δ=3，K=5", fontsize=FS_TITLE, loc="left", pad=18)
+    support.barh(1, 32, left=-24, height=.28, color="#dbe9f6", edgecolor=C_BLUE)
+    support.barh(0, 32, left=0, height=.28, color="#f6dbdb", edgecolor=C_RED)
+    support.axvspan(0, 8, facecolor="none", edgecolor="0.4", hatch="///", lw=0)
+    support.axvline(0, ls="--", color="0.4", lw=1)
+    support.axvline(8, ls=":", color="0.4", lw=1)
+    support.text(-8, 1, "[−24, 8) ms", ha="center", va="center", fontsize=FS_SMALL)
+    support.text(17, 0, "[0, 32) ms", ha="center", va="center", fontsize=FS_SMALL)
+    support.annotate("重叠 8 ms（128 点）", xy=(4, .45), xytext=(-22, .45),
+                     fontsize=FS_SMALL, va="center", arrowprops=dict(arrowstyle="->"))
+    support.set_yticks([0, 1], ["当前帧 t 的窗", "最近历史帧 t−3 的窗"])
+    support.set_xticks([-24, -16, -8, 0, 8, 16, 24, 32])
+    support.set_xlim(-26, 34); support.set_ylim(-.4, 1.4)
+    support.set_xlabel("相对当前窗起点的采样时间 (ms)", fontsize=FS_LABEL)
+    support.grid(axis="x", ls=":", alpha=.3)
+    support.set_title("(b) 16 kHz，窗长 512 点（32 ms），帧移 128 点（8 ms）\n"
+                      "窗起点相距 ΔH=384 点（24 ms），并不意味着波形时间段互不重叠",
+                      loc="left", fontsize=FS_TITLE, pad=12)
+    fig.suptitle("图24  WPE 的帧索引与分析窗支持区间", fontsize=FS_SUP)
+    fig.tight_layout(rect=(0, 0, 1, .94), h_pad=2)
     fig._wpe_current_note = current_note
     fig._wpe_formula_note = formula_note
     save(fig, "fig24_wpe_frames.png")

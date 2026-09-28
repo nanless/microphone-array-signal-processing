@@ -165,7 +165,7 @@ h1,h2,h3,h4{break-after:avoid}
 /* 第10章末尾四条总结作为一个完整列表，避免仅末两条占据下一页。 */
 #ch-10-sec-10-12+ol{break-inside:avoid;page-break-inside:avoid}
 /* 章末独立练习与研究小节从完整页开始，避免最后几行独占一页。 */
-p:has(>a#ch-8-e08-11),#ch-7-sec-7-10{break-before:page;page-break-before:always}
+p:has(>a#ch-8-e08-11){break-before:page;page-break-before:always}
 #ch-0-sec-u-cc2724a31a+ul{break-inside:avoid;page-break-inside:avoid}
 .chap>h1{margin:0 0 3mm;line-height:1.3}
 .chap>h2:first-of-type{margin-top:3mm;margin-bottom:2mm;line-height:1.3}

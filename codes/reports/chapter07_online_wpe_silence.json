@@ -1,0 +1,242 @@
+{
+  "schema_version": 1,
+  "scope": "deterministic float64 silence failure, not room or speech quality",
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "source": {
+    "project": "nara-wpe",
+    "version": "0.0.11",
+    "revision": "a166779cca2088817e330481bd20af1a2c598555",
+    "url": "https://github.com/fgnt/nara_wpe/blob/a166779cca2088817e330481bd20af1a2c598555/nara_wpe/wpe.py",
+    "installed_module_sha256": "385a6f1c67071ba3e243c8a24fe4a041484c55280ad4ed0dbadefa4679a606d2",
+    "upstream_execution": "executed_after_hash_verification",
+    "adaptation_notice": "codes/licenses/nara_wpe_MIT.txt; adapted comparison preserves upstream behavior"
+  },
+  "generator_inputs": {
+    "codes/examples/wpe_silence_boundary.py": "08a8fe60132b131df66a44a4591e113a759e4635148da969854a1381b5fa1711",
+    "codes/examples/compare_online_wpe_reference.py": "785a990d56edf4ee5fa9d39748f716b84e6c871c181b968b08d219a5c88d1931"
+  },
+  "records": [
+    {
+      "implementation": "adapted",
+      "alpha": 0.5,
+      "dimensions": {
+        "frequency_bins": 1,
+        "channels": 1,
+        "taps": 1,
+        "delay_argument": 1
+      },
+      "initial_inverse_covariance": 1.0,
+      "initial_filter": 0.0,
+      "initial_buffer": "all zeros",
+      "observations": "zero until first non-finite inverse covariance or cap, then three unit frames",
+      "frame_count_convention": "one-based number of processed zero frames",
+      "maximum_zero_frames": 16000,
+      "processed_zero_frames": 1024,
+      "first_nonfinite_state_frame": 1024,
+      "last_pre_step_covariance": {
+        "finite": true,
+        "value_class": "finite",
+        "real": 8.98846567431158e+307,
+        "imag": 0.0
+      },
+      "final_zero_frame_output": {
+        "finite": true,
+        "value_class": "finite",
+        "real": 0.0,
+        "imag": 0.0
+      },
+      "final_zero_frame_covariance": {
+        "finite": false,
+        "value_class": "infinity"
+      },
+      "resumed_unit_frame_outputs": [
+        {
+          "finite": true,
+          "value_class": "finite",
+          "real": 1.0,
+          "imag": 0.0
+        },
+        {
+          "finite": false,
+          "value_class": "nan"
+        },
+        {
+          "finite": false,
+          "value_class": "nan"
+        }
+      ],
+      "first_nonfinite_output_resume_frame": 2,
+      "illustrative_hop_seconds": 0.008,
+      "first_nonfinite_state_seconds_at_8ms_hop": 8.192,
+      "analytic_zero_history_rule": "P_n = alpha**(-n), gain=0 until floating-point range is exceeded"
+    },
+    {
+      "implementation": "upstream",
+      "alpha": 0.5,
+      "dimensions": {
+        "frequency_bins": 1,
+        "channels": 1,
+        "taps": 1,
+        "delay_argument": 1
+      },
+      "initial_inverse_covariance": 1.0,
+      "initial_filter": 0.0,
+      "initial_buffer": "all zeros",
+      "observations": "zero until first non-finite inverse covariance or cap, then three unit frames",
+      "frame_count_convention": "one-based number of processed zero frames",
+      "maximum_zero_frames": 16000,
+      "processed_zero_frames": 1024,
+      "first_nonfinite_state_frame": 1024,
+      "last_pre_step_covariance": {
+        "finite": true,
+        "value_class": "finite",
+        "real": 8.98846567431158e+307,
+        "imag": 0.0
+      },
+      "final_zero_frame_output": {
+        "finite": true,
+        "value_class": "finite",
+        "real": 0.0,
+        "imag": 0.0
+      },
+      "final_zero_frame_covariance": {
+        "finite": false,
+        "value_class": "infinity"
+      },
+      "resumed_unit_frame_outputs": [
+        {
+          "finite": true,
+          "value_class": "finite",
+          "real": 1.0,
+          "imag": 0.0
+        },
+        {
+          "finite": false,
+          "value_class": "nan"
+        },
+        {
+          "finite": false,
+          "value_class": "nan"
+        }
+      ],
+      "first_nonfinite_output_resume_frame": 2,
+      "illustrative_hop_seconds": 0.008,
+      "first_nonfinite_state_seconds_at_8ms_hop": 8.192,
+      "analytic_zero_history_rule": "P_n = alpha**(-n), gain=0 until floating-point range is exceeded"
+    },
+    {
+      "implementation": "adapted",
+      "alpha": 0.95,
+      "dimensions": {
+        "frequency_bins": 1,
+        "channels": 1,
+        "taps": 1,
+        "delay_argument": 1
+      },
+      "initial_inverse_covariance": 1.0,
+      "initial_filter": 0.0,
+      "initial_buffer": "all zeros",
+      "observations": "zero until first non-finite inverse covariance or cap, then three unit frames",
+      "frame_count_convention": "one-based number of processed zero frames",
+      "maximum_zero_frames": 16000,
+      "processed_zero_frames": 13838,
+      "first_nonfinite_state_frame": 13838,
+      "last_pre_step_covariance": {
+        "finite": true,
+        "value_class": "finite",
+        "real": 1.7317038329385077e+308,
+        "imag": 0.0
+      },
+      "final_zero_frame_output": {
+        "finite": true,
+        "value_class": "finite",
+        "real": 0.0,
+        "imag": 0.0
+      },
+      "final_zero_frame_covariance": {
+        "finite": false,
+        "value_class": "infinity"
+      },
+      "resumed_unit_frame_outputs": [
+        {
+          "finite": true,
+          "value_class": "finite",
+          "real": 1.0,
+          "imag": 0.0
+        },
+        {
+          "finite": false,
+          "value_class": "nan"
+        },
+        {
+          "finite": false,
+          "value_class": "nan"
+        }
+      ],
+      "first_nonfinite_output_resume_frame": 2,
+      "illustrative_hop_seconds": 0.008,
+      "first_nonfinite_state_seconds_at_8ms_hop": 110.70400000000001,
+      "analytic_zero_history_rule": "P_n = alpha**(-n), gain=0 until floating-point range is exceeded"
+    },
+    {
+      "implementation": "upstream",
+      "alpha": 0.95,
+      "dimensions": {
+        "frequency_bins": 1,
+        "channels": 1,
+        "taps": 1,
+        "delay_argument": 1
+      },
+      "initial_inverse_covariance": 1.0,
+      "initial_filter": 0.0,
+      "initial_buffer": "all zeros",
+      "observations": "zero until first non-finite inverse covariance or cap, then three unit frames",
+      "frame_count_convention": "one-based number of processed zero frames",
+      "maximum_zero_frames": 16000,
+      "processed_zero_frames": 13838,
+      "first_nonfinite_state_frame": 13838,
+      "last_pre_step_covariance": {
+        "finite": true,
+        "value_class": "finite",
+        "real": 1.7317038329385077e+308,
+        "imag": 0.0
+      },
+      "final_zero_frame_output": {
+        "finite": true,
+        "value_class": "finite",
+        "real": 0.0,
+        "imag": 0.0
+      },
+      "final_zero_frame_covariance": {
+        "finite": false,
+        "value_class": "infinity"
+      },
+      "resumed_unit_frame_outputs": [
+        {
+          "finite": true,
+          "value_class": "finite",
+          "real": 1.0,
+          "imag": 0.0
+        },
+        {
+          "finite": false,
+          "value_class": "nan"
+        },
+        {
+          "finite": false,
+          "value_class": "nan"
+        }
+      ],
+      "first_nonfinite_output_resume_frame": 2,
+      "illustrative_hop_seconds": 0.008,
+      "first_nonfinite_state_seconds_at_8ms_hop": 110.70400000000001,
+      "analytic_zero_history_rule": "P_n = alpha**(-n), gain=0 until floating-point range is exceeded"
+    }
+  ],
+  "interpretation": "No repair is applied. Silence gating, resetting, or bounded covariance are distinct algorithm changes requiring their own validation."
+}

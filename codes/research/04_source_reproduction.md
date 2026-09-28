@@ -195,6 +195,10 @@ SMP-PHAT 的原版复现发现了失败：在本机 Apple clang/arm64 上，固�
 配置、预期值和实测数字见[增强研究](02_aec_wpe_separation.md)。它们不测试真实房间的去混响质量，
 也不要求离线估计器与逐帧估计器在不同统计窗口下输出相同。
 
+2026-09-28 的[WPE 接口审查](../examples/audit_wpe_upstream_interfaces.py)进一步区分真正调用固定 NARA 函数、提取上游原函数后提供受控边界，以及仅沿源码追踪 ESPnet、TensorFlow、GSS、BTK20 的参数。对应[报告](../reports/wpe_upstream_interfaces.json)不能当成上述框架整包运行或真实语音评测。
+
+[长静音实验](../examples/wpe_silence_boundary.py)单独记录逆协方差首次非有限的调用序号、静音后的信号恢复和环境摘要。固定版的失败作为失败保留，不修改上游再宣称原版稳定。[图 21 报告](../reports/figure21_wpe.json)则来自本书绘图算法，指标取点、时间轴及全频统计独立说明；它与教学音频生成器采用不同窗和功率更新，不要求两者逐点相同。
+
 下面是一份记录结构示例，不含虚构运行结果：
 
 ```json

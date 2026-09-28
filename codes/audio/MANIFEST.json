@@ -10,7 +10,7 @@
     "float_dtype": "float64"
   },
   "synthetic_signal": {
-    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband, spectral_subtraction, clock_drift, interpolation, alignment_error, room_decay, dma_calibration, doa_ambiguity, gsc_gate and aec_dropout; see each group for noise and transforms",
+    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband, spectral_subtraction, clock_drift, interpolation, alignment_error, room_decay, dma_calibration, doa_ambiguity, gsc_gate, aec_dropout and wpe_predictable; see each group for noise and transforms",
     "duration_s": 2,
     "base_frequencies_hz": [
       173,
@@ -33,8 +33,8 @@
   "pcm": "signed little-endian 16-bit, round-to-nearest-even; no dither; no per-file normalization",
   "listening": "Start at low device volume. No automatic playback. No formal listening study performed.",
   "generator_inputs": {
-    "codes/examples/generate_audio_samples.py": "1b989109b4404fc7eec1048f4ba1981fb9571307fcd5389c281129da2c369863",
-    "codes/array_tutorial/audio_samples.py": "9b994486650ffcacb6f6fef26a61e802e85ca98bde1380dbfe898f4659ca3c61",
+    "codes/examples/generate_audio_samples.py": "93fbf1c24843a2b3b7698ef7ec61bca97dfae74c2606a867d1bfd0b41df4e2d8",
+    "codes/array_tutorial/audio_samples.py": "79bb31c92b1e95a19640fb7dd465b27b62eab56f47d00d615c3707512a414062",
     "codes/array_tutorial/aec.py": "70d69fcd523cff3028162a221d71ea6bd2254979dfe37479ad26f77ab74a5a7e",
     "codes/array_tutorial/aec_ipnlms.py": "320fccd7458b8abb0c65c6f5871beb015403776fc00c4d3a8df5aa3a9afaeab2",
     "codes/array_tutorial/aec_rls.py": "f13c2018297e46f0b393ef52e04fad5f1d48ede00de8b37a80a4abf597a9305d",
@@ -42,12 +42,118 @@
     "codes/array_tutorial/aec_subband.py": "1473556e8cda4908dbe19cbeb645960dbb636b3dd672ab61358007a3d29d43be",
     "codes/array_tutorial/gsc.py": "29995ed363ba2cf807059f146e075dea1aadef7ae21709cd62b9a3e9423b12f9",
     "codes/array_tutorial/noise_suppression.py": "b6eeeca35d3246585f42e0ee9ac9b028f9523fef3c224a07b98fa0383160cb3f",
-    "codes/array_tutorial/dereverberation.py": "8d3fa44c64e0763b6039233a15b676d108a02d1679d3fa8bcc647aae8931083a",
+    "codes/array_tutorial/dereverberation.py": "af55bbb288f0f2b5208afc5fa0c3e66a918233fdb7a32c953ae54f5c85ca2017",
     "codes/array_tutorial/spectral.py": "9b7c3d3e2b936fdfa793f372e5d258788a4b43b9536294c231019454bfcb45c6",
     "codes/array_tutorial/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385",
     "codes/array_tutorial/geometry.py": "7e9c33e90101c41441cde659d288f0aa25be141e9cdbaaa9fcabee54b285f72a"
   },
   "groups": {
+    "wpe_predictable": {
+      "parameters": {
+        "sample_rate_hz": 16000,
+        "samples": 32000,
+        "duration_seconds": 2,
+        "source_frequency_hz": 1000,
+        "source_amplitude": 0.12,
+        "phase_at_onset_radians": 0,
+        "source_active_interval_samples": [
+          4000,
+          16000
+        ],
+        "fade_samples_each_end": 320,
+        "fade": "sin(linspace(0,pi/2,320)) squared, endpoint included; reverse at end of active interval",
+        "model": "x[n]=s[n]+0.65*x[n-512]; all negative-time samples zero; observation truncated to 32000 samples",
+        "feedback_coefficient": 0.65,
+        "feedback_delay_samples": 512,
+        "oracle_inverse": "s_oracle[n]=x[n]-0.65*x[n-512], negative-time x zero",
+        "oracle_max_abs_reference_error_float": 2.7755575615628914e-17,
+        "stft": {
+          "n_fft": 512,
+          "hop_length": 128,
+          "window": "periodic Hann",
+          "center": true,
+          "zero_padding_each_end": 256,
+          "frames": 251,
+          "istft": "squared-window weighted overlap-add, discard initial 256 padding, return first 32000 samples"
+        },
+        "wpe": {
+          "taps": 1,
+          "delay": 4,
+          "iterations": 3,
+          "diagonal_loading": 1e-06,
+          "power_floor": 1e-05,
+          "statistics": "whole-record valid-frame statistics, no temporal power smoothing"
+        },
+        "score_windows_samples": {
+          "steady_target": [
+            6400,
+            14400
+          ],
+          "post_source_tail": [
+            16000,
+            32000
+          ]
+        },
+        "alignment": "same sample origin; no fitted delay, no gain correction or separate normalization",
+        "metrics": "steady projection gain dot(output,target)/dot(target,target); steady squared error sum((output-target)^2)/sum(target^2); tail mean square includes all samples in declared half-open window",
+        "float_truth_scores": {
+          "files": {
+            "wpe_predictable_target": {
+              "steady_projection_gain": 1.0,
+              "steady_relative_squared_reference_error": 0.0,
+              "tail_mean_square": 0.0
+            },
+            "wpe_predictable_reverberant": {
+              "steady_projection_gain": 2.8045627719691524,
+              "steady_relative_squared_reference_error": 3.2631008431305135,
+              "tail_mean_square": 0.0011136598722843922
+            },
+            "wpe_predictable_oracle_inverse": {
+              "steady_projection_gain": 0.9999999999999999,
+              "steady_relative_squared_reference_error": 2.2696549414063444e-32,
+              "tail_mean_square": 0.0
+            },
+            "wpe_predictable_output": {
+              "steady_projection_gain": 0.5281427858467548,
+              "steady_relative_squared_reference_error": 0.22310070146973232,
+              "tail_mean_square": 7.606226879133411e-05
+            }
+          },
+          "output_to_input_tail_power_ratio_db": -11.655832958792718
+        },
+        "pcm_to_pcm_reference_scores": {
+          "files": {
+            "wpe_predictable_target": {
+              "steady_projection_gain": 1.0,
+              "steady_relative_squared_reference_error": 0.0,
+              "tail_mean_square": 0.0
+            },
+            "wpe_predictable_reverberant": {
+              "steady_projection_gain": 2.804636845019857,
+              "steady_relative_squared_reference_error": 3.2633697965353687,
+              "tail_mean_square": 0.0011136091137886979
+            },
+            "wpe_predictable_oracle_inverse": {
+              "steady_projection_gain": 1.0,
+              "steady_relative_squared_reference_error": 0.0,
+              "tail_mean_square": 0.0
+            },
+            "wpe_predictable_output": {
+              "steady_projection_gain": 0.5281547405271501,
+              "steady_relative_squared_reference_error": 0.2230895153407433,
+              "tail_mean_square": 7.60615014587529e-05
+            }
+          },
+          "output_to_input_tail_power_ratio_db": -11.65567882391468
+        },
+        "noise": "none",
+        "randomness": "none",
+        "algorithm_delay_samples": "offline noncausal record; no streaming latency claim",
+        "statistics": "one deterministic mathematical fixture; no real speech, room or listening study"
+      },
+      "limits": "All four mono files share export gain 1. The oracle knows the feedback path; blind WPE does not. The stationary target itself is predictable at the 32 ms delay, so lower tail energy does not guarantee unit target gain. Finite onset/fades and STFT boundary padding affect the fit. No T60, SNR, ERLE or intelligibility claim; tail after the two-second file is excluded. Float and PCM reference scores are reported separately.",
+      "common_export_gain": 1.0
+    },
     "aec_dropout": {
       "parameters": {
         "sample_rate_hz": 16000,
@@ -1443,6 +1549,58 @@
     }
   },
   "files": [
+    {
+      "file": "wpe_predictable_target.wav",
+      "sha256": "bb09d3e21ab93fd74cb9268cf227cd7688d178bfdda5e962ec2bf99fc2d848e0",
+      "group": "wpe_predictable",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.1199951171875,
+      "rms": 0.0510876233790567,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.525330241648748e-05
+    },
+    {
+      "file": "wpe_predictable_reverberant.wav",
+      "sha256": "a889db417ebaf9f79c7b0b287effbd41e5f2a48297d51992488a21388c1cc972",
+      "group": "wpe_predictable",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.34283447265625,
+      "rms": 0.13894343202176956,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258138062278283e-05
+    },
+    {
+      "file": "wpe_predictable_oracle_inverse.wav",
+      "sha256": "bb09d3e21ab93fd74cb9268cf227cd7688d178bfdda5e962ec2bf99fc2d848e0",
+      "group": "wpe_predictable",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.1199951171875,
+      "rms": 0.0510876233790567,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.525330241648748e-05
+    },
+    {
+      "file": "wpe_predictable_output.wav",
+      "sha256": "5b7dea4579c518864e6dc8538aedf9f0189a65b2e8f2f98d74f5fedc604d45f6",
+      "group": "wpe_predictable",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.12078857421875,
+      "rms": 0.030575160933814596,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258674397986005e-05
+    },
     {
       "file": "aec_dropout_target.wav",
       "sha256": "a28e2df59d1c1bd5793e09ba9dccaced86c61f8bcb5d2aca28217669b5a4db8c",

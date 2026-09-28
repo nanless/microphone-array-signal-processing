@@ -136,14 +136,16 @@ class EnhancementParagraphTest(unittest.TestCase):
         self.assertEqual(items[4]["paragraphs"], 3)
         self.assertIn("WebRTC AEC3", items[4]["text"])
 
-    def test_wpe_five_steps_keep_loading_in_third_item(self):
-        source, path = self.passage("07_wpe-dereverberation.md", "**离线单通道 WPE 的完整一轮**", "边界检查包括")
+    def test_wpe_five_steps_preserve_update_order(self):
+        source, path = self.passage("07_wpe-dereverberation.md", "每个频点的一轮工程迭代", "边界检查包括")
         items = self.render_items(source, path)
         self.assertEqual(len(items), 5)
-        self.assertEqual(items[2]["paragraphs"], 3)
-        self.assertIn(r"\operatorname{tr}", items[2]["text"])
-        self.assertIn("无量纲", items[2]["text"])
-        self.assertNotIn("无量纲", items[3]["text"])
+        self.assertIn("初始化", items[0]["text"])
+        self.assertIn("有效帧集合", items[1]["text"])
+        self.assertIn("加载方式求系数", items[2]["text"])
+        self.assertIn("由新系数计算残差", items[3]["text"])
+        self.assertIn("迭代上限", items[4]["text"])
+        self.assertIn("不能自动宣称原似然每轮下降", source)
 
     def test_three_aec_beamforming_orders(self):
         source, path = self.passage("06_aec.md", "### 6.6", "**联合分析**")

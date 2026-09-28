@@ -6,6 +6,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from .conventions import finite_real_scalar
+
 
 @dataclass(frozen=True)
 class WPEFrequencyDiagnostic:
@@ -54,7 +56,9 @@ def offline_wpe(
         raise ValueError("taps, delay and iterations must be integers")
     if taps < 0 or delay < 1 or iterations < 0:
         raise ValueError("require taps >= 0, delay >= 1, iterations >= 0")
-    if not np.isfinite(diagonal_loading) or not np.isfinite(power_floor) or diagonal_loading < 0 or power_floor <= 0:
+    diagonal_loading = finite_real_scalar(diagonal_loading, "diagonal_loading")
+    power_floor = finite_real_scalar(power_floor, "power_floor")
+    if diagonal_loading < 0 or power_floor <= 0:
         raise ValueError("loading must be non-negative and power_floor positive")
     if not isinstance(return_diagnostics, (bool, np.bool_)):
         raise ValueError("return_diagnostics must be a boolean")
@@ -141,20 +145,35 @@ def offline_wpe(
                 raise ValueError("WPE history energy is too small to solve reliably")
             try:
                 with np.errstate(over="raise", invalid="raise"):
-                    loaded = correlation + diagonal_loading * trace / dimension * np.eye(dimension)
+                    # Average first: loading*trace can overflow even when
+                    # loading*(trace/dimension) and the final matrix fit.
+                    loading = diagonal_loading * (trace / dimension)
+                    loaded = correlation + loading * np.eye(dimension)
+                    if not np.all(np.isfinite(loaded)):
+                        raise ValueError("WPE diagonal loading exceeds the float64 range")
             except FloatingPointError as error:
                 raise ValueError("WPE diagonal loading exceeds the float64 range") from error
+            solve_matrix, solve_cross = loaded, cross
+            matrix_scale = float(max(np.max(np.abs(loaded.real)), np.max(np.abs(loaded.imag))))
+            if matrix_scale > np.sqrt(np.finfo(float).max):
+                # Some complex LAPACK paths lose a representable subnormal
+                # solution with near-maximal matrix entries. Rescale both
+                # sides, dividing components rather than complex reciprocals.
+                solve_matrix = np.empty_like(loaded)
+                solve_cross = np.empty_like(cross)
+                solve_matrix.real, solve_matrix.imag = loaded.real / matrix_scale, loaded.imag / matrix_scale
+                solve_cross.real, solve_cross.imag = cross.real / matrix_scale, cross.imag / matrix_scale
             if return_diagnostics:
-                rank = int(np.linalg.matrix_rank(loaded))
-                condition = float(np.linalg.cond(loaded))
+                rank = int(np.linalg.matrix_rank(solve_matrix))
+                condition = float(np.linalg.cond(solve_matrix))
                 min_rank = rank if min_rank is None else min(min_rank, rank)
                 max_condition_number = (condition if max_condition_number is None
                                         else max(max_condition_number, condition))
             try:
-                predictor = np.linalg.solve(loaded, cross)
+                predictor = np.linalg.solve(solve_matrix, solve_cross)
             except np.linalg.LinAlgError:
                 least_squares_count += 1
-                predictor = np.linalg.lstsq(loaded, cross, rcond=None)[0]
+                predictor = np.linalg.lstsq(solve_matrix, solve_cross, rcond=None)[0]
             if not np.all(np.isfinite(predictor)):
                 raise ValueError("WPE predictor is not finite")
             try:
