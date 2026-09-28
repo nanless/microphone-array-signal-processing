@@ -160,8 +160,8 @@ h1,h2,h3,h4{break-after:avoid}
 #ch-2 p:has(>strong:first-child):has(+p+p > mjx-container){break-after:avoid;page-break-after:avoid}
 /* 第4章的整段粗体算例标题和进阶引导随下一段排版。 */
 #ch-4 p:has(>strong:only-child){break-after:avoid;page-break-after:avoid}
-/* 第5章的短步骤引导和表格题注跟随其内容，长推导仍可自然跨页。 */
-#ch-5 p.keep-next,#ch-5 p:has(+table){break-after:avoid;page-break-after:avoid}
+/* 显式短引导及第5章表格题注跟随内容，长推导仍可自然跨页。 */
+.chap p.keep-next,#ch-5 p:has(+table){break-after:avoid;page-break-after:avoid}
 /* 第10章末尾四条总结作为一个完整列表，避免仅末两条占据下一页。 */
 #ch-10-sec-10-12+ol{break-inside:avoid;page-break-inside:avoid}
 /* 章末独立练习与研究小节从完整页开始，避免最后几行独占一页。 */

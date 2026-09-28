@@ -27,7 +27,7 @@ def run_demo() -> dict:
     candidate_second = state.last_candidate_partition_time_coefficients
     return {
         "model": "dimensionless two-block real FIR, zero prior reference and zero initial weights",
-        "scope": "teaching Eq. (6-3) instantaneous-power PBFDAF; not Speex AUMDF, WebRTC AEC3, a double-talk detector or real-time audio",
+        "scope": "teaching Eq. (6-5) instantaneous-power PBFDAF; not Speex AUMDF, WebRTC AEC3, a double-talk detector or real-time audio",
         "block_length": state.block_length,
         "fft_length": state.fft_length,
         "partitions": state.partitions,

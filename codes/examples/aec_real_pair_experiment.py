@@ -84,12 +84,18 @@ def peak_lag(reference: np.ndarray, microphone: np.ndarray, *, start: int,
 def speex_linear_aec(library: Path, reference: np.ndarray,
                      microphone: np.ndarray) -> tuple[np.ndarray, int]:
     """Drive the synchronous 16-bit API with exact 10 ms, paired frames."""
+    reference = np.asarray(reference)
+    microphone = np.asarray(microphone)
     if reference.dtype != np.int16 or microphone.dtype != np.int16:
         raise ValueError("Speex inputs must be PCM16")
     if reference.ndim != 1 or microphone.ndim != 1 or reference.shape != microphone.shape:
         raise ValueError("Speex inputs must be equal-length mono arrays")
     if len(reference) % FRAME:
         raise ValueError("Speex inputs must contain whole 10 ms frames")
+    # The C API reads consecutive native-endian int16 samples; NumPy views
+    # can have positive or negative strides that a raw pointer cannot express.
+    reference = np.ascontiguousarray(reference, dtype=np.int16)
+    microphone = np.ascontiguousarray(microphone, dtype=np.int16)
     dsp = ctypes.CDLL(str(library.resolve(strict=True)))
     dsp.speex_echo_state_init.argtypes = [ctypes.c_int, ctypes.c_int]
     dsp.speex_echo_state_init.restype = ctypes.c_void_p
@@ -110,7 +116,7 @@ def speex_linear_aec(library: Path, reference: np.ndarray,
             raise RuntimeError("SpeexDSP could not report sampling rate")
         if actual.value != RATE:
             raise RuntimeError(f"SpeexDSP used {actual.value} Hz, not {RATE} Hz")
-        output = np.empty_like(microphone)
+        output = np.empty(microphone.shape, dtype=np.int16)
         for start in range(0, len(reference), FRAME):
             play = reference[start:start + FRAME]
             rec = microphone[start:start + FRAME]

@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from .conventions import finite_real_array, finite_real_scalar
+
 
 LABELS = ("silence", "far_only", "near_only", "double_talk")
 
@@ -25,35 +27,47 @@ def ncc_activity_states(
 
     The reference and microphone must already be aligned. A quiet reference
     disables the double-talk decision: microphone activity then means near-only.
+    A live reference with a quiet microphone is still far-end-only activity.
+    A frame is decided only once all its samples have arrived; applying its
+    decision to that same frame requires a full-frame buffer.
     Thresholds are amplitude in input units and dimensionless NCC respectively.
     """
 
-    x = np.asarray(reference, dtype=float)
-    d = np.asarray(microphone, dtype=float)
-    if x.ndim != 1 or d.shape != x.shape or x.size == 0 or not np.all(np.isfinite(x)) or not np.all(np.isfinite(d)):
-        raise ValueError("reference and microphone must be equal-length finite 1-D arrays")
-    if isinstance(frame_size, bool) or not isinstance(frame_size, int) or frame_size <= 1 or x.size % frame_size:
+    x = finite_real_array(reference, "reference")
+    d = finite_real_array(microphone, "microphone")
+    if x.ndim != 1 or d.shape != x.shape or x.size == 0:
+        raise ValueError("reference and microphone must be equal-length nonempty 1-D arrays")
+    if (isinstance(frame_size, (bool, np.bool_))
+            or not isinstance(frame_size, (int, np.integer))
+            or frame_size <= 1 or x.size % frame_size):
         raise ValueError("frame_size must be >1 and divide the signal length")
-    if not np.isfinite(activity_rms) or activity_rms <= 0:
-        raise ValueError("activity_rms must be finite and positive")
-    if not np.isfinite(coherence_threshold) or not 0 < coherence_threshold < 1:
+    activity_rms = finite_real_scalar(activity_rms, "activity_rms")
+    coherence_threshold = finite_real_scalar(coherence_threshold, "coherence_threshold")
+    if activity_rms <= 0:
+        raise ValueError("activity_rms must be positive")
+    if not 0 < coherence_threshold < 1:
         raise ValueError("coherence_threshold must be strictly between 0 and 1")
 
     frames_x = x.reshape(-1, frame_size)
     frames_d = d.reshape(-1, frame_size)
-    # Centering removes a DC offset; the input experiment has zero-mean frames.
-    centered_x = frames_x - frames_x.mean(axis=1, keepdims=True)
-    centered_d = frames_d - frames_d.mean(axis=1, keepdims=True)
-    x_rms = np.sqrt(np.mean(centered_x ** 2, axis=1))
-    d_rms = np.sqrt(np.mean(centered_d ** 2, axis=1))
-    numerator = np.abs(np.sum(centered_x * centered_d, axis=1))
-    denominator = np.sqrt(np.sum(centered_x ** 2, axis=1) * np.sum(centered_d ** 2, axis=1))
-    coherence = np.divide(numerator, denominator, out=np.zeros_like(numerator), where=denominator > 0)
 
-    far = x_rms >= activity_rms
-    mic = d_rms >= activity_rms
+    def centered_unit_frames(frames):
+        # Scale BEFORE centering: even a finite frame's raw sum can overflow.
+        scale = np.max(np.abs(frames), axis=1, keepdims=True)
+        unit = np.divide(frames, scale, out=np.zeros_like(frames), where=scale > 0)
+        centered = unit - unit.mean(axis=1, keepdims=True)
+        norm = np.sqrt(np.sum(centered * centered, axis=1, keepdims=True))
+        normalized = np.divide(centered, norm, out=np.zeros_like(centered), where=norm > 0)
+        # Standard deviation <= peak original magnitude. Compare in input
+        # units, retaining the absolute activity threshold (not scale-free).
+        rms = scale[:, 0] * np.minimum(norm[:, 0] / np.sqrt(frame_size), 1.0)
+        return normalized, rms >= activity_rms
+
+    centered_x, far = centered_unit_frames(frames_x)
+    centered_d, mic = centered_unit_frames(frames_d)
+    coherence = np.clip(np.abs(np.sum(centered_x * centered_d, axis=1)), 0., 1.)
     states = np.zeros(frames_x.shape[0], dtype=np.int8)
-    states[far & mic] = 1
+    states[far] = 1
     states[~far & mic] = 2
     states[far & mic & (coherence < coherence_threshold)] = 3
     return states, coherence

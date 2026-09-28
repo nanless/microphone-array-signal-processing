@@ -231,3 +231,10 @@ SMP-PHAT 的原版复现发现了失败：在本机 Apple clang/arm64 上，固�
 [STK DelayL探针](../examples/run_stk_delay_probe.py)先核对官方地址、完整提交、稀疏选择和清洁工作区，再在临时目录编译两份上游C++源文件。它把零延迟、半采样、一采样、保留状态分块和逐块清空五项分别对照解析FIR。已执行配置、零误差边界与0.1519102855的重置差异见[工业I29](03_industrial_deployment.md#i29stkdelayl)和[报告](../reports/stk_delay.json)。
 
 这项检查不下载权重、不访问音频设备，也不需要重新授权本书使用整个STK工具箱。第三方源码保留在独立的被忽略目录；提交的是本书调用探针、锁表和可复核报告。运行失败应保留实际错误与来源状态，不能用静态源码说明代替运行记录。
+
+
+### 第6章外部 AEC 接口诊断
+
+[诊断入口](../examples/audit_aec_upstream_interfaces.py)不下载依赖、不修补上游。它先核对固定提交和原文件摘要，再实际调用 pyaec 的 RLS/Kalman/FDKF/PFDKF 及 echocatzh 的初始块接口。pyaec 的尾截断和 `np.complex` 失败保留在[报告](../reports/aec_upstream_interfaces.json)中；echocatzh 的默认后滤输出另列，不能等同于线性残差。
+
+DTLN 部分用原 `process_file` 函数的 AST、内存输入和假解释器检查文件填充、状态及输出缩放，明确没有运行神经网络。这类测试可以发现接口问题，不能据此报告语音效果、实时性或论文复现成功。输入、逐项结果及源码入口见[研究 A18](02_aec_wpe_separation.md#aec)。

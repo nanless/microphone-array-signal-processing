@@ -216,24 +216,24 @@ def fig_problem():
     ax = fig.add_subplot(gs[0, :])
     ax.set_title("(a) 用脉冲响应 h[ℓ] 表示房间回声路径", fontsize=FS_TITLE)
     ax.stem(h[:128], linefmt=C_BLUE, markerfmt="o", basefmt=" ", label="h抽头")
-    ax.set_xlabel("抽头索引 ℓ（采样）", fontsize=FS_LABEL); ax.set_ylabel("归一化幅度", fontsize=FS_LABEL)
+    ax.set_xlabel("抽头索引 ℓ（采样）", fontsize=FS_LABEL); ax.set_ylabel("幅度（无量纲）", fontsize=FS_LABEL)
     ax.annotate("0号抽头为直达声；25、62、103号为早期反射\n其余随机衰减项表示晚期尾", xy=(25, h[25]), xytext=(58, 0.43),
                 fontsize=FS_SMALL + 1, arrowprops=dict(arrowstyle="->", color=C_ORANGE), color=C_ORANGE)
     ax.grid(ls=":", alpha=0.5); ax.tick_params(labelsize=FS_TINY)
     ax = fig.add_subplot(gs[1, 0])
-    ax.set_title("(b) 卷积把声音拖长：x → 回声", fontsize=FS_TITLE)
+    ax.set_title("(b) 参考、回声与合成近端分量", fontsize=FS_TITLE)
     ax.plot(t, x, color=C_BLUE, lw=1, label="远端 x(n)")
     ax.plot(t, echo, color=C_BLUE, ls="--", lw=1, label="回声 x*h")
     ax.plot(t, s, color=C_RED, lw=1, label="合成近端干扰 s(n)（非语音）")
     ax.axvspan(0.8, 1.2, color=C_RED, alpha=0.10)
-    ax.set_xlim(0, 1.6); ax.set_xlabel("时间 (s)", fontsize=FS_LABEL); ax.set_ylabel("归一化幅度", fontsize=FS_LABEL)
+    ax.set_xlim(0, 1.6); ax.set_xlabel("时间 (s)", fontsize=FS_LABEL); ax.set_ylabel("幅度（无量纲）", fontsize=FS_LABEL)
     ax.legend(fontsize=FS_SMALL); ax.grid(ls=":", alpha=0.5); ax.tick_params(labelsize=FS_TINY)
     ax = fig.add_subplot(gs[1, 1])
     ax.set_title("(c) 麦克风里三者相加得 d(n)", fontsize=FS_TITLE)
     ax.plot(t, d, color=C_MAIN, lw=1.2, label="麦克风 d(n)")
     ax.plot(t, echo, color=C_BLUE, lw=1.0, ls="--", alpha=0.8, label="回声分量")
     ax.axvspan(0.8, 1.2, color=C_RED, alpha=0.10)
-    ax.set_xlim(0, 1.6); ax.set_xlabel("时间 (s)", fontsize=FS_LABEL); ax.set_ylabel("归一化幅度", fontsize=FS_LABEL)
+    ax.set_xlim(0, 1.6); ax.set_xlabel("时间 (s)", fontsize=FS_LABEL); ax.set_ylabel("幅度（无量纲）", fontsize=FS_LABEL)
     ax.legend(fontsize=FS_SMALL); ax.grid(ls=":", alpha=0.5); ax.tick_params(labelsize=FS_TINY)
     save(fig, "fig26_aec_problem.png")
 
@@ -322,8 +322,8 @@ def fig_nlms():
     ax.set_ylabel("失配 (dB)", fontsize=FS_LABEL, color=C_RED)
     ax2.set_ylabel("ERLE (dB)", fontsize=FS_LABEL, color=C_BLUE)
     ax.grid(ls=":", alpha=0.5)
-    ax.text(0.99, -6.0, "系数欧氏失配与残余功率采用不同加权；\n这里只比较下降/上升趋势，不作等量换算", fontsize=FS_SMALL, color=C_MAIN, ha="right",
-            bbox=dict(fc="white", ec="0.7", alpha=0.9))
+    ax.text(0.5, -0.29, "系数失配与残余功率采用不同加权，不能等量换算。",
+            transform=ax.transAxes, fontsize=FS_SMALL, color=C_MAIN, ha="center")
     ax = axes[2]; ax.set_title("(c) 步长 μ：无噪声模型中的有限时段收敛", fontsize=FS_TITLE)
     step_styles = [(0.2, C_BLUE, "-", "o"), (0.5, C_ORANGE, "--", "s"),
                    (1.0, C_RED, "-.", "^")]
@@ -334,10 +334,6 @@ def fig_nlms():
                 markevery=8, label=f"μ={mu}")
     ax.set_xlabel("时间 (s)", fontsize=FS_LABEL); ax.set_ylabel("ERLE (dB)", fontsize=FS_LABEL)
     ax.legend(fontsize=FS_SMALL); ax.grid(ls=":", alpha=0.5); ax.tick_params(labelsize=FS_TINY)
-    ax.text(0.05, 0.08, "本图只比较 μ=0.2、0.5、1.0 的暂态。\n"
-            "无近端噪声，不据此判断稳态失调。",
-            transform=ax.transAxes, fontsize=FS_SMALL, color=C_RED,
-            bbox=dict(fc="white", ec="0.8", alpha=0.85))
     save(fig, "fig28_aec_nlms.png")
 
 # ---- 图29：ERLE + 合成近端干扰时的真值冻结 ----
@@ -378,8 +374,8 @@ def fig_erle():
     ax.axvspan(0.8, 1.2, color=C_RED, alpha=0.10)
     ax.text(1.0, np.nanmax(erle_view)*0.88, "合成近端干扰段（非语音）\nERLE 不评价回声抵消量", ha="center", fontsize=FS_SMALL + 1, color=C_RED,
             bbox=dict(fc="white", ec=C_RED, lw=0.7, alpha=0.9, boxstyle="round,pad=0.3"))
-    ax.annotate(f"收敛后 ERLE≈{plateau:.0f} dB", xy=(0.62, plateau), xytext=(0.35, plateau+6),
-                fontsize=FS_LABEL, color=C_BLUE,
+    ax.annotate(f"指定窗块 dB 均值≈{plateau:.0f} dB", xy=(0.62, plateau), xytext=(0.05, plateau+3),
+                fontsize=FS_LABEL, color=C_BLUE, va="top",
                 arrowprops=dict(arrowstyle="->", color=C_BLUE))
     ax.set_xlim(0, 1.6); ax.set_xlabel("时间 (s)", fontsize=FS_LABEL); ax.set_ylabel("ERLE (dB)", fontsize=FS_LABEL)
     ax.legend(fontsize=FS_SMALL, loc="lower right")
@@ -439,8 +435,8 @@ def fig_delay_dtd():
     ax.set_xlim(-50, delay + 200); ax.set_xlabel("滞后（采样）", fontsize=FS_LABEL)
     ax.set_ylabel("归一化有符号互相关", fontsize=FS_LABEL)
     ax.grid(ls=":", alpha=0.5); ax.tick_params(labelsize=FS_TINY)
-    ax = axes[1]; ax.set_title("(b) 延迟对齐：300 采样 > 128 抽头", fontsize=FS_TITLE)
-    ax.plot(tcc, er_align_view, color=C_BLUE, lw=1.6, label=f"对齐（单讲约{pa:.0f}dB）")
+    ax = axes[1]; ax.set_title("(b) 使用真值 300 点对齐；滤波器 128 抽头", fontsize=FS_TITLE)
+    ax.plot(tcc, er_align_view, color=C_BLUE, lw=1.6, label=f"真值对齐（指定窗约{pa:.0f}dB）")
     ax.plot(tcc, er_mis_view, color="0.6", lw=1.4, ls="--", label=f"不对齐（单讲约{pm:.0f}dB）")
     ax.axvspan(0.8, 1.2, color=C_RED, alpha=0.08)
     ax.set_ylim(-10, 40); ax.set_xlabel("时间 (s)", fontsize=FS_LABEL); ax.set_ylabel("ERLE (dB)", fontsize=FS_LABEL)
@@ -530,6 +526,10 @@ def fig_hybrid():
     box(2.6, 0.9, 1.8, 1.2, "延迟估计与对齐\n得到 x_a(n)", "#dbe9f6")
     arrow((2.1, 1.5), (2.6, 1.5), C_BLUE)
     arrow((3.5, 2.1), (3.9, 3.2), C_BLUE)
+    # 延迟估计还必须观察麦克风；参考单独不能给出相对传播时差。
+    ax.plot([1.2, 1.2, 3.1], [3.2, 2.6, 2.6], color=C_RED, lw=1.2)
+    arrow((3.1, 2.6), (3.1, 2.1), C_RED)
+    ax.text(1.3, 2.68, "观测 d", fontsize=FS_SMALL, color=C_RED)
     # 可选条件参考从对齐框下缘绕行，避开下方更新控制的观测与输出箭头。
     ax.plot([3.5, 3.5, 9.0, 9.0], [0.9, -0.12, -0.12, 3.2],
             color=C_BLUE, lw=1.0, ls=":")
@@ -542,7 +542,7 @@ def fig_hybrid():
     arrow((6.0, 1.2), (4.5, 3.2), C_ORANGE)
     ax.text(3.4, 5.75, "线性 AEC 同时接收麦克风信号 d(n)\n和对齐参考 x_a(n)",
             fontsize=FS_SMALL, color=C_BLUE, ha="center")
-    ax.text(9.6, 5.75, "学习型后处理只抑制\n训练条件覆盖的残余成分",
+    ax.text(9.6, 5.75, "后处理的适用范围与近端损伤\n须在目标条件下验证",
             fontsize=FS_SMALL, color=C_ORANGE, ha="center")
     ax.text(
         7.0,
@@ -639,11 +639,10 @@ def fig_haar_crossband():
     ax.legend(fontsize=FS_SMALL, ncols=2, loc="upper right")
     ax.grid(axis="y", ls=":", alpha=0.5)
     ax.tick_params(labelsize=FS_TINY)
-    ax.text(0.02, 0.9,
-            "完整：[0,1,0,0]；仅同带：[0,0.5,0,0.5]\n"
-            "后者是删去交叉项的模型示意，不是训练后的 AEC 残差。",
-            transform=ax.transAxes, fontsize=FS_SMALL, va="top", color=C_MAIN,
-            bbox=dict(fc="white", ec="0.7", alpha=0.95))
+    ax.text(0.5, -0.27,
+            "完整：[0,1,0,0]；仅同带：[0,0.5,0,0.5]。\n"
+            "后者删去了交叉项，不是训练后的 AEC 残差。",
+            transform=ax.transAxes, fontsize=FS_SMALL, va="top", ha="center", color=C_MAIN)
     save(fig, "fig37_aec_subband.png")
 
 
@@ -845,6 +844,11 @@ def fig_pbfdaf_flow():
                        ((11.66, 3.195), (12.0, 3.195))]:
         arrow(update_ax, start, end)
     arrow(update_ax, (5.27, 4.72), (5.75, 3.69), color=C_GREEN)
+    # D 只保留功率；更新还需要带相位的复参考共轭。
+    update_ax.plot([1.16, 1.16, 6.06], [2.7, 2.10, 2.10], color=C_BLUE, lw=1.5)
+    arrow(update_ax, (6.06, 2.10), (6.06, 2.7))
+    update_ax.text(3.4, 1.65, r"复参考共轭 $X_{m-p}^*$",
+                   ha="center", fontsize=FS_SMALL, color=C_BLUE)
     box(update_ax, 7.25, 1.20, 1.73, 0.67,
         "旧权重 $W_p(m)$", "#f3f0fa")
     arrow(update_ax, (8.115, 1.87), (8.115, 2.7), color=C_PURPLE)

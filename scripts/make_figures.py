@@ -1525,59 +1525,67 @@ def fig18_erle_simulation():
 
 
 def fig_aec():
-    fig = plt.figure(figsize=(9.5, 5.2))
-    ax = fig.add_subplot(1, 2, 1)
-    ax.axis("off"); ax.set_xlim(0, 11); ax.set_ylim(0, 6)
-    def box(x, y, w, h, text, fc="#dbe9f6", fs=9.5):
-        ax.add_patch(plt.Rectangle((x, y), w, h, fc=fc, ec="k", lw=1.2, zorder=3))
-        ax.text(x + w / 2, y + h / 2, text, ha="center", va="center", fontsize=fs, zorder=4)
-    def arrow(x1, y1, x2, y2, text="", c="k", dy=0.15):
-        ax.add_patch(FancyArrowPatch((x1, y1), (x2, y2), arrowstyle="-|>", mutation_scale=14, color=c, lw=1.4, zorder=2))
-        if text:
-            ax.text((x1 + x2) / 2, (y1 + y2) / 2 + dy, text, fontsize=FS_LABEL, ha="center", color=c,
-            bbox=dict(fc="white", alpha=0.85, pad=1, ec="none"))
-    box(0.2, 4.6, 1.9, 0.9, "播放信号 x(n)\n(已知参考)", "#f6e5db")
-    box(3.0, 4.6, 1.6, 0.9, "扬声器")
-    box(5.5, 4.6, 1.9, 0.9, "房间回声路径\nh(n)")
-    arrow(2.1, 5.05, 3.0, 5.05); arrow(4.6, 5.05, 5.5, 5.05)
-    box(8.2, 4.6, 2.4, 0.9, "麦克风信号 d(n)\n=回声+用户语音", "#f6dbdb", 8.5)
-    arrow(7.4, 5.05, 8.2, 5.05)
-    box(3.0, 2.4, 2.2, 1.0, "自适应滤波器 ŵ(n)\n(NLMS, 学回声路径)")
-    arrow(1.15, 4.6, 3.6, 3.4, "参考信号", C_BLUE)
-    box(6.0, 2.4, 1.6, 1.0, "回声副本\nŷ(n)", "#f6dbdb")
-    arrow(5.2, 2.9, 6.0, 2.9)
-    box(8.2, 2.4, 2.4, 1.0, "相减\ne(n)=d(n)−ŷ(n)", "#e8f6db")
-    arrow(7.6, 2.9, 8.2, 2.9)
-    arrow(9.4, 4.6, 9.4, 3.4)
-    arrow(9.4, 2.4, 9.4, 1.2, "e→残余抑制/后端", C_GREEN, dy=-0.1)
-    # 残差反馈驱动自适应更新；DTD 只控制这条更新支路，不切断音频输出。
-    ax.plot([9.4, 9.4, 7.35], [2.4, 0.35, 0.35], color=C_BLUE, lw=1.4)
-    ax.add_patch(plt.Rectangle((6.55, 0.15), 0.8, 0.4, fc="white", ec=C_RED, lw=1.2, zorder=4))
-    ax.plot([6.68, 7.18], [0.49, 0.23], color=C_RED, lw=1.6, zorder=5)
-    ax.plot([4.1, 6.55], [0.35, 0.35], color=C_BLUE, lw=1.4)
-    arrow(4.1, 0.35, 4.1, 2.4, "残差 e 驱动更新", C_BLUE)
-    box(6.0, 0.75, 2.2, 0.8, "双讲检测 DTD\n控制系数更新", "#f6e5db", 8.5)
-    arrow(7.1, 0.75, 7.1, 0.35, "门控", C_RED, dy=0.05)
-    ax.set_title("(a) AEC 结构：残差反馈更新滤波器，DTD 在双讲时停止系数更新", fontsize=11)
-    ax = fig.add_subplot(1, 2, 2)
-    t_axis, erle, erle_plateau = fig18_erle_simulation()
-    ax.plot(t_axis, erle, color=C_BLUE, lw=1.6, label="ERLE（仅远端单讲区）")
-    ax.axvspan(0.8, 1.2, color=C_RED, alpha=0.10)
-    ax.annotate(f"收敛后 ERLE≈{erle_plateau:.0f} dB\n（线性滤波器，未含残余抑制）",
-                xy=(0.62, erle_plateau), xytext=(0.18, erle_plateau + 7),
-                fontsize=FS_LABEL, color=C_BLUE,
-                arrowprops=dict(arrowstyle="->", color=C_BLUE))
-    ax.text(1.0, 5, "双讲期冻结系数\n残差含近端语音，不计算 ERLE", fontsize=FS_LABEL,
-            color=C_RED, ha="center")
-    ax.set_xlabel("时间 (s)", fontsize=FS_LABEL); ax.set_ylabel("ERLE (dB)", fontsize=FS_LABEL)
-    ax.set_ylim(-10, 40)
-    ax.set_title("(b) NLMS 收敛过程（ERLE，模拟）", fontsize=FS_TITLE + 1)
-    ax.legend(fontsize=FS_SMALL, loc="lower right")
-    ax.grid(ls=":", alpha=0.5)
-    fig.suptitle("图18  声学回声消除（AEC）原理", fontsize=FS_SUP)
-    fig.tight_layout()
-    save(fig, "fig18_aec.png")
+    fig = plt.figure(figsize=(9.5, 8.6), layout="constrained")
+    grid = fig.add_gridspec(2, 1, height_ratios=(1.05, 1.0))
+    ax = fig.add_subplot(grid[0])
+    ax.axis("off"); ax.set_xlim(0, 14); ax.set_ylim(0, 6.6)
 
+    def box(x, y, w, h, label, color="#dbe9f6"):
+        ax.add_patch(plt.Rectangle((x, y), w, h, fc=color, ec=C_MAIN, lw=1.2, zorder=3))
+        ax.text(x+w/2, y+h/2, label, ha="center", va="center", fontsize=FS_SMALL, zorder=4)
+
+    def arrow(a, b, color=C_BLUE, style="-"):
+        ax.add_patch(FancyArrowPatch(a, b, arrowstyle="-|>", mutation_scale=14,
+                                    color=color, lw=1.5, ls=style, zorder=2))
+
+    box(.2, 3.5, 2.1, 1.1, "已对齐参考\nx(n)", "#f6e5db")
+    box(3.4, 3.5, 2.4, 1.1, "旧抽头 ŵ(n)\n预测线性回声")
+    box(6.7, 3.5, 1.8, 1.1, "回声副本\nŷ(n)")
+    box(10.5, 3.5, 3.1, 1.1, "先验残差 e(n)\n=d(n)−ŷ(n)", "#e8f6db")
+    box(8.25, 5.3, 2.8, .8, "麦克风观测 d(n)", "#f6dbdb")
+    ax.add_patch(Circle((9.5, 4.05), .33, fc="white", ec=C_MAIN, lw=1.3))
+    ax.text(9.5, 4.05, "Σ", ha="center", va="center", fontsize=FS_LABEL)
+    ax.text(9.0, 4.32, "−", fontsize=FS_SMALL)
+    ax.text(9.68, 4.72, "+", fontsize=FS_SMALL)
+    for a,b in [((2.3,4.05),(3.4,4.05)), ((5.8,4.05),(6.7,4.05)),
+                ((8.5,4.05),(9.16,4.05)), ((9.84,4.05),(10.5,4.05)),
+                ((9.5,5.3),(9.5,4.39))]:
+        arrow(a,b)
+    box(3.4, 1.3, 2.4, 1., "NLMS 系数更新\n读取 x 与 e")
+    box(7.4, 1.3, 2.9, 1., "检测/外部控制\n决定是否冻结", "#f6e5db")
+    # 输入、残差、控制分支互相独立；输出从不被冻结开关切断。
+    ax.plot([1.25,1.25,3.4], [3.5,1.8,1.8], color=C_BLUE, lw=1.5)
+    arrow((3.05,1.8),(3.4,1.8))
+    ax.plot([12.05,12.05,5.2], [3.5,.65,.65], color=C_GREEN, lw=1.5)
+    arrow((5.2,.65),(5.2,1.3),C_GREEN)
+    ax.text(11.1,.85,"残差 e",fontsize=FS_SMALL,color=C_GREEN)
+    arrow((4.6,2.3),(4.6,3.5),C_PURPLE)
+    ax.text(4.75,2.65,"新抽头供下一样本",fontsize=FS_SMALL,color=C_PURPLE)
+    arrow((7.4,1.8),(5.8,1.8),C_ORANGE,"--")
+    # 简图用独立命名输入端，避免画穿其他框；同名 x/d 是上方同一信号。
+    ax.text(8.25,2.95,"x",fontsize=FS_SMALL,color=C_BLUE,ha="center")
+    ax.text(9.5,2.95,"d",fontsize=FS_SMALL,color=C_RED,ha="center")
+    arrow((8.25,2.85),(8.25,2.3),C_BLUE)
+    arrow((9.5,2.85),(9.5,2.3),C_RED)
+    ax.text(7,.05,"控制框可由 x、d 检测；下图实验直接给定干扰真值，不测检测准确率。",
+            ha="center",fontsize=FS_SMALL,color=".25")
+    ax.set_title("(a) 先预测输出，再用参考、残差和控制更新抽头",fontsize=FS_TITLE)
+
+    ax = fig.add_subplot(grid[1])
+    t_axis, erle, window_mean = fig18_erle_simulation()
+    ax.plot(t_axis,erle,color=C_BLUE,lw=1.6,label="线性残差的块 ERLE（单讲区）")
+    ax.axvspan(.8,1.2,color=C_RED,alpha=.1)
+    ax.annotate(f"指定窗块 dB 均值≈{window_mean:.0f} dB\n（块起点 0.45<t<0.8 s）",
+                xy=(.62,window_mean),xytext=(.08,36),va="top",fontsize=FS_SMALL,color=C_BLUE,
+                arrowprops=dict(arrowstyle="->",color=C_BLUE))
+    ax.text(1.,4.,"合成近端干扰（非语音）\n按真值冻结；本区间不评分",fontsize=FS_SMALL,
+            color=C_RED,ha="center")
+    ax.set_xlabel("时间 (s)",fontsize=FS_LABEL);ax.set_ylabel("ERLE (dB)",fontsize=FS_LABEL)
+    ax.set_ylim(-10,40);ax.set_xlim(0,1.6)
+    ax.set_title("(b) 16 kHz、128 抽头、μ=0.5 的单次固定种子仿真",fontsize=FS_TITLE)
+    ax.legend(fontsize=FS_SMALL,loc="lower right");ax.grid(ls=":",alpha=.5)
+    fig.suptitle("图18 声学回声消除：输出、更新与控制分开检查",fontsize=FS_SUP)
+    save(fig,"fig18_aec.png")
 
 # ----------------------------------------------------------------------
 # 图21 WPE 去混响：混响语音 → WPE → 去混响语音（算法演示）
@@ -2252,144 +2260,98 @@ def fig_dsin_geometry():
 # 图20 AEC 信号处理链：经典结构 vs 混合式结构（示意）
 # ----------------------------------------------------------------------
 def fig_aec_pipeline():
-    fig = plt.figure(figsize=(9.5, 11.0))
+    fig = plt.figure(figsize=(9.5, 10.4), layout="constrained")
+    grid=fig.add_gridspec(2,1,height_ratios=(1.15,1))
 
-    # ---- (a) 经典 AEC 信号流 ----
-    ax = fig.add_subplot(2, 1, 1)
-    ax.axis("off"); ax.set_xlim(0, 14); ax.set_ylim(0, 8)
+    def setup(axis,title):
+        axis.axis("off");axis.set_xlim(0,14);axis.set_ylim(0,8)
+        axis.set_title(title,fontsize=FS_TITLE)
 
-    def box(x, y, w, h, text, fc="#dbe9f6", fs=FS_SMALL, ec="k", ls="-", lw=1.2):
-        ax.add_patch(plt.Rectangle((x, y), w, h, fc=fc, ec=ec, lw=lw, ls=ls, zorder=3))
-        ax.text(x + w / 2, y + h / 2, text, ha="center", va="center", fontsize=fs, zorder=4)
+    def box(axis,x,y,w,h,label,fill="#dbe9f6"):
+        axis.add_patch(plt.Rectangle((x,y),w,h,fc=fill,ec=C_MAIN,lw=1.2,zorder=3))
+        axis.text(x+w/2,y+h/2,label,ha="center",va="center",fontsize=FS_SMALL,zorder=4)
 
-    def arrow(x1, y1, x2, y2, text="", c="k", dy=0.18, fs=FS_TINY, ls="-"):
-        ax.add_patch(FancyArrowPatch((x1, y1), (x2, y2), arrowstyle="-|>",
-                                     mutation_scale=14, color=c, lw=1.4, ls=ls, zorder=2))
-        if text:
-            ax.text((x1 + x2) / 2, (y1 + y2) / 2 + dy, text, fontsize=fs, ha="center", color=c)
+    def arrow(axis,a,b,color=C_BLUE,style="-"):
+        axis.add_patch(FancyArrowPatch(a,b,arrowstyle="-|>",mutation_scale=14,
+                                      color=color,lw=1.5,ls=style,zorder=2))
 
-    def sum_node(cx, cy, r=0.32, label="Σ"):
-        ax.add_patch(Circle((cx, cy), r, fc="white", ec="k", lw=1.4, zorder=3))
-        ax.text(cx, cy, label, ha="center", va="center", fontsize=FS_LABEL, zorder=4)
+    ax=fig.add_subplot(grid[0]);setup(ax,"(a) 参考取点、物理路径、相对时差与自适应更新")
+    box(ax,.2,6.2,2.,1.,"播放参考 x\n已知数字取点","#f6e5db")
+    box(ax,3.,6.2,4.5,1.,"等效线性路径 h\n器件小信号响应 + 房间 + 采集")
+    box(ax,10.1,6.2,3.5,1.,"麦克风观测 d\n=x*h+s+v","#f6dbdb")
+    arrow(ax,(2.2,6.7),(3.,6.7));arrow(ax,(7.5,6.7),(8.27,6.7))
+    ax.add_patch(Circle((8.6,6.7),.32,fc="white",ec=C_MAIN,lw=1.2))
+    ax.text(8.6,6.7,"Σ",ha="center",va="center",fontsize=FS_LABEL)
+    arrow(ax,(8.93,6.7),(10.1,6.7))
+    ax.text(8.6,5.62,"近端 s + 噪声 v",fontsize=FS_SMALL,ha="center",color=C_RED)
+    arrow(ax,(8.6,5.92),(8.6,6.37),C_RED)
 
-    # 上排：远端 → 扬声器 → 房间 → Σ ← 近端
-    box(0.3, 6.2, 2.1, 0.95, "远端播放 x(n)\n（已知参考）", "#f6e5db")
-    box(3.2, 6.2, 1.7, 0.95, "数模转换\n功放+扬声器", fs=FS_TINY)
-    box(5.7, 6.2, 2.5, 0.95, "扬声器—房间—麦克风\n回声路径 h(n)", fs=FS_TINY)
-    arrow(2.4, 6.68, 3.2, 6.68); arrow(4.9, 6.68, 5.7, 6.68)
-    sum_node(9.15, 6.68)
-    arrow(8.2, 6.68, 8.82, 6.68)
-    box(5.7, 4.3, 2.5, 0.9, "近端语音 s(n)\n+ 环境噪声 v(n)", "#f6dbdb", FS_TINY)
-    arrow(6.95, 5.2, 8.95, 6.4, c=C_RED)
-    box(10.3, 6.2, 2.3, 0.95, "麦克风信号 d(n)\n= s + x*h + v", "#f6dbdb", FS_TINY)
-    arrow(9.48, 6.68, 10.3, 6.68)
+    box(ax,.2,3.5,2.4,1.1,"时差估计与对齐\n输出 x_a")
+    box(ax,4.,3.5,2.8,1.1,"线性路径估计\nŷ = ŵ * x_a")
+    box(ax,10.1,3.5,3.5,1.1,"线性残差 e=d−ŷ\n送后续抑制/任务","#e8f6db")
+    arrow(ax,(1.2,6.2),(1.2,4.6))
+    # 麦克风观测经独立命名端口送时差估计，并非由参考自身估时差。
+    ax.text(2.3,5.5,"d",color=C_RED,ha="center",fontsize=FS_SMALL)
+    arrow(ax,(2.3,5.25),(2.3,4.6),C_RED)
+    arrow(ax,(2.6,4.05),(4.,4.05))
+    ax.add_patch(Circle((8.6,4.05),.32,fc="white",ec=C_MAIN,lw=1.2))
+    ax.text(8.6,4.05,"Σ",ha="center",va="center",fontsize=FS_LABEL)
+    ax.text(8.05,4.28,"−",fontsize=FS_SMALL)
+    ax.text(8.82,4.69,"+",fontsize=FS_SMALL)
+    arrow(ax,(6.8,4.05),(8.27,4.05));arrow(ax,(8.93,4.05),(10.1,4.05))
+    ax.plot([11.85,11.85,9.25],[6.2,5.1,5.1],color=C_RED,lw=1.5)
+    arrow(ax,(9.25,5.1),(8.7,4.37),C_RED)
 
-    # 下排：参考 → 延迟对齐 → 自适应滤波 → Σ(减)
-    box(0.3, 2.5, 1.9, 0.95, "延迟对齐 τ̂\n（参考与回声输入对齐）", fs=FS_TINY)
-    box(3.2, 2.5, 2.6, 0.95, "自适应滤波器 ŵ(n)\n（NLMS，估计线性路径）", fs=FS_TINY)
-    box(6.7, 2.5, 1.7, 0.95, "回声副本\nŷ(n)=ŵ*x", fs=FS_TINY)
-    sum_node(9.15, 2.98, label="−")
-    arrow(1.25, 6.2, 1.25, 3.45, "参考", C_BLUE, ls="--")
-    arrow(2.2, 2.98, 3.2, 2.98)
-    arrow(5.8, 2.98, 6.7, 2.98)
-    arrow(8.4, 2.98, 8.82, 2.98)
-    arrow(11.45, 6.2, 11.45, 3.7, "d(n)", C_RED)
-    ax.plot([11.45, 11.45], [3.7, 3.7], lw=0)  # 占位
-    ax.add_patch(FancyArrowPatch((11.45, 3.7), (9.5, 3.05), arrowstyle="-|>",
-                                 mutation_scale=14, color=C_RED, lw=1.4, zorder=2))
-    box(10.3, 2.5, 2.3, 0.95, "残差 e(n)=d−ŷ\n→ 后续模块", "#e8f6db", FS_TINY)
-    arrow(9.48, 2.98, 10.3, 2.98)
+    box(ax,4.,1.1,2.8,1.,"自适应更新\n读取 x_a、e")
+    box(ax,8.3,1.1,3.5,1.,"DTD / 步长控制\n读取 x_a、d 或 e","#f6e5db")
+    ax.plot([1.4,1.4,4.],[3.5,1.6,1.6],color=C_BLUE,lw=1.5)
+    arrow(ax,(3.5,1.6),(4.,1.6))
+    ax.plot([12.5,12.5,6.],[3.5,.5,.5],color=C_GREEN,lw=1.5)
+    arrow(ax,(6.,.5),(6.,1.1),C_GREEN)
+    ax.text(12.65,1.6,"e",fontsize=FS_SMALL,color=C_GREEN)
+    arrow(ax,(5.4,2.1),(5.4,3.5),C_PURPLE)
+    ax.text(5.55,2.65,"下一时刻抽头",fontsize=FS_SMALL,color=C_PURPLE)
+    arrow(ax,(8.3,1.6),(6.8,1.6),C_ORANGE,"--")
+    for x,label,color in [(8.8,"x_a",C_BLUE),(10.,"d",C_RED),(11.2,"e",C_GREEN)]:
+        ax.text(x,2.95,label,ha="center",fontsize=FS_SMALL,color=color)
+        arrow(ax,(x,2.75),(x,2.1),color)
+    ax.text(7.,.02,"同名端口连接同一信号；ŵ 表示对齐后路径，h 表示从原参考到麦克风的总路径。",
+            ha="center",fontsize=FS_SMALL,color=".25")
 
-    # e 反馈更新 + DTD 开关
-    ax.plot([11.45, 11.45], [2.5, 1.15], color=C_BLUE, lw=1.4, zorder=2)
-    ax.plot([4.5, 5.55], [1.15, 1.15], color=C_BLUE, lw=1.4, zorder=2)
-    ax.plot([6.45, 11.45], [1.15, 1.15], color=C_BLUE, lw=1.4, zorder=2)
-    ax.add_patch(FancyArrowPatch((4.5, 1.15), (4.5, 2.5), arrowstyle="-|>",
-                                 mutation_scale=14, color=C_BLUE, lw=1.4, zorder=2))
-    ax.text(8.6, 0.82, "非双讲段用残差 e(n) 驱动滤波器系数更新", fontsize=FS_TINY,
-            color=C_BLUE, ha="center")
-    # 反馈线上的“开关”（双讲时断开）
-    ax.add_patch(plt.Rectangle((5.4, 0.95), 1.2, 0.4, fc="white", ec=C_RED, lw=1.4, zorder=4))
-    ax.plot([5.62, 6.3], [1.3, 1.06], color=C_RED, lw=1.8, zorder=5)
-    ax.text(6.0, 1.5, "开关（双讲时断开）", fontsize=FS_SMALL, color=C_RED, ha="center", zorder=5)
-    # DTD 控制盒
-    box(5.2, 0.0, 1.6, 0.75, "双讲检测\nDTD", "#f6e5db", FS_TINY)
-    ax.add_patch(FancyArrowPatch((6.0, 0.75), (6.0, 1.0), arrowstyle="-|>",
-                                 mutation_scale=12, color=C_RED, lw=1.2, zorder=4))
-
-    ax.annotate("ŵ(n) 估计上方线性回声路径 h(n)", xy=(4.5, 3.5), xytext=(4.5, 5.6),
-                fontsize=FS_SMALL + 2, color=C_PURPLE, ha="center",
-                arrowprops=dict(arrowstyle="->", color=C_PURPLE, lw=1.2,
-                                connectionstyle="arc3,rad=-0.25"))
-    ax.set_title("(a) 经典 AEC 信号流：已知参考学出回声副本再相减（示意）", fontsize=FS_TITLE)
-
-    # ---- (b) 混合式处理链 ----
-    ax2 = fig.add_subplot(2, 1, 2)
-    ax2.axis("off"); ax2.set_xlim(0, 14); ax2.set_ylim(0, 8)
-
-    def box2(x, y, w, h, text, fc="#dbe9f6", fs=FS_SMALL, ec="k", ls="-", lw=1.2):
-        ax2.add_patch(plt.Rectangle((x, y), w, h, fc=fc, ec=ec, lw=lw, ls=ls, zorder=3))
-        ax2.text(x + w / 2, y + h / 2, text, ha="center", va="center", fontsize=fs, zorder=4)
-
-    def arrow2(x1, y1, x2, y2, text="", c="k", dy=0.18, fs=FS_TINY, ls="-"):
-        ax2.add_patch(FancyArrowPatch((x1, y1), (x2, y2), arrowstyle="-|>",
-                                      mutation_scale=14, color=c, lw=1.4, ls=ls, zorder=2))
-        if text:
-            ax2.text((x1 + x2) / 2, (y1 + y2) / 2 + dy, text, fontsize=fs, ha="center", color=c)
-
-    C_DSP = "#dbe9f6"    # 传统 DSP（蓝）
-    C_NN = "#fde3c8"     # 神经网络（橙）
-    y0 = 4.6
-    box2(0.3, y0, 1.8, 1.0, "远端参考 x(n)\n（播放链路末端取）", "#f6e5db", FS_TINY)
-    box2(2.6, y0, 1.8, 1.0, "延迟对齐", C_DSP)
-    box2(4.9, y0, 2.4, 1.0, "线性 AEC\n（PBFDAF / 频域 Kalman）", C_DSP, FS_TINY)
-    box2(7.8, y0, 1.6, 1.0, "残余 e(n)\n+ 噪声", C_DSP, FS_TINY)
-    box2(9.9, y0, 2.3, 1.0, "神经残余抑制器\n（DNN，输入 e 与 x）", C_NN, FS_TINY)
-    box2(12.4, y0, 1.4, 1.0, "干净输出\n→ 波束/ASR", "#e8f6db", FS_TINY)
-    for x1, x2 in [(2.1, 2.6), (4.4, 4.9), (7.3, 7.8), (9.4, 9.9), (12.2, 12.4)]:
-        arrow2(x1, y0 + 0.5, x2, y0 + 0.5)
-    box2(4.9, 6.3, 2.4, 0.9, "麦克风 d(n)", "#f6dbdb", FS_TINY)
-    arrow2(6.1, 6.3, 6.1, y0 + 1.0)
-    # 参考支路到 DNN
-    ax2.plot([1.2, 1.2], [y0, 2.1], color=C_BLUE, lw=1.4, zorder=2, alpha=0.6)
-    ax2.plot([1.2, 11.05], [2.1, 2.1], color=C_BLUE, lw=1.4, zorder=2, alpha=0.6)
-    ax2.add_patch(FancyArrowPatch((11.05, 2.1), (11.05, y0), arrowstyle="-|>",
-                                  mutation_scale=14, color=C_BLUE, lw=1.4, zorder=2))
-    ax2.text(5.4, 2.28, "参考 x 也可作为 DNN 输入（帮助区分残余回声与近端语音）",
-             fontsize=FS_SMALL + 1.5, color=C_BLUE, ha="center", alpha=0.9,
-             bbox=dict(fc="white", alpha=0.7, pad=1, ec="none"))
-    # DTD / 步长控制：从左侧绕行，避免穿过两条职责说明。
-    box2(3.4, 0.7, 5.4, 0.95,
-         "DTD / 步长控制（根据参考、麦克风与残差信号控制线性滤波器更新）",
-         "white", FS_TINY, ec=C_ORANGE, ls="--")
-    ax2.plot([6.1, 3.8, 3.8, 4.65], [1.65, 1.65, 4.05, 4.05],
-             color=C_ORANGE, lw=1.4, ls="--", zorder=2)
-    ax2.add_patch(FancyArrowPatch((4.65, 4.05), (5.35, y0),
-                                  arrowstyle="-|>", mutation_scale=14,
-                                  color=C_ORANGE, lw=1.4, ls="--", zorder=2))
-    ax2.text(3.62, 2.8, "控制更新", fontsize=FS_TINY,
-             color=C_ORANGE, ha="right", rotation=90)
-    # 分工注释
-    linear_note = ax2.text(
-        6.1, 3.62, "线性 AEC：消除参考可解释、滤波器可表示的回声",
-        fontsize=FS_TINY, color=C_BLUE, ha="center",
-        bbox=dict(fc="white", ec="none", alpha=0.92, pad=1.5))
-    neural_note = ax2.text(
-        10.95, 3.08, "神经残余抑制：处理训练覆盖的非线性残余与噪声",
-        fontsize=FS_TINY, color=C_ORANGE, ha="center",
-        bbox=dict(fc="white", ec="none", alpha=0.92, pad=1.5))
-    # 图例
-    ax2.add_patch(plt.Rectangle((0.3, 7.3), 0.4, 0.4, fc=C_DSP, ec="k", lw=1.0))
-    ax2.text(0.8, 7.5, "传统 DSP", fontsize=FS_TINY, va="center")
-    ax2.add_patch(plt.Rectangle((2.6, 7.3), 0.4, 0.4, fc=C_NN, ec="k", lw=1.0))
-    ax2.text(3.1, 7.5, "神经网络", fontsize=FS_TINY, va="center")
-    ax2.set_title("(b) 混合式处理链：线性回声估计 + 学习型残余抑制（示意）", fontsize=FS_TITLE)
-
-    fig.suptitle("图20  AEC 信号处理链：自适应滤波与混合式结构（示意）", fontsize=FS_SUP)
-    fig.tight_layout(rect=(0, 0, 1, 0.96))
-    fig._lower_annotation_lanes = (linear_note, neural_note)
-    save(fig, "fig20_aec_pipeline.png")
-
+    ax=fig.add_subplot(grid[1]);setup(ax,"(b) 一类混合流程：线性估计 + 学习型残余抑制")
+    box(ax,.2,4.8,2.3,1.,"麦克风观测 d","#f6dbdb")
+    box(ax,3.4,4.8,2.5,1.,"线性 AEC\nPBFDAF / FDKF")
+    box(ax,6.8,4.8,2.8,1.,"学习型残余抑制\n使用 e 与可选参考","#fde3c8")
+    box(ax,10.5,4.8,3.1,1.,"处理后输出\n另测近端损伤","#e8f6db")
+    for a,b in [((2.5,5.3),(3.4,5.3)),((5.9,5.3),(6.8,5.3)),((9.6,5.3),(10.5,5.3))]:
+        arrow(ax,a,b)
+    ax.text(6.35,5.55,"e",ha="center",fontsize=FS_SMALL,color=C_GREEN)
+    box(ax,.2,2.25,2.3,1.,"播放参考 x","#f6e5db")
+    box(ax,3.4,2.25,2.5,1.,"时差估计/对齐\n使用 x 与 d")
+    arrow(ax,(2.5,2.75),(3.4,2.75));arrow(ax,(4.65,3.25),(4.65,4.8))
+    ax.plot([1.35,1.35,3.7],[4.8,3.9,3.9],color=C_RED,lw=1.5)
+    arrow(ax,(3.7,3.9),(3.7,3.25),C_RED)
+    box(ax,8.3,2.25,3.5,1.,"自适应控制\n读取 x_a、d、e","#f6e5db")
+    for x,label,color in [(8.8,"x_a",C_BLUE),(10.,"d",C_RED),(11.2,"e",C_GREEN)]:
+        ax.text(x,4.15,label,ha="center",fontsize=FS_SMALL,color=color)
+        arrow(ax,(x,3.95),(x,3.25),color)
+    arrow(ax,(8.3,2.75),(7.6,2.75),C_ORANGE,"--")
+    ax.text(7.1,3.5,"更新控制",ha="center",fontsize=FS_SMALL,color=C_ORANGE)
+    # 控制信号从对齐框外绕到 AEC，避免被误画成控制时差估计器。
+    ax.plot([7.6,7.6,6.25,6.25],[2.75,1.65,1.65,4.35],color=C_ORANGE,lw=1.5,ls="--")
+    arrow(ax,(6.25,4.35),(5.5,4.8),C_ORANGE,"--")
+    # DNN 可使用原参考或对齐参考，由具体模型决定。
+    ax.plot([1.35,1.35,8.],[2.25,1.25,1.25],color=C_BLUE,lw=1.2,ls=":")
+    ax.plot([8.,8.],[1.25,4.55],color=C_BLUE,lw=1.2,ls=":")
+    arrow(ax,(8.,4.55),(8.,4.8),C_BLUE,":")
+    ax.text(4.1,1.02,"可选原参考 x（也可按模型改用 x_a）",ha="center",fontsize=FS_SMALL,color=C_BLUE)
+    linear_note=ax.text(7.,.5,"线性前级：估计参考可解释的路径；后级仍可能含残余回声、噪声和近端失真。",
+                        ha="center",fontsize=FS_SMALL,color=C_BLUE)
+    neural_note=ax.text(7.,.02,"学习后级：按模型输入、前视与训练范围配置，在目标条件下测泛化与损伤。",
+                        ha="center",fontsize=FS_SMALL,color=C_ORANGE)
+    fig._lower_annotation_lanes=(linear_note,neural_note)
+    fig.suptitle("图20 AEC 系统：信号、估计与控制的依赖",fontsize=FS_SUP)
+    save(fig,"fig20_aec_pipeline.png")
 
 # ----------------------------------------------------------------------
 # 图19 AEC 全景：线性模型失配仿真 + 算法家族按假设分类
@@ -2427,8 +2389,8 @@ def fig_aec_landscape():
 
     t1, e_lin = nlms_erle(echo_lin)
     t2, e_nl = nlms_erle(echo_nl)
-    ax.plot(t1, e_lin, color=C_BLUE, lw=1.6, label="线性回声路径")
-    ax.plot(t2, e_nl, color=C_RED, lw=1.6, label="非线性回声路径（tanh 软削波）")
+    ax.plot(t1, e_lin, color=C_BLUE, lw=1.6, ls="-", marker="o", markevery=8, label="线性回声路径")
+    ax.plot(t2, e_nl, color=C_RED, lw=1.6, ls="--", marker="s", markevery=8, label="非线性回声路径（tanh 软削波）")
     p_lin = np.mean(e_lin[t1 > 2.2]); p_nl = np.mean(e_nl[t2 > 2.2])
     ax.annotate(f"线性路径后段均值：{p_lin:.1f} dB", xy=(2.5, p_lin), xytext=(1.7, p_lin + 6),
                 fontsize=FS_SMALL + 1, color=C_BLUE,

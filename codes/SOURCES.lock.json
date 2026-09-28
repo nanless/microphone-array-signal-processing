@@ -769,7 +769,7 @@
       "license": "LicenseRef-NCSA-and-Adobe-Research",
       "scope": "Learned adaptive-filter optimizers; AEC, WPE and beamforming research",
       "fetch_enabled": true,
-      "note": "Acquire only metaaf/ (UIUC/NCSA, metaaf/LICENSE) and the root README. zoo/ and weights under Adobe Research License are not included. Building or executing this core has not been validated.",
+      "note": "Core metaaf/ is UIUC/NCSA. The selected zoo/aec/ and its direct shared source dependencies use Adobe Research License: non-commercial research including teaching/testing; retain zoo/LICENSE when redistributing that selection. Source only: no weights/audio, JAX installation, training, or full inference validated. License and AEC imports checked 2026-09-28.",
       "entrypoints": [
         "metaaf/LICENSE",
         "metaaf/filter.py",
@@ -777,11 +777,22 @@
         "metaaf/optimizer_gru.py",
         "metaaf/optimizer_rls.py",
         "metaaf/meta.py",
-        "README.md"
+        "README.md",
+        "zoo/LICENSE",
+        "zoo/aec/aec.py",
+        "zoo/aec/optimizer_kf.py",
+        "zoo/aec/aec_baselines.py",
+        "zoo/aec/aec_eval.py"
       ],
       "source_paths": [
         "metaaf/",
-        "README.md"
+        "README.md",
+        "zoo/LICENSE",
+        "zoo/README.md",
+        "zoo/__init__.py",
+        "zoo/__config__.py",
+        "zoo/metrics.py",
+        "zoo/aec/"
       ]
     },
     {
@@ -1588,6 +1599,21 @@
         "util/map_function.py",
         "requirements.txt",
         "how to train & test.txt"
+      ]
+    },
+    {
+      "id": "ec-evaluation-toolbox",
+      "url": "https://github.com/ifnspaml/EC-Evaluation-Toolbox.git",
+      "revision": "aec8873325ed8e4d93eadc53e5c0af84be4db4fd",
+      "license": "NOASSERTION",
+      "scope": "AEC/AES evaluation and dynamic room-response research source index",
+      "fetch_enabled": false,
+      "note": "Official repository and selected source headers checked 2026-09-28; no explicit source redistribution license established. Index only. CGGN16 imports speechlightning, which is not supplied here. A README roadmap date is not evidence that unchecked milestones shipped; no model, dataset, or runtime reproduction claimed.",
+      "entrypoints": [
+        "README.md",
+        "07_Evaluation/evaluation_metrics.py",
+        "07_Evaluation/audio_processing.py",
+        "04_Model_Definitions/CGGN16.py"
       ]
     }
   ]

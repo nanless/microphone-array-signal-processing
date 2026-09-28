@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 import tempfile
+import ctypes
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
 import unittest
 
 import numpy as np
@@ -43,6 +46,38 @@ class RealPairExperimentTests(unittest.TestCase):
             speex_linear_aec(Path("/nonexistent/libspeexdsp.dylib"),
                              np.zeros(161, dtype=np.int16),
                              np.zeros(161, dtype=np.int16))
+
+    def test_c_adapter_materializes_strided_pcm_views(self) -> None:
+        captured = []
+        def ctl(_state, request, pointer):
+            if request == 25:
+                ctypes.cast(pointer, ctypes.POINTER(ctypes.c_int))[0] = 16000
+            return 0
+        def cancel(_state, rec_pointer, play_pointer, out_pointer):
+            rec = np.ctypeslib.as_array((ctypes.c_int16 * 160).from_address(rec_pointer))
+            play = np.ctypeslib.as_array((ctypes.c_int16 * 160).from_address(play_pointer))
+            out = np.ctypeslib.as_array((ctypes.c_int16 * 160).from_address(out_pointer))
+            captured.append((rec.copy(), play.copy()))
+            out[:] = rec - play
+        fake = SimpleNamespace(speex_echo_state_init=Mock(return_value=1),
+            speex_echo_ctl=Mock(side_effect=ctl),
+            speex_echo_cancellation=Mock(side_effect=cancel), speex_echo_state_destroy=Mock())
+        storage = np.arange(640, dtype=np.int16)
+        with tempfile.NamedTemporaryFile() as library:
+            for view in (storage[::2], storage[1::2], storage[:320][::-1]):
+                microphone = (storage + 1000)[::2]
+                captured.clear()
+                with patch('codes.examples.aec_real_pair_experiment.ctypes.CDLL', return_value=fake):
+                    out, rate = speex_linear_aec(Path(library.name), view, microphone)
+                self.assertEqual(rate, 16000)
+                np.testing.assert_array_equal(out, microphone - view)
+                np.testing.assert_array_equal(np.concatenate([p for _, p in captured]), view)
+                np.testing.assert_array_equal(np.concatenate([r for r, _ in captured]), microphone)
+                self.assertTrue(out.flags.c_contiguous)
+        # Non-native byte order is rejected, never reinterpreted by the C ABI.
+        swapped = storage[:320].astype(np.dtype(np.int16).newbyteorder('S'))
+        with self.assertRaises(ValueError):
+            speex_linear_aec(Path('/missing'), swapped, storage[:320])
 
     def test_doubletalk_rejects_unpinned_or_lfs_audio(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

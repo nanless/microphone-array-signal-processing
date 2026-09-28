@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "lock_sha256": "b23b03e3179b7fcc6d2af47a3c13ebb19d00316c067c7d0138d47a32ad8235c4",
+  "lock_sha256": "b894b527a6a41bb4d337d47f76e411293bb3bb95330220a69a307b854a9c3083",
   "projects": [
     {
       "id": "pyroomacoustics",
@@ -1681,11 +1681,23 @@
       "asset_policy": "sparse_source_checkout",
       "requested_source_paths": [
         "metaaf/",
-        "README.md"
+        "README.md",
+        "zoo/LICENSE",
+        "zoo/README.md",
+        "zoo/__init__.py",
+        "zoo/__config__.py",
+        "zoo/metrics.py",
+        "zoo/aec/"
       ],
       "observed_sparse_patterns": [
         "/metaaf/",
         "/README.md",
+        "/zoo/LICENSE",
+        "/zoo/README.md",
+        "/zoo/__init__.py",
+        "/zoo/__config__.py",
+        "/zoo/metrics.py",
+        "/zoo/aec/",
         "!**/*.wav",
         "!**/*.flac",
         "!**/*.mp3",
@@ -3327,6 +3339,11 @@
     {
       "id": "ideeppe",
       "revision": "c2cdc26ddafd33bf3bda45640c06febef9092365",
+      "status": "index_only"
+    },
+    {
+      "id": "ec-evaluation-toolbox",
+      "revision": "aec8873325ed8e4d93eadc53e5c0af84be4db4fd",
       "status": "index_only"
     }
   ]

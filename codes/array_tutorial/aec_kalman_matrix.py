@@ -26,13 +26,32 @@ def _covariance(value: object, name: str, length: int) -> np.ndarray:
     matrix = finite_real_array(value, name)
     if matrix.shape != (length, length):
         raise ValueError(f"{name} must have shape ({length}, {length})")
-    if not np.allclose(matrix, matrix.T, rtol=1e-12, atol=1e-12):
-        raise ValueError(f"{name} must be symmetric")
-    symmetric = 0.5 * matrix + 0.5 * matrix.T
-    scale = float(np.max(np.abs(symmetric)))
-    if scale and np.min(np.linalg.eigvalsh(symmetric / scale)) < -1e-10:
+    if np.any(np.diag(matrix) < 0.):
+        raise ValueError(f"{name} has a negative variance")
+    scale = float(np.max(np.abs(matrix)))
+    if scale == 0.:
+        return matrix.copy()
+    unit = matrix / scale
+    tolerance = 32. * length * np.finfo(float).eps
+    if np.max(np.abs(unit - unit.T)) > tolerance:
+        raise ValueError(f"{name} must be symmetric relative to its scale")
+    # Preserve exact symmetric subnormal variances: halving the smallest
+    # positive float before adding it to itself would erase that variance.
+    symmetric = (matrix.copy() if np.array_equal(matrix, matrix.T)
+                 else 0.5 * matrix + 0.5 * matrix.T)
+    eigenvalues, vectors = np.linalg.eigh(0.5 * unit + 0.5 * unit.T)
+    if eigenvalues[0] < -tolerance:
         raise ValueError(f"{name} must be positive semidefinite")
+    if eigenvalues[0] < 0.:
+        # Singular PSD matrices may acquire tiny negative eigenvalues through
+        # roundoff. Explicitly project ONLY that machine-precision band; never
+        # propagate a tolerated negative variance as a covariance state.
+        projected = (vectors * np.maximum(eigenvalues, 0.)) @ vectors.T
+        symmetric = (0.5 * projected + 0.5 * projected.T) * scale
+        if not np.all(np.isfinite(symmetric)):
+            raise ValueError(f"{name} projection exceeds float64 range")
     return symmetric.copy()
+
 
 
 class KalmanAECState:
@@ -40,6 +59,10 @@ class KalmanAECState:
 
     ``freeze=True`` skips the measurement update, but still propagates the
     state with ``a`` and the covariance with ``Q`` and advances render history.
+    Covariance validation uses a relative 32*L*machine-epsilon tolerance.
+    Negative diagonal entries and materially negative spectra are rejected;
+    only roundoff-sized negative eigenvalues of a singular PSD matrix are
+    explicitly projected to zero. Valid singular covariances are allowed.
     Thus it is an *adaptation freeze*, not a bitwise hold of weights when
     ``a != 1``.  ``reset()`` restores initial weights, covariance and history.
     """

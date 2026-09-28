@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 A · 符号术语数学 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="36ae205792c1"><style>
+<meta name="source-digest" content="c0e8dcbfbf37"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -596,7 +596,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>回声返回损失增强（Echo Return Loss Enhancement，ERLE）</td>
-<td>衡量远端单讲时回声功率被降低多少；目标值取决于设备、声学路径、非线性和测量窗口，不能用一个通用区间代替验收条件（§6.1）</td>
+<td>衡量同一窗口内回声分量的能量衰减；真实录音通常用远端单讲近似。双讲若无独立回声及残余回声真值，不能用混合输入／总输出功率比代替；设备、路径、取点与窗口须说明（§6.7）</td>
 </tr>
 <tr>
 <td>WPE</td>
@@ -668,7 +668,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>PBFDAF</td>
-<td>分区块频域自适应滤波：把长回声路径分块并用 FFT 计算卷积与更新。第 6 章式(6-3)与同配置的频域多抽头 NLMS 更新逐分量相同；相对逐样本时域实现能节省多少计算取决于滤波长度、分块、FFT 库和硬件（§6.2）</td>
+<td>分区块频域自适应滤波：把长回声路径分块并用 FFT 计算卷积与更新。第 6 章式(6-5)与同配置的频域多抽头 NLMS 更新逐分量相同；相对逐样本时域实现能节省多少计算取决于滤波长度、分块、FFT 库和硬件（§6.2）</td>
 </tr>
 <tr>
 <td>IPNLMS</td>

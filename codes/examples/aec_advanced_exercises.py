@@ -21,7 +21,7 @@ def run_exercises() -> dict:
     diagonal_only = [0.0, 0.5, 0.0, 0.5]
     missing_cross_terms = [a - b for a, b in zip(true_echo, diagonal_only)]
 
-    # E06-13/14: equation (6-4), keeping both denominator floors.
+    # E06-13/14: the IPNLMS allocation equation, keeping both denominator floors.
     old = [F(4, 5), F(1, 5)]
     prior_error = F(1, 5)
     gain = [F(9, 20), F(3, 10)]  # kappa=0, epsilon_g=2
@@ -76,7 +76,7 @@ def run_exercises() -> dict:
                    "gain_sum": float(sum(gain)), "denominator": float(denominator),
                    "update": [float(x) for x in delta],
                    "uniform_update": [float(x) for x in uniform_delta],
-                   "scope": "equation (6-4) with explicit nonzero floors"},
+                   "scope": "the IPNLMS allocation equation with explicit nonzero floors"},
         "E06-14": {"pure_proportionate_zero_start_update": [0.0, 0.0],
                    "reason": "all g_l vanish at kappa=1 and zero weights"},
         "E06-15": {"old_observation_weight_after_100_updates": old_weight,

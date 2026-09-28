@@ -1,6 +1,6 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 87 个 Git 上游项目；已在 `codes/upstream/_downloads/` 取得 76 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。2026-09-28 离线核验 75 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 11 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 88 个 Git 上游项目；已在 `codes/upstream/_downloads/` 取得 76 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。2026-09-28 离线核验 75 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 12 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”只说明来源、提交、工作区状态和指定入口符合清单，不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -74,13 +74,13 @@ SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构�
 | [wpe_gpu](https://github.com/desh2608/wpe/tree/bd2857b5b8de36df4f436a93574c088bea142042) | CuPy 离线 WPE 与 GPU-GSS 去混响 | MIT | 已取得独立源码 |
 | [dtln_aec](https://github.com/breizhn/DTLN-aec/tree/9d24e128b4f409db18227b8babb343016625921f) | 双信号处理域的神经 AEC | MIT | 已取得独立源码 |
 | [speakerbeam](https://github.com/BUTSpeechFIT/speakerbeam/tree/91af02cc617afa35fedfbdbf32533012cd0a8672) | 目标说话人提取的受限评测实现 | LicenseRef-BUT-NTT-Evaluation | 仅来源索引 |
-| [metaaf](https://github.com/adobe-research/MetaAF/tree/56c4665bdc51c2e0595a7c0cd9b1266408adceff) | 可学习更新规则及通用频域 RLS 的核心库；AEC Kalman/RLS 基线另在 `zoo/aec/` | 核心 University of Illinois/NCSA；`zoo/` Adobe Research License | 已取得 metaaf/ 核心与 README；未取得 zoo/ |
+| [metaaf](https://github.com/adobe-research/MetaAF/tree/56c4665bdc51c2e0595a7c0cd9b1266408adceff) | 可学习更新规则及通用频域 RLS 的核心库；AEC Kalman/RLS 基线另在 `zoo/aec/` | 核心 University of Illinois/NCSA；`zoo/` Adobe Research License | 已取得核心及 zoo/aec/ 与直接公共源码；zoo 仅限非商用研究（含教学/测试），附独立许可；未取权重、未运行网络 |
 | [fastmnmf_author](https://github.com/sekiguchi92/SoundSourceSeparation/tree/897fe87fea3d85a243d8a3fd36c2232bb0548ad3) | FastMNMF 与自回归联合模型的作者实验 | LicenseRef-Academic-Research-Only | 仅来源索引 |
 | [spmamba](https://github.com/JusperLee/SPMamba/tree/f939f60a10db8a66aa69ec09685684307af47412) | 空间域与时序状态空间分离 | Apache-2.0 | 已取得独立源码 |
 | [mamba_tasnet](https://github.com/xi-j/Mamba-TasNet/tree/a35c692f27213781a11b1606c375cda1e1f0fb62) | Mamba 与 TasNet 分离实现 | GPL-3.0 | 已取得独立源码 |
 | [nkf_aec](https://github.com/fjiang9/NKF-AEC/tree/8ac58fb8fb9ced48579f9aa310745c54f98d7e1f) | 神经 Kalman AEC 作者研究代码 | NOASSERTION | 仅来源索引 |
-| [pyaec](https://github.com/ewan-xu/pyaec/tree/5b9c02c57075d790b7df8652884618189d49bbc4) | 时域 RLS、Kalman 与频域 FDKF/PFDKF 的教学代码；不含完整产品前端 | Apache-2.0；演示音频另核 | 已取得稀疏源码及许可，未运行 |
-| [echocatzh/PFDKF](https://github.com/echocatzh/PFDKF/tree/7c8c86b5691966c330015d8e0960db0733b4844f) | 分块频域 Kalman 演示；默认输出含残余处理，并非单独的线性误差 | MIT；演示音频另核 | 已取得稀疏源码及许可，未运行 |
+| [pyaec](https://github.com/ewan-xu/pyaec/tree/5b9c02c57075d790b7df8652884618189d49bbc4) | 时域 RLS、Kalman 与频域 FDKF/PFDKF 的教学代码；不含完整产品前端 | Apache-2.0；演示音频另核 | 已取得源码；RLS/Kalman 小输入实调发现截尾，FDKF/PFDKF 在 NumPy 2.5.3 入口失败 |
+| [echocatzh/PFDKF](https://github.com/echocatzh/PFDKF/tree/7c8c86b5691966c330015d8e0960db0733b4844f) | 分块频域 Kalman 演示；默认输出含残余处理，并非单独的线性误差 | MIT；演示音频另核 | 已取得源码并实调首块，确认默认后处理改变线性残差；未测设备 |
 | [Subband_Kalman_AEC](https://github.com/changxuding/Subband_Kalman_AEC/tree/f0c4f7030769d94dea2da3c814837448f171d422) | MATLAB 子带 Kalman、平方根及信息形式；部分默认输出含非线性后处理 | MIT 代码；附带录音许可另核 | 已取得指定 `.m` 源码、README 和许可，未取得音频或 `.mat`，未运行 |
 | [bssaec2020](https://github.com/nay0648/bssaec2020/tree/a3f52249ee61f19e2369823f65c6c31392dcf042) | 作者 MATLAB Aux-ICA/加权 RLS 仿真；不是完整工业 C++ 实现 | 未发现明确再分发许可；附带音频与 PESQ 文件另核 | 仅来源索引，不下载、不再分发 |
 | [fn-ssl-ipdnet](https://github.com/Audio-WestlakeU/FN-SSL/tree/76fcb281be92caf068c712dfb015e354f437260f) | 直接路径 IPD 估计与定位 | MIT stated in README; complete license text and third-party notices not established | 仅来源索引 |
@@ -205,3 +205,7 @@ HARK 不属于 Git 锁表的 84 项，另见 [ARCHIVE_SOURCES.lock.json](ARCHIVE
 | [iDeepPE](https://github.com/CSeIn/iDeepPE/tree/c2cdc26ddafd33bf3bda45640c06febef9092365) | 未建立明确代码许可；仅固定索引 | 不获取/训练/推理；模型和CHiME-4/DEMAND/VCTK数据许可分别核查 |
 
 SOF 的[审查程序](examples/audit_sof_tdfb_design.py)与[报告](reports/sof_tdfb_design_audit.json)读取未修改的固定源码，核对 normalized sinc 参数和 WNG 分母；数学反例是独立选择的标量/两频配置，没有执行官方 MATLAB 设计、生成 FIR 或运行固件。官网旧参数与固定版本默认值分别保存。其他外部方法的实际运行、提取调用、兼容性问题与尚未构建状态见[空间研究](research/01_spatial_and_tracking.md)，不能由75项源码核验通过推断75套算法已正确运行。
+
+### 第6章评测研究补充
+
+[EC-Evaluation-Toolbox](https://github.com/ifnspaml/EC-Evaluation-Toolbox/tree/aec8873325ed8e4d93eadc53e5c0af84be4db4fd) 固定版本用于追溯 AEC/AES 评测与动态房间响应研究。2026-09-28 检查根目录及所列源文件头，未找到明确源码再分发许可，因此仅登记来源；不下载模型或数据，不称为已完整运行。其模型入口还依赖仓库未附的 `speechlightning`。原方法调用与教学例的差异见 [AEC 源码研究](research/02_aec_wpe_separation.md#aec)。

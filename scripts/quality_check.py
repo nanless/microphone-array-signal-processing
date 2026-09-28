@@ -50,7 +50,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "03_array-geometry.md": 28,
     "04_doa-estimation.md": 40,
     "05_beamforming.md": 38,
-    "06_aec.md": 15,
+    "06_aec.md": 60,
     "08_speech-separation.md": 9,
     "09_source-tracking.md": 9,
     "10_engineering-practice.md": 13,
@@ -77,10 +77,10 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 119
-EXPECTED_SUBSECTION_COUNT = 256
-EXPECTED_OUTLINE_ITEM_COUNT = 389
+EXPECTED_SUBSECTION_COUNT = 301
+EXPECTED_OUTLINE_ITEM_COUNT = 434
 EXPECTED_FIGURE_NUMBERS = set(range(1, 42))
-# 研究附站使用独立显式清单，不挤占 14 篇教程或 389 项 PDF 大纲基线。
+# 研究附站使用独立显式清单，不挤占 14 篇教程或 434 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
     ("README.md", "index.html"),
@@ -1034,6 +1034,8 @@ def check_pdf(errors: list[str], notices: list[str]):
 
 
 EXPECTED_AUDIO_STEMS = {
+    "aec_dropout_target", "aec_dropout_microphone",
+    "aec_dropout_complete_reference_residual", "aec_dropout_missing_reference_residual",
     "gsc_reference", "gsc_array", "gsc_always_adapt", "gsc_gate_frozen",
     "doa_ambiguity_tone", "doa_ambiguity_broadband",
     "dma_calibration_array", "dma_calibration_target", "dma_calibration_mismatch", "dma_calibration_corrected",
@@ -1291,13 +1293,13 @@ def check_audio(errors):
         manifest = json.loads((root / "MANIFEST.json").read_text())
         records = manifest["files"]
         names = {stem + ".wav" for stem in EXPECTED_AUDIO_STEMS}
-        if len(records) != 86 or {r["file"] for r in records} != names:
-            fail(errors, "音频清单必须包含独立基线的 86 个 WAV")
+        if len(records) != 90 or {r["file"] for r in records} != names:
+            fail(errors, "音频清单必须包含独立基线的 90 个 WAV")
         if {p.name for p in root.glob("*.wav")} != names or {p.name for p in (SITE / "audio").glob("*.wav")} != names:
             fail(errors, "源音频或站点音频文件集合不符")
         if set(manifest["groups"]) != {"spatial", "aec", "aec_methods", "aec_subband", "wpe", "separation", "engineering", "tracking",
                                       "correlation", "polarity", "conditioning", "nonlinear", "fractional_array",
-                                      "spectral_subtraction", "clock_drift", "interpolation", "alignment_error", "room_decay", "dma_calibration", "doa_ambiguity", "gsc_gate"}:
+                                      "spectral_subtraction", "clock_drift", "interpolation", "alignment_error", "room_decay", "dma_calibration", "doa_ambiguity", "gsc_gate", "aec_dropout"}:
             fail(errors, "音频实验组不符")
         expected_inputs = {"codes/examples/generate_audio_samples.py", "codes/array_tutorial/audio_samples.py",
                            "codes/array_tutorial/aec.py", "codes/array_tutorial/aec_ipnlms.py",
@@ -1330,7 +1332,8 @@ def check_audio(errors):
                 raw = wav.readframes(frames)
             if record["sample_rate_hz"] != 16000 or record["duration_s"] != frames / 16000:
                 fail(errors, f"音频清单采样率或时长不符：{name}")
-            expected_group = ("gsc_gate" if name.startswith("gsc_") else
+            expected_group = ("aec_dropout" if name.startswith("aec_dropout_") else
+                              "gsc_gate" if name.startswith("gsc_") else
                               "doa_ambiguity" if name.startswith("doa_ambiguity_") else
                               "dma_calibration" if name.startswith("dma_calibration_") else
                               "room_decay" if name.startswith("room_decay_") else

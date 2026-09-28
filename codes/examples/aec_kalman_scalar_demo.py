@@ -1,4 +1,4 @@
-"""Run the single-bin scalar Kalman hand case in chapter 6, Eq. (6-9).
+"""Run the single-bin scalar Kalman hand case in chapter 6, the scalar Kalman equations.
 
 This deliberately excludes FFT block formation, partition coupling, variance
 estimation, double-talk detection, nonlinear echo and device timing. It is
@@ -12,6 +12,7 @@ Run ``python -m codes.examples.aec_kalman_scalar_demo`` from the repo root.
 from __future__ import annotations
 
 import json
+import math
 
 import numpy as np
 
@@ -28,6 +29,28 @@ def _finite_complex_scalar(value: object, name: str) -> complex:
     if not np.isfinite(converted):
         raise ValueError(f"{name} must be finite and representable as complex128")
     return converted
+
+
+def _product_ratio(first: float, second: float, divisor: float = 1.) -> float:
+    """Evaluate a*b/c without overflowing or underflowing the product first."""
+    if first == 0. or second == 0.:
+        return 0.
+    am, ae = math.frexp(first)
+    bm, be = math.frexp(second)
+    cm, ce = math.frexp(divisor)
+    return math.ldexp(am * bm / cm, ae + be - ce)
+
+
+def _squared_modulus_times(value: complex, variance: float) -> float:
+    # Multiplying one component by variance first can itself lose the answer;
+    # keep all three factors' exponents until the final conversion.
+    def component_squared(component):
+        if component == 0. or variance == 0.:
+            return 0.
+        cm, ce = math.frexp(component)
+        pm, pe = math.frexp(variance)
+        return math.ldexp(cm * cm * pm, 2 * ce + pe)
+    return component_squared(value.real) + component_squared(value.imag)
 
 
 def scalar_kalman_step(
@@ -63,14 +86,15 @@ def scalar_kalman_step(
         with np.errstate(over="raise", invalid="raise", divide="raise",
                          under="ignore"):
             prior_weight = a * w
-            prior_variance = abs(a) ** 2 * p + phi
+            prior_variance = _squared_modulus_times(a, p) + phi
             prior_error = d - x * prior_weight
-            denominator = abs(x) ** 2 * prior_variance + psi
-            gain = prior_variance * x.conjugate() / denominator
+            denominator = _squared_modulus_times(x, prior_variance) + psi
+            gain = complex(_product_ratio(prior_variance, x.real, denominator),
+                           -_product_ratio(prior_variance, x.imag, denominator))
             posterior_weight = prior_weight + gain * prior_error
             # Algebraically (1-KX)P^-; this positive form avoids subtracting
             # nearly equal floating-point numbers when observation noise is low.
-            posterior_variance = prior_variance * psi / denominator
+            posterior_variance = _product_ratio(prior_variance, psi, denominator)
             posterior_error = d - x * posterior_weight
     except (FloatingPointError, OverflowError) as error:
         raise ValueError("scalar Kalman intermediate exceeds float64 range") from error
@@ -118,7 +142,7 @@ def run_demo() -> dict:
         process_variance=0., reference=1j, observation=1.,
         observation_variance=1.)
     return {
-        "model": "one known-variance scalar frequency bin; equation (6-9), chapter 6",
+        "model": "one known-variance scalar frequency bin; scalar Kalman equations, chapter 6",
         "scope": "not complete FDKF/PBFDKF and not measured double talk",
         "display_decimal_places": 12,
         "chapter_inputs": {**common, "observation_variance": .4},

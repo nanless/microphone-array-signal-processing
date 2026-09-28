@@ -10,7 +10,7 @@
     "float_dtype": "float64"
   },
   "synthetic_signal": {
-    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband, spectral_subtraction, clock_drift, interpolation, alignment_error, room_decay, dma_calibration, doa_ambiguity and gsc_gate; see each group for noise and transforms",
+    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband, spectral_subtraction, clock_drift, interpolation, alignment_error, room_decay, dma_calibration, doa_ambiguity, gsc_gate and aec_dropout; see each group for noise and transforms",
     "duration_s": 2,
     "base_frequencies_hz": [
       173,
@@ -33,12 +33,12 @@
   "pcm": "signed little-endian 16-bit, round-to-nearest-even; no dither; no per-file normalization",
   "listening": "Start at low device volume. No automatic playback. No formal listening study performed.",
   "generator_inputs": {
-    "codes/examples/generate_audio_samples.py": "457387770064078d40b9d378b2f763fc82a2518645c18c3943abb5ca1751bfcb",
-    "codes/array_tutorial/audio_samples.py": "585a4cb9ecc53e11b0fc48995a810f18d9850a7def681edbd619298325e6b318",
+    "codes/examples/generate_audio_samples.py": "1b989109b4404fc7eec1048f4ba1981fb9571307fcd5389c281129da2c369863",
+    "codes/array_tutorial/audio_samples.py": "9b994486650ffcacb6f6fef26a61e802e85ca98bde1380dbfe898f4659ca3c61",
     "codes/array_tutorial/aec.py": "70d69fcd523cff3028162a221d71ea6bd2254979dfe37479ad26f77ab74a5a7e",
-    "codes/array_tutorial/aec_ipnlms.py": "86422a00df25293176e0bde8193c7e05ac7a1e5703660b56907024985978c0d4",
+    "codes/array_tutorial/aec_ipnlms.py": "320fccd7458b8abb0c65c6f5871beb015403776fc00c4d3a8df5aa3a9afaeab2",
     "codes/array_tutorial/aec_rls.py": "f13c2018297e46f0b393ef52e04fad5f1d48ede00de8b37a80a4abf597a9305d",
-    "codes/array_tutorial/aec_kalman_matrix.py": "9feedf2058d0aad0996565048988894cf63199719112f46700a43ba9d9bb97b6",
+    "codes/array_tutorial/aec_kalman_matrix.py": "cfd716054315f95370f4271d038682963dbb8f1c26a9b211091d81ad5c5fc1d3",
     "codes/array_tutorial/aec_subband.py": "1473556e8cda4908dbe19cbeb645960dbb636b3dd672ab61358007a3d29d43be",
     "codes/array_tutorial/gsc.py": "29995ed363ba2cf807059f146e075dea1aadef7ae21709cd62b9a3e9423b12f9",
     "codes/array_tutorial/noise_suppression.py": "b6eeeca35d3246585f42e0ee9ac9b028f9523fef3c224a07b98fa0383160cb3f",
@@ -48,6 +48,128 @@
     "codes/array_tutorial/geometry.py": "7e9c33e90101c41441cde659d288f0aa25be141e9cdbaaa9fcabee54b285f72a"
   },
   "groups": {
+    "aec_dropout": {
+      "parameters": {
+        "sample_rate_hz": 16000,
+        "samples": 32000,
+        "duration_seconds": 2,
+        "seed": 20261028,
+        "physical_playback": "uniform noise in [-0.18,0.18] plus 310 Hz sine amplitude 0.08, continuously present during reference loss",
+        "near_target_frequencies_hz": [
+          220,
+          330,
+          660
+        ],
+        "near_target_amplitudes": [
+          0.12,
+          0.08,
+          0.04
+        ],
+        "phase_radians": 0,
+        "fade_samples_each_end": 320,
+        "fade": "squared sine from 0 to pi/2, endpoint included; reverse at end",
+        "microphone_model": "known causal FIR echo plus synthetic near-end harmonic target; no noise or measured room",
+        "path_nonzero_samples": [
+          0,
+          80,
+          240
+        ],
+        "path_values": [
+          0.7,
+          -0.3,
+          0.15
+        ],
+        "filter_length": 256,
+        "algorithm": "NLMSState prior residual, oracle initial weights equal true path; frozen on all samples",
+        "algorithm_reference_loss_interval_samples": [
+          12000,
+          16000
+        ],
+        "interval_convention": "half-open; missing algorithm reference is replaced with zeros, physical playback is unchanged",
+        "first_fully_recovered_output_sample": 16240,
+        "alignment": "same sample origin, zero algorithm delay; no fitted gain or delay",
+        "analytic_missing_reference_error": "convolution(physical_reference-available_reference, path), truncated to 32000 samples",
+        "analytic_identity_max_abs_error": 8.326672684688674e-17,
+        "score_windows_samples": {
+          "missing_reference": [
+            12000,
+            16000
+          ],
+          "history_tail": [
+            16000,
+            16240
+          ],
+          "recovered": [
+            16240,
+            30000
+          ]
+        },
+        "float_truth_scores": {
+          "complete_reference_residual": {
+            "missing_reference": {
+              "relative_squared_reference_error": 1.7688955976424826e-32,
+              "error_rms": 1.4075379459750167e-17
+            },
+            "history_tail": {
+              "relative_squared_reference_error": 1.421543654807043e-32,
+              "error_rms": 1.2081902790978395e-17
+            },
+            "recovered": {
+              "relative_squared_reference_error": 1.7138613630244178e-32,
+              "error_rms": 1.3871110143490216e-17
+            }
+          },
+          "missing_reference_residual": {
+            "missing_reference": {
+              "relative_squared_reference_error": 0.773952992999112,
+              "error_rms": 0.09310356342047282
+            },
+            "history_tail": {
+              "relative_squared_reference_error": 0.06483212747891486,
+              "error_rms": 0.025801821903928913
+            },
+            "recovered": {
+              "relative_squared_reference_error": 1.7138613630244178e-32,
+              "error_rms": 1.3871110143490216e-17
+            }
+          }
+        },
+        "pcm_to_pcm_reference_scores": {
+          "complete_reference_residual": {
+            "missing_reference": {
+              "relative_squared_reference_error": 0.0,
+              "error_rms": 0.0
+            },
+            "history_tail": {
+              "relative_squared_reference_error": 0.0,
+              "error_rms": 0.0
+            },
+            "recovered": {
+              "relative_squared_reference_error": 0.0,
+              "error_rms": 0.0
+            }
+          },
+          "missing_reference_residual": {
+            "missing_reference": {
+              "relative_squared_reference_error": 0.7739527696224056,
+              "error_rms": 0.09310332820269043
+            },
+            "history_tail": {
+              "relative_squared_reference_error": 0.0648305784755329,
+              "error_rms": 0.025801627969191925
+            },
+            "recovered": {
+              "relative_squared_reference_error": 0.0,
+              "error_rms": 0.0
+            }
+          }
+        },
+        "metric": "sum((output-target)^2)/sum(target^2), using each declared interval; not ERLE, SNR or intelligibility",
+        "statistics": "one fixed-seed mathematical fixture, no repeated-trial or listening study"
+      },
+      "limits": "Four mono files share export gain 1. Ideal path knowledge excludes identification error. Missing reference contaminates delayed taps for 240 more samples after transport resumes. Float analytic checks and PCM-to-PCM scores are separate; no third-party recording.",
+      "common_export_gain": 1.0
+    },
     "gsc_gate": {
       "parameters": {
         "sample_rate_hz": 16000,
@@ -1321,6 +1443,58 @@
     }
   },
   "files": [
+    {
+      "file": "aec_dropout_target.wav",
+      "sha256": "a28e2df59d1c1bd5793e09ba9dccaced86c61f8bcb5d2aca28217669b5a4db8c",
+      "group": "aec_dropout",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.189208984375,
+      "rms": 0.1051704398408704,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5250031052044255e-05
+    },
+    {
+      "file": "aec_dropout_microphone.wav",
+      "sha256": "99ad0026c70b13320653ca68097f152a754e14e54ba83f3f87879db5dc9415d2",
+      "group": "aec_dropout",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.459564208984375,
+      "rms": 0.1407096981982216,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.525812723221498e-05
+    },
+    {
+      "file": "aec_dropout_complete_reference_residual.wav",
+      "sha256": "a28e2df59d1c1bd5793e09ba9dccaced86c61f8bcb5d2aca28217669b5a4db8c",
+      "group": "aec_dropout",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.189208984375,
+      "rms": 0.1051704398408704,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5250031052044255e-05
+    },
+    {
+      "file": "aec_dropout_missing_reference_residual.wav",
+      "sha256": "8feec889d38a791c66f6b168e2e765c0b9a9ee9ab2f9c3e8216b2c132ca99bae",
+      "group": "aec_dropout",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.41888427734375,
+      "rms": 0.11027393836669001,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5256751365211318e-05
+    },
     {
       "file": "gsc_reference.wav",
       "sha256": "6ccabee9b87c17f358b523729aca9035d3d99bda5178d28beedd7b0d438c2bc9",

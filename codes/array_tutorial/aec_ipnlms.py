@@ -13,6 +13,27 @@ import numpy as np
 from .conventions import finite_real_array, finite_real_scalar
 
 
+def _tap_gains(weights: np.ndarray, kappa: float, gain_floor: float) -> np.ndarray:
+    """Keep ordinary arithmetic unchanged; scale only unsafe large norms."""
+    magnitude = np.abs(weights)
+    scale = float(np.max(magnitude))
+    uniform = (1.0 - kappa) / (2.0 * weights.size)
+    if scale == 0.0:
+        return np.full(weights.size, uniform)
+    # This bound protects the sum, twice that sum, and the proportional
+    # numerator. Preserve the original normal-range path and existing PCM.
+    safe = np.finfo(float).max / (4.0 * weights.size)
+    if scale <= safe and gain_floor <= np.finfo(float).max / 2:
+        norm = float(np.sum(magnitude))
+        return uniform + (1.0 + kappa) * magnitude / (2.0 * norm + gain_floor)
+    # Dividing by max(scale, floor) bounds both terms without losing a
+    # representable ratio when 2*sum(abs(weights)) would overflow.
+    divisor = max(scale, gain_floor)
+    scaled = magnitude / divisor
+    denominator = 2.0 * float(np.sum(scaled)) + gain_floor / divisor
+    return uniform + (1.0 + kappa) * scaled / denominator
+
+
 class IPNLMSState:
     """Keep FIR taps and the preceding ``L-1`` reference samples.
 
@@ -84,22 +105,9 @@ class IPNLMSState:
         self._history = self._initial_history.copy()
 
     def tap_gains(self) -> np.ndarray:
-        """Return current nonnegative diagonal gains of equation (6-4)."""
+        """Return current nonnegative diagonal gains of the IPNLMS diagonal-allocation equation."""
 
-        try:
-            with np.errstate(over="raise", invalid="raise", divide="raise"):
-                magnitude = np.abs(self._weights)
-                norm = float(np.sum(magnitude))
-                if not np.isfinite(norm):
-                    raise ValueError("IPNLMS coefficient norm exceeds float64 range")
-                gains = ((1.0 - self.kappa) / (2.0 * self.filter_length)
-                         + (1.0 + self.kappa) * magnitude
-                         / (2.0 * norm + self.gain_floor))
-        except FloatingPointError as exc:
-            raise ValueError("IPNLMS gain computation exceeds float64 range") from exc
-        if not np.all(np.isfinite(gains)):
-            raise ValueError("IPNLMS gains are not finite")
-        return gains
+        return _tap_gains(self._weights, self.kappa, self.gain_floor)
 
     def process(
         self,
@@ -138,13 +146,7 @@ class IPNLMSState:
                     prediction = float(weights @ u)
                     error = float(d[n] - prediction)
                     if not frozen[n] and self.step_size and np.any(u):
-                        magnitude = np.abs(weights)
-                        norm = float(np.sum(magnitude))
-                        if not np.isfinite(norm):
-                            raise ValueError("IPNLMS coefficient norm exceeds float64 range")
-                        gains = ((1.0 - self.kappa) / (2.0 * length)
-                                 + (1.0 + self.kappa) * magnitude
-                                 / (2.0 * norm + self.gain_floor))
+                        gains = _tap_gains(weights, self.kappa, self.gain_floor)
                         denominator = float(u @ (gains * u) + self.denominator_floor)
                         if not (np.all(np.isfinite(gains))
                                 and np.isfinite(denominator) and denominator > 0.0):

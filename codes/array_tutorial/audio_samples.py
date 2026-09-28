@@ -13,7 +13,7 @@ import wave
 import numpy as np
 
 from .gsc import ScalarGSCNLMS
-from .aec import nlms
+from .aec import NLMSState, nlms
 from .aec_ipnlms import ipnlms
 from .aec_rls import rls
 from .aec_kalman_matrix import KalmanAECState
@@ -520,8 +520,86 @@ def gsc_gate_case() -> dict:
                   'The target-only score is reference error, not SNR, denoising quality or speech intelligibility.'}
 
 
+def aec_dropout_case() -> dict:
+    """Known-path AEC isolates a missing ALGORITHM reference, not stopped playback.
+
+    All coefficients are oracle-initialized and frozen. This is a diagnostic
+    of reference transport and FIR history, not adaptation or a measured room.
+    """
+    count = 2 * SAMPLE_RATE
+    n = np.arange(count)
+    t = n / SAMPLE_RATE
+    fade_samples = 320
+    fade = np.ones(count)
+    fade[:fade_samples] = np.sin(np.linspace(0, np.pi/2, fade_samples))**2
+    fade[-fade_samples:] = fade[:fade_samples][::-1]
+    rng = np.random.default_rng(SEED + 106)
+    physical_reference = (rng.uniform(-.18, .18, count)
+                          + .08*np.sin(2*np.pi*310*t)) * fade
+    target = (.12*np.sin(2*np.pi*220*t) + .08*np.sin(2*np.pi*330*t)
+              + .04*np.sin(2*np.pi*660*t)) * fade
+    path = np.zeros(256)
+    path[[0, 80, 240]] = [.7, -.3, .15]
+    echo = np.convolve(physical_reference, path)[:count]
+    microphone = target + echo
+    available = physical_reference.copy()
+    start, stop, recovered = 12000, 16000, 16240
+    available[start:stop] = 0.
+    outputs = {}
+    for label, reference in [('complete_reference_residual', physical_reference),
+                             ('missing_reference_residual', available)]:
+        state = NLMSState(256, initial_weights=path)
+        outputs[label], _ = state.process(reference, microphone, freeze=np.ones(count, bool))
+        if not np.array_equal(state.weights, path):
+            raise AssertionError('oracle-frozen path was changed')
+    analytic_missing_echo = np.convolve(physical_reference - available, path)[:count]
+    signals = {'aec_dropout_target': target, 'aec_dropout_microphone': microphone,
+               **{'aec_dropout_' + name: value for name, value in outputs.items()}}
+    if max(float(np.max(np.abs(x))) for x in signals.values()) >= .8:
+        raise ValueError('reference-dropout fixture requires common export gain 1')
+    decoded = {name: read_pcm16(pcm16_bytes(value))[1][0] for name, value in signals.items()}
+    windows = {'missing_reference': [start, stop], 'history_tail': [stop, recovered],
+               'recovered': [recovered, 30000]}
+
+    def scores(out, truth):
+        results = {}
+        for name, (first, last) in windows.items():
+            error = out[first:last] - truth[first:last]
+            denominator = float(truth[first:last] @ truth[first:last])
+            results[name] = {'relative_squared_reference_error': float(error @ error / denominator),
+                             'error_rms': float(np.sqrt(np.mean(error**2)))}
+        return results
+
+    floating = {name: scores(value, target) for name, value in outputs.items()}
+    pcm = {name: scores(decoded['aec_dropout_' + name], decoded['aec_dropout_target'])
+           for name in outputs}
+    return {'signals': signals, 'parameters': {
+        'sample_rate_hz': SAMPLE_RATE, 'samples': count, 'duration_seconds': 2,
+        'seed': SEED + 106,
+        'physical_playback': 'uniform noise in [-0.18,0.18] plus 310 Hz sine amplitude 0.08, continuously present during reference loss',
+        'near_target_frequencies_hz': [220, 330, 660], 'near_target_amplitudes': [.12, .08, .04],
+        'phase_radians': 0, 'fade_samples_each_end': fade_samples,
+        'fade': 'squared sine from 0 to pi/2, endpoint included; reverse at end',
+        'microphone_model': 'known causal FIR echo plus synthetic near-end harmonic target; no noise or measured room',
+        'path_nonzero_samples': [0, 80, 240], 'path_values': [.7, -.3, .15],
+        'filter_length': 256, 'algorithm': 'NLMSState prior residual, oracle initial weights equal true path; frozen on all samples',
+        'algorithm_reference_loss_interval_samples': [start, stop],
+        'interval_convention': 'half-open; missing algorithm reference is replaced with zeros, physical playback is unchanged',
+        'first_fully_recovered_output_sample': recovered,
+        'alignment': 'same sample origin, zero algorithm delay; no fitted gain or delay',
+        'analytic_missing_reference_error': 'convolution(physical_reference-available_reference, path), truncated to 32000 samples',
+        'analytic_identity_max_abs_error': float(np.max(np.abs(outputs['missing_reference_residual'] - target - analytic_missing_echo))),
+        'score_windows_samples': windows, 'float_truth_scores': floating,
+        'pcm_to_pcm_reference_scores': pcm,
+        'metric': 'sum((output-target)^2)/sum(target^2), using each declared interval; not ERLE, SNR or intelligibility',
+        'statistics': 'one fixed-seed mathematical fixture, no repeated-trial or listening study'},
+        'limits': 'Four mono files share export gain 1. Ideal path knowledge excludes identification error. '
+                  'Missing reference contaminates delayed taps for 240 more samples after transport resumes. '
+                  'Float analytic checks and PCM-to-PCM scores are separate; no third-party recording.'}
+
+
 def build_cases() -> dict:
-    """Return twenty-one experiments with model parameters and references.
+    """Return twenty-two experiments with model parameters and references.
 
     Each entry has ``signals`` (filename stem -> CxN array), ``parameters`` and
     ``limits``. Signals are pre-export floats; no group uses peak matching.
@@ -654,6 +732,7 @@ def build_cases() -> dict:
     subtraction_zero_audio = istft(subtraction_zero[None], n_fft=512, hop_length=128,
                                    length=t.size)[0]
     return {
+        'aec_dropout': aec_dropout_case(),
         'gsc_gate': gsc_gate_case(),
         'doa_ambiguity': doa_ambiguity_case(),
         'dma_calibration': dma_calibration_case(),

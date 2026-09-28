@@ -1,7 +1,7 @@
 """Minimal partitioned-block frequency-domain adaptive echo canceller.
 
 This is a real-valued, mono, block-synchronous teaching implementation of the
-instantaneous-power candidate update in chapter 6, Eq. (6-3). It is not
+instantaneous-power candidate update in chapter 6, Eq. (6-5). It is not
 SpeexDSP's AUMDF, WebRTC AEC3, a double-talk detector, or a real-time device
 interface. Input calls contain whole ``block_length``-sample blocks; ``freeze``
 is one externally supplied boolean decision per block.

@@ -1,4 +1,4 @@
-"""Fraction-oracle and boundary tests for the scalar Eq. (6-9) teaching case."""
+"""Fraction-oracle and boundary tests for the scalar Kalman teaching case."""
 
 from fractions import Fraction
 import json
