@@ -36,7 +36,7 @@ def generate(destination: Path, check: bool = False) -> dict:
     manifest = {'schema_version': 1, 'seed': SEED, 'origin': 'original deterministic mathematical synthesis',
                 'environment': {'python': platform.python_version(), 'numpy': np.__version__,
                                 'system': platform.system(), 'machine': platform.machine(), 'float_dtype': 'float64'},
-                'synthetic_signal': {'applies_to': '173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband, spectral_subtraction, clock_drift, interpolation, alignment_error, room_decay, dma_calibration, doa_ambiguity, gsc_gate, aec_dropout, wpe_predictable, css_overlap and agc_blocks; see each group for noise and transforms',
+                'synthetic_signal': {'applies_to': '173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband, spectral_subtraction, clock_drift, interpolation, alignment_error, room_decay, dma_calibration, doa_ambiguity, gsc_gate, aec_dropout, wpe_predictable, css_overlap, agc_blocks and selection_tradeoff; see each group for noise and transforms',
                                      'duration_s': 2, 'base_frequencies_hz': [173, 293],
                                      'harmonic_numbers': [1, 2, 3, 4, 5, 6], 'harmonic_amplitude': '1/(4*k)',
                                      'envelope': '0.3+0.7*sin(2*pi*2*t)^2', 'fade_duration_s': .02,

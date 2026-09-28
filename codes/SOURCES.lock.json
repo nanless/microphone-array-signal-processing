@@ -278,15 +278,55 @@
       "license": "MIT",
       "fetch_enabled": true,
       "scope": "cpWER, ORC-WER, MIMO-WER and DI-cpWER meeting evaluation",
-      "note": "Input transcripts and challenge datasets retain their own terms. 2026-09-22 pinned local algorithm documentation and scoring entrypoints checked.",
+      "note": "Input transcripts and challenge datasets retain their own terms. Pinned source/doc inspected 2026-09-28: cpWER requires global speaker-grouped streams, while ORC-WER allows reference utterance redistribution; a reused CSS output slot is not automatically a permanent speaker identity. The real installed scoring interface was not runnable without its compiled edit-distance dependency; controlled extracted-method probes are recorded separately.",
       "acquisition": "independent_source_checkout",
       "entrypoints": [
         "doc/algorithms.md",
         "meeteval/wer/wer/cp.py",
         "meeteval/wer/wer/orc.py",
         "meeteval/wer/wer/time_constrained.py",
-        "meeteval/wer/preprocess.py"
+        "meeteval/wer/preprocess.py",
+        "meeteval/wer/wer/mimo.py",
+        "meeteval/wer/wer/di_cp.py",
+        "meeteval/wer/wer/siso.py",
+        "meeteval/wer/wer/utils.py",
+        "meeteval/wer/wer/error_rate.py",
+        "meeteval/io/seglst.py",
+        "meeteval/wer/matching/levenshtein.h",
+        "setup.py"
       ]
+    },
+    {
+      "id": "kaldialign",
+      "url": "https://github.com/pzelasko/kaldialign.git",
+      "revision": "06ac40f03c3d368932adf8536965a088d54189b1",
+      "release": "0.12.0",
+      "license": "Apache-2.0",
+      "fetch_enabled": true,
+      "scope": "compiled edit-distance alignment dependency used by pinned MeetEval scoring paths; source and interface study only",
+      "acquisition": "independent_source_checkout",
+      "source_paths": [
+        "LICENSE",
+        "README.md",
+        "CMakeLists.txt",
+        "pyproject.toml",
+        "setup.py",
+        "MANIFEST.in",
+        "cmake/",
+        "extensions/",
+        "kaldialign/",
+        "tests/"
+      ],
+      "entrypoints": [
+        "LICENSE",
+        "README.md",
+        "CMakeLists.txt",
+        "extensions/kaldi_align.cpp",
+        "extensions/kaldi_align.h",
+        "extensions/kaldialign.cpp",
+        "kaldialign/__init__.py"
+      ],
+      "note": "Author-maintained Python/C++ alignment package derived from Kaldi. Fixed Git source only: requires a separate pybind11 build dependency (at least 3.0.4 per fixed CMake); no build, binary package, transcription data, or end-to-end MeetEval run is implied. Check upstream notices and pybind11 terms before compiling or redistribution."
     },
     {
       "id": "filterpy",
@@ -697,9 +737,11 @@
       "license": "MIT",
       "scope": "CHiME-8 DASR 数据清单、文本规范化和会议评分",
       "fetch_enabled": true,
-      "note": "2026-09-22 挑战赛官方仓库、README Scoring、MIT 与 git ls-remote 已核实；数据生成命令会另行下载语料，源码获取时不执行；cpWER/tcpWER、缺场景策略及评测范围必须绑定该届任务。",
+      "note": "2026-09-28 pinned source inspected: challenge-scoring missing-file branch and text-normalization idempotence guard require explicit validation; see controlled source audit. Data-preparation commands download corpora and are not executed; cpWER/tcpWER, missing-session handling and evaluation scope bind to this challenge edition.",
       "entrypoints": [
         "chime_utils",
+        "chime_utils/scoring/meeteval.py",
+        "chime_utils/text_norm",
         "tests/test_normalizer.py",
         "README.md",
         "DATAPREP.md"

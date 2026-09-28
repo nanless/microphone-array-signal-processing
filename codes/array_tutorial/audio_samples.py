@@ -793,8 +793,85 @@ def agc_blocks_case() -> dict:
                       'RMS ratios compare level, not SNR or perceived quality; no listening test claimed.'}
 
 
+def selection_tradeoff_case() -> dict:
+    """Fixed causal FIRs: lower noise need not preserve the designed target.
+
+    No ASR, speech, room, sensor model or listening evaluation. The exported
+    samples retain the one- and four-sample group delays; only scoring aligns references.
+    """
+    t = np.arange(2 * SAMPLE_RATE) / SAMPLE_RATE
+    fade = np.minimum(np.clip(t / .02, 0, 1), np.clip((2 - t) / .02, 0, 1))
+    clean = .2 * (np.cos(2*np.pi*500*t) + np.cos(2*np.pi*1500*t)) * fade
+    noise = .2 * np.cos(2*np.pi*3500*t) * fade
+    mixture = clean + noise
+    signals = {'selection_clean': clean[None, :], 'selection_mixture': mixture[None, :]}
+    filters, analytic = {}, {}
+    frequencies = [500, 1500, 3500]
+    for length in (3, 9):
+        taps = np.ones(length) / length
+        response_500 = abs(taps @ np.exp(-2j*np.pi*500*np.arange(length)/SAMPLE_RATE))
+        taps /= response_500
+        delay = (length-1)//2
+        name = f'selection_fir{length}'
+        signals[name] = np.convolve(mixture, taps)[:len(t)][None, :]
+        gains = {str(f): float(abs(taps @ np.exp(-2j*np.pi*f*np.arange(length)/SAMPLE_RATE)))
+                 for f in frequencies}
+        filters[name] = {'taps': taps.tolist(), 'group_delay_samples': delay,
+                         'group_delay_ms': delay / SAMPLE_RATE * 1000,
+                         'score_output_samples_half_open': [1600+delay, 30400+delay]}
+        analytic[name] = {'amplitude_response': gains,
+                         'noise_attenuation_db': -20*float(np.log10(gains['3500']))}
+
+    def analyze(values):
+        def amplitudes(waveform, start, stop):
+            time = np.arange(start, stop) / SAMPLE_RATE
+            columns = [np.ones(stop-start)]
+            for frequency in frequencies:
+                columns.extend([np.cos(2*np.pi*frequency*time), np.sin(2*np.pi*frequency*time)])
+            coefficients = np.linalg.lstsq(np.column_stack(columns), waveform[start:stop], rcond=None)[0]
+            return {str(f): float(np.hypot(coefficients[1+2*i], coefficients[2+2*i]))
+                    for i, f in enumerate(frequencies)}
+        clean_values = values['selection_clean'][0]
+        clean_amplitudes = amplitudes(clean_values, 1600, 30400)
+        mixture_amplitudes = amplitudes(values['selection_mixture'][0], 1600, 30400)
+        result = {}
+        for name, config in filters.items():
+            start, stop = config['score_output_samples_half_open']
+            output = values[name][0]
+            fitted = amplitudes(output, start, stop)
+            # Reference is the same data domain (float or PCM), with known delay.
+            reference = clean_values[1600:30400]
+            nmse = float(np.sum((output[start:stop]-reference)**2) / np.sum(reference**2))
+            result[name] = {'fitted_amplitudes': fitted,
+                'target_500_retention': fitted['500'] / clean_amplitudes['500'],
+                'target_1500_retention': fitted['1500'] / clean_amplitudes['1500'],
+                'noise_3500_retention': fitted['3500'] / mixture_amplitudes['3500'],
+                'noise_attenuation_db': -20*float(np.log10(fitted['3500'] / mixture_amplitudes['3500'])),
+                'aligned_total_nmse': nmse, 'aligned_total_nmse_db': 10*float(np.log10(nmse))}
+        return {'clean_fitted_amplitudes': clean_amplitudes, 'mixture_fitted_amplitudes': mixture_amplitudes,
+                'candidates': result}
+
+    gain = .8
+    pcm = {name: read_pcm16(pcm16_bytes(value * gain))[1] for name, value in signals.items()}
+    return {'signals': signals, 'export_gain_override': gain,
+            'parameters': {'sample_rate_hz': SAMPLE_RATE, 'duration_s': 2., 'samples': len(t),
+                'target_frequencies_hz': [500, 1500], 'noise_frequency_hz': 3500,
+                'component_amplitude': .2, 'fade_s': .02, 'fade': 'linear min(t/.02,(2-t)/.02,1)',
+                'seed': None, 'filters': filters, 'score_source_samples_half_open': [1600, 30400],
+                'coefficient_rule': 'equal taps divided by their magnitude response at 500 Hz',
+                'convolution': 'causal linear convolution, zero initial history, retain first 32000 samples',
+                'pcm_fit': 'joint least squares: DC plus cos/sin at 500,1500,3500 Hz; fit magnitudes',
+                'nmse': 'output vs same-domain clean delayed by known FIR group delay; no gain fitting'},
+            'analytic_response': analytic, 'float_analysis': analyze(signals), 'pcm_analysis': analyze(pcm),
+            'limits': 'Mathematical three-tone mixture, not speech, ASR or perceived quality. '
+                      'Both filters process the same mixture; separated components are not provided to them. '
+                      'Frequency-specific scoring exploits known distinct tones and does not generalize to overlapping speech/noise. '
+                      'No per-file normalization, no human listening test. Causal audio retains group delay; '
+                      'steady scoring omits fade/startup and truncated end tails.'}
+
+
 def build_cases() -> dict:
-    """Return twenty-five experiments with model parameters and references.
+    """Return twenty-six experiments with model parameters and references.
 
     Each entry has ``signals`` (filename stem -> CxN array), ``parameters`` and
     ``limits``. Signals are pre-export floats; no group uses peak matching.
@@ -930,6 +1007,7 @@ def build_cases() -> dict:
         'wpe_predictable': wpe_predictable_case(),
         'css_overlap': css_overlap_case(),
         'agc_blocks': agc_blocks_case(),
+        'selection_tradeoff': selection_tradeoff_case(),
         'aec_dropout': aec_dropout_case(),
         'gsc_gate': gsc_gate_case(),
         'doa_ambiguity': doa_ambiguity_case(),

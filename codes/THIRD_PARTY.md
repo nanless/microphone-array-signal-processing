@@ -1,6 +1,6 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 92 个 Git 上游项目；已在 `codes/upstream/_downloads/` 取得 80 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。2026-09-28 离线核验 79 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 12 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 93 个 Git 上游项目；已在 `codes/upstream/_downloads/` 取得 81 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。2026-09-28 离线核验 80 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 12 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”只说明来源、提交、工作区状态和指定入口符合清单，不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -41,6 +41,7 @@ SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构�
 | [torchaudio](https://github.com/pytorch/audio/tree/b85c99ccac635a06b1afaf5284bf4c1a00c1f9b5) | SoudenMVDR 教程与多通道接口 | BSD-2-Clause | 已取得独立源码 |
 | [piva](https://github.com/fakufaku/piva/tree/7fa273e9aa597aba57067aef2e7b6c999dadef26) | AuxIVA、OverIVA、FIVE 与更新规则 | GPL-3.0 | 已取得独立源码 |
 | [meeteval](https://github.com/fgnt/meeteval/tree/6e3dc81284f2d6928f7ef9e620fd3b6906daa429) | 说话人、排列及时间约束的会议评分 | MIT | 已取得独立源码 |
+| [kaldialign](https://github.com/pzelasko/kaldialign/tree/06ac40f03c3d368932adf8536965a088d54189b1) | MeetEval相关编辑距离路径的Python/C++编译依赖；源自Kaldi对齐代码 | Apache-2.0；构建还需另核pybind11依赖及其条款 | 已取得源码选集并核验提交/范围；未构建、安装或运行评分接口 |
 | [filterpy](https://github.com/rlabbe/filterpy/tree/3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33) | KF、EKF、UKF、IMM 与重采样 | MIT | 已取得独立源码 |
 | [stonesoup](https://github.com/dstl/Stone-Soup/tree/8d1edeb07ef8505ed065cbef435cfb5e517d9bdc) | 多目标关联、点过程与 OSPA | MIT | 已取得独立源码 |
 | [s4m](https://github.com/JusperLee/S4M/tree/4990b3fe9d7391e59d652c5a7d2803d1354fd0ae) | 状态空间分离模型；不是完整训练配方 | MIT | 已取得独立源码 |
@@ -244,5 +245,5 @@ PRA的AuxIVA、ILRMA、FastMNMF/FastMNMF2、TRINICON，ssspy的回投影，以�
 Vo归档SHA-256为`fb22c9edecb56049b7f8ede1e1522384f0c4e6bfb5e5577f3bd482f6367ef46a`。
 配套descriptor是作者下载页的固定快照，摘要为`a4903db625b19ed77c69b495b9655257bd3b1e7ebd3fe5d27bfcec52ef6d2984`；
 这两个值均为本次取得后本地计算，不是作者公布的独立校验值或数字签名。
-[归档锁表](ARCHIVE_SOURCES.lock.json)现有HARK与Vo两项，与92个Git项目分开计数。
+[归档锁表](ARCHIVE_SOURCES.lock.json)现有HARK与Vo两项，与93个Git项目分开计数。
 完整压缩包仍在忽略缓存中，包含未选取资产；只有选定工作树排除了二进制、图和数据。缓存及源码工作树不随本书提交推送。

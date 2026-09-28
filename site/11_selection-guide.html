@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 11 章 · 总结与选型指南 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="7749ebf86197"><style>
+<meta name="source-digest" content="2b88c454f9ab"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -67,21 +67,39 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="11_selection-guide.html#sec-u-ecf5494b60">11. 总结与选型指南</a></li>
 <li><a href="11_selection-guide.html#sec-11-1">11.1 先回答六个问题</a></li>
 <li><a href="11_selection-guide.html#sec-11-2">11.2 按条件选择模块</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-b1c49f9bf3">方法类别与启用条件</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-d96611f1d8">多人内容与身份的评分口径</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-991366ae59">四词手算：两条流在第二段交换</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-1ad6ffa9bb">输出槽位与目标条件</a></li>
 <li><a href="11_selection-guide.html#sec-11-3">11.3 几何与算法要一起选</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-d12e9fbcdd">平面镜像为什么不能靠换算法消除</a></li>
 <li><a href="11_selection-guide.html#sec-11-4">11.4 四个场景怎样推导方案</a></li>
 <li><a href="11_selection-guide.html#sec-11-5">11.5 把候选方案写成可验证的规格</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-11-5-1">11.5.1 先写规格和证据口径</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-11-5-2">11.5.2 完整决策例：未知参会者的连续转写</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-01def5a266">硬约束要区分通过、失败与证据不足</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-2b5c122169">合格候选之间仍可能没有唯一最好方案</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-d142131458">固定评测组成，并检查模块之间的相互作用</a></li>
 <li><a href="11_selection-guide.html#sec-11-6">11.6 练习</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-b322947d6d">题 1：带播放的周向语音终端（E11-05）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-7b9a84ce60">题 2：多人会议（E11-06）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-a3b87b0c99">题 3：跨时钟车载阵列（E11-07）</a></li>
-<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-65c140a10b">题 4：把空间带宽、同步与延迟放进同一张选型表</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-1cf1ad108e">题 4：把空间带宽、同步与延迟放进同一张选型表（E11-01）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-b2f4d38876">题 5：评分覆盖与电池预算（E11-02）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-994102bab0">题 6：平均文件分数与合并计数（E11-03）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-67b9b2107f">题 7：p99 为什么还需要注明计算方法（E11-04）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-7ef9cfea65">题 8：零次失败能证明多低的风险（E11-08）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-5f467b9f7e">题 9：平均错误减少，配对证据足够吗（E11-09）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-adfeb2996b">题 10：硬约束之后，哪个候选更好（E11-10）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-3a9768c82a">题 11：每个场景都较好，为何总分反而较差（E11-11）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-ae2f22fb83">题 12：评分失败后，完整均值还可能是多少（E11-12）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-5d36e206d1">题 13：三个场景分别通过，能否同时作出同样声明（E11-13）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-da9377b819">题 14：阈值附近应保留第三种状态（E11-14）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-fb5daa9144">题 15：单模块都变差，组合为何可能变好（E11-15）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-5582b2e9a6">题 16：三位说话人复用两个输出槽（E11-16）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-961e1e4deb">题 17：唤醒阈值必须同时看漏检与误触发（E11-17）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-f1051be709">题 18：把残余对齐误差也放进SRO预算（E11-18）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-7c1e653813">题 19：噪声压得更多，为何总误差反而更大（E11-19）</a></li>
 <li><a href="11_selection-guide.html#sec-11-7">11.7 后续阅读</a></li>
 </ul>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
@@ -92,21 +110,39 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="11_selection-guide.html#sec-u-ecf5494b60">11. 总结与选型指南</a></li>
 <li><a href="11_selection-guide.html#sec-11-1">11.1 先回答六个问题</a></li>
 <li><a href="11_selection-guide.html#sec-11-2">11.2 按条件选择模块</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-b1c49f9bf3">方法类别与启用条件</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-d96611f1d8">多人内容与身份的评分口径</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-991366ae59">四词手算：两条流在第二段交换</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-1ad6ffa9bb">输出槽位与目标条件</a></li>
 <li><a href="11_selection-guide.html#sec-11-3">11.3 几何与算法要一起选</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-d12e9fbcdd">平面镜像为什么不能靠换算法消除</a></li>
 <li><a href="11_selection-guide.html#sec-11-4">11.4 四个场景怎样推导方案</a></li>
 <li><a href="11_selection-guide.html#sec-11-5">11.5 把候选方案写成可验证的规格</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-11-5-1">11.5.1 先写规格和证据口径</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-11-5-2">11.5.2 完整决策例：未知参会者的连续转写</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-01def5a266">硬约束要区分通过、失败与证据不足</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-2b5c122169">合格候选之间仍可能没有唯一最好方案</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-d142131458">固定评测组成，并检查模块之间的相互作用</a></li>
 <li><a href="11_selection-guide.html#sec-11-6">11.6 练习</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-b322947d6d">题 1：带播放的周向语音终端（E11-05）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-7b9a84ce60">题 2：多人会议（E11-06）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-a3b87b0c99">题 3：跨时钟车载阵列（E11-07）</a></li>
-<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-65c140a10b">题 4：把空间带宽、同步与延迟放进同一张选型表</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-1cf1ad108e">题 4：把空间带宽、同步与延迟放进同一张选型表（E11-01）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-b2f4d38876">题 5：评分覆盖与电池预算（E11-02）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-994102bab0">题 6：平均文件分数与合并计数（E11-03）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-67b9b2107f">题 7：p99 为什么还需要注明计算方法（E11-04）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-7ef9cfea65">题 8：零次失败能证明多低的风险（E11-08）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-5f467b9f7e">题 9：平均错误减少，配对证据足够吗（E11-09）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-adfeb2996b">题 10：硬约束之后，哪个候选更好（E11-10）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-3a9768c82a">题 11：每个场景都较好，为何总分反而较差（E11-11）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-ae2f22fb83">题 12：评分失败后，完整均值还可能是多少（E11-12）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-5d36e206d1">题 13：三个场景分别通过，能否同时作出同样声明（E11-13）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-da9377b819">题 14：阈值附近应保留第三种状态（E11-14）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-fb5daa9144">题 15：单模块都变差，组合为何可能变好（E11-15）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-5582b2e9a6">题 16：三位说话人复用两个输出槽（E11-16）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-961e1e4deb">题 17：唤醒阈值必须同时看漏检与误触发（E11-17）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-f1051be709">题 18：把残余对齐误差也放进SRO预算（E11-18）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-7c1e653813">题 19：噪声压得更多，为何总误差反而更大（E11-19）</a></li>
 <li><a href="11_selection-guide.html#sec-11-7">11.7 后续阅读</a></li>
 </ul></nav></details>
 <blockquote>
@@ -157,16 +193,28 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>TSE</td>
 <td>目标说话人提取（Target Speaker Extraction）：按注册语音、视觉或方向条件提取指定目标</td>
 </tr>
+<tr>
+<td>ASR</td>
+<td>自动语音识别（Automatic Speech Recognition）：把语音转换为文字</td>
+</tr>
+<tr>
+<td>KWS</td>
+<td>关键词检测（Keyword Spotting）：检测唤醒词等指定词语</td>
+</tr>
+<tr>
+<td>STOI / ESTOI</td>
+<td>短时客观可懂度（Short-Time Objective Intelligibility）及其扩展（Extended STOI）：需要匹配参考的可懂度指标</td>
+</tr>
 </tbody>
 </table></div>
 <p>各定位、波束和追踪算法的全称在首次出现处给出。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-11-1">11.1 先回答六个问题</h2>
 <ol>
 <li>
-<p><strong>系统要输出什么？</strong> 输出一个方向、连续轨迹、增强语音、彼此独立的多人语流、指定目标的一条语流，还是识别文本？多人输出还要说明人数固定还是随时间变化、整句处理还是连续流、是否需要保持说话人身份。输出不同，所需模块不同。只做固定方向录音时，不需要在线定位；只做方向显示时，也未必需要波束形成和 NS。</p>
+<p><strong>系统要输出什么？</strong> 输出一个方向、连续轨迹、增强语音、分别输出的多人语流、指定目标的一条语流，还是识别文本？多人输出还要说明人数固定还是随时间变化、整句处理还是连续流、是否需要保持说话人身份。输出不同，所需模块不同。只做固定方向录音时，不需要在线定位；只做方向显示时，也未必需要波束形成和 NS。</p>
 </li>
 <li>
-<p><strong>覆盖区域和声源距离是什么？</strong> 线阵适合重点覆盖阵列轴所在平面或扇区，但会有前后或镜像歧义；圆阵适合水平面环绕覆盖；平面阵与球阵可提供俯仰信息，但需要更多通道和更严格的标定。形态不是按“几只麦”直接决定的。</p>
+<p><strong>覆盖区域和声源距离是什么？</strong> 线阵在已知目标平面或扇区的条件下可利用轴向时差，但三维中相同轴投影仍有歧义；圆阵可用于水平面环绕覆盖。平面阵可以约束俯仰，却不能仅凭理想自由场相位区分阵面上下镜像；需半空间先验或非共面麦克风等额外信息。球阵及其他三维几何也要检查采样与标定条件。形态不是按“几只麦”直接决定的。</p>
 </li>
 <li>
 <p><strong>空间分辨率和最高工作频率是什么？</strong> 孔径影响角分辨率，阵元间距限制无空间混叠频带。增大孔径有利于低频方向信息，减小间距有利于高频无混叠。两者冲突时，可以增加阵元、限制工作频带或采用非均匀几何；不能只报一个间距就宣称覆盖全频带。</p>
@@ -182,6 +230,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </li>
 </ol>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-11-2">11.2 按条件选择模块</h2>
+<h3 id="sec-u-b1c49f9bf3">方法类别与启用条件</h3>
 <p>先把表中常用方法名与任务对应起来：</p>
 <ul>
 <li>广义互相关相位变换（Generalized Cross-Correlation with Phase Transform，GCC-PHAT）从麦克风对估计相对时延；导向响应功率相位变换（Steered Response Power with Phase Transform，SRP-PHAT）在候选方向或位置上汇总多麦克风对的证据。</li>
@@ -249,15 +298,16 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tbody>
 </table></div>
 <p>算法名只确定了方法类别，还没有确定参数。WPE 的预测延迟和阶数、MVDR 的加载量、AEC 的滤波器覆盖范围、VAD 的挂起时间都应由目标数据和硬件测量得到，不应作为通用默认值从别的产品复制。</p>
-<p>多人重叠场景可按下面的决策维度缩小范围：</p>
-<p>下表使用三种不同的识别口径：</p>
+<h3 id="sec-u-d96611f1d8">多人内容与身份的评分口径</h3>
+<p>多人重叠场景先区分三种识别口径：</p>
 <ul>
 <li>拼接最小排列词错误率（Concatenated minimum-Permutation Word Error Rate，cpWER）先按说话人拼接参考与假设，再寻找一个全局最优的说话人排列；</li>
 <li>最优参考组合词错误率（Optimal Reference Combination Word Error Rate，ORC-WER）允许参考语句在输出流之间做最优组合，不要求一条输出流全程对应同一个人；</li>
 <li>说话人归属词错误率（Speaker-Attributed Word Error Rate，sa-WER）把词转写与说话人标签一起评价，归属错误会影响结果。</li>
 </ul>
 <p>三者不能互换：ORC-WER 偏向检查内容是否被完整识别，cpWER 还要求全局输出流一致，sa-WER 用于确实需要身份归属的任务。</p>
-<p><strong>四词手算：两条流在第二段交换。</strong> 下表的“春天、夏天、秋天、冬天”各算一个词元；每段中甲、乙同时说话，分离器在第二段把两人的内容放进了相反的输出槽位。本例只比较词内容与流分配，不涉及分词歧义或时间容差。</p>
+<h3 id="sec-u-991366ae59">四词手算：两条流在第二段交换</h3>
+<p>下表的“春天、夏天、秋天、冬天”各算一个词元；每段中甲、乙同时说话，分离器在第二段把两人的内容放进了相反的输出槽位。本例只比较词内容与流分配，不涉及分词歧义或时间容差。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
 <tr>
@@ -290,6 +340,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>ORC-WER 按<strong>参考语句</strong>选择输出流：第一段的“春天”给流 1、“夏天”给流 2，第二段的“秋天”给流 2、“冬天”给流 1。两条重组参考流于是分别等于两条输出流，编辑数为 0，ORC-WER 为 $0/4=0\%$。</p>
 <p>这个零分只说明按该语句分配口径内容齐全，不能证明流 1 始终属于甲。sa-WER 还需要明确每个输出词的说话人标签及其评分定义，本例没有给出这些标签，故不计算 sa-WER。以上小例遵循下方固定版 MeetEval 对 cpWER 全局排列与 ORC-WER 逐语句分配的定义，不把二者当成同一个评分器的不同阈值。</p>
 <p>实现时还要记录分段与重叠处理、标记规则，以及固定的评分工具版本或提交。本文核实于 2026-09-22，并将 MeetEval 对 cpWER、ORC-WER、MIMO-WER 和 DI-cpWER 的算法说明钉在提交 <a href="https://github.com/fgnt/meeteval/blob/6e3dc81284f2d6928f7ef9e620fd3b6906daa429/doc/algorithms.md"><code>6e3dc81284f2d6928f7ef9e620fd3b6906daa429</code></a>；该锁定文档没有把 sa-WER 列作同一工具的实现，使用 sa-WER 时应另行固定定义与评分器。复现实验还应记录实际安装包版本或完整提交号，不能只写会移动的 <code>main</code>。</p>
+<p>原始 CSS 槽位可由不同说话人轮流复用。若三位说话人分别说一个词 <code>a</code>、<code>b</code>、<code>c</code>，两个槽输出 <code>a c</code> 和 <code>b</code>，内容全对仍会有非零 cpWER：一个槽不能同时一一匹配两位参考说话人。E11-16 将算出 cpWER 为 $2/3$，ORC-WER 为零。用于内容验收时可选择固定分段和时间顺序的 ORC-WER；需要按人验收时，先说明分割与身份关联怎样形成整场的说话人转写，再计算 cpWER 或明确规定的归属指标。</p>
+<p><a href="https://arxiv.org/pdf/2307.11394">MeetEval 作者论文</a>的 §3.2～3.5 区分这些分配约束。ORC-WER 不能在一句内部任意换流，并按参考语句时序组合；改变参考分段也可能改变最优分配。因此参考分段、同起点的排序规则和时间约束必须随评分配置固定。</p>
+<h3 id="sec-u-1ad6ffa9bb">输出槽位与目标条件</h3>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
 <tr>
@@ -336,13 +389,17 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="sec-4" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-11-3">11.3 几何与算法要一起选</h2>
 <p>阵列几何决定观测中有哪些空间信息，算法决定如何使用这些信息。</p>
 <ul>
-<li><strong>双麦或近似线阵</strong>：可以估计沿阵列轴投影的时差并形成方向性，但某些方向会有镜像歧义。适合已知目标扇区、孔径和外形受限的设备。</li>
-<li><strong>非共线三麦及平面阵</strong>：能提供二维几何约束。精度仍受孔径、频带、遮挡和标定影响，不能把“三麦”简单归为单麦处理。</li>
+<li><strong>双麦或近似线阵</strong>：可以估计沿阵列轴投影的时差并形成方向性；三维中具有同一轴向投影的方向构成锥面，在指定平面中还可能有镜像二解。近似共线的小偏离可能只提供很弱的额外信息。适合已知目标扇区、孔径和外形受限的设备。</li>
+<li><strong>非共线三麦及平面阵</strong>：能提供两个独立的平面投影约束，但理想自由场下阵面上下镜像仍不可分。精度还受孔径、频带、遮挡和标定影响，不能把“三麦”简单归为单麦处理。</li>
 <li><strong>圆阵</strong>：便于覆盖水平面。阵元数和半径应由所需角分辨率、最高频率与结构尺寸共同确定，不存在“全向必须至少四麦、六麦最好”的通用答案。</li>
 <li><strong>球阵或三维阵</strong>：适合需要俯仰角、声场分析或多方向波束的任务。可用球谐阶数受阵元采样、无量纲频率 $kr$（$k=2\pi f/c$ 为波数，$r$ 为球阵半径）、径向滤波噪声放大和标定误差共同限制，详见 §10.8。</li>
 <li><strong>稀疏阵</strong>：差分共阵可增加二阶统计中的虚拟滞后数，但不会凭空增加独立物理通道，也不保证宽带、相干声源和有限快拍下都能得到同样的自由度。应按第 3 章的适用条件验证。</li>
 </ul>
 <p>白噪声增益（White Noise Gain，WNG）和指向性指数（Directivity Index，DI）之间常有取舍。更窄的波束或更深的零陷可能放大传感器自噪声和标定误差。对角加载、WNG 约束和限制工作频带都能改善鲁棒性，但通常会牺牲一部分空间选择性。</p>
+<h3 id="sec-u-d12e9fbcdd">平面镜像为什么不能靠换算法消除</h3>
+<p>沿用第 2 章远场单位方向与导向相位约定。令三个麦克风坐标依次为 $(0,0,0)$、$(0.04,0,0)$、$(0,0.04,0)$ m，两个候选方向为 $\boldsymbol u_+=(0.6,0,0.8)^\top$ 与 $\boldsymbol u_-=(0.6,0,-0.8)^\top$。两者的长度均为 1。</p>
+<p>以第一麦为参考，另外两麦的坐标与方向点乘，在两种方向下都等于 $0.024$ m 和 $0$。因此所有频率上的相对传播相位相同，理想观测本身不能区分这两个方向；增加快拍或更换谱峰搜索法不会产生缺少的垂直信息。</p>
+<p>若增加坐标为 $(0,0,0.04)$ m 的第四麦，它的投影分别为 $+0.032$ m 与 $-0.032$ m。取 $c=343$ m/s、$f=1$ kHz，对应导向相位分别为 $\pm2\pi f(0.032)/c\approx\pm0.58619$ rad，于是这对方向可分。这只是对该镜像二解的复算，不保证任意频率和方向均无空间混叠。更完整的几何可辨识性练习见第 3 章 E03-10。</p>
 <span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-11-4">11.4 四个场景怎样推导方案</h2>
 <p>下表给的是推导方法，不是产品清单。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -357,7 +414,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <tr>
 <td>带扬声器的语音终端</td>
 <td>若要求播放时仍能唤醒或通话</td>
-<td>AEC 成为必要候选；参考取在实际播放处理之后。圆阵、线阵或平面阵由覆盖区域和外形决定。无明显晚期混响时不必默认加 WPE。</td>
+<td>AEC 成为必要候选；数字参考应覆盖实际混音、均衡与播放增益。圆阵、线阵或平面阵由覆盖区域和外形决定。无明显晚期混响时不必默认加 WPE。</td>
 </tr>
 <tr>
 <td>会议室</td>
@@ -377,6 +434,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tbody>
 </table></div>
 <p>同一场景也可能得出不同答案。例如会议设备安装在墙边时，覆盖区域可能只有半空间；放在桌中央时则要覆盖周向。前者可能适合线阵或弧形阵，后者可能适合圆阵。覆盖区域确定后，才能据此选择阵列形态和麦克风数量。</p>
+<p>数字播放参考无法自动包含后续功放和扬声器的非线性。是否另取电参考、增加非线性模型或限制播放工作范围，要按硬件条件选择；“参考覆盖播放处理”不意味着要求所有系统都在模拟声学输出之后取参考，见第 6 章与第 10 章图 23。</p>
 <span id="sec-6" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-11-5">11.5 把候选方案写成可验证的规格</h2>
 <h3 id="sec-11-5-1">11.5.1 先写规格和证据口径</h3>
 <p>为了复现实验并比较方案，候选方案的规格应覆盖以下内容：</p>
@@ -406,7 +464,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>资源</td>
-<td>目标硬件上的 RTF、最坏帧耗时、峰值内存、平均/峰值功耗</td>
+<td>目标硬件上的 RTF、已测帧耗时范围、峰值内存、平均/峰值功耗及测量条件</td>
 </tr>
 <tr>
 <td>延迟</td>
@@ -422,7 +480,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 </tbody>
 </table></div>
-<p>可以先建立最小基线，再一次增加一个模块。增加模块后要同时检查收益、语音损伤、延迟、功耗和失败样例。</p>
+<p>可以先建立最小基线，再一次增加一个模块，便于定位变化来自哪一步。增加模块后要同时检查收益、语音损伤、延迟、功耗和失败样例。若模块之间存在输入依赖或相互作用，还需测试组合，不能把“一次加一个”当成保证找到最佳组合的搜索算法。</p>
 <p>如果 WPE 没有改善目标房间的结果，或分离网络虽然提高了尺度不变信号失真比（Scale-Invariant Signal-to-Distortion Ratio，SI-SDR）却增加了内容错误，就不应因为流程图里画了它而保留。</p>
 <p>开源实现也要按任务筛选。项目名称不能代替算法条件：</p>
 <ul>
@@ -472,8 +530,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>身份与识别评测</td>
-<td>单路 WER 不能评价重叠双方</td>
-<td>报 ORC-WER 或 cpWER；若要求身份再报 sa-WER</td>
+<td>本候选的单目标 WER 不能代表被舍弃者的内容</td>
+<td>原始槽位按固定协议报 ORC-WER；形成说话人转写后再评 cpWER 或归属指标</td>
 <td>需另测错误目标和声纹冒用</td>
 <td>先按无注册转写口径验收</td>
 </tr>
@@ -487,7 +545,20 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tbody>
 </table></div>
 <p>这个例子中，2～6 是整场会议的总参会人数，两路输出由“最多同时两人重叠”决定，二者并不冲突；输出槽位也不代表永久说话人身份。例子没有填写性能分数，因为算力和准确率必须在目标硬件与目标会议数据上测量。</p>
+<p>这里淘汰的是只保留一个目标的具体波束候选，不是证明“一条文本流不能包含多人内容”。如果改用多人串行化转写等后端，必须重新定义输出、参考顺序和评分协议，再作为另一候选评估。</p>
 <p>若需求改成“始终只听主持人，且主持人可注册”，硬约束会改变，TSE 才重新成为候选。</p>
+<h3 id="sec-u-01def5a266">硬约束要区分通过、失败与证据不足</h3>
+<p>先明确每条阈值约束的是确定预算、测量值还是概率。例如“任何输出不得超过 150 ms”和“该负载下延迟的 p99 不超过 150 ms”是不同要求。有限样本最大值并不自动等于系统的最坏情况保证；平均 RTF 合格也不能替代逐次截止期检查。</p>
+<p>若已有可信的指标范围，可比较整个范围与上界：范围全部合格才通过，范围全部超限则失败，跨越阈值或缺少必要指标时记为证据不足。范围是确定误差界、统计置信区间还是观测的最小至最大值，也要分别写明；后两者不能无条件当作确定界。E11-14 用两个指标演示三态判断。</p>
+<h3 id="sec-u-2b5c122169">合格候选之间仍可能没有唯一最好方案</h3>
+<p>硬约束筛选后，把质量、延迟与功耗放在同一张表中。如果 A 在所有约定指标上都不差于 C，且至少一项更好，可说 A 支配 C；留下的非支配候选往往各有代价。这个定义见<a href="https://ntrs.nasa.gov/api/citations/20170007991/downloads/20170007991.pdf">多目标设计原文第 7 页“Multi-Objective Optimization Problem Statement”节的式(3)</a>，本书只采用其中的支配关系，不采用其轨迹优化算法。</p>
+<p>若确实需要一个总分，应先统一指标方向，再除以明确的尺度并给出权重。不能把“毫秒+错误率+瓦”直接相加，也不能在看到结果后选择最有利于某候选的权重。E11-10 显示同一组非支配候选怎样随事先选择的权重改变排序。样本均值上的支配关系仍可能受估计误差影响，不能自动推广到所有场景。</p>
+<p><img alt="图 46：先检查硬约束，再比较非支配候选" src="../figures/fig46_selection_pareto.png" onerror="this.alt+='（图缺失）'" /></p>
+<p><em>图 46：E11-10 的四个构造候选。(a) 横轴为延迟（ms），纵轴为 WER；功率分别为 A/B 0.8 W、C 1.0 W、D 0.7 W。先要求延迟不超过 150 ms、功率不超过 1 W，D 即使 WER 最低也不合格。合格集合中 A 支配 C，A 与 B 则各有优势。(b) 按式(11-4)比较 A/B 的归一化代价；质量权重 $w=4/7$ 时两者同分，权重变化会改变选择。图中的数值用于本书推导，不是四台设备的实测；(a) 的二维散点不能代替未画出的功率检查。</em></p>
+<h3 id="sec-u-d142131458">固定评测组成，并检查模块之间的相互作用</h3>
+<p>候选应使用共同的场景清单、参考、分词与评分器。部署场景比例与测试抽样比例不同时，先报告各场景结果，再按预先指定的共同权重汇总。E11-11 中，每个场景都较好的候选反而有更差的混合总分，原因只是两套测试的场景比例不同。</p>
+<p>失败文件保留数量与原因。只有指标本身存在已知上下界时，才可对缺失项构造完整均值的可能范围；这个范围不等于补出了分数，也不是置信区间，见 E11-12。多个场景各自具有 95% 覆盖率，也不意味着所有区间同时具有 95% 覆盖率，E11-13 给出联合处理。</p>
+<p>对于两个可能互相影响的模块 A、B，可在同一数据上测基线、仅 A、仅 B、A+B 四种配置。E11-15 用差中之差量化交互；它说明单模块增益不能简单相加，不证明实际的 WPE、波束或分离必有某种交互。调参和选择在开发集完成后，应锁定候选与验收规则，再运行独立测试。反复查看测试结果来改配置会改变原先声明的证据条件。</p>
 <span id="sec-7" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-11-6">11.6 练习</h2>
 <span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-b322947d6d">题 1：带播放的周向语音终端（E11-05）</h3>
 <p>需求是水平面周向覆盖，设备会播放音乐，主要任务是唤醒和单人指令。两种示意圆阵半径都为 4 cm，分别放 4 麦和 6 麦；声速取 343 m/s，需求频率上限 4 kHz。先以相邻麦弦长 $2r\sin(\pi/M)$ 与 $c/(2d_{\rm adjacent})$ 作<strong>单对筛查</strong>，再写出必要模块和两个关键对照实验。这个筛查不保证整个圆阵流形没有其他歧义。</p>
@@ -500,19 +571,19 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>答案要点</strong>：两路分离器输出两路且延迟 180 ms，先被题设硬条件淘汰；不能给它填一个未定义评分口径的单路 WER。两种合格的单路方案在同一参考与分词规则下，示意 WER 分别为 $25/100=25\%$、$20/100=20\%$，相差 5 个词错误，即 5 个百分点。还需在目标房间的独立会话上比较 WER、可懂度、语音损伤和资源，再决定是否启用 WPE；这一份示意数据不能给出统计显著性或一般优劣结论。</p>
 <p>若需求改为必须完整保留重叠双方内容，应重定输出路数与延迟约束，并为所有候选固定同一目标内容、分词和多人评分协议；可按任务选用 ORC-WER 或 cpWER，不能把两路输出的未知错误数与上述单路 WER 排序。<code>E11-06</code> 的代码只执行题设筛选，不产生识别结果。</p>
 <span id="sec-10" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-a3b87b0c99">题 3：跨时钟车载阵列（E11-07）</h3>
-<p>四只麦克风分属两个时钟域。示意初始错位为 2 ms，相对 SRO 恒定为 80 ppm，允许重对齐间的<strong>新增</strong>错位不超过 0.1 ms。比较每 10 s 和每 1 s 重对齐两种候选。为什么不能先调波束权重？还应先测什么？</p>
-<p><strong>答案要点</strong>：10 s 新增漂移是 $80\times10^{-6}\times10=0.8$ ms，失败；1 s 是 0.08 ms，通过题设的漂移条件。只靠周期性重对齐，理论最长间隔为 $0.0001\text{ s}/(80\times10^{-6})=1.25$ s。</p>
+<p>四只麦克风分属两个时钟域。示意初始错位为 2 ms，相对 SRO 恒定为 80 ppm，允许重对齐间的<strong>新增</strong>错位不超过 0.1 ms。比较每 10 s 和每 1 s 重对齐两种候选。本题按 SRO 乘时间作一阶预算，保留三位以内有效数字；精确的同索引时间差另见 E11-18。为什么不能先调波束权重？还应先测什么？</p>
+<p><strong>答案要点</strong>：10 s 新增漂移是 $80\times10^{-6}\times10=0.8$ ms，失败；1 s 是 0.08 ms，通过题设的漂移条件。按这一阶预算，只靠周期性重对齐的最长间隔约为 $0.0001\text{ s}/(80\times10^{-6})=1.25$ s。</p>
 <p>初始 2 ms 必须另行对齐，不能把它误当成 SRO 斜率；丢样会产生阶跃，也不能靠改变斜率解释。应先测初始时差、累计漂移、丢样和时间戳稳定性，完成重采样或时钟同步后再标定几何与增益，最后调波束。</p>
 <p><code>E11-07</code> 只复算已知恒定 SRO；温漂、时间戳噪声和行驶状态仍要在设备上验收。</p>
-<span id="sec-11" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-65c140a10b">题 4：把空间带宽、同步与延迟放进同一张选型表</h3>
-<p>候选四麦均匀线阵间距为 4 cm，声速取 343 m/s，需求频带上限为 4 kHz。两个采集设备的最坏相对 SRO 为 80 ppm，目前每 5 min 才重新对齐一次，而允许的通道错位不超过 0.1 ms。</p>
+<span id="sec-u-65c140a10b" class="anchor-alias" aria-hidden="true"></span><span id="sec-11" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-1cf1ad108e">题 4：把空间带宽、同步与延迟放进同一张选型表（E11-01）</h3>
+<p>候选四麦均匀线阵间距为 4 cm，声速取 343 m/s，需求频带上限为 4 kHz。两个采集设备的最坏相对 SRO 为 80 ppm，目前每 5 min 才重新对齐一次，而允许的通道错位不超过 0.1 ms。本题忽略重对齐残差，采用 SRO 乘时间的一阶预算。</p>
 <p>连续处理路径的采集/分帧、前瞻、计算、调度和解码分别为 16、8、22、5、70 ms；候选分离器若串行加入，还会增加 48 ms 前瞻和 18 ms 计算。要求端到端延迟小于 150 ms。判断阵元间距、同步周期、基础路径和分离器是否满足硬约束。</p>
 <p><strong>答案要点</strong>：</p>
 <ol>
 <li><strong>阵元间距</strong>：空间混叠边界为 $f_{\mathrm{alias}}=c/(2d)=343/(2\times0.04)\approx4288$ Hz，因此 4 kHz 仍低于该理想远场边界，但余量只有约 288 Hz，实际还要考虑麦位误差与宽带过渡。</li>
 <li><strong>同步周期</strong>：80 ppm 经过 300 s 的漂移为 $80\times10^{-6}\times300=0.024$ s，即 24 ms，远超 0.1 ms；若只靠周期性重对齐，最大间隔应不超过 $0.1\ \mathrm{ms}/(80\times10^{-6})=1.25$ s。</li>
 <li><strong>基础路径</strong>：总延迟为 $16+8+22+5+70=121$ ms，满足 150 ms，但只剩 29 ms 裕量。</li>
-<li><strong>加入分离器</strong>：串行加入后为 $121+48+18=187$ ms，不满足约束；除非通过并行、流水、减少前瞻或更换后端重新测得关键路径低于 150 ms，否则不应启用该候选。</li>
+<li><strong>加入分离器</strong>：串行加入后为 $121+48+18=187$ ms，不满足约束；除非改变可并行依赖、减少前瞻或更换后端后，重新测得关键路径低于 150 ms，否则不应启用该候选。仅让不同块流水执行主要改善吞吐，不能自动扣除单个输出在串行依赖中必须经历的等待。</li>
 </ol>
 <p><strong>代码复算 E11-01</strong>：运行 <code>.venv/bin/python -m codes.examples.exercises_engineering</code>，核对 <code>alias_boundary_hz=4287.5</code>、<code>drift_300s_ms=24</code>、<code>maximum_alignment_interval_s=1.25</code> 和两条延迟。只要其中一个硬约束不满足，就不能用另一个指标的收益抵消。该练习验证算术和筛选逻辑，没有测量设备延迟。</p>
 <span id="sec-12" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-b2f4d38876">题 5：评分覆盖与电池预算（E11-02）</h3>
@@ -525,9 +596,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>答案要点</strong>：两文件的 WER 为 $1/10=10\%$ 和 $45/90=50\%$。文件等权的宏平均为 $(10\%+50\%)/2=30\%$；合并计数为 $(1+45)/(10+90)=46\%$，相当于按参考词数加权。</p>
 <p>两个值回答不同问题：前者给每个文件同样权重，后者给每个参考词同样权重。不能把宏平均写成合并计数 WER，也不能在比较模型时临时更换聚合方式。实际评测还要按任务固定说话人/会话归属、空参考文件与失败文件的处理方式；本题没有计算语音转写或多人排列。</p>
 <span id="sec-14" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-67b9b2107f">题 7：p99 为什么还需要注明计算方法（E11-04）</h3>
-<p>20 个示意延迟按升序为 $[1,2,\ldots,19,100]$ ms。采用最近秩定义：对分位数比例 $q>0$，取升序数组中从 1 开始数的第 $\lceil nq\rceil$ 项。计算 p50、p95、p99，再与 NumPy 的 <code>method="linear"</code> 比较。</p>
-<p><strong>答案要点</strong>：最近秩为 $\lceil20\times0.50\rceil=10$、$\lceil20\times0.95\rceil=19$、$\lceil20\times0.99\rceil=20$，得到 10、19、100 ms。</p>
-<p>线性插值则在从 0 开始的位置 $q(n-1)$ 取值：p50 位于 9.5，得到 10.5 ms；p95 位于 18.05，在 19 与 100 ms 间插值，得到 $19+0.05\times81=23.05$ ms；p99 位于 18.81，得到 $19+0.81\times81=84.61$ ms。<a href="https://numpy.org/doc/stable/reference/generated/numpy.quantile.html" title="citation">NumPy 分位数文档的 Notes 小节</a>给出该插值定义，核实于 2026-09-22。</p>
+<p>20 个示意延迟按升序为 $[1,2,\ldots,19,100]$ ms。采用最近秩定义：对非空数组及分位数比例 $0\lt q\le1$，取升序数组中从 1 开始数的第 $\lceil nq\rceil$ 项。计算 p50、p95、p99，再与 NumPy 的 <code>method="linear"</code> 比较。</p>
+<p><strong>答案要点</strong>：最近秩为 $\lceil20\times0.50\rceil=10$、$\lceil20\times0.95\rceil=19$、$\lceil20\times0.99\rceil=20$，三个结果依次为 10 ms、19 ms 和 100 ms。</p>
+<p>线性插值则在从 0 开始的位置 $q(n-1)$ 取值：p50 位于 9.5，得到 10.5 ms；p95 位于 18.05，在 19 与 100 ms 间插值，得到 $19+0.05\times81=23.05$ ms；p99 位于 18.81，得到 $19+0.81\times81=84.61$ ms。<a href="https://numpy.org/doc/stable/reference/generated/numpy.quantile.html" title="citation">NumPy 分位数文档的 Notes 小节</a>给出该插值定义，核实于 2026 年 9 月 28 日。</p>
 <p>两组结果来自不同的报告约定。预先选定方法，连同样本数、测量时长与测点一起记录；不要用仅 20 个样本宣称已经稳定估计实际系统的 99% 尾部。两种计算都不能补回未观测到的罕见卡顿。</p>
 <h3 id="sec-u-7ef9cfea65">题 8：零次失败能证明多低的风险（E11-08）</h3>
 <p>一次独立会话中，只要发生截止期违约就算失败。事先固定相同测试条件，独立重复 $n$ 次，假设各次失败概率同为 $p$。现在观察到零次失败；分别取 $n=20,100,1000$，求失败概率的单侧 95% 精确二项上界。若希望该上界不超过 1%，至少需要多少次零失败试验？</p>
@@ -554,6 +625,308 @@ $$</p>
 <p>本题 $p_{\mathrm{sign}}=(5+1)/32=0.1875$。配对差取符号、平局排除和零假设二项模型见 <a href="https://www.itl.nist.gov/div898/software/dataplot/refman1/auxillar/signtest.htm" title="citation">NIST 的 Sign Test 说明</a>（核实：2026-09-26）；式(11-2)按本题预定的“B 更好”方向取上尾，不能在看过结果后再挑单侧方向。</p>
 <p><strong>怎样解释。</strong> B 的合并错误数确实少 11 个，但在预先选定的 0.05 显著性水平下，这六次会话不足以拒绝“非平局胜负各半”。这不证明两个候选等效，也不否定已经观察到的下降。符号检验只计方向，一次少 1 个词和少 6 个词都算一胜，所以它检验的不是平均 WER 降幅；两种结果应同时报告，不能互相替代。</p>
 <p>运行 <code>.venv/bin/python -m codes.examples.engineering_boundary_exercises</code> 可核对 <code>E11-09</code>；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_engineering_boundaries.py">独立测试</a>枚举全部 32 种符号，而不由被测函数生成期望值。所有会话平局时，代码保留总数并返回“没有非平局配对”，不伪造一个显著性分数。实际评测应按独立会话或其他预定单元设计配对；同一长录音切成许多相关短段，不能自动增加独立证据。</p>
+<h3 id="sec-u-adfeb2996b">题 10：硬约束之后，哪个候选更好（E11-10）</h3>
+<p>四个候选的构造数据如下。延迟上界为 150 ms、功率上界为 1 W；这些数在本题中视为确定输入，不是设备测量。WER 越低越好，先判断可行性，再找非支配候选。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">候选</th>
+<th scope="col" style="text-align: right;">延迟 $L$（ms）</th>
+<th scope="col" style="text-align: right;">WER</th>
+<th scope="col" style="text-align: right;">功率（W）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">12%</td>
+<td style="text-align: right;">0.8</td>
+</tr>
+<tr>
+<td>B</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">10%</td>
+<td style="text-align: right;">0.8</td>
+</tr>
+<tr>
+<td>C</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">14%</td>
+<td style="text-align: right;">1.0</td>
+</tr>
+<tr>
+<td>D</td>
+<td style="text-align: right;">160</td>
+<td style="text-align: right;">8%</td>
+<td style="text-align: right;">0.7</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>筛选与支配。</strong> D 虽有最低 WER 和功率，仍因延迟超限而不可行。A、B、C 通过两个硬条件。令 $f_j(x)$ 表示候选 $x$ 的第 $j$ 个待最小化指标，A 支配 C 须同时满足：第一行对所有指标 $j$ 成立，第二行对至少一个指标 $k$ 成立。</p>
+<p>$$
+\begin{aligned}
+f_j(A)&\le f_j(C),\\
+f_k(A)&\lt f_k(C).
+\end{aligned}\tag{11-3}
+$$</p>
+<p>A 的三个指标都优于 C，因此删除 C 不会损失这张表中的任一指标。A 比 B 快，但 B 的 WER 更低，二者功率相同，因此都保留。这里只得到给定有限候选集中的非支配集合，不能声称已找到所有可能设计的全局最优前沿。</p>
+<p><strong>把偏好写出来。</strong> 为比较 A、B，题设将 WER 用 20% 归一化、延迟用 150 ms 归一化，并令 $w$ 为质量权重：</p>
+<p>$$
+\begin{aligned}
+J_w(x)&=w\frac{\operatorname{WER}(x)}{0.20}\\
+&\quad +(1-w)\frac{L(x)}{150\ \mathrm{ms}},\\
+0&\le w\le1.
+\end{aligned}\tag{11-4}
+$$</p>
+<p>两项及总分均无量纲，分数越低越好。代入 A、B，得到 $J_w(A)=3w/5+8(1-w)/15$，$J_w(B)=w/2+2(1-w)/3$。令两式相等，整理为 $7w/30=2/15$，所以交点为 $w=4/7$。</p>
+<p>当 $w=0.5$ 时，两分数为 $17/30\approx0.5667$ 和 $7/12\approx0.5833$，选 A；当 $w=0.8$ 时，为 $44/75\approx0.5867$ 和 $8/15\approx0.5333$，选 B。改变归一化尺度也会改变这类加权分数，因此尺度与权重都必须预先声明。本题没有把功率再加入软分数，因为它已用于硬筛选且 A、B 的功率相同。</p>
+<p>运行<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/chapter11_experiments.py">本章选型练习</a>的 <code>E11-10</code> 可核对可行集合、支配关系与两组分数。该排序只针对题设指标；未测的语音损伤、可靠性或隐私要求不能由低总分自动抵消。</p>
+<h3 id="sec-u-3a9768c82a">题 11：每个场景都较好，为何总分反而较差（E11-11）</h3>
+<p>两组测试的安静/噪声场景比例不同。下表给出参考词数和错误数，所有文件均评分成功。分别计算两候选的场景 WER、合并 WER，再按预定的两场景各 50% 权重比较。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">候选与场景</th>
+<th scope="col" style="text-align: right;">参考词数</th>
+<th scope="col" style="text-align: right;">错误数</th>
+<th scope="col" style="text-align: right;">场景 WER</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A，安静</td>
+<td style="text-align: right;">900</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">10%</td>
+</tr>
+<tr>
+<td>A，噪声</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">30%</td>
+</tr>
+<tr>
+<td>B，安静</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">8%</td>
+</tr>
+<tr>
+<td>B，噪声</td>
+<td style="text-align: right;">900</td>
+<td style="text-align: right;">252</td>
+<td style="text-align: right;">28%</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>先看组成。</strong> B 在两个场景中均低 2 个百分点，但 A 的合并 WER 是 $(90+30)/1000=12\%$，B 是 $(8+252)/1000=26\%$。B 的测试把更多参考词放在困难场景，所以这个混合总体差异不能解释成 A 的算法更好。</p>
+<p>令场景 $j$ 的 WER 为 $e_j$，预定共同权重为 $\omega_j$。分层汇总定义为</p>
+<p>$$
+\begin{aligned}
+e_{\mathrm{mix}}&=\sum_{j=1}^{J}\omega_j e_j,\\
+\omega_j&\ge0,\qquad\sum_{j=1}^{J}\omega_j=1.
+\end{aligned}\tag{11-5}
+$$</p>
+<p>取两权重均为 0.5，A 为 $0.5\times10\%+0.5\times30\%=20\%$，B 为 $0.5\times8\%+0.5\times28\%=18\%$。这个量是按场景权重定义的汇总，不是原始测试集的合并计数 WER。两种量都可报告，但名称和分母必须保留。</p>
+<p>本题只演示组成偏差，不能用四个计数证明真实总体差异显著；真实比较还要保持同场景内的内容、说话人和采集条件可比。运行 <code>E11-11</code> 可核对两种聚合方式。</p>
+<h3 id="sec-u-ae2f22fb83">题 12：评分失败后，完整均值还可能是多少（E11-12）</h3>
+<p>沿用 E11-02 的 10 个文件、8 个成功分数平均为 3.8，另加一个明确假设：本题指标的合法范围为 $[1,5]$。另一候选 B 的全部 10 个分数均成功，平均为 3.6。能否确定 A、B 谁更好？分数越高越好。</p>
+<p>令 $N$ 为计划项数、$m$ 为成功项数、成功分数之和为 $S$，未知分数各在 $[a,b]$ 内。把缺失项的最小和最大可能总分分别加入，得到</p>
+<p>$$
+\begin{aligned}
+\bar z_{\min}&=\frac{S+(N-m)a}{N},\\
+\bar z_{\max}&=\frac{S+(N-m)b}{N}.
+\end{aligned}\tag{11-6}
+$$</p>
+<p>本题 $S=8\times3.8=30.4$。两项若均为 1，完整均值为 $(30.4+2)/10=3.24$；若均为 5，则为 $(30.4+10)/10=4.04$。所以 A 的可能均值范围是 $[3.24,4.04]$，包含 B 的 3.6，无法据此确定排序。成功子集的 3.8 大于 3.6 不能解决缺失信息。</p>
+<p>这是在假定上下界成立时的代数范围，不是统计置信区间，也没有为失败文件生成评分。若失败意味着评分对象根本未定义，仍应先报告失败而非承诺存在一个潜在分数；没有已知有限上下界时，不能套用本题的有限范围。运行 <code>E11-12</code> 可核对两个端点。</p>
+<h3 id="sec-u-5d36e206d1">题 13：三个场景分别通过，能否同时作出同样声明（E11-13）</h3>
+<p>三个预先规定的场景各做 100 次试验，均观察到零失败。每个场景内部满足 E11-08 的固定次数、独立同分布二项假设，但三个场景的真实失败概率可以不同。先算各自单侧 95% 上界，再要求三个上界<strong>同时</strong>覆盖各自真值的概率至少为 95%。</p>
+<p>令 $A_j$ 表示第 $j$ 个区间覆盖其固定真值的事件，单项失覆盖率至多为 $\alpha_j$。由并集上界，</p>
+<p>$$
+\begin{aligned}
+P\!\left(\bigcap_{j=1}^{J}A_j\right)
+&\ge1-\sum_{j=1}^{J}P(A_j^{\mathrm c})\\
+&\ge1-\sum_{j=1}^{J}\alpha_j.
+\end{aligned}\tag{11-7}
+$$</p>
+<p>这是 <a href="https://www.itl.nist.gov/div898/handbook/prc/section4/prc473.htm">NIST Bonferroni 方法</a>所述的一般不等式；这里将它用于有限个二项上界，不使用该页后续的均值比较公式。式(11-7)不要求三个区间事件相互独立。</p>
+<p>各自取 $\alpha_j=0.05$ 时，式(11-1)给出每个上界约 2.9513%，但上述联合保证只有至少 85%，不能仍称联合 95%。要保证联合至少 95%，可预先平均分配 $\alpha_j=0.05/3$。对于零失败和各自次数 $n_j$，</p>
+<p>$$
+\begin{aligned}
+\alpha_j&=\alpha/J,\\
+p_{\mathrm U,j}&=1-(\alpha/J)^{1/n_j}.
+\end{aligned}\tag{11-8}
+$$</p>
+<p>代入 $J=3$、$n_j=100$，得到每个上界约 4.0117%。联合要求更强，所以单项界变宽。</p>
+<p>若希望三个上界都不超过 1%，各场景预定次数须满足 $n_j\ge\ln(0.05/3)/\ln(0.99)$，向上取整为 408。407 次零失败时上界约 1.00094%，408 次约 0.99850%。这是一种保守且透明的分配方法，不宣称样本数在所有联合方法中最小。运行 <code>E11-13</code> 可检查 407/408 边界；不能事后挑选零失败场景才作联合声明。</p>
+<h3 id="sec-u-da9377b819">题 14：阈值附近应保留第三种状态（E11-14）</h3>
+<p>要求延迟不超过 150 ms、功率不超过 1 W。下表暂将区间视为确定的误差范围，而非有限样本的极值或置信区间。判断每个候选是通过、失败还是证据不足。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">候选</th>
+<th scope="col">延迟范围（ms）</th>
+<th scope="col">功率范围（W）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>[142,148]</td>
+<td>[0.85,0.95]</td>
+</tr>
+<tr>
+<td>B</td>
+<td>[147,153]</td>
+<td>[0.85,0.95]</td>
+</tr>
+<tr>
+<td>C</td>
+<td>[151,155]</td>
+<td>[0.8,0.9]</td>
+</tr>
+<tr>
+<td>D</td>
+<td>[140,145]</td>
+<td>未提供</td>
+</tr>
+</tbody>
+</table></div>
+<p>对某个上界约束 $v\le b$，可信范围为 $[\ell,u]$ 时，单项规则为</p>
+<p>$$
+\operatorname{state}=\begin{cases}
+\text{通过},&u\le b,\\
+\text{失败},&\ell>b,\\
+\text{证据不足},&\text{其余或缺失}.
+\end{cases}\tag{11-9}
+$$</p>
+<p>多个必要约束中，有一项失败即可拒绝；全部通过才通过；否则保留证据不足。A 的两个上端点均未超限，故通过。B 的延迟范围跨过 150 ms，即使中点恰为 150 ms也不足以通过。C 的延迟下端点已超过上界，故失败。D 虽满足延迟条件，缺少功率范围，故证据不足。</p>
+<p>若范围改成统计置信区间，应说明其覆盖率和多项联合方式；若只是已测最小值至最大值，更不能保证未来仍在范围内。运行 <code>E11-14</code> 可核对四种输入；通过这一代数判断不等于某设备完成了可靠性验收。</p>
+<h3 id="sec-u-fb5daa9144">题 15：单模块都变差，组合为何可能变好（E11-15）</h3>
+<p>在同一份 100 个参考词上，四个构造配置的词错误数为：无模块20、仅 A 为22、仅 B 为23、A+B 为10。先计算单独加入的变化，再检查组合变化能否由二者相加得到。</p>
+<p>因为分母相同，错误数恰等于以百分数表示的 WER。仅 A 比基线增加 2 个百分点，仅 B 增加 3 个百分点。若变化可相加，组合应为 $20\%+2\%+3\%=25\%$，实际题设却为 10%。</p>
+<p>用 $e_{ab}$ 表示 A、B 的开关状态为 $a,b\in\{0,1\}$ 时的 WER。交互差定义为</p>
+<p>$$
+\begin{aligned}
+I&=(e_{11}-e_{01})\\
+&\quad -(e_{10}-e_{00})\\
+&=e_{11}-e_{10}-e_{01}+e_{00}.
+\end{aligned}\tag{11-10}
+$$</p>
+<p>代入得到 $10-22-23+20=-15$ 个百分点。另一种读法是：没有 B 时，A 的变化为 $22-20=+2$ 个百分点；已有 B 时，A 的变化为 $10-23=-13$ 个百分点，两者相差 $-15$ 个百分点。WER 越低越好，因此本构造例的组合比相加预测少错。</p>
+<p>运行 <code>E11-15</code> 可复算四种配置。只有四个构造计数不能证明真实系统有显著交互，更不能外推到任何指定算法；还应在独立会话上重复配对比较，并同时验收额外资源。本题说明逐次删除“单独无收益”的模块可能漏掉组合，而不是要求所有候选都枚举所有组合。</p>
+<h3 id="sec-u-5582b2e9a6">题 16：三位说话人复用两个输出槽（E11-16）</h3>
+<p>甲、乙、丙按时间各说一个不同词元 <code>a</code>、<code>b</code>、<code>c</code>，没有同时重叠。CSS 输出槽 1 为 <code>a c</code>，槽 2 为 <code>b</code>。比较直接按槽位计算的 cpWER 与按这三个单词语句计算的 ORC-WER；不假设输出已有身份标签。</p>
+<p><strong>cpWER。</strong> 参考说话人流为 <code>a</code>、<code>b</code>、<code>c</code>。为作一一匹配，将假设补一个空流。把 <code>a c</code> 匹配甲需一次插入，把 <code>b</code> 匹配乙为零，把空流匹配丙需一次删除，总编辑数2。若将 <code>a c</code> 匹配丙，也仍需一次插入和另一空流的一次删除。</p>
+<p>无法得到低于2的总编辑数：长度为2的槽至少比任一长度为1的参考多一个词，空槽又至少漏掉一个词。因此最小编辑数为2，参考总词数3，cpWER为 $2/3\approx66.67\%$。</p>
+<p><strong>ORC-WER。</strong> 把参考语句 <code>a</code>、<code>c</code> 依序分给槽1，把 <code>b</code> 分给槽2，重组参考恰为 <code>a c</code>、<code>b</code>，总编辑数0，所以 ORC-WER 为0。它只证明这组固定分段与顺序下内容齐全，不证明已恢复三人的身份。</p>
+<p>运行 <code>E11-16</code>，本书小规模代码枚举全局匹配和逐语句分配作独立核查；它不运行分离或识别模型，也不冒充完整 MeetEval 接口。若参考改成不同语句边界，ORC 可选分配会变化，因此不能为了降低错误率事后修改参考分段。</p>
+<h3 id="sec-u-961e1e4deb">题 17：唤醒阈值必须同时看漏检与误触发（E11-17）</h3>
+<p>四个标注为唤醒的正事件，其构造分数为 $[0.9,0.8,0.55,0.45]$；另外2小时不含唤醒词的音频中，四个已去重负事件的分数为 $[0.7,0.4,0.3,0.1]$。分数大于等于阈值就触发。比较阈值0.5与0.75，不把这些构造分数称为模型实测或校准概率。</p>
+<p>令 $N_{\rm miss}$ 为漏掉的正事件数、$N_+$为全部正事件数，$N_{\rm FA}$为负音频中的误触发次数、$T_-$为负音频时长（小时）。本题采用</p>
+<p>$$
+\begin{aligned}
+r_{\rm miss}&=N_{\rm miss}/N_+,\\
+\nu_{\rm FA}&=N_{\rm FA}/T_-.
+\end{aligned}\tag{11-11}
+$$</p>
+<p>前者无量纲，后者单位为次/小时。阈值0.5漏掉0.45，且被0.7误触发，故漏检率 $1/4=25\%$、误触发率 $1/2=0.5$ 次/小时。阈值0.75漏掉0.55与0.45，但没有负事件触发，故漏检率50%、误触发率0次/小时。零次观测不等于真实风险为零；应按预定负音频时长与统计模型补充不确定性分析。</p>
+<p>若给漏检和误触发赋予每次事件的示意代价 $c_m,c_f$，该固定样本上的代价为</p>
+<p>$$
+C=c_mN_{\rm miss}+c_fN_{\rm FA}.
+\tag{11-12}
+$$</p>
+<p>取 $(c_m,c_f)=(2,5)$，两阈值代价分别为 $2+5=7$、$2\times2=4$，偏好0.75；取 $(10,1)$，则为11、20，偏好0.5。若另有漏检率不超过25%的硬约束，0.75即被排除，不能用较低软代价挽回。</p>
+<p>运行 <code>E11-17</code> 可复算事件判定。代价依赖任务偏好和正负事件暴露比例；换部署频率后应重新加权。实际KWS还须固定事件匹配窗、去重与触发后抑制规则，不把重叠帧的每次越阈都当成独立误触发。</p>
+<h3 id="sec-u-f1051be709">题 18：把残余对齐误差也放进SRO预算（E11-18）</h3>
+<p>快时钟采样率为 $f_s(1+\epsilon)$，慢时钟为 $f_s$。先令 $\epsilon=80\times10^{-6}$，以慢时钟第 $n$ 点的时刻 $T=n/f_s$ 为基准，计算同索引两点的物理时间差，比较 E11-07 的一阶预算。</p>
+<p>快时钟同索引点的时刻为 $T/(1+\epsilon)$，相减得到 $\Delta t=\epsilon T/(1+\epsilon)$，正号表示快时钟该点更早。$T=1,10,300$ s 时，精确结果依次约为0.0799936、0.7999360、23.9980802 ms。允许时间差0.1 ms、初始残差为零时，最长间隔为 $0.0001(1+\epsilon)/\epsilon=1.2501$ s。</p>
+<p>这里的口径必须保持一致：同一物理时刻 $t$，两时钟的理想累计样本数差为 $f_s\epsilon t$，除以名义 $f_s$ 后是精确的 $\epsilon t$；它与同索引两点的时间差不是同一个量。第10章式(10-3)给出这一区分。E11-01/07用 $\epsilon T$ 近似后者，在题设精度下保留24 ms与1.25 s。</p>
+<p><strong>加入实际预算余量。</strong> 再假设一次重对齐后仍可能留下绝对误差 $b=20\ \mu\mathrm{s}$，快时钟偏差位于正区间 $[70,90]$ ppm，总允许误差 $B=100\ \mu\mathrm{s}$。因 $\epsilon/(1+\epsilon)$ 在此区间递增，采用上端 $\epsilon_{\max}=90\times10^{-6}$，并按误差同向的最坏情况相加：</p>
+<p>$$
+\begin{aligned}
+q&=\frac{\epsilon_{\max}}{1+\epsilon_{\max}},\\
+b+qT&\le B,\\
+T&\le(B-b)/q.
+\end{aligned}\tag{11-13}
+$$</p>
+<p>代入剩余余量 $B-b=80\ \mu\mathrm{s}$，得到 $T\le0.8889689$ s，比“无残差且恒80 ppm”的1.2501 s短。这个相加是确定的最坏情况预算，不是独立随机误差的均方合成。若残差已大于总预算，应先解决初始对齐；若偏差区间跨零、随温度变化或含丢样，应重新计算上界并分开处理阶跃。运行 <code>E11-18</code> 可核对精确值与两种预算。</p>
+<h3 id="sec-u-7c1e653813">题 19：噪声压得更多，为何总误差反而更大（E11-19）</h3>
+<p>本题实际处理数学合成音频，用两种有限冲激响应（FIR）滤波器说明目标保持与噪声抑制的取舍。它不运行语音识别，也不评估自然语音的听感。取采样率 $f_s=16000$ Hz、长度 32000 点，令 $t=n/f_s$，两端用 20 ms 线性淡入淡出 $a(t)=\min\{1,t/0.02,(2-t)/0.02\}$。定义目标为 500 Hz 与 1500 Hz 两个等幅余弦，噪声为 3500 Hz 余弦，每个分量幅度均为 0.2：</p>
+<p>$$
+\begin{aligned}
+s[n]&=0.2a(t)\bigl[\cos(2\pi500t)\\
+&\qquad +\cos(2\pi1500t)\bigr],\\
+v[n]&=0.2a(t)\cos(2\pi3500t),\\
+x[n]&=s[n]+v[n].
+\end{aligned}
+$$</p>
+<p>两个候选都只接收混合 $x$，分别采用 3 抽头与 9 抽头等权 FIR，并把系数统一缩放到 500 Hz 幅度响应为 1。不要分别对导出文件作峰值归一化，也不要提前从算法输入中去掉噪声。</p>
+<p><strong>第一步：从有限求和推导频响。</strong> 令 $\omega=2\pi f/f_s$。长度为 $L$ 的普通滑动平均，其频响是 $H_L^{(0)}(f)=L^{-1}\sum_{k=0}^{L-1}e^{-j\omega k}$。将等比数列的和取出中心相位，并令 $d_L=(L-1)/2$，得到</p>
+<p>$$
+\begin{aligned}
+D_L(f)&=\frac{\sin(L\omega/2)}{L\sin(\omega/2)},\\
+H_L^{(0)}(f)&=e^{-j\omega d_L}D_L(f),\\
+b_L&=|D_L(500)|,\\
+h_L[k]&=\frac{1}{Lb_L}.
+\end{aligned}\tag{11-14}
+$$</p>
+<p>最后一行适用于 $k=0,\ldots,L-1$，其余抽头为零；本题两个 $b_L$ 均非零。$f=0$ 等可去奇点用有限求和或连续极限求值。归一化后的频响是 $H_L(f)=e^{-j\omega d_L}D_L(f)/b_L$。注意 $D_L(f)$ 是带符号实数，幅度响应才取绝对值；不能在重建波形时丢掉负号。</p>
+<p>对 $L=3$，$D_3(f)=[1+2\cos(2\pi f/f_s)]/3$，所以每个抽头为 $1/[1+2\cos(\pi/16)]\approx0.33765868$。对 $L=9$，代入正弦比得到每个抽头约 0.12679924。两种滤波器的群延迟分别为1点和4点，即0.0625 ms与0.25 ms；音频保留这些延迟。实际线性卷积用零初始历史，并保留前32000个输出样本。</p>
+<p><strong>第二步：先核对稳态解析值。</strong> 将1500 Hz和3500 Hz代入式(11-14)，3抽头的幅度保留约为0.89916454与0.46940656，9抽头约为0.20591080与0.01959116。两个候选都保持500 Hz，但9抽头同时大幅压低了属于目标的1500 Hz分量。</p>
+<p>令 $A_L(f)=D_L(f)/b_L$，并只在去掉启动、淡入淡出和尾截断影响的稳态区评分。将输出区间比源区间后移 $d_L$ 点，定义误差 $e_L[n]=y[n+d_L]-s[n]$，并简记 $a_v=A_L(3500)$。归一均方误差（Normalized Mean-Square Error，NMSE）及3500 Hz噪声幅度衰减为</p>
+<p>$$
+\begin{aligned}
+\mathcal E_L&=\frac{\sum_{n\in\mathcal I}|e_L[n]|^2}
+{\sum_{n\in\mathcal I}|s[n]|^2},\\
+\mathcal E_{L,\mathrm{dB}}&=10\log_{10}\mathcal E_L,\\
+R_{v,L}&=-20\log_{10}|a_v|.
+\end{aligned}\tag{11-15}
+$$</p>
+<p>这里 $\mathcal I=\{1600,\ldots,30399\}$，源区间为半开区间 $[1600,30400)$；两种候选取 $[1601,30401)$ 与 $[1604,30404)$。不拟合额外增益。该区间长度为1.8 s，三个频率均包含整数周期，交叉项之和为零。500 Hz误差为零，两个目标分量的总能量是单个等幅余弦的两倍，故可独立得到</p>
+<p>$$
+\begin{aligned}
+2\mathcal E_L&=[A_L(1500)-1]^2\\
+&\quad +A_L(3500)^2.
+\end{aligned}
+$$</p>
+<p>代入后，3抽头的 $\mathcal E_L\approx0.11525515$，即 $-9.38340$ dB；9抽头约为0.31548074，即 $-5.01027$ dB。噪声衰减则分别为6.56902 dB与34.15880 dB。NMSE越低越好，而本题噪声衰减越大越好：9抽头的噪声更小，但目标损伤使总误差更大。</p>
+<p><strong>第三步：核对实际PCM读回，保留同一评分口径。</strong> 四路波形统一乘以0.8，导出16位PCM WAV，再从文件域计算。幅度由直流项与三个已知频率的正弦、余弦联合最小二乘拟合得到；目标1500 Hz保留量除以同域干净参考的拟合幅度，噪声3500 Hz保留量除以同域混合输入的拟合幅度。NMSE与同域干净PCM按上述已知延迟对齐，不作增益拟合。实际读回为：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">候选</th>
+<th scope="col">1500 Hz目标幅度保留</th>
+<th scope="col">3500 Hz噪声衰减（dB）</th>
+<th scope="col">对齐NMSE（dB）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3抽头</td>
+<td>0.89923</td>
+<td>6.56914</td>
+<td>−9.38396</td>
+</tr>
+<tr>
+<td>9抽头</td>
+<td>0.20593</td>
+<td>34.15796</td>
+<td>−5.01061</td>
+</tr>
+</tbody>
+</table></div>
+<p>这些PCM值与上面的解析、浮点值稍有差异，原因是共同增益后的量化。拟合只用于评分；滤波器没有访问真值分量。依赖已知且互不重叠的三个频率，使本题能分别检查目标和噪声，不能把这种评分直接用于频谱重叠的自然语音与噪声。</p>
+<p><img alt="图 47：噪声衰减与目标保持的取舍" src="../figures/fig47_selection_audio_tradeoff.png" onerror="this.alt+='（图缺失）'" /></p>
+<p><em>图 47：E11-19 中实际 FIR 处理后的 PCM 结果。500 Hz 与 1500 Hz 组成目标，3500 Hz 为噪声；两滤波器的 500 Hz 解析增益均为 1，四个 WAV 使用共同增益 0.8。(a) 展示三个频率的同频幅度比，目标以干净 PCM 为参考，干扰以混合输入 PCM 为参考。(b) 比较 3500 Hz 干扰抑制与 1500 Hz 目标保留，标注对齐后的总 NMSE；两滤波器延迟分别为 1 点和 4 点。频率测量与表中 PCM 口径一致；它显示数学合成三音模型中的取舍，不代表语音识别或主观质量排名。</em></p>
+<p><strong>听音与复现。</strong> 先调低播放音量。以下四个文件都有2 s、16 kHz、单通道，使用共同增益；按“干净目标—混合输入—3抽头—9抽头”的次序听，并留意更安静的候选是否也削弱目标分量。</p>
+<p><a href="audio/selection_clean.wav">干净目标</a><audio class="audio-sample" controls preload="none" aria-label="干净目标" src="audio/selection_clean.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="audio/selection_mixture.wav">混合输入</a><audio class="audio-sample" controls preload="none" aria-label="混合输入" src="audio/selection_mixture.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="audio/selection_fir3.wav">3抽头输出</a><audio class="audio-sample" controls preload="none" aria-label="3抽头输出" src="audio/selection_fir3.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="audio/selection_fir9.wav">9抽头输出</a><audio class="audio-sample" controls preload="none" aria-label="9抽头输出" src="audio/selection_fir9.wav">请使用上方 WAV 链接下载。</audio></p>
+<p>运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/chapter11_experiments.py">chapter11_experiments.py</a> 的 <code>E11-19</code> 可核对解析、浮点与PCM三种结果；完整参数和音频解释见<a href="research/05_exercises_and_audio.html#33-选型取舍更安静的滤波器也可能损伤更多目标">音频研究手册第33节</a>。这里只评分稳态区，不把启动瞬态与文件末端被截掉的卷积尾部隐去后宣称全段都达到同一误差，也不由听到更安静推断ASR或听感必然更好。</p>
 <span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-11-7">11.7 后续阅读</h2>
 <p>要实现算法，可回到第 4～9 章查看定位、波束、AEC、WPE、分离和追踪。要制定整机预算和验收计划，见<a href="10_engineering-practice.html">第 10 章</a>。<a href="12_appendix-symbols-math.html">附录 A</a>汇总符号与数学工具，<a href="13_appendix-guide.html">附录 B</a>给出进一步阅读、练习和排错入口。</p>
 <hr />

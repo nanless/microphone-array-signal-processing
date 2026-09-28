@@ -3240,6 +3240,169 @@ def fig_agc_blocks():
     save(fig, 'fig45_agc_blocks.png',
          {'AudioManifestDigest': hashlib.sha256(manifest_path.read_bytes()).hexdigest()})
 
+
+def fig_selection_pareto():
+    """Draw the constructed chapter-11 decision example, not measured devices."""
+    candidates = {
+        'A': (80., .12, .8),
+        'B': (100., .10, .8),
+        'C': (90., .14, 1.),
+        'D': (160., .08, .7),
+    }
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 4.8),
+                             gridspec_kw={'width_ratios': [1.02, 1]})
+    ax = axes[0]
+    ax.axvspan(150, 178, color=C_RED, alpha=.10, label='延迟硬界外')
+    ax.axvline(150, color=C_RED, ls='--', lw=1.4)
+    for name, (latency, wer, power) in candidates.items():
+        color = C_RED if name == 'D' else (C_GREEN if name == 'C' else C_BLUE)
+        marker = 'x' if name == 'D' else ('o' if name == 'C' else 's')
+        ax.scatter(latency, 100 * wer, s=110, marker=marker, color=color,
+                   linewidths=2, zorder=4)
+        dx, dy = {'A': (-8, -1.5), 'B': (3, -.5), 'C': (3, .1),
+                  'D': (-13, -.6)}[name]
+        ax.text(latency + dx, 100 * wer + dy,
+                f'{name} ({power:g} W)', fontsize=FS_LABEL, color=color)
+    ax.annotate('A 同时低于 C 的延迟、WER 和功率', xy=(90, 14),
+                xytext=(70, 16.8), fontsize=FS_SMALL,
+                arrowprops=dict(arrowstyle='->', color=C_GREEN), color=C_GREEN)
+    ax.set(xlim=(66, 177), ylim=(7, 18.5), xlabel='单次端到端延迟 (ms)',
+           ylabel='构造的合并计数 WER (%)')
+    ax.set_title('(a) 先看硬约束，再去掉被支配候选', fontsize=FS_TITLE)
+    ax.grid(ls=':', alpha=.32)
+
+    ax = axes[1]
+    weight = np.linspace(0, 1, 201)
+    for name, color, style in [('A', C_BLUE, '-'), ('B', C_GREEN, '--'),
+                               ('C', '0.45', ':')]:
+        latency, wer, _ = candidates[name]
+        score = weight * wer / .20 + (1 - weight) * latency / 150
+        ax.plot(weight, score, style, color=color, lw=2,
+                label=f'{name}：预设归一化代价')
+    crossing = 4 / 7
+    cost = crossing * candidates['A'][1] / .20 + (1 - crossing) * candidates['A'][0] / 150
+    ax.scatter([crossing], [cost], c=C_MAIN, s=48, zorder=5)
+    ax.annotate(r'$w=4/7$：A、B 同代价', xy=(crossing, cost),
+                xytext=(.03, .78), fontsize=FS_LABEL,
+                arrowprops=dict(arrowstyle='->', color=C_MAIN))
+    ax.set(xlim=(0, 1), ylim=(.44, .86),
+           xlabel='预先指定的 WER 权重 $w$（其余给延迟）',
+           ylabel=r'$J=w\,\mathrm{WER}/0.20+(1-w)L/150$（无量纲）')
+    ax.set_title('(b) A 与 B 的选择依赖事先声明的偏好', fontsize=FS_TITLE)
+    ax.legend(loc='upper right', fontsize=FS_SMALL)
+    ax.grid(ls=':', alpha=.32)
+    fig.suptitle('图46  选型的两个步骤：硬约束与非支配权衡（本书构造数据）',
+                 fontsize=FS_SUP)
+    fig.tight_layout(rect=(0, 0, 1, .94), w_pad=2.5)
+    save(fig, 'fig46_selection_pareto.png')
+
+
+def fig_selection_audio_tradeoff():
+    """Recompute the fixed-tone tradeoff from the exported PCM files."""
+    import json
+    import wave
+    audio = OUT.parent / 'codes' / 'audio'
+    manifest_path = audio / 'MANIFEST.json'
+    manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+    group = manifest['groups']['selection_tradeoff']
+    params = group['parameters']
+    report = group['pcm_analysis']['candidates']
+    records = {item['file']: item for item in manifest['files']}
+    fs = params['sample_rate_hz']
+    names = ('selection_clean', 'selection_mixture', 'selection_fir3', 'selection_fir9')
+    waves = {}
+    for name in names:
+        path = audio / f'{name}.wav'
+        if hashlib.sha256(path.read_bytes()).hexdigest() != records[path.name]['sha256']:
+            raise ValueError(f'selection PCM digest mismatch: {path.name}')
+        with wave.open(str(path), 'rb') as wav:
+            if (wav.getframerate(), wav.getnchannels(), wav.getsampwidth(),
+                    wav.getnframes()) != (fs, 1, 2, 2 * fs):
+                raise ValueError(f'selection PCM format mismatch: {path.name}')
+            waves[name] = np.frombuffer(wav.readframes(wav.getnframes()),
+                                        dtype='<i2').astype(float) / 32768
+
+    source_start, source_stop = params['score_source_samples_half_open']
+    def harmonic_amplitude(signal, start, stop, frequency):
+        indices = np.arange(start, stop)
+        segment = signal[start:stop]
+        # The fixed 1.8 s scoring interval contains whole cycles at all three
+        # tones, so the direct complex projection is independent of LS fitting.
+        return abs(2 * np.dot(segment,
+            np.exp(-2j * np.pi * frequency * indices / fs)) / len(indices))
+
+    clean = waves['selection_clean']
+    mixture = waves['selection_mixture']
+    baselines = {
+        500: harmonic_amplitude(clean, source_start, source_stop, 500),
+        1500: harmonic_amplitude(clean, source_start, source_stop, 1500),
+        3500: harmonic_amplitude(mixture, source_start, source_stop, 3500),
+    }
+    measurements = {}
+    for name in ('selection_fir3', 'selection_fir9'):
+        start, stop = params['filters'][name]['score_output_samples_half_open']
+        values = waves[name]
+        retention = {frequency: harmonic_amplitude(values, start, stop, frequency)
+                     / baselines[frequency] for frequency in (500, 1500, 3500)}
+        aligned_nmse = np.sum((values[start:stop] - clean[source_start:source_stop]) ** 2)
+        aligned_nmse /= np.sum(clean[source_start:source_stop] ** 2)
+        measured = report[name]
+        if not (np.isclose(retention[1500], measured['target_1500_retention'], atol=2e-5)
+                and np.isclose(-20*np.log10(retention[3500]),
+                               measured['noise_attenuation_db'], atol=2e-3)
+                and np.isclose(10*np.log10(aligned_nmse),
+                               measured['aligned_total_nmse_db'], atol=2e-3)):
+            raise ValueError(f'selection PCM report mismatch: {name}')
+        measurements[name] = (retention, 10*np.log10(aligned_nmse))
+
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 4.8),
+                             gridspec_kw={'width_ratios': [1.08, 1]})
+    ax = axes[0]
+    xs = np.arange(3)
+    for name, offset, color, hatch, label in (
+        ('selection_fir3', -.19, C_BLUE, '', '3抽头，1点群延迟'),
+        ('selection_fir9', .19, C_GREEN, '//', '9抽头，4点群延迟'),
+    ):
+        retention, _ = measurements[name]
+        values = [20*np.log10(retention[f]) for f in (500, 1500, 3500)]
+        ax.bar(xs + offset, values, width=.36, color=color, edgecolor='black',
+               lw=.7, hatch=hatch, label=label)
+        for x, value in zip(xs + offset, values):
+            if value < -2:
+                ax.text(x, value - 1.0, f'{value:.1f}', ha='center', va='top',
+                        fontsize=FS_SMALL)
+    ax.set_xticks(xs, ['500 Hz\n目标', '1500 Hz\n目标', '3500 Hz\n干扰'])
+    ax.set(ylabel='相对对应参考同频幅度 (dB)', ylim=(-40, 3))
+    ax.set_title('(a) 同一混合信号经两种实际FIR处理', fontsize=FS_TITLE)
+    ax.legend(loc='lower left', fontsize=FS_SMALL)
+    ax.grid(axis='y', ls=':', alpha=.32)
+    ax.axhline(0, color='0.35', lw=.8)
+
+    ax = axes[1]
+    for name, color, marker, label in (
+        ('selection_fir3', C_BLUE, 's', '3抽头'),
+        ('selection_fir9', C_GREEN, 'o', '9抽头'),
+    ):
+        retention, nmse_db = measurements[name]
+        attenuation = -20*np.log10(retention[3500])
+        ax.scatter(attenuation, 100*retention[1500], color=color, marker=marker,
+                   s=130, zorder=4, label=label)
+        offset = (1.1, 2) if name.endswith('fir3') else (-7.2, 3)
+        ax.annotate(f'{label}\n对齐NMSE {nmse_db:.2f} dB',
+                    (attenuation, 100*retention[1500]), xytext=offset,
+                    textcoords='offset points', fontsize=FS_SMALL,
+                    color=color, ha='left' if name.endswith('fir3') else 'right',
+                    va='bottom')
+    ax.set(xlim=(0, 40), ylim=(0, 110), xlabel='3500 Hz 干扰幅度衰减 (dB，越高越好)',
+           ylabel='1500 Hz 目标幅度保留 (%)')
+    ax.set_title('(b) 更安静不必然更保留目标', fontsize=FS_TITLE)
+    ax.grid(ls=':', alpha=.32)
+    fig.suptitle('图47  固定三音合成输入的FIR选型取舍（最终PCM读回）',
+                 fontsize=FS_SUP)
+    fig.tight_layout(rect=(0, 0, 1, .94), w_pad=2.5)
+    save(fig, 'fig47_selection_audio_tradeoff.png',
+         {'AudioManifestDigest': hashlib.sha256(manifest_path.read_bytes()).hexdigest()})
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -3278,6 +3441,8 @@ def main():
     fig_css_overlap()
     fig_tracking_audio()
     fig_agc_blocks()
+    fig_selection_pareto()
+    fig_selection_audio_tradeoff()
     print("ALL DONE")
 
 

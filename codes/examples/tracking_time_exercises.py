@@ -93,7 +93,13 @@ def zero_failure_upper_bound(trials, confidence=0.95):
     confidence = finite_real_scalar(confidence, "confidence")
     if not 0 < confidence < 1:
         raise ValueError("confidence must be strictly between zero and one")
-    return -math.expm1(math.log1p(-confidence) / trials)
+    try:
+        result = -math.expm1(math.log1p(-confidence) / int(trials))
+    except OverflowError as error:
+        raise ValueError("trials exceed the finite float64 calculation range") from error
+    if result == 0:
+        raise ValueError("strictly positive confidence bound underflows float64")
+    return result
 
 
 def run_exercises():

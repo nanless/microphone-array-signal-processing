@@ -55,7 +55,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "08_speech-separation.md": 52,
     "09_source-tracking.md": 52,
     "10_engineering-practice.md": 47,
-    "11_selection-guide.md": 11,
+    "11_selection-guide.md": 29,
     "12_appendix-symbols-math.md": 14,
     "13_appendix-guide.md": 23,
 }
@@ -78,9 +78,9 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 119
-EXPECTED_SUBSECTION_COUNT = 469
-EXPECTED_OUTLINE_ITEM_COUNT = 602
-EXPECTED_FIGURE_NUMBERS = set(range(1, 46))
+EXPECTED_SUBSECTION_COUNT = 487
+EXPECTED_OUTLINE_ITEM_COUNT = 620
+EXPECTED_FIGURE_NUMBERS = set(range(1, 48))
 # 研究附站使用独立显式清单，不挤占 14 篇教程或 568 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
@@ -616,7 +616,7 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45)
+            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
@@ -626,7 +626,7 @@ def check_figures(errors: list[str]):
                 with Image.open(path) as image:
                     if image.info.get("AudioManifestDigest") != expected:
                         fail(errors, "图44独立追踪音频清单摘要失效")
-            if number in (34, 35, 36, 40, 41, 43, 45):
+            if number in (34, 35, 36, 40, 41, 43, 45, 47):
                 expected = hashlib.sha256((ROOT / "codes/audio/MANIFEST.json").read_bytes()).hexdigest()
                 with Image.open(path) as image:
                     if image.info.get("AudioManifestDigest") != expected:
@@ -1050,6 +1050,7 @@ def check_pdf(errors: list[str], notices: list[str]):
 
 
 EXPECTED_AUDIO_STEMS = {
+    "selection_clean", "selection_mixture", "selection_fir3", "selection_fir9",
     "agc_blocks_input", "agc_blocks_10ms", "agc_blocks_100ms", "agc_blocks_100ms_wrong_alpha",
     "css_overlap_reference", "css_overlap_mixture", "css_overlap_naive", "css_overlap_aligned",
     "wpe_predictable_target", "wpe_predictable_reverberant",
@@ -1353,13 +1354,13 @@ def check_audio(errors):
         manifest = json.loads((root / "MANIFEST.json").read_text())
         records = manifest["files"]
         names = {stem + ".wav" for stem in EXPECTED_AUDIO_STEMS}
-        if len(records) != 102 or {r["file"] for r in records} != names:
-            fail(errors, "音频清单必须包含独立基线的 102 个 WAV")
+        if len(records) != 106 or {r["file"] for r in records} != names:
+            fail(errors, "音频清单必须包含独立基线的 106 个 WAV")
         if {p.name for p in root.glob("*.wav")} != names or {p.name for p in (SITE / "audio").glob("*.wav")} != names:
             fail(errors, "源音频或站点音频文件集合不符")
         if set(manifest["groups"]) != {"spatial", "aec", "aec_methods", "aec_subband", "wpe", "separation", "engineering", "tracking",
                                       "correlation", "polarity", "conditioning", "nonlinear", "fractional_array",
-                                      "spectral_subtraction", "clock_drift", "interpolation", "alignment_error", "room_decay", "dma_calibration", "doa_ambiguity", "gsc_gate", "aec_dropout", "wpe_predictable", "css_overlap", "agc_blocks"}:
+                                      "spectral_subtraction", "clock_drift", "interpolation", "alignment_error", "room_decay", "dma_calibration", "doa_ambiguity", "gsc_gate", "aec_dropout", "wpe_predictable", "css_overlap", "agc_blocks", "selection_tradeoff"}:
             fail(errors, "音频实验组不符")
         expected_inputs = {"codes/examples/generate_audio_samples.py", "codes/array_tutorial/audio_samples.py",
                            "codes/array_tutorial/engineering.py",
@@ -1394,7 +1395,8 @@ def check_audio(errors):
                 raw = wav.readframes(frames)
             if record["sample_rate_hz"] != 16000 or record["duration_s"] != frames / 16000:
                 fail(errors, f"音频清单采样率或时长不符：{name}")
-            expected_group = ("agc_blocks" if name.startswith("agc_blocks_") else
+            expected_group = ("selection_tradeoff" if name.startswith("selection_") else
+                              "agc_blocks" if name.startswith("agc_blocks_") else
                               "css_overlap" if name.startswith("css_overlap_") else
                               "wpe_predictable" if name.startswith("wpe_predictable_") else
                               "aec_dropout" if name.startswith("aec_dropout_") else

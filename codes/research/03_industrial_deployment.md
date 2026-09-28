@@ -276,11 +276,51 @@ TensorFlow Lite Micro 要求调用方先划出一块内存，供推理时的张�
 
 ### I21：CHiME-8 数据准备、文本规范化与会议评分
 
-`chimechallenge/chime-utils` 提供 CHiME-8 DASR 数据准备、清单转换和官方评分入口，代码为 MIT。[`README` 的 Scoring 部分](https://github.com/chimechallenge/chime-utils#scoring)说明 SegLST 中的会话、说话人、起止时间和文字字段，提供 cpWER/tcpWER，并在评分前执行该届文本规范化。MeetEval 的具体算法入口见其 `doc/algorithms.md` 与本书锁定清单。
+`chimechallenge/chime-utils` 提供 CHiME-8 DASR 数据准备、清单转换和官方评分入口，代码为 MIT。本节固定提交 `152882404f572d40769ef02bf91c5a9a9cfc9c78`；其 [`README` 的 Scoring 部分](https://github.com/chimechallenge/chime-utils/blob/152882404f572d40769ef02bf91c5a9a9cfc9c78/README.md#scoring)说明 SegLST 的会话、说话人、起止时间和文字字段。底层 MeetEval 固定为 `6e3dc81284f2d6928f7ef9e620fd3b6906daa429`，代码同为 MIT；核实日期为 2026-09-28。源码许可不代表能够再分发原始会议语料。
 
-必须记录届次、任务、数据版本、评测区域、规范化、缺失场景策略和评分器提交。`--ignore-missing` 会改变哪些场景计入结果，因此必须在报告中显式说明，不能用它掩盖未处理数据。许可证允许取评分代码，不代表能够直接再分发各原始语料。
+#### 输出槽位与说话人身份决定评分口径
 
-建议制作小型人工 SegLST 夹具：完全正确、交换说话人、漏一段重叠语音、时间戳偏移、重复输出。检查评分变动是否符合所选指标的定义，再运行完整数据。这样能区分“算法增强失败”与“转写输出或评分映射失败”。
+[MeetEval 作者论文](https://arxiv.org/pdf/2307.11394)的 v3（2024-01-25）§3.2 式(3)、§3.3～3.5 和图1区分说话人转写与连续语音分离的输出流。cpWER 为整场参考说话人和假设说话人寻找一个全局排列；ORC-WER 把完整参考语句分配到输出流，且保留参考语句的给定顺序。MIMO-WER 保留各参考说话人内部的语句顺序，允许不同说话人的语句重新交错。选择前要固定分词、参考语句边界、排序、空流和评分区域。
+
+两路 CSS 可以在不同时段承载多于两名说话人，[CSS 原论文](https://www.microsoft.com/en-us/research/uploads/prod/2020/04/ICASSP2020__Continuous_speech_separation__dataset_and_analysis.pdf)§1～2讨论了固定输出流与按说话人输出的区别。假设 A、B 先同时各说一个词 `a`、`b`，随后 C 说 `c`；CSS 两槽为 `a c`、`b`。内容完全保留，ORC-WER 为零；直接把槽位当身份交给 cpWER，补空流后仍有一次插入和一次删除，错误率为 $2/3$。这说明两种评分回答的问题不同，不能由 cpWER 的惩罚推出该例丢失了内容。
+
+原始 CSS 槽位可先报 ORC-WER；需要身份结果时，先形成整场说话人轨迹，再报定义明确的 cpWER、tcpWER 或说话人归属指标。ORC 也不能任意切开参考语句以降低分数：参考语句 `a`、`b c` 与输出 `a b`、`c` 的最小错误数为 2；若事后将 `b c` 拆开，已经改变评分任务。
+
+DI-cpWER 也不是身份准确率。固定 [`di_cp.py`](https://github.com/fgnt/meeteval/blob/6e3dc81284f2d6928f7ef9e620fd3b6906daa429/meeteval/wer/wer/di_cp.py) 的公开入口为 `greedy_di_cp_word_error_rate`：交换参考与假设送入贪心 ORC，再换回插入、删除计数，按原参考词数归一。这个实现的贪心结果不能默认等于穷举最小值；本书没有执行该生产入口。简化算法文档中的 `di_cp_lev` 另有形参与正文变量拼写不一致，提取原函数调用产生 `NameError`，不应把这段文档的故障扩大为生产实现的同类故障。
+
+#### 缺失会话不能随意从统计分母中消失
+
+固定 [`apply_multi_file`](https://github.com/fgnt/meeteval/blob/6e3dc81284f2d6928f7ef9e620fd3b6906daa429/meeteval/io/seglst.py#L565) 按参考会话逐项调用评分函数。本书实际调用原分发函数，以“返回参考、假设片段数”的简单回调检查其会话选择；该回调不计算 WER。
+
+| 输入边界 | 固定分发函数的行为 |
+|---|---|
+| 10 个参考会话缺 1 个假设 | 返回全部 10 项；缺失假设传入空 SegLST，并记录警告 |
+| 2 个参考会话缺 1 个假设 | 超过默认缺失比例 0.1，抛出异常 |
+| 假设含参考中不存在的会话 | 默认抛出异常 |
+| 上一情况但显式 `partial=True` | 只处理参考会话，记录丢弃范围的警告 |
+| 参考集合为空 | 抛出异常 |
+
+因此，空假设、整个会话遗漏、主动评测子集和输入错误必须分别记录。参考会话存在而模型输出静音时，应明确输出该会话的空转写，不靠删文件改变分母；不能先取两个文件集合的交集再宣称完整评测。
+
+#### CHiME 包装层的固定版本控制流边界
+
+[`chime_utils/scoring/meeteval.py`](https://github.com/chimechallenge/chime-utils/blob/152882404f572d40769ef02bf91c5a9a9cfc9c78/chime_utils/scoring/meeteval.py) 的 `_wer` 调用 cpWER、带 5 s 容差的 tcpWER，或带 0.25 s 容差的 DER；这些是该届包装器的不同参数，不能互换。它先分别汇总各场景错误率，再对场景错误率作宏平均，不能称为全部词数加权的总 WER。上述评分分支为静态审读，未运行挑战赛整链。
+
+`_load_and_prepare` 的缺文件分支还需要调用方预检。固定版本在 `ignore_missing=False` 时只记录错误而继续；原函数提取后用模拟路径和加载器实际调用，第一场景缺参考或假设均产生 `UnboundLocalError`。第二场景缺参考时，却可能继续产出 `mixer6` 的条目并沿用 `chime6` 的参考；第二场景缺假设也会沿用上一场景假设。显式允许忽略时，缺失场景才被跳过。诊断保留这些不利结果，没有修改上游。
+
+同一函数的规范化循环写成 `if words == words`，普通字符串下立即退出，未比较第二次结果。受控输入 `aaa` 配合“每次删除第一个字符”的模拟规范化器，返回 `aa`，而继续规范化的稳定值为空串。这个反例只证明固定包装层没有执行所注释的稳定性检查，不证明其真实默认文本规范化器一定不幂等；本书没有在该实验中运行官方规范化器。
+
+生产评测前应核对预定场景与文件集合，缺项时明确失败或事先声明子集；固定规范化规则，并对代表性文本验证重复应用是否改变结果。不要依赖错误日志来阻止函数继续，也不要用 `--ignore-missing` 掩盖未处理数据。
+
+<a id="meeting-scoring-audit"></a>
+
+#### 诊断的执行层次与复算入口
+
+[诊断脚本](../examples/audit_meeting_scoring_interfaces.py)与[固定报告](../reports/meeting_scoring_interfaces.json)绑定源码提交、所读文件摘要、输入配置、脚本摘要和运行环境，区分四类证据：原 MeetEval 会话分发函数调用；原简化文档函数提取调用；原 CHiME 控制函数加模拟文件接口；未执行生产算法的静态核对。
+
+在既有隔离环境中，MeetEval 可以导入，但真实 `cp_word_error_rate` 调用因缺少编译扩展 `cy_levenshtein` 而失败。文档函数在同一环境中给出三人两槽例的 cp 错误数 2、ORC 错误数 0；这不能改写成生产包已算出对应 WER。没有运行 ASR、说话人分离、CHiME 音频评测、模型推理或设备测试。
+
+普通[离线测试](../../tests/test_codes_meeting_scoring_interfaces.py)不依赖下载目录、NumPy 或 SciPy，用独立全矩阵编辑距离与排列枚举核对记录。要重新执行外部诊断，需固定源码和含 NumPy/SciPy 的隔离环境；输出先放到新临时文件，再比较报告。脚本核对原文件摘要和干净工作树，不安装依赖、不编译扩展、不修正上游，也不下载会议录音。
 
 ## 6. 怎样把项目变成可执行实验
 

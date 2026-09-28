@@ -333,12 +333,12 @@
 |---|---|---|---|---|
 | §10.5；工业 I19 | DNSMOS | 外部参考实现 | `dns-challenge`：`DNSMOS/dnsmos_local.py` | 模型/个人化/窗口；不是受试者 MOS |
 | §6.7、§10.5 | AECMOS | 外部参考实现 | `aec-challenge`：`AECMOS/AECMOS_local/` | 三路对应、场景、裁段规则 |
-| §11.2 | cpWER | 外部参考实现 | `meeteval`：`meeteval/wer/wer/cp.py` | 会话级说话人排列 |
-| §11.2 | ORC-WER | 外部参考实现 | `meeteval`：`meeteval/wer/wer/orc.py` | 参考片段到流映射 |
+| §11.2 | cpWER | 外部参考实现 | `meeteval`：`meeteval/wer/wer/cp.py` | 全局说话人分组后的会话级排列；CSS复用的原始槽位不能直接当永久说话人流 |
+| §11.2 | ORC-WER | 外部参考实现 | `meeteval`：`meeteval/wer/wer/orc.py` | 参考片段到流映射，偏向内容完整性；不保证身份连续 |
 | §11.2 | MIMO-WER | 外部参考实现 | `meeteval`：`meeteval/wer/wer/mimo.py` | 流顺序、允许映射 |
-| §11.2 | DI-cpWER | 外部参考实现 | `meeteval`：`meeteval/wer/wer/di_cp.py` | 不可与 sa-WER 互换 |
+| §11.2 | DI-cpWER | 外部参考实现 | `meeteval`：`meeteval/wer/wer/di_cp.py` | 锁定入口使用贪心匹配；与理论最优定义、简化文档示例及 sa-WER 均须区分 |
 | §13.7；工业 I21 | tcpWER | 外部参考实现 | `meeteval`：`meeteval/wer/wer/time_constrained.py` | 时间约束、容差和词时间戳 |
-| §13.7；工业 I21 | CHiME-8 文本规范化/评分 | 外部参考实现 | `chime-utils`：`chime_utils/`、`tests/test_normalizer.py` | 届次、划分、缺失场景与数据许可 |
+| §13.7；工业 I21 | CHiME-8 文本规范化/评分 | 外部参考实现 | `chime-utils`：`chime_utils/scoring/meeteval.py`、`chime_utils/text_norm/`、`tests/test_normalizer.py` | 固定源码的缺文件分支和规范化幂等检查另有受控诊断；届次、划分、缺失场景与数据许可 |
 | §11.2 | sa-WER 说话人归属口径 | 原理索引 | 正文指标区别 | 不声称锁定 MeetEval 覆盖全部定义 |
 | §5.9 | 未指定实现的“DNNBeamformer” | 明确排除 | 无唯一算法/项目身份 | 具体网络需按模型和官方实现另登记 |
 
@@ -367,7 +367,7 @@
 
 ## 章节代码练习与音频映射
 
-205 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 293 行算法统计。补充的空间精算、增强步骤、时间状态模块分别提供3/5/4道题。三个原有 `exercises_` 模块各自提供 `run_exercises()`，分别有 28/23/25 道题；AEC 小实验另有 4 道，进阶 AEC 手算另有 10 道；E03-07、E04-08、E09-06 与 E10-13 由独立实验入口提供。E04-08 的 200 次独立双源抽样只说明固定模型中的分辨事件频率和 Wilson 区间。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
+215 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 293 行算法统计。补充的空间精算、增强步骤、时间状态模块分别提供3/5/4道题。三个原有 `exercises_` 模块各自提供 `run_exercises()`，分别有 28/23/25 道题；AEC 小实验另有 4 道，进阶 AEC 手算另有 10 道；E03-07、E04-08、E09-06 与 E10-13 由独立实验入口提供。E04-08 的 200 次独立双源抽样只说明固定模型中的分辨事件频率和 Wilson 区间。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
 
 | 章节与稳定 ID | 练习入口 | 回归测试 |
 |---|---|---|
@@ -383,6 +383,7 @@
 | E02-07、E04-10、E05-06（3题） | [空间精算](examples/spatial_precision_exercises.py) | [独立测试](../tests/test_codes_spatial_precision.py) |
 | E09-10～19（10题） | [第9章逐步计算](examples/chapter09_experiments.py) | [独立解析测试](../tests/test_codes_chapter09_experiments.py)、[PCM音频](../tests/test_codes_tracking_audio.py) |
 | E10-18～27（10题） | [第10章工程逐步计算](examples/chapter10_experiments.py) | [独立解析与PCM测试](../tests/test_codes_chapter10_experiments.py)、[数值边界](../tests/test_codes_engineering_ch10_boundaries.py) |
+| E11-10～19（10题） | [第11章约束与选型逐步计算](examples/chapter11_experiments.py)；[小规模选型与评分模型](array_tutorial/selection.py)；[四路同增益FIR音频](audio/MANIFEST.json) | [独立解析、整数边界与PCM测试](../tests/test_codes_chapter11_experiments.py) |
 | E08-12～23（12题） | [第8章逐步计算](examples/chapter08_experiments.py) | [独立测试](../tests/test_codes_chapter08_experiments.py) |
 | E07-08～17（10题） | [第7章逐步计算](examples/chapter07_experiments.py) | [独立测试](../tests/test_codes_chapter07_experiments.py) |
 | E06-21、E07-06、E08-08～10（5题） | [增强逐步计算](examples/enhancement_step_exercises.py) | [独立测试](../tests/test_codes_enhancement_steps.py) |
@@ -392,6 +393,7 @@
 
 ```bash
 .venv/bin/python -m codes.examples.chapter09_experiments
+.venv/bin/python -m codes.examples.chapter11_experiments
 .venv/bin/python -m codes.examples.chapter08_experiments
 .venv/bin/python -m codes.examples.chapter07_experiments
 .venv/bin/python -m codes.examples.chapter06_experiments
@@ -409,9 +411,9 @@
 .venv/bin/python -m codes.examples.doa_resolution_trials
 ```
 
-题目、答案和 25 组、102 个合成音频的对应关系见[练习与音频实验](research/05_exercises_and_audio.md)。音频由 [generate_audio_samples.py](examples/generate_audio_samples.py) 生成，参数和摘要见 [MANIFEST.json](audio/MANIFEST.json)；它们只展示特定条件下的现象，不作为完整算法、工业性能或自然语音听测的新增覆盖证据。
+题目、答案和 26 组、106 个合成音频的对应关系见[练习与音频实验](research/05_exercises_and_audio.md)。音频由 [generate_audio_samples.py](examples/generate_audio_samples.py) 生成，参数和摘要见 [MANIFEST.json](audio/MANIFEST.json)；它们只展示特定条件下的现象，不作为完整算法、工业性能或自然语音听测的新增覆盖证据。
 
-另外两套独立合成资产分别是 [GSS 五路 WAV 与中间状态](gss_audio/MANIFEST.json)和[移动声源三路 WAV 与轨迹真值](moving_audio/MANIFEST.json)。它们不计入主清单的 102 个音频，也不等于真实语音或设备验证。
+另外两套独立合成资产分别是 [GSS 五路 WAV 与中间状态](gss_audio/MANIFEST.json)和[移动声源三路 WAV 与轨迹真值](moving_audio/MANIFEST.json)。它们不计入主清单的 106 个音频，也不等于真实语音或设备验证。
 
 ## 未完成项怎样保留
 
@@ -419,10 +421,10 @@
 
 原理索引明确保留下一步所需证据：唯一作者实现、明确许可、原模型配置，或与正文模型一致的最小代码。不得仅因为框架大、copyleft 或权重未授权就将许可明确的源码降为“没有实现”；也不得因同名函数存在就将整个算法家族标为已覆盖。
 
-本仓库不提交下载缓存、模型权重或未经授权的第三方语料；`audio/` 中的 102 个文件是本书自行合成的教学样本，`real_audio/` 中另有许可明确的 DEMAND 小型摘录和派生文件，不包含完整下载归档。独立上游工作目录的取得、许可保留与未执行项目按来源状态记录报告。算法、源码或排除范围变化时，同步修改本表、研究说明、来源清单和真实验证记录。
+本仓库不提交下载缓存、模型权重或未经授权的第三方语料；`audio/` 中的 106 个文件是本书自行合成的教学样本，`real_audio/` 中另有许可明确的 DEMAND 小型摘录和派生文件，不包含完整下载归档。独立上游工作目录的取得、许可保留与未执行项目按来源状态记录报告。算法、源码或排除范围变化时，同步修改本表、研究说明、来源清单和真实验证记录。
 
 
-真实数据练习 R01 使用 [prepare_real_recordings.py](examples/prepare_real_recordings.py) 与 [real_recordings.py](array_tutorial/real_recordings.py)，测试见 [test_codes_real_recordings.py](../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 205 道合成/手算代码题。数据来源和许可另见 [real_audio/](real_audio/README.md)。
+真实数据练习 R01 使用 [prepare_real_recordings.py](examples/prepare_real_recordings.py) 与 [real_recordings.py](array_tutorial/real_recordings.py)，测试见 [test_codes_real_recordings.py](../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 215 道合成/手算代码题。数据来源和许可另见 [real_audio/](real_audio/README.md)。
 
 四组模型与边界练习对应以下独立实现；主音频新增的 4 个 interpolation 文件验证固定滤波误差，不是完整采样率转换性能。
 

@@ -8,11 +8,11 @@ from __future__ import annotations
 
 import json
 import math
-from numbers import Integral
+from numbers import Integral, Real
 
 import numpy as np
 
-from codes.array_tutorial.engineering import _finite_1d, simulate_deadline_queue
+from codes.array_tutorial.engineering import simulate_deadline_queue
 
 
 def callback_timing_ns(input_adc_ns, callback_ns, output_dac_ns):
@@ -50,8 +50,24 @@ def paired_sign_test_lower_is_better(baseline, candidate):
     return no p-value; ties remain in the reported total. Equality is exact on
     the supplied observations, not determined by an implicit tolerance.
     """
-    a = _finite_1d(baseline, "baseline")
-    b = _finite_1d(candidate, "candidate")
+    def observations(values):
+        # Object conversion preserves each Python integer even in mixed lists.
+        array = np.asarray(values, dtype=object)
+        if array.ndim != 1:
+            raise ValueError("observations must be one-dimensional")
+        result = []
+        for value in array:
+            if isinstance(value, (bool, np.bool_)) or not isinstance(value, Real):
+                raise ValueError("observations must be finite real numbers, not booleans")
+            if isinstance(value, Integral):
+                result.append(int(value))
+            else:
+                value = float(value)
+                if not math.isfinite(value):
+                    raise ValueError("observations must be finite")
+                result.append(value)
+        return np.asarray(result, dtype=object)
+    a, b = observations(baseline), observations(candidate)
     if a.shape != b.shape or not a.size:
         raise ValueError("paired arrays must have equal non-zero length")
     wins = int(np.count_nonzero(b < a))
@@ -62,11 +78,18 @@ def paired_sign_test_lower_is_better(baseline, candidate):
     tail = (sum(math.comb(informative, k) for k in range(wins, informative + 1))
             if informative else None)
     denominator = (1 << informative) if informative else None
+    pvalue = tail / denominator if informative else None
+    log_pvalue = (math.log(pvalue) if pvalue else
+                  math.log(tail) - informative * math.log(2)) if informative else None
+    underflow = informative > 0 and pvalue == 0
     return {
         "pairs": int(a.size), "wins": wins, "losses": losses,
         "ties": int(a.size) - informative, "informative_pairs": informative,
-        "one_sided_pvalue": tail / denominator if informative else None,
-        "status": "valid" if informative else "no_non_tied_pairs",
+        "one_sided_pvalue": pvalue,
+        "log_one_sided_pvalue": log_pvalue,
+        "pvalue_underflow": underflow,
+        "status": ("positive_pvalue_underflow" if underflow else "valid")
+                  if informative else "no_non_tied_pairs",
     }
 
 

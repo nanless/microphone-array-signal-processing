@@ -10,7 +10,7 @@
     "float_dtype": "float64"
   },
   "synthetic_signal": {
-    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband, spectral_subtraction, clock_drift, interpolation, alignment_error, room_decay, dma_calibration, doa_ambiguity, gsc_gate, aec_dropout, wpe_predictable, css_overlap and agc_blocks; see each group for noise and transforms",
+    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband, spectral_subtraction, clock_drift, interpolation, alignment_error, room_decay, dma_calibration, doa_ambiguity, gsc_gate, aec_dropout, wpe_predictable, css_overlap, agc_blocks and selection_tradeoff; see each group for noise and transforms",
     "duration_s": 2,
     "base_frequencies_hz": [
       173,
@@ -34,8 +34,8 @@
   "listening": "Start at low device volume. No automatic playback. No formal listening study performed.",
   "generator_inputs": {
     "codes/array_tutorial/engineering.py": "3e59427d2c769df24b0fc5663ae10523e46168f719c53509cfcf59bfe4a6507e",
-    "codes/examples/generate_audio_samples.py": "c0ac7cf5bb04947212d1499732b703394b8334f42a21c8cfdd850776986b32bd",
-    "codes/array_tutorial/audio_samples.py": "ee77240d96853776e8a99da3b718ec667198ac642e0b7b2ed3d0da80fa435504",
+    "codes/examples/generate_audio_samples.py": "6d7994e008ca0d01c3f64e6643b9f85335e81d53228f933aef196420224af06f",
+    "codes/array_tutorial/audio_samples.py": "43e0766f4d3b0692adf6ae612dc2ddc07dac724372e6fcda37ecd21887e2ba6a",
     "codes/array_tutorial/aec.py": "70d69fcd523cff3028162a221d71ea6bd2254979dfe37479ad26f77ab74a5a7e",
     "codes/array_tutorial/aec_ipnlms.py": "320fccd7458b8abb0c65c6f5871beb015403776fc00c4d3a8df5aa3a9afaeab2",
     "codes/array_tutorial/aec_rls.py": "f13c2018297e46f0b393ef52e04fad5f1d48ede00de8b37a80a4abf597a9305d",
@@ -2660,6 +2660,165 @@
       "limits": "Mathematical 500 Hz tone with intentional envelope steps, no speech or noise. Peak AGC buffers each complete block: samples are available only at its end. Changing alpha with hop preserves its time constant, not block-partition invariance. RMS ratios compare level, not SNR or perceived quality; no listening test claimed.",
       "common_export_gain": 0.7
     },
+    "selection_tradeoff": {
+      "export_gain_override": 0.8,
+      "parameters": {
+        "sample_rate_hz": 16000,
+        "duration_s": 2.0,
+        "samples": 32000,
+        "target_frequencies_hz": [
+          500,
+          1500
+        ],
+        "noise_frequency_hz": 3500,
+        "component_amplitude": 0.2,
+        "fade_s": 0.02,
+        "fade": "linear min(t/.02,(2-t)/.02,1)",
+        "seed": null,
+        "filters": {
+          "selection_fir3": {
+            "taps": [
+              0.33765867787654247,
+              0.33765867787654247,
+              0.33765867787654247
+            ],
+            "group_delay_samples": 1,
+            "group_delay_ms": 0.0625,
+            "score_output_samples_half_open": [
+              1601,
+              30401
+            ]
+          },
+          "selection_fir9": {
+            "taps": [
+              0.1267992430156256,
+              0.1267992430156256,
+              0.1267992430156256,
+              0.1267992430156256,
+              0.1267992430156256,
+              0.1267992430156256,
+              0.1267992430156256,
+              0.1267992430156256,
+              0.1267992430156256
+            ],
+            "group_delay_samples": 4,
+            "group_delay_ms": 0.25,
+            "score_output_samples_half_open": [
+              1604,
+              30404
+            ]
+          }
+        },
+        "score_source_samples_half_open": [
+          1600,
+          30400
+        ],
+        "coefficient_rule": "equal taps divided by their magnitude response at 500 Hz",
+        "convolution": "causal linear convolution, zero initial history, retain first 32000 samples",
+        "pcm_fit": "joint least squares: DC plus cos/sin at 500,1500,3500 Hz; fit magnitudes",
+        "nmse": "output vs same-domain clean delayed by known FIR group delay; no gain fitting"
+      },
+      "analytic_response": {
+        "selection_fir3": {
+          "amplitude_response": {
+            "500": 1.0,
+            "1500": 0.8991645378457399,
+            "3500": 0.46940655827349204
+          },
+          "noise_attenuation_db": 6.569016939738236
+        },
+        "selection_fir9": {
+          "amplitude_response": {
+            "500": 0.9999999999999999,
+            "1500": 0.20591079747959287,
+            "3500": 0.019591158208318426
+          },
+          "noise_attenuation_db": 34.15879776442096
+        }
+      },
+      "float_analysis": {
+        "clean_fitted_amplitudes": {
+          "500": 0.19999999999999768,
+          "1500": 0.19999999999999873,
+          "3500": 2.3865130038523602e-17
+        },
+        "mixture_fitted_amplitudes": {
+          "500": 0.199999999999998,
+          "1500": 0.19999999999999868,
+          "3500": 0.20000000000000034
+        },
+        "candidates": {
+          "selection_fir3": {
+            "fitted_amplitudes": {
+              "500": 0.20000000000000007,
+              "1500": 0.17983290756914788,
+              "3500": 0.09388131165469878
+            },
+            "target_500_retention": 1.000000000000012,
+            "target_1500_retention": 0.8991645378457451,
+            "noise_3500_retention": 0.4694065582734931,
+            "noise_attenuation_db": 6.569016939738217,
+            "aligned_total_nmse": 0.11525515368901484,
+            "aligned_total_nmse_db": -9.383396458198037
+          },
+          "selection_fir9": {
+            "fitted_amplitudes": {
+              "500": 0.2000000000000005,
+              "1500": 0.04118215949591789,
+              "3500": 0.003918231641663657
+            },
+            "target_500_retention": 1.0000000000000142,
+            "target_1500_retention": 0.20591079747959076,
+            "noise_3500_retention": 0.019591158208318252,
+            "noise_attenuation_db": 34.158797764421045,
+            "aligned_total_nmse": 0.31548073751972067,
+            "aligned_total_nmse_db": -5.010271525665317
+          }
+        }
+      },
+      "pcm_analysis": {
+        "clean_fitted_amplitudes": {
+          "500": 0.15999632810839498,
+          "1500": 0.15999296072465355,
+          "3500": 4.633836204709735e-06
+        },
+        "mixture_fitted_amplitudes": {
+          "500": 0.15999714273218962,
+          "1500": 0.16000027250383436,
+          "3500": 0.1600009321450408
+        },
+        "candidates": {
+          "selection_fir3": {
+            "fitted_amplitudes": {
+              "500": 0.15999392436061463,
+              "1500": 0.14387093046629526,
+              "3500": 0.07510442703656867
+            },
+            "target_500_retention": 0.9999849762315876,
+            "target_1500_retention": 0.8992328775882574,
+            "noise_3500_retention": 0.46939993429842347,
+            "noise_attenuation_db": 6.569139510506263,
+            "aligned_total_nmse": 0.1152401155126502,
+            "aligned_total_nmse_db": -9.38396315069849
+          },
+          "selection_fir9": {
+            "fitted_amplitudes": {
+              "500": 0.16000578851490466,
+              "1500": 0.03294801040409392,
+              "3500": 0.003134905476714214
+            },
+            "target_500_retention": 1.0000591288976537,
+            "target_1500_retention": 0.20593412519440246,
+            "noise_3500_retention": 0.01959304508221504,
+            "noise_attenuation_db": 34.157961244749096,
+            "aligned_total_nmse": 0.3154562031816209,
+            "aligned_total_nmse_db": -5.010609281373436
+          }
+        }
+      },
+      "limits": "Mathematical three-tone mixture, not speech, ASR or perceived quality. Both filters process the same mixture; separated components are not provided to them. Frequency-specific scoring exploits known distinct tones and does not generalize to overlapping speech/noise. No per-file normalization, no human listening test. Causal audio retains group delay; steady scoring omits fade/startup and truncated end tails.",
+      "common_export_gain": 0.8
+    },
     "aec_dropout": {
       "parameters": {
         "sample_rate_hz": 16000,
@@ -4210,6 +4369,58 @@
       "rms": 0.2591642808074891,
       "common_export_gain": 0.7,
       "quantization_max_abs_error": 1.5253549438161429e-05
+    },
+    {
+      "file": "selection_clean.wav",
+      "sha256": "ca81437e2a3bc4a13ccfa58eb0239b7e72b1efca48c690552d6e22e6736e0998",
+      "group": "selection_tradeoff",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.32000732421875,
+      "rms": 0.1589248457774723,
+      "common_export_gain": 0.8,
+      "quantization_max_abs_error": 1.5129082509467151e-05
+    },
+    {
+      "file": "selection_mixture.wav",
+      "sha256": "88eec46300ab78b79b449c71005d52d43c6e253471417101bfbbd7441c541237",
+      "group": "selection_tradeoff",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.480010986328125,
+      "rms": 0.19464813517498608,
+      "common_export_gain": 0.8,
+      "quantization_max_abs_error": 1.5228892785795756e-05
+    },
+    {
+      "file": "selection_fir3.wav",
+      "sha256": "56dcf27b0da3c8d4c1ec761fd2362a90e6f31c22206505be096e16ba5220463b",
+      "group": "selection_tradeoff",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.37896728515625,
+      "rms": 0.1600708233627406,
+      "common_export_gain": 0.8,
+      "quantization_max_abs_error": 1.5213618716022892e-05
+    },
+    {
+      "file": "selection_fir9.wav",
+      "sha256": "885fbf30371345fee3a63b2df62c74e0765e5bffe02fbf49597a91249813e5c0",
+      "group": "selection_tradeoff",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.1898193359375,
+      "rms": 0.114763790008234,
+      "common_export_gain": 0.8,
+      "quantization_max_abs_error": 1.5035341200593869e-05
     },
     {
       "file": "aec_dropout_target.wav",
