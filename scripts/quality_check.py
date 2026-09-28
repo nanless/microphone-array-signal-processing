@@ -890,7 +890,8 @@ def source_digest():
     digest = hashlib.sha256()
     paths = sorted(CHAPTERS.glob("*.md"))
     paths += [RESEARCH_ROOT / name for name, _ in EXPECTED_RESEARCH_PAGES]
-    paths += [ROOT / "scripts" / "build_site.py", ROOT / "scripts" / "heading_aliases.py",
+    paths += [ROOT / "scripts" / "build_site.py", ROOT / "scripts" / "build_markdown_helpers.py",
+              ROOT / "scripts" / "heading_aliases.py",
               ROOT / "scripts" / "legacy_sequential_anchors.json"]
     paths += sorted(path for path in (ROOT / "scripts" / "vendor" / "mathjax-3.2.2").rglob("*")
                     if path.is_file())
@@ -920,8 +921,9 @@ def site_source_digest():
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
-              ("build_site.py", "heading_aliases.py", "legacy_sequential_anchors.json",
-               "code_layout.py", "make_figures.py", "make_aec_figures.py")]
+              ("build_site.py", "build_markdown_helpers.py", "heading_aliases.py",
+               "legacy_sequential_anchors.json", "code_layout.py", "make_figures.py",
+               "make_aec_figures.py")]
     paths.append(ROOT / "requirements.txt")
     for path in paths:
         digest.update(path.relative_to(ROOT).as_posix().encode("utf-8"))
@@ -1485,7 +1487,9 @@ def check_audio(errors):
         for chapter, expected_files in expected_by_chapter.items():
             if {p.name for p in (root / chapter / "audio").glob("*.wav")} != expected_files:
                 fail(errors, f"{chapter} 源音频文件集合不符")
-        if {p.name for p in (SITE / "audio").glob("*.wav")} != names:
+        site_audio_entries = list((SITE / "audio").iterdir())
+        if ({p.name for p in site_audio_entries} != names or
+                any(not p.is_file() or p.is_symlink() for p in site_audio_entries)):
             fail(errors, "站点音频文件集合不符")
         if set(manifest["groups"]) != {"spatial", "aec", "aec_methods", "aec_subband", "wpe", "separation", "engineering", "tracking",
                                       "correlation", "polarity", "conditioning", "nonlinear", "fractional_array",

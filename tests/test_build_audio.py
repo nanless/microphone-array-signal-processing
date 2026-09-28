@@ -93,6 +93,19 @@ class AudioQualityTest(unittest.TestCase):
         (self.site / "audio" / self.manifest["files"][0]["file"]).unlink()
         self.assert_rejected("文件集合不符")
 
+    def test_extra_site_file_is_rejected(self):
+        (self.site / "audio" / "unlisted.json").write_text("{}", encoding="utf-8")
+        self.assert_rejected("站点音频文件集合不符")
+
+    def test_extra_site_directory_is_rejected(self):
+        (self.site / "audio" / "old_samples").mkdir()
+        self.assert_rejected("站点音频文件集合不符")
+
+    def test_similarly_named_site_backup_is_rejected(self):
+        name = self.manifest["files"][0]["file"]
+        (self.site / "audio" / (name + ".bak")).write_bytes(b"old")
+        self.assert_rejected("站点音频文件集合不符")
+
     def test_wrong_wav_digest_is_rejected(self):
         self.manifest["files"][0]["sha256"] = "0" * 64
         self.save_manifest()

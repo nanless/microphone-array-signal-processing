@@ -501,7 +501,7 @@ $$
 
 [正确活动输出](../codes/chapters/ch08/gss_audio/enhanced_correct.wav)
 
-[漏标输出](../codes/chapters/ch08/gss_audio/enhanced_missed.wav)都按同一增益导出，文件摘要和精确参数见[独立清单](../codes/chapters/ch08/gss_audio/MANIFEST.json)。这五个 WAV 属独立 GSS 资产，不并入本书主清单的 98 个样本。
+[漏标输出](../codes/chapters/ch08/gss_audio/enhanced_missed.wav)都按同一增益导出，文件摘要和精确参数见[独立清单](../codes/chapters/ch08/gss_audio/MANIFEST.json)。这五个 WAV 属独立 GSS 资产，不并入本书主清单的 109 个样本。
 
 官方 [GPU-GSS 固定源码](https://github.com/desh2608/gss/tree/10fad18cae85e2e4342c77421abc70c9c5da23ed)还包含 CuPy、Lhotse/RTTM、分段上下文及完整会议处理；本机未运行其官方整链，也没有使用 CHiME 语料或计算 WER。本段的教学结果不能充当 Boeddeker 等原论文的复现成绩。[GSS 原论文 §3.1～§3.3](https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf "citation")。
 

@@ -851,7 +851,7 @@ NOTSOFAR-1 的固定源码从 `run_training_css_local.py` 进入 `css/training/t
 | `sgmse/backbones/streaming_unet.py` | `CausalNCSNpp` 及各子层的 `init_state()` / `forward_step()` | 逐层追踪状态形状和寿命，检查整段/逐帧等价；不能只检查函数名称存在 |
 | `fit_rk_scheme.py` 与 `config/LRK5_streamfm_derev.yaml` | 学习求解器的独立入口与配置 | 不是普通模型训练器的同一个调用；本书未执行拟合 |
 
-**已执行的静态检查揭示两个接口问题。** 本书的 [AST 检查脚本](../../ch08/examples/streamfm_source_audit.py)只解析语法树，不导入 PyTorch、不运行上游代码；[生成报告](STREAMFM_SOURCE_AUDIT.json)固定了提交和被读文件的 SHA-256。上游文件没有被本书修改。
+**已执行的静态检查揭示两个接口问题。** 本书的 [AST 检查脚本](../../ch08/examples/streamfm_source_audit.py)只解析语法树，不导入 PyTorch、不运行上游代码；[生成报告](../../ch08/reports/streamfm_source_audit.json)固定了提交和被读文件的 SHA-256。上游文件没有被本书修改。
 
 1. `CausalResnetBlockBigGANpp.init_state()` 在第 672 行返回 5 元组，而 `forward_step()` 第 683 行将传入 `state` 解包成 6 项。若原样把这个初始化结果交给这个方法并执行到该行，就会出现元组长度不匹配。报告证明的是这两个方法的直接契约冲突，不证明所有模型配置都经过此路径。
 

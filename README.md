@@ -2,33 +2,13 @@
 
 一套写给初学者和入门研究生的麦克风阵列信号处理中文教程。从“为什么摆一群麦克风”讲到定位（DOA）、波束形成、回声消除（AEC）、去混响（WPE）、语音分离、声源追踪，一直到工程实现与选型。
 
-正文提供关键公式推导、可复算例子、适用边界、49 张脚本生成的图，以及与各章公式对应的 NumPy/标准库教学代码。
+正文提供关键公式推导、可复算例子、适用边界，以及与各章公式对应的 NumPy/标准库教学代码。
 
-全书有 228 道可运行代码练习和 27 组、共 109 个主清单合成音频文件；输入、答案与试听条件见[练习与音频实验](codes/chapters/ch00/research/05_exercises_and_audio.md)。第 6 章 E06-07～20 是模型与边界手算，另有两组**参数不完全相同**的 AEC 合成音频；不能用音频替代题目真值。这 109 个音频不是自然语音或正式听测数据。
+全书有 228 道可运行代码练习、49 张脚本生成的图，以及 27 组共 109 个[主清单合成 WAV](codes/chapters/ch00/audio/MANIFEST.json)。[练习与音频实验手册](codes/chapters/ch00/research/05_exercises_and_audio.md)逐题列出输入、答案、试听条件与代码入口。音频是数学合成样本，不是真实语音或正式听测；第 6 章两组合成 AEC 音频的参数也不完全等同于 E06-07～20 手算题。
 
-附录 B 另有[六位置房间题](chapters/13_appendix-guide.md)的 18 个白噪声合成 WAV、一张实算结果图和[逐位置数值报告](codes/chapters/appendix_b/room_audio/RESULTS.json)，保存在独立的 [room_audio 清单](codes/chapters/appendix_b/room_audio/MANIFEST.json)下；它们不计入上面的 109 个音频。
+另有四套独立管理的合成资产：[GSS 教学链](codes/chapters/ch08/gss_audio/MANIFEST.json) 5 个 WAV 与状态、[自由场移动声源](codes/chapters/ch09/moving_audio/MANIFEST.json) 3 个 WAV 与轨迹真值、[观测到追踪](codes/chapters/ch09/tracking_audio/MANIFEST.json) 2 个 WAV 与逐帧观测，以及[附录 B 房间题](codes/chapters/appendix_b/room_audio/MANIFEST.json) 18 个白噪声 WAV、结果图和[数值报告](codes/chapters/appendix_b/room_audio/RESULTS.json)。它们均不并入主 109 个样本。另有 DEMAND 真实同步录音摘录及 3 个派生 WAV，[数据说明与许可](codes/chapters/ch02/real_audio/README.md)独立保存。
 
-另有[活动导引 GSS 教学链](codes/chapters/ch08/gss_audio/MANIFEST.json)的 5 个 WAV 和可复算状态，以及[自由场移动声源](codes/chapters/ch09/moving_audio/MANIFEST.json)的 3 个 WAV 与轨迹真值，均使用独立清单，不计入主 109 个样本。它们只验证指定的合成模型，不代表真实语音或设备表现。
-
-第 9 章还有[两份连续运动合成音频与逐帧观测清单](codes/chapters/ch09/tracking_audio/MANIFEST.json)：从导出的 PCM 重新计算 GCC-PHAT、缺测门控和 Kalman 追踪，分别记录状态时刻与数据可用时刻。这两份 WAV 不计入主 109 个样本，也不与上述三份移动声源音频混算；运行 `.venv/bin/python -m codes.chapters.ch09.examples.chapter09_tracking_audio --check` 可只读核对。
-
-另有 DEMAND 河流场景的真实 16 通道录音摘录及 3 个派生 WAV，共 4 个文件，独立标注 CC BY-SA 3.0 数据许可；实验只分析噪声功率与通道相关性。
-
-第 6 章还记录了一对 Microsoft AEC Challenge 真实播放环回/麦克风录音上的 [SpeexDSP AEC 接口实验](codes/chapters/ch00/research/02_aec_wpe_separation.md#aec)，含零参考和错位参考对照。该众包录音未随仓库再分发；报告的是本片段输入/输出功率变化，不是真值 ERLE 或设备性能排名。
-
-可复核专题包括[同输入波束比较](codes/chapters/ch05/beamformer_common_input_demo.py)、[锁定版 AuxIVA 盲估计](codes/chapters/ch08/examples/reproduce_auxiva_reference.py)、[GSS 活动错标](codes/chapters/ch08/gss_activity_error_demo.py)、[同一合成真值上的 AEC 接口对照](codes/chapters/ch06/examples/aec_same_input_truth.py)及[在线 WPE 时间边界](codes/chapters/ch07/wpe_temporal_contract.py)。各实验分别限定于解析单频、数学合成混合、固定密度 E 步、合成 PCM 或复谱，不构成真实语音或设备效果排名。
-
-其他实验包括[协同阵协方差重构](codes/chapters/ch03/coarray_covariance_exercise.py)、[双源分辨率重复抽样](codes/chapters/ch04/doa_resolution_trials.py)、[GSS 受控完整教学子链](codes/chapters/ch08/examples/gss_teaching_demo.py)、[自动双讲检测](codes/chapters/ch06/aec_dtd_demo.py)、[连续移动双麦音频](codes/chapters/ch09/examples/moving_source_audio.py)及[SMP-PHAT 的隔离可移植适配](codes/chapters/ch04/examples/reproduce_smpphat_portable_overlay.py)。每项结果及未运行的官方整链边界见对应章节和研究手册。
-
-[第 9 章追踪实验](codes/chapters/ch09/tracking_crossing_dropout_demo.py)用确定性角度观测展示交叉时位置集合正确而身份错配，并复算缺测协方差与波束限速滞后；它不是语音录音或完整多目标追踪系统。
-
-[第 10 章工程逐步实验](codes/chapters/ch10/chapter10_experiments.py)提供十道可复算练习，区分重叠帧实时因子、谱减数值边界、跨块时钟状态与整块 AGC 的可用时刻。四路[同增益合成音频](codes/chapters/ch00/research/05_exercises_and_audio.md#32-分块-agc时间常数相同输出仍可能不同)可对照实际 PCM；[工业研究手册](codes/chapters/ch00/research/03_industrial_deployment.md)分别记录源码接口实调、静态诊断和尚未运行的模型或设备测试。
-
-[第 11 章选型实验](codes/chapters/ch11/chapter11_experiments.py)提供十道关于硬约束、场景组成、评分缺失、联合风险和身份评分的可复算练习。四路[同增益FIR合成音频](codes/chapters/ch00/research/05_exercises_and_audio.md)由相同混合输入实际处理并从PCM读回，展示干扰衰减与目标频带保留的取舍；图46、47对应决策和音频计算。这些样本不是语音、设备或识别效果测试。
-
-[附录 A 数学实验](codes/chapters/appendix_a/appendix_a_experiments.py)提供七道可复算题，并用[三路数学合成脉冲](codes/chapters/ch00/research/05_exercises_and_audio.md#sec-u-a0ab2e82f7)对照正确线性分块卷积和故意错误的循环绕回；图48、49分别显示 FFT 频点约定和最终 PCM 读回位置。
-
-[源码研究手册](codes/chapters/ch00/research/README.md) 进一步展开算法实现、工业配置和复现实验，分为空间处理与追踪、AEC/WPE/分离、工业部署与评测三篇专题，另附源码复现方法、练习与音频实验。官方实现固定提交，取得的源码保存在 `codes/chapters/ch00/upstream/_downloads/` 的独立工作树中。
+从[按章代码地图](codes/chapters/README.md)查找每章的教学实现、实验和报告；其中的数值、合成波形与外部接口诊断各有适用边界。第 6 章的 [SpeexDSP 真实配对录音接口实验](codes/chapters/ch00/research/02_aec_wpe_separation.md#aec)仅使用本地缓存，不再分发录音或声称真值 ERLE。[源码研究手册](codes/chapters/ch00/research/README.md)详列算法实现、工业配置、原始来源、许可、已运行实验与尚未验证的范围。
 
 English version: [README_EN.md](README_EN.md)
 

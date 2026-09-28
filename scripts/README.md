@@ -87,7 +87,7 @@ PDF 正文固定为 16 px，MathJax 公式按 100% 字号打印；网页公式�
 
 `--html-only` 只替换 HTML；旧 PDF 的摘要会与新 HTML 不同，必须继续生成 PDF 后再发布。
 
-**扩展依赖**：`pyroomacoustics==0.10.0`（房间声学仿真库）只用于第 10 章示例和附录 B 的房间仿真练习。可用另建的临时虚拟环境安装并运行房间脚本，保留仓库 `.venv` 的主依赖集；本轮实测使用 Python 3.13.12。没有该依赖仍能生成正文的 49 张编号图，已随仓附录 B 的补充结果图和 18 个房间 WAV 可直接查阅。固定版本说明见[官方 PyPI 页面](https://pypi.org/project/pyroomacoustics/0.10.0/)。
+**扩展依赖**：`pyroomacoustics==0.10.0`（房间声学仿真库）只用于附录 B 的房间仿真练习。可用另建的临时虚拟环境安装并运行房间脚本，保留仓库 `.venv` 的主依赖集；下列复算命令以 Python 3.13 的 macOS/Linux 环境为例。没有该依赖仍能生成正文的 49 张编号图，已随仓附录 B 的补充结果图和 18 个房间 WAV 可直接查阅。固定版本说明见[官方 PyPI 页面](https://pypi.org/project/pyroomacoustics/0.10.0/)。
 
 在有 Python 3.13 的 macOS/Linux 主机上，可从仓库根目录用新目录复算，不覆盖本书样本：
 
@@ -99,7 +99,7 @@ PRA_NUM_THREADS=2 /tmp/masp-room-pra/bin/python -m codes.chapters.appendix_b.exa
 
 目标图文件及音频目录应事先不存在。重跑后用新目录清单的 SHA-256 对照 `codes/chapters/appendix_b/room_audio/MANIFEST.json`，并记录 Python、NumPy、SciPy、pyroomacoustics 与线程数；跨平台绘图字体可能改变 PNG 字节，数值和 WAV 应分别核查。
 
-本轮新增的 12 道逐步练习可分别运行：
+跨章的空间精度、增强步骤与追踪时间练习可分别运行：
 
 ```bash
 .venv/bin/python -m codes.chapters.ch00.cross_chapter.spatial_precision_exercises

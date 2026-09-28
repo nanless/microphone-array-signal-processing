@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AEC、WPE 与分离源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="4bf248e8700e"><style>
+<meta name="source-digest" content="fa8f29393c69"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -1047,7 +1047,7 @@ PATH=/path/to/depot_tools:$PATH DEPOT_TOOLS_UPDATE=0 \
 </tr>
 </tbody>
 </table></div>
-<p><strong>已执行的静态检查揭示两个接口问题。</strong> 本书的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch08/examples/streamfm_source_audit.py">AST 检查脚本</a>只解析语法树，不导入 PyTorch、不运行上游代码；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/research/STREAMFM_SOURCE_AUDIT.json">生成报告</a>固定了提交和被读文件的 SHA-256。上游文件没有被本书修改。</p>
+<p><strong>已执行的静态检查揭示两个接口问题。</strong> 本书的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch08/examples/streamfm_source_audit.py">AST 检查脚本</a>只解析语法树，不导入 PyTorch、不运行上游代码；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch08/reports/streamfm_source_audit.json">生成报告</a>固定了提交和被读文件的 SHA-256。上游文件没有被本书修改。</p>
 <ol>
 <li>
 <p><code>CausalResnetBlockBigGANpp.init_state()</code> 在第 672 行返回 5 元组，而 <code>forward_step()</code> 第 683 行将传入 <code>state</code> 解包成 6 项。若原样把这个初始化结果交给这个方法并执行到该行，就会出现元组长度不匹配。报告证明的是这两个方法的直接契约冲突，不证明所有模型配置都经过此路径。</p>

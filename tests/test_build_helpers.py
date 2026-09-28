@@ -299,6 +299,31 @@ class BuildHelpersTest(unittest.TestCase):
         self.assertIn('<code>$HOME &lt; $PATH</code>', pdf_html)
         self.assertIn('$x\\lt y$', pdf_html)
 
+    def test_publishers_share_code_shielding_for_fence_edge_cases(self):
+        self.assertIs(build_site.protect_code, build_pdf.protect_code)
+        self.assertIs(build_site.restore_code, build_pdf.restore_code)
+        for source in (
+                '````python\n`$x$`\n```\nstill code\n````\n$y$\n',
+                '~~~text\r\n$x$\r\n~~~\r\n`$y$`',
+                '```python\nunterminated $x$\n'):
+            with self.subTest(source=source):
+                shielded, repo = build_site.protect_code(source)
+                self.assertIn('@@CODETOKEN0@@', shielded)
+                self.assertEqual(build_pdf.restore_code(shielded, repo), source)
+
+    def test_publishers_share_link_policy_and_existing_errors(self):
+        self.assertIs(build_site.validate_url_schemes, build_pdf.validate_url_schemes)
+        for validator in (build_site.validate_url_schemes, build_pdf.validate_url_schemes):
+            with self.subTest(validator=validator):
+                validator('<a href="mailto:reader@example.org">邮件</a>'
+                          '<img src="relative.png"><a href="#part">章内</a>')
+                with self.assertRaisesRegex(ValueError,
+                                            '不允许省略协议的外部 href：//example.org/x'):
+                    validator('<a href="//example.org/x">外链</a>')
+                with self.assertRaisesRegex(ValueError,
+                                            '不安全或不支持的 href 协议：javascript'):
+                    validator('<a href="javascript&#58;alert(1)">危险</a>')
+
     def test_link_protocol_policy_accepts_normal_links_and_rejects_active_content(self):
         build_site.validate_url_schemes(
             '<a href="https://example.org">外链</a><a href="#sec-1">节</a>'

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 8 章 · 语音分离 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="4bf248e8700e"><style>
+<meta name="source-digest" content="fa8f29393c69"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -631,7 +631,7 @@ $$</p>
 <p><a href="gss_audio/source_2.wav">第二路源</a><audio class="audio-sample" controls preload="none" aria-label="第二路源" src="gss_audio/source_2.wav">请使用上方 WAV 链接下载。</audio></p>
 <p><a href="gss_audio/mixture.wav">混合双麦</a><audio class="audio-sample" controls preload="none" aria-label="混合双麦" src="gss_audio/mixture.wav">请使用上方 WAV 链接下载。</audio></p>
 <p><a href="gss_audio/enhanced_correct.wav">正确活动输出</a><audio class="audio-sample" controls preload="none" aria-label="正确活动输出" src="gss_audio/enhanced_correct.wav">请使用上方 WAV 链接下载。</audio></p>
-<p><a href="gss_audio/enhanced_missed.wav">漏标输出</a><audio class="audio-sample" controls preload="none" aria-label="漏标输出" src="gss_audio/enhanced_missed.wav">请使用上方 WAV 链接下载。</audio>都按同一增益导出，文件摘要和精确参数见<a href="gss_audio/MANIFEST.json">独立清单</a>。这五个 WAV 属独立 GSS 资产，不并入本书主清单的 98 个样本。</p>
+<p><a href="gss_audio/enhanced_missed.wav">漏标输出</a><audio class="audio-sample" controls preload="none" aria-label="漏标输出" src="gss_audio/enhanced_missed.wav">请使用上方 WAV 链接下载。</audio>都按同一增益导出，文件摘要和精确参数见<a href="gss_audio/MANIFEST.json">独立清单</a>。这五个 WAV 属独立 GSS 资产，不并入本书主清单的 109 个样本。</p>
 <p>官方 <a href="https://github.com/desh2608/gss/tree/10fad18cae85e2e4342c77421abc70c9c5da23ed">GPU-GSS 固定源码</a>还包含 CuPy、Lhotse/RTTM、分段上下文及完整会议处理；本机未运行其官方整链，也没有使用 CHiME 语料或计算 WER。本段的教学结果不能充当 Boeddeker 等原论文的复现成绩。<a href="https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf" title="citation">GSS 原论文 §3.1～§3.3</a>。</p>
 <p><img alt="图42：活动信息约束方向聚类，原复谱与掩码共同形成SCM，波束输出目标音频" src="../figures/fig42_gss_flow.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图42把控制信息与音频统计分开：活动标注进入聚类的允许类别；WPE 后的复谱一支做方向归一并估计掩码，另一支保留幅度供 SCM 计算。形状矩阵 $B$ 与功率 SCM 不是同一个对象。本书受控实验无混响，因此旁路 WPE；真实系统只有满足前置条件时才启用。低能量归背景、空统计回参考麦和失败诊断也应随结果报告。</p>

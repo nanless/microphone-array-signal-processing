@@ -56,7 +56,7 @@ WebRTC 的这一份工作树只包含主源码库，不是 `depot_tools` 管理�
 算法核心的区别见[第三方说明](../THIRD_PARTY.md)；两个获取工具都不会安装、编译或执行上游程序。
 
 
-第9章增加`vo-rfs-tracking-updated`：
+Vo RFS 追踪源码归档单独取得和核验：
 
 ```bash
 .venv/bin/python codes/chapters/ch00/upstream/fetch_archives.py --project vo-rfs-tracking-updated

@@ -21,11 +21,15 @@ from html import escape, unescape
 from collections import Counter
 from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import quote, unquote, urlparse, urlsplit, urlunsplit
+from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 try:
+    from scripts.build_markdown_helpers import (ALLOWED_LINK_SCHEMES, protect_code,
+                                                restore_code, validate_url_schemes)
     from scripts.code_layout import MAIN_AUDIO_GROUP_CHAPTER, main_audio_manifest_path, main_audio_path
 except ModuleNotFoundError:  # direct ``python scripts/build_site.py``
+    from build_markdown_helpers import (ALLOWED_LINK_SCHEMES, protect_code,
+                                        restore_code, validate_url_schemes)
     from code_layout import MAIN_AUDIO_GROUP_CHAPTER, main_audio_manifest_path, main_audio_path
 
 ROOT = Path(__file__).parent.parent
@@ -394,7 +398,8 @@ def source_digest():
                        TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
-    paths += [Path(__file__), ROOT / "scripts" / "heading_aliases.py",
+    paths += [Path(__file__), ROOT / "scripts" / "build_markdown_helpers.py",
+              ROOT / "scripts" / "heading_aliases.py",
               ROOT / "scripts" / "legacy_sequential_anchors.json",
               ROOT / "scripts" / "code_layout.py",
               ROOT / "scripts" / "make_figures.py",
@@ -455,71 +460,6 @@ def heading_records(heads):
         primary = base if seen[base] == 1 else f"{base}-{seen[base]}"
         records.append((level, text, primary, f"sec-{index}"))
     return records
-
-
-INLINE_CODE_RE = re.compile(r"(?<!`)(`+)(?!`)(.+?)(?<!`)\1(?!`)", re.S)
-ALLOWED_LINK_SCHEMES = {"http", "https", "mailto"}
-
-
-def protect_code(md_text):
-    """暂存围栏和行内代码，使数学正则不会改写代码中的 `$...$`。"""
-    repo = []
-
-    def stash(value):
-        repo.append(value)
-        return f"@@CODETOKEN{len(repo) - 1}@@"
-
-    lines = md_text.splitlines(keepends=True)
-    protected = []
-    index = 0
-    while index < len(lines):
-        marker = re.match(r"^\s{0,3}(`{3,}|~{3,})", lines[index])
-        if not marker:
-            protected.append(lines[index])
-            index += 1
-            continue
-        fence_char = marker.group(1)[0]
-        fence_len = len(marker.group(1))
-        block = [lines[index]]
-        index += 1
-        while index < len(lines):
-            block.append(lines[index])
-            closing = re.match(r"^\s{0,3}(`{3,}|~{3,})\s*$", lines[index].rstrip("\r\n"))
-            index += 1
-            if (closing and closing.group(1)[0] == fence_char
-                    and len(closing.group(1)) >= fence_len):
-                break
-        protected.append(stash("".join(block)))
-
-    text = "".join(protected)
-    text = INLINE_CODE_RE.sub(lambda match: stash(match.group(0)), text)
-    return text, repo
-
-
-def restore_code(text, repo):
-    return re.sub(r"@@CODETOKEN(\d+)@@", lambda m: repo[int(m.group(1))], text)
-
-
-def validate_url_schemes(html):
-    """只允许站内相对链接以及 http、https、mailto 外链。"""
-    class TargetParser(HTMLParser):
-        def __init__(self):
-            super().__init__(convert_charrefs=True)
-            self.targets = []
-
-        def handle_starttag(self, _tag, attrs):
-            self.targets.extend((key, value) for key, value in attrs
-                                if key.lower() in {"href", "src"} and value is not None)
-
-    parser = TargetParser()
-    parser.feed(html)
-    for attribute, value in parser.targets:
-        parsed = urlparse(value.strip())
-        scheme = parsed.scheme.lower()
-        if parsed.netloc and not scheme:
-            raise ValueError(f"不允许省略协议的外部 {attribute}：{value}")
-        if scheme and scheme not in ALLOWED_LINK_SCHEMES:
-            raise ValueError(f"不安全或不支持的 {attribute} 协议：{scheme}")
 
 
 def source_outputs():

@@ -166,6 +166,20 @@ class PublishedResearchQualityTests(unittest.TestCase):
                     with patch.object(Path, "read_bytes", read):
                         self.assertNotEqual(before, digest())
 
+    def test_shared_markdown_helper_invalidates_both_quality_digests(self):
+        original_read = Path.read_bytes
+        helper = quality.ROOT / "scripts/build_markdown_helpers.py"
+        for digest in (quality.site_source_digest, quality.source_digest):
+            before = digest()
+
+            def read(path):
+                value = original_read(path)
+                return value + b"\n# changed helper\n" if path == helper else value
+
+            with self.subTest(digest=digest.__name__):
+                with patch.object(Path, "read_bytes", read):
+                    self.assertNotEqual(before, digest())
+
     def test_temporary_published_site_passes_tutorial_and_research_gates(self):
         from scripts import build_site
         with tempfile.TemporaryDirectory() as directory:
