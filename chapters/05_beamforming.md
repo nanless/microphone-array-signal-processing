@@ -589,7 +589,7 @@ J(\vec w)&=J_n+J_s/\mu,\\
 
     可先验证 $(\mu\mathbf R_{nn}+\phi_s\vec a\vec a^H)\mathbf R_{nn}^{-1}\vec a=(\mu+\phi_s q)\vec a$，因此逆矩阵乘 $\vec a$ 等于 $\mathbf R_{nn}^{-1}\vec a/(\mu+\phi_s q)$。再用 $a_r=1$ 和 $\mathbf R_{ss}\vec e_r=\phi_s\vec a$，就得到式(5-13)。这一步另要求 $\mathbf R_{nn}$ 正定。
 
-    此时 SDW-MWF 是 MVDR 输出再乘一个标量 Wiener 增益，并在 $\mu\to0^+$ 时趋近 MVDR。目标协方差满秩时没有这个简单关系。[Doclo, Spriet, Wouters & Moonen, *Speech Communication*, vol.49, p.636, 2007](https://hal.science/hal-00499178v1/document "citation")
+    此时 SDW-MWF 是 MVDR 输出再乘一个标量 Wiener 增益，并在 $\mu\to0^+$ 时趋近 MVDR。目标协方差满秩时没有这个简单关系。SDW 的代价函数与权衡参数见 [Doclo、Spriet、Wouters 与 Moonen，2007，§2.3、式(13)～(15)](https://hal.science/hal-00499178v1/document "citation")；秩一模型中的参考响应因子及 MVDR 与 Wiener 增益的分解见 [Grimm、Lawin-Ore、Doclo 与 Freudenberger，2016，§3.1、式(7)、(9)～(16)](https://doi.org/10.1186/s13634-016-0375-6 "citation")。
 
 ### Frost 波束形成器：时域约束更新
 

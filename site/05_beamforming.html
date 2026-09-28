@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 5 章 · 波束形成 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="7e678a15b0f1"><style>
+<meta name="source-digest" content="47603b7ef500"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -769,7 +769,7 @@ J(\vec w)&=J_n+J_s/\mu,\\
     \vec w_{SDW}&=G_\mu\vec w_{MVDR}。
     \end{aligned}\tag{5-13}$$</p>
 <p>可先验证 $(\mu\mathbf R_{nn}+\phi_s\vec a\vec a^H)\mathbf R_{nn}^{-1}\vec a=(\mu+\phi_s q)\vec a$，因此逆矩阵乘 $\vec a$ 等于 $\mathbf R_{nn}^{-1}\vec a/(\mu+\phi_s q)$。再用 $a_r=1$ 和 $\mathbf R_{ss}\vec e_r=\phi_s\vec a$，就得到式(5-13)。这一步另要求 $\mathbf R_{nn}$ 正定。</p>
-<p>此时 SDW-MWF 是 MVDR 输出再乘一个标量 Wiener 增益，并在 $\mu\to0^+$ 时趋近 MVDR。目标协方差满秩时没有这个简单关系。<a href="https://hal.science/hal-00499178v1/document" title="citation">Doclo, Spriet, Wouters &amp; Moonen, <em>Speech Communication</em>, vol.49, p.636, 2007</a></p>
+<p>此时 SDW-MWF 是 MVDR 输出再乘一个标量 Wiener 增益，并在 $\mu\to0^+$ 时趋近 MVDR。目标协方差满秩时没有这个简单关系。SDW 的代价函数与权衡参数见 <a href="https://hal.science/hal-00499178v1/document" title="citation">Doclo、Spriet、Wouters 与 Moonen，2007，§2.3、式(13)～(15)</a>；秩一模型中的参考响应因子及 MVDR 与 Wiener 增益的分解见 <a href="https://doi.org/10.1186/s13634-016-0375-6" title="citation">Grimm、Lawin-Ore、Doclo 与 Freudenberger，2016，§3.1、式(7)、(9)～(16)</a>。</p>
 </li>
 </ul>
 <h2 id="sec-u-b11411e989">Frost 波束形成器：时域约束更新</h2>

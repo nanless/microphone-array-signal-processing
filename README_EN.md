@@ -2,7 +2,7 @@
 
 A beginner-friendly Chinese tutorial on microphone array signal processing at graduate-entry level. It starts with “why use an array of microphones” and covers DOA estimation, beamforming, acoustic echo cancellation (AEC), dereverberation (WPE), speech separation, source tracking, engineering practice, and system selection.
 
-The tutorial provides derivations, reproducible numerical examples, validity limits, 49 script-generated figures, and chapter-owned teaching code. It has 228 executable exercises and 109 [main-manifest synthetic WAVs](codes/chapters/ch00/audio/MANIFEST.json) in 27 groups. The [exercise and audio handbook](codes/chapters/ch00/research/05_exercises_and_audio.md) gives inputs, answers, listening conditions, and code entry points. These sounds are mathematical samples, not natural speech or formal listening tests; two Chapter 6 AEC audio groups also use parameters that do not exactly match exercises E06-07–20.
+The tutorial provides derivations, reproducible numerical examples, validity limits, 49 script-generated figures, and chapter-owned teaching code. It has 229 executable exercises and 109 [main-manifest synthetic WAVs](codes/chapters/ch00/audio/MANIFEST.json) in 27 groups. The [exercise and audio handbook](codes/chapters/ch00/research/05_exercises_and_audio.md) gives inputs, answers, listening conditions, and code entry points. These sounds are mathematical samples, not natural speech or formal listening tests; two Chapter 6 AEC audio groups also use parameters that do not exactly match exercises E06-07–20.
 
 Four independently catalogued synthetic sets provide [five GSS WAVs and intermediate state](codes/chapters/ch08/gss_audio/MANIFEST.json), [three moving-source WAVs and trajectory truth](codes/chapters/ch09/moving_audio/MANIFEST.json), [two observation-to-tracking WAVs and frame records](codes/chapters/ch09/tracking_audio/MANIFEST.json), and [18 Appendix B white-noise room WAVs](codes/chapters/appendix_b/room_audio/MANIFEST.json) with a chart and [numerical report](codes/chapters/appendix_b/room_audio/RESULTS.json). None belongs to the main 109. A real synchronized DEMAND excerpt and three derivatives have separate [data and license documentation](codes/chapters/ch02/real_audio/README.md).
 
@@ -24,7 +24,7 @@ Use the [chapter code map](codes/chapters/README.md) to find teaching implementa
 | `codes/chapters/*/reports/` | Small-scale run reports beside their algorithm chapters, separate from source acquisition and full paper benchmarks |
 | `scripts/` | Plotting and build scripts (`make_figures.py`, `make_aec_figures.py`, `build_site.py`, `build_pdf.py`; see `scripts/README.md`) |
 | `site/` | 20 pages: 14 tutorial pages (including the homepage) and 6 handbook pages under `research/`; reproducible build output |
-| `dist/` | [Current combined PDF](dist/microphone-array-tutorial.pdf) and rebuildable HTML; the PDF has 638 bookmarks: 14 top-level, 119 second-level and 505 third-level |
+| `dist/` | [Current combined PDF](dist/microphone-array-tutorial.pdf) and rebuildable HTML; the PDF has 639 bookmarks: 14 top-level, 121 second-level and 504 third-level |
 
 ## Chapters
 

@@ -1,4 +1,4 @@
-"""Independent arithmetic and PCM oracles for Appendix A E12-06..12."""
+"""Independent arithmetic and PCM oracles for Appendix A E12-06..13."""
 
 import json
 import unittest
@@ -18,15 +18,21 @@ class AppendixAMathTests(unittest.TestCase):
         cls.rows = run_experiments()
 
     def test_exact_ids_and_json(self):
-        self.assertEqual(set(self.rows), {f'E12-{number:02d}' for number in range(6, 13)})
+        self.assertEqual(set(self.rows), {f'E12-{number:02d}' for number in range(6, 14)})
         json.dumps(self.rows, allow_nan=False)
 
     def test_signed_bins_and_complex_norm(self):
         row = self.rows['E12-06']
         self.assertEqual(row['signed_frequency_hz_by_bin'],
                          [0, 1000, 2000, 3000, -4000, -3000, -2000, -1000])
+        # Analytically, f_k = k f_s/N for the five retained real-FFT bins.
+        self.assertEqual(row['one_sided_frequency_hz_by_bin'],
+                         [0, 1000, 2000, 3000, 4000])
         self.assertEqual(row['real_cosine_nonzero_bins'], [1, 7])
         self.assertEqual(row['real_cosine_nonzero_coefficients'], [4, 4])
+        # (-1)^n = exp(j 2*pi*4*n/8), so its unnormalized DFT is 8 at k=4 only.
+        self.assertEqual(row['alternating_signal_nonzero_bins'], [4])
+        self.assertEqual(row['alternating_signal_nonzero_coefficients'], [8])
         self.assertEqual(row['nyquist_bin']['frequency_magnitude_hz'], 4000)
         row = self.rows['E12-07']
         self.assertEqual(row['hermitian_norm_squared'], 2)
@@ -109,6 +115,32 @@ class AppendixAMathTests(unittest.TestCase):
         self.assertEqual(pcm['first_wrong_wrap_sample_108'], round(.18 * 32768) / 32768)
         self.assertEqual(pcm['first_wrong_sample_620'], 0)
         self.assertEqual(pcm['wrong_minus_linear_nonzero_count'], 20)
+
+    def test_absolute_and_trace_relative_loading_scales(self):
+        row = self.rows['E12-13']
+        self.assertEqual(row['covariance'], [[4, 0], [0, 1]])
+        self.assertEqual(row['steering'], [1, 1])
+        self.assertEqual((row['microphones'], row['absolute_loading'],
+                          row['relative_coefficient'], row['scale_factor']),
+                         (2, 1, .4, 10))
+
+        # For diagonal d1,d2 and a=[1,1], w=[d2,d1]/(d1+d2).
+        expected = (
+            (1, 'absolute', 1, [[5, 0], [0, 2]], [2/7, 5/7], 5/2),
+            (1, 'relative', 1, [[5, 0], [0, 2]], [2/7, 5/7], 5/2),
+            (10, 'absolute', 1, [[41, 0], [0, 11]], [11/52, 41/52], 41/11),
+            (10, 'relative', 10, [[50, 0], [0, 20]], [2/7, 5/7], 5/2),
+        )
+        self.assertEqual(len(row['cases']), len(expected))
+        for case, (scale, kind, addition, matrix, weights, condition) in zip(row['cases'], expected):
+            with self.subTest(scale=scale, kind=kind):
+                self.assertEqual((case['input_scale'], case['kind'],
+                                  case['effective_diagonal_addition']),
+                                 (scale, kind, addition))
+                np.testing.assert_array_equal(case['loaded_covariance'], matrix)
+                np.testing.assert_allclose(case['weights'], weights, rtol=0, atol=1e-15)
+                self.assertAlmostEqual(case['condition_2'], condition, places=12)
+                self.assertAlmostEqual(case['target_response'], 1, places=12)
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-"""E12-06..12: reproducible mathematical counterexamples for Appendix A.
+"""E12-06..13: reproducible mathematical counterexamples for Appendix A.
 
 All values are constructed teaching inputs, not measurements. The audio case
 is mathematical PCM16 synthesis; no file is written by importing or running
@@ -29,13 +29,21 @@ def run_experiments() -> dict:
 
     n, sample_rate = 8, 8000
     signed_frequencies = np.fft.fftfreq(n, 1 / sample_rate)
+    one_sided_frequencies = np.fft.rfftfreq(n, 1 / sample_rate)
     cosine = np.cos(2 * np.pi * np.arange(n) / n)
     spectrum = np.fft.fft(cosine)
+    alternating = (-1.) ** np.arange(n)
+    alternating_spectrum = np.fft.fft(alternating)
     results['E12-06'] = {
         'sample_rate_hz': sample_rate, 'fft_length': n,
         'signed_frequency_hz_by_bin': signed_frequencies.tolist(),
+        'one_sided_frequency_hz_by_bin': one_sided_frequencies.tolist(),
         'real_cosine_nonzero_bins': [int(k) for k in np.flatnonzero(np.abs(spectrum) > 1e-12)],
         'real_cosine_nonzero_coefficients': [float(spectrum[k].real) for k in (1, 7)],
+        'alternating_signal_nonzero_bins': [
+            int(k) for k in np.flatnonzero(np.abs(alternating_spectrum) > 1e-12)
+        ],
+        'alternating_signal_nonzero_coefficients': [float(alternating_spectrum[4].real)],
         'nyquist_bin': {'index': 4, 'frequency_magnitude_hz': 4000,
                         'one_discrete_bin_for_both_signs': True},
         'scope': 'signed representative of DFT frequencies; k=4 also denotes +4 kHz modulo 8 kHz',
@@ -121,6 +129,34 @@ def run_experiments() -> dict:
         'singular_noise_weights': singular_weights,
         'identity_noise_weights': identity_weights,
         'limiting_statement': 'with target energy in the noise nullspace, increasing mu does not force zero output',
+    }
+
+    covariance = np.diag([4., 1.])
+    steering = np.ones(2)
+    absolute_load, relative_coefficient, scale_factor = 1., .4, 10.
+    cases = []
+    for input_scale in (1., scale_factor):
+        scaled_covariance = input_scale * covariance
+        for kind in ('absolute', 'relative'):
+            diagonal_addition = (absolute_load if kind == 'absolute' else
+                                 relative_coefficient * np.trace(scaled_covariance) / 2)
+            loaded = scaled_covariance + diagonal_addition * np.eye(2)
+            unnormalized = np.linalg.solve(loaded, steering)
+            weights = unnormalized / np.vdot(steering, unnormalized)
+            cases.append({
+                'input_scale': input_scale, 'kind': kind,
+                'effective_diagonal_addition': float(diagonal_addition),
+                'loaded_covariance': loaded.tolist(),
+                'weights': weights.tolist(),
+                'condition_2': float(np.linalg.cond(loaded)),
+                'target_response': float(np.vdot(weights, steering).real),
+            })
+    results['E12-13'] = {
+        'covariance': covariance.tolist(), 'steering': steering.tolist(),
+        'microphones': 2, 'absolute_loading': absolute_load,
+        'relative_coefficient': relative_coefficient,
+        'scale_factor': scale_factor, 'cases': cases,
+        'scope': 'fixed absolute load changes under covariance scaling; trace-relative load scales with the covariance',
     }
     return results
 

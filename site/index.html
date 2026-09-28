@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>导读与导航 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="7e678a15b0f1"><style>
+<meta name="source-digest" content="47603b7ef500"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -755,7 +755,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 </code></pre>
 <p>再运行第 13.7 节列出的绘图命令，可重新生成 49 张图；运行时间取决于机器。具体构建步骤和错误处理见 <code>scripts/README.md</code>。Windows 上需把命令中的 <code>.venv/bin/python</code> 换成 <code>.venv\Scripts\python</code>。</p>
-<p>另有 228 道带答案的<a href="research/05_exercises_and_audio.html">章节代码练习与音频实验</a>，从第 1 章到附录 B 使用 E01-01 等稳定编号。第 6 章 E06-07～E06-20 包含算法边界手算与子带、IPNLMS、RLS、Kalman 的小规模复算；附录 B 的 E13-03～08 复算房间结果、相位与来源证据。每道题对应输入、执行代码和可核查结果；附录 B 的 1～17 题另用一套编号。</p>
+<p>另有 229 道带答案的<a href="research/05_exercises_and_audio.html">章节代码练习与音频实验</a>，从第 1 章到附录 B 使用 E01-01 等稳定编号。第 6 章 E06-07～E06-20 包含算法边界手算与子带、IPNLMS、RLS、Kalman 的小规模复算；附录 B 的 E13-03～08 复算房间结果、相位与来源证据。每道题对应输入、执行代码和可核查结果；附录 B 的 1～17 题另用一套编号。</p>
 <p>109 个 WAV 样本由本书合成，分为 27 组，覆盖对齐平均、四麦分数采样时差、AEC、WPE、已知矩阵解混、工程失真、双声道声像，以及相关噪声、极性错误、病态求逆、非线性回声、四种 AEC 自适应方法、两带跨项、功率谱减、时钟漂移、线性插值失真、一采样对齐误差、房间衰减、双麦差分校准、纯音时差歧义、GSC 目标泄漏门控、AEC 参考断流、WPE 可预测目标损伤、整块 AGC 控制，以及第11章同一三音混合输入的3/9抽头FIR选型。先运行 <code>codes/chapters/ch00/examples/generate_audio_samples.py</code>，再按手册比较参考、输入和输出；网页提供不自动播放的试听控件。</p>
 <p>另有四套独立清单管理的合成资产：<a href="gss_audio/MANIFEST.json">GSS 五路音频与中间状态</a>、<a href="moving_audio/MANIFEST.json">自由场移动声源三路音频与轨迹真值</a>、<a href="tracking_audio/MANIFEST.json">第 9 章两路追踪音频与逐帧观测</a>，以及<a href="room_audio/MANIFEST.json">附录 B 六位置房间题的 18 个白噪声 WAV 和结果报告</a>。它们均不计入主清单 109 个样本，四套的生成模型和评分条件也不能互相替代。</p>
 <p>三组反例见附录 B 图 35，非线性残留见第 6 章图 36。图 37 解释两带子带模型的交叉项；图 38 分别展示 IPNLMS、RLS 和卡尔曼滤波的受控状态变化，三幅子图不构成性能排名。图 39 展示分区块频域自适应滤波（PBFDAF）如何用播放参考的历史块预测回声、计算残差并更新滤波器。</p>
