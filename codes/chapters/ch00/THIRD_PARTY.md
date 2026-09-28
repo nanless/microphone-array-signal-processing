@@ -1,6 +1,6 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 96 个 Git 上游项目；已在 `codes/chapters/ch00/upstream/_downloads/` 取得 83 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件，DiCoW v1 演示与 TS-ASR-Whisper v1 训练源码于 2026-09-28 按固定提交取得。2026-09-28 离线核验 82 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 13 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 96 个 Git 上游项目；已在 `codes/chapters/ch00/upstream/_downloads/` 取得 83 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件，DiCoW v1 演示与 TS-ASR-Whisper v1 训练源码于 2026-09-28 按固定提交取得。2026-09-29 扩充 WPE 源码入口后离线重核，82 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 13 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”只说明来源、提交、工作区状态和指定入口符合清单，不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -102,7 +102,7 @@ DiCoW 两份 v1 源码是互相匹配的：TS-ASR-Whisper v1 的 `inference_pipe
 |---|---|---|---|
 | [sbl](https://github.com/gerstoft/SBL/tree/d4bba35e9b60907d3024473ba5a41046450baae0) | 多快拍、多频稀疏贝叶斯定位 | GPL-3.0 | 已取得独立源码 |
 | [robustsbl](https://github.com/NoiseLabUCSD/RobustSBL/tree/d746266a1336d4467f60b6f7b7e8b4695a01d26d) | Gauss、t、Huber、Tyler 损失的稳健 SBL | MIT | 已取得独立源码 |
-| [btk20](https://github.com/kkumatani/distant_speech_recognition/tree/feff19ec8bcb770f6530fe280dc3ccafc2f5984a) | 子带 LMS/RLS 广义旁瓣抵消 | MIT; retain per-file notices | 已取得独立源码 |
+| [btk20](https://github.com/kkumatani/distant_speech_recognition/tree/feff19ec8bcb770f6530fe280dc3ccafc2f5984a) | 子带 LMS/RLS 广义旁瓣抵消、后置滤波与 WPE 去混响 | MIT; retain per-file notices | 已取得独立源码；WPE 入口已静态核对，未构建整链 |
 | [smpphat](https://github.com/FrancoisGrondin/smpphat/tree/6fd33e6eb3251078a4cd9793dde909e2500265cc) | 合并等效麦对的 SRP-PHAT 加速 | GPL-3.0 | 已取得独立源码；未改原版在本机数值失败，临时两行适配版的合成案例通过；原版与适配版报告分开保存 |
 | [libsoxr](https://sourceforge.net/p/soxr/code/ci/945b592b70470e29f917f4de89b4281fbbd540c0/tree/) | 连续与可变比率重采样 | LGPL-2.1-or-later; embedded PFFFT terms separate | 已取得独立源码 |
 | [libebur128](https://github.com/jiixyj/libebur128/tree/67b33abe1558160ed76ada1322329b0e9e058b02) | 响度和真峰值测量 | MIT | 已取得独立源码 |

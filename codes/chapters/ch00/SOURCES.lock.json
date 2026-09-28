@@ -118,7 +118,11 @@
       "entrypoints": [
         "LICENSE",
         "espnet2/enh/layers/dnn_wpe.py",
+        "espnet2/enh/layers/wpe.py",
+        "espnet2/enh/layers/mask_estimator.py",
         "espnet2/enh/layers/beamformer.py",
+        "espnet2/enh/layers/beamformer_th.py",
+        "espnet2/enh/layers/dnn_beamformer.py",
         "espnet2/enh/separator/tfgridnet_separator.py"
       ]
     },
@@ -1136,7 +1140,7 @@
       "revision": "feff19ec8bcb770f6530fe280dc3ccafc2f5984a",
       "license": "MIT; retain per-file notices",
       "fetch_enabled": true,
-      "scope": "Subband LMS/RLS GSC",
+      "scope": "Subband LMS/RLS GSC, postfilters and WPE dereverberation",
       "acquisition": "independent_source_checkout",
       "note": "Legacy Python 2.7/SWIG3/GSL build. Coordinates in millimetres. Does not establish a time-domain Frost implementation.",
       "entrypoints": [
@@ -1145,7 +1149,9 @@
         "btk20_src/beamformer/beamformer.cc",
         "btk20_src/unit_test/test_online_beamforming.py",
         "btk20_src/postfilter/postfilter.cc",
-        "btk20_src/postfilter/postfilter.h"
+        "btk20_src/postfilter/postfilter.h",
+        "btk20_src/dereverberation/dereverberation.cc",
+        "btk20_src/dereverberation/dereverberation.h"
       ]
     },
     {

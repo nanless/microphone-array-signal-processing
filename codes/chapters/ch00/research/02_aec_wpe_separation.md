@@ -484,13 +484,15 @@ AEC 入口是 `zoo/aec/aec.py` 的任务滤波器，再看 `optimizer_kf.py` 的
 
 ### W05　WPD：同时利用当前通道与延迟历史
 
-WPD 把当前帧与历史帧一起放入无失真滤波问题。它的约束只施加在扩展向量的当前目标分量，历史部分用于削弱可预测晚期混响。出处为[Nakatani 与 Kinoshita](https://arxiv.org/abs/1908.02710)；实现入口为 [ESPnet `beamformer.py`](https://github.com/espnet/espnet/blob/be79590bb2ff26ffb01bc825c5f68cb9418b7f0d/espnet2/enh/layers/beamformer.py) 的 WPD 相关函数及 `dnn_beamformer.py` 的类型选择。
+WPD 把当前帧与历史帧一起放入无失真滤波问题。它的约束只施加在扩展向量的当前目标分量，历史部分用于削弱可预测晚期混响。[Nakatani 与 Kinoshita，IEEE Signal Processing Letters 2019](https://doi.org/10.1109/LSP.2019.2911179)（[作者版](https://arxiv.org/abs/1812.08400)）提出统一的加权功率最小化准则；同作者的[EUSIPCO 2019 论文](https://arxiv.org/abs/1908.02710)进一步给出生成模型、概率表述和最大似然推导。前者是 WPD 的原始论文，后者解释该准则的统计依据。
+
+参考实现入口为 [ESPnet `beamformer.py`](https://github.com/espnet/espnet/blob/be79590bb2ff26ffb01bc825c5f68cb9418b7f0d/espnet2/enh/layers/beamformer.py) 的 WPD 相关函数及 `dnn_beamformer.py` 的类型选择；固定源码的调用差异见下文。
 
 读码时先查 `wpd` 分支怎样构造延迟堆叠，再查功率倒数、参考通道和解线性方程。最小实验用正文块对角协方差验证历史权重为零，再加入当前—历史互相关；失败实验使功率权重接近零或增大历史阶数至统计量不足。WPD 与串联 WPE→MVDR 的计算和假设有关联，但不能把两个独立增益相加当作联合结果。
 
 E07-05 已把第二种情形写成四维可执行手算：当前—历史相关使权重为 `[0.4, 0.6, -0.2, 0]`，无失真约束为 1。给定协方差上的目标值为 0.6，强制历史权重为零时为 2/3。这里比较的是同一矩阵下两个约束集合的最小值，不是音频去混响或识别收益；逐行求解见 [第 7 章练习](../../../../chapters/07_wpe-dereverberation.md#sec-7-9)。
 
-[E07-07](../../../../chapters/07_wpe-dereverberation.md#e07-07)把同一矩阵进一步分块并完成平方：历史预测 $G=C^{-1}B^H$、残差加权统计量 $S=A-BC^{-1}B^H$，再求加权 MPDR；四维解与两步输出逐项相同。这个等价要求同一功率、有效帧和约束，正则化也必须对应同一目标。[Boeddeker 等，ICASSP 2020，§4 和附录](https://arxiv.org/pdf/1910.13707)提供因式分解依据；[原创复算脚本](../cross_chapter/enhancement_structure_exercises.py)另检查复数交叉项，正文另分析加载边界。不能把它改写成任意 WPE→MVDR 都等于 WPD。
+[E07-07](../../../../chapters/07_wpe-dereverberation.md#e07-07)把同一矩阵进一步分块并完成平方：历史预测 $G=C^{-1}B^H$、残差加权统计量 $S=A-BC^{-1}B^H$，再求加权 MPDR；四维解与两步输出逐项相同。这个等价要求同一功率、有效帧和约束，正则化也必须对应同一目标。[Boeddeker 等，ICASSP 2020，§4 和附录](https://arxiv.org/pdf/1910.13707)在 WPD 提出后推导其无损分解为 WPE 与加权 MPDR；[原创复算脚本](../cross_chapter/enhancement_structure_exercises.py)另检查复数交叉项，正文另分析加载边界。不能把它改写成任意 WPE→MVDR 都等于 WPD。
 
 固定 ESPnet 的 `wpd` 分支走 `get_WPD_filter_with_rtf()`，`wpd_souden` 走 `get_WPD_filter_v2()`，二者不是同一导向估计过程。`get_covariances()` 把当前块和延迟历史按抽头优先堆成 `(btaps+1)*通道`，统计从 `bdelay+btaps-1` 起；`perform_WPD_filtering()` 再按相同排列应用。默认 `use_torchaudio_api=False` 选择 `beamformer.py`，另一路 `beamformer_th.py` 不应只凭函数同名就跳过核查。与 DNN-WPE 的未消费开关不同，WPD 分支确实传入加载参数，但加载落在估计 RTF 用的噪声矩阵还是扩展统计矩阵，要逐函数确认。本轮没有执行任一 PyTorch WPD 分支。
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 B · 路径地图与练习 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="9518a5787358"><style>
+<meta name="source-digest" content="3a32b6414d9f"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -523,7 +523,7 @@ $$</p>
 \vec w_{SDW}
 =\left(\mathbf R_{ss}+\mu\mathbf R_{nn}\right)^{-1}\mathbf R_{ss}\vec e_r .
 $$</p>
-<p><strong>WPE 预测模型，见式(7-1)</strong>：沿用第 7 章的局部记号，$f$ 是离散频点索引（不同于第 2 章以 Hz 计的物理频率 $f$）；$X(n,f)$ 是当前帧该频点的观测；$G^*(k,f)X(n-k,f)$ 用过去帧预测晚期混响，$E(n,f)$ 是保留的早期成分。$\Delta$ 为预测延迟，$K$ 为抽头数；多通道时系数和历史观测改为向量，见 §7.1。</p>
+<p><strong>WPE 预测模型，见式(7-1)</strong>：沿用第 7 章的局部记号，$f$ 是离散频点索引（不同于第 2 章以 Hz 计的物理频率 $f$）；$X(n,f)$ 是当前帧该频点的观测；$G^*(k,f)X(n-k,f)$ 用过去帧预测晚期混响，$E(n,f)$ 是希望保留早期成分的预测残差，并不保证等于真实早期成分。$\Delta$ 为预测延迟，$K$ 为抽头数；多通道时系数和历史观测改为向量，见<a href="07_wpe-dereverberation.html#sec-7-3">§7.3</a>。</p>
 <p>$$
 X(n,f)=E(n,f)+\sum_{k=\Delta}^{\Delta+K-1}G^*(k,f)X(n-k,f) .
 $$</p>

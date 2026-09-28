@@ -68,15 +68,13 @@
 
 Kinoshita 等在 *EURASIP Journal on Advances in Signal Processing* 2016 的挑战总结表明，WPE 对远场识别的改善与通道数和数据条件有关；引用结果时必须注明通道数与测试集。[REVERB Challenge 官方任务说明](https://reverb2014.audiolabs-erlangen.de/index.html "citation")、[Kinoshita et al., 2016, §2、§4.1.1 与图5](https://doi.org/10.1186/s13634-016-0306-6 "citation")
 
-图21（b）中音节结束后的横向能量拖尾，在（c）中得到减弱。
-
 #### 延迟预测模型与帧索引
 
 晚期混响在所选时频模型中被近似为可由历史观测线性预测的成分，再从当前帧减去该预测。在一次固定系数估计所覆盖的范围内，声学路径应近似不变；语音功率可以随时间变化。算法用随帧变化的功率 $\lambda(n,f)$ 表示语音非平稳性。保护延迟 $\Delta$ 隔开当前帧与预测历史，跳过最近的 $\Delta-1$ 帧，以降低直达声和早期反射进入预测项的程度。
 
 WPE 的预测式只引用当前帧之前的观测，这使它可以改造成流式算法。但经典批处理 WPE 会用整段录音反复估计滤波器和时变功率，仍然是非因果处理。只有把统计量、滤波器和功率估计都改为只使用当前及历史数据，并计入 STFT 分帧带来的等待时间，才能称为因果在线 WPE。
 
-**本章的局部频率记号**：为沿用 WPE 文献中的 $X(n,f)$ 写法，这里的 $f$ 暂作无量纲的离散频点索引，不是第 2 章以 Hz 计的连续物理频率 $f$；需要物理频率时写 $f_{\mathrm{Hz}}=f f_s/N$（单边谱），并注明 STFT 长度 $N$ 与采样率 $f_s$。本章求和用的 $k$ 是滞后帧号，不是第 2 章的频点索引。下文同一式中的 $n$ 是帧索引，勿与采样点索引混淆。
+**本章的局部频率记号**：为沿用 WPE 文献中的 $X(n,f)$ 写法，这里的 $f$ 暂作无量纲的离散频点索引，不是第 2 章以 Hz 计的连续物理频率 $f$。对实信号的单边谱，$f$ 取整数 $0,1,\ldots,\lfloor N/2\rfloor$，物理频率为 $f_{\mathrm{Hz}}=f f_s/N$；$N$ 是 STFT 长度，$f_s$ 是采样率，$N$ 为偶数时末项是 Nyquist 频点 $f_s/2$。本章求和用的 $k$ 是滞后帧号，不是第 2 章的频点索引。下文同一式中的 $n$ 是帧索引，勿与采样点索引混淆。
 
 **模型**（每个离散频点 $f$ 独立处理；本节 $X$、$E$、$G$ 都是**逐时频点的复数标量**，多通道版才升级为向量；下式为简短省略 $f$）：
 
@@ -423,7 +421,7 @@ $$\begin{aligned}
 
 干净参考被因果延迟160点，使它与混响观测和WPE输出共用麦克风接收时间轴；没有把三路波形都提前10 ms。共172帧，末帧起点1368 ms。三图共用一个谱幅参考，显示0～2.5 kHz；评分使用全部257个单边频点，即0～8 kHz。
 
-（a）是仅有直达延迟的干净参考；（b）显示混响后的音节拖尾；（c）显示WPE输出。谱图可提示哪里发生变化，定量结论还需分开看拖尾和目标失真。
+（a）是仅有直达延迟的干净参考；（b）显示混响后的音节拖尾；（c）显示WPE输出。音节结束后，（b）的横向能量拖尾在（c）中减弱。谱图可提示哪里发生变化，定量结论还需分开看拖尾和目标失真。
 
 以干净参考每帧的全频能量为基准：不低于其峰值10%的96帧为活动帧集合 $\mathcal A$，不高于峰值1%的61帧为静音帧集合 $\mathcal Q$，另15帧不归入两者。对待评谱 $Y$ 定义
 
@@ -575,7 +573,7 @@ WPE 的模型目标是抑制可由延迟历史预测的晚期混响，而不是�
 
 #### WPD将历史与空间约束放入同一目标
 
-加权功率最小无失真响应（Weighted Power minimization Distortionless response，WPD）把多帧、多通道滤波写进同一个无失真最小功率问题，可同时处理去混响与波束形成。它不是简单串联两个现成模块，也不能用条件不同的 WPE、MPDR 数字相加预测收益。
+加权功率最小无失真响应（Weighted Power minimization Distortionless response，WPD；[Nakatani 与 Kinoshita，IEEE Signal Processing Letters 2019](https://doi.org/10.1109/LSP.2019.2911179 "citation")）把多帧、多通道滤波写进同一个无失真最小功率问题，可同时处理去混响与波束形成。它不是简单串联两个现成模块，也不能用条件不同的 WPE、MPDR 数字相加预测收益。
 
 把当前多通道帧及延迟历史堆成 $\bar{\vec x}_t=[\vec x_t^\top,\vec x_{t-\Delta}^\top,\ldots]^\top$，并把目标导向约束扩展为 $\bar{\vec v}=[\vec v^\top,\vec0^\top,\ldots]^\top$。令 $\lambda_t>0$，用同一组时帧构造加权协方差 $\bar{\mathbf R}=\sum_t\bar{\vec x}_t\bar{\vec x}_t^H/\lambda_t$。WPD 的目标是
 
@@ -602,7 +600,7 @@ $$\bar{\vec w}=[1/3,2/3,0,0]^\top，$$
 
 该模型还假设希望保留的早期目标可由当前块的导向向量描述、$\lambda_t>0$ 且求解所用协方差厄米正定；若 $\lambda_t$ 或协方差使用未来帧，所得实现仍是离线的。
 
-原始 WPD 工作见 Nakatani 与 Kinoshita 2019，后续因式分解工作说明了它与 WPE、波束形成的关系。[Nakatani & Kinoshita, EUSIPCO 2019](https://arxiv.org/abs/1908.02710 "citation")、[Boeddeker et al., ICASSP 2020](https://doi.org/10.1109/ICASSP40776.2020.9054393 "citation")
+Nakatani 与 Kinoshita 的 2019 年 *IEEE Signal Processing Letters* 论文提出 WPD 的统一目标；其[EUSIPCO 2019 论文](https://doi.org/10.23919/EUSIPCO.2019.8902753 "citation")进一步给出概率模型和最大似然解释。[Boeddeker 等，ICASSP 2020](https://doi.org/10.1109/ICASSP40776.2020.9054393 "citation")随后说明在共同权重与约束下，联合滤波可因式分解为 WPE 与加权 MPDR。下文的 E07-07 只在声明的固定统计条件下复算这一关系。
 
 这里的“联合”并不排斥分步计算。在同一组正权重、同一有效帧和同一导向约束下，可以先解多通道 WPE，再对其残差解**加权 MPDR**，得到与整块 WPD 相同的输出。关键是两步共同对应原目标，而非任意选两个模块串联。[E07-07](#e07-07)通过完整平方和一个四维例子说明这种等价，以及不同加载为什么会破坏直接比较。
 
@@ -617,6 +615,8 @@ $$\bar{\vec w}=[1/3,2/3,0,0]^\top，$$
 默认调用仍只返回谱数组。设 `return_diagnostics=True` 时另返回逐频点诊断：加载后正规矩阵在各轮中的最小数值秩、最大条件数、进入最小范数最小二乘回退的次数，以及未求解时的旁路原因。数值秩依赖浮点精度和矩阵尺度，不是语音质量或混响强度评分。
 
 当前基线在 `np.linalg.solve` 抛出奇异矩阵错误后用 `np.linalg.lstsq` 求最小范数解；它不会自行增加加载、减小 $K$ 或根据音质旁路。调用方应检查诊断和参考信号，在需要时调整加载、阶数或旁路策略；求得有限残差不等于保住了直达声。
+
+可试听一组独立的 2.25 s、16 kHz 单通道数学合成夹具：[无回声参考](../codes/chapters/ch07/audio/wpe_dry.wav)、[稀疏回声观测](../codes/chapters/ch07/audio/wpe_reverberant.wav)、[离线 WPE 输出](../codes/chapters/ch07/audio/wpe_output.wav)。三条 WAV 使用共同导出增益 1，可比较停音后拖尾及有声段谐波的变化；它们不同于图21的 1.4 s 随机衰减 RIR 仿真，只供现象试听，不能充当真实房间或语音质量测试。[主音频清单](../codes/chapters/ch00/audio/MANIFEST.json)和[练习与音频手册](../codes/chapters/ch00/research/05_exercises_and_audio.md#5-wpe-的预测与目标损伤)给出生成条件与边界。
 
 #### 低残差不等于保住了目标
 

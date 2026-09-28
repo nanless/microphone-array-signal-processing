@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 7 章 · 去混响（WPE） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="9518a5787358"><style>
+<meta name="source-digest" content="3a32b6414d9f"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -305,11 +305,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>长混响可先评估 WPE；存在定向干扰时再结合波束形成；学习型后滤波还需满足算力和训练数据条件。多通道 WPE、波束形成与单通道后滤波可以组成一条候选链路，但实际顺序取决于统计量和通道数，见<a href="10_engineering-practice.html#sec-10-1">第 10 章 §10.1</a>。</p>
 <p><strong>REVERB 挑战赛中的 WPE</strong>：REVERB 包含 8 通道、2 通道和单通道设置，仿真数据的混响时间约为 0.25～0.7 s，另含真实房间录音。</p>
 <p>Kinoshita 等在 <em>EURASIP Journal on Advances in Signal Processing</em> 2016 的挑战总结表明，WPE 对远场识别的改善与通道数和数据条件有关；引用结果时必须注明通道数与测试集。<a href="https://reverb2014.audiolabs-erlangen.de/index.html" title="citation">REVERB Challenge 官方任务说明</a>、<a href="https://doi.org/10.1186/s13634-016-0306-6" title="citation">Kinoshita et al., 2016, §2、§4.1.1 与图5</a></p>
-<p>图21（b）中音节结束后的横向能量拖尾，在（c）中得到减弱。</p>
 <h3 id="sec-u-c0712b727b">延迟预测模型与帧索引</h3>
 <p>晚期混响在所选时频模型中被近似为可由历史观测线性预测的成分，再从当前帧减去该预测。在一次固定系数估计所覆盖的范围内，声学路径应近似不变；语音功率可以随时间变化。算法用随帧变化的功率 $\lambda(n,f)$ 表示语音非平稳性。保护延迟 $\Delta$ 隔开当前帧与预测历史，跳过最近的 $\Delta-1$ 帧，以降低直达声和早期反射进入预测项的程度。</p>
 <p>WPE 的预测式只引用当前帧之前的观测，这使它可以改造成流式算法。但经典批处理 WPE 会用整段录音反复估计滤波器和时变功率，仍然是非因果处理。只有把统计量、滤波器和功率估计都改为只使用当前及历史数据，并计入 STFT 分帧带来的等待时间，才能称为因果在线 WPE。</p>
-<p><strong>本章的局部频率记号</strong>：为沿用 WPE 文献中的 $X(n,f)$ 写法，这里的 $f$ 暂作无量纲的离散频点索引，不是第 2 章以 Hz 计的连续物理频率 $f$；需要物理频率时写 $f_{\mathrm{Hz}}=f f_s/N$（单边谱），并注明 STFT 长度 $N$ 与采样率 $f_s$。本章求和用的 $k$ 是滞后帧号，不是第 2 章的频点索引。下文同一式中的 $n$ 是帧索引，勿与采样点索引混淆。</p>
+<p><strong>本章的局部频率记号</strong>：为沿用 WPE 文献中的 $X(n,f)$ 写法，这里的 $f$ 暂作无量纲的离散频点索引，不是第 2 章以 Hz 计的连续物理频率 $f$。对实信号的单边谱，$f$ 取整数 $0,1,\ldots,\lfloor N/2\rfloor$，物理频率为 $f_{\mathrm{Hz}}=f f_s/N$；$N$ 是 STFT 长度，$f_s$ 是采样率，$N$ 为偶数时末项是 Nyquist 频点 $f_s/2$。本章求和用的 $k$ 是滞后帧号，不是第 2 章的频点索引。下文同一式中的 $n$ 是帧索引，勿与采样点索引混淆。</p>
 <p><strong>模型</strong>（每个离散频点 $f$ 独立处理；本节 $X$、$E$、$G$ 都是<strong>逐时频点的复数标量</strong>，多通道版才升级为向量；下式为简短省略 $f$）：</p>
 <p>$$\begin{aligned}
 X(n)&=E(n)+\hat r(n),\\
@@ -563,7 +562,7 @@ RG&=P,\\
 <p><img alt="图21 WPE 对合成混响的处理" src="../figures/fig21_wpe.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>本书仿真使用16 kHz、1.4 s的合成音节和种子21001。合成RIR的直达延迟为10 ms，随机衰减尾的设定 $T_{60}=0.6$ s、直达混响比（Direct-to-Reverberant Ratio，DRR）为6 dB；这不是实测房间。使用512点Hann窗、128点移、单通道 $\Delta=6,K=10$，迭代3次。</p>
 <p>干净参考被因果延迟160点，使它与混响观测和WPE输出共用麦克风接收时间轴；没有把三路波形都提前10 ms。共172帧，末帧起点1368 ms。三图共用一个谱幅参考，显示0～2.5 kHz；评分使用全部257个单边频点，即0～8 kHz。</p>
-<p>（a）是仅有直达延迟的干净参考；（b）显示混响后的音节拖尾；（c）显示WPE输出。谱图可提示哪里发生变化，定量结论还需分开看拖尾和目标失真。</p>
+<p>（a）是仅有直达延迟的干净参考；（b）显示混响后的音节拖尾；（c）显示WPE输出。音节结束后，（b）的横向能量拖尾在（c）中减弱。谱图可提示哪里发生变化，定量结论还需分开看拖尾和目标失真。</p>
 <p>以干净参考每帧的全频能量为基准：不低于其峰值10%的96帧为活动帧集合 $\mathcal A$，不高于峰值1%的61帧为静音帧集合 $\mathcal Q$，另15帧不归入两者。对待评谱 $Y$ 定义</p>
 <p>$$\begin{aligned}
 Q(Y)&=\sum_{n\in\mathcal Q,f}|Y(n,f)|^2,\\
@@ -703,7 +702,7 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 </table></div>
 <p>启用 WPE 前应检查可用帧数、混响强度、加性噪声和通道时延。任一条件不满足时，应调整块长、模型或旁路策略。</p>
 <h3 id="sec-u-884aaada8f">WPD将历史与空间约束放入同一目标</h3>
-<p>加权功率最小无失真响应（Weighted Power minimization Distortionless response，WPD）把多帧、多通道滤波写进同一个无失真最小功率问题，可同时处理去混响与波束形成。它不是简单串联两个现成模块，也不能用条件不同的 WPE、MPDR 数字相加预测收益。</p>
+<p>加权功率最小无失真响应（Weighted Power minimization Distortionless response，WPD；<a href="https://doi.org/10.1109/LSP.2019.2911179" title="citation">Nakatani 与 Kinoshita，IEEE Signal Processing Letters 2019</a>）把多帧、多通道滤波写进同一个无失真最小功率问题，可同时处理去混响与波束形成。它不是简单串联两个现成模块，也不能用条件不同的 WPE、MPDR 数字相加预测收益。</p>
 <p>把当前多通道帧及延迟历史堆成 $\bar{\vec x}_t=[\vec x_t^\top,\vec x_{t-\Delta}^\top,\ldots]^\top$，并把目标导向约束扩展为 $\bar{\vec v}=[\vec v^\top,\vec0^\top,\ldots]^\top$。令 $\lambda_t>0$，用同一组时帧构造加权协方差 $\bar{\mathbf R}=\sum_t\bar{\vec x}_t\bar{\vec x}_t^H/\lambda_t$。WPD 的目标是</p>
 <p>$$\begin{aligned}
 &\min_{\bar{\vec w}}\ \bar{\vec w}^H\bar{\mathbf R}\bar{\vec w},\\
@@ -718,7 +717,7 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 <p>这里当前帧与历史块没有互相关，历史权重退化为零，WPD 退化到当前帧的加权 MPDR（weighted minimum power distortionless response，加权最小功率无失真响应）。$\bar{\mathbf R}$ 仍是用 $1/\lambda_t$ 加权的观测协方差，不是噪声协方差。只有把优化中的矩阵明确取为目标缺席时的噪声协方差 $\mathbf R_{nn}$，同形闭式解才对应 MVDR。</p>
 <p>延迟历史与当前晚期混响之间存在可利用相关性时，历史权重才会参与去混响。</p>
 <p>该模型还假设希望保留的早期目标可由当前块的导向向量描述、$\lambda_t>0$ 且求解所用协方差厄米正定；若 $\lambda_t$ 或协方差使用未来帧，所得实现仍是离线的。</p>
-<p>原始 WPD 工作见 Nakatani 与 Kinoshita 2019，后续因式分解工作说明了它与 WPE、波束形成的关系。<a href="https://arxiv.org/abs/1908.02710" title="citation">Nakatani &amp; Kinoshita, EUSIPCO 2019</a>、<a href="https://doi.org/10.1109/ICASSP40776.2020.9054393" title="citation">Boeddeker et al., ICASSP 2020</a></p>
+<p>Nakatani 与 Kinoshita 的 2019 年 <em>IEEE Signal Processing Letters</em> 论文提出 WPD 的统一目标；其<a href="https://doi.org/10.23919/EUSIPCO.2019.8902753" title="citation">EUSIPCO 2019 论文</a>进一步给出概率模型和最大似然解释。<a href="https://doi.org/10.1109/ICASSP40776.2020.9054393" title="citation">Boeddeker 等，ICASSP 2020</a>随后说明在共同权重与约束下，联合滤波可因式分解为 WPE 与加权 MPDR。下文的 E07-07 只在声明的固定统计条件下复算这一关系。</p>
 <p>这里的“联合”并不排斥分步计算。在同一组正权重、同一有效帧和同一导向约束下，可以先解多通道 WPE，再对其残差解<strong>加权 MPDR</strong>，得到与整块 WPD 相同的输出。关键是两步共同对应原目标，而非任意选两个模块串联。<a href="#e07-07">E07-07</a>通过完整平方和一个四维例子说明这种等价，以及不同加载为什么会破坏直接比较。</p>
 <h2 id="sec-7-7">7.7 可执行教学基线与复现实验</h2>
 <h3 id="sec-u-e6c77eb174">教学实现与诊断取点</h3>
@@ -726,6 +725,7 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 <p><code>taps=0</code>、迭代次数为零、记录短于首个有效回归帧或整个频点为零时直接旁路。输入各维不能为空、数值必须有限；阶数、延迟和迭代次数必须为整数，功率下限必须是有限正数。输入必须是复谱，不能把幅度谱传入后再补相位。</p>
 <p>默认调用仍只返回谱数组。设 <code>return_diagnostics=True</code> 时另返回逐频点诊断：加载后正规矩阵在各轮中的最小数值秩、最大条件数、进入最小范数最小二乘回退的次数，以及未求解时的旁路原因。数值秩依赖浮点精度和矩阵尺度，不是语音质量或混响强度评分。</p>
 <p>当前基线在 <code>np.linalg.solve</code> 抛出奇异矩阵错误后用 <code>np.linalg.lstsq</code> 求最小范数解；它不会自行增加加载、减小 $K$ 或根据音质旁路。调用方应检查诊断和参考信号，在需要时调整加载、阶数或旁路策略；求得有限残差不等于保住了直达声。</p>
+<p>可试听一组独立的 2.25 s、16 kHz 单通道数学合成夹具：<a href="audio/wpe_dry.wav">无回声参考</a><audio class="audio-sample" controls preload="none" aria-label="无回声参考" src="audio/wpe_dry.wav">请使用上方 WAV 链接下载。</audio>、<a href="audio/wpe_reverberant.wav">稀疏回声观测</a><audio class="audio-sample" controls preload="none" aria-label="稀疏回声观测" src="audio/wpe_reverberant.wav">请使用上方 WAV 链接下载。</audio>、<a href="audio/wpe_output.wav">离线 WPE 输出</a><audio class="audio-sample" controls preload="none" aria-label="离线 WPE 输出" src="audio/wpe_output.wav">请使用上方 WAV 链接下载。</audio>。三条 WAV 使用共同导出增益 1，可比较停音后拖尾及有声段谐波的变化；它们不同于图21的 1.4 s 随机衰减 RIR 仿真，只供现象试听，不能充当真实房间或语音质量测试。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/audio/MANIFEST.json">主音频清单</a>和<a href="research/05_exercises_and_audio.html#5-wpe-的预测与目标损伤">练习与音频手册</a>给出生成条件与边界。</p>
 <h3 id="sec-u-24aba87cac">低残差不等于保住了目标</h3>
 <p>取一个频点、单通道六帧全为 $1+0j$，设 $K=2$、$\Delta=1$、迭代一次、对角加载为零。有效帧 $n=2,3,4,5$ 的历史向量全为 $[1,1]^\top$，所以 $\mathbf R=4\begin{bmatrix}1&1\\1&1\end{bmatrix}$、$\vec r=[4,4]^\top$；$\mathbf R$ 的秩为 1。最小范数解 $\vec g=[1/2,1/2]^\top$ 把这些帧预测为 1，残差为零（双精度实现中约在 $10^{-16}$ 量级）。前两帧因缺少完整历史而原样保留。</p>
 <p>该输入没有给出晚期混响真值，却会使可预测的目标分量几乎消失，故不能把残差小解读为去混响成功。若为改善数值条件而加对角加载，也仍须检查目标失真；正则化不能单独证明模型的声学假设成立。</p>
