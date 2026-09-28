@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>空间处理与追踪源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f9de5d527abe"><style>
+<meta name="source-digest" content="a9d838b30805"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -1040,7 +1040,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>最小手算取目标协方差 <code>diag(4,1)</code>、噪声协方差 <code>diag(1,2)</code>，两个广义特征值为 4 和 0.5，最优方向为第一通道；该向量乘 10 后信噪比不变，输出幅度却增大 10 倍。因此广义特征向量不是直接满足参考通道幅度的增强输出。加入奇异噪声协方差测试加载、数值失败及状态输出；任意改用一般 <code>eig</code> 不能证明非厄米输入合理。</p>
 <p>固定 pb_bss 优先尝试可选 Cython 后端，否则调用 SciPy；<code>use_eig</code> 决定是否采用一般特征分解，不会修复错误的协方差模型。ESPnet 的 <code>get_gev_vector</code> 默认 <code>mode='power'</code>、3 次迭代，最后归一化并作相位连续性修正；<code>evd</code> 路径求解失败时还有替代向量分支。三次幂迭代不必等于精确最大广义特征向量，近重根、极小初始投影和参考通道都会影响结果。这里尚未用相同张量实际运行两包来比较收敛或误差。</p>
 <span id="20242026-年方法的有限选型补充" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-u-ea48fb89da">2024～2026 年方法的有限选型补充</h4>
-<p>下列方法针对已有链路中的具体限制，不据年份或不同论文指标排序。原文与官方代码状态核实于 2026-09-28。</p>
+<p>下列方法针对已有链路中的具体限制，不据年份或不同论文指标排序。Deng 等的接收状态于 2026-09-29 复核；其余原文与代码状态按各自记录核实。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
 <tr>
@@ -1059,14 +1059,14 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>联合学习 SCM/WNG，2026</td>
-<td>预印本原理候选；未核到官方代码</td>
+<td>已接收 INTERSPEECH 2026；所链 arXiv v1 是预印本；未核到官方代码</td>
 </tr>
 </tbody>
 </table></div>
 <p><a href="https://www.isca-archive.org/interspeech_2024/tammen24_interspeech.pdf">Tammen 等，Interspeech 2024</a> §2–3 将固定时间平均换成对瞬时 SCM 的注意力聚合，并用随机通道训练、TAC 和特征选择减弱通道数量/排列依赖。它仍通过 SCM 计算 MVDR，所解决的是移动目标下的统计量跟踪。原文式(2)可使用整段帧，不能自动声称因果；§4 是模拟移动语音叠加 CHiME-3/DEMAND 录音噪声，非真实移动说话人测试。最小选型应固定掩码，对照递归平均和注意力聚合，再改变通道排列与数目。当前未核到可取得的作者实现，故不设正文独立目录或声称已经复现。</p>
 <p><a href="https://doi.org/10.1109/LSP.2025.3599455">Cheong、Kim 与 Shin，SPL 2025</a>的 iDeepPE 把波束阶段估计的语音存在概率、目标/噪声 PSD 传给后滤参数估计，补充只看单通道波束输出的信息；<a href="https://sapl.gist.ac.kr/wp-content/uploads/2025/08/Integrated_DNN-Based_Parameter_Estimation_for_Multichannel_Speech_Enhancement.pdf">作者版 §II–III</a>保留 MVDR 加 LSA 结构，并采用远场的相位型 RTF 近似。最小对照应固定前级输出，仅比较独立后滤与融合估计；不能把整个网络改善归因于某个协方差公式。</p>
 <p><a href="https://github.com/CSeIn/iDeepPE/tree/c2cdc26ddafd33bf3bda45640c06febef9092365">官方固定源码</a>中 <code>evaluate.py</code> 调用非因果 BMC-MCRA 与双网络，<code>make_mvdr_out.py</code> 用 oracle 参数准备后滤训练数据，不能当作部署推理入口。主要阅读路径是 <code>models/conformer_cmgan.py</code>、<code>util/oracle_test_mse.py</code>、<code>util/gain.py</code> 和 <code>evaluate.py</code>。固定根目录及所核核心文件未见明确代码许可，故只保留索引，不复制到本地源码集合；训练数据与权重另行核许可。未训练、推理或重测论文分数。</p>
-<p><a href="https://arxiv.org/abs/2606.24137v1">Deng 等，arXiv:2606.24137v1，2026</a> §2–3 将噪声掩码与频率相关的 WNG 下限共同学习，并将稳健 MVDR 作为可微层。它针对手工固定加载/门限不能随场景调整的问题，但依赖远场、阵列几何与目标方向，仍不能消除误差集之外的失配。可选型的对照是同一掩码下固定 WNG 和预测 WNG 的失真、噪声及失配曲线。该项为预印本，尚未核到官方代码和可复算配置，不进入正文目录，也不把作者结果写成本书实测。</p>
+<p><a href="https://arxiv.org/abs/2606.24137v1">Deng 等，arXiv:2606.24137v1，2026</a> §2–3 将噪声掩码与频率相关的 WNG 下限共同学习，并将稳健 MVDR 作为可微层。它针对手工固定加载/门限不能随场景调整的问题，但依赖远场、阵列几何与目标方向，仍不能消除误差集之外的失配。可选型的对照是同一掩码下固定 WNG 和预测 WNG 的失真、噪声及失配曲线。arXiv v1 的 Comments 标明已接收 INTERSPEECH 2026，<a href="https://www.isca-archive.org/interspeech_2026/index.html">ISCA 官方该届索引</a>也列出同题同作者；本文链接仍是预印本版本，未核定正式单篇 DOI 或页码。此项未核到官方代码和可复算配置，不进入正文目录，也不把作者结果写成本书实测。</p>
 <span id="sec-57" class="anchor-alias" aria-hidden="true"></span><span id="47-bangev-的盲解析尺度归一化" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-a3f8971b9f">47. BAN：GEV 的盲解析尺度归一化</h3>
 <p>对应 §5.9。pb_bss <code>blind_analytic_normalization</code> 使用噪声协方差计算尺度，分子为 <code>sqrt(wᴴ Rn² w)</code>，分母为 <code>|wᴴ Rn w|</code>，再乘原向量。它不需要已知目标导向，但也因此不能保证对任意真实目标传递函数满足单位响应。函数显式将零分母位置的增益置零，工程中仍应把这种退化与正常增强区分。</p>
 <p>本书手算取 <code>Rn=I</code>、任意非零向量 <code>w</code>，该比例为 <code>1/||w||</code>，得到单位范数权重；单位范数并不等于 <code>wᴴa=1</code>。最小实验比较同一 GEV 向量乘正数、负数及复相位后的 BAN 输出：功率尺度约束与复相位相干性是不同问题。连续帧/频点特征向量还要处理任意相位，ESPnet 的 <code>gev_phase_correction</code> 是可阅读入口，但不能把它的平滑方向约定当成通用目标相位恢复。<a href="https://github.com/espnet/espnet/blob/be79590bb2ff26ffb01bc825c5f68cb9418b7f0d/espnet2/enh/layers/beamformer.py">ESPnet 波束源码</a>。</p>

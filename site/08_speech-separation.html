@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 8 章 · 语音分离 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f9de5d527abe"><style>
+<meta name="source-digest" content="a9d838b30805"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -287,7 +287,7 @@ a_m(f,\theta)&=e^{\mathrm j(m-1)\phi},\\
 \end{aligned}\tag{8-4}$$</p>
 <p>这个相加式假定当前统计区间内传播矩阵可视为固定，且 $E[\mathbf S\mathbf V^H]=0$；否则展开外积还会出现 $\mathbf A E[\mathbf S\mathbf V^H]$ 及其共轭转置。这里的 $R$ 是未减均值的二阶矩；只有信号已去均值或均值为零时，才与严格定义的协方差相等。源之间是否相关体现在 $R_s$ 的非对角项，不能再无条件把它写成对角矩阵。</p>
 <p>复角中心高斯混合模型（Complex Angular Central Gaussian Mixture Model，cACGMM）先把每个观测归一化到复单位球面，拟合只描述方向分布的形状矩阵。它不把未归一化的观测功率 SCM 直接当作概率密度。</p>
-<p>GSS 和部分深度方法先由 cACGMM 或网络估计时频掩码，再用原始 $\mathbf X\mathbf X^H$ 加权计算目标与干扰 SCM，做法见 §5.4。</p>
+<p>GSS 和部分深度方法先由 cACGMM 或网络估计时频掩码，再用原始 $\mathbf X\mathbf X^H$ 加权计算目标与干扰 SCM；加权统计步骤见第 5 章 §5.9 的式(5-21)。</p>
 <p>波束形成一次输出通常针对一个目标，但可以用不同导向或掩码构造多组权重，分别输出多个人的信号。因此“波束形成”和“语音分离”不是互斥方法：GSS 正是先估掩码，再为每个目标计算一组波束权重。下面按解混矩阵、空间聚类和监督学习三条路线比较。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>

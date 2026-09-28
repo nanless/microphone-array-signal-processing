@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 4 章 · 声源定位（DOA 估计） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f9de5d527abe"><style>
+<meta name="source-digest" content="a9d838b30805"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -713,7 +713,7 @@ u_y&=-\frac{0.0282975}{0.04}=-0.7074375\text{。}
 <p>Bartlett 的典型分辨尺度由该阵列的常规波束主瓣决定。Rayleigh 类判据是约定的分辨标准，不是所有噪声和检测条件下的绝对物理边界。下面的单频算例为减轻记号负担，省略固定的 $f_k$。</p>
 <p><strong>Capon/MVDR 谱</strong>：对每个候选方向设计“该方向增益为 1、输出功率最小”的滤波器：</p>
 <p>$$P_C(\theta)=\frac{1}{\vec a^H(\theta)\hat{\mathbf R}^{-1}\vec a(\theta)}\text{。}\tag{4-12}$$</p>
-<p>这个式子来自约束优化：最小化 $\vec{w}^H\hat{\mathbf{R}}\vec{w}$，同时要求 $\vec{w}^H\vec{a}(\theta)=1$。拉格朗日乘子法给出 $\vec{w}=\hat{\mathbf{R}}^{-1}\vec{a}/(\vec{a}^H\hat{\mathbf{R}}^{-1}\vec{a})$；把该权重代回输出功率，得到上面的 Capon 谱。完整推导见 §5.4 和式(5-3)。</p>
+<p>这个式子来自约束优化：最小化 $\vec{w}^H\hat{\mathbf{R}}\vec{w}$，同时要求 $\vec{w}^H\vec{a}(\theta)=1$。拉格朗日乘子法给出 $\vec{w}=\hat{\mathbf{R}}^{-1}\vec{a}/(\vec{a}^H\hat{\mathbf{R}}^{-1}\vec{a})$；把该权重代回输出功率，得到上面的 Capon 谱。完整推导见 §5.4 的式(5-8)～式(5-9)；那一节用噪声协方差设计波束，本处则用观测总协方差扫描候选方向。</p>
 <p>原始自适应谱见<a href="https://epsc.wustl.edu/~ggeuler/reading/cam_noise_biblio/capon_1969-ieee-high-resolution_frequency-wavenumber_spectrum_analysis.pdf" title="citation">Capon 1969，印刷页1410式(18)</a>；该文页1412也讨论有限观测下样本谱矩阵的奇异问题。这里假定协方差正定；样本不足时不能把形式上的逆当作总能执行的计算。</p>
 <p>候选方向与真实源方向一致时，无失真约束保留该源，因此最小输出功率较大；方向不匹配时，优化器可进一步压低输出功率。$\hat{\mathbf R}$ 是 $M\times M$ 协方差矩阵。</p>
 <p>Capon 在模型准确、快拍充分时通常比 Bartlett 得到更窄的谱峰。快拍不足、相干多径或协方差病态时，应加正则并检查稳健性。</p>

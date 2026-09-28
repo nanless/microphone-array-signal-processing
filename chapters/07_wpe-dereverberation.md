@@ -46,7 +46,7 @@
 
 **三路线对照表**。不同论文使用的阵列、数据集、识别器和因果条件不同，不能把词错率改善幅度横向拼成统一范围。表中只比较处理对象与实现条件；需要性能数字时，应引用同一数据集上的原始实验。
 
-空间路线的代表是最小方差无失真响应（Minimum Variance Distortionless Response，MVDR）与广义特征值（Generalized Eigenvalue，GEV）波束形成，见[第 5 章 §5.4](05_beamforming.md#sec-5-4)。谱增益既可由统计模型估计，也可由深度神经网络（Deep Neural Network，DNN）估计。
+空间路线的代表是最小方差无失真响应（Minimum Variance Distortionless Response，MVDR）与广义特征值（Generalized Eigenvalue，GEV）波束形成，分别见[第 5 章 §5.4](05_beamforming.md#sec-5-4)和[§5.9](05_beamforming.md#sec-5-9)。谱增益既可由统计模型估计，也可由深度神经网络（Deep Neural Network，DNN）估计。
 
 | 路线 | 处理对象与代表 | 所需输入或假设 |
 |---|---|---|

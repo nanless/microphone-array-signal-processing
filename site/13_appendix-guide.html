@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 B · 路径地图与练习 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f9de5d527abe"><style>
+<meta name="source-digest" content="a9d838b30805"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -482,7 +482,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <tr>
 <td>SDW-MWF 权重，见式(5-12)</td>
 <td>失真可调维纳滤波；完整表达式和符号在表后单列</td>
-<td>§5.5</td>
+<td><a href="05_beamforming.html#sec-u-fb93744989">第 5 章 MWF 专题</a></td>
 </tr>
 <tr>
 <td>$e=d-y$</td>
@@ -518,7 +518,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 =\mathbf R^{-1}\mathbf C
 \left(\mathbf C^H\mathbf R^{-1}\mathbf C\right)^{-1}\vec f .
 $$</p>
-<p><strong>SDW-MWF 权重，见式(5-12)</strong>：$\mathbf R_{ss}$、$\mathbf R_{nn}$ 分别是目标与噪声协方差矩阵，$\vec e_r$ 选出参考麦；$\mu>0$ 调节噪声惩罚与目标失真。它不是一般条件下的 MVDR 解，具体目标函数和秩一特例见 §5.5。</p>
+<p><strong>SDW-MWF 权重，见式(5-12)</strong>：$\mathbf R_{ss}$、$\mathbf R_{nn}$ 分别是目标与噪声协方差矩阵，$\vec e_r$ 选出参考麦；$\mu>0$ 调节噪声惩罚与目标失真。它不是一般条件下的 MVDR 解，具体目标函数和秩一特例见<a href="05_beamforming.html#sec-u-fb93744989">第 5 章 MWF 专题</a>。</p>
 <p>$$
 \vec w_{SDW}
 =\left(\mathbf R_{ss}+\mu\mathbf R_{nn}\right)^{-1}\mathbf R_{ss}\vec e_r .

@@ -121,7 +121,7 @@
 | §5.4.1 | 特征空间波束 | 原理索引 | Chang–Yeh 1992；空间研究 §22 | 子空间维数/高SNR/导向投影；未取得作者完整实现 |
 | §5.4.1 | 干扰加噪声协方差重构 | 原理索引 | Gu–Leshem 2012；空间研究 §22 | 排除目标角域与流形假设；Capon函数不是完整重构算法 |
 | §5.5 | LCMV 闭式权重 | 本仓库可运行基线 | `codes/chapters/ch05/core/beamforming.py::lcmv_weights`；`codes/chapters/ch05/beamformer_common_input_demo.py` | 约束独立性、残差 |
-| §5.5 | Frost 投影自适应 | 原理索引 | 正文时域投影更新；E05-10实际计算一步 | 一步约束核对不是完整在线Frost实现 |
+| §5.5 后的 Frost 专题 | Frost 投影自适应 | 原理索引 | 正文时域投影更新；E05-10实际计算一步 | 由 LCMV 约束出发；一步约束核对不是完整在线Frost实现 |
 | §5.6 | GSC 阻塞矩阵 | 本仓库可运行基线 | `codes/chapters/ch05/core/beamforming.py::blocking_matrix` | 不含持续自适应抵消支路 |
 | §5.6；E05-16 | 单参考复数 GSC NLMS 状态更新 | 本仓库可运行基线 | `codes/chapters/ch05/core/gsc.py::ScalarGSCNLMS`；`codes/chapters/ch05/chapter05_experiments.py` | 给定固定/阻塞输出，跨块、冻结和复位；不含方向估计、自动SPP或多抽头滤波器组 |
 | §5.6；空间 §21 | 完整在线自适应 GSC | 外部参考实现 | `btk20`：`btk20_src/lib/pybeamformer.py` | 子带 LMS/RLS；毫米坐标、旧依赖、泄漏与冻结；非时域 Frost |
@@ -131,7 +131,7 @@
 | §5.7.1 | MCRA | 原理索引 | 正文与空间研究的作者软件入口 | 未获得可核版本/许可包 |
 | §5.7.1 | IMCRA | 原理索引 | 正文与空间研究的作者软件入口 | 不把普通最小值跟踪称 IMCRA |
 | §5.7.2 | OM-LSA | 原理索引 | 正文及作者方法说明 | 不以 Wiener 或其他 MMSE 增益代替 |
-| §5.7.2；研究扩展：空间后滤 | 全秩 SDW-MWF | 外部参考实现 | `espnet`：`espnet2/enh/layers/beamformer.py::get_sdw_mwf_vector` | 失真权重与参考通道 |
+| §5.5 后的 MWF 专题；§5.7.2 | 全秩 SDW-MWF | 外部参考实现 | `espnet`：`espnet2/enh/layers/beamformer.py::get_sdw_mwf_vector` | 独立均方误差问题；失真权重与参考通道，非 LCMV 子类 |
 | 研究扩展：空间后滤 | 秩一迹化简 WMWF | 外部参考实现 | `pb_bss`：`pb_bss/extraction/beamformer.py::get_wmwf_vector` | 不代表一般全秩 MWF |
 | §5.9 | GEV 波束权重 | 外部参考实现 | `pb_bss`：同文件 `get_gev_vector` | 广义特征向量尺度不确定 |
 | §5.9 | BAN 缩放 | 外部参考实现 | `pb_bss`：同文件 `blind_analytic_normalization` | pb_bss返回权重、ESPnet返回增益且含C²差异；不保证无失真 |
@@ -159,7 +159,7 @@
 | 研究扩展：空间 §30 | 移动源时域声学成像 | 外部参考实现 | `acoular`：`acoular/tbeamform.py` | 轨迹/传播真值，不直接输出增强语音 |
 | 研究扩展：空间近年候选 | ASA 注意力空间协方差聚合（2024） | 原理索引 | Tammen 等 Interspeech 2024 原论文 | 注意力帧权重与通道不变性；未核实作者代码，不冒充已复现 |
 | 研究扩展：空间近年候选 | iDeepPE 参数估计与后滤融合（2025） | 原理索引 | `ideeppe`固定索引：`evaluate.py` | 未建立代码许可，不获取；默认非因果噪声估计，oracle训练准备不等于推理 |
-| 研究扩展：空间近年候选 | 可学习 WNG 阈值的稳健波束（2026） | 原理索引 | arXiv:2606.24137v1 预印本 | 已知远场方向、双头mask/阈值；未取得作者代码和完整训练复现 |
+| 研究扩展：空间近年候选 | 可学习 WNG 阈值的稳健波束（2026） | 原理索引 | 已接收 INTERSPEECH 2026；所链 [arXiv:2606.24137v1](https://arxiv.org/abs/2606.24137v1) 为预印本 | 已知远场方向、双头mask/阈值；未取得作者代码和完整训练复现；不推测最终 DOI |
 
 ## 回声消除与自适应控制
 

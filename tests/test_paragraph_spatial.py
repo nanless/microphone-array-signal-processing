@@ -205,7 +205,7 @@ class SpatialParagraphTest(unittest.TestCase):
             self.assertNotIn("<pre>", html)
 
     def test_rank_one_mwf_relation_stays_in_its_parameter_item(self):
-        source, path = chapter_fragment("05_beamforming.md", "- $\\mathbf{R}_{ss},", "前文给出的是 LCMV")
+        source, path = chapter_fragment("05_beamforming.md", "- $\\mathbf{R}_{ss},", "### Frost 波束形成器：时域约束更新")
         html, lists = rendered_lists("- $\\mathbf{R}_{ss},"+source, path)
         self.assertEqual([len(items) for items in lists], [2])
         self.assertIn(r"\frac{\phi_s q}{\mu+\phi_s q}", lists[0][1])

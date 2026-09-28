@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 A · 符号术语数学 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f9de5d527abe"><style>
+<meta name="source-digest" content="a9d838b30805"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -215,7 +215,7 @@ kf_s/N,&0\leq k\lt \lceil N/2\rceil,\\
 </tr>
 <tr>
 <td>$\vec{e}_r$</td>
-<td>参考麦选择向量（第 $r$ 位为 1 的单位向量，见§5.5 参考麦选择，MWF/SDW 用）</td>
+<td>参考麦选择向量（第 $r$ 位为 1 的单位向量，见<a href="05_beamforming.html#sec-u-fb93744989">第 5 章 MWF 专题</a>的参考麦选择，MWF/SDW 用）</td>
 </tr>
 <tr>
 <td>$\mathbf{B}$</td>
@@ -239,7 +239,7 @@ kf_s/N,&0\leq k\lt \lceil N/2\rceil,\\
 </tr>
 <tr>
 <td>$\mu_{\mathrm{SDW}}$</td>
-<td>语音失真加权多通道维纳滤波（Speech-Distortion-Weighted Multichannel Wiener Filter，SDW-MWF）的失真—降噪折中系数（§5.5）；与上一行的 NLMS 步长不是同一物理量</td>
+<td>语音失真加权多通道维纳滤波（Speech-Distortion-Weighted Multichannel Wiener Filter，SDW-MWF）的失真—降噪折中系数（<a href="05_beamforming.html#sec-u-fb93744989">第 5 章 MWF 专题</a>）；与上一行的 NLMS 步长不是同一物理量</td>
 </tr>
 <tr>
 <td>$\varepsilon_{\mathrm{NLMS}}$</td>
@@ -485,7 +485,7 @@ kf_s/N,&0\leq k\lt \lceil N/2\rceil,\\
 </tr>
 <tr>
 <td>MWF（多通道维纳滤波）</td>
-<td>直接最小化参考目标与输出之间的均方误差，允许目标缩放来换取更小总误差。秩一目标模型且噪声协方差正定时，MWF 可分解成 MVDR 空间滤波器乘一个标量维纳后滤波器。对本书 $\vec{w}_{\mathrm{SDW}}=(\mathbf{R}_{ss}+\mu\mathbf{R}_{nn})^{-1}\mathbf{R}_{ss}\vec e_r$ 的定义，$\mu=1$ 是标准 MWF；$\mu$ 增大时更重视降噪。<strong>若 $\mathbf R_{nn}$ 正定且 $\mathbf R_{ss}$ 固定，$\mu\to\infty$ 时权重趋零</strong>；若噪声矩阵有零空间，这个极限不能无条件照搬（E12-12、§5.5）。</td>
+<td>直接最小化参考目标与输出之间的均方误差，允许目标缩放来换取更小总误差。秩一目标模型且噪声协方差正定时，MWF 可分解成 MVDR 空间滤波器乘一个标量维纳后滤波器。对本书 $\vec{w}_{\mathrm{SDW}}=(\mathbf{R}_{ss}+\mu\mathbf{R}_{nn})^{-1}\mathbf{R}_{ss}\vec e_r$ 的定义，$\mu=1$ 是标准 MWF；$\mu$ 增大时更重视降噪。<strong>若 $\mathbf R_{nn}$ 正定且 $\mathbf R_{ss}$ 固定，$\mu\to\infty$ 时权重趋零</strong>；若噪声矩阵有零空间，这个极限不能无条件照搬（E12-12、<a href="05_beamforming.html#sec-u-fb93744989">第 5 章 MWF 专题</a>）。</td>
 </tr>
 <tr>
 <td>相对传递函数（Relative Transfer Function，RTF）</td>

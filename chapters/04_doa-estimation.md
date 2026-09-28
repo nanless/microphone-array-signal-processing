@@ -534,7 +534,7 @@ Bartlett 的典型分辨尺度由该阵列的常规波束主瓣决定。Rayleigh
 
 $$P_C(\theta)=\frac{1}{\vec a^H(\theta)\hat{\mathbf R}^{-1}\vec a(\theta)}\text{。}\tag{4-12}$$
 
-这个式子来自约束优化：最小化 $\vec{w}^H\hat{\mathbf{R}}\vec{w}$，同时要求 $\vec{w}^H\vec{a}(\theta)=1$。拉格朗日乘子法给出 $\vec{w}=\hat{\mathbf{R}}^{-1}\vec{a}/(\vec{a}^H\hat{\mathbf{R}}^{-1}\vec{a})$；把该权重代回输出功率，得到上面的 Capon 谱。完整推导见 §5.4 和式(5-3)。
+这个式子来自约束优化：最小化 $\vec{w}^H\hat{\mathbf{R}}\vec{w}$，同时要求 $\vec{w}^H\vec{a}(\theta)=1$。拉格朗日乘子法给出 $\vec{w}=\hat{\mathbf{R}}^{-1}\vec{a}/(\vec{a}^H\hat{\mathbf{R}}^{-1}\vec{a})$；把该权重代回输出功率，得到上面的 Capon 谱。完整推导见 §5.4 的式(5-8)～式(5-9)；那一节用噪声协方差设计波束，本处则用观测总协方差扫描候选方向。
 
 原始自适应谱见[Capon 1969，印刷页1410式(18)](https://epsc.wustl.edu/~ggeuler/reading/cam_noise_biblio/capon_1969-ieee-high-resolution_frequency-wavenumber_spectrum_analysis.pdf "citation")；该文页1412也讨论有限观测下样本谱矩阵的奇异问题。这里假定协方差正定；样本不足时不能把形式上的逆当作总能执行的计算。
 

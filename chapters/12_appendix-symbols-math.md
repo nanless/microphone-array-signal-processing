@@ -45,13 +45,13 @@ kf_s/N,&0\leq k<\lceil N/2\rceil,\\
 | $\mathbf{E}_n$（$\mathbf{E}_s$） | 噪声（信号）子空间的特征向量基（§4.6） |
 | $\sigma^2$ | 噪声方差/功率（白噪声下协方差为 $\sigma^2\mathbf{I}$） |
 | $\mathbf{C}$, $\vec{f}$ | LCMV 约束矩阵与约束值向量，$\mathbf{C}^H\vec{w}=\vec{f}$（§5.5） |
-| $\vec{e}_r$ | 参考麦选择向量（第 $r$ 位为 1 的单位向量，见§5.5 参考麦选择，MWF/SDW 用） |
+| $\vec{e}_r$ | 参考麦选择向量（第 $r$ 位为 1 的单位向量，见[第 5 章 MWF 专题](05_beamforming.md#sec-u-fb93744989)的参考麦选择，MWF/SDW 用） |
 | $\mathbf{B}$ | GSC 阻塞矩阵，满足 $\mathbf{B}^H\vec{a}(\theta_0)=\vec{0}$（§5.6） |
 | $\Phi(f)$ | 在 §4.2 表示 GCC 的频率加权函数；在 §5.7 表示功率谱。两处符号相同，含义须根据所在公式区分。 |
 | $\mathbf{P}$, $\mathbf{K}$, $\mathbf{Q}$, $\mathbf{F}$, $\mathbf{H}$ | 卡尔曼滤波：误差协方差、卡尔曼增益、过程噪声协方差、状态转移、观测矩阵（§9.2） |
 | $V$, $A$, $S$, $\bar\alpha$ | 房间体积、等效吸声面积、总表面积、平均吸声系数（§2.4） |
 | $\mu_{\mathrm{NLMS}}$ | 归一化最小均方（Normalized Least Mean Squares，NLMS）步长（§6.1）；理想化独立性假设下常讨论 $0<\mu<2$，实际取值还受输入相关性、正则项和时变路径影响 |
-| $\mu_{\mathrm{SDW}}$ | 语音失真加权多通道维纳滤波（Speech-Distortion-Weighted Multichannel Wiener Filter，SDW-MWF）的失真—降噪折中系数（§5.5）；与上一行的 NLMS 步长不是同一物理量 |
+| $\mu_{\mathrm{SDW}}$ | 语音失真加权多通道维纳滤波（Speech-Distortion-Weighted Multichannel Wiener Filter，SDW-MWF）的失真—降噪折中系数（[第 5 章 MWF 专题](05_beamforming.md#sec-u-fb93744989)）；与上一行的 NLMS 步长不是同一物理量 |
 | $\varepsilon_{\mathrm{NLMS}}$ | 归一化最小均方（Normalized Least Mean Squares，NLMS）更新分母中的小正数，用于防止输入能量接近零时除零（§6.1） |
 | $\delta$, $\eta$ | 绝对对角加载 $\mathbf R+\delta\mathbf I$ 中的 $\delta$ 与 $\mathbf R$ 同量纲；相对加载 $\mathbf R+\eta\,\mathrm{tr}(\mathbf R)\mathbf I/M$ 中的 $\eta$ 无量纲（§5.4） |
 | $\tau_{ij}$，TDOA | $\tau_{ij}=t_i-t_j$；到达时间差（Time Difference of Arrival，TDOA）。远场下 $\tau_{m1}=-(\vec r_m-\vec r_1)^\top\vec u/c$ |
@@ -139,7 +139,7 @@ $d_{ij}$ 是两麦间距，$f$ 是 Hz 频率，$c$ 是声速；当 $i=j$ 或 $f=
 | 半功率波束宽度（Half-Power Beamwidth，HPBW）/旁瓣电平（Side-Lobe Level，SLL） | HPBW 是主瓣两个 −3 dB 点间的角宽；SLL 是最高旁瓣相对主瓣的电平（§2.6、§5.2） |
 | CRLB / CRB（克拉美－罗下界，Cramér–Rao Lower Bound） | 给定概率模型和正则条件下，无偏估计器方差的下界；模型、参数化或偏差条件改变，下界也改变（§2.6） |
 | MVDR（最小方差无失真响应） | 在 $\vec{w}^H\vec{a}=1$ 的约束下最小化输出噪声功率。它保护目标方向或 RTF，同时压低噪声（§5.4） |
-| MWF（多通道维纳滤波） | 直接最小化参考目标与输出之间的均方误差，允许目标缩放来换取更小总误差。秩一目标模型且噪声协方差正定时，MWF 可分解成 MVDR 空间滤波器乘一个标量维纳后滤波器。对本书 $\vec{w}_{\mathrm{SDW}}=(\mathbf{R}_{ss}+\mu\mathbf{R}_{nn})^{-1}\mathbf{R}_{ss}\vec e_r$ 的定义，$\mu=1$ 是标准 MWF；$\mu$ 增大时更重视降噪。**若 $\mathbf R_{nn}$ 正定且 $\mathbf R_{ss}$ 固定，$\mu\to\infty$ 时权重趋零**；若噪声矩阵有零空间，这个极限不能无条件照搬（E12-12、§5.5）。 |
+| MWF（多通道维纳滤波） | 直接最小化参考目标与输出之间的均方误差，允许目标缩放来换取更小总误差。秩一目标模型且噪声协方差正定时，MWF 可分解成 MVDR 空间滤波器乘一个标量维纳后滤波器。对本书 $\vec{w}_{\mathrm{SDW}}=(\mathbf{R}_{ss}+\mu\mathbf{R}_{nn})^{-1}\mathbf{R}_{ss}\vec e_r$ 的定义，$\mu=1$ 是标准 MWF；$\mu$ 增大时更重视降噪。**若 $\mathbf R_{nn}$ 正定且 $\mathbf R_{ss}$ 固定，$\mu\to\infty$ 时权重趋零**；若噪声矩阵有零空间，这个极限不能无条件照搬（E12-12、[第 5 章 MWF 专题](05_beamforming.md#sec-u-fb93744989)）。 |
 | 相对传递函数（Relative Transfer Function，RTF） | 各通道相对参考通道的声学传递响应；是否包含早期反射取决于估计目标和时间窗，混响中 MVDR 常保护 RTF 而不是自由场导向矢量（§5.4） |
 | 对角加载 | 求逆前在协方差矩阵上增加对角项，以改善条件数并降低对失配的敏感性。绝对加载写成 $\mathbf R+\delta\mathbf I$，相对加载写成 $\mathbf R+\eta\operatorname{tr}(\mathbf R)\mathbf I/M$；两种参数的量纲和缩放行为不同（§5.4、§12.3） |
 | 相干源 | 在所分析频点，完全相干的多个源分量互为固定复数倍，使源协方差降秩；未去相关的标准 MUSIC 因此失去相应信号子空间条件。高度相关但非完全相干时未必严格降秩，却可能更难在有限快拍下分辨；空间平滑可在满足阵列与维数条件时改善这一问题（§4.6） |

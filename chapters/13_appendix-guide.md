@@ -218,7 +218,7 @@ VarArray 把 TAC、Conformer 分离和通道间相位差特征用于几何无关
 | $\vec{w}_{SD}=\dfrac{\mathbf{\Gamma}^{-1}\vec{a}}{\vec{a}^H\mathbf{\Gamma}^{-1}\vec{a}}$ | 超指向：在无失真约束下最小化弥散噪声输出 | §5.3 |
 | $\vec{w}_{MVDR} = \mathbf{R}_{nn}^{-1}\vec{a}/(\vec{a}^H\mathbf{R}_{nn}^{-1}\vec{a})$ | 最小方差无失真 | §5.4 |
 | LCMV 权重，见式(5-11) | 多约束最小方差解；完整表达式和符号在表后单列 | §5.5 |
-| SDW-MWF 权重，见式(5-12) | 失真可调维纳滤波；完整表达式和符号在表后单列 | §5.5 |
+| SDW-MWF 权重，见式(5-12) | 失真可调维纳滤波；完整表达式和符号在表后单列 | [第 5 章 MWF 专题](05_beamforming.md#sec-u-fb93744989) |
 | $e=d-y$ | GSC 中固定波束输出 $d$ 减去自适应抵消输出 $y$；在阻塞矩阵理想、支路自由度足够且优化收敛时与相应 LCMV 等价 | §5.6 |
 | NLMS 更新式 | AEC 自适应滤波 | §6.1 |
 | $\mathrm{ERLE}=10\log_{10}\dfrac{\sum_n|y(n)|^2}{\sum_n|e_{\mathrm{echo}}(n)|^2}$ | 同一远端单讲窗口内的回声返回损失增强；$y=x*h$ 为消除前回声，$e_{\mathrm{echo}}$ 为消除后回声分量 | §6.1 |
@@ -235,7 +235,7 @@ $$
 \left(\mathbf C^H\mathbf R^{-1}\mathbf C\right)^{-1}\vec f .
 $$
 
-**SDW-MWF 权重，见式(5-12)**：$\mathbf R_{ss}$、$\mathbf R_{nn}$ 分别是目标与噪声协方差矩阵，$\vec e_r$ 选出参考麦；$\mu>0$ 调节噪声惩罚与目标失真。它不是一般条件下的 MVDR 解，具体目标函数和秩一特例见 §5.5。
+**SDW-MWF 权重，见式(5-12)**：$\mathbf R_{ss}$、$\mathbf R_{nn}$ 分别是目标与噪声协方差矩阵，$\vec e_r$ 选出参考麦；$\mu>0$ 调节噪声惩罚与目标失真。它不是一般条件下的 MVDR 解，具体目标函数和秩一特例见[第 5 章 MWF 专题](05_beamforming.md#sec-u-fb93744989)。
 
 $$
 \vec w_{SDW}

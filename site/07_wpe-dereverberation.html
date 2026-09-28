@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 7 章 · 去混响（WPE） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f9de5d527abe"><style>
+<meta name="source-digest" content="a9d838b30805"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -248,7 +248,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>这些路线分别说明路径已知、倒谱可分和干扰功率可估计时能做什么。WPE则从观测估计延迟预测器，不要求预先测量RIR；保护延迟降低误预测早期目标的风险，但不能保证预测项只包含晚期声。</p>
 <h3 id="sec-u-6b00570989">路线选择与学习目标</h3>
 <p><strong>三路线对照表</strong>。不同论文使用的阵列、数据集、识别器和因果条件不同，不能把词错率改善幅度横向拼成统一范围。表中只比较处理对象与实现条件；需要性能数字时，应引用同一数据集上的原始实验。</p>
-<p>空间路线的代表是最小方差无失真响应（Minimum Variance Distortionless Response，MVDR）与广义特征值（Generalized Eigenvalue，GEV）波束形成，见<a href="05_beamforming.html#sec-5-4">第 5 章 §5.4</a>。谱增益既可由统计模型估计，也可由深度神经网络（Deep Neural Network，DNN）估计。</p>
+<p>空间路线的代表是最小方差无失真响应（Minimum Variance Distortionless Response，MVDR）与广义特征值（Generalized Eigenvalue，GEV）波束形成，分别见<a href="05_beamforming.html#sec-5-4">第 5 章 §5.4</a>和<a href="05_beamforming.html#sec-5-9">§5.9</a>。谱增益既可由统计模型估计，也可由深度神经网络（Deep Neural Network，DNN）估计。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
 <tr>

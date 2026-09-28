@@ -146,7 +146,7 @@ $$\begin{aligned}
 
 实际设计通常加入 $\vec{w}^H\vec{w}\le\delta$ 形式的 $G_{\mathrm{WNG}}$ 下限约束，或按频段选择不同权重：低频在白噪声增益预算内提高指向性，高频在 $\mathbf{\Gamma}\approx\mathbf{I}$ 时使用接近 DSB 的解。
 
-Kumatani 等综述给出了特定小尺寸球阵的对比结果，不能脱离其阵列与数据条件外推。[Kumatani et al.（出处同 §5.2 引文）]
+Kumatani 等综述给出了特定小尺寸球阵的对比结果，不能脱离其阵列与数据条件外推；实验条件见 §5.10.1。[Kumatani、McDonough 与 Raj 2012](https://doi.org/10.1109/MSP.2012.2205285 "citation")
 
 #### 算例 5-1：超指向权重与白噪声增益
 
@@ -258,7 +258,7 @@ $$\vec{w}^H\vec{a}_{mis} = 1.0050 - 0.0236\mathrm{j}\text{。}$$
 
 **一阶差分原理**：两个相距很近的麦克风接收同一远场声波时存在小的传播时延差。对其中一路施加内部延迟和增益后相减，可使某些方向相消、另一些方向保留。输出写成 $y(t)=x_1(t)-g\,x_2(t-\tau)$：实数系数 $g$ 的绝对值控制幅度，负号会额外翻转相位；$\tau$ 控制随频率变化的延迟相位；改变 $(g,\tau)$ 就会改变零点位置和指向图形状。
 
-**后向零点怎样变成近似心形**：设端射双麦间距为 $d$，某方向的传播时延差为 $\tau_p(\theta)$。该方向的频率响应可写成
+**后向零点怎样变成近似心形**：设端射双麦间距为 $d$。为固定麦序与正负号，本节取麦 1 在 $x=0$ 的前端、麦 2 在 $x=d$ 的后端；前方是 $-x$（$\theta=-90^\circ$），后方是 $+x$（$\theta=+90^\circ$）。定义传播时延差 $\tau_p(\theta)=\tau_{21}=t_2-t_1$，即麦 2 相对麦 1 的到达时刻差。该方向的频率响应可写成
 
 $$H(\omega,\theta)=1-g\,e^{-\mathrm j\omega[\tau+\tau_p(\theta)]}。\tag{5-7}$$
 
@@ -268,7 +268,7 @@ $$H(\omega,\theta)=1-g\,e^{-\mathrm j\omega[\tau+\tau_p(\theta)]}。\tag{5-7}$$
 
 频率升高、间距不再远小于波长、延迟量化或通道失配都会使形状偏离该近似。$\tau=0$ 且 $g=1$ 的纯相减只产生前后对称的偶极响应。[Elko & Pong, ICASSP 1997](https://doi.org/10.1109/ICASSP.1997.599609 "citation")
 
-**一阶 DMA 手算。** 取端射双麦 $d=2$ cm、$c=343$ m/s，则 $T=d/c=58.31\ \mu$s。沿用式中的符号约定，令后向 $\tau_p=-T$、前向 $\tau_p=+T$，并取 $g=1,\tau=T$。后向响应为 $H_b=1-e^0=0$。在 $f=500$ Hz，前向响应
+**一阶 DMA 手算。** 取端射双麦 $d=2$ cm、$c=343$ m/s，则 $T=d/c=58.31\ \mu$s。按上面的麦序与坐标约定，前向 $\tau_p=+T$、后向 $\tau_p=-T$；取 $g=1,\tau=T$。后向响应为 $H_b=1-e^0=0$。在 $f=500$ Hz，前向响应
 
 $$\begin{aligned}
 H_f&=1-e^{-\mathrm j2\omega T},\\
@@ -567,7 +567,7 @@ $\vec{w}=\mathbf{C}(\mathbf{C}^H\mathbf{C})^{-1}\vec{f}$ 取逆矩阵第一列�
 
 相比之下，算例 5-2 的 MVDR 只约束目标，得到 $\mathrm{WNG}_{\mathrm{dB}}=+0.39$ dB 和干扰方向 −23.8 dB。LCMV 适合方向先验可靠且需要硬约束的情形；MVDR 根据估计协方差自适应抑制干扰。两者的选择还取决于方向误差和协方差估计质量。
 
-#### 多通道维纳滤波与秩一目标模型
+### 多通道维纳滤波与秩一目标模型
 
 多通道维纳滤波（Multichannel Wiener Filter，简称 MWF）直接在均方误差准则下权衡目标失真与残余噪声；MVDR 则施加硬的无失真约束，两者不能一般性地视为同一个解。语音失真加权多通道维纳滤波（Speech Distortion Weighted MWF，简称 SDW-MWF）写成下面的目标函数。设 $\vec x=\vec s+\vec n$，两分量不相关；$s_{out}=\vec w^H\vec s$、$n_{out}=\vec w^H\vec n$、$s_{ref}=\vec e_r^H\vec s$，并取 $\mu>0$。记噪声输出功率 $J_n=E|n_{out}|^2$，目标失真功率 $J_s=E|s_{out}-s_{ref}|^2$。普通逆还要求 $\mathbf R_{ss}+\mu\mathbf R_{nn}$ 正定。
 
@@ -591,9 +591,9 @@ J(\vec w)&=J_n+J_s/\mu,\\
 
     此时 SDW-MWF 是 MVDR 输出再乘一个标量 Wiener 增益，并在 $\mu\to0^+$ 时趋近 MVDR。目标协方差满秩时没有这个简单关系。[Doclo, Spriet, Wouters & Moonen, *Speech Communication*, vol.49, p.636, 2007](https://hal.science/hal-00499178v1/document "citation")
 
-前文给出的是 LCMV 的频域闭式解。Frost 算法是它的一种经典时域在线实现；下面给出更新式，并与 GSC 的结构对照。
+### Frost 波束形成器：时域约束更新
 
-#### Frost 波束形成器：时域约束更新
+回到 §5.5 的 LCMV 频域闭式解：Frost 算法是它的一种经典时域在线实现；下面给出更新式，并与 GSC 的结构对照。
 
 §5.1 末提过它是滤波求和的自适应代表，这里把更新式写出来：每路麦接一段 $J$ 抽头 FIR，第 $m$ 路第 $j$ 抽头权重记 $w_{m,j}$，全权重向量 $\vec{w}$ 共 $MJ$ 个系数。约束是"看目标方向"的线性约束 $\mathbf{C}^H\vec{w}=\vec{f}$（比如每列约束钉住一个抽头时刻的目标响应），将观测按抽头时刻排列：先列当前时刻的 $M$ 路，再列前一时刻的 $M$ 路，直到 $J$ 组；$\vec x(l)\in\mathbb C^{MJ}$，$y(l)=\vec w^H(l)\vec x(l)$。此处 $\mu$ 改指自适应步长，与上一段 SDW 的权衡系数含义不同。更新分两步走：
 
@@ -764,7 +764,7 @@ LCMV 把 MVDR 的单约束推广为多约束；Frost 用投影更新实现时域
 
 波束形成后仍可能保留弥散噪声、旁瓣干扰和混响。后置滤波在波束输出上估计残留噪声谱，再按各时频点的统计量计算增益。本节先比较噪声谱估计方法，再讨论语音存在概率（§5.7.1）、Wiener 增益（§5.7.2）和音乐噪声代价（§5.7.3）。
 
-- **Zelinski（1988）**：先按目标方向做时延/相位对齐，并通常把各通道目标传递幅度归一化。在目标同相同幅、通道噪声互不相关且噪声自谱相同的模型下，自谱均值减去互谱实部均值可估计**每个输入通道**的噪声功率谱：
+- **Zelinski（1988）**：先按目标方向做时延/相位对齐，并通常把各通道目标传递幅度归一化。在目标同相同幅、通道噪声互不相关且噪声自谱相同的模型下，自谱均值减去互谱实部均值可估计**每个输入通道**的噪声功率谱；见 [Zelinski 1988 原始会议论文](https://doi.org/10.1109/ICASSP.1988.197172 "citation")：
 
     $$\begin{aligned}
     A&=\frac1M\sum_i\Phi_{ii},\\
@@ -781,17 +781,19 @@ LCMV 把 MVDR 的单约束推广为多约束；Frost 用投影更新实现时域
 
     McCowan 方法引入弥散噪声场的理论相干函数（sinc 形的 $\mathbf{\Gamma}$，§5.1）修正互谱项。其效果取决于声场与弥散模型的匹配程度；E05-12 推导双麦等功率模型的修正，并检查相干系数趋近 1 时的不可辨识性。作者报告的式(22)估计目标 PSD，式(23)组成后滤增益，与本节输入噪声差式的取点不同。[McCowan 与 Bourlard，作者报告印刷页4、6，封面版本 December 2002](https://publications.idiap.ch/attachments/reports/2001/rr01-40.pdf "citation")；[正式期刊版，2003](https://doi.org/10.1109/TSA.2003.818212 "citation")；
 
-- **对数谱幅度（Log-Spectral Amplitude，LSA）/优化修正 LSA（Optimally Modified LSA，OM-LSA）**：在对数谱幅度最小均方误差准则下估计增益；OM-LSA 还显式结合语音存在不确定性。[Habets & Cohen, IWAENC 2006](https://webee.technion.ac.il/Sites/People/IsraelCohen/Publications/IWAENC2006_Habets.pdf "citation")
+- **对数谱幅度（Log-Spectral Amplitude，LSA）/优化修正 LSA（Optimally Modified LSA，OM-LSA）**：LSA 在对数谱幅度最小均方误差准则下估计增益；OM-LSA 还显式结合语音存在不确定性。[Ephraim 与 Malah 1985，LSA 原始论文](https://doi.org/10.1109/TASSP.1985.1164550 "citation")；[Cohen 与 Berdugo 2001，OM-LSA 原始论文](https://israelcohen.com/wp-content/uploads/2018/05/sp_Nov2001.pdf "citation")；[Habets 与 Cohen 2006，后续工作](https://webee.technion.ac.il/Sites/People/IsraelCohen/Publications/IWAENC2006_Habets.pdf "citation")
 
 #### 5.7.1 逐时频点语音存在概率（SPP）
 
-SPP（Speech Presence Probability，语音存在概率）记为 $p(k,n)\in[0,1]$，表示第 $k$ 个频点、第 $n$ 帧含语音的后验概率。它不同于 VAD 的帧级 0/1 判决，可用于在语音保留与噪声更新之间连续加权。
+SPP（Speech Presence Probability，语音存在概率）表示第 $k$ 个频点、第 $n$ 帧含语音的概率，取值在 $[0,1]$，不同于 VAD 的帧级 0/1 判决。本节按用途分别记噪声谱更新所用的 $p_n(k,n)$ 和语音估计增益所用的 $p_s(k,n)$；两者可以依据不同的统计量与先验求得，不能因为都叫 SPP 就视为同一个数。Cohen 与 Berdugo 的 2001 年论文明确使用两种不同的概率函数。[原文摘要、§2 与 §5](https://israelcohen.com/wp-content/uploads/2018/05/sp_Nov2001.pdf "citation")
 
-**最小值控制递归平均（Minima-Controlled Recursive Averaging，MCRA）**：算法在每个频点跟踪一段时间内的平滑功率最小值，并根据当前功率相对该最小值的偏离估计 SPP。SPP 较低时更新噪声谱，SPP 较高时减慢或冻结更新，以减少语音泄漏对噪声估计的污染。改进最小值控制递归平均（Improved Minima-Controlled Recursive Averaging，IMCRA）进一步改进了最小值跟踪和概率估计；具体窗口与门限应按所用文献版本实现。
+**最小值控制递归平均（Minima-Controlled Recursive Averaging，MCRA）**：算法在每个频点跟踪一段时间内的平滑功率最小值，并根据当前功率相对该最小值的偏离估计 $p_n$。$p_n$ 较低时较快更新噪声谱，较高时减慢更新，以减少语音泄漏对噪声估计的污染；这并非必须完全冻结的二值开关。原始方法见 [Cohen 与 Berdugo 2001，§5](https://israelcohen.com/wp-content/uploads/2018/05/sp_Nov2001.pdf "citation")；另见两人的 [2002 年短文](https://israelcohen.com/wp-content/uploads/2018/05/SPL_Jan2002.pdf "citation")。
 
-**对前级自适应模块的门控**：GSC 可把 NLMS 步长乘以 $(1-p)$，在语音存在概率高时减慢更新；MVDR 也可主要使用低 SPP 时频点更新噪声协方差。这些门控都依赖 SPP 的校准质量，错误的高概率会降低跟踪速度，错误的低概率会增加目标泄漏。
+改进最小值控制递归平均（Improved Minima-Controlled Recursive Averaging，IMCRA）使用两轮平滑与最小值跟踪，改进语音活动期间的噪声估计；具体窗口与门限应按所用文献版本实现。[Cohen 2003，§I–IV](https://israelcohen.com/wp-content/uploads/2018/05/SAP_Sep2003.pdf "citation")
 
-#### 5.7.2 Wiener 后滤通用式：SPP 加权与 MWF 级联
+**对前级自适应模块的门控**：作为本书的工程设计选项，可把经过校准并与更新时帧对齐的 $p_n$ 用于 GSC 下支路，例如令 NLMS 步长乘以 $(1-p_n)$，在语音存在概率高时减慢更新；MVDR 也可优先使用低 $p_n$ 时频点更新噪声协方差。这不是 MCRA、IMCRA 或原始 GSC 论文规定的通用更新式。错误的高概率会降低跟踪速度，错误的低概率会增加目标泄漏。
+
+#### 5.7.2 Wiener 后滤通用式、SPP 用途与 MWF 级联
 
 构造 Wiener 型后滤时，先将噪声估计转换到波束输出，再按同一输出端的信噪比计算增益：
 
@@ -803,11 +805,11 @@ G&=\max(1-r,G_{\min}),\\
 
 式(5-19)省略共同的时频参数 $(k,n)$；此处临时比值 $r$ 表示噪声功率占比，不是参考麦索引。$Y$ 是波束输出，$\Phi_{yy}$ 是其功率谱，$\hat\Phi_{nn}$ 是估计的残留噪声谱，$G_{\min}$ 是最小允许增益，也称增益地板。若这里的 $G$ 用作实数非负的幅度增益，应取 $0\le G_{\min}\le1$：$G_{\min}=0$ 允许完全压低一个时频点，$G_{\min}=1$ 则不衰减。它限制最大衰减量，以减轻谱估计误差造成的音乐噪声；取值应按听感、目标失真和残留噪声共同确定。
 
-SPP 可用于条件更新噪声谱，也可连续调节增益。优化修正 LSA（OM-LSA）是在对数谱幅度最小均方误差准则下结合语音存在不确定性的一类方法。
+式(5-19)本身没有显式的 SPP 项；若用 $p_n$ 控制前面的噪声谱更新，改变的是 $\hat\Phi_{nn}$，若另用 $p_s$ 调节后滤增益，则需另行定义增益规则，不能把式(5-19)直接称为 OM-LSA。原始 OM-LSA 在对数谱幅度最小均方误差准则下，用面向语音估计的 $p_s$ 组合语音存在与缺席两种假设下的增益。[Cohen 与 Berdugo 2001，§2](https://israelcohen.com/wp-content/uploads/2018/05/sp_Nov2001.pdf "citation")
 
 这里 $\hat\Phi_{nn}=\vec w^H\hat{\mathbf R}_{nn}\vec w$，而不是输入通道自谱。直接从输出估计噪声时也应使用同一个输出端。分母为零表示没有可用输出功率，此时不能按上式作除法；实现可跳过该点，或以功率下限保护除法并单独标记无有效 SNR 证据。若噪声估计超过输出功率，上式的 $\max$ 会把负的原始增益截到非负地板。
 
-**与 MWF 的关系**：MWF（§5.5 末）在一个均方误差目标中联合权衡残留噪声和目标失真。MVDR 与单通道 Wiener 后滤级联时，前级施加空间无失真约束，后级再按时频统计抑制残留噪声；两级的估计误差和延迟会累加。两种结构没有无条件的优劣，应在同一目标参考、延迟预算和任务指标下比较。
+**与 MWF 的关系**：[上文的多通道维纳滤波](#sec-u-fb93744989)在一个均方误差目标中联合权衡残留噪声和目标失真。MVDR 与单通道 Wiener 后滤级联时，前级施加空间无失真约束，后级再按时频统计抑制残留噪声；两级的估计误差和延迟会累加。两种结构没有无条件的优劣，应在同一目标参考、延迟预算和任务指标下比较。
 
 #### 5.7.3 音乐噪声与三项调节参数
 
@@ -874,9 +876,9 @@ b_n=4\pi\mathrm j^n j_n(\kappa r)。
 
 采样矩阵还必须满列秩，阵元布局要能稳定区分这些模式，径向响应也不能落入未正则化的深零点。即使有 16 支麦克风，几何位置退化或某阶径向响应过小，仍可能无法稳定估计 16 个系数。高阶重建常因径向补偿和采样条件数而放大噪声。
 
-Kumatani 等综述的指定房间实验比较了小球阵与大线阵，几何、数据与 WER 取点见 §5.10.1；该比较不能外推为不同孔径普遍等效。[Kumatani et al.（出处同 §5.2 引文）]
+Kumatani 等综述的指定房间实验比较了小球阵与大线阵，几何、数据与 WER 取点见 §5.10.1；该比较不能外推为不同孔径普遍等效。[Kumatani、McDonough 与 Raj 2012](https://doi.org/10.1109/MSP.2012.2205285 "citation")
 
-**圆阵的二维对应：相位模式（phase-mode / 圆谐波）处理。** 圆阵可把圆环上的声场做方位角傅里叶分解（Jacobi–Anger 展开）。各阶圆谐波系数经模态补偿后，可在模型成立的频带内合成能电子转向的波束。
+**圆阵的二维对应：相位模式（phase-mode / 圆谐波）处理。** 圆阵可把圆环上的声场做方位角傅里叶分解（Jacobi–Anger 展开）。各阶圆谐波系数经模态补偿后，可在模型成立的频带内合成通过调整系数转向的波束。
 
 模态补偿涉及贝塞尔函数 $J_n(\kappa r)$。当它接近零时，除法会放大噪声；因此阶数不仅受麦克风数量限制，还要受正则化和 WNG 约束。同心多环圆阵（Concentric Circular Microphone Array，CCMA）提供另一种扩展可控频带和空间自由度的几何结构；具体结果见 Huang、Chen 与 Benesty，*Insights into Frequency-Invariant Beamforming with Concentric Circular Microphone Arrays*，IEEE/ACM TASLP 26(12), 2305–2318，[DOI 10.1109/TASLP.2018.2862826](https://doi.org/10.1109/TASLP.2018.2862826)。
 

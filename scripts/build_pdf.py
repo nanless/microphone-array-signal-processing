@@ -157,6 +157,8 @@ h1,h2,h3,h4{break-after:avoid}
 /* 第2章的图注和短引导句随其解释对象排版，避免只剩一行或孤立图注。 */
 #ch-2 p:has(+ol),#ch-2 p:has(+ul){break-after:avoid;page-break-after:avoid}
 #ch-2 p:has(>img[src$="fig03_near_far_field.png"]),#ch-2 p:has(>img[src$="fig05_room_acoustics.png"]){break-after:avoid;page-break-after:avoid}
+/* 第5章图15和首段模型口径留在同页，避免读者翻页对照曲线。 */
+#ch-5 p:has(>img[src$="fig15_wng_di.png"]){break-after:avoid;page-break-after:avoid}
 #ch-2 p:has(>strong:first-child):has(+p+p > mjx-container){break-after:avoid;page-break-after:avoid}
 /* 第4章的整段粗体算例标题和进阶引导随下一段排版。 */
 #ch-4 p:has(>strong:only-child){break-after:avoid;page-break-after:avoid}

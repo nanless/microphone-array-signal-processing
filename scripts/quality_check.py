@@ -44,7 +44,7 @@ EXPECTED_SECTION_COUNTS = {
     "02_basics-signal-model.md": 8,
     "03_array-geometry.md": 5,
     "04_doa-estimation.md": 11,
-    "05_beamforming.md": 11,
+    "05_beamforming.md": 13,
     "06_aec.md": 17,
     "07_wpe-dereverberation.md": 10,
     "08_speech-separation.md": 8,
@@ -61,7 +61,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "02_basics-signal-model.md": 41,
     "03_array-geometry.md": 28,
     "04_doa-estimation.md": 40,
-    "05_beamforming.md": 38,
+    "05_beamforming.md": 36,
     "06_aec.md": 60,
     "07_wpe-dereverberation.md": 48,
     "08_speech-separation.md": 52,
@@ -89,8 +89,8 @@ EXPECTED_CHAPTERS = [
     ("13_appendix-guide.md", "附录 B · 路径地图与练习"),
 ]
 EXPECTED_CHAPTER_COUNT = 14
-EXPECTED_SECTION_COUNT = 119
-EXPECTED_SUBSECTION_COUNT = 505
+EXPECTED_SECTION_COUNT = 121
+EXPECTED_SUBSECTION_COUNT = 503
 EXPECTED_OUTLINE_ITEM_COUNT = 638
 EXPECTED_FIGURE_NUMBERS = set(range(1, 50))
 # 研究附站使用独立显式清单，不挤占 14 篇教程或 568 项 PDF 大纲基线。
