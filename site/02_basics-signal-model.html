@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 2 章 · 声音到达阵列时发生了什么 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="79cd2ab95058"><style>
+<meta name="source-digest" content="d120f59b1fb3"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -57,8 +57,15 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <ul>
 <li><a href="02_basics-signal-model.html#sec-u-99adf3ab78">2. 基础：声音到达阵列时发生了什么</a></li>
 <li><a href="02_basics-signal-model.html#sec-2-1">2.1 核心事实：同一声音，到达各麦克风有先有后</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-1-1">2.1.1 先固定坐标与时差的正负</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-1-2">2.1.2 采样、同步与声速失配</a></li>
 <li><a href="02_basics-signal-model.html#sec-2-2">2.2 近场与远场</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-2-1">2.2.1 球面波与平面波各省略了什么</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-2-2">2.2.2 从路程误差推导相位容限</a></li>
 <li><a href="02_basics-signal-model.html#sec-2-3">2.3 信号模型：把“声音有先有后”写成数学</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-3-1">2.3.1 时域：每个麦克风的相对时移</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-3-2">2.3.2 频域：用变量代换得到相位因子</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-3-3">2.3.3 多通道：导向矢量与维度检查</a></li>
 <li><a href="02_basics-signal-model.html#sec-2-4">2.4 房间声学：混响到底是怎么来的</a></li>
 <li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-4-1">2.4.1 房间脉冲响应与早晚反射</a></li>
 <li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-4-2">2.4.2 混响时间：从吸声量算衰减</a></li>
@@ -79,7 +86,25 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-6-7">2.6.7 算例 2-1：复算 CRB 的五个因子</a></li>
 <li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-6-8">2.6.8 算例 2-2：同一阵列的 DI 与 WNG</a></li>
 <li><a href="02_basics-signal-model.html#sec-2-7">2.7 小结：声源走近了，平面波不够用——近场要换的三样东西</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-7-1">2.7.1 参考麦归一化的球面导向</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-7-2">2.7.2 距离信息与不可辨识情况</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-7-3">2.7.3 模型选择需要同时检查相位和幅度</a></li>
 <li><a href="02_basics-signal-model.html#sec-u-f7a201edb9">本章练习</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-c820e5558a">E02-01：同一段录音为什么有两种帧数？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-3ccdb4879b">E02-02：用复数协方差检查通道顺序。</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-162d27d019">E02-03：窗重叠足够，为什么首点仍可能无法恢复？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-b11ac4532c">E02-04：掩码总和非零，协方差就可逆吗？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-8a6156878d">E02-05：递归协方差启动时为何偏小？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-e81def45ae">E02-06：掩码很小，是否意味着没有数据？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-9a0f5dcad3">E02-07：同一个遗忘因子，为什么换帧移后响应变慢？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-2ecaa753d2">E02-08：为什么单边频谱模方之和不等于信号功率？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-9410592b12">E02-09：相位误差很小，能否忽略幅度差？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-74967baa38">E02-10：球面平均与水平圆周平均为何得到不同 DI？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-70a24ade11">E02-11：相同的混响时间，直达混响比可以不同吗？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-ef18fae77a">E02-12：从阵元位置重新推导 CRB，并比较观测预算</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-b4930f81de">E02-13：四点 STFT 如何乘窗、变换和恢复？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-582c6ba787">E02-14：总体零均值与本批样本均值为零有何区别？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-4b3db2c478">E02-15：一条反射怎样改变六个输出样本？</a></li>
 </ul>
 <div class="chap"><a href="03_array-geometry.html">第 3 章 · 阵列几何形态</a></div>
 <div class="chap"><a href="04_doa-estimation.html">第 4 章 · 声源定位（DOA 估计）</a></div>
@@ -97,8 +122,15 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
 <li><a href="02_basics-signal-model.html#sec-u-99adf3ab78">2. 基础：声音到达阵列时发生了什么</a></li>
 <li><a href="02_basics-signal-model.html#sec-2-1">2.1 核心事实：同一声音，到达各麦克风有先有后</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-1-1">2.1.1 先固定坐标与时差的正负</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-1-2">2.1.2 采样、同步与声速失配</a></li>
 <li><a href="02_basics-signal-model.html#sec-2-2">2.2 近场与远场</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-2-1">2.2.1 球面波与平面波各省略了什么</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-2-2">2.2.2 从路程误差推导相位容限</a></li>
 <li><a href="02_basics-signal-model.html#sec-2-3">2.3 信号模型：把“声音有先有后”写成数学</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-3-1">2.3.1 时域：每个麦克风的相对时移</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-3-2">2.3.2 频域：用变量代换得到相位因子</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-3-3">2.3.3 多通道：导向矢量与维度检查</a></li>
 <li><a href="02_basics-signal-model.html#sec-2-4">2.4 房间声学：混响到底是怎么来的</a></li>
 <li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-4-1">2.4.1 房间脉冲响应与早晚反射</a></li>
 <li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-4-2">2.4.2 混响时间：从吸声量算衰减</a></li>
@@ -119,7 +151,25 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-6-7">2.6.7 算例 2-1：复算 CRB 的五个因子</a></li>
 <li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-6-8">2.6.8 算例 2-2：同一阵列的 DI 与 WNG</a></li>
 <li><a href="02_basics-signal-model.html#sec-2-7">2.7 小结：声源走近了，平面波不够用——近场要换的三样东西</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-7-1">2.7.1 参考麦归一化的球面导向</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-7-2">2.7.2 距离信息与不可辨识情况</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-2-7-3">2.7.3 模型选择需要同时检查相位和幅度</a></li>
 <li><a href="02_basics-signal-model.html#sec-u-f7a201edb9">本章练习</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-c820e5558a">E02-01：同一段录音为什么有两种帧数？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-3ccdb4879b">E02-02：用复数协方差检查通道顺序。</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-162d27d019">E02-03：窗重叠足够，为什么首点仍可能无法恢复？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-b11ac4532c">E02-04：掩码总和非零，协方差就可逆吗？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-8a6156878d">E02-05：递归协方差启动时为何偏小？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-e81def45ae">E02-06：掩码很小，是否意味着没有数据？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-9a0f5dcad3">E02-07：同一个遗忘因子，为什么换帧移后响应变慢？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-2ecaa753d2">E02-08：为什么单边频谱模方之和不等于信号功率？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-9410592b12">E02-09：相位误差很小，能否忽略幅度差？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-74967baa38">E02-10：球面平均与水平圆周平均为何得到不同 DI？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-70a24ade11">E02-11：相同的混响时间，直达混响比可以不同吗？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-ef18fae77a">E02-12：从阵元位置重新推导 CRB，并比较观测预算</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-b4930f81de">E02-13：四点 STFT 如何乘窗、变换和恢复？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-582c6ba787">E02-14：总体零均值与本批样本均值为零有何区别？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-4b3db2c478">E02-15：一条反射怎样改变六个输出样本？</a></li>
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是正文第 2 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
@@ -128,6 +178,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <hr />
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-99adf3ab78">2. 基础：声音到达阵列时发生了什么</h1>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-2-1">2.1 核心事实：同一声音，到达各麦克风有先有后</h2>
+<p>本章沿着“距离差 → 时延 → 复数相位 → 多通道统计量 → 波束指标”学习。先检查几何和单位，再计算矩阵；房间反射与软件接口分别说明，避免把理想传播模型当成所有录音的真实情况。</p>
+<h3 id="sec-2-1-1">2.1.1 先固定坐标与时差的正负</h3>
 <p>本书取声速 $c\approx343$ m/s，这是约 20°C 干空气中的常用近似；温度、湿度和气体成分改变时，声速也会改变。<a href="https://doi.org/10.1121/1.405827" title="citation">Cramer 1993 给出湿空气声速计算式及适用范围，JASA 93(5)</a>。</p>
 <p>两个相距 4 cm 的麦克风，当声音沿两麦连线的方向传来时，先到近麦、后到远麦，时差幅值最大，约为 $0.04/343\approx0.116$ ms。当声音垂直于连线传来时，两麦同时收到，时差为零。这个到达时间差称为<strong>到达时间差（Time Difference of Arrival，TDOA）</strong>。</p>
 <p><strong>坐标、方向和时差约定。</strong> 把麦 1 放在 $x=0$，麦 2 放在 $x=d>0$；正横方向为 $\theta=0°$，正角朝 $+x$、即麦 2 一侧。单位向量 $\vec u(\theta)$ 从阵列指向声源，声波实际传播方向为 $-\vec u$。到达时刻之差统一定义为 $\tau_{ij}=t_i-t_j$。</p>
@@ -138,17 +190,21 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>全书角度约定（后文凡涉角度一律沿用）</strong>：$\theta$ 从<strong>正横方向</strong>（broadside，垂直于两麦连线的方向）起算。正横 $\theta=0°$ 时两麦同时收到波前，时差为零；<strong>端射方向</strong>（endfire，沿两麦连线）$\theta=\pm90°$ 时路程差幅值为 $d$、时差幅值最大。有些文献从阵列轴起算，此时关系写成 $\Delta\tau=d\cos\theta/c$。比较公式前应先统一角度零点和正方向；两种起算方式相差 90°。</p>
 <p><img alt="图2 时延的几何来源与角度约定" src="../figures/fig02_dsin_geometry.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图 2 中麦 1 位于左侧、麦 2 位于右侧。正角声源位于麦 2 一侧，波前先到麦 2；直角三角形给出 $\tau_{12}=d\sin\theta/c>0$。正横时差为零，端射时差幅值达到最大。</p>
+<h3 id="sec-2-1-2">2.1.2 采样、同步与声速失配</h3>
 <p><strong>离散化。</strong> 16 kHz 采样率下，采样间隔为 $1/16000=62.5$ μs，对应约 $343\times62.5\,\mu s\approx2.1$ cm 的传播距离。4 cm 阵列的最大时差约为 117 μs，不到两个采样间隔。仅按整数采样点定位会得到很粗的方向，因此实际系统需要亚采样 TDOA 估计，例如对互相关峰插值、对相关函数上采样，或在频域拟合相位斜率（见 §4.2）。</p>
 <p><strong>同步。</strong> 多路信号必须同步采样。同一设备可让多通道模数转换器（ADC，Analog-to-Digital Converter）共享时钟；分布式设备则有独立晶振。相对偏移为 50 ppm 时，1 小时累积约 $50\times10^{-6}\times3600=0.18$ 秒，远大于阵列所测的微秒级时差，因此需要时钟同步或采样率偏移补偿（§10.2）。</p>
+<p>除了固定起始偏移，采样率误差还会使偏移随时间累积。共享时钟只能解决时钟来源问题，通道滤波、驱动缓存或接线次序仍应通过同一已知信号检查。幅度校准只校正灵敏度或单位，不会自动校正这些时间与相位差。</p>
 <p>声速失配会直接变成角度偏差。示意地，若真实声速为 331 m/s、真实方向为 60°，系统却按 343 m/s 反算，则 $\hat\theta=\arcsin[(343/331)\sin60°]\approx63.8°$，偏差约 3.8°。这不是“331 m/s 对应某一固定气温”的断言，只用于隔离声速参数失配；实际系统应按工作环境估计或校准 $c$。</p>
 <p>上式是 §2.3 远场向量模型的几何基础；式(2-1)将在那里给出。声源接近阵列时，波前曲率不能忽略，需要先区分近场与远场。</p>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-2-2">2.2 近场与远场</h2>
+<h3 id="sec-2-2-1">2.2.1 球面波与平面波各省略了什么</h3>
 <ul>
 <li><strong>近场</strong>（声源很近）：波前（波阵面，即相位相同的面）是球面，各麦克风信号的<strong>时间和幅度都有差别</strong>；</li>
 <li><strong>远场</strong>（声源距离远大于阵列尺寸）：波前近似平面，各麦克风收到的是“同一个信号错开一些时间”，幅度几乎相同。</li>
 </ul>
+<h3 id="sec-2-2-2">2.2.2 从路程误差推导相位容限</h3>
 <p>Fraunhofer 距离 $r_F=2D^2/\lambda$（$D$ 为阵列最大孔径、$\lambda$ 为波长）是常用的<strong>相位曲率</strong>尺度。这个等式针对以阵列中心对称的孔径：点声源位于中心法线上，最远阵元到中心的距离为半孔径 $a=D/2$，并以中心到该阵元的路程差不超过 $\lambda/16$ 为容限。</p>
-<p>非中心对称阵列应直接使用从选定参考点到最远阵元的距离 $a$，得到 $r_F=8a^2/\lambda$。对其他方位，这个尺度只能作为起始检查，而不是精确边界。该 $\lambda/16$ 口径及几何推导也见 <a href="https://www.etsi.org/deliver/etsi_etr/200_299/2730101/01_60/etr_2730101e01p.pdf" title="citation">ETSI ETR 273-1-1 条款 7.2.3.1（p.76）</a>。</p>
+<p>非中心对称阵列应直接使用从选定参考点到最远阵元的距离 $a$，得到 $r_F=8a^2/\lambda$。对其他方位，这个尺度只能作为起始检查，而不是精确边界。这项球面路程几何也用于电磁孔径测量；下列来源是电磁测量报告，并非麦克风阵列的声学验收标准。该 $\lambda/16$ 口径及几何推导见 <a href="https://www.etsi.org/deliver/etsi_etr/200_299/2730101/01_60/etr_2730101e01p.pdf" title="citation">ETSI ETR 273-1-1 条款 7.2.3.1（p.76）</a>。</p>
 <p>当 $r$ 大于该尺度，且同时满足下面展开所需的 $r\gg a$ 时，可以把球面波的相位近似为平面波。对实际拾音距离，还应检查阵列到声源的距离比、各阵元的幅度差，以及最高使用频率。</p>
 <p>例如，7 cm 中心对称阵列在 1 kHz（$\lambda=0.343$ m）时的公式值是 $2\times0.07^2/0.343\approx2.9$ cm，但 2.9 cm 并不满足 $r\gg D$，不能据此宣称从 3 cm 开始整个房间都是远场。作为对照，1.26 m 的中心对称线阵在 1 kHz 下有 $r_F\approx9.3$ m，普通会议室内应核对球面波模型。</p>
 <p><strong>Fraunhofer 判据的推导</strong>：</p>
@@ -160,7 +216,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <blockquote>
 <p><strong>泰勒展开的中间步</strong>：先提出 $r^2$：$\sqrt{r^2+a^2}-r = r\left[\sqrt{1+x}-1\right]$，其中 $x=(a/r)^2$。当 $x\ll1$ 时，$\sqrt{1+x}\approx1+x/2$，因此路程差近似为 $r\cdot x/2=a^2/(2r)$。中心对称孔径代入 $a=D/2$ 后才得到 $D^2/(8r)$。</p>
 </blockquote>
-<p>所以 Fraunhofer 距离不是物理突变点，而是“相位误差还能忍”的约定线。</p>
+<p>若不作展开，直接解 $\sqrt{r^2+a^2}-r\le\lambda/16$，平方并移项得到 $r\ge8a^2/\lambda-\lambda/32$；负的右端不构成额外距离限制。它只检验这组几何的相位误差。即使通过相位检查，距离比引起的幅度差仍可能很大，不能省略另一项检查。</p>
+<p>Fraunhofer 距离是选定误差容限对应的尺度，不是声场突然改变的物理边界。</p>
 <blockquote>
 <p><strong>为何选 $\lambda/16$（22.5°）作为示例容限</strong>：路程误差 $\Delta$ 对应相位误差 $2\pi\Delta/\lambda$；当 $\Delta=\lambda/16$ 时，相位误差为 22.5°。若只看两路等幅信号、其中一路存在这项相位误差，归一化相干和的幅度为 $|1+e^{\mathrm j\pi/8}|/2=\cos(\pi/16)\approx0.981$，即约 −0.17 dB。$\lambda/16$ 是本节为了说明数量级采用的工程容限，不是普适常数；要求更深零陷或更小相位误差时，所需距离会更大。</p>
 </blockquote>
@@ -177,10 +234,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>频率与帧索引</strong>：本章的连续频率统一记作 $f$，单位 Hz；DFT/STFT 的频点索引记作 $k$，其物理频率为 $f_k=kf_s/N$；帧索引记作 $\ell$。文献中常见的 $\vec x(f,t)$ 是简写，本书需要区分离散网格时写成 $\vec x(f_k,\ell)$。复指数 $e^{-\mathrm j2\pi f\tau}$ 中必须代入 Hz 频率 $f$ 或 $f_k$，不能直接代入无量纲索引 $k$。</p>
 </blockquote>
 <p>§2.1 得到了各麦到达时刻之差。下面先写每路麦克风的波形，再把时延转成频域相位，最后将多路式子合成一个向量式。</p>
-<p><strong>第一步：时域模型——每个麦克风一个式子</strong></p>
+<h3 id="sec-2-3-1">2.3.1 时域：每个麦克风的相对时移</h3>
 <p>远场、单声源时，先把各麦相对麦 1 的到达时延定义为 $\tau_{m1}=t_m-t_1$。由 §2.1 的方向约定，</p>
 <p>$$\tau_{m1}=-\frac{(\vec r_m-\vec r_1)^\top\vec u}{c}\text{。}$$</p>
-<p>正角 ULA 上 $\vec r_m-\vec r_1$ 的 $x$ 分量为正，所以 $m>1$ 时 $\tau_{m1}\lt 0$：右侧麦更早收到。把麦 1 的到达时刻作为时间原点，第 $m$ 个麦克风（$m=1,2,\dots,M$）录到的信号为</p>
+<p>均匀线阵（Uniform Linear Array，ULA）的阵元依次沿 $+x$ 排列。正角声源下， $\vec r_m-\vec r_1$ 的 $x$ 分量为正，所以 $m>1$ 时 $\tau_{m1}\lt 0$：右侧麦更早收到。把麦 1 的到达时刻作为时间原点，第 $m$ 个麦克风（$m=1,2,\dots,M$）录到的信号为</p>
 <p>$$x_m(t) = s(t - \tau_{m1}) + n_m(t)\text{。}$$</p>
 <ul>
 <li>$x_m(t)$：第 $m$ 路录音波形——这是<strong>你实际拿到的数据</strong>；下标 $m$ 表示“第几个麦克风”，$t$ 是时间；</li>
@@ -189,17 +246,23 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>$n_m(t)$：第 $m$ 路的噪声。</li>
 </ul>
 <p>时移位于 $s(t-\tau_{m1})$ 的自变量中。变换到频域后，它会成为可直接相乘的复相位因子。</p>
-<p><strong>第二步：搬到频率域——延迟从“移位”变成“转个角度”</strong></p>
+<h3 id="sec-2-3-2">2.3.2 频域：用变量代换得到相位因子</h3>
 <p>本书采用前向傅里叶变换 $X(f)=\int x(t)e^{-\mathrm j2\pi ft}\,\mathrm dt$。在此约定下，时移性质为</p>
 <p>$$s(t-\tau)\ \xrightarrow{\mathcal{F}}\ S(f)\,e^{-\mathrm{j}2\pi f\tau}$$</p>
-<p>箭头上的 $\mathcal F$ 表示傅里叶变换。</p>
+<p>箭头上的 $\mathcal F$ 表示傅里叶变换。将积分变量换成 $v=t-\tau$，就能核对负号来自哪里：</p>
+<p>$$\begin{aligned}
+\int s(t-\tau)e^{-\mathrm j2\pi ft}\,\mathrm dt
+&=\int s(v)e^{-\mathrm j2\pi f(v+\tau)}\,\mathrm dv,\\
+&=e^{-\mathrm j2\pi f\tau}\int s(v)e^{-\mathrm j2\pi fv}\,\mathrm dv.
+\end{aligned}$$</p>
+<p>这里 $t=v+\tau$，所以指数中的时移项仍带负号；相对时延 $\tau\lt 0$ 时，得到的相位旋转自然为正。</p>
 <p>左边表示时域延迟 $\tau$ 秒，右边表示频域中乘以复相位因子。频域形式便于把宽带信号分频点处理，也便于将卷积近似为乘法，因此许多阵列算法采用 STFT 实现；这种近似的边界见 §2.5。</p>
 <p>这个 $e^{-\mathrm{j}2\pi f\tau}$ 到底是什么？<strong>它是复平面上一个长度为 1 的箭头，从正实轴出发顺时针转过角度 $2\pi f\tau$</strong>（图4(b)）。其中 $\mathrm{j}$ 是虚数单位（$\mathrm{j}^2=-1$）；$e$ 的复指数由欧拉公式定义：$e^{\mathrm{j}\phi} = \cos\phi + \mathrm{j}\sin\phi$；有些书把 $2\pi f$ 写成 $\omega$（角频率），两者是一回事。</p>
 <p>可以用一个周期检查：若 $\tau=1/f$，相位转过整整一圈 $2\pi$；周期信号平移一个周期后与原波形重合，复相量也回到原位置。</p>
 <p><img alt="图4 时延为什么变成复数相位" src="../figures/fig04_delay_phase.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图 4 的三幅子图采用同一组参数：4 cm 麦距、声速 343 m/s、端射方向，因此 $\tau=d/c\approx0.1166$ ms。时域波形右移约 0.117 ms；1 kHz 复相量顺时针旋转约 $2\pi\times1000\times0.1166\text{ ms}\approx42°$；相位—频率图的斜率为 $-2\pi\tau$，2 kHz 处约为 −84°。§4.2 的 GCC-PHAT 正是利用这项关系估计时延。</p>
-<p>图 4（c）还说明，同一时延引起的相位旋转与频率成正比。相位展开后，直线斜率为 $-2\pi\tau$；实际数据中的相位缠绕、噪声和混响会使估计更复杂。</p>
-<p><strong>第三步：把 $M$ 个式子摞起来，写成向量</strong></p>
+<p>图 4（b）把原谱值的相位选作零点，展示单位模长的相对相位因子，并不要求原始 $S(f)$ 总在正实轴上。三幅子图采用同一组参数：4 cm 麦距、声速 343 m/s、端射方向，因此 $\tau=d/c\approx0.1166$ ms。时域波形右移约 0.117 ms；1 kHz 复相量顺时针旋转约 $2\pi\times1000\times0.1166\text{ ms}\approx42°$；相位以 rad、频率以 Hz 表示时斜率为 $-2\pi\tau$；图中的单位换成 °/kHz 后，斜率为 $-360000\tau\approx-41.98$ °/kHz，2 kHz 处约为 −84°。§4.2 的 GCC-PHAT 正是利用这项关系估计时延。</p>
+<p>图 4（c）还说明，同一时延引起的相位旋转与频率成正比。相位以 rad、频率以 Hz 表示并展开后，直线斜率为 $-2\pi\tau$；实际数据中的相位缠绕、噪声和混响会使估计更复杂。</p>
+<h3 id="sec-2-3-3">2.3.3 多通道：导向矢量与维度检查</h3>
 <p>对第 $m$ 路、物理频率 $f$，时移性质给出：</p>
 <p>$$X_m(f) = e^{-\mathrm{j}2\pi f\tau_{m1}(\theta)}\,S(f) + N_m(f)\text{。}$$</p>
 <ul>
@@ -210,16 +273,21 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>$$a_m(f,\theta)=e^{-\mathrm j2\pi f\tau_{m1}}
 =e^{+\mathrm j2\pi f(\vec r_m-\vec r_1)^\top\vec u/c}\text{。}$$</p>
 <p>于是</p>
-<p>$$\underbrace{\begin{bmatrix} X_1(f) \\ X_2(f) \\ \vdots \\ X_M(f) \end{bmatrix}}_{\vec{x}(f)} \;=\; \underbrace{\begin{bmatrix} e^{-\mathrm{j}2\pi f\tau_{11}(\theta)} \\ e^{-\mathrm{j}2\pi f\tau_{21}(\theta)} \\ \vdots \\ e^{-\mathrm{j}2\pi f\tau_{M1}(\theta)} \end{bmatrix}}_{\vec{a}(f,\theta)} \,S(f) \;+\; \underbrace{\begin{bmatrix} N_1(f) \\ \vdots \\ N_M(f) \end{bmatrix}}_{\vec{n}(f)}\text{。}$$</p>
+<p>$$\begin{aligned}
+\underbrace{\begin{bmatrix}X_1(f)\\X_2(f)\\\vdots\\X_M(f)\end{bmatrix}}_{\vec x(f)}
+&=\underbrace{\begin{bmatrix}e^{-\mathrm j2\pi f\tau_{11}(\theta)}\\e^{-\mathrm j2\pi f\tau_{21}(\theta)}\\\vdots\\e^{-\mathrm j2\pi f\tau_{M1}(\theta)}\end{bmatrix}}_{\vec a(f,\theta)}S(f)\\
+&\quad+\underbrace{\begin{bmatrix}N_1(f)\\\vdots\\N_M(f)\end{bmatrix}}_{\vec n(f)}\text{。}
+\end{aligned}$$</p>
 <p>每一行就是上面那个标量式子；把公共的 $S(f)$ 提到列向量外面，就得到全书最常用的紧凑形式：</p>
 <p>$$\vec{x} = \vec{a}(\theta)\,s + \vec{n}\text{。}\tag{2-1}$$</p>
 <ul>
-<li>$\vec{x}$：$M$ 路信号的列向量，$M$ 为麦克风数量；</li>
+<li>$\vec{x}$：$M\times1$ 复数列向量，$M$ 为麦克风数量；</li>
 <li>$\vec{a}(\theta)$：<strong>导向矢量（steering vector）</strong>，描述声源位于 $\theta$ 方向时各麦克风相对麦 1 的相位；</li>
 <li>$\theta$：声源方向，也是定位时想求的量；</li>
 <li>$s$：该频点的声源谱，是标量，即上面逐行式子中的 $S(f)$；</li>
-<li>$\vec{n}$：噪声向量。</li>
+<li>$\vec{n}$：$M\times1$ 复数噪声向量。</li>
 </ul>
+<p>维度检查：$\vec a$ 为 $M\times1$，乘一个标量 $s$ 后仍为 $M\times1$，才能与 $\vec n$ 相加。导向分量无量纲；$s$ 与各路谱值使用相同单位和傅里叶归一化。</p>
 <p>式(2-1)省略了频点自变量 $(f)$，下文沿用此简写。在本节的等幅远场模型中，$\vec{a}(\theta)$ 每个分量的模长为 1，分量差异来自相对时延 $\tau_{m1}(\theta)$。定位算法可用候选方向的导向矢量解释观测，波束形成器则用它规定目标方向响应；近场或含散射时还要加入距离和幅度项。</p>
 <p><strong>手算一遍</strong>：3 麦 ULA 的麦 1、2、3 依次位于 $x=0,4,8$ cm；声源位于正角 30°，$f=1$ kHz。</p>
 <p>相邻麦的 $\tau_{m1}$ 变化量为 $-d\sin30°/c\approx-58.3$ μs，所以相邻导向相位变化为 $-2\pi f(-58.3\,\mu\mathrm s)\approx+0.366$ rad，即约 +21°。因此</p>
@@ -233,41 +301,54 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>房间脉冲响应说明反射怎样进入录音，混响时间描述拖尾的衰减，直达混响比描述两种能量的相对大小。以下分别建立这三个量，再说明怎样仿真和测量。</p>
 <h3 id="sec-2-4-1">2.4.1 房间脉冲响应与早晚反射</h3>
 <p><strong>房间脉冲响应（Room Impulse Response，RIR）</strong>：RIR 是房间和收发位置固定时，系统对理想单位冲激的响应。在线性、时不变近似下，麦克风信号等于声源信号与 RIR 的卷积。</p>
+<p>先用离散模型把“叠加”写清。令 $u[n]$ 为声源端数字信号，$h_m[q]$ 为第 $m$ 路的离散 RIR，长度为 $Q$，则</p>
+<p>$$\begin{aligned}
+x_m[n]&=\sum_{q=0}^{Q-1}h_m[q]u[n-q]\\
+&\quad+n_m[n]\text{。}
+\end{aligned}\tag{2-2}$$</p>
+<p>$h_m[q]$ 的每个非零抽头都产生一份延迟 $q$ 个采样点、再乘相应增益的副本。本式使用数字输入输出约定，$h_m[q]$ 是离散滤波增益；实测声学传递函数的单位还取决于播放参考和麦克风校准。声源端 $u[n]$ 与 §2.3 已吸收公共传播的参考麦目标 $s$ 不同，不能悄悄互换。E02-15 用六个输出样本逐项复算。</p>
 <p>拍手录音可以粗略显示直达声和衰减尾，却不是严格的 RIR：拍手本身有有限时长和频谱，麦克风响应也会进入录音。要得到可用于计算的 RIR，通常播放已知测试信号并反卷积，测量方法见本节末。</p>
 <p>RIR 可按图5(a)作教学性分段：</p>
 <ol>
-<li><strong>直达声</strong>：从声源直线到达，最干净、携带最准的方向信息；</li>
+<li><strong>直达声</strong>：从声源直接到达；在直达路径未被遮挡且传播模型成立时，它提供声源方向的几何线索；</li>
 <li><strong>早期反射</strong>：直达声后较早到达、仍能分辨出路径结构的反射。图5(a)用 80 ms 作示意分界；80 ms 也是音乐清晰度指标 $C_{80}$ 的积分分界，而语音清晰度常用 50 ms 的 $C_{50}$。这不是早、晚反射的普适物理边界，80 ms 内的反射次数也取决于房间尺度和路径。早期反射可能增加响度，也会模糊方向线索；</li>
 <li><strong>晚期混响</strong>：经多次反射后形成的弥散尾音。统计建模时，常把充分弥散的晚期混响近似为各向同性声场；这个近似适合分析波束形成器的 DI（指向性指数，§2.6），但不表示混响在时间上就是独立白噪声。WPE（第 7 章）正是利用晚期混响仍有时间相关性来做预测消除。</li>
 </ol>
 <p><img alt="图5 房间声学基础" src="../figures/fig05_room_acoustics.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图 5（a）把房间脉冲响应分为直达声、早期反射和晚期混响；图 5（b）用能量衰减 60 dB 所需时间定义 $T_{60}$；图 5（c）固定 $d_c=1.0$ m，展示直达声与混响声的相对声级怎样随声源—麦克风距离变化。该子图是归一化示例，不直接给出体积或混响时间不同的房间结果。</p>
+<p>图 5（a）中，12 ms 的指定直达抽头为 1；随机反射尾从直达之后就存在，并叠加四条离散早期反射，92 ms 是教学分段位置，不是随机尾的启动点。直达抽头也不必是整条 RIR 的最大峰。图 5（b）用能量衰减 60 dB 所需时间定义 $T_{60}$；图 5（c）固定 $d_c=1.0$ m，展示直达声与混响声的相对声级怎样随声源—麦克风距离变化。该子图是归一化示例，不直接给出体积或混响时间不同的房间结果。</p>
 <h3 id="sec-2-4-2">2.4.2 混响时间：从吸声量算衰减</h3>
 <p><strong>$T_{60}$ 与赛宾公式</strong>。$T_{60}$ 是声能衰减 60 dB 所需的时间（图5(b)），可用赛宾（Sabine）公式估算。原始理论可追溯到 Sabine 的声学论文集。实测时要按空间类型选标准：<a href="https://www.iso.org/standard/40979.html" title="citation">ISO 3382-1:2009</a>面向演出空间，<a href="https://www.iso.org/standard/36201.html" title="citation">ISO 3382-2:2008</a>面向普通房间：</p>
-<p>$$T_{60} = \frac{0.161\,V}{A}, \qquad A = \sum_i S_i\,\alpha_i\text{。}$$</p>
-<ul>
-<li>$V$：房间体积（m³）；$S_i$、$\alpha_i$：第 $i$ 个表面的面积与吸声系数（0=全反射的光滑瓷砖，1=全吸声的开放窗户）。</li>
-<li><strong>算例</strong>（本例是参数演示，不代表某类房间的通用测量值）：房间尺寸取 5 m × 4 m × 2.8 m，故 $V=56$ m³；再假设各表面的赛宾吸声量合计为 $A=18$ m²，则 $T_{60}=0.161\times56/18\approx0.50$ s。改变表面材料或摆设会改变 $A$，因此同尺寸房间也可能得到不同结果。</li>
-</ul>
+<p>$$\begin{aligned}
+T_{60}&=\frac{0.161\,V}{A},\\
+A&=\sum_i S_i\alpha_i\text{。}
+\end{aligned}\tag{2-3}$$</p>
+<p>$V$：房间体积（m³）；$S_i$、$\alpha_i$：第 $i$ 个表面的面积与吸声系数（理想能量吸收比例，0 表示不吸收，1 表示全部吸收）。</p>
+<p>实际材料的吸声系数随频带、入射条件和测量方法变化，不能把某种瓷砖或窗户固定等同于 0 或 1。$A$ 是等效吸声面积，单位 m²；它不等于墙面总面积。</p>
+<p><strong>算例</strong>（本例是参数演示，不代表某类房间的通用测量值）：房间尺寸取 5 m × 4 m × 2.8 m，故 $V=56$ m³；再假设各表面的赛宾吸声量合计为 $A=18$ m²，则 $T_{60}=0.161\times56/18\approx0.50$ s。改变表面材料或摆设会改变 $A$，因此同尺寸房间也可能得到不同结果。</p>
 <p><strong>这个公式怎么推出来的</strong>（五步，能量守恒 + 一个几何事实）：</p>
 <ol>
 <li><strong>模型</strong>：混响期的声能在房间里近似均匀分布（扩散场假设），声线不断撞墙，每撞一次被吸收掉一部分；</li>
 <li><strong>几何事实</strong>：声线在房间中平均飞行 $\ell_{\rm mfp} = \dfrac{4V}{S}$ 米撞一次墙（统计几何的经典结果，$S$ 是所有墙面的总面积）。直觉检验：房间越大飞得越远、墙越多撞得越勤，都对得上；</li>
 <li><strong>每秒能量损失率</strong>：撞墙频率 $= \dfrac{c}{\ell_{\rm mfp}} = \dfrac{cS}{4V}$（次/秒），每次损失能量比例 $\bar\alpha$（平均吸声系数），于是每秒损失率 $= \dfrac{cS\bar\alpha}{4V} = \dfrac{cA}{4V}$；</li>
 <li><strong>列方程求解</strong>：$\dfrac{\mathrm{d}E}{\mathrm{d}t} = -\dfrac{cA}{4V}E$——“损失率正比于当前能量”的方程，解是指数衰减 $E(t) = E_0\,e^{-\frac{cA}{4V}t}$；</li>
-<li><strong>代入定义收尾</strong>：$T_{60}$ 是能量衰减 60 dB 的时间——注意 60 dB 是能量比 $10^6$（不是 $10^3$：能量的 dB 用 $10\log_{10}$，$10\log_{10}10^6 = 60$）。令 $e^{-\frac{cA}{4V}T_{60}} = 10^{-6}$，两边取对数：$\frac{cA}{4V}T_{60} = 6\ln 10$，解出</li>
+<li><strong>代入定义收尾</strong>：$T_{60}$ 是能量衰减 60 dB 的时间——注意 60 dB 是能量比 $10^6$（不是 $10^3$：能量的 dB 用 $10\log_{10}$，$10\log_{10}10^6 = 60$）。令 $e^{-\frac{cA}{4V}T_{60}} = 10^{-6}$，取对数得 $\frac{cA}{4V}T_{60}=6\ln10$。因此</li>
 </ol>
-<p>$$T_{60} = \frac{24\ln 10}{c}\cdot\frac{V}{A} = \frac{55.3}{343}\cdot\frac{V}{A} \approx 0.161\,\frac{V}{A}\ \checkmark\text{。}$$</p>
+<p>$$\begin{aligned}
+T_{60}&=\frac{24\ln10}{c}\frac VA,\\
+&\approx\frac{55.3}{343}\frac VA
+\approx0.161\frac VA\text{。}
+\end{aligned}$$</p>
 <blockquote>
 <p><strong>平均自由程中的因子 4</strong>：在声线方向各向同性、房间为凸体的假设下，墙面对各方向的平均投影面积是总表面积的 $1/4$。因此单位体积内声线单位时间的墙面碰撞率为 $cS/(4V)$，两次碰撞间的平均距离为其传播距离形式的倒数 $\ell_{\rm mfp}=4V/S$。量纲检查：$V/S$ 是长度；立方房间边长为 $L$ 时，$\ell_{\rm mfp}=4L^3/(6L^2)=2L/3$。</p>
 <p><strong>常数 0.161 的来源</strong>：$24\ln10\approx55.26$；取声速 $c=343$ m/s，$55.26/343\approx0.161$。其中 $6\ln10$ 来自 60 dB 的能量比，几何平均路径项再带来因子 4。</p>
 </blockquote>
-<p><strong>适用边界</strong>：推导用了“扩散场 + 弱吸收”假设。平均吸声系数不再很小时，赛宾的一阶近似会逐渐偏离，可改用 Eyring 公式 $T_{60} = \dfrac{-0.161V}{S\ln(1-\bar\alpha)}$（极端检查：$\bar\alpha=1$ 时 Eyring 给出 $T_{60}=0$，赛宾却给出非零值）。这里不设一个适用于所有房间的硬阈值；应按频带、声场扩散程度和测量标准核对。公式来源见 <a href="https://doi.org/10.1121/1.1915175" title="citation">Eyring 1930 原论文</a>。</p>
+<p><strong>适用边界</strong>：推导用了“扩散场 + 弱吸收”假设。平均吸声系数不再很小时，赛宾的一阶近似会逐渐偏离，在相应的扩散场假设下可比较 Eyring 公式 $T_{60} = \dfrac{-0.161V}{S\ln(1-\bar\alpha)}$（形式极限检查：$\bar\alpha\to1^-$ 时 Eyring 趋于零，赛宾仍趋于非零值；$\ln0$ 本身未定义，全吸收条件下扩散场模型也已失去前提）。</p>
+<p>这里不设一个适用于所有房间的硬阈值；应按频带、声场扩散程度和测量标准核对。公式来源见 <a href="https://doi.org/10.1121/1.1915175" title="citation">Eyring 1930 原论文</a>。</p>
 <h3 id="sec-2-4-3">2.4.3 直达混响比与临界距离</h3>
 <p><strong>直达混响比（Direct-to-Reverberant Ratio，DRR）</strong>比较同一声源的直达分量与混响分量能量：$\mathrm{DRR}=10\log_{10}(E_{\rm direct}/E_{\rm reverberant})$ dB。DRR 为正表示直达能量较大，为负表示混响能量较大。</p>
 <p>两项能量须来自同一次声学条件与相同频带、幅度参考；直达窗与混响窗的各自边界也要说明。图 5（c）采用下述理想扩散场模型，真实房间的直达与反射分界仍要按测量方法确定。</p>
 <p>直达声随距离按平方反比衰减（每远一倍弱 6 dB），而理想扩散场中的晚期混响能量密度近似不随位置变化。两者相等的位置称为<strong>临界距离</strong> $d_c$：</p>
-<p>$$d_c \approx 0.057\sqrt{\frac{V}{T_{60}}}\ \text{(m)}\text{。}$$</p>
+<p>$$d_c \approx 0.057\sqrt{\frac{V}{T_{60}}}\ \text{(m)}\text{。}\tag{2-4}$$</p>
 <p>（此式默认声源全向辐射，即指向性因子 $Q=1$；若声源有指向性（如人声朝前更响），把 $Q$ 乘进根号内的分子：$d_c \approx 0.057\sqrt{QV/T_{60}}$。）</p>
 <p><strong>临界距离公式的推导</strong>（四步）：</p>
 <ol>
@@ -275,10 +356,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>求直达声能量密度。</strong> 全向声源的功率 $W$ 均匀分布在半径 $r$ 的球面上，声强为 $I_d=W/(4\pi r^2)$，单位是 W/m²。对向外传播的波作局部平面波近似，再除以声速，得到能量密度 $E_d=I_d/c=W/(4\pi r^2c)$，单位是 J/m³。</p>
 </li>
 <li>
-<p><strong>求混响声能量密度。</strong> 房间里的混响能量不断被墙面吸收，又不断由声源补充。稳态扩散场中的能量密度为 $E_r=4W/(cA)$，其中 $A$ 是赛宾吸声量；该理想模型把它视为不随位置变化。下面的说明框解释分子中的 4。</p>
+<p><strong>求混响声能量密度。</strong> 房间里的混响能量不断被墙面吸收，又不断由声源补充。稳态扩散场中有 $E_r=4W/(cA)$。$A$ 是赛宾吸声量，模型把 $E_r$ 视为不随位置变化。下面的说明框解释分子中的 4。</p>
 </li>
 <li>
-<p><strong>令两种能量密度相等。</strong> 在临界距离 $r=d_c$ 处，$E_d=E_r$。将上面两式代入，先消去共同的声源功率 $W$ 与声速 $c$，再解 $d_c^2$：</p>
+<p><strong>令两种能量密度相等。</strong> 在临界距离 $r=d_c$ 处，$E_d=E_r$。代入上面两式，消去共同的 $W$ 和 $c$，解得：</p>
 <p>$$\begin{aligned}
     \frac{W}{4\pi d_c^2c}&=\frac{4W}{cA},\\
     \frac{1}{4\pi d_c^2}&=\frac4A,\\
@@ -299,7 +380,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>可跳过：弥散能量式中 4 从哪里来（$4W/(cA)$）</strong>：稳态能量平衡是“注入功率 $=$ 吸收功率”。墙面每秒吸收的功率 $=$ 能量密度 $E$ $\times$ 声速 $c$ $\times$ 有效吸收面积。关键一步：各向同性声场中，只有面向墙面方向的能量流才会被吸收，对半球方向平均后有效因子恰为 $1/4$（各向同性场向墙面投影平均带来的 $1/4$ 因子，直觉版的严格说法见上），于是吸收功率 $=E\cdot cA/4$。令它等于注入功率 $W$，解得 $E=4W/(cA)$。与上一步平均自由程里的 4 是同一个几何根源：都是“各向同性场向一面墙投影”带来的 $1/4$。</p>
 <p><strong>常数 0.057 的来源</strong>：$0.161/(16\pi)\approx0.003203$，再开平方得到 $0.0566\approx0.057$。因此该常数同时包含赛宾公式中的 0.161 和球面扩散项 $16\pi$。</p>
 </blockquote>
-<p>图 5（b）的指数包络把名义 $T_{60}$ 设为 0.5 s；加入固定随机尾和早期反射后，<a href="https://doi.org/10.1121/1.1909343" title="citation">Schroeder 剩余能量积分</a>曲线最接近 −60 dB 的位置约为 0.514 s。因此 0.5 s 是生成模型的名义参数，不表示该固定样例恰好在 0.500 s 穿过 −60 dB。</p>
+<p>图 5（b）的指数包络把名义 $T_{60}$ 设为 0.5 s；加入固定随机尾和早期反射后，<a href="https://doi.org/10.1121/1.1909343" title="citation">Schroeder 剩余能量积分</a>曲线首次到达 −60 dB 的录音时刻约为 0.514 s。减去直达声的 0.012 s，到达后经过约 0.502 s。名义 0.5 s 的时间长度应从直达起算，对应录音时刻 0.512 s；不能把传播前的静音也算作衰减。该固定随机样例的实现衰减与名义参数有差别。</p>
 <p>这里直接寻找 −60 dB 交点，只用于核对这条合成曲线。实测应按场所选择 ISO 3382 的相应分册，常对衰减曲线的 −5～−25 dB（$T_{20}$）或 −5～−35 dB（$T_{30}$）区间回归，再外推到 60 dB。</p>
 <p>图 5（c）是设定 $d_c=1.0$ m 的归一化示例。在该模型中，3 m 处的 DRR 为 $-20\log_{10}(3/1)\approx-9.5$ dB，表示混响能量高于直达声；这个数不能外推到未测量的房间。实际 $d_c$ 还随体积、吸声量和声源指向性变化。</p>
 <p>DRR 可作为距离估计的声学线索，但必须同时考虑房间和声源指向性。在上述线性模型中，直达声与混响声能量都正比于声源功率 $W$，两者相除后 $W$ 抵消，因此只把声源整体调大并不会改变 DRR。若从含噪或发生削波的录音估计 DRR，测得的比值还可能受噪声和非线性影响。</p>
@@ -307,21 +388,32 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>仿真怎么造混响</strong>：镜像法（Image Method，镜像声源法）把墙面反射等效为镜像声源的叠加，算法定义见 <a href="https://doi.org/10.1121/1.382599" title="citation">Allen 与 Berkley 1979 原论文</a>。开源库 pyroomacoustics 可生成给定房间和阵列的 RIR；本书固定链接到 <a href="https://pypi.org/project/pyroomacoustics/0.10.0/" title="citation">pyroomacoustics 0.10.0 的 PyPI 发布页</a>，示例接口以该版本为准。不同版本的接口、默认值或依赖可能变化，复现时应记录实际安装版本。</p>
 <p><strong>反过来，怎么实测一个房间的混响</strong>：拍手或爆破气球后观察衰减只能作粗略估计。更可控的做法是<strong>指数正弦扫频（Exponential Sine Sweep，ESS）</strong>：播放频率指数上升的已知扫频，录音后反卷积得到 RIR，方法见 <a href="https://aes.org/publications/elibrary-page/?id=10211" title="citation">Farina 2000，AES Convention Paper 5093</a>。</p>
 <p>在系统近似时不变、没有削波且扫频长度足够时，ESS 可将若干谐波失真成分与线性 RIR 在反卷积结果中分开。环境噪声、削波、时变非线性和播放/录音链路的频响仍会影响测量。</p>
-<p>无法播放测试音的在线场景也可以用普通语音<strong>盲估</strong> $T_{60}$ 和 DRR，例如利用两麦相干函数估计直达－弥散比。</p>
+<p>无法播放测试音时，也可研究从普通语音盲估房间参数，但不同参数需要不同模型。两麦相干函数可用于估计直达－弥散比，不能仅凭一个比值直接得到 $T_{60}$；后者还需要衰减形态或混响统计模型。</p>
+<p>镜像仿真也要区分能量吸收系数 $\alpha$ 与理想幅度反射系数 $\sqrt{1-\alpha}$。由赛宾公式反求的材料参数与反射阶数只是仿真配置，生成后仍要测量衰减曲线。ESS 实测则应保留播放参考、扫频频带、录音尾长、噪声底和反卷积设置；本书合成 RIR 不能替代一次实际测量。固定版本的源码入口、声速与测量接口差异见<a href="research/01_spatial_and_tracking.html">空间处理研究手册</a>。</p>
 <p>房间传播模型解释了麦克风信号的组成。算法实现还需要把连续波形组织成 STFT、快拍和协方差矩阵。</p>
 <span id="sec-6" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-2-5">2.5 数据怎么组织：STFT、快拍与协方差矩阵</h2>
 <p>后面的算法反复出现三个词——STFT、快拍、协方差矩阵，先在这里一次讲清。</p>
 <h3 id="sec-2-5-1">2.5.1 从波形到逐频点的短时谱</h3>
 <p><strong>短时傅里叶变换（Short-Time Fourier Transform，STFT）</strong>把波形切成重叠短帧，每帧加窗后做快速傅里叶变换（Fast Fourier Transform，FFT），得到时间—频率复数网格。每个网格点同时包含幅度与相位；图 6（b）这样的语谱图只把其中的幅度或功率画成颜色，相位没有直接显示。</p>
 <p>增强或波束示例可用 32 ms 窗、8 ms 帧移；自动语音识别（Automatic Speech Recognition，ASR）前端常见另一组设置为 25 ms/10 ms。比较文献时应核对采样率、窗函数、窗长和帧移。</p>
-<p>为什么需要这张表？因为 STFT 把宽带语音分解为一组<strong>近似窄带</strong>问题。时延 $\tau$ 对应的相位旋转 $2\pi f_k\tau$ 随频率变化，因此第 $k$ 个频点要使用自己的 $\vec a(f_k,\theta)$。</p>
-<p>把卷积在每个时频点写成 $\vec{x}(f_k,\ell)\approx\vec{a}(f_k,\theta)s(f_k,\ell)+\vec n(f_k,\ell)$ 仍是窄带近似。窗函数会使直线卷积在 STFT 中产生频带内和跨频带项，长房间响应、过短窗或频率变化过快时误差更大。第 4、5 章逐频点处理时，需把窗长与有效冲激响应长度纳入验证。</p>
+<p>令 $g[q]$ 为长度 $N_w$ 的实窗，$H$ 为帧移采样点数，$N\ge N_w$ 为 FFT 点数；这里先用不居中、从零开始的帧索引 $\ell$。本书前向 FFT 不除以 $N$：</p>
+<p>$$\begin{aligned}
+z_{m,\ell}[q]&=x_m[\ell H+q]g[q],\\
+X_m[k,\ell]&=\sum_{q=0}^{N_w-1}z_{m,\ell}[q]e^{-\mathrm j2\pi kq/N},\\
+f_k&=\frac{kf_s}{N}\text{。}
+\end{aligned}\tag{2-5}$$</p>
+<p>$z_{m,\ell}[q]$ 是乘窗后的帧内样本；$x_m$ 是第 $m$ 路实波形，$X_m[k,\ell]$ 是一个复数；$q$ 是窗内采样点编号，$k$ 是频点编号。完整 DFT 的 $k=0,\ldots,N-1$；实输入可只保存 $k=0,\ldots,\lfloor N/2\rfloor$，由共轭对称补回负频率。居中或末端补齐时，先扩展输入序列，再使用相同求和式。窗外样本与尾部补入的零不能算作新观测。</p>
+<p>本书教学接口取 $N_w=N$；讨论窗长与 FFT 补零时才分别使用两个量。周期 Hann 窗是 $g[q]=\tfrac12-\tfrac12\cos(2\pi q/N_w)$。E02-13 用四点窗列出乘窗、复谱和重构分母，帮助检查实际数组中的每个数字。</p>
+<p>STFT 把宽带语音分解为一组<strong>近似窄带</strong>问题。时延 $\tau$ 对应的相位旋转 $2\pi f_k\tau$ 随频率变化，因此第 $k$ 个频点要使用自己的 $\vec a(f_k,\theta)$。</p>
+<p>对直达场，在每个时频点写 $\vec{x}(f_k,\ell)\approx\vec{a}(f_k,\theta)s(f_k,\ell)+\vec n(f_k,\ell)$ 仍需窄带近似。加入房间反射后，乘法模型的通道因子应来自房间传递函数，不能继续把它解释成只有几何时延的单位模长导向。</p>
+<p>完整傅里叶变换把时不变卷积精确变成乘法；有限窗的 STFT 则一般还包含跨帧与跨频带项。省略这些项后，才得到当前帧的逐频点乘法近似；是否采用直达导向还是含反射的相对传递函数，是另一项模型选择。</p>
+<p>长房间响应、过短窗或频率变化过快时误差更大。第 4、5 章逐频点处理时，需把窗长与有效冲激响应长度纳入验证。跨帧项与跨带项分别表示时间帧之间、频率通道之间的耦合，不能混为一项；推导可参阅 <a href="https://www.ee.technion.ac.il/Sites/People/IsraelCohen/Publications/TASL_May2007.pdf" title="citation">Avargel 与 Cohen 2007，§II，式(7)～(11)</a>。</p>
 <p><strong>STFT 分帧数字例子</strong>：阵列配置为 4 麦常规小间距，采样率 16 kHz、窗长 32 ms、帧移 8 ms。</p>
 <ul>
 <li>窗长为 $16000\times0.032=512$ 点，FFT 常用 512 点。</li>
 <li>帧移为 $16000\times0.008=128$ 点，相邻帧重叠率为 $(512-128)/512=75\%$。</li>
 <li>不在信号两端补零、只取完整窗时，1 s 语音共有 $\lfloor(16000-512)/128\rfloor+1=122$ 帧。</li>
-<li>每帧 FFT 给出 257 个有效频点（0～8 kHz），相邻频点间隔为 $16000/512=31.25$ Hz。</li>
+<li>每帧实 FFT 保存 257 个单边频点（0～8 kHz），相邻频点间隔为 $16000/512=31.25$ Hz。</li>
 </ul>
 <p>这个 31.25 Hz 是 DFT 网格间隔，不等于能分开两条相邻谱线的频率分辨能力；后者还取决于窗函数的主瓣宽度等条件。<a href="https://doi.org/10.1109/PROC.1978.10837" title="citation">Harris 1978</a>详细讨论了窗函数对谱分析的影响。</p>
 <p>分帧还要单独指定端点策略。本书 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/spectral.py"><code>spectral.py</code></a> 的默认设置 <code>center=True</code> 会在两端各补半窗，并把末端补到完整帧，因此同一段 1 s 信号得到 126 帧；设为 <code>center=False</code> 时，本例才得到 122 帧。一般长度若不能恰好覆盖，代码仍会补齐末帧，不能直接套用只取完整窗的向下取整式。</p>
@@ -329,32 +421,55 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>按上述不补端点、只取完整窗的口径，1 s、4 麦录音展开为 $122\times257=31354$ 个时频点，每个点上有一个 4 维快拍向量。这就是后文协方差矩阵 $\hat{\mathbf{R}}(f_k)$ 在每个频点上平均的对象，每个频点有 122 个快拍参与平均。</p>
 <h3 id="sec-2-5-2">2.5.2 从多通道快拍到空间二阶矩</h3>
 <p><strong>快拍（snapshot，快照向量）</strong>：固定频点索引 $k$、取第 $\ell$ 帧，把 $M$ 个麦克风在该时频点 $(f_k,\ell)$ 的复数谱排成列向量 $\vec{x}(f_k,\ell)$，就是一个快拍——相当于阵列在某一短帧拍下的一张“空间照片”（图6(b) 里标的那个格子就是它）。</p>
-<p><strong>空间二阶矩（阵列文献常称空间协方差矩阵）</strong>：单张快拍太噪，把几十到几百个快拍平均：</p>
-<p>$$\hat{\mathbf{R}}(f_k) = \frac{1}{L}\sum_{\ell=1}^{L} \vec{x}(f_k,\ell)\,\vec{x}^H(f_k,\ell)\text{。}\tag{2-2}$$</p>
-<p>式(2-2)没有减去样本均值，严格说是未中心化的样本二阶矩；当 STFT 快拍在所用时间段内可视为零均值，或已经去均值时，它才等于样本协方差。阵列文献常把两者都简称为空间协方差，使用实现或论文时要核对其定义。</p>
+<p><strong>空间二阶矩（阵列文献常称空间协方差矩阵）</strong>：单张快拍只给一次观测。固定频点，收集 $L$ 个快拍后对外积求平均：</p>
+<p>$$\begin{aligned}
+\vec x_\ell&=\vec x(f_k,\ell),\\
+\hat{\mathbf R}(f_k)&=\frac1L\sum_{\ell=1}^{L}\vec x_\ell\vec x_\ell^H\text{。}
+\end{aligned}\tag{2-6}$$</p>
+<p>式(2-6)没有减去样本均值，严格说是未中心化的样本二阶矩；总体均值为零，只能保证总体二阶矩与总体协方差相等，不能保证有限一批快拍的样本均值恰为零。阵列文献常把两者都简称为空间协方差，使用实现或论文时要核对其定义。</p>
+<p>把当前频点的样本均值写为 $\bar{\vec x}=L^{-1}\sum_\ell\vec x_\ell$。采用同一个分母 $L$ 时，中心化矩阵与未中心化矩阵之间满足</p>
+<p>$$\begin{aligned}
+\hat{\mathbf C}_L&=\frac1L\sum_{\ell=1}^{L}(\vec x_\ell-\bar{\vec x})(\vec x_\ell-\bar{\vec x})^H,\\
+\hat{\mathbf R}&=\hat{\mathbf C}_L+\bar{\vec x}\bar{\vec x}^{H}\text{。}
+\end{aligned}\tag{2-7}$$</p>
+<p>展开乘积后，两项线性交叉项都利用 $L^{-1}\sum_\ell\vec x_\ell=\bar{\vec x}$ 合并，得到第二行。只有本批 $\bar{\vec x}=0$ 时，两种矩阵才相等。独立同分布、均值未知且 $L>1$ 时，常用分母 $L-1$ 得到无偏协方差估计；它还多一个 $L/(L-1)$ 因子。E02-14 把这三个结果分开复算。</p>
 <p>$\hat{\mathbf{R}}$ 是 $M\times M$ 的复数矩阵，第 $m,n$ 个元素记录麦 $m$ 与麦 $n$ 在该频点上的相关幅度与相位差。Capon、MVDR、MUSIC 都以它为输入；MUSIC 再用特征分解把观测空间分成信号子空间和噪声子空间。</p>
 <p>先用一帧两麦数据看清矩阵中的四个数。若该频点的快拍为 $\vec x=[1,2\mathrm j]^\top$，则它的外积是</p>
 <p>$$\vec x\vec x^H=\begin{bmatrix}1&-2\mathrm j\\2\mathrm j&4\end{bmatrix}\text{。}$$</p>
-<p>对角线上的 1 和 4 是两路谱值的模平方，因而都是非负实数；右上角的 $-2\mathrm j$ 与左下角的 $2\mathrm j$ 互为共轭，记录这帧的跨通道相位关系。这只是单帧外积，秩为 1；式(2-2)还要把同频点的多帧外积平均，才能估计该时间段的空间二阶矩。</p>
+<p>对角线上的 1 和 4 是两路谱值的模平方，因而都是非负实数；右上角的 $-2\mathrm j$ 与左下角的 $2\mathrm j$ 互为共轭，记录这帧的跨通道相位关系。这只是单帧外积，秩为 1；式(2-6)还要把同频点的多帧外积平均，才能估计该时间段的空间二阶矩。</p>
 <p>只有在窄带远场模型正确、$K\lt M$、导向矩阵与源协方差均满秩、噪声为空间白噪声且快拍足够多时，才可把高于噪声底的 $K$ 个特征值解释成 $K$ 个声源。相干反射、彩色噪声、有限快拍和阵列失配都会破坏这种分组。</p>
 <p><img alt="图6 从波形到协方差矩阵" src="../figures/fig06_stft_cov.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图 6（a）（b）来自单通道示意语音，用来解释分帧和时频点。图 6（c）（d）是另一组独立的 8 麦、2 个互不相干窄带源加空间白噪声理论例，并非由（a）（b）的单通道波形累积得到。</p>
+<p>图 6（a）（b）来自 16 kHz、1.2 s 的单通道数学合成谐波信号，随机种子 6001，使用 512 点周期 Hann 窗、128 点帧移。横轴标帧起点；颜色表示 $20\log_{10}(|S|/\max|S|)$，相对全图最大幅度显示 −60～0 dB，不是校准声压级。选中的是零起点第 60 帧、第 20 频点，即 480 ms 与 625 Hz。</p>
+<p>图 6（c）（d）为独立理论例：8 麦半波线阵、方向 −20° 与 30°、两个互不相干源功率为 10 与 5、空间白噪声方差为 1，因此 $\mathbf R=\mathbf A\operatorname{diag}(10,5)\mathbf A^H+\mathbf I$。它没有从（a）（b）累积快拍，也没有进行有限样本源数估计。</p>
 <p>图 6（c）只画 $|R_{ij}|$，相位仍包含在复数 $R_{ij}$ 中但未在图上显示。图中 $(k,l)$ 依次表示频点索引和帧索引；正文用 $\ell$ 代替容易与数字 1 混淆的字母 $l$，对应物理频率为 $f_k$。</p>
 <p>只有在源协方差满秩、噪声为空间白噪声、阵列模型正确且快拍充足等条件下，才能把较大特征值的个数与声源数联系起来。</p>
 <p><strong>协方差估计的两个细节</strong>：</p>
 <ol>
 <li>快拍数太少时，$\hat{\mathbf{R}}$ 的估计方差增大，小特征值也会明显波动。这是 Capon/MVDR 使用对角加载（§5.4）的原因之一。</li>
-<li>帧移小、相邻帧高度重叠时，快拍间并不独立，有效快拍数会少于帧数。</li>
+<li>帧移小、相邻帧高度重叠时，快拍通常相关，不能把帧数直接代入假设独立观测的方差公式。</li>
 </ol>
 <p>其中 $L$ 是参与平均的快拍数，$\ell$ 是快拍（帧）索引。<strong>快拍不够时会发生什么</strong>（处理方法见 §5.4、§8.4）：样本协方差是 $L$ 个秩一外积之和，因此</p>
 <p>$$\operatorname{rank}(\hat{\mathbf{R}}(f_k))\le \min(M,L)\text{。}$$</p>
 <p>若未去均值，$L\lt M$ 时它必然奇异；若先用同一批样本估计并减去均值，秩至多为 $L-1$，此时 $L\le M$ 就必然奇异。</p>
 <p>即使 $L\ge M$，强相关快拍、很差的条件数和估计误差仍可能让求逆不稳，所以不存在通用的“$L\ge2M$ 就安全”门槛。</p>
 <p>第一类处理是收缩估计：</p>
-<p>$$\hat{\mathbf{R}}_{\mathrm{shrink}}(f_k)=(1-\rho)\hat{\mathbf{R}}(f_k)+\rho\frac{\operatorname{tr}\hat{\mathbf{R}}(f_k)}{M}\mathbf{I}\text{，}$$</p>
+<p>$$\begin{aligned}
+\hat{\mathbf R}_{\mathrm{shrink}}(f_k)
+&=(1-\rho)\hat{\mathbf R}(f_k)\\
+&\quad+\rho\frac{\operatorname{tr}\hat{\mathbf R}(f_k)}{M}\mathbf I\text{，}
+\end{aligned}\tag{2-8}$$</p>
 <p>其中 $0\le\rho\le1$，用于在样本统计量和各向同性先验之间折中；§5.4 的对角加载与它目标相近。</p>
+<p>若原特征值为 $\lambda_i\ge0$，新特征值为 $(1-\rho)\lambda_i+\rho\operatorname{tr}(\hat{\mathbf R})/M$。因此 $\rho>0$ 且迹大于零时才由这一条件保证正定；全零数据不能靠按自身迹收缩变出信息。手工选定 $\rho$ 也不等于已经执行自动估计收缩系数的方法。</p>
 <p>第二类处理是用时频掩码为快拍加权，分别估计目标或噪声协方差（§8.4）。掩码可以减少干扰泄漏，但也会减少有效样本数，仍须检查矩阵的条件数并配合加载。</p>
 <p><strong>本书代码采用的数组与流式约定。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/spectral.py"><code>spectral.py</code></a> 中的 STFT 固定输出 <code>通道数 × 频点数 × 帧数</code>，即 $M\times F\times L$；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/covariance.py"><code>covariance.py</code></a> 再把它变成 $F$ 个 $M\times M$ 空间二阶矩。示例使用前向变换 $e^{-\mathrm j2\pi ft}$、周期 Hann 窗和加权重叠相加。</p>
+<p>对未修改的 STFT，逐帧逆 FFT 得到的 $z_{m,\ell}[q]$ 等于 $x_m[\ell H+q]g[q]$。本书合成器再乘同一窗，并对所有覆盖样本 $n$ 的帧求和：</p>
+<p>$$\begin{aligned}
+q_\ell&=n-\ell H,\\
+D_g[n]&=\sum_\ell g^2[q_\ell],\\
+\hat x_m[n]&=\frac{\sum_\ell g[q_\ell]z_{m,\ell}[q_\ell]}{D_g[n]}\text{。}
+\end{aligned}\tag{2-9}$$</p>
+<p>这里 $q_\ell$ 是样本 $n$ 相对于第 $\ell$ 帧起点的位置；窗外的 $g$ 与 $z$ 取零。分子因此是 $x_m[n]D_g[n]$，只有分母非零才能恢复该样本。这是非零重叠相加（Nonzero Overlap Add，NOLA）条件；采用这个逐点归一化时，并不要求分母处处是同一常数。实际还须覆盖每个要保留的样本，见 <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.check_NOLA.html" title="citation">SciPy NOLA 与重构说明</a>（2026-09-28 核实）。</p>
+<p>数学上 $D_g[n]>0$ 与数值上可安全相除是两件事。本书 <code>istft</code> 默认拒绝 $D_g[n]\le10^{-12}$，参数名为 <code>denominator_floor</code>，尺度对应窗幅度的平方。把自定义窗整体缩得很小，可能仍满足数学 NOLA，却触发这个保护；例如四点周期 Hann 乘 $10^{-7}$。因此比较接口时应同时记录窗归一化与阈值，不能把数值拒绝解释成声音没有信息。</p>
 <p><code>center=True</code> 会在两端补半窗，因此离线重构可对齐原波形；实时系统不能据此把延迟写成零，还要把首帧等待、窗长、帧移、分块缓存和可能的前瞻一并计入端到端延迟。</p>
 <p>协方差实现同时给出批量估计和指数递归更新。掩码在某个频点全为零时，代码会报错，而不是用 $\varepsilon$ 伪造一个无统计依据的矩阵。非零掩码先除以该频点的最大权重，再累积归一化二阶矩；这个共同缩放不改变估计值，却避免把很小的权重单位误判成没有数据。</p>
 <p>有限精度造成的非厄米残差会被对称化；中间计算超出浮点数范围时明确报错。需要加载时采用无量纲相对口径 $\alpha\operatorname{tr}(\hat{\mathbf R})\mathbf I/M$。权重可归一化不代表独立快拍充足，还需检查秩、权重集中程度和模型条件。</p>
@@ -399,11 +514,18 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>阵列能否利用高频定位，还要同时检查混叠：4 cm 间距对应的全视场安全上限约 4.3 kHz，3 cm 间距约 5.7 kHz（§2.6）。超过上限并非一律不能用，而是必须结合转向范围、阵列几何和宽带融合处理歧义。</p>
 <p>有了协方差和导向矢量，便可以定义波束图及其分辨率、旁瓣、WNG 和 DI。</p>
 <span id="sec-7" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-2-6">2.6 怎么衡量一个波束好不好：先学会读波束图</h2>
-<p><strong>本节路线图</strong>：四个度量回答四个问题——主瓣多窄（看得多细）？旁瓣多高（漏多少）？DI（抗混响/弥散噪声的能力）？WNG（抗自身底噪的能力）？</p>
+<p>本节分别讨论主瓣宽度、旁瓣电平、弥散噪声下的指向性指数和独立通道噪声下的白噪声增益。它们使用不同参照，不能互相替代。</p>
+<p>先定义一个频点上的线性输出。令 $\vec w\in\mathbb C^{M\times1}$ 为权重，$\vec x$ 为快拍：</p>
+<p>$$\begin{aligned}
+y&=\vec w^H\vec x,\\
+B(f,\Omega)&=\vec w^H\vec a(f,\Omega)\text{。}
+\end{aligned}\tag{2-10}$$</p>
+<p>$y$ 是标量输出，$B$ 是单位参考目标通过阵列后的复响应，$\Omega$ 表示方向。无失真约束为 $\vec w^H\vec a=1$。满足它时，该频点的目标保持单位复增益。仅将绘图峰值归一化为 1，不能证明实际权重满足这个约束。</p>
+<p>例如，两麦目标都已对齐，$\vec a=[1,1]^\top$，取 $\vec w=[1/2,1/2]^\top$，则 $B=1$。若两路噪声等功率为 $\sigma^2$、跨通道二阶交叉项为零，输出噪声功率为 $\sigma^2(1/4+1/4)=\sigma^2/2$。目标不变、噪声功率减半，才可得到 3.01 dB 的改善。</p>
 <p>波束形成器让指定方向保持所需响应，同时改变其他方向的增益。把各方向的增益画出来就是<strong>波束图（beampattern）</strong>；图7(a)标出本节使用的四个读图要素：</p>
 <ul>
-<li><strong>主瓣（main lobe）</strong>：想听的方向上拱起的那个大峰。峰顶增益 0 dB（无失真通过）；</li>
-<li><strong>旁瓣（side lobes）</strong>：主瓣两侧一连串越来越矮的小峰——它们是其他方向的声音<strong>漏进来的通道</strong>；</li>
+<li><strong>主瓣（main lobe）</strong>：围绕所选指向的主要峰。本图将峰值归一化为 0 dB；无失真还须核对实际权重的目标复响应；</li>
+<li><strong>旁瓣（side lobes）</strong>：主瓣以外的其他局部峰；旁瓣高度由几何、频率与权重决定，不必依次变矮；</li>
 <li><strong>零点（nulls）</strong>：瓣与瓣之间的深谷——这些方向上各麦信号恰好相消干涉，几乎完全听不到；</li>
 </ul>
 <p>同相叠加形成峰，反相抵消形成谷；等比数列求和得到完整阵因子，见 §5.2。图 7（a）先帮助读者辨认这些结构，后面再计算其宽度和电平。</p>
@@ -413,10 +535,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>半功率波束宽度（Half-Power Beam Width，HPBW）</strong>是主瓣两侧功率降到峰值一半的两个点之间的夹角。</p>
 <p><strong>半功率点与 −3 dB 点</strong>：功率减半为 $10\log_{10}0.5=-3.01$ dB。波束图若按幅度绘制，半功率对应幅度 $1/\sqrt{2}\approx0.707$，同样得到 $20\log_{10}0.707=-3.01$ dB。因此“半功率点”和“−3 dB 点”指同一位置（图 7（a）的红色双箭头）。幅度减半则是 −6 dB，对应功率变为四分之一。</p>
 <p>对常规波束扫描而言，HPBW 可用来估计角分辨率：两个源的间隔小于主瓣宽度时，扫描谱往往难以形成两个清楚峰值。对 $M$ 元、等权、等间距 ULA，其离散阵因子给出的宽阵列近似为</p>
-<p>$$\mathrm{HPBW} \approx \frac{0.886\,\lambda}{Md\cos\theta_0}\ \text{rad}\text{。}\tag{2-3}$$</p>
+<p>$$\mathrm{HPBW} \approx \frac{0.886\,\lambda}{Md\cos\theta_0}\ \text{rad}\text{。}\tag{2-11}$$</p>
 <blockquote>
 <p><strong>可跳过：系数 0.886 从哪里来</strong>：均匀线阵的归一化阵因子是 Dirichlet 核 $\dfrac{\sin(M\psi/2)}{M\sin(\psi/2)}$（§5.2 的等比数列求和结果），其中 $\psi=2\pi d(\sin\theta-\sin\theta_0)/\lambda$。半功率点要求幅度 $=1/\sqrt2$，即 $|\sin(M\psi/2)/(M\psi/2)|\approx1/\sqrt2$（大 $M$ 时分母 $\sin(\psi/2)\approx\psi/2$）。</p>
-<p>解 $\sin x/x=1/\sqrt2$ 得 $x\approx1.3916$（$x=M\psi/2$），于是单边 $\psi_{3dB}=2\times1.3916/M=2.7832/M$；双边宽度换算到 $\sin\theta$ 域再除以 $\cos\theta_0$（$\mathrm{d}\sin\theta$ 微分带来 $1/\cos\theta_0$），得 $\mathrm{HPBW}=2\times1.3916/(\pi)\times\lambda/(Md\cos\theta_0)$，而 $2\times1.3916/\pi=0.8859\approx0.886$。</p>
+<p>解 $\sin x/x=1/\sqrt2$ 得 $x\approx1.3916$（$x=M\psi/2$），于是单边 $\psi_{3dB}=2\times1.3916/M=2.7832/M$；双边宽度换算到 $\sin\theta$ 域再除以 $\cos\theta_0$（$\mathrm{d}\sin\theta$ 微分带来 $1/\cos\theta_0$），得 $\mathrm{HPBW}=2\times1.3916/(\pi)\times\lambda/(Md\cos\theta_0)$。即 $2\times1.3916/\pi\approx0.886$。</p>
 <p>系数 0.886 来自方程 $\sin x/x=1/\sqrt2$ 的解。分母中的 $Md$ 是离散阵因子近似产生的尺度，物理首末阵元跨度仍为 $D_{\mathrm{phys}}=(M-1)d$。当 $M$ 较大时两者接近；$\lambda/D_{\mathrm{phys}}$ 可用于孔径量级判断，但不是上述离散 ULA 公式的精确替换。</p>
 </blockquote>
 <p>读法：阵列的电尺寸越大、频率越高（波长越短），主瓣越窄；转向接近端射时，$\cos\theta_0$ 变小，主瓣变宽。</p>
@@ -436,12 +558,14 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </blockquote>
 <h3 id="sec-2-6-3">2.6.3 指向性指数：弥散场中的目标方向优势</h3>
 <p>充分弥散的晚期混响常近似为从各方向入射的声场；实际风噪通常由局部湍流激发，不能无条件按弥散场处理。<strong>指向性指数（Directivity Index，DI）</strong>表示在指定的各向同性弥散场模型下，波束对目标方向的信噪比改善。它由主瓣方向增益的平方除以全空间平均增益的平方，再取对数：</p>
-<p>$$\mathrm{DI} = 10\log_{10}\frac{4\pi\,|B(\Omega_0)|^2}{\int_{4\pi} |B(\Omega)|^2\,\mathrm{d}\Omega}\text{。}\tag{2-4}$$</p>
+<p>$$\mathrm{DI} = 10\log_{10}\frac{4\pi\,|B(\Omega_0)|^2}{\int_{4\pi} |B(\Omega)|^2\,\mathrm{d}\Omega}\tag{2-12}$$</p>
 <p>$\Omega=(\theta,\phi)$ 表示三维方向，$B(\Omega)$ 是该方向上的复响应，$\Omega_0$ 是目标方向；$\mathrm{d}\Omega$ 是立体角微元，整个球面的立体角为 $4\pi$。分母对波束图在整个球面上积分，表示弥散场中各方向输入的总贡献。只有波束图轴对称时，才能把 $B(\Omega)$ 简写为单角变量。</p>
 <p>DI = 0 dB 表示所选目标方向的功率响应等于全空间平均功率响应。全向波束满足这一条件，但非全向波束在某个方向也可能满足它，所以仅凭一个 DI 数字不能判断整个波束图是否平坦。对固定的目标方向，DI 越大，表示该方向相对弥散场平均响应的增益越大。超指向波束形成（§5.3）的目标之一就是提高这一指标。</p>
 <h3 id="sec-2-6-4">2.6.4 白噪声增益：独立通道底噪怎样进入输出</h3>
-<p>每个麦克风自己有底噪（热噪声），各通道互相独立。<strong>白噪声增益（White Noise Gain，WNG）</strong>衡量目标响应相对独立通道底噪的增益：</p>
-<p>$$\mathrm{WNG} = 10\log_{10}\frac{|\vec{w}^H\vec{a}(\theta)|^2}{\|\vec{w}\|^2}\text{。}\tag{2-5}$$</p>
+<p>麦克风及其电路会产生自身噪声。计算 WNG 时，先假设各通道噪声在当前频点上功率相等、跨通道不相关，噪声二阶矩为 $\sigma^2\mathbf I$；这里“白”指空间统计，不要求整个时间频带平坦。</p>
+<p>共用电源或电路耦合可能产生相关噪声，实际设备须验证这个模型。</p>
+<p><strong>白噪声增益（White Noise Gain，WNG）</strong>衡量目标响应相对独立通道底噪的增益：</p>
+<p>$$\mathrm{WNG} = 10\log_{10}\frac{|\vec{w}^H\vec{a}(\theta)|^2}{\|\vec{w}\|^2}\text{。}\tag{2-13}$$</p>
 <p>分子是目标方向的增益平方，分母是权重自身的能量。无失真约束下，WNG 为负表示输出白噪声功率高于单通道参考。</p>
 <p>超指向设计在低频可能产生较大的正负权重，使通道增益、相位和位置失配显著改变主瓣或零陷。单位幅度导向矢量下的 WNG 上限是 $10\log_{10}M$，DSB 达到该上限（§5.2）。</p>
 <p>DI 与 WNG 的定义及其在阵列设计中的用法可参见 <a href="https://doi.org/10.1007/978-3-662-04619-7" title="citation">Brandstein 与 Ward 编《Microphone Arrays》，第 2 章，2001</a>。引用这些指标时仍须说明声场模型、导向归一化和积分范围。</p>
@@ -465,18 +589,26 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>这一部分的统计内容较重，第一遍可以跳过，在第 4 章需要分析定位精度时再读。<strong>克拉美－罗界（Cramér–Rao Bound，CRB）</strong>是在给定观测模型和正则条件下，对无偏波达方向（Direction of Arrival，DOA）估计器方差的下界。</p>
 <p>下面的显式式子采用单源、窄带、确定性信号模型。每个快拍的未知复幅度作为干扰参数；阵列是 $M$ 元均匀线阵（Uniform Linear Array，ULA）、间距为 $d$；共有 $T$ 个独立快拍；噪声为各阵元方差均为 $\sigma^2$ 的圆对称复白高斯噪声。</p>
 <p>这里的单阵元线性 SNR 定义为 $\mathrm{SNR}=\sum_{t=1}^{T}|s_t|^2/(T\sigma^2)$。在这些约定下可得到下式。改变复/实噪声、已知/未知幅度或 SNR 定义会改变常数，推导口径见 <a href="https://doi.org/10.1109/29.17564" title="citation">Stoica 与 Nehorai 1989</a>：</p>
-<p>$$\mathrm{CRB}(\theta) = \frac{6}{T \cdot \mathrm{SNR} \cdot M(M^2-1) \cdot \left(\frac{2\pi d}{\lambda}\right)^2 \cos^2\theta}\quad(\text{rad}^2)\text{。}\tag{2-6}$$</p>
-<p>误差方差与 SNR、快拍数和阵元位置的二阶矩成反比，并在端射方向（$\cos\theta\to0$）发散。</p>
+<p>$$\begin{aligned}
+\eta(\theta)&=\frac{2\pi d}{\lambda}\cos\theta,\\
+G_\theta&=M(M^2-1)\eta^2(\theta),\\
+\mathrm{CRB}(\theta)&=\frac6{T\,\mathrm{SNR}\,G_\theta}\text{。}
+\end{aligned}\tag{2-14}$$</p>
+<p>辅助量 $\eta(\theta)$ 表示相邻阵元相位对角度的变化率，$G_\theta$ 汇总阵元数与几何因子；角度按弧度代入，CRB 单位为 rad²。误差方差与 SNR、快拍数和阵元位置的二阶矩成反比，并在端射方向（$\cos\theta\to0$）发散。</p>
 <ul>
 <li>固定间距 $d$ 并增加阵元时，$M(M^2-1)d^2$ 约按 $M^3d^2$ 增长。</li>
 <li>固定物理孔径 $D=(M-1)d$ 时，同一项可写成 $M(M+1)D^2/(M-1)$，约按 $MD^2$ 增长，不能仍称为 $M^3$ 标度。</li>
 </ul>
-<p>公式里的 $M(M^2-1)$ 来自各麦位置绕阵列中心的二阶矩 $\sum_m (m-\frac{M-1}{2})^2 = \frac{M(M^2-1)}{12}$。</p>
+<p>公式里的 $M(M^2-1)$ 来自各麦位置绕阵列中心的二阶矩 $\sum_{m=1}^{M}(m-\frac{M+1}{2})^2=\frac{M(M^2-1)}{12}$。</p>
 <h3 id="sec-2-6-7">2.6.7 算例 2-1：复算 CRB 的五个因子</h3>
 <p>阵列配置——6 麦、间距 1.4 cm、孔径 7 cm；正横方向、$f=1$ kHz、$T=100$ 快拍。</p>
 <p>在上述模型内，任何满足正则条件的无偏估计器，其方差都不低于该 CRB。它不直接约束有偏估计器的均方误差，也不能脱离模型解释成所有算法的绝对极限。</p>
 <p>本例取正横方向（$\theta=0°$，即 $\cos\theta=1$）、$\lambda=0.343$ m。SNR 要换成线性值再代入：SNR $=10$ dB 对应 10，0 dB 对应 1。代入上式：</p>
-<p>$$\mathrm{CRB} = \frac{6}{100\times10\times6\times35\times(2\pi\times0.014/0.343)^2\times1} \approx 4.3\times10^{-4}\ \text{rad}^2\text{。}$$</p>
+<p>$$\begin{aligned}
+\eta^2(0)&=(2\pi\times0.014/0.343)^2\approx0.0658,\\
+\mathrm{CRB}&\approx\frac{6}{100\times10\times6\times35\times0.0658},\\
+&\approx4.3\times10^{-4}\ \mathrm{rad}^2\text{。}
+\end{aligned}$$</p>
 <blockquote>
 <p><strong>CRB 分母的五个因子</strong>：$T=100$（快拍数）；$\mathrm{SNR}=10$（10 dB 的线性值）；$M(M^2-1)=6\times35=210$（麦克风位置方差项）；$(2\pi d/\lambda)^2\approx0.0658$（电尺寸项）；$\cos^2\theta=1$（正横方向）。分母乘积约为 13800，因此 $6/13800\approx4.3\times10^{-4}$ rad²。改变阵列或频率时，应重新计算这五项。</p>
 </blockquote>
@@ -495,54 +627,58 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>口径注：此处 $\mathrm{sinc}$ 取 $\sin x/x$ 定义；§5.1 用归一化定义 $\sin(\pi x)/(\pi x)$，相邻麦的同一物理量在该口径下写作 $\mathrm{sinc}(1)=0$。两种写法只差自变量里的 $\pi$，对照时应先换算。</p>
 </li>
 </ul>
-<p>量级结论：在本例的半波间距、空间白噪声近似下，4 元 DSB 的 WNG 和 DI 都是 6 dB。若针对某个弥散噪声模型提高 DI，权重通常会变得更敏感，WNG 可能下降；具体上限取决于阵列几何、频率、噪声相关矩阵和稳健性约束，不能只由麦克风数给出。</p>
+<p>量级结论：在本例的半波间距、三维各向同性弥散场的二阶空间统计下，4 元 DSB 的 WNG 和 DI 都是 6 dB。若针对某个弥散噪声模型提高 DI，权重通常会变得更敏感，WNG 可能下降；具体上限取决于阵列几何、频率、噪声相关矩阵和稳健性约束，不能只由麦克风数给出。</p>
 <p>上述度量基于远场平面波模型。声源进入近场后，导向模型、搜索空间和定位参数都要加入距离维度。</p>
 <span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-2-7">2.7 小结：声源走近了，平面波不够用——近场要换的三样东西</h2>
 <p>远场模型把波前当平面，只剩方向一个未知数；声源走近后波前弯成球面，到达各麦的<strong>距离</strong>本身也携带信息。本小节把近场需要换掉的三样东西一次列清。</p>
-<p><strong>① 球面导向矢量</strong></p>
+<h3 id="sec-2-7-1">2.7.1 参考麦归一化的球面导向</h3>
 <p>远场导向矢量的第 $m$ 个分量只有相对相位旋转 $e^{-\mathrm{j}2\pi f\tau_{m1}(\theta)}$，幅度视为相同。近场要写成球面波形式：声源在位置 $\vec{p}$ 时，第 $m$ 个麦克风位于 $\vec{r}_m$，它收到的复增益正比于</p>
 <p>$$\frac{e^{-\mathrm{j}2\pi f\|\vec{p}-\vec{r}_m\|/c}}{\|\vec{p}-\vec{r}_m\|}\text{。}$$</p>
-<p>与远场相比，近场有两处变化：相位按<strong>真实距离</strong> $\|\vec{p}-\vec{r}_m\|$ 计算，不再是方向投影 $d\sin\theta$；幅度按距离的倒数衰减，各麦幅度不再相等。以麦 1 归一化后得到近场导向矢量 $\vec{a}(\vec{p})$，其自变量从方向 $\theta$ 变成位置 $\vec{p}$，定位输出也由角度扩展为角度和距离。</p>
-<p><strong>② 距离估计从哪里来</strong></p>
-<p>球面弯曲在阵列边缘相对中心造成的额外路程约为 $D^2/(8r)$（§2.2 第 2 步），它同时改变相位曲率与幅度差。声源越近，波前越弯，边缘麦相对平面波预测的相位偏差越大；拟合这部分曲率可以估计距离 $r$。</p>
+<p>与远场相比，近场有两处变化：相位按<strong>真实距离</strong> $\|\vec{p}-\vec{r}_m\|$ 计算，不再是方向投影 $d\sin\theta$；幅度按距离的倒数衰减，各麦幅度不再相等。以麦 1 归一化后得到近场导向矢量 $\vec{a}(\vec{p})$，其自变量从方向 $\theta$ 变成位置 $\vec{p}$。具体令 $r_m=\|\vec p-\vec r_m\|>0$，以麦 1 处直达声为参考：</p>
+<p>$$\begin{aligned}
+\phi_m&=\frac{2\pi f}{c}(r_m-r_1),\\
+a_m(f,\vec p)&=\frac{r_1}{r_m}e^{-\mathrm j\phi_m}\text{。}
+\end{aligned}\tag{2-15}$$</p>
+<p>相位量 $\phi_m$ 由相对路程换算，单位为 rad。分子分母同为距离，幅度比无量纲；$a_1=1$。定位参数由角度扩展为位置，但增加参数不代表它们必然可辨。此式假设自由场点声源、全向且响应一致的麦克风；设备方向响应或外壳散射会额外引入传递函数比 $G_m/G_1$。不能把全部幅相差都归于距离。</p>
+<h3 id="sec-2-7-2">2.7.2 距离信息与不可辨识情况</h3>
+<p>球面弯曲在中心法线方向、中心对称阵列边缘产生约 $D^2/(8r)$ 的额外路程（§2.2 第 2 步）。这是相对于平面波的相位曲率项；幅度差另由各路 $1/r_m$ 决定。声源越近，波前越弯，边缘麦相对平面波预测的相位偏差越大；拟合这部分曲率可以估计距离 $r$。</p>
+<p>若以阵列中心为原点，声源为 $r\vec u$，阵元位置为 $\vec q_m$，将真实距离展开可看见两种作用：</p>
+<p>$$\begin{aligned}
+r_m&=r-\vec u^\top\vec q_m\\
+&\quad+\frac{\|\vec q_m\|^2-(\vec u^\top\vec q_m)^2}{2r}\\
+&\quad+O\!\left(\frac{\|\vec q_m\|^3}{r^2}\right)\text{。}
+\end{aligned}\tag{2-16}$$</p>
+<p>展开要求 $\|\vec q_m\|/r\ll1$。第一项是公共路程，第二项就是平面波投影；第三项来自垂直于声源方向的阵元位移。端射且声源在整条线阵外侧时，所有阵元共线，真实路程已经是一次式，曲率残差可为零，但距离比和幅度仍不同。E02-09 将两种误差分别列数，避免仅凭曲率通过就采用等幅模型。</p>
 <p>距离是否可观测取决于 $D^2/(r\lambda)$、信噪比、带宽、麦数和几何形态。孔径很小或声源很远时，球面模型与平面模型几乎不可区分，此时距离估计会很不稳定。距离误差用米、角度误差用弧度，不能用“相差一个量级”直接比较。</p>
-<p><strong>③ 何时换球面模型</strong></p>
+<h3 id="sec-2-7-3">2.7.3 模型选择需要同时检查相位和幅度</h3>
 <p>对中心对称孔径，Fraunhofer 距离 $r_F=2D^2/\lambda$；一般应从选定参考点到最远阵元的距离 $a$ 出发，用 $r_F=8a^2/\lambda$ 作相位曲率的起始检查。它不是跨过就立即从近场变为远场的物理分界。</p>
 <p>使用平面波模型前，还要满足推导里的 $r\gg a$，并核对幅度差和允许的相位误差。条件不满足时，改用球面导向 $\vec{a}(\vec{p})$，SRP 搜索网格也从角度一维扩展为位置二维或三维（§4.3 的 $\tau_{ij}(\vec{r})$ 已按距离差写出）。</p>
 <p>7 cm 中心对称阵列在 1 kHz 下有 $r_F\approx2.9$ cm，该数只表示相位曲率尺度，不能单独支持“整个房间都是远场”。1.26 m 中心对称线阵在同频率下有 $r_F\approx9.3$ m，会议室内常需要球面波模型。频率越高、波长越短，$r_F$ 越大；宽带系统应在目标频带内逐频检查建模误差。</p>
 <p>本章从传播时延建立了远近场模型，并定义了 STFT、快拍、协方差及四项阵列度量。第 3 章将讨论麦克风几何如何限制这些观测与指标。</p>
 <span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-f7a201edb9">本章练习</h2>
-<ol>
-<li>
-<p>STFT 分帧换算：采样率 8 kHz、窗长 32 ms、帧移 8 ms，求窗长采样点数、帧移采样点数、重叠率和 1 s 语音的帧数。</p>
-<p>参考答案：窗长 $8000\times0.032=256$ 点；帧移 $8000\times0.008=64$ 点；重叠率 $(256-64)/256=75\%$；不补信号端点、只取完整窗时，帧数 $\lfloor(8000-256)/64\rfloor+1=122$。采用同一端点策略且采样点数恰好对应这些时间值时，帧数与 16 kHz 情形相同。</p>
-<p>口径注：另取 FFT 点数等于窗长点数，即 256 点窗做 256 点 FFT。若同一帧补零到 512 点，单边频点数从 129 增为 257，网格间隔从 31.25 Hz 减为 15.625 Hz；观测窗没有变长，分开相邻谱线的能力并不因此提高。端点补零对帧数的影响见 E02-01。</p>
-</li>
-<li>
-<p>协方差读数：2 麦在某频点上信号完全相干（互相关系数幅值为 1、相位差 30°），各麦总功率都是 2，写出 $2\times2$ 协方差矩阵 $\hat{\mathbf{R}}$。</p>
-<p>参考答案：$\hat{\mathbf{R}}=\begin{bmatrix}2 & 2e^{\mathrm{j}\pi/6}\\ 2e^{-\mathrm{j}\pi/6} & 2\end{bmatrix}$。对角线是各麦功率，非对角线的模是相干强度，辐角是麦间相位差；矩阵应满足对角元为实数且整体共轭对称。这里约定麦 1 相位超前 30°；若采用相反的通道顺序，非对角元的相位符号也相反。</p>
-</li>
-<li>
-<p>CRB 估算：阵列配置沿用算例 2-1（6 麦、间距 1.4 cm、孔径 7 cm）与 100 快拍，若 SNR 从 10 dB 提到 20 dB（线性值从 10 到 100），角度标准差从约 1.2° 变成多少？再想想：快拍数翻 10 倍与 SNR 提 10 dB，哪个更划算？</p>
-<p>参考答案：方差与 SNR 成反比，标准差缩小 $\sqrt{10}\approx3.16$ 倍，约为 $1.2°/3.16\approx0.38°$。在该模型里，独立快拍数与 SNR 成乘积关系，两种变化对下界的影响相同。增加观测时间不需要提高单帧 SNR，却会增加等待时间；声源移动或统计量变化时，也不能把更多帧当作同一方向的独立快拍。因此要按延迟预算和场景平稳性选择，而不能断言增加快拍总是更合算。</p>
-</li>
-</ol>
+<p>本章练习按稳定标识组织。E02-01～08 练习分析合成与协方差估计，E02-09～15 分别检查近场误差、声场积分、房间衰减、精度下界、分析合成、中心化和卷积。先手算关键中间量，再运行代码核对；代码返回的有限数值不能代替模型前提。</p>
 <p>以下六题的复算入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a>，结果采用稳定标识 E02-01～E02-06。</p>
-<p><strong>E02-01：同一段录音为什么有两种帧数？</strong> 对 8 kHz、1 s 的信号，取窗长 256 点、帧移 64 点，分别使用 <code>center=False</code> 和 <code>center=True</code>。再对其中同一个 256 点窗做 256 点与 512 点实 FFT。哪些输出数量改变，哪些物理信息没有增加？</p>
-<p><strong>参考答案</strong>：不居中时为 $(8000-256)/64+1=122$ 帧。居中时两端各补 128 点，为 $(8256-256)/64+1=126$ 帧。两种 FFT 的单边频点数分别是 $256/2+1=129$ 和 $512/2+1=257$。FFT 补零改变网格密度，不增加观测时长；端点补零增加的帧也不是新录到的独立声音。</p>
-<p><strong>E02-02：用复数协方差检查通道顺序。</strong> 各路功率为 2，麦 1 相位超前麦 2 为 30°。构造两帧 $\vec x$ 和 $-\vec x$，使样本均值为零，计算二阶矩、特征值和交换通道后的非对角相位。</p>
+<h3 id="sec-u-c820e5558a">E02-01：同一段录音为什么有两种帧数？</h3>
+<p>对 8 kHz、1 s 的信号，取窗长 256 点、帧移 64 点，分别使用 <code>center=False</code> 和 <code>center=True</code>。再对其中同一个 256 点窗做 256 点与 512 点实 FFT。哪些输出数量改变，哪些物理信息没有增加？</p>
+<p><strong>参考答案</strong>：窗长 $8000\times0.032=256$ 点，帧移 $8000\times0.008=64$ 点，重叠率 $(256-64)/256=75\%$。不居中时为 $\lfloor(8000-256)/64\rfloor+1=122$ 帧。居中时两端各补 128 点，为 $\lfloor(8256-256)/64\rfloor+1=126$ 帧。</p>
+<p>两种 FFT 的单边频点数分别是 $256/2+1=129$ 和 $512/2+1=257$。256 点 FFT 的频率间隔为 $8000/256=31.25$ Hz，512 点 FFT 为 15.625 Hz。FFT 补零改变网格密度，不增加观测时长；端点补零增加的帧也不是新录到的独立声音。</p>
+<h3 id="sec-u-3ccdb4879b">E02-02：用复数协方差检查通道顺序。</h3>
+<p>各路功率为 2，麦 1 相位超前麦 2 为 30°。构造两帧 $\vec x$ 和 $-\vec x$，使样本均值为零，计算二阶矩、特征值和交换通道后的非对角相位。</p>
 <p><strong>参考答案</strong>：可取 $\vec x=\sqrt2[e^{\mathrm j\pi/6},1]^\top$。两帧的外积相同，因此平均后 $R_{11}=R_{22}=2$，$R_{12}=2e^{\mathrm j\pi/6}=\sqrt3+\mathrm j$，$R_{21}=R_{12}^*$。行列式为 $4-|R_{12}|^2=0$，迹为 4，特征值为 0 和 4。</p>
 <p>交换通道后 $R_{12}$ 变为 $\sqrt3-\mathrm j$，相位由 +30° 变成 −30°。这不是另一个声源方向，而是坐标与通道顺序变化；不能交换音频而不交换麦克风坐标。</p>
-<p><strong>E02-03：窗重叠足够，为什么首点仍可能无法恢复？</strong> 用固定种子 20260922 生成 8 kHz、1 s 的零均值高斯样本，周期 Hann 窗长 256 点、帧移 64 点，完成 STFT/iSTFT 往返。比较居中与不居中两种边界处理。</p>
+<h3 id="sec-u-162d27d019">E02-03：窗重叠足够，为什么首点仍可能无法恢复？</h3>
+<p>用固定种子 20260922 从均值为零的高斯分布抽取 8 kHz、1 s 的样本，周期 Hann 窗长 256 点、帧移 64 点，完成 STFT/iSTFT 往返。比较居中与不居中两种边界处理。</p>
 <p><strong>参考答案</strong>：居中并保留原长度时，双精度实现的最大绝对重建误差应小于 $10^{-12}$。不居中时，第一点只被 Hann 窗的零端点覆盖，合成分母为零，本书实现会拒绝输出而不是把错误样本补成零。</p>
 <p>需要检查的是每个保留样本的窗平方和是否非零，不能只看“重叠了 75%”。<a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.check_NOLA.html" title="citation">SciPy 的 NOLA 条件说明</a>给出这一归一化分母。这个实验只验证分析与合成的一致性，不证明修改过频谱后仍无失真，也不代表居中处理适合零前瞻实时系统。</p>
-<p><strong>E02-04：掩码总和非零，协方差就可逆吗？</strong> 两通道的三帧快拍为 $[1,0]^\top$、$[0,1]^\top$、$[1,1]^\top$。按 $\sum_tq_t\vec x_t\vec x_t^H/\sum_tq_t$ 计算加权二阶矩，分别取掩码 $[1,0,1]$ 和 $[1,0,0]$。再将第一组权重全部乘 2，结果是否改变？</p>
+<h3 id="sec-u-b11ac4532c">E02-04：掩码总和非零，协方差就可逆吗？</h3>
+<p>两通道的三帧快拍为 $[1,0]^\top$、$[0,1]^\top$、$[1,1]^\top$。按 $\sum_tq_t\vec x_t\vec x_t^H/\sum_tq_t$ 计算加权二阶矩，分别取掩码 $[1,0,1]$ 和 $[1,0,0]$。再将第一组权重全部乘 2，结果是否改变？</p>
 <p><strong>参考答案</strong>：第一组保留首、末两帧，外积相加再除以 2，得到</p>
 <p>$$\mathbf R_A=\begin{bmatrix}1&1/2\\1/2&1/2\end{bmatrix},\qquad
 \mathbf R_B=\begin{bmatrix}1&0\\0&0\end{bmatrix}.$$</p>
 <p>$\mathbf R_A$ 的行列式为 $1/4$、秩为 2；$\mathbf R_B$ 的行列式为 0、秩为 1。所有权重同时乘 2 时，分子与分母等比放大，$\mathbf R_A$ 不变。权重集中程度可用本题的辅助量 $L_w=(\sum_tq_t)^2/\sum_tq_t^2$ 比较，两组分别为 2 和 1。</p>
 <p>$L_w$ 只描述权重分布，不自动等于统计独立的快拍数，也不保证满秩：即使均匀保留很多帧，若它们彼此成比例，协方差仍可能秩一。全零掩码没有可用统计量，本书代码会拒绝计算，而不是仅在分母加一个小数后宣称得到有效协方差。</p>
-<p><strong>E02-05：递归协方差启动时为何偏小？</strong> 固定快拍 $\vec x=[1,2]^\top$，从零矩阵开始，使用 $\mathbf S_t=0.5\mathbf S_{t-1}+0.5\vec x\vec x^H$。计算前三步的矩阵和累计权重，再按累计权重归一化。</p>
+<h3 id="sec-u-8a6156878d">E02-05：递归协方差启动时为何偏小？</h3>
+<p>固定快拍 $\vec x=[1,2]^\top$，从零矩阵开始，使用 $\mathbf S_t=0.5\mathbf S_{t-1}+0.5\vec x\vec x^H$。计算前三步的矩阵和累计权重，再按累计权重归一化。</p>
 <p><strong>参考答案</strong>：外积为 $\mathbf Q=\begin{bmatrix}1&2\\2&4\end{bmatrix}$。第一步为 $0.5\mathbf Q$；第二步为 $(0.5^2+0.5)\mathbf Q=0.75\mathbf Q$；第三步为 $(0.5^3+0.5^2+0.5)\mathbf Q=0.875\mathbf Q$。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
@@ -575,14 +711,16 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tbody>
 </table></div>
 <p>这是零初始化造成的权重总和不足，不是信号功率随时间上升。归一化修正这一尺度，却不会增加独立观测，也不会把本题的秩一矩阵变成可逆矩阵。有跳帧、可变遗忘因子或掩码时，应按实际更新递推累计权重，不能继续照搬 $1-2^{-t}$。</p>
-<p><strong>E02-06：掩码很小，是否意味着没有数据？</strong> 沿用 E02-04 的三帧 $[1,0]^\top$、$[0,1]^\top$、$[1,1]^\top$，令掩码为 $a[1,0,1]$，分别取 $a=10^{-200},1,10^{200}$。计算归一化二阶矩，并说明为什么全零掩码必须另行处理。</p>
+<h3 id="sec-u-e81def45ae">E02-06：掩码很小，是否意味着没有数据？</h3>
+<p>沿用 E02-04 的三帧 $[1,0]^\top$、$[0,1]^\top$、$[1,1]^\top$，令掩码为 $a[1,0,1]$，分别取 $a=10^{-200},1,10^{200}$。计算归一化二阶矩，并说明为什么全零掩码必须另行处理。</p>
 <p><strong>参考答案</strong>：对任意 $a>0$，加权外积之和与权重之和分别为</p>
 <p>$$\sum_t q_t\vec x_t\vec x_t^H=a\begin{bmatrix}2&1\\1&1\end{bmatrix},\qquad \sum_t q_t=2a。$$</p>
 <p>相除后，三种尺度都得到</p>
 <p>$$\mathbf R=\frac{1}{2a}\,a\begin{bmatrix}2&1\\1&1\end{bmatrix}=\begin{bmatrix}1&1/2\\1/2&1/2\end{bmatrix}。$$</p>
 <p>直接把原始权重和与固定小数比较，会把第一组误判为没有数据；先除以最大权重后，三组掩码都变为 $[1,0,1]$，再累积即可。</p>
 <p>全零掩码无法执行这项归一化，也没有可用观测权重，因此本书代码拒绝计算。共同缩放保持的是这三个既定快拍的加权结果，不会增加独立样本，也不会提高源数估计的可信度。结果与独立手算逐元素比较，双精度绝对误差应小于 $10^{-14}$。</p>
-<p><strong>E02-07：同一个遗忘因子，为什么换帧移后响应变慢？</strong> 每次实际更新采用 $\mathbf S_t=\alpha\mathbf S_{t-1}+(1-\alpha)\mathbf Q_t$，$\mathbf Q_t$ 是当前快拍外积。固定 $\alpha=0.98$，比较更新间隔 $H=8$ ms 和 16 ms 时，旧状态的贡献衰减到初始值 $1/e$ 所需的时间。若希望两者都具有 0.4 s 时间常数，应各取多大的 $\alpha$？</p>
+<h3 id="sec-u-9a0f5dcad3">E02-07：同一个遗忘因子，为什么换帧移后响应变慢？</h3>
+<p>每次实际更新采用 $\mathbf S_t=\alpha\mathbf S_{t-1}+(1-\alpha)\mathbf Q_t$，$\mathbf Q_t$ 是当前快拍外积。固定 $\alpha=0.98$，比较更新间隔 $H=8$ ms 和 16 ms 时，旧状态的贡献衰减到初始值 $1/e$ 所需的时间。若希望两者都具有 0.4 s 时间常数，应各取多大的 $\alpha$？</p>
 <p><strong>参考答案：先从更新次数换到时间。</strong> 经过 $k$ 次更新，旧状态系数为 $\alpha^k$。令连续时间指数包络满足 $\alpha^{t/H}=e^{-t/T}$，两边取对数并约去 $t$，得到 $T=-H/\ln\alpha$。这里 $H,T$ 都用秒，$\alpha$ 无量纲；$T$ 表示指数包络的时间常数，实际更新仍发生在离散时刻。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
@@ -609,21 +747,23 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>不要把时间常数当成独立样本数。</strong> 稳态指数权重 $q_k=(1-\alpha)\alpha^k$ 满足 $\sum_{k=0}^{\infty}q_k=1$、$\sum_{k=0}^{\infty}q_k^2=(1-\alpha)/(1+\alpha)$，所以 E02-04 的权重集中度为 $L_w=(1+\alpha)/(1-\alpha)=99$。只有被加权统计量彼此独立、方差相同等条件成立时，才可用它解释平均估计量的方差缩减；重叠 STFT 帧通常不能直接视为 99 个独立快拍。</p>
 <p>遇到 VAD 冻结、跳帧或可变帧移，要按实际更新间隔解释遗忘时间。冻结期间不执行递推，旧状态也就不会按墙钟时间自动衰减。零初始化的权重不足仍按 E02-05 处理，不能靠时间常数换算消除。</p>
 <p>这道题由 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/spatial_precision_exercises.py"><code>spatial_precision_exercises.py</code></a> 的 <code>E02-07</code> 复算；全部数值来自本书几何级数推导，无随机抽样。脚本保留未舍入值，上表显示六位小数。</p>
-<p><strong>E02-08：为什么单边频谱模方之和不等于信号功率？</strong> 取四个实样本 $x=[1,0,-1,0]$，不加窗、不减均值。使用 NumPy 默认的未归一化正向 DFT，得到 <code>rfft(x)=[0,2,0]</code>。求原四个样本的均方值；再把 FFT 补零到八点，检查均方值是否改变。</p>
+<h3 id="sec-u-2ecaa753d2">E02-08：为什么单边频谱模方之和不等于信号功率？</h3>
+<p>取四个实样本 $x=[1,0,-1,0]$，不加窗、不减均值。使用 NumPy 默认的未归一化正向 DFT，得到 <code>rfft(x)=[0,2,0]</code>。求原四个样本的均方值；再把 FFT 补零到八点，检查均方值是否改变。</p>
 <p><strong>第一步：从时间域确定答案。</strong> 均方值是 $(1^2+0^2+(-1)^2+0^2)/4=0.5$。若样本单位是 Pa，结果单位为 Pa²；若是未经声学校准的数字样本，就不能写成声压级。这里“功率”指信号均方值，不直接等于声学瓦数。</p>
 <p><strong>第二步：还原单边频谱没有存下来的能量。</strong> 实输入的正负频率互为共轭，模方相等。四点完整 DFT 是 $[0,2,0,2]$；<code>rfft</code> 只存下前面三项。内部正频点要计两份；直流 DC 只计一份。偶数 FFT 长度下，Nyquist 点也只计一份，因为它已代表同一个离散频点。</p>
 <p>设原样本数为 $L$，补零后的 FFT 长度为 $N\ge L$，单边频谱为 $X_+[k]$。将 Parseval 恒等式先用于能量，再除以<strong>原长度</strong>，得到本书换算式：</p>
 <p>$$\begin{aligned}
-\sum_{n=0}^{L-1}|x[n]|^2
+E_x&=\sum_{n=0}^{L-1}|x[n]|^2,\\
 &=\frac{1}{N}\sum_{k=0}^{\lfloor N/2\rfloor}c_k|X_+[k]|^2,\\
 P_x&=\frac{1}{NL}\sum_{k=0}^{\lfloor N/2\rfloor}c_k|X_+[k]|^2,\\
 c_k&=\begin{cases}
-1,&k=0,\ \text{或 }N\text{ 为偶数且 }k=N/2,\\
-2,&\text{其他单边频点。}
+1,&k\in\mathcal E,\\
+2,&k\notin\mathcal E.
 \end{cases}
-\end{aligned}\tag{2-7}$$</p>
+\end{aligned}\tag{2-17}$$</p>
+<p>其中 $E_x$ 为原序列的平方和。$\mathcal E$ 是不需要配对的端点集合：$N$ 为奇数时只有 $\{0\}$；$N$ 为偶数时是 $\{0,N/2\}$。其余单边频点的权重为 2。</p>
 <p>这里正向变换没有 $1/N$，所以 Parseval 的能量式有 $1/N$。当 $L=N=4$ 时，本题得到 $(0+2\times4+0)/16=0.5$。漏掉内部频点的两份能量会算成 0.25；把所有频点一律乘二则会在 DC 或 Nyquist 输入上算错。</p>
-<p><strong>第三步：逐项检查端点与补零。</strong> 下表使用同一约定；“加权模方和”指式(2-7)的求和部分。</p>
+<p><strong>第三步：逐项检查端点与补零。</strong> 下表使用同一约定；“加权模方和”指式(2-17)的求和部分。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
 <tr>
@@ -675,7 +815,211 @@ c_k&=\begin{cases}
 <p>补零到八点时，单边频谱为 $[0,1+j,2,1-j,0]$，加权模方和为 $2(2+4+2)=16$；除以 $NL=32$ 仍为 0.5。若改除 $N^2=64$，得到的是“把补入的四个零也计入时长”的均方值 0.25，统计对象已经改变。</p>
 <p>奇数长度没有 Nyquist 频点。最后一行的单边频谱为 $[0,1.5+j\sqrt3/2]$，末项模方为 3，仍需乘二。不能不检查奇偶性就把 <code>rfft</code> 最后一项永远当作端点。</p>
 <p><strong>均方值与功率谱密度要区分。</strong> 功率谱密度（Power Spectral Density，PSD）还含“每 Hz”的单位。矩形窗、<code>detrend=False</code>、不裁短信号时，单边周期图可写成 $S_{xx}[k]=c_k|X_+[k]|^2/(f_sL)$，将它乘频率间距 $f_s/N$ 后求和才恢复本题均方值。其他窗改变加权与归一化；不能把未校正的加窗功率直接当成原信号功率。SciPy <code>periodogram</code> 默认减均值，复现本题 DC 行时必须显式关闭该操作。</p>
-<p>接口依据为 <a href="https://numpy.org/doc/stable/reference/generated/numpy.fft.rfft.html" title="citation">NumPy <code>rfft</code> 的归一化、端点与补零约定</a>、<a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.periodogram.html" title="citation">SciPy <code>periodogram</code> 的单位与单边谱说明</a>（2026-09-26 核实）；表中数字为本书推导。运行 <code>.venv/bin/python -m codes.examples.spatial_model_exercises</code> 的 <code>E02-08</code> 可复算全部五行；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/spatial_model_exercises.py">代码</a>同时拒绝复输入被悄悄丢弃虚部，以及过短 FFT 导致输入裁切。</p>
+<p>接口依据为 <a href="https://numpy.org/doc/stable/reference/generated/numpy.fft.rfft.html" title="citation">NumPy <code>rfft</code> 的归一化、端点与补零约定</a>、<a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.periodogram.html" title="citation">SciPy <code>periodogram</code> 的单位与单边谱说明</a>（2026-09-28 核实）；表中数字为本书推导。运行 <code>.venv/bin/python -m codes.examples.spatial_model_exercises</code> 的 <code>E02-08</code> 可复算全部五行；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/spatial_model_exercises.py">代码</a>同时拒绝复输入被悄悄丢弃虚部，以及过短 FFT 导致输入裁切。</p>
+<p>以下 E02-09～15 的统一复算入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/chapter02_experiments.py"><code>chapter02_experiments.py</code></a>。这些实验使用本书明确给出的模型，分别核对计算与失效边界。</p>
+<h3 id="sec-u-9410592b12">E02-09：相位误差很小，能否忽略幅度差？</h3>
+<p>三个全向麦克风位于 $x=[-0.1,0,0.1]$ m，以中心麦为参考。声速 343 m/s、频率 1 kHz；声源距中心分别为 0.2 m 和 2 m，并分别位于正横 0° 与正端射 90°。比较真实球面导向与等幅平面导向。</p>
+<p><strong>计算距离。</strong> 正横时，左右端点距离均为 $\sqrt{r^2+0.1^2}$，中心距离为 $r$。正端射且 $r>0.1$ m 时，从左至右的距离为 $[r+0.1,r,r-0.1]$。</p>
+<p><strong>分开计算两项误差。</strong> 第 $m$ 路的幅度是 $r/r_m$；球面相位减去平面相位的未缠绕误差为 $-360f[r_m-r+q_m\sin\theta]/c$ 度，$q_m$ 为该麦的横坐标。保留正负号，不把模 $360°$ 后的相位误当成真实路程误差。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">距离与方向</th>
+<th scope="col">左／中／右幅度比</th>
+<th scope="col">左／中／右相位误差（°）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.2 m，0°</td>
+<td>0.894427／1／0.894427</td>
+<td>−24.776814／0／−24.776814</td>
+</tr>
+<tr>
+<td>2 m，0°</td>
+<td>0.998752／1／0.998752</td>
+<td>−2.622269／0／−2.622269</td>
+</tr>
+<tr>
+<td>0.2 m，90°</td>
+<td>0.666667／1／2.000000</td>
+<td>0／0／0</td>
+</tr>
+<tr>
+<td>2 m，90°</td>
+<td>0.952381／1／1.052632</td>
+<td>0／0／0</td>
+</tr>
+</tbody>
+</table></div>
+<p>以第一行为例，端点距离为 $\sqrt{0.05}=0.2236068$ m，额外路程为 0.0236068 m；相位误差为 $-360\times1000\times0.0236068/343\approx-24.7768°$。第三行的真实距离为 0.3、0.2、0.1 m，恰好等于平面波的公共路程加线性投影，因而曲率相位误差为零；最右麦幅度却是中心的两倍。</p>
+<p>这些结果支持“分别检查相位与幅度”，不支持“端射一定适合远场等幅模型”。声源指向性、遮挡和麦克风响应失配不在本题模型内。</p>
+<h3 id="sec-u-74967baa38">E02-10：球面平均与水平圆周平均为何得到不同 DI？</h3>
+<p>取 4 元半波长 ULA，正横指向，等权 $w_m=1/4$。令 $u$ 为入射方向在阵列轴上的方向余弦，归一化响应为 $B(u)=\tfrac14\sum_{m=0}^{3}e^{\mathrm j\pi mu}$。目标响应 $B(0)=1$。</p>
+<p><strong>三维各向同性场。</strong> 对整个球面积分时，方向余弦 $u$ 均匀覆盖 $[-1,1]$，平均功率响应为</p>
+<p>$$\begin{aligned}
+\overline P_{3D}
+&=\frac12\int_{-1}^{1}|B(u)|^2\,\mathrm du,\\
+&=\frac1{16}\sum_{m,n=0}^{3}\frac12\int_{-1}^{1}e^{\mathrm j\pi(m-n)u}\,\mathrm du,\\
+&=\frac4{16}=\frac14.
+\end{aligned}$$</p>
+<p>$m=n$ 的四项积分各为 1；$m-n$ 为非零整数的项是 $\sin[\pi(m-n)]/[\pi(m-n)]=0$。所以 $\mathrm{DI}_{3D}=10\log_{10}4=6.020600$ dB。</p>
+<p><strong>水平圆周场。</strong> 若所有入射声都在水平面内，方位角 $\phi$ 均匀，则平均值改为 $(2\pi)^{-1}\int_0^{2\pi}|B(\sin\phi)|^2\,\mathrm d\phi$，约为 0.168327，得到约 7.7385 dB。这里均匀的是 $\phi$，不再是 $u=\sin\phi$；端射附近方向余弦变化慢，对积分的权重不同。</p>
+<p>同一权重的 WNG 始终为 $10\log_{10}[1/(4\times(1/4)^2)]=6.020600$ dB。两个 DI 不同是声场模型不同，不能称为算法提升；把水平切面按角度平均，不能替代三维球面积分。</p>
+<h3 id="sec-u-70a24ade11">E02-11：相同的混响时间，直达混响比可以不同吗？</h3>
+<p>使用同一个数学合成声源和明确分开的 RIR 分量。直达抽头在 12 ms；随机反射尾从直达后 20 ms 开始。反射尾使用同一固定高斯序列，乘幅度包络 $\exp[-3\ln(10)t/T_{60}]$，再按目标能量归一化。比较三组名义参数：$(T_{60},\mathrm{DRR})=(0.2\mathrm s,0\mathrm{dB})$、$(0.6\mathrm s,0\mathrm{dB})$、$(0.6\mathrm s,6\mathrm{dB})$。</p>
+<p><strong>先用五点 RIR 手算反向累积。</strong> 取 $h=[1,0,0.5,0,0.25]$，把首点定义为直达，其余为反射。平方后为 $[1,0,1/4,0,1/16]$；从末端往前累加得到 $[21/16,5/16,5/16,1/16,1/16]$，除以总能量后为 $[1,5/21,5/21,1/21,1/21]$。直达能量 1，反射能量 $5/16$，所以 DRR 为 $10\log_{10}(16/5)=5.051500$ dB。</p>
+<p>在 RIR 前面补两个零，只会让直达与衰减曲线整体后移两点；不会改变相对直达起点的衰减过程。这条稀疏 RIR 没有指数尾，不能据三条抽头宣称测得混响时间。下面的音频另用完整随机指数尾模型。</p>
+<p><strong>先检查 DRR。</strong> 直达与反射位于互不重叠的样本区间，分别求平方和得到 $E_d,E_r$。0 dB 要求 $E_r=E_d$；6 dB 要求 $E_r=E_d10^{-6/10}\approx0.251189E_d$。共同缩放整条 RIR 不改变这个比值；只缩放反射尾则会改变它。</p>
+<p><strong>再检查衰减。</strong> 对 RIR $h[n]$，离散 Schroeder 剩余能量及其归一化 dB 曲线为</p>
+<p>$$\begin{aligned}
+E[n]&=\sum_{q=n}^{N_h-1}|h[q]|^2,\\
+D[n]&=10\log_{10}\frac{E[n]}{E[n_0]}\text{，}
+\end{aligned}\tag{2-18}$$</p>
+<p>其中 $N_h$ 是 RIR 长度，$n_0$ 是明确选定的归一化起点，要求 $E[n_0]>0$。能量已为零的位置对应 $-\infty$ dB，不应用人为地板值声称测到了更长衰减。整条 RIR 与仅反射尾各自归一化，得到的曲线不必相同。尾部幅度包络平方后为 $\exp[-6\ln(10)t/T_{60}]$；理想无限长连续指数尾的剩余能量具有同样斜率。因此名义 $T_{60}$ 控制衰减速度，DRR 控制直达与反射的相对能量，两个参数可以分开设定。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">名义 $T_{60}$（s）／DRR（dB）</th>
+<th scope="col" style="text-align: right;">整条 RIR 首次 −60 dB 距直达（ms）</th>
+<th scope="col" style="text-align: right;">尾部独立归一化首次 −60 dB 距尾起点（ms）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.2／0</td>
+<td style="text-align: right;">209.7500</td>
+<td style="text-align: right;">199.6875</td>
+</tr>
+<tr>
+<td>0.6／0</td>
+<td style="text-align: right;">587.6250</td>
+<td style="text-align: right;">600.6250</td>
+</tr>
+<tr>
+<td>0.6／6</td>
+<td style="text-align: right;">550.1875</td>
+<td style="text-align: right;">600.6250</td>
+</tr>
+</tbody>
+</table></div>
+<p>表中为本书固定种子计算：16 kHz，一采样点为 0.0625 ms；尾长 1.2 s，尾种子 2026092802。三组共享同一个随机向量，并非三次独立试验。最后两行只有尾能量比例不同，尾部自身归一化曲线完全相同；整条 RIR 的归一化参考却包括直达能量，因此全响应交点改变。</p>
+<p>若在有效衰减区间拟合 $D(t)=\beta t+b$，其中 $\beta\lt 0$、单位 dB/s，则由下降 60 dB 解得 $T_{60}=-60/\beta$。固定随机序列、有限尾长和拟合区间都会影响实现值，不能把包络参数直接冒充实测结果。录音开始到首次 −60 dB 的时刻还包含播放前静音或传播延迟；测衰减时应说明起点及时间差。</p>
+<p><a href="research/05_exercises_and_audio.html">房间衰减音频说明</a>给出一个干参考和三条卷积输出。声源为固定种子 2026092801 的短时高斯噪声脉冲，乘 0.08 并作 10 ms 边缘淡入淡出；干参考已加入共同的 12 ms 直达延迟。</p>
+<p>四条输出均为 16 kHz、2.5 s，采用同一导出增益并保留完整非零卷积尾部。比较前不要逐条归一化音量。先检查清单与波形，再试听短尾、长尾以及相同长尾而反射能量较低的区别。</p>
+<p>这些音频是数学合成样本，不能称为真实语音或房间测量。</p>
+<h3 id="sec-u-ef18fae77a">E02-12：从阵元位置重新推导 CRB，并比较观测预算</h3>
+<p>沿用算例 2-1：6 麦、间距 0.014 m、声速 343 m/s、频率 1 kHz、100 个独立快拍，单阵元 SNR 为 10 dB。计算正横方向的标准差下界，再分别将 SNR 提高到 20 dB、快拍数增加到 1000，并比较 60° 方向。</p>
+<p><strong>未知源幅度为何要投影掉？</strong> 在本节确定性模型中，每帧复幅度未知。与 $\vec a$ 同方向的观测变化可以被改变源幅度解释，不能全部算作方向信息。记方向导数为 $\vec a'=\partial\vec a/\partial\theta$，对其去除该分量，得到</p>
+<p>$$\begin{aligned}
+\vec a'_\perp&=\left(\mathbf I-\frac{\vec a\vec a^H}{M}\right)\vec a',\\
+J_\theta&=2T\,\mathrm{SNR}\,\|\vec a'_\perp\|^2,\\
+\mathrm{CRB}(\theta)&=J_\theta^{-1}\text{。}
+\end{aligned}\tag{2-19}$$</p>
+<p>这里使用单位模长导向、圆对称复高斯噪声和独立快拍；系数 2 来自这个复噪声信息量约定。</p>
+<p>对 $m=0,\ldots,M-1$ 的线阵位置 $md$，投影相当于减去位置均值。导数平方范数是 $(2\pi d\cos\theta/\lambda)^2\sum_{m=0}^{M-1}(m-(M-1)/2)^2$。后一个和等于 $M(M^2-1)/12$，与信息量里的 2 合并后，得到本章 CRB 公式分子中的 6。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">条件</th>
+<th scope="col" style="text-align: right;">方差下界（rad²）</th>
+<th scope="col" style="text-align: right;">标准差下界（°）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>100 快拍、10 dB、0°</td>
+<td style="text-align: right;">0.000434415</td>
+<td style="text-align: right;">1.194194</td>
+</tr>
+<tr>
+<td>100 快拍、20 dB、0°</td>
+<td style="text-align: right;">0.000043441</td>
+<td style="text-align: right;">0.377637</td>
+</tr>
+<tr>
+<td>1000 快拍、10 dB、0°</td>
+<td style="text-align: right;">0.000043441</td>
+<td style="text-align: right;">0.377637</td>
+</tr>
+<tr>
+<td>100 快拍、10 dB、60°</td>
+<td style="text-align: right;">0.001737658</td>
+<td style="text-align: right;">2.388388</td>
+</tr>
+</tbody>
+</table></div>
+<p>SNR 提高 10 dB 是线性值增加十倍，方差降为十分之一、标准差降为 $1/\sqrt{10}$。在同一模型下快拍数增加十倍的代数效果相同，却需要更长观测；相邻重叠帧不能直接当成独立快拍。60° 的 $\cos^2\theta=1/4$，方差为正横的四倍、标准差为两倍。</p>
+<p>这是无偏估计器的方差下界，不是已经运行的定位算法误差，也不保证任何估计器达到它。固定间距增加阵元会同时扩大孔径；固定孔径增加阵元则要缩小间距，比较阵元数之前必须说清哪一个量保持不变。</p>
+<h3 id="sec-u-b4930f81de">E02-13：四点 STFT 如何乘窗、变换和恢复？</h3>
+<p>取一帧 $x=[1,2,3,4]$，周期 Hann 窗 $g=[0,1/2,1,1/2]$，FFT 长度为 4，正向不归一化。求加窗帧与单边复谱，再检查帧移 2 的重叠合成。</p>
+<p>逐项相乘得到 $z=[0,1,3,2]$。直流项 $Z[0]=0+1+3+2=6$；第一个正频点为 $0-\mathrm j-3+2\mathrm j=-3+\mathrm j$；Nyquist 项为 $0-1+3-2=0$。所以 <code>rfft(z)=[6,-3+1j,0]</code>。逆 FFT 恢复的是加窗帧 $z$，不是原始帧 $x$。</p>
+<p>为检查两帧的实际重叠，延长输入为 $[1,2,3,4,5,6]$，取起点 0 和 2 的两帧。第二帧加窗为 $[0,2,5,3]$。合成分母依次为 $[0,1/4,1,1/2,1,1/4]$，分子为 $[0,1/2,3,2,5,3/2]$。</p>
+<p>合成时再次乘窗，窗口覆盖的每份样本贡献 $x[n]g^2[n-\ell H]$。两个起点为 0 和 2 的帧，在 $n=3$ 处分别用窗系数 $1/2,1/2$，分母为 $1/4+1/4=1/2$；分子为 $x[3]/2$，相除恢复 $x[3]$。在 $n=2$ 处窗系数为 1 和 0，分母为 1，同样可恢复。</p>
+<p>若不作左端扩展，$n=0$ 只有第一个窗的零端点覆盖，分母为零，原样本无法从该组频谱恢复。中心补零让保留的原始首样本落到有支持的位置；它没有创造新声音。只有窗、帧移、边界扩展、FFT 归一化与保留长度相配时，往返误差才有意义。</p>
+<h3 id="sec-u-582c6ba787">E02-14：总体零均值与本批样本均值为零有何区别？</h3>
+<p>给出两帧 $\vec x_1=[1,0]^\top$、$\vec x_2=[1,2]^\top$。分别计算样本均值、未中心化二阶矩、分母为 $L$ 的中心化矩阵，以及分母为 $L-1$ 的协方差估计。</p>
+<p>样本均值为 $\bar{\vec x}=[1,1]^\top$。两帧外积分别是 $\begin{bmatrix}1&0\\0&0\end{bmatrix}$ 与 $\begin{bmatrix}1&2\\2&4\end{bmatrix}$，相加除以 2 得到</p>
+<p>$$\begin{aligned}
+\hat{\mathbf R}&=\begin{bmatrix}1&1\\1&2\end{bmatrix},\\
+\hat{\mathbf C}_L&=\begin{bmatrix}0&0\\0&1\end{bmatrix},\\
+\hat{\mathbf C}_{L-1}&=\begin{bmatrix}0&0\\0&2\end{bmatrix}.
+\end{aligned}$$</p>
+<p>中心化后的两帧为 $[0,-1]^\top$ 与 $[0,1]^\top$。它们只在第二个坐标上变化，所以中心化矩阵秩为 1；未中心化矩阵还包含均值方向，行列式为 1、秩为 2。</p>
+<p>逐元素相减可得 $\hat{\mathbf R}-\hat{\mathbf C}_L=\begin{bmatrix}1&1\\1&1\end{bmatrix}=\bar{\vec x}\bar{\vec x}^{H}$。即使这两个数值来自一个总体零均值随机过程的一次有限抽样，上述样本均值也不会自动消失。是否中心化改变了计算对象，不能只为了矩阵满秩选择分母或保留均值。</p>
+<h3 id="sec-u-4b3db2c478">E02-15：一条反射怎样改变六个输出样本？</h3>
+<p>取声源数字序列 $u=[1,2,0,-1]$，离散 RIR 为 $h=[1,0,0.5]$，边界外输入为零。它包含单位直达抽头和延迟两点、幅度为 0.5 的反射。求完整卷积；不要裁掉尾部。</p>
+<p>每个输出满足 $x[n]=u[n]+0.5u[n-2]$。输出长度为 $4+3-1=6$：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col" style="text-align: right;">$n$</th>
+<th scope="col" style="text-align: right;">直达项 $u[n]$</th>
+<th scope="col" style="text-align: right;">反射项 $0.5u[n-2]$</th>
+<th scope="col" style="text-align: right;">和 $x[n]$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.5</td>
+<td style="text-align: right;">0.5</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">−1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">−0.5</td>
+<td style="text-align: right;">−0.5</td>
+</tr>
+</tbody>
+</table></div>
+<p>反射并非永远增加当前样本幅度：$n=3$ 的两项相消。反射幅度系数 0.5 对应独立分量能量系数 $0.5^2=0.25$；两分量叠加后的总能量还含交叉项，不能直接把两个能量相加。</p>
+<p>本题直达序列能量为 6，反射能量为 1.5，输出能量为 5.5；交叉项为 $2\sum_nu[n](0.5u[n-2])=-2$，故 $6+1.5-2=5.5$。这条两抽头 RIR 只用于说明卷积与相消，不含可拟合的弥散混响尾，不能据它给房间报一个 $T_{60}$。</p>
 <p><a href="research/05_exercises_and_audio.html">音频实验总览</a>提供已知采样率与通道顺序的 WAV，可用同一分析/合成参数检查边缘重建；比较时保留原长度，不把端点丢失误认为降噪效果。</p>
 <hr />
 <blockquote>

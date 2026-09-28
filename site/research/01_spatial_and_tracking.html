@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>空间处理与追踪源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="79cd2ab95058"><style>
+<meta name="source-digest" content="d120f59b1fb3"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -65,9 +65,21 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-u-7a1b197af1">SOFA 数据接口与新增资源的收录边界</a></li>
 <li><a href="01_spatial_and_tracking.html#sec-u-e77feefd5d">基础模型、统计估计与校准</a></li>
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-u-3ee9a1ab52">1. 远场与近场导向矢量</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-1-1">1.1 先区分传播响应、归一化响应和波束权重</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-1-2">1.2 声速参数必须与实际实现一致</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-1-3">1.3 从理想阵列到实际设备</a></li>
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-u-48f1c42c46">2. 镜像法与射线追踪房间模拟</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-2-1">2.1 从目标混响时间到模拟器输入</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-2-2">2.2 用生成的 RIR 检查结果</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-2-3">2.3 固定版本中空气吸收公式的静态边界</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-2-4">2.4 ESS 扫频与受限频带反卷积：pyfar</a></li>
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-u-3d6b2ce923">3. STFT 与加权重叠相加重构</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-3-1">3.1 重构成立与卷积近似成立是两件事</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-3-2">3.2 合成窗和有限信号端点</a></li>
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-u-6a61e9b954">4. 批处理、加权与递推空间协方差</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-4-1">4.1 权重归一化不增加信息量</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-4-2">4.2 遗忘时间和数值正定性分别检查</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-4-3">4.3 理论精度接口中的参数身份</a></li>
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-u-3c235c5743">5. AIC 与 MDL 源数估计</a></li>
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-u-762739c4a4">6. 前向与前后向空间平滑</a></li>
 <li><a href="01_spatial_and_tracking.html#sec-u-df9f7dd673">定位算法和搜索加速</a></li>
@@ -157,9 +169,21 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-u-7a1b197af1">SOFA 数据接口与新增资源的收录边界</a></li>
 <li><a href="01_spatial_and_tracking.html#sec-u-e77feefd5d">基础模型、统计估计与校准</a></li>
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-u-3ee9a1ab52">1. 远场与近场导向矢量</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-1-1">1.1 先区分传播响应、归一化响应和波束权重</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-1-2">1.2 声速参数必须与实际实现一致</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-1-3">1.3 从理想阵列到实际设备</a></li>
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-u-48f1c42c46">2. 镜像法与射线追踪房间模拟</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-2-1">2.1 从目标混响时间到模拟器输入</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-2-2">2.2 用生成的 RIR 检查结果</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-2-3">2.3 固定版本中空气吸收公式的静态边界</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-2-4">2.4 ESS 扫频与受限频带反卷积：pyfar</a></li>
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-u-3d6b2ce923">3. STFT 与加权重叠相加重构</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-3-1">3.1 重构成立与卷积近似成立是两件事</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-3-2">3.2 合成窗和有限信号端点</a></li>
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-u-6a61e9b954">4. 批处理、加权与递推空间协方差</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-4-1">4.1 权重归一化不增加信息量</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-4-2">4.2 遗忘时间和数值正定性分别检查</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-4-3">4.3 理论精度接口中的参数身份</a></li>
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-u-3c235c5743">5. AIC 与 MDL 源数估计</a></li>
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-u-762739c4a4">6. 前向与前后向空间平滑</a></li>
 <li><a href="01_spatial_and_tracking.html#sec-u-df9f7dd673">定位算法和搜索加速</a></li>
@@ -392,18 +416,135 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>SAF 提供听觉响应的处理函数，libmysofa 补充 SOFA 数据读取及方向查询入口，两者承担不同步骤。源码筛选保留 <code>src/hrtf/</code>、<code>src/hdf/</code>、<code>src/resampler/</code>（K-D 树源码位于 <code>src/hrtf/kdtree.c</code>）、必要构建说明、README 和许可证；省略测试和测量数据，不表示已经形成可直接重现官方测试的完整环境。重采样器与 K-D 树的原始源码声明也随文件保留。HRTF 个体化、神经插值及神经双耳渲染需要独立的数据、误差定义和渲染实验，本章不把这些方法名称堆入入门任务目录。</p>
 <span id="sec-4" class="anchor-alias" aria-hidden="true"></span><span id="基础模型统计估计与校准" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-e77feefd5d">基础模型、统计估计与校准</h2>
 <span id="sec-5" class="anchor-alias" aria-hidden="true"></span><span id="1-远场与近场导向矢量" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-3ee9a1ab52">1. 远场与近场导向矢量</h3>
-<p>对应正文 §2.2～2.3。输入是位置、频率、声速和候选方向或声源坐标，输出是每个通道相对参考麦的复数响应。远场以平面波投影计算相对距离，近场用每个麦到声源的欧氏距离，并决定是否保留距离衰减。源码先读本书 <code>geometry.py</code>，再读 pyroomacoustics 的 <code>doa/doa.py</code> 中 <code>ModeVector</code>。</p>
-<p>最小实验采用三麦直线阵，先把源放在近距离，再逐步移远，同时保持方向不变。检查近场相对时延趋近远场值；只比较去除公共相位后的响应。工业中还需将挡板、麦指向性和通道校准乘入流形。把米误写成厘米会改变整个频段的相位，不是增加对角加载可以补救的问题。</p>
+<p>对应正文 §2.1～2.3、§2.7。传播模型的输入包括麦克风位置、声源位置或方向、物理频率和声速；输出是各通道相对同一参考的复数响应。代码中的坐标、音频通道和校准因子必须逐项对应。把米误写成厘米会改变相位，增加对角加载无法修正这种几何错误。</p>
+<span id="11-先区分传播响应归一化响应和波束权重" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-1-1">1.1 先区分传播响应、归一化响应和波束权重</h4>
+<p>在自由场点声源模型中，设源到麦 $m$ 的距离为 $r_m>0$。前向傅里叶变换采用负指数时，传播响应正比于 $e^{-j2\pi f r_m/c}/r_m$。以麦 1 为参考，除去公共传播增益后，第 $m$ 路响应为 $(r_1/r_m)e^{-j2\pi f(r_m-r_1)/c}$。其中 $r_1/r_m$ 无量纲，第一路响应等于 1；改变参考麦会改变表示形式，不会改变实际录音。</p>
+<p>远场近似再把距离差换成位置投影，并把幅度比近似为 1。直接比较近场和远场的绝对相位，会把声源至阵列的公共传播距离混入误差。建议实验沿同一方向逐步增大距离，比较相对时延、幅度比与去除公共相位后的响应；它们是三个不同的误差量。</p>
+<p>固定 pyroomacoustics 0.10.0 的 <code>doa/doa.py::ModeVector</code> 不能直接充当上述完整球面响应：<code>near</code> 分支计算欧氏距离，但最终只构造 <code>exp(+j*omega*dist/c)</code>，没有距离倒数衰减。它还采用算法内部的符号与参考约定。当前上层 DOA 构造未将 <code>mode</code> 传入 <code>ModeVector</code> 的限制见本文 §8；仅看函数参数存在 <code>near</code> 不能证明近场调用链已正确启用。<a href="https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/doa/doa.py">固定版 ModeVector</a>。</p>
+<p>Acoular 提供另一组需要明确区分的对象。固定提交的 <code>SteeringVector.transfer(f)</code> 返回传播矩阵；<code>fastFuncs.py::_transferCoreFunc</code> 实际计算相对参考距离的距离比和负指数相位。随后 <code>steer_vector(f)</code> 才依据 <code>steer_type</code> 把传播矩阵变为波束权重。它的 <code>classic</code>、<code>inverse</code>、<code>true level</code>、<code>true location</code> 使用不同的幅度归一化，不能把返回值全部理解为本书的单位参考导向矢量。<a href="https://github.com/acoular/acoular/blob/13d3d7df74ac1a8135c7ec71da098cbbc03d8652/acoular/fbeamform.py">传播与权重接口</a>；<a href="https://github.com/acoular/acoular/blob/13d3d7df74ac1a8135c7ec71da098cbbc03d8652/acoular/fastFuncs.py">传播内核</a>。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">对象</th>
+<th scope="col">需要固定的参考</th>
+<th scope="col">核对方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>自由场传播响应</td>
+<td>源端幅度与传播距离</td>
+<td>单一路径时延和 $1/r$ 衰减</td>
+</tr>
+<tr>
+<td>本书相对导向</td>
+<td>参考麦 1</td>
+<td>第一分量为 1，保留通道顺序</td>
+</tr>
+<tr>
+<td>Acoular <code>transfer</code></td>
+<td><code>ref</code> 指定的参考位置或距离</td>
+<td>比较同一个参考，不直接逐元素减去本书向量</td>
+</tr>
+<tr>
+<td>Acoular <code>steer_vector</code></td>
+<td>上一行参考与 <code>steer_type</code></td>
+<td>独立计算目标响应、输出功率归一化</td>
+</tr>
+</tbody>
+</table></div>
+<span id="12-声速参数必须与实际实现一致" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-1-2">1.2 声速参数必须与实际实现一致</h4>
+<p>正文采用 $c=343$ m/s 作为近室温的教学近似。pyroomacoustics 0.10.0 的 <code>parameters.py::calculate_speed_of_sound(t,h,p)</code> 实际使用 <code>331.4 + 0.6*t + 0.0124*h</code>，温度单位为 °C、相对湿度按 0～100 的百分数输入。函数虽接收压力 <code>p</code>，计算式没有使用它；<code>Physics</code> 内部也将压力标注为未使用。这是该版本的简化经验实现，不能写成执行了 Cramer 的完整湿空气模型。<a href="https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/parameters.py">固定版环境参数</a>。</p>
+<p>复现实验时，应同时记录传入温度、湿度和最终采用的 <code>room.c</code>。例如显式传入 20°C、0% 会由该式得到 343.4 m/s；省略温度时则按库的声速常数反算温度。这两个设置不可因都写作“室温”就视为相同。上述数字是对公开源码表达式的代入，不是声速测量结果。</p>
+<p>正文引用的 ETSI ETR 273-1-1 为 1998 年电磁辐射测量技术报告。其 §7.2.3.1、印刷页 76 给出点源与孔径边缘的路径差及 $\lambda/16$ 容限；这里采用的是相同的波程几何。它不规定麦克风阵列应当接受多大的模型误差，也不替代声学条件和设备响应检查。<a href="https://www.etsi.org/deliver/etsi_etr/200_299/2730101/01_60/etr_2730101e01p.pdf">原报告</a>。</p>
+<span id="13-从理想阵列到实际设备" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-1-3">1.3 从理想阵列到实际设备</h4>
+<p>实际通道还包含麦克风、外壳、模拟前端和数字滤波的响应。若这些响应为 $G_m(f,\Omega)$，相对参考流形要包含 $G_m/G_1$，而不只是距离差。方向相关的外壳散射不能靠每通道一个常数修正；独立设备的时钟漂移也不是一个固定相位校准可以长期消除的量。</p>
+<p>Acoular <code>Calib.result()</code> 将每个数据块逐通道乘以指定校准因子，因子单位为 Pa/unit；频域输入也可使用按频点、通道排列的因子。这个接口应用已有校准数据，不会自动测量灵敏度，不会推断麦克风坐标或同步偏差。其 XML 读取路径载入实数因子，不能把这种文件称为完整复频响校准。<a href="https://github.com/acoular/acoular/blob/13d3d7df74ac1a8135c7ec71da098cbbc03d8652/acoular/calib.py">固定版校准源码</a>。</p>
+<p>设备实验至少保留以下记录；缺少某项时，缩小结论到已知范围。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">条件</th>
+<th scope="col">应保存的内容</th>
+<th scope="col">它影响什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>几何和通道</td>
+<td>米制坐标、通道排列、缺失通道</td>
+<td>距离差及方向正负号</td>
+</tr>
+<tr>
+<td>幅度校准</td>
+<td>每通道灵敏度、单位、校准频带</td>
+<td>数字功率能否换算为 Pa²</td>
+</tr>
+<tr>
+<td>复响应校准</td>
+<td>频率、方向、相位参考与测量方法</td>
+<td>模型失配、主瓣和零陷</td>
+</tr>
+<tr>
+<td>采样同步</td>
+<td>公共时钟或偏移估计、时间戳</td>
+<td>固定 TDOA 与随时间漂移的区别</td>
+</tr>
+<tr>
+<td>环境</td>
+<td>声速、温湿度、流场模型</td>
+<td>路径时延与传播假设</td>
+</tr>
+</tbody>
+</table></div>
+<p>Acoular 的静止均匀环境与含流场模型也应分开使用。这里只核查源码和接口含义，没有执行本机设备校准或风洞实验；官方声学成像示例不能替代某台语音设备的测量。</p>
 <span id="sec-6" class="anchor-alias" aria-hidden="true"></span><span id="2-镜像法与射线追踪房间模拟" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-48f1c42c46">2. 镜像法与射线追踪房间模拟</h3>
-<p>对应 §2.4。pyroomacoustics 的 <code>room.py</code>、<code>libroom_src/</code> 分别提供场景接口和计算实现；镜像法显式构造反射路径，射线追踪近似统计晚期传播。二者组合不代表已经模拟衍射、结构传声或设备非线性。输入还包括墙面材料、采样率、麦指向性和最大反射阶数，输出是 RIR 或多通道波形。<a href="https://github.com/LCAV/pyroomacoustics">官方项目说明</a>。</p>
-<p>建议先用无反射房间验证首达时刻和距离衰减，再只留一面反射墙验证镜像路径长度，最后增加高阶反射检查能量衰减。训练数据应改变房间、源位和通道扰动，并留下未见房间做测试。单独调整 <code>max_order</code> 不等价于准确控制某个实测房间的混响时间。</p>
-<p>附录 B 第 16 题现已用锁定 pyroomacoustics 0.10.0 在隔离环境中实际运行<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/room_srp_exercise.py">六位置房间脚本</a>，并保存<a href="../room_audio/MANIFEST.json">18 个合成白噪声 WAV 与参数清单</a>。该版本逐条 RIR 默认使用 10 Hz 零相位高通；若用较短的零阶直达 RIR 补零后去减高阶完整 RIR，高通边界差会混入“反射能量”。脚本以相同镜像阶数和长度，令直达对照房间墙面完全吸收，并用原始单直达镜像源及同长度滤波独立核对。六位置 $T_{20}$ 外推 $T_{60}$ 为约 0.546～0.563 s，低于反推设计值 0.6 s；定位误差为约 0.604～2°。这些数是一个房间、一次固定输入的仿真，不是实测 T60 或跨房间 SRP 准确率。图、逐麦 DRR 和阶数收敛检查见<a href="../13_appendix-guide.html">附录题目</a>。</p>
+<p>对应正文 §2.4。pyroomacoustics 的 <code>room.py</code>、<code>libroom_src/</code> 分别提供场景接口和计算实现。镜像法构造离散反射路径，射线追踪用声线和能量传播描述更晚的响应，并可包含散射设置。这些几何声学方法不自动覆盖衍射、结构传声、扬声器失真或采集链路非线性。<a href="https://pyroomacoustics.readthedocs.io/en/stable/pyroomacoustics.room.html">官方房间配置说明</a>。</p>
+<span id="21-从目标混响时间到模拟器输入" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-2-1">2.1 从目标混响时间到模拟器输入</h4>
+<p><code>acoustics.py::inverse_sabine(rt60, room_dim, c)</code> 返回平均<strong>能量吸收系数</strong>和建议的最大镜像阶数。三维房间中，它由体积、表面积和声速代入赛宾关系得到吸收系数；阶数由路径长度覆盖的几何估计决定。输入的 <code>rt60</code> 是设计目标，并非对最终 RIR 的测量结果。<a href="https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/acoustics.py">固定版反推代码</a>。</p>
+<p>把能量和幅度分开手算有助于检查材料参数。在不考虑透射、反射相位且使用实幅度反射因子的简化模型中，能量吸收系数 $\alpha=0.36$ 意味着保留 0.64 的能量，对应幅度反射因子 $\sqrt{0.64}=0.8$。两次相同反射的幅度因子为 $0.8^2=0.64$，能量因子为 $0.64^2=0.4096$。不能把 0.36 直接当作幅度损失后再平方。</p>
+<p>这只是参数定义例子。实际材料系数随频率、入射角和测量条件变化；“0”与“1”表示模型中的理想极限，不能据此宣称某种瓷砖或窗户在所有频率恰为极限材料。版本 0.10.0 推荐 <code>materials=Material(...)</code>；已弃用的 <code>absorption</code> 参数沿用不同历史含义，复现旧脚本应先转换口径。</p>
+<p>模拟器输入还需保存源位、麦位、采样率、指向性、空气吸收、反射阶数，以及是否启用随机镜像扰动。规则鞋盒房间的镜像位置可能产生规律性的回声结构；随机镜像方法用于扰动该结构。它改变的是模拟假设，不证明新波形更接近任意真实房间。</p>
+<span id="22-用生成的-rir-检查结果" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-2-2">2.2 用生成的 RIR 检查结果</h4>
+<p>建议按由简单到复杂的顺序检查：无反射时核对首达时刻和距离衰减；单面反射时核对镜像路径的几何长度；加入多次反射后，才检查衰减曲线、直达混响比和阶数增加后的变化。每一步先确认时间原点、库引入的分数延迟滤波器延迟、高通和截断处理。</p>
+<p>附录 B 第 16 题已经用锁定 pyroomacoustics 0.10.0 在隔离环境中实际运行<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/room_srp_exercise.py">六位置房间脚本</a>，保存<a href="../room_audio/MANIFEST.json">18 个合成白噪声 WAV 与参数清单</a>。该版本逐条 RIR 默认使用 10 Hz 零相位高通；若用较短的零阶直达 RIR 补零后去减高阶完整 RIR，高通边界差会混入“反射能量”。脚本以相同镜像阶数和长度，令直达对照房间墙面完全吸收，并用原始单直达镜像源及同长度滤波独立核对。</p>
+<p>六位置 $T_{20}$ 外推 $T_{60}$ 为约 0.546～0.563 s，低于反推设计值 0.6 s；定位误差为约 0.604～2°。这些数是一个房间、一次固定输入的仿真，不是实测混响时间或跨房间定位准确率。图、逐麦 DRR 和阶数收敛检查见<a href="../13_appendix-guide.html">附录题目</a>。</p>
+<p><code>experimental/rt60.py::measure_rt60</code> 对实 RIR 平方后反向累加，得到 Schroeder 剩余能量曲线，再拟合衰减斜率并外推 60 dB。<code>decay_db</code> 控制拟合跨度，默认值是 60；要使用 20 dB 跨度需显式设定。它还接受 <code>energy_thres</code> 和线性域拟合选项，改变这些参数会改变评分口径。<a href="https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/experimental/rt60.py">固定版测量代码</a>。</p>
+<p>静态阅读还显示：当曲线没有找到 −5 dB 位置时，该函数可能返回 0.0；数据衰减不够时可能调整实际拟合区间。因此一个有限返回值不等于测量有效，更不能自动标注为符合 ISO 3382。应额外保存原始曲线、实际区间、噪底、拟合残差和失败状态；普通房间与演出空间的适用范围分别查 <a href="https://www.iso.org/standard/36201.html">ISO 3382-2</a>和 <a href="https://www.iso.org/standard/40979.html">ISO 3382-1</a>。标准页面的范围说明不能代替完整条款验收。</p>
+<span id="23-固定版本中空气吸收公式的静态边界" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-2-3">2.3 固定版本中空气吸收公式的静态边界</h4>
+<p>pyroomacoustics 0.10.0 的 <code>acoustics.py::rt60_eyring</code> 返回值可写成 $-K V/[S\ln(1-a)+4mV]$，其中 $K=24\ln(10)/c>0$，<code>m</code> 在接口中表示空气吸收参数。固定 $0\lt a\lt 1$ 时，分母首项为负；增加正的 <code>m</code> 会先让分母更接近零，使预测时间增加。这与增加吸收应加快能量衰减的单调性不符。该判断来自源码表达式和符号检查，没有执行其房间仿真路径。</p>
+<p><code>room.py::rt60_theory</code> 还逐面墙调用理论函数后累加倒数；当每次调用都包含同一个体积空气吸收项时，该项会随墙数重复计入。因此本文不使用该版本含空气吸收的理论返回值作为正文公式的数值基准，也不把这项静态矛盾外推成其全部 RIR 模拟器失效。<a href="https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/acoustics.py">固定版理论公式</a>；<a href="https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/room.py">固定版逐墙聚合</a>。</p>
+<p>正文无空气吸收的赛宾/Eyring手算应与同样设为零空气吸收的解析模型比较。需要分析空气吸收时，先明确振幅还是能量的衰减系数，再独立核对公式、代码和生成 RIR 的衰减；这些额外路径尚未在本节运行。</p>
+<span id="24-ess-扫频与受限频带反卷积pyfar" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-2-4">2.4 ESS 扫频与受限频带反卷积：pyfar</h4>
+<p>正文提到的指数正弦扫频需要配套生成测试信号和反卷积实现。pyfar 补充这一入口：本书已将维护者官方仓库 v0.8.1、提交 <code>0bfe1e8b7d71ab83edd3ea3b5fab7b28761d114a</code> 的源码子集取得到 <code>codes/upstream/_downloads/pyfar/</code>，保留 MIT 许可证与作者声明；它是本地独立研究副本，不是已经并入发布仓库的第三方包。本节已阅读固定源码，没有安装运行扫频测量流程，也没有播放声音或采集真实房间数据。<a href="https://github.com/pyfar/pyfar/tree/0bfe1e8b7d71ab83edd3ea3b5fab7b28761d114a">固定版源码</a>；<a href="https://github.com/pyfar/pyfar/blob/0bfe1e8b7d71ab83edd3ea3b5fab7b28761d114a/LICENSE">许可证</a>。</p>
+<p><code>signals/deterministic.py::exponential_sweep_time</code> 按指数变化的瞬时频率合成信号，输入包括样本数、起止频率、采样率、幅度和末尾淡出长度。若指定 <code>sweep_rate</code>，函数会按每秒倍频程数重新计算长度；不能同时假定传入的 <code>n_samples</code> 仍决定时长。默认淡出为 90 个样本，它在 16 kHz 下是 5.625 ms，不是接口说明中以 44.1/48 kHz 为例的约 2 ms。频域合成版本 <code>exponential_sweep_freq</code> 采用另一条生成路线，不能假定两者拥有逐样本相同的包络。<a href="https://github.com/pyfar/pyfar/blob/0bfe1e8b7d71ab83edd3ea3b5fab7b28761d114a/pyfar/signals/deterministic.py">固定版扫频实现</a>。</p>
+<p><code>dsp/dsp.py::regularized_spectrum_inversion</code> 对输入谱构造 $X^*/(|X|^2+\epsilon)$。正则项限制低能量频点上的巨大逆增益，但也会产生偏差；它不把未受激频带的信息恢复出来。指定带内、带外参数时，该版本先构造频率过渡，再乘以输入谱最大模方；直接提供 <code>regu_final</code> 时，则按给定最终数值使用。比较结果前要固定 FFT 归一化和正则项的尺度。<a href="https://github.com/pyfar/pyfar/blob/0bfe1e8b7d71ab83edd3ea3b5fab7b28761d114a/pyfar/dsp/dsp.py">固定版反卷积与逆滤波实现</a>。</p>
+<p>同文件 <code>deconvolve</code> 的文档把 <code>frequency_range=None</code> 描述为绕过正则化，但固定源码实际将它换成 <code>[0,f_s/2]</code>，仍调用上述逆滤波函数；默认 <code>regu_inside=10^{-10}</code> 会保留很小的正则项。因此采用范围应按代码写成“默认以整个单边频带为带内”，不能写成自动识别有效扫频频带，也不能据文档注释称它完全没有正则。</p>
+<p><code>deconvolve</code> 还检查输入输出采样率一致，并默认补齐到两者较长的长度。这个长度规则不保证录音已经保留足够的混响尾，也不说明结果已经消除播放/采集的固定延迟。v0.8.1 源码已对该接口和旧逆滤波函数发出将来弃用的提示，推荐 <code>RegularizedSpectrumInversion</code> 与 <code>convolve</code>；本书固定版本阅读不把将来的接口变化说成已经验证的迁移。</p>
+<p>建议的最小验证先完全在数字域完成：生成扫频，经过已知短 FIR，以线性卷积构造输出，再检查延迟、主抽头与带内传输误差。随后加入带外零能量、观测噪声和截断尾部，分别观察正则偏差及失效。只有这一步通过后，才接到带播放参考、足够尾长、未削波的测量系统；所得响应仍包含未单独校准的扬声器和麦克风传输特性。建议实验尚未执行，不与附录 B 已运行的房间仿真混计。</p>
 <span id="sec-7" class="anchor-alias" aria-hidden="true"></span><span id="3-stft-与加权重叠相加重构" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-3d6b2ce923">3. STFT 与加权重叠相加重构</h3>
-<p>对应 §2.5。本书 <code>spectral.py</code> 用于检查窗、帧移和边界补齐；外部阅读入口是 pyroomacoustics 的 <code>transform/stft.py</code>。分析窗和合成窗的乘积经过移位相加应形成非零、可补偿的包络。输出长度、启动补零和尾帧补齐应和原始采样时间一起记录。</p>
-<p>最小实验分别用脉冲、常量和不整帧长度的随机信号重构；不能只用频点对齐的正弦。接入实时音频时把算法前瞻与累计输入帧数分开计算：块长并不自动等于全部算法延迟。过短窗会使房间卷积的逐频乘法近似变差，过长窗会降低时变跟随能力。</p>
+<p>对应正文 §2.5。本书 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/spectral.py"><code>spectral.py</code></a> 固定多通道谱形状为 <code>M × F × L</code>，分别表示通道、频点和帧。频率 $f_k=kf_s/N$ 的单位是 Hz；不能把频点下标 $k$ 直接代入传播复指数。帧号、采样号和秒也应在接口边界转换。</p>
+<span id="31-重构成立与卷积近似成立是两件事" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-3-1">3.1 重构成立与卷积近似成立是两件事</h4>
+<p>完整信号的傅里叶变换满足卷积定理。STFT 先乘有限窗，再按帧移取样，其精确系统表示通常同时涉及跨帧卷积和频带耦合。把每个时频点独立写作“输入谱乘一个传输系数”是乘性传输函数近似（Multiplicative Transfer Function，MTF）；它不能仅由 iSTFT 往返误差小推出。</p>
+<p><a href="https://www.ee.technion.ac.il/Sites/People/IsraelCohen/Publications/TASL_May2007.pdf">Avargel 与 Cohen 2007 作者原文</a>的 §II、式(7)～(11)、印刷页 1307 将 LTI 系统写成带内与跨带滤波之和。需要几个跨带项与分析/合成窗有关，跨帧滤波长度也受原始冲激响应影响。增加可估参数还会改变有限数据估计误差，不能把“更多跨带滤波”直接写作性能必然更好。</p>
+<p>一个最小反例是延迟超出当前窗的短脉冲：当前帧没有输入脉冲，输出帧却仍可能收到先前帧的延迟响应。同一时频点只做相乘无法产生这段跨帧记忆。应先按时域线性卷积得到参考，再采用完全相同的窗、帧移和边界生成参考 STFT，最后统计近似残差；不要用待检逐点模型生成自己的正确答案。</p>
+<span id="32-合成窗和有限信号端点" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-3-2">3.2 合成窗和有限信号端点</h4>
+<p>pyroomacoustics <code>transform/stft.py::compute_synthesis_window</code> 用分析窗除以所有移位分析窗的平方和，构造合成窗。这说明分母非零的重要性，但其周期移位窗计算不能自动证明某个有限录音首尾都有覆盖。<a href="https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/transform/stft.py">固定版合成窗函数</a>。</p>
+<p>正文 E02-03 用首点为零的 Hann 窗检查这一差别：中间区域的重叠条件成立，仍不能恢复未被任何非零窗覆盖的首点。外部 SciPy <code>stft</code> 也分别设置 <code>boundary</code> 和 <code>padded</code>；其文档将该接口标为旧式接口并推荐新应用考虑 <code>ShortTimeFFT</code>，但替换接口时仍要逐项对齐窗、尺度、时间标记和边界。<a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.stft.html">STFT 边界参数</a>；<a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.check_NOLA.html">NOLA 分母条件</a>（文档版本 1.18.0，2026-09-28 核实）。</p>
+<p>工程对照应使用脉冲、常量和不能整除帧移的随机信号，核对输入输出长度、启动延迟和末帧；只用稳态正弦容易漏掉边缘问题。实时系统还要记录每次调用消耗和产出的采样数、是否保留跨块状态、前瞻和结束时如何冲洗尾部。块长不会自动等于整个算法延迟。</p>
 <span id="sec-8" class="anchor-alias" aria-hidden="true"></span><span id="4-批处理加权与递推空间协方差" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-6a61e9b954">4. 批处理、加权与递推空间协方差</h3>
-<p>对应 §2.5、§5.4、§5.9。本书 <code>covariance.py</code> 的回归测试检查矩阵厄米性、非负二次型和权重归一化。掩码协方差按掩码和归一化；全零权重表示没有可用统计，接口明确拒绝。非零掩码整体乘同一正数不会改变归一化二阶矩，所以不能仅因绝对掩码和很小就判断无效；实现先按最大权重缩放以避免上下溢。E02-06 用 $10^{-200},1,10^{200}$ 三种共同尺度验证这一点，但缩放不增加独立样本，也不改善统计置信度。递推方式还需保留历史权重，否则启动阶段统计与稳态统计的尺度可能不同。</p>
-<p>实验将同一组快拍分别整体处理和分块递推，比较约定一致时的结果；再给全零掩码、单个快拍和完全相关通道。工业中同时记录有效快拍数、条件数、遗忘因子和目标泄漏检测。矩阵维度正确、求解没有报错，仍不足以证明它描述的是噪声而非目标。</p>
+<p>对应正文 §2.5。本书 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/covariance.py"><code>covariance.py</code></a> 的统计量是未中心化的空间二阶矩。零均值假设、去均值操作和无偏分母应分别核对，不能仅凭接口名含 <code>covariance</code> 就认定实现相同。单帧外积的秩至多为 1；没有去均值的 $L$ 帧平均秩至多为 $\min(M,L)$。</p>
+<span id="41-权重归一化不增加信息量" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-4-1">4.1 权重归一化不增加信息量</h4>
+<p>掩码二阶矩按权重和归一化。所有非零权重共同乘正数，结果不变；实现先除以最大权重以避免过小尺度被误判为无数据。E02-06 用 $10^{-200},1,10^{200}$ 三种共同尺度核对这一点。全零权重没有统计依据，代码明确拒绝。</p>
+<p>“权重非零”“矩阵满秩”和“快拍独立”是不同条件。很多帧若彼此成比例，平均后仍可能秩一；重叠帧也不能自动作为同样数量的独立样本。工程记录应保留权重和、权重集中程度、特征值与条件数，以及参与更新的时间范围，而不只记录矩阵形状。</p>
+<span id="42-遗忘时间和数值正定性分别检查" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-4-2">4.2 遗忘时间和数值正定性分别检查</h4>
+<p>递推估计要保留历史累计权重，否则从零初始化的矩阵会因权重总和不足而偏小。正文 E02-05 展示归一化，E02-07 再把遗忘因子换算为实际时间常数。语音活动检测冻结更新时，状态不会按墙钟时间自行遗忘；可变帧移也不能继续沿用固定帧移的时间解释。</p>
+<p>收缩估计把矩阵与同尺度的单位阵混合。由特征分解直接可知，原特征值 $\lambda_i$ 会变为 $(1-\rho)\lambda_i+\rho\mu$，其中 $\mu=\operatorname{tr}(\hat{\mathbf R})/M$。只有原矩阵半正定、$\mu>0$ 且 $\rho>0$ 等条件成立时，这种混合才会把零特征值抬高；零输入产生的零矩阵不会凭空变成有效噪声模型。</p>
+<p>这里的手选 $\rho$ 表示指定正则强度，没有执行自动收缩系数估计。将实数独立样本的收缩公式直接用于复数、重叠 STFT 快拍，也需要重新核对假设。归一化和加载可以改善计算条件，却不能纠正目标泄漏、错误通道排列或错误噪声时段。</p>
+<span id="43-理论精度接口中的参数身份" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-4-3">4.3 理论精度接口中的参数身份</h4>
+<p>正文式(2-14)为单源确定性模型下的 CRB。固定 doatools <code>performance/crb.py::crb_det_farfield_1d</code> 先把导向导数投影到导向张成空间的正交补，再结合源样本二阶矩和噪声方差计算下界。这一步消除了未知复幅度造成的干扰参数，解释了阵元位置为何要相对中心求二阶矩。<a href="https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/performance/crb.py">固定版 CRB 源码</a>。</p>
+<p>该接口的 <code>sigma</code> 表示噪声<strong>方差</strong>，不是标准差；<code>P</code> 是源信号样本二阶矩，<code>n_snapshots</code> 是模型中的快拍数量。相邻的 <code>crb_sto_farfield_1d</code> 和 <code>crb_stouc_farfield_1d</code> 分别采用随机源模型和不相关随机源模型，不能因为参数名类似就交换结果。源码所引 Stoica–Nehorai 1990 比较论文与正文 1989 理论论文也是不同文献。</p>
+<p>本节完成的是固定源码的接口与公式对应检查，没有新增执行 doatools 的 CRB 接口。正文的数值必须由本书公开条件独立复算，不能以源码存在代替运行，更不能把模型下界当成某个定位器的实测误差。</p>
 <span id="sec-9" class="anchor-alias" aria-hidden="true"></span><span id="5-aic-与-mdl-源数估计" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-3c235c5743">5. AIC 与 MDL 源数估计</h3>
 <p>对应 <a href="../04_doa-estimation.html#sec-4-1-1">§4.1.1</a> 和 <a href="../04_doa-estimation.html#sec-4-9">§4.9</a>。本书 <code>doa.py::mdl_source_count</code> 提供复高斯、空间白噪声模型的 MDL 教学基线；输入为任意顺序的严格正实特征值和独立快拍数，输出所选源数与全部候选评分。它拒绝秩亏、非法类型和不足以支持满秩样本协方差的快拍数，不静默加载，也不把评分写成概率。</p>
 <p>外部入口仍为 doatools 的 <code>estimation/source_number.py</code> 中 <code>aic</code>、<code>mdl</code>、<code>ld_stat</code>。其接口接受协方差或<strong>升序</strong>特征值，并需要快拍数；本书接口不接受协方差矩阵。锁定版本的 <code>mdl</code> 保留公共惩罚 $\tfrac12\ln N$，本书去掉该常数，所以直接比较评分时要先统一口径，源数最小值不受影响。上游 <code>ld_stat</code> 直接计算特征值乘积，本书改用平移后的对数计算，以覆盖极大、极小尺度。<a href="https://morriswmz.github.io/doatools.py/references/doatools.estimation.source_number.html">作者 API</a>；<a href="https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/estimation/source_number.py">锁定提交的官方源码</a>。版本同时登记在 <code>SOURCES.lock.json</code>。</p>

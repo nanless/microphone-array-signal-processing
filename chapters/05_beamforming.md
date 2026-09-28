@@ -964,7 +964,7 @@ $$\begin{aligned}
 G_{\mathrm{WNG}}(\varepsilon)&=\frac{1}{1/2+50/(11+\varepsilon)^2}\text{。}
 \end{aligned}\tag{5-11}$$
 
-$G_{\mathrm{WNG}}$ 是线性量；式(2-5)的 dB 表达是 $10\log_{10}G_{\mathrm{WNG}}$。两项虚部在目标响应中相消，所以 $\vec w_\varepsilon^H\vec a=1$ 始终成立。
+$G_{\mathrm{WNG}}$ 是线性量；式(2-13)的 dB 表达是 $10\log_{10}G_{\mathrm{WNG}}$。两项虚部在目标响应中相消，所以 $\vec w_\varepsilon^H\vec a=1$ 始终成立。
 
 **第二步：解不等式，不靠试参数。** 因分母为正，要求 $G_{\mathrm{WNG}}\ge1.6$ 等价于
 

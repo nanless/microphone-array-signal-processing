@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 4 章 · 声源定位（DOA 估计） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="79cd2ab95058"><style>
+<meta name="source-digest" content="d120f59b1fb3"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -491,7 +491,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>两阶段几何法需要先把各麦对 TDOA 归属于同一声源；多源时数据关联会显著变难。§4.5 的 Bartlett 和 Capon 改为空间扫描，可直接从多个谱峰寻找候选方向。</p>
 </blockquote>
 <span id="sec-7" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-5">4.5 波束扫描类：Bartlett 与 Capon</h2>
-<p><strong>Bartlett</strong>：在固定频点 $f_k$，$P_B(f_k,\theta) = \vec{a}^H(f_k,\theta)\hat{\mathbf{R}}(f_k)\vec{a}(f_k,\theta)$。按式(2-2)，$\hat{\mathbf{R}}(f_k)=L^{-1}\sum_{\ell=1}^{L}\vec{x}(f_k,\ell)\vec{x}^H(f_k,\ell)$；$L$ 是快拍数，$\ell$ 是快拍索引。</p>
+<p><strong>Bartlett</strong>：在固定频点 $f_k$，$P_B(f_k,\theta) = \vec{a}^H(f_k,\theta)\hat{\mathbf{R}}(f_k)\vec{a}(f_k,\theta)$。按式(2-6)，$\hat{\mathbf{R}}(f_k)=L^{-1}\sum_{\ell=1}^{L}\vec{x}(f_k,\ell)\vec{x}^H(f_k,\ell)$；$L$ 是快拍数，$\ell$ 是快拍索引。</p>
 <p>矩阵对角元是各通道自功率，非对角元是通道间互功率。二次型给出按候选导向矢量转向后的平均输出功率。若各方向的 $\|\vec a(f_k,\theta)\|$ 相同，省略统一归一化不改变峰位。</p>
 <p>Bartlett 的典型分辨尺度由该阵列的常规波束主瓣决定。Rayleigh 类判据是约定的分辨标准，不是所有噪声和检测条件下的绝对物理边界。下面的单频算例为减轻记号负担，省略固定的 $f_k$。</p>
 <p><strong>Capon/MVDR 谱</strong>：对每个候选方向设计“该方向增益为 1、输出功率最小”的滤波器：</p>
@@ -739,7 +739,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>这些变化说明，学习式定位的“输出”已经从稀疏 DOA 向量扩展到距离和稠密空间图。复现时必须绑定届次，不能只写“DCASE Task 3”。</p>
 </blockquote>
 <p><strong>距离估计：从方向扩展到三维位置</strong>：远场平面波的相对时延模型只给方向；近场球面波的通道间时延还随距离变化（见 §2.7）。网络也可能利用波前曲率、直达混响比（DRR）和绝对声级。</p>
-<p>绝对声级对应的距离线索依赖未知声源级别；在 §2.7 所用的同一声源功率同时缩放直达声与混响声的理想模型下，DRR 是两者之比，声源功率会约去。实际 DRR 仍受房间、源与麦克风指向性、距离及录音噪声影响，不能当作单独可靠的距离刻度。距离结果必须在明确的数据集、误差定义和范围内报告，不能与只估方向的结果直接比较。</p>
+<p>绝对声级对应的距离线索依赖未知声源级别；在 §2.4.3 所用的同一声源功率同时缩放直达声与混响声的理想模型下，DRR 是两者之比，声源功率会约去。实际 DRR 仍受房间、源与麦克风指向性、距离及录音噪声影响，不能当作单独可靠的距离刻度。距离结果必须在明确的数据集、误差定义和范围内报告，不能与只估方向的结果直接比较。</p>
 <span id="sec-4-7-1" class="anchor-alias" aria-hidden="true"></span><span id="sec-13" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-00305faff5">近场模型失配：角度相同，距离仍会改变导向矢量</h3>
 <p>取 3 麦 ULA，阵元横坐标为 $[-5,0,5]$ cm；声源距阵列中心 $r=20$ cm，方位 $\theta=30°$（从正横起算）。声源坐标为 $(r\sin\theta,r\cos\theta)=(0.10,0.1732)$ m。三个传播距离约为 $[0.22913,0.20000,0.18028]$ m，因此相对中心麦的路程差为</p>
 <p>$$\boldsymbol\delta_{\rm sph}=[+29.13,\ 0,\ -19.72]\ \text{mm}。$$</p>

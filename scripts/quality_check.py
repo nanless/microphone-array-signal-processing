@@ -46,7 +46,7 @@ EXPECTED_SECTION_COUNTS = {
 # 基线，不从构建脚本或待检产物反推。
 EXPECTED_SUBSECTION_COUNTS = {
     "01_problem-definition.md": 15,
-    "02_basics-signal-model.md": 16,
+    "02_basics-signal-model.md": 41,
     "03_array-geometry.md": 12,
     "04_doa-estimation.md": 11,
     "05_beamforming.md": 7,
@@ -77,10 +77,10 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 119
-EXPECTED_SUBSECTION_COUNT = 155
-EXPECTED_OUTLINE_ITEM_COUNT = 288
+EXPECTED_SUBSECTION_COUNT = 180
+EXPECTED_OUTLINE_ITEM_COUNT = 313
 EXPECTED_FIGURE_NUMBERS = set(range(1, 42))
-# 研究附站使用独立显式清单，不挤占 14 篇教程或 273 项 PDF 大纲基线。
+# 研究附站使用独立显式清单，不挤占 14 篇教程或 313 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
     ("README.md", "index.html"),
@@ -1016,6 +1016,7 @@ def check_pdf(errors: list[str], notices: list[str]):
 
 
 EXPECTED_AUDIO_STEMS = {
+    "room_decay_dry", "room_decay_short_drr0", "room_decay_long_drr0", "room_decay_long_drr6",
     "alignment_reference", "alignment_array", "alignment_unaligned", "alignment_aligned",
     "interpolation_ideal_half", "interpolation_linear_half", "interpolation_ideal_one", "interpolation_linear_twice",
     "clock_reference", "clock_array", "clock_index_mean", "clock_oracle_mean",
@@ -1269,13 +1270,13 @@ def check_audio(errors):
         manifest = json.loads((root / "MANIFEST.json").read_text())
         records = manifest["files"]
         names = {stem + ".wav" for stem in EXPECTED_AUDIO_STEMS}
-        if len(records) != 72 or {r["file"] for r in records} != names:
-            fail(errors, "音频清单必须包含独立基线的 72 个 WAV")
+        if len(records) != 76 or {r["file"] for r in records} != names:
+            fail(errors, "音频清单必须包含独立基线的 76 个 WAV")
         if {p.name for p in root.glob("*.wav")} != names or {p.name for p in (SITE / "audio").glob("*.wav")} != names:
             fail(errors, "源音频或站点音频文件集合不符")
         if set(manifest["groups"]) != {"spatial", "aec", "aec_methods", "aec_subband", "wpe", "separation", "engineering", "tracking",
                                       "correlation", "polarity", "conditioning", "nonlinear", "fractional_array",
-                                      "spectral_subtraction", "clock_drift", "interpolation", "alignment_error"}:
+                                      "spectral_subtraction", "clock_drift", "interpolation", "alignment_error", "room_decay"}:
             fail(errors, "音频实验组不符")
         expected_inputs = {"codes/examples/generate_audio_samples.py", "codes/array_tutorial/audio_samples.py",
                            "codes/array_tutorial/aec.py", "codes/array_tutorial/aec_ipnlms.py",
@@ -1308,7 +1309,8 @@ def check_audio(errors):
                 raw = wav.readframes(frames)
             if record["sample_rate_hz"] != 16000 or record["duration_s"] != frames / 16000:
                 fail(errors, f"音频清单采样率或时长不符：{name}")
-            expected_group = ("alignment_error" if name.startswith("alignment_") else
+            expected_group = ("room_decay" if name.startswith("room_decay_") else
+                              "alignment_error" if name.startswith("alignment_") else
                               "spectral_subtraction" if name.startswith("spectral_") else
                               "clock_drift" if name.startswith("clock_") else
                               "fractional_array" if name.startswith("fractional_") else

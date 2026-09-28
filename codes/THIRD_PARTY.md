@@ -1,6 +1,6 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 78 个上游项目；已在 `codes/upstream/_downloads/` 取得 71 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。2026-09-28 离线核验 70 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 7 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 79 个上游项目；已在 `codes/upstream/_downloads/` 取得 72 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。2026-09-28 离线核验 71 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 7 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”只说明来源、提交、工作区状态和指定入口符合清单，不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -14,7 +14,7 @@
 没有复制进教学包。
 
 SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构建依赖，不另计为一种空间算法，
-也不计入上面的 75 项 Git 源码索引。官方归档为
+也不计入主锁定清单的 Git 源码索引。官方归档为
 [`fftw-3.3.10.tar.gz`](https://fftw.org/pub/fftw/fftw-3.3.10.tar.gz)，SHA-256 为
 `56c932549852cddcfafdab3820b0200c7742675be92179e59e6215b340e26467`。
 归档的 `COPYRIGHT` 与 `kernel/alloc.c` 声明 GPL-2.0-or-later；`api/fftw3.h` 单独采用 BSD 两条款文本，
@@ -53,6 +53,7 @@ SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构�
 | [spherical-array-processing](https://github.com/polarch/Spherical-Array-Processing/tree/f192aac652b023ee4ab8673adce20ec13bf5450c) | 球谐编码、SH-MVDR/LCMV/MUSIC/ESPRIT | BSD-3-Clause | 已取得独立源码 |
 | [spatial-audio-framework](https://github.com/leomccormack/Spatial_Audio_Framework/tree/18fd5aba46e20787b51f28f7197a68506c965c07) | C/C++ 球阵处理、功率图、HRIR/HRTF 与可选追踪 | ISC core; GPL-2.0 optional modules | 已取得独立源码 |
 | [libmysofa](https://github.com/hoene/libmysofa/tree/6cc5b15a73e9bd97810d03767082edda7f315881) | SOFA读取、HRIR方向插值与归一化接口 | BSD-3-Clause，第三方源码声明分别保留 | 已取得源码子集；未编译或数值运行，不含SOFA测量数据 |
+| [pyfar](https://github.com/pyfar/pyfar/tree/0bfe1e8b7d71ab83edd3ea3b5fab7b28761d114a) | 指数扫频、频带受限谱反卷积、信号与频谱单位接口 | MIT，保留作者声明；测量数据许可另核 | v0.8.1固定源码已取得；未安装、未运行或实机测量 |
 | [frida-original](https://github.com/LCAV/FRIDA/tree/ff5d51e498805b862c342dd216ccfffb22444b7f) | FRIDA 原论文仿真和录音实验 | MIT | 已取得独立源码 |
 | [acoular](https://github.com/acoular/acoular/tree/13d3d7df74ac1a8135c7ec71da098cbbc03d8652) | DAMAS、CLEAN-SC、CMF 与移动声源成像 | BSD-3-Clause | 已取得独立源码 |
 | [lib-voice](https://github.com/xmos/lib_voice/tree/c9f1a9bf95cd88c7950adf4bf631c217f900ad25) | XMOS AEC、IC、NS、AGC 语音前端 | XMOS Public Licence v1 | 已取得独立源码 |

@@ -167,7 +167,7 @@ $$f_{\rm check} = \frac{c}{2d} = \frac{343}{2\times0.0375} \approx 4573\ \text{H
 
 $$\mathrm{HPBW} \approx \frac{0.886\,\lambda}{Md}\ \text{rad}$$
 
-这里的 $Md=12$ cm 来自 Dirichlet 核的近似尺度，不等于物理跨度。对小阵列要保留这个区别；该式是式(2-3)在正横方向 $\cos\theta_0=1$ 的形式。
+这里的 $Md=12$ cm 来自 Dirichlet 核的近似尺度，不等于物理跨度。对小阵列要保留这个区别；该式是式(2-11)在正横方向 $\cos\theta_0=1$ 的形式。
 
 **1 kHz**：波长 $\lambda = 343/1000 = 0.343$ m。若强行代入窄主瓣近似，会得到 $0.886\times0.343/0.12\approx2.53$ rad，但这个数不是该阵列的 HPBW。直接计算精确阵因子：端射处 $\psi=2\pi d/\lambda\approx0.550$ rad，
 

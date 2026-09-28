@@ -26,7 +26,11 @@
         "pyroomacoustics/doa/tools_fri_doa_plane.py",
         "pyroomacoustics/beamforming.py",
         "pyroomacoustics/adaptive/rls.py",
-        "LICENSE"
+        "LICENSE",
+        "pyroomacoustics/parameters.py",
+        "pyroomacoustics/acoustics.py",
+        "pyroomacoustics/experimental/rt60.py",
+        "pyroomacoustics/doa/doa.py"
       ]
     },
     {
@@ -389,7 +393,8 @@
         "doatools/estimation/preprocessing.py",
         "doatools/estimation/source_number.py",
         "doatools/estimation/sparse.py",
-        "LICENSE.md"
+        "LICENSE.md",
+        "doatools/performance/crb.py"
       ]
     },
     {
@@ -471,7 +476,10 @@
       "entrypoints": [
         "acoular/fbeamform.py",
         "acoular/tbeamform.py",
-        "LICENSE"
+        "LICENSE",
+        "acoular/calib.py",
+        "acoular/fastFuncs.py",
+        "acoular/environments.py"
       ]
     },
     {
@@ -1354,6 +1362,28 @@
         "src/hrtf/kdtree.c",
         "src/hrtf/loudness.c",
         "src/hrtf/interpolate.c"
+      ]
+    },
+    {
+      "id": "pyfar",
+      "url": "https://github.com/pyfar/pyfar.git",
+      "revision": "0bfe1e8b7d71ab83edd3ea3b5fab7b28761d114a",
+      "release": "v0.8.1",
+      "license": "MIT",
+      "scope": "声学测试信号、指数扫频、频带受限反卷积、音频容器和频谱归一化；不等于已完成设备测量",
+      "fetch_enabled": true,
+      "note": "2026-09-28核实官方v0.8.1；仅固定源码与许可，不获取录音/测量数据，不执行上游。代码取得、运行和实机ESS测量分别记录。",
+      "source_paths": [
+        "pyfar/",
+        "LICENSE",
+        "README.md",
+        "pyproject.toml"
+      ],
+      "entrypoints": [
+        "LICENSE",
+        "pyfar/signals/deterministic.py",
+        "pyfar/dsp/dsp.py",
+        "pyproject.toml"
       ]
     }
   ]

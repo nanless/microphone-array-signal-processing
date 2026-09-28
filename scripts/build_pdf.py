@@ -154,6 +154,10 @@ td,th{word-break:break-word;overflow-wrap:anywhere}
 /* MathJax 的行内长式与展示式均需留在 A4 正文宽度内。 */
 mjx-container{font-size:100%!important;max-width:100%}
 h1,h2,h3,h4{break-after:avoid}
+/* 第2章的图注和短引导句随其解释对象排版，避免只剩一行或孤立图注。 */
+#ch-2 p:has(+ol),#ch-2 p:has(+ul){break-after:avoid;page-break-after:avoid}
+#ch-2 p:has(>img[src$="fig03_near_far_field.png"]),#ch-2 p:has(>img[src$="fig05_room_acoustics.png"]){break-after:avoid;page-break-after:avoid}
+#ch-2 p:has(>strong:first-child):has(+p+p > mjx-container){break-after:avoid;page-break-after:avoid}
 /* 第10章末尾四条总结作为一个完整列表，避免仅末两条占据下一页。 */
 #ch-10-sec-10-12+ol{break-inside:avoid;page-break-inside:avoid}
 /* 章末独立练习与研究小节从完整页开始，避免最后几行独占一页。 */

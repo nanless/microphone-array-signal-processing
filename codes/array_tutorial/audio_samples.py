@@ -7,6 +7,7 @@ group, including its references. Listen at a low device volume.
 from __future__ import annotations
 
 import io
+import hashlib
 import wave
 
 import numpy as np
@@ -210,8 +211,126 @@ def alignment_error_case() -> dict:
                   'Level changes are not SNR gains; known alignment is not an estimated algorithm result.'}
 
 
+def room_decay_components() -> dict:
+    """E02-11: explicit direct/tail filters and a common mathematical source.
+
+    Tail entries are Gaussian samples times an exponential amplitude envelope;
+    they are not simulated wall reflections. The fixed 1.2 s tail supports
+    nominal decay parameters of 0.2 and 0.6 s, without truncating a convolution.
+    Direct and tail supports do not overlap, so their RIR energies separate.
+    """
+    source_seed, tail_seed = 2026092801, 2026092802
+    source = np.zeros(int(2.5 * SAMPLE_RATE))
+    start, stop, fade_length = 2400, 8800, 160
+    burst = .08 * np.random.default_rng(source_seed).standard_normal(stop - start)
+    fade = np.ones(stop - start)
+    fade[:fade_length] = np.linspace(0., 1., fade_length, endpoint=False)
+    fade[-fade_length:] = np.linspace(1., 0., fade_length, endpoint=True)
+    source[start:stop] = burst * fade
+    direct_index, tail_start, tail_length = 192, 512, 19200
+    direct = np.zeros(tail_start + tail_length)
+    direct[direct_index] = 1.
+    z = np.random.default_rng(tail_seed).standard_normal(tail_length)
+    elapsed = np.arange(tail_length) / SAMPLE_RATE
+    tails = {}
+    for name, t60, drr_db in [('short_drr0', .2, 0.), ('long_drr0', .6, 0.),
+                              ('long_drr6', .6, 6.)]:
+        tail = np.zeros_like(direct)
+        samples = z * np.exp(-3 * np.log(10.) * elapsed / t60)
+        samples *= np.sqrt(10 ** (-drr_db / 10) / np.sum(samples**2))
+        tail[tail_start:] = samples
+        tails[name] = {'tail': tail, 'nominal_t60_s': t60, 'rir_drr_db': drr_db}
+    return {'source': source, 'direct_rir': direct, 'tails': tails,
+            'source_seed': source_seed, 'tail_seed': tail_seed,
+            'source_active_interval_samples': [start, stop],
+            'source_fade_samples': fade_length,
+            'direct_index': direct_index, 'tail_start': tail_start,
+            'tail_length': tail_length}
+
+
+def room_decay_case() -> dict:
+    """Four aligned WAVs separate RIR energy ratio from nominal tail decay.
+
+    FFT convolution is zero padded to its full linear-convolution length.
+    The signal support finishes before 2.5 s; only numerical roundoff lies
+    beyond the retained output, and it is checked rather than silently lost.
+    """
+    parts = room_decay_components()
+    source, direct = parts['source'], parts['direct_rir']
+    reference = delay_samples(source, parts['direct_index'])
+    signals = {'room_decay_dry': reference}
+    records = []
+    full_length = source.size + direct.size - 1
+    nfft = 1 << (full_length - 1).bit_length()
+    source_fft = np.fft.rfft(source, n=nfft)
+
+    def digest(array):
+        return hashlib.sha256(np.asarray(array, dtype='<f8').tobytes()).hexdigest()
+
+    def crossing_samples(array):
+        remaining = np.cumsum(array[::-1]**2)[::-1]
+        indices = np.flatnonzero(remaining <= remaining[0] * 1e-6)
+        return int(indices[0]) if indices.size else None
+
+    for name, item in parts['tails'].items():
+        tail = item['tail']
+        rir = direct + tail
+        tail_full = np.fft.irfft(source_fft * np.fft.rfft(tail, n=nfft), n=nfft)[:full_length]
+        if np.max(np.abs(tail_full[source.size:])) > 1e-12:
+            raise ValueError('room decay output would truncate a nonzero response')
+        # Guarantee exact causality of the retained samples before excitation.
+        tail_full[:parts['source_active_interval_samples'][0] + parts['tail_start']] = 0.
+        reflected = tail_full[:source.size]
+        signals['room_decay_' + name] = reference + reflected
+        total_cross, tail_cross = crossing_samples(rir), crossing_samples(tail)
+        direct_energy, tail_energy = float(direct @ direct), float(tail @ tail)
+        direct_output_energy = float(reference @ reference)
+        tail_output_energy = float(reflected @ reflected)
+        records.append({
+            'name': name, 'nominal_t60_s': item['nominal_t60_s'],
+            'target_rir_drr_db': item['rir_drr_db'],
+            'direct_rir_energy': direct_energy, 'tail_rir_energy': tail_energy,
+            'measured_rir_drr_db': float(10*np.log10(direct_energy/tail_energy)),
+            'rir_float64_le_sha256': digest(rir),
+            'tail_float64_le_sha256': digest(tail),
+            'total_edc_first_minus60_sample': total_cross,
+            'total_edc_first_minus60_absolute_s': total_cross / SAMPLE_RATE if total_cross is not None else None,
+            'total_edc_first_minus60_after_direct_s': (total_cross-parts['direct_index']) / SAMPLE_RATE if total_cross is not None else None,
+            'tail_edc_first_minus60_sample': tail_cross,
+            'tail_edc_first_minus60_after_tail_start_s': (tail_cross-parts['tail_start']) / SAMPLE_RATE if tail_cross is not None else None,
+            'direct_output_energy': direct_output_energy,
+            'tail_output_energy': tail_output_energy,
+            'output_cross_energy': float(2 * (reference @ reflected)),
+            'total_output_energy': float(signals['room_decay_' + name] @ signals['room_decay_' + name]),
+        })
+    return {'signals': signals, 'parameters': {
+        'exercise_id': 'E02-11', 'sample_rate_hz': SAMPLE_RATE,
+        'duration_s': 2.5, 'samples_per_channel': source.size,
+        'source_seed': parts['source_seed'], 'tail_seed': parts['tail_seed'],
+        'source': '0.08 times seeded unit-variance Gaussian samples with 10 ms linear edge fades; zero elsewhere',
+        'source_active_interval_samples': parts['source_active_interval_samples'],
+        'source_fade_samples': parts['source_fade_samples'],
+        'source_float64_le_sha256': digest(source),
+        'direct_arrival_sample': parts['direct_index'], 'direct_arrival_s': .012,
+        'tail_start_sample': parts['tail_start'], 'tail_start_s': .032,
+        'tail_length_samples': parts['tail_length'], 'tail_duration_s': 1.2,
+        'tail_model': 'z[n]*exp(-3*ln(10)*n/(fs*nominal_T60)), then normalize its total squared sum to 10^(-DRR/10)',
+        'shared_randomness': 'the same tail Gaussian vector is used in all three conditions; conditions are not independent trials',
+        'reference': 'room_decay_dry is the common source delayed by 192 samples (12 ms), matching every direct arrival',
+        'alignment': 'known direct-path alignment; no fitted gain, delay or algorithm estimate',
+        'convolution': 'zero-padded full FFT linear convolution; full nonzero tail fits in the 40000 retained samples',
+        'energy_interval_samples': [0, source.size],
+        'energy_units': 'sum of squared dimensionless digital samples, before common export gain and PCM16 quantization',
+        'edc': 'reverse sum of squared RIR entries, normalized by that filter total; first remaining-energy ratio <= 1e-6',
+        'conditions': records,
+    }, 'limits': 'Seeded mathematical scalar filters, not physical room simulation, measured RIR, speech, T20/T30 fit or standard reverberation-time measurement. '
+                 'Nominal T60 controls the amplitude envelope; total-EDC threshold times also depend on DRR, onset, finite tail and this random draw. '
+                 'RIR component energy ratios do not equal finite convolved-signal ratios; the outputs contain direct/tail cross terms. '
+                 'No noise-removal algorithm or listening study is evaluated.'}
+
+
 def build_cases() -> dict:
-    """Return seventeen experiments with model parameters and references.
+    """Return eighteen experiments with model parameters and references.
 
     Each entry has ``signals`` (filename stem -> CxN array), ``parameters`` and
     ``limits``. Signals are pre-export floats; no group uses peak matching.
@@ -344,6 +463,7 @@ def build_cases() -> dict:
     subtraction_zero_audio = istft(subtraction_zero[None], n_fft=512, hop_length=128,
                                    length=t.size)[0]
     return {
+        'room_decay': room_decay_case(),
         'alignment_error': alignment_error_case(),
         'interpolation': interpolation_case(),
         'clock_drift': clock_drift_case(),

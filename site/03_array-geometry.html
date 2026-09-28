@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 3 章 · 阵列几何形态 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="79cd2ab95058"><style>
+<meta name="source-digest" content="d120f59b1fb3"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -255,7 +255,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <h3 id="sec-3-2-3">3.2.3 算例 3-4：ULA 主瓣宽度计算</h3>
 <p>取一条 4 麦 ULA（等间距直线排列的阵列），间距 $d = 3$ cm，指向正横。首末阵元的物理跨度为 $(M-1)d=9$ cm；§2.6 从离散阵因子推得的窄主瓣近似则是</p>
 <p>$$\mathrm{HPBW} \approx \frac{0.886\,\lambda}{Md}\ \text{rad}$$</p>
-<p>这里的 $Md=12$ cm 来自 Dirichlet 核的近似尺度，不等于物理跨度。对小阵列要保留这个区别；该式是式(2-3)在正横方向 $\cos\theta_0=1$ 的形式。</p>
+<p>这里的 $Md=12$ cm 来自 Dirichlet 核的近似尺度，不等于物理跨度。对小阵列要保留这个区别；该式是式(2-11)在正横方向 $\cos\theta_0=1$ 的形式。</p>
 <p><strong>1 kHz</strong>：波长 $\lambda = 343/1000 = 0.343$ m。若强行代入窄主瓣近似，会得到 $0.886\times0.343/0.12\approx2.53$ rad，但这个数不是该阵列的 HPBW。直接计算精确阵因子：端射处 $\psi=2\pi d/\lambda\approx0.550$ rad，</p>
 <p>$$\left|B(90°)\right|=\left|\frac{\sin(M\psi/2)}{M\sin(\psi/2)}\right|\approx0.821，$$</p>
 <p>即 $20\log_{10}0.821\approx-1.71$ dB。从 $-90°$ 到 $90°$ 都没有降到 −3 dB，所以本例在 1 kHz 下<strong>没有可定义的 −3 dB 主瓣宽度</strong>。</p>

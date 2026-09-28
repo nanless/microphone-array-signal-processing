@@ -1,4 +1,4 @@
-"""Explicit cross-module, chapter and research inventory for 120 exercises."""
+"""Explicit cross-module, chapter and research inventory for 127 exercises."""
 
 import json
 import re
@@ -14,11 +14,12 @@ from codes.examples.coarray_covariance_exercise import run_exercise as coarray_e
 from codes.examples.doa_resolution_trials import run_experiment as doa_resolution_experiment
 
 
-from codes.examples import chapter01_experiments
+from codes.examples import chapter01_experiments, chapter02_experiments
 from codes.examples import spatial_model_exercises, enhancement_structure_exercises, engineering_boundary_exercises, interpolation_exercise
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = {
+    "chapter02": {f"E02-{n:02d}" for n in range(9, 16)},
     "chapter01": {"E01-04", "E01-05", "E01-06"},
     "spatial_model": {"E02-08", "E04-11", "E05-07", "E12-05"},
     "enhancement_structure": {"E07-07", "E08-11", "E09-09"},
@@ -54,7 +55,8 @@ EXPECTED = {
 }
 AEC_CASE_KEYS = {"E06-07": "overlap_save", "E06-08": "ipnlms",
                  "E06-09": "geigel", "E06-10": "delay_polarity"}
-RUNNERS = {"chapter01": chapter01_experiments.run_exercises,
+RUNNERS = {"chapter02": chapter02_experiments.run_exercises,
+           "chapter01": chapter01_experiments.run_exercises,
            "spatial_model": spatial_model_exercises.run_exercises,
            "enhancement_structure": enhancement_structure_exercises.run_exercises,
            "engineering_boundary": engineering_boundary_exercises.run_exercises,
@@ -92,9 +94,9 @@ class ExerciseCatalogTest(unittest.TestCase):
     def setUpClass(cls):
         cls.results = {name: run() for name, run in RUNNERS.items()}
 
-    def test_independent_inventory_has_120_unique_ids(self):
-        self.assertEqual(len(ALL_IDS), 120)
-        self.assertEqual(sum(map(len, EXPECTED.values())), 120)
+    def test_independent_inventory_has_127_unique_ids(self):
+        self.assertEqual(len(ALL_IDS), 127)
+        self.assertEqual(sum(map(len, EXPECTED.values())), 127)
 
     def test_each_module_returns_exact_assigned_ids(self):
         for name, results in self.results.items():
@@ -117,7 +119,7 @@ class ExerciseCatalogTest(unittest.TestCase):
                 text = chapters[0].read_text(encoding="utf-8")
                 self.assertRegex(text, rf"\b{re.escape(exercise_id)}\b")
 
-    def test_chapter_and_research_inventories_cover_exactly_120_ids(self):
+    def test_chapter_and_research_inventories_cover_exactly_127_ids(self):
         chapters = "\n".join(path.read_text(encoding="utf-8")
                              for path in (ROOT / "chapters").glob("*.md"))
         research = (ROOT / "codes/research/05_exercises_and_audio.md").read_text(encoding="utf-8")

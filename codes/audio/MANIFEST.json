@@ -10,7 +10,7 @@
     "float_dtype": "float64"
   },
   "synthetic_signal": {
-    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband, spectral_subtraction, clock_drift, interpolation and alignment_error; see each group for noise and transforms",
+    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband, spectral_subtraction, clock_drift, interpolation, alignment_error and room_decay; see each group for noise and transforms",
     "duration_s": 2,
     "base_frequencies_hz": [
       173,
@@ -33,8 +33,8 @@
   "pcm": "signed little-endian 16-bit, round-to-nearest-even; no dither; no per-file normalization",
   "listening": "Start at low device volume. No automatic playback. No formal listening study performed.",
   "generator_inputs": {
-    "codes/examples/generate_audio_samples.py": "10a5be3082e798663a951fa559c7cc45299cca6d8efd9713d1c5d25c67df50d1",
-    "codes/array_tutorial/audio_samples.py": "6cf969e54fa558a363959f170e48dd96840d3f43c66775611603cddb61eb62c5",
+    "codes/examples/generate_audio_samples.py": "1e5d6d7baad03d53b21ea71bff1665d5c263ffad1ad3efc695ab4edb057ebbb7",
+    "codes/array_tutorial/audio_samples.py": "49e85fecf52bf03486369a06daa4ed9a02d9929887dae80729634604f508f765",
     "codes/array_tutorial/aec.py": "70d69fcd523cff3028162a221d71ea6bd2254979dfe37479ad26f77ab74a5a7e",
     "codes/array_tutorial/aec_ipnlms.py": "86422a00df25293176e0bde8193c7e05ac7a1e5703660b56907024985978c0d4",
     "codes/array_tutorial/aec_rls.py": "f13c2018297e46f0b393ef52e04fad5f1d48ede00de8b37a80a4abf597a9305d",
@@ -47,6 +47,101 @@
     "codes/array_tutorial/geometry.py": "7e9c33e90101c41441cde659d288f0aa25be141e9cdbaaa9fcabee54b285f72a"
   },
   "groups": {
+    "room_decay": {
+      "parameters": {
+        "exercise_id": "E02-11",
+        "sample_rate_hz": 16000,
+        "duration_s": 2.5,
+        "samples_per_channel": 40000,
+        "source_seed": 2026092801,
+        "tail_seed": 2026092802,
+        "source": "0.08 times seeded unit-variance Gaussian samples with 10 ms linear edge fades; zero elsewhere",
+        "source_active_interval_samples": [
+          2400,
+          8800
+        ],
+        "source_fade_samples": 160,
+        "source_float64_le_sha256": "21142ee2298b4209c199ab6ab91879faa588dab98749ee623950863069a2710c",
+        "direct_arrival_sample": 192,
+        "direct_arrival_s": 0.012,
+        "tail_start_sample": 512,
+        "tail_start_s": 0.032,
+        "tail_length_samples": 19200,
+        "tail_duration_s": 1.2,
+        "tail_model": "z[n]*exp(-3*ln(10)*n/(fs*nominal_T60)), then normalize its total squared sum to 10^(-DRR/10)",
+        "shared_randomness": "the same tail Gaussian vector is used in all three conditions; conditions are not independent trials",
+        "reference": "room_decay_dry is the common source delayed by 192 samples (12 ms), matching every direct arrival",
+        "alignment": "known direct-path alignment; no fitted gain, delay or algorithm estimate",
+        "convolution": "zero-padded full FFT linear convolution; full nonzero tail fits in the 40000 retained samples",
+        "energy_interval_samples": [
+          0,
+          40000
+        ],
+        "energy_units": "sum of squared dimensionless digital samples, before common export gain and PCM16 quantization",
+        "edc": "reverse sum of squared RIR entries, normalized by that filter total; first remaining-energy ratio <= 1e-6",
+        "conditions": [
+          {
+            "name": "short_drr0",
+            "nominal_t60_s": 0.2,
+            "target_rir_drr_db": 0.0,
+            "direct_rir_energy": 1.0,
+            "tail_rir_energy": 1.0,
+            "measured_rir_drr_db": 0.0,
+            "rir_float64_le_sha256": "eaa897b6c103711bbb3fd26690d98e6da0461ae79037874259a04c1507f0386b",
+            "tail_float64_le_sha256": "39cfd810da5190a57b278fbbc4947d7d717f5509eab1f2abeadb0ff162590297",
+            "total_edc_first_minus60_sample": 3548,
+            "total_edc_first_minus60_absolute_s": 0.22175,
+            "total_edc_first_minus60_after_direct_s": 0.20975,
+            "tail_edc_first_minus60_sample": 3707,
+            "tail_edc_first_minus60_after_tail_start_s": 0.1996875,
+            "direct_output_energy": 39.347973099175064,
+            "tail_output_energy": 40.65807811811259,
+            "output_cross_energy": 1.1731655865149229,
+            "total_output_energy": 81.17921680380259
+          },
+          {
+            "name": "long_drr0",
+            "nominal_t60_s": 0.6,
+            "target_rir_drr_db": 0.0,
+            "direct_rir_energy": 1.0,
+            "tail_rir_energy": 1.0,
+            "measured_rir_drr_db": 0.0,
+            "rir_float64_le_sha256": "a2ee0940a99f943379bdc0d4f3ee11597dee0d8d2e50421e5116f846d5df8597",
+            "tail_float64_le_sha256": "052e407d50240bf4e93072e7be0073e35095f3b7d05ca3f00e1a5c4b1029ffa6",
+            "total_edc_first_minus60_sample": 9594,
+            "total_edc_first_minus60_absolute_s": 0.599625,
+            "total_edc_first_minus60_after_direct_s": 0.587625,
+            "tail_edc_first_minus60_sample": 10122,
+            "tail_edc_first_minus60_after_tail_start_s": 0.600625,
+            "direct_output_energy": 39.347973099175064,
+            "tail_output_energy": 41.152456841215496,
+            "output_cross_energy": 1.199174134624501,
+            "total_output_energy": 81.69960407501506
+          },
+          {
+            "name": "long_drr6",
+            "nominal_t60_s": 0.6,
+            "target_rir_drr_db": 6.0,
+            "direct_rir_energy": 1.0,
+            "tail_rir_energy": 0.2511886431509581,
+            "measured_rir_drr_db": 5.999999999999998,
+            "rir_float64_le_sha256": "02b0a5982ccaddb3579b00161ee1600d35bcf9a0ad5414ccd740bc440d4fe6ed",
+            "tail_float64_le_sha256": "cfa08840df213d307785a129236ec7bf989712df7da59f85486a678077ae45f0",
+            "total_edc_first_minus60_sample": 8995,
+            "total_edc_first_minus60_absolute_s": 0.5621875,
+            "total_edc_first_minus60_after_direct_s": 0.5501875,
+            "tail_edc_first_minus60_sample": 10122,
+            "tail_edc_first_minus60_after_tail_start_s": 0.600625,
+            "direct_output_energy": 39.347973099175064,
+            "tail_output_energy": 10.337029796273281,
+            "output_cross_energy": 0.6010107671698319,
+            "total_output_energy": 50.286013662618174
+          }
+        ]
+      },
+      "limits": "Seeded mathematical scalar filters, not physical room simulation, measured RIR, speech, T20/T30 fit or standard reverberation-time measurement. Nominal T60 controls the amplitude envelope; total-EDC threshold times also depend on DRR, onset, finite tail and this random draw. RIR component energy ratios do not equal finite convolved-signal ratios; the outputs contain direct/tail cross terms. No noise-removal algorithm or listening study is evaluated.",
+      "common_export_gain": 1.0
+    },
     "alignment_error": {
       "parameters": {
         "exercise_id": "E01-05",
@@ -606,6 +701,58 @@
     }
   },
   "files": [
+    {
+      "file": "room_decay_dry.wav",
+      "sha256": "b7e2c6345a9cbb5abd98f17db4bd50a4a42a77177ab998b0a0ed31df3081f114",
+      "group": "room_decay",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 40000,
+      "duration_s": 2.5,
+      "peak": 0.319427490234375,
+      "rms": 0.03136396229795642,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5246292192488964e-05
+    },
+    {
+      "file": "room_decay_short_drr0.wav",
+      "sha256": "8748b7d697cb42de1a35220232542e155d27926326e8076f7a2260ea18c69dea",
+      "group": "room_decay",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 40000,
+      "duration_s": 2.5,
+      "peak": 0.47503662109375,
+      "rms": 0.045049763957044055,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.525783583249292e-05
+    },
+    {
+      "file": "room_decay_long_drr0.wav",
+      "sha256": "5843f5d049b0e814df226e3233724e92790225629c952873a370035653f8d662",
+      "group": "room_decay",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 40000,
+      "duration_s": 2.5,
+      "peak": 0.412261962890625,
+      "rms": 0.04519393405124826,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258774250702378e-05
+    },
+    {
+      "file": "room_decay_long_drr6.wav",
+      "sha256": "35f79acf3ded59321de308c76aceaa75665ca2a29138a9d3f3c990214b01d0f1",
+      "group": "room_decay",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 40000,
+      "duration_s": 2.5,
+      "peak": 0.329559326171875,
+      "rms": 0.03545633778601035,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.52573539634458e-05
+    },
     {
       "file": "alignment_reference.wav",
       "sha256": "9f0774e8676a669124d9b80e776262ef97c42fedfc2b8fa1e74ddc2589406136",

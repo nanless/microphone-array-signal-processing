@@ -368,7 +368,7 @@ def fig_near_far_field():
     ax.annotate("幅度差 + 相位差\n(球面波)", xy=(1.6, 1.2), fontsize=FS_LABEL, color=C_GREEN)
     ax.set_xlabel("水平示意坐标（无量纲）", fontsize=FS_SMALL)
     ax.set_ylabel("竖直示意坐标（无量纲）", fontsize=FS_SMALL)
-    ax.set_title("(a) 近场模型：球面波，需联合估计距离与方向", fontsize=11)
+    ax.set_title("(a) 近场模型：球面波，响应依赖距离与方向", fontsize=11)
     ax.set_xlim(-3, 3); ax.set_ylim(-0.8, 4.8); ax.set_aspect("equal"); ax.grid(ls=":", alpha=0.5)
     ax = axes[1]
     # 斜入射平面波：传播方向 245°（声源在右上 65°，自正横起算 θ=25°）
@@ -1270,19 +1270,19 @@ def fig_room_acoustics():
     # 早期反射若干离散峰
     for dt, a in [(0.010, 0.55), (0.018, -0.4), (0.027, 0.3), (0.036, -0.22)]:
         rir[tau + int(dt * fs)] += a
-    fig, axes = plt.subplots(3, 1, figsize=(9.5, 12.0))
+    fig, axes = plt.subplots(3, 1, figsize=(9.5, 9.5))
     ax = axes[0]
     ax.plot(t * 1000, rir, color=C_BLUE, lw=0.7)
     ax.axvspan(0, 12, color="0.8", alpha=0.12)
-    ax.axvspan(12, 13, color=C_GREEN, alpha=0.24)
-    ax.axvspan(13, 92, color=C_ORANGE, alpha=0.15)
+    ax.axvspan(12, 92, color=C_ORANGE, alpha=0.15)
+    ax.plot(12, rir[tau], "o", color=C_GREEN, ms=5, zorder=5)
     ax.axvspan(92, 700, color=C_RED, alpha=0.11)
     ax.axvline(12, color="gray", ls="--", lw=0.9, alpha=0.8)
     ax.axvline(92, color="gray", ls="--", lw=0.9, alpha=0.8)
     ax.set_ylim(-2.6, 3.1)
-    ax.annotate("直达声\n（12 ms 到达）", xy=(12, 1.05), xytext=(16, 2.72), fontsize=FS_SMALL, color=C_GREEN,
+    ax.annotate("指定直达脉冲\n（12 ms；非全局最大峰）", xy=(12, 1.0), xytext=(16, 2.72), fontsize=FS_SMALL, color=C_GREEN,
                 arrowprops=dict(arrowstyle="->", color=C_GREEN))
-    ax.annotate("早期反射\n（直达后 0–80 ms）", xy=(55, 0.7), xytext=(105, 2.15), fontsize=FS_SMALL,
+    ax.annotate("早期区：离散反射 + 随机尾\n（直达后 0–80 ms）", xy=(55, 0.7), xytext=(180, 2.15), fontsize=FS_SMALL,
                 color=C_ORANGE, arrowprops=dict(arrowstyle="->", color=C_ORANGE))
     ax.annotate("晚期随机尾\n（本图指数衰减模型）", xy=(260, 0.25), xytext=(330, 1.5), fontsize=FS_SMALL,
                 color=C_RED, arrowprops=dict(arrowstyle="->", color=C_RED))
@@ -1296,12 +1296,12 @@ def fig_room_acoustics():
     realized_ms = t[crossing[0]] * 1000 if crossing.size else np.nan
     ax.plot(t * 1000, edb, color=C_PURPLE, lw=1.8)
     ax.axhline(-60, color="k", ls="--", alpha=0.5)
-    ax.axvline(T60 * 1000, color="0.45", ls=":", alpha=0.8)
+    ax.axvline((T60 + tau / fs) * 1000, color="0.45", ls=":", alpha=0.8)
     if np.isfinite(realized_ms):
         ax.axvline(realized_ms, color="k", ls="--", alpha=0.6)
-        ax.annotate(f"固定随机种子的 EDC 首次到 −60 dB：{realized_ms:.0f} ms\n"
-                    f"指数包络参数：名义 $T_{{60}}$={T60*1000:.0f} ms",
-                    xy=(realized_ms, -60), xytext=(205, -35), fontsize=FS_SMALL,
+        ax.annotate(f"EDC 首次 −60 dB：绝对时刻 {realized_ms:.0f} ms\n"
+                    f"距直达 {realized_ms-tau/fs*1000:.0f} ms；包络名义衰减 {T60*1000:.0f} ms",
+                    xy=(realized_ms, -60), xytext=(205, -21), fontsize=FS_SMALL,
                     arrowprops=dict(arrowstyle="->", color="k"))
     ax.set_ylim(-75, 2); ax.set_xlabel("时间 (ms)"); ax.set_ylabel("剩余能量 (dB)")
     ax.set_title("(b) 能量衰减曲线与混响时间 $T_{60}$", fontsize=11)
@@ -1312,7 +1312,7 @@ def fig_room_acoustics():
     direct = -20 * np.log10(d / dc)
     reverb = np.zeros_like(d)
     ax.plot(d, direct, color=C_GREEN, lw=1.8, label=r"直达声：$-20\log_{10}(d/d_c)$")
-    ax.plot(d, reverb, color=C_RED, lw=1.8, label="混响声参考：本图设为 0 dB")
+    ax.plot(d, reverb, color=C_RED, ls="--", lw=1.8, label="混响声参考：本图设为 0 dB")
     ax.axvline(dc, color="k", ls="--", alpha=0.6)
     ax.annotate("本子图设定 $d_c=1.0$ m\n两条曲线在此相等", xy=(dc, 0),
                 xytext=(1.7, 14), fontsize=FS_SMALL, arrowprops=dict(arrowstyle="->", color="k"))
@@ -1335,7 +1335,7 @@ def fig_stft_cov():
     fs = 16000
     t, sig = synth_speech(fs, 1.2, rng=rng)
     n_fft, hop = 512, 128
-    win = np.hanning(n_fft)
+    win = 0.5 - 0.5 * np.cos(2 * np.pi * np.arange(n_fft) / n_fft)
     frames = [sig[i:i + n_fft] * win
               for i in range(0, len(sig) - n_fft + 1, hop)]
     S = np.array([np.fft.rfft(fr) for fr in frames]).T  # F x T
@@ -1353,19 +1353,21 @@ def fig_stft_cov():
     ax.set_xlabel("时间 (ms)", fontsize=FS_LABEL); ax.set_ylabel("幅度", fontsize=FS_LABEL)
     ax.grid(ls=":", alpha=0.4)
     ax = axes[0, 1]
-    Sdb = 20 * np.log10(np.abs(S) + 1e-6)
-    ax.pcolormesh(np.arange(S.shape[1]) * hop / fs * 1000, np.fft.rfftfreq(n_fft, 1 / fs) / 1000,
-                  Sdb, cmap="viridis", shading="auto", vmin=Sdb.max() - 60, vmax=Sdb.max())
+    reference_amplitude = np.max(np.abs(S))
+    Sdb = 20 * np.log10(np.maximum(np.abs(S) / reference_amplitude, 1e-3))
+    mesh = ax.pcolormesh(np.arange(S.shape[1]) * hop / fs * 1000, np.fft.rfftfreq(n_fft, 1 / fs) / 1000,
+                        Sdb, cmap="viridis", shading="auto", vmin=-60, vmax=0)
+    fig.colorbar(mesh, ax=ax, shrink=0.8, label="相对全图峰值 (dB)")
     # 标出一个时频点（格子放大标出）
-    f0, fb = 60, 128          # 第 60 帧、约 2 kHz 频点
+    f0, fb = 60, 20          # 从0计：第60帧起点480ms，频点20为625Hz
     px, py = f0 * hop / fs * 1000, np.fft.rfftfreq(n_fft, 1 / fs)[fb] / 1000
     ax.plot(px, py, "x", color="w", ms=12, mew=2.8)
-    ax.annotate("一个格子：一个时频点 $(k,\\ell)$\n固定此格，取 $M$ 路复数谱\n组成一个快拍，见 (c)",
-                xy=(px, py), xytext=(350, 5.3), fontsize=FS_LABEL, color="w",
+    ax.annotate("时频点 $(k,\\ell)$\n同一格的 $M$ 路谱组成快拍\n(c)(d) 另用独立理论数据",
+                xy=(px, py), xytext=(100, 5.3), fontsize=FS_LABEL, color="w",
                 arrowprops=dict(arrowstyle="->", color="w", lw=1.5))
-    ax.set_ylim(0, 8); ax.set_xlabel("时间 (ms)", fontsize=FS_LABEL)
+    ax.set_ylim(0, 8); ax.set_xlabel("帧起点时间 (ms)", fontsize=FS_LABEL)
     ax.set_ylabel("频率 (kHz)", fontsize=FS_LABEL)
-    ax.set_title("(b) STFT 语谱图（单麦克风；格子为放大标出）", fontsize=FS_TITLE)
+    ax.set_title("(b) 单麦语谱图：周期 Hann 窗", fontsize=FS_TITLE)
     ax = axes[1, 0]
     M = 8
     R = np.zeros((M, M), dtype=complex)
@@ -1385,13 +1387,15 @@ def fig_stft_cov():
     colors = [C_RED if i < 2 else C_BLUE for i in range(M)]
     ax.bar(range(1, M + 1), np.maximum(evals_db, 0), bottom=np.minimum(evals_db, 0),
            color=colors, edgecolor="k")
+    ax.plot(np.arange(3, M + 1), evals_db[2:], "s", color=C_BLUE, ms=5,
+            markerfacecolor="white", zorder=5)
     ax.axhline(0, color=C_BLUE, ls="--", lw=1.2)
     ax.annotate("2个大特征值\n→ 信号子空间(2个源)", xy=(2, evals_db[1] - 1),
                 xytext=(3.0, 13), fontsize=FS_LABEL, color=C_RED,
                 arrowprops=dict(arrowstyle="->", color=C_RED))
     ax.annotate("6个小特征值≈噪声底(0 dB)\n→ 噪声子空间", xy=(6.5, 0), xytext=(3.2, 4.5),
                 fontsize=FS_LABEL, color=C_BLUE, arrowprops=dict(arrowstyle="->", color=C_BLUE))
-    ax.set_xlabel("特征值序号"); ax.set_ylabel("特征值 (dB)")
+    ax.set_xlabel("特征值序号"); ax.set_ylabel("相对噪声方差的特征值 (dB)")
     ax.set_ylim(-4, 21)
     ax.set_title("(d) (c) 的特征值谱：已知白噪声模型下的示意", fontsize=11)
     ax.grid(ls=":", alpha=0.4)
@@ -1940,7 +1944,7 @@ def fig_gcc_reverb():
 # 图4 时延 = 相位旋转：复数表示的几何直觉
 # ----------------------------------------------------------------------
 def fig_delay_phase():
-    fig, axes = plt.subplots(3, 1, figsize=(9.5, 12.0))
+    fig, axes = plt.subplots(3, 1, figsize=(9.5, 9.8))
     sound_speed = 343.0
     spacing = 0.04
     tau = spacing / sound_speed  # 4 cm 端射入射的最大麦间时延
@@ -1951,12 +1955,12 @@ def fig_delay_phase():
     ax.plot(t * 1e3, np.sin(2 * np.pi * f0 * t), color=C_BLUE, lw=2, label="原始信号 s(t)")
     ax.plot(t * 1e3, np.sin(2 * np.pi * f0 * (t - tau)), color=C_RED, lw=2, ls="--",
             label="延迟 τ 后 s(t−τ)")
-    arrow_start = 1.0
+    arrow_start = 0.625  # ms；原正弦的下降沿−1/√2，与延迟后的同相位点相连
     ax.annotate("", xy=(arrow_start + tau * 1e3, -0.707), xytext=(arrow_start, -0.707),
                 arrowprops=dict(arrowstyle="->", color="k", lw=1.5))
     ax.text(arrow_start + tau * 500, -1.15, "τ≈0.117 ms", fontsize=11, ha="center")
     ax.set_xlabel("时间 (ms)"); ax.set_ylabel("幅度")
-    ax.set_title("(a) 时域看延迟：整条波形向右平移", fontsize=11)
+    ax.set_title("(a) 1 kHz 正弦：同相位点向右平移", fontsize=11)
     ax.legend(fontsize=FS_SMALL, loc="upper right"); ax.grid(ls=":", alpha=0.5)
     ax.set_ylim(-1.5, 1.5)
     # (b) 复平面：相位旋转
@@ -1974,8 +1978,8 @@ def fig_delay_phase():
     ax.add_patch(arc)
     ax.annotate("", xy=(0.69, -0.39), xytext=(0.70, -0.18),
                 arrowprops=dict(arrowstyle="->", color="k", lw=1.2))
-    ax.text(1.05, 0.06, "原始 $S(f)$", fontsize=FS_LABEL, color=C_BLUE)
-    ax.text(0.05, -1.18, r"延迟后 $S(f)e^{-j2\pi f\tau}$", fontsize=FS_LABEL,
+    ax.text(1.05, 0.06, "归一化参考 1", fontsize=FS_LABEL, color=C_BLUE)
+    ax.text(0.05, -1.18, r"相对相位因子 $e^{-j2\pi f\tau}$", fontsize=FS_LABEL,
             color=C_RED)
     ax.text(0.98, -0.38, "2πfτ≈42°", fontsize=11, style="italic")
     ax.text(-2.25, 0.95, "延迟 τ 等价于复平面上\n顺时针转 2πfτ", fontsize=FS_LABEL, color=C_MAIN)
@@ -1988,15 +1992,15 @@ def fig_delay_phase():
     ax.plot(f / 1000, np.rad2deg(phase), color=C_BLUE, lw=2)
     for fk in [1000, 2000, 3000, 4000]:
         ax.plot(fk / 1000, np.rad2deg(-2 * np.pi * fk * tau), "o", color=C_RED, ms=6)
-    ax.annotate("1 kHz → −42°\n2 kHz → −84°\n转角与频率成正比\n斜率 = −2πτ", xy=(3.0, -125),
-                xytext=(3.8, -135), fontsize=FS_SMALL,
+    ax.annotate("1 kHz → −42°\n2 kHz → −84°\n本坐标斜率：\n−360000τ ≈ −41.98 °/kHz", xy=(3.0, -125),
+                xytext=(3.8, -153), fontsize=FS_SMALL,
                 arrowprops=dict(arrowstyle="->", color="k"))
     ax.set_xlabel("频率 (kHz)"); ax.set_ylabel("相位 (°)")
     ax.set_title("(c) 同一延迟在不同频率：相位-频率是直线", fontsize=11)
     ax.grid(ls=":", alpha=0.5)
     fig.suptitle("图4  时延为什么变成 $e^{-j2\\pi f\\tau}$：几何直觉\n"
                  "（4 cm 麦距；端射方向达到最大麦间时延 τ=d/c≈0.117 ms）", fontsize=12.5)
-    fig.tight_layout(rect=(0, 0, 1, 0.89), h_pad=3.5)
+    fig.tight_layout(rect=(0, 0, 1, 0.93), h_pad=2.0)
     save(fig, "fig04_delay_phase.png")
 
 
@@ -2021,7 +2025,8 @@ def fig_beampattern_anatomy():
     ax = axes[0]
     Bdb = pattern(0.5, 30)
     ax.plot(th, Bdb, color=C_BLUE, lw=1.8)
-    ax.axhline(-3, color="gray", ls="--", lw=1)
+    half_power_db = 10 * np.log10(0.5)
+    ax.axhline(half_power_db, color="gray", ls="--", lw=1)
     main_lobe = np.abs(np.sin(tr) - np.sin(np.deg2rad(30))) <= 2 / M
     right_sidelobe = ~main_lobe & (th > 30)
     sidelobe_index = np.argmax(np.where(right_sidelobe, Bdb, -np.inf))
@@ -2030,10 +2035,13 @@ def fig_beampattern_anatomy():
     ax.set_ylim(-40, 13); ax.set_xlim(-90, 90)
     # HPBW 实测
     i0 = np.argmax(Bdb)
-    left = np.where(Bdb[:i0] < -3)[0][-1]; right = i0 + np.where(Bdb[i0:] < -3)[0][0]
-    ax.annotate("", xy=(th[right], -3), xytext=(th[left], -3),
+    left = np.where(Bdb[:i0] < half_power_db)[0][-1]
+    right = i0 + np.where(Bdb[i0:] < half_power_db)[0][0]
+    left_angle = np.interp(half_power_db, Bdb[left:left+2], th[left:left+2])
+    right_angle = np.interp(half_power_db, Bdb[right-1:right+1][::-1], th[right-1:right+1][::-1])
+    ax.annotate("", xy=(right_angle, half_power_db), xytext=(left_angle, half_power_db),
                 arrowprops=dict(arrowstyle="<->", color=C_RED, lw=1.5))
-    ax.text(0.03, 0.96, f"HPBW ≈ {th[right]-th[left]:.1f}°\n两侧 −3 dB 交点间角宽",
+    ax.text(0.03, 0.96, f"HPBW ≈ {right_angle-left_angle:.1f}°\n两侧 −3.01 dB 交点间角宽",
             transform=ax.transAxes, ha="left", va="top", fontsize=FS_LABEL, color=C_RED,
             bbox=dict(fc="white", ec=C_RED, lw=0.7, alpha=0.9, boxstyle="round,pad=0.25"))
     ax.annotate("30° 主瓣", xy=(30, 0), xytext=(13, 7), fontsize=FS_LABEL,
@@ -2051,7 +2059,7 @@ def fig_beampattern_anatomy():
     ax.grid(ls=":", alpha=0.4)
     # (b) 栅瓣
     ax = axes[1]
-    ax.plot(th, pattern(0.5, 60), color=C_BLUE, lw=1.8, ls="--", label="d = λ/2（安全）")
+    ax.plot(th, pattern(0.5, 60), color=C_BLUE, lw=1.8, ls="--", label="d = λ/2（指向60°）")
     ax.plot(th, pattern(1.0, 60), color=C_RED, lw=2.5, label="d = λ（超半波长）")
     ax.axvline(-7.7, color="gray", ls=":", lw=1.2, alpha=0.8)
     ax.set_ylim(-40, 13); ax.set_xlim(-90, 90)
