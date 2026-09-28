@@ -1,12 +1,14 @@
 """Create a separate free-field moving-source listening fixture and truth file.
 
-This synthetic example is not part of the 60-WAV main manifest and is not a
+This synthetic example is separate from the main audio manifest and is not a
 room recording. All exported WAVs receive one common gain.
 """
 
 from __future__ import annotations
 
+import argparse
 import hashlib
+import platform
 import json
 from pathlib import Path
 
@@ -14,6 +16,7 @@ import numpy as np
 
 from codes.array_tutorial.audio_samples import pcm16_bytes
 from codes.array_tutorial.moving_source import free_field_array, synthetic_source
+from codes.array_tutorial.conventions import finite_real_scalar
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -21,8 +24,11 @@ OUT = ROOT / "codes" / "moving_audio"
 
 
 def build_fixture(sample_rate: int = 16000, duration_seconds: float = 2.0) -> tuple[dict[str, np.ndarray], dict]:
+    sample_rate = finite_real_scalar(sample_rate, "sample_rate")
+    duration_seconds = finite_real_scalar(duration_seconds, "duration_seconds")
     if sample_rate != 16000 or duration_seconds != 2.0:
         raise ValueError("this fixed experiment uses 16 kHz and 2 s")
+    sample_rate = int(sample_rate)
     times = np.arange(int(sample_rate * duration_seconds)) / sample_rate
     microphones = np.array([[-0.05, 0.0], [0.05, 0.0]])
     start = (-0.8, 1.5)
@@ -64,20 +70,46 @@ def build_fixture(sample_rate: int = 16000, duration_seconds: float = 2.0) -> tu
     return signals, metadata
 
 
-def generate(out_dir: Path = OUT) -> dict:
+SOURCE_PATHS = (
+    'codes/examples/moving_source_audio.py', 'codes/array_tutorial/moving_source.py',
+    'codes/array_tutorial/audio_samples.py', 'codes/array_tutorial/conventions.py',
+)
+
+
+def generate(out_dir: Path = OUT, *, check: bool = False) -> dict:
+    """Generate assets or strictly check them in memory without writing."""
+    out_dir = Path(out_dir)
     signals, metadata = build_fixture()
-    out_dir.mkdir(parents=True, exist_ok=True)
-    files = {}
+    assets, files = {}, {}
     for stem, waveform in signals.items():
         name = f"{stem}.wav"
         data = pcm16_bytes(waveform, metadata["sample_rate_hz"])
-        (out_dir / name).write_bytes(data)
+        assets[name] = data
         files[name] = {"channels": int(waveform.shape[0]), "samples_per_channel": int(waveform.shape[1]),
                        "sha256": hashlib.sha256(data).hexdigest()}
     metadata["files"] = files
-    (out_dir / "MANIFEST.json").write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + "\n")
+    metadata["source_sha256"] = {name: hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in SOURCE_PATHS}
+    metadata["environment"] = {"python": platform.python_version(), "numpy": np.__version__, "platform": platform.platform()}
+    metadata["truth_time_axis"] = "emission-event clock: path position at u and both microphone travel times for this same u; not simultaneous receiver samples"
+    metadata["propagation_scope"] = "assigned retarded-time 1/r pressure model; no moving-monopole radiation-amplitude correction"
+    assets['MANIFEST.json'] = (json.dumps(metadata, ensure_ascii=False, indent=2, allow_nan=False)+'\n').encode()
+    if check:
+        for name, data in assets.items():
+            path = out_dir/name
+            if not path.is_file() or path.read_bytes() != data:
+                raise ValueError(f'missing or stale moving-source asset: {path}')
+    else:
+        out_dir.mkdir(parents=True, exist_ok=True)
+        for name, data in assets.items():
+            (out_dir/name).write_bytes(data)
     return metadata
 
 
 if __name__ == "__main__":
-    print(json.dumps(generate(), ensure_ascii=False, indent=2))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--output', type=Path, default=OUT)
+    parser.add_argument('--check', action='store_true')
+    args = parser.parse_args()
+    report = generate(args.output, check=args.check)
+    print(json.dumps({'mode': 'verified' if args.check else 'generated',
+                      'files': list(report['files'])}, ensure_ascii=False, indent=2))

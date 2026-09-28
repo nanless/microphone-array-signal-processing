@@ -418,16 +418,23 @@ class BuildHelpersTest(unittest.TestCase):
         )
 
     def test_figure_semantics_accept_any_reuse_and_reject_mismatch_or_orphan(self):
-        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 44)]
+        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 45)]
         refs.extend([("图1 复用", "fig01_x.png", 1),
                      ("图23 复用", "fig23_x.png", 23)])
-        names = [f"fig{i:02d}_x.png" for i in range(1, 44)]
+        names = [f"fig{i:02d}_x.png" for i in range(1, 45)]
         self.assertEqual(quality_check.figure_inventory_issues(refs, names), [])
         bad_refs = list(refs)
         bad_refs[0] = ("图2 错配", "fig01_x.png", 1)
         issues = quality_check.figure_inventory_issues(bad_refs, names + ["fig39_orphan.png"])
         self.assertTrue(any("不匹配" in item for item in issues))
         self.assertTrue(any("孤立 PNG" in item for item in issues))
+
+    def test_source_control_characters_catch_damaged_tex(self):
+        self.assertEqual(quality_check.source_control_character_issues("正文\n\t数学\r\n"), [])
+        issues = quality_check.source_control_character_issues("正文\n$"+chr(7)+"pprox$\n")
+        self.assertEqual(len(issues),1)
+        self.assertIn("U+0007",issues[0])
+        self.assertIn("第2行",issues[0])
 
     def test_formula_semantics_valid_duplicate_missing_and_arithmetic_near_miss(self):
         valid = {"02_x.md": "$$x=1\\tag{2-1}$$\n见式(2-1)。\n算术 (10-1) 不是引用。"}

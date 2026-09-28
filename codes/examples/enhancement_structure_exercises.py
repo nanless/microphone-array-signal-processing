@@ -144,10 +144,12 @@ def imm_mix(probabilities, transition, means, covariances):
     Unreachable destination modes are rejected instead of dividing by zero.
     Angular states must already be unwrapped in a common local chart.
     """
-    mu = _real(probabilities, "probabilities")
-    p = _real(transition, "transition")
-    x = _real(means, "means")
-    cov = _real(covariances, "covariances")
+    from codes.array_tutorial.conventions import finite_real_array
+    from codes.array_tutorial.tracking import _checked_covariance
+    mu = finite_real_array(probabilities, "probabilities")
+    p = finite_real_array(transition, "transition")
+    x = finite_real_array(means, "means")
+    cov = finite_real_array(covariances, "covariances").copy()
     if (mu.ndim != 1 or mu.size == 0 or not np.all(np.isfinite(mu))
             or np.any(mu < 0) or not np.isclose(mu.sum(), 1, rtol=1e-12, atol=1e-12)):
         raise ValueError("probabilities must be a finite probability vector")
@@ -159,11 +161,8 @@ def imm_mix(probabilities, transition, means, covariances):
             or not np.all(np.isfinite(x)) or cov.shape != (n, x.shape[1], x.shape[1])
             or not np.all(np.isfinite(cov))):
         raise ValueError("means and covariances must have compatible finite shapes")
-    for matrix in cov:
-        _hermitian(matrix, "covariance", positive=False)
-        scale = float(np.max(np.abs(matrix)))
-        if np.linalg.eigvalsh(matrix / scale if scale else matrix).min() < 0:
-            raise ValueError("covariances must be positive semidefinite")
+    for i, matrix in enumerate(cov):
+        cov[i] = _checked_covariance(matrix, "mode covariance")
     prior = mu @ p
     if np.any(prior <= 0):
         raise ValueError("each destination mode must have positive prior mass")

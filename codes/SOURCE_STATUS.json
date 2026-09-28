@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "lock_sha256": "0b0cd3a52f57b3a59e08bbdfca543376b3ae67682e9dc98e8cbe27432e41e8b5",
+  "lock_sha256": "05a32dd34c4ffe9ce7bc8f2b9aa5cf8d265d913b4a0dd89ab30813f3bb4c559a",
   "projects": [
     {
       "id": "pyroomacoustics",
@@ -3544,6 +3544,11 @@
         "!**/*.weights"
       ],
       "source_selection_verified": true
+    },
+    {
+      "id": "neural-srp",
+      "revision": "0ec639f028987ca3d9d3764331f6d65ff455f9a8",
+      "status": "index_only"
     }
   ]
 }

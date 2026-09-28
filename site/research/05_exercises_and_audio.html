@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>章节代码练习与音频实验 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="b1acdf28f221"><style>
+<meta name="source-digest" content="6a8206ac3b4f"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -101,6 +101,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-30-1">30.1 输入与实际执行范围</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-30-2">30.2 拼接、播放与评分</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-30-3">30.3 不确定时拒绝猜测</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-eb5a66336a">31. 移动宽带源：从传播时差到定位与缺测追踪</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-31-1">31.1 连续源、发射时刻与接收时刻</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-31-2">31.2 定位器看到什么，状态属于哪个时刻</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-31-3">31.3 PCM 与未量化指标分开计算</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-31-4">31.4 如何复算与检查边界</a></li>
 </ul>
 <div class="chap"><a href="../01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
 <div class="chap"><a href="../02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
@@ -159,15 +164,22 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-30-1">30.1 输入与实际执行范围</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-30-2">30.2 拼接、播放与评分</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-30-3">30.3 不确定时拒绝猜测</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-eb5a66336a">31. 移动宽带源：从传播时差到定位与缺测追踪</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-31-1">31.1 连续源、发射时刻与接收时刻</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-31-2">31.2 定位器看到什么，状态属于哪个时刻</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-31-3">31.3 PCM 与未量化指标分开计算</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-31-4">31.4 如何复算与检查边界</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="章节代码练习与音频实验" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-c621965c02">章节代码练习与音频实验</h1>
 <p>先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。</p>
-<p>本页索引 185 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
+<p>本页索引 195 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
 <p>E06-07～E06-20 使用无量纲回声模型检查 AEC 的计算与边界，其中 E06-11～20 可用精确答案程序核对。第 15、16 节另提供参数不同的合成音频；试听文件本身不是题目真值。</p>
-<p>第 3～11、13～16、18、21～30 节对应主清单的 98 个数学合成样本。第 17 节的 18 个房间白噪声合成样本使用独立清单；第 12 节使用另行授权的真实同步录音。三类音频的来源和可作的比较不同，试听前先查看各节的条件。</p>
+<p>第 3～11、13～16、18、21～30 节对应主清单的 98 个数学合成样本。第 17 节的 18 个房间白噪声合成样本使用独立清单；第 12 节使用另行授权的真实同步录音。第31节新增2份从PCM形成定位观测的追踪样本，也使用独立清单。不同音频的来源和可作的比较不同，试听前先查看各节的条件。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="1-按章节运行" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-08633b42fc">1. 按章节运行</h2>
 <p>在仓库根目录执行，依赖沿用本书环境。E04-12会导入绘图脚本中的插值函数，因此还使用项目已有的Matplotlib；该调用不生成图片或写文件：</p>
-<pre><code class="language-bash">.venv/bin/python -m codes.examples.chapter08_experiments
+<pre><code class="language-bash">.venv/bin/python -m codes.examples.chapter09_experiments
+.venv/bin/python -m codes.examples.chapter09_tracking_audio --check
+.venv/bin/python -m codes.examples.chapter08_experiments
 .venv/bin/python -m codes.examples.chapter07_experiments
 .venv/bin/python -m codes.examples.chapter06_experiments
 .venv/bin/python -m codes.examples.chapter01_experiments
@@ -285,6 +297,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>第 9 章 E09-01～06</td>
 <td>缺测、环绕、粒子、两类过程噪声、新息门控与交叉身份错配</td>
 <td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_enhancement.py">增强练习</a>（01～05）；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/tracking_crossing_dropout_demo.py">追踪交叉与限速</a>（06）</td>
+</tr>
+<tr>
+<td>第 9 章 E09-10～19</td>
+<td>EKF一步、无迹矩、圆周歧义与正先验支持、JPDA方差、人数分布、OSPA/GOSPA、固定延迟平滑、单位换算、过程噪声及PCM观测追踪</td>
+<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/chapter09_experiments.py">追踪逐步实验</a>；音频独立见§31</td>
 </tr>
 <tr>
 <td>第 10 章 E10-01～14</td>
@@ -1174,6 +1191,61 @@ $$</p>
 <p>全静音或去均值后为常量的重叠返回 <code>low_energy_overlap</code>；两槽波形相同会产生同分，返回 <code>ambiguous_assignment</code>；匹配相关不足返回 <code>weak_correlation</code>。这些情况的排列为 <code>None</code>，不能把枚举中的第一个排列伪装成确定身份。</p>
 <p>函数只估计排列，不校正极性、增益、时间偏移，也不识别注册说话人。单个可靠重叠不保证静音后重新出现、三个以上声源、串音突变或长时间身份连续。算法看到重叠样本后才能比较，本组是离线两块演示，没有测量实时延迟或人工听感。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_css_overlap.py">独立测试</a>用正交四点向量检查排列和不确定边界，用解析串音模型检查拼接，用读回 PCM 的平方相关恒等式重新计算分数；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_chapter08_experiments.py">练习测试</a>另核对 $20/101$ 的相关锚点。</p>
+<span id="sec-44" class="anchor-alias" aria-hidden="true"></span><span id="31-移动宽带源从传播时差到定位与缺测追踪" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-eb5a66336a">31. 移动宽带源：从传播时差到定位与缺测追踪</h2>
+<p>本组由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/chapter09_tracking_audio.py"><code>chapter09_tracking_audio.py</code></a>生成到独立目录 <code>codes/tracking_audio/</code>，包含两份WAV及<a href="../tracking_audio/MANIFEST.json">参数、逐帧状态与评分清单</a>。两个文件都是16 kHz、2 s的数学合成音频；参考为单声道，观测为双声道。它们与既有三个移动源文件、主音频清单分别管理。</p>
+<p><strong>试听前先调低音量。</strong> 本组展示运动传播、源静音和传感器噪声。追踪器输出角度、角速度和协方差，不输出增强波形，因此没有把角度序列加工成所谓“追踪后音频”。本文只报告客观计算与 PCM 读回，未进行人工听感评价。</p>
+<p><a href="../tracking_audio/source.wav">源参考</a><audio class="audio-sample" controls preload="none" aria-label="源参考" src="../tracking_audio/source.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../tracking_audio/array_noisy.wav">带噪双麦观测</a><audio class="audio-sample" controls preload="none" aria-label="带噪双麦观测" src="../tracking_audio/array_noisy.wav">请使用上方 WAV 链接下载。</audio></p>
+<span id="sec-45" class="anchor-alias" aria-hidden="true"></span><span id="311-连续源发射时刻与接收时刻" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-31-1">31.1 连续源、发射时刻与接收时刻</h3>
+<p>源由 32 个正弦相加，频率依次为 300、400、……、3400 Hz，每个分量幅度为 $1/\sqrt{32}$。相位由种子 9001 的 PCG64 随机流在 $[-\pi,\pi)$ 抽取；同一随机流接着按声道优先的顺序产生两路各 32000 点高斯噪声。噪声在共同导出增益之前的标准差为 0.01，各通道独立。</p>
+<p>包络定义在<strong>源的发射时轴</strong>：首末各 20 ms 线性淡入、淡出；0.80～0.82 s 淡出至零，0.82～1.08 s 保持零，1.08～1.10 s 恢复。只有源停止发声，传感器噪声仍在。接收端窗口既有传播延迟，又可能跨过包络边界，不能把发射时轴的静音区间直接当成定位器的缺测区间。</p>
+<p>两麦坐标为 $(-0.05,0)$ m 与 $(0.05,0)$ m，源从 $(-0.8,1.5)$ m 以 $(0.8,0)$ m/s 匀速运动，声速为 343 m/s。每个接收样本先解第9章式(9-27)的迟滞发射时刻，再求连续源波形并乘指定的 $1/r$ 压力增益。该模型不包含房间反射、麦克风方向性或完整运动单极子的辐射幅度修正，不是设备录音。</p>
+<p>源参考与双麦观测共用一个导出增益，取两个文件未量化峰值最大者的倒数再乘 0.7。实际增益保存在清单的 <code>common_export_gain</code> 中；不逐文件归一化。导出为小端交织 PCM16，按乘 32768 后四舍五入量化，读回时除以 32768。</p>
+<span id="sec-46" class="anchor-alias" aria-hidden="true"></span><span id="312-定位器看到什么状态属于哪个时刻" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-31-2">31.2 定位器看到什么，状态属于哪个时刻</h3>
+<p>每帧长 512 点、步长 160 点，共 197 帧。起始采样编号为 $n_0$ 时，观测与滤波状态的时间标记为 $(n_0+255.5)/16000$ s，即离散采样窗的中心；最早可用时刻为 $(n_0+512)/16000$ s，即半开区间的整个块已到齐。两者相差 16.03125 ms，不包含额外计算、调度或消息传输延迟。</p>
+<p>检测器先对未加窗的双声道块计算均方根。为保持固定门限的量纲，PCM 分析只除去清单中已知的共同导出增益；它不根据当前块重新归一化。RMS 严格大于 0.04 时才执行 GCC-PHAT，否则记为缺测。这个规则只读取观测样本，不读取源的静音真值。</p>
+<p>通过能量门的块乘 <code>numpy.hanning(512)</code> 对称窗，再调用 <code>gcc_phat(通道1, 通道0)</code>，限制最大时差为 $0.1/343$ s，并作三点抛物线插值。返回符号为 $\tau_{10}=t_1-t_0$；远场角度换算使用 $\arcsin(-343\tau_{10}/0.1)$，正角从正 $y$ 轴转向正 $x$ 轴。若插值结果超出反正弦的物理域，记为缺测，不把结果强行截成端射角。</p>
+<p>首次有效观测把 Kalman 状态初始化为“观测角度、零角速度”，协方差为 $\operatorname{diag}(4,400)$，分别对应度平方与角速度方差。随后每 10 ms 先预测，再在有有效观测时更新。测量方差取 $R=4\ \mathrm{deg}^2$；连续白角加速度谱密度取 $q=100\ \mathrm{deg}^2/\mathrm{s}^3$，由实际步长生成 $Q$。这些是教学配置，没有用设备数据标定。缺测时仅预测；返回状态中的 <code>state_phase</code> 区分初始化、后验和纯预测。</p>
+<p>这组重叠窗口的定位误差相关，固定 $R$ 又是指定值，所以图中的角度方差不能直接宣称为经过校准的真实误差覆盖率。实验也没有执行轨迹出生、身份识别或波束形成。</p>
+<span id="sec-47" class="anchor-alias" aria-hidden="true"></span><span id="313-pcm-与未量化指标分开计算" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-31-3">31.3 PCM 与未量化指标分开计算</h3>
+<p>评分真值按接收窗中心求到阵列中心的迟滞发射时刻，再计算该发射位置相对正 $y$ 轴的方位。时差真值则比较<strong>同一次发射事件</strong>到两麦的传播时间。有限窗内源仍在运动，GCC 的单个时差是局部近似；远场反正弦换算也不等同于精确近场几何。因此，方向误差不能全部解释成滤波器本身的误差。</p>
+<p>实际 PCM 读回后重新运行 RMS 门、GCC-PHAT 和 Kalman。结果为 173 帧有观测、24 帧缺测；缺测窗中心从 0.83596875 s 到 1.06596875 s。173 帧中的首帧用于初始化，其余有效帧才执行观测更新。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">数据与统计区间</th>
+<th scope="col" style="text-align: right;">原始定位角 RMSE（度）</th>
+<th scope="col" style="text-align: right;">Kalman 角 RMSE（度）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>未量化，173 个相同有效观测帧</td>
+<td style="text-align: right;">2.806401</td>
+<td style="text-align: right;">1.155576</td>
+</tr>
+<tr>
+<td>PCM，173 个相同有效观测帧</td>
+<td style="text-align: right;">2.822620</td>
+<td style="text-align: right;">1.150540</td>
+</tr>
+<tr>
+<td>未量化，24 个缺测帧</td>
+<td style="text-align: right;">无观测，不评分</td>
+<td style="text-align: right;">0.370061</td>
+</tr>
+<tr>
+<td>PCM，24 个缺测帧</td>
+<td style="text-align: right;">无观测，不评分</td>
+<td style="text-align: right;">0.352571</td>
+</tr>
+</tbody>
+</table></div>
+<p>这是一个固定输入序列，未对多个房间、轨迹或噪声实现重复抽样，不能据此推出普遍的改善率。量化会改变弱频谱分量，经 PHAT 归一化后可能改变插值峰；因此两条分析链的数值并不完全相同。清单分别保留 <code>float_analysis</code> 和 <code>pcm_analysis</code>，每条链都有逐帧有效标记、角度、时差、状态方差和评分分母。</p>
+<span id="sec-48" class="anchor-alias" aria-hidden="true"></span><span id="314-如何复算与检查边界" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-31-4">31.4 如何复算与检查边界</h3>
+<p>从仓库根目录运行 <code>.venv/bin/python -m codes.examples.chapter09_tracking_audio</code> 生成这组三文件；运行同一命令并加 <code>--check</code> 时只在内存重算、读取并比对资产，不改写文件。生成器记录直接依赖源文件摘要、Python/NumPy 与平台信息；源代码或发布数据失配时检查失败。跨环境字节不一致应按清单核查原因，不能通过重写文件伪造检查成功。</p>
+<p><a href="../09_source-tracking.html#e09-19">E09-19</a>通过<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/chapter09_experiments.py"><code>chapter09_experiments.py</code></a>返回本组关键结果，其余新题分别检验 EKF、UT、圆周均值、关联后验混合、人数分布、集合指标、固定延迟平滑、单位转换与过程噪声合成。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_tracking_audio.py">音频独立回归</a>用迟滞时间的二次方程解核查 Newton 结果，以正弦加法恒等式重造量化采样，重新计算 PCM 的分母与误差，并验证窗末之后的样本不能影响已经产生的状态。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_tracking_boundaries.py">状态边界回归</a>另测负方差、合法奇异矩阵、极大角度、粒子正先验支持、失败时状态与随机流不变，以及旧三个移动源 WAV 的字节保持。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

@@ -650,5 +650,18 @@
       "samples_per_channel": 32000,
       "sha256": "fef25b5d5cab1e16278cffedd4202503fe88ea405babba66cd0e4c21219f576b"
     }
-  }
+  },
+  "source_sha256": {
+    "codes/examples/moving_source_audio.py": "0341374a443809e67452db4c7e2a01d474ca676252b2bf53b484360383161936",
+    "codes/array_tutorial/moving_source.py": "3317587312c90a97b351a3e15c8fa802e207dd06cff1281b9fce4ca255760d28",
+    "codes/array_tutorial/audio_samples.py": "f953a4075ad122b35c2b6d78f3f0689dd3ab30f02c159ef4eb241122ff764c45",
+    "codes/array_tutorial/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385"
+  },
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O"
+  },
+  "truth_time_axis": "emission-event clock: path position at u and both microphone travel times for this same u; not simultaneous receiver samples",
+  "propagation_scope": "assigned retarded-time 1/r pressure model; no moving-monopole radiation-amplitude correction"
 }

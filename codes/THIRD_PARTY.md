@@ -1,6 +1,6 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 90 个 Git 上游项目；已在 `codes/upstream/_downloads/` 取得 79 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。2026-09-28 离线核验 78 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 11 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 91 个 Git 上游项目；已在 `codes/upstream/_downloads/` 取得 79 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。2026-09-28 离线核验 78 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 12 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”只说明来源、提交、工作区状态和指定入口符合清单，不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -51,7 +51,7 @@ SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构�
 | [doatools](https://github.com/morriswmz/doatools.py/tree/9469db201e0418aef6b97583ef54b6fec2769502) | 源数估计、root-MUSIC、稀疏定位与下界 | MIT | 已取得独立源码 |
 | [sound-field-analysis](https://github.com/AppliedAcousticsChalmers/sound_field_analysis-py/tree/4b03ee123d98370c55f744c4f8d7c955fbc099f1) | 球谐变换、径向滤波及球阵声场 | MIT | 已取得独立源码 |
 | [spherical-array-processing](https://github.com/polarch/Spherical-Array-Processing/tree/f192aac652b023ee4ab8673adce20ec13bf5450c) | 球谐编码、SH-MVDR/LCMV/MUSIC/ESPRIT | BSD-3-Clause | 已取得独立源码 |
-| [spatial-audio-framework](https://github.com/leomccormack/Spatial_Audio_Framework/tree/18fd5aba46e20787b51f28f7197a68506c965c07) | C/C++ 球阵处理、功率图、HRIR/HRTF 与可选追踪 | ISC core; GPL-2.0 optional modules | 已取得独立源码 |
+| [spatial-audio-framework](https://github.com/leomccormack/Spatial_Audio_Framework/tree/18fd5aba46e20787b51f28f7197a68506c965c07) | C/C++ 球阵处理、功率图、HRIR/HRTF 与可选追踪 | ISC core；本轮saf_tracker文件头GPL-2.0-or-later，其他模块逐文件核对 | 已取得独立源码 |
 | [libmysofa](https://github.com/hoene/libmysofa/tree/6cc5b15a73e9bd97810d03767082edda7f315881) | SOFA读取、HRIR方向插值与归一化接口 | BSD-3-Clause，第三方源码声明分别保留 | 已取得源码子集；未编译或数值运行，不含SOFA测量数据 |
 | [pyfar](https://github.com/pyfar/pyfar/tree/0bfe1e8b7d71ab83edd3ea3b5fab7b28761d114a) | 指数扫频、频带受限谱反卷积、信号与频谱单位接口 | MIT，保留作者声明；测量数据许可另核 | v0.8.1固定源码已取得；未安装、未运行或实机测量 |
 | [frida-original](https://github.com/LCAV/FRIDA/tree/ff5d51e498805b862c342dd216ccfffb22444b7f) | FRIDA 原论文仿真和录音实验 | MIT | 已取得独立源码 |
@@ -181,7 +181,7 @@ StructureFromSound保存在Git忽略的`codes/upstream/_downloads/structure-from
 | [HARKTOOL5 3.5.0](https://hark.jp/download/source-code/) | 独立归档锁定 README、debian 许可与变更、CMake、src、python 和两个文档源；不取生成文档目录 | HARK License v2.0，研究、开发、教育和学术用途受原文约束，商业用途另行授权；不是普通宽松开源许可。未编译或测设备 |
 | [Infineon AE 配置](https://github.com/Infineon/mtb-example-psoc-edge-ae-application/tree/955a61090acf7caddd75fc74161fc0fb40aa7ae5) | `infineon-ae-config`：仅 GeneratedSource 下配置 C/H 与根 LICENSE | 两个文件逐文件 Apache-2.0；根 EULA 保留供核对，应用包装代码、配置器项目和算法核心不在取得范围内；未构建或刷写 |
 
-HARK 不属于 Git 锁表的 84 项，另见 [ARCHIVE_SOURCES.lock.json](ARCHIVE_SOURCES.lock.json) 和由工具生成的 [ARCHIVE_SOURCE_STATUS.json](ARCHIVE_SOURCE_STATUS.json)。下载采用官方 `.dsc` 公布的固定 SHA-256，来源核实于2026-09-28；归档与源码放在忽略目录，不随本书 Git 提交重新分发。Infineon 已取得三个登记文件并通过固定提交、来源、清洁工作树和筛选范围核验；取得的配置数组不能重现闭源算法核心。
+HARK 不属于 Git 项目计数，另见 [ARCHIVE_SOURCES.lock.json](ARCHIVE_SOURCES.lock.json) 和由工具生成的 [ARCHIVE_SOURCE_STATUS.json](ARCHIVE_SOURCE_STATUS.json)。下载采用官方 `.dsc` 公布的固定 SHA-256，来源核实于2026-09-28；归档与源码放在忽略目录，不随本书 Git 提交重新分发。Infineon 已取得三个登记文件并通过固定提交、来源、清洁工作树和筛选范围核验；取得的配置数组不能重现闭源算法核心。
 
 ### 第4章固定实现复核（2026-09-28）
 
@@ -227,3 +227,21 @@ NARA、ESPnet、BTK20 与 GSS 的 WPE 入口已有本地固定源码。详见[�
 [mfFCA 作者源码](https://github.com/nttcslab-sp/mfFCA/tree/1d6b422fc56f5f9ef612fd87ae1402e1311c5c3c)的固定版本已原样取得到本地独立目录 `codes/upstream/_downloads/mffca/`，只选择9个许可、说明、Python与合成实验notebook文件，不取录音。其 `LICENCE.txt` 是NTT内部测试、分析和评估协议，禁止修改与再分发；本书不复制其源码进公开Git，也不把它称为宽松许可证开源软件。已取得不等于已运行多帧协方差训练或论文语音实验，逐算法解释见[增强研究](research/02_aec_wpe_separation.md)。
 
 PRA的AuxIVA、ILRMA、FastMNMF/FastMNMF2、TRINICON，ssspy的回投影，以及GSS活动约束按固定版本分别核查。原接口的短输入结果、提取函数的受控诊断与静态神经模型阅读是不同证据，不互相替代；上游边界不会通过改写缓存来隐藏。本书的严格活动门控、数值保护和双槽CSS关联有自己的实现范围，不称为官方整链复现。
+
+
+### 第9章追踪源码与受限研究归档（2026-09-28）
+
+[固定接口诊断](reports/tracking_upstream_interfaces.json)分别记录 FilterPy 原包实际调用、Stone Soup 原方法提取调用和静态源码核对。
+这些层级不能合并成“整库已验证”；外部代码保持原状，教学实现独立修正。完整输入和差异解释见[追踪研究](research/01_spatial_and_tracking.md)。
+
+| 来源与固定范围 | 本地状态 | 许可与解释边界 |
+|---|---|---|
+| [Vo RFS tracking toolbox](https://ba-tuong.vo-au.com/codes.html)，`vo-rfs-tracking-updated` | 作者ZIP共565949字节；已取得62个选定MATLAB/C源码及readme，逐字节核对通过；没有执行MATLAB或编译MEX | 包readme限学术/研究用途，逐文件声明保留；不能概括为可自由再分发的开源。选集只含线性高斯CPHD、GLMB、LMB、joint变体及直接公共函数，不含预编译MEX、图或数据 |
+| [SAF tracker](https://github.com/leomccormack/Spatial_Audio_Framework/tree/18fd5aba46e20787b51f28f7197a68506c965c07/framework/modules/saf_tracker) | 既有固定源码增加tracker和MEX包装入口核查，未编译执行 | 被核查tracker文件头为GPL-2.0-or-later；RBMCDA用粒子表示关联等离散变量，给定关联后用Kalman处理连续位置，不等于普通位置粒子滤波 |
+| [Neural-SRP](https://github.com/egrinstein/neural_srp/tree/0ec639f028987ca3d9d3764331f6d65ff455f9a8) | 仅固定来源索引与有限选型候选；未获取源码/权重或运行 | 未建立代码许可；论文的CC BY不能代替仓库许可。训练/评测源数、阵列和任务边界不可由网络结构外推 |
+
+Vo归档SHA-256为`fb22c9edecb56049b7f8ede1e1522384f0c4e6bfb5e5577f3bd482f6367ef46a`。
+配套descriptor是作者下载页的固定快照，摘要为`a4903db625b19ed77c69b495b9655257bd3b1e7ebd3fe5d27bfcec52ef6d2984`；
+这两个值均为本次取得后本地计算，不是作者公布的独立校验值或数字签名。
+[归档锁表](ARCHIVE_SOURCES.lock.json)现有HARK与Vo两项，与91个Git项目分开计数。
+完整压缩包仍在忽略缓存中，包含未选取资产；只有选定工作树排除了二进制、图和数据。缓存及源码工作树不随本书提交推送。

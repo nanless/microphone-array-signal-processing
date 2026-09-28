@@ -416,6 +416,44 @@ class FigureAlgorithmTest(unittest.TestCase):
                 self.assertTrue(np.all(np.isfinite(values)))
             self.assertTrue(np.all((result[0] >= 0.0) & (result[0] <= 120.0)))
 
+    def test_particle_filter_clutter_density_is_zero_outside_its_support(self):
+        options = dict(n_particles=50, observation_std=3., resample_fraction=0.)
+        gaussian = figures.particle_filter_doa([121., -1.], np.random.default_rng(901),
+                                               clutter_probability=0., **options)
+        mixture = figures.particle_filter_doa([121., -1.], np.random.default_rng(901),
+                                              clutter_probability=.2, **options)
+        for first, second in zip(gaussian, mixture):
+            np.testing.assert_allclose(first, second, rtol=0, atol=0)
+
+    def test_particle_filter_extreme_observation_respects_positive_prior_support(self):
+        class FixedParticles:
+            def normal(self, mean, std, count):
+                return np.zeros(count)
+            def uniform(self, lower, upper, count):
+                return np.array([0., 120.])
+        # The first observation removes all weight at 0. The second must not
+        # resurrect it, nor subtract a likelihood shift based on a zero prior.
+        estimates, ess, resampled, _ = figures.particle_filter_doa(
+            [1e300, -1e300], FixedParticles(), n_particles=2,
+            process_std=0., velocity_process_std=0., observation_std=1.,
+            clutter_probability=0., resample_fraction=0.)
+        np.testing.assert_array_equal(estimates, [120.,120.])
+        np.testing.assert_array_equal(ess, [1.,1.])
+        self.assertFalse(resampled.any())
+
+    def test_particle_filter_equal_distances_survive_tiny_noise_scale(self):
+        class FixedParticles:
+            def normal(self, mean, std, count):
+                return np.zeros(count)
+            def uniform(self, lower, upper, count):
+                return np.array([0.,120.])
+        estimates, ess, _, _ = figures.particle_filter_doa(
+            [60.], FixedParticles(), n_particles=2, process_std=0.,
+            velocity_process_std=0., observation_std=1e-308,
+            clutter_probability=0., resample_fraction=0.)
+        np.testing.assert_array_equal(estimates,[60.])
+        np.testing.assert_array_equal(ess,[2.])
+
     def test_particle_filter_all_missing_observations_are_prediction_only(self):
         observations = np.full(6, np.nan)
         estimates, neff, resampled, reflection_fraction = figures.particle_filter_doa(

@@ -4,8 +4,8 @@
 可直接装进产品的音频前端。实时音频线程、设备驱动、线程调度、定点优化、模型权重和现场标定仍需按
 第 10 章单独完成。
 
-外部研究代码由 [锁定清单](SOURCES.lock.json) 管理：90 个 Git 项目中，79 个在本机有
-`upstream/_downloads/` 工作区，另 11 个保留来源索引。2026-09-28 离线核验有 78 项通过，AEC Challenge 工作区的 5 个真实录音文件处于本地修改状态，未把该项记为通过；见 [SOURCE_STATUS.json](SOURCE_STATUS.json)。独立源码目录被 Git 忽略，不会随本书提交上传。
+外部研究代码由 [锁定清单](SOURCES.lock.json) 管理：91 个 Git 项目中，79 个在本机有
+`upstream/_downloads/` 工作区，另 12 个保留来源索引。2026-09-28 离线核验有 78 项通过，AEC Challenge 工作区的 5 个真实录音文件处于本地修改状态，未把该项记为通过；见 [SOURCE_STATUS.json](SOURCE_STATUS.json)。独立源码目录被 Git 忽略，不会随本书提交上传。
 取得代码、完成构建和复现数值是不同状态，见[复现记录说明](research/04_source_reproduction.md)。
 
 已有可选 nara-wpe 0.0.11 环境时，可运行
@@ -68,7 +68,7 @@ SMP-PHAT 可用 `.venv/bin/python codes/examples/reproduce_smpphat_reference.py 
 例子只使用确定性输入，随机输入会固定种子。函数拒绝维度、单位或参数范围明显错误的输入；这类检查是
 为了尽早暴露口径错误，不表示代码已经达到产品级防御能力。
 
-全书185道稳定编号代码题按各章学习难点组织；完整ID、每题输入与答案、运行入口及音频条件见[练习与音频实验](research/05_exercises_and_audio.md)。基础题、算法边界题、精算题与结构题使用独立模块，导入模块不运行实验。附录B的17道综合书面题另行编号，其中需pyroomacoustics的房间实验不混入稳定ID题数。算法种类以[COVERAGE.md](COVERAGE.md)为准，不能用练习数量表示方法覆盖。
+全书195道稳定编号代码题按各章学习难点组织；完整ID、每题输入与答案、运行入口及音频条件见[练习与音频实验](research/05_exercises_and_audio.md)。基础题、算法边界题、精算题与结构题使用独立模块，导入模块不运行实验。附录B的17道综合书面题另行编号，其中需pyroomacoustics的房间实验不混入稳定ID题数。算法种类以[COVERAGE.md](COVERAGE.md)为准，不能用练习数量表示方法覆盖。
 
 第4章的[七道定位逐步实验](examples/chapter04_experiments.py)复算插值、相位求和、共同子空间基、几何更新和局部下界；[固定版doatools诊断](examples/reproduce_doatools_esprit.py)另需已有SciPy环境，并保留默认加权失败与独立参考结果。两者的教学验证与外部实现诊断分别记录。
 
@@ -167,3 +167,8 @@ SMP-PHAT 可用 `.venv/bin/python codes/examples/reproduce_smpphat_reference.py 
 WebRTC 和训练框架仍需各自的构建工具、依赖、模型或数据，取得主源码库只是复现的一步。
 
 HARKTOOL5 3.5.0 采用独立的[归档锁表](ARCHIVE_SOURCES.lock.json)和[核验报告](ARCHIVE_SOURCE_STATUS.json)，不混入上面的 Git 项目计数。归档按固定 SHA-256 验证后仅提取登记的源码与许可，保存在被 Git 忽略的下载目录；取得源码不等于编译、运行或设备测量。HARK License v2.0 有用途限制，详情见 [第三方记录](THIRD_PARTY.md)。
+
+
+第9章另取得作者Vo RFS工具包的62个选定MATLAB/C源码与readme，位于
+`upstream/_downloads/vo-rfs-tracking-updated/`，与HARK共同使用独立归档锁表；学术/研究用途限制和本地摘要口径见
+[第三方记录](THIRD_PARTY.md)。源码取得不代表MATLAB、MEX或完整追踪系统已经运行。

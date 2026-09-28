@@ -38,7 +38,7 @@ WebRTC 的这一份工作树只包含主源码库，不是 `depot_tools` 管理�
 
 有些官方源码使用发布归档而不是 Git。`fetch_archives.py` 读取独立的
 [`ARCHIVE_SOURCES.lock.json`](../ARCHIVE_SOURCES.lock.json)，验证归档与官方描述文件的 SHA-256，
-再提取登记的源码子集。HARKTOOL5 3.5.0 保存在 `_downloads/harktool5-3.5.0/`，
+再提取登记的源码子集。工具支持固定的tar.xz与ZIP；两种格式都先验压缩字节，再检查路径、链接、重复成员、大小上限及选集。HARKTOOL5 3.5.0 保存在 `_downloads/harktool5-3.5.0/`，
 原始压缩包与 `.dsc` 存于 `_downloads/.archive-cache/`，两处均不进入本书 Git 提交。
 
 ```bash
@@ -54,3 +54,15 @@ WebRTC 的这一份工作树只包含主源码库，不是 `depot_tools` 管理�
 
 归档来源独立计数，不能用 Git 项目总数代表全部获取方式。HARK 的受限许可、Infineon 配置文件与
 算法核心的区别见[第三方说明](../THIRD_PARTY.md)；两个获取工具都不会安装、编译或执行上游程序。
+
+
+第9章增加`vo-rfs-tracking-updated`：
+
+```bash
+.venv/bin/python codes/upstream/fetch_archives.py --project vo-rfs-tracking-updated
+.venv/bin/python codes/upstream/fetch_archives.py --verify --report codes/ARCHIVE_SOURCE_STATUS.json
+```
+
+该作者ZIP仅作许可允许的学术研究阅读，保留62个选定源文件及原声明。其descriptor是官方网页快照，
+并非`.dsc`、官方校验和或签名；锁表SHA-256为本次取得后本地计算。完整归档只在忽略缓存中，
+选定目录不含预编译MEX或数据，未运行MATLAB/MEX。不能把两项归档与Git来源混算。

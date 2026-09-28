@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fetch pinned .tar.xz source subsets; never build, import or execute upstream code.
+"""Fetch pinned .tar.xz or ZIP source subsets; never execute upstream code.
 
 Only standard-library code is used. Verify compressed bytes before parsing, bound
 both compressed and decompressed sizes, reject unsafe members even when omitted,
@@ -20,6 +20,7 @@ import stat
 import sys
 import tarfile
 import tempfile
+import zipfile
 from urllib.parse import urlparse
 from urllib.request import urlopen
 
@@ -45,6 +46,8 @@ def safe_name(name: str) -> str:
 
 
 def validate_project(project: dict) -> None:
+    if project.get("archive_format", "tar.xz") not in {"tar.xz", "zip"}:
+        raise ValueError("unsupported archive format")
     if not re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,63}(?:\.[a-z0-9_-]+)*", project["id"]):
         raise ValueError("unsafe project id")
     if "/" in safe_name(project["archive_root"]):
@@ -135,6 +138,8 @@ def selected_files(data: bytes, project: dict) -> dict[str, bytes]:
     """Return audited subset; do not extract using tar member names."""
     validate_project(project)
     checked_bytes(data, project["archive"], MAX_ARCHIVE_BYTES)
+    if project.get("archive_format", "tar.xz") == "zip":
+        return selected_zip_files(data, project)
     with lzma.LZMAFile(io.BytesIO(data)) as stream:
         raw = stream.read(MAX_TAR_BYTES + 1)
     if len(raw) > MAX_TAR_BYTES:
@@ -172,6 +177,63 @@ def selected_files(data: bytes, project: dict) -> dict[str, bytes]:
                         content = stream.read(MAX_FILE_BYTES + 1)
                     if len(content) != member.size:
                         raise ValueError("truncated member")
+                    selected[relative] = content
+        for name in seen:
+            if any(str(p) in regular for p in PurePosixPath(name).parents):
+                raise ValueError("file/directory path collision")
+    if matched != set(project["source_paths"]):
+        raise ValueError("some source selection rules matched no files")
+    return selected
+
+
+def selected_zip_files(data: bytes, project: dict) -> dict[str, bytes]:
+    """Audit every ZIP entry, then read only the explicitly selected sources.
+
+    Called only after the pinned compressed-byte check. Never use extractall;
+    Unix links/special files, encrypted entries and ambiguous names are rejected
+    even if the corresponding entry is outside the requested subset.
+    """
+    selected, seen, regular, matched = {}, set(), set(), set()
+    total = 0
+    with zipfile.ZipFile(io.BytesIO(data)) as archive:
+        entries = archive.infolist()
+        if len(entries) > MAX_MEMBERS:
+            raise ValueError("archive member count limit exceeded")
+        for member in entries:
+            if member.orig_filename != member.filename:
+                raise ValueError("unsafe ZIP filename")
+            name = safe_name(member.filename)
+            if name in seen:
+                raise ValueError(f"duplicate archive path: {name}")
+            seen.add(name)
+            kind = stat.S_IFMT(member.external_attr >> 16)
+            if (member.flag_bits & 1 or kind not in (0, stat.S_IFREG, stat.S_IFDIR)
+                    or (kind == stat.S_IFDIR and not member.is_dir())
+                    or (kind == stat.S_IFREG and member.is_dir())):
+                raise ValueError(f"encrypted/links/special members forbidden: {name}")
+            parts = PurePosixPath(name).parts
+            if parts[0] != project["archive_root"]:
+                raise ValueError(f"member outside archive root: {name}")
+            if not 0 <= member.file_size <= MAX_FILE_BYTES:
+                raise ValueError("archive member size limit exceeded")
+            total += member.file_size
+            if total > MAX_TAR_BYTES:
+                raise ValueError("total member size limit exceeded")
+            if member.is_dir():
+                if member.file_size:
+                    raise ValueError("ZIP directory carries file content")
+                continue
+            if len(parts) < 2:
+                raise ValueError("archive root must be a directory")
+            regular.add(name)
+            relative = "/".join(parts[1:])
+            for rule in project["source_paths"]:
+                if relative == rule or (rule.endswith("/") and relative.startswith(rule)):
+                    matched.add(rule)
+                    with archive.open(member) as stream:
+                        content = stream.read(MAX_FILE_BYTES + 1)
+                    if len(content) != member.file_size:
+                        raise ValueError("truncated or oversized ZIP member")
                     selected[relative] = content
         for name in seen:
             if any(str(p) in regular for p in PurePosixPath(name).parents):
@@ -259,7 +321,8 @@ def main(argv: list[str] | None = None) -> int:
         try:
             record = acquire(project, args.destination, args.cache or args.destination / ".archive-cache",
                              download=not args.verify)
-        except (ValueError, OSError, tarfile.TarError, lzma.LZMAError, EOFError) as error:
+        except (ValueError, OSError, tarfile.TarError, lzma.LZMAError,
+                zipfile.BadZipFile, EOFError, RuntimeError, NotImplementedError) as error:
             record = {"id": project["id"], "status": "failed", "error": str(error),
                       "execution": "not_run", "dependency_validation": "not_run"}
         records.append(record)

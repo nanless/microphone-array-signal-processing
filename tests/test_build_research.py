@@ -323,7 +323,8 @@ class ResearchBuildTest(unittest.TestCase):
                             self.assertFalse(uri.fragment)
                             continue
                         if target.parent in {(output / "gss_audio").resolve(),
-                                             (output / "moving_audio").resolve()}:
+                                             (output / "moving_audio").resolve(),
+                                             (output / "tracking_audio").resolve()}:
                             source = ROOT / "codes" / target.parent.name / target.name
                             self.assertTrue(target.is_file())
                             self.assertEqual(target.read_bytes(), source.read_bytes())

@@ -604,6 +604,12 @@ Acoular 的 `BeamformerCMF` 直接拟合 CSM 的空间模型；`BeamformerSODIX`
 
 [E09-08](../../chapters/09_source-tracking.md#sec-9-6)补充状态所属时刻、发布时刻与消费时刻的区别：从 1.00 s 状态预测至 1.08 s，同时传播均值与协方差；不是把旧原始观测当作当前观测更新。对乱序融合，可读 [Stone Soup 1.9.1 固定延迟示例](https://stonesoup.readthedocs.io/en/v1.9.1/auto_examples/oosm/KalmanFilterOOSMExample.html)，区分等待重排、忽略旧数据和按到达顺序直接处理的后果。本书未实现通用乱序融合器。
 
+本轮在既有隔离环境实际调用了固定 FilterPy，补充了此前主环境缺少 SciPy、没有运行该类的历史记录。`ExtendedKalmanFilter.predict_update()` 与 `predict(); update()` 在非线性观测下不能直接互换：前者在状态预测前计算观测雅可比，而预测后的状态才交给观测函数；后者在预测后计算雅可比。前者也没有 `residual` 参数，角度更新宜显式检查残差入口。完整输入、函数调用顺序与数值见[§54 的上游诊断](#tracking-upstream-audit)，没有修改上游。
+
+UKF 的 `sigma_points.py::MerweScaledSigmaPoints` 分开给均值权重 `Wm` 和协方差权重 `Wc`；负权重不是概率为负，不能用普通粒子权重归一化替代。`UKF.py` 提供 `x_mean_fn`、`z_mean_fn`、`residual_x`、`residual_z`，角度量应协调使用。固定版本在 `predict()` 加入过程协方差后重新生成 sigma 点，不能照搬旧版本“更新点不含 Q”的批评。本轮运行的是一维无迹变换小例，未运行完整非线性声学 UKF。原始方法见 Julier、Uhlmann，*Unscented Filtering and Nonlinear Estimation*，Proceedings of the IEEE 92(3), 2004, pp.401–422，[正式 DOI](https://doi.org/10.1109/JPROC.2003.823141)。
+
+固定增益可另读 `filterpy/gh/gh_filter.py` 的 `GHFilter` 与 `GHKFilter`。其中位置修正为 `g*residual`、速度修正为 `h*residual/dt`；二阶实现的加速度修正含 `2*k/dt**2`，所以应先说明 γ 的定义再与 α-β-γ 教材公式对照。滑动平均是线性平滑，中值和直方图众数是非线性汇聚；三者不共同构成一个线性低通滤波器。它们都没有自动维护关联、人数或状态协方差，本轮未把这些接口当成完整追踪系统实跑。
+
 ### 32. SIR 粒子滤波与重采样
 
 对应 §9.2.4。先读本书 `CircularParticleFilter` 和 `systematic_resample`，再读 ODAS `src/system/particle2particle.c` 与 `src/module/mod_sst.c` 中的持续状态管理。权重应由一致的似然和杂波模型形成，极小概率在对数域计算；重采样只是分配粒子数量，不创造观测信息。
@@ -611,6 +617,10 @@ Acoular 的 `BeamformerCMF` 直接拟合 CSM 的空间模型；`BeamformerSODIX`
 建议固定种子比较有无重采样的有效粒子数，再用双峰对称后验检查圆周均值是否有定义。单个均值可能落在两个真实峰之间，因此多峰后验应保留峰或混合表示。工业中记录粒子数、退化阈值、扩散噪声、出生位置范围和静默保持时间，不把所有声学峰强制解释成一个人。
 
 [E09-07](../../chapters/09_source-tracking.md#sec-9-6)给出两次独立观测的权重递推：不重采样时，旧权重必须进入新后验。`tracking_time_exercises.py` 的两粒子例子从 `[0.5,0.5]` 经 `[0.622459,0.377541]` 变为 `[0.731059,0.268941]`；每次覆盖为似然会抹掉历史证据。一般重要性提议还需密度比，见 [Stone Soup 1.9.1 权重推导](https://stonesoup.readthedocs.io/en/v1.9.1/auto_tutorials/04_ParticleFilter.html)。该确定性例子检验概率递推，不评价真实定位性能。
+
+APF 的“辅助”是利用下一次观测构造粒子选择或提议的辅助权重，再补上重要性修正；它不自动把离群观测识别成杂波。Pitt、Shephard 的 1999 原论文 *Filtering via Simulation: Auxiliary Particle Filters* 应与门控、重尾似然分别阅读；本章不把 APF 作为已经运行的声学鲁棒插件。正文的 SIR 数字例也不能替代 APF 实现验证。
+
+ODAS 的 `particle2particle.c` 以位置、速度和权重维护粒子，按模式的 α、β 与帧间隔产生扩散；更新按关联后验混合观测似然，在有效粒子数低于 `Nmin*nParticles` 时重采样。它并不是把每一个峰独立送入本书单源圆周滤波器。完整生命周期、Kalman 分支与配置消费见 §55。
 
 ### 33. GNN/PDA 与 JPDA
 
@@ -622,11 +632,19 @@ Acoular 的 `BeamformerCMF` 直接拟合 CSM 的空间模型；`BeamformerSODIX`
 
 第 3 s A 无观测时只预测，角度方差由约 $0.68$ 增至 $1.80\ \mathrm{deg}^2$；另一个纯缺测的控制缩例从 $20^\circ$ 起、目标速度 $10^\circ/\mathrm s$，当波束每秒最多转 $5^\circ$ 时两秒后滞后 $10^\circ$。脚本未实现 JPDA、轨迹出生或身份确认，真值标签不参与盲关联。下一轮应在真实帧率、标注说话人身份和可复现角度观测上分别统计 ID 错配、位置误差、缺测持续时间与控制滞后，并给出重复序列的离散程度。
 
+原始依据是 Fortmann、Bar-Shalom、Scheffe，*Sonar Tracking of Multiple Targets Using Joint Probabilistic Data Association*，IEEE Journal of Oceanic Engineering OE-8(3), July 1983, pp.173–184。[正式 DOI](https://doi.org/10.1109/JOE.1983.1145560)；[作者上传全文](https://www.researchgate.net/publication/3231807_Sonar_tracking_of_multiple_targets_using_joint_probabilistic_data_association)的 §II 式(2.11)–(2.13)将组合新息与关联不确定性的协方差项分开。它讨论已建立轨迹的目标导向关联，不能据此省掉声学系统的出生确认。§III 为简化假定门内概率为 1；真实有限门控需要一致处理漏检项与门内概率。
+
+固定 Stone Soup 的 `hypothesiser/probability.py::PDAHypothesiser` 默认检测概率 0.85、门内概率 0.95；漏检假设权重起点是 `1-prob_detect*prob_gate`，不是一律 `1-prob_detect`。提供杂波空间密度时，观测权重除以该密度；未提供时则用有效门体积与门内观测数估计。`include_all=True` 要求显式提供杂波密度。门控以平方 Mahalanobis 距离与卡方分位数比较，输入维度改变时阈值也改变。这些是该固定通用库的默认值，不是麦克风产品推荐参数。本轮只静态检查 JPDA/假设器，未运行它们的完整包链。
+
 ### 34. GM-PHD 与高斯混合缩减
 
 对应 §9.3。Stone Soup `updater/pointprocess.py::PHDUpdater`、`hypothesiser/gaussianmixture.py`、`mixturereducer/gaussianmixture.py::GaussianMixtureReducer` 分别执行强度更新、生成观测假设和合并/剪枝。阅读必须包含出生强度，不能只读更新公式。[官方 GM-PHD 教程](https://stonesoup.readthedocs.io/en/v1.9.1/auto_tutorials/filters/GMPHDTutorial.html)。
 
-建议先复算正文两网格例，再以无观测帧检查总强度如何因存活与漏检改变；最后新增一个源，检查出生模型能否覆盖其方向。高斯权重和表示期望目标数，不要求归一为 1；剪枝会改变这个和，应报告删去质量。PHD 不保留完整身份，给每个高斯分量贴标签也不等于实现了 GLMB。
+建议先复算正文两网格例，再以无观测帧检查总强度如何因存活与漏检改变；最后新增一个源，检查出生模型能否覆盖其方向。高斯权重和表示期望目标数，不要求归一为 1；直接丢弃低权分量会改变总强度，但具体库可能另行补偿，必须报告实际输入、输出质量。PHD 不保留完整身份，给每个高斯分量贴标签也不等于实现了 GLMB。
+
+固定 `GaussianMixtureReducer` 的实现需要特别区分：`prune()` 把低权分量的总权重均摊给幸存分量，`truncate()` 也把截掉的质量均摊给保留分量；若全部分量被剪掉则返回空列表。`merge_components()` 先按原权重做均值与协方差矩匹配，再把合并权重大于 1 的值截为 1。这些步骤不能统称为“直接删除”，也不能假定均保持 PHD 的期望人数。
+
+本轮没有安装 Stone Soup 缺少的 `ordered_set` 依赖；仅提取上述未修改原函数，用明确的最小状态容器运行。权重 `[0.1,0.4,0.5]`、剪枝阈值 0.2 得到 `[0.45,0.55]`；两个权重 0.8、0.7 合并后却为 1，原总质量是 1.5。该反例是固定版本缩减接口行为，不是 PHD 理论禁止期望人数大于 1。详见 §54；`PHDUpdater`、真实状态类和完整合并调度均未运行。
 
 ### 35. MHT、CPHD、LMB/GLMB 与检测前追踪
 
@@ -638,7 +656,7 @@ Stone Soup 固定版本实际包含滑窗多帧分配形式的 MHT 参考。阅�
 
 最小实验建议从同目录 `MFA_example.py` 的两目标交叉场景开始，保持观测集合不变，比较滑窗 1 与 3 的分支数量、延迟决策、身份交换和计算量，再插入连续缺测。出生和长静默应作为额外实验单独报告，不能由固定目标示例推断已经支持。这里仅完成源码检查，未运行 OR-Tools 实验。
 
-CPHD、LMB/GLMB 另有 [Ba Tuong Vo 的作者 MATLAB 工具包](https://ba-tuong.vo-au.com/codes.html)，页面列出相应滤波器及 OSPA/OSPA²，并明确面向 academic/research 使用。该可变 ZIP 页面没有提供本书所需的固定提交和完整通用再分发许可，故保留受限来源索引，不复制或改称许可完备的开源集合。作者提供代码与本书已经取得可分发实现是两个判断。
+CPHD、LMB/GLMB 另有 [Ba Tuong Vo 的作者 MATLAB 工具包](https://ba-tuong.vo-au.com/codes.html)。2026-09-28 已按其 `readme.txt` 第 5 条“academic/research purposes only”取得 62 个源码和说明文件，以归档锁 `vo-rfs-tracking-updated` 管理；它不是宽松开源许可，也不据此允许公开再分发。取得固定归档不要求作者一定提供 Git 提交。归档 SHA、逐文件范围、第三方说明和未运行项目见 §56。
 
 检测前追踪仍保留原理索引。对其他家族，也不能从 Stone Soup 的基类文字推断其实现了 CPHD，或从 PHD 分量上的临时标签推断其实现了 GLMB。两人交叉、出生、长静默和强反射应分别评价身份切换、漏检、虚警、人数和成本；输入定位峰不符合点目标观测模型时，还要调整似然与杂波模型。
 
@@ -647,6 +665,10 @@ CPHD、LMB/GLMB 另有 [Ba Tuong Vo 的作者 MATLAB 工具包](https://ba-tuong
 对应 §9.3～9.4。OSPA 在同一坐标和截断距离下同时惩罚位置与目标数误差；身份连续性应另外评价。将 DOA 转换为波束控制时还需预测到播放或采集消费时刻，记录 `measurement_time`、`publish_time`、`track_id`、协方差与有效期。
 
 建议先复算正文 30°/70° 对单真值 32° 的 OSPA，再交换两条轨迹 ID：位置指标可能完全不变，身份连续性已经出错。控制器按最大角速度和时间间隔限速，在过期观测、长静默或身份不确定时降低更新可信度。轨迹 ID 不等于永久说话人身份；单凭声学位置不能维持跨房间身份。
+
+GOSPA 补充的是 OSPA 按集合基数归一后不便分解的误差解释。Rahmathullah、García-Fernández、Svensson 的[作者原文](https://arxiv.org/pdf/1601.05585) Definition 1 要求阶数至少为 1、正截断距离，且参数 α 在 `(0,2]`；§II.B Proposition 1 在 α=2 时给出定位、漏检与虚警代价的分解。对真值 `{32°}` 和估计 `{30°,70°}`，取阶数 1、截断 10°、α=2，定位代价 2°，一个虚警代价 5°，GOSPA 为 7°；同条件 OSPA 为 6°。这是本书小例，两种指标的量值不可直接互判优劣。
+
+固定 `metricgenerator/ospametric.py::GOSPAMetric` 把 α 固定为 2，默认距离为普通 Euclidean；方位角必须提供适合环绕的距离，不能在 ±180° 附近机械相减。输出 `distance` 取阶数根，而 `localisation`、`missed`、`false` 保留取根前的代价，因此阶数 2 时后三者是平方单位。该版本还有 `_SwitchingLoss`，但 `switching_penalty` 默认为 0；不能沿用旧版本“没有切换项”的说法，也不能把默认单帧分数称为身份连续性验收。本轮未运行该完整指标对象。
 
 ### 37. TDOA 非线性最小二乘与可观测性
 
@@ -780,6 +802,10 @@ Chan–Ho 的 1994 方法把距离差定位整理为两阶段加权代数估计�
 
 建议给匀速、转弯和静默三段轨迹，比较单模型与多模型的跟随延迟和协方差。必须核对转移矩阵方向及归一化，而不是凭行列名称猜测；长期缺测时不能把模式概率改变解释成观测证据。源突然停止说话是活动状态变化，并不必然代表其运动模式改变。
 
+原始 IMM 论文为 Blom、Bar-Shalom，*The Interacting Multiple Model Algorithm for Systems with Markovian Switching Coefficients*，IEEE TAC 33(8), 1988, pp.780–783，[DOI](https://doi.org/10.1109/9.1299)。本书混合矩的数字推导独立列明行转移约定；论文身份与具体库实现应分开核对。
+
+本轮原类调用发现两个缺测边界。`predict()` 在混合和预测子滤波器后用旧 `mu` 融合总体均值、协方差，没有按 `cbar=mu@M` 形成该时刻总体先验；连续只预测时还会沿用旧模式权重。`update(None)` 也不是“什么都不变”：子 KF 把新息设为零、清除似然缓存，但保留旧新息协方差，IMM 随后读取这个零新息下的似然更新模式概率。没有新观测时，这不等于仅传播 Markov 模式概率。§54 保留第一次预测、连续三次预测及有观测后转入缺测的全部分量和总体二阶矩；不通过修补上游来掩盖差异。
+
 ### 41. icoDOA、Cross3D 与神经方向追踪
 
 对应 §4.7、§9.3。icoDOA 的 `1sourceTracking_icoCNN.py` 是训练与测试入口；`acousticTrackingModels.py` 定义 `IcoTempCNN`、`Cross3D` 等模型，`acousticTrackingModules.py` 提供输出映射，`acousticTrackingDataset.py` 生成移动源场景。二十面体方向网格与普通平面卷积网格有不同邻接结构，方向分辨率及输出变换必须与训练时一致。[作者仓库](https://github.com/DavidDiazGuerra/icoDOA)。
@@ -787,6 +813,10 @@ Chan–Ho 的 1994 方法把距离差定位整理为两阶段加权代数估计�
 最小实验应先验证方向图旋转与标签同步，再用未见房间、阵列误差和静默输入测角度误差与失效状态。代码依赖 gpuRIR、icoCNN 和声学数据；只读到模型类不表示完整训练可复现。作者 README 明确提醒主脚本未调用的辅助功能可能未经测试，因此同一文件中的 `SELDnet` 类也不能直接等同于已经验证的 SELD 系统。AGPL 源码与模型、LibriSpeech/LOCATA 数据分别核对。
 
 这类方向图网络的输入依赖上游 SRP 图的网格、角度坐标、频带与归一化；即使输出同为三维方向，也不能直接把不同麦阵生成的任意图送入已有权重。单源方向追踪脚本不自动提供同类重叠多源的轨道容量或身份关联。本书本次未运行训练、预训练推理或 LOCATA 评分，工程复现还需固定训练划分、上下文长度、模型状态复位和前端耗时，分别核对网络耗时与端到端延迟。
+
+固定实现中 `IcoTempCNN` 输入轴是批量、通道、时间、五个网格面片及两个面片坐标，最后经 `SoftArgMax` 输出方向坐标；`Cross3D` 则在方位—俯仰方向图上分支卷积。`CausConv1d/2d/3d` 左侧补足历史长度后裁去尾部，没有自动保存跨调用的流式历史；逐帧调用仍需调用者管理上下文。还应避开未验证的任意参数组合：这些层直接使用 `:-pad`，时间核长度为 1 时 `pad=0` 会产生空切片。该点由固定源码静态识别，未执行 Torch 模型；不否定作者使用大于 1 时间核的既定配置。
+
+ACCDOA 的向量模与方向、multi-ACCDOA 的输出槽位和持久说话人 ID 是三个不同对象。训练时允许轨道置换不会自动解决第 9 章两人交叉的身份问题；需要明确跨帧关联或身份特征后才能评价 ID 切换。有限近期候选及不纳入正文目录的原因见 §57。
 
 ### 42. FN-SSL 与 IPDnet：先估计直达声相位差
 
@@ -911,6 +941,98 @@ Habets 与 Cohen 2006 的 §III 先复述标准几何组合，随后把语音缺
 对应 §5.7 的工业对照。已下载 WebRTC `modules/audio_processing/ns/quantile_noise_estimator.cc::QuantileNoiseEstimator::Estimate` 跟踪分位数，`noise_estimator.cc::NoiseEstimator::PreUpdate/PostUpdate` 管理初始化和噪声更新，`speech_probability_estimator.cc::SpeechProbabilityEstimator::Update` 估计语音概率。它们提供可检查的产品代码路径，但不是 MCRA、IMCRA 或 OM-LSA 的逐式实现。[WebRTC 官方 NS 目录](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/ns/)。代码许可及 PATENTS 使用总清单记录的固定提交逐项核对。
 
 读码须继续到 `noise_suppressor.cc` 的整帧流程，区分分析、增益施加和通道状态，再检查 `suppression_params.h` 的模式参数。建议复用噪声阶跃、持续弱语音与静音启动输入，同时检查全零谱及采样率分支。单独调用分位数模块不等于运行整个 WebRTC Audio Processing；没有 APM 集成、采样帧检查和目标设备计时，不报告实时端到端收益。
+
+## 追踪接口、工程配置与来源核验
+
+<a id="tracking-upstream-audit"></a>
+
+### 54. 固定追踪上游的实际调用与失败边界
+
+本节于 2026-09-28 使用既有隔离环境执行[诊断脚本](../examples/audit_tracking_upstream_interfaces.py)，原始结果保存在[JSON 报告](../reports/tracking_upstream_interfaces.json)。脚本绑定自身摘要、精确输入、上游提交与被调用文件摘要，运行前核查独立 checkout、固定 HEAD 和未修改的跟踪文件。它不下载依赖，不改 FilterPy 或 Stone Soup。此前主环境没有 SciPy、未运行这些接口的记录仍然有效；本节新增的是另一环境中的有限方法调用，不能追溯性地改写旧验证范围。
+
+#### 54.1 IMM：模式先验与输出时刻
+
+两模型都是标量 KF，初始均值 0、10，方差 1、4，模式概率 0.75、0.25；两者状态转移和观测矩阵均为 1，过程方差 0、观测方差 1。行转移矩阵第一行为 `(0.9,0.1)`，第二行为 `(0.2,0.8)`。这些是无量纲接口诊断输入，不是目标运动的标定数据。
+
+一次交互后两模式先验为 0.725、0.275，条件均值约为 0.689655、7.272727。物理状态没有运动且没有新观测，按联合概率求和，整体均值仍应为 2.5、方差 20.5、原始二阶矩 26.75；这些是本书独立概率计算。原 `IMMEstimator.predict()` 却用旧模式概率融合，返回均值 2.335423、方差 19.600657，原始二阶矩 25.054859。再连续调用时，旧模式权重未推进，整体矩继续改变。报告逐次保留全部 `mu`、`cbar`、混合系数及子滤波器状态，不只给一个错误标签。
+
+调用 `update(None)` 也不能假定模式证据为 1。先实际观测 0、再预测，模式先验约为 `(0.849531,0.150469)`；随后缺测调用得到模式概率 `(0.904028,0.095972)`。原因是子 KF 把新息设为零，似然却继续使用上次观测留下的新息方差。它不是直接复用上次似然标量，也不是新的观测证据。本书没有修补这一上游版本，实际系统若使用该接口，应明确缺测协议并独立验证模式概率与总体矩。
+
+#### 54.2 EKF：同名便利接口不等于相同调用顺序
+
+输入为均值 1、方差 1、状态转移系数 2、过程方差 0、观测方差 1，观测函数为状态平方，观测值为 4。预测均值为 2、方差为 4，观测雅可比在预测点应为 4；独立计算的增益为 `16/65`、后验方差为 `4/65`。
+
+| 原调用 | 增益；后验方差 |
+|---|---|
+| `predict_update()` | 0.470588；0.235294 |
+| `predict(); update()` | 0.246154；0.061538 |
+
+合并接口先在旧状态 1 求雅可比 2，再把预测状态 2 送入平方观测函数；分步接口在预测后线性化。两条路径本例的新息均为零，所以均值同为 2，只有协方差显示差异。合并路径还把旧状态记入 `x_prior/P_prior`；因此不能只对照最终均值或字段名称。
+
+另一例把先验设为 179°、观测设为 −179°，两方差均为 1。合并接口默认相减得到 −358° 新息；分步 `update(residual=...)` 用最短角差得到 2° 新息，更新后的局部展开均值为 180°。最终是否显示为 −180° 是另一个坐标表示步骤。
+
+#### 54.3 无迹变换与高斯混合缩减
+
+原 `MerweScaledSigmaPoints` 取一维标准正态、α=1、β=2、κ=0，sigma 点是 0、1、−1。平方变换后的 `unscented_transform` 输出均值 1、方差 2，与标准正态二阶和四阶矩独立复算一致。这只验证一个确定性变换，不代表完整 UKF 追踪已经验证。
+
+Stone Soup 包导入实际被缺少 `ordered_set` 阻断。本节调用的是 AST 提取的未修改 `prune`、`truncate`、`merge_components`，依赖替身只保存 `mean/covar/weight/timestamp`，没有声称执行完整包、PHD 更新器或带标签分支。
+
+| 操作与输入 | 实际输出权重 |
+|---|---|
+| 阈值 0.2 剪枝：0.1、0.4、0.5 | 0.45、0.55 |
+| 阈值 0.2 剪枝：0.1、0.1 | 空集合 |
+| 截为一项：0.4、0.6 | 1 |
+| 合并两项：0.8、0.7 | 1，而非 1.5 |
+
+合并例的位置为 0、1、方差均为 1；输出均值为 `7/15`，方差约 1.248889。均值和方差按原始相对权重算，只有输出总质量被截断。因此“位置矩匹配”与“强度质量保持”应分别验收。[离线测试](../../tests/test_codes_tracking_upstream_interfaces.py)不用外部源码、SciPy 或下载，按联合概率、标量 Joseph 式和解析高阶矩检查报告，并核对脚本与源配置绑定。它不把上游缺陷改成通过。
+
+### 55. ODAS 与 SAF 的工程追踪接口
+
+#### 55.1 ODAS：每帧参数与生命周期
+
+[ODAS 2022 正式论文](https://www.frontiersin.org/journals/robotics-and-ai/articles/10.3389/frobt.2022.854444/full) §2.2、§3.6 说明其追踪可选择粒子或 Kalman 分支，并将定位峰解释为已有源、新源或虚警。论文 §4 给出机器人与阵列应用，能支持该项目的部署案例，不能推出所有商业产品都使用这些默认值。本文不转引其对早期文献的 CPU 倍数；这里没有在 Raspberry Pi 或任何阵列设备上计时。
+
+固定 `bcb845434495e293df3d48f1203b7a86e1852449` 的 `config/odaslive/respeaker.cfg` 是一份具体配置：处理采样率 16 kHz、帧移 128 样本，即 8 ms；`sst.mode="kalman"`，`add="dynamic"`。同一文件也列粒子数 1000 和有效粒子比例阈值 0.7，但在 Kalman 分支下并不执行粒子更新。`mod_sst.c` 实际用 `hopSize/fS` 构造动态模型，时间参数必须按该处理帧率解释。
+
+`Pfalse/Pnew/Ptrack` 分别为 0.1、0.1、0.8；新源后验超过 0.9 才建立候选，候选累计 5 帧的平均活动度至少 0.8 才确认。确认源的低活动计数用 `N_inactive[nTracks-1]`，不是按轨道 ID 取固定超时。该配置为 `(150,200,250,250)` 帧，在持续低活动且当前轨道数不变时分别对应 1.2、1.6、2.0、2.0 s；轨道数变化会改变所用门限，不能写成每条轨迹固定等待 2 s。
+
+`active/inactive` 是定位峰功率的统计模型，观测噪声另区分候选、活动源和预设目标；应由实际前端数据标定，不能把这些功率阈值换成角度置信区间。读取顺序为配置、配置解析、`mod_sst.c`、`kalman2kalman.c`/`kalman2coherence.c` 或 `particle2particle.c`。固定 C 源使用枚举分支，非法模式有进程退出路径；宿主程序不能把它当成无副作用的 Python 参数异常。本轮仅静态读码，未构建 ODAS 或运行硬件。
+
+#### 55.2 SAF：关联粒子与条件 Kalman 状态
+
+固定 SAF `18fd5aba46e20787b51f28f7197a68506c965c07` 的 `framework/modules/saf_tracker/` 以 RBMCDA 为基础：粒子保存关联及出生、死亡假设，每个目标的位置和速度由条件 KF 表示。[McCormack 等 EUSIPCO 2021 原文](https://eurasip.org/Proceedings/Eusipco/Eusipco2021/pdfs/0000206.pdf) §III 描述该分工；§IV 使用 LOCATA 任务 1–4、Eigenmike 的 32 路录音转四阶球谐，按开发集分别调各任务参数，再评价盲测集。整链结果不能归因于追踪器单模块。
+
+`tracker3d_step` 输入为 `nObs×3` 坐标，可声明为单位方向向量；输出为目标位置、各轴方差、ID 和人数。调用者须每 `dt` 调用一次，缺测时仍传空指针或 `nObs=0`，不能停止调用而期待时钟自行推进。创建时实际将 `dt` 限为至少 0.0001 s、测量标准差限为至少 0.001、权重平滑系数限为不超过 0.99；最后一项与头文件注释中的 0.999 不一致，应以固定实现和输入核验为准。
+
+近距离强制删除较年轻目标是一项可选控制策略，会影响交叉时的轨迹身份，不能与纯几何定位精度混为一谈。模块文件头授权 GPL-2.0-or-later，核心 SAF 的 ISC 许可不能覆盖它；MATLAB 封装另读 `extras/safmex/safmex_tracker3d.c/.m`。本轮没有编译 C/MEX、运行粒子系统或复现论文 LOCATA 分数。
+
+### 56. Vo 作者归档：CPHD、LMB 与 GLMB 的真实取得范围
+
+官方[工具包页面](https://ba-tuong.vo-au.com/codes.html)和包内 `readme.txt` 明确面向学术与研究；第 5 条不给运行保证，商业级代码需另联系作者。归档原链接为 `rfs_tracking_toolbox_updated.zip`，下载大小 565949 字节；本地计算 SHA-256 为：
+
+```text
+fb22c9edecb56049b7f8ede1e1522384f0c4e6bfb5e5577f3bd482f6367ef46a
+```
+
+这是本地内容摘要，不是作者签名或独立发布校验和。归档固定选集与逐文件摘要见[归档锁](../ARCHIVE_SOURCES.lock.json)及[生成的获取报告](../ARCHIVE_SOURCE_STATUS.json)。本轮取得 `cphd/glmb/lmb/jointglmb/jointlmb` 下各自 `gms/` 示例和递归依赖共 62 个文件，保存于独立的 `vo-rfs-tracking-updated` 缓存；未取得预编译 MEX、数据或图像。`_common/BFMSpathwrap.m` 自带 BSD 条件，原样保留；其他帮助函数的归属和包内研究限制也不能因“公开可下载”而省掉。
+
+阅读每组 `gen_model → gen_truth → gen_meas → run_filter → plot_results`。CPHD 代码显式递推人数分布并计算基本对称函数，不能解释成仅对 PHD 强度换一个名字。LMB 和 GLMB 维护标签；`joint*` 是联合预测—更新实现，与分开的实现不是另一种数据集或另一个许可证。`readme` 说明本次所选线性高斯例是四维匀速状态与二维位置观测；非线性目录则是带转率的五维状态及距离—方位观测，本轮没有选取后者。
+
+`_common/gaus_prune.m` 直接删去低权质量；`gaus_cap.m` 则按原总质量比例重标定保留分量。这与 §34 的 Stone Soup 均摊规则不同，同名缩减步骤也需要逐函数核对。GLMB 分配路径调用 `assignmentoptimal`，本轮保存了其 C 源但没有编译 MEX；绘图、随机仿真和 MATLAB 工具箱依赖未运行。取得代码使 CPHD/LMB/GLMB 从单纯原理索引增加了作者实现入口，不等于已经复现完整声学多说话人实验。
+
+### 57. 本轮检索与有限候选决策
+
+检索日期为 2026-09-28。关键词包括 `Julier Uhlmann 2004 unscented`、`Fortmann Bar-Shalom 1983 JPDA`、`ODAS tracking Kalman configuration`、`LOCATA evaluation toolkit`、`Neural-SRP multi-source tracking` 和 `Vo CPHD GLMB MATLAB code`。搜索摘要只用于定位，以上正式结论分别来自论文正文、作者说明或固定源码；没有用搜索排名判断先进性。
+
+**GOSPA 采纳为指标扩展。** 它补充已出现的 OSPA 人数归一与漏检、虚警解释问题，现有 Stone Soup 已有接口；§36 提供可手算小例。它不是新增声源追踪网络，也不自动提供持久身份。
+
+**Neural-SRP 保留为有明确机制的研究候选。** Grinstein 等的正式出版信息为 IEEE OJSP 5, 2024, pp.19–28，[DOI](https://doi.org/10.1109/OJSP.2023.3340057)；这里实际阅读的是[作者接受稿](https://lirias.kuleuven.be/retrieve/740352)。§III 式(9)把每个麦对的 GCC 和坐标经共享网络编码、求和，再全局解码；单向 GRU 提供时间信息。它针对固定几何网络的迁移问题，仍需已知麦位和一致特征。作者实验只支持所述源数与阵列，结尾把三个及以上同时源列为后续研究，不能把“universal”外推为任意源数或任意录音保证。
+
+[作者仓库](https://github.com/egrinstein/neural_srp/tree/0ec639f028987ca3d9d3764331f6d65ff455f9a8)固定 HEAD 为 `0ec639f028987ca3d9d3764331f6d65ff455f9a8`。`visualize_locata.py` 与 `visualize_tau.py` 分别对应论文表 3/4 与表 5，配置通过 `params.json` 消费；这是后续最小复现入口。当前已读根说明和目录未建立代码许可，论文的 CC BY 不能代替软件授权，故未取得该源码/权重、不添加正文算法目录，也不冒称运行过预训练模型。
+
+**沿用 icoDOA/Cross3D，暂不把 IPDnet 变成已执行追踪器。** 前者已有固定 AGPL 源码，§41 核其轴与历史边界；后者根 README 仅写 MIT，其 `IPDnet/Dataset.py` 明称修改自 Cross3D/icoCNN，却没有完整继承条件说明。这里缺少的是派生仿真代码的清楚授权记录，不是因为 AGPL 或研究限制一概禁止本地取得。网络、仿真和数据许可应分别解决，不能用已训练 DOA 输出替代跨帧身份评估。
+
+LOCATA 官方 [I/O 框架](https://github.com/cevers/sap_locata_io)与[评价框架](https://github.com/cevers/sap_locata_eval)分开负责读写/基线和参赛输出评价；本轮未建立这两个软件仓库的完整许可，也未执行其 MATLAB 评分。已有论文中的任务、版本、阵列与真值条件仍须原样保留，不能把教学自由场移动音频称为 LOCATA 复现。上述有限清单没有声称穷尽追踪方法。
 
 ## 可复算的工程配置与验收记录
 

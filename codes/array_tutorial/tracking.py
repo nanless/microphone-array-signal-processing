@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import copy
+import math
+
 import numpy as np
 
 from .conventions import finite_real_array, finite_real_scalar
@@ -31,16 +34,9 @@ class ConstantVelocityKalman:
             raise ValueError("state must be (2,), covariance and process_noise must be (2,2)")
         if not all(np.all(np.isfinite(value)) for value in (self.state, self.covariance, self.process_noise)):
             raise ValueError("state and covariance inputs must be finite")
-        for name, matrix in (("covariance", self.covariance), ("process_noise", self.process_noise)):
-            scale = float(np.max(np.abs(matrix)))
-            normalized = matrix / scale if scale else matrix
-            if not np.allclose(normalized, normalized.T, rtol=0.0, atol=1e-12):
-                raise ValueError(f"{name} must be symmetric")
-            symmetric = 0.5 * normalized + 0.5 * normalized.T
-            if np.min(np.linalg.eigvalsh(symmetric)) < -1e-12:
-                raise ValueError(f"{name} must be positive semidefinite")
-            # Accepted roundoff asymmetry must not enter later state updates.
-            matrix[:] = 0.5 * matrix + 0.5 * matrix.T
+        self.state[0] = wrap_angle(self.state[0])
+        self.covariance = _checked_covariance(self.covariance, "covariance")
+        self.process_noise = _checked_covariance(self.process_noise, "process_noise")
 
     def predict(self, dt: float) -> np.ndarray:
         dt = finite_real_scalar(dt, "dt")
@@ -99,14 +95,35 @@ class ConstantVelocityKalman:
         return self.state.copy()
 
 
-def _checked_covariance(matrix: np.ndarray) -> np.ndarray:
-    """Symmetrize without doubling large entries; reject invalid covariance."""
-    symmetric = 0.5 * matrix + 0.5 * matrix.T
-    if not np.all(np.isfinite(symmetric)):
-        raise ValueError("tracking covariance exceeds floating-point range")
-    scale = float(np.max(np.abs(symmetric)))
-    if scale and np.min(np.linalg.eigvalsh(symmetric / scale)) < -1e-10:
-        raise ValueError("tracking covariance is not positive semidefinite")
+def _checked_covariance(matrix: np.ndarray, name: str = "tracking covariance") -> np.ndarray:
+    """Validate a real PSD state matrix, including legitimate singular matrices.
+
+    Reject negative diagonal variances. Only negative eigenvalues within
+    32*n*machine_epsilon of the entry scale are projected to zero; this is a
+    rounding repair, not an allowance for physical negative uncertainty.
+    """
+    matrix = finite_real_array(matrix, name)
+    if matrix.ndim != 2 or matrix.shape[0] == 0 or matrix.shape[0] != matrix.shape[1]:
+        raise ValueError(f"{name} must be a nonempty square matrix")
+    if np.any(np.diag(matrix) < 0):
+        raise ValueError(f"{name} contains a negative variance")
+    scale = float(np.max(np.abs(matrix)))
+    if scale == 0:
+        return matrix.copy()
+    unit = matrix / scale
+    tolerance = 32 * matrix.shape[0] * np.finfo(float).eps
+    if np.max(np.abs(unit - unit.T)) > tolerance:
+        raise ValueError(f"{name} must be symmetric relative to its scale")
+    symmetric = matrix.copy() if np.array_equal(matrix, matrix.T) else .5*matrix + .5*matrix.T
+    values, vectors = np.linalg.eigh(.5*unit + .5*unit.T)
+    if values[0] < -tolerance:
+        raise ValueError(f"{name} is not positive semidefinite")
+    if values[0] < 0:
+        projected = (vectors * np.maximum(values, 0)) @ vectors.T
+        with np.errstate(over="ignore", invalid="ignore"):
+            symmetric = (.5*projected + .5*projected.T) * scale
+        if not np.all(np.isfinite(symmetric)):
+            raise ValueError(f"{name} projection exceeds floating-point range")
     return symmetric
 
 
@@ -143,9 +160,18 @@ class CircularParticleFilter:
         process_std = finite_real_scalar(process_std, "process_std")
         if not all(np.isfinite(value) for value in (angular_velocity, dt, process_std)) or dt <= 0 or process_std < 0:
             raise ValueError("velocity, dt and process_std must be finite; dt positive and std non-negative")
-        self.particles = wrap_angle(
-            self.particles + angular_velocity * dt + rng.normal(0.0, process_std, self.particles.size)
-        )
+        # Validate deterministic arithmetic before drawing randomness. Work with
+        # a private RNG copy so even a stochastic overflow is an atomic failure.
+        drift = angular_velocity * dt
+        if not math.isfinite(drift):
+            raise ValueError("angular displacement exceeds floating-point range")
+        local_rng = copy.deepcopy(rng)
+        with np.errstate(over="ignore", invalid="ignore"):
+            noise = local_rng.normal(0.0, process_std, self.particles.size)
+            proposed = self.particles + wrap_angle(drift) + noise
+        particles = wrap_angle(proposed)  # validates all finite before committing
+        rng.bit_generator.state = copy.deepcopy(local_rng.bit_generator.state)
+        self.particles = particles
 
     def update(self, observation: float, observation_std: float, *, clutter_probability: float = 0.05) -> None:
         observation = finite_real_scalar(observation, "observation")
@@ -156,29 +182,35 @@ class CircularParticleFilter:
             or not np.isfinite(observation_std)
             or not np.isfinite(clutter_probability)
             or observation_std <= 0
-            or observation_std < np.sqrt(np.finfo(float).tiny)
             or not 0.0 <= clutter_probability < 1.0
         ):
             raise ValueError("invalid observation_std or clutter_probability")
-        error = wrap_angle(observation - self.particles)
+        error = wrap_angle(wrap_angle(observation) - self.particles)
         absolute_error = np.abs(error)
         if clutter_probability == 0.0:
-            minimum = float(np.min(absolute_error))
-            log_likelihood = (
-                -0.5
-                * (absolute_error - minimum)
-                * (absolute_error + minimum)
-                / (observation_std * observation_std)
-            )
+            support = self.weights > 0
+            minimum = float(np.min(absolute_error[support]))
+            delta = absolute_error - minimum
+            log_likelihood = np.full_like(absolute_error, -np.inf)
+            closest = support & (delta == 0)
+            log_likelihood[closest] = 0.0
+            other = support & (delta > 0)
+            # log((r²-r_min²)/(2 sigma²)): no sigma² underflow,
+            # no 0*inf at the nearest supported particle.
+            log_penalty = (np.log(delta[other])
+                           + np.log(absolute_error[other] + minimum)
+                           - math.log(2.) - 2*math.log(observation_std))
+            with np.errstate(over="ignore", under="ignore"):
+                log_likelihood[other] = -np.exp(log_penalty)
         else:
-            log_gaussian = (
-                -0.5 * (absolute_error / observation_std) ** 2
-                - np.log(np.sqrt(2.0 * np.pi) * observation_std)
-            )
-            log_likelihood = np.logaddexp(
-                np.log1p(-clutter_probability) + log_gaussian,
-                np.log(clutter_probability / 360.0),
-            )
+            with np.errstate(over="ignore", under="ignore", divide="ignore"):
+                log_gaussian = (-0.5 * (absolute_error / observation_std) ** 2
+                                - .5*math.log(2*math.pi) - math.log(observation_std))
+            with np.errstate(under="ignore"):
+                log_likelihood = np.logaddexp(
+                    math.log1p(-clutter_probability) + log_gaussian,
+                    math.log(clutter_probability) - math.log(360.0),
+                )
         log_weights = np.log(
             self.weights,
             where=self.weights > 0,
@@ -188,8 +220,10 @@ class CircularParticleFilter:
         maximum = float(np.max(log_weights))
         if not np.isfinite(maximum):
             raise FloatingPointError("particle posterior has no finite support")
-        unnormalized = np.exp(log_weights - maximum)
-        self.weights = unnormalized / np.sum(unnormalized)
+        with np.errstate(under="ignore"):
+            unnormalized = np.exp(log_weights - maximum)
+            weights = unnormalized / np.sum(unnormalized)
+        self.weights = weights
 
     @property
     def effective_sample_size(self) -> float:
@@ -200,7 +234,7 @@ class CircularParticleFilter:
         vector = np.sum(self.weights * np.exp(1j * radians))
         if abs(vector) <= 1e-12:
             raise ValueError("circular mean is undefined for this symmetric posterior")
-        return float(np.rad2deg(np.angle(vector)))
+        return float(wrap_angle(np.rad2deg(np.angle(vector))))
 
     def resample_if_needed(self, rng: np.random.Generator, threshold: float | None = None) -> bool:
         """Resample when ESS is below a finite threshold in ``[0, N]``.

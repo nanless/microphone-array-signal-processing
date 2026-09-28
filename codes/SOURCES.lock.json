@@ -55,7 +55,11 @@
         "src/signal/scan.c",
         "src/system/freq2xcorr.c",
         "src/system/particle2particle.c",
-        "LICENSE"
+        "LICENSE",
+        "config/odaslive/respeaker.cfg",
+        "src/system/kalman2kalman.c",
+        "src/system/kalman2coherence.c",
+        "demo/odaslive/parameters.c"
       ]
     },
     {
@@ -290,7 +294,11 @@
         "filterpy/kalman/UKF.py",
         "filterpy/kalman/IMM.py",
         "filterpy/monte_carlo/resampling.py",
-        "LICENSE"
+        "LICENSE",
+        "filterpy/gh/gh_filter.py",
+        "filterpy/common/discretization.py",
+        "filterpy/kalman/sigma_points.py",
+        "filterpy/kalman/unscented_transform.py"
       ]
     },
     {
@@ -310,7 +318,8 @@
         "stonesoup/mixturereducer/gaussianmixture.py",
         "stonesoup/metricgenerator/ospametric.py",
         "docs/tutorials/08_JPDATutorial.py",
-        "LICENSE"
+        "LICENSE",
+        "stonesoup/hypothesiser/probability.py"
       ]
     },
     {
@@ -450,10 +459,10 @@
       "id": "spatial-audio-framework",
       "url": "https://github.com/leomccormack/Spatial_Audio_Framework.git",
       "revision": "18fd5aba46e20787b51f28f7197a68506c965c07",
-      "license": "ISC core; GPL-2.0 optional modules",
+      "license": "ISC core; GPL-2.0-or-later optional tracker module (individual headers control)",
       "scope": "C/C++球谐处理、array2sh、波束、声场功率图、可选粒子追踪；HRIR时差估计、HRTF变换及方向插值",
       "fetch_enabled": true,
-      "note": "只下载研究。核心ISC，saf_tracker/saf_hades等可选模块GPLv2；第三方BLAS/FFT/HRIR许可单独核对，不能把整个仓库标成纯ISC。",
+      "note": "核心ISC；本轮核对的saf_tracker文件头为GPL-2.0-or-later，其他可选模块逐一看许可。第三方BLAS/FFT/HRIR许可另核，不能把整个仓库标成纯ISC。tracker3d每个dt均须调用，缺测传NULL/0；当前仅静态源码审读，未编译或运行追踪模块。",
       "entrypoints": [
         "framework/modules/saf_sh/saf_sh.h",
         "examples/src/array2sh/array2sh.c",
@@ -461,7 +470,13 @@
         "examples/src/powermap/powermap.c",
         "LICENSE.md",
         "framework/modules/saf_hrir/saf_hrir.c",
-        "framework/modules/saf_hrir/saf_hrir.h"
+        "framework/modules/saf_hrir/saf_hrir.h",
+        "framework/modules/saf_tracker/saf_tracker.c",
+        "framework/modules/saf_tracker/saf_tracker.h",
+        "framework/modules/saf_tracker/saf_tracker_internal.c",
+        "framework/modules/saf_tracker/saf_tracker_internal.h",
+        "extras/safmex/safmex_tracker3d.c",
+        "extras/safmex/safmex_tracker3d.m"
       ]
     },
     {
@@ -964,7 +979,7 @@
       "license": "MIT stated in README; complete license text and third-party notices not established",
       "scope": "Official FN-SSL and IPDnet direct-path inter-channel phase difference estimation",
       "fetch_enabled": false,
-      "note": "Author README states MIT but full license terms and acknowledged Cross3D/icoCNN-derived simulation code notices require further verification before automatic redistribution. Index-only; checkpoints and LibriSpeech/Noise92/LOCATA/RealMAN data are separate. IPDnet fixed-array filename is literally FixedAarryIPDnet.py.",
+      "note": "Official README states MIT but root full license text is absent and IPDnet/Dataset.py acknowledges Cross3D/icoCNN-derived simulation code without established inherited notices. This concrete scope remains unresolved, so the pinned full project remains index-only; local acquisition and redistribution are separate questions. Checkpoints and LibriSpeech/Noise92/LOCATA/RealMAN data are separate. IPDnet fixed-array filename is literally FixedAarryIPDnet.py.",
       "entrypoints": [
         "README.md",
         "IPDnet/README.md",
@@ -1716,6 +1731,24 @@
         "main_speech.py"
       ],
       "note": "Keep source unchanged in ignored local checkout. No audio, weights or datasets selected; do not redistribute with the book. Acquisition is not runtime, numerical or paper-performance validation."
+    },
+    {
+      "id": "neural-srp",
+      "url": "https://github.com/egrinstein/neural_srp.git",
+      "revision": "0ec639f028987ca3d9d3764331f6d65ff455f9a8",
+      "license": "No code license established in root or readme; paper CC BY does not license repository code",
+      "scope": "Research candidate: pairwise GCC and microphone-coordinate encoding, permutation-invariant aggregation, causal direction/activity sequence model",
+      "fetch_enabled": false,
+      "note": "Official paper OJSP 5 (2024), 19–28, DOI 10.1109/OJSP.2023.3340057. Fixed author repository indexed 2026-09-28; source, weights, dependencies and datasets not acquired or executed. No new algorithm-coverage row or universal source-count claim.",
+      "entrypoints": [
+        "readme.md",
+        "params.json",
+        "models/",
+        "train_singlesource.py",
+        "train_multisource.py",
+        "visualize_locata.py",
+        "visualize_tau.py"
+      ]
     }
   ]
 }

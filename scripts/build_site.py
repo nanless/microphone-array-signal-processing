@@ -126,6 +126,7 @@ REAL_AUDIO_WAVS = {
 }
 REAL_AUDIO_FILES = REAL_AUDIO_WAVS | {"MANIFEST.json", "ATTRIBUTION.txt", "LICENSE.txt", "README.md"}
 ROOM_AUDIO_EXTRA = {"MANIFEST.json", "ROOM_RESULTS.png"}
+TRACKING_AUDIO_WAVS = {"source.wav": 1, "array_noisy.wav": 2}
 MOVING_AUDIO_WAVS = {"source.wav": 1, "static_array.wav": 2, "moving_array.wav": 2}
 GSS_AUDIO_WAVS = {"source_1.wav": 1, "source_2.wav": 1, "mixture.wav": 2,
                   "enhanced_correct.wav": 1, "enhanced_missed.wav": 1}
@@ -212,6 +213,31 @@ def stage_moving_audio(source, destination):
     return expected
 
 
+
+def stage_tracking_audio(source, destination):
+    """Validate the independent PCM-to-observation experiment before publishing."""
+    import wave
+    expected = set(TRACKING_AUDIO_WAVS) | {"MANIFEST.json"}
+    if (source.is_symlink() or {p.name for p in source.iterdir()} != expected
+            or any(p.is_symlink() or not p.is_file() for p in source.iterdir())):
+        raise ValueError("追踪音频目录必须恰有两份普通WAV及清单")
+    manifest = json.loads((source/"MANIFEST.json").read_text())
+    if set(manifest["files"]) != set(TRACKING_AUDIO_WAVS) or manifest["sample_rate_hz"] != 16000:
+        raise ValueError("追踪音频清单集合或采样率不符")
+    for name, channels in TRACKING_AUDIO_WAVS.items():
+        path, record = source/name, manifest["files"][name]
+        if (record["channels"] != channels or record["samples_per_channel"] != 32000
+                or hashlib.sha256(path.read_bytes()).hexdigest() != record["sha256"]):
+            raise ValueError(f"追踪音频摘要或参数不符：{name}")
+        with wave.open(str(path),"rb") as wav:
+            if (wav.getframerate(),wav.getnchannels(),wav.getsampwidth(),
+                    wav.getnframes(),wav.getcomptype()) != (16000,channels,2,32000,"NONE"):
+                raise ValueError(f"追踪音频PCM格式不符：{name}")
+    destination.mkdir()
+    for name in sorted(expected):
+        shutil.copy2(source/name,destination/name)
+    return expected
+
 def stage_gss_audio(source, destination):
     """核对受控 GSS 教学链的五路 PCM 与可复算中间状态。"""
     import wave
@@ -260,6 +286,7 @@ def source_digest():
     paths += sorted((ROOT / "codes" / "real_audio").glob("*"))
     paths += sorted((ROOT / "codes" / "room_audio").glob("*"))
     paths += sorted((ROOT / "codes" / "moving_audio").glob("*"))
+    paths += sorted((ROOT / "codes" / "tracking_audio").glob("*"))
     paths += sorted((ROOT / "codes" / "gss_audio").glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "heading_aliases.py",
@@ -459,6 +486,9 @@ def rewrite_site_links(html, source_path):
         if target.parent == (ROOT / "codes" / "room_audio").resolve():
             relative = os.path.relpath("room_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
+        if target.parent == (ROOT / "codes" / "tracking_audio").resolve() and target.name in (set(TRACKING_AUDIO_WAVS) | {"MANIFEST.json"}):
+            relative = os.path.relpath("tracking_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
+            return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
         if target.parent == (ROOT / "codes" / "moving_audio").resolve() and target.name in (set(MOVING_AUDIO_WAVS) | {"MANIFEST.json"}):
             relative = os.path.relpath("moving_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
@@ -477,7 +507,7 @@ def rewrite_site_links(html, source_path):
         # input as a download link; only the explicit mono derivatives play.
         if parsed.path.endswith("real_audio/demand_nriver_16ch_10s.wav"):
             return match.group(0)
-        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|gss_audio)/[a-z0-9_]+\.wav", parsed.path):
+        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio)/[a-z0-9_]+\.wav", parsed.path):
             return match.group(0)
         safe_href = escape(href, quote=True)
         safe_label = escape(re.sub(r'<[^>]+>', '', unescape(label)), quote=True)
@@ -757,6 +787,10 @@ def main():
         (OUT / "moving_audio").mkdir(exist_ok=True)
         stale += [path for path in (OUT / "moving_audio").iterdir()
                   if path.is_file() and path.name not in moving_names]
+        tracking_names = stage_tracking_audio(ROOT / "codes/tracking_audio", temp_out / "tracking_audio")
+        (OUT / "tracking_audio").mkdir(exist_ok=True)
+        stale += [path for path in (OUT / "tracking_audio").iterdir()
+                  if path.is_file() and path.name not in tracking_names]
         gss_names = stage_gss_audio(ROOT / "codes/gss_audio", temp_out / "gss_audio")
         (OUT / "gss_audio").mkdir(exist_ok=True)
         stale += [path for path in (OUT / "gss_audio").iterdir()
@@ -769,6 +803,8 @@ def main():
                        for name in sorted(room_names)] +
                       [(temp_out / "moving_audio" / name, OUT / "moving_audio" / name)
                        for name in sorted(moving_names)] +
+                      [(temp_out / "tracking_audio" / name, OUT / "tracking_audio" / name)
+                       for name in sorted(tracking_names)] +
                       [(temp_out / "gss_audio" / name, OUT / "gss_audio" / name)
                        for name in sorted(gss_names)], stale)
     print("DONE", len(expected), "pages")

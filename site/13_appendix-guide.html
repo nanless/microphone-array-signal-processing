@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 B · 路径地图与练习 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="b1acdf28f221"><style>
+<meta name="source-digest" content="6a8206ac3b4f"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -152,7 +152,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <ol>
 <li>运行 <code>codes/</code> 中只依赖 NumPy 的教学实现，核对手算结果、数组维度和退化边界。</li>
 <li>在隔离环境中用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线，记录房间、阵列和随机种子。</li>
-<li>运行 <code>scripts/</code> 中的两个绘图脚本，按当前参数复现 43 张编号图，并逐图核对正文条件。</li>
+<li>运行 <code>scripts/</code> 中的两个绘图脚本，按当前参数复现 44 张编号图，并逐图核对正文条件。</li>
 <li>按研究任务选择公开数据和固定版本参考系统，分别核对代码、模型与数据的许可和评测口径。</li>
 <li>在可用的多通道硬件上测实时性、同步和标定；仿真结果不能代替设备测量。</li>
 </ol>
@@ -515,12 +515,12 @@ $$</p>
 <p>$$
 X(n,f)=E(n,f)+\sum_{k=\Delta}^{\Delta+K-1}G^*(k,f)X(n-k,f) .
 $$</p>
-<p><strong>PHD 预测，见式(9-9)</strong>：新生目标强度加存活目标的状态转移。</p>
+<p><strong>PHD 预测，见式(9-22)</strong>：新生目标强度加存活目标的状态转移。</p>
 <p>$$\begin{aligned}
 D_{t\vert t-1}(\vec x)&=\gamma_t(\vec x)\\
 &\quad+\int p_S(\vec\xi)f_{t\vert t-1}(\vec x\mid\vec\xi)D_{t-1}(\vec\xi)\,d\vec\xi.
 \end{aligned}$$</p>
-<p><strong>PHD 更新，见式(9-10)</strong>：漏检项加每条观测的“目标/杂波”归一化贡献。</p>
+<p><strong>PHD 更新，见式(9-23)</strong>：漏检项加每条观测的“目标/杂波”归一化贡献。</p>
 <p>$$\begin{aligned}
 D_t&=(1-p_D)D^-\\
 &\quad+\sum_{z\in Z_t}\dfrac{p_Dg(z\mid x)D^-}{\kappa(z)+\int p_Dg(z\mid\xi)D^-(\xi)d\xi}.
@@ -903,7 +903,7 @@ $$</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/engineering_boundary_exercises.py">工程边界练习</a>再区分三类容易混淆的量：E10-16 的恰好完成与真正超期，E10-17 的采样时刻、回调时刻与对应输出时刻，E11-09 的平均错误下降与独立配对方向证据。它们分别用整数刻度、同一时钟的构造时间戳和全部符号排列作独立核查，不将调度模型、时间单位或教学计数写成硬件实测。</p>
 <p>继续做设备实验时，可按<a href="research/03_industrial_deployment.html">工业实现研究</a>的 I01～I29 选择一个主题，例如采集与路由、连续重采样、VAD/AGC/NS、DSP 固件、模型运行时或评分。先固定源码提交，再记录依赖、编译、模型、声学输入和故障状态；“已下载”只能说明源码在本机，不能代替“已编译、已运行、已测量”。</p>
 <p>会议识别复现还要固定数据准备与文本规范化。CHiME-8 的官方 <code>chime-utils</code> 提供 SegLST 转写格式、该届规范化及 cpWER/tcpWER 评分；其中缺失场景的忽略选项会改变实际计分范围。应保留每个场景的输入文件数、失败数和最终参与评分的清单，并先用正确转写、说话人交换、漏词和时间戳偏移的小夹具检查评分口径。<a href="https://github.com/chimechallenge/chime-utils/tree/152882404f572d40769ef02bf91c5a9a9cfc9c78" title="citation">CHiME-8 官方评分实现</a></p>
-<p>绘图脚本都在 <code>scripts/</code> 里。图 34～36 和图 37～38 读取或复算指定教学数据，图 39 是算法流程图，图 40 复算时钟漂移音频，图 41 对照线性插值的解析响应与PCM幅度，图 42 展开 GSS 的三条依赖，图 43 对照 CSS 槽位关联与 PCM 音调幅度；先生成音频，再运行两个绘图脚本。图片写入 <code>figures/</code>，共 43 张：</p>
+<p>绘图脚本都在 <code>scripts/</code> 里。图 34～36 和图 37～38 读取或复算指定教学数据，图 39 是算法流程图，图 40 复算时钟漂移音频，图 41 对照线性插值的解析响应与PCM幅度，图 42 展开 GSS 的三条依赖，图 43 对照 CSS 槽位关联与 PCM 音调幅度；先生成音频，再运行两个绘图脚本。图片写入 <code>figures/</code>，共 44 张：</p>
 <pre><code class="language-bash">.venv/bin/python codes/examples/generate_audio_samples.py
 .venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～43
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～39（回声消除专题）

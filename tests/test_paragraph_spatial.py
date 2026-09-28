@@ -102,8 +102,8 @@ class SpatialParagraphTest(unittest.TestCase):
             self.assertEqual(html.count(equation), 1)
             self.assertEqual(item.count(r"\tag{"), 1)
         self.assertIn("未建模运动的过程噪声", lists[0][1])
-        self.assertIn("更新更依赖观测", lists[0][2])
-        self.assertIn("括号里的差称为新息", lists[0][3])
+        self.assertIn("较小的观测方差会增大角度增益", lists[0][2])
+        self.assertIn("第一行的差称为新息", lists[0][3])
         self.assertNotIn("<pre>", html)
 
     def test_missing_intro_separator_reproduces_the_original_failure(self):

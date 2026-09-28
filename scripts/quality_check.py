@@ -53,7 +53,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "06_aec.md": 60,
     "07_wpe-dereverberation.md": 48,
     "08_speech-separation.md": 52,
-    "09_source-tracking.md": 9,
+    "09_source-tracking.md": 52,
     "10_engineering-practice.md": 13,
     "11_selection-guide.md": 11,
     "12_appendix-symbols-math.md": 14,
@@ -78,10 +78,10 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 119
-EXPECTED_SUBSECTION_COUNT = 392
-EXPECTED_OUTLINE_ITEM_COUNT = 525
-EXPECTED_FIGURE_NUMBERS = set(range(1, 44))
-# 研究附站使用独立显式清单，不挤占 14 篇教程或 525 项 PDF 大纲基线。
+EXPECTED_SUBSECTION_COUNT = 435
+EXPECTED_OUTLINE_ITEM_COUNT = 568
+EXPECTED_FIGURE_NUMBERS = set(range(1, 45))
+# 研究附站使用独立显式清单，不挤占 14 篇教程或 568 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
     ("README.md", "index.html"),
@@ -420,6 +420,13 @@ def collaboration_baseline_issues(text: str):
     return [] if actual == expected else [f"AGENTS 书签基线过期：{actual}，应为 {expected}"]
 
 
+
+def source_control_character_issues(text):
+    """Catch accidental Python escapes (e.g. BEL from a TeX approx command)."""
+    return [f"源文含控制字符 U+{ord(char):04X}：第{line_no}行"
+            for line_no, line in enumerate(text.split("\n"),1)
+            for char in line if (ord(char)<32 and char not in "\t\r") or ord(char)==127]
+
 def check_sources(errors: list[str], notices: list[str]):
     agents_path = ROOT / "AGENTS.md"
     if agents_path.exists():
@@ -430,6 +437,8 @@ def check_sources(errors: list[str], notices: list[str]):
     paths += [ROOT / "README.md", ROOT / "README_EN.md", ROOT / "scripts" / "README.md"]
     for path in paths:
         original = path.read_text(encoding="utf-8")
+        errors.extend(f"{path.relative_to(ROOT)}: {issue}"
+                      for issue in source_control_character_issues(original))
         prose = strip_fenced_code(original)
         for line_no, line in enumerate(original.splitlines(), 1):
             if EDITING_MARKERS.search(line):
@@ -607,11 +616,16 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43)
+            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
                 fail(errors, f"PNG 溯源失效：figures/{name}: {issue}")
+            if number == 44:
+                expected = hashlib.sha256((ROOT / "codes/tracking_audio/MANIFEST.json").read_bytes()).hexdigest()
+                with Image.open(path) as image:
+                    if image.info.get("AudioManifestDigest") != expected:
+                        fail(errors, "图44独立追踪音频清单摘要失效")
             if number in (34, 35, 36, 40, 41, 43):
                 expected = hashlib.sha256((ROOT / "codes/audio/MANIFEST.json").read_bytes()).hexdigest()
                 with Image.open(path) as image:
@@ -889,6 +903,7 @@ def site_source_digest():
     paths += sorted((ROOT / "codes" / "real_audio").glob("*"))
     paths += sorted((ROOT / "codes" / "room_audio").glob("*"))
     paths += sorted((ROOT / "codes" / "moving_audio").glob("*"))
+    paths += sorted((ROOT / "codes" / "tracking_audio").glob("*"))
     paths += sorted((ROOT / "codes" / "gss_audio").glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
@@ -1138,7 +1153,7 @@ def check_real_audio(errors):
         parser = Players()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         allowed_audio_roots = ("../audio/", "../real_audio/", "../room_audio/",
-                               "../gss_audio/", "../moving_audio/")
+                               "../gss_audio/", "../moving_audio/", "../tracking_audio/")
         if any(not (p.get("src") or "").startswith(allowed_audio_roots)
                for p in parser.items):
             fail(errors, "未知试听控件来源")
@@ -1248,6 +1263,46 @@ def check_moving_audio(errors):
     except Exception as exc:
         fail(errors, f"移动声源合成样本检查失败：{exc}")
 
+
+
+def check_tracking_audio(errors):
+    """Verify published PCM, regeneration provenance and real observation controls."""
+    source, published = ROOT/"codes/tracking_audio", SITE/"tracking_audio"
+    expected = {"source.wav","array_noisy.wav","MANIFEST.json"}
+    try:
+        for folder in (source,published):
+            if (folder.is_symlink() or {p.name for p in folder.iterdir()} != expected
+                    or any(p.is_symlink() or not p.is_file() for p in folder.iterdir())):
+                raise ValueError(f"追踪音频文件集合或类型不符：{folder}")
+        for name in expected:
+            if (source/name).read_bytes() != (published/name).read_bytes():
+                raise ValueError(f"追踪音频网页副本不同：{name}")
+        manifest = json.loads((source/"MANIFEST.json").read_text())
+        for name,digest in manifest['source_sha256'].items():
+            if hashlib.sha256((ROOT/name).read_bytes()).hexdigest() != digest:
+                raise ValueError(f"追踪音频生成源码已变化：{name}")
+        for name,channels in {"source.wav":1,"array_noisy.wav":2}.items():
+            path = source/name
+            if hashlib.sha256(path.read_bytes()).hexdigest() != manifest['files'][name]['sha256']:
+                raise ValueError(f"追踪音频摘要不符：{name}")
+            with wave.open(str(path),'rb') as wav:
+                if (wav.getframerate(),wav.getnchannels(),wav.getsampwidth(),
+                        wav.getnframes(),wav.getcomptype()) != (16000,channels,2,32000,'NONE'):
+                    raise ValueError(f"追踪音频PCM格式不符：{name}")
+        frames = manifest['pcm_analysis']['frames']
+        if len(frames['state_time_s']) != 197 or any(len(v)!=197 for v in frames.values()):
+            raise ValueError("追踪音频逐帧结果长度不符")
+        if any(abs((a-t)-256.5/16000)>1e-12 for t,a in zip(
+                frames['state_time_s'],frames['available_time_s'])):
+            raise ValueError("帧中心和整帧可用时刻混淆")
+        page = (SITE/'09_source-tracking.html').read_text()
+        for name in expected-{'MANIFEST.json'}:
+            if f'src="tracking_audio/{name}"' not in page:
+                raise ValueError(f"第9章缺少追踪音频播放器：{name}")
+        if 'href="tracking_audio/MANIFEST.json"' not in page:
+            raise ValueError("第9章缺少追踪音频独立清单")
+    except Exception as exc:
+        fail(errors,f"PCM观测追踪实验检查失败：{exc}")
 
 def check_gss_audio(errors):
     """独立核对教学 GSS 的五路 PCM、状态文件和站点副本。"""
@@ -1400,6 +1455,7 @@ def main():
     check_real_audio(errors)
     check_room_audio(errors)
     check_moving_audio(errors)
+    check_tracking_audio(errors)
     check_gss_audio(errors)
     check_combined_html(errors)
     check_pdf(errors, notices)

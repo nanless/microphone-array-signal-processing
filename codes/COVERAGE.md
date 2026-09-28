@@ -1,6 +1,6 @@
 # 算法—源码—验证覆盖表
 
-逐章核实日期：2026-09-28（本轮已复核第1至8章的教学基线、章节映射、练习和相关外部来源；其余条目沿用各自原核实记录）。本表覆盖正文定义、推导或用于选型的方法，以及三篇研究文档中明确说明收录理由的扩展。每行限定具体计算步骤、算法变体或工业机制；同一算法的教学实现与外部对照不重复登记成不同状态。
+逐章核实日期：2026-09-28（本轮已复核第1至9章的教学基线、章节映射、练习和相关外部来源；其余条目沿用各自原核实记录）。本表覆盖正文定义、推导或用于选型的方法，以及三篇研究文档中明确说明收录理由的扩展。每行限定具体计算步骤、算法变体或工业机制；同一算法的教学实现与外部对照不重复登记成不同状态。
 
 四种覆盖状态：
 
@@ -9,7 +9,7 @@
 - **原理索引**：已有原理或来源依据，但尚未形成唯一、许可明确且承担对应计算的源码映射；代码可见而许可不明时也保留此状态，并说明原因。
 - **明确排除**：指定软件的身份或许可不满足本书当前收录方式；不表示删除相应方法的学术讨论。
 
-算法表共 287 行：本仓库可运行基线 55 行、外部参考实现 166 行、原理索引 65 行、明确排除 1 行。练习映射单独计数，不因题数增加算法行；MDL、功率谱减、受控 NCC 双讲检测与 cACGMM 教学迭代属于本地基线。覆盖表仍有原理索引，不表示全书全部算法已经运行。
+算法表共 292 行：本仓库可运行基线 55 行、外部参考实现 172 行、原理索引 64 行、明确排除 1 行。练习映射单独计数，不因题数增加算法行；MDL、功率谱减、受控 NCC 双讲检测与 cACGMM 教学迭代属于本地基线。覆盖表仍有原理索引，不表示全书全部算法已经运行。
 
 源码取得与入口核对见 [SOURCE_STATUS.json](SOURCE_STATUS.json)；该文件中的依赖验证和执行字段未开展时为 `not_run`，不承载方法级数值实验结果。实际运行及数值对照见[复现记录](research/04_source_reproduction.md)、[增强研究记录](research/02_aec_wpe_separation.md)和 [WPE 独立对照脚本](examples/compare_wpe_reference.py)。工业三库与 SBL 的限定实验保存在 `reports/`；实际调用外部代码不将它改列为本仓库教学基线。覆盖状态不是测试结果。完整提交、官方地址、许可与来源 ID 见 [SOURCES.lock.json](SOURCES.lock.json)。教学路径相对于 [array_tutorial/](array_tutorial/)；外部路径相对于对应项目根，出现“同文件”时仅继承上一行文件，不继承其算法或验证结论。
 
@@ -257,9 +257,9 @@
 | 正文或研究范围 | 算法/机制 | 覆盖状态 | 教学入口或主清单 ID：官方源码入口 | 关键边界 |
 |---|---|---|---|---|
 | §9.2 | 角度—角速度 Kalman | 本仓库可运行基线 | `tracking.py::ConstantVelocityKalman` | 最短角差、Joseph 更新、Q 的离散化 |
-| §9.2 | EKF | 外部参考实现 | `filterpy`：`filterpy/kalman/EKF.py` | 观测雅可比、角度残差 |
+| §9.2 | EKF | 外部参考实现 | `filterpy`：`filterpy/kalman/EKF.py` | 观测雅可比、角度残差；固定版组合接口线性化点与分步调用不同，见追踪接口报告 |
 | §9.2 | UKF | 外部参考实现 | `filterpy`：`filterpy/kalman/UKF.py` | sigma 点、圆周均值 |
-| §9.2；研究扩展：空间 §40 | IMM | 外部参考实现 | `filterpy`：`filterpy/kalman/IMM.py` | 同维同义状态与模式转移 |
+| §9.2；研究扩展：空间 §40 | IMM | 外部参考实现 | `filterpy`：`filterpy/kalman/IMM.py` | 同维同义状态与模式转移；固定版缺测/模式先验实际诊断见追踪接口报告 |
 | §9.2.4 | 圆周 SIR 粒子滤波 | 本仓库可运行基线 | `tracking.py::CircularParticleFilter` | 对数权重、多峰均值无定义 |
 | §9.2.4 | 系统重采样 | 本仓库可运行基线 | `tracking.py::systematic_resample` | 权重归一、随机种子 |
 | §9.3；研究扩展：空间 §33 | 最近邻关联 | 外部参考实现 | `stonesoup`：`stonesoup/dataassociator/neighbour.py` | 单轨最近不等于全局最优 |
@@ -267,14 +267,20 @@
 | §9.3；研究扩展：空间 §33 | PDA | 外部参考实现 | `stonesoup`：`stonesoup/dataassociator/probability.py` | 漏检、检测概率、杂波密度 |
 | §9.3 | JPDA | 外部参考实现 | `stonesoup`：同文件 `JPDA` | 联合事件，不自动维护说话人身份 |
 | §9.3 | GM-PHD | 外部参考实现 | `stonesoup`：`stonesoup/updater/pointprocess.py::PHDUpdater` | 权重和是期望人数 |
-| §9.3；研究扩展：空间 §34 | 高斯混合剪枝/合并 | 外部参考实现 | `stonesoup`：`stonesoup/mixturereducer/gaussianmixture.py` | 删去强度、出生覆盖 |
+| §9.3；研究扩展：空间 §34 | 高斯混合剪枝/合并 | 外部参考实现 | `stonesoup`：`stonesoup/mixturereducer/gaussianmixture.py` | 逐步核质量；固定版剪枝/截断重分配与合并权重上限见原方法诊断 |
 | §9.3；空间 §35 | MHT：滑窗多帧分配形式 | 外部参考实现 | `stonesoup`：`stonesoup/hypothesiser/mfa.py`、`stonesoup/dataassociator/mfa/` | OR-Tools、N-scan；已知目标示例不是声学完整系统 |
-| §9.3 | CPHD | 原理索引 | 正文目标数分布 | 基类文字不证明有实现 |
-| §9.3 | LMB | 原理索引 | 正文标签多伯努利模型 | 标签、存在性 |
-| §9.3 | δ-GLMB | 原理索引 | 正文标签随机有限集 | PHD 分量命名不等于 GLMB |
+| §9.3；空间研究 §56 | CPHD | 外部参考实现 | 归档锁表 `vo-rfs-tracking-updated`：`cphd/gms/run_filter.m` | 62文件选集已核；线性高斯目标研究模型，学术/研究用途受限；未执行MATLAB/MEX，非声学整链 |
+| §9.3；空间研究 §56 | LMB | 外部参考实现 | 归档锁表 `vo-rfs-tracking-updated`：`lmb/gms/run_filter.m` | 62文件选集已核；线性高斯目标研究模型，学术/研究用途受限；未执行MATLAB/MEX，非声学整链 |
+| §9.3；空间研究 §56 | δ-GLMB | 外部参考实现 | 归档锁表 `vo-rfs-tracking-updated`：`glmb/gms/run_filter.m` | 62文件选集已核；线性高斯目标研究模型，学术/研究用途受限；未执行MATLAB/MEX，非声学整链 |
 | §9.3 | 检测前追踪 TBD | 原理索引 | 正文弱证据模型 | 硬阈值峰不能替代原输入 |
 | §9.3 | OSPA | 外部参考实现 | `stonesoup`：`stonesoup/metricgenerator/ospametric.py` | 截断、阶数、单位；不直接评价身份 |
 | §9.4 | 轨迹到波束预测/限速 | 原理索引 | 正文控制接口；[缺测与限速缩例](examples/tracking_crossing_dropout_demo.py) | 观测龄期、失效与最大角速度；缩例未接真实设备 |
+
+| §9.2；空间研究 §31 | 固定增益 α-β / α-β-γ | 外部参考实现 | `filterpy`：`filterpy/gh/gh_filter.py` | 固定增益与采样间隔共同定义动态；不是自动估计协方差的Kalman |
+| §9.1；空间研究 §31 | 滑动平均、中值与众数基线 | 原理索引 | 正文比较三种统计量 | 平均线性，中值/众数非线性；众数依赖离散化，圆周边界另处理 |
+| §9.2；空间研究 §32 | APF 辅助粒子滤波 | 原理索引 | Pitt–Shephard观测引导祖先选择与重要性校正 | 改进提议分布不自动提供异常值鲁棒性；不可把SIR改名为APF |
+| §9.3；空间研究 §36 | GOSPA | 外部参考实现 | `stonesoup`：`stonesoup/metricgenerator/ospametric.py::GOSPAMetric` | p≥1，α=2分解定位/漏检/虚警；单帧位置指标不证明身份连续 |
+| 研究扩展：空间 §55.2 | RBMCDA 条件解析多目标追踪 | 外部参考实现 | `spatial-audio-framework`：`framework/modules/saf_tracker/saf_tracker.c`、`saf_tracker_internal.c` | 关联粒子与条件Kalman分开；GPL-2.0-or-later模块，静态核对未执行 |
 
 ## 连续音频、噪声控制与部署
 
@@ -360,7 +366,7 @@
 
 ## 章节代码练习与音频映射
 
-185 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 287 行算法统计。补充的空间精算、增强步骤、时间状态模块分别提供3/5/4道题。三个原有 `exercises_` 模块各自提供 `run_exercises()`，分别有 28/23/25 道题；AEC 小实验另有 4 道，进阶 AEC 手算另有 10 道；E03-07、E04-08、E09-06 与 E10-13 由独立实验入口提供。E04-08 的 200 次独立双源抽样只说明固定模型中的分辨事件频率和 Wilson 区间。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
+195 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 292 行算法统计。补充的空间精算、增强步骤、时间状态模块分别提供3/5/4道题。三个原有 `exercises_` 模块各自提供 `run_exercises()`，分别有 28/23/25 道题；AEC 小实验另有 4 道，进阶 AEC 手算另有 10 道；E03-07、E04-08、E09-06 与 E10-13 由独立实验入口提供。E04-08 的 200 次独立双源抽样只说明固定模型中的分辨事件频率和 Wilson 区间。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
 
 | 章节与稳定 ID | 练习入口 | 回归测试 |
 |---|---|---|
@@ -374,6 +380,7 @@
 | 第 6～9 章：`E06-01`～`E06-20`、`E07-01`～`E07-05`、`E08-01`～`E08-07`、`E09-01`～`E09-06`（38 题） | [exercises_enhancement.py](examples/exercises_enhancement.py)（23 题）；[AEC 四个边界小例](examples/aec_algorithm_minicases.py)（`E06-07`～`E06-10`）；[AEC 十个进阶手算](examples/aec_advanced_exercises.py)（`E06-11`～`E06-20`）；[交叉追踪 E09-06](examples/tracking_crossing_dropout_demo.py) | [test_codes_exercises_enhancement.py](../tests/test_codes_exercises_enhancement.py)、[test_codes_aec_minicases.py](../tests/test_codes_aec_minicases.py)、[test_codes_aec_advanced_exercises.py](../tests/test_codes_aec_advanced_exercises.py)、[test_codes_tracking_crossing_dropout.py](../tests/test_codes_tracking_crossing_dropout.py) |
 | 第 10～11 章、附录 A/B：`E10-01`～`E10-14`、`E11-01`～`E11-07`、`E12-01`～`E12-04`、`E13-01`（26 题） | [exercises_engineering.py](examples/exercises_engineering.py)（25 题）；[谱减 E10-13](examples/spectral_subtraction_demo.py)（1 题） | [test_codes_exercises_engineering.py](../tests/test_codes_exercises_engineering.py)、[test_codes_spectral_subtraction.py](../tests/test_codes_spectral_subtraction.py) |
 | E02-07、E04-10、E05-06（3题） | [空间精算](examples/spatial_precision_exercises.py) | [独立测试](../tests/test_codes_spatial_precision.py) |
+| E09-10～19（10题） | [第9章逐步计算](examples/chapter09_experiments.py) | [独立解析测试](../tests/test_codes_chapter09_experiments.py)、[PCM音频](../tests/test_codes_tracking_audio.py) |
 | E08-12～23（12题） | [第8章逐步计算](examples/chapter08_experiments.py) | [独立测试](../tests/test_codes_chapter08_experiments.py) |
 | E07-08～17（10题） | [第7章逐步计算](examples/chapter07_experiments.py) | [独立测试](../tests/test_codes_chapter07_experiments.py) |
 | E06-21、E07-06、E08-08～10（5题） | [增强逐步计算](examples/enhancement_step_exercises.py) | [独立测试](../tests/test_codes_enhancement_steps.py) |
@@ -382,6 +389,7 @@
 在仓库根目录使用模块入口：
 
 ```bash
+.venv/bin/python -m codes.examples.chapter09_experiments
 .venv/bin/python -m codes.examples.chapter08_experiments
 .venv/bin/python -m codes.examples.chapter07_experiments
 .venv/bin/python -m codes.examples.chapter06_experiments
@@ -412,7 +420,7 @@
 本仓库不提交下载缓存、模型权重或未经授权的第三方语料；`audio/` 中的 98 个文件是本书自行合成的教学样本，`real_audio/` 中另有许可明确的 DEMAND 小型摘录和派生文件，不包含完整下载归档。独立上游工作目录的取得、许可保留与未执行项目按来源状态记录报告。算法、源码或排除范围变化时，同步修改本表、研究说明、来源清单和真实验证记录。
 
 
-真实数据练习 R01 使用 [prepare_real_recordings.py](examples/prepare_real_recordings.py) 与 [real_recordings.py](array_tutorial/real_recordings.py)，测试见 [test_codes_real_recordings.py](../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 185 道合成/手算代码题。数据来源和许可另见 [real_audio/](real_audio/README.md)。
+真实数据练习 R01 使用 [prepare_real_recordings.py](examples/prepare_real_recordings.py) 与 [real_recordings.py](array_tutorial/real_recordings.py)，测试见 [test_codes_real_recordings.py](../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 195 道合成/手算代码题。数据来源和许可另见 [real_audio/](real_audio/README.md)。
 
 四组模型与边界练习对应以下独立实现；主音频新增的 4 个 interpolation 文件验证固定滤波误差，不是完整采样率转换性能。
 

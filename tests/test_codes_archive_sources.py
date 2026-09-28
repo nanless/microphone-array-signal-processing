@@ -6,6 +6,9 @@ import lzma
 from pathlib import Path
 import tarfile
 import tempfile
+import stat
+import zipfile
+import warnings
 import unittest
 from unittest.mock import patch
 
@@ -235,6 +238,67 @@ class ArchiveSourceTests(unittest.TestCase):
         records = json.loads(report.read_text())["projects"]
         self.assertEqual(records[0]["status"], "failed")
         self.assertIn("modified", records[0]["error"])
+
+
+class ZipSourceTests(ArchiveSourceTests):
+    """Run the shared acquisition checks against ZIP, plus ZIP-specific hazards."""
+    def archive(self, members=None):
+        raw = io.BytesIO()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            with zipfile.ZipFile(raw, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+                for name, content in self.default_members if members is None else members:
+                    member = zipfile.ZipInfo(name)
+                    member.create_system = 3
+                    if isinstance(content, tuple):
+                        types = {tarfile.SYMTYPE: stat.S_IFLNK, tarfile.LNKTYPE: stat.S_IFLNK,
+                                 tarfile.FIFOTYPE: stat.S_IFIFO, tarfile.CHRTYPE: stat.S_IFCHR,
+                                 tarfile.BLKTYPE: stat.S_IFBLK}
+                        member.external_attr = (types[content[0]] | 0o644) << 16
+                        content = content[1].encode()
+                    else:
+                        member.external_attr = (stat.S_IFREG | 0o644) << 16
+                    archive.writestr(member, content)
+        data = raw.getvalue()
+        self.project["archive_format"] = "zip"
+        self.project["archive"]["url"] = "https://example.invalid/source.zip"
+        self.project["archive"].update(sha256=hashlib.sha256(data).hexdigest(), size_bytes=len(data))
+        return data
+
+    def test_decompression_member_count_and_size_limits(self):
+        data = self.archive()
+        for limit, value, message in (("MAX_TAR_BYTES", 10, "total member"),
+                                       ("MAX_FILE_BYTES", 2, "member size"),
+                                       ("MAX_MEMBERS", 1, "member count")):
+            with self.subTest(limit=limit), patch.object(fetch, limit, value):
+                with self.assertRaisesRegex(ValueError, message):
+                    fetch.selected_files(data, self.project)
+
+    def test_invalid_xz_is_recorded_as_failure_after_matching_hash(self):
+        self.project["archive_format"] = "zip"
+        super().test_invalid_xz_is_recorded_as_failure_after_matching_hash()
+
+    def test_encrypted_unselected_entry_rejected(self):
+        data = self.archive()
+        original = zipfile.ZipFile.infolist
+        def entries(archive):
+            members = original(archive)
+            members[-1].flag_bits |= 1
+            return members
+        with patch.object(zipfile.ZipFile, "infolist", entries):
+            with self.assertRaisesRegex(ValueError, "encrypted"):
+                fetch.selected_files(data, self.project)
+
+    def test_crc_corruption_rejected_before_publication(self):
+        data = self.archive()
+        # ZIP_STORED fixture: alter selected payload, retain its CRC, then pin
+        # the corrupt archive to isolate the member-integrity boundary.
+        corrupt = data.replace(b"license and readme", b"LICENSE and readme", 1)
+        self.assertNotEqual(corrupt, data)
+        self.project["archive"]["sha256"] = hashlib.sha256(corrupt).hexdigest()
+        with self.assertRaises(zipfile.BadZipFile):
+            fetch.selected_files(corrupt, self.project)
+        self.assertFalse(self.destination.exists())
 
 
 if __name__ == "__main__":

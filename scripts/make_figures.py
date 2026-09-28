@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""生成教程插图 33 张（图 1~25、图 33~36、40~43；图 26~32、37~39 见 make_aec_figures.py）。
+"""生成教程插图 34 张（图 1~25、图 33~36、40~44；图 26~32、37~39 见 make_aec_figures.py）。
 
 用法（仓库根目录）：
-    .venv/bin/python scripts/make_figures.py      # 图 1~25、图 33~36、40~43 → figures/
+    .venv/bin/python scripts/make_figures.py      # 图 1~25、图 33~36、40~44 → figures/
 """
 from pathlib import Path
 import hashlib
@@ -878,16 +878,25 @@ def particle_filter_doa(observations, rng, n_particles=200, process_std=1.0,
             proposed, velocities, angle_bounds)
         reflection_fraction[k] = np.mean(hit_bound)
         if np.isfinite(observation):
-            if clutter_probability == 0:
-                # 只需相对似然。先减去最小绝对残差再形成平方差，避免极远观测
-                # 使所有普通高斯密度同时下溢为零。
-                absolute_residual = np.abs(angles - observation)
-                closest = np.min(absolute_residual)
-                with np.errstate(over="ignore", invalid="ignore"):
-                    squared_difference = ((absolute_residual - closest)
-                                          * (absolute_residual + closest)
-                                          / observation_std ** 2)
-                likelihood_log = -0.5 * squared_difference
+            if clutter_probability == 0 or not lower <= observation <= upper:
+                # Outside the finite clutter support its density is zero. The
+                # common Gaussian factor cancels, including the mixture weight.
+                # Select the reference only among particles with positive prior.
+                support = weights > 0
+                supported = angles[support]
+                reference = supported[np.argmin(np.abs(supported - np.clip(observation, lower, upper)))]
+                with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+                    # Factored square difference preserves particle separation
+                    # even when observation is so large that angle-z rounds to -z.
+                    difference = angles - reference
+                    total = (angles - observation) + (reference - observation)
+                    # Form exact zero products before scale division: equal
+                    # distances stay equally likely even for tiny positive σ.
+                    squared_difference = difference * total
+                    squared_difference[difference == 0] = 0.0
+                    likelihood_log = -0.5 * (squared_difference / observation_std) / observation_std
+                likelihood_log[angles == reference] = 0.0
+                likelihood_log[~support] = -np.inf
             else:
                 standardized = (angles - observation) / observation_std
                 with np.errstate(over="ignore"):
@@ -955,7 +964,10 @@ def fig_tracking():
     N = 200
     est, n_eff, resampled, reflection_fraction = particle_filter_doa(
         obs, rng, n_particles=N)
-    fig, axes = plt.subplots(1, 2, figsize=(9.5, 6.4))
+    fig = plt.figure(figsize=(9.5, 9.0))
+    grid = fig.add_gridspec(2, 2, height_ratios=(1.25, 1))
+    axes = [fig.add_subplot(grid[0, :]), fig.add_subplot(grid[1, 0]),
+            fig.add_subplot(grid[1, 1])]
     axes[0].plot(t, obs, ".", color="gray", ms=4, label="DOA观测（含噪声和均匀杂波）")
     axes[0].plot(t, true, color="k", lw=2, label="真实轨迹")
     axes[0].plot(t, est, color=C_RED, lw=1.6, ls="--", label="混合似然粒子滤波估计")
@@ -968,11 +980,17 @@ def fig_tracking():
     axes[0].set_xlabel("帧"); axes[0].set_ylabel("方位角 (°)")
     handles, labels = axes[0].get_legend_handles_labels()
     fig.legend(handles, labels, fontsize=FS_SMALL, loc="lower center", ncol=2,
-               bbox_to_anchor=(.5, .015), framealpha=.95)
+               bbox_to_anchor=(.5, .002), framealpha=.95)
     axes[0].grid(ls=":", alpha=0.5)
     axes[0].set_title("(a) 单说话人追踪：匀速状态模型在缺测段只做预测\n"
                       "（200 粒子；高斯目标+均匀杂波似然；0～120°镜面反射边界）", fontsize=FS_TITLE)
-    ax = axes[1]
+    axes[1].plot(t, n_eff, color=C_BLUE, lw=1.5, label="更新后、重采样前")
+    axes[1].axhline(N/2, color=C_RED, ls="--", label="重采样阈值 100")
+    axes[1].axvspan(48, 57, color=C_PURPLE, alpha=.12)
+    axes[1].set(xlabel="帧", ylabel="有效粒子数 (个)", ylim=(0, N+5),
+                title="(b) 本帧重采样前 ESS\n虚线为重采样阈值100")
+    axes[1].grid(ls=":", alpha=.5)
+    ax = axes[2]
     th = np.linspace(-90, 90, 400)
     I = normalized_phd_intensity(
         th, centers=[-25, 40], stds=[4, 5], weights=[1, 1],
@@ -986,11 +1004,39 @@ def fig_tracking():
                     arrowprops=dict(arrowstyle="->", color="r"))
     ax.set_ylim(0, 1.45 * I.max())
     ax.set_xlabel("方位角 (°)"); ax.set_ylabel("PHD 强度 (目标数/度)")
-    ax.set_title("(b) 两目标 PHD 强度示意：曲线积分=2\n（角度约定：−90°～+90°）", fontsize=FS_TITLE)
+    ax.set_title("(c) 人工 PHD 强度示意：积分=2\n（角度约定：−90°～+90°）", fontsize=FS_TITLE)
     ax.grid(ls=":", alpha=0.5)
     fig.suptitle("图22  声源追踪示意（模拟）", fontsize=FS_SUP)
-    fig.tight_layout(rect=(0, .24, 1, .96))
+    fig.tight_layout(rect=(0, .16, 1, .95), h_pad=2.0)
     save(fig, "fig22_tracking.png")
+    valid = ~missing
+    rmse = lambda mask, values: float(np.sqrt(np.mean((values[mask]-true[mask])**2)))
+    report = {
+        "schema_version": 1, "seed": FIGURE_SEEDS["tracking"],
+        "generator": "NumPy default_rng / PCG64; one sequential generator",
+        "script_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "environment": {"python": platform.python_version(), "numpy": np.__version__},
+        "parameters": {"frames": T, "particles": N, "observation_std_deg": 7,
+            "observation_replacement_probability": .2, "likelihood_clutter_probability": .1,
+            "angle_bounds_deg": [0,120], "process_std_deg_per_frame": 1,
+            "velocity_process_std_deg_per_frame": .25, "resample_ess_below": N/2,
+            "missing_frame_interval_half_open": [48,58]},
+        "counts": {"observed": int(valid.sum()), "missing": int(missing.sum()),
+            "replacement_draws": int(is_out.sum()), "observed_replacements": int((is_out&valid).sum()),
+            "resampling": int(resampled.sum()), "reflection_at_least_5_percent": int(boundary_active.sum())},
+        "scores": {"raw_observed_rmse_deg": rmse(valid,obs),
+            "pf_observed_rmse_deg": rmse(valid,est), "pf_missing_rmse_deg": rmse(missing,est),
+            "minimum_ess": float(n_eff.min())},
+        "frames": {"index": t.tolist(), "truth_deg": true.tolist(),
+            "observation_deg": [float(x) if np.isfinite(x) else None for x in obs],
+            "estimate_deg": est.tolist(), "missing": missing.tolist(),
+            "replacement_draw": is_out.tolist(), "ess_before_resampling": n_eff.tolist(),
+            "resampled": resampled.tolist(), "reflection_fraction": reflection_fraction.tolist()},
+        "phd_illustration": {"not_a_filter_run": True, "grid_deg": th.tolist(),
+            "intensity_targets_per_degree": I.tolist(), "integral_targets": float(np.trapezoid(I,th))},
+        "interpretation": "Single synthetic angular sequence, not microphone/audio input; no confidence interval or general performance claim."}
+    target = Path(__file__).resolve().parents[1]/"codes/reports/figure22_tracking.json"
+    target.write_text(json.dumps(report,ensure_ascii=False,indent=2,allow_nan=False)+"\n")
 
 
 # ----------------------------------------------------------------------
@@ -3102,6 +3148,38 @@ def fig_css_overlap():
     save(fig,'fig43_css_overlap.png',{'AudioManifestDigest':hashlib.sha256(manifest_path.read_bytes()).hexdigest()})
 
 
+
+def fig_tracking_audio():
+    """Plot only the analysis recomputed from the independently exported PCM."""
+    manifest_path = Path(__file__).resolve().parents[1]/'codes/tracking_audio/MANIFEST.json'
+    manifest = json.loads(manifest_path.read_text())
+    frames = manifest['pcm_analysis']['frames']
+    t = np.asarray(frames['state_time_s'])
+    valid = np.asarray(frames['observation_valid'],dtype=bool)
+    values = lambda key: np.asarray([np.nan if x is None else x for x in frames[key]],dtype=float)
+    fig, axes = plt.subplots(3,1,figsize=(9.5,9),sharex=True)
+    axes[0].plot(t,values('truth_angle_deg'),color='black',lw=1.8,label='阵列中心迟滞方向')
+    axes[0].plot(t,values('observation_angle_deg'),'.',color=C_BLUE,ms=3,label='PCM → GCC-PHAT → 方位')
+    axes[0].plot(t,values('filtered_angle_deg'),'--',color=C_RED,lw=1.6,label='Kalman 后验 / 缺测预测')
+    axes[0].set(ylabel='方位角 (°)',title='(a) 音频观测形成后才进入滤波器')
+    axes[0].legend(fontsize=11,loc='upper left')
+    axes[1].plot(t,values('angle_variance_deg2'),color=C_PURPLE,lw=1.6)
+    axes[1].set(ylabel='角度方差 (°²)',title='(b) 状态时刻的不确定度：缺测时只预测')
+    axes[2].plot(t,values('truth_tau10_samples'),color='black',lw=1.8,label='同一发射事件的传播时差')
+    axes[2].plot(t,values('observation_tau10_samples'),'.',color=C_BLUE,ms=3,label='GCC 亚采样峰')
+    axes[2].set(ylabel='通道1−通道0时差 (样本)',xlabel='接收帧中心 / state_time (s)',
+                title='(c) 左右麦时差与声源方向的符号相反')
+    axes[2].legend(fontsize=11,loc='lower left')
+    for ax in axes:
+        ax.fill_between(t,0,1,where=~valid,transform=ax.get_xaxis_transform(),
+                        color='#cfcfcf',alpha=.35,step='mid')
+        ax.grid(ls=':',alpha=.4)
+        ax.set_xlim(t[0],t[-1])
+    fig.suptitle('图44  连续运动合成音频 → 时差观测 → 追踪\n'
+                 '16 kHz / 2 s / 双麦间距10 cm；灰区为RMS门限产生的缺测',fontsize=FS_SUP)
+    fig.tight_layout(rect=(0,0,1,.93),h_pad=1.8)
+    save(fig,'fig44_tracking_audio.png',{'AudioManifestDigest':hashlib.sha256(manifest_path.read_bytes()).hexdigest()})
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -3138,6 +3216,7 @@ def main():
     fig_interpolation_error()
     fig_gss_flow()
     fig_css_overlap()
+    fig_tracking_audio()
     print("ALL DONE")
 
 
