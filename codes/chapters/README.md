@@ -2,22 +2,22 @@
 
 这里是全书教学代码与资产的唯一目录。每章的 `core/` 放算法数值核，`examples/` 放对应实验或外部接口探针；同一个数值核只归一个章节，其他章节直接导入。导读 `ch00/` 保存跨章练习、主音频总清单、全书索引和上游获取工具。
 
-| 目录 | 主要内容 |
-|---|---|
-| [ch00](ch00/README.md) | 全书索引、研究手册、外部源码清单和复现记录 |
-| [ch01](ch01/README.md) | 阵列有效性的基础模型与边界 |
-| [ch02](ch02/README.md) | 时延、声学模型和数字口径 |
-| [ch03](ch03/README.md) | 几何、协同阵与校准 |
-| [ch04](ch04/README.md) | 定位及双源分辨率实验 |
-| [ch05](ch05/README.md) | 波束约束、状态和同输入比较 |
-| [ch06](ch06/README.md) | AEC 状态、双讲与算法对照 |
-| [ch07](ch07/README.md) | WPE 时间和预测边界 |
-| [ch08](ch08/README.md) | 分离模型与活动错误 |
-| [ch09](ch09/README.md) | 追踪、交叉与缺测 |
-| [ch10](ch10/README.md) | 实时、数值、谱减和时钟工程 |
-| [ch11](ch11/README.md) | 约束、评分与方案选择 |
-| [appendix_a](appendix_a/README.md) | 数学、FFT 和统计边界 |
-| [appendix_b](appendix_b/README.md) | 房间结果、相位与来源证据题 |
+| 目录 | 主要实验模块（统一前缀 `codes.chapters.`） | 复算范围与边界 |
+|---|---|---|
+| [ch00](ch00/README.md) | `ch00.cross_chapter.*` | 全书索引、跨章练习、主音频清单与上游来源 |
+| [ch01](ch01/) | `ch01.chapter01_experiments` | E01-04～06；有限记录互项、残余延迟和头部传播模型，均为数学输入 |
+| [ch02](ch02/) | `ch02.chapter02_experiments` | E02-09～15；传播、频谱、协方差与采样，不是设备测量 |
+| [ch03](ch03/) | `ch03.chapter03_experiments`、`ch03.coarray_covariance_exercise` | E03-07～14；几何、模糊、校准和虚拟滞后统计 |
+| [ch04](ch04/) | `ch04.chapter04_experiments`、`ch04.doa_resolution_trials` | E04-08、E04-12～18；分辨率试验保留分类计数与统计分母 |
+| [ch05](ch05/) | `ch05.chapter05_experiments`、`ch05.beamformer_common_input_demo` | E05 练习；同输入波束权重比较限于所声明的阵列与噪声条件 |
+| [ch06](ch06/) | `ch06.chapter06_experiments`、`ch06.aec_algorithm_minicases`、`ch06.aec_partitioned_demo` | E06-22～33 及 AEC 算法缩例；外部库或录音示例另有依赖 |
+| [ch07](ch07/) | `ch07.chapter07_experiments`、`ch07.wpe_temporal_contract` | E07 练习及在线 WPE 分块连续性、未来帧影响 |
+| [ch08](ch08/) | `ch08.chapter08_experiments`、`ch08.gss_activity_error_demo` | E08 练习及固定密度下活动标注误差；不是官方 GPU 整链 |
+| [ch09](ch09/) | `ch09.chapter09_experiments`、`ch09.tracking_crossing_dropout_demo` | E09-10～19；轨迹交叉、缺测、方向限速的合成反例 |
+| [ch10](ch10/) | `ch10.chapter10_experiments`、`ch10.spectral_subtraction_demo`、`ch10.sro_closed_loop_demo` | E10-13、E10-18～27；合成时间戳及有状态插值，不是声卡实时实测 |
+| [ch11](ch11/) | `ch11.chapter11_experiments` | E11-10～19；硬约束、评分和 FIR 取舍，示意分数不代表产品测量 |
+| [appendix_a](appendix_a/) | `appendix_a.appendix_a_experiments` | E12-06～12；短向量、矩阵和合成脉冲的数学边界 |
+| [appendix_b](appendix_b/) | `appendix_b.appendix_b_experiments`、`appendix_b.interpolation_exercise` | E13-02～08；只读既有房间报告与 PCM，不重跑房间仿真 |
 
 从仓库根目录使用模块形式运行，例如：
 
@@ -26,7 +26,7 @@
 .venv/bin/python -m codes.chapters.appendix_b.appendix_b_experiments
 ```
 
-旧的 `codes.examples.*` 和 `codes.array_tutorial.*` 导入路径已经退出仓内接口。运行时使用上表中的章节模块；[旧新路径映射](../../scripts/code_layout_map.json)帮助定位原文件。修改题目时改唯一真实源文件，再核对全书 228 个稳定练习 ID、对应章节和覆盖表。
+旧的 `codes.examples.*` 和 `codes.array_tutorial.*` 导入路径已经退出仓内接口。运行时使用上表中的章节模块；修改题目时改唯一真实源文件，再核对全书 228 个稳定练习 ID、对应章节和覆盖表。
 
 房间、主音频、GSS、移动和追踪资产的清单，以及某些工业报告，会校验生成器的**路径和完整源码摘要**。生成器已归入相应章节的 `examples/`；原生 C/C++ 探针与调用它的 Python 文件放在同一目录。更改这些文件后，应从真实新源重生资产并核对参数、逐文件摘要和报告，再同步构建与测试。
 

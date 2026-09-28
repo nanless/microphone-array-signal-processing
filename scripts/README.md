@@ -32,7 +32,6 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 | `../codes/chapters/ch02/examples/prepare_real_recordings.py` | 默认及 `--check` 均离线只读；`--prepare` 从固定本地归档重建；`--download` 显式获取约 99 MB 归档并重建 | `codes/chapters/ch02/real_audio/`：4 个 WAV、清单；署名与许可独立保留 |
 | `make_figures.py` | 生成图 1～25 和图 33～36、40～49。只用 numpy 和 matplotlib，不依赖 scipy；随机种子固定。图 34～36、40～41、43～45、47、49 读取已生成的音频，必须先运行音频生成器。图 13 的蒙特卡洛统计耗时最长 | `figures/fig01`～`fig25_*.png`、`fig33_*`～`fig36_*`、`fig40_*`～`fig49_*` |
 | `make_aec_figures.py` | 10 张回声消除专题图（原 7 张另加两带子带、IPNLMS/RLS/Kalman 状态图及 PBFDAF 流程图）。风格与上一个脚本统一（六色/五级字号/dpi150） | `figures/fig26`～`fig32_*`、`fig37`～`fig39_*` |
-| `renumber2.py` | 已退役。单篇长文时代的图号整理工具，留作存档，平时不用跑 | 无 |
 | `build_site.py` | 生成 14 个教程页和 6 个研究页，保留旧版语义及顺序深链；编号图直接引用 `figures/`，独立音频与状态按各自清单核验并复制；站点 MathJax 在线加载 | `site/` 下的网页及独立媒体副本 |
 | `build_pdf.py` | 合订本脚本。14 篇合成带封面和三级目录的 HTML，Chrome 标签化打印 A4 PDF，再以保留结构树的方式写三级书签；第 1～13 章的源 h4 进入第三级。常用 flag：`--html-only`、`--pdf-only`、`--no-bookmarks`、`--build-date YYYY-MM-DD` | `dist/combined.html` 与 `dist/microphone-array-tutorial.pdf` |
 | `quality_check.py` | 发布门禁。用独立基线检查 14 篇/119 节/505 个指定子节/49 图，核对图号、alt、公式编号与引用、小节语义链接、PNG 绘图脚本摘要、网页导航和 PDF 三级书签。确定性问题阻断发布，高风险口语只提醒人工复核 | 通过、失败清单，以及不阻断发布的人工复核与可访问性提示 |

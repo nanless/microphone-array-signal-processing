@@ -6,7 +6,7 @@
 
 - 在 macOS 主机上运行 `system_profiler SPAudioDataType -json`。提升权限后的设备列表只有一个输入：Apple 内建“MacBook Air麦克风”，1 个输入通道，当前标称 48,000 Hz；另有“MacBook Air扬声器”输出。沙箱内同一命令曾返回空列表，故不以沙箱结果判断硬件数量。
 - 用 CoreAudio 的设备属性再次枚举到这两个设备：一个输入、一个输出。两者的 `kAudioDevicePropertyClockDomain` 为相同的非零值。依本机 macOS SDK 的 `AudioHardwareBase.h` 语义，同一非零时钟域表示可硬件同步；不能把这对内建设备当成两个已确认独立的采样时钟。
-- [libsamplerate 的已知时钟实验](./research/03_industrial_deployment.md#i04libsamplerate-的有状态重采样)以数学合成输入预设 +100/+150 ppm，验证的是重采样接口和真值补偿，不是设备 SRO 估计。[DEMAND 真实录音](./MDL_REAL_AUDIO_REVIEW.md)的多通道样本来自同一同步采集设备，也不能用于两设备相对时钟测量。
+- [libsamplerate 的已知时钟实验](../../ch00/research/03_industrial_deployment.md#i04libsamplerate-的有状态重采样)以数学合成输入预设 +100/+150 ppm，验证的是重采样接口和真值补偿，不是设备 SRO 估计。[DEMAND 真实录音](../../ch02/real_audio/README.md)的多通道样本来自同一同步采集设备，也不能用于两设备相对时钟测量。
 
 | ID｜位置 | 类别／严重度 | 证据 | 修改建议 | 负责人 | 状态 | 验证结果 |
 |---|---|---|---|---|---|---|

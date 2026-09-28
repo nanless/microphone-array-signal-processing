@@ -42,7 +42,7 @@ The [source research handbook](codes/chapters/ch00/research/README.md) explains 
 | `codes/chapters/*/reports/` | Small-scale run reports beside their algorithm chapters, separate from source acquisition and full paper benchmarks |
 | `scripts/` | Plotting and build scripts (`make_figures.py`, `make_aec_figures.py`, `build_site.py`, `build_pdf.py`; see `scripts/README.md`) |
 | `site/` | 20 pages: 14 tutorial pages (including the homepage) and 6 handbook pages under `research/`; reproducible build output |
-| `dist/` | Current combined PDF and rebuildable HTML; the PDF has 638 bookmarks: 14 top-level, 119 second-level and 505 third-level. Two historical snapshots are explained in the [directory guide](dist/README.md) |
+| `dist/` | [Current combined PDF](dist/microphone-array-tutorial.pdf) and rebuildable HTML; the PDF has 638 bookmarks: 14 top-level, 119 second-level and 505 third-level |
 
 ## Chapters
 
