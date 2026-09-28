@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "verified_at": "2026-09-23",
+  "verified_at": "2026-09-28",
   "notes": "Fixed source revisions for independent local research checkouts. Acquisition does not mean runtime validation or redistribution permission. LFS objects, submodules and common model/audio/archive files are omitted in new sparse working trees; upstream Git objects can still contain embedded assets. Code, models and datasets retain their respective terms.",
   "projects": [
     {
@@ -1819,6 +1819,89 @@
         "main_speech.py"
       ],
       "note": "Keep source unchanged in ignored local checkout. No audio, weights or datasets selected; do not redistribute with the book. Acquisition is not runtime, numerical or paper-performance validation."
+    },
+    {
+      "id": "dicow-v1-inference",
+      "url": "https://github.com/BUTSpeechFIT/DiCoW.git",
+      "revision": "e9326bd536bf632e823357438b210102903ba620",
+      "release": "v1 branch",
+      "license": "Apache-2.0 for repository source; model weights and diarization assets have separate terms",
+      "scope": "Original DiCoW v1 diarization-conditioned Whisper demo and model inference source, not current main branch SE-DiCoW",
+      "fetch_enabled": true,
+      "acquisition": "independent_source_checkout",
+      "source_paths": [
+        "LICENSE",
+        "README.md",
+        "requirements.txt",
+        "app.py",
+        "example.py",
+        "modeling_dicow.py",
+        "dicow_encoder.py",
+        "dicow_config.py",
+        "dicow_utils.py",
+        "pipeline.py",
+        "hybrid_decoding.py",
+        "amplifiers.py",
+        "interactions.py"
+      ],
+      "entrypoints": [
+        "LICENSE",
+        "README.md",
+        "app.py",
+        "modeling_dicow.py",
+        "dicow_encoder.py",
+        "pipeline.py"
+      ],
+      "note": "Author v1 branch inspected 2026-09-28. README delegates training to TS-ASR-Whisper and states Python 3.11, FFmpeg, Pyannote diarization and Hugging Face access are needed for its demo. Source checkout excludes weights and audio; it is not a run or numerical validation. DiCoW weights are separately CC BY 4.0 and optional DiariZen weights CC BY-NC 4.0 according to the author main README, and each exact model card must be checked before use. Original paper DOI 10.1016/j.csl.2025.101841."
+    },
+    {
+      "id": "ts-asr-whisper-v1",
+      "url": "https://github.com/BUTSpeechFIT/TS-ASR-Whisper.git",
+      "revision": "0ea6679d44405f5ff39188030123524686c198e9",
+      "release": "v1 branch",
+      "license": "Apache-2.0 for repository source; model weights, datasets and submodule terms separate",
+      "scope": "Original DiCoW and Target Speaker Whisper training, decoding, configuration and scoring source; v1 branch is marked deprecated by authors",
+      "fetch_enabled": true,
+      "acquisition": "independent_source_checkout",
+      "source_paths": [
+        "LICENSE",
+        "README.md",
+        "requirements.txt",
+        "src/",
+        "configs/",
+        "scripts/",
+        "utils/"
+      ],
+      "entrypoints": [
+        "LICENSE",
+        "README.md",
+        "src/main.py",
+        "src/train.py",
+        "src/mt_asr/interactions.py",
+        "src/models/whisper_ctc.py",
+        "configs/base.yaml",
+        "configs/train/icassp/table1_final-models/ami.yaml",
+        "configs/decode/best_ami.yaml",
+        "scripts/training/submit_slurm.sh"
+      ],
+      "note": "Author v1 branch inspected 2026-09-28; distinct from current main with DiCoW v3 and SE-DiCoW. Its inference_pipeline submodule pins DiCoW commit e9326bd536bf632e823357438b210102903ba620. README requires external prepared AMI/NOTSOFAR/Libri2Mix data, pretrained checkpoints, Python 3.11 and FFmpeg/Sox. The fetch tool does not initialize submodules or acquire weights/data; source verification alone does not show the recipe can run. Original DiCoW paper DOI 10.1016/j.csl.2025.101841."
+    },
+    {
+      "id": "flowsep",
+      "url": "https://github.com/Audio-AGI/FlowSep.git",
+      "revision": "d8164db58bd461ef5bb6df8ffd372b536ee6afb4",
+      "license": "NOASSERTION: no repository LICENSE, LICENCE, COPYING or NOTICE file found at pinned revision; dependency, checkpoint and dataset terms separate",
+      "scope": "Author FlowSep language-queried sound separation via rectified flow matching, indexed for source study only",
+      "fetch_enabled": false,
+      "acquisition": "index_only",
+      "entrypoints": [
+        "README.md",
+        "lass_inference.py",
+        "lass_config/2channel_flow.yaml",
+        "train_latent_diffusion.py",
+        "val_latent_diffusion.py"
+      ],
+      "note": "Fixed author tree inspected 2026-09-28. The README says inference requires a separately downloaded Zenodo checkpoint; training requires an additional VAE checkpoint and AudioCaps, and code derives from AudioLDM and BigVGAN. Repository visibility is not redistribution permission: do not automatically fetch, copy code or weights into the book. No dependency installation, model run or quality validation. ICASSP 2025 DOI 10.1109/ICASSP49660.2025.10890129."
     },
     {
       "id": "neural-srp",

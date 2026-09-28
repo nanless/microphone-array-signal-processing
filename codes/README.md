@@ -4,8 +4,8 @@
 可直接装进产品的音频前端。实时音频线程、设备驱动、线程调度、定点优化、模型权重和现场标定仍需按
 第 10 章单独完成。
 
-外部研究代码由 [锁定清单](SOURCES.lock.json) 管理：93 个 Git 项目中，81 个在本机有
-`upstream/_downloads/` 工作区，另 12 个保留来源索引。2026-09-28 离线核验有 80 项通过，AEC Challenge 工作区的 5 个真实录音文件处于本地修改状态，未把该项记为通过；见 [SOURCE_STATUS.json](SOURCE_STATUS.json)。新增的`kaldialign`仅取得Apache-2.0源码及接口，并未构建或运行评分包。独立源码目录被 Git 忽略，不会随本书提交上传。
+外部研究代码由 [锁定清单](SOURCES.lock.json) 管理：96 个 Git 项目中，83 个在本机有
+`upstream/_downloads/` 工作区，另 13 个保留来源索引。2026-09-28 离线核验有 82 项通过，AEC Challenge 工作区的 5 个真实录音文件处于本地修改状态，未把该项记为通过；见 [SOURCE_STATUS.json](SOURCE_STATUS.json)。新增的`kaldialign`仅取得Apache-2.0源码及接口，并未构建或运行评分包。独立源码目录被 Git 忽略，不会随本书提交上传。
 取得代码、完成构建和复现数值是不同状态，见[复现记录说明](research/04_source_reproduction.md)。
 
 已有可选 nara-wpe 0.0.11 环境时，可运行
@@ -36,7 +36,7 @@ SMP-PHAT 可用 `.venv/bin/python codes/examples/reproduce_smpphat_reference.py 
 | `examples/` | 按章节组织的可运行例子，打印输入口径、中间量和结果 |
 | `reports/` | 本书仿真逐次统计与显式运行外部接口后保存的数值报告；记录输入、固定版本及环境，不等同于源码获取状态 |
 | `audio/` | 27 组、109 个本书合成 WAV 及 `MANIFEST.json`；由音频生成器产生，不直接编辑 |
-| `room_audio/` | 附录 B 第 16 题的 6 组、18 个房间白噪声合成 WAV、独立清单和结果图；由 `room_srp_exercise.py` 用锁定 pyroomacoustics 生成 |
+| `room_audio/` | 附录 B 第 16 题的 6 组、18 个房间白噪声合成 WAV、独立清单、结果图和 `RESULTS.json` 数值报告；由 `room_srp_exercise.py` 用锁定 pyroomacoustics 生成 |
 | `real_audio/` | 真实 DEMAND 河流录音摘录与 3 个派生 WAV，独立记录 CC BY-SA 3.0 数据许可 |
 | `upstream/` | 第三方官方仓库的按需获取工具；下载内容默认不入 Git |
 | `COVERAGE.md` | 正文算法到代码、测试和外部实现的逐项映射 |
@@ -70,7 +70,7 @@ SMP-PHAT 可用 `.venv/bin/python codes/examples/reproduce_smpphat_reference.py 
 
 附录 A 的[七道数学边界题](examples/appendix_a_experiments.py)与[FFT 分块卷积教学实现](array_tutorial/math_foundations.py)分别检查频率格点、复内积、相关符号、有限快拍与错误块处理；三路同增益脉冲音频见[第 34 节](research/05_exercises_and_audio.md#sec-u-a0ab2e82f7)。
 
-全书222道稳定编号代码题按各章学习难点组织；完整ID、每题输入与答案、运行入口及音频条件见[练习与音频实验](research/05_exercises_and_audio.md)。基础题、算法边界题、精算题与结构题使用独立模块，导入模块不运行实验。附录B的17道综合书面题另行编号，其中需pyroomacoustics的房间实验不混入稳定ID题数。算法种类以[COVERAGE.md](COVERAGE.md)为准，不能用练习数量表示方法覆盖。
+全书228道稳定编号代码题按各章学习难点组织；完整ID、每题输入与答案、运行入口及音频条件见[练习与音频实验](research/05_exercises_and_audio.md)。基础题、算法边界题、精算题与结构题使用独立模块，导入模块不运行实验。附录B的17道综合书面题另行编号，其中需pyroomacoustics的房间实验不混入稳定ID题数。算法种类以[COVERAGE.md](COVERAGE.md)为准，不能用练习数量表示方法覆盖。
 
 第4章的[七道定位逐步实验](examples/chapter04_experiments.py)复算插值、相位求和、共同子空间基、几何更新和局部下界；[固定版doatools诊断](examples/reproduce_doatools_esprit.py)另需已有SciPy环境，并保留默认加权失败与独立参考结果。两者的教学验证与外部实现诊断分别记录。
 
@@ -104,7 +104,7 @@ SMP-PHAT 可用 `.venv/bin/python codes/examples/reproduce_smpphat_reference.py 
 
 样例用于观察时延、残留回声、混响、混合和削波等现象，不是自然语音质量评测。给定混合矩阵的求逆不是盲分离；已知双讲区间的冻结不是双讲检测器。这些限制及试听顺序见[音频实验说明](research/05_exercises_and_audio.md)。合成文件的来源说明不等于授予新的再分发许可，许可边界仍见下节。
 
-附录 B 第 16 题另有[六位置房间仿真](examples/room_srp_exercise.py)生成的 [18 个白噪声 WAV](room_audio/MANIFEST.json)和[三栏结果图](room_audio/ROOM_RESULTS.png)：每个位置保存源、一条四麦仅直达输出和一条四麦完整房间输出。它们采用一组共同导出增益，且与上面的 109 个文件使用不同清单；条件、计算和读取边界见[音频实验说明第 17 节](research/05_exercises_and_audio.md#17-六位置房间响应与定位)。
+附录 B 第 16 题另有[六位置房间仿真](examples/room_srp_exercise.py)生成的 [18 个白噪声 WAV](room_audio/MANIFEST.json)、[三栏结果图](room_audio/ROOM_RESULTS.png)和[逐位置数值报告](room_audio/RESULTS.json)：每个位置保存源、一条四麦仅直达输出和一条四麦完整房间输出。它们采用一组共同导出增益，且与上面的 109 个文件使用不同清单；条件、计算和读取边界见[音频实验说明第 17 节](research/05_exercises_and_audio.md#17-六位置房间响应与定位)。
 
 ## 真实录音实验 R01
 

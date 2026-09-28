@@ -1,6 +1,6 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 93 个 Git 上游项目；已在 `codes/upstream/_downloads/` 取得 81 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。2026-09-28 离线核验 80 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 12 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 96 个 Git 上游项目；已在 `codes/upstream/_downloads/` 取得 83 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件，DiCoW v1 演示与 TS-ASR-Whisper v1 训练源码于 2026-09-28 按固定提交取得。2026-09-28 离线核验 82 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 13 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”只说明来源、提交、工作区状态和指定入口符合清单，不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -75,6 +75,9 @@ SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构�
 | [wpe_gpu](https://github.com/desh2608/wpe/tree/bd2857b5b8de36df4f436a93574c088bea142042) | CuPy 离线 WPE 与 GPU-GSS 去混响 | MIT | 已取得独立源码 |
 | [dtln_aec](https://github.com/breizhn/DTLN-aec/tree/9d24e128b4f409db18227b8babb343016625921f) | 双信号处理域的神经 AEC | MIT | 已取得独立源码 |
 | [speakerbeam](https://github.com/BUTSpeechFIT/speakerbeam/tree/91af02cc617afa35fedfbdbf32533012cd0a8672) | 目标说话人提取的受限评估实现 | LicenseRef-BUT-NTT-Evaluation | 已取得8个原样文件供内部评估；不随本书再分发 |
+| [DiCoW v1 推理](https://github.com/BUTSpeechFIT/DiCoW/tree/e9326bd536bf632e823357438b210102903ba620) | 目标说话人转写的演示与模型接口；原版依赖说话人分段 | Apache-2.0 源码；模型与分段器另核 | 固定 v1 分支源码选集；不含权重、数据或服务部署 |
+| [TS-ASR-Whisper v1](https://github.com/BUTSpeechFIT/TS-ASR-Whisper/tree/0ea6679d44405f5ff39188030123524686c198e9) | 原 DiCoW 训练、解码、Hydra 配置与评分；作者已标记此分支为旧版 | Apache-2.0 源码；子模块、权重和语料另核 | 固定 v1 分支源码选集；不初始化子模块或取得模型、数据 |
+| [FlowSep](https://github.com/Audio-AGI/FlowSep/tree/d8164db58bd461ef5bb6df8ffd372b536ee6afb4) | 文本查询的整流流匹配声音分离；不是目标说话人转写 | 固定提交未找到明确仓库源码许可；仅索引 | 不自动取得源码、权重或演示音频，不再分发 |
 | [metaaf](https://github.com/adobe-research/MetaAF/tree/56c4665bdc51c2e0595a7c0cd9b1266408adceff) | 可学习更新规则及通用频域 RLS 的核心库；AEC Kalman/RLS 基线另在 `zoo/aec/` | 核心 University of Illinois/NCSA；`zoo/` Adobe Research License | 已取得核心、zoo/aec/、zoo/wpe/ 与直接公共源码；zoo 仅限非商用研究（含教学/测试），附独立许可；未取权重、未运行网络 |
 | [fastmnmf_author](https://github.com/sekiguchi92/SoundSourceSeparation/tree/897fe87fea3d85a243d8a3fd36c2232bb0548ad3) | FastMNMF 与自回归联合模型的作者实验 | LicenseRef-Academic-Research-Only | 仅来源索引 |
 | [spmamba](https://github.com/JusperLee/SPMamba/tree/f939f60a10db8a66aa69ec09685684307af47412) | 空间域与时序状态空间分离 | Apache-2.0 | 已取得独立源码 |
@@ -88,6 +91,8 @@ SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构�
 | [dcase2022-seld](https://github.com/sharathadavanne/seld-dcase2022/tree/c8adb1d3a5a35de2d6c7b6d19e01ad455eef3986) | multi-ACCDOA、ADPIT 与 SELD | No explicit redistribution license established from inspected official tree and source header | 仅来源索引 |
 | [dcase2025-stereo-seld](https://github.com/partha2409/DCASE2025_seld_baseline/tree/42a48b6456b73be35ad0e1a9ffeb6ceef83ae0bd) | 双通道方位/距离与视听 SELD | No explicit redistribution license established from inspected official tree and source header | 仅来源索引 |
 | [notsofar1](https://github.com/microsoft/NOTSOFAR1-Challenge/tree/6f58e08b008f7530ba4141f0aeb02447c70b6fd7) | 连续语音分离训练、会议推理与转写基线 | MIT code; DATA_LICENSE and dataset-version restrictions separate | 已取得独立源码 |
+
+DiCoW 两份 v1 源码是互相匹配的：TS-ASR-Whisper v1 的 `inference_pipeline` 子模块固定指向表中 DiCoW v1 提交，当前主分支的 v3/SE-DiCoW 则是不同版本。两仓 `LICENSE` 均为 Apache-2.0；[作者当前 DiCoW 许可说明](https://github.com/BUTSpeechFIT/DiCoW#license)把 DiCoW 权重单列为 CC BY 4.0、较新演示采用的 DiariZen 权重单列为 CC BY-NC 4.0，[DiariZen 模型许可原文](https://github.com/BUTSpeechFIT/DiariZen/blob/main/MODEL_LICENSE)再次确认非商用限制。v1 演示依赖 Pyannote 3.1，不能把 DiariZen 写成 v1 必需项；具体模型卡、Pyannote 访问条款和语料授权还需逐项核对。FlowSep 的固定源码树没有仓库许可文件；其论文、Zenodo checkpoint 与网页演示不能代替源码许可。因此 FlowSep 仅保留固定提交及入口，不进入本地获取或本书代码分发。两份 DiCoW 源码虽已取得，也未安装依赖、取得权重、执行推理或训练。最小实验与方法差异见[神经方法研究手册 N17～N18](research/02_aec_wpe_separation.md#neural)。
 
 ### 空间、控制与工程补充
 
@@ -245,5 +250,5 @@ PRA的AuxIVA、ILRMA、FastMNMF/FastMNMF2、TRINICON，ssspy的回投影，以�
 Vo归档SHA-256为`fb22c9edecb56049b7f8ede1e1522384f0c4e6bfb5e5577f3bd482f6367ef46a`。
 配套descriptor是作者下载页的固定快照，摘要为`a4903db625b19ed77c69b495b9655257bd3b1e7ebd3fe5d27bfcec52ef6d2984`；
 这两个值均为本次取得后本地计算，不是作者公布的独立校验值或数字签名。
-[归档锁表](ARCHIVE_SOURCES.lock.json)现有HARK与Vo两项，与93个Git项目分开计数。
+[归档锁表](ARCHIVE_SOURCES.lock.json)现有HARK与Vo两项，与96个Git项目分开计数。
 完整压缩包仍在忽略缓存中，包含未选取资产；只有选定工作树排除了二进制、图和数据。缓存及源码工作树不随本书提交推送。

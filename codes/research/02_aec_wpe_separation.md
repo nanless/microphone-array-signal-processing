@@ -931,6 +931,24 @@ NOTSOFAR-1 的固定源码从 `run_training_css_local.py` 进入 `css/training/t
 
 经典原文的核查范围同样有限：已读 MNMF2013、FastMNMF2019、TRINICON2006、GSS2018、GPU-GSS2023、Conv-TasNet、DPRNN和SepFormer的上述相关段落。AuxIVA2011与ILRMA2016的正式DOI身份已核，但此次资料核查没有取得两篇全文；本书公式另由固定实现与独立代数复算核对，不把这项源码核对写成“全文原文复现”。其他已锁神经方法沿用各节具体入口及明确的未运行范围，不宣称穷尽整个领域。
 
+### N17　DiCoW v1：分段条件控制目标说话人的转写
+
+[DiCoW 正式论文](https://doi.org/10.1016/j.csl.2025.101841)研究的是**目标说话人自动转写**：输入为混合语音和目标说话人的逐帧活动信息，输出是目标说话人的文字。它不是把每个说话人还原成可播放的独立波形，也不是只凭两麦角度即可确定身份。其目标说话人条件来自分段器；分段器把目标和非目标弄反、漏检重叠或时间戳错位时，转写也可能指向错误的人。
+
+作者将原版 v1 推理固定在 [DiCoW v1 提交 `e9326bd`](https://github.com/BUTSpeechFIT/DiCoW/tree/e9326bd536bf632e823357438b210102903ba620)，训练与解码固定在 [TS-ASR-Whisper v1 提交 `0ea6679`](https://github.com/BUTSpeechFIT/TS-ASR-Whisper/tree/0ea6679d44405f5ff39188030123524686c198e9)。后者的 `inference_pipeline` 子模块恰好指向前者同一提交；两份作者源码在本书锁表中分别登记，不能将后来的主分支 DiCoW v3 或 SE-DiCoW 权重当作原版 v1 实验。旧训练分支的 README 已标记 deprecated，表示它适合追溯原实现，不等于当前维护推荐。训练入口为 [`src/main.py`](https://github.com/BUTSpeechFIT/TS-ASR-Whisper/blob/0ea6679d44405f5ff39188030123524686c198e9/src/main.py)、[`src/train.py`](https://github.com/BUTSpeechFIT/TS-ASR-Whisper/blob/0ea6679d44405f5ff39188030123524686c198e9/src/train.py)，四类活动条件在 [`src/models/whisper_ctc.py` 的 `TargetSpeakerAmplifier`](https://github.com/BUTSpeechFIT/TS-ASR-Whisper/blob/0ea6679d44405f5ff39188030123524686c198e9/src/models/whisper_ctc.py) 接入编码状态；推理侧对应 [`modeling_dicow.py`](https://github.com/BUTSpeechFIT/DiCoW/blob/e9326bd536bf632e823357438b210102903ba620/modeling_dicow.py) 的 `vad_mask` 输入与 [`app.py`](https://github.com/BUTSpeechFIT/DiCoW/blob/e9326bd536bf632e823357438b210102903ba620/app.py)。这些定位是静态源码阅读，不代表已加载权重跑过一次转写。
+
+**最小可复现检查。** 先在固定、授权的短双人录音上保留两人的参考文本与活动时间线，手工给出“静音、目标、非目标、重叠”四类逐帧条件，核对分段时间基准、Whisper 特征帧与条件帧是否对齐。用同一模型版本、同一语言与解码设置分别给正确目标条件、交换身份条件及时间错位条件；记录目标 WER、非目标内容串入和空目标时的幻觉。若改用完整作者演示，v1 README 还要求 Python 3.11、FFmpeg、Pyannote 3.1、Hugging Face 访问和相配的模型权重；重训另需预训练模型、AMI/NOTSOFAR/Libri2Mix 的各自数据许可与配置。不要把网页能打开、源码已取得或权重可见等同实验已复现。
+
+两份固定源码的 `LICENSE` 都是 Apache-2.0；[作者当前许可说明](https://github.com/BUTSpeechFIT/DiCoW#license)另将 DiCoW 模型权重列为 CC BY 4.0，将较新演示所用 DiariZen 权重列为 CC BY-NC 4.0。[DiariZen 模型许可](https://github.com/BUTSpeechFIT/DiariZen/blob/main/MODEL_LICENSE)也单列非商用条件。**v1 演示实际用 Pyannote 3.1**，不能将较新 DiariZen 配置误写成 v1 的前提；每个拟用模型和语料仍需核对精确资产许可。本书只在忽略目录取得固定源码选集，未取得上述权重、数据或运行转写。
+
+### N18　FlowSep：文本查询指定声音事件，而非说话人身份
+
+[FlowSep 的 ICASSP 2025 正式论文](https://doi.org/10.1109/ICASSP49660.2025.10890129)和[作者固定源码](https://github.com/Audio-AGI/FlowSep/tree/d8164db58bd461ef5bb6df8ffd372b536ee6afb4)处理的是“给出混合声音与文字描述，生成符合描述的声音”。其整流流匹配学习从噪声到目标潜表示的变换，之后仍需潜表示到梅尔谱、再到波形的解码链；文字“人声”不能保证得到指定说话人的稳定身份。与上面的 DiCoW 相比，FlowSep 输出音频，DiCoW 输出文字；与 [N12 AudioSep](#neural) 相比，条件形式同为文本，但生成模型、潜空间和推理次数不同，不能混用权重或直接按论文不同数据上的单项数字排序。
+
+固定树的 [`lass_inference.py`](https://github.com/Audio-AGI/FlowSep/blob/d8164db58bd461ef5bb6df8ffd372b536ee6afb4/lass_inference.py) 接文字和音频路径；[`lass_config/2channel_flow.yaml`](https://github.com/Audio-AGI/FlowSep/blob/d8164db58bd461ef5bb6df8ffd372b536ee6afb4/lass_config/2channel_flow.yaml)列模型条件；训练、验证入口分别为 `train_latent_diffusion.py`、`val_latent_diffusion.py`。作者 README 要求另外取得 [Zenodo checkpoint](https://zenodo.org/records/13869712)；从头训练还需要 VAE 权重、[AudioCaps](https://audiocaps.github.io/) 与其音频/标注数据。还需核对改编自 AudioLDM 与 BigVGAN 的依赖版本和各自许可。最低限度的任务核查可用**自行合成且有真值**的两种非人声音源：固定查询词、随机种子、采样率和解码设置，分别查询存在/不存在的事件，逐条保存目标泄漏、误生成与残差信号；只有在权重、依赖和数据许可都齐备并实际运行后，才能填入音频质量数值。
+
+截至 2026-09-28，固定 FlowSep 源码树未找到 `LICENSE`、`LICENCE`、`COPYING` 或 `NOTICE`，论文与公开网页也不自动授予源码或权重的再分发权。因此锁表将其设为 `index_only`、`fetch_enabled=false`；本书只保留官方入口、提交号与实验设计，**没有复制该源码、权重或演示音频，也没有运行模型**。若以后补到明确代码许可，须重新核对具体提交、模型与数据条件，再决定是否本地取得。
+
 
 ## 6. 复现实验的共同记录表
 

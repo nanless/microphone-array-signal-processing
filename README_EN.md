@@ -2,9 +2,9 @@
 
 A beginner-friendly Chinese tutorial on microphone array signal processing at graduate-entry level. It starts with “why use an array of microphones” and covers DOA estimation, beamforming, acoustic echo cancellation (AEC), dereverberation (WPE), speech separation, source tracking, engineering practice, and system selection.
 
-The tutorial provides key derivations, reproducible numerical examples, validity limits, 49 script-generated figures, and NumPy/standard-library teaching code mapped to the equations. It includes 222 executable exercises and 109 main-manifest synthetic audio files in 27 groups; see [exercises and audio experiments](codes/research/05_exercises_and_audio.md) for inputs, answers and listening conditions. Chapter 6 exercises E06-07–20 are dimensionless model checks; two AEC audio groups use related but not identical parameters and are not substitutes for the exercise answers. These 109 files are not natural speech or formal listening-test data. A separate set of 4 WAV files contains a real 16-channel DEMAND river-noise excerpt and three derivatives under CC BY-SA 3.0, for noise-power and interchannel-correlation experiments.
+The tutorial provides key derivations, reproducible numerical examples, validity limits, 49 script-generated figures, and NumPy/standard-library teaching code mapped to the equations. It includes 228 executable exercises and 109 main-manifest synthetic audio files in 27 groups; see [exercises and audio experiments](codes/research/05_exercises_and_audio.md) for inputs, answers and listening conditions. Chapter 6 exercises E06-07–20 are dimensionless model checks; two AEC audio groups use related but not identical parameters and are not substitutes for the exercise answers. These 109 files are not natural speech or formal listening-test data. A separate set of 4 WAV files contains a real 16-channel DEMAND river-noise excerpt and three derivatives under CC BY-SA 3.0, for noise-power and interchannel-correlation experiments.
 
-Appendix B also has [18 separate synthetic room WAVs](codes/room_audio/MANIFEST.json) across six source positions and one chart from the executed simulation. They contain white noise, not recorded speech, and are separate from the 109 main synthetic files.
+Appendix B also has [18 separate synthetic room WAVs](codes/room_audio/MANIFEST.json) across six source positions, one chart, and a [machine-readable result report](codes/room_audio/RESULTS.json) from the executed simulation. They contain white noise, not recorded speech, and are separate from the 109 main synthetic files.
 
 Two further independent synthetic sets provide [five guided-separation WAVs and intermediate state](codes/gss_audio/MANIFEST.json) and [three moving-source WAVs with trajectory truth](codes/moving_audio/MANIFEST.json). Neither set is included in the main 109 files or represents recorded speech or device performance.
 
@@ -40,7 +40,7 @@ The [source research handbook](codes/research/README.md) explains implementation
 | `codes/reports/` | Small-scale industrial-interface and spatial-algorithm run reports, separate from source acquisition and full paper benchmarks |
 | `scripts/` | Plotting and build scripts (`make_figures.py`, `make_aec_figures.py`, `build_site.py`, `build_pdf.py`; see `scripts/README.md`) |
 | `site/` | 20 pages: 14 tutorial pages (including the homepage) and 6 handbook pages under `research/`; reproducible build output |
-| `dist/` | Combined PDF (`microphone-array-tutorial.pdf`) and HTML; the PDF has 632 bookmarks: 14 top-level, 119 second-level and 499 third-level |
+| `dist/` | Combined PDF (`microphone-array-tutorial.pdf`) and HTML; the PDF has 638 bookmarks: 14 top-level, 119 second-level and 505 third-level |
 
 ## Chapters
 

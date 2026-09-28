@@ -280,7 +280,7 @@ class ResearchBuildTest(unittest.TestCase):
             room_manifest = json.loads((room_source / "MANIFEST.json").read_text(encoding="utf-8"))
             room_names = {record["file"] for record in room_manifest["files"]}
             self.assertEqual(len(room_names), 18)
-            room_names.update({"MANIFEST.json", "ROOM_RESULTS.png"})
+            room_names.update({"MANIFEST.json", "ROOM_RESULTS.png", "RESULTS.json"})
             self.assertEqual({path.name for path in (output / "room_audio").iterdir()}, room_names)
             for name in room_names:
                 with self.subTest(room_asset=name):

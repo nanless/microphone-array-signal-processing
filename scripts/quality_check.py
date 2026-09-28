@@ -57,7 +57,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "10_engineering-practice.md": 47,
     "11_selection-guide.md": 29,
     "12_appendix-symbols-math.md": 26,
-    "13_appendix-guide.md": 23,
+    "13_appendix-guide.md": 29,
 }
 # 上表为独立发布基线，不从待检 HTML 或构建器反推。
 EXPECTED_CHAPTERS = [
@@ -78,8 +78,8 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 119
-EXPECTED_SUBSECTION_COUNT = 499
-EXPECTED_OUTLINE_ITEM_COUNT = 632
+EXPECTED_SUBSECTION_COUNT = 505
+EXPECTED_OUTLINE_ITEM_COUNT = 638
 EXPECTED_FIGURE_NUMBERS = set(range(1, 50))
 # 研究附站使用独立显式清单，不挤占 14 篇教程或 568 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
@@ -1181,7 +1181,7 @@ def check_room_audio(errors):
         names = [record["file"] for record in records]
         cases = {record["case"] for record in records}
         roles = {(record["case"], record["role"]) for record in records}
-        expected = set(names) | {"MANIFEST.json", "ROOM_RESULTS.png"}
+        expected = set(names) | {"MANIFEST.json", "ROOM_RESULTS.png", "RESULTS.json"}
         if (len(records) != 18 or len(set(names)) != 18 or len(cases) != 6 or
                 roles != {(case, role) for case in cases
                           for role in ("source", "direct", "full")} or
@@ -1205,6 +1205,45 @@ def check_room_audio(errors):
                 int.from_bytes(png[16:20], "big") < 1200 or
                 int.from_bytes(png[20:24], "big") < 1000):
             raise ValueError("房间结果图格式或尺寸不符")
+        report = json.loads((root / "RESULTS.json").read_text(encoding="utf-8"))
+        if (report.get("schema_version") != 1 or
+                report.get("status") != "pyroomacoustics_simulation_executed" or
+                report.get("pyroomacoustics_version_installed") != "0.10.0" or
+                report.get("actual_max_order") != 40 or
+                report.get("generator", {}).get("path") != "codes/examples/room_srp_exercise.py" or
+                report["generator"].get("sha256") != hashlib.sha256(
+                    (ROOT / "codes/examples/room_srp_exercise.py").read_bytes()).hexdigest() or
+                report.get("assets", {}).get("figure", {}).get("sha256") != hashlib.sha256(png).hexdigest() or
+                report["assets"].get("audio_manifest", {}).get("sha256") != hashlib.sha256(
+                    (root / "MANIFEST.json").read_bytes()).hexdigest()):
+            raise ValueError("房间结果报告的版本、源或资产摘要不符")
+        published_rows = (
+            ("fixed_near_left", 1.000, -30.000, 0.546, 5.755, -29, 1.000),
+            ("fixed_near_right", 1.000, 30.000, 0.546, 5.755, 29, 1.000),
+            ("fixed_far_left", 2.500, -30.000, 0.553, -2.113, -32, 2.000),
+            ("fixed_far_right", 2.500, 30.000, 0.553, -2.113, 32, 2.000),
+            ("seeded_1", 1.099, -41.244, 0.555, 4.866, -40, 1.244),
+            ("seeded_2", 1.973, 2.396, 0.563, -0.003, 3, 0.604),
+        )
+        if len(report.get("results", [])) != len(published_rows):
+            raise ValueError("房间结果报告必须有六个位置")
+        for row, baseline in zip(report["results"], published_rows):
+            actual = (row["name"], row["distance_m"], row["true_azimuth_deg"],
+                      row["t60_s_median"], row["drr_db_median"],
+                      row["estimated_azimuth_deg"], row["absolute_doa_error_deg"])
+            if actual[0] != baseline[0] or any(round(value, 3) != reference
+                                               for value, reference in zip(actual[1:], baseline[1:])):
+                raise ValueError(f"房间结果报告与已发布三位小数表不符：{row['name']}")
+        chapter = (CHAPTERS / "13_appendix-guide.md").read_text(encoding="utf-8")
+        for label, distance, azimuth, t60, drr, estimate, error in published_rows:
+            # The publication table is checked by its six rounded numeric columns,
+            # not by position-only labels that might be edited independently.
+            formatted = (f"{distance:.3f}", f"{azimuth:+.3f}" if azimuth > 0 else f"{azimuth:.3f}",
+                         f"{t60:.3f}", f"{drr:.3f}", f"{estimate:+d}" if estimate > 0 else str(estimate),
+                         f"{error:.3f}")
+            if not any(all(value in cell.replace('−', '-') for value, cell in zip(formatted, line.split('|')[2:8]))
+                       for line in chapter.splitlines() if line.startswith('| ') and len(line.split('|')) >= 9):
+                raise ValueError(f"房间正文表与结果报告不符：{label}")
         for record in records:
             path = root / record["file"]
             if hashlib.sha256(path.read_bytes()).hexdigest() != record["sha256"]:

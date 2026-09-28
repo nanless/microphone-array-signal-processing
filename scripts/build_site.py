@@ -125,7 +125,7 @@ REAL_AUDIO_WAVS = {
     "demand_nriver_mean02_10s.wav", "demand_nriver_mean16_10s.wav",
 }
 REAL_AUDIO_FILES = REAL_AUDIO_WAVS | {"MANIFEST.json", "ATTRIBUTION.txt", "LICENSE.txt", "README.md"}
-ROOM_AUDIO_EXTRA = {"MANIFEST.json", "ROOM_RESULTS.png"}
+ROOM_AUDIO_EXTRA = {"MANIFEST.json", "ROOM_RESULTS.png", "RESULTS.json"}
 TRACKING_AUDIO_WAVS = {"source.wav": 1, "array_noisy.wav": 2}
 MOVING_AUDIO_WAVS = {"source.wav": 1, "static_array.wav": 2, "moving_array.wav": 2}
 GSS_AUDIO_WAVS = {"source_1.wav": 1, "source_2.wav": 1, "mixture.wav": 2,
@@ -173,6 +173,19 @@ def stage_room_audio(source, destination):
         raise ValueError("房间音频目录文件集合与清单不符")
     if not (source / "ROOM_RESULTS.png").read_bytes().startswith(b"\x89PNG\r\n\x1a\n"):
         raise ValueError("房间结果图不是 PNG")
+    report = json.loads((source / "RESULTS.json").read_text(encoding="utf-8"))
+    if (report.get("schema_version") != 1 or
+            report.get("status") != "pyroomacoustics_simulation_executed" or
+            report.get("actual_max_order") != manifest.get("max_order") or
+            report.get("generator", {}).get("path") != "codes/examples/room_srp_exercise.py" or
+            report["generator"].get("sha256") != hashlib.sha256(
+                (ROOT / "codes/examples/room_srp_exercise.py").read_bytes()).hexdigest() or
+            report.get("assets", {}).get("figure", {}).get("sha256") != hashlib.sha256(
+                (source / "ROOM_RESULTS.png").read_bytes()).hexdigest() or
+            report["assets"].get("audio_manifest", {}).get("sha256") != hashlib.sha256(
+                (source / "MANIFEST.json").read_bytes()).hexdigest() or
+            len(report.get("results", [])) != 6):
+        raise ValueError("房间结果报告与生成源、结果图或音频清单不符")
     for record in records:
         path = source / record["file"]
         if path.is_symlink() or hashlib.sha256(path.read_bytes()).hexdigest() != record["sha256"]:

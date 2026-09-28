@@ -266,6 +266,7 @@ def run_experiment(max_order: int | None = None) -> dict:
         "rir_highpass_enabled": bool(pra.constants.get("rir_hpf_enable")),
         "rir_highpass_cutoff_hz": (float(pra.constants.get("rir_hpf_fc"))
                                    if pra.constants.get("rir_hpf_enable") else None),
+        "fractional_delay_filter_length_samples": int(pra.constants.get("frac_delay_length")),
         "elapsed_s": time.perf_counter() - started,
         "convergence_check": {
             "case": anchor["name"], "previous_max_order": previous_order,
@@ -284,6 +285,9 @@ def run_experiment(max_order: int | None = None) -> dict:
 def plot_results(report: dict, path: Path) -> None:
     """Save aligned acoustic and localization bars for all six positions."""
     import matplotlib.pyplot as plt
+
+    if path.exists():
+        raise ValueError(f"plot output already exists: {path}")
 
     rows = report["results"]
     labels = [f"{r['name']}\n{r['distance_m']:.2f} m, {r['true_azimuth_deg']:+.1f}°"
@@ -414,6 +418,47 @@ def export_audio(report: dict, directory: Path) -> dict:
     return manifest
 
 
+def _without_runtime_fields(value):
+    """Keep measured values while dropping timing and temporary output paths."""
+    if isinstance(value, dict):
+        return {key: _without_runtime_fields(item) for key, item in value.items()
+                if key not in ("elapsed_s", "audio_export")}
+    if isinstance(value, list):
+        return [_without_runtime_fields(item) for item in value]
+    return value
+
+
+def write_results(report: dict, figure: Path, audio_directory: Path, path: Path) -> dict:
+    """Bind one executed six-position report to its source, plot and WAV manifest.
+
+    The output contains no wall-clock times, absolute temporary paths or results
+    inferred from the published table. It must follow an actual ``--run`` with
+    newly exported plot and audio files.
+    """
+    if report.get("status") != "pyroomacoustics_simulation_executed":
+        raise ValueError("results require an executed room simulation")
+    if path.exists():
+        raise ValueError(f"results output already exists: {path}")
+    manifest = audio_directory / "MANIFEST.json"
+    for item in (figure, manifest):
+        if not item.is_file():
+            raise ValueError(f"results asset is missing: {item}")
+    source = Path(__file__).resolve()
+    result = _without_runtime_fields(report)
+    result["schema_version"] = 1
+    result["generator"] = {"path": "codes/examples/room_srp_exercise.py",
+                           "sha256": hashlib.sha256(source.read_bytes()).hexdigest()}
+    result["assets"] = {
+        "figure": {"file": "ROOM_RESULTS.png",
+                   "sha256": hashlib.sha256(figure.read_bytes()).hexdigest()},
+        "audio_manifest": {"file": "MANIFEST.json",
+                           "sha256": hashlib.sha256(manifest.read_bytes()).hexdigest()},
+    }
+    path.write_text(json.dumps(result, ensure_ascii=False, sort_keys=True, indent=2,
+                               allow_nan=False) + "\n", encoding="utf-8")
+    return result
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group(required=True)
@@ -423,10 +468,18 @@ def main() -> None:
     parser.add_argument("--plot", type=Path, help="save a three-panel DRR/T60/DOA chart after --run")
     parser.add_argument("--audio-dir", type=Path,
                         help="write optional synthetic source/direct/full PCM files and manifest")
+    parser.add_argument("--results", type=Path,
+                        help="write deterministic six-position results after --plot and --audio-dir")
     args = parser.parse_args()
-    if args.check and (args.max_order is not None or args.plot is not None or args.audio_dir is not None):
-        parser.error("--max-order, --plot, and --audio-dir require --run")
+    if args.check and (args.max_order is not None or args.plot is not None or
+                       args.audio_dir is not None or args.results is not None):
+        parser.error("--max-order, --plot, --audio-dir, and --results require --run")
+    if args.results is not None and (args.plot is None or args.audio_dir is None):
+        parser.error("--results requires both --plot and --audio-dir")
     try:
+        for output in (args.plot, args.audio_dir, args.results):
+            if output is not None and output.exists():
+                raise ValueError(f"output already exists: {output}")
         report = configuration() if args.check else run_experiment(args.max_order)
         if args.plot is not None:
             plot_results(report, args.plot)
@@ -435,6 +488,8 @@ def main() -> None:
             report["audio_export"] = {"directory": str(args.audio_dir),
                                       "file_count": len(manifest["files"]),
                                       "common_gain": manifest["common_gain"]}
+        if args.results is not None:
+            write_results(report, args.plot, args.audio_dir, args.results)
     except (ValueError, RuntimeError) as error:
         parser.exit(2, f"{error}\n")
     print(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False))

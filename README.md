@@ -4,9 +4,9 @@
 
 正文提供关键公式推导、可复算例子、适用边界、49 张脚本生成的图，以及与各章公式对应的 NumPy/标准库教学代码。
 
-全书有 222 道可运行代码练习和 27 组、共 109 个主清单合成音频文件；输入、答案与试听条件见[练习与音频实验](codes/research/05_exercises_and_audio.md)。第 6 章 E06-07～20 是模型与边界手算，另有两组**参数不完全相同**的 AEC 合成音频；不能用音频替代题目真值。这 109 个音频不是自然语音或正式听测数据。
+全书有 228 道可运行代码练习和 27 组、共 109 个主清单合成音频文件；输入、答案与试听条件见[练习与音频实验](codes/research/05_exercises_and_audio.md)。第 6 章 E06-07～20 是模型与边界手算，另有两组**参数不完全相同**的 AEC 合成音频；不能用音频替代题目真值。这 109 个音频不是自然语音或正式听测数据。
 
-附录 B 另有[六位置房间题](chapters/13_appendix-guide.md)的 18 个白噪声合成 WAV 和一张实算结果图，保存在独立的 [room_audio 清单](codes/room_audio/MANIFEST.json)下；它们不计入上面的 109 个音频。
+附录 B 另有[六位置房间题](chapters/13_appendix-guide.md)的 18 个白噪声合成 WAV、一张实算结果图和[逐位置数值报告](codes/room_audio/RESULTS.json)，保存在独立的 [room_audio 清单](codes/room_audio/MANIFEST.json)下；它们不计入上面的 109 个音频。
 
 另有[活动导引 GSS 教学链](codes/gss_audio/MANIFEST.json)的 5 个 WAV 和可复算状态，以及[自由场移动声源](codes/moving_audio/MANIFEST.json)的 3 个 WAV 与轨迹真值，均使用独立清单，不计入主 109 个样本。它们只验证指定的合成模型，不代表真实语音或设备表现。
 
@@ -44,7 +44,7 @@ English version: [README_EN.md](./README_EN.md)
 | `codes/reports/` | 工业接口与空间算法的小规模运行报告；与源码获取状态、论文全量评测分开 |
 | `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
 | `site/` | 20 个网页：14 个教程页（含首页）及 `research/` 下 6 个研究手册页；构建产物，可再生 |
-| `dist/` | 合订 PDF（`microphone-array-tutorial.pdf`）与合订 HTML；PDF 含 14 个顶级、119 个二级、499 个三级书签，共 632 个 |
+| `dist/` | 合订 PDF（`microphone-array-tutorial.pdf`）与合订 HTML；PDF 含 14 个顶级、119 个二级、505 个三级书签，共 638 个 |
 
 ## 章节导览
 
@@ -63,7 +63,7 @@ English version: [README_EN.md](./README_EN.md)
 | 第 10 章 | `chapters/10_engineering-practice.md` | 参考链路、关键路径延迟、SRO/标定、资源预算与评测 | 进阶 |
 | 第 11 章 | `chapters/11_selection-guide.md` | 条件化选型、场景约束、可验证规格与练习 | 入门 |
 | 附录 A | `chapters/12_appendix-symbols-math.md` | 符号表、术语定义、预备数学速览 | 查阅 |
-| 附录 B | `chapters/13_appendix-guide.md` | 学习路径、领域地图、研究前沿、排错、17 道书面练习与配套代码练习、复现说明 | 查阅 |
+| 附录 B | `chapters/13_appendix-guide.md` | 学习路径、领域地图、研究前沿、排错、17 道综合书面题与 E13-01～08 代码题、复现说明 | 查阅 |
 
 ## 快速开始
 
