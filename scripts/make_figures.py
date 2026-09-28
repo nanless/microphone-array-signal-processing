@@ -384,14 +384,24 @@ def fig_geometries():
 def fig_near_far_field():
     fig, axes = plt.subplots(1, 2, figsize=(9.5, 5.5))
     ax = axes[0]
-    src = (0, 4.0)
+    # 偏轴声源使三条传播距离不同；坐标只用于几何示意，不代表米。
+    src = (0.7, 3.0)
+    mic_x = (-0.8, 0.0, 0.8)
     ax.scatter(*src, marker="*", s=400, c=C_RED, zorder=6, edgecolors="k")
-    ax.annotate("近场点声源", xy=src, xytext=(0.3, 4.35), fontsize=FS_LABEL, color=C_RED)
-    th = np.linspace(np.pi + 0.35, 2 * np.pi - 0.35, 60)
-    for rr in [0.8, 1.3, 1.8, 2.3]:
-        ax.plot(src[0] + rr * np.cos(th), src[1] + rr * np.sin(th), color=C_BLUE, alpha=0.55)
-    ax.scatter([-0.8, 0, 0.8], [0, 0, 0], s=150, c=C_GREEN, zorder=6, edgecolors="k")
-    ax.annotate("幅度差 + 相位差\n(球面波)", xy=(1.6, 1.2), fontsize=FS_LABEL, color=C_GREEN)
+    ax.annotate("近场点声源", xy=src, xytext=(1.0, 3.42), fontsize=FS_LABEL, color=C_RED)
+    th = np.linspace(np.pi + 0.35, 2 * np.pi - 0.35, 160)
+    for rr in [0.7, 1.35, 2.0, 2.65, 3.05, 3.4]:
+        ax.plot(src[0] + rr * np.cos(th), src[1] + rr * np.sin(th),
+                color=C_BLUE, alpha=0.55, zorder=1)
+    for i, mx in enumerate(mic_x, start=1):
+        ax.plot([src[0], mx], [src[1], 0], color=C_ORANGE,
+                ls="--", lw=1.3, alpha=0.85, zorder=2)
+        ax.text(mx, -0.28, rf"$r_{i}$", ha="center", va="top",
+                fontsize=FS_SMALL, color=C_GREEN)
+    ax.scatter(mic_x, [0, 0, 0], s=150, c=C_GREEN, zorder=6, edgecolors="k")
+    ax.annotate("$r_1>r_2>r_3$\n→ 幅度差 + 相位差", xy=(2.8, 1.3),
+                ha="right", fontsize=FS_LABEL, color=C_GREEN,
+                bbox=dict(fc="white", ec="none", alpha=0.82, pad=1.5))
     ax.set_xlabel("水平示意坐标（无量纲）", fontsize=FS_SMALL)
     ax.set_ylabel("竖直示意坐标（无量纲）", fontsize=FS_SMALL)
     ax.set_title("(a) 近场模型：球面波，响应依赖距离与方向", fontsize=11)
