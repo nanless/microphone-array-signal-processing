@@ -12,6 +12,7 @@ import wave
 
 import numpy as np
 
+from .gsc import ScalarGSCNLMS
 from .aec import nlms
 from .aec_ipnlms import ipnlms
 from .aec_rls import rls
@@ -438,8 +439,89 @@ def doa_ambiguity_case() -> dict:
        'No additive noise, SNR improvement or formal listening result is reported.'}
 
 
+def gsc_gate_case() -> dict:
+    """E05-16: explicit instantaneous mixtures and an oracle update gate.
+
+    The only mismatch is target channel gain 0.96. This is not propagation,
+    room simulation, speech, estimated VAD, or an industrial GSC benchmark.
+    """
+    n = np.arange(2 * SAMPLE_RATE)
+    t = n / SAMPLE_RATE
+
+    def envelope(start: int, end: int) -> np.ndarray:
+        result = np.zeros(n.size)
+        result[start:end] = 1.0
+        length = 320
+        result[start:start + length] = np.linspace(0, 1, length, endpoint=False)
+        result[end - length:end] = np.linspace(1, 0, length, endpoint=False)
+        return result
+
+    target = (.16*np.sin(2*np.pi*220*t) + .10*np.sin(2*np.pi*330*t)
+              + .07*np.sin(2*np.pi*660*t)) * envelope(9600, 32000)
+    interference = (.18*np.sin(2*np.pi*440*t) + .12*np.sin(2*np.pi*880*t)) * envelope(0, 8000)
+    array = np.vstack((target + interference, .96*target + .5*interference))
+    desired = array.mean(axis=0)
+    reference = (array[0] - array[1]) / 2
+    outputs, checkpoints = {}, {}
+    for name, gated in [('always_adapt', False), ('gate_frozen', True)]:
+        state = ScalarGSCNLMS(step_size=.1, epsilon=1e-8)
+        pieces, history = [], []
+        start = 0
+        for end in (8000, 9600, 16000, 30000, 32000):
+            gate = n[start:end] < 8000 if gated else True
+            result = state.process(desired[start:end], reference[start:end], update=gate)
+            if np.max(np.abs(result.imag)) != 0:
+                raise ValueError('real GSC fixture unexpectedly produced imaginary output')
+            pieces.append(result.real)
+            history.append({'samples_processed': end, 'coefficient': float(state.coefficient.real)})
+            start = end
+        outputs[name] = np.concatenate(pieces)
+        checkpoints[name] = history
+
+    signals = {'gsc_reference': target, 'gsc_array': array,
+               **{'gsc_' + name: value for name, value in outputs.items()}}
+    # The group is strictly below 0.8, so prepare_exports uses common gain 1.
+    if max(float(np.max(np.abs(x))) for x in signals.values()) >= .8:
+        raise ValueError('GSC fixture requires its declared common gain of 1')
+    decoded = {name: read_pcm16(pcm16_bytes(value))[1] for name, value in signals.items()}
+    score_slice = slice(16000, 30000)
+
+    def score(output: np.ndarray, truth: np.ndarray) -> dict:
+        out, ref = output[score_slice], truth[score_slice]
+        power = float(ref @ ref)
+        return {'reference_projection_gain': float(ref @ out / power),
+                'normalized_reference_error': float(np.sqrt(np.sum((out-ref)**2)/power))}
+
+    floating = {name: score(value, target) for name, value in outputs.items()}
+    pcm = {name: score(decoded['gsc_' + name][0], decoded['gsc_reference'][0]) for name in outputs}
+    return {'signals': signals, 'parameters': {
+        'sample_rate_hz': SAMPLE_RATE, 'duration_seconds': 2, 'samples': 32000,
+        'mixing_matrix': [[1, 1], [.96, .5]], 'latent_order': ['target', 'interference'],
+        'model': 'instantaneous real linear mixtures; no geometric propagation delay',
+        'target_frequencies_hz': [220, 330, 660], 'target_amplitudes': [.16, .10, .07],
+        'interference_frequencies_hz': [440, 880], 'interference_amplitudes': [.18, .12],
+        'phases_rad': 0, 'target_interval_samples': [9600, 32000],
+        'interference_interval_samples': [0, 8000],
+        'interval_convention': 'half-open [start,end)',
+        'fade_samples_each_end': 320, 'fade': 'linear 0 to 1 and 1 to 0, endpoint=False',
+        'fixed_weights': [.5, .5], 'blocking_vector': [.5, -.5],
+        'branches': 'd=.98*s+.75*i; u=.02*s+.25*i; e=d-conj(h)*u before update',
+        'nlms': {'step_size': .1, 'epsilon_reference_power': 1e-8, 'initial_coefficient': 0},
+        'oracle_gate': 'update only n<8000; known time labels, not estimated SPP/VAD',
+        'coefficient_checkpoints': checkpoints, 'noise_only_optimum_h': 3.,
+        'target_only_optimum_h': 49., 'frozen_target_gain_analytic': .92,
+        'score_interval_samples': [16000, 30000],
+        'alignment': 'same sample origin; no gain fitting, delay alignment or fitted rescaling',
+        'float_truth_scores': floating, 'pcm_to_pcm_reference_scores': pcm,
+        'metrics': 'projection is diagnostic only; error=sqrt(sum((output-reference)^2)/sum(reference^2))',
+        'statistics': 'deterministic tones and updates, no random trials or listening scores'},
+        'limits': 'Original mathematical mixture, not a free-field array or real recording. '
+                  'Freezing prevents further target adaptation but retains a 0.92 target response. '
+                  'The target-only score is reference error, not SNR, denoising quality or speech intelligibility.'}
+
+
 def build_cases() -> dict:
-    """Return twenty experiments with model parameters and references.
+    """Return twenty-one experiments with model parameters and references.
 
     Each entry has ``signals`` (filename stem -> CxN array), ``parameters`` and
     ``limits``. Signals are pre-export floats; no group uses peak matching.
@@ -572,6 +654,7 @@ def build_cases() -> dict:
     subtraction_zero_audio = istft(subtraction_zero[None], n_fft=512, hop_length=128,
                                    length=t.size)[0]
     return {
+        'gsc_gate': gsc_gate_case(),
         'doa_ambiguity': doa_ambiguity_case(),
         'dma_calibration': dma_calibration_case(),
         'room_decay': room_decay_case(),

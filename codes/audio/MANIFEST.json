@@ -10,7 +10,7 @@
     "float_dtype": "float64"
   },
   "synthetic_signal": {
-    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband, spectral_subtraction, clock_drift, interpolation, alignment_error, room_decay, dma_calibration and doa_ambiguity; see each group for noise and transforms",
+    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband, spectral_subtraction, clock_drift, interpolation, alignment_error, room_decay, dma_calibration, doa_ambiguity and gsc_gate; see each group for noise and transforms",
     "duration_s": 2,
     "base_frequencies_hz": [
       173,
@@ -33,13 +33,14 @@
   "pcm": "signed little-endian 16-bit, round-to-nearest-even; no dither; no per-file normalization",
   "listening": "Start at low device volume. No automatic playback. No formal listening study performed.",
   "generator_inputs": {
-    "codes/examples/generate_audio_samples.py": "83f677c8cf4c80171ba54632e4a1cccf29c80deebc84c629f0be9d0d78ae06f8",
-    "codes/array_tutorial/audio_samples.py": "2143472942b879c318c42a7d1f76002ba994cc785f79fc0ddaefd8fd8a1a52d6",
+    "codes/examples/generate_audio_samples.py": "457387770064078d40b9d378b2f763fc82a2518645c18c3943abb5ca1751bfcb",
+    "codes/array_tutorial/audio_samples.py": "585a4cb9ecc53e11b0fc48995a810f18d9850a7def681edbd619298325e6b318",
     "codes/array_tutorial/aec.py": "70d69fcd523cff3028162a221d71ea6bd2254979dfe37479ad26f77ab74a5a7e",
     "codes/array_tutorial/aec_ipnlms.py": "86422a00df25293176e0bde8193c7e05ac7a1e5703660b56907024985978c0d4",
     "codes/array_tutorial/aec_rls.py": "f13c2018297e46f0b393ef52e04fad5f1d48ede00de8b37a80a4abf597a9305d",
     "codes/array_tutorial/aec_kalman_matrix.py": "9feedf2058d0aad0996565048988894cf63199719112f46700a43ba9d9bb97b6",
     "codes/array_tutorial/aec_subband.py": "1473556e8cda4908dbe19cbeb645960dbb636b3dd672ab61358007a3d29d43be",
+    "codes/array_tutorial/gsc.py": "29995ed363ba2cf807059f146e075dea1aadef7ae21709cd62b9a3e9423b12f9",
     "codes/array_tutorial/noise_suppression.py": "b6eeeca35d3246585f42e0ee9ac9b028f9523fef3c224a07b98fa0383160cb3f",
     "codes/array_tutorial/dereverberation.py": "8d3fa44c64e0763b6039233a15b676d108a02d1679d3fa8bcc647aae8931083a",
     "codes/array_tutorial/spectral.py": "9b7c3d3e2b936fdfa793f372e5d258788a4b43b9536294c231019454bfcb45c6",
@@ -47,6 +48,151 @@
     "codes/array_tutorial/geometry.py": "7e9c33e90101c41441cde659d288f0aa25be141e9cdbaaa9fcabee54b285f72a"
   },
   "groups": {
+    "gsc_gate": {
+      "parameters": {
+        "sample_rate_hz": 16000,
+        "duration_seconds": 2,
+        "samples": 32000,
+        "mixing_matrix": [
+          [
+            1,
+            1
+          ],
+          [
+            0.96,
+            0.5
+          ]
+        ],
+        "latent_order": [
+          "target",
+          "interference"
+        ],
+        "model": "instantaneous real linear mixtures; no geometric propagation delay",
+        "target_frequencies_hz": [
+          220,
+          330,
+          660
+        ],
+        "target_amplitudes": [
+          0.16,
+          0.1,
+          0.07
+        ],
+        "interference_frequencies_hz": [
+          440,
+          880
+        ],
+        "interference_amplitudes": [
+          0.18,
+          0.12
+        ],
+        "phases_rad": 0,
+        "target_interval_samples": [
+          9600,
+          32000
+        ],
+        "interference_interval_samples": [
+          0,
+          8000
+        ],
+        "interval_convention": "half-open [start,end)",
+        "fade_samples_each_end": 320,
+        "fade": "linear 0 to 1 and 1 to 0, endpoint=False",
+        "fixed_weights": [
+          0.5,
+          0.5
+        ],
+        "blocking_vector": [
+          0.5,
+          -0.5
+        ],
+        "branches": "d=.98*s+.75*i; u=.02*s+.25*i; e=d-conj(h)*u before update",
+        "nlms": {
+          "step_size": 0.1,
+          "epsilon_reference_power": 1e-08,
+          "initial_coefficient": 0
+        },
+        "oracle_gate": "update only n<8000; known time labels, not estimated SPP/VAD",
+        "coefficient_checkpoints": {
+          "always_adapt": [
+            {
+              "samples_processed": 8000,
+              "coefficient": 2.9999999999999987
+            },
+            {
+              "samples_processed": 9600,
+              "coefficient": 2.9999999999999987
+            },
+            {
+              "samples_processed": 16000,
+              "coefficient": 48.99999999999995
+            },
+            {
+              "samples_processed": 30000,
+              "coefficient": 48.99999999999998
+            },
+            {
+              "samples_processed": 32000,
+              "coefficient": 48.99999999999995
+            }
+          ],
+          "gate_frozen": [
+            {
+              "samples_processed": 8000,
+              "coefficient": 2.9999999999999987
+            },
+            {
+              "samples_processed": 9600,
+              "coefficient": 2.9999999999999987
+            },
+            {
+              "samples_processed": 16000,
+              "coefficient": 2.9999999999999987
+            },
+            {
+              "samples_processed": 30000,
+              "coefficient": 2.9999999999999987
+            },
+            {
+              "samples_processed": 32000,
+              "coefficient": 2.9999999999999987
+            }
+          ]
+        },
+        "noise_only_optimum_h": 3.0,
+        "target_only_optimum_h": 49.0,
+        "frozen_target_gain_analytic": 0.92,
+        "score_interval_samples": [
+          16000,
+          30000
+        ],
+        "alignment": "same sample origin; no gain fitting, delay alignment or fitted rescaling",
+        "float_truth_scores": {
+          "always_adapt": {
+            "reference_projection_gain": -1.3835016104071665e-17,
+            "normalized_reference_error": 1.0
+          },
+          "gate_frozen": {
+            "reference_projection_gain": 0.92,
+            "normalized_reference_error": 0.08000000000000004
+          }
+        },
+        "pcm_to_pcm_reference_scores": {
+          "always_adapt": {
+            "reference_projection_gain": 0.0,
+            "normalized_reference_error": 1.0
+          },
+          "gate_frozen": {
+            "reference_projection_gain": 0.9200033979526868,
+            "normalized_reference_error": 0.0799966476118432
+          }
+        },
+        "metrics": "projection is diagnostic only; error=sqrt(sum((output-reference)^2)/sum(reference^2))",
+        "statistics": "deterministic tones and updates, no random trials or listening scores"
+      },
+      "limits": "Original mathematical mixture, not a free-field array or real recording. Freezing prevents further target adaptation but retains a 0.92 target response. The target-only score is reference error, not SNR, denoising quality or speech intelligibility.",
+      "common_export_gain": 1.0
+    },
     "doa_ambiguity": {
       "parameters": {
         "sample_rate_hz": 16000,
@@ -1175,6 +1321,58 @@
     }
   },
   "files": [
+    {
+      "file": "gsc_reference.wav",
+      "sha256": "6ccabee9b87c17f358b523729aca9035d3d99bda5178d28beedd7b0d438c2bc9",
+      "group": "gsc_gate",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.255340576171875,
+      "rms": 0.11792181990114785,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5248783244548036e-05
+    },
+    {
+      "file": "gsc_array.wav",
+      "sha256": "92d0576b2800d151b2fa4a736cc1c5a321565caa3a210098ca603050a31df17c",
+      "group": "gsc_gate",
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.260589599609375,
+      "rms": 0.12969879403421278,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5255343160568147e-05
+    },
+    {
+      "file": "gsc_always_adapt.wav",
+      "sha256": "c593cf7b3fa7e6f76e78131cf30a7768f25bdd3e07533117e0d7c57b40469288",
+      "group": "gsc_gate",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.00555419921875,
+      "rms": 0.00011749453357367218,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.521473862436414e-05
+    },
+    {
+      "file": "gsc_gate_frozen.wav",
+      "sha256": "d18f288f898781e24db170c314dc879fbaa075225bc42d990ddff279c5b09982",
+      "group": "gsc_gate",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.23492431640625,
+      "rms": 0.10848846374046758,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5238140776765996e-05
+    },
     {
       "file": "doa_ambiguity_tone.wav",
       "sha256": "c510a385dbf5100b56e37686c604fbe15a4bf3b53550a05ea6f464bbee2706ee",

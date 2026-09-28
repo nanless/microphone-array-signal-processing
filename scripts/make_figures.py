@@ -409,64 +409,60 @@ def fig_near_far_field():
 # ----------------------------------------------------------------------
 # 图16：三条曲线使用两种阵距，图内直接标明比较条件。
 # ----------------------------------------------------------------------
+def beam_pattern_comparison():
+    """图16的固定总体协方差；返回权重/几何，不把有限INR当硬零陷。"""
+    channels = 8
+    centered = np.arange(channels) - (channels - 1) / 2
+    spacing = 0.5
+    target = ula_steering(spacing * centered, 0)[:, 0]
+    interferer = ula_steering(spacing * centered, 20)[:, 0]
+    covariance = np.eye(channels) + 10 * np.outer(interferer, interferer.conj())
+    mvdr, _ = distortionless_weights(covariance, target)
+    sd_spacing = 0.2
+    diffuse = np.sinc(2 * sd_spacing * np.abs(np.subtract.outer(centered, centered)))
+    sd, _ = distortionless_weights(diffuse, target, diagonal_loading=1e-6)
+    return centered, [
+        ("DSB：d=0.5λ", target / channels, spacing, C_BLUE, "-"),
+        ("MVDR：d=0.5λ", mvdr, spacing, C_RED, "--"),
+        ("超指向：d=0.2λ", sd, sd_spacing, C_GREEN, ":"),
+    ]
+
+
 def fig_beampatterns():
-    M, d = 8, 0.5
-    th = np.linspace(-90, 90, 721)
-    thetas_rad = np.deg2rad(th)
-    m = np.arange(M) - (M - 1) / 2
-    a0 = ula_steering(d * m, 0)[:, 0]                    # 期望方向 0°
-    # DSB
-    w_ds = a0 / M
-    # MVDR: 白噪声 + 20°方向强干扰(避开DSB自然零陷位置)
-    a_int = ula_steering(d * m, 20)
-    R = 10 * (a_int @ a_int.conj().T) + 1.0 * np.eye(M)
-    w_mvdr, _ = distortionless_weights(R, a0)
-    # 超指向: 小间距 d_sd=0.2λ, 各向同性(弥散)噪声协方差 Γ=sinc(2d|i-j|)
-    d_sd = 0.2
-    a0_sd = ula_steering(d_sd * m, 0)[:, 0]
-    G = np.sinc(2 * d_sd * np.abs(np.subtract.outer(m, m)))
-    w_sd, _ = distortionless_weights(G, a0_sd, diagonal_loading=1e-6)
-    fig, axes = plt.subplots(1, 2, figsize=(9.5, 5.4), subplot_kw=dict(polar=True))
-    fig.subplots_adjust(wspace=0.12)
-    curves = [("DSB：8 麦，d=0.5λ", w_ds, d, C_BLUE, "-"),
-              ("MVDR：8 麦，d=0.5λ", w_mvdr, d, C_RED, "--"),
-              (r"超指向：8 麦，d=0.2λ", w_sd, d_sd, C_GREEN, ":")]
-    for ax, (title, ymax) in zip(axes, [("线性幅度", None), ("dB 刻度", 40)]):
-        for name, w, dd, c, ls in curves:
-            A = ula_steering(dd * m, th)
-            b = np.abs(w.conj() @ A)
-            target = ula_steering(dd * m, 0)[:, 0]
-            target_gain = np.abs(w.conj() @ target)
-            if "dB" in title:
-                b = 20 * np.log10(np.maximum(b / target_gain, 1e-4))
-                b = np.maximum(b, -40) + 40      # 平移到 0~40 便于径向刻度
-            ax.plot(thetas_rad, b, color=c, ls=ls, lw=2.0, label=name)
+    centered, curves = beam_pattern_comparison()
+    angles = np.linspace(-90, 90, 721)
+    radians = np.deg2rad(angles)
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 5.8), subplot_kw={"polar": True})
+    for panel, ax in enumerate(axes):
+        for name, weight, spacing, color, style in curves:
+            gain = np.abs(weight.conj() @ ula_steering(spacing * centered, angles))
+            # All three weights have unit target response; no per-curve peak normalization.
+            if panel:
+                gain = np.maximum(20 * np.log10(np.maximum(gain, 1e-12)), -40) + 40
+            ax.plot(radians, gain, color=color, ls=style, lw=2.0, label=name)
         ax.set_theta_zero_location("N")
-        ax.set_thetamin(-90); ax.set_thetamax(90)
-        if "dB" in title:
-            ax.set_rlim(0, 40)
-            ax.set_rgrids([0, 20, 40], ["−40", "−20", "0 dB"],
-                          angle=55, fontsize=FS_SMALL)
+        ax.set_theta_direction(-1)  # +y broadside -> +x: positive angles to the right.
+        ax.set_thetamin(-90)
+        ax.set_thetamax(90)
+        ax.set_thetagrids([-90, -60, -30, 0, 30, 60, 90])
+        if panel:
+            ax.set_rlim(0, 42)  # Keep the small >0 dB peak visible.
+            ax.set_rgrids([0, 20, 40], ["−40", "−20", "0 dB"], angle=-60, fontsize=11)
         else:
-            # 半圆极坐标图减少径向刻度并错开默认标签位置，避免缩放到网页宽度后
-            # 与角度刻度、图例挤在一起。
-            radial_max = ax.get_rmax()
-            ax.set_rgrids([0.5, 1.0], ["0.5", "1.0"],
-                          angle=55, fontsize=FS_SMALL)
-            ax.set_rmax(radial_max)
-        ax.set_title(title, fontsize=13, pad=18)
-        ax.legend(loc="lower center", bbox_to_anchor=(0.5, -0.22), fontsize=FS_SMALL + 0.5, framealpha=0.95)
-    # 在 dB 图上用箭头标出 20° 处 MVDR 零陷（标签外移至图外空白，引线指回零陷坑）
-    ax_db = axes[1]
-    ax_db.annotate("MVDR：20° 方向的零陷", xy=(np.deg2rad(20), 2),
-                   xytext=(np.deg2rad(76), 37.5), fontsize=FS_SMALL, color=C_RED,
-                   bbox=dict(fc="white", ec=C_RED, lw=0.7, alpha=0.9, boxstyle="round,pad=0.25"),
-                   arrowprops=dict(arrowstyle="->", color=C_RED, lw=1.5,
-                                   connectionstyle="arc3,rad=-0.1"))
-    fig.suptitle("图16  8 麦线阵的三种波束：两种阵距，不能作为同条件性能排名\n"
-                 r"DSB/MVDR：$d=0.5\lambda$；超指向：$d=0.2\lambda$；目标方向 0°、响应均为 1；MVDR 干扰 20°",
-                 fontsize=12.3)
-    fig.tight_layout(rect=(0, 0, 1, 0.90))
+            ax.set_rlim(0, 1.06)
+            ax.set_rgrids([0.5, 1], ["0.5", "1.0"], angle=-60, fontsize=11)
+        ax.set_title(["(a) 幅度响应（无量纲）", "(b) 幅度响应（dB）"][panel], pad=15)
+    interferer = ula_steering(.5 * centered, 20)[:, 0]
+    rejection = 20 * np.log10(abs(np.vdot(curves[1][1], interferer)))
+    fig.legend(*axes[0].get_legend_handles_labels(), loc="lower center",
+               bbox_to_anchor=(.5, .12), ncol=3, frameon=False, fontsize=11)
+    fig.text(.5, .09, f"MVDR 在 20° 的响应为 {rejection:.2f} dB；低于 −40 dB 的曲线截在图心。",
+             ha="center", fontsize=11)
+    fig.text(.5, .035, "两种阵距不能作为同条件排名；目标 0°，三条曲线的目标响应均为 1。",
+             ha="center", fontsize=11)
+    fig.suptitle("图16  8 麦线阵的固定与自适应方向图", fontsize=FS_SUP)
+    fig.text(.5, .9, "MVDR：单通道线性 INR=10，白噪声方差=1；超指向：相对加载 $10^{-6}$", ha="center", fontsize=11)
+    fig.subplots_adjust(left=.045, right=.97, bottom=.23, top=.82, wspace=.25)
     save(fig, "fig16_beampattern.png")
 
 
@@ -669,42 +665,49 @@ def fig_gcc_phat():
 # 图17 GSC 结构框图
 # ----------------------------------------------------------------------
 def fig_gsc():
-    fig, ax = plt.subplots(figsize=(9.5, 6.0))
-    ax.axis("off"); ax.set_xlim(0, 11.5); ax.set_ylim(0, 6.4)
-    def box(x, y, w, h, text, fc="#dbe9f6"):
-        ax.add_patch(plt.Rectangle((x, y), w, h, fc=fc, ec="k", lw=1.2, zorder=3))
-        ax.text(x + w / 2, y + h / 2, text, ha="center", va="center", fontsize=FS_LABEL, zorder=4)
-    def arrow(x1, y1, x2, y2, text="", c="k", conn=None, dy=0.15):
-        ax.add_patch(FancyArrowPatch((x1, y1), (x2, y2), arrowstyle="-|>", mutation_scale=14,
-                                     color=c, lw=1.8, zorder=2,
-                                     connectionstyle=conn or "arc3,rad=0"))
-        if text:
-            ax.text((x1 + x2) / 2, (y1 + y2) / 2 + dy, text, fontsize=FS_SMALL + 2,
-                    ha="center", color=c, bbox=dict(fc="white", alpha=0.8, pad=1, ec="none"))
-    # ---- 上支路（直通链路）：阵列 → 延迟补偿 → 固定波束 → d(n)
-    box(0.3, 4.6, 1.7, 0.9, "麦克风阵列\n$x_1...x_M$")
-    box(2.7, 4.6, 1.7, 0.9, "延迟补偿\n(转向期望方向)")
-    box(5.1, 4.6, 1.6, 0.9, "固定波束形成器\n(求和)", fc="#f6e5db")
-    arrow(2.0, 5.05, 2.7, 5.05); arrow(4.4, 5.05, 5.1, 5.05)
-    # ---- 下支路：延迟补偿 → 阻塞矩阵 B → 多通道自适应滤波 → y(n)
-    box(2.7, 1.6, 1.7, 0.9, "阻塞矩阵 B\n(陷波期望方向)")
-    box(5.1, 1.6, 1.6, 0.9, "多通道自适应滤波\n$L_1...L_{M-1}$")
-    arrow(3.55, 4.6, 3.55, 2.5)          # 延迟补偿 ↓ 阻塞矩阵
-    arrow(4.4, 2.05, 5.1, 2.05)
-    # ---- 最右：减法器汇合
-    box(8.3, 2.85, 1.7, 1.0, "减法器\n$e=d-y$", fc="#e8f6db")
-    arrow(6.7, 5.05, 9.15, 3.85, conn="angle,angleA=0,angleB=90,rad=8")   # d(n) → 减法器顶
-    arrow(6.7, 2.05, 9.15, 2.85, conn="angle,angleA=0,angleB=90,rad=8")   # y(n) → 减法器底
-    ax.text(7.5, 4.75, "d(n)\n期望+残余噪声", fontsize=FS_SMALL, color=C_MAIN, ha="center")
-    ax.text(7.5, 1.62, "y(n)\n噪声估计", fontsize=FS_SMALL, color=C_MAIN, ha="center")
-    arrow(10.0, 3.35, 10.8, 3.35)
-    ax.text(10.55, 3.6, "e(n)", fontsize=FS_LABEL, color=C_RED, ha="center")
-    # ---- 支路标签：放在各自支路最左端正上方
-    ax.text(0.3, 5.68, "上支路（设计目标：期望方向单位响应）", fontsize=FS_LABEL, color=C_ORANGE, ha="left")
-    ax.text(2.7, 2.68, "下支路（自适应噪声估计）", fontsize=FS_LABEL, color=C_BLUE, ha="left")
-    ax.text(5.75, 0.55, "模型匹配且滤波器收敛时：保持目标响应，对消相关干扰",
-            ha="center", fontsize=FS_LABEL, color=C_RED)
-    ax.set_title("图17  GSC（广义旁瓣对消器）结构框图", fontsize=FS_SUP)
+    fig, ax = plt.subplots(figsize=(9.5, 6.8))
+    ax.axis("off")
+    ax.set_xlim(0, 12)
+    ax.set_ylim(0, 8)
+
+    def box(x, y, width, height, label, color="#dbe9f6"):
+        ax.add_patch(plt.Rectangle((x, y), width, height, fc=color, ec=C_MAIN, lw=1.2, zorder=3))
+        ax.text(x + width / 2, y + height / 2, label, ha="center", va="center", fontsize=11, zorder=4)
+
+    def path(points, color=C_MAIN, dashed=False):
+        if len(points) > 2:
+            xx, yy = zip(*points[:-1])
+            ax.plot(xx, yy, color=color, lw=1.5, ls="--" if dashed else "-", zorder=1)
+        ax.add_patch(FancyArrowPatch(points[-2], points[-1], arrowstyle="-|>",
+                    mutation_scale=13, lw=1.5, color=color, linestyle="--" if dashed else "-", zorder=2))
+
+    box(.15, 3.85, 1.45, .85, "阵列观测\n$\\mathbf{x}(n)$")
+    box(3.0, 5.6, 2.0, .9, "固定权重\n$\\mathbf{w}_q^H$", "#f6e5db")
+    box(3.0, 3.45, 2.0, .9, "阻塞变换\n$\\mathbf{B}^H$")
+    box(6.2, 3.45, 2.0, .9, "自适应权重\n$\\mathbf{h}^H(n)$")
+    box(9.0, 4.8, 1.8, .9, "相减\n$e=d-y$", "#e8f6db")
+    box(5.85, 1.5, 2.7, .9, "由 $u(n)$、$e(n)$ 更新\n下一步 $\\mathbf{h}(n+1)$", "#eee2f3")
+    path([(1.6, 4.275), (2.25, 4.275), (2.25, 6.05), (3, 6.05)])
+    path([(2.25, 4.275), (2.25, 3.9), (3, 3.9)])
+    path([(5, 6.05), (9.9, 6.05), (9.9, 5.7)])
+    ax.text(7.2, 6.23, "$d(n)$：固定支路输出", ha="center", fontsize=11)
+    path([(5, 3.9), (6.2, 3.9)])
+    ax.text(5.6, 4.1, "$u(n)$", ha="center", fontsize=11)
+    path([(8.2, 3.9), (9.9, 3.9), (9.9, 4.8)])
+    ax.text(9.2, 3.56, "$y(n)$：对消分量", ha="center", fontsize=11)
+    path([(10.8, 5.25), (11.75, 5.25)])
+    ax.text(11.4, 5.52, "$e(n)$", ha="center", fontsize=11)
+    path([(5.5, 3.9), (5.5, 1.95), (5.85, 1.95)], C_PURPLE, True)
+    path([(11.2, 5.25), (11.2, 1.95), (8.55, 1.95)], C_PURPLE, True)
+    path([(7.2, 2.4), (7.2, 3.45)], C_PURPLE, True)
+    ax.text(7.55, 2.85, "更新状态", fontsize=11, color=C_PURPLE)
+    ax.text(.25, 7.15, "导向模型 a 决定固定权重与阻塞基：", fontsize=11)
+    ax.text(7.0, 7.15, "$\\mathbf{w}_q^H\\mathbf{a}=1$,  $\\mathbf{B}^H\\mathbf{a}=0$", fontsize=12, ha="center")
+    path([(3.65, 7.0), (3.65, 6.5)], C_ORANGE, True)
+    path([(2.75, 7.0), (2.75, 4.5), (3.5, 4.5), (3.5, 4.35)], C_ORANGE, True)
+    ax.text(.25, .77, "模型匹配时，任意有限 h 都保持约束方向响应；收敛决定噪声抑制效果。", fontsize=11)
+    ax.text(.25, .27, "单频复数模型；本次输出使用更新前权重。虚线表示模型、误差和状态的控制依赖。", fontsize=11)
+    ax.set_title("图17  GSC 的输出路径与自适应反馈", fontsize=FS_SUP, pad=10)
     save(fig, "fig17_gsc.png")
 
 
@@ -1012,27 +1015,31 @@ def fig_wng_di():
         di_dsb.append(10 * np.log10(1 / np.real(w_ds.conj() @ G @ w_ds)))
         wng_sd.append(10 * np.log10(1 / np.sum(np.abs(w_sd) ** 2)))
         di_sd.append(10 * np.log10(1 / np.real(w_sd.conj() @ G @ w_sd)))
-    fig, axes = plt.subplots(1, 2, figsize=(9.5, 5.8))
-    axes[0].semilogx(freqs, wng_dsb, color=C_BLUE, lw=2.0, label="DSB 延迟求和（理想无失配理论值）")
-    axes[0].semilogx(freqs, wng_sd, color=C_RED, ls="--", lw=2.0,
-                     label=r"对角加载超指向（相对加载 $10^{-6}$）")
-    axes[0].axhline(0, color="gray", ls="--", lw=1.2, label="0 dB 参考线")
-    axes[0].set_xlabel("频率 (Hz)"); axes[0].set_ylabel("白噪声增益 WNG (dB)")
-    axes[0].legend(fontsize=FS_SMALL, loc="lower right", framealpha=0.95)
-    axes[0].grid(ls=":", alpha=0.5); axes[0].set_title("(a) WNG：超指向低频稳健性差", fontsize=FS_TITLE)
-    axes[1].semilogx(freqs, di_dsb, color=C_BLUE, lw=2.0, label="DSB 延迟求和")
-    axes[1].semilogx(freqs, di_sd, color=C_RED, ls="--", lw=2.0,
-                     label=r"对角加载超指向（相对加载 $10^{-6}$）")
-    axes[1].set_xlabel("频率 (Hz)"); axes[1].set_ylabel("指向性指数 DI (dB)")
-    axes[1].legend(fontsize=FS_SMALL, loc="center left", bbox_to_anchor=(1.02, 0.5), framealpha=0.95)
-    axes[1].grid(ls=":", alpha=0.5); axes[1].set_title("(b) DI：本理想弥散场模型下超指向不低于 DSB", fontsize=FS_TITLE)
-    for _ax in axes:
-        _ax.minorticks_on()
-        _ax.grid(which="minor", ls=":", alpha=0.25)
-    fig.suptitle("图15  6元圆阵（半径=相邻弦长=4 cm）超指向 vs 延迟求和：WNG与DI\n"
-                 r"（三维各向同性弥散场；超指向相对对角加载=$10^{-6}$；目标方向单位响应；本书仿真）",
-                 fontsize=FS_SUP - 1)
-    fig.subplots_adjust(left=0.07, right=0.82, bottom=0.12, top=0.76, wspace=0.46)
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 5.5))
+    for ax, ds, sd, ylabel, title in zip(
+            axes, [wng_dsb, di_dsb], [wng_sd, di_sd],
+            ["白噪声增益 WNG (dB)", "指向性指数 DI (dB)"],
+            ["(a) 空间白噪声", "(b) 三维各向同性弥散噪声"]):
+        ax.semilogx(freqs, ds, color=C_BLUE, lw=2, label="DSB 延迟求和")
+        ax.semilogx(freqs, sd, color=C_RED, ls="--", lw=2, label="对角加载超指向")
+        ax.set_xlabel("频率 (Hz)")
+        ax.set_ylabel(ylabel)
+        ax.set_title(title)
+        ax.minorticks_on()
+        ax.grid(which="major", ls=":", alpha=.5)
+        ax.grid(which="minor", ls=":", alpha=.25)
+        ax.set_xlim(100, 8000)
+    axes[0].axhline(0, color="gray", ls="-.", lw=1, zorder=0)
+    axes[0].set_ylim(-48, 10)
+    axes[1].set_ylim(-.5, 12)
+    fig.legend(*axes[0].get_legend_handles_labels(), loc="lower center",
+               bbox_to_anchor=(.5, .06), ncol=2, frameon=False, fontsize=11)
+    fig.text(.5, .025, "目标响应均为 1；灰点划线为 0 dB；100～8000 Hz 共 200 个线性采样频点。",
+             ha="center", fontsize=11)
+    fig.suptitle("图15  6 麦圆阵的白噪声增益与指向性", fontsize=FS_SUP)
+    fig.text(.5, .91, "半径与相邻弦长均为 4 cm；朝向 +x（正横角 90°）；声速 343 m/s", ha="center", fontsize=11)
+    fig.text(.5, .86, "超指向采用相对对角加载 $10^{-6}$；使用未加载的弥散协方差计算 DI", ha="center", fontsize=11)
+    fig.subplots_adjust(left=.08, right=.98, bottom=.23, top=.75, wspace=.32)
     save(fig, "fig15_wng_di.png")
 
 

@@ -27,6 +27,36 @@ aec_figures = load_module("make_aec_figures", "make_aec_figures.py")
 
 
 class FigureAlgorithmTest(unittest.TestCase):
+    def test_figure16_mvdr_matches_independent_rank_one_inverse(self):
+        positions, curves = figures.beam_pattern_comparison()
+        direction = np.exp(1j * np.pi * positions * np.sin(np.deg2rad(20)))
+        # Sherman–Morrison for I + 10 bb^H, independent of the plotted solver.
+        inverse_target = np.ones(8) - 10 * direction * direction.conj().sum() / 81
+        expected = inverse_target / inverse_target.sum()
+        np.testing.assert_allclose(curves[1][1], expected, atol=1e-14)
+        self.assertAlmostEqual(20 * np.log10(abs(np.vdot(expected, direction))),
+                               -50.74157252207409, places=9)
+        for _label, weights, _spacing, _color, _style in curves:
+            self.assertAlmostEqual(np.vdot(weights, np.ones(8)).real, 1., places=10)
+            self.assertAlmostEqual(np.vdot(weights, np.ones(8)).imag, 0., places=10)
+
+    def test_figure16_positive_angles_and_nonzero_response_headroom(self):
+        figure = self.capture_figure(figures.fig_beampatterns)
+        for axis in figure.axes:
+            self.assertEqual(axis.get_theta_direction(), -1)
+        self.assertGreater(figure.axes[1].get_rmax(), 40)
+        self.assertEqual(len(figure.legends), 1)
+
+    def test_figure15_low_frequency_sd_curve_is_inside_axes(self):
+        figure = self.capture_figure(figures.fig_wng_di)
+        axis = figure.axes[0]
+        ds, sd = axis.lines[:2]
+        np.testing.assert_allclose(ds.get_ydata(), 10 * np.log10(6), atol=1e-12)
+        self.assertAlmostEqual(sd.get_ydata()[0], -43.72052864, places=5)
+        self.assertLess(axis.get_ylim()[0], min(sd.get_ydata()))
+        self.assertEqual(len(figure.legends), 1)
+        self.assertIsNone(axis.get_legend())
+
     def capture_figure(self, builder):
         captured = []
         original_save = figures.save

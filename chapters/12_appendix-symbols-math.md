@@ -277,7 +277,7 @@ $$L=\vec{w}^H\mathbf{R}\vec{w}+2\operatorname{Re}\!\left\{\lambda^*(\vec{w}^H\ve
 
 **第 3 步：写出比例关系。** 乘子的命名可吸收共轭与负号，因此得到 $\vec w\propto\mathbf R^{-1}\vec a$。
 
-**第 4 步：代回约束。** 写 $\vec w=\kappa\mathbf R^{-1}\vec a$，则 $\vec w^H\vec a=\kappa^*\vec a^H\mathbf R^{-1}\vec a=1$。若 $\mathbf R$ 厄米正定，分母 $q=\vec a^H\mathbf R^{-1}\vec a$ 是正实数，所以 $\kappa=1/q$，得到 $\vec w=\mathbf R^{-1}\vec a/(\vec a^H\mathbf R^{-1}\vec a)$，即 §5.4 式(5-3)。
+**第 4 步：代回约束。** 写 $\vec w=\kappa\mathbf R^{-1}\vec a$，则 $\vec w^H\vec a=\kappa^*\vec a^H\mathbf R^{-1}\vec a=1$。若 $\mathbf R$ 厄米正定，分母 $q=\vec a^H\mathbf R^{-1}\vec a$ 是正实数，所以 $\kappa=1/q$，得到 $\vec w=\mathbf R^{-1}\vec a/(\vec a^H\mathbf R^{-1}\vec a)$，即 §5.4 式(5-9)。
 
 若协方差奇异，不能直接使用这一逆矩阵形式；需另行处理秩或加载。LCMV 把标量约束和乘子换成向量形式（§5.5）。
 
@@ -369,7 +369,7 @@ $$\mathbf R=\begin{bmatrix}0&0\\0&1\end{bmatrix},\qquad
 \min_{\vec w}\ \vec w^H\mathbf R\vec w
 \quad\text{使 }\vec w^H\vec a=1\text{。}$$
 
-这里第一通道在该理想模型中完全没有噪声，第二通道噪声功率为 1；目标在两路的响应都是 1。协方差是半正定而非正定，不能直接套用第 5 章式(5-3)的可逆前提。
+这里第一通道在该理想模型中完全没有噪声，第二通道噪声功率为 1；目标在两路的响应都是 1。协方差是半正定而非正定，不能直接套用第 5 章式(5-9)的可逆前提。
 
 **第一步：先用原问题求答案。** 令权重为 $[w_1,w_2]^\top$。约束是 $w_1^*+w_2^*=1$，目标函数是 $|w_2|^2$。非负量的下界为 0；取 $w_2=0,w_1=1$ 同时满足约束并达到下界，因此 $\vec w_*=[1,0]^\top$ 是全局最优解，输出噪声功率为 0。
 
@@ -382,7 +382,7 @@ $$\vec w_+=\frac{\mathbf R^+\vec a}{\vec a^H\mathbf R^+\vec a}
 
 原因在于 $\mathbf R^+$ 把零特征值方向映射成零；而本题第一通道方向恰好可以在不付噪声代价的同时满足目标约束。机械替换把这个有用的零空间分量丢掉了。这个反例只推翻“所有奇异协方差都可以这样替换”的说法，不表示伪逆在所有波束或最小二乘问题中都无效。
 
-**第三步：对照正加载的极限。** 对 $\delta>0$，$\mathbf R_\delta=\mathbf R+\delta\mathbf I=\operatorname{diag}(\delta,1+\delta)$ 可逆，式(5-3)给出
+**第三步：对照正加载的极限。** 对 $\delta>0$，$\mathbf R_\delta=\mathbf R+\delta\mathbf I=\operatorname{diag}(\delta,1+\delta)$ 可逆，式(5-9)给出
 
 $$\vec w_\delta
 =\frac{[1/\delta,\ 1/(1+\delta)]^\top}{1/\delta+1/(1+\delta)}

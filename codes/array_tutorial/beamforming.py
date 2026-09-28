@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from .conventions import finite_real_array, hermitian_part, validate_cft, validate_frequencies, validate_positions
+from .conventions import finite_real_scalar, finite_real_array, hermitian_part, validate_cft, validate_frequencies, validate_positions
 
 
 def dsb_weights(steering: np.ndarray) -> np.ndarray:
@@ -113,6 +113,7 @@ def superdirective_weights(
     condition_limit: float = 1e12,
 ) -> np.ndarray:
     """Return loaded superdirective weights from diffuse-field coherence."""
+    relative_diagonal_loading = finite_real_scalar(relative_diagonal_loading, "relative_diagonal_loading")
     if relative_diagonal_loading <= 0.0:
         raise ValueError("superdirective examples require an explicit positive loading")
     return mvdr_weights(
@@ -145,13 +146,45 @@ def lcmv_weights(
         raise ValueError("responses must have one value per constraint")
     if c.shape[1] < 1 or not np.all(np.isfinite(c)) or not np.all(np.isfinite(f)):
         raise ValueError("constraints and responses must be finite and non-empty")
+    if c.shape[1] > c.shape[0] or np.any(np.all(c == 0, axis=0)):
+        raise np.linalg.LinAlgError("constraint columns must be linearly independent")
+    # A positive column rescaling changes neither C.H w=f nor the solution,
+    # provided f is rescaled too. This avoids squaring tiny/huge columns.
+    scales = np.max(np.maximum(np.abs(c.real), np.abs(c.imag)), axis=0)
+    with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+        c = c.real / scales + 1j * (c.imag / scales)
+        f = f.real / scales + 1j * (f.imag / scales)
+    if not np.all(np.isfinite(f)):
+        raise ValueError("LCMV normalized responses exceed floating-point range")
     if np.linalg.matrix_rank(c) != c.shape[1]:
         raise np.linalg.LinAlgError("constraint columns must be linearly independent")
-    whitened = np.linalg.solve(matrix, c)
-    gram = c.conj().T @ whitened
-    if not np.isfinite(np.linalg.cond(gram)) or np.linalg.cond(gram) > condition_limit:
+    with np.errstate(over="ignore", invalid="ignore"):
+        whitened = np.linalg.solve(matrix, c)
+        gram = c.conj().T @ whitened
+    if not np.all(np.isfinite(whitened)) or not np.all(np.isfinite(gram)):
+        raise ValueError("LCMV solve or Gram matrix exceeds floating-point range")
+    condition = np.linalg.cond(gram)
+    if not np.isfinite(condition) or condition > condition_limit:
         raise np.linalg.LinAlgError("constraint Gram matrix is ill-conditioned")
-    return whitened @ np.linalg.solve(gram, f)
+    with np.errstate(over="ignore", invalid="ignore"):
+        coefficients = np.linalg.solve(gram, f)
+        result = whitened @ coefficients
+    if not np.all(np.isfinite(coefficients)) or not np.all(np.isfinite(result)):
+        raise ValueError("LCMV weights exceed floating-point range")
+    # Verify C.H w=f without squaring huge norms or overflowing complex abs.
+    result_peak = float(np.max(np.maximum(np.abs(result.real), np.abs(result.imag))))
+    if result_peak == 0.0:
+        if np.any(f != 0):
+            raise np.linalg.LinAlgError("LCMV final constraints are not satisfied")
+    else:
+        reduced = result.real / result_peak + 1j * (result.imag / result_peak)
+        expected = f.real / result_peak + 1j * (f.imag / result_peak)
+        actual = c.conj().T @ reduced
+        error = float(np.max(np.abs(actual-expected)))
+        response_scale = float(np.max(np.abs(expected)))
+        if not np.isfinite(error) or error > 1e-8 * response_scale:
+            raise np.linalg.LinAlgError("LCMV final constraint residual exceeds relative tolerance 1e-8")
+    return result
 
 
 def blocking_matrix(constraints: np.ndarray, *, rtol: float = 1e-12) -> np.ndarray:
@@ -198,25 +231,50 @@ def _load_covariance(
     relative_diagonal_loading: float,
     condition_limit: float,
 ) -> np.ndarray:
-    matrix = hermitian_part(np.asarray(covariance, dtype=complex))
-    if matrix.ndim != 2 or matrix.shape[0] < 1 or not np.all(np.isfinite(matrix)):
+    """Validate a covariance, then require a positive-definite loaded solve.
+
+    Relative Hermitian and original-PSD tolerances are 1e-10. Small negative
+    round-off is NOT silently clipped: the matrix actually solved must still
+    be strictly positive definite. A documented positive load may make it so.
+    """
+    relative_diagonal_loading = finite_real_scalar(relative_diagonal_loading, "relative_diagonal_loading")
+    condition_limit = finite_real_scalar(condition_limit, "condition_limit")
+    raw = np.asarray(covariance, dtype=complex)
+    if (raw.ndim != 2 or raw.shape[0] < 1 or raw.shape[0] != raw.shape[1]
+            or not np.all(np.isfinite(raw))):
         raise ValueError("covariance must be one finite square matrix")
     if not np.isfinite(condition_limit) or condition_limit < 1.0:
         raise ValueError("condition_limit must be finite and at least one")
-    if relative_diagonal_loading < 0.0 or not np.isfinite(relative_diagonal_loading):
+    if not np.isfinite(relative_diagonal_loading) or relative_diagonal_loading < 0.0:
         raise ValueError("relative_diagonal_loading must be non-negative")
-    scale = np.trace(matrix).real / matrix.shape[0]
+    peak = float(np.max(np.maximum(np.abs(raw.real), np.abs(raw.imag))))
+    if peak == 0.0:
+        raise np.linalg.LinAlgError("zero covariance has no invertible noise model")
+    normalized = raw.real / peak + 1j * (raw.imag / peak)
+    if np.max(np.abs(normalized - normalized.conj().T)) > 1e-10:
+        raise ValueError("covariance must be Hermitian within relative tolerance 1e-10")
+    normalized = hermitian_part(normalized)
+    original_values = np.linalg.eigvalsh(normalized)
+    spectral_scale = float(np.max(np.abs(original_values)))
+    if spectral_scale == 0.0 or original_values[0] < -1e-10 * spectral_scale:
+        raise np.linalg.LinAlgError("original covariance must be positive semidefinite")
+    matrix = hermitian_part(raw)
+    # Divide before summing, so a valid near-limit diagonal does not overflow.
+    scale = float(np.sum(matrix.diagonal().real / matrix.shape[0]))
     if relative_diagonal_loading:
         if scale <= 0.0:
             raise np.linalg.LinAlgError("non-positive covariance scale cannot be loaded relatively")
-        matrix = matrix + relative_diagonal_loading * scale * np.eye(matrix.shape[0])
-    eigenvalues = np.linalg.eigvalsh(matrix)
-    eigenvalue_scale = float(np.max(np.abs(eigenvalues)))
-    if eigenvalue_scale == 0.0:
-        raise np.linalg.LinAlgError("zero covariance has no invertible noise model")
-    if eigenvalues[0] / eigenvalue_scale < -1e-10:
-        raise np.linalg.LinAlgError("covariance must be positive semidefinite")
-    condition = np.linalg.cond(matrix)
+        with np.errstate(over="ignore", invalid="ignore"):
+            matrix = matrix + relative_diagonal_loading * scale * np.eye(matrix.shape[0])
+        if not np.all(np.isfinite(matrix)):
+            raise ValueError("loaded covariance exceeds floating-point range")
+    loaded_peak = float(np.max(np.maximum(np.abs(matrix.real), np.abs(matrix.imag))))
+    reduced = matrix.real / loaded_peak + 1j * (matrix.imag / loaded_peak)
+    values = np.linalg.eigvalsh(reduced)
+    if values[0] <= 0.0:
+        raise np.linalg.LinAlgError("loaded covariance must be strictly positive definite")
+    np.linalg.cholesky(reduced)
+    condition = np.linalg.cond(reduced)
     if not np.isfinite(condition) or condition > condition_limit:
         raise np.linalg.LinAlgError(
             "covariance is singular or ill-conditioned; use documented diagonal loading"

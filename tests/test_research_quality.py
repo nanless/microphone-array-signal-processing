@@ -66,8 +66,8 @@ class ResearchQualityTests(unittest.TestCase):
     def test_explicit_baselines_preserve_tutorial_pdf_and_figure_counts(self):
         self.assertEqual(quality.EXPECTED_CHAPTER_COUNT, 14)
         self.assertEqual(quality.EXPECTED_SECTION_COUNT, 119)
-        self.assertEqual(quality.EXPECTED_SUBSECTION_COUNT, 225)
-        self.assertEqual(quality.EXPECTED_OUTLINE_ITEM_COUNT, 358)
+        self.assertEqual(quality.EXPECTED_SUBSECTION_COUNT, 256)
+        self.assertEqual(quality.EXPECTED_OUTLINE_ITEM_COUNT, 389)
         self.assertEqual(quality.EXPECTED_FIGURE_NUMBERS, set(range(1, 42)))
         self.assertEqual(quality.EXPECTED_RESEARCH_PAGE_COUNT, 6)
         self.assertEqual(quality.EXPECTED_RESEARCH_PAGES, (
@@ -135,6 +135,17 @@ class ResearchQualityTests(unittest.TestCase):
 
 
 class PublishedResearchQualityTests(unittest.TestCase):
+    def test_agents_baseline_current_stale_missing_and_unrelated_numbers(self):
+        current = (f"PDF 的 {quality.EXPECTED_CHAPTER_COUNT} 个章级、"
+                   f"{quality.EXPECTED_SECTION_COUNT} 个节级、\n"
+                   f"{quality.EXPECTED_SUBSECTION_COUNT} 个子节级书签，共 "
+                   f"{quality.EXPECTED_OUTLINE_ITEM_COUNT} 个大纲项")
+        self.assertEqual(quality.collaboration_baseline_issues(current), [])
+        self.assertEqual(quality.collaboration_baseline_issues("历史记录196/329。\n" + current), [])
+        self.assertTrue(quality.collaboration_baseline_issues(current.replace("个章级", "个旧章级")))
+        self.assertTrue(quality.collaboration_baseline_issues(current.replace("14 个章级", "13 个章级")))
+        self.assertTrue(quality.collaboration_baseline_issues(current + "\n" + current))
+
     def test_independent_source_digests_match_publishers(self):
         from scripts import build_pdf, build_site
         self.assertEqual(quality.site_source_digest(), build_site.source_digest())

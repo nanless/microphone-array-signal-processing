@@ -520,7 +520,10 @@
         "src/audio/tdfb",
         "src/audio/tdfb/tdfb_generic.c",
         "src/audio/src",
-        "LICENCE"
+        "LICENCE",
+        "src/audio/tdfb/tune/sof_bf_design.m",
+        "src/audio/tdfb/tune/sof_bf_defaults.m",
+        "src/audio/tdfb/tune/sof_bf_paths.m"
       ]
     },
     {
@@ -695,7 +698,9 @@
       "note": "Statistical model toolkit; speaker activities and a complete GSS pipeline are separate inputs/components.",
       "entrypoints": [
         "LICENSE",
-        "pb_bss/distribution/cacgmm.py"
+        "pb_bss/distribution/cacgmm.py",
+        "pb_bss/extraction/beamformer.py",
+        "pb_bss/math/solve.py"
       ]
     },
     {
@@ -1027,7 +1032,9 @@
         "LICENSE",
         "btk20_src/lib/pybeamformer.py",
         "btk20_src/beamformer/beamformer.cc",
-        "btk20_src/unit_test/test_online_beamforming.py"
+        "btk20_src/unit_test/test_online_beamforming.py",
+        "btk20_src/postfilter/postfilter.cc",
+        "btk20_src/postfilter/postfilter.h"
       ]
     },
     {
@@ -1510,6 +1517,77 @@
         "run_inference.py",
         "evaluate.py",
         "train.py"
+      ]
+    },
+    {
+      "id": "spherical-harmonic-transform",
+      "url": "https://github.com/polarch/Spherical-Harmonic-Transform.git",
+      "revision": "30ec1454ab654a0432eafd168da7bee72ecca3fc",
+      "license": "BSD-3-Clause",
+      "fetch_enabled": true,
+      "source_paths": [
+        "LICENSE",
+        "README.md",
+        "getSH.m"
+      ],
+      "scope": "Politis 球阵处理直接依赖：实数/复数球谐基 getSH",
+      "note": "2026-09-28核实固定作者源码/许可。仅getSH自包含源码与README/许可；省略网格数据、旋转、Gaunt和其他示例，不宣称完整工具箱已运行。",
+      "entrypoints": [
+        "LICENSE",
+        "README.md",
+        "getSH.m"
+      ]
+    },
+    {
+      "id": "array-response-simulator",
+      "url": "https://github.com/polarch/Array-Response-Simulator.git",
+      "revision": "1ebfb28296736c52691c63e1aa336a7bd0d6216b",
+      "license": "BSD-3-Clause",
+      "fetch_enabled": true,
+      "source_paths": [
+        "LICENSE",
+        "README.md",
+        "sphModalCoeffs.m",
+        "sph_besselj.m",
+        "dsph_besselj.m",
+        "sph_bessely.m",
+        "dsph_bessely.m",
+        "sph_hankel2.m",
+        "dsph_hankel2.m"
+      ],
+      "scope": "Politis 理论球阵径向滤波直接依赖：球面模态与Bessel/Hankel函数",
+      "note": "2026-09-28核实固定作者源码/许可。仅模态函数及闭合依赖，不含完整simulateSphArray或测量数据；未MATLAB/Octave运行。directional头注的dirCoeff端点与实际公式相反，研究仅采用open/rigid并记录差异。",
+      "entrypoints": [
+        "LICENSE",
+        "README.md",
+        "sphModalCoeffs.m",
+        "sph_besselj.m",
+        "dsph_besselj.m",
+        "sph_bessely.m",
+        "dsph_bessely.m",
+        "sph_hankel2.m",
+        "dsph_hankel2.m"
+      ]
+    },
+    {
+      "id": "ideeppe",
+      "url": "https://github.com/CSeIn/iDeepPE.git",
+      "revision": "c2cdc26ddafd33bf3bda45640c06febef9092365",
+      "license": "未声明；固定根目录及已读核心入口未见许可声明",
+      "fetch_enabled": false,
+      "scope": "iDeepPE 2025：MVDR参数估计与后滤参数融合；仅官方源码索引",
+      "note": "2026-09-28核对官方GitHub currentOid与论文DOI10.1109/LSP.2025.3599455。固定根目录无LICENSE，已读evaluate.py/make_mvdr_out.py/models/conformer_model.py未见文件授权；待作者授权及逐文件许可核实后才能开启获取。权重和CHiME-4/DEMAND/VCTK数据许可独立；未下载到codes、未训练/推理。默认非因果BMC-MCRA；make_mvdr_out.py为oracle训练数据准备。",
+      "entrypoints": [
+        "README.md",
+        "evaluate.py",
+        "models/conformer_cmgan.py",
+        "models/conformer_model.py",
+        "models/modules/conv_stft.py",
+        "util/oracle_test_mse.py",
+        "util/gain.py",
+        "util/map_function.py",
+        "requirements.txt",
+        "how to train & test.txt"
       ]
     }
   ]

@@ -64,9 +64,23 @@ class SpatialParagraphTest(unittest.TestCase):
         self.assertIn(r"\sin\theta-\sin\theta_0=\dfrac{\lambda}{d}", lists[0][1])
         self.assertIn(r"\lambda/d>2", lists[0][2])
 
+    def test_beamforming_derivation_and_postfilters_are_separate_list_items(self):
+        cases = (
+            ("#### 阵因子、主瓣与旁瓣", "均匀加权等价", ("残余相位差", "未归一化", "实际单位响应", "主瓣边缘")),
+            ("### 5.7 后置滤波", "#### 5.7.1", ("Zelinski", "McCowan", "对数谱幅度")),
+        )
+        for start, end, labels in cases:
+            with self.subTest(section=start):
+                source, path = chapter_fragment("05_beamforming.md", start, end)
+                html, lists = rendered_lists(source, path)
+                self.assertEqual([len(items) for items in lists], [len(labels)])
+                for item, label in zip(lists[0], labels):
+                    self.assertIn(label, item)
+                self.assertNotIn("<pre>", html)
+
     def test_mvdr_implementation_has_three_separate_questions(self):
         source, path = chapter_fragment(
-            "05_beamforming.md", "**实现中的三个问题**", "**对角加载、WNG"
+            "05_beamforming.md", "**实现中的三个问题**", "#### 对角加载、WNG"
         )
         _, lists = rendered_lists("**实现中的三个问题**" + source, path)
         self.assertEqual([len(items) for items in lists], [3])
@@ -110,7 +124,7 @@ class SpatialParagraphTest(unittest.TestCase):
         )
         html, lists = rendered_lists(source, path)
         self.assertEqual([len(items) for items in lists], [3])
-        self.assertIn(r"\hat{\mathbf R}_{ss}(k)", lists[0][0])
+        self.assertIn(r"\hat{\mathbf R}_{vv}", lists[0][0])
         self.assertIn("零掩码拥有统计依据", lists[0][0])
         self.assertIn(r"\lambda_{\max}", lists[0][1])
         self.assertIn("尺度规则", lists[0][1])
@@ -144,7 +158,7 @@ class SpatialParagraphTest(unittest.TestCase):
 
     def test_noise_reduction_formula_has_its_own_block(self):
         source, path = chapter_fragment(
-            "05_beamforming.md", "上表“目标保持条件”", "#### 延伸阅读"
+            "05_beamforming.md", "上表“目标保持条件”", "#### 5.10.1 延伸阅读"
         )
         html, _ = render("上表“目标保持条件”" + source, path)
         paragraphs = re.findall(r"<p>(.*?)</p>", html, flags=re.S)
@@ -154,12 +168,13 @@ class SpatialParagraphTest(unittest.TestCase):
             return matches[0]
 
         intro = paragraph_index("目标保持条件")
-        nr_formula = paragraph_index(r"\tag{5-9}")
+        nr_formula = paragraph_index(r"\tag{5-23}")
         nr_explanation = paragraph_index("分子、分母要用同一频带")
-        example = paragraph_index("同输入算例：零陷")
+        example = paragraph_index("取四麦 ULA")
+        self.assertRegex(html, r"<h4[^>]*>同输入算例：零陷、WNG 与目标损伤</h4>")
         example_conditions = paragraph_index("设计使用精确的干扰加噪声协方差")
         sinr_definition = paragraph_index("真实目标输出信干噪比按同一功率口径计算")
-        sinr_formula = paragraph_index(r"\tag{5-10}")
+        sinr_formula = paragraph_index(r"\tag{5-24}")
         hand_check = paragraph_index("可先独立核对 DSB 行")
         boundary = paragraph_index("表中数字不代表语音可懂度")
 
@@ -174,7 +189,7 @@ class SpatialParagraphTest(unittest.TestCase):
         self.assertTrue(paragraphs[nr_formula].strip().endswith("$$"))
         self.assertTrue(paragraphs[sinr_formula].strip().startswith("$$"))
         self.assertTrue(paragraphs[sinr_formula].strip().endswith("$$"))
-        self.assertLess(html.index(r"\tag{5-10}"), html.index("<table>"))
+        self.assertLess(html.index(r"\tag{5-24}"), html.index("<table>"))
         self.assertLess(html.index("</table>"), html.index("可先独立核对 DSB 行"))
 
     def test_music_and_nearfield_formula_belongs_to_third_step(self):

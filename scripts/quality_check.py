@@ -49,7 +49,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "02_basics-signal-model.md": 41,
     "03_array-geometry.md": 28,
     "04_doa-estimation.md": 40,
-    "05_beamforming.md": 7,
+    "05_beamforming.md": 38,
     "06_aec.md": 15,
     "08_speech-separation.md": 9,
     "09_source-tracking.md": 9,
@@ -77,10 +77,10 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 119
-EXPECTED_SUBSECTION_COUNT = 225
-EXPECTED_OUTLINE_ITEM_COUNT = 358
+EXPECTED_SUBSECTION_COUNT = 256
+EXPECTED_OUTLINE_ITEM_COUNT = 389
 EXPECTED_FIGURE_NUMBERS = set(range(1, 42))
-# 研究附站使用独立显式清单，不挤占 14 篇教程或 358 项 PDF 大纲基线。
+# 研究附站使用独立显式清单，不挤占 14 篇教程或 389 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
     ("README.md", "index.html"),
@@ -406,7 +406,25 @@ def section_reference_issues(documents: dict[str, str]):
     return issues
 
 
+def collaboration_baseline_issues(text: str):
+    """Check the published-outline baseline in AGENTS, not historical logs."""
+    pattern = (r"PDF 的\s*(\d+)\s*个章级、\s*(\d+)\s*个节级、\s*"
+               r"(\d+)\s*个子节级书签，共\s*(\d+)\s*个大纲项")
+    matches = re.findall(pattern, text)
+    expected = (EXPECTED_CHAPTER_COUNT, EXPECTED_SECTION_COUNT,
+                EXPECTED_SUBSECTION_COUNT, EXPECTED_OUTLINE_ITEM_COUNT)
+    if len(matches) != 1:
+        return ["AGENTS 的当前 PDF 书签基线必须有且仅有一条完整记录"]
+    actual = tuple(map(int, matches[0]))
+    return [] if actual == expected else [f"AGENTS 书签基线过期：{actual}，应为 {expected}"]
+
+
 def check_sources(errors: list[str], notices: list[str]):
+    agents_path = ROOT / "AGENTS.md"
+    if agents_path.exists():
+        errors.extend(collaboration_baseline_issues(agents_path.read_text(encoding="utf-8")))
+    else:
+        fail(errors, "缺少 AGENTS.md 当前协作规范")
     paths = sorted(CHAPTERS.glob("*.md"))
     paths += [ROOT / "README.md", ROOT / "README_EN.md", ROOT / "scripts" / "README.md"]
     for path in paths:
@@ -1016,6 +1034,7 @@ def check_pdf(errors: list[str], notices: list[str]):
 
 
 EXPECTED_AUDIO_STEMS = {
+    "gsc_reference", "gsc_array", "gsc_always_adapt", "gsc_gate_frozen",
     "doa_ambiguity_tone", "doa_ambiguity_broadband",
     "dma_calibration_array", "dma_calibration_target", "dma_calibration_mismatch", "dma_calibration_corrected",
     "room_decay_dry", "room_decay_short_drr0", "room_decay_long_drr0", "room_decay_long_drr6",
@@ -1272,13 +1291,13 @@ def check_audio(errors):
         manifest = json.loads((root / "MANIFEST.json").read_text())
         records = manifest["files"]
         names = {stem + ".wav" for stem in EXPECTED_AUDIO_STEMS}
-        if len(records) != 82 or {r["file"] for r in records} != names:
-            fail(errors, "音频清单必须包含独立基线的 82 个 WAV")
+        if len(records) != 86 or {r["file"] for r in records} != names:
+            fail(errors, "音频清单必须包含独立基线的 86 个 WAV")
         if {p.name for p in root.glob("*.wav")} != names or {p.name for p in (SITE / "audio").glob("*.wav")} != names:
             fail(errors, "源音频或站点音频文件集合不符")
         if set(manifest["groups"]) != {"spatial", "aec", "aec_methods", "aec_subband", "wpe", "separation", "engineering", "tracking",
                                       "correlation", "polarity", "conditioning", "nonlinear", "fractional_array",
-                                      "spectral_subtraction", "clock_drift", "interpolation", "alignment_error", "room_decay", "dma_calibration", "doa_ambiguity"}:
+                                      "spectral_subtraction", "clock_drift", "interpolation", "alignment_error", "room_decay", "dma_calibration", "doa_ambiguity", "gsc_gate"}:
             fail(errors, "音频实验组不符")
         expected_inputs = {"codes/examples/generate_audio_samples.py", "codes/array_tutorial/audio_samples.py",
                            "codes/array_tutorial/aec.py", "codes/array_tutorial/aec_ipnlms.py",
@@ -1287,7 +1306,7 @@ def check_audio(errors):
                            "codes/array_tutorial/dereverberation.py",
                            "codes/array_tutorial/spectral.py", "codes/array_tutorial/conventions.py",
                            "codes/array_tutorial/geometry.py",
-                           "codes/array_tutorial/noise_suppression.py"}
+                           "codes/array_tutorial/noise_suppression.py", "codes/array_tutorial/gsc.py"}
         if set(manifest["generator_inputs"]) != expected_inputs:
             fail(errors, "音频生成来源清单不完整")
         for name, expected in manifest["generator_inputs"].items():
@@ -1311,7 +1330,8 @@ def check_audio(errors):
                 raw = wav.readframes(frames)
             if record["sample_rate_hz"] != 16000 or record["duration_s"] != frames / 16000:
                 fail(errors, f"音频清单采样率或时长不符：{name}")
-            expected_group = ("doa_ambiguity" if name.startswith("doa_ambiguity_") else
+            expected_group = ("gsc_gate" if name.startswith("gsc_") else
+                              "doa_ambiguity" if name.startswith("doa_ambiguity_") else
                               "dma_calibration" if name.startswith("dma_calibration_") else
                               "room_decay" if name.startswith("room_decay_") else
                               "alignment_error" if name.startswith("alignment_") else

@@ -1,6 +1,6 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 84 个 Git 上游项目；已在 `codes/upstream/_downloads/` 取得 74 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。2026-09-28 离线核验 73 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 10 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 87 个 Git 上游项目；已在 `codes/upstream/_downloads/` 取得 76 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。2026-09-28 离线核验 75 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 11 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”只说明来源、提交、工作区状态和指定入口符合清单，不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -192,3 +192,16 @@ HARK 不属于 Git 锁表的 84 项，另见 [ARCHIVE_SOURCES.lock.json](ARCHIVE
 | [DCASE2026 SAISELD 官方基线](https://github.com/iranroman/DCASE2026_Task3_SAISELD_baseline/tree/d4df66251f39e34bc0157be93858e5a68ec9d7c4) | 声学图、分割、追踪与事件输出链 | 固定版本未建立明确源码许可；仅索引，权重许可另核，未运行 |
 
 源码入口和版本见锁表。网站可访问、Python 包元数据的许可名称、模型权重可下载是不同事实，不能互相代替授权条款。
+
+
+## 第5章的固定源码检查与直接依赖
+
+2026-09-28 按每个算法的输入、输出、约定和失败边界复核波束/后滤实现。两项 Politis 直接依赖按以下最小选集取得；它们补齐现有球阵实现的函数来源，不增加两种算法，也不表示全部 MATLAB 示例已运行。
+
+| 来源与固定提交 | 许可与本地范围 | 结果与边界 |
+|---|---|---|
+| [Spherical-Harmonic-Transform](https://github.com/polarch/Spherical-Harmonic-Transform/tree/30ec1454ab654a0432eafd168da7bee72ecca3fc) | BSD-3-Clause；LICENSE、README、getSH.m | 实/复球谐基直接依赖；未运行MATLAB，不含网格数据和完整工具箱 |
+| [Array-Response-Simulator](https://github.com/polarch/Array-Response-Simulator/tree/1ebfb28296736c52691c63e1aa336a7bd0d6216b) | BSD-3-Clause；LICENSE、README、sphModalCoeffs及6个Bessel/Hankel函数 | 模态计算依赖闭合；未包含完整空间模拟器或测量；directional端点头注差异见研究 |
+| [iDeepPE](https://github.com/CSeIn/iDeepPE/tree/c2cdc26ddafd33bf3bda45640c06febef9092365) | 未建立明确代码许可；仅固定索引 | 不获取/训练/推理；模型和CHiME-4/DEMAND/VCTK数据许可分别核查 |
+
+SOF 的[审查程序](examples/audit_sof_tdfb_design.py)与[报告](reports/sof_tdfb_design_audit.json)读取未修改的固定源码，核对 normalized sinc 参数和 WNG 分母；数学反例是独立选择的标量/两频配置，没有执行官方 MATLAB 设计、生成 FIR 或运行固件。官网旧参数与固定版本默认值分别保存。其他外部方法的实际运行、提取调用、兼容性问题与尚未构建状态见[空间研究](research/01_spatial_and_tracking.md)，不能由75项源码核验通过推断75套算法已正确运行。
