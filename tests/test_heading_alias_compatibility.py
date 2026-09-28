@@ -64,6 +64,18 @@ class HistoricalHeadingCompatibilityTest(unittest.TestCase):
         self.assertEqual(parsed.targets["ch-0-sec-u-d538d6d0a5"], "ch-0-sec-u-3a0278b879")
         self.assertEqual(parsed.targets["ch-0-sec-u-d8fd1002de"], "ch-0-sec-u-3a0278b879")
 
+    def test_chapter_one_distance_heading_keeps_original_topic_link(self):
+        source = ROOT / "chapters/01_problem-definition.md"
+        html, _ = build_site.render(source.read_text(), source)
+        parsed = AliasDestinations(html)
+        self.assertEqual(parsed.targets["sec-u-05ec932a34"], "sec-u-c36b7ac16e")
+        self.assertEqual(parsed.ids["sec-u-05ec932a34"], 1)
+        html, _ = build_pdf.build_html(build_date="2026-09-29")
+        parsed = AliasDestinations(html)
+        self.assertEqual(parsed.targets["ch-1-sec-u-05ec932a34"],
+                         "ch-1-sec-u-c36b7ac16e")
+        self.assertEqual(parsed.ids["ch-1-sec-u-05ec932a34"], 1)
+
     def test_every_frozen_sequence_stays_with_its_original_topic(self):
         for relative in self.SOURCES:
             source = ROOT / relative

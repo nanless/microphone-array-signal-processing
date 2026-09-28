@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 1 章 · 问题定义与双耳启示 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="c6987cca3ed2"><style>
+<meta name="source-digest" content="92bc33374d29"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -56,7 +56,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <ul>
 <li><a href="01_problem-definition.html#sec-u-5cd90bfd4e">1. 从一个生活场景出发：问题定义</a></li>
 <li><a href="01_problem-definition.html#sec-u-81896116fa">导入：从客厅场景认识阵列任务</a></li>
-<li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-05ec932a34">客厅里的远场语音问题</a></li>
+<li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-c36b7ac16e">客厅里的远距离语音问题</a></li>
 <li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-2fa0be7e3b">空间处理的三项任务</a></li>
 <li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-8057829d0f">先分清音量、功率与信噪比</a></li>
 <li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-783265321c">三类阵列收益与白噪声增益</a></li>
@@ -91,7 +91,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
 <li><a href="01_problem-definition.html#sec-u-5cd90bfd4e">1. 从一个生活场景出发：问题定义</a></li>
 <li><a href="01_problem-definition.html#sec-u-81896116fa">导入：从客厅场景认识阵列任务</a></li>
-<li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-05ec932a34">客厅里的远场语音问题</a></li>
+<li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-c36b7ac16e">客厅里的远距离语音问题</a></li>
 <li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-2fa0be7e3b">空间处理的三项任务</a></li>
 <li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-8057829d0f">先分清音量、功率与信噪比</a></li>
 <li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-783265321c">三类阵列收益与白噪声增益</a></li>
@@ -115,10 +115,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </blockquote>
 <hr />
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-5cd90bfd4e">1. 从一个生活场景出发：问题定义</h1>
-<p>本章从客厅里的远场语音交互出发，区分定位、波束形成和追踪的输入输出，再计算阵列为什么有时能降低噪声、有时却会削弱目标。双耳听觉则提供一个参照：时间差、声级差和方向相关谱形分别包含什么信息，机器阵列能借鉴到哪一步。</p>
+<p>本章从客厅里的远距离语音交互出发，区分定位、波束形成和追踪的输入输出，再计算阵列为什么有时能降低噪声、有时却会削弱目标。双耳听觉则提供一个参照：时间差、声级差和方向相关谱形分别包含什么信息，机器阵列能借鉴到哪一步。</p>
 <p>读完本章，应能复算四麦理想增益，说明它为什么不是每段录音都能得到的保证，并分清几何模型的预测与人的听觉实验结果。</p>
 <h2 id="sec-u-81896116fa">导入：从客厅场景认识阵列任务</h2>
-<h3 id="sec-u-05ec932a34">客厅里的远场语音问题</h3>
+<span id="sec-u-05ec932a34" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-c36b7ac16e">客厅里的远距离语音问题</h3>
 <p>想象你坐在客厅里，对 3 米外的智能音箱说“今天天气怎么样”。音箱要听清这句话，需要面对几类不同的干扰：</p>
 <ol>
 <li><strong>环境噪声</strong>：空调声、车声，与目标说话声同时进入麦克风。</li>
@@ -127,6 +127,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><strong>麦克风自噪声</strong>：传感器及其电路自身产生的底噪。环境很安静时，自噪声仍然存在；某些依靠通道相消的波束形成器还会放大它。</li>
 <li><strong>设备播放回声</strong>：如果音箱正在播放音乐，扬声器的声音也会经房间传回麦克风。设备能够取得自己的播放信号作为参考；外部电视的播放参考通常不在设备手中。</li>
 </ol>
+<p>这里的 3 米只说明对话距离；能否把传播近似为平面波，还取决于阵列孔径和使用频率（见 §2.2）。</p>
 <p>人的听觉系统会合并双耳线索来定位和选择性聆听。机器可以用<strong>一组同步采样的麦克风</strong>观测空间差异：同一声音到达不同位置的时间、幅度和频谱响应可能不同。这些差异包含方向信息，也使系统能够优先保留目标方向的声音。</p>
 <p>这里的“同步”是指各路样本对应同一个时间基准。两路各录到一段声音，并不意味着可以直接按相同样本编号相加。没有校准的采样偏移会与真实传播时差混在一起；后面的 E01-05 会展示仅差一个采样点对高低频的不同影响。</p>
 <h3 id="sec-u-2fa0be7e3b">空间处理的三项任务</h3>
@@ -170,7 +171,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>$$
 P_u=\frac{1}{N}\sum_{n=0}^{N-1}u[n]^2. \tag{1-1}
 $$</p>
-<p>其中 $n$ 是样本编号，$N$ 是所选记录的样本数。若样本是无量纲数字幅度，$P_u$ 也是相应的数字域量，不能直接称为多少瓦的声功率。本章计算不先减去样本均值；只有零均值模型的均方值才与方差相同。</p>
+<p>其中 $n$ 是样本编号，$N$ 是所选记录的样本数。若样本是无量纲数字幅度，$P_u$ 也是相应的数字域量，不能直接称为多少瓦的声功率。</p>
+<p>本章计算 $P_u$ 时不先减样本均值。若记本次记录的均值为 $\bar u=N^{-1}\sum_n u[n]$，按同一分母 $N$ 计算的中心化样本方差是 $V_N=P_u-\bar u^2$。总体均值为零时，总体均方等于总体方差；但从这个模型截取的有限记录仍可能有 $\bar u\ne0$，见 E01-04。</p>
 <p>在仿真中，若能分别取得目标分量 $s[n]$ 和噪声分量 $v[n]$，就能在相同时间段上分别计算 $P_s$、$P_v$。<strong>信噪比（Signal-to-Noise Ratio，SNR）</strong>及其改善量定义为：</p>
 <p>$$
 \begin{aligned}
@@ -278,7 +280,7 @@ $$</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-1-1">1.1 双耳听觉的三类定位线索</h2>
 <p>双耳可以近似为带有头部散射的双传感器系统，但听觉还会利用头部运动、经验和神经处理。下面区分时间差、声级差和方向相关谱形，分别说明它们与机器阵列的联系。</p>
 <p><img alt="图1 人类双耳听觉的定位线索" src="../figures/fig01_binaural.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图1(a)标出双耳与方向约定；图1(b)比较球头模型和无遮挡双点模型的 ITD；图1(c)区分纯音细结构、双耳声级差和高频包络的实验条件。曲线是指定几何模型的计算，不是人体测量；文字框也不表示所有人的统一频率截止。</p>
+<p>图1(a)标出双耳与方向约定：红色外向箭头指向声源方位，蓝色内向箭头表示声波向双耳传播。图1(b)比较球头模型和无遮挡双点模型的 ITD；图1(c)区分纯音细结构、双耳声级差和高频包络的实验条件。曲线是指定几何模型的计算，不是人体测量；文字框也不表示所有人的统一频率截止。</p>
 <h3 id="sec-u-8b017cf10d">双耳时间差：把几何模型算清楚</h3>
 <p><strong>双耳时间差（Interaural Time Difference，ITD）</strong>描述声音到达两耳的先后。这里把正前方定为 $0^\circ$，朝右转为正，定义 $\tau=t_{\mathrm{左}}-t_{\mathrm{右}}$。右侧声源先到右耳，所以 ITD 为正；对称的左侧声源为负。</p>
 <p>Woodworth 模型把头近似成半径 $a$ 的刚性球，两耳位于直径两端，入射声近似为远场平面波。对前半平面 $-\pi/2\le\theta\le\pi/2$，常用的射线路程近似为：</p>
@@ -303,7 +305,8 @@ $$</p>
 <p>Woodworth 模型是高频射线近似，不是覆盖任意频率、耳位与个体形状的精确人体模型。低频绕射会改变结果，模型扩展还要考虑非对径耳和有限距离；参见 <a href="https://doi.org/10.1121/1.4861243" title="citation">Aaronson 与 Hartmann，JASA 135(2)，817–823，2014</a>。本章只用它说明几何假设怎样影响数值，不用它推算人的听觉阈值。</p>
 <h3 id="sec-u-5221e22cae">声级差、细结构与包络要分别判断</h3>
 <p><strong>双耳声级差（Interaural Level Difference，ILD）</strong>描述两耳接收声级的差异。头部遮挡使远耳的高频通常更弱，低频绕射则会减小这种差异；大小还取决于方向、频率和具体头部形状。声级差并不等于简单的“两耳离声源远近之差”。</p>
-<p>瑞利<strong>双重理论（duplex theory）</strong>把低频细结构 ITD 与高频 ILD 作为重要线索。这是帮助理解的概括，不是两条没有重叠的频段规则。这里的“细结构”指声波逐周期的快速起伏；“包络”指声音强弱随时间较慢的变化。高频载波即使周期很短，也可以带有较慢的强弱调制。</p>
+<p>瑞利在 1907 年的<a href="https://doi.org/10.1080/14786440709463595" title="citation">《On our perception of sound direction》</a>中讨论了低频相位差与高频强度差对方位判断的不同作用。本书用<strong>双重理论（duplex theory）</strong>概括低频细结构 ITD 与高频 ILD 这两类重要线索；它们不是两条没有重叠的频段规则。</p>
+<p>这里的“细结构”指声波逐周期的快速起伏；“包络”指声音强弱随时间较慢的变化。高频载波即使周期很短，也可以带有较慢的强弱调制。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
 <tr>
@@ -339,6 +342,7 @@ $$</p>
 <p>谱形线索也受声源本身的频谱影响：耳朵接收的频谱同时包含声源谱与传播滤波，某个频率很弱，既可能来自方向相关谱谷，也可能是声源原本就很弱。单一纯音只在一个频率上提供信息，不能展示一段完整的谱峰与谱谷。因此，不能仅凭一个未知声音的单耳谱谷就唯一判定方向；较宽频带的声音、双耳比较、运动和已有经验能提供更多约束。</p>
 <p>方向相关谱形有助于减少前后混淆，但听觉还联合 ITD、ILD、头部运动和经验。仅有两个耳朵并不意味着只靠一个时差就能唯一确定三维方向。经典综述可参见 <a href="https://doi.org/10.1146/annurev.ps.42.020191.001031" title="citation">Middlebrooks 与 Green，1991</a>。</p>
 <h3 id="sec-u-e0e1bf4258">双耳线索怎样对应机器阵列</h3>
+<p><strong>优先效应（precedence effect）</strong>讨论的是先到声与短延迟后到声携带不同方向线索时的方位感。在两声相似、延迟及听觉任务满足相应条件的实验中，听者的方位判断常更受先到声影响；极短延迟或改变刺激与任务后，结果可能不同。它不是“所有反射都被听觉忽略”的规则，也不等于机器去混响。<a href="https://doi.org/10.2307/1418275" title="citation">Wallach、Newman 与 Rosenzweig，1949，原始研究</a>；<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4310855/" title="citation">Brown、Stecker 与 Tollin，2015，实验条件综述</a>。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
 <tr>
@@ -364,7 +368,7 @@ $$</p>
 <td>§3.4、§10.2</td>
 </tr>
 <tr>
-<td>先到声影响方位感的优先效应</td>
+<td>短延迟、方向线索冲突条件下的优先效应</td>
 <td>区分直达声、早期反射与晚期混响；机器去混响不等于复制听觉机制</td>
 <td>§2.4、§7.1</td>
 </tr>
@@ -521,7 +525,14 @@ $$</p>
 </table></div>
 <p>时间差相同，高频在这段时间内转过的相位更多，平均时抵消也更多。这里的 dB 是目标电平损失，不是 SNR 改善，更不是完整语音的可懂度分数。</p>
 <p>若把先到的第一路再延迟一个样本，两路都成为 $s[n-1]$，平均后目标幅度恢复，同时保留一个样本的共同延迟。因果实现可以延迟先到声；不能把“把后到声提前”当成不需未来样本的操作。</p>
-<p><strong>试听与复算。</strong> 本书的 <code>alignment_error</code> 音频组使用 2 秒的 1 kHz 与 4 kHz 双音，每个正弦幅度为 0.18，首尾各有 20 ms 线性淡入淡出。四个文件使用共同增益 1：<code>alignment_array.wav</code> 保存两路输入，<code>alignment_unaligned.wav</code> 是直接平均，<code>alignment_aligned.wav</code> 是补偿后平均，<code>alignment_reference.wav</code> 是具有同样共同延迟的参考。补偿后文件与参考相同，是这一确定性对齐实验的预期结果。</p>
+<p><strong>试听与复算。</strong> 本书的 <code>alignment_error</code> 音频组使用 2 秒的 1 kHz 与 4 kHz 双音，每个正弦幅度为 0.18，首尾各有 20 ms 线性淡入淡出。四个文件使用共同增益 1：</p>
+<ul>
+<li><a href="audio/alignment_array.wav">两路输入 <code>alignment_array.wav</code></a><audio class="audio-sample" controls preload="none" aria-label="两路输入 alignment_array.wav" src="audio/alignment_array.wav">请使用上方 WAV 链接下载。</audio>；</li>
+<li><a href="audio/alignment_unaligned.wav">直接平均 <code>alignment_unaligned.wav</code></a><audio class="audio-sample" controls preload="none" aria-label="直接平均 alignment_unaligned.wav" src="audio/alignment_unaligned.wav">请使用上方 WAV 链接下载。</audio>；</li>
+<li><a href="audio/alignment_aligned.wav">补偿后平均 <code>alignment_aligned.wav</code></a><audio class="audio-sample" controls preload="none" aria-label="补偿后平均 alignment_aligned.wav" src="audio/alignment_aligned.wav">请使用上方 WAV 链接下载。</audio>；</li>
+<li><a href="audio/alignment_reference.wav">同样共同延迟的参考 <code>alignment_reference.wav</code></a><audio class="audio-sample" controls preload="none" aria-label="同样共同延迟的参考 alignment_reference.wav" src="audio/alignment_reference.wav">请使用上方 WAV 链接下载。</audio>。</li>
+</ul>
+<p>这组跨章音频按固定组映射归入第 2 章的 <code>audio/</code>，参数和逐文件摘要见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/audio/MANIFEST.json">主音频清单</a>，生成源见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/core/audio_samples.py"><code>alignment_error_case()</code></a>。补偿后文件与参考相同，是这一确定性对齐实验的预期结果。</p>
 <p>程序在样本半开区间 $[1600,30400)$，即 0.1～1.9 秒，按各频率的正弦与余弦投影测量幅度。该区间避开淡入淡出且包含整数周期，避免把起止边缘、共同延迟和幅度衰减混为同一种误差。PCM 量化使读回数值与解析值有微小差异。这组样本没有真实语音、噪声或房间混响，只用于检查对齐与频率相关抵消。</p>
 <h3 id="sec-u-759110492b">E01-06：有头部与没有头部，时差能差多少</h3>
 <p>使用式(1-5)、式(1-6)，取 $a=0.0875$ m、$c=343$ m/s，分别计算 $0^\circ$、$1^\circ$、$30^\circ$、$90^\circ$ 的 ITD。再判断负角度的符号，以及球头正侧面时差在 16 kHz 下相当于几个采样间隔。</p>

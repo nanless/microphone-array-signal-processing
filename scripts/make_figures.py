@@ -1929,17 +1929,20 @@ def fig_binaural():
     a = 1.0
     ax.add_patch(Circle((0, 0), a, fc="#f6e5db", ec="k", lw=1.5))
     ax.scatter([-a, a], [0, 0], s=180, c=C_BLUE, zorder=6, edgecolors="k")
-    ax.annotate("左耳", xy=(-a, 0), xytext=(-a - 0.1, -0.35), fontsize=FS_LABEL, ha="center")
-    ax.annotate("右耳", xy=(a, 0), xytext=(a + 0.1, -0.35), fontsize=FS_LABEL, ha="center")
+    ax.text(-a - 0.32, -0.18, "左耳", fontsize=FS_LABEL, ha="right", va="center")
+    ax.text(a + 0.32, -0.18, "右耳", fontsize=FS_LABEL, ha="left", va="center")
     th = np.deg2rad(60)
-    for dy in np.linspace(-0.9, 0.9, 5):
+    # Blue arrows follow the incoming wave; leave the center ray free for the
+    # opposite, head-to-source bearing arrow so their directions stay distinct.
+    for dy in (-0.9, -0.45, 0.45, 0.9):
         p1 = np.array([3.2 * np.cos(th) - dy * np.sin(th), 3.2 * np.sin(th) + dy * np.cos(th)])
         p2 = np.array([0.9 * np.cos(th) - dy * np.sin(th), 0.9 * np.sin(th) + dy * np.cos(th)])
         ax.annotate("", xy=tuple(p2), xytext=tuple(p1),
                     arrowprops=dict(arrowstyle="->", color=C_BLUE, alpha=0.55, lw=1.2))
-    ax.annotate("", xy=(1.15 * np.cos(th), 1.15 * np.sin(th)), xytext=(3.1 * np.cos(th), 3.1 * np.sin(th)),
+    ax.annotate("", xy=(3.1 * np.cos(th), 3.1 * np.sin(th)), xytext=(1.15 * np.cos(th), 1.15 * np.sin(th)),
                 arrowprops=dict(arrowstyle="->", color=C_RED, lw=1.8))
-    ax.text(3.3 * np.cos(th) + 0.05, 3.3 * np.sin(th), "声源方向", fontsize=FS_LABEL, color=C_RED)
+    ax.text(3.3 * np.cos(th) + 0.05, 3.3 * np.sin(th), "声源方位（红）", fontsize=FS_LABEL, color=C_RED)
+    ax.text(1.85, 0.35, "入射传播（蓝）", fontsize=FS_SMALL, color=C_BLUE)
     ax.text(-1.85, -1.35, "头影：远侧耳被头遮挡\n路程差 → 双耳时间差 ITD\n遮挡 → 双耳声级差 ILD",
             fontsize=FS_LABEL, ha="left", va="top", color=C_MAIN)
     ax.set_xlim(-1.9, 3.6); ax.set_ylim(-3.4, 3.6)

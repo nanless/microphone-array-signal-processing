@@ -25,6 +25,9 @@ HISTORICAL_SECTION_IDS = {
         "sec-u-d8fd1002de": "sec-u-3a0278b879",  # 45 张历史标题
         "sec-u-627ed3907e": "sec-u-3a0278b879",  # 47 张历史标题
     },
+    "01_problem-definition.md": {
+        "sec-u-05ec932a34": "sec-u-c36b7ac16e",  # 客厅里的远场语音问题：标题改为远距离
+    },
     "04_doa-estimation.md": {
         "sec-u-442f837dd2": "sec-u-5d3aebe0fb",  # MUSIC 旧标题
         "sec-u-8dda6571c9": "sec-u-e9bdae6530",  # ESPRIT 旧标题
