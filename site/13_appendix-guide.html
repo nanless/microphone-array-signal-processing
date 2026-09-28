@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 B · 路径地图与练习 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="a9d838b30805"><style>
+<meta name="source-digest" content="9518a5787358"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -355,7 +355,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </li>
 <li>
 <p><strong>AEC 残余回声较大</strong> → 优先检查参考取点、参考与麦克风的整体延迟、扬声器削波以及滤波器覆盖时间。参考不同步是需要排查的原因之一，不是所有设备的固定首因。</p>
-<p>若线性路径已收敛而仍有与播放相关的非线性残余，再评估非线性处理（NLP）或学习型 AEC（§6.1）。</p>
+<p>若线性路径已收敛而仍有与播放相关的非线性残余，再评估<a href="06_aec.html#sec-6-12">非线性处理（NLP）及其工作点</a>，或<a href="06_aec.html#sec-6-5">学习型 AEC</a>；AEC3 的残余抑制结构见<a href="06_aec.html#sec-6-8">§6.8</a>。</p>
 </li>
 <li>
 <p><strong>SRP-PHAT 出现镜像假峰</strong>：先区分三种原因，不能把所有对称峰都归于麦间距。</p>
@@ -497,7 +497,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <tr>
 <td>$\mathrm{ERLE}=10\log_{10}\dfrac{\sum_n|y(n)|^2}{\sum_n|e_{\mathrm{echo}}(n)|^2}$</td>
 <td>同一远端单讲窗口内的回声返回损失增强；$y=x*h$ 为消除前回声，$e_{\mathrm{echo}}$ 为消除后回声分量</td>
-<td>§6.1</td>
+<td><a href="06_aec.html#sec-6-7">§6.7，式(6-25)</a></td>
 </tr>
 <tr>
 <td>WPE 预测模型，见式(7-1)</td>

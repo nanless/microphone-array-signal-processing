@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 A · 符号术语数学 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="a9d838b30805"><style>
+<meta name="source-digest" content="9518a5787358"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -426,7 +426,7 @@ kf_s/N,&0\leq k\lt \lceil N/2\rceil,\\
 <tbody>
 <tr>
 <td>LMS / NLMS / RLS</td>
-<td>最小均方（Least Mean Squares，LMS）结构简单；归一化最小均方（Normalized LMS，NLMS）按输入功率归一化步长；递归最小二乘（Recursive Least Squares，RLS）利用输入相关矩阵的递推逆，通常收敛更快，但计算量和存储量也更大。实际差距取决于输入相关性、滤波长度和参数设置（§5.6、§6.1）</td>
+<td>最小均方（Least Mean Squares，LMS）结构简单；归一化最小均方（Normalized LMS，NLMS）按输入功率归一化步长；递归最小二乘（Recursive Least Squares，RLS）利用输入相关矩阵的递推逆，通常收敛更快，但计算量和存储量也更大。实际差距取决于输入相关性、滤波长度和参数设置（<a href="05_beamforming.html#sec-5-6">GSC §5.6</a>、<a href="06_aec.html#sec-6-1-2">NLMS §6.1.2</a>、<a href="06_aec.html#sec-6-2-5">RLS §6.2.5</a>）</td>
 </tr>
 <tr>
 <td>音乐噪声</td>
@@ -623,7 +623,7 @@ kf_s/N,&0\leq k\lt \lceil N/2\rceil,\\
 </tr>
 <tr>
 <td>DTD（双讲检测）</td>
-<td>检测近端语音与远端播放同时活动的状态，用于冻结、减小步长或切换到稳健的 AEC 更新策略（§6.1）</td>
+<td>检测近端语音与远端播放同时活动的状态，用于冻结、减小步长或切换到稳健的 AEC 更新策略（<a href="06_aec.html#sec-6-4">§6.4</a>）</td>
 </tr>
 <tr>
 <td>回声返回损失增强（Echo Return Loss Enhancement，ERLE）</td>
@@ -671,7 +671,7 @@ kf_s/N,&0\leq k\lt \lceil N/2\rceil,\\
 </tr>
 <tr>
 <td>双讲（double-talk）</td>
-<td>远端播放与近端用户同时发声。近端语音出现在麦克风或误差信号中，不应出现在理想的远端参考信号中；它会使 AEC 的误差不再只含路径失配，因此需用 DTD 控制自适应更新（§6.1）</td>
+<td>远端播放与近端用户同时发声。近端语音出现在麦克风或误差信号中，不应出现在理想的远端参考信号中；它会使 AEC 的误差不再只含路径失配，因此需用 DTD 控制自适应更新（<a href="06_aec.html#sec-6-4">§6.4</a>）</td>
 </tr>
 <tr>
 <td>MOS（平均意见分）</td>
@@ -695,7 +695,7 @@ kf_s/N,&0\leq k\lt \lceil N/2\rceil,\\
 </tr>
 <tr>
 <td>NLP（非线性处理）</td>
-<td>Non-Linear Processing：AEC 里接在线性滤波器之后的残余回声抑制（谱减式/神经式），对付扬声器非线性失真等线性滤波器消不掉的部分（§6.1）；注意与自然语言处理（Natural Language Processing）同缩写，语境区分</td>
+<td>Non-Linear Processing：AEC 里接在线性滤波器之后的残余回声抑制（谱减式/神经式），对付扬声器非线性失真等线性滤波器消不掉的部分；<a href="06_aec.html#sec-6-8">§6.8</a>解释处理结构，<a href="06_aec.html#sec-6-12">§6.12</a>解释工作点。注意与自然语言处理（Natural Language Processing）同缩写，语境区分</td>
 </tr>
 <tr>
 <td>PBFDAF</td>

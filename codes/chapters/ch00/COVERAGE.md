@@ -190,7 +190,7 @@
 | §6.4 | 相关/相干性 DTD | 本仓库可运行基线 | `codes/chapters/ch06/core/double_talk.py::ncc_activity_states`、`codes/chapters/ch06/aec_dtd_demo.py` 的四状态计数及路径突变反例 | 已对齐单参考、固定阈值、数学合成 PCM；真值只评分，远端静音禁作双讲判决；真实设备未测 |
 | §6.4 | 连续可变学习率 | 外部参考实现 | `speexdsp`：`libspeexdsp/mdf.c` | 不是独立二值 DTD |
 | §6.8 | AEC3 参考延迟控制 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/echo_path_delay_estimator.cc`、`render_delay_controller.cc` | 降采样匹配滤波估滞后；与 refined/coarse 线性滤波器分工不同 |
-| §6.8 | AEC3 线性抵消 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/subtractor.cc`；官方 WAV 入口的已运行适配器 `codes/chapters/ch06/examples/aec3_offline_compare.py`、`codes/chapters/ch06/examples/aec_same_input_truth.py` | 固定提交的 `audioproc_f` 已在两对真实录音和一组已知合成分量上分别导出线性/最终 WAV；比较须补偿输出固定延迟并区分取点，仍无设备性能排名，见研究手册 A06 |
+| §6.8 | AEC3 线性抵消 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/subtractor.cc`；官方 WAV 入口的已运行适配器 `codes/chapters/ch06/examples/aec3_offline_compare.py`、`codes/chapters/ch06/examples/aec_same_input_truth.py` | 固定提交的 `audioproc_f` 已在两对真实录音和一组已知合成分量上分别导出线性/最终 WAV；同输入脚本默认锁历史二进制，新构建需显式清单并重新测延迟、评分，尚无第二构建实测；比较须区分取点，仍无设备性能排名，见研究手册 A06 |
 | §6.8、§6.12 | AEC3 残余回声估计 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/residual_echo_estimator.cc` | 与执行抑制增益分开 |
 | §6.8、§6.12 | AEC3 抑制增益 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/suppression_gain.cc` | 近端损伤与回声泄漏分别计量 |
 | §6.8 | AEC3 舒适噪声 | 外部参考实现 | `webrtc`：`modules/audio_processing/aec3/comfort_noise_generator.cc` | 不掩盖滤波器未收敛 |

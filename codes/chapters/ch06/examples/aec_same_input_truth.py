@@ -9,6 +9,12 @@ Run from the repository root with the already-built pinned binaries:
     .venv/bin/python -m codes.chapters.ch06.examples.aec_same_input_truth \
       --speex-library /private/tmp/speexdsp-aec-20260923/libspeexdsp.dylib \
       --audioproc codes/chapters/ch00/upstream/_downloads/webrtc_aec3_checkout/src/out/aec3/audioproc_f
+
+For a separately built binary, add --build-manifest path/to/build.json. The
+manifest declares, for each binary, its SHA-256, source repository, full Git
+commit and build configuration. The script verifies the binary bytes, not the
+declared source/build history; its output keeps this run separate from the
+historical pinned-binary result.
 """
 
 from __future__ import annotations
@@ -23,7 +29,10 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import platform
+import re
 import subprocess
+import sys
 import tempfile
 
 import numpy as np
@@ -43,6 +52,10 @@ FAR_SCORE = (2 * RATE, 3 * RATE)
 NEAR_SCORE = (3 * RATE, 4 * RATE)
 SPEEX_SHA256 = "c3e70172a3a9bf60b60bfd0bddfd58550a1899fef09078a9c7d5270d4a12105d"
 AEC3_SHA256 = "82f8eebaf574eb10fdee695ee7ea05a54418300a045a3ffb0de8f4c78f4592d3"
+MANIFEST_KEYS = frozenset({"schema_version", "speexdsp", "aec3_audioproc_f"})
+BUILD_KEYS = frozenset({
+    "sha256", "source_repository", "source_commit", "build_configuration"
+})
 
 
 def _pcm16(values: np.ndarray) -> np.ndarray:
@@ -135,14 +148,119 @@ def _score(base: np.ndarray, injected: np.ndarray, known_near: np.ndarray,
     return result
 
 
-def _verify_binary(path: Path, expected_digest: str, label: str) -> tuple[Path, str]:
+def _verify_binary(path: Path, expected_digest: str, label: str, *,
+                   digest_source: str = "documented local build") -> tuple[Path, str]:
     resolved = path.resolve(strict=True)
     if not resolved.is_file():
         raise ValueError(f"{label} must be a file")
     digest = hashlib.sha256(resolved.read_bytes()).hexdigest()
     if digest != expected_digest:
-        raise ValueError(f"{label} SHA-256 differs from the documented local build")
+        raise ValueError(f"{label} SHA-256 differs from the {digest_source}")
     return resolved, digest
+
+
+def _unique_json_pairs(pairs: list[tuple[str, object]]) -> dict:
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate build manifest key: {key}")
+        result[key] = value
+    return result
+
+
+def _load_build_manifest(path: Path) -> tuple[dict, str]:
+    """Validate self-reported build metadata before executing either binary."""
+
+    resolved = path.resolve(strict=True)
+    if not resolved.is_file():
+        raise ValueError("build manifest must be a file")
+    raw = resolved.read_bytes()
+    try:
+        manifest = json.loads(raw, object_pairs_hook=_unique_json_pairs)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError("build manifest must be valid UTF-8 JSON") from exc
+    if not isinstance(manifest, dict) or set(manifest) != MANIFEST_KEYS:
+        raise ValueError(f"build manifest keys must be {sorted(MANIFEST_KEYS)}")
+    if type(manifest["schema_version"]) is not int or manifest["schema_version"] != 1:
+        raise ValueError("build manifest schema_version must be 1")
+    for label in ("speexdsp", "aec3_audioproc_f"):
+        entry = manifest[label]
+        if not isinstance(entry, dict) or set(entry) != BUILD_KEYS:
+            raise ValueError(f"{label} build keys must be {sorted(BUILD_KEYS)}")
+        if not isinstance(entry["sha256"], str) or not re.fullmatch(
+            r"[0-9a-f]{64}", entry["sha256"]
+        ):
+            raise ValueError(f"{label} sha256 must be 64 lowercase hexadecimal characters")
+        if not isinstance(entry["source_commit"], str) or not re.fullmatch(
+            r"[0-9a-f]{40}", entry["source_commit"]
+        ):
+            raise ValueError(f"{label} source_commit must be a full lowercase Git SHA-1")
+        for field in ("source_repository", "build_configuration"):
+            if not isinstance(entry[field], str) or not entry[field].strip():
+                raise ValueError(f"{label} {field} must be a nonempty string")
+        if not entry["source_repository"].startswith("https://"):
+            raise ValueError(f"{label} source_repository must be an HTTPS URL")
+    return manifest, hashlib.sha256(raw).hexdigest()
+
+
+def _verified_inputs(speex_library: Path, audioproc: Path,
+                     build_manifest: Path | None) -> tuple[Path, Path, dict]:
+    """Keep the historical lock distinct from a new, declared build run."""
+
+    if build_manifest is None:
+        speex_library, speex_digest = _verify_binary(
+            speex_library, SPEEX_SHA256, "SpeexDSP library"
+        )
+        audioproc, aec3_digest = _verify_binary(
+            audioproc, AEC3_SHA256, "AEC3 audioproc_f"
+        )
+        provenance = {"mode": "historical_pinned_binaries"}
+    else:
+        manifest, manifest_digest = _load_build_manifest(build_manifest)
+        speex_library, speex_digest = _verify_binary(
+            speex_library, manifest["speexdsp"]["sha256"], "SpeexDSP library",
+            digest_source="declared build manifest",
+        )
+        audioproc, aec3_digest = _verify_binary(
+            audioproc, manifest["aec3_audioproc_f"]["sha256"], "AEC3 audioproc_f",
+            digest_source="declared build manifest",
+        )
+        provenance = {
+            "mode": "explicit_build_manifest_run",
+            "manifest_sha256": manifest_digest,
+            "declared_builds": {
+                label: {
+                    "source_repository": manifest[label]["source_repository"],
+                    "source_commit": manifest[label]["source_commit"],
+                    "build_configuration": manifest[label]["build_configuration"],
+                }
+                for label in ("speexdsp", "aec3_audioproc_f")
+            },
+            "declaration_boundary": (
+                "Binary SHA-256 was verified against this manifest. Source commits and "
+                "build configurations are user declarations, not cryptographic proof "
+                "of how the binaries were built."
+            ),
+            "matches_historical_binary_sha256": {
+                "speexdsp": speex_digest == SPEEX_SHA256,
+                "aec3_audioproc_f": aec3_digest == AEC3_SHA256,
+            },
+        }
+    provenance.update({
+        "binary_paths": {
+            "speexdsp": str(speex_library), "aec3_audioproc_f": str(audioproc)
+        },
+        "binary_sha256": {
+            "speexdsp": speex_digest, "aec3_audioproc_f": aec3_digest
+        },
+        "runtime": {
+            "platform": platform.platform(),
+            "python": sys.version.split()[0],
+            "numpy": np.__version__,
+            "script_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        },
+    })
+    return speex_library, audioproc, provenance
 
 
 def _run_aec3(binary: Path, render: np.ndarray, microphone: np.ndarray,
@@ -179,13 +297,13 @@ def _impulse_lag(output: np.ndarray, input_index: int) -> int:
     return first - input_index
 
 
-def run(speex_library: Path, audioproc: Path) -> dict:
+def run(speex_library: Path, audioproc: Path, *,
+        build_manifest: Path | None = None) -> dict:
     """Run all processors from fresh state on identical sample-indexed input."""
 
-    speex_library, speex_digest = _verify_binary(
-        speex_library, SPEEX_SHA256, "SpeexDSP library"
+    speex_library, audioproc, provenance = _verified_inputs(
+        speex_library, audioproc, build_manifest
     )
-    audioproc, aec3_digest = _verify_binary(audioproc, AEC3_SHA256, "AEC3 audioproc_f")
     components = known_components()
     render = components["render"]
     echo = components["echo"]
@@ -258,7 +376,8 @@ def run(speex_library: Path, audioproc: Path) -> dict:
         "far_only_score_interval_half_open": list(FAR_SCORE),
         "near_injection_score_interval_half_open": list(NEAR_SCORE),
         "input_pcm_sha256": {key: _digest(value) for key, value in components.items()},
-        "binary_sha256": {"speexdsp": speex_digest, "aec3_audioproc_f": aec3_digest},
+        "binary_sha256": provenance["binary_sha256"],
+        "run_provenance": provenance,
         "delay_probe": {
             "render": "all zero",
             "capture": "one 10000-count PCM impulse at sample 48037, otherwise zero",
@@ -288,8 +407,14 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--speex-library", type=Path, required=True)
     parser.add_argument("--audioproc", type=Path, required=True)
+    parser.add_argument(
+        "--build-manifest", type=Path,
+        help="explicit non-historical run: JSON with schema_version=1 and each binary's "
+             "sha256, source_repository, source_commit and build_configuration",
+    )
     args = parser.parse_args()
-    print(json.dumps(run(args.speex_library, args.audioproc), ensure_ascii=False,
+    print(json.dumps(run(args.speex_library, args.audioproc,
+                         build_manifest=args.build_manifest), ensure_ascii=False,
                      indent=2, allow_nan=False))
 
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 6 章 · 声学回声消除（AEC） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="a9d838b30805"><style>
+<meta name="source-digest" content="9518a5787358"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -761,13 +761,13 @@ g_l&=\frac{1-\kappa}{2L}
 <p>这个单步例子只说明权重如何分配，不证明长期收敛优劣；声学路径是否足够稀疏还需用目标录音检验。</p>
 <p><strong>正则项不容略过的第二例。</strong> 固定同一 $\hat{\vec w},\vec x,d,\mu$，改取 $\varepsilon_g=2$、$\delta=0.25$。当 $\kappa=0$ 时，均匀项为 $0.25$，比例项分别为 $0.8/4=0.2$ 和 $0.2/4=0.05$，故 $g=[0.45,0.30]$。两项之和是 $0.75$，不是 1；分母为 $0.45+0.30+0.25=1$，更新量为 $0.2[0.45,0.30]=[0.09,0.06]$。</p>
 <p>当 $\kappa=-1$ 时，两项均为 $1/2$，分母为 $0.5+0.5+0.25=1.25$，更新量为 $0.2[0.5,0.5]/1.25=[0.08,0.08]$。对照 NLMS，令其正则项为 $L\delta=2\times0.25=0.5$，式(6-3)的更新正好也是 $0.2[1,1]/(2+0.5)=[0.08,0.08]$。因此“$\kappa=-1$ 退化为 NLMS”需要连同正则项尺度一起说；$\varepsilon_g$ 较大时也不能暗中把 $g$ 强行归一成和为 1。</p>
-<p><img alt="图38 四类方法的状态与更新控制" src="../figures/fig38_aec_four_methods.png" onerror="this.alt+='（图缺失）'" /></p>
+<p><img alt="图38 IPNLMS、RLS 与 Kalman 三类方法的状态与更新控制" src="../figures/fig38_aec_four_methods.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图38(a)取前述<strong>忽略正则项</strong>的两抽头例，显示 $\kappa=-1,0,1$ 时的 IPNLMS 份额；不是紧邻的 $\varepsilon_g=2$ 例。图38(b)画出 RLS 手算中逆相关矩阵两步的对角与非对角元素；图38(c)在 $X=1$ 下单独改变已知的 $P^-$ 或 $\Psi$，说明 Kalman 增益的条件依赖。三幅图没有共同声学输入，不是性能排名，不能由柱高判断哪种方法抵消更好。</p>
 <p><strong>持续更新的可运行边界。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/core/aec_ipnlms.py">IPNLMS 状态代码</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/aec_ipnlms_subband_demo.py">子带/IPNLMS 演示</a>把先验残差、抽头状态和冻结掩码分开返回。稀疏路径、稠密路径、路径突变分别需要独立评价；某一次更新把强抽头推得更远，只能说明当前输入方向上的变化，不能替代多个时刻的系数误差或远端单讲残差曲线。</p>
 <span id="sec-10" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-6-2-5">6.2.5 RLS：用参考相关矩阵改变更新方向</h3>
 <p><strong>递归最小二乘（Recursive Least Squares，RLS）为什么与 NLMS 不同。</strong> NLMS 在当前误差的梯度方向走一步；RLS 则把先前参考与麦克风观测形成的相关矩阵压缩成持续更新的状态，求指数加权最小二乘解。</p>
 <p>以下先限于实数、单播放参考、单麦克风、长度 $L$ 的因果 FIR。$\vec x_n=[x[n],x[n-1],\ldots,x[n-L+1]]^\top$ 已与麦克风 $d_n$ 对齐，预测是 $\vec w^\top\vec x_n$。近端语音若包含在 $d_n$ 中，会进入拟合目标，RLS 本身并不知道哪一部分是回声。</p>
-<p>有限的初始逆相关矩阵需要一个相应的初始约束。设初始权重 $\vec w_{-1}$、$R_{-1}=\delta I$、$P_{-1}=R_{-1}^{-1}=\delta^{-1}I$，其中 $\delta>0$；若每个已接纳的样本都执行一次更新，则本书采用的目标是</p>
+<p>有限的初始逆相关矩阵需要一个相应的初始约束。设初始权重 $\vec w_{-1}$、$R_{-1}=\delta I$、$P_{-1}=R_{-1}^{-1}=\delta^{-1}I$，其中 $\delta>0$。遗忘因子取 $0\lt \lambda\le1$：$\lambda\lt 1$ 时越早的观测权重越小，$\lambda=1$ 时不遗忘已接纳的观测。若每个已接纳的样本都执行一次更新，则本书采用的目标是</p>
 <p>$$\begin{aligned}
 J_n(\vec w)={}&\sum_{i=0}^{n}\lambda^{n-i}
   (d_i-\vec w^\top\vec x_i)^2\\
@@ -1164,11 +1164,11 @@ c_{xd}&=\frac{|\sum_b\tilde x_b\tilde d_b|}{\sqrt{P_xP_d}}.
 <p>代表方案如下：</p>
 <ul>
 <li><strong>PercepNet</strong>：在传统线性 AEC 之后，用网络估计 32 个 ERB 三角频带的增益，以及音高梳状滤波器的混合强度，联合抑制残余回声与噪声。原论文 §4 图2给出频带结构，§5使用两帧前视、总算法延迟 40 ms。这个结构说明了解析路径估计与学习型后处理的功能分工；论文中的实时性只适用于所述模型、处理器和计时口径，换设备后仍需重测双讲近端保护与资源占用。<a href="https://doi.org/10.1109/ICASSP39728.2021.9414140" title="citation">Valin et al., ICASSP 2021</a>；</li>
-<li><strong>Ma et al. 2020</strong>：自适应滤波器加 RNN 后处理的公开实现展示了同一混合思路；该来源是 arXiv 预印本，结果应按文中的数据与基线解读。<a href="https://arxiv.org/abs/2005.09237" title="citation">Ma et al., arXiv:2005.09237</a>；</li>
+<li><strong>Ma et al. 2020</strong>：arXiv 预印本 §2、图 1 描述先用 MDF 自适应滤波估计线性回声，再用基于 GRU 的 RNN 抑制残余回声，展示同一混合思路。本书没有该论文作者实现的版本与许可核验，只把它作为结构文献；论文结果应按其数据与基线解读。<a href="https://arxiv.org/abs/2005.09237" title="citation">Ma et al., arXiv:2005.09237</a>；</li>
 <li><strong>DeepVQE</strong>（Interspeech 2023）：单模型联合 AEC、降噪和去混响，用交叉注意力在参考与麦克风信号之间做软对齐。论文报告了作者实现面向 Teams 场景的实时测试；这一结论只适用于论文所述模型、硬件和软件配置，不能据此推断其他实现的实时性。<a href="https://doi.org/10.21437/Interspeech.2023-1028" title="citation">DeepVQE, DOI 10.21437/Interspeech.2023-1028</a></li>
 </ul>
 <p><strong>端到端神经 AEC</strong>把问题写成条件语音分离：输入麦克风信号和播放参考，直接估计近端语音。它能联合建模非线性与残余噪声，但低 SER 下的近端保护、未见设备上的泛化、因果延迟和故障诊断都需要单独验证。深度滤波不只输出 0～1 掩码，而是估计复数时频滤波器，可以同时调整幅度和相位。不同方案的 MOS 与 ERLE 只有在数据、场景、延迟和统计区间相同的条件下才能比较。</p>
-<p><strong>训练数据</strong>。回声路径可以用§2.4 的镜像法生成不同房间尺寸和 $T_{60}$，非线性失真可以用随机 Wiener–Hammerstein 级联参数化，SER 和 SNR 也可按区间采样。真实设备录音仍用于覆盖仿真中缺少的扬声器、结构振动和系统链路特性。常见做法是先用合成数据训练，再用目标设备录音微调并验证。</p>
+<p><strong>训练数据</strong>。回声路径可以用 §2.4 的镜像法生成不同房间尺寸和 $T_{60}$，非线性失真可以用随机 Wiener–Hammerstein 级联参数化，SER 和 SNR 也可按区间采样。一种需要验证的设计选项是先用合成数据训练，再用目标设备录音微调；应将未微调与微调后的模型放到未参与训练或微调的目标设备留出录音上比较，并记录数据划分、播放链路、双讲条件、延迟和近端损伤。真实录音有助于检验仿真未覆盖的扬声器、结构振动和系统链路特性，不能仅凭合成训练假定已覆盖这些条件。</p>
 <h3 id="sec-u-ceb12cfc88">神经卡尔曼：学习递推中的未知部分</h3>
 <p>“神经卡尔曼”并不是单一网络接口，不能把所有论文概括为直接预测卡尔曼增益。例如 NeuralKalman（ASRU 2023，§2.2、图 1(b)）用网络学习非线性参考变换 $g$、状态转移因子 $A$ 和非线性状态转移 $t$，其余递推仍须结合论文方程理解。另有直接估计频域卡尔曼增益的 NKF 方案；两者改变的变量不同，不宜合并成一行实验结果。<a href="https://arxiv.org/pdf/2301.12363" title="citation">NeuralKalman 原论文</a>、<a href="https://arxiv.org/pdf/2207.11388" title="citation">NKF 原论文</a></p>
 <p>NeuralKalman 已发表于 ASRU 2023；引用性能结果时需同时给出论文中的数据集、基线和表格位置。<a href="https://doi.org/10.1109/ASRU57964.2023.10389780" title="citation">NeuralKalman，DOI 10.1109/ASRU57964.2023.10389780</a></p>
@@ -1178,7 +1178,7 @@ c_{xd}&=\frac{|\sum_b\tilde x_b\tilde d_b|}{\sqrt{P_xP_d}}.
 <h3 id="sec-u-02307edfbb">个性化 AEC（personalized AEC，pAEC）</h3>
 <p>2023 年 AEC Challenge 报告描述了个性化任务，系统要消除回声并保留注册用户的近端语音。<a href="https://doi.org/10.1109/OJSP.2024.3376289" title="citation">Cutler et al., IEEE OJSP 2024</a></p>
 <p>注册语音时长、延迟和评分条件应按该报告的对应规则复现，不能写成所有 pAEC 产品的通用标准。</p>
-<p>系统从注册语音提取声纹嵌入，并把它作为网络条件。这一思路与目标说话人提取（Target Speaker Extraction，TSE；见 §13.3）相近。<a href="https://www.isca-archive.org/interspeech_2022/zhang22t_interspeech.pdf" title="citation">GTCNN, Interspeech 2022</a> 合规与验收细节见 §6.13。</p>
+<p>系统从注册语音提取声纹嵌入，并把它作为网络条件。这一思路与目标说话人提取（Target Speaker Extraction，TSE；见 §8.6，研究延伸见 §13.3）相近。<a href="https://www.isca-archive.org/interspeech_2022/zhang22t_interspeech.pdf" title="citation">GTCNN, Interspeech 2022</a>。合规与验收细节见 §6.13。</p>
 <p><strong>pAEC 门限例子。</strong> 设非零的实数注册嵌入为 $\vec e_{\mathrm{enroll}}$，非零逐帧嵌入为 $\vec e_t$。余弦相似度为</p>
 <p>$$c=\frac{\vec e_t^\top\vec e_{\mathrm{enroll}}}{\|\vec e_t\|\,\|\vec e_{\mathrm{enroll}}\|}.\tag{6-23}$$</p>
 <p>零嵌入没有定义好的相似度，应回退而不是强行比较门限。阈值不能从通用经验直接照搬，应在目标设备、注册时长、距离和噪声条件下，用目标用户和非目标用户验证集标定。可以设置放行、抑制和不确定三个区间。</p>
@@ -1306,7 +1306,7 @@ E_y&=\sum_n|y(n)|^2,\\
 E_e&=\sum_n|e_{\mathrm{echo}}(n)|^2,\\
 \mathrm{ERLE}&=10\log_{10}\frac{E_y}{E_e}.
 \end{aligned}\tag{6-25}$$</p>
-<p>其中 $y$ 是进入消除器前的真实回声分量，$e_{\mathrm{echo}}$ 是消除后的回声分量；在线性路径模型下才有 $y=x*h$。</p>
+<p>其中 $y$ 是进入消除器前的真实回声分量，$e_{\mathrm{echo}}$ 是消除后的回声分量；在线性路径模型下才有 $y=x*h$。有限的 ERLE 数值要求同一有效窗口内 $E_y>0$ 且 $E_e>0$。若 $E_y>0$ 而 $E_e=0$，理想定义趋于 $+\infty$；若 $E_y=0$，该窗口没有可评价的输入回声，即使 $E_e=0$ 也不能报告有效 ERLE。实现中给能量加地板得到的有限值应单独说明地板口径。</p>
 <p>真实录音通常不能直接分离这两项。测试时可用远端单讲录音，以 AEC 输入和输出功率近似，但背景噪声会给分母设置下限。报告中应注明采样率、统计窗口、是否去除初始收敛段，以及输出是否包含残余抑制。</p>
 <p>双讲时若只有混合输入和最终输出，二者总功率之比不再表示回声衰减；应改用双讲回声和近端语音质量指标。若合成数据另有干净回声及残余回声分量真值，式(6-25)仍可对这些分量单独计算，但必须说明取得真值的办法。图 18、图 19（a）、图 29 和图 31 来自不同仿真配置，数值不能横向比较。</p>
 <blockquote>
@@ -2130,6 +2130,8 @@ $$</p>
 </tr>
 </tbody>
 </table></div>
+<p>上表只绑定<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/examples/aec_same_input_truth.py">实验脚本</a>默认模式接受的两份历史二进制：SpeexDSP 库的 SHA-256 为 <code>c3e70172a3a9bf60b60bfd0bddfd58550a1899fef09078a9c7d5270d4a12105d</code>，AEC3 <code>audioproc_f</code> 的 SHA-256 为 <code>82f8eebaf574eb10fdee695ee7ea05a54418300a045a3ffb0de8f4c78f4592d3</code>。任一摘要不符，默认模式会拒绝运行。</p>
+<p>若改用脚本的 <code>--build-manifest</code> 模式，须为<strong>两份实际使用的二进制</strong>分别声明 SHA-256、源码仓库、完整提交号和构建配置；脚本核对文件字节与清单摘要，但仓库、提交和构建配置仍是提供者声明，不能据此证明二进制确由该源码构建。该模式属于新实验：须重新用独立脉冲测量各输出的固定延迟，再计算同窗口评分并记录输出摘要；即使输入夹具相同，也不能沿用上表的延迟和数字。</p>
 <p>若<strong>不</strong>补偿 AEC3 的固定输出延迟，同采样点计算的线性段 $g_\Delta$ 只有 0.199，不能据此直接说近端幅度只保留两成；补偿后为 0.964。最终段补偿后仍与已知注入相差较大，但这包含 AEC3 输出处理和两次运行状态的差异，不能把 $E_\Delta$ 当作独立近端语音的失真度或双讲 ERLE。NLMS 的约 79 dB 由精确匹配、无噪声线性路径和真值冻结产生，不能外推到实录。</p>
 <p>脚本输出输入、二进制和 PCM 输出摘要、未舍入数字与未经延迟补偿的对照；合成输入和第三方处理输出只在运行时的临时目录中创建，不充当新的真实录音或发布音频。固定二进制与接口来源分别见<a href="https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/mdf.c">SpeexDSP <code>mdf.c</code></a>及<a href="https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/api/audio/audio_processing.h">WebRTC APM 接口</a>。</p>
 <p>上述实验完成了同一合成输入上的接口及指标对照，尚无三者相同内部线性取点与相同自适应控制的性能比较。前述真实配对录音仍缺独立干净回声和近端真值；无播放参考的 DEMAND 环境录音也不是 AEC 实录。</p>
