@@ -2,6 +2,8 @@
 
 本目录放绘图、构建和发布检查工具。算法与工程教学代码在 `codes/`；两类程序都应在**仓库根目录**执行。
 
+单章实验的真实实现按 [第 1～11 章及附录 A/B](../codes/chapters/README.md) 分目录保存；旧 `codes/examples/` 的同名入口保留兼容。音频/房间生成器和部分上游探针有源路径或 SHA 绑定，继续以各自清单登记的旧位置为准。
+
 运行时间取决于处理器、操作系统、Python 与依赖版本和当前负载。若要报告耗时，应同时记录这些条件、运行次数和统计方式。
 
 ```bash
@@ -37,16 +39,16 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 
 改图练习（如附录 B 习题）应使用脚本副本或独立输出目录，记录改变的参数，不覆盖本书的发布图。228 道稳定编号可运行题分布在各章入口，附录 B 的 E13-03～08 另有只读逐步实验；第 16 题的房间重算需 pyroomacoustics 0.10.0：
 
-第11章另有 [`chapter11_experiments.py`](../codes/examples/chapter11_experiments.py) 的 E11-10～19 十道选型计算。图46读取本书构造的四候选表；图47在四个实际导出的FIR音频通过摘要校验后，从PCM重新投影频率并核对对齐误差。两图的条件、数据与脚本入口见[第11章](../chapters/11_selection-guide.md)和[音频实验§33](../codes/research/05_exercises_and_audio.md)。
+第11章另有 [`chapter11_experiments.py`](../codes/chapters/ch11/chapter11_experiments.py) 的 E11-10～19 十道选型计算。图46读取本书构造的四候选表；图47在四个实际导出的FIR音频通过摘要校验后，从PCM重新投影频率并核对对齐误差。两图的条件、数据与脚本入口见[第11章](../chapters/11_selection-guide.md)和[音频实验§33](../codes/research/05_exercises_and_audio.md)。
 
 ```bash
-.venv/bin/python -m codes.examples.chapter04_experiments
+.venv/bin/python -m codes.chapters.ch04.chapter04_experiments
 .venv/bin/python -m codes.examples.exercises_spatial
 .venv/bin/python -m codes.examples.exercises_enhancement
-.venv/bin/python -m codes.examples.aec_algorithm_minicases
-.venv/bin/python -m codes.examples.aec_advanced_exercises
+.venv/bin/python -m codes.chapters.ch06.aec_algorithm_minicases
+.venv/bin/python -m codes.chapters.ch06.aec_advanced_exercises
 .venv/bin/python -m codes.examples.exercises_engineering
-.venv/bin/python -m codes.examples.appendix_b_experiments
+.venv/bin/python -m codes.chapters.appendix_b.appendix_b_experiments
 .venv/bin/python -m codes.examples.room_srp_exercise --check
 ```
 
@@ -113,7 +115,7 @@ PRA_NUM_THREADS=2 /tmp/masp-room-pra/bin/python -m codes.examples.room_srp_exerc
 .venv/bin/python -m codes.examples.spatial_model_exercises
 .venv/bin/python -m codes.examples.enhancement_structure_exercises
 .venv/bin/python -m codes.examples.engineering_boundary_exercises
-.venv/bin/python -m codes.examples.interpolation_exercise
+.venv/bin/python -m codes.chapters.appendix_b.interpolation_exercise
 .venv/bin/python -m codes.examples.run_stk_delay_probe --report tmp/stk-delay-rerun.json
 ```
 

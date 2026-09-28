@@ -219,11 +219,11 @@ Woodworth 模型是高频射线近似，不是覆盖任意频率、耳位与个�
 
 ### 本章练习
 
-E01-01～E01-03 使用 [`exercises_spatial.py`](../codes/examples/exercises_spatial.py)；E01-04～E01-06 使用 [`chapter01_experiments.py`](../codes/examples/chapter01_experiments.py)。均不需下载数据；在仓库根目录运行：
+E01-01～E01-03 使用 [`exercises_spatial.py`](../codes/examples/exercises_spatial.py)；E01-04～E01-06 使用 [`chapter01_experiments.py`](../codes/chapters/ch01/chapter01_experiments.py)。均不需下载数据；在仓库根目录运行：
 
 ```bash
 .venv/bin/python -m codes.examples.exercises_spatial
-.venv/bin/python -m codes.examples.chapter01_experiments
+.venv/bin/python -m codes.chapters.ch01.chapter01_experiments
 ```
 
 以下数字来自本书手算及确定性实验，不是设备或听者实测。中间计算保留更多位，表中按所列精度舍入。

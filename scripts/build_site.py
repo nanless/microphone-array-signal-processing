@@ -211,6 +211,15 @@ def stage_moving_audio(source, destination):
     if (manifest["sample_rate_hz"] != 16000
             or manifest["model"].find("free field") < 0):
         raise ValueError("移动声源采样率或模型说明不符")
+    source_paths = {"codes/examples/moving_source_audio.py",
+                    "codes/array_tutorial/moving_source.py",
+                    "codes/array_tutorial/audio_samples.py",
+                    "codes/array_tutorial/conventions.py"}
+    if set(manifest.get("source_sha256", {})) != source_paths:
+        raise ValueError("移动声源生成源码清单不完整")
+    for name, digest in manifest["source_sha256"].items():
+        if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest:
+            raise ValueError(f"移动声源生成源码已变化：{name}")
     for name, channels in MOVING_AUDIO_WAVS.items():
         path = source / name
         if path.is_symlink() or hashlib.sha256(path.read_bytes()).hexdigest() != records[name]["sha256"]:
@@ -262,6 +271,18 @@ def stage_gss_audio(source, destination):
             or {p.name for p in source.iterdir() if p.is_file()} - {"README.md"} != expected
             or manifest["sample_rate_hz"] != 16000):
         raise ValueError("GSS 独立清单、文件集合或采样率不符")
+    source_paths = {"codes/examples/gss_teaching_demo.py",
+                    "codes/array_tutorial/gss_teaching.py",
+                    "codes/array_tutorial/separation.py",
+                    "codes/array_tutorial/spectral.py",
+                    "codes/array_tutorial/conventions.py",
+                    "codes/array_tutorial/audio_samples.py",
+                    "codes/array_tutorial/dereverberation.py"}
+    if set(manifest.get("generator_inputs", {})) != source_paths:
+        raise ValueError("GSS 生成源码清单不完整")
+    for name, digest in manifest["generator_inputs"].items():
+        if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest:
+            raise ValueError(f"GSS 生成源码已变化：{name}")
     for name in expected - {"MANIFEST.json"}:
         path = source / name
         if path.is_symlink() or hashlib.sha256(path.read_bytes()).hexdigest() != records[name]["sha256"]:

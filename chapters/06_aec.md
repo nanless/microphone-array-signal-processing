@@ -413,7 +413,7 @@ SpeexDSP、WebRTC AEC3 虽有分区结构，也有不同的功率估计及更新
 
 第 1 块新参考全零，但重叠保存输入是 $[1,0,0,0]$，故 $X_1=[1,1,1,1]$，历史 $X_0$ 仍须保留。先验预测为零，有效误差 $[2,0]$ 对应 $E_1=[2,-2,2,-2]$；每频点分母是 $|X_1|^2+|X_0|^2+\delta=3$。式(6-5)使第一分区的候选时域系数成为 $[0.25,0,1/3,0]$，第二分区成为 $[1/3,0,0,0]$。
 
-第一分区的第 3 个位置是循环相关带来的**非法抽头**，逐分区梯度约束把各分区后 $N$ 点清零，最终 $L$ 抽头路径为 $[0.25,0\mid1/3,0]$。如果不做约束，候选中的 $1/3$ 会保留，不能再把这个频域状态直接称为四抽头 FIR。可运行版本和独立手算测试见[分区自适应实验](../codes/examples/aec_partitioned_demo.py)与[测试](../tests/test_codes_aec_partitioned.py)；它只实现式(6-5)的瞬时功率教学变体，不复现 SpeexDSP 的 AUMDF 控制。
+第一分区的第 3 个位置是循环相关带来的**非法抽头**，逐分区梯度约束把各分区后 $N$ 点清零，最终 $L$ 抽头路径为 $[0.25,0\mid1/3,0]$。如果不做约束，候选中的 $1/3$ 会保留，不能再把这个频域状态直接称为四抽头 FIR。可运行版本和独立手算测试见[分区自适应实验](../codes/chapters/ch06/aec_partitioned_demo.py)与[测试](../tests/test_codes_aec_partitioned.py)；它只实现式(6-5)的瞬时功率教学变体，不复现 SpeexDSP 的 AUMDF 控制。
 
 这个非法位置的索引是第一分区内的滞后 2，而第二分区的合法首抽头也对应整条路径的滞后 2；若都保留，它们对有效输出可以产生重叠表示。投影要维持“每一分区只含前 $N$ 个时域抽头”这一清楚的 FIR 解释。注意这里说的是**梯度约束/权重投影**；预测时舍弃循环卷积前半块是另一件事，两者都做并不重复。
 
@@ -440,7 +440,7 @@ $$\Delta W(k)=\frac{X^*(k)E(k)}{|X(k)|^2+1}\text{。}$$
 
 #### 算例 6-5：预测残差很小，不一定辨识了路径
 
-[固定种子实验](../codes/examples/aec_partitioned_demo.py)以独立的直接时域卷积生成无噪声观测，真实九抽头路径为 $[0,0,0.7,-0.2,0.08,0,0,0,0.05]$；教学 PBFDAF 取 $N=16$、$L=9$、$\mu=0.3$、$\delta=0.05$。一组训练参考是独立标准正态宽带样本，另一组是每 8 点一周期的纯音。两组各训练 4096 点，再冻结权重，用**同一段** 1024 点独立宽带参考留出测试。
+[固定种子实验](../codes/chapters/ch06/aec_partitioned_demo.py)以独立的直接时域卷积生成无噪声观测，真实九抽头路径为 $[0,0,0.7,-0.2,0.08,0,0,0,0.05]$；教学 PBFDAF 取 $N=16$、$L=9$、$\mu=0.3$、$\delta=0.05$。一组训练参考是独立标准正态宽带样本，另一组是每 8 点一周期的纯音。两组各训练 4096 点，再冻结权重，用**同一段** 1024 点独立宽带参考留出测试。
 
 随机种子为 2094；两条件不是随机重复试验，因此下表只描述这一组样本，不附置信区间。
 
@@ -522,11 +522,11 @@ W_{i,j,k}^{+}&=W_{i,j,k}+\Delta W_{i,j,k}.
 
 第 1 块当前参考为零，但历史 $U_{0,1}=\sqrt2$：先验预测仍为零，更新后 $W_{0,0,1}=W_{1,0,1}=1/3$。
 
-高输出带确实从**低输入带**学到系数；这些权重是两块数据后的状态，不能把当前块更新前的残差误写为训练后的低误差。[完整可运行输出](../codes/examples/aec_crossband_demo.py)与[独立测试](../tests/test_codes_aec_crossband.py)复算此例。
+高输出带确实从**低输入带**学到系数；这些权重是两块数据后的状态，不能把当前块更新前的残差误写为训练后的低误差。[完整可运行输出](../codes/chapters/ch06/aec_crossband_demo.py)与[独立测试](../tests/test_codes_aec_crossband.py)复算此例。
 
 **结构反例与留出验证。** 用随机种子 20260923 生成 2000 个独立标准正态块值，每值在时域重复两次；物理路径固定为一拍延迟，$h=[0,1]$。前 1500 块训练，后 500 块冻结权重作留出测试；两模型同取 $K=2$、$\mu=0.5$、$\varepsilon=0.05$。
 
-量化前 float64 值上，真实回声均方约 $0.989129$，全交叉残差均方在该构造中为 $0$（浮点输出），对角残差均方约 $0.489674$。重复样本对使输入高带恒零，对角模型无法预测由块边界延迟产生的高带；这验证**该输入和该路径的表示能力**，不是一般语音收敛速度、设备 ERLE 或双讲质量排名。训练和留出共享同一条固定路径与参考序列，留出块的权重不再更新，参数、随机种子和计算代码都在[演示](../codes/examples/aec_crossband_demo.py)中。
+量化前 float64 值上，真实回声均方约 $0.989129$，全交叉残差均方在该构造中为 $0$（浮点输出），对角残差均方约 $0.489674$。重复样本对使输入高带恒零，对角模型无法预测由块边界延迟产生的高带；这验证**该输入和该路径的表示能力**，不是一般语音收敛速度、设备 ERLE 或双讲质量排名。训练和留出共享同一条固定路径与参考序列，留出块的权重不再更新，参数、随机种子和计算代码都在[演示](../codes/chapters/ch06/aec_crossband_demo.py)中。
 
 **代价与边界。** 全交叉状态有 $4K$ 个实系数，时域物理路径只有 $L$ 个；除结构约束外，额外自由度可能在有限、相关或噪声数据上难以辨识。
 
@@ -586,7 +586,7 @@ $\kappa=-1$ 时各 $g_l=1/L$，式(6-11)的分子、分母同乘 $L$ 后，正�
 
 图38(a)取前述**忽略正则项**的两抽头例，显示 $\kappa=-1,0,1$ 时的 IPNLMS 份额；不是紧邻的 $\varepsilon_g=2$ 例。图38(b)画出 RLS 手算中逆相关矩阵两步的对角与非对角元素；图38(c)在 $X=1$ 下单独改变已知的 $P^-$ 或 $\Psi$，说明 Kalman 增益的条件依赖。三幅图没有共同声学输入，不是性能排名，不能由柱高判断哪种方法抵消更好。
 
-**持续更新的可运行边界。** [IPNLMS 状态代码](../codes/array_tutorial/aec_ipnlms.py)和[子带/IPNLMS 演示](../codes/examples/aec_ipnlms_subband_demo.py)把先验残差、抽头状态和冻结掩码分开返回。稀疏路径、稠密路径、路径突变分别需要独立评价；某一次更新把强抽头推得更远，只能说明当前输入方向上的变化，不能替代多个时刻的系数误差或远端单讲残差曲线。
+**持续更新的可运行边界。** [IPNLMS 状态代码](../codes/array_tutorial/aec_ipnlms.py)和[子带/IPNLMS 演示](../codes/chapters/ch06/aec_ipnlms_subband_demo.py)把先验残差、抽头状态和冻结掩码分开返回。稀疏路径、稠密路径、路径突变分别需要独立评价；某一次更新把强抽头推得更远，只能说明当前输入方向上的变化，不能替代多个时刻的系数误差或远端单讲残差曲线。
 
 #### 6.2.5 RLS：用参考相关矩阵改变更新方向
 
@@ -637,7 +637,7 @@ P_n&=\lambda^{-1}(P_{n-1}-K_nq_n^\top).
 
 第 1 步 $q_1=P_0\vec x_1=[2/3,2]^\top$，分母 $1/2+2/3+2=19/6$，因此 $K_1=[4/19,12/19]^\top$。先验预测 $2/3$、残差 $4/3$，得到 $\vec w_1=[18/19,16/19]^\top$ 与 $P_1=\bigl[\begin{smallmatrix}20&-16\\-16&28\end{smallmatrix}\bigr]/19$；中途保持分数，最后才按需舍入。
 
-再走一条**独立的批量路线**：式(6-12)在第 1 步给 $R_1=\bigl[\begin{smallmatrix}7/4&1\\1&5/4\end{smallmatrix}\bigr]$、$\vec p_1=[5/2,2]^\top$。直接解 $R_1\vec w=\vec p_1$ 得 $[18/19,16/19]^\top$，其逆也等于上段的 $P_1$。这验证两步递推与指定的**含初始约束**目标一致；换遗忘因子、删去初始项、加入近端语音或让参考秩亏，不能沿用这两个系数。[可运行逐样本示例](../codes/examples/aec_rls_demo.py)和[批量独立测试](../tests/test_codes_aec_rls.py)复算此例。
+再走一条**独立的批量路线**：式(6-12)在第 1 步给 $R_1=\bigl[\begin{smallmatrix}7/4&1\\1&5/4\end{smallmatrix}\bigr]$、$\vec p_1=[5/2,2]^\top$。直接解 $R_1\vec w=\vec p_1$ 得 $[18/19,16/19]^\top$，其逆也等于上段的 $P_1$。这验证两步递推与指定的**含初始约束**目标一致；换遗忘因子、删去初始项、加入近端语音或让参考秩亏，不能沿用这两个系数。[可运行逐样本示例](../codes/chapters/ch06/aec_rls_demo.py)和[批量独立测试](../tests/test_codes_aec_rls.py)复算此例。
 
 #### RLS 的遗忘、双讲与工程边界
 
@@ -721,7 +721,7 @@ P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 
 若一开始便有 $P_m^-=0$，则对每个正的 $\Psi_m$ 都有 $K_m=0$；错误初值不会被观测修正。过程方差也为零时，这种状态可一直延续，见 E06-29。
 
-不提前舍入时，上例的精确分数是 $P^-=3/5$、$E^-=1$、创新方差 $S=14/5$、$K=3/7$、$W=22/35$、$P=3/35$、后验残差 $1/7$。[标量递推代码](../codes/examples/aec_kalman_scalar_demo.py)逐项输出这些量，并用相同 $X$ 与先验把 $\Psi$ 从 $0.4$ 改为 $4$：增益由 $3/7$ 降到 $3/16$，后验权重从 $22/35$ 变为 $31/80$。这只验证**假定观测方差已知**时的代数响应，不是程序成功检测到了双讲。
+不提前舍入时，上例的精确分数是 $P^-=3/5$、$E^-=1$、创新方差 $S=14/5$、$K=3/7$、$W=22/35$、$P=3/35$、后验残差 $1/7$。[标量递推代码](../codes/chapters/ch06/aec_kalman_scalar_demo.py)逐项输出这些量，并用相同 $X$ 与先验把 $\Psi$ 从 $0.4$ 改为 $4$：增益由 $3/7$ 降到 $3/16$，后验权重从 $22/35$ 变为 $31/80$。这只验证**假定观测方差已知**时的代数响应，不是程序成功检测到了双讲。
 
 另取复数 $X=i$、$P^-=\Psi=1$，式(6-17)给 $K=-i/2$；若漏掉共轭，会得到错误的 $+i/2$。上述三项有[独立分数与边界测试](../tests/test_codes_aec_kalman_scalar_demo.py)，仍不能代替完整 FDKF 或 PBFDKF 的协方差、分区和声学验证。
 
@@ -742,7 +742,7 @@ P_n&=B_nP_n^-B_n^\top+K_n\Psi K_n^\top.
 
 **两维协方差手算。** 取 $A=I$、$Q=0$、$\Psi=1$、$\hat{\vec h}^-=0$、$P^-=\operatorname{diag}(1,4)$、$\vec x=[1,1]^\top$、$d=3$。式(6-18)给 $S=1+4+1=6$、$K=[1/6,2/3]^\top$、$\hat{\vec h}=[1/2,2]^\top$，Joseph 更新得到 $P=\bigl[\begin{smallmatrix}5/6&-2/3\\-2/3&4/3\end{smallmatrix}\bigr]$。虽然先验是对角矩阵，同一次观测同时约束两个抽头，后验立刻出现非零交叉协方差。
 
-下一次若参考回归向量是 $[-1,1]^\top$、其余预测条件不变，完整创新方差为 $[-1,1]P[-1,1]^\top+1=9/2$；把 $P$ 的非对角项直接丢掉则只得 $19/6$。这证明**对角近似会改变下一次增益的分母**，不证明完整矩阵算法在任意录音上必优。数例与[逐步输出](../codes/examples/aec_kalman_matrix_demo.py)采用同一抽头顺序和无量纲值；实际频域分区还需有效区投影、复数共轭和频点/分区结构。
+下一次若参考回归向量是 $[-1,1]^\top$、其余预测条件不变，完整创新方差为 $[-1,1]P[-1,1]^\top+1=9/2$；把 $P$ 的非对角项直接丢掉则只得 $19/6$。这证明**对角近似会改变下一次增益的分母**，不证明完整矩阵算法在任意录音上必优。数例与[逐步输出](../codes/chapters/ch06/aec_kalman_matrix_demo.py)采用同一抽头顺序和无量纲值；实际频域分区还需有效区投影、复数共轭和频点/分区结构。
 
 **RLS 与 Kalman 何时同式。** 在式(6-18)取静态路径 $A=I$、$\Psi=1$，并人为令每次预测协方差 $P_n^-=P_{n-1}/\lambda$，则 $K_n=P_{n-1}\vec x_n/(\lambda+\vec x_n^\top P_{n-1}\vec x_n)$，恰是式(6-14)的增益。这相当于每次使用依赖当前后验协方差的 $Q_n=(\lambda^{-1}-1)P_{n-1}$；$\lambda=1$ 时 $Q_n=0$。
 
@@ -781,7 +781,7 @@ K_m&=P_m^-H_m^HS_m^{-1},\\
 
 三种结果只说明观测方差和真值控制改变了更新；它们都没有提供从实际麦克风信号自动识别双讲的方法。路径若恰在双讲时突变，冻结也会延迟跟踪。
 
-[同输入 RLS/Kalman 受控实验](../codes/examples/aec_rls_kalman_comparison.py)把 512 个无量纲样本分成远端单讲、已知近端注入、远端恢复与路径突变四段。固定种子为 20260923，使用两抽头、名义 8 kHz；同一播放参考和真实路径供各算法使用。实验分别报告**先验回声估计与已知回声真值的均方误差**、后验路径均方根误差，以及 Kalman 增益范数。
+[同输入 RLS/Kalman 受控实验](../codes/chapters/ch06/aec_rls_kalman_comparison.py)把 512 个无量纲样本分成远端单讲、已知近端注入、远端恢复与路径突变四段。固定种子为 20260923，使用两抽头、名义 8 kHz；同一播放参考和真实路径供各算法使用。实验分别报告**先验回声估计与已知回声真值的均方误差**、后验路径均方根误差，以及 Kalman 增益范数。
 
 双讲段中，固定低 $\Psi$ 的 Kalman 回声估计误差均方约为 0.1341；在**真值已知**的区间提高 $\Psi$ 后约为 $1.57\times10^{-5}$，理想冻结约为 $9.83\times10^{-6}$。
 
@@ -937,7 +937,7 @@ c_{xd}&=\frac{|\sum_b\tilde x_b\tilde d_b|}{\sqrt{P_xP_d}}.
 
 只有 $P_xP_d>0$ 才形成这个比值；否则记录为无相关证据并先走活动分支。负极性的纯比例回声也有 $c_{xd}=1$。该式是可检查的单帧标量基线，不是 Benesty 等原论文完整参考向量及协方差归一化检测器。
 
-[可复算脚本](../codes/examples/aec_dtd_demo.py)以 16 kHz、种子 20260924 生成两条独立高斯波形，已知回声路径为 $[0.6,0.25]$；五个连续阶段各含 20 帧，依次为静音、远端单讲、近端单讲、双讲、远端恢复。参考和近端波形幅度系数分别为 0.3 和 0.22，参考活动门限为帧内去均值均方根 0.02，绝对互相关门限为 0.85。这些门限只为此确定性教学输入给定，没有在独立录音上标定。
+[可复算脚本](../codes/chapters/ch06/aec_dtd_demo.py)以 16 kHz、种子 20260924 生成两条独立高斯波形，已知回声路径为 $[0.6,0.25]$；五个连续阶段各含 20 帧，依次为静音、远端单讲、近端单讲、双讲、远端恢复。参考和近端波形幅度系数分别为 0.3 和 0.22，参考活动门限为帧内去均值均方根 0.02，绝对互相关门限为 0.85。这些门限只为此确定性教学输入给定，没有在独立录音上标定。
 
 | 真值状态 | 预测静音 | 预测远端单讲 | 预测近端单讲 | 预测双讲 |
 |---|---:|---:|---:|---:|
@@ -1361,16 +1361,16 @@ pAEC（个性化 AEC，personalized AEC）在 §6.5 定义。注册语音和算�
 
 它仍不检测双讲、不搜索参考延迟，也不提供实时线程安全保证。
 
-可运行的[流式边界实验](../codes/examples/aec_streaming_demo.py)用 $h=[0.5,0.25]$、$x=[1,2,3,4]$ 和 $\mu=0$ 验证：完整或在第 2 个样本后切块，已知真值抽头给出的残差都是 $[0,0,0,0]$；若仅续接抽头而把参考历史归零，第二块的首个残差变成 $0.5$。这不是算法收敛失败，而是上一块的 $x[1]=2$ 未参与当前卷积。运行：
+可运行的[流式边界实验](../codes/chapters/ch06/aec_streaming_demo.py)用 $h=[0.5,0.25]$、$x=[1,2,3,4]$ 和 $\mu=0$ 验证：完整或在第 2 个样本后切块，已知真值抽头给出的残差都是 $[0,0,0,0]$；若仅续接抽头而把参考历史归零，第二块的首个残差变成 $0.5$。这不是算法收敛失败，而是上一块的 $x[1]=2$ 未参与当前卷积。运行：
 
 ```bash
-.venv/bin/python -m codes.examples.aec_streaming_demo
+.venv/bin/python -m codes.chapters.ch06.aec_streaming_demo
 ```
 
-[AEC 算法小实验](../codes/examples/aec_algorithm_minicases.py)把四个易误解的边界写成可运行、可与手算逐项比对的 JSON：$N=2,P=2$ 的分区卷积有效半块、两抽头 IPNLMS 的一步权重分配、Geigel 多径误判与零参考门控，以及负极性路径使最大正相关峰选错延迟。运行：
+[AEC 算法小实验](../codes/chapters/ch06/aec_algorithm_minicases.py)把四个易误解的边界写成可运行、可与手算逐项比对的 JSON：$N=2,P=2$ 的分区卷积有效半块、两抽头 IPNLMS 的一步权重分配、Geigel 多径误判与零参考门控，以及负极性路径使最大正相关峰选错延迟。运行：
 
 ```bash
-.venv/bin/python -m codes.examples.aec_algorithm_minicases
+.venv/bin/python -m codes.chapters.ch06.aec_algorithm_minicases
 ```
 
 这些输出是无量纲固定算例，不是完整自适应 PBFDAF、真实录音实验或工业性能测试；相应独立测试在 [`test_codes_aec_minicases.py`](../tests/test_codes_aec_minicases.py)。
@@ -1378,7 +1378,7 @@ pAEC（个性化 AEC，personalized AEC）在 §6.5 定义。注册语音和算�
 [分区自适应教学实现](../codes/array_tutorial/aec_partitioned.py)另把式(6-5)接成有状态的预测—有效区残差—逐频归一化更新—可选时域梯度约束。它只接收完整的 $N$ 样本块，`freeze` 是调用方给定的每块布尔控制；没有双讲检测、延迟搜索、残余抑制或实时设备接口。运行下面的命令可同时输出两块手算和算例 6-5 的固定种子训练/冻结留出结果：
 
 ```bash
-.venv/bin/python -m codes.examples.aec_partitioned_demo
+.venv/bin/python -m codes.chapters.ch06.aec_partitioned_demo
 ```
 
 手算部分同时保留**更新前**回声预测与残差、约束前候选系数和约束后路径，便于核对非法抽头；留出部分报告两种训练参考下的残差均方和路径误差。测试还检查已知 FIR 的直接时域卷积、短末分区补零、跨调用状态、冻结更新与算例 6-4 的四点 DFT；这不是在真实语音上测出的 ERLE、延迟或收敛速度。[教学实现测试](../tests/test_codes_aec_partitioned.py)与[外部 AUMDF 源码](https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/mdf.c)须按不同证据级别阅读。
@@ -1386,19 +1386,19 @@ pAEC（个性化 AEC，personalized AEC）在 §6.5 定义。注册语音和算�
 [逐样本全矩阵 RLS](../codes/array_tutorial/aec_rls.py)保存抽头、逆相关矩阵与跨块参考历史；它返回更新前的回声估计和残差。调用方给定的 `freeze` 会跳过该样本的拟合与遗忘，却继续推进参考历史；未冻结的零参考仍按式(6-14)遗忘。两抽头演示同时输出递推值和独立批量求解，测试还核对切块等价、冻结、重置与非法输入：
 
 ```bash
-.venv/bin/python -m codes.examples.aec_rls_demo
+.venv/bin/python -m codes.chapters.ch06.aec_rls_demo
 ```
 
 [实数短 FIR 全矩阵 Kalman](../codes/array_tutorial/aec_kalman_matrix.py)另维护完整路径误差协方差，以 Joseph 形式执行式(6-18)。其 `freeze` 仍作状态预测和参考历史推进，只跳过麦克风观测更新；若状态转移系数不为 1，冻结并不意味着权重按位保持。两抽头演示输出非对角协方差及丢弃它后的下一步创新方差；这只是已知 $Q,\Psi$ 的算术验证，不是频域分区 AEC：
 
 ```bash
-.venv/bin/python -m codes.examples.aec_kalman_matrix_demo
+.venv/bin/python -m codes.chapters.ch06.aec_kalman_matrix_demo
 ```
 
-式(6-17)的[单频点卡尔曼数例](../codes/examples/aec_kalman_scalar_demo.py)另可运行：
+式(6-17)的[单频点卡尔曼数例](../codes/chapters/ch06/aec_kalman_scalar_demo.py)另可运行：
 
 ```bash
-.venv/bin/python -m codes.examples.aec_kalman_scalar_demo
+.venv/bin/python -m codes.chapters.ch06.aec_kalman_scalar_demo
 ```
 
 它固定已知状态和噪声方差，展示实数、复数与较大观测方差三种代入；不包含完整频域滤波器的分区状态、方差估计或双讲判决。[独立测试](../tests/test_codes_aec_kalman_scalar_demo.py)核对分数结果，不把这一个标量更新列为已复现的 FDKF 工业算法。
@@ -1454,7 +1454,7 @@ SpeexDSP 的同步 `speex_echo_cancellation()` 由应用提供已对应的播放
 
 输入包含近端语音、回声与噪声，却没有对应的干净分量；因此这些数字既不是双讲 ERLE，也不说明近端语音保留或回声泄漏的大小。此处尚未作盲听或逐帧语音标注。
 
-原文件摘要、满幅样本检查、计算口径和[可运行脚本](../codes/examples/aec_doubletalk_experiment.py)见[研究记录](../codes/research/02_aec_wpe_separation.md#aec)。录音只放在 Git 忽略缓存，不随教程分发。
+原文件摘要、满幅样本检查、计算口径和[可运行脚本](../codes/chapters/ch06/aec_doubletalk_experiment.py)见[研究记录](../codes/research/02_aec_wpe_separation.md#aec)。录音只放在 Git 忽略缓存，不随教程分发。
 
 **同一真实配对输入上的教学 PBFDAF。** 为检查式(6-5)的实现离开合成输入后会怎样，本书将上述远端单讲和真实双讲的 `lpb`/`mic` 原样交给[离线脚本](../codes/examples/aec_pbfdaf_real_pair_compare.py)。16 kHz PCM16 除以 32768 后以 float64 处理；块长 160 点、26 个分区（覆盖 4160 点）、步长 0.3、归一化地板 0.05，每块投影合法梯度。参数沿用先前合成教学例，**没有针对这两段实录调参**。
 
@@ -1492,7 +1492,7 @@ $g_{\Delta}=1$ 且 $E_{\Delta}=0$ 表示这两个输出之差在该区间逐样�
 
 Speex 正确参考下 $g_{\Delta}=0.922$、$E_{\Delta}=0.140$；零参考对照为 0.923、0.128。这里只能说已知外加波形经过两次运行后的输出增量与原波形有差异，不能据此断定真实近端语音的主观保真。
 
-原始录音摘要、无削波检查、恢复区间和[可运行脚本](../codes/examples/aec_controlled_doubletalk.py)见[研究记录](../codes/research/02_aec_wpe_separation.md#aec)。
+原始录音摘要、无削波检查、恢复区间和[可运行脚本](../codes/chapters/ch06/aec_controlled_doubletalk.py)见[研究记录](../codes/research/02_aec_wpe_separation.md#aec)。
 
 #### 6.15.5 WebRTC AEC3 的取点与同输入真值实验
 
@@ -1715,7 +1715,7 @@ $$\begin{aligned}
 
 图36(a)比较回声、共同最小二乘增益得到的线性副本与残差；图36(b)读取配套 PCM 后显示 500 Hz 和 1500 Hz 的离散周期幅度。上面的功率和 ERLE 来自未量化解析序列，PCM 读回值会有量化误差。本题的标量估计不是在线自适应器，但它给出了所有线性时不变滤波器都无法跨频率产生 1500 Hz 分量的稳态反例；改变输入频谱、非线性或统计窗口后，数值不会保持不变。
 
-**边界练习 E06-07～E06-10。** 下面四题可用 [`aec_algorithm_minicases.py`](../codes/examples/aec_algorithm_minicases.py) 的 JSON 字段逐项核对：E06-07 对应 `overlap_save`，E06-08 对应 `ipnlms`，E06-09 对应 `geigel`，E06-10 对应 `delay_polarity`。先独立手算，再运行程序；这些题只检验运算和判决边界，不是工业算法性能实验。
+**边界练习 E06-07～E06-10。** 下面四题可用 [`aec_algorithm_minicases.py`](../codes/chapters/ch06/aec_algorithm_minicases.py) 的 JSON 字段逐项核对：E06-07 对应 `overlap_save`，E06-08 对应 `ipnlms`，E06-09 对应 `geigel`，E06-10 对应 `delay_polarity`。先独立手算，再运行程序；这些题只检验运算和判决边界，不是工业算法性能实验。
 
 #### E06-07：循环卷积的哪半块能用？
 
@@ -1741,7 +1741,7 @@ $$\begin{aligned}
 
 **解答**：相关序列为 $[0,0,-1,0]$；只取最大有符号值会在并列零峰中按首个位置选 $k=0$，而最大绝对值选 $k=2$，与真实纯延迟一致。多径或周期参考仍可能使绝对峰有歧义，设备测试还要结合时间戳与宽带激励。
 
-**子带、IPNLMS、RLS 与 Kalman 练习 E06-11～E06-20。** 先按式(6-10)～式(6-19)及本节 Haar 定义手算，再运行 [`aec_advanced_exercises.py`](../codes/examples/aec_advanced_exercises.py) 的 `run_exercises()` 对照稳定 ID；[独立测试](../tests/test_codes_aec_advanced_exercises.py)用分数与解析边界核对答案。这十题是无量纲模型题，不把合成样本或人为提供的双讲真值当成设备检测结果。
+**子带、IPNLMS、RLS 与 Kalman 练习 E06-11～E06-20。** 先按式(6-10)～式(6-19)及本节 Haar 定义手算，再运行 [`aec_advanced_exercises.py`](../codes/chapters/ch06/aec_advanced_exercises.py) 的 `run_exercises()` 对照稳定 ID；[独立测试](../tests/test_codes_aec_advanced_exercises.py)用分数与解析边界核对答案。这十题是无量纲模型题，不把合成样本或人为提供的双讲真值当成设备检测结果。
 
 #### E06-11：低带输入能否产生高带回声？
 
@@ -2037,7 +2037,7 @@ E_\Delta
 
 在真实 AEC 的两次运行中，$\Delta$ 还可能包含注入近端后触发的控制与状态差异，不能把它自动当作独立提取出的近端声轨。本题是实向量指标的确定性分解，不涉及听感或设备排名。
 
-E06-22～E06-33 的统一复算入口是 [`chapter06_experiments.py`](../codes/examples/chapter06_experiments.py) 的 `run_experiments()`。在仓库根目录运行 `.venv/bin/python -m codes.examples.chapter06_experiments` 可按稳定 ID 查看输入、中间量与结果；这些数学和接口边界题不替代声学性能实测。
+E06-22～E06-33 的统一复算入口是 [`chapter06_experiments.py`](../codes/chapters/ch06/chapter06_experiments.py) 的 `run_experiments()`。在仓库根目录运行 `.venv/bin/python -m codes.chapters.ch06.chapter06_experiments` 可按稳定 ID 查看输入、中间量与结果；这些数学和接口边界题不替代声学性能实测。
 
 ### 6.17 延伸阅读
 

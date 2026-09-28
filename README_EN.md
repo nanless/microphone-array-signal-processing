@@ -10,17 +10,17 @@ Two further independent synthetic sets provide [five guided-separation WAVs and 
 
 Chapter 6 also reports a [SpeexDSP AEC interface experiment](codes/research/02_aec_wpe_separation.md#aec) on one real Microsoft AEC Challenge loopback/microphone pair, with zero-reference and misaligned-reference controls. The crowd recordings are not redistributed here; the measured input/output power change is neither clean-component ERLE nor a device-performance ranking.
 
-Additional reproducible studies cover a [common-input beamformer comparison](codes/examples/beamformer_common_input_demo.py), [pinned AuxIVA blind estimation](codes/examples/reproduce_auxiva_reference.py), [GSS activity-label errors](codes/examples/gss_activity_error_demo.py), [AEC interfaces on one synthetic known-component input](codes/examples/aec_same_input_truth.py), and [online WPE temporal behavior](codes/examples/wpe_temporal_contract.py). Their scopes are respectively a single-frequency model, mathematical synthetic mixtures, a fixed-density E-step, synthetic PCM, and complex STFT data; they do not rank real-speech or device performance.
+Additional reproducible studies cover a [common-input beamformer comparison](codes/chapters/ch05/beamformer_common_input_demo.py), [pinned AuxIVA blind estimation](codes/examples/reproduce_auxiva_reference.py), [GSS activity-label errors](codes/chapters/ch08/gss_activity_error_demo.py), [AEC interfaces on one synthetic known-component input](codes/examples/aec_same_input_truth.py), and [online WPE temporal behavior](codes/chapters/ch07/wpe_temporal_contract.py). Their scopes are respectively a single-frequency model, mathematical synthetic mixtures, a fixed-density E-step, synthetic PCM, and complex STFT data; they do not rank real-speech or device performance.
 
-New controlled studies cover [co-array covariance reconstruction](codes/examples/coarray_covariance_exercise.py), [repeated two-source resolution](codes/examples/doa_resolution_trials.py), a [teaching cACGMM-to-MVDR chain](codes/examples/gss_teaching_demo.py), [automatic double-talk detection](codes/examples/aec_dtd_demo.py), [continuous free-field two-microphone motion](codes/examples/moving_source_audio.py), and an [isolated SMP-PHAT portability overlay](codes/examples/reproduce_smpphat_portable_overlay.py). Each study separates its synthetic result from official implementations that were not run.
+Controlled studies cover [co-array covariance reconstruction](codes/chapters/ch03/coarray_covariance_exercise.py), [repeated two-source resolution](codes/chapters/ch04/doa_resolution_trials.py), a [teaching cACGMM-to-MVDR chain](codes/examples/gss_teaching_demo.py), [automatic double-talk detection](codes/chapters/ch06/aec_dtd_demo.py), [continuous free-field two-microphone motion](codes/examples/moving_source_audio.py), and an [isolated SMP-PHAT portability overlay](codes/examples/reproduce_smpphat_portable_overlay.py). Each study separates its synthetic result from official implementations that were not run.
 
-The [Chapter 9 tracking experiment](codes/examples/tracking_crossing_dropout_demo.py) uses deterministic angle detections to show that a correct unlabelled location set can coincide with wrong track identities. It also calculates covariance growth during missing observations and lag from a beam steering speed limit; it is not a speech recording or a complete multi-target tracker.
+The [Chapter 9 tracking experiment](codes/chapters/ch09/tracking_crossing_dropout_demo.py) uses deterministic angle detections to show that a correct unlabelled location set can coincide with wrong track identities. It also calculates covariance growth during missing observations and lag from a beam steering speed limit; it is not a speech recording or a complete multi-target tracker.
 
-The [Chapter 10 engineering experiments](codes/examples/chapter10_experiments.py) add ten reproducible exercises on overlapping-frame real-time factor, spectral-subtraction numeric limits, streaming clock state, and whole-block AGC availability. Four [common-gain synthetic WAVs](codes/research/05_exercises_and_audio.md#32-分块-agc时间常数相同输出仍可能不同) support PCM comparisons; the [industrial handbook](codes/research/03_industrial_deployment.md) distinguishes executed interface probes, static source diagnostics, and model or device tests that have not been run.
+The [Chapter 10 engineering experiments](codes/chapters/ch10/chapter10_experiments.py) provide ten reproducible exercises on overlapping-frame real-time factor, spectral-subtraction numeric limits, streaming clock state, and whole-block AGC availability. Four [common-gain synthetic WAVs](codes/research/05_exercises_and_audio.md#32-分块-agc时间常数相同输出仍可能不同) support PCM comparisons; the [industrial handbook](codes/research/03_industrial_deployment.md) distinguishes executed interface probes, static source diagnostics, and model or device tests that have not been run.
 
-The [Chapter 11 selection experiments](codes/examples/chapter11_experiments.py) add ten reproducible exercises on hard constraints, scenario composition, missing scores, joint risk, and speaker-identity scoring. Four [common-gain FIR WAVs](codes/research/05_exercises_and_audio.md) are actually processed from the same constructed mixture and measured again from PCM; Figures 46 and 47 show the decision logic and audio tradeoff. They are not speech, device, or recognition-quality tests.
+The [Chapter 11 selection experiments](codes/chapters/ch11/chapter11_experiments.py) provide ten reproducible exercises on hard constraints, scenario composition, missing scores, joint risk, and speaker-identity scoring. Four [common-gain FIR WAVs](codes/research/05_exercises_and_audio.md) are actually processed from the same constructed mixture and measured again from PCM; Figures 46 and 47 show the decision logic and audio tradeoff. They are not speech, device, or recognition-quality tests.
 
-[Appendix A experiments](codes/examples/appendix_a_experiments.py) add seven reproducible math exercises. Three [synthetic pulse WAVs](codes/research/05_exercises_and_audio.md#sec-u-a0ab2e82f7) compare correct blockwise linear convolution with an intentionally incorrect circular wrap; Figures 48–49 show FFT frequency conventions and measured PCM sample positions.
+[Appendix A experiments](codes/chapters/appendix_a/appendix_a_experiments.py) provide seven reproducible math exercises. Three [synthetic pulse WAVs](codes/research/05_exercises_and_audio.md#sec-u-a0ab2e82f7) compare correct blockwise linear convolution with an intentionally incorrect circular wrap; Figures 48–49 show FFT frequency conventions and measured PCM sample positions.
 
 The [source research handbook](codes/research/README.md) explains implementation steps, industrial configuration and reproduction experiments across spatial processing and tracking, AEC/WPE/separation, and deployment and evaluation. Two further guides cover source reproduction and exercises with audio experiments. Official revisions are pinned; acquired sources reside in independent working trees under `codes/upstream/_downloads/`.
 
@@ -33,8 +33,9 @@ The [source research handbook](codes/research/README.md) explains implementation
 | `chapters/` | 14 tutorial documents in Markdown (`00_overview.md` is the homepage; `01`–`11` are chapters; `12`/`13` are appendices A/B) |
 | `figures/` | 49 figures (`fig01`–`fig49_*.png`), all generated by scripts and reproducible |
 | `codes/` | Teaching algorithms, chapter examples, engineering utilities, and a commit-locked index of official upstream implementations; see `codes/COVERAGE.md` |
+| `codes/chapters/` | Canonical chapter-owned experiments for Chapters 1–11 and Appendices A/B; see the [code map](codes/chapters/README.md). Same-named legacy `codes/examples/` entry points remain compatible |
 | `codes/audio/` | 109 WAV files in 27 groups synthesized for this book, with parameters and hashes; generated by script, not edited directly |
-| `codes/gss_audio/`, `codes/moving_audio/` | Separate sets of five and three synthetic WAVs with intermediate state or trajectory truth and independent manifests |
+| `codes/gss_audio/`, `codes/moving_audio/`, `codes/tracking_audio/`, `codes/room_audio/` | Four independent synthetic sets containing 5, 3, 2, and 18 WAVs respectively, with their own state, truth, observations or room-result report and manifests |
 | `codes/real_audio/` | Real synchronized DEMAND excerpt, derived averages, separate manifest and data license |
 | `codes/research/` | Detailed source research: algorithm steps, state and configuration, source entrypoints, failure experiments and industrial reproduction |
 | `codes/reports/` | Small-scale industrial-interface and spatial-algorithm run reports, separate from source acquisition and full paper benchmarks |
@@ -59,7 +60,7 @@ The [source research handbook](codes/research/README.md) explains implementation
 | Ch 10 | `chapters/10_engineering-practice.md` | Reference pipeline, critical-path latency, SRO/calibration, resource budgets, evaluation | Intermediate |
 | Ch 11 | `chapters/11_selection-guide.md` | Conditional selection, scenario constraints, verifiable specifications, exercises | Beginner |
 | App A | `chapters/12_appendix-symbols-math.md` | Symbols, terminology, math refresher | Reference |
-| App B | `chapters/13_appendix-guide.md` | Learning paths, field map, research frontier, debugging, the original 17 exercises and cross-chapter code exercises, reproduction guide | Reference |
+| App B | `chapters/13_appendix-guide.md` | Learning paths, field map, research frontier, debugging, the 17 comprehensive written exercises and E13-01–08 code exercises, reproduction guide | Reference |
 
 ## Quick start
 
@@ -75,8 +76,8 @@ python3 -m venv .venv
 .venv/bin/python codes/examples/ch10_engineering_baselines.py
 .venv/bin/python -m codes.examples.exercises_spatial
 .venv/bin/python -m codes.examples.exercises_enhancement
-.venv/bin/python -m codes.examples.aec_advanced_exercises
-.venv/bin/python -m codes.examples.aec_algorithm_minicases
+.venv/bin/python -m codes.chapters.ch06.aec_advanced_exercises
+.venv/bin/python -m codes.chapters.ch06.aec_algorithm_minicases
 .venv/bin/python -m codes.examples.exercises_engineering
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 

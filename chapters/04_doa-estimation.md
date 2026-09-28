@@ -1048,11 +1048,11 @@ $$O(TM^2+N_{\rm grid}M^2)\text{。}$$
 
 #### E04-08：独立复算与改参
 
-先手算 $20$ dB 配置的单麦噪声功率，以及 99/200 的观察成功率；再运行 [`doa_resolution_trials.py`](../codes/examples/doa_resolution_trials.py)，用两组命令分别核对九个方法—间隔组合的计数直方图与 Wilson 区间：
+先手算 $20$ dB 配置的单麦噪声功率，以及 99/200 的观察成功率；再运行 [`doa_resolution_trials.py`](../codes/chapters/ch04/doa_resolution_trials.py)，用两组命令分别核对九个方法—间隔组合的计数直方图与 Wilson 区间：
 
 ```bash
-.venv/bin/python -m codes.examples.doa_resolution_trials --snapshots 400 --snr-db 20
-.venv/bin/python -m codes.examples.doa_resolution_trials --snapshots 64 --snr-db 0
+.venv/bin/python -m codes.chapters.ch04.doa_resolution_trials --snapshots 400 --snr-db 20
+.venv/bin/python -m codes.chapters.ch04.doa_resolution_trials --snapshots 64 --snr-db 0
 ```
 
 然后只改 `--snapshots` 或 `--snr-db` 中的一项重跑，保持种子、角度与峰匹配规则固定；解释新旧配置中唯一变化的因素。脚本只输出 JSON，不生成音频或图，也不把单次谱峰高度当作功率排名。
@@ -1319,10 +1319,10 @@ $$\begin{aligned}
 
 本例运行入口为 `.venv/bin/python -m codes.examples.spatial_model_exercises` 的 `E04-11`，使用[本书源码](../codes/examples/spatial_model_exercises.py)与现有 `music_spectrum`。完整输出保留白化矩阵、特征值、网格和三个峰；测试另用上述秩一投影表达式核对矩阵，避免只靠同一特征分解程序自证正确。
 
-下面七题使用同一个[补充实验入口](../codes/examples/chapter04_experiments.py)：
+下面七题使用同一个[补充实验入口](../codes/chapters/ch04/chapter04_experiments.py)：
 
 ```bash
-.venv/bin/python -m codes.examples.chapter04_experiments
+.venv/bin/python -m codes.chapters.ch04.chapter04_experiments
 ```
 
 程序输出输入配置、中间量和最终数字，不写文件。各题先按公式复算，再核对程序；确定性构造、理论下界与已导出的数学合成音频分别说明，不混成算法实测精度。

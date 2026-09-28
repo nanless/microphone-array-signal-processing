@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 2 章 · 声音到达阵列时发生了什么 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="8a1e501d775d"><style>
+<meta name="source-digest" content="5517357657f5"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -816,7 +816,7 @@ c_k&=\begin{cases}
 <p>奇数长度没有 Nyquist 频点。最后一行的单边频谱为 $[0,1.5+j\sqrt3/2]$，末项模方为 3，仍需乘二。不能不检查奇偶性就把 <code>rfft</code> 最后一项永远当作端点。</p>
 <p><strong>均方值与功率谱密度要区分。</strong> 功率谱密度（Power Spectral Density，PSD）还含“每 Hz”的单位。矩形窗、<code>detrend=False</code>、不裁短信号时，单边周期图可写成 $S_{xx}[k]=c_k|X_+[k]|^2/(f_sL)$，将它乘频率间距 $f_s/N$ 后求和才恢复本题均方值。其他窗改变加权与归一化；不能把未校正的加窗功率直接当成原信号功率。SciPy <code>periodogram</code> 默认减均值，复现本题 DC 行时必须显式关闭该操作。</p>
 <p>接口依据为 <a href="https://numpy.org/doc/stable/reference/generated/numpy.fft.rfft.html" title="citation">NumPy <code>rfft</code> 的归一化、端点与补零约定</a>、<a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.periodogram.html" title="citation">SciPy <code>periodogram</code> 的单位与单边谱说明</a>（2026-09-28 核实）；表中数字为本书推导。运行 <code>.venv/bin/python -m codes.examples.spatial_model_exercises</code> 的 <code>E02-08</code> 可复算全部五行；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/spatial_model_exercises.py">代码</a>同时拒绝复输入被悄悄丢弃虚部，以及过短 FFT 导致输入裁切。</p>
-<p>以下 E02-09～15 的统一复算入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/chapter02_experiments.py"><code>chapter02_experiments.py</code></a>。这些实验使用本书明确给出的模型，分别核对计算与失效边界。</p>
+<p>以下 E02-09～15 的统一复算入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch02/chapter02_experiments.py"><code>chapter02_experiments.py</code></a>。这些实验使用本书明确给出的模型，分别核对计算与失效边界。</p>
 <h3 id="sec-u-9410592b12">E02-09：相位误差很小，能否忽略幅度差？</h3>
 <p>三个全向麦克风位于 $x=[-0.1,0,0.1]$ m，以中心麦为参考。声速 343 m/s、频率 1 kHz；声源距中心分别为 0.2 m 和 2 m，并分别位于正横 0° 与正端射 90°。比较真实球面导向与等幅平面导向。</p>
 <p><strong>计算距离。</strong> 正横时，左右端点距离均为 $\sqrt{r^2+0.1^2}$，中心距离为 $r$。正端射且 $r>0.1$ m 时，从左至右的距离为 $[r+0.1,r,r-0.1]$。</p>

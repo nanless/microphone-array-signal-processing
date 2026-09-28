@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 4 章 · 声源定位（DOA 估计） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="8a1e501d775d"><style>
+<meta name="source-digest" content="5517357657f5"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -1227,9 +1227,9 @@ u_y&=-\frac{0.0282975}{0.04}=-0.7074375\text{。}
 <p>在这个特定的高 SNR 合成模型中，8° 的 Bartlett 谱没有按预定规则给出两个匹配峰；Capon 和 MUSIC 做到了。降低 SNR、减少快拍后，8° 的 Capon 也没有成功，而 MUSIC 的成功数为 99/200。这说明“超分辨”结论必须连同样本量、噪声、源数先验和选峰规则一起报告，不能从图 11 或一个角间隔推出普适排名。更换相关源、宽带语音、反射或阵列误差，需要重新做同口径试验。</p>
 <p><a id="e04-08"></a></p>
 <h3 id="sec-u-099a6bd345">E04-08：独立复算与改参</h3>
-<p>先手算 $20$ dB 配置的单麦噪声功率，以及 99/200 的观察成功率；再运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/doa_resolution_trials.py"><code>doa_resolution_trials.py</code></a>，用两组命令分别核对九个方法—间隔组合的计数直方图与 Wilson 区间：</p>
-<pre><code class="language-bash">.venv/bin/python -m codes.examples.doa_resolution_trials --snapshots 400 --snr-db 20
-.venv/bin/python -m codes.examples.doa_resolution_trials --snapshots 64 --snr-db 0
+<p>先手算 $20$ dB 配置的单麦噪声功率，以及 99/200 的观察成功率；再运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/doa_resolution_trials.py"><code>doa_resolution_trials.py</code></a>，用两组命令分别核对九个方法—间隔组合的计数直方图与 Wilson 区间：</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch04.doa_resolution_trials --snapshots 400 --snr-db 20
+.venv/bin/python -m codes.chapters.ch04.doa_resolution_trials --snapshots 64 --snr-db 0
 </code></pre>
 <p>然后只改 <code>--snapshots</code> 或 <code>--snr-db</code> 中的一项重跑，保持种子、角度与峰匹配规则固定；解释新旧配置中唯一变化的因素。脚本只输出 JSON，不生成音频或图，也不把单次谱峰高度当作功率排名。</p>
 <p><strong>参考答案。</strong> 两个单位功率源的总信号功率为 2，$20$ dB 的线性 SNR 为 100，因此噪声功率是 $2/100=0.02$。99/200 是 $49.5\%$，该观察比例的双侧 Wilson 95% 区间约为 $42.6\%$～$56.4\%$，计算分母必须保留失败的 101 次。若改参后结果变化，只能归于新旧之间实际改变的配置；一次固定种子的变化不能证明总体性能改善。</p>
@@ -1537,8 +1537,8 @@ g_k&=\left(\prod_{i=k+1}^{M}\hat\lambda_i\right)^{1/(M-k)}。
 <p>投影能量是伪谱的分母，不是角度置信度。三条链的坐标和导向尺度不同，也不能用这些分母大小直接比较“可信程度”。代码给伪谱分母设置 $10^{-15}$ 的数值下限，避免除以零；下限产生的峰高没有统计意义。表中的小投影值由未截断的投影另外计算。</p>
 <p><strong>适用边界。</strong> 正确结果依赖于事先给定且匹配当前频点的 $\mathbf R_{nn}$。工程中须从目标不活动或独立噪声训练段估计它，保持通道顺序、阵列标定和处理增益一致。把含目标的总协方差当作噪声协方差，会把要找的方向一起压平；噪声变化、估计误差和病态特征值也不会因写出 $\mathbf W$ 自动消失。本文没有证明未知有色噪声下的源数估计已经解决。</p>
 <p>本例运行入口为 <code>.venv/bin/python -m codes.examples.spatial_model_exercises</code> 的 <code>E04-11</code>，使用<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/spatial_model_exercises.py">本书源码</a>与现有 <code>music_spectrum</code>。完整输出保留白化矩阵、特征值、网格和三个峰；测试另用上述秩一投影表达式核对矩阵，避免只靠同一特征分解程序自证正确。</p>
-<p>下面七题使用同一个<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/chapter04_experiments.py">补充实验入口</a>：</p>
-<pre><code class="language-bash">.venv/bin/python -m codes.examples.chapter04_experiments
+<p>下面七题使用同一个<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/chapter04_experiments.py">补充实验入口</a>：</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch04.chapter04_experiments
 </code></pre>
 <p>程序输出输入配置、中间量和最终数字，不写文件。各题先按公式复算，再核对程序；确定性构造、理论下界与已导出的数学合成音频分别说明，不混成算法实测精度。</p>
 <h3 id="sec-u-1ee1f73a64">E04-12：频谱补零为什么还要处理奈奎斯特点和幅度？</h3>

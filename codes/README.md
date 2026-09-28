@@ -33,10 +33,12 @@ SMP-PHAT 可用 `.venv/bin/python codes/examples/reproduce_smpphat_reference.py 
 | 路径 | 内容 |
 |---|---|
 | `array_tutorial/` | 本书自行编写的 NumPy/标准库教学实现 |
-| `examples/` | 按章节组织的可运行例子，打印输入口径、中间量和结果 |
+| [chapters/](chapters/README.md) | `ch01`～`ch11` 和 `appendix_a/b` 的单章实验真实实现，每章附练习范围与运行入口 |
+| `examples/` | 旧路径兼容入口、跨章练习、仍与资产或报告摘要绑定的生成器及外部探针；已迁移的同名文件不再保存第二份算法实现 |
 | `reports/` | 本书仿真逐次统计与显式运行外部接口后保存的数值报告；记录输入、固定版本及环境，不等同于源码获取状态 |
 | `audio/` | 27 组、109 个本书合成 WAV 及 `MANIFEST.json`；由音频生成器产生，不直接编辑 |
 | `room_audio/` | 附录 B 第 16 题的 6 组、18 个房间白噪声合成 WAV、独立清单、结果图和 `RESULTS.json` 数值报告；由 `room_srp_exercise.py` 用锁定 pyroomacoustics 生成 |
+| `gss_audio/`、`moving_audio/`、`tracking_audio/` | 分别保存 5、3、2 个独立数学合成 WAV，附 GSS 状态、自由场轨迹或 PCM 观测真值；不计入主 109 个样本 |
 | `real_audio/` | 真实 DEMAND 河流录音摘录与 3 个派生 WAV，独立记录 CC BY-SA 3.0 数据许可 |
 | `upstream/` | 第三方官方仓库的按需获取工具；下载内容默认不入 Git |
 | `COVERAGE.md` | 正文算法到代码、测试和外部实现的逐项映射 |
@@ -53,14 +55,14 @@ SMP-PHAT 可用 `.venv/bin/python codes/examples/reproduce_smpphat_reference.py 
 .venv/bin/python codes/examples/ch02_05_baselines.py
 .venv/bin/python codes/examples/ch06_09_baselines.py
 .venv/bin/python codes/examples/ch10_engineering_baselines.py
-.venv/bin/python -m codes.examples.aec_rls_demo
-.venv/bin/python -m codes.examples.aec_kalman_matrix_demo
-.venv/bin/python -m codes.examples.chapter04_experiments
-.venv/bin/python -m codes.examples.chapter05_experiments
-.venv/bin/python -m codes.examples.chapter08_experiments
+.venv/bin/python -m codes.chapters.ch06.aec_rls_demo
+.venv/bin/python -m codes.chapters.ch06.aec_kalman_matrix_demo
+.venv/bin/python -m codes.chapters.ch04.chapter04_experiments
+.venv/bin/python -m codes.chapters.ch05.chapter05_experiments
+.venv/bin/python -m codes.chapters.ch08.chapter08_experiments
 .venv/bin/python -m codes.examples.exercises_spatial
 .venv/bin/python -m codes.examples.exercises_enhancement
-.venv/bin/python -m codes.examples.aec_advanced_exercises
+.venv/bin/python -m codes.chapters.ch06.aec_advanced_exercises
 .venv/bin/python -m codes.examples.exercises_engineering
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 ```
@@ -68,27 +70,27 @@ SMP-PHAT 可用 `.venv/bin/python codes/examples/reproduce_smpphat_reference.py 
 例子只使用确定性输入，随机输入会固定种子。函数拒绝维度、单位或参数范围明显错误的输入；这类检查是
 为了尽早暴露口径错误，不表示代码已经达到产品级防御能力。
 
-附录 A 的[七道数学边界题](examples/appendix_a_experiments.py)与[FFT 分块卷积教学实现](array_tutorial/math_foundations.py)分别检查频率格点、复内积、相关符号、有限快拍与错误块处理；三路同增益脉冲音频见[第 34 节](research/05_exercises_and_audio.md#sec-u-a0ab2e82f7)。
+附录 A 的[七道数学边界题](chapters/appendix_a/appendix_a_experiments.py)与[FFT 分块卷积教学实现](array_tutorial/math_foundations.py)分别检查频率格点、复内积、相关符号、有限快拍与错误块处理；三路同增益脉冲音频见[第 34 节](research/05_exercises_and_audio.md#sec-u-a0ab2e82f7)。
 
 全书228道稳定编号代码题按各章学习难点组织；完整ID、每题输入与答案、运行入口及音频条件见[练习与音频实验](research/05_exercises_and_audio.md)。基础题、算法边界题、精算题与结构题使用独立模块，导入模块不运行实验。附录B的17道综合书面题另行编号，其中需pyroomacoustics的房间实验不混入稳定ID题数。算法种类以[COVERAGE.md](COVERAGE.md)为准，不能用练习数量表示方法覆盖。
 
-第4章的[七道定位逐步实验](examples/chapter04_experiments.py)复算插值、相位求和、共同子空间基、几何更新和局部下界；[固定版doatools诊断](examples/reproduce_doatools_esprit.py)另需已有SciPy环境，并保留默认加权失败与独立参考结果。两者的教学验证与外部实现诊断分别记录。
+第4章的[七道定位逐步实验](chapters/ch04/chapter04_experiments.py)复算插值、相位求和、共同子空间基、几何更新和局部下界；[固定版doatools诊断](examples/reproduce_doatools_esprit.py)另需已有SciPy环境，并保留默认加权失败与独立参考结果。两者的教学验证与外部实现诊断分别记录。
 
-第 5 章的[同输入波束比较](examples/beamformer_common_input_demo.py)在一个可手算的单频模型中同时报告 DSB、MVDR、相对加载 MVDR 和 LCMV 的目标增益、干扰残留、WNG 与输出 SINR；它不代表宽带语音或设备实测。第 8 章的[锁定版 AuxIVA 盲估计](examples/reproduce_auxiva_reference.py)实际调用外部迭代源码，并保留一个谐波反例和一个秩亏失败例；[GSS 活动错标实验](examples/gss_activity_error_demo.py)只检查固定密度 E 步，不冒充完整分离流水线。
+第 5 章的[同输入波束比较](chapters/ch05/beamformer_common_input_demo.py)在一个可手算的单频模型中同时报告 DSB、MVDR、相对加载 MVDR 和 LCMV 的目标增益、干扰残留、WNG 与输出 SINR；它不代表宽带语音或设备实测。第 8 章的[锁定版 AuxIVA 盲估计](examples/reproduce_auxiva_reference.py)实际调用外部迭代源码，并保留一个谐波反例和一个秩亏失败例；[GSS 活动错标实验](chapters/ch08/gss_activity_error_demo.py)只检查固定密度 E 步，不冒充完整分离流水线。
 
-第5章另有[十道逐步实验](examples/chapter05_experiments.py)，覆盖非正交阻塞、单快拍自消、Frost投影、后置滤波功率、失配自消、GEV/MWF、球谐采样与掩码退化。[GSC状态处理器](array_tutorial/gsc.py)与四个合成音频演示目标泄漏下持续更新和已知区间冻结的差别，冻结区间来自真值，并不是活动检测器。
+第5章另有[十道逐步实验](chapters/ch05/chapter05_experiments.py)，覆盖非正交阻塞、单快拍自消、Frost投影、后置滤波功率、失配自消、GEV/MWF、球谐采样与掩码退化。[GSC状态处理器](array_tutorial/gsc.py)与四个合成音频演示目标泄漏下持续更新和已知区间冻结的差别，冻结区间来自真值，并不是活动检测器。
 
 [SOF固定版设计审查](examples/audit_sof_tdfb_design.py)只做源码核对和独立数学反例，未运行MATLAB或固件；[pb_bss/PRA诊断](examples/audit_beamformer_reference.py)分别保留原函数提取调用和原包方法调用的已知失败。输入、版本和运行边界见[空间研究手册](research/01_spatial_and_tracking.md)。
 
-第 6 章新增的 [RLS 两抽头演示](examples/aec_rls_demo.py)与[矩阵 Kalman 两抽头演示](examples/aec_kalman_matrix_demo.py)只核算带已知参数的状态递推；[研究手册 A04](research/02_aec_wpe_separation.md#aec)逐项列出外部 RLS、FDKF/PBFDKF 与商业 Kalman 模块的源码入口、许可及尚未完成的对照实验。教学代码不含延迟搜索、双讲检测、残余抑制或设备接入。
+第 6 章新增的 [RLS 两抽头演示](chapters/ch06/aec_rls_demo.py)与[矩阵 Kalman 两抽头演示](chapters/ch06/aec_kalman_matrix_demo.py)只核算带已知参数的状态递推；[研究手册 A04](research/02_aec_wpe_separation.md#aec)逐项列出外部 RLS、FDKF/PBFDKF 与商业 Kalman 模块的源码入口、许可及尚未完成的对照实验。教学代码不含延迟搜索、双讲检测、残余抑制或设备接入。
 
-第6章另有[十二道状态与指标实验](examples/chapter06_experiments.py)，逐步复算共同归一化、参考可辨识性、因果支持、断流历史、协方差边界与评分。新增4个参考断流音频使用已知冻结路径，隔离“播放仍在继续、算法却收不到参考”的后果。
+第6章另有[十二道状态与指标实验](chapters/ch06/chapter06_experiments.py)，逐步复算共同归一化、参考可辨识性、因果支持、断流历史、协方差边界与评分。新增4个参考断流音频使用已知冻结路径，隔离“播放仍在继续、算法却收不到参考”的后果。
 
 [外部AEC接口诊断](examples/audit_aec_upstream_interfaces.py)固定源码和输入，保留 pyaec 的尾部截断与 NumPy 兼容失败，以及 echocatzh 的线性输出/默认后滤差异。DTLN 部分只提取原文件处理函数并使用假解释器，不加载网络、权重或真实录音；[报告](reports/aec_upstream_interfaces.json)逐项记录运行范围。
 
-第 6 章的[同一合成输入 AEC 接口实验](examples/aec_same_input_truth.py)用已知回声和近端分量检查教学 NLMS、锁定版 SpeexDSP 与 WebRTC AEC3，并以独立脉冲测量固定输出延迟；它按处理取点分别报告总输出功率和近端注入增量，不给设备性能排名。第 7 章的[在线 WPE 时间边界实验](examples/wpe_temporal_contract.py)检查未来帧扰动与跨块状态，并用锁定版离线 WPE 作对照；输入是复谱数学样本，不是语音音质实验。
+第 6 章的[同一合成输入 AEC 接口实验](examples/aec_same_input_truth.py)用已知回声和近端分量检查教学 NLMS、锁定版 SpeexDSP 与 WebRTC AEC3，并以独立脉冲测量固定输出延迟；它按处理取点分别报告总输出功率和近端注入增量，不给设备性能排名。第 7 章的[在线 WPE 时间边界实验](chapters/ch07/wpe_temporal_contract.py)检查未来帧扰动与跨块状态，并用锁定版离线 WPE 作对照；输入是复谱数学样本，不是语音音质实验。
 
-第 9 章的[两轨交叉、缺测与波束限速实验](examples/tracking_crossing_dropout_demo.py)用确定性角度观测复算 E09-06：交叉帧的集合位置指标可为零而轨迹身份错配；另报告缺测协方差和限速滞后。输入不是语音或设备录音，真值标签只用于评价和诊断对照。
+第 9 章的[两轨交叉、缺测与波束限速实验](chapters/ch09/tracking_crossing_dropout_demo.py)用确定性角度观测复算 E09-06：交叉帧的集合位置指标可为零而轨迹身份错配；另报告缺测协方差和限速滞后。输入不是语音或设备录音，真值标签只用于评价和诊断对照。
 
 ## 合成音频与图 34～38
 

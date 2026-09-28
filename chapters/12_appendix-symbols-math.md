@@ -334,7 +334,7 @@ MUSIC（§4.6）在独立源、白噪声和模型正确等条件下，把较大�
 
 ### 12.4 计算练习
 
-E12-01～04 可通过 `.venv/bin/python -m codes.examples.exercises_engineering` 复算；E12-05 的奇异矩阵反例使用 `.venv/bin/python -m codes.examples.spatial_model_exercises`。新增 E12-06～12 使用 `.venv/bin/python -m codes.examples.appendix_a_experiments`。题中数组均为本书构造的输入；下列答案先从短序列或代数独立求出，再用代码核对。图 48～49 与配套音频只说明明确给定的离散模型，不等于自然语音或实测房间。
+E12-01～04 可通过 `.venv/bin/python -m codes.examples.exercises_engineering` 复算；E12-05 的奇异矩阵反例使用 `.venv/bin/python -m codes.examples.spatial_model_exercises`。新增 E12-06～12 使用 `.venv/bin/python -m codes.chapters.appendix_a.appendix_a_experiments`。题中数组均为本书构造的输入；下列答案先从短序列或代数独立求出，再用代码核对。图 48～49 与配套音频只说明明确给定的离散模型，不等于自然语音或实测房间。
 
 #### E12-01：FFT 乘法为什么需要补零
 
@@ -458,7 +458,7 @@ $$\vec w_\delta
 
 ![图48 完整八点 DFT 的有符号频率与实谱单边频率](../figures/fig48_fft_frequencies.png)
 
-图 48（a）按 fftfreq 约定画出 $N=8$、$f_s=8$ kHz 的全部格点，$k=4$ 记为 $-4$ kHz；（b）只保存实信号的非负格点，$k=4$ 记为 $+4$ kHz。两幅图中的 Nyquist 标注是**同一个离散格点**，不是两次观测。图示给的是频率坐标约定，不表示补零增加了频率分辨能力。[代码复算](../codes/examples/appendix_a_experiments.py)还列出余弦的两个非零格点。
+图 48（a）按 fftfreq 约定画出 $N=8$、$f_s=8$ kHz 的全部格点，$k=4$ 记为 $-4$ kHz；（b）只保存实信号的非负格点，$k=4$ 记为 $+4$ kHz。两幅图中的 Nyquist 标注是**同一个离散格点**，不是两次观测。图示给的是频率坐标约定，不表示补零增加了频率分辨能力。[代码复算](../codes/chapters/appendix_a/appendix_a_experiments.py)还列出余弦的两个非零格点。
 
 #### E12-07：复向量为什么不能用普通转置计算能量？
 
@@ -520,7 +520,7 @@ $\mathbf A$ 的两个奇异值为 $1$ 和 $10^{-4}$，所以 $\kappa_2(\mathbf A
 
 **噪声有零空间。** 第一种矩阵的和为 $\operatorname{diag}(1,\mu)$，对每个 $\mu>0$ 都可逆。右边为 $[1,0]^\top$，所以三个权重均为 $[1,0]^\top$，极限也不为零。第一通道恰在噪声零空间中，增大它的噪声惩罚不会改变该通道的输出；这不表示真实麦克风有完全无噪声通道。
 
-**噪声正定。** 将噪声矩阵改为 $\mathbf I$，则 $\vec w_\mu=[1/(1+\mu),0]^\top$。$\mu=1,10,10^6$ 时第一权重分别为 $0.5$、约 $0.090909$、约 $9.99999\times10^{-7}$，极限为零。两组的目标与参考完全相同，改变的只有噪声矩阵是否正定。因此“$\mu$ 趋大则零输出”必须写出充分条件；“总矩阵每次可逆”本身不足以推出极限。[代码复算](../codes/examples/appendix_a_experiments.py)返回两组权重，结果属于本书代数反例，不是实际语音质量比较。
+**噪声正定。** 将噪声矩阵改为 $\mathbf I$，则 $\vec w_\mu=[1/(1+\mu),0]^\top$。$\mu=1,10,10^6$ 时第一权重分别为 $0.5$、约 $0.090909$、约 $9.99999\times10^{-7}$，极限为零。两组的目标与参考完全相同，改变的只有噪声矩阵是否正定。因此“$\mu$ 趋大则零输出”必须写出充分条件；“总矩阵每次可逆”本身不足以推出极限。[代码复算](../codes/chapters/appendix_a/appendix_a_experiments.py)返回两组权重，结果属于本书代数反例，不是实际语音质量比较。
 
 ---
 

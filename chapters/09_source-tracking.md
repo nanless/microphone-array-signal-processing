@@ -645,7 +645,7 @@ $p_D$ 是检测概率，$g_t(z\mid x)$ 是目标在状态 $x$ 时产生观测 $z
 
 #### 两目标交叉、短暂缺测与控制限速
 
- [`tracking_crossing_dropout_demo.py`](../codes/examples/tracking_crossing_dropout_demo.py) 使用确定的角度观测，不生成语音或设备录音。为便于手算，每步间隔刻意取 1 s；两条轨迹初态分别为 $[20^\circ,+10^\circ/\mathrm s]$、$[60^\circ,-10^\circ/\mathrm s]$，初始协方差都是 $I$，每步过程噪声 $Q=\operatorname{diag}(0.1,0.01)$，角度观测方差为 $1\ \mathrm{deg}^2$。这些是实验指定的滤波参数，并非从真实定位器标定得到。
+ [`tracking_crossing_dropout_demo.py`](../codes/chapters/ch09/tracking_crossing_dropout_demo.py) 使用确定的角度观测，不生成语音或设备录音。为便于手算，每步间隔刻意取 1 s；两条轨迹初态分别为 $[20^\circ,+10^\circ/\mathrm s]$、$[60^\circ,-10^\circ/\mathrm s]$，初始协方差都是 $I$，每步过程噪声 $Q=\operatorname{diag}(0.1,0.01)$，角度观测方差为 $1\ \mathrm{deg}^2$。这些是实验指定的滤波参数，并非从真实定位器标定得到。
 
 示例在 15° 门内穷举两轨与最多两条观测的一对一配对，优先关联最多的门内观测，再选择圆周角残差平方和最小者；若代价完全相等，按轨迹和观测输入顺序决定。
 
@@ -655,7 +655,7 @@ $p_D$ 是检测概率，$g_t(z\mid x)$ 是目标在状态 $x$ 时产生观测 $z
 
 去掉标签后，观测位置集合与真值集合都是 $\{39^\circ,41^\circ\}$，按后文式(9-25)取 $p\ge1,c>0$，该集合的 OSPA 仍为 0。这里算的是**未滤波的观测集合**；滤波后的两条角度还有非零位置误差，不能把两者混称为零误差。
 
-下表逐帧比较最小代价关联结果与“用真值标签做关联”的诊断对照。真值标签只用于评价和对照更新，不进入最小代价关联的代价。角度误差是滤波后轨迹 A、B 各自相对其真值的最短圆周角绝对误差；方差是最小代价关联轨迹 A 的角度方差，数值保留两位小数。运行命令为 `.venv/bin/python -m codes.examples.tracking_crossing_dropout_demo`，独立手算检验见 [`test_codes_tracking_crossing_dropout.py`](../tests/test_codes_tracking_crossing_dropout.py)。
+下表逐帧比较最小代价关联结果与“用真值标签做关联”的诊断对照。真值标签只用于评价和对照更新，不进入最小代价关联的代价。角度误差是滤波后轨迹 A、B 各自相对其真值的最短圆周角绝对误差；方差是最小代价关联轨迹 A 的角度方差，数值保留两位小数。运行命令为 `.venv/bin/python -m codes.chapters.ch09.tracking_crossing_dropout_demo`，独立手算检验见 [`test_codes_tracking_crossing_dropout.py`](../tests/test_codes_tracking_crossing_dropout.py)。
 
 | t（s） | 观测与真标签 | 分配至 A/B | 错配数 | 硬关联角误差 A/B（度） | 真值关联角误差 A/B（度） | A 角度方差（度²） |
 |---|---|---|---:|---:|---:|---:|
@@ -1229,7 +1229,7 @@ Q(2h)&=F(h)Q(h)F(h)^\top+Q(h)\\
 
 #### 新练习的实现边界
 
-E09-10～E09-19 的统一入口为 `.venv/bin/python -m codes.examples.chapter09_experiments`，见[原创复算代码](../codes/examples/chapter09_experiments.py)。前九题是小规模代数、概率或数值边界检查；E09-19 才运行指定波形链。它们不构成完整通用 EKF、UKF、JPDA、PHD 或多目标身份管理系统。
+E09-10～E09-19 的统一入口为 `.venv/bin/python -m codes.chapters.ch09.chapter09_experiments`，见[原创复算代码](../codes/chapters/ch09/chapter09_experiments.py)。前九题是小规模代数、概率或数值边界检查；E09-19 才运行指定波形链。它们不构成完整通用 EKF、UKF、JPDA、PHD 或多目标身份管理系统。
 
 
 ---

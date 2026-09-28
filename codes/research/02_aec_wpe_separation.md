@@ -45,7 +45,7 @@ NLMS 以参考回归向量的能量归一化更新幅度，便于在不同播放
 
 最小实验先关闭更新，把已知 FIR 分区后与直接线性卷积逐样本比较，再启用更新并保存每块权重。故障注入分别测试不丢弃循环卷积的无效输出区，以及关闭梯度约束：前者会破坏对应位置的线性卷积输出；后者可能改变权重轨迹和稳态误差，却不保证每组输入都出现块边界错误。另需区分一般 STFT 域同频带跨帧滤波：任意分析、合成窗下，忽略跨频带项未必与重叠保存的全带时域 FIR 逐样本等价，见 [Avargel 与 Cohen 2007，§II](https://webee.technion.ac.il/Sites/People/IsraelCohen/Publications/TASL_May2007.pdf)。
 
-上述最小实验现有[教学实现](../array_tutorial/aec_partitioned.py)、[两块手算及辨识演示](../examples/aec_partitioned_demo.py)与[独立测试](../../tests/test_codes_aec_partitioned.py)：$N=P=2$ 时，第 1 块第一分区候选的非法第 3 个时域抽头为 $1/3$，约束后归零，第二分区合法首抽头保留 $1/3$。测试另以直接时域卷积校验固定已知路径，并覆盖跨块状态、零参考、短末分区、冻结和数值溢出。固定种子实验先分别用白噪声或纯音训练，再冻结路径，用同一宽带参考检验；纯音训练残差小但留出残差大，展示“消掉训练信号”与“辨识真实路径”不同。这些证据只证明教学代码在指定合成输入下遵循本书约定，不是 Speex AUMDF 的复现，也未提供真实语音收敛或实时性对比。
+上述最小实验现有[教学实现](../array_tutorial/aec_partitioned.py)、[两块手算及辨识演示](../chapters/ch06/aec_partitioned_demo.py)与[独立测试](../../tests/test_codes_aec_partitioned.py)：$N=P=2$ 时，第 1 块第一分区候选的非法第 3 个时域抽头为 $1/3$，约束后归零，第二分区合法首抽头保留 $1/3$。测试另以直接时域卷积校验固定已知路径，并覆盖跨块状态、零参考、短末分区、冻结和数值溢出。固定种子实验先分别用白噪声或纯音训练，再冻结路径，用同一宽带参考检验；纯音训练残差小但留出残差大，展示“消掉训练信号”与“辨识真实路径”不同。这些证据只证明教学代码在指定合成输入下遵循本书约定，不是 Speex AUMDF 的复现，也未提供真实语音收敛或实时性对比。
 
 算例 6-2 的 224/736 次每样本只计全复频点模型下的变换、预测复乘和梯度复乘；逐块、逐分区重算 $|X|^2$ 又分别至少增加 32 次/样本。求和、除法、步长缩放及内存访问仍未计。教学代码还为输出约束前诊断系数做逐分区 IFFT，即使关闭投影也执行，故上述理论账不能作为该 Python 程序的测时结果。
 
@@ -57,17 +57,17 @@ Speex 的 `mdf.c` 注释明确采用交替更新的 MDF（AUMDF）。它调度�
 
 ### A04　RLS、Kalman、FDKF 与分区状态空间 AEC
 
-**先分清估计目标。** [正文式(6-12)～式(6-14)](../../chapters/06_aec.md#sec-6-2)的实数时域 RLS 维护指数加权参考相关矩阵的逆，精确求解含指定初值约束的加权最小二乘。它用当前样本的先验残差更新路径，并不识别近端语音。有限的 $P_{-1}=\delta^{-1}I$ 与目标里的 $\lambda^{n+1}\delta\|w-w_{-1}\|^2$ 必须配套；只写未正则化的目标、却用有限初始逆矩阵，前几个样本就不等价。教学[逐样本实现](../array_tutorial/aec_rls.py)、[两抽头演示](../examples/aec_rls_demo.py)和[独立批量最小二乘测试](../../tests/test_codes_aec_rls.py)可核对这个对应关系，均不是产品级 AEC。
+**先分清估计目标。** [正文式(6-12)～式(6-14)](../../chapters/06_aec.md#sec-6-2)的实数时域 RLS 维护指数加权参考相关矩阵的逆，精确求解含指定初值约束的加权最小二乘。它用当前样本的先验残差更新路径，并不识别近端语音。有限的 $P_{-1}=\delta^{-1}I$ 与目标里的 $\lambda^{n+1}\delta\|w-w_{-1}\|^2$ 必须配套；只写未正则化的目标、却用有限初始逆矩阵，前几个样本就不等价。教学[逐样本实现](../array_tutorial/aec_rls.py)、[两抽头演示](../chapters/ch06/aec_rls_demo.py)和[独立批量最小二乘测试](../../tests/test_codes_aec_rls.py)可核对这个对应关系，均不是产品级 AEC。
 
 RLS 对 $L$ 抽头需要 $L\times L$ 逆相关状态，常规每样本更新为 $O(L^2)$；参考长时间为零时，按遗忘递推仍会放大逆相关状态。双讲时继续更新会把近端语音混进路径拟合，冻结更新又可能漏掉同时发生的回声路径变化。因此遗忘因子、路径突变检测和双讲控制必须一起观察，不能只报一条收敛曲线。平方根、QR 与 Householder 是数值稳定性路线，不表示它们都与原递推有相同运算量。[MathWorks 官方 RLSFilter 文档](https://www.mathworks.com/help/dsp/ref/dsp.rlsfilter-system-object.html)给出这些方法和锁定系数接口；它只证明工具箱提供 RLS，不证明 MathWorks 的 [AEC 示例](https://www.mathworks.com/help/audio/ug/acoustic-echo-cancellation-aec.html)采用了 RLS。
 
-本仓库的短实数 RLS 为防止浮点更新后逆相关矩阵失去正定性，**每个已接纳样本**另用 Cholesky 检查整矩阵，实际教学代码因此含 $O(L^3)$ 检查成本；上段 $O(L^2)$ 只指矩阵求逆引理更新的代数主项。不可用这份安全检查开启后的运行耗时代表优化的工业 RLS。[固定种子、分段真值的 RLS/Kalman 对照](../examples/aec_rls_kalman_comparison.py)报告先验回声预测误差、路径误差及 Kalman 增益，不把已知近端注入时的总残差功率误称为 ERLE。
+本仓库的短实数 RLS 为防止浮点更新后逆相关矩阵失去正定性，**每个已接纳样本**另用 Cholesky 检查整矩阵，实际教学代码因此含 $O(L^3)$ 检查成本；上段 $O(L^2)$ 只指矩阵求逆引理更新的代数主项。不可用这份安全检查开启后的运行耗时代表优化的工业 RLS。[固定种子、分段真值的 RLS/Kalman 对照](../chapters/ch06/aec_rls_kalman_comparison.py)报告先验回声预测误差、路径误差及 Kalman 增益，不把已知近端注入时的总残差功率误称为 ERLE。
 
 **快 RLS 不等于普通频域 NLMS。** 频域多抽头 NLMS/PBFDAF 使用参考能量归一化梯度；经典 RLS 使用输入相关矩阵的逆来改变更新方向。Schneider 与 Kellermann 的 [GFDAF 分析，2016，§3～4](https://doi.org/10.1186/s13634-015-0302-2)把该类广义频域算法联系到**块 RLS 的近似**，而不是证明所有 PBFDAF 都是精确 RLS。面向长回声路径还有 [Cioffi 与 Kailath 1984 的快速横向滤波器](https://doi.org/10.1109/TASSP.1984.1164334)及 [Slock 与 Maouche 1994 的 FFT/低位移秩 RLS](https://doi.org/10.1016/0165-1684(94)90018-3)等结构化路线；名称里的“快速”必须回到各论文的输入模型、初始化与复杂度条件核实，不可把本书全矩阵 RLS 的 $O(L^2)$ 原样用于这些变体。
 
 **Kalman 的额外模型。** [正文式(6-16)～式(6-18)](../../chapters/06_aec.md#sec-6-2)把真实路径当作变化状态，用过程协方差 $Q$ 描述路径不确定度，用观测方差 $\Psi$ 描述近端语音和其他干扰；$P$ 是路径估计误差协方差，不是 RLS 定义下的逆参考相关矩阵。固定已知 $Q,\Psi$ 时可以复算增益，但残差变大本身不能证明应增大 $Q$：双讲和路径突变都会增大残差，前者通常要求减少对麦克风观测的信任，后者可能要求提高对新路径的适应。将 $A=I,\Psi=1,P_n^-=P_{n-1}/\lambda$ 特设于完整矩阵 Kalman，才与普通遗忘 RLS 的增益同式；这等价于依赖当前 $P$ 的 $Q_n=(\lambda^{-1}-1)P_{n-1}$，不是任意固定过程噪声 Kalman。
 
-两个层次的可运行核查彼此独立：[式(6-17)单复频点演示](../examples/aec_kalman_scalar_demo.py)与[分数测试](../../tests/test_codes_aec_kalman_scalar_demo.py)给出 $K=3/7$、后验路径 $22/35$、方差 $3/35$；把已知 $\Psi$ 从 $0.4$ 改为 $4$，增益变为 $3/16$，复数 $X=i$ 时 $K=-i/2$。[两抽头实数矩阵演示](../examples/aec_kalman_matrix_demo.py)与[独立测试](../../tests/test_codes_aec_kalman_matrix.py)用 Joseph 形式核对 $P^-=\operatorname{diag}(1,4)$、$x=[1,1]^\top$、$\Psi=1$ 时的 $K=[1/6,2/3]^\top$ 和后验非对角项 $-2/3$。第二步将状态协方差强行改成对角，创新方差会从 $9/2$ 误成 $19/6$。它说明**近似改变计算**，并不测得真实录音性能；两个实现都不含 FFT、分区、在线噪声估计、延迟搜索、双讲检测或残余抑制。
+两个层次的可运行核查彼此独立：[式(6-17)单复频点演示](../chapters/ch06/aec_kalman_scalar_demo.py)与[分数测试](../../tests/test_codes_aec_kalman_scalar_demo.py)给出 $K=3/7$、后验路径 $22/35$、方差 $3/35$；把已知 $\Psi$ 从 $0.4$ 改为 $4$，增益变为 $3/16$，复数 $X=i$ 时 $K=-i/2$。[两抽头实数矩阵演示](../chapters/ch06/aec_kalman_matrix_demo.py)与[独立测试](../../tests/test_codes_aec_kalman_matrix.py)用 Joseph 形式核对 $P^-=\operatorname{diag}(1,4)$、$x=[1,1]^\top$、$\Psi=1$ 时的 $K=[1/6,2/3]^\top$ 和后验非对角项 $-2/3$。第二步将状态协方差强行改成对角，创新方差会从 $9/2$ 误成 $19/6$。它说明**近似改变计算**，并不测得真实录音性能；两个实现都不含 FFT、分区、在线噪声估计、延迟搜索、双讲检测或残余抑制。
 
 **从矩阵 Kalman 到 FDKF/PBFDKF。** [Enzner 与 Vary，Signal Processing 2006，§2～4](https://doi.org/10.1016/j.sigpro.2005.09.013)建立声学状态空间频域滤波；[作者说明](https://homepages.ruhr-uni-bochum.de/gerald.enzner/StateSpaceFDAF.html)明确它是对精确 Kalman 的近似，并区分线性抵消输出和依据状态不确定度形成的后滤波输出。读论文时要跟踪频域路径状态、线性卷积有效区、观测扰动与状态协方差的近似，不能见到单频点式(6-17)就声称复现原论文。分区延伸可从 [Kuech、Mabande 与 Enzner，ICASSP 2014](https://doi.org/10.1109/ICASSP.2014.6853806)查起。[Zhu 等，Interspeech 2021，§2～3、图 4～5](https://www.isca-archive.org/interspeech_2021/zhu21d_interspeech.pdf)的 VD-PBFDKF 只保留同参考声道、同分区的协方差块；SD-PBFDKF 在同分区还保留不同参考声道间的块，两者仍丢弃跨分区块。多麦、多播放参考时，“对角”必须说明是频点、分区、声道还是矩阵元素层面的对角。论文实验的排序不自动外推到其他房间或双讲安排。
 
@@ -94,7 +94,7 @@ RLS 对 $L$ 抽头需要 $L\times L$ 逆相关状态，常规每样本更新为 
 
 最小实验由远端单讲、双讲、近端单讲与静音四段组成，分别保存检测量、步长与系数误差。失败实验保持远端播放同时改变路径，比较“误判双讲导致冻结”和“漏判双讲导致误更新”。即使两者输出能量相近，恢复办法也不同。不要仅用一个总体准确率验收 DTD。
 
-**已执行：自动四状态检测与路径突变反例。** [第 6 章 §6.4.1](../../chapters/06_aec.md#sec-6-4-1)给出固定种子、16 kHz、每帧 160 点的数学合成实验；[检测器](../array_tutorial/double_talk.py)只读取已对齐的参考和麦克风信号，真值标签仅供[脚本](../examples/aec_dtd_demo.py)统计。沉默、远端单讲（含恢复段）、近端单讲、双讲四类分别为 20、40、20、20 帧，本次混淆矩阵对角线正好是这四个计数。检测结果用于 NLMS 冻结时，双讲段已知回声分量残差 RMS 从不冻结的 0.1492 降至 0.0812；在另一个只有远端播放、路径从 $[0.6,0.25]$ 改为 $[0.1,0.75]$ 的反例里，20/20 帧被误判为双讲。这些是单次合成夹具的结果，不能代表真实语音准确率或路径变化时的稳健性；Speex 和 AEC3 的内部控制也不是本检测器。
+**已执行：自动四状态检测与路径突变反例。** [第 6 章 §6.4.1](../../chapters/06_aec.md#sec-6-4-1)给出固定种子、16 kHz、每帧 160 点的数学合成实验；[检测器](../array_tutorial/double_talk.py)只读取已对齐的参考和麦克风信号，真值标签仅供[脚本](../chapters/ch06/aec_dtd_demo.py)统计。沉默、远端单讲（含恢复段）、近端单讲、双讲四类分别为 20、40、20、20 帧，本次混淆矩阵对角线正好是这四个计数。检测结果用于 NLMS 冻结时，双讲段已知回声分量残差 RMS 从不冻结的 0.1492 降至 0.0812；在另一个只有远端播放、路径从 $[0.6,0.25]$ 改为 $[0.1,0.75]$ 的反例里，20/20 帧被误判为双讲。这些是单次合成夹具的结果，不能代表真实语音准确率或路径变化时的稳健性；Speex 和 AEC3 的内部控制也不是本检测器。
 
 ### A06　AEC3 的延迟、线性抵消、残余抑制与舒适噪声
 
@@ -185,12 +185,12 @@ cmake --build /private/tmp/speexdsp-aec-20260923 --parallel 4
 
 **真实双讲的第二组接口检查（2026-09-23 已运行）。** 同一固定版中另取 GUID `-2jLGNCgf0WDpKMY2iup7g` 的 `doubletalk_lpb` 与 `doubletalk_mic`。两份原 WAV 的 SHA-256 分别是 `790203e68cc8cc9b02becc4efefbde0ddf962fff4d223608b00ffc8b2682ed71`、`4e7e35290d763d2d22173976c2cfd46739c9afe76729a0c283c1b69609f22041`；均为 16 kHz、单声道、PCM16。参考 196186 点、麦克风 196320 点，共同截为 196160 点完整 10 ms 帧，不插值、不时移。参考全段没有满幅样本，麦克风有 1 个满幅样本；全段数字 RMS 分别为 0.05574、0.02760。官方[数据说明](https://github.com/microsoft/AEC-Challenge/blob/6c633d0a9d2a143a0e364899b91b06f127315b18/datasets/README.md)将 `doubletalk` 标为双讲且无路径变化；这不是本书对该片段每一帧的人工语音标注。
 
-固定 `[0,3)` s 为适应期、`[3,8)` s 为评分区，三个条件都从新状态运行同一 Speex 同步核心。库与远端单讲实验相同，参数仍是 160 点帧、4096 点滤波覆盖。评分区的麦克风数字 RMS 是 0.03860；正确参考、零参考、故意晚 1 秒参考的输入/输出总功率变化分别是 2.234、2.204、2.200 dB，正确参考的输出相对零参考仅低 0.029 dB。这个很小的差别不能被解释为“已消掉的回声量”：近端语音、回声和噪声在麦克风里不可分，三种控制的输出哈希和未舍入数字由[双讲脚本](../examples/aec_doubletalk_experiment.py)给出。此处也未完成盲听，不能称近端音质已经验证。
+固定 `[0,3)` s 为适应期、`[3,8)` s 为评分区，三个条件都从新状态运行同一 Speex 同步核心。库与远端单讲实验相同，参数仍是 160 点帧、4096 点滤波覆盖。评分区的麦克风数字 RMS 是 0.03860；正确参考、零参考、故意晚 1 秒参考的输入/输出总功率变化分别是 2.234、2.204、2.200 dB，正确参考的输出相对零参考仅低 0.029 dB。这个很小的差别不能被解释为“已消掉的回声量”：近端语音、回声和噪声在麦克风里不可分，三种控制的输出哈希和未舍入数字由[双讲脚本](../chapters/ch06/aec_doubletalk_experiment.py)给出。此处也未完成盲听，不能称近端音质已经验证。
 
 复做时把上述两只原 WAV 放到 `codes/upstream/_downloads/aec-challenge/datasets/real/`，脚本在读取前核查摘要，再运行：
 
 ```bash
-.venv/bin/python -m codes.examples.aec_doubletalk_experiment --speex-library /private/tmp/speexdsp-aec-20260923/libspeexdsp.dylib
+.venv/bin/python -m codes.chapters.ch06.aec_doubletalk_experiment --speex-library /private/tmp/speexdsp-aec-20260923/libspeexdsp.dylib
 ```
 
 **同两对真实配对录音上的教学 PBFDAF 对照（2026-09-24 已运行）。** [离线脚本](../examples/aec_pbfdaf_real_pair_compare.py)只读取上述固定 SHA-256 的 `lpb`/`mic`，将 PCM16 原样除以 32768 转为 float64；不重采样、不时移、不调增益、不量化输出，也不保存录音。每种参考条件都从零权重与零历史的新状态运行。参数在评分前固定为 $N=160$、$2N=320$、$P=26$、$L=4160$、$\mu=0.3$、$\delta=0.05$，每块投影合法抽头；没有双讲冻结、延迟估计或后滤。这一 $\mu,\delta$ 沿用教学合成实验，**不是**在真实评分区选出的最优参数。
@@ -234,10 +234,10 @@ cmake --build /private/tmp/speexdsp-aec-20260923 --parallel 4
 | 正确参考 | 0.922 | 0.140 | 111.04 PCM 计数 |
 | 全零参考 | 0.923 | 0.128 | 5.62 PCM 计数 |
 
-两张表的输入条件不同，**不能横向排算法名次**。恢复区间没有外加近端，仍有输出差，说明先前注入改变了后续处理状态或其输出；没有独立回声真值时不能把 111.04 计数直接解释为“恢复期回声”。锁定版 [Speex `mdf.c`](https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/mdf.c)还对麦克风做 DC 陷波、预加重、输出去加重和 PCM 转换，这解释了零参考控制也不能简单视作原样旁路。完整未舍入结果与输入、输出摘要可由[受控脚本](../examples/aec_controlled_doubletalk.py)复算；[测试](../../tests/test_codes_aec_controlled_doubletalk.py)另检查 PCM 加法、已知区间及指标算术，但不替代完整接口实验。复做命令为：
+两张表的输入条件不同，**不能横向排算法名次**。恢复区间没有外加近端，仍有输出差，说明先前注入改变了后续处理状态或其输出；没有独立回声真值时不能把 111.04 计数直接解释为“恢复期回声”。锁定版 [Speex `mdf.c`](https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/mdf.c)还对麦克风做 DC 陷波、预加重、输出去加重和 PCM 转换，这解释了零参考控制也不能简单视作原样旁路。完整未舍入结果与输入、输出摘要可由[受控脚本](../chapters/ch06/aec_controlled_doubletalk.py)复算；[测试](../../tests/test_codes_aec_controlled_doubletalk.py)另检查 PCM 加法、已知区间及指标算术，但不替代完整接口实验。复做命令为：
 
 ```bash
-.venv/bin/python -m codes.examples.aec_controlled_doubletalk \
+.venv/bin/python -m codes.chapters.ch06.aec_controlled_doubletalk \
   --speex-library /private/tmp/speexdsp-aec-20260923/libspeexdsp.dylib \
   --include-real-hybrid
 ```
@@ -298,7 +298,7 @@ $g_\Delta$ 和 $E_\Delta$ 按第 6 章式(6-27)的已知近端注入增量定义
 
 比例归一化更新改变抽头间的学习分配；子带滤波改变输入相关性与每带更新问题；Volterra、Hammerstein、Wiener 或级联模型改变可表示的输入—回声关系。它们解决的困难不同，不能看见“频域”或“非线性”标签就视作同一种加速方案。出处与模型讨论见 [§6.2](../../chapters/06_aec.md#sec-6-2)和[§6.3](../../chapters/06_aec.md#sec-6-3)。
 
-本书新增[实数 IPNLMS 状态](../array_tutorial/aec_ipnlms.py)：每次由旧权重构造抽头份额，按式(6-11)计算先验误差和同时更新；$\kappa=-1$ 与 NLMS 逐步对齐还须把 NLMS 正则项设为 $L\delta$。零初值、$\kappa=1$ 时所有比例份额均为零，这个失败边界有[独立测试](../../tests/test_codes_aec_ipnlms_subband.py)。[两带 Haar 代码](../array_tutorial/aec_subband.py)现在分三层：已知时域路径的精确交叉带矩阵、只读同带历史的对角 NLMS、未知路径的两带全交叉 NLMS。最后一项按正文式(6-10)同时预测两输出带、逐行归一化更新、逆 Haar 合成；它是**这个两带教学模型内**的完整四路路径，而非工业通用子带 AEC 或 Lee–Gan NSAF。[交叉带演示](../examples/aec_crossband_demo.py)给出两块手算与冻结留出集；[独立测试](../../tests/test_codes_aec_crossband.py)以多个长度的时域卷积作真值，另核对冻结、切块、复位和非法输入。[原 IPNLMS/已知路径锚点](../examples/aec_ipnlms_subband_demo.py)和[章节 E06-11～20](../examples/aec_advanced_exercises.py)仍可单独复算。
+本书新增[实数 IPNLMS 状态](../array_tutorial/aec_ipnlms.py)：每次由旧权重构造抽头份额，按式(6-11)计算先验误差和同时更新；$\kappa=-1$ 与 NLMS 逐步对齐还须把 NLMS 正则项设为 $L\delta$。零初值、$\kappa=1$ 时所有比例份额均为零，这个失败边界有[独立测试](../../tests/test_codes_aec_ipnlms_subband.py)。[两带 Haar 代码](../array_tutorial/aec_subband.py)现在分三层：已知时域路径的精确交叉带矩阵、只读同带历史的对角 NLMS、未知路径的两带全交叉 NLMS。最后一项按正文式(6-10)同时预测两输出带、逐行归一化更新、逆 Haar 合成；它是**这个两带教学模型内**的完整四路路径，而非工业通用子带 AEC 或 Lee–Gan NSAF。[交叉带演示](../chapters/ch06/aec_crossband_demo.py)给出两块手算与冻结留出集；[独立测试](../../tests/test_codes_aec_crossband.py)以多个长度的时域卷积作真值，另核对冻结、切块、复位和非法输入。[原 IPNLMS/已知路径锚点](../chapters/ch06/aec_ipnlms_subband_demo.py)和[章节 E06-11～20](../chapters/ch06/aec_advanced_exercises.py)仍可单独复算。
 
 固定在本仓库的 pyroomacoustics v0.10.0 源码还含 [`adaptive/subband_lms.py`](https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/adaptive/subband_lms.py)；该文件是**另一种实现入口**，锁定源码中可读；未在本轮运行，不能把其演示中由子带模型合成的目标信号当作任意时域房间卷积的独立验证。一般临界抽样子带建模需检查交叉项，[Gilloire–Vetterli 1992 原论文](https://doi.org/10.1109/78.149989)是依据；[Lee–Gan 2004 NSAF 原论文](https://doi.org/10.1109/LSP.2004.833445)的子带误差更新全带抽头，结构与本书两带逐输出带 FIR 状态不同。图37和[四个子带结构音频](05_exercises_and_audio.md#16-两带-haar-的交叉项音频)仍是已知路径的代数模型，**不是新自适应器的训练结果**；[另七个 WAV](05_exercises_and_audio.md#15-同源短路径-aec-的线性残差)对比时域 NLMS、IPNLMS、RLS 和矩阵 Kalman，不含子带自适应输出。新交叉带自适应留出试验目前只有可复算数字，没有新增 WAV；不得把前述 WAV 冒充其输出。
 
@@ -460,7 +460,7 @@ AEC 入口是 `zoo/aec/aec.py` 的任务滤波器，再看 `optimizer_kf.py` 的
 
 `OnlineWPE.step_block()`处理已有历史缓冲形状的块；当前检出源码的 `_get_prediction()`还注明只支持 `block_shift=1`。TensorFlow 路线另有 `tf_wpe.py` 中的 `block_wpe_step()`、`recursive_wpe()`，二者不应凭名字直接互换。见[nara_wpe 固定版本源码](https://github.com/fgnt/nara_wpe/blob/a166779cca2088817e330481bd20af1a2c598555/nara_wpe/tf_wpe.py)。
 
-[在线时间边界实验](../examples/wpe_temporal_contract.py)使用锁定的 nara-wpe 0.0.11 `OnlineWPE.step_frame`，在同一状态中处理固定的 48 帧、2 频点、1 通道复谱，设 2 抽头、`delay=2`、`alpha=0.95`，只将第 30 帧两个频点各增加 $5+2j$。在线输出的更早前缀最大差为 0，当帧差的最大模为 $\sqrt{29}$，后续最大差约 1.261。将外层调用分成 48 个单帧块、`7+13+5+23` 或 `30+18`，都与整段逐帧调用按位相同；这只检查同一对象的状态连续性，外层分组不等于 `step_block` 的历史窗口。离线 `wpe_v6` 用全段统计和一次迭代时，受未来帧扰动的前缀最大差为 0.210。本实验是固定复谱的接口检查，没有 STFT 波形、语音质量或端到端延迟结论。
+[在线时间边界实验](../chapters/ch07/wpe_temporal_contract.py)使用锁定的 nara-wpe 0.0.11 `OnlineWPE.step_frame`，在同一状态中处理固定的 48 帧、2 频点、1 通道复谱，设 2 抽头、`delay=2`、`alpha=0.95`，只将第 30 帧两个频点各增加 $5+2j$。在线输出的更早前缀最大差为 0，当帧差的最大模为 $\sqrt{29}$，后续最大差约 1.261。将外层调用分成 48 个单帧块、`7+13+5+23` 或 `30+18`，都与整段逐帧调用按位相同；这只检查同一对象的状态连续性，外层分组不等于 `step_block` 的历史窗口。离线 `wpe_v6` 用全段统计和一次迭代时，受未来帧扰动的前缀最大差为 0.210。本实验是固定复谱的接口检查，没有 STFT 波形、语音质量或端到端延迟结论。
 
 最小复现要先确认块是“送入模型的新样本”还是“含全部历史的窗口”，再比较输出时间戳。失败实验把窗口长度误当帧移，检查是否重复消费或跳过帧。计算实时性时分别报块等待、历史上下文、STFT 和计算时间；有历史记忆不意味着必须等待同样长的未来数据。
 
@@ -678,7 +678,7 @@ GSS 用说话人活动约束空间聚类，随后由掩码估计 SCM 并生成�
 
 读 [`desh2608/gss`](https://github.com/desh2608/gss/tree/10fad18cae85e2e4342c77421abc70c9c5da23ed)时，从 `gss/core/enhancer.py` 串到 `gss/wpe/`、`gss/cacgmm/` 和 `gss/beamformer/`，再看 `recipes/` 的清单生成。最小实验是一段同步多通道 WAV 加 RTTM；失败实验平移 RTTM、删除短活动或把噪声当成说话人。需分别报告活动错误和分离错误，不能全部归因于波束。
 
-**已执行：固定密度的活动错标敏感性。** [`gss_activity_error_demo.py`](../examples/gss_activity_error_demo.py)沿用教学版 `guided_activity_posterior()`，只取一个频点和三帧，分量为两位说话人加恒活动背景。权重 $[0.4,0.4,0.2]$，相对密度依次为 $[8,1,1]$、$[1,8,1]$、$[1,1,1]$；真实活动是“仅 1、仅 2、全静音”。正确标注时首帧说话人 1 的后验是 $16/17$；漏标后必为 0。第三帧若错误标注说话人 1 活动，其后验从 0 变为 $2/3$，背景从 1 降到 $1/3$。这些是固定权重/密度的 E 步后验，不包含 cACG 参数估计、WPE、SCM、MVDR、音频或 WER；不能作为完整 GSS 的活动错误性能曲线。该对照由[原论文 §3.2 式(5)～(8)](https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf)的门控公式导出，脚本计算与独立分数测试一致。GPU-GSS 的 CuPy/Lhotse 整链在本机尚未运行。
+**已执行：固定密度的活动错标敏感性。** [`gss_activity_error_demo.py`](../chapters/ch08/gss_activity_error_demo.py)沿用教学版 `guided_activity_posterior()`，只取一个频点和三帧，分量为两位说话人加恒活动背景。权重 $[0.4,0.4,0.2]$，相对密度依次为 $[8,1,1]$、$[1,8,1]$、$[1,1,1]$；真实活动是“仅 1、仅 2、全静音”。正确标注时首帧说话人 1 的后验是 $16/17$；漏标后必为 0。第三帧若错误标注说话人 1 活动，其后验从 0 变为 $2/3$，背景从 1 降到 $1/3$。这些是固定权重/密度的 E 步后验，不包含 cACG 参数估计、WPE、SCM、MVDR、音频或 WER；不能作为完整 GSS 的活动错误性能曲线。该对照由[原论文 §3.2 式(5)～(8)](https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf)的门控公式导出，脚本计算与独立分数测试一致。GPU-GSS 的 CuPy/Lhotse 整链在本机尚未运行。
 
 **已执行：教学版 cACGMM—SCM—MVDR 受控链。** [第 8 章 §8.4.5](../../chapters/08_speech-separation.md#sec-8-4-5)把前述固定密度 E 步扩展为[原创 NumPy 活动导引实现](../array_tutorial/gss_teaching.py)：两麦方向向量、给定说话人活动与恒活动背景类进入逐频点八轮迭代，随后用未归一化的混合复谱构造 SCM，再计算目标 MVDR。固定种子、16 kHz、2 s 的无混响双源合成输入及五路试听 WAV 见[独立清单](../gss_audio/MANIFEST.json)；在同一 $[0.2,1.45)$ s 去均值 SI-SDR 评分区，参考麦约 1.28 dB，正确活动约 13.76 dB，目标活动全漏标时回退参考麦。该例不估计活动、不计算 WER，也未运行官方 CuPy/Lhotse 整链；无混响时 WPE 旁路，不能称作官方 GSS 或真实会议性能复现。
 

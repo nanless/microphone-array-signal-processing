@@ -217,8 +217,8 @@ VarArray 把 TAC、Conformer 分离和通道间相位差特征用于几何无关
 | $\lvert B(\theta)\rvert = \left\lvert\frac{\sin(M\psi/2)}{M\sin(\psi/2)}\right\rvert$ | 等权 ULA 的归一化阵因子，$\psi=2\pi d(\sin\theta-\sin\theta_0)/\lambda$ | §5.2 |
 | $\vec{w}_{SD}=\dfrac{\mathbf{\Gamma}^{-1}\vec{a}}{\vec{a}^H\mathbf{\Gamma}^{-1}\vec{a}}$ | 超指向：在无失真约束下最小化弥散噪声输出 | §5.3 |
 | $\vec{w}_{MVDR} = \mathbf{R}_{nn}^{-1}\vec{a}/(\vec{a}^H\mathbf{R}_{nn}^{-1}\vec{a})$ | 最小方差无失真 | §5.4 |
-| LCMV 权重，见式(5-4) | 多约束最小方差解；完整表达式和符号在表后单列 | §5.5 |
-| SDW-MWF 权重，见式(5-5) | 失真可调维纳滤波；完整表达式和符号在表后单列 | §5.5 |
+| LCMV 权重，见式(5-11) | 多约束最小方差解；完整表达式和符号在表后单列 | §5.5 |
+| SDW-MWF 权重，见式(5-12) | 失真可调维纳滤波；完整表达式和符号在表后单列 | §5.5 |
 | $e=d-y$ | GSC 中固定波束输出 $d$ 减去自适应抵消输出 $y$；在阻塞矩阵理想、支路自由度足够且优化收敛时与相应 LCMV 等价 | §5.6 |
 | NLMS 更新式 | AEC 自适应滤波 | §6.1 |
 | $\mathrm{ERLE}=10\log_{10}\dfrac{\sum_n|y(n)|^2}{\sum_n|e_{\mathrm{echo}}(n)|^2}$ | 同一远端单讲窗口内的回声返回损失增强；$y=x*h$ 为消除前回声，$e_{\mathrm{echo}}$ 为消除后回声分量 | §6.1 |
@@ -227,7 +227,7 @@ VarArray 把 TAC、Conformer 分离和通道间相位差特征用于几何无关
 
 表中三个较长的表达式单独列出，以便在网页和 A4 页面上读清上下标。这里沿用对应章节的定义与成立条件，没有重新给公式编号。
 
-**LCMV 权重，见式(5-4)**：$\mathbf R$ 为用于最小化输出功率的协方差矩阵；$\mathbf C$ 的列是各约束导向向量，$\vec f$ 给出对应响应。若所需逆矩阵不存在，须回到 §5.5 检查约束是否独立及正则化条件。
+**LCMV 权重，见式(5-11)**：$\mathbf R$ 为用于最小化输出功率的协方差矩阵；$\mathbf C$ 的列是各约束导向向量，$\vec f$ 是 $\mathbf C^H\vec w=\vec f$ 的约束值。实际输出复响应为 $\vec w^H\mathbf C=\vec f^H$；逐列指定输出复响应 $g_k=\vec w^H\vec c_k$ 时，应输入约束值 $f_k=g_k^*$。实数 $0/1$ 例子无法检出误用复共轭。若所需逆矩阵不存在，须回到 §5.5 检查约束是否独立及正则化条件。
 
 $$
 \vec w_{LCMV}
@@ -235,14 +235,14 @@ $$
 \left(\mathbf C^H\mathbf R^{-1}\mathbf C\right)^{-1}\vec f .
 $$
 
-**SDW-MWF 权重，见式(5-5)**：$\mathbf R_{ss}$、$\mathbf R_{nn}$ 分别是目标与噪声协方差矩阵，$\vec e_r$ 选出参考麦；$\mu>0$ 调节噪声惩罚与目标失真。它不是一般条件下的 MVDR 解，具体目标函数和秩一特例见 §5.5。
+**SDW-MWF 权重，见式(5-12)**：$\mathbf R_{ss}$、$\mathbf R_{nn}$ 分别是目标与噪声协方差矩阵，$\vec e_r$ 选出参考麦；$\mu>0$ 调节噪声惩罚与目标失真。它不是一般条件下的 MVDR 解，具体目标函数和秩一特例见 §5.5。
 
 $$
 \vec w_{SDW}
 =\left(\mathbf R_{ss}+\mu\mathbf R_{nn}\right)^{-1}\mathbf R_{ss}\vec e_r .
 $$
 
-**WPE 预测模型，见式(7-1)**：$X(n,f)$ 是当前帧第 $f$ 个频点的观测；$G^*(k,f)X(n-k,f)$ 用过去帧预测晚期混响，$E(n,f)$ 是保留的早期成分。$\Delta$ 为预测延迟，$K$ 为抽头数；多通道时系数和历史观测改为向量，见 §7.1。
+**WPE 预测模型，见式(7-1)**：沿用第 7 章的局部记号，$f$ 是离散频点索引（不同于第 2 章以 Hz 计的物理频率 $f$）；$X(n,f)$ 是当前帧该频点的观测；$G^*(k,f)X(n-k,f)$ 用过去帧预测晚期混响，$E(n,f)$ 是保留的早期成分。$\Delta$ 为预测延迟，$K$ 为抽头数；多通道时系数和历史观测改为向量，见 §7.1。
 
 $$
 X(n,f)=E(n,f)+\sum_{k=\Delta}^{\Delta+K-1}G^*(k,f)X(n-k,f) .
@@ -573,7 +573,7 @@ $$
 
 **怎样核验音频。** 对[四个插值对照文件](../codes/research/05_exercises_and_audio.md#22-线性分数延迟的幅度失真)，只统计半开区间 $[1600,30400)$ 点，即0.1～1.9 s，避开初始化和淡入淡出。该区间包含500 Hz的900个周期和6000 Hz的10800个周期，可用 $2|\sum_n x[n]e^{-j2\pi fn/f_s}|/N$ 分别测两种频率的幅度。分母参考须是对应半采样或一采样的理想输出。
 
-运行 `.venv/bin/python -m codes.examples.interpolation_exercise`，可同时得到解析值、PCM幅度及其比值；PCM16量化使结果与解析值略有差异。理想输出由已知连续双音在目标时刻求值得到，不是从离散输入恢复出的估计。此题没有房间、噪声或真人语音，不能据音色差异给真实语音质量评分。
+运行 `.venv/bin/python -m codes.chapters.appendix_b.interpolation_exercise`，可同时得到解析值、PCM幅度及其比值；PCM16量化使结果与解析值略有差异。理想输出由已知连续双音在目标时刻求值得到，不是从离散输入恢复出的估计。此题没有房间、噪声或真人语音，不能据音色差异给真实语音质量评分。
 
 选择分数延迟器时应按目标频带检查幅度、相位、延迟和状态，不能只核对插值位置。高阶FIR、全通或带限重采样有不同误差与代价；本题未运行这些替代方案。已实际编译的STK `DelayL` 固定接口对照及其状态重置反例见[工业研究I29](../codes/research/03_industrial_deployment.md#i29stkdelayl)。
 
@@ -583,7 +583,7 @@ $$
 
 左右两组近点 DRR 都为 $5.755$ dB，远点都为 $-2.113$ dB，因此各有 $\Delta\mathrm{DRR}=-2.113-5.755=-7.868$ dB。绝对误差各从 $1.000^\circ$ 变成 $2.000^\circ$，即增加 $1.000^\circ$。两侧来自镜像几何，不能作为四次独立随机重复。种子位置 1 在 $1.099$ m 时误差 $1.244^\circ$；种子位置 2 在 $1.973$ m 时误差反而是 $0.604^\circ$。这否定了“六行误差随距离严格单调增加”，却不能证明增大距离会改善定位，因为方向、墙面相对位置和反射路径也变了。
 
-[附录 B 逐步实验](../codes/examples/appendix_b_experiments.py)的 E13-03 复算两组配对差并列出种子点。若要检验距离本身的效应，需要预定同方向、相同房间与源谱、噪声、重复输入和评分规则，并逐位置记录随声源移动而改变的墙面反射路径；本题没有完成这样的因果实验。
+[附录 B 逐步实验](../codes/chapters/appendix_b/appendix_b_experiments.py)的 E13-03 复算两组配对差并列出种子点。若要检验距离本身的效应，需要预定同方向、相同房间与源谱、噪声、重复输入和评分规则，并逐位置记录随声源移动而改变的墙面反射路径；本题没有完成这样的因果实验。
 
 #### E13-04：四麦 DRR 的中位数能用合并能量代替吗？
 
@@ -607,7 +607,7 @@ $$
 =2+\tfrac12+1=\tfrac72.
 $$
 
-交叉项来自两种输出在同一采样点叠加；不能把总输出能量误写为 $2+1/2$。本题是手算夹具，不是房间 RIR 的重测。运行[逐步实验](../codes/examples/appendix_b_experiments.py)的 E13-04 可复核排序、卷积和交叉项；不从总输出功率比反推已经分离的物理 DRR。
+交叉项来自两种输出在同一采样点叠加；不能把总输出能量误写为 $2+1/2$。本题是手算夹具，不是房间 RIR 的重测。运行[逐步实验](../codes/chapters/appendix_b/appendix_b_experiments.py)的 E13-04 可复核排序、卷积和交叉项；不从总输出功率比反推已经分离的物理 DRR。
 
 #### E13-05：从 T20 的斜率怎样外推 T60？
 
@@ -615,7 +615,7 @@ $$
 
 首尾两点的斜率是 $[-25-(-5)]/(0.25-0.05)=-100\ \mathrm{dB/s}$；中间点也在该直线上，最小二乘斜率相同。从 $-5$ 下降到 $-25$ dB 用了 $T_{20}=0.20$ s；按同一斜率外推，$T_{60}=-60/(-100)=0.60$ s，亦即 $3T_{20}$。若将所有采样时刻平移 $0.10$ s，斜率和外推时长均不变。
 
-这个 $0.60$ s 不表示数据已测到 $-60$ dB，也不保证真实尾声始终线性衰减。有限录音的噪声底、拟合区间不足、非下降斜率或分段斜率变化均需报告；不能在没有有效 $-5$～$-25$ dB 区间时强行给出 $T_{20}$。[逐步实验](../codes/examples/appendix_b_experiments.py)的 E13-05 只复算这三个给定点；房间题仍以固定 RIR 的逐麦拟合为准。
+这个 $0.60$ s 不表示数据已测到 $-60$ dB，也不保证真实尾声始终线性衰减。有限录音的噪声底、拟合区间不足、非下降斜率或分段斜率变化均需报告；不能在没有有效 $-5$～$-25$ dB 区间时强行给出 $T_{20}$。[逐步实验](../codes/chapters/appendix_b/appendix_b_experiments.py)的 E13-05 只复算这三个给定点；房间题仍以固定 RIR 的逐麦拟合为准。
 
 #### E13-06：一对麦、一个频点如何给 SRP 候选方向打分？
 
@@ -629,7 +629,7 @@ $$
 | $0^\circ$ | $0$ | $-\phi$ | $\cos\phi\approx0.933635$ |
 | $+30^\circ$ | $+\tau_{12}$ | $0$ | $1$ |
 
-这个无噪、精确相位且真方向在三点网格中的例子选中 $+30^\circ$。交换麦顺序会使互谱相位与预测时延同时反号；只改一边会得到错误方向。单频点存在周期相位歧义，一个麦对也不能证明三维位置唯一；第 16 题实际使用四麦、300～2000 Hz 多频点与 $-80^\circ$～$+80^\circ$ 网格。[逐步实验](../codes/examples/appendix_b_experiments.py)的 E13-06 复核三个分数。
+这个无噪、精确相位且真方向在三点网格中的例子选中 $+30^\circ$。交换麦顺序会使互谱相位与预测时延同时反号；只改一边会得到错误方向。单频点存在周期相位歧义，一个麦对也不能证明三维位置唯一；第 16 题实际使用四麦、300～2000 Hz 多频点与 $-80^\circ$～$+80^\circ$ 网格。[逐步实验](../codes/chapters/appendix_b/appendix_b_experiments.py)的 E13-06 复核三个分数。
 
 #### E13-07：房间 WAV 的共同增益和峰时延各说明什么？
 
@@ -637,7 +637,7 @@ $$
 
 按清单坐标，固定近左源到第 1 麦的距离约为 $1.011811$ m，单纯几何传播折合 $1.011811\times16000/343\approx47.198$ 样本。实际源与仅直达第 1 麦 PCM 的互相关主峰约在 $+87$ 样本；仿真 RIR 的分数延迟滤波器还引入固定群延迟，不能把这 87 点全部当作声学传播并乘 $c/f_s$ 报成物理距离。这段固定白噪声的相关峰也不是 SRP 的 DOA 输出。
 
-[逐步实验](../codes/examples/appendix_b_experiments.py)的 E13-07 读回格式、逐文件摘要、共同增益和四麦相对源的相关峰，不改写 18 份 WAV。本题不从 WAV 峰值比求第 16 题的 RIR DRR，也不把 PCM 的单个峰当作未经滤波的精确飞行时间。
+[逐步实验](../codes/chapters/appendix_b/appendix_b_experiments.py)的 E13-07 读回格式、逐文件摘要、共同增益和四麦相对源的相关峰，不改写 18 份 WAV。本题不从 WAV 峰值比求第 16 题的 RIR DRR，也不把 PCM 的单个峰当作未经滤波的精确飞行时间。
 
 #### E13-08：看见开源代码就算复现论文了吗？
 
@@ -649,7 +649,7 @@ $$
 | B | 是 | 是 | 否 | 一个入口在记录条件下运行；没有论文性能复现证据 |
 | C | 是 | 是 | 是 | 可报告此次评价与原文的实际差异；只有满足预定判据才称结果得到复现 |
 
-这是证据判定题，并非本书已运行 FlowSep、DiCoW、ArrayDPS 或全部 CHiME 系统。代码、模型权重、训练数据和评测数据的许可分别核查；仓库可读、源码已取得、入口可运行与论文同条件结果各属不同层次。[逐步实验](../codes/examples/appendix_b_experiments.py)的 E13-08 只枚举上述固定字段与允许表述，不联网或执行外部项目。
+这是证据判定题，并非本书已运行 FlowSep、DiCoW、ArrayDPS 或全部 CHiME 系统。代码、模型权重、训练数据和评测数据的许可分别核查；仓库可读、源码已取得、入口可运行与论文同条件结果各属不同层次。[逐步实验](../codes/chapters/appendix_b/appendix_b_experiments.py)的 E13-08 只枚举上述固定字段与允许表述，不联网或执行外部项目。
 
 ### 13.7 复现说明
 
@@ -659,7 +659,7 @@ $$
 .venv/bin/python -m unittest tests.test_codes_engineering -v
 .venv/bin/python -m codes.examples.ch10_engineering_baselines
 .venv/bin/python -m codes.examples.exercises_engineering
-.venv/bin/python -m codes.examples.appendix_b_experiments
+.venv/bin/python -m codes.chapters.appendix_b.appendix_b_experiments
 .venv/bin/python -m codes.examples.tracking_time_exercises
 .venv/bin/python -m codes.examples.engineering_boundary_exercises
 ```

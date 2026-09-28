@@ -242,7 +242,7 @@ $$
 
 本书的[libsamplerate 两段已知时钟实验](../codes/research/03_industrial_deployment.md#i04libsamplerate-的有状态重采样)实际调用锁定的 C 接口：前 5 s 为 +100 ppm，后 5 s 为 +150 ppm。未校正组在 1～9 s 的标记偏移增加 16 帧，按真值更新比例后该段残余增加 0 帧；每次输入消费量及结束排空也逐调用核对。这里的时钟速率是预先给定的，不能把结果写成“已自动估计漂移”，也没有测抗混叠或真实设备。
 
-为把“估计—补偿—残余核查”连起来，本书另有[固定真值的合成时间戳实验](../codes/examples/sro_closed_loop_demo.py)。参考时钟为 2 000 Hz，设备时钟快 150 ppm，首样本晚到 2 ms，并故意删去设备索引 12 000 的一个样本。前 2 s 的 9 个时间戳锚点满足 $t_n=0.002+n/2000.3$ s；相对延迟 $n/2000-t_n$ 的截距是 $-2$ ms，斜率应为 $150\times10^{-6}/(1+150\times10^{-6})$，即一阶报告 149.9775 ppm，反解得到 150 ppm。时间戳间隔还单独识别出一个缺样，不能把这个阶跃并入斜率。
+为把“估计—补偿—残余核查”连起来，本书另有[固定真值的合成时间戳实验](../codes/chapters/ch10/sro_closed_loop_demo.py)。参考时钟为 2 000 Hz，设备时钟快 150 ppm，首样本晚到 2 ms，并故意删去设备索引 12 000 的一个样本。前 2 s 的 9 个时间戳锚点满足 $t_n=0.002+n/2000.3$ s；相对延迟 $n/2000-t_n$ 的截距是 $-2$ ms，斜率应为 $150\times10^{-6}/(1+150\times10^{-6})$，即一阶报告 149.9775 ppm，反解得到 150 ppm。时间戳间隔还单独识别出一个缺样，不能把这个阶跃并入斜率。
 
 校准结束后，示例从参考索引 4 500 开始，以 257 样本块保持插值相位。缺样附近的参考索引 12 002、12 003 被标为无效，而不是跨缺口插值。
 
@@ -349,7 +349,7 @@ Boll 的[原始谱减论文](https://doi.org/10.1109/TASSP.1979.1163209 "citatio
 
 两帧原相位均为零；若原系数改成 $3\mathrm j$ 和 $1\mathrm j$，输出相应为 $\sqrt5\mathrm j$ 和 $0.2\mathrm j$。不能把功率相减误写成幅度 $3-2=1$。这个手算只证明式(10-8)的数值约定；若噪声统计随时间改变或噪声段混入目标，$D$ 就会失配。
 
-运行[谱减练习代码](../codes/examples/spectral_subtraction_demo.py)可复算同一频点的两个带噪帧；另运行[统一音频生成器](../codes/examples/generate_audio_samples.py)可重建[五个试听文件及参数清单](../codes/audio/MANIFEST.json)：合成谐波目标、独立高斯噪声、带噪输入、$\beta=0.04$ 输出和 $\beta=0$ 输出。16 kHz、2 s 输入的前 0.4 s 仅有噪声，47 个完整落在该段的 STFT 帧估计 $D_f$；两种处理使用同一输入、同一固定噪声估计和同组共同导出增益。
+运行[谱减练习代码](../codes/chapters/ch10/spectral_subtraction_demo.py)可复算同一频点的两个带噪帧；另运行[统一音频生成器](../codes/examples/generate_audio_samples.py)可重建[五个试听文件及参数清单](../codes/audio/MANIFEST.json)：合成谐波目标、独立高斯噪声、带噪输入、$\beta=0.04$ 输出和 $\beta=0$ 输出。16 kHz、2 s 输入的前 0.4 s 仅有噪声，47 个完整落在该段的 STFT 帧估计 $D_f$；两种处理使用同一输入、同一固定噪声估计和同组共同导出增益。
 
 先降低播放音量，再比较[带噪输入](../codes/audio/spectral_noisy.wav)、[有地板输出](../codes/audio/spectral_floor04.wav)与[零地板输出](../codes/audio/spectral_floor00.wav)。离散随机残余频点可能听成短促的调性噪声，但这组数学合成信号没有经过人耳听测，不能据此报告语音可懂度、MOS 或产品降噪性能。
 
@@ -829,7 +829,7 @@ PipeWire 的 `capture/source/sink/playback` 依次是麦克风采集、应用读
 .venv/bin/python -m codes.examples.exercises_engineering
 ```
 
-E10-13 运行独立的 [`spectral_subtraction_demo.py`](../codes/examples/spectral_subtraction_demo.py)；E10-15 使用 [`tracking_time_exercises.py`](../codes/examples/tracking_time_exercises.py)，E10-16～17 使用 [`engineering_boundary_exercises.py`](../codes/examples/engineering_boundary_exercises.py)。各程序按稳定编号输出中间量和结果；它们不访问声卡，也不代表硬件性能测量。E10-18～27 使用 [`chapter10_experiments.py`](../codes/examples/chapter10_experiments.py)，运行方式为 `.venv/bin/python -m codes.examples.chapter10_experiments`。
+E10-13 运行独立的 [`spectral_subtraction_demo.py`](../codes/chapters/ch10/spectral_subtraction_demo.py)；E10-15 使用 [`tracking_time_exercises.py`](../codes/examples/tracking_time_exercises.py)，E10-16～17 使用 [`engineering_boundary_exercises.py`](../codes/examples/engineering_boundary_exercises.py)。各程序按稳定编号输出中间量和结果；它们不访问声卡，也不代表硬件性能测量。E10-18～27 使用 [`chapter10_experiments.py`](../codes/chapters/ch10/chapter10_experiments.py)，运行方式为 `.venv/bin/python -m codes.chapters.ch10.chapter10_experiments`。
 
 #### E10-01：把初始错位与 SRO 分开
 
@@ -1171,7 +1171,7 @@ $$
 
 ![图45 整块峰值 AGC 的分块、增益与输出对照](../figures/fig45_agc_blocks.png)
 
-图 45(a) 以四个正式 WAV 的 PCM 读回值计算整段 2 s 音频的 10 ms RMS 曲线，各值置于该测量窗中心，显示输入与三条实际运行支路的电平变化；(b) 把增益阶梯放在各块结束、控制量可用的时刻。上图的样本时间与下图的可用时间含义不同，不能把离线画回原样本时轴的结果称作零等待；图中也没有通过时间平移模拟实际播放。完整逐块状态和浮点/PCM 分窗结果见[音频参数清单](../codes/audio/MANIFEST.json)与[练习入口](../codes/examples/chapter10_experiments.py)。
+图 45(a) 以四个正式 WAV 的 PCM 读回值计算整段 2 s 音频的 10 ms RMS 曲线，各值置于该测量窗中心，显示输入与三条实际运行支路的电平变化；(b) 把增益阶梯放在各块结束、控制量可用的时刻。上图的样本时间与下图的可用时间含义不同，不能把离线画回原样本时轴的结果称作零等待；图中也没有通过时间平移模拟实际播放。完整逐块状态和浮点/PCM 分窗结果见[音频参数清单](../codes/audio/MANIFEST.json)与[练习入口](../codes/chapters/ch10/chapter10_experiments.py)。
 
 先调低播放音量，再比较以下文件：
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 6 章 · 声学回声消除（AEC） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="8a1e501d775d"><style>
+<meta name="source-digest" content="5517357657f5"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -605,7 +605,7 @@ J_m&=\tfrac12\|e_m\|_2^2,\\
 <p><strong>算例 6-3 的自适应补充：两块更新怎样处理非法抽头。</strong> 另取 $N=P=2$、$L=4$、$\mu=0.5$、$\delta=1$，初始权重和负时间参考全零；参考 $x=[1,0,0,0]$、麦克风观测 $d=[1,0,2,0]$。这是为核对式(6-5)设计的无量纲输入，不是声学传播测量；第二块的 $d=[2,0]$ 也不被解释成固定物理回声路径的输出。</p>
 <p>第 0 块的重叠保存输入为 $[0,0,1,0]$，其四点 FFT 为 $X_0=[1,-1,1,-1]$。旧权重全零，有效误差为 $[1,0]$，所以 $E_0=X_0$；每频点分母为 $|X_0|^2+\delta=2$。更新第一分区的四个频点后再 IFFT，时域候选为 $[0.25,0,0,0]$；第二分区此时没有历史参考，仍为零。</p>
 <p>第 1 块新参考全零，但重叠保存输入是 $[1,0,0,0]$，故 $X_1=[1,1,1,1]$，历史 $X_0$ 仍须保留。先验预测为零，有效误差 $[2,0]$ 对应 $E_1=[2,-2,2,-2]$；每频点分母是 $|X_1|^2+|X_0|^2+\delta=3$。式(6-5)使第一分区的候选时域系数成为 $[0.25,0,1/3,0]$，第二分区成为 $[1/3,0,0,0]$。</p>
-<p>第一分区的第 3 个位置是循环相关带来的<strong>非法抽头</strong>，逐分区梯度约束把各分区后 $N$ 点清零，最终 $L$ 抽头路径为 $[0.25,0\mid1/3,0]$。如果不做约束，候选中的 $1/3$ 会保留，不能再把这个频域状态直接称为四抽头 FIR。可运行版本和独立手算测试见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_partitioned_demo.py">分区自适应实验</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_partitioned.py">测试</a>；它只实现式(6-5)的瞬时功率教学变体，不复现 SpeexDSP 的 AUMDF 控制。</p>
+<p>第一分区的第 3 个位置是循环相关带来的<strong>非法抽头</strong>，逐分区梯度约束把各分区后 $N$ 点清零，最终 $L$ 抽头路径为 $[0.25,0\mid1/3,0]$。如果不做约束，候选中的 $1/3$ 会保留，不能再把这个频域状态直接称为四抽头 FIR。可运行版本和独立手算测试见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/aec_partitioned_demo.py">分区自适应实验</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_partitioned.py">测试</a>；它只实现式(6-5)的瞬时功率教学变体，不复现 SpeexDSP 的 AUMDF 控制。</p>
 <p>这个非法位置的索引是第一分区内的滞后 2，而第二分区的合法首抽头也对应整条路径的滞后 2；若都保留，它们对有效输出可以产生重叠表示。投影要维持“每一分区只含前 $N$ 个时域抽头”这一清楚的 FIR 解释。注意这里说的是<strong>梯度约束/权重投影</strong>；预测时舍弃循环卷积前半块是另一件事，两者都做并不重复。</p>
 <h3 id="sec-u-b4bfa3ef6a">算例 6-4：逐频归一化为什么不等于时域 NLMS</h3>
 <p>取更小的单分区问题：$N=2$、$P=1$、初值全零、$\mu=\delta=1$，当前重叠保存输入 $u=[0,0,1,2]$，有效麦克风块 $d=[1,0]$。旧权重为零，所以有效先验误差也是 $e=[1,0]$。按 NumPy 所用的正变换负指数、逆变换除以 4 的约定，四点谱和候选更新逐项为：</p>
@@ -656,7 +656,7 @@ J_m&=\tfrac12\|e_m\|_2^2,\\
 <p>对最后一列作四点 IFFT，候选时域系数为 $[1/30,1/30,-2/15,11/30]$；将后两点清零后，合法的两抽头成为 $[1/30,1/30]$。若先不逐频除以不同的分母，$\operatorname{IFFT}(X^*E)=[1,0,0,2]$，合法梯度是 $[1,0]$；无论再除以哪一个<strong>共同标量</strong>，第二个合法抽头仍为零。</p>
 <p>逐频功率预条件改变了更新方向，时域投影又把频点耦合起来。因此本书 PBFDAF 不是逐样本时域 NLMS 的“完全相同结果、只是更快”，也不一般等于单一标量归一化的时域块 NLMS。这个反例只比较一次无量纲更新，不给出哪种方法收敛更快的证据。</p>
 <h3 id="sec-u-c875bee6d3">算例 6-5：预测残差很小，不一定辨识了路径</h3>
-<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_partitioned_demo.py">固定种子实验</a>以独立的直接时域卷积生成无噪声观测，真实九抽头路径为 $[0,0,0.7,-0.2,0.08,0,0,0,0.05]$；教学 PBFDAF 取 $N=16$、$L=9$、$\mu=0.3$、$\delta=0.05$。一组训练参考是独立标准正态宽带样本，另一组是每 8 点一周期的纯音。两组各训练 4096 点，再冻结权重，用<strong>同一段</strong> 1024 点独立宽带参考留出测试。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/aec_partitioned_demo.py">固定种子实验</a>以独立的直接时域卷积生成无噪声观测，真实九抽头路径为 $[0,0,0.7,-0.2,0.08,0,0,0,0.05]$；教学 PBFDAF 取 $N=16$、$L=9$、$\mu=0.3$、$\delta=0.05$。一组训练参考是独立标准正态宽带样本，另一组是每 8 点一周期的纯音。两组各训练 4096 点，再冻结权重，用<strong>同一段</strong> 1024 点独立宽带参考留出测试。</p>
 <p>随机种子为 2094；两条件不是随机重复试验，因此下表只描述这一组样本，不附置信区间。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
@@ -727,9 +727,9 @@ W_{i,j,k}^{+}&=W_{i,j,k}+\Delta W_{i,j,k}.
 <p>冻结某块时，只跳过权重更新，仍把该块参考推进历史；这里的冻结标记由调用方提供，<strong>没有</strong>实现双讲检测。两点成块必须等第二个样本到来，因果流至少有一个采样的成块等待；代码要求调用方对齐播放与麦克风时间轴。</p>
 <p><strong>一步手算。</strong> 仍用 $x=[1,1\mid0,0]$、$d=[0,1\mid1,0]$，令 $K=2$、$W=0$、$\mu=1$、$\varepsilon=1$。第 0 块只有 $U_{0,0}=\sqrt2$ 非零，$\vec v_0=[1/\sqrt2,-1/\sqrt2]^\top$；先验预测为零，分母是 $1+(\sqrt2)^2=3$。于是 $W_{0,0,0}=1/3$、$W_{1,0,0}=-1/3$，其余仍零。</p>
 <p>第 1 块当前参考为零，但历史 $U_{0,1}=\sqrt2$：先验预测仍为零，更新后 $W_{0,0,1}=W_{1,0,1}=1/3$。</p>
-<p>高输出带确实从<strong>低输入带</strong>学到系数；这些权重是两块数据后的状态，不能把当前块更新前的残差误写为训练后的低误差。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_crossband_demo.py">完整可运行输出</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_crossband.py">独立测试</a>复算此例。</p>
+<p>高输出带确实从<strong>低输入带</strong>学到系数；这些权重是两块数据后的状态，不能把当前块更新前的残差误写为训练后的低误差。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/aec_crossband_demo.py">完整可运行输出</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_crossband.py">独立测试</a>复算此例。</p>
 <p><strong>结构反例与留出验证。</strong> 用随机种子 20260923 生成 2000 个独立标准正态块值，每值在时域重复两次；物理路径固定为一拍延迟，$h=[0,1]$。前 1500 块训练，后 500 块冻结权重作留出测试；两模型同取 $K=2$、$\mu=0.5$、$\varepsilon=0.05$。</p>
-<p>量化前 float64 值上，真实回声均方约 $0.989129$，全交叉残差均方在该构造中为 $0$（浮点输出），对角残差均方约 $0.489674$。重复样本对使输入高带恒零，对角模型无法预测由块边界延迟产生的高带；这验证<strong>该输入和该路径的表示能力</strong>，不是一般语音收敛速度、设备 ERLE 或双讲质量排名。训练和留出共享同一条固定路径与参考序列，留出块的权重不再更新，参数、随机种子和计算代码都在<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_crossband_demo.py">演示</a>中。</p>
+<p>量化前 float64 值上，真实回声均方约 $0.989129$，全交叉残差均方在该构造中为 $0$（浮点输出），对角残差均方约 $0.489674$。重复样本对使输入高带恒零，对角模型无法预测由块边界延迟产生的高带；这验证<strong>该输入和该路径的表示能力</strong>，不是一般语音收敛速度、设备 ERLE 或双讲质量排名。训练和留出共享同一条固定路径与参考序列，留出块的权重不再更新，参数、随机种子和计算代码都在<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/aec_crossband_demo.py">演示</a>中。</p>
 <p><strong>代价与边界。</strong> 全交叉状态有 $4K$ 个实系数，时域物理路径只有 $L$ 个；除结构约束外，额外自由度可能在有限、相关或噪声数据上难以辨识。</p>
 <p>四条子带路径每块约有 $4K$ 次系数乘积，摊到原采样约 $2K$ 次，未计分析、合成与归一化；不能因为采样率减半就推断一定比 $L$ 抽头时域滤波省算力。对角状态仅有 $2K$ 个系数，却可能漏掉必要交叉项。</p>
 <p>两点 Haar 没有工业原型滤波器组的频率选择性；真实设计还需检查抽取混叠、过采样、滤波器组延迟、路径变化、双讲冻结和异步采样。</p>
@@ -763,7 +763,7 @@ g_l&=\frac{1-\kappa}{2L}
 <p>当 $\kappa=-1$ 时，两项均为 $1/2$，分母为 $0.5+0.5+0.25=1.25$，更新量为 $0.2[0.5,0.5]/1.25=[0.08,0.08]$。对照 NLMS，令其正则项为 $L\delta=2\times0.25=0.5$，式(6-3)的更新正好也是 $0.2[1,1]/(2+0.5)=[0.08,0.08]$。因此“$\kappa=-1$ 退化为 NLMS”需要连同正则项尺度一起说；$\varepsilon_g$ 较大时也不能暗中把 $g$ 强行归一成和为 1。</p>
 <p><img alt="图38 四类方法的状态与更新控制" src="../figures/fig38_aec_four_methods.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图38(a)取前述<strong>忽略正则项</strong>的两抽头例，显示 $\kappa=-1,0,1$ 时的 IPNLMS 份额；不是紧邻的 $\varepsilon_g=2$ 例。图38(b)画出 RLS 手算中逆相关矩阵两步的对角与非对角元素；图38(c)在 $X=1$ 下单独改变已知的 $P^-$ 或 $\Psi$，说明 Kalman 增益的条件依赖。三幅图没有共同声学输入，不是性能排名，不能由柱高判断哪种方法抵消更好。</p>
-<p><strong>持续更新的可运行边界。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/aec_ipnlms.py">IPNLMS 状态代码</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_ipnlms_subband_demo.py">子带/IPNLMS 演示</a>把先验残差、抽头状态和冻结掩码分开返回。稀疏路径、稠密路径、路径突变分别需要独立评价；某一次更新把强抽头推得更远，只能说明当前输入方向上的变化，不能替代多个时刻的系数误差或远端单讲残差曲线。</p>
+<p><strong>持续更新的可运行边界。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/aec_ipnlms.py">IPNLMS 状态代码</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/aec_ipnlms_subband_demo.py">子带/IPNLMS 演示</a>把先验残差、抽头状态和冻结掩码分开返回。稀疏路径、稠密路径、路径突变分别需要独立评价；某一次更新把强抽头推得更远，只能说明当前输入方向上的变化，不能替代多个时刻的系数误差或远端单讲残差曲线。</p>
 <span id="sec-10" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-6-2-5">6.2.5 RLS：用参考相关矩阵改变更新方向</h3>
 <p><strong>递归最小二乘（Recursive Least Squares，RLS）为什么与 NLMS 不同。</strong> NLMS 在当前误差的梯度方向走一步；RLS 则把先前参考与麦克风观测形成的相关矩阵压缩成持续更新的状态，求指数加权最小二乘解。</p>
 <p>以下先限于实数、单播放参考、单麦克风、长度 $L$ 的因果 FIR。$\vec x_n=[x[n],x[n-1],\ldots,x[n-L+1]]^\top$ 已与麦克风 $d_n$ 对齐，预测是 $\vec w^\top\vec x_n$。近端语音若包含在 $d_n$ 中，会进入拟合目标，RLS 本身并不知道哪一部分是回声。</p>
@@ -797,7 +797,7 @@ P_n&=\lambda^{-1}(P_{n-1}-K_nq_n^\top).
 <p><strong>两抽头锚点手算。</strong> 取 $L=2$、$\lambda=1/2$、$\delta=1$、$\vec w_{-1}=0$，故 $P_{-1}=I$。顺序输入 $\vec x_0=[1,0]^\top,d_0=1$ 与 $\vec x_1=[1,1]^\top,d_1=2$；第二个回归向量可由连续参考 $x[0]=x[1]=1$ 产生。这是无量纲算术例，不是实录回声或收敛性能结果。</p>
 <p>第 0 步有 $q_0=[1,0]^\top$、分母 $1/2+1=3/2$、$K_0=[2/3,0]^\top$。先验预测为零、$e_0^-=1$，所以 $\vec w_0=[2/3,0]^\top$、$P_0=\operatorname{diag}(2/3,2)$。第二个对角元从 1 变为 2，是未受参考激励方向的旧信息被遗忘，不表示那里已量到新的路径。</p>
 <p>第 1 步 $q_1=P_0\vec x_1=[2/3,2]^\top$，分母 $1/2+2/3+2=19/6$，因此 $K_1=[4/19,12/19]^\top$。先验预测 $2/3$、残差 $4/3$，得到 $\vec w_1=[18/19,16/19]^\top$ 与 $P_1=\bigl[\begin{smallmatrix}20&-16\\-16&28\end{smallmatrix}\bigr]/19$；中途保持分数，最后才按需舍入。</p>
-<p>再走一条<strong>独立的批量路线</strong>：式(6-12)在第 1 步给 $R_1=\bigl[\begin{smallmatrix}7/4&1\\1&5/4\end{smallmatrix}\bigr]$、$\vec p_1=[5/2,2]^\top$。直接解 $R_1\vec w=\vec p_1$ 得 $[18/19,16/19]^\top$，其逆也等于上段的 $P_1$。这验证两步递推与指定的<strong>含初始约束</strong>目标一致；换遗忘因子、删去初始项、加入近端语音或让参考秩亏，不能沿用这两个系数。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_rls_demo.py">可运行逐样本示例</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_rls.py">批量独立测试</a>复算此例。</p>
+<p>再走一条<strong>独立的批量路线</strong>：式(6-12)在第 1 步给 $R_1=\bigl[\begin{smallmatrix}7/4&1\\1&5/4\end{smallmatrix}\bigr]$、$\vec p_1=[5/2,2]^\top$。直接解 $R_1\vec w=\vec p_1$ 得 $[18/19,16/19]^\top$，其逆也等于上段的 $P_1$。这验证两步递推与指定的<strong>含初始约束</strong>目标一致；换遗忘因子、删去初始项、加入近端语音或让参考秩亏，不能沿用这两个系数。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/aec_rls_demo.py">可运行逐样本示例</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_rls.py">批量独立测试</a>复算此例。</p>
 <h3 id="sec-u-b07bac3f14">RLS 的遗忘、双讲与工程边界</h3>
 <p>只考虑已接纳的 $J$ 个观测，不把初始正则项当成额外样本。由新到旧的权重为 $a_j=\lambda^j$，$j=0,\ldots,J-1$。权重总量 $A_J$ 与权重集中程度所对应的有效样本数 $N_{\mathrm{eff},J}$ 为</p>
 <p>$$\begin{aligned}
@@ -848,7 +848,7 @@ P_m&=(1-0.4286\times2)0.6\approx0.0857\text{。}
 \end{aligned}$$</p>
 <p>用更新后的系数回看该观测，残差为 $1.4-2\times0.6286\approx0.1429$；它是后验检查，不应代替式(6-17)中用于更新的先验残差。若 $\Psi_m\to\infty$，则 $K_m\to0$，路径几乎不更新；若保持 $P_m^->0$、$X_m\ne0$，再理想化地令 $\Psi_m\to0$，标量模型会令 $K_m\to1/X_m$、$P_m\to0$。实际系统存在模型失配和数值误差，需要为方差设置正下限，不能把 $P_m=0$ 当作永久确定。</p>
 <p>若一开始便有 $P_m^-=0$，则对每个正的 $\Psi_m$ 都有 $K_m=0$；错误初值不会被观测修正。过程方差也为零时，这种状态可一直延续，见 E06-29。</p>
-<p>不提前舍入时，上例的精确分数是 $P^-=3/5$、$E^-=1$、创新方差 $S=14/5$、$K=3/7$、$W=22/35$、$P=3/35$、后验残差 $1/7$。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_kalman_scalar_demo.py">标量递推代码</a>逐项输出这些量，并用相同 $X$ 与先验把 $\Psi$ 从 $0.4$ 改为 $4$：增益由 $3/7$ 降到 $3/16$，后验权重从 $22/35$ 变为 $31/80$。这只验证<strong>假定观测方差已知</strong>时的代数响应，不是程序成功检测到了双讲。</p>
+<p>不提前舍入时，上例的精确分数是 $P^-=3/5$、$E^-=1$、创新方差 $S=14/5$、$K=3/7$、$W=22/35$、$P=3/35$、后验残差 $1/7$。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/aec_kalman_scalar_demo.py">标量递推代码</a>逐项输出这些量，并用相同 $X$ 与先验把 $\Psi$ 从 $0.4$ 改为 $4$：增益由 $3/7$ 降到 $3/16$，后验权重从 $22/35$ 变为 $31/80$。这只验证<strong>假定观测方差已知</strong>时的代数响应，不是程序成功检测到了双讲。</p>
 <p>另取复数 $X=i$、$P^-=\Psi=1$，式(6-17)给 $K=-i/2$；若漏掉共轭，会得到错误的 $+i/2$。上述三项有<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_kalman_scalar_demo.py">独立分数与边界测试</a>，仍不能代替完整 FDKF 或 PBFDKF 的协方差、分区和声学验证。</p>
 <p><strong>矩阵状态说明标量近似舍掉了什么。</strong> 对实数路径状态，令 $A$ 是 $L\times L$ 转移矩阵、$Q$ 是过程协方差，观测仍为标量 $d_n$。先预测，再用先验创新更新：</p>
 <p>$$\begin{aligned}
@@ -863,7 +863,7 @@ P_n&=B_nP_n^-B_n^\top+K_n\Psi K_n^\top.
 \end{aligned}\tag{6-18}$$</p>
 <p>这里 $B_n$ 只是简写的 $L\times L$ 更新矩阵。最后一行是 Joseph 协方差形式；当增益精确且计算无舍入时，它与简写的 $(I-K_n\vec x_n^\top)P_n^-$ 等价。近似增益或有限精度下，Joseph 形式更明确保留非负协方差结构；这不保证所有错误的 $Q$、$\Psi$ 或增益都能被修复。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/aec_kalman_matrix.py">矩阵教学代码</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_kalman_matrix.py">独立测试</a>仅实现短实数 FIR，不含 FFT、分区约束或统计量在线估计。</p>
 <p><strong>两维协方差手算。</strong> 取 $A=I$、$Q=0$、$\Psi=1$、$\hat{\vec h}^-=0$、$P^-=\operatorname{diag}(1,4)$、$\vec x=[1,1]^\top$、$d=3$。式(6-18)给 $S=1+4+1=6$、$K=[1/6,2/3]^\top$、$\hat{\vec h}=[1/2,2]^\top$，Joseph 更新得到 $P=\bigl[\begin{smallmatrix}5/6&-2/3\\-2/3&4/3\end{smallmatrix}\bigr]$。虽然先验是对角矩阵，同一次观测同时约束两个抽头，后验立刻出现非零交叉协方差。</p>
-<p>下一次若参考回归向量是 $[-1,1]^\top$、其余预测条件不变，完整创新方差为 $[-1,1]P[-1,1]^\top+1=9/2$；把 $P$ 的非对角项直接丢掉则只得 $19/6$。这证明<strong>对角近似会改变下一次增益的分母</strong>，不证明完整矩阵算法在任意录音上必优。数例与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_kalman_matrix_demo.py">逐步输出</a>采用同一抽头顺序和无量纲值；实际频域分区还需有效区投影、复数共轭和频点/分区结构。</p>
+<p>下一次若参考回归向量是 $[-1,1]^\top$、其余预测条件不变，完整创新方差为 $[-1,1]P[-1,1]^\top+1=9/2$；把 $P$ 的非对角项直接丢掉则只得 $19/6$。这证明<strong>对角近似会改变下一次增益的分母</strong>，不证明完整矩阵算法在任意录音上必优。数例与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/aec_kalman_matrix_demo.py">逐步输出</a>采用同一抽头顺序和无量纲值；实际频域分区还需有效区投影、复数共轭和频点/分区结构。</p>
 <p><strong>RLS 与 Kalman 何时同式。</strong> 在式(6-18)取静态路径 $A=I$、$\Psi=1$，并人为令每次预测协方差 $P_n^-=P_{n-1}/\lambda$，则 $K_n=P_{n-1}\vec x_n/(\lambda+\vec x_n^\top P_{n-1}\vec x_n)$，恰是式(6-14)的增益。这相当于每次使用依赖当前后验协方差的 $Q_n=(\lambda^{-1}-1)P_{n-1}$；$\lambda=1$ 时 $Q_n=0$。</p>
 <p>这是本书在指定归一化下的代数对应，不表示任意固定 $Q$ 的 Kalman、FDKF 或 PBFDKF 只是 RLS 改名；两者还可能采用不同的观测模型、变换约束和双讲控制。</p>
 <p><strong>分区块频域卡尔曼滤波</strong>（Partitioned-Block Frequency-Domain Kalman Filter，PBFDKF）把长回声路径分区，状态和协方差还要考虑分区及多播放通道。Kuech、Mabande 与 Enzner 的 ICASSP 2014 状态空间架构是分区方法的原始依据之一；不能把本书单频点、单状态演示直接当作该完整算法。<a href="https://doi.org/10.1109/ICASSP.2014.6853806" title="citation">原论文 DOI 10.1109/ICASSP.2014.6853806</a>。</p>
@@ -886,7 +886,7 @@ K_m&=P_m^-H_m^HS_m^{-1},\\
 <p><strong>已知真值的双讲反例。</strong> 先取一个实数抽头，$P^-=1$、$w^-=0$、$x=1$、观测方差 $\Psi=0.1$，且首个观测 $d=1$。卡尔曼增益为 $1/(1+0.1)=10/11$，后验 $w=10/11$、$P=1/11$。下一次真实路径仍是 1，但加入近端成分 2，使 $d=3$；这时先验残差是 $3-10/11=23/11$，其中大部分并非路径突变。</p>
 <p>若仍误设 $\Psi=0.1$，第二次增益为 $(1/11)/(1/11+1/10)=10/21$，新权重为 $10/11+(10/21)(23/11)=440/231\approx1.905$。若<strong>已知</strong>双讲而把 $\Psi$ 调成 10，增益变为 $1/111$，新权重为 $10/11+23/1221\approx0.928$；若理想冻结观测更新，权重保持 $10/11\approx0.909$。</p>
 <p>三种结果只说明观测方差和真值控制改变了更新；它们都没有提供从实际麦克风信号自动识别双讲的方法。路径若恰在双讲时突变，冻结也会延迟跟踪。</p>
-<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_rls_kalman_comparison.py">同输入 RLS/Kalman 受控实验</a>把 512 个无量纲样本分成远端单讲、已知近端注入、远端恢复与路径突变四段。固定种子为 20260923，使用两抽头、名义 8 kHz；同一播放参考和真实路径供各算法使用。实验分别报告<strong>先验回声估计与已知回声真值的均方误差</strong>、后验路径均方根误差，以及 Kalman 增益范数。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/aec_rls_kalman_comparison.py">同输入 RLS/Kalman 受控实验</a>把 512 个无量纲样本分成远端单讲、已知近端注入、远端恢复与路径突变四段。固定种子为 20260923，使用两抽头、名义 8 kHz；同一播放参考和真实路径供各算法使用。实验分别报告<strong>先验回声估计与已知回声真值的均方误差</strong>、后验路径均方根误差，以及 Kalman 增益范数。</p>
 <p>双讲段中，固定低 $\Psi$ 的 Kalman 回声估计误差均方约为 0.1341；在<strong>真值已知</strong>的区间提高 $\Psi$ 后约为 $1.57\times10^{-5}$，理想冻结约为 $9.83\times10^{-6}$。</p>
 <p>这些是本书一组短合成序列的算术输出，不是双讲 ERLE、自动检测成绩、自然语音质量或 RLS/FDKF 的一般性能排名。RLS 的遗忘因子与 Kalman 的 $Q,\Psi$ 描述不同先验，也不能把参数数值设成相同就称为“公平调参”。</p>
 <p><a href="research/05_exercises_and_audio.html#15-同源短路径-aec-的线性残差">另一组合成音频</a>用 16 kHz、四抽头已知路径和同一麦克风输入导出 NLMS、IPNLMS、RLS、短实数矩阵 Kalman 的先验线性残差；中途人为改变路径，另存真值回声与背景噪声。音频只对应这四种时域教学实现，不含完整子带 AEC、FDKF/PBFDKF、真实语音或实机结果。四法的参数并非等效调优，表格中的单次均方误差也不是普适优劣顺序。</p>
@@ -1076,7 +1076,7 @@ P_d&=\sum_b\tilde d_b^2,\\
 c_{xd}&=\frac{|\sum_b\tilde x_b\tilde d_b|}{\sqrt{P_xP_d}}.
 \end{aligned}\tag{6-22}$$</p>
 <p>只有 $P_xP_d>0$ 才形成这个比值；否则记录为无相关证据并先走活动分支。负极性的纯比例回声也有 $c_{xd}=1$。该式是可检查的单帧标量基线，不是 Benesty 等原论文完整参考向量及协方差归一化检测器。</p>
-<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_dtd_demo.py">可复算脚本</a>以 16 kHz、种子 20260924 生成两条独立高斯波形，已知回声路径为 $[0.6,0.25]$；五个连续阶段各含 20 帧，依次为静音、远端单讲、近端单讲、双讲、远端恢复。参考和近端波形幅度系数分别为 0.3 和 0.22，参考活动门限为帧内去均值均方根 0.02，绝对互相关门限为 0.85。这些门限只为此确定性教学输入给定，没有在独立录音上标定。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/aec_dtd_demo.py">可复算脚本</a>以 16 kHz、种子 20260924 生成两条独立高斯波形，已知回声路径为 $[0.6,0.25]$；五个连续阶段各含 20 帧，依次为静音、远端单讲、近端单讲、双讲、远端恢复。参考和近端波形幅度系数分别为 0.3 和 0.22，参考活动门限为帧内去均值均方根 0.02，绝对互相关门限为 0.85。这些门限只为此确定性教学输入给定，没有在独立录音上标定。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
 <tr>
@@ -1944,25 +1944,25 @@ e&=d-\hat y.
 <p>信号、初始抽头和正则项必须有限，抽头长度必须是正整数；掩码必须为布尔数组，不能用数值或字符串隐式转换。非法输入会明确报错，不继续产生 NaN 残差。</p>
 <p><strong>跨块续算的状态不能只存抽头。</strong> 在线性卷积中，块首样本仍需要前一块末尾的 $L-1$ 个参考样本。教学类 <code>NLMSState</code> 同时保留当前抽头和这段历史，<code>process()</code> 接受任意长度的连续块；<code>reset()</code> 同时恢复构造时的抽头与历史。状态的 <code>history</code> 按旧到新存放，参与点积的回归向量则按当前到过去排列。</p>
 <p>它仍不检测双讲、不搜索参考延迟，也不提供实时线程安全保证。</p>
-<p>可运行的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_streaming_demo.py">流式边界实验</a>用 $h=[0.5,0.25]$、$x=[1,2,3,4]$ 和 $\mu=0$ 验证：完整或在第 2 个样本后切块，已知真值抽头给出的残差都是 $[0,0,0,0]$；若仅续接抽头而把参考历史归零，第二块的首个残差变成 $0.5$。这不是算法收敛失败，而是上一块的 $x[1]=2$ 未参与当前卷积。运行：</p>
-<pre><code class="language-bash">.venv/bin/python -m codes.examples.aec_streaming_demo
+<p>可运行的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/aec_streaming_demo.py">流式边界实验</a>用 $h=[0.5,0.25]$、$x=[1,2,3,4]$ 和 $\mu=0$ 验证：完整或在第 2 个样本后切块，已知真值抽头给出的残差都是 $[0,0,0,0]$；若仅续接抽头而把参考历史归零，第二块的首个残差变成 $0.5$。这不是算法收敛失败，而是上一块的 $x[1]=2$ 未参与当前卷积。运行：</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch06.aec_streaming_demo
 </code></pre>
-<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_algorithm_minicases.py">AEC 算法小实验</a>把四个易误解的边界写成可运行、可与手算逐项比对的 JSON：$N=2,P=2$ 的分区卷积有效半块、两抽头 IPNLMS 的一步权重分配、Geigel 多径误判与零参考门控，以及负极性路径使最大正相关峰选错延迟。运行：</p>
-<pre><code class="language-bash">.venv/bin/python -m codes.examples.aec_algorithm_minicases
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/aec_algorithm_minicases.py">AEC 算法小实验</a>把四个易误解的边界写成可运行、可与手算逐项比对的 JSON：$N=2,P=2$ 的分区卷积有效半块、两抽头 IPNLMS 的一步权重分配、Geigel 多径误判与零参考门控，以及负极性路径使最大正相关峰选错延迟。运行：</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch06.aec_algorithm_minicases
 </code></pre>
 <p>这些输出是无量纲固定算例，不是完整自适应 PBFDAF、真实录音实验或工业性能测试；相应独立测试在 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_minicases.py"><code>test_codes_aec_minicases.py</code></a>。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/aec_partitioned.py">分区自适应教学实现</a>另把式(6-5)接成有状态的预测—有效区残差—逐频归一化更新—可选时域梯度约束。它只接收完整的 $N$ 样本块，<code>freeze</code> 是调用方给定的每块布尔控制；没有双讲检测、延迟搜索、残余抑制或实时设备接口。运行下面的命令可同时输出两块手算和算例 6-5 的固定种子训练/冻结留出结果：</p>
-<pre><code class="language-bash">.venv/bin/python -m codes.examples.aec_partitioned_demo
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch06.aec_partitioned_demo
 </code></pre>
 <p>手算部分同时保留<strong>更新前</strong>回声预测与残差、约束前候选系数和约束后路径，便于核对非法抽头；留出部分报告两种训练参考下的残差均方和路径误差。测试还检查已知 FIR 的直接时域卷积、短末分区补零、跨调用状态、冻结更新与算例 6-4 的四点 DFT；这不是在真实语音上测出的 ERLE、延迟或收敛速度。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_partitioned.py">教学实现测试</a>与<a href="https://gitlab.xiph.org/xiph/speexdsp/-/blob/8e29a256ef0235ebbe7fcb8417b5ac7731eb8307/libspeexdsp/mdf.c">外部 AUMDF 源码</a>须按不同证据级别阅读。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/aec_rls.py">逐样本全矩阵 RLS</a>保存抽头、逆相关矩阵与跨块参考历史；它返回更新前的回声估计和残差。调用方给定的 <code>freeze</code> 会跳过该样本的拟合与遗忘，却继续推进参考历史；未冻结的零参考仍按式(6-14)遗忘。两抽头演示同时输出递推值和独立批量求解，测试还核对切块等价、冻结、重置与非法输入：</p>
-<pre><code class="language-bash">.venv/bin/python -m codes.examples.aec_rls_demo
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch06.aec_rls_demo
 </code></pre>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/aec_kalman_matrix.py">实数短 FIR 全矩阵 Kalman</a>另维护完整路径误差协方差，以 Joseph 形式执行式(6-18)。其 <code>freeze</code> 仍作状态预测和参考历史推进，只跳过麦克风观测更新；若状态转移系数不为 1，冻结并不意味着权重按位保持。两抽头演示输出非对角协方差及丢弃它后的下一步创新方差；这只是已知 $Q,\Psi$ 的算术验证，不是频域分区 AEC：</p>
-<pre><code class="language-bash">.venv/bin/python -m codes.examples.aec_kalman_matrix_demo
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch06.aec_kalman_matrix_demo
 </code></pre>
-<p>式(6-17)的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_kalman_scalar_demo.py">单频点卡尔曼数例</a>另可运行：</p>
-<pre><code class="language-bash">.venv/bin/python -m codes.examples.aec_kalman_scalar_demo
+<p>式(6-17)的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/aec_kalman_scalar_demo.py">单频点卡尔曼数例</a>另可运行：</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch06.aec_kalman_scalar_demo
 </code></pre>
 <p>它固定已知状态和噪声方差，展示实数、复数与较大观测方差三种代入；不包含完整频域滤波器的分区状态、方差估计或双讲判决。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_kalman_scalar_demo.py">独立测试</a>核对分数结果，不把这一个标量更新列为已复现的 FDKF 工业算法。</p>
 <p><code>erle_db()</code> 用 <code>double_talk_mask</code> 明确排除双讲样本；调用者还需用 <code>valid_mask</code> 排除初始收敛段、近端单讲和静音段。函数在输入、输出平均功率上都加上正的 <code>epsilon</code> 地板，因此完美抵消也会报告有限的、随地板而变的 dB 数值，不能把这个上限解释成设备噪声底。该实现用于核对式(6-3)的抽头顺序、冻结语义和指标窗口，不包含延迟搜索、非线性处理、舒适噪声或实时音频接口。</p>
@@ -2056,7 +2056,7 @@ e&=d-\hat y.
 <p><strong>真实双讲的控制组。</strong> 本书又在 Microsoft AEC Challenge 固定版本中取同一 GUID 的真实 <code>doubletalk_lpb</code>/<code>doubletalk_mic</code> 配对录音，按与上段相同的 16 kHz、160 点帧和 4096 点滤波覆盖运行 SpeexDSP，同样设置正确、全零和晚 1 秒的错误参考。两路原录音分别约 12.26 s 和 12.27 s；共同裁成 196160 点完整帧，<code>[0,3)</code> s 供适应，预先固定 <code>[3,8)</code> s 计量。</p>
 <p>在这 5 s 中，麦克风输入对三种输出的总数字功率变化分别是 2.234、2.204、2.200 dB。正确参考的输出功率只比零参考低 0.029 dB。</p>
 <p>输入包含近端语音、回声与噪声，却没有对应的干净分量；因此这些数字既不是双讲 ERLE，也不说明近端语音保留或回声泄漏的大小。此处尚未作盲听或逐帧语音标注。</p>
-<p>原文件摘要、满幅样本检查、计算口径和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_doubletalk_experiment.py">可运行脚本</a>见<a href="research/02_aec_wpe_separation.html#aec">研究记录</a>。录音只放在 Git 忽略缓存，不随教程分发。</p>
+<p>原文件摘要、满幅样本检查、计算口径和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/aec_doubletalk_experiment.py">可运行脚本</a>见<a href="research/02_aec_wpe_separation.html#aec">研究记录</a>。录音只放在 Git 忽略缓存，不随教程分发。</p>
 <p><strong>同一真实配对输入上的教学 PBFDAF。</strong> 为检查式(6-5)的实现离开合成输入后会怎样，本书将上述远端单讲和真实双讲的 <code>lpb</code>/<code>mic</code> 原样交给<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_pbfdaf_real_pair_compare.py">离线脚本</a>。16 kHz PCM16 除以 32768 后以 float64 处理；块长 160 点、26 个分区（覆盖 4160 点）、步长 0.3、归一化地板 0.05，每块投影合法梯度。参数沿用先前合成教学例，<strong>没有针对这两段实录调参</strong>。</p>
 <p>正确、全零、晚 1 s 三种参考各从零状态运行；没有延迟搜索、双讲冻结或残余后滤。Speex 的 4096 点请求在固定版内部上取整到 26 个 160 点分区；相同的抽头容量并不意味着相同的更新和输出链。</p>
 <p>在相同的远端单讲 <code>[3,11.77)</code> s 评分区，正确参考、全零参考、晚 1 s 参考的麦克风输入/教学残差<strong>总数字功率变化</strong>分别为 −6.700、0、−18.017 dB；在真实双讲 <code>[3,8)</code> s 分别为 −6.363、0、−1.665 dB。负号表示输出总功率反而更大，不应删除不利结果或把零参考的 0 dB 当作算法有效的证据。晚参考条件的部分 float64 样本还超出了 PCM16 可表示幅度，因此脚本不剪裁、不保存这些输出为音频。</p>
@@ -2078,7 +2078,7 @@ $$</p>
 <p>第二组把 Microsoft AEC Challenge 同一 GUID 的另一次真实近端单讲麦克风录音，按 PCM 原样叠加到真实远端单讲麦克风的 <code>[3,8)</code> s；播放参考不变，叠加前后都从新状态运行。它是<strong>半合成双讲</strong>，不是官方同时录制的真实双讲，也不具备干净近端语音真值。</p>
 <p>注入在 3 s 和 8 s 处直接切入、切出，没有淡入淡出；两个边界附近可能产生拼接瞬态。因此这一组用于检验固定波形的输出增量，不把它当作自然双讲的听感样本或泛化性能。</p>
 <p>Speex 正确参考下 $g_{\Delta}=0.922$、$E_{\Delta}=0.140$；零参考对照为 0.923、0.128。这里只能说已知外加波形经过两次运行后的输出增量与原波形有差异，不能据此断定真实近端语音的主观保真。</p>
-<p>原始录音摘要、无削波检查、恢复区间和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_controlled_doubletalk.py">可运行脚本</a>见<a href="research/02_aec_wpe_separation.html#aec">研究记录</a>。</p>
+<p>原始录音摘要、无削波检查、恢复区间和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/aec_controlled_doubletalk.py">可运行脚本</a>见<a href="research/02_aec_wpe_separation.html#aec">研究记录</a>。</p>
 <h3 id="sec-6-15-5">6.15.5 WebRTC AEC3 的取点与同输入真值实验</h3>
 <p>固定版本的官方 <code>audioproc_f</code> 可分别输出 AEC3 的线性段和最终段。其 WAV 模拟器默认先处理采集帧再处理播放帧；对同帧 Speex 同步接口作比较时，需要显式改为先播放参考、后采集。</p>
 <p>两者还要核对流延迟设置、额外高通、取点和输出采样率，不能把 AEC3 最终输出与 Speex 核心输出的功率差解释成线性滤波器优劣。本机已从固定提交构建官方 <code>audioproc_f</code>，按同帧先参考后采集、0 ms 报告流延迟，在上述两对真实录音上分别保存线性和最终输出；详细构建参数与输出摘要见<a href="research/02_aec_wpe_separation.html#aec">研究记录</a>。</p>
@@ -2324,7 +2324,7 @@ z&=\frac14\left[\frac3{10}+\frac{-2+\mathrm j}{6}\right.\\
 \end{aligned}$$</p>
 <p><img alt="图36 单频三次非线性在线性投影后的残差" src="../figures/fig36_nonlinear_echo.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图36(a)比较回声、共同最小二乘增益得到的线性副本与残差；图36(b)读取配套 PCM 后显示 500 Hz 和 1500 Hz 的离散周期幅度。上面的功率和 ERLE 来自未量化解析序列，PCM 读回值会有量化误差。本题的标量估计不是在线自适应器，但它给出了所有线性时不变滤波器都无法跨频率产生 1500 Hz 分量的稳态反例；改变输入频谱、非线性或统计窗口后，数值不会保持不变。</p>
-<p><strong>边界练习 E06-07～E06-10。</strong> 下面四题可用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_algorithm_minicases.py"><code>aec_algorithm_minicases.py</code></a> 的 JSON 字段逐项核对：E06-07 对应 <code>overlap_save</code>，E06-08 对应 <code>ipnlms</code>，E06-09 对应 <code>geigel</code>，E06-10 对应 <code>delay_polarity</code>。先独立手算，再运行程序；这些题只检验运算和判决边界，不是工业算法性能实验。</p>
+<p><strong>边界练习 E06-07～E06-10。</strong> 下面四题可用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/aec_algorithm_minicases.py"><code>aec_algorithm_minicases.py</code></a> 的 JSON 字段逐项核对：E06-07 对应 <code>overlap_save</code>，E06-08 对应 <code>ipnlms</code>，E06-09 对应 <code>geigel</code>，E06-10 对应 <code>delay_polarity</code>。先独立手算，再运行程序；这些题只检验运算和判决边界，不是工业算法性能实验。</p>
 <h3 id="sec-u-7cfc36928f">E06-07：循环卷积的哪半块能用？</h3>
 <p>取 $N=2,P=2$、$h=[1,2\mid3,4]$、$x=[1,2,3,4]$，负时刻输入为零。写出第 1 块 $[1,2,3,4]$ 与第一分区 $[1,2,0,0]$ 的四点循环卷积，再加上延迟一个块的第二分区，指出哪些样本可用。</p>
 <p><strong>解答</strong>：第一分区循环结果为 $[9,4,7,10]$，第二分区从上一块 $[0,0,1,2]$ 得到 $[8,0,3,10]$。各自前半块含循环折返，不用于当前块；后半块相加为 $[7+3,10+10]=[10,20]$。连同第 0 块的 $[1,4]$，与直接时域卷积一致。这只检查固定路径的分区卷积，不含自适应系数更新。</p>
@@ -2337,7 +2337,7 @@ z&=\frac14\left[\frac3{10}+\frac{-2+\mathrm j}{6}\right.\\
 <h3 id="sec-u-24f17e0494">E06-10：负极性回声怎样骗过最大正峰？</h3>
 <p>令 $x=[1,0,0,0]$、$d=[0,0,-1,0]$，定义非负滞后相关 $r_{xd}[k]=\sum_n x[n]d[n+k]$，$k=0,1,2,3$。分别用最大有符号值、最大绝对值选延迟。</p>
 <p><strong>解答</strong>：相关序列为 $[0,0,-1,0]$；只取最大有符号值会在并列零峰中按首个位置选 $k=0$，而最大绝对值选 $k=2$，与真实纯延迟一致。多径或周期参考仍可能使绝对峰有歧义，设备测试还要结合时间戳与宽带激励。</p>
-<p><strong>子带、IPNLMS、RLS 与 Kalman 练习 E06-11～E06-20。</strong> 先按式(6-10)～式(6-19)及本节 Haar 定义手算，再运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/aec_advanced_exercises.py"><code>aec_advanced_exercises.py</code></a> 的 <code>run_exercises()</code> 对照稳定 ID；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_advanced_exercises.py">独立测试</a>用分数与解析边界核对答案。这十题是无量纲模型题，不把合成样本或人为提供的双讲真值当成设备检测结果。</p>
+<p><strong>子带、IPNLMS、RLS 与 Kalman 练习 E06-11～E06-20。</strong> 先按式(6-10)～式(6-19)及本节 Haar 定义手算，再运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/aec_advanced_exercises.py"><code>aec_advanced_exercises.py</code></a> 的 <code>run_exercises()</code> 对照稳定 ID；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_advanced_exercises.py">独立测试</a>用分数与解析边界核对答案。这十题是无量纲模型题，不把合成样本或人为提供的双讲真值当成设备检测结果。</p>
 <h3 id="sec-u-0241e3d01d">E06-11：低带输入能否产生高带回声？</h3>
 <p>两点 Haar 分析下，取 $x=[1,1\mid0,0]$、$d[n]=x[n-1]$。写出两个块的输入高带 $u_1[m]$、输出高带 $v_1[m]$；解释只用独立同带滤波器为何不能精确表示。</p>
 <p><strong>解答</strong>：输入两块高带均为零。延迟后 $d=[0,1\mid1,0]$，所以 $v_1=[-1/\sqrt2,+1/\sqrt2]$。任意只读 $u_1$ 的线性滤波器输出仍为零；缺的是 $u_0\to v_1$ 交叉项。这不是实际滤波器组在噪声下的收敛测量。</p>
@@ -2629,7 +2629,7 @@ E_\Delta
 \end{aligned}$$</p>
 <p><strong>解释。</strong> 只报增益 0.8 会遗漏正交误差；只报总误差 0.13 又无法区分整体幅度变化和其余波形变化。该分解也给出检查下界 $E_\Delta\ge(g_\Delta-1)^2$，但没有证明正交项就是某一种物理失真。</p>
 <p>在真实 AEC 的两次运行中，$\Delta$ 还可能包含注入近端后触发的控制与状态差异，不能把它自动当作独立提取出的近端声轨。本题是实向量指标的确定性分解，不涉及听感或设备排名。</p>
-<p>E06-22～E06-33 的统一复算入口是 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/chapter06_experiments.py"><code>chapter06_experiments.py</code></a> 的 <code>run_experiments()</code>。在仓库根目录运行 <code>.venv/bin/python -m codes.examples.chapter06_experiments</code> 可按稳定 ID 查看输入、中间量与结果；这些数学和接口边界题不替代声学性能实测。</p>
+<p>E06-22～E06-33 的统一复算入口是 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/chapter06_experiments.py"><code>chapter06_experiments.py</code></a> 的 <code>run_experiments()</code>。在仓库根目录运行 <code>.venv/bin/python -m codes.chapters.ch06.chapter06_experiments</code> 可按稳定 ID 查看输入、中间量与结果；这些数学和接口边界题不替代声学性能实测。</p>
 <span id="sec-6-1-18" class="anchor-alias" aria-hidden="true"></span><span id="sec-26" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-6-17">6.17 延伸阅读</h2>
 <ol>
 <li><strong>Hänsler &amp; Schmidt, <em>Acoustic Echo and Noise Control</em>（Wiley 2004）</strong>——AEC 领域的经典大部头，讨论自适应理论与免提终端工程。<a href="https://onlinelibrary.wiley.com/doi/book/10.1002/0471678406" title="citation">Wiley 在线版</a></li>

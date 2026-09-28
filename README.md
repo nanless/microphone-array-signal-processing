@@ -14,17 +14,17 @@
 
 第 6 章还记录了一对 Microsoft AEC Challenge 真实播放环回/麦克风录音上的 [SpeexDSP AEC 接口实验](codes/research/02_aec_wpe_separation.md#aec)，含零参考和错位参考对照。该众包录音未随仓库再分发；报告的是本片段输入/输出功率变化，不是真值 ERLE 或设备性能排名。
 
-可复核专题包括[同输入波束比较](codes/examples/beamformer_common_input_demo.py)、[锁定版 AuxIVA 盲估计](codes/examples/reproduce_auxiva_reference.py)、[GSS 活动错标](codes/examples/gss_activity_error_demo.py)、[同一合成真值上的 AEC 接口对照](codes/examples/aec_same_input_truth.py)及[在线 WPE 时间边界](codes/examples/wpe_temporal_contract.py)。各实验分别限定于解析单频、数学合成混合、固定密度 E 步、合成 PCM 或复谱，不构成真实语音或设备效果排名。
+可复核专题包括[同输入波束比较](codes/chapters/ch05/beamformer_common_input_demo.py)、[锁定版 AuxIVA 盲估计](codes/examples/reproduce_auxiva_reference.py)、[GSS 活动错标](codes/chapters/ch08/gss_activity_error_demo.py)、[同一合成真值上的 AEC 接口对照](codes/examples/aec_same_input_truth.py)及[在线 WPE 时间边界](codes/chapters/ch07/wpe_temporal_contract.py)。各实验分别限定于解析单频、数学合成混合、固定密度 E 步、合成 PCM 或复谱，不构成真实语音或设备效果排名。
 
-其他实验包括[协同阵协方差重构](codes/examples/coarray_covariance_exercise.py)、[双源分辨率重复抽样](codes/examples/doa_resolution_trials.py)、[GSS 受控完整教学子链](codes/examples/gss_teaching_demo.py)、[自动双讲检测](codes/examples/aec_dtd_demo.py)、[连续移动双麦音频](codes/examples/moving_source_audio.py)及[SMP-PHAT 的隔离可移植适配](codes/examples/reproduce_smpphat_portable_overlay.py)。每项结果及未运行的官方整链边界见对应章节和研究手册。
+其他实验包括[协同阵协方差重构](codes/chapters/ch03/coarray_covariance_exercise.py)、[双源分辨率重复抽样](codes/chapters/ch04/doa_resolution_trials.py)、[GSS 受控完整教学子链](codes/examples/gss_teaching_demo.py)、[自动双讲检测](codes/chapters/ch06/aec_dtd_demo.py)、[连续移动双麦音频](codes/examples/moving_source_audio.py)及[SMP-PHAT 的隔离可移植适配](codes/examples/reproduce_smpphat_portable_overlay.py)。每项结果及未运行的官方整链边界见对应章节和研究手册。
 
-[第 9 章追踪实验](codes/examples/tracking_crossing_dropout_demo.py)用确定性角度观测展示交叉时位置集合正确而身份错配，并复算缺测协方差与波束限速滞后；它不是语音录音或完整多目标追踪系统。
+[第 9 章追踪实验](codes/chapters/ch09/tracking_crossing_dropout_demo.py)用确定性角度观测展示交叉时位置集合正确而身份错配，并复算缺测协方差与波束限速滞后；它不是语音录音或完整多目标追踪系统。
 
-[第 10 章工程逐步实验](codes/examples/chapter10_experiments.py)增加十道可复算练习，区分重叠帧实时因子、谱减数值边界、跨块时钟状态与整块 AGC 的可用时刻。新增四路[同增益合成音频](codes/research/05_exercises_and_audio.md#32-分块-agc时间常数相同输出仍可能不同)可对照实际 PCM；[工业研究手册](codes/research/03_industrial_deployment.md)分别记录源码接口实调、静态诊断和尚未运行的模型或设备测试。
+[第 10 章工程逐步实验](codes/chapters/ch10/chapter10_experiments.py)提供十道可复算练习，区分重叠帧实时因子、谱减数值边界、跨块时钟状态与整块 AGC 的可用时刻。四路[同增益合成音频](codes/research/05_exercises_and_audio.md#32-分块-agc时间常数相同输出仍可能不同)可对照实际 PCM；[工业研究手册](codes/research/03_industrial_deployment.md)分别记录源码接口实调、静态诊断和尚未运行的模型或设备测试。
 
-[第 11 章选型实验](codes/examples/chapter11_experiments.py)增加十道关于硬约束、场景组成、评分缺失、联合风险和身份评分的可复算练习。四路[同增益FIR合成音频](codes/research/05_exercises_and_audio.md)由相同混合输入实际处理并从PCM读回，展示干扰衰减与目标频带保留的取舍；图46、47对应决策和音频计算。这些样本不是语音、设备或识别效果测试。
+[第 11 章选型实验](codes/chapters/ch11/chapter11_experiments.py)提供十道关于硬约束、场景组成、评分缺失、联合风险和身份评分的可复算练习。四路[同增益FIR合成音频](codes/research/05_exercises_and_audio.md)由相同混合输入实际处理并从PCM读回，展示干扰衰减与目标频带保留的取舍；图46、47对应决策和音频计算。这些样本不是语音、设备或识别效果测试。
 
-[附录 A 数学实验](codes/examples/appendix_a_experiments.py)新增七道可复算题，并用[三路数学合成脉冲](codes/research/05_exercises_and_audio.md#sec-u-a0ab2e82f7)对照正确线性分块卷积和故意错误的循环绕回；图48、49分别显示 FFT 频点约定和最终 PCM 读回位置。
+[附录 A 数学实验](codes/chapters/appendix_a/appendix_a_experiments.py)提供七道可复算题，并用[三路数学合成脉冲](codes/research/05_exercises_and_audio.md#sec-u-a0ab2e82f7)对照正确线性分块卷积和故意错误的循环绕回；图48、49分别显示 FFT 频点约定和最终 PCM 读回位置。
 
 [源码研究手册](codes/research/README.md) 进一步展开算法实现、工业配置和复现实验，分为空间处理与追踪、AEC/WPE/分离、工业部署与评测三篇专题，另附源码复现方法、练习与音频实验。官方实现固定提交，取得的源码保存在 `codes/upstream/_downloads/` 的独立工作树中。
 
@@ -37,8 +37,9 @@ English version: [README_EN.md](./README_EN.md)
 | `chapters/` | 教程正文 14 篇 Markdown（`00_overview.md` 是入口，`01`～`11` 是 11 章正文，`12`/`13` 是附录 A/B） |
 | `figures/` | 49 张插图（`fig01`～`fig49_*.png`），全部由脚本生成、可复现 |
 | `codes/` | 教学算法、章节例子、工业实现小工具、第三方官方源码索引与精确版本锁定；覆盖表见 `codes/COVERAGE.md` |
+| `codes/chapters/` | 第 1～11 章及附录 A/B 的单章实验真实实现，逐章目录和命令见[代码地图](codes/chapters/README.md)；旧 `codes/examples/` 同名入口兼容 |
 | `codes/audio/` | 27 组、109 个本书合成的 WAV 及参数、摘要清单，由脚本生成，不直接编辑 |
-| `codes/gss_audio/`、`codes/moving_audio/` | 独立合成实验的 5+3 个 WAV、状态/轨迹及各自清单，由对应脚本生成并核验 |
+| `codes/gss_audio/`、`codes/moving_audio/`、`codes/tracking_audio/`、`codes/room_audio/` | 四套独立合成实验资产，分别为 5、3、2、18 个 WAV；中间状态、轨迹/逐帧观测或房间数值报告随各自清单保存 |
 | `codes/real_audio/` | DEMAND 真实同步录音摘录、派生均值、独立清单与数据许可；不是合成数据 |
 | `codes/research/` | 详细源码研究手册：算法步骤、状态与配置、代码入口、失败实验和工业复现 |
 | `codes/reports/` | 工业接口与空间算法的小规模运行报告；与源码获取状态、论文全量评测分开 |
@@ -79,7 +80,7 @@ python3 -m venv .venv
 .venv/bin/python codes/examples/ch10_engineering_baselines.py
 .venv/bin/python -m codes.examples.exercises_spatial
 .venv/bin/python -m codes.examples.exercises_enhancement
-.venv/bin/python -m codes.examples.aec_advanced_exercises
+.venv/bin/python -m codes.chapters.ch06.aec_advanced_exercises
 .venv/bin/python -m codes.examples.exercises_engineering
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 

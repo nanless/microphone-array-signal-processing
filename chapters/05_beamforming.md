@@ -1023,7 +1023,7 @@ P_{in}=P_i+P_n,\\
 
 在这一组**精确协方差、单频、固定几何**条件下，LCMV 的干扰响应被硬约束为零，但输出 SINR 略低于 MVDR；加载使 WNG 和真实目标幅度增益回升，同时放松了干扰抑制。目标方向变化后，四种方法对设计方向的响应仍为 1，却不保证对真实方向无失真。
 
-表中数字不代表语音可懂度、统计平均或实机性能，也不能推广为固定排名。完整参数、未舍入结果和可运行计算见[同输入波束对照](../codes/examples/beamformer_common_input_demo.py)。
+表中数字不代表语音可懂度、统计平均或实机性能，也不能推广为固定排名。完整参数、未舍入结果和可运行计算见[同输入波束对照](../codes/chapters/ch05/beamformer_common_input_demo.py)。
 
 #### 5.10.1 延伸阅读：Kumatani 等的远场语音阵列处理综述
 
@@ -1193,7 +1193,7 @@ $$\begin{aligned}
 
 本题为式(5-9)与 WNG 定义的本书代数推导，复算见[`spatial_model_exercises.py`](../codes/examples/spatial_model_exercises.py)的 `E05-07`。代码实际调用 `mvdr_weights`，测试用式(5-25)及干扰响应独立核对，并包含刚低于要求的 $\varepsilon=8$ 作为反例。
 
-下面 E05-08～17 由 [`chapter05_experiments.py`](../codes/examples/chapter05_experiments.py) 输出同一组输入和未舍入结果。它们是本书确定性小模型；除 E05-16 的逐样本处理外，不模拟语音录音、随机快拍或设备运行时间。
+下面 E05-08～17 由 [`chapter05_experiments.py`](../codes/chapters/ch05/chapter05_experiments.py) 输出同一组输入和未舍入结果。它们是本书确定性小模型；除 E05-16 的逐样本处理外，不模拟语音录音、随机快拍或设备运行时间。
 
 #### E05-08：GSC 的零空间解怎样等于 LCMV？
 

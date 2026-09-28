@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 9 章 · 声源追踪 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="8a1e501d775d"><style>
+<meta name="source-digest" content="5517357657f5"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -875,12 +875,12 @@ D_t(x)=[1-p_D(x)]D_t^-(x)\\
 <p>如何重算 $Q$ 取决于过程噪声模型，练习 E09-04 比较两种不同定义。粒子重采样阈值则按有效粒子数的同一尺度指定：<code>resample_if_needed()</code> 接受 $[0,N]$ 内有限实数，0 表示关闭，默认是 $N/2$；布尔值、数组、负数、超过粒子数或非有限值均报错，且不改变粒子和随机数状态。</p>
 <p>设备只搜索有限扇区时不能把两个扇区端点自动接成相邻方向；还需测试迟到/乱序观测、长缺测、错误时间戳、野点门控、目标交叉、轨迹出生/确认/删除、ID 重用和消息超时。无有效观测时只预测并传播协方差，超过有效期后回到搜索模式，不能把外推方向当作新观测。</p>
 <h3 id="sec-u-b70bbe3259">两目标交叉、短暂缺测与控制限速</h3>
-<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/tracking_crossing_dropout_demo.py"><code>tracking_crossing_dropout_demo.py</code></a> 使用确定的角度观测，不生成语音或设备录音。为便于手算，每步间隔刻意取 1 s；两条轨迹初态分别为 $[20^\circ,+10^\circ/\mathrm s]$、$[60^\circ,-10^\circ/\mathrm s]$，初始协方差都是 $I$，每步过程噪声 $Q=\operatorname{diag}(0.1,0.01)$，角度观测方差为 $1\ \mathrm{deg}^2$。这些是实验指定的滤波参数，并非从真实定位器标定得到。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/tracking_crossing_dropout_demo.py"><code>tracking_crossing_dropout_demo.py</code></a> 使用确定的角度观测，不生成语音或设备录音。为便于手算，每步间隔刻意取 1 s；两条轨迹初态分别为 $[20^\circ,+10^\circ/\mathrm s]$、$[60^\circ,-10^\circ/\mathrm s]$，初始协方差都是 $I$，每步过程噪声 $Q=\operatorname{diag}(0.1,0.01)$，角度观测方差为 $1\ \mathrm{deg}^2$。这些是实验指定的滤波参数，并非从真实定位器标定得到。</p>
 <p>示例在 15° 门内穷举两轨与最多两条观测的一对一配对，优先关联最多的门内观测，再选择圆周角残差平方和最小者；若代价完全相等，按轨迹和观测输入顺序决定。</p>
 <p>这个两轨最小代价关联是全局最近邻（Global Nearest Neighbour，GNN）分配的教学缩例，不实现 JPDA、MHT、轨迹出生或删除。Stone Soup 固定版本的 <code>neighbour.py</code> 区分逐次贪心的 <code>NearestNeighbour</code> 与联合分配的 <code>GlobalNearestNeighbour</code>；本例只复算后一类的两轨分配思想，没有调用该框架的假设器和轨迹管理。<a href="https://github.com/dstl/Stone-Soup/blob/8d1edeb07ef8505ed065cbef435cfb5e517d9bdc/stonesoup/dataassociator/neighbour.py" title="citation">Stone Soup 固定源码</a>。</p>
 <p>第 2 s，两轨按匀速模型都预测到 $40^\circ$，输入顺序是 B 的 $39^\circ$、A 的 $41^\circ$。两种一对一配对的残差平方和同为 $1^2+1^2=2\ \mathrm{deg}^2$。示例的并列代价规则于是把 B 的观测给轨迹 A，把 A 的观测给轨迹 B；这一帧有两次标签错配。</p>
 <p>去掉标签后，观测位置集合与真值集合都是 $\{39^\circ,41^\circ\}$，按后文式(9-25)取 $p\ge1,c>0$，该集合的 OSPA 仍为 0。这里算的是<strong>未滤波的观测集合</strong>；滤波后的两条角度还有非零位置误差，不能把两者混称为零误差。</p>
-<p>下表逐帧比较最小代价关联结果与“用真值标签做关联”的诊断对照。真值标签只用于评价和对照更新，不进入最小代价关联的代价。角度误差是滤波后轨迹 A、B 各自相对其真值的最短圆周角绝对误差；方差是最小代价关联轨迹 A 的角度方差，数值保留两位小数。运行命令为 <code>.venv/bin/python -m codes.examples.tracking_crossing_dropout_demo</code>，独立手算检验见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_tracking_crossing_dropout.py"><code>test_codes_tracking_crossing_dropout.py</code></a>。</p>
+<p>下表逐帧比较最小代价关联结果与“用真值标签做关联”的诊断对照。真值标签只用于评价和对照更新，不进入最小代价关联的代价。角度误差是滤波后轨迹 A、B 各自相对其真值的最短圆周角绝对误差；方差是最小代价关联轨迹 A 的角度方差，数值保留两位小数。运行命令为 <code>.venv/bin/python -m codes.chapters.ch09.tracking_crossing_dropout_demo</code>，独立手算检验见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_tracking_crossing_dropout.py"><code>test_codes_tracking_crossing_dropout.py</code></a>。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
 <tr>
@@ -1392,7 +1392,7 @@ Q(2h)&=F(h)Q(h)F(h)^\top+Q(h)\\
 <p><strong>第4步：核对结果。</strong> 实际PCM的173帧原始定位RMSE为2.8226°，同帧滤波输出为1.1505°；24帧仅预测误差为.3526°。先按清单逐帧角差平方求和，再各除自己的分母、开平方；不能把两个RMSE直接平均成全段RMSE，也不能把无观测记成零误差。</p>
 <p>本题未对协方差作覆盖率标定，没有重复试验，也没有身份评分。改变声学输入、门限或 $R,Q$ 后须完整重跑，不能沿用这些数字作为保证。</p>
 <h3 id="sec-u-b51bd23596">新练习的实现边界</h3>
-<p>E09-10～E09-19 的统一入口为 <code>.venv/bin/python -m codes.examples.chapter09_experiments</code>，见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/chapter09_experiments.py">原创复算代码</a>。前九题是小规模代数、概率或数值边界检查；E09-19 才运行指定波形链。它们不构成完整通用 EKF、UKF、JPDA、PHD 或多目标身份管理系统。</p>
+<p>E09-10～E09-19 的统一入口为 <code>.venv/bin/python -m codes.chapters.ch09.chapter09_experiments</code>，见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/chapter09_experiments.py">原创复算代码</a>。前九题是小规模代数、概率或数值边界检查；E09-19 才运行指定波形链。它们不构成完整通用 EKF、UKF、JPDA、PHD 或多目标身份管理系统。</p>
 <hr />
 <blockquote>
 <p>📄 本篇信息：配图 3 张 ｜ <a href="index.html">回首页</a></p>

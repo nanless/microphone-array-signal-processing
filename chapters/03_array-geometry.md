@@ -642,12 +642,12 @@ $$\begin{aligned}
 
 **相干源为什么不能按同一滞后直接解释？** 另取物理 ULA 位置 $p=\{0,1,2\}$、两个方向仍为 $0°$ 与 $30°$，但两源现在播放同一个单位功率复波形，且没有噪声。两个导向向量相加得到 $\vec v=[2,1+\mathrm j,0]^\top$，所以 $\mathbf R=\vec v\vec v^H$。同为滞后 1 的两个元素变成 $R_{10}=2+2\mathrm j$、$R_{21}=0$，已经不是同一个总体值。把它们平均不能恢复“两个互不相关源各有单位功率”的模型。
 
-先手算这些外积与滞后，再运行 [E03-07 原例](../codes/examples/coarray_covariance_exercise.py)与[第 3 章补充实验](../codes/examples/chapter03_experiments.py)核对原例、平滑对照和相干反例。这些都是窄带统计计算，没有生成四通道声音，也没有证明三只麦在任意 SNR 或快拍数下都能分辨四个声源。
+先手算这些外积与滞后，再运行 [E03-07 原例](../codes/chapters/ch03/coarray_covariance_exercise.py)与[第 3 章补充实验](../codes/chapters/ch03/chapter03_experiments.py)核对原例、平滑对照和相干反例。这些都是窄带统计计算，没有生成四通道声音，也没有证明三只麦在任意 SNR 或快拍数下都能分辨四个声源。
 
 下面 E03-08～14 使用同一个补充实验入口：
 
 ```bash
-.venv/bin/python -m codes.examples.chapter03_experiments
+.venv/bin/python -m codes.chapters.ch03.chapter03_experiments
 ```
 
 题干与答案中未特别说明的声速均为 343 m/s。浮点复算保留中间精度，表格最后舍入；没有输入随机噪声的例子，不报告定位准确率或实测信噪比。

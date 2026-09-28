@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 8 章 · 语音分离 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="8a1e501d775d"><style>
+<meta name="source-digest" content="5517357657f5"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -556,7 +556,7 @@ B^{(r+1)}&=\frac{M\widetilde B^{(r+1)}}{\operatorname{tr}\widetilde B^{(r+1)}}.
 <p>这些密度是题目给定的相对数值，只检验 E 步归一化；它们不是从录音拟合出的 cACG 密度，也不构成分离性能实验。完整手算及代码见练习 E08-07。</p>
 <p><strong>活动错误的三帧反例</strong>。再固定 $\pi=[0.4,0.4,0.2]$，顺序仍为“说话人 1、说话人 2、背景噪声”。三帧的相对空间密度依次是 $[8,1,1]$、$[1,8,1]$、$[1,1,1]$；真实说话人活动依次是“仅说话人 1、仅说话人 2、两人都静音”。正确标注下，首帧说话人 1 的分数为 $0.4\times8=3.2$，背景分数为 $0.2$，故其后验为 $3.2/(3.2+0.2)=16/17\approx0.9412$。</p>
 <p>若漏标首帧的说话人 1，门控会把其后验强制置零，无论该分量的固定空间密度多高。若把第三帧的说话人 1 错标为活动，其后验会从 0 变成 $0.4/(0.4+0.2)=2/3$，本应占 1 的背景后验变为 $1/3$。</p>
-<p>这组数字由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/gss_activity_error_demo.py"><code>gss_activity_error_demo.py</code></a>和独立分数测试复算，只描述<strong>固定密度、固定权重时的 E 步</strong>。完整 GSS 还会让错误活动参与参数更新，并经 SCM、波束形成影响音频；上述后验变化不能直接换算成 SI-SDR 或 WER 的变化。原论文的活动门控见<a href="https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf" title="citation">Boeddeker 等 §3.2、式(5)～(8)</a>。</p>
+<p>这组数字由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch08/gss_activity_error_demo.py"><code>gss_activity_error_demo.py</code></a>和独立分数测试复算，只描述<strong>固定密度、固定权重时的 E 步</strong>。完整 GSS 还会让错误活动参与参数更新，并经 SCM、波束形成影响音频；上述后验变化不能直接换算成 SI-SDR 或 WER 的变化。原论文的活动门控见<a href="https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf" title="citation">Boeddeker 等 §3.2、式(5)～(8)</a>。</p>
 <p>活动标注只限制允许的簇，不会自动修复错误分割。如果目标说话人在所选片段内始终活动，目标与恒活动噪声类仍可能交换标签；原论文通过扩展目标片段前后的上下文，让目标类出现静音帧来降低这种置换风险，不能保证完全消除。短活动段、空分量或近奇异形状矩阵还需要正则化和失败检测。<a href="https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf" title="citation">原始论文 §3.2、图 3、式(5)～(8)</a></p>
 <h3 id="sec-8-4-4">8.4.4 协方差、波束权重与适用边界</h3>
 <p><strong>GSS 的源数与计算规模</strong>：输入通常是一段包含重叠语音的会议录音。cACGMM 的分量数通常由日志或系统配置预先给定；它不会仅凭式(8-16)可靠推断未知说话人数。</p>
@@ -1059,7 +1059,7 @@ H=\begin{bmatrix}2&0.5\\0.1&3\end{bmatrix}.$$</p>
 <p><strong>第 4 步：不要把一步迭代误认成稳定估计。</strong> 若继续固定本题的责任权重，下一轮二次型为 $2/3,2$，未归一矩阵为 $\operatorname{diag}(9/4,1/4)$，迹归一后为 $\operatorname{diag}(1.8,0.2)$。这组只有两个正交方向且权重不均衡的数据会把形状推向边界；它不是证明已收敛的训练集。若两帧都改成 $[1,0]^\top$，第一步就得到 $\operatorname{diag}(2,0)$，虽然迹为 2，矩阵却奇异，下一轮密度没有合法逆矩阵。</p>
 <p>教学整链在归一化后使用向单位阵收缩等显式正则化，并在质量不足时重置分量；例如将奇异矩阵收缩为 $(1-0.02)B+0.02I$，其特征值为 $1.98,0.02$。这样改变了无正则化迭代，必须保留参数，不能把“迹已经归一化”当成正定保证。</p>
 <p>运行 <code>.venv/bin/python -m codes.examples.enhancement_structure_exercises</code>；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/enhancement_structure_exercises.py">原创代码</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_enhancement_structure.py">独立测试</a>检查分数结果、正比例尺度不变、复数外积的共轭以及秩亏拒绝。这里只执行形状子步骤，没有重新运行官方 GSS、生成该题音频或测量分离质量。</p>
-<p>以下 E08-12～23 的确定性输入与步骤由本书推导；运行 <code>.venv/bin/python -m codes.examples.chapter08_experiments</code>，入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/chapter08_experiments.py">chapter08_experiments.py</a> 的 <code>run_experiments()</code>。其中矩阵题只验证指定数学步骤，E08-23 使用人为给定的输出槽位检验连续拼接，均不冒充新训练的分离网络。</p>
+<p>以下 E08-12～23 的确定性输入与步骤由本书推导；运行 <code>.venv/bin/python -m codes.chapters.ch08.chapter08_experiments</code>，入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch08/chapter08_experiments.py">chapter08_experiments.py</a> 的 <code>run_experiments()</code>。其中矩阵题只验证指定数学步骤，E08-23 使用人为给定的输出槽位检验连续拼接，均不冒充新训练的分离网络。</p>
 <p><a id="e08-12"></a></p>
 <h3 id="sec-u-b8a7fee7f2">E08-12：复数 IP 为什么要共轭写回并逐行更新？</h3>
 <p><strong>题设。</strong> 取 $W_0=I_2$，两行暂用同一个加权矩阵</p>

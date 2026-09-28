@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 11 章 · 总结与选型指南 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="8a1e501d775d"><style>
+<meta name="source-digest" content="5517357657f5"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -681,7 +681,7 @@ J_w(x)&=w\frac{\operatorname{WER}(x)}{0.20}\\
 $$</p>
 <p>两项及总分均无量纲，分数越低越好。代入 A、B，得到 $J_w(A)=3w/5+8(1-w)/15$，$J_w(B)=w/2+2(1-w)/3$。令两式相等，整理为 $7w/30=2/15$，所以交点为 $w=4/7$。</p>
 <p>当 $w=0.5$ 时，两分数为 $17/30\approx0.5667$ 和 $7/12\approx0.5833$，选 A；当 $w=0.8$ 时，为 $44/75\approx0.5867$ 和 $8/15\approx0.5333$，选 B。改变归一化尺度也会改变这类加权分数，因此尺度与权重都必须预先声明。本题没有把功率再加入软分数，因为它已用于硬筛选且 A、B 的功率相同。</p>
-<p>运行<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/chapter11_experiments.py">本章选型练习</a>的 <code>E11-10</code> 可核对可行集合、支配关系与两组分数。该排序只针对题设指标；未测的语音损伤、可靠性或隐私要求不能由低总分自动抵消。</p>
+<p>运行<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch11/chapter11_experiments.py">本章选型练习</a>的 <code>E11-10</code> 可核对可行集合、支配关系与两组分数。该排序只针对题设指标；未测的语音损伤、可靠性或隐私要求不能由低总分自动抵消。</p>
 <h3 id="sec-u-3a9768c82a">题 11：每个场景都较好，为何总分反而较差（E11-11）</h3>
 <p>两组测试的安静/噪声场景比例不同。下表给出参考词数和错误数，所有文件均评分成功。分别计算两候选的场景 WER、合并 WER，再按预定的两场景各 50% 权重比较。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -926,7 +926,7 @@ $$</p>
 <p><a href="audio/selection_mixture.wav">混合输入</a><audio class="audio-sample" controls preload="none" aria-label="混合输入" src="audio/selection_mixture.wav">请使用上方 WAV 链接下载。</audio></p>
 <p><a href="audio/selection_fir3.wav">3抽头输出</a><audio class="audio-sample" controls preload="none" aria-label="3抽头输出" src="audio/selection_fir3.wav">请使用上方 WAV 链接下载。</audio></p>
 <p><a href="audio/selection_fir9.wav">9抽头输出</a><audio class="audio-sample" controls preload="none" aria-label="9抽头输出" src="audio/selection_fir9.wav">请使用上方 WAV 链接下载。</audio></p>
-<p>运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/chapter11_experiments.py">chapter11_experiments.py</a> 的 <code>E11-19</code> 可核对解析、浮点与PCM三种结果；完整参数和音频解释见<a href="research/05_exercises_and_audio.html#33-选型取舍更安静的滤波器也可能损伤更多目标">音频研究手册第33节</a>。这里只评分稳态区，不把启动瞬态与文件末端被截掉的卷积尾部隐去后宣称全段都达到同一误差，也不由听到更安静推断ASR或听感必然更好。</p>
+<p>运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch11/chapter11_experiments.py">chapter11_experiments.py</a> 的 <code>E11-19</code> 可核对解析、浮点与PCM三种结果；完整参数和音频解释见<a href="research/05_exercises_and_audio.html#33-选型取舍更安静的滤波器也可能损伤更多目标">音频研究手册第33节</a>。这里只评分稳态区，不把启动瞬态与文件末端被截掉的卷积尾部隐去后宣称全段都达到同一误差，也不由听到更安静推断ASR或听感必然更好。</p>
 <span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-11-7">11.7 后续阅读</h2>
 <p>要实现算法，可回到第 4～9 章查看定位、波束、AEC、WPE、分离和追踪。要制定整机预算和验收计划，见<a href="10_engineering-practice.html">第 10 章</a>。<a href="12_appendix-symbols-math.html">附录 A</a>汇总符号与数学工具，<a href="13_appendix-guide.html">附录 B</a>给出进一步阅读、练习和排错入口。</p>
 <hr />

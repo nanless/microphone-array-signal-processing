@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 5 章 · 波束形成 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="8a1e501d775d"><style>
+<meta name="source-digest" content="5517357657f5"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -1212,7 +1212,7 @@ P_{in}=P_i+P_n,\\
 </table></div>
 <p>可先独立核对 DSB 行：正横设计使四个权重均为 $1/4$；干扰方向相邻麦的相位步进为 $\psi=2\pi(2000)(0.04)\sin40°/343$，所以干扰幅度响应为 $|\sum_{m=0}^{3}e^{\mathrm jm\psi}/4|\approx0.5241$。输出干扰加噪声功率为 $10(0.5241)^2+1/4\approx2.9973$，再代入式(5-24)得到表中 SINR。</p>
 <p>在这一组<strong>精确协方差、单频、固定几何</strong>条件下，LCMV 的干扰响应被硬约束为零，但输出 SINR 略低于 MVDR；加载使 WNG 和真实目标幅度增益回升，同时放松了干扰抑制。目标方向变化后，四种方法对设计方向的响应仍为 1，却不保证对真实方向无失真。</p>
-<p>表中数字不代表语音可懂度、统计平均或实机性能，也不能推广为固定排名。完整参数、未舍入结果和可运行计算见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/beamformer_common_input_demo.py">同输入波束对照</a>。</p>
+<p>表中数字不代表语音可懂度、统计平均或实机性能，也不能推广为固定排名。完整参数、未舍入结果和可运行计算见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/beamformer_common_input_demo.py">同输入波束对照</a>。</p>
 <span id="sec-18" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-5-10-1">5.10.1 延伸阅读：Kumatani 等的远场语音阵列处理综述</h3>
 <p>本章引用的是 Kumatani、McDonough 与 Raj 的正式综述 <em>Microphone Array Processing for Distant Speech Recognition: From Close-Talking Microphones to Far-Field Sensors</em>，发表于 <em>IEEE Signal Processing Magazine</em> 29(6):127–140，2012 年11月。CMU 课程网站托管了这篇期刊综述的 PDF。<a href="https://doi.org/10.1109/MSP.2012.2205285" title="citation">正式 DOI</a>；<a href="https://course.ece.cmu.edu/~ece792/handouts/KumataniEtAl12.pdf" title="citation">作者 PDF</a>。</p>
 <p><strong>先核对实验对象。</strong> 印刷页137～139的球阵实验比较32麦、半径4.2 cm的 Eigenmike 刚性球与64麦、长1.26 m的线阵。数据是 TIMIT 预录语音通过扬声器在真实房间重放，每个位置37名说话人、3241词，采样率44.1 kHz，房间混响时间约525 ms。这是重放录音实验，既不是本书数学合成音频，也不是自然会议录音。表4与表5分别对应28°和68°位置。</p>
@@ -1399,7 +1399,7 @@ G_{\mathrm{WNG}}(\varepsilon)&=\frac1{1/2+50/h^2}。
 <p>评分使用<strong>原始</strong> $\mathbf R$，不把 $\vec w^H\mathbf R_\varepsilon\vec w$ 误称为物理噪声功率。后者多出 $\varepsilon\|\vec w\|^2$，是设计惩罚项。表中更大的 WNG 伴随更弱的干扰抑制；仅凭 WNG 增大不能说整体增强效果变好。</p>
 <p><strong>边界检查。</strong> 当 $\varepsilon\to\infty$，权重趋向 $[0.5,0.5]^\top$，WNG 趋向 2。对于本题的名义导向，无失真约束与 Cauchy–Schwarz 不等式给出 $1=|\vec w^H\vec a|^2\le2\|\vec w\|^2$，因此 WNG 不可能大于 2。本题的有限加载始终留有非零虚部，所以恰好达到 2 只能取极限；要求 2.1 则没有解。一般阵列应根据实际协方差重新求解，不能沿用本题的数字 9。</p>
 <p>本题为式(5-9)与 WNG 定义的本书代数推导，复算见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/spatial_model_exercises.py"><code>spatial_model_exercises.py</code></a>的 <code>E05-07</code>。代码实际调用 <code>mvdr_weights</code>，测试用式(5-25)及干扰响应独立核对，并包含刚低于要求的 $\varepsilon=8$ 作为反例。</p>
-<p>下面 E05-08～17 由 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/chapter05_experiments.py"><code>chapter05_experiments.py</code></a> 输出同一组输入和未舍入结果。它们是本书确定性小模型；除 E05-16 的逐样本处理外，不模拟语音录音、随机快拍或设备运行时间。</p>
+<p>下面 E05-08～17 由 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/chapter05_experiments.py"><code>chapter05_experiments.py</code></a> 输出同一组输入和未舍入结果。它们是本书确定性小模型；除 E05-16 的逐样本处理外，不模拟语音录音、随机快拍或设备运行时间。</p>
 <h3 id="sec-u-531bc348b1">E05-08：GSC 的零空间解怎样等于 LCMV？</h3>
 <p><strong>题设。</strong> 三麦目标导向为 $\vec a=\vec1$，噪声协方差为 $\mathbf R=\operatorname{diag}(1,2,4)$。固定权重 $\vec w_q=\vec1/3$，阻塞矩阵取</p>
 <p>$$\mathbf B=\begin{bmatrix}1&1\\-1&0\\0&-1\end{bmatrix}。$$</p>

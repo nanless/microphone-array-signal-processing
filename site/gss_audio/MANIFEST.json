@@ -319,7 +319,7 @@
     "codes/array_tutorial/separation.py": "fba14bf7e4ddf2c40b54964d900b1f8f8f2865d7fe4232edcfba14d44fd2622b",
     "codes/array_tutorial/spectral.py": "9b7c3d3e2b936fdfa793f372e5d258788a4b43b9536294c231019454bfcb45c6",
     "codes/array_tutorial/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385",
-    "codes/array_tutorial/audio_samples.py": "f953a4075ad122b35c2b6d78f3f0689dd3ab30f02c159ef4eb241122ff764c45",
+    "codes/array_tutorial/audio_samples.py": "665fe4255b087102b051082deea094c8dc2e236709cd348d24ad91b0de401a71",
     "codes/array_tutorial/dereverberation.py": "af55bbb288f0f2b5208afc5fa0c3e66a918233fdb7a32c953ae54f5c85ca2017"
   },
   "pcm": "little-endian signed PCM16, nearest-even rounding, no dither; common gain for all files",

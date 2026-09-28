@@ -842,7 +842,7 @@ c_k&=\begin{cases}
 接口依据为 [NumPy `rfft` 的归一化、端点与补零约定](https://numpy.org/doc/stable/reference/generated/numpy.fft.rfft.html "citation")、[SciPy `periodogram` 的单位与单边谱说明](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.periodogram.html "citation")（2026-09-28 核实）；表中数字为本书推导。运行 `.venv/bin/python -m codes.examples.spatial_model_exercises` 的 `E02-08` 可复算全部五行；[代码](../codes/examples/spatial_model_exercises.py)同时拒绝复输入被悄悄丢弃虚部，以及过短 FFT 导致输入裁切。
 
 
-以下 E02-09～15 的统一复算入口为 [`chapter02_experiments.py`](../codes/examples/chapter02_experiments.py)。这些实验使用本书明确给出的模型，分别核对计算与失效边界。
+以下 E02-09～15 的统一复算入口为 [`chapter02_experiments.py`](../codes/chapters/ch02/chapter02_experiments.py)。这些实验使用本书明确给出的模型，分别核对计算与失效边界。
 
 #### E02-09：相位误差很小，能否忽略幅度差？
 

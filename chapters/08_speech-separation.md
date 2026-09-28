@@ -406,7 +406,7 @@ $$\begin{gathered}
 
 若漏标首帧的说话人 1，门控会把其后验强制置零，无论该分量的固定空间密度多高。若把第三帧的说话人 1 错标为活动，其后验会从 0 变成 $0.4/(0.4+0.2)=2/3$，本应占 1 的背景后验变为 $1/3$。
 
-这组数字由[`gss_activity_error_demo.py`](../codes/examples/gss_activity_error_demo.py)和独立分数测试复算，只描述**固定密度、固定权重时的 E 步**。完整 GSS 还会让错误活动参与参数更新，并经 SCM、波束形成影响音频；上述后验变化不能直接换算成 SI-SDR 或 WER 的变化。原论文的活动门控见[Boeddeker 等 §3.2、式(5)～(8)](https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf "citation")。
+这组数字由[`gss_activity_error_demo.py`](../codes/chapters/ch08/gss_activity_error_demo.py)和独立分数测试复算，只描述**固定密度、固定权重时的 E 步**。完整 GSS 还会让错误活动参与参数更新，并经 SCM、波束形成影响音频；上述后验变化不能直接换算成 SI-SDR 或 WER 的变化。原论文的活动门控见[Boeddeker 等 §3.2、式(5)～(8)](https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf "citation")。
 
 活动标注只限制允许的簇，不会自动修复错误分割。如果目标说话人在所选片段内始终活动，目标与恒活动噪声类仍可能交换标签；原论文通过扩展目标片段前后的上下文，让目标类出现静音帧来降低这种置换风险，不能保证完全消除。短活动段、空分量或近奇异形状矩阵还需要正则化和失败检测。[原始论文 §3.2、图 3、式(5)～(8)](https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf "citation")
 
@@ -902,7 +902,7 @@ H=\begin{bmatrix}2&0.5\\0.1&3\end{bmatrix}.$$
 运行 `.venv/bin/python -m codes.examples.enhancement_structure_exercises`；[原创代码](../codes/examples/enhancement_structure_exercises.py)和[独立测试](../tests/test_codes_enhancement_structure.py)检查分数结果、正比例尺度不变、复数外积的共轭以及秩亏拒绝。这里只执行形状子步骤，没有重新运行官方 GSS、生成该题音频或测量分离质量。
 
 
-以下 E08-12～23 的确定性输入与步骤由本书推导；运行 `.venv/bin/python -m codes.examples.chapter08_experiments`，入口为 [chapter08_experiments.py](../codes/examples/chapter08_experiments.py) 的 `run_experiments()`。其中矩阵题只验证指定数学步骤，E08-23 使用人为给定的输出槽位检验连续拼接，均不冒充新训练的分离网络。
+以下 E08-12～23 的确定性输入与步骤由本书推导；运行 `.venv/bin/python -m codes.chapters.ch08.chapter08_experiments`，入口为 [chapter08_experiments.py](../codes/chapters/ch08/chapter08_experiments.py) 的 `run_experiments()`。其中矩阵题只验证指定数学步骤，E08-23 使用人为给定的输出槽位检验连续拼接，均不冒充新训练的分离网络。
 
 <a id="e08-12"></a>
 

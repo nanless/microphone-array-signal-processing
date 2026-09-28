@@ -654,7 +654,7 @@
   "source_sha256": {
     "codes/examples/moving_source_audio.py": "0341374a443809e67452db4c7e2a01d474ca676252b2bf53b484360383161936",
     "codes/array_tutorial/moving_source.py": "3317587312c90a97b351a3e15c8fa802e207dd06cff1281b9fce4ca255760d28",
-    "codes/array_tutorial/audio_samples.py": "f953a4075ad122b35c2b6d78f3f0689dd3ab30f02c159ef4eb241122ff764c45",
+    "codes/array_tutorial/audio_samples.py": "665fe4255b087102b051082deea094c8dc2e236709cd348d24ad91b0de401a71",
     "codes/array_tutorial/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385"
   },
   "environment": {

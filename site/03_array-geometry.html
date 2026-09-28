@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 3 章 · 阵列几何形态 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="8a1e501d775d"><style>
+<meta name="source-digest" content="5517357657f5"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -737,9 +737,9 @@ J(\vec v)=\|\mathbf C\vec v-\vec x\|_2^2
 <p>它等价于对按 −3～3 排列的连续滞后向量取四个长度为 4 的重叠片段，再求外积均值。片段内部保持原顺序；四个片段恰好对应 $\mathbf T$ 从最后一列到第一列，改变求和项的次序不改变外积之和。任意向量 $\vec v$ 都有 $\vec v^H\mathbf R_{\rm ss}\vec v=\|\mathbf T^H\vec v\|^2/4\ge0$，所以该构造半正定。此例 $\mathbf T$ 为厄米矩阵，特征向量保持不变、特征值变为原值平方后除以 4，得到 $25/36,1/9,1/9,1/36$。</p>
 <p>这不证明有限样本误差已经消失，也不是恢复了原始麦信号。若 $X$ 用 V 表示，直接滞后矩阵 $\mathbf T$ 的单位为 V²，$\mathbf R_{\rm ss}$ 的单位则为 V⁴；两者不能直接把特征值当作同一种声功率来比较。<a href="https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/estimation/coarray.py" title="citation">固定版 doatools 的 <code>CoarrayACMBuilder1D</code></a>分别提供直接重排与空间平滑模式，调用时应明确模式；原始方法和构造条件见 <a href="https://doi.org/10.1109/TSP.2010.2049264" title="citation">Pal 与 Vaidyanathan 2010 第 IV 节</a>。</p>
 <p><strong>相干源为什么不能按同一滞后直接解释？</strong> 另取物理 ULA 位置 $p=\{0,1,2\}$、两个方向仍为 $0°$ 与 $30°$，但两源现在播放同一个单位功率复波形，且没有噪声。两个导向向量相加得到 $\vec v=[2,1+\mathrm j,0]^\top$，所以 $\mathbf R=\vec v\vec v^H$。同为滞后 1 的两个元素变成 $R_{10}=2+2\mathrm j$、$R_{21}=0$，已经不是同一个总体值。把它们平均不能恢复“两个互不相关源各有单位功率”的模型。</p>
-<p>先手算这些外积与滞后，再运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/coarray_covariance_exercise.py">E03-07 原例</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/chapter03_experiments.py">第 3 章补充实验</a>核对原例、平滑对照和相干反例。这些都是窄带统计计算，没有生成四通道声音，也没有证明三只麦在任意 SNR 或快拍数下都能分辨四个声源。</p>
+<p>先手算这些外积与滞后，再运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/coarray_covariance_exercise.py">E03-07 原例</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/chapter03_experiments.py">第 3 章补充实验</a>核对原例、平滑对照和相干反例。这些都是窄带统计计算，没有生成四通道声音，也没有证明三只麦在任意 SNR 或快拍数下都能分辨四个声源。</p>
 <p>下面 E03-08～14 使用同一个补充实验入口：</p>
-<pre><code class="language-bash">.venv/bin/python -m codes.examples.chapter03_experiments
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch03.chapter03_experiments
 </code></pre>
 <p>题干与答案中未特别说明的声速均为 343 m/s。浮点复算保留中间精度，表格最后舍入；没有输入随机噪声的例子，不报告定位准确率或实测信噪比。</p>
 <h3 id="sec-u-c5318713a1">E03-08：精确半功率宽度与孔径近似相差多少？</h3>
