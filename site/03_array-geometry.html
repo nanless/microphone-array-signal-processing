@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 3 章 · 阵列几何形态 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="93c0f71d121e"><style>
+<meta name="source-digest" content="bde473e0d8f4"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -248,10 +248,11 @@ Y(f)&=X_1(f)-e^{-\mathrm j2\pi fd/c}X_2(f).
 <p>$$\begin{aligned}
 B(f,\beta)&=1-e^{-\mathrm jp(1+\cos\beta)},\\
 \frac{|B(f,\beta)|}{|B(f,0)|}
-&=\frac{|\sin[\tfrac p2(1+\cos\beta)]|}{|\sin p|},\\
+&=\frac{|\sin[\tfrac p2(1+\cos\beta)]|}{|\sin p|}\quad(\sin p\ne0),\\
 &\xrightarrow{p\to0}\frac{1+\cos\beta}{2}.
 \end{aligned}\tag{3-3}$$</p>
-<p>第二步用了 $|1-e^{-\mathrm jx}|=2|\sin(x/2)|$；最后一步分别将小角度的正弦换为其自变量。这才得到低频心形的全角度表达式。1 kHz 时，前、正横、后方的归一化幅度约为 $1,0.5021,0$，接近心形的 $1,0.5,0$。该极限讨论的是归一化形状；频率为零时原始差分输出为零，不能真的除以零响应。</p>
+<p>第二步用了 $|1-e^{-\mathrm jx}|=2|\sin(x/2)|$。归一化只在 $\sin p\ne0$、前方响应非零时有定义：不能直接代入 $p=0$ 或其他 $p$ 为 $\pi$ 的整数倍的频点。最后一步是沿着分母非零的频点令 $p\to0$，分别将小角度的正弦换为其自变量，得到低频心形的全角度表达式。</p>
+<p>1 kHz 时，前、正横、后方的归一化幅度约为 $1,0.5021,0$，接近心形的 $1,0.5,0$。上述极限讨论的是归一化形状；频率为零时原始差分输出为零，不能真的除以零响应。</p>
 <p>目标方向的 WNG 也可直接复算。用 $G(f)$ 表示线性 WNG；两路权重的模均为 1，平方和为 2，因此</p>
 <p>$$\begin{gathered}
 G(f)=\frac{|B(f,0)|^2}{2}=2\sin^2p,\\
@@ -358,7 +359,7 @@ G(f)=\frac{|B(f,0)|^2}{2}=2\sin^2p,\\
 <h3 id="sec-3-2-1">3.2.1 先看孔径、方向、挡板和麦数</h3>
 <ol>
 <li>
-<p><strong>常规波束的分辨率尺度由孔径与波长之比决定</strong>（约 $\lambda/D$）：7 cm 级圆阵在 1 kHz 的这个尺度已经超过线阵的整个可视角域，方向选择性很弱；到 4 kHz 才进入几十度量级（见算例 3-3）。高频虽然能提供更大的电尺寸，却也更容易遇到空间混叠、传播衰减和阵列失配。设计时必须把这些因素一起考虑。</p>
+<p><strong>常规波束的分辨率尺度由孔径与波长之比决定</strong>（约 $\lambda/D$）：7 cm 级圆阵在 1 kHz 的这个尺度已经超过线阵的整个可视角域，方向选择性很弱；到 4 kHz 才进入几十度量级（见算例 3-3）。高频虽然能提供更大的电尺寸，却也更容易遇到空间混叠和阵列失配。设计时必须把这些因素一起考虑。</p>
 </li>
 <li>
 <p><strong>圆阵与线阵各有适用方向</strong>：线阵在正横附近投影孔径最大，转向端射时灵敏度下降；圆阵在水平面各方位的几何更均衡。球阵还可提供俯仰信息。哪一种识别率更高，取决于尺寸、挡板、房间、算法和评测方向分布，不能只按阵形下结论。<a href="https://course.ece.cmu.edu/~ece792/handouts/KumataniEtAl12.pdf" title="citation">Kumatani–McDonough–Raj《Microphone Array Processing for Distant Speech Recognition》IEEE Signal Processing Magazine 论文，2012（CMU 托管稿）</a></p>
@@ -455,7 +456,8 @@ B(f,\theta;\theta_0)&=\frac1M\sum_{m=0}^{M-1}e^{\mathrm j\psi_m}.
 <span id="sec-6" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-3-3">3.3 稀疏阵列与差分协同阵</h2>
 <span id="sec-u-5834a7d67e" class="anchor-alias" aria-hidden="true"></span><span id="sec-7" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-3-3-1">3.3.1 协同阵的概念：从麦的位置到麦对的间距</h3>
 <p>均匀线阵若要在包含两个端射方向的闭角域内保证无相位歧义，阵元间距须严格小于半波长；等于半波长时两个端射方向仍重合（§2.6）。在给定麦克风数量下，这一条件限制了物理孔径。</p>
-<p><strong>稀疏阵列（sparse array）</strong>相对于一个明确的密集参考网格，只启用其中一部分候选位置；“麦克风少”或“位置不均匀”本身都不足以构成这个定义。常见设计包括非均匀的嵌套阵、互质阵和删减阵，也可能保留等间距但存在空位。利用麦克风对的位置差，可以补出物理阵列没有直接占用的连续虚拟位置；虚拟位置数增加不等于物理孔径凭空增加。</p>
+<p><strong>本节的整数网格稀疏阵列（sparse array）</strong>先给定一个密集参考网格，再只占用其中部分位置。下文的嵌套阵、互质阵和删减阵都按整数位置及其差分滞后来比较；这种设计可用较少的物理麦克风取得某些原本需要更多阵元才能覆盖的间距。<a href="https://doi.org/10.1121/1.406821">Pumphrey《Design of sparse arrays in one, two, and three dimensions》JASA 论文，1993</a></p>
+<p><strong>广义稀疏阵列设计不要求位置落在预设网格上。</strong> 例如 <a href="https://doi.org/10.1049/iet-map.2015.0775">Yan 与 Yang《Synthesis of planar sparse arrays by perturbed compressive sampling framework》IET MAP 论文，2016</a> 在平面天线阵列设计中允许候选阵元位置连续扰动；这说明固定网格是本节算例的约定，而不是所有稀疏阵列的定义。麦克风数量少或位置不均匀，本身也不足以说明差分滞后连续。只有实际位置差覆盖相应网格时，才能补出物理阵列没有占用的连续虚拟位置；虚拟位置数增加不等于物理孔径凭空增加。</p>
 <p><strong>核心概念：差分协同阵（difference co-array）</strong>。理想远场窄带模型下，协方差矩阵第 $i,j$ 个元素的相位由麦 $i$ 与麦 $j$ 的位置差决定。收集所有麦对的位置差，就得到差分协同阵。</p>
 <p>6 麦均匀线阵的位置是 {0,1,2,3,4,5}（单位 $\lambda/2$），不同的有符号滞后是 {0, ±1, …, ±5}，共 11 个。6 麦嵌套阵 {0,1,2,3,7,11} 可得到 {0, ±1, …, ±11}，共 23 个连续滞后（图10）。</p>
 <p>这 23 个数是连续的<strong>有符号差分滞后</strong>，不是 23 路彼此独立的物理快拍。按连续单侧滞后 $0,\ldots,L$ 可组织成 $L+1$ 维虚拟矩阵：均匀例为 6 维，嵌套例为 12 维；具体构造仍要检查模型和矩阵性质。</p>
@@ -490,30 +492,46 @@ r[-\ell]&=r[\ell]^*.
 <p>协同阵使用的是二阶统计量，需要专门的协同阵 MUSIC、Toeplitz 重构、空间平滑或稀疏重构。差分滞后中的洞还会使可用连续虚拟孔径缩短，插值或矩阵补全又会引入额外假设。</p>
 <p>嵌套阵与互质阵最初主要在窄带阵列模型下发展，原始方法见 <a href="https://doi.org/10.1109/TSP.2010.2049264" title="citation">Pal 与 Vaidyanathan 的嵌套阵论文</a>与 <a href="https://doi.org/10.1109/TSP.2010.2089682" title="citation">Vaidyanathan 与 Pal 的互质阵论文</a>。</p>
 <p>语音宽带、混响和频率相关阵列流形会增加处理难度。因此实际使用前应在目标频带和房间条件下验证，不能只按理论差集长度选型。</p>
-<p>稀疏阵与分布式阵不是同一概念。稀疏阵强调只占用密集候选网格中的部分位置，位置可以非均匀，也可以是带空位的等间距子集；分布式阵由多个独立设备组成，除了几何布局，还要处理节点标定、独立时钟和通信。</p>
+<p>稀疏阵与分布式阵不是同一概念。本节的稀疏阵算例只占用参考网格中的部分位置；更一般的稀疏设计也可以连续选择位置。分布式阵由多个独立设备组成，除了几何布局，还要处理节点标定、独立时钟和通信。</p>
 <p>上述几何分析默认通道和位置准确。实际系统还需要通过标定减小增益、相位、耦合和位置误差。</p>
 <span id="sec-10" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-3-4">3.4 阵列校准：麦克风个个不一样时怎么办</h2>
 <p>前面的理想公式假设各通道增益和相位一致、阵元位置准确，并忽略壳体散射、声学耦合和电串扰。实际偏差会使导向模型与观测不匹配。本节把常见偏差写进模型，再说明怎样测量和补偿。</p>
 <span id="sec-11" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-3-4-1">3.4.1 增益相位自校准：利用未知声源的多位置观测</h3>
-<p>先区分已知方向标定与未知方向自校准。前者用已知几何和校准声源求通道误差；后者还要估计声源方向，需要额外的可辨识条件。不能仅凭“交替优化会收敛”就认为未知量能唯一确定。</p>
-<p>在一个固定频点，把第 $m$ 路响应误差写成复增益：</p>
+<p>先区分已知方向标定与未知方向联合估计。前者用已知几何和校准声源求通道误差；后者还要估计声源方向，必须先问哪些未知量能由观测分开。交替优化即使收敛，也不能替代可辨识性检查。</p>
+<p>在一个固定频点，令 $q$ 表示依次录制的声源场景、$t$ 表示该场景中的帧、$m=0,\ldots,M-1$ 表示通道。假设每个场景只有一个远场窄带源，各场景共用不变的通道复增益；把模型和本节使用的未归一化复数残差平方和写在一起：</p>
 <p>$$\begin{aligned}
 g_m(f)&=[1+\Delta g_m(f)]e^{\mathrm j\Delta\phi_m(f)},\\
-\vec x&=\operatorname{diag}(\vec g)\vec a\,s+\vec n.
+\vec x_{qt}&=\operatorname{diag}(\vec g)\vec a(\theta_q)s_{qt}+\vec n_{qt},\\
+J(\vec g,\boldsymbol\theta,\mathbf S)
+&=\sum_{q,t,m}|x_{qtm}-g_ma_m(\theta_q)s_{qt}|^2.
 \end{aligned}\tag{3-11}$$</p>
-<p>$\Delta g_m$ 是相对幅度误差、无量纲；$\Delta\phi_m$ 是相位误差、单位 rad；$s$ 为参考处的源复谱，$\vec n$ 为噪声。逐通道增益构成对角矩阵，尚未包含通道间串扰。相位和增益通常随频率变化，单个频点的修正不能不经检查地用于整个语音频带。</p>
+<p>$\Delta g_m$ 是相对幅度误差、无量纲，且此参数化要求 $1+\Delta g_m>0$；$\Delta\phi_m$ 是相位误差、单位 rad；$s_{qt}$ 是参考处每帧未知的源复谱，$\vec n_{qt}$ 是噪声。逐通道增益构成对角矩阵，尚未包含通道间串扰。相位和增益通常随频率变化，单个频点的修正不能不经检查地用于整个语音频带。</p>
 <p>仅由观测，公共源幅度与全部 $g_m$ 的共同复尺度不能分开。相对标定通常选择参考通道，令 $g_0=1$；这表示以参考通道为基准，不表示它已具备绝对声压校准。</p>
+<p><strong>固定参考麦仍不能消除线阵的方向—相位斜率歧义。</strong> 对间距 $d$ 的均匀线阵，本书以正横为 $0°$ 的导向约定给出 $a_m(\theta)=e^{\mathrm j kmd\sin\theta}$，其中 $k=2\pi f/c$。任选一个使所有新方向仍在可用角域内的共同偏移 $\delta$，令</p>
+<p>$$\begin{aligned}
+\sin\theta'_q&=\sin\theta_q+\delta,\qquad
+g'_m=g_m e^{-\mathrm j kmd\delta},\\
+g'_ma_m(\theta'_q)
+&=g_m e^{-\mathrm j kmd\delta}
+  e^{\mathrm j kmd(\sin\theta_q+\delta)}
+ =g_ma_m(\theta_q).
+\end{aligned}$$</p>
+<p>这里改动的是每个方向的<strong>正弦值</strong>，不是把每个角度简单加上同一个度数；$m=0$ 时仍有 $g'_0=g_0=1$。因此，即使录到多个不同的未知方向，只要任意复增益的相位斜率也未知，这两套参数仍会逐帧产生完全相同的无噪声观测。</p>
+<p>可用下面的四麦小例子检查：$d=4$ cm、$f=1$ kHz、$c=343$ m/s，原方向是 $[-40°,0°,35°]$，令 $\delta=0.15$，新方向约为 $[-29.524°,8.627°,46.351°]$，均处于 $[-60°,60°]$。同时给第 $m$ 路增益乘上 $e^{-\mathrm j kmd(0.15)}$，第 1 路相位就相对原值改变约 $-6.297°$；两套模型逐样本预测的最大差在本书双精度合成中约为 $7.0\times10^{-16}$。这个差是浮点舍入量级，不是定位误差，也不说明哪一套方向是真值。</p>
 <p>导向矢量 $\vec{a}(\theta)$ 的每个分量都会乘上这个误差，不同通道的相对误差可能使 MUSIC 谱峰变宽或偏移，也可能使波束零陷变浅。若所有通道只有同一个非零复增益，则归一化后的相对流形不变；共同尺度不是方向失配。麦克风阵列实测校准的一个原始例子见 <a href="https://doi.org/10.1109/TSA.2004.834459" title="citation">Sachar、Silverman 与 Patterson 2005，IEEE Transactions on Speech and Audio Processing，13(1):42–52</a>。</p>
-<p><strong>已知方向时先走通最小二乘。</strong> 对某一待校准通道，令 $z_q$ 是由已知方向和可靠参考信号算出的理想复谱，$y_q$ 是该通道实测复谱，$q=1,\ldots,Q$ 标识不同帧或校准条件。模型为 $y_q=gz_q+n_q$，估计问题是</p>
+<p><strong>已知方向时先走通最小二乘。</strong> 对某一待校准通道，令 $z_i$ 是由已知方向和可靠参考信号算出的理想复谱，$y_i$ 是该通道实测复谱，$i=1,\ldots,Q$ 标识不同帧或校准条件。模型为 $y_i=gz_i+n_i$，估计问题是</p>
 <p>$$\begin{aligned}
 \hat g&=\underset{g\in\mathbb C}{\arg\min}
- \sum_{q=1}^{Q}|y_q-gz_q|^2,\\
-\hat g&=\frac{\sum_q z_q^*y_q}{\sum_q|z_q|^2}.
+ \sum_{i=1}^{Q}|y_i-gz_i|^2,\\
+\hat g&=\frac{\sum_i z_i^*y_i}{\sum_i|z_i|^2}.
 \end{aligned}\tag{3-12}$$</p>
-<p>将平方展开为 $|y_q|^2-gz_qy_q^*-g^*z_q^*y_q+|g|^2|z_q|^2$，收集关于 $g$ 的二次项，最小点满足 $g\sum|z_q|^2=\sum z_q^*y_q$。分母是校准激励能量，必须为正；零能量时应拒绝估计。E03-12 从两个复数观测算出 $\hat g=0.94+0.5\mathrm j$，并逐项核对残差。</p>
-<p>这个公式假设 $z_q$ 可视为已知输入。若参考麦本身含显著噪声，直接用带噪 $X_m/X_0$ 或把 $X_0$ 当精确输入会引入误差变量问题，尤其在参考能量很小时容易不稳定。实测需要足够激励、多帧统计和独立复测；最小二乘教学题不证明一般录音上的无偏性。</p>
-<p>自校准可以不用方向已知的专用声源。一类做法是交替估计：先固定通道误差估方向，再固定方向估各麦复增益。还应给初值、约束、停止条件和残差检查；目标函数不再下降，只能说明该迭代停止，不能证明全局最优或几何唯一。</p>
-<p>这种方法依赖可辨识条件。若只有一个固定方向，声源相位、传播相位和麦克风相位误差可能互相混淆；加入多个充分分散的方向、频点或几何约束后，才有机会分离这些未知量。具体需要多少方向取决于模型参数和约束，不能用一条固定数字概括。</p>
+<p>将平方展开为 $|y_i|^2-gz_iy_i^*-g^*z_i^*y_i+|g|^2|z_i|^2$，收集关于 $g$ 的二次项，最小点满足 $g\sum|z_i|^2=\sum z_i^*y_i$。分母是校准激励能量，必须为正；零能量时应拒绝估计。E03-12 从两个复数观测算出 $\hat g=0.94+0.5\mathrm j$，并逐项核对残差。</p>
+<p>这个公式假设 $z_i$ 可视为已知输入。若参考麦本身含显著噪声，直接用带噪 $X_m/X_0$ 或把 $X_0$ 当精确输入会引入误差变量问题，尤其在参考能量很小时容易不稳定。实测需要足够激励、多帧统计和独立复测；最小二乘教学题不证明一般录音上的无偏性。</p>
+<p><strong>未知方向不等于完全无锚。</strong> <a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2004/06/2004-ivantash-icme.pdf">Tashev《Gain Self-Calibration Procedure for Microphone Arrays》ICME 论文，2004，§2–3</a>先估方向，再利用该方向与各路接收能量更新<strong>增益</strong>；其简化模型把位置视为足够准确，并把通道响应修正简化为增益修正。<a href="https://doi.org/10.1007/BF01201215">Weiss 与 Friedlander《Eigenstructure Methods for Direction Finding with Sensor Gain and Phase Uncertainties》，1990，摘要</a>讨论方向与各传感器增益、相位的联合估计。方法名称或论文摘要都不能使上面这个任意复增益 ULA 反例自动消失；必须核对各自的模型和额外约束。</p>
+<p><strong>本书的受锚约束教学演示</strong>给出一条可运行的最小路径，而非复现上述论文算法。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/examples/self_calibration_demo.py">演示入口</a>生成四麦、三个依次录制的单源场景，每场景 48 帧单频复谱；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/core/calibration.py">估计实现</a>固定 $g_0=1$，还要求从观测之外独立测得相邻第 1 路相对第 0 路的相位，增益幅度仍由数据估计。角度限制在 $[-60°,60°]$，相邻麦在该角域内不得相位折叠。这个外部相位锚约束住上面的共同相位斜率；如果锚本身错了，数据残差并不能替它纠错。</p>
+<p>实现最小化式(3-11)的 $J$：固定增益时先对每帧未知源复谱做最小二乘消元，在角域内用网格和局部搜索更新每个场景的方向；固定方向和源复谱时，再用复数最小二乘更新通道增益，并将第 1 路相位约束在外部测量值上。它记录初始与每轮目标值、轮数和停止状态；目标值停止下降或达到迭代上限，不等于找到全局最优。</p>
+<p>运行仓库根目录下的 <code>PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -B -m codes.chapters.ch03.examples.self_calibration_demo</code> 可得到 JSON 数值。本书单次合成以随机种子 307 生成源复谱和复高斯噪声，噪声复数均方根为 $0.005$；外部相位锚取正确的 $0°$ 时，算法在 21 轮后报告收敛，三个真方向 $[-40°,0°,35°]$ 对应的估计约为 $[-39.994°,-0.012°,34.997°]$，未归一化目标值由约 $0.011823$ 降至 $0.011719$。真值只用于事后评分，不作为拟合输入。</p>
+<p>反过来，对<strong>无噪声</strong>的同一信号误设外部相位锚为 $+5°$，算法也报告收敛，估计方向约为 $[-49.631°,-6.840°,27.031°]$，目标值约 $1.1\times10^{-28}$。可见极小残差只能说明模型对数据拟合得好，不能证明相位锚正确或方向无偏。本例没有混响、同时多源、频率相关误差或时钟偏差，也没有设备实测与全局最优保证。</p>
 <p>复增益标定处理单通道幅相偏差；跨通道电串扰可在一定线性近似下写成频率相关混合矩阵，壳体散射则通常还随入射方向变化。</p>
 <span id="sec-12" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-3-4-2">3.4.2 互耦补偿：把串音矩阵抵消掉</h3>
 <p>电路走线或器件间的线性串扰，在近似不随声源方向变化时可写成频率相关矩阵 $\mathbf{C}(f)$，实际导向矢量变为 $\mathbf{C}(f)\vec{a}(f,\theta)$。</p>
@@ -550,7 +568,9 @@ J(\vec v)=\|\mathbf C\vec v-\vec x\|_2^2
 <li><strong>有锚点标定</strong>：在多个已知位置播放信号，由 TDOA 反解麦克风坐标；</li>
 <li><strong>无锚点自标定</strong>：同时估计声源位置与麦克风位置，要求声源运动或多位置观测满足可辨识条件。</li>
 </ul>
-<p>无外部锚时，观测至少不能区分整体平移、旋转和镜像；只用方向观测时还可能不能确定尺度。实现中固定参考麦和坐标轴，是选择一个坐标规范，以报告该坐标系中的代表解；它不能单独建立外部世界中的绝对坐标。若观测本身不能确定尺度，还须加入已知距离；若需要房间世界坐标，则要提供外部锚点或等价约束。这些不唯一性可由距离差对刚体变换的不变性直接验证，属于本书几何分析。若实际求解 TDOA 自标定，还必须明确发声时刻和接收机时钟是否已知；基于全部绝对传播时间或距离的到达时间（Time of Arrival，TOA）方法，不能直接当作仅有时间差的解法。</p>
+<p>无外部锚时，观测至少不能区分整体平移、旋转和镜像；只用方向观测时还可能不能确定尺度。实现中固定参考麦和坐标轴，是选择一个坐标规范，以报告该坐标系中的代表解；它不能单独建立外部世界中的绝对坐标。</p>
+<p>若观测本身不能确定尺度，还须加入已知距离；若需要房间世界坐标，则要提供外部锚点或等价约束。这些不唯一性可由距离差对刚体变换的不变性直接验证，属于本书几何分析。</p>
+<p>若实际求解 TDOA 自标定，还必须明确发声时刻和接收机时钟是否已知；基于全部绝对传播时间或距离的到达时间（Time of Arrival，TOA）方法，不能直接当作仅有时间差的解法。</p>
 <p><a href="https://arxiv.org/abs/1610.02392" title="citation">Zhayida、Segerblom Rex、Kuang、Andersson 与 Åström 的 2016 年预印本《An Automatic System for Acoustic Microphone Geometry Calibration based on Minimal Solvers》</a>在 §2 明确采用接收麦同步、声源发声时刻未知的条件，§5～6 分别处理时间偏移与几何。它可作为这种特定 TDOA 自标定问题的实现入口；不是任意异步分布式节点的直接解法。固定源码与实际取得/运行边界见<a href="research/01_spatial_and_tracking.html">空间算法源码研究</a>。</p>
 <p>分布式阵列还需同时估计节点时钟关系（§10.2），否则 TDOA 会包含系统偏差。</p>
 <span id="sec-14" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-3-4-4">3.4.4 失配灵敏度表：先坏哪、坏多少</h3>
@@ -571,7 +591,7 @@ J(\vec v)=\|\mathbf C\vec v-\vec x\|_2^2
 <td>1%（约 0.1 dB）</td>
 <td>差分/超指向的零陷深度</td>
 <td>本例后方残差相对单麦幅度为 −40 dB；相对前方单位响应约 −31 dB（§3.1 算例 3-1 第 5 步）</td>
-<td>产线逐只配对、出厂标定系数</td>
+<td>在受控条件下测量相对增益并补偿</td>
 </tr>
 <tr>
 <td>相位失配</td>
@@ -608,8 +628,9 @@ J(\vec v)=\|\mathbf C\vec v-\vec x\|_2^2
 <p>若按同一采样索引比较两节点的物理采样时间，50 ppm、标称 1 小时对应的时间差大小为 $0.18/1.00005\approx0.179991$ s；这与累计采样数差的换算口径不同。该表只作数量级分析，不替代设备时钟的温漂与统计测量。</p>
 <p>增益失配一行的两个 dB 数有不同分母。−40 dB 是后方残差相对一只麦克风输入幅度的电平；−31 dB 先把前方响应归一到 0 dB，再读后方零陷的相对电平。读波束图时应使用后一个口径，不能把两数当成同一零陷深度。</p>
 <p>位置误差造成的相位偏差随频率增大；增益漂移、耦合和噪声则未必遵循同一单调关系。依赖精确相消的零陷和超指向设计通常最敏感。</p>
-<p>固定一体式阵列常用出厂标定。分布式阵列还需处理节点位置、时钟偏移和采样率漂移，并根据设备移动或时钟变化决定是否在线更新。</p>
-<p><strong>工程流程</strong>通常分三步：</p>
+<p>固定一体式阵列可在受控条件下标定相对通道响应；是否出厂写入补偿系数，取决于具体设备和流程。例如，<a href="https://wiki.analog.com/resources/tools-software/sigmastudio/toolbox/adialgorithms/offlinemicrophonematch">ADI 的 SigmaStudio 离线麦克风匹配说明</a>只涉及两路输入的电平匹配；<a href="https://www.ti.com/lit/pdf/SLAAEH6">TI 的 TAC5x1x 系列应用说明 SLAAEH6，2024</a>列出增益和相位校准功能。这些具体功能不能直接证明某款设备完成了几何或全频带阵列流形标定。</p>
+<p>分布式阵列还需处理节点位置、时钟偏移和采样率漂移，并根据设备移动或时钟变化决定是否在线更新。</p>
+<p><strong>一种可核验的工程流程</strong>分三步：</p>
 <ol>
 <li>在受控声场中测各通道的频率响应和阵列流形；</li>
 <li>把补偿参数写入设备；</li>
@@ -629,7 +650,7 @@ J(\vec v)=\|\mathbf C\vec v-\vec x\|_2^2
 <p>嵌套阵的滞后连续覆盖 −11 到 11，共 23 个；正滞后 1～11 的重数依次为 $3,2,1,2,1,1,1,1,1,1,1$，负滞后与之对称。相同滞后的样本可以平均，但不同麦对可能共享同一通道，不能据重数直接假定它们统计独立，更不能把 23 个差分位置当作 23 路原始录音。对于连续滞后 −11～11，按单侧索引构造的虚拟矩阵是 12 维；能估计的源数还受有效秩、噪声和重构方式限制，不能由 23−1 得出 22 个可分辨源。</p>
 <h3 id="sec-u-e1032bc540">E03-02：把越界时延与大角度误差分开</h3>
 <p>麦 1 位于 $x=0$、麦 2 位于 $x=d=4$ cm，声速 343 m/s；本题观测 $\tau_{12}=-\tau_{21}=d\sin\theta/c$，真角取 0° 和 85°。分别给真实时延加、减 10 μs，用完整反正弦反算；若反正弦输入超出 $[-1,1]$，应如何记录？</p>
-<p><strong>参考答案</strong>：正横的真实时延为零，两个估计角分别约为 −4.92°、+4.92°。85° 时的真实时延约为 116.17 μs；减去 10 μs 后约为 65.57°，增加 10 μs 则超过最大时延 $0.04/343\approx116.62$ μs，无实数方向可解。保留更多位计算，再将角度舍入到两位小数。</p>
+<p><strong>参考答案</strong>：正横的真实时延为零；先加 10 μs 得到约 +4.92°，再减 10 μs 得到约 −4.92°。85° 时的真实时延约为 116.17 μs；减去 10 μs 后约为 65.57°，增加 10 μs 则超过最大时延 $0.04/343\approx116.62$ μs，无实数方向可解。保留更多位计算，再将角度舍入到两位小数。</p>
 <p>代码将越界结果记为 <code>valid=false</code>、角度为 <code>null</code>，不把它悄悄夹到 90°。系统可以另设夹限策略，但必须保留越界标记；夹限输出是恢复动作，不是一次准确的方向观测。</p>
 <h3 id="sec-u-490a1e7e53">E03-03：同一方向为什么会有两个方位角数字？</h3>
 <p>已知方向单位向量 $\vec u=[-1/2,-1/\sqrt2,1/2]^\top$。按本书约定——方位角零点为 $+y$、正角转向 $+x$——反算方位角与俯仰角，并将角度重新代回方向向量。再与从 $+x$ 朝 $+y$ 计角的常见数学约定比较。</p>
@@ -818,7 +839,7 @@ a&=\sqrt{1-b^2}\approx0.75117439,\\
 <p>可靠的已知输入为 $\vec z=[1,2\mathrm j]^\top$，真实通道增益为 $g=1+0.5\mathrm j$。两次观测分别加入误差 $\vec n=[0.1,-0.2\mathrm j]^\top$，因此测得 $\vec y=[1.1+0.5\mathrm j,-1+1.8\mathrm j]^\top$。按式(3-12)估计增益，求两个残差和残差平方和；再解释 $\vec z=0$ 时如何处理。</p>
 <p><strong>参考答案：分母与共轭不能省。</strong> 输入能量为 $|1|^2+|2\mathrm j|^2=1+4=5$。分子为</p>
 <p>$$\begin{aligned}
-\sum_q z_q^*y_q
+\sum_i z_i^*y_i
 &=(1.1+0.5\mathrm j)
  +(-2\mathrm j)(-1+1.8\mathrm j)\\
 &=4.7+2.5\mathrm j.

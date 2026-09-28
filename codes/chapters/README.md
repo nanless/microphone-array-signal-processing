@@ -7,7 +7,7 @@
 | [ch00](ch00/) | `ch00.cross_chapter.*` | 全书索引、跨章练习、主音频清单与上游来源 |
 | [ch01](ch01/) | `ch01.chapter01_experiments` | E01-04～06；有限记录互项、残余延迟和头部传播模型，均为数学输入 |
 | [ch02](ch02/) | `ch02.chapter02_experiments` | E02-09～15；传播、频谱、协方差与采样，不是设备测量 |
-| [ch03](ch03/) | `ch03.chapter03_experiments`、`ch03.coarray_covariance_exercise` | E03-07～14；几何、模糊、校准和虚拟滞后统计 |
+| [ch03](ch03/) | `ch03.chapter03_experiments`、`ch03.coarray_covariance_exercise`、`ch03.examples.self_calibration_demo` | E03-07～14 与单独的受外部相位锚约束标定示例；几何、模糊、校准和虚拟滞后统计，不是全盲设备标定 |
 | [ch04](ch04/) | `ch04.chapter04_experiments`、`ch04.doa_resolution_trials` | E04-08、E04-12～18；分辨率试验保留分类计数与统计分母 |
 | [ch05](ch05/) | `ch05.chapter05_experiments`、`ch05.beamformer_common_input_demo` | E05 练习；同输入波束权重比较限于所声明的阵列与噪声条件 |
 | [ch06](ch06/) | `ch06.chapter06_experiments`、`ch06.aec_algorithm_minicases`、`ch06.aec_partitioned_demo` | E06-22～33 及 AEC 算法缩例；外部库或录音示例另有依赖 |

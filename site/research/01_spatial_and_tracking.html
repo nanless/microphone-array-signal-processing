@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>空间处理与追踪源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="93c0f71d121e"><style>
+<meta name="source-digest" content="bde473e0d8f4"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -930,6 +930,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="395-前向失配模型与校准器的区别" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-39-5">39.5 前向失配模型与校准器的区别</h4>
 <p>固定 doatools 的 <a href="https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/model/perturbations.py"><code>model/perturbations.py</code></a>可以把指定误差施加到模型：<code>LocationErrors</code> 加到坐标，<code>GainErrors</code> 逐通道乘 $1+g_m$，<code>PhaseErrors</code> 乘 $e^{\mathrm j\phi_m}$，<code>MutualCoupling</code> 左乘矩阵 $\mathbf C$。其中 $\phi_m$ 用弧度，$g_m=-0.1$ 表示实际增益 0.9。这些类接收已给定误差，不从录音估计误差，也不是自动校准算法。</p>
 <p>建议先用正文 E03-06 的已知双麦复增益检查前向响应，再把反向补偿和未知参数估计作为单独步骤。把全部通道乘同一非零复数可并入未知源幅度；相对校准需指定参考通道。参考通道本身含噪时，直接复谱比值会受分母噪声影响。多位置联合拟合还需检查参考能量、方向覆盖、模型残差与留出方向，不能从训练方向拟合准确推出全方向准确。</p>
+<p><strong>未知方向与任意复增益还有更深的不唯一性。</strong> 对间距 $d$ 的 ULA，令 $u_q=\sin\theta_q$、$\kappa=2\pi f/c$，单频第 $q$ 个单源场景的通道预测可写 $x_{mqt}=g_m e^{\mathrm j\kappa md u_q}b_{qt}$。只要全部 $u_q+\delta$ 仍在允许方向域，把每个方向余弦加同一个 $\delta$，同时令 $g'_m=g_m e^{-\mathrm j\kappa md\delta}$，每个观测的复数预测便逐项不变，而且 $g'_0=g_0$。固定参考通道、增加几个未知方向或增加同频快拍，都不足以确定绝对方向；若每个频率的通道相位可自由变化，简单叠加频点也不能自动解除这项自由度。<a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2004/06/2004-ivantash-icme.pdf">Tashev 2004 的作者原文</a>说明交替估计方向与通道参数的思路，但该论文处理的是增益校准；<a href="https://doi.org/10.1007/BF01201215">Weiss 与 Friedlander 1990</a>讨论方向与增益相位联合估计。下面的程序是本书独立写的受约束教学例，不是两篇论文的原实现。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/examples/self_calibration_demo.py">第 3 章受锚标定演示</a>先构造无锚反例：4 麦、间距 4 cm、1 kHz、声速 343 m/s，三场景真角为 −40°、0°、35°；方向余弦共同加 0.15，并让通道相位吸收反向斜率后，两套参数的逐样本复预测最大差约 $7.0\times10^{-16}$。随后给估计器一个<strong>另行测得</strong>的相邻通道相位 0°，固定参考麦增益为 1，在 −60°～60° 内交替剖面搜索方向、最小二乘更新各通道复增益与逐帧源谱。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/core/calibration.py">唯一数值核</a>记录每轮残差目标、收敛状态和低能量、越界或混叠拒绝条件；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_chapter03_self_calibration.py">独立边界测试</a>检查代数等价、正确锚与错误锚。固定种子 307、每场景 48 帧、复噪声 RMS 0.005 的一次合成运行于第 21 轮停止，三个角误差为约 +0.00561°、−0.01208°、−0.00282°；这不是跨条件性能分布。</p>
+<p>错误锚比低残差更值得注意：把相邻通道相位误设为 +5°，同一无噪声数据仍可拟合到约 $10^{-28}$ 的残差目标，却把正横场景估成约 −6.84°。因此优化目标下降不能证明外部相位锚正确。示例假设同步远场、每场景一个窄带源、已知几何和准确的外部相位锚；它没有运行真实硬件、混响或多个同时说话人的实验，也不保证全局最优。运行：<code>.venv/bin/python -m codes.chapters.ch03.examples.self_calibration_demo</code>，标准输出为 JSON，不生成音频文件。</p>
 <p>固定源码还有以下静态接口疑点，未在此执行错误路径：<code>GainErrors</code>、<code>PhaseErrors</code> 的列表转数组分支写入了拼错的局部变量，后面仍读取原对象的 <code>ndim</code>；<code>MutualCoupling</code> 的方阵校验使用 <code>and</code>，没有完整拒绝非方二维数组。合法模型对照可显式传入正确形状的 NumPy 数组，负例仍需在外部隔离环境中验证并记录；不能把这些类列成已验收的设备输入接口。</p>
 <p>串扰补偿还应注明噪声加入的位置。若观测为 $\vec x=\mathbf C\vec s+\vec n_{\rm post}$，左乘逆矩阵会改变后加噪声为 $\mathbf C^{-1}\vec n_{\rm post}$，病态矩阵可大幅放大它；若噪声在混合前已与信号共同经过 $\mathbf C$，就不能把同一句结论无条件套上去。方向相关壳体散射应进入实测流形，固定串扰矩阵不能代替它。</p>
 <span id="396-从-toa-距离到同步麦克风-tdoa-自标定" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-39-6">39.6 从 TOA 距离到同步麦克风 TDOA 自标定</h4>

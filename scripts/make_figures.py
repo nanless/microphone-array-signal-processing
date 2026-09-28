@@ -304,18 +304,19 @@ def fig_geometries():
         color=C_ORANGE, lw=1.4))
     ax.annotate("竖线为平面波波前\n沿基线向左传播", xy=(2.55, 1.35),
                 fontsize=FS_SMALL, color=C_ORANGE)
-    ax.set_xlim(-3.5, 6.5); ax.set_ylim(-2.0, 2.5)
+    # (a)(b) 共用横轴范围；两只麦的 4 个示意单位在成图中须等长。
+    ax.set_xlim(-4, 6); ax.set_ylim(-2.0, 2.5)
     # (b) broadside
     ax = axes[0, 1]
     ax.scatter([-2, 2], [0, 0], s=180, c=C_BLUE, zorder=5, edgecolors="k")
-    for y_front in [1.3, 2.3, 3.3, 4.3, 5.3]:
+    for y_front in [0.8, 1.5, 2.2, 2.9, 3.6]:
         ax.plot([-3.2, 3.2], [y_front, y_front], color=C_ORANGE, alpha=0.65, lw=1.2)
     ax.add_patch(FancyArrowPatch(
-        (0, 6.2), (0, 5.0), arrowstyle="-|>", mutation_scale=14,
+        (0, 4.5), (0, 3.75), arrowstyle="-|>", mutation_scale=14,
         color=C_ORANGE, lw=1.4))
-    ax.annotate("横线为平面波波前\n垂直基线向下传播", xy=(1.2, 5.75),
+    ax.annotate("横线为平面波波前\n垂直基线向下传播", xy=(1.2, 4.05),
                 fontsize=FS_SMALL, color=C_ORANGE)
-    ax.set_xlim(-6.5, 6.5); ax.set_ylim(-1, 7)
+    ax.set_xlim(-4, 6); ax.set_ylim(-1, 5)
     # (c) ULA
     ax = axes[0, 2]
     xs = np.arange(4)
