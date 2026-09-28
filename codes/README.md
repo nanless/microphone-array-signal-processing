@@ -4,8 +4,8 @@
 可直接装进产品的音频前端。实时音频线程、设备驱动、线程调度、定点优化、模型权重和现场标定仍需按
 第 10 章单独完成。
 
-外部研究代码由 [锁定清单](SOURCES.lock.json) 管理：91 个 Git 项目中，79 个在本机有
-`upstream/_downloads/` 工作区，另 12 个保留来源索引。2026-09-28 离线核验有 78 项通过，AEC Challenge 工作区的 5 个真实录音文件处于本地修改状态，未把该项记为通过；见 [SOURCE_STATUS.json](SOURCE_STATUS.json)。独立源码目录被 Git 忽略，不会随本书提交上传。
+外部研究代码由 [锁定清单](SOURCES.lock.json) 管理：92 个 Git 项目中，80 个在本机有
+`upstream/_downloads/` 工作区，另 12 个保留来源索引。2026-09-28 离线核验有 79 项通过，AEC Challenge 工作区的 5 个真实录音文件处于本地修改状态，未把该项记为通过；见 [SOURCE_STATUS.json](SOURCE_STATUS.json)。独立源码目录被 Git 忽略，不会随本书提交上传。
 取得代码、完成构建和复现数值是不同状态，见[复现记录说明](research/04_source_reproduction.md)。
 
 已有可选 nara-wpe 0.0.11 环境时，可运行
@@ -35,7 +35,7 @@ SMP-PHAT 可用 `.venv/bin/python codes/examples/reproduce_smpphat_reference.py 
 | `array_tutorial/` | 本书自行编写的 NumPy/标准库教学实现 |
 | `examples/` | 按章节组织的可运行例子，打印输入口径、中间量和结果 |
 | `reports/` | 本书仿真逐次统计与显式运行外部接口后保存的数值报告；记录输入、固定版本及环境，不等同于源码获取状态 |
-| `audio/` | 24 组、98 个本书合成 WAV 及 `MANIFEST.json`；由音频生成器产生，不直接编辑 |
+| `audio/` | 25 组、102 个本书合成 WAV 及 `MANIFEST.json`；由音频生成器产生，不直接编辑 |
 | `room_audio/` | 附录 B 第 16 题的 6 组、18 个房间白噪声合成 WAV、独立清单和结果图；由 `room_srp_exercise.py` 用锁定 pyroomacoustics 生成 |
 | `real_audio/` | 真实 DEMAND 河流录音摘录与 3 个派生 WAV，独立记录 CC BY-SA 3.0 数据许可 |
 | `upstream/` | 第三方官方仓库的按需获取工具；下载内容默认不入 Git |
@@ -68,7 +68,7 @@ SMP-PHAT 可用 `.venv/bin/python codes/examples/reproduce_smpphat_reference.py 
 例子只使用确定性输入，随机输入会固定种子。函数拒绝维度、单位或参数范围明显错误的输入；这类检查是
 为了尽早暴露口径错误，不表示代码已经达到产品级防御能力。
 
-全书195道稳定编号代码题按各章学习难点组织；完整ID、每题输入与答案、运行入口及音频条件见[练习与音频实验](research/05_exercises_and_audio.md)。基础题、算法边界题、精算题与结构题使用独立模块，导入模块不运行实验。附录B的17道综合书面题另行编号，其中需pyroomacoustics的房间实验不混入稳定ID题数。算法种类以[COVERAGE.md](COVERAGE.md)为准，不能用练习数量表示方法覆盖。
+全书205道稳定编号代码题按各章学习难点组织；完整ID、每题输入与答案、运行入口及音频条件见[练习与音频实验](research/05_exercises_and_audio.md)。基础题、算法边界题、精算题与结构题使用独立模块，导入模块不运行实验。附录B的17道综合书面题另行编号，其中需pyroomacoustics的房间实验不混入稳定ID题数。算法种类以[COVERAGE.md](COVERAGE.md)为准，不能用练习数量表示方法覆盖。
 
 第4章的[七道定位逐步实验](examples/chapter04_experiments.py)复算插值、相位求和、共同子空间基、几何更新和局部下界；[固定版doatools诊断](examples/reproduce_doatools_esprit.py)另需已有SciPy环境，并保留默认加权失败与独立参考结果。两者的教学验证与外部实现诊断分别记录。
 
@@ -98,11 +98,11 @@ SMP-PHAT 可用 `.venv/bin/python codes/examples/reproduce_smpphat_reference.py 
 .venv/bin/python codes/examples/generate_audio_samples.py --check
 ```
 
-98 个音频文件分为空间处理、四麦分数采样时差、AEC、WPE、给定矩阵解混、工程失真、追踪、相关噪声、极性错误、病态求逆、非线性回声、四种 AEC 方法、两带跨项、功率谱减、时钟漂移、线性插值失真、一采样对齐误差、房间衰减、双麦差分校准、纯音时差歧义、GSC 目标泄漏门控和 AEC 参考断流 24 组，均为本书合成的 16 kHz、PCM16 信号，不含第三方录音；真实录音使用独立的 `real_audio/` 目录。每组共用一个增益，避免逐文件归一化掩盖幅度差异；清单记录参数、随机种子、生成源文件摘要和 WAV 摘要。`--check` 检查当前生成物，不重写文件，也不自动播放音频。
+102 个音频文件分为空间处理、四麦分数采样时差、AEC、WPE、给定矩阵解混、工程失真、追踪、相关噪声、极性错误、病态求逆、非线性回声、四种 AEC 方法、两带跨项、功率谱减、时钟漂移、线性插值失真、一采样对齐误差、房间衰减、双麦差分校准、纯音时差歧义、GSC 目标泄漏门控、AEC 参考断流、WPE 可预测目标损伤、CSS 重叠关联和整块 AGC 控制共 25 组，均为本书合成的 16 kHz、PCM16 信号，不含第三方录音；真实录音使用独立的 `real_audio/` 目录。每组共用一个增益，避免逐文件归一化掩盖幅度差异；清单记录参数、随机种子、生成源文件摘要和 WAV 摘要。`--check` 检查当前生成物，不重写文件，也不自动播放音频。
 
 样例用于观察时延、残留回声、混响、混合和削波等现象，不是自然语音质量评测。给定混合矩阵的求逆不是盲分离；已知双讲区间的冻结不是双讲检测器。这些限制及试听顺序见[音频实验说明](research/05_exercises_and_audio.md)。合成文件的来源说明不等于授予新的再分发许可，许可边界仍见下节。
 
-附录 B 第 16 题另有[六位置房间仿真](examples/room_srp_exercise.py)生成的 [18 个白噪声 WAV](room_audio/MANIFEST.json)和[三栏结果图](room_audio/ROOM_RESULTS.png)：每个位置保存源、一条四麦仅直达输出和一条四麦完整房间输出。它们采用一组共同导出增益，且与上面的 98 个文件使用不同清单；条件、计算和读取边界见[音频实验说明第 17 节](research/05_exercises_and_audio.md#17-六位置房间响应与定位)。
+附录 B 第 16 题另有[六位置房间仿真](examples/room_srp_exercise.py)生成的 [18 个白噪声 WAV](room_audio/MANIFEST.json)和[三栏结果图](room_audio/ROOM_RESULTS.png)：每个位置保存源、一条四麦仅直达输出和一条四麦完整房间输出。它们采用一组共同导出增益，且与上面的 102 个文件使用不同清单；条件、计算和读取边界见[音频实验说明第 17 节](research/05_exercises_and_audio.md#17-六位置房间响应与定位)。
 
 ## 真实录音实验 R01
 
@@ -124,7 +124,7 @@ SMP-PHAT 可用 `.venv/bin/python codes/examples/reproduce_smpphat_reference.py 
 
 ## 真实成对 AEC 录音实验 R02
 
-[aec_real_pair_experiment.py](examples/aec_real_pair_experiment.py)对 Microsoft AEC Challenge 官方固定版的一对播放环回/麦克风录音运行 SpeexDSP 同步 AEC，并分别设置正确、全零和故意晚 1 秒的参考。录音没有独立干净回声真值；报告的是固定评分区的输入/输出数字功率变化，不是真值 ERLE。[完整文件摘要、构建命令、数值和限制](research/02_aec_wpe_separation.md#aec)保存在研究记录。真实众包录音的再分发授权尚不明确，因此原文件和可选处理后 WAV 只放在 Git 忽略缓存中，不纳入本仓库的 98 个合成音频或 DEMAND 的 4 个已授权 WAV。
+[aec_real_pair_experiment.py](examples/aec_real_pair_experiment.py)对 Microsoft AEC Challenge 官方固定版的一对播放环回/麦克风录音运行 SpeexDSP 同步 AEC，并分别设置正确、全零和故意晚 1 秒的参考。录音没有独立干净回声真值；报告的是固定评分区的输入/输出数字功率变化，不是真值 ERLE。[完整文件摘要、构建命令、数值和限制](research/02_aec_wpe_separation.md#aec)保存在研究记录。真实众包录音的再分发授权尚不明确，因此原文件和可选处理后 WAV 只放在 Git 忽略缓存中，不纳入本仓库的 102 个合成音频或 DEMAND 的 4 个已授权 WAV。
 
 ## 如何把公式和程序对上
 

@@ -1,0 +1,285 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-28T10:04:12.235151+00:00",
+  "harness_sha256": "0de9df6d42b08a82a4fd763d2e5047a0b5d396c33530767ccc35df77d78a202f",
+  "source_config_sha256": "7c49e37038b015ae3d36633480760ce3c8e7e3309aa2bd5b5f5fd77ef4492cfd",
+  "sources": {
+    "pystoi": {
+      "revision": "74872b000753a7a42ff51aa0868af8c82c7f9053",
+      "files": {
+        "pystoi/__init__.py": "48ce9882b6ba42f643f8305481a48902ddee97aa4f07bca13e44fea1b7d104ea",
+        "pystoi/stoi.py": "482b30bfa8e60f1453200315afcd5564fc9e9aa1d14aeb9710a58fd7a9f52658",
+        "pystoi/utils.py": "0222df0354a248ccc7f8525eda9bda9da815e5d60106f611a5f4750d1ba7f321",
+        "LICENSE": "35c25f6087c4e1857ba6d4bc0b7957b7bc523c9ff190a9e2cccb4b5ecba018ab"
+      }
+    },
+    "deepfilternet": {
+      "revision": "d375b2d8309e0935d165700c91da9de862a99c31",
+      "files": {
+        "ladspa/src/lib.rs": "d8fd5bfb0432609f3225648e6389505a8fcf0568d54da2bd9cb3cb30ed70ede8",
+        "LICENSE-MIT": "24e6bb09c928af8d8e56268082f87413247ce36b39dd5d33add2f9893968065e",
+        "LICENSE-APACHE": "1eaee808c5fb6b4e895ba30425285a5cdc5dd25bba2cd230f264c2200c331aec"
+      }
+    }
+  },
+  "config": {
+    "pystoi": {
+      "sample_rate_hz": 10000,
+      "zero_lengths": [
+        256,
+        1024,
+        10000
+      ],
+      "self_comparison_length": 10000,
+      "input_rng": "default_rng(4).normal",
+      "normalization_seeds": [
+        0,
+        1
+      ],
+      "alignment_samples": 0
+    },
+    "dfn_queue": {
+      "channels": 2,
+      "frame_size": 480,
+      "initial_queue_length_per_channel": 960,
+      "proc_delay_before": 960
+    },
+    "scope": "synthetic numerical inputs; no speech quality, hardware or model inference"
+  },
+  "environment": {
+    "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
+    "executable": "/tmp/room-pra-venv/bin/python",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O"
+  },
+  "pystoi": {
+    "execution": "original pystoi package functions",
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "records": [
+      {
+        "input": "zeros_256",
+        "samples": 256,
+        "extended": false,
+        "normalization_seed": 0,
+        "input_sha256": "e5a00aa9991ac8a5ee3109844d84a55583bd20572ad3ffcd42792f3c36b183ad",
+        "reference_equals_degraded": true,
+        "reference_has_energy": false,
+        "value": null,
+        "finite": false,
+        "classification": "exception",
+        "exception_type": "AxisError",
+        "exception_message": "axis 1 is out of bounds for array of dimension 1",
+        "warnings": []
+      },
+      {
+        "input": "zeros_256",
+        "samples": 256,
+        "extended": true,
+        "normalization_seed": 0,
+        "input_sha256": "e5a00aa9991ac8a5ee3109844d84a55583bd20572ad3ffcd42792f3c36b183ad",
+        "reference_equals_degraded": true,
+        "reference_has_energy": false,
+        "value": null,
+        "finite": false,
+        "classification": "exception",
+        "exception_type": "AxisError",
+        "exception_message": "axis 1 is out of bounds for array of dimension 1",
+        "warnings": []
+      },
+      {
+        "input": "zeros_256",
+        "samples": 256,
+        "extended": true,
+        "normalization_seed": 1,
+        "input_sha256": "e5a00aa9991ac8a5ee3109844d84a55583bd20572ad3ffcd42792f3c36b183ad",
+        "reference_equals_degraded": true,
+        "reference_has_energy": false,
+        "value": null,
+        "finite": false,
+        "classification": "exception",
+        "exception_type": "AxisError",
+        "exception_message": "axis 1 is out of bounds for array of dimension 1",
+        "warnings": []
+      },
+      {
+        "input": "zeros_1024",
+        "samples": 1024,
+        "extended": false,
+        "normalization_seed": 0,
+        "input_sha256": "9f1dcbc35c350d6027f98be0f5c8b43b42ca52b7604459c0c42be3aa88913d47",
+        "reference_equals_degraded": true,
+        "reference_has_energy": false,
+        "value": 1e-05,
+        "finite": true,
+        "classification": "warning_sentinel",
+        "warnings": [
+          {
+            "category": "RuntimeWarning",
+            "message": "Not enough STFT frames to compute intermediate intelligibility measure after removing silent frames. Returning 1e-5. Please check you wav files"
+          }
+        ]
+      },
+      {
+        "input": "zeros_1024",
+        "samples": 1024,
+        "extended": true,
+        "normalization_seed": 0,
+        "input_sha256": "9f1dcbc35c350d6027f98be0f5c8b43b42ca52b7604459c0c42be3aa88913d47",
+        "reference_equals_degraded": true,
+        "reference_has_energy": false,
+        "value": 1e-05,
+        "finite": true,
+        "classification": "warning_sentinel",
+        "warnings": [
+          {
+            "category": "RuntimeWarning",
+            "message": "Not enough STFT frames to compute intermediate intelligibility measure after removing silent frames. Returning 1e-5. Please check you wav files"
+          }
+        ]
+      },
+      {
+        "input": "zeros_1024",
+        "samples": 1024,
+        "extended": true,
+        "normalization_seed": 1,
+        "input_sha256": "9f1dcbc35c350d6027f98be0f5c8b43b42ca52b7604459c0c42be3aa88913d47",
+        "reference_equals_degraded": true,
+        "reference_has_energy": false,
+        "value": 1e-05,
+        "finite": true,
+        "classification": "warning_sentinel",
+        "warnings": [
+          {
+            "category": "RuntimeWarning",
+            "message": "Not enough STFT frames to compute intermediate intelligibility measure after removing silent frames. Returning 1e-5. Please check you wav files"
+          }
+        ]
+      },
+      {
+        "input": "zeros_10000",
+        "samples": 10000,
+        "extended": false,
+        "normalization_seed": 0,
+        "input_sha256": "f8c784aa6b57396e7c5e094c34d079d8252473e46e2f60593a921dbebf941fcc",
+        "reference_equals_degraded": true,
+        "reference_has_energy": false,
+        "value": 0.0,
+        "finite": true,
+        "classification": "finite_zero_energy_invalid",
+        "warnings": []
+      },
+      {
+        "input": "zeros_10000",
+        "samples": 10000,
+        "extended": true,
+        "normalization_seed": 0,
+        "input_sha256": "f8c784aa6b57396e7c5e094c34d079d8252473e46e2f60593a921dbebf941fcc",
+        "reference_equals_degraded": true,
+        "reference_has_energy": false,
+        "value": 0.00856518978523145,
+        "finite": true,
+        "classification": "finite_zero_energy_invalid",
+        "warnings": []
+      },
+      {
+        "input": "zeros_10000",
+        "samples": 10000,
+        "extended": true,
+        "normalization_seed": 1,
+        "input_sha256": "f8c784aa6b57396e7c5e094c34d079d8252473e46e2f60593a921dbebf941fcc",
+        "reference_equals_degraded": true,
+        "reference_has_energy": false,
+        "value": -0.00020999388836695469,
+        "finite": true,
+        "classification": "finite_zero_energy_invalid",
+        "warnings": []
+      },
+      {
+        "input": "random_self",
+        "samples": 10000,
+        "extended": false,
+        "normalization_seed": 0,
+        "input_sha256": "357c59a264da44c0a81d02c46cdf86964acdc163d43868da3b89c8abae4b7f0f",
+        "reference_equals_degraded": true,
+        "reference_has_energy": true,
+        "value": 1.0,
+        "finite": true,
+        "classification": "finite_self_comparison",
+        "warnings": []
+      },
+      {
+        "input": "random_self",
+        "samples": 10000,
+        "extended": true,
+        "normalization_seed": 0,
+        "input_sha256": "357c59a264da44c0a81d02c46cdf86964acdc163d43868da3b89c8abae4b7f0f",
+        "reference_equals_degraded": true,
+        "reference_has_energy": true,
+        "value": 1.0,
+        "finite": true,
+        "classification": "finite_self_comparison",
+        "warnings": []
+      },
+      {
+        "input": "random_self",
+        "samples": 10000,
+        "extended": true,
+        "normalization_seed": 1,
+        "input_sha256": "357c59a264da44c0a81d02c46cdf86964acdc163d43868da3b89c8abae4b7f0f",
+        "reference_equals_degraded": true,
+        "reference_has_energy": true,
+        "value": 1.0,
+        "finite": true,
+        "classification": "finite_self_comparison",
+        "warnings": []
+      }
+    ],
+    "not_executed": [
+      "MATLAB/Octave reference",
+      "natural speech corpus",
+      "resampling path (all inputs already 10 kHz)"
+    ]
+  },
+  "deepfilternet": {
+    "execution": "static source inspection only",
+    "rust_plugin_executed": false,
+    "evidence_lines": {
+      "channel_iteration": [
+        472
+      ],
+      "one_pop_per_channel": [
+        425,
+        473
+      ],
+      "metadata_frame_decrement": [
+        479
+      ],
+      "blocking_wait": [
+        431
+      ],
+      "delay_limit": [
+        443
+      ]
+    },
+    "queue_example": {
+      "execution": "independent Python queue semantics example, not upstream execution",
+      "queue_lengths_after": [
+        959,
+        959
+      ],
+      "first_remaining_sample_indices": [
+        1,
+        1
+      ],
+      "actual_removed_per_channel": [
+        1,
+        1
+      ],
+      "proc_delay_after": 480,
+      "intended_frame_drop_lengths": [
+        480,
+        480
+      ]
+    }
+  }
+}

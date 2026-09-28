@@ -136,7 +136,12 @@
         "modules/audio_processing/aec3/echo_canceller3.cc",
         "modules/audio_processing/aec3/subtractor.cc",
         "modules/audio_processing/aec3/residual_echo_estimator.cc",
-        "modules/audio_processing/aec3/suppression_gain.cc"
+        "modules/audio_processing/aec3/suppression_gain.cc",
+        "common_audio/vad/webrtc_vad.c",
+        "modules/audio_processing/agc2/input_volume_controller.cc",
+        "modules/audio_processing/gain_controller2.cc",
+        "modules/audio_processing/ns/quantile_noise_estimator.cc",
+        "modules/audio_processing/ns/speech_probability_estimator.cc"
       ]
     },
     {
@@ -150,7 +155,9 @@
       "entrypoints": [
         "COPYING",
         "libspeexdsp/mdf.c",
-        "libspeexdsp/preprocess.c"
+        "libspeexdsp/preprocess.c",
+        "libspeexdsp/resample.c",
+        "include/speex/speex_resampler.h"
       ]
     },
     {
@@ -164,7 +171,9 @@
       "acquisition": "independent_source_checkout",
       "entrypoints": [
         "COPYING",
-        "src/denoise.c"
+        "src/denoise.c",
+        "examples/rnnoise_demo.c",
+        "include/rnnoise.h"
       ]
     },
     {
@@ -588,6 +597,8 @@
         "DeepFilterNet/df",
         "libDF/src",
         "ladspa",
+        "ladspa/src/lib.rs",
+        "libDF/src/tract.rs",
         "LICENSE"
       ]
     },
@@ -1152,7 +1163,7 @@
       "fetch_enabled": true,
       "scope": "STOI and ESTOI",
       "acquisition": "independent_source_checkout",
-      "note": "Software-author implementation, not original-paper authors' Python package. Requires SciPy. Too-short active audio returns 1e-5 plus warning; do not aggregate sentinel.",
+      "note": "Software-author implementation, not original-paper authors' Python package. Requires SciPy. The short-active-audio 1e-5 warning is not a universal invalid-input detector: fixed-version calls on all-silent input can raise before that check or return a finite score (ESTOI may include random epsilon dither). Validate reference/estimate length, energy and scoring region separately; see industrial source audit.",
       "entrypoints": [
         "LICENSE",
         "pystoi/stoi.py",
@@ -1357,6 +1368,41 @@
         "scripts/export_onnx.py"
       ],
       "note": "Official author repository. Source inspection only. Not AEC, WPE or microphone-array separation; no inherited benchmark or device-real-time claim. The onnx directory contains binary models and is intentionally absent after asset filtering; ONNX API entrypoints are scripts/test_onnx.py and scripts/export_onnx.py."
+    },
+    {
+      "id": "faster-enhancer-c",
+      "url": "https://github.com/kdrkdrkdr/faster-enhancer.c.git",
+      "revision": "7d78dab11bca854fb200426c621a96d7b37a2983",
+      "verified_at": "2026-09-28",
+      "license": "MIT for repository source; NOTICE and original-model/weight terms apply separately",
+      "fetch_enabled": true,
+      "scope": "independent C11 fixed-model int8 runtime for 48 kHz FastEnhancer-Medium; source-level streaming and paced-versus-racing execution study",
+      "acquisition": "independent_source_checkout",
+      "source_paths": [
+        "LICENSE",
+        "NOTICE",
+        "README.md",
+        "CMakeLists.txt",
+        "include/",
+        "src/",
+        "tests/",
+        "docs/"
+      ],
+      "entrypoints": [
+        "LICENSE",
+        "NOTICE",
+        "README.md",
+        "CMakeLists.txt",
+        "include/fe.h",
+        "src/fe_pipeline.c",
+        "src/fe_engine.c",
+        "src/fe_weights.c",
+        "src/qgemm/qgemm_dispatch.c",
+        "src/qgemm/qgemm_quant.c",
+        "tests/fe_run_file.c",
+        "tests/fe_test_cross_tier.c"
+      ],
+      "note": "Official fixed source and notices only; independent 2026-07-28 arXiv:2607.25350v1 preprint, not the original FastEnhancer author's implementation. The sparse checkout excludes weights, testaudio, tools and all model/audio assets. Source availability does not validate the model, dependencies, compile, hardware timing, quality or redistribution of original weights. Do not compare its 48 kHz runtime figures directly with the original model's different setup."
     },
     {
       "id": "stk",

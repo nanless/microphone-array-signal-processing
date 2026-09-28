@@ -2,13 +2,13 @@
 
 一套写给初学者和入门研究生的麦克风阵列信号处理中文教程。从“为什么摆一群麦克风”讲到定位（DOA）、波束形成、回声消除（AEC）、去混响（WPE）、语音分离、声源追踪，一直到工程实现与选型。
 
-正文提供关键公式推导、可复算例子、适用边界、44 张脚本生成的图，以及与各章公式对应的 NumPy/标准库教学代码。
+正文提供关键公式推导、可复算例子、适用边界、45 张脚本生成的图，以及与各章公式对应的 NumPy/标准库教学代码。
 
-全书有 195 道可运行代码练习和 24 组、共 98 个主清单合成音频文件；输入、答案与试听条件见[练习与音频实验](codes/research/05_exercises_and_audio.md)。第 6 章 E06-07～20 是模型与边界手算，另有两组**参数不完全相同**的 AEC 合成音频；不能用音频替代题目真值。这 98 个音频不是自然语音或正式听测数据。
+全书有 205 道可运行代码练习和 25 组、共 102 个主清单合成音频文件；输入、答案与试听条件见[练习与音频实验](codes/research/05_exercises_and_audio.md)。第 6 章 E06-07～20 是模型与边界手算，另有两组**参数不完全相同**的 AEC 合成音频；不能用音频替代题目真值。这 102 个音频不是自然语音或正式听测数据。
 
-附录 B 另有[六位置房间题](chapters/13_appendix-guide.md)的 18 个白噪声合成 WAV 和一张实算结果图，保存在独立的 [room_audio 清单](codes/room_audio/MANIFEST.json)下；它们不计入上面的 98 个音频。
+附录 B 另有[六位置房间题](chapters/13_appendix-guide.md)的 18 个白噪声合成 WAV 和一张实算结果图，保存在独立的 [room_audio 清单](codes/room_audio/MANIFEST.json)下；它们不计入上面的 102 个音频。
 
-另有[活动导引 GSS 教学链](codes/gss_audio/MANIFEST.json)的 5 个 WAV 和可复算状态，以及[自由场移动声源](codes/moving_audio/MANIFEST.json)的 3 个 WAV 与轨迹真值，均使用独立清单，不计入主 98 个样本。它们只验证指定的合成模型，不代表真实语音或设备表现。
+另有[活动导引 GSS 教学链](codes/gss_audio/MANIFEST.json)的 5 个 WAV 和可复算状态，以及[自由场移动声源](codes/moving_audio/MANIFEST.json)的 3 个 WAV 与轨迹真值，均使用独立清单，不计入主 102 个样本。它们只验证指定的合成模型，不代表真实语音或设备表现。
 
 另有 DEMAND 河流场景的真实 16 通道录音摘录及 3 个派生 WAV，共 4 个文件，独立标注 CC BY-SA 3.0 数据许可；实验只分析噪声功率与通道相关性。
 
@@ -20,6 +20,8 @@
 
 [第 9 章追踪实验](codes/examples/tracking_crossing_dropout_demo.py)用确定性角度观测展示交叉时位置集合正确而身份错配，并复算缺测协方差与波束限速滞后；它不是语音录音或完整多目标追踪系统。
 
+[第 10 章工程逐步实验](codes/examples/chapter10_experiments.py)增加十道可复算练习，区分重叠帧实时因子、谱减数值边界、跨块时钟状态与整块 AGC 的可用时刻。新增四路[同增益合成音频](codes/research/05_exercises_and_audio.md#32-分块-agc时间常数相同输出仍可能不同)可对照实际 PCM；[工业研究手册](codes/research/03_industrial_deployment.md)分别记录源码接口实调、静态诊断和尚未运行的模型或设备测试。
+
 [源码研究手册](codes/research/README.md) 进一步展开算法实现、工业配置和复现实验，分为空间处理与追踪、AEC/WPE/分离、工业部署与评测三篇专题，另附源码复现方法、练习与音频实验。官方实现固定提交，取得的源码保存在 `codes/upstream/_downloads/` 的独立工作树中。
 
 English version: [README_EN.md](./README_EN.md)
@@ -29,16 +31,16 @@ English version: [README_EN.md](./README_EN.md)
 | 目录/文件 | 说明 |
 |---|---|
 | `chapters/` | 教程正文 14 篇 Markdown（`00_overview.md` 是入口，`01`～`11` 是 11 章正文，`12`/`13` 是附录 A/B） |
-| `figures/` | 44 张插图（`fig01`～`fig44_*.png`），全部由脚本生成、可复现 |
+| `figures/` | 45 张插图（`fig01`～`fig45_*.png`），全部由脚本生成、可复现 |
 | `codes/` | 教学算法、章节例子、工业实现小工具、第三方官方源码索引与精确版本锁定；覆盖表见 `codes/COVERAGE.md` |
-| `codes/audio/` | 24 组、98 个本书合成的 WAV 及参数、摘要清单，由脚本生成，不直接编辑 |
+| `codes/audio/` | 25 组、102 个本书合成的 WAV 及参数、摘要清单，由脚本生成，不直接编辑 |
 | `codes/gss_audio/`、`codes/moving_audio/` | 独立合成实验的 5+3 个 WAV、状态/轨迹及各自清单，由对应脚本生成并核验 |
 | `codes/real_audio/` | DEMAND 真实同步录音摘录、派生均值、独立清单与数据许可；不是合成数据 |
 | `codes/research/` | 详细源码研究手册：算法步骤、状态与配置、代码入口、失败实验和工业复现 |
 | `codes/reports/` | 工业接口与空间算法的小规模运行报告；与源码获取状态、论文全量评测分开 |
 | `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
 | `site/` | 20 个网页：14 个教程页（含首页）及 `research/` 下 6 个研究手册页；构建产物，可再生 |
-| `dist/` | 合订 PDF（`microphone-array-tutorial.pdf`）与合订 HTML；PDF 含 14 个顶级、119 个二级、435 个三级书签，共 568 个 |
+| `dist/` | 合订 PDF（`microphone-array-tutorial.pdf`）与合订 HTML；PDF 含 14 个顶级、119 个二级、469 个三级书签，共 602 个 |
 
 ## 章节导览
 
@@ -77,7 +79,7 @@ python3 -m venv .venv
 .venv/bin/python -m codes.examples.exercises_engineering
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 
-# 3. 先生成 98 个音频，再生成 44 张图（图 34～36、40～41、43～44 读取生成的音频）
+# 3. 先生成 102 个音频，再生成 45 张图（图 34～36、40～41、43～45 读取生成的音频）
 .venv/bin/python codes/examples/generate_audio_samples.py
 .venv/bin/python scripts/make_figures.py
 .venv/bin/python scripts/make_aec_figures.py
@@ -111,7 +113,7 @@ HARKTOOL5 的官方源码归档另按 SHA-256 锁定和取得，使用独立的 
 
 ## 学习路径
 
-- **路径 A（零基础入门）**：导读 → 01 → 11.1/11.3 → 02/03 → 04（GCC+SRP）→ 05（DSB+MVDR）→ 06/07/08 → 09 → 运行 `codes/examples/` 并复现 44 张图。
+- **路径 A（零基础入门）**：导读 → 01 → 11.1/11.3 → 02/03 → 04（GCC+SRP）→ 05（DSB+MVDR）→ 06/07/08 → 09 → 运行 `codes/examples/` 并复现 45 张图。
 - **路径 B（工程实现）**：11.1/11.2/11.3 定 A/B/C 方案 → 05/06/07/08 → 10 全读 → 运行第 10 章工程基线 → 输出延迟/同步/标定三张预算表。
 - **路径 C（研究前沿）**：02（CRLB）→ 03（稀疏阵）→ 04/05 前沿 → 06/07/08 → 13.3 八条前沿 + 13.6 练习。
 
@@ -124,4 +126,4 @@ HARKTOOL5 的官方源码归档另按 SHA-256 锁定和取得，使用独立的 
 - 本仓库教学代码与外部参考实现的边界见 `codes/README.md`；第三方代码、模型和数据的许可证分别核对。
 
 
-第9章另有2份连续运动合成音频与[逐帧观测清单](codes/tracking_audio/MANIFEST.json)，从PCM实际计算GCC-PHAT、缺测门控和Kalman追踪；这两份文件与主98份及原移动声源3份分开计数。运行`.venv/bin/python -m codes.examples.chapter09_tracking_audio --check`可只读核对。
+第9章另有2份连续运动合成音频与[逐帧观测清单](codes/tracking_audio/MANIFEST.json)，从PCM实际计算GCC-PHAT、缺测门控和Kalman追踪；这两份文件与主102份及原移动声源3份分开计数。运行`.venv/bin/python -m codes.examples.chapter09_tracking_audio --check`可只读核对。

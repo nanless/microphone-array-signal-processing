@@ -76,27 +76,32 @@ class StatefulLinearClockCorrector:
     def __init__(self, reference_rate_hz: float, device_rate_hz: float,
                  device_start_s: float, reference_length: int,
                  output_start_index: int = 0):
-        if not all(math.isfinite(v) for v in (reference_rate_hz, device_rate_hz, device_start_s)):
-            raise ValueError("clock parameters must be finite")
-        if reference_rate_hz <= 0 or device_rate_hz <= 0 or reference_length <= 0:
-            raise ValueError("rates and reference length must be positive")
-        if (isinstance(output_start_index, bool) or not isinstance(output_start_index, int)
-                or not 0 <= output_start_index < reference_length):
+        from codes.array_tutorial.engineering import _finite_scalar, _integer
+        reference_rate_hz = _finite_scalar(reference_rate_hz, "reference_rate_hz")
+        device_rate_hz = _finite_scalar(device_rate_hz, "device_rate_hz")
+        device_start_s = _finite_scalar(device_start_s, "device_start_s")
+        reference_length = _integer(reference_length, "reference_length", minimum=1)
+        output_start_index = _integer(output_start_index, "output_start_index")
+        if reference_rate_hz <= 0 or device_rate_hz <= 0:
+            raise ValueError("rates must be positive")
+        if output_start_index >= reference_length:
             raise ValueError("output_start_index must be within the reference signal")
+        first_position = device_start_s * reference_rate_hz
+        if not math.isfinite(first_position):
+            raise ValueError("initial clock position exceeds finite range")
         self.reference_rate_hz = reference_rate_hz
         self.device_rate_hz = device_rate_hz
         self.device_start_s = device_start_s
         self.reference_length = reference_length
         self.next_output_index = max(output_start_index,
-                                     math.ceil(device_start_s * reference_rate_hz - 1e-12))
+                                     math.ceil(first_position - 1e-12))
         self.previous: tuple[int, float] | None = None
 
     def push(self, device_indices: list[int], samples: list[float]) -> list[tuple[int, float | None]]:
-        indices = list(device_indices)
-        values = list(samples)
-        if (len(indices) != len(values)
-                or any(isinstance(i, bool) or not isinstance(i, int) for i in indices)
-                or not all(math.isfinite(v) for v in values)):
+        from codes.array_tutorial.engineering import _finite_scalar, _integer
+        indices = [_integer(i, "device index") for i in device_indices]
+        values = [_finite_scalar(v, "sample") for v in samples]
+        if len(indices) != len(values):
             raise ValueError("indices and samples must be equal-length finite sequences")
         if len(indices) == 0:
             return []
@@ -105,13 +110,16 @@ class StatefulLinearClockCorrector:
         known_indices = ([self.previous[0]] if self.previous else []) + indices
         known_values = ([self.previous[1]] if self.previous else []) + values
         emitted: list[tuple[int, float | None]] = []
-        while self.next_output_index < self.reference_length:
-            j = self.next_output_index
+        next_output_index = self.next_output_index
+        while next_output_index < self.reference_length:
+            j = next_output_index
             position = (j / self.reference_rate_hz - self.device_start_s) * self.device_rate_hz
-            if position > known_indices[-1] + 1e-10:
+            if not math.isfinite(position):
+                raise ValueError("clock position exceeds finite range; state unchanged")
+            if position > known_indices[-1]:
                 break
             right = bisect_left(known_indices, position)
-            if right < len(known_indices) and abs(known_indices[right] - position) < 1e-10:
+            if right < len(known_indices) and known_indices[right] == position:
                 corrected: float | None = known_values[right]
             elif right == 0:
                 corrected = None
@@ -122,8 +130,11 @@ class StatefulLinearClockCorrector:
                 else:
                     fraction = position - known_indices[left]
                     corrected = known_values[left] * (1 - fraction) + known_values[right] * fraction
+            if corrected is not None and not math.isfinite(corrected):
+                raise ValueError("interpolated sample exceeds finite range; state unchanged")
             emitted.append((j, corrected))
-            self.next_output_index += 1
+            next_output_index += 1
+        self.next_output_index = next_output_index
         self.previous = (int(indices[-1]), float(values[-1]))
         return emitted
 

@@ -12,6 +12,7 @@ import wave
 
 import numpy as np
 
+from .engineering import PeakProtectAGC
 from .gsc import ScalarGSCNLMS
 from .aec import NLMSState, nlms
 from .aec_ipnlms import ipnlms
@@ -728,8 +729,72 @@ def css_overlap_case() -> dict:
                   'No listening study; stereo channels are output slots, not binaural spatial audio.'}
 
 
+def agc_blocks_case() -> dict:
+    """One buffered peak-AGC experiment; block availability is not sample time."""
+    t = np.arange(2 * SAMPLE_RATE) / SAMPLE_RATE
+    amplitude = np.select([t < .525, t < .8, t < 1.2], [.1, .9, .03], default=.25)
+    fade = np.minimum(np.clip(t / .02, 0, 1), np.clip((2 - t) / .02, 0, 1))
+    source = amplitude * np.sin(2 * np.pi * 500 * t) * fade
+    signals = {'agc_blocks_input': source[None, :]}
+    block_records = {}
+    configurations = [('10ms', 160, 160), ('100ms', 1600, 1600),
+                      ('100ms_wrong_alpha', 1600, 160)]
+    for name, hop, coefficient_hop in configurations:
+        attack = float(-np.expm1(-coefficient_hop / SAMPLE_RATE / .02))
+        release = float(-np.expm1(-coefficient_hop / SAMPLE_RATE / .2))
+        state = PeakProtectAGC(target_peak=.8, max_gain=8.,
+                              attack=attack, release=release, gain=1.)
+        output = np.empty_like(source)
+        records = []
+        for start in range(0, source.size, hop):
+            stop = min(start + hop, source.size)
+            old_gain = state.gain
+            block = source[start:stop]
+            processed, gain = state.process(block)
+            output[start:stop] = processed
+            records.append({'start_sample': start, 'end_sample_exclusive': stop,
+                            'available_time_s': stop / SAMPLE_RATE,
+                            'gain_before': old_gain, 'gain': gain,
+                            'input_peak': float(np.max(np.abs(block))),
+                            'output_peak': float(np.max(np.abs(processed)))})
+        signals['agc_blocks_' + name] = output[None, :]
+        block_records[name] = {'hop_samples': hop, 'coefficient_hop_samples': coefficient_hop,
+                               'attack_alpha': attack, 'release_alpha': release,
+                               'blocks': records}
+    windows = {'before_burst': [8000, 8320], 'loud': [9600, 11200],
+               'quiet': [16000, 17600]}
+    def analyze(values):
+        reference = values['agc_blocks_input'][0]
+        result = {}
+        for stem, value in values.items():
+            waveform = value[0]
+            result[stem] = {'peak': float(np.max(np.abs(waveform))), 'windows': {}}
+            for name, (start, stop) in windows.items():
+                input_rms = float(np.sqrt(np.mean(reference[start:stop]**2)))
+                output_rms = float(np.sqrt(np.mean(waveform[start:stop]**2)))
+                result[stem]['windows'][name] = {'input_rms': input_rms,
+                    'output_rms': output_rms, 'rms_ratio': output_rms / input_rms}
+        return result
+    export_gain = .7
+    pcm = {name: read_pcm16(pcm16_bytes(waveform * export_gain))[1]
+           for name, waveform in signals.items()}
+    return {'signals': signals, 'export_gain_override': export_gain,
+            'parameters': {'sample_rate_hz': SAMPLE_RATE, 'duration_s': 2.,
+                'carrier_hz': 500., 'amplitude_breaks_s': [.525, .8, 1.2],
+                'amplitudes': [.1, .9, .03, .25], 'fade_s': .02,
+                'target_peak': .8, 'max_gain': 8., 'initial_gain': 1.,
+                'attack_tau_s': .02, 'release_tau_s': .2,
+                'score_windows_samples_half_open': windows},
+            'block_records': block_records,
+            'float_analysis': analyze(signals), 'pcm_analysis': analyze(pcm),
+            'limits': 'Mathematical 500 Hz tone with intentional envelope steps, no speech or noise. '
+                      'Peak AGC buffers each complete block: samples are available only at its end. '
+                      'Changing alpha with hop preserves its time constant, not block-partition invariance. '
+                      'RMS ratios compare level, not SNR or perceived quality; no listening test claimed.'}
+
+
 def build_cases() -> dict:
-    """Return twenty-four experiments with model parameters and references.
+    """Return twenty-five experiments with model parameters and references.
 
     Each entry has ``signals`` (filename stem -> CxN array), ``parameters`` and
     ``limits``. Signals are pre-export floats; no group uses peak matching.
@@ -864,6 +929,7 @@ def build_cases() -> dict:
     return {
         'wpe_predictable': wpe_predictable_case(),
         'css_overlap': css_overlap_case(),
+        'agc_blocks': agc_blocks_case(),
         'aec_dropout': aec_dropout_case(),
         'gsc_gate': gsc_gate_case(),
         'doa_ambiguity': doa_ambiguity_case(),
@@ -1067,6 +1133,10 @@ def prepare_exports(cases: dict | None = None) -> tuple[dict, dict]:
     for name, case in cases.items():
         peak = max(float(np.max(np.abs(x))) for x in case['signals'].values())
         gain = min(1., .8 / peak) if peak > 0 else 1.
+        if 'export_gain_override' in case:
+            gain = float(case['export_gain_override'])
+            if not np.isfinite(gain) or gain <= 0 or peak * gain > 32767 / 32768:
+                raise ValueError('export gain must be finite, positive, and leave PCM headroom')
         groups[name] = {k: v for k, v in case.items() if k != 'signals'}
         groups[name]['common_export_gain'] = gain
         for stem, array in case['signals'].items():

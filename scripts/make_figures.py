@@ -1117,124 +1117,121 @@ def pipeline_dependency_spec():
 
 
 def fig_pipeline():
-    # 六层布局：播放、GSS、定位、控制、音频主链、神经旁路。
-    fig, ax = plt.subplots(figsize=(9.5, 12.5))
-    ax.axis("off"); ax.set_xlim(0, 16.2); ax.set_ylim(0, 11.8)
-    box_w, box_h = 2.0, 0.95
-    positions = {
-        "capture": (0.20, 2.10), "aec": (2.60, 2.10), "wpe": (5.00, 2.10),
-        "bf": (8.80, 2.10), "ns": (11.20, 2.10), "backend": (13.60, 2.10),
-        "neural_separator": (7.00, 0.20),
-        "ssl": (8.80, 4.75), "tracking": (11.40, 4.75),
-        "diarization": (0.50, 6.55), "gss_mask": (3.20, 6.55),
-        "scm": (5.90, 6.55),
-        "far_end": (0.20, 10.00), "render": (2.60, 10.00),
-        "render_tap": (2.60, 8.25), "speaker": (5.00, 10.00),
-    }
-    labels = {
-        "capture": "多通道采集\n同步/标定", "aec": "AEC\n回声消除",
-        "wpe": "WPE\n去混响", "bf": "波束形成\nMVDR / GEV",
-        "ns": "NS + AGC\n逐流可选", "backend": "KWS / ASR\n逐流或选流",
-        "neural_separator": "神经/CSS\n分离旁路",
-        "ssl": "声源定位\nSSL / DOA", "tracking": "轨迹预测\n状态+协方差",
-        "diarization": "说话人分割\n活动标注", "gss_mask": "GSS / cACG\n掩码",
-        "scm": "目标/干扰\nSCM",
-        "far_end": "远端播放", "render": "播放处理\n均衡/音量",
-        "render_tap": "播放参考\n供回声消除", "speaker": "数模转换\n功放/扬声器",
-    }
-    colors = {
-        "capture": "#dbe9f6", "aec": "#dbe9f6", "wpe": "#dbe9f6",
-        "bf": "#e8f6db", "ns": "#e8f6db", "backend": "#f6dbdb",
-        "neural_separator": "#e8f6db", "ssl": "#f6e5db", "tracking": "#f6e5db",
-        "diarization": "#f6e5db", "gss_mask": "#f6e5db", "scm": "#f6e5db",
-        "far_end": "#fff2cc", "render": "#fff2cc", "render_tap": "#fff2cc",
-        "speaker": "#fff2cc",
-    }
-    node_rectangles, node_texts = {}, {}
-    for name, (x, y) in positions.items():
-        rectangle = plt.Rectangle((x, y), box_w, box_h, fc=colors[name],
-                                  ec="k", lw=1.1)
-        text_artist = ax.text(x + box_w / 2, y + box_h / 2, labels[name],
-                              ha="center", va="center", fontsize=FS_SMALL)
+    """Two compact panels keep physical reference and optional branches distinct."""
+    fig, (main, branches) = plt.subplots(
+        2, 1, figsize=(9.5, 7.8), gridspec_kw={"height_ratios": [1, 1.32]})
+    for ax, ymax in ((main, 4.15), (branches, 5.25)):
+        ax.set_xlim(0, 16.0)
+        ax.set_ylim(0, ymax)
+        ax.axis("off")
+    main.set_title("(a) 播放参考与音频主链", loc="left", pad=4)
+    branches.set_title("(b) 按任务选择的方向、GSS 与分离支路", loc="left", pad=4)
+    rectangles, node_texts = {}, {}
+
+    def node(ax, key, x, y, label, *, width=2.35, height=.76, fill="#e7eff6"):
+        rectangle = plt.Rectangle((x, y), width, height, fc=fill,
+                                  ec=C_MAIN, lw=1.05, zorder=3)
         ax.add_patch(rectangle)
-        node_rectangles[name] = rectangle
-        node_texts[name] = text_artist
+        artist = ax.text(x + width / 2, y + height / 2, label,
+                         ha="center", va="center", fontsize=FS_SMALL, zorder=4)
+        rectangles[key] = rectangle
+        node_texts[key] = artist
+        return (x, y, width, height)
 
-    def anchor(name, side):
-        x, y = positions[name]
-        return {
-            "left": (x, y + box_h / 2), "right": (x + box_w, y + box_h / 2),
-            "top": (x + box_w / 2, y + box_h), "bottom": (x + box_w / 2, y),
-        }[side]
+    def point(box, side):
+        x, y, width, height = box
+        return {"left": (x, y + height / 2), "right": (x + width, y + height / 2),
+                "top": (x + width / 2, y + height), "bottom": (x + width / 2, y)}[side]
 
-    dependencies = pipeline_dependency_spec()
-    drawn_edges = {category: set() for category in dependencies}
+    def arrow(ax, start, end, color=C_MAIN, style="-", width=1.45):
+        ax.add_patch(FancyArrowPatch(start, end, arrowstyle="-|>",
+                                     mutation_scale=12, color=color, lw=width,
+                                     linestyle=style, zorder=2))
 
-    def edge(source, target, category, color="k", linestyle="-", source_side="right",
-             target_side="left", rad=0.0, lw=1.5, via=None):
-        points = [anchor(source, source_side), *(via or []), anchor(target, target_side)]
-        for index, (start, stop) in enumerate(zip(points[:-1], points[1:])):
-            ax.add_patch(FancyArrowPatch(
-                start, stop, arrowstyle="-|>" if index == len(points) - 2 else "-",
-                mutation_scale=14, color=color, lw=lw, ls=linestyle,
-                connectionstyle=f"arc3,rad={rad if via is None else 0.0}"))
-        drawn_edges[category].add((source, target))
+    # Top panel: the playback-reference take-off is visibly after render
+    # processing and before the DAC/amplifier. S labels the physical loop.
+    far = node(main, "far_end", .25, 3.08, "远端播放", width=2.25, fill="#fff2cc")
+    render = node(main, "render", 3.05, 3.08, "混音 / 均衡 / 音量", width=2.62, fill="#fff2cc")
+    speaker = node(main, "speaker", 6.38, 3.08, "DAC / 功放 / 扬声器", width=2.75, fill="#fff2cc")
+    tap = node(main, "render_tap", 3.18, 1.89, "R：处理后播放参考", width=2.40, fill="#fff2cc")
+    arrow(main, point(far, "right"), point(render, "left"))
+    arrow(main, point(render, "right"), point(speaker, "left"))
+    arrow(main, point(render, "bottom"), point(tap, "top"), C_RED, "--")
+    arrow(main, point(speaker, "right"), (9.43, 3.46), C_RED, ":")
+    main.text(9.50, 3.48, "S：扬声器 → 房间/机壳 → 麦克风",
+              color=C_RED, va="center", fontsize=FS_SMALL)
+    main.text(9.50, 2.90, "物理声路带回声；R 提供 AEC 参考",
+              color=C_RED, va="center", fontsize=FS_SMALL)
 
-    audio_routes = {
-        ("render", "render_tap"): dict(color=C_RED, linestyle="--", source_side="bottom", target_side="top"),
-        ("render_tap", "aec"): dict(
-            color=C_RED, linestyle="--", source_side="bottom", target_side="top",
-            via=[(2.80, 7.85), (2.80, 3.45), (3.60, 3.45)], lw=1.8),
-        ("speaker", "capture"): dict(color=C_RED, linestyle=":", source_side="right", target_side="top", rad=-0.47, lw=1.8),
-        ("wpe", "neural_separator"): dict(color=C_GREEN, linestyle="-.", source_side="bottom", target_side="left", rad=0.10),
-        ("neural_separator", "ns"): dict(color=C_GREEN, linestyle="-.", source_side="right", target_side="bottom", rad=-0.18),
-    }
-    for source, target in sorted(dependencies["audio"]):
-        edge(source, target, "audio", **audio_routes.get((source, target), {}))
-    ax.text(1.95, 8.05, "处理后参考", color=C_RED, fontsize=FS_SMALL, ha="center")
-    ax.text(10.7, 10.70, "声学回路：扬声器 → 房间/机壳 → 麦克风",
-            color=C_RED, fontsize=FS_SMALL, ha="center")
+    xs = [.18, 2.83, 5.48, 8.13, 10.78, 13.43]
+    keys = ("capture", "aec", "wpe", "bf", "ns", "backend")
+    labels = ("S：多麦采集\n同步/标定", "AEC\n回声消除", "WPE\n去混响",
+              "解析波束\nMVDR/GEV", "NS / AGC\n逐流可选", "KWS / ASR\n逐流或选流")
+    fills = ("#dbe9f6", "#dbe9f6", "#dbe9f6", "#e8f6db", "#e8f6db", "#f6dbdb")
+    boxes = {key: node(main, key, x, .30, label, fill=fill)
+             for key, x, label, fill in zip(keys, xs, labels, fills)}
+    for src, dst in zip(keys[:-1], keys[1:]):
+        arrow(main, point(boxes[src], "right"), point(boxes[dst], "left"))
+    arrow(main, point(tap, "bottom"), point(boxes["aec"], "top"), C_RED, "--")
+    main.text(6.25, 1.34, "S 与 R 在 AEC 汇合；主链按任务裁剪。",
+              color="dimgray", fontsize=FS_SMALL)
 
-    information_routes = {
-        ("wpe", "ssl"): dict(color=C_ORANGE, linestyle="-.", source_side="top", target_side="left"),
-        ("ssl", "tracking"): dict(color=C_ORANGE, linestyle="-."),
-        ("tracking", "bf"): dict(color=C_RED, linestyle="-.", source_side="bottom", target_side="top"),
-        ("diarization", "gss_mask"): dict(color=C_PURPLE, linestyle=":"),
-        ("wpe", "gss_mask"): dict(color=C_PURPLE, linestyle=":", source_side="top", target_side="bottom", rad=-0.18),
-        ("gss_mask", "scm"): dict(color=C_PURPLE, linestyle=":"),
-        ("wpe", "scm"): dict(color=C_PURPLE, linestyle=":", source_side="top", target_side="bottom", rad=-0.27),
-        ("scm", "bf"): dict(color=C_PURPLE, linestyle=":", source_side="bottom", target_side="top"),
-    }
-    for source, target in sorted(dependencies["information"]):
-        edge(source, target, "information", **information_routes[(source, target)])
-    ax.text(10.60, 4.47, "带时间戳方向", color=C_RED, fontsize=FS_SMALL, ha="center")
+    # Bottom panel: every lane has its own input/output contract. A named M
+    # port denotes the same WPE-stage multichannel STFT, without crossing
+    # arrows through the unrelated routes.
+    port_fill = "#edf4fa"
+    m = node(branches, "wpe_port", .16, 4.08,
+             "M：WPE 后多通道\nSTFT / 特征", width=2.65, fill=port_fill)
+    ssl = node(branches, "ssl", 3.25, 4.08, "SSL / DOA\n定位", width=2.35, fill="#f6e5db")
+    track = node(branches, "tracking", 6.08, 4.08, "追踪预测\n方向+协方差+时刻", width=2.78, fill="#f6e5db")
+    bfport = node(branches, "bf_port", 10.20, 4.08,
+                  "D → 解析波束\n方向控制", width=2.85, fill="#e8f6db")
+    for left, right in ((m, ssl), (ssl, track), (track, bfport)):
+        arrow(branches, point(left, "right"), point(right, "left"), C_ORANGE, "-.")
+    branches.text(13.25, 4.46, "D 有效期 / 坐标系", color=C_ORANGE, fontsize=FS_SMALL,
+                  va="center")
 
-    ax.text(7.15, 7.82, "活动标注→掩码；WPE 未方向归一 STFT→SCM",
-            color=C_PURPLE, fontsize=FS_SMALL, ha="center")
-    ax.text(8.75, 0.02, "神经/CSS 旁路解析波束；多路输出分别处理，网络已增强时可跳过 NS",
-            color=C_GREEN, fontsize=FS_SMALL, ha="center")
+    diar = node(branches, "diarization", .16, 2.77,
+                "说话人活动标注", width=2.65, fill="#f6e5db")
+    mask = node(branches, "gss_mask", 3.25, 2.77,
+                "GSS / cACGMM\nM + 活动→掩码", width=2.35, fill="#f6e5db")
+    scm = node(branches, "scm", 6.08, 2.77,
+               "M + 掩码 →\n目标/干扰 SCM", width=2.78, fill="#f6e5db")
+    gssout = node(branches, "gss_out", 10.20, 2.77,
+                  "解析波束\n逐目标音轨", width=2.85, fill="#e8f6db")
+    for left, right in ((diar, mask), (mask, scm), (scm, gssout)):
+        arrow(branches, point(left, "right"), point(right, "left"), C_PURPLE, ":")
+    branches.text(13.25, 3.15, "M 同时进掩码与 SCM", color=C_PURPLE,
+                  fontsize=FS_SMALL, va="center")
 
-    control_y = 3.85
-    ax.plot([anchor("aec", "top")[0], anchor("backend", "top")[0]],
-            [control_y, control_y],
-            ls="--", color=C_ORANGE, lw=1.3)
-    ax.text(12.45, 4.08, "活动控制：VAD / 远端 / 双讲",
-            color=C_ORANGE, fontsize=FS_SMALL, ha="center")
-    for target in ("aec", "wpe", "tracking", "bf", "backend"):
-        target_side = "bottom" if target == "tracking" else "top"
-        x = anchor(target, target_side)[0]
-        ax.add_patch(FancyArrowPatch((x, control_y), anchor(target, target_side),
-                                    arrowstyle="-|>", mutation_scale=10,
-                                    color=C_ORANGE, lw=1.0, ls="--"))
-        drawn_edges["control"].add(("activity_control", target))
-    ax.text(0.20, 11.48,
-            "实线=音频；红/橙=参考、方向或控制；紫点线=GSS统计；绿点划线=神经旁路。",
-            fontsize=FS_SMALL, color="dimgray", ha="left")
-    ax.set_title("图23  远场语音前端：播放参考、音频主链与三条条件支路",
-                 fontsize=FS_SUP)
-    fig._pipeline_edges = {key: frozenset(value) for key, value in drawn_edges.items()}
-    fig._pipeline_node_rectangles = node_rectangles
+    neuralin = node(branches, "neural_in", .16, 1.46,
+                    "M：WPE 后多通道\nSTFT / 特征", width=2.65, fill=port_fill)
+    neural = node(branches, "neural_separator", 3.25, 1.46,
+                  "神经 / CSS\n分离旁路", width=2.35, fill="#e8f6db")
+    nsport = node(branches, "ns_port", 6.08, 1.46,
+                  "逐流 NS / AGC\n按需保留", width=2.78, fill="#e8f6db")
+    backport = node(branches, "backend_port", 10.20, 1.46,
+                    "逐流 KWS / ASR\n或先选一路", width=2.85, fill="#f6dbdb")
+    for left, right in ((neuralin, neural), (neural, nsport), (nsport, backport)):
+        arrow(branches, point(left, "right"), point(right, "left"), C_GREEN, "-.")
+    branches.text(13.25, 1.84, "旁路解析波束", color=C_GREEN, fontsize=FS_SMALL,
+                  va="center")
+
+    control = node(branches, "activity_control", .16, .19,
+                   "C：活动 / 远端\n双讲控制", width=2.65, height=.77, fill="#fff1df")
+    branches.text(3.27, .58,
+                  "C 分别约束 AEC、WPE、追踪、波束和后端；各模块按自身状态决定更新。",
+                  color=C_ORANGE, fontsize=FS_SMALL, va="center")
+    arrow(branches, point(control, "right"), (3.16, .58), C_ORANGE, "--")
+
+    # Named ports express cross-panel contracts; the separate dependency
+    # specification remains the machine-checkable graph, not a claim that
+    # every edge has an individual arrow in this compact teaching diagram.
+    fig._pipeline_node_rectangles = rectangles
     fig._pipeline_node_texts = node_texts
+    fig._pipeline_panel_axes = (main, branches)
+    fig.suptitle("图23  播放参考、音频主链与条件支路", fontsize=FS_SUP, y=.985)
+    fig.subplots_adjust(left=.025, right=.985, top=.93, bottom=.025, hspace=.22)
     save(fig, "fig23_pipeline.png")
 
 
@@ -2957,8 +2954,8 @@ def fig_clock_drift():
         axes[1].plot(t, envelope, color=color, ls=style, label=f'{f} Hz 解析包络', lw=1.8)
     axes[1].set(xlabel='名义时间 (s)', ylabel='单频幅度比 (无量纲)', ylim=(-.03, 1.08),
                 title='(b) 相位差随时间增大；两路平均可抵消同一个目标')
-    axes[1].text(6.3, .40, '500 Hz：实线', color=C_BLUE)
-    axes[1].text(5.4, 1.025, '1500 Hz：虚线', color=C_RED)
+    axes[1].legend(loc='upper left', bbox_to_anchor=(1.01, 1),
+                   fontsize=FS_SMALL, framealpha=.92)
     axes[2].plot(centers, powers['index_mean'] / powers['reference'],
                  color=C_RED, label='未同步均值：PCM 20 ms 功率比')
     axes[2].plot(centers, powers['oracle_mean'] / powers['reference'],
@@ -2972,7 +2969,7 @@ def fig_clock_drift():
         ax.set_xlim(0, 8)
     fig.suptitle('图40  先对齐起点仍会失步：采样时钟偏差的双麦反例\n'
                  '500 / 1500 Hz；16 kHz；8 s；100 ppm；共址、无噪声数学模型', fontsize=FS_SUP)
-    fig.tight_layout(rect=(0, 0, 1, .94), h_pad=1.5)
+    fig.tight_layout(rect=(0, 0, .81, .94), h_pad=1.5)
     save(fig, 'fig40_clock_drift.png', {'AudioManifestDigest': digest})
 
 
@@ -3180,6 +3177,69 @@ def fig_tracking_audio():
     fig.tight_layout(rect=(0,0,1,.93),h_pad=1.8)
     save(fig,'fig44_tracking_audio.png',{'AudioManifestDigest':hashlib.sha256(manifest_path.read_bytes()).hexdigest()})
 
+
+def fig_agc_blocks():
+    """Plot exported PCM and the causal, block-available AGC state."""
+    import json
+    import wave
+    audio = OUT.parent / 'codes' / 'audio'
+    manifest_path = audio / 'MANIFEST.json'
+    manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+    group = manifest['groups']['agc_blocks']
+    records = {record['file']: record for record in manifest['files']}
+    labels = (
+        ('agc_blocks_input.wav', '输入', C_MAIN, '-'),
+        ('agc_blocks_10ms.wav', '10 ms 正确系数', C_BLUE, '-'),
+        ('agc_blocks_100ms.wav', '100 ms 正确系数', C_GREEN, '--'),
+        ('agc_blocks_100ms_wrong_alpha.wav', '100 ms 错用 10 ms 系数', C_RED, ':'),
+    )
+    fig, axes = plt.subplots(2, 1, figsize=(9.5, 6.8), sharex=True,
+                             gridspec_kw={'height_ratios': [1.12, 1]})
+    sample_rate = group['parameters']['sample_rate_hz']
+    block = sample_rate // 100  # 10 ms measured windows, independently of AGC block size
+    for name, label, color, style in labels:
+        path = audio / name
+        if hashlib.sha256(path.read_bytes()).hexdigest() != records[name]['sha256']:
+            raise ValueError(f'AGC PCM digest mismatch: {name}')
+        with wave.open(str(path), 'rb') as wav:
+            if (wav.getframerate(), wav.getnchannels(), wav.getsampwidth(),
+                    wav.getnframes()) != (sample_rate, 1, 2, 2 * sample_rate):
+                raise ValueError(f'AGC PCM format mismatch: {name}')
+            pcm = np.frombuffer(wav.readframes(wav.getnframes()), dtype='<i2').astype(float) / 32768
+        rms = np.sqrt(np.mean(pcm.reshape(-1, block) ** 2, axis=1))
+        time = (np.arange(len(rms)) + .5) * block / sample_rate
+        axes[0].plot(time, rms, style, color=color, lw=1.7, label=label)
+    axes[0].set_ylabel('10 ms PCM RMS / 满量程', fontsize=FS_LABEL)
+    axes[0].set_title('(a) 四路导出 WAV 用同一 0.7 增益；曲线从 PCM 重新测量',
+                      loc='left', fontsize=FS_TITLE)
+    axes[0].legend(loc='upper left', bbox_to_anchor=(1.01, 1),
+                   fontsize=FS_SMALL)
+    for key, label, color, style in (
+        ('10ms', '10 ms 正确系数', C_BLUE, '-'),
+        ('100ms', '100 ms 正确系数', C_GREEN, '--'),
+        ('100ms_wrong_alpha', '100 ms 错用 10 ms 系数', C_RED, ':'),
+    ):
+        blocks = group['block_records'][key]['blocks']
+        available = [0.] + [item['available_time_s'] for item in blocks]
+        gain = [blocks[0]['gain_before']] + [item['gain'] for item in blocks]
+        axes[1].step(available, gain, where='post', label=label,
+                     color=color, linestyle=style, lw=1.8)
+    axes[1].set(ylabel='整块可用后的增益 (倍)', xlabel='源时间与输出可用时间 (s)')
+    axes[1].set_title('(b) 增益只能在对应输入块全部到达后更新；虚线与点线使用 100 ms 块',
+                      loc='left', fontsize=FS_TITLE)
+    for at in group['parameters']['amplitude_breaks_s']:
+        for ax in axes:
+            ax.axvline(at, color='0.5', ls=(0, (2, 3)), lw=.8)
+    for ax in axes:
+        ax.set_xlim(0, 2)
+        ax.grid(ls=':', alpha=.3)
+    axes[1].set_ylim(.8, 8.4)
+    fig.suptitle('图45  同一合成载波的整块 AGC：块长、时间常数与 PCM 输出',
+                 fontsize=FS_SUP)
+    fig.tight_layout(rect=(0, 0, .81, .94), h_pad=1.2)
+    save(fig, 'fig45_agc_blocks.png',
+         {'AudioManifestDigest': hashlib.sha256(manifest_path.read_bytes()).hexdigest()})
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -3217,6 +3277,7 @@ def main():
     fig_gss_flow()
     fig_css_overlap()
     fig_tracking_audio()
+    fig_agc_blocks()
     print("ALL DONE")
 
 

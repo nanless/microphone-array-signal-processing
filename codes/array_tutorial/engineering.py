@@ -21,7 +21,10 @@ import numpy as np
 def _finite_scalar(value: float, name: str) -> float:
     if isinstance(value, (bool, np.bool_)) or not isinstance(value, Real):
         raise ValueError(f"{name} must be a finite real scalar")
-    result = float(value)
+    try:
+        result = float(value)
+    except (OverflowError, ValueError) as error:
+        raise ValueError(f"{name} must be a finite real scalar") from error
     if not math.isfinite(result):
         raise ValueError(f"{name} must be a finite real scalar")
     return result
@@ -121,11 +124,14 @@ def estimate_sro_ppm(times_s: np.ndarray, delays_s: np.ndarray) -> tuple[float, 
     return ppm, intercept
 
 
-def resample_sro_to_reference(samples: np.ndarray, relative_sro_ppm: float) -> np.ndarray:
+def resample_sro_to_reference(samples: np.ndarray, relative_sro_ppm: float,
+                              *, max_output_samples: int = 10_000_000) -> np.ndarray:
     """Align samples from ``f_device=f_reference*(1+ppm*1e-6)``.
 
     Linear interpolation is used so the arithmetic is visible.  Production
     sample-rate conversion needs a band-limited filter and streaming state.
+    ``max_output_samples`` bounds the time-axis length before allocation; it
+    is not a guarantee that all arrays fit the caller's memory budget.
     """
 
     signal = _finite_real_array(samples, "samples")
@@ -136,14 +142,23 @@ def resample_sro_to_reference(samples: np.ndarray, relative_sro_ppm: float) -> n
     ratio = 1.0 + _finite_scalar(relative_sro_ppm, "relative_sro_ppm") * 1e-6
     if not math.isfinite(ratio) or ratio <= 0.0:
         raise ValueError("relative_sro_ppm gives a non-positive or non-finite rate")
-    output_length = int(np.floor((signal.shape[-1] - 1) / ratio)) + 1
-    source_positions = np.arange(output_length, dtype=float) * ratio
-    source_index = np.arange(signal.shape[-1], dtype=float)
-    if signal.ndim == 1:
-        return np.interp(source_positions, source_index, signal)
-    return np.vstack(
-        [np.interp(source_positions, source_index, channel) for channel in signal]
-    )
+    budget = _integer(max_output_samples, "max_output_samples", minimum=1)
+    length_minus_one = (signal.shape[-1] - 1) / ratio
+    if not math.isfinite(length_minus_one) or length_minus_one >= budget:
+        raise ValueError("resampled time-axis length exceeds max_output_samples")
+    output_length = math.floor(length_minus_one) + 1
+    channels = 1 if signal.ndim == 1 else signal.shape[0]
+    if output_length > np.iinfo(np.intp).max // (8 * channels):
+        raise ValueError("resampled array exceeds platform allocation range")
+    positions = np.arange(output_length, dtype=float) * ratio
+    left = np.minimum(np.floor(positions).astype(np.intp), signal.shape[-1] - 1)
+    right = np.minimum(left + 1, signal.shape[-1] - 1)
+    fraction = positions - left
+    # Convex interpolation avoids overflowing b-a for opposite large values.
+    result = signal[..., left] * (1.0 - fraction) + signal[..., right] * fraction
+    if not np.all(np.isfinite(result)):
+        raise ValueError("interpolated samples exceed finite float64 range")
+    return result
 
 
 @dataclass
@@ -198,7 +213,9 @@ class PeakProtectAGC:
     """Block AGC whose safety ceiling prevents output clipping.
 
     ``attack`` is used when gain must decrease; ``release`` is used when gain
-    may increase.  Both are smoothing fractions in ``(0, 1]``.
+    may increase. Both are smoothing fractions in ``(0, 1]``. The complete
+    input block must be buffered before its peak and output can be computed.
+    Time-constant adjustment does not make peak statistics block-invariant.
     """
 
     target_peak: float = 0.8
@@ -355,13 +372,18 @@ def q15_dot(left: np.ndarray, right: np.ndarray) -> np.int16:
     Products are accumulated exactly in signed 64-bit integer space, scaled
     back by 2**15 with nearest-even rounding, and saturated once at the output.
     A target DSP may use another rounding point or accumulator width; record it
-    before requiring bit-exact agreement.
+    before requiring bit-exact agreement. Length is conservatively limited to
+    2**33-1 terms so even all maximum positive products fit signed int64.
     """
 
     a = np.asarray(left)
     b = np.asarray(right)
     if a.shape != b.shape or a.size == 0:
         raise ValueError("left and right must have the same non-empty shape")
+    # A single product can be +2**30. Reject before traversing or casting
+    # enormous broadcast views; this conservative bound guarantees int64 sums.
+    if a.size > (2**63 - 1) // 2**30:
+        raise ValueError("dot-product length exceeds safe signed int64 accumulator bound")
     for name, values in (("left", a), ("right", b)):
         if not np.issubdtype(values.dtype, np.integer):
             raise ValueError(f"{name} must have an integer dtype")
@@ -392,6 +414,8 @@ TELEMETRY_FIELDS = {
 def validate_telemetry(record: Mapping[str, object]) -> list[str]:
     """Return human-readable errors for one engineering telemetry record."""
 
+    if not isinstance(record, Mapping):
+        return ["record must be a mapping"]
     errors: list[str] = []
     for name, expected in TELEMETRY_FIELDS.items():
         if name not in record:
@@ -401,9 +425,9 @@ def validate_telemetry(record: Mapping[str, object]) -> list[str]:
         if expected is bool:
             valid_type = isinstance(value, (bool, np.bool_))
         elif expected is int:
-            valid_type = isinstance(value, (int, np.integer)) and not isinstance(value, bool)
+            valid_type = isinstance(value, (int, np.integer)) and not isinstance(value, (bool, np.bool_))
         elif expected is float:
-            valid_type = isinstance(value, (int, float, np.integer, np.floating)) and not isinstance(value, bool)
+            valid_type = isinstance(value, (int, float, np.integer, np.floating)) and not isinstance(value, (bool, np.bool_))
         else:
             valid_type = isinstance(value, expected)
         if not valid_type:
@@ -415,14 +439,18 @@ def validate_telemetry(record: Mapping[str, object]) -> list[str]:
         errors.append("sample_rate_hz must be positive")
     for name in ("sro_ppm", "rtf", "agc_gain", "clipping_fraction"):
         value = record.get(name)
-        if isinstance(value, (int, float, np.integer, np.floating)) and not math.isfinite(float(value)):
+        if isinstance(value, (bool, np.bool_)) or not isinstance(value, Real):
+            continue  # Type error is already recorded above.
+        try:
+            numeric = float(value)
+        except (OverflowError, ValueError):
             errors.append(f"{name} must be finite")
-    clipping = record.get("clipping_fraction")
-    if isinstance(clipping, (int, float, np.integer, np.floating)) and not 0.0 <= float(clipping) <= 1.0:
-        errors.append("clipping_fraction must be in [0, 1]")
-    for name in ("rtf", "agc_gain"):
-        value = record.get(name)
-        if isinstance(value, (int, float, np.integer, np.floating)) and float(value) < 0.0:
+            continue
+        if not math.isfinite(numeric):
+            errors.append(f"{name} must be finite")
+        elif name == "clipping_fraction" and not 0 <= numeric <= 1:
+            errors.append("clipping_fraction must be in [0, 1]")
+        elif name in ("rtf", "agc_gain") and numeric < 0:
             errors.append(f"{name} must be non-negative")
     if isinstance(record.get("model_version"), str) and not record["model_version"].strip():
         errors.append("model_version must be non-empty")

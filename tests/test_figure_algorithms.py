@@ -647,14 +647,17 @@ class FigureAlgorithmTest(unittest.TestCase):
             {("activity_control", target)
              for target in ("aec", "wpe", "tracking", "bf", "backend")})
 
-    def test_pipeline_draws_exactly_the_declared_dependencies(self):
+    def test_pipeline_diagram_exposes_the_independent_signal_contracts(self):
         figure = self.capture_figure(figures.fig_pipeline)
-        expected = {key: frozenset(value)
-                    for key, value in figures.pipeline_dependency_spec().items()}
-        self.assertEqual(figure._pipeline_edges, expected)
         self.assertLessEqual(figure.get_size_inches()[0], figures.MAX_FIGURE_WIDTH)
-        text = " ".join(item.get_text() for item in figure.axes[0].texts)
-        self.assertIn("未方向归一 STFT", text)
+        self.assertEqual(len(figure._pipeline_panel_axes), 2)
+        text = " ".join(item.get_text() for axis in figure.axes for item in axis.texts)
+        for signal in ("R：处理后播放参考", "S：扬声器", "M：WPE 后多通道",
+                       "D → 解析波束", "C：活动 / 远端\n双讲控制"):
+            with self.subTest(signal=signal):
+                self.assertIn(signal, text)
+        self.assertIn("M + 活动→掩码", text)
+        self.assertIn("M + 掩码", text)
 
     def test_pipeline_node_text_stays_inside_boxes_and_layers_are_separate(self):
         figure = self.capture_figure(figures.fig_pipeline)
@@ -667,12 +670,11 @@ class FigureAlgorithmTest(unittest.TestCase):
                 self.assertLessEqual(text_box.x1, box.x1)
                 self.assertGreaterEqual(text_box.y0, box.y0)
                 self.assertLessEqual(text_box.y1, box.y1)
-        positions = {name: rectangle.get_y()
-                     for name, rectangle in figure._pipeline_node_rectangles.items()}
-        self.assertGreater(positions["far_end"], positions["diarization"])
-        self.assertGreater(positions["diarization"], positions["ssl"])
-        self.assertGreater(positions["ssl"], positions["capture"])
-        self.assertGreater(positions["capture"], positions["neural_separator"])
+        main, branches = figure._pipeline_panel_axes
+        self.assertIs(figure._pipeline_node_rectangles["far_end"].axes, main)
+        self.assertIs(figure._pipeline_node_rectangles["capture"].axes, main)
+        for name in ("ssl", "diarization", "neural_separator", "activity_control"):
+            self.assertIs(figure._pipeline_node_rectangles[name].axes, branches)
 
     def test_fig13_has_room_between_panel_titles_and_previous_xlabels(self):
         figure = self.capture_figure(figures.fig_gcc_reverb)

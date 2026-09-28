@@ -1,6 +1,6 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 91 个 Git 上游项目；已在 `codes/upstream/_downloads/` 取得 79 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。2026-09-28 离线核验 78 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 12 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 92 个 Git 上游项目；已在 `codes/upstream/_downloads/` 取得 80 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。2026-09-28 离线核验 79 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 12 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”只说明来源、提交、工作区状态和指定入口符合清单，不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -150,8 +150,9 @@ DEMAND v1.0 的 NRIVER 河流场景来自 [Zenodo 1227121](https://zenodo.org/re
 |---|---|---|---|
 | [Stream.FM](https://github.com/sp-uhh/streamfm/tree/ab2700c1154acc5c2ce67a5344182028336413f5) | 流匹配语音恢复、逐步状态接口 | AGPL-3.0；独立源码与许可，未取权重/数据 | 源码检查，非完整推理运行；状态接口疑点见增强研究 |
 | [FastEnhancer](https://github.com/aask1357/fastenhancer/tree/f85223bd546b27f39dc0744e0310dcd246f750a4) | 单通道流式降噪、显式ONNX状态 | MIT；独立源码与许可，模型二进制未取 | 非AEC/WPE，不引用设备性能；实现说明见工业研究 |
+| [faster-enhancer.c](https://github.com/kdrkdrkdr/faster-enhancer.c/tree/7d78dab11bca854fb200426c621a96d7b37a2983) | FastEnhancer-Medium 的独立C11/int8运行时，48 kHz、320样本步长 | MIT源码，原作者版权见NOTICE；仅取得LICENSE、NOTICE、README、CMake与include/src/tests/docs原样源码选集，不取权重或测试音频 | 2026-07预印本的移植实现；源码已取得并核验范围，未编译、运行模型或测设备性能；与原项目不同配置的数字不可直接比较 |
 
-两项均保存在忽略的独立下载目录，不随本书提交重新分发。上游 `onnx/` 模型目录被二进制筛选省略，实际API入口是 `scripts/test_onnx.py` 和 `scripts/export_onnx.py`。代码许可不替代权重和数据条款。
+三项均保存在忽略的独立下载目录，不随本书提交重新分发。FastEnhancer上游 `onnx/` 模型目录被二进制筛选省略，实际API入口是 `scripts/test_onnx.py` 和 `scripts/export_onnx.py`。faster-enhancer.c的`weights/`与`testaudio/`未取得。代码许可不替代权重和数据条款。
 
 
 ## 固定分数延迟与时频分离补充
@@ -243,5 +244,5 @@ PRA的AuxIVA、ILRMA、FastMNMF/FastMNMF2、TRINICON，ssspy的回投影，以�
 Vo归档SHA-256为`fb22c9edecb56049b7f8ede1e1522384f0c4e6bfb5e5577f3bd482f6367ef46a`。
 配套descriptor是作者下载页的固定快照，摘要为`a4903db625b19ed77c69b495b9655257bd3b1e7ebd3fe5d27bfcec52ef6d2984`；
 这两个值均为本次取得后本地计算，不是作者公布的独立校验值或数字签名。
-[归档锁表](ARCHIVE_SOURCES.lock.json)现有HARK与Vo两项，与91个Git项目分开计数。
+[归档锁表](ARCHIVE_SOURCES.lock.json)现有HARK与Vo两项，与92个Git项目分开计数。
 完整压缩包仍在忽略缓存中，包含未选取资产；只有选定工作树排除了二进制、图和数据。缓存及源码工作树不随本书提交推送。
