@@ -32,3 +32,25 @@ WebRTC 的这一份工作树只包含主源码库，不是 `depot_tools` 管理�
 
 更新锁定版本时，可通过 `--destination` 建立另一个目录，先检查已有修改归属；不要覆盖旧目录或把
 `_downloads/` 整体加入本仓库 Git。逐算法读码方法见 [源码复现手册](../research/04_source_reproduction.md)。
+
+
+## 固定摘要的官方源码归档
+
+有些官方源码使用发布归档而不是 Git。`fetch_archives.py` 读取独立的
+[`ARCHIVE_SOURCES.lock.json`](../ARCHIVE_SOURCES.lock.json)，验证归档与官方描述文件的 SHA-256，
+再提取登记的源码子集。HARKTOOL5 3.5.0 保存在 `_downloads/harktool5-3.5.0/`，
+原始压缩包与 `.dsc` 存于 `_downloads/.archive-cache/`，两处均不进入本书 Git 提交。
+
+```bash
+.venv/bin/python codes/upstream/fetch_archives.py --list
+.venv/bin/python codes/upstream/fetch_archives.py --project harktool5-3.5.0
+.venv/bin/python codes/upstream/fetch_archives.py --verify --report codes/ARCHIVE_SOURCE_STATUS.json
+```
+
+校验发生在解析和写入源码之前。工具限制压缩与展开大小，拒绝路径逃逸、链接、特殊文件和重复路径；
+已有目录只能核对，不会覆盖修复。离线验证将本地每个文件与已校验归档的选集逐字节比较，检查缺失、
+额外文件及目录，报告实际文件摘要和未运行状态。HTTP 来源使用已经固定的摘要校验内容，
+这里没有宣称验证发布签名。摘要的出处与核实日期保存在锁表。
+
+归档来源独立计数，不能用 Git 项目总数代表全部获取方式。HARK 的受限许可、Infineon 配置文件与
+算法核心的区别见[第三方说明](../THIRD_PARTY.md)；两个获取工具都不会安装、编译或执行上游程序。

@@ -10,7 +10,7 @@
     "float_dtype": "float64"
   },
   "synthetic_signal": {
-    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband, spectral_subtraction, clock_drift, interpolation, alignment_error and room_decay; see each group for noise and transforms",
+    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband, spectral_subtraction, clock_drift, interpolation, alignment_error, room_decay and dma_calibration; see each group for noise and transforms",
     "duration_s": 2,
     "base_frequencies_hz": [
       173,
@@ -33,8 +33,8 @@
   "pcm": "signed little-endian 16-bit, round-to-nearest-even; no dither; no per-file normalization",
   "listening": "Start at low device volume. No automatic playback. No formal listening study performed.",
   "generator_inputs": {
-    "codes/examples/generate_audio_samples.py": "1e5d6d7baad03d53b21ea71bff1665d5c263ffad1ad3efc695ab4edb057ebbb7",
-    "codes/array_tutorial/audio_samples.py": "49e85fecf52bf03486369a06daa4ed9a02d9929887dae80729634604f508f765",
+    "codes/examples/generate_audio_samples.py": "9f66e158bd3316ea559dcaee6ab92113494bb1fc380f3d3225cec42e6e1cf63d",
+    "codes/array_tutorial/audio_samples.py": "9fe8d82a25bdbd79c7714b4caa5cba42ea1c3f806b7be26bd3e973c4467deb59",
     "codes/array_tutorial/aec.py": "70d69fcd523cff3028162a221d71ea6bd2254979dfe37479ad26f77ab74a5a7e",
     "codes/array_tutorial/aec_ipnlms.py": "86422a00df25293176e0bde8193c7e05ac7a1e5703660b56907024985978c0d4",
     "codes/array_tutorial/aec_rls.py": "f13c2018297e46f0b393ef52e04fad5f1d48ede00de8b37a80a4abf597a9305d",
@@ -47,6 +47,68 @@
     "codes/array_tutorial/geometry.py": "7e9c33e90101c41441cde659d288f0aa25be141e9cdbaaa9fcabee54b285f72a"
   },
   "groups": {
+    "dma_calibration": {
+      "parameters": {
+        "exercise_id": "E03-14",
+        "sample_rate_hz": 16000,
+        "duration_s": 2.0,
+        "samples_per_channel": 32000,
+        "spacing_m": 0.01,
+        "sound_speed_m_s": 343.0,
+        "channel_order": [
+          "front microphone 1",
+          "rear microphone 2 with gain 1.01"
+        ],
+        "relative_channel_gain": 1.01,
+        "geometric_delay_s": 2.915451895043732e-05,
+        "geometric_delay_samples": 0.4664723032069971,
+        "common_base_delay_s": 0.002,
+        "front_source": {
+          "frequency_hz": 1000.0,
+          "amplitude": 0.25,
+          "active_interval_s": [
+            0.1,
+            0.7
+          ]
+        },
+        "back_source": {
+          "frequency_hz": 1600.0,
+          "amplitude": 0.25,
+          "active_interval_s": [
+            0.9,
+            1.5
+          ]
+        },
+        "envelope": "min(clip((t-begin)/0.01,0,1),clip((end-t)/0.01,0,1)); sine phase is 2*pi*f*t",
+        "fade_duration_s": 0.01,
+        "source_model": "two separate-time finite sinusoidal bursts evaluated at continuous delayed times; no random input",
+        "microphone_model": "x1=F(t-b)+B(t-b-tau); x2=1.01*(F(t-b-tau)+B(t-b))",
+        "unaligned_output_model": "none; every output uses the same tau delay before rear-channel subtraction",
+        "mismatch_output_model": "x1(t)-x2(t-tau)",
+        "corrected_output_model": "x1(t)-x2(t-tau)/1.01, using known gain, no fitted calibration",
+        "reference": "F(t-b)-F(t-b-2*tau), ideal target-only differential output; includes its physical/filter phase",
+        "delay_implementation": "continuous source evaluation at shifted time; no interpolation or causal digital filter is executed",
+        "alignment": "same time origin and differential response; no post-hoc delay or gain fitting",
+        "front_scoring_interval_samples": [
+          2400,
+          10400
+        ],
+        "back_scoring_interval_samples": [
+          15200,
+          23200
+        ],
+        "front_ideal_steady_amplitude_ratio": 0.36432095340217624,
+        "front_mismatch_steady_amplitude_ratio": 0.36627456185046403,
+        "back_mismatch_steady_amplitude_ratio": 0.010000000000000009,
+        "back_corrected_steady_amplitude_ratio": 0.0,
+        "back_mismatch_level_relative_single_mic_db": -39.99999999999999,
+        "normalization": "one common export gain across array, target, mismatch and corrected waveforms",
+        "randomness": "none",
+        "noise": "none"
+      },
+      "limits": "Mathematical free-field equal-amplitude signals, not real speech, a measured DMA or a hardware calibrator. Known 1.01 gain correction and ideal continuous delays demonstrate the null model; no gain or delay estimator is run. A zero rear response is an ideal-model result; PCM16 has a quantization floor. There is no additive noise, so the reported amplitude ratios are not SNR gains. No formal listening study.",
+      "common_export_gain": 1.0
+    },
     "room_decay": {
       "parameters": {
         "exercise_id": "E02-11",
@@ -701,6 +763,58 @@
     }
   },
   "files": [
+    {
+      "file": "dma_calibration_array.wav",
+      "sha256": "4f1e7b3786e475a9115e7643ea28b028c4adca13de26cb3c724c410196e100dd",
+      "group": "dma_calibration",
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.25,
+      "rms": 0.1360772461703133,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5258633492415408e-05
+    },
+    {
+      "file": "dma_calibration_target.wav",
+      "sha256": "cdda1c5936006ebde7affd4d463bee5b28c8500260e4e66296f3b66a1159c8af",
+      "group": "dma_calibration",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.089569091796875,
+      "rms": 0.03488055532480818,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5255251935027137e-05
+    },
+    {
+      "file": "dma_calibration_mismatch.wav",
+      "sha256": "d294ad9ced5f2bcabd751dc8878b8119f2ed4a51ce6c548b0260eb96d17cd29a",
+      "group": "dma_calibration",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.0904541015625,
+      "rms": 0.035081528922067735,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5250196745100753e-05
+    },
+    {
+      "file": "dma_calibration_corrected.wav",
+      "sha256": "cdda1c5936006ebde7affd4d463bee5b28c8500260e4e66296f3b66a1159c8af",
+      "group": "dma_calibration",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.089569091796875,
+      "rms": 0.03488055532480818,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5255251935027137e-05
+    },
     {
       "file": "room_decay_dry.wav",
       "sha256": "b7e2c6345a9cbb5abd98f17db4bd50a4a42a77177ab998b0a0ed31df3081f114",

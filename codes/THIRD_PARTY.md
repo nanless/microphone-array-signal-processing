@@ -1,6 +1,6 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 79 个上游项目；已在 `codes/upstream/_downloads/` 取得 72 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。2026-09-28 离线核验 71 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 7 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 82 个 Git 上游项目；已在 `codes/upstream/_downloads/` 取得 74 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件。2026-09-28 离线核验 73 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 8 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”只说明来源、提交、工作区状态和指定入口符合清单，不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -163,3 +163,21 @@ DEMAND v1.0 的 NRIVER 河流场景来自 [Zenodo 1227121](https://zenodo.org/re
 | [TF-Locoformer](https://github.com/merlresearch/tf-locoformer/tree/7a615460d347ff7334a13dbb831d16280da72cdc) | Apache-2.0及逐文件许可；`7a615460d347ff7334a13dbb831d16280da72cdc` | MERL作者仓库，源码与配置；静态接口研究，未取得权重或执行推理 |
 
 本地源码位于`codes/upstream/_downloads/stk/`和`tf-locoformer/`，不随本书Git再分发。STK的许可说明保留作者声明；TF-Locoformer的模型与训练数据权利另行核对。细节见[工业I29](research/03_industrial_deployment.md#i29stkdelayl)与[增强研究](research/02_aec_wpe_separation.md)。
+
+
+## 2026-09-28 阵列几何与标定源码
+
+| 固定作者来源 | 许可与取得范围 | 验证边界 |
+|---|---|---|
+| [StructureFromSound](https://github.com/kalleastrom/StructureFromSound/tree/9b7db79a489d347bed9a38bd38224e65c273660a) | GPL-3.0；已取得README、许可与matlab目录，省略data/、tex/及常见音频/二进制 | 作者同步麦TDOA几何标定实现；主入口有作者路径与外部依赖，备用v2存在冲突标记。已核源码，未执行MATLAB或完整录音流程 |
+| [Alias-Free Arrays](https://github.com/Zhao-Shen/Alias-free-Arrays/tree/4c80e169518d44f8333aac7f13c935286538f670) | 固定提交未建立代码许可证；仅索引，不自动获取或再分发 | 作者论文与MATLAB绘图入口对应；本书六边形相位相等是独立计算 |
+
+StructureFromSound保存在Git忽略的`codes/upstream/_downloads/structure-from-sound/`，未随本书重新分发。获取工具保留原始冲突与依赖，不把静态核查记为运行成功。doatools已有固定目录新增登记几何、协同阵和失配前向模型入口；其误差施加器不估计未知校准量。逐函数解释、几何规范与工业流形采集流程见[空间研究§39](research/01_spatial_and_tracking.md#39-差分协同阵与虚拟协方差重建)。
+
+
+| 工业来源 | 实际保留范围 | 许可与验证边界 |
+|---|---|---|
+| [HARKTOOL5 3.5.0](https://hark.jp/download/source-code/) | 独立归档锁定 README、debian 许可与变更、CMake、src、python 和两个文档源；不取生成文档目录 | HARK License v2.0，研究、开发、教育和学术用途受原文约束，商业用途另行授权；不是普通宽松开源许可。未编译或测设备 |
+| [Infineon AE 配置](https://github.com/Infineon/mtb-example-psoc-edge-ae-application/tree/955a61090acf7caddd75fc74161fc0fb40aa7ae5) | `infineon-ae-config`：仅 GeneratedSource 下配置 C/H 与根 LICENSE | 两个文件逐文件 Apache-2.0；根 EULA 保留供核对，应用包装代码、配置器项目和算法核心不在取得范围内；未构建或刷写 |
+
+HARK 不属于 Git 锁表的 82 项，另见 [ARCHIVE_SOURCES.lock.json](ARCHIVE_SOURCES.lock.json) 和由工具生成的 [ARCHIVE_SOURCE_STATUS.json](ARCHIVE_SOURCE_STATUS.json)。下载采用官方 `.dsc` 公布的固定 SHA-256，来源核实于2026-09-28；归档与源码放在忽略目录，不随本书 Git 提交重新分发。Infineon 已取得三个登记文件并通过固定提交、来源、清洁工作树和筛选范围核验；取得的配置数组不能重现闭源算法核心。

@@ -571,9 +571,115 @@ CPHD、LMB/GLMB 另有 [Ba Tuong Vo 的作者 MATLAB 工具包](https://ba-tuong
 
 ### 39. 差分协同阵与虚拟协方差重建
 
-对应 §3.3。doatools `estimation/coarray.py::CoarrayACMBuilder1D` 将物理阵列协方差映射到差分滞后，再构造增广协方差用于虚拟阵列处理。原始输入仍是有限个物理通道；差分滞后具有重复计数和统计相关性，不是新增的独立麦克风通道。[作者源码](https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/estimation/coarray.py)。
+对应[第 3 章](../../chapters/03_array-geometry.md)。本节同时检查几何、二阶统计量与标定接口：阵元位置给出传播模型，协同阵重排已有的统计量，标定则检验模型与设备是否一致。以下外部源码核实于 2026-09-28；除明确标出的本书复算外，没有新增执行外部 MATLAB 或 doatools 接口。
 
-建议对正文稀疏阵坐标手工枚举差分集合，核对重复滞后的平均与缺孔处理，然后分别使用独立源和完全相干源。可形成较长连续滞后区间不等于在任意声场都能识别相同数量的源。频带变化后相位字典需重算；宽带混响与互耦不能通过集合计数消除。
+#### 39.1 从阵列参数到坐标与连续差集
+
+固定 doatools 的 [`model/arrays.py`](https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/model/arrays.py)提供 `NestedArray`、`CoPrimeArray` 和若干预设几何。它们生成坐标，不自动搜索最优布置。`d0` 是基础网格的物理间距，不能在不同频点偷偷改成该频点的半波长，否则比较的已经是不同硬件。
+
+| 调用与参数 | 以 `d0` 为单位的阵元索引 | 阅读时要确认的条件 |
+|---|---|---|
+| `NestedArray(3,3,d0)` | `{0,1,2,3,7,11}` | 前三点来自 `0…n1−1`，后三点来自 `(n1+1)k−1`；与正文六麦例相符 |
+| `CoPrimeArray(3,4,d0,mode='m')` | `{0,3,6,9,4,8}` | 这是图 10 的六麦基本互质阵；库返回顺序不是从小到大，必须同步保留通道次序 |
+| `CoPrimeArray(3,4,d0)` | `{0,3,6,9,4,8,12,16,20}` | 默认 `mode='2m'`，是扩展的九麦配置，不能拿它替代图中的六麦结果 |
+
+[`model/coarray.py::WeightFunction1D`](https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/model/coarray.py)先保存每个有符号差分滞后对应的协方差元素索引，再记录重复次数。对六麦嵌套阵，36 个有序麦对分布在 −11～11 的 23 个滞后上；零滞后对应 6 个对角元素。重复元素共享物理通道，不能按 36 次独立测量解释。
+
+`get_central_ula_size()` 从零向正方向寻找第一个缺失整数，并利用差集对称性返回中心连续段的长度。若连续滞后为 $-L,\ldots,L$，其长度为 $2L+1$；排除负半部时返回 $L+1$。它不会对缺孔自动插值。该函数早期 docstring 的端点描述与实际循环有一位差异，读取时以 `while mv in self._index_map` 和返回表达式核对，本节采用实际代码的长度。
+
+物理嵌套阵跨度为 $11d_0$，差集从 $-11d_0$ 到 $11d_0$ 的跨度为 $22d_0$，用于增广的单侧虚拟阵列有 12 个位置、跨度仍为 $11d_0$。三种数量分别是物理孔径、差集跨度和虚拟矩阵维度，不能把“23 个滞后”读成 23 路录音或 23 个可分辨声源。
+
+#### 39.2 直接增广与空间平滑的实际计算
+
+读取路线为 `WeightFunction1D` → `utils/math.py::vec` → [`estimation/coarray.py::CoarrayACMBuilder1D.transform`](https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/estimation/coarray.py)。输入是 $M\times M$ 物理协方差，输出是 $M_v\times M_v$ 增广矩阵，其中 $M_v=L+1$。本书采用 $R_{ij}=E[X_iX_j^*]$、滞后 $\ell=p_i-p_j$；向量化和位置差必须采用同一排列。
+
+同一滞后的元素先求平均，得到 $z=[r[-L],\ldots,r[L]]^\top$。代码提供两个分支。
+
+- `method='da'` 是直接增广：依次把 $z$ 的长度 $M_v$ 子段放到矩阵列中，得到 $T_{ij}=r[i-j]$。有限样本下，即使输入物理协方差半正定，$\mathbf T$ 仍可能有负特征值。
+- 默认 `method='ss'` 是协同阵空间平滑：取全部 $M_v$ 个长度 $M_v$ 的连续子段 $\vec z_q$，计算 $\mathbf R_{\rm ss}=M_v^{-1}\sum_q\vec z_q\vec z_q^H$。每项外积半正定，所以结果半正定；这不自动证明源独立、模型匹配或快拍数充分。
+
+若 $\mathbf T$ 是上述子段按列组成的矩阵，列顺序不会改变外积和，因此 $\mathbf R_{\rm ss}=\mathbf T\mathbf T^H/M_v$。在输入滞后共轭对称时，$\mathbf T$ 为厄米矩阵，于是特征值经过平方和尺度变换。直接增广的负特征值不会在平滑后保持符号，特征值大小次序也可能改变；不能据平滑矩阵半正定，反推直接增广原先没有问题。
+
+两条分支的数值单位不同。若输入麦克风谱单位为 V，$r[\ell]$ 与 $\mathbf T$ 的元素单位为 V²，$\mathbf R_{\rm ss}$ 则为 V⁴；输入幅度整体乘 $b$ 时，两者分别乘 $|b|^2$ 与 $|b|^4$。空间平滑矩阵用于构造子空间，不应直接当作新增物理通道的声功率，或与原始协方差按元素比较功率大小。
+
+#### 39.3 两组可独立复算的矩阵
+
+正文 [E03-07](../../chapters/03_array-geometry.md#e03-07)使用物理位置 `{0,1,3}`，两个互不相关的单位功率源来自 0° 与 30°，通道白噪声功率为 0.1。其四维直接增广矩阵特征值为 $0.1,0.1,4.1,4.1$，因而空间平滑的特征值为 $0.0025,0.0025,4.2025,4.2025$，逐项来自原值平方后除以 4。
+
+同题的一次快拍反例 $\vec x=[1,0,1]^\top$ 给出直接增广特征值 $-1/3,2/3,2/3,5/3$。空间平滑后的值则为 $1/36,1/9,1/9,25/36$。这些结果已用本书独立 NumPy 外积求和与矩阵乘法两条路线复算；没有调用 doatools，也不能说一次快拍就恢复了真实的两个声源。
+
+下一步外部对照应对同一输入分别调用 `da` 和 `ss`，保存滞后顺序、重数、矩阵及特征值，再逐项与上述手算对齐。固定源码使用 `np.complex_`，运行环境需核对 NumPy 相容性；目前没有把替换类型别名后的程序冒充原版运行。原始方法定位为 [Pal–Vaidyanathan 2010 第 IV 节及 Caltech 所列勘误](https://authors.library.caltech.edu/records/e8ge0-xc746)；本节的矩阵对照只采用已明确列出的输入与代数关系。
+
+#### 39.4 几何秩、相位歧义与方向域
+
+时延模型的几何秩与窄带相位混叠是两次不同的检查。共线基线只能确定一个方向投影；非共线平面基线可以确定两个投影，但法向两侧仍有镜像。增加非共面基线可补足第三个投影，却不能单独保证单频相位在整个球面上唯一。还要检查相位绕回后是否有不同方向产生相同相对导向。
+
+[Tucker、Zhao、Ahmad 与 Potter 2022 原文](https://pmc.ncbi.nlm.nih.gov/articles/PMC9757818/)的 §II～III 用相对首阵元的几何矩阵定义方向域；平面阵的完整单侧方向域映射为二维单位圆盘。§IV 的 Corollary 4 要求最短非零歧义格点的范数严格大于 2；§V-B 给出规则六边形相邻间距 $d=\lambda/\sqrt3$ 时圆盘恰好相切。相切已经存在一对相同相位方向，因此无歧义需要严格处于临界内侧。正文的 7.5 cm 环径例由此得到约 5.28 kHz 的临界频率。
+
+原文 §VI 也把无歧义限制为无噪声性质。近似相同的导向、高旁瓣、有限快拍和标定误差仍会造成大误差；不能把无歧义证明当成定位精度保证。若采用刚性挡板、方向性麦克风或实测流形，应重新比较完整复响应，不能直接套用各向同性传感器的纯相位判据。
+
+原论文脚注明确指向 [Alias-free-Arrays 作者仓库](https://github.com/Zhao-Shen/Alias-free-Arrays/tree/4c80e169518d44f8333aac7f13c935286538f670)。固定提交包含 `CreateFigure1a.m`～`CreateFigure2.m` 与 README，2026-09-28 核查未见代码许可证，因此只保留来源索引，不自动获取。其绘图代码也不等于带噪声阵列几何优化器。本书几何练习使用公开模型独立计算相对导向，不复制这些 MATLAB 脚本。
+
+#### 39.5 前向失配模型与校准器的区别
+
+固定 doatools 的 [`model/perturbations.py`](https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/model/perturbations.py)可以把指定误差施加到模型：`LocationErrors` 加到坐标，`GainErrors` 逐通道乘 $1+g_m$，`PhaseErrors` 乘 $e^{\mathrm j\phi_m}$，`MutualCoupling` 左乘矩阵 $\mathbf C$。其中 $\phi_m$ 用弧度，$g_m=-0.1$ 表示实际增益 0.9。这些类接收已给定误差，不从录音估计误差，也不是自动校准算法。
+
+建议先用正文 E03-06 的已知双麦复增益检查前向响应，再把反向补偿和未知参数估计作为单独步骤。把全部通道乘同一非零复数可并入未知源幅度；相对校准需指定参考通道。参考通道本身含噪时，直接复谱比值会受分母噪声影响。多位置联合拟合还需检查参考能量、方向覆盖、模型残差与留出方向，不能从训练方向拟合准确推出全方向准确。
+
+固定源码还有以下静态接口疑点，未在此执行错误路径：`GainErrors`、`PhaseErrors` 的列表转数组分支写入了拼错的局部变量，后面仍读取原对象的 `ndim`；`MutualCoupling` 的方阵校验使用 `and`，没有完整拒绝非方二维数组。合法模型对照可显式传入正确形状的 NumPy 数组，负例仍需在外部隔离环境中验证并记录；不能把这些类列成已验收的设备输入接口。
+
+串扰补偿还应注明噪声加入的位置。若观测为 $\vec x=\mathbf C\vec s+\vec n_{\rm post}$，左乘逆矩阵会改变后加噪声为 $\mathbf C^{-1}\vec n_{\rm post}$，病态矩阵可大幅放大它；若噪声在混合前已与信号共同经过 $\mathbf C$，就不能把同一句结论无条件套上去。方向相关壳体散射应进入实测流形，固定串扰矩阵不能代替它。
+
+#### 39.6 从 TOA 距离到同步麦克风 TDOA 自标定
+
+[Kuang 等 ICASSP 2013 的大学官方记录](https://www.lunduniversity.lu.se/lup/publication/e90f122e-669e-44c8-8da8-41fae8645aae)明确讨论到达时间（Time of Arrival，TOA）给出的全部接收器—发射器距离。到达时间差（Time Difference of Arrival，TDOA）只提供距离差，未知发声时刻带来另一组未知量，不能直接套用 TOA 的最小数据要求。
+
+进一步的作者系统见 [Zhayida 等 2016 预印本 §2、§5～6](https://arxiv.org/html/1610.02392)。该系统在未知麦克风与声源坐标之间估计几何，接收麦克风仍须同步，声速须已知。论文中的未知发声偏置不是每台独立设备的采样时钟偏移；设备时钟不同步时还要增加同步模型。论文通过多个相关峰、跨通道一致性与稳健拟合处理错误匹配，不能只取一次互相关最高峰就宣称复现了该系统。
+
+论文 §10 指向 [StructureFromSound 作者代码](https://github.com/kalleastrom/StructureFromSound/tree/9b7db79a489d347bed9a38bd38224e65c273660a)，根 [LICENSE.md](https://github.com/kalleastrom/StructureFromSound/blob/9b7db79a489d347bed9a38bd38224e65c273660a/LICENSE.md)为 GPL-3.0。代码来源与取得状态见锁表及状态报告；录音、测量真值、模板和外部工具箱分别核对，不由根代码许可推断数据可再分发。
+
+读码从 [`matlab/main.m`](https://github.com/kalleastrom/StructureFromSound/blob/9b7db79a489d347bed9a38bd38224e65c273660a/matlab/main.m)进入 `sfs_system_v1`。相关峰匹配后，`main_gcctracking_rex` 将采样点差乘 `settings.v/settings.sr` 得到米制 `matches.u`；后续估计偏置、麦位置与源位置，并继续寻找内点。
+
+[`tdoa/calcresandjac.m`](https://github.com/kalleastrom/StructureFromSound/blob/9b7db79a489d347bed9a38bd38224e65c273660a/matlab/tdoa/calcresandjac.m)的残差是 $e_{ij}=\|\vec x_i-\vec y_j\|+o_j-D_{ij}$。这里 $\vec x_i$ 是麦位置、$\vec y_j$ 是第 $j$ 个声事件位置，均以米计；$D_{ij}$ 是已转换成米的距离差，不是秒或采样点数。对于以麦 1 为参考的理想距离差，$o_j=-\|\vec x_1-\vec y_j\|$，所以参考行残差为零。相同项目的部分注释采用相反的偏置符号，适配时须用实际残差表达式核对。
+
+最小独立检查可取 $\vec x_1=(0,0,0)$ m、$\vec x_2=(3,0,0)$ m、$\vec y=(0,4,0)$ m。两距离为 4 m、5 m，距离差为 `[0,1]` m，偏置为 −4 m，两个残差都为零。整体平移、旋转或镜像后距离不变；仅凭这些观测不能恢复外部世界坐标。这个 3–4–5 手算只验证符号与单位，不满足完整三维自标定的观测数量，更没有执行 MATLAB 求解器。
+
+#### 39.7 固定校准代码的运行前提与障碍
+
+下面记录的是固定提交的静态检查。源码可以支持模型研究，但“取得源码”不能改写成“原作者系统已复现”。
+
+| 入口 | 已读到的具体行为 | 对复现的影响 |
+|---|---|---|
+| `matlab/main.m` | 写死作者本机的 `multipolpath`、`datapath`，读取指定 `sfsdb` 记录，再调用 `sfs_system_v1` | 需另准备路径、依赖与获授权录音；原样运行不是可移植入口 |
+| `sfs_system_v1`、`main_gcctracking_rex` | 内部重设声速为 340 m/s，后者写入 `channels=1:8`、参考 1、窗长 2048、步长 1000 | 论文实验声速 343 m/s 不能直接当成固定程序值；传入设置也可能被覆盖 |
+| `tdoa_offset_ransac` | 抽取 7 麦、6 个完整匹配列，加载 `options76`，调用偏置求解 | 只有部分缺失数据可处理，不代表任意缺测模式都可解；模板和随机状态须记录 |
+| `tdoa_offset` | 多项式分支调用 `multipol`、`polysolve`，部分路径含 `keyboard` | MATLAB 与辅助代码、模板及交互停止点需逐项处理，不能只列主文件 |
+| `bundletdoa` | 构造过固定坐标的选择矩阵，但当前活跃分支对全部参数作阻尼更新 | 不能声称已使用坐标固定分支；比较几何误差前须处理刚体规范，检查实际残差与退化方向 |
+| `sfs_system_v2` | 留有合并冲突标记，函数输入为 `matches,rns,settings` 却还读取 `a` | 是备用版本的静态故障；`main.m` 调用的是 v1，不能把 v2 故障说成已实测的主入口失败 |
+
+[`bundletdoa.m`](https://github.com/kalleastrom/StructureFromSound/blob/9b7db79a489d347bed9a38bd38224e65c273660a/matlab/tdoa/bundletdoa.m)的阻尼不是补充声学信息。它可以使数值方程更容易求解，却不能消除整体坐标规范不唯一，也不能保证全局收敛。正确的验收应分别报告距离差残差、规范对齐后的坐标误差、失败次数，以及未参与拟合的声源位置结果。上述程序尚未在本机运行，表中的问题不带虚构的报错输出或运行时间。
+
+#### 39.8 实测阵列流形怎样进入工程系统
+
+[HARKTOOL5 官方传递函数生成手册 §1.3、§2.2、§3.1](https://www.hark.jp/document/tf/generating_transfer_functions/Generating_a_Transfer_Function_Using_HARKTOOL5.html)区分测量与几何计算两条路线。测量路线利用时间伸展脉冲（Time Stretched Pulse，TSP）或脉冲响应录音建立各方向到各通道的传递函数；几何路线根据麦与源坐标生成自由场响应。后者不能自动包含实际外壳散射。
+
+测量文件的通道数、录音通道次序及声源方向须对应。官方表 2 对测量路线要求正确的麦数与声源位置，表 5 对几何路线还要求正确麦坐标；因此“文件能加载”并不能证明测量坐标和几何模型都正确。方向网格、采样率、频率网格、参考通道和幅相归一化应随传递函数一起保存。
+
+[HARK Cookbook 3.5.0 的脉冲响应测量节](https://www.hark.jp/document/3.5.0/hark-cookbook-en/subsec-InputDataGeneration-002.html)要求播放扬声器、麦阵、可同时播放录音的音频设备和重复 TSP。这个流程与第 2 章的反卷积测量相衔接，但这里没有运行 HARK、采集设备录音或验证某款产品。官方示例中的角度步长、重复次数和频带设置属于该流程，不能提升为所有产品的统一验收标准。
+
+**HARKTOOL5 有实际源码，但许可和分发形式要分别核对。** [官方源码页](https://hark.jp/download/source-code/)给出 Ubuntu 源包分发入口。本节固定使用 jammy 仓库的 `harktool5_3.5.0.tar.xz`，用[同版 `.dsc` 文件](http://archive.hark.jp/harkrepos/dists/jammy/non-free/source/harktool5_3.5.0.dsc)公布的 SHA-256 校验归档；它不是 Git 提交。下载地址、摘要和选择的源码范围记录在[归档来源锁表](../ARCHIVE_SOURCES.lock.json)，本地取得与校验结果由[归档状态报告](../ARCHIVE_SOURCE_STATUS.json)记录，和 Git 来源计数分开。
+
+包内 `debian/copyright` 与[官方 HARK License v2.0（2020 年 7 月）](https://hark.jp/notice/HARK_License_Agreement.pdf)一致。该许可限定研究、开发、教育或学术用途，商业用途另有约定；它不等于 MIT 或 GPL 许可。本书只保留独立的本地研究源码及许可，不把它纳入教程的开放许可或重新分发。选择范围包括构建说明、相关 C 源文件和原始文档，排除样本音频、二进制与生成的文档资产。源码取得不证明编译、设备采集或算法运行成功。
+
+静态阅读可从 `src/harktool/main.c` 进入 `calctfgeo.c`（按几何生成传递函数）、`calctfrec.c`（从 TSP 录音生成传递函数）和 `calctfimp.c`（脉冲响应输入）。`calctfrec` 读取采样率、FFT 长度、同步平均与峰值搜索范围；这些设置必须随测量记录保存。`calctfgeo.c::writeNormalizeInfo` 明确提示忽略关闭归一化的选项，几何分支始终输出归一化值。因此，把它与实测响应比较之前，应先核对归一化和参考量，不能把两者幅度之差全部归因于壳体或标定误差。源包根 `CMakeLists.txt` 仍有旧的 `PROJECT_VERSION "3.4.0"` 字段，本书依据 `.dsc` 及归档摘要识别 3.5.0 分发包，不用这个旧字段冒充新版本证据。
+
+实际应用可先用已知坐标生成解析响应核对通道与符号，再用实测流形替换；保持同一录音与评分方法比较目标响应和错误方向峰。把测量方向分成拟合集与留出方向，另测试设备外壳装配、温度或位置变化。改进应由这些独立条件的结果支持，不能仅凭存下更多方向或训练残差变小判断标定有效。
+
+一个固件配置实例是 [Infineon AN240916 的 BeamForming Configuration](https://documentation.infineon.com/psocedge/docs/fqo1761931960980)（2026-09-28 核实）。其双麦接口给出 20～100 mm 麦距和 0～180° 角度参数；接入前须转换本书坐标约定并核对通道次序。厂商说明波束图是示意，实际场景仍需测量；`audio-voice-core` 是单独授权交付的算法库，公开应用示例不能作为算法核心已经开源的证据。
+
+该文档直接指向[官方 AE 应用固定源码](https://github.com/Infineon/mtb-example-psoc-edge-ae-application/tree/955a61090acf7caddd75fc74161fc0fb40aa7ae5)。仓库根 `LICENSE` 是 Infineon EULA，不能仅因公开可读就将整个应用标为 Apache-2.0。不过 `proj_cm55/source/audio_enhancement_application/audio_enhancement/GeneratedSource/` 下的 `cy_afe_configurator_settings.c` 和 `.h` 各自明确写有 Apache-2.0 许可头。本书的[Git 来源锁表](../SOURCES.lock.json)只选择这两个配置文件，并保留根许可供核对；其余应用包装代码、配置器项目和核心库不因这两个文件的许可而变成开放源码。
+
+阅读配置头中的 `AFE_PARAM_ID_MIC_DIST`、`AFE_PARAM_ID_ANGLE_RANGE_A` 和 `AFE_PARAM_ID_ANGLE_RANGE_B`，可以追踪麦距与角域怎样进入部署接口；配置 C 文件保存生成的常量数组。它们由配置器生成，不能代替配置器算法源码，也不是可独立运行的波束形成器。本节没有构建、刷写或执行 Infineon 应用；涉及核心库的算法性能不由这两个配置文件证明。
 
 ### 40. IMM 多运动模型交互
 

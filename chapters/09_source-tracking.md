@@ -502,7 +502,7 @@ OSPA 不保留身份，所以身份切换要另报身份切换次数（Identity 
 
 ### 9.5 自由场移动声源的双麦音频与传播真值
 
-前文的[声像移动试听](../codes/audio/tracking_pan.wav)只改变左右声道增益，不包含阵列传播时差。为让读者听到并复算真实传播**模型**下的两麦差异，本书另生成一组[独立的自由场合成样本](../codes/moving_audio/MANIFEST.json)：[原始两音调源](../codes/moving_audio/source.wav)、[固定在起点的双麦输出](../codes/moving_audio/static_array.wav)、[沿直线运动的双麦输出](../codes/moving_audio/moving_array.wav)。它们是数学合成信号，不是真实语音、房间录音或 LOCATA 数据，也不计入主清单的 76 个 WAV。
+前文的[声像移动试听](../codes/audio/tracking_pan.wav)只改变左右声道增益，不包含阵列传播时差。为让读者听到并复算真实传播**模型**下的两麦差异，本书另生成一组[独立的自由场合成样本](../codes/moving_audio/MANIFEST.json)：[原始两音调源](../codes/moving_audio/source.wav)、[固定在起点的双麦输出](../codes/moving_audio/static_array.wav)、[沿直线运动的双麦输出](../codes/moving_audio/moving_array.wav)。它们是数学合成信号，不是真实语音、房间录音或 LOCATA 数据，也不计入主清单的 80 个 WAV。
 
 几何与时间口径固定如下：采样率 16 kHz，持续 2 s；两麦坐标分别为 $(-0.05,0)$ m、$(0.05,0)$ m。声源从 $(-0.8,1.5)$ m 出发，以 $(0.8,0)$ m/s 匀速运动，声速取 343 m/s。
 

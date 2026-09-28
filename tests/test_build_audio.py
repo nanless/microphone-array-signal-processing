@@ -66,8 +66,8 @@ class AudioQualityTest(unittest.TestCase):
     def assert_rejected(self, text):
         self.assertTrue(any(text in error for error in self.errors()), text)
 
-    def test_published_76_sample_fixture_passes_without_writes(self):
-        self.assertEqual(len(self.manifest["files"]), 76)
+    def test_published_80_sample_fixture_passes_without_writes(self):
+        self.assertEqual(len(self.manifest["files"]), 80)
         before = {p.relative_to(self.root): hashlib.sha256(p.read_bytes()).hexdigest()
                   for p in self.root.rglob("*") if p.is_file()}
         self.assertEqual(self.errors(), [])

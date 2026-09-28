@@ -385,7 +385,7 @@
       "url": "https://github.com/morriswmz/doatools.py.git",
       "revision": "9469db201e0418aef6b97583ef54b6fec2769502",
       "license": "MIT",
-      "scope": "root-MUSIC、空间平滑、源数估计、稀疏协方差定位、统计下界",
+      "scope": "root-MUSIC、空间平滑、源数估计、稀疏协方差定位、统计下界; array geometry, coarray direct augmentation/spatial smoothing and given-perturbation forward models",
       "fetch_enabled": true,
       "note": "作者维护的理论研究工具；需要逐方法核对阵列和角度约定，求解器成功不等于DOA正确。",
       "entrypoints": [
@@ -394,7 +394,11 @@
         "doatools/estimation/source_number.py",
         "doatools/estimation/sparse.py",
         "LICENSE.md",
-        "doatools/performance/crb.py"
+        "doatools/performance/crb.py",
+        "doatools/model/arrays.py",
+        "doatools/model/coarray.py",
+        "doatools/estimation/coarray.py",
+        "doatools/model/perturbations.py"
       ]
     },
     {
@@ -1385,6 +1389,72 @@
         "pyfar/dsp/dsp.py",
         "pyproject.toml"
       ]
+    },
+    {
+      "id": "structure-from-sound",
+      "url": "https://github.com/kalleastrom/StructureFromSound.git",
+      "revision": "9b7db79a489d347bed9a38bd38224e65c273660a",
+      "license": "GPL-3.0",
+      "scope": "Synchronized-microphone TDOA geometry self-calibration with unknown emission offsets",
+      "fetch_enabled": true,
+      "acquisition": "independent_source_checkout",
+      "verified_at": "2026-09-28",
+      "source_paths": [
+        "README.md",
+        "LICENSE.md",
+        "matlab/"
+      ],
+      "note": "Original author implementation. Local source-only research, not redistribution. data/ and tex/ excluded; standard media/binary exclusions apply. main has author paths and external dependencies; optional v2 has conflict markers. Acquisition is not execution.",
+      "entrypoints": [
+        "README.md",
+        "LICENSE.md",
+        "matlab/main.m",
+        "matlab/sfs_systems/sfs_system_v1.m",
+        "matlab/sfs_systems/sfs_system_v2.m",
+        "matlab/tdoa/calcresandjac.m",
+        "matlab/tdoa/bundletdoa.m",
+        "matlab/tdoa/tdoa_offset.m",
+        "matlab/tdoa/tdoa_offset_ransac.m",
+        "matlab/gcctracking_rex/main_gcctracking_rex.m"
+      ]
+    },
+    {
+      "id": "alias-free-arrays",
+      "url": "https://github.com/Zhao-Shen/Alias-free-Arrays.git",
+      "revision": "4c80e169518d44f8333aac7f13c935286538f670",
+      "license": "NOASSERTION",
+      "scope": "Narrowband array ambiguity lattice on a specified direction domain; original paper figures",
+      "fetch_enabled": false,
+      "acquisition": "index_only",
+      "verified_at": "2026-09-28",
+      "note": "Author repository identified by paper. No LICENSE at fixed revision; GitHub license null and license endpoint 404. Establish applicable code license before enabling automated acquisition. Public paper does not license code redistribution.",
+      "entrypoints": [
+        "README.md",
+        "CreateFigure1a.m",
+        "CreateFigure1b.m",
+        "CreateFigure1c.m",
+        "CreateFigure2.m"
+      ]
+    },
+    {
+      "id": "infineon-ae-config",
+      "url": "https://github.com/Infineon/mtb-example-psoc-edge-ae-application.git",
+      "revision": "955a61090acf7caddd75fc74161fc0fb40aa7ae5",
+      "license": "Apache-2.0 (selected generated configuration files); root EULA retained for scope",
+      "scope": "Generated audio enhancement configuration constants and interfaces only; no licensed beamforming core",
+      "fetch_enabled": true,
+      "verified_at": "2026-09-28",
+      "source_paths": [
+        "LICENSE",
+        "proj_cm55/source/audio_enhancement_application/audio_enhancement/GeneratedSource/cy_afe_configurator_settings.c",
+        "proj_cm55/source/audio_enhancement_application/audio_enhancement/GeneratedSource/cy_afe_configurator_settings.h"
+      ],
+      "entrypoints": [
+        "LICENSE",
+        "proj_cm55/source/audio_enhancement_application/audio_enhancement/GeneratedSource/cy_afe_configurator_settings.c",
+        "proj_cm55/source/audio_enhancement_application/audio_enhancement/GeneratedSource/cy_afe_configurator_settings.h"
+      ],
+      "note": "Selected C/H files explicitly carry Apache-2.0 headers. Root EULA does not describe that selected subset. Wrapper, .mtbafe configuration, binary libraries, test media, and algorithm core are not fetched. Static inspection only."
     }
   ]
 }

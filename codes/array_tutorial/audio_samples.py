@@ -329,8 +329,73 @@ def room_decay_case() -> dict:
                  'No noise-removal algorithm or listening study is evaluated.'}
 
 
+def dma_calibration_case() -> dict:
+    """E03-14: ideal time shifts isolate a 1% gain error in a rear null.
+
+    Source envelopes and sinusoids are evaluated at their continuous delayed
+    times. This is not an implementation of a sampled fractional-delay filter.
+    Front/rear sources are active separately, with ample zero guard regions.
+    """
+    fs = SAMPLE_RATE
+    time = np.arange(2*fs)/fs
+    spacing, speed, base, gain = .01, 343., .002, 1.01
+    tau = spacing/speed
+
+    def source(t, frequency, begin, end):
+        envelope = np.minimum(np.clip((t-begin)/.01, 0, 1),
+                              np.clip((end-t)/.01, 0, 1))
+        return .25*envelope*np.sin(2*np.pi*frequency*t)
+
+    front = lambda t: source(t, 1000., .1, .7)
+    back = lambda t: source(t, 1600., .9, 1.5)
+    x1 = front(time-base)+back(time-base-tau)
+    nominal_x2 = front(time-base-tau)+back(time-base)
+    delayed_nominal_x2 = front(time-base-2*tau)+back(time-base-tau)
+    target = front(time-base)-front(time-base-2*tau)
+    mismatch = x1-gain*delayed_nominal_x2
+    corrected = x1-(gain*delayed_nominal_x2)/gain
+    phase = 2*np.pi*1000*tau
+    return {'signals': {
+        'dma_calibration_array': np.vstack((x1, gain*nominal_x2)),
+        'dma_calibration_target': target,
+        'dma_calibration_mismatch': mismatch,
+        'dma_calibration_corrected': corrected,
+    }, 'parameters': {
+        'exercise_id': 'E03-14', 'sample_rate_hz': fs, 'duration_s': 2.,
+        'samples_per_channel': time.size,
+        'spacing_m': spacing, 'sound_speed_m_s': speed,
+        'channel_order': ['front microphone 1', 'rear microphone 2 with gain 1.01'],
+        'relative_channel_gain': gain, 'geometric_delay_s': tau,
+        'geometric_delay_samples': tau*fs, 'common_base_delay_s': base,
+        'front_source': {'frequency_hz': 1000., 'amplitude': .25, 'active_interval_s': [.1,.7]},
+        'back_source': {'frequency_hz': 1600., 'amplitude': .25, 'active_interval_s': [.9,1.5]},
+        'envelope': 'min(clip((t-begin)/0.01,0,1),clip((end-t)/0.01,0,1)); sine phase is 2*pi*f*t',
+        'fade_duration_s': .01,
+        'source_model': 'two separate-time finite sinusoidal bursts evaluated at continuous delayed times; no random input',
+        'microphone_model': 'x1=F(t-b)+B(t-b-tau); x2=1.01*(F(t-b-tau)+B(t-b))',
+        'unaligned_output_model': 'none; every output uses the same tau delay before rear-channel subtraction',
+        'mismatch_output_model': 'x1(t)-x2(t-tau)',
+        'corrected_output_model': 'x1(t)-x2(t-tau)/1.01, using known gain, no fitted calibration',
+        'reference': 'F(t-b)-F(t-b-2*tau), ideal target-only differential output; includes its physical/filter phase',
+        'delay_implementation': 'continuous source evaluation at shifted time; no interpolation or causal digital filter is executed',
+        'alignment': 'same time origin and differential response; no post-hoc delay or gain fitting',
+        'front_scoring_interval_samples': [2400,10400],
+        'back_scoring_interval_samples': [15200,23200],
+        'front_ideal_steady_amplitude_ratio': float(abs(1-np.exp(-2j*phase))),
+        'front_mismatch_steady_amplitude_ratio': float(abs(1-gain*np.exp(-2j*phase))),
+        'back_mismatch_steady_amplitude_ratio': abs(1-gain),
+        'back_corrected_steady_amplitude_ratio': 0.,
+        'back_mismatch_level_relative_single_mic_db': float(20*np.log10(abs(1-gain))),
+        'normalization': 'one common export gain across array, target, mismatch and corrected waveforms',
+        'randomness': 'none', 'noise': 'none',
+    }, 'limits': 'Mathematical free-field equal-amplitude signals, not real speech, a measured DMA or a hardware calibrator. '
+                 'Known 1.01 gain correction and ideal continuous delays demonstrate the null model; no gain or delay estimator is run. '
+                 'A zero rear response is an ideal-model result; PCM16 has a quantization floor. '
+                 'There is no additive noise, so the reported amplitude ratios are not SNR gains. No formal listening study.'}
+
+
 def build_cases() -> dict:
-    """Return eighteen experiments with model parameters and references.
+    """Return nineteen experiments with model parameters and references.
 
     Each entry has ``signals`` (filename stem -> CxN array), ``parameters`` and
     ``limits``. Signals are pre-export floats; no group uses peak matching.
@@ -463,6 +528,7 @@ def build_cases() -> dict:
     subtraction_zero_audio = istft(subtraction_zero[None], n_fft=512, hop_length=128,
                                    length=t.size)[0]
     return {
+        'dma_calibration': dma_calibration_case(),
         'room_decay': room_decay_case(),
         'alignment_error': alignment_error_case(),
         'interpolation': interpolation_case(),

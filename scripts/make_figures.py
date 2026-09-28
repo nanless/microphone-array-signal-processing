@@ -259,7 +259,7 @@ def fig_geometries():
     axes = np.array([[grid[0, 0], grid[0, 1], grid[1, 0], grid[1, 1]],
                      [grid[2, 0], grid[2, 1], grid[3, 0], grid[3, 1]]])
     titles = ["(a) 同一双麦基线：端射方向", "(b) 同一双麦基线：正横方向", "(c) 四麦均匀线阵 ULA",
-              "(d) 四麦方阵/平面阵", "(e) 六麦圆阵 UCA + 中心麦",
+              "(d) 四麦方阵/平面阵", "(e) 圆环六麦 + 中心一麦（共7麦）",
               "(f) Fibonacci近均匀球阵(32麦)", "(g) 螺旋阵/对数阵", "(h) 分布式/非规则阵"]
     for ax, t in zip(axes.flat, titles):
         ax.set_title(t, fontsize=11)
@@ -303,7 +303,7 @@ def fig_geometries():
     ax = axes[0, 3]
     sq = [(0, 0), (1, 0), (1, 1), (0, 1)]
     ax.scatter(*zip(*sq), s=180, c=C_BLUE, zorder=5, edgecolors="k")
-    ax.add_patch(Circle((0.5, 0.5), 0.75, fill=False, ls="--", color="gray"))
+    ax.add_patch(Circle((0.5, 0.5), np.sqrt(0.5), fill=False, ls="--", color="gray"))
     ax.set_xlim(-0.6, 1.6); ax.set_ylim(-0.6, 1.6)
     # (e) UCA 6+1
     ax = axes[1, 0]
@@ -1205,7 +1205,7 @@ def fig_tradeoffs():
     ax.legend(fontsize=FS_SMALL, loc="lower right")
     ax.grid(ls=":", alpha=0.5)
     ax.set_title("(a) 目标已精确对齐、各通道噪声独立同方差", fontsize=FS_TITLE)
-    ax.text(0.03, 0.94, "这是模型上限，不含失配、混响和相关噪声。",
+    ax.text(0.03, 0.94, "单位响应、独立同方差噪声下的上限。",
             transform=ax.transAxes, va="top", fontsize=FS_SMALL, color="0.3")
 
     ax = axes[1]
@@ -1218,15 +1218,15 @@ def fig_tradeoffs():
     ax.set_xticks(mic_counts)
     ax.set_xlabel("麦克风数量 M", fontsize=FS_LABEL)
     ax.set_ylabel("数据项数量（以 2 为底的对数刻度）", fontsize=FS_LABEL)
-    ax.legend(fontsize=FS_SMALL, loc="upper left")
+    ax.legend(fontsize=FS_SMALL, loc="lower right")
     ax.grid(ls=":", alpha=0.5, which="both")
     ax.set_title("(b) 通道、麦对和协方差矩阵的规模", fontsize=FS_TITLE)
-    ax.text(0.97, 0.05, "数量由公式直接计算；不等同于运行时间、功耗或价格。",
-            transform=ax.transAxes, ha="right", fontsize=FS_SMALL, color="0.3")
+    fig.text(0.5, 0.015, "数据项数量由公式直接计算，不等同于运行时间、功耗或价格。",
+             ha="center", fontsize=FS_SMALL, color="0.3")
 
-    fig.suptitle("图9  麦克风数量增加时的理想增益与处理量\n"
+    fig.suptitle("图9  麦克风数量增加时的理想增益与数据项数量\n"
                  "（公式计算，不给出产品选型排名）", fontsize=FS_SUP - 0.5)
-    fig.tight_layout()
+    fig.tight_layout(rect=(0, 0.07, 1, 1))
     save(fig, "fig09_tradeoffs.png")
 
 
@@ -1436,15 +1436,18 @@ def fig_sparse_array():
         return sorted(lags)
     for y, (name, pos, c) in enumerate([("ULA：连续滞后 -5..5（11个）", ula, C_BLUE),
                                         ("嵌套阵：连续滞后 -11..11（23个）", nested, C_RED),
-                                        ("互质阵：有“洞”但范围大（17个）", coprime, C_GREEN)]):
+                                        ("互质阵：17个滞后；中心连续13个", coprime, C_GREEN)]):
         lags = coarray(pos)
         ax.scatter(lags, np.full(len(lags), 2 - y, dtype=float), marker="|", s=400, c=c, lw=2.5)
         ax.text(-11.5, 2 - y + 0.32, name, fontsize=FS_LABEL, va="center", color=c)
+    ax.scatter([-7, 7], [0, 0], facecolors="none", edgecolors="0.35", s=65, marker="o", zorder=7)
+    ax.text(0, -0.36, "空圈：缺少±7；范围−9～9", ha="center", fontsize=FS_SMALL, color="0.3")
+    ax.set_xticks([-11, -9, -7, -5, 0, 5, 7, 9, 11])
     ax.set_xlim(-13, 12.5); ax.set_ylim(-0.7, 2.75)
     ax.set_yticks([]); ax.set_xlabel("差分滞后（单位 λ/2）")
     ax.grid(axis="x", ls=":", alpha=0.5)
     ax.set_title("(b) 差分协同阵：所有有序麦对产生有符号差分位置", fontsize=11)
-    fig.suptitle("图10  稀疏阵列：6 个物理麦克风对应不同的有符号差分位置（模拟）", fontsize=13)
+    fig.suptitle("图10  六麦几何与有符号差分位置（按坐标枚举）", fontsize=13)
     fig.tight_layout()
     save(fig, "fig10_sparse_array.png")
 

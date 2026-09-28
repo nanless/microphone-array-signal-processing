@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "verified_at": "2026-09-28",
+  "notes": "Fixed archives for local source inspection only. No build, import or execution. HARK License v2.0 is purpose-restricted to research/development/education/academic use; acquisition does not grant general open-source or redistribution rights. HTTP transport is checked against these independently pinned SHA-256 digests; no package-signature verification is claimed.",
+  "projects": [
+    {
+      "id": "harktool5-3.5.0",
+      "release": "3.5.0",
+      "license": "HARK License v2.0 (research/development/education/academic-purpose restricted; not general open source)",
+      "archive": {
+        "url": "http://archive.hark.jp/harkrepos/dists/jammy/non-free/source/harktool5_3.5.0.tar.xz",
+        "sha256": "26f7f75d8dbe9f8c3e3a83aef160472adf683b130ee12100d4c4e2af52b65d6d",
+        "size_bytes": 1672544
+      },
+      "descriptor": {
+        "url": "http://archive.hark.jp/harkrepos/dists/jammy/non-free/source/harktool5_3.5.0.dsc",
+        "sha256": "ca2d69008e0860cd04ddce9d671c020c91c307092ae10025377d9c4ee41735f1"
+      },
+      "archive_root": "harktool5",
+      "source_paths": ["README", "debian/copyright", "debian/changelog", "CMakeLists.txt", "CMakeModules/", "src/", "python/", "docs/harktool5.rst", "docs/index.rst"],
+      "omitted": "Everything outside source_paths, including other documentation and packaged examples; the complete compressed archive remains in the ignored cache for independent verification. Selected source may contain embedded constants; this is not an asset-content audit."
+    }
+  ]
+}
