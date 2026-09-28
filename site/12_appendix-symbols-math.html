@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 A · 符号术语数学 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="3a32b6414d9f"><style>
+<meta name="source-digest" content="253d03326f83"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -433,8 +433,12 @@ kf_s/N,&0\leq k\lt \lceil N/2\rceil,\\
 <td>谱减类方法过度估计噪声后残留的随机孤立谱峰，听起来像叮咚作响的流水声（§5.7）</td>
 </tr>
 <tr>
-<td>ICA / IVA / PIT</td>
-<td>ICA 利用源间统计独立性估计解混矩阵；IVA 把同一输出在各频点的分量组成向量联合估计，以降低频点间排列不一致；PIT（排列不变训练）在训练时选择与参考源匹配代价最小的输出排列（§8.1）</td>
+<td>ICA / IVA</td>
+<td>ICA 利用源间统计独立性估计解混矩阵；IVA 把同一输出在各频点的分量组成向量联合估计，以降低频点间排列不一致（§8.3）</td>
+</tr>
+<tr>
+<td>PIT</td>
+<td>排列不变训练在训练时选择与参考源匹配代价最小的输出排列；它不保证跨长录音的身份连续（§8.1）</td>
 </tr>
 </tbody>
 </table></div>
@@ -517,7 +521,7 @@ kf_s/N,&0\leq k\lt \lceil N/2\rceil,\\
 </tr>
 <tr>
 <td>WDO（W-不重叠正交性，W-disjoint orthogonality）</td>
-<td>近似认为不同源在时频平面的非零支撑较少重叠，从而可逐时频点选取主导声源；它强于“互不相关”。例如两组系数 $[1,1]$ 与 $[1,-1]$ 的内积为 0，但两个位置都同时非零，故不能由正交或零互协方差推出 WDO。强混响或多人同时发声会削弱这一近似（§8.1）。<a href="https://doi.org/10.1109/TSP.2004.828896" title="citation">Yılmaz 与 Rickard 原始论文</a></td>
+<td>近似认为不同源在时频平面的非零支撑较少重叠，从而可逐时频点选取主导声源；它强于“互不相关”。例如两组系数 $[1,1]$ 与 $[1,-1]$ 的内积为 0，但两个位置都同时非零，故不能由正交或零互协方差推出 WDO。强混响或多人同时发声会削弱这一近似（§8.6）。<a href="https://doi.org/10.1109/TSP.2004.828896" title="citation">Yılmaz 与 Rickard 原始论文</a></td>
 </tr>
 </tbody>
 </table></div>

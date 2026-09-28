@@ -1,6 +1,6 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 96 个 Git 上游项目；已在 `codes/chapters/ch00/upstream/_downloads/` 取得 83 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件，DiCoW v1 演示与 TS-ASR-Whisper v1 训练源码于 2026-09-28 按固定提交取得。2026-09-29 扩充 WPE 源码入口后离线重核，82 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 13 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 96 个 Git 上游项目；已在 `codes/chapters/ch00/upstream/_downloads/` 取得 83 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件，DiCoW v1 演示与 TS-ASR-Whisper v1 训练源码于 2026-09-28 按固定提交取得。2026-09-29 扩充 WPE 与 cACGMM 源码入口后离线重核，82 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 13 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”只说明来源、提交、工作区状态和指定入口符合清单，不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -69,7 +69,7 @@ SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构�
 | [dns-challenge](https://github.com/microsoft/DNS-Challenge/tree/591184a9fcb2cbdec02520fed81a32bbbf9d73ff) | 降噪挑战配方及 DNSMOS | MIT for code (LICENSE-CODE); data terms separate | 已取得独立源码 |
 | [aec-challenge](https://github.com/microsoft/AEC-Challenge/tree/6c633d0a9d2a143a0e364899b91b06f127315b18) | 回声挑战与 AECMOS | MIT for repository code; assets separately | 已有独立工作树；5 个录音本地有改动，离线核验失败，未覆盖 |
 | [chime-utils](https://github.com/chimechallenge/chime-utils/tree/152882404f572d40769ef02bf91c5a9a9cfc9c78) | 会议数据整理、活动与评测工具 | MIT | 已取得独立源码 |
-| [ssspy](https://github.com/tky823/ssspy/tree/38b9389e8b1914422561f1936d9b28d042d62d2c) | FDICA、IVA、ILRMA、MNMF 与尺度恢复 | Apache-2.0 | 已取得独立源码 |
+| [ssspy](https://github.com/tky823/ssspy/tree/38b9389e8b1914422561f1936d9b28d042d62d2c) | FDICA、IVA、ILRMA、MNMF、FastMNMF、cACGMM 与尺度恢复 | Apache-2.0 | 已取得独立源码；cACGMM 入口仅静态核对，未运行 |
 | [pb_bss](https://github.com/fgnt/pb_bss/tree/10acc347fc9ea21e3d312806a0bd751d0d0af183) | 空间聚类、GEV、BAN 与波束参考 | MIT | 已取得独立源码 |
 | [gss](https://github.com/desh2608/gss/tree/10fad18cae85e2e4342c77421abc70c9c5da23ed) | 活动引导分离及 GPU 批处理 | MIT | 已取得独立源码 |
 | [wpe_gpu](https://github.com/desh2608/wpe/tree/bd2857b5b8de36df4f436a93574c088bea142042) | CuPy 离线 WPE 与 GPU-GSS 去混响 | MIT | 已取得独立源码 |

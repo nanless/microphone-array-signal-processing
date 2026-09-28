@@ -233,7 +233,7 @@
 | 研究扩展：增强 B06 | FastMNMF2 | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/bss/fastmnmf2.py` | 参数化、参考麦源图像 |
 | 研究扩展：增强 B11 | 多帧满秩空间协方差分析 mfFCA | 外部参考实现 | `mffca`：`fca.py`、`main_synthetic.ipynb` | 固定作者源码仅内部评估，不修改或再分发；未运行整链 |
 | §8.3 | TRINICON | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/bss/trinicon.py` | 该实现固定两个输出 |
-| §8.4 | cACGMM | 本仓库可运行基线 | `codes/chapters/ch08/core/gss_teaching.py` 的受控 NumPy 活动导引迭代；`pb_bss`：`pb_bss/distribution/cacgmm.py` 为外部对照入口 | 二麦合成复谱、给定活动；方向外积不保留原功率，未复现官方 GPU/CHiME 结果 |
+| §8.4 | cACGMM | 本仓库可运行基线 | `codes/chapters/ch08/core/gss_teaching.py` 的受控 NumPy 活动导引迭代；`pb_bss`：`pb_bss/distribution/cacgmm.py` 与 `ssspy`：`ssspy/bss/cacgmm.py` 为外部对照入口 | 二麦合成复谱、给定活动；方向外积不保留原功率；ssspy 入口仅静态核对，未运行其 cACGMM 或官方 GPU/CHiME 整链 |
 | §8.4 | GSS 活动约束分离 | 外部参考实现 | `gss`：`gss/core/enhancer.py` 为官方整链；本书 `codes/chapters/ch08/examples/gss_teaching_demo.py` 已运行 cACGMM→SCM→MVDR 受控子链 | 本书无混响输入中 WPE 旁路；官方 CuPy/Lhotse、RTTM 与 CHiME 语料未运行，不能外推为完整官方复现 |
 | 研究扩展：增强 B10 | GPU-GSS 批处理 | 外部参考实现 | `gss`：`gss/core/`、`recipes/` | CUDA/CuPy、批量、显存 |
 | 研究扩展：增强 B10 | CuPy WPE 子实现 | 外部参考实现 | `wpe_gpu`：`wpe/` | GSS 子集，不覆盖全部在线接口 |

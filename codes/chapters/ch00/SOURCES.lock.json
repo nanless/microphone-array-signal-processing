@@ -765,6 +765,7 @@
         "ssspy/bss/fdica.py",
         "ssspy/bss/ilrma.py",
         "ssspy/bss/mnmf.py",
+        "ssspy/bss/cacgmm.py",
         "ssspy/algorithm/projection_back.py"
       ]
     },
