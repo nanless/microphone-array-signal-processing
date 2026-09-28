@@ -579,7 +579,7 @@ J(\vec w)&=J_n+J_s/\mu,\\
 
 - $\mathbf{R}_{ss}, \mathbf{R}_{nn}$：目标与噪声协方差矩阵；$\vec{e}_r$：参考麦选择向量（第 $r$ 位为 1 的单位向量，即“以第 $r$ 个麦收到的目标为基准”）；
 
-- $\mu=1$ 是普通 MWF；$\mu>1$ 更重视噪声项，抑制增强而目标失真通常增大；$\mu<1$ 更重视目标保真。令 $\mu\to\infty$ 时权重趋近零，并不趋近 MVDR。只有秩一目标模型 $\mathbf R_{ss}=\phi_s\vec a\vec a^H$ 且参考麦归一化 $a_r=1$ 时，才有
+- $\mu=1$ 是普通 MWF；$\mu>1$ 更重视噪声项，抑制增强而目标失真通常增大；$\mu<1$ 更重视目标保真。若 $\mathbf R_{nn}$ 正定且 $\mathbf R_{ss}$ 固定，令 $\mu\to\infty$ 时权重趋近零，并不趋近 MVDR；若噪声协方差有零空间，则目标在该零空间中的分量可能保留，不能直接推广这个极限。只有秩一目标模型 $\mathbf R_{ss}=\phi_s\vec a\vec a^H$ 且参考麦归一化 $a_r=1$ 时，才有
 
     $$\begin{aligned}
     q&=\vec a^H\mathbf R_{nn}^{-1}\vec a,\\

@@ -2,11 +2,11 @@
 
 A beginner-friendly Chinese tutorial on microphone array signal processing at graduate-entry level. It starts with “why use an array of microphones” and covers DOA estimation, beamforming, acoustic echo cancellation (AEC), dereverberation (WPE), speech separation, source tracking, engineering practice, and system selection.
 
-The tutorial provides key derivations, reproducible numerical examples, validity limits, 47 script-generated figures, and NumPy/standard-library teaching code mapped to the equations. It includes 215 executable exercises and 106 main-manifest synthetic audio files in 26 groups; see [exercises and audio experiments](codes/research/05_exercises_and_audio.md) for inputs, answers and listening conditions. Chapter 6 exercises E06-07–20 are dimensionless model checks; two AEC audio groups use related but not identical parameters and are not substitutes for the exercise answers. These 106 files are not natural speech or formal listening-test data. A separate set of 4 WAV files contains a real 16-channel DEMAND river-noise excerpt and three derivatives under CC BY-SA 3.0, for noise-power and interchannel-correlation experiments.
+The tutorial provides key derivations, reproducible numerical examples, validity limits, 49 script-generated figures, and NumPy/standard-library teaching code mapped to the equations. It includes 222 executable exercises and 109 main-manifest synthetic audio files in 27 groups; see [exercises and audio experiments](codes/research/05_exercises_and_audio.md) for inputs, answers and listening conditions. Chapter 6 exercises E06-07–20 are dimensionless model checks; two AEC audio groups use related but not identical parameters and are not substitutes for the exercise answers. These 109 files are not natural speech or formal listening-test data. A separate set of 4 WAV files contains a real 16-channel DEMAND river-noise excerpt and three derivatives under CC BY-SA 3.0, for noise-power and interchannel-correlation experiments.
 
-Appendix B also has [18 separate synthetic room WAVs](codes/room_audio/MANIFEST.json) across six source positions and one chart from the executed simulation. They contain white noise, not recorded speech, and are separate from the 106 main synthetic files.
+Appendix B also has [18 separate synthetic room WAVs](codes/room_audio/MANIFEST.json) across six source positions and one chart from the executed simulation. They contain white noise, not recorded speech, and are separate from the 109 main synthetic files.
 
-Two further independent synthetic sets provide [five guided-separation WAVs and intermediate state](codes/gss_audio/MANIFEST.json) and [three moving-source WAVs with trajectory truth](codes/moving_audio/MANIFEST.json). Neither set is included in the main 106 files or represents recorded speech or device performance.
+Two further independent synthetic sets provide [five guided-separation WAVs and intermediate state](codes/gss_audio/MANIFEST.json) and [three moving-source WAVs with trajectory truth](codes/moving_audio/MANIFEST.json). Neither set is included in the main 109 files or represents recorded speech or device performance.
 
 Chapter 6 also reports a [SpeexDSP AEC interface experiment](codes/research/02_aec_wpe_separation.md#aec) on one real Microsoft AEC Challenge loopback/microphone pair, with zero-reference and misaligned-reference controls. The crowd recordings are not redistributed here; the measured input/output power change is neither clean-component ERLE nor a device-performance ranking.
 
@@ -20,6 +20,8 @@ The [Chapter 10 engineering experiments](codes/examples/chapter10_experiments.py
 
 The [Chapter 11 selection experiments](codes/examples/chapter11_experiments.py) add ten reproducible exercises on hard constraints, scenario composition, missing scores, joint risk, and speaker-identity scoring. Four [common-gain FIR WAVs](codes/research/05_exercises_and_audio.md) are actually processed from the same constructed mixture and measured again from PCM; Figures 46 and 47 show the decision logic and audio tradeoff. They are not speech, device, or recognition-quality tests.
 
+[Appendix A experiments](codes/examples/appendix_a_experiments.py) add seven reproducible math exercises. Three [synthetic pulse WAVs](codes/research/05_exercises_and_audio.md#sec-u-a0ab2e82f7) compare correct blockwise linear convolution with an intentionally incorrect circular wrap; Figures 48–49 show FFT frequency conventions and measured PCM sample positions.
+
 The [source research handbook](codes/research/README.md) explains implementation steps, industrial configuration and reproduction experiments across spatial processing and tracking, AEC/WPE/separation, and deployment and evaluation. Two further guides cover source reproduction and exercises with audio experiments. Official revisions are pinned; acquired sources reside in independent working trees under `codes/upstream/_downloads/`.
 
 中文版：[README.md](./README.md)
@@ -29,16 +31,16 @@ The [source research handbook](codes/research/README.md) explains implementation
 | Path | Description |
 |---|---|
 | `chapters/` | 14 tutorial documents in Markdown (`00_overview.md` is the homepage; `01`–`11` are chapters; `12`/`13` are appendices A/B) |
-| `figures/` | 47 figures (`fig01`–`fig47_*.png`), all generated by scripts and reproducible |
+| `figures/` | 49 figures (`fig01`–`fig49_*.png`), all generated by scripts and reproducible |
 | `codes/` | Teaching algorithms, chapter examples, engineering utilities, and a commit-locked index of official upstream implementations; see `codes/COVERAGE.md` |
-| `codes/audio/` | 106 WAV files in 26 groups synthesized for this book, with parameters and hashes; generated by script, not edited directly |
+| `codes/audio/` | 109 WAV files in 27 groups synthesized for this book, with parameters and hashes; generated by script, not edited directly |
 | `codes/gss_audio/`, `codes/moving_audio/` | Separate sets of five and three synthetic WAVs with intermediate state or trajectory truth and independent manifests |
 | `codes/real_audio/` | Real synchronized DEMAND excerpt, derived averages, separate manifest and data license |
 | `codes/research/` | Detailed source research: algorithm steps, state and configuration, source entrypoints, failure experiments and industrial reproduction |
 | `codes/reports/` | Small-scale industrial-interface and spatial-algorithm run reports, separate from source acquisition and full paper benchmarks |
 | `scripts/` | Plotting and build scripts (`make_figures.py`, `make_aec_figures.py`, `build_site.py`, `build_pdf.py`; see `scripts/README.md`) |
 | `site/` | 20 pages: 14 tutorial pages (including the homepage) and 6 handbook pages under `research/`; reproducible build output |
-| `dist/` | Combined PDF (`microphone-array-tutorial.pdf`) and HTML; the PDF has 620 bookmarks: 14 top-level, 119 second-level and 487 third-level |
+| `dist/` | Combined PDF (`microphone-array-tutorial.pdf`) and HTML; the PDF has 632 bookmarks: 14 top-level, 119 second-level and 499 third-level |
 
 ## Chapters
 
@@ -78,7 +80,7 @@ python3 -m venv .venv
 .venv/bin/python -m codes.examples.exercises_engineering
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 
-# 3. Generate 106 audio files first, then 47 figures (Figures 34–36 and 40–41 and 43–45 and 47 read the generated audio)
+# 3. Generate 109 audio files first, then 49 figures (Figures 34–36 and 40–41 and 43–45 and 47 and 49 read the generated audio)
 .venv/bin/python codes/examples/generate_audio_samples.py
 .venv/bin/python scripts/make_figures.py
 .venv/bin/python scripts/make_aec_figures.py
@@ -115,7 +117,7 @@ External formulas, algorithms, datasets, and standards should link to a DOI, sta
 
 ## Learning paths
 
-- **Path A (from scratch, self-paced units)**: Guide → 01 → 11.1/11.3 → 02/03 → 04 (GCC+SRP) → 05 (DSB+MVDR) → 06/07/08 → 09 → run `codes/examples/` and reproduce all 47 figures.
+- **Path A (from scratch, self-paced units)**: Guide → 01 → 11.1/11.3 → 02/03 → 04 (GCC+SRP) → 05 (DSB+MVDR) → 06/07/08 → 09 → run `codes/examples/` and reproduce all 49 figures.
 - **Path B (deployment, 1 week)**: 11.1/11.2/11.3 for plan A/B/C → 05/06/07/08 → full Ch 10 → run the Ch. 10 engineering baselines → output latency/sync/calibration budgets.
 - **Path C (research frontier)**: 02 (CRLB) → 03 (sparse arrays) → 04/05 frontier → 06/07/08 → 13.3 eight frontiers + 13.6 exercises.
 
@@ -126,4 +128,4 @@ External formulas, algorithms, datasets, and standards should link to a DOI, sta
 - Benchmark numbers always carry conditions and sources; simulation numbers carry implementation notes.
 
 
-Chapter 9 adds two separately catalogued synthetic moving-source WAVs in `codes/tracking_audio/`. GCC-PHAT observations, missing-data gating and Kalman tracking are recomputed from exported PCM, with separate state and availability timestamps. These two files are separate from both the 106-file main collection and the earlier three-file moving-source set. Run `.venv/bin/python -m codes.examples.chapter09_tracking_audio --check` for a read-only check.
+Chapter 9 adds two separately catalogued synthetic moving-source WAVs in `codes/tracking_audio/`. GCC-PHAT observations, missing-data gating and Kalman tracking are recomputed from exported PCM, with separate state and availability timestamps. These two files are separate from both the 109-file main collection and the earlier three-file moving-source set. Run `.venv/bin/python -m codes.examples.chapter09_tracking_audio --check` for a read-only check.

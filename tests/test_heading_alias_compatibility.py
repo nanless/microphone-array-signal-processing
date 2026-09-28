@@ -48,20 +48,21 @@ class HistoricalHeadingCompatibilityTest(unittest.TestCase):
     OVERVIEW_RENAMES = {
         "sec-u-b7a71b077a": "sec-u-3937b1b94e",
         "sec-u-efc5552983": "sec-u-f958564d39",
-        "sec-u-6ef8e18126": "sec-u-627ed3907e",
-        "sec-u-1e5d8a2bad": "sec-u-627ed3907e",
+        "sec-u-6ef8e18126": "sec-u-3a0278b879",
+        "sec-u-1e5d8a2bad": "sec-u-3a0278b879",
+        "sec-u-627ed3907e": "sec-u-3a0278b879",
     }
 
     def test_previous_41_figure_map_hash_still_reaches_same_map(self):
         source = ROOT / "chapters/00_overview.md"
         html, _ = build_site.render(source.read_text(), source)
         parsed = AliasDestinations(html)
-        self.assertEqual(parsed.targets["sec-u-d538d6d0a5"], "sec-u-627ed3907e")
-        self.assertEqual(parsed.targets["sec-u-d8fd1002de"], "sec-u-627ed3907e")
+        self.assertEqual(parsed.targets["sec-u-d538d6d0a5"], "sec-u-3a0278b879")
+        self.assertEqual(parsed.targets["sec-u-d8fd1002de"], "sec-u-3a0278b879")
         html, _ = build_pdf.build_html(build_date="2026-09-28")
         parsed = AliasDestinations(html)
-        self.assertEqual(parsed.targets["ch-0-sec-u-d538d6d0a5"], "ch-0-sec-u-627ed3907e")
-        self.assertEqual(parsed.targets["ch-0-sec-u-d8fd1002de"], "ch-0-sec-u-627ed3907e")
+        self.assertEqual(parsed.targets["ch-0-sec-u-d538d6d0a5"], "ch-0-sec-u-3a0278b879")
+        self.assertEqual(parsed.targets["ch-0-sec-u-d8fd1002de"], "ch-0-sec-u-3a0278b879")
 
     def test_every_frozen_sequence_stays_with_its_original_topic(self):
         for relative in self.SOURCES:

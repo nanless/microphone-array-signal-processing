@@ -21,6 +21,7 @@ from .aec_kalman_matrix import KalmanAECState
 from .aec_subband import haar_synthesize, two_tap_subband_outputs
 from .dereverberation import offline_wpe
 from .geometry import plane_wave_delays
+from .math_foundations import blockwise_circular_convolution, fft_overlap_add
 from .noise_suppression import power_spectral_subtraction
 from .spectral import stft, istft
 
@@ -870,8 +871,67 @@ def selection_tradeoff_case() -> dict:
                       'steady scoring omits fade/startup and truncated end tails.'}
 
 
+def math_block_case() -> dict:
+    """Appendix A: listen to a deliberately wrong block FFT wrap-around.
+
+    Ten sparse, equal-amplitude mathematical pulses are six 512-sample blocks
+    apart. The correct causal FIR
+    retains its delayed response across blocks. The wrong version performs a
+    separate 512-point circular convolution inside each block and discards
+    history. No room or speech is simulated.
+    """
+    block_size, count = 512, 2 * SAMPLE_RATE
+    pulses = (500 + 6 * block_size * np.arange(10)).astype(int)
+    dry = np.zeros(count, dtype=float)
+    dry[pulses] = .3
+    taps = np.zeros(121, dtype=float)
+    taps[0], taps[120] = 1., .6
+    correct_full = fft_overlap_add(dry, taps, block_size)
+    correct = correct_full[:count]
+    wrong = blockwise_circular_convolution(dry, taps, block_size)
+    signals = {'math_block_dry': dry, 'math_block_linear': correct,
+               'math_block_circular': wrong}
+
+    def analysis(values: dict) -> dict:
+        return {
+            'first_dry_sample_500': float(values['math_block_dry'][500]),
+            'first_linear_sample_500': float(values['math_block_linear'][500]),
+            'first_linear_echo_sample_620': float(values['math_block_linear'][620]),
+            'first_wrong_wrap_sample_108': float(values['math_block_circular'][108]),
+            'first_wrong_sample_500': float(values['math_block_circular'][500]),
+            'first_wrong_sample_620': float(values['math_block_circular'][620]),
+            'wrong_minus_linear_nonzero_count': int(np.count_nonzero(
+                np.abs(values['math_block_circular'] - values['math_block_linear']) > 1e-12)),
+        }
+
+    pcm = {name: read_pcm16(pcm16_bytes(value))[1][0] for name, value in signals.items()}
+    return {
+        'signals': signals, 'export_gain_override': 1.,
+        'parameters': {
+            'exercise_id': 'E12-08', 'sample_rate_hz': SAMPLE_RATE,
+            'duration_s': count / SAMPLE_RATE, 'samples': count,
+            'channels': 1, 'seed': None, 'pulse_amplitude': .3,
+            'pulse_positions_samples': pulses.tolist(),
+            'source': 'ten isolated one-sample mathematical impulses, separated by six 512-sample blocks',
+            'block_size': block_size, 'filter_length': taps.size,
+            'filter_nonzero_samples': [0, 120], 'filter_values': [1., .6],
+            'first_correct_echo_sample': 620, 'first_wrong_wrap_sample': 108,
+            'linear_method': '512-sample input blocks, 632-point real FFT and inverse; add full overlapping tails; truncate at 32000 samples for WAV',
+            'wrong_method': 'each 512-sample input block circularly convolves with the 512-point padded FIR; no history and no overlap-add',
+            'common_export_gain': 1., 'pcm': '16-bit signed little endian, nearest-even, no dither',
+            'alignment': 'same sample origin; no time shift, delay or per-file gain matching',
+            'reference': 'math_block_dry is the common excitation; math_block_linear is the correct causal FIR output',
+            'tail': 'last nonzero pulse and echo both lie before sample 32000; full linear output beyond the record is zero',
+        },
+        'float_analysis': analysis(signals), 'pcm_analysis': analysis(pcm),
+        'limits': 'Mathematical impulse and FIR example, not speech, room, echo-canceller or hardware recording. '
+                  'The premature response is an intentional faulty block implementation. '
+                  'Impulse clicks may sound different, but no human listening experiment was performed.',
+    }
+
+
 def build_cases() -> dict:
-    """Return twenty-six experiments with model parameters and references.
+    """Return twenty-seven experiments with model parameters and references.
 
     Each entry has ``signals`` (filename stem -> CxN array), ``parameters`` and
     ``limits``. Signals are pre-export floats; no group uses peak matching.
@@ -1201,6 +1261,7 @@ def build_cases() -> dict:
             'limits': 'Single seeded mathematical tone plus stationary Gaussian noise; fixed oracle-marked noise-only preamble. '
                       'The zero-floor output may make sparse tonal residuals audible; no human listening study, '
                       'natural speech, VAD, adaptive noise tracker, MMSE-STSA or MMSE-LSA.'},
+        'math_block': math_block_case(),
     }
 
 

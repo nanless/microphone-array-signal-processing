@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""生成教程插图 34 张（图 1~25、图 33~36、40~44；图 26~32、37~39 见 make_aec_figures.py）。
+"""生成教程插图（图 1～25、33～36、40～49；图 26～32、37～39 见 make_aec_figures.py）。
 
 用法（仓库根目录）：
-    .venv/bin/python scripts/make_figures.py      # 图 1~25、图 33~36、40~44 → figures/
+    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～49 → figures/
 """
 from pathlib import Path
 import hashlib
@@ -3403,6 +3403,118 @@ def fig_selection_audio_tradeoff():
     save(fig, 'fig47_selection_audio_tradeoff.png',
          {'AudioManifestDigest': hashlib.sha256(manifest_path.read_bytes()).hexdigest()})
 
+def fig_fft_signed_bins():
+    """Illustrate signed full-FFT bins versus the nonnegative real FFT grid."""
+    n, fs = 8, 8000
+    full = np.fft.fftfreq(n, d=1 / fs) / 1000
+    one_sided = np.fft.rfftfreq(n, d=1 / fs) / 1000
+    assert np.array_equal(full, [0, 1, 2, 3, -4, -3, -2, -1])
+    assert np.array_equal(one_sided, [0, 1, 2, 3, 4])
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 4.5))
+    ax = axes[0]
+    indices = np.arange(n)
+    for k, frequency in enumerate(full):
+        ax.plot([k, k], [0, frequency], color=C_BLUE if frequency >= 0 else C_RED,
+                lw=2, ls='-' if frequency >= 0 else '--')
+    ax.scatter(indices[:4], full[:4], color=C_BLUE, marker='o', s=74,
+               label='非负频点', zorder=3)
+    ax.scatter(indices[4:], full[4:], color=C_RED, marker='s', s=74,
+               label='负频点', zorder=3)
+    ax.axhline(0, color='0.35', lw=.8)
+    ax.set(xlim=(-.45, 7.45), ylim=(-4.7, 4.7), xticks=indices,
+           xlabel='完整 FFT 数组下标 k', ylabel='有符号频率 (kHz)')
+    ax.set_title('(a) 完整 FFT：高半区对应负频率', fontsize=FS_TITLE)
+    ax.grid(axis='y', ls=':', alpha=.35)
+    ax.legend(loc='lower left', fontsize=FS_SMALL)
+    ax.annotate('k=7 对应 −1 kHz\n不是 +7 kHz', xy=(7, -1), xytext=(4.1, 2.6),
+                arrowprops={'arrowstyle': '->', 'color': C_RED}, color=C_RED,
+                fontsize=FS_SMALL, ha='center')
+
+    ax = axes[1]
+    r_indices = np.arange(len(one_sided))
+    for k, frequency in enumerate(one_sided):
+        ax.plot([k, k], [0, frequency], color=C_GREEN, lw=2)
+    ax.scatter(r_indices[:-1], one_sided[:-1], color=C_GREEN, marker='o',
+               s=74, label='非负频点', zorder=3)
+    ax.scatter([4], [one_sided[-1]], facecolor='white', edgecolor=C_PURPLE,
+               marker='D', s=88, lw=2, label='Nyquist 点', zorder=3)
+    ax.axhline(0, color='0.35', lw=.8)
+    ax.set(xlim=(-.45, 4.45), ylim=(-.3, 4.7), xticks=r_indices,
+           xlabel='实信号 rFFT 数组下标 k', ylabel='单边频率 (kHz)')
+    ax.set_title('(b) rFFT：只保存非负半边', fontsize=FS_TITLE)
+    ax.grid(axis='y', ls=':', alpha=.35)
+    ax.legend(loc='upper left', fontsize=FS_SMALL)
+    fig.suptitle('图48  N=8、采样率8 kHz的两种频点标记', fontsize=FS_SUP)
+    fig.tight_layout(rect=(0, 0, 1, .93), w_pad=2)
+    save(fig, 'fig48_fft_frequencies.png')
+
+
+def fig_fft_block_boundary():
+    """Plot the actual PCM consequence of dropping overlap-add tails."""
+    import wave
+
+    root = Path(__file__).resolve().parents[1]
+    audio = root / 'codes/audio'
+    manifest_path = audio / 'MANIFEST.json'
+    names = ('math_block_dry', 'math_block_linear', 'math_block_circular')
+    signals = {}
+    for name in names:
+        with wave.open(str(audio / f'{name}.wav'), 'rb') as wav:
+            if (wav.getframerate(), wav.getnchannels(), wav.getsampwidth(),
+                    wav.getnframes()) != (16000, 1, 2, 32000):
+                raise ValueError(f'unexpected appendix A PCM format: {name}')
+            signals[name] = np.frombuffer(wav.readframes(32000),
+                                          dtype='<i2').astype(float) / 32768
+    # Independent sample checks keep the diagram tied to the exported PCM.
+    tolerance = 1 / 32768
+    if not (abs(signals['math_block_dry'][500] - .3) <= tolerance
+            and abs(signals['math_block_linear'][500] - .3) <= tolerance
+            and abs(signals['math_block_linear'][620] - .18) <= tolerance
+            and abs(signals['math_block_circular'][108] - .18) <= tolerance
+            and abs(signals['math_block_linear'][108]) <= tolerance
+            and abs(signals['math_block_circular'][620]) <= tolerance):
+        raise ValueError('appendix A block PCM does not match causal impulse model')
+
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 4.4), sharex=True, sharey=True)
+    xs = np.arange(700) / 16  # samples / (16 kHz) in milliseconds
+    for ax, output_name, title, color, marker in (
+        (axes[0], 'math_block_linear', '(a) 线性卷积：跨块尾部保留', C_BLUE, 'o'),
+        (axes[1], 'math_block_circular', '(b) 错误循环卷积：尾部回绕', C_RED, 's'),
+    ):
+        output = signals[output_name][:700]
+        dry = signals['math_block_dry'][:700]
+        for series, line_color, line_style, point, label, size, layer in (
+            (dry, C_GREEN, '--', '^', '干输入脉冲', 190, 3),
+            (output, color, '-', marker, '导出PCM输出', 74, 4),
+        ):
+            nz = np.flatnonzero(abs(series) > tolerance / 2)
+            ax.vlines(xs[nz], 0, series[nz], colors=line_color,
+                      linestyles=line_style, linewidth=2)
+            ax.scatter(xs[nz], series[nz], color=line_color, marker=point,
+                       s=size, label=label, zorder=layer)
+        ax.axvline(512 / 16, color=C_PURPLE, ls=':', lw=1.6,
+                   label='首块末端32 ms')
+        ax.set(xlim=(0, 44), ylim=(-.025, .34),
+               xlabel='相对录音起点时间 (ms)', ylabel='归一化PCM幅度')
+        ax.set_title(title, fontsize=FS_TITLE)
+        ax.grid(ls=':', alpha=.3)
+        ax.legend(loc='upper left' if output_name.endswith('linear') else 'lower right',
+                  fontsize=FS_SMALL)
+    axes[0].annotate('正确尾部\n38.75 ms', xy=(620 / 16, .18),
+                     xytext=(28, .23), arrowprops={'arrowstyle': '->',
+                     'color': C_BLUE}, color=C_BLUE, fontsize=FS_SMALL,
+                     ha='center')
+    axes[1].annotate('错误回绕\n6.75 ms', xy=(108 / 16, .18),
+                     xytext=(17, .23), arrowprops={'arrowstyle': '->',
+                     'color': C_RED}, color=C_RED, fontsize=FS_SMALL,
+                     ha='center')
+    fig.suptitle('图49  同一脉冲与稀疏121抽头FIR的块边界（最终PCM读回）',
+                 fontsize=FS_SUP)
+    fig.tight_layout(rect=(0, 0, 1, .93), w_pad=2)
+    save(fig, 'fig49_fft_block_boundary.png',
+         {'AudioManifestDigest': hashlib.sha256(manifest_path.read_bytes()).hexdigest()})
+
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -3443,6 +3555,8 @@ def main():
     fig_agc_blocks()
     fig_selection_pareto()
     fig_selection_audio_tradeoff()
+    fig_fft_signed_bins()
+    fig_fft_block_boundary()
     print("ALL DONE")
 
 

@@ -31,6 +31,18 @@ class SpatialModelExercisesTest(unittest.TestCase):
             with self.subTest(signal=signal, nfft=nfft), self.assertRaises(ValueError):
                 rfft_mean_square(signal, nfft)
 
+    def test_rfft_scaled_power_and_underflow_boundary(self):
+        # The true mean square is finite although squaring the DC FFT bin
+        # before normalization would overflow.
+        self.assertAlmostEqual(rfft_mean_square([1e154, 1e154]), 1e308,
+                               delta=1e294)
+        self.assertEqual(rfft_mean_square([0., 0.]), 0.)
+        self.assertGreater(rfft_mean_square([1e-160, 0.]), 0.)
+        # A strictly positive physical value below the smallest binary64
+        # result cannot be labelled exactly zero.
+        with self.assertRaises(ValueError):
+            rfft_mean_square([1e-170, 0.])
+
     def test_whitener_matches_rank_one_projector_and_target(self):
         report = colored_noise_music()
         packed = report["whitener"]

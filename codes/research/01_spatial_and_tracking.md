@@ -200,7 +200,7 @@ pyroomacoustics 0.10.0 的 `acoustics.py::rt60_eyring` 返回值可写成 $-K V/
 
 ### 3. STFT 与加权重叠相加重构
 
-对应正文 §2.5。本书 [`spectral.py`](../array_tutorial/spectral.py) 固定多通道谱形状为 `M × F × L`，分别表示通道、频点和帧。频率 $f_k=kf_s/N$ 的单位是 Hz；不能把频点下标 $k$ 直接代入传播复指数。帧号、采样号和秒也应在接口边界转换。
+对应正文 §2.5。本书 [`spectral.py`](../array_tutorial/spectral.py) 固定多通道谱形状为 `M × F × L`，分别表示通道、频点和帧。实信号单边谱的 $0\le k\le\lfloor N/2\rfloor$ 对应 $f_k=kf_s/N$，单位是 Hz；完整 DFT 的 $k>N/2$ 则对应 $(k-N)f_s/N$ 的负频率。不能把频点下标 $k$ 直接代入传播复指数。帧号、采样号和秒也应在接口边界转换。
 
 #### 3.1 重构成立与卷积近似成立是两件事
 

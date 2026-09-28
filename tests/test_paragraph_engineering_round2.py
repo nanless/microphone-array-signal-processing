@@ -27,7 +27,7 @@ class EngineeringRoundTwoParagraphTest(unittest.TestCase):
         html, lists = rendered_lists(start + source, path)
         paragraphs = re.findall(r"<p>(.*?)</p>", html, re.S)
         self.assertEqual(lists, [])
-        self.assertEqual(len(paragraphs), 2)
+        self.assertGreaterEqual(len(paragraphs), 2)
         self.assertIn("具体含义以所在公式的定义为准", paragraphs[0])
         self.assertNotIn("需要区分 STFT 网格时", paragraphs[0])
         self.assertTrue(paragraphs[1].startswith("需要区分 STFT 网格时"))

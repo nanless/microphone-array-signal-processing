@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 5 章 · 波束形成 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="2b88c454f9ab"><style>
+<meta name="source-digest" content="be90541b6030"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -762,7 +762,7 @@ J(\vec w)&=J_n+J_s/\mu,\\
 <p>$\mathbf{R}_{ss}, \mathbf{R}_{nn}$：目标与噪声协方差矩阵；$\vec{e}_r$：参考麦选择向量（第 $r$ 位为 1 的单位向量，即“以第 $r$ 个麦收到的目标为基准”）；</p>
 </li>
 <li>
-<p>$\mu=1$ 是普通 MWF；$\mu>1$ 更重视噪声项，抑制增强而目标失真通常增大；$\mu\lt 1$ 更重视目标保真。令 $\mu\to\infty$ 时权重趋近零，并不趋近 MVDR。只有秩一目标模型 $\mathbf R_{ss}=\phi_s\vec a\vec a^H$ 且参考麦归一化 $a_r=1$ 时，才有</p>
+<p>$\mu=1$ 是普通 MWF；$\mu>1$ 更重视噪声项，抑制增强而目标失真通常增大；$\mu\lt 1$ 更重视目标保真。若 $\mathbf R_{nn}$ 正定且 $\mathbf R_{ss}$ 固定，令 $\mu\to\infty$ 时权重趋近零，并不趋近 MVDR；若噪声协方差有零空间，则目标在该零空间中的分量可能保留，不能直接推广这个极限。只有秩一目标模型 $\mathbf R_{ss}=\phi_s\vec a\vec a^H$ 且参考麦归一化 $a_r=1$ 时，才有</p>
 <p>$$\begin{aligned}
     q&=\vec a^H\mathbf R_{nn}^{-1}\vec a,\\
     G_\mu&=\frac{\phi_s q}{\mu+\phi_s q},\\

@@ -10,7 +10,7 @@
     "float_dtype": "float64"
   },
   "synthetic_signal": {
-    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband, spectral_subtraction, clock_drift, interpolation, alignment_error, room_decay, dma_calibration, doa_ambiguity, gsc_gate, aec_dropout, wpe_predictable, css_overlap, agc_blocks and selection_tradeoff; see each group for noise and transforms",
+    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband, spectral_subtraction, clock_drift, interpolation, alignment_error, room_decay, dma_calibration, doa_ambiguity, gsc_gate, aec_dropout, wpe_predictable, css_overlap, agc_blocks, selection_tradeoff and math_block; see each group for noise and transforms",
     "duration_s": 2,
     "base_frequencies_hz": [
       173,
@@ -34,8 +34,8 @@
   "listening": "Start at low device volume. No automatic playback. No formal listening study performed.",
   "generator_inputs": {
     "codes/array_tutorial/engineering.py": "3e59427d2c769df24b0fc5663ae10523e46168f719c53509cfcf59bfe4a6507e",
-    "codes/examples/generate_audio_samples.py": "6d7994e008ca0d01c3f64e6643b9f85335e81d53228f933aef196420224af06f",
-    "codes/array_tutorial/audio_samples.py": "43e0766f4d3b0692adf6ae612dc2ddc07dac724372e6fcda37ecd21887e2ba6a",
+    "codes/examples/generate_audio_samples.py": "4b66f191f11e6673bc12a15080f781e1760c9e2660d2abdfa814c70ea6271b9c",
+    "codes/array_tutorial/audio_samples.py": "665fe4255b087102b051082deea094c8dc2e236709cd348d24ad91b0de401a71",
     "codes/array_tutorial/aec.py": "70d69fcd523cff3028162a221d71ea6bd2254979dfe37479ad26f77ab74a5a7e",
     "codes/array_tutorial/aec_ipnlms.py": "320fccd7458b8abb0c65c6f5871beb015403776fc00c4d3a8df5aa3a9afaeab2",
     "codes/array_tutorial/aec_rls.py": "f13c2018297e46f0b393ef52e04fad5f1d48ede00de8b37a80a4abf597a9305d",
@@ -43,6 +43,7 @@
     "codes/array_tutorial/aec_subband.py": "1473556e8cda4908dbe19cbeb645960dbb636b3dd672ab61358007a3d29d43be",
     "codes/array_tutorial/gsc.py": "29995ed363ba2cf807059f146e075dea1aadef7ae21709cd62b9a3e9423b12f9",
     "codes/array_tutorial/noise_suppression.py": "88ddcbf1385b3cdd2dc934ca5e148d4a1d7e76ee1d122d762a0b187bbb8b7f5a",
+    "codes/array_tutorial/math_foundations.py": "6e9825aac7a80b86dca58122d698db2e5a22d7f9a8f4314e64ac8f671eb645cc",
     "codes/array_tutorial/css.py": "c1b1f62d568f09c737afe0d7434c1a028a87e689d1d11251996fc235b1b18b61",
     "codes/array_tutorial/separation.py": "fba14bf7e4ddf2c40b54964d900b1f8f8f2865d7fe4232edcfba14d44fd2622b",
     "codes/array_tutorial/dereverberation.py": "af55bbb288f0f2b5208afc5fa0c3e66a918233fdb7a32c953ae54f5c85ca2017",
@@ -4211,6 +4212,70 @@
       },
       "limits": "Single seeded mathematical tone plus stationary Gaussian noise; fixed oracle-marked noise-only preamble. The zero-floor output may make sparse tonal residuals audible; no human listening study, natural speech, VAD, adaptive noise tracker, MMSE-STSA or MMSE-LSA.",
       "common_export_gain": 1.0
+    },
+    "math_block": {
+      "export_gain_override": 1.0,
+      "parameters": {
+        "exercise_id": "E12-08",
+        "sample_rate_hz": 16000,
+        "duration_s": 2.0,
+        "samples": 32000,
+        "channels": 1,
+        "seed": null,
+        "pulse_amplitude": 0.3,
+        "pulse_positions_samples": [
+          500,
+          3572,
+          6644,
+          9716,
+          12788,
+          15860,
+          18932,
+          22004,
+          25076,
+          28148
+        ],
+        "source": "ten isolated one-sample mathematical impulses, separated by six 512-sample blocks",
+        "block_size": 512,
+        "filter_length": 121,
+        "filter_nonzero_samples": [
+          0,
+          120
+        ],
+        "filter_values": [
+          1.0,
+          0.6
+        ],
+        "first_correct_echo_sample": 620,
+        "first_wrong_wrap_sample": 108,
+        "linear_method": "512-sample input blocks, 632-point real FFT and inverse; add full overlapping tails; truncate at 32000 samples for WAV",
+        "wrong_method": "each 512-sample input block circularly convolves with the 512-point padded FIR; no history and no overlap-add",
+        "common_export_gain": 1.0,
+        "pcm": "16-bit signed little endian, nearest-even, no dither",
+        "alignment": "same sample origin; no time shift, delay or per-file gain matching",
+        "reference": "math_block_dry is the common excitation; math_block_linear is the correct causal FIR output",
+        "tail": "last nonzero pulse and echo both lie before sample 32000; full linear output beyond the record is zero"
+      },
+      "float_analysis": {
+        "first_dry_sample_500": 0.3,
+        "first_linear_sample_500": 0.30000000000000004,
+        "first_linear_echo_sample_620": 0.18,
+        "first_wrong_wrap_sample_108": 0.18,
+        "first_wrong_sample_500": 0.3,
+        "first_wrong_sample_620": 0.0,
+        "wrong_minus_linear_nonzero_count": 20
+      },
+      "pcm_analysis": {
+        "first_dry_sample_500": 0.29998779296875,
+        "first_linear_sample_500": 0.29998779296875,
+        "first_linear_echo_sample_620": 0.17999267578125,
+        "first_wrong_wrap_sample_108": 0.17999267578125,
+        "first_wrong_sample_500": 0.29998779296875,
+        "first_wrong_sample_620": 0.0,
+        "wrong_minus_linear_nonzero_count": 20
+      },
+      "limits": "Mathematical impulse and FIR example, not speech, room, echo-canceller or hardware recording. The premature response is an intentional faulty block implementation. Impulse clicks may sound different, but no human listening experiment was performed.",
+      "common_export_gain": 1.0
     }
   },
   "files": [
@@ -5591,6 +5656,45 @@
       "rms": 0.13749734097086969,
       "common_export_gain": 1.0,
       "quantization_max_abs_error": 1.5258604990242564e-05
+    },
+    {
+      "file": "math_block_dry.wav",
+      "sha256": "6f311e7309d9d5315f018cbf23e6af2ab753a12076679d1f7599bf96bd2a59e9",
+      "group": "math_block",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.29998779296875,
+      "rms": 0.005303085067034731,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.2207031249988898e-05
+    },
+    {
+      "file": "math_block_linear.wav",
+      "sha256": "1547c82c616671561822db74046bf254b12e272fa9dbb8f9c0a47b46a7312c24",
+      "group": "math_block",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.29998779296875,
+      "rms": 0.006184406784030396,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.2207031250044409e-05
+    },
+    {
+      "file": "math_block_circular.wav",
+      "sha256": "db4757fdf23be0d5d5e3ffd141104849bf855aef05959e8b7e0c08d435a46656",
+      "group": "math_block",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.29998779296875,
+      "rms": 0.006184406784030396,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.2207031249988898e-05
     }
   ]
 }

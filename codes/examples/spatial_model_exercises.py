@@ -35,15 +35,25 @@ def rfft_mean_square(signal: np.ndarray, nfft: int | None = None) -> float:
     if (isinstance(nfft, (bool, np.bool_))
             or not isinstance(nfft, (int, np.integer)) or nfft < x.size):
         raise ValueError("nfft must be an integer no smaller than the input")
-    spectrum = np.fft.rfft(x, n=nfft)
+    scale = float(np.max(np.abs(x)))
+    if scale == 0.0:
+        return 0.0
+    # Scale before the FFT and square. A finite input such as [1e154, 1e154]
+    # has representable mean square 1e308, although its unscaled DC bin
+    # squared overflows. Conversely a positive power below float's minimum
+    # cannot truthfully be reported as mathematical zero.
+    spectrum = np.fft.rfft(x / scale, n=nfft)
     multiplicity = np.full(spectrum.size, 2.0)
     multiplicity[0] = 1.0
     if nfft % 2 == 0:
         multiplicity[-1] = 1.0
-    with np.errstate(over="ignore", invalid="ignore"):
-        result = float(np.sum(multiplicity * np.abs(spectrum)**2) / (nfft * x.size))
+    normalized_power = float(np.sum(multiplicity * np.abs(spectrum)**2) / (nfft * x.size))
+    with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+        result = float(scale * (scale * normalized_power))
     if not np.isfinite(result):
         raise ValueError("spectral energy exceeds floating-point range")
+    if result == 0.0:
+        raise ValueError("positive spectral energy is below floating-point range")
     return result
 
 
