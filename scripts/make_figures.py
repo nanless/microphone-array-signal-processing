@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""生成教程插图 31 张（图 1~25、图 33~36、40~41；图 26~32、37~39 见 make_aec_figures.py）。
+"""生成教程插图 33 张（图 1~25、图 33~36、40~43；图 26~32、37~39 见 make_aec_figures.py）。
 
 用法（仓库根目录）：
-    .venv/bin/python scripts/make_figures.py      # 图 1~25、图 33~36、40~41 → figures/
+    .venv/bin/python scripts/make_figures.py      # 图 1~25、图 33~36、40~43 → figures/
 """
 from pathlib import Path
 import hashlib
@@ -2987,6 +2987,121 @@ def fig_interpolation_error():
          {'AudioManifestDigest': hashlib.sha256(manifest_path.read_bytes()).hexdigest()})
 
 
+def fig_gss_flow():
+    """Show the separate direction, raw-power and activity paths of teaching GSS."""
+    fig, ax = plt.subplots(figsize=(9.5, 8.1))
+    ax.set(xlim=(-.2, 9), ylim=(-.65, 9.15))
+    ax.axis('off')
+    width, height = 2.35, 1.05
+    locations = {'pre': (0, 7.55), 'activity': (6.3, 7.55),
+                 'raw': (0, 5.2), 'unit': (3.15, 5.2), 'cluster': (6.3, 5.2),
+                 'raw_copy': (0, 2.7), 'scm': (3.15, 2.7), 'beam': (6.3, 2.7),
+                 'output': (6.3, .05)}
+    labels = {'pre': '同步多通道复谱 X\n可选 WPE → Y',
+              'activity': '外部说话人活动 a\n背景类始终活动',
+              'raw': '处理后的复谱 Y\n保留幅度与相位',
+              'unit': '非低能量点单位化\nz = Y / ‖Y‖',
+              'cluster': '导引 cACG 迭代\n形状 B、权重 π',
+              'raw_copy': '同一复谱 Y\n不做单位范数化',
+              'scm': '掩码加权外积\n目标 / 非目标 SCM',
+              'beam': '目标主方向 + 参考麦\n加载 MVDR 权重 w',
+              'output': '输出 $y = w^H Y$\n非可用频点选参考麦'}
+    for name, (x, y) in locations.items():
+        fill = '#fff2cc' if name == 'activity' else '#e8f6db' if name in ('cluster', 'scm', 'beam') else '#dbe9f6'
+        ax.add_patch(plt.Rectangle((x, y), width, height, facecolor=fill, edgecolor=C_MAIN, lw=1.2))
+        ax.text(x+width/2, y+height/2, labels[name], ha='center', va='center', fontsize=11)
+    def anchor(name, side):
+        x,y=locations[name]
+        return {'l':(x,y+height/2),'r':(x+width,y+height/2),
+                't':(x+width/2,y+height),'b':(x+width/2,y)}[side]
+    def edge(a,b,s='r',t='l',via=(),control=False):
+        pts=[anchor(a,s),*via,anchor(b,t)]
+        for i,(start,stop) in enumerate(zip(pts[:-1],pts[1:])):
+            ax.add_patch(FancyArrowPatch(start,stop,
+                arrowstyle='-|>' if i==len(pts)-2 else '-', mutation_scale=14,
+                color=C_ORANGE if control else C_BLUE, lw=1.6, ls='--' if control else '-'))
+    edge('pre','raw','b','t')
+    edge('raw','unit')
+    edge('unit','cluster')
+    edge('activity','cluster','b','t',control=True)
+    edge('raw','raw_copy','b','t')
+    edge('raw_copy','scm')
+    edge('cluster','scm','b','t',via=((7.475,4.45),(4.325,4.45)))
+    ax.text(5.6,4.53,'后验掩码 γ',ha='center',va='bottom',fontsize=11)
+    edge('scm','beam')
+    edge('beam','output','b','t')
+    ax.text(7.65,1.8,'权重 w',ha='left',va='center',fontsize=11)
+    edge('raw_copy','output','b','l',via=((1.175,1.55),(2.65,1.55),(2.65,.575)))
+    ax.text(4.3,.75,'保留尺度的 Y',ha='center',va='bottom',fontsize=11)
+    ax.text(3.05,7.8,'实线：信号 / 统计量\n虚线：外部活动控制',ha='left',va='center',fontsize=11)
+    ax.text(.1,-.3,'方向聚类不能恢复声功率；掩码不直接替代空间滤波权重。',ha='left',va='center',fontsize=11)
+    fig.suptitle('图42  教学 GSS 的三条依赖：空间方向、原始功率、外部活动',fontsize=FS_SUP)
+    fig.tight_layout(rect=(0,0,1,.95))
+    save(fig,'fig42_gss_flow.png')
+
+
+def css_tone_amplitudes(waveform, sample_rate=16000, block_samples=1280):
+    """Joint two-tone + DC regression, returning midpoint seconds and amplitudes."""
+    x = np.asarray(waveform, dtype=float)
+    if x.ndim != 1 or not np.all(np.isfinite(x)) or x.size < block_samples:
+        raise ValueError('a finite mono waveform of at least one measurement block is required')
+    times = np.arange(block_samples) / sample_rate
+    basis = np.column_stack([np.cos(2*np.pi*f*times) for f in (250,625)] +
+                            [np.sin(2*np.pi*f*times) for f in (250,625)] + [np.ones(block_samples)])
+    count = x.size // block_samples
+    coefficients = np.linalg.lstsq(basis,x[:count*block_samples].reshape(count,block_samples).T,rcond=None)[0]
+    amplitudes = np.hypot(coefficients[:2],coefficients[2:4]).T
+    return (np.arange(count)+.5)*block_samples/sample_rate, amplitudes
+
+
+def fig_css_overlap():
+    """Read published PCM for output amplitudes; keep float matching separate."""
+    import wave
+    root = Path(__file__).resolve().parents[1]
+    manifest_path = root/'codes/audio/MANIFEST.json'
+    manifest = json.loads(manifest_path.read_text())
+    config = manifest['groups']['css_overlap']['parameters']
+    correlation = np.asarray(config['matching']['absolute_centered_correlation'])
+    fig = plt.figure(figsize=(9.5,9.0))
+    grid = fig.add_gridspec(3,2,height_ratios=(1.05,1,1),width_ratios=(1,1.2))
+    matrix = fig.add_subplot(grid[0,0])
+    matrix.imshow(correlation,vmin=0,vmax=1,cmap='Blues')
+    for i in range(2):
+        for j in range(2):
+            matrix.text(j,i,f'{correlation[i,j]:.4f}',ha='center',va='center',
+                        color='white' if correlation[i,j]>.6 else C_MAIN,fontsize=13)
+    matrix.set(xticks=[0,1],yticks=[0,1],xticklabels=['当前槽0','当前槽1'],
+               yticklabels=['前块槽0','前块槽1'],xlabel='当前块的重叠信号',ylabel='前一块的重叠信号',
+               title='(a) 浮点重叠区绝对相关（无量纲）')
+    note = fig.add_subplot(grid[0,1]);note.axis('off')
+    identity_score, swap_score = config['matching']['candidate_mean_scores_identity_swap']
+    mapping = config['matching']['current_indices_for_previous']
+    note.text(0,.92,f'重叠区为 0.8～1.2 s\n\n交换排列平均分：{swap_score:.4f}\n原顺序平均分：{identity_score:.4f}\n\n只据重叠信号选择 {mapping}\n不向匹配器提供干净参考',
+              va='top',fontsize=11,linespacing=1.4)
+    for row,(stem,title) in enumerate([
+            ('css_overlap_naive','(b) 未关联：槽0在重叠区逐渐换成另一源'),
+            ('css_overlap_aligned','(c) 实际关联：槽0保持第一源与其残留串音')],start=1):
+        with wave.open(str(root/'codes/audio'/f'{stem}.wav'), 'rb') as wav:
+            fs = wav.getframerate()
+            if wav.getsampwidth() != 2 or wav.getnchannels() != 2:
+                raise ValueError('CSS figure requires two-channel PCM16')
+            waves = np.frombuffer(wav.readframes(wav.getnframes()), dtype='<i2').astype(float).reshape(-1,2).T / 32768
+        t,amplitudes=css_tone_amplitudes(waves[0],fs)
+        ax=fig.add_subplot(grid[row,:])
+        ax.axvspan(.8,1.2,color='#bdbdbd',alpha=.25,label='两块重叠区')
+        for i,(frequency,color,style,marker) in enumerate([(250,C_BLUE,'-','o'),(625,C_RED,'--','s')]):
+            ax.plot(t,amplitudes[:,i],color=color,ls=style,marker=marker,ms=3.5,
+                    label=f'{frequency} Hz：PCM测幅')
+        ax.set(title=title,xlim=(0,2),ylim=(0,.14),xlabel='时间 (s)',ylabel='槽0音调幅度\n(数字满幅单位)')
+        ax.grid(ls=':',alpha=.35)
+    handles, labels = ax.get_legend_handles_labels()
+    fig.legend(handles, labels, loc='lower center', ncol=3, fontsize=11)
+    fig.suptitle('图43  相关匹配修正跨块槽位交换：受控两音调实验\n'
+                 '16 kHz / 2 s；10%人为串音；下两图按80 ms分块联合测幅',fontsize=FS_SUP)
+    fig.tight_layout(rect=(0,.035,1,.92),h_pad=1.8)
+    save(fig,'fig43_css_overlap.png',{'AudioManifestDigest':hashlib.sha256(manifest_path.read_bytes()).hexdigest()})
+
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -3021,6 +3136,8 @@ def main():
     fig_nonlinear_echo()
     fig_clock_drift()
     fig_interpolation_error()
+    fig_gss_flow()
+    fig_css_overlap()
     print("ALL DONE")
 
 

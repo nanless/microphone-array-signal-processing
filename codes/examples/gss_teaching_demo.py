@@ -8,12 +8,15 @@ because this particular fixture has no reverberation. This is not GPU-GSS.
 from __future__ import annotations
 
 import hashlib
+import argparse
+import io
 import json
+import platform
 from pathlib import Path
 
 import numpy as np
 
-from codes.array_tutorial.audio_samples import delay_samples, pcm16_bytes
+from codes.array_tutorial.audio_samples import delay_samples, pcm16_bytes, read_pcm16
 from codes.array_tutorial.gss_teaching import guided_cacgmm_mvdr
 from codes.array_tutorial.separation import si_sdr
 from codes.array_tutorial.spectral import istft, stft
@@ -61,10 +64,10 @@ def run_experiment() -> tuple[dict, dict[str, np.ndarray]]:
                          length=times.size)[0]
     score = (times >= .2) & (times < 1.45)
     data = {
-        "scope": "original NumPy two-microphone cACGMM EM, activity gating, target/non-target SCM and mask-MVDR on synthetic anechoic noise-like sources; not official GPU-GSS or speech",
+        "scope": "original NumPy activity-guided cACG fixed-count updates, target/non-target SCM and mask-MVDR on synthetic anechoic noise-like sources; not exact conditional-likelihood EM, official GPU-GSS or speech",
         "sample_rate_hz": 16000,
         "seed": 20260924,
-        "stft": {"n_fft": n_fft, "hop": hop, "center": True},
+        "stft": {"n_fft": n_fft, "hop": hop, "center": True, "window": "periodic Hann", "padding": "128 zeros at each end; complete frames", "synthesis": "weighted overlap-add, trim leading 128 and return 32000 samples"},
         "sources": "two independent seeded Gaussian sequences with 30 ms onset/offset; first active [0.1,1.5) s, second [0.5,1.9) s",
         "array": "two microphones; source 1 direct at mic 0 and delayed two samples at mic 1; source 2 reversed; independent microphone noise RMS 0.003",
         "wpe": "bypassed because the fixture contains no reverberation; code can optionally call the independent offline WPE teaching implementation",
@@ -72,6 +75,11 @@ def run_experiment() -> tuple[dict, dict[str, np.ndarray]]:
         "shape_loading": 0.02,
         "correct_shape_resets": fitted["shape_reset_count"],
         "low_energy_bins": fitted["low_energy_bins"],
+        "energy_gate": {"absolute_norm_floor": fitted["absolute_energy_floor"], "relative_to_bin_peak": fitted["relative_energy_floor"]},
+        "state_phase": fitted["state_phase"],
+        "stopping_rule": fitted["stopping_rule"],
+        "beam_routes": fitted["beam_diagnostics"]["routes"],
+        "missed_beam_routes": wrong["beam_diagnostics"]["routes"],
         "correct_mask_sum_max_error": float(np.max(np.abs(fitted["posterior"].sum(axis=1) - 1))),
         "inactive_target_max_posterior": float(np.max(fitted["posterior"][:, 0, activity[:, 0] == 0])),
         "silent_frame_background_min_posterior": float(np.min(fitted["posterior"][:, -1, activity.sum(axis=1) == 0])),
@@ -90,32 +98,56 @@ def run_experiment() -> tuple[dict, dict[str, np.ndarray]]:
               "posterior": fitted["posterior"], "target_scm": fitted["target_scm"],
               "other_scm": fitted["other_scm"], "weights": fitted["weights"],
               "activity": activity, "mixture_stft": spectrum}
+    for key in ("e_step_shapes", "e_step_priors", "shape_matrices", "post_update_priors", "valid_points", "actual_iterations_per_frequency"):
+        arrays[key] = fitted[key]
     return data, arrays
 
 
-def generate(out_dir: Path = OUT) -> dict:
+def generate(out_dir: Path = OUT, *, check: bool = False) -> dict:
     result, arrays = run_experiment()
-    out_dir.mkdir(parents=True, exist_ok=True)
     wav_names = ["source_1", "source_2", "mixture", "enhanced_correct", "enhanced_missed"]
     peak = max(float(np.max(np.abs(arrays[name]))) for name in wav_names)
     gain = 0.7 / peak
     result["common_export_gain"] = gain
+    result["environment"] = {"python": platform.python_version(), "numpy": np.__version__, "system": platform.system(), "machine": platform.machine()}
+    sources = ["codes/examples/gss_teaching_demo.py", "codes/array_tutorial/gss_teaching.py", "codes/array_tutorial/separation.py", "codes/array_tutorial/spectral.py", "codes/array_tutorial/conventions.py", "codes/array_tutorial/audio_samples.py", "codes/array_tutorial/dereverberation.py"]
+    result["generator_inputs"] = {path: hashlib.sha256((ROOT / path).read_bytes()).hexdigest() for path in sources}
+    result["pcm"] = "little-endian signed PCM16, nearest-even rounding, no dither; common gain for all files"
+    result["score"] = "reference mic0 source1, [3200,23200) samples, centered SI-SDR; no time alignment, float and decoded PCM reported separately"
     files = {}
+    contents = {}
+    decoded = {}
     for name in wav_names:
         path = out_dir / f"{name}.wav"
         content = pcm16_bytes(arrays[name] * gain)
-        path.write_bytes(content)
+        contents[path.name] = content
+        decoded[name] = read_pcm16(content)[1]
         files[path.name] = {"channels": int(arrays[name].shape[0]),
                             "samples_per_channel": int(arrays[name].shape[1]),
                             "sha256": hashlib.sha256(content).hexdigest()}
-    state_path = out_dir / "STATE.npz"
-    np.savez_compressed(state_path, **{name: arrays[name] for name in
-                                        ("posterior", "target_scm", "other_scm", "weights", "activity", "mixture_stft")})
-    files[state_path.name] = {"sha256": hashlib.sha256(state_path.read_bytes()).hexdigest()}
+    result["pcm_si_sdr_db"] = {name: si_sdr(decoded[name][0, 3200:23200], decoded["source_1"][0, 3200:23200]) for name in ("mixture", "enhanced_correct", "enhanced_missed")}
+    state = io.BytesIO()
+    np.savez_compressed(state, **{name: value for name, value in arrays.items() if name not in wav_names})
+    contents["STATE.npz"] = state.getvalue()
+    files["STATE.npz"] = {"sha256": hashlib.sha256(contents["STATE.npz"]).hexdigest()}
     result["files"] = files
-    (out_dir / "MANIFEST.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
+    contents["MANIFEST.json"] = (json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + "\n").encode()
+    if check:
+        if {p.name for p in out_dir.glob('*.wav')} != {name for name in contents if name.endswith('.wav')}:
+            raise ValueError("GSS WAV file set differs")
+        for name, content in contents.items():
+            if not (out_dir / name).is_file() or (out_dir / name).read_bytes() != content:
+                raise ValueError(f"GSS asset missing or stale: {name}")
+    else:
+        out_dir.mkdir(parents=True, exist_ok=True)
+        for name, content in contents.items():
+            (out_dir / name).write_bytes(content)
     return result
 
 
 if __name__ == "__main__":
-    print(json.dumps(generate(), ensure_ascii=False, indent=2))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--output', type=Path, default=OUT)
+    parser.add_argument('--check', action='store_true')
+    args = parser.parse_args()
+    print(json.dumps(generate(args.output, check=args.check), ensure_ascii=False, indent=2))

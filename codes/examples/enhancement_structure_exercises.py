@@ -41,15 +41,22 @@ def _real(value, name):
     return np.asarray(value, dtype=float)
 
 
+def _divide_real_scale(value, scale):
+    result = np.empty_like(value)
+    result.real = value.real / scale
+    result.imag = value.imag / scale
+    return result
+
+
 def _hermitian(value, name, *, positive=True):
     matrix = np.asarray(value, dtype=np.complex128)
     if (matrix.ndim != 2 or matrix.shape[0] != matrix.shape[1]
             or matrix.shape[0] == 0 or not np.all(np.isfinite(matrix))):
         raise ValueError(f"{name} must be a finite nonempty square matrix")
-    scale = float(np.max(np.abs(matrix)))
+    scale = float(max(np.max(np.abs(matrix.real)), np.max(np.abs(matrix.imag))))
     if not np.isfinite(scale):
         raise ValueError(f"{name} magnitude exceeds float64 range")
-    scaled = matrix / scale if scale > 0 else matrix
+    scaled = _divide_real_scale(matrix, scale) if scale > 0 else matrix
     if not np.allclose(scaled, scaled.conj().T, rtol=1e-12, atol=1e-12):
         raise ValueError(f"{name} must be Hermitian")
     if positive:
@@ -69,7 +76,7 @@ def wpd_factorization(covariance, steering):
     """
     r = _hermitian(covariance, "covariance")
     r_scale = float(np.max(np.abs(r)))
-    r = r / r_scale
+    r = _divide_real_scale(r, r_scale)
     v = np.asarray(steering, dtype=np.complex128)
     if (v.ndim != 1 or not 0 < v.size < r.shape[0]
             or not np.all(np.isfinite(v)) or np.max(np.abs(v)) == 0):
@@ -97,7 +104,7 @@ def cacg_shape_step(directions, weights, old_shape):
     """
     b = _hermitian(old_shape, "old_shape")
     b_scale = float(np.max(np.abs(b)))
-    b = b / b_scale
+    b = _divide_real_scale(b, b_scale)
     z = np.asarray(directions, dtype=np.complex128)
     gamma = _real(weights, "weights")
     if (z.ndim != 2 or z.shape[1] != b.shape[0] or z.shape[0] == 0
@@ -118,7 +125,7 @@ def cacg_shape_step(directions, weights, old_shape):
 def cacg_relative_density(directions, shape):
     """Return cACG density without the common sphere normalization constant."""
     b = _hermitian(shape, "shape")
-    b = b / np.max(np.abs(b))
+    b = _divide_real_scale(b, np.max(np.abs(b)))
     z = np.asarray(directions, dtype=np.complex128)
     if (z.ndim != 2 or z.shape[1] != b.shape[0] or z.shape[0] == 0
             or not np.all(np.isfinite(z))

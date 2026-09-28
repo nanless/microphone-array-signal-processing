@@ -669,8 +669,67 @@ def wpe_predictable_case() -> dict:
                   'tail after the two-second file is excluded. Float and PCM reference scores are reported separately.'}
 
 
+def css_overlap_case() -> dict:
+    """Two synthetic separator blocks; only their overlap association is run."""
+    from .css import match_two_source_overlap
+    from .separation import si_sdr
+
+    n = 2 * SAMPLE_RATE
+    t = np.arange(n) / SAMPLE_RATE
+    envelope = np.ones(n)
+    fade = np.sin(np.linspace(0, np.pi / 2, 320)) ** 2
+    envelope[:320], envelope[-320:] = fade, fade[::-1]
+    reference = .12 * np.vstack((np.sin(2 * np.pi * 250 * t),
+                                 np.sin(2 * np.pi * 625 * t))) * envelope
+    simulated = np.array([[1., .1], [.1, 1.]]) @ reference
+    first, second = simulated[:, :19200], simulated[::-1, 12800:]
+    match = match_two_source_overlap(first[:, 12800:], second[:, :6400])
+    if match['status'] != 'matched':
+        raise ValueError('deterministic CSS fixture no longer has an identifiable overlap')
+
+    def assemble(right):
+        result = np.empty_like(reference)
+        result[:, :12800] = first[:, :12800]
+        ramp = np.linspace(0., 1., 6400)
+        result[:, 12800:19200] = (1 - ramp) * first[:, 12800:] + ramp * right[:, :6400]
+        result[:, 19200:] = right[:, 6400:]
+        return result
+
+    signals = {'css_overlap_reference': reference,
+               'css_overlap_mixture': reference.sum(axis=0, keepdims=True),
+               'css_overlap_naive': assemble(second),
+               'css_overlap_aligned': assemble(second[match['current_indices_for_previous']])}
+
+    def score(values):
+        truth = values['css_overlap_reference']
+        return {name: [si_sdr(values[name][0 if name == 'css_overlap_mixture' else i], truth[i])
+                       for i in range(2)]
+                for name in ('css_overlap_mixture', 'css_overlap_naive', 'css_overlap_aligned')}
+
+    pcm = {name: read_pcm16(pcm16_bytes(value))[1] for name, value in signals.items()}
+    return {'signals': signals, 'parameters': {
+        'sample_rate_hz': SAMPLE_RATE, 'samples': n, 'frequencies_hz': [250, 625],
+        'source_amplitude': .12, 'fade_samples': 320, 'fade': 'squared sine with endpoints included',
+        'source_model': 'two deterministic sinusoids; reference stereo is two source tracks, not microphone geometry',
+        'simulated_separator_matrix': [[1., .1], [.1, 1.]],
+        'blocks_half_open_samples': [[0, 19200], [12800, 32000]],
+        'second_block_slot_order': [1, 0], 'overlap_half_open_samples': [12800, 19200],
+        'overlap_add': 'linear complementary weights linspace(0,1,6400), endpoints included',
+        'matching': match, 'expected_off_diagonal_assignment_score': 1.,
+        'expected_identity_assignment_score': 20 / 101,
+        'common_export_gain': 1., 'score_interval_samples': [0, n],
+        'score_definition': 'per-stream centered SI-SDR, fixed stream-to-reference order, no PIT or time alignment; PCM scores use PCM references',
+        'floating_si_sdr_db': score(signals), 'pcm_si_sdr_db': score(pcm),
+        'alignment_scope': 'the matcher sees overlapping output waveforms only, never the references; it estimates permutation, not gain/polarity/delay',
+        'failed_overlap_policy': 'ambiguous returns no mapping; no fabricated identity through silence or ties',
+        'algorithm_latency': 'offline two-block fixture; matching requires the overlap samples, no measured streaming latency'},
+        'limits': 'Given simulated separator slots with residual crosstalk, not actual blind or neural separation. '
+                  'Two sinusoids and a single reliable overlap are not speech, arbitrary-source CSS, or a permanent speaker-identity guarantee. '
+                  'No listening study; stereo channels are output slots, not binaural spatial audio.'}
+
+
 def build_cases() -> dict:
-    """Return twenty-three experiments with model parameters and references.
+    """Return twenty-four experiments with model parameters and references.
 
     Each entry has ``signals`` (filename stem -> CxN array), ``parameters`` and
     ``limits``. Signals are pre-export floats; no group uses peak matching.
@@ -804,6 +863,7 @@ def build_cases() -> dict:
                                    length=t.size)[0]
     return {
         'wpe_predictable': wpe_predictable_case(),
+        'css_overlap': css_overlap_case(),
         'aec_dropout': aec_dropout_case(),
         'gsc_gate': gsc_gate_case(),
         'doa_ambiguity': doa_ambiguity_case(),

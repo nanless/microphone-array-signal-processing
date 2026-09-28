@@ -190,14 +190,15 @@ class TestEnhancementInvalidInputs(unittest.TestCase):
             with self.assertRaises(ValueError):masked_spatial_covariance(np.ones((1,2,3),complex),np.zeros((1,3)),epsilon=value)
         np.testing.assert_array_equal(masked_spatial_covariance(np.ones((1,2,3),complex),np.zeros((1,3))),np.zeros((1,2,2)))
 
-    def test_scm_rejects_nonfinite_accumulation_or_output(self):
+    def test_scm_rejects_unrepresentable_output_not_raw_intermediate(self):
         with np.errstate(all='raise'):
-            with self.assertRaisesRegex(ValueError, 'accumulation exceeds'):
+            with self.assertRaisesRegex(ValueError, 'result exceeds'):
                 masked_spatial_covariance(
                     np.full((1, 1, 2), 1e200, dtype=complex), np.ones((1, 2)))
-            with self.assertRaisesRegex(ValueError, 'accumulation exceeds'):
-                masked_spatial_covariance(
-                    np.ones((1, 1, 2), dtype=complex), np.full((1, 2), 1e308))
+            # The raw numerator and mass overflow, but their ratio is one.
+            covariance = masked_spatial_covariance(
+                np.ones((1, 1, 2), dtype=complex), np.full((1, 2), 1e308))
+            np.testing.assert_array_equal(covariance, np.ones((1, 1, 1)))
 
     def test_si_sdr_independent_scaling_and_nonorthogonal_error(self):
         reference=np.array([1.,-1.,1.,-1.])

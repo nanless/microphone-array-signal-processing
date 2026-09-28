@@ -10,7 +10,7 @@
     "float_dtype": "float64"
   },
   "synthetic_signal": {
-    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband, spectral_subtraction, clock_drift, interpolation, alignment_error, room_decay, dma_calibration, doa_ambiguity, gsc_gate, aec_dropout and wpe_predictable; see each group for noise and transforms",
+    "applies_to": "173/293 Hz harmonic targets in groups other than nonlinear, fractional_array, aec_methods, aec_subband, spectral_subtraction, clock_drift, interpolation, alignment_error, room_decay, dma_calibration, doa_ambiguity, gsc_gate, aec_dropout, wpe_predictable and css_overlap; see each group for noise and transforms",
     "duration_s": 2,
     "base_frequencies_hz": [
       173,
@@ -33,8 +33,8 @@
   "pcm": "signed little-endian 16-bit, round-to-nearest-even; no dither; no per-file normalization",
   "listening": "Start at low device volume. No automatic playback. No formal listening study performed.",
   "generator_inputs": {
-    "codes/examples/generate_audio_samples.py": "93fbf1c24843a2b3b7698ef7ec61bca97dfae74c2606a867d1bfd0b41df4e2d8",
-    "codes/array_tutorial/audio_samples.py": "79bb31c92b1e95a19640fb7dd465b27b62eab56f47d00d615c3707512a414062",
+    "codes/examples/generate_audio_samples.py": "a99dff65ad15fc728aeb2f8e09bfdb0a9c0643174a7cd7d9bc74973288ea2c67",
+    "codes/array_tutorial/audio_samples.py": "f953a4075ad122b35c2b6d78f3f0689dd3ab30f02c159ef4eb241122ff764c45",
     "codes/array_tutorial/aec.py": "70d69fcd523cff3028162a221d71ea6bd2254979dfe37479ad26f77ab74a5a7e",
     "codes/array_tutorial/aec_ipnlms.py": "320fccd7458b8abb0c65c6f5871beb015403776fc00c4d3a8df5aa3a9afaeab2",
     "codes/array_tutorial/aec_rls.py": "f13c2018297e46f0b393ef52e04fad5f1d48ede00de8b37a80a4abf597a9305d",
@@ -42,6 +42,8 @@
     "codes/array_tutorial/aec_subband.py": "1473556e8cda4908dbe19cbeb645960dbb636b3dd672ab61358007a3d29d43be",
     "codes/array_tutorial/gsc.py": "29995ed363ba2cf807059f146e075dea1aadef7ae21709cd62b9a3e9423b12f9",
     "codes/array_tutorial/noise_suppression.py": "b6eeeca35d3246585f42e0ee9ac9b028f9523fef3c224a07b98fa0383160cb3f",
+    "codes/array_tutorial/css.py": "c1b1f62d568f09c737afe0d7434c1a028a87e689d1d11251996fc235b1b18b61",
+    "codes/array_tutorial/separation.py": "fba14bf7e4ddf2c40b54964d900b1f8f8f2865d7fe4232edcfba14d44fd2622b",
     "codes/array_tutorial/dereverberation.py": "af55bbb288f0f2b5208afc5fa0c3e66a918233fdb7a32c953ae54f5c85ca2017",
     "codes/array_tutorial/spectral.py": "9b7c3d3e2b936fdfa793f372e5d258788a4b43b9536294c231019454bfcb45c6",
     "codes/array_tutorial/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385",
@@ -152,6 +154,118 @@
         "statistics": "one deterministic mathematical fixture; no real speech, room or listening study"
       },
       "limits": "All four mono files share export gain 1. The oracle knows the feedback path; blind WPE does not. The stationary target itself is predictable at the 32 ms delay, so lower tail energy does not guarantee unit target gain. Finite onset/fades and STFT boundary padding affect the fit. No T60, SNR, ERLE or intelligibility claim; tail after the two-second file is excluded. Float and PCM reference scores are reported separately.",
+      "common_export_gain": 1.0
+    },
+    "css_overlap": {
+      "parameters": {
+        "sample_rate_hz": 16000,
+        "samples": 32000,
+        "frequencies_hz": [
+          250,
+          625
+        ],
+        "source_amplitude": 0.12,
+        "fade_samples": 320,
+        "fade": "squared sine with endpoints included",
+        "source_model": "two deterministic sinusoids; reference stereo is two source tracks, not microphone geometry",
+        "simulated_separator_matrix": [
+          [
+            1.0,
+            0.1
+          ],
+          [
+            0.1,
+            1.0
+          ]
+        ],
+        "blocks_half_open_samples": [
+          [
+            0,
+            19200
+          ],
+          [
+            12800,
+            32000
+          ]
+        ],
+        "second_block_slot_order": [
+          1,
+          0
+        ],
+        "overlap_half_open_samples": [
+          12800,
+          19200
+        ],
+        "overlap_add": "linear complementary weights linspace(0,1,6400), endpoints included",
+        "matching": {
+          "status": "matched",
+          "reason": "matched",
+          "current_indices_for_previous": [
+            1,
+            0
+          ],
+          "absolute_centered_correlation": [
+            [
+              0.1980198019801971,
+              0.9999999999999967
+            ],
+            [
+              0.9999999999999968,
+              0.1980198019801971
+            ]
+          ],
+          "candidate_mean_scores_identity_swap": [
+            0.1980198019801971,
+            0.9999999999999967
+          ],
+          "margin": 0.8019801980197996,
+          "thresholds": {
+            "minimum_centered_rms": 1e-08,
+            "minimum_correlation": 0.5,
+            "minimum_margin": 0.05
+          }
+        },
+        "expected_off_diagonal_assignment_score": 1.0,
+        "expected_identity_assignment_score": 0.19801980198019803,
+        "common_export_gain": 1.0,
+        "score_interval_samples": [
+          0,
+          32000
+        ],
+        "score_definition": "per-stream centered SI-SDR, fixed stream-to-reference order, no PIT or time alignment; PCM scores use PCM references",
+        "floating_si_sdr_db": {
+          "css_overlap_mixture": [
+            1.3026428269391488e-06,
+            7.150064046390625e-07
+          ],
+          "css_overlap_naive": [
+            -3.340710426368209,
+            -3.340711112091752
+          ],
+          "css_overlap_aligned": [
+            20.000000394700756,
+            19.999999807064277
+          ]
+        },
+        "pcm_si_sdr_db": {
+          "css_overlap_mixture": [
+            -1.4136587589419491e-05,
+            1.7366722444567273e-05
+          ],
+          "css_overlap_naive": [
+            -3.3407587885149015,
+            -3.3405346277825765
+          ],
+          "css_overlap_aligned": [
+            19.998887508407478,
+            19.999652603596665
+          ]
+        },
+        "alignment_scope": "the matcher sees overlapping output waveforms only, never the references; it estimates permutation, not gain/polarity/delay",
+        "failed_overlap_policy": "ambiguous returns no mapping; no fabricated identity through silence or ties",
+        "algorithm_latency": "offline two-block fixture; matching requires the overlap samples, no measured streaming latency"
+      },
+      "limits": "Given simulated separator slots with residual crosstalk, not actual blind or neural separation. Two sinusoids and a single reliable overlap are not speech, arbitrary-source CSS, or a permanent speaker-identity guarantee. No listening study; stereo channels are output slots, not binaural spatial audio.",
       "common_export_gain": 1.0
     },
     "aec_dropout": {
@@ -1600,6 +1714,58 @@
       "rms": 0.030575160933814596,
       "common_export_gain": 1.0,
       "quantization_max_abs_error": 1.5258674397986005e-05
+    },
+    {
+      "file": "css_overlap_reference.wav",
+      "sha256": "e7b37d84a8dd4a52142f9659af50464effc0caa14c6180dea8c521ac02f47077",
+      "group": "css_overlap",
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.1199951171875,
+      "rms": 0.08432264518994063,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5238008756100763e-05
+    },
+    {
+      "file": "css_overlap_mixture.wav",
+      "sha256": "b19907078c48d0bae11f14aaa20a5978129ccb9bd67f91d07e54f8f3813fa271",
+      "group": "css_overlap",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.23468017578125,
+      "rms": 0.11924739685338606,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.5244144981912955e-05
+    },
+    {
+      "file": "css_overlap_naive.wav",
+      "sha256": "b10db3e1bbf9bfec7737d44653d881c2f940ec2577ae70d8e992c6b5363d628b",
+      "group": "css_overlap",
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.13134765625,
+      "rms": 0.08241596335963851,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.525681585404226e-05
+    },
+    {
+      "file": "css_overlap_aligned.wav",
+      "sha256": "91159ccd38b9b97ed6989d7ac45385ae670ef1ef5a9ecc873a81b9a5cb427e2c",
+      "group": "css_overlap",
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples": 32000,
+      "duration_s": 2.0,
+      "peak": 0.13134765625,
+      "rms": 0.08474156624981358,
+      "common_export_gain": 1.0,
+      "quantization_max_abs_error": 1.524912225463193e-05
     },
     {
       "file": "aec_dropout_target.wav",

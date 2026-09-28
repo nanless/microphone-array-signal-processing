@@ -1,4 +1,4 @@
-"""Explicit cross-module, chapter and research inventory for 173 exercises."""
+"""Explicit cross-module, chapter and research inventory for 185 exercises."""
 
 import json
 import re
@@ -14,11 +14,12 @@ from codes.examples.coarray_covariance_exercise import run_exercise as coarray_e
 from codes.examples.doa_resolution_trials import run_experiment as doa_resolution_experiment
 
 
-from codes.examples import chapter01_experiments, chapter02_experiments, chapter03_experiments, chapter04_experiments, chapter05_experiments, chapter06_experiments, chapter07_experiments
+from codes.examples import chapter01_experiments, chapter02_experiments, chapter03_experiments, chapter04_experiments, chapter05_experiments, chapter06_experiments, chapter07_experiments, chapter08_experiments
 from codes.examples import spatial_model_exercises, enhancement_structure_exercises, engineering_boundary_exercises, interpolation_exercise
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = {
+    "chapter08": {f"E08-{n:02d}" for n in range(12, 24)},
     "chapter07": {f"E07-{n:02d}" for n in range(8, 18)},
     "chapter06": {f"E06-{n:02d}" for n in range(22, 34)},
     "chapter05": {f"E05-{n:02d}" for n in range(8, 18)},
@@ -60,7 +61,8 @@ EXPECTED = {
 }
 AEC_CASE_KEYS = {"E06-07": "overlap_save", "E06-08": "ipnlms",
                  "E06-09": "geigel", "E06-10": "delay_polarity"}
-RUNNERS = {"chapter07": chapter07_experiments.run_experiments,
+RUNNERS = {"chapter08": chapter08_experiments.run_experiments,
+           "chapter07": chapter07_experiments.run_experiments,
            "chapter06": chapter06_experiments.run_experiments,
            "chapter05": chapter05_experiments.run_exercises,
            "chapter04": chapter04_experiments.run_exercises,
@@ -104,9 +106,9 @@ class ExerciseCatalogTest(unittest.TestCase):
     def setUpClass(cls):
         cls.results = {name: run() for name, run in RUNNERS.items()}
 
-    def test_independent_inventory_has_173_unique_ids(self):
-        self.assertEqual(len(ALL_IDS), 173)
-        self.assertEqual(sum(map(len, EXPECTED.values())), 173)
+    def test_independent_inventory_has_185_unique_ids(self):
+        self.assertEqual(len(ALL_IDS), 185)
+        self.assertEqual(sum(map(len, EXPECTED.values())), 185)
 
     def test_each_module_returns_exact_assigned_ids(self):
         for name, results in self.results.items():
@@ -129,7 +131,7 @@ class ExerciseCatalogTest(unittest.TestCase):
                 text = chapters[0].read_text(encoding="utf-8")
                 self.assertRegex(text, rf"\b{re.escape(exercise_id)}\b")
 
-    def test_chapter_and_research_inventories_cover_exactly_173_ids(self):
+    def test_chapter_and_research_inventories_cover_exactly_185_ids(self):
         chapters = "\n".join(path.read_text(encoding="utf-8")
                              for path in (ROOT / "chapters").glob("*.md"))
         research = (ROOT / "codes/research/05_exercises_and_audio.md").read_text(encoding="utf-8")

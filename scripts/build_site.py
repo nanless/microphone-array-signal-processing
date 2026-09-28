@@ -220,7 +220,7 @@ def stage_gss_audio(source, destination):
     records = manifest["files"]
     expected = set(GSS_AUDIO_WAVS) | {"STATE.npz", "MANIFEST.json"}
     if (set(records) != expected - {"MANIFEST.json"}
-            or {p.name for p in source.iterdir() if p.is_file()} != expected
+            or {p.name for p in source.iterdir() if p.is_file()} - {"README.md"} != expected
             or manifest["sample_rate_hz"] != 16000):
         raise ValueError("GSS 独立清单、文件集合或采样率不符")
     for name in expected - {"MANIFEST.json"}:

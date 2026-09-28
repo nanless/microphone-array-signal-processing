@@ -19,7 +19,7 @@
 
     1. 运行 `codes/` 中只依赖 NumPy 的教学实现，核对手算结果、数组维度和退化边界。
     2. 在隔离环境中用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线，记录房间、阵列和随机种子。
-    3. 运行 `scripts/` 中的两个绘图脚本，按当前参数复现 41 张编号图，并逐图核对正文条件。
+    3. 运行 `scripts/` 中的两个绘图脚本，按当前参数复现 43 张编号图，并逐图核对正文条件。
     4. 按研究任务选择公开数据和固定版本参考系统，分别核对代码、模型与数据的许可和评测口径。
     5. 在可用的多通道硬件上测实时性、同步和标定；仿真结果不能代替设备测量。
 
@@ -482,7 +482,7 @@ $$
 
 仓库已将六组源信号、四麦完整房间输出和四麦仅直达输出，共 18 个 PCM WAV 单独保存在 `codes/room_audio/`，参数、共同增益、种子和逐文件摘要见[房间音频清单](../codes/room_audio/MANIFEST.json)；[逐组试听入口](../codes/research/05_exercises_and_audio.md#17-六位置房间响应与定位)列出全部文件。
 
-每组使用与定位估计相同的固定白高斯噪声输入；全部文件采用同一个显式增益，不逐文件峰值归一化，保留传播时延和增益差异。文件是数学合成白噪声，不是真实语音或实测房间录音；试听前先降低播放音量。它们与主清单的 80 个 `codes/audio/` 样本分别管理。
+每组使用与定位估计相同的固定白高斯噪声输入；全部文件采用同一个显式增益，不逐文件峰值归一化，保留传播时延和增益差异。文件是数学合成白噪声，不是真实语音或实测房间录音；试听前先降低播放音量。它们与主清单的 98 个 `codes/audio/` 样本分别管理。
 
 若要重新生成到个人实验目录，先在装有锁定版 pyroomacoustics 0.10.0 的隔离环境中运行 `python -m codes.examples.room_srp_exercise --run --audio-dir /tmp/room-srp-audio-new`；为防覆盖，该目录必须尚不存在。
 
@@ -597,11 +597,11 @@ $$
 
 会议识别复现还要固定数据准备与文本规范化。CHiME-8 的官方 `chime-utils` 提供 SegLST 转写格式、该届规范化及 cpWER/tcpWER 评分；其中缺失场景的忽略选项会改变实际计分范围。应保留每个场景的输入文件数、失败数和最终参与评分的清单，并先用正确转写、说话人交换、漏词和时间戳偏移的小夹具检查评分口径。[CHiME-8 官方评分实现](https://github.com/chimechallenge/chime-utils/tree/152882404f572d40769ef02bf91c5a9a9cfc9c78 "citation")
 
-绘图脚本都在 `scripts/` 里。图 34～36 和图 37～38 读取或复算指定教学数据，图 39 是算法流程图，图 40 复算时钟漂移音频，图 41 对照线性插值的解析响应与PCM幅度；先生成音频，再运行两个绘图脚本。图片写入 `figures/`，共 41 张：
+绘图脚本都在 `scripts/` 里。图 34～36 和图 37～38 读取或复算指定教学数据，图 39 是算法流程图，图 40 复算时钟漂移音频，图 41 对照线性插值的解析响应与PCM幅度，图 42 展开 GSS 的三条依赖，图 43 对照 CSS 槽位关联与 PCM 音调幅度；先生成音频，再运行两个绘图脚本。图片写入 `figures/`，共 43 张：
 
 ```bash
 .venv/bin/python codes/examples/generate_audio_samples.py
-.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～41
+.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～43
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～39（回声消除专题）
 ```
 

@@ -57,6 +57,16 @@ class GssAudioStagingTests(unittest.TestCase):
             self.assertEqual((self.root / "published" / name).read_bytes(),
                              (self.source / name).read_bytes())
 
+    def test_readme_is_optional_but_other_extras_are_rejected(self):
+        (self.source / "README.md").write_text("Source instructions only")
+        names = build_site.stage_gss_audio(self.source, self.root / "with_readme")
+        self.assertNotIn("README.md", names)
+        (self.source / "README.md").unlink()
+        build_site.stage_gss_audio(self.source, self.root / "without_readme")
+        (self.source / "README.md.bak").write_text("unexpected")
+        with self.assertRaisesRegex(ValueError, "集合"):
+            build_site.stage_gss_audio(self.source, self.root / "unexpected")
+
     def test_rejects_changed_state(self):
         state = self.source / "STATE.npz"
         data = bytearray(state.read_bytes())

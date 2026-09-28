@@ -27,6 +27,15 @@ aec_figures = load_module("make_aec_figures", "make_aec_figures.py")
 
 
 class FigureAlgorithmTest(unittest.TestCase):
+    def test_css_tone_measurement_separates_phase_and_dc(self):
+        t = np.arange(2560) / 16000
+        wave = .12*np.sin(2*np.pi*250*t+.7) + .012*np.cos(2*np.pi*625*t-.3) + .04
+        centers, amplitudes = figures.css_tone_amplitudes(wave)
+        np.testing.assert_allclose(centers, [.04, .12], atol=1e-15)
+        np.testing.assert_allclose(amplitudes, [[.12,.012],[.12,.012]], atol=1e-14)
+        with self.assertRaises(ValueError):
+            figures.css_tone_amplitudes(np.ones(4))
+
     def test_figure16_mvdr_matches_independent_rank_one_inverse(self):
         positions, curves = figures.beam_pattern_comparison()
         direction = np.exp(1j * np.pi * positions * np.sin(np.deg2rad(20)))

@@ -30,7 +30,13 @@
         "pyroomacoustics/parameters.py",
         "pyroomacoustics/acoustics.py",
         "pyroomacoustics/experimental/rt60.py",
-        "pyroomacoustics/doa/doa.py"
+        "pyroomacoustics/doa/doa.py",
+        "pyroomacoustics/bss/auxiva.py",
+        "pyroomacoustics/bss/common.py",
+        "pyroomacoustics/bss/fastmnmf.py",
+        "pyroomacoustics/bss/fastmnmf2.py",
+        "pyroomacoustics/bss/ilrma.py",
+        "pyroomacoustics/bss/trinicon.py"
       ]
     },
     {
@@ -79,7 +85,8 @@
       "entrypoints": [
         "LICENSE",
         "asteroid/models/conv_tasnet.py",
-        "asteroid/models/dprnn_tasnet.py"
+        "asteroid/models/dprnn_tasnet.py",
+        "asteroid/masknn/norms.py"
       ]
     },
     {
@@ -243,7 +250,7 @@
       "license": "GPL-3.0",
       "fetch_enabled": true,
       "scope": "AuxIVA, OverIVA, FIVE and related blind source separation",
-      "note": "Index only because source or binary redistribution has GPL obligations; native dependencies require separate review.",
+      "note": "Source acquired in an independent ignored local checkout for research; GPL-3.0 redistribution obligations remain separate. Native dependencies and each runtime path require separate validation.",
       "acquisition": "independent_source_checkout",
       "entrypoints": [
         "LICENSE",
@@ -685,7 +692,8 @@
         "ssspy/bss/iva.py",
         "ssspy/bss/fdica.py",
         "ssspy/bss/ilrma.py",
-        "ssspy/bss/mnmf.py"
+        "ssspy/bss/mnmf.py",
+        "ssspy/algorithm/projection_back.py"
       ]
     },
     {
@@ -717,7 +725,11 @@
         "gss/cacgmm",
         "gss/beamformer",
         "gss/wpe",
-        "recipes"
+        "recipes",
+        "gss/cacgmm/cacgmm.py",
+        "gss/cacgmm/cacgmm_trainer.py",
+        "gss/cacgmm/utils.py",
+        "gss/core/gss.py"
       ]
     },
     {
@@ -752,14 +764,29 @@
       "revision": "91af02cc617afa35fedfbdbf32533012cd0a8672",
       "license": "LicenseRef-BUT-NTT-Evaluation",
       "scope": "Target speaker extraction using enrollment speech",
-      "fetch_enabled": false,
-      "note": "LICENSE.txt grants internal evaluation and restricts redistribution and modification. Source index only; not represented as freely redistributable open source.",
+      "fetch_enabled": true,
+      "note": "Original selected source for internal evaluation only; LICENSE.txt prohibits modification and redistribution. Do not copy into book release. Current model entry is td_speakerbeam.py; the licence exhibit still names an older entry. Unpinned dependencies and model/data rights are not validated by acquisition.",
       "entrypoints": [
         "LICENSE.txt",
-        "src/models/convtasnet_informed.py",
+        "README.md",
+        "requirements.txt",
+        "src/models/td_speakerbeam.py",
+        "src/models/base_models_informed.py",
         "src/models/adapt_layers.py",
-        "src/datasets/librimix_informed.py",
-        "egs/libri2mix"
+        "src/models/system.py",
+        "src/datasets/librimix_informed.py"
+      ],
+      "verified_at": "2026-09-28",
+      "acquisition": "independent_source_checkout",
+      "source_paths": [
+        "LICENSE.txt",
+        "README.md",
+        "requirements.txt",
+        "src/models/td_speakerbeam.py",
+        "src/models/base_models_informed.py",
+        "src/models/adapt_layers.py",
+        "src/models/system.py",
+        "src/datasets/librimix_informed.py"
       ]
     },
     {
@@ -807,7 +834,7 @@
       "license": "LicenseRef-Academic-Research-Only",
       "scope": "FastMNMF1/2, AR-FastMNMF2 and joint source separation/dereverberation",
       "fetch_enabled": false,
-      "note": "Author license permits academic research at universities/research institutions and disallows commercial or industrial use/modification without permission. Permissively licensed FastMNMF alternatives exist in pyroomacoustics and ssspy.",
+      "note": "The author licence limits use to academic research at universities and research institutions. Eligible institutional status or separate permission has not been established for this task; retain an index until that condition is met. MIT FastMNMF alternatives are locally available in pyroomacoustics; this restriction is not a claim that source is unavailable.",
       "entrypoints": [
         "LICENSE",
         "src"
@@ -1656,6 +1683,39 @@
         "run.py"
       ],
       "note": "Official Yang/Chang repository; root MIT copyright 2021 dreadbird06, selected file headers contain no conflicting license. models/ and data/ excluded; torch_custom direct local dependencies included. No model loading, PyTorch installation, training, inference or claimed ASV gain validated. Fixed README identifies TASLP 30,3144–3159(2022), DOI10.1109/TASLP.2022.3205752."
+    },
+    {
+      "id": "mffca",
+      "url": "https://github.com/nttcslab-sp/mfFCA.git",
+      "revision": "1d6b422fc56f5f9ef612fd87ae1402e1311c5c3c",
+      "verified_at": "2026-09-28",
+      "license": "NTT SOFTWARE LICENSE AGREEMENT FOR EVALUATION; internal testing, analysis and evaluation only; modification and redistribution prohibited",
+      "fetch_enabled": true,
+      "scope": "Author multi-frame full-rank spatial covariance analysis; original source subset for local evaluation only",
+      "acquisition": "independent_source_checkout",
+      "source_paths": [
+        "LICENCE.txt",
+        "README.md",
+        "fca.py",
+        "fca_permu.py",
+        "permu.py",
+        "spatial_white.py",
+        "util.py",
+        "main_synthetic.ipynb",
+        "main_speech.py"
+      ],
+      "entrypoints": [
+        "LICENCE.txt",
+        "README.md",
+        "fca.py",
+        "fca_permu.py",
+        "permu.py",
+        "spatial_white.py",
+        "util.py",
+        "main_synthetic.ipynb",
+        "main_speech.py"
+      ],
+      "note": "Keep source unchanged in ignored local checkout. No audio, weights or datasets selected; do not redistribute with the book. Acquisition is not runtime, numerical or paper-performance validation."
     }
   ]
 }

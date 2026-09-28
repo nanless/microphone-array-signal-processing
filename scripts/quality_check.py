@@ -52,7 +52,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "05_beamforming.md": 38,
     "06_aec.md": 60,
     "07_wpe-dereverberation.md": 48,
-    "08_speech-separation.md": 9,
+    "08_speech-separation.md": 52,
     "09_source-tracking.md": 9,
     "10_engineering-practice.md": 13,
     "11_selection-guide.md": 11,
@@ -78,10 +78,10 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 119
-EXPECTED_SUBSECTION_COUNT = 349
-EXPECTED_OUTLINE_ITEM_COUNT = 482
-EXPECTED_FIGURE_NUMBERS = set(range(1, 42))
-# 研究附站使用独立显式清单，不挤占 14 篇教程或 482 项 PDF 大纲基线。
+EXPECTED_SUBSECTION_COUNT = 392
+EXPECTED_OUTLINE_ITEM_COUNT = 525
+EXPECTED_FIGURE_NUMBERS = set(range(1, 44))
+# 研究附站使用独立显式清单，不挤占 14 篇教程或 525 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
     ("README.md", "index.html"),
@@ -607,12 +607,12 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41)
+            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
                 fail(errors, f"PNG 溯源失效：figures/{name}: {issue}")
-            if number in (34, 35, 36, 40, 41):
+            if number in (34, 35, 36, 40, 41, 43):
                 expected = hashlib.sha256((ROOT / "codes/audio/MANIFEST.json").read_bytes()).hexdigest()
                 with Image.open(path) as image:
                     if image.info.get("AudioManifestDigest") != expected:
@@ -1035,6 +1035,7 @@ def check_pdf(errors: list[str], notices: list[str]):
 
 
 EXPECTED_AUDIO_STEMS = {
+    "css_overlap_reference", "css_overlap_mixture", "css_overlap_naive", "css_overlap_aligned",
     "wpe_predictable_target", "wpe_predictable_reverberant",
     "wpe_predictable_oracle_inverse", "wpe_predictable_output",
     "aec_dropout_target", "aec_dropout_microphone",
@@ -1261,7 +1262,7 @@ def check_gss_audio(errors):
                 or manifest["sample_rate_hz"] != 16000):
             raise ValueError("GSS 清单集合或采样率不符")
         for folder in (source, published):
-            if {path.name for path in folder.iterdir() if path.is_file()} != expected:
+            if {path.name for path in folder.iterdir() if path.is_file()} - ({"README.md"} if folder == source else set()) != expected:
                 raise ValueError(f"GSS 文件集合不符：{folder}")
         for name in expected:
             original, copy = source / name, published / name
@@ -1296,13 +1297,13 @@ def check_audio(errors):
         manifest = json.loads((root / "MANIFEST.json").read_text())
         records = manifest["files"]
         names = {stem + ".wav" for stem in EXPECTED_AUDIO_STEMS}
-        if len(records) != 94 or {r["file"] for r in records} != names:
-            fail(errors, "音频清单必须包含独立基线的 94 个 WAV")
+        if len(records) != 98 or {r["file"] for r in records} != names:
+            fail(errors, "音频清单必须包含独立基线的 98 个 WAV")
         if {p.name for p in root.glob("*.wav")} != names or {p.name for p in (SITE / "audio").glob("*.wav")} != names:
             fail(errors, "源音频或站点音频文件集合不符")
         if set(manifest["groups"]) != {"spatial", "aec", "aec_methods", "aec_subband", "wpe", "separation", "engineering", "tracking",
                                       "correlation", "polarity", "conditioning", "nonlinear", "fractional_array",
-                                      "spectral_subtraction", "clock_drift", "interpolation", "alignment_error", "room_decay", "dma_calibration", "doa_ambiguity", "gsc_gate", "aec_dropout", "wpe_predictable"}:
+                                      "spectral_subtraction", "clock_drift", "interpolation", "alignment_error", "room_decay", "dma_calibration", "doa_ambiguity", "gsc_gate", "aec_dropout", "wpe_predictable", "css_overlap"}:
             fail(errors, "音频实验组不符")
         expected_inputs = {"codes/examples/generate_audio_samples.py", "codes/array_tutorial/audio_samples.py",
                            "codes/array_tutorial/aec.py", "codes/array_tutorial/aec_ipnlms.py",
@@ -1311,7 +1312,8 @@ def check_audio(errors):
                            "codes/array_tutorial/dereverberation.py",
                            "codes/array_tutorial/spectral.py", "codes/array_tutorial/conventions.py",
                            "codes/array_tutorial/geometry.py",
-                           "codes/array_tutorial/noise_suppression.py", "codes/array_tutorial/gsc.py"}
+                           "codes/array_tutorial/noise_suppression.py", "codes/array_tutorial/gsc.py",
+                           "codes/array_tutorial/css.py", "codes/array_tutorial/separation.py"}
         if set(manifest["generator_inputs"]) != expected_inputs:
             fail(errors, "音频生成来源清单不完整")
         for name, expected in manifest["generator_inputs"].items():
@@ -1335,7 +1337,8 @@ def check_audio(errors):
                 raw = wav.readframes(frames)
             if record["sample_rate_hz"] != 16000 or record["duration_s"] != frames / 16000:
                 fail(errors, f"音频清单采样率或时长不符：{name}")
-            expected_group = ("wpe_predictable" if name.startswith("wpe_predictable_") else
+            expected_group = ("css_overlap" if name.startswith("css_overlap_") else
+                              "wpe_predictable" if name.startswith("wpe_predictable_") else
                               "aec_dropout" if name.startswith("aec_dropout_") else
                               "gsc_gate" if name.startswith("gsc_") else
                               "doa_ambiguity" if name.startswith("doa_ambiguity_") else

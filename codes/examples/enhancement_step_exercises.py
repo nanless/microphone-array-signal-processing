@@ -26,17 +26,29 @@ def ip_row(matrix: np.ndarray, covariance: np.ndarray, source: int) -> np.ndarra
         raise ValueError("W and V must be equal-size finite nonempty square matrices")
     if isinstance(source, (bool, np.bool_)) or not isinstance(source, (int, np.integer)) or not 0 <= source < len(w):
         raise ValueError("source must be a valid integer row index")
-    scale = np.max(np.abs(v))
-    if scale == 0 or not np.allclose(v / scale, v.conj().T / scale, rtol=1e-12, atol=1e-14):
+    scale = max(np.max(np.abs(v.real)), np.max(np.abs(v.imag)))
+    w_scale = max(np.max(np.abs(w.real)), np.max(np.abs(w.imag)))
+    if scale == 0 or w_scale == 0:
+        raise ValueError("IP system must have nonzero W and positive definite V")
+    vn = np.empty_like(v)
+    vn.real, vn.imag = v.real / scale, v.imag / scale
+    wn = np.empty_like(w)
+    wn.real, wn.imag = w.real / w_scale, w.imag / w_scale
+    if not np.allclose(vn, vn.conj().T, rtol=1e-12, atol=1e-14):
         raise ValueError("V must be Hermitian positive definite")
     try:
-        np.linalg.cholesky(v / scale)
+        np.linalg.cholesky(vn)
         with np.errstate(over='raise', divide='raise', invalid='raise', under='ignore'):
-            u = np.linalg.solve(w @ v, np.eye(len(w), dtype=complex)[:, source])
-            quadratic = np.vdot(u, v @ u)
+            u = np.linalg.solve(wn @ vn, np.eye(len(w), dtype=complex)[:, source])
+            peak = max(np.max(np.abs(u.real)), np.max(np.abs(u.imag)))
+            if not np.isfinite(peak) or peak == 0:
+                raise ValueError("IP solve has no finite nonzero direction")
+            u.real /= peak
+            u.imag /= peak
+            quadratic = np.vdot(u, vn @ u)
             if not np.isfinite(quadratic) or quadratic.real <= 0:
                 raise ValueError("IP quadratic form must be finite and positive")
-            result = u / np.sqrt(quadratic.real)
+            result = (u / np.sqrt(quadratic.real)) / np.sqrt(scale)
     except (np.linalg.LinAlgError, FloatingPointError) as error:
         raise ValueError("IP system is singular or not representable") from error
     if not np.isfinite(result).all():

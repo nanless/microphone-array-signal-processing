@@ -18,7 +18,8 @@ HISTORICAL_SECTION_IDS = {
     "00_overview.md": {
         "sec-u-b7a71b077a": "sec-u-3937b1b94e",  # 路径 A：去掉无依据的周数
         "sec-u-efc5552983": "sec-u-f958564d39",  # 路径 B：去掉无依据的周数
-        "sec-u-6ef8e18126": "sec-u-d538d6d0a5",  # 插图地图：40 张更新为 41 张
+        "sec-u-6ef8e18126": "sec-u-0943a9ed3c",  # 插图地图：40 张历史标题
+        "sec-u-d538d6d0a5": "sec-u-0943a9ed3c",  # 41 张历史标题，同指43张地图
     },
     "04_doa-estimation.md": {
         "sec-u-442f837dd2": "sec-u-5d3aebe0fb",  # MUSIC 旧标题

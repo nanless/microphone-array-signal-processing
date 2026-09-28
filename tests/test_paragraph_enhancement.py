@@ -95,7 +95,7 @@ class EnhancementParagraphTest(unittest.TestCase):
             ("06_aec.md", "#### 6.2.4 IPNLMS：", "**两抽头手算。**", "比例归一化最小均方", 8),
             ("06_aec.md", "第一行描述路径的漂移或突变", "下式是便于复算", "同写为", 4),
             ("06_aec.md", "D1～D3检查参考", "> **采样率偏移", "ITU-T 已于", 3),
-            ("08_speech-separation.md", "**AuxIVA（", "**ILRMA（", "标准实现仍是整段迭代", 3),
+            ("08_speech-separation.md", "**AuxIVA（", "设统计帧数为", "标准实现仍是整段迭代", 3),
             ("09_source-tracking.md", "多目标追踪还要估计", "**可执行单目标基线", "最优子模式分配距离", 2),
             ("09_source-tracking.md", "GM-PHD 的高斯权重和", "MHT 已有可阅读的受限参考", "JPDA 也需要明确", 2),
         ]
@@ -164,7 +164,7 @@ class EnhancementParagraphTest(unittest.TestCase):
         paragraphs = items[0]["paragraph_texts"]
         anchors = (
             "cACGMM 空间聚类",
-            r"\tag{8-4}",
+            r"\tag{8-16}",
             "正定的形状矩阵",
             "混合模型的后验概率",
         )
@@ -176,7 +176,7 @@ class EnhancementParagraphTest(unittest.TestCase):
         self.assertIn("其中", paragraphs[positions[2]])
         self.assertIn("软时频掩码", paragraphs[positions[3]])
         for item in items[1:]:
-            self.assertNotIn(r"\tag{8-4}", item["text"])
+            self.assertNotIn(r"\tag{8-16}", item["text"])
 
     def test_eight_research_directions_preserve_arraydps(self):
         source, path = self.passage("13_appendix-guide.md", "### 13.3", "#### 专题：神经网络前端")
@@ -212,7 +212,7 @@ class EnhancementParagraphTest(unittest.TestCase):
         html, _ = build_site.render(broken, path)
         parser = ListParser()
         parser.feed(html)
-        self.assertNotIn(r"\tag{8-4}", parser.lists[0]["items"][0]["text"])
+        self.assertNotIn(r"\tag{8-16}", parser.lists[0]["items"][0]["text"])
 
 
 if __name__ == "__main__":

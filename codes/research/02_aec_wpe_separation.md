@@ -592,6 +592,14 @@ E08-04 对人为指定的解混矩阵演示回投影：原输出 `[2s, -3u]` 乘
 
 [E08-08](../../chapters/08_speech-separation.md#e08-08)补充已运行的一行 IP 手算：给定正定 $V$，先解 $WV u=e_n$，再归一化到 $w^HVw=1$，写回矩阵时使用共轭行。它与完整 AuxIVA 运行分开记录，并用复数矩阵、整体协方差缩放、单通道与秩亏边界测试；不同 Laplace 范数尺度可能改变未回投影幅度。
 
+**已执行：三种回投影接口的同输入对照。** 固定两输出为 `[1,0,1]`、`[0,1,1]`，参考麦为 `[1,2,3]`。ssspy 的联合数据拟合得到系数 `[1,2]`，与给定可逆解混矩阵再取逆矩阵第一行的路径一致；PRA 的逐输出标量拟合得到 `[2,2.5]`。两输出相关，逐输出拟合会各自吸收另一源的相关分量，因此三种调用不能只因名称都叫 `projection_back` 就互换。
+
+PRA 公共函数返回的是最终应用系数的共轭；以单输出 `[1,j]`、参考为其 `(2+j)` 倍时，原函数返回 `2−j`，AuxIVA 应用时再取共轭。独立小算例见 [E08-13](../../chapters/08_speech-separation.md#e08-13)，实际固定原函数调用及完整数组另存于 [B12 的报告](../reports/separation_upstream_interfaces.json)。此对照没有运行盲估计，也不能用参考麦重构一致性代替分离质量。
+
+**PRA 接口与固定初始化边界。** 锁定 `pyroomacoustics 0.10.0` 的输入为 `(帧,频点,通道)`，内部 `W` 的实际轴是 `(频点,源,通道)`；文档中把后两轴反写，在确定混合的方阵情况下不容易察觉。Laplace 路径使用跨频范数，Gaussian 路径使用跨频平均功率，两者不能共用同一未回投影尺度。每轮固定这些权重，再逐行更新空间滤波器；每十轮的回调位于更新前，回调曲线也要注明取点。
+
+本书实际调用两麦一源的 `init_eig=True`，即使 `n_iter=0` 也因 `(2,1)` 无法写入 `(1,2)` 而报 `ValueError`。该分支将特征向量列直接写入源行，没有所需的轴转换。普通默认初始化的成功不覆盖此分支；诊断输入、逐文件摘要与原版错误见 [B12](#separation-upstream-audit)。此记录不修改上游，也不声称所有 OverIVA 配置都失败。
+
 ### B03　OverIVA、FIVE 与过定提取
 
 麦克风数多于目标源数时，OverIVA 利用低维目标子空间与背景模型，FIVE 面向单目标提取，不必总是先做任意降维再调用方阵 IVA。[piva 官方仓库](https://github.com/fakufaku/piva)包含这些方法；[pyroomacoustics `auxiva.py`](https://github.com/LCAV/pyroomacoustics/blob/v0.10.0/pyroomacoustics/bss/auxiva.py)也需查看 `n_src` 分支，确认当前算法实际的源数条件。
@@ -606,11 +614,17 @@ ILRMA 把独立向量分析与非负矩阵分解（NMF）结合，让每个源�
 
 [E08-09](../../chapters/08_speech-separation.md#e08-09)给出谱基乘时间激活的四个数字，并复算两因子互补缩放不改变功率。固定 ssspy 版本还值得用实际赋值核对文档：`ILRMABase` 初始化在 `partitioning=False` 时把 `basis` 建成 `(源, 频点, 基)`、`activation` 建成 `(源, 基, 帧)`，`reconstruct_nmf()` 实际执行 `T @ V`；该方法 docstring 的两项形状说明却与这些角色不符。此处以初始化和实际乘法为依据，不沿用那段形状注释，也没有修改上游文件。
 
+**已执行：PRA 返回滤波器与输出的一致性。** 固定复谱为 9 帧、3 频点、2 通道，PCG64 种子 8，第二通道乘 3；ILRMA 的旧式 NumPy 随机初始化另设种子 7，2 个谱基，迭代一次，关闭回投影。记录原函数归一化前的矩阵，得到缩放因子约为 `0.721573`、`0.351573`。
+
+源行更新后，源码却用 `W[:,:,s]` 缩放输入通道列；NMF 功率和基则按源缩放。返回的音频谱还是最终缩放前的谱，因此与同次返回的 `W @ X` 最大绝对差约为 3.7390。独立按源行缩放时，每源平均功率均为 1，确认尺度补偿应作用在哪个轴。这个失败记录只针对固定 PRA 版本；不能据此否定 ILRMA 理论，也不能把另一库的运行成功用于替代这一接口检查。完整数组与独立点积验证见 [B12](#separation-upstream-audit)。
+
 ### B05　MNMF 的满秩空间协方差
 
 MNMF 为每个源建模满秩空间协方差，能表达比单导向矢量更复杂的传播和欠定混合。[Sawada 等 2013 论文](https://doi.org/10.1109/TASL.2013.2239990)定义多通道模型；[ssspy `bss/mnmf.py`](https://github.com/tky823/ssspy/blob/38b9389e8b1914422561f1936d9b28d042d62d2c/ssspy/bss/mnmf.py)提供 `GaussMNMF`。
 
 读码需一起查看谱参数、源 SCM 及多通道维纳重构。最小实验用两个通道、三个源检验输出形状、模型代价和重复初值的差异；失败实验让两个源方向和谱形同时接近。能够写出欠定模型不等于数据足以识别所有源，应报告初始化种子、分量重置和多次运行分散程度。
+
+[Sawada 等作者全文](https://www.kecl.ntt.co.jp/icl/signal/sawada/mypaper/IEEEtaslp2013sawada.pdf) §IV～V 同时讨论源空间模型与谱基聚类；共享谱基、聚类权重的版本不能直接与逐源独立谱基的简化模型混称。读 `GaussMNMF` 时固定 `partitioning`、谱基数与空间初始化，再核对输出取自哪支参考麦。多通道 Wiener 重构给出该麦克风处的估计源图像；源图像之和接近混合只是观测一致性，尚不证明每路身份或源波形正确。
 
 ### B06　FastMNMF、FastMNMF2 与联合对角化
 
@@ -618,11 +632,23 @@ FastMNMF 以可联合对角化的空间协方差降低反复处理满矩阵的�
 
 最小实验在相同 STFT、源数、NMF 基数和初值下比较迭代耗时及分离，不把 CPU 与 GPU 实现直接按秒排名。失败实验使混合 SCM 秩亏并比较不同加载/精度；双精度的较慢计算可能避免数值失效。输出 `mic_index` 决定重构哪支麦克风的源图像，不能与干声参考混淆。
 
+[FastMNMF 2019 原文](https://www.eurasip.org/Proceedings/Eusipco/eusipco2019/Proceedings/papers/1570533283.pdf) §II～III 的共同变换满足各源空间协方差经同一个可逆矩阵合同变换后为对角阵；不是任意满秩 SCM 都能同时满足该约束。PRA 第一版的空间参数为 `G_NFM`，每个源和频点各有一组对角元素；第二版为频率共享的 `g_NM`，对应[直接性约束版本的正式论文](https://doi.org/10.1109/TASLP.2020.3019181)。不能把两者仅视为相同公式的提速开关。
+
+**已执行：初值所有权与输出轴。** 两方法都直接令 `Q_FMM=W0`，没有复制。以每频点 `W0=2I`、两麦三源、零次优化调用，调用者的初值已被归一化为 `I`。比较多次运行时，每次传入独立副本，并分别重置随机种子。`mic_index="all"` 的实际输出轴为 `(麦克风,帧,频点,源)`；上述小例各源图像求和与混合的误差小于 $2\times10^{-15}$，但这是零次学习的 Wiener 分配，不能称为三源分离成功。[B12](#separation-upstream-audit)保存原函数结果。
+
+作者整库的[固定许可](https://github.com/sekiguchi92/SoundSourceSeparation/blob/897fe87fea3d85a243d8a3fd36c2232bb0548ad3/LICENSE)进一步限定大学和研究机构中的学术研究，并非所有个人非商用用途均已获准。本书保留该索引与适用主体条件；已取得的 PRA 文件采用 MIT，许可判断不能跨仓库移用。
+
 ### B07　TRINICON 的时域块自适应
 
 [pyroomacoustics `bss/trinicon.py`](https://github.com/LCAV/pyroomacoustics/blob/v0.10.0/pyroomacoustics/bss/trinicon.py)提供依据[Aichner 等 2006 表 1](https://doi.org/10.1016/j.sigpro.2005.06.022)的时域块方法，并明确固定两个输出通道。输入轴序为 `(通道, 样本)`，与频域 BSS 接口不同。
 
 最小实验以双源卷积混合检查滤波器长度、块长、在线重叠、离线内迭代和遗忘设置；失败实验在第三源出现或路径变化后检查重适应。滤波器覆盖的历史长度、每次读入块与首个可用输出的等待应分开计量。该具体实现存在于本地源码缓存，因此不应继续把 TRINICON 写成完全没有可用代码的原理索引。
+
+TRINICON 框架的[作者出版列表](https://www.buchner-net.com/publications.html)对应 ICASSP 2004, iii-889～iii-892；[Aichner 等 2006 作者全文](https://www.buchner-net.com/lnt2006_19.pdf) §1～2 与表 1 是此处具体二阶统计版本的依据。框架可讨论非高斯性，而该块算法主要利用非白性与非平稳性，不能将“框架能用高阶统计”写成固定 PRA 已执行的步骤。
+
+**已执行：已知滤波器的非整块尾部。** 关闭内部适应 `j_max=0`，两通道默认滤波器各只有第 2 个延迟样本处为 1；滤波器长度 4、块长 8、`n_blocks=2`，处理步长为 4。输入为连续索引乘 0.001。16 样本返回16样本，与两样本延迟一致；17 样本却返回19样本，原输入区间内第16号输出变成零，独立卷积应为首通道的 0.014。19、23样本也分别返回21、25样本，但这两例的原输入区间未出现同一遗漏。
+
+源码补零取模误用了麦克风轴而非样本轴。这里同时检验长度与已知卷积，避免只凭“调用成功”验收。诊断不启用盲适应，不能支持 TRINICON 的语音分离性能结论，见 [B12](#separation-upstream-audit)。
 
 ### B08　cACGMM：方向统计、活动约束与数值稳定
 
@@ -631,6 +657,12 @@ FastMNMF 以可联合对角化的空间协方差降低反复处理满矩阵的�
 最小实验先用两个不同复方向生成单位向量，检查后验归一和分量置换，再用未归一的原 STFT 构造 SCM。失败实验含低能量点、空活动分量和近奇异形状矩阵。用于聚类的方向外积没有原始功率，不能直接当作波束形成的功率 SCM。[第 8 章 E08-07](../../chapters/08_speech-separation.md#e08-07)先固定相对密度，只复算活动门控的 E 步；它不代替形状矩阵估计或完整分离实验。
 
 [E08-11](../../chapters/08_speech-separation.md#e08-11)补上固定责任权重的形状子步骤：两个正交单位方向和 $3/4,1/4$ 权重，从单位阵更新得到 $\operatorname{diag}(1.5,0.5)$，两个相对密度因子为 $3,1/3$；继续同样权重会趋向边界，不能把第一步当作收敛结果。形状矩阵的正比例尺度会在行列式和二次型中抵消，方向全部相同时迹归一也不能避免秩亏。[式(14)的原始依据](https://www.eurasip.org/Proceedings/Eusipco/Eusipco2016/papers/1570256519.pdf)、[原创计算](../examples/enhancement_structure_exercises.py)与[独立复数/尺度测试](../../tests/test_codes_enhancement_structure.py)分别给出定义、算术和实现边界；这一小题不生成 GSS 音频。
+
+**GPU-GSS 与教学概率约束的差异。** 固定 `gss/cacgmm/utils.py` 先减去所有分量的最大对数密度，指数化后才乘活动掩码。训练默认将后验裁剪到 $[10^{-10},1-10^{-10}]$，源码明确跳过再次归一化；最终 `predict()` 默认不裁剪。因而“训练的非活动源严格为零、每帧后验严格和为1”不适用于这一路实现。
+
+本书只提取该原函数，将数组后端从 CuPy 换为 NumPy。三分量权重为 `[0.2,0.3,0.5]`：仅背景活动、对数密度全零时，裁剪输出为 `[ε,ε,1−ε]`，总和为 `1+ε`。另取对数密度 `[1000,0,0]`，关闭第一分量，后两分量活动，得到全零；独立在活动分量上稳定归一化应为 `[0,3/8,5/8]`。这证明该算术顺序的浮点下溢边界，没有运行 CuPy 或官方整链。
+
+`normalize_observation()` 将零范数的除数换成极小正数，零向量仍保留。形状协方差默认采用特征值尺度归一化及地板，不是本书教学版的每轮迹归一。另一个静态边界是 `CACGMM.log_likelihood()` 汇总各分量对数密度时没有加入混合权重，也没有活动参数；它不能直接用作指导式完整似然的收敛证明。原文算法、工程裁剪和本书反例分别记录，不能由这几个实现事实指责原论文推导错误。
 
 ### B09　GSS：活动日志、WPE、聚类与波束形成
 
@@ -642,13 +674,58 @@ GSS 用说话人活动约束空间聚类，随后由掩码估计 SCM 并生成�
 
 **已执行：固定密度的活动错标敏感性。** [`gss_activity_error_demo.py`](../examples/gss_activity_error_demo.py)沿用教学版 `guided_activity_posterior()`，只取一个频点和三帧，分量为两位说话人加恒活动背景。权重 $[0.4,0.4,0.2]$，相对密度依次为 $[8,1,1]$、$[1,8,1]$、$[1,1,1]$；真实活动是“仅 1、仅 2、全静音”。正确标注时首帧说话人 1 的后验是 $16/17$；漏标后必为 0。第三帧若错误标注说话人 1 活动，其后验从 0 变为 $2/3$，背景从 1 降到 $1/3$。这些是固定权重/密度的 E 步后验，不包含 cACG 参数估计、WPE、SCM、MVDR、音频或 WER；不能作为完整 GSS 的活动错误性能曲线。该对照由[原论文 §3.2 式(5)～(8)](https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf)的门控公式导出，脚本计算与独立分数测试一致。GPU-GSS 的 CuPy/Lhotse 整链在本机尚未运行。
 
-**已执行：教学版 cACGMM—SCM—MVDR 受控链。** [第 8 章 §8.4.5](../../chapters/08_speech-separation.md#sec-8-4-5)把前述固定密度 E 步扩展为[原创 NumPy EM 实现](../array_tutorial/gss_teaching.py)：两麦方向向量、给定说话人活动与恒活动背景类进入逐频点八轮迭代，随后用未归一化的混合复谱构造 SCM，再计算目标 MVDR。固定种子、16 kHz、2 s 的无混响双源合成输入及五路试听 WAV 见[独立清单](../gss_audio/MANIFEST.json)；在同一 $[0.2,1.45)$ s 去均值 SI-SDR 评分区，参考麦约 1.28 dB，正确活动约 13.76 dB，目标活动全漏标时回退参考麦。该例不估计活动、不计算 WER，也未运行官方 CuPy/Lhotse 整链；无混响时 WPE 旁路，不能称作官方 GSS 或真实会议性能复现。
+**已执行：教学版 cACGMM—SCM—MVDR 受控链。** [第 8 章 §8.4.5](../../chapters/08_speech-separation.md#sec-8-4-5)把前述固定密度 E 步扩展为[原创 NumPy 活动导引实现](../array_tutorial/gss_teaching.py)：两麦方向向量、给定说话人活动与恒活动背景类进入逐频点八轮迭代，随后用未归一化的混合复谱构造 SCM，再计算目标 MVDR。固定种子、16 kHz、2 s 的无混响双源合成输入及五路试听 WAV 见[独立清单](../gss_audio/MANIFEST.json)；在同一 $[0.2,1.45)$ s 去均值 SI-SDR 评分区，参考麦约 1.28 dB，正确活动约 13.76 dB，目标活动全漏标时回退参考麦。该例不估计活动、不计算 WER，也未运行官方 CuPy/Lhotse 整链；无混响时 WPE 旁路，不能称作官方 GSS 或真实会议性能复现。
+
+**实际活动参数的消费位置。** 固定 `gss/core/enhancer.py` 默认 `bss_iterations_post=1`。`core/gss.py` 在有约束的训练之后，若该值非零，最终调用 `cur.predict(Obs.T)` 不再传活动掩码；大于1还会先增加无活动约束的拟合。只有值为0的最终预测继续传入活动掩码。`Obs` 是 `(通道,帧,频点)`，转置后的聚类输入为 `(频点,帧,通道)`，返回掩码为 `(分量,帧,频点)`。
+
+因此，前述教学链的严格门控与恒活动背景是明确选择的教学配置，不能作为官方默认最终掩码的接口契约。是否允许片段外目标的少量后验，需要结合上下文裁剪、SCM估计和任务指标判断；不能仅以关闭源输出非零就认定整套 GSS 无效。这里是固定源码控制流核对，没有运行官方 GPU 训练/预测。
 
 ### B10　GPU-GSS 的批处理与资源边界
 
 GPU-GSS 把频点、段及相同目标的计算合并，提高 GPU 利用率。批处理策略会同时影响上下文复用、显存与输出片段，`max-batch-duration`、`max-segment-length` 和 `context-duration`是不同参数。[官方使用说明](https://github.com/desh2608/gss/blob/10fad18cae85e2e4342c77421abc70c9c5da23ed/README.md)给出 Lhotse、CuPy 与 CUDA 前提。
 
 最小实验保持音频/活动/算法迭代相同，只改变批处理量，检查音频和时间戳一致性；失败实验增加通道数与长段，记录峰值显存和 OOM 前的工作点。论文加速数值依赖指定硬件与基线，不应转写成所有会议录音的固定倍数。独立 [CuPy WPE 子项目](https://github.com/desh2608/wpe/tree/bd2857b5b8de36df4f436a93574c088bea142042)只包含 GSS 需要的 WPE 子集，不能代替 nara_wpe 全部在线接口。
+
+[GPU-GSS 原文](https://www.isca-archive.org/interspeech_2023/raj23_interspeech.pdf) §4、表4的计算实验采用 CHiME-6 开发集、全部可用阵列通道、15秒上下文与20次 BSS 迭代。其加速倍数按累计作业小时计算；CPU并行作业数、GPU数与墙钟时间各有单独口径。该实验能证明指定实现和资源配置下的收益，不能推出本机实时性。原始 GSS 的六台四麦设备也不能简写成“六麦阵列”。
+
+<a id="mffca"></a>
+
+### B11　mfFCA：把跨帧相关纳入满秩空间模型
+
+单帧 STFT 乘法模型无法完整表达跨帧混响。Sawada 等的 [mfFCA 原文](https://www.kecl.ntt.co.jp/icl/signal/sawada/mypaper/IEEEtaslp2023sawada.pdf) §III～IV 将多个移位观测联合建模，以较高维复高斯协方差保留跨帧相关，再用 EM 更新与多通道 Wiener 估计分离源；正式出处为 IEEE/ACM TASLP 31 (2023), 3589～3602，[DOI](https://doi.org/10.1109/TASLP.2023.3313446)。代价是更大的协方差与求解量；这不是先做 WPE 再调用原单帧 MNMF 的同一流程。
+
+[官方代码](https://github.com/nttcslab-sp/mfFCA/tree/1d6b422fc56f5f9ef612fd87ae1402e1311c5c3c)固定为 `1d6b422fc56f5f9ef612fd87ae1402e1311c5c3c`。本书已原样取得9个源码/说明文件到独立缓存，未取得示例房间音频。`LICENCE.txt` 授权内部测试、分析与评估，限制修改和再分发；代码可供本地评估，不按 MIT/Apache 开源代码随书发布。源码状态与性能复现分别登记。
+
+- `fca.py::mfFCA` 接收 `(帧,频点,麦克风)`，源数为 `nSig`。`use_cupy=False` 选择 NumPy；`span_list` 中每个移位增加一组麦克风维，空间矩阵轴为 `(源,频点,堆叠维,堆叠维)`，功率为 `(帧,源,频点)`。
+- `_shifted_matrix()` 的正移位读取后面的帧并在尾部补零，负移位在头部补零。因此正移位模型使用未来帧，不能仅看“delay”名称就称严格因果。
+- `optimizationEM()` 交替求后验二阶矩、空间参数和功率；默认 `param_floor=1e-4` 加到空间矩阵并限制源功率。该地板、初始化和扩维时的 `scale_factor` 都要保留。
+- `fca_permu.py`、`permu.py` 处理频率排列；`spatial_white.py` 提供白化及恢复，`util.py` 提供波形/STFT工具。源图像的早晚分解依赖该模型的帧移分量，不是已知真实 RIR 的物理裁剪。
+
+`main_synthetic.ipynb` 是不需要语音数据的建议起点；先检查堆叠轴、正负移位和各源图像之和，再运行其合成优化。`main_speech.py` 明确选择 CuPy，两麦三源、1024点变换、256点帧移，按配置逐步增加移位并优化；它还需要未取得的房间录音。两入口都未在本书执行，未安装 CuPy，也没有论文质量或速度复现。受限源码保持原样，独立测试设计不复制或改写其实现。
+
+<a id="separation-upstream-audit"></a>
+
+### B12　固定接口诊断：运行范围与离线复核
+
+[`audit_separation_upstream_interfaces.py`](../examples/audit_separation_upstream_interfaces.py) 与[原始结果](../reports/separation_upstream_interfaces.json)绑定输入配置、脚本 SHA-256 和逐文件摘要。PRA 在既有隔离环境执行，导入的方法及公共函数先与固定缓存逐字节比较；使用 `sys.settrace` 只读记录 ILRMA 归一化前状态，没有改变上游方法。GSS 只提取后验算术原函数并以 NumPy 替换数组后端；神经模型只静态阅读。三种证据不能合称“全部上游已运行”。
+
+| 检查对象 | 已观察结果 | 不能据此推出 |
+|---|---|---|
+| AuxIVA 特征向量初值 | 两麦一源初始化报错 | 默认分支全部失败 |
+| 回投影接口 | 联合与逐输出拟合不同 | 同名接口运算相同 |
+| ILRMA 返回契约 | 输出与返回滤波器不一致 | ILRMA 理论错误 |
+| TRINICON 尾部 | 17样本例遗漏一个原区间输出 | 盲适应分离质量 |
+| FastMNMF/2 初值 | 零次优化也原地修改 W0 | 零次分配已分离源 |
+| GSS 后验算术 | 裁剪和下溢破坏严格归一 | GPU 整链指标 |
+
+离线测试使用报告中的完整复数组，以标量点积、单位脉冲卷积、概率分数和源图像求和独立复算，不依赖外部缓存或网络。运行正式审计需要已有的 PRA 0.10.0 隔离环境与固定缓存；只读检查省略 `--report`，重生成才指定输出路径。没有下载模型、训练集、运行神经前向、ASR或设备计时。
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 /tmp/room-pra-venv/bin/python \
+  codes/examples/audit_separation_upstream_interfaces.py
+.venv/bin/python -m unittest discover -s tests \
+  -p 'test_codes_separation_upstream_interfaces.py' -v
+```
 
 <a id="neural"></a>
 
@@ -660,11 +737,15 @@ Conv-TasNet 学习短窗编码/解码器，并在编码域估计掩码。[正式
 
 最小复现先固定源数与官方 recipe，记录采样率、编码核、步长、堆叠次数和 normalization。失败实验改变未来帧但保留过去，检查所谓因果配置是否真的不改变过去输出；另以短于编码窗的音频检查 padding。只提供网络构造类并不意味着已有匹配的训练权重。
 
+原文 [Conv-TasNet §II-C，式(12)～(14)](https://arxiv.org/pdf/1809.07454) 的 cLN 是累计归一化；Asteroid `masknn/norms.py` 中 `cLN=ChanLN` 仅在每个时间点沿通道归一，`cgLN=CumLN` 才沿已见时间累计统计。`models/conv_tasnet.py` 的因果开关允许后两种归一化，默认非因果配置使用 gLN。两个实现都可有因果用途，但运算不同，复现论文不能只复制同名缩写。此项为源码静态核对，未运行网络。
+
 ### N02　DPRNN：块内、块间与重叠重构
 
 DPRNN 把长序列划成重叠块，分开处理局部和跨块关系。[论文](https://doi.org/10.1109/ICASSP40776.2020.9054266)与[Asteroid `models/dprnn_tasnet.py`](https://github.com/asteroid-team/asteroid/blob/fce87469132760fbab41c20616ea0f0e079aad38/asteroid/models/dprnn_tasnet.py)需结合双路径 mask 网络阅读。块大小、块间循环方向和归一化决定能否在线。
 
 最小实验用脉冲或已知索引序列检查分块/合并是否保留顺序，再做双源分离。失败实验在跨块边界换人，并测极短、非整块长度的输入。DPRNN 的分块主要是建模和计算设计，不能据此自动宣称它已经解决长会议的输出身份连续性。
+
+[DPRNN 原文 §2.1](https://arxiv.org/pdf/1910.06379)明确分块、块内和块间处理。Asteroid `masknn/recurrent.py` 的块内 RNN 始终双向，块间方向由配置控制；默认全局归一化仍依赖整段统计。把 `bidirectional=False` 单个参数改掉，不能独立证明完整编解码系统因果。
 
 ### N03　SepFormer：双路径注意力与整句上下文
 
@@ -672,11 +753,15 @@ SepFormer 把双路径中的序列模型换为注意力结构。[正式论文](h
 
 最小复现只使用一个固定公开模型的匹配采样率与源数；失败实验延长音频，记录内存和输出槽位变化。注意力读到未来、全局归一化读完整句以及外层分块拼接分别检查。模型名和“低 RTF”不能代替前瞻、首帧时间和长录音峰值内存。
 
+[SepFormer 原文 §2](https://arxiv.org/pdf/2010.13154)使用重叠分块和块内/块间注意力。检查 SpeechBrain 时还要记录归一化、注意力掩码和分块恢复；重叠相加解决边界重构，不自动完成跨块说话人身份跟踪。上述结构检查未包含权重推理。
+
 ### N04　TF-GridNet：频率、时间与多通道输入
 
 [ESPnet `tfgridnet_separator.py`](https://github.com/espnet/espnet/blob/be79590bb2ff26ffb01bc825c5f68cb9418b7f0d/espnet2/enh/separator/tfgridnet_separator.py)明确标为离线 `TFGridNet`，输入可为 `(批, 样本, 麦克风)`，固定 `n_imics`。其短时变换、频率/时间建模和注意力应与[论文](https://doi.org/10.1109/ICASSP49357.2023.10094992)及多通道扩展分开核对。
 
 最小实验从官方配置检查输入标准差归一化、参考麦、输出源数和 STFT 长度；失败实验交换或缺失一个麦克风、改变阵列几何，并用静音检测归一化稳定性。源码的不同版本/变体不能共用一句“TF-GridNet 支持任意阵列”。推理返回多个单通道波形，也不等于每个输出永久绑定一个身份。
+
+固定 ESPnet `forward()` 先计算整个输入的 `torch.std(..., dim=(1,2))`，再直接相除；这里没有零方差下限，不能因后续层带 `eps` 就认为输入归一化也受保护。全零或常量输入有非有限风险，此项仍是静态读码而非 PyTorch 实调。归一化还读取整段时间，因此和双向时序层、全局注意力一起限定其离线接口。
 
 ### N05　S4M：可读的骨干不等于完整训练配方
 
@@ -698,9 +783,13 @@ SepFormer 把双路径中的序列模型换为注意力结构。[正式论文](h
 
 ### N08　SpeakerBeam：注册条件和评估许可
 
-[SpeakerBeam](https://github.com/BUTSpeechFIT/speakerbeam/tree/91af02cc617afa35fedfbdbf32533012cd0a8672)以注册语音指定希望提取的说话人。[2019 论文](https://doi.org/10.1109/JSTSP.2019.2922820)与其时域扩展需要区分。仓库入口为 `src/models/convtasnet_informed.py`、`adapt_layers.py`、`src/datasets/librimix_informed.py`，配方位于 `egs/libri2mix/`。
+[SpeakerBeam](https://github.com/BUTSpeechFIT/speakerbeam/tree/91af02cc617afa35fedfbdbf32533012cd0a8672)以注册语音指定希望提取的说话人。[2019 论文](https://doi.org/10.1109/JSTSP.2019.2922820)与其时域扩展需要区分。固定版本实际入口为 `src/models/td_speakerbeam.py`、`adapt_layers.py`、`src/datasets/librimix_informed.py`，配方位于 `egs/libri2mix/`。
 
-该仓库的 `LICENSE.txt` 为评估协议，限定内部测试、分析和评估，并限制修改与再分发；它不是普通开源许可证，本书不复制代码。最小实验应固定注册语音列表和测试混合，不使用目标测试语句本身当注册条件。失败实验使用另一人、跨设备注册、目标缺席和近似声纹，分别记录目标误抑制与非目标泄漏。
+该仓库的 `LICENSE.txt` 为评估协议，限定内部测试、分析和评估，并限制修改与再分发。它不是普通开源许可证；本书已原样取得8个模型、数据接口及许可/说明文件，作为独立内部评估缓存，不随公开仓库再分发。许可附录仍保留旧文件名 `convtasnet_informed.py`，固定源码树实际已改为 `td_speakerbeam.py`，不能按旧名字登记不存在的入口。
+
+`TimeDomainSpeakerBeam` 通过辅助网络编码注册波形，再在 `TDConvNetInformed` 的指定层施加条件；`base_models_informed.py` 负责双输入前向，`system.py` 连接 Asteroid 训练系统。外部要求 Torch、Asteroid 及其 filterbanks；原 `requirements.txt` 未固定版本，不能把本书已有 Asteroid 提交当作已验证兼容组合。本书没有加载模型、运行前向或准备注册语料。
+
+最小实验应固定注册语音列表和测试混合，不使用目标测试语句本身当注册条件。失败实验使用另一人、跨设备注册、目标缺席和近似声纹，分别记录目标误抑制与非目标泄漏。
 
 ### N09　CSS：跨块输出排列和长时状态
 
@@ -730,7 +819,7 @@ NOTSOFAR-1 的固定源码从 `run_training_css_local.py` 进入 `css/training/t
 
 ### N13　Online SpatialNet：因果网络与跨调用状态
 
-[NBSS 官方仓库](https://github.com/Audio-WestlakeU/NBSS/tree/cc42fc8ad2e6642c09b8f4169a85b4766dc22b7e)中的 [`models/arch/OnlineSpatialNet.py`](https://github.com/Audio-WestlakeU/NBSS/blob/cc42fc8ad2e6642c09b8f4169a85b4766dc22b7e/models/arch/OnlineSpatialNet.py)实现面向静止与移动说话人的多通道长时增强，论文比较在线掩码注意力、Retention 与 Mamba 时序模块。[论文预印本](https://arxiv.org/abs/2403.07675)说明算法设计；源码末尾还给出固定配置的因果前缀自测，用来检查附加未来帧是否改变既有前缀。本书当前环境没有 PyTorch、Mamba 与 CUDA，未实际运行这项自测，不能把源码中的测试代码当作本书已复现实验。训练入口还要结合 `SharedTrainer.py`、`configs/onlineSpatialNet.yaml`、数据加载器和 `generate_rirs.py` 阅读。
+[NBSS 官方仓库](https://github.com/Audio-WestlakeU/NBSS/tree/cc42fc8ad2e6642c09b8f4169a85b4766dc22b7e)中的 [`models/arch/OnlineSpatialNet.py`](https://github.com/Audio-WestlakeU/NBSS/blob/cc42fc8ad2e6642c09b8f4169a85b4766dc22b7e/models/arch/OnlineSpatialNet.py)实现面向静止与移动说话人的多通道长时增强，论文比较在线掩码注意力、Retention 与 Mamba 时序模块。[正式论文](https://doi.org/10.1109/LSP.2024.3418714)（IEEE Signal Processing Letters 31, 2024, 2295～2299）说明算法设计；源码末尾还给出固定配置的因果前缀自测，用来检查附加未来帧是否改变既有前缀。本书当前环境没有 PyTorch、Mamba 与 CUDA，未实际运行这项自测，不能把源码中的测试代码当作本书已复现实验。训练入口还要结合 `SharedTrainer.py`、`configs/onlineSpatialNet.yaml`、数据加载器和 `generate_rirs.py` 阅读。
 
 该仓库为 MIT，但运行依赖 PyTorch、Lightning、`mamba-ssm`、`causal-conv1d` 及相应 CUDA 环境。更重要的是，顶层 `OnlineSpatialNet.forward()` 调用每一层时传入的 `state` 为 `None`，没有把 `CausalConv1d` 等子层的状态作为顶层输入输出暴露。因此“网络是因果的”“整段计算量随长度近似线性”和“任意外层块可连续续算”是三个不同命题；固定版本不能仅凭类名证明第三项。最小实验应比较整段、任意分块且保留状态、每块重置三种输出，再测 251/1000/1024 帧、静止/移动源、麦数变化和无 Mamba/CUDA 的 CPU 路径；没有显式跨调用状态时应记录不等价，而不是用每块真实参考重排掩盖边界差异。
 
@@ -825,6 +914,17 @@ NOTSOFAR-1 的固定源码从 `run_training_css_local.py` 进入 `css/training/t
 - 最后才用明确目标参考计算 SI-SDR/SI-SDRi，并把前处理、iSTFT、输出长度、排列与增益放进记录。未来扰动应检查非因果前缀变化；分窗后要重新测 CSS 排列及长流身份。速度报告包含完整编解码、所有块和状态/数据搬移，不将“没有 RNN”或“可并行”写成已达到实时。
 
 本次完成范围是源码取得、方法阅读、配置对照和静态检查。当前教程环境未安装 PyTorch，依赖构建、模型构造、前向/反向、权重推理、训练、音频质量与运行速度均未执行。仓库另含 TF-Locoformer-NoPE 与 BS-Locoformer，前者已核对 `pos_enc=nope` 的分支与 WHAMR 配置，后者只登记为不同的频带拆分入口；本节没有把未逐段审查的 BS-Locoformer 说成同样完成了方法级验收。
+
+### N16　候选筛选与来源核查边界
+
+检索日期为 2026-09-28，范围是本章已涉及的盲分离、活动引导、神经分离及明确的模型缺口。检索词包含算法名与 `original PDF`、`author code`、`license`，以及 `mfFCA 2023`、`SAM Audio 2025`、`FLASeformer official code`。下列候选经过原文或官方代码入口阅读，但不是统一数据和硬件上的排名。
+
+- **mfFCA 2023**：补单帧模型遗漏的跨帧相关，有官方合成入口和明确评估许可，纳入 [B11](#mffca)。源码已取得，优化尚未运行。
+- **SAM Audio 2025**：已读[原论文](https://arxiv.org/pdf/2512.18099)的条件编码和流匹配设计，以及[官方仓库](https://github.com/facebookresearch/sam-audio)许可。它用文本、视觉和时间跨度条件指定目标，和注册说话人提取不同。代码采用 SAM License，不能写成 MIT；模型取得需另外满足托管条件，项目还依赖多个 Git 来源及完整音频编解码。本书未闭合固定版本、直接依赖和权重条件，因此只留选型线索，没有取得或运行该模型，也不以“无许可证”为排除理由。
+- **FLASeformer 2025**：已读 [Interspeech 正式原文](https://www.isca-archive.org/interspeech_2025/wang25j_interspeech.pdf)的注意力替换及实验节。线性注意力针对长序列计算量，但本书未核成固定官方源码与匹配配置入口；暂不增加正文算法目录或声称可运行，其论文数字也不进入横向排行榜。
+
+经典原文的核查范围同样有限：已读 MNMF2013、FastMNMF2019、TRINICON2006、GSS2018、GPU-GSS2023、Conv-TasNet、DPRNN和SepFormer的上述相关段落。AuxIVA2011与ILRMA2016的正式DOI身份已核，但此次资料核查没有取得两篇全文；本书公式另由固定实现与独立代数复算核对，不把这项源码核对写成“全文原文复现”。其他已锁神经方法沿用各节具体入口及明确的未运行范围，不宣称穷尽整个领域。
+
 
 ## 6. 复现实验的共同记录表
 
