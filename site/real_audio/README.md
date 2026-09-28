@@ -137,6 +137,6 @@ $5.6532246512\times10^{-6}+1.0304891010\times10^{-6}\approx
 四个输出先在临时目录生成并检查，再替换正式音频，最后写清单。若替换期间中断，
 必须重新执行 `--prepare` 和 `--check`，不能把部分更新资产发布到站点。
 
-实现见 [real_recordings.py](../core/real_recordings.py) 和
-[prepare_real_recordings.py](../examples/prepare_real_recordings.py)；固定输入、原始坐标、
+实现见 [real_recordings.py](https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch02/core/real_recordings.py) 和
+[prepare_real_recordings.py](https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch02/examples/prepare_real_recordings.py)；固定输入、原始坐标、
 处理参数、逐文件摘要、量化口径和十个时间块的完整结果见 [MANIFEST.json](MANIFEST.json)。

@@ -150,11 +150,55 @@ REAL_AUDIO_WAVS = {
     "demand_nriver_mean02_10s.wav", "demand_nriver_mean16_10s.wav",
 }
 REAL_AUDIO_FILES = REAL_AUDIO_WAVS | {"MANIFEST.json", "ATTRIBUTION.txt", "LICENSE.txt", "README.md"}
+REAL_AUDIO_SOURCE_LINKS = {
+    "../core/real_recordings.py": REPOSITORY_BLOB_BASE + "codes/chapters/ch02/core/real_recordings.py",
+    "../examples/prepare_real_recordings.py": REPOSITORY_BLOB_BASE + "codes/chapters/ch02/examples/prepare_real_recordings.py",
+}
 ROOM_AUDIO_EXTRA = {"MANIFEST.json", "ROOM_RESULTS.png", "RESULTS.json"}
 TRACKING_AUDIO_WAVS = {"source.wav": 1, "array_noisy.wav": 2}
 MOVING_AUDIO_WAVS = {"source.wav": 1, "static_array.wav": 2, "moving_array.wav": 2}
 GSS_AUDIO_WAVS = {"source_1.wav": 1, "source_2.wav": 1, "mixture.wav": 2,
                   "enhanced_correct.wav": 1, "enhanced_missed.wav": 1}
+
+
+def publish_real_audio_readme(source_text, destination):
+    """Retain local media links while making chapter code links work on the site."""
+    import markdown
+
+    published = source_text
+    for local, remote in REAL_AUDIO_SOURCE_LINKS.items():
+        token = f"]({local})"
+        if published.count(token) != 1:
+            raise ValueError(f"真实录音说明缺少唯一的源码链接：{local}")
+        published = published.replace(token, f"]({remote})")
+
+    class Links(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.hrefs = []
+
+        def handle_starttag(self, tag, attrs):
+            if tag == "a":
+                self.hrefs.extend(value for key, value in attrs if key == "href")
+
+    links = Links()
+    links.feed(markdown.markdown(published, extensions=["tables"]))
+    for href in links.hrefs:
+        parsed = urlsplit(href)
+        if parsed.netloc and not parsed.scheme:
+            raise ValueError(f"真实录音发布说明含无协议外部链接：{href}")
+        if parsed.scheme:
+            if parsed.scheme not in ALLOWED_LINK_SCHEMES:
+                raise ValueError(f"真实录音发布说明含不安全链接：{href}")
+            continue
+        if not parsed.path:
+            continue
+        target = (destination / unquote(parsed.path)).resolve()
+        if (parsed.path.startswith("/") or
+                not target.is_relative_to(destination.parent.resolve()) or
+                not target.is_file()):
+            raise ValueError(f"真实录音发布说明含失效的本地链接：{href}")
+    return published
 
 
 def stage_real_audio(source, destination):
@@ -176,7 +220,11 @@ def stage_real_audio(source, destination):
     for name in sorted(REAL_AUDIO_FILES):
         if (source / name).is_symlink():
             raise ValueError("真实录音发布文件不能为符号链接")
-        shutil.copy2(source / name, destination / name)
+        if name != "README.md":
+            shutil.copy2(source / name, destination / name)
+    published_readme = publish_real_audio_readme(
+        (source / "README.md").read_text(encoding="utf-8"), destination)
+    (destination / "README.md").write_text(published_readme, encoding="utf-8")
     return REAL_AUDIO_FILES.copy()
 
 
@@ -348,6 +396,7 @@ def source_digest():
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "heading_aliases.py",
               ROOT / "scripts" / "legacy_sequential_anchors.json",
+              ROOT / "scripts" / "code_layout.py",
               ROOT / "scripts" / "make_figures.py",
               ROOT / "scripts" / "make_aec_figures.py", ROOT / "requirements.txt"]
     for path in paths:

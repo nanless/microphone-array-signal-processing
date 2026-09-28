@@ -6,7 +6,7 @@
 
 ## 官方源码与用途
 
-`examples/compare_online_wpe_reference.py` 中的 `NumpyOnlineWPE011` 是对 nara-wpe 0.0.11
+`codes/chapters/ch07/examples/compare_online_wpe_reference.py` 中的 `NumpyOnlineWPE011` 是对 nara-wpe 0.0.11
 `OnlineWPE` 和正数求逆保护行为的精简适配，保留缓冲顺序及更新口径，用于版本对照而非独立推导证明。
 该改编范围保留 Communications Engineering Group, Paderborn University 的 2018 年版权与
 [完整 MIT 声明](../ch07/licenses/nara_wpe_MIT.txt)；脚本注明来源、改编内容和固定版本。
@@ -212,7 +212,7 @@ HARK 不属于 Git 项目计数，另见 [ARCHIVE_SOURCES.lock.json](ARCHIVE_SOU
 | [Array-Response-Simulator](https://github.com/polarch/Array-Response-Simulator/tree/1ebfb28296736c52691c63e1aa336a7bd0d6216b) | BSD-3-Clause；LICENSE、README、sphModalCoeffs及6个Bessel/Hankel函数 | 模态计算依赖闭合；未包含完整空间模拟器或测量；directional端点头注差异见研究 |
 | [iDeepPE](https://github.com/CSeIn/iDeepPE/tree/c2cdc26ddafd33bf3bda45640c06febef9092365) | 未建立明确代码许可；仅固定索引 | 不获取/训练/推理；模型和CHiME-4/DEMAND/VCTK数据许可分别核查 |
 
-SOF 的[审查程序](../ch05/examples/audit_sof_tdfb_design.py)与[报告](../ch05/reports/sof_tdfb_design_audit.json)读取未修改的固定源码，核对 normalized sinc 参数和 WNG 分母；数学反例是独立选择的标量/两频配置，没有执行官方 MATLAB 设计、生成 FIR 或运行固件。官网旧参数与固定版本默认值分别保存。其他外部方法的实际运行、提取调用、兼容性问题与尚未构建状态见[空间研究](research/01_spatial_and_tracking.md)，不能由78项源码核验通过推断78套算法已正确运行。
+SOF 的[审查程序](../ch05/examples/audit_sof_tdfb_design.py)与[报告](../ch05/reports/sof_tdfb_design_audit.json)读取未修改的固定源码，核对 normalized sinc 参数和 WNG 分母；数学反例是独立选择的标量/两频配置，没有执行官方 MATLAB 设计、生成 FIR 或运行固件。官网旧参数与固定版本默认值分别保存。其他外部方法的实际运行、提取调用、兼容性问题与尚未构建状态见[空间研究](research/01_spatial_and_tracking.md)；源码核验通过不能证明其中各套算法已正确运行。
 
 ### 第6章评测研究补充
 

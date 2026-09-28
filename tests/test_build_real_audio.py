@@ -24,7 +24,8 @@ class RealAudioPublishingTests(unittest.TestCase):
         self.source = self.root / "codes/chapters/ch02/real_audio"
         self.site = self.root / "site"
         shutil.copytree(ROOT / "codes/chapters/ch02/real_audio", self.source)
-        shutil.copytree(self.source, self.site / "real_audio")
+        self.site.mkdir()
+        build_site.stage_real_audio(self.source, self.site / "real_audio")
         for name in ("codes/chapters/ch02/core/real_recordings.py", "codes/chapters/ch02/examples/prepare_real_recordings.py"):
             target = self.root / name
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -62,8 +63,38 @@ class RealAudioPublishingTests(unittest.TestCase):
         destination = self.root / "staged"
         files = build_site.stage_real_audio(self.source, destination)
         self.assertEqual(files, NAMES | {"MANIFEST.json", "README.md", "LICENSE.txt", "ATTRIBUTION.txt"})
-        for name in files:
+        for name in files - {"README.md"}:
             self.assertEqual((self.source / name).read_bytes(), (destination / name).read_bytes())
+        original = (self.source / "README.md").read_text(encoding="utf-8")
+        published = (destination / "README.md").read_text(encoding="utf-8")
+        for old, new in build_site.REAL_AUDIO_SOURCE_LINKS.items():
+            self.assertIn(f"]({old})", original)
+            self.assertNotIn(f"]({old})", published)
+            self.assertIn(f"]({new})", published)
+        self.assertIn("](ATTRIBUTION.txt)", published)
+        self.assertIn("](demand_nriver_ch01_10s.wav)", published)
+
+    def test_missing_or_similar_source_link_cannot_be_published(self):
+        readme = self.source / "README.md"
+        original = readme.read_text(encoding="utf-8")
+        readme.write_text(original.replace("](../core/real_recordings.py)",
+                                           "](../core/real_recording.py)"), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "缺少唯一的源码链接"):
+            build_site.stage_real_audio(self.source, self.root / "missing-link")
+        readme.write_text(original + "\n[近似文件](../core/real_recordings.py.bak)\n", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "失效的本地链接"):
+            build_site.stage_real_audio(self.source, self.root / "similar-link")
+
+    def test_quality_gate_rejects_wrong_code_url_and_other_broken_local_link(self):
+        published = self.site / "real_audio/README.md"
+        original = published.read_text(encoding="utf-8")
+        published.write_text(original.replace("/core/real_recordings.py)",
+                                              "/core/real_recordings.py.bak)"), encoding="utf-8")
+        self.assertTrue(any("发布说明与定向转换后的源文件不符" in issue for issue in self.errors()))
+        published.write_text(original + "\n[缺失的音频](missing.wav)\n", encoding="utf-8")
+        self.assertTrue(any("失效的本地链接：missing.wav" in issue for issue in self.errors()))
+        published.write_text(original + "\n[不安全链接](javascript:alert(1))\n", encoding="utf-8")
+        self.assertTrue(any("不安全链接" in issue for issue in self.errors()))
 
     def test_staging_rejects_path_injection(self):
         self.mutate_record("file", "../escape.wav")

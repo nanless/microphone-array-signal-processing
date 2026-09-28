@@ -11,7 +11,7 @@
       "license": "MIT",
       "fetch_enabled": true,
       "scope": "room simulation, STFT, DOA, beamforming, BSS, and general-purpose real-valued RLS/BlockRLS adaptive filters",
-      "note": "The book's optional reproduction environment and this source revision are pinned to 0.10.0. Current main was separately inspected at ff7d61f219e4eb41489963c4bb5f57bea5bc2c69. CSSM/WAVES/TOPS static indexing concerns are documented in codes/research/01_spatial_and_tracking.md; acquisition is not numerical validation.",
+      "note": "The book's optional reproduction environment and this source revision are pinned to 0.10.0. Current main was separately inspected at ff7d61f219e4eb41489963c4bb5f57bea5bc2c69. CSSM/WAVES/TOPS static indexing concerns are documented in codes/chapters/ch00/research/01_spatial_and_tracking.md; acquisition is not numerical validation.",
       "acquisition": "independent_source_checkout",
       "entrypoints": [
         "pyroomacoustics/room.py",

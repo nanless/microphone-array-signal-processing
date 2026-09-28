@@ -8,6 +8,8 @@ Appendix B also has [18 separate synthetic room WAVs](codes/chapters/appendix_b/
 
 Two further independent synthetic sets provide [five guided-separation WAVs and intermediate state](codes/chapters/ch08/gss_audio/MANIFEST.json) and [three moving-source WAVs with trajectory truth](codes/chapters/ch09/moving_audio/MANIFEST.json). Neither set is included in the main 109 files or represents recorded speech or device performance.
 
+Chapter 9 also has [two separately catalogued continuous-motion WAVs and frame-level observations](codes/chapters/ch09/tracking_audio/MANIFEST.json). GCC-PHAT observations, missing-data gating, and Kalman tracking are recomputed from exported PCM, with separate state and availability timestamps. These WAVs belong to neither the 109-file main collection nor the three-file moving-source set. Run `.venv/bin/python -m codes.chapters.ch09.examples.chapter09_tracking_audio --check` for a read-only check.
+
 Chapter 6 also reports a [SpeexDSP AEC interface experiment](codes/chapters/ch00/research/02_aec_wpe_separation.md#aec) on one real Microsoft AEC Challenge loopback/microphone pair, with zero-reference and misaligned-reference controls. The crowd recordings are not redistributed here; the measured input/output power change is neither clean-component ERLE nor a device-performance ranking.
 
 Additional reproducible studies cover a [common-input beamformer comparison](codes/chapters/ch05/beamformer_common_input_demo.py), [pinned AuxIVA blind estimation](codes/chapters/ch08/examples/reproduce_auxiva_reference.py), [GSS activity-label errors](codes/chapters/ch08/gss_activity_error_demo.py), [AEC interfaces on one synthetic known-component input](codes/chapters/ch06/examples/aec_same_input_truth.py), and [online WPE temporal behavior](codes/chapters/ch07/wpe_temporal_contract.py). Their scopes are respectively a single-frequency model, mathematical synthetic mixtures, a fixed-density E-step, synthetic PCM, and complex STFT data; they do not rank real-speech or device performance.
@@ -40,7 +42,7 @@ The [source research handbook](codes/chapters/ch00/research/README.md) explains 
 | `codes/chapters/*/reports/` | Small-scale run reports beside their algorithm chapters, separate from source acquisition and full paper benchmarks |
 | `scripts/` | Plotting and build scripts (`make_figures.py`, `make_aec_figures.py`, `build_site.py`, `build_pdf.py`; see `scripts/README.md`) |
 | `site/` | 20 pages: 14 tutorial pages (including the homepage) and 6 handbook pages under `research/`; reproducible build output |
-| `dist/` | Combined PDF (`microphone-array-tutorial.pdf`) and HTML; the PDF has 638 bookmarks: 14 top-level, 119 second-level and 505 third-level |
+| `dist/` | Current combined PDF and rebuildable HTML; the PDF has 638 bookmarks: 14 top-level, 119 second-level and 505 third-level. Two historical snapshots are explained in the [directory guide](dist/README.md) |
 
 ## Chapters
 
@@ -126,6 +128,3 @@ External formulas, algorithms, datasets, and standards should link to a DOI, sta
 - Core equations that are referenced across sections use MathJax `\tag{chapter-index}` labels and are cited as “see Eq. (5-1)”.
 - Abbreviations spelled out on first use; dB uses 10log (power) / 20log (amplitude).
 - Benchmark numbers always carry conditions and sources; simulation numbers carry implementation notes.
-
-
-Chapter 9 adds two separately catalogued synthetic moving-source WAVs in `codes/chapters/ch09/tracking_audio/`. GCC-PHAT observations, missing-data gating and Kalman tracking are recomputed from exported PCM, with separate state and availability timestamps. These two files are separate from both the 109-file main collection and the earlier three-file moving-source set. Run `.venv/bin/python -m codes.chapters.ch09.examples.chapter09_tracking_audio --check` for a read-only check.

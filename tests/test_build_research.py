@@ -10,7 +10,7 @@ from pathlib import Path
 from unittest import mock
 from urllib.parse import unquote, urlsplit
 
-from scripts import build_pdf, build_site
+from scripts import build_pdf, build_site, quality_check
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -243,6 +243,19 @@ class ResearchBuildTest(unittest.TestCase):
                     with mock.patch.object(Path, "read_bytes", read):
                         self.assertNotEqual(before, builder.source_digest())
 
+    def test_site_digests_include_audio_layout_mapping(self):
+        layout = ROOT / "scripts/code_layout.py"
+        original_read = Path.read_bytes
+        for digest in (build_site.source_digest, quality_check.site_source_digest):
+            before = digest()
+
+            def read(path):
+                return original_read(path) + (b"\nchanged" if path == layout else b"")
+
+            with self.subTest(digest=digest.__qualname__):
+                with mock.patch.object(Path, "read_bytes", read):
+                    self.assertNotEqual(before, digest())
+
     def test_pdf_same_chapter_fragment_gets_chapter_prefix(self):
         result = build_pdf.rewrite_repository_links(
             '<a href="#sec-4-9">MDL</a><a href="#sec-1">章首</a>',
@@ -319,7 +332,14 @@ class ResearchBuildTest(unittest.TestCase):
                                 "MANIFEST.json", "README.md", "ATTRIBUTION.txt", "LICENSE.txt",
                             })
                             self.assertTrue(target.is_file())
-                            self.assertEqual(target.read_bytes(), (ROOT / "codes/chapters/ch02/real_audio" / target.name).read_bytes())
+                            if target.name == "README.md":
+                                published = target.read_text(encoding="utf-8")
+                                for old, remote in quality_check.EXPECTED_REAL_AUDIO_SOURCE_LINKS.items():
+                                    self.assertNotIn(f"]({old})", published)
+                                    self.assertIn(f"]({remote})", published)
+                            else:
+                                self.assertEqual(target.read_bytes(),
+                                                 (ROOT / "codes/chapters/ch02/real_audio" / target.name).read_bytes())
                             self.assertFalse(uri.fragment)
                             continue
                         if target.parent in {(output / "gss_audio").resolve(),

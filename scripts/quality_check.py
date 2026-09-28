@@ -921,7 +921,7 @@ def site_source_digest():
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
               ("build_site.py", "heading_aliases.py", "legacy_sequential_anchors.json",
-               "make_figures.py", "make_aec_figures.py")]
+               "code_layout.py", "make_figures.py", "make_aec_figures.py")]
     paths.append(ROOT / "requirements.txt")
     for path in paths:
         digest.update(path.relative_to(ROOT).as_posix().encode("utf-8"))
@@ -1107,6 +1107,10 @@ EXPECTED_REAL_AUDIO_CHANNELS = {
 EXPECTED_REAL_AUDIO_FILES = set(EXPECTED_REAL_AUDIO_CHANNELS) | {
     "MANIFEST.json", "ATTRIBUTION.txt", "LICENSE.txt", "README.md",
 }
+EXPECTED_REAL_AUDIO_SOURCE_LINKS = {
+    "../core/real_recordings.py": "https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch02/core/real_recordings.py",
+    "../examples/prepare_real_recordings.py": "https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch02/examples/prepare_real_recordings.py",
+}
 
 
 def check_real_audio(errors):
@@ -1119,8 +1123,49 @@ def check_real_audio(errors):
                 fail(errors, "真实录音文件或许可集合不符")
         for name in EXPECTED_REAL_AUDIO_FILES:
             source, published = root / name, SITE / "real_audio" / name
-            if source.is_symlink() or published.is_symlink() or source.read_bytes() != published.read_bytes():
+            if (source.is_symlink() or published.is_symlink() or
+                    (name != "README.md" and source.read_bytes() != published.read_bytes())):
                 fail(errors, f"真实录音站点副本不符：{name}")
+        source_readme = (root / "README.md").read_text(encoding="utf-8")
+        published_readme = (SITE / "real_audio/README.md").read_text(encoding="utf-8")
+        expected_readme = source_readme
+        for local, remote in EXPECTED_REAL_AUDIO_SOURCE_LINKS.items():
+            token = f"]({local})"
+            if source_readme.count(token) != 1:
+                fail(errors, f"真实录音源说明缺少唯一源码链接：{local}")
+            expected_readme = expected_readme.replace(token, f"]({remote})")
+        if published_readme != expected_readme:
+            fail(errors, "真实录音发布说明与定向转换后的源文件不符")
+
+        import markdown
+
+        class ReadmeLinks(HTMLParser):
+            def __init__(self):
+                super().__init__()
+                self.hrefs = []
+
+            def handle_starttag(self, tag, attrs):
+                if tag == "a":
+                    self.hrefs.extend(value for key, value in attrs if key == "href")
+
+        readme_links = ReadmeLinks()
+        readme_links.feed(markdown.markdown(published_readme, extensions=["tables"]))
+        for href in readme_links.hrefs:
+            parsed = urlparse(href)
+            if parsed.netloc and not parsed.scheme:
+                fail(errors, f"真实录音发布说明含无协议外部链接：{href}")
+                continue
+            if parsed.scheme:
+                if parsed.scheme not in ALLOWED_LINK_SCHEMES:
+                    fail(errors, f"真实录音发布说明含不安全链接：{href}")
+                continue
+            if not parsed.path:
+                continue
+            target = ((SITE / "real_audio") / unquote(parsed.path)).resolve()
+            if (parsed.path.startswith("/") or
+                    not target.is_relative_to(SITE.resolve()) or
+                    not target.is_file()):
+                fail(errors, f"真实录音发布说明含失效的本地链接：{href}")
         attribution = (root / "ATTRIBUTION.txt").read_text(encoding="utf-8")
         for required in ("Joachim Thiemann", "Nobutaka Ito", "Emmanuel Vincent",
                          "1227121", "creativecommons.org/licenses/by-sa/3.0"):

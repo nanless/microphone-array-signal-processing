@@ -10,6 +10,8 @@
 
 另有[活动导引 GSS 教学链](codes/chapters/ch08/gss_audio/MANIFEST.json)的 5 个 WAV 和可复算状态，以及[自由场移动声源](codes/chapters/ch09/moving_audio/MANIFEST.json)的 3 个 WAV 与轨迹真值，均使用独立清单，不计入主 109 个样本。它们只验证指定的合成模型，不代表真实语音或设备表现。
 
+第 9 章还有[两份连续运动合成音频与逐帧观测清单](codes/chapters/ch09/tracking_audio/MANIFEST.json)：从导出的 PCM 重新计算 GCC-PHAT、缺测门控和 Kalman 追踪，分别记录状态时刻与数据可用时刻。这两份 WAV 不计入主 109 个样本，也不与上述三份移动声源音频混算；运行 `.venv/bin/python -m codes.chapters.ch09.examples.chapter09_tracking_audio --check` 可只读核对。
+
 另有 DEMAND 河流场景的真实 16 通道录音摘录及 3 个派生 WAV，共 4 个文件，独立标注 CC BY-SA 3.0 数据许可；实验只分析噪声功率与通道相关性。
 
 第 6 章还记录了一对 Microsoft AEC Challenge 真实播放环回/麦克风录音上的 [SpeexDSP AEC 接口实验](codes/chapters/ch00/research/02_aec_wpe_separation.md#aec)，含零参考和错位参考对照。该众包录音未随仓库再分发；报告的是本片段输入/输出功率变化，不是真值 ERLE 或设备性能排名。
@@ -44,7 +46,7 @@ English version: [README_EN.md](README_EN.md)
 | `codes/chapters/*/reports/` | 随算法所属章保存的小规模运行报告；与源码获取状态、论文全量评测分开 |
 | `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
 | `site/` | 20 个网页：14 个教程页（含首页）及 `research/` 下 6 个研究手册页；构建产物，可再生 |
-| `dist/` | 合订 PDF（`microphone-array-tutorial.pdf`）与合订 HTML；PDF 含 14 个顶级、119 个二级、505 个三级书签，共 638 个 |
+| `dist/` | 当前合订 PDF 与可再生的合订 HTML；PDF 含 14 个顶级、119 个二级、505 个三级书签，共 638 个；两份历史快照另见[目录说明](dist/README.md) |
 
 ## 章节导览
 
@@ -80,6 +82,7 @@ python3 -m venv .venv
 .venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_spatial
 .venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_enhancement
 .venv/bin/python -m codes.chapters.ch06.aec_advanced_exercises
+.venv/bin/python -m codes.chapters.ch06.aec_algorithm_minicases
 .venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 
@@ -128,6 +131,3 @@ HARKTOOL5 的官方源码归档另按 SHA-256 锁定和取得，使用独立的 
 - 数字凡涉榜单均标注条件与出处，仿真数字注明实现口径。
 - 外部公式、算法和数据优先链接 DOI、标准组织或官方页面；引用时核对标题、作者、年份和具体表/节，不能只检查链接能否打开。
 - 本仓库教学代码与外部参考实现的边界见 `codes/chapters/README.md`；第三方代码、模型和数据的许可证分别核对。
-
-
-第9章另有2份连续运动合成音频与[逐帧观测清单](codes/chapters/ch09/tracking_audio/MANIFEST.json)，从PCM实际计算GCC-PHAT、缺测门控和Kalman追踪；这两份文件与主109份及原移动声源3份分开计数。运行`.venv/bin/python -m codes.chapters.ch09.examples.chapter09_tracking_audio --check`可只读核对。
