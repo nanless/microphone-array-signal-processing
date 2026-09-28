@@ -82,6 +82,8 @@ PipeWire 官方开发仓库位于 freedesktop GitLab，`PipeWire/pipewire` 是�
 
 运行 `python3 codes/chapters/ch10/sro_closed_loop_demo.py` 即得到参数、估计、缺口和逐段 JSON；[独立单元测试](../../../../tests/test_codes_sro_closed_loop.py)核对解析斜率、2 ms 截距、单点缺样、跨块相位及 257/509 样本分块一致性。这里是无时间戳噪声、恒定速率且合成波形可解析的教学闭环；MSE 还包括线性插值误差，不可解释为纯时间残差。本实验不验证实际声卡、盲音频估计、抗混叠、动态比例更新或长时队列稳定。上述 libsamplerate 实验验证真实 C 接口的有状态调用，但使用已知比率；两者共同仍不能替代设备验收。
 
+2026-09-23 的本机环境核查只枚举设备，未打开麦克风或录制音频。`system_profiler SPAudioDataType -json` 在主机侧列出一台标称 48 kHz、单输入通道的“MacBook Air 麦克风”和一台内建扬声器；受限沙箱中的同一命令曾返回空列表，因此不能用该空结果断言没有设备。CoreAudio 再次枚举到这一输入和输出，其 `kAudioDevicePropertyClockDomain` 值相同且非零。按 [Apple 的时钟域说明](https://developer.apple.com/documentation/coreaudio/audiohardwareclock/clockdomain)，同一非零域的设备可在硬件上同步；这组内建设备不能充当两个已确认独立的输入时钟。本机当时缺少第二台独立输入设备，因而没有测得可报告的真实设备相对 SRO 或 ppm 值。实际测量还需核查两台设备的时钟域、驱动或聚合设备是否隐式重采样，并保存两路原始帧序号与时间戳，再从多个时间窗区分初始错位、稳定斜率和丢样阶跃。
+
 锁定版 WebRTC AEC3 的 [`render_delay_controller.cc`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/render_delay_controller.cc)提供 `HasClockdrift()`，`block_processor.cc` 将该状态传给回声路径控制。检测到延迟轨迹变化、调节参考缓冲或重置路径状态，不等于已经把两个独立设备时钟重采样到同一速率。若产品跨时钟域采集与播放，应在输入时间戳、长期参考队列和补偿前后残余上验证 SRO 闭环；本书已运行的已知比率重采样实验也不替代这一设备验收。
 
 ### I05：SpeexDSP 的流式转换与回声缓冲
@@ -512,7 +514,7 @@ XMOS `lib_voice` 的底层依赖不是任意最新版数学库。锁定的 [`lib
 
 ### I28：FastEnhancer 的显式流式状态与单通道降噪
 
-FastEnhancer 用于单通道神经语音增强。[官方固定 README](https://github.com/aask1357/fastenhancer/blob/f85223bd546b27f39dc0744e0310dcd246f750a4/README.md)将项目论文标为 ICASSP 2026 已接收，并明确其模型按噪声抑制训练；本文只核对固定代码的接口，不转录跨数据集性能或实时性排名。源码提交为 `f85223bd546b27f39dc0744e0310dcd246f750a4`，已按[MIT 许可](https://github.com/aask1357/fastenhancer/blob/f85223bd546b27f39dc0744e0310dcd246f750a4/LICENSE)获取至 `codes/chapters/ch00/upstream/_downloads/fastenhancer/`，核对日期为 2026-09-26。
+FastEnhancer 用于单通道神经语音增强。[官方固定 README](https://github.com/aask1357/fastenhancer/blob/f85223bd546b27f39dc0744e0310dcd246f750a4/README.md)说明其模型按噪声抑制训练；本文只核对固定代码的接口，不转录跨数据集性能或实时性排名。源码提交为 `f85223bd546b27f39dc0744e0310dcd246f750a4`，已按[MIT 许可](https://github.com/aask1357/fastenhancer/blob/f85223bd546b27f39dc0744e0310dcd246f750a4/LICENSE)获取至 `codes/chapters/ch00/upstream/_downloads/fastenhancer/`，核对日期为 2026-09-26。
 
 **模型算什么。** 默认实现 `models/fastenhancer/default/model.py` 中，`RNNFormerBlock` 组合时间递归状态与频率注意力；`ONNXModel.forward` 对实部/虚部表示的频谱先做幅度压缩，再预测复数掩码并执行复数乘法，最后还原压缩。它返回增强频谱和更新后的模型缓存。目录中还有 `noncausal` 等变体，不能只看到项目名称含 streaming 就把每种配置都当成相同因果结构。[固定模型源码](https://github.com/aask1357/fastenhancer/blob/f85223bd546b27f39dc0744e0310dcd246f750a4/models/fastenhancer/default/model.py)
 
@@ -524,7 +526,7 @@ FastEnhancer 用于单通道神经语音增强。[官方固定 README](https://g
 
 本次只读取并保存了源码，没有取得权重、导出 ONNX 或执行推理，所以没有本书测得的质量分、RTF 或音频输出。该接口没有播放参考，也没有 WPE 的延迟多通道预测器；不能将它计作 AEC 或 WPE 实现。将其接在波束输出后作单通道 NS 是可研究的系统组合，仍须独立检查前端输出分布、目标失真和端到端任务指标。
 
-2026-09-28再次核对[论文原始记录](https://arxiv.org/abs/2509.21867)及作者项目。这里保留固定 README 可证的“ICASSP 2026 已接收”身份，不猜测正式卷页或 DOI。另一个项目对其48 kHz发布配置做了专用 C 推理移植，见[I31](#faster-enhancer-runtime)；原模型论文的16 kHz实验、这里默认16 kHz脚本和移植的48 kHz配置必须分开，不能混成同一个速度/质量基准。
+2026-09-29 核对[论文原始记录](https://arxiv.org/abs/2509.21867)和 [ICASSP 2026 官方会议节目](https://www.cmsworkshops.com/ICASSP2026/view_paper.php?PaperNum=3646&bare=1)：FastEnhancer 已列入 SLP-P2.8，节目给出 2026-05-05 的报告场次。固定 README 的“已接收”是该源码快照的历史措辞；这里不据此猜测正式卷页或 DOI。另一个项目对其 48 kHz 发布配置做了专用 C 推理移植，见[I31](#faster-enhancer-runtime)；原模型论文的 16 kHz 实验、这里默认 16 kHz 脚本和移植的 48 kHz 配置必须分开，不能混成同一个速度/质量基准。
 
 
 <a id="i29stkdelayl"></a>

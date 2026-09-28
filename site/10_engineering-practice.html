@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 10 章 · 工程实现、评测与产业实践 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="d78e3fba4a0f"><style>
+<meta name="source-digest" content="8ad5529242aa"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -338,7 +338,8 @@ c_v&=r_v+s_v.
 \end{aligned}
 \tag{10-1}
 $$</p>
-<p>源节点的就绪时刻由采集或输入协议给出。两个分支只有在硬件资源允许时才能同时运行；共享单线程时还要把线程空闲时刻加入启动约束。若音频在 32 ms 就绪，两个可并行分支分别用 4、7 ms，汇合后再用 3 ms，完成时刻是 $32+\max(4,7)+3=42$ ms。共享等待 32 ms 只计一次；若两分支在同一线程顺序执行，则变成 46 ms，详见 E10-21。</p>
+<p>源节点的就绪时刻由采集或输入协议给出。两个分支只有在硬件资源允许时才能同时运行；共享单线程时还要把线程空闲时刻加入启动约束。</p>
+<p>若音频在 32 ms 就绪，两个可并行分支分别用 4、7 ms，汇合后再用 3 ms，完成时刻是 $32+\max(4,7)+3=42$ ms。共享等待 32 ms 只计一次；若两分支在同一线程顺序执行，则变成 46 ms，详见 E10-21。</p>
 <p>按因果路径划分各段，确认没有重复计入同一等待后，可把第 $p$ 条路径写成</p>
 <p>$$
 \begin{aligned}
@@ -369,7 +370,8 @@ $$</p>
 <p>回调与工作线程的时钟、缓冲单位和丢帧策略必须写清。这是一种参考结构，不表示所有实时 DSP 都只能在回调外执行；有界、预分配且能满足期限的小型处理也可以在回调中完成。</p>
 <p>环形缓冲已满时，系统需要事先选择“丢最旧块”“丢新块”或“降级处理”。任何一种策略都会改变输出：丢块破坏连续状态，等待会阻塞采集，积压则增大延迟。本书的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/core/engineering.py"><code>RingBuffer</code></a> 采用“丢最旧样本”的可见基线，并累计 <code>dropped</code>；它用来说明容量和溢出语义，不是无锁实时队列。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/core/engineering.py"><code>simulate_deadline_queue</code></a> 用一条串行工作队列区分三件事：处理完成晚于本帧期限、队列达到高水位、容量已满而丢帧。平均 RTF 小于 1 仍可能出现其中任何一种。正式设备还要记录<strong>播放下溢</strong>（下一块音频未及时送到设备，underrun）和<strong>采集上溢</strong>（采集数据未及时取走，overrun）；驱动常把两者合称 <code>xrun</code>。线程优先级、CPU 频率策略和并发负载也应一同记录。</p>
-<p>同一时刻的事件需要明确先后：本书模型先释放已经完成的帧，再接收这一时刻到来的新帧；恰在期限完成算准时。若到达时刻用乘法、完成时刻用浮点累加，舍入差可能把同一边界误判为队列仍满。教学模拟内部因此用输入浮点数对应的精确有理数比较事件，不加人为宽限；E10-16 用整数时钟刻度独立复核。这种离线记账方式不用于实时音频回调。</p>
+<p>同一时刻的事件需要明确先后：本书模型先释放已经完成的帧，再接收这一时刻到来的新帧；恰在期限完成算准时。</p>
+<p>若到达时刻用乘法、完成时刻用浮点累加，舍入差可能把同一边界误判为队列仍满。教学模拟内部因此用输入浮点数对应的精确有理数比较事件，不加人为宽限；E10-16 用整数时钟刻度独立复核。这种离线记账方式不用于实时音频回调。</p>
 <p>Linux 的 ALSA（Advanced Linux Sound Architecture，先进 Linux 声音架构）还区分具体恢复原因：<code>-EPIPE</code> 表示上溢或下溢，<code>-ESTRPIPE</code> 与挂起有关，<code>-ENODEV</code> 可表示设备移除；某些回声参考设备在关联播放未启动时会返回 <code>-ENODATA</code>。这些状态不能统一解释为“再读一次”。恢复后要记录丢样，并通知依赖连续历史的 AEC、重采样器及后端。<a href="https://www.alsa-project.org/alsa-doc/alsa-lib/pcm.html" title="citation">ALSA PCM 官方接口说明</a></p>
 <p>参考接口可按下表检查：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -458,6 +460,8 @@ $$</p>
 <p>表中的 GSS 三行是一条有先后依赖的教学子链：活动标注约束掩码，掩码与多通道复系数形成 SCM，解析波束再用 SCM 或导向信息计算权重。若实现直接从网络预测 SCM，第二行的输入会改变；仍须记录实际取点，不能把三个中间量统称为“增强结果”。</p>
 <span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-2">10.2 拾音、同步与增益</h2>
 <p>麦克风选型至少要看自噪声、声学过载点、灵敏度、频响和通道一致性。单个器件的典型值不能代替整机测试：声孔、密封、挡板、电源噪声和装配偏差都会改变阵列响应。</p>
+<p>声学过载点（Acoustic Overload Point，AOP）是在规定测试条件下，输入声压使麦克风输出达到指定失真阈值时的声压级。比较不同器件的 AOP，应同时核对测试频率、供电条件、失真阈值和声压级单位；仅凭两个数值不能判断整机在大声压下的可用范围。</p>
+<p>例如 <a href="https://product.tdk.com/en/search/sw_piezo/mic/mems-mic/info?part_no=MMICT4078-00-908" title="citation">TDK MMICT4078-00-908 官方产品页的电声参数</a>将该器件的 AOP 列为 10% 总谐波失真（THD）时的 135 dB SPL，同时另列出 1 kHz、1% THD 时的 130 dB SPL；<a href="https://www.analog.com/en/resources/app-notes/an-1328.html" title="citation">Analog Devices《AN-1328》的 THD 与线性度段</a>则说明 ADMP411 单麦在 131 dB SPL 达到 10% THD。这些是具体器件及其测试条件，不是所有麦克风统一的失真阈值。</p>
 <p>脉冲密度调制（Pulse-Density Modulation，PDM）、芯片间音频总线（Inter-IC Sound，I²S）和时分复用（Time-Division Multiplexing，TDM）是常见数字接口，但一根数据线能承载多少通道取决于器件、时钟和控制器配置，不能只按接口名称判断。阵列处理还要确认通道是否共享采样时钟、帧同步是否一致，以及驱动是否会独立丢样。</p>
 <p>16 位、24 位和 32 位浮点描述的是数字样本格式。32 位浮点便于保留中间动态范围，不能提高麦克风的声学过载点，也不能消除模拟前端的底噪或削波。某些录音设备以浮点文件保存多增益通路合成后的信号，但这仍不等于“无需增益设计”。</p>
 <span id="sec-6" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-2-1">10.2.1 SRO：先区分初始时差和采样率偏移</h3>
@@ -509,7 +513,8 @@ y[k]&=(1-\eta_k)x[q_k]\\
 \end{aligned}
 \tag{10-5}
 $$</p>
-<p>末行是本书的线性插值约定，要求所需输入索引真实存在。若 $\eta_k=0$，只需那个精确索引；若插值区间跨过缺样，应标为无效而非压紧索引跨缺口。若端点尚未到达，应等待，不等同于已经确认丢失。连续调用必须保持 $u_k$ 的全局位置，不能每块从零开始。E10-24 给出两次调用及一个已知缺口的手算。</p>
+<p>末行是本书的线性插值约定，要求所需输入索引真实存在。若 $\eta_k=0$，只需那个精确索引；若插值区间跨过缺样，应标为无效而非压紧索引跨缺口。若端点尚未到达，应等待，不等同于已经确认丢失。</p>
+<p>连续调用必须保持 $u_k$ 的全局位置，不能每块从零开始。E10-24 给出两次调用及一个已知缺口的手算。</p>
 <p>连续流可对照 libsamplerate 的 <code>src_process</code> 或 SpeexDSP 的重采样接口。以 libsamplerate 为例，比例定义为“输出速率/输入速率”；设备快 100 ppm 时，转到参考时钟的比例约为 $1/1.0001=0.99990001$。每次调用还会返回实际消耗的输入帧数和生成的输出帧数，调用方必须保留未消耗输入，不能假设一进一出或每块重新创建转换器。<a href="https://libsndfile.github.io/libsamplerate/api_full.html" title="citation">libsamplerate Full API</a></p>
 <p>本书的<a href="research/03_industrial_deployment.html#i04libsamplerate-的有状态重采样">libsamplerate 两段已知时钟实验</a>实际调用锁定的 C 接口：前 5 s 为 +100 ppm，后 5 s 为 +150 ppm。未校正组在 1～9 s 的标记偏移增加 16 帧，按真值更新比例后该段残余增加 0 帧；每次输入消费量及结束排空也逐调用核对。这里的时钟速率是预先给定的，不能把结果写成“已自动估计漂移”，也没有测抗混叠或真实设备。</p>
 <p>为把“估计—补偿—残余核查”连起来，本书另有<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/sro_closed_loop_demo.py">固定真值的合成时间戳实验</a>。参考时钟为 2 000 Hz，设备时钟快 150 ppm，首样本晚到 2 ms，并故意删去设备索引 12 000 的一个样本。前 2 s 的 9 个时间戳锚点满足 $t_n=0.002+n/2000.3$ s；相对延迟 $n/2000-t_n$ 的截距是 $-2$ ms，斜率应为 $150\times10^{-6}/(1+150\times10^{-6})$，即一阶报告 149.9775 ppm，反解得到 150 ppm。时间戳间隔还单独识别出一个缺样，不能把这个阶跃并入斜率。</p>
@@ -522,7 +527,8 @@ $$</p>
 <p>127 输入帧分块与整段渐变输出逐点相同；立即阶跃和 160/320 输出帧渐变的最大逐点差分别约 $6.25\times10^{-4}$、$1.25\times10^{-3}$。这些差值只证明固定实现按不同控制长度产生不同波形，并非设备时钟估计精度。协议、调用消费量及独立验收见<a href="research/03_industrial_deployment.html#i22libsoxr-的比率渐变与输出延迟">工业接口研究 I22</a>。</p>
 <span id="sec-7" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-2-2">10.2.2 增益变化与 AEC</h3>
 <p>AEC 前的时变增益可能改变它要辨识的等效回声路径。先记录增益位于参考取点之前还是之后，以及是否同时作用于参考与麦克风。参考已经包含的播放音量变化，不应再当成未知路径变化；参考取点之后的增益变化、麦克风增益变化则需补偿或重新跟踪。</p>
-<p>削波保护、双讲和路径改变是三种不同情况。削波会破坏线性模型，受污染帧可能需要暂停或减弱更新；双讲需避免把近端语音当作回声来学习；持久的路径改变则需要恢复辨识能力，单纯减小步长反而可能延缓收敛。是否补偿滤波器系数、重新初始化或调整步长，应依据具体实现与故障实验确定，不能统一规定为“重置或减小步长”。锁定时间、解锁条件和允许步进也不存在通用秒数或 dB 阈值。</p>
+<p>削波保护、双讲和路径改变是三种不同情况。削波会破坏线性模型，受污染帧可能需要暂停或减弱更新；双讲需避免把近端语音当作回声来学习；持久的路径改变则需要恢复辨识能力，单纯减小步长反而可能延缓收敛。</p>
+<p>是否补偿滤波器系数、重新初始化或调整步长，应依据具体实现与故障实验确定，不能统一规定为“重置或减小步长”。锁定时间、解锁条件和允许步进也不存在通用秒数或 dB 阈值。</p>
 <p>阵列标定应覆盖相对增益、相位/时延和麦克风坐标。沿用 §2.3 的远场导向约定，令 $\Delta\vec r$ 是某麦相对参考麦的实际位置减标称位置（m），$\vec u$ 是指向声源的单位向量。将实际位置代入导向相位，再减去标称相位，本书得到</p>
 <p>$$
 \begin{aligned}
@@ -643,7 +649,8 @@ $$</p>
 </tr>
 </tbody>
 </table></div>
-<p>谱减的关键边界是估计误差：噪声上升时旧 $D_f$ 偏低，会留下残余；目标误入估计段时 $D_f$ 偏高，会损伤目标。较大的 $\alpha$ 或较小的 $\beta$ 可能减少持续噪声却造成时频斑点；地板也会保留噪声，不能称为无失真解。此实现没有自适应噪声追踪、语音存在概率或 Ephraim–Malah 的 MMSE-STSA/LSA 统计估计器。它是可复算的谱减基线，不能用其输出冒充这些方法。</p>
+<p>谱减的关键边界是估计误差：噪声上升时旧 $D_f$ 偏低，会留下残余；目标误入估计段时 $D_f$ 偏高，会损伤目标。较大的 $\alpha$ 或较小的 $\beta$ 可能减少持续噪声却造成时频斑点；地板也会保留噪声，不能称为无失真解。</p>
+<p>此实现没有自适应噪声追踪、语音存在概率或 Ephraim–Malah 的 MMSE-STSA/LSA 统计估计器。它是可复算的谱减基线，不能用其输出冒充这些方法。</p>
 <p>实现还要保护中间功率：很小的非零复系数平方可能下溢，大功率先求和再平均也可能溢出。教学实现对这些边界改用对数功率计算增益；返回的噪声功率若小于可表示范围仍可能为零，但不能因此把原本非零的频谱误判成静音。$\alpha=0$ 时保持原频谱；真实平均噪声功率超过浮点范围则明确拒绝。这些是数值实现条件，不能用它们替代噪声模型的统计检验。</p>
 <span id="sec-11" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-3-3">10.3.3 控制状态不能只看一个 VAD 比特</h3>
 <p>控制状态需要涵盖近端语音、远端播放和双讲。下表是稳态条件摘要：其中“没有远端参考”还要求相关输入历史已经安静，不能只看当前播放样本是否为零。具体实现可以使用离散状态，也可以使用连续的活动概率。</p>
@@ -817,7 +824,7 @@ t\approx\frac{E\,\eta}{P_{\text{avg}}},
 $$</p>
 <p>式(10-13)约定 $P_{\text{avg}}$ 是各工作状态按占空比加权后、在稳压与转换电路<strong>输出端</strong>测得的整机负载平均功率；$\eta$ 才可同时计入电池可用容量比例、从电池到负载的转换效率及老化裕量。若功率仪测的是<strong>电池端输入功率</strong>，转换损耗已经包含在 $P_{\text{avg}}$ 中，$\eta$ 不应再次计入转换效率。应记录电压、测点、各状态功率与占空比；只给毫安时（mAh）而不给这些条件，无法推出可验收的续航。</p>
 <h3 id="sec-10-4-3">10.4.3 把吞吐、排队、内存和功率放进同一预算</h3>
-<p>单看一列可能漏掉真正的失败条件。下面是本书构造的六帧教学调度，<strong>不是目标芯片实测</strong>：四路 16 kHz 浮点音频每 10 ms 交付新的 160 个时间样本，六块之间不重叠，一条串行处理线程的六次服务耗时依次为 $[4,4,25,4,4,4]$ ms。队列最多容纳三个未完成帧，<strong>包含正在计算的一帧</strong>；处理不能抢占，每帧应在下一帧到达前完成。下表的到达、开始和完成时间均从第一帧到达的 $t=0$ 起算。</p>
+<p>单看一列可能漏掉真正的失败条件。下面是本书构造的六帧教学调度，<strong>不是目标芯片实测</strong>：四路 16 kHz 浮点音频每 10 ms 交付新的 160 个时间样本，六块之间不重叠，一条串行处理线程的六次服务耗时依次为 $[4,4,25,4,4,4]$ ms。队列最多容纳三个未完成帧，<strong>包含正在计算的一帧</strong>；处理不能抢占，每帧应不晚于下一帧到达时完成。下表的到达、开始和完成时间均从第一帧到达的 $t=0$ 起算。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
 <tr>
@@ -958,7 +965,8 @@ $$</p>
 <p><a href="https://www.itu.int/rec/T-REC-P.566/en" title="citation">ITU-T P.566（07/2026）</a>的官方条目将其列为“已生效，待发布”（in force / to be published）的单端机器学习多维语音质量模型。在正式文本发布前，本书不从二手资料扩写输出维度或评分细则。P.566 的单端客观预测不能代替 P.835 主观听测，也不评价 DOA、轨迹或空间位置。</p>
 <p>公开评分代码可帮助固定执行口径。DNS Challenge 的 <code>DNSMOS/dnsmos_local.py</code> 提供本地质量预测，AEC Challenge 的 <code>AECMOS/AECMOS_local/</code> 提供回声相关评分；前者还区分普通和个性化模式。需要同时锁定模型摘要、采样率、裁段、短文件处理与聚合方式。模型预测分不是实际听众 MOS，也不能代替任务识别指标。<a href="https://github.com/microsoft/DNS-Challenge/tree/591184a9fcb2cbdec02520fed81a32bbbf9d73ff/DNSMOS" title="citation">DNSMOS 本地说明</a>、<a href="https://github.com/microsoft/AEC-Challenge/tree/6c633d0a9d2a143a0e364899b91b06f127315b18/AECMOS" title="citation">AECMOS 本地说明</a></p>
 <p>AECMOS 官方为 2021/2022 测试集规定了收敛段后的评分范围，近端单讲、远端单讲和双讲的裁取方式不同。使用别的测试集时，应按该测试集规则定义区间，不能直接沿用旧届剪裁。逐文件失败、静音输出和缺失场景也要计入报告，避免只汇总成功评分的子集。</p>
-<p>全参考指标还要求干净参考与处理后信号的采样率、时间轴和评分区域一致。pystoi 提供普通 STOI 与扩展 STOI（Extended Short-Time Objective Intelligibility，ESTOI），两种模式应分别报告。锁定实现的一条分支会在去静音后不足 30 个 STFT 帧时警告并返回 <code>1e-5</code>；这只是一个无效评分标记，不覆盖所有无效情形。本书对原包的受控运行还发现：10 kHz、256 点全零输入会先在去静音处理中抛出 <code>AxisError</code>；1 s 全零输入的普通 STOI 可返回 0 且不警告，ESTOI 则可能随内部随机扰动得到微小正值或负值。</p>
+<p>全参考指标还要求干净参考与处理后信号的采样率、时间轴和评分区域一致。pystoi 提供普通 STOI 与扩展 STOI（Extended Short-Time Objective Intelligibility，ESTOI），两种模式应分别报告。</p>
+<p>锁定实现的一条分支会在去静音后不足 30 个 STFT 帧时警告并返回 <code>1e-5</code>；这只是一个无效评分标记，不覆盖所有无效情形。本书对原包的受控运行还发现：10 kHz、256 点全零输入会先在去静音处理中抛出 <code>AxisError</code>；1 s 全零输入的普通 STOI 可返回 0 且不警告，ESTOI 则可能随内部随机扰动得到微小正值或负值。</p>
 <p>因此，评分前应独立检查长度、有限性和有效能量，评分后分别记录异常、警告、非有限值及协议定义的无效状态；没有警告不等于分数有效。<a href="https://github.com/mpariente/pystoi/blob/74872b000753a7a42ff51aa0868af8c82c7f9053/pystoi/stoi.py" title="citation">pystoi 固定实现及短输入分支</a></p>
 <h3 id="sec-u-274faa96b4">客观评分的有效输入与取点</h3>
 <p>ViSQOL（Virtual Speech Quality Objective Listener）则比较参考与退化信号的时频结构，输出客观听音质量预测分（Mean Opinion Score—Listening Quality Objective，MOS-LQO）。该实现区分 48 kHz 的 audio 模式与 16 kHz 的 speech 模式，并将多通道下混单声道；因此不能用它证明阵列方向或双耳线索保持。它不是 POLQA 实现，模型预测也不能代替受试者评分；模式、映射模型和适用失真范围都要记录。<a href="https://github.com/google/visqol/blob/38d0b0163e441047d4429bf07ad09e5b9031d02c/README.md" title="citation">ViSQOL 固定说明的 Guidelines 与 FAQ</a></p>

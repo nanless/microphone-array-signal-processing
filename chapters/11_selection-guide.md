@@ -179,7 +179,7 @@ ORC-WER 按**参考语句**选择输出流：第一段的“春天”给流 1、
 
 候选的输入输出与评分工具同样需要筛选。libsoxr、libsamplerate 的比例协议不能照搬；libsndfile 的时间帧数不能当成通道标量数；libebur128 的响度与真峰值也不是语音质量分。
 
-有干净参考时才可按相应条件使用 STOI/ESTOI 或 ViSQOL，静音过多、有效帧不足、参考错配及模型缺失必须进入失败记录。各接口的固定版本与边界见[第 10 章工程对照](10_engineering-practice.md#sec-10-9)。
+有干净参考时才可按相应条件使用 STOI/ESTOI 或 ViSQOL，静音过多、有效帧不足、参考错配及模型缺失必须进入失败记录。评分输入与失效边界见[第 10 章评测体系](10_engineering-practice.md#sec-10-5)，固定源码入口另见[工业部署研究](../codes/chapters/ch00/research/03_industrial_deployment.md)。
 
 #### 11.5.2 完整决策例：未知参会者的连续转写
 
