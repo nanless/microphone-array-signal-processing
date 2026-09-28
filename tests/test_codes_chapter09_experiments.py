@@ -3,7 +3,7 @@ from fractions import Fraction as F
 import math
 import unittest
 import numpy as np
-from codes.examples.chapter09_experiments import run_experiments, small_set_distances, white_acceleration_covariance
+from codes.chapters.ch09.chapter09_experiments import run_experiments, small_set_distances, white_acceleration_covariance
 
 
 class Chapter09ExperimentsTests(unittest.TestCase):

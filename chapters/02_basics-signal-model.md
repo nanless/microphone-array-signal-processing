@@ -1,6 +1,6 @@
 > ⚠️ 本篇是正文第 2 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。
 >
-> 🏠 首页导读：[`00_overview.md`](./00_overview.md) ｜ 上一篇：[01_problem-definition.md](./01_problem-definition.md) ｜ 下一篇：[03_array-geometry.md](./03_array-geometry.md)
+> 🏠 首页导读：[`00_overview.md`](00_overview.md) ｜ 上一篇：[01_problem-definition.md](01_problem-definition.md) ｜ 下一篇：[03_array-geometry.md](03_array-geometry.md)
 
 ---
 
@@ -314,7 +314,7 @@ DRR 可作为距离估计的声学线索，但必须同时考虑房间和声源�
 
 无法播放测试音时，也可研究从普通语音盲估房间参数，但不同参数需要不同模型。两麦相干函数可用于估计直达－弥散比，不能仅凭一个比值直接得到 $T_{60}$；后者还需要衰减形态或混响统计模型。
 
-镜像仿真也要区分能量吸收系数 $\alpha$ 与理想幅度反射系数 $\sqrt{1-\alpha}$。由赛宾公式反求的材料参数与反射阶数只是仿真配置，生成后仍要测量衰减曲线。ESS 实测则应保留播放参考、扫频频带、录音尾长、噪声底和反卷积设置；本书合成 RIR 不能替代一次实际测量。固定版本的源码入口、声速与测量接口差异见[空间处理研究手册](../codes/research/01_spatial_and_tracking.md)。
+镜像仿真也要区分能量吸收系数 $\alpha$ 与理想幅度反射系数 $\sqrt{1-\alpha}$。由赛宾公式反求的材料参数与反射阶数只是仿真配置，生成后仍要测量衰减曲线。ESS 实测则应保留播放参考、扫频频带、录音尾长、噪声底和反卷积设置；本书合成 RIR 不能替代一次实际测量。固定版本的源码入口、声速与测量接口差异见[空间处理研究手册](../codes/chapters/ch00/research/01_spatial_and_tracking.md)。
 
 房间传播模型解释了麦克风信号的组成。算法实现还需要把连续波形组织成 STFT、快拍和协方差矩阵。
 
@@ -357,7 +357,7 @@ STFT 把宽带语音分解为一组**近似窄带**问题。时延 $\tau$ 对应
 
 这个 31.25 Hz 是 DFT 网格间隔，不等于能分开两条相邻谱线的频率分辨能力；后者还取决于窗函数的主瓣宽度等条件。[Harris 1978](https://doi.org/10.1109/PROC.1978.10837 "citation")详细讨论了窗函数对谱分析的影响。
 
-分帧还要单独指定端点策略。本书 [`spectral.py`](../codes/array_tutorial/spectral.py) 的默认设置 `center=True` 会在两端各补半窗，并把末端补到完整帧，因此同一段 1 s 信号得到 126 帧；设为 `center=False` 时，本例才得到 122 帧。一般长度若不能恰好覆盖，代码仍会补齐末帧，不能直接套用只取完整窗的向下取整式。
+分帧还要单独指定端点策略。本书 [`spectral.py`](../codes/chapters/ch02/core/spectral.py) 的默认设置 `center=True` 会在两端各补半窗，并把末端补到完整帧，因此同一段 1 s 信号得到 126 帧；设为 `center=False` 时，本例才得到 122 帧。一般长度若不能恰好覆盖，代码仍会补齐末帧，不能直接套用只取完整窗的向下取整式。
 
 信号端点补零会改变帧数；固定一帧后，把 FFT 从 512 点补到 1024 点则只加密频率网格，两者不是同一个操作。外部接口也应分别检查端点扩展和末尾补齐设置，见 [SciPy STFT 的 `boundary` 与 `padded` 定义](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.stft.html "citation")。从单边 FFT 换算功率还须处理正负频率配对、DC/Nyquist 端点与原样本长度，完整手算见 E02-08。
 
@@ -432,7 +432,7 @@ $$\begin{aligned}
 
 第二类处理是用时频掩码为快拍加权，分别估计目标或噪声协方差（§8.4）。掩码可以减少干扰泄漏，但也会减少有效样本数，仍须检查矩阵的条件数并配合加载。
 
-**本书代码采用的数组与流式约定。** [`spectral.py`](../codes/array_tutorial/spectral.py) 中的 STFT 固定输出 `通道数 × 频点数 × 帧数`，即 $M\times F\times L$；[`covariance.py`](../codes/array_tutorial/covariance.py) 再把它变成 $F$ 个 $M\times M$ 空间二阶矩。示例使用前向变换 $e^{-\mathrm j2\pi ft}$、周期 Hann 窗和加权重叠相加。
+**本书代码采用的数组与流式约定。** [`spectral.py`](../codes/chapters/ch02/core/spectral.py) 中的 STFT 固定输出 `通道数 × 频点数 × 帧数`，即 $M\times F\times L$；[`covariance.py`](../codes/chapters/ch03/core/covariance.py) 再把它变成 $F$ 个 $M\times M$ 空间二阶矩。示例使用前向变换 $e^{-\mathrm j2\pi ft}$、周期 Hann 窗和加权重叠相加。
 
 对未修改的 STFT，逐帧逆 FFT 得到的 $z_{m,\ell}[q]$ 等于 $x_m[\ell H+q]g[q]$。本书合成器再乘同一窗，并对所有覆盖样本 $n$ 的帧求和：
 
@@ -452,13 +452,13 @@ D_g[n]&=\sum_\ell g^2[q_\ell],\\
 
 有限精度造成的非厄米残差会被对称化；中间计算超出浮点数范围时明确报错。需要加载时采用无量纲相对口径 $\alpha\operatorname{tr}(\hat{\mathbf R})\mathbf I/M$。权重可归一化不代表独立快拍充足，还需检查秩、权重集中程度和模型条件。
 
-实际运行时还应记录遗忘因子、根据语音活动和语音存在概率决定何时更新的规则、每频点有效权重、条件数，以及估计失败时采用的处理方式。这些设置共同决定统计量跟随声场变化的速度，不能只记录“用了 MVDR”。可运行的小例见 [`ch02_05_baselines.py`](../codes/examples/ch02_05_baselines.py)，边界检查见 [`test_codes_doa_beam.py`](../tests/test_codes_doa_beam.py)。
+实际运行时还应记录遗忘因子、根据语音活动和语音存在概率决定何时更新的规则、每频点有效权重、条件数，以及估计失败时采用的处理方式。这些设置共同决定统计量跟随声场变化的速度，不能只记录“用了 MVDR”。可运行的小例见 [`ch02_05_baselines.py`](../codes/chapters/ch00/cross_chapter/ch02_05_baselines.py)，边界检查见 [`test_codes_doa_beam.py`](../tests/test_codes_doa_beam.py)。
 
 #### 2.5.3 真实录音：交叉项为何不能随意省去
 
 **真实录音 R01：忽略通道交叉项会怎样？** [DEMAND 数据库](https://zenodo.org/records/1227121 "citation")的 NRIVER 场景提供真实同步环境噪声。本书取其 16 kHz 版本前 10 s，即各通道样本 `[0,160000)`，分别平均通道 1～2 和 1～16。
 
-16 只麦克风由同一设备采集，原始通道增益未经彼此校准；没有干净语音参考或声源位置真值。数据及本书派生音频按 CC BY-SA 3.0 分发，作者、采集条件、几何和修改说明见[真实录音说明](../codes/real_audio/README.md)。
+16 只麦克风由同一设备采集，原始通道增益未经彼此校准；没有干净语音参考或声源位置真值。数据及本书派生音频按 CC BY-SA 3.0 分发，作者、采集条件、几何和修改说明见[真实录音说明](../codes/chapters/ch02/real_audio/README.md)。
 
 PCM 整数除以 32768 后，直接计算未去均值的二阶矩 $R_{ij}=T^{-1}\sum_n x_i[n]x_j[n]$，这里 $T=160000$。等权平均功率包含全部 $R_{ij}$；若只保留对角项，就得到“交叉项为零”的预测。这个预测仍保留各通道自身功率，不另行假设麦克风等增益。非零均值下，统计独立也不自动意味着二阶交叉项为零。
 
@@ -469,7 +469,7 @@ PCM 整数除以 32768 后，直接计算未去均值的二阶矩 $R_{ij}=T^{-1}
 
 功率单位为数字满刻度幅度平方，不是 Pa²。全部文件导出增益为 1，无去直流、时移或逐文件归一化；平均后仅做一次 PCM16 舍入，故 WAV 读回功率与表中量化前功率有微小差别。数值为本书对该固定片段的计算，表格最后统一舍入。
 
-本片段的交叉项为正，忽略它们会低估平均后的数字功率；增加通道并没有消除这个偏差。平均后的音量下降不等于语音增强成功，因为这里没有目标语音可供检验。练习 R01 的逐步计算、10 个连续 1 s 子段、代码及三个单通道试听对照见[真实河流录音实验](../codes/research/05_exercises_and_audio.md#12-r01真实河流录音中的通道相关项)。子段范围不是独立重复实验的置信区间。
+本片段的交叉项为正，忽略它们会低估平均后的数字功率；增加通道并没有消除这个偏差。平均后的音量下降不等于语音增强成功，因为这里没有目标语音可供检验。练习 R01 的逐步计算、10 个连续 1 s 子段、代码及三个单通道试听对照见[真实河流录音实验](../codes/chapters/ch00/research/05_exercises_and_audio.md#12-r01真实河流录音中的通道相关项)。子段范围不是独立重复实验的置信区间。
 
 #### 2.5.4 语音信号会改变哪些估计条件
 
@@ -711,7 +711,7 @@ r_m&=r-\vec u^\top\vec q_m\\
 
 本章练习按稳定标识组织。E02-01～08 练习分析合成与协方差估计，E02-09～15 分别检查近场误差、声场积分、房间衰减、精度下界、分析合成、中心化和卷积。先手算关键中间量，再运行代码核对；代码返回的有限数值不能代替模型前提。
 
-以下六题的复算入口为 [`exercises_spatial.py`](../codes/examples/exercises_spatial.py)，结果采用稳定标识 E02-01～E02-06。
+以下六题的复算入口为 [`exercises_spatial.py`](../codes/chapters/ch00/cross_chapter/exercises_spatial.py)，结果采用稳定标识 E02-01～E02-06。
 
 #### E02-01：同一段录音为什么有两种帧数？
 
@@ -797,7 +797,7 @@ $$\mathbf R=\frac{1}{2a}\,a\begin{bmatrix}2&1\\1&1\end{bmatrix}=\begin{bmatrix}1
 
 遇到 VAD 冻结、跳帧或可变帧移，要按实际更新间隔解释遗忘时间。冻结期间不执行递推，旧状态也就不会按墙钟时间自动衰减。零初始化的权重不足仍按 E02-05 处理，不能靠时间常数换算消除。
 
-这道题由 [`spatial_precision_exercises.py`](../codes/examples/spatial_precision_exercises.py) 的 `E02-07` 复算；全部数值来自本书几何级数推导，无随机抽样。脚本保留未舍入值，上表显示六位小数。
+这道题由 [`spatial_precision_exercises.py`](../codes/chapters/ch00/cross_chapter/spatial_precision_exercises.py) 的 `E02-07` 复算；全部数值来自本书几何级数推导，无随机抽样。脚本保留未舍入值，上表显示六位小数。
 
 #### E02-08：为什么单边频谱模方之和不等于信号功率？
 
@@ -839,7 +839,7 @@ c_k&=\begin{cases}
 
 **均方值与功率谱密度要区分。** 功率谱密度（Power Spectral Density，PSD）还含“每 Hz”的单位。矩形窗、`detrend=False`、不裁短信号时，单边周期图可写成 $S_{xx}[k]=c_k|X_+[k]|^2/(f_sL)$，将它乘频率间距 $f_s/N$ 后求和才恢复本题均方值。其他窗改变加权与归一化；不能把未校正的加窗功率直接当成原信号功率。SciPy `periodogram` 默认减均值，复现本题 DC 行时必须显式关闭该操作。
 
-接口依据为 [NumPy `rfft` 的归一化、端点与补零约定](https://numpy.org/doc/stable/reference/generated/numpy.fft.rfft.html "citation")、[SciPy `periodogram` 的单位与单边谱说明](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.periodogram.html "citation")（2026-09-28 核实）；表中数字为本书推导。运行 `.venv/bin/python -m codes.examples.spatial_model_exercises` 的 `E02-08` 可复算全部五行；[代码](../codes/examples/spatial_model_exercises.py)同时拒绝复输入被悄悄丢弃虚部，以及过短 FFT 导致输入裁切。
+接口依据为 [NumPy `rfft` 的归一化、端点与补零约定](https://numpy.org/doc/stable/reference/generated/numpy.fft.rfft.html "citation")、[SciPy `periodogram` 的单位与单边谱说明](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.periodogram.html "citation")（2026-09-28 核实）；表中数字为本书推导。运行 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.spatial_model_exercises` 的 `E02-08` 可复算全部五行；[代码](../codes/chapters/ch00/cross_chapter/spatial_model_exercises.py)同时拒绝复输入被悄悄丢弃虚部，以及过短 FFT 导致输入裁切。
 
 
 以下 E02-09～15 的统一复算入口为 [`chapter02_experiments.py`](../codes/chapters/ch02/chapter02_experiments.py)。这些实验使用本书明确给出的模型，分别核对计算与失效边界。
@@ -911,7 +911,7 @@ D[n]&=10\log_{10}\frac{E[n]}{E[n_0]}\text{，}
 
 若在有效衰减区间拟合 $D(t)=\beta t+b$，其中 $\beta<0$、单位 dB/s，则由下降 60 dB 解得 $T_{60}=-60/\beta$。固定随机序列、有限尾长和拟合区间都会影响实现值，不能把包络参数直接冒充实测结果。录音开始到首次 −60 dB 的时刻还包含播放前静音或传播延迟；测衰减时应说明起点及时间差。
 
-[房间衰减音频说明](../codes/research/05_exercises_and_audio.md)给出一个干参考和三条卷积输出。声源为固定种子 2026092801 的短时高斯噪声脉冲，乘 0.08 并作 10 ms 边缘淡入淡出；干参考已加入共同的 12 ms 直达延迟。
+[房间衰减音频说明](../codes/chapters/ch00/research/05_exercises_and_audio.md)给出一个干参考和三条卷积输出。声源为固定种子 2026092801 的短时高斯噪声脉冲，乘 0.08 并作 10 ms 边缘淡入淡出；干参考已加入共同的 12 ms 直达延迟。
 
 四条输出均为 16 kHz、2.5 s，采用同一导出增益并保留完整非零卷积尾部。比较前不要逐条归一化音量。先检查清单与波形，再试听短尾、长尾以及相同长尾而反射能量较低的区别。
 
@@ -991,8 +991,8 @@ $$\begin{aligned}
 
 本题直达序列能量为 6，反射能量为 1.5，输出能量为 5.5；交叉项为 $2\sum_nu[n](0.5u[n-2])=-2$，故 $6+1.5-2=5.5$。这条两抽头 RIR 只用于说明卷积与相消，不含可拟合的弥散混响尾，不能据它给房间报一个 $T_{60}$。
 
-[音频实验总览](../codes/research/05_exercises_and_audio.md)提供已知采样率与通道顺序的 WAV，可用同一分析/合成参数检查边缘重建；比较时保留原长度，不把端点丢失误认为降噪效果。
+[音频实验总览](../codes/chapters/ch00/research/05_exercises_and_audio.md)提供已知采样率与通道顺序的 WAV，可用同一分析/合成参数检查边缘重建；比较时保留原长度，不把端点丢失误认为降噪效果。
 
 ---
 
-> 📄 本篇信息：配图 6 张 ｜ [回首页](./00_overview.md)
+> 📄 本篇信息：配图 6 张 ｜ [回首页](00_overview.md)

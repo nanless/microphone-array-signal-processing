@@ -11,11 +11,11 @@ import unittest
 
 import numpy as np
 
-from codes.examples.aec_real_pair_experiment import (
+from codes.chapters.ch06.examples.aec_real_pair_experiment import (
     load_pinned_pair, peak_lag, power_ratio_db, speex_linear_aec,
 )
-from codes.examples.aec_doubletalk_experiment import load_doubletalk
-from codes.examples.aec3_offline_compare import command, run as run_aec3
+from codes.chapters.ch06.aec_doubletalk_experiment import load_doubletalk
+from codes.chapters.ch06.examples.aec3_offline_compare import command, run as run_aec3
 
 
 class RealPairExperimentTests(unittest.TestCase):
@@ -67,7 +67,7 @@ class RealPairExperimentTests(unittest.TestCase):
             for view in (storage[::2], storage[1::2], storage[:320][::-1]):
                 microphone = (storage + 1000)[::2]
                 captured.clear()
-                with patch('codes.examples.aec_real_pair_experiment.ctypes.CDLL', return_value=fake):
+                with patch('codes.chapters.ch06.examples.aec_real_pair_experiment.ctypes.CDLL', return_value=fake):
                     out, rate = speex_linear_aec(Path(library.name), view, microphone)
                 self.assertEqual(rate, 16000)
                 np.testing.assert_array_equal(out, microphone - view)

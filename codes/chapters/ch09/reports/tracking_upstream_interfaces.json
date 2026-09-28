@@ -1,0 +1,628 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-28T13:56:51.736261+00:00",
+  "harness_sha256": "8d45e9d5f364c2b2f013ef7878d4bd580907b9c90c2b6ee0c667ba3fe38e121f",
+  "source_config_sha256": "e73d6446f7feb9827a661ac83c74d47e80bb4beee139e274f2569c9da7efb4de",
+  "sources": {
+    "filterpy": {
+      "files": {
+        "LICENSE": "8ffce1097f1b1c0fba42e4449ef49aa05cb7b45566dd0989407839dba07af99c",
+        "filterpy/__init__.py": "329536b1ff39c3fdc3621983a98ecd0ad4a2327ea0694750f46d6358a89fe67e",
+        "filterpy/common/helpers.py": "45ac0d338a5ae96caae37ccaced7ad1e45a4d848da17d4a8023e59213ef62f02",
+        "filterpy/kalman/EKF.py": "44421460b96bc911e2cf81ca97009d84594de5a448be1c8a3a5de752575a547a",
+        "filterpy/kalman/IMM.py": "22b86f0fef3989445e61243cfe78f1b141ab373622a4583c249ba34f2d9ef556",
+        "filterpy/kalman/kalman_filter.py": "602923a445aa167a43a721bef5b8e17bb31b0f43e1b08c880f414460eebcf689",
+        "filterpy/kalman/sigma_points.py": "cfa457511eb6f1dbe95f452e1b2e5b489187b64707c5e7bc2b15f30dad17df9e",
+        "filterpy/kalman/unscented_transform.py": "3c499c584c7f6e3f0091b1817853926533a80efa689285d7a4fcfa73bd55be75",
+        "filterpy/stats/stats.py": "576b407938a36b7292f862cf414527e1adc8419d19241f529b6ec2942f31f374"
+      },
+      "revision": "3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33"
+    },
+    "stonesoup": {
+      "files": {
+        "LICENSE": "2462f3d8a857f601e266f048a4ff051366c1e05f098cf3a1524eaf922f879815",
+        "stonesoup/mixturereducer/gaussianmixture.py": "ac8d5eacebb7e2e3458ab7125707915b77f57e23b9b19e87c2c8d52c4b803aa4"
+      },
+      "revision": "8d1edeb07ef8505ed065cbef435cfb5e517d9bdc"
+    }
+  },
+  "config": {
+    "imm": {
+      "means": [
+        0.0,
+        10.0
+      ],
+      "variances": [
+        1.0,
+        4.0
+      ],
+      "mu": [
+        0.75,
+        0.25
+      ],
+      "transition_rows_old_columns_new": [
+        [
+          0.9,
+          0.1
+        ],
+        [
+          0.2,
+          0.8
+        ]
+      ],
+      "F": 1.0,
+      "Q": 0.0,
+      "H": 1.0,
+      "R": 1.0,
+      "predict_only_steps": 3,
+      "stale_likelihood_sequence": [
+        "predict",
+        "update(0)",
+        "predict",
+        "update(None)"
+      ]
+    },
+    "ekf": {
+      "x": 1.0,
+      "P": 1.0,
+      "F": 2.0,
+      "Q": 0.0,
+      "R": 1.0,
+      "z": 4.0,
+      "h": "x**2",
+      "HJacobian": "2*x"
+    },
+    "ekf_angle": {
+      "x_degrees": 179.0,
+      "z_degrees": -179.0,
+      "P": 1.0,
+      "R": 1.0
+    },
+    "unscented_transform": {
+      "mean": 0.0,
+      "variance": 1.0,
+      "alpha": 1.0,
+      "beta": 2.0,
+      "kappa": 0.0,
+      "transform": "x**2"
+    },
+    "reducer": {
+      "prune_threshold": 0.2,
+      "max_number_components": 1,
+      "prune_weights": [
+        0.1,
+        0.4,
+        0.5
+      ],
+      "all_pruned_weights": [
+        0.1,
+        0.1
+      ],
+      "truncate_weights": [
+        0.4,
+        0.6
+      ],
+      "merge_weights": [
+        0.8,
+        0.7
+      ],
+      "component_means": "zero-based component index",
+      "component_variance": 1.0
+    },
+    "scope": "dimensionless scalar arithmetic except explicitly labelled degree example; no acoustic data or hardware timing"
+  },
+  "environment": {
+    "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
+    "executable": "/Users/francis7999/miniforge3/bin/python",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "numpy": "2.3.5"
+  },
+  "filterpy": {
+    "execution": "original package classes/functions imported from verified checkout",
+    "filterpy_version": "1.4.5",
+    "scipy_version": "1.17.1",
+    "imm_predict_only": [
+      {
+        "mu": [
+          0.75,
+          0.25
+        ],
+        "cbar": [
+          0.7250000000000001,
+          0.275
+        ],
+        "omega": [
+          [
+            0.9310344827586207,
+            0.27272727272727276
+          ],
+          [
+            0.06896551724137931,
+            0.7272727272727273
+          ]
+        ],
+        "mean": 2.5,
+        "variance": 20.5,
+        "second_raw_moment": 26.75,
+        "component_means": [
+          0.0,
+          10.0
+        ],
+        "component_variances": [
+          1.0,
+          4.0
+        ]
+      },
+      {
+        "mu": [
+          0.75,
+          0.25
+        ],
+        "cbar": [
+          0.7250000000000001,
+          0.275
+        ],
+        "omega": [
+          [
+            0.9310344827586207,
+            0.27272727272727276
+          ],
+          [
+            0.06896551724137931,
+            0.7272727272727273
+          ]
+        ],
+        "mean": 2.335423197492163,
+        "variance": 19.60065742278476,
+        "second_raw_moment": 25.05485893416928,
+        "component_means": [
+          0.6896551724137931,
+          7.272727272727273
+        ],
+        "component_variances": [
+          7.627824019024969,
+          23.016528925619838
+        ]
+      },
+      {
+        "mu": [
+          0.75,
+          0.25
+        ],
+        "cbar": [
+          0.7250000000000001,
+          0.275
+        ],
+        "omega": [
+          [
+            0.9310344827586207,
+            0.27272727272727276
+          ],
+          [
+            0.06896551724137931,
+            0.7272727272727273
+          ]
+        ],
+        "mean": 2.227081101797349,
+        "variance": 18.979045114529804,
+        "second_raw_moment": 23.938935348512697,
+        "component_means": [
+          1.1436601448492056,
+          5.477343972641779
+        ],
+        "component_variances": [
+          11.47174096503031,
+          27.415345923575103
+        ]
+      },
+      {
+        "mu": [
+          0.75,
+          0.25
+        ],
+        "cbar": [
+          0.7250000000000001,
+          0.275
+        ],
+        "omega": [
+          [
+            0.9310344827586207,
+            0.27272727272727276
+          ],
+          [
+            0.06896551724137931,
+            0.7272727272727273
+          ]
+        ],
+        "mean": 2.1557587190515464,
+        "variance": 18.557019151464164,
+        "second_raw_moment": 23.20431480623093,
+        "component_means": [
+          1.442534891593521,
+          4.2954302014256225
+        ],
+        "component_variances": [
+          13.777202469948532,
+          26.792210459364554
+        ]
+      }
+    ],
+    "imm_update_none_fresh": {
+      "before": {
+        "mu": [
+          0.75,
+          0.25
+        ],
+        "cbar": [
+          0.7250000000000001,
+          0.275
+        ],
+        "omega": [
+          [
+            0.9310344827586207,
+            0.27272727272727276
+          ],
+          [
+            0.06896551724137931,
+            0.7272727272727273
+          ]
+        ],
+        "mean": 2.335423197492163,
+        "variance": 19.60065742278476,
+        "second_raw_moment": 25.05485893416928,
+        "component_means": [
+          0.6896551724137931,
+          7.272727272727273
+        ],
+        "component_variances": [
+          7.627824019024969,
+          23.016528925619838
+        ]
+      },
+      "after": {
+        "mu": [
+          0.7250000000000001,
+          0.2749999999999999
+        ],
+        "cbar": [
+          0.7075,
+          0.2924999999999999
+        ],
+        "omega": [
+          [
+            0.92226148409894,
+            0.24786324786324795
+          ],
+          [
+            0.07773851590106005,
+            0.7521367521367521
+          ]
+        ],
+        "mean": 2.4999999999999996,
+        "variance": 20.499999999999996,
+        "second_raw_moment": 26.749999999999993,
+        "component_means": [
+          0.6896551724137931,
+          7.272727272727273
+        ],
+        "component_variances": [
+          7.627824019024969,
+          23.016528925619838
+        ]
+      },
+      "likelihoods": [
+        2.2250738585072014e-308,
+        2.2250738585072014e-308
+      ]
+    },
+    "imm_update_none_after_measurement": {
+      "after_real_measurement": {
+        "mu": [
+          0.9279008171172274,
+          0.07209918288277264
+        ],
+        "cbar": [
+          0.8495305719820592,
+          0.15046942801794086
+        ],
+        "omega": [
+          [
+            0.9830261122411271,
+            0.6166706615024757
+          ],
+          [
+            0.016973887758872857,
+            0.3833293384975243
+          ]
+        ],
+        "mean": 0.09600388333306412,
+        "variance": 0.8927740153769471,
+        "second_raw_moment": 0.9019907609919757,
+        "component_means": [
+          0.0799338478500552,
+          0.3028217481073643
+        ],
+        "component_variances": [
+          0.88409592061742,
+          0.9583620096352374
+        ]
+      },
+      "before": {
+        "mu": [
+          0.9279008171172274,
+          0.07209918288277264
+        ],
+        "cbar": [
+          0.8495305719820592,
+          0.15046942801794086
+        ],
+        "omega": [
+          [
+            0.9830261122411271,
+            0.6166706615024757
+          ],
+          [
+            0.016973887758872857,
+            0.3833293384975243
+          ]
+        ],
+        "mean": 0.08960446714459747,
+        "variance": 0.8893801072038117,
+        "second_raw_moment": 0.8974090677360789,
+        "component_means": [
+          0.08371712205183361,
+          0.16537331921479168
+        ],
+        "component_variances": [
+          0.886185437755945,
+          0.9243078124979133
+        ]
+      },
+      "after": {
+        "mu": [
+          0.9040275777715678,
+          0.09597242222843218
+        ],
+        "cbar": [
+          0.8328193044400974,
+          0.16718069555990253
+        ],
+        "omega": [
+          [
+            0.9769524021076927,
+            0.5407487836702088
+          ],
+          [
+            0.023047597892307318,
+            0.4592512163297911
+          ]
+        ],
+        "mean": 0.09155386508352513,
+        "variance": 0.8904226384937982,
+        "second_raw_moment": 0.8988047487055305,
+        "component_means": [
+          0.08371712205183361,
+          0.16537331921479168
+        ],
+        "component_variances": [
+          0.886185437755945,
+          0.9243078124979133
+        ]
+      },
+      "previous_measurement_likelihoods": [
+        0.13212615475980008,
+        0.027065926265244608
+      ],
+      "retained_innovation_variances": [
+        8.627824019024969,
+        24.016528925619838
+      ],
+      "likelihoods_used_by_none": [
+        0.1358186554132128,
+        0.0814057245343635
+      ]
+    },
+    "ekf": {
+      "predict_update": {
+        "calls": [
+          {
+            "function": "HJacobian",
+            "x": 1.0
+          },
+          {
+            "function": "Hx",
+            "x": 2.0
+          }
+        ],
+        "mean": 2.0,
+        "variance": 0.23529411764705885,
+        "gain": 0.47058823529411764,
+        "innovation_variance": 17.0,
+        "stored_x_prior": 1.0,
+        "stored_P_prior": 1.0
+      },
+      "predict_then_update": {
+        "calls": [
+          {
+            "function": "HJacobian",
+            "x": 2.0
+          },
+          {
+            "function": "Hx",
+            "x": 2.0
+          }
+        ],
+        "mean": 2.0,
+        "variance": 0.061538461538461535,
+        "gain": 0.24615384615384617,
+        "innovation_variance": 65.0,
+        "stored_x_prior": 2.0,
+        "stored_P_prior": 4.0
+      }
+    },
+    "angle": {
+      "merged_default": {
+        "innovation_degrees": -358.0,
+        "unwrapped_mean_degrees": 0.0
+      },
+      "separate_wrapped": {
+        "innovation_degrees": 2.0,
+        "unwrapped_mean_degrees": 180.0
+      }
+    },
+    "unscented_transform": {
+      "points": [
+        [
+          0.0
+        ],
+        [
+          1.0
+        ],
+        [
+          -1.0
+        ]
+      ],
+      "Wm": [
+        0.0,
+        0.5,
+        0.5
+      ],
+      "Wc": [
+        2.0,
+        0.5,
+        0.5
+      ],
+      "mean": 1.0,
+      "variance": 2.0
+    }
+  },
+  "stonesoup_reducer": {
+    "execution": "unchanged AST-extracted original methods with minimal state containers",
+    "stonesoup_package_executed": false,
+    "package_import_probe": "ModuleNotFoundError: No module named 'ordered_set'",
+    "not_tested": [
+      "PHDUpdater",
+      "TaggedWeightedGaussianState branch",
+      "merge orchestration",
+      "MHT/OR-Tools"
+    ],
+    "records": [
+      {
+        "method": "prune",
+        "input_weights": [
+          0.1,
+          0.4,
+          0.5
+        ],
+        "input_means": [
+          0,
+          1,
+          2
+        ],
+        "input_variances": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "output_weights": [
+          0.45,
+          0.55
+        ],
+        "output_means": [
+          1.0,
+          2.0
+        ],
+        "output_variances": [
+          1.0,
+          1.0
+        ],
+        "mass_before": 1.0,
+        "mass_after": 1.0
+      },
+      {
+        "method": "prune",
+        "input_weights": [
+          0.1,
+          0.1
+        ],
+        "input_means": [
+          0,
+          1
+        ],
+        "input_variances": [
+          1.0,
+          1.0
+        ],
+        "output_weights": [],
+        "output_means": [],
+        "output_variances": [],
+        "mass_before": 0.2,
+        "mass_after": 0
+      },
+      {
+        "method": "truncate",
+        "input_weights": [
+          0.4,
+          0.6
+        ],
+        "input_means": [
+          0,
+          1
+        ],
+        "input_variances": [
+          1.0,
+          1.0
+        ],
+        "output_weights": [
+          1.0
+        ],
+        "output_means": [
+          1.0
+        ],
+        "output_variances": [
+          1.0
+        ],
+        "mass_before": 1.0,
+        "mass_after": 1.0
+      },
+      {
+        "method": "merge_components",
+        "input_weights": [
+          0.8,
+          0.7
+        ],
+        "input_means": [
+          0,
+          1
+        ],
+        "input_variances": [
+          1.0,
+          1.0
+        ],
+        "output_weights": [
+          1.0
+        ],
+        "output_means": [
+          0.4666666666666666
+        ],
+        "output_variances": [
+          1.248888888888889
+        ],
+        "mass_before": 1.5,
+        "mass_after": 1.0
+      }
+    ]
+  },
+  "static_only": [
+    "ODAS",
+    "SAF tracker3d",
+    "icoDOA/Cross3D",
+    "StoneSoup JPDA/GOSPA/MHT"
+  ],
+  "not_run": [
+    "audio corpus",
+    "hardware",
+    "neural inference/training",
+    "MATLAB Vo toolbox"
+  ]
+}

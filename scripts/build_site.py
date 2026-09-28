@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""把 chapters/ 14 篇及 codes/research/ 6 篇 Markdown 建成静态站。
+"""把 chapters/ 14 篇及 codes/chapters/ch00/research/ 6 篇 Markdown 建成静态站。
 
 用法（报告根目录）：
     .venv/bin/python scripts/build_site.py
 
 产物：site/index.html（首页）+ site/01..13_*.html（13 篇正文），
-另有 site/research/index.html 和 5 篇独立研究页、72 个合成 WAV 和 4 个真实录音/派生 WAV。
+另有 site/research/index.html 和 5 篇独立研究页、主清单 109 个与独立实验 28 个合成 WAV，
+以及 4 个真实录音/派生 WAV；源码按章保存，发布 URL 保持原样。
 左侧边栏 = 首页 + 13 篇 + 每篇的二级及以下小节锚点，顶部面包屑，
 文末上一篇/下一篇（首页不输出该盒）。图片直接引用 ../figures/（不复制）。
 数学公式用 MathJax CDN 渲染（离线时显示源码，页面顶部有提示）。
@@ -22,9 +23,33 @@ from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import quote, unquote, urlparse, urlsplit, urlunsplit
 
+try:
+    from scripts.code_layout import MAIN_AUDIO_GROUP_CHAPTER, main_audio_manifest_path, main_audio_path
+except ModuleNotFoundError:  # direct ``python scripts/build_site.py``
+    from code_layout import MAIN_AUDIO_GROUP_CHAPTER, main_audio_manifest_path, main_audio_path
+
 ROOT = Path(__file__).parent.parent
 SRC = ROOT / "chapters"
 OUT = ROOT / "site"
+CODE_CHAPTERS = ROOT / "codes" / "chapters"
+RESEARCH_ROOT = CODE_CHAPTERS / "ch00" / "research"
+REAL_AUDIO_ROOT = CODE_CHAPTERS / "ch02" / "real_audio"
+ROOM_AUDIO_ROOT = CODE_CHAPTERS / "appendix_b" / "room_audio"
+MOVING_AUDIO_ROOT = CODE_CHAPTERS / "ch09" / "moving_audio"
+TRACKING_AUDIO_ROOT = CODE_CHAPTERS / "ch09" / "tracking_audio"
+GSS_AUDIO_ROOT = CODE_CHAPTERS / "ch08" / "gss_audio"
+
+
+def main_audio_sources():
+    """Map only declared chapter-owned WAVs to their stable published names."""
+    manifest = json.loads(main_audio_manifest_path(CODE_CHAPTERS).read_text(encoding="utf-8"))
+    result = {}
+    for record in manifest["files"]:
+        chapter = MAIN_AUDIO_GROUP_CHAPTER[record["group"]]
+        if record.get("chapter") != chapter:
+            raise ValueError(f"音频章节归属不符：{record['file']}")
+        result[main_audio_path(CODE_CHAPTERS, record["group"], record["file"]).resolve()] = record["file"]
+    return result
 
 CHAPTERS = [
     ("01_problem-definition.md", "第 1 章 · 问题定义与双耳启示"),
@@ -177,9 +202,9 @@ def stage_room_audio(source, destination):
     if (report.get("schema_version") != 1 or
             report.get("status") != "pyroomacoustics_simulation_executed" or
             report.get("actual_max_order") != manifest.get("max_order") or
-            report.get("generator", {}).get("path") != "codes/examples/room_srp_exercise.py" or
+            report.get("generator", {}).get("path") != "codes/chapters/appendix_b/examples/room_srp_exercise.py" or
             report["generator"].get("sha256") != hashlib.sha256(
-                (ROOT / "codes/examples/room_srp_exercise.py").read_bytes()).hexdigest() or
+                (ROOT / "codes/chapters/appendix_b/examples/room_srp_exercise.py").read_bytes()).hexdigest() or
             report.get("assets", {}).get("figure", {}).get("sha256") != hashlib.sha256(
                 (source / "ROOM_RESULTS.png").read_bytes()).hexdigest() or
             report["assets"].get("audio_manifest", {}).get("sha256") != hashlib.sha256(
@@ -211,10 +236,10 @@ def stage_moving_audio(source, destination):
     if (manifest["sample_rate_hz"] != 16000
             or manifest["model"].find("free field") < 0):
         raise ValueError("移动声源采样率或模型说明不符")
-    source_paths = {"codes/examples/moving_source_audio.py",
-                    "codes/array_tutorial/moving_source.py",
-                    "codes/array_tutorial/audio_samples.py",
-                    "codes/array_tutorial/conventions.py"}
+    source_paths = {"codes/chapters/ch09/examples/moving_source_audio.py",
+                    "codes/chapters/ch09/core/moving_source.py",
+                    "codes/chapters/ch00/core/audio_samples.py",
+                    "codes/chapters/ch02/core/conventions.py"}
     if set(manifest.get("source_sha256", {})) != source_paths:
         raise ValueError("移动声源生成源码清单不完整")
     for name, digest in manifest["source_sha256"].items():
@@ -271,13 +296,13 @@ def stage_gss_audio(source, destination):
             or {p.name for p in source.iterdir() if p.is_file()} - {"README.md"} != expected
             or manifest["sample_rate_hz"] != 16000):
         raise ValueError("GSS 独立清单、文件集合或采样率不符")
-    source_paths = {"codes/examples/gss_teaching_demo.py",
-                    "codes/array_tutorial/gss_teaching.py",
-                    "codes/array_tutorial/separation.py",
-                    "codes/array_tutorial/spectral.py",
-                    "codes/array_tutorial/conventions.py",
-                    "codes/array_tutorial/audio_samples.py",
-                    "codes/array_tutorial/dereverberation.py"}
+    source_paths = {"codes/chapters/ch08/examples/gss_teaching_demo.py",
+                    "codes/chapters/ch08/core/gss_teaching.py",
+                    "codes/chapters/ch08/core/separation.py",
+                    "codes/chapters/ch02/core/spectral.py",
+                    "codes/chapters/ch02/core/conventions.py",
+                    "codes/chapters/ch00/core/audio_samples.py",
+                    "codes/chapters/ch07/core/dereverberation.py"}
     if set(manifest.get("generator_inputs", {})) != source_paths:
         raise ValueError("GSS 生成源码清单不完整")
     for name, digest in manifest["generator_inputs"].items():
@@ -314,14 +339,12 @@ def source_digest():
     """站点正文与构建器的稳定摘要，用于拒绝陈旧生成物。"""
     digest = hashlib.sha256()
     paths = sorted(SRC.glob("*.md"))
-    paths += [ROOT / "codes" / "research" / name for name, _ in RESEARCH]
-    paths += sorted((ROOT / "codes" / "audio").glob("*.wav"))
-    paths += [ROOT / "codes" / "audio" / "MANIFEST.json"]
-    paths += sorted((ROOT / "codes" / "real_audio").glob("*"))
-    paths += sorted((ROOT / "codes" / "room_audio").glob("*"))
-    paths += sorted((ROOT / "codes" / "moving_audio").glob("*"))
-    paths += sorted((ROOT / "codes" / "tracking_audio").glob("*"))
-    paths += sorted((ROOT / "codes" / "gss_audio").glob("*"))
+    paths += [RESEARCH_ROOT / name for name, _ in RESEARCH]
+    paths += [main_audio_manifest_path(CODE_CHAPTERS)]
+    paths += sorted(main_audio_sources())
+    for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT):
+        paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "heading_aliases.py",
               ROOT / "scripts" / "legacy_sequential_anchors.json",
@@ -456,7 +479,7 @@ def source_outputs():
         **{(SRC / name).resolve(): name.replace(".md", ".html")
            for name, _ in CHAPTERS},
         (SRC / HOME_FNAME).resolve(): "index.html",
-        **{(ROOT / "codes" / "research" / name).resolve():
+        **{(RESEARCH_ROOT / name).resolve():
            "research/" + ("index.html" if name == "README.md" else name.replace(".md", ".html"))
            for name, _ in RESEARCH},
     }
@@ -492,7 +515,7 @@ def rewrite_room_image_src(html, source_path, current):
     """Keep the supplementary room chart inside the published site bundle."""
     def replace(match):
         parsed, target = local_link_target(unescape(match.group(3)), source_path)
-        if target == (ROOT / "codes" / "room_audio" / "ROOM_RESULTS.png").resolve():
+        if target == (ROOM_AUDIO_ROOT / "ROOM_RESULTS.png").resolve():
             relative = os.path.relpath("room_audio/ROOM_RESULTS.png", Path(current).parent).replace(os.sep, "/")
             value = urlunsplit(("", "", relative, parsed.query, parsed.fragment))
             return match.group(1) + match.group(2) + escape(value, quote=True) + match.group(2)
@@ -511,22 +534,23 @@ def rewrite_site_links(html, source_path):
         if target in outputs:
             relative = os.path.relpath(outputs[target], Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
-        if target.parent == (ROOT / "codes" / "audio").resolve() and target.suffix == ".wav":
-            relative = os.path.relpath("audio/" + target.name, Path(current).parent).replace(os.sep, "/")
+        main_audio = main_audio_sources()
+        if target in main_audio:
+            relative = os.path.relpath("audio/" + main_audio[target], Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
-        if target.parent == (ROOT / "codes" / "real_audio").resolve() and target.name in REAL_AUDIO_FILES:
+        if target.parent == REAL_AUDIO_ROOT.resolve() and target.name in REAL_AUDIO_FILES:
             relative = os.path.relpath("real_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
-        if target.parent == (ROOT / "codes" / "room_audio").resolve():
+        if target.parent == ROOM_AUDIO_ROOT.resolve():
             relative = os.path.relpath("room_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
-        if target.parent == (ROOT / "codes" / "tracking_audio").resolve() and target.name in (set(TRACKING_AUDIO_WAVS) | {"MANIFEST.json"}):
+        if target.parent == TRACKING_AUDIO_ROOT.resolve() and target.name in (set(TRACKING_AUDIO_WAVS) | {"MANIFEST.json"}):
             relative = os.path.relpath("tracking_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
-        if target.parent == (ROOT / "codes" / "moving_audio").resolve() and target.name in (set(MOVING_AUDIO_WAVS) | {"MANIFEST.json"}):
+        if target.parent == MOVING_AUDIO_ROOT.resolve() and target.name in (set(MOVING_AUDIO_WAVS) | {"MANIFEST.json"}):
             relative = os.path.relpath("moving_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
-        if target.parent == (ROOT / "codes" / "gss_audio").resolve() and target.name in (set(GSS_AUDIO_WAVS) | {"MANIFEST.json", "STATE.npz"}):
+        if target.parent == GSS_AUDIO_ROOT.resolve() and target.name in (set(GSS_AUDIO_WAVS) | {"MANIFEST.json", "STATE.npz"}):
             relative = os.path.relpath("gss_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
         return repository_url(parsed, target)
@@ -558,7 +582,7 @@ def render(md_text, source_path=None):
         from scripts.heading_aliases import historical_aliases, has_historical_sequential_aliases
     except ModuleNotFoundError:
         from heading_aliases import historical_aliases, has_historical_sequential_aliases
-    is_research = source_path.resolve().parent == (ROOT / "codes" / "research").resolve()
+    is_research = source_path.resolve().parent == RESEARCH_ROOT.resolve()
     records = heading_records(parse_headings(md_text))
     # 数学段暂存：防 markdown 吃下划线、防浏览器吞 <，转完再贴回
     repo = []
@@ -778,7 +802,7 @@ def main():
                 body=body, pn=pn), encoding="utf-8")
         (temp_out / "research").mkdir()
         for fname, label in RESEARCH:
-            source = ROOT / "codes" / "research" / fname
+            source = RESEARCH_ROOT / fname
             md = source.read_text(encoding="utf-8")
             heads = parse_headings(md)
             body, n = render(md, source)
@@ -796,36 +820,38 @@ def main():
         stale = [path for path in OUT.glob("*.html") if path.name not in expected]
         stale += [path for path in (OUT / "research").glob("*.html")
                   if "research/" + path.name not in expected]
-        audio_root = ROOT / "codes" / "audio"
-        manifest = json.loads((audio_root / "MANIFEST.json").read_text())
+        manifest = json.loads(main_audio_manifest_path(CODE_CHAPTERS).read_text())
         audio_names = [record["file"] for record in manifest["files"]]
         if len(audio_names) != len(set(audio_names)) or any(not re.fullmatch(r"[a-z0-9_]+\.wav", name) for name in audio_names):
             raise ValueError("音频清单含重复或不安全路径")
         (temp_out / "audio").mkdir()
         (OUT / "audio").mkdir(exist_ok=True)
         for record in manifest["files"]:
-            source = audio_root / record["file"]
+            chapter = MAIN_AUDIO_GROUP_CHAPTER[record["group"]]
+            if record.get("chapter") != chapter:
+                raise ValueError(f"音频章节归属不符：{record['file']}")
+            source = main_audio_path(CODE_CHAPTERS, record["group"], record["file"])
             if hashlib.sha256(source.read_bytes()).hexdigest() != record["sha256"]:
                 raise ValueError(f"音频校验失败：{source.name}")
             shutil.copy2(source, temp_out / "audio" / source.name)
         stale += [path for path in (OUT / "audio").glob("*.wav") if path.name not in audio_names]
-        real_names = stage_real_audio(ROOT / "codes/real_audio", temp_out / "real_audio")
+        real_names = stage_real_audio(REAL_AUDIO_ROOT, temp_out / "real_audio")
         (OUT / "real_audio").mkdir(exist_ok=True)
         stale += [path for path in (OUT / "real_audio").iterdir()
                   if path.is_file() and path.name not in real_names]
-        room_names = stage_room_audio(ROOT / "codes/room_audio", temp_out / "room_audio")
+        room_names = stage_room_audio(ROOM_AUDIO_ROOT, temp_out / "room_audio")
         (OUT / "room_audio").mkdir(exist_ok=True)
         stale += [path for path in (OUT / "room_audio").iterdir()
                   if path.is_file() and path.name not in room_names]
-        moving_names = stage_moving_audio(ROOT / "codes/moving_audio", temp_out / "moving_audio")
+        moving_names = stage_moving_audio(MOVING_AUDIO_ROOT, temp_out / "moving_audio")
         (OUT / "moving_audio").mkdir(exist_ok=True)
         stale += [path for path in (OUT / "moving_audio").iterdir()
                   if path.is_file() and path.name not in moving_names]
-        tracking_names = stage_tracking_audio(ROOT / "codes/tracking_audio", temp_out / "tracking_audio")
+        tracking_names = stage_tracking_audio(TRACKING_AUDIO_ROOT, temp_out / "tracking_audio")
         (OUT / "tracking_audio").mkdir(exist_ok=True)
         stale += [path for path in (OUT / "tracking_audio").iterdir()
                   if path.is_file() and path.name not in tracking_names]
-        gss_names = stage_gss_audio(ROOT / "codes/gss_audio", temp_out / "gss_audio")
+        gss_names = stage_gss_audio(GSS_AUDIO_ROOT, temp_out / "gss_audio")
         (OUT / "gss_audio").mkdir(exist_ok=True)
         stale += [path for path in (OUT / "gss_audio").iterdir()
                   if path.is_file() and path.name not in gss_names]

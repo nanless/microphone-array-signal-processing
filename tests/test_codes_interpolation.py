@@ -3,8 +3,8 @@ import math
 import unittest
 import numpy as np
 
-from codes.array_tutorial.audio_samples import interpolation_case, delay_samples, prepare_exports, read_pcm16
-from codes.examples.interpolation_exercise import run_exercises
+from codes.chapters.ch00.core.audio_samples import interpolation_case, delay_samples, prepare_exports, read_pcm16
+from codes.chapters.appendix_b.interpolation_exercise import run_exercises
 
 
 class InterpolationTest(unittest.TestCase):

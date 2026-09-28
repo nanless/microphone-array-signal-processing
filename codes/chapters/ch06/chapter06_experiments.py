@@ -6,15 +6,21 @@ they are not speech-quality, device, or convergence benchmarks.
 """
 from __future__ import annotations
 
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
+
 import json
 import numpy as np
 
-from codes.array_tutorial.aec import NLMSState
-from codes.array_tutorial.aec_kalman_matrix import KalmanAECState
-from codes.array_tutorial.aec_rls import RLSState
-from codes.array_tutorial.double_talk import ncc_activity_states
-from codes.examples.aec_kalman_scalar_demo import scalar_kalman_step
-from codes.examples.aec_controlled_doubletalk import increment_metrics
+from codes.chapters.ch06.core.aec import NLMSState
+from codes.chapters.ch06.core.aec_kalman_matrix import KalmanAECState
+from codes.chapters.ch06.core.aec_rls import RLSState
+from codes.chapters.ch06.core.double_talk import ncc_activity_states
+from codes.chapters.ch06.aec_kalman_scalar_demo import scalar_kalman_step
+from codes.chapters.ch06.aec_controlled_doubletalk import increment_metrics
 
 
 def shared_reference_normalization() -> dict:

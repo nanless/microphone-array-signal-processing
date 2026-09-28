@@ -16,7 +16,8 @@ class AssetSourceIntegrityTest(unittest.TestCase):
             ("moving_audio", "source_sha256", quality_check.check_moving_audio),
         ):
             with self.subTest(asset_dir=asset_dir):
-                manifest = quality_check.ROOT / "codes" / asset_dir / "MANIFEST.json"
+                owner = {"gss_audio": "ch08", "moving_audio": "ch09"}[asset_dir]
+                manifest = quality_check.ROOT / "codes" / "chapters" / owner / asset_dir / "MANIFEST.json"
                 recorded = json.loads(original_read(manifest, encoding="utf-8"))
                 source = next(iter(recorded[field]))
                 recorded[field][source] = "0" * 64

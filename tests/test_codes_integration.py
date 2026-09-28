@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from codes.upstream.fetch_upstreams import inspect_project, run_git, validate_project
+from codes.chapters.ch00.upstream.fetch_upstreams import inspect_project, run_git, validate_project
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -16,15 +16,15 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class CodesIntegrationTests(unittest.TestCase):
     def test_documented_examples_run_from_repository_root(self):
-        scripts = (
-            "codes/examples/ch02_05_baselines.py",
-            "codes/examples/ch06_09_baselines.py",
-            "codes/examples/ch10_engineering_baselines.py",
+        modules = (
+            "codes.chapters.ch00.cross_chapter.ch02_05_baselines",
+            "codes.chapters.ch00.cross_chapter.ch06_09_baselines",
+            "codes.chapters.ch10.examples.ch10_engineering_baselines",
         )
-        for script in scripts:
-            with self.subTest(script=script):
+        for module in modules:
+            with self.subTest(module=module):
                 completed = subprocess.run(
-                    [sys.executable, script],
+                    [sys.executable, "-m", module],
                     cwd=ROOT,
                     check=False,
                     stdout=subprocess.PIPE,
@@ -35,7 +35,7 @@ class CodesIntegrationTests(unittest.TestCase):
                 self.assertTrue(completed.stdout.strip())
 
     def test_upstream_lock_uses_full_immutable_git_revisions(self):
-        lock_path = ROOT / "codes" / "SOURCES.lock.json"
+        lock_path = ROOT / "codes" / "chapters" / "ch00" / "SOURCES.lock.json"
         data = json.loads(lock_path.read_text(encoding="utf-8"))
         ids = [project["id"] for project in data["projects"]]
         self.assertEqual(len(ids), len(set(ids)))
@@ -46,7 +46,7 @@ class CodesIntegrationTests(unittest.TestCase):
 
     def test_upstream_list_is_offline_and_matches_lock(self):
         completed = subprocess.run(
-            [sys.executable, "codes/upstream/fetch_upstreams.py", "--list"],
+            [sys.executable, "-m", "codes.chapters.ch00.upstream.fetch_upstreams", "--list"],
             cwd=ROOT,
             check=False,
             stdout=subprocess.PIPE,
@@ -83,7 +83,7 @@ class CodesIntegrationTests(unittest.TestCase):
                     "GIT_INDEX_FILE": "/outside/index", "GIT_CONFIG_COUNT": "1",
                     "GIT_CONFIG_KEY_0": "core.worktree", "GIT_CONFIG_VALUE_0": "/outside"}
         with patch.dict(os.environ, injected):
-            with patch("codes.upstream.fetch_upstreams.subprocess.run") as execute:
+            with patch("codes.chapters.ch00.upstream.fetch_upstreams.subprocess.run") as execute:
                 execute.return_value.stdout = "ok"
                 run_git(["status"], cwd=ROOT)
                 environment = execute.call_args.kwargs["env"]
@@ -99,7 +99,7 @@ class CodesIntegrationTests(unittest.TestCase):
             info = root / "fixture" / ".git" / "info"
             info.mkdir(parents=True)
             (info / "sparse-checkout").write_text("/metaaf/\n/README.md\n!**/*.bin\n")
-            with patch("codes.upstream.fetch_upstreams.run_git",
+            with patch("codes.chapters.ch00.upstream.fetch_upstreams.run_git",
                        side_effect=(project["revision"], project["url"], "")):
                 result = inspect_project(project, root)
             self.assertEqual(result["status"], "source_selection_mismatch")
@@ -116,10 +116,10 @@ class CodesIntegrationTests(unittest.TestCase):
             for outputs in (("b" * 40, project["url"]),
                             (project["revision"], "https://example.invalid/other.git"),
                             (project["revision"], project["url"], " M algorithm.py")):
-                with patch("codes.upstream.fetch_upstreams.run_git", side_effect=outputs):
+                with patch("codes.chapters.ch00.upstream.fetch_upstreams.run_git", side_effect=outputs):
                     with self.assertRaises(ValueError):
                         inspect_project(project, root)
-            with patch("codes.upstream.fetch_upstreams.run_git",
+            with patch("codes.chapters.ch00.upstream.fetch_upstreams.run_git",
                        side_effect=(project["revision"], project["url"], "")):
                 result = inspect_project(project, root)
                 self.assertEqual(result["status"], "entrypoints_missing")
@@ -131,7 +131,7 @@ class CodesIntegrationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "fixture").symlink_to(root / "elsewhere", target_is_directory=True)
-            with patch("codes.upstream.fetch_upstreams.run_git") as git:
+            with patch("codes.chapters.ch00.upstream.fetch_upstreams.run_git") as git:
                 with self.assertRaises(ValueError):
                     inspect_project(project, root)
                 git.assert_not_called()

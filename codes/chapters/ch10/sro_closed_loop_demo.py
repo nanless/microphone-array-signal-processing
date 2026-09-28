@@ -6,6 +6,12 @@ teaching tool, not a band-limited asynchronous sample-rate converter.
 
 from __future__ import annotations
 
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
+
 from bisect import bisect_left
 import json
 import math
@@ -76,7 +82,7 @@ class StatefulLinearClockCorrector:
     def __init__(self, reference_rate_hz: float, device_rate_hz: float,
                  device_start_s: float, reference_length: int,
                  output_start_index: int = 0):
-        from codes.array_tutorial.engineering import _finite_scalar, _integer
+        from codes.chapters.ch10.core.engineering import _finite_scalar, _integer
         reference_rate_hz = _finite_scalar(reference_rate_hz, "reference_rate_hz")
         device_rate_hz = _finite_scalar(device_rate_hz, "device_rate_hz")
         device_start_s = _finite_scalar(device_start_s, "device_start_s")
@@ -98,7 +104,7 @@ class StatefulLinearClockCorrector:
         self.previous: tuple[int, float] | None = None
 
     def push(self, device_indices: list[int], samples: list[float]) -> list[tuple[int, float | None]]:
-        from codes.array_tutorial.engineering import _finite_scalar, _integer
+        from codes.chapters.ch10.core.engineering import _finite_scalar, _integer
         indices = [_integer(i, "device index") for i in device_indices]
         values = [_finite_scalar(v, "sample") for v in samples]
         if len(indices) != len(values):

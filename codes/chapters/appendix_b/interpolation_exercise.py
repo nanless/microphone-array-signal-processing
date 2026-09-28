@@ -5,10 +5,16 @@ The ideal output is evaluated from a known continuous signal, not reconstructed.
 """
 from __future__ import annotations
 
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
+
 import json
 import numpy as np
 
-from codes.array_tutorial.audio_samples import interpolation_case, prepare_exports, read_pcm16
+from codes.chapters.ch00.core.audio_samples import interpolation_case, prepare_exports, read_pcm16
 
 
 def run_exercises() -> dict:

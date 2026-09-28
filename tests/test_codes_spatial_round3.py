@@ -7,11 +7,11 @@ import warnings
 
 import numpy as np
 
-from codes.array_tutorial.beamforming import dsb_weights, mvdr_weights, wiener_gain
-from codes.array_tutorial.doa import gcc_phat, music_spectrum, srp_phat
-from codes.array_tutorial.geometry import direction_vector
-from codes.array_tutorial.tracking import ConstantVelocityKalman, CircularParticleFilter, systematic_resample, wrap_angle
-from codes.examples.exercises_spatial import mvdr_finite_noise_null
+from codes.chapters.ch05.core.beamforming import dsb_weights, mvdr_weights, wiener_gain
+from codes.chapters.ch04.core.doa import gcc_phat, music_spectrum, srp_phat
+from codes.chapters.ch03.core.geometry import direction_vector
+from codes.chapters.ch09.core.tracking import ConstantVelocityKalman, CircularParticleFilter, systematic_resample, wrap_angle
+from codes.chapters.ch00.cross_chapter.exercises_spatial import mvdr_finite_noise_null
 
 
 class SpatialRoundThreeTest(unittest.TestCase):

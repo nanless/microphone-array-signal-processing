@@ -16,7 +16,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from codes.examples.room_srp_exercise import (
+from codes.chapters.appendix_b.examples.room_srp_exercise import (
     SAMPLE_RATE_HZ, _make_room, _write_pcm16, configuration, drr_db,
     export_audio, measured_t60_from_t20, run_experiment, validate_configuration,
 )
@@ -72,7 +72,7 @@ class RoomSrpExerciseTest(unittest.TestCase):
 
     def test_offline_cli_emits_finite_json_without_simulation_result(self):
         completed = subprocess.run(
-            [sys.executable, "-m", "codes.examples.room_srp_exercise", "--check"],
+            [sys.executable, "-m", "codes.chapters.appendix_b.examples.room_srp_exercise", "--check"],
             cwd=ROOT, capture_output=True, text=True, check=True,
         )
         report = json.loads(completed.stdout)

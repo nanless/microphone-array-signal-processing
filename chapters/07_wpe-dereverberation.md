@@ -1,6 +1,6 @@
 > ⚠️ 本篇是教程正文第 7 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。
 >
-> 🏠 首页导读：[`00_overview.md`](./00_overview.md) ｜ 上一篇：[06_aec.md](./06_aec.md) ｜ 下一篇：[08_speech-separation.md](./08_speech-separation.md)
+> 🏠 首页导读：[`00_overview.md`](00_overview.md) ｜ 上一篇：[06_aec.md](06_aec.md) ｜ 下一篇：[08_speech-separation.md](08_speech-separation.md)
 
 ## 7. 去混响（WPE）
 
@@ -46,7 +46,7 @@
 
 **三路线对照表**。不同论文使用的阵列、数据集、识别器和因果条件不同，不能把词错率改善幅度横向拼成统一范围。表中只比较处理对象与实现条件；需要性能数字时，应引用同一数据集上的原始实验。
 
-空间路线的代表是最小方差无失真响应（Minimum Variance Distortionless Response，MVDR）与广义特征值（Generalized Eigenvalue，GEV）波束形成，见[第 5 章 §5.4](./05_beamforming.md#sec-5-4)。谱增益既可由统计模型估计，也可由深度神经网络（Deep Neural Network，DNN）估计。
+空间路线的代表是最小方差无失真响应（Minimum Variance Distortionless Response，MVDR）与广义特征值（Generalized Eigenvalue，GEV）波束形成，见[第 5 章 §5.4](05_beamforming.md#sec-5-4)。谱增益既可由统计模型估计，也可由深度神经网络（Deep Neural Network，DNN）估计。
 
 | 路线 | 处理对象与代表 | 所需输入或假设 |
 |---|---|---|
@@ -62,7 +62,7 @@
 | 延迟预测 | 批处理版迭代整段数据；在线版递推统计量 | 短语音、模型失配或预测阶数过大时不稳定 |
 | 谱增益估计 | 是否因果取决于网络前瞻与特征窗；计算量依模型而定 | 跨房间、跨设备泛化和语音失真需单独验证 |
 
-长混响可先评估 WPE；存在定向干扰时再结合波束形成；学习型后滤波还需满足算力和训练数据条件。多通道 WPE、波束形成与单通道后滤波可以组成一条候选链路，但实际顺序取决于统计量和通道数，见[第 10 章 §10.1](./10_engineering-practice.md#sec-10-1)。
+长混响可先评估 WPE；存在定向干扰时再结合波束形成；学习型后滤波还需满足算力和训练数据条件。多通道 WPE、波束形成与单通道后滤波可以组成一条候选链路，但实际顺序取决于统计量和通道数，见[第 10 章 §10.1](10_engineering-practice.md#sec-10-1)。
 
 **REVERB 挑战赛中的 WPE**：REVERB 包含 8 通道、2 通道和单通道设置，仿真数据的混响时间约为 0.25～0.7 s，另含真实房间录音。
 
@@ -447,7 +447,7 @@ L_{\mathrm{NMSE}}&=10\log_{10}\mathrm{NMSE}.
 
 混响与输出的指标分别为−8.67、−7.70 dB，输出反而变差约0.97 dB。因此本例同时显示拖尾能量减少与活动段参考误差增加，不能把拖尾减少直接写成语音保真改善。
 
-图中使用居中5帧均值估计功率，包含两帧未来信息；功率下限为每频原观测最大功率的 $10^{-5}$，相对对角加载为 $10^{-6}$。全段求系数本身也依赖未来。卷积结果截取1.4 s，未显示之后的完整物理尾声，因此图中指标不用于估计真实 $T_{60}$。生成参数、选帧和数字见[图21统计记录](../codes/reports/figure21_wpe.json)。
+图中使用居中5帧均值估计功率，包含两帧未来信息；功率下限为每频原观测最大功率的 $10^{-5}$，相对对角加载为 $10^{-6}$。全段求系数本身也依赖未来。卷积结果截取1.4 s，未显示之后的完整物理尾声，因此图中指标不用于估计真实 $T_{60}$。生成参数、选帧和数字见[图21统计记录](../codes/chapters/ch07/reports/figure21_wpe.json)。
 
 #### 与空间处理组成系统
 
@@ -610,7 +610,7 @@ $$\bar{\vec w}=[1/3,2/3,0,0]^\top，$$
 
 #### 教学实现与诊断取点
 
-[`codes/array_tutorial/dereverberation.py`](../codes/array_tutorial/dereverberation.py) 提供只依赖 NumPy 的最小离线 WPE。`offline_wpe()` 接收复数 STFT，单通道轴序为 `(频点, 帧)`，多通道轴序为 `(频点, 通道, 帧)`，输出保持相同形状；它实现保护延迟、按滞后堆叠多通道历史、共享功率权重、相对对角加载和复共轭预测。计算前逐频点以共同幅度归一化各通道和各帧，输出再恢复原幅度，以免极小或极大但有限的输入在平方时下溢或上溢。
+[`codes/chapters/ch07/core/dereverberation.py`](../codes/chapters/ch07/core/dereverberation.py) 提供只依赖 NumPy 的最小离线 WPE。`offline_wpe()` 接收复数 STFT，单通道轴序为 `(频点, 帧)`，多通道轴序为 `(频点, 通道, 帧)`，输出保持相同形状；它实现保护延迟、按滞后堆叠多通道历史、共享功率权重、相对对角加载和复共轭预测。计算前逐频点以共同幅度归一化各通道和各帧，输出再恢复原幅度，以免极小或极大但有限的输入在平方时下溢或上溢。
 
 `taps=0`、迭代次数为零、记录短于首个有效回归帧或整个频点为零时直接旁路。输入各维不能为空、数值必须有限；阶数、延迟和迭代次数必须为整数，功率下限必须是有限正数。输入必须是复谱，不能把幅度谱传入后再补相位。
 
@@ -624,9 +624,9 @@ $$\bar{\vec w}=[1/3,2/3,0,0]^\top，$$
 
 该输入没有给出晚期混响真值，却会使可预测的目标分量几乎消失，故不能把残差小解读为去混响成功。若为改善数值条件而加对角加载，也仍须检查目标失真；正则化不能单独证明模型的声学假设成立。
 
-联合示例用 `.venv/bin/python -m codes.examples.ch06_09_baselines` 运行，边界测试见 [`tests/test_codes_aec_wpe_sep_track.py`](../tests/test_codes_aec_wpe_sep_track.py)和[`tests/test_codes_wpe_mask_diagnostics.py`](../tests/test_codes_wpe_mask_diagnostics.py)。测试固定检查 $K=0$、短输入、全零频点、单抽头复共轭方向、多通道形状、整体幅度缩放等变性、秩亏诊断与非零微小掩码。实际音频管线还要自行固定 STFT 的窗、帧移、`center`/补零约定与 ISTFT 长度，并测试短语音、静音权重、病态矩阵、通道交换及块边界。
+联合示例用 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.ch06_09_baselines` 运行，边界测试见 [`tests/test_codes_aec_wpe_sep_track.py`](../tests/test_codes_aec_wpe_sep_track.py)和[`tests/test_codes_wpe_mask_diagnostics.py`](../tests/test_codes_wpe_mask_diagnostics.py)。测试固定检查 $K=0$、短输入、全零频点、单抽头复共轭方向、多通道形状、整体幅度缩放等变性、秩亏诊断与非零微小掩码。实际音频管线还要自行固定 STFT 的窗、帧移、`center`/补零约定与 ISTFT 长度，并测试短语音、静音权重、病态矩阵、通道交换及块边界。
 
-该基线是整段离线估计，不宣称因果或实时。离线、在线、学习功率与联合滤波的源代码入口分别如下，完整读码顺序和失效实验见 [WPE 源码研究](../codes/research/02_aec_wpe_separation.md#wpe)。
+该基线是整段离线估计，不宣称因果或实时。离线、在线、学习功率与联合滤波的源代码入口分别如下，完整读码顺序和失效实验见 [WPE 源码研究](../codes/chapters/ch00/research/02_aec_wpe_separation.md#wpe)。
 
 | 实现 | 主要源码 | 与教学基线的差别 | 最小核对实验 |
 |---|---|---|---|
@@ -639,21 +639,21 @@ $$\bar{\vec w}=[1/3,2/3,0,0]^\top，$$
 
 ESPnet 的 DNN-WPE 外层输入为 `(批, 帧, 通道, 频点)`，内部才转成 `(批, 频点, 通道, 帧)`；换库时必须显式转换，不能仅凭数组同为四维就直接传入。DNN-WPE 中只做一次解析更新，也不表示网络或功率估计没有使用未来帧。[ESPnet DNN-WPE 源码](https://github.com/espnet/espnet/blob/be79590bb2ff26ffb01bc825c5f68cb9418b7f0d/espnet2/enh/layers/dnn_wpe.py)
 
-静态核对锁定ESPnet代码还发现，构造器中的 `diagonal_loading`、`diag_eps`、`use_torch_solver` 没有被该版本 `DNN_WPE.forward()` 消费；对应底层路径仍使用固定 $10^{-10}$ 的绝对加载及求逆。这是特定版本的源码行为，不是已运行训练权重的结果。移植参数时需追踪实际被调用的路径，不能只看构造器名称。[研究手册W04](../codes/research/02_aec_wpe_separation.md#wpe)保留调用关系和验证范围。
+静态核对锁定ESPnet代码还发现，构造器中的 `diagonal_loading`、`diag_eps`、`use_torch_solver` 没有被该版本 `DNN_WPE.forward()` 消费；对应底层路径仍使用固定 $10^{-10}$ 的绝对加载及求逆。这是特定版本的源码行为，不是已运行训练权重的结果。移植参数时需追踪实际被调用的路径，不能只看构造器名称。[研究手册W04](../codes/chapters/ch00/research/02_aec_wpe_separation.md#wpe)保留调用关系和验证范围。
 
 工程比较应固定通道数、上下文长度、硬件、计时范围和实际因果条件。训练权重、语料和 CUDA 环境是独立前提；取得源代码并不表示训练或设备实时性已经验证。
 
 #### 离线、在线与未来扰动的实跑对照
 
-本书另提供[独立实现数值对照](../codes/examples/compare_wpe_reference.py)：把教学版 `offline_wpe()` 与未经修改的 `nara-wpe 0.0.11` 的 `wpe_v6()` 比较。固定复数随机输入、预测阶数 2、保护延迟 3，检查单通道、双通道、通道置换和整体缩放，每种分别迭代 1 次和 3 次。两种实现对启动帧的处理不同，因此只比较零起始索引 $t=4$ 起的有效预测区间；8组检查的最大绝对误差约为 $3.2\times10^{-15}$。
+本书另提供[独立实现数值对照](../codes/chapters/ch07/examples/compare_wpe_reference.py)：把教学版 `offline_wpe()` 与未经修改的 `nara-wpe 0.0.11` 的 `wpe_v6()` 比较。固定复数随机输入、预测阶数 2、保护延迟 3，检查单通道、双通道、通道置换和整体缩放，每种分别迭代 1 次和 3 次。两种实现对启动帧的处理不同，因此只比较零起始索引 $t=4$ 起的有效预测区间；8组检查的最大绝对误差约为 $3.2\times10^{-15}$。
 
-[完整参数与误差口径](../codes/research/02_aec_wpe_separation.md#wpe)说明为何要对齐统计区间和功率下限。
+[完整参数与误差口径](../codes/chapters/ch00/research/02_aec_wpe_separation.md#wpe)说明为何要对齐统计区间和功率下限。
 
 锁定包的默认别名 `wpe` 指向 `wpe_v7`；上述对照明确选择的是 `wpe_v6`。v6/v7的全频相对功率地板与v8的逐频地板，在高动态范围输入上不等价；固定输入下误差接近零不能证明所有入口都等价，源码和反例见同一研究手册。
 
 该检查验证复数代数、维度和迭代口径，不是语音质量、流式延迟或论文全量实验的复现。
 
-[在线接口与状态对照](../codes/examples/compare_online_wpe_reference.py)先手算上述三个固定索引，再以保留上游缓冲顺序的精简 NumPy 适配参考逐帧对照锁定源码。适配部分随附原始版权与 MIT 声明；独立期望另由实数、复数启动例的分数手算给出，不用两个相关实现彼此一致代替独立验证。
+[在线接口与状态对照](../codes/chapters/ch07/examples/compare_online_wpe_reference.py)先手算上述三个固定索引，再以保留上游缓冲顺序的精简 NumPy 适配参考逐帧对照锁定源码。适配部分随附原始版权与 MIT 声明；独立期望另由实数、复数启动例的分数手算给出，不用两个相关实现彼此一致代替独立验证。
 
 固定种子、48 帧、2 个频点、1 个通道、2 抽头、`delay=2`、遗忘因子 0.95 时，NumPy 与上游连续输出的最大绝对误差为 $2.4\times10^{-15}$。同一对象在第 24 帧外层分块不改变输出；若第 24 帧重建对象，差异从该帧开始，最大绝对差约为 2.56。后一个数值只说明状态丢失会改变这组合成复谱，不表示 2.56 是任何语音指标。
 
@@ -734,7 +734,7 @@ ESPnet 的 DNN-WPE 外层输入为 `(批, 帧, 通道, 频点)`，内部才转�
 
 **可运行练习 E07-01～E07-05**
 
-运行 `.venv/bin/python -m codes.examples.exercises_enhancement`，源码见 [`exercises_enhancement.py`](../codes/examples/exercises_enhancement.py)。可听的混响前后样本及其固定处理参数见[练习及音频手册](../codes/research/05_exercises_and_audio.md)；下面的复数序列只用于数学核对。
+运行 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_enhancement`，源码见 [`exercises_enhancement.py`](../codes/chapters/ch00/cross_chapter/exercises_enhancement.py)。可听的混响前后样本及其固定处理参数见[练习及音频手册](../codes/chapters/ch00/research/05_exercises_and_audio.md)；下面的复数序列只用于数学核对。
 
 #### E07-01：有效帧与矩阵尺寸
 
@@ -788,7 +788,7 @@ $$\bar R=\begin{bmatrix}2&0&1&0\\0&1&0&0\\1&0&2&0\\0&0&0&1\end{bmatrix}，$$
 
 **第 3 步：改变通道增益。** 第二路乘以 2 后，残差为 $[1+\mathrm j,4]$，其功率变为 16，共享估计为 $(2+16)/2=9$；把所有通道都乘以 2 则得到 $4\times3=12$。单通道增益变化和全阵列共同缩放并不等价。若共同乘以非零常数 $c$，同时令 $\lambda$ 乘以 $|c|^2$，正规方程中分子与分母抵消，$R$ 和 $P$ 保持不变。另一种操作是只把全部逆功率权重乘同一正常数，此时两边才共同缩放。逐通道增益不均匀通常还会改变各帧相对权重，不满足上述共同缩放关系。
 
-全零残差时，无约束似然把最优值推向 $\lambda\downarrow0$，没有正的内部极小值，也不能对零功率取倒数。实际 [`offline_wpe()`](../codes/array_tutorial/dereverberation.py)另设相对功率地板，并对完全静音频点旁路，因此实现不是无约束的逐帧极大似然。代码与独立检查见 [enhancement_step_exercises.py](../codes/examples/enhancement_step_exercises.py) 的 `E07-06`。本题只核对功率更新，不证明球形模型符合真实房间。
+全零残差时，无约束似然把最优值推向 $\lambda\downarrow0$，没有正的内部极小值，也不能对零功率取倒数。实际 [`offline_wpe()`](../codes/chapters/ch07/core/dereverberation.py)另设相对功率地板，并对完全静音频点旁路，因此实现不是无约束的逐帧极大似然。代码与独立检查见 [enhancement_step_exercises.py](../codes/chapters/ch00/cross_chapter/enhancement_step_exercises.py) 的 `E07-06`。本题只核对功率更新，不证明球形模型符合真实房间。
 
 <a id="e07-07"></a>
 
@@ -841,7 +841,7 @@ y_t&=w_\star^H(x_t-G^Hq_t).
 
 给整块 $\bar R$ 加 $\delta I$ 后，代数分解依然成立，但得到的是 $G_\delta=(C+\delta I)^{-1}B^H$ 和 $S_\delta=A+\delta I-BG_\delta$。只对 WPE 历史块加载，再直接用其残差的经验协方差做后级，通常不是同一个 $S_\delta$；两模块各自的相对加载也不能自动视为同一个正则化问题。因此“串联即可等价”必须连同权重、统计帧和正则化一起核对。
 
-分解依据见 [Boeddeker 等，ICASSP 2020，§4 和附录](https://arxiv.org/pdf/1910.13707)；本题的完整平方、数字和快照为本书复算。运行 `.venv/bin/python -m codes.examples.enhancement_structure_exercises`；[代码](../codes/examples/enhancement_structure_exercises.py)和[独立测试](../tests/test_codes_enhancement_structure.py)另检查复数互相关、共同缩放、零互相关与奇异矩阵。这里没有运行真实音频，也不从目标值较小推断语音质量必然更好。
+分解依据见 [Boeddeker 等，ICASSP 2020，§4 和附录](https://arxiv.org/pdf/1910.13707)；本题的完整平方、数字和快照为本书复算。运行 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.enhancement_structure_exercises`；[代码](../codes/chapters/ch00/cross_chapter/enhancement_structure_exercises.py)和[独立测试](../tests/test_codes_enhancement_structure.py)另检查复数互相关、共同缩放、零互相关与奇异矩阵。这里没有运行真实音频，也不从目标值较小推断语音质量必然更好。
 
 #### E07-08：复数加权求解与加载后的正交性
 
@@ -936,7 +936,7 @@ r_3&=\alpha^3r_0+\sum_{i=1}^3\alpha^{3-i}q_iX_i.
 
 **第3步：零历史期间保留什么？** 若接着两帧的回归量均为零，继续遗忘得到 $R=7/8,r=117/160$；若冻结统计，两者保持 $7/2,117/40$。这两种情况下系数比值暂时相同，但之后遇到非零输入时权重不同。无论选择哪种统计策略，实际时间和历史缓冲仍须推进，不能反复把同一个旧帧当作新历史。
 
-**数值边界另查。** 逆矩阵递推在零回归量下可能执行 $P\leftarrow P/\alpha$，其增长与上述直接 $R$ 衰减是同一问题的两面。锁定nara实现从单位逆矩阵启动、连续零帧时，$\alpha=0.95$在第13838个调用首次出现非有限状态；$\alpha=0.5$在第1024个调用出现。之后切回非零输入也可能传播非有限输出。参数、调用计数和环境见[静音边界实跑报告](../codes/reports/chapter07_online_wpe_silence.json)及[复现入口](../codes/examples/wpe_silence_boundary.py)。这些是固定双精度实现的边界，不是所有在线WPE的通用寿命；本题直接累计R的教学递推也不是该上游逆更新接口。
+**数值边界另查。** 逆矩阵递推在零回归量下可能执行 $P\leftarrow P/\alpha$，其增长与上述直接 $R$ 衰减是同一问题的两面。锁定nara实现从单位逆矩阵启动、连续零帧时，$\alpha=0.95$在第13838个调用首次出现非有限状态；$\alpha=0.5$在第1024个调用出现。之后切回非零输入也可能传播非有限输出。参数、调用计数和环境见[静音边界实跑报告](../codes/chapters/ch07/reports/chapter07_online_wpe_silence.json)及[复现入口](../codes/chapters/ch07/examples/wpe_silence_boundary.py)。这些是固定双精度实现的边界，不是所有在线WPE的通用寿命；本题直接累计R的教学递推也不是该上游逆更新接口。
 
 #### E07-14：MINT可逆为什么仍会放大噪声？
 
@@ -1003,13 +1003,13 @@ s_{\mathrm{oracle}}[n]&=x[n]-d[n].
 
 四个文件以共同增益1导出，不分别归一化。播放前先调低音量：
 
-[纯音目标](../codes/audio/wpe_predictable_target.wav)
+[纯音目标](../codes/chapters/ch07/audio/wpe_predictable_target.wav)
 
-[带反馈尾声的观测](../codes/audio/wpe_predictable_reverberant.wav)
+[带反馈尾声的观测](../codes/chapters/ch07/audio/wpe_predictable_reverberant.wav)
 
-[已知真值逆滤波输出](../codes/audio/wpe_predictable_oracle_inverse.wav)
+[已知真值逆滤波输出](../codes/chapters/ch07/audio/wpe_predictable_oracle_inverse.wav)
 
-[盲WPE输出](../codes/audio/wpe_predictable_output.wav)
+[盲WPE输出](../codes/chapters/ch07/audio/wpe_predictable_output.wav)
 
 **处理条件。** 实际WPE用512点periodic Hann窗、128点移，`center=True`使首尾各补256个零，共251帧；逆STFT使用平方窗加权重叠相加，去掉起始补零，返回32000点。设 $K=1,\Delta=4$、迭代3次、相对加载 $10^{-6}$、功率地板 $10^{-5}$；无时间平滑，系数用整段有效帧估计，因此是离线处理。
 
@@ -1030,7 +1030,7 @@ g&=\frac{s^Ty}{s^Ts},\\
 
 **为什么不能只看尾声？** 在目标停止后的 $[1,2)$ s窗口，WPE尾声均方功率相对观测下降约11.66 dB；但目标稳态增益也降为约0.53，并未保持单位增益。该频率在32 ms延迟内正好经历32个周期，目标本身高度可预测，不能假定预测器只会拟合不需要的尾声。若忽略起止过程，反馈稳态增益是 $1/(1-0.65)\approx2.8571$；表中2.8046还受有限启动和评分窗口影响。
 
-浮点真值逆的最大误差约 $2.8\times10^{-17}$；PCM逆输出与PCM目标相同。盲输出的浮点与PCM评分略有量化差别，上表固定采用后者。全部处理参数、两种精度评分及复现代码见[练习及音频手册](../codes/research/05_exercises_and_audio.md)。本题是单个确定性合成反例，不是听感研究，也不以尾声能量变化声称识别率或可懂度改善。
+浮点真值逆的最大误差约 $2.8\times10^{-17}$；PCM逆输出与PCM目标相同。盲输出的浮点与PCM评分略有量化差别，上表固定采用后者。全部处理参数、两种精度评分及复现代码见[练习及音频手册](../codes/chapters/ch00/research/05_exercises_and_audio.md)。本题是单个确定性合成反例，不是听感研究，也不以尾声能量变化声称识别率或可懂度改善。
 
 ### 7.10 研究方向
 
@@ -1045,13 +1045,13 @@ WPE 的改进主要围绕四个限制展开：
 
 **MetaAF WPE改变系数更新规则。** 固定频域预测结构后，用学习到的GRU/FGRU优化器生成更新量，以处理手工更新规则对信号和路径变化的适应问题。[固定源码 `zoo/wpe/wpe.py`](https://github.com/adobe-research/MetaAF/blob/56c4665bdc51c2e0595a7c0cd9b1266408adceff/zoo/wpe/wpe.py)的直接乘法参数约定与本章共轭系数不同，需要先核对。一项可行的最小检查是暂以预先指定的更新量替代网络输出，手算两步系数、预测与状态推进，再比较相同结构下的固定和学习更新器；这是建议实验，本书没有训练或运行该网络权重。
 
-**VACE-WPE改变回归输入。** [Yang与Chang（2022）](https://doi.org/10.1109/TASLP.2022.3205752)为单麦观测生成虚拟第二通道，再执行双通道预测；虚拟通道没有增加独立物理麦克风或真实阵列孔径。该配置的功率网络只使用实际观测，因此也不能直接套用两路残差平均的功率模型。[固定源码](https://github.com/dreadbird06/tso_vace_wpe/tree/10ee77dd020d58af508feb77251f9353208cb33a)采用离线前端。一项最小检查是固定给定的虚拟复谱与正功率，先验证两通道排列、零输入和求解结果，再加载网络比较有无虚拟通道；本书未运行PyTorch推理，不能把这一方案写成已完成的神经实验。两种扩展的依赖、许可证和复核边界见[研究手册W09](../codes/research/02_aec_wpe_separation.md#wpe)。
+**VACE-WPE改变回归输入。** [Yang与Chang（2022）](https://doi.org/10.1109/TASLP.2022.3205752)为单麦观测生成虚拟第二通道，再执行双通道预测；虚拟通道没有增加独立物理麦克风或真实阵列孔径。该配置的功率网络只使用实际观测，因此也不能直接套用两路残差平均的功率模型。[固定源码](https://github.com/dreadbird06/tso_vace_wpe/tree/10ee77dd020d58af508feb77251f9353208cb33a)采用离线前端。一项最小检查是固定给定的虚拟复谱与正功率，先验证两通道排列、零输入和求解结果，再加载网络比较有无虚拟通道；本书未运行PyTorch推理，不能把这一方案写成已完成的神经实验。两种扩展的依赖、许可证和复核边界见[研究手册W09](../codes/chapters/ch00/research/02_aec_wpe_separation.md#wpe)。
 
 生成式恢复是另一条路线。例如[Stream.FM（2026）正式论文](https://doi.org/10.1109/TASLPRO.2026.3696215)（卷34，3087～3101页；另有[v3作者版](https://arxiv.org/abs/2512.19442v3)）用逐帧流匹配处理包含去混响在内的语音恢复任务。
 
-它学习从受损观测到恢复信号的条件生成过程，不是用 WPE 的延迟线性回归替换一个更好的功率估计器。流式运行还要为数值求解的各阶段分别维护历史；网络单次调用因果不等于完整采样器已经能跨音频块续算。固定源码入口、已发现的状态接口问题与未执行边界见[研究手册 N14](../codes/research/02_aec_wpe_separation.md#streamfm)。本书没有运行该模型权重，不能据此声称它在本章合成例上优于 WPE。
+它学习从受损观测到恢复信号的条件生成过程，不是用 WPE 的延迟线性回归替换一个更好的功率估计器。流式运行还要为数值求解的各阶段分别维护历史；网络单次调用因果不等于完整采样器已经能跨音频块续算。固定源码入口、已发现的状态接口问题与未执行边界见[研究手册 N14](../codes/chapters/ch00/research/02_aec_wpe_separation.md#streamfm)。本书没有运行该模型权重，不能据此声称它在本章合成例上优于 WPE。
 
 参数设置应先在目标数据上把直达声和早期反射的损伤控制在声明的指标阈值内，再根据晚期拖尾长度和可用帧数选择 $K$。保护延迟不能保证早期成分完全不变；弱混响时可以旁路 WPE。多说话人分离见第 8 章。
 
 
-> 📄 本篇信息：配图 2 张 ｜ [回首页](./00_overview.md)
+> 📄 本篇信息：配图 2 张 ｜ [回首页](00_overview.md)

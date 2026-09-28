@@ -1,8 +1,8 @@
 """Known inverse, geometric impulse train and independent one-tap WLS audio checks."""
 import unittest
 import numpy as np
-from codes.array_tutorial.audio_samples import wpe_predictable_case,prepare_exports,read_pcm16
-from codes.array_tutorial.spectral import stft,istft
+from codes.chapters.ch00.core.audio_samples import wpe_predictable_case,prepare_exports,read_pcm16
+from codes.chapters.ch02.core.spectral import stft,istft
 
 
 class WPEPredictableAudio(unittest.TestCase):

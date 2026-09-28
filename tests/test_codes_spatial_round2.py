@@ -8,10 +8,10 @@ import unittest
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from codes.array_tutorial.beamforming import mvdr_weights
-from codes.array_tutorial.doa import capon_spectrum
-from codes.array_tutorial.geometry import near_field_steering
-from codes.examples.exercises_spatial import run_exercises
+from codes.chapters.ch05.core.beamforming import mvdr_weights
+from codes.chapters.ch04.core.doa import capon_spectrum
+from codes.chapters.ch03.core.geometry import near_field_steering
+from codes.chapters.ch00.cross_chapter.exercises_spatial import run_exercises
 
 
 class SpatialRoundTwoTest(unittest.TestCase):

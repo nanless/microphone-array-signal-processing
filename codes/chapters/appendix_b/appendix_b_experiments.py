@@ -7,6 +7,12 @@ PCM. The other exercises use small analytic fixtures with independent answers.
 
 from __future__ import annotations
 
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
+
 import hashlib
 import json
 import math
@@ -15,12 +21,12 @@ import wave
 
 import numpy as np
 
-from codes.array_tutorial.doa import srp_phat
+from codes.chapters.ch04.core.doa import srp_phat
 
 
 # codes/chapters/appendix_b/<module>.py is three directory levels below the repo.
 ROOT = Path(__file__).resolve().parents[3]
-ROOM = ROOT / "codes" / "room_audio"
+ROOM = ROOT / "codes/chapters/appendix_b/room_audio"
 
 
 def _read_results() -> dict:

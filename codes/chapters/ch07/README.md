@@ -8,5 +8,3 @@
 .venv/bin/python -m codes.chapters.ch07.chapter07_experiments
 .venv/bin/python -m codes.chapters.ch07.wpe_temporal_contract
 ```
-
-原 `codes.examples.*` 模块名和命令保留兼容入口。

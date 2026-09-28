@@ -94,11 +94,11 @@ class BuildHelpersTest(unittest.TestCase):
             )
 
     def test_repository_links_become_portable_in_combined_pdf(self):
-        html = '<a href="../codes/array_tutorial/aec.py">AEC code</a>'
+        html = '<a href="../codes/chapters/ch06/core/aec.py">AEC code</a>'
         rewritten = build_pdf.rewrite_repository_links(html)
         self.assertEqual(
             rewritten,
-            '<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/aec.py">AEC code</a>',
+            '<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/core/aec.py">AEC code</a>',
         )
         self.assertEqual(
             build_pdf.rewrite_repository_links('<a href="https://example.com/a">a</a>'),

@@ -10,10 +10,10 @@ import wave
 
 import numpy as np
 
-from codes.array_tutorial.real_recordings import (
+from codes.chapters.ch02.core.real_recordings import (
     FILENAMES, average_pcm, experiment, pcm_wav, power_metrics, read_pcm_wav,
 )
-from codes.examples.prepare_real_recordings import (
+from codes.chapters.ch02.examples.prepare_real_recordings import (
     DEFAULT_OUTPUT, EXCERPT_PCM_SHA256, check, download_archive, verify_archive,
 )
 

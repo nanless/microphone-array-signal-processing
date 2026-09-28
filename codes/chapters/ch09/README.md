@@ -9,4 +9,4 @@
 .venv/bin/python -m codes.chapters.ch09.tracking_crossing_dropout_demo
 ```
 
-原有 `codes.examples` 同名模块保留为兼容入口。公式、题干和限制见 [第 9 章](../../../chapters/09_source-tracking.md)；逐题映射见 [练习手册](../../research/05_exercises_and_audio.md)。
+公式、题干和限制见 [第 9 章](../../../chapters/09_source-tracking.md)；逐题映射见 [练习手册](../ch00/research/05_exercises_and_audio.md)。

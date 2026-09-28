@@ -203,7 +203,7 @@ class FigureAlgorithmTest(unittest.TestCase):
         np.testing.assert_allclose(first["median"], np.median(first["trial_contrasts"], axis=-1))
 
     def test_published_gcc_trials_reproduce_counts_and_quantiles(self):
-        report = json.loads((ROOT / "codes/reports/figure13_gcc_reverb.json").read_text())
+        report = json.loads((ROOT / "codes/chapters/ch04/reports/figure13_gcc_reverb.json").read_text())
         self.assertEqual(report["generator_sha256"],
                          hashlib.sha256((ROOT / "scripts/make_figures.py").read_bytes()).hexdigest())
         stats = report["statistics"]

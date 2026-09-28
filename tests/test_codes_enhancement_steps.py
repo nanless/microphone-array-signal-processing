@@ -2,7 +2,7 @@
 from fractions import Fraction as F
 import unittest
 import numpy as np
-from codes.examples.enhancement_step_exercises import ip_row, run_exercises
+from codes.chapters.ch00.cross_chapter.enhancement_step_exercises import ip_row, run_exercises
 
 
 class EnhancementSteps(unittest.TestCase):

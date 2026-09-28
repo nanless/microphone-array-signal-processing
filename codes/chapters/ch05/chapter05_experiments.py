@@ -1,16 +1,22 @@
 """E05-08--17: exact small models and an actual GSC waveform teaching chain.
 
-Run .venv/bin/python -m codes.examples.chapter05_experiments. No files are
+Run .venv/bin/python -m codes.chapters.ch05.chapter05_experiments. No files are
 written. These are original deterministic examples, not upstream benchmarks.
 """
 from __future__ import annotations
 
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
+
 import json
 import numpy as np
 
-from codes.array_tutorial.audio_samples import gsc_gate_case
-from codes.array_tutorial.beamforming import lcmv_weights, mvdr_weights
-from codes.array_tutorial.separation import masked_spatial_covariance
+from codes.chapters.ch00.core.audio_samples import gsc_gate_case
+from codes.chapters.ch05.core.beamforming import lcmv_weights, mvdr_weights
+from codes.chapters.ch08.core.separation import masked_spatial_covariance
 
 
 def gsc_lcmv_equivalence() -> dict:

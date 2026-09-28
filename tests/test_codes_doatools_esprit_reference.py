@@ -9,13 +9,13 @@ import unittest
 
 import numpy as np
 
-from codes.examples import reproduce_doatools_esprit as experiment
+from codes.chapters.ch04.examples import reproduce_doatools_esprit as experiment
 
 
 class DoatoolsEspritReferenceTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.report = json.loads((experiment.ROOT / "reports/doatools_esprit_reference.json").read_text())
+        cls.report = json.loads((experiment.ROOT / "chapters/ch04/reports/doatools_esprit_reference.json").read_text())
 
     def test_saved_report_bound_to_harness_source_and_configuration(self):
         provenance = self.report["provenance"]

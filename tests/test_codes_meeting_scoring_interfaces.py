@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import unittest
 
-from codes.examples import audit_meeting_scoring_interfaces as audit
+from codes.chapters.ch11.examples import audit_meeting_scoring_interfaces as audit
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -26,7 +26,7 @@ def edit_distance(reference, hypothesis):
 class MeetingScoringReportTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.report = json.loads((ROOT / "codes/reports/meeting_scoring_interfaces.json").read_text(),
+        cls.report = json.loads((ROOT / "codes/chapters/ch11/reports/meeting_scoring_interfaces.json").read_text(),
                                 parse_constant=lambda value: (_ for _ in ()).throw(ValueError(value)))
 
     def test_binding_and_execution_scopes(self):

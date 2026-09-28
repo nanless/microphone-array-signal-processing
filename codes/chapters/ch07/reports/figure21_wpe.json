@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/make_figures.py::fig_wpe",
+  "source_sha256": "b571f8a35283e19398e8a53dde5c787136ad9a3f498daf0d151d1392bb4d7247",
+  "data_type": "mathematical synthetic signal and impulse response; not real speech or measured RIR",
+  "parameters": {
+    "sample_rate_hz": 16000,
+    "duration_seconds": 1.4,
+    "seed": 21001,
+    "rir_length_samples": 12800,
+    "direct_delay_samples": 160,
+    "decay_parameter_seconds": 0.6,
+    "drr_db": 6.0,
+    "fft_size": 512,
+    "hop_samples": 128,
+    "window": "symmetric Hann (numpy.hanning)",
+    "center": false,
+    "padding": false,
+    "taps": 10,
+    "delay_frames": 6,
+    "iterations": 3,
+    "power_smoothing": "5 frames centered, truncate and renormalize at boundaries",
+    "relative_power_floor": 1e-05,
+    "relative_loading": 1e-06
+  },
+  "time_axis": "Reference delayed 160 samples; input and output stay on receiver timeline; no propagation compensation",
+  "measurement": {
+    "frequency_bins": 257,
+    "frequency_range_hz": [
+      0,
+      8000
+    ],
+    "display_frequency_range_hz": [
+      0,
+      2500
+    ],
+    "frame_count": 172,
+    "last_frame_start_ms": 1368.0,
+    "active_frames": 96,
+    "quiet_frames": 61,
+    "other_frames": 15,
+    "active_threshold_fraction_of_reference_peak": 0.1,
+    "quiet_threshold_fraction_of_reference_peak": 0.01,
+    "nmse_alignment": "one complex gain over all active frame-frequency coefficients"
+  },
+  "results": {
+    "input": {
+      "quiet_energy": 11884.23581846863,
+      "total_energy": 677482.1699634285,
+      "quiet_energy_ratio_db": -17.55926608988597,
+      "active_scale_aligned_nmse_db": -8.666965204694867
+    },
+    "output": {
+      "quiet_energy": 4119.550343237914,
+      "total_energy": 424136.9458751631,
+      "quiet_energy_ratio_db": -20.126562902383608,
+      "active_scale_aligned_nmse_db": -7.697679148892545
+    }
+  }
+}

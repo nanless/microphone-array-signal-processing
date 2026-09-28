@@ -1,6 +1,6 @@
 > ⚠️ 本篇是附录 A（正文共 11 章，另有附录 A/B），可独立查阅，前后篇见下方导航。
 >
-> 🏠 首页导读：[`00_overview.md`](./00_overview.md) ｜ 上一篇：[11_selection-guide.md](./11_selection-guide.md) ｜ 下一篇：[13_appendix-guide.md](./13_appendix-guide.md)
+> 🏠 首页导读：[`00_overview.md`](00_overview.md) ｜ 上一篇：[11_selection-guide.md](11_selection-guide.md) ｜ 下一篇：[13_appendix-guide.md](13_appendix-guide.md)
 
 ---
 
@@ -334,7 +334,7 @@ MUSIC（§4.6）在独立源、白噪声和模型正确等条件下，把较大�
 
 ### 12.4 计算练习
 
-E12-01～04 可通过 `.venv/bin/python -m codes.examples.exercises_engineering` 复算；E12-05 的奇异矩阵反例使用 `.venv/bin/python -m codes.examples.spatial_model_exercises`。新增 E12-06～12 使用 `.venv/bin/python -m codes.chapters.appendix_a.appendix_a_experiments`。题中数组均为本书构造的输入；下列答案先从短序列或代数独立求出，再用代码核对。图 48～49 与配套音频只说明明确给定的离散模型，不等于自然语音或实测房间。
+E12-01～04 可通过 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering` 复算；E12-05 的奇异矩阵反例使用 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.spatial_model_exercises`。新增 E12-06～12 使用 `.venv/bin/python -m codes.chapters.appendix_a.appendix_a_experiments`。题中数组均为本书构造的输入；下列答案先从短序列或代数独立求出，再用代码核对。图 48～49 与配套音频只说明明确给定的离散模型，不等于自然语音或实测房间。
 
 #### E12-01：FFT 乘法为什么需要补零
 
@@ -400,7 +400,7 @@ $$
 
 PHAT 的运算对象却是**一个频点的一对通道的互功率谱**：当 $G_{12}(f)\ne0$ 时，$G_{12}(f)/|G_{12}(f)|$ 是一个模为 1 的复数，不会把两路快拍分别乘上 $1/2$ 和 $1$。例如两路确定的复频谱值为 $X_1=2$、$X_2=1$ 时，互谱为 2，PHAT 后为 1，但这不是把噪声协方差变成单位阵。
 
-本题两路噪声互不相关，理论噪声互功率谱为 0；此时 PHAT 还须跳过或保护分母，更不能从零互谱推得 $\mathbf W$。这反驳了“PHAT 等于空间白化”的说法，但不否定 PHAT 在时延估计中抑制源谱幅度影响的用途。复算入口为 [`exercises_engineering.py`](../codes/examples/exercises_engineering.py) 的 `E12-04`。
+本题两路噪声互不相关，理论噪声互功率谱为 0；此时 PHAT 还须跳过或保护分母，更不能从零互谱推得 $\mathbf W$。这反驳了“PHAT 等于空间白化”的说法，但不否定 PHAT 在时延估计中抑制源谱幅度影响的用途。复算入口为 [`exercises_engineering.py`](../codes/chapters/ch00/cross_chapter/exercises_engineering.py) 的 `E12-04`。
 
 第 4 章 E04-11 进一步给出非对角噪声协方差与完整方向搜索：只白化协方差会得到 −4.8°，同步变换导向才得到给定的 0° 真值。那是已知噪声模型下的确定性例子，不是一般噪声中的定位精度保证。
 
@@ -446,7 +446,7 @@ $$\vec w_\delta
 
 **工程解释。** 真实麦克风一般不会拥有完全零噪声通道；这个精确半正定模型用于揭示优化前提，不能据此推荐把实际加载降到零。有限快拍、通道重复或秩约束模型都可能产生奇异样本协方差。此时应先判断目标是否含零空间分量，再选加载、明确的子空间约束或其他相应求解方法。E12-03 中伪逆给出最小范数最小二乘解的结论仍然成立，那是另一个目标函数与约束问题。
 
-本题是本书自行构造的代数反例，运行 `.venv/bin/python -m codes.examples.spatial_model_exercises` 的 `E12-05` 可核对可行性、两种输出功率与加载极限；[源码](../codes/examples/spatial_model_exercises.py)使用给定矩阵，不把反例扩写成通用奇异 MVDR 求解器。
+本题是本书自行构造的代数反例，运行 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.spatial_model_exercises` 的 `E12-05` 可核对可行性、两种输出功率与加载极限；[源码](../codes/chapters/ch00/cross_chapter/spatial_model_exercises.py)使用给定矩阵，不把反例扩写成通用奇异 MVDR 求解器。
 
 #### E12-06：完整 FFT 的末格是接近采样率的正频率吗？
 
@@ -483,7 +483,7 @@ $$\vec w_\delta
 
 图 49 把上述两点手算扩展到下文的 16 kHz PCM 脉冲音频，而不是直接画小序列 $x=[1,2,3,4]$。（a）为正确线性卷积，（b）为刻意构造的错误逐块循环卷积；两图使用相同的 $B=512$、$h[0]=1$、$h[120]=0.6$、输入脉冲与共同导出增益 1。首脉冲在 $n=500$（31.25 ms），竖虚线标出 $n=512$（32 ms）块边界。正确尾部在 $n=620$（38.75 ms），错误实现却将尾部绕回到 $n=108$（6.75 ms）。左、右两图的纵轴都是最终 PCM 读回幅度；图中的提前脉冲不是物理声学预回声。
 
-下面三个[数学合成音频](../codes/research/05_exercises_and_audio.md)把同一问题换成可听的块边界：先降低音量，再分别播放[干脉冲](../codes/audio/math_block_dry.wav)、[正确线性 FIR](../codes/audio/math_block_linear.wav)与[错误逐块循环](../codes/audio/math_block_circular.wav)。三路均为 16 kHz、2 s、单声道 PCM16，使用同一导出增益 1；输入含 10 个幅度 0.3 的数学脉冲，位置为 $500+3072i$（$i=0,\ldots,9$），滤波器仅 $h[0]=1,h[120]=0.6$，块长 512。第一个脉冲的正确副脉冲在 $n=620$，错误循环实现却把它绕回本块的 $n=108$。导出 PCM 读回分别约为 0.299988 和 0.179993；错误文件的 $n=620$ 为 0。这是刻意构造的错误分块示例，不是实测房间回声，也不等于听测通过。
+下面三个[数学合成音频](../codes/chapters/ch00/research/05_exercises_and_audio.md)把同一问题换成可听的块边界：先降低音量，再分别播放[干脉冲](../codes/chapters/appendix_a/audio/math_block_dry.wav)、[正确线性 FIR](../codes/chapters/appendix_a/audio/math_block_linear.wav)与[错误逐块循环](../codes/chapters/appendix_a/audio/math_block_circular.wav)。三路均为 16 kHz、2 s、单声道 PCM16，使用同一导出增益 1；输入含 10 个幅度 0.3 的数学脉冲，位置为 $500+3072i$（$i=0,\ldots,9$），滤波器仅 $h[0]=1,h[120]=0.6$，块长 512。第一个脉冲的正确副脉冲在 $n=620$，错误循环实现却把它绕回本块的 $n=108$。导出 PCM 读回分别约为 0.299988 和 0.179993；错误文件的 $n=620$ 为 0。这是刻意构造的错误分块示例，不是实测房间回声，也不等于听测通过。
 
 #### E12-09：交换互相关的两路输入会怎样改变延迟符号？
 
@@ -524,4 +524,4 @@ $\mathbf A$ 的两个奇异值为 $1$ 和 $10^{-4}$，所以 $\kappa_2(\mathbf A
 
 ---
 
-> 📄 本篇信息：配图 2 张 ｜ [回首页](./00_overview.md)
+> 📄 本篇信息：配图 2 张 ｜ [回首页](00_overview.md)

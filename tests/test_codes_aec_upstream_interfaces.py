@@ -9,14 +9,14 @@ from unittest.mock import patch
 
 import numpy as np
 
-from codes.examples import audit_aec_upstream_interfaces as audit
+from codes.chapters.ch06.examples import audit_aec_upstream_interfaces as audit
 
 
 class AecUpstreamInterfaceTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         root = Path(__file__).resolve().parents[1]
-        cls.report = json.loads((root / "codes/reports/aec_upstream_interfaces.json").read_text())
+        cls.report = json.loads((root / "codes/chapters/ch06/reports/aec_upstream_interfaces.json").read_text())
 
     def test_report_binds_harness_sources_inputs_and_execution_scope(self):
         report = self.report

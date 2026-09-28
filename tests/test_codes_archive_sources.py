@@ -12,7 +12,7 @@ import warnings
 import unittest
 from unittest.mock import patch
 
-from codes.upstream import fetch_archives as fetch
+from codes.chapters.ch00.upstream import fetch_archives as fetch
 
 
 class ArchiveSourceTests(unittest.TestCase):

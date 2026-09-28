@@ -3,10 +3,10 @@ from decimal import Decimal, localcontext
 import unittest
 import numpy as np
 
-from codes.array_tutorial.double_talk import ncc_activity_states
-from codes.array_tutorial.aec_ipnlms import IPNLMSState
-from codes.array_tutorial.aec_kalman_matrix import KalmanAECState
-from codes.examples.aec_kalman_scalar_demo import scalar_kalman_step
+from codes.chapters.ch06.core.double_talk import ncc_activity_states
+from codes.chapters.ch06.core.aec_ipnlms import IPNLMSState
+from codes.chapters.ch06.core.aec_kalman_matrix import KalmanAECState
+from codes.chapters.ch06.aec_kalman_scalar_demo import scalar_kalman_step
 
 
 class AECNumericalBoundaries(unittest.TestCase):

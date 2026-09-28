@@ -3,7 +3,7 @@
 import json
 import unittest
 
-from codes.examples.aec_algorithm_minicases import (
+from codes.chapters.ch06.aec_algorithm_minicases import (
     geigel_two_boundaries,
     ipnlms_two_tap_case,
     overlap_save_two_partitions,

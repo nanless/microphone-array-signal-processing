@@ -7,14 +7,20 @@ resolution comparison, not an evaluation on speech or measured rooms.
 
 from __future__ import annotations
 
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
+
 import argparse
 import json
 import math
 
 import numpy as np
 
-from codes.array_tutorial.doa import bartlett_spectrum, capon_spectrum, music_spectrum
-from codes.examples.mdl_repeated_trials import wilson_interval
+from codes.chapters.ch04.core.doa import bartlett_spectrum, capon_spectrum, music_spectrum
+from codes.chapters.ch04.examples.mdl_repeated_trials import wilson_interval
 
 
 DEFAULT_SEED = 20260924

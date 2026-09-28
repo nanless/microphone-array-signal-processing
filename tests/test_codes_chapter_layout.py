@@ -1,4 +1,4 @@
-"""Guard the chapter-owned implementations and legacy entry-point contract."""
+"""Guard the chapter-only layout and representative canonical entry points."""
 
 import importlib
 import subprocess
@@ -8,40 +8,58 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CHAPTERS = ROOT / "codes" / "chapters"
-EXPECTED_DIRS = {*(f"ch{number:02d}" for number in range(1, 12)),
+CODES = ROOT / "codes"
+CHAPTERS = CODES / "chapters"
+EXPECTED_DIRS = {*(f"ch{number:02d}" for number in range(12)),
                  "appendix_a", "appendix_b"}
 
 
 class ChapterLayoutTest(unittest.TestCase):
-    def test_canonical_modules_share_one_object_with_legacy_imports(self):
+    def test_all_repository_code_content_is_under_chapters(self):
+        # Downloaded upstream repositories and Python bytecode are ignored.
+        result = subprocess.run(
+            ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", "codes"],
+            cwd=ROOT, capture_output=True, check=True,
+        )
+        present = [ROOT / name.decode() for name in result.stdout.split(b"\0") if name]
+        present = [path for path in present if path.is_file()]
+        self.assertTrue(present)
+        self.assertEqual([path for path in present if not path.is_relative_to(CHAPTERS)], [])
+
+    def test_chapter_packages_and_module_sources(self):
         directories = {path.name for path in CHAPTERS.iterdir()
                        if path.is_dir() and not path.name.startswith("__")}
         self.assertEqual(directories, EXPECTED_DIRS)
-        implementations = sorted(CHAPTERS.glob("*/*.py"))
-        implementations = [path for path in implementations if path.name != "__init__.py"]
+        implementations = [path for path in sorted(CHAPTERS.glob("*/*.py"))
+                           if path.name != "__init__.py"]
         self.assertEqual(len(implementations), 35)
         for path in implementations:
             with self.subTest(path=path):
                 chapter = path.parent.name
-                canonical = importlib.import_module(f"codes.chapters.{chapter}.{path.stem}")
-                legacy = importlib.import_module(f"codes.examples.{path.stem}")
-                self.assertIs(legacy, canonical)
-                self.assertEqual(Path(canonical.__file__).resolve(), path.resolve())
+                module = importlib.import_module(f"codes.chapters.{chapter}.{path.stem}")
+                self.assertEqual(Path(module.__file__).resolve(), path.resolve())
+        for module_name in (
+            "codes.chapters.ch02.core.spectral",
+            "codes.chapters.ch06.core.aec",
+            "codes.chapters.ch08.examples.gss_teaching_demo",
+            "codes.chapters.ch00.cross_chapter.exercises_spatial",
+        ):
+            with self.subTest(module=module_name):
+                module = importlib.import_module(module_name)
+                self.assertTrue(Path(module.__file__).resolve().is_relative_to(CHAPTERS))
 
-    def test_direct_script_and_module_commands_keep_same_results(self):
+    def test_module_commands_produce_stable_results(self):
         for chapter, module in (("ch01", "chapter01_experiments"),
+                                ("ch04", "chapter04_experiments"),
                                 ("appendix_b", "appendix_b_experiments")):
             with self.subTest(module=module):
-                commands = (
-                    [sys.executable, "-m", f"codes.chapters.{chapter}.{module}"],
-                    [sys.executable, "-m", f"codes.examples.{module}"],
-                    [sys.executable, str(ROOT / "codes/examples" / f"{module}.py")],
-                )
-                outputs = [subprocess.run(command, cwd=ROOT, capture_output=True,
-                                          timeout=25, check=True).stdout for command in commands]
-                self.assertEqual(outputs[0], outputs[1])
-                self.assertEqual(outputs[0], outputs[2])
+                command = [sys.executable, "-m", f"codes.chapters.{chapter}.{module}"]
+                first = subprocess.run(command, cwd=ROOT, capture_output=True,
+                                       timeout=30, check=True).stdout
+                second = subprocess.run(command, cwd=ROOT, capture_output=True,
+                                        timeout=30, check=True).stdout
+                self.assertTrue(first)
+                self.assertEqual(first, second)
 
 
 if __name__ == "__main__":

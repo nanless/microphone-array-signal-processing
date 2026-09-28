@@ -3,7 +3,7 @@
 import json
 import unittest
 
-from codes.examples.sro_closed_loop_demo import (
+from codes.chapters.ch10.sro_closed_loop_demo import (
     StatefulLinearClockCorrector,
     recover_device_indices,
     run_experiment,

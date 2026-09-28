@@ -5,17 +5,37 @@ import re
 import unittest
 from pathlib import Path
 
-from codes.examples import (aec_advanced_exercises, aec_algorithm_minicases, exercises_engineering,
-                            exercises_enhancement, exercises_spatial,
-                            tracking_crossing_dropout_demo)
-from codes.examples import spatial_precision_exercises, enhancement_step_exercises, tracking_time_exercises
-from codes.examples.spectral_subtraction_demo import run_demo as spectral_subtraction_demo
-from codes.examples.coarray_covariance_exercise import run_exercise as coarray_exercise
-from codes.examples.doa_resolution_trials import run_experiment as doa_resolution_experiment
+from codes.chapters.ch06 import aec_advanced_exercises
+from codes.chapters.ch06 import aec_algorithm_minicases
+from codes.chapters.ch00.cross_chapter import exercises_engineering
+from codes.chapters.ch00.cross_chapter import exercises_enhancement
+from codes.chapters.ch00.cross_chapter import exercises_spatial
+from codes.chapters.ch09 import tracking_crossing_dropout_demo
+from codes.chapters.ch00.cross_chapter import spatial_precision_exercises
+from codes.chapters.ch00.cross_chapter import enhancement_step_exercises
+from codes.chapters.ch00.cross_chapter import tracking_time_exercises
+from codes.chapters.ch10.spectral_subtraction_demo import run_demo as spectral_subtraction_demo
+from codes.chapters.ch03.coarray_covariance_exercise import run_exercise as coarray_exercise
+from codes.chapters.ch04.doa_resolution_trials import run_experiment as doa_resolution_experiment
 
 
-from codes.examples import chapter01_experiments, chapter02_experiments, chapter03_experiments, chapter04_experiments, chapter05_experiments, chapter06_experiments, chapter07_experiments, chapter08_experiments, chapter09_experiments, chapter10_experiments, chapter11_experiments, appendix_a_experiments, appendix_b_experiments
-from codes.examples import spatial_model_exercises, enhancement_structure_exercises, engineering_boundary_exercises, interpolation_exercise
+from codes.chapters.ch01 import chapter01_experiments
+from codes.chapters.ch02 import chapter02_experiments
+from codes.chapters.ch03 import chapter03_experiments
+from codes.chapters.ch04 import chapter04_experiments
+from codes.chapters.ch05 import chapter05_experiments
+from codes.chapters.ch06 import chapter06_experiments
+from codes.chapters.ch07 import chapter07_experiments
+from codes.chapters.ch08 import chapter08_experiments
+from codes.chapters.ch09 import chapter09_experiments
+from codes.chapters.ch10 import chapter10_experiments
+from codes.chapters.ch11 import chapter11_experiments
+from codes.chapters.appendix_a import appendix_a_experiments
+from codes.chapters.appendix_b import appendix_b_experiments
+from codes.chapters.ch00.cross_chapter import spatial_model_exercises
+from codes.chapters.ch00.cross_chapter import enhancement_structure_exercises
+from codes.chapters.ch00.cross_chapter import engineering_boundary_exercises
+from codes.chapters.appendix_b import interpolation_exercise
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = {
@@ -144,7 +164,7 @@ class ExerciseCatalogTest(unittest.TestCase):
     def test_chapter_and_research_inventories_cover_exactly_228_ids(self):
         chapters = "\n".join(path.read_text(encoding="utf-8")
                              for path in (ROOT / "chapters").glob("*.md"))
-        research = (ROOT / "codes/research/05_exercises_and_audio.md").read_text(encoding="utf-8")
+        research = (ROOT / "codes/chapters/ch00/research/05_exercises_and_audio.md").read_text(encoding="utf-8")
         self.assertEqual(documented_ids(chapters), ALL_IDS)
         self.assertEqual(documented_ids(research), ALL_IDS)
 

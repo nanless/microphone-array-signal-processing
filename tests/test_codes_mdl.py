@@ -10,7 +10,7 @@ import unittest
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from codes.array_tutorial.doa import mdl_source_count
+from codes.chapters.ch04.core.doa import mdl_source_count
 
 
 def decimal_scores(values, snapshots):

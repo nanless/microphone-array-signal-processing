@@ -14,7 +14,7 @@ class MovingAudioStagingTests(unittest.TestCase):
         self.root = Path(self.temp.name)
         self.source = self.root / "moving_audio"
         self.source.mkdir()
-        for path in (build_site.ROOT / "codes/moving_audio").iterdir():
+        for path in (build_site.ROOT / "codes/chapters/ch09/moving_audio").iterdir():
             if path.is_file():
                 shutil.copy2(path, self.source / path.name)
 
@@ -43,7 +43,7 @@ class GssAudioStagingTests(unittest.TestCase):
         self.root = Path(self.temp.name)
         self.source = self.root / "gss_audio"
         self.source.mkdir()
-        for path in (build_site.ROOT / "codes/gss_audio").iterdir():
+        for path in (build_site.ROOT / "codes/chapters/ch08/gss_audio").iterdir():
             if path.is_file():
                 shutil.copy2(path, self.source / path.name)
 

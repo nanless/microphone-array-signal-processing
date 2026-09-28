@@ -7,8 +7,8 @@ from unittest.mock import patch
 
 import numpy as np
 
-from codes.array_tutorial.doa import mdl_source_count
-from codes.examples.mdl_repeated_trials import run_experiment, wilson_interval
+from codes.chapters.ch04.core.doa import mdl_source_count
+from codes.chapters.ch04.examples.mdl_repeated_trials import run_experiment, wilson_interval
 
 
 class RepeatedMDLTest(unittest.TestCase):
@@ -46,7 +46,7 @@ class RepeatedMDLTest(unittest.TestCase):
             observed.append(values.copy())
             return count, tested_scores
 
-        with patch("codes.examples.mdl_repeated_trials.mdl_source_count", side_effect=independent):
+        with patch("codes.chapters.ch04.examples.mdl_repeated_trials.mdl_source_count", side_effect=independent):
             run_experiment(trials=3, seed=7)
         self.assertEqual(len(observed), 21)
         self.assertFalse(np.array_equal(observed[0], observed[1]))

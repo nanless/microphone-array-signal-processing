@@ -11,7 +11,7 @@ import unittest
 
 import numpy as np
 
-from codes.examples.compare_online_wpe_reference import NumpyOnlineWPE011
+from codes.chapters.ch07.examples.compare_online_wpe_reference import NumpyOnlineWPE011
 
 
 class TestOnlineWPEHandCalculation(unittest.TestCase):

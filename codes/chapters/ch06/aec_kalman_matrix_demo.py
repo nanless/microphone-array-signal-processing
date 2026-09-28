@@ -3,16 +3,22 @@
 This is real, time-domain, and uses known Q/R.  It illustrates why discarding
 cross-tap covariance changes the next gain; it is not FDKF/PBFDKF.
 
-Run ``python -m codes.examples.aec_kalman_matrix_demo`` from the repo root.
+Run ``python -m codes.chapters.ch06.aec_kalman_matrix_demo`` from the repo root.
 """
 
 from __future__ import annotations
+
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
 
 import json
 
 import numpy as np
 
-from codes.array_tutorial.aec_kalman_matrix import KalmanAECState
+from codes.chapters.ch06.core.aec_kalman_matrix import KalmanAECState
 
 
 def _plain(step: dict) -> dict:

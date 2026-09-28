@@ -7,12 +7,18 @@ this module. Run ``python -m codes.chapters.appendix_a.appendix_a_experiments`` 
 
 from __future__ import annotations
 
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
+
 import json
 
 import numpy as np
 
-from codes.array_tutorial.audio_samples import math_block_case
-from codes.array_tutorial.math_foundations import (
+from codes.chapters.ch00.core.audio_samples import math_block_case
+from codes.chapters.appendix_a.core.math_foundations import (
     blockwise_circular_convolution, fft_overlap_add,
 )
 

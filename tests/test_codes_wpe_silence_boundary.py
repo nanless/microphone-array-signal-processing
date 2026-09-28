@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 import unittest
 import numpy as np
-from codes.examples.wpe_silence_boundary import silence_probe,classify_scalar
-from codes.examples.compare_online_wpe_reference import NumpyOnlineWPE011,NARA_WPE_MODULE_SHA256
+from codes.chapters.ch07.examples.wpe_silence_boundary import silence_probe,classify_scalar
+from codes.chapters.ch07.examples.compare_online_wpe_reference import NumpyOnlineWPE011,NARA_WPE_MODULE_SHA256
 
 
 class WPESilenceBoundary(unittest.TestCase):
@@ -39,7 +39,7 @@ class WPESilenceBoundary(unittest.TestCase):
 
     def test_committed_report_binds_generator_and_locked_source(self):
         root = Path(__file__).resolve().parents[1]
-        r = json.loads((root/'codes/reports/chapter07_online_wpe_silence.json').read_text())
+        r = json.loads((root/'codes/chapters/ch07/reports/chapter07_online_wpe_silence.json').read_text())
         self.assertEqual(r['source']['installed_module_sha256'],NARA_WPE_MODULE_SHA256)
         self.assertEqual(r['source']['upstream_execution'],'executed_after_hash_verification')
         for path,digest in r['generator_inputs'].items():

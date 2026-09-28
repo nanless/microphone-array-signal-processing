@@ -8,7 +8,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from codes.array_tutorial.beamforming import (
+from codes.chapters.ch05.core.beamforming import (
     apply_beamformer,
     blocking_matrix,
     diffuse_coherence,
@@ -18,8 +18,8 @@ from codes.array_tutorial.beamforming import (
     superdirective_weights,
     wiener_gain,
 )
-from codes.array_tutorial.covariance import recursive_covariance, spatial_covariance
-from codes.array_tutorial.doa import (
+from codes.chapters.ch03.core.covariance import recursive_covariance, spatial_covariance
+from codes.chapters.ch04.core.doa import (
     bartlett_spectrum,
     capon_spectrum,
     esprit_ula,
@@ -27,12 +27,12 @@ from codes.array_tutorial.doa import (
     music_spectrum,
     srp_phat,
 )
-from codes.array_tutorial.geometry import (
+from codes.chapters.ch03.core.geometry import (
     near_field_steering,
     plane_wave_delays,
     plane_wave_steering,
 )
-from codes.array_tutorial.spectral import istft, stft
+from codes.chapters.ch02.core.spectral import istft, stft
 
 
 class SpectralAndCovarianceTest(unittest.TestCase):

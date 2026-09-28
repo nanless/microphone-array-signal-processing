@@ -6,8 +6,8 @@ import unittest
 
 import numpy as np
 
-from codes.array_tutorial.aec_kalman_matrix import KalmanAECState
-from codes.examples.aec_kalman_matrix_demo import run_demo
+from codes.chapters.ch06.core.aec_kalman_matrix import KalmanAECState
+from codes.chapters.ch06.aec_kalman_matrix_demo import run_demo
 
 
 def _case(**overrides):

@@ -2,8 +2,8 @@
 import math
 import unittest
 import numpy as np
-from codes.examples.chapter10_experiments import run_experiments
-from codes.array_tutorial.audio_samples import agc_blocks_case, prepare_exports, read_pcm16
+from codes.chapters.ch10.chapter10_experiments import run_experiments
+from codes.chapters.ch00.core.audio_samples import agc_blocks_case, prepare_exports, read_pcm16
 
 
 class Chapter10ExperimentsTests(unittest.TestCase):

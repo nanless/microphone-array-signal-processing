@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 import unittest
 
-from codes.examples import audit_industrial_upstream_interfaces as audit
+from codes.chapters.ch10.examples import audit_industrial_upstream_interfaces as audit
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class IndustrialUpstreamReportTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.report = json.loads((ROOT / 'codes/reports/industrial_upstream_interfaces.json').read_text(),
+        cls.report = json.loads((ROOT / 'codes/chapters/ch10/reports/industrial_upstream_interfaces.json').read_text(),
                                 parse_constant=lambda x: (_ for _ in ()).throw(ValueError(x)))
 
     def test_binding_and_scope(self):

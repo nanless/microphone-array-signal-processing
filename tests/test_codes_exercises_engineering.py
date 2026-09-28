@@ -4,7 +4,7 @@ import unittest
 
 import numpy as np
 
-from codes.examples.exercises_engineering import run_exercises
+from codes.chapters.ch00.cross_chapter.exercises_engineering import run_exercises
 
 
 class EngineeringExerciseTests(unittest.TestCase):

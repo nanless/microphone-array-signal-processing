@@ -15,7 +15,7 @@ class TrackingAudioStagingTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         self.source = self.root/'source'
-        shutil.copytree(build_site.ROOT/'codes/tracking_audio',self.source)
+        shutil.copytree(build_site.ROOT/'codes/chapters/ch09/tracking_audio',self.source)
         self.destination = self.root/'published'
 
     def test_exact_assets_and_bytes(self):

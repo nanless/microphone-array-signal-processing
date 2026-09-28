@@ -42,8 +42,8 @@ class AliasDestinations(HTMLParser):
 class HistoricalHeadingCompatibilityTest(unittest.TestCase):
     SOURCES = (
         "chapters/00_overview.md",
-        "codes/research/01_spatial_and_tracking.md",
-        "codes/research/02_aec_wpe_separation.md",
+        "codes/chapters/ch00/research/01_spatial_and_tracking.md",
+        "codes/chapters/ch00/research/02_aec_wpe_separation.md",
     )
     OVERVIEW_RENAMES = {
         "sec-u-b7a71b077a": "sec-u-3937b1b94e",
@@ -84,7 +84,7 @@ class HistoricalHeadingCompatibilityTest(unittest.TestCase):
         )
         for name, alias, original_topic, inserted_topic in cases:
             with self.subTest(source=name):
-                source = ROOT / "codes" / "research" / name
+                source = ROOT / "codes" / "chapters" / "ch00" / "research" / name
                 html, _ = build_site.render(source.read_text(), source)
                 parsed = AliasDestinations(html)
                 expected = build_site.heading_anchor(original_topic, 1)

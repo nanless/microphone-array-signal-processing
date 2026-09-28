@@ -4,9 +4,9 @@ import copy
 import unittest
 import numpy as np
 
-from codes.array_tutorial.separation import mask_mvdr_2x2
-from codes.array_tutorial.tracking import CircularParticleFilter
-from codes.examples.exercises_enhancement import run_exercises
+from codes.chapters.ch08.core.separation import mask_mvdr_2x2
+from codes.chapters.ch09.core.tracking import CircularParticleFilter
+from codes.chapters.ch00.cross_chapter.exercises_enhancement import run_exercises
 
 
 class EnhancementRoundTwo(unittest.TestCase):

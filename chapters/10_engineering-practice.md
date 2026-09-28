@@ -1,6 +1,6 @@
 > ⚠️ 本篇是教程第 10 章。前后篇见下方导航。
 >
-> 🏠 首页导读：[00_overview.md](./00_overview.md) ｜ 上一篇：[09_source-tracking.md](./09_source-tracking.md) ｜ 下一篇：[11_selection-guide.md](./11_selection-guide.md)
+> 🏠 首页导读：[00_overview.md](00_overview.md) ｜ 上一篇：[09_source-tracking.md](09_source-tracking.md) ｜ 下一篇：[11_selection-guide.md](11_selection-guide.md)
 
 ---
 
@@ -132,9 +132,9 @@ WPE 历史帧、追踪状态、递归协方差和因果 AGC 时间常数是历�
 
 回调与工作线程的时钟、缓冲单位和丢帧策略必须写清。这是一种参考结构，不表示所有实时 DSP 都只能在回调外执行；有界、预分配且能满足期限的小型处理也可以在回调中完成。
 
-环形缓冲已满时，系统需要事先选择“丢最旧块”“丢新块”或“降级处理”。任何一种策略都会改变输出：丢块破坏连续状态，等待会阻塞采集，积压则增大延迟。本书的 [`RingBuffer`](../codes/array_tutorial/engineering.py) 采用“丢最旧样本”的可见基线，并累计 `dropped`；它用来说明容量和溢出语义，不是无锁实时队列。
+环形缓冲已满时，系统需要事先选择“丢最旧块”“丢新块”或“降级处理”。任何一种策略都会改变输出：丢块破坏连续状态，等待会阻塞采集，积压则增大延迟。本书的 [`RingBuffer`](../codes/chapters/ch10/core/engineering.py) 采用“丢最旧样本”的可见基线，并累计 `dropped`；它用来说明容量和溢出语义，不是无锁实时队列。
 
-[`simulate_deadline_queue`](../codes/array_tutorial/engineering.py) 用一条串行工作队列区分三件事：处理完成晚于本帧期限、队列达到高水位、容量已满而丢帧。平均 RTF 小于 1 仍可能出现其中任何一种。正式设备还要记录**播放下溢**（下一块音频未及时送到设备，underrun）和**采集上溢**（采集数据未及时取走，overrun）；驱动常把两者合称 `xrun`。线程优先级、CPU 频率策略和并发负载也应一同记录。
+[`simulate_deadline_queue`](../codes/chapters/ch10/core/engineering.py) 用一条串行工作队列区分三件事：处理完成晚于本帧期限、队列达到高水位、容量已满而丢帧。平均 RTF 小于 1 仍可能出现其中任何一种。正式设备还要记录**播放下溢**（下一块音频未及时送到设备，underrun）和**采集上溢**（采集数据未及时取走，overrun）；驱动常把两者合称 `xrun`。线程优先级、CPU 频率策略和并发负载也应一同记录。
 
 同一时刻的事件需要明确先后：本书模型先释放已经完成的帧，再接收这一时刻到来的新帧；恰在期限完成算准时。若到达时刻用乘法、完成时刻用浮点累加，舍入差可能把同一边界误判为队列仍满。教学模拟内部因此用输入浮点数对应的精确有理数比较事件，不加人为宽限；E10-16 用整数时钟刻度独立复核。这种离线记账方式不用于实时音频回调。
 
@@ -196,14 +196,14 @@ $$
 
 ![图40：采样率偏移的时间漂移与未同步求平均](../figures/fig40_clock_drift.png)
 
-图 40：16 kHz、100 ppm、8 s 数学合成例子；各文件采用同一导出增益。参考信号、双设备采样、未对齐均值与理想同步均值用于区分时钟误差和空间噪声。请结合[音频清单](../codes/audio/MANIFEST.json)读取参数。
+图 40：16 kHz、100 ppm、8 s 数学合成例子；各文件采用同一导出增益。参考信号、双设备采样、未对齐均值与理想同步均值用于区分时钟误差和空间噪声。请结合[音频清单](../codes/chapters/ch00/audio/MANIFEST.json)读取参数。
 
 同索引直接求平均时，时差随时间增加，频率越高，同一时差对应的相位差越大；局部相消不能解释成已经消除了环境噪声。理想同步均值使用已知连续信号与时钟真值，表示准确重采样所要达到的目标，**并非已经实现的盲 SRO 估计器或补偿器输出**。因此试听比较只能说明失同步的后果，不能据此报告某补偿算法的性能；下文另有实际估计与插值的闭环例子。
 
 
 初始时差表现为整条“延迟—时间”曲线的截距，稳定 SRO 表现为斜率，偶发丢样则表现为阶跃。三者不能只靠首尾两个点可靠区分。工程上可分块估计互相关峰，先检查峰值置信度，再对可信的“时间—相对延迟”点做直线拟合；残差中若出现近似一个或多个采样间隔的突跳，应先查丢样和时间戳，而不是把所有变化都拟合成 ppm。
 
-[`estimate_sro_ppm`](../codes/array_tutorial/engineering.py) 把相对延迟定义为“参考时间减设备时间”，再拟合截距和斜率；正斜率表示设备采样率较高，与 [`resample_sro_to_reference`](../codes/array_tutorial/engineering.py) 的符号一致。
+[`estimate_sro_ppm`](../codes/chapters/ch10/core/engineering.py) 把相对延迟定义为“参考时间减设备时间”，再拟合截距和斜率；正斜率表示设备采样率较高，与 [`resample_sro_to_reference`](../codes/chapters/ch10/core/engineering.py) 的符号一致。
 
 以参考时间为横轴，将观测延迟拟合为 $\widehat d(T)=b+\widehat sT$。这里 $b$ 的单位是秒，$\widehat s$ 是秒/秒；仅在恒定速率模型成立且 $\widehat s<1$ 时，才有以下换算：
 
@@ -240,7 +240,7 @@ $$
 
 连续流可对照 libsamplerate 的 `src_process` 或 SpeexDSP 的重采样接口。以 libsamplerate 为例，比例定义为“输出速率/输入速率”；设备快 100 ppm 时，转到参考时钟的比例约为 $1/1.0001=0.99990001$。每次调用还会返回实际消耗的输入帧数和生成的输出帧数，调用方必须保留未消耗输入，不能假设一进一出或每块重新创建转换器。[libsamplerate Full API](https://libsndfile.github.io/libsamplerate/api_full.html "citation")
 
-本书的[libsamplerate 两段已知时钟实验](../codes/research/03_industrial_deployment.md#i04libsamplerate-的有状态重采样)实际调用锁定的 C 接口：前 5 s 为 +100 ppm，后 5 s 为 +150 ppm。未校正组在 1～9 s 的标记偏移增加 16 帧，按真值更新比例后该段残余增加 0 帧；每次输入消费量及结束排空也逐调用核对。这里的时钟速率是预先给定的，不能把结果写成“已自动估计漂移”，也没有测抗混叠或真实设备。
+本书的[libsamplerate 两段已知时钟实验](../codes/chapters/ch00/research/03_industrial_deployment.md#i04libsamplerate-的有状态重采样)实际调用锁定的 C 接口：前 5 s 为 +100 ppm，后 5 s 为 +150 ppm。未校正组在 1～9 s 的标记偏移增加 16 帧，按真值更新比例后该段残余增加 0 帧；每次输入消费量及结束排空也逐调用核对。这里的时钟速率是预先给定的，不能把结果写成“已自动估计漂移”，也没有测抗混叠或真实设备。
 
 为把“估计—补偿—残余核查”连起来，本书另有[固定真值的合成时间戳实验](../codes/chapters/ch10/sro_closed_loop_demo.py)。参考时钟为 2 000 Hz，设备时钟快 150 ppm，首样本晚到 2 ms，并故意删去设备索引 12 000 的一个样本。前 2 s 的 9 个时间戳锚点满足 $t_n=0.002+n/2000.3$ s；相对延迟 $n/2000-t_n$ 的截距是 $-2$ ms，斜率应为 $150\times10^{-6}/(1+150\times10^{-6})$，即一阶报告 149.9775 ppm，反解得到 150 ppm。时间戳间隔还单独识别出一个缺样，不能把这个阶跃并入斜率。
 
@@ -248,7 +248,7 @@ $$
 
 按解析生成的参考波形逐段比较，缺样前的 6 000 个有效样本均方误差从未校正的 0.02869 降到 0.000002773；缺样后的 9 000 个有效样本从 0.02131 降到 0.000002477。这些是本书合成数据的无量纲幅值平方误差，未校正组按相同序号直接比较，包含起始错位、长期速率偏差和缺样造成的错位；已校正组只统计有效输出。
 
-结果说明在**精确时间戳、恒定时钟和已知缺口**下，估计值能驱动跨块补偿，且可分别检查缺口两侧。线性插值没有充分抗混叠能力，本例也没有测设备时间戳噪声、音频盲估计、时钟温漂或在线比例更新；这些仍须在目标设备验证。[实验口径与运行方法](../codes/research/03_industrial_deployment.md#i04libsamplerate-的有状态重采样)
+结果说明在**精确时间戳、恒定时钟和已知缺口**下，估计值能驱动跨块补偿，且可分别检查缺口两侧。线性插值没有充分抗混叠能力，本例也没有测设备时间戳噪声、音频盲估计、时钟温漂或在线比例更新；这些仍须在目标设备验证。[实验口径与运行方法](../codes/chapters/ch00/research/03_industrial_deployment.md#i04libsamplerate-的有状态重采样)
 
 换用另一库时要重新检查比例方向。libsoxr 的 `soxr_set_io_ratio` 使用“输入/输出”比，同一 100 ppm 算例应设为 1.0001，而非 0.99990001。其渐变长度以输出样本数计，滤波延迟也应从输出样本换算到时间；创建状态、切换比率与排空尾部是不同操作。[libsoxr 固定可变比率示例](https://sourceforge.net/p/soxr/code/ci/945b592b70470e29f917f4de89b4281fbbd540c0/tree/examples/5-variable-rate.c "citation")
 
@@ -256,7 +256,7 @@ $$
 
 持续使用旧比率得到 160004 帧；更新比率并排空后为 160000 帧。每秒脉冲标记的前五个位置相同，9 s 标记在旧比率输出为 144005、在更新后的输出为 144002。两者都有约 2 帧的共同插值器偏移，所以判断漂移要比较**相对首个标记的变化**，不能把 144002 当作绝对时间误差。
 
-127 输入帧分块与整段渐变输出逐点相同；立即阶跃和 160/320 输出帧渐变的最大逐点差分别约 $6.25\times10^{-4}$、$1.25\times10^{-3}$。这些差值只证明固定实现按不同控制长度产生不同波形，并非设备时钟估计精度。协议、调用消费量及独立验收见[工业接口研究 I22](../codes/research/03_industrial_deployment.md#i22libsoxr-的比率渐变与输出延迟)。
+127 输入帧分块与整段渐变输出逐点相同；立即阶跃和 160/320 输出帧渐变的最大逐点差分别约 $6.25\times10^{-4}$、$1.25\times10^{-3}$。这些差值只证明固定实现按不同控制长度产生不同波形，并非设备时钟估计精度。协议、调用消费量及独立验收见[工业接口研究 I22](../codes/chapters/ch00/research/03_industrial_deployment.md#i22libsoxr-的比率渐变与输出延迟)。
 
 #### 10.2.2 增益变化与 AEC
 
@@ -349,9 +349,9 @@ Boll 的[原始谱减论文](https://doi.org/10.1109/TASSP.1979.1163209 "citatio
 
 两帧原相位均为零；若原系数改成 $3\mathrm j$ 和 $1\mathrm j$，输出相应为 $\sqrt5\mathrm j$ 和 $0.2\mathrm j$。不能把功率相减误写成幅度 $3-2=1$。这个手算只证明式(10-8)的数值约定；若噪声统计随时间改变或噪声段混入目标，$D$ 就会失配。
 
-运行[谱减练习代码](../codes/chapters/ch10/spectral_subtraction_demo.py)可复算同一频点的两个带噪帧；另运行[统一音频生成器](../codes/examples/generate_audio_samples.py)可重建[五个试听文件及参数清单](../codes/audio/MANIFEST.json)：合成谐波目标、独立高斯噪声、带噪输入、$\beta=0.04$ 输出和 $\beta=0$ 输出。16 kHz、2 s 输入的前 0.4 s 仅有噪声，47 个完整落在该段的 STFT 帧估计 $D_f$；两种处理使用同一输入、同一固定噪声估计和同组共同导出增益。
+运行[谱减练习代码](../codes/chapters/ch10/spectral_subtraction_demo.py)可复算同一频点的两个带噪帧；另运行[统一音频生成器](../codes/chapters/ch00/examples/generate_audio_samples.py)可重建[五个试听文件及参数清单](../codes/chapters/ch00/audio/MANIFEST.json)：合成谐波目标、独立高斯噪声、带噪输入、$\beta=0.04$ 输出和 $\beta=0$ 输出。16 kHz、2 s 输入的前 0.4 s 仅有噪声，47 个完整落在该段的 STFT 帧估计 $D_f$；两种处理使用同一输入、同一固定噪声估计和同组共同导出增益。
 
-先降低播放音量，再比较[带噪输入](../codes/audio/spectral_noisy.wav)、[有地板输出](../codes/audio/spectral_floor04.wav)与[零地板输出](../codes/audio/spectral_floor00.wav)。离散随机残余频点可能听成短促的调性噪声，但这组数学合成信号没有经过人耳听测，不能据此报告语音可懂度、MOS 或产品降噪性能。
+先降低播放音量，再比较[带噪输入](../codes/chapters/ch10/audio/spectral_noisy.wav)、[有地板输出](../codes/chapters/ch10/audio/spectral_floor04.wav)与[零地板输出](../codes/chapters/ch10/audio/spectral_floor00.wav)。离散随机残余频点可能听成短促的调性噪声，但这组数学合成信号没有经过人耳听测，不能据此报告语音可懂度、MOS 或产品降噪性能。
 
 在生成器的**浮点波形**上计算前 6400 个样本的均方根值，得到下表；三者的共同 WAV 导出增益为 1，表内按四位小数舍入。输入只有噪声，所以这里没有“语音保真”可比。$\beta=0$ 的前奏数值比 $\beta=0.04$ 更低，只说明这个固定输入的平均剩余幅度较低，不能推出音乐噪声更少。
 
@@ -398,15 +398,15 @@ E_k&=\frac1B\sum_{n=0}^{B-1}x_k[n]^2,\\
 \tag{10-9}
 $$
 
-样本以数字满幅为 1 时，$E_k$ 是该幅度单位的平方，RMS 与样本同单位。[`HysteresisVAD`](../codes/array_tutorial/engineering.py) 的 `update(frame)` 输入是波形样本，内部计算 RMS 后与门限平方根比较；构造参数 `on_threshold`、`off_threshold` 则是线性均方能量，不接受 dB 阈值；把 dBFS 门限传给它会造成口径错误。
+样本以数字满幅为 1 时，$E_k$ 是该幅度单位的平方，RMS 与样本同单位。[`HysteresisVAD`](../codes/chapters/ch10/core/engineering.py) 的 `update(frame)` 输入是波形样本，内部计算 RMS 后与门限平方根比较；构造参数 `on_threshold`、`off_threshold` 则是线性均方能量，不接受 dB 阈值；把 dBFS 门限传给它会造成口径错误。
 
 `hangover_frames=2` 表示首次跌破继续阈值的两帧仍保持活动，第三帧才关闭。例如恒定幅度 0.3 的一帧，均方能量为 $0.3^2=0.09$，可跨过 0.08 的启动阈值；直接把标量 0.09 当作波形输入只得到 $0.09^2=0.0081$，不会启动。
 
-该基线没有噪声自适应、频带特征和神经网络，也不自行保存预卷；预卷可用 [`RingBuffer`](../codes/array_tutorial/engineering.py) 保留触发前的固定帧数，并在 VAD 由假变真时先取出缓存。
+该基线没有噪声自适应、频带特征和神经网络，也不自行保存预卷；预卷可用 [`RingBuffer`](../codes/chapters/ch10/core/engineering.py) 保留触发前的固定帧数，并在 VAD 由假变真时先取出缓存。
 
 #### 整块 AGC：控制量何时可用
 
-AGC 要区分“把正常语音逐渐推向目标电平”和“避免数字输出样本超出满幅”。[`PeakProtectAGC`](../codes/array_tutorial/engineering.py) 先取得当前整块的峰值，再给这一块乘同一增益；它必须等当前块收齐，不能被描述为零等待的逐样本控制。
+AGC 要区分“把正常语音逐渐推向目标电平”和“避免数字输出样本超出满幅”。[`PeakProtectAGC`](../codes/chapters/ch10/core/engineering.py) 先取得当前整块的峰值，再给这一块乘同一增益；它必须等当前块收齐，不能被描述为零等待的逐样本控制。
 
 设当前块峰值为 $p_k=\max_n|x_k[n]|$，目标峰值为 $p_\star\in(0,1]$，最大增益为 $g_{\max}>0$，上一块实际增益为 $g_{k-1}$。对 $p_k>0$，该基线按以下步骤计算：
 
@@ -434,7 +434,7 @@ $\alpha_k\in(0,1]$ 在期望增益下降时取 attack，上升或不变时取 re
 
 一个容易手算的反例是 48 kHz 采样的 12 kHz 正弦，幅度 0.95、初相 $\pi/4$。平台段每个离散样本的绝对值都是 $0.95/\sqrt2\approx0.67175$，而连续正弦可在两个采样点之间达到 0.95。
 
-对 10 s 信号的两端各加 100 ms 平滑渐变后，锁定 libebur128 的 4 倍插值器实际返回采样峰 0.671751、估计真峰 0.946371；后者是**该库有限长滤波器的估计值**，不是把解析上界精确重建成 0.95。若让正弦从第一点突起，滤波起始瞬态可能抬高库估计，不适合用来检验纯正弦的采样间峰值。输入与独立手算见[工业接口研究 I23](../codes/research/03_industrial_deployment.md#i23libebur128-的响度与真峰值)。
+对 10 s 信号的两端各加 100 ms 平滑渐变后，锁定 libebur128 的 4 倍插值器实际返回采样峰 0.671751、估计真峰 0.946371；后者是**该库有限长滤波器的估计值**，不是把解析上界精确重建成 0.95。若让正弦从第一点突起，滤波起始瞬态可能抬高库估计，不适合用来检验纯正弦的采样间峰值。输入与独立手算见[工业接口研究 I23](../codes/chapters/ch00/research/03_industrial_deployment.md#i23libebur128-的响度与真峰值)。
 
 #### 控制接口的合法块长与会话状态
 
@@ -442,7 +442,7 @@ $\alpha_k\in(0,1]$ 在期望增益下降时取 attack，上升或不变时取 re
 
 因此，10 ms 的声卡回调不能直接当成任意模型的一次输入。接入前要按所选接口缓冲到合法块长，并记录判决对应的采集时间；否则 32 ms 块的输出可能被错误标成最后一次 10 ms 回调的即时结果。
 
-跨块状态要与会话绑定。每块重置会改变模型行为，多条独立会话共享状态会相互干扰。阈值、最短语音、静音等待和前后填充也要分开调节；降低语音概率阈值并不能自动补回已经丢失的词首音频。工业 VAD、WebRTC AGC2 和 DeepFilterNet 的源码阅读顺序及故障试验见[工业实现研究中的控制与增强部分](../codes/research/03_industrial_deployment.md#2-噪声语音活动与增益)。
+跨块状态要与会话绑定。每块重置会改变模型行为，多条独立会话共享状态会相互干扰。阈值、最短语音、静音等待和前后填充也要分开调节；降低语音概率阈值并不能自动补回已经丢失的词首音频。工业 VAD、WebRTC AGC2 和 DeepFilterNet 的源码阅读顺序及故障试验见[工业实现研究中的控制与增强部分](../codes/chapters/ch00/research/03_industrial_deployment.md#2-噪声语音活动与增益)。
 
 ### 10.4 定点化、算力与功耗预算
 
@@ -463,9 +463,9 @@ $\alpha_k\in(0,1]$ 在期望增益下降时取 attack，上升或不变时取 re
 
 #### Q1.15 的乘积、累加与输出取整
 
-定点格式还要明确舍入和饱和规则。本书的 [`q15_quantize`](../codes/array_tutorial/engineering.py) 把 $[-1,1)$ 映射到有符号 Q1.15：乘 $32768$、按最近偶数舍入，再饱和到 $[-32768,32767]$。因此 $-1$ 可以精确表示，$+1$ 只能饱和为 $32767/32768$。
+定点格式还要明确舍入和饱和规则。本书的 [`q15_quantize`](../codes/chapters/ch10/core/engineering.py) 把 $[-1,1)$ 映射到有符号 Q1.15：乘 $32768$、按最近偶数舍入，再饱和到 $[-32768,32767]$。因此 $-1$ 可以精确表示，$+1$ 只能饱和为 $32767/32768$。
 
-[`q15_dot`](../codes/array_tutorial/engineering.py) 用 64 位整数累加乘积，只在输出时除以 $2^{15}$、按最近偶数舍入并饱和；目标 DSP 若使用不同累加位宽或逐乘积舍入，就不应期待 bit-exact 相同。测试既要覆盖正常小数，也要覆盖 $\pm1$、超范围输入和累加器极值；不能只比较平均误差。
+[`q15_dot`](../codes/chapters/ch10/core/engineering.py) 用 64 位整数累加乘积，只在输出时除以 $2^{15}$、按最近偶数舍入并饱和；目标 DSP 若使用不同累加位宽或逐乘积舍入，就不应期待 bit-exact 相同。测试既要覆盖正常小数，也要覆盖 $\pm1$、超范围输入和累加器极值；不能只比较平均误差。
 
 实数 PCM 接口还应在类型转换前拒绝意外的复数输入，不能把丢弃虚部后的数组当作原始信号。
 
@@ -576,7 +576,7 @@ $$
 
 同一物理内存只计一次。串行阶段的临时工作区若可复用，不应直接把两个峰值相加；阶段并发时又不能只取较大者。E10-23 用同一组大小比较这两种生命周期。
 
-只有**假设这六帧模式长期重复**且线程服务时间等于高功耗时间，才可用 $45/60=75\%$ 作功率占空比。若负载端活动/空闲功率为 1.2/0.2 W，则平均为 $1.2\times0.75+0.2\times0.25=0.95$ W；3.7 V、2 Ah、可交付比例 0.8 给出 $5.92/0.95\approx6.23$ h。功率假设与帧截止期假设彼此独立，续航估算合格也不能抵消三次逾期。完整输入和逐帧结果见 E10-14，复算入口为 [`exercises_engineering.py`](../codes/examples/exercises_engineering.py)。
+只有**假设这六帧模式长期重复**且线程服务时间等于高功耗时间，才可用 $45/60=75\%$ 作功率占空比。若负载端活动/空闲功率为 1.2/0.2 W，则平均为 $1.2\times0.75+0.2\times0.25=0.95$ W；3.7 V、2 Ah、可交付比例 0.8 给出 $5.92/0.95\approx6.23$ h。功率假设与帧截止期假设彼此独立，续航估算合格也不能抵消三次逾期。完整输入和逐帧结果见 E10-14，复算入口为 [`exercises_engineering.py`](../codes/chapters/ch00/cross_chapter/exercises_engineering.py)。
 
 ### 10.5 评测体系
 
@@ -620,7 +620,7 @@ ViSQOL v3 [原论文 §II.C、§III.C](https://arxiv.org/pdf/2004.09584 "citatio
 
 本书的音频示例用于辨认时延、拖尾、削波和增益等现象，不是标准主观评分材料。试听前先降低播放音量，确认没有异常峰值，再比较同一输入的参考、受扰和处理后版本。对同组文件施加共同线性增益，可以保留它们的相对电平；各文件分别峰值归一化会抹去衰减或增益差异。若为了比较音色而另做响度匹配，应把该版本和原始测量版本分开保存，并记录匹配方法。
 
-数值评分应使用规定的原始数据、对齐和增益规则，不能直接把试听归一化后的文件当作评分输入。合成谐波或噪声只检验信号处理现象，不包含自然语言内容，不能由此报告语音 MOS、可懂度或 WER。材料来源、参数及章节练习见[练习与音频实验手册](../codes/research/05_exercises_and_audio.md)。
+数值评分应使用规定的原始数据、对齐和增益规则，不能直接把试听归一化后的文件当作评分输入。合成谐波或噪声只检验信号处理现象，不包含自然语言内容，不能由此报告语音 MOS、可懂度或 WER。材料来源、参数及章节练习见[练习与音频实验手册](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
 
 ### 10.6 数据、仿真与复现
 
@@ -727,7 +727,7 @@ $E[n]$ 表示从索引 $n$ 到所保留尾端的剩余能量；$D[n]$ 单位是 
 
 #### 10.9.1 开源实现怎样用作工程对照
 
-开源项目解决的是链路中的不同部分，不能因为都能处理音频就横向替换。下面只列本书正文能够说明用途和边界的项目；固定来源、提交、许可证和核实日期统一记录在 [`codes/SOURCES.lock.json`](../codes/SOURCES.lock.json)，代码、模型权重和数据集许可证分别检查。
+开源项目解决的是链路中的不同部分，不能因为都能处理音频就横向替换。下面只列本书正文能够说明用途和边界的项目；固定来源、提交、许可证和核实日期统一记录在 [`codes/chapters/ch00/SOURCES.lock.json`](../codes/chapters/ch00/SOURCES.lock.json)，代码、模型权重和数据集许可证分别检查。
 
 | 官方项目 | 可以对照什么 | 不能由它证明什么 |
 |---|---|---|
@@ -741,7 +741,7 @@ $E[n]$ 表示从索引 $n$ 到所保留尾端的剩余能量；$D[n]$ 单位是 
 
 PipeWire 的 `capture/source/sink/playback` 依次是麦克风采集、应用读取、应用播放和实际播放四条流。XMOS 的 ADEC 负责围绕 AEC 的延迟估计与控制；IC 是干扰消除，VNR 是语音与噪声比估计。
 
-`tensor arena` 是微控制器运行模型时预留的内存区；`headroom` 是定点数在溢出前还能向左移动的位数。具体接口见[工业部署研究](../codes/research/03_industrial_deployment.md)。
+`tensor arena` 是微控制器运行模型时预留的内存区；`headroom` 是定点数在溢出前还能向左移动的位数。具体接口见[工业部署研究](../codes/chapters/ch00/research/03_industrial_deployment.md)。
 
 | 实现层 | 官方项目与源码入口 | 接入时要固定的条件 |
 |---|---|---|
@@ -754,13 +754,13 @@ PipeWire 的 `capture/source/sink/playback` 依次是麦克风采集、应用读
 | 块浮点内核 | XMOS `lib_xcore_math` 的 `src/bfp/`、`src/fft/`、`src/arch/ref/` | 尾数与共享指数、headroom、目标架构；版本按 lib_voice 依赖固定 |
 | 电平与质量测量 | libebur128 `ebur128/`；pystoi `pystoi/stoi.py`；ViSQOL `src/` | 响度/真峰值与质量分分开；参考、模式、模型、有效帧与失败记录 |
 
-[工业实现研究文档](../codes/research/03_industrial_deployment.md)按采集、连续流、控制、固件、部署与评分分别给出源码入口、状态和参数、故障注入及验收方法。各项核实日期和实际运行范围随条目记录，例如 I28 的 FastEnhancer 接口核对日期为 2026-09-26；不要把文档建立日期当成全部实现的统一运行日期。XMOS 的旧 `fwk_voice` 已迁移到 `lib_voice`；该库使用 XMOS Public Licence v1，商用硬件范围和特殊用途条款应按原许可判断，不能把可获取源码等同于跨平台宽松许可。[XMOS 官方迁移说明](https://github.com/xmos/fwk_voice "citation")、[lib_voice 许可](https://github.com/xmos/lib_voice/blob/c9f1a9bf95cd88c7950adf4bf631c217f900ad25/LICENSE.rst "citation")
+[工业实现研究文档](../codes/chapters/ch00/research/03_industrial_deployment.md)按采集、连续流、控制、固件、部署与评分分别给出源码入口、状态和参数、故障注入及验收方法。各项核实日期和实际运行范围随条目记录，例如 I28 的 FastEnhancer 接口核对日期为 2026-09-26；不要把文档建立日期当成全部实现的统一运行日期。XMOS 的旧 `fwk_voice` 已迁移到 `lib_voice`；该库使用 XMOS Public Licence v1，商用硬件范围和特殊用途条款应按原许可判断，不能把可获取源码等同于跨平台宽松许可。[XMOS 官方迁移说明](https://github.com/xmos/fwk_voice "citation")、[lib_voice 许可](https://github.com/xmos/lib_voice/blob/c9f1a9bf95cd88c7950adf4bf631c217f900ad25/LICENSE.rst "citation")
 
 文件和评分接口也可能改变结论。例如 libsndfile 的 `sf_readf_*` 返回时间帧数，`sf_read_*` 返回通道展开后的标量项数；最后一块不足请求长度时，只能按实际返回量更新录音时长与算法状态。评分器则要同时保留失败数和模型资产状态，不能把“源码可以导入”写成“已经能评分”。这些独立对照的输入与建议试验见研究文档，不表示本书已完成对应设备验收。[libsndfile 官方读写接口](https://libsndfile.github.io/libsndfile/api.html "citation")
 
-本书已运行包含重采样、文件读写和 VAD 接口的[三库工业实验](../codes/research/04_source_reproduction.md)：48 kHz 双通道输入重采样到 16 kHz，保留同一状态并排空尾部后，整段与 127/509 帧分块输出相同；中途清状态且不排空则少了 434 个输出帧。另以七帧双通道 PCM16 检查短读，按帧请求三帧时返回 3、3、1、0，按标量项请求六项时返回 6、6、2、0。程序与原始报告均可重跑，这些结果不代表设备回调期限或断连恢复已经通过。
+本书已运行包含重采样、文件读写和 VAD 接口的[三库工业实验](../codes/chapters/ch00/research/04_source_reproduction.md)：48 kHz 双通道输入重采样到 16 kHz，保留同一状态并排空尾部后，整段与 127/509 帧分块输出相同；中途清状态且不排空则少了 434 个输出帧。另以七帧双通道 PCM16 检查短读，按帧请求三帧时返回 3、3、1、0，按标量项请求六项时返回 6、6、2、0。程序与原始报告均可重跑，这些结果不代表设备回调期限或断连恢复已经通过。
 
-上游源码按锁定清单独立获取到被 Git 忽略的 `codes/upstream/_downloads/`，保留原许可证和版本；是否已下载以本机获取记录为准。代码、权重和数据分别管理。`codes/array_tutorial/` 中的程序是本书教学基线，作用是复算约定和边界；下载上游源码本身也不意味着已经完成依赖安装、编译和目标设备验证。
+上游源码按锁定清单独立获取到被 Git 忽略的 `codes/chapters/ch00/upstream/_downloads/`，保留原许可证和版本；是否已下载以本机获取记录为准。代码、权重和数据分别管理。`codes/chapters/` 中的程序是本书教学基线，作用是复算约定和边界；下载上游源码本身也不意味着已经完成依赖安装、编译和目标设备验证。
 
 在设备上运行模型时，还要固定输入采样率、通道顺序、块长、动态轴、归一化、状态张量、算子集、运行时版本和线程配置。
 
@@ -787,7 +787,7 @@ PipeWire 的 `capture/source/sink/playback` 依次是麦克风采集、应用读
 
 每个验收阈值都应包含测量条件、统计量和样本量。例如“角误差小于 5°”还要说明声源角度分布、距离、房间、信噪比，以及该数值是均值还是某个分位数。教程中的算例只能用于验证计算，不能直接作为产品验收阈值。
 
-在线监控应记录足以定位故障、但不默认保存原始语音的字段。本书给出的 [`telemetry_schema.json`](../codes/engineering/telemetry_schema.json) 采用以下口径；它是最小示例，不含用户身份、转写文本或原始音频。
+在线监控应记录足以定位故障、但不默认保存原始语音的字段。本书给出的 [`telemetry_schema.json`](../codes/chapters/ch10/engineering/telemetry_schema.json) 采用以下口径；它是最小示例，不含用户身份、转写文本或原始音频。
 
 | 字段组 | 单位与统计口径 |
 |---|---|
@@ -823,13 +823,13 @@ PipeWire 的 `capture/source/sink/playback` 依次是麦克风采集、应用读
 
 ### 10.11 本章练习
 
-以下二十七题的输入均为本书构造的教学数据。先手算，再运行 E10-01～12 与 E10-14 的 [`exercises_engineering.py`](../codes/examples/exercises_engineering.py)：
+以下二十七题的输入均为本书构造的教学数据。先手算，再运行 E10-01～12 与 E10-14 的 [`exercises_engineering.py`](../codes/chapters/ch00/cross_chapter/exercises_engineering.py)：
 
 ```bash
-.venv/bin/python -m codes.examples.exercises_engineering
+.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering
 ```
 
-E10-13 运行独立的 [`spectral_subtraction_demo.py`](../codes/chapters/ch10/spectral_subtraction_demo.py)；E10-15 使用 [`tracking_time_exercises.py`](../codes/examples/tracking_time_exercises.py)，E10-16～17 使用 [`engineering_boundary_exercises.py`](../codes/examples/engineering_boundary_exercises.py)。各程序按稳定编号输出中间量和结果；它们不访问声卡，也不代表硬件性能测量。E10-18～27 使用 [`chapter10_experiments.py`](../codes/chapters/ch10/chapter10_experiments.py)，运行方式为 `.venv/bin/python -m codes.chapters.ch10.chapter10_experiments`。
+E10-13 运行独立的 [`spectral_subtraction_demo.py`](../codes/chapters/ch10/spectral_subtraction_demo.py)；E10-15 使用 [`tracking_time_exercises.py`](../codes/chapters/ch00/cross_chapter/tracking_time_exercises.py)，E10-16～17 使用 [`engineering_boundary_exercises.py`](../codes/chapters/ch00/cross_chapter/engineering_boundary_exercises.py)。各程序按稳定编号输出中间量和结果；它们不访问声卡，也不代表硬件性能测量。E10-18～27 使用 [`chapter10_experiments.py`](../codes/chapters/ch10/chapter10_experiments.py)，运行方式为 `.venv/bin/python -m codes.chapters.ch10.chapter10_experiments`。
 
 #### E10-01：把初始错位与 SRO 分开
 
@@ -900,7 +900,7 @@ E10-13 运行独立的 [`spectral_subtraction_demo.py`](../codes/chapters/ch10/s
 
 正常平均为 $(s+0.9s)/2=0.95s$；反转后为 $(s-0.9s)/2=0.05s$。后者相对前者为 $20\log_{10}(0.05/0.95)\approx-25.575$ dB。若两路幅度完全一致，反转后目标会完全抵消；这不是噪声被压低的证据。
 
-题目只展示符号错误，未加入时延或频率相关响应。对照[音频实验手册](../codes/research/05_exercises_and_audio.md)中的极性样本时，不要分别归一化输出峰值，否则目标衰减会被隐藏。
+题目只展示符号错误，未加入时延或频率相关响应。对照[音频实验手册](../codes/chapters/ch00/research/05_exercises_and_audio.md)中的极性样本时，不要分别归一化输出峰值，否则目标衰减会被隐藏。
 
 #### E10-10：同一个平滑系数为何不能跨块长照搬
 
@@ -962,7 +962,7 @@ $$
 
 帧 3 完整到达时是 40 ms，启动事件此时可用；帧 7 完整到达时是 80 ms，结束事件此时可用。被保留音频的结束边界却是 70 ms。预卷保存的是此前已采集的声音，事件可用时刻与片段时轴不同，不能把两帧预卷自动当作每个连续音频块又增加 20 ms 延迟。
 
-运行 `.venv/bin/python -m codes.examples.tracking_time_exercises` 可检查上述逐帧结果，见[代码](../codes/examples/tracking_time_exercises.py)和[边界测试](../tests/test_codes_time_state_exercises.py)。流开始后立刻触发时，只能使用实际存在的历史；输入终止时仍活动的片段标成“尚未观察到结束事件”，不伪造 VAD 关闭。本题验证缓冲和事件语义，常数波形不用于评价真实语音检出率。
+运行 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.tracking_time_exercises` 可检查上述逐帧结果，见[代码](../codes/chapters/ch00/cross_chapter/tracking_time_exercises.py)和[边界测试](../tests/test_codes_time_state_exercises.py)。流开始后立刻触发时，只能使用实际存在的历史；输入终止时仍活动的片段标成“尚未观察到结束事件”，不伪造 VAD 关闭。本题验证缓冲和事件语义，常数波形不用于评价真实语音检出率。
 
 #### E10-16：恰好在下一帧到达时完成，算不算丢帧？
 
@@ -972,7 +972,7 @@ $$
 
 第二种情形每帧需 11 刻度。帧 0 在刻度 11 才结束，因此刻度 10 到来的帧 1 被丢弃；帧 2 在刻度 20 到来时可以开始，在 31 结束，帧 3 又被丢弃。依此交替，偶数帧 0、2、…、28 共 15 帧接收且全部超期，奇数帧共 15 帧丢弃。两个统计不能合并成“30 帧都处理失败”：一半完成得晚，另一半根本没有处理。
 
-运行 `.venv/bin/python -m codes.examples.engineering_boundary_exercises`，核对 `E10-16`。代码对输入浮点值作精确事件比较，避免 $iT$ 与反复累加 $T$ 的舍入差制造丢帧；若服务时长真比周期大，即使只差一个可表示的浮点间隔，也仍记为超期。本题只检查理想队列的边界语义，0.1 ms 是教学时钟单位，没有声卡调度或计算抖动。
+运行 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.engineering_boundary_exercises`，核对 `E10-16`。代码对输入浮点值作精确事件比较，避免 $iT$ 与反复累加 $T$ 的舍入差制造丢帧；若服务时长真比周期大，即使只差一个可表示的浮点间隔，也仍记为超期。本题只检查理想队列的边界语义，0.1 ms 是教学时钟单位，没有声卡调度或计算抖动。
 
 #### E10-17：三个时间戳为什么不等于三段算法耗时？
 
@@ -1171,17 +1171,17 @@ $$
 
 ![图45 整块峰值 AGC 的分块、增益与输出对照](../figures/fig45_agc_blocks.png)
 
-图 45(a) 以四个正式 WAV 的 PCM 读回值计算整段 2 s 音频的 10 ms RMS 曲线，各值置于该测量窗中心，显示输入与三条实际运行支路的电平变化；(b) 把增益阶梯放在各块结束、控制量可用的时刻。上图的样本时间与下图的可用时间含义不同，不能把离线画回原样本时轴的结果称作零等待；图中也没有通过时间平移模拟实际播放。完整逐块状态和浮点/PCM 分窗结果见[音频参数清单](../codes/audio/MANIFEST.json)与[练习入口](../codes/chapters/ch10/chapter10_experiments.py)。
+图 45(a) 以四个正式 WAV 的 PCM 读回值计算整段 2 s 音频的 10 ms RMS 曲线，各值置于该测量窗中心，显示输入与三条实际运行支路的电平变化；(b) 把增益阶梯放在各块结束、控制量可用的时刻。上图的样本时间与下图的可用时间含义不同，不能把离线画回原样本时轴的结果称作零等待；图中也没有通过时间平移模拟实际播放。完整逐块状态和浮点/PCM 分窗结果见[音频参数清单](../codes/chapters/ch00/audio/MANIFEST.json)与[练习入口](../codes/chapters/ch10/chapter10_experiments.py)。
 
 先调低播放音量，再比较以下文件：
 
-[合成输入](../codes/audio/agc_blocks_input.wav)
+[合成输入](../codes/chapters/ch10/audio/agc_blocks_input.wav)
 
-[10 ms 块、按时间常数换算系数](../codes/audio/agc_blocks_10ms.wav)
+[10 ms 块、按时间常数换算系数](../codes/chapters/ch10/audio/agc_blocks_10ms.wav)
 
-[100 ms 块、按时间常数换算系数](../codes/audio/agc_blocks_100ms.wav)
+[100 ms 块、按时间常数换算系数](../codes/chapters/ch10/audio/agc_blocks_100ms.wav)
 
-[100 ms 块、错误复用短块系数](../codes/audio/agc_blocks_100ms_wrong_alpha.wav)
+[100 ms 块、错误复用短块系数](../codes/chapters/ch10/audio/agc_blocks_100ms_wrong_alpha.wav)
 
 本题说明，保持时间常数只保持固定目标下的指数衰减速度，不能消除峰值统计区间不同、块内统一增益和硬安全上限带来的差异。较短块的输出也不自动代表更好听；此处没有噪声、自然语音或人工听测。设备选型还要一起检验块缓冲等待、突增保护与任务效果。
 
@@ -1194,4 +1194,4 @@ $$
 
 ---
 
-> 📄 [回首页](./00_overview.md)
+> 📄 [回首页](00_overview.md)

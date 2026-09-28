@@ -5,17 +5,23 @@ only group calls to ``step_frame``; they are not ``OnlineWPE.step_block`` input
 windows. The optional upstream check requires the pinned nara-wpe 0.0.11.
 
 Run from the repository root:
-    .venv/bin/python -m codes.examples.wpe_temporal_contract
+    .venv/bin/python -m codes.chapters.ch07.wpe_temporal_contract
 """
 
 from __future__ import annotations
+
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
 
 import importlib.metadata
 import json
 
 import numpy as np
 
-from codes.examples.compare_online_wpe_reference import (
+from codes.chapters.ch07.examples.compare_online_wpe_reference import (
     NARA_WPE_VERSION,
     NumpyOnlineWPE011,
     _load_locked_upstream,

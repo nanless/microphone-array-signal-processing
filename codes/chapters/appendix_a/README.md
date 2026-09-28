@@ -8,4 +8,4 @@
 .venv/bin/python -m codes.chapters.appendix_a.appendix_a_experiments
 ```
 
-原有 `codes.examples.appendix_a_experiments` 保留为兼容入口。题干、公式和边界见 [附录 A](../../../chapters/12_appendix-symbols-math.md)及[练习手册](../../research/05_exercises_and_audio.md)。
+题干、公式和边界见 [附录 A](../../../chapters/12_appendix-symbols-math.md)及[练习手册](../ch00/research/05_exercises_and_audio.md)。

@@ -1,6 +1,6 @@
 > ⚠️ 本篇是教程正文第 9 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。
 >
-> 🏠 首页导读：[`00_overview.md`](./00_overview.md) ｜ 上一篇：[08_speech-separation.md](./08_speech-separation.md) ｜ 下一篇：[10_engineering-practice.md](./10_engineering-practice.md)
+> 🏠 首页导读：[`00_overview.md`](00_overview.md) ｜ 上一篇：[08_speech-separation.md](08_speech-separation.md) ｜ 下一篇：[10_engineering-practice.md](10_engineering-practice.md)
 
 ---
 
@@ -503,7 +503,7 @@ $\rho=0$ 时均值方向无定义；接近零时均值不稳定。ESS 检查权�
 - **滤波器**：使用 200 个粒子和“高斯目标 + 均匀杂波”混合似然，均匀杂波权重为 0.1，角度过程扰动标准差为每步 $1^\circ$，角速度过程扰动标准差为每步 $0.25^\circ/\mathrm{frame}$；
 - **初始化与边界**：初始角度粒子在允许扇区内均匀采样，不读取未来第一个有效观测。状态只允许落在 $[0^\circ,120^\circ]$ 有限扇区，越界粒子按扇区端点作镜面反射。
 
-镜面反射是便于展示的玩具边界，不是圆周角的 $360^\circ$ 环绕，也不代表真实墙面反射。随机种子为22001，同一随机数生成器依次生成观测与粒子过程；0.2替换概率实际抽中25帧，其中3帧又被置为缺测，留下110个有效观测中的22个杂波。完整逐帧轨迹、ESS、掩码和分母见[图22报告](../codes/reports/figure22_tracking.json)。
+镜面反射是便于展示的玩具边界，不是圆周角的 $360^\circ$ 环绕，也不代表真实墙面反射。随机种子为22001，同一随机数生成器依次生成观测与粒子过程；0.2替换概率实际抽中25帧，其中3帧又被置为缺测，留下110个有效观测中的22个杂波。完整逐帧轨迹、ESS、掩码和分母见[图22报告](../codes/chapters/ch09/reports/figure22_tracking.json)。
 
 ![图22 声源追踪示意](../figures/fig22_tracking.png)
 
@@ -629,13 +629,13 @@ $p_D$ 是检测概率，$g_t(z\mid x)$ 是目标在状态 $x$ 时产生观测 $z
 
 #### 可执行单目标接口与边界
 
- [`codes/array_tutorial/tracking.py`](../codes/array_tutorial/tracking.py) 提供常速度角度 Kalman 滤波器、$[-180^\circ,180^\circ)$ 环绕、系统重采样和圆周角 SIR 粒子滤波器。
+ [`codes/chapters/ch09/core/tracking.py`](../codes/chapters/ch09/core/tracking.py) 提供常速度角度 Kalman 滤波器、$[-180^\circ,180^\circ)$ 环绕、系统重采样和圆周角 SIR 粒子滤波器。
 
 `ConstantVelocityKalman` 的状态单位是 `[度, 度/秒]`；每帧先用实际秒数 `dt` 调用 `predict()`，有观测时再以角度方差调用 `update()`，缺测时不调用更新。协方差使用 Joseph 形式。它与算例9-1的“度/帧”不同，比较前应转换状态、转移矩阵及过程噪声单位。
 
 `CircularParticleFilter` 用最短圆周角差的高斯目标项与均匀杂波项混合更新权重，按有效粒子数决定是否系统重采样；它只估计单个圆周角，不包含速度粒子、有限扇区反射或轨迹身份。该项把最短角差代入普通高斯密度，再与每度 $1/360$ 的均匀项混合。当标准差远小于180°时，高斯落在最短角区间外的质量很小；对任意大的标准差，它在该区间的积分小于1，混合系数不能再直接解释为严格圆周生成模型的杂波概率。因此它是窄角误差的教学近似，不是通用的归一圆周高斯模型。严格宽分布模型须另选环绕正态、归一截断密度或其他圆分布，连同参数含义一起验证。
 
-联合示例用 `.venv/bin/python -m codes.examples.ch06_09_baselines` 运行，测试见 [`tests/test_codes_aec_wpe_sep_track.py`](../tests/test_codes_aec_wpe_sep_track.py)。测试覆盖 $179^\circ$ 与 $-179^\circ$ 的最短新息、缺测时角度方差增长、Joseph 更新后的对称半正定性、远距离高置信观测的对数权重、退化权重的系统重采样，以及对称后验下未定义的圆周均值。
+联合示例用 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.ch06_09_baselines` 运行，测试见 [`tests/test_codes_aec_wpe_sep_track.py`](../tests/test_codes_aec_wpe_sep_track.py)。测试覆盖 $179^\circ$ 与 $-179^\circ$ 的最短新息、缺测时角度方差增长、Joseph 更新后的对称半正定性、远距离高置信观测的对数权重、退化权重的系统重采样，以及对称后验下未定义的圆周均值。
 
 教学 Kalman 类的过程噪声矩阵 $Q$ 已按一次预测间隔离散化；若 `dt` 改变，不能继续照搬同一个 $Q$。粒子后验的圆周合向量接近零时，代码会明确报错，而不是返回由浮点残差决定的任意角度。
 
@@ -672,9 +672,9 @@ $p_D$ 是检测概率，$g_t(z\mid x)$ 是目标在状态 $x$ 时产生观测 $z
 
 #### 上游实现与适用范围
 
-固定版本函数名不等于完整算法契约。FilterPy 的组合 `predict_update()` 与分开调用的 EKF 路径在雅可比求值时刻上有差异；IMM 也需核对无观测时是否按新模式先验融合。正文推导固定求值时刻，原函数受控输入及差异见[追踪实现核查](../codes/research/01_spatial_and_tracking.md#tracking-upstream-audit)，不要把调用成功当作数学条件已满足。
+固定版本函数名不等于完整算法契约。FilterPy 的组合 `predict_update()` 与分开调用的 EKF 路径在雅可比求值时刻上有差异；IMM 也需核对无观测时是否按新模式先验融合。正文推导固定求值时刻，原函数受控输入及差异见[追踪实现核查](../codes/chapters/ch00/research/01_spatial_and_tracking.md#tracking-upstream-audit)，不要把调用成功当作数学条件已满足。
 
-进一步的实现可按 FilterPy 和 Stone Soup 的固定版本阅读，源码工作目录、许可和入口由 [`SOURCES.lock.json`](../codes/SOURCES.lock.json) 管理。FilterPy 的 `kalman/EKF.py`、`UKF.py`、`IMM.py` 分别定位非线性更新和运动模型切换；Stone Soup 的 `dataassociator/probability.py::JPDA` 处理联合关联，`updater/pointprocess.py::PHDUpdater` 配合 `mixturereducer/gaussianmixture.py::GaussianMixtureReducer` 完成 GM-PHD 更新与分量合并、剪枝。具体阅读顺序、实验输入和失败情况见[空间处理与追踪研究](../codes/research/01_spatial_and_tracking.md)。
+进一步的实现可按 FilterPy 和 Stone Soup 的固定版本阅读，源码工作目录、许可和入口由 [`SOURCES.lock.json`](../codes/chapters/ch00/SOURCES.lock.json) 管理。FilterPy 的 `kalman/EKF.py`、`UKF.py`、`IMM.py` 分别定位非线性更新和运动模型切换；Stone Soup 的 `dataassociator/probability.py::JPDA` 处理联合关联，`updater/pointprocess.py::PHDUpdater` 配合 `mixturereducer/gaussianmixture.py::GaussianMixtureReducer` 完成 GM-PHD 更新与分量合并、剪枝。具体阅读顺序、实验输入和失败情况见[空间处理与追踪研究](../codes/chapters/ch00/research/01_spatial_and_tracking.md)。
 
 把位置追踪例子改成麦克风方向追踪时，至少要重写三处。观测模型应输出方位角或方向单位向量，不能继续使用二维位置残差；门控距离要使用相应协方差与角度环绕；杂波强度必须与观测空间的测度一致，例如每弧度的预期假峰数。检测概率还要反映说话人静默和定位器漏检，不能直接照搬雷达示例。
 
@@ -684,7 +684,7 @@ JPDA 也需要明确漏检事件和一对一约束；在两人交叉时，软关
 
 MHT 已有可阅读的受限参考：Stone Soup 的 `docs/examples/dataassociation/mht_example.py` 使用 `MFAHypothesiser` 延续多帧观测历史，再由 `MFADataAssociator` 做滑窗多帧分配和 N-scan 剪枝。该示例需要 OR-Tools，使用三帧窗口、预置三个目标及方位/距离观测，没有出生或消亡，不能直接代表变人数的声学追踪。[固定 MHT 示例](https://github.com/dstl/Stone-Soup/blob/8d1edeb07ef8505ed065cbef435cfb5e517d9bdc/docs/examples/dataassociation/mht_example.py "citation")。可先用相同观测比较窗口 1 与 3，再检查交叉和缺测；本书未执行这一上游实验。
 
-另一个具体分工是 Rao–Blackwell 化蒙特卡洛数据关联（Rao–Blackwellized Monte Carlo Data Association，RBMCDA）：粒子表示关联及出生/死亡假设，条件位置与速度由 KF 表示。SAF 的追踪模块采用这一思路，[McCormack 等 EUSIPCO 2021 原文](https://eurasip.org/Proceedings/Eusipco/Eusipco2021/pdfs/0000206.pdf "citation")§III给出分工；其 LOCATA 整链结果不能当成本章教学KF的成绩，源码与任务条件见[研究记录](../codes/research/01_spatial_and_tracking.md#tracking-upstream-audit)。这也说明“用了粒子”不代表每个状态量都由粒子采样。
+另一个具体分工是 Rao–Blackwell 化蒙特卡洛数据关联（Rao–Blackwellized Monte Carlo Data Association，RBMCDA）：粒子表示关联及出生/死亡假设，条件位置与速度由 KF 表示。SAF 的追踪模块采用这一思路，[McCormack 等 EUSIPCO 2021 原文](https://eurasip.org/Proceedings/Eusipco/Eusipco2021/pdfs/0000206.pdf "citation")§III给出分工；其 LOCATA 整链结果不能当成本章教学KF的成绩，源码与任务条件见[研究记录](../codes/chapters/ch00/research/01_spatial_and_tracking.md#tracking-upstream-audit)。这也说明“用了粒子”不代表每个状态量都由粒子采样。
 
 CPHD、LMB/$\delta$-GLMB 可在 [Vo 作者 MATLAB 工具包页面](https://ba-tuong.vo-au.com/codes.html "citation")找到研究代码来源，但页面限定 academic/research 使用，不能把它写成已确认通用再分发许可的源码。检测前追踪也仍需匹配具体观测模型。某个库的基类说明提到这些家族，不等于该版本已实现全部算法；给 PHD 分量附加临时标签也不等于实现了 GLMB。正式采用前仍要验证出生/存活/漏检模型、假设截断、身份切换和运行成本。
 
@@ -776,15 +776,15 @@ OSPA 与 GOSPA 都在同一帧无标签集合上计算，都不能证明轨迹�
 
 先调低播放音量。前文的声像移动样本只改变左右声道增益，不包含阵列传播时差：
 
-[声像移动试听](../codes/audio/tracking_pan.wav)
+[声像移动试听](../codes/chapters/ch09/audio/tracking_pan.wav)
 
-为复算包含迟滞传播时间的教学模型下的两麦差异，另有一组[独立自由场样本清单](../codes/moving_audio/MANIFEST.json)。以下三份都是数学合成信号，不是真实语音、房间录音或LOCATA数据，不计入主清单的98个WAV。
+为复算包含迟滞传播时间的教学模型下的两麦差异，另有一组[独立自由场样本清单](../codes/chapters/ch09/moving_audio/MANIFEST.json)。以下三份都是数学合成信号，不是真实语音、房间录音或LOCATA数据，不计入主清单的98个WAV。
 
-[原始两音调源](../codes/moving_audio/source.wav)
+[原始两音调源](../codes/chapters/ch09/moving_audio/source.wav)
 
-[固定在起点的双麦输出](../codes/moving_audio/static_array.wav)
+[固定在起点的双麦输出](../codes/chapters/ch09/moving_audio/static_array.wav)
 
-[沿直线运动的双麦输出](../codes/moving_audio/moving_array.wav)
+[沿直线运动的双麦输出](../codes/chapters/ch09/moving_audio/moving_array.wav)
 
 几何与时间口径固定如下：采样率 16 kHz，持续 2 s；两麦坐标分别为 $(-0.05,0)$ m、$(0.05,0)$ m。声源从 $(-0.8,1.5)$ m 出发，以 $(0.8,0)$ m/s 匀速运动，声速取 343 m/s。
 
@@ -817,7 +817,7 @@ r'_m(u)&=\vec n_m(u)^\top\vec v,\\
 
 把同一发射时刻到麦 1、麦 0 的传播时间之差定义为有符号 TDOA：$\tau_{1-0}(u)=[r_1(u)-r_0(u)]/343$，其中 $r_m$ 是声源到麦 $m$ 的距离。起点声源在左侧，更靠近麦 0，所以 $r_1-r_0>0$，麦 1 的到达更晚。按上述坐标代入距离公式，起点约为 $+0.0001372$ s，乘以 16000 后是 $+2.19$ 采样；末段声源已在右侧，约为 $-0.0001361$ s，即 $-2.18$ 采样。两侧符号相反，不能只报 TDOA 的绝对值。
 
-清单中的时间格点按声源轨迹的全局时钟取样；同一行 TDOA 比较的是该时刻发出的波到两麦的传播时间，并非两麦在同一采样索引处的波形峰差。逐帧值、坐标、统一增益及各文件摘要保存在清单中。[静止解析极限和符号测试](../tests/test_codes_moving_source.py)独立核对[生成器](../codes/examples/moving_source_audio.py)。
+清单中的时间格点按声源轨迹的全局时钟取样；同一行 TDOA 比较的是该时刻发出的波到两麦的传播时间，并非两麦在同一采样索引处的波形峰差。逐帧值、坐标、统一增益及各文件摘要保存在清单中。[静止解析极限和符号测试](../tests/test_codes_moving_source.py)独立核对[生成器](../codes/chapters/ch09/examples/moving_source_audio.py)。
 
 这里没有墙面反射、空气吸收、声源和麦克风指向性，也没有多人交叉或活动缺测。听到的音高、声像和电平变化不能直接当作某个 DOA 追踪器的准确率；若要评价追踪，还需对输出运行固定定位器，按相同时间戳比较逐帧误差和漏检，并另报波束控制滞后。真实移动录音可另按 [LOCATA 官方任务说明](https://www.locata.lms.tf.fau.de/tasks/ "citation")选择任务 3（静止阵列、单移动说话人），明确使用的录音和真值版本。
 
@@ -826,11 +826,11 @@ r'_m(u)&=\vec n_m(u)^\top\vec v,\\
 
 前一组两音调样本用于核对传播模型；下面新增的独立实验真正对波形运行定位器，再把有效观测交给 KF。两组样本不能混用评分。先调低播放音量：
 
-[源参考：32音调与一次静默](../codes/tracking_audio/source.wav)
+[源参考：32音调与一次静默](../codes/chapters/ch09/tracking_audio/source.wav)
 
-[运动传播后的带噪双麦信号](../codes/tracking_audio/array_noisy.wav)
+[运动传播后的带噪双麦信号](../codes/chapters/ch09/tracking_audio/array_noisy.wav)
 
-这两份都是本书数学合成 WAV，独立保存在 `codes/tracking_audio/`，不计入主98个样本或旧移动源3个文件。生成、量化、参数及逐帧结果见[独立清单](../codes/tracking_audio/MANIFEST.json)；实现见 [`tracking_audio.py`](../codes/array_tutorial/tracking_audio.py)。
+这两份都是本书数学合成 WAV，独立保存在 `codes/chapters/ch09/tracking_audio/`，不计入主98个样本或旧移动源3个文件。生成、量化、参数及逐帧结果见[独立清单](../codes/chapters/ch09/tracking_audio/MANIFEST.json)；实现见 [`tracking_audio.py`](../codes/chapters/ch09/core/tracking_audio.py)。
 
 几何、速度、声速与本节旧模型相同。采样率16 kHz、时长2 s；源由300～3400 Hz、间隔100 Hz的32条正弦等幅相加，每条幅度为 $1/\sqrt{32}$。随机生成器为PCG64、种子9001，先生成32个独立均匀相位，再按通道次序生成两路独立高斯传感器噪声，导出前标准差.01。源首尾采用20 ms线性淡入淡出；在发射时轴.8～.82 s淡出、.82～1.08 s为零、1.08～1.10 s淡入。它是带包络的多音调，不是真实语音或白噪声。
 
@@ -912,7 +912,7 @@ $$\mathrm{RMSE}_{\mathcal I}=\sqrt{\frac{1}{|\mathcal I|}\sum_{k\in\mathcal I}e_
 
 本章保留 E09-01～E09-09，并用 E09-10～E09-19 补充非线性变换、关联不确定度、集合指标与实际波形处理。
 
-E09-01～E09-05 运行 `.venv/bin/python -m codes.examples.exercises_enhancement`，源码见 [`exercises_enhancement.py`](../codes/examples/exercises_enhancement.py)；E09-06 使用本节的交叉实验脚本。这些练习使用方向数值，不通过左右声道音量模拟阵列定位；后者的声像不能代替麦克风传播时延模型。
+E09-01～E09-05 运行 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_enhancement`，源码见 [`exercises_enhancement.py`](../codes/chapters/ch00/cross_chapter/exercises_enhancement.py)；E09-06 使用本节的交叉实验脚本。这些练习使用方向数值，不通过左右声道音量模拟阵列定位；后者的声像不能代替麦克风传播时延模型。
 
 #### E09-01：把“每帧”改为“每秒”
 
@@ -998,7 +998,7 @@ $$P_{1.08}\approx\begin{bmatrix}4.217941&1.7264\\1.7264&9.16\end{bmatrix}.$$
 
 1.08 s 尚未超过有效期；若 1.20 s 才消费，示例拒绝这个状态并要求重新搜索或采用另行定义的降级策略。本题只把**已在测量时刻形成的状态**向前预测，未实现把迟到原始观测融合进已经更新过的当前滤波器。后一问题需要保存历史状态、重排重放或专用乱序观测方法；直接在当前时刻调用一次普通更新会混淆时间。[Stone Soup 固定延迟乱序观测示例](https://stonesoup.readthedocs.io/en/v1.9.1/auto_examples/oosm/KalmanFilterOOSMExample.html)可用于比较到达顺序、等待重排与丢弃策略。
 
-E09-07、E09-08 的复算入口为 `.venv/bin/python -m codes.examples.tracking_time_exercises`，见[源码](../codes/examples/tracking_time_exercises.py)和[独立期望值测试](../tests/test_codes_time_state_exercises.py)。前者检查证据递推，后者检查时间和不确定度；都不是实际声学定位精度测试。
+E09-07、E09-08 的复算入口为 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.tracking_time_exercises`，见[源码](../codes/chapters/ch00/cross_chapter/tracking_time_exercises.py)和[独立期望值测试](../tests/test_codes_time_state_exercises.py)。前者检查证据递推，后者检查时间和不确定度；都不是实际声学定位精度测试。
 
 <a id="e09-09"></a>
 
@@ -1026,9 +1026,9 @@ E09-07、E09-08 的复算入口为 `.venv/bin/python -m codes.examples.tracking_
 
 **边界与实现检查。** 若 $T=I$，每个模型只接收自己的旧状态，交互退化为不混合；若某个 $c_j=0$，这个目的模式不可达，条件概率无定义，需禁用或按另行声明的初始化策略处理。不同状态维度的静止、匀速和加速模型不能直接平均，须先定义状态映射与被补维度的不确定度。接近 $-180^\circ/180^\circ$ 时，也不能把两个原始角度直接算术平均；需在一致局部角度图中展开，或采用适当的圆统计混合。
 
-固定 [FilterPy `IMM.py`](https://github.com/rlabbe/filterpy/blob/3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33/filterpy/kalman/IMM.py) 的 `predict()` 在传播前计算混合初值，`_compute_mixing_probabilities()` 实际执行 `mu @ M`；其类参数说明中的转移方向文字与这条赋值不一致，接入时应以明确约定和非对称矩阵小例核验，不能照抄文字后再转置一次。本书例题采用上述行转移约定。固定版本的实际调用还存在无观测 `predict()` 总体混合权重与新模式先验不一致的边界；研究记录将上游原行为与独立目标计算分开，不修改上游源码，见[追踪实现核查](../codes/research/01_spatial_and_tracking.md#tracking-upstream-audit)。
+固定 [FilterPy `IMM.py`](https://github.com/rlabbe/filterpy/blob/3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33/filterpy/kalman/IMM.py) 的 `predict()` 在传播前计算混合初值，`_compute_mixing_probabilities()` 实际执行 `mu @ M`；其类参数说明中的转移方向文字与这条赋值不一致，接入时应以明确约定和非对称矩阵小例核验，不能照抄文字后再转置一次。本书例题采用上述行转移约定。固定版本的实际调用还存在无观测 `predict()` 总体混合权重与新模式先验不一致的边界；研究记录将上游原行为与独立目标计算分开，不修改上游源码，见[追踪实现核查](../codes/chapters/ch00/research/01_spatial_and_tracking.md#tracking-upstream-audit)。
 
-本题运行入口为 `.venv/bin/python -m codes.examples.enhancement_structure_exercises`，见[原创复算代码](../codes/examples/enhancement_structure_exercises.py)和[独立测试](../tests/test_codes_enhancement_structure.py)。测试用有理数二阶矩核对方差，另检查全概率下的总体均值/协方差不变、恒等转移和不可达模式。它验证交互算术，不验证真实 DOA 精度或机动识别率。
+本题运行入口为 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.enhancement_structure_exercises`，见[原创复算代码](../codes/chapters/ch00/cross_chapter/enhancement_structure_exercises.py)和[独立测试](../tests/test_codes_enhancement_structure.py)。测试用有理数二阶矩核对方差，另检查全概率下的总体均值/协方差不变、恒等转移和不可达模式。它验证交互算术，不验证真实 DOA 精度或机动识别率。
 
 <a id="e09-10"></a>
 
@@ -1234,4 +1234,4 @@ E09-10～E09-19 的统一入口为 `.venv/bin/python -m codes.chapters.ch09.chap
 
 ---
 
-> 📄 本篇信息：配图 3 张 ｜ [回首页](./00_overview.md)
+> 📄 本篇信息：配图 3 张 ｜ [回首页](00_overview.md)

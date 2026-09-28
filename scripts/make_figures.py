@@ -14,6 +14,11 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, FancyArrowPatch
 
+try:
+    from scripts.code_layout import MAIN_AUDIO_GROUP_CHAPTER, main_audio_manifest_path, main_audio_path
+except ModuleNotFoundError:  # direct ``python scripts/make_figures.py``
+    from code_layout import MAIN_AUDIO_GROUP_CHAPTER, main_audio_manifest_path, main_audio_path
+
 # 绘图样式必须只由仓库代码决定，不能随外部运行时是否存在而改变。
 plt.rcParams.update({
     "font.family": "sans-serif",
@@ -30,6 +35,19 @@ plt.rcParams.update({
 
 OUT = Path(__file__).parent.parent / "figures"
 OUT.mkdir(exist_ok=True)
+CODE_CHAPTERS = OUT.parent / "codes" / "chapters"
+
+
+def main_audio_file(filename):
+    """Resolve a flat published WAV name to its single chapter-owned source."""
+    manifest = json.loads(main_audio_manifest_path(CODE_CHAPTERS).read_text(encoding="utf-8"))
+    for record in manifest["files"]:
+        if record["file"] == filename:
+            chapter = MAIN_AUDIO_GROUP_CHAPTER[record["group"]]
+            if record.get("chapter") != chapter:
+                raise ValueError(f"音频章节归属不符：{filename}")
+            return main_audio_path(CODE_CHAPTERS, record["group"], filename)
+    raise ValueError(f"主音频清单未列出：{filename}")
 C_MAIN, C_BLUE, C_RED, C_GREEN, C_ORANGE, C_PURPLE = "#1a1a2e", "#2f6db3", "#c0392b", "#2e8b57", "#e67e22", "#7d3c98"
 # 全局字号约定（统一全书插图）
 MAX_FIGURE_WIDTH = 9.5
@@ -1035,7 +1053,7 @@ def fig_tracking():
         "phd_illustration": {"not_a_filter_run": True, "grid_deg": th.tolist(),
             "intensity_targets_per_degree": I.tolist(), "integral_targets": float(np.trapezoid(I,th))},
         "interpretation": "Single synthetic angular sequence, not microphone/audio input; no confidence interval or general performance claim."}
-    target = Path(__file__).resolve().parents[1]/"codes/reports/figure22_tracking.json"
+    target = Path(__file__).resolve().parents[1]/"codes/chapters/ch09/reports/figure22_tracking.json"
     target.write_text(json.dumps(report,ensure_ascii=False,indent=2,allow_nan=False)+"\n")
 
 
@@ -1897,7 +1915,7 @@ def fig_wpe():
             "quiet_energy": float(np.sum(np.abs(spectrum[:, quiet])**2)),
             "total_energy": float(np.sum(np.abs(spectrum)**2)),
             "quiet_energy_ratio_db": float(ratio), "active_scale_aligned_nmse_db": float(nmse)}
-    destination = Path(__file__).resolve().parents[1] / "codes/reports/figure21_wpe.json"
+    destination = Path(__file__).resolve().parents[1] / "codes/chapters/ch07/reports/figure21_wpe.json"
     destination.write_text(json.dumps(report, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
 
 
@@ -2759,15 +2777,14 @@ def fig_audio_examples():
     import json
     import wave
     root = Path(__file__).resolve().parents[1]
-    audio = root / "codes" / "audio"
-    manifest = audio / "MANIFEST.json"
+    manifest = main_audio_manifest_path(CODE_CHAPTERS)
     metadata = json.loads(manifest.read_text())
     for record in metadata["files"]:
-        if hashlib.sha256((audio / record["file"]).read_bytes()).hexdigest() != record["sha256"]:
+        if hashlib.sha256(main_audio_file(record["file"]).read_bytes()).hexdigest() != record["sha256"]:
             raise ValueError("音频文件与清单不符，先重新生成并核验")
 
     def read(stem):
-        with wave.open(str(audio / (stem + '.wav')), 'rb') as wav:
+        with wave.open(str(main_audio_file(stem + '.wav')), 'rb') as wav:
             rate, channels = wav.getframerate(), wav.getnchannels()
             x = np.frombuffer(wav.readframes(wav.getnframes()), dtype='<i2').reshape(-1, channels).T / 32768
         return rate, x[0]
@@ -2811,12 +2828,11 @@ def fig_audio_counterexamples():
     """Measure exported PCM; show three separate failure mechanisms, not a ranking."""
     import json
     import wave
-    root = Path(__file__).resolve().parents[1] / 'codes/audio'
-    manifest = root / 'MANIFEST.json'
+    manifest = main_audio_manifest_path(CODE_CHAPTERS)
     records = {item['file']: item for item in json.loads(manifest.read_text())['files']}
 
     def read(stem):
-        path = root / (stem + '.wav')
+        path = main_audio_file(stem + '.wav')
         if hashlib.sha256(path.read_bytes()).hexdigest() != records[path.name]['sha256']:
             raise ValueError(f'音频文件与清单不符：{stem}')
         with wave.open(str(path), 'rb') as wav:
@@ -2868,12 +2884,11 @@ def nonlinear_echo_measurements():
     """
     import json
     import wave
-    root = Path(__file__).resolve().parents[1] / 'codes/audio'
-    manifest = root / 'MANIFEST.json'
+    manifest = main_audio_manifest_path(CODE_CHAPTERS)
     records = {item['file']: item for item in json.loads(manifest.read_text())['files']}
     data = {}
     for name in ('reference', 'echo', 'estimate', 'residual'):
-        path = root / f'nonlinear_{name}.wav'
+        path = main_audio_file(f'nonlinear_{name}.wav')
         if hashlib.sha256(path.read_bytes()).hexdigest() != records[path.name]['sha256']:
             raise ValueError(f'音频文件与清单不符：{path.name}')
         with wave.open(str(path), 'rb') as wav:
@@ -2922,12 +2937,11 @@ def clock_drift_measurements():
     """Measure PCM frame power; compare to a separate analytic clock model."""
     import json
     import wave
-    root = OUT.parent / 'codes' / 'audio'
-    manifest = root / 'MANIFEST.json'
+    manifest = main_audio_manifest_path(CODE_CHAPTERS)
     records = {r['file']: r for r in json.loads(manifest.read_text())['files']}
     decoded = {}
     for name in ('reference', 'index_mean', 'oracle_mean'):
-        path = root / f'clock_{name}.wav'
+        path = main_audio_file(f'clock_{name}.wav')
         if hashlib.sha256(path.read_bytes()).hexdigest() != records[path.name]['sha256']:
             raise ValueError('clock PCM does not match manifest')
         with wave.open(str(path), 'rb') as wav:
@@ -2978,8 +2992,7 @@ def fig_interpolation_error():
     import json
     import wave
     root = Path(__file__).resolve().parents[1]
-    audio = root / 'codes/audio'
-    manifest_path = audio / 'MANIFEST.json'
+    manifest_path = main_audio_manifest_path(CODE_CHAPTERS)
     manifest = json.loads(manifest_path.read_text())
     params = manifest['groups']['interpolation']['parameters']
     fs = params['sample_rate_hz']
@@ -2988,7 +3001,7 @@ def fig_interpolation_error():
     tones = np.array(params['frequencies_hz'])
     amplitudes = {}
     for label in ('ideal_half', 'linear_half', 'ideal_one', 'linear_twice'):
-        with wave.open(str(audio / f'interpolation_{label}.wav'), 'rb') as wav:
+        with wave.open(str(main_audio_file(f'interpolation_{label}.wav')), 'rb') as wav:
             if (wav.getframerate(), wav.getnchannels(), wav.getsampwidth()) != (fs, 1, 2):
                 raise ValueError('Interpolation figure requires mono PCM16 at the declared rate')
             x = np.frombuffer(wav.readframes(wav.getnframes()), dtype='<i2') / 32768
@@ -3101,7 +3114,7 @@ def fig_css_overlap():
     """Read published PCM for output amplitudes; keep float matching separate."""
     import wave
     root = Path(__file__).resolve().parents[1]
-    manifest_path = root/'codes/audio/MANIFEST.json'
+    manifest_path = root/'codes/chapters/ch00/audio/MANIFEST.json'
     manifest = json.loads(manifest_path.read_text())
     config = manifest['groups']['css_overlap']['parameters']
     correlation = np.asarray(config['matching']['absolute_centered_correlation'])
@@ -3124,7 +3137,7 @@ def fig_css_overlap():
     for row,(stem,title) in enumerate([
             ('css_overlap_naive','(b) 未关联：槽0在重叠区逐渐换成另一源'),
             ('css_overlap_aligned','(c) 实际关联：槽0保持第一源与其残留串音')],start=1):
-        with wave.open(str(root/'codes/audio'/f'{stem}.wav'), 'rb') as wav:
+        with wave.open(str(main_audio_file(f'{stem}.wav')), 'rb') as wav:
             fs = wav.getframerate()
             if wav.getsampwidth() != 2 or wav.getnchannels() != 2:
                 raise ValueError('CSS figure requires two-channel PCM16')
@@ -3148,7 +3161,7 @@ def fig_css_overlap():
 
 def fig_tracking_audio():
     """Plot only the analysis recomputed from the independently exported PCM."""
-    manifest_path = Path(__file__).resolve().parents[1]/'codes/tracking_audio/MANIFEST.json'
+    manifest_path = Path(__file__).resolve().parents[1]/'codes/chapters/ch09/tracking_audio/MANIFEST.json'
     manifest = json.loads(manifest_path.read_text())
     frames = manifest['pcm_analysis']['frames']
     t = np.asarray(frames['state_time_s'])
@@ -3182,8 +3195,8 @@ def fig_agc_blocks():
     """Plot exported PCM and the causal, block-available AGC state."""
     import json
     import wave
-    audio = OUT.parent / 'codes' / 'audio'
-    manifest_path = audio / 'MANIFEST.json'
+    audio = OUT.parent / 'codes' / 'chapters' / 'ch10' / 'audio'
+    manifest_path = OUT.parent / 'codes' / 'chapters' / 'ch00' / 'audio' / 'MANIFEST.json'
     manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
     group = manifest['groups']['agc_blocks']
     records = {record['file']: record for record in manifest['files']}
@@ -3301,8 +3314,8 @@ def fig_selection_audio_tradeoff():
     """Recompute the fixed-tone tradeoff from the exported PCM files."""
     import json
     import wave
-    audio = OUT.parent / 'codes' / 'audio'
-    manifest_path = audio / 'MANIFEST.json'
+    audio = OUT.parent / 'codes' / 'chapters' / 'ch11' / 'audio'
+    manifest_path = OUT.parent / 'codes' / 'chapters' / 'ch00' / 'audio' / 'MANIFEST.json'
     manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
     group = manifest['groups']['selection_tradeoff']
     params = group['parameters']
@@ -3454,12 +3467,11 @@ def fig_fft_block_boundary():
     import wave
 
     root = Path(__file__).resolve().parents[1]
-    audio = root / 'codes/audio'
-    manifest_path = audio / 'MANIFEST.json'
+    manifest_path = main_audio_manifest_path(CODE_CHAPTERS)
     names = ('math_block_dry', 'math_block_linear', 'math_block_circular')
     signals = {}
     for name in names:
-        with wave.open(str(audio / f'{name}.wav'), 'rb') as wav:
+        with wave.open(str(main_audio_file(f'{name}.wav')), 'rb') as wav:
             if (wav.getframerate(), wav.getnchannels(), wav.getsampwidth(),
                     wav.getnframes()) != (16000, 1, 2, 32000):
                 raise ValueError(f'unexpected appendix A PCM format: {name}')
@@ -3537,7 +3549,7 @@ def main():
     fig_wpe()
     fig_binaural()
     write_gcc_reverb_report(fig_gcc_reverb(),
-        Path(__file__).resolve().parents[1] / "codes/reports/figure13_gcc_reverb.json")
+        Path(__file__).resolve().parents[1] / "codes/chapters/ch04/reports/figure13_gcc_reverb.json")
     fig_delay_phase()
     fig_beampattern_anatomy()
     fig_dsin_geometry()

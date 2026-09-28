@@ -5,8 +5,8 @@ import unittest
 
 import numpy as np
 
-from codes.examples.chapter01_experiments import run_exercises
-from codes.array_tutorial.audio_samples import alignment_error_case, prepare_exports, read_pcm16
+from codes.chapters.ch01.chapter01_experiments import run_exercises
+from codes.chapters.ch00.core.audio_samples import alignment_error_case, prepare_exports, read_pcm16
 
 
 class Chapter01ExperimentsTest(unittest.TestCase):

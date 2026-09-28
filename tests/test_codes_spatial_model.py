@@ -4,7 +4,7 @@ import unittest
 
 import numpy as np
 
-from codes.examples.spatial_model_exercises import (
+from codes.chapters.ch00.cross_chapter.spatial_model_exercises import (
     colored_noise_music, loading_from_wng, parseval_power, rfft_mean_square,
     run_exercises, singular_mvdr_counterexample,
 )

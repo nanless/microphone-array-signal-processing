@@ -1,0 +1,1291 @@
+"""Deterministic synthetic listening fixtures; not speech or room measurements.
+
+Arrays use channels x samples. All cases have known inputs, no downloaded
+recordings, and no pretrained model. Export applies ONE gain per comparison
+group, including its references. Listen at a low device volume.
+"""
+from __future__ import annotations
+
+import io
+import hashlib
+import wave
+
+import numpy as np
+
+from codes.chapters.ch10.core.engineering import PeakProtectAGC
+from codes.chapters.ch05.core.gsc import ScalarGSCNLMS
+from codes.chapters.ch06.core.aec import NLMSState, nlms
+from codes.chapters.ch06.core.aec_ipnlms import ipnlms
+from codes.chapters.ch06.core.aec_rls import rls
+from codes.chapters.ch06.core.aec_kalman_matrix import KalmanAECState
+from codes.chapters.ch06.core.aec_subband import haar_synthesize, two_tap_subband_outputs
+from codes.chapters.ch07.core.dereverberation import offline_wpe
+from codes.chapters.ch03.core.geometry import plane_wave_delays
+from codes.chapters.appendix_a.core.math_foundations import blockwise_circular_convolution, fft_overlap_add
+from codes.chapters.ch10.core.noise_suppression import power_spectral_subtraction
+from codes.chapters.ch02.core.spectral import stft, istft
+
+SAMPLE_RATE = 16000
+SEED = 20260922
+
+
+def delay_samples(signal: np.ndarray, samples: int) -> np.ndarray:
+    """Zero-padded causal delay, preserving length; never circularly wrap."""
+    x = np.asarray(signal)
+    if np.iscomplexobj(x):
+        raise ValueError("signal must be real")
+    x = np.asarray(x, dtype=float)
+    if x.ndim != 1 or not np.all(np.isfinite(x)):
+        raise ValueError("signal must be finite and one-dimensional")
+    if isinstance(samples, (bool, np.bool_)) or not isinstance(samples, (int, np.integer)) or samples < 0:
+        raise ValueError("delay must be a non-negative integer")
+    out = np.zeros_like(x)
+    if samples < x.size:
+        out[samples:] = x[:x.size-samples]
+    return out
+
+
+def pcm16_bytes(waveforms: np.ndarray, sample_rate: int = SAMPLE_RATE) -> bytes:
+    """Encode CxN audio without implicit normalization, saturation or dither."""
+    x = np.asarray(waveforms)
+    if np.iscomplexobj(x):
+        raise ValueError("PCM input must be real")
+    x = np.asarray(x, dtype=float)
+    if x.ndim == 1:
+        x = x[None, :]
+    if x.ndim != 2 or min(x.shape) < 1 or not np.all(np.isfinite(x)):
+        raise ValueError("audio must be finite nonempty CxN")
+    if isinstance(sample_rate, bool) or not isinstance(sample_rate, (int, np.integer)) or sample_rate <= 0:
+        raise ValueError("sample rate must be a positive integer")
+    if np.max(np.abs(x)) > 32767 / 32768:
+        raise ValueError("PCM headroom exceeded; choose an explicit common gain")
+    quantized = np.rint(x.T * 32768).astype('<i2')
+    stream = io.BytesIO()
+    with wave.open(stream, 'wb') as out:
+        out.setnchannels(x.shape[0])
+        out.setsampwidth(2)
+        out.setframerate(int(sample_rate))
+        out.writeframes(quantized.tobytes())
+    return stream.getvalue()
+
+
+def read_pcm16(data: bytes) -> tuple[int, np.ndarray]:
+    """Read the uncompressed 16-bit PCM format produced by this module."""
+    with wave.open(io.BytesIO(data), 'rb') as source:
+        if source.getsampwidth() != 2 or source.getcomptype() != 'NONE':
+            raise ValueError("expected uncompressed PCM16")
+        rate, channels, frames = source.getframerate(), source.getnchannels(), source.getnframes()
+        raw = source.readframes(frames)
+    if len(raw) != frames * channels * 2:
+        raise ValueError("truncated PCM payload")
+    return rate, np.frombuffer(raw, dtype='<i2').reshape(-1, channels).T.astype(float) / 32768
+
+
+def _tone(t: np.ndarray, frequency: float) -> np.ndarray:
+    # An AM harmonic complex, deliberately labelled synthetic rather than speech.
+    envelope = np.sin(np.pi * np.minimum(t / .02, 1) / 2)**2
+    envelope *= np.sin(np.pi * np.minimum((t[-1] - t) / .02, 1) / 2)**2
+    envelope *= .3 + .7 * np.sin(2 * np.pi * 2 * t)**2
+    return envelope * sum(np.sin(2*np.pi*frequency*k*t) / k for k in range(1, 7)) / 4
+
+
+def clock_drift_case() -> dict:
+    """Two co-located ideal sensors, sampled by clocks differing by 100 ppm.
+
+    Equal sample indices are paired despite representing different physical
+    times. The oracle is an analytic common-clock target, NOT a resampler.
+    """
+    duration = 8.0
+    epsilon = 100e-6
+    index = np.arange(int(duration * SAMPLE_RATE))
+    time = index / SAMPLE_RATE
+    fast_time = index / (SAMPLE_RATE * (1 + epsilon))
+
+    def source(t):
+        fade = np.minimum(np.clip(t / .02, 0, 1),
+                          np.clip((duration - t) / .02, 0, 1))
+        return fade * (.18 * np.sin(2 * np.pi * 500 * t)
+                       + .18 * np.sin(2 * np.pi * 1500 * t))
+
+    reference = source(time)
+    fast = source(fast_time)
+    return {
+        'signals': {'clock_reference': reference,
+                    'clock_array': np.vstack((reference, fast)),
+                    'clock_index_mean': (reference + fast) / 2,
+                    'clock_oracle_mean': reference.copy()},
+        'parameters': {
+            'sample_rate_hz': SAMPLE_RATE, 'duration_s': duration,
+            'actual_clock_rates_hz': [SAMPLE_RATE, SAMPLE_RATE * (1 + epsilon)],
+            'relative_rate_ppm': 100.0, 'samples_per_channel': index.size,
+            'frequencies_hz': [500, 1500], 'amplitudes': [.18, .18],
+            'source': 'sum of two continuous sinusoids with 20 ms linear edge fades',
+            'sampling_times': 't1=n/fs, t2=n/(fs*(1+100e-6)); n starts at zero',
+            'time_difference_seconds': 't1-t2=t1*epsilon/(1+epsilon)',
+            'per_tone_interior_envelope_ratio': 'abs(cos(pi*f*(t1-t2)))',
+            'channel_order': ['nominal_clock', 'fast_clock'],
+            'export_time_axis': 'Both sample sequences stored at nominal 16000 Hz; fast channel is intentionally not time-corrected',
+            'oracle': 'Analytically evaluate both sensors at t1; no estimated clock, interpolation or resampling algorithm',
+            'geometry': 'co-located omnidirectional ideal sensors; zero propagation difference',
+            'alignment': 'same physical start; no post-hoc delay or gain fitting',
+            'seed': None,
+        },
+        'limits': 'Mathematical clock-only counterexample, no noise, room, speech or device data. '
+                  'Oracle is the ideal common-clock target, not measured compensation performance.'}
+
+
+def interpolation_case() -> dict:
+    """Fixed half-sample FIR delay versus analytic, continuous-time targets.
+
+    The ideal targets are evaluated from the known source, not estimated.
+    Both linear passes have zero initial history. Score only the interior.
+    """
+    count = 2 * SAMPLE_RATE
+    index = np.arange(count)
+
+    def source(samples):
+        t = samples / SAMPLE_RATE
+        fade = np.minimum(np.clip(t / .02, 0, 1), np.clip((2 - t) / .02, 0, 1))
+        return fade * (.18 * np.sin(2 * np.pi * 500 * t)
+                       + .18 * np.sin(2 * np.pi * 6000 * t))
+
+    x = source(index)
+    first = .5 * (x + delay_samples(x, 1))
+    second = .5 * (first + delay_samples(first, 1))
+    return {
+        'signals': {'interpolation_ideal_half': source(index - .5),
+                    'interpolation_linear_half': first,
+                    'interpolation_ideal_one': source(index - 1.),
+                    'interpolation_linear_twice': second},
+        'parameters': {
+            'sample_rate_hz': SAMPLE_RATE, 'duration_s': 2., 'seed': None,
+            'source': '500 and 6000 Hz continuous sinusoids, each amplitude 0.18; 20 ms linear edge fades',
+            'frequencies_hz': [500, 6000], 'amplitudes': [.18, .18],
+            'fir_coefficients_one_pass': [.5, .5],
+            'fir_coefficients_two_passes': [.25, .5, .25],
+            'delay_samples': {'ideal_half': .5, 'linear_half': .5,
+                             'ideal_one': 1., 'linear_twice': 1.},
+            'initial_history': 'zero; source is zero outside [0, 2] seconds',
+            'scoring_interval_samples': [1600, 30400],
+            'amplitude_measurement': '2/N*abs(sum(x[n]*exp(-j*2*pi*f*n/fs))) on integer-period interior',
+            'reference': 'Compare each output to its matching ideal delay; no gain fitting or time alignment',
+            'normalization': 'one common export gain for all four files',
+        },
+        'limits': 'Mathematical fixed-delay component example, not a resampling-rate estimator, '
+                  'room, device or speech quality test. Two passes delay by one sample but are not an exact one-sample delay.'}
+
+
+def alignment_error_case() -> dict:
+    """E01-05: one sample of residual target misalignment, without noise.
+
+    The raw channels are an undelayed target and its zero-padded delay.
+    Delay the first channel once to obtain a causal, exactly aligned pair.
+    """
+    index = np.arange(2 * SAMPLE_RATE)
+    t = index / SAMPLE_RATE
+    fade = np.minimum(np.clip(t / .02, 0, 1), np.clip((2 - t) / .02, 0, 1))
+    target = fade * (.18 * np.sin(2 * np.pi * 1000 * t)
+                     + .18 * np.sin(2 * np.pi * 4000 * t))
+    later = delay_samples(target, 1)
+    array = np.vstack((target, later))
+    aligned = (delay_samples(array[0], 1) + array[1]) / 2
+    return {
+        'signals': {'alignment_reference': later,
+                    'alignment_array': array,
+                    'alignment_unaligned': array.mean(axis=0),
+                    'alignment_aligned': aligned},
+        'parameters': {
+            'exercise_id': 'E01-05', 'sample_rate_hz': SAMPLE_RATE,
+            'duration_s': 2., 'samples_per_channel': index.size, 'seed': None,
+            'source': 'sum of 1000 and 4000 Hz sinusoids with 20 ms linear edge fades',
+            'frequencies_hz': [1000, 4000], 'amplitudes': [.18, .18],
+            'residual_delay_samples': 1, 'residual_delay_seconds': 1 / SAMPLE_RATE,
+            'channel_order': ['earlier_target', 'target_delayed_by_one_sample'],
+            'initial_history': 'zero; causal delay, no circular wrap',
+            'reference': 'clean target delayed by one sample; identical to aligned output',
+            'alignment': 'known one-sample delay added to channel 1; no estimated direction or delay',
+            'effective_common_delay_samples': {'unaligned': .5, 'aligned': 1.},
+            'amplitude_ratio_formula': 'abs(cos(pi*f/fs)) before alignment; 1 after alignment',
+            'scoring_interval_samples': [1600, 30400],
+            'amplitude_measurement': '2/N*abs(sum(x[n]*exp(-j*2*pi*f*n/fs))) on integer-period interior',
+            'comparison': 'Compare projected tone amplitudes. Do not interpret raw time-domain error across unequal delays as amplitude loss.',
+        },
+        'limits': 'Target-only mathematical example; no noise, HRTF, room, speech or device recording. '
+                  'Level changes are not SNR gains; known alignment is not an estimated algorithm result.'}
+
+
+def room_decay_components() -> dict:
+    """E02-11: explicit direct/tail filters and a common mathematical source.
+
+    Tail entries are Gaussian samples times an exponential amplitude envelope;
+    they are not simulated wall reflections. The fixed 1.2 s tail supports
+    nominal decay parameters of 0.2 and 0.6 s, without truncating a convolution.
+    Direct and tail supports do not overlap, so their RIR energies separate.
+    """
+    source_seed, tail_seed = 2026092801, 2026092802
+    source = np.zeros(int(2.5 * SAMPLE_RATE))
+    start, stop, fade_length = 2400, 8800, 160
+    burst = .08 * np.random.default_rng(source_seed).standard_normal(stop - start)
+    fade = np.ones(stop - start)
+    fade[:fade_length] = np.linspace(0., 1., fade_length, endpoint=False)
+    fade[-fade_length:] = np.linspace(1., 0., fade_length, endpoint=True)
+    source[start:stop] = burst * fade
+    direct_index, tail_start, tail_length = 192, 512, 19200
+    direct = np.zeros(tail_start + tail_length)
+    direct[direct_index] = 1.
+    z = np.random.default_rng(tail_seed).standard_normal(tail_length)
+    elapsed = np.arange(tail_length) / SAMPLE_RATE
+    tails = {}
+    for name, t60, drr_db in [('short_drr0', .2, 0.), ('long_drr0', .6, 0.),
+                              ('long_drr6', .6, 6.)]:
+        tail = np.zeros_like(direct)
+        samples = z * np.exp(-3 * np.log(10.) * elapsed / t60)
+        samples *= np.sqrt(10 ** (-drr_db / 10) / np.sum(samples**2))
+        tail[tail_start:] = samples
+        tails[name] = {'tail': tail, 'nominal_t60_s': t60, 'rir_drr_db': drr_db}
+    return {'source': source, 'direct_rir': direct, 'tails': tails,
+            'source_seed': source_seed, 'tail_seed': tail_seed,
+            'source_active_interval_samples': [start, stop],
+            'source_fade_samples': fade_length,
+            'direct_index': direct_index, 'tail_start': tail_start,
+            'tail_length': tail_length}
+
+
+def room_decay_case() -> dict:
+    """Four aligned WAVs separate RIR energy ratio from nominal tail decay.
+
+    FFT convolution is zero padded to its full linear-convolution length.
+    The signal support finishes before 2.5 s; only numerical roundoff lies
+    beyond the retained output, and it is checked rather than silently lost.
+    """
+    parts = room_decay_components()
+    source, direct = parts['source'], parts['direct_rir']
+    reference = delay_samples(source, parts['direct_index'])
+    signals = {'room_decay_dry': reference}
+    records = []
+    full_length = source.size + direct.size - 1
+    nfft = 1 << (full_length - 1).bit_length()
+    source_fft = np.fft.rfft(source, n=nfft)
+
+    def digest(array):
+        return hashlib.sha256(np.asarray(array, dtype='<f8').tobytes()).hexdigest()
+
+    def crossing_samples(array):
+        remaining = np.cumsum(array[::-1]**2)[::-1]
+        indices = np.flatnonzero(remaining <= remaining[0] * 1e-6)
+        return int(indices[0]) if indices.size else None
+
+    for name, item in parts['tails'].items():
+        tail = item['tail']
+        rir = direct + tail
+        tail_full = np.fft.irfft(source_fft * np.fft.rfft(tail, n=nfft), n=nfft)[:full_length]
+        if np.max(np.abs(tail_full[source.size:])) > 1e-12:
+            raise ValueError('room decay output would truncate a nonzero response')
+        # Guarantee exact causality of the retained samples before excitation.
+        tail_full[:parts['source_active_interval_samples'][0] + parts['tail_start']] = 0.
+        reflected = tail_full[:source.size]
+        signals['room_decay_' + name] = reference + reflected
+        total_cross, tail_cross = crossing_samples(rir), crossing_samples(tail)
+        direct_energy, tail_energy = float(direct @ direct), float(tail @ tail)
+        direct_output_energy = float(reference @ reference)
+        tail_output_energy = float(reflected @ reflected)
+        records.append({
+            'name': name, 'nominal_t60_s': item['nominal_t60_s'],
+            'target_rir_drr_db': item['rir_drr_db'],
+            'direct_rir_energy': direct_energy, 'tail_rir_energy': tail_energy,
+            'measured_rir_drr_db': float(10*np.log10(direct_energy/tail_energy)),
+            'rir_float64_le_sha256': digest(rir),
+            'tail_float64_le_sha256': digest(tail),
+            'total_edc_first_minus60_sample': total_cross,
+            'total_edc_first_minus60_absolute_s': total_cross / SAMPLE_RATE if total_cross is not None else None,
+            'total_edc_first_minus60_after_direct_s': (total_cross-parts['direct_index']) / SAMPLE_RATE if total_cross is not None else None,
+            'tail_edc_first_minus60_sample': tail_cross,
+            'tail_edc_first_minus60_after_tail_start_s': (tail_cross-parts['tail_start']) / SAMPLE_RATE if tail_cross is not None else None,
+            'direct_output_energy': direct_output_energy,
+            'tail_output_energy': tail_output_energy,
+            'output_cross_energy': float(2 * (reference @ reflected)),
+            'total_output_energy': float(signals['room_decay_' + name] @ signals['room_decay_' + name]),
+        })
+    return {'signals': signals, 'parameters': {
+        'exercise_id': 'E02-11', 'sample_rate_hz': SAMPLE_RATE,
+        'duration_s': 2.5, 'samples_per_channel': source.size,
+        'source_seed': parts['source_seed'], 'tail_seed': parts['tail_seed'],
+        'source': '0.08 times seeded unit-variance Gaussian samples with 10 ms linear edge fades; zero elsewhere',
+        'source_active_interval_samples': parts['source_active_interval_samples'],
+        'source_fade_samples': parts['source_fade_samples'],
+        'source_float64_le_sha256': digest(source),
+        'direct_arrival_sample': parts['direct_index'], 'direct_arrival_s': .012,
+        'tail_start_sample': parts['tail_start'], 'tail_start_s': .032,
+        'tail_length_samples': parts['tail_length'], 'tail_duration_s': 1.2,
+        'tail_model': 'z[n]*exp(-3*ln(10)*n/(fs*nominal_T60)), then normalize its total squared sum to 10^(-DRR/10)',
+        'shared_randomness': 'the same tail Gaussian vector is used in all three conditions; conditions are not independent trials',
+        'reference': 'room_decay_dry is the common source delayed by 192 samples (12 ms), matching every direct arrival',
+        'alignment': 'known direct-path alignment; no fitted gain, delay or algorithm estimate',
+        'convolution': 'zero-padded full FFT linear convolution; full nonzero tail fits in the 40000 retained samples',
+        'energy_interval_samples': [0, source.size],
+        'energy_units': 'sum of squared dimensionless digital samples, before common export gain and PCM16 quantization',
+        'edc': 'reverse sum of squared RIR entries, normalized by that filter total; first remaining-energy ratio <= 1e-6',
+        'conditions': records,
+    }, 'limits': 'Seeded mathematical scalar filters, not physical room simulation, measured RIR, speech, T20/T30 fit or standard reverberation-time measurement. '
+                 'Nominal T60 controls the amplitude envelope; total-EDC threshold times also depend on DRR, onset, finite tail and this random draw. '
+                 'RIR component energy ratios do not equal finite convolved-signal ratios; the outputs contain direct/tail cross terms. '
+                 'No noise-removal algorithm or listening study is evaluated.'}
+
+
+def dma_calibration_case() -> dict:
+    """E03-14: ideal time shifts isolate a 1% gain error in a rear null.
+
+    Source envelopes and sinusoids are evaluated at their continuous delayed
+    times. This is not an implementation of a sampled fractional-delay filter.
+    Front/rear sources are active separately, with ample zero guard regions.
+    """
+    fs = SAMPLE_RATE
+    time = np.arange(2*fs)/fs
+    spacing, speed, base, gain = .01, 343., .002, 1.01
+    tau = spacing/speed
+
+    def source(t, frequency, begin, end):
+        envelope = np.minimum(np.clip((t-begin)/.01, 0, 1),
+                              np.clip((end-t)/.01, 0, 1))
+        return .25*envelope*np.sin(2*np.pi*frequency*t)
+
+    front = lambda t: source(t, 1000., .1, .7)
+    back = lambda t: source(t, 1600., .9, 1.5)
+    x1 = front(time-base)+back(time-base-tau)
+    nominal_x2 = front(time-base-tau)+back(time-base)
+    delayed_nominal_x2 = front(time-base-2*tau)+back(time-base-tau)
+    target = front(time-base)-front(time-base-2*tau)
+    mismatch = x1-gain*delayed_nominal_x2
+    corrected = x1-(gain*delayed_nominal_x2)/gain
+    phase = 2*np.pi*1000*tau
+    return {'signals': {
+        'dma_calibration_array': np.vstack((x1, gain*nominal_x2)),
+        'dma_calibration_target': target,
+        'dma_calibration_mismatch': mismatch,
+        'dma_calibration_corrected': corrected,
+    }, 'parameters': {
+        'exercise_id': 'E03-14', 'sample_rate_hz': fs, 'duration_s': 2.,
+        'samples_per_channel': time.size,
+        'spacing_m': spacing, 'sound_speed_m_s': speed,
+        'channel_order': ['front microphone 1', 'rear microphone 2 with gain 1.01'],
+        'relative_channel_gain': gain, 'geometric_delay_s': tau,
+        'geometric_delay_samples': tau*fs, 'common_base_delay_s': base,
+        'front_source': {'frequency_hz': 1000., 'amplitude': .25, 'active_interval_s': [.1,.7]},
+        'back_source': {'frequency_hz': 1600., 'amplitude': .25, 'active_interval_s': [.9,1.5]},
+        'envelope': 'min(clip((t-begin)/0.01,0,1),clip((end-t)/0.01,0,1)); sine phase is 2*pi*f*t',
+        'fade_duration_s': .01,
+        'source_model': 'two separate-time finite sinusoidal bursts evaluated at continuous delayed times; no random input',
+        'microphone_model': 'x1=F(t-b)+B(t-b-tau); x2=1.01*(F(t-b-tau)+B(t-b))',
+        'unaligned_output_model': 'none; every output uses the same tau delay before rear-channel subtraction',
+        'mismatch_output_model': 'x1(t)-x2(t-tau)',
+        'corrected_output_model': 'x1(t)-x2(t-tau)/1.01, using known gain, no fitted calibration',
+        'reference': 'F(t-b)-F(t-b-2*tau), ideal target-only differential output; includes its physical/filter phase',
+        'delay_implementation': 'continuous source evaluation at shifted time; no interpolation or causal digital filter is executed',
+        'alignment': 'same time origin and differential response; no post-hoc delay or gain fitting',
+        'front_scoring_interval_samples': [2400,10400],
+        'back_scoring_interval_samples': [15200,23200],
+        'front_ideal_steady_amplitude_ratio': float(abs(1-np.exp(-2j*phase))),
+        'front_mismatch_steady_amplitude_ratio': float(abs(1-gain*np.exp(-2j*phase))),
+        'back_mismatch_steady_amplitude_ratio': abs(1-gain),
+        'back_corrected_steady_amplitude_ratio': 0.,
+        'back_mismatch_level_relative_single_mic_db': float(20*np.log10(abs(1-gain))),
+        'normalization': 'one common export gain across array, target, mismatch and corrected waveforms',
+        'randomness': 'none', 'noise': 'none',
+    }, 'limits': 'Mathematical free-field equal-amplitude signals, not real speech, a measured DMA or a hardware calibrator. '
+                 'Known 1.01 gain correction and ideal continuous delays demonstrate the null model; no gain or delay estimator is run. '
+                 'A zero rear response is an ideal-model result; PCM16 has a quantization floor. '
+                 'There is no additive noise, so the reported amplitude ratios are not SNR gains. No formal listening study.'}
+
+
+def doa_ambiguity_case() -> dict:
+    """Two finite stereo records with an exactly controlled steady periodic model."""
+    n = np.arange(2 * SAMPLE_RATE)
+    period = 1024
+    bins = np.arange(20, 385)
+    rng = np.random.default_rng(2026092804)
+    spectrum = np.zeros(period // 2 + 1, complex)
+    spectrum[bins] = np.exp(1j * rng.uniform(-np.pi, np.pi, bins.size))
+    # Equal spectral amplitudes, fixed independent phases; this is a multisine,
+    # not a Gaussian-noise recording or a continuous spectrum.
+    broad_period = np.fft.irfft(spectrum, n=period) * np.sqrt(period / 2)
+    tone = .2 * np.cos(2 * np.pi * 2000 * n / SAMPLE_RATE)
+    broad = .2 * broad_period[n % period]
+    envelope = np.ones(n.size)
+    fade = np.sin(np.linspace(0, np.pi/2, 320))**2
+    envelope[:320], envelope[-320:] = fade, fade[::-1]
+    signals = {}
+    for name, source in [('tone', tone), ('broadband', broad)]:
+        source = source * envelope
+        signals['doa_ambiguity_' + name] = np.vstack((delay_samples(source, 2), source))
+    return {'signals': signals, 'parameters': {
+        'sample_rate_hz': SAMPLE_RATE, 'samples': int(n.size), 'spacing_m': .2,
+        'sound_speed_m_s': 343., 'tau12_samples': 2, 'tau12_s': 2/SAMPLE_RATE,
+        'channel_order': ['microphone1_delayed_two_samples', 'microphone2_reference'],
+        'tone_frequency_hz': 2000, 'tone_amplitude': .2,
+        'broadband_model': '365 equal-amplitude periodic multisine bins; independent seeded phases',
+        'period_samples': period, 'retained_fft_bins': bins.tolist(),
+        'frequency_range_hz': [312.5, 6000.], 'seed': 2026092804,
+        'rng': 'NumPy default_rng PCG64, uniform phase [-pi, pi)',
+        'broadband_scaling': '0.2 * sqrt(1024/2) * irfft(unit-magnitude retained bins)',
+        'fade_samples': 320, 'fade': 'squared sine, endpoint included, before channel delay',
+        'delay_boundary': 'causal zero extension, output truncated to 32000 samples',
+        'score_interval_samples': [8192, 9216], 'score_fft_length': 1024,
+        'score_window': 'rectangular, one complete steady multisine period',
+        'tone_score_bins': [128], 'candidate_tau12_samples': [-6, 2],
+        'noise': 'none', 'randomness': 'fixed source phases only; no repeated-trial statistics',
+    }, 'limits': 'Mathematical equal-amplitude far-field model, no measured recording or speech. '
+       'The 2 kHz steady tone has equal phase at delays +2 and -6 samples within the physical bound. '
+       'Finite fades and record boundaries can break a full-record GCC tie; this does not make a steady pure tone globally identifiable. '
+       'The wide-band signal is a 365-line periodic multisine, not continuous white noise. '
+       'Scores use only specified bins in the steady 1024-sample segment; PCM quantization is checked separately. '
+       'No additive noise, SNR improvement or formal listening result is reported.'}
+
+
+def gsc_gate_case() -> dict:
+    """E05-16: explicit instantaneous mixtures and an oracle update gate.
+
+    The only mismatch is target channel gain 0.96. This is not propagation,
+    room simulation, speech, estimated VAD, or an industrial GSC benchmark.
+    """
+    n = np.arange(2 * SAMPLE_RATE)
+    t = n / SAMPLE_RATE
+
+    def envelope(start: int, end: int) -> np.ndarray:
+        result = np.zeros(n.size)
+        result[start:end] = 1.0
+        length = 320
+        result[start:start + length] = np.linspace(0, 1, length, endpoint=False)
+        result[end - length:end] = np.linspace(1, 0, length, endpoint=False)
+        return result
+
+    target = (.16*np.sin(2*np.pi*220*t) + .10*np.sin(2*np.pi*330*t)
+              + .07*np.sin(2*np.pi*660*t)) * envelope(9600, 32000)
+    interference = (.18*np.sin(2*np.pi*440*t) + .12*np.sin(2*np.pi*880*t)) * envelope(0, 8000)
+    array = np.vstack((target + interference, .96*target + .5*interference))
+    desired = array.mean(axis=0)
+    reference = (array[0] - array[1]) / 2
+    outputs, checkpoints = {}, {}
+    for name, gated in [('always_adapt', False), ('gate_frozen', True)]:
+        state = ScalarGSCNLMS(step_size=.1, epsilon=1e-8)
+        pieces, history = [], []
+        start = 0
+        for end in (8000, 9600, 16000, 30000, 32000):
+            gate = n[start:end] < 8000 if gated else True
+            result = state.process(desired[start:end], reference[start:end], update=gate)
+            if np.max(np.abs(result.imag)) != 0:
+                raise ValueError('real GSC fixture unexpectedly produced imaginary output')
+            pieces.append(result.real)
+            history.append({'samples_processed': end, 'coefficient': float(state.coefficient.real)})
+            start = end
+        outputs[name] = np.concatenate(pieces)
+        checkpoints[name] = history
+
+    signals = {'gsc_reference': target, 'gsc_array': array,
+               **{'gsc_' + name: value for name, value in outputs.items()}}
+    # The group is strictly below 0.8, so prepare_exports uses common gain 1.
+    if max(float(np.max(np.abs(x))) for x in signals.values()) >= .8:
+        raise ValueError('GSC fixture requires its declared common gain of 1')
+    decoded = {name: read_pcm16(pcm16_bytes(value))[1] for name, value in signals.items()}
+    score_slice = slice(16000, 30000)
+
+    def score(output: np.ndarray, truth: np.ndarray) -> dict:
+        out, ref = output[score_slice], truth[score_slice]
+        power = float(ref @ ref)
+        return {'reference_projection_gain': float(ref @ out / power),
+                'normalized_reference_error': float(np.sqrt(np.sum((out-ref)**2)/power))}
+
+    floating = {name: score(value, target) for name, value in outputs.items()}
+    pcm = {name: score(decoded['gsc_' + name][0], decoded['gsc_reference'][0]) for name in outputs}
+    return {'signals': signals, 'parameters': {
+        'sample_rate_hz': SAMPLE_RATE, 'duration_seconds': 2, 'samples': 32000,
+        'mixing_matrix': [[1, 1], [.96, .5]], 'latent_order': ['target', 'interference'],
+        'model': 'instantaneous real linear mixtures; no geometric propagation delay',
+        'target_frequencies_hz': [220, 330, 660], 'target_amplitudes': [.16, .10, .07],
+        'interference_frequencies_hz': [440, 880], 'interference_amplitudes': [.18, .12],
+        'phases_rad': 0, 'target_interval_samples': [9600, 32000],
+        'interference_interval_samples': [0, 8000],
+        'interval_convention': 'half-open [start,end)',
+        'fade_samples_each_end': 320, 'fade': 'linear 0 to 1 and 1 to 0, endpoint=False',
+        'fixed_weights': [.5, .5], 'blocking_vector': [.5, -.5],
+        'branches': 'd=.98*s+.75*i; u=.02*s+.25*i; e=d-conj(h)*u before update',
+        'nlms': {'step_size': .1, 'epsilon_reference_power': 1e-8, 'initial_coefficient': 0},
+        'oracle_gate': 'update only n<8000; known time labels, not estimated SPP/VAD',
+        'coefficient_checkpoints': checkpoints, 'noise_only_optimum_h': 3.,
+        'target_only_optimum_h': 49., 'frozen_target_gain_analytic': .92,
+        'score_interval_samples': [16000, 30000],
+        'alignment': 'same sample origin; no gain fitting, delay alignment or fitted rescaling',
+        'float_truth_scores': floating, 'pcm_to_pcm_reference_scores': pcm,
+        'metrics': 'projection is diagnostic only; error=sqrt(sum((output-reference)^2)/sum(reference^2))',
+        'statistics': 'deterministic tones and updates, no random trials or listening scores'},
+        'limits': 'Original mathematical mixture, not a free-field array or real recording. '
+                  'Freezing prevents further target adaptation but retains a 0.92 target response. '
+                  'The target-only score is reference error, not SNR, denoising quality or speech intelligibility.'}
+
+
+def aec_dropout_case() -> dict:
+    """Known-path AEC isolates a missing ALGORITHM reference, not stopped playback.
+
+    All coefficients are oracle-initialized and frozen. This is a diagnostic
+    of reference transport and FIR history, not adaptation or a measured room.
+    """
+    count = 2 * SAMPLE_RATE
+    n = np.arange(count)
+    t = n / SAMPLE_RATE
+    fade_samples = 320
+    fade = np.ones(count)
+    fade[:fade_samples] = np.sin(np.linspace(0, np.pi/2, fade_samples))**2
+    fade[-fade_samples:] = fade[:fade_samples][::-1]
+    rng = np.random.default_rng(SEED + 106)
+    physical_reference = (rng.uniform(-.18, .18, count)
+                          + .08*np.sin(2*np.pi*310*t)) * fade
+    target = (.12*np.sin(2*np.pi*220*t) + .08*np.sin(2*np.pi*330*t)
+              + .04*np.sin(2*np.pi*660*t)) * fade
+    path = np.zeros(256)
+    path[[0, 80, 240]] = [.7, -.3, .15]
+    echo = np.convolve(physical_reference, path)[:count]
+    microphone = target + echo
+    available = physical_reference.copy()
+    start, stop, recovered = 12000, 16000, 16240
+    available[start:stop] = 0.
+    outputs = {}
+    for label, reference in [('complete_reference_residual', physical_reference),
+                             ('missing_reference_residual', available)]:
+        state = NLMSState(256, initial_weights=path)
+        outputs[label], _ = state.process(reference, microphone, freeze=np.ones(count, bool))
+        if not np.array_equal(state.weights, path):
+            raise AssertionError('oracle-frozen path was changed')
+    analytic_missing_echo = np.convolve(physical_reference - available, path)[:count]
+    signals = {'aec_dropout_target': target, 'aec_dropout_microphone': microphone,
+               **{'aec_dropout_' + name: value for name, value in outputs.items()}}
+    if max(float(np.max(np.abs(x))) for x in signals.values()) >= .8:
+        raise ValueError('reference-dropout fixture requires common export gain 1')
+    decoded = {name: read_pcm16(pcm16_bytes(value))[1][0] for name, value in signals.items()}
+    windows = {'missing_reference': [start, stop], 'history_tail': [stop, recovered],
+               'recovered': [recovered, 30000]}
+
+    def scores(out, truth):
+        results = {}
+        for name, (first, last) in windows.items():
+            error = out[first:last] - truth[first:last]
+            denominator = float(truth[first:last] @ truth[first:last])
+            results[name] = {'relative_squared_reference_error': float(error @ error / denominator),
+                             'error_rms': float(np.sqrt(np.mean(error**2)))}
+        return results
+
+    floating = {name: scores(value, target) for name, value in outputs.items()}
+    pcm = {name: scores(decoded['aec_dropout_' + name], decoded['aec_dropout_target'])
+           for name in outputs}
+    return {'signals': signals, 'parameters': {
+        'sample_rate_hz': SAMPLE_RATE, 'samples': count, 'duration_seconds': 2,
+        'seed': SEED + 106,
+        'physical_playback': 'uniform noise in [-0.18,0.18] plus 310 Hz sine amplitude 0.08, continuously present during reference loss',
+        'near_target_frequencies_hz': [220, 330, 660], 'near_target_amplitudes': [.12, .08, .04],
+        'phase_radians': 0, 'fade_samples_each_end': fade_samples,
+        'fade': 'squared sine from 0 to pi/2, endpoint included; reverse at end',
+        'microphone_model': 'known causal FIR echo plus synthetic near-end harmonic target; no noise or measured room',
+        'path_nonzero_samples': [0, 80, 240], 'path_values': [.7, -.3, .15],
+        'filter_length': 256, 'algorithm': 'NLMSState prior residual, oracle initial weights equal true path; frozen on all samples',
+        'algorithm_reference_loss_interval_samples': [start, stop],
+        'interval_convention': 'half-open; missing algorithm reference is replaced with zeros, physical playback is unchanged',
+        'first_fully_recovered_output_sample': recovered,
+        'alignment': 'same sample origin, zero algorithm delay; no fitted gain or delay',
+        'analytic_missing_reference_error': 'convolution(physical_reference-available_reference, path), truncated to 32000 samples',
+        'analytic_identity_max_abs_error': float(np.max(np.abs(outputs['missing_reference_residual'] - target - analytic_missing_echo))),
+        'score_windows_samples': windows, 'float_truth_scores': floating,
+        'pcm_to_pcm_reference_scores': pcm,
+        'metric': 'sum((output-target)^2)/sum(target^2), using each declared interval; not ERLE, SNR or intelligibility',
+        'statistics': 'one fixed-seed mathematical fixture, no repeated-trial or listening study'},
+        'limits': 'Four mono files share export gain 1. Ideal path knowledge excludes identification error. '
+                  'Missing reference contaminates delayed taps for 240 more samples after transport resumes. '
+                  'Float analytic checks and PCM-to-PCM scores are separate; no third-party recording.'}
+
+
+def wpe_predictable_case() -> dict:
+    """Blind prediction can attenuate a periodic target despite reducing a tail.
+
+    A known stable scalar feedback delay creates the observation. Its exact
+    oracle inverse is a diagnostic, not a blind-WPE or measured-room result.
+    """
+    count, onset, stop, path_delay = 32000, 4000, 16000, 512
+    target = np.zeros(count)
+    tone = .12 * np.sin(2 * np.pi * 1000 * np.arange(stop - onset) / SAMPLE_RATE)
+    fade = np.sin(np.linspace(0, np.pi / 2, 320))**2
+    tone[:320] *= fade
+    tone[-320:] *= fade[::-1]
+    target[onset:stop] = tone
+    observed = target.copy()
+    for n in range(path_delay, count):
+        observed[n] += .65 * observed[n - path_delay]
+    oracle = observed.copy()
+    oracle[path_delay:] -= .65 * observed[:-path_delay]
+    spectrum = stft(observed, n_fft=512, hop_length=128, center=True)[0]
+    residual = offline_wpe(spectrum, taps=1, delay=4, iterations=3,
+                           diagonal_loading=1e-6, power_floor=1e-5)
+    processed = istft(residual[None], n_fft=512, hop_length=128,
+                      center=True, length=count)[0]
+    signals = {'wpe_predictable_target': target,
+               'wpe_predictable_reverberant': observed,
+               'wpe_predictable_oracle_inverse': oracle,
+               'wpe_predictable_output': processed}
+    if max(float(np.max(np.abs(x))) for x in signals.values()) >= .8:
+        raise ValueError('predictable-WPE fixture requires common export gain 1')
+    decoded = {name: read_pcm16(pcm16_bytes(value))[1][0] for name, value in signals.items()}
+
+    def scores(values):
+        truth = values['wpe_predictable_target'][6400:14400]
+        denominator = float(truth @ truth)
+        result = {}
+        for name, value in values.items():
+            segment = value[6400:14400]
+            error = segment - truth
+            result[name] = {'steady_projection_gain': float(segment @ truth / denominator),
+                            'steady_relative_squared_reference_error': float(error @ error / denominator),
+                            'tail_mean_square': float(np.mean(value[16000:32000]**2))}
+        before = result['wpe_predictable_reverberant']['tail_mean_square']
+        after = result['wpe_predictable_output']['tail_mean_square']
+        return {'files': result, 'output_to_input_tail_power_ratio_db': float(10*np.log10(after/before))}
+
+    return {'signals': signals, 'parameters': {
+        'sample_rate_hz': SAMPLE_RATE, 'samples': count, 'duration_seconds': 2,
+        'source_frequency_hz': 1000, 'source_amplitude': .12, 'phase_at_onset_radians': 0,
+        'source_active_interval_samples': [onset, stop], 'fade_samples_each_end': 320,
+        'fade': 'sin(linspace(0,pi/2,320)) squared, endpoint included; reverse at end of active interval',
+        'model': 'x[n]=s[n]+0.65*x[n-512]; all negative-time samples zero; observation truncated to 32000 samples',
+        'feedback_coefficient': .65, 'feedback_delay_samples': path_delay,
+        'oracle_inverse': 's_oracle[n]=x[n]-0.65*x[n-512], negative-time x zero',
+        'oracle_max_abs_reference_error_float': float(np.max(np.abs(oracle-target))),
+        'stft': {'n_fft': 512, 'hop_length': 128, 'window': 'periodic Hann', 'center': True,
+                 'zero_padding_each_end': 256, 'frames': spectrum.shape[1],
+                 'istft': 'squared-window weighted overlap-add, discard initial 256 padding, return first 32000 samples'},
+        'wpe': {'taps': 1, 'delay': 4, 'iterations': 3, 'diagonal_loading': 1e-6,
+                'power_floor': 1e-5, 'statistics': 'whole-record valid-frame statistics, no temporal power smoothing'},
+        'score_windows_samples': {'steady_target': [6400, 14400], 'post_source_tail': [16000, 32000]},
+        'alignment': 'same sample origin; no fitted delay, no gain correction or separate normalization',
+        'metrics': 'steady projection gain dot(output,target)/dot(target,target); steady squared error sum((output-target)^2)/sum(target^2); tail mean square includes all samples in declared half-open window',
+        'float_truth_scores': scores(signals), 'pcm_to_pcm_reference_scores': scores(decoded),
+        'noise': 'none', 'randomness': 'none', 'algorithm_delay_samples': 'offline noncausal record; no streaming latency claim',
+        'statistics': 'one deterministic mathematical fixture; no real speech, room or listening study'},
+        'limits': 'All four mono files share export gain 1. The oracle knows the feedback path; blind WPE does not. '
+                  'The stationary target itself is predictable at the 32 ms delay, so lower tail energy does not guarantee unit target gain. '
+                  'Finite onset/fades and STFT boundary padding affect the fit. No T60, SNR, ERLE or intelligibility claim; '
+                  'tail after the two-second file is excluded. Float and PCM reference scores are reported separately.'}
+
+
+def css_overlap_case() -> dict:
+    """Two synthetic separator blocks; only their overlap association is run."""
+    from codes.chapters.ch08.core.css import match_two_source_overlap
+    from codes.chapters.ch08.core.separation import si_sdr
+
+    n = 2 * SAMPLE_RATE
+    t = np.arange(n) / SAMPLE_RATE
+    envelope = np.ones(n)
+    fade = np.sin(np.linspace(0, np.pi / 2, 320)) ** 2
+    envelope[:320], envelope[-320:] = fade, fade[::-1]
+    reference = .12 * np.vstack((np.sin(2 * np.pi * 250 * t),
+                                 np.sin(2 * np.pi * 625 * t))) * envelope
+    simulated = np.array([[1., .1], [.1, 1.]]) @ reference
+    first, second = simulated[:, :19200], simulated[::-1, 12800:]
+    match = match_two_source_overlap(first[:, 12800:], second[:, :6400])
+    if match['status'] != 'matched':
+        raise ValueError('deterministic CSS fixture no longer has an identifiable overlap')
+
+    def assemble(right):
+        result = np.empty_like(reference)
+        result[:, :12800] = first[:, :12800]
+        ramp = np.linspace(0., 1., 6400)
+        result[:, 12800:19200] = (1 - ramp) * first[:, 12800:] + ramp * right[:, :6400]
+        result[:, 19200:] = right[:, 6400:]
+        return result
+
+    signals = {'css_overlap_reference': reference,
+               'css_overlap_mixture': reference.sum(axis=0, keepdims=True),
+               'css_overlap_naive': assemble(second),
+               'css_overlap_aligned': assemble(second[match['current_indices_for_previous']])}
+
+    def score(values):
+        truth = values['css_overlap_reference']
+        return {name: [si_sdr(values[name][0 if name == 'css_overlap_mixture' else i], truth[i])
+                       for i in range(2)]
+                for name in ('css_overlap_mixture', 'css_overlap_naive', 'css_overlap_aligned')}
+
+    pcm = {name: read_pcm16(pcm16_bytes(value))[1] for name, value in signals.items()}
+    return {'signals': signals, 'parameters': {
+        'sample_rate_hz': SAMPLE_RATE, 'samples': n, 'frequencies_hz': [250, 625],
+        'source_amplitude': .12, 'fade_samples': 320, 'fade': 'squared sine with endpoints included',
+        'source_model': 'two deterministic sinusoids; reference stereo is two source tracks, not microphone geometry',
+        'simulated_separator_matrix': [[1., .1], [.1, 1.]],
+        'blocks_half_open_samples': [[0, 19200], [12800, 32000]],
+        'second_block_slot_order': [1, 0], 'overlap_half_open_samples': [12800, 19200],
+        'overlap_add': 'linear complementary weights linspace(0,1,6400), endpoints included',
+        'matching': match, 'expected_off_diagonal_assignment_score': 1.,
+        'expected_identity_assignment_score': 20 / 101,
+        'common_export_gain': 1., 'score_interval_samples': [0, n],
+        'score_definition': 'per-stream centered SI-SDR, fixed stream-to-reference order, no PIT or time alignment; PCM scores use PCM references',
+        'floating_si_sdr_db': score(signals), 'pcm_si_sdr_db': score(pcm),
+        'alignment_scope': 'the matcher sees overlapping output waveforms only, never the references; it estimates permutation, not gain/polarity/delay',
+        'failed_overlap_policy': 'ambiguous returns no mapping; no fabricated identity through silence or ties',
+        'algorithm_latency': 'offline two-block fixture; matching requires the overlap samples, no measured streaming latency'},
+        'limits': 'Given simulated separator slots with residual crosstalk, not actual blind or neural separation. '
+                  'Two sinusoids and a single reliable overlap are not speech, arbitrary-source CSS, or a permanent speaker-identity guarantee. '
+                  'No listening study; stereo channels are output slots, not binaural spatial audio.'}
+
+
+def agc_blocks_case() -> dict:
+    """One buffered peak-AGC experiment; block availability is not sample time."""
+    t = np.arange(2 * SAMPLE_RATE) / SAMPLE_RATE
+    amplitude = np.select([t < .525, t < .8, t < 1.2], [.1, .9, .03], default=.25)
+    fade = np.minimum(np.clip(t / .02, 0, 1), np.clip((2 - t) / .02, 0, 1))
+    source = amplitude * np.sin(2 * np.pi * 500 * t) * fade
+    signals = {'agc_blocks_input': source[None, :]}
+    block_records = {}
+    configurations = [('10ms', 160, 160), ('100ms', 1600, 1600),
+                      ('100ms_wrong_alpha', 1600, 160)]
+    for name, hop, coefficient_hop in configurations:
+        attack = float(-np.expm1(-coefficient_hop / SAMPLE_RATE / .02))
+        release = float(-np.expm1(-coefficient_hop / SAMPLE_RATE / .2))
+        state = PeakProtectAGC(target_peak=.8, max_gain=8.,
+                              attack=attack, release=release, gain=1.)
+        output = np.empty_like(source)
+        records = []
+        for start in range(0, source.size, hop):
+            stop = min(start + hop, source.size)
+            old_gain = state.gain
+            block = source[start:stop]
+            processed, gain = state.process(block)
+            output[start:stop] = processed
+            records.append({'start_sample': start, 'end_sample_exclusive': stop,
+                            'available_time_s': stop / SAMPLE_RATE,
+                            'gain_before': old_gain, 'gain': gain,
+                            'input_peak': float(np.max(np.abs(block))),
+                            'output_peak': float(np.max(np.abs(processed)))})
+        signals['agc_blocks_' + name] = output[None, :]
+        block_records[name] = {'hop_samples': hop, 'coefficient_hop_samples': coefficient_hop,
+                               'attack_alpha': attack, 'release_alpha': release,
+                               'blocks': records}
+    windows = {'before_burst': [8000, 8320], 'loud': [9600, 11200],
+               'quiet': [16000, 17600]}
+    def analyze(values):
+        reference = values['agc_blocks_input'][0]
+        result = {}
+        for stem, value in values.items():
+            waveform = value[0]
+            result[stem] = {'peak': float(np.max(np.abs(waveform))), 'windows': {}}
+            for name, (start, stop) in windows.items():
+                input_rms = float(np.sqrt(np.mean(reference[start:stop]**2)))
+                output_rms = float(np.sqrt(np.mean(waveform[start:stop]**2)))
+                result[stem]['windows'][name] = {'input_rms': input_rms,
+                    'output_rms': output_rms, 'rms_ratio': output_rms / input_rms}
+        return result
+    export_gain = .7
+    pcm = {name: read_pcm16(pcm16_bytes(waveform * export_gain))[1]
+           for name, waveform in signals.items()}
+    return {'signals': signals, 'export_gain_override': export_gain,
+            'parameters': {'sample_rate_hz': SAMPLE_RATE, 'duration_s': 2.,
+                'carrier_hz': 500., 'amplitude_breaks_s': [.525, .8, 1.2],
+                'amplitudes': [.1, .9, .03, .25], 'fade_s': .02,
+                'target_peak': .8, 'max_gain': 8., 'initial_gain': 1.,
+                'attack_tau_s': .02, 'release_tau_s': .2,
+                'score_windows_samples_half_open': windows},
+            'block_records': block_records,
+            'float_analysis': analyze(signals), 'pcm_analysis': analyze(pcm),
+            'limits': 'Mathematical 500 Hz tone with intentional envelope steps, no speech or noise. '
+                      'Peak AGC buffers each complete block: samples are available only at its end. '
+                      'Changing alpha with hop preserves its time constant, not block-partition invariance. '
+                      'RMS ratios compare level, not SNR or perceived quality; no listening test claimed.'}
+
+
+def selection_tradeoff_case() -> dict:
+    """Fixed causal FIRs: lower noise need not preserve the designed target.
+
+    No ASR, speech, room, sensor model or listening evaluation. The exported
+    samples retain the one- and four-sample group delays; only scoring aligns references.
+    """
+    t = np.arange(2 * SAMPLE_RATE) / SAMPLE_RATE
+    fade = np.minimum(np.clip(t / .02, 0, 1), np.clip((2 - t) / .02, 0, 1))
+    clean = .2 * (np.cos(2*np.pi*500*t) + np.cos(2*np.pi*1500*t)) * fade
+    noise = .2 * np.cos(2*np.pi*3500*t) * fade
+    mixture = clean + noise
+    signals = {'selection_clean': clean[None, :], 'selection_mixture': mixture[None, :]}
+    filters, analytic = {}, {}
+    frequencies = [500, 1500, 3500]
+    for length in (3, 9):
+        taps = np.ones(length) / length
+        response_500 = abs(taps @ np.exp(-2j*np.pi*500*np.arange(length)/SAMPLE_RATE))
+        taps /= response_500
+        delay = (length-1)//2
+        name = f'selection_fir{length}'
+        signals[name] = np.convolve(mixture, taps)[:len(t)][None, :]
+        gains = {str(f): float(abs(taps @ np.exp(-2j*np.pi*f*np.arange(length)/SAMPLE_RATE)))
+                 for f in frequencies}
+        filters[name] = {'taps': taps.tolist(), 'group_delay_samples': delay,
+                         'group_delay_ms': delay / SAMPLE_RATE * 1000,
+                         'score_output_samples_half_open': [1600+delay, 30400+delay]}
+        analytic[name] = {'amplitude_response': gains,
+                         'noise_attenuation_db': -20*float(np.log10(gains['3500']))}
+
+    def analyze(values):
+        def amplitudes(waveform, start, stop):
+            time = np.arange(start, stop) / SAMPLE_RATE
+            columns = [np.ones(stop-start)]
+            for frequency in frequencies:
+                columns.extend([np.cos(2*np.pi*frequency*time), np.sin(2*np.pi*frequency*time)])
+            coefficients = np.linalg.lstsq(np.column_stack(columns), waveform[start:stop], rcond=None)[0]
+            return {str(f): float(np.hypot(coefficients[1+2*i], coefficients[2+2*i]))
+                    for i, f in enumerate(frequencies)}
+        clean_values = values['selection_clean'][0]
+        clean_amplitudes = amplitudes(clean_values, 1600, 30400)
+        mixture_amplitudes = amplitudes(values['selection_mixture'][0], 1600, 30400)
+        result = {}
+        for name, config in filters.items():
+            start, stop = config['score_output_samples_half_open']
+            output = values[name][0]
+            fitted = amplitudes(output, start, stop)
+            # Reference is the same data domain (float or PCM), with known delay.
+            reference = clean_values[1600:30400]
+            nmse = float(np.sum((output[start:stop]-reference)**2) / np.sum(reference**2))
+            result[name] = {'fitted_amplitudes': fitted,
+                'target_500_retention': fitted['500'] / clean_amplitudes['500'],
+                'target_1500_retention': fitted['1500'] / clean_amplitudes['1500'],
+                'noise_3500_retention': fitted['3500'] / mixture_amplitudes['3500'],
+                'noise_attenuation_db': -20*float(np.log10(fitted['3500'] / mixture_amplitudes['3500'])),
+                'aligned_total_nmse': nmse, 'aligned_total_nmse_db': 10*float(np.log10(nmse))}
+        return {'clean_fitted_amplitudes': clean_amplitudes, 'mixture_fitted_amplitudes': mixture_amplitudes,
+                'candidates': result}
+
+    gain = .8
+    pcm = {name: read_pcm16(pcm16_bytes(value * gain))[1] for name, value in signals.items()}
+    return {'signals': signals, 'export_gain_override': gain,
+            'parameters': {'sample_rate_hz': SAMPLE_RATE, 'duration_s': 2., 'samples': len(t),
+                'target_frequencies_hz': [500, 1500], 'noise_frequency_hz': 3500,
+                'component_amplitude': .2, 'fade_s': .02, 'fade': 'linear min(t/.02,(2-t)/.02,1)',
+                'seed': None, 'filters': filters, 'score_source_samples_half_open': [1600, 30400],
+                'coefficient_rule': 'equal taps divided by their magnitude response at 500 Hz',
+                'convolution': 'causal linear convolution, zero initial history, retain first 32000 samples',
+                'pcm_fit': 'joint least squares: DC plus cos/sin at 500,1500,3500 Hz; fit magnitudes',
+                'nmse': 'output vs same-domain clean delayed by known FIR group delay; no gain fitting'},
+            'analytic_response': analytic, 'float_analysis': analyze(signals), 'pcm_analysis': analyze(pcm),
+            'limits': 'Mathematical three-tone mixture, not speech, ASR or perceived quality. '
+                      'Both filters process the same mixture; separated components are not provided to them. '
+                      'Frequency-specific scoring exploits known distinct tones and does not generalize to overlapping speech/noise. '
+                      'No per-file normalization, no human listening test. Causal audio retains group delay; '
+                      'steady scoring omits fade/startup and truncated end tails.'}
+
+
+def math_block_case() -> dict:
+    """Appendix A: listen to a deliberately wrong block FFT wrap-around.
+
+    Ten sparse, equal-amplitude mathematical pulses are six 512-sample blocks
+    apart. The correct causal FIR
+    retains its delayed response across blocks. The wrong version performs a
+    separate 512-point circular convolution inside each block and discards
+    history. No room or speech is simulated.
+    """
+    block_size, count = 512, 2 * SAMPLE_RATE
+    pulses = (500 + 6 * block_size * np.arange(10)).astype(int)
+    dry = np.zeros(count, dtype=float)
+    dry[pulses] = .3
+    taps = np.zeros(121, dtype=float)
+    taps[0], taps[120] = 1., .6
+    correct_full = fft_overlap_add(dry, taps, block_size)
+    correct = correct_full[:count]
+    wrong = blockwise_circular_convolution(dry, taps, block_size)
+    signals = {'math_block_dry': dry, 'math_block_linear': correct,
+               'math_block_circular': wrong}
+
+    def analysis(values: dict) -> dict:
+        return {
+            'first_dry_sample_500': float(values['math_block_dry'][500]),
+            'first_linear_sample_500': float(values['math_block_linear'][500]),
+            'first_linear_echo_sample_620': float(values['math_block_linear'][620]),
+            'first_wrong_wrap_sample_108': float(values['math_block_circular'][108]),
+            'first_wrong_sample_500': float(values['math_block_circular'][500]),
+            'first_wrong_sample_620': float(values['math_block_circular'][620]),
+            'wrong_minus_linear_nonzero_count': int(np.count_nonzero(
+                np.abs(values['math_block_circular'] - values['math_block_linear']) > 1e-12)),
+        }
+
+    pcm = {name: read_pcm16(pcm16_bytes(value))[1][0] for name, value in signals.items()}
+    return {
+        'signals': signals, 'export_gain_override': 1.,
+        'parameters': {
+            'exercise_id': 'E12-08', 'sample_rate_hz': SAMPLE_RATE,
+            'duration_s': count / SAMPLE_RATE, 'samples': count,
+            'channels': 1, 'seed': None, 'pulse_amplitude': .3,
+            'pulse_positions_samples': pulses.tolist(),
+            'source': 'ten isolated one-sample mathematical impulses, separated by six 512-sample blocks',
+            'block_size': block_size, 'filter_length': taps.size,
+            'filter_nonzero_samples': [0, 120], 'filter_values': [1., .6],
+            'first_correct_echo_sample': 620, 'first_wrong_wrap_sample': 108,
+            'linear_method': '512-sample input blocks, 632-point real FFT and inverse; add full overlapping tails; truncate at 32000 samples for WAV',
+            'wrong_method': 'each 512-sample input block circularly convolves with the 512-point padded FIR; no history and no overlap-add',
+            'common_export_gain': 1., 'pcm': '16-bit signed little endian, nearest-even, no dither',
+            'alignment': 'same sample origin; no time shift, delay or per-file gain matching',
+            'reference': 'math_block_dry is the common excitation; math_block_linear is the correct causal FIR output',
+            'tail': 'last nonzero pulse and echo both lie before sample 32000; full linear output beyond the record is zero',
+        },
+        'float_analysis': analysis(signals), 'pcm_analysis': analysis(pcm),
+        'limits': 'Mathematical impulse and FIR example, not speech, room, echo-canceller or hardware recording. '
+                  'The premature response is an intentional faulty block implementation. '
+                  'Impulse clicks may sound different, but no human listening experiment was performed.',
+    }
+
+
+def build_cases() -> dict:
+    """Return twenty-seven experiments with model parameters and references.
+
+    Each entry has ``signals`` (filename stem -> CxN array), ``parameters`` and
+    ``limits``. Signals are pre-export floats; no group uses peak matching.
+    """
+    rng = np.random.default_rng(SEED)
+    t = np.arange(2 * SAMPLE_RATE) / SAMPLE_RATE
+    target = _tone(t, 173)
+    other = _tone(t, 293)
+    noise = .07 * rng.standard_normal((2, t.size))
+    microphones = np.vstack((delay_samples(target, 3), target)) + noise
+    # Align to the later microphone by delaying mic 2; both estimates share delay 3.
+    aligned = .5 * (microphones[0] + delay_samples(microphones[1], 3))
+    unaligned = .5 * (microphones[0] + microphones[1])
+
+    far = .12 * rng.standard_normal(t.size) + .2 * other
+    path = np.zeros(25)
+    path[[0, 12, 24]] = [.7, -.3, .15]
+    echo = np.convolve(far, path)[:t.size]
+    active = (t >= 1.2) & (t < 1.8)
+    near = .5 * target * active
+    microphone = echo + near
+    frozen, _, _ = nlms(far, microphone, 32, step_size=.4, freeze=active)
+    free, _, _ = nlms(far, microphone, 32, step_size=.4)
+
+    # Retain 0.25 s of tail. This is a sparse FIR echo, not a measured room/T60.
+    dry = np.pad(target, (0, SAMPLE_RATE // 4))
+    reverberant = dry + .6 * delay_samples(dry, 640) + .3 * delay_samples(dry, 1280)
+    spectrum = stft(reverberant, n_fft=512, hop_length=128)
+    processed = offline_wpe(spectrum.transpose(1, 0, 2), taps=4, delay=3, iterations=3)
+    wpe = istft(processed.transpose(1, 0, 2), n_fft=512, hop_length=128, length=dry.size)[0]
+
+    matrix = np.array([[1., .5], [.2, 1.]])
+    sources = np.vstack((target, other))
+    mixture = matrix @ sources
+    recovered = np.linalg.solve(matrix, mixture)
+    damaged = target.copy()
+    damaged[(t >= .9) & (t < 1.)] = 0
+    clipped = np.clip(3 * target, -.3, .3) / 3
+    pan = np.linspace(0, np.pi / 2, t.size)
+    # Separate streams keep the first six experiments unchanged when adding cases.
+    contrast_rng = np.random.default_rng(SEED + 1)
+    independent_noise = .07 * contrast_rng.standard_normal((2, t.size))
+    independent_mean = target + independent_noise.mean(axis=0)
+    common_mean = target + independent_noise[0]
+    polarity_array = np.vstack((target, -.9 * target))
+    measurement_noise = .003 * contrast_rng.standard_normal(sources.shape)
+    well = np.array([[1., .5], [.5, 1.]])
+    ill = np.array([[1., .99], [.99, 1.]])
+    well_input, ill_input = well @ sources + measurement_noise, ill @ sources + measurement_noise
+    # Exactly 1000 periods. No taper: preserve sinusoidal orthogonality over
+    # the scoring interval. This is an analytic fixture, not a listening test.
+    nonlinear_reference = .4 * np.sin(2 * np.pi * 500 * t)
+    nonlinear_echo = nonlinear_reference + 2 * nonlinear_reference**3
+    best_linear_gain = float(nonlinear_reference @ nonlinear_echo
+                             / (nonlinear_reference @ nonlinear_reference))
+    nonlinear_estimate = best_linear_gain * nonlinear_reference
+    # A short, deliberately synthetic, shared-input AEC contrast. Use a new
+    # stream so earlier fixtures and their PCM bytes do not change. The path
+    # changes at exactly sample 6000; the microphone has known echo plus
+    # independent background noise, never near-end speech.
+    method_rng = np.random.default_rng(SEED + 3)
+    method_samples = 12000
+    method_reference = .12 * method_rng.standard_normal(method_samples)
+    method_reference += .09 * np.sin(2 * np.pi * 310 * np.arange(method_samples) / SAMPLE_RATE)
+    method_path_before = np.array([.65, 0., -.2, 0.])
+    method_path_after = np.array([.1, -.45, 0., .5])
+    method_change = 6000
+    method_before = np.convolve(method_reference, method_path_before)[:method_samples]
+    method_after = np.convolve(method_reference, method_path_after)[:method_samples]
+    method_echo = method_before.copy()
+    method_echo[method_change:] = method_after[method_change:]
+    method_background = .005 * method_rng.standard_normal(method_samples)
+    method_microphone = method_echo + method_background
+    method_nlms, _, _ = nlms(method_reference, method_microphone, 4, step_size=.4)
+    method_ipnlms, _, _ = ipnlms(method_reference, method_microphone, 4,
+                                step_size=.4, kappa=0.,
+                                denominator_floor=1e-8, gain_floor=1e-8)
+    method_rls, _, _ = rls(method_reference, method_microphone, 4,
+                           forgetting_factor=.995, initial_regularization=1.)
+    method_kalman = KalmanAECState(
+        4, transition=1., process_covariance=np.eye(4) * 1e-5,
+        observation_variance=.0025, initial_covariance=np.eye(4),
+    ).process_block(method_reference, method_microphone)['prior_error']
+    # A separate exact model-identification contrast, not an adaptive run.
+    subband_rng = np.random.default_rng(SEED + 4)
+    subband_reference = .12 * subband_rng.standard_normal(8000)
+    subband_reference += .08 * np.sin(2 * np.pi * 2100 * np.arange(8000) / SAMPLE_RATE)
+    _, subband_diagonal_bands, subband_echo = two_tap_subband_outputs(
+        subband_reference, [0., 1.])
+    subband_diagonal = haar_synthesize(subband_diagonal_bands)
+    # Four-microphone far-field example. A separate RNG leaves all older
+    # experiments unchanged. Linear interpolation defines the fractional-
+    # sample signal model; the corresponding alignment uses the same model.
+    array_positions = np.column_stack((.04 * np.arange(4), np.zeros(4)))
+    relative_delays = plane_wave_delays(array_positions, np.deg2rad(30.0))
+    arrivals = .002 + relative_delays - np.min(relative_delays)
+    fractional_rng = np.random.default_rng(SEED + 2)
+    fractional_source = _tone(t, 383) + .04 * fractional_rng.standard_normal(t.size)
+    fractional_clean = np.vstack([
+        np.interp(t - arrival, t, fractional_source, left=0., right=0.)
+        for arrival in arrivals
+    ])
+    fractional_array = fractional_clean + .02 * fractional_rng.standard_normal(fractional_clean.shape)
+    fractional_reference = fractional_clean[0]
+    fractional_unaligned = np.mean(fractional_array, axis=0)
+    fractional_aligned = np.mean(np.vstack([
+        np.interp(t - (arrivals[0] - arrival), t, channel, left=0., right=0.)
+        for arrival, channel in zip(arrivals, fractional_array)
+    ]), axis=0)
+    subtraction_rng = np.random.default_rng(SEED + 5)
+    subtraction_clean = target.copy()
+    noise_only_samples = 6400
+    subtraction_clean[:noise_only_samples] = 0.
+    subtraction_clean[noise_only_samples:noise_only_samples + 320] *= (
+        np.sin(np.linspace(0., np.pi / 2, 320, endpoint=False)) ** 2
+    )
+    subtraction_noise = .07 * subtraction_rng.standard_normal(t.size)
+    subtraction_noisy = subtraction_clean + subtraction_noise
+    subtraction_spectrum = stft(subtraction_noisy, n_fft=512, hop_length=128)[0]
+    centers = np.arange(subtraction_spectrum.shape[1]) * 128
+    noise_frames = np.flatnonzero((centers >= 256) & (centers + 256 <= noise_only_samples))
+    subtraction_soft, subtraction_noise_power = power_spectral_subtraction(
+        subtraction_spectrum, noise_frames, floor_ratio=.04
+    )
+    subtraction_zero, _ = power_spectral_subtraction(
+        subtraction_spectrum, noise_frames, floor_ratio=0.
+    )
+    subtraction_soft_audio = istft(subtraction_soft[None], n_fft=512, hop_length=128,
+                                   length=t.size)[0]
+    subtraction_zero_audio = istft(subtraction_zero[None], n_fft=512, hop_length=128,
+                                   length=t.size)[0]
+    return {
+        'wpe_predictable': wpe_predictable_case(),
+        'css_overlap': css_overlap_case(),
+        'agc_blocks': agc_blocks_case(),
+        'selection_tradeoff': selection_tradeoff_case(),
+        'aec_dropout': aec_dropout_case(),
+        'gsc_gate': gsc_gate_case(),
+        'doa_ambiguity': doa_ambiguity_case(),
+        'dma_calibration': dma_calibration_case(),
+        'room_decay': room_decay_case(),
+        'alignment_error': alignment_error_case(),
+        'interpolation': interpolation_case(),
+        'clock_drift': clock_drift_case(),
+        'spatial': {
+            'signals': {'spatial_reference': delay_samples(target, 3),
+                        'spatial_array': microphones, 'spatial_mic1': microphones[0],
+                        'spatial_unaligned': unaligned, 'spatial_aligned': aligned},
+            'parameters': {'delay_samples': 3, 'delay_seconds': 3/SAMPLE_RATE,
+                           'noise_std_each_channel': .07, 'noise_correlation': 0,
+                           'reference': 'target delayed by 3 samples; ignore first 3 samples when scoring',
+                           'channel_order': ['mic1_later', 'mic2_earlier'],
+                           'alignment': 'delay mic2 by 3, no noncausal advance'},
+            'limits': 'Integer-delay broadband model; not binaural HRTF, measured array or speech.'},
+        'fractional_array': {
+            'signals': {'fractional_reference': fractional_reference,
+                        'fractional_array': fractional_array,
+                        'fractional_unaligned': fractional_unaligned,
+                        'fractional_aligned': fractional_aligned},
+            'parameters': {'seed': SEED + 2, 'sample_rate_hz': SAMPLE_RATE,
+                           'positions_m': array_positions.tolist(), 'azimuth_deg': 30.,
+                           'sound_speed_m_s': 343., 'relative_arrival_seconds': relative_delays.tolist(),
+                           'arrival_seconds': arrivals.tolist(),
+                           'arrival_difference_adjacent_samples': float((arrivals[0] - arrivals[1]) * SAMPLE_RATE),
+                           'source': '383 Hz six-harmonic tone plus seeded broadband noise, std 0.04',
+                           'sensor_noise_std_each_channel': .02,
+                           'fractional_delay_model': 'linear interpolation with zero outside the 2 s source',
+                           'reference': 'clean microphone 1 at its physical arrival time; no gain or delay fitting',
+                           'alignment': 'causally delay microphones 2--4 to microphone 1 using linear interpolation',
+                           'channel_order': ['mic1_x0', 'mic2_x0.04', 'mic3_x0.08', 'mic4_x0.12']},
+            'limits': 'Far-field plane wave with simulated fractional delays and independent sensor noise; '
+                      'no measured room, microphone directivity or physical moving-source recording.'},
+        'aec': {
+            'signals': {'aec_far': far, 'aec_near': near, 'aec_microphone': microphone,
+                        'aec_frozen': frozen, 'aec_unfrozen': free},
+            'parameters': {'path_nonzero_samples': [0, 12, 24], 'path_values': [.7, -.3, .15],
+                           'filter_length': 32, 'step_size': .4, 'epsilon': 1e-8,
+                           'oracle_freeze_interval_s': [1.2, 1.8],
+                           'far_end_only_scoring_interval_s': [.6, 1.1], 'algorithm_delay_samples': 0},
+            'limits': 'Exactly matched linear path, known double-talk mask (not an implemented DTD); no real-room ERLE claim.'},
+        'aec_methods': {
+            'signals': {
+                'aec_methods_reference': method_reference,
+                'aec_methods_true_echo': method_echo,
+                'aec_methods_microphone': method_microphone,
+                'aec_methods_nlms_residual': method_nlms,
+                'aec_methods_ipnlms_residual': method_ipnlms,
+                'aec_methods_rls_residual': method_rls,
+                'aec_methods_kalman_residual': method_kalman,
+            },
+            'parameters': {
+                'seed': SEED + 3, 'sample_rate_hz': SAMPLE_RATE,
+                'samples': method_samples, 'path_change_sample': method_change,
+                'path_before': method_path_before.tolist(),
+                'path_after': method_path_after.tolist(),
+                'reference': 'seeded white Gaussian std 0.12 plus 310 Hz sine amplitude 0.09',
+                'microphone_model': 'causal 4-tap FIR, path selected per output sample, plus independent Gaussian background noise std 0.005; no near end',
+                'background_noise_seed': SEED + 3,
+                'nlms': {'step_size': .4, 'epsilon': 1e-8},
+                'ipnlms': {'step_size': .4, 'kappa': 0., 'denominator_floor': 1e-8,
+                           'gain_floor': 1e-8},
+                'rls': {'forgetting_factor': .995, 'initial_regularization': 1.},
+                'kalman': {'transition': 1., 'process_covariance_diagonal': 1e-5,
+                           'observation_variance': .0025, 'initial_covariance_diagonal': 1.},
+                'score_windows_samples': {'before_change': [3000, 6000],
+                                          'immediate_after_change': [6000, 6200],
+                                          'after_change': [9000, 12000]},
+                'algorithm_delay_samples': 0,
+                'output': 'causal prior linear residual before each sample update',
+            },
+            'limits': 'Seeded mathematical signal and exactly known 4-tap path; single run, no near end, '
+                      'DTD, real loudspeaker, room or subjective speech test. Do not rank industrial AEC from these WAVs.',
+        },
+        'aec_subband': {
+            'signals': {
+                'aec_subband_reference': subband_reference,
+                'aec_subband_true_echo': subband_echo,
+                'aec_subband_diagonal_model': subband_diagonal,
+                'aec_subband_missing_cross_terms': subband_echo - subband_diagonal,
+            },
+            'parameters': {
+                'seed': SEED + 4, 'sample_rate_hz': SAMPLE_RATE, 'samples': 8000,
+                'reference': 'seeded Gaussian std 0.12 plus 2100 Hz sine amplitude 0.08',
+                'path': [0., 1.], 'analysis': 'nonoverlapping orthonormal two-sample Haar',
+                'model': 'known current/previous block 2x2 crossband matrices; diagonal_model removes exact off-diagonal terms',
+                'near_end': 'none', 'noise': 'none', 'algorithm_delay_samples': 0,
+                'score_interval_samples': [0, 8000],
+            },
+            'limits': 'Known-path system representation only; diagonal model has NOT been adapted or fitted. '
+                      'The difference is missing cross terms, not a measured AEC residual or subband ERLE.',
+        },
+        'wpe': {
+            'signals': {'wpe_dry': dry, 'wpe_reverberant': reverberant, 'wpe_output': wpe},
+            'parameters': {'echo_delays_samples': [0, 640, 1280], 'echo_gains': [1, .6, .3],
+                           'tail_padding_samples': 4000, 'n_fft': 512, 'hop': 128,
+                           'taps': 4, 'delay_frames': 3, 'iterations': 3, 'first_valid_frame': 6,
+                           'relative_diagonal_loading': 1e-6, 'relative_power_floor': 1e-5,
+                           'window': 'periodic Hann', 'center': True, 'synthesis_denominator_floor': 1e-12,
+                           'causal': False, 'propagation_delay_samples': 0},
+            'limits': 'Offline WPE may remove predictable harmonic content; this sparse FIR is not a room or speech-quality benchmark.'},
+        'separation': {
+            'signals': {'separation_source1': target, 'separation_source2': other,
+                        'separation_mixture': mixture, 'separation_recovered1': recovered[0],
+                        'separation_recovered2': recovered[1]},
+            'parameters': {'mixing_matrix': matrix.tolist(), 'condition_number': float(np.linalg.cond(matrix)),
+                           'algorithm_delay_samples': 0, 'permutation': [0, 1]},
+            'limits': 'Known instantaneous mixing matrix; solving it is not blind separation, ICA or neural inference.'},
+        'engineering': {
+            'signals': {'engineering_reference': target, 'engineering_clipped': clipped,
+                        'engineering_low_level': .02*target, 'engineering_dropout': damaged},
+            'parameters': {'clip_operation': 'clip(3*x,-0.3,0.3)/3', 'low_level_gain': .02,
+                           'dropout_interval_s': [.9, 1.], 'algorithm_delay_samples': 0},
+            'limits': 'Clipping and dropout are deliberate faults, not enhancement algorithms.'},
+        'tracking': {
+            'signals': {'tracking_pan': np.vstack((np.cos(pan)*target, np.sin(pan)*target))},
+            'parameters': {'left_gain': 'cos(phi)', 'right_gain': 'sin(phi)', 'phi_range_rad': [0, np.pi/2]},
+            'limits': 'Equal-power stereo panning; not a physical moving-source array recording and not valid DOA ground truth.'},
+        'correlation': {
+            'signals': {'correlation_reference': target,
+                        'correlation_single': target + independent_noise[0],
+                        'correlation_independent': independent_mean,
+                        'correlation_common': common_mean},
+            'parameters': {'seed': SEED + 1, 'noise_std_each_channel': .07,
+                           'model': 'Both target channels are already aligned; average weights [0.5, 0.5].',
+                           'noise_correlations': {'independent': 0, 'common': 1},
+                           'expected_noise_power_ratios': {'independent': .5, 'common': 1},
+                           'reference': 'correlation_reference, no delay; score all samples',
+                           'algorithm_delay_samples': 0},
+            'limits': 'Population variances predict 3.0103 dB and 0 dB; one finite realization is not a statistical performance estimate.'},
+        'polarity': {
+            'signals': {'polarity_reference': target, 'polarity_array': polarity_array,
+                        'polarity_uncorrected': polarity_array.mean(axis=0),
+                        'polarity_corrected': (polarity_array[0] - polarity_array[1]) / 2},
+            'parameters': {'channel_gains': [1, -.9], 'channel_order': ['normal', 'inverted_0.9'],
+                           'uncorrected_target_gain': .05, 'corrected_target_gain': .95,
+                           'relative_amplitude_db': float(20*np.log10(.05/.95)),
+                           'reference': 'polarity_reference, no delay; no gain fitting when scoring',
+                           'algorithm_delay_samples': 0},
+            'limits': 'Known polarity correction, not blind calibration. Array WAV is raw stereo; compare mono averages to study cancellation.'},
+        'conditioning': {
+            'signals': {'conditioning_reference': sources,
+                        'conditioning_well_input': well_input, 'conditioning_ill_input': ill_input,
+                        'conditioning_well_output': np.linalg.solve(well, well_input),
+                        'conditioning_ill_output': np.linalg.solve(ill, ill_input)},
+            'parameters': {'seed': SEED + 1, 'rng_order': 'after correlation noise draw (2, 32000)',
+                           'well_matrix': well.tolist(), 'ill_matrix': ill.tolist(),
+                           'noise_std_each_channel': .003, 'same_noise_in_both_inputs': True,
+                           'condition_numbers_2norm': [3., 199.],
+                           'reference': 'conditioning_reference; compare each source channel without delay or gain fitting',
+                           'input_channel_order': ['microphone1', 'microphone2'],
+                           'output_and_reference_channel_order': ['source1', 'source2'],
+                           'algorithm_delay_samples': 0},
+            'limits': 'Both mixing matrices are known; this is inverse-problem noise amplification, not blind separation or a benchmark of AuxIVA.'},
+        'nonlinear': {
+            'signals': {'nonlinear_reference': nonlinear_reference,
+                        'nonlinear_echo': nonlinear_echo,
+                        'nonlinear_estimate': nonlinear_estimate,
+                        'nonlinear_residual': nonlinear_echo - nonlinear_estimate},
+            'parameters': {'sample_rate_hz': SAMPLE_RATE, 'samples': t.size,
+                           'frequency_hz': 500, 'amplitude': .4, 'cubic_coefficient': 2.,
+                           'model': 'd=x+2*x**3; best whole-segment scalar least-squares fit g*x',
+                           'fit_gain': best_linear_gain, 'analysis_interval_samples': [0, t.size],
+                           'reference': 'nonlinear_echo for echo-power ratio; nonlinear_reference is playback',
+                           'taper': 'none; 1000 complete periods', 'algorithm_delay_samples': 0,
+                           'noise': 'none', 'near_end': 'none', 'randomness': 'none'},
+            'limits': 'Steady sinusoid, memoryless cubic distortion and batch scalar projection; '
+                      'not NLMS convergence, a measured loudspeaker or speech-quality evaluation.'},
+        'spectral_subtraction': {
+            'signals': {'spectral_clean': subtraction_clean,
+                        'spectral_noise': subtraction_noise,
+                        'spectral_noisy': subtraction_noisy,
+                        'spectral_floor04': subtraction_soft_audio,
+                        'spectral_floor00': subtraction_zero_audio},
+            'parameters': {'seed': SEED + 5, 'sample_rate_hz': SAMPLE_RATE,
+                           'samples': t.size, 'noise_only_samples': noise_only_samples,
+                           'noise_only_stft_frame_indices': noise_frames.tolist(),
+                           'noise_model': 'independent white Gaussian, standard deviation 0.07',
+                           'clean_model': '173 Hz six-harmonic synthetic tone, silent for first 0.4 s, 20 ms squared-sine onset',
+                           'stft': {'n_fft': 512, 'hop_length': 128, 'window': 'periodic Hann',
+                                    'center': True, 'weighted_overlap_add': True},
+                           'noise_estimation': 'per-bin arithmetic mean of |Y|^2 over complete noise-only frames',
+                           'mean_noise_power_sum': float(np.sum(subtraction_noise_power)),
+                           'oversubtraction': 1., 'floor_ratios': [0., .04],
+                           'spectral_floor_reference': 'fraction of observed noisy-bin power',
+                           'noisy_phase_retained': True, 'algorithm_delay_samples': 'offline STFT demonstration; no online latency claim',
+                           'reference': 'spectral_clean; no delay or gain fitting; first 0.4 s is noise-only'},
+            'limits': 'Single seeded mathematical tone plus stationary Gaussian noise; fixed oracle-marked noise-only preamble. '
+                      'The zero-floor output may make sparse tonal residuals audible; no human listening study, '
+                      'natural speech, VAD, adaptive noise tracker, MMSE-STSA or MMSE-LSA.'},
+        'math_block': math_block_case(),
+    }
+
+
+def prepare_exports(cases: dict | None = None) -> tuple[dict, dict]:
+    """Apply common headroom per group; return encoded WAVs and metadata."""
+    cases = build_cases() if cases is None else cases
+    files, groups = {}, {}
+    for name, case in cases.items():
+        peak = max(float(np.max(np.abs(x))) for x in case['signals'].values())
+        gain = min(1., .8 / peak) if peak > 0 else 1.
+        if 'export_gain_override' in case:
+            gain = float(case['export_gain_override'])
+            if not np.isfinite(gain) or gain <= 0 or peak * gain > 32767 / 32768:
+                raise ValueError('export gain must be finite, positive, and leave PCM headroom')
+        groups[name] = {k: v for k, v in case.items() if k != 'signals'}
+        groups[name]['common_export_gain'] = gain
+        for stem, array in case['signals'].items():
+            x = np.atleast_2d(array) * gain
+            blob = pcm16_bytes(x)
+            _, decoded = read_pcm16(blob)
+            files[stem + '.wav'] = (blob, {
+                'group': name, 'sample_rate_hz': SAMPLE_RATE, 'channels': x.shape[0],
+                'samples': x.shape[1], 'duration_s': x.shape[1]/SAMPLE_RATE,
+                'peak': float(np.max(np.abs(decoded))), 'rms': float(np.sqrt(np.mean(decoded**2))),
+                'common_export_gain': gain, 'quantization_max_abs_error': float(np.max(np.abs(decoded-x))),
+            })
+    return files, groups

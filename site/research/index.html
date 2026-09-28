@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码研究导读 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5517357657f5"><style>
+<meta name="source-digest" content="b40a94533c43"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -84,7 +84,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>本手册接在教程的数学推导之后，回答从式子走到真实实现时出现的问题：哪个数组对应观测，状态怎样跨帧保留，
 控制信号从哪里取得，代码在哪个文件，怎样设计可以判断对错的实验。</p>
 <p>材料按 2026-09-22～28 查阅的原论文、维护者文档和官方仓库整理。版本清单见
-<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json">SOURCES.lock.json</a>，逐算法覆盖状态见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/COVERAGE.md">COVERAGE.md</a>。
+<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCES.lock.json">SOURCES.lock.json</a>，逐算法覆盖状态见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/COVERAGE.md">COVERAGE.md</a>。
 同名算法在不同项目中可能采用不同归一化、频谱轴序和输出参考通道，不能直接比较两个函数的数组而不检查约定。</p>
 <p>本手册包括本页入口和以下 5 篇专题，共 6 个网页；与 14 个教程页合计为 20 页。</p>
 <p>锁表登记 96 个 Git 上游项目，其中 83 个已有本地工作区。截至 2026-09-28，离线核验 82 项通过；AEC Challenge 的真实录音文件有本地变动，未计通过。另 13 项只保留来源索引。<code>kaldialign</code>作为MeetEval编译依赖仅已取得源码，未构建或执行。</p>
@@ -150,9 +150,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>读维护者测试，区分形状测试、数值测试、音频质量测试和硬件测试。</li>
 <li>用本书的小规模输入或独立解析例做一次对照。运行成功和输出数值可信是两个不同结论。</li>
 </ol>
-<p>本地取得源码的状态由获取工具生成，见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/upstream/README.md">源码获取说明</a>。
+<p>本地取得源码的状态由获取工具生成，见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/upstream/README.md">源码获取说明</a>。
 许可与依赖属于各上游项目；本手册不把不同项目的源码合并成一个重新授权的软件包。</p>
-<p>第4章另有 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/reports/doatools_esprit_reference.json">doatools ESPRIT 固定接口对照</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/reports/figure13_gcc_reverb.json">图13的逐次统计</a>。默认加权的原版偏差、取消加权与独立参考分开记录；完整数字、适用范围与源码入口见空间篇第14节。</p>
+<p>第4章另有 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/reports/doatools_esprit_reference.json">doatools ESPRIT 固定接口对照</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/reports/figure13_gcc_reverb.json">图13的逐次统计</a>。默认加权的原版偏差、取消加权与独立参考分开记录；完整数字、适用范围与源码入口见空间篇第14节。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

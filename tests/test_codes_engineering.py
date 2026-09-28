@@ -4,7 +4,7 @@ import unittest
 
 import numpy as np
 
-from codes.array_tutorial.engineering import (
+from codes.chapters.ch10.core.engineering import (
     HysteresisVAD,
     PeakProtectAGC,
     RingBuffer,
@@ -143,7 +143,7 @@ class EngineeringCodeTests(unittest.TestCase):
             q15_dequantize(np.array([32768], dtype=np.int32))
 
     def test_telemetry_schema_matches_validator(self):
-        schema_path = ROOT / "codes" / "engineering" / "telemetry_schema.json"
+        schema_path = ROOT / "codes" / "chapters" / "ch10" / "engineering" / "telemetry_schema.json"
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
         self.assertEqual(set(schema["required"]), set(TELEMETRY_FIELDS))
         record = {

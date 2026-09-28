@@ -4,8 +4,8 @@ import unittest
 
 import numpy as np
 
-from codes.array_tutorial.dereverberation import offline_wpe
-from codes.array_tutorial.separation import mask_mvdr_2x2
+from codes.chapters.ch07.core.dereverberation import offline_wpe
+from codes.chapters.ch08.core.separation import mask_mvdr_2x2
 
 
 class TestMaskScalingBoundary(unittest.TestCase):

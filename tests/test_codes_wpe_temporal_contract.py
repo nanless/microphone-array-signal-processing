@@ -6,7 +6,7 @@ import unittest
 
 import numpy as np
 
-from codes.examples.wpe_temporal_contract import (
+from codes.chapters.ch07.wpe_temporal_contract import (
     CHUNK_PARTITIONS,
     FRAME_COUNT,
     PERTURBED_FRAME,
@@ -16,7 +16,7 @@ from codes.examples.wpe_temporal_contract import (
     report,
     temporal_summary,
 )
-from codes.examples.compare_online_wpe_reference import NumpyOnlineWPE011
+from codes.chapters.ch07.examples.compare_online_wpe_reference import NumpyOnlineWPE011
 
 
 def new_state():

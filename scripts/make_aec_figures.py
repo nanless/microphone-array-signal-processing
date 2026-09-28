@@ -21,7 +21,7 @@ from pathlib import Path
 
 # Direct ``python scripts/make_aec_figures.py`` must see the repository package.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from codes.array_tutorial.conventions import finite_real_array, finite_real_scalar
+from codes.chapters.ch02.core.conventions import finite_real_array, finite_real_scalar
 
 OUT = Path(os.environ.get("AEC_FIGURE_DIR", Path(__file__).parent.parent / "figures"))
 OUT.mkdir(exist_ok=True)

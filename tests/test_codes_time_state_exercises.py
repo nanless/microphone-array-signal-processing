@@ -4,8 +4,8 @@ import unittest
 
 import numpy as np
 
-from codes.array_tutorial.tracking import ConstantVelocityKalman
-from codes.examples.tracking_time_exercises import (
+from codes.chapters.ch09.core.tracking import ConstantVelocityKalman
+from codes.chapters.ch00.cross_chapter.tracking_time_exercises import (
     predict_timestamped_direction, run_exercises, vad_preroll_segments,
     zero_failure_upper_bound,
 )

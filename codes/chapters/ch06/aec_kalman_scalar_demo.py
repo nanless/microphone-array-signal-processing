@@ -6,17 +6,23 @@ neither a complete FDKF/PBFDKF nor a double-talk recording experiment.
 
 Original frequency-domain AEC context: Enzner and Vary, Signal Processing 86
 (2006), https://doi.org/10.1016/j.sigpro.2005.09.013 .
-Run ``python -m codes.examples.aec_kalman_scalar_demo`` from the repo root.
+Run ``python -m codes.chapters.ch06.aec_kalman_scalar_demo`` from the repo root.
 """
 
 from __future__ import annotations
+
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
 
 import json
 import math
 
 import numpy as np
 
-from codes.array_tutorial.conventions import finite_real_scalar
+from codes.chapters.ch02.core.conventions import finite_real_scalar
 
 
 def _finite_complex_scalar(value: object, name: str) -> complex:

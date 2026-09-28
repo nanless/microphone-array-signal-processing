@@ -4,9 +4,10 @@ from pathlib import Path
 
 import numpy as np
 
-from codes.array_tutorial.audio_samples import (SEED, delay_samples, pcm16_bytes, read_pcm16,
+from codes.chapters.ch00.core.audio_samples import (SEED, delay_samples, pcm16_bytes, read_pcm16,
                                                build_cases, prepare_exports)
-from codes.examples.generate_audio_samples import generate
+from codes.chapters.ch00.examples.generate_audio_samples import generate
+from scripts.code_layout import main_audio_path
 
 
 class AudioSamplesTest(unittest.TestCase):
@@ -55,10 +56,11 @@ class AudioSamplesTest(unittest.TestCase):
             root = Path(directory)
             self.assertEqual(generate(root)['files'], 109)
             self.assertTrue(generate(root, check=True)['checked'])
-            (root/'spatial_reference.wav').write_bytes(b'not a WAV')
+            sample = main_audio_path(root, 'spatial', 'spatial_reference.wav')
+            sample.write_bytes(b'not a WAV')
             with self.assertRaisesRegex(ValueError, 'audio content differs'):
                 generate(root, check=True)
-            self.assertEqual((root/'spatial_reference.wav').read_bytes(), b'not a WAV')
+            self.assertEqual(sample.read_bytes(), b'not a WAV')
 
     def test_common_gain_attenuates_all_signals_without_boost(self):
         files, groups = prepare_exports({'test': {'signals': {'reference': np.array([1., -1.]),

@@ -9,8 +9,8 @@ import wave
 from pathlib import Path
 import numpy as np
 
-from codes.array_tutorial.tracking_audio import build_fixture, analyze_array, read_pcm16, frame_truth
-from codes.examples.chapter09_tracking_audio import generate, SOURCE_PATHS, ROOT
+from codes.chapters.ch09.core.tracking_audio import build_fixture, analyze_array, read_pcm16, frame_truth
+from codes.chapters.ch09.examples.chapter09_tracking_audio import generate, SOURCE_PATHS, ROOT
 
 
 class TrackingAudioTests(unittest.TestCase):

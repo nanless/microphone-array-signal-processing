@@ -2,7 +2,7 @@
 import unittest
 from unittest.mock import patch
 import numpy as np
-from codes.array_tutorial.dereverberation import offline_wpe
+from codes.chapters.ch07.core.dereverberation import offline_wpe
 
 
 class WPENumericalBoundaries(unittest.TestCase):
@@ -28,7 +28,7 @@ class WPENumericalBoundaries(unittest.TestCase):
             return result
         # R=ones(2,2), r=ones(2,2). Exact g columns=ones/(1e308+2).
         # Output rounds back to one; inspect actual solve path to test tiny g.
-        with patch('codes.array_tutorial.dereverberation.np.linalg.solve',side_effect=solve):
+        with patch('codes.chapters.ch07.core.dereverberation.np.linalg.solve',side_effect=solve):
             result = offline_wpe(np.ones((1,2,2),complex),taps=1,delay=1,
                                  iterations=1,diagonal_loading=1e308)
         matrix,g = captured[0]

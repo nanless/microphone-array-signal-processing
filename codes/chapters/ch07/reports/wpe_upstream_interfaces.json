@@ -1,0 +1,851 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-09-28T13:57:21.308510+00:00",
+  "harness_sha256": "6f1951c31d27679eba69c5e90d1eb341a9f0b1955a5006b7cdd87b3f0d2be380",
+  "source_config_sha256": "f8cb9a3df22c7f5018e8a219f2e3b0a2a63b568e98acf89dd69e6c2a7944dbb7",
+  "sources": {
+    "btk20": {
+      "files": {
+        "LICENSE": "1dfe95044a48d8c90dde9fe0d32fa75beba51633b866cc91f10b803489edeec0",
+        "btk20_src/dereverberation/dereverberation.cc": "56dd5e81a2da21f9ab1edd8a0169473233c68a188112534fa706cebbfeac2cad"
+      },
+      "revision": "feff19ec8bcb770f6530fe280dc3ccafc2f5984a"
+    },
+    "espnet": {
+      "files": {
+        "LICENSE": "4696c3c9551da6fef1368be1e4ed2c80cf13e55448c6dcf2aba9462f5ff29ef5",
+        "espnet2/enh/layers/dnn_wpe.py": "a71db01cb84be5b42096f926c800d5f358c1b7f45b021ca1147ce78816ed1736",
+        "espnet2/enh/layers/mask_estimator.py": "267b76279f58bf5d6c0054f30b1866ea5adb120231dac6f58e411a7873eaddd7",
+        "espnet2/enh/layers/wpe.py": "1648649392558463d27d727d0a0a17cbba02efce46ed3b897f85864bb1dda6a1"
+      },
+      "revision": "be79590bb2ff26ffb01bc825c5f68cb9418b7f0d"
+    },
+    "gss": {
+      "files": {
+        "LICENSE": "5658d3e38fcd75f27608d9ba7ee83a2c1a04cc7a76334509907b41c87b92fc8b",
+        "gss/core/enhancer.py": "2e4ce14a9bd82e15471fa38e702aceb126db381d6642797f77b29bdaba208099",
+        "gss/wpe/wpe.py": "37d4ba884a341a86238e9e0d0e85bea27d07380206959fbe341651fdda9a8be2"
+      },
+      "revision": "10fad18cae85e2e4342c77421abc70c9c5da23ed"
+    },
+    "metaaf": {
+      "files": {
+        "metaaf/LICENSE": "4281265bd0d7692b781b56f3395f9673e9a67e74b10348e470a6c43a4259d3fb",
+        "zoo/LICENSE": "24d3e5484e1fa549be9d7b4ea8c1534a6f0227c34f6e7ab602f0e32a80728d9c",
+        "zoo/wpe/nara_wpe_eval.py": "c42b71b4d77cc564c40965e8612569cbac1decce62dceccc688fd2ce8b4a0b3b",
+        "zoo/wpe/wpe.py": "47e7f846b09f85c44a76134f504bdb1fa781bf7c394740c29d4f2196cc03ec37",
+        "zoo/wpe/wpe_eval.py": "18924db865c36d6898b4f748ae9ff7d6f8d64bd801293f694c8d8a4628fb1b8e"
+      },
+      "revision": "56c4665bdc51c2e0595a7c0cd9b1266408adceff"
+    },
+    "nara_wpe": {
+      "files": {
+        "LICENSE": "f9fad5befd31a5c5540fb671fa56efd59d959959ffe1b6a8156a66549d6410f0",
+        "nara_wpe/tf_wpe.py": "54ca54c9b1e10d1188142063caf54fa9322f30da5f897a0841f1f60d96762fcf",
+        "nara_wpe/utils.py": "7ec579df10b18f1eca38a0d9c797d242a89f0344fa98e2fc2b0cc51fe0332570",
+        "nara_wpe/wpe.py": "385a6f1c67071ba3e243c8a24fe4a041484c55280ad4ed0dbadefa4679a606d2"
+      },
+      "revision": "a166779cca2088817e330481bd20af1a2c598555"
+    },
+    "speexdsp": {
+      "files": {
+        "COPYING": "2654a4264b2bfe298dedc508748d140111840c315cc8eb646a3a68c13fa75b01",
+        "libspeexdsp/preprocess.c": "5f7143d00f12af60759ea1b9249fba3615fd92fcead2671e9350fe6cf530ecbd"
+      },
+      "revision": "8e29a256ef0235ebbe7fcb8417b5ac7731eb8307"
+    },
+    "tso_vace_wpe": {
+      "files": {
+        "LICENSE": "664fb260188108b8c9b3e21ab0c8c8f57c94b421f8134dc1544ede4627d2713b",
+        "README.md": "816199b90fee133396dbab2c76e432d5ff16e6968d531fc4be0051691b404422",
+        "bldnn_4M62.py": "038fa1948d05cf548f1cc48bf5905f457b1f8288560cd2583e02d0f80aeb08b1",
+        "gcunet4c_4M4390.py": "fff0244234a5137b095f02889a059f83bd360e54f735ebf0ab611e936125f69a",
+        "run.py": "3315e9ff2e3f6f9edda995d24a1e18548a6d0233ed894b96257fad8aad21e6d5",
+        "torch_custom/custom_layers.py": "f41ac5e906317b0148a40efcb900be83ab91641fd6886f5ca20e3d4cc9bb8837",
+        "torch_custom/iterative_wpe.py": "ebcde972a551d38129092add41c032782f54f032693a25f65220d95d71bdef16",
+        "torch_custom/math_utils.py": "dfa13868bcecd57572fb6de42337d279057f37e6dff60c4eb8545f6325dfca73",
+        "torch_custom/neural_wpe.py": "03b4bb34f58719b401b09c3105184c4e423a8f68007b46d093b19445621761aa",
+        "torch_custom/signal_utils.py": "c1ea6a5f4ee1e72e034de60e89331979c2eef4f3df3018d03dbf8efc49eba125",
+        "torch_custom/spectral_ops.py": "a4803ae54739a0a02b692c533961237866767d110e5e6446f69380a55a00ce0a",
+        "torch_custom/stft_helper.py": "9ececfe942834f543e86f6f584923ba529869e5788fa06993c7bd0dead62a47b",
+        "torch_custom/torch_utils.py": "7bb348ca3fed5fd7fb8d392a589211ac39e71d917dc26c8e939f7d4209a2851d",
+        "torch_custom/wpe_th_utils.py": "f10e2323dc0737232669fe21755192c0885b40506439643b887cf6bb646d171c",
+        "vace_wpe.py": "bb64a67de37257d94beaa59cc3f04203c9f6b0a9a394867de2eff285d5b63e29"
+      },
+      "revision": "10ee77dd020d58af508feb77251f9353208cb33a"
+    }
+  },
+  "config": {
+    "input_real": [
+      [
+        [
+          1.0,
+          2.0,
+          1.0,
+          4.0,
+          2.0,
+          1.0
+        ]
+      ],
+      [
+        [
+          1e-08,
+          3e-08,
+          2e-08,
+          1e-08,
+          5e-08,
+          2e-08
+        ]
+      ]
+    ],
+    "input_imag": "all zero",
+    "dtype": "complex128",
+    "axis_order": "frequency,channel,time",
+    "taps": 1,
+    "delay": 1,
+    "iterations": 1,
+    "statistics_mode": "valid",
+    "psd_context": 0,
+    "helper_input": "arange(1,13).reshape(2,1,6)",
+    "helper_contexts": [
+      1,
+      [
+        0,
+        2
+      ]
+    ],
+    "randomness": "none",
+    "scope": "dimensionless synthetic spectra; no acoustic quality or speed claim"
+  },
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "bytecode_writes": false
+  },
+  "nara": {
+    "execution_kind": "hash_checked_original_module_functions",
+    "default_alias_is_v7": true,
+    "variants": {
+      "wpe_v6": {
+        "output_real": [
+          [
+            [
+              1.0,
+              1.451776649746193,
+              -0.09644670050761417,
+              3.451776649746193,
+              -0.19289340101522834,
+              -0.09644670050761417
+            ]
+          ],
+          [
+            [
+              1e-08,
+              2.35e-08,
+              5.000000000000012e-10,
+              -3.0000000000000004e-09,
+              4.35e-08,
+              -1.25e-08
+            ]
+          ]
+        ],
+        "output_imag": [
+          [
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          ],
+          [
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          ]
+        ],
+        "finite": true
+      },
+      "wpe_v7": {
+        "output_real": [
+          [
+            [
+              1.0,
+              1.451776649746193,
+              -0.09644670050761417,
+              3.451776649746193,
+              -0.19289340101522834,
+              -0.09644670050761417
+            ]
+          ],
+          [
+            [
+              1e-08,
+              2.35e-08,
+              5.000000000000012e-10,
+              -3.0000000000000004e-09,
+              4.35e-08,
+              -1.25e-08
+            ]
+          ]
+        ],
+        "output_imag": [
+          [
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          ],
+          [
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          ]
+        ],
+        "finite": true
+      },
+      "wpe_v8": {
+        "output_real": [
+          [
+            [
+              1.0,
+              1.451776649746193,
+              -0.09644670050761417,
+              3.451776649746193,
+              -0.19289340101522834,
+              -0.09644670050761417
+            ]
+          ],
+          [
+            [
+              1e-08,
+              2.4835763217986998e-08,
+              4.507289653961003e-09,
+              -3.2847356402599965e-10,
+              4.4835763217987e-08,
+              -5.821183910064998e-09
+            ]
+          ]
+        ],
+        "output_imag": [
+          [
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          ],
+          [
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          ]
+        ],
+        "finite": true
+      }
+    },
+    "inverse_power_batched": [
+      [
+        1.0,
+        0.25,
+        1.0,
+        0.0625,
+        0.25,
+        1.0
+      ],
+      [
+        625000000.0,
+        625000000.0,
+        625000000.0,
+        625000000.0,
+        625000000.0,
+        625000000.0
+      ]
+    ],
+    "inverse_power_frequency1_alone": [
+      9999999999999998.0,
+      1111111111111111.4,
+      2499999999999999.5,
+      9999999999999998.0,
+      400000000000000.06,
+      2499999999999999.5
+    ],
+    "get_power_context1": [
+      [
+        25.0,
+        34.0,
+        45.0,
+        58.0,
+        73.0,
+        90.0
+      ],
+      [
+        25.0,
+        34.0,
+        45.0,
+        58.0,
+        73.0,
+        90.0
+      ]
+    ],
+    "get_power_context_0_2": {
+      "exception_type": "ValueError",
+      "message": "first array argument cannot be empty"
+    },
+    "note": "get_power helper is not the get_power_inverse path used by offline variants"
+  },
+  "espnet": {
+    "execution_kind": "static_ast_only",
+    "wpe_call_keywords": [
+      "delay",
+      "inverse_power",
+      "taps"
+    ],
+    "public_controls_not_read_in_forward": [
+      "diagonal_loading",
+      "diag_eps",
+      "use_torch_solver"
+    ],
+    "discarded_masked_fill_lines": [
+      82
+    ],
+    "solver_defaults": {
+      "eps": "1e-10"
+    },
+    "inverse_call_lines": [
+      140
+    ],
+    "framework_or_network_executed": false
+  },
+  "static_scope": {
+    "tensorflow": "read tf_wpe.py; no TensorFlow runtime; block .7 weights current statistics",
+    "gss": "read frequency chunking and global power floor; no CuPy/GPU execution",
+    "btk20": "read C++ per-output powers and loading; no GSL compilation or execution",
+    "tso_vace_wpe": "read 15 source/notice files; no PyTorch or weights executed",
+    "speexdsp": "read disabled dereverb update/control code; no new preprocess execution"
+  },
+  "silence_boundary": "Separate experiment: codes/chapters/ch07/reports/chapter07_online_wpe_silence.json",
+  "not_executed": [
+    "speech quality",
+    "ASR",
+    "hardware timing",
+    "neural weights",
+    "training"
+  ],
+  "metaaf_nara_wrapper": {
+    "execution_kind": "unchanged_function_ast_with_original_nara_state_and_transform_stubs",
+    "config": {
+      "window_size": 16,
+      "hop_size": 4,
+      "n_taps": 1,
+      "delay": 1,
+      "alpha": 0.95,
+      "n_in_chan": 1
+    },
+    "waveform_argument": "64 by 1 zeros; ignored by STFT stub",
+    "stft_stub": "arange(1,73).reshape(1,8,9).astype(complex128)",
+    "istft_stub": "captures input spectra; returns 1 by 64 zeros, not computed audio",
+    "real_stft_or_istft_executed": false,
+    "jax_or_metaaf_package_executed": false,
+    "captured_spectra_real": [
+      [
+        [
+          1.0
+        ],
+        [
+          2.0
+        ],
+        [
+          3.0
+        ],
+        [
+          4.0
+        ],
+        [
+          5.0
+        ],
+        [
+          6.0
+        ],
+        [
+          7.0
+        ],
+        [
+          8.0
+        ],
+        [
+          9.0
+        ]
+      ],
+      [
+        [
+          10.0
+        ],
+        [
+          11.0
+        ],
+        [
+          12.0
+        ],
+        [
+          13.0
+        ],
+        [
+          14.0
+        ],
+        [
+          15.0
+        ],
+        [
+          16.0
+        ],
+        [
+          17.0
+        ],
+        [
+          18.0
+        ]
+      ],
+      [
+        [
+          19.0
+        ],
+        [
+          20.0
+        ],
+        [
+          21.0
+        ],
+        [
+          22.0
+        ],
+        [
+          23.0
+        ],
+        [
+          24.0
+        ],
+        [
+          25.0
+        ],
+        [
+          26.0
+        ],
+        [
+          27.0
+        ]
+      ],
+      [
+        [
+          28.0
+        ],
+        [
+          29.0
+        ],
+        [
+          30.0
+        ],
+        [
+          31.0
+        ],
+        [
+          32.0
+        ],
+        [
+          33.0
+        ],
+        [
+          34.0
+        ],
+        [
+          35.0
+        ],
+        [
+          36.0
+        ]
+      ],
+      [
+        [
+          36.17409025257813
+        ],
+        [
+          36.293140253073396
+        ],
+        [
+          36.37978930503688
+        ],
+        [
+          36.450936774082614
+        ],
+        [
+          36.51871964218577
+        ],
+        [
+          36.59153267564459
+        ],
+        [
+          36.67494124940403
+        ],
+        [
+          36.77243328617131
+        ],
+        [
+          36.88600780079586
+        ]
+      ],
+      [
+        [
+          35.27090339242318
+        ],
+        [
+          34.171592478181516
+        ],
+        [
+          33.21316032031841
+        ],
+        [
+          32.38932863765754
+        ],
+        [
+          31.68960049894074
+        ],
+        [
+          31.10174498295454
+        ],
+        [
+          30.61329382712458
+        ],
+        [
+          30.212372414463506
+        ],
+        [
+          29.888108310797318
+        ]
+      ],
+      [
+        [
+          27.248050734436514
+        ],
+        [
+          25.77769820686129
+        ],
+        [
+          24.568346328177697
+        ],
+        [
+          23.58156454656894
+        ],
+        [
+          22.782483174656477
+        ],
+        [
+          22.140678241663693
+        ],
+        [
+          21.630230284686377
+        ],
+        [
+          21.229378252303057
+        ],
+        [
+          20.920011454102763
+        ]
+      ],
+      [
+        [
+          18.104306257716395
+        ],
+        [
+          16.760355520211768
+        ],
+        [
+          15.70015176683178
+        ],
+        [
+          14.872548023372246
+        ],
+        [
+          14.23466179342369
+        ],
+        [
+          13.751139390633838
+        ],
+        [
+          13.393129584097238
+        ],
+        [
+          13.137223874877371
+        ],
+        [
+          12.964483596842733
+        ]
+      ]
+    ],
+    "captured_spectra_imag": [
+      [
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ]
+      ],
+      [
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ]
+      ],
+      [
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ]
+      ],
+      [
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ]
+      ],
+      [
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ]
+      ],
+      [
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ]
+      ],
+      [
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ]
+      ],
+      [
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ]
+      ]
+    ],
+    "max_difference_from_original_single_frame_calls": 0.0,
+    "finite": true,
+    "dummy_return_shape": [
+      64
+    ],
+    "status": "window_input_supported_by_actual_state_implementation",
+    "note": "step_frame docstring specifies F,D, but implementation accepts a full 3D buffer"
+  }
+}

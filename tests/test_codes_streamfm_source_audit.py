@@ -2,7 +2,7 @@
 import tempfile
 import unittest
 from pathlib import Path
-from codes.examples.streamfm_source_audit import audit_file, inspect_source
+from codes.chapters.ch08.examples.streamfm_source_audit import audit_file, inspect_source
 
 FIXTURE = '''
 class CausalResnetBlockBigGANpp:

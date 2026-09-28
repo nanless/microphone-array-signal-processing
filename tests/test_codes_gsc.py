@@ -2,8 +2,8 @@
 import unittest
 import numpy as np
 
-from codes.array_tutorial.gsc import ScalarGSCNLMS
-from codes.array_tutorial.audio_samples import gsc_gate_case, prepare_exports, read_pcm16
+from codes.chapters.ch05.core.gsc import ScalarGSCNLMS
+from codes.chapters.ch00.core.audio_samples import gsc_gate_case, prepare_exports, read_pcm16
 
 
 class ScalarGSCTest(unittest.TestCase):

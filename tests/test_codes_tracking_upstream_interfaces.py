@@ -5,7 +5,7 @@ import unittest
 
 import numpy as np
 
-from codes.examples import audit_tracking_upstream_interfaces as audit
+from codes.chapters.ch09.examples import audit_tracking_upstream_interfaces as audit
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class TrackingUpstreamReportTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.report = json.loads((ROOT / 'codes/reports/tracking_upstream_interfaces.json').read_text(),
+        cls.report = json.loads((ROOT / 'codes/chapters/ch09/reports/tracking_upstream_interfaces.json').read_text(),
                                 parse_constant=lambda s: (_ for _ in ()).throw(ValueError(s)))
 
     def test_binding_and_execution_scope(self):

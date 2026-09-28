@@ -3,7 +3,7 @@ import hashlib
 from pathlib import Path
 import unittest
 
-from codes.examples.compare_online_wpe_reference import (
+from codes.chapters.ch07.examples.compare_online_wpe_reference import (
     compare_locked_upstream,
     fixed_index_hand_calculation,
     state_lifetime_experiment,
@@ -13,10 +13,10 @@ from codes.examples.compare_online_wpe_reference import (
 class TestOnlineWPEReference(unittest.TestCase):
     def test_adapted_reference_retains_upstream_notice(self):
         root = Path(__file__).resolve().parents[1]
-        notice = root / "codes/licenses/nara_wpe_MIT.txt"
+        notice = root / "codes/chapters/ch07/licenses/nara_wpe_MIT.txt"
         self.assertEqual(hashlib.sha256(notice.read_bytes()).hexdigest(),
                          "eef25788ae3423a6d6188f3fc0d23c083d8e7f9ab18a1d1e495df5879f2edaf0")
-        script = (root / "codes/examples/compare_online_wpe_reference.py").read_text()
+        script = (root / "codes/chapters/ch07/examples/compare_online_wpe_reference.py").read_text()
         self.assertIn("../licenses/nara_wpe_MIT.txt", script)
         self.assertIn("Copyright (c) 2018 Communications Engineering Group, Paderborn University", script)
 

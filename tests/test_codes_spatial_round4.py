@@ -6,13 +6,13 @@ import warnings
 
 import numpy as np
 
-from codes.array_tutorial.doa import (
+from codes.chapters.ch04.core.doa import (
     bartlett_spectrum,
     gcc_phat,
     music_spectrum,
     srp_phat,
 )
-from codes.array_tutorial.tracking import ConstantVelocityKalman, systematic_resample
+from codes.chapters.ch09.core.tracking import ConstantVelocityKalman, systematic_resample
 
 
 class StableDoaTest(unittest.TestCase):

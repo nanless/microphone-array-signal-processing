@@ -8,5 +8,3 @@
 .venv/bin/python -m codes.chapters.ch08.chapter08_experiments
 .venv/bin/python -m codes.chapters.ch08.gss_activity_error_demo
 ```
-
-原 `codes.examples.*` 模块名和命令保留兼容入口。

@@ -6,8 +6,8 @@ import unittest
 
 import numpy as np
 
-from codes.array_tutorial.engineering import PeakProtectAGC, simulate_deadline_queue
-from codes.examples.engineering_boundary_exercises import (
+from codes.chapters.ch10.core.engineering import PeakProtectAGC, simulate_deadline_queue
+from codes.chapters.ch00.cross_chapter.engineering_boundary_exercises import (
     callback_timing_ns, paired_sign_test_lower_is_better, run_exercises,
 )
 

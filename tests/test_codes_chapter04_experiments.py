@@ -1,9 +1,9 @@
 """Independent closed-form anchors and numerical failure checks for chapter 4."""
 import unittest
 import numpy as np
-from codes.examples import chapter04_experiments as ex
-from codes.array_tutorial.doa import esprit_ula, gcc_phat
-from codes.array_tutorial.audio_samples import doa_ambiguity_case, prepare_exports, read_pcm16
+from codes.chapters.ch04 import chapter04_experiments as ex
+from codes.chapters.ch04.core.doa import esprit_ula, gcc_phat
+from codes.chapters.ch00.core.audio_samples import doa_ambiguity_case, prepare_exports, read_pcm16
 
 
 class Chapter04ExperimentsTests(unittest.TestCase):

@@ -5,11 +5,11 @@ import unittest
 
 import numpy as np
 
-from codes.array_tutorial.audio_samples import math_block_case, pcm16_bytes, read_pcm16
-from codes.array_tutorial.math_foundations import (
+from codes.chapters.ch00.core.audio_samples import math_block_case, pcm16_bytes, read_pcm16
+from codes.chapters.appendix_a.core.math_foundations import (
     blockwise_circular_convolution, fft_overlap_add,
 )
-from codes.examples.appendix_a_experiments import run_experiments
+from codes.chapters.appendix_a.appendix_a_experiments import run_experiments
 
 
 class AppendixAMathTests(unittest.TestCase):

@@ -5,16 +5,16 @@ import unittest
 
 import numpy as np
 
-from codes.array_tutorial.aec import NLMSState
-from codes.array_tutorial.aec_ipnlms import IPNLMSState, ipnlms
-from codes.array_tutorial.aec_subband import (
+from codes.chapters.ch06.core.aec import NLMSState
+from codes.chapters.ch06.core.aec_ipnlms import IPNLMSState, ipnlms
+from codes.chapters.ch06.core.aec_subband import (
     HaarDiagonalSubbandNLMSState,
     haar_analyze,
     haar_synthesize,
     two_tap_crossband_matrices,
     two_tap_subband_outputs,
 )
-from codes.examples.aec_ipnlms_subband_demo import run_demo
+from codes.chapters.ch06.aec_ipnlms_subband_demo import run_demo
 
 
 class TestIPNLMS(unittest.TestCase):

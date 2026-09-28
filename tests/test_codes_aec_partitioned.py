@@ -4,8 +4,8 @@ import unittest
 
 import numpy as np
 
-from codes.array_tutorial.aec_partitioned import PartitionedFDAFState
-from codes.examples.aec_partitioned_demo import run_demo, run_identifiability_demo
+from codes.chapters.ch06.core.aec_partitioned import PartitionedFDAFState
+from codes.chapters.ch06.aec_partitioned_demo import run_demo, run_identifiability_demo
 
 
 class TestPartitionedFDAFState(unittest.TestCase):

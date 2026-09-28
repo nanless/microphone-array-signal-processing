@@ -6,7 +6,7 @@ import shutil
 import tempfile
 import unittest
 
-from codes.examples.run_libsamplerate_sro import (
+from codes.chapters.ch10.examples.run_libsamplerate_sro import (
     ROOT, clock_frame, inspect_trace, run, validate_clock_result,
 )
 
@@ -91,7 +91,7 @@ class TestTraceProtocol(unittest.TestCase):
 
 
 class TestNativeProbe(unittest.TestCase):
-    @unittest.skipUnless((ROOT / "codes/upstream/_downloads/libsamplerate/src/samplerate.c").exists()
+    @unittest.skipUnless((ROOT / "codes/chapters/ch00/upstream/_downloads/libsamplerate/src/samplerate.c").exists()
                          and shutil.which("cmake") and (shutil.which("clang") or shutil.which("cc")),
                          "locked local libsamplerate source and native build tools required")
     def test_native_two_clock_c_api(self):

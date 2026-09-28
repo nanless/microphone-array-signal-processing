@@ -5,10 +5,10 @@ import unittest
 import warnings
 import numpy as np
 
-from codes.array_tutorial.beamforming import lcmv_weights, mvdr_weights
-from codes.array_tutorial.doa import capon_spectrum
-from codes.examples import chapter05_experiments as ex
-from codes.examples.beamformer_common_input_demo import run_experiment
+from codes.chapters.ch05.core.beamforming import lcmv_weights, mvdr_weights
+from codes.chapters.ch04.core.doa import capon_spectrum
+from codes.chapters.ch05 import chapter05_experiments as ex
+from codes.chapters.ch05.beamformer_common_input_demo import run_experiment
 
 
 class ChapterFiveExamplesTest(unittest.TestCase):

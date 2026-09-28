@@ -3,8 +3,8 @@
 import unittest
 import numpy as np
 
-from codes.array_tutorial.double_talk import confusion_counts, ncc_activity_states
-from codes.examples.aec_dtd_demo import run_experiment
+from codes.chapters.ch06.core.double_talk import confusion_counts, ncc_activity_states
+from codes.chapters.ch06.aec_dtd_demo import run_experiment
 
 
 class TestAutomaticDTD(unittest.TestCase):

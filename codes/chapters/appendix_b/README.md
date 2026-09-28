@@ -9,4 +9,4 @@
 .venv/bin/python -m codes.chapters.appendix_b.interpolation_exercise
 ```
 
-原有 `codes.examples` 同名模块保留为兼容入口。题干、结果及执行层级见 [附录 B](../../../chapters/13_appendix-guide.md)、[房间结果](../../room_audio/RESULTS.json)和[练习手册](../../research/05_exercises_and_audio.md)。
+题干、结果及执行层级见 [附录 B](../../../chapters/13_appendix-guide.md)、[房间结果](room_audio/RESULTS.json)和[练习手册](../ch00/research/05_exercises_and_audio.md)。

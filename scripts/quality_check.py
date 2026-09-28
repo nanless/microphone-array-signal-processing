@@ -15,11 +15,23 @@ from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
+try:
+    from scripts.code_layout import MAIN_AUDIO_GROUP_CHAPTER, main_audio_manifest_path, main_audio_path
+except ModuleNotFoundError:  # direct ``python scripts/quality_check.py``
+    from code_layout import MAIN_AUDIO_GROUP_CHAPTER, main_audio_manifest_path, main_audio_path
+
 
 ROOT = Path(__file__).resolve().parent.parent
 CHAPTERS = ROOT / "chapters"
 SITE = ROOT / "site"
 DIST = ROOT / "dist"
+CODE_CHAPTERS = ROOT / "codes" / "chapters"
+RESEARCH_ROOT = CODE_CHAPTERS / "ch00" / "research"
+REAL_AUDIO_ROOT = CODE_CHAPTERS / "ch02" / "real_audio"
+ROOM_AUDIO_ROOT = CODE_CHAPTERS / "appendix_b" / "room_audio"
+MOVING_AUDIO_ROOT = CODE_CHAPTERS / "ch09" / "moving_audio"
+TRACKING_AUDIO_ROOT = CODE_CHAPTERS / "ch09" / "tracking_audio"
+GSS_AUDIO_ROOT = CODE_CHAPTERS / "ch08" / "gss_audio"
 
 EDITING_MARKERS = re.compile(
     r"待核实|待补(?:实测|充)?|链接待补|成绩待补|清单#|"
@@ -495,7 +507,7 @@ def expected_site_content(name: str, source: str):
     images = Counter(f"../figures/{figure_name}"
                      for _alt, figure_name, _number in extract_figure_references(source))
     if name == "13_appendix-guide.md":
-        if not re.search(r"!\[[^\]]+\]\(\.\./codes/room_audio/ROOM_RESULTS\.png\)", source):
+        if not re.search(r"!\[[^\]]+\]\(\.\./codes/chapters/appendix_b/room_audio/ROOM_RESULTS\.png\)", source):
             raise ValueError("附录 B 缺少房间仿真补充图源引用")
         images["room_audio/ROOM_RESULTS.png"] += 1
     return ids, images
@@ -622,12 +634,12 @@ def check_figures(errors: list[str]):
             for issue in png_provenance_issues(path, script_path):
                 fail(errors, f"PNG 溯源失效：figures/{name}: {issue}")
             if number == 44:
-                expected = hashlib.sha256((ROOT / "codes/tracking_audio/MANIFEST.json").read_bytes()).hexdigest()
+                expected = hashlib.sha256((ROOT / "codes/chapters/ch09/tracking_audio/MANIFEST.json").read_bytes()).hexdigest()
                 with Image.open(path) as image:
                     if image.info.get("AudioManifestDigest") != expected:
                         fail(errors, "图44独立追踪音频清单摘要失效")
             if number in (34, 35, 36, 40, 41, 43, 45, 47, 49):
-                expected = hashlib.sha256((ROOT / "codes/audio/MANIFEST.json").read_bytes()).hexdigest()
+                expected = hashlib.sha256((ROOT / "codes/chapters/ch00/audio/MANIFEST.json").read_bytes()).hexdigest()
                 with Image.open(path) as image:
                     if image.info.get("AudioManifestDigest") != expected:
                         fail(errors, f"图 {number} 音频清单摘要失效")
@@ -728,7 +740,7 @@ def external_markdown_link_issues(source: str, links: list[str]):
 
 
 def check_research_site(errors: list[str]):
-    research_root = ROOT / "codes" / "research"
+    research_root = RESEARCH_ROOT
     output_root = SITE / "research"
     expected_names = {output for _source, output in EXPECTED_RESEARCH_PAGES}
     actual_names = {path.relative_to(output_root).as_posix()
@@ -855,7 +867,7 @@ def check_combined_html(errors: list[str]):
             for _alt, figure_name, _number in extract_figure_references(documents[name])
         )
         if name == "13_appendix-guide.md":
-            expected_images["../codes/room_audio/ROOM_RESULTS.png"] += 1
+            expected_images["../codes/chapters/appendix_b/room_audio/ROOM_RESULTS.png"] += 1
     missing_ids = sorted(expected_ids - ids)
     if missing_ids:
         fail(errors, f"dist/combined.html 缺少源章节或小节：{missing_ids[:8]}")
@@ -877,7 +889,7 @@ def check_combined_html(errors: list[str]):
 def source_digest():
     digest = hashlib.sha256()
     paths = sorted(CHAPTERS.glob("*.md"))
-    paths += [ROOT / "codes" / "research" / name for name, _ in EXPECTED_RESEARCH_PAGES]
+    paths += [RESEARCH_ROOT / name for name, _ in EXPECTED_RESEARCH_PAGES]
     paths += [ROOT / "scripts" / "build_site.py", ROOT / "scripts" / "heading_aliases.py",
               ROOT / "scripts" / "legacy_sequential_anchors.json"]
     paths += sorted(path for path in (ROOT / "scripts" / "vendor" / "mathjax-3.2.2").rglob("*")
@@ -897,14 +909,15 @@ def source_digest():
 def site_source_digest():
     digest = hashlib.sha256()
     paths = sorted(CHAPTERS.glob("*.md"))
-    paths += [ROOT / "codes" / "research" / name for name, _ in EXPECTED_RESEARCH_PAGES]
-    paths += sorted((ROOT / "codes" / "audio").glob("*.wav"))
-    paths += [ROOT / "codes" / "audio" / "MANIFEST.json"]
-    paths += sorted((ROOT / "codes" / "real_audio").glob("*"))
-    paths += sorted((ROOT / "codes" / "room_audio").glob("*"))
-    paths += sorted((ROOT / "codes" / "moving_audio").glob("*"))
-    paths += sorted((ROOT / "codes" / "tracking_audio").glob("*"))
-    paths += sorted((ROOT / "codes" / "gss_audio").glob("*"))
+    paths += [RESEARCH_ROOT / name for name, _ in EXPECTED_RESEARCH_PAGES]
+    manifest_path = main_audio_manifest_path(CODE_CHAPTERS)
+    paths += [manifest_path]
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    paths += sorted(main_audio_path(CODE_CHAPTERS, record["group"], record["file"])
+                    for record in manifest["files"])
+    for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT):
+        paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
               ("build_site.py", "heading_aliases.py", "legacy_sequential_anchors.json",
@@ -1099,7 +1112,7 @@ EXPECTED_REAL_AUDIO_FILES = set(EXPECTED_REAL_AUDIO_CHANNELS) | {
 def check_real_audio(errors):
     """Independent inventory and PCM/attribution checks for the DEMAND excerpt."""
     import numpy as np
-    root = ROOT / "codes/real_audio"
+    root = REAL_AUDIO_ROOT
     try:
         for folder in (root, SITE / "real_audio"):
             if {p.name for p in folder.iterdir() if p.is_file()} != EXPECTED_REAL_AUDIO_FILES:
@@ -1116,7 +1129,7 @@ def check_real_audio(errors):
         if "creativecommons.org/licenses/by-sa/3.0" not in (root / "LICENSE.txt").read_text(encoding="utf-8"):
             fail(errors, "真实录音许可地址缺失")
         manifest = json.loads((root / "MANIFEST.json").read_text(encoding="utf-8"))
-        expected_inputs = {"codes/array_tutorial/real_recordings.py", "codes/examples/prepare_real_recordings.py"}
+        expected_inputs = {"codes/chapters/ch02/core/real_recordings.py", "codes/chapters/ch02/examples/prepare_real_recordings.py"}
         if set(manifest["generator_inputs"]) != expected_inputs:
             fail(errors, "真实录音生成来源清单不符")
         for name in expected_inputs:
@@ -1174,7 +1187,7 @@ def check_real_audio(errors):
 def check_room_audio(errors):
     """Independently verify the 18 generated room WAVs and staged site assets."""
     import numpy as np
-    root, published = ROOT / "codes/room_audio", SITE / "room_audio"
+    root, published = ROOM_AUDIO_ROOT, SITE / "room_audio"
     try:
         manifest = json.loads((root / "MANIFEST.json").read_text(encoding="utf-8"))
         records = manifest["files"]
@@ -1210,9 +1223,9 @@ def check_room_audio(errors):
                 report.get("status") != "pyroomacoustics_simulation_executed" or
                 report.get("pyroomacoustics_version_installed") != "0.10.0" or
                 report.get("actual_max_order") != 40 or
-                report.get("generator", {}).get("path") != "codes/examples/room_srp_exercise.py" or
+                report.get("generator", {}).get("path") != "codes/chapters/appendix_b/examples/room_srp_exercise.py" or
                 report["generator"].get("sha256") != hashlib.sha256(
-                    (ROOT / "codes/examples/room_srp_exercise.py").read_bytes()).hexdigest() or
+                    (ROOT / "codes/chapters/appendix_b/examples/room_srp_exercise.py").read_bytes()).hexdigest() or
                 report.get("assets", {}).get("figure", {}).get("sha256") != hashlib.sha256(png).hexdigest() or
                 report["assets"].get("audio_manifest", {}).get("sha256") != hashlib.sha256(
                     (root / "MANIFEST.json").read_bytes()).hexdigest()):
@@ -1269,7 +1282,7 @@ def check_room_audio(errors):
 
 def check_moving_audio(errors):
     """独立核对移动声源三组 PCM、真值清单和网页副本。"""
-    source, published = ROOT / "codes/moving_audio", SITE / "moving_audio"
+    source, published = MOVING_AUDIO_ROOT, SITE / "moving_audio"
     expected_channels = {"source.wav": 1, "static_array.wav": 2, "moving_array.wav": 2}
     expected = set(expected_channels) | {"MANIFEST.json"}
     try:
@@ -1279,10 +1292,10 @@ def check_moving_audio(errors):
                 or "free field" not in manifest["model"]
                 or len(manifest["truth"]["time_seconds"]) < 100):
             raise ValueError("清单模型、真值或样本集合不符")
-        source_paths = {"codes/examples/moving_source_audio.py",
-                        "codes/array_tutorial/moving_source.py",
-                        "codes/array_tutorial/audio_samples.py",
-                        "codes/array_tutorial/conventions.py"}
+        source_paths = {"codes/chapters/ch09/examples/moving_source_audio.py",
+                        "codes/chapters/ch09/core/moving_source.py",
+                        "codes/chapters/ch00/core/audio_samples.py",
+                        "codes/chapters/ch02/core/conventions.py"}
         if set(manifest.get("source_sha256", {})) != source_paths:
             raise ValueError("移动声源生成源码清单不完整")
         for name, digest in manifest["source_sha256"].items():
@@ -1318,7 +1331,7 @@ def check_moving_audio(errors):
 
 def check_tracking_audio(errors):
     """Verify published PCM, regeneration provenance and real observation controls."""
-    source, published = ROOT/"codes/tracking_audio", SITE/"tracking_audio"
+    source, published = TRACKING_AUDIO_ROOT, SITE/"tracking_audio"
     expected = {"source.wav","array_noisy.wav","MANIFEST.json"}
     try:
         for folder in (source,published):
@@ -1358,7 +1371,7 @@ def check_tracking_audio(errors):
 def check_gss_audio(errors):
     """独立核对教学 GSS 的五路 PCM、状态文件和站点副本。"""
     import zipfile
-    source, published = ROOT / "codes/gss_audio", SITE / "gss_audio"
+    source, published = GSS_AUDIO_ROOT, SITE / "gss_audio"
     channels = {"source_1.wav": 1, "source_2.wav": 1, "mixture.wav": 2,
                 "enhanced_correct.wav": 1, "enhanced_missed.wav": 1}
     expected = set(channels) | {"MANIFEST.json", "STATE.npz"}
@@ -1367,13 +1380,13 @@ def check_gss_audio(errors):
         if (set(manifest["files"]) != expected - {"MANIFEST.json"}
                 or manifest["sample_rate_hz"] != 16000):
             raise ValueError("GSS 清单集合或采样率不符")
-        source_paths = {"codes/examples/gss_teaching_demo.py",
-                        "codes/array_tutorial/gss_teaching.py",
-                        "codes/array_tutorial/separation.py",
-                        "codes/array_tutorial/spectral.py",
-                        "codes/array_tutorial/conventions.py",
-                        "codes/array_tutorial/audio_samples.py",
-                        "codes/array_tutorial/dereverberation.py"}
+        source_paths = {"codes/chapters/ch08/examples/gss_teaching_demo.py",
+                        "codes/chapters/ch08/core/gss_teaching.py",
+                        "codes/chapters/ch08/core/separation.py",
+                        "codes/chapters/ch02/core/spectral.py",
+                        "codes/chapters/ch02/core/conventions.py",
+                        "codes/chapters/ch00/core/audio_samples.py",
+                        "codes/chapters/ch07/core/dereverberation.py"}
         if set(manifest.get("generator_inputs", {})) != source_paths:
             raise ValueError("GSS 生成源码清单不完整")
         for name, digest in manifest["generator_inputs"].items():
@@ -1410,29 +1423,39 @@ def check_gss_audio(errors):
 
 def check_audio(errors):
     """Independent published PCM inventory, provenance, format and player checks."""
-    root = ROOT / "codes/audio"
+    root = CODE_CHAPTERS
     try:
-        manifest = json.loads((root / "MANIFEST.json").read_text())
+        manifest = json.loads(main_audio_manifest_path(root).read_text())
         records = manifest["files"]
         names = {stem + ".wav" for stem in EXPECTED_AUDIO_STEMS}
-        if len(records) != 109 or {r["file"] for r in records} != names:
+        if manifest.get("schema_version") != 2 or len(records) != 109 or {r["file"] for r in records} != names:
             fail(errors, "音频清单必须包含独立基线的 109 个 WAV")
-        if {p.name for p in root.glob("*.wav")} != names or {p.name for p in (SITE / "audio").glob("*.wav")} != names:
-            fail(errors, "源音频或站点音频文件集合不符")
+        expected_by_chapter = {chapter: set() for chapter in set(MAIN_AUDIO_GROUP_CHAPTER.values())}
+        for record in records:
+            chapter = MAIN_AUDIO_GROUP_CHAPTER.get(record["group"])
+            if chapter is None or record.get("chapter") != chapter:
+                fail(errors, f"音频章节归属不符：{record['file']}")
+                continue
+            expected_by_chapter[chapter].add(record["file"])
+        for chapter, expected_files in expected_by_chapter.items():
+            if {p.name for p in (root / chapter / "audio").glob("*.wav")} != expected_files:
+                fail(errors, f"{chapter} 源音频文件集合不符")
+        if {p.name for p in (SITE / "audio").glob("*.wav")} != names:
+            fail(errors, "站点音频文件集合不符")
         if set(manifest["groups"]) != {"spatial", "aec", "aec_methods", "aec_subband", "wpe", "separation", "engineering", "tracking",
                                       "correlation", "polarity", "conditioning", "nonlinear", "fractional_array",
                                       "spectral_subtraction", "clock_drift", "interpolation", "alignment_error", "room_decay", "dma_calibration", "doa_ambiguity", "gsc_gate", "aec_dropout", "wpe_predictable", "css_overlap", "agc_blocks", "selection_tradeoff", "math_block"}:
             fail(errors, "音频实验组不符")
-        expected_inputs = {"codes/examples/generate_audio_samples.py", "codes/array_tutorial/audio_samples.py",
-                           "codes/array_tutorial/engineering.py",
-                           "codes/array_tutorial/aec.py", "codes/array_tutorial/aec_ipnlms.py",
-                           "codes/array_tutorial/aec_rls.py", "codes/array_tutorial/aec_kalman_matrix.py",
-                           "codes/array_tutorial/aec_subband.py",
-                           "codes/array_tutorial/dereverberation.py",
-                           "codes/array_tutorial/spectral.py", "codes/array_tutorial/conventions.py",
-                           "codes/array_tutorial/geometry.py",
-                           "codes/array_tutorial/noise_suppression.py", "codes/array_tutorial/math_foundations.py", "codes/array_tutorial/gsc.py",
-                           "codes/array_tutorial/css.py", "codes/array_tutorial/separation.py"}
+        expected_inputs = {"scripts/code_layout.py", "codes/chapters/ch00/examples/generate_audio_samples.py", "codes/chapters/ch00/core/audio_samples.py",
+                           "codes/chapters/ch10/core/engineering.py",
+                           "codes/chapters/ch06/core/aec.py", "codes/chapters/ch06/core/aec_ipnlms.py",
+                           "codes/chapters/ch06/core/aec_rls.py", "codes/chapters/ch06/core/aec_kalman_matrix.py",
+                           "codes/chapters/ch06/core/aec_subband.py",
+                           "codes/chapters/ch07/core/dereverberation.py",
+                           "codes/chapters/ch02/core/spectral.py", "codes/chapters/ch02/core/conventions.py",
+                           "codes/chapters/ch03/core/geometry.py",
+                           "codes/chapters/ch10/core/noise_suppression.py", "codes/chapters/appendix_a/core/math_foundations.py", "codes/chapters/ch05/core/gsc.py",
+                           "codes/chapters/ch08/core/css.py", "codes/chapters/ch08/core/separation.py"}
         if set(manifest["generator_inputs"]) != expected_inputs:
             fail(errors, "音频生成来源清单不完整")
         for name, expected in manifest["generator_inputs"].items():
@@ -1445,7 +1468,7 @@ def check_audio(errors):
             name = record["file"]
             if name not in names:
                 continue
-            path = root / name
+            path = main_audio_path(root, record["group"], name)
             blob = path.read_bytes()
             if hashlib.sha256(blob).hexdigest() != record["sha256"] or (SITE / "audio" / name).read_bytes() != blob:
                 fail(errors, f"音频摘要或站点副本不符：{name}")

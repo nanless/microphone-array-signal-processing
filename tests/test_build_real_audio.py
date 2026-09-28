@@ -21,11 +21,11 @@ class RealAudioPublishingTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
-        self.source = self.root / "codes/real_audio"
+        self.source = self.root / "codes/chapters/ch02/real_audio"
         self.site = self.root / "site"
-        shutil.copytree(ROOT / "codes/real_audio", self.source)
+        shutil.copytree(ROOT / "codes/chapters/ch02/real_audio", self.source)
         shutil.copytree(self.source, self.site / "real_audio")
-        for name in ("codes/array_tutorial/real_recordings.py", "codes/examples/prepare_real_recordings.py"):
+        for name in ("codes/chapters/ch02/core/real_recordings.py", "codes/chapters/ch02/examples/prepare_real_recordings.py"):
             target = self.root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / name, target)
@@ -36,7 +36,9 @@ class RealAudioPublishingTests(unittest.TestCase):
             for n in sorted(NAMES) if "16ch" not in n), encoding="utf-8")
 
     def errors(self):
-        with patch.object(quality_check, "ROOT", self.root), patch.object(quality_check, "SITE", self.site):
+        with patch.object(quality_check, "ROOT", self.root), \
+                patch.object(quality_check, "REAL_AUDIO_ROOT", self.source), \
+                patch.object(quality_check, "SITE", self.site):
             errors = []
             quality_check.check_real_audio(errors)
             return errors
@@ -85,7 +87,7 @@ class RealAudioPublishingTests(unittest.TestCase):
         self.assertTrue(self.errors())
 
     def test_changed_generator_is_rejected(self):
-        path = self.root / "codes/array_tutorial/real_recordings.py"
+        path = self.root / "codes/chapters/ch02/core/real_recordings.py"
         path.write_text(path.read_text() + "\n# fixture change\n")
         self.assertTrue(any("生成源过期" in error for error in self.errors()))
 
@@ -111,20 +113,18 @@ class RealAudioPublishingTests(unittest.TestCase):
         self.assertTrue(self.errors())
 
     def test_rewritten_links_keep_real_audio_and_license_local(self):
-        with patch.object(build_site, "ROOT", self.root), patch.object(build_site, "SRC", self.root / "chapters"):
-            output = build_site.rewrite_site_links(
-                '<a href="../real_audio/demand_nriver_ch01_10s.wav">录音</a>'
-                '<a href="../real_audio/ATTRIBUTION.txt">署名</a>',
-                self.root / "codes/research/05_exercises_and_audio.md")
+        output = build_site.rewrite_site_links(
+            '<a href="../../ch02/real_audio/demand_nriver_ch01_10s.wav">录音</a>'
+            '<a href="../../ch02/real_audio/ATTRIBUTION.txt">署名</a>',
+            ROOT / "codes/chapters/ch00/research/05_exercises_and_audio.md")
         self.assertIn('src="../real_audio/demand_nriver_ch01_10s.wav"', output)
         self.assertIn('href="../real_audio/ATTRIBUTION.txt"', output)
         self.assertNotIn("autoplay", output)
 
     def test_multichannel_input_stays_a_download_link(self):
-        with patch.object(build_site, "ROOT", self.root), patch.object(build_site, "SRC", self.root / "chapters"):
-            output = build_site.rewrite_site_links(
-                '<a href="../real_audio/demand_nriver_16ch_10s.wav">16 通道输入</a>',
-                self.root / "codes/research/05_exercises_and_audio.md")
+        output = build_site.rewrite_site_links(
+            '<a href="../../ch02/real_audio/demand_nriver_16ch_10s.wav">16 通道输入</a>',
+            ROOT / "codes/chapters/ch00/research/05_exercises_and_audio.md")
         self.assertIn('href="../real_audio/demand_nriver_16ch_10s.wav"', output)
         self.assertNotIn("<audio", output)
 

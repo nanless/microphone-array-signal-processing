@@ -4,8 +4,8 @@ import unittest
 
 import numpy as np
 
-from codes.array_tutorial.aec import NLMSState, erle_db, nlms
-from codes.examples.aec_streaming_demo import run_demo
+from codes.chapters.ch06.core.aec import NLMSState, erle_db, nlms
+from codes.chapters.ch06.aec_streaming_demo import run_demo
 
 
 class TestNLMSState(unittest.TestCase):

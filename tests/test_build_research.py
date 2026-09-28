@@ -14,7 +14,7 @@ from scripts import build_pdf, build_site
 
 
 ROOT = Path(__file__).resolve().parents[1]
-RESEARCH = ROOT / "codes" / "research"
+RESEARCH = ROOT / "codes" / "chapters" / "ch00" / "research"
 
 
 class Links(HTMLParser):
@@ -180,17 +180,17 @@ class ResearchBuildTest(unittest.TestCase):
 
     def test_chapter_links_to_research_and_source_documents(self):
         html = self.render(
-            "[研究](../codes/research/02_aec_wpe_separation.md#wpe)\n\n"
-            "[覆盖](../codes/COVERAGE.md#说明)", ROOT / "chapters" / "07_wpe-dereverberation.md")
+            "[研究](../codes/chapters/ch00/research/02_aec_wpe_separation.md#wpe)\n\n"
+            "[覆盖](../codes/chapters/ch00/COVERAGE.md#说明)", ROOT / "chapters" / "07_wpe-dereverberation.md")
         self.assertIn('href="research/02_aec_wpe_separation.html#wpe"', html)
-        self.assertIn('href="' + build_site.REPOSITORY_BLOB_BASE + 'codes/COVERAGE.md#说明"', html)
+        self.assertIn('href="' + build_site.REPOSITORY_BLOB_BASE + 'codes/chapters/ch00/COVERAGE.md#说明"', html)
 
     def test_research_links_to_home_peer_chapter_and_code(self):
         html = self.render(
-            "[首页](../../chapters/00_overview.md)\n\n"
+            "[首页](../../../../chapters/00_overview.md)\n\n"
             "[研究](./README.md)\n\n"
-            "[AEC](../../chapters/06_aec.md#sec-6-1)\n\n"
-            "[测试](../../tests/test_codes_aec_wpe_sep_track.py)",
+            "[AEC](../../../../chapters/06_aec.md#sec-6-1)\n\n"
+            "[测试](../../../../tests/test_codes_aec_wpe_sep_track.py)",
             RESEARCH / "02_aec_wpe_separation.md")
         for href in ("../index.html", "index.html", "../06_aec.html#sec-6-1",
                      build_site.REPOSITORY_BLOB_BASE + "tests/test_codes_aec_wpe_sep_track.py"):
@@ -204,13 +204,13 @@ class ResearchBuildTest(unittest.TestCase):
         self.assertNotIn("README.html", html)
 
     def test_query_fragment_and_uri_encoded_path_preserved(self):
-        html = self.render('[文档](../codes/%43OVERAGE.md?plain=1&view=source#说明)',
+        html = self.render('[文档](../codes/chapters/ch00/%43OVERAGE.md?plain=1&view=source#说明)',
                            ROOT / "chapters" / "06_aec.md")
-        self.assertIn('codes/COVERAGE.md?plain=1&amp;view=source#说明', html)
+        self.assertIn('codes/chapters/ch00/COVERAGE.md?plain=1&amp;view=source#说明', html)
 
     def test_same_basename_is_resolved_using_source_context(self):
         html = self.render('[上游说明](../upstream/README.md)', RESEARCH / "README.md")
-        self.assertIn(build_site.REPOSITORY_BLOB_BASE + "codes/upstream/README.md", html)
+        self.assertIn(build_site.REPOSITORY_BLOB_BASE + "codes/chapters/ch00/upstream/README.md", html)
         self.assertNotIn('href="index.html"', html)
 
     def test_research_heading_alias_accepts_published_markdown_fragment(self):
@@ -218,13 +218,13 @@ class ResearchBuildTest(unittest.TestCase):
         self.assertIn('id="2-噪声语音活动与增益"', html)
 
     def test_combined_links_keep_real_source_suffix_and_external_url(self):
-        html = ('<a href="../codes/COVERAGE.md#说明">覆盖</a>'
-                '<a href="../codes/research/README.md">研究</a>'
+        html = ('<a href="../codes/chapters/ch00/COVERAGE.md#说明">覆盖</a>'
+                '<a href="../codes/chapters/ch00/research/README.md">研究</a>'
                 '<a href="https://example.org/README.md">外部</a>'
                 '<a href="./07_wpe-dereverberation.md#sec-7-1">WPE</a>')
         html = build_pdf.rewrite_repository_links(html, ROOT / "chapters" / "06_aec.md")
-        self.assertIn(build_site.REPOSITORY_BLOB_BASE + "codes/COVERAGE.md#说明", html)
-        self.assertIn(build_site.REPOSITORY_BLOB_BASE + "codes/research/README.md", html)
+        self.assertIn(build_site.REPOSITORY_BLOB_BASE + "codes/chapters/ch00/COVERAGE.md#说明", html)
+        self.assertIn(build_site.REPOSITORY_BLOB_BASE + "codes/chapters/ch00/research/README.md", html)
         self.assertIn('href="https://example.org/README.md"', html)
         self.assertIn('href="#ch-7-sec-7-1"', html)
         self.assertNotIn(".html", html)
@@ -276,7 +276,7 @@ class ResearchBuildTest(unittest.TestCase):
             output = Path(temporary) / "site"
             with mock.patch.object(build_site, "OUT", output), contextlib.redirect_stdout(io.StringIO()):
                 build_site.main()
-            room_source = ROOT / "codes" / "room_audio"
+            room_source = ROOT / "codes" / "chapters" / "appendix_b" / "room_audio"
             room_manifest = json.loads((room_source / "MANIFEST.json").read_text(encoding="utf-8"))
             room_names = {record["file"] for record in room_manifest["files"]}
             self.assertEqual(len(room_names), 18)
@@ -319,13 +319,15 @@ class ResearchBuildTest(unittest.TestCase):
                                 "MANIFEST.json", "README.md", "ATTRIBUTION.txt", "LICENSE.txt",
                             })
                             self.assertTrue(target.is_file())
-                            self.assertEqual(target.read_bytes(), (ROOT / "codes/real_audio" / target.name).read_bytes())
+                            self.assertEqual(target.read_bytes(), (ROOT / "codes/chapters/ch02/real_audio" / target.name).read_bytes())
                             self.assertFalse(uri.fragment)
                             continue
                         if target.parent in {(output / "gss_audio").resolve(),
                                              (output / "moving_audio").resolve(),
                                              (output / "tracking_audio").resolve()}:
-                            source = ROOT / "codes" / target.parent.name / target.name
+                            owner = {"gss_audio": "ch08", "moving_audio": "ch09",
+                                     "tracking_audio": "ch09"}[target.parent.name]
+                            source = ROOT / "codes" / "chapters" / owner / target.parent.name / target.name
                             self.assertTrue(target.is_file())
                             self.assertEqual(target.read_bytes(), source.read_bytes())
                             self.assertFalse(uri.fragment)

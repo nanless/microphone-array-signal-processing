@@ -1,6 +1,6 @@
 > ⚠️ 本篇是教程第 11 章。前后篇见下方导航。
 >
-> 🏠 首页导读：[00_overview.md](./00_overview.md) ｜ 上一篇：[10_engineering-practice.md](./10_engineering-practice.md) ｜ 下一篇：[12_appendix-symbols-math.md](./12_appendix-symbols-math.md)
+> 🏠 首页导读：[00_overview.md](00_overview.md) ｜ 上一篇：[10_engineering-practice.md](10_engineering-practice.md) ｜ 下一篇：[12_appendix-symbols-math.md](12_appendix-symbols-math.md)
 
 ---
 
@@ -171,15 +171,15 @@ ORC-WER 按**参考语句**选择输出流：第一段的“春天”给流 1、
 - pyroomacoustics 适合房间与阵列原型，不证明目标设备实时。
 - WebRTC AEC3 可以对照实时回声链路，但其内部参数不是其他产品的默认值。
 
-选择开源项目时应把规范仓库、固定提交或发布、许可证、支持平台、输入输出契约、维护状态和最小测试一起写入方案，详见 §10.9.1 与 [`codes/SOURCES.lock.json`](../codes/SOURCES.lock.json)。
+选择开源项目时应把规范仓库、固定提交或发布、许可证、支持平台、输入输出契约、维护状态和最小测试一起写入方案，详见 §10.9.1 与 [`codes/chapters/ch00/SOURCES.lock.json`](../codes/chapters/ch00/SOURCES.lock.json)。
 
-本书按 [`codes/COVERAGE.md`](../codes/COVERAGE.md) 将算法分为“本仓库可运行基线、外部参考实现、原理索引、明确排除”四种状态。适配器只是调用外部实现的一种方式，不是第五种覆盖状态。教学实现通过单元测试，只能说明约定和边界算例正确；它没有经过目标设备的实时、长稳和主观听测，不能直接标成工业实现。
+本书按 [`codes/chapters/ch00/COVERAGE.md`](../codes/chapters/ch00/COVERAGE.md) 将算法分为“本仓库可运行基线、外部参考实现、原理索引、明确排除”四种状态。适配器只是调用外部实现的一种方式，不是第五种覆盖状态。教学实现通过单元测试，只能说明约定和边界算例正确；它没有经过目标设备的实时、长稳和主观听测，不能直接标成工业实现。
 
-工程选型还要把“源码能获取”与“接口能接入、平台能编译、设备能通过验收”分开。Linux 会议终端可研究 ALSA/PipeWire 的设备和参考路由；Cortex-M 端侧模型可研究 TFLM/CMSIS-NN 的算子与内存；XMOS 或 SOF 固件则需要对应硬件、工具链及拓扑。每条候选都应补一项故障试验，例如拔插后恢复、参考切换、跨块状态清零、缓冲不足或线程过载，具体入口见[工业部署研究](../codes/research/03_industrial_deployment.md)。
+工程选型还要把“源码能获取”与“接口能接入、平台能编译、设备能通过验收”分开。Linux 会议终端可研究 ALSA/PipeWire 的设备和参考路由；Cortex-M 端侧模型可研究 TFLM/CMSIS-NN 的算子与内存；XMOS 或 SOF 固件则需要对应硬件、工具链及拓扑。每条候选都应补一项故障试验，例如拔插后恢复、参考切换、跨块状态清零、缓冲不足或线程过载，具体入口见[工业部署研究](../codes/chapters/ch00/research/03_industrial_deployment.md)。
 
 候选的输入输出与评分工具同样需要筛选。libsoxr、libsamplerate 的比例协议不能照搬；libsndfile 的时间帧数不能当成通道标量数；libebur128 的响度与真峰值也不是语音质量分。
 
-有干净参考时才可按相应条件使用 STOI/ESTOI 或 ViSQOL，静音过多、有效帧不足、参考错配及模型缺失必须进入失败记录。各接口的固定版本与边界见[第 10 章工程对照](./10_engineering-practice.md#sec-10-9)。
+有干净参考时才可按相应条件使用 STOI/ESTOI 或 ViSQOL，静音过多、有效帧不足、参考错配及模型缺失必须进入失败记录。各接口的固定版本与边界见[第 10 章工程对照](10_engineering-practice.md#sec-10-9)。
 
 #### 11.5.2 完整决策例：未知参会者的连续转写
 
@@ -233,7 +233,7 @@ ORC-WER 按**参考语句**选择输出流：第一段的“春天”给流 1、
 
 播放时仍需拾音，因此两方案都要评估 AEC，并确保参考覆盖播放处理。定位或多方向固定波束可用于周向选择；WPE 和分离不是默认必选。
 
-关键对照至少包括“静音播放与音乐播放下的唤醒曲线”和“AEC 开关下的近端语音损伤及残余回声”。本题的几何数字是本书构造的筛查输入，不是任何产品的性能。运行 [`exercises_engineering.py`](../codes/examples/exercises_engineering.py) 的 `E11-05` 可复算两行候选。
+关键对照至少包括“静音播放与音乐播放下的唤醒曲线”和“AEC 开关下的近端语音损伤及残余回声”。本题的几何数字是本书构造的筛查输入，不是任何产品的性能。运行 [`exercises_engineering.py`](../codes/chapters/ch00/cross_chapter/exercises_engineering.py) 的 `E11-05` 可复算两行候选。
 
 #### 题 2：多人会议（E11-06）
 
@@ -268,7 +268,7 @@ ORC-WER 按**参考语句**选择输出流：第一段的“春天”给流 1、
 3. **基础路径**：总延迟为 $16+8+22+5+70=121$ ms，满足 150 ms，但只剩 29 ms 裕量。
 4. **加入分离器**：串行加入后为 $121+48+18=187$ ms，不满足约束；除非改变可并行依赖、减少前瞻或更换后端后，重新测得关键路径低于 150 ms，否则不应启用该候选。仅让不同块流水执行主要改善吞吐，不能自动扣除单个输出在串行依赖中必须经历的等待。
 
-**代码复算 E11-01**：运行 `.venv/bin/python -m codes.examples.exercises_engineering`，核对 `alias_boundary_hz=4287.5`、`drift_300s_ms=24`、`maximum_alignment_interval_s=1.25` 和两条延迟。只要其中一个硬约束不满足，就不能用另一个指标的收益抵消。该练习验证算术和筛选逻辑，没有测量设备延迟。
+**代码复算 E11-01**：运行 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering`，核对 `alias_boundary_hz=4287.5`、`drift_300s_ms=24`、`maximum_alignment_interval_s=1.25` 和两条延迟。只要其中一个硬约束不满足，就不能用另一个指标的收益抵消。该练习验证算术和筛选逻辑，没有测量设备延迟。
 
 #### 题 5：评分覆盖与电池预算（E11-02）
 
@@ -315,7 +315,7 @@ $n=20$ 时 $p_{\mathrm U}=1-0.05^{1/20}\approx13.9108\%$；100 次时约 2.9513%
 
 这里“95%”描述重复使用该构造程序时的覆盖性质，不是在观察后断言“固定的真实 $p$ 有 95% 概率落在区间内”。同一录音的连续帧常相关，不能把 1000 帧当作 1000 次独立会话；每个场景失败概率不同，也不能未经说明套用相同 $p$ 的模型。实际验收应预先定义失败、独立试验单元、场景抽样和停止规则，并保留失败数及分母。
 
-运行 `.venv/bin/python -m codes.examples.tracking_time_exercises`，核对[脚本](../codes/examples/tracking_time_exercises.py)中的 `E11-08`。实现使用 `log1p`、`expm1` 减轻小上界的相减精度损失；[测试](../tests/test_codes_time_state_exercises.py)再把上界代回 $(1-p)^n=0.05$，并检查 298 与 299 的边界。本题只检查统计推理，没有宣称某设备通过了验收。
+运行 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.tracking_time_exercises`，核对[脚本](../codes/chapters/ch00/cross_chapter/tracking_time_exercises.py)中的 `E11-08`。实现使用 `log1p`、`expm1` 减轻小上界的相减精度损失；[测试](../tests/test_codes_time_state_exercises.py)再把上界代回 $(1-p)^n=0.05$，并检查 298 与 299 的边界。本题只检查统计推理，没有宣称某设备通过了验收。
 
 #### 题 9：平均错误减少，配对证据足够吗（E11-09）
 
@@ -340,7 +340,7 @@ $$
 
 **怎样解释。** B 的合并错误数确实少 11 个，但在预先选定的 0.05 显著性水平下，这六次会话不足以拒绝“非平局胜负各半”。这不证明两个候选等效，也不否定已经观察到的下降。符号检验只计方向，一次少 1 个词和少 6 个词都算一胜，所以它检验的不是平均 WER 降幅；两种结果应同时报告，不能互相替代。
 
-运行 `.venv/bin/python -m codes.examples.engineering_boundary_exercises` 可核对 `E11-09`；[独立测试](../tests/test_codes_engineering_boundaries.py)枚举全部 32 种符号，而不由被测函数生成期望值。所有会话平局时，代码保留总数并返回“没有非平局配对”，不伪造一个显著性分数。实际评测应按独立会话或其他预定单元设计配对；同一长录音切成许多相关短段，不能自动增加独立证据。
+运行 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.engineering_boundary_exercises` 可核对 `E11-09`；[独立测试](../tests/test_codes_engineering_boundaries.py)枚举全部 32 种符号，而不由被测函数生成期望值。所有会话平局时，代码保留总数并返回“没有非平局配对”，不伪造一个显著性分数。实际评测应按独立会话或其他预定单元设计配对；同一长录音切成许多相关短段，不能自动增加独立证据。
 
 #### 题 10：硬约束之后，哪个候选更好（E11-10）
 
@@ -624,20 +624,20 @@ $$
 
 **听音与复现。** 先调低播放音量。以下四个文件都有2 s、16 kHz、单通道，使用共同增益；按“干净目标—混合输入—3抽头—9抽头”的次序听，并留意更安静的候选是否也削弱目标分量。
 
-[干净目标](../codes/audio/selection_clean.wav)
+[干净目标](../codes/chapters/ch11/audio/selection_clean.wav)
 
-[混合输入](../codes/audio/selection_mixture.wav)
+[混合输入](../codes/chapters/ch11/audio/selection_mixture.wav)
 
-[3抽头输出](../codes/audio/selection_fir3.wav)
+[3抽头输出](../codes/chapters/ch11/audio/selection_fir3.wav)
 
-[9抽头输出](../codes/audio/selection_fir9.wav)
+[9抽头输出](../codes/chapters/ch11/audio/selection_fir9.wav)
 
-运行 [chapter11_experiments.py](../codes/chapters/ch11/chapter11_experiments.py) 的 `E11-19` 可核对解析、浮点与PCM三种结果；完整参数和音频解释见[音频研究手册第33节](../codes/research/05_exercises_and_audio.md#33-选型取舍更安静的滤波器也可能损伤更多目标)。这里只评分稳态区，不把启动瞬态与文件末端被截掉的卷积尾部隐去后宣称全段都达到同一误差，也不由听到更安静推断ASR或听感必然更好。
+运行 [chapter11_experiments.py](../codes/chapters/ch11/chapter11_experiments.py) 的 `E11-19` 可核对解析、浮点与PCM三种结果；完整参数和音频解释见[音频研究手册第33节](../codes/chapters/ch00/research/05_exercises_and_audio.md#33-选型取舍更安静的滤波器也可能损伤更多目标)。这里只评分稳态区，不把启动瞬态与文件末端被截掉的卷积尾部隐去后宣称全段都达到同一误差，也不由听到更安静推断ASR或听感必然更好。
 
 ### 11.7 后续阅读
 
-要实现算法，可回到第 4～9 章查看定位、波束、AEC、WPE、分离和追踪。要制定整机预算和验收计划，见[第 10 章](./10_engineering-practice.md)。[附录 A](./12_appendix-symbols-math.md)汇总符号与数学工具，[附录 B](./13_appendix-guide.md)给出进一步阅读、练习和排错入口。
+要实现算法，可回到第 4～9 章查看定位、波束、AEC、WPE、分离和追踪。要制定整机预算和验收计划，见[第 10 章](10_engineering-practice.md)。[附录 A](12_appendix-symbols-math.md)汇总符号与数学工具，[附录 B](13_appendix-guide.md)给出进一步阅读、练习和排错入口。
 
 ---
 
-> 📄 [回首页](./00_overview.md)
+> 📄 [回首页](00_overview.md)

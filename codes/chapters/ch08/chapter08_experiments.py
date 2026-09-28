@@ -1,19 +1,25 @@
 """Twelve original small experiments E08-12..23, without upstream imports.
 
-Run with python -m codes.examples.chapter08_experiments. No files are written.
+Run with python -m codes.chapters.ch08.chapter08_experiments. No files are written.
 Substeps and supplied source/slot models are not complete separation systems.
 """
 from __future__ import annotations
 
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
+
 import json
 import numpy as np
 
-from codes.array_tutorial.audio_samples import css_overlap_case
-from codes.array_tutorial.css import match_two_source_overlap
-from codes.array_tutorial.gss_teaching import guided_cacgmm_mvdr
-from codes.array_tutorial.separation import guided_activity_posterior, masked_spatial_covariance, si_sdr
-from codes.examples.enhancement_step_exercises import ip_row
-from codes.examples.enhancement_structure_exercises import cacg_relative_density
+from codes.chapters.ch00.core.audio_samples import css_overlap_case
+from codes.chapters.ch08.core.css import match_two_source_overlap
+from codes.chapters.ch08.core.gss_teaching import guided_cacgmm_mvdr
+from codes.chapters.ch08.core.separation import guided_activity_posterior, masked_spatial_covariance, si_sdr
+from codes.chapters.ch00.cross_chapter.enhancement_step_exercises import ip_row
+from codes.chapters.ch00.cross_chapter.enhancement_structure_exercises import cacg_relative_density
 
 
 def _plain(value):

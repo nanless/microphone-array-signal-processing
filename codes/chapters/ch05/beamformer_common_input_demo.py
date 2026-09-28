@@ -7,12 +7,18 @@ industrial beamformer benchmark.
 
 from __future__ import annotations
 
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
+
 import json
 
 import numpy as np
 
-from codes.array_tutorial.beamforming import dsb_weights, lcmv_weights, mvdr_weights
-from codes.array_tutorial.geometry import plane_wave_steering
+from codes.chapters.ch05.core.beamforming import dsb_weights, lcmv_weights, mvdr_weights
+from codes.chapters.ch03.core.geometry import plane_wave_steering
 
 
 def run_experiment() -> dict:

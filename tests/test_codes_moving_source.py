@@ -3,8 +3,8 @@
 import unittest
 import numpy as np
 
-from codes.array_tutorial.moving_source import free_field_array, retarded_emission_times, synthetic_source
-from codes.examples.moving_source_audio import build_fixture
+from codes.chapters.ch09.core.moving_source import free_field_array, retarded_emission_times, synthetic_source
+from codes.chapters.ch09.examples.moving_source_audio import build_fixture
 
 
 class TestMovingSource(unittest.TestCase):

@@ -5,8 +5,8 @@ import unittest
 
 import numpy as np
 
-from codes.examples import chapter02_experiments as ch2
-from codes.array_tutorial.audio_samples import (room_decay_case, room_decay_components,
+from codes.chapters.ch02 import chapter02_experiments as ch2
+from codes.chapters.ch00.core.audio_samples import (room_decay_case, room_decay_components,
                                                prepare_exports, read_pcm16)
 
 

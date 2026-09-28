@@ -274,7 +274,7 @@ def source_digest():
     """发布输入的稳定摘要；避免把生成物自身所在提交写回生成物造成循环漂移。"""
     digest = hashlib.sha256()
     paths = sorted(SRC.glob("*.md"))
-    paths += [ROOT / "codes" / "research" / name for name, _ in build_site.RESEARCH]
+    paths += [build_site.RESEARCH_ROOT / name for name, _ in build_site.RESEARCH]
     paths += [ROOT / "scripts" / "build_site.py", ROOT / "scripts" / "heading_aliases.py",
               ROOT / "scripts" / "legacy_sequential_anchors.json"]
     paths += sorted(path for path in MATHJAX_DIR.rglob("*") if path.is_file())

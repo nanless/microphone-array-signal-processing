@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 4 章 · 声源定位（DOA 估计） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5517357657f5"><style>
+<meta name="source-digest" content="b40a94533c43"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -404,7 +404,7 @@ G[k]&=X_1X_2^*\\
 </tbody>
 </table></div>
 <p>单帧直接代入时，$\sqrt{|X_1|^2|X_2|^2}=|X_1X_2^*|$，SCOT 与 PHAT 的分母数值相同。使用统计谱估计后，SCOT 的分母来自两路自谱，而 PHAT 的分母来自互谱幅度；两者的偏差和方差取决于平均窗、频带、信噪比及谱估计方法，不能笼统断言哪一个始终更稳。</p>
-<p>教学实现 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/doa.py"><code>gcc_phat</code></a> 把 <code>epsilon</code> 解释为<strong>相对本麦对互谱最大幅值</strong>的无量纲下限。令 $G=X_1X_2^*$、$g_{\max}=\max_k|G[k]|$，实现计算 $G[k]/\max(|G[k]|,\varepsilon g_{\max})$，与表中“分母加常数”并不相同。前者只衰减低于下限的频点，后者会改变所有非零频点的模；直接丢弃弱频点又是第三种操作。E04-14 逐项比较三者。</p>
+<p>教学实现 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/core/doa.py"><code>gcc_phat</code></a> 把 <code>epsilon</code> 解释为<strong>相对本麦对互谱最大幅值</strong>的无量纲下限。令 $G=X_1X_2^*$、$g_{\max}=\max_k|G[k]|$，实现计算 $G[k]/\max(|G[k]|,\varepsilon g_{\max})$，与表中“分母加常数”并不相同。前者只衰减低于下限的频点，后者会改变所有非零频点的模；直接丢弃弱频点又是第三种操作。E04-14 逐项比较三者。</p>
 <p>代码先缩放输入以避免大幅度有限样本的中间乘法溢出。对任一路施加共同<strong>正增益</strong>不改变相位；若只把一路乘以 −1，互谱与相关曲线都反号，原来的正峰变成负谷。代码寻找实相关的最大值，没有改成绝对值峰，因此不能宣称任意非零增益都不改变估计。反相也可能来自通道极性接反，应先检查采集和标定。</p>
 <p>全零麦对没有可估时差，函数会报错；这不是返回 $0^\circ$ 或“静音方向”。门限、麦序与实际频带都必须随实验记录，不能把数值保护误认为噪声下的方向置信度。</p>
 <h3 id="sec-u-3ec7eee7e9">从时延峰到角度：插值与图 12 的模型</h3>
@@ -467,7 +467,7 @@ G[k]&=X_1X_2^*\\
 </tr>
 </tbody>
 </table></div>
-<p>每个条件按第 $k=0,\ldots,149$ 次使用种子 $2000+17k$；源信号使用该种子加1000的独立生成器。因此各条件同一次使用相同的带限源。固定 $T_{60}$、改变DRR时，随机尾与取帧位置也共享；改变 $T_{60}$ 会改变随机尾长度，随后第二通道随机数和取帧位置不再逐项相同，不能声称全部条件完全配对。每个条件内部的150次重新抽样，九个条件之间并非独立数据集。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/reports/figure13_gcc_reverb.json">逐次统计记录</a>保留全部1350次的正确标志、峰值对比度、种子、计数和Wilson区间配置。</p>
+<p>每个条件按第 $k=0,\ldots,149$ 次使用种子 $2000+17k$；源信号使用该种子加1000的独立生成器。因此各条件同一次使用相同的带限源。固定 $T_{60}$、改变DRR时，随机尾与取帧位置也共享；改变 $T_{60}$ 会改变随机尾长度，随后第二通道随机数和取帧位置不再逐项相同，不能声称全部条件完全配对。每个条件内部的150次重新抽样，九个条件之间并非独立数据集。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/reports/figure13_gcc_reverb.json">逐次统计记录</a>保留全部1350次的正确标志、峰值对比度、种子、计数和Wilson区间配置。</p>
 <p>这个试验把每条随机尾的<strong>总能量</strong>固定在目标DRR，为两通道独立生成随机尾，并对完整源序列先卷积、后截取1024点观测帧。观测帧短于反射尾，不等于仅保留反射尾的前64 ms；较早的源样本仍通过长响应贡献当前观测。因此不能用“尾变长、短帧内能量必然下降”单独解释表中变化。频谱形状、启动边界、取帧位置及反射统计共同变化；表格没有隔离各项因果，也不能推出混响更长有利于定位。</p>
 <p>独立通道随机尾没有模拟真实晚期混响随麦距和频率变化的空间相干性。这些随机尾不是几何房间的镜像法 RIR，也不是实测数据。图 13 只比较该说明模型内两个因素对峰统计量的影响，不能外推绝对性能。</p>
 <p><img alt="图13 GCC-PHAT 随 T60 与 DRR 的联合作用" src="../figures/fig13_gcc_reverb.png" onerror="this.alt+='（图缺失）'" /></p>
@@ -883,7 +883,7 @@ u_y&=-\frac{0.0282975}{0.04}=-0.7074375\text{。}
 <p>先用本书构造的理想信号子空间向量 $\vec e=[1,\mathrm j,-1]^\top$，令 $\vec e_1=[e_1,e_2]^\top$、$\vec e_2=[e_2,e_3]^\top$；再把第三项改为 $-0.9+0.1\mathrm j$，其余两项不变。两次分别计算 $\vec e_1^H\vec e_1$、$\vec e_1^H\vec e_2$、$\hat\Psi$、残差范数和反演方向。取 $d=\lambda/2$，数字只代表子空间扰动的教学示例，不代表某个快拍数或 SNR 下的统计误差。</p>
 <p><strong>参考答案</strong>：两次都有 $\vec e_1=[1,\mathrm j]^\top$，故分母为 $1+|\mathrm j|^2=2$。理想情形分子是 $1^*\mathrm j+(\mathrm j)^*(-1)=2\mathrm j$，于是 $\hat\Psi=\mathrm j$，残差为 0，方向为 $\arcsin((\pi/2)/\pi)=30°$。</p>
 <p>扰动后分子是 $\mathrm j+(-\mathrm j)(-0.9+0.1\mathrm j)=0.1+1.9\mathrm j$，故 $\hat\Psi=0.05+0.95\mathrm j$。残差向量为 $[-0.05+0.05\mathrm j,\,0.05+0.05\mathrm j]^\top$，范数为 $\sqrt{0.01}=0.1$；相位约 $86.987°$，方向约 $28.90°$。</p>
-<p>这说明最小二乘只能拟合被扰动的移位关系，不保证角度仍精确。若交换子阵次序，新的最小二乘因子一般<strong>不等于</strong>原因子的共轭（分母也会改变），但这里其相位变号；反演公式须同时改变符号。代码入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 的 <code>E04-09</code>，并用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/doa.py"><code>doa.py::esprit_ula</code></a> 核对由这两个向量构造的协方差。</p>
+<p>这说明最小二乘只能拟合被扰动的移位关系，不保证角度仍精确。若交换子阵次序，新的最小二乘因子一般<strong>不等于</strong>原因子的共轭（分母也会改变），但这里其相位变号；反演公式须同时改变符号。代码入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_spatial.py"><code>exercises_spatial.py</code></a> 的 <code>E04-09</code>，并用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/core/doa.py"><code>doa.py::esprit_ula</code></a> 核对由这两个向量构造的协方差。</p>
 <p>上式还假定已确定正确的相位分支。$d>\lambda/2$ 时，主值相位可能对应多个角度；即使 $d=\lambda/2$，两个端射方向 $+90°、-90°$ 都给出 $e^{\pm j\pi}=-1$，闭角域仍有端点歧义。需限制可见角域或使用额外几何、频率消歧。三维线阵首先给出沿阵列的方向余弦；输出一个平面角度还使用了声源位于指定平面的先验。</p>
 <p>E04-15检验共同基变换、秩退化和相位分支。教学接口会拒绝全零或非法协方差、不能支持指定源数的有效信号子空间、秩亏的选行块和零模旋转特征值；数值检查通过仍不能证明实际录音满足白噪声、源数和标定条件。</p>
 <p>外部实现也须做此类小例检查。固定doatools源码中，两块重叠视图分别原地乘行权重，会交叉修改共享行；精确八麦半波距模型的真方向为−5°、10°，原版默认LS却给出约−6.50854°、11.52782°。禁用行权或复制后施加共同权重的诊断对照恢复真值。这是特定提交的确定性实现问题，不是有限快拍误差；上游源码未被改写，调用与独立验证见<a href="research/01_spatial_and_tracking.html">空间研究手册</a>。</p>
@@ -965,7 +965,7 @@ u_y&=-\frac{0.0282975}{0.04}=-0.7074375\text{。}
 <p>成立条件是阵列坐标与声速模型已知、训练与推理使用兼容的球面采样，并且训练数据覆盖部署时的声源数、混响和噪声。</p>
 <p>最小比较应在同一批多通道数据上生成相同分辨率的 SRP-PHAT 球面图，以直接取峰为基线，再训练 icoDOA，并在未参与训练的旋转和房间上用同一角误差与检出规则比较。若没有这些数据覆盖或算力，解析 SRP-PHAT 更适合作为可解释基线。原论文的 soft-argmax 步骤用球面各方向的分数计算连续方向，而不是只返回分数最高的格点；算法定义与 60 个离散旋转的条件见 <a href="https://doi.org/10.1109/TASLP.2022.3224282" title="citation">Díaz-Guerra、Miguel 与 Beltrán 的原论文</a>。</p>
 <p>官方 <a href="https://github.com/DavidDiazGuerra/icoDOA" title="citation">icoDOA 代码仓库</a>给出的最小入口是 <code>1sourceTracking_icoCNN.py</code>。README 记录的验证环境为 Python 3.8.1、PyTorch 1.8.1，并依赖 gpuRIR；合成训练需准备 LibriSpeech，实录测试需准备 LOCATA，输入图分辨率由脚本参数 <code>r</code> 控制，预训练模型和对应结果位于 <code>models/</code>、<code>results/</code>。这些版本和路径是仓库的复现口径，不是对其他版本的兼容性保证。</p>
-<p>该仓库采用 <a href="https://github.com/DavidDiazGuerra/icoDOA/blob/master/LICENSE" title="citation">AGPL-3.0</a>，并明确定位为论文复现代码而非通用软件库。本书将固定版本源码保留在独立的 <code>codes/upstream/_downloads/icodoa/</code> 研究目录，保留上游许可，不将其改标为本书教学代码的许可，也不把模型或录音授权与源码授权合并。许可证与环境信息核实于 2026-09-22，完整提交为 <code>04d1a89594c78ae3cf42f07d94c3737bdc1f7c82</code>；取得源码不代表本机已经完成训练或论文复现。</p>
+<p>该仓库采用 <a href="https://github.com/DavidDiazGuerra/icoDOA/blob/master/LICENSE" title="citation">AGPL-3.0</a>，并明确定位为论文复现代码而非通用软件库。本书将固定版本源码保留在独立的 <code>codes/chapters/ch00/upstream/_downloads/icodoa/</code> 研究目录，保留上游许可，不将其改标为本书教学代码的许可，也不把模型或录音授权与源码授权合并。许可证与环境信息核实于 2026-09-22，完整提交为 <code>04d1a89594c78ae3cf42f07d94c3737bdc1f7c82</code>；取得源码不代表本机已经完成训练或论文复现。</p>
 <p><strong>数据驱动结果的比较范围</strong>：定位网络必须在相同数据集、阵列、信噪比、混响、训练数据和误差指标下比较。使用时还需评估标注成本、跨房间泛化和模型复杂度。</p>
 <p>卷积空间谱定位可参见 Chakrabarty &amp; Habets <a href="https://doi.org/10.1109/JSTSP.2019.2901664" title="citation">期刊论文</a>；IPDnet 见 Wang、Yang 与 Li 的 <a href="https://doi.org/10.1109/TASLP.2024.3507560" title="citation">IEEE/ACM TASLP 2024 正式论文</a>；ACCDOA 见 <a href="https://doi.org/10.1109/ICASSP39728.2021.9413609" title="citation">Shimada et al., ICASSP 2021</a>。</p>
 <h3 id="sec-u-60260ccada">任务和数据：不同届 DCASE 的输出不能混用</h3>
@@ -1048,21 +1048,21 @@ u_y&=-\frac{0.0282975}{0.04}=-0.7074375\text{。}
 <p>若真实位置落在格点之间，应做局部细化或连续优化，不能把粗网格误差归因于观测噪声。球面波下联合估计角度与距离的宽带最大似然模型可参见 <a href="https://doi.org/10.1109/TSP.2002.800420" title="citation">Chen、Hudson 与 Yao 2002</a>。</p>
 <p><strong>距离不可观测边界</strong>：当 $r\to\infty$ 时，$d_m-d_2\to-x_m\sin\theta$，对 $r$ 的导数趋近 0；不同大距离候选的 TDOA 因而趋于同一平面波值。此时表中同角度的失配差会继续缩小，距离维度形成平坦谷。孔径很小、带宽或 SNR 不足、通道相位未标定时也会出现相同现象；算法应报告距离低置信度或只输出 DOA，而不是把搜索边界当成可靠距离。</p>
 <span id="sec-4-7-2" class="anchor-alias" aria-hidden="true"></span><span id="sec-14" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-374bae76e9">可执行基线的输入、异常处理与外部实现边界</h3>
-<p>本书的原创 NumPy 基线位于 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/doa.py"><code>doa.py</code></a>。<code>gcc_phat</code> 对应 §4.2，返回的正时延严格表示 $\tau_{12}=t_1-t_2$；它对输入补零、计算 PHAT 加权的周期逆变换，再截取物理时延范围，可选三点插值。有限补零只对未加权互相关保证线性相关等价，不能为 PHAT 保证有限支撑。</p>
-<p><code>srp_phat</code> 是式(4-5)的远场、非负频点直接求和实现，与近场位置式(4-4)共享按麦对几何累计的原则；其输入多通道谱的形状固定为 <code>通道 × 频点 × 帧</code>。<code>bartlett_spectrum</code>、<code>capon_spectrum</code>、<code>music_spectrum</code> 和 <code>esprit_ula</code> 分别对应 §4.5、§4.6；平面波和近场导向矢量来自 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/geometry.py"><code>geometry.py</code></a>。完整小例与手算回归见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/ch02_05_baselines.py"><code>ch02_05_baselines.py</code></a> 和 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_doa_beam.py"><code>test_codes_doa_beam.py</code></a>。</p>
+<p>本书的原创 NumPy 基线位于 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/core/doa.py"><code>doa.py</code></a>。<code>gcc_phat</code> 对应 §4.2，返回的正时延严格表示 $\tau_{12}=t_1-t_2$；它对输入补零、计算 PHAT 加权的周期逆变换，再截取物理时延范围，可选三点插值。有限补零只对未加权互相关保证线性相关等价，不能为 PHAT 保证有限支撑。</p>
+<p><code>srp_phat</code> 是式(4-5)的远场、非负频点直接求和实现，与近场位置式(4-4)共享按麦对几何累计的原则；其输入多通道谱的形状固定为 <code>通道 × 频点 × 帧</code>。<code>bartlett_spectrum</code>、<code>capon_spectrum</code>、<code>music_spectrum</code> 和 <code>esprit_ula</code> 分别对应 §4.5、§4.6；平面波和近场导向矢量来自 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/core/geometry.py"><code>geometry.py</code></a>。完整小例与手算回归见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/ch02_05_baselines.py"><code>ch02_05_baselines.py</code></a> 和 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_doa_beam.py"><code>test_codes_doa_beam.py</code></a>。</p>
 <p>接入实际录音时还要固定 WAV 数值口径、采样率、通道顺序、麦克风坐标及单位、参考麦、坐标轴、声速和时间戳。GCC 必须按物理孔径裁剪时延范围，并同时输出峰值、峰背比和有效频带；SRP 还要记录阵元对、二维或三维搜索范围、网格单位、插值和粗到细规则。扫描谱要记录快拍窗口、频带合并、源数、选峰间距和加载口径。</p>
 <p>Capon/MVDR 使用线性求解，不显式形成矩阵逆；协方差奇异或超过接口的条件数上限且没有适当加载时，示例代码会报错。调用方应明确选择增加快拍、相对加载、保持上次可靠估计或退回 SRP/Bartlett，不能把 NaN 当成方向。</p>
 <p>MUSIC 使用厄米特征分解 <code>eigh</code>，不需要协方差可逆。例如无噪声单源的秩一协方差仍可用于已知源数的理想子空间演示，不能一概要求先加载。能完成特征分解也不证明真实源数、白噪声或非相干模型成立；这些前提仍需单独检查。</p>
-<p>本书代码之外，还有可供研究的作者或项目源码。锁定版本、许可和下载状态见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json"><code>SOURCES.lock.json</code></a>；<a href="research/01_spatial_and_tracking.html">空间处理与追踪研究手册</a>逐项列出了 doatools、pyroomacoustics、ODAS、SBL、RobustSBL 和 SMP-PHAT 的源码入口、数据形状、算法前提与复现实验。取得源码只是能阅读它；能跑一个例子也不等于复现了论文结果。</p>
+<p>本书代码之外，还有可供研究的作者或项目源码。锁定版本、许可和下载状态见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCES.lock.json"><code>SOURCES.lock.json</code></a>；<a href="research/01_spatial_and_tracking.html">空间处理与追踪研究手册</a>逐项列出了 doatools、pyroomacoustics、ODAS、SBL、RobustSBL 和 SMP-PHAT 的源码入口、数据形状、算法前提与复现实验。取得源码只是能阅读它；能跑一个例子也不等于复现了论文结果。</p>
 <p>接入外部实现时，先对照坐标和数组形状。例如本书麦位置按“通道 × 空间维度”排列，pyroomacoustics 按“空间维度 × 通道”排列；SBL 作者实现的观测按“通道 × 快拍 × 频点”排列，本书短时谱则是“通道 × 频点 × 帧”。转置错误不会总是报错，却会让方向结果失去意义。</p>
 <p>root-MUSIC 还要求均匀线阵；输出为一个角度前，应确认源数、协方差和峰选择是否有效。</p>
 <p>固定版本也要检查实现本身。研究手册记录了 pyroomacoustics 0.10.0 宽带子空间实现中频点筛选后下标对应的静态疑点；外部包尚未完成完整声学回归，不能把“有源码入口”写成“已通过设备验证”。</p>
 <p>SMP-PHAT（Steered Response Power by Merging Pairs with PHAse Transform，合并麦对的相位变换功率扫描）利用远场阵列里等长、平行麦对的重复时延，先合并其互谱，再减少逆变换和时延查表；方向相反的基线需取共轭。<a href="https://arxiv.org/html/2203.14409v1" title="citation">原论文预印本 §3</a>给出了条件。近场声源到各麦的距离差取决于基线所在位置，不能直接沿用这种合并。</p>
 <p>本书在 Apple clang/arm64 上编译该固定版本后，发现负时延转无符号查表索引的实现问题，原版全方向分数未通过独立数值对照。它不推翻等效麦对合并的数学条件，但说明不能直接把这个版本当成已验证的可移植实现。具体反例和未改动源码的运行记录见<a href="research/01_spatial_and_tracking.html">空间研究文档</a>。</p>
-<p>本书还在临时副本中只把 <code>src/system.c</code> 的两处负时延查表转换改为有符号整数，保留锁定上游源码不变。修复版在两组固定的四麦远场合成案例中，SRP 与合并麦对 SMP 的全方向分数分别与独立 DFT 对照达到 $2\times10^{-4}$ 以内的最大绝对误差；两组都选中预定方向。代码与逐例误差见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/reproduce_smpphat_portable_overlay.py">隔离适配脚本</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/reports/smpphat_portable_overlay.json">运行记录</a>。</p>
+<p>本书还在临时副本中只把 <code>src/system.c</code> 的两处负时延查表转换改为有符号整数，保留锁定上游源码不变。修复版在两组固定的四麦远场合成案例中，SRP 与合并麦对 SMP 的全方向分数分别与独立 DFT 对照达到 $2\times10^{-4}$ 以内的最大绝对误差；两组都选中预定方向。代码与逐例误差见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/examples/reproduce_smpphat_portable_overlay.py">隔离适配脚本</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/reports/smpphat_portable_overlay.json">运行记录</a>。</p>
 <p>这只验证适配版的受控案例；未验证原版、真实录音、不同硬件或运行速度。</p>
 <p>上述 SBL 与 SMP-PHAT 代码为 GPL-3.0，RobustSBL 为 MIT；模型、录音与依赖另行核对。源码版本、实际运行结果及尚未执行的范围见<a href="research/01_spatial_and_tracking.html">空间研究手册</a>。</p>
-<p>本书的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/reproduce_sbl_reference.py">SBL 合成实验</a>使用四麦半波距线阵、200 个复高斯快拍、−80°～80° 的 1° 网格和已知两源数。在总源功率相对单麦白噪声功率为 20 dB 时，一次固定随机输入得到 −30°、30° 两个正确网格峰；低至 −10 dB 的对照则得到 −21°、31°，且达到 1000 次迭代上限。</p>
+<p>本书的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/examples/reproduce_sbl_reference.py">SBL 合成实验</a>使用四麦半波距线阵、200 个复高斯快拍、−80°～80° 的 1° 网格和已知两源数。在总源功率相对单麦白噪声功率为 20 dB 时，一次固定随机输入得到 −30°、30° 两个正确网格峰；低至 −10 dB 的对照则得到 −21°、31°，且达到 1000 次迭代上限。</p>
 <p>这里的停止判据是功率超参数的相对变化，不是定位正确性。每组只有一次实现，各条件共享基础随机输入，不能据此估计成功率；离网格、有色噪声和源数错设的完整结果见研究文档。</p>
 <span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-8">4.8 定位算法总对比</h2>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -1311,7 +1311,7 @@ g_k&=\left(\prod_{i=k+1}^{M}\hat\lambda_i\right)^{1/(M-k)}。
 <h3 id="sec-u-b9933e68d1">E04-05：复算 MDL，并检验哪些输入不成立</h3>
 <p>复算表中四个候选，再计算特征值全为 1 的情况。把原谱整体乘以 $10^{-200}$ 后，源数是否应改变？若最后一个特征值为零，能否随意补一个很小的常数继续评分？</p>
 <p><strong>参考答案</strong>：原谱选 2；全为 1 时所有拟合项为零，惩罚最小的 $k=0$ 胜出。共同正尺度在 $a_k/g_k$ 中约去，所以缩放后评分和选择应在浮点误差内不变。零特征值使几何均值和对数不满足本节定义，本书接口明确拒绝；对角加载会改变谱和准则结果，不能不加说明地当作原算法的数值修补。</p>
-<p>复算入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 的 <code>E04-05</code>；通用教学接口是 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/doa.py"><code>doa.py::mdl_source_count</code></a>。它接受任意顺序的严格正实特征值，内部排序但不修改输入，返回所选源数和 $k=0$ 至 $M-1$ 的全部评分。实现直接用对数求几何均值，并在每个尾部内用最大对数平移后求算术均值的对数，避免先连乘或把极小特征值除到零。独立测试用高精度标量计算核对本表，并覆盖尺度、排序、纯噪声、秩亏和样本数错误。</p>
+<p>复算入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_spatial.py"><code>exercises_spatial.py</code></a> 的 <code>E04-05</code>；通用教学接口是 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/core/doa.py"><code>doa.py::mdl_source_count</code></a>。它接受任意顺序的严格正实特征值，内部排序但不修改输入，返回所选源数和 $k=0$ 至 $M-1$ 的全部评分。实现直接用对数求几何均值，并在每个尾部内用最大对数平移后求算术均值的对数，避免先连乘或把极小特征值除到零。独立测试用高精度标量计算核对本表，并覆盖尺度、排序、纯噪声、秩亏和样本数错误。</p>
 <p>实际工程还要区分三类失效：空间有色噪声使尾部不平；完全相干源使信号协方差降秩；重叠 STFT 帧使独立快拍假设不成立。不能把帧数直接当成有效独立样本数，也不能随意用窗口时长替代 $N$。</p>
 <p>平滑、白化或有效样本数校正需要另行验证模型；本节代码不自动执行这些步骤，不以一次选对源数证明长期检测可靠。</p>
 <span id="sec-17" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-467e2bd676">重复抽样：把模型失败与有限样本误差分开</h3>
@@ -1387,7 +1387,7 @@ g_k&=\left(\prod_{i=k+1}^{M}\hat\lambda_i\right)^{1/(M-k)}。
 <p><strong>参考答案与解释</strong>：先不运行随机试验，也能核对总体谱。两列导向矢量各有平方范数 4，内积为零；独立源的信号协方差因此有两个非零特征值 $4p$，加单位白噪声后为 $[1+4p,1+4p,1,1]$。完全相干时，信号变为 $(\vec a_1+\vec a_2)s$，平方范数为 8，信号秩只有 1，所以总体谱为 $[9,1,1,1]$。物理声源数 2 与可分辨信号秩 1 不是同一件事。</p>
 <p>再看随机表：第一、二行只改变快拍数，较短窗口出现漏检与过检。第三、四行的源功率较弱，有限样本下拟合改善常不足以抵消惩罚；100 个快拍仍远不足以保证检出。一次或少数次偶然输出 2 不能证明更短窗口更好。</p>
 <p>第五行的相干模型与第七行的有色噪声已经违背用该 MDL 估计物理源数的前提，增加快拍不能自动修复这种模型失配。表格只说明这些指定条件，不给出一般声源检测率，也没有检验重叠 STFT 帧的影响。</p>
-<p>运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/mdl_repeated_trials.py"><code>mdl_repeated_trials.py</code></a> 可单独复算全部条件，用 <code>--trials</code> 和 <code>--seed</code> 修改试验次数与种子；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 的 <code>E04-06</code> 也会实际执行默认 7×200 次并输出相同结构。输出保留总体谱、模型是否满足物理源数解释的前提、完整计数、比例区间、种子和软件版本；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_mdl_repeated.py"><code>test_codes_mdl_repeated.py</code></a> 另用标量算术—几何均值式核对实际抽样后的评分，并检查总体谱与区间，不把硬编码一次随机计数当作算法正确性的证明。</p>
+<p>运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/examples/mdl_repeated_trials.py"><code>mdl_repeated_trials.py</code></a> 可单独复算全部条件，用 <code>--trials</code> 和 <code>--seed</code> 修改试验次数与种子；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_spatial.py"><code>exercises_spatial.py</code></a> 的 <code>E04-06</code> 也会实际执行默认 7×200 次并输出相同结构。输出保留总体谱、模型是否满足物理源数解释的前提、完整计数、比例区间、种子和软件版本；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_mdl_repeated.py"><code>test_codes_mdl_repeated.py</code></a> 另用标量算术—几何均值式核对实际抽样后的评分，并检查总体谱与区间，不把硬编码一次随机计数当作算法正确性的证明。</p>
 <span id="sec-18" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-10">4.10 四麦亚采样时差：从几何到可听信号</h2>
 <p>前面的整数点脉冲适合检查 GCC 的正负号，但物理阵列的时差通常不是整数采样。这里另外给出一组可核验的四麦数学合成音频。</p>
 <p>四个麦克风在 $x=0,0.04,0.08,0.12$ m，$y=0$；正横为 $0^\circ$，声源方位为 $30^\circ$，声速取 343 m/s，采样率为 16 kHz。远场平面波从 $+x$ 一侧先到达麦 4，再到达麦 1；相邻时差的绝对值为 $0.04\sin30^\circ/343=58.3090\ \mu\mathrm{s}$，相当于 $0.932945$ 个采样点。</p>
@@ -1427,7 +1427,7 @@ g_k&=\left(\prod_{i=k+1}^{M}\hat\lambda_i\right)^{1/(M-k)}。
 <p>手算表中四个时差。若只取 2298 Hz 的理想单音、暂时忽略噪声与插值，四麦未经对齐直接平均后，相对单麦的幅度是多少？按表中因果时延对齐后是多少？</p>
 <p>然后读取下列 WAV，对参考计算 20～1980 ms 的均方误差，比较两种平均方式；不得对输出逐文件调增益，也不要把单次合成结果写成真实场景的平均性能。</p>
 <p><strong>参考答案。</strong> 相邻理想相位差的大小是 $2\pi(2298)(0.04\sin30^\circ/343)\approx0.84191$ rad。未经对齐时的幅度为 $\left|\sum_{m=0}^{3}e^{\mathrm j m(0.84191)}/4\right|\approx0.607893$，即相对单麦约 −4.32345 dB；理想对齐后四个相量同相，目标幅度为 1。</p>
-<p>音频还含宽带成分、两次线性插值、独立噪声和 PCM16 量化，因此 WAV 的逐样本均方误差不会等于这两个单频幅度。运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 的 <code>E04-07</code> 可复算理想相量，按<a href="research/05_exercises_and_audio.html#14-四麦分数采样时差">练习与音频实验</a>读取 WAV 并检查全频结果。</p>
+<p>音频还含宽带成分、两次线性插值、独立噪声和 PCM16 量化，因此 WAV 的逐样本均方误差不会等于这两个单频幅度。运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_spatial.py"><code>exercises_spatial.py</code></a> 的 <code>E04-07</code> 可复算理想相量，按<a href="research/05_exercises_and_audio.html#14-四麦分数采样时差">练习与音频实验</a>读取 WAV 并检查全频结果。</p>
 <ul>
 <li><a href="audio/fractional_reference.wav">无噪麦 1 参考</a><audio class="audio-sample" controls preload="none" aria-label="无噪麦 1 参考" src="audio/fractional_reference.wav">请使用上方 WAV 链接下载。</audio></li>
 <li><a href="audio/fractional_array.wav">四通道阵列原始输入</a><audio class="audio-sample" controls preload="none" aria-label="四通道阵列原始输入" src="audio/fractional_array.wav">请使用上方 WAV 链接下载。</audio></li>
@@ -1437,7 +1437,7 @@ g_k&=\left(\prod_{i=k+1}^{M}\hat\lambda_i\right)^{1/(M-k)}。
 <p>音频中的角度和传感器时差是真值，因为它们由合成器设定；它们并不是某种 DOA 算法在真实房间中“测出”的值。先用这组样本检查算法的单位、角度零点和输出符号，仍需另用未知方向、反射及真实多通道录音评价定位性能。</p>
 <span id="sec-19" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-11">4.11 本章练习</h2>
 <p>本节汇集几何、统计和实现边界的复算题；前面专题中的题也保留各自入口。正横与端射误差可先对照 §3.1 的算例3-2；CRLB题要求先指定完整观测模型，见E04-17。</p>
-<p>以下四题用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a> 复算。它们检查时延符号、统计秩、几何歧义和空间平滑，不把谱峰尖锐程度当作准确性的唯一依据。</p>
+<p>以下四题用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_spatial.py"><code>exercises_spatial.py</code></a> 复算。它们检查时延符号、统计秩、几何歧义和空间平滑，不把谱峰尖锐程度当作准确性的唯一依据。</p>
 <p>ESPRIT 最小二乘练习 E04-09 随推导放在 <a href="#sec-u-e9bdae6530">§4.6 的 ESPRIT 小节</a>；分辨率重复试验 E04-08 放在 <a href="#sec-4-8-1">§4.8.1</a>；MDL 练习 E04-05、E04-06 随完整算例放在 <a href="#sec-4-9">§4.9</a>；四麦音频练习 E04-07 放在 <a href="#sec-4-10">§4.10</a>。题号保持稳定，建议先读对应专题，再做本节综合练习。</p>
 <h3 id="sec-u-10983698db">E04-01：交换两段录音，延迟应怎样变化？</h3>
 <p>16 kHz 下，让麦 1 比麦 2 晚 3 点，零填充而不循环移动信号。对单脉冲和固定种子宽带噪声各算一次 GCC-PHAT，再交换两通道。静音输入应返回哪个方向？</p>
@@ -1453,7 +1453,7 @@ g_k&=\left(\prod_{i=k+1}^{M}\hat\lambda_i\right)^{1/(M-k)}。
 <p><strong>参考答案</strong>：相邻相位分别为 $-\pi$、$+\pi$，复指数相同，两个导向矢量均为 $[1,-1,1,-1]^\top$。所以两个候选的噪声子空间投影相同；本书用 $10^{-15}$ 限制伪谱分母，二者均达到约 $10^{15}$。这个数由数值保护决定，不是置信度，也不是信噪比。</p>
 <p>更密的角度扫描或更尖的谱峰不能分开完全相同的观测模型。需要改变几何、引入其他频率或限定已知可见区域；限定区域所用的先验也应随结果说明。</p>
 <h3 id="sec-u-0d66a87e86">E04-04：空间平滑怎样恢复两维信号子空间？</h3>
-<p>沿用 E04-02 的完全相干双源，截取麦 1～3 与麦 2～4 的两个子阵协方差，再等权平均。计算平滑矩阵与特征值，并比较处理前后的孔径。复算入口仍为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a>。</p>
+<p>沿用 E04-02 的完全相干双源，截取麦 1～3 与麦 2～4 的两个子阵协方差，再等权平均。计算平滑矩阵与特征值，并比较处理前后的孔径。复算入口仍为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_spatial.py"><code>exercises_spatial.py</code></a>。</p>
 <p><strong>参考答案</strong>：两个源的合成导向为 $[2,0,-2,0]^\top$。两个子阵的向量分别为 $[2,0,-2]^\top$ 和 $[0,-2,0]^\top$，外积平均得到</p>
 <p>$$\mathbf R_{\mathrm{sm}}=
 \begin{bmatrix}2&0&-2\\0&2&0\\-2&0&2\end{bmatrix}。$$</p>
@@ -1470,7 +1470,7 @@ g_k&=\left(\prod_{i=k+1}^{M}\hat\lambda_i\right)^{1/(M-k)}。
 <p>相关系数为 $100/\sqrt{200\times200}=0.5$。共用参考产生了相关误差，不能因有两条观测就默认协方差是对角阵。这里是独立到达时间误差的示意模型；分别运行 GCC 得到的实际时差误差不一定服从这个模型，应通过数据估计其协方差。</p>
 <p>对 $M$ 个同源到达时间，全部 $M(M-1)/2$ 个不重复麦对的时差只由 $M-1$ 个参考时差决定；冗余麦对可以帮助检验一致性，不等于新增同样数量的独立几何自由度。代数结构见 <a href="https://publications.idiap.ch/downloads/papers/2015/Velasco_IEEE_2015.pdf" title="citation">Velasco 等《TDOA Matrices: Algebraic Properties and their Application to Robust Denoising with Missing Data》§IV、式(1)–(2)</a>；上述小规模投影与协方差是本书自行推导，未复现该论文完整的鲁棒缺失数据算法。</p>
 <p><strong>补充检查：网格误差能不能为零？</strong> 取 $0°,2°,4°$ 三个格点，真值分别为 $2°,2.5°,3°$，理想最近格点误差依次为 $0°,0.5°,1°$；最后一项有两个同样近的格点。它们说明 2° 网格没有 2° 的误差下限，最近格点界为 1°。有噪声时选错远处峰值，则可能超过这个量化界。</p>
-<p>运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/spatial_precision_exercises.py"><code>spatial_precision_exercises.py</code></a> 的 <code>E04-10</code> 可得到原始观测、闭合残差、未舍入投影、共享参考协方差和网格反例。均为确定性代数，不是实际录音的定位精度统计。</p>
+<p>运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/spatial_precision_exercises.py"><code>spatial_precision_exercises.py</code></a> 的 <code>E04-10</code> 可得到原始观测、闭合残差、未舍入投影、共享参考协方差和网格反例。均为确定性代数，不是实际录音的定位精度统计。</p>
 <p><a id="e04-11"></a></p>
 <h3 id="sec-u-b0738d4f79">E04-11：已知有色噪声时，只把协方差白化够不够？</h3>
 <p>附录 A 的 E12-04 已说明白化后必须同步修改导向。本题把这条规则放进完整 MUSIC 搜索，观察漏改一步会把方向推到哪里。</p>
@@ -1536,7 +1536,7 @@ g_k&=\left(\prod_{i=k+1}^{M}\hat\lambda_i\right)^{1/(M-k)}。
 </table></div>
 <p>投影能量是伪谱的分母，不是角度置信度。三条链的坐标和导向尺度不同，也不能用这些分母大小直接比较“可信程度”。代码给伪谱分母设置 $10^{-15}$ 的数值下限，避免除以零；下限产生的峰高没有统计意义。表中的小投影值由未截断的投影另外计算。</p>
 <p><strong>适用边界。</strong> 正确结果依赖于事先给定且匹配当前频点的 $\mathbf R_{nn}$。工程中须从目标不活动或独立噪声训练段估计它，保持通道顺序、阵列标定和处理增益一致。把含目标的总协方差当作噪声协方差，会把要找的方向一起压平；噪声变化、估计误差和病态特征值也不会因写出 $\mathbf W$ 自动消失。本文没有证明未知有色噪声下的源数估计已经解决。</p>
-<p>本例运行入口为 <code>.venv/bin/python -m codes.examples.spatial_model_exercises</code> 的 <code>E04-11</code>，使用<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/spatial_model_exercises.py">本书源码</a>与现有 <code>music_spectrum</code>。完整输出保留白化矩阵、特征值、网格和三个峰；测试另用上述秩一投影表达式核对矩阵，避免只靠同一特征分解程序自证正确。</p>
+<p>本例运行入口为 <code>.venv/bin/python -m codes.chapters.ch00.cross_chapter.spatial_model_exercises</code> 的 <code>E04-11</code>，使用<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/spatial_model_exercises.py">本书源码</a>与现有 <code>music_spectrum</code>。完整输出保留白化矩阵、特征值、网格和三个峰；测试另用上述秩一投影表达式核对矩阵，避免只靠同一特征分解程序自证正确。</p>
 <p>下面七题使用同一个<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/chapter04_experiments.py">补充实验入口</a>：</p>
 <pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch04.chapter04_experiments
 </code></pre>

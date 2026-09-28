@@ -9,7 +9,7 @@ import unittest
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from codes.examples.exercises_spatial import run_exercises
+from codes.chapters.ch00.cross_chapter.exercises_spatial import run_exercises
 
 
 class SpatialExerciseTest(unittest.TestCase):

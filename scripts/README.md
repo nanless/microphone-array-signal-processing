@@ -2,34 +2,34 @@
 
 本目录放绘图、构建和发布检查工具。算法与工程教学代码在 `codes/`；两类程序都应在**仓库根目录**执行。
 
-单章实验的真实实现按 [第 1～11 章及附录 A/B](../codes/chapters/README.md) 分目录保存；旧 `codes/examples/` 的同名入口保留兼容。音频/房间生成器和部分上游探针有源路径或 SHA 绑定，继续以各自清单登记的旧位置为准。
+单章实验的真实实现按 [第 1～11 章及附录 A/B](../codes/chapters/README.md) 分目录保存；旧 `codes/chapters/` 的同名入口保留兼容。音频/房间生成器和部分上游探针有源路径或 SHA 绑定，继续以各自清单登记的旧位置为准。
 
 运行时间取决于处理器、操作系统、Python 与依赖版本和当前负载。若要报告耗时，应同时记录这些条件、运行次数和统计方式。
 
 ```bash
-.venv/bin/python codes/examples/generate_audio_samples.py  # 先生成 27 组、109 个合成 WAV 及清单
-.venv/bin/python -m codes.examples.gss_teaching_demo  # 独立 GSS 教学音频与状态
-.venv/bin/python -m codes.examples.chapter09_tracking_audio  # 独立PCM观测与追踪音频
-.venv/bin/python -m codes.examples.moving_source_audio  # 独立连续移动双麦音频
+.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py  # 先生成 27 组、109 个合成 WAV 及清单
+.venv/bin/python -m codes.chapters.ch08.examples.gss_teaching_demo  # 独立 GSS 教学音频与状态
+.venv/bin/python -m codes.chapters.ch09.examples.chapter09_tracking_audio  # 独立PCM观测与追踪音频
+.venv/bin/python -m codes.chapters.ch09.examples.moving_source_audio  # 独立连续移动双麦音频
 .venv/bin/python scripts/make_figures.py      # 生成图 1～25、图 33～36、40～49 → figures/
 .venv/bin/python scripts/make_aec_figures.py  # 生成图 26～32、37～39（回声消除专题）→ figures/
 .venv/bin/python scripts/build_site.py        # 14 个教程页 + 6 个研究页，共 20 页 → site/
 .venv/bin/python scripts/build_pdf.py         # 合订 chapters/ → dist/combined.html → dist/microphone-array-tutorial.pdf（需 Chrome）
-.venv/bin/python codes/examples/generate_audio_samples.py --check  # 只核对音频、参数与摘要，不重写文件
-.venv/bin/python codes/examples/prepare_real_recordings.py --check  # 真实录音及派生文件，离线核对
+.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py --check  # 只核对音频、参数与摘要，不重写文件
+.venv/bin/python codes/chapters/ch02/examples/prepare_real_recordings.py --check  # 真实录音及派生文件，离线核对
 .venv/bin/python scripts/quality_check.py      # 发布前检查结构、公式、图片溯源、链接、书签和本地路径泄露
 .venv/bin/python -m unittest discover -s tests -v  # 运行构建与算法回归测试
-.venv/bin/python -m codes.examples.ch10_engineering_baselines  # 第 10 章工程基线
+.venv/bin/python -m codes.chapters.ch10.examples.ch10_engineering_baselines  # 第 10 章工程基线
 ```
 
 Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 
 | 脚本 | 作用 | 输出 |
 |---|---|---|
-| `../codes/examples/generate_audio_samples.py` | 生成 27 组、109 个合成音频文件；清单记录参数、共同增益和摘要。`--check` 只检查现有生成物 | `codes/audio/*.wav`、`codes/audio/MANIFEST.json` |
-| `../codes/examples/room_srp_exercise.py` | `--check` 只核几何；可选 pyroomacoustics 0.10.0 的 `--run` 实算六位置 RIR、T60、DRR 和 SRP，`--audio-dir`、`--plot` 与 `--results` 可在新目录生成独立样本、图和机器可读结果；已有目标会拒绝覆盖 | `codes/room_audio/` 已收入 18 个合成 WAV、清单、`ROOM_RESULTS.png` 及 `RESULTS.json`；重生成时先输出到另一个新目录核对 |
-| `../codes/examples/gss_teaching_demo.py`、`moving_source_audio.py` | 分别生成受控活动导引处理链和连续自由场双麦实验；数学合成，不是设备实测 | `codes/gss_audio/` 的 5 个 WAV、状态及清单；`codes/moving_audio/` 的 3 个 WAV 与真值清单 |
-| `../codes/examples/prepare_real_recordings.py` | 默认及 `--check` 均离线只读；`--prepare` 从固定本地归档重建；`--download` 显式获取约 99 MB 归档并重建 | `codes/real_audio/`：4 个 WAV、清单；署名与许可独立保留 |
+| `../codes/chapters/ch00/examples/generate_audio_samples.py` | 生成 27 组、109 个合成音频文件；清单记录参数、共同增益和摘要。`--check` 只检查现有生成物 | `codes/chapters/ch00/audio/*.wav`、`codes/chapters/ch00/audio/MANIFEST.json` |
+| `../codes/chapters/appendix_b/examples/room_srp_exercise.py` | `--check` 只核几何；可选 pyroomacoustics 0.10.0 的 `--run` 实算六位置 RIR、T60、DRR 和 SRP，`--audio-dir`、`--plot` 与 `--results` 可在新目录生成独立样本、图和机器可读结果；已有目标会拒绝覆盖 | `codes/chapters/appendix_b/room_audio/` 已收入 18 个合成 WAV、清单、`ROOM_RESULTS.png` 及 `RESULTS.json`；重生成时先输出到另一个新目录核对 |
+| `../codes/chapters/ch08/examples/gss_teaching_demo.py`、`moving_source_audio.py` | 分别生成受控活动导引处理链和连续自由场双麦实验；数学合成，不是设备实测 | `codes/chapters/ch08/gss_audio/` 的 5 个 WAV、状态及清单；`codes/chapters/ch09/moving_audio/` 的 3 个 WAV 与真值清单 |
+| `../codes/chapters/ch02/examples/prepare_real_recordings.py` | 默认及 `--check` 均离线只读；`--prepare` 从固定本地归档重建；`--download` 显式获取约 99 MB 归档并重建 | `codes/chapters/ch02/real_audio/`：4 个 WAV、清单；署名与许可独立保留 |
 | `make_figures.py` | 生成图 1～25 和图 33～36、40～49。只用 numpy 和 matplotlib，不依赖 scipy；随机种子固定。图 34～36、40～41、43～45、47、49 读取已生成的音频，必须先运行音频生成器。图 13 的蒙特卡洛统计耗时最长 | `figures/fig01`～`fig25_*.png`、`fig33_*`～`fig36_*`、`fig40_*`～`fig49_*` |
 | `make_aec_figures.py` | 10 张回声消除专题图（原 7 张另加两带子带、IPNLMS/RLS/Kalman 状态图及 PBFDAF 流程图）。风格与上一个脚本统一（六色/五级字号/dpi150） | `figures/fig26`～`fig32_*`、`fig37`～`fig39_*` |
 | `renumber2.py` | 已退役。单篇长文时代的图号整理工具，留作存档，平时不用跑 | 无 |
@@ -39,32 +39,32 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 
 改图练习（如附录 B 习题）应使用脚本副本或独立输出目录，记录改变的参数，不覆盖本书的发布图。228 道稳定编号可运行题分布在各章入口，附录 B 的 E13-03～08 另有只读逐步实验；第 16 题的房间重算需 pyroomacoustics 0.10.0：
 
-第11章另有 [`chapter11_experiments.py`](../codes/chapters/ch11/chapter11_experiments.py) 的 E11-10～19 十道选型计算。图46读取本书构造的四候选表；图47在四个实际导出的FIR音频通过摘要校验后，从PCM重新投影频率并核对对齐误差。两图的条件、数据与脚本入口见[第11章](../chapters/11_selection-guide.md)和[音频实验§33](../codes/research/05_exercises_and_audio.md)。
+第11章另有 [`chapter11_experiments.py`](../codes/chapters/ch11/chapter11_experiments.py) 的 E11-10～19 十道选型计算。图46读取本书构造的四候选表；图47在四个实际导出的FIR音频通过摘要校验后，从PCM重新投影频率并核对对齐误差。两图的条件、数据与脚本入口见[第11章](../chapters/11_selection-guide.md)和[音频实验§33](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
 
 ```bash
 .venv/bin/python -m codes.chapters.ch04.chapter04_experiments
-.venv/bin/python -m codes.examples.exercises_spatial
-.venv/bin/python -m codes.examples.exercises_enhancement
+.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_spatial
+.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_enhancement
 .venv/bin/python -m codes.chapters.ch06.aec_algorithm_minicases
 .venv/bin/python -m codes.chapters.ch06.aec_advanced_exercises
-.venv/bin/python -m codes.examples.exercises_engineering
+.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering
 .venv/bin/python -m codes.chapters.appendix_b.appendix_b_experiments
-.venv/bin/python -m codes.examples.room_srp_exercise --check
+.venv/bin/python -m codes.chapters.appendix_b.examples.room_srp_exercise --check
 ```
 
-题号、答案和音频对照见[练习与音频实验](../codes/research/05_exercises_and_audio.md)。`codes/audio/` 的 109 个音频为 16 kHz、PCM16 的本书合成信号，每组共用一个增益，不逐文件归一化；不能用这些短样例声称自然语音质量或正式听测结果。
+题号、答案和音频对照见[练习与音频实验](../codes/chapters/ch00/research/05_exercises_and_audio.md)。`codes/chapters/ch00/audio/` 的 109 个音频为 16 kHz、PCM16 的本书合成信号，每组共用一个增益，不逐文件归一化；不能用这些短样例声称自然语音质量或正式听测结果。
 
-`codes/room_audio/` 另外保存 18 个白噪声房间样本，建站时核对并复制到 `site/room_audio/`，不混用清单。
+`codes/chapters/appendix_b/room_audio/` 另外保存 18 个白噪声房间样本，建站时核对并复制到 `site/room_audio/`，不混用清单。
 
-`codes/gss_audio/` 和 `codes/moving_audio/` 分别保存 5 个受控 GSS 音频及状态、3 个自由场移动声源音频及轨迹真值。建站时分别按独立清单核验并复制，不混用主 109 个 WAV。
+`codes/chapters/ch08/gss_audio/` 和 `codes/chapters/ch09/moving_audio/` 分别保存 5 个受控 GSS 音频及状态、3 个自由场移动声源音频及轨迹真值。建站时分别按独立清单核验并复制，不混用主 109 个 WAV。
 
-`codes/real_audio/` 另含 DEMAND 真实环境录音摘录与派生文件，建站时复制到独立的 `site/real_audio/`，同时保留清单、署名和许可。16 通道输入仅供下载分析，三个单通道派生文件提供不自动播放的试听控件。
+`codes/chapters/ch02/real_audio/` 另含 DEMAND 真实环境录音摘录与派生文件，建站时复制到独立的 `site/real_audio/`，同时保留清单、署名和许可。16 通道输入仅供下载分析，三个单通道派生文件提供不自动播放的试听控件。
 
-研究页入口为 `site/research/index.html`，对应 `codes/research/README.md`；其余五页保留研究文件名。研究页与正文互链，源码及未生成网页的代码文档链接指向 GitHub 中的原文件，不把 `.md` 猜成不存在的 `.html`。外部链接不改写。
+研究页入口为 `site/research/index.html`，对应 `codes/chapters/ch00/research/README.md`；其余五页保留研究文件名。研究页与正文互链，源码及未生成网页的代码文档链接指向 GitHub 中的原文件，不把 `.md` 猜成不存在的 `.html`。外部链接不改写。
 
 合订本仍只有 14 篇教程：跨章链接指向内部锚点，研究文档和源码链接指向仓库原文件。两种构建摘要均纳入六篇研究源文件，修改后应重新构建。
 
-`codes/array_tutorial/engineering.py` 中的工程基线只依赖 NumPy。它包括 SRO 拟合与教学用线性重采样、VAD 迟滞与 hangover、峰值保护 AGC、固定容量环形缓冲、deadline/队列模拟、Q1.15 量化和遥测字段校验。运行 `.venv/bin/python -m unittest tests.test_codes_engineering -v` 可执行对应回归测试。代码范围、上游实现与许可证边界以 `codes/README.md`、`codes/COVERAGE.md`、`codes/THIRD_PARTY.md` 和 `codes/SOURCES.lock.json` 为准。
+`codes/chapters/ch10/core/engineering.py` 中的工程基线只依赖 NumPy。它包括 SRO 拟合与教学用线性重采样、VAD 迟滞与 hangover、峰值保护 AGC、固定容量环形缓冲、deadline/队列模拟、Q1.15 量化和遥测字段校验。运行 `.venv/bin/python -m unittest tests.test_codes_engineering -v` 可执行对应回归测试。代码范围、上游实现与许可证边界以 `codes/chapters/README.md`、`codes/chapters/ch00/COVERAGE.md`、`codes/chapters/ch00/THIRD_PARTY.md` 和 `codes/chapters/ch00/SOURCES.lock.json` 为准。
 
 **发布与验收说明**
 
@@ -95,37 +95,37 @@ PDF 正文固定为 16 px，MathJax 公式按 100% 字号打印；网页公式�
 ```bash
 python3.13 -m venv /tmp/masp-room-pra
 /tmp/masp-room-pra/bin/python -m pip install pyroomacoustics==0.10.0 matplotlib
-PRA_NUM_THREADS=2 /tmp/masp-room-pra/bin/python -m codes.examples.room_srp_exercise --run --plot /tmp/masp-room-result.png --results /tmp/masp-room-results.json --audio-dir /tmp/masp-room-audio-new
+PRA_NUM_THREADS=2 /tmp/masp-room-pra/bin/python -m codes.chapters.appendix_b.examples.room_srp_exercise --run --plot /tmp/masp-room-result.png --results /tmp/masp-room-results.json --audio-dir /tmp/masp-room-audio-new
 ```
 
-目标图文件及音频目录应事先不存在。重跑后用新目录清单的 SHA-256 对照 `codes/room_audio/MANIFEST.json`，并记录 Python、NumPy、SciPy、pyroomacoustics 与线程数；跨平台绘图字体可能改变 PNG 字节，数值和 WAV 应分别核查。
+目标图文件及音频目录应事先不存在。重跑后用新目录清单的 SHA-256 对照 `codes/chapters/appendix_b/room_audio/MANIFEST.json`，并记录 Python、NumPy、SciPy、pyroomacoustics 与线程数；跨平台绘图字体可能改变 PNG 字节，数值和 WAV 应分别核查。
 
 本轮新增的 12 道逐步练习可分别运行：
 
 ```bash
-.venv/bin/python -m codes.examples.spatial_precision_exercises
-.venv/bin/python -m codes.examples.enhancement_step_exercises
-.venv/bin/python -m codes.examples.tracking_time_exercises
+.venv/bin/python -m codes.chapters.ch00.cross_chapter.spatial_precision_exercises
+.venv/bin/python -m codes.chapters.ch00.cross_chapter.enhancement_step_exercises
+.venv/bin/python -m codes.chapters.ch00.cross_chapter.tracking_time_exercises
 ```
 
 
 模型与边界练习：
 
 ```bash
-.venv/bin/python -m codes.examples.spatial_model_exercises
-.venv/bin/python -m codes.examples.enhancement_structure_exercises
-.venv/bin/python -m codes.examples.engineering_boundary_exercises
+.venv/bin/python -m codes.chapters.ch00.cross_chapter.spatial_model_exercises
+.venv/bin/python -m codes.chapters.ch00.cross_chapter.enhancement_structure_exercises
+.venv/bin/python -m codes.chapters.ch00.cross_chapter.engineering_boundary_exercises
 .venv/bin/python -m codes.chapters.appendix_b.interpolation_exercise
-.venv/bin/python -m codes.examples.run_stk_delay_probe --report tmp/stk-delay-rerun.json
+.venv/bin/python -m codes.chapters.ch10.examples.run_stk_delay_probe --report tmp/stk-delay-rerun.json
 ```
 
 最后一项需已取得固定STK源码和C++编译器，只运行DelayL组件检查；其余为本书NumPy/标准库数学例子。图41从主清单4个interpolation音频读回逐频幅度，与独立解析曲线区分；先生成109个WAV再绘图。
 
-图13在绘图时同步输出 `codes/reports/figure13_gcc_reverb.json`：9条件各150次的事件、峰对比度、种子和区间口径。测试与导入不写报告；修改绘图源后通过同一入口重生图和报告。
+图13在绘图时同步输出 `codes/chapters/ch04/reports/figure13_gcc_reverb.json`：9条件各150次的事件、峰对比度、种子和区间口径。测试与导入不写报告；修改绘图源后通过同一入口重生图和报告。
 
 
-图44读取`codes/tracking_audio/MANIFEST.json`中的PCM逐帧分析。先运行
-`.venv/bin/python -m codes.examples.chapter09_tracking_audio`生成两份独立WAV，
+图44读取`codes/chapters/ch09/tracking_audio/MANIFEST.json`中的PCM逐帧分析。先运行
+`.venv/bin/python -m codes.chapters.ch09.examples.chapter09_tracking_audio`生成两份独立WAV，
 再绘图；`--check`只读复算，拒绝过期或额外文件。网页构建同时核对精确文件集合、摘要和PCM格式，
 播放器与独立清单分别发布到`site/tracking_audio/`，不混入主音频组。
-图22另由同一绘图过程保存`codes/reports/figure22_tracking.json`，包括逐帧ESS、重采样标记及观测/缺测独立分母。
+图22另由同一绘图过程保存`codes/chapters/ch09/reports/figure22_tracking.json`，包括逐帧ESS、重采样标记及观测/缺测独立分母。

@@ -5,11 +5,11 @@ import warnings
 
 import numpy as np
 
-from codes.array_tutorial.engineering import (
+from codes.chapters.ch10.core.engineering import (
     HysteresisVAD, PeakProtectAGC, RingBuffer, estimate_sro_ppm,
     q15_quantize, resample_sro_to_reference, simulate_deadline_queue,
 )
-from codes.examples.exercises_engineering import block_consumption, run_exercises
+from codes.chapters.ch00.cross_chapter.exercises_engineering import block_consumption, run_exercises
 
 
 class EngineeringInputTests(unittest.TestCase):

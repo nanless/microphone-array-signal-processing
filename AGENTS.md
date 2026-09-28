@@ -29,20 +29,19 @@
 | 类型 | 路径 | 作用 | 修改规则 |
 |---|---|---|---|
 | 教程源文件 | `chapters/*.md` | 导读、11 章正文和 2 篇附录 | 直接修改；改后检查跨章引用 |
-| 教学代码源文件 | `codes/array_tutorial/*.py`、`codes/chapters/*/*.py`、保留在 `codes/examples/*.py` 的源文件 | 共享数值核、按章实验和仍与资产摘要绑定的生成器/探针 | 改真实实现而非兼容入口；同步测试、算法覆盖表和对应章节 |
-| 旧入口兼容层 | 已迁移脚本同名的 `codes/examples/*.py` | 保留旧模块导入、`-m` 与直接脚本命令 | 只转交 `codes/chapters/` 的唯一真实实现；不复制算法逻辑；迁移时验证新旧输出和可被 patch 的模块身份 |
-| 音频生成源与生成物 | `codes/array_tutorial/audio_samples.py`、`codes/examples/generate_audio_samples.py` → `codes/audio/*.wav`、`MANIFEST.json` | 27 组、109 个数学合成音频样本及可核验参数 | 修改源代码后重新生成；禁止手改单个 WAV 或把合成数据称为真实录音 |
-| 房间仿真源与生成物 | `codes/examples/room_srp_exercise.py` → `codes/room_audio/` | 6 个源位各有源、仅直达和完整房间输出，共 18 个白噪声合成 WAV、独立清单、一张结果图和 `RESULTS.json` 数值报告 | 使用隔离的 pyroomacoustics 0.10.0 环境生成到新目录并核验后更新；不得混入主清单的 109 个样本或称作真实录音；报告、图与清单的摘要须一致 |
-| GSS 教学链源与生成物 | `codes/array_tutorial/gss_teaching.py`、`codes/examples/gss_teaching_demo.py` → `codes/gss_audio/` | 5 个数学合成 WAV、`STATE.npz` 和独立清单 | 重生后核对共同增益、状态摘要与评分；不把教学子链称为已运行官方 GPU/CHiME 整链 |
-| 观测到追踪源与生成物 | `codes/array_tutorial/tracking_audio.py`、`codes/examples/chapter09_tracking_audio.py` → `codes/tracking_audio/` | 2个独立连续运动合成WAV，PCM重读后计算GCC观测、门控与KF的逐帧清单 | 不混入主109个样本；保留浮点与PCM分开结果、状态时刻与可用时刻、各评分分母；`--check`只核对不重生 |
-| 移动声源源与生成物 | `codes/array_tutorial/moving_source.py`、`codes/examples/moving_source_audio.py` → `codes/moving_audio/` | 3 个自由场数学合成 WAV 与轨迹真值清单 | 以传播时延和距离衰减的源模型生成；不与主 109 个 WAV 混算或称为真实录音 |
-| 真实录音与派生文件 | `codes/array_tutorial/real_recordings.py`、`codes/examples/prepare_real_recordings.py` → `codes/real_audio/` | DEMAND 真实同步录音摘录和派生文件，共 4 个 WAV | 原始归档固定摘要；截取范围、通道次序、变更和独立数据许可随资产保留；不与合成清单混用 |
-| 外部代码索引 | `codes/SOURCES.lock.json`、`codes/ARCHIVE_SOURCES.lock.json`、`codes/THIRD_PARTY.md` | 官方仓库、精确版本、许可证和使用边界 | 只记录已核实来源；不把链接或源码可见误写成可自由再分发 |
-| 源码状态生成物 | `codes/SOURCE_STATUS.json`、`codes/ARCHIVE_SOURCE_STATUS.json` | 当前锁定清单对应的本地获取与范围核对结果 | 由获取工具 `--verify --report` 生成，不手工改成成功；方法级运行另记 |
-| 图13统计生成物 | `scripts/make_figures.py` → `codes/reports/figure13_gcc_reverb.json` | 9 条件各 150 次的逐次事件、峰对比度和计数 | 与图片同次计算生成；保留共享随机性、失败和区间口径，不手改结果 |
-| 源码研究文档 | `codes/research/*.md` | 逐算法源码入口、实现差异、工业配置与复现实验 | 与正文和覆盖表互链；区分建议实验和已执行结果 |
+| 教学代码源文件 | `codes/chapters/{ch00,ch01～ch11,appendix_a,appendix_b}/` 中的 `core/`、`examples/` 与单章入口 | 共享数值核按首讲章节唯一归档，跨章练习在 `ch00/cross_chapter/` | 修改唯一真实实现；同步测试、覆盖表和对应章节；旧 `codes.array_tutorial`、`codes.examples` 路径已退出仓内接口 |
+| 主音频布局 | `codes/chapters/ch00/audio/MANIFEST.json`、各章 `audio/*.wav`；`scripts/code_layout.py` 固定组→章节映射 | 27 组、109 个数学合成 WAV，单一总清单、分章存放 | 改生成源后按新布局重生；清单记录每条所属章、生成源 SHA 与 WAV SHA；禁止手改单个 WAV |
+| 房间仿真源与生成物 | `codes/chapters/appendix_b/examples/room_srp_exercise.py` → `codes/chapters/appendix_b/room_audio/` | 6 个源位各有源、仅直达和完整房间输出，共 18 个白噪声合成 WAV、独立清单、一张结果图和 `RESULTS.json` 数值报告 | 使用隔离的 pyroomacoustics 0.10.0 环境生成到新目录并核验后更新；不得混入主清单的 109 个样本或称作真实录音；报告、图与清单的摘要须一致 |
+| GSS 教学链源与生成物 | `codes/chapters/ch08/core/gss_teaching.py`、`codes/chapters/ch08/examples/gss_teaching_demo.py` → `codes/chapters/ch08/gss_audio/` | 5 个数学合成 WAV、`STATE.npz` 和独立清单 | 重生后核对共同增益、状态摘要与评分；不把教学子链称为已运行官方 GPU/CHiME 整链 |
+| 观测到追踪源与生成物 | `codes/chapters/ch09/core/tracking_audio.py`、`codes/chapters/ch09/examples/chapter09_tracking_audio.py` → `codes/chapters/ch09/tracking_audio/` | 2个独立连续运动合成WAV，PCM重读后计算GCC观测、门控与KF的逐帧清单 | 不混入主109个样本；保留浮点与PCM分开结果、状态时刻与可用时刻、各评分分母；`--check`只核对不重生 |
+| 移动声源源与生成物 | `codes/chapters/ch09/core/moving_source.py`、`codes/chapters/ch09/examples/moving_source_audio.py` → `codes/chapters/ch09/moving_audio/` | 3 个自由场数学合成 WAV 与轨迹真值清单 | 以传播时延和距离衰减的源模型生成；不与主 109 个 WAV 混算或称为真实录音 |
+| 真实录音与派生文件 | `codes/chapters/ch02/core/real_recordings.py`、`codes/chapters/ch02/examples/prepare_real_recordings.py` → `codes/chapters/ch02/real_audio/` | DEMAND 真实同步录音摘录和派生文件，共 4 个 WAV | 原始归档固定摘要；截取范围、通道次序、变更和独立数据许可随资产保留；不与合成清单混用 |
+| 外部代码索引 | `codes/chapters/ch00/SOURCES.lock.json`、`codes/chapters/ch00/ARCHIVE_SOURCES.lock.json`、`codes/chapters/ch00/THIRD_PARTY.md` | 官方仓库、精确版本、许可证和使用边界 | 只记录已核实来源；不把链接或源码可见误写成可自由再分发 |
+| 源码状态生成物 | `codes/chapters/ch00/SOURCE_STATUS.json`、`codes/chapters/ch00/ARCHIVE_SOURCE_STATUS.json` | 当前锁定清单对应的本地获取与范围核对结果 | 由获取工具 `--verify --report` 生成，不手工改成成功；方法级运行另记 |
+| 图13统计生成物 | `scripts/make_figures.py` → `codes/chapters/ch04/reports/figure13_gcc_reverb.json` | 9 条件各 150 次的逐次事件、峰对比度和计数 | 与图片同次计算生成；保留共享随机性、失败和区间口径，不手改结果 |
+| 源码研究文档 | `codes/chapters/ch00/research/*.md` | 逐算法源码入口、实现差异、工业配置与复现实验 | 与正文和覆盖表互链；区分建议实验和已执行结果 |
 | 项目说明源文件 | `README.md`、`README_EN.md`、`scripts/README.md` | 项目入口、英文说明、构建说明 | 直接修改；中英文共有信息要同步 |
-| 图 21 数值报告 | `scripts/make_figures.py::fig_wpe` → `codes/reports/figure21_wpe.json` | 同一信号的参数、帧选择、能量分母与谱域误差 | 随图重生；不将谱图显示频带当成指标统计频带 |
+| 图 21 数值报告 | `scripts/make_figures.py::fig_wpe` → `codes/chapters/ch07/reports/figure21_wpe.json` | 同一信号的参数、帧选择、能量分母与谱域误差 | 随图重生；不将谱图显示频带当成指标统计频带 |
 | 绘图源文件 | `scripts/make_figures.py`、`scripts/make_aec_figures.py` | 生成全部插图 | 图有问题时修改这里，不手工修 PNG |
 | 构建源文件 | `scripts/build_site.py`、`scripts/build_pdf.py`、`scripts/heading_aliases.py`、`scripts/legacy_sequential_anchors.json` | 生成站点、合订 HTML 和 PDF，并保护已发布深链的原语义 | 页面结构或渲染有问题时修改这里；标题改号后逐项校验历史语义锚 |
 | PDF 公式第三方资源 | `scripts/vendor/mathjax-3.2.2/` | 固定版本的 MathJax 脚本、按需扩展和字体 | 保留上游许可及来源摘要；更新版本时同步更新构建核验与渲染抽查，不手改压缩脚本或字体 |
@@ -53,18 +52,18 @@
 `chapters/` 当前包含 14 篇 Markdown，研究手册另有 6 篇网页源文件，项目当前有 49 张编号图和附录 B 房间题的一张补充结果图。文件数量、图号、章节名称或构建入口发生变化时，要同步
 更新本节、README、导读中的文件地图和构建说明。
 
-`codes/chapters/` 按 `ch01`～`ch11`、`appendix_a`、`appendix_b` 放置单章实验的真实实现；`codes/array_tutorial/` 仍放跨章共用数值内核。已迁移的 `codes/examples/` 同名文件只是兼容入口。生成音频、房间、状态和报告时，若清单或报告记录源路径及 SHA，先保留固定源位置；确需迁移时必须从新源重生并核对每个资产，不可只改清单字符串或兼容入口以伪造一致性。
+`codes/chapters/` 含导读 `ch00`、第 1～11 章和附录 A/B。跨章内核按首次完整讲解所在章放入一个 `core/`，其他章节直接导入这一实现；全书索引、来源锁表、获取工具和跨章练习归 `ch00/`。原 `codes/examples/` 的 35 个薄兼容入口已经移除，仓内命令使用新模块名。生成音频、房间、状态和报告时，清单或报告记录的源路径与 SHA 必须来自当前真实源；迁移后要从新源重生并核对每个资产，不可只改清单字符串伪造一致性。历史运行报告中的旧路径代表当时的执行条件，不应改写为新路径下实测。
 
 ### 1.3 构建入口
 
 在仓库根目录执行：
 
 ```bash
-.venv/bin/python codes/examples/generate_audio_samples.py  # 合成 109 个 WAV 与清单
-.venv/bin/python -m codes.examples.gss_teaching_demo  # 独立 GSS 教学音频与状态
-.venv/bin/python -m codes.examples.chapter09_tracking_audio  # 独立PCM观测与追踪音频
-.venv/bin/python -m codes.examples.moving_source_audio  # 独立连续移动双麦音频
-.venv/bin/python codes/examples/prepare_real_recordings.py --check  # 离线检查 4 个真实录音/派生 WAV
+.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py  # 合成 109 个 WAV 与清单
+.venv/bin/python -m codes.chapters.ch08.examples.gss_teaching_demo  # 独立 GSS 教学音频与状态
+.venv/bin/python -m codes.chapters.ch09.examples.chapter09_tracking_audio  # 独立PCM观测与追踪音频
+.venv/bin/python -m codes.chapters.ch09.examples.moving_source_audio  # 独立连续移动双麦音频
+.venv/bin/python codes/chapters/ch02/examples/prepare_real_recordings.py --check  # 离线检查 4 个真实录音/派生 WAV
 .venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～49
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、图 37～39
 .venv/bin/python scripts/build_site.py        # chapters/ → site/*.html
@@ -691,7 +690,7 @@ Chrome 标签化输出和书签处理后的结构树必须同时保留；存在 
 
 用户要求“覆盖所有算法”时，先清点本书正文实际定义、推导或直接用于工程选择的算法；用户要求扩充领域研究时，
 还要调查能补足现有方法缺陷的相关实现，并在研究文档中解释收录理由。不能只用项目数量宣称覆盖完整。
-每个算法在 `codes/COVERAGE.md` 中只能落入一种状态：本仓库可运行
+每个算法在 `codes/chapters/ch00/COVERAGE.md` 中只能落入一种状态：本仓库可运行
 基线、外部参考实现、原理索引或明确排除。不能用占位函数或未经验证的简化程序冒充论文完整实现。
 
 - 本仓库教学实现要尽量少依赖，写明输入输出形状、单位、复数约定、随机种子、公式对应位置和失效边界。
@@ -711,7 +710,7 @@ Chrome 标签化输出和书签处理后的结构树必须同时保留；存在 
   具体原因和解除条件；代码可本地研究而随仓示例音频、权重或数据许可未明时，优先评估能否只取得
   固定提交的源码与许可证。取得后仍分别记录源码核对、依赖构建、示例运行和数值对照，不能把
   `source_verified` 写成算法复现成功。
-- 用户要求把可获取源码放到本地时，可以在 Git 忽略的 `codes/upstream/_downloads/` 中建立独立上游工作树，
+- 用户要求把可获取源码放到本地时，可以在 Git 忽略的 `codes/chapters/ch00/upstream/_downloads/` 中建立独立上游工作树，
   保留来源和许可。大型框架、copyleft 许可或权重未授权不自动意味着代码不能本地研究；是否取得代码、是否取得
   权重、是否再分发必须分别判断。不得用缓存忽略规则代替实际下载，也不得把独立下载描述为已并入发布仓库。
 - 按需获取脚本必须固定提交并默认只下载、不执行；普通单元测试不得联网。下载压缩包时记录并核对
@@ -742,12 +741,12 @@ Chrome 标签化输出和书签处理后的结构树必须同时保留；存在 
   数值期望仍需来自手算、解析边界或另一条独立计算路线；改编程序与上游一致只能证明版本行为一致。
 - 使用数组切片构造重叠子阵或滑窗时，检查其是否共享底层内存；原地缩放不得无意改写另一子阵或输入。接口的成功标志与物理有效性分别验证；对子空间与协方差方法，按适用模型为零能量、非半正定、有效秩不足和相位主值分支设置独立边界例。
 - 采用频谱补零实现实信号的周期时域插值时，须分别检查直流、偶数长度的 Nyquist 分量及逆变换的幅度尺度；用解析三角和或其他独立解析基准核对，并确认原采样网格的值保持。增加插值点不等于增加观测信息。
-- 新增、替换或删除算法时，同时检查正文、`codes/COVERAGE.md`、`codes/THIRD_PARTY.md`、锁定清单、
+- 新增、替换或删除算法时，同时检查正文、`codes/chapters/ch00/COVERAGE.md`、`codes/chapters/ch00/THIRD_PARTY.md`、锁定清单、
   示例和测试。正式交付前检查仓库中没有意外下载的第三方源码、权重、数据、凭据和许可证不明文件。
 
 ### 8.6 章节练习与音频样本
 
-- 新增可执行练习使用稳定 ID；正文、答案、示例返回结果、独立测试和 `codes/COVERAGE.md` 一一对应。
+- 新增可执行练习使用稳定 ID；正文、答案、示例返回结果、独立测试和 `codes/chapters/ch00/COVERAGE.md` 一一对应。
   添加练习不等于添加一种算法，不用题目数量增加算法覆盖统计。保留旧题编号，移动题目后按题意检查引用。
 - 新增练习应对应明确的学习难点、反例或缺失步骤；不能只换数字重复现有题目来增加数量。
   全书审查报告分别列出已读、已独立复算、已运行和未验证范围，不使用“全部覆盖”代替这些记录。
@@ -758,8 +757,8 @@ Chrome 标签化输出和书签处理后的结构树必须同时保留；存在 
   “冻结”须分别说明权重、协方差、参考历史与时间预测是否推进；整帧统计后回填同帧控制须计入所需缓冲。
 - 以整块峰值、协方差或活动统计控制同一块输出时，写明必须先收到整块；数字样本峰保护、插值真峰值估计和模拟前端削波分开判断。重采样输出长度须在分配前校验有限性、整数可表示范围与公开的教学资源预算。
 - 谱功率因浮点下溢变成零，不等于复系数本身为零；输出可表示而平方/平均不可表示时，先考虑缩放域计算并把物理单位和失败条件说清。评分器返回有限值、未警告或给哨兵值，都不能替代对有效长度、活动能量、参考对齐与评分区域的检查。
-- 音频生成源在 `codes/array_tutorial/audio_samples.py` 和 `codes/examples/generate_audio_samples.py`。
-  不直接修 WAV；改源后重建 `codes/audio/MANIFEST.json` 和受影响图、站点副本。清单记录输入摘要、环境、
+- 音频生成源在 `codes/chapters/ch00/core/audio_samples.py` 和 `codes/chapters/ch00/examples/generate_audio_samples.py`。
+  不直接修 WAV；改源后重建 `codes/chapters/ch00/audio/MANIFEST.json` 和受影响图、站点副本。清单记录输入摘要、环境、
   模型与参数、采样率、声道、时长、参考、时延、增益、随机种子、量化与文件摘要。
 - GSS 与自由场移动音频各有独立生成脚本、目录和清单。变更后同时核对中间状态或轨迹真值、每个 WAV 的
   帧数/通道/摘要，以及站点副本；不能用主音频清单的 109 个文件数掩盖独立资产缺失。

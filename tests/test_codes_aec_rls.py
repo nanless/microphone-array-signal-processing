@@ -6,8 +6,8 @@ import unittest
 
 import numpy as np
 
-from codes.array_tutorial.aec_rls import RLSState, rls
-from codes.examples.aec_rls_demo import run_demo
+from codes.chapters.ch06.core.aec_rls import RLSState, rls
+from codes.chapters.ch06.aec_rls_demo import run_demo
 
 
 def _batch_oracle(reference, microphone, length, lam, delta, *,

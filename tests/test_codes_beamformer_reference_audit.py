@@ -8,13 +8,13 @@ import unittest
 
 import numpy as np
 
-from codes.examples import audit_beamformer_reference as audit
+from codes.chapters.ch05.examples import audit_beamformer_reference as audit
 
 
 class BeamformerReferenceAuditTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.report = json.loads((audit.ROOT / "reports/beamformer_reference_audit.json").read_text())
+        cls.report = json.loads((audit.ROOT / "chapters/ch05/reports/beamformer_reference_audit.json").read_text())
 
     def test_provenance_binds_exact_source_configuration_and_script(self):
         p = self.report["provenance"]

@@ -4,7 +4,7 @@ from fractions import Fraction
 import json
 import unittest
 
-from codes.examples.aec_kalman_scalar_demo import run_demo, scalar_kalman_step
+from codes.chapters.ch06.aec_kalman_scalar_demo import run_demo, scalar_kalman_step
 
 
 class TestScalarKalmanStep(unittest.TestCase):

@@ -1,6 +1,6 @@
 > ⚠️ 本篇是教程正文第 5 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。
 >
-> 🏠 首页导读：[`00_overview.md`](./00_overview.md) ｜ 上一篇：[04_doa-estimation.md](./04_doa-estimation.md) ｜ 下一篇：[06_aec.md](./06_aec.md)
+> 🏠 首页导读：[`00_overview.md`](00_overview.md) ｜ 上一篇：[04_doa-estimation.md](04_doa-estimation.md) ｜ 下一篇：[06_aec.md](06_aec.md)
 
 ---
 
@@ -934,9 +934,9 @@ Kumatani 等综述的指定房间实验比较了小球阵与大线阵，几何�
 
 #### 5.9.1 可执行基线与上线检查
 
-[`beamforming.py`](../codes/array_tutorial/beamforming.py) 提供 DSB、弥散场相干矩阵、加载超指向/MVDR、LCMV、GSC 阻塞矩阵和 Wiener 增益的原创 NumPy 基线。权重约定统一为输出 $Y=\vec w^H\vec x$，多通道谱形状统一为 `通道 × 频点 × 帧`；逐频点权重为 `频点 × 通道`。
+[`beamforming.py`](../codes/chapters/ch05/core/beamforming.py) 提供 DSB、弥散场相干矩阵、加载超指向/MVDR、LCMV、GSC 阻塞矩阵和 Wiener 增益的原创 NumPy 基线。权重约定统一为输出 $Y=\vec w^H\vec x$，多通道谱形状统一为 `通道 × 频点 × 帧`；逐频点权重为 `频点 × 通道`。
 
-函数用线性方程求解代替显式求逆；未加载协方差病态、LCMV 约束不独立或空统计量都会报错。正文算例的 DSB 单位响应、Capon 数值、MVDR 权重、LCMV 双约束、GSC 阻塞和 Wiener 增益由 [`test_codes_doa_beam.py`](../tests/test_codes_doa_beam.py) 独立回归，串联示例见 [`ch02_05_baselines.py`](../codes/examples/ch02_05_baselines.py)。
+函数用线性方程求解代替显式求逆；未加载协方差病态、LCMV 约束不独立或空统计量都会报错。正文算例的 DSB 单位响应、Capon 数值、MVDR 权重、LCMV 双约束、GSC 阻塞和 Wiener 增益由 [`test_codes_doa_beam.py`](../tests/test_codes_doa_beam.py) 独立回归，串联示例见 [`ch02_05_baselines.py`](../codes/chapters/ch00/cross_chapter/ch02_05_baselines.py)。
 
 DSB 对非零导向矢量计算 $\vec a/(\vec a^H\vec a)$；实现先按最大分量缩放，再归一化，以免极大或极小的有限输入在平方时溢出或下溢。若结果本身超出浮点范围则报错，而不是返回貌似有效的零权重。Wiener 增益中的功率必须为有限非负实数，不能把复数功率的虚部丢掉后继续运行；相关边界回归见 [`test_codes_spatial_round3.py`](../tests/test_codes_spatial_round3.py)。
 
@@ -944,7 +944,7 @@ DSB 对非零导向矢量计算 $\vec a/(\vec a^H\vec a)$；实现先按最大�
 
 每次更新后检查条件数、$|\vec w^H\vec a-1|$、WNG 和输出峰值；空掩码或病态矩阵出现时，应在“保持上一组已验证权值、增加已标明口径的加载、退回 DSB”之间预先规定顺序。目标泄漏时应冻结噪声 SCM 或 GSC 自适应支路，并记录触发原因，不能只在输出失真后重新初始化。
 
-外部波束实现按完整提交号保存在 `codes/upstream/_downloads/`，取得源码后的构建、数值回归和设备测试分别记录。版本与许可见 [`SOURCES.lock.json`](../codes/SOURCES.lock.json)，扩展实验和源码阅读顺序见[空间处理与追踪研究](../codes/research/01_spatial_and_tracking.md)。TorchAudio 的 `examples/tutorials/mvdr_tutorial.py`、ESPnet 的 `espnet2/enh/layers/beamformer.py` 分别连接掩码、协方差、参考通道与输出波形；复现应使用锁定源码及相容依赖，不能把浮动 nightly 文档当作稳定发行版契约。
+外部波束实现按完整提交号保存在 `codes/chapters/ch00/upstream/_downloads/`，取得源码后的构建、数值回归和设备测试分别记录。版本与许可见 [`SOURCES.lock.json`](../codes/chapters/ch00/SOURCES.lock.json)，扩展实验和源码阅读顺序见[空间处理与追踪研究](../codes/chapters/ch00/research/01_spatial_and_tracking.md)。TorchAudio 的 `examples/tutorials/mvdr_tutorial.py`、ESPnet 的 `espnet2/enh/layers/beamformer.py` 分别连接掩码、协方差、参考通道与输出波形；复现应使用锁定源码及相容依赖，不能把浮动 nightly 文档当作稳定发行版契约。
 
 持续自适应 GSC 可读 BTK2.0 的 `btk20_src/lib/pybeamformer.py::SubbandGSCLMSBeamformer` 和 `SubbandGSCRLSBeamformer`，由 `unit_test/test_online_beamforming.py` 连接逐通道音频、滤波器组、方向控制和输出。这些类保留跨帧更新状态，提供了比本书 E05-16 单抽头教学链更完整的子带处理结构；其子带实现不能直接当作 §5.5 的时域 Frost。[固定 BTK 作者源码](https://github.com/kkumatani/distant_speech_recognition/blob/feff19ec8bcb770f6530fe280dc3ccafc2f5984a/btk20_src/lib/pybeamformer.py "citation")。
 
@@ -1060,7 +1060,7 @@ P_{in}=P_i+P_n,\\
 
     泄漏目标与固定支路输出相关，自适应对消器可能将这部分目标一并消除，造成目标衰减；实际程度还取决于自适应滤波器和更新门控。保护措施见 §5.6 末。
 
-下面五题由 [`exercises_spatial.py`](../codes/examples/exercises_spatial.py) 输出权重、响应或功率，用来检查实现所需的模型条件。
+下面五题由 [`exercises_spatial.py`](../codes/chapters/ch00/cross_chapter/exercises_spatial.py) 输出权重、响应或功率，用来检查实现所需的模型条件。
 
 #### E05-01：一般 MWF 为什么不能总用秩一公式？
 
@@ -1140,7 +1140,7 @@ B(30^\circ)&=\frac{1+j}{2(\beta+1)}。
 
 **边界。** 这里允许任意复数范数球内的误差；真实的角度偏差、共同增益漂移或设备标定残差可能只占其中很小的结构化子集。因此这个界可以保守，不能把 $\epsilon=0.02$ 直接解释成“每只麦误差 2%”或“方向误差 0.02 rad”。B 是隔离范数效应的代数例子，不是声称某种阵列的最优超指向解。
 
-这条推导把 §5.2 的 WNG 与 §5.4.1 的球形不确定集联系起来；[Vorobyov、Gershman 与 Luo 2003，§III-A、式(18)–(25)](https://users.aalto.fi/~vorobys1/RobBeamformer.pdf "citation")讨论用此类集合构造最坏情况约束。该论文的鲁棒优化还需联合选择权重，不能把本题对既定权重的误差界当成完整求解器。数值由 [`spatial_precision_exercises.py`](../codes/examples/spatial_precision_exercises.py) 的 `E05-06` 输出，测试直接验证构造误差达到手算界。
+这条推导把 §5.2 的 WNG 与 §5.4.1 的球形不确定集联系起来；[Vorobyov、Gershman 与 Luo 2003，§III-A、式(18)–(25)](https://users.aalto.fi/~vorobys1/RobBeamformer.pdf "citation")讨论用此类集合构造最坏情况约束。该论文的鲁棒优化还需联合选择权重，不能把本题对既定权重的误差界当成完整求解器。数值由 [`spatial_precision_exercises.py`](../codes/chapters/ch00/cross_chapter/spatial_precision_exercises.py) 的 `E05-06` 输出，测试直接验证构造误差达到手算界。
 
 **实现边界检查。** 数学式成立不意味着任意有限浮点输入都能直接计算。`mvdr_weights` 和 `capon_spectrum` 在求解、二次型归一化或最终结果超出浮点范围时明确报错；`apply_beamformer` 也拒绝非有限输出。
 
@@ -1191,7 +1191,7 @@ $$\begin{aligned}
 
 **边界检查。** 当 $\varepsilon\to\infty$，权重趋向 $[0.5,0.5]^\top$，WNG 趋向 2。对于本题的名义导向，无失真约束与 Cauchy–Schwarz 不等式给出 $1=|\vec w^H\vec a|^2\le2\|\vec w\|^2$，因此 WNG 不可能大于 2。本题的有限加载始终留有非零虚部，所以恰好达到 2 只能取极限；要求 2.1 则没有解。一般阵列应根据实际协方差重新求解，不能沿用本题的数字 9。
 
-本题为式(5-9)与 WNG 定义的本书代数推导，复算见[`spatial_model_exercises.py`](../codes/examples/spatial_model_exercises.py)的 `E05-07`。代码实际调用 `mvdr_weights`，测试用式(5-25)及干扰响应独立核对，并包含刚低于要求的 $\varepsilon=8$ 作为反例。
+本题为式(5-9)与 WNG 定义的本书代数推导，复算见[`spatial_model_exercises.py`](../codes/chapters/ch00/cross_chapter/spatial_model_exercises.py)的 `E05-07`。代码实际调用 `mvdr_weights`，测试用式(5-25)及干扰响应独立核对，并包含刚低于要求的 $\varepsilon=8$ 作为反例。
 
 下面 E05-08～17 由 [`chapter05_experiments.py`](../codes/chapters/ch05/chapter05_experiments.py) 输出同一组输入和未舍入结果。它们是本书确定性小模型；除 E05-16 的逐样本处理外，不模拟语音录音、随机快拍或设备运行时间。
 
@@ -1428,10 +1428,10 @@ u&=(x_1-x_2)/2=.02s+.25i。
 
 **第二步：核对状态与波形。** 实跑在处理8000点后，两条链的系数均约3；到16000点时，始终更新已约49，冻结链仍约3。文件如下：
 
-- 单声道目标 $s$：[目标参考](../codes/audio/gsc_reference.wav)
-- 立体声 $x_1,x_2$：[双麦输入](../codes/audio/gsc_array.wav)
-- [始终更新输出](../codes/audio/gsc_always_adapt.wav)
-- [门控冻结输出](../codes/audio/gsc_gate_frozen.wav)
+- 单声道目标 $s$：[目标参考](../codes/chapters/ch05/audio/gsc_reference.wav)
+- 立体声 $x_1,x_2$：[双麦输入](../codes/chapters/ch05/audio/gsc_array.wav)
+- [始终更新输出](../codes/chapters/ch05/audio/gsc_always_adapt.wav)
+- [门控冻结输出](../codes/chapters/ch05/audio/gsc_gate_frozen.wav)
 
 **第三步：固定评分取点。** 取样本区间 $[16000,30000)$，保留原始增益和样本原点，不做增益拟合或时延补偿。以参考 $s$ 与输出 $e$ 定义诊断投影增益 $g_p=\sum se/\sum s^2$；归一误差为 $\sqrt{\sum(e-s)^2/\sum s^2}$。投影只用于报告，没有再用它缩放输出。
 
@@ -1440,7 +1440,7 @@ u&=(x_1-x_2)/2=.02s+.25i。
 | 始终更新 | 0.0000 | 1.0000 |
 | 门控冻结 | 0.9200 | 0.0800 |
 
-表格由16位 PCM 输出对同为 PCM 的目标参考计算；浮点解析结果分别为0/1与0.92/0.08，在显示精度下相同。文件保持共同增益，不对每路单独归一化。参数、量化核验及可播放说明见[音频实验总览](../codes/research/05_exercises_and_audio.md#27-gsc-目标泄漏与更新冻结)。
+表格由16位 PCM 输出对同为 PCM 的目标参考计算；浮点解析结果分别为0/1与0.92/0.08，在显示精度下相同。文件保持共同增益，不对每路单独归一化。参数、量化核验及可播放说明见[音频实验总览](../codes/chapters/ch00/research/05_exercises_and_audio.md#27-gsc-目标泄漏与更新冻结)。
 
 **边界。** 这是暴露阻塞泄漏的控制实验，不是自然语音听评或完整房间波束器。两段源不同时活动，理想门控不犯判决错误；真实系统仍须检查双源重叠、误门控、噪声变化及滤波长度。输出更安静不能单独证明增强更好。
 
@@ -1467,8 +1467,8 @@ $$\vec z^H\hat{\mathbf R}\vec z
 
 **第三步：说明不能推出什么。** 两帧都有正权重不等于两份独立证据；高度相关或重复帧仍可能信息不足。权重集中程度不受共同缩放影响，也不等于语音存在概率或估计置信度。协方差半正定只保证代数上合法，不保证满秩、正确分类或目标 RTF 可信。
 
-逐频点处理和 iSTFT 才得到波形。[音频总览](../codes/research/05_exercises_and_audio.md)的对齐平均仅用于检查通道、增益和时延，不是 E05-02 或 E05-05 的 MVDR 输出。
+逐频点处理和 iSTFT 才得到波形。[音频总览](../codes/chapters/ch00/research/05_exercises_and_audio.md)的对齐平均仅用于检查通道、增益和时延，不是 E05-02 或 E05-05 的 MVDR 输出。
 
 ---
 
-> 📄 本篇信息：配图 3 张 ｜ [回首页](./00_overview.md)
+> 📄 本篇信息：配图 3 张 ｜ [回首页](00_overview.md)

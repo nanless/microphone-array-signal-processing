@@ -1,6 +1,6 @@
 > ⚠️ 本篇是教程正文第 4 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。
 >
-> 🏠 首页导读：[`00_overview.md`](./00_overview.md) ｜ 上一篇：[03_array-geometry.md](./03_array-geometry.md) ｜ 下一篇：[05_beamforming.md](./05_beamforming.md)
+> 🏠 首页导读：[`00_overview.md`](00_overview.md) ｜ 上一篇：[03_array-geometry.md](03_array-geometry.md) ｜ 下一篇：[05_beamforming.md](05_beamforming.md)
 
 ---
 
@@ -20,7 +20,7 @@
 | DFT / IDFT | 离散傅里叶变换，Discrete Fourier Transform；其逆变换，Inverse DFT | FFT（Fast Fourier Transform）与 IFFT 是快速计算它们的算法 |
 | STFT | 短时傅里叶变换，Short-Time Fourier Transform | 将录音分成逐频点、逐帧的复数观测 |
 
-矩阵的共轭转置记为 $^H$，普通转置记为 $^\top$；$\mathbf I$ 是单位矩阵。$M$ 为麦数、$K$ 为候选源数。涉及快拍、特征向量和矩阵分解时，可对照[附录 A 的数学工具](./12_appendix-symbols-math.md)。
+矩阵的共轭转置记为 $^H$，普通转置记为 $^\top$；$\mathbf I$ 是单位矩阵。$M$ 为麦数、$K$ 为候选源数。涉及快拍、特征向量和矩阵分解时，可对照[附录 A 的数学工具](12_appendix-symbols-math.md)。
 
 ### 4.1 总览：四大类思路
 
@@ -197,7 +197,7 @@ IDFT 为 $r[\tau]=\frac{1}{8}\sum_k G[k]e^{+\mathrm{j}2\pi k\tau/8}$。分别计
 
 单帧直接代入时，$\sqrt{|X_1|^2|X_2|^2}=|X_1X_2^*|$，SCOT 与 PHAT 的分母数值相同。使用统计谱估计后，SCOT 的分母来自两路自谱，而 PHAT 的分母来自互谱幅度；两者的偏差和方差取决于平均窗、频带、信噪比及谱估计方法，不能笼统断言哪一个始终更稳。
 
-教学实现 [`gcc_phat`](../codes/array_tutorial/doa.py) 把 `epsilon` 解释为**相对本麦对互谱最大幅值**的无量纲下限。令 $G=X_1X_2^*$、$g_{\max}=\max_k|G[k]|$，实现计算 $G[k]/\max(|G[k]|,\varepsilon g_{\max})$，与表中“分母加常数”并不相同。前者只衰减低于下限的频点，后者会改变所有非零频点的模；直接丢弃弱频点又是第三种操作。E04-14 逐项比较三者。
+教学实现 [`gcc_phat`](../codes/chapters/ch04/core/doa.py) 把 `epsilon` 解释为**相对本麦对互谱最大幅值**的无量纲下限。令 $G=X_1X_2^*$、$g_{\max}=\max_k|G[k]|$，实现计算 $G[k]/\max(|G[k]|,\varepsilon g_{\max})$，与表中“分母加常数”并不相同。前者只衰减低于下限的频点，后者会改变所有非零频点的模；直接丢弃弱频点又是第三种操作。E04-14 逐项比较三者。
 
 代码先缩放输入以避免大幅度有限样本的中间乘法溢出。对任一路施加共同**正增益**不改变相位；若只把一路乘以 −1，互谱与相关曲线都反号，原来的正峰变成负谷。代码寻找实相关的最大值，没有改成绝对值峰，因此不能宣称任意非零增益都不改变估计。反相也可能来自通道极性接反，应先检查采集和标定。
 
@@ -261,7 +261,7 @@ $$\begin{aligned}
 | 0 dB | 149 | 148 | 150 |
 | −6 dB | 50 | 57 | 68 |
 
-每个条件按第 $k=0,\ldots,149$ 次使用种子 $2000+17k$；源信号使用该种子加1000的独立生成器。因此各条件同一次使用相同的带限源。固定 $T_{60}$、改变DRR时，随机尾与取帧位置也共享；改变 $T_{60}$ 会改变随机尾长度，随后第二通道随机数和取帧位置不再逐项相同，不能声称全部条件完全配对。每个条件内部的150次重新抽样，九个条件之间并非独立数据集。[逐次统计记录](../codes/reports/figure13_gcc_reverb.json)保留全部1350次的正确标志、峰值对比度、种子、计数和Wilson区间配置。
+每个条件按第 $k=0,\ldots,149$ 次使用种子 $2000+17k$；源信号使用该种子加1000的独立生成器。因此各条件同一次使用相同的带限源。固定 $T_{60}$、改变DRR时，随机尾与取帧位置也共享；改变 $T_{60}$ 会改变随机尾长度，随后第二通道随机数和取帧位置不再逐项相同，不能声称全部条件完全配对。每个条件内部的150次重新抽样，九个条件之间并非独立数据集。[逐次统计记录](../codes/chapters/ch04/reports/figure13_gcc_reverb.json)保留全部1350次的正确标志、峰值对比度、种子、计数和Wilson区间配置。
 
 这个试验把每条随机尾的**总能量**固定在目标DRR，为两通道独立生成随机尾，并对完整源序列先卷积、后截取1024点观测帧。观测帧短于反射尾，不等于仅保留反射尾的前64 ms；较早的源样本仍通过长响应贡献当前观测。因此不能用“尾变长、短帧内能量必然下降”单独解释表中变化。频谱形状、启动边界、取帧位置及反射统计共同变化；表格没有隔离各项因果，也不能推出混响更长有利于定位。
 
@@ -784,13 +784,13 @@ $\|\cdot\|_F$ 是所有矩阵元素模平方求和后的平方根，$^\dagger$ �
 
 扰动后分子是 $\mathrm j+(-\mathrm j)(-0.9+0.1\mathrm j)=0.1+1.9\mathrm j$，故 $\hat\Psi=0.05+0.95\mathrm j$。残差向量为 $[-0.05+0.05\mathrm j,\,0.05+0.05\mathrm j]^\top$，范数为 $\sqrt{0.01}=0.1$；相位约 $86.987°$，方向约 $28.90°$。
 
-这说明最小二乘只能拟合被扰动的移位关系，不保证角度仍精确。若交换子阵次序，新的最小二乘因子一般**不等于**原因子的共轭（分母也会改变），但这里其相位变号；反演公式须同时改变符号。代码入口为 [`exercises_spatial.py`](../codes/examples/exercises_spatial.py) 的 `E04-09`，并用 [`doa.py::esprit_ula`](../codes/array_tutorial/doa.py) 核对由这两个向量构造的协方差。
+这说明最小二乘只能拟合被扰动的移位关系，不保证角度仍精确。若交换子阵次序，新的最小二乘因子一般**不等于**原因子的共轭（分母也会改变），但这里其相位变号；反演公式须同时改变符号。代码入口为 [`exercises_spatial.py`](../codes/chapters/ch00/cross_chapter/exercises_spatial.py) 的 `E04-09`，并用 [`doa.py::esprit_ula`](../codes/chapters/ch04/core/doa.py) 核对由这两个向量构造的协方差。
 
 上式还假定已确定正确的相位分支。$d>\lambda/2$ 时，主值相位可能对应多个角度；即使 $d=\lambda/2$，两个端射方向 $+90°、-90°$ 都给出 $e^{\pm j\pi}=-1$，闭角域仍有端点歧义。需限制可见角域或使用额外几何、频率消歧。三维线阵首先给出沿阵列的方向余弦；输出一个平面角度还使用了声源位于指定平面的先验。
 
 E04-15检验共同基变换、秩退化和相位分支。教学接口会拒绝全零或非法协方差、不能支持指定源数的有效信号子空间、秩亏的选行块和零模旋转特征值；数值检查通过仍不能证明实际录音满足白噪声、源数和标定条件。
 
-外部实现也须做此类小例检查。固定doatools源码中，两块重叠视图分别原地乘行权重，会交叉修改共享行；精确八麦半波距模型的真方向为−5°、10°，原版默认LS却给出约−6.50854°、11.52782°。禁用行权或复制后施加共同权重的诊断对照恢复真值。这是特定提交的确定性实现问题，不是有限快拍误差；上游源码未被改写，调用与独立验证见[空间研究手册](../codes/research/01_spatial_and_tracking.md)。
+外部实现也须做此类小例检查。固定doatools源码中，两块重叠视图分别原地乘行权重，会交叉修改共享行；精确八麦半波距模型的真方向为−5°、10°，原版默认LS却给出约−6.50854°、11.52782°。禁用行权或复制后施加共同权重的诊断对照恢复真值。这是特定提交的确定性实现问题，不是有限快拍误差；上游源码未被改写，调用与独立验证见[空间研究手册](../codes/chapters/ch00/research/01_spatial_and_tracking.md)。
 
 > MUSIC 与 ESPRIT 的上述推导基于窄带模型。宽带语音需要在频率维度合并信息，下一节讨论相干与非相干宽带处理。
 
@@ -839,7 +839,7 @@ CSSM（coherent signal-subspace method，相干信号子空间方法）是代表
 
 **学习式定位**：网络用带方向标签的多通道数据学习噪声、混响与直达声线索之间的映射。多层感知机（Multilayer Perceptron，MLP）和卷积神经网络（Convolutional Neural Network，CNN）是两种可选结构；结构名称本身不说明输出是角度类别、连续方向还是声事件活动。训练规模、房间覆盖范围和阵列几何决定其泛化边界。
 
-下表把“模型输入”“模型输出”和“使用前要检查的条件”分开。网络结构、训练设置与论文结果仍要按原论文和[源码研究手册](../codes/research/01_spatial_and_tracking.md)核对，表中没有跨论文的性能排名。
+下表把“模型输入”“模型输出”和“使用前要检查的条件”分开。网络结构、训练设置与论文结果仍要按原论文和[源码研究手册](../codes/chapters/ch00/research/01_spatial_and_tracking.md)核对，表中没有跨论文的性能排名。
 
 | 路线 | 输入怎样形成 | 输出是什么 | 使用前要检查什么 |
 |---|---|---|---|
@@ -859,7 +859,7 @@ CSSM（coherent signal-subspace method，相干信号子空间方法）是代表
 
 官方 [icoDOA 代码仓库](https://github.com/DavidDiazGuerra/icoDOA "citation")给出的最小入口是 `1sourceTracking_icoCNN.py`。README 记录的验证环境为 Python 3.8.1、PyTorch 1.8.1，并依赖 gpuRIR；合成训练需准备 LibriSpeech，实录测试需准备 LOCATA，输入图分辨率由脚本参数 `r` 控制，预训练模型和对应结果位于 `models/`、`results/`。这些版本和路径是仓库的复现口径，不是对其他版本的兼容性保证。
 
-该仓库采用 [AGPL-3.0](https://github.com/DavidDiazGuerra/icoDOA/blob/master/LICENSE "citation")，并明确定位为论文复现代码而非通用软件库。本书将固定版本源码保留在独立的 `codes/upstream/_downloads/icodoa/` 研究目录，保留上游许可，不将其改标为本书教学代码的许可，也不把模型或录音授权与源码授权合并。许可证与环境信息核实于 2026-09-22，完整提交为 `04d1a89594c78ae3cf42f07d94c3737bdc1f7c82`；取得源码不代表本机已经完成训练或论文复现。
+该仓库采用 [AGPL-3.0](https://github.com/DavidDiazGuerra/icoDOA/blob/master/LICENSE "citation")，并明确定位为论文复现代码而非通用软件库。本书将固定版本源码保留在独立的 `codes/chapters/ch00/upstream/_downloads/icodoa/` 研究目录，保留上游许可，不将其改标为本书教学代码的许可，也不把模型或录音授权与源码授权合并。许可证与环境信息核实于 2026-09-22，完整提交为 `04d1a89594c78ae3cf42f07d94c3737bdc1f7c82`；取得源码不代表本机已经完成训练或论文复现。
 
 **数据驱动结果的比较范围**：定位网络必须在相同数据集、阵列、信噪比、混响、训练数据和误差指标下比较。使用时还需评估标注成本、跨房间泛化和模型复杂度。
 
@@ -877,7 +877,7 @@ DCASE2022 基线则通过 `seldnet_model.py` 与 `cls_data_generator.py` 连接 
 
 换到 DCASE2025 基线时，每轨的第三个音频输出是距离，不是旧三维方向中的 z 分量；把它一起归一化会混淆方向和距离。[DCASE2025 输出层](https://github.com/partha2409/DCASE2025_seld_baseline/blob/42a48b6456b73be35ad0e1a9ffeb6ceef83ae0bd/model.py "citation")。
 
-上述三个基线的固定提交、读码顺序、数据条件、最小实验和许可缺口分别记录在[空间处理研究文档](../codes/research/01_spatial_and_tracking.md)。IPDnet 根 README 仅给出 MIT 字样，两个 DCASE 基线在本次检查中未建立明确再分发授权，因此暂保留官方源码索引，不自动复制；不能把这一限制误写成“没有官方实现”。
+上述三个基线的固定提交、读码顺序、数据条件、最小实验和许可缺口分别记录在[空间处理研究文档](../codes/chapters/ch00/research/01_spatial_and_tracking.md)。IPDnet 根 README 仅给出 MIT 字样，两个 DCASE 基线在本次检查中未建立明确再分发授权，因此暂保留官方源码索引，不自动复制；不能把这一限制误写成“没有官方实现”。
 
 > **DCASE 任务变化（核实于 2026-09-28）**
 >
@@ -942,9 +942,9 @@ $$\sqrt{\frac{4.13^2+0^2+5.28^2}{3}}\approx3.87\ \text{mm}\text{，}$$
 
 #### 可执行基线的输入、异常处理与外部实现边界
 
-本书的原创 NumPy 基线位于 [`doa.py`](../codes/array_tutorial/doa.py)。`gcc_phat` 对应 §4.2，返回的正时延严格表示 $\tau_{12}=t_1-t_2$；它对输入补零、计算 PHAT 加权的周期逆变换，再截取物理时延范围，可选三点插值。有限补零只对未加权互相关保证线性相关等价，不能为 PHAT 保证有限支撑。
+本书的原创 NumPy 基线位于 [`doa.py`](../codes/chapters/ch04/core/doa.py)。`gcc_phat` 对应 §4.2，返回的正时延严格表示 $\tau_{12}=t_1-t_2$；它对输入补零、计算 PHAT 加权的周期逆变换，再截取物理时延范围，可选三点插值。有限补零只对未加权互相关保证线性相关等价，不能为 PHAT 保证有限支撑。
 
-`srp_phat` 是式(4-5)的远场、非负频点直接求和实现，与近场位置式(4-4)共享按麦对几何累计的原则；其输入多通道谱的形状固定为 `通道 × 频点 × 帧`。`bartlett_spectrum`、`capon_spectrum`、`music_spectrum` 和 `esprit_ula` 分别对应 §4.5、§4.6；平面波和近场导向矢量来自 [`geometry.py`](../codes/array_tutorial/geometry.py)。完整小例与手算回归见 [`ch02_05_baselines.py`](../codes/examples/ch02_05_baselines.py) 和 [`test_codes_doa_beam.py`](../tests/test_codes_doa_beam.py)。
+`srp_phat` 是式(4-5)的远场、非负频点直接求和实现，与近场位置式(4-4)共享按麦对几何累计的原则；其输入多通道谱的形状固定为 `通道 × 频点 × 帧`。`bartlett_spectrum`、`capon_spectrum`、`music_spectrum` 和 `esprit_ula` 分别对应 §4.5、§4.6；平面波和近场导向矢量来自 [`geometry.py`](../codes/chapters/ch03/core/geometry.py)。完整小例与手算回归见 [`ch02_05_baselines.py`](../codes/chapters/ch00/cross_chapter/ch02_05_baselines.py) 和 [`test_codes_doa_beam.py`](../tests/test_codes_doa_beam.py)。
 
 接入实际录音时还要固定 WAV 数值口径、采样率、通道顺序、麦克风坐标及单位、参考麦、坐标轴、声速和时间戳。GCC 必须按物理孔径裁剪时延范围，并同时输出峰值、峰背比和有效频带；SRP 还要记录阵元对、二维或三维搜索范围、网格单位、插值和粗到细规则。扫描谱要记录快拍窗口、频带合并、源数、选峰间距和加载口径。
 
@@ -952,7 +952,7 @@ Capon/MVDR 使用线性求解，不显式形成矩阵逆；协方差奇异或超
 
 MUSIC 使用厄米特征分解 `eigh`，不需要协方差可逆。例如无噪声单源的秩一协方差仍可用于已知源数的理想子空间演示，不能一概要求先加载。能完成特征分解也不证明真实源数、白噪声或非相干模型成立；这些前提仍需单独检查。
 
-本书代码之外，还有可供研究的作者或项目源码。锁定版本、许可和下载状态见 [`SOURCES.lock.json`](../codes/SOURCES.lock.json)；[空间处理与追踪研究手册](../codes/research/01_spatial_and_tracking.md)逐项列出了 doatools、pyroomacoustics、ODAS、SBL、RobustSBL 和 SMP-PHAT 的源码入口、数据形状、算法前提与复现实验。取得源码只是能阅读它；能跑一个例子也不等于复现了论文结果。
+本书代码之外，还有可供研究的作者或项目源码。锁定版本、许可和下载状态见 [`SOURCES.lock.json`](../codes/chapters/ch00/SOURCES.lock.json)；[空间处理与追踪研究手册](../codes/chapters/ch00/research/01_spatial_and_tracking.md)逐项列出了 doatools、pyroomacoustics、ODAS、SBL、RobustSBL 和 SMP-PHAT 的源码入口、数据形状、算法前提与复现实验。取得源码只是能阅读它；能跑一个例子也不等于复现了论文结果。
 
 接入外部实现时，先对照坐标和数组形状。例如本书麦位置按“通道 × 空间维度”排列，pyroomacoustics 按“空间维度 × 通道”排列；SBL 作者实现的观测按“通道 × 快拍 × 频点”排列，本书短时谱则是“通道 × 频点 × 帧”。转置错误不会总是报错，却会让方向结果失去意义。
 
@@ -962,15 +962,15 @@ root-MUSIC 还要求均匀线阵；输出为一个角度前，应确认源数、
 
 SMP-PHAT（Steered Response Power by Merging Pairs with PHAse Transform，合并麦对的相位变换功率扫描）利用远场阵列里等长、平行麦对的重复时延，先合并其互谱，再减少逆变换和时延查表；方向相反的基线需取共轭。[原论文预印本 §3](https://arxiv.org/html/2203.14409v1 "citation")给出了条件。近场声源到各麦的距离差取决于基线所在位置，不能直接沿用这种合并。
 
-本书在 Apple clang/arm64 上编译该固定版本后，发现负时延转无符号查表索引的实现问题，原版全方向分数未通过独立数值对照。它不推翻等效麦对合并的数学条件，但说明不能直接把这个版本当成已验证的可移植实现。具体反例和未改动源码的运行记录见[空间研究文档](../codes/research/01_spatial_and_tracking.md)。
+本书在 Apple clang/arm64 上编译该固定版本后，发现负时延转无符号查表索引的实现问题，原版全方向分数未通过独立数值对照。它不推翻等效麦对合并的数学条件，但说明不能直接把这个版本当成已验证的可移植实现。具体反例和未改动源码的运行记录见[空间研究文档](../codes/chapters/ch00/research/01_spatial_and_tracking.md)。
 
-本书还在临时副本中只把 `src/system.c` 的两处负时延查表转换改为有符号整数，保留锁定上游源码不变。修复版在两组固定的四麦远场合成案例中，SRP 与合并麦对 SMP 的全方向分数分别与独立 DFT 对照达到 $2\times10^{-4}$ 以内的最大绝对误差；两组都选中预定方向。代码与逐例误差见[隔离适配脚本](../codes/examples/reproduce_smpphat_portable_overlay.py)和[运行记录](../codes/reports/smpphat_portable_overlay.json)。
+本书还在临时副本中只把 `src/system.c` 的两处负时延查表转换改为有符号整数，保留锁定上游源码不变。修复版在两组固定的四麦远场合成案例中，SRP 与合并麦对 SMP 的全方向分数分别与独立 DFT 对照达到 $2\times10^{-4}$ 以内的最大绝对误差；两组都选中预定方向。代码与逐例误差见[隔离适配脚本](../codes/chapters/ch04/examples/reproduce_smpphat_portable_overlay.py)和[运行记录](../codes/chapters/ch04/reports/smpphat_portable_overlay.json)。
 
 这只验证适配版的受控案例；未验证原版、真实录音、不同硬件或运行速度。
 
-上述 SBL 与 SMP-PHAT 代码为 GPL-3.0，RobustSBL 为 MIT；模型、录音与依赖另行核对。源码版本、实际运行结果及尚未执行的范围见[空间研究手册](../codes/research/01_spatial_and_tracking.md)。
+上述 SBL 与 SMP-PHAT 代码为 GPL-3.0，RobustSBL 为 MIT；模型、录音与依赖另行核对。源码版本、实际运行结果及尚未执行的范围见[空间研究手册](../codes/chapters/ch00/research/01_spatial_and_tracking.md)。
 
-本书的[SBL 合成实验](../codes/examples/reproduce_sbl_reference.py)使用四麦半波距线阵、200 个复高斯快拍、−80°～80° 的 1° 网格和已知两源数。在总源功率相对单麦白噪声功率为 20 dB 时，一次固定随机输入得到 −30°、30° 两个正确网格峰；低至 −10 dB 的对照则得到 −21°、31°，且达到 1000 次迭代上限。
+本书的[SBL 合成实验](../codes/chapters/ch04/examples/reproduce_sbl_reference.py)使用四麦半波距线阵、200 个复高斯快拍、−80°～80° 的 1° 网格和已知两源数。在总源功率相对单麦白噪声功率为 20 dB 时，一次固定随机输入得到 −30°、30° 两个正确网格峰；低至 −10 dB 的对照则得到 −21°、31°，且达到 1000 次迭代上限。
 
 这里的停止判据是功率超参数的相对变化，不是定位正确性。每组只有一次实现，各条件共享基础随机输入，不能据此估计成功率；离网格、有色噪声和源数错设的完整结果见研究文档。
 
@@ -1119,7 +1119,7 @@ $$\begin{aligned}
 
 **参考答案**：原谱选 2；全为 1 时所有拟合项为零，惩罚最小的 $k=0$ 胜出。共同正尺度在 $a_k/g_k$ 中约去，所以缩放后评分和选择应在浮点误差内不变。零特征值使几何均值和对数不满足本节定义，本书接口明确拒绝；对角加载会改变谱和准则结果，不能不加说明地当作原算法的数值修补。
 
-复算入口为 [`exercises_spatial.py`](../codes/examples/exercises_spatial.py) 的 `E04-05`；通用教学接口是 [`doa.py::mdl_source_count`](../codes/array_tutorial/doa.py)。它接受任意顺序的严格正实特征值，内部排序但不修改输入，返回所选源数和 $k=0$ 至 $M-1$ 的全部评分。实现直接用对数求几何均值，并在每个尾部内用最大对数平移后求算术均值的对数，避免先连乘或把极小特征值除到零。独立测试用高精度标量计算核对本表，并覆盖尺度、排序、纯噪声、秩亏和样本数错误。
+复算入口为 [`exercises_spatial.py`](../codes/chapters/ch00/cross_chapter/exercises_spatial.py) 的 `E04-05`；通用教学接口是 [`doa.py::mdl_source_count`](../codes/chapters/ch04/core/doa.py)。它接受任意顺序的严格正实特征值，内部排序但不修改输入，返回所选源数和 $k=0$ 至 $M-1$ 的全部评分。实现直接用对数求几何均值，并在每个尾部内用最大对数平移后求算术均值的对数，避免先连乘或把极小特征值除到零。独立测试用高精度标量计算核对本表，并覆盖尺度、排序、纯噪声、秩亏和样本数错误。
 
 实际工程还要区分三类失效：空间有色噪声使尾部不平；完全相干源使信号协方差降秩；重叠 STFT 帧使独立快拍假设不成立。不能把帧数直接当成有效独立样本数，也不能随意用窗口时长替代 $N$。
 
@@ -1157,7 +1157,7 @@ $$\begin{aligned}
 
 第五行的相干模型与第七行的有色噪声已经违背用该 MDL 估计物理源数的前提，增加快拍不能自动修复这种模型失配。表格只说明这些指定条件，不给出一般声源检测率，也没有检验重叠 STFT 帧的影响。
 
-运行 [`mdl_repeated_trials.py`](../codes/examples/mdl_repeated_trials.py) 可单独复算全部条件，用 `--trials` 和 `--seed` 修改试验次数与种子；[`exercises_spatial.py`](../codes/examples/exercises_spatial.py) 的 `E04-06` 也会实际执行默认 7×200 次并输出相同结构。输出保留总体谱、模型是否满足物理源数解释的前提、完整计数、比例区间、种子和软件版本；[`test_codes_mdl_repeated.py`](../tests/test_codes_mdl_repeated.py) 另用标量算术—几何均值式核对实际抽样后的评分，并检查总体谱与区间，不把硬编码一次随机计数当作算法正确性的证明。
+运行 [`mdl_repeated_trials.py`](../codes/chapters/ch04/examples/mdl_repeated_trials.py) 可单独复算全部条件，用 `--trials` 和 `--seed` 修改试验次数与种子；[`exercises_spatial.py`](../codes/chapters/ch00/cross_chapter/exercises_spatial.py) 的 `E04-06` 也会实际执行默认 7×200 次并输出相同结构。输出保留总体谱、模型是否满足物理源数解释的前提、完整计数、比例区间、种子和软件版本；[`test_codes_mdl_repeated.py`](../tests/test_codes_mdl_repeated.py) 另用标量算术—几何均值式核对实际抽样后的评分，并检查总体谱与区间，不把硬编码一次随机计数当作算法正确性的证明。
 
 ### 4.10 四麦亚采样时差：从几何到可听信号
 
@@ -1182,12 +1182,12 @@ $$\begin{aligned}
 
 **参考答案。** 相邻理想相位差的大小是 $2\pi(2298)(0.04\sin30^\circ/343)\approx0.84191$ rad。未经对齐时的幅度为 $\left|\sum_{m=0}^{3}e^{\mathrm j m(0.84191)}/4\right|\approx0.607893$，即相对单麦约 −4.32345 dB；理想对齐后四个相量同相，目标幅度为 1。
 
-音频还含宽带成分、两次线性插值、独立噪声和 PCM16 量化，因此 WAV 的逐样本均方误差不会等于这两个单频幅度。运行 [`exercises_spatial.py`](../codes/examples/exercises_spatial.py) 的 `E04-07` 可复算理想相量，按[练习与音频实验](../codes/research/05_exercises_and_audio.md#14-四麦分数采样时差)读取 WAV 并检查全频结果。
+音频还含宽带成分、两次线性插值、独立噪声和 PCM16 量化，因此 WAV 的逐样本均方误差不会等于这两个单频幅度。运行 [`exercises_spatial.py`](../codes/chapters/ch00/cross_chapter/exercises_spatial.py) 的 `E04-07` 可复算理想相量，按[练习与音频实验](../codes/chapters/ch00/research/05_exercises_and_audio.md#14-四麦分数采样时差)读取 WAV 并检查全频结果。
 
-- [无噪麦 1 参考](../codes/audio/fractional_reference.wav)
-- [四通道阵列原始输入](../codes/audio/fractional_array.wav)
-- [未经对齐的四麦平均](../codes/audio/fractional_unaligned.wav)
-- [按已知几何延迟对齐后的四麦平均](../codes/audio/fractional_aligned.wav)
+- [无噪麦 1 参考](../codes/chapters/ch04/audio/fractional_reference.wav)
+- [四通道阵列原始输入](../codes/chapters/ch04/audio/fractional_array.wav)
+- [未经对齐的四麦平均](../codes/chapters/ch04/audio/fractional_unaligned.wav)
+- [按已知几何延迟对齐后的四麦平均](../codes/chapters/ch04/audio/fractional_aligned.wav)
 
 音频中的角度和传感器时差是真值，因为它们由合成器设定；它们并不是某种 DOA 算法在真实房间中“测出”的值。先用这组样本检查算法的单位、角度零点和输出符号，仍需另用未知方向、反射及真实多通道录音评价定位性能。
 
@@ -1195,7 +1195,7 @@ $$\begin{aligned}
 
 本节汇集几何、统计和实现边界的复算题；前面专题中的题也保留各自入口。正横与端射误差可先对照 §3.1 的算例3-2；CRLB题要求先指定完整观测模型，见E04-17。
 
-以下四题用 [`exercises_spatial.py`](../codes/examples/exercises_spatial.py) 复算。它们检查时延符号、统计秩、几何歧义和空间平滑，不把谱峰尖锐程度当作准确性的唯一依据。
+以下四题用 [`exercises_spatial.py`](../codes/chapters/ch00/cross_chapter/exercises_spatial.py) 复算。它们检查时延符号、统计秩、几何歧义和空间平滑，不把谱峰尖锐程度当作准确性的唯一依据。
 
 ESPRIT 最小二乘练习 E04-09 随推导放在 [§4.6 的 ESPRIT 小节](#sec-u-e9bdae6530)；分辨率重复试验 E04-08 放在 [§4.8.1](#sec-4-8-1)；MDL 练习 E04-05、E04-06 随完整算例放在 [§4.9](#sec-4-9)；四麦音频练习 E04-07 放在 [§4.10](#sec-4-10)。题号保持稳定，建议先读对应专题，再做本节综合练习。
 
@@ -1207,7 +1207,7 @@ ESPRIT 最小二乘练习 E04-09 随推导放在 [§4.6 的 ESPRIT 小节](#sec-
 
 这个 3 点延迟至少对应 $343\times187.5\,\mu\mathrm{s}=6.43$ cm 的麦距，不能把它再代入 4 cm 双麦反算实数角度。本题隔离代码符号与零输入行为，不模拟混响或亚采样误差。
 
-[音频总览的“对齐与平均”实验](../codes/research/05_exercises_and_audio.md#3-对齐与平均)另提供含噪的双通道 WAV，也采用第一通道晚 3 点的约定。先读取采样率和通道顺序，再估计时差；谐波样本可能产生多个相关峰，不能把 E04-01 的宽带、无噪结果直接当作该文件的误差保证。
+[音频总览的“对齐与平均”实验](../codes/chapters/ch00/research/05_exercises_and_audio.md#3-对齐与平均)另提供含噪的双通道 WAV，也采用第一通道晚 3 点的约定。先读取采样率和通道顺序，再估计时差；谐波样本可能产生多个相关峰，不能把 E04-01 的宽带、无噪结果直接当作该文件的误差保证。
 
 #### E04-02：两个声源为什么可能只产生一个大特征值？
 
@@ -1227,7 +1227,7 @@ ESPRIT 最小二乘练习 E04-09 随推导放在 [§4.6 的 ESPRIT 小节](#sec-
 
 #### E04-04：空间平滑怎样恢复两维信号子空间？
 
-沿用 E04-02 的完全相干双源，截取麦 1～3 与麦 2～4 的两个子阵协方差，再等权平均。计算平滑矩阵与特征值，并比较处理前后的孔径。复算入口仍为 [`exercises_spatial.py`](../codes/examples/exercises_spatial.py)。
+沿用 E04-02 的完全相干双源，截取麦 1～3 与麦 2～4 的两个子阵协方差，再等权平均。计算平滑矩阵与特征值，并比较处理前后的孔径。复算入口仍为 [`exercises_spatial.py`](../codes/chapters/ch00/cross_chapter/exercises_spatial.py)。
 
 **参考答案**：两个源的合成导向为 $[2,0,-2,0]^\top$。两个子阵的向量分别为 $[2,0,-2]^\top$ 和 $[0,-2,0]^\top$，外积平均得到
 
@@ -1260,7 +1260,7 @@ $$\mathbf C_{\tau}=\begin{bmatrix}200&100\\100&200\end{bmatrix}\ \mu\mathrm{s}^2
 
 **补充检查：网格误差能不能为零？** 取 $0°,2°,4°$ 三个格点，真值分别为 $2°,2.5°,3°$，理想最近格点误差依次为 $0°,0.5°,1°$；最后一项有两个同样近的格点。它们说明 2° 网格没有 2° 的误差下限，最近格点界为 1°。有噪声时选错远处峰值，则可能超过这个量化界。
 
-运行 [`spatial_precision_exercises.py`](../codes/examples/spatial_precision_exercises.py) 的 `E04-10` 可得到原始观测、闭合残差、未舍入投影、共享参考协方差和网格反例。均为确定性代数，不是实际录音的定位精度统计。
+运行 [`spatial_precision_exercises.py`](../codes/chapters/ch00/cross_chapter/spatial_precision_exercises.py) 的 `E04-10` 可得到原始观测、闭合残差、未舍入投影、共享参考协方差和网格反例。均为确定性代数，不是实际录音的定位精度统计。
 
 <a id="e04-11"></a>
 
@@ -1317,7 +1317,7 @@ $$\begin{aligned}
 
 **适用边界。** 正确结果依赖于事先给定且匹配当前频点的 $\mathbf R_{nn}$。工程中须从目标不活动或独立噪声训练段估计它，保持通道顺序、阵列标定和处理增益一致。把含目标的总协方差当作噪声协方差，会把要找的方向一起压平；噪声变化、估计误差和病态特征值也不会因写出 $\mathbf W$ 自动消失。本文没有证明未知有色噪声下的源数估计已经解决。
 
-本例运行入口为 `.venv/bin/python -m codes.examples.spatial_model_exercises` 的 `E04-11`，使用[本书源码](../codes/examples/spatial_model_exercises.py)与现有 `music_spectrum`。完整输出保留白化矩阵、特征值、网格和三个峰；测试另用上述秩一投影表达式核对矩阵，避免只靠同一特征分解程序自证正确。
+本例运行入口为 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.spatial_model_exercises` 的 `E04-11`，使用[本书源码](../codes/chapters/ch00/cross_chapter/spatial_model_exercises.py)与现有 `music_spectrum`。完整输出保留白化矩阵、特征值、网格和三个峰；测试另用上述秩一投影表达式核对矩阵，避免只靠同一特征分解程序自证正确。
 
 下面七题使用同一个[补充实验入口](../codes/chapters/ch04/chapter04_experiments.py)：
 
@@ -1507,8 +1507,8 @@ $$\begin{aligned}
 
 **第二步：固定一组多频证据。** 两个提供的WAV均为2 s、16 kHz、PCM16双通道的数学合成音频，共同导出增益为1、无传感器噪声。纯音文件使用2 kHz；宽带文件由1024点周期的365条等幅随机相位正弦线组成，频点索引为20～384，频率312.5～6000 Hz，种子为 `2026092804`。它是周期多正弦，不是连续白噪声或真实语音。
 
-- [纯2 kHz双通道](../codes/audio/doa_ambiguity_tone.wav)
-- [宽带多正弦双通道](../codes/audio/doa_ambiguity_broadband.wav)
+- [纯2 kHz双通道](../codes/chapters/ch04/audio/doa_ambiguity_tone.wav)
+- [宽带多正弦双通道](../codes/chapters/ch04/audio/doa_ambiguity_broadband.wav)
 
 只读取稳态样本8192～9215（Python切片 `8192:9216`），正好一个1024点周期，不加窗。对已知活动频点计算互谱并归一化：纯音只用索引128，宽带只用20～384。随后按两个候选的相位补偿取实部等权平均。
 
@@ -1519,8 +1519,8 @@ $$\begin{aligned}
 
 宽带错误候选相对真值差−8点，第 $k$ 个频点贡献 $\cos(2\pi k/128)$；把 $k=20,\ldots,384$ 的365项平均，就得到表中的−0.044266776。正确候选的所有相位抵消，每项均为1。程序同时计算浮点生成信号与PCM16读回信号，两个候选的评分在该显示精度下一致；逐样本量化误差不超过半个量化步长。
 
-音频开头、结尾含有限时长与淡入淡出边界，整段GCC可能利用这些边界偏向一个时延。因此不能看到整段纯音GCC的单峰，就声称稳态单频全局无歧义。反过来，本例宽带在这两个候选间成功，也不保证真实房间有混响、窄带噪声或多个声源时必然选对。音频生成、共同增益和试听条件见[练习与音频实验总览第26节](../codes/research/05_exercises_and_audio.md#26-纯音的时差歧义与宽频相位约束)。
+音频开头、结尾含有限时长与淡入淡出边界，整段GCC可能利用这些边界偏向一个时延。因此不能看到整段纯音GCC的单峰，就声称稳态单频全局无歧义。反过来，本例宽带在这两个候选间成功，也不保证真实房间有混响、窄带噪声或多个声源时必然选对。音频生成、共同增益和试听条件见[练习与音频实验总览第26节](../codes/chapters/ch00/research/05_exercises_and_audio.md#26-纯音的时差歧义与宽频相位约束)。
 
 ---
 
-> 📄 本篇信息：配图 5 张 ｜ [回首页](./00_overview.md)
+> 📄 本篇信息：配图 5 张 ｜ [回首页](00_overview.md)

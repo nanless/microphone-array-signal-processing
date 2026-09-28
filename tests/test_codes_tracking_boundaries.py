@@ -5,11 +5,11 @@ from pathlib import Path
 import unittest
 import numpy as np
 
-from codes.array_tutorial.tracking import ConstantVelocityKalman, CircularParticleFilter, _checked_covariance, wrap_angle
-from codes.array_tutorial.moving_source import retarded_emission_times, synthetic_source, free_field_array
-from codes.array_tutorial.audio_samples import pcm16_bytes
-from codes.examples.enhancement_structure_exercises import imm_mix
-from codes.examples.moving_source_audio import build_fixture, generate
+from codes.chapters.ch09.core.tracking import ConstantVelocityKalman, CircularParticleFilter, _checked_covariance, wrap_angle
+from codes.chapters.ch09.core.moving_source import retarded_emission_times, synthetic_source, free_field_array
+from codes.chapters.ch00.core.audio_samples import pcm16_bytes
+from codes.chapters.ch00.cross_chapter.enhancement_structure_exercises import imm_mix
+from codes.chapters.ch09.examples.moving_source_audio import build_fixture, generate
 
 
 class TrackingBoundaries(unittest.TestCase):
@@ -139,7 +139,7 @@ class MovingBoundaryTests(unittest.TestCase):
 
     def test_existing_three_wav_bytes_preserved(self):
         signals, metadata = build_fixture()
-        directory = Path(__file__).resolve().parents[1]/'codes/moving_audio'
+        directory = Path(__file__).resolve().parents[1]/'codes/chapters/ch09/moving_audio'
         for stem, waveform in signals.items():
             self.assertEqual(pcm16_bytes(waveform, 16000), (directory/f'{stem}.wav').read_bytes())
 

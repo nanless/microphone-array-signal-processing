@@ -4,11 +4,11 @@ import tempfile
 import unittest
 from pathlib import Path
 import numpy as np
-from codes.array_tutorial.separation import masked_spatial_covariance, mask_mvdr_2x2
-from codes.array_tutorial.gss_teaching import guided_cacgmm_mvdr
-from codes.examples.enhancement_step_exercises import ip_row
-from codes.examples.enhancement_structure_exercises import cacg_relative_density, cacg_shape_step
-from codes.examples.gss_teaching_demo import generate
+from codes.chapters.ch08.core.separation import masked_spatial_covariance, mask_mvdr_2x2
+from codes.chapters.ch08.core.gss_teaching import guided_cacgmm_mvdr
+from codes.chapters.ch00.cross_chapter.enhancement_step_exercises import ip_row
+from codes.chapters.ch00.cross_chapter.enhancement_structure_exercises import cacg_relative_density, cacg_shape_step
+from codes.chapters.ch08.examples.gss_teaching_demo import generate
 
 
 class SeparationBoundaries(unittest.TestCase):

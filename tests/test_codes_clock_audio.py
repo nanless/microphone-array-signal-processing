@@ -1,7 +1,7 @@
 """Analytic clock identities, PCM bounds and read-only export verification."""
 import unittest
 import numpy as np
-from codes.array_tutorial.audio_samples import clock_drift_case, prepare_exports, read_pcm16
+from codes.chapters.ch00.core.audio_samples import clock_drift_case, prepare_exports, read_pcm16
 
 class ClockAudioTest(unittest.TestCase):
     def test_clock_sampling_and_interior_sum_identity(self):

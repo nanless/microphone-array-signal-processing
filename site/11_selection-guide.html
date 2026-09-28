@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 11 章 · 总结与选型指南 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5517357657f5"><style>
+<meta name="source-digest" content="b40a94533c43"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -489,8 +489,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>pyroomacoustics 适合房间与阵列原型，不证明目标设备实时。</li>
 <li>WebRTC AEC3 可以对照实时回声链路，但其内部参数不是其他产品的默认值。</li>
 </ul>
-<p>选择开源项目时应把规范仓库、固定提交或发布、许可证、支持平台、输入输出契约、维护状态和最小测试一起写入方案，详见 §10.9.1 与 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json"><code>codes/SOURCES.lock.json</code></a>。</p>
-<p>本书按 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/COVERAGE.md"><code>codes/COVERAGE.md</code></a> 将算法分为“本仓库可运行基线、外部参考实现、原理索引、明确排除”四种状态。适配器只是调用外部实现的一种方式，不是第五种覆盖状态。教学实现通过单元测试，只能说明约定和边界算例正确；它没有经过目标设备的实时、长稳和主观听测，不能直接标成工业实现。</p>
+<p>选择开源项目时应把规范仓库、固定提交或发布、许可证、支持平台、输入输出契约、维护状态和最小测试一起写入方案，详见 §10.9.1 与 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCES.lock.json"><code>codes/chapters/ch00/SOURCES.lock.json</code></a>。</p>
+<p>本书按 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/COVERAGE.md"><code>codes/chapters/ch00/COVERAGE.md</code></a> 将算法分为“本仓库可运行基线、外部参考实现、原理索引、明确排除”四种状态。适配器只是调用外部实现的一种方式，不是第五种覆盖状态。教学实现通过单元测试，只能说明约定和边界算例正确；它没有经过目标设备的实时、长稳和主观听测，不能直接标成工业实现。</p>
 <p>工程选型还要把“源码能获取”与“接口能接入、平台能编译、设备能通过验收”分开。Linux 会议终端可研究 ALSA/PipeWire 的设备和参考路由；Cortex-M 端侧模型可研究 TFLM/CMSIS-NN 的算子与内存；XMOS 或 SOF 固件则需要对应硬件、工具链及拓扑。每条候选都应补一项故障试验，例如拔插后恢复、参考切换、跨块状态清零、缓冲不足或线程过载，具体入口见<a href="research/03_industrial_deployment.html">工业部署研究</a>。</p>
 <p>候选的输入输出与评分工具同样需要筛选。libsoxr、libsamplerate 的比例协议不能照搬；libsndfile 的时间帧数不能当成通道标量数；libebur128 的响度与真峰值也不是语音质量分。</p>
 <p>有干净参考时才可按相应条件使用 STOI/ESTOI 或 ViSQOL，静音过多、有效帧不足、参考错配及模型缺失必须进入失败记录。各接口的固定版本与边界见<a href="10_engineering-practice.html#sec-10-9">第 10 章工程对照</a>。</p>
@@ -564,7 +564,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>需求是水平面周向覆盖，设备会播放音乐，主要任务是唤醒和单人指令。两种示意圆阵半径都为 4 cm，分别放 4 麦和 6 麦；声速取 343 m/s，需求频率上限 4 kHz。先以相邻麦弦长 $2r\sin(\pi/M)$ 与 $c/(2d_{\rm adjacent})$ 作<strong>单对筛查</strong>，再写出必要模块和两个关键对照实验。这个筛查不保证整个圆阵流形没有其他歧义。</p>
 <p><strong>答案要点</strong>：四麦相邻弦长为 $0.08\sin45°\approx0.05657$ m，对应筛查界约 3032 Hz，低于 4 kHz；六麦相邻弦长为 $0.08\sin30°=0.04$ m，对应 4287.5 Hz，高于 4 kHz。按本题相邻单对条件，只保留六麦候选继续研究，仍需用完整阵列几何和工作频带核对歧义与波束质量。</p>
 <p>播放时仍需拾音，因此两方案都要评估 AEC，并确保参考覆盖播放处理。定位或多方向固定波束可用于周向选择；WPE 和分离不是默认必选。</p>
-<p>关键对照至少包括“静音播放与音乐播放下的唤醒曲线”和“AEC 开关下的近端语音损伤及残余回声”。本题的几何数字是本书构造的筛查输入，不是任何产品的性能。运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_engineering.py"><code>exercises_engineering.py</code></a> 的 <code>E11-05</code> 可复算两行候选。</p>
+<p>关键对照至少包括“静音播放与音乐播放下的唤醒曲线”和“AEC 开关下的近端语音损伤及残余回声”。本题的几何数字是本书构造的筛查输入，不是任何产品的性能。运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_engineering.py"><code>exercises_engineering.py</code></a> 的 <code>E11-05</code> 可复算两行候选。</p>
 <span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-7b9a84ce60">题 2：多人会议（E11-06）</h3>
 <p>房间混响明显，偶尔有人抢话，系统只接受一路输出，端到端延迟不得超过 150 ms。三条链路分别为单路波束、波束加 WPE、两路分离器；其延迟依次为 90、115、180 ms。</p>
 <p>前两种单路方案按同一份 100 个参考词、同一分词规则评分，分别有 25 和 20 个词错误。两路分离器尚无规定的流与参考匹配、合并评分协议，因此本题不给它单路 WER。先用输出路数和延迟两个硬条件筛选，再比较具有相同口径的词错误率。什么时候值得进一步验证 WPE，什么时候才需要重新考虑分离？</p>
@@ -585,7 +585,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><strong>基础路径</strong>：总延迟为 $16+8+22+5+70=121$ ms，满足 150 ms，但只剩 29 ms 裕量。</li>
 <li><strong>加入分离器</strong>：串行加入后为 $121+48+18=187$ ms，不满足约束；除非改变可并行依赖、减少前瞻或更换后端后，重新测得关键路径低于 150 ms，否则不应启用该候选。仅让不同块流水执行主要改善吞吐，不能自动扣除单个输出在串行依赖中必须经历的等待。</li>
 </ol>
-<p><strong>代码复算 E11-01</strong>：运行 <code>.venv/bin/python -m codes.examples.exercises_engineering</code>，核对 <code>alias_boundary_hz=4287.5</code>、<code>drift_300s_ms=24</code>、<code>maximum_alignment_interval_s=1.25</code> 和两条延迟。只要其中一个硬约束不满足，就不能用另一个指标的收益抵消。该练习验证算术和筛选逻辑，没有测量设备延迟。</p>
+<p><strong>代码复算 E11-01</strong>：运行 <code>.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering</code>，核对 <code>alias_boundary_hz=4287.5</code>、<code>drift_300s_ms=24</code>、<code>maximum_alignment_interval_s=1.25</code> 和两条延迟。只要其中一个硬约束不满足，就不能用另一个指标的收益抵消。该练习验证算术和筛选逻辑，没有测量设备延迟。</p>
 <span id="sec-12" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-b2f4d38876">题 5：评分覆盖与电池预算（E11-02）</h3>
 <p>候选模型计划评测 10 个文件，只有 8 个成功评分，成功文件的平均分为 3.8。能否直接报告“完整测试集得分 3.8”？应同时给出哪些数量？</p>
 <p>同一设备示意电池为 3.7 V、2000 mAh，电池可用容量、老化裕量及电池至负载的转换效率合计系数为 0.8；<strong>在转换电路输出端</strong>测得的整机负载功率，低功耗状态为 0.2 W、占时间 10%，处理状态为 1.2 W、占时间 90%。估计负载平均功率和续航。这里的输入是预算示意，不是某产品规格；若改在电池端测功率，转换效率不能再计入系数。</p>
@@ -610,7 +610,7 @@ p_{\mathrm U}&=1-\alpha^{1/n}.
 <p>$n=20$ 时 $p_{\mathrm U}=1-0.05^{1/20}\approx13.9108\%$；100 次时约 2.9513%，1000 次时约 0.2991%。所有组的观察失败率都为 0，但支持的风险上界不同。公式是本书从二项分布零计数概率反解的单侧界；<a href="https://itl.nist.gov/div898/handbook/prc/section2/prc241.htm">NIST 精确二项区间说明</a>提供一般计数情形的背景，其双侧公式分配 $\alpha/2$，不能直接把本题的单侧 0.05 换成 0.025 而仍称同一上界。</p>
 <p>要求 $1-0.05^{1/n}\le0.01$，等价于 $0.05^{1/n}\ge0.99$。取对数得到 $\ln(0.05)/n\ge\ln(0.99)$；两侧涉及负数，整理为 $n\ge\ln(0.05)/\ln(0.99)\approx298.073$，向上取整为 299。该预定试验设计下，299 次零失败才满足这一上界条件；不能不停测试直到某一段碰巧没有失败，再只汇报那一段。</p>
 <p>这里“95%”描述重复使用该构造程序时的覆盖性质，不是在观察后断言“固定的真实 $p$ 有 95% 概率落在区间内”。同一录音的连续帧常相关，不能把 1000 帧当作 1000 次独立会话；每个场景失败概率不同，也不能未经说明套用相同 $p$ 的模型。实际验收应预先定义失败、独立试验单元、场景抽样和停止规则，并保留失败数及分母。</p>
-<p>运行 <code>.venv/bin/python -m codes.examples.tracking_time_exercises</code>，核对<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/tracking_time_exercises.py">脚本</a>中的 <code>E11-08</code>。实现使用 <code>log1p</code>、<code>expm1</code> 减轻小上界的相减精度损失；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_time_state_exercises.py">测试</a>再把上界代回 $(1-p)^n=0.05$，并检查 298 与 299 的边界。本题只检查统计推理，没有宣称某设备通过了验收。</p>
+<p>运行 <code>.venv/bin/python -m codes.chapters.ch00.cross_chapter.tracking_time_exercises</code>，核对<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/tracking_time_exercises.py">脚本</a>中的 <code>E11-08</code>。实现使用 <code>log1p</code>、<code>expm1</code> 减轻小上界的相减精度损失；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_time_state_exercises.py">测试</a>再把上界代回 $(1-p)^n=0.05$，并检查 298 与 299 的边界。本题只检查统计推理，没有宣称某设备通过了验收。</p>
 <h3 id="sec-u-5f467b9f7e">题 9：平均错误减少，配对证据足够吗（E11-09）</h3>
 <p>事先固定六次相互独立的会话，同一会话的两个候选使用完全相同的输入、参考转写和评分规则，每次都有 100 个参考词。候选 A 的词错误总数依次为 $[12,8,20,5,15,10]$，候选 B 为 $[10,9,14,5,12,9]$；全部文件均成功评分。这些是教学计数，没有运行识别模型。</p>
 <p>先求两者的合并计数 WER、降低的百分点和相对降幅。再按预先指定的单侧问题“B 在一个非平局会话中更可能获胜吗”，做一个最小配对符号检验。零假设是：在非平局条件下，B 胜与负各有一半概率，且各会话的符号相互独立；平局保留在总数中，但不进入这次二项计数。</p>
@@ -624,7 +624,7 @@ p_{\mathrm{sign}}=\sum_{k=w}^{n}\binom nk 2^{-n}.
 $$</p>
 <p>本题 $p_{\mathrm{sign}}=(5+1)/32=0.1875$。配对差取符号、平局排除和零假设二项模型见 <a href="https://www.itl.nist.gov/div898/software/dataplot/refman1/auxillar/signtest.htm" title="citation">NIST 的 Sign Test 说明</a>（核实：2026-09-26）；式(11-2)按本题预定的“B 更好”方向取上尾，不能在看过结果后再挑单侧方向。</p>
 <p><strong>怎样解释。</strong> B 的合并错误数确实少 11 个，但在预先选定的 0.05 显著性水平下，这六次会话不足以拒绝“非平局胜负各半”。这不证明两个候选等效，也不否定已经观察到的下降。符号检验只计方向，一次少 1 个词和少 6 个词都算一胜，所以它检验的不是平均 WER 降幅；两种结果应同时报告，不能互相替代。</p>
-<p>运行 <code>.venv/bin/python -m codes.examples.engineering_boundary_exercises</code> 可核对 <code>E11-09</code>；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_engineering_boundaries.py">独立测试</a>枚举全部 32 种符号，而不由被测函数生成期望值。所有会话平局时，代码保留总数并返回“没有非平局配对”，不伪造一个显著性分数。实际评测应按独立会话或其他预定单元设计配对；同一长录音切成许多相关短段，不能自动增加独立证据。</p>
+<p>运行 <code>.venv/bin/python -m codes.chapters.ch00.cross_chapter.engineering_boundary_exercises</code> 可核对 <code>E11-09</code>；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_engineering_boundaries.py">独立测试</a>枚举全部 32 种符号，而不由被测函数生成期望值。所有会话平局时，代码保留总数并返回“没有非平局配对”，不伪造一个显著性分数。实际评测应按独立会话或其他预定单元设计配对；同一长录音切成许多相关短段，不能自动增加独立证据。</p>
 <h3 id="sec-u-adfeb2996b">题 10：硬约束之后，哪个候选更好（E11-10）</h3>
 <p>四个候选的构造数据如下。延迟上界为 150 ms、功率上界为 1 W；这些数在本题中视为确定输入，不是设备测量。WER 越低越好，先判断可行性，再找非支配候选。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>

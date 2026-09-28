@@ -4,12 +4,18 @@ Run ``python -m codes.chapters.ch10.chapter10_experiments``. Every answer is com
 from the stated inputs; no external model, network or recording is required.
 """
 from __future__ import annotations
+
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
 import json
 import math
 import numpy as np
-from codes.array_tutorial.engineering import q15_dot, resample_sro_to_reference
-from codes.array_tutorial.noise_suppression import power_spectral_subtraction
-from codes.array_tutorial.audio_samples import agc_blocks_case
+from codes.chapters.ch10.core.engineering import q15_dot, resample_sro_to_reference
+from codes.chapters.ch10.core.noise_suppression import power_spectral_subtraction
+from codes.chapters.ch00.core.audio_samples import agc_blocks_case
 from codes.chapters.ch10.sro_closed_loop_demo import StatefulLinearClockCorrector
 
 

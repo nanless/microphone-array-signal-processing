@@ -6,6 +6,12 @@ reported power ratios are descriptive, not ERLE or near-end preservation.
 
 from __future__ import annotations
 
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
+
 import argparse
 import hashlib
 import io
@@ -15,7 +21,7 @@ import wave
 
 import numpy as np
 
-from codes.examples.aec_real_pair_experiment import (
+from codes.chapters.ch06.examples.aec_real_pair_experiment import (
     FRAME, PAIR_DIR, RATE, ROOT, SOURCE_COMMIT, power_ratio_db,
     speex_linear_aec,
 )
@@ -108,7 +114,7 @@ def main() -> None:
     result, output = run(args.speex_library, args.pair_dir)
     if args.output_wav:
         destination = args.output_wav.resolve()
-        if not destination.is_relative_to((ROOT / "codes/upstream/_downloads").resolve()):
+        if not destination.is_relative_to((ROOT / "codes/chapters/ch00/upstream/_downloads").resolve()):
             raise ValueError("output WAV must stay inside the Git-ignored upstream cache")
         if destination.exists():
             raise FileExistsError("refusing to overwrite an existing output WAV")

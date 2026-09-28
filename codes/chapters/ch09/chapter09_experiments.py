@@ -6,13 +6,19 @@ Run: python -m codes.chapters.ch09.chapter09_experiments
 """
 from __future__ import annotations
 
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
+
 from itertools import permutations, product
 import json
 import math
 import numpy as np
-from codes.array_tutorial.conventions import finite_real_array, finite_real_scalar
-from codes.array_tutorial.tracking import CircularParticleFilter, ConstantVelocityKalman, wrap_angle
-from codes.array_tutorial.tracking_audio import build_fixture
+from codes.chapters.ch02.core.conventions import finite_real_array, finite_real_scalar
+from codes.chapters.ch09.core.tracking import CircularParticleFilter, ConstantVelocityKalman, wrap_angle
+from codes.chapters.ch09.core.tracking_audio import build_fixture
 
 
 def white_acceleration_covariance(dt, density):
@@ -239,7 +245,7 @@ def run_experiments():
         'negative_cross_prior': [[4., -1.], [-1., 1.]], 'prediction_without_observation': decreasing.covariance}
 
     _, audio = build_fixture()
-    result['E09-19'] = {'audio_directory': 'codes/tracking_audio',
+    result['E09-19'] = {'audio_directory': 'codes/chapters/ch09/tracking_audio',
         'float_scores': audio['float_analysis']['scores'], 'pcm_scores': audio['pcm_analysis']['scores'],
         'common_export_gain': audio['common_export_gain'], 'config': audio['analysis_config'],
         'first_state_time_s': audio['pcm_analysis']['frames']['state_time_s'][0],

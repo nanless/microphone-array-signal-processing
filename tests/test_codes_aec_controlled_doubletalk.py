@@ -6,15 +6,15 @@ import unittest
 
 import numpy as np
 
-from codes.examples.aec_controlled_doubletalk import (
+from codes.chapters.ch06.aec_controlled_doubletalk import (
     SYNTH_SHA256, checked_pcm_add, increment_metrics, interval_mask, read_pinned_pcm,
 )
-from codes.examples.aec_real_pair_experiment import ROOT
+from codes.chapters.ch06.examples.aec_real_pair_experiment import ROOT
 
 
 class ControlledDoubleTalkTests(unittest.TestCase):
     def test_published_pcm_fixture_is_exactly_additive_after_near_removal(self) -> None:
-        directory = ROOT / "codes/audio"
+        directory = ROOT / "codes/chapters/ch06/audio"
         near = read_pinned_pcm(directory / "aec_near.wav", SYNTH_SHA256["aec_near.wav"])
         mixed = read_pinned_pcm(directory / "aec_microphone.wav", SYNTH_SHA256["aec_microphone.wav"])
         base = mixed.astype(np.int32) - near.astype(np.int32)

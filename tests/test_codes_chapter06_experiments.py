@@ -4,7 +4,7 @@ import json
 import math
 import unittest
 import numpy as np
-from codes.examples.chapter06_experiments import run_experiments
+from codes.chapters.ch06.chapter06_experiments import run_experiments
 
 
 class Chapter06Experiments(unittest.TestCase):

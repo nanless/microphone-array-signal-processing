@@ -5,9 +5,9 @@ import unittest
 
 import numpy as np
 
-from codes.array_tutorial.audio_samples import build_cases, prepare_exports, read_pcm16
-from codes.array_tutorial.noise_suppression import power_spectral_subtraction
-from codes.examples.spectral_subtraction_demo import run_demo
+from codes.chapters.ch00.core.audio_samples import build_cases, prepare_exports, read_pcm16
+from codes.chapters.ch10.core.noise_suppression import power_spectral_subtraction
+from codes.chapters.ch10.spectral_subtraction_demo import run_demo
 
 
 class SpectralSubtractionTest(unittest.TestCase):

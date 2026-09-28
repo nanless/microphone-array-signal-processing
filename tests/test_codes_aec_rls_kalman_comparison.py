@@ -5,7 +5,7 @@ import unittest
 
 import numpy as np
 
-from codes.examples.aec_rls_kalman_comparison import (
+from codes.chapters.ch06.aec_rls_kalman_comparison import (
     LENGTH, PATH_A, PATH_B, SEGMENTS, make_signals, run_demo, run_experiment,
 )
 

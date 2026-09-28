@@ -1,17 +1,23 @@
 """Reproduce a hand update and a fixed-seed PBFDAF identifiability test.
 
-Run ``python -m codes.examples.aec_partitioned_demo`` at the repository root.
+Run ``python -m codes.chapters.ch06.aec_partitioned_demo`` at the repository root.
 This is a dimensionless algorithm fixture, not an acoustic recording or a
 measured convergence/latency result.
 """
 
 from __future__ import annotations
 
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
+
 import json
 
 import numpy as np
 
-from codes.array_tutorial.aec_partitioned import PartitionedFDAFState
+from codes.chapters.ch06.core.aec_partitioned import PartitionedFDAFState
 
 
 def run_demo() -> dict:

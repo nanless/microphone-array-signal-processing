@@ -3,7 +3,7 @@ import json
 import math
 import unittest
 
-from codes.examples.aec_advanced_exercises import run_exercises
+from codes.chapters.ch06.aec_advanced_exercises import run_exercises
 
 
 class AdvancedAECExercisesTest(unittest.TestCase):

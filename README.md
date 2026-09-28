@@ -4,31 +4,31 @@
 
 正文提供关键公式推导、可复算例子、适用边界、49 张脚本生成的图，以及与各章公式对应的 NumPy/标准库教学代码。
 
-全书有 228 道可运行代码练习和 27 组、共 109 个主清单合成音频文件；输入、答案与试听条件见[练习与音频实验](codes/research/05_exercises_and_audio.md)。第 6 章 E06-07～20 是模型与边界手算，另有两组**参数不完全相同**的 AEC 合成音频；不能用音频替代题目真值。这 109 个音频不是自然语音或正式听测数据。
+全书有 228 道可运行代码练习和 27 组、共 109 个主清单合成音频文件；输入、答案与试听条件见[练习与音频实验](codes/chapters/ch00/research/05_exercises_and_audio.md)。第 6 章 E06-07～20 是模型与边界手算，另有两组**参数不完全相同**的 AEC 合成音频；不能用音频替代题目真值。这 109 个音频不是自然语音或正式听测数据。
 
-附录 B 另有[六位置房间题](chapters/13_appendix-guide.md)的 18 个白噪声合成 WAV、一张实算结果图和[逐位置数值报告](codes/room_audio/RESULTS.json)，保存在独立的 [room_audio 清单](codes/room_audio/MANIFEST.json)下；它们不计入上面的 109 个音频。
+附录 B 另有[六位置房间题](chapters/13_appendix-guide.md)的 18 个白噪声合成 WAV、一张实算结果图和[逐位置数值报告](codes/chapters/appendix_b/room_audio/RESULTS.json)，保存在独立的 [room_audio 清单](codes/chapters/appendix_b/room_audio/MANIFEST.json)下；它们不计入上面的 109 个音频。
 
-另有[活动导引 GSS 教学链](codes/gss_audio/MANIFEST.json)的 5 个 WAV 和可复算状态，以及[自由场移动声源](codes/moving_audio/MANIFEST.json)的 3 个 WAV 与轨迹真值，均使用独立清单，不计入主 109 个样本。它们只验证指定的合成模型，不代表真实语音或设备表现。
+另有[活动导引 GSS 教学链](codes/chapters/ch08/gss_audio/MANIFEST.json)的 5 个 WAV 和可复算状态，以及[自由场移动声源](codes/chapters/ch09/moving_audio/MANIFEST.json)的 3 个 WAV 与轨迹真值，均使用独立清单，不计入主 109 个样本。它们只验证指定的合成模型，不代表真实语音或设备表现。
 
 另有 DEMAND 河流场景的真实 16 通道录音摘录及 3 个派生 WAV，共 4 个文件，独立标注 CC BY-SA 3.0 数据许可；实验只分析噪声功率与通道相关性。
 
-第 6 章还记录了一对 Microsoft AEC Challenge 真实播放环回/麦克风录音上的 [SpeexDSP AEC 接口实验](codes/research/02_aec_wpe_separation.md#aec)，含零参考和错位参考对照。该众包录音未随仓库再分发；报告的是本片段输入/输出功率变化，不是真值 ERLE 或设备性能排名。
+第 6 章还记录了一对 Microsoft AEC Challenge 真实播放环回/麦克风录音上的 [SpeexDSP AEC 接口实验](codes/chapters/ch00/research/02_aec_wpe_separation.md#aec)，含零参考和错位参考对照。该众包录音未随仓库再分发；报告的是本片段输入/输出功率变化，不是真值 ERLE 或设备性能排名。
 
-可复核专题包括[同输入波束比较](codes/chapters/ch05/beamformer_common_input_demo.py)、[锁定版 AuxIVA 盲估计](codes/examples/reproduce_auxiva_reference.py)、[GSS 活动错标](codes/chapters/ch08/gss_activity_error_demo.py)、[同一合成真值上的 AEC 接口对照](codes/examples/aec_same_input_truth.py)及[在线 WPE 时间边界](codes/chapters/ch07/wpe_temporal_contract.py)。各实验分别限定于解析单频、数学合成混合、固定密度 E 步、合成 PCM 或复谱，不构成真实语音或设备效果排名。
+可复核专题包括[同输入波束比较](codes/chapters/ch05/beamformer_common_input_demo.py)、[锁定版 AuxIVA 盲估计](codes/chapters/ch08/examples/reproduce_auxiva_reference.py)、[GSS 活动错标](codes/chapters/ch08/gss_activity_error_demo.py)、[同一合成真值上的 AEC 接口对照](codes/chapters/ch06/examples/aec_same_input_truth.py)及[在线 WPE 时间边界](codes/chapters/ch07/wpe_temporal_contract.py)。各实验分别限定于解析单频、数学合成混合、固定密度 E 步、合成 PCM 或复谱，不构成真实语音或设备效果排名。
 
-其他实验包括[协同阵协方差重构](codes/chapters/ch03/coarray_covariance_exercise.py)、[双源分辨率重复抽样](codes/chapters/ch04/doa_resolution_trials.py)、[GSS 受控完整教学子链](codes/examples/gss_teaching_demo.py)、[自动双讲检测](codes/chapters/ch06/aec_dtd_demo.py)、[连续移动双麦音频](codes/examples/moving_source_audio.py)及[SMP-PHAT 的隔离可移植适配](codes/examples/reproduce_smpphat_portable_overlay.py)。每项结果及未运行的官方整链边界见对应章节和研究手册。
+其他实验包括[协同阵协方差重构](codes/chapters/ch03/coarray_covariance_exercise.py)、[双源分辨率重复抽样](codes/chapters/ch04/doa_resolution_trials.py)、[GSS 受控完整教学子链](codes/chapters/ch08/examples/gss_teaching_demo.py)、[自动双讲检测](codes/chapters/ch06/aec_dtd_demo.py)、[连续移动双麦音频](codes/chapters/ch09/examples/moving_source_audio.py)及[SMP-PHAT 的隔离可移植适配](codes/chapters/ch04/examples/reproduce_smpphat_portable_overlay.py)。每项结果及未运行的官方整链边界见对应章节和研究手册。
 
 [第 9 章追踪实验](codes/chapters/ch09/tracking_crossing_dropout_demo.py)用确定性角度观测展示交叉时位置集合正确而身份错配，并复算缺测协方差与波束限速滞后；它不是语音录音或完整多目标追踪系统。
 
-[第 10 章工程逐步实验](codes/chapters/ch10/chapter10_experiments.py)提供十道可复算练习，区分重叠帧实时因子、谱减数值边界、跨块时钟状态与整块 AGC 的可用时刻。四路[同增益合成音频](codes/research/05_exercises_and_audio.md#32-分块-agc时间常数相同输出仍可能不同)可对照实际 PCM；[工业研究手册](codes/research/03_industrial_deployment.md)分别记录源码接口实调、静态诊断和尚未运行的模型或设备测试。
+[第 10 章工程逐步实验](codes/chapters/ch10/chapter10_experiments.py)提供十道可复算练习，区分重叠帧实时因子、谱减数值边界、跨块时钟状态与整块 AGC 的可用时刻。四路[同增益合成音频](codes/chapters/ch00/research/05_exercises_and_audio.md#32-分块-agc时间常数相同输出仍可能不同)可对照实际 PCM；[工业研究手册](codes/chapters/ch00/research/03_industrial_deployment.md)分别记录源码接口实调、静态诊断和尚未运行的模型或设备测试。
 
-[第 11 章选型实验](codes/chapters/ch11/chapter11_experiments.py)提供十道关于硬约束、场景组成、评分缺失、联合风险和身份评分的可复算练习。四路[同增益FIR合成音频](codes/research/05_exercises_and_audio.md)由相同混合输入实际处理并从PCM读回，展示干扰衰减与目标频带保留的取舍；图46、47对应决策和音频计算。这些样本不是语音、设备或识别效果测试。
+[第 11 章选型实验](codes/chapters/ch11/chapter11_experiments.py)提供十道关于硬约束、场景组成、评分缺失、联合风险和身份评分的可复算练习。四路[同增益FIR合成音频](codes/chapters/ch00/research/05_exercises_and_audio.md)由相同混合输入实际处理并从PCM读回，展示干扰衰减与目标频带保留的取舍；图46、47对应决策和音频计算。这些样本不是语音、设备或识别效果测试。
 
-[附录 A 数学实验](codes/chapters/appendix_a/appendix_a_experiments.py)提供七道可复算题，并用[三路数学合成脉冲](codes/research/05_exercises_and_audio.md#sec-u-a0ab2e82f7)对照正确线性分块卷积和故意错误的循环绕回；图48、49分别显示 FFT 频点约定和最终 PCM 读回位置。
+[附录 A 数学实验](codes/chapters/appendix_a/appendix_a_experiments.py)提供七道可复算题，并用[三路数学合成脉冲](codes/chapters/ch00/research/05_exercises_and_audio.md#sec-u-a0ab2e82f7)对照正确线性分块卷积和故意错误的循环绕回；图48、49分别显示 FFT 频点约定和最终 PCM 读回位置。
 
-[源码研究手册](codes/research/README.md) 进一步展开算法实现、工业配置和复现实验，分为空间处理与追踪、AEC/WPE/分离、工业部署与评测三篇专题，另附源码复现方法、练习与音频实验。官方实现固定提交，取得的源码保存在 `codes/upstream/_downloads/` 的独立工作树中。
+[源码研究手册](codes/chapters/ch00/research/README.md) 进一步展开算法实现、工业配置和复现实验，分为空间处理与追踪、AEC/WPE/分离、工业部署与评测三篇专题，另附源码复现方法、练习与音频实验。官方实现固定提交，取得的源码保存在 `codes/chapters/ch00/upstream/_downloads/` 的独立工作树中。
 
-English version: [README_EN.md](./README_EN.md)
+English version: [README_EN.md](README_EN.md)
 
 ## 目录结构
 
@@ -36,13 +36,12 @@ English version: [README_EN.md](./README_EN.md)
 |---|---|
 | `chapters/` | 教程正文 14 篇 Markdown（`00_overview.md` 是入口，`01`～`11` 是 11 章正文，`12`/`13` 是附录 A/B） |
 | `figures/` | 49 张插图（`fig01`～`fig49_*.png`），全部由脚本生成、可复现 |
-| `codes/` | 教学算法、章节例子、工业实现小工具、第三方官方源码索引与精确版本锁定；覆盖表见 `codes/COVERAGE.md` |
-| `codes/chapters/` | 第 1～11 章及附录 A/B 的单章实验真实实现，逐章目录和命令见[代码地图](codes/chapters/README.md)；旧 `codes/examples/` 同名入口兼容 |
-| `codes/audio/` | 27 组、109 个本书合成的 WAV 及参数、摘要清单，由脚本生成，不直接编辑 |
-| `codes/gss_audio/`、`codes/moving_audio/`、`codes/tracking_audio/`、`codes/room_audio/` | 四套独立合成实验资产，分别为 5、3、2、18 个 WAV；中间状态、轨迹/逐帧观测或房间数值报告随各自清单保存 |
-| `codes/real_audio/` | DEMAND 真实同步录音摘录、派生均值、独立清单与数据许可；不是合成数据 |
-| `codes/research/` | 详细源码研究手册：算法步骤、状态与配置、代码入口、失败实验和工业复现 |
-| `codes/reports/` | 工业接口与空间算法的小规模运行报告；与源码获取状态、论文全量评测分开 |
+| `codes/chapters/` | 导读、第 1～11 章及附录 A/B 的源码、实验、报告和资产；逐章目录与命令见[代码地图](codes/chapters/README.md) |
+| `codes/chapters/ch00/audio/MANIFEST.json`、各章 `audio/` | 主清单统一管理 27 组、109 个按章节存放的本书合成 WAV；由脚本生成，不直接编辑 |
+| `codes/chapters/ch08/gss_audio/`、`codes/chapters/ch09/moving_audio/`、`codes/chapters/ch09/tracking_audio/`、`codes/chapters/appendix_b/room_audio/` | 四套独立合成实验资产，分别为 5、3、2、18 个 WAV；中间状态、轨迹/逐帧观测或房间数值报告随各自清单保存 |
+| `codes/chapters/ch02/real_audio/` | DEMAND 真实同步录音摘录、派生均值、独立清单与数据许可；不是合成数据 |
+| `codes/chapters/ch00/research/` | 详细源码研究手册：算法步骤、状态与配置、代码入口、失败实验和工业复现 |
+| `codes/chapters/*/reports/` | 随算法所属章保存的小规模运行报告；与源码获取状态、论文全量评测分开 |
 | `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
 | `site/` | 20 个网页：14 个教程页（含首页）及 `research/` 下 6 个研究手册页；构建产物，可再生 |
 | `dist/` | 合订 PDF（`microphone-array-tutorial.pdf`）与合订 HTML；PDF 含 14 个顶级、119 个二级、505 个三级书签，共 638 个 |
@@ -75,17 +74,17 @@ python3 -m venv .venv
 # 可选房间仿真使用独立环境中的 pyroomacoustics 0.10.0，见 scripts/README.md
 
 # 2. 运行与正文对应的教学基线及回归测试
-.venv/bin/python codes/examples/ch02_05_baselines.py
-.venv/bin/python codes/examples/ch06_09_baselines.py
-.venv/bin/python codes/examples/ch10_engineering_baselines.py
-.venv/bin/python -m codes.examples.exercises_spatial
-.venv/bin/python -m codes.examples.exercises_enhancement
+.venv/bin/python codes/chapters/ch00/cross_chapter/ch02_05_baselines.py
+.venv/bin/python codes/chapters/ch00/cross_chapter/ch06_09_baselines.py
+.venv/bin/python codes/chapters/ch10/examples/ch10_engineering_baselines.py
+.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_spatial
+.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_enhancement
 .venv/bin/python -m codes.chapters.ch06.aec_advanced_exercises
-.venv/bin/python -m codes.examples.exercises_engineering
+.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 
 # 3. 先生成 109 个音频，再生成 49 张图（图 34～36、40～41、43～45、47、49 读取生成的音频）
-.venv/bin/python codes/examples/generate_audio_samples.py
+.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
 .venv/bin/python scripts/make_figures.py
 .venv/bin/python scripts/make_aec_figures.py
 
@@ -99,7 +98,7 @@ python3 -m venv .venv
 # 需要可复现的封面日期时，加 --build-date YYYY-MM-DD，或设置 SOURCE_DATE_EPOCH
 
 # 6. 发布前检查
-.venv/bin/python codes/examples/generate_audio_samples.py --check
+.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py --check
 .venv/bin/python -m unittest discover -s tests -v
 .venv/bin/python scripts/quality_check.py
 ```
@@ -107,18 +106,18 @@ python3 -m venv .venv
 获取官方参考源码并核对本地状态（需要 Git，获取时需要网络）：
 
 ```bash
-.venv/bin/python codes/upstream/fetch_upstreams.py --all --report tmp/source-acquisition.json
-.venv/bin/python codes/upstream/fetch_upstreams.py --verify --report tmp/source-verification.json
+.venv/bin/python codes/chapters/ch00/upstream/fetch_upstreams.py --all --report tmp/source-acquisition.json
+.venv/bin/python codes/chapters/ch00/upstream/fetch_upstreams.py --verify --report tmp/source-verification.json
 ```
 
 工具保留独立仓库和许可证，省略常见模型/音频资产，不安装或运行上游程序。源码核对与论文复现分别记录，
-具体范围见 [获取工具说明](codes/upstream/README.md)。
+具体范围见 [获取工具说明](codes/chapters/ch00/upstream/README.md)。
 
 HARKTOOL5 的官方源码归档另按 SHA-256 锁定和取得，使用独立的 `fetch_archives.py` 与状态报告；命令、许可和提取范围见同一获取说明。
 
 ## 学习路径
 
-- **路径 A（零基础入门）**：导读 → 01 → 11.1/11.3 → 02/03 → 04（GCC+SRP）→ 05（DSB+MVDR）→ 06/07/08 → 09 → 运行 `codes/examples/` 并复现 49 张图。
+- **路径 A（零基础入门）**：导读 → 01 → 11.1/11.3 → 02/03 → 04（GCC+SRP）→ 05（DSB+MVDR）→ 06/07/08 → 09 → 运行 `codes/chapters/` 并复现 49 张图。
 - **路径 B（工程实现）**：11.1/11.2/11.3 定 A/B/C 方案 → 05/06/07/08 → 10 全读 → 运行第 10 章工程基线 → 输出延迟/同步/标定三张预算表。
 - **路径 C（研究前沿）**：02（CRLB）→ 03（稀疏阵）→ 04/05 前沿 → 06/07/08 → 13.3 八条前沿 + 13.6 练习。
 
@@ -128,7 +127,7 @@ HARKTOOL5 的官方源码归档另按 SHA-256 锁定和取得，使用独立的 
 - 缩写首次出现给全称；"dB 换算用 10log（功率）/20log（幅度）"。
 - 数字凡涉榜单均标注条件与出处，仿真数字注明实现口径。
 - 外部公式、算法和数据优先链接 DOI、标准组织或官方页面；引用时核对标题、作者、年份和具体表/节，不能只检查链接能否打开。
-- 本仓库教学代码与外部参考实现的边界见 `codes/README.md`；第三方代码、模型和数据的许可证分别核对。
+- 本仓库教学代码与外部参考实现的边界见 `codes/chapters/README.md`；第三方代码、模型和数据的许可证分别核对。
 
 
-第9章另有2份连续运动合成音频与[逐帧观测清单](codes/tracking_audio/MANIFEST.json)，从PCM实际计算GCC-PHAT、缺测门控和Kalman追踪；这两份文件与主109份及原移动声源3份分开计数。运行`.venv/bin/python -m codes.examples.chapter09_tracking_audio --check`可只读核对。
+第9章另有2份连续运动合成音频与[逐帧观测清单](codes/chapters/ch09/tracking_audio/MANIFEST.json)，从PCM实际计算GCC-PHAT、缺测门控和Kalman追踪；这两份文件与主109份及原移动声源3份分开计数。运行`.venv/bin/python -m codes.chapters.ch09.examples.chapter09_tracking_audio --check`可只读核对。

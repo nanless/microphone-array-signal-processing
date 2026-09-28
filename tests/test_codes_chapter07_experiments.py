@@ -3,7 +3,7 @@ import json
 import unittest
 from fractions import Fraction as F
 import numpy as np
-from codes.examples import chapter07_experiments as ex
+from codes.chapters.ch07 import chapter07_experiments as ex
 
 
 def z(encoded):

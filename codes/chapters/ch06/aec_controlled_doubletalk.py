@@ -8,6 +8,12 @@ No third-party recordings are redistributed by this script.
 
 from __future__ import annotations
 
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
+
 import argparse
 import hashlib
 import io
@@ -17,8 +23,8 @@ import wave
 
 import numpy as np
 
-from codes.array_tutorial.aec import nlms
-from codes.examples.aec_real_pair_experiment import (
+from codes.chapters.ch06.core.aec import nlms
+from codes.chapters.ch06.examples.aec_real_pair_experiment import (
     FRAME, PAIR_DIR, RATE, ROOT, SOURCE_COMMIT, load_pinned_pair,
     speex_linear_aec,
 )
@@ -139,7 +145,7 @@ def speex_pair(library: Path, reference: np.ndarray, base: np.ndarray,
     }
 
 
-def synthetic_fixture(library: Path, audio_dir: Path = ROOT / "codes/audio") -> dict:
+def synthetic_fixture(library: Path, audio_dir: Path = ROOT / "codes/chapters/ch06/audio") -> dict:
     far = read_pinned_pcm(audio_dir / "aec_far.wav", SYNTH_SHA256["aec_far.wav"])
     near = read_pinned_pcm(audio_dir / "aec_near.wav", SYNTH_SHA256["aec_near.wav"])
     mixed = read_pinned_pcm(audio_dir / "aec_microphone.wav", SYNTH_SHA256["aec_microphone.wav"])
@@ -201,7 +207,7 @@ def real_hybrid_fixture(library: Path, pair_dir: Path = PAIR_DIR) -> dict:
 
 
 def run(library: Path, *, include_real_hybrid: bool = False,
-        audio_dir: Path = ROOT / "codes/audio", pair_dir: Path = PAIR_DIR) -> dict:
+        audio_dir: Path = ROOT / "codes/chapters/ch06/audio", pair_dir: Path = PAIR_DIR) -> dict:
     result = {
         "speex_source_commit": "8e29a256ef0235ebbe7fcb8417b5ac7731eb8307",
         "library_sha256": hashlib.sha256(library.read_bytes()).hexdigest(),

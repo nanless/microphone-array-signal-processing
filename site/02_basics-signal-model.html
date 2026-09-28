@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 2 章 · 声音到达阵列时发生了什么 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5517357657f5"><style>
+<meta name="source-digest" content="b40a94533c43"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -416,7 +416,7 @@ f_k&=\frac{kf_s}{N},\qquad 0\le k\le\lfloor N/2\rfloor\text{。}
 <li>每帧实 FFT 保存 257 个单边频点（0～8 kHz），相邻频点间隔为 $16000/512=31.25$ Hz。</li>
 </ul>
 <p>这个 31.25 Hz 是 DFT 网格间隔，不等于能分开两条相邻谱线的频率分辨能力；后者还取决于窗函数的主瓣宽度等条件。<a href="https://doi.org/10.1109/PROC.1978.10837" title="citation">Harris 1978</a>详细讨论了窗函数对谱分析的影响。</p>
-<p>分帧还要单独指定端点策略。本书 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/spectral.py"><code>spectral.py</code></a> 的默认设置 <code>center=True</code> 会在两端各补半窗，并把末端补到完整帧，因此同一段 1 s 信号得到 126 帧；设为 <code>center=False</code> 时，本例才得到 122 帧。一般长度若不能恰好覆盖，代码仍会补齐末帧，不能直接套用只取完整窗的向下取整式。</p>
+<p>分帧还要单独指定端点策略。本书 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch02/core/spectral.py"><code>spectral.py</code></a> 的默认设置 <code>center=True</code> 会在两端各补半窗，并把末端补到完整帧，因此同一段 1 s 信号得到 126 帧；设为 <code>center=False</code> 时，本例才得到 122 帧。一般长度若不能恰好覆盖，代码仍会补齐末帧，不能直接套用只取完整窗的向下取整式。</p>
 <p>信号端点补零会改变帧数；固定一帧后，把 FFT 从 512 点补到 1024 点则只加密频率网格，两者不是同一个操作。外部接口也应分别检查端点扩展和末尾补齐设置，见 <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.stft.html" title="citation">SciPy STFT 的 <code>boundary</code> 与 <code>padded</code> 定义</a>。从单边 FFT 换算功率还须处理正负频率配对、DC/Nyquist 端点与原样本长度，完整手算见 E02-08。</p>
 <p>按上述不补端点、只取完整窗的口径，1 s、4 麦录音展开为 $122\times257=31354$ 个时频点，每个点上有一个 4 维快拍向量。这就是后文协方差矩阵 $\hat{\mathbf{R}}(f_k)$ 在每个频点上平均的对象，每个频点有 122 个快拍参与平均。</p>
 <h3 id="sec-2-5-2">2.5.2 从多通道快拍到空间二阶矩</h3>
@@ -461,7 +461,7 @@ f_k&=\frac{kf_s}{N},\qquad 0\le k\le\lfloor N/2\rfloor\text{。}
 <p>其中 $0\le\rho\le1$，用于在样本统计量和各向同性先验之间折中；§5.4 的对角加载与它目标相近。</p>
 <p>若原特征值为 $\lambda_i\ge0$，新特征值为 $(1-\rho)\lambda_i+\rho\operatorname{tr}(\hat{\mathbf R})/M$。因此 $\rho>0$ 且迹大于零时才由这一条件保证正定；全零数据不能靠按自身迹收缩变出信息。手工选定 $\rho$ 也不等于已经执行自动估计收缩系数的方法。</p>
 <p>第二类处理是用时频掩码为快拍加权，分别估计目标或噪声协方差（§8.4）。掩码可以减少干扰泄漏，但也会减少有效样本数，仍须检查矩阵的条件数并配合加载。</p>
-<p><strong>本书代码采用的数组与流式约定。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/spectral.py"><code>spectral.py</code></a> 中的 STFT 固定输出 <code>通道数 × 频点数 × 帧数</code>，即 $M\times F\times L$；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/array_tutorial/covariance.py"><code>covariance.py</code></a> 再把它变成 $F$ 个 $M\times M$ 空间二阶矩。示例使用前向变换 $e^{-\mathrm j2\pi ft}$、周期 Hann 窗和加权重叠相加。</p>
+<p><strong>本书代码采用的数组与流式约定。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch02/core/spectral.py"><code>spectral.py</code></a> 中的 STFT 固定输出 <code>通道数 × 频点数 × 帧数</code>，即 $M\times F\times L$；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/core/covariance.py"><code>covariance.py</code></a> 再把它变成 $F$ 个 $M\times M$ 空间二阶矩。示例使用前向变换 $e^{-\mathrm j2\pi ft}$、周期 Hann 窗和加权重叠相加。</p>
 <p>对未修改的 STFT，逐帧逆 FFT 得到的 $z_{m,\ell}[q]$ 等于 $x_m[\ell H+q]g[q]$。本书合成器再乘同一窗，并对所有覆盖样本 $n$ 的帧求和：</p>
 <p>$$\begin{aligned}
 q_\ell&=n-\ell H,\\
@@ -473,7 +473,7 @@ D_g[n]&=\sum_\ell g^2[q_\ell],\\
 <p><code>center=True</code> 会在两端补半窗，因此离线重构可对齐原波形；实时系统不能据此把延迟写成零，还要把首帧等待、窗长、帧移、分块缓存和可能的前瞻一并计入端到端延迟。</p>
 <p>协方差实现同时给出批量估计和指数递归更新。掩码在某个频点全为零时，代码会报错，而不是用 $\varepsilon$ 伪造一个无统计依据的矩阵。非零掩码先除以该频点的最大权重，再累积归一化二阶矩；这个共同缩放不改变估计值，却避免把很小的权重单位误判成没有数据。</p>
 <p>有限精度造成的非厄米残差会被对称化；中间计算超出浮点数范围时明确报错。需要加载时采用无量纲相对口径 $\alpha\operatorname{tr}(\hat{\mathbf R})\mathbf I/M$。权重可归一化不代表独立快拍充足，还需检查秩、权重集中程度和模型条件。</p>
-<p>实际运行时还应记录遗忘因子、根据语音活动和语音存在概率决定何时更新的规则、每频点有效权重、条件数，以及估计失败时采用的处理方式。这些设置共同决定统计量跟随声场变化的速度，不能只记录“用了 MVDR”。可运行的小例见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/ch02_05_baselines.py"><code>ch02_05_baselines.py</code></a>，边界检查见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_doa_beam.py"><code>test_codes_doa_beam.py</code></a>。</p>
+<p>实际运行时还应记录遗忘因子、根据语音活动和语音存在概率决定何时更新的规则、每频点有效权重、条件数，以及估计失败时采用的处理方式。这些设置共同决定统计量跟随声场变化的速度，不能只记录“用了 MVDR”。可运行的小例见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/ch02_05_baselines.py"><code>ch02_05_baselines.py</code></a>，边界检查见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_doa_beam.py"><code>test_codes_doa_beam.py</code></a>。</p>
 <h3 id="sec-2-5-3">2.5.3 真实录音：交叉项为何不能随意省去</h3>
 <p><strong>真实录音 R01：忽略通道交叉项会怎样？</strong> <a href="https://zenodo.org/records/1227121" title="citation">DEMAND 数据库</a>的 NRIVER 场景提供真实同步环境噪声。本书取其 16 kHz 版本前 10 s，即各通道样本 <code>[0,160000)</code>，分别平均通道 1～2 和 1～16。</p>
 <p>16 只麦克风由同一设备采集，原始通道增益未经彼此校准；没有干净语音参考或声源位置真值。数据及本书派生音频按 CC BY-SA 3.0 分发，作者、采集条件、几何和修改说明见<a href="real_audio/README.md">真实录音说明</a>。</p>
@@ -657,7 +657,7 @@ r_m&=r-\vec u^\top\vec q_m\\
 <p>本章从传播时延建立了远近场模型，并定义了 STFT、快拍、协方差及四项阵列度量。第 3 章将讨论麦克风几何如何限制这些观测与指标。</p>
 <span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-f7a201edb9">本章练习</h2>
 <p>本章练习按稳定标识组织。E02-01～08 练习分析合成与协方差估计，E02-09～15 分别检查近场误差、声场积分、房间衰减、精度下界、分析合成、中心化和卷积。先手算关键中间量，再运行代码核对；代码返回的有限数值不能代替模型前提。</p>
-<p>以下六题的复算入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/exercises_spatial.py"><code>exercises_spatial.py</code></a>，结果采用稳定标识 E02-01～E02-06。</p>
+<p>以下六题的复算入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_spatial.py"><code>exercises_spatial.py</code></a>，结果采用稳定标识 E02-01～E02-06。</p>
 <h3 id="sec-u-c820e5558a">E02-01：同一段录音为什么有两种帧数？</h3>
 <p>对 8 kHz、1 s 的信号，取窗长 256 点、帧移 64 点，分别使用 <code>center=False</code> 和 <code>center=True</code>。再对其中同一个 256 点窗做 256 点与 512 点实 FFT。哪些输出数量改变，哪些物理信息没有增加？</p>
 <p><strong>参考答案</strong>：窗长 $8000\times0.032=256$ 点，帧移 $8000\times0.008=64$ 点，重叠率 $(256-64)/256=75\%$。不居中时为 $\lfloor(8000-256)/64\rfloor+1=122$ 帧。居中时两端各补 128 点，为 $\lfloor(8256-256)/64\rfloor+1=126$ 帧。</p>
@@ -746,7 +746,7 @@ r_m&=r-\vec u^\top\vec q_m\\
 <p>第二行每秒只更新第一行的一半次数；每次遗忘量却相同，所以旧状态在物理时间上保留得更久。保持 0.4 s 时，两组在该时刻都保留 $e^{-1}\approx0.367879$ 的旧状态贡献。</p>
 <p><strong>不要把时间常数当成独立样本数。</strong> 稳态指数权重 $q_k=(1-\alpha)\alpha^k$ 满足 $\sum_{k=0}^{\infty}q_k=1$、$\sum_{k=0}^{\infty}q_k^2=(1-\alpha)/(1+\alpha)$，所以 E02-04 的权重集中度为 $L_w=(1+\alpha)/(1-\alpha)=99$。只有被加权统计量彼此独立、方差相同等条件成立时，才可用它解释平均估计量的方差缩减；重叠 STFT 帧通常不能直接视为 99 个独立快拍。</p>
 <p>遇到 VAD 冻结、跳帧或可变帧移，要按实际更新间隔解释遗忘时间。冻结期间不执行递推，旧状态也就不会按墙钟时间自动衰减。零初始化的权重不足仍按 E02-05 处理，不能靠时间常数换算消除。</p>
-<p>这道题由 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/spatial_precision_exercises.py"><code>spatial_precision_exercises.py</code></a> 的 <code>E02-07</code> 复算；全部数值来自本书几何级数推导，无随机抽样。脚本保留未舍入值，上表显示六位小数。</p>
+<p>这道题由 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/spatial_precision_exercises.py"><code>spatial_precision_exercises.py</code></a> 的 <code>E02-07</code> 复算；全部数值来自本书几何级数推导，无随机抽样。脚本保留未舍入值，上表显示六位小数。</p>
 <h3 id="sec-u-2ecaa753d2">E02-08：为什么单边频谱模方之和不等于信号功率？</h3>
 <p>取四个实样本 $x=[1,0,-1,0]$，不加窗、不减均值。使用 NumPy 默认的未归一化正向 DFT，得到 <code>rfft(x)=[0,2,0]</code>。求原四个样本的均方值；再把 FFT 补零到八点，检查均方值是否改变。</p>
 <p><strong>第一步：从时间域确定答案。</strong> 均方值是 $(1^2+0^2+(-1)^2+0^2)/4=0.5$。若样本单位是 Pa，结果单位为 Pa²；若是未经声学校准的数字样本，就不能写成声压级。这里“功率”指信号均方值，不直接等于声学瓦数。</p>
@@ -815,7 +815,7 @@ c_k&=\begin{cases}
 <p>补零到八点时，单边频谱为 $[0,1+j,2,1-j,0]$，加权模方和为 $2(2+4+2)=16$；除以 $NL=32$ 仍为 0.5。若改除 $N^2=64$，得到的是“把补入的四个零也计入时长”的均方值 0.25，统计对象已经改变。</p>
 <p>奇数长度没有 Nyquist 频点。最后一行的单边频谱为 $[0,1.5+j\sqrt3/2]$，末项模方为 3，仍需乘二。不能不检查奇偶性就把 <code>rfft</code> 最后一项永远当作端点。</p>
 <p><strong>均方值与功率谱密度要区分。</strong> 功率谱密度（Power Spectral Density，PSD）还含“每 Hz”的单位。矩形窗、<code>detrend=False</code>、不裁短信号时，单边周期图可写成 $S_{xx}[k]=c_k|X_+[k]|^2/(f_sL)$，将它乘频率间距 $f_s/N$ 后求和才恢复本题均方值。其他窗改变加权与归一化；不能把未校正的加窗功率直接当成原信号功率。SciPy <code>periodogram</code> 默认减均值，复现本题 DC 行时必须显式关闭该操作。</p>
-<p>接口依据为 <a href="https://numpy.org/doc/stable/reference/generated/numpy.fft.rfft.html" title="citation">NumPy <code>rfft</code> 的归一化、端点与补零约定</a>、<a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.periodogram.html" title="citation">SciPy <code>periodogram</code> 的单位与单边谱说明</a>（2026-09-28 核实）；表中数字为本书推导。运行 <code>.venv/bin/python -m codes.examples.spatial_model_exercises</code> 的 <code>E02-08</code> 可复算全部五行；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/spatial_model_exercises.py">代码</a>同时拒绝复输入被悄悄丢弃虚部，以及过短 FFT 导致输入裁切。</p>
+<p>接口依据为 <a href="https://numpy.org/doc/stable/reference/generated/numpy.fft.rfft.html" title="citation">NumPy <code>rfft</code> 的归一化、端点与补零约定</a>、<a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.periodogram.html" title="citation">SciPy <code>periodogram</code> 的单位与单边谱说明</a>（2026-09-28 核实）；表中数字为本书推导。运行 <code>.venv/bin/python -m codes.chapters.ch00.cross_chapter.spatial_model_exercises</code> 的 <code>E02-08</code> 可复算全部五行；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/spatial_model_exercises.py">代码</a>同时拒绝复输入被悄悄丢弃虚部，以及过短 FFT 导致输入裁切。</p>
 <p>以下 E02-09～15 的统一复算入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch02/chapter02_experiments.py"><code>chapter02_experiments.py</code></a>。这些实验使用本书明确给出的模型，分别核对计算与失效边界。</p>
 <h3 id="sec-u-9410592b12">E02-09：相位误差很小，能否忽略幅度差？</h3>
 <p>三个全向麦克风位于 $x=[-0.1,0,0.1]$ m，以中心麦为参考。声速 343 m/s、频率 1 kHz；声源距中心分别为 0.2 m 和 2 m，并分别位于正横 0° 与正端射 90°。比较真实球面导向与等幅平面导向。</p>

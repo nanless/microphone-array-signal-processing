@@ -3,13 +3,13 @@
 import json
 import unittest
 
-from codes.examples import reproduce_smpphat_portable_overlay as overlay
-from codes.examples import reproduce_smpphat_reference as reference
+from codes.chapters.ch04.examples import reproduce_smpphat_portable_overlay as overlay
+from codes.chapters.ch04.examples import reproduce_smpphat_reference as reference
 
 
 class PortableOverlayTests(unittest.TestCase):
     def test_patch_requires_exact_locked_expressions(self):
-        source = (reference.ROOT / "upstream/_downloads/smpphat/src/system.c")
+        source = (reference.ROOT / "chapters/ch00/upstream/_downloads/smpphat/src/system.c")
         if not source.is_file():
             self.skipTest("固定版外部源码未取得")
         original = source.read_text(encoding="utf-8")
@@ -21,7 +21,7 @@ class PortableOverlayTests(unittest.TestCase):
             overlay.patch_source(original.replace(overlay.OLD_LOOKUP, "", 1))
 
     def test_saved_report_distinguishes_overlay_from_original(self):
-        path = reference.ROOT / "reports/smpphat_portable_overlay.json"
+        path = reference.ROOT / "chapters/ch04/reports/smpphat_portable_overlay.json"
         report = json.loads(path.read_text(encoding="utf-8"))
         self.assertEqual(report["status"], "passed_patched_teaching_case")
         self.assertEqual(report["upstream_revision"], reference.UPSTREAM_REVISION)
@@ -34,7 +34,7 @@ class PortableOverlayTests(unittest.TestCase):
             self.assertLess(case["srp_max_abs_error"], 2e-4)
             self.assertLess(case["smp_max_abs_error"], 2e-4)
             self.assertLess(case["srp_vs_smp_max_abs"], 2e-4)
-        original = json.loads((reference.ROOT / "reports/smpphat_reference.json")
+        original = json.loads((reference.ROOT / "chapters/ch04/reports/smpphat_reference.json")
                               .read_text(encoding="utf-8"))
         self.assertEqual(original["numerical_status"], "failed_portability")
 

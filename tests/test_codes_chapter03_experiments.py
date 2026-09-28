@@ -3,8 +3,8 @@ import json
 import math
 import unittest
 import numpy as np
-from codes.examples import chapter03_experiments as ch3
-from codes.array_tutorial.audio_samples import dma_calibration_case, prepare_exports, read_pcm16
+from codes.chapters.ch03 import chapter03_experiments as ch3
+from codes.chapters.ch00.core.audio_samples import dma_calibration_case, prepare_exports, read_pcm16
 
 
 class Chapter03ExperimentsTest(unittest.TestCase):

@@ -1,8 +1,8 @@
 """Independent overlap association and encoded-audio checks."""
 import unittest
 import numpy as np
-from codes.array_tutorial.css import match_two_source_overlap
-from codes.array_tutorial.audio_samples import css_overlap_case, pcm16_bytes, read_pcm16
+from codes.chapters.ch08.core.css import match_two_source_overlap
+from codes.chapters.ch00.core.audio_samples import css_overlap_case, pcm16_bytes, read_pcm16
 
 
 class CSSOverlapTests(unittest.TestCase):

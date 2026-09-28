@@ -3,9 +3,9 @@ import copy
 import unittest
 from unittest.mock import patch
 import numpy as np
-from codes.array_tutorial.engineering import resample_sro_to_reference, q15_dot, validate_telemetry
-from codes.array_tutorial.noise_suppression import power_spectral_subtraction
-from codes.examples.sro_closed_loop_demo import StatefulLinearClockCorrector
+from codes.chapters.ch10.core.engineering import resample_sro_to_reference, q15_dot, validate_telemetry
+from codes.chapters.ch10.core.noise_suppression import power_spectral_subtraction
+from codes.chapters.ch10.sro_closed_loop_demo import StatefulLinearClockCorrector
 
 
 class SpectralRangeTests(unittest.TestCase):
@@ -45,7 +45,7 @@ class EngineeringRangeTests(unittest.TestCase):
         np.testing.assert_array_equal(out, [-1e308, 0, 1e308])
 
     def test_budget_checked_before_allocation(self):
-        with patch('codes.array_tutorial.engineering.np.arange', side_effect=AssertionError('allocated')):
+        with patch('codes.chapters.ch10.core.engineering.np.arange', side_effect=AssertionError('allocated')):
             with self.assertRaisesRegex(ValueError, 'max_output_samples'):
                 resample_sro_to_reference(np.array([0., 1.]), np.nextafter(-1e6, 0))
         with self.assertRaises(ValueError):

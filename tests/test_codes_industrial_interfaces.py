@@ -15,7 +15,7 @@ import unittest
 from unittest.mock import patch
 import wave
 
-from codes.examples.run_industrial_interfaces import (
+from codes.chapters.ch10.examples.run_industrial_interfaces import (
     DEFAULT_REPORT, ROOT, digest, record_final_source_status, validate_measurements,
     validate_variable_ratio_trace, verify_wave,
 )
@@ -189,7 +189,7 @@ class TestIndustrialAcceptance(unittest.TestCase):
         self.assertEqual(report["status"], "passed")
         for artifact in report["artifacts"].values():
             self.assertEqual(artifact["sha256"], digest(ROOT / artifact["path"]))
-        lock = json.loads((ROOT / "codes/SOURCES.lock.json").read_text(encoding="utf-8"))
+        lock = json.loads((ROOT / "codes/chapters/ch00/SOURCES.lock.json").read_text(encoding="utf-8"))
         revisions = {project["id"]: project["revision"] for project in lock["projects"]}
         for name, source in report["sources"].items():
             self.assertEqual(source["revision"], revisions[name])
@@ -200,7 +200,7 @@ class TestIndustrialAcceptance(unittest.TestCase):
 
     def test_post_build_source_failure_revokes_success(self):
         report = {"status": "passed", "sources": {"probe": {}}}
-        with patch("codes.examples.run_industrial_interfaces.inspect_project",
+        with patch("codes.chapters.ch10.examples.run_industrial_interfaces.inspect_project",
                    return_value={"status": "source_selection_mismatch"}):
             errors = record_final_source_status(report, {"probe": {}}, Path("unused"))
         self.assertEqual(report["status"], "failed")
@@ -209,7 +209,7 @@ class TestIndustrialAcceptance(unittest.TestCase):
 
     def test_post_build_exception_preserves_primary_error(self):
         report = {"status": "failed", "failure": "original compilation failure", "sources": {"probe": {}}}
-        with patch("codes.examples.run_industrial_interfaces.inspect_project",
+        with patch("codes.chapters.ch10.examples.run_industrial_interfaces.inspect_project",
                    side_effect=ValueError("dirty checkout")):
             errors = record_final_source_status(report, {"probe": {}}, Path("unused"))
         self.assertEqual(report["failure"], "original compilation failure")

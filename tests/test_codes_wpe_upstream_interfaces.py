@@ -6,7 +6,7 @@ from pathlib import Path
 import unittest
 
 import numpy as np
-from codes.examples import audit_wpe_upstream_interfaces as audit
+from codes.chapters.ch07.examples import audit_wpe_upstream_interfaces as audit
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class WPEInterfaceReportTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.report = json.loads((ROOT / 'codes/reports/wpe_upstream_interfaces.json').read_text())
+        cls.report = json.loads((ROOT / 'codes/chapters/ch07/reports/wpe_upstream_interfaces.json').read_text())
 
     def test_report_bound_to_harness_sources_inputs(self):
         r = self.report

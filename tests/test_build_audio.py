@@ -34,12 +34,20 @@ class AudioQualityTest(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
-        self.source = self.root / "codes/audio"
+        self.source = self.root / "codes/chapters/ch00/audio"
         self.site = self.root / "site"
-        shutil.copytree(ROOT / "codes/audio", self.source)
-        shutil.copytree(ROOT / "codes/audio", self.site / "audio")
+        shutil.copytree(ROOT / "codes/chapters/ch00/audio", self.source)
         self.manifest_path = self.source / "MANIFEST.json"
         self.manifest = json.loads(self.manifest_path.read_text(encoding="utf-8"))
+        (self.site / "audio").mkdir(parents=True)
+        for record in self.manifest["files"]:
+            chapter = record["chapter"]
+            name = record["file"]
+            source = ROOT / "codes" / "chapters" / chapter / "audio" / name
+            target = self.root / "codes" / "chapters" / chapter / "audio" / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
+            shutil.copy2(source, self.site / "audio" / name)
         for name in self.manifest["generator_inputs"]:
             target = self.root / name
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -56,6 +64,7 @@ class AudioQualityTest(unittest.TestCase):
     def errors(self):
         errors = []
         with mock.patch.object(quality_check, "ROOT", self.root), \
+                mock.patch.object(quality_check, "CODE_CHAPTERS", self.root / "codes/chapters"), \
                 mock.patch.object(quality_check, "SITE", self.site):
             quality_check.check_audio(errors)
         return errors
@@ -76,7 +85,8 @@ class AudioQualityTest(unittest.TestCase):
         self.assertEqual(before, after)
 
     def test_missing_source_wav_is_rejected(self):
-        (self.source / self.manifest["files"][0]["file"]).unlink()
+        record = self.manifest["files"][0]
+        (self.root / "codes" / "chapters" / record["chapter"] / "audio" / record["file"]).unlink()
         self.assert_rejected("文件集合不符")
 
     def test_missing_site_wav_is_rejected(self):
@@ -87,6 +97,11 @@ class AudioQualityTest(unittest.TestCase):
         self.manifest["files"][0]["sha256"] = "0" * 64
         self.save_manifest()
         self.assert_rejected("摘要或站点副本不符")
+
+    def test_wrong_chapter_ownership_is_rejected(self):
+        self.manifest["files"][0]["chapter"] = "ch06"
+        self.save_manifest()
+        self.assert_rejected("章节归属")
 
     def test_changed_site_copy_is_rejected(self):
         path = self.site / "audio" / self.manifest["files"][0]["file"]
@@ -109,7 +124,7 @@ class AudioQualityTest(unittest.TestCase):
                                     ('duration_s', 99, '采样率或时长'),
                                     ('rms', .7, 'RMS 不符'),
                                     ('rms', float('nan'), 'RMS 不符'),
-                                    ('group', 'aec', '分组归属')]:
+                                    ('group', 'aec', '章节归属')]:
             with self.subTest(field=field, value=value):
                 self.manifest['files'][0] = {**original, field: value}
                 self.save_manifest()
@@ -170,8 +185,8 @@ class AudioLinkTest(unittest.TestCase):
 
     def test_chapter_and_research_local_wavs_get_safe_controls(self):
         cases = [
-            (ROOT / "chapters/01_problem-definition.md", "../codes/audio/spatial_reference.wav", "audio/spatial_reference.wav"),
-            (ROOT / "codes/research/05_exercises_and_audio.md", "../audio/spatial_reference.wav", "../audio/spatial_reference.wav"),
+            (ROOT / "chapters/01_problem-definition.md", "../codes/chapters/ch01/audio/spatial_reference.wav", "audio/spatial_reference.wav"),
+            (ROOT / "codes/chapters/ch00/research/05_exercises_and_audio.md", "../../ch01/audio/spatial_reference.wav", "../audio/spatial_reference.wav"),
         ]
         for source, href, output in cases:
             with self.subTest(source=source):
@@ -186,7 +201,7 @@ class AudioLinkTest(unittest.TestCase):
                 self.assertNotIn("autoplay", player)
 
     def test_external_wavs_are_unchanged_and_not_players(self):
-        source = ROOT / "codes/research/05_exercises_and_audio.md"
+        source = ROOT / "codes/chapters/ch00/research/05_exercises_and_audio.md"
         for href in ("https://example.org/audio/spatial_reference.wav",
                      "http://example.org/audio/spatial_reference.wav",
                      "//example.org/audio/spatial_reference.wav"):
@@ -196,11 +211,11 @@ class AudioLinkTest(unittest.TestCase):
                 self.assertEqual(parsed.players, [])
 
     def test_similar_but_disallowed_local_paths_are_not_players(self):
-        source = ROOT / "codes/research/05_exercises_and_audio.md"
-        for href in ("../audio/spatial_reference.wav?download=1",
-                     "../audio/spatial_reference.wav#time", "../audio/MANIFEST.json",
-                     "../audio/subdir/spatial_reference.wav", "../upstream/spatial_reference.wav",
-                     "../audio/spatial-reference.wav", "../audio/spatial_reference.WAV",
+        source = ROOT / "codes/chapters/ch00/research/05_exercises_and_audio.md"
+        for href in ("../../ch01/audio/spatial_reference.wav?download=1",
+                     "../../ch01/audio/spatial_reference.wav#time", "../audio/MANIFEST.json",
+                     "../../ch01/audio/subdir/spatial_reference.wav", "../upstream/spatial_reference.wav",
+                     "../../ch01/audio/spatial-reference.wav", "../../ch01/audio/spatial_reference.WAV",
                      "../../../../outside/audio/spatial_reference.wav"):
             with self.subTest(href=href):
                 self.assertEqual(self.rewrite(href, source).players, [])

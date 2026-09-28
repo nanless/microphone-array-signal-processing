@@ -6,9 +6,9 @@ import warnings
 
 import numpy as np
 
-from codes.array_tutorial.beamforming import apply_beamformer, mvdr_weights
-from codes.array_tutorial.doa import capon_spectrum
-from codes.examples.spatial_precision_exercises import (
+from codes.chapters.ch05.core.beamforming import apply_beamformer, mvdr_weights
+from codes.chapters.ch04.core.doa import capon_spectrum
+from codes.chapters.ch00.cross_chapter.spatial_precision_exercises import (
     forgetting_time, mismatch_bound, run_exercises, tdoa_consistency,
 )
 

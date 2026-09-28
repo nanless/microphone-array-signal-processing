@@ -1,6 +1,6 @@
 """Four dimensionless AEC hand cases; no recording or device benchmark.
 
-Run ``python -m codes.examples.aec_algorithm_minicases`` from the repository
+Run ``python -m codes.chapters.ch06.aec_algorithm_minicases`` from the repository
 root. The FFT case illustrates partitioned *convolution*, not the adaptive
 coefficient update of a complete PBFDAF. IPNLMS follows the parameterization
 in Benesty and Huang, EUSIPCO 2004, Table 1:

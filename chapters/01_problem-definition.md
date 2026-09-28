@@ -1,6 +1,6 @@
 > ⚠️ 本篇是教程正文第 1 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。
 >
-> 🏠 首页导读：[`00_overview.md`](./00_overview.md) ｜ 上一篇：（无） ｜ 下一篇：[02_basics-signal-model.md](./02_basics-signal-model.md)
+> 🏠 首页导读：[`00_overview.md`](00_overview.md) ｜ 上一篇：（无） ｜ 下一篇：[02_basics-signal-model.md](02_basics-signal-model.md)
 
 ---
 
@@ -219,10 +219,10 @@ Woodworth 模型是高频射线近似，不是覆盖任意频率、耳位与个�
 
 ### 本章练习
 
-E01-01～E01-03 使用 [`exercises_spatial.py`](../codes/examples/exercises_spatial.py)；E01-04～E01-06 使用 [`chapter01_experiments.py`](../codes/chapters/ch01/chapter01_experiments.py)。均不需下载数据；在仓库根目录运行：
+E01-01～E01-03 使用 [`exercises_spatial.py`](../codes/chapters/ch00/cross_chapter/exercises_spatial.py)；E01-04～E01-06 使用 [`chapter01_experiments.py`](../codes/chapters/ch01/chapter01_experiments.py)。均不需下载数据；在仓库根目录运行：
 
 ```bash
-.venv/bin/python -m codes.examples.exercises_spatial
+.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_spatial
 .venv/bin/python -m codes.chapters.ch01.chapter01_experiments
 ```
 
@@ -357,8 +357,8 @@ $$
 
 两种模型在正前方附近很接近，正侧面却相差约 146 μs。因此选择传播模型必须先看是否存在头部或挡板，以及近似条件是否成立。这个计算既不验证人体定位准确率，也不能作为两麦硬件在房间中的实测结果。
 
-可在[章节代码练习与音频实验](../codes/research/05_exercises_and_audio.md)中试听既有“单麦输入”“对齐后平均”和本章的残余时差样本。文件保留各组共同增益，使用数学合成信号；先从低播放音量开始。听音帮助发现差别，功率、延迟与模型判断仍需以上述计算为准。
+可在[章节代码练习与音频实验](../codes/chapters/ch00/research/05_exercises_and_audio.md)中试听既有“单麦输入”“对齐后平均”和本章的残余时差样本。文件保留各组共同增益，使用数学合成信号；先从低播放音量开始。听音帮助发现差别，功率、延迟与模型判断仍需以上述计算为准。
 
 ---
 
-> 📄 本篇信息：配图 1 张 ｜ [回首页](./00_overview.md)
+> 📄 本篇信息：配图 1 张 ｜ [回首页](00_overview.md)

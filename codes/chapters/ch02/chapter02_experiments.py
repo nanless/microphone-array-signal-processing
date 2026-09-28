@@ -6,12 +6,18 @@ uses only NumPy and the repository baseline. Imports do not run experiments.
 """
 from __future__ import annotations
 
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
+
 import json
 import numpy as np
 
-from codes.array_tutorial.audio_samples import room_decay_case
-from codes.array_tutorial.covariance import spatial_covariance
-from codes.array_tutorial.spectral import periodic_hann
+from codes.chapters.ch00.core.audio_samples import room_decay_case
+from codes.chapters.ch03.core.covariance import spatial_covariance
+from codes.chapters.ch02.core.spectral import periodic_hann
 
 
 def near_far_errors() -> dict:

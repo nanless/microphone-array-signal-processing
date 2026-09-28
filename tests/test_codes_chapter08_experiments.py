@@ -2,7 +2,7 @@
 import json
 import unittest
 import numpy as np
-from codes.examples.chapter08_experiments import run_experiments
+from codes.chapters.ch08.chapter08_experiments import run_experiments
 
 
 def complex_array(value):

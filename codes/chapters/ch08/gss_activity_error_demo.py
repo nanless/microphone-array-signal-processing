@@ -6,10 +6,16 @@ shape matrices, run EM, form spatial covariances, beamform, or score speech.
 
 from __future__ import annotations
 
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
+
 import json
 import numpy as np
 
-from codes.array_tutorial.separation import guided_activity_posterior
+from codes.chapters.ch08.core.separation import guided_activity_posterior
 
 
 def run_experiment() -> dict:

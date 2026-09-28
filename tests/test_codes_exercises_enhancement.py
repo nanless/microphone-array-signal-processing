@@ -4,10 +4,10 @@ import json
 import unittest
 import numpy as np
 
-from codes.examples.exercises_enhancement import run_exercises
-from codes.array_tutorial.aec import erle_db, nlms
-from codes.array_tutorial.dereverberation import offline_wpe
-from codes.array_tutorial.separation import (guided_activity_posterior,
+from codes.chapters.ch00.cross_chapter.exercises_enhancement import run_exercises
+from codes.chapters.ch06.core.aec import erle_db, nlms
+from codes.chapters.ch07.core.dereverberation import offline_wpe
+from codes.chapters.ch08.core.separation import (guided_activity_posterior,
                                              masked_spatial_covariance, pit_permutation, si_sdr)
 
 

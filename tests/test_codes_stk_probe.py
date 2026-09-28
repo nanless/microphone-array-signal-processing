@@ -1,6 +1,6 @@
 """Offline report validation; native compilation is an explicit experiment."""
 import unittest
-from codes.examples.run_stk_delay_probe import validate_measurements
+from codes.chapters.ch10.examples.run_stk_delay_probe import validate_measurements
 
 
 class STKProbeTest(unittest.TestCase):

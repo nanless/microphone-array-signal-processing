@@ -10,4 +10,4 @@
 .venv/bin/python -m codes.chapters.ch10.sro_closed_loop_demo
 ```
 
-原有 `codes.examples` 同名模块保留为兼容入口。背景与边界见 [第 10 章](../../../chapters/10_engineering-practice.md)和[练习手册](../../research/05_exercises_and_audio.md)。
+背景与边界见 [第 10 章](../../../chapters/10_engineering-practice.md)和[练习手册](../ch00/research/05_exercises_and_audio.md)。

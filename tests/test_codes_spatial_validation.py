@@ -7,9 +7,9 @@ import unittest
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from codes.array_tutorial.beamforming import apply_beamformer, blocking_matrix, lcmv_weights, mvdr_weights, wiener_gain
-from codes.array_tutorial.covariance import spatial_covariance
-from codes.array_tutorial.doa import bartlett_spectrum, capon_spectrum, esprit_ula, gcc_phat, music_spectrum, srp_phat
+from codes.chapters.ch05.core.beamforming import apply_beamformer, blocking_matrix, lcmv_weights, mvdr_weights, wiener_gain
+from codes.chapters.ch03.core.covariance import spatial_covariance
+from codes.chapters.ch04.core.doa import bartlett_spectrum, capon_spectrum, esprit_ula, gcc_phat, music_spectrum, srp_phat
 
 
 class SpatialValidationTest(unittest.TestCase):

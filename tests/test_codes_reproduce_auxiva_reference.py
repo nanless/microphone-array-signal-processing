@@ -4,10 +4,10 @@ import unittest
 
 import numpy as np
 
-from codes.examples.reproduce_auxiva_reference import (
+from codes.chapters.ch08.examples.reproduce_auxiva_reference import (
     MIXING, SOURCE_TREE, independent_sources, pinned_auxiva_class, run_experiment,
 )
-from codes.examples.gss_activity_error_demo import run_experiment as run_activity_experiment
+from codes.chapters.ch08.gss_activity_error_demo import run_experiment as run_activity_experiment
 
 
 class AuxIVAReferenceExperimentTests(unittest.TestCase):

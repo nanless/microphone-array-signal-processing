@@ -1,6 +1,6 @@
 > ⚠️ 本篇是附录 B（正文共 11 章，另有附录 A/B），可独立查阅，前后篇见下方导航。
 >
-> 🏠 首页导读：[`00_overview.md`](./00_overview.md) ｜ 上一篇：[12_appendix-symbols-math.md](./12_appendix-symbols-math.md) ｜ 下一篇：（无）
+> 🏠 首页导读：[`00_overview.md`](00_overview.md) ｜ 上一篇：[12_appendix-symbols-math.md](12_appendix-symbols-math.md) ｜ 下一篇：（无）
 
 ---
 
@@ -276,7 +276,7 @@ D_t&=(1-p_D)D^-\\
 
 练习按学习主题排列，题 9 先用去混响图作对照，题 10～11 再回到回声消除；原有 1～17 的编号保持不变。修改脚本参数时，应同时记录随机种子、实验条件和输出指标。数值题附参考答案，综合题附思路提示。
 
-**练习涉及的绘图函数**：先阅读参数与生成模型。需要改参数时，在个人实验副本中运行并保存到独立输出目录，不直接覆盖本书的出版插图或 `codes/reports/`。这些函数是出版图生成器，并非自动接受参数、同步改图注和报告的实验接口。记录实际输入时，要同时核对标题、图内固定文字、坐标、图注和 JSON 报告；任何一项仍写旧值，就不能用该图说明新条件。
+**练习涉及的绘图函数**：先阅读参数与生成模型。需要改参数时，在个人实验副本中运行并保存到独立输出目录，不直接覆盖本书的出版插图或 `codes/chapters/ch00/reports/`。这些函数是出版图生成器，并非自动接受参数、同步改图注和报告的实验接口。记录实际输入时，要同时核对标题、图内固定文字、坐标、图注和 JSON 报告；任何一项仍写旧值，就不能用该图说明新条件。
 
 | 函数名 | 它画的是什么 | 用在哪道题 |
 |---|---|---|
@@ -289,7 +289,7 @@ D_t&=(1-p_D)D^-\\
 
 动手题用的绘图函数都在 `scripts/` 里，具体对应关系见上表。第 16 题还要安装 pyroomacoustics 0.10.0；它是房间声学仿真的扩展依赖，命令见该题和项目 README。
 
-章内还有带稳定编号 `E01-01` 等的计算练习，由[练习与音频实验手册](../codes/research/05_exercises_and_audio.md)统一索引。下面的 1～17 题采用另一套编号，与 E 号题各自独立。`codes/examples/exercises_engineering.py` 覆盖工程、选型和数学的基础计算组；谱减、状态时间和事件边界等题使用各自的独立入口。请按题面或手册中的稳定 ID 选择程序，先手算再比对输出，不能把一个入口当作全部 E10、E11、E12 题的执行器。
+章内还有带稳定编号 `E01-01` 等的计算练习，由[练习与音频实验手册](../codes/chapters/ch00/research/05_exercises_and_audio.md)统一索引。下面的 1～17 题采用另一套编号，与 E 号题各自独立。`codes/chapters/ch00/cross_chapter/exercises_engineering.py` 覆盖工程、选型和数学的基础计算组；谱减、状态时间和事件边界等题使用各自的独立入口。请按题面或手册中的稳定 ID 选择程序，先手算再比对输出，不能把一个入口当作全部 E10、E11、E12 题的执行器。
 
 #### 13.6.1 基础与几何：第 1～3 章的题 1～4
 
@@ -403,7 +403,7 @@ D_t&=(1-p_D)D^-\\
 
     **提示**：分别列出前瞻、缓冲、计算、调度和解码/交互。把 STFT 窗长从 32 ms 改为 16 ms 只会改变依赖完整窗的等待，不会自动把端到端延迟减半；WPE 流式化和后端分级也要以实测关键路径验收。
 
-    运行 `.venv/bin/python -m codes.examples.ch10_engineering_baselines`，再把调度示例中的两个 18 ms 处理帧逐步增大。记录未能在下一帧到来前完成的次数（程序字段 `deadline_misses`）、接收但尚未完成的帧数峰值（`queue_high_water`，含正在处理的帧）和丢帧数。该模拟器只有一条串行工作线程，不含操作系统抢占；它验证记账方式，不是目标硬件性能测试。
+    运行 `.venv/bin/python -m codes.chapters.ch10.examples.ch10_engineering_baselines`，再把调度示例中的两个 18 ms 处理帧逐步增大。记录未能在下一帧到来前完成的次数（程序字段 `deadline_misses`）、接收但尚未完成的帧数峰值（`queue_high_water`，含正在处理的帧）和丢帧数。该模拟器只有一条串行工作线程，不含操作系统抢占；它验证记账方式，不是目标硬件性能测试。
 
 **第 11 章（选型）**
 
@@ -413,7 +413,7 @@ D_t&=(1-p_D)D^-\\
 
 #### 13.6.5 房间仿真：第 16 题的输入、测量和结果
 
-16. **确定性房间仿真：距离、直达声与混响声能量比、定位误差。** 用 pyroomacoustics 0.10.0 生成目标 $T_{60}=0.6$ s 的房间冲激响应（Room Impulse Response，RIR），再用本书的 SRP-PHAT 教学实现估计单声源方向。先运行 `.venv/bin/python -m codes.examples.room_srp_exercise --check`：这一步只检查配置，不需要安装 pyroomacoustics，也没有运行房间仿真。
+16. **确定性房间仿真：距离、直达声与混响声能量比、定位误差。** 用 pyroomacoustics 0.10.0 生成目标 $T_{60}=0.6$ s 的房间冲激响应（Room Impulse Response，RIR），再用本书的 SRP-PHAT 教学实现估计单声源方向。先运行 `.venv/bin/python -m codes.chapters.appendix_b.examples.room_srp_exercise --check`：这一步只检查配置，不需要安装 pyroomacoustics，也没有运行房间仿真。
 
 #### 第 16 题：输入与声学模型
 
@@ -431,11 +431,11 @@ $$
 
 按该版本源码的镜像覆盖口径，三组边长分别计算 $ab/\sqrt{a^2+b^2}$，并取最小的一组；本房间的最小值来自 10 m 与 6 m 两边，为 $10\cdot6/\sqrt{10^2+6^2}=60/\sqrt{136}\approx5.145$ m。将未舍入的尺度代入源码的阶数规则，得到 $\lceil343\cdot0.6/(60/\sqrt{136})-1\rceil=40$；$\lceil\,\rceil$ 表示向上取整，临近整数时不能先舍入中间量。镜像法关闭随机扰动、射线追踪和空气吸收；实际使用的阶数单独写进结果。
 
-式(13-1)中的 $\alpha$ 和“目标 0.6 s”都只是建模输入，不能写成已实现的衰减时间。公式口径可对照[固定版本源码清单](../codes/SOURCES.lock.json)中锁定的 pyroomacoustics `acoustics.py` 的 `inverse_sabine`。
+式(13-1)中的 $\alpha$ 和“目标 0.6 s”都只是建模输入，不能写成已实现的衰减时间。公式口径可对照[固定版本源码清单](../codes/chapters/ch00/SOURCES.lock.json)中锁定的 pyroomacoustics `acoustics.py` 的 `inverse_sabine`。
 
 #### 第 16 题：运行与指标计算
 
-在单独的虚拟环境安装 `pyroomacoustics==0.10.0` 和绘图依赖，再从仓库根目录用该环境的 Python 运行 `python -m codes.examples.room_srp_exercise --run --plot /tmp/room_srp_exercise.png`；这里的 `python` 指隔离环境的解释器，不要求改变仓库 `.venv`。`--run` 输出逐位置 JSON，图按六个位置分别画四麦 DRR 中位数、由 $T_{20}$ 外推的 $T_{60}$ 与 DOA 绝对误差；每个位置标明距离和角度，避免相同距离、近乎相同 DRR 的左右对称点在散点图中重叠。
+在单独的虚拟环境安装 `pyroomacoustics==0.10.0` 和绘图依赖，再从仓库根目录用该环境的 Python 运行 `python -m codes.chapters.appendix_b.examples.room_srp_exercise --run --plot /tmp/room_srp_exercise.png`；这里的 `python` 指隔离环境的解释器，不要求改变仓库 `.venv`。`--run` 输出逐位置 JSON，图按六个位置分别画四麦 DRR 中位数、由 $T_{20}$ 外推的 $T_{60}$ 与 DOA 绝对误差；每个位置标明距离和角度，避免相同距离、近乎相同 DRR 的左右对称点在散点图中重叠。
 
 定位脚本用 512 点 Hann 窗、128 点帧移、300～2000 Hz 频带，在 $-80°$ 到 $+80°$ 的 1° 网格扫描；报告 $|\hat\theta-\theta|$，故网格量化与近场/远场模型差异均计入误差。四麦最远间距为 $0.06\sqrt2\approx0.0849$ m，低于 2 kHz 对应的半波长 $343/(2\cdot2000)=0.08575$ m，这控制了所用频带内的空间混叠。
 
@@ -468,9 +468,9 @@ $$
 | 种子位置 1 | 1.099 | −41.244 | 0.555 | 4.866 | −40 | 1.244 |
 | 种子位置 2 | 1.973 | +2.396 | 0.563 | −0.003 | +3 | 0.604 |
 
-逐位置原始数值、每麦指标、镜像阶数和参数见[机器可读的房间仿真结果报告](../codes/room_audio/RESULTS.json)。上表展示值按注明精度舍入，复算差值或检查收敛时应优先读取报告的未舍入值；该报告对应本书固定的 pyroomacoustics 0.10.0 隔离运行，不是独立房间实测。
+逐位置原始数值、每麦指标、镜像阶数和参数见[机器可读的房间仿真结果报告](../codes/chapters/appendix_b/room_audio/RESULTS.json)。上表展示值按注明精度舍入，复算差值或检查收敛时应优先读取报告的未舍入值；该报告对应本书固定的 pyroomacoustics 0.10.0 隔离运行，不是独立房间实测。
 
-![本题六个声源位置的房间仿真结果，依次比较 DRR、T20 外推混响时间与 SRP-PHAT 方位绝对误差](../codes/room_audio/ROOM_RESULTS.png)
+![本题六个声源位置的房间仿真结果，依次比较 DRR、T20 外推混响时间与 SRP-PHAT 方位绝对误差](../codes/chapters/appendix_b/room_audio/ROOM_RESULTS.png)
 
 这张本题补充图的上、中、下栏分别用 dB、s、角度表示四麦 DRR 中位数、$T_{20}$ 外推的 $T_{60}$ 中位数和 SRP-PHAT 方位绝对误差。横轴标明六个已经固定的声源位置、距离与真方位；中栏虚线是 0.6 s 建模目标。图仅表示这一间合成房间的六个源位，不代表跨房间的统计分布。
 
@@ -482,11 +482,11 @@ $$
 
 #### 第 16 题：试听文件与复现
 
-仓库已将六组源信号、四麦完整房间输出和四麦仅直达输出，共 18 个 PCM WAV 单独保存在 `codes/room_audio/`，参数、共同增益、种子和逐文件摘要见[房间音频清单](../codes/room_audio/MANIFEST.json)；[逐组试听入口](../codes/research/05_exercises_and_audio.md#17-六位置房间响应与定位)列出全部文件。
+仓库已将六组源信号、四麦完整房间输出和四麦仅直达输出，共 18 个 PCM WAV 单独保存在 `codes/chapters/appendix_b/room_audio/`，参数、共同增益、种子和逐文件摘要见[房间音频清单](../codes/chapters/appendix_b/room_audio/MANIFEST.json)；[逐组试听入口](../codes/chapters/ch00/research/05_exercises_and_audio.md#17-六位置房间响应与定位)列出全部文件。
 
-每组使用与定位估计相同的固定白高斯噪声输入；全部文件采用同一个显式增益，不逐文件峰值归一化，保留传播时延和增益差异。文件是数学合成白噪声，不是真实语音或实测房间录音；试听前先降低播放音量。它们与主清单的 109 个 `codes/audio/` 样本分别管理。
+每组使用与定位估计相同的固定白高斯噪声输入；全部文件采用同一个显式增益，不逐文件峰值归一化，保留传播时延和增益差异。文件是数学合成白噪声，不是真实语音或实测房间录音；试听前先降低播放音量。它们与主清单的 109 个 `codes/chapters/ch00/audio/` 样本分别管理。
 
-若要重新生成到个人实验目录，先在装有锁定版 pyroomacoustics 0.10.0 的隔离环境中运行 `python -m codes.examples.room_srp_exercise --run --audio-dir /tmp/room-srp-audio-new`；为防覆盖，该目录必须尚不存在。
+若要重新生成到个人实验目录，先在装有锁定版 pyroomacoustics 0.10.0 的隔离环境中运行 `python -m codes.chapters.appendix_b.examples.room_srp_exercise --run --audio-dir /tmp/room-srp-audio-new`；为防覆盖，该目录必须尚不存在。
 
 #### 第 16 题：能得出的结论
 
@@ -508,7 +508,7 @@ $$
 
 答案：$b$ 的幅度是 $a$ 的一半，电平低 $20\log_{10}2\approx6.0206$ dB。共同乘 2 后，两者峰值是 0.8 和 0.4，原来的比例保留。各自除以自身峰值后，都变成 $[0,1,-1,0]$，差值为零，衰减被归一化消除了。
 
-运行 `.venv/bin/python -m codes.examples.exercises_engineering` 中的 `E13-01` 可复核这组数字。实际试听使用[音频实验手册](../codes/research/05_exercises_and_audio.md)列出的较长素材。比较残余回声电平或 AGC 行为时，不能先分别拉到同一峰值再宣称电平没有变化；若只比较音色，可另建等响度试听版本，但仍保留未经该处理的评分输入。
+运行 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering` 中的 `E13-01` 可复核这组数字。实际试听使用[音频实验手册](../codes/chapters/ch00/research/05_exercises_and_audio.md)列出的较长素材。比较残余回声电平或 AGC 行为时，不能先分别拉到同一峰值再宣称电平没有变化；若只比较音色，可另建等响度试听版本，但仍保留未经该处理的评分输入。
 
 ![图35 相关噪声、极性错误和病态求逆的合成音频反例](../figures/fig35_audio_counterexamples.png)
 
@@ -518,7 +518,7 @@ $$
 
 **(b)** 输入目标增益为 1 与 −0.9；极性未纠正时平均只保留 0.05 倍目标，已知纠正后为 0.95 倍。波形展示 500～510 ms。
 
-**(c)** 两个已知混合矩阵的二范数条件数分别为 3、199，同一输入噪声标准差为 0.003。每一路恢复结果与对应源参考逐样本相减，统计全段 RMS，不拟合额外时延或增益。柱形表示同一固定随机样本，不代表统计均值；不同子图条件不同，不能跨组排名。模型、矩阵及 13 个对照文件见[音频手册第 9～11 节](../codes/research/05_exercises_and_audio.md)。
+**(c)** 两个已知混合矩阵的二范数条件数分别为 3、199，同一输入噪声标准差为 0.003。每一路恢复结果与对应源参考逐样本相减，统计全段 RMS，不拟合额外时延或增益。柱形表示同一固定随机样本，不代表统计均值；不同子图条件不同，不能跨组排名。模型、矩阵及 13 个对照文件见[音频手册第 9～11 节](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
 
 #### 13.6.8 分数延迟：时延对了，幅度为何仍会变
 
@@ -571,11 +571,11 @@ $$
 
 图41(a)的实线与虚线由式(13-5)计算；空心圆和方块从已导出PCM读回，分别测一次和两次处理。(b)按同一口径将PCM幅度比转成dB，柱内纹理区分两次处理。输入为2 s双音，两端各20 ms线性淡入淡出；四文件共用导出增益1，不分别归一化。
 
-**怎样核验音频。** 对[四个插值对照文件](../codes/research/05_exercises_and_audio.md#22-线性分数延迟的幅度失真)，只统计半开区间 $[1600,30400)$ 点，即0.1～1.9 s，避开初始化和淡入淡出。该区间包含500 Hz的900个周期和6000 Hz的10800个周期，可用 $2|\sum_n x[n]e^{-j2\pi fn/f_s}|/N$ 分别测两种频率的幅度。分母参考须是对应半采样或一采样的理想输出。
+**怎样核验音频。** 对[四个插值对照文件](../codes/chapters/ch00/research/05_exercises_and_audio.md#22-线性分数延迟的幅度失真)，只统计半开区间 $[1600,30400)$ 点，即0.1～1.9 s，避开初始化和淡入淡出。该区间包含500 Hz的900个周期和6000 Hz的10800个周期，可用 $2|\sum_n x[n]e^{-j2\pi fn/f_s}|/N$ 分别测两种频率的幅度。分母参考须是对应半采样或一采样的理想输出。
 
 运行 `.venv/bin/python -m codes.chapters.appendix_b.interpolation_exercise`，可同时得到解析值、PCM幅度及其比值；PCM16量化使结果与解析值略有差异。理想输出由已知连续双音在目标时刻求值得到，不是从离散输入恢复出的估计。此题没有房间、噪声或真人语音，不能据音色差异给真实语音质量评分。
 
-选择分数延迟器时应按目标频带检查幅度、相位、延迟和状态，不能只核对插值位置。高阶FIR、全通或带限重采样有不同误差与代价；本题未运行这些替代方案。已实际编译的STK `DelayL` 固定接口对照及其状态重置反例见[工业研究I29](../codes/research/03_industrial_deployment.md#i29stkdelayl)。
+选择分数延迟器时应按目标频带检查幅度、相位、延迟和状态，不能只核对插值位置。高阶FIR、全通或带限重采样有不同误差与代价；本题未运行这些替代方案。已实际编译的STK `DelayL` 固定接口对照及其状态重置反例见[工业研究I29](../codes/chapters/ch00/research/03_industrial_deployment.md#i29stkdelayl)。
 
 #### E13-03：六个位置中，距离越远就一定越难定位吗？
 
@@ -633,7 +633,7 @@ $$
 
 #### E13-07：房间 WAV 的共同增益和峰时延各说明什么？
 
-**读现有资产。** 只检查[房间独立清单](../codes/room_audio/MANIFEST.json)中固定近左的三份旧 PCM16 WAV，不生成新房间。源为单通道 16000 帧；完整房间和仅直达文件均为四通道 38497 帧，采样率皆为 16 kHz。清单中的量化前最大绝对幅度按源、完整、仅直达顺序为 $4.1199508233$、$5.1599726691$、$4.0516387986$；共用增益 $g=0.1516968997435788$ 后，分别约为 $0.62498377$、$0.78275186$、$0.61462104$。PCM16 舍入后峰值略有变化；三个导出峰不相等并不表示逐文件归一化。
+**读现有资产。** 只检查[房间独立清单](../codes/chapters/appendix_b/room_audio/MANIFEST.json)中固定近左的三份旧 PCM16 WAV，不生成新房间。源为单通道 16000 帧；完整房间和仅直达文件均为四通道 38497 帧，采样率皆为 16 kHz。清单中的量化前最大绝对幅度按源、完整、仅直达顺序为 $4.1199508233$、$5.1599726691$、$4.0516387986$；共用增益 $g=0.1516968997435788$ 后，分别约为 $0.62498377$、$0.78275186$、$0.61462104$。PCM16 舍入后峰值略有变化；三个导出峰不相等并不表示逐文件归一化。
 
 按清单坐标，固定近左源到第 1 麦的距离约为 $1.011811$ m，单纯几何传播折合 $1.011811\times16000/343\approx47.198$ 样本。实际源与仅直达第 1 麦 PCM 的互相关主峰约在 $+87$ 样本；仿真 RIR 的分数延迟滤波器还引入固定群延迟，不能把这 87 点全部当作声学传播并乘 $c/f_s$ 报成物理距离。这段固定白噪声的相关峰也不是 SRP 的 DOA 输出。
 
@@ -657,30 +657,30 @@ $$
 
 ```bash
 .venv/bin/python -m unittest tests.test_codes_engineering -v
-.venv/bin/python -m codes.examples.ch10_engineering_baselines
-.venv/bin/python -m codes.examples.exercises_engineering
+.venv/bin/python -m codes.chapters.ch10.examples.ch10_engineering_baselines
+.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering
 .venv/bin/python -m codes.chapters.appendix_b.appendix_b_experiments
-.venv/bin/python -m codes.examples.tracking_time_exercises
-.venv/bin/python -m codes.examples.engineering_boundary_exercises
+.venv/bin/python -m codes.chapters.ch00.cross_chapter.tracking_time_exercises
+.venv/bin/python -m codes.chapters.ch00.cross_chapter.engineering_boundary_exercises
 ```
 
 第 10 章示例使用确定性输入，覆盖 SRO 直线拟合与线性重采样、VAD 迟滞与语音结束保持时间、峰值保护 AGC、固定容量环形缓冲、处理超时与队列模拟，以及 Q1.15 饱和量化。线性重采样、Python 环形缓冲和调度模拟都是教学基线，不应替换带抗混叠滤波的流式重采样器、无锁实时队列或目标系统测量。
 
-附录 B 逐步实验运行 E13-03～08 的固定手算与只读 PCM 检查。它不运行第 16 题的房间仿真，也不下载第 17 题提及的外部系统；房间仿真要按第 16 题使用隔离依赖，并区分[结果报告](../codes/room_audio/RESULTS.json)的实际运行证据与本书构造的数学小例。
+附录 B 逐步实验运行 E13-03～08 的固定手算与只读 PCM 检查。它不运行第 16 题的房间仿真，也不下载第 17 题提及的外部系统；房间仿真要按第 16 题使用隔离依赖，并区分[结果报告](../codes/chapters/appendix_b/room_audio/RESULTS.json)的实际运行证据与本书构造的数学小例。
 
-新增的[状态与时间练习](../codes/examples/tracking_time_exercises.py)分别对应 E09-07 的旧权重递推、E09-08 的测量到消费时间外推、E10-15 的预卷与结束事件、E11-08 的零失败风险上界。先按题面独立手算，再检查代码中间值；四题均有[独立边界测试](../tests/test_codes_time_state_exercises.py)，不需要模型权重或声卡。
+新增的[状态与时间练习](../codes/chapters/ch00/cross_chapter/tracking_time_exercises.py)分别对应 E09-07 的旧权重递推、E09-08 的测量到消费时间外推、E10-15 的预卷与结束事件、E11-08 的零失败风险上界。先按题面独立手算，再检查代码中间值；四题均有[独立边界测试](../tests/test_codes_time_state_exercises.py)，不需要模型权重或声卡。
 
-[工程边界练习](../codes/examples/engineering_boundary_exercises.py)再区分三类容易混淆的量：E10-16 的恰好完成与真正超期，E10-17 的采样时刻、回调时刻与对应输出时刻，E11-09 的平均错误下降与独立配对方向证据。它们分别用整数刻度、同一时钟的构造时间戳和全部符号排列作独立核查，不将调度模型、时间单位或教学计数写成硬件实测。
+[工程边界练习](../codes/chapters/ch00/cross_chapter/engineering_boundary_exercises.py)再区分三类容易混淆的量：E10-16 的恰好完成与真正超期，E10-17 的采样时刻、回调时刻与对应输出时刻，E11-09 的平均错误下降与独立配对方向证据。它们分别用整数刻度、同一时钟的构造时间戳和全部符号排列作独立核查，不将调度模型、时间单位或教学计数写成硬件实测。
 
-继续做设备实验时，可按[工业实现研究](../codes/research/03_industrial_deployment.md)的 I01～I32 选择一个主题，例如采集与路由、连续重采样、VAD/AGC/NS、DSP 固件、模型运行时或评分。先固定源码提交，再记录依赖、编译、模型、声学输入和故障状态；“已下载”只能说明源码在本机，不能代替“已编译、已运行、已测量”。
+继续做设备实验时，可按[工业实现研究](../codes/chapters/ch00/research/03_industrial_deployment.md)的 I01～I32 选择一个主题，例如采集与路由、连续重采样、VAD/AGC/NS、DSP 固件、模型运行时或评分。先固定源码提交，再记录依赖、编译、模型、声学输入和故障状态；“已下载”只能说明源码在本机，不能代替“已编译、已运行、已测量”。
 
 会议识别复现还要固定数据准备与文本规范化。CHiME-8 的官方 `chime-utils` 提供 SegLST 转写格式、该届规范化及 cpWER/tcpWER 评分；其中缺失场景的忽略选项会改变实际计分范围。应保留每个场景的输入文件数、失败数和最终参与评分的清单，并先用正确转写、说话人交换、漏词和时间戳偏移的小夹具检查评分口径。[CHiME-8 官方评分实现](https://github.com/chimechallenge/chime-utils/tree/152882404f572d40769ef02bf91c5a9a9cfc9c78 "citation")
 
 绘图脚本都在 `scripts/` 里。图 34～36 和图 37～38 读取或复算指定教学数据，图 39 是算法流程图；图 40～49 又分别使用时钟漂移、线性插值、GSS、CSS、追踪音频、波束、选型及附录 A 的确定性数据。先生成主音频与独立的追踪音频/清单，再运行两个绘图脚本；图 44 使用后者。图片写入 `figures/`，共 49 张：
 
 ```bash
-.venv/bin/python codes/examples/generate_audio_samples.py
-.venv/bin/python -m codes.examples.chapter09_tracking_audio
+.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
+.venv/bin/python -m codes.chapters.ch09.examples.chapter09_tracking_audio
 .venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～49
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～39（回声消除专题）
 ```
@@ -689,8 +689,8 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`，其余不变�
 
 运行时间随硬件、软件版本和负载变化。报告耗时时应同时记录这些条件、运行次数和统计方式。
 
-代码基线只依赖 `numpy`；绘图脚本依赖 `numpy` 和 `matplotlib`，并使用固定随机种子，因此相同环境和参数下应得到相同结果。每个脚本生成哪些图、练习需要哪些扩展依赖，见 `scripts/README.md`；代码覆盖范围、上游来源和许可证见 `codes/README.md`、`codes/COVERAGE.md` 与 `codes/SOURCES.lock.json`。
+代码基线只依赖 `numpy`；绘图脚本依赖 `numpy` 和 `matplotlib`，并使用固定随机种子，因此相同环境和参数下应得到相同结果。每个脚本生成哪些图、练习需要哪些扩展依赖，见 `scripts/README.md`；代码覆盖范围、上游来源和许可证见 `codes/chapters/README.md`、`codes/chapters/ch00/COVERAGE.md` 与 `codes/chapters/ch00/SOURCES.lock.json`。
 
 ---
 
-> 📄 本篇信息：编号图 2 张（图35、图41），另有房间题结果图 ｜ [回首页](./00_overview.md)
+> 📄 本篇信息：编号图 2 张（图35、图41），另有房间题结果图 ｜ [回首页](00_overview.md)

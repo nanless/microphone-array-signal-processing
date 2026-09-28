@@ -8,4 +8,4 @@
 .venv/bin/python -m codes.chapters.ch11.chapter11_experiments
 ```
 
-原有 `codes.examples.chapter11_experiments` 保留为兼容入口。题干和边界见 [第 11 章](../../../chapters/11_selection-guide.md)及[练习手册](../../research/05_exercises_and_audio.md)。
+题干和边界见 [第 11 章](../../../chapters/11_selection-guide.md)及[练习手册](../ch00/research/05_exercises_and_audio.md)。

@@ -4,9 +4,15 @@ These are small declared models, not benchmarks. Complex arrays are encoded
 as separate real/imag lists for strict JSON. Importing does not run or write.
 """
 from __future__ import annotations
+
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
 import json
 import numpy as np
-from codes.array_tutorial.audio_samples import wpe_predictable_case
+from codes.chapters.ch00.core.audio_samples import wpe_predictable_case
 
 
 def _complex(value) -> dict:
@@ -109,8 +115,8 @@ def exponential_statistics() -> dict:
             'two_zero_history_steps_forgetting': {'correlation': alpha**2*R, 'cross': alpha**2*r, 'coefficient': r/R},
             'two_fully_frozen_statistics_steps': {'correlation': R, 'cross': r, 'coefficient': r/R},
             'scope': 'declared powers and direct statistics, both policies still advance frame history; separate locked-upstream silence probe uses its own inverse-matrix update',
-            'silence_probe': 'codes/examples/wpe_silence_boundary.py',
-            'silence_report': 'codes/reports/chapter07_online_wpe_silence.json'}
+            'silence_probe': 'codes/chapters/ch07/examples/wpe_silence_boundary.py',
+            'silence_report': 'codes/chapters/ch07/reports/chapter07_online_wpe_silence.json'}
 
 
 def mint_near_common_zero() -> dict:

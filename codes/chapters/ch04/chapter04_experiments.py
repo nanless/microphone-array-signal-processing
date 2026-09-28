@@ -5,11 +5,17 @@ written; no external implementation is imported or run. Local bounds and
 single deterministic examples are not measured algorithm performance.
 """
 from __future__ import annotations
+
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
 import json
 import numpy as np
-from codes.array_tutorial.doa import esprit_ula, srp_phat
-from codes.array_tutorial.geometry import plane_wave_steering
-from codes.array_tutorial.audio_samples import doa_ambiguity_case, prepare_exports, read_pcm16
+from codes.chapters.ch04.core.doa import esprit_ula, srp_phat
+from codes.chapters.ch03.core.geometry import plane_wave_steering
+from codes.chapters.ch00.core.audio_samples import doa_ambiguity_case, prepare_exports, read_pcm16
 
 
 def nyquist_interpolation():

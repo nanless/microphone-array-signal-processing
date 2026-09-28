@@ -11,12 +11,12 @@ import unittest
 
 import numpy as np
 
-from codes.examples.appendix_b_experiments import (
+from codes.chapters.appendix_b.appendix_b_experiments import (
     ROOM, _read_results, evidence_claims, four_mic_drr_and_convolution,
     paired_room_comparison, room_pcm_readback, run_exercises,
     t20_from_edc_points, two_mic_srp_phase,
 )
-from codes.examples.room_srp_exercise import plot_results, write_results
+from codes.chapters.appendix_b.examples.room_srp_exercise import plot_results, write_results
 
 
 class AppendixBExperimentsTest(unittest.TestCase):

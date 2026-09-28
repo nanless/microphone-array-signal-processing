@@ -1,16 +1,22 @@
 """Chapter 6 block-boundary example with a known two-tap echo path.
 
-Run ``python -m codes.examples.aec_streaming_demo`` from the repository root.
+Run ``python -m codes.chapters.ch06.aec_streaming_demo`` from the repository root.
 The numbers are a mathematical fixture, not a recording or device benchmark.
 """
 
 from __future__ import annotations
 
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
+
 import json
 
 import numpy as np
 
-from codes.array_tutorial.aec import NLMSState, nlms
+from codes.chapters.ch06.core.aec import NLMSState, nlms
 
 
 def run_demo() -> dict:

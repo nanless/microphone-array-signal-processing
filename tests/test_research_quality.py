@@ -17,10 +17,11 @@ class ResearchQualityTests(unittest.TestCase):
         self.addCleanup(self.stack.close)
         self.root = Path(self.stack.enter_context(tempfile.TemporaryDirectory()))
         self.site = self.root / "site"
-        self.sources = self.root / "codes" / "research"
+        self.sources = self.root / "codes" / "chapters" / "ch00" / "research"
         self.sources.mkdir(parents=True)
         (self.site / "research").mkdir(parents=True)
         self.stack.enter_context(patch.object(quality, "ROOT", self.root))
+        self.stack.enter_context(patch.object(quality, "RESEARCH_ROOT", self.sources))
         self.stack.enter_context(patch.object(quality, "SITE", self.site))
         self.stack.enter_context(patch.object(quality, "site_source_digest", return_value="0123456789ab"))
         (self.site / "index.html").write_text('<h1 id="home">Tutorial</h1>', encoding="utf-8")
@@ -156,7 +157,7 @@ class PublishedResearchQualityTests(unittest.TestCase):
         for digest in (quality.site_source_digest, quality.source_digest):
             before = digest()
             for name, _output in quality.EXPECTED_RESEARCH_PAGES:
-                changed = quality.ROOT / "codes" / "research" / name
+                changed = quality.ROOT / "codes" / "chapters" / "ch00" / "research" / name
 
                 def read(path):
                     return original_read(path) + (b"\nchanged" if path == changed else b"")

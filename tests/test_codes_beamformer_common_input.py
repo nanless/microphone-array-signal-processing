@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from codes.examples.beamformer_common_input_demo import run_experiment
+from codes.chapters.ch05.beamformer_common_input_demo import run_experiment
 
 
 class BeamformerCommonInputTests(unittest.TestCase):

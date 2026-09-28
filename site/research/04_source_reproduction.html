@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码获取与独立复现记录 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5517357657f5"><style>
+<meta name="source-digest" content="b40a94533c43"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -146,12 +146,12 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tbody>
 </table></div>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><span id="2-固定提交与本地文件" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-c8f62b2f38">2. 固定提交与本地文件</h2>
-<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/SOURCES.lock.json">锁定清单</a> 保存官方仓库地址和完整 Git 提交。获取工具检出独立仓库，
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCES.lock.json">锁定清单</a> 保存官方仓库地址和完整 Git 提交。获取工具检出独立仓库，
 保留许可证与作者声明，不安装依赖，也不启动维护者的训练或构建程序。</p>
 <p>在本仓库根目录执行：</p>
-<pre><code class="language-bash">.venv/bin/python codes/upstream/fetch_upstreams.py --list
-.venv/bin/python codes/upstream/fetch_upstreams.py --all --report tmp/source-acquisition.json
-.venv/bin/python codes/upstream/fetch_upstreams.py --verify --report tmp/source-verification.json
+<pre><code class="language-bash">.venv/bin/python codes/chapters/ch00/upstream/fetch_upstreams.py --list
+.venv/bin/python codes/chapters/ch00/upstream/fetch_upstreams.py --all --report tmp/source-acquisition.json
+.venv/bin/python codes/chapters/ch00/upstream/fetch_upstreams.py --verify --report tmp/source-verification.json
 </code></pre>
 <p>已有目录只有在来源、提交、工作树和入口文件都符合清单时才能通过核对。发现本地修改或错误版本时，
 工具会保留现场并报错；应先检查修改归属，再决定建立另一个下载目录。不要把未完成目录当成可用实现。</p>
@@ -159,7 +159,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 该策略不能识别所有资产：文本文件也可能包含模型系数，Git 对象库也可能保留上游跟踪的资源。
 此前已经存在的工作树原样保留，其资产范围不由新下载规则追溯保证。若复现确实需要被省略的文件，
 应先读上游对应资产说明，再在独立环境中按其方法取得。</p>
-<p>本地下载目录位于 <code>codes/upstream/_downloads/</code>，被本仓库 Git 忽略。提交本书时提交获取工具和锁定信息，
+<p>本地下载目录位于 <code>codes/chapters/ch00/upstream/_downloads/</code>，被本仓库 Git 忽略。提交本书时提交获取工具和锁定信息，
 这些上游工作树仍各自保留原始历史和许可。</p>
 <span id="sec-4" class="anchor-alias" aria-hidden="true"></span><span id="3-对齐数据接口" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-2dd95e0690">3. 对齐数据接口</h2>
 <p>本书 STFT、定位和通用协方差接口采用 <code>C × F × T</code>：通道、频点、帧；WPE 和分离模块采用 <code>F × C × T</code>。
@@ -236,7 +236,7 @@ ERLE 不能把双讲中的近端语音解释成残余回声，也不能用参考
 把两条轨迹身份交换后，平均位置误差可能仍很小。粒子滤波需要固定种子，并记录重采样条件。</p>
 <p>音频工程接口至少测试静音、过载、丢帧、设备断开、采样率切换和队列积压。离线算法测试不能代替回调线程测试。
 连续重采样必须保留滤波历史和分数相位；逐块重新初始化会在块边界产生跳变，即使每块单独看起来正常。</p>
-<p>事件边界也要有独立期望。服务时间与到达周期严格相等时，一帧完成后应立即释放容量，再接收同刻到来的帧；不能让浮点乘法与累加的舍入差制造丢帧。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/engineering_boundary_exercises.py">工程边界练习 E10-16</a>以整数刻度手算作对照，另保留略大于周期的真实超期输入。AGC 的增益下降更新则要回到解析等式：平滑系数为 1 时增益应等于目标增益；“输出有限且不削波”并不能排除数值消减导致的错误静音。</p>
+<p>事件边界也要有独立期望。服务时间与到达周期严格相等时，一帧完成后应立即释放容量，再接收同刻到来的帧；不能让浮点乘法与累加的舍入差制造丢帧。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/engineering_boundary_exercises.py">工程边界练习 E10-16</a>以整数刻度手算作对照，另保留略大于周期的真实超期输入。AGC 的增益下降更新则要回到解析等式：平滑系数为 1 时增益应等于目标增益；“输出有限且不削波”并不能排除数值消减导致的错误静音。</p>
 <p>外部时间戳与模型运行时也应先检查协议。<a href="03_industrial_deployment.html">工业研究 I01 与 I18</a>分别核对 PortAudio 的测点含义、ONNX Runtime 的设备缓冲绑定与同步接口。E10-17 实际运行的是构造时间戳的减法和样本映射；I18 的 GPU 绑定对照仍是实验设计。两者不能因为有可执行教学程序就统一登记为设备实验已通过。</p>
 <span id="sec-10" class="anchor-alias" aria-hidden="true"></span><span id="5-记录结果的必要字段" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-96ac81c5a8">5. 记录结果的必要字段</h2>
 <p>获取、构建和数值实验分开记录。以下是本机截至 2026-09-23 的状态，不是推荐配置的性能表：</p>
@@ -269,7 +269,7 @@ ERLE 不能把双讲中的近端语音解释成残余回声，也不能用参考
 <td>libsamplerate 0.2.2 变比接口</td>
 <td>已核对固定提交</td>
 <td>原源码隔离构建静态库；未安装系统依赖</td>
-<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/run_libsamplerate_sro.py">两段已知时钟偏差实验</a>通过，逐调用核对消费量和尾部排空；时钟估计闭环与抗混叠未测</td>
+<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/examples/run_libsamplerate_sro.py">两段已知时钟偏差实验</a>通过，逐调用核对消费量和尾部排空；时钟估计闭环与抗混叠未测</td>
 <td>未测</td>
 </tr>
 <tr>
@@ -374,12 +374,12 @@ ViSQOL 还需固定 speech/audio 模式、采样率和映射模型，不能混�
 </li>
 </ol>
 <span id="sec-12" class="anchor-alias" aria-hidden="true"></span><span id="已执行实验与可重跑入口" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-88c5e110dd">已执行实验与可重跑入口</h3>
-<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/run_industrial_interfaces.py">工业接口程序</a>在独立临时目录编译三库，
-随后调用<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/industrial_interfaces.c">原创 C 夹具</a>。它不下载或安装依赖，
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/examples/run_industrial_interfaces.py">工业接口程序</a>在独立临时目录编译三库，
+随后调用<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/examples/industrial_interfaces.c">原创 C 夹具</a>。它不下载或安装依赖，
 要求先取得锁定源码，并已具备 CMake 与 clang。构建关闭可选编解码器、OpenMP 和 soxr SIMD 路径，
 因此结论限定于记录的标量、单线程配置。</p>
-<pre><code class="language-bash">.venv/bin/python codes/examples/run_industrial_interfaces.py --report tmp/industrial-rerun.json
-.venv/bin/python codes/examples/reproduce_sbl_reference.py --output tmp/sbl-rerun.json
+<pre><code class="language-bash">.venv/bin/python codes/chapters/ch10/examples/run_industrial_interfaces.py --report tmp/industrial-rerun.json
+.venv/bin/python codes/chapters/ch04/examples/reproduce_sbl_reference.py --output tmp/sbl-rerun.json
 </code></pre>
 <p>工业输入为 48 kHz、双通道、1 s：一通道在第 12000 帧放幅度 0.5 的脉冲，另一通道放幅度 0.1 的
 1 kHz 正弦。显式 HQ 配置重采样到 16 kHz，整段及 127/509 帧供给均得到 16000 帧，
@@ -389,13 +389,13 @@ ViSQOL 还需固定 speech/audio 模式、采样率和映射模型，不能混�
 <p>响度使用另一段 48 kHz、单通道 CENTER、10 s 正弦，
 幅度从 0.1 变为 0.05 后下降 6.0206 LU；静音记录为 <code>null</code> 并保留无有效门控能量的原因。</p>
 <p>PCM16 的七帧双通道读回得到帧数 3/3/1/0、标量项数 6/6/2/0，归一化误差为 0。
-完整条件和原始数值见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/reports/industrial_interfaces.json">工业报告</a>及<a href="03_industrial_deployment.html">工业研究</a>。</p>
-<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/reproduce_sbl_reference.py">SBL 程序</a>实际调用独立目录中未改动的作者实现，
+完整条件和原始数值见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/reports/industrial_interfaces.json">工业报告</a>及<a href="03_industrial_deployment.html">工业研究</a>。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/examples/reproduce_sbl_reference.py">SBL 程序</a>实际调用独立目录中未改动的作者实现，
 以四麦、200 个快拍、1° 网格核对两源定位。标准条件得到 −30°、30°；将两源均移出网格 0.5° 后，
 各有 0.5° 网格误差。低信噪比和源数错设的两组达到 1000 次上限，仍作为未收敛结果保存。
 五组共享基础随机输入，每组只有一次实现，不给成功率或普遍优劣排名。
 输入轴、解析总体谱、逐次更新量及峰缺失处理见<a href="01_spatial_and_tracking.html">空间研究</a>
-和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/reports/sbl_reference.json">SBL 报告</a>。</p>
+和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/reports/sbl_reference.json">SBL 报告</a>。</p>
 <p>SMP-PHAT 的原版复现发现了失败：在本机 Apple clang/arm64 上，固定 <code>system.c</code> 第 588、824 行
 先把负的舍入时延转为 <code>unsigned int</code>，再与中心索引相加，不能得到理论需要的负偏移。
 例如整数部分 −6 不在无符号整数的表示范围内；这不是按模回绕的整数到整数转换。
@@ -404,13 +404,13 @@ ViSQOL 还需固定 speech/audio 模式、采样率和映射模型，不能混�
 <p>因此，程序能完成编译、两个方法在选定输入上恰好给出同一峰，并不等于全方向分数与推导相符。
 实验保留原版失败，再用上游实际查表索引配合独立离散傅里叶求和定位误差来源；没有修改上游算法后
 将其结果冒充原版通过。完整输入、依赖、判据与诊断见<a href="01_spatial_and_tracking.html">空间研究</a>。</p>
-<p>2026-09-24 又以<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/reproduce_smpphat_portable_overlay.py">独立隔离脚本</a>在临时副本上仅改两处负时延索引转换，保持固定上游目录不动。两组合成四麦输入的全方向分数相对独立 DFT 最大误差均小于 $2\times10^{-4}$；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/reports/smpphat_portable_overlay.json">适配报告</a>单列为 <code>passed_patched_teaching_case</code>。该结论不改变<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/reports/smpphat_reference.json">未修补原版报告</a>的 <code>failed_portability</code> 状态，也未测试真实录音和运行时间。</p>
-<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/compare_wpe_reference.py">离线 WPE 对照</a>只比较对齐的有效历史帧；
-<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/compare_online_wpe_reference.py">在线 WPE 对照</a>核对三个接口的实际抽头时间点及连续状态。
+<p>2026-09-24 又以<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/examples/reproduce_smpphat_portable_overlay.py">独立隔离脚本</a>在临时副本上仅改两处负时延索引转换，保持固定上游目录不动。两组合成四麦输入的全方向分数相对独立 DFT 最大误差均小于 $2\times10^{-4}$；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/reports/smpphat_portable_overlay.json">适配报告</a>单列为 <code>passed_patched_teaching_case</code>。该结论不改变<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/reports/smpphat_reference.json">未修补原版报告</a>的 <code>failed_portability</code> 状态，也未测试真实录音和运行时间。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/examples/compare_wpe_reference.py">离线 WPE 对照</a>只比较对齐的有效历史帧；
+<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/examples/compare_online_wpe_reference.py">在线 WPE 对照</a>核对三个接口的实际抽头时间点及连续状态。
 配置、预期值和实测数字见<a href="02_aec_wpe_separation.html">增强研究</a>。它们不测试真实房间的去混响质量，
 也不要求离线估计器与逐帧估计器在不同统计窗口下输出相同。</p>
-<p>2026-09-28 的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/audit_wpe_upstream_interfaces.py">WPE 接口审查</a>进一步区分真正调用固定 NARA 函数、提取上游原函数后提供受控边界，以及仅沿源码追踪 ESPnet、TensorFlow、GSS、BTK20 的参数。对应<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/reports/wpe_upstream_interfaces.json">报告</a>不能当成上述框架整包运行或真实语音评测。</p>
-<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/wpe_silence_boundary.py">长静音实验</a>单独记录逆协方差首次非有限的调用序号、静音后的信号恢复和环境摘要。固定版的失败作为失败保留，不修改上游再宣称原版稳定。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/reports/figure21_wpe.json">图 21 报告</a>则来自本书绘图算法，指标取点、时间轴及全频统计独立说明；它与教学音频生成器采用不同窗和功率更新，不要求两者逐点相同。</p>
+<p>2026-09-28 的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/examples/audit_wpe_upstream_interfaces.py">WPE 接口审查</a>进一步区分真正调用固定 NARA 函数、提取上游原函数后提供受控边界，以及仅沿源码追踪 ESPnet、TensorFlow、GSS、BTK20 的参数。对应<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/reports/wpe_upstream_interfaces.json">报告</a>不能当成上述框架整包运行或真实语音评测。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/examples/wpe_silence_boundary.py">长静音实验</a>单独记录逆协方差首次非有限的调用序号、静音后的信号恢复和环境摘要。固定版的失败作为失败保留，不修改上游再宣称原版稳定。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/reports/figure21_wpe.json">图 21 报告</a>则来自本书绘图算法，指标取点、时间轴及全频统计独立说明；它与教学音频生成器采用不同窗和功率更新，不要求两者逐点相同。</p>
 <p>下面是一份记录结构示例，不含虚构运行结果：</p>
 <pre><code class="language-json">{
   &quot;algorithm&quot;: &quot;method and variant&quot;,
@@ -434,10 +434,10 @@ ViSQOL 还需固定 speech/audio 模式、采样率和映射模型，不能混�
 <p>实际设备的验收条件由产品覆盖距离、房间、声音类型和可接受损伤决定。本书的手算输入与教学示例用于检验算法，
 它们不能直接成为出厂阈值。工业项目的具体入口和测量方法见 <a href="03_industrial_deployment.html">工业部署与评测</a>。</p>
 <span id="sec-14" class="anchor-alias" aria-hidden="true"></span><span id="7-固定延迟组件的实际接口对照" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-678e07d1d5">7. 固定延迟组件的实际接口对照</h2>
-<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/run_stk_delay_probe.py">STK DelayL探针</a>先核对官方地址、完整提交、稀疏选择和清洁工作区，再在临时目录编译两份上游C++源文件。它把零延迟、半采样、一采样、保留状态分块和逐块清空五项分别对照解析FIR。已执行配置、零误差边界与0.1519102855的重置差异见<a href="03_industrial_deployment.html#i29stkdelayl">工业I29</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/reports/stk_delay.json">报告</a>。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/examples/run_stk_delay_probe.py">STK DelayL探针</a>先核对官方地址、完整提交、稀疏选择和清洁工作区，再在临时目录编译两份上游C++源文件。它把零延迟、半采样、一采样、保留状态分块和逐块清空五项分别对照解析FIR。已执行配置、零误差边界与0.1519102855的重置差异见<a href="03_industrial_deployment.html#i29stkdelayl">工业I29</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/reports/stk_delay.json">报告</a>。</p>
 <p>这项检查不下载权重、不访问音频设备，也不需要重新授权本书使用整个STK工具箱。第三方源码保留在独立的被忽略目录；提交的是本书调用探针、锁表和可复核报告。运行失败应保留实际错误与来源状态，不能用静态源码说明代替运行记录。</p>
 <span id="sec-15" class="anchor-alias" aria-hidden="true"></span><span id="第6章外部-aec-接口诊断" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-6d973a34e1">第6章外部 AEC 接口诊断</h3>
-<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/examples/audit_aec_upstream_interfaces.py">诊断入口</a>不下载依赖、不修补上游。它先核对固定提交和原文件摘要，再实际调用 pyaec 的 RLS/Kalman/FDKF/PFDKF 及 echocatzh 的初始块接口。pyaec 的尾截断和 <code>np.complex</code> 失败保留在<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/reports/aec_upstream_interfaces.json">报告</a>中；echocatzh 的默认后滤输出另列，不能等同于线性残差。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/examples/audit_aec_upstream_interfaces.py">诊断入口</a>不下载依赖、不修补上游。它先核对固定提交和原文件摘要，再实际调用 pyaec 的 RLS/Kalman/FDKF/PFDKF 及 echocatzh 的初始块接口。pyaec 的尾截断和 <code>np.complex</code> 失败保留在<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/reports/aec_upstream_interfaces.json">报告</a>中；echocatzh 的默认后滤输出另列，不能等同于线性残差。</p>
 <p>DTLN 部分用原 <code>process_file</code> 函数的 AST、内存输入和假解释器检查文件填充、状态及输出缩放，明确没有运行神经网络。这类测试可以发现接口问题，不能据此报告语音效果、实时性或论文复现成功。输入、逐项结果及源码入口见<a href="02_aec_wpe_separation.html#aec">研究 A18</a>。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>

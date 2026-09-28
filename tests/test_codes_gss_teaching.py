@@ -3,9 +3,9 @@
 import unittest
 import numpy as np
 
-from codes.array_tutorial.gss_teaching import guided_cacgmm_mvdr
-from codes.array_tutorial.separation import si_sdr
-from codes.examples.gss_teaching_demo import run_experiment
+from codes.chapters.ch08.core.gss_teaching import guided_cacgmm_mvdr
+from codes.chapters.ch08.core.separation import si_sdr
+from codes.chapters.ch08.examples.gss_teaching_demo import run_experiment
 
 
 class TestGSSTeaching(unittest.TestCase):

@@ -11,10 +11,12 @@ from unittest import mock
 
 import numpy as np
 
-from codes.examples import reproduce_smpphat_reference as experiment
+from codes.chapters.ch04.examples import reproduce_smpphat_reference as experiment
 
 
-REPORT = experiment.ROOT / "reports/smpphat_reference.json"
+REPORT = experiment.ROOT / "chapters/ch04/reports/smpphat_reference.json"
+PROVIDED_FFTW_HEADER_SHA256 = "0dd1b988b681d5797aaf10c2c57c107f7dca510695e4b94b3855eb52550d282c"
+PROVIDED_FFTW_LIBRARY_SHA256 = "7d5247b5e7a20d6dcb5969cddb2b80ac85dd9ba0348174f03df0e69bafb3de99"
 
 
 class SMPPHATReferenceTests(unittest.TestCase):
@@ -48,8 +50,24 @@ class SMPPHATReferenceTests(unittest.TestCase):
         report = json.loads(REPORT.read_text(encoding="utf-8"))
         provenance = report["provenance"]
         self.assertEqual(provenance["upstream_revision"], experiment.UPSTREAM_REVISION)
-        self.assertEqual(provenance["fftw"]["archive_sha256"], experiment.FFTW_SHA256)
-        self.assertEqual(provenance["fftw"]["source"], "checksum_verified_official_archive")
+        fftw = provenance["fftw"]
+        self.assertEqual(fftw["runtime_version"], f"fftw-{experiment.FFTW_VERSION}")
+        if fftw["source"] == "checksum_verified_official_archive":
+            self.assertEqual(fftw["version"], experiment.FFTW_VERSION)
+            self.assertEqual(fftw["archive_url"], experiment.FFTW_URL)
+            self.assertEqual(fftw["archive_sha256"], experiment.FFTW_SHA256)
+            self.assertRegex(fftw["header_sha256"], r"^[0-9a-f]{64}$")
+            self.assertRegex(fftw["library_sha256"], r"^[0-9a-f]{64}$")
+        elif fftw["source"] == "provided_prefix":
+            # The prefix's actual header and static library are pinned. Their
+            # bytes do not prove that an official source archive was verified.
+            self.assertEqual(fftw["version"], "not verified from an archive")
+            self.assertIsNone(fftw["archive_url"])
+            self.assertIsNone(fftw["archive_sha256"])
+            self.assertEqual(fftw["header_sha256"], PROVIDED_FFTW_HEADER_SHA256)
+            self.assertEqual(fftw["library_sha256"], PROVIDED_FFTW_LIBRARY_SHA256)
+        else:
+            self.fail(f"unknown FFTW provenance: {fftw['source']}")
         self.assertEqual(
             provenance["runner_sha256"], hashlib.sha256(Path(experiment.__file__).read_bytes()).hexdigest())
         harness = Path(experiment.__file__).with_name("reproduce_smpphat_harness.c")
@@ -57,7 +75,7 @@ class SMPPHATReferenceTests(unittest.TestCase):
         self.assertFalse(report["build"]["upstream_cmake_used"])
         self.assertFalse(report["build"]["algorithm_source_modified"])
         self.assertFalse(report["build"]["fftw_backend_replaced"])
-        source = experiment.ROOT / "upstream/_downloads/smpphat"
+        source = experiment.ROOT / "chapters/ch00/upstream/_downloads/smpphat"
         # The saved-report tests remain usable in a clean clone without the
         # ignored upstream downloads. Verify actual bytes when they are present.
         if source.is_dir():

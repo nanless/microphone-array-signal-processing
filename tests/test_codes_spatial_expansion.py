@@ -4,10 +4,10 @@ import unittest
 
 import numpy as np
 
-from codes.examples.coarray_covariance_exercise import (
+from codes.chapters.ch03.coarray_covariance_exercise import (
     average_ordered_lags, run_exercise as coarray_exercise, virtual_toeplitz,
 )
-from codes.examples.doa_resolution_trials import (
+from codes.chapters.ch04.doa_resolution_trials import (
     classify_peaks, run_experiment, steering_rows, two_peaks,
 )
 

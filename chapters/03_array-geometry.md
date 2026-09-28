@@ -1,6 +1,6 @@
 > ⚠️ 本篇是正文第 3 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。
 >
-> 🏠 首页导读：[`00_overview.md`](./00_overview.md) ｜ 上一篇：[02_basics-signal-model.md](./02_basics-signal-model.md) ｜ 下一篇：[04_doa-estimation.md](./04_doa-estimation.md)
+> 🏠 首页导读：[`00_overview.md`](00_overview.md) ｜ 上一篇：[02_basics-signal-model.md](02_basics-signal-model.md) ｜ 下一篇：[04_doa-estimation.md](04_doa-estimation.md)
 
 ---
 
@@ -482,7 +482,7 @@ $$\Delta\phi_m=\frac{2\pi f}{c}\,\delta\vec b_m^\top\vec u.
 
 无外部锚时，观测至少不能区分整体平移、旋转和镜像；只用方向观测时还可能不能确定尺度。实现中固定参考麦和坐标轴，是选择一个坐标规范，以报告该坐标系中的代表解；它不能单独建立外部世界中的绝对坐标。若观测本身不能确定尺度，还须加入已知距离；若需要房间世界坐标，则要提供外部锚点或等价约束。这些不唯一性可由距离差对刚体变换的不变性直接验证，属于本书几何分析。若实际求解 TDOA 自标定，还必须明确发声时刻和接收机时钟是否已知；基于全部绝对传播时间或距离的到达时间（Time of Arrival，TOA）方法，不能直接当作仅有时间差的解法。
 
-[Zhayida、Segerblom Rex、Kuang、Andersson 与 Åström 的 2016 年预印本《An Automatic System for Acoustic Microphone Geometry Calibration based on Minimal Solvers》](https://arxiv.org/abs/1610.02392 "citation")在 §2 明确采用接收麦同步、声源发声时刻未知的条件，§5～6 分别处理时间偏移与几何。它可作为这种特定 TDOA 自标定问题的实现入口；不是任意异步分布式节点的直接解法。固定源码与实际取得/运行边界见[空间算法源码研究](../codes/research/01_spatial_and_tracking.md)。
+[Zhayida、Segerblom Rex、Kuang、Andersson 与 Åström 的 2016 年预印本《An Automatic System for Acoustic Microphone Geometry Calibration based on Minimal Solvers》](https://arxiv.org/abs/1610.02392 "citation")在 §2 明确采用接收麦同步、声源发声时刻未知的条件，§5～6 分别处理时间偏移与几何。它可作为这种特定 TDOA 自标定问题的实现入口；不是任意异步分布式节点的直接解法。固定源码与实际取得/运行边界见[空间算法源码研究](../codes/chapters/ch00/research/01_spatial_and_tracking.md)。
 
 分布式阵列还需同时估计节点时钟关系（§10.2），否则 TDOA 会包含系统偏差。
 
@@ -524,13 +524,13 @@ $$\Delta\phi_m=\frac{2\pi f}{c}\,\delta\vec b_m^\top\vec u.
 
 产线验收还要用未参与拟合的方向复测目标响应、旁瓣或零陷，并把允许误差写成设备规格，而不是沿用某个教学算例的门限。
 
-[`geometry.py`](../codes/array_tutorial/geometry.py) 提供统一的平面波和球面波导向矢量，正角、参考麦克风和声速约定与 §2.1 一致。它是校准前后的共同计算基线，不包含针对某种硬件的自动校准器。对应测试会检查正角时 $\tau_{21}<0$、导向相位为正，以及近场幅度和传播距离；这样可在替换实测流形前先排除坐标轴、通道顺序和傅里叶符号错误。
+[`geometry.py`](../codes/chapters/ch03/core/geometry.py) 提供统一的平面波和球面波导向矢量，正角、参考麦克风和声速约定与 §2.1 一致。它是校准前后的共同计算基线，不包含针对某种硬件的自动校准器。对应测试会检查正角时 $\tau_{21}<0$、导向相位为正，以及近场幅度和传播距离；这样可在替换实测流形前先排除坐标轴、通道顺序和傅里叶符号错误。
 
 几何决定可观测的空间信息，标定决定理论模型能否用于实测数据。第 4 章将从 GCC-PHAT 开始介绍声源定位算法。
 
 ### 本章练习
 
-下面六题使用 [`exercises_spatial.py`](../codes/examples/exercises_spatial.py) 复算，检查差分位置、反三角函数边界、角度约定、远场近似误差、双麦相减响应和通道复增益标定。第七题用独立的协同阵脚本，避免把“差集长度”误当作有效虚拟协方差。
+下面六题使用 [`exercises_spatial.py`](../codes/chapters/ch00/cross_chapter/exercises_spatial.py) 复算，检查差分位置、反三角函数边界、角度约定、远场近似误差、双麦相减响应和通道复增益标定。第七题用独立的协同阵脚本，避免把“差集长度”误当作有效虚拟协方差。
 
 #### E03-01：差分位置相同，观测次数也相同吗？
 
@@ -775,19 +775,19 @@ x_2(t)&=1.01[F(t-b-\tau)+B(t-b)].
 
 **双麦观测**是双声道文件，通道按麦 1、麦 2 顺序保存上述输入。
 
-[播放双麦观测](../codes/audio/dma_calibration_array.wav)
+[播放双麦观测](../codes/chapters/ch03/audio/dma_calibration_array.wav)
 
 **目标参考**是单声道文件，只含理想前方差分输出 $F(t-b)-F(t-b-2\tau)$。
 
-[播放目标参考](../codes/audio/dma_calibration_target.wav)
+[播放目标参考](../codes/chapters/ch03/audio/dma_calibration_target.wav)
 
 **增益失配输出**是单声道文件，直接使用后麦观测延迟后相减。
 
-[播放增益失配输出](../codes/audio/dma_calibration_mismatch.wav)
+[播放增益失配输出](../codes/chapters/ch03/audio/dma_calibration_mismatch.wav)
 
 **已知增益校正输出**是单声道文件，先将后麦除以 1.01，再延迟相减。
 
-[播放已知增益校正输出](../codes/audio/dma_calibration_corrected.wav)
+[播放已知增益校正输出](../codes/chapters/ch03/audio/dma_calibration_corrected.wav)
 
 **参考答案：稳定段计算。** 只在前段 $[0.15,0.65)$ s 和后段 $[0.95,1.45)$ s 测量，避开包络与传播边界。四文件使用共同导出增益 1，不分别归一化。1 kHz 理想前方幅度相对输入为 $2\sin(2\pi\times1000\times0.01/343)=0.364321$，所以目标输出幅度约为 $0.25\times0.364321=0.091080$。
 
@@ -795,8 +795,8 @@ x_2(t)&=1.01[F(t-b-\tau)+B(t-b)].
 
 理想真值校正使后方数学残差为零，校正输出与目标参考相同；PCM 读回还要检查量化、通道顺序和文件摘要。有限噪声、温漂、方向相关响应与估计误差都未进入本题，不能据此宣称产品可实现无限深零陷。先调低音量再试听；读回与浏览器加载不等于标准主观评价。
 
-更多跨章练习和音频条件见[实验总览](../codes/research/05_exercises_and_audio.md)。整数延迟音频只提供已知通道时差；E03-14 则提供连续源模型的差分失配对照。两者都没有模拟真实麦克风外壳，不能据此推断挡板收益或设备标定精度。[差分音频参数与读回记录](../codes/research/05_exercises_and_audio.md#25-双麦差分的增益失配与理想校正)另列量化与试听边界。
+更多跨章练习和音频条件见[实验总览](../codes/chapters/ch00/research/05_exercises_and_audio.md)。整数延迟音频只提供已知通道时差；E03-14 则提供连续源模型的差分失配对照。两者都没有模拟真实麦克风外壳，不能据此推断挡板收益或设备标定精度。[差分音频参数与读回记录](../codes/chapters/ch00/research/05_exercises_and_audio.md#25-双麦差分的增益失配与理想校正)另列量化与试听边界。
 
 ---
 
-> 📄 本篇信息：配图 3 张 ｜ [回首页](./00_overview.md)
+> 📄 本篇信息：配图 3 张 ｜ [回首页](00_overview.md)

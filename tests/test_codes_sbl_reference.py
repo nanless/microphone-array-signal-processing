@@ -8,12 +8,12 @@ import unittest
 
 import numpy as np
 
-from codes.examples import reproduce_sbl_reference as experiment
+from codes.chapters.ch04.examples import reproduce_sbl_reference as experiment
 
 
 class SBLReferenceTests(unittest.TestCase):
     def test_saved_report_matches_the_harness_and_locked_source(self):
-        report = json.loads((experiment.ROOT / "reports/sbl_reference.json").read_text())
+        report = json.loads((experiment.ROOT / "chapters/ch04/reports/sbl_reference.json").read_text())
         provenance = report["provenance"]
         self.assertEqual(provenance["revision"], experiment.REVISION)
         self.assertEqual(provenance["module_sha256"], experiment.MODULE_SHA256)
@@ -64,7 +64,7 @@ class SBLReferenceTests(unittest.TestCase):
                 experiment.load_locked_source(Path(directory))
 
     def test_actual_locked_source_when_present(self):
-        source = experiment.ROOT / "upstream/_downloads/sbl"
+        source = experiment.ROOT / "chapters/ch00/upstream/_downloads/sbl"
         if not source.exists():
             self.skipTest("optional locked SBL checkout is absent; no network access attempted")
         result = experiment.run_experiment()
@@ -85,7 +85,7 @@ class SBLReferenceTests(unittest.TestCase):
         json.dumps(result, allow_nan=False)
 
     def test_iteration_exhaustion_is_not_reported_as_convergence(self):
-        if not (experiment.ROOT / "upstream/_downloads/sbl").exists():
+        if not (experiment.ROOT / "chapters/ch00/upstream/_downloads/sbl").exists():
             self.skipTest("optional locked SBL checkout is absent")
         for case in experiment.run_experiment(max_iterations=1)["cases"]:
             self.assertEqual(case["stop_reason"], "iteration_limit")

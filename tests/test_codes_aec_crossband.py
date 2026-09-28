@@ -4,14 +4,14 @@ import unittest
 
 import numpy as np
 
-from codes.array_tutorial.aec_subband import (
+from codes.chapters.ch06.core.aec_subband import (
     HaarCrossbandNLMSState,
     fir_crossband_matrices,
     haar_analyze,
     haar_synthesize,
     two_tap_crossband_matrices,
 )
-from codes.examples.aec_crossband_demo import run_demo
+from codes.chapters.ch06.aec_crossband_demo import run_demo
 
 
 class TestHaarCrossbandAEC(unittest.TestCase):

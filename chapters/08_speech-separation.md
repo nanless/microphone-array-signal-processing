@@ -1,6 +1,6 @@
 > ⚠️ 本篇是教程正文第 8 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。
 >
-> 🏠 首页导读：[`00_overview.md`](./00_overview.md) ｜ 上一篇：[07_wpe-dereverberation.md](./07_wpe-dereverberation.md) ｜ 下一篇：[09_source-tracking.md](./09_source-tracking.md)
+> 🏠 首页导读：[`00_overview.md`](00_overview.md) ｜ 上一篇：[07_wpe-dereverberation.md](07_wpe-dereverberation.md) ｜ 下一篇：[09_source-tracking.md](09_source-tracking.md)
 
 ## 8. 语音分离
 
@@ -124,11 +124,11 @@ $$
 
 回声、混响和多说话人混合对应不同的信号模型。以下顺序由参考可用性、空间相位保持和统计量依赖关系决定，接口定义见 §10.1。
 
-一种较完整的音频主链见[第 10 章 §10.1](./10_engineering-practice.md#sec-10-1)：**采集 → AEC → WPE → 解析波束形成 → 单通道增强**。定位/追踪、说话人分割/GSS/SCM 是为解析波束提供条件的支路；神经或 CSS 分离则是从多通道特征到单通道/多流输出的替代音频路径，不与 GSS 掩码或解析波束合并成一个黑箱。项目只启用满足输入条件且能改善目标指标的模块。
+一种较完整的音频主链见[第 10 章 §10.1](10_engineering-practice.md#sec-10-1)：**采集 → AEC → WPE → 解析波束形成 → 单通道增强**。定位/追踪、说话人分割/GSS/SCM 是为解析波束提供条件的支路；神经或 CSS 分离则是从多通道特征到单通道/多流输出的替代音频路径，不与 GSS 掩码或解析波束合并成一个黑箱。项目只启用满足输入条件且能改善目标指标的模块。
 
-1. **启用声学回声消除（Acoustic Echo Cancellation，AEC）时先处理回声**：回声参考与麦克风回声之间的线性关系可能被后续自适应波束、非线性增益或单通道增强改变，见[第 10 章 §10.1](./10_engineering-practice.md#sec-10-1)；
+1. **启用声学回声消除（Acoustic Echo Cancellation，AEC）时先处理回声**：回声参考与麦克风回声之间的线性关系可能被后续自适应波束、非线性增益或单通道增强改变，见[第 10 章 §10.1](10_engineering-practice.md#sec-10-1)；
 2. **多通道 WPE 通常在波束之前**：晚期混响会污染波束形成所需的协方差估计。WPE 是线性处理，但各通道的预测滤波器不同，不能笼统保证所有跨通道相位关系完全不变。应验证处理后的目标相对传递函数和协方差是否仍适用于后续波束；
-3. **导向或掩码给解析波束提供目标统计量**：DSB 和导向型 MVDR 可由定位/追踪提供方向或相对传递函数；掩码 MVDR 可从目标 SCM 提取相对传递函数，GEV 则直接由目标/干扰 SCM 求广义特征向量，二者都不必先得到显式 DOA。定位仍可作为稳定的方向先验或控制支路（见[第 5 章](./05_beamforming.md)与[第 9 章](./09_source-tracking.md)）；
+3. **导向或掩码给解析波束提供目标统计量**：DSB 和导向型 MVDR 可由定位/追踪提供方向或相对传递函数；掩码 MVDR 可从目标 SCM 提取相对传递函数，GEV 则直接由目标/干扰 SCM 求广义特征向量，二者都不必先得到显式 DOA。定位仍可作为稳定的方向先验或控制支路（见[第 5 章](05_beamforming.md)与[第 9 章](09_source-tracking.md)）；
 4. **diarization 在 GSS 聚类之前、掩码在 MVDR 之前**：diarization 提供“谁在何时说话”的标注，用于约束 cACGMM 的跨频点置换；掩码随后用于估计目标和噪声协方差，再计算波束权重（见 §5.4 和 §8.4）；
 5. **DNN 的位置由输出决定**：逐通道改写复谱或波形的网络可能破坏跨通道相位，通常放在波束形成后的单通道链路；只输出共享掩码、协方差或 WPE 功率先验的网络可以放在多通道算法内部；联合多通道网络则可能同时完成分离和波束形成。还要单独检查网络是否使用未来帧。
 
@@ -136,7 +136,7 @@ $$
 
 AEC 与降噪的顺序也不是脱离统计假设的固定结论。[Integrated_AEC_NR 固定实现](https://github.com/Arnout-Roebben/Integrated_AEC_NR/tree/23c6b567c7863a8ee9bafd38bad0d3ff2f25e185)同时提供 AEC→NR、NR→AEC 与联合扩展结构，适合在相同输入下比较顺序；但其 `process.m` 借助干净期望语音和干净回声真值生成理想活动判决。设备运行时拿不到这两条干净真值。把结论移到实际设备前，必须改用可取得的活动估计，并重新测试参考相关、非平稳噪声、双讲和路径变化。
 
-**本章模块与图 23 的对应关系**（图的信号取点与启用条件见[第 10 章 §10.1](./10_engineering-practice.md#sec-10-1)）：
+**本章模块与图 23 的对应关系**（图的信号取点与启用条件见[第 10 章 §10.1](10_engineering-practice.md#sec-10-1)）：
 
 | 本章模块 | 图 23 中的位置 | 作用 |
 |---|---|---|
@@ -394,7 +394,7 @@ $$\begin{gathered}
 
 第二项也依赖 $\pi$，因此简单的后验均值不一定最大化这个条件目标。E08-18 用固定形状、三帧输入算出 $\ell$ 从 $\log5$ 降为 $\log3.4$。这不否认原文确实使用该更新；它说明不能把其名称、或正则化教学链的固定迭代，直接当作条件似然单调上升的证明。
 
-本节伪代码和 E08-07 的“禁用类后验为零”是本书严格活动门控约定。固定 GPU-GSS 默认 `bss_iterations_post=1` 时，最后一次预测不再传活动标记；其训练路径还使用非零后验地板。因此该默认最终掩码不保证非活动类恰为零。源码配置和静态/实际核查范围见[研究 B09](../codes/research/02_aec_wpe_separation.md#bss)，不能把本书受控链冒充所有官方配置。
+本节伪代码和 E08-07 的“禁用类后验为零”是本书严格活动门控约定。固定 GPU-GSS 默认 `bss_iterations_post=1` 时，最后一次预测不再传活动标记；其训练路径还使用非零后验地板。因此该默认最终掩码不保证非活动类恰为零。源码配置和静态/实际核查范围见[研究 B09](../codes/chapters/ch00/research/02_aec_wpe_separation.md#bss)，不能把本书受控链冒充所有官方配置。
 
 #### 8.4.3 活动门控手算与错误标注反例
 
@@ -469,13 +469,13 @@ $$
 
 #### 8.4.5 可运行的 cACGMM—SCM—MVDR 受控链
 
-前面的三帧例子只计算固定密度的 E 步。本书另提供原创 NumPy [教学整链](../codes/array_tutorial/gss_teaching.py)：逐频点把两麦复谱严格归一化为单位向量，使用说话人活动和恒活动背景类对复角中心高斯混合模型（cACGMM）进行 8 轮活动导引与形状迭代；各类形状矩阵采用迹归一化与正定加载，空类显式重置。然后用未做方向归一化的原始复谱和后验掩码计算目标/非目标 SCM，最终使用两麦 MVDR 输出目标复谱。
+前面的三帧例子只计算固定密度的 E 步。本书另提供原创 NumPy [教学整链](../codes/chapters/ch08/core/gss_teaching.py)：逐频点把两麦复谱严格归一化为单位向量，使用说话人活动和恒活动背景类对复角中心高斯混合模型（cACGMM）进行 8 轮活动导引与形状迭代；各类形状矩阵采用迹归一化与正定加载，空类显式重置。然后用未做方向归一化的原始复谱和后验掩码计算目标/非目标 SCM，最终使用两麦 MVDR 输出目标复谱。
 
 低能量点归入背景；代码同时返回掩码、SCM、权重、低能量点数、重置次数以及波束求解诊断，便于核查每一步。
 
 教学实现用向量范数判断有效点，不用范数平方。每个频点先取所有帧的最大范数，门限为该峰值的 $10^{-7}$ 与绝对下限 $10^{-12}$ 中较大者；范数严格大于门限才参与更新，相等也归背景。绝对项与 STFT 幅度同单位，相对系数无量纲，两者均为公开参数。绝对项主导时，整体缩小输入可能改变门控。
 
-[固定脚本](../codes/examples/gss_teaching_demo.py)用种子 20260924 合成 16 kHz、2 s 的**两条独立高斯测试波形**，并给它们设置已知活动区间。第一路在麦 0 直接到达、麦 1 晚 2 个采样；第二路相反，另加每麦独立均方根约 0.003 的高斯噪声。STFT 窗长 256 点、帧移 128 点，活动按帧中心给出。
+[固定脚本](../codes/chapters/ch08/examples/gss_teaching_demo.py)用种子 20260924 合成 16 kHz、2 s 的**两条独立高斯测试波形**，并给它们设置已知活动区间。第一路在麦 0 直接到达、麦 1 晚 2 个采样；第二路相反，另加每麦独立均方根约 0.003 的高斯噪声。STFT 窗长 256 点、帧移 128 点，活动按帧中心给出。
 
 这个合成阵列没有房间混响，因此演示时旁路 WPE；代码可显式调用本书的离线 WPE 实现，但**本实验没有据此验证 WPE**。说话人活动作为外部输入提供，不是从混合录音自动识别。
 
@@ -487,21 +487,21 @@ $$
 
 这一组数字只说明在给定模型、固定输入和已知活动下，整条教学链能产生可复核音频；不能推断在其他说话人、房间或活动标注上必有 12.48 dB 的改善。
 
-所有说话人静音的帧上，背景后验为 1；错误标注条件下目标后验为 0。正确条件下本次形状矩阵重置次数为 0，后验每点求和与 1 的最大差约为 $2.22\times10^{-16}$。这些数值可由[独立测试](../tests/test_codes_gss_teaching.py)和[完整状态文件](../codes/gss_audio/STATE.npz)复算。
+所有说话人静音的帧上，背景后验为 1；错误标注条件下目标后验为 0。正确条件下本次形状矩阵重置次数为 0，后验每点求和与 1 的最大差约为 $2.22\times10^{-16}$。这些数值可由[独立测试](../tests/test_codes_gss_teaching.py)和[完整状态文件](../codes/chapters/ch08/gss_audio/STATE.npz)复算。
 
 状态文件分别保存更新前后两套参数：`posterior` 来自末次 E 步使用的 `e_step_shapes`、`e_step_priors`；`shape_matrices`、`post_update_priors` 是随后形状与先验更新的结果，没有再用它们执行一次 E 步。重算后验须选前一套，并读取 `valid_points` 区分强制背景点。全为低能量的频点执行零轮，其余固定执行八轮；实际轮数另存，固定八轮不等于已经收敛。
 
-先调低播放音量。各文件采用同一导出增益；文件摘要和参数见[独立清单](../codes/gss_audio/MANIFEST.json)。
+先调低播放音量。各文件采用同一导出增益；文件摘要和参数见[独立清单](../codes/chapters/ch08/gss_audio/MANIFEST.json)。
 
-[第一路源](../codes/gss_audio/source_1.wav)
+[第一路源](../codes/chapters/ch08/gss_audio/source_1.wav)
 
-[第二路源](../codes/gss_audio/source_2.wav)
+[第二路源](../codes/chapters/ch08/gss_audio/source_2.wav)
 
-[混合双麦](../codes/gss_audio/mixture.wav)
+[混合双麦](../codes/chapters/ch08/gss_audio/mixture.wav)
 
-[正确活动输出](../codes/gss_audio/enhanced_correct.wav)
+[正确活动输出](../codes/chapters/ch08/gss_audio/enhanced_correct.wav)
 
-[漏标输出](../codes/gss_audio/enhanced_missed.wav)都按同一增益导出，文件摘要和精确参数见[独立清单](../codes/gss_audio/MANIFEST.json)。这五个 WAV 属独立 GSS 资产，不并入本书主清单的 98 个样本。
+[漏标输出](../codes/chapters/ch08/gss_audio/enhanced_missed.wav)都按同一增益导出，文件摘要和精确参数见[独立清单](../codes/chapters/ch08/gss_audio/MANIFEST.json)。这五个 WAV 属独立 GSS 资产，不并入本书主清单的 98 个样本。
 
 官方 [GPU-GSS 固定源码](https://github.com/desh2608/gss/tree/10fad18cae85e2e4342c77421abc70c9c5da23ed)还包含 CuPy、Lhotse/RTTM、分段上下文及完整会议处理；本机未运行其官方整链，也没有使用 CHiME 语料或计算 WER。本段的教学结果不能充当 Boeddeker 等原论文的复现成绩。[GSS 原论文 §3.1～§3.3](https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf "citation")。
 
@@ -637,7 +637,7 @@ z&=E_\theta(x),\\
 | 双路径注意力 | SepFormer（Subakan et al., 2021） | 在双路径结构中用 Transformer 替换 RNN | 核对源数、数据生成、模型版本和 SI-SNRi 实现 | 注意力内存随序列长度增长，长句通常需分块。见 [SepFormer 正式论文](https://doi.org/10.1109/ICASSP39728.2021.9413901) |
 | 状态空间 | S4M（Chen et al., 2023） | 用多尺度编码和结构化状态空间块替换分离骨干中的循环或注意力时序建模 | 原文使用固定两源的 WSJ0-2Mix、LibriMix 与 LRS2-Mix；核对 8/16 kHz 数据版本、源数和官方配置 | 状态递推提供长程建模的另一种实现，但原论文未验证严格因果的前瞻量与端到端延迟。见 [Interspeech 2023 正式论文](https://doi.org/10.21437/Interspeech.2023-696) 与[官方复现仓库](https://github.com/JusperLee/S4M) |
 | 时频网格 | TF-GridNet（Wang et al., 2023） | 在时频域分别建模时间、频率与跨帧关系，并结合子带长短期记忆网络（Long Short-Term Memory，LSTM）和注意力 | 会议版是单通道分离，原文主表使用 SI-SDRi；多通道混响扩展是另一模型与实验设置 | 整句注意力需要改造后才能流式运行。见[单通道会议正式论文](https://doi.org/10.1109/ICASSP49357.2023.10094992)与[多通道混响期刊扩展](https://doi.org/10.1109/TASLP.2023.3304482 "citation") |
-| 时频注意力与局部卷积 | TF-Locoformer（Saijo et al., 2024） | 沿频率、时间交替使用注意力，并把前馈网络改成卷积门控，直接预测单通道各源复谱 | 固定输入轴序、源数、STFT、训练任务与模型权重；源码的 Macaron 残差系数与论文有已说明的差异 | 全局归一化和无因果掩码的时间注意力使用整段上下文。见[原论文 §2](https://arxiv.org/abs/2408.03440)与[固定源码研究 N15](../codes/research/02_aec_wpe_separation.md#tflocoformer) |
+| 时频注意力与局部卷积 | TF-Locoformer（Saijo et al., 2024） | 沿频率、时间交替使用注意力，并把前馈网络改成卷积门控，直接预测单通道各源复谱 | 固定输入轴序、源数、STFT、训练任务与模型权重；源码的 Macaron 残差系数与论文有已说明的差异 | 全局归一化和无因果掩码的时间注意力使用整段上下文。见[原论文 §2](https://arxiv.org/abs/2408.03440)与[固定源码研究 N15](../codes/chapters/ch00/research/02_aec_wpe_separation.md#tflocoformer) |
 | 长时多通道因果网络 | Online SpatialNet（Quan & Li, 2024） | 用在线掩码注意力、Retention 或 Mamba 沿时间建模，同时保留多通道空间特征 | 核对静止/移动源、麦数、训练配置、CUDA/Mamba 依赖和跨调用状态接口 | 源码附有固定配置的因果前缀自测，但顶层 `forward()` 不暴露跨调用状态，不能直接推定任意块续算等价。见[SPL 2024 正式论文](https://doi.org/10.1109/LSP.2024.3418714)与[固定源码](https://github.com/Audio-WestlakeU/NBSS/blob/cc42fc8ad2e6642c09b8f4169a85b4766dc22b7e/models/arch/OnlineSpatialNet.py) |
 
 比较分离数字时要对齐采样率、`min`/`max` 混合方式、静态或动态混合、源数、评测脚本和指标名称。分离文献中的 SI-SNR 常采用与 SI-SDR 相同的正交投影公式，二者在相同去均值与数值实现下可以相等；也有代码把均值处理、截断长度或稳定项写得不同。不能笼统地说两者固定相差若干 dB。引用 SI-SNRi 或 SI-SDRi 时，应给出实现或至少说明是否去均值，并始终用同一指标计算输入基线和输出结果。
@@ -672,7 +672,7 @@ TSE 的身份泄漏、注册信道和声纹保护测试，不能由文本查询�
 
 #### 本地可运行模块与回退
 
-[`codes/array_tutorial/separation.py`](../codes/array_tutorial/separation.py) 提供五个只依赖 NumPy 的小模块：
+[`codes/chapters/ch08/core/separation.py`](../codes/chapters/ch08/core/separation.py) 提供五个只依赖 NumPy 的小模块：
 
 - `si_sdr()` 接收等长一维估计与参考。先各自按峰值缩放再去均值，避免绝对幅度引起溢出；能量下限是估计能量乘 `epsilon`，而不是固定绝对能量。默认 `epsilon=1e-12` 时，完美和正交样本分别返回约 +120/−120 dB 的有限边界值；这些上限不是测量精度。零信号及去均值后为零的信号明确报错。
 - `pit_permutation()` 接收 `(源, 样本)` 数组并枚举排列，返回“第几个输出对应第几个参考”的元组和平均 SI-SDR。这是已知参考下的评价，不是在线说话人身份恢复。
@@ -684,11 +684,11 @@ TSE 的身份泄漏、注册信道和声纹保护测试，不能由文本查询�
 
 掩码全空、有效目标或干扰统计为零、参考分量不可用或求解失败时仍退回参考麦；不把这些情形计为成功分离。诊断中的特征值间隙供调用方判断主方向是否明确；当前函数不会仅凭间隙小就自动拒绝。这里的掩码归一化只属于 `mask_mvdr_2x2()`，不能反推上一节直接调用 `masked_spatial_covariance()` 时也具有相同的极小掩码行为。
 
-联合示例用 `.venv/bin/python -m codes.examples.ch06_09_baselines` 运行，测试见 [`tests/test_codes_aec_wpe_sep_track.py`](../tests/test_codes_aec_wpe_sep_track.py)。测试覆盖输出交换、静音参考和静音估计拒绝、SCM 厄米性、MVDR 无失真约束，以及目标或干扰掩码为空时回退参考麦。实际评测还必须固定去均值、时延/增益对齐、静音段、截断长度和输入基线；秩亏 SCM、单通道输入、$N>M$、跨块换人及 STFT 重构均需单独测试。教学版 MVDR 在目标或干扰统计不可用时退回参考麦克风，不应把这一回退的输出解释成成功分离。
+联合示例用 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.ch06_09_baselines` 运行，测试见 [`tests/test_codes_aec_wpe_sep_track.py`](../tests/test_codes_aec_wpe_sep_track.py)。测试覆盖输出交换、静音参考和静音估计拒绝、SCM 厄米性、MVDR 无失真约束，以及目标或干扰掩码为空时回退参考麦。实际评测还必须固定去均值、时延/增益对齐、静音段、截断长度和输入基线；秩亏 SCM、单通道输入、$N>M$、跨块换人及 STFT 重构均需单独测试。教学版 MVDR 在目标或干扰统计不可用时退回参考麦克风，不应把这一回退的输出解释成成功分离。
 
 #### 外部源码及运行边界
 
-本章的外部实现已经按具体算法定位，不能把“正文尚未实现”写成“没有可用源码”。[盲分离与 GSS 研究](../codes/research/02_aec_wpe_separation.md#bss)和[神经分离研究](../codes/research/02_aec_wpe_separation.md#neural)进一步列出读码顺序、状态、最小实验与失败条件。
+本章的外部实现已经按具体算法定位，不能把“正文尚未实现”写成“没有可用源码”。[盲分离与 GSS 研究](../codes/chapters/ch00/research/02_aec_wpe_separation.md#bss)和[神经分离研究](../codes/chapters/ch00/research/02_aec_wpe_separation.md#neural)进一步列出读码顺序、状态、最小实验与失败条件。
 
 | 方法 | 已定位的源码入口 | 复现与工业使用的主要限制 |
 |---|---|---|
@@ -700,22 +700,22 @@ TSE 的身份泄漏、注册信道和声纹保护测试，不能由文本查询�
 | Conv-TasNet、DPRNN | Asteroid `models/conv_tasnet.py`、`dprnn_tasnet.py` | 配套 recipe、编码窗、归一化、源数、循环方向和权重 |
 | SepFormer | SpeechBrain `lobes/models/dual_path.py` 与 WSJ0Mix 分离 recipe | 双路径注意力和整句上下文不能直接当作流式状态 |
 | TF-GridNet | ESPnet `enh/separator/tfgridnet_separator.py` | 此类明确为离线，固定输入麦数；单/多通道版本分别核对 |
-| TF-Locoformer | MERL `standalone/tflocoformer_separator.py` 与 ESPnet 适配版 | 单通道复谱映射；已执行默认参数及 4D 轴序静态检查，未运行神经网络推理，详见[研究 N15](../codes/research/02_aec_wpe_separation.md#tflocoformer) |
+| TF-Locoformer | MERL `standalone/tflocoformer_separator.py` 与 ESPnet 适配版 | 单通道复谱映射；已执行默认参数及 4D 轴序静态检查，未运行神经网络推理，详见[研究 N15](../codes/chapters/ch00/research/02_aec_wpe_separation.md#tflocoformer) |
 | S4M、SPMamba、Mamba-TasNet | 各作者模型/训练目录，详见研究文档 | 三者不是同一算法；S4M 训练资产不完整，双向模型使用未来上下文 |
 | Online SpatialNet | NBSS `models/arch/OnlineSpatialNet.py`、`SharedTrainer.py` 与 `configs/onlineSpatialNet.yaml` | 依赖 PyTorch/Mamba/CUDA；因果前缀与跨调用状态连续性分别检查 |
 | SpeakerBeam、AudioSep | 注册语音条件模型、`pipeline.py` 等各自入口 | 身份条件与文本类别条件不同；代码、权重和数据许可分别核对 |
 
-固定版本的接口边界也已单独复核：pyroomacoustics 两麦一源的 `init_eig=True` 分支实际发生轴广播错误；其 ILRMA 在关闭回投影时，返回输出与返回解混矩阵乘输入不一致。它们是具体版本与分支的实跑记录，不是上述数学模型的反例，也不表示所有初始化都会失败。复现输入、源码摘要与诊断见[研究 B12](../codes/research/02_aec_wpe_separation.md#separation-upstream-audit)。
+固定版本的接口边界也已单独复核：pyroomacoustics 两麦一源的 `init_eig=True` 分支实际发生轴广播错误；其 ILRMA 在关闭回投影时，返回输出与返回解混矩阵乘输入不一致。它们是具体版本与分支的实跑记录，不是上述数学模型的反例，也不表示所有初始化都会失败。复现输入、源码摘要与诊断见[研究 B12](../codes/chapters/ch00/research/02_aec_wpe_separation.md#separation-upstream-audit)。
 
-网络归一化则需要区分静态读码与实际推理：Conv-TasNet 原论文的 cLN 表示累计归一化，而 Asteroid 的同名别名表示逐帧通道归一化，`cgLN` 才对应累计统计。固定 ESPnet TF-GridNet 在输入标准差归一化处未设零方差下限，全零或常量输入因此存在非有限风险。本书仅完成这些路径的源码核对，未运行对应神经网络；具体定位见[神经分离研究](../codes/research/02_aec_wpe_separation.md#neural)。
+网络归一化则需要区分静态读码与实际推理：Conv-TasNet 原论文的 cLN 表示累计归一化，而 Asteroid 的同名别名表示逐帧通道归一化，`cgLN` 才对应累计统计。固定 ESPnet TF-GridNet 在输入标准差归一化处未设零方差下限，全零或常量输入因此存在非有限风险。本书仅完成这些路径的源码核对，未运行对应神经网络；具体定位见[神经分离研究](../codes/chapters/ch00/research/02_aec_wpe_separation.md#neural)。
 
 FastMNMF 的可用实现还体现了许可需要逐来源检查：作者 `SoundSourceSeparation` 整库限定学术研究，而 pyroomacoustics 的 `fastmnmf.py` 文件有独立 MIT 许可。SpeakerBeam 作者仓库采用内部评估协议，限制修改与再分发，不能把它与 MIT/Apache-2.0 项目统一称为可自由纳入产品的开源代码。[FastMNMF 文件许可](https://github.com/LCAV/pyroomacoustics/blob/v0.10.0/pyroomacoustics/bss/fastmnmf.py)、[作者仓库许可](https://github.com/sekiguchi92/SoundSourceSeparation/blob/897fe87fea3d85a243d8a3fd36c2232bb0548ad3/LICENSE)、[SpeakerBeam 评估协议](https://github.com/BUTSpeechFIT/speakerbeam/blob/91af02cc617afa35fedfbdbf32533012cd0a8672/LICENSE.txt)
 
 #### AuxIVA 的盲估计实验
 
-**已运行的 AuxIVA 盲估计最小实验**。本书的[`reproduce_auxiva_reference.py`](../codes/examples/reproduce_auxiva_reference.py)直接从锁定的 [ssspy `bss/iva.py`](https://github.com/tky823/ssspy/blob/38b9389e8b1914422561f1936d9b28d042d62d2c/ssspy/bss/iva.py "citation") 调用 `AuxLaplaceIVA` 的 IP 更新。混合矩阵只用于合成两麦观测和制作参考，未传给估计器；它接收的只有混合 STFT，自己估计逐频解混矩阵。输出经参考麦 0 回投影和 iSTFT 后才评分。
+**已运行的 AuxIVA 盲估计最小实验**。本书的[`reproduce_auxiva_reference.py`](../codes/chapters/ch08/examples/reproduce_auxiva_reference.py)直接从锁定的 [ssspy `bss/iva.py`](https://github.com/tky823/ssspy/blob/38b9389e8b1914422561f1936d9b28d042d62d2c/ssspy/bss/iva.py "citation") 调用 `AuxLaplaceIVA` 的 IP 更新。混合矩阵只用于合成两麦观测和制作参考，未传给估计器；它接收的只有混合 STFT，自己估计逐频解混矩阵。输出经参考麦 0 回投影和 iSTFT 后才评分。
 
-测试运行命令为 `.venv/bin/python -m codes.examples.reproduce_auxiva_reference`；源码必须先按[锁表](../codes/SOURCES.lock.json)取得到隔离目录。
+测试运行命令为 `.venv/bin/python -m codes.chapters.ch08.examples.reproduce_auxiva_reference`；源码必须先按[锁表](../codes/chapters/ch00/SOURCES.lock.json)取得到隔离目录。
 
 本书仿真采用两路独立高斯随机载波乘不同的八段固定包络，各路按自身标准差归一；随机种子 2468、采样率 8 kHz、每路 32000 点，观测为 $\left[\begin{smallmatrix}1&0.9\\0.8&1\end{smallmatrix}\right]\mathbf s$，矩阵条件数约 12.24。无噪声、无混响。周期 Hann 窗长 256 点、帧移 64 点、中心补零，整段运行 30 次 IP 迭代。
 
@@ -736,7 +736,7 @@ FastMNMF 的可用实现还体现了许可需要逐来源检查：作者 `SoundS
 
 后续完整实验还应分别改变混响、初始化及片段长度，在相同统计口径下记录失败次数。CSS 还需测试跨块换人和静音后重新出现，不能让每块用真实答案独立排列后再拼接。cACGMM 的正文伪代码仅解释依赖关系；完整实现中的空分量处理、对数域计算与收敛检查仍须核对。
 
-单帧乘性传递函数（Multiplicative Transfer Function，MTF）近似若不足以描述跨帧传播，可进一步研究多帧满秩空间协方差分析（multi-frame Full-rank Spatial Covariance Analysis，mfFCA）。它把多个帧的观测堆叠，扩大空间协方差以直接建模跨帧相关，与“先 WPE、再单帧分离”不是同一模型。最小核查应固定堆叠帧的次序、协方差维数和重构取点，再比较单帧退化情形。本章不声称已经运行这一整链。见 [Sawada 等，TASLP 2023，31卷3589–3602页原文](https://www.kecl.ntt.co.jp/icl/signal/sawada/mypaper/IEEEtaslp2023sawada.pdf)与[研究 B11](../codes/research/02_aec_wpe_separation.md#mffca)；NTT 代码只供许可范围内的内部评估，不能修改或再分发。
+单帧乘性传递函数（Multiplicative Transfer Function，MTF）近似若不足以描述跨帧传播，可进一步研究多帧满秩空间协方差分析（multi-frame Full-rank Spatial Covariance Analysis，mfFCA）。它把多个帧的观测堆叠，扩大空间协方差以直接建模跨帧相关，与“先 WPE、再单帧分离”不是同一模型。最小核查应固定堆叠帧的次序、协方差维数和重构取点，再比较单帧退化情形。本章不声称已经运行这一整链。见 [Sawada 等，TASLP 2023，31卷3589–3602页原文](https://www.kecl.ntt.co.jp/icl/signal/sawada/mypaper/IEEEtaslp2023sawada.pdf)与[研究 B11](../codes/chapters/ch00/research/02_aec_wpe_separation.md#mffca)；NTT 代码只供许可范围内的内部评估，不能修改或再分发。
 
 ### 8.8 练习与可复算答案
 
@@ -760,7 +760,7 @@ FastMNMF 的可用实现还体现了许可需要逐来源检查：作者 `SoundS
 
 **可运行练习 E08-01～E08-07**
 
-运行 `.venv/bin/python -m codes.examples.exercises_enhancement` 复算以下七题。逐题结果和代码见 [`exercises_enhancement.py`](../codes/examples/exercises_enhancement.py)，GSS 活动门控函数见 [`guided_activity_posterior()`](../codes/array_tutorial/separation.py)，合成混合与已知矩阵解混音频见[练习及音频手册](../codes/research/05_exercises_and_audio.md)。
+运行 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_enhancement` 复算以下七题。逐题结果和代码见 [`exercises_enhancement.py`](../codes/chapters/ch00/cross_chapter/exercises_enhancement.py)，GSS 活动门控函数见 [`guided_activity_posterior()`](../codes/chapters/ch08/core/separation.py)，合成混合与已知矩阵解混音频见[练习及音频手册](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
 
 #### E08-01：尺度不变是否意味着时移不变？
 
@@ -824,7 +824,7 @@ PIT 利用真实参考选取评价排列；若相邻块不断交换输出而每�
 
 **第 3 步：检查失效边界。** 若删去背景类，第二帧的两个分数和为零，后验无定义。该结果说明背景类在全体说话人静音时提供了可归一化的候选；它不表示这一帧已被正确分离。
 
-本题给的是固定相对密度，只检验式(8-16)之后的活动门控与 E 步归一化。它没有估计 cACG 形状矩阵、执行 M 步或输出分离音频；后验属于背景类也不证明目标语音已被正确分离。代码中 `speaker_activity` 只输入两位说话人的标记，背景活动由函数自动补上。见 [`exercises_enhancement.py`](../codes/examples/exercises_enhancement.py) 中的 `E08-07`。
+本题给的是固定相对密度，只检验式(8-16)之后的活动门控与 E 步归一化。它没有估计 cACG 形状矩阵、执行 M 步或输出分离音频；后验属于背景类也不证明目标语音已被正确分离。代码中 `speaker_activity` 只输入两位说话人的标记，背景活动由函数自动补上。见 [`exercises_enhancement.py`](../codes/chapters/ch00/cross_chapter/exercises_enhancement.py) 中的 `E08-07`。
 
 
 <a id="e08-08"></a>
@@ -839,7 +839,7 @@ $$\vec w=[\sqrt{2/3},-1/\sqrt6]^\top\approx[0.81650,-0.40825]^\top.$$
 
 直接代回有 $\vec w^\top V\vec w=1$；$V$ 的特征值为 1、3，满足正定条件。它不是欧氏长度归一，$\vec w^\top\vec w=5/6$。复数情形存入矩阵行时必须共轭，不能把列 $\vec w$ 原样当行。
 
-本题的 $V$ 是已给定的正定输入，未从语音运行范数估计、所有行更新或回投影，因此只验证 IP 子步骤；源码和独立复数检查见 [enhancement_step_exercises.py](../codes/examples/enhancement_step_exercises.py) 的 `E08-08`。秩亏、零范数和源数大于麦数不满足本题前提，不能原样求解。
+本题的 $V$ 是已给定的正定输入，未从语音运行范数估计、所有行更新或回投影，因此只验证 IP 子步骤；源码和独立复数检查见 [enhancement_step_exercises.py](../codes/chapters/ch00/cross_chapter/enhancement_step_exercises.py) 的 `E08-08`。秩亏、零范数和源数大于麦数不满足本题前提，不能原样求解。
 
 <a id="e08-09"></a>
 
@@ -870,7 +870,7 @@ H=\begin{bmatrix}2&0.5\\0.1&3\end{bmatrix}.$$
 
 **最后核对 GEV。** 两个方向的广义特征值分别为 $1.8/0.2=9$、$0.2/1.8=1/9$，故主方向也是 $v_+$。GEV 本身只决定方向，直接用 $v_+$ 会把目标输出变成 2；另施加 $w^Hv=1$ 后才与本例 MVDR 的尺度一致。比值 9 不表示已经测到真实录音改善 9 倍；这里只有两个给定快照、软掩码和已选目标方向。一般 SCM 未必共享特征向量，不能外推为 GEV 与 MVDR 总相同。代码对应 `E08-10`。
 
-上述三题与 E06-21、E07-06 共同运行：`.venv/bin/python -m codes.examples.enhancement_step_exercises`。检验见 [test_codes_enhancement_steps.py](../tests/test_codes_enhancement_steps.py)。
+上述三题与 E06-21、E07-06 共同运行：`.venv/bin/python -m codes.chapters.ch00.cross_chapter.enhancement_step_exercises`。检验见 [test_codes_enhancement_steps.py](../tests/test_codes_enhancement_steps.py)。
 
 <a id="e08-11"></a>
 
@@ -899,7 +899,7 @@ H=\begin{bmatrix}2&0.5\\0.1&3\end{bmatrix}.$$
 
 教学整链在归一化后使用向单位阵收缩等显式正则化，并在质量不足时重置分量；例如将奇异矩阵收缩为 $(1-0.02)B+0.02I$，其特征值为 $1.98,0.02$。这样改变了无正则化迭代，必须保留参数，不能把“迹已经归一化”当成正定保证。
 
-运行 `.venv/bin/python -m codes.examples.enhancement_structure_exercises`；[原创代码](../codes/examples/enhancement_structure_exercises.py)和[独立测试](../tests/test_codes_enhancement_structure.py)检查分数结果、正比例尺度不变、复数外积的共轭以及秩亏拒绝。这里只执行形状子步骤，没有重新运行官方 GSS、生成该题音频或测量分离质量。
+运行 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.enhancement_structure_exercises`；[原创代码](../codes/chapters/ch00/cross_chapter/enhancement_structure_exercises.py)和[独立测试](../tests/test_codes_enhancement_structure.py)检查分数结果、正比例尺度不变、复数外积的共轭以及秩亏拒绝。这里只执行形状子步骤，没有重新运行官方 GSS、生成该题音频或测量分离质量。
 
 
 以下 E08-12～23 的确定性输入与步骤由本书推导；运行 `.venv/bin/python -m codes.chapters.ch08.chapter08_experiments`，入口为 [chapter08_experiments.py](../codes/chapters/ch08/chapter08_experiments.py) 的 `run_experiments()`。其中矩阵题只验证指定数学步骤，E08-23 使用人为给定的输出槽位检验连续拼接，均不冒充新训练的分离网络。
@@ -1145,17 +1145,17 @@ $$C=\begin{bmatrix}20/101&1\\1&20/101\end{bmatrix}.$$
 
 **第二步：重排与加权。** 在重叠 6400 点上，令第二块权重从 0 线性增加到 1，第一块取其补数；两端点都包含在权重数组中。权重之和恒为 1，非重叠区只保留对应块。正确关联后，两块同槽位的样本相同，所以加权拼接精确恢复 $[v_1,v_2]$。若不关联，重叠区会逐渐换人，重叠区后继续保持错误槽位。
 
-**评分与试听。** 全段统一去均值、不做时移或增益对齐，分别对固定身份的 $s_1,s_2$ 评分。浮点参考下，未关联两路约为 −3.3407 dB，正确关联两路约为 20.0000 dB；输入单通道混合分别对两源的分数约为 0 dB。这里改善的是已给定槽位的连续对应，没有降低模拟槽位中原有的 0.1 倍串音。实际导出 PCM 后，以 PCM 参考同口径评分：未关联两路为 −3.3408、−3.3405 dB，已关联为 19.9989、19.9997 dB，混合基线约为 0 dB。量化使这些值略有变化，不能把浮点解析值当作 PCM 实测值。精确参数见[练习及音频手册](../codes/research/05_exercises_and_audio.md)。
+**评分与试听。** 全段统一去均值、不做时移或增益对齐，分别对固定身份的 $s_1,s_2$ 评分。浮点参考下，未关联两路约为 −3.3407 dB，正确关联两路约为 20.0000 dB；输入单通道混合分别对两源的分数约为 0 dB。这里改善的是已给定槽位的连续对应，没有降低模拟槽位中原有的 0.1 倍串音。实际导出 PCM 后，以 PCM 参考同口径评分：未关联两路为 −3.3408、−3.3405 dB，已关联为 19.9989、19.9997 dB，混合基线约为 0 dB。量化使这些值略有变化，不能把浮点解析值当作 PCM 实测值。精确参数见[练习及音频手册](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
 
 所有文件用共同增益 1 导出。先调低播放音量；参考文件与两个输出文件的左右声道表示源身份槽位，不是物理左右麦克风。
 
-[双声道源参考，仅用于评分](../codes/audio/css_overlap_reference.wav)
+[双声道源参考，仅用于评分](../codes/chapters/ch08/audio/css_overlap_reference.wav)
 
-[单通道混合](../codes/audio/css_overlap_mixture.wav)
+[单通道混合](../codes/chapters/ch08/audio/css_overlap_mixture.wav)
 
-[未关联的双声道拼接](../codes/audio/css_overlap_naive.wav)
+[未关联的双声道拼接](../codes/chapters/ch08/audio/css_overlap_naive.wav)
 
-[按实际重叠关联的双声道拼接](../codes/audio/css_overlap_aligned.wav)
+[按实际重叠关联的双声道拼接](../codes/chapters/ch08/audio/css_overlap_aligned.wav)
 
 ![图43：模拟分离槽位在第二块交换，重叠相关用于恢复对应，再检查PCM输出](../figures/fig43_css_overlap.png)
 
@@ -1164,4 +1164,4 @@ $$C=\begin{bmatrix}20/101&1\\1&20/101\end{bmatrix}.$$
 **失效边界。** 若重叠区全零，相关没有有效分母；若两槽均为 $[1,-1,1,-1]$，所有相关都为 1，两种排列同分。教学匹配器在两种情况都返回 `status="ambiguous"`、无排列。默认要求去均值 RMS 严格大于 $10^{-8}$、被选每对相关不小于 0.5、最优平均得分优势严格大于 0.05；这些阈值是工程策略，不是正确身份的概率。不能取枚举第一项就声称恢复身份。静音后新说话人出现、增益或极性跳变、三个以上源及活动人数变化还需额外测试。
 
 ---
-> 📄 本篇信息：配图 2 张 ｜ [回首页](./00_overview.md)
+> 📄 本篇信息：配图 2 张 ｜ [回首页](00_overview.md)

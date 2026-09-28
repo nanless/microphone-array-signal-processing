@@ -4,13 +4,13 @@ import unittest
 
 import numpy as np
 
-from codes.array_tutorial.conventions import (
+from codes.chapters.ch02.core.conventions import (
     finite_real_array, finite_real_scalar, hermitian_part,
     validate_frequencies, validate_positions, validate_waveforms,
 )
-from codes.array_tutorial.covariance import recursive_covariance, spatial_covariance
-from codes.array_tutorial.geometry import direction_vector, near_field_steering, plane_wave_delays, plane_wave_steering
-from codes.array_tutorial.spectral import istft, stft
+from codes.chapters.ch03.core.covariance import recursive_covariance, spatial_covariance
+from codes.chapters.ch03.core.geometry import direction_vector, near_field_steering, plane_wave_delays, plane_wave_steering
+from codes.chapters.ch02.core.spectral import istft, stft
 
 
 class FoundationValidationTest(unittest.TestCase):
@@ -103,7 +103,7 @@ class FoundationValidationTest(unittest.TestCase):
             istft(np.ones((1,3,3)),n_fft=4,hop_length=2,window=np.full(4,1e200))
 
     def test_exercise_covariance_scales_against_hand_answer(self):
-        from codes.examples.exercises_spatial import run_exercises
+        from codes.chapters.ch00.cross_chapter.exercises_spatial import run_exercises
         result = run_exercises()["E02-06"]
         self.assertTrue(result["zero_mask_rejected"])
         self.assertEqual(len(result["cases"]), 3)
@@ -111,7 +111,7 @@ class FoundationValidationTest(unittest.TestCase):
             np.testing.assert_allclose(case["matrix_real"], [[1,.5],[.5,.5]], atol=1e-14)
 
     def test_exercise_gain_symmetry_against_scalar_identity(self):
-        from codes.examples.exercises_spatial import run_exercises
+        from codes.chapters.ch00.cross_chapter.exercises_spatial import run_exercises
         result = run_exercises()["E03-05"]
         p = 2*math.pi*1000*.01/343
         for case in result["cases"]:

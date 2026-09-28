@@ -1,17 +1,23 @@
 """Small exact arithmetic cases for IPNLMS and two-channel subband AEC.
 
-Run ``python -m codes.examples.aec_ipnlms_subband_demo``. Inputs are
+Run ``python -m codes.chapters.ch06.aec_ipnlms_subband_demo``. Inputs are
 dimensionless; no result here is a real-recording ERLE or speed claim.
 """
 
 from __future__ import annotations
 
+# Allow the documented direct-file command as well as python -m.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
+
 import json
 
 import numpy as np
 
-from codes.array_tutorial.aec_ipnlms import IPNLMSState
-from codes.array_tutorial.aec_subband import (
+from codes.chapters.ch06.core.aec_ipnlms import IPNLMSState
+from codes.chapters.ch06.core.aec_subband import (
     HaarDiagonalSubbandNLMSState,
     haar_analyze,
     haar_synthesize,

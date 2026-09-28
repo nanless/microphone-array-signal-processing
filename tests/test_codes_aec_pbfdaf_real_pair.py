@@ -7,7 +7,7 @@ import unittest
 
 import numpy as np
 
-from codes.examples.aec_pbfdaf_real_pair_compare import (
+from codes.chapters.ch06.examples.aec_pbfdaf_real_pair_compare import (
     evaluate_arrays, power_change_db, reference_conditions, run,
 )
 

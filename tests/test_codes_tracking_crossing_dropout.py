@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from codes.examples.tracking_crossing_dropout_demo import (
+from codes.chapters.ch09.tracking_crossing_dropout_demo import (
     _minimum_cost_assignment,
     run_experiment,
 )

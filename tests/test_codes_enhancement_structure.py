@@ -5,7 +5,7 @@ import unittest
 
 import numpy as np
 
-from codes.examples.enhancement_structure_exercises import (
+from codes.chapters.ch00.cross_chapter.enhancement_structure_exercises import (
     cacg_relative_density, cacg_shape_step, imm_mix, wpd_factorization,
 )
 

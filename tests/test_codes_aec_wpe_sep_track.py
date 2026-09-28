@@ -2,15 +2,15 @@ import unittest
 
 import numpy as np
 
-from codes.array_tutorial.aec import erle_db, nlms
-from codes.array_tutorial.dereverberation import offline_wpe
-from codes.array_tutorial.separation import (
+from codes.chapters.ch06.core.aec import erle_db, nlms
+from codes.chapters.ch07.core.dereverberation import offline_wpe
+from codes.chapters.ch08.core.separation import (
     mask_mvdr_2x2,
     masked_spatial_covariance,
     pit_permutation,
     si_sdr,
 )
-from codes.array_tutorial.tracking import (
+from codes.chapters.ch09.core.tracking import (
     CircularParticleFilter,
     ConstantVelocityKalman,
     systematic_resample,

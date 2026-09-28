@@ -5,7 +5,7 @@ import unittest
 
 import numpy as np
 
-from codes.examples.aec_same_input_truth import (
+from codes.chapters.ch06.examples.aec_same_input_truth import (
     FAR_SCORE,
     NEAR_SCORE,
     PATH,

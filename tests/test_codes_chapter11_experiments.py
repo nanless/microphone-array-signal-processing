@@ -5,12 +5,12 @@ import tempfile
 import unittest
 import wave
 import numpy as np
-from codes.array_tutorial.selection import (upper_limit_verdict, pareto_minima,
+from codes.chapters.ch11.core.selection import (upper_limit_verdict, pareto_minima,
                                             small_slot_word_errors, token_edit_distance)
-from codes.array_tutorial.audio_samples import selection_tradeoff_case, pcm16_bytes
-from codes.examples.chapter11_experiments import run_experiments
-from codes.examples.engineering_boundary_exercises import paired_sign_test_lower_is_better
-from codes.examples.tracking_time_exercises import zero_failure_upper_bound
+from codes.chapters.ch00.core.audio_samples import selection_tradeoff_case, pcm16_bytes
+from codes.chapters.ch11.chapter11_experiments import run_experiments
+from codes.chapters.ch00.cross_chapter.engineering_boundary_exercises import paired_sign_test_lower_is_better
+from codes.chapters.ch00.cross_chapter.tracking_time_exercises import zero_failure_upper_bound
 
 
 class Chapter11ExperimentsTests(unittest.TestCase):
