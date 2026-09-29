@@ -6920,11 +6920,12 @@
   },
   "retarded_equation_max_residual_s": 2.220446049250313e-16,
   "source_sha256": {
-    "codes/chapters/ch09/examples/chapter09_tracking_audio.py": "f350957cd4a1d76e814851983a568a4921a5988305225224bb2f544c4b1c9103",
+    "codes/chapters/ch09/examples/chapter09_tracking_audio.py": "f7972a7daa0deba765f8841760390904f946b4f660613b81c1a171bae92bed26",
     "codes/chapters/ch09/core/tracking_audio.py": "5c5fc25fac0841ef7bdc2e11eacf9de9f501d6424877ad709319be02dc04697c",
     "codes/chapters/ch09/core/moving_source.py": "5f9a3f7e94e451d6926ce72dc5e52f67855800fe5cb7bb2212f2da6c433335bb",
     "codes/chapters/ch09/core/tracking.py": "19ec7bbdf819b31002996c898a9dd5a253b3a72bf2511e58fc7fac2db6892130",
-    "codes/chapters/ch04/core/doa.py": "6dbef7d89cde9e29c5df7825a692129d8193db24d90fac5e83feb4f14ea636b9",
+    "codes/chapters/ch04/core/doa.py": "26b3053dbe28407648b46e86b10c6f9c3203942f19f41abe0d5f4980712c56a1",
+    "codes/chapters/ch04/core/covariance.py": "c3b5941dec14ea5bc94fb93a9089ee60a8844baa26cc3a50dddb54b8532d1989",
     "codes/chapters/ch02/core/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385",
     "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8"
   },

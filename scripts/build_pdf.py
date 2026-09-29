@@ -165,6 +165,11 @@ h1,h2,h3,h4{break-after:avoid}
 #ch-2 p:has(>strong:first-child):has(+p+p > mjx-container){break-after:avoid;page-break-after:avoid}
 /* 第4章的整段粗体算例标题和进阶引导随下一段排版。 */
 #ch-4 p:has(>strong:only-child){break-after:avoid;page-break-after:avoid}
+/* 第4章末题保留全部推导与字号，收紧局部空隙，避免末段单独占一页。 */
+#ch-4 h3#ch-4-sec-u-56493f2d40{margin-bottom:.5em}
+#ch-4 h3#ch-4-sec-u-56493f2d40~p{margin-bottom:.4em;line-height:1.62}
+#ch-4 h3#ch-4-sec-u-56493f2d40~ul{margin-top:.35em;margin-bottom:.35em}
+#ch-4 h3#ch-4-sec-u-56493f2d40~table{margin:6px 0}
 /* 显式短引导及第5章表格题注跟随内容，长推导仍可自然跨页。 */
 .chap p.keep-next,#ch-5 p:has(+table){break-after:avoid;page-break-after:avoid}
 /* 第10章末尾四条总结作为一个完整列表，避免仅末两条占据下一页。 */

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "verified_at": "2026-09-28",
+  "verified_at": "2026-09-29",
   "notes": "Fixed source revisions for independent local research checkouts. Acquisition does not mean runtime validation or redistribution permission. LFS objects, submodules and common model/audio/archive files are omitted in new sparse working trees; upstream Git objects can still contain embedded assets. Code, models and datasets retain their respective terms.",
   "projects": [
     {

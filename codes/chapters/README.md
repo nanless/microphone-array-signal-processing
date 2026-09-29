@@ -2,6 +2,8 @@
 
 这里是全书教学代码与资产的唯一目录。每章的 `core/` 放算法数值核，`examples/` 放对应实验或外部接口探针；同一个数值核只归一个章节，其他章节直接导入。导读 `ch00/` 保存跨章练习、主音频总清单、全书索引和上游获取工具。
 
+例如第 4 章 Capon 与第 5 章 MVDR/LCMV 共用的协方差验证和相对对角加载，只在首次用到的 [`ch04/core/covariance.py`](ch04/core/covariance.py) 实现，第 5 章直接导入。
+
 | 目录 | 主要实验模块（统一前缀 `codes.chapters.`） | 复算范围与边界 |
 |---|---|---|
 | [ch00](ch00/) | `ch00.cross_chapter.*` | 全书索引、跨章练习、主音频清单与上游来源 |
@@ -17,7 +19,7 @@
 | [ch10](ch10/) | `ch10.chapter10_experiments`、`ch10.spectral_subtraction_demo`、`ch10.sro_closed_loop_demo` | E10-13、E10-18～27；合成时间戳及有状态插值，不是声卡实时实测 |
 | [ch11](ch11/) | `ch11.chapter11_experiments` | E11-10～19；硬约束、评分和 FIR 取舍，示意分数不代表产品测量 |
 | [appendix_a](appendix_a/) | `appendix_a.appendix_a_experiments` | E12-06～13；短向量、矩阵和合成脉冲的数学边界 |
-| [appendix_b](appendix_b/) | `appendix_b.appendix_b_experiments`、`appendix_b.interpolation_exercise` | E13-02～08；只读既有房间报告与 PCM，不重跑房间仿真 |
+| [appendix_b](appendix_b/) | `appendix_b.appendix_b_experiments`、`appendix_b.interpolation_exercise` | E13-02～10；E13-02 读回主音频 PCM，E13-03～10 核查房间结果、PCM、来源证据或解析反例，不重跑房间仿真 |
 
 从仓库根目录使用模块形式运行，例如：
 

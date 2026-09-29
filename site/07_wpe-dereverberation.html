@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 7 章 · 去混响（WPE） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="15ca024621fb"><style>
+<meta name="source-digest" content="14bcf8fd1aec"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -1086,6 +1086,7 @@ g&=\frac{s^Ty}{s^Ts},\\
 <p>生成式恢复是另一条路线。例如<a href="https://doi.org/10.1109/TASLPRO.2026.3696215">Stream.FM（2026）正式论文</a>（卷34，3087～3101页；另有<a href="https://arxiv.org/abs/2512.19442v3">v3作者版</a>）用逐帧流匹配处理包含去混响在内的语音恢复任务。</p>
 <p>它学习从受损观测到恢复信号的条件生成过程，不是用 WPE 的延迟线性回归替换一个更好的功率估计器。流式运行还要为数值求解的各阶段分别维护历史；网络单次调用因果不等于完整采样器已经能跨音频块续算。固定源码入口、已发现的状态接口问题与未执行边界见<a href="research/02_aec_wpe_separation.html#streamfm">研究手册 N14</a>。本书没有运行该模型权重，不能据此声称它在本章合成例上优于 WPE。</p>
 <p>参数设置应先在目标数据上把直达声和早期反射的损伤控制在声明的指标阈值内，再根据晚期拖尾长度和可用帧数选择 $K$。保护延迟不能保证早期成分完全不变；弱混响时可以旁路 WPE。多说话人分离见第 8 章。</p>
+<hr />
 <blockquote>
 <p>📄 本篇信息：配图 2 张 ｜ <a href="index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="06_aec.html">← 上一篇</a></span><span><a href="08_speech-separation.html">下一篇 →</a></span></div>

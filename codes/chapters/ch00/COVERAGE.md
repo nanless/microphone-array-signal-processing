@@ -70,7 +70,7 @@
 | §4.4 | Chan 双曲定位 | 原理索引 | Chan–Ho 1994；正文距离差变量与两阶段思想 | E04-16只实现GN一步，不是完整Chan加权与约束处理 |
 | §4.4 | TDOA 加权非线性最小二乘 | 原理索引 | 正文高斯—牛顿推导 | 共享参考误差相关、多解、雅可比 |
 | §4.5 | Bartlett 空间谱 | 本仓库可运行基线 | `codes/chapters/ch04/core/doa.py::bartlett_spectrum` | 导向与输出功率归一 |
-| §4.5 | Capon 空间谱 | 本仓库可运行基线 | `codes/chapters/ch04/core/doa.py::capon_spectrum` | 加载、秩亏、失配 |
+| §4.5 | Capon 空间谱 | 本仓库可运行基线 | `codes/chapters/ch04/core/doa.py::capon_spectrum`；共用加载核 `codes/chapters/ch04/core/covariance.py::_load_covariance` | 加载、秩亏、失配 |
 | §4.6 | MUSIC | 本仓库可运行基线 | `codes/chapters/ch04/core/doa.py::music_spectrum` | 源数、噪声子空间、选峰；非半正定及零协方差拒绝 |
 | §4.6 | NormMUSIC | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/doa/normmusic.py` | 低可靠频点可能被过度加权 |
 | §4.6 | 前向空间平滑 | 外部参考实现 | `doatools`：`doatools/estimation/preprocessing.py::spatial_smooth` | 参数 `l` 是子阵数 |
@@ -115,7 +115,7 @@
 | §5.3 | 弥散场相干模型 | 本仓库可运行基线 | `codes/chapters/ch05/core/beamforming.py::diffuse_coherence` | 各向同性假设 |
 | §5.3 | 超指向波束 | 本仓库可运行基线 | `codes/chapters/ch05/core/beamforming.py::superdirective_weights` | 低频 WNG 与麦误差 |
 | §5.3 专栏 | 差分麦克风阵 DMA | 原理索引 | 正文一阶算例与高阶模型 | 超指向接口不覆盖全部 DMA |
-| §5.4 | MVDR 与相对对角加载 | 本仓库可运行基线 | `codes/chapters/ch05/core/beamforming.py::mvdr_weights`；`codes/chapters/ch05/beamformer_common_input_demo.py` | 加载按平均特征值缩放 |
+| §5.4 | MVDR 与相对对角加载 | 本仓库可运行基线 | `codes/chapters/ch05/core/beamforming.py::mvdr_weights`；共用加载核 `codes/chapters/ch04/core/covariance.py::_load_covariance`；`codes/chapters/ch05/beamformer_common_input_demo.py` | 加载按平均特征值缩放 |
 | §5.4.1 | 最坏情形稳健波束 | 原理索引 | 正文误差集模型 | 经验加载不等于明确误差集优化 |
 | §5.4.1 | 显式 WNG 约束设计 | 原理索引 | 正文约束与选型 | WNG 计算不等于约束优化器 |
 | §5.4.1 | 特征空间波束 | 原理索引 | Chang–Yeh 1992；空间研究 §22 | 子空间维数/高SNR/导向投影；未取得作者完整实现 |

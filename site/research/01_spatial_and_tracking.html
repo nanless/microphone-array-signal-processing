@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>空间处理与追踪源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="15ca024621fb"><style>
+<meta name="source-digest" content="14bcf8fd1aec"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -289,7 +289,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="01_spatial_and_tracking.html#sec-u-a16f6b51b4">收录边界</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="空间处理与声源追踪算法实现和工业使用条件" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-8b9c858ba6">空间处理与声源追踪：算法、实现和工业使用条件</h1>
-<p>基础索引核实日期：2026-09-22；第 1、5 章相关研究小节及所列实验、源码入口核实于 2026-09-28。对应正文第 1～5 章和第 9 章。这里按算法的输入、计算步骤和可检查结果整理源码，既包括语音前端，也包括直接相关的球阵录音与工业噪声源成像。后两类任务的输出不同，不能把声源功率图或 Ambisonics 解码结果当成增强语音。</p>
+<p>基础索引核实日期：2026-09-22；第 1、5 章相关研究小节及所列实验、源码入口核实于 2026-09-28；DCASE 2026 任务状态及近年候选的后续复核日期见各条 2026-09-29 记录。对应正文第 1～5 章和第 9 章。这里按算法的输入、计算步骤和可检查结果整理源码，既包括语音前端，也包括直接相关的球阵录音与工业噪声源成像。后两类任务的输出不同，不能把声源功率图或 Ambisonics 解码结果当成增强语音。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="阅读与复现方式" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-37b31460d5">阅读与复现方式</h2>
 <p>先运行本书的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/ch02_05_baselines.py"><code>ch02_05_baselines.py</code></a> 和 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/ch06_09_baselines.py"><code>ch06_09_baselines.py</code></a>，确认时延正负、共轭、通道顺序和角度零点。再按下面的文件入口阅读外部实现。外部目录位于 <code>codes/chapters/ch00/upstream/_downloads/&lt;项目 ID&gt;/</code>，由锁定清单和获取工具管理。下载、导入、单次演示成功、论文实验复现和设备验收是不同结果。</p>
 <p>本文的“最小实验”是建议的独立验证方案，未附运行结果的方案均未在本文中宣称通过。固定版本源码中的静态疑点集中放在末节；它们不能被隐藏在“有官方实现”的分类里。外部包缺少编译器、求解器、MATLAB、模型或测量数据时，仍可阅读源码，但不能据此声称运行验证完成。</p>

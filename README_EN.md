@@ -21,6 +21,7 @@ Use the [chapter code map](codes/chapters/README.md) to find teaching implementa
 | `codes/chapters/ch08/gss_audio/`, `codes/chapters/ch09/moving_audio/`, `codes/chapters/ch09/tracking_audio/`, `codes/chapters/appendix_b/room_audio/` | Four independent synthetic sets containing 5, 3, 2, and 18 WAVs respectively, with their own state, truth, observations or room-result report and manifests |
 | `codes/chapters/ch02/real_audio/` | Real synchronized DEMAND excerpt, derived averages, separate manifest and data license |
 | `codes/chapters/ch00/research/` | Detailed source research: algorithm steps, state and configuration, source entrypoints, failure experiments and industrial reproduction |
+| `codes/chapters/ch00/upstream/_downloads/` | Git-ignored local cache of separately acquired upstream source; it may contain local changes and is not part of the published tutorial or tracked documentation. See the [acquisition guide](codes/chapters/ch00/upstream/README.md) |
 | `codes/chapters/*/reports/` | Small-scale run reports beside their algorithm chapters, separate from source acquisition and full paper benchmarks |
 | `scripts/` | Plotting and build scripts (`make_figures.py`, `make_aec_figures.py`, `build_site.py`, `build_pdf.py`; see `scripts/README.md`) |
 | `site/` | 20 pages: 14 tutorial pages (including the homepage) and 6 handbook pages under `research/`; reproducible build output |

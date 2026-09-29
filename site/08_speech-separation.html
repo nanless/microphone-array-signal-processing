@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 8 章 · 语音分离 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="15ca024621fb"><style>
+<meta name="source-digest" content="14bcf8fd1aec"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -436,7 +436,9 @@ D_n&=1\oslash\lambda_n,\\
 B_n&\leftarrow B_n\odot\sqrt{\frac{U_nH_n^\top}{D_nH_n^\top}},\\
 H_n&\leftarrow H_n\odot\sqrt{\frac{B_n^\top U_n}{B_n^\top D_n}}.
 \end{aligned}\tag{8-11}$$</p>
-<p>$\odot,\oslash$ 表示同形数组逐元素运算；式中的分式、平方和根号也逐元素计算，普通并置表示矩阵乘法。先更新 $B_n$，重算 $\lambda_n=B_nH_n$，据新功率重算 $U_n,D_n$ 后再更新 $H_n$。这里的 $D_n$ 只是该小步的逐元素倒数矩阵，不是回投影中的尺度矩阵。固定 $W$ 的目标是 $\sum(P/\lambda+\log\lambda)$；当 $P>0$ 时，它与 Itakura–Saito 散度仅差常数。零初始化可能因乘法而始终为零，通常使用正初值，再明确功率地板的工程口径。E08-19 展开一次基和激活更新；它不把更低的拟合代价当成更好的真实分离。</p>
+<p>$\odot,\oslash$ 表示同形数组逐元素运算；式中的分式、平方和根号也逐元素计算，普通并置表示矩阵乘法。</p>
+<p>先更新 $B_n$，重算 $\lambda_n=B_nH_n$，据新功率重算 $U_n,D_n$ 后再更新 $H_n$。这里的 $D_n$ 只是该小步的逐元素倒数矩阵，不是回投影中的尺度矩阵。</p>
+<p>固定 $W$ 的目标是 $\sum(P/\lambda+\log\lambda)$；当 $P>0$ 时，它与 Itakura–Saito 散度仅差常数。零初始化可能因乘法而始终为零，通常使用正初值，再明确功率地板的工程口径。E08-19 展开一次基和激活更新；它不把更低的拟合代价当成更好的真实分离。</p>
 <h3 id="sec-u-90be0c3662">MNMF 的满秩模型与维纳重构</h3>
 <p><strong>MNMF（多通道 NMF，Multichannel NMF）</strong>。MNMF 同样使用低秩源谱模型，但以满秩空间协方差描述传播，不要求方阵解混矩阵可逆，因此可以表示欠定混合。谱基、激活和空间协方差需要联合估计，参数数量和局部最优使初值十分重要。可利用 AuxIVA 或 ILRMA 结果辅助初始化，但欠定模型中多出的源还需另作设置。本章未在相同硬件和输入下测定这些方法的速度，不按方法名推断固定运行时长。</p>
 <p>以 $\mathbf c_{nft}\in\mathbb C^M$ 表示第 $n$ 个源在所有麦克风上的源图像。满秩工作模型取不同源图像统计独立，协方差 $R_{nft}=\lambda_{nft}G_{nf}$；$G_{nf}$ 是空间形状，$\lambda_{nft}$ 可由 NMF 给出。其乘积才是带功率的协方差。总模型和负对数似然为</p>
@@ -701,8 +703,10 @@ s_{\mathrm{tar}}=\alpha s,\\
 </tbody>
 </table></div>
 <p><strong>REVERB。</strong> 仿真部分的混响时间约分 0.25 / 0.5 / 0.7 s 三档，另有以 MC-WSJ-AV 为基础的真实房间录音；基线语音来自 WSJCAM0。存在 8 通道、2 通道及单通道设置。比较 WPE 时，应同时写通道数、识别器、测试子集，以及 WER 的绝对值或相对变化。</p>
-<p><strong>CHiME-5。</strong> 录音来自真实家庭的厨房、餐厅和客厅，包含自然混响和生活噪声。每场有 6 台 Kinect，每台 4 个同步麦克风；每位参与者还佩戴双耳麦。原始 CHiME-5 的双耳录音仅提供于训练集和开发集，评测集不提供，不能把三组数据都写成可取得双耳通道。<a href="https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf" title="citation">Boeddecker 等 CHiME-5 2018 原论文 §2</a>。6 台设备不能缩写成“6 麦阵列”；可用的双耳录音用于辅助转写和时间对齐，不是干净评分参考。<a href="https://www.chimechallenge.org/challenges/chime5/overview" title="citation">CHiME-5 官方数据说明</a></p>
-<p><strong>CHiME-6。</strong> 该版本重新对齐了 CHiME-5 的部分录音，必须写明具体版本和划分。总计 32 个物理通道，其中 6 台四麦阵列给出 24 通道，4 套双耳设备给出 8 通道。CHiME-6 Track 2 官方数据规则对 <strong>evaluation set</strong> 的双耳录音限定为仅可用于阵列同步，不可用于说话人分割、增强或识别；不能把这一条直接扩写为训练集和开发集的同一限制。<a href="https://www.chimechallenge.org/challenges/chime6/track2_data" title="citation">CHiME-6 Track 2 官方数据页 Audio Note</a>。报告 GSS 还须注明实际选用哪些阵列、日志输入、打分集和原论文表号。</p>
+<p><strong>CHiME-5。</strong> 录音来自真实家庭的厨房、餐厅和客厅，包含自然混响和生活噪声。每场有 6 台 Kinect，每台 4 个同步麦克风；每位参与者还佩戴双耳麦。</p>
+<p>原始 CHiME-5 的双耳录音仅提供于训练集和开发集，评测集不提供，不能把三组数据都写成可取得双耳通道。<a href="https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf" title="citation">Boeddecker 等 CHiME-5 2018 原论文 §2</a>。6 台设备不能缩写成“6 麦阵列”；可用的双耳录音用于辅助转写和时间对齐，不是干净评分参考。<a href="https://www.chimechallenge.org/challenges/chime5/overview" title="citation">CHiME-5 官方数据说明</a></p>
+<p><strong>CHiME-6。</strong> 该版本重新对齐了 CHiME-5 的部分录音，必须写明具体版本和划分。总计 32 个物理通道，其中 6 台四麦阵列给出 24 通道，4 套双耳设备给出 8 通道。</p>
+<p>CHiME-6 Track 2 官方数据规则对 <strong>evaluation set</strong> 的双耳录音限定为仅可用于阵列同步，不可用于说话人分割、增强或识别；不能把这一条直接扩写为训练集和开发集的同一限制。<a href="https://www.chimechallenge.org/challenges/chime6/track2_data" title="citation">CHiME-6 Track 2 官方数据页 Audio Note</a>。报告 GSS 还须注明实际选用哪些阵列、日志输入、打分集和原论文表号。</p>
 <p><strong>WHAMR。</strong> 使用合成房间冲激响应，$T_{60}$ 的低、中、高混响档分别从 0.1～0.3 s、0.2～0.6 s、0.4～1.0 s 均匀采样；这三档表示混响程度，不表示房间大小。</p>
 <p>数据以 WSJ0-2mix 加 WHAM 噪声为基础，提供 8 kHz / 16 kHz、min（截短对齐）/ max（全长）版本。报告时写清源数、目标是无混响还是带混响语音，以及 SI-SDRi 实现。<a href="https://doi.org/10.1109/ICASSP40776.2020.9053327" title="citation">WHAMR 正式论文 §2 与表 1</a></p>
 <p><strong>WSJ0-2mix / 3mix。</strong> 语音素材直接叠加，无另加噪声或混响。<a href="https://www.merl.com/publications/TR2016-003" title="citation">Hershey 等原始论文 §3.1</a>对双人混合报告 30 小时训练、10 小时验证、5 小时测试，并在处理前统一降采样至 8 kHz；其三人实验采用另行构造的样本集，不能照搬双人时长。</p>
@@ -1211,7 +1215,8 @@ G_1G_2-G_2G_1&=\begin{bmatrix}0&-5\\5&0\end{bmatrix}\ne0.
 <p><a href="audio/css_overlap_aligned.wav">按实际重叠关联的双声道拼接</a><audio class="audio-sample" controls preload="none" aria-label="按实际重叠关联的双声道拼接" src="audio/css_overlap_aligned.wav">请使用上方 WAV 链接下载。</audio></p>
 <p><img alt="图43：模拟分离槽位在第二块交换，重叠相关用于恢复对应，再检查PCM输出" src="../figures/fig43_css_overlap.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图43(a)给出未量化重叠波形的相关矩阵；(b)(c)分别从直接拼接与关联拼接的第一输出槽 PCM 中，每 80 ms 联合拟合 250 Hz 和 625 Hz 正弦幅度。后两幅采用相同坐标，阴影标出 0.8～1.2 s 重叠区。频率标签用于解释两条指定参考源，评分另用参考；排列器只读取重叠样本。无房间混响、设备噪声或新分离网络，不能把这幅图的改善归为实际会议分离性能。</p>
-<p><strong>失效边界。</strong> 若重叠区全零，相关没有有效分母；若两槽均为 $[1,-1,1,-1]$，所有相关都为 1，两种排列同分。教学匹配器在两种情况都返回 <code>status="ambiguous"</code>、无排列。默认要求去均值 RMS 严格大于 $10^{-8}$、被选每对相关不小于 0.5、最优平均得分优势严格大于 0.05；这些阈值是工程策略，不是正确身份的概率。不能取枚举第一项就声称恢复身份。静音后新说话人出现、增益或极性跳变、三个以上源及活动人数变化还需额外测试。</p>
+<p><strong>失效边界。</strong> 若重叠区全零，相关没有有效分母；若两槽均为 $[1,-1,1,-1]$，所有相关都为 1，两种排列同分。</p>
+<p>教学匹配器在两种情况都返回 <code>status="ambiguous"</code>、无排列。默认要求去均值 RMS 严格大于 $10^{-8}$、被选每对相关不小于 0.5、最优平均得分优势严格大于 0.05；这些阈值是工程策略，不是正确身份的概率。不能取枚举第一项就声称恢复身份。静音后新说话人出现、增益或极性跳变、三个以上源及活动人数变化还需额外测试。</p>
 <hr />
 <blockquote>
 <p>📄 本篇信息：配图 2 张 ｜ <a href="index.html">回首页</a></p>

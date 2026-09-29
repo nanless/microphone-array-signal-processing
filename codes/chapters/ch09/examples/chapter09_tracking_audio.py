@@ -27,7 +27,8 @@ OUTPUT = ROOT/'codes/chapters/ch09/tracking_audio'
 SOURCE_PATHS = (
     'codes/chapters/ch09/examples/chapter09_tracking_audio.py', 'codes/chapters/ch09/core/tracking_audio.py',
     'codes/chapters/ch09/core/moving_source.py', 'codes/chapters/ch09/core/tracking.py',
-    'codes/chapters/ch04/core/doa.py', 'codes/chapters/ch02/core/conventions.py',
+    'codes/chapters/ch04/core/doa.py', 'codes/chapters/ch04/core/covariance.py',
+    'codes/chapters/ch02/core/conventions.py',
     'codes/chapters/ch00/core/audio_samples.py',
 )
 

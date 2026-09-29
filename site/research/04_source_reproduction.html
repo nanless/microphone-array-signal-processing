@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码获取与独立复现记录 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="15ca024621fb"><style>
+<meta name="source-digest" content="14bcf8fd1aec"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -239,7 +239,7 @@ ERLE 不能把双讲中的近端语音解释成残余回声，也不能用参考
 <p>事件边界也要有独立期望。服务时间与到达周期严格相等时，一帧完成后应立即释放容量，再接收同刻到来的帧；不能让浮点乘法与累加的舍入差制造丢帧。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/engineering_boundary_exercises.py">工程边界练习 E10-16</a>以整数刻度手算作对照，另保留略大于周期的真实超期输入。AGC 的增益下降更新则要回到解析等式：平滑系数为 1 时增益应等于目标增益；“输出有限且不削波”并不能排除数值消减导致的错误静音。</p>
 <p>外部时间戳与模型运行时也应先检查协议。<a href="03_industrial_deployment.html">工业研究 I01 与 I18</a>分别核对 PortAudio 的测点含义、ONNX Runtime 的设备缓冲绑定与同步接口。E10-17 实际运行的是构造时间戳的减法和样本映射；I18 的 GPU 绑定对照仍是实验设计。两者不能因为有可执行教学程序就统一登记为设备实验已通过。</p>
 <span id="sec-10" class="anchor-alias" aria-hidden="true"></span><span id="5-记录结果的必要字段" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-96ac81c5a8">5. 记录结果的必要字段</h2>
-<p>获取、构建和数值实验分开记录。以下是本机截至 2026-09-23 的状态，不是推荐配置的性能表：</p>
+<p>获取、构建和数值实验分开记录。下表以 2026-09-23 的本机记录为底稿，已累计补入后续实验；SMP-PHAT 的隔离有符号索引适配与独立 DFT 对照于 2026-09-24 完成。它不是推荐配置的性能表：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
 <tr>
@@ -296,8 +296,8 @@ ERLE 不能把双讲中的近端语音解释成残余回声，也不能用参考
 <tr>
 <td>pystoi</td>
 <td>已取得 Python 核心</td>
-<td>项目环境缺 SciPy，未安装</td>
-<td>未运行；短片段行为来自源码核查</td>
+<td>共享项目环境缺 SciPy，未安装；另有现成隔离环境</td>
+<td>2026-09-28 在隔离环境作 12 次原 Python 接口受控调用；自然语音、MATLAB 对照与内部重采样路径未测</td>
 <td>不适用</td>
 </tr>
 <tr>
@@ -346,7 +346,7 @@ ERLE 不能把双讲中的近端语音解释成残余回声，也不能用参考
 </table></div>
 <p>“未运行”不同于“运行失败”；“存在编译器”也不同于“依赖验证通过”。获取工具报告中的 <code>execution: not_run</code>
 始终描述获取工具自身没有执行上游代码，具体方法的实验结果保存在独立研究记录，不反写成整个项目已通过。</p>
-<p>上表保留 2026-09-23 的本机快照。2026-09-28 又在已有隔离环境对固定版 <code>pystoi.stoi</code> 做了 12 次原 Python 接口受控调用，记录异常、警告和返回值，见<a href="03_industrial_deployment.html#i24pystoi-的-stoiestoi-与无效评分">工业研究 I24</a>及<a href="03_industrial_deployment.html#industrial-upstream-audit">I32 原始报告入口</a>。这些输入是零信号与非退化随机信号自比较；没有运行自然语音可懂度评测、原作者 MATLAB/Octave 对照或内部重采样路径，也没有在项目共享环境安装 SciPy。ViSQOL 评分器仍未运行。</p>
+<p>2026-09-28 在已有隔离环境对固定版 <code>pystoi.stoi</code> 做了 12 次原 Python 接口受控调用，记录异常、警告和返回值，见<a href="03_industrial_deployment.html#i24pystoi-的-stoiestoi-与无效评分">工业研究 I24</a>及<a href="03_industrial_deployment.html#industrial-upstream-audit">I32 原始报告入口</a>。这些输入是零信号与非退化随机信号自比较；没有运行自然语音可懂度评测、原作者 MATLAB/Octave 对照或内部重采样路径，也没有在项目共享环境安装 SciPy。ViSQOL 评分器仍未运行。</p>
 <span id="sec-11" class="anchor-alias" aria-hidden="true"></span><span id="工程接口实验与待扩展的评分检查" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-ac4d3025b1">工程接口实验与待扩展的评分检查</h3>
 <p>前两条已实际运行；响度的半幅、分块与静音检查也已完成。固定版 pystoi 已完成上述受控接口探针，但第三条的完整自然语音评分与失败处理流程仍是实验设计；ViSQOL 仍未运行。下文不预填自然语音得分。</p>
 <ol>
@@ -401,6 +401,9 @@ ViSQOL 还需固定 speech/audio 模式、采样率和映射模型，不能混�
 例如整数部分 −6 不在无符号整数的表示范围内；这不是按模回绕的整数到整数转换。
 该转换属于语言未定义行为，其他编译器上的偶然结果不能作为可移植保证。
 <a href="https://clang.llvm.org/docs/UsersManual.html">Clang 官方手册的浮点到整数溢出说明</a></p>
+<p>原版复现入口是<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/examples/reproduce_smpphat_reference.py">Python 驱动脚本</a>及其调用的
+<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/examples/reproduce_smpphat_harness.c">C 测试程序</a>。它们针对未修改的固定上游源码生成
+<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/reports/smpphat_reference.json">原版报告</a>，与下文的隔离适配脚本分别保存失败和适配结果。</p>
 <p>因此，程序能完成编译、两个方法在选定输入上恰好给出同一峰，并不等于全方向分数与推导相符。
 实验保留原版失败，再用上游实际查表索引配合独立离散傅里叶求和定位误差来源；没有修改上游算法后
 将其结果冒充原版通过。完整输入、依赖、判据与诊断见<a href="01_spatial_and_tracking.html">空间研究</a>。</p>

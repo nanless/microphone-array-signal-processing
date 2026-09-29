@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 9 章 · 声源追踪 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="15ca024621fb"><style>
+<meta name="source-digest" content="14bcf8fd1aec"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -842,7 +842,8 @@ L(A)&=p_D^d(1-p_D)^{2-d}\\
 <p>活动耦合笛卡尔 DOA（Activity-Coupled Cartesian DOA，ACCDOA）把向量方向编码为 DOA、向量长度编码为活动强度。它本身是逐帧声事件定位与检测的输出表示，不等同于追踪器；只有结合时序模型、平滑和身份关联后，才形成轨迹。</p>
 <p>PHD 的人数含义、递推和最小手算单独放在下一小节，便于与前面的逐帧数据关联方法对照。</p>
 <h3 id="sec-u-175f2c0587">PHD 强度：人数期望与单帧更新</h3>
-<p>PHD 强度 $D_t(x)$ 也不是“某处有人”的普通概率密度。它在区域 $A$ 上的积分表示该区域内目标数的期望，因而总强度 $\int D_t(x)\,dx$ 给出期望人数；输出整数人数还需另定取整或提取规则。目标位置通常从强度峰或聚类中心提取；“峰数就是人数”只是实现近似。PHD 避免显式枚举观测—目标关联，但只传播一阶矩，不保留目标身份，也不能完整描述人数分布或目标间相关性。CPHD 进一步传播人数的概率分布；这不意味着它自动获得永久身份。E09-14 用同一强度、不同人数方差说明区别。</p>
+<p>PHD 强度 $D_t(x)$ 也不是“某处有人”的普通概率密度。它在区域 $A$ 上的积分表示该区域内目标数的期望，因而总强度 $\int D_t(x)\,dx$ 给出期望人数；输出整数人数还需另定取整或提取规则。目标位置通常从强度峰或聚类中心提取；“峰数就是人数”只是实现近似。</p>
+<p>PHD 避免显式枚举观测—目标关联，但只传播一阶矩，不保留目标身份，也不能完整描述人数分布或目标间相关性。CPHD 进一步传播人数的概率分布；这不意味着它自动获得永久身份。E09-14 用同一强度、不同人数方差说明区别。</p>
 <p>下面的递推针对标准独立点目标模型：各目标独立演化，检测事件相互独立，每个被检测目标每帧至多产生一条观测，杂波是与目标观测独立的 Poisson 随机有限集，并忽略由既有目标衍生新目标（spawning）的过程，只用 $\gamma_t$ 表示自发出生；为得到下面的标准闭式更新，还采用 Poisson 型预测多目标分布近似。PHD 的预测式为</p>
 <p>令 $s_t(\xi)=p_S(\xi)D_{t-1}(\xi)$ 表示存活后的先验强度，则</p>
 <p>$$\begin{gathered}
@@ -869,7 +870,8 @@ D_t(x)=[1-p_D(x)]D_t^-(x)\\
 <h3 id="sec-u-fc4ad81613">可执行单目标接口与边界</h3>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/core/tracking.py"><code>codes/chapters/ch09/core/tracking.py</code></a> 提供常速度角度 Kalman 滤波器、$[-180^\circ,180^\circ)$ 环绕、系统重采样和圆周角 SIR 粒子滤波器。</p>
 <p><code>ConstantVelocityKalman</code> 的状态单位是 <code>[度, 度/秒]</code>；每帧先用实际秒数 <code>dt</code> 调用 <code>predict()</code>，有观测时再以角度方差调用 <code>update()</code>，缺测时不调用更新。协方差使用 Joseph 形式。它与算例9-1的“度/帧”不同，比较前应转换状态、转移矩阵及过程噪声单位。</p>
-<p><code>CircularParticleFilter</code> 用最短圆周角差的高斯目标项与均匀杂波项混合更新权重，按有效粒子数决定是否系统重采样；它只估计单个圆周角，不包含速度粒子、有限扇区反射或轨迹身份。该项把最短角差代入普通高斯密度，再与每度 $1/360$ 的均匀项混合。当标准差远小于180°时，高斯落在最短角区间外的质量很小；对任意大的标准差，它在该区间的积分小于1，混合系数不能再直接解释为严格圆周生成模型的杂波概率。因此它是窄角误差的教学近似，不是通用的归一圆周高斯模型。严格宽分布模型须另选环绕正态、归一截断密度或其他圆分布，连同参数含义一起验证。</p>
+<p><code>CircularParticleFilter</code> 用最短圆周角差的高斯目标项与均匀杂波项混合更新权重，按有效粒子数决定是否系统重采样；它只估计单个圆周角，不包含速度粒子、有限扇区反射或轨迹身份。</p>
+<p>该项把最短角差代入普通高斯密度，再与每度 $1/360$ 的均匀项混合。当标准差远小于180°时，高斯落在最短角区间外的质量很小；对任意大的标准差，它在该区间的积分小于1，混合系数不能再直接解释为严格圆周生成模型的杂波概率。因此它是窄角误差的教学近似，不是通用的归一圆周高斯模型。严格宽分布模型须另选环绕正态、归一截断密度或其他圆分布，连同参数含义一起验证。</p>
 <p>联合示例用 <code>.venv/bin/python -m codes.chapters.ch00.cross_chapter.ch06_09_baselines</code> 运行，测试见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_wpe_sep_track.py"><code>tests/test_codes_aec_wpe_sep_track.py</code></a>。测试覆盖 $179^\circ$ 与 $-179^\circ$ 的最短新息、缺测时角度方差增长、Joseph 更新后的对称半正定性、远距离高置信观测的对数权重、退化权重的系统重采样，以及对称后验下未定义的圆周均值。</p>
 <p>教学 Kalman 类的过程噪声矩阵 $Q$ 已按一次预测间隔离散化；若 <code>dt</code> 改变，不能继续照搬同一个 $Q$。粒子后验的圆周合向量接近零时，代码会明确报错，而不是返回由浮点残差决定的任意角度。</p>
 <p>如何重算 $Q$ 取决于过程噪声模型，练习 E09-04 比较两种不同定义。粒子重采样阈值则按有效粒子数的同一尺度指定：<code>resample_if_needed()</code> 接受 $[0,N]$ 内有限实数，0 表示关闭，默认是 $N/2$；布尔值、数组、负数、超过粒子数或非有限值均报错，且不改变粒子和随机数状态。</p>
@@ -1095,7 +1097,8 @@ t_{\rm available}&=\frac{n_0+512}{16000},\\
 &=16.03125\ \mathrm{ms}.
 \end{aligned}\tag{9-29}$$</p>
 <p>这里尚未加入定位运算、调度和播放缓冲延迟。输出是窗中心状态，不能称为采样完成时刻的零延迟方向。真值也按接收窗中心解到阵列中心的迟滞发射时刻，再计算该发射位置的方位；不能拿同数值发射时间的位置直接评分。</p>
-<p>逐帧清单另以 <code>measurement_time_s</code> 记录<strong>本帧有效观测</strong>所属的接收窗中心；有效时它等于 <code>state_time_s</code>，缺测时为 <code>null</code>。<code>last_valid_measurement_time_s</code> 保存最近一次有效观测的中心时刻，尚无有效观测时为 <code>null</code>。<code>state_time_s</code> 始终是本帧滤波或预测状态所属时刻，<code>available_time_s</code> 是整窗采齐的最早时刻；缺测后若需计算观测龄期，应从当前 <code>state_time_s</code> 减去最近有效观测时刻，不能把状态已预测到当前时刻误当作刚收到新观测。图 44 的横轴仍采用 <code>state_time_s</code>；新增字段用于核对观测龄期，不参与图中的原有评分。</p>
+<p>逐帧清单另以 <code>measurement_time_s</code> 记录<strong>本帧有效观测</strong>所属的接收窗中心；有效时它等于 <code>state_time_s</code>，缺测时为 <code>null</code>。<code>last_valid_measurement_time_s</code> 保存最近一次有效观测的中心时刻，尚无有效观测时为 <code>null</code>。<code>state_time_s</code> 始终是本帧滤波或预测状态所属时刻，<code>available_time_s</code> 是整窗采齐的最早时刻。</p>
+<p>缺测后若需计算观测龄期，应从当前 <code>state_time_s</code> 减去最近有效观测时刻，不能把状态已预测到当前时刻误当作刚收到新观测。图 44 的横轴仍采用 <code>state_time_s</code>；新增字段用于核对观测龄期，不参与图中的原有评分。</p>
 <p><img alt="图44 带噪移动源的波形定位与追踪" src="../figures/fig44_tracking_audio.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图44使用上述同一组实际PCM波形处理结果：（a）比较传播真值、有效GCC方向和滤波输出；（b）显示状态时刻的角方差，缺测时只传播预测；（c）比较同一发射事件的真值时差与GCC亚采样峰，单位为采样点，左侧声源的通道1−通道0时差为正。三图横轴都是接收窗中心 <code>state_time</code>，灰区标记本次RMS门产生的缺测。</p>
 <p>图中的真值用于评分与显示，不参与定位、RMS门或KF更新。“滤波输出”含初始化帧、有效观测更新后的状态，以及缺测时的预测状态，清单逐帧保存取点类型。图中方差没有进行覆盖率校准，不能直接当作实测置信带。</p>
@@ -1127,7 +1130,8 @@ t_{\rm available}&=\frac{n_0+512}{16000},\\
 </tr>
 </tbody>
 </table></div>
-<p>173个有效观测帧包括一次初始化和172次更新；另有24次仅预测。24个缺测帧的中心从.83596875到1.06596875 s。缺测段恰处在本条平滑轨迹的一段，较低误差不能推出“不观测更准确”；它和173帧使用不同分母。未量化浮点信号的对应结果为2.8064°、1.1556°、.3701°，清单单列保留，不与PCM结果混写。PHAT对弱频点敏感，因此微小量化差异也可能改变峰位。</p>
+<p>173个有效观测帧包括一次初始化和172次更新；另有24次仅预测。24个缺测帧的中心从.83596875到1.06596875 s。</p>
+<p>缺测段恰处在本条平滑轨迹的一段，较低误差不能推出“不观测更准确”；它和173帧使用不同分母。未量化浮点信号的对应结果为2.8064°、1.1556°、.3701°，清单单列保留，不与PCM结果混写。PHAT对弱频点敏感，因此微小量化差异也可能改变峰位。</p>
 <p>这是固定种子的一条合成序列，没有重复实验置信区间，没有真实房间、多人身份关联、出生删除或波束音频输出。它补齐“波形→定位→门控→状态”链路，不能作为算法排名。E09-19核对帧数、时间、门控和评分分母。</p>
 <span id="sec-u-f7a201edb9" class="anchor-alias" aria-hidden="true"></span><span id="sec-6" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-9-6">9.6 本章练习</h2>
 <h3 id="sec-u-60cf4cb927">四个综合自测</h3>

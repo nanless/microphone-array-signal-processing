@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>工业音频实现研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="15ca024621fb"><style>
+<meta name="source-digest" content="14bcf8fd1aec"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -181,7 +181,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="03_industrial_deployment.html#sec-u-b1a4a4acde">I32：固定工业接口诊断的执行范围</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="工业音频实现从采集状态到部署和评分" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-d1edc87d16">工业音频实现：从采集、状态到部署和评分</h1>
-<p>原核实日期：2026-09-22；AEC 接口 I03/I05 与评分 I20 复核日期：2026-09-23；I01 时间戳、I18 输入输出绑定与 I28 源码接口核对日期：2026-09-26；第10章工业边界及 I30～I32 复核日期：2026-09-28。对应正文第 10、11 章和附录 B。这里讨论本书算法进入连续音频系统后需要补上的部分：驱动、参考路由、跨块状态、定点内核、模型运行时和评分器。每项的完整提交以 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCES.lock.json"><code>SOURCES.lock.json</code></a> 为准；网页文档版本只说明核实依据，不自动等于本机安装版本。</p>
+<p>原核实日期：2026-09-22；AEC 接口 I03/I05 与评分 I20 复核日期：2026-09-23；I01 时间戳、I18 输入输出绑定与 I28 源码接口核对日期：2026-09-26；第10章工业边界及 I30～I32 复核日期：2026-09-28；FastEnhancer 论文发表状态于 2026-09-29 另行复核。对应正文第 10、11 章和附录 B。这里讨论本书算法进入连续音频系统后需要补上的部分：驱动、参考路由、跨块状态、定点内核、模型运行时和评分器。每项的完整提交以 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCES.lock.json"><code>SOURCES.lock.json</code></a> 为准；网页文档版本只说明核实依据，不自动等于本机安装版本。</p>
 <p>除明确写出输入、环境和实测值的本地接口实验外，下面的试验是建议执行的设备验收步骤，不是已经测得的产品结果。源码下载、依赖安装、编译、运行、声学测量是不同状态。没有硬件、模型或数据时，可以完成源码核对，但不能把该项标成已经通过设备验收。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="1-采集时钟与连续流" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-ffac6d1f19">1. 采集、时钟与连续流</h2>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><span id="i01portaudio-回调与设备时间戳" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-39d396e1a1">I01：PortAudio 回调与设备时间戳</h3>
