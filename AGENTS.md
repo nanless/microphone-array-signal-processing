@@ -32,6 +32,7 @@
 | 教学代码源文件 | `codes/chapters/{ch00,ch01～ch11,appendix_a,appendix_b}/` 中的 `core/`、`examples/` 与单章入口 | 共享数值核按首讲章节唯一归档，跨章练习在 `ch00/cross_chapter/` | 修改唯一真实实现；同步测试、覆盖表和对应章节；旧 `codes.array_tutorial`、`codes.examples` 路径已退出仓内接口 |
 | 主音频布局 | `codes/chapters/ch00/audio/MANIFEST.json`、各章 `audio/*.wav`；`scripts/code_layout.py` 固定组→章节映射 | 27 组、109 个数学合成 WAV，单一总清单、分章存放 | 改生成源后按新布局重生；清单记录每条所属章、生成源 SHA 与 WAV SHA；禁止手改单个 WAV |
 | 房间仿真源与生成物 | `codes/chapters/appendix_b/examples/room_srp_exercise.py` → `codes/chapters/appendix_b/room_audio/` | 6 个源位各有源、仅直达和完整房间输出，共 18 个白噪声合成 WAV、独立清单、一张结果图和 `RESULTS.json` 数值报告 | 使用隔离的 pyroomacoustics 0.10.0 环境生成到新目录并核验后更新；不得混入主清单的 109 个样本或称作真实录音；报告、图与清单的摘要须一致 |
+| 双耳线索源与生成物 | `codes/chapters/ch01/core/binaural_cues.py`、`codes/chapters/ch01/examples/generate_binaural_cues.py` → `codes/chapters/ch01/binaural_audio/` | 5 个双声道数学合成 WAV、独立清单；左声道在前，共同导出增益 1 | 复用主 PCM 编解码，清单绑定三个真实源的 SHA；分开浮点与 PCM 评分；不并入主 109 个或称为 HRTF/真实双耳录音；`--check` 只核对 |
 | GSS 教学链源与生成物 | `codes/chapters/ch08/core/gss_teaching.py`、`codes/chapters/ch08/examples/gss_teaching_demo.py` → `codes/chapters/ch08/gss_audio/` | 5 个数学合成 WAV、`STATE.npz` 和独立清单 | 重生后核对共同增益、状态摘要与评分；不把教学子链称为已运行官方 GPU/CHiME 整链 |
 | 观测到追踪源与生成物 | `codes/chapters/ch09/core/tracking_audio.py`、`codes/chapters/ch09/examples/chapter09_tracking_audio.py` → `codes/chapters/ch09/tracking_audio/` | 2个独立连续运动合成WAV，PCM重读后计算GCC观测、门控与KF的逐帧清单 | 不混入主109个样本；保留浮点与PCM分开结果、状态时刻与可用时刻、各评分分母；`--check`只核对不重生 |
 | 移动声源源与生成物 | `codes/chapters/ch09/core/moving_source.py`、`codes/chapters/ch09/examples/moving_source_audio.py` → `codes/chapters/ch09/moving_audio/` | 3 个自由场数学合成 WAV 与轨迹真值清单 | 以传播时延和距离衰减的源模型生成；不与主 109 个 WAV 混算或称为真实录音 |
@@ -46,7 +47,7 @@
 | 构建源文件 | `scripts/build_site.py`、`scripts/build_pdf.py`、`scripts/heading_aliases.py`、`scripts/legacy_sequential_anchors.json` | 生成站点、合订 HTML 和 PDF，并保护已发布深链的原语义 | 页面结构或渲染有问题时修改这里；标题改号后逐项校验历史语义锚 |
 | PDF 公式第三方资源 | `scripts/vendor/mathjax-3.2.2/` | 固定版本的 MathJax 脚本、按需扩展和字体 | 保留上游许可及来源摘要；更新版本时同步更新构建核验与渲染抽查，不手改压缩脚本或字体 |
 | 插图生成物 | `figures/fig*.png` | 正文插图 | 由绘图脚本生成，不直接编辑 |
-| 站点生成物 | `site/*.html`、`site/research/*.html`、`site/real_audio/`、`site/room_audio/`、`site/gss_audio/`、`site/moving_audio/`、`site/tracking_audio/` | 14 篇教程、6 篇研究手册页面与真实录音、独立合成实验的媒体副本 | 由 `build_site.py` 生成，不直接编辑 |
+| 站点生成物 | `site/*.html`、`site/research/*.html`、`site/binaural_audio/`、`site/real_audio/`、`site/room_audio/`、`site/gss_audio/`、`site/moving_audio/`、`site/tracking_audio/` | 14 篇教程、6 篇研究手册页面与真实录音、独立合成实验的媒体副本 | 由 `build_site.py` 生成，不直接编辑 |
 | 合订生成物 | `dist/combined.html`、`dist/microphone-array-tutorial.pdf` | 合订 HTML 和 PDF | 由 `build_pdf.py` 生成，不直接编辑 |
 
 `chapters/` 当前包含 14 篇 Markdown，研究手册另有 6 篇网页源文件，项目当前有 49 张编号图和附录 B 房间题的一张补充结果图。文件数量、图号、章节名称或构建入口发生变化时，要同步
@@ -60,6 +61,7 @@
 
 ```bash
 .venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py  # 合成 109 个 WAV 与清单
+.venv/bin/python -m codes.chapters.ch01.examples.generate_binaural_cues  # 独立双耳线索 5 个 WAV；--check 只核对
 .venv/bin/python -m codes.chapters.ch08.examples.gss_teaching_demo  # 独立 GSS 教学音频与状态
 .venv/bin/python -m codes.chapters.ch09.examples.chapter09_tracking_audio  # 独立PCM观测与追踪音频
 .venv/bin/python -m codes.chapters.ch09.examples.moving_source_audio  # 独立连续移动双麦音频
@@ -613,7 +615,7 @@ MathJax 公式统一缩到明显小于相邻正文；优先拆行、使用 `alig
 | 构建脚本或依赖 | 运行受影响命令及最小回归；检查退出状态和输出文件 | 命令正常结束；输出完整；未引入无关依赖或文件变化 |
 
 当前完整构建的基线是 49 张 PNG、14 个教程页面（首页加 13 篇）与 6 个研究手册页面，以及 PDF 的 14 个章级、121 个节级、
-500 个子节级书签，共 635 个大纲项。子节级书签来自第 1～11 章与附录 A/B；各篇独立数量见 `scripts/quality_check.py` 的显式清单。
+503 个子节级书签，共 638 个大纲项。子节级书签来自第 1～11 章与附录 A/B；各篇独立数量见 `scripts/quality_check.py` 的显式清单。
 质量门禁应从独立的发布清单或显式常量读取这些基线，不能只从待检 Markdown 动态生成“期望值”
 再自我比较。构建后应核对数量和名称。若本次任务改变章节或图表结构，先更新发布清单、README 和本节，
 再按新值验收，不能为了通过检查保留过期数字。

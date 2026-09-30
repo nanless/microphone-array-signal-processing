@@ -344,9 +344,10 @@ class ResearchBuildTest(unittest.TestCase):
                             continue
                         if target.parent in {(output / "gss_audio").resolve(),
                                              (output / "moving_audio").resolve(),
-                                             (output / "tracking_audio").resolve()}:
+                                             (output / "tracking_audio").resolve(),
+                                             (output / "binaural_audio").resolve()}:
                             owner = {"gss_audio": "ch08", "moving_audio": "ch09",
-                                     "tracking_audio": "ch09"}[target.parent.name]
+                                     "tracking_audio": "ch09", "binaural_audio": "ch01"}[target.parent.name]
                             source = ROOT / "codes" / "chapters" / owner / target.parent.name / target.name
                             self.assertTrue(target.is_file())
                             self.assertEqual(target.read_bytes(), source.read_bytes())

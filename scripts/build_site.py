@@ -42,6 +42,7 @@ ROOM_AUDIO_ROOT = CODE_CHAPTERS / "appendix_b" / "room_audio"
 MOVING_AUDIO_ROOT = CODE_CHAPTERS / "ch09" / "moving_audio"
 TRACKING_AUDIO_ROOT = CODE_CHAPTERS / "ch09" / "tracking_audio"
 GSS_AUDIO_ROOT = CODE_CHAPTERS / "ch08" / "gss_audio"
+BINAURAL_AUDIO_ROOT = CODE_CHAPTERS / "ch01" / "binaural_audio"
 
 
 def main_audio_sources():
@@ -163,6 +164,8 @@ TRACKING_AUDIO_WAVS = {"source.wav": 1, "array_noisy.wav": 2}
 MOVING_AUDIO_WAVS = {"source.wav": 1, "static_array.wav": 2, "moving_array.wav": 2}
 GSS_AUDIO_WAVS = {"source_1.wav": 1, "source_2.wav": 1, "mixture.wav": 2,
                   "enhanced_correct.wav": 1, "enhanced_missed.wav": 1}
+BINAURAL_AUDIO_WAVS = {"reference.wav", "itd_only.wav", "ild_only.wav",
+                       "consistent.wav", "conflicting.wav"}
 
 
 def publish_real_audio_readme(source_text, destination):
@@ -313,6 +316,43 @@ def stage_moving_audio(source, destination):
 
 
 
+def stage_binaural_audio(source, destination):
+    """Publish five independent time/level cue fixtures with complete tails."""
+    import wave
+    expected = BINAURAL_AUDIO_WAVS | {"MANIFEST.json"}
+    if (source.is_symlink() or {p.name for p in source.iterdir()} != expected
+            or any(p.is_symlink() or not p.is_file() for p in source.iterdir())):
+        raise ValueError("双耳线索目录必须恰含五份普通WAV及独立清单")
+    manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+    if (set(manifest["files"]) != BINAURAL_AUDIO_WAVS
+            or manifest["sample_rate_hz"] != 16000
+            or manifest["common_export_gain"] != 1):
+        raise ValueError("双耳线索清单集合、采样率或共同增益不符")
+    required_sources = {"codes/chapters/ch01/core/binaural_cues.py",
+                        "codes/chapters/ch01/examples/generate_binaural_cues.py",
+                        "codes/chapters/ch00/core/audio_samples.py"}
+    if set(manifest["source_sha256"]) != required_sources:
+        raise ValueError("双耳线索必须记录真实生成源与PCM编码源")
+    for name, digest in manifest["source_sha256"].items():
+        if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest:
+            raise ValueError(f"双耳线索生成源摘要过期：{name}")
+    for name in BINAURAL_AUDIO_WAVS:
+        path, record = source / name, manifest["files"][name]
+        if (record["channels"] != 2 or record["samples_per_channel"] != 32008
+                or hashlib.sha256(path.read_bytes()).hexdigest() != record["sha256"]):
+            raise ValueError(f"双耳线索摘要或参数不符：{name}")
+        with wave.open(str(path), "rb") as wav:
+            if (wav.getframerate(), wav.getnchannels(), wav.getsampwidth(),
+                    wav.getnframes(), wav.getcomptype()) != (16000, 2, 2, 32008, "NONE"):
+                raise ValueError(f"双耳线索PCM格式不符：{name}")
+            if len(wav.readframes(32008)) != 32008 * 2 * 2:
+                raise ValueError(f"双耳线索PCM数据截断：{name}")
+    destination.mkdir()
+    for name in sorted(expected):
+        shutil.copy2(source / name, destination / name)
+    return expected
+
+
 def stage_tracking_audio(source, destination):
     """Validate the independent PCM-to-observation experiment before publishing."""
     import wave
@@ -395,7 +435,7 @@ def source_digest():
     paths += [main_audio_manifest_path(CODE_CHAPTERS)]
     paths += sorted(main_audio_sources())
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "build_markdown_helpers.py",
@@ -542,6 +582,9 @@ def rewrite_site_links(html, source_path):
         if target.parent == GSS_AUDIO_ROOT.resolve() and target.name in (set(GSS_AUDIO_WAVS) | {"MANIFEST.json", "STATE.npz"}):
             relative = os.path.relpath("gss_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
+        if target.parent == BINAURAL_AUDIO_ROOT.resolve() and target.name in (BINAURAL_AUDIO_WAVS | {"MANIFEST.json"}):
+            relative = os.path.relpath("binaural_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
+            return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
         return repository_url(parsed, target)
 
     html = rewrite_href_targets(html, transform)
@@ -554,7 +597,7 @@ def rewrite_site_links(html, source_path):
         # input as a download link; only the explicit mono derivatives play.
         if parsed.path.endswith("real_audio/demand_nriver_16ch_10s.wav"):
             return match.group(0)
-        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio)/[a-z0-9_]+\.wav", parsed.path):
+        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio)/[a-z0-9_]+\.wav", parsed.path):
             return match.group(0)
         safe_href = escape(href, quote=True)
         safe_label = escape(re.sub(r'<[^>]+>', '', unescape(label)), quote=True)
@@ -844,6 +887,10 @@ def main():
         (OUT / "gss_audio").mkdir(exist_ok=True)
         stale += [path for path in (OUT / "gss_audio").iterdir()
                   if path.is_file() and path.name not in gss_names]
+        binaural_names = stage_binaural_audio(BINAURAL_AUDIO_ROOT, temp_out / "binaural_audio")
+        (OUT / "binaural_audio").mkdir(exist_ok=True)
+        stale += [path for path in (OUT / "binaural_audio").iterdir()
+                  if path.is_file() and path.name not in binaural_names]
         publish_files([(temp_out / name, OUT / name) for name in sorted(expected)] +
                       [(temp_out / "audio" / name, OUT / "audio" / name) for name in audio_names] +
                       [(temp_out / "real_audio" / name, OUT / "real_audio" / name)
@@ -855,7 +902,9 @@ def main():
                       [(temp_out / "tracking_audio" / name, OUT / "tracking_audio" / name)
                        for name in sorted(tracking_names)] +
                       [(temp_out / "gss_audio" / name, OUT / "gss_audio" / name)
-                       for name in sorted(gss_names)], stale)
+                       for name in sorted(gss_names)] +
+                      [(temp_out / "binaural_audio" / name, OUT / "binaural_audio" / name)
+                       for name in sorted(binaural_names)], stale)
     print("DONE", len(expected), "pages")
 
 

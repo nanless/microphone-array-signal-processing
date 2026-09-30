@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>章节代码练习与音频实验 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5bb655885815"><style>
+<meta name="source-digest" content="f3536b51b350"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -117,6 +117,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="05_exercises_and_audio.html#sec-u-a0ab2e82f7">34. 附录 A：分块 FFT 的尾部为什么不能消失</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-34-1">34.1 固定模型与边界位置</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-34-2">34.2 复算与代码边界</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-b1ae7435b8">35. 双耳时间差、声级差与相反线索</a></li>
 </ul>
 <div class="chap"><a href="../01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
 <div class="chap"><a href="../02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
@@ -191,10 +192,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="05_exercises_and_audio.html#sec-u-a0ab2e82f7">34. 附录 A：分块 FFT 的尾部为什么不能消失</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-34-1">34.1 固定模型与边界位置</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-34-2">34.2 复算与代码边界</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-b1ae7435b8">35. 双耳时间差、声级差与相反线索</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="章节代码练习与音频实验" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-c621965c02">章节代码练习与音频实验</h1>
 <p>先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。</p>
-<p>本页索引 231 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
+<p>本页索引 234 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
 <p>E06-07～E06-20 使用无量纲回声模型检查 AEC 的计算与边界，其中 E06-11～20 可用精确答案程序核对。第 15、16 节另提供参数不同的合成音频；试听文件本身不是题目真值。</p>
 <p>第 3～11、13～16、18、21～30、32～34 节对应主清单的 109 个数学合成样本。第 17 节的 18 个房间白噪声合成样本使用独立清单；第 12 节使用另行授权的真实同步录音。第 31 节的 2 份从 PCM 形成定位观测的追踪样本也使用独立清单。不同音频的来源和可作的比较不同，试听前先查看各节的条件。</p>
 <p>主音频按章存放，统一由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/examples/generate_audio_samples.py">生成器</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/audio/MANIFEST.json">清单</a>管理。清单记录每组模型、种子、共同导出增益、采样率、通道、帧数、量化误差、运行环境、源文件摘要与逐 WAV 摘要；不把某组的谐波模板套到其他组。PCM16 编码按最近偶数舍入，不加抖动或自动限幅，RMS 对全部通道与采样一起计算。运行生成器并附加 <code>--check</code> 时只在内存重算和读回比对，不重写资产；严格字节核对也比较 Python、NumPy 和平台记录，异机不通过不等于算法错误。生成中断造成清单与 WAV 不一致时须重新生成、核对，再构建图和网站；不要手改单个生成文件。样本没有真人录音或模型权重，客观读回和浏览器加载不等于正式听测。</p>
@@ -245,9 +247,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </thead>
 <tbody>
 <tr>
-<td>第 1 章 E01-01～06</td>
-<td>相关噪声、幅度和功率、不等噪声方差、有限记录交叉项、残余时差与球头模型</td>
-<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_spatial.py">空间练习</a>（01～03）；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch01/chapter01_experiments.py">基础逐步实验</a>（04～06）</td>
+<td>第 1 章 E01-01～09</td>
+<td>相关噪声、幅度和功率、不等噪声方差、有限记录交叉项、残余时差、球头、混合分解、ILD与WNG</td>
+<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_spatial.py">空间练习</a>（01～03）；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch01/chapter01_experiments.py">基础逐步实验</a>（04～09）</td>
 </tr>
 <tr>
 <td>第 2 章 E02-01～06</td>
@@ -1158,7 +1160,7 @@ $$</p>
 <td>未量化目标</td>
 <td>WPE</td>
 <td style="text-align: right;">0.528143</td>
-<td style="text-align: right;">0.223101</td>
+<td style="text-align: right;">0.223401</td>
 </tr>
 <tr>
 <td>PCM 目标</td>
@@ -1469,6 +1471,71 @@ $$</p>
 <span id="sec-59" class="anchor-alias" aria-hidden="true"></span><span id="342-复算与代码边界" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-34-2">34.2 复算与代码边界</h3>
 <p>运行 <code>.venv/bin/python -m codes.chapters.appendix_a.appendix_a_experiments</code> 可查看 E12-06～13 的 JSON 输出。其中 E12-08 同时列出两块四点手算和本节音频的浮点、PCM 指定位置；E12-13 列出同一正对角协方差在原尺度与十倍尺度下，绝对及迹相对加载的实际加性项、MVDR 权重、条件数和目标响应。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/core/audio_samples.py">音频生成源</a>的 <code>math_block_case</code> 明确保存脉冲位置、滤波器、块长、两种计算路径、共同增益和最后一枚非零响应。完整文件参数与 SHA-256 见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/audio/MANIFEST.json">主音频清单</a>的 <code>groups.math_block</code> 和三条 <code>files</code> 记录；相同源文件的其它 106 个 WAV 在本节加入后逐文件 SHA-256 不变。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_appendix_a_experiments.py">独立测试</a>用直接逐脉冲放置构造预期输出，不调用被测 FFT 函数来形成期望；再编码并读回 PCM，核对文件格式、峰值位置、量化和边界。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_spatial_model.py">单边谱测试</a>另检查可表示的 $10^{308}$ 均方在谱计算时不能被中间平方误判为溢出，以及低于浮点可表示范围的严格正功率不能被误报为数学零。运行 <code>.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py --check</code> 只会重算并比对清单与 WAV，不修改文件。新组的比较只支持这个确定性错误示例，不表示实际产品会产生同样大小的听感伪影。</p>
+<span id="sec-60" class="anchor-alias" aria-hidden="true"></span><span id="35-双耳时间差声级差与相反线索" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-b1ae7435b8">35. 双耳时间差、声级差与相反线索</h2>
+<p>本组对应第 1 章 E01-08，与主清单的 109 个样本分开管理。五个文件都是数学合成的双声道 PCM16，通道次序为左、右，采样率 16 kHz，共 32008 帧，即 2.0005 s。共同导出增益为 1。没有真人、头部散射、耳廓滤波或房间响应，也没有进行正式听测。</p>
+<p>源为长 2 s 的四音信号：500、800、1300、2400 Hz，每项幅度 0.08，首尾各有 20 ms 线性淡入淡出。左右只作整数时移和正幅度缩放；8 点对应 500 μs。所有文件保留延迟尾部，不单独归一化。定义 ITD 为左耳到达时刻减右耳到达时刻，ILD 为右 RMS 除左 RMS 的 20 倍常用对数。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">文件</th>
+<th scope="col">左延迟</th>
+<th scope="col">左、右增益</th>
+<th scope="col">解析 ITD</th>
+<th scope="col">解析 ILD</th>
+<th scope="col">PCM ITD / ILD</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../binaural_audio/reference.wav">同相同幅参考</a><audio class="audio-sample" controls preload="none" aria-label="同相同幅参考" src="../binaural_audio/reference.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>0 点</td>
+<td>1、1</td>
+<td>0 μs</td>
+<td>0 dB</td>
+<td>0 点 / 0.0000 dB</td>
+</tr>
+<tr>
+<td><a href="../binaural_audio/itd_only.wav">仅时间差</a><audio class="audio-sample" controls preload="none" aria-label="仅时间差" src="../binaural_audio/itd_only.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>8 点</td>
+<td>1、1</td>
+<td>+500 μs</td>
+<td>0 dB</td>
+<td>8 点 / 0.0000 dB</td>
+</tr>
+<tr>
+<td><a href="../binaural_audio/ild_only.wav">仅声级差</a><audio class="audio-sample" controls preload="none" aria-label="仅声级差" src="../binaural_audio/ild_only.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>0 点</td>
+<td>0.5、1</td>
+<td>0 μs</td>
+<td>+6.02 dB</td>
+<td>0 点 / +6.0207 dB</td>
+</tr>
+<tr>
+<td><a href="../binaural_audio/consistent.wav">两种线索同向</a><audio class="audio-sample" controls preload="none" aria-label="两种线索同向" src="../binaural_audio/consistent.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>8 点</td>
+<td>0.5、1</td>
+<td>+500 μs</td>
+<td>+6.02 dB</td>
+<td>8 点 / +6.0207 dB</td>
+</tr>
+<tr>
+<td><a href="../binaural_audio/conflicting.wav">两种线索相反</a><audio class="audio-sample" controls preload="none" aria-label="两种线索相反" src="../binaural_audio/conflicting.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>8 点</td>
+<td>1、0.5</td>
+<td>+500 μs</td>
+<td>−6.02 dB</td>
+<td>8 点 / −6.0207 dB</td>
+</tr>
+</tbody>
+</table></div>
+<p>声级差比较同一段源内容：未延迟通道取半开区间 [1600,30400)，延迟通道取 [1608,30408)，各 28800 点。稳态源均方为四项正弦均方之和，即 4×0.08²/2=0.0128；半幅通道均方为 0.0032。PCM 读回后分别为约 0.01280018 与 0.00319997，量化导致 ILD 略有差别。共同缩放不改变两耳比例，单独改变一个通道会改变比例。</p>
+<p>ITD 测量保留原始时间关系，在 −16～+16 点范围内搜索归一化线性相关的最大值。固定右窗口，每个候选都比较同长度的左窗口；分母为两段能量乘积的平方根。相关分数不是概率。多音结构及有限搜索范围属于本例条件，不能凭这一次正确结果保证任意声音、任意范围内都没有模糊峰。</p>
+<p>试听前先调低音量，使用保留左右通道的耳机。同向例的右通道先到且更强，相反例的右通道先到而左通道更强；可以比较个人听到的偏向，不把听感换算为人体角度、阈值或定位准确率。单声道合并和独立通道增益会改变线索。</p>
+<p><a href="../binaural_audio/MANIFEST.json">独立清单</a>记录解析参数、浮点与 PCM 结果、完整相关曲线及真实生成源和文件 SHA-256。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch01/core/binaural_cues.py">数值核</a>生成模型，<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch01/examples/generate_binaural_cues.py">入口</a>复用主 PCM 编解码并保存清单。从仓库根目录运行：</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch01.examples.generate_binaural_cues --check
+.venv/bin/python -m codes.chapters.ch01.chapter01_experiments
+</code></pre>
+<p>第一项只在内存重算并读取核对，不重写音频或清单；第二项包括混合功率恒等式 E01-07、双耳线索 E01-08 和固定目标响应下的 WNG E01-09。它们的概念、逐步计算和失效条件见<a href="../01_problem-definition.html">第一章</a>。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 1 章 · 问题定义与双耳启示 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5bb655885815"><style>
+<meta name="source-digest" content="f3536b51b350"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -73,6 +73,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-c36045fcae">E01-04：短记录里的交叉项为什么不能丢</a></li>
 <li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-7c4b67ce5c">E01-05：差一个采样点，为什么高频损失更大</a></li>
 <li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-759110492b">E01-06：有头部与没有头部，时差能差多少</a></li>
+<li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-18de151f2c">E01-07：混合总功率能告诉我们多少信噪比</a></li>
+<li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-d10085615c">E01-08：左右相差一半幅度，ILD 是多少</a></li>
+<li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-5a8c86a7c7">E01-09：保持目标不变，为什么自噪声还会被放大</a></li>
 </ul>
 <div class="chap"><a href="02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
 <div class="chap"><a href="03_array-geometry.html">第 3 章 · 阵列几何形态</a></div>
@@ -108,6 +111,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-c36045fcae">E01-04：短记录里的交叉项为什么不能丢</a></li>
 <li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-7c4b67ce5c">E01-05：差一个采样点，为什么高频损失更大</a></li>
 <li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-759110492b">E01-06：有头部与没有头部，时差能差多少</a></li>
+<li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-18de151f2c">E01-07：混合总功率能告诉我们多少信噪比</a></li>
+<li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-d10085615c">E01-08：左右相差一半幅度，ILD 是多少</a></li>
+<li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-5a8c86a7c7">E01-09：保持目标不变，为什么自噪声还会被放大</a></li>
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是教程正文第 1 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
@@ -116,7 +122,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <hr />
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-5cd90bfd4e">1. 从一个生活场景出发：问题定义</h1>
 <p>本章从客厅里的远距离语音交互出发，区分定位、波束形成和追踪的输入输出，再计算阵列为什么有时能降低噪声、有时却会削弱目标。双耳听觉则提供一个参照：时间差、声级差和方向相关谱形分别包含什么信息，机器阵列能借鉴到哪一步。</p>
-<p>读完本章，应能复算四麦理想增益，说明它为什么不是每段录音都能得到的保证，并分清几何模型的预测与人的听觉实验结果。</p>
+<p>读完本章，应能复算四麦理想增益，说明它为什么不是每段录音都能得到的保证；能区分混合总功率与分量 SNR、时间差与声级差，并分清几何模型的预测与人的听觉实验结果。</p>
 <h2 id="sec-u-81896116fa">导入：从客厅场景认识阵列任务</h2>
 <span id="sec-u-05ec932a34" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-c36b7ac16e">客厅里的远距离语音问题</h3>
 <p>想象你坐在客厅里，对 3 米外的智能音箱说“今天天气怎么样”。音箱要听清这句话，需要面对几类不同的干扰：</p>
@@ -182,7 +188,8 @@ G&=\frac{\mathrm{SNR}_{\mathrm{out}}}{\mathrm{SNR}_{\mathrm{in}}},\qquad
 G_{\mathrm{dB}}=10\log_{10}G.
 \end{aligned} \tag{1-2}
 $$</p>
-<p>这里的功率分母均要求大于零；目标完全被抵消时，SNR 的对数值按极限解释。下面以任意一只具有相同目标和噪声功率的麦克风为输入基准。实际录音通常只有混合波形，单看混合波形的总功率不能分辨其中多少属于目标、多少属于噪声。</p>
+<p>计算有限的 SNR 及改善量时，输入目标功率、输入噪声功率与输出噪声功率都要求大于零。输入目标功率为零时，$\mathrm{SNR}_{\mathrm{in}}=0$，不能继续用它作 $G$ 的分母。若输入有目标、输出目标完全被抵消而输出噪声仍为正，则输出 SNR 与 $G$ 都为零，对数值按极限记为 $-\infty$。噪声功率为零时也需要单独解释，不能把无穷量相除或 $0/0$ 当成普通改善量。</p>
+<p>下面以任意一只具有相同目标和噪声功率的麦克风为输入基准。实际录音通常只有混合波形，单看混合波形的总功率不能分辨其中多少属于目标、多少属于噪声。把目标和噪声相加后再平方，还会出现二者的交叉项；E01-07 将展开这个计算，并展示同一混合波形为何能对应不同的数学分解。</p>
 <p>例如目标功率为 1、噪声功率为 1 时，SNR 为 1，即 0 dB。若目标仍为 1、噪声降到 0.25，SNR 变为 4，即约 6.02 dB。若目标与噪声同时缩小到四分之一，声音变轻，SNR 却没有变化。</p>
 <h3 id="sec-u-783265321c">三类阵列收益与白噪声增益</h3>
 <p>不同噪声模型对应不同评价量，不能用一个“降噪增益”替代全部结果：</p>
@@ -276,11 +283,13 @@ $$</p>
 =\sum_{m=1}^{M}w_m^2-\frac{1}{M}\ge0,
 $$</p>
 <p>可知噪声功率不低于 $1/M$；只有每个权重都是 $1/M$ 才取到等号。复数频域权重也有相应的柯西不等式上界，后面会结合导向矢量说明。因此，在相同单位模导向响应与空间白噪声定义下，$M$ 是线性波束形成器的 WNG 上界，延迟求和达到它。这个界不限制 DI、其他噪声模型下的增益或语音分离指标。</p>
+<p>目标响应保持为 1，也不保证输出噪声比单麦小。E01-09 将用两个实权重展示：为了相消而使用较大的正负权重，可能同时放大各路不相关的自噪声。</p>
 <p>上述最小模型由本书展开计算。阵列处理及其语音识别应用的系统介绍可参见 Kumatani、McDonough 与 Raj 的 <a href="https://doi.org/10.1109/MSP.2012.2205285" title="citation">《Microphone Array Processing for Distant Speech Recognition: From Close-Talking Microphones to Far-Field Sensors》，IEEE Signal Processing Magazine，29(6)，127–140，2012</a>；<a href="https://course.ece.cmu.edu/~ece792/handouts/KumataniEtAl12.pdf" title="citation">CMU 课程页面托管了论文副本</a>。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-1-1">1.1 双耳听觉的三类定位线索</h2>
 <p>双耳可以近似为带有头部散射的双传感器系统，但听觉还会利用头部运动、经验和神经处理。下面区分时间差、声级差和方向相关谱形，分别说明它们与机器阵列的联系。</p>
 <p><img alt="图1 人类双耳听觉的定位线索" src="../figures/fig01_binaural.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图1(a)标出双耳与方向约定：红色外向箭头指向声源方位，蓝色内向箭头表示声波向双耳传播。图1(b)比较球头模型和无遮挡双点模型的 ITD；图1(c)区分纯音细结构、双耳声级差和高频包络的实验条件。曲线是指定几何模型的计算，不是人体测量；文字框也不表示所有人的统一频率截止。</p>
+<p>图1(a)标出双耳与方向约定：红色外向箭头指向声源方位，蓝色内向箭头表示声波向双耳传播；$30^\circ$ 方位弧从正前方量到声源方向。图1(b)比较球头模型和无遮挡双点模型的 ITD；图1(c)区分纯音细结构、双耳声级差和高频包络的实验条件。</p>
+<p>曲线是指定几何模型的计算，不是人体测量；文字框也不表示所有人的统一频率截止。</p>
 <h3 id="sec-u-8b017cf10d">双耳时间差：把几何模型算清楚</h3>
 <p><strong>双耳时间差（Interaural Time Difference，ITD）</strong>描述声音到达两耳的先后。这里把正前方定为 $0^\circ$，朝右转为正，定义 $\tau=t_{\mathrm{左}}-t_{\mathrm{右}}$。右侧声源先到右耳，所以 ITD 为正；对称的左侧声源为负。</p>
 <p>Woodworth 模型把头近似成半径 $a$ 的刚性球，两耳位于直径两端，入射声近似为远场平面波。对前半平面 $-\pi/2\le\theta\le\pi/2$，常用的射线路程近似为：</p>
@@ -305,6 +314,7 @@ $$</p>
 <p>Woodworth 模型是高频射线近似，不是覆盖任意频率、耳位与个体形状的精确人体模型。低频绕射会改变结果，模型扩展还要考虑非对径耳和有限距离；参见 <a href="https://doi.org/10.1121/1.4861243" title="citation">Aaronson 与 Hartmann，JASA 135(2)，817–823，2014</a>。本章只用它说明几何假设怎样影响数值，不用它推算人的听觉阈值。</p>
 <h3 id="sec-u-5221e22cae">声级差、细结构与包络要分别判断</h3>
 <p><strong>双耳声级差（Interaural Level Difference，ILD）</strong>描述两耳接收声级的差异。头部遮挡使远耳的高频通常更弱，低频绕射则会减小这种差异；大小还取决于方向、频率和具体头部形状。声级差并不等于简单的“两耳离声源远近之差”。</p>
+<p>本书采用“右耳声级减左耳声级”的符号约定：右耳更强时 ILD 为正，左耳更强时为负。这个约定使本章的正 ILD 与正 ITD 都对应右侧线索，但它不是所有文献唯一使用的符号惯例。E01-08 将由均方和均方根幅度计算声级差，并检查共同增益与左右不同增益的区别。</p>
 <p>瑞利在 1907 年的<a href="https://doi.org/10.1080/14786440709463595" title="citation">《On our perception of sound direction》</a>中讨论了低频相位差与高频强度差对方位判断的不同作用。本书用<strong>双重理论（duplex theory）</strong>概括低频细结构 ITD 与高频 ILD 这两类重要线索；它们不是两条没有重叠的频段规则。</p>
 <p>这里的“细结构”指声波逐周期的快速起伏；“包络”指声音强弱随时间较慢的变化。高频载波即使周期很短，也可以带有较慢的强弱调制。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -333,16 +343,21 @@ $$</p>
 </tr>
 </tbody>
 </table></div>
-<p><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3663869/" title="citation">Brughera、Dunai 与 Hartmann，2013，实验结果 §II.C、讨论 §II.E</a>中，最敏感的两位听者在 1400 Hz 仍得到收敛阈值，1450 Hz 的阶梯程序已经发散；其他听者的表现更弱。因此“接近 1.4 kHz”应连同纯音刺激、任务和测量判据理解。<a href="https://doi.org/10.1121/1.1570431" title="citation">Bernstein 与 Trahiotis，2003</a>研究的 4 kHz 高频调制刺激则说明，包络能提供另一种时间线索。</p>
+<p><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3663869/" title="citation">Brughera、Dunai 与 Hartmann，2013，结果 §II.B（p.2841）、高频分析 §II.C.4（p.2843）</a>中，最敏感的两位听者在 1400 Hz 仍得到收敛阈值，1450 Hz 的阶梯程序已经发散；其他听者的表现更弱。<a href="https://riunet.upv.es/server/api/core/bitstreams/f65b9337-1b1e-4013-9020-8338ac77ad6b/content" title="citation">共同作者机构库中的正式论文副本</a>可用于核对这些位置。</p>
+<p>该实验的 §II.A（p.2840）使用左右等声级、起止同步的 500 ms 耳机纯音，含 100 ms 升、降包络，呈现声级为 70 dB SPL。听者比较两个先后区间，判断第二个声音比第一个更偏左还是更偏右；三次答对减小时差、一次答错增大时差的阶梯程序对应约 79.4% 正确率的判据。</p>
+<p>论文报告的是两个区间之间的 $\Delta\mathrm{ITD}$ 辨别阈值：若第一区间 ITD 为 $+10\ \mu\mathrm{s}$，第二区间为 $-10\ \mu\mathrm{s}$，变化幅度就是 $20\ \mu\mathrm{s}$，不是某一个区间的 $10\ \mu\mathrm{s}$。因此“接近 1.4 kHz”应连同纯音刺激、双区间任务和收敛判据理解，也不能直接换算成人体的方位角阈值。</p>
+<p><a href="https://doi.org/10.1121/1.1570431" title="citation">Bernstein 与 Trahiotis，2003</a>研究的 4 kHz 高频转置调制刺激则说明，包络能提供另一种时间线索。这里的侧向感知任务与前一项纯音阈值实验不同，不把两篇研究的结果合成一个统一截止频率。</p>
 <p>机器阵列不能照搬人的这条纯音实验界限。以 2 kHz 纯音为例，一个周期是 $1/2000=0.0005$ 秒，即 $500\ \mu\mathrm{s}$。延迟 $100\ \mu\mathrm{s}$ 与延迟 $600\ \mu\mathrm{s}$ 相差一个完整周期，对无限持续的这个纯音产生相同的相位；只有在几何允许两种时延时，二者才同时构成候选。由相位绕圈产生的数学歧义，与听觉神经对快速细结构的锁相能力下降，是两件不同的事。</p>
-<p>对机器而言，相位歧义还取决于麦间距和几何。宽带信息、非均匀阵列或实测阵列响应可以提供额外约束，但不是自动消除歧义的保证（§2.6、§3.2）。</p>
+<p>对机器而言，相位歧义还取决于麦间距和几何。宽带信息、非均匀阵列或实测阵列响应可以提供额外约束，但不是自动消除歧义的保证（§2.6、§3.2）。准备好时，可继续复算<a href="04_doa-estimation.html#sec-u-56493f2d40">第 4 章 E04-18 的纯音与多频对照</a>，参数及试听见<a href="research/05_exercises_and_audio.html#26-纯音的时差歧义与宽频相位约束">音频实验总览第 26 节</a>。</p>
 <h3 id="sec-u-dff9e8c5a2">方向相关频谱与头相关传递函数</h3>
 <p>耳廓的褶皱，以及头、肩膀的散射，会改变不同方向声音到耳朵时的频谱。某些频率加强形成谱峰，某些频率减弱形成谱谷；这些位置随方向变化，可以提供俯仰和前后方向的线索。</p>
 <p><strong>头相关传递函数（Head-Related Transfer Function，HRTF）</strong>描述指定声源位置到某一耳的频率响应，通常相对头部不存在时的自由场参考来定义。左右耳各有一个传递函数。它同时包含幅度和相位信息，因此 ITD、ILD 与 HRTF 并不是三种互不相关的物理信号；这里第三类线索专指方向相关的谱形变化。</p>
-<p>谱形线索也受声源本身的频谱影响：耳朵接收的频谱同时包含声源谱与传播滤波，某个频率很弱，既可能来自方向相关谱谷，也可能是声源原本就很弱。单一纯音只在一个频率上提供信息，不能展示一段完整的谱峰与谱谷。因此，不能仅凭一个未知声音的单耳谱谷就唯一判定方向；较宽频带的声音、双耳比较、运动和已有经验能提供更多约束。</p>
+<p>谱形线索也受声源本身的频谱影响：耳朵接收的频谱同时包含声源谱与传播滤波，某个频率很弱，既可能来自方向相关谱谷，也可能是声源原本就很弱。</p>
+<p>单一纯音只在一个频率上提供信息，不能展示一段完整的谱峰与谱谷。因此，不能仅凭一个未知声音的单耳谱谷就唯一判定方向；较宽频带的声音、双耳比较、运动和已有经验能提供更多约束。</p>
 <p>方向相关谱形有助于减少前后混淆，但听觉还联合 ITD、ILD、头部运动和经验。仅有两个耳朵并不意味着只靠一个时差就能唯一确定三维方向。经典综述可参见 <a href="https://doi.org/10.1146/annurev.ps.42.020191.001031" title="citation">Middlebrooks 与 Green，1991</a>。</p>
 <h3 id="sec-u-e0e1bf4258">双耳线索怎样对应机器阵列</h3>
-<p><strong>优先效应（precedence effect）</strong>讨论的是先到声与短延迟后到声携带不同方向线索时的方位感。在两声相似、延迟及听觉任务满足相应条件的实验中，听者的方位判断常更受先到声影响；极短延迟或改变刺激与任务后，结果可能不同。它不是“所有反射都被听觉忽略”的规则，也不等于机器去混响。<a href="https://doi.org/10.2307/1418275" title="citation">Wallach、Newman 与 Rosenzweig，1949，原始研究</a>；<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4310855/" title="citation">Brown、Stecker 与 Tollin，2015，实验条件综述</a>。</p>
+<p><strong>优先效应（precedence effect）</strong>讨论的是先到声与短延迟后到声携带不同方向线索时的方位感。在两声相似、延迟及听觉任务满足相应条件的实验中，听者的方位判断常更受先到声影响；极短延迟或改变刺激与任务后，结果可能不同。</p>
+<p>它不是“所有反射都被听觉忽略”的规则，也不等于机器去混响。<a href="https://doi.org/10.2307/1418275" title="citation">Wallach、Newman 与 Rosenzweig，1949，原始研究</a>；<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4310855/" title="citation">Brown、Stecker 与 Tollin，2015，实验条件综述</a>。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
 <tr>
@@ -381,7 +396,7 @@ $$</p>
 </table></div>
 <p>硬件形状决定能观测到哪些差异，算法决定怎样利用这些差异。增加麦克风数量、改变外壳或采用学习方法，都需要检查输入信息、模型假设与失效情况，不能只凭方法名称推断效果。第 2 章将从传播时延出发，把这些差异写成完整阵列信号模型。</p>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-f7a201edb9">本章练习</h2>
-<p>E01-01～E01-03 使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_spatial.py"><code>exercises_spatial.py</code></a>；E01-04～E01-06 使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch01/chapter01_experiments.py"><code>chapter01_experiments.py</code></a>。均不需下载数据；在仓库根目录运行：</p>
+<p>E01-01～E01-03 使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_spatial.py"><code>exercises_spatial.py</code></a>；E01-04～E01-09 使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch01/chapter01_experiments.py"><code>chapter01_experiments.py</code></a>。均不需下载数据；在仓库根目录运行：</p>
 <pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_spatial
 .venv/bin/python -m codes.chapters.ch01.chapter01_experiments
 </code></pre>
@@ -533,7 +548,35 @@ $$</p>
 <li><a href="audio/alignment_reference.wav">同样共同延迟的参考 <code>alignment_reference.wav</code></a><audio class="audio-sample" controls preload="none" aria-label="同样共同延迟的参考 alignment_reference.wav" src="audio/alignment_reference.wav">请使用上方 WAV 链接下载。</audio>。</li>
 </ul>
 <p>这组跨章音频按固定组映射归入第 2 章的 <code>audio/</code>，参数和逐文件摘要见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/audio/MANIFEST.json">主音频清单</a>，生成源见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/core/audio_samples.py"><code>alignment_error_case()</code></a>。补偿后文件与参考相同，是这一确定性对齐实验的预期结果。</p>
-<p>程序在样本半开区间 $[1600,30400)$，即 0.1～1.9 秒，按各频率的正弦与余弦投影测量幅度。该区间避开淡入淡出且包含整数周期，避免把起止边缘、共同延迟和幅度衰减混为同一种误差。PCM 量化使读回数值与解析值有微小差异。这组样本没有真实语音、噪声或房间混响，只用于检查对齐与频率相关抵消。</p>
+<p>章节入口的 E01-05 同时报告浮点计算和随仓 WAV 的实际 PCM 读回结果。读回前核对主清单、生成源摘要、文件摘要与 PCM 格式，再在样本半开区间 $[1600,30400)$，即 0.1～1.9 秒，用各频率的正弦、余弦基函数做最小二乘并合成幅度。该区间避开淡入淡出且包含整数周期，避免把起止边缘、共同延迟和幅度衰减混为同一种误差。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">频率</th>
+<th scope="col">PCM 参考幅度</th>
+<th scope="col">PCM 未对齐幅度</th>
+<th scope="col">PCM 幅度比</th>
+<th scope="col">PCM 电平变化</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 kHz</td>
+<td>0.180004</td>
+<td>0.176546</td>
+<td>0.980788</td>
+<td>−0.16849 dB</td>
+</tr>
+<tr>
+<td>4 kHz</td>
+<td>0.180000</td>
+<td>0.127279</td>
+<td>0.707107</td>
+<td>−3.01030 dB</td>
+</tr>
+</tbody>
+</table></div>
+<p>这里的幅度是数字域正弦幅度，不是均方根幅度或声压级；比值以同频率的共同延迟参考为分母。补偿后文件与参考的读回样本完全相同，两项幅度比均为 1。PCM 舍入使某些读回值与解析值有微小差异。这组样本没有真实语音、噪声或房间混响，只用于检查对齐与频率相关抵消。</p>
 <h3 id="sec-u-759110492b">E01-06：有头部与没有头部，时差能差多少</h3>
 <p>使用式(1-5)、式(1-6)，取 $a=0.0875$ m、$c=343$ m/s，分别计算 $0^\circ$、$1^\circ$、$30^\circ$、$90^\circ$ 的 ITD。再判断负角度的符号，以及球头正侧面时差在 16 kHz 下相当于几个采样间隔。</p>
 <p><strong>参考答案。</strong> 先把每个角度乘 $\pi/180$ 转成弧度。例如 $30^\circ=\pi/6$、$\sin30^\circ=0.5$，球头时差为 $(0.0875/343)(\pi/6+0.5)$ 秒，无遮挡双点为 $(0.175/343)\times0.5$ 秒。</p>
@@ -570,7 +613,215 @@ $$</p>
 </table></div>
 <p>角度反号时，两式都反号；正前方都为零。球头正侧面为 $0.000655815\times16000\approx10.493$ 个采样间隔，不是整数，说明连续传播时延不必落在整数样本上。表中小数用于复算模型，不表示人的头部尺寸或时差已经测到微秒的小数精度。</p>
 <p>两种模型在正前方附近很接近，正侧面却相差约 146 μs。因此选择传播模型必须先看是否存在头部或挡板，以及近似条件是否成立。这个计算既不验证人体定位准确率，也不能作为两麦硬件在房间中的实测结果。</p>
-<p>可在<a href="research/05_exercises_and_audio.html">章节代码练习与音频实验</a>中试听既有“单麦输入”“对齐后平均”和本章的残余时差样本。文件保留各组共同增益，使用数学合成信号；先从低播放音量开始。听音帮助发现差别，功率、延迟与模型判断仍需以上述计算为准。</p>
+<h3 id="sec-u-18de151f2c">E01-07：混合总功率能告诉我们多少信噪比</h3>
+<p>先取目标 $s=[1,-1,1,-1]$，分别叠加三种已声明的干扰分量：$v=[1,1,-1,-1]$、$v=s$、$v=-s$。对每种情况计算 $P_s$、$P_v$、交叉乘积均值与混合波形 $x=s+v$ 的均方。若分量 SNR 都是 0 dB，混合总功率也应相同吗？</p>
+<p>再只给出观测 $x=[2,0,-2,0]$。第一种分解取 $s=x/2$、$v=x/2$；第二种取 $s=3x/4$、$v=x/4$。两种分解都能重新相加成原来的 $x$ 吗？它们给出的 SNR 是否相同？</p>
+<p><strong>第一步：把混合波形的平方完整展开。</strong> 按式(1-1)，各量使用相同的 $N$ 个实数样本且不去均值。本书直接展开得到：</p>
+<p>$$
+\begin{aligned}
+P_x&=\frac1N\sum_{n=0}^{N-1}\bigl(s[n]+v[n]\bigr)^2\\
+&=P_s+P_v+2C_{sv},\\
+C_{sv}&=\frac1N\sum_{n=0}^{N-1}s[n]v[n].
+\end{aligned}\tag{1-10}
+$$</p>
+<p>$C_{sv}$ 是这次记录里目标与干扰的未中心化交叉二阶矩。它与 E01-04 的两个噪声通道交叉项是不同对象。只有当前记录的 $C_{sv}=0$ 时，混合均方才恰好等于两个分量均方之和；随机模型中的期望为零也不保证每段短记录都为零。</p>
+<p><strong>第二步：同样的分量 SNR，可以有不同的总功率。</strong> 三例的目标与干扰各自平方后都是四个 1，因此 $P_s=P_v=1$，分量 SNR 都是 $1/1=1$，即 0 dB。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">干扰分量</th>
+<th scope="col">逐点乘积 $sv$</th>
+<th scope="col">$C_{sv}$</th>
+<th scope="col">混合波形 $x$</th>
+<th scope="col">$P_x$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$[1,1,-1,-1]$</td>
+<td>$[1,-1,-1,1]$</td>
+<td>0</td>
+<td>$[2,0,0,-2]$</td>
+<td>2</td>
+</tr>
+<tr>
+<td>$v=s$</td>
+<td>$[1,1,1,1]$</td>
+<td>1</td>
+<td>$[2,-2,2,-2]$</td>
+<td>4</td>
+</tr>
+<tr>
+<td>$v=-s$</td>
+<td>$[-1,-1,-1,-1]$</td>
+<td>−1</td>
+<td>$[0,0,0,0]$</td>
+<td>0</td>
+</tr>
+</tbody>
+</table></div>
+<p>把表中每行代入式(1-10)，依次得到 $1+1+0=2$、$1+1+2=4$、$1+1-2=0$。最后一例的混合波形完全抵消，两个声明分量的功率却没有消失。这里不把相关或反相关干扰当成独立噪声，也不把零混合输出解释成“留下了干净目标”。</p>
+<p><strong>第三步：同一个观测，分解也不唯一。</strong> 对 $x=[2,0,-2,0]$，有 $P_x=(4+0+4+0)/4=2$。第一组 $s=v=[1,0,-1,0]$，故 $P_s=P_v=2/4=0.5$，逐点乘积为 $[1,0,1,0]$，$C_{sv}=0.5$。式(1-10)给出 $0.5+0.5+2\times0.5=2$，SNR 为 0 dB。</p>
+<p>第二组 $s=[1.5,0,-1.5,0]$、$v=[0.5,0,-0.5,0]$，仍逐点相加成同一个 $x$。现在 $P_s=4.5/4=1.125$、$P_v=0.5/4=0.125$，逐点乘积为 $[0.75,0,0.75,0]$，$C_{sv}=1.5/4=0.375$。混合均方仍为 $1.125+0.125+2\times0.375=2$，SNR 却为 $10\log_{10}(1.125/0.125)=10\log_{10}9\approx9.54$ dB。</p>
+<p><strong>结论与边界。</strong> 两组只是已知数学分量的不同声明，不证明真实录音应该采用其中任何一种分解。观测波形及其总功率完全一样，不能据此选出真实目标与噪声的功率。需要目标参考、可信的分量模型或其他可核验信息，才能解释所计算的 SNR。</p>
+<h3 id="sec-u-d10085615c">E01-08：左右相差一半幅度，ILD 是多少</h3>
+<p>采用本章“右减左”的约定。给定同一时间段、同一幅度尺度下，右通道均方根幅度为 0.4，左通道为 0.2。先分别用幅度比与功率比计算 ILD，再计算两路共同乘 0.5、以及仅右路乘 0.5 时的 ILD。最后用下方音频检查：右侧先到与右侧更强是否必须同时出现？</p>
+<p><strong>第一步：分清均方与均方根。</strong> 记左右的均方功率为 $P_L,P_R$，均方根（Root Mean Square，RMS）幅度为 $A_L=\sqrt{P_L}$、$A_R=\sqrt{P_R}$。左右采用同一正参考幅度 $A_0$ 时，两个电平分别是 $L_L=20\log_{10}(A_L/A_0)$、$L_R=20\log_{10}(A_R/A_0)$。相减时共同参考消去，得到本书使用的声级差定义：</p>
+<p>$$
+\mathrm{ILD}=L_R-L_L
+=20\log_{10}\frac{A_R}{A_L}
+=10\log_{10}\frac{P_R}{P_L}.
+\tag{1-11}
+$$</p>
+<p>ILD 的单位是 dB。两路的 RMS 都须为正才能得到有限值；只有一路为零时按相应极限解释，两路都为零时比值无定义。数字通道必须具有共同幅度标定，才能把电平差解释为接收声级差；这里只计算相对差值，不由数字幅度推断绝对 dB SPL。</p>
+<p><strong>第二步：核对 20 与 10 的因子。</strong> 幅度比为 $0.4/0.2=2$，所以 ILD 为 $20\log_{10}2\approx+6.02$ dB。功率分别为 $0.4^2=0.16$、$0.2^2=0.04$，功率比是 4，故 $10\log_{10}4$ 也为 +6.02 dB。对幅度比误用 $10\log_{10}2$ 得到的 3.01 dB，少了一倍。</p>
+<p><strong>第三步：共同增益与相对增益不同。</strong> 两路共同乘 0.5 后，右、左 RMS 为 0.2、0.1，比例仍为 2，ILD 不变。仅右路乘 0.5 后，两路 RMS 都为 0.2，ILD 变为 0 dB。</p>
+<p>更一般地，左右分别乘正增益 $g_L,g_R$，观测 ILD 会增加 $20\log_{10}(g_R/g_L)$。因此不同的通道增益、独立自动增益控制或播放设置可能改变线索，不能把所有观测声级差都归因于头部遮挡。</p>
+<p><strong>第四步：分别改变时间与幅度。</strong> 以下五个文件使用同一个数学合成源 $s[n]$：16 kHz 下长 2 秒，包含 500、800、1300、2400 Hz 四个正弦，每个幅度 0.08，首尾各 20 ms 线性淡入淡出。令负下标及源结束后的样本为零，双通道模型为</p>
+<p>$$
+\begin{aligned}
+x_L[n]&=g_Ls[n-d_L],\qquad x_R[n]=g_Rs[n-d_R],\\
+\tau&=\frac{d_L-d_R}{f_s},\qquad f_s=16000\ \mathrm{Hz}.
+\end{aligned}\tag{1-12}
+$$</p>
+<p>$d_L,d_R$ 是整数延迟，单位为采样点；这里右通道延迟 $d_R=0$。左右增益均为正，所以幅度比与 RMS 比相同。8 点延迟对应 $8/16000=0.0005$ s，即 +500 μs。所有输出都是双通道 PCM16 文件，统一保留 32008 帧，让延迟尾部完整留在文件中；共同导出增益为 1，不逐文件归一化。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">数学合成样本（通道次序：左、右）</th>
+<th scope="col">$d_L$</th>
+<th scope="col">$g_L,g_R$</th>
+<th scope="col">解析 ITD</th>
+<th scope="col">解析 ILD</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="binaural_audio/reference.wav">参考：同相同幅</a><audio class="audio-sample" controls preload="none" aria-label="参考：同相同幅" src="binaural_audio/reference.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>0</td>
+<td>1，1</td>
+<td>0 μs</td>
+<td>0.00 dB</td>
+</tr>
+<tr>
+<td><a href="binaural_audio/itd_only.wav">仅改变时间差</a><audio class="audio-sample" controls preload="none" aria-label="仅改变时间差" src="binaural_audio/itd_only.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>8</td>
+<td>1，1</td>
+<td>+500 μs</td>
+<td>0.00 dB</td>
+</tr>
+<tr>
+<td><a href="binaural_audio/ild_only.wav">仅改变声级差</a><audio class="audio-sample" controls preload="none" aria-label="仅改变声级差" src="binaural_audio/ild_only.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>0</td>
+<td>0.5，1</td>
+<td>0 μs</td>
+<td>+6.02 dB</td>
+</tr>
+<tr>
+<td><a href="binaural_audio/consistent.wav">两种线索同向</a><audio class="audio-sample" controls preload="none" aria-label="两种线索同向" src="binaural_audio/consistent.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>8</td>
+<td>0.5，1</td>
+<td>+500 μs</td>
+<td>+6.02 dB</td>
+</tr>
+<tr>
+<td><a href="binaural_audio/conflicting.wav">两种线索相反</a><audio class="audio-sample" controls preload="none" aria-label="两种线索相反" src="binaural_audio/conflicting.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>8</td>
+<td>1，0.5</td>
+<td>+500 μs</td>
+<td>−6.02 dB</td>
+</tr>
+</tbody>
+</table></div>
+<p>“同向”指右通道既先到又更强；“相反”指右通道先到、左通道却更强。表中是式(1-11)、式(1-12)的解析值，未把左右线索换算成一个人体方向角。四音源没有加入头部散射、耳廓滤波、房间反射或传感器噪声，因此不是 HRTF 录音。</p>
+<p>测量幅度时要比较同一段源内容：未延迟通道取半开区间 $[1600,30400)$，延迟 8 点的通道取 $[1608,30408)$。这只是选择对应内容的取点，不拟合或补偿两耳增益；测量 ITD 则保留原始左右时间关系。稳态区间包含各频率整数周期，各正弦的交叉平均为零，源均方为 $4\times0.08^2/2=0.0128$，RMS 约为 0.113137。乘 0.5 的通道均方变为 0.0032，RMS 约为 0.056569。</p>
+<p><strong>PCM 读回核查。</strong> 章节入口 E01-08 实际读取这五个文件，分别报告浮点与 PCM 的均方、ILD 和时差估计。PCM 中增益 1 的通道均方约为 0.01280018，增益 0.5 的通道约为 0.00319997，因此声级差与解析值略有不同：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">样本</th>
+<th scope="col">PCM 估计 ITD（采样点）</th>
+<th scope="col">PCM 估计 ITD</th>
+<th scope="col">PCM ILD（右减左）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>参考</td>
+<td>0</td>
+<td>0 μs</td>
+<td>0.0000 dB</td>
+</tr>
+<tr>
+<td>仅改变时间差</td>
+<td>8</td>
+<td>+500 μs</td>
+<td>0.0000 dB</td>
+</tr>
+<tr>
+<td>仅改变声级差</td>
+<td>0</td>
+<td>0 μs</td>
+<td>+6.0207 dB</td>
+</tr>
+<tr>
+<td>两种线索同向</td>
+<td>8</td>
+<td>+500 μs</td>
+<td>+6.0207 dB</td>
+</tr>
+<tr>
+<td>两种线索相反</td>
+<td>8</td>
+<td>+500 μs</td>
+<td>−6.0207 dB</td>
+</tr>
+</tbody>
+</table></div>
+<p>时差测量只搜索 −16～+16 的整数采样点：固定右通道接收窗口，对每个候选延迟取对应左通道的 28800 个样本，先把逐点乘积求和，再除以两段能量乘积的平方根，选归一化线性相关最大的候选。正延迟表示左通道较晚到达。这个相关分数不是方向概率，限定范围内恢复本例的时差也不证明全范围或任意声音都能唯一定位。</p>
+<p>这一组音频及其<a href="binaural_audio/MANIFEST.json">独立清单</a>由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch01/examples/generate_binaural_cues.py">双耳线索生成与检查入口</a>生成，源模型见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch01/core/binaural_cues.py">双耳线索实现</a>。它们不计入主清单的 109 个 WAV。清单分别保留解析输入参数、浮点测量、PCM 测量和生成源及 WAV 摘要；检查模式只读，不修改样本。</p>
+<p>试听时使用能保持左右通道的耳机，并先从低音量开始。合并单声道会改变这些线索。可以描述自己听到的偏向，但不能凭个人听感声称测出了 ITD 阈值、定位准确率或某个固定角度。</p>
+<h3 id="sec-u-5a8c86a7c7">E01-09：保持目标不变，为什么自噪声还会被放大</h3>
+<p>两路输入均为 $x_1=s+v_1$、$x_2=s+v_2$，目标已经等幅对齐。两路噪声零均值、空间不相关、单位功率；目标功率为正。分别使用实权重 $(w_1,w_2)=(0.5,0.5)$ 与 $(2,-1)$，计算目标响应、输出噪声功率、线性 WNG 和 dB WNG。负权重是否会带来“负噪声功率”？</p>
+<p><strong>第一步：先看目标响应。</strong> 输出为 $y=(w_1+w_2)s+w_1v_1+w_2v_2$。两组权重的和都为 1，所以输出目标仍为 $s$，目标功率不变。</p>
+<p><strong>第二步：噪声要按平方计算。</strong> 展开 $(w_1v_1+w_2v_2)^2$，得到 $w_1^2v_1^2+w_2^2v_2^2+2w_1w_2v_1v_2$。在题设的总体二阶矩下，最后一项期望为零，两路单位功率则给出</p>
+<p>$$
+P_{v,\mathrm{out}}=w_1^2+w_2^2,\qquad
+\mathrm{WNG}=\frac{1}{w_1^2+w_2^2},\qquad
+\mathrm{WNG}_{\mathrm{dB}}=10\log_{10}\mathrm{WNG}.
+\tag{1-13}
+$$</p>
+<p>式(1-13)的线性 WNG 来自输出与输入 SNR 之比：输入是 $P_s/1$，输出是 $P_s/(w_1^2+w_2^2)$，二者相除后 $P_s$ 消去。这里使用了 $w_1+w_2=1$，不能直接用于任意目标响应或任意相关噪声。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">权重</th>
+<th scope="col">目标响应</th>
+<th scope="col">输出噪声功率</th>
+<th scope="col">线性 WNG</th>
+<th scope="col">WNG 的 dB 值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$(0.5,0.5)$</td>
+<td>$0.5+0.5=1$</td>
+<td>$0.5^2+0.5^2=0.5$</td>
+<td>$1/0.5=2$</td>
+<td>+3.01 dB</td>
+</tr>
+<tr>
+<td>$(2,-1)$</td>
+<td>$2-1=1$</td>
+<td>$2^2+(-1)^2=5$</td>
+<td>$1/5=0.2$</td>
+<td>−6.99 dB</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>第三步：解释负号。</strong> $-v_2$ 是反相后相加，负的是样本或权重；它的平方功率仍为正。目标在两路中相同，$2s-s=s$ 可以精确保持目标。但两路不相关噪声没有相同波形可供精确抵消，权重 2 先把第一路噪声功率放大到 4，再加上第二路的 1。输出噪声因此是单麦的五倍。</p>
+<p>负的 dB WNG 表示相对单麦的 SNR 变差，不是线性 WNG 或噪声功率为负。这个例子也没有构造指定干扰方向的零陷，不能凭权重正负推断 DI 或方向抑制效果。通道噪声若相关，就必须把交叉项重新加回；目标若没准确对齐，$w_1+w_2=1$ 也不再保证真实目标保持。</p>
+<p>可在<a href="research/05_exercises_and_audio.html">章节代码练习与音频实验</a>中试听既有“单麦输入”“对齐后平均”和本章的残余时差、双耳线索样本。文件保留各组共同增益，使用数学合成信号；先从低播放音量开始。听音帮助发现差别，功率、延迟与模型判断仍需以上述计算为准。</p>
 <hr />
 <blockquote>
 <p>📄 本篇信息：配图 1 张 ｜ <a href="index.html">回首页</a></p>

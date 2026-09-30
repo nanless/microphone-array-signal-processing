@@ -1,6 +1,6 @@
 # 空间处理与声源追踪：算法、实现和工业使用条件
 
-基础索引核实日期：2026-09-22；第 1、5 章相关研究小节及所列实验、源码入口核实于 2026-09-28；DCASE 2026 任务状态及近年候选的后续复核日期见各条 2026-09-29 记录。对应正文第 1～5 章和第 9 章。这里按算法的输入、计算步骤和可检查结果整理源码，既包括语音前端，也包括直接相关的球阵录音与工业噪声源成像。后两类任务的输出不同，不能把声源功率图或 Ambisonics 解码结果当成增强语音。
+基础索引核实日期：2026-09-22；第 1 章相关研究及最小原生调用核实于 2026-09-30，第 5 章相关研究小节及所列实验、源码入口核实于 2026-09-28；DCASE 2026 任务状态及近年候选的后续复核日期见各条 2026-09-29 记录。对应正文第 1～5 章和第 9 章。这里按算法的输入、计算步骤和可检查结果整理源码，既包括语音前端，也包括直接相关的球阵录音与工业噪声源成像。后两类任务的输出不同，不能把声源功率图或 Ambisonics 解码结果当成增强语音。
 
 ## 阅读与复现方式
 
@@ -40,6 +40,8 @@ SBL、RobustSBL、BTK 和 SMP-PHAT 的依据分别是固定提交的 [SBL LICENS
 
 双耳时间差（Interaural Time Difference，ITD）描述两耳信号的相对时间；双耳声级差（Interaural Level Difference，ILD）描述同一频率或指定频带中的相对声级。实际声音经过头、耳廓和躯干后，还会形成随方向变化的谱峰和谱谷。后者称为方向相关频谱线索较准确。
 
+按正文的“右减左”约定，同一频率的两耳响应幅度都非零时，`ILD = 20 log10(|H_R|/|H_L|)`，单位为 dB。左右幅度为 `1` 和 `0.5` 时，ILD 约为 −6.02 dB；交换两耳后变为 +6.02 dB。若两耳同时乘同一个非零增益，这个比值不变。这个例子是幅度比的计算，不是把左右分别归一化，也不是完整的人头滤波。
+
 头相关传递函数（Head-Related Transfer Function，HRTF）是每只耳朵的复数频率响应，其时域对应物是头相关脉冲响应（Head-Related Impulse Response，HRIR）。一对 HRTF 同时描述左右耳的幅度和相位，因此可用来分析 ILD、时差及频谱形状；它并不是与 ITD、ILD 互不相干的第三种传感器。固定版本 SAF 的 `HRIRs2HRTFs` 把左右 HRIR 分别变换到频域，`estimateITDs` 则从同一对 HRIR 提取一个时差，正好展示这种从完整响应到摘要量的关系。[SAF 头文件及数据维度](https://github.com/leomccormack/Spatial_Audio_Framework/blob/18fd5aba46e20787b51f28f7197a68506c965c07/framework/modules/saf_hrir/saf_hrir.h)
 
 方向谱形也不能直接从一段未知声音里无条件读出。耳边频谱同时受声源本身的频谱和传播响应影响；只有先说明已知输入、参考测量或统计假设，才能解释哪些差异来自方向。例如，单个频率的纯音不能展示完整的谱谷位置；左右各乘一个常数也只改变声级，不能模拟耳廓随频率变化的滤波。
@@ -54,7 +56,7 @@ SBL、RobustSBL、BTK 和 SMP-PHAT 的依据分别是固定提交的 [SBL LICENS
 
 相同的耳间距离若改成没有头部的两个自由场传感器，正侧面的最大时差由直线距离计算：`0.175 / 343` 秒，即约 510.2041 μs。两种数值不同，是因为传播模型不同。用 656 μs 合成时延的双通道文件可以说明声像时差，但在没有头部滤波时，不能声称该文件完整模拟了真实双耳录音。[模型假设研究：Aaronson 与 Hartmann，JASA 2014](https://doi.org/10.1121/1.4861243)
 
-Brughera、Dunai 与 Hartmann 的实验使用等声级耳机纯音，起止包络同步，任务是判断两个呈现区间之间的左右变化。其图 1 比较四位听者，两个最敏感听者在 1400 Hz 仍得到收敛阈值，1450 Hz 时未得到收敛阈值。论文的阈值量是两个区间的 `ΔITD`；例如一个区间右耳领先 10 μs、另一个区间左耳领先 10 μs，比较量为 20 μs。不能把它写成单次声源方位估计误差，也不能直接套用于宽带语音或高频调制包络。[原论文 §II 的 Methods、Results 与图 1](https://pmc.ncbi.nlm.nih.gov/articles/PMC3663869/)
+Brughera、Dunai 与 Hartmann 的实验使用等声级耳机纯音，起止包络同步，任务是判断两个呈现区间之间的左右变化。其图 1 比较四位听者，两个最敏感听者在 1400 Hz 仍得到收敛阈值，1450 Hz 时未得到收敛阈值。论文的阈值量是两个区间的 `ΔITD`；例如一个区间右耳领先 10 μs、另一个区间左耳领先 10 μs，比较量为 20 μs。不能把它写成单次声源方位估计误差，也不能直接套用于宽带语音或高频调制包络。[共同作者 UPV 库保存的正式原文：§II.A，页 2840；§II.B 与图 1，页 2841；§II.C.4，页 2843](https://riunet.upv.es/server/api/core/bitstreams/f65b9337-1b1e-4013-9020-8338ac77ad6b/content)
 
 ### 从产品问题确定输入、输出和验收对象
 
@@ -67,6 +69,8 @@ Brughera、Dunai 与 Hartmann 的实验使用等声级耳机纯音，起止包�
 | 音箱边播放边收音 | 麦克风采集与播放参考 → 回声处理后的采集音频 | 播放参考是否可取得、是否同步；电视机声音未必有可用参考 |
 | 多人同时讲话且都要保留 | 混合音频 → 多个输出流及各自活动范围 | 输出流的说话人身份是否跨时间一致；单束目标增强不等于完整分离 |
 | 用耳机呈现一个虚拟方向 | 干声、方向和左右 HRIR → 左右耳输出 | 数据坐标及通道顺序；个体差异、耳机响应和头动是否被处理 |
+
+这些任务有不同的软件入口。例如 SOFA 官方的 [Software and APIs](https://www.sofacoustics.org/mediawiki/index.php/Software_and_APIs) 页面列出 libmysofa 的 C 数据读取、IRCAM Spat/Panoramix 的空间创作与混音，以及 3D Tune-In 的耳机空间化用途。这里只用项目说明核对应用范围，不以这些入口证明设备性能或部署规模。第 1 章优先用已锁定的 libmysofa 检查共同增益；个体化 HRTF 与神经插值需要数据、基线误差和渲染实验，本章不再增加只有名称的模型。
 
 ODAS 是现有源码中连接声源定位、追踪与分离的入口之一。其维护者 README 把定位、追踪、分离和后滤波列为不同功能；本书固定的 `mod_ssl.c`、`mod_sst.c`、`mod_sss.c` 也分别保留这些模块。它可以帮助读者理解方向候选如何变成连续轨迹、轨迹怎样控制输出流，但取得这些 C 源文件不能证明已经在某个设备上达到实时性能。[ODAS 固定版本说明](https://github.com/introlab/odas/blob/bcb845434495e293df3d48f1203b7a86e1852449/README.md)
 
@@ -91,9 +95,24 @@ ODAS 是现有源码中连接声源定位、追踪与分离的入口之一。其
 
 空间定向声学格式（Spatially Oriented Format for Acoustics，SOFA）用于交换 HRTF、双耳或空间房间脉冲响应等数据。格式兼容只说明软件知道怎样组织数据；仍须读取具体文件中的坐标、采样率、接收器顺序、时延及数据许可。[SOFA 项目说明与规范入口](https://www.sofacoustics.org/mediawiki/index.php/Main_Page)
 
-读取 SOFA、按方向获取和插值左右滤波器，可阅读维护者官方实现 [libmysofa](https://github.com/hoene/libmysofa)。SOFA 项目的 [Software and APIs](https://www.sofacoustics.org/mediawiki/index.php/Software_and_APIs) 页面直接链接该实现。本书锁定版本为 v1.3.5、提交 `6cc5b15a73e9bd97810d03767082edda7f315881`，其[许可证文件](https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/LICENSE)给出三条款 BSD 条件。源码子集和许可证已取得到 `codes/chapters/ch00/upstream/_downloads/libmysofa/`，固定提交、工作树与登记入口经获取工具核对；未编译、未执行数值实验，未取得 `share/` 和 `tests/` 中的 SOFA 测量数据。
+读取 SOFA、按方向获取和插值左右滤波器，可阅读维护者官方实现 [libmysofa](https://github.com/hoene/libmysofa)。SOFA 项目的 [Software and APIs](https://www.sofacoustics.org/mediawiki/index.php/Software_and_APIs) 页面直接链接该实现。本书锁定版本为 v1.3.5、提交 `6cc5b15a73e9bd97810d03767082edda7f315881`，其[许可证文件](https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/LICENSE)给出三条款 BSD 条件。源码子集和许可证已取得到 `codes/chapters/ch00/upstream/_downloads/libmysofa/`。2026-09-30 仅对原方法的公共归一化函数进行了提取调用：直接编译原始 `loudness.c` 和 `tools.c`，在临时目录用人工结构调用；未取得 `share/` 和 `tests/` 中的 SOFA 测量数据，也未运行完整读取与渲染链。
 
 官方接口文档说明 `mysofa_open` 会在读取时归一化，而 `mysofa_open_no_norm` 保留未归一化数据。研究方向间增益、ILD 或不同软件输出时，应明确实际调用和增益处理；归一化、重采样和插值都不是“原始文件完全未变”。固定版 `loudness.c` 计算一个公共缩放因子，并乘到整个 `DataIR` 数组，两耳不会在这一步各自归一化。[维护者接口说明](https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/README.md)
+
+**最小原生调用的实际结果。** [调用工具](../../ch01/examples/audit_libmysofa_loudness.py)先核对来源锁表、HEAD、干净工作树及编译所需源码与头文件的 Git 字节和 SHA；原始 C 文件直接参与编译，不修改上游。临时导出头只定义空的 `MYSOFA_EXPORT` 宏，是编译脚手架。自写调用程序设一个球坐标方向 `[0°, 0°, 1 m]`、两个接收器和每耳一个系数，结构尺寸为 `M=1、C=3、R=2、N=1`。人工系数不是测量 HRIR。
+
+| 人工输入 `[左, 右]` | 独立计算的预期 | 实际调用结果 | 可以支持什么 |
+|---|---|---|---|
+| `[1, 0.5]` | 两耳能量和 `1²+0.5²=1.25`；公共因子 `sqrt(2/1.25)`，约 1.264911 | 因子约 1.264911；输出约 `[1.264911, 0.632456]`，两耳能量和约 2、幅度比约 2 | 该输入下共同缩放保持右减左 ILD 约 −6.02 dB |
+| `[0, 0]` | 选定响应能量为零，公式涉及除零与无穷乘零 | 因子为正无穷，两耳输出都是 NaN | 该固定版本及编译配置下的退化；不是成功归一化 |
+
+运行使用 Apple clang 21.0.0、C99、`-O0`，非零数值的绝对核对容差为 `2×10⁻⁶`。[实际报告](../../ch01/reports/libmysofa_loudness.json)保留编译器、实际命令、源 SHA、脚手架摘要、输入、输出与未执行范围；非有限结果以 `null` 和分类字段保存，符合严格 JSON。报告中的“符合预期”包括确认全零退化，不代表两例都成功归一化。可在已有锁定源码与 C 编译器的环境运行：
+
+```bash
+.venv/bin/python -m codes.chapters.ch01.examples.audit_libmysofa_loudness --report codes/chapters/ch01/reports/libmysofa_loudness.json
+```
+
+参考方向的选择也有条件。固定版 `loudness.c` 先在球坐标中最小化方位角与仰角的和 `c[0]+c[1]`，相同时再比较半径；它不是一般的角距离最小化。此次只有一个方向，验证了公共缩放与全零退化，没有验证多方向网格的参考选择。使用自己的数据网格时，仍须核对哪个响应被选作参考及其能量。[固定版函数，行 30–55](https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/src/hrtf/loudness.c)
 
 额外延迟需单独核查。固定版 README 将浮点接口的延迟标为秒、short 接口标为采样数，但源码与 SOFA 的数据单位之间存在不一致：SOFA 将 `Data.Delay` 定义为采样数；`reader.c` 直接读取该数组，`interpolate.c` 对其取值或加权，浮点接口直接返回所得数值。重采样时 `resample.c` 按新旧采样率之比缩放延迟，而 short 接口会将插值结果再乘当前采样率。
 

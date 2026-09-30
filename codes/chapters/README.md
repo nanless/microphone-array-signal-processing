@@ -7,7 +7,7 @@
 | 目录 | 主要实验模块（统一前缀 `codes.chapters.`） | 复算范围与边界 |
 |---|---|---|
 | [ch00](ch00/) | `ch00.cross_chapter.*` | 全书索引、跨章练习、主音频清单与上游来源 |
-| [ch01](ch01/) | `ch01.chapter01_experiments` | E01-04～06；有限记录互项、残余延迟和头部传播模型，均为数学输入 |
+| [ch01](ch01/) | `ch01.chapter01_experiments` | E01-04～09；有限记录、残余延迟、球头、混合功率、ILD与WNG；数学输入及实际PCM读回 |
 | [ch02](ch02/) | `ch02.chapter02_experiments` | E02-09～15；传播、频谱、协方差与采样，不是设备测量 |
 | [ch03](ch03/) | `ch03.chapter03_experiments`、`ch03.coarray_covariance_exercise`、`ch03.examples.self_calibration_demo` | E03-07～14 与单独的受外部相位锚约束标定示例；几何、模糊、校准和虚拟滞后统计，不是全盲设备标定 |
 | [ch04](ch04/) | `ch04.chapter04_experiments`、`ch04.doa_resolution_trials` | E04-08、E04-12～18；分辨率试验保留分类计数与统计分母 |
@@ -34,11 +34,11 @@
 `MVDR target response` 应接近 1；STFT 重建误差接近浮点舍入。极高的匹配无噪声 AEC ERLE 是算术
 收敛检查，队列示例中的超期次数则来自构造的负载，二者均不代表设备测量。完整核对步骤见导读。
 
-旧的 `codes.examples.*` 和 `codes.array_tutorial.*` 导入路径已经退出仓内接口。运行时使用上表中的章节模块；修改题目时改唯一真实源文件，再核对全书 231 个稳定练习 ID、对应章节和覆盖表。
+旧的 `codes.examples.*` 和 `codes.array_tutorial.*` 导入路径已经退出仓内接口。运行时使用上表中的章节模块；修改题目时改唯一真实源文件，再核对全书 234 个稳定练习 ID、对应章节和覆盖表。
 
-房间、主音频、GSS、移动和追踪资产的清单，以及某些工业报告，会校验生成器的**路径和完整源码摘要**。生成器已归入相应章节的 `examples/`；原生 C/C++ 探针与调用它的 Python 文件放在同一目录。更改这些文件后，应从真实新源重生资产并核对参数、逐文件摘要和报告，再同步构建与测试。
+双耳、房间、主音频、GSS、移动和追踪资产的清单，以及某些工业报告，会校验生成器的**路径和完整源码摘要**。生成器已归入相应章节的 `examples/`；原生 C/C++ 探针与调用它的 Python 文件放在同一目录。更改这些文件后，应从真实新源重生资产并核对参数、逐文件摘要和报告，再同步构建与测试。
 
-各章 `examples/` 的文件按学习章查找：第 2 章有真实录音准备；第 4 章有 MDL 重复试验、doatools/SBL/SMP-PHAT 原实现探针；第 5 章有波束上游与 SOF 设计审查；第 6 章有 AEC3、真实配对录音、同输入接口和上游审查；第 7 章有 WPE 外部对照、静音边界与上游审查；第 8 章有 GSS 音频生成、AuxIVA、Stream.FM/TF-Locoformer 和分离上游审查；第 9 章有追踪与移动音频生成、上游审查；第 10 章有工程综合基线、工业接口与原生 C/C++ 探针；第 11 章有会议评分接口审查；附录 B 有房间仿真生成器。这些脚本的精确文件名与原始验证范围见[算法覆盖表](ch00/COVERAGE.md)和[研究手册](ch00/research/README.md)。
+各章 `examples/` 的文件按学习章查找：第 1 章有双耳线索音频生成和 libmysofa 原始归一化方法探针；第 2 章有真实录音准备；第 4 章有 MDL 重复试验、doatools/SBL/SMP-PHAT 原实现探针；第 5 章有波束上游与 SOF 设计审查；第 6 章有 AEC3、真实配对录音、同输入接口和上游审查；第 7 章有 WPE 外部对照、静音边界与上游审查；第 8 章有 GSS 音频生成、AuxIVA、Stream.FM/TF-Locoformer 和分离上游审查；第 9 章有追踪与移动音频生成、上游审查；第 10 章有工程综合基线、工业接口与原生 C/C++ 探针；第 11 章有会议评分接口审查；附录 B 有房间仿真生成器。这些脚本的精确文件名与原始验证范围见[算法覆盖表](ch00/COVERAGE.md)和[研究手册](ch00/research/README.md)。
 
 `ch02_05_baselines.py`、`ch06_09_baselines.py`、三个 `exercises_*` 及空间模型、增强步骤、工程边界、时间状态等跨章练习集中在 [`ch00/cross_chapter/`](ch00/cross_chapter/)；其稳定 ID 由[练习目录](ch00/research/05_exercises_and_audio.md)逐题映射。后续拆分时须保持一个 ID 只有一个真实实现，并同步目录测试，不能复制一份后让两个实现各自漂移。
 
@@ -52,7 +52,7 @@
 
 `ch00/` 集中保存[跨章练习](ch00/cross_chapter/)、[主音频生成器](ch00/examples/generate_audio_samples.py)、[Git 来源锁表](ch00/SOURCES.lock.json)、[归档锁表](ch00/ARCHIVE_SOURCES.lock.json)、[获取状态](ch00/SOURCE_STATUS.json)和[归档状态](ch00/ARCHIVE_SOURCE_STATUS.json)。状态由[获取工具](ch00/upstream/README.md)核验生成；忽略的 `_downloads/` 工作区可能含本地修改，不能覆盖或纳入提交。
 
-本书的主[合成音频清单](ch00/audio/MANIFEST.json)记录 27 组、109 个分章存放的 PCM16 WAV 的输入、所属章节、共同增益、种子、运行环境、生成源码与逐文件 SHA-256。另有附录 B 的 18 个[房间合成 WAV 与结果报告](appendix_b/room_audio/RESULTS.json)、[GSS 教学链](ch08/gss_audio/MANIFEST.json)的 5 个 WAV 和中间状态、[连续移动声源](ch09/moving_audio/MANIFEST.json)的 3 个 WAV，以及[观测到追踪](ch09/tracking_audio/MANIFEST.json)的 2 个 WAV；这些是彼此独立的实验，不并入主 109 个样本。相同实验组使用共同导出增益，不逐文件做峰值归一化。生成物出现问题应修改生成源码并重新生成、只读核对清单，再重建图和站点；不得手改单个 WAV、清单或报告。
+本书的主[合成音频清单](ch00/audio/MANIFEST.json)记录 27 组、109 个分章存放的 PCM16 WAV 的输入、所属章节、共同增益、种子、运行环境、生成源码与逐文件 SHA-256。另有第 1 章的 5 个[双耳线索 WAV](ch01/binaural_audio/MANIFEST.json)、附录 B 的 18 个[房间合成 WAV 与结果报告](appendix_b/room_audio/RESULTS.json)、[GSS 教学链](ch08/gss_audio/MANIFEST.json)的 5 个 WAV 和中间状态、[连续移动声源](ch09/moving_audio/MANIFEST.json)的 3 个 WAV，以及[观测到追踪](ch09/tracking_audio/MANIFEST.json)的 2 个 WAV；这些是彼此独立的实验，不并入主 109 个样本。相同实验组使用共同导出增益，不逐文件做峰值归一化。生成物出现问题应修改生成源码并重新生成、只读核对清单，再重建图和站点；不得手改单个 WAV、清单或报告。
 
 主音频由 `.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py` 生成，附加 `--check` 时只读重算并核对现有清单与 WAV。它们是数学合成样本，没有真人录音、模型权重或下载素材，不用于证明真实语音或设备效果；试听前先调低播放音量。各组的信号模型、参考、评分窗口和代码题见[音频实验手册](ch00/research/05_exercises_and_audio.md)。
 

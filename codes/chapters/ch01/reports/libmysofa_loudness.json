@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "executed_at_utc": "2026-09-30T12:20:57.042488+00:00",
+  "audit_source": "codes/chapters/ch01/examples/audit_libmysofa_loudness.py",
+  "audit_source_sha256": "46e82008fc7ec7fbb92dec430824dcda66ff8155d0afe37a9f5e06278179f989",
+  "scope": "original-method extracted call: mysofa_loudness only",
+  "source": {
+    "url": "https://github.com/hoene/libmysofa.git",
+    "revision": "6cc5b15a73e9bd97810d03767082edda7f315881",
+    "release": "v1.3.5",
+    "license": "BSD-3-Clause; third-party code notices separate",
+    "lock_sha256": "20d3fe423721828648ba33526af98eeecc23dff2f6a83ab34cb7d07fa1d270cb",
+    "worktree_clean": true,
+    "source_sha256": {
+      "src/hrtf/loudness.c": "3aa186feb3f1da3df1a7c23a33388bf4a5395c4525f58ce7d671ed1a9caa157b",
+      "src/hrtf/tools.c": "55238724d257d3221c6c16bfcf62d6990c176b248ad81786e0f100e172f4fa22",
+      "src/hrtf/tools.h": "2fb4fa5f73609ab963fbd5c94f24fd2411d45ebec138b4af48d82ba75b3fb59e",
+      "src/hrtf/mysofa.h": "fe24a1a424dae943624b942723af48b0f345d8d13911be88b0202096e546f834",
+      "src/resampler/speex_resampler.h": "ced479f7a027e2601c2c0ec129ba280d56e0021b0aa65f2e6f51e767efb3c622",
+      "LICENSE": "9c8713ccc5d6d93d20c7a1cfcb876e64baf551bfbe67faa4e60d39cda9ffd023"
+    }
+  },
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "compiler": {
+    "executable": "/usr/bin/cc",
+    "version": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin25.6.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin\n",
+    "command": [
+      "/usr/bin/cc",
+      "-std=c99",
+      "-O0",
+      "-I",
+      "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/ch01-libmysofa-d6qq44t5",
+      "-I",
+      "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/libmysofa/src/hrtf",
+      "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/ch01-libmysofa-d6qq44t5/probe.c",
+      "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/libmysofa/src/hrtf/loudness.c",
+      "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/libmysofa/src/hrtf/tools.c",
+      "-lm",
+      "-o",
+      "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/ch01-libmysofa-d6qq44t5/probe"
+    ],
+    "stdout": "",
+    "stderr": "",
+    "flags": [
+      "-std=c99",
+      "-O0"
+    ]
+  },
+  "scaffold": {
+    "export_header": "#ifndef MYSOFA_EXPORT\n#define MYSOFA_EXPORT\n#endif\n",
+    "export_header_sha256": "1f9efb7e749c691eab429577c481e34e5e8405f92f19e5e5e2a6812bf0942eec",
+    "harness_sha256": "1aa8c9288448a3b225e1b94c9c75f7857c88b4356d7ff5b054f0d1fb5003aa27",
+    "upstream_patched": false,
+    "temporary_binary_retained": false
+  },
+  "config": {
+    "dimensions": {
+      "I": 1,
+      "E": 1,
+      "M": 1,
+      "N": 1,
+      "C": 3,
+      "R": 2
+    },
+    "source_position": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "source_position_type": "spherical",
+    "absolute_tolerance": 2e-06,
+    "randomness": "none; deterministic artificial coefficients"
+  },
+  "native_stdout": "nonzero 1.26491106 1.26491106 0.632455528\nzero inf nan nan\n",
+  "cases": [
+    {
+      "name": "nonzero",
+      "input_ir_left_right": [
+        1.0,
+        0.5
+      ],
+      "factor": {
+        "value": 1.26491106,
+        "classification": "finite"
+      },
+      "output_ir_left_right": [
+        {
+          "value": 1.26491106,
+          "classification": "finite"
+        },
+        {
+          "value": 0.632455528,
+          "classification": "finite"
+        }
+      ],
+      "expected_factor": 1.2649110640673518,
+      "expected_output_ir_left_right": [
+        1.2649110640673518,
+        0.6324555320336759
+      ],
+      "expected_energy_sum": 2.0,
+      "energy_sum": {
+        "value": 1.9999999846080825,
+        "classification": "finite"
+      },
+      "expected_left_over_right": 2.0,
+      "left_over_right": 2.000000006324555,
+      "ild_definition": "20*log10(abs(right/left))",
+      "input_ild_db": -6.020599913279624,
+      "output_ild_db": -6.020599940746818,
+      "normalization_success": true,
+      "expected_behavior_observed": true
+    },
+    {
+      "name": "zero",
+      "input_ir_left_right": [
+        0.0,
+        0.0
+      ],
+      "factor": {
+        "value": null,
+        "classification": "positive_infinity"
+      },
+      "output_ir_left_right": [
+        {
+          "value": null,
+          "classification": "nan"
+        },
+        {
+          "value": null,
+          "classification": "nan"
+        }
+      ],
+      "normalization_success": false,
+      "expected_behavior": "positive infinity factor and two NaN outputs",
+      "expected_behavior_observed": true,
+      "reason": "zero selected IR energy; division by zero and infinity times zero"
+    }
+  ],
+  "expected_behavior_observed": true,
+  "not_executed": [
+    "SOFA parser",
+    "SOFA measurement data",
+    "mysofa_open",
+    "Data.Delay",
+    "resampling",
+    "interpolation",
+    "audio convolution/rendering",
+    "device acceptance"
+  ]
+}

@@ -8,6 +8,7 @@
 
 ```bash
 .venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py  # 先生成 27 组、109 个合成 WAV 及清单
+.venv/bin/python -m codes.chapters.ch01.examples.generate_binaural_cues  # 独立双耳线索 5 个 WAV；--check 只核对
 .venv/bin/python -m codes.chapters.ch08.examples.gss_teaching_demo  # 独立 GSS 教学音频与状态
 .venv/bin/python -m codes.chapters.ch09.examples.chapter09_tracking_audio  # 独立PCM观测与追踪音频
 .venv/bin/python -m codes.chapters.ch09.examples.moving_source_audio  # 独立连续移动双麦音频
@@ -34,9 +35,9 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 | `make_aec_figures.py` | 10 张回声消除专题图（原 7 张另加两带子带、IPNLMS/RLS/Kalman 状态图及 PBFDAF 流程图）。风格与上一个脚本统一（六色/五级字号/dpi150） | `figures/fig26`～`fig32_*`、`fig37`～`fig39_*` |
 | `build_site.py` | 生成 14 个教程页和 6 个研究页，保留旧版语义及顺序深链；编号图直接引用 `figures/`，独立音频与状态按各自清单核验并复制；站点 MathJax 在线加载 | `site/` 下的网页及独立媒体副本 |
 | `build_pdf.py` | 合订本脚本。14 篇合成带封面和三级目录的 HTML，Chrome 标签化打印 A4 PDF，再以保留结构树的方式写三级书签；第 1～13 章的源 h4 进入第三级。常用 flag：`--html-only`、`--pdf-only`、`--no-bookmarks`、`--build-date YYYY-MM-DD` | `dist/combined.html` 与 `dist/microphone-array-tutorial.pdf` |
-| `quality_check.py` | 发布门禁。用独立基线检查 14 篇/121 节/500 个指定子节/49 图，核对图号、alt、公式编号与引用、小节语义链接、PNG 绘图脚本摘要、网页导航和 PDF 三级书签。确定性问题阻断发布，高风险口语只提醒人工复核 | 通过、失败清单，以及不阻断发布的人工复核与可访问性提示 |
+| `quality_check.py` | 发布门禁。用独立基线检查 14 篇/121 节/503 个指定子节/49 图，核对图号、alt、公式编号与引用、小节语义链接、PNG 绘图脚本摘要、网页导航和 PDF 三级书签。确定性问题阻断发布，高风险口语只提醒人工复核 | 通过、失败清单，以及不阻断发布的人工复核与可访问性提示 |
 
-231 道稳定编号的代码题可从各章入口复算，例如：
+234 道稳定编号的代码题可从各章入口复算，例如：
 
 ```bash
 .venv/bin/python -m codes.chapters.ch04.chapter04_experiments
@@ -70,7 +71,7 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 
 **发布与验收说明**
 
-**书签与人工抽查**：合订本 PDF 顶层是导读、11 章正文和 2 篇附录，第二层来自各篇实际小节；第 1～13 章共有 500 个源 h4 作为第三级书签，并保持在各自父节之下。
+**书签与人工抽查**：合订本 PDF 顶层是导读、11 章正文和 2 篇附录，第二层来自各篇实际小节；第 1～13 章共有 503 个源 h4 作为第三级书签，并保持在各自父节之下。
 
 书签使用 HTML 标题 id 对应的 PDF 命名目标，保留页内定位。命名目标缺失、越界或同名却指向不同位置时构建失败；发布门禁独立比较每项书签与正文目标的页码及视图参数。目录和正文可能出现同名标题，仅检查落页文字不能识别误跳到目录的问题。
 
@@ -84,7 +85,7 @@ PDF 正文固定为 16 px，MathJax 公式按 100% 字号打印；网页公式�
 
 **PDF 可访问性边界**：Chrome 使用 `--export-tagged-pdf` 导出结构树，pypdf 完整克隆页面后添加书签；构建和发布门禁检查标记根、父树及页面连接。标签存在不等于公式辅助文本、阅读顺序或 PDF/UA 已完整验收，最终版仍需辅助技术实测。
 
-**独立结构基线**：发布门禁的独立结构基线为 14 个顶级书签、121 个二级书签、500 个三级书签，共 635 个大纲项，以及图 1～49。它还检查图号与 alt、公式编号与引用、小节语义链接、每个源 h2/h3/h4 标题是否真的出现在当前页导航中（源 h1 可排除），以及 PNG 中的 `SourceScript` 和完整 `SourceScriptDigest`。
+**独立结构基线**：发布门禁的独立结构基线为 14 个顶级书签、121 个二级书签、503 个三级书签，共 638 个大纲项，以及图 1～49。它还检查图号与 alt、公式编号与引用、小节语义链接、每个源 h2/h3/h4 标题是否真的出现在当前页导航中（源 h1 可排除），以及 PNG 中的 `SourceScript` 和完整 `SourceScriptDigest`。
 
 修改绘图脚本后未重画的 PNG 会使门禁失败；高风险口语命中只输出人工复核提示。
 

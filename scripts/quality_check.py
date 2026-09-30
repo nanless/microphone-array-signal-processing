@@ -32,6 +32,7 @@ ROOM_AUDIO_ROOT = CODE_CHAPTERS / "appendix_b" / "room_audio"
 MOVING_AUDIO_ROOT = CODE_CHAPTERS / "ch09" / "moving_audio"
 TRACKING_AUDIO_ROOT = CODE_CHAPTERS / "ch09" / "tracking_audio"
 GSS_AUDIO_ROOT = CODE_CHAPTERS / "ch08" / "gss_audio"
+BINAURAL_AUDIO_ROOT = CODE_CHAPTERS / "ch01" / "binaural_audio"
 
 EDITING_MARKERS = re.compile(
     r"待核实|待补(?:实测|充)?|链接待补|成绩待补|清单#|"
@@ -57,7 +58,7 @@ EXPECTED_SECTION_COUNTS = {
 # 第 1～13 章的源 h4 进入合订目录和 PDF 第三级书签。此表是独立发布
 # 基线，不从构建脚本或待检产物反推。
 EXPECTED_SUBSECTION_COUNTS = {
-    "01_problem-definition.md": 15,
+    "01_problem-definition.md": 18,
     "02_basics-signal-model.md": 41,
     "03_array-geometry.md": 28,
     "04_doa-estimation.md": 40,
@@ -90,10 +91,10 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 121
-EXPECTED_SUBSECTION_COUNT = 500
-EXPECTED_OUTLINE_ITEM_COUNT = 635
+EXPECTED_SUBSECTION_COUNT = 503
+EXPECTED_OUTLINE_ITEM_COUNT = 638
 EXPECTED_FIGURE_NUMBERS = set(range(1, 50))
-# 研究附站使用独立显式清单，不挤占 14 篇教程或 635 项 PDF 大纲基线。
+# 研究附站使用独立显式清单，不挤占 14 篇教程或 638 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
     ("README.md", "index.html"),
@@ -966,7 +967,7 @@ def site_source_digest():
     paths += sorted(main_audio_path(CODE_CHAPTERS, record["group"], record["file"])
                     for record in manifest["files"])
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
@@ -1270,7 +1271,7 @@ def check_real_audio(errors):
         parser = Players()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         allowed_audio_roots = ("../audio/", "../real_audio/", "../room_audio/",
-                               "../gss_audio/", "../moving_audio/", "../tracking_audio/")
+                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/")
         if any(not (p.get("src") or "").startswith(allowed_audio_roots)
                for p in parser.items):
             fail(errors, "未知试听控件来源")
@@ -1428,6 +1429,69 @@ def check_moving_audio(errors):
     except Exception as exc:
         fail(errors, f"移动声源合成样本检查失败：{exc}")
 
+
+
+def check_binaural_audio(errors):
+    """Independently verify cue files, their actual source hashes and players."""
+    source, published = BINAURAL_AUDIO_ROOT, SITE / "binaural_audio"
+    wav_names = {"reference.wav", "itd_only.wav", "ild_only.wav",
+                 "consistent.wav", "conflicting.wav"}
+    expected = wav_names | {"MANIFEST.json"}
+    required_sources = {"codes/chapters/ch01/core/binaural_cues.py",
+                        "codes/chapters/ch01/examples/generate_binaural_cues.py",
+                        "codes/chapters/ch00/core/audio_samples.py"}
+    try:
+        for folder in (source, published):
+            if (folder.is_symlink() or {p.name for p in folder.iterdir()} != expected
+                    or any(p.is_symlink() or not p.is_file() for p in folder.iterdir())):
+                raise ValueError(f"双耳线索文件集合或类型不符：{folder}")
+        for name in expected:
+            if (source / name).read_bytes() != (published / name).read_bytes():
+                raise ValueError(f"双耳线索网页副本不同：{name}")
+        manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+        if (set(manifest["files"]) != wav_names or manifest["sample_rate_hz"] != 16000
+                or manifest["common_export_gain"] != 1
+                or set(manifest["source_sha256"]) != required_sources):
+            raise ValueError("双耳线索清单参数或真实源集合不符")
+        for name, digest in manifest["source_sha256"].items():
+            if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest:
+                raise ValueError(f"双耳线索生成源码已变化：{name}")
+        for name in wav_names:
+            path, record = source / name, manifest["files"][name]
+            if (record["channels"] != 2 or record["samples_per_channel"] != 32008
+                    or hashlib.sha256(path.read_bytes()).hexdigest() != record["sha256"]):
+                raise ValueError(f"双耳线索摘要或参数不符：{name}")
+            with wave.open(str(path), "rb") as wav:
+                if (wav.getframerate(), wav.getnchannels(), wav.getsampwidth(),
+                        wav.getnframes(), wav.getcomptype()) != (16000, 2, 2, 32008, "NONE"):
+                    raise ValueError(f"双耳线索PCM格式不符：{name}")
+                if len(wav.readframes(32008)) != 32008 * 2 * 2:
+                    raise ValueError(f"双耳线索PCM数据截断：{name}")
+        for page, prefix in ((SITE / "01_problem-definition.html", ""),
+                             (SITE / "research/05_exercises_and_audio.html", "../")):
+            text = page.read_text(encoding="utf-8")
+            class CuePlayers(HTMLParser):
+                def __init__(self):
+                    super().__init__()
+                    self.items = []
+                def handle_starttag(self, tag, attrs):
+                    if tag == "audio":
+                        self.items.append(dict(attrs))
+            parser = CuePlayers()
+            parser.feed(text)
+            players = [item for item in parser.items
+                       if (item.get("src") or "").startswith(prefix + "binaural_audio/")]
+            expected = {prefix + "binaural_audio/" + name for name in wav_names}
+            if len(players) != 5 or {item.get("src") for item in players} != expected:
+                raise ValueError(f"缺少双耳线索播放器或集合不符：{page.name}")
+            if any("autoplay" in item or "controls" not in item
+                   or item.get("preload") != "none" or not item.get("aria-label")
+                   for item in players):
+                raise ValueError(f"双耳线索播放器控制或标签不符：{page.name}")
+            if f'href="{prefix}binaural_audio/MANIFEST.json"' not in text:
+                raise ValueError(f"缺少双耳线索独立清单：{page.name}")
+    except Exception as exc:
+        fail(errors, f"双耳线索实验检查失败：{exc}")
 
 
 def check_tracking_audio(errors):
@@ -1650,6 +1714,7 @@ def main():
     check_moving_audio(errors)
     check_tracking_audio(errors)
     check_gss_audio(errors)
+    check_binaural_audio(errors)
     check_combined_html(errors)
     check_pdf(errors, notices)
     for item in notices:

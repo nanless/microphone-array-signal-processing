@@ -1,7 +1,11 @@
 """Chapter 1 checks from rational sums, half-angle identities and geometry."""
 import json
 import math
+import hashlib
+import io
+from pathlib import Path
 import unittest
+import wave
 
 import numpy as np
 
@@ -12,7 +16,7 @@ from codes.chapters.ch00.core.audio_samples import alignment_error_case, prepare
 class Chapter01ExperimentsTest(unittest.TestCase):
     def test_result_ids_and_finite_json(self):
         results = run_exercises()
-        self.assertEqual(set(results), {'E01-04', 'E01-05', 'E01-06'})
+        self.assertEqual(set(results), {'E01-04', 'E01-05', 'E01-06', 'E01-07', 'E01-08', 'E01-09'})
         json.dumps(results, allow_nan=False)
 
     def test_short_record_cross_terms_are_not_assumed_zero(self):
@@ -87,6 +91,89 @@ class Chapter01ExperimentsTest(unittest.TestCase):
         self.assertEqual(files['alignment_reference.wav'][0], files['alignment_aligned.wav'][0])
         _, stereo = read_pcm16(files['alignment_array.wav'][0])
         self.assertEqual(stereo.shape, (2, 32000))
+
+    def test_published_alignment_scores_match_actual_pcm_real_projection(self):
+        result = run_exercises()['E01-05']['published_audio']
+        root = Path(__file__).resolve().parents[1]
+        index = np.arange(1600, 30400)
+        measured = {}
+        for stem, record in result['assets'].items():
+            raw = (root / record['path']).read_bytes()
+            self.assertEqual(hashlib.sha256(raw).hexdigest(), record['sha256'])
+            with wave.open(io.BytesIO(raw), 'rb') as stream:
+                self.assertEqual(stream.getframerate(), 16000)
+                self.assertEqual(stream.getnframes(), 32000)
+                self.assertEqual(stream.getsampwidth(), 2)
+                channels = stream.getnchannels()
+                samples = np.frombuffer(stream.readframes(32000), dtype='<i2').reshape(-1, channels).T / 32768
+            # Orthogonal integer-period real projections, rather than the
+            # implementation's multi-column least-squares solver.
+            amplitudes = []
+            for frequency in (1000, 4000):
+                phase = 2 * np.pi * frequency * index / 16000
+                a = 2 * np.mean(samples[0, index] * np.sin(phase))
+                b = 2 * np.mean(samples[0, index] * np.cos(phase))
+                amplitudes.append(float(np.hypot(a, b)))
+            measured[stem] = amplitudes
+            np.testing.assert_allclose(record['tone_amplitudes_by_channel'][0], amplitudes, atol=1e-14, rtol=0)
+        float_cases = result['float_measurements']['cases']
+        pcm_cases = result['pcm_measurements']['cases']
+        expected = [math.sqrt((2 + math.sqrt(2 + math.sqrt(2))) / 4), 1 / math.sqrt(2)]
+        for i, (float_case, pcm_case) in enumerate(zip(float_cases, pcm_cases)):
+            self.assertAlmostEqual(float_case['unaligned_amplitude_ratio'], expected[i], places=12)
+            self.assertAlmostEqual(pcm_case['reference_amplitude'], measured['alignment_reference'][i], places=13)
+            self.assertAlmostEqual(pcm_case['unaligned_amplitude_ratio'],
+                                   measured['alignment_unaligned'][i] / measured['alignment_reference'][i], places=13)
+            self.assertEqual(pcm_case['aligned_amplitude_ratio'], 1.)
+        # Quantization has an observable effect; do not silently substitute
+        # analytic floating-point values for actual published PCM measurements.
+        self.assertGreater(abs(pcm_cases[0]['unaligned_amplitude_ratio'] - expected[0]), 1e-6)
+        self.assertEqual(result['scoring_samples'], 28800)
+
+    def test_cross_terms_and_same_mixture_have_independent_rational_answers(self):
+        result = run_exercises()['E01-07']
+        for row, cross, total in zip(result['illustrative_cross_terms'], (0, 1, -1), (2, 4, 0)):
+            self.assertEqual(row['signal_mean_square'], 1)
+            self.assertEqual(row['noise_mean_square'], 1)
+            self.assertEqual(row['cross_second_moment'], cross)
+            self.assertEqual(row['mixture_mean_square'], total)
+            self.assertEqual(row['snr_db'], 0)
+        first, second = result['cases']
+        self.assertEqual(first['mixture'], second['mixture'])
+        self.assertEqual(first['mixture'], [2, 0, -2, 0])
+        for row, ps, pv, cross, snr in ((first, 1/2, 1/2, 1/2, 0),
+                                       (second, 9/8, 1/8, 3/8, 10 * math.log10(9))):
+            self.assertEqual(row['signal_mean_square'], ps)
+            self.assertEqual(row['noise_mean_square'], pv)
+            self.assertEqual(row['cross_second_moment'], cross)
+            self.assertEqual(row['mixture_mean_square'], 2)
+            self.assertEqual(ps + pv + 2 * cross, 2)
+            self.assertAlmostEqual(row['snr_db'], snr)
+
+    def test_white_noise_gain_counts_actual_noise_and_preserves_target(self):
+        equal, aggressive = run_exercises()['E01-09']['cases']
+        for row, weights, expected_noise, expected_gain in ((equal, [.5, .5], .5, 2),
+                                                         (aggressive, [2, -1], 5, .2)):
+            self.assertEqual(row['weights'], weights)
+            self.assertEqual(row['target_amplitude_gain'], 1)
+            self.assertEqual(row['output_noise_mean_square'], expected_noise)
+            self.assertEqual(row['white_noise_gain_linear'], expected_gain)
+            self.assertAlmostEqual(row['white_noise_gain_db'], 10 * math.log10(expected_gain))
+
+    def test_binaural_exercise_reads_all_five_actual_assets(self):
+        result = run_exercises()['E01-08']
+        self.assertEqual(set(result['samples']), {'reference', 'itd_only', 'ild_only', 'consistent', 'conflicting'})
+        self.assertEqual(result['common_export_gain'], 1.)
+        for name, expected_lag, sign in (('reference', 0, 0), ('itd_only', 8, 0),
+                                         ('ild_only', 0, 1), ('consistent', 8, 1), ('conflicting', 8, -1)):
+            row = result['samples'][name]
+            pcm, floats = row['pcm_measurements'], row['float_measurements']
+            self.assertEqual(pcm['estimated_itd_samples'], expected_lag)
+            self.assertEqual(pcm['truth_itd_samples'], expected_lag)
+            self.assertAlmostEqual(floats['ild_right_minus_left_db'], sign * 20 * math.log10(2))
+            self.assertAlmostEqual(pcm['ild_right_minus_left_db'], sign * 20 * math.log10(2), delta=.0002)
+            self.assertEqual(pcm['correlation_window_samples'], 28800)
+            self.assertEqual(pcm['power_window_samples'], 28800)
 
 
 if __name__ == '__main__':

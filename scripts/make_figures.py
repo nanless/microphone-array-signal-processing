@@ -12,7 +12,7 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.patches import Circle, FancyArrowPatch
+from matplotlib.patches import Arc, Circle, FancyArrowPatch
 
 try:
     from scripts.code_layout import MAIN_AUDIO_GROUP_CHAPTER, main_audio_manifest_path, main_audio_path
@@ -1943,7 +1943,8 @@ def fig_binaural():
     ax.scatter([-a, a], [0, 0], s=180, c=C_BLUE, zorder=6, edgecolors="k")
     ax.text(-a - 0.32, -0.18, "左耳", fontsize=FS_LABEL, ha="right", va="center")
     ax.text(a + 0.32, -0.18, "右耳", fontsize=FS_LABEL, ha="left", va="center")
-    th = np.deg2rad(60)
+    bearing_deg = 30.0  # Clockwise from +y (front), toward the listener's right.
+    th = np.deg2rad(90.0 - bearing_deg)
     # Blue arrows follow the incoming wave; leave the center ray free for the
     # opposite, head-to-source bearing arrow so their directions stay distinct.
     for dy in (-0.9, -0.45, 0.45, 0.9):
@@ -1962,7 +1963,11 @@ def fig_binaural():
                 ha="center", fontsize=FS_SMALL,
                 bbox=dict(fc="white", ec="none", alpha=0.9, pad=1),
                 arrowprops=dict(arrowstyle="->", color=C_MAIN))
-    ax.text(1.2, 1.25, r"向右为正 $\theta$", fontsize=FS_SMALL,
+    ax.add_patch(Arc((0, 0), 3.4, 3.4, theta1=90.0 - bearing_deg,
+                     theta2=90.0, color=C_PURPLE, lw=1.6))
+    ax.text(0.45, 1.9, r"$\theta=+30^\circ$", fontsize=FS_SMALL,
+            color=C_PURPLE, bbox=dict(fc="white", ec="none", alpha=0.9, pad=1))
+    ax.text(1.2, 1.25, "向右为正", fontsize=FS_SMALL,
             bbox=dict(fc="white", ec="none", alpha=0.9, pad=1))
     ax.text(-1.85, -3.05, r"$\mathrm{ITD}=t_L-t_R$：右耳先到时为正", fontsize=FS_SMALL)
     ax.set_title("(a) 俯视图：方位与到达时差的正号约定", fontsize=11)
