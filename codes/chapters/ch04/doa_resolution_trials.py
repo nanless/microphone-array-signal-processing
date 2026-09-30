@@ -19,6 +19,7 @@ import math
 
 import numpy as np
 
+from codes.chapters.ch02.core.conventions import finite_real_array, finite_real_scalar
 from codes.chapters.ch04.core.doa import bartlett_spectrum, capon_spectrum, music_spectrum
 from codes.chapters.ch04.examples.mdl_repeated_trials import wilson_interval
 
@@ -31,7 +32,9 @@ METHODS = ("Bartlett", "Capon", "MUSIC")
 
 def steering_rows(angles_deg: np.ndarray, channels: int = 8) -> np.ndarray:
     """Rows use a_m(theta)=exp(+j*pi*m*sin(theta)), d=lambda/2."""
-    angles = np.asarray(angles_deg, dtype=float)
+    angles = finite_real_array(angles_deg, "angles_deg")
+    if isinstance(channels, (bool, np.bool_)) or not isinstance(channels, (int, np.integer)):
+        raise ValueError("channels must be an integer")
     if angles.ndim != 1 or channels < 2 or not np.all(np.isfinite(angles)):
         raise ValueError("angles must be finite 1-D values and channels >= 2")
     return np.exp(1j * np.pi * np.sin(np.deg2rad(angles))[:, None]
@@ -41,8 +44,9 @@ def steering_rows(angles_deg: np.ndarray, channels: int = 8) -> np.ndarray:
 def two_peaks(scores: np.ndarray, grid_deg: np.ndarray = GRID_DEG,
               minimum_separation_deg: float = 3.0) -> list[float]:
     """Pick two highest *local* peaks subject to a predeclared separation."""
-    values = np.asarray(scores, dtype=float)
-    grid = np.asarray(grid_deg, dtype=float)
+    values = finite_real_array(scores, "scores")
+    grid = finite_real_array(grid_deg, "grid_deg")
+    minimum_separation_deg = finite_real_scalar(minimum_separation_deg, "minimum_separation_deg")
     if (values.ndim != 1 or grid.ndim != 1 or values.size != grid.size
             or values.size < 3 or not np.all(np.isfinite(values))
             or not np.all(np.isfinite(grid)) or np.any(np.diff(grid) <= 0)
@@ -65,12 +69,17 @@ def two_peaks(scores: np.ndarray, grid_deg: np.ndarray = GRID_DEG,
 def classify_peaks(peaks_deg: list[float], truth_deg: tuple[float, float],
                    tolerance_deg: float = 3.0) -> str:
     """One-to-one ordered matching for two disjoint truth neighborhoods."""
-    if len(peaks_deg) < 2:
+    peaks = finite_real_array(peaks_deg, "peaks_deg")
+    truths = finite_real_array(truth_deg, "truth_deg")
+    tolerance_deg = finite_real_scalar(tolerance_deg, "tolerance_deg")
+    if peaks.ndim != 1 or truths.shape != (2,) or tolerance_deg <= 0:
+        raise ValueError("require finite 1-D peaks, two truth angles and positive tolerance")
+    if len(peaks) < 2:
         return "fewer_than_two_peaks"
     if len(peaks_deg) != 2 or not np.isfinite(tolerance_deg) or tolerance_deg <= 0:
         raise ValueError("require exactly two peaks and positive tolerance")
-    predicted = sorted(peaks_deg)
-    truth = sorted(truth_deg)
+    predicted = sorted(peaks)
+    truth = sorted(truths)
     if all(abs(a-b) <= tolerance_deg for a, b in zip(predicted, truth)):
         return "matched"
     return "wrong_location"
@@ -92,10 +101,14 @@ def run_experiment(trials: int = 200, seed: int = DEFAULT_SEED,
     if any(isinstance(value, (bool, np.bool_)) or not isinstance(value, (int, np.integer))
            for value in (trials, seed, snapshots)):
         raise ValueError("trials, seed and snapshots must be integers")
+    array_snr_db = finite_real_scalar(array_snr_db, "array_snr_db")
     if trials < 1 or seed < 0 or snapshots < 8 or not np.isfinite(array_snr_db):
         raise ValueError("require trials>=1, seed>=0, snapshots>=8, finite SNR")
     trials, seed, snapshots = int(trials), int(seed), int(snapshots)
-    noise_power = 2.0 / (10.0 ** (array_snr_db / 10.0))
+    try:
+        noise_power = 2.0 / (10.0 ** (array_snr_db / 10.0))
+    except (OverflowError, ZeroDivisionError) as error:
+        raise ValueError("SNR gives nonrepresentable noise power") from error
     if not np.isfinite(noise_power) or noise_power <= 0.0:
         raise ValueError("SNR gives nonrepresentable noise power")
     candidates = steering_rows(GRID_DEG)

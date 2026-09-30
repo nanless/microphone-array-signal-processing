@@ -9,7 +9,7 @@
 - **原理索引**：已有原理或来源依据，但尚未形成唯一、许可明确且承担对应计算的源码映射；代码可见而许可不明时也保留此状态，并说明原因。
 - **明确排除**：指定软件的身份或许可不满足本书当前收录方式；不表示删除相应方法的学术讨论。
 
-算法表共 299 行：本仓库可运行基线 56 行、外部参考实现 175 行、原理索引 67 行、明确排除 1 行。练习映射单独计数，不因题数增加算法行；MDL、功率谱减、受控 NCC 双讲检测与 cACGMM 教学迭代属于本地基线。覆盖表仍有原理索引，不表示全书全部算法已经运行。
+算法表共 300 行：本仓库可运行基线 57 行、外部参考实现 175 行、原理索引 67 行、明确排除 1 行。练习映射单独计数，不因题数增加算法行；MDL、功率谱减、受控 NCC 双讲检测与 cACGMM 教学迭代属于本地基线。覆盖表仍有原理索引，不表示全书全部算法已经运行。
 
 源码取得与入口核对见 [SOURCE_STATUS.json](SOURCE_STATUS.json)；该文件中的依赖验证和执行字段未开展时为 `not_run`，不承载方法级数值实验结果。实际运行及数值对照见[复现记录](research/04_source_reproduction.md)、[增强研究记录](research/02_aec_wpe_separation.md)和 [WPE 独立对照脚本](../ch07/examples/compare_wpe_reference.py)。工业接口与 SBL 的限定实验报告按主题放在 `codes/chapters/ch04/reports/`、`codes/chapters/ch10/reports/` 等对应章节；实际调用外部代码不将它改列为本仓库教学基线。覆盖状态不是测试结果。完整提交、官方地址、许可与来源 ID 见 [SOURCES.lock.json](SOURCES.lock.json)。表内本仓库教学源文件使用相对于仓库根目录的完整路径；第三方项目的内部路径仍相对于各自项目根目录。出现“同文件”时仅继承上一行文件，不继承其算法或验证结论。
 
@@ -54,7 +54,7 @@
 
 | 正文或研究范围 | 算法/机制 | 覆盖状态 | 教学入口或主清单 ID：官方源码入口 | 关键边界 |
 |---|---|---|---|---|
-| §4.1.1 | AIC 源数估计 | 外部参考实现 | `doatools`：`doatools/estimation/source_number.py::aic` | 特征值排序、快拍独立性、白噪声 |
+| §4.1.1、§4.9、E04-20 | AIC 源数估计 | 本仓库可运行基线 | `codes/chapters/ch04/core/doa.py::aic_source_count`；外部对照 `doatools`：`doatools/estimation/source_number.py::aic` | 复高斯独立快拍、空间白噪声、严格正特征值；固定谱手算不是抽样性能，AIC和MDL绝对分数不可互比 |
 | §4.1.1、§4.9 | MDL 源数估计 | 本仓库可运行基线 | `codes/chapters/ch04/core/doa.py::mdl_source_count`；外部对照 `doatools`：`doatools/estimation/source_number.py::mdl` | 复高斯独立快拍、白噪声、正特征值；无自动加载 |
 | §4.1.1 | 特征值间隙源数启发式 | 原理索引 | 正文相邻特征值差/比 | 阈值依赖噪声模型与尺度，不是自动保证正确的源数接口 |
 | §4.2 | 普通互相关 CC | 原理索引 | 正文 GCC 权重 Ψ=1 与 Knapp–Carter 1976 | 带宽、能量与极性影响峰；教学PHAT接口不冒充所有加权法 |
@@ -79,9 +79,9 @@
 | §4.6 | root-MUSIC | 外部参考实现 | `doatools`：`doatools/estimation/music.py::RootMUSIC1D` | ULA、根选择、半波距与 NumPy 相容性 |
 | §4.6 | LS-ESPRIT | 本仓库可运行基线 | `codes/chapters/ch04/core/doa.py::esprit_ula` | 共同全阵基截取、非零PSD与子阵秩；主值角不证明无空间混叠 |
 | §4.6；研究扩展：空间 §14 | TLS-ESPRIT | 外部参考实现 | `doatools`：`doatools/estimation/esprit.py` | 双侧误差模型不同于LS；固定版默认行加权共享view错误已实际复现，none/独立复制对照见报告 |
-| §4.6.1 | CSSM | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/doa/cssm.py` | 已登记剔除频点后协方差下标疑点 |
-| §4.6.1 | WAVES | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/doa/waves.py` | 已登记剔除频点后协方差下标疑点 |
-| §4.6.1 | TOPS | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/doa/tops.py` | 已登记真实 bin/列表下标疑点 |
+| [§4.6“宽带MUSIC”](../../../chapters/04_doa-estimation.md#sec-u-08146bdaaf) | CSSM | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/doa/cssm.py` | 固定原辅助函数已复算剔除首频后的错位；见ch04/reports/upstream_doa.json，不是完整整链结果 |
+| [§4.6“宽带MUSIC”](../../../chapters/04_doa-estimation.md#sec-u-08146bdaaf) | WAVES | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/doa/waves.py` | 固定原辅助函数已复算剔除首频后的错位；见ch04/reports/upstream_doa.json，不是完整整链结果 |
+| [§4.6“宽带MUSIC”](../../../chapters/04_doa-estimation.md#sec-u-08146bdaaf) | TOPS | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/doa/tops.py` | 固定原类已在指定三麦/三频合成模型执行；真值30°却输出49°，与独立投影对照分开记录，不外推所有数据 |
 | §4.7 | FRIDA | 外部参考实现 | `frida-original`：`doa/fri.py`；`pyroomacoustics`：`pyroomacoustics/doa/frida.py` | 二维远场、不相关源、平面阵列方位；visibility与raw模型分别说明，固定接口不支持三维；原实验旧环境 |
 | §4.7 | L1-SVD 定位 | 外部参考实现 | `doatools`：`estimation/preprocessing.py::l1_svd`与`estimation/sparse.py::GroupSparseEstimator`显式组合 | 压缩观测M×K，求解器快拍数设K；压缩本身不是定位，未运行完整链 |
 | §4.7 | 组稀疏多快拍定位 | 外部参考实现 | `doatools`：`doatools/estimation/sparse.py::GroupSparseEstimator` | 离格误差、字典尺度、求解器 |
@@ -93,6 +93,7 @@
 | §4.7 | GCC 向量特征 MLP 定位（Xiao 等，2015） | 原理索引 | [原始论文 DOI](https://doi.org/10.1109/ICASSP.2015.7178484) | 机构论文页可核 GCC 向量输入；未核到与论文逐项对应且许可明确的作者实现，不外推为 PHAT 特征 |
 | §4.7 | 共素阵 GCC-PHAT 图 CNN 定位（Zhao–Ritz，2021） | 原理索引 | [原始论文 §III、图 5](https://www.apsipa.org/proceedings/2021/pdfs/0000974.pdf) | 已核特征和分类路线；未核到许可明确的作者实现或本书训练结果 |
 | §4.7 | 多通道 STFT 相位图 CNN 多源 DOA（Chakrabarty–Habets，2019） | 原理索引 | [作者版原论文](https://www.audiolabs-erlangen.de/resources/aps-w23/papers/sap_Chakrabarty2019.pdf) | 作者页所链代码 README 指向不同的 2017 单源模型，不能当作 2019 多源整链已复现 |
+| §4.7；[空间研究§45](research/01_spatial_and_tracking.md#said-semantic-imaging) | SAID球面方向编码与逐源语义能量成像 | 外部参考实现 | `said-spatial-imaging`：`said/models/audio2sph.py`、`sph2imaging.py`；`said/utils/compression.py` | 2026-09预印本；固定源码和混合组件许可已取得，检查点/数据未取；仅单文件压缩与提交大小诊断，不称网络、训练或榜单复现 |
 | §4.7、§9.3 | icoDOA | 外部参考实现 | `icodoa`：`1sourceTracking_icoCNN.py` | AGPL；gpuRIR、icoCNN、数据另核 |
 | 研究扩展：空间 §41 | Cross3D | 外部参考实现 | `icodoa`：`acousticTrackingModels.py::Cross3D` | 类存在不等于训练已经复现 |
 | §4.8；研究扩展：空间 §38 | 随机源 CRB | 外部参考实现 | `doatools`：`doatools/performance/crb.py::crb_sto_farfield_1d` | 模型下界，不是定位器 |
@@ -375,13 +376,13 @@
 
 ## 章节代码练习与音频映射
 
-240 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 299 行算法统计。补充的空间精算、增强步骤、时间状态模块分别提供3/5/4道题。三个原有 `exercises_` 模块各自提供 `run_exercises()`，分别有 28/23/25 道题；AEC 小实验另有 4 道，进阶 AEC 手算另有 10 道；E03-07、E04-08、E09-06 与 E10-13 由独立实验入口提供。E04-08 的 200 次独立双源抽样只说明固定模型中的分辨事件频率和 Wilson 区间。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
+245 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 300 行算法统计。补充的空间精算、增强步骤、时间状态模块分别提供3/5/4道题。三个原有 `exercises_` 模块各自提供 `run_exercises()`，分别有 28/23/25 道题；AEC 小实验另有 4 道，进阶 AEC 手算另有 10 道；E03-07、E04-08、E09-06 与 E10-13 由独立实验入口提供。E04-08 的 200 次独立双源抽样只说明固定模型中的分辨事件频率和 Wilson 区间。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
 
 | 章节与稳定 ID | 练习入口 | 回归测试 |
 |---|---|---|
 | 第 6 章：E06-22～33（12题） | [AEC 状态、数值与指标实验](../ch06/chapter06_experiments.py) | [独立测试](../../../tests/test_codes_chapter06_experiments.py)、[数值边界](../../../tests/test_codes_aec_numerical_boundaries.py) |
 | 第 5 章：E05-08～17（10题） | [约束、谱估计与状态实验](../ch05/chapter05_experiments.py) | [独立测试](../../../tests/test_codes_chapter05_experiments.py)、[GSC状态测试](../../../tests/test_codes_gsc.py) |
-| 第 4 章：E04-12～18（7题） | [定位逐步实验](../ch04/chapter04_experiments.py) | [独立测试](../../../tests/test_codes_chapter04_experiments.py) |
+| 第 4 章：E04-12～23（12题） | [定位逐步实验](../ch04/chapter04_experiments.py) | [独立测试](../../../tests/test_codes_chapter04_experiments.py) |
 | 第 3 章：E03-08～17（10题） | [几何与校准逐步实验](../ch03/chapter03_experiments.py) | [独立测试](../../../tests/test_codes_chapter03_experiments.py) |
 | 第 2 章：E02-09～18（10题） | [声学模型逐步实验](../ch02/chapter02_experiments.py) | [独立测试](../../../tests/test_codes_chapter02_experiments.py) |
 | 第 1 章：E01-04～09（6题） | [基础逐步实验](../ch01/chapter01_experiments.py) | [独立测试](../../../tests/test_codes_chapter01_experiments.py) |
@@ -434,7 +435,7 @@
 本仓库不提交下载缓存、模型权重或未经授权的第三方语料。109 个自行合成的教学 WAV 按章放在 `codes/chapters/*/audio/`，单一总清单位于 `codes/chapters/ch00/audio/MANIFEST.json`；许可明确的 DEMAND 小型摘录和派生文件位于 `codes/chapters/ch02/real_audio/`，不包含完整下载归档。独立上游工作目录的取得、许可保留与未执行项目按来源状态记录报告。算法、源码或排除范围变化时，同步修改本表、研究说明、来源清单和真实验证记录。
 
 
-真实数据练习 R01 使用 [prepare_real_recordings.py](../ch02/examples/prepare_real_recordings.py) 与 [real_recordings.py](../ch02/core/real_recordings.py)，测试见 [test_codes_real_recordings.py](../../../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 240 道合成/手算代码题。数据来源和许可另见 [real_audio/](../ch02/real_audio/README.md)。
+真实数据练习 R01 使用 [prepare_real_recordings.py](../ch02/examples/prepare_real_recordings.py) 与 [real_recordings.py](../ch02/core/real_recordings.py)，测试见 [test_codes_real_recordings.py](../../../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 245 道合成/手算代码题。数据来源和许可另见 [real_audio/](../ch02/real_audio/README.md)。
 
 四组模型与边界练习对应以下独立实现；主音频新增的 4 个 interpolation 文件验证固定滤波误差，不是完整采样率转换性能。
 

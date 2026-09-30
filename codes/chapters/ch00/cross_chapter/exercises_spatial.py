@@ -414,7 +414,7 @@ def mvdr_finite_noise_null() -> dict:
 
 
 def four_mic_fractional_delay() -> dict:
-    """E04-07: plane-wave delays and ideal narrowband sum for the audio fixture."""
+    """E04-07: ideal phasors and actual published PCM against clean mic 1."""
     positions = np.column_stack((.04 * np.arange(4), np.zeros(4)))
     delays = plane_wave_delays(positions, np.deg2rad(30.))
     frequency = 6 * 383.
@@ -422,6 +422,19 @@ def four_mic_fractional_delay() -> dict:
     extra_delays = -delays
     aligned_phasors = source_phasors * np.exp(-2j * np.pi * frequency * extra_delays)
     unaligned_amplitude = float(abs(np.mean(source_phasors)))
+    from codes.chapters.ch04.chapter04_experiments import read_published_audio
+    published = read_published_audio('fractional_array', {
+        'fractional_reference.wav':1, 'fractional_array.wav':4,
+        'fractional_unaligned.wav':1, 'fractional_aligned.wav':1})
+    reference = published['fractional_reference.wav']['samples'][0,320:31680]
+    measurements = {}
+    for name in ('fractional_unaligned.wav', 'fractional_aligned.wav'):
+        error = published[name]['samples'][0,320:31680]-reference
+        integers = np.rint(error*32768).astype(np.int64)
+        measurements[name] = {'mse':float(np.mean(error**2)),
+                              'residual_squared_sum':float(np.sum(error**2)),
+                              'integer_residual_squared_sum':int(integers@integers),
+                              'sample_denominator':int(error.size)}
     return {"positions_m": positions.tolist(), "azimuth_deg": 30.,
             "sample_rate_hz": 16000, "sound_speed_m_s": 343.,
             "relative_arrival_us": (delays * 1e6).tolist(),
@@ -430,6 +443,11 @@ def four_mic_fractional_delay() -> dict:
             "ideal_unaligned_amplitude": unaligned_amplitude,
             "ideal_unaligned_db": float(20 * np.log10(unaligned_amplitude)),
             "ideal_aligned_amplitude": float(abs(np.mean(aligned_phasors))),
+            "published_files": {name:{k:v for k,v in row.items() if k != 'samples'}
+                                for name,row in published.items()},
+            "pcm_measurements":measurements, "scoring_interval_samples":[320,31680],
+            "pcm_reference":"fractional_reference.wav: clean physical mic 1, not noisy array channel 0",
+            "pcm_decode_divisor":32768, "gain_or_delay_fitting":False,
             "model_scope": "ideal pure-tone phasor; WAV additionally uses broadband noise, linear interpolation and PCM16"}
 
 

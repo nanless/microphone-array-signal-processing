@@ -1,6 +1,6 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 97 个 Git 上游项目；已在 `codes/chapters/ch00/upstream/_downloads/` 取得 84 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件，DiCoW v1 演示与 TS-ASR-Whisper v1 训练源码于 2026-09-28 按固定提交取得。2026-09-30 新增原作者湿空气声速模型并离线重核，83 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 13 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 98 个 Git 上游项目；已在 `codes/chapters/ch00/upstream/_downloads/` 取得 85 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件，DiCoW v1 演示与 TS-ASR-Whisper v1 训练源码于 2026-09-28 按固定提交取得。2026-09-30 新增原作者湿空气声速模型，2026-10-01取得SAID固定源码并离线重核，84 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 13 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”只说明来源、提交、工作区状态和指定入口符合清单，不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -26,6 +26,7 @@ SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构�
 | 项目与固定版本 | 对应算法或工程功能 | 代码许可摘要 | 本地获取范围 |
 |---|---|---|---|
 | [Speed of sound in air](https://github.com/RobertoGavioso/Speed-of-sound-in-air/tree/5c7e6652cf2fd7b4c52e83d8fa3782b3c56e61de) | 2025湿空气声速与不确定度模型，供环境校准研究 | 根GPLv3文本；未核得项目级or-later声明，LabVIEW运行时独立 | 2026-09-30取得43个VI图形源码、ReadMe和LICENSE，45文件共2147682字节；省略EXE和独立许可论文PDF。VI框图未读取、模型未执行；源使用需要LabVIEW晚于2016的64位版本 |
+| [SAID](https://github.com/IN03X/SAID/tree/cf52ede4f38361cdbb03aa93c8254109583dfe2b) | Audio2Sph球面方向编码、Sph2Imaging逐源能量图与类别、DCASE 2026 Track A压缩提交 | 原创源MIT，所列第三方组件MIT/Apache-2.0；权重独立非商业研究条款，AudioMAE权重CC BY-NC 4.0 | 固定源码选集及完整LICENSES/第三方声明已取得；未取检查点或said/demo_data，未运行网络、训练或榜单评测；原压缩单文件实验范围见空间研究 |
 | [pyroomacoustics](https://github.com/LCAV/pyroomacoustics/tree/0dd39f2614b7fc44b2cc63dbe7d60f4641068890) | 房间仿真、STFT、DOA、波束、盲分离及通用 RLS/BlockRLS 自适应滤波；后者不是完整 AEC 链路 | MIT | 已取得独立源码 |
 | [odas](https://github.com/introlab/odas/tree/bcb845434495e293df3d48f1203b7a86e1852449) | 定位、追踪、分离与后滤波的实时 C 链路 | MIT | 已取得独立源码 |
 | [nara_wpe](https://github.com/fgnt/nara_wpe/tree/a166779cca2088817e330481bd20af1a2c598555) | 离线、块在线和逐帧在线 WPE | MIT | 已取得独立源码 |

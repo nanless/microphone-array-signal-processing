@@ -24,6 +24,9 @@ class AliasDestinations(HTMLParser):
         self.pending = []
         self.targets = {}
         self.ids = Counter()
+        self.heading_titles = {}
+        self.heading_id = None
+        self.heading_text = []
         self.feed(source)
 
     def handle_starttag(self, tag, attrs):
@@ -34,9 +37,20 @@ class AliasDestinations(HTMLParser):
         if tag == "span" and "anchor-alias" in attributes.get("class", "").split():
             self.pending.append(element_id)
         if tag in {"h1", "h2", "h3", "h4"}:
+            self.heading_id = element_id
+            self.heading_text = []
             for alias in self.pending:
                 self.targets[alias] = element_id
             self.pending.clear()
+
+    def handle_data(self, data):
+        if self.heading_id is not None:
+            self.heading_text.append(data)
+
+    def handle_endtag(self, tag):
+        if tag in {"h1", "h2", "h3", "h4"} and self.heading_id is not None:
+            self.heading_titles[self.heading_id] = "".join(self.heading_text).strip()
+            self.heading_id = None
 
 
 class HistoricalHeadingCompatibilityTest(unittest.TestCase):
@@ -48,23 +62,41 @@ class HistoricalHeadingCompatibilityTest(unittest.TestCase):
     OVERVIEW_RENAMES = {
         "sec-u-b7a71b077a": "sec-u-3937b1b94e",
         "sec-u-efc5552983": "sec-u-f958564d39",
-        "sec-u-1e72416790": "sec-u-3ebc13ca5a",
-        "sec-u-6ef8e18126": "sec-u-3ebc13ca5a",
-        "sec-u-1e5d8a2bad": "sec-u-3ebc13ca5a",
-        "sec-u-627ed3907e": "sec-u-3ebc13ca5a",
-        "sec-u-3a0278b879": "sec-u-3ebc13ca5a",
+        "sec-u-1e72416790": "sec-u-36fa20efde",
+        "sec-u-6ef8e18126": "sec-u-36fa20efde",
+        "sec-u-1e5d8a2bad": "sec-u-36fa20efde",
+        "sec-u-627ed3907e": "sec-u-36fa20efde",
+        "sec-u-3a0278b879": "sec-u-36fa20efde",
+        "sec-u-3ebc13ca5a": "sec-u-36fa20efde",
+        "sec-u-d538d6d0a5": "sec-u-36fa20efde",
+        "sec-u-0943a9ed3c": "sec-u-36fa20efde",
+        "sec-u-d8fd1002de": "sec-u-36fa20efde",
     }
 
     def test_previous_41_figure_map_hash_still_reaches_same_map(self):
         source = ROOT / "chapters/00_overview.md"
         html, _ = build_site.render(source.read_text(), source)
         parsed = AliasDestinations(html)
-        self.assertEqual(parsed.targets["sec-u-d538d6d0a5"], "sec-u-3ebc13ca5a")
-        self.assertEqual(parsed.targets["sec-u-d8fd1002de"], "sec-u-3ebc13ca5a")
+        self.assertEqual(parsed.targets["sec-u-d538d6d0a5"], "sec-u-36fa20efde")
+        self.assertEqual(parsed.targets["sec-u-d8fd1002de"], "sec-u-36fa20efde")
         html, _ = build_pdf.build_html(build_date="2026-09-28")
         parsed = AliasDestinations(html)
-        self.assertEqual(parsed.targets["ch-0-sec-u-d538d6d0a5"], "ch-0-sec-u-3ebc13ca5a")
-        self.assertEqual(parsed.targets["ch-0-sec-u-d8fd1002de"], "ch-0-sec-u-3ebc13ca5a")
+        self.assertEqual(parsed.targets["ch-0-sec-u-d538d6d0a5"], "ch-0-sec-u-36fa20efde")
+        self.assertEqual(parsed.targets["ch-0-sec-u-d8fd1002de"], "ch-0-sec-u-36fa20efde")
+
+    def test_previous_52_figure_primary_anchor_is_unique_and_keeps_map_topic(self):
+        source = ROOT / "chapters/00_overview.md"
+        site_html, _ = build_site.render(source.read_text(), source)
+        combined_html, _ = build_pdf.build_html(build_date="2026-10-01")
+        for html, prefix in ((site_html, ""), (combined_html, "ch-0-")):
+            with self.subTest(prefix=prefix):
+                parsed = AliasDestinations(html)
+                old = prefix + "sec-u-3ebc13ca5a"
+                current = prefix + "sec-u-36fa20efde"
+                self.assertEqual(parsed.targets[old], current)
+                self.assertEqual(parsed.ids[old], 1)
+                self.assertEqual(parsed.ids[current], 1)
+                self.assertEqual(parsed.heading_titles[current], "6. 插图地图：54 张图在哪篇")
 
     def test_chapter_one_distance_heading_keeps_original_topic_link(self):
         source = ROOT / "chapters/01_problem-definition.md"

@@ -58,7 +58,7 @@ MUSIC 还要满足 $K<M$，否则没有非零维噪声子空间可供正交检�
 
 **方法 2：信息准则（AIC/MDL）**。增加候选源数通常会改善数据拟合，同时也会增加模型复杂度。AIC（Akaike information criterion，赤池信息准则）和 MDL（minimum description length，最小描述长度）用不同的复杂度惩罚项平衡这两部分，并取准则值最小的候选 $K$。
 
-Wax 与 Kailath 的[1984 年原始会议论文，式(10)～(15)](https://doi.org/10.1109/ICASSP.1984.1172389 "citation")给出了复数观测、空间白噪声、独立快拍模型下的推导；[1985 年期刊论文](https://doi.org/10.1109/TASSP.1985.1164557 "citation")题为 *Detection of signals by information theoretic criteria*。两篇论文的题名和公式编号不能混用。MDL 比较剩余特征值的几何均值与算术均值，再加入源数惩罚；[§4.9](#sec-4-9)给出完整定义、逐候选计算和代码练习。
+Wax 与 Kailath 的[1984 年原始会议论文，式(10)～(15)](https://doi.org/10.1109/ICASSP.1984.1172389 "citation")给出了复数观测、空间白噪声、独立快拍模型下的推导；[1985 年期刊论文](https://doi.org/10.1109/TASSP.1985.1164557 "citation")题为 *Detection of signals by information theoretic criteria*。两篇论文的题名和公式编号不能混用。两种准则都比较尾部特征值的几何均值与算术均值，但拟合项和惩罚项的系数不同；[§4.9](#sec-4-9)展开 MDL，[E04-20](#e04-20)定义 AIC，并用同一组输入比较两种选择。
 
 实现时必须核对复/实数据、快拍数和惩罚项口径。低 SNR、快拍不足、彩色噪声或相干源导致的信号协方差降秩都会造成误判。
 
@@ -173,7 +173,7 @@ G[k]&=X_1X_2^*\\
 
 IDFT 为 $r[\tau]=\frac{1}{8}\sum_k G[k]e^{+\mathrm{j}2\pi k\tau/8}$。分别计算三个候选点：
 
-1. $\tau=0$ 时，$\frac{1}{8}(6-6\mathrm{j}-6+6\mathrm{j}+6-6\mathrm{j}-6+6\mathrm{j})$ 的实部和虚部各自相消，得 $\mathbf{r[0]=0}=R(0)$；
+1. $\tau=0$ 时，$\frac{1}{8}(6-6\mathrm{j}-6+6\mathrm{j}+6-6\mathrm{j}-6+6\mathrm{j})$ 的实部和虚部各自相消，得 $\mathbf{r[0]=0}=R(0)$
 2. $\tau=1$ 时，$G[k]\cdot e^{\mathrm{j}2\pi k/8}=6(e^{-\mathrm{j}\pi/4})^k$。$k=0\ldots7$ 构成公比不等于 1 的完整周期几何级数，配对相消，得 $\mathbf{r[1]=0}=R(1)$；
 3. $\tau=2$ 时，$G[k]\cdot e^{\mathrm{j}2\pi k\cdot2/8}=6e^{-\mathrm{j}\pi k/2}\cdot e^{+\mathrm{j}\pi k/2}=6$。8 项全是 6，得 $r[2]=48/8=\mathbf{6}=R(2)$。
 
@@ -213,26 +213,26 @@ $$\hat\theta=\arcsin\!\left(\frac{c\hat\tau_{12}}d\right)\text{。}\tag{4-3}$$
 
 **这个换算怎么来的**：几何推导见 §2.1“时差的几何来源”。平面波以角 $\theta$ 斜入射，路程差 $\Delta=d\sin\theta$（图12(c)），因此 $\hat\tau=d\sin\theta/c$；$\theta$ 从正横方向起算。若论文把角度定义为相对麦克风连线，则同一关系写成 $\hat\tau=d\cos\theta/c$。
 
-双麦只给一个标量时延。三维中相容方向构成以连线为轴的锥面；要解除该模糊，需要增加不共线的麦克风或加入其他先验。
+双麦只给一个标量时延。三维中相容方向构成以连线为轴的锥面；增加不共线的基线可以增加方向约束，但三只不共线、仍共面的麦克风还保留上下镜像。完整三维方向的唯一性要检查基线的空间秩、可见半空间等条件，见[§3.1 的几何可辨识性](03_array-geometry.md#sec-3-1)。
 
 **两个实用细节**：
 
-1. 16 kHz 下一个采样点为 62.5 μs。对 4 cm 间距，从正横方向的 0 延迟跳到 1 个采样点对应 $\arcsin(343\times62.5\,\mu\mathrm{s}/0.04)\approx32.4°$，而且越靠近端射方向，同样的时延误差造成的角度误差越大。实际系统要对相关峰插值或拟合相位斜率，得到亚采样时延。
+1. 16 kHz 下一个采样点为 $62.5\,\mu\mathrm{s}$。对 4 cm 间距，从正横方向的 0 延迟跳到 1 个采样点对应 $\arcsin(343\times62.5\,\mu\mathrm{s}/0.04)\approx32.4°$，而且越靠近端射方向，同样的时延误差造成的角度误差越大。实际系统要对相关峰插值或拟合相位斜率，得到亚采样时延。
 2. PHAT 提高了相位的相对权重，因此麦克风相位响应不一致会直接造成定位偏差（见 §10.2）。
 
 ![图12 GCC-PHAT 原理](../figures/fig12_gcc_phat.png)
 
 图 12 的声源由4096点周期模型产生，频带为300～6000 Hz；用频域相位实现分数采样时延后，每路加标准差0.05的独立噪声。相关计算的FFT长度为8192，时延网格插值16倍。它是周期带限随机信号的数学示例，截取两路波形不会把它变成真实录音或因果有限长传播实验。
 
-**图示说明**：图 12（a）的两路波形设定为 $d=4$ cm、$\theta=30°$，对应 $\tau_0\approx58.3\,\mu$s，即 16 kHz 下约 0.933 个采样点。
+**图示说明**：图 12（a）的两路波形设定为 $d=4$ cm、$\theta=30°$，对应 $\tau_0\approx58.3\,\mu\mathrm{s}$，即 16 kHz 下约 0.933 个采样点。
 
-图 12（b）将两路固定噪声样例做 16 倍时延网格插值后计算 GCC-PHAT，峰值落在 $58.59375\,\mu$s，即 0.9375 个原始采样点；虚线标出 $58.3\,\mu$s 真值。图 12（c）把时差乘声速得到路程差，再除以间距得到角度正弦，$\theta$ 从正横起算，与 §2.1 约定一致。
+图 12（b）将两路固定噪声样例做 16 倍时延网格插值后计算 GCC-PHAT，峰值落在 $58.59375\,\mu\mathrm{s}$，即 0.9375 个原始采样点；虚线标出 $58.3\,\mu\mathrm{s}$ 真值。图 12（c）把时差乘声速得到路程差，再除以间距得到角度正弦，$\theta$ 从正横起算，与 §2.1 约定一致。
 
 这个固定样例的估计接近真值，但单个样例不能代表误差分布。
 
-**算例：GCC-PHAT 完整数字链（$d=4$ cm、$\theta=30°$）**：按 §2.1 几何关系，真值时延 $\tau_0=d\sin\theta/c=0.04\times0.5/343\approx58.3\,\mu$s；16 kHz 下 1 个采样点 $=62.5\,\mu$s，故真值在 $58.3/62.5\approx0.933$ 格。直接取整读峰只能得到 1 格，对应 $\arcsin(343\times62.5\,\mu s/0.04)\approx32.4°$。
+**算例：GCC-PHAT 完整数字链（$d=4$ cm、$\theta=30°$）**：按 §2.1 几何关系，真值时延 $\tau_0=d\sin\theta/c=0.04\times0.5/343\approx58.3\,\mu\mathrm{s}$；16 kHz 下 1 个采样点 $=62.5\,\mu\mathrm{s}$，故真值在 $58.3/62.5\approx0.933$ 格。直接取整读峰只能得到 1 格，对应 $\arcsin(343\times62.5\,\mu\mathrm{s}/0.04)\approx32.4°$。
 
-图 12 的脚本对互谱补零，把旧偶数奈奎斯特频点拆到正负频率，并补偿逆变换的长度尺度；E04-12说明为什么两步都需要。这里使用周期三角插值，不是三点抛物线拟合。它把 GCC-PHAT 的时延网格细化到 $62.5/16\approx3.91\,\mu$s，再在相关序列上取最大值。固定随机种子的噪声样例得到 $58.59375\,\mu$s，即 $0.9375$ 格；换算角度为
+图 12 的脚本对互谱补零，把旧偶数奈奎斯特频点拆到正负频率，并补偿逆变换的长度尺度；E04-12说明为什么两步都需要。这里使用周期三角插值，不是三点抛物线拟合。它把 GCC-PHAT 的时延网格细化到 $62.5/16\approx3.91\,\mu\mathrm{s}$，再在相关序列上取最大值。固定随机种子的噪声样例得到 $58.59375\,\mu\mathrm{s}$，即 $0.9375$ 格；换算角度为
 
 $$\begin{aligned}
 \hat\theta&=\arcsin\!\left(\frac{343\times58.59375\times10^{-6}}{0.04}\right)\\
@@ -308,7 +308,7 @@ SRP-PHAT 把 PHAT 加权引入可控响应功率扫描的原始系统论述见 [
 
 下面用两个候选点计算预测时延，再比较六个麦对的累积得分。
 
-**设定**：平面 4 麦矩形阵，坐标 $\vec{r}_1=(0,0)$、$\vec{r}_2=(4\,\text{cm},0)$、$\vec{r}_3=(0,3\,\text{cm})$、$\vec{r}_4=(4\,\text{cm},3\,\text{cm})$；真实声源在 $\vec{p}=(2\,\text{m},\,1.5\,\text{m})$；声速 $c=343$ m/s，采样率 $f_s=16$ kHz（1 个采样点 $=1/f_s=62.5\,\mu$s，折合成路程 $c/f_s=343/16000=0.0214375$ m——后文所有“采样点”都靠这个数换算）。
+**设定**：平面 4 麦矩形阵，坐标 $\vec{r}_1=(0,0)$、$\vec{r}_2=(4\,\text{cm},0)$、$\vec{r}_3=(0,3\,\text{cm})$、$\vec{r}_4=(4\,\text{cm},3\,\text{cm})$；真实声源在 $\vec{p}=(2\,\text{m},\,1.5\,\text{m})$；声速 $c=343$ m/s，采样率 $f_s=16$ kHz（1 个采样点 $=1/f_s=62.5\,\mu\mathrm{s}$，折合成路程 $c/f_s=343/16000=0.0214375$ m——后文所有“采样点”都靠这个数换算）。
 
 **第 1 步：算出几何真值**。声源在 $\vec{p}$，各麦到声源的距离由勾股定理（$d_i=\|\vec{p}-\vec{r}_i\|$）：
 
@@ -504,7 +504,9 @@ $$\begin{aligned}
 
 满列秩且条件良好时，正规方程等价于 $\Delta\vec p=(\mathbf J^\top\mathbf J)^{-1}\mathbf J^\top\boldsymbol\varepsilon$。实际宜用QR分解（把矩阵分成正交基与上三角因子）或奇异值分解（Singular Value Decomposition，SVD）直接求最小二乘，避免显式求逆。基线方向单一或声源处于不利位置时，还须检查奇异值；伪逆给出一个代数解，不会恢复不可观测的位置分量。阻尼Gauss–Newton可以限制过大的更新，但仍依赖初值和模型。
 
-各 TDOA 共用同一参考麦时，其测量误差通常相关；若已知或能估计误差协方差，应用加权最小二乘。迭代还需要足够接近真解的初值。要抗野点需配合稳健损失或剔除机制，普通最小二乘本身并不抗野点。
+各 TDOA 共用同一参考麦时，其测量误差通常相关；若已知或能估计误差协方差，应用加权最小二乘。[E04-21](#e04-21)从四个独立到达距离误差推导相关的距离差协方差，再比较等权与加权的一步更新。
+
+迭代还需要足够接近真解的初值。要抗野点需配合稳健损失或剔除机制，普通最小二乘本身并不抗野点。
 
 #### 几何误差放大与局部有效范围
 
@@ -579,7 +581,7 @@ $$\hat{\mathbf{R}}=\begin{bmatrix}1.25 & 1\\ 1 & 1.25\end{bmatrix}$$
 
 $$\hat{\mathbf{R}}^{-1}=\frac{1}{0.5625}\begin{bmatrix}1.25 & -1\\ -1 & 1.25\end{bmatrix}$$
 
-- 源方向 $\theta=0°$：$\vec{a}^H\hat{\mathbf{R}}^{-1}\vec{a}=\dfrac{1.25-1-1+1.25}{0.5625}=\dfrac{0.5}{0.5625}\approx0.889$，$P_C=1/0.889=\mathbf{1.125}$；
+- 源方向 $\theta=0°$：$\vec{a}^H\hat{\mathbf{R}}^{-1}\vec{a}=\dfrac{1.25-1-1+1.25}{0.5625}=\dfrac{0.5}{0.5625}\approx0.889$，$P_C=1/0.889=\mathbf{1.125}$
 - 错开方向 $\theta=30°$：$\hat{\mathbf R}^{-1}\vec a=[1.25-\mathrm j,\,-1+1.25\mathrm j]^\top/0.5625$，再左乘 $\vec a^H=[1,-\mathrm j]$，得 $\vec{a}^H\hat{\mathbf{R}}^{-1}\vec{a}=2.5/0.5625\approx4.444$，所以 $P_C=\mathbf{0.225}$。
 
 源方向与 30° 候选方向的谱值比 $=1.125/0.225=\mathbf{5.0}$，约 7.0 dB；30° 处只剩峰值的 20%。
@@ -716,6 +718,8 @@ $$\mathbf R(30°)=\vec a(30°)\vec a^H(30°)=\begin{bmatrix}1&-\mathrm j&-1\\\ma
 
     $$\mathbf S(f)=\begin{bmatrix}1&q^*(f)\\q(f)&|q(f)|^2\end{bmatrix}。$$
 
+    这里的延迟乘法关系对完整傅里叶变换成立；有限窗 STFT 还受到窗边界和跨帧贡献影响，不能把逐帧乘法近似无条件当成完整卷积，见[第二章 E02-16](02_basics-signal-model.md#sec-u-59870d19e1)。
+
     第二行等于第一行乘 $q(f)$，因此行列式为零、秩为 1。非对角元含有 3 个采样点延迟造成的复相位，只有 $q(f)=0.5$ 的特殊频点才能直接写成实数 0.5。于是 $\mathbf{A}\mathbf{S}\mathbf{A}^H$ 随之降为秩 1，两个物理传播方向只对应一个非零信号特征值。
 
     **空间平滑**可在均匀线阵上处理这种相干性：切成 $L$ 个重叠子阵，分别估计协方差再平均。恢复可用秩至少需要子阵数 $L\ge K$，并且子阵长度 $P=M-L+1>K$，还需不同方向等模型条件成立（§4.1.1）。
@@ -724,7 +728,7 @@ $$\mathbf R(30°)=\vec a(30°)\vec a^H(30°)=\begin{bmatrix}1&-\mathrm j&-1\\\ma
 
 - 对模型误差敏感。麦位标定、相位响应或阵列流形不准确时，真实方向不再满足理想正交关系。与 SRP-PHAT 比较时，应在相同失配条件下检验方向误差，不能只比较理想协方差上的谱峰宽度。
 
-**变体**：root-MUSIC 把 ULA 的 MUSIC 分母写成 $z$ 域多项式，选择靠近单位圆的根并由根相位反演角度，从而免去角度网格扫描。宽带语音则需在多个频点合并信息；非相干叠加、CSSM/WAVES 聚焦和 TOPS 的处理方式不同，下一节分别说明。
+**变体**：root-MUSIC 把 ULA 的 MUSIC 分母写成 $z$ 域多项式，选择靠近单位圆的根并由根相位反演角度，从而免去角度网格扫描。[E04-23](#e04-23)从三麦的噪声投影矩阵逐项构造多项式，解释互为倒数的根、理想重根和选根边界。宽带语音则需在多个频点合并信息；非相干叠加、CSSM/WAVES 聚焦和 TOPS 的处理方式不同，下一节分别说明。
 
 > **专栏：NormMUSIC——宽带逐频叠加时，为什么要先归一化**
 >
@@ -740,7 +744,7 @@ $$\mathbf R(30°)=\vec a(30°)\vec a^H(30°)=\begin{bmatrix}1&-\mathrm j&-1\\\ma
 
 多源时，先从**同一个全阵协方差**得到信号子空间基 $\mathbf E_s\in\mathbb C^{M\times K}$，再用两张选行矩阵 $\mathbf J_1、\mathbf J_2\in\mathbb R^{P\times M}$ 截出两个长度为 $P$ 的平移子阵。不能对子阵各自独立求一套任意相位、任意基变换的特征向量后直接相除。
 
-在总体模型满足MUSIC一节的秩和噪声条件时，$\mathbf E_s=\mathbf A\mathbf T$，其中 $\mathbf T\in\mathbb C^{K\times K}$ 可逆。记 $\mathbf A_1=\mathbf J_1\mathbf A$，子阵沿线阵正向平移 $\Delta d$，每个源对应的相位组成对角矩阵
+在总体模型满足MUSIC一节的秩和噪声条件时，$\mathbf E_s=\mathbf A\mathbf T$，其中 $\mathbf T\in\mathbb C^{K\times K}$ 可逆。由选行关系 $\mathbf A_1=\mathbf J_1\mathbf A$ 得到第一子阵的导向矩阵。子阵沿线阵正向平移 $\Delta d$，每个源对应的相位组成对角矩阵
 
 $$\begin{aligned}
 \mathbf D&=\operatorname{diag}\!\left(e^{j2\pi\Delta d\sin\theta_k/\lambda}\right)_{k=1}^K,\\
@@ -800,17 +804,25 @@ MUSIC、ESPRIT 的基本推导采用窄带假设：在单个频点内，导向�
 
 **聚焦矩阵的思想**。选定参考频率 $f_0$ 后，对每个频点 $f_j$ 构造变换矩阵 $\mathbf{T}(f_j)$，使选定角度集合上的 $\mathbf{T}(f_j)\vec{a}(f_j,\theta)\approx\vec{a}(f_0,\theta)$。各频点协方差经 $\mathbf{T}\hat{\mathbf{R}}(f_j)\mathbf{T}^H$ 变换后再合并。
 
+**信号对齐后，还要检查噪声。** 若原频点的噪声为 $\sigma_j^2\mathbf I$，变换后的噪声是 $\sigma_j^2\mathbf T(f_j)\mathbf T^H(f_j)$。酉变换满足 $\mathbf T\mathbf T^H=\mathbf I$，因此保留空间白噪声；非酉变换即使精确对齐真实导向，也可能把噪声放大成有色噪声。此时不能直接沿用普通 MUSIC 的“最大的 $K$ 个特征值属于信号”论证。
+
+应按聚焦后的噪声协方差同步白化数据和候选导向，或使用匹配该噪声模型的广义子空间方法。[E04-19](#e04-19)给出只含两个频点、两只麦的反例；噪声变换也见 [TOPS 原论文 §II-C，印刷页1979～1980](https://www.researchgate.net/publication/3319689_TOPS_new_DOA_estimator_for_wideband_signals "citation")。聚焦误差、噪声估计误差与数值条件仍要分别检查。
+
 CSSM（coherent signal-subspace method，相干信号子空间方法）是代表方法；经典构造通常依赖初始 DOA 或聚焦角集合，初值偏差会造成聚焦损失。[Wang 与 Kaveh 的 CSSM 原始论文](https://doi.org/10.1109/TASSP.1985.1164667 "citation")。
 
 **初始角从哪来**。CSSM 可先用 Bartlett 或 SRP-PHAT 粗扫得到候选角，再据此构造聚焦集合。是否迭代、迭代次数和停止条件属于具体实现，不能假定一两轮必然收敛。
 
-**相干源为什么影响聚焦子空间法**。混响多径中的直达与反射可能相干，使源协方差矩阵降秩（§4.6 的 $2\times2$ 例子中，完全相干时 $\mathbf S$ 的秩从 2 降为 1）。若聚焦后仍直接使用降秩协方差，MUSIC 可能合并谱峰或产生方向偏差。均匀线阵可在各频点聚焦前做空间平滑以恢复可用秩，代价是有效子阵孔径减小。
+**相干源的单频秩与跨频池化秩要分开。** 混响多径中的直达与反射可能相干，使每个频点的源协方差降秩。但两路源的复比例若随频率改变，正确聚焦到共同阵列坐标后，多个秩一矩阵的平均仍可能满秩。[E04-22](#e04-22)用同一波形及其延迟副本得到这一结果；两个源并没有因此变成统计独立的声源。
 
-**TOPS：不使用聚焦初值**。TOPS（test of orthogonality of projected subspaces，投影子空间正交性检验）用候选方向构造频率间变换，检验变换后的信号子空间与各频点噪声子空间的正交性。它不需要 CSSM/WAVES 的初始值预处理，但性能仍取决于频点选择、快拍数、源数和信噪比。[Yoon、Kaplan 与 McClellan 的 TOPS 原始论文](https://doi.org/10.1109/TSP.2006.872581 "citation")。
+若比例在所用频点始终相同，或聚焦后平均矩阵仍降秩，普通 MUSIC 的完整源空间条件便没有恢复。均匀线阵可按模型考虑空间平滑，代价是有效子阵孔径减小；不能把“做过聚焦”或“用了宽带”本身当作去相关保证。
 
-**WAVES：聚焦后加权信号子空间**。WAVES（weighted average of signal subspaces，加权信号子空间平均）把聚焦矩阵与按可靠度加权的信号子空间结合，以降低传统 CSSM 对聚焦误差的敏感性；它仍属于需要初始值预处理的相干宽带方法，不能写成免聚焦初值。[Di Claudio 与 Parisi 的 WAVES 原始论文](https://doi.org/10.1109/78.950774 "citation")。
+**TOPS：不使用聚焦初值**。TOPS（test of orthogonality of projected subspaces，投影子空间正交性检验）用候选方向构造频率间变换，检验变换后的信号子空间与各频点噪声子空间的正交性。它不要求先取得一组 DOA 来构造固定聚焦矩阵，但仍依赖源数、信号子空间的有效秩、频点选择、快拍数、信噪比与阵列流形条件。[Yoon、Kaplan 与 McClellan 的 TOPS 原始论文 §III-A～B](https://www.researchgate.net/publication/3319689_TOPS_new_DOA_estimator_for_wideband_signals "citation")。
 
-选择时先区分是否有可靠初值和阵列是否满足各方法的模型：CSSM 与 WAVES 依赖聚焦预处理，TOPS 不需要该初值。相干源还会使频点内源协方差降秩；ULA 可尝试空间平滑，但必须同时检查子阵长度、源数上界和损失的有效孔径。
+**WAVES：聚焦后加权信号子空间**。WAVES（weighted average of signal subspaces，加权信号子空间平均）把聚焦矩阵与按可靠度加权的信号子空间结合。[Di Claudio 与 Parisi 的原始论文](https://doi.org/10.1109/78.950774 "citation")给出该方法；具体聚焦构造决定它是否需要初始 DOA。
+
+[TOPS 原论文导言，印刷页1978及 §II-C，页1980](https://www.researchgate.net/publication/3319689_TOPS_new_DOA_estimator_for_wideband_signals "citation")明确区分：WAVES 可采用依赖初始角的旋转信号子空间聚焦，也可采用不需要初始 DOA 的波束形成不变构造；后一类有阵列几何和视场限制。因此不能把所有 WAVES 实现统一归为“必须有初始角”，也不能反过来称为无条件免初值。
+
+选择时先检查具体聚焦构造的初值、噪声和几何条件，再检查跨频平均后的可用秩。TOPS 的免聚焦初值不等于免源数、免模型或自动处理完全相干源；ULA 的空间平滑还必须同时检查子阵长度、源数上界和损失的有效孔径。
 
 > 子空间法完成宽带扩展后，§4.7 转向稀疏重构与数据驱动定位。
 
@@ -846,7 +858,7 @@ CSSM（coherent signal-subspace method，相干信号子空间方法）是代表
 | 多麦对时差特征分类（本书设计示例） | 把多个麦对的 GCC-PHAT 结果排成特征向量，输入多层感知机或卷积网络 | 预设角度类别的分数 | 类别间距限制输出角度；特征排列、网络和噪声条件须在目标数据上验证 |
 | 球面空间响应图 | 把 SRP-PHAT 响应采样到二十面体网格，输入 icoDOA 卷积网络 | 由球面分数计算连续三维方向 | 与直接取同一张 SRP 图的峰作对照；其 60 种离散旋转对称不等于任意三维旋转 |
 | 直达声麦间相位差 | 把多通道频谱输入 IPDnet，估计直达声的通道间相位差 | 多源相位差，再结合已知阵列几何换算位置 | 检查训练阵列、通道顺序及跨房间、跨阵列条件 |
-| 多通道相位图分类 | 把多通道 STFT 相位图输入卷积网络，见 [Chakrabarty–Habets 2019 原论文](https://www.audiolabs-erlangen.de/resources/aps-w23/papers/sap_Chakrabarty2019.pdf "citation") | 一个或多个离散方位类别 | 要说明角度类别间距和选取多个类别的规则 |
+| 多通道相位图分类 | 把多通道 STFT 相位图输入卷积网络，见 [Chakrabarty–Habets 2019 原论文 §II～IV](https://www.audiolabs-erlangen.de/resources/aps-w23/papers/sap_Chakrabarty2019.pdf "citation") | 一个或多个离散方位类别 | 原论文的选取步骤给定活动源数；要说明类别间距和选取规则，不能称为已自动估出源数 |
 | 声音事件联合定位 | 把连续帧的音频特征输入序列网络 | 活动强度与方向组成的 ACCDOA 向量 | 原始单轨格式每类每帧只容纳一个方向；同类同时多源须用多轨格式 |
 
 第一行是本书尚未训练和评测的组合设计示例，不应当作某篇论文的已验证模型。相关的原始路线分别有 [Xiao 等 2015 的 GCC 向量特征学习](https://doi.org/10.1109/ICASSP.2015.7178484 "citation")和 [Zhao–Ritz 2021 §III、图 5 的 GCC-PHAT 二维图卷积分类](https://www.apsipa.org/proceedings/2021/pdfs/0000974.pdf "citation")；两者的特征与网络不能拼接为一项已实测结果。本书也没有训练第二行的 icoDOA，表中是输入输出与复现条件索引。
@@ -892,6 +904,10 @@ DCASE2022 基线则通过 `seldnet_model.py` 与 `cls_data_generator.py` 连接 
 > 每个提交 JSON 的 `annotations` 条目必须写 `metadata_frame_index`、`category_id`、`score` 和 `segmentation`；其中 `segmentation` 是一个或多个由 `[x,y,intensity]` 三元组构成的空间掩码，`distance` 为可选字段。
 >
 > 这些变化说明，学习式定位的“输出”已经从稀疏 DOA 向量扩展到距离和稠密空间图。复现时必须绑定届次，不能只写“DCASE Task 3”。
+
+**逐源声图的一个研究入口。** SAID（Semantic Acoustic Imaging Detector，语义声学成像检测器）的[2026年9月25日作者预印本v1，§2.1～2.2、§3～4](https://arxiv.org/html/2609.31492v1 "citation")直接用四通道谱幅度和相位的正弦、余弦形成按方向排列的特征，再用候选源槽解码逐源能量图、活动与类别。相对“先生成声图，再做图像检测”的路线，它改变了音频到方向特征和逐源掩码的连接方式。
+
+该模型的16个候选槽不是16个同时活动声源的保证；训练通道、房间、类别和设备域仍限制使用范围。最小研究可先核对官方张量形状、候选槽输出及声图压缩，再取得获准使用的权重和数据检验新阵列；本书没有运行完整模型或建立工业实时性结论。固定源码、独立权重许可与最小调用见[空间研究手册的 SAID 专题](../codes/chapters/ch00/research/01_spatial_and_tracking.md#said-semantic-imaging)。
 
 **距离估计：从方向扩展到三维位置**：远场平面波的相对时延模型只给方向；近场球面波的通道间时延还随距离变化（见 §2.7）。网络也可能利用波前曲率、直达混响比（DRR）和绝对声级。
 
@@ -960,7 +976,9 @@ MUSIC 使用厄米特征分解 `eigh`，不需要协方差可逆。例如无噪�
 
 root-MUSIC 还要求均匀线阵；输出为一个角度前，应确认源数、协方差和峰选择是否有效。
 
-固定版本也要检查实现本身。研究手册记录了 pyroomacoustics 0.10.0 宽带子空间实现中频点筛选后下标对应的静态疑点；外部包尚未完成完整声学回归，不能把“有源码入口”写成“已通过设备验证”。
+固定版本也要检查实现本身。本书对 pyroomacoustics 0.10.0 的 TOPS 原类作了一次受控调用：使用非共线三麦、精确构造的频点协方差，按外部实现从 $+x$ 朝 $+y$ 计角，给定真方向30°，频点索引为10、20、30，参考频点为20，原实现的谱峰却在49°。独立按已知导向构造的跨频正交投影范数在30°理论为零，实际计算小于 $10^{-12}$；固定源码中参考频点与筛选后下标的对应问题须据此检查。这里两个外部角换成本书约定分别为60°、41°。
+
+这个反例说明特定实现的频点索引问题，不推翻 TOPS 原论文，也不是未知真实声场、PCM录音或完整声学回归。全部输入、原方法响应与独立投影保留在[运行报告](../codes/chapters/ch04/reports/upstream_doa.json)，固定版本和复算入口见[空间研究手册](../codes/chapters/ch00/research/01_spatial_and_tracking.md)。
 
 SMP-PHAT（Steered Response Power by Merging Pairs with PHAse Transform，合并麦对的相位变换功率扫描）利用远场阵列里等长、平行麦对的重复时延，先合并其互谱，再减少逆变换和时延查表；方向相反的基线需取共轭。[原论文预印本 §3](https://arxiv.org/html/2203.14409v1 "citation")给出了条件。近场声源到各麦的距离差取决于基线所在位置，不能直接沿用这种合并。
 
@@ -1008,7 +1026,7 @@ $$O(TM^2+N_{\rm grid}M^2)\text{。}$$
 **定位置信度与丢轨判据**：单帧给一个方向是不够的，在线系统还要回答“这个方向值不值得信、目标跟丢了没有”。三个常用健康度量如下：
 
 1. **峰值显著度**：先规定主峰邻域以外哪些点构成背景，再比较主峰与该背景。GCC或SRP-PHAT可含负得分，不能直接当成非负功率比；例如图13使用 $\max g/\operatorname{median}|g|$，背景分母为零时应标成指标无效，另查峰形。高比值仍可能来自反射假峰，不能证明方向正确；
-2. **帧间一致性**：连续多帧 DOA 的方差或中值偏移；平稳声源下跳动大即不可信；
+2. **帧间一致性**：连续多帧 DOA 的角度离散程度或中值偏移。跨越 $\pm180°$ 时应先按圆周角差计算，不能把179°与−179°当成相差358°。静止源的异常跳动与运动源的正常变化须分开，不能仅凭方差大便丢弃移动目标；
 3. **信号存在性**：该方向波束输出的SNR，或经验证集校准的语音存在概率；静音段的方向估计直接弃用。
 
 这些量是诊断特征，不自动成为正确方向的概率。平坦响应、空间混叠或镜像歧义须另行判断，不能用高峰背比消除。丢轨阈值必须用本系统验证集标定。满足丢轨条件后，追踪器应转入重捕获状态，而不是继续输出抖动角度。这三类量是第 9 章追踪状态机的输入。
@@ -1186,6 +1204,8 @@ $$\begin{aligned}
 
 音频还含宽带成分、两次线性插值、独立噪声和 PCM16 量化，因此 WAV 的逐样本均方误差不会等于这两个单频幅度。运行 [`exercises_spatial.py`](../codes/chapters/ch00/cross_chapter/exercises_spatial.py) 的 `E04-07` 可复算理想相量，按[练习与音频实验](../codes/chapters/ch00/research/05_exercises_and_audio.md#14-四麦分数采样时差)读取 WAV 并检查全频结果。
 
+实际读回 PCM16 文件，将有符号整数除以32768；参考使用无噪 `fractional_reference.wav`，不是含噪阵列的第一通道。固定窗口为切片 `320:31680`，共31360点，不另拟合增益或时移。未经对齐与几何对齐输出相对参考的均方误差分别为0.004222704806和0.000082220157；分母都是31360。这是给定合成输入的单次样本误差，不是定位角度精度或真实录音性能。
+
 - [无噪麦 1 参考](../codes/chapters/ch04/audio/fractional_reference.wav)
 - [四通道阵列原始输入](../codes/chapters/ch04/audio/fractional_array.wav)
 - [未经对齐的四麦平均](../codes/chapters/ch04/audio/fractional_unaligned.wav)
@@ -1321,7 +1341,7 @@ $$\begin{aligned}
 
 本例运行入口为 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.spatial_model_exercises` 的 `E04-11`，使用[本书源码](../codes/chapters/ch00/cross_chapter/spatial_model_exercises.py)与现有 `music_spectrum`。完整输出保留白化矩阵、特征值、网格和三个峰；测试另用上述秩一投影表达式核对矩阵，避免只靠同一特征分解程序自证正确。
 
-下面七题使用同一个[补充实验入口](../codes/chapters/ch04/chapter04_experiments.py)：
+下面十二题使用同一个[补充实验入口](../codes/chapters/ch04/chapter04_experiments.py)：
 
 ```bash
 .venv/bin/python -m codes.chapters.ch04.chapter04_experiments
@@ -1523,6 +1543,292 @@ $$\begin{aligned}
 
 音频开头、结尾含有限时长与淡入淡出边界，整段GCC可能利用这些边界偏向一个时延。因此不能看到整段纯音GCC的单峰，就声称稳态单频全局无歧义。反过来，本例宽带在这两个候选间成功，也不保证真实房间有混响、窄带噪声或多个声源时必然选对。音频生成、共同增益和试听条件见[练习与音频实验总览第26节](../codes/chapters/ch00/research/05_exercises_and_audio.md#26-纯音的时差歧义与宽频相位约束)。
 
+<a id="e04-19"></a>
+
+#### E04-19：导向精确对齐，聚焦后的噪声就仍是白的吗？
+
+本题是本书构造的两频点反例，不是某个 CSSM 实现的性能试验。两只麦观察同一个正横单源，两个频点都有真实导向 $\vec a=[1,1]^\top$、源功率1、每麦噪声功率1。源和噪声不相关，直接用总体矩阵，不含快拍误差。每频点的协方差都是
+
+$$\mathbf R=\vec a\vec a^H+\mathbf I=
+\begin{bmatrix}2&1\\1&2\end{bmatrix}\text{。}$$
+
+选择 $\mathbf T_1=\mathbf I$，以及非酉变换
+
+$$\mathbf T_2=\begin{bmatrix}2&-1\\-1&2\end{bmatrix}\text{。}$$
+
+逐项检查 $\mathbf T_2\vec a=\vec a$，再计算两频等权聚焦后的信号、噪声和总矩阵。若把最大的一个特征向量直接当作目标，会选对吗？怎样按已知聚焦噪声修正？
+
+**第一步：把信号变换与噪声变换分别写出来。** 对一般频点，设原噪声协方差为 $\sigma_j^2\mathbf I$，源与噪声不相关，聚焦矩阵为 $\mathbf T_j$。等权平均的总体矩阵为
+
+$$\begin{aligned}
+\mathbf R_f&=\frac1J\sum_{j=1}^J
+  \mathbf T_j\mathbf A_j\mathbf S_j\mathbf A_j^H\mathbf T_j^H+\mathbf C_f,\\
+\mathbf C_f&=\frac1J\sum_{j=1}^J
+  \sigma_j^2\mathbf T_j\mathbf T_j^H\text{。}
+\end{aligned}\tag{4-25}$$
+
+这里 $J$ 是参与聚焦的频点数，$\mathbf T_j$ 为 $M\times M$ 变换，$\mathbf A_j$ 为 $M\times K$ 导向矩阵，$\mathbf S_j$ 为 $K\times K$ 源协方差；$\mathbf R_f、\mathbf C_f$ 都是 $M\times M$ 的功率矩阵。它们不是把不同频点的时域波形直接相加得到的瞬时信号。
+
+本题 $J=2、M=2$。先算 $\mathbf T_2\vec a=[2-1,-1+2]^\top=\vec a$，所以平均后的信号项仍为 $\vec a\vec a^H$。噪声却成为
+
+$$\begin{aligned}
+\mathbf T_2\mathbf T_2^H&=\begin{bmatrix}5&-4\\-4&5\end{bmatrix},\\
+\mathbf C_f&=\frac12\left(\mathbf I+\mathbf T_2\mathbf T_2^H\right)
+=\begin{bmatrix}3&-2\\-2&3\end{bmatrix},\\
+\mathbf R_f&=\vec a\vec a^H+\mathbf C_f
+=\begin{bmatrix}4&-1\\-1&4\end{bmatrix}\text{。}
+\end{aligned}$$
+
+噪声的负非对角元表示负相关，不表示负功率。$\mathbf C_f$ 的特征值为1和5，仍正定。
+
+**第二步：不用数值特征分解也能看出误选。** 令 $\vec q=[1,-1]^\top$，有 $\vec a^H\vec q=0$。原矩阵在 $\vec a、\vec q$ 方向上的特征值分别为3、1；$\mathbf T_2$ 在这两个方向的幅度增益分别为1、3。噪声在第二个方向的功率于是乘以9，两频平均后为 $(1+9)/2=5$。
+
+逐项相乘可得 $\mathbf R_f\vec a=3\vec a$、$\mathbf R_f\vec q=5\vec q$。最大的特征值5由被放大的噪声产生，真实信号方向的总特征值反而为3。若指定 $K=1$ 后沿用普通 MUSIC，便会把 $\vec q$ 当作信号方向，$\vec a/\sqrt2$ 当作噪声向量；真方向的投影能量为2，$\vec q$ 的投影能量却为0。
+
+在参考频率的半波距双麦模型中，$\vec q$ 可以对应端射导向；两个端射角仍互相混叠，不能把这一错误零投影再解释为唯一方位。
+
+**第三步：按变换后的噪声白化。** 定义正交投影
+
+$$\mathbf P_a=\frac{\vec a\vec a^H}{2},\qquad
+\mathbf P_q=\frac{\vec q\vec q^H}{2},\qquad
+\mathbf W=\mathbf P_a+\frac1{\sqrt5}\mathbf P_q\text{。}$$
+
+因为 $\mathbf C_f=\mathbf P_a+5\mathbf P_q$，可直接相乘验证 $\mathbf W\mathbf C_f\mathbf W^H=\mathbf I$。又因 $\mathbf W\vec a=\vec a$，白化后的总矩阵为 $\vec a\vec a^H+\mathbf I$，两个特征值恢复为3和1。所有候选导向也必须乘同一个 $\mathbf W$，对应 E04-11 的同步白化规则。
+
+![图53 非酉聚焦后的信号与噪声特征值](../figures/fig53_focus_noise.png)
+
+**图示说明**：图53来自本题指定的精确矩阵，左侧分别画非酉聚焦后的噪声功率与总功率，右侧画正确白化后的总功率；两组柱都沿真实导向和其正交方向比较。图不包含录音、随机快拍或某种聚焦算法的方向估计结果；计算依据是式(4-25)，不是由图片反推公式正确。
+
+**边界。** 精确对齐一个导向只约束变换在该方向的作用，并未规定其余方向上的噪声增益。本题特意选择一个会放大正交噪声的变换。实际聚焦要同时检验阵列流形近似、噪声结构和条件数；若 $\mathbf C_f$ 未知或不正定，不能照搬这里的白化结果。
+
+<a id="e04-20"></a>
+
+#### E04-20：同一组特征值，AIC 与 MDL 为什么选不同源数？
+
+采用 §4.9 的复高斯、空间白噪声、独立快拍与严格正特征值模型。指定四麦、$N=100$，样本特征值为 $[9,4,1.2,0.8]$；这是手算输入，没有给定某个真实录音的物理源数。
+
+用同一尾部均值计算每个 $k=0,1,2,3$ 的拟合项，再分别计算 AIC 与 MDL。两者输出不同，是否有一个计算错了？
+
+**第一步：保留相同拟合量，区分不同惩罚。** 由式(4-19)，记 $F_k=N(M-k)\ln(a_k/g_k)$。§4.9 的实自由参数数目为 $\nu_k=k(2M-k)+1$。AIC 用两倍负对数似然加 $2\nu_k$；去掉各候选共有的常数，得到
+
+$$\begin{aligned}
+\mathrm{AIC}(k)&=2N(M-k)\ln(a_k/g_k)+2k(2M-k),\\
+\hat K_{\mathrm{AIC}}&=\underset{0\le k<M}{\arg\min}\;\mathrm{AIC}(k)\text{。}
+\end{aligned}\tag{4-26}$$
+
+MDL 仍使用式(4-20)，即 $F_k+\tfrac12k(2M-k)\ln N$。起始似然与参数计数来自 [Wax–Kailath《Determining the number of signals by information theoretic criteria》，ICASSP 1984四页会议稿，§IV、印刷页6.3.3、式(14)～(15)](https://www.researchgate.net/profile/Mati-Wax/publication/3177764_Detection_of_signals_by_information_theoretic_criteria/links/56cacde408aee3cee54041cd/Detection-of-signals-by-information-theoretic-criteria.pdf "citation")；本题仅换一组指定谱，展开两种准则的比较。
+
+**第二步：独立计算尾部均值。** 以 $k=2$ 为例，只剩1.2与0.8：$a_2=(1.2+0.8)/2=1$，$g_2=\sqrt{0.96}\approx0.979795897$。所以
+
+$$F_2=200\ln(1/\sqrt{0.96})=-100\ln0.96\approx4.082199452\text{。}$$
+
+AIC 惩罚为 $2\times2\times(8-2)=24$，总分约32.164399；MDL 惩罚为 $\tfrac12\times2\times6\times\ln100\approx27.631021$，总分约31.713221。
+
+其他三行也可逐项复查：$a_0=15/4=3.75、g_0=(9\times4\times1.2\times0.8)^{1/4}=34.56^{1/4}$；$a_1=6/3=2、g_1=3.84^{1/3}$；$k=3$ 只剩0.8，故 $a_3=g_3=0.8、F_3=0$。全部中间量用未舍入值计算，最后显示六位小数：
+
+先列出每个候选的算术均值、几何均值与共同拟合量：
+
+| $k$ | $a_k$ | $g_k$ | $F_k$ |
+|---:|---:|---:|---:|
+| 0 | 3.750000 | 2.424619 | 174.432642 |
+| 1 | 2.000000 | 1.565947 | 73.396918 |
+| 2 | 1.000000 | 0.979796 | 4.082199 |
+| 3 | 0.800000 | 0.800000 | 0.000000 |
+
+再对同一候选加入各自的惩罚项，计算两种准则的总分：
+
+| $k$ | AIC 惩罚 | AIC 总分 | MDL 惩罚 | MDL 总分 |
+|---:|---:|---:|---:|---:|
+| 0 | 0 | 348.865283 | 0.000000 | 174.432642 |
+| 1 | 14 | 160.793835 | 16.118096 | 89.515013 |
+| 2 | 24 | 32.164399 | 27.631021 | 31.713221 |
+| 3 | 30 | **30.000000** | 34.538776 | 34.538776 |
+
+**第三步：说明两种选择。** 从2增到3，AIC 的拟合项减少 $2F_2\approx8.164399$，惩罚只增加6，所以选3。MDL 的拟合项减少 $F_2\approx4.082199$，惩罚却增加约6.907755，所以选2。两者的数值和选择均符合各自定义。
+
+不能直接拿 AIC 的30与 MDL 的31.713221比较，宣称前者“更好”：两个目标的拟合尺度和惩罚不同，只能在每个准则内部比较候选。共同正功率尺度会在 $a_k/g_k$ 中约去；源数结果也不是单次输出的正确概率。
+
+**边界与代码。** 本题没有物理真值，不能凭选3或2判断哪个检出了真实源。实高斯观测、未知均值、有色噪声、相干源和非独立 STFT 帧都须重新核对模型。教学 [`aic_source_count`](../codes/chapters/ch04/core/doa.py) 与 `mdl_source_count` 接受相同形式的严格正实特征值和快拍数；本题入口输出各候选全部评分，不自动白化、去相关或选择有效独立样本数。
+
+<a id="e04-21"></a>
+
+#### E04-21：共用参考的相关误差，怎样改变一次位置更新？
+
+沿用 E04-16 的四麦单位正方形：麦坐标为 $(0,0)、(1,0)、(0,1)、(1,1)$ m。现在真位置和线性化初值都设为 $\vec p_0=(0.5,0.5)$ m，因此三个真实距离差均为0。
+
+假定四个到达距离估计误差 $e_1,\ldots,e_4$ 相互独立、零均值，标准差都为 $\sigma=0.01$ m。误差以距离计，不是直接以秒计；若由到达时间误差换算，需先乘声速。以麦1作参考，距离差误差为 $[e_2-e_1,e_3-e_1,e_4-e_1]^\top$。
+
+给定一次观测残差 $\vec z=[0.02,-0.01,0.03]^\top$ m。它是指定的确定性输入，不声称来自一次随机采样。比较等权最小二乘和使用上述误差协方差的广义最小二乘（Generalized Least Squares，GLS）更新，再比较其总体局部误差协方差。
+
+**第一步：推导相关矩阵。** 对角项为 $\operatorname{var}(e_i-e_1)=2\sigma^2$；不同非参考麦之间的交叉项为 $E[(e_i-e_1)(e_j-e_1)]=\sigma^2$。令 $\vec 1=[1,1,1]^\top$，所以
+
+$$\mathbf C=\sigma^2(\mathbf I_3+\vec1\vec1^\top)
+=0.0001\begin{bmatrix}2&1&1\\1&2&1\\1&1&2\end{bmatrix}\ \mathrm m^2\text{。}$$
+
+这是距离差误差的协方差，不能把原始四路误差的对角协方差直接当成它。矩阵 $\mathbf I_3+\vec1\vec1^\top$ 在 $\vec1$ 方向的特征值为4、在其正交方向为1，因此逆矩阵为 $\mathbf I_3-\vec1\vec1^\top/4$。
+
+**第二步：写出局部线性模型。** 初值处雅可比与 E04-16 相同，
+
+$$\mathbf J=-\sqrt2\begin{bmatrix}1&0\\0&1\\1&1\end{bmatrix}\text{。}$$
+
+局部残差约为 $\vec z=\mathbf J\Delta\vec p+\vec\eta$，三个残差为一个三维列向量，$\Delta\vec p$ 为二维位置修正，$\mathbf J$ 为 $3\times2$；$\vec\eta$ 的协方差为 $\mathbf C$。若 $\mathbf C$ 正定、$\mathbf J$ 满列秩，则最小化白化残差平方得到
+
+$$\begin{aligned}
+\widehat{\Delta\vec p}_{\mathrm{GLS}}
+&=\arg\min_{\Delta\vec p}\\
+&\quad(\vec z-\mathbf J\Delta\vec p)^\top\mathbf C^{-1}(\vec z-\mathbf J\Delta\vec p),\\
+\mathbf G&=(\mathbf J^\top\mathbf C^{-1}\mathbf J)^{-1}\mathbf J^\top\mathbf C^{-1},\\
+\widehat{\Delta\vec p}_{\mathrm{GLS}}&=\mathbf G\vec z,\\
+\operatorname{Cov}(\widehat{\Delta\vec p}_{\mathrm{GLS}})
+&=(\mathbf J^\top\mathbf C^{-1}\mathbf J)^{-1}\text{。}
+\end{aligned}\tag{4-27}$$
+
+末行针对固定 $\mathbf J$ 的线性模型：误差零均值且协方差匹配，并没有保证非线性定位在任意初值附近都达到该值。$\mathbf J$ 无量纲，$\mathbf C^{-1}$ 的单位为 m⁻²，所以更新为米、协方差为 m²。
+
+实际可以取对称白化矩阵 $\mathbf W=\sigma^{-1}(\mathbf I_3-\vec1\vec1^\top/6)$。沿 $\vec1$ 方向的缩放为 $1/(2\sigma)$，其余为 $1/\sigma$，故 $\mathbf W\mathbf C\mathbf W^\top=\mathbf I_3$。随后用 QR 或 SVD 解 $\|\mathbf W\vec z-\mathbf W\mathbf J\Delta\vec p\|_2^2$，避免显式求逆。
+
+**第三步：把两张更新矩阵算出来。** 等权解 $\mathbf L=(\mathbf J^\top\mathbf J)^{-1}\mathbf J^\top$，加权解为上式 $\mathbf G$。逐项相乘得到
+
+$$\begin{aligned}
+\mathbf L&=\frac1{\sqrt2}\begin{bmatrix}-2/3&1/3&-1/3\\1/3&-2/3&-1/3\end{bmatrix},\\
+\mathbf G&=\frac1{\sqrt2}\begin{bmatrix}-1/2&1/2&-1/2\\1/2&-1/2&-1/2\end{bmatrix}\text{。}
+\end{aligned}$$
+
+两者都满足 $\mathbf L\mathbf J=\mathbf G\mathbf J=\mathbf I_2$。例如 GLS 第一行代入观测后为 $(-0.02/2-0.01/2-0.03/2)/\sqrt2=-0.03/\sqrt2$ m，第二行为0。LS 两行则分别为 $(-2\times0.02-0.01-0.03)/(3\sqrt2)=-0.08/(3\sqrt2)$ m，以及 $(0.02+2\times0.01-0.03)/(3\sqrt2)=0.01/(3\sqrt2)$ m。完整结果是
+
+| 更新方式 | $\Delta p_x$／m | $\Delta p_y$／m | 更新后位置／m |
+|---|---:|---:|---|
+| 等权 LS | −0.018856181 | +0.002357023 | $(0.481143819,0.502357023)$ |
+| GLS | −0.021213203 | 0 | $(0.478786797,0.500000000)$ |
+
+本题的真位置正是初值，因此这一次更新反而把位置移离真值。等权与加权的位置误差平方分别为0.000361111111、0.000450000000 m²；加权的单次误差更大。
+
+**第四步：为什么这不否定加权的方差优势？** 在相同局部模型下，对全部可能的零均值误差取总体协方差：
+
+$$\begin{aligned}
+\operatorname{Cov}_{\mathrm{LS}}
+&=\mathbf L\mathbf C\mathbf L^\top
+=\frac{\sigma^2}{2}\begin{bmatrix}10/9&1/9\\1/9&10/9\end{bmatrix},\\
+\operatorname{Cov}_{\mathrm{GLS}}
+&=\mathbf G\mathbf C\mathbf G^\top
+=\frac{\sigma^2}{2}\mathbf I_2,\\
+\operatorname{Cov}_{\mathrm{LS}}-\operatorname{Cov}_{\mathrm{GLS}}
+&=\frac{\sigma^2}{18}\begin{bmatrix}1&1\\1&1\end{bmatrix}\succeq0\text{。}
+\end{aligned}$$
+
+最后一个矩阵在 $[1,-1]^\top$ 方向为0、在 $[1,1]^\top$ 方向为正，说明对任意线性位置分量，加权后的总体方差不更大。它是总体二阶量的比较，不是每次观测的误差排序。这里的线性无偏和协方差计算只需一、二阶误差条件；若称为最大似然，还须另加相应分布模型。
+
+**边界。** 实际各麦对分别用 GCC 求峰时，不一定等价于四个独立到达误差作差。须验证或估计真正的 $\mathbf C$，并另处理野值、初值和非线性残差。E04-10 的闭合投影、E04-16 的几何更新与本题的统计加权解决的是相互关联的三步，不能互相替代。
+
+<a id="e04-22"></a>
+
+#### E04-22：两个完全相干源，酉聚焦后跨频平均能恢复两维吗？
+
+采用本书已知方向的确定性构造：四麦 ULA，$x_m=md$、$m=0,1,2,3$，$d=0.1715$ m，声速343 m/s。两个方向为 $-30°、+30°$，使用1000 Hz和3000 Hz。1 kHz 下间距为半波长，3 kHz 下为1.5倍波长；因此后一个频点有空间混叠。
+
+源1的稳态波形含等幅的1 kHz与3 kHz余弦，源2是源1晚4个采样点的副本，采样率16 kHz。两源完全由同一波形确定，不加入传感器噪声。先去掉每频点共同的源幅度和公共传播相位，手算两频的观测向量；再恢复音频的实际传播相位，核对稳态 PCM 数值。
+
+**第一步：单频的源比例和导向。** 4点延迟是0.25 ms，因此两频的源2／源1复比例为
+
+$$q_1=e^{-j2\pi(1000)(0.00025)}=-j,\qquad
+q_3=e^{-j2\pi(3000)(0.00025)}=+j\text{。}$$
+
+每个频点的两个源都完全相干，源协方差分别为
+
+$$\mathbf S_1=\begin{bmatrix}1&j\\-j&1\end{bmatrix},\qquad
+\mathbf S_3=\begin{bmatrix}1&-j\\j&1\end{bmatrix}\text{，}$$
+
+各自行列式为0、秩为1。1 kHz 下记
+
+$$\vec a_-=[1,-j,-1,j]^\top,\qquad
+\vec a_+=[1,j,-1,-j]^\top\text{。}$$
+
+两列平方范数都是4，内积为0；3 kHz 下两方向的导向恰好交换。于是两频观测为
+
+$$\vec v_1=\vec a_- -j\vec a_+,\qquad
+\vec v_3=\vec a_+ +j\vec a_-=j\vec v_1\text{。}$$
+
+未经聚焦直接平均 $\vec v_j\vec v_j^H$，两项完全相同，只有一个非零特征值 $\|\vec v_1\|^2=8$。这个特殊模型中，增加一个频点本身没有恢复秩。
+
+**第二步：把3 kHz放回1 kHz的阵列坐标。** 取酉置换矩阵 $\mathbf P$，按零起点行号把四个分量重排为 `[0,3,2,1]`。逐项检查 $\mathbf P\vec a_+=\vec a_-$、$\mathbf P\vec a_-=\vec a_+$，因此 $\mathbf P\vec v_3=\vec a_-+j\vec a_+$。
+
+把两列写成分量可复查：$\vec v_1=[1-j,1-j,-1+j,-1+j]^\top$，$\mathbf P\vec v_3=[1+j,-1-j,-1-j,1+j]^\top$。每项模平方都是2，所以两者的范数平方各为8；内积为 $4+j\times j\times4=0$。等权池化得到
+
+$$\begin{aligned}
+\mathbf R_{\mathrm{pool}}
+&=\frac12\left[\vec v_1\vec v_1^H+
+(\mathbf P\vec v_3)(\mathbf P\vec v_3)^H\right],\\
+&=\mathbf A_1\left(\frac{\mathbf S_1+\mathbf S_3}{2}\right)\mathbf A_1^H,\\
+\mathbf A_1&=[\vec a_-,\vec a_+],\qquad
+\frac{\mathbf S_1+\mathbf S_3}{2}=\mathbf I_2\text{。}
+\end{aligned}\tag{4-28}$$
+
+所以 $\mathbf R_{\mathrm{pool}}=\mathbf A_1\mathbf A_1^H$，特征值为 $[4,4,0,0]$，恢复两维。这是指定频率相量外积的平均，不是把实 PCM 的全记录时间协方差直接写成上述数值；余弦幅度、时间平均及边界会带来不同尺度。
+
+![图54 相干源的两频导向与酉聚焦](../figures/fig54_coherent_frequency_rank.png)
+
+**图示说明**：图54按已知方向的解析模型比较两个单频相量协方差、未经聚焦的池化与正确聚焦后的池化。它不声称从未知方向录音估出了聚焦矩阵，也不使用听感证明矩阵秩。
+
+**第三步：区分公共传播相位与源间相对相位。** 音频使用公共传播基准 $b=12$ 点；源1到第 $m$ 个麦的传播延迟为 $12+4m$ 点，源2为 $12-4m$ 点，再加自身4点延迟。1 kHz 的公共相位为 $e^{-j2\pi(1000)(12/16000)}=j$，3 kHz 为 $-j$。
+
+因此含公共传播相位的理想、未量化稳态相量满足 $\vec X_3=-j\vec X_1$；上面去掉各频共同相位后的相对模型才是 $\vec v_3=j\vec v_1$。两个关系都表示原观测向量共线，公共单位模相位在外积中相消，未聚焦秩仍为1。
+
+**第四步：按固定窗口核对，而不是从试听推断秩。** 两条源的每个频率幅度为0.08，源长2 s、淡入淡出各20 ms；文件共同16 kHz、32024点，保留最长24点传播尾，共同导出增益为1。读取稳态切片 `2400:29600`，共27200点，用1 kHz与3 kHz的余弦、正弦四列设计矩阵做最小二乘相量投影。复相量取“余弦系数减 $j$ 倍正弦系数”，与本书傅里叶约定一致。
+
+将各频四通道复相量除以共同源幅度0.08，保留实际公共相位，再按式(4-28)形成相量外积并对两频平均，分母为2。解析预期的未聚焦、聚焦后特征值分别为 $[8,0,0,0]$、$[4,4,0,0]$；PCM16的整数必须除以32768，量化会使数值偏离解析值。
+
+| 实际文件与取点 | 浮点生成信号的正特征值 | PCM16读回的正特征值 | 相对阈值 $10^{-10}$ 下的数值秩 |
+|---|---|---|---:|
+| 原始四通道，稳态两频相量池化 | 8.000000000 | 8.000267686 | 1 |
+| 已知分量聚焦四通道，同一取点 | 4.000000000、4.000000000 | 4.000133843、4.000283980 | 2 |
+
+这里的数值秩把大于最大特征值 $10^{-10}$ 倍的特征值计入，不是未知源数检测器。表中的浮点与PCM值来自实际生成信号和文件读回；相对解析值的微小变化不能被解释为新声源。音频采用有符号PCM16整数按32768缩放，逐样本量化误差不超过半个步长 $0.5/32768$。
+
+- [源1参考，单通道](../codes/chapters/ch04/focus_audio/focus_reference.wav)
+- [源2的4点延迟副本，单通道](../codes/chapters/ch04/focus_audio/focus_delayed_source.wav)
+- [两方向叠加的原始四通道阵列](../codes/chapters/ch04/focus_audio/focus_array.wav)
+- [已知频率分量数学重组的聚焦四通道](../codes/chapters/ch04/focus_audio/focus_known_focused.wav)
+
+生成与只读核验入口为 [generate_focus_audio.py](../codes/chapters/ch04/examples/generate_focus_audio.py)；执行 `.venv/bin/python -m codes.chapters.ch04.examples.generate_focus_audio --check` 只核对资产与计算，不重生音频。[独立清单](../codes/chapters/ch04/focus_audio/MANIFEST.json)记录源摘要、WAV摘要、相量、投影窗口和浮点／PCM结果，试听与取点说明见[练习与音频实验](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
+
+**边界。** 聚焦矩阵利用了已知两方向及两个选定频率，这不是未知 DOA 算法的成功定位。所谓聚焦音频是把已知解析频率分量数学重组得到的对照；淡变和有限边界含旁频，不称为整段盲 STFT 聚焦或新物理录音。
+
+若两源比例在所有频点都相同，则 $\mathbf S_j$ 的平均仍秩1；若聚焦错误，平均也未必对应共同的真实阵列流形。本例的两维来自频率间相对系数变化与正确的共同坐标，不能外推为所有相干源都能靠宽带自动分离。
+
+<a id="e04-23"></a>
+
+#### E04-23：三麦 root-MUSIC 多项式里，哪些根代表真实方向？
+
+沿用算例4-4：三麦半波距 ULA，真实单源在0°，使用无噪总体协方差。其单位信号向量为 $[1,1,1]^\top/\sqrt3$，噪声空间的正交投影是
+
+$$\mathbf Q=\mathbf E_n\mathbf E_n^H
+=\mathbf I_3-\frac13\vec1\vec1^\top
+=\frac13\begin{bmatrix}2&-1&-1\\-1&2&-1\\-1&-1&2\end{bmatrix}\text{。}$$
+
+令 $z=e^{j\pi\sin\theta}$，候选导向为 $\vec a(z)=[1,z,z^2]^\top$。求 MUSIC 分母对应的多项式、所有根及其角度含义。这里诊断理想多项式，不实现一个对任意有噪数据通用的 root-MUSIC 选根接口。
+
+**第一步：只在单位圆上把共轭换成倒数。** 因为 $|z|=1$，$z^*=z^{-1}$，所以 $\vec a^H(z)=[1,z^{-1},z^{-2}]$。下标 $m,n=0,1,2$ 时，投影分母为 $\sum_{m,n}Q_{mn}z^{n-m}$。它含负幂，是 Laurent 多项式；乘 $z^2$ 得到普通四次多项式：
+
+$$\begin{aligned}
+p(z)&=z^2\sum_{m=0}^2\sum_{n=0}^2Q_{mn}z^{n-m},\\
+&=-\frac13-\frac23z+2z^2-\frac23z^3-\frac13z^4,\\
+&=-\frac13(z-1)^2(z^2+4z+1)\text{。}
+\end{aligned}\tag{4-29}$$
+
+逐条对角线可以检查系数：主对角元素之和为2，给 $2z^2$；两条相邻对角线的元素和各为 $-2/3$，给 $z、z^3$ 两项；两条最外对角线各只有一个 $-1/3$，给常数项和 $z^4$ 项。乘 $z^2$ 没有在单位圆引入零点，因为那里 $z\ne0$。
+
+这里从单位圆表达式延拓得到 $p(z)$。不能在任意复平面点都先写 $z^*=z^{-1}$；离开单位圆后，$p(z)/z^2$ 也不应继续解释成非负的物理投影能量。
+
+**第二步：解析求根，再反演角度。** 因式分解给出根1（双重）与 $-2\pm\sqrt3$。后两个约为−0.267949192和−3.732050808，互为倒数；前者虽在单位圆内，但离单位圆远，不是第二个声源。
+
+真实根1的相位为0。在本书半波距约定下，$\theta=\arcsin(\arg z/\pi)$，因此得到0°。指定 $K=1$ 时，不能把全部圆内根都当作源，也不能把表示同一方向的根对重复计数。
+
+**第三步：区分解析重根与数值分裂。** 理想根1是重根。有限精度多项式求根可能给出两个非常接近1的根，带有微小虚部或模长误差；按单位圆内外分类可能受舍入影响，不能凭“恰好 $|z|<1$”无条件筛出唯一真实根。题目入口分别保留解析参考根和数值求根结果，检查回代残差与互为倒数的结构。
+
+一般有噪 root-MUSIC 还需指定源数、根对选择、靠近单位圆的规则及所用角度分支；本题不把解析根硬编码成一个通用估计器。对照[空间研究手册](../codes/chapters/ch00/research/01_spatial_and_tracking.md)中的固定上游方法调用时，也要保留其选根约定。
+
+**边界。** 半波距 ULA 的 $+90°、-90°$ 都给 $z=-1$，原几何端点混叠仍在；更大间距也可能对应多个方向。免角度网格不等于免空间混叠、免源数或免模型校准。先由 $\mathbf Q$ 的正交性复算正确方向，再看根，才能区分模型结论和求根器的数值行为。
+
 ---
 
-> 📄 本篇信息：配图 5 张 ｜ [回首页](00_overview.md)
+> 📄 本篇信息：配图 7 张 ｜ [回首页](00_overview.md)

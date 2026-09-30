@@ -1,6 +1,6 @@
 # 空间处理与声源追踪：算法、实现和工业使用条件
 
-基础索引核实日期：2026-09-22；第 1 章相关研究及最小原生调用、第 2 章相关资料与原方法提取调用核实于 2026-09-30，第 5 章相关研究小节及所列实验、源码入口核实于 2026-09-28；DCASE 2026 任务状态及近年候选的后续复核日期见各条 2026-09-29 记录。对应正文第 1～5 章和第 9 章。这里按算法的输入、计算步骤和可检查结果整理源码，既包括语音前端，也包括直接相关的球阵录音与工业噪声源成像。后两类任务的输出不同，不能把声源功率图或 Ambisonics 解码结果当成增强语音。
+基础索引核实日期：2026-09-22；第 1 章相关研究及最小原生调用、第 2 章相关资料与原方法提取调用核实于 2026-09-30，第 4 章相关原始资料及有限原方法调用核实于 2026-10-01，第 5 章相关研究小节及所列实验、源码入口核实于 2026-09-28；DCASE 2026 任务状态及近年候选的后续复核日期见各条 2026-09-29 记录。对应正文第 1～5 章和第 9 章。这里按算法的输入、计算步骤和可检查结果整理源码，既包括语音前端，也包括直接相关的球阵录音与工业噪声源成像。后两类任务的输出不同，不能把声源功率图或 Ambisonics 解码结果当成增强语音。
 
 ## 阅读与复现方式
 
@@ -328,6 +328,8 @@ PSD 的尺度是另一个独立检查。实信号单边功率谱须将成对的�
 
 外部入口仍为 doatools 的 `estimation/source_number.py` 中 `aic`、`mdl`、`ld_stat`。其接口接受协方差或**升序**特征值，并需要快拍数；本书接口不接受协方差矩阵。锁定版本的 `mdl` 保留公共惩罚 $\tfrac12\ln N$，本书去掉该常数，所以直接比较评分时要先统一口径，源数最小值不受影响。上游 `ld_stat` 直接计算特征值乘积，本书改用平移后的对数计算，以覆盖极大、极小尺度。[作者 API](https://morriswmz.github.io/doatools.py/references/doatools.estimation.source_number.html)；[锁定提交的官方源码](https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/estimation/source_number.py)。版本同时登记在 `SOURCES.lock.json`。
 
+2026-10-01 的[原方法审计](../../ch04/examples/audit_upstream_doa.py)实际调用固定 `ld_stat/aic/mdl`，输入是 E04-20 的升序谱 `[0.8,1.2,4,9]`、100 快拍。原 AIC 选择 3，原 MDL 选择 2，与独立标量对数和及本书评分一致。`aic` 内部评分是本书去公共常数 AIC 的一半，不改变最小值；原 MDL 多出的公共项为约 2.302585。将全部特征值乘 $10^{-300}$ 后，原 `ld_stat` 的乘积下溢并返回正无穷；[严格 JSON 报告](../../ch04/reports/upstream_doa.json)以 `positive_infinity` 分类、数值字段 `null` 保存，不把它写成有效评分。本书对数计算的共同尺度不变性另由 E04-20 和教学测试核对。
+
 E04-05 使用指定谱 $[9,4,1.1,0.9]$ 和 $N=100$，四个 MDL 总分为约 171.355476、86.437847、28.636055、34.538776，选择 2。表格、算例、`exercises_spatial.py` 与 `test_codes_mdl.py` 对应；测试期望值另由 Decimal 高精度标量公式产生，覆盖所有排序、共同尺度 $10^{-300}$ 至 $10^{300}$、最小正浮点数、纯噪声、最后一个候选和拒绝输入。这是本书手算及数值回归，不是数据集检测正确率实验。
 
 公式核查使用 Wax 与 Kailath 的 *Determining the number of signals by information theoretic criteria*，ICASSP **1984**，§II～IV、式(10)～(15)，[DOI](https://doi.org/10.1109/ICASSP.1984.1172389)及[作者上传原文](https://www.researchgate.net/profile/Mati-Wax/publication/3177764_Detection_of_signals_by_information_theoretic_criteria/links/56cacde408aee3cee54041cd/Detection-of-signals-by-information-theoretic-criteria.pdf)。[1985 年期刊论文](https://doi.org/10.1109/TASSP.1985.1164557)另题为 *Detection of signals by information theoretic criteria*；ResearchGate 的该期刊条目挂载的是 1984 年会议稿，引用定位以 PDF 的实际版本为准。核查日期：2026-09-22。
@@ -346,7 +348,9 @@ E04-06 已加入实际重复抽样，入口为 [`mdl_repeated_trials.py`](../../
 
 建议用 8 元 ULA、两条完全相关的平面波，先检查未经平滑的信号协方差秩，再取 3 个长度为 6 的子阵比较。平滑能改善特定模型的秩，但付出有效孔径和可处理源数的代价。非均匀阵、挡板方向响应或未知互耦不满足相同平移流形时，不能直接滑动矩阵下标冒充空间平滑。
 
-固定函数先形成前向平均 `Rf`；`fb=True` 时再返回 `0.5*(Rf+flip(Rf).conj())`，`flip` 同时反转两轴，对应交换矩阵作用于两侧。它不另做自动源数选择，也不检查真实阵列是否满足这种对称性。此入口完成的是静态核查；本书平滑手算不能替代上游函数的运行验收。[固定预处理源码](https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/estimation/preprocessing.py)。
+固定函数先形成前向平均 `Rf`；`fb=True` 时再返回 `0.5*(Rf+flip(Rf).conj())`，`flip` 同时反转两轴，对应交换矩阵作用于两侧。它不另做自动源数选择，也不检查真实阵列是否满足这种对称性。2026-10-01 已实际提取调用这个未经修改的函数：三麦输入 `v=[2,0,2]`、`R=v vᴴ`、`l=2`，浮点前向与复数前后向两路都得到手算的 `diag(2,2)`。同样数值用整数矩阵输入时，原函数因平均中的浮点结果不能原地写回整数数组而抛类型错误；报告保留该失败，没有替上游自动转换。该确定性小矩阵调用不验证真实非理想阵列。[固定预处理源码](https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/estimation/preprocessing.py)。
+
+原模型的条件可核对 [Shan–Wax–Kailath 1985 原文，§II～III，印刷页806～809](https://www.researchgate.net/profile/Mati-Wax/publication/3177856_On_spatial_smoothing_of_estimation_of_coherent_signals/links/56cacb9208ae5488f0d9b392/On-spatial-smoothing-of-estimation-of-coherent-signals.pdf)：相同阵元 ULA、不同且无混叠的方向、窄带源及白噪声等前提共同支持秩恢复。全相干 $q$ 源的前向构造要求足够多的子阵和足够长的子阵，不能把矩阵平均直接用于未知流形。这里于 2026-10-01 阅读原文相关定理，不扩写为任意房间保证。
 
 ## 定位算法和搜索加速
 
@@ -364,7 +368,7 @@ CC、Roth、SCOT 与 PHAT 改变同一互谱的频率权重。普通 CC 保留�
 
 锁定版本 pyroomacoustics 0.10.0 的静态调用链有明确限制。`doa/srp.py` 构造函数把 `mode/r` 传给 `DOA.__init__`，但 `doa/doa.py:289` 创建 `ModeVector(self.L, self.fs, self.nfft, self.c, self.grid)` 时没有传 `mode`，因此该对象仍采用第 32 行的默认 `mode='far'`。同时，候选 `r` 仅保存到 `self.r`，第 234～280 行的 `GridCircle/GridSphere` 构造没有把它形成距离维；`srp.py:116` 的评分随后直接使用这个 `self.mode_vec`。[固定提交 DOA 构造与导向源码](https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/doa/doa.py)；[固定提交 SRP 评分源码](https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/doa/srp.py)。
 
-据此，即使构造参数写为 `mode='near', r=np.array([2.0])`，也没有将近场选项传入实际相位表。这一**近场 API 判断**来自默认参数、调用实参与网格构造的静态核对；附录 B 实际运行的是本书远场 SRP 教学实现与上游房间 RIR，不构成上游近场接口的声学数值验证。若要实现近场搜索，必须另行构造包含距离的候选位置，并使球面传播时延进入 SRP 评分；不能仅补传一个 `mode` 参数就宣称完整三维搜索已完成。
+据此，即使构造参数写为 `mode='near', r=np.array([2.0])`，也没有将近场选项传入实际相位表。2026-10-01 用原类构造器进一步运行核对：半径 `[0.2,0.5]` 在构造中抛 `ValueError`；单半径 `[0.2]` 可构造，但三个候选坐标的范数仍均为 1，选定频点的相位表与相同几何的 `far` 完全一致。这是构造与导向表检查，未运行完整近场评分。附录 B 实际运行的是本书远场 SRP 教学实现与上游房间 RIR，也不构成上游近场接口的声学数值验证。若要实现近场搜索，必须另行构造包含距离的候选位置，并使球面传播时延进入 SRP 评分；不能仅补传一个 `mode` 参数就宣称完整三维搜索已完成。
 
 建议在真值落格点、落在格点之间、落在搜索区外三个条件下比较峰值。源在区外时，算法仍可能返回边界上的最大值，因此“找到峰”不等于位置可信。部署时缓存静态时延表、限制重复麦对、记录选峰间距，并在阵列几何或采样率变化后重建表。
 
@@ -428,13 +432,15 @@ Capon 的原始出处是 *High-Resolution Frequency-Wavenumber Spectrum Analysis
 
 固定 `MUSIC._compute_correlation_matricesvec` 把 `M×F×T` 输入转置为帧、频率、通道，形成每频二阶矩并对帧平均，未先减均值；`_subspace_decomposition` 利用 `eigh` 的升序结果按已给定的 `num_src` 切分。`NormMUSIC` 开启逐频最大谱值归一化，再在频率轴合并，不是对协方差白化，也不自动选择可靠频点。空间有色噪声仍会改变噪声子空间；应使用合适的噪声模型或另作预白化。[固定 MUSIC 源码](https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/doa/music.py)。这些接口本次仅静态核查。
 
+HARK 的工业接口另有明确的数据和时间契约。[官方 LocalizeMUSIC，3.4.0 Rev9509，§6.2.14.1～4](https://www.hark.jp/document/hark-document-en/subsec-LocalizeMUSIC.html)要求 `M×(NFFT/2+1)` 复数频谱，传递函数通道列表须与输入物理通道一致。SEVD 分支忽略噪声协方差，GEVD/GSVD 分支利用它做噪声处理，不能仅换分解名字而保持任意噪声模型。默认 `WINDOW_TYPE=FUTURE` 使用当前及后续帧，`PAST` 才改变窗口方向；因此默认配置不能称作严格因果。输出 MUSIC 伪谱也不是校准声压功率。该文档角度 0° 指机器人正前、正角向左，须转换为本文坐标。这里于 2026-10-01 阅读官方接口，未运行 HARK 节点或设备录音。
+
 ### 13. root-MUSIC
 
 对应 §4.6 和总对比。doatools `estimation/music.py::RootMUSIC1D` 针对 ULA，把噪声子空间投影矩阵的对角线和变成多项式系数，从单位圆附近的根恢复相位，再转换为方向。输入是 ULA 协方差、源数、波长与麦间距；默认半波长间距必须显式检查。[作者接口与 Barabell/Rao–Hari 原文定位](https://morriswmz.github.io/doatools.py/references/doatools.estimation.music.html)。
 
 建议先用单源无噪协方差比较 MUSIC 扫描峰和 root-MUSIC，再加入相干双源、几何扰动和空间混叠。对共轭倒数根需按算法规则选取，不可把所有近圆根都计作声源；成功找到指定数量的根也不保证方向正确。免网格只消除了网格量化，未消除特征分解和多项式数值误差。
 
-固定 `RootMUSIC1D.estimate` 中还使用 `np.complex_` 创建系数数组，该别名已从 NumPy 2 移除；因此下面 ESPRIT 在 NumPy 2.5.3 中运行成功进入计算，不代表同一包的 root-MUSIC 相容。当前仅核实该源码调用，未在该环境实际调用 root-MUSIC；此前缺少 SciPy 的导入失败另记在末节。[固定 root-MUSIC 源码](https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/estimation/music.py)。
+固定 `RootMUSIC1D.estimate` 中还使用 `np.complex_` 创建系数数组，该别名已从 NumPy 2 移除；因此下面 ESPRIT 在 NumPy 2.5.3 中运行成功进入计算，不代表同一包的 root-MUSIC 相容。2026-10-01 实调原方法确实在此抛 `AttributeError`。随后仅给提取方法的局部 `np` 门面增加 `complex_→complex128` 别名，不改方法体、上游目录或共享 NumPy；六元半波距 ULA、`a=[1,j,−1,−j,1,j]`、`R=a aᴴ+0.1I` 得到约 29.99999971°，与解析 30° 相差小于 $10^{-6}$ 度。门面成功不等于原发行包已兼容 NumPy 2，也不覆盖 E04-23 三麦理想重根的数值稳定性。此前缺少 SciPy 的导入失败另记在末节。[固定 root-MUSIC 源码](https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/estimation/music.py)。
 
 ### 14. LS-ESPRIT、TLS-ESPRIT 与几何约定
 
@@ -453,7 +459,9 @@ Capon 的原始出处是 *High-Resolution Frequency-Wavenumber Spectrum Analysis
 
 默认行权为 `[1,√2,√3,2,√3,√2,1]`。四次上游调用都返回 `resolved=True`，但两次默认加权的最大方向误差分别约 1.527825°、1.496900°；该标志不能判定方向正确。未加权两路与独立复制两路的误差均低于 `10⁻⁸` 度。独立 LS 使用 `lstsq`，TLS 使用拼接子阵的 SVD；再用解析导向列替代特征向量作为另一组参考，结果也恢复真角。解析基下的移位特征值直接为 `exp(j*pi*sin(theta))`，无需用上游输出定义答案。
 
-[执行脚本](../../ch04/examples/reproduce_doatools_esprit.py)在调用前核对提交、跟踪文件状态和所调用关键源码摘要，禁止未跟踪 Python 源混入；[报告](../../ch04/reports/doatools_esprit_reference.json)绑定脚本、配置与源码摘要，保留完整协方差、原版四路结果及两组独立参考。普通[离线测试](../../../../tests/test_codes_doatools_esprit_reference.py)只核报告和 NumPy 参考，以标量三角和、±30° 四分之一周期解析基及换基不变性独立校验，不导入外部包或联网。实际重跑需要已取得的固定源码和含 SciPy 的环境，例如本次使用的 `/private/tmp/room-pra-venv/bin/python codes/chapters/ch04/examples/reproduce_doatools_esprit.py --output codes/chapters/ch04/reports/doatools_esprit_reference.json`。
+[执行脚本](../../ch04/examples/reproduce_doatools_esprit.py)在调用前核对提交、跟踪文件状态和所调用关键源码摘要，禁止未跟踪 Python 源混入；[报告](../../ch04/reports/doatools_esprit_reference.json)绑定脚本、配置与源码摘要，保留完整协方差、原版四路结果及两组独立参考。普通[离线测试](../../../../tests/test_codes_doatools_esprit_reference.py)只核报告和 NumPy 参考，以标量三角和、±30° 四分之一周期解析基及换基不变性独立校验，不导入外部包或联网。历史运行使用 `/private/tmp/room-pra-venv/bin/python`；2026-10-01 核查该临时环境已不存在。当前重跑需另备固定源码和含 SciPy 的环境，例如本章新的 `/private/tmp/masp-ch04-pra-venv/bin/python`，但不能把新环境运行写回成上述历史执行条件。
+
+[Roy–Kailath 1989 原文，§IV-A～D，印刷页989～991](https://alumni.media.mit.edu/~aggelos/papers/roykailath89.pdf)对成对传感器的一致响应、相同平移和共同采样作出约定，并给出共同子空间基下的相似关系；任意旋转布局不能代替平移子阵。原文 TLS 同时拟合两块误差，不能由其名称推出所有失配下优于 LS。该原文相关页于 2026-10-01 实读。
 
 本书保留原版失败，未修改上游或将独立参考包装成修复发行版。`row_weights='none'` 只是在本例中通过的明确调用配置；它与安全复制参考都不构成真实房间准确率、TLS 优于 LS、不同源数或其他几何已验证的证据。
 
@@ -461,19 +469,25 @@ Capon 的原始出处是 *High-Resolution Frequency-Wavenumber Spectrum Analysis
 
 对应 [§4.6 的宽带聚焦](../../../../chapters/04_doa-estimation.md#sec-u-08146bdaaf)。固定 pyroomacoustics 的 `doa/cssm.py` 先为各频带产生候选峰，选参考频点，构造聚焦矩阵并循环聚合协方差。源码入口依次为 `_process`、`_coherent_sum`、继承的子空间分解。[Wang–Kaveh 原文](https://doi.org/10.1109/TASSP.1985.1164667)。
 
-建议固定一组双源频域快拍，改变初值、参考频点和迭代数，报告方向误差与聚焦矩阵条件数。被剔除的频点必须与协方差、权重和候选峰同步筛选。固定 0.10.0 版本的这个关联存在静态疑点，见末节；因此可读源码不意味着该版本所有边界输入已验收。
+建议固定一组双源频域快拍，改变初值、参考频点和迭代数，报告方向误差与聚焦矩阵条件数。被剔除的频点必须与协方差、权重和候选峰同步筛选。固定 0.10.0 版本的这个关联已经用原 `_coherent_sum` 方法体提取调用核对，见末节。人工模拟首频点剔除后，剩余频点为 `[20,30]`、三份原协方差对角为 `[4,1,1]`、`[9,1,1]`、`[16,1,1]`；导向取相同值使聚焦为单位阵。原方法返回 `diag(13,2,2)`，独立保留频点求和应为 `diag(25,2,2)`，Frobenius 差为 12。未运行原完整 `_process`，也未自动构造触发剔除的声学输入。
+
+聚焦误差与噪声变换也要分开核对。即使导向被精确对齐，非酉聚焦仍把白噪声变成 `σ² T Tᴴ`；[E04-19](../../../../chapters/04_doa-estimation.md#e04-19)给出两麦反例。相干源在单频为秩一，跨频源比例改变且已正确聚焦时，合并矩阵可以恢复秩；[E04-22](../../../../chapters/04_doa-estimation.md#e04-22)以已知酉变换展示这一条件。它们是本书可控教学链，不是固定 CSSM 已在真实录音中成功的证据。
 
 ### 16. WAVES 加权信号子空间
 
 对应 [§4.6 的宽带聚焦](../../../../chapters/04_doa-estimation.md#sec-u-08146bdaaf)。`doa/waves.py` 将各频带聚焦后的信号子空间按特征值相关权重拼接，再对拼接矩阵做 SVD。它与 CSSM 的区别在聚合对象和权重，不是简单把 CSSM 改名；初始化、频点剔除和噪声特征值估计都影响结果。[Di Claudio–Parisi 原文](https://doi.org/10.1109/78.950774)。
 
-建议让部分频点只包含噪声，检查权重是否减弱该频点影响；再设强弱源功率差，观察弱源是否被压掉。阅读 `_construct_waves_matrix` 时逐项追踪 `freq_bins[j]` 与 `C_hat[j]` 的对应。WAVES 与 CSSM 相同的频点筛选疑点也列在末节。
+建议让部分频点只包含噪声，检查权重是否减弱该频点影响；再设强弱源功率差，观察弱源是否被压掉。阅读 `_construct_waves_matrix` 时逐项追踪 `freq_bins[j]` 与 `C_hat[j]` 的对应。2026-10-01 同样提取调用原 `_construct_waves_matrix`，给上述对角矩阵显式特征子空间适配器。原首行是 `[3/√5,8/√10]`，保留频点的独立期望则为 `[8/√10,15/√17]`；这验证辅助方法的错位，不声称原整条 `_process` 已运行。
+
+WAVES 方法类不能笼统写成总要初始 DOA。[TOPS 作者上传正式原文 §II-C，印刷页1980](https://www.researchgate.net/publication/3319689_TOPS_new_DOA_estimator_for_wideband_signals)明确区分 RSS 聚焦与可不需初始 DOA 的 BICSSM 聚焦，同时提示其视场与阵列条件。这里的固定 PRA 实现采用候选方向聚焦；原 WAVES 与这一路实现的条件须分开。当前未取得可完整读取的 WAVES 原论文正文，不用上述源码替代原文定义。
 
 ### 17. TOPS 投影子空间正交性检验
 
 对应 [§4.6 的宽带聚焦](../../../../chapters/04_doa-estimation.md#sec-u-08146bdaaf)。`doa/tops.py` 为每个方向组合跨频子空间正交性矩阵，以最小奇异值构造谱；它不依赖 CSSM 的初始方向聚焦，但仍依赖正确的源数和多个频点。[Yoon–Kaplan–McClellan 原文](https://doi.org/10.1109/TSP.2006.872581)。
 
-建议至少用两个不连续频点，并移动参考频点的位置，检查输出是否对频点排列保持相同物理含义。排列频点不会改变声场，但若代码错误地把“频点列表下标”当成“FFT bin 编号”，结果会改变。固定版本的具体静态索引证据列在末节；生产选型前需完整数值反例和修复后回归。
+建议至少用两个不连续频点，并移动参考频点的位置，检查输出是否对频点排列保持相同物理含义。排列频点不会改变声场，但若代码错误地把“频点列表下标”当成“FFT bin 编号”，结果会改变。2026-10-01 已运行原完整 TOPS 类：三只非共线麦、16 kHz、256 点 FFT、343 m/s、bins `[10,20,30]`、参考 bin 20，真方向 30°；8 个精确正交的复数快拍使每频协方差为 `p a aᴴ+0.01I`，三频功率为 1、4、2。原实现峰值为 49°，依据已知真导向独立计算的跨频正交投影范数在 30° 为零（数值小于 $10^{-12}$）；全 360 个方向的差异保存在报告。这里没有随机抽样、PCM、房间或论文成功率实验。
+
+原文 §III-A/B，印刷页1981～1982 的论证还需要满秩源协方差、跨频相对阵元增益一致和相应无混叠流形；它不保证任意三维阵列、任意相干源都可辨。[作者上传全文及公式定位](https://www.researchgate.net/publication/3319689_TOPS_new_DOA_estimator_for_wideband_signals)。固定实现的频率索引问题不能反推论文方法错误，也不能把本书独立投影参考当作已发布修复包。
 
 ### 18. FRIDA 连续角度恢复
 
@@ -980,6 +994,28 @@ ACCDOA 的向量模与方向、multi-ACCDOA 的输出槽位和持久说话人 ID
 
 该固定仓库根目录、README 和已核对模型文件未建立明确许可文本，因此仅保留索引，不复制源码或 `UpLAM.pth`；模型权重和数据许可也不由代码可见性推出。这里未运行 2025/2026 两届基线，未将不同通道、标签、数据和评分规则下的数字直接比较。
 
+<a id="said-semantic-imaging"></a>
+
+#### SAID：直接从四路声学特征生成语义强度图
+
+[SAID 作者预印本 v1，2026-09-25，§2～4](https://arxiv.org/html/2609.31492v1)解决的是语义成像中的事件区域、强度和类别联合预测。相对先由 UpLAM 生成声学图再用实例模型处理的基线，它从四路幅度与相位特征开始，经 ConvNeXt 和学习的方向查询交叉注意力生成 `45×90` 中间空间表示，再用多尺度、16 个掩模查询输出 `180×360` 的实例强度图、活动和 13 类预测。16 是输出查询槽数，不能当作任意场景同时检出 16 源的保证；空间图也不是声源波形或持久身份。仓库说明稿件获 DCASE2026 Workshop 接收，本文公式定位仍使用这个预印本版本。
+
+这一方法以训练几何和数据域为前提。作者说明使用 Eigenmike 的指定四路（按一基编号为 `[6,10,26,22]`），48 kHz、2048 点 Hann、480 点步长；两秒片段的边界帧处理与 10 fps 输出也属于复现配置。它不是无需已知几何的任意阵列定位器，两秒片段输入不能直接写成已验证实时低延迟系统。[固定 README](https://github.com/IN03X/SAID/blob/cf52ede4f38361cdbb03aa93c8254109583dfe2b/README.md)；[模型架构说明](https://github.com/IN03X/SAID/blob/cf52ede4f38361cdbb03aa93c8254109583dfe2b/docs/model_architecture.md)。
+
+作者代码已按 `cf52ede4f38361cdbb03aa93c8254109583dfe2b` 取得；阅读入口依次为 `said/models/audio2sph.py`、`sph2imaging.py`、`said.py`、`said/inference/infer.py`、`said/evaluation/output2dcase.py`。原项目核心 MIT；组合软件还包含 Apache-2.0 来源，须保留 `THIRD_PARTY_NOTICES.md` 和 `LICENSES/`。三个作者检查点采用非商业研究许可 1.0，AudioMAE 权重另有 CC-BY-NC-4.0 条款；源码许可不能覆盖权重。此次限定取源排除了 demo 媒体和检查点。[主许可证](https://github.com/IN03X/SAID/blob/cf52ede4f38361cdbb03aa93c8254109583dfe2b/LICENSE)；[第三方说明](https://github.com/IN03X/SAID/blob/cf52ede4f38361cdbb03aa93c8254109583dfe2b/THIRD_PARTY_NOTICES.md)。原推理依赖 Python `>=3.10,<3.13`、Torch/Torchaudio 2.5.1 等；本书 Python 3.13 环境未安装该模型依赖、未取得权重、未运行预测或榜单评分。
+
+最小已执行范围是后处理格式与体积约束。[独立调用工具](../../ch04/examples/audit_said_compression.py)直接装载未修改的 `said/utils/compression.py` 单文件，避开会载入模型的包入口；只用标准库与 NumPy。2026-10-01 运行结果见[报告](../../ch04/reports/said_compression.json)，[测试](../../../../tests/test_codes_ch04_said_compression.py)用标量坐标和手写点集另核期望。
+
+| 人工输入／约束 | 原方法实际结果 | 支持的结论 |
+|---|---|---|
+| 高置信检测，能量 `[1,.5,.09,0]` | 保留 `[1,.5]`，检测 ID、类别及额外元数据保留 | 相对峰值下限为 `.1`；不删除整条检测 |
+| 低置信单点 `(359,0,1)` | 原点加八个能量 `.12` 的边界支持点，横坐标绕回、纵坐标裁切 | 边界点是后处理生成，不是额外实测声学观测 |
+| 两检测小 JSON，单进程目录流程 | 两检测均保留；输入 285 字节，输出 353 字节 | 边界支持可增大极小文件，压缩不保证每次更小 |
+| 全零／非有限能量 | 分别抛 `ValueError` | 保留错误，未改成合法检测 |
+| 人工 1 字节上限 | 逐级回退后 `RuntimeError`，未发布输出目录，无临时残留 | 执行了大小失败路径；不证明 20 MB 长录音性能 |
+
+原默认上限为十进制 `20,000,000` 字节。论文 §4.2、Table1 的压缩/指标数据属于作者自己的开发测试预测、阈值和评分协议，本表不复现那些数字；后处理成功也不验证声学图准确率。选型时先看任务输出是否真需要实例区域，再确认阵列、数据域、推理依赖及权重条款；若只需要一个方位角，没有理由仅据名称替换本章经典 DOA 链路。
+
 ### 46. GEV：最大信噪比方向与未定尺度
 
 对应 §5.9。GEV 最大化目标和噪声输出功率之比，输入两组厄米协方差，输出最大广义特征值对应的波束向量。pb_bss `extraction/beamformer.py::get_gev_vector` 调用广义特征值求解；ESPnet `enh/layers/beamformer.py::get_gev_vector` 提供张量实现。pb_bss 函数中的文献定位为 Warsitz 与 Haeb-Umbach 2007 年论文，归一化讨论见其 §III.A。[pb_bss 官方源码](https://github.com/fgnt/pb_bss/blob/10acc347fc9ea21e3d312806a0bd751d0d0af183/pb_bss/extraction/beamformer.py)。pb_bss 为 MIT，ESPnet 为 Apache-2.0，使用本书总清单锁定的提交。
@@ -1171,23 +1207,32 @@ LOCATA 官方 [I/O 框架](https://github.com/cevers/sap_locata_io)与[评价框
 
 ## 固定版本的源码审查疑点
 
-下表分别记录固定 pyroomacoustics 0.10.0 的静态审查与 doatools 的方法级实调。前者尚未运行完整声学反例；后者只运行 §14 的总体协方差。它们用于限定实现采用范围，不据此推断原始论文有误。
+下表保留此前静态发现，并补充 2026-10-01 的实际方法调用。CSSM/WAVES 只执行原辅助方法，TOPS 执行原完整类；其余行按各自范围说明。它们用于限定固定实现采用范围，不据此推断原始论文有误。
 
 | ID | 精确位置与证据 | 最小可复核配置 | 状态及下一步 |
 |---|---|---|---|
-| SP-CSSM-01 | `pyroomacoustics/doa/cssm.py:108` 删除 `freq_bins` 的 `invalid` 项，但第 156 行仍按 `C_hat[j]` 使用原协方差序列 | 若三频点为 `[10,20,30]`、协方差为 `[R10,R20,R30]`，首频点被删除后 `j=0` 的导向对应 20，协方差仍对应 10 | 已发现；静态不一致。需构造首频点峰数不足的音频/谱输入，核对输出及同步筛选修复 |
-| SP-WAVES-01 | `pyroomacoustics/doa/waves.py:104` 同样删除频点，第 148 行仍使用 `C_hat[j]` | 同上，把首频点设为无有效峰，后两频点保持不同协方差 | 已发现；静态不一致。需独立声学回归，不能只验证维度相同 |
-| SP-TOPS-01 | `pyroomacoustics/doa/tops.py:117` 构造真实 FFT bin 差，第 136 行却使用 `Phi[k]`，且构造但未使用剔除参考频点后的 `freq` | `[10,20,30]`、参考 bin 20 时，跨频差应取 −10 和 +10；下标 0、1 对应的却是 −20 和 −19 | 已发现；静态频率映射疑点。需对照原论文实现参考频点排除与真实 bin 取值后比较全谱 |
+| SP-CSSM-01 | `pyroomacoustics/doa/cssm.py:108` 删除 `freq_bins` 的 `invalid` 项，但第 156 行仍按 `C_hat[j]` 使用原协方差序列 | 若三频点为 `[10,20,30]`、协方差为 `[R10,R20,R30]`，首频点被删除后 `j=0` 的导向对应 20，协方差仍对应 10 | 已执行原辅助方法；人工模拟剔除首频点得 `diag(13,2,2)`，独立期望 `diag(25,2,2)`。原 `_process` 和触发剔除的声学输入未运行 |
+| SP-WAVES-01 | `pyroomacoustics/doa/waves.py:104` 同样删除频点，第 148 行仍使用 `C_hat[j]` | 同上，把首频点设为无有效峰，后两频点保持不同协方差 | 已执行原辅助方法与显式对角特征子空间适配器；首行 `[3/√5,8/√10]` 与保留频点期望错位。原 `_process` 未运行 |
+| SP-TOPS-01 | `pyroomacoustics/doa/tops.py:117` 构造真实 FFT bin 差，第 136 行却使用 `Phi[k]`，且构造但未使用剔除参考频点后的 `freq` | `[10,20,30]`、参考 bin 20 时，跨频差应取 −10 和 +10；下标 0、1 对应的却是 −20 和 −19 | 已执行原完整 TOPS；真方向 30°、原峰 49°、独立已知导向投影峰 30°，完整360方向谱保存。未修补上游 |
 | SP-FRIDA-01 | `pyroomacoustics/doa/frida.py` 文档的 `n_rot` 默认值说明与构造函数值不同 | 直接比较文档默认与 `__init__` 默认，不需声学输入 | 已验证静态差异；本文要求显式记录 `n_rot`，不从旧 docstring 复制默认值 |
 | SP-ESPRIT-01 | doatools `estimation/esprit.py:120–125` 两个移位子阵共享内存，随后原地加权 | §14 同一总体协方差的 LS/TLS 默认加权、未加权与独立复制参考 | 已实际复现默认加权失败；保留原版，未加权及独立参考只在本例通过，不是上游完整验收 |
 
 这些源码问题不要求修改下载的上游仓库来“让演示通过”。如需修复，应创建保留原始许可证与提交号的独立补丁、列出改动原因，并采用理想多频输入及真实录音双重回归。未完成修复和回归前，不把这三个固定版本实现列作设备可直接采用的已验证定位器。
 
-本机实际运行检查记录：2026-09-22，在仓库 `.venv` 中分别尝试导入固定版本 doatools 的 `RootMUSIC1D` 和 FilterPy 的 `KalmanFilter`，两次均在导入阶段因缺少 `scipy` 失败，未进入数值计算。计划的独立输入分别为六元半波距阵、30° 单源协方差，以及先验均值 2、方差 4、观测 3、观测方差 1 的标量更新；后者手算后验为 2.8 与 0.8。这些预期值不是已取得的外部运行结果。2026-09-24 已在**独立临时环境**安装 pyroomacoustics 0.10.0 并实际运行上述房间 RIR；仓库 `.venv` 未因此改变。CSSM/WAVES/TOPS 仍只完成上表所列静态核查，不能以房间 RIR 运行替代它们的定位接口验证。
+本机实际运行检查记录：2026-09-22，在仓库 `.venv` 中分别尝试导入固定版本 doatools 的 `RootMUSIC1D` 和 FilterPy 的 `KalmanFilter`，两次均在导入阶段因缺少 `scipy` 失败，未进入数值计算。计划的独立输入分别为六元半波距阵、30° 单源协方差，以及先验均值 2、方差 4、观测 3、观测方差 1 的标量更新；后者手算后验为 2.8 与 0.8。这些预期值不是已取得的外部运行结果。2026-09-24 已在**独立临时环境**安装 pyroomacoustics 0.10.0 并实际运行上述房间 RIR；仓库 `.venv` 未因此改变。截至该次历史运行，CSSM/WAVES/TOPS 只完成静态核查，不能以房间 RIR 运行替代定位接口验证。
 
 2026-09-28 在该既有临时环境中实际执行了 §14 的 doatools ESPRIT 四路诊断，并保存独立报告；没有安装新依赖，没有修改上游源码。此次方法级计算不覆盖 root-MUSIC、稀疏求解器、FRIDA 或其他定位接口，也不改变先前两次导入失败的历史记录。源码获取状态与方法运行状态分别记录。
 
-另一个版本相容性检查是 doatools `estimation/music.py:153` 使用 `np.complex_`，需在其依赖支持的 NumPy 版本中运行或准备独立兼容补丁；本文未修改外部工作目录或共享依赖来绕过这些条件。
+2026-10-01 新建的隔离环境是 `/private/tmp/masp-ch04-pra-venv`，实际安装 PRA 0.10.0 wheel、NumPy 2.5.3、SciPy 1.18.1、Cython 3.3.0、pybind11 3.1.0；主 `.venv` 和下载源码未改变。[审计脚本](../../ch04/examples/audit_upstream_doa.py)、[当次报告](../../ch04/reports/upstream_doa.json)及[独立测试](../../../../tests/test_codes_ch04_upstream_doa.py)绑定当前工具 SHA、整锁摘要、项目条目、HEAD、原 Git blob 与文件 SHA、前后洁净状态。原完整 TOPS 所用七份相关 DOA Python 文件与固定缓存逐字节一致；CSSM/WAVES 明确为 AST 方法提取，root-MUSIC 明确先记录原失败再用局部兼容门面。未运行 CSSM/WAVES 整流程、FRIDA、稀疏求解器、硬件或论文大样本基准。
+
+```bash
+/private/tmp/masp-ch04-pra-venv/bin/python codes/chapters/ch04/examples/audit_upstream_doa.py --report codes/chapters/ch04/reports/upstream_doa.json
+/private/tmp/masp-ch04-pra-venv/bin/python -m unittest tests.test_codes_ch04_upstream_doa -v
+.venv/bin/python codes/chapters/ch04/examples/audit_said_compression.py --report codes/chapters/ch04/reports/said_compression.json
+.venv/bin/python -m unittest tests.test_codes_ch04_said_compression -v
+```
+
+两个工具默认只读并输出当前结果；只有显式 `--report` 才写报告，没有缺省下载、安装或上游补丁。缺少缓存或 PRA/SciPy 的环境不能声称完成原定位方法重跑；普通离线报告测试和可选原调用分开记。上述临时环境是本机路径，其他读者应另建同版本环境。此轮原始资料还实读了 Knapp–Carter 页321～323、Capon 页1409～1412、Shan–Wax–Kailath §II～III、Roy–Kailath §IV 与 TOPS §II～III；CSSM/WAVES 原论文完整正文的网络入口未能取得，Chan–Ho 和 Foy 本轮也未取得全文，因此未据摘要新增算法细节或性能数字。
 
 ## 从源代码接口到完整数学模型：四个确定性核对
 

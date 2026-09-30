@@ -33,6 +33,7 @@ MOVING_AUDIO_ROOT = CODE_CHAPTERS / "ch09" / "moving_audio"
 TRACKING_AUDIO_ROOT = CODE_CHAPTERS / "ch09" / "tracking_audio"
 GSS_AUDIO_ROOT = CODE_CHAPTERS / "ch08" / "gss_audio"
 BINAURAL_AUDIO_ROOT = CODE_CHAPTERS / "ch01" / "binaural_audio"
+FOCUS_AUDIO_ROOT = ROOT / "codes/chapters/ch04/focus_audio"
 GEOMETRY_AUDIO_ROOT = ROOT / "codes/chapters/ch03/geometry_audio"
 STFT_AUDIO_ROOT = ROOT / "codes/chapters/ch02/stft_audio"
 
@@ -63,7 +64,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "01_problem-definition.md": 18,
     "02_basics-signal-model.md": 44,
     "03_array-geometry.md": 31,
-    "04_doa-estimation.md": 40,
+    "04_doa-estimation.md": 45,
     "05_beamforming.md": 36,
     "06_aec.md": 60,
     "07_wpe-dereverberation.md": 48,
@@ -93,10 +94,10 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 121
-EXPECTED_SUBSECTION_COUNT = 509
-EXPECTED_OUTLINE_ITEM_COUNT = 644
-EXPECTED_FIGURE_NUMBERS = set(range(1, 53))
-# 研究附站使用独立显式清单，不挤占 14 篇教程或 644 项 PDF 大纲基线。
+EXPECTED_SUBSECTION_COUNT = 514
+EXPECTED_OUTLINE_ITEM_COUNT = 649
+EXPECTED_FIGURE_NUMBERS = set(range(1, 55))
+# 研究附站使用独立显式清单，不挤占 14 篇教程或 649 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
     ("README.md", "index.html"),
@@ -680,7 +681,7 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52)
+            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
@@ -969,7 +970,7 @@ def site_source_digest():
     paths += sorted(main_audio_path(CODE_CHAPTERS, record["group"], record["file"])
                     for record in manifest["files"])
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
@@ -1273,7 +1274,7 @@ def check_real_audio(errors):
         parser = Players()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         allowed_audio_roots = ("../audio/", "../real_audio/", "../room_audio/",
-                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../stft_audio/", "../geometry_audio/")
+                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/")
         if any(not (p.get("src") or "").startswith(allowed_audio_roots)
                for p in parser.items):
             fail(errors, "未知试听控件来源")
@@ -1639,6 +1640,82 @@ def check_geometry_audio(errors):
         fail(errors, f"多频几何实验检查失败：{exc}")
 
 
+def check_focus_audio(errors):
+    """Independently verify known-unitary focusing files, their actual source hashes and players."""
+    source, published = FOCUS_AUDIO_ROOT, SITE / "focus_audio"
+    wav_names = {"focus_reference.wav", "focus_delayed_source.wav", "focus_array.wav", "focus_known_focused.wav"}
+    expected = wav_names | {"MANIFEST.json"}
+    required_sources = {"codes/chapters/ch04/core/focus_audio.py",
+                        "codes/chapters/ch04/examples/generate_focus_audio.py",
+                        "codes/chapters/ch03/core/geometry.py",
+                        "codes/chapters/ch02/core/conventions.py",
+                        "codes/chapters/ch00/core/audio_samples.py"}
+    try:
+        for folder in (source, published):
+            if (folder.is_symlink() or {p.name for p in folder.iterdir()} != expected
+                    or any(p.is_symlink() or not p.is_file() for p in folder.iterdir())):
+                raise ValueError(f"已知酉聚焦文件集合或类型不符：{folder}")
+        for name in expected:
+            if (source / name).read_bytes() != (published / name).read_bytes():
+                raise ValueError(f"已知酉聚焦网页副本不同：{name}")
+        manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+        if (set(manifest["files"]) != wav_names or manifest["sample_rate_hz"] != 16000
+                or manifest["common_export_gain"] != 1
+                or set(manifest["source_sha256"]) != required_sources):
+            raise ValueError("已知酉聚焦清单参数或真实源集合不符")
+        for name, digest in manifest["source_sha256"].items():
+            if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest:
+                raise ValueError(f"已知酉聚焦生成源码已变化：{name}")
+        for name in wav_names:
+            path, record = source / name, manifest["files"][name]
+            if (record["channels"] != (1 if name in {"focus_reference.wav", "focus_delayed_source.wav"} else 4) or record["samples_per_channel"] != 32024
+                    or hashlib.sha256(path.read_bytes()).hexdigest() != record["sha256"]):
+                raise ValueError(f"已知酉聚焦摘要或参数不符：{name}")
+            with wave.open(str(path), "rb") as wav:
+                if (wav.getframerate(), wav.getnchannels(), wav.getsampwidth(),
+                        wav.getnframes(), wav.getcomptype()) != (16000, 1 if name in {"focus_reference.wav", "focus_delayed_source.wav"} else 4, 2, 32024, "NONE"):
+                    raise ValueError(f"已知酉聚焦PCM格式不符：{name}")
+                if len(wav.readframes(32024)) != 32024 * (1 if name in {"focus_reference.wav", "focus_delayed_source.wav"} else 4) * 2:
+                    raise ValueError(f"已知酉聚焦PCM数据截断：{name}")
+        for page, prefix in ((SITE / "04_doa-estimation.html", ""),
+                             (SITE / "research/05_exercises_and_audio.html", "../")):
+            text = page.read_text(encoding="utf-8")
+            class CuePlayers(HTMLParser):
+                def __init__(self):
+                    super().__init__()
+                    self.items = []
+                    self.links = set()
+                    self.template_depth = 0
+                def handle_starttag(self, tag, attrs):
+                    if tag == "template":
+                        self.template_depth += 1
+                        return
+                    if self.template_depth:
+                        return
+                    if tag == "audio":
+                        self.items.append(dict(attrs))
+                    elif tag == "a":
+                        self.links.add(dict(attrs).get("href"))
+                def handle_endtag(self, tag):
+                    if tag == "template" and self.template_depth:
+                        self.template_depth -= 1
+            parser = CuePlayers()
+            parser.feed(text)
+            players = [item for item in parser.items
+                       if (item.get("src") or "").startswith(prefix + "focus_audio/")]
+            expected = {prefix + "focus_audio/" + name for name in wav_names}
+            if len(players) != 4 or {item.get("src") for item in players} != expected:
+                raise ValueError(f"缺少已知酉聚焦播放器或集合不符：{page.name}")
+            if any("autoplay" in item or "controls" not in item
+                   or item.get("preload") != "none" or not item.get("aria-label")
+                   for item in players):
+                raise ValueError(f"已知酉聚焦播放器控制或标签不符：{page.name}")
+            if prefix + "focus_audio/MANIFEST.json" not in parser.links:
+                raise ValueError(f"缺少已知酉聚焦独立清单：{page.name}")
+    except Exception as exc:
+        fail(errors, f"已知酉聚焦实验检查失败：{exc}")
+
+
 def check_tracking_audio(errors):
     """Verify published PCM, regeneration provenance and real observation controls."""
     source, published = TRACKING_AUDIO_ROOT, SITE/"tracking_audio"
@@ -1862,6 +1939,7 @@ def main():
     check_binaural_audio(errors)
     check_stft_audio(errors)
     check_geometry_audio(errors)
+    check_focus_audio(errors)
     check_combined_html(errors)
     check_pdf(errors, notices)
     for item in notices:

@@ -10,9 +10,9 @@ import math
 
 import numpy as np
 
-from codes.chapters.ch02.core.conventions import finite_real_array, hermitian_part, validate_cft, validate_frequencies
+from codes.chapters.ch02.core.conventions import finite_real_array, finite_real_scalar, validate_cft, validate_frequencies
 from codes.chapters.ch03.core.geometry import plane_wave_delays
-from codes.chapters.ch04.core.covariance import _load_covariance
+from codes.chapters.ch04.core.covariance import _load_covariance, _validate_covariance, _scaled_covariance
 
 
 def mdl_source_count(eigenvalues: np.ndarray, snapshots: int) -> tuple[int, np.ndarray]:
@@ -34,6 +34,17 @@ def mdl_source_count(eigenvalues: np.ndarray, snapshots: int) -> tuple[int, np.n
     doi:10.1109/ICASSP.1984.1172389. This is a teaching baseline, not a detector
     for coherent sources, colored noise, or the real Gaussian model.
     """
+    channels, count, gaps = _source_count_tail_statistics(eigenvalues, snapshots)
+    scores = np.empty(channels)
+    for k in range(channels):
+        scores[k] = count * (channels-k) * gaps[k] + 0.5 * k * (2 * channels - k) * math.log(count)
+    if not np.all(np.isfinite(scores)):
+        raise ValueError("MDL scores exceed floating-point range")
+    return int(np.argmin(scores)), scores
+
+
+def _source_count_tail_statistics(eigenvalues, snapshots):
+    """Shared real-input validation and stable log AM/GM gaps; no loading."""
     values = np.asarray(eigenvalues)
     if values.ndim != 1 or values.size < 1 or values.dtype.kind not in "iuf":
         raise ValueError("eigenvalues must be a nonempty 1-D real numeric vector")
@@ -53,18 +64,28 @@ def mdl_source_count(eigenvalues: np.ndarray, snapshots: int) -> tuple[int, np.n
     if not math.isfinite(count):
         raise ValueError("snapshots exceeds floating-point range")
     logs = np.log(np.sort(values)[::-1])
-    scores = np.empty(channels)
+    gaps = np.empty(channels)
     for k in range(channels):
         tail = logs[k:]
         shifted = tail - tail[0]
-        # A normalized eigenvalue itself could underflow to zero; its log
-        # remains finite here and must still contribute to the geometric mean.
         arithmetic_log = math.log(math.fsum(math.exp(x) for x in shifted) / tail.size)
         geometric_log = math.fsum(shifted) / tail.size
-        gap = max(0.0, arithmetic_log - geometric_log)  # AM >= GM; round-off only.
-        scores[k] = count * tail.size * gap + 0.5 * k * (2 * channels - k) * math.log(count)
+        gaps[k] = max(0.0, arithmetic_log - geometric_log)
+    return channels, count, gaps
+
+
+def aic_source_count(eigenvalues: np.ndarray, snapshots: int) -> tuple[int, np.ndarray]:
+    """Complex, iid, known-zero-mean white-noise AIC; same domain as MDL.
+
+    AIC(k)=2*N*(M-k)*log(AM/GM)+2*k*(2*M-k), omitting a k-independent
+    parameter constant. Scores are not probabilities. See Wax--Kailath,
+    ICASSP 1984, equations (10)--(15), doi:10.1109/ICASSP.1984.1172389.
+    """
+    channels, count, gaps = _source_count_tail_statistics(eigenvalues, snapshots)
+    scores = np.array([2*count*(channels-k)*gaps[k]+2*k*(2*channels-k)
+                       for k in range(channels)])
     if not np.all(np.isfinite(scores)):
-        raise ValueError("MDL scores exceed floating-point range")
+        raise ValueError("AIC scores exceed floating-point range")
     return int(np.argmin(scores)), scores
 
 
@@ -91,6 +112,10 @@ def gcc_phat(
     lags, and changing the FFT length can change its values.  Optional
     three-point interpolation is local and does not change the lag search range.
     """
+    sample_rate = finite_real_scalar(sample_rate, "sample_rate")
+    epsilon = finite_real_scalar(epsilon, "epsilon")
+    if max_tau is not None:
+        max_tau = finite_real_scalar(max_tau, "max_tau")
     first = finite_real_array(x1, "x1")
     second = finite_real_array(x2, "x2")
     if first.ndim != 1 or second.ndim != 1 or first.size < 1 or second.size < 1:
@@ -112,7 +137,14 @@ def gcc_phat(
     maximum = np.max(magnitude)
     if not np.isfinite(maximum) or maximum == 0.0:
         raise ValueError("GCC-PHAT is undefined for a zero-energy pair")
-    cross /= np.maximum(magnitude, epsilon * maximum)
+    protection = epsilon * maximum
+    if not np.isfinite(protection) or protection == 0.0:
+        raise ValueError("relative PHAT protection is not representable")
+    denominator = np.maximum(magnitude, protection)
+    if np.min(denominator) >= np.finfo(float).tiny:
+        cross /= denominator  # Preserve the ordinary numerical path.
+    else:
+        cross = cross.real / denominator + 1j * (cross.imag / denominator)
     circular = np.fft.ifft(cross).real
     negative_lags = circular[-(second.size - 1) :] if second.size > 1 else circular[:0]
     correlation = np.concatenate((negative_lags, circular[: first.size]))
@@ -120,11 +152,18 @@ def gcc_phat(
     if max_tau is not None:
         if not np.isfinite(max_tau) or max_tau < 0.0:
             raise ValueError("max_tau must be finite and non-negative")
-        keep = np.abs(lags / sample_rate) <= max_tau + np.finfo(float).eps
+        with np.errstate(over="ignore", divide="ignore"):
+            keep = np.abs(lags / sample_rate) <= max_tau + np.finfo(float).eps
         correlation = correlation[keep]
         lags = lags[keep]
         if lags.size == 0:
             raise ValueError("max_tau leaves no candidate lag")
+    if not np.all(np.isfinite(correlation)):
+        raise ValueError("GCC-PHAT correlation is not finite")
+    with np.errstate(over="ignore", divide="ignore"):
+        seconds = lags / sample_rate
+    if not np.all(np.isfinite(seconds)):
+        raise ValueError("lag time axis exceeds floating-point range")
     index = int(np.argmax(correlation))
     lag = lags[index]
     peak = correlation[index]
@@ -154,7 +193,8 @@ def srp_phat(
     relative to each pair's maximum cross-spectrum magnitude. A recording
     with no usable microphone pair has no direction and raises ``ValueError``.
     """
-    if not np.isfinite(epsilon) or epsilon <= 0.0:
+    epsilon = finite_real_scalar(epsilon, "epsilon")
+    if epsilon <= 0.0:
         raise ValueError("epsilon must be finite and positive")
     x = validate_cft(spectra)
     frequencies = validate_frequencies(frequencies_hz)
@@ -189,11 +229,17 @@ def srp_phat(
                 continue
             if np.any(magnitude[frequencies > 0.0] > epsilon * maximum):
                 informative_pairs += 1
-            phat = np.where(
-                magnitude > epsilon * maximum,
-                cross / np.maximum(magnitude, epsilon * maximum),
-                0.0,
-            )
+            threshold = epsilon * maximum
+            if not np.isfinite(threshold) or threshold == 0.0:
+                raise ValueError("relative PHAT gate is not representable")
+            usable = magnitude > threshold
+            phat = np.zeros_like(cross)
+            # Do not evaluate a zero or tiny unused denominator.
+            if np.min(magnitude[usable], initial=1.0) >= np.finfo(float).tiny:
+                phat[usable] = cross[usable] / magnitude[usable]
+            else:
+                phat[usable] = (cross.real[usable]/magnitude[usable]
+                                + 1j*(cross.imag[usable]/magnitude[usable]))
             mean_cross = np.mean(phat, axis=1)
             predicted = delays[:, first] - delays[:, second]
             phase = np.exp(2.0j * np.pi * predicted[:, None] * frequencies[None, :])
@@ -212,19 +258,18 @@ def _steering_rows(steering: np.ndarray, channels: int) -> np.ndarray:
     candidates = np.asarray(steering, dtype=complex)
     if candidates.ndim == 1:
         candidates = candidates[None, :]
-    if candidates.ndim != 2 or candidates.shape[1] != channels:
+    if candidates.ndim != 2 or candidates.shape[0] < 1 or candidates.shape[1] != channels:
         raise ValueError("steering must have shape candidates x channels")
     if not np.all(np.isfinite(candidates)):
         raise ValueError("steering contains NaN or infinity")
+    if np.any(np.max(np.maximum(abs(candidates.real), abs(candidates.imag)), axis=1) == 0):
+        raise ValueError("steering rows must be nonzero")
     return candidates
 
 
 def bartlett_spectrum(covariance: np.ndarray, steering: np.ndarray) -> np.ndarray:
     """Evaluate ``a.H @ R @ a`` for each steering-vector row."""
-    matrix = hermitian_part(np.asarray(covariance, dtype=complex))
-    if matrix.ndim != 2 or matrix.shape[0] < 1 or not np.all(np.isfinite(matrix)):
-        raise ValueError("covariance must be a single square matrix")
-    _validate_positive_semidefinite(matrix)
+    matrix = _validate_covariance(covariance)
     candidates = _steering_rows(steering, matrix.shape[0])
     values = np.einsum("km,mn,kn->k", candidates.conj(), matrix, candidates)
     if not np.all(np.isfinite(values)):
@@ -245,6 +290,15 @@ def capon_spectrum(
     with np.errstate(over="ignore", invalid="ignore"):
         solved = np.linalg.solve(matrix, candidates.T)
         denominator = np.einsum("km,mk->k", candidates.conj(), solved)
+    spectrum_scale = 1.0
+    if not np.all(np.isfinite(solved)) or not np.all(np.isfinite(denominator)):
+        # A tiny covariance can have an unrepresentable inverse, while the
+        # final Capon power is representable. Solve a scaled system instead.
+        peak = float(np.max(np.maximum(abs(matrix.real), abs(matrix.imag))))
+        with np.errstate(over="ignore", invalid="ignore"):
+            solved = np.linalg.solve(_scaled_covariance(matrix, peak), candidates.T)
+            denominator = np.einsum("km,mk->k", candidates.conj(), solved)
+        spectrum_scale = peak
     if not np.all(np.isfinite(solved)) or not np.all(np.isfinite(denominator)):
         raise ValueError("Capon solve or denominator exceeds floating-point range")
     # The quadratic form scales inversely with covariance power, so the
@@ -253,8 +307,8 @@ def capon_spectrum(
             or np.any(np.abs(denominator.imag) > 1e-8 * np.abs(denominator.real))):
         raise np.linalg.LinAlgError("Capon denominator is not positive real")
     with np.errstate(over="ignore", invalid="ignore"):
-        spectrum = 1.0 / denominator.real
-    if not np.all(np.isfinite(spectrum)):
+        spectrum = spectrum_scale / denominator.real
+    if not np.all(np.isfinite(spectrum)) or np.any(spectrum <= 0.0):
         raise ValueError("Capon spectrum exceeds floating-point range")
     return spectrum
 
@@ -267,25 +321,29 @@ def music_spectrum(
     denominator_floor: float = 1e-15,
 ) -> np.ndarray:
     """Evaluate the narrowband MUSIC pseudospectrum using ``numpy.linalg.eigh``."""
-    if not np.isfinite(denominator_floor) or denominator_floor <= 0.0:
+    denominator_floor = finite_real_scalar(denominator_floor, "denominator_floor")
+    if denominator_floor <= 0.0:
         raise ValueError("denominator_floor must be finite and positive")
-    matrix = hermitian_part(np.asarray(covariance, dtype=complex))
-    if matrix.ndim != 2 or matrix.shape[0] < 1 or not np.all(np.isfinite(matrix)):
-        raise ValueError("covariance must be a single square matrix")
+    matrix = _validate_covariance(covariance)
     channels = matrix.shape[0]
-    if not isinstance(source_count, (int, np.integer)) or not 0 < source_count < channels:
+    if isinstance(source_count, (bool, np.bool_)) or not isinstance(source_count, (int, np.integer)) or not 0 < source_count < channels:
         raise ValueError("source_count must be in [1, channels - 1]")
     scale = float(np.max(np.maximum(np.abs(matrix.real), np.abs(matrix.imag))))
     if scale == 0.0:
         raise ValueError("MUSIC has no signal or noise energy from which to form a subspace")
     candidates = _steering_rows(steering, channels)
-    eigenvalues, eigenvectors = np.linalg.eigh(matrix / scale)
+    eigenvalues, eigenvectors = np.linalg.eigh(_scaled_covariance(matrix, scale))
     if eigenvalues[0] < -1e-10 * max(1.0, float(np.max(np.abs(eigenvalues)))):
         raise np.linalg.LinAlgError("covariance must be positive semidefinite")
     noise = eigenvectors[:, : channels - source_count]
-    projection = candidates.conj() @ noise
-    denominator = np.sum(np.abs(projection) ** 2, axis=1)
-    return 1.0 / np.maximum(denominator, denominator_floor)
+    with np.errstate(over="ignore", invalid="ignore", divide="ignore", under="ignore"):
+        projection = candidates.conj() @ noise
+        denominator = np.sum(np.abs(projection) ** 2, axis=1)
+        spectrum = 1.0 / np.maximum(denominator, denominator_floor)
+    if (not np.all(np.isfinite(denominator)) or not np.all(np.isfinite(spectrum))
+            or np.any(spectrum <= 0.0)):
+        raise ValueError("MUSIC projection or spectrum exceeds floating-point range")
+    return spectrum
 
 
 def esprit_ula(
@@ -307,14 +365,16 @@ def esprit_ula(
     disambiguation.
     At half-wavelength spacing the two endfire endpoints also coincide.
     """
-    matrix = hermitian_part(np.asarray(covariance, dtype=complex))
-    if matrix.ndim != 2 or matrix.shape[0] < 1 or not np.all(np.isfinite(matrix)):
-        raise ValueError("covariance must be a single square matrix")
+    matrix = _validate_covariance(covariance)
     channels = matrix.shape[0]
     if channels < 2 or isinstance(source_count, (bool, np.bool_)) or not isinstance(source_count, (int, np.integer)):
         raise ValueError("ESPRIT needs at least two channels and an integer source_count")
     if not 0 < source_count < channels:
         raise ValueError("source_count must be in [1, channels - 1]")
+    spacing_m = finite_real_scalar(spacing_m, "spacing_m")
+    frequency_hz = finite_real_scalar(frequency_hz, "frequency_hz")
+    sound_speed = finite_real_scalar(sound_speed, "sound_speed")
+    alias_tolerance = finite_real_scalar(alias_tolerance, "alias_tolerance")
     if (not np.all(np.isfinite([spacing_m, frequency_hz, sound_speed]))
             or spacing_m <= 0.0 or frequency_hz <= 0.0 or sound_speed <= 0.0):
         raise ValueError("spacing, frequency, and sound speed must be positive")
@@ -323,7 +383,7 @@ def esprit_ula(
     scale = float(np.max(np.maximum(np.abs(matrix.real), np.abs(matrix.imag))))
     if scale == 0.0:
         raise np.linalg.LinAlgError("zero covariance has no signal subspace")
-    eigenvalues, eigenvectors = np.linalg.eigh(matrix / scale)
+    eigenvalues, eigenvectors = np.linalg.eigh(_scaled_covariance(matrix, scale))
     spectral_scale = float(np.max(np.abs(eigenvalues)))
     if eigenvalues[0] < -1e-10 * spectral_scale:
         raise np.linalg.LinAlgError("covariance must be positive semidefinite")
@@ -344,13 +404,3 @@ def esprit_ula(
     if not np.all(np.isfinite(sine)) or np.any(np.abs(sine) > 1.0 + alias_tolerance):
         raise ValueError("principal spatial phase lies outside the physical arcsine domain")
     return np.sort(np.arcsin(np.clip(sine, -1.0, 1.0)).real)
-
-
-def _validate_positive_semidefinite(matrix: np.ndarray) -> None:
-    """Reject a covariance with a materially negative normalized eigenvalue."""
-    scale = float(np.max(np.maximum(np.abs(matrix.real), np.abs(matrix.imag))))
-    if scale == 0.0:
-        return  # The zero matrix is PSD; callers decide if it is informative.
-    eigenvalues = np.linalg.eigvalsh(matrix / scale)
-    if eigenvalues[0] < -1e-10 * max(1.0, float(np.max(np.abs(eigenvalues)))):
-        raise np.linalg.LinAlgError("covariance must be positive semidefinite")

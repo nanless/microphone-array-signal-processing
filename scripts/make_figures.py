@@ -640,13 +640,18 @@ def fig_gcc_phat():
     # (b) 对互谱做零填充，将 GCC-PHAT 的时延网格细化 16 倍。
     ax = axes[1]
     up = 16
-    lags, gcc, tau_est = gcc_phat_interpolated(
-        x1, x2, fs, interp=up, max_tau=500e-6)
+    # Display the wider correlation, but search only physically possible lags.
+    lags, gcc, _ = gcc_phat_interpolated(x1, x2, fs, interp=up, max_tau=500e-6)
+    _, _, tau_est = gcc_phat_interpolated(x1, x2, fs, interp=up, max_tau=d/c)
     lags_us = lags * 1e6
-    pk = np.argmax(gcc)
+    pk = int(np.argmin(abs(lags-tau_est)))
     ax.plot(lags_us, gcc, color=C_BLUE, lw=1.4)
     ax.plot(tau_est * 1e6, gcc[pk], "r^", ms=10)
     ax.axvline(tau_true * 1e6, color="k", ls="--", lw=1, alpha=0.6)
+    physical_us = d/c*1e6
+    ax.axvspan(-physical_us, physical_us, color=C_GREEN, alpha=.09)
+    for bound in (-physical_us, physical_us):
+        ax.axvline(bound, color=C_GREEN, ls="-.", lw=1.2)
     for s in np.arange(-3, 4) * 1e6 / fs:
         if abs(s) <= 500:
             ax.axvline(s, color="gray", ls=":", lw=1.4, alpha=0.9)
@@ -659,7 +664,7 @@ def fig_gcc_phat():
     ax.text(0.03, 0.76, "（16×时延网格插值；\n灰点线=整数采样间隔）",
             transform=ax.transAxes, fontsize=FS_TINY + 0.5, color=C_RED, va="top")
     ax.set_xlim(-500, 500)
-    ax.set_title("(b) GCC-PHAT（16×时延网格插值）", fontsize=FS_TITLE)
+    ax.set_title(f"(b) GCC-PHAT（16×网格；搜索限于 ±{physical_us:.1f} μs）", fontsize=FS_TITLE)
     ax.set_xlabel("时延 τ (μs)", fontsize=FS_LABEL); ax.set_ylabel("GCC-PHAT（保持原网格幅度）", fontsize=FS_LABEL); ax.grid(ls=":", alpha=0.5)
     # (c) 几何：θ 自正横方向（垂直于两麦连线）起算
     ax = axes[2]
@@ -3753,6 +3758,98 @@ def fig_hexagon_multifrequency():
     save(fig, "fig52_hexagon_multifrequency.png")
 
 
+
+def focus_noise_example():
+    """Independent two-sensor E04-19 covariance oracle, not a CSSM implementation."""
+    a = np.ones(2)
+    matrices = (np.eye(2), np.array([[2., -1.], [-1., 2.]]))
+    observation = np.outer(a, a)+np.eye(2)
+    focused = sum(t@observation@t.T for t in matrices)/2
+    noise = sum(t@t.T for t in matrices)/2
+    axes = np.column_stack((a/np.sqrt(2), np.array([1., -1.])/np.sqrt(2)))
+    powers = np.diag(axes.T@focused@axes)
+    noise_powers = np.diag(axes.T@noise@axes)
+    whitened_powers = powers/noise_powers
+    return focused, noise, powers, noise_powers, whitened_powers
+
+
+def fig_focus_noise():
+    focused, noise, powers, noise_powers, white = focus_noise_example()
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 5.4))
+    x = np.arange(2)
+    axes[0].bar(x-.17, noise_powers, .34, color=C_ORANGE, label="聚焦后噪声")
+    axes[0].bar(x+.17, powers, .34, color=C_BLUE, label="信号＋噪声")
+    for i, (n, total) in enumerate(zip(noise_powers, powers)):
+        axes[0].text(i-.17, n+.12, f"{n:g}", ha="center", fontsize=FS_SMALL)
+        axes[0].text(i+.17, total+.12, f"{total:g}", ha="center", fontsize=FS_SMALL)
+    axes[0].set_ylim(0, 6.3)
+    axes[0].set_ylabel("单位方向上的功率（归一化单位）")
+    axes[0].set_title("(a) 普通特征分解把噪声轴选成主轴")
+    axes[0].legend(fontsize=FS_SMALL)
+    axes[1].bar(x, white, .55, color=[C_BLUE, C_ORANGE])
+    for i, total in enumerate(white):
+        axes[1].text(i, total+.07, f"{total:g}", ha="center", fontsize=FS_SMALL)
+    axes[1].axhline(1, color=".4", ls="--", lw=1)
+    axes[1].text(.5, 1.7, "白化后两轴噪声功率均为1", ha="center", fontsize=FS_SMALL)
+    axes[1].set_ylim(0, 3.8)
+    axes[1].set_ylabel("白化后的功率（无单位）")
+    axes[1].set_title("(b) 用真实噪声协方差白化后恢复目标轴")
+    for ax in axes:
+        ax.set_xticks(x, ["目标轴\na/√2", "纯噪声轴\nq/√2"])
+        ax.grid(axis="y", ls=":", alpha=.3)
+        ax.set_axisbelow(True)
+    fig.suptitle("图53  满足导向映射，也可能把白噪声变成有色噪声", fontsize=FS_SUP)
+    fig.text(.5, .035, "两频等权；T₁=I，T₂=[[2,−1],[−1,2]]；两者都把 a=[1,1] 映射到自身。\n"
+             "聚焦协方差 [[4,−1],[−1,4]]，噪声协方差 [[3,−2],[−2,3]]；已知总体矩阵，无抽样。",
+             ha="center", fontsize=FS_SMALL)
+    fig.tight_layout(rect=(0, .15, 1, .92))
+    save(fig, "fig53_focus_noise.png")
+
+
+def coherent_frequency_example():
+    """Analytic population phasors with source power normalized to one per tone."""
+    m = np.arange(4)
+    a1 = np.exp(-.5j*np.pi*m)
+    a2 = np.exp(.5j*np.pi*m)
+    low = a1-1j*a2
+    high_raw = -1j*low  # Includes the shared twelve-sample propagation delay.
+    high_focus = high_raw[[0, 3, 2, 1]]
+    outer = lambda z: np.outer(z, z.conj())
+    matrices = (outer(low), outer(high_raw), (outer(low)+outer(high_raw))/2,
+                (outer(low)+outer(high_focus))/2)
+    return [np.linalg.eigvalsh(r) for r in matrices]
+
+
+def fig_coherent_frequency_rank():
+    spectra = coherent_frequency_example()
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 5.6))
+    x = np.arange(4)
+    for spectrum, offset, color, label in zip(spectra[:3], [-.24, 0, .24],
+            [C_BLUE, C_ORANGE, C_GREEN], ["1 kHz 单频", "3 kHz 单频", "未聚焦等权池化"]):
+        axes[0].bar(x+offset, np.maximum(spectrum, 0), .22, color=color, label=label)
+    axes[0].set_title("(a) 两个单频与未聚焦池化均为秩1")
+    axes[0].legend(fontsize=FS_SMALL)
+    axes[1].bar(x, np.maximum(spectra[3], 0), .55, color=C_BLUE)
+    axes[1].set_title("(b) 已知酉聚焦后等权池化为秩2")
+    axes[1].text(1.5, 7, "两频源比：−j 与 +j\n3 kHz 阵元置换：[0,3,2,1]", ha="center", fontsize=FS_SMALL)
+    for i, value in enumerate(spectra[3]):
+        if value > 1e-10:
+            axes[1].text(i, value+.12, f"{value:g}", ha="center", fontsize=FS_SMALL)
+    for ax in axes:
+        ax.set_xticks(x, ["λ₁", "λ₂", "λ₃", "λ₄"])
+        ax.set_xlabel("升序排列的协方差特征值")
+        ax.set_ylabel("按单源复幅度平方归一的特征值")
+        ax.set_ylim(0, 9.8)
+        ax.grid(axis="y", ls=":", alpha=.3)
+        ax.set_axisbelow(True)
+    fig.suptitle("图54  指定双频相干模型：酉聚焦后池化秩从1到2", fontsize=FS_SUP)
+    fig.text(.5, .035, "四阵元，d=0.1715 m，θ=±30°，c=343 m/s；源2额外延迟0.25 ms。\n"
+             "指定方向、两频、无噪声总体矩阵；不代表盲定位成功，也不消除3 kHz全部空间别名。",
+             ha="center", fontsize=FS_SMALL)
+    fig.tight_layout(rect=(0, .15, 1, .92))
+    save(fig, "fig54_coherent_frequency_rank.png")
+
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -3798,6 +3895,8 @@ def main():
     fig_stft_convolution()
     fig_near_planar_sensitivity()
     fig_hexagon_multifrequency()
+    fig_focus_noise()
+    fig_coherent_frequency_rank()
     print("ALL DONE")
 
 
