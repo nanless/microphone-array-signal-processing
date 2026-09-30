@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "verified_at": "2026-09-29",
+  "verified_at": "2026-09-30",
   "notes": "Fixed source revisions for independent local research checkouts. Acquisition does not mean runtime validation or redistribution permission. LFS objects, submodules and common model/audio/archive files are omitted in new sparse working trees; upstream Git objects can still contain embedded assets. Code, models and datasets retain their respective terms.",
   "projects": [
     {
@@ -1928,6 +1928,28 @@
         "visualize_locata.py",
         "visualize_tau.py"
       ]
+    },
+    {
+      "id": "speed-of-sound-in-air",
+      "url": "https://github.com/RobertoGavioso/Speed-of-sound-in-air.git",
+      "revision": "5c7e6652cf2fd7b4c52e83d8fa3782b3c56e61de",
+      "license": "GPL-3.0",
+      "fetch_enabled": true,
+      "scope": "Original authors' 2025 humid-air sound-speed and uncertainty model in LabVIEW; environmental calibration reference, not the tutorial's default propagation constant",
+      "source_paths": [
+        "source labview files/",
+        "LICENSE",
+        "ReadMe.txt"
+      ],
+      "entrypoints": [
+        "source labview files/SoS_AIR_2025.vi",
+        "source labview files/Plot & Save SoS_AIR.vi",
+        "source labview files/T from SoS_AIR.vi",
+        "LICENSE",
+        "ReadMe.txt"
+      ],
+      "acquisition": "independent_source_checkout",
+      "note": "Original-author identity verified 2026-09-30 via DOI 10.1063/5.0294663, section 6 and reference 81. Fixed tree contains 43 VI source files; source-only selection excludes EXE files and paper PDF. Source requires LabVIEW later than 2016 (64-bit); separate executables require LabVIEW 2016 32-bit Runtime. VI acquisition is neither graphical-source inspection nor model execution. Root GPLv3 license does not cover proprietary runtime; no project-level or-later notice verified."
     }
   ]
 }

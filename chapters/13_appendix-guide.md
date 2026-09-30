@@ -19,7 +19,7 @@
 
     1. 运行 `codes/` 中只依赖 NumPy 的教学实现，核对手算结果、数组维度和退化边界。
     2. 在隔离环境中用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线，记录房间、阵列和随机种子。
-    3. 先按 §13.7 生成图所依赖的音频和追踪清单，再运行 `scripts/` 中的两个绘图脚本，按当前参数复现 49 张编号图，并逐图核对正文条件。
+    3. 先按 §13.7 生成图所依赖的音频和追踪清单，再运行 `scripts/` 中的两个绘图脚本，按当前参数复现 50 张编号图，并逐图核对正文条件。
     4. 按研究任务选择公开数据和固定版本参考系统，分别核对代码、模型与数据的许可和评测口径。
     5. 在可用的多通道硬件上测实时性、同步和标定；仿真结果不能代替设备测量。
 
@@ -210,7 +210,7 @@ VarArray 把 TAC、Conformer 分离和通道间相位差特征用于几何无关
 | $\vec{x} = \vec{a}(\theta)s + \vec{n}$ | 远场窄带阵列信号模型 | §2.3 |
 | $\hat{\mathbf{R}} = \frac{1}{T}\sum_t \vec{x}\vec{x}^H$ | 未中心化的样本空间二阶矩；阵列文献常称空间协方差估计 | §2.5 |
 | $d < \lambda/2$ | ULA 在整个闭可视角域内避免端点歧义的充分条件；$d=\lambda/2$ 时两个端火方向 $-90^\circ$ 与 $+90^\circ$ 可产生相同阵元采样，限定转向范围时可另行分析 | §2.6 |
-| HPBW、DI、WNG | 分别按主瓣两个半功率点、全空间方向响应平均、独立等功率通道噪声定义；见式(2-11)～式(2-13) | §2.6 |
+| HPBW、DI、WNG | 分别按主瓣两个半功率点、全空间功率响应平均、不相关等功率通道噪声定义；见式(2-11)～式(2-13) | §2.6 |
 | CRB 公式 | 给定统计模型与正则条件下，无偏 DOA 估计方差的下界；见式(2-14) | §2.6 |
 | $\hat\theta = \arcsin(c\hat\tau_{12}/d)$ | 双麦时延差 → 角度；本书定义 $\tau_{12}=t_1-t_2$，并以 $X_1X_2^*$ 的 GCC 峰估计它 | §2.1、§4.2 |
 | $R(\tau)=\int \Phi X_1X_2^* e^{j2\pi f\tau}df$ | GCC 加权互相关 | §4.2 |
@@ -718,12 +718,12 @@ $$
 
 会议识别复现还要固定数据准备与文本规范化。CHiME-8 的官方 `chime-utils` 提供 SegLST 转写格式、该届规范化及 cpWER/tcpWER 评分；其中缺失场景的忽略选项会改变实际计分范围。应保留每个场景的输入文件数、失败数和最终参与评分的清单，并先用正确转写、说话人交换、漏词和时间戳偏移的小夹具检查评分口径。[CHiME-8 官方评分实现](https://github.com/chimechallenge/chime-utils/tree/152882404f572d40769ef02bf91c5a9a9cfc9c78 "citation")
 
-绘图脚本都在 `scripts/` 里。图 34～36 和图 37～38 读取或复算指定教学数据，图 39 是算法流程图；图 40～49 又分别使用时钟漂移、线性插值、GSS、CSS、追踪音频、波束、选型及附录 A 的确定性数据。先生成主音频与独立的追踪音频/清单，再运行两个绘图脚本；图 44 使用后者。图片写入 `figures/`，共 49 张：
+绘图脚本都在 `scripts/` 里。图 34～36 和图 37～38 读取或复算指定教学数据，图 39 是算法流程图；图 40～49 又分别使用时钟漂移、线性插值、GSS、CSS、追踪音频、波束、选型及附录 A 的确定性数据。先生成主音频与独立的追踪音频/清单，再运行两个绘图脚本；图 44 使用后者。图50新增有限窗STFT卷积的六点对照，数值由确定性样本计算。图片写入 `figures/`，共 50 张：
 
 ```bash
 .venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
 .venv/bin/python -m codes.chapters.ch09.examples.chapter09_tracking_audio
-.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～49
+.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～50
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～39（回声消除专题）
 ```
 

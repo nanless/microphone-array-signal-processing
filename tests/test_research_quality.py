@@ -67,9 +67,9 @@ class ResearchQualityTests(unittest.TestCase):
     def test_explicit_baselines_preserve_tutorial_pdf_and_figure_counts(self):
         self.assertEqual(quality.EXPECTED_CHAPTER_COUNT, 14)
         self.assertEqual(quality.EXPECTED_SECTION_COUNT, 121)
-        self.assertEqual(quality.EXPECTED_SUBSECTION_COUNT, 503)
-        self.assertEqual(quality.EXPECTED_OUTLINE_ITEM_COUNT, 638)
-        self.assertEqual(quality.EXPECTED_FIGURE_NUMBERS, set(range(1, 50)))
+        self.assertEqual(quality.EXPECTED_SUBSECTION_COUNT, 506)
+        self.assertEqual(quality.EXPECTED_OUTLINE_ITEM_COUNT, 641)
+        self.assertEqual(quality.EXPECTED_FIGURE_NUMBERS, set(range(1, 51)))
         self.assertEqual(quality.EXPECTED_RESEARCH_PAGE_COUNT, 6)
         self.assertEqual(quality.EXPECTED_RESEARCH_PAGES, (
             ("README.md", "index.html"),
@@ -208,6 +208,8 @@ class PublishedResearchQualityTests(unittest.TestCase):
                 quality.check_site(errors)
                 quality.check_research_site(errors)
                 quality.check_room_audio(errors)
+                quality.check_real_audio(errors)
+                quality.check_stft_audio(errors)
             self.assertEqual(errors, [])
 
     def test_room_asset_check_rejects_changed_published_wav(self):

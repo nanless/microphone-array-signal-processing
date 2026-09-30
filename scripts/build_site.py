@@ -43,6 +43,8 @@ MOVING_AUDIO_ROOT = CODE_CHAPTERS / "ch09" / "moving_audio"
 TRACKING_AUDIO_ROOT = CODE_CHAPTERS / "ch09" / "tracking_audio"
 GSS_AUDIO_ROOT = CODE_CHAPTERS / "ch08" / "gss_audio"
 BINAURAL_AUDIO_ROOT = CODE_CHAPTERS / "ch01" / "binaural_audio"
+STFT_AUDIO_ROOT = CODE_CHAPTERS / "ch02" / "stft_audio"
+STFT_AUDIO_WAVS = {"stft_roundtrip.wav", "full_convolution.wav", "framewise_mtf.wav"}
 
 
 def main_audio_sources():
@@ -353,6 +355,45 @@ def stage_binaural_audio(source, destination):
     return expected
 
 
+def stage_stft_audio(source, destination):
+    """Publish three independent finite-window convolution fixtures with complete tails."""
+    import wave
+    expected = STFT_AUDIO_WAVS | {"MANIFEST.json"}
+    if (source.is_symlink() or {p.name for p in source.iterdir()} != expected
+            or any(p.is_symlink() or not p.is_file() for p in source.iterdir())):
+        raise ValueError("STFT卷积目录必须恰含三份普通WAV及独立清单")
+    manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+    if (set(manifest["files"]) != STFT_AUDIO_WAVS
+            or manifest["sample_rate_hz"] != 16000
+            or manifest["common_export_gain"] != 1):
+        raise ValueError("STFT卷积清单集合、采样率或共同增益不符")
+    required_sources = {"codes/chapters/ch02/core/stft_convolution.py",
+                        "codes/chapters/ch02/examples/generate_stft_convolution.py",
+                        "codes/chapters/ch02/core/spectral.py",
+                        "codes/chapters/ch02/core/conventions.py",
+                        "codes/chapters/ch00/core/audio_samples.py"}
+    if set(manifest["source_sha256"]) != required_sources:
+        raise ValueError("STFT卷积必须记录真实生成源与PCM编码源")
+    for name, digest in manifest["source_sha256"].items():
+        if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest:
+            raise ValueError(f"STFT卷积生成源摘要过期：{name}")
+    for name in STFT_AUDIO_WAVS:
+        path, record = source / name, manifest["files"][name]
+        if (record["channels"] != 1 or record["samples_per_channel"] != 32320
+                or hashlib.sha256(path.read_bytes()).hexdigest() != record["sha256"]):
+            raise ValueError(f"STFT卷积摘要或参数不符：{name}")
+        with wave.open(str(path), "rb") as wav:
+            if (wav.getframerate(), wav.getnchannels(), wav.getsampwidth(),
+                    wav.getnframes(), wav.getcomptype()) != (16000, 1, 2, 32320, "NONE"):
+                raise ValueError(f"STFT卷积PCM格式不符：{name}")
+            if len(wav.readframes(32320)) != 32320 * 1 * 2:
+                raise ValueError(f"STFT卷积PCM数据截断：{name}")
+    destination.mkdir()
+    for name in sorted(expected):
+        shutil.copy2(source / name, destination / name)
+    return expected
+
+
 def stage_tracking_audio(source, destination):
     """Validate the independent PCM-to-observation experiment before publishing."""
     import wave
@@ -435,7 +476,7 @@ def source_digest():
     paths += [main_audio_manifest_path(CODE_CHAPTERS)]
     paths += sorted(main_audio_sources())
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "build_markdown_helpers.py",
@@ -585,6 +626,9 @@ def rewrite_site_links(html, source_path):
         if target.parent == BINAURAL_AUDIO_ROOT.resolve() and target.name in (BINAURAL_AUDIO_WAVS | {"MANIFEST.json"}):
             relative = os.path.relpath("binaural_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
+        if target.parent == STFT_AUDIO_ROOT.resolve() and target.name in (STFT_AUDIO_WAVS | {"MANIFEST.json"}):
+            relative = os.path.relpath("stft_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
+            return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
         return repository_url(parsed, target)
 
     html = rewrite_href_targets(html, transform)
@@ -597,7 +641,7 @@ def rewrite_site_links(html, source_path):
         # input as a download link; only the explicit mono derivatives play.
         if parsed.path.endswith("real_audio/demand_nriver_16ch_10s.wav"):
             return match.group(0)
-        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio)/[a-z0-9_]+\.wav", parsed.path):
+        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|stft_audio)/[a-z0-9_]+\.wav", parsed.path):
             return match.group(0)
         safe_href = escape(href, quote=True)
         safe_label = escape(re.sub(r'<[^>]+>', '', unescape(label)), quote=True)
@@ -891,6 +935,10 @@ def main():
         (OUT / "binaural_audio").mkdir(exist_ok=True)
         stale += [path for path in (OUT / "binaural_audio").iterdir()
                   if path.is_file() and path.name not in binaural_names]
+        stft_names = stage_stft_audio(STFT_AUDIO_ROOT, temp_out / "stft_audio")
+        (OUT / "stft_audio").mkdir(exist_ok=True)
+        stale += [path for path in (OUT / "stft_audio").iterdir()
+                  if path.is_file() and path.name not in stft_names]
         publish_files([(temp_out / name, OUT / name) for name in sorted(expected)] +
                       [(temp_out / "audio" / name, OUT / "audio" / name) for name in audio_names] +
                       [(temp_out / "real_audio" / name, OUT / "real_audio" / name)
@@ -904,7 +952,9 @@ def main():
                       [(temp_out / "gss_audio" / name, OUT / "gss_audio" / name)
                        for name in sorted(gss_names)] +
                       [(temp_out / "binaural_audio" / name, OUT / "binaural_audio" / name)
-                       for name in sorted(binaural_names)], stale)
+                       for name in sorted(binaural_names)] +
+                      [(temp_out / "stft_audio" / name, OUT / "stft_audio" / name)
+                       for name in sorted(stft_names)], stale)
     print("DONE", len(expected), "pages")
 
 

@@ -1,0 +1,399 @@
+{
+  "schema_version": 1,
+  "exercise_id": "E02-16",
+  "sample_rate_hz": 16000,
+  "samples_per_channel": 32320,
+  "channels": 1,
+  "common_export_gain": 1.0,
+  "source_sha256": {
+    "codes/chapters/ch02/core/stft_convolution.py": "bd949afc3c4cd8f01fdd3f7b2a4f3a1835f695d79c7bc535d145e25cc56c590c",
+    "codes/chapters/ch02/examples/generate_stft_convolution.py": "40df9961f79c31f0f16c09aab2cc6fe610fd33d41f7ff9208afd468b3a1ec3cb",
+    "codes/chapters/ch02/core/spectral.py": "5ade0b101cc00615276b3b60c3659ece3e68ad614cd2cb2edeb568359f034059",
+    "codes/chapters/ch02/core/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385",
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8"
+  },
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "byteorder": "little",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O"
+  },
+  "parameters": {
+    "source_samples": 32000,
+    "output_samples": 32320,
+    "source_zero_padding_samples": 320,
+    "source_hash_samples": 32320,
+    "source_duration_s": 2.0,
+    "output_duration_s": 2.02,
+    "source": "sum of four 0.06*sin(2*pi*f*n/fs) tones, multiplied by intermittent linear-faded envelopes",
+    "frequencies_hz": [
+      440,
+      997,
+      1733,
+      2819
+    ],
+    "amplitudes": [
+      0.06,
+      0.06,
+      0.06,
+      0.06
+    ],
+    "burst_intervals_samples": [
+      [
+        3200,
+        6400
+      ],
+      [
+        11200,
+        15200
+      ],
+      [
+        19200,
+        23200
+      ],
+      [
+        26400,
+        29600
+      ]
+    ],
+    "edge_fade_samples": 320,
+    "fade": "each half-open burst [a,b): min(1,(n-a)/320,(b-1-n)/320)",
+    "seed": null,
+    "rir_nonzero_indices": [
+      0,
+      320
+    ],
+    "rir_values": [
+      1.0,
+      0.5
+    ],
+    "reflection_delay_s": 0.02,
+    "n_fft": 512,
+    "window": "DFT-periodic Hann",
+    "hop_length": 128,
+    "center": true,
+    "endpoint_padding": "256 zeros at each side; complete final frame",
+    "convolution": "full time-domain linear convolution, including every nonzero tail sample",
+    "framewise_mtf": "rfft(h,512)*STFT(padded source), then unchanged real WOLA",
+    "normalization": "NumPy backward FFT; a single fixed export gain 1 for every file",
+    "initial_history": "zero; no fitted delay or gain compensation",
+    "source_float64_le_sha256": "1045e980c698a9fa5d6bc080be5606fa862e578dec2a84e8fa3abee7d503f6d5",
+    "rir_float64_le_sha256": "479ca7f4d076578ef89ab6fbe51a16175a9f4fc5b763632fa60b3ad9c2cb37da"
+  },
+  "synthesis_support": {
+    "retained_interval_samples": [
+      0,
+      32320
+    ],
+    "denominator_samples": 32320,
+    "analysis_frames": 254,
+    "frame_starts_first_last": [
+      -256,
+      32128
+    ],
+    "window_squared_sum_min": 1.25,
+    "window_squared_sum_max": 1.5000000000000007,
+    "window_squared_sum_first_last_8": [
+      [
+        1.25,
+        1.2560981214798856,
+        1.2621200462871025,
+        1.2680649185555155,
+        1.2739319279977337,
+        1.2797203099759429,
+        1.2854293455454313,
+        1.2910583614708373
+      ],
+      [
+        1.4871189364293524,
+        1.4862133967161921,
+        1.4852631139463224,
+        1.4842668628618279,
+        1.4832234201362846,
+        1.4821315653862481,
+        1.4809900821848065,
+        1.4797977590765452
+      ]
+    ],
+    "window_squared_sum_float64_le_sha256": "6372caf47c5a18888f78cfd022803ccceef79a4841e1506b965925b0ea4d3337"
+  },
+  "quantization": {
+    "format": "signed little-endian PCM16",
+    "scale": 32768,
+    "rounding": "nearest, ties to even",
+    "sample_width_bytes": 2,
+    "max_rounding_error_bound": 1.52587890625e-05,
+    "clipping": "rejected"
+  },
+  "comparison": "Uncentered full-support digital energy and error, N=32320; no gain/delay fitting. PCM scores compare actual PCM references; float scores compare float references.",
+  "limits": "Mathematical tones and a sparse filter, not speech, a measured RIR, T60, noise-removal or human listening scores. Framewise multiplication approximates filtering; its errors do not demonstrate failure of unmodified STFT inversion. The 3-file continuous example is distinct from the four-point FFT8 control.",
+  "listening": "Start with low playback volume; never autoplay or normalize individual files.",
+  "files": {
+    "stft_roundtrip.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples_per_channel": 32320,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "e6980e94fce9935fc4a0e306e1533c6c307aebd31c47200e2a05008e46363b13",
+      "peak": 0.237518310546875,
+      "quantization_max_abs_error": 1.5255172872125078e-05
+    },
+    "full_convolution.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples_per_channel": 32320,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "7fcf344a5e7007dcfcdfe043aa9c8b5ed2d67bd75bf3ac295b9f517fceb53051",
+      "peak": 0.25390625,
+      "quantization_max_abs_error": 1.5258365781051914e-05
+    },
+    "framewise_mtf.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples_per_channel": 32320,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "edcd583470390fa7c0c74a3ff79d2e9c025026bcc2d4866b8e8818d7669c7d32",
+      "peak": 0.25732421875,
+      "quantization_max_abs_error": 1.5257715283392703e-05
+    }
+  },
+  "samples": {
+    "stft_roundtrip": {
+      "file": "stft_roundtrip.wav",
+      "common_export_gain": 1.0,
+      "float_measurements": {
+        "against_unmodified_source": {
+          "interval_samples": [
+            0,
+            32320
+          ],
+          "denominator_samples": 32320,
+          "duration_s": 2.02,
+          "energy": 91.36376630233093,
+          "mean_square": 0.002826849204898853,
+          "reference_energy": 91.36376630233093,
+          "error_energy": 0.0,
+          "error_mean_square": 0.0,
+          "relative_error_energy": 0.0,
+          "max_abs_error": 0.0
+        },
+        "against_full_convolution": {
+          "interval_samples": [
+            0,
+            32320
+          ],
+          "denominator_samples": 32320,
+          "duration_s": 2.02,
+          "energy": 91.36376630233093,
+          "mean_square": 0.002826849204898853,
+          "reference_energy": 113.65147376772242,
+          "error_energy": 22.840941575582736,
+          "error_mean_square": 0.0007067123012247133,
+          "relative_error_energy": 0.20097356258014207,
+          "max_abs_error": 0.11876430070010802
+        }
+      },
+      "pcm_measurements": {
+        "against_unmodified_source": {
+          "interval_samples": [
+            0,
+            32320
+          ],
+          "denominator_samples": 32320,
+          "duration_s": 2.02,
+          "energy": 91.36365691013634,
+          "mean_square": 0.002826845820239367,
+          "reference_energy": 91.36365691013634,
+          "error_energy": 0.0,
+          "error_mean_square": 0.0,
+          "relative_error_energy": 0.0,
+          "max_abs_error": 0.0
+        },
+        "against_full_convolution": {
+          "interval_samples": [
+            0,
+            32320
+          ],
+          "denominator_samples": 32320,
+          "duration_s": 2.02,
+          "energy": 91.36365691013634,
+          "mean_square": 0.002826845820239367,
+          "reference_energy": 113.65138462465256,
+          "error_energy": 22.840892218984663,
+          "error_mean_square": 0.0007067107741022483,
+          "relative_error_energy": 0.20097328593417027,
+          "max_abs_error": 0.118743896484375
+        }
+      }
+    },
+    "full_convolution": {
+      "file": "full_convolution.wav",
+      "common_export_gain": 1.0,
+      "float_measurements": {
+        "against_unmodified_source": {
+          "interval_samples": [
+            0,
+            32320
+          ],
+          "denominator_samples": 32320,
+          "duration_s": 2.02,
+          "energy": 113.65147376772242,
+          "mean_square": 0.0035164441141003226,
+          "reference_energy": 91.36376630233093,
+          "error_energy": 22.840941575582736,
+          "error_mean_square": 0.0007067123012247133,
+          "relative_error_energy": 0.25000000000000006,
+          "max_abs_error": 0.11876430070010802
+        },
+        "against_full_convolution": {
+          "interval_samples": [
+            0,
+            32320
+          ],
+          "denominator_samples": 32320,
+          "duration_s": 2.02,
+          "energy": 113.65147376772242,
+          "mean_square": 0.0035164441141003226,
+          "reference_energy": 113.65147376772242,
+          "error_energy": 0.0,
+          "error_mean_square": 0.0,
+          "relative_error_energy": 0.0,
+          "max_abs_error": 0.0
+        }
+      },
+      "pcm_measurements": {
+        "against_unmodified_source": {
+          "interval_samples": [
+            0,
+            32320
+          ],
+          "denominator_samples": 32320,
+          "duration_s": 2.02,
+          "energy": 113.65138462465256,
+          "mean_square": 0.0035164413559607846,
+          "reference_energy": 91.36365691013634,
+          "error_energy": 22.840892218984663,
+          "error_mean_square": 0.0007067107741022483,
+          "relative_error_energy": 0.24999975911045852,
+          "max_abs_error": 0.118743896484375
+        },
+        "against_full_convolution": {
+          "interval_samples": [
+            0,
+            32320
+          ],
+          "denominator_samples": 32320,
+          "duration_s": 2.02,
+          "energy": 113.65138462465256,
+          "mean_square": 0.0035164413559607846,
+          "reference_energy": 113.65138462465256,
+          "error_energy": 0.0,
+          "error_mean_square": 0.0,
+          "relative_error_energy": 0.0,
+          "max_abs_error": 0.0
+        }
+      }
+    },
+    "framewise_mtf": {
+      "file": "framewise_mtf.wav",
+      "common_export_gain": 1.0,
+      "float_measurements": {
+        "against_unmodified_source": {
+          "interval_samples": [
+            0,
+            32320
+          ],
+          "denominator_samples": 32320,
+          "duration_s": 2.02,
+          "energy": 107.97990324468608,
+          "mean_square": 0.0033409623528677626,
+          "reference_energy": 91.36376630233093,
+          "error_energy": 3.5763257911968536,
+          "error_mean_square": 0.00011065364452960562,
+          "relative_error_energy": 0.039143808710364124,
+          "max_abs_error": 0.04794453167446604
+        },
+        "against_full_convolution": {
+          "interval_samples": [
+            0,
+            32320
+          ],
+          "denominator_samples": 32320,
+          "duration_s": 2.02,
+          "energy": 107.97990324468608,
+          "mean_square": 0.0033409623528677626,
+          "reference_energy": 113.65147376772242,
+          "error_energy": 20.376285480538748,
+          "error_mean_square": 0.0006304543774919167,
+          "relative_error_energy": 0.17928747252484564,
+          "max_abs_error": 0.10944110583078703
+        }
+      },
+      "pcm_measurements": {
+        "against_unmodified_source": {
+          "interval_samples": [
+            0,
+            32320
+          ],
+          "denominator_samples": 32320,
+          "duration_s": 2.02,
+          "energy": 107.98001691885293,
+          "mean_square": 0.003340965870014014,
+          "reference_energy": 91.36365691013634,
+          "error_energy": 3.5762712210416794,
+          "error_mean_square": 0.00011065195609658661,
+          "relative_error_energy": 0.03914325829316613,
+          "max_abs_error": 0.047943115234375
+        },
+        "against_full_convolution": {
+          "interval_samples": [
+            0,
+            32320
+          ],
+          "denominator_samples": 32320,
+          "duration_s": 2.02,
+          "energy": 107.98001691885293,
+          "mean_square": 0.003340965870014014,
+          "reference_energy": 113.65138462465256,
+          "error_energy": 20.376153274439275,
+          "error_mean_square": 0.0006304502869566608,
+          "relative_error_energy": 0.179286449890021,
+          "max_abs_error": 0.10943603515625
+        }
+      }
+    }
+  },
+  "unmodified_roundtrip_against_input": {
+    "interval_samples": [
+      0,
+      32320
+    ],
+    "denominator_samples": 32320,
+    "duration_s": 2.02,
+    "energy": 91.36376630233093,
+    "mean_square": 0.002826849204898853,
+    "reference_energy": 91.36376630233093,
+    "error_energy": 3.3633767485785845e-30,
+    "error_mean_square": 1.0406487464661462e-34,
+    "relative_error_energy": 3.6813026484141074e-32,
+    "max_abs_error": 8.326672684688674e-17
+  },
+  "unmodified_roundtrip_pcm_against_quantized_input": {
+    "interval_samples": [
+      0,
+      32320
+    ],
+    "denominator_samples": 32320,
+    "duration_s": 2.02,
+    "energy": 91.36365691013634,
+    "mean_square": 0.002826845820239367,
+    "reference_energy": 91.36365691013634,
+    "error_energy": 0.0,
+    "error_mean_square": 0.0,
+    "relative_error_energy": 0.0,
+    "max_abs_error": 0.0
+  }
+}

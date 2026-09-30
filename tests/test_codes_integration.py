@@ -78,6 +78,28 @@ class CodesIntegrationTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     validate_project(changed)
 
+    def test_source_selection_accepts_literal_spaces_without_pattern_syntax(self):
+        project = {"id": "fixture", "url": "https://example.invalid/official.git",
+                   "revision": "a" * 40, "entrypoints": [],
+                   "source_paths": ["source labview files/", "LICENSE"]}
+        validate_project(project)
+        for path in ("source\nfiles/", "source\tfiles/", "source*/", "source[1]/",
+                     "/source files/", "source files/../outside"):
+            with self.subTest(path=path), self.assertRaises(ValueError):
+                validate_project({**project, "source_paths": [path]})
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            info = root / "fixture" / ".git" / "info"
+            info.mkdir(parents=True)
+            (info / "sparse-checkout").write_text(
+                "/source labview files/\n/LICENSE\n!**/*.exe\n")
+            with patch("codes.chapters.ch00.upstream.fetch_upstreams.run_git",
+                       side_effect=(project["revision"], project["url"], "")):
+                result = inspect_project(project, root)
+        self.assertEqual(result["status"], "source_verified")
+        self.assertTrue(result["source_selection_verified"])
+        self.assertEqual(result["requested_source_paths"], project["source_paths"])
+
     def test_git_environment_cannot_redirect_repository_or_inject_config(self):
         injected = {"GIT_DIR": "/outside/.git", "GIT_WORK_TREE": "/outside",
                     "GIT_INDEX_FILE": "/outside/index", "GIT_CONFIG_COUNT": "1",

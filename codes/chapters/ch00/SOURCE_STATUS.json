@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "lock_sha256": "20d3fe423721828648ba33526af98eeecc23dff2f6a83ab34cb7d07fa1d270cb",
+  "lock_sha256": "6e6ed68abddd8b927b05019aefdce13e370c3064e7b9bb22bb61437626631323",
   "projects": [
     {
       "id": "pyroomacoustics",
@@ -3814,6 +3814,58 @@
       "id": "neural-srp",
       "revision": "0ec639f028987ca3d9d3764331f6d65ff455f9a8",
       "status": "index_only"
+    },
+    {
+      "id": "speed-of-sound-in-air",
+      "revision": "5c7e6652cf2fd7b4c52e83d8fa3782b3c56e61de",
+      "status": "source_verified",
+      "missing_entrypoints": [],
+      "execution": "not_run",
+      "dependency_validation": "not_run",
+      "asset_policy": "sparse_source_checkout",
+      "requested_source_paths": [
+        "source labview files/",
+        "LICENSE",
+        "ReadMe.txt"
+      ],
+      "observed_sparse_patterns": [
+        "/source labview files/",
+        "/LICENSE",
+        "/ReadMe.txt",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "source_selection_verified": true
     }
   ]
 }

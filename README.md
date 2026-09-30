@@ -4,9 +4,9 @@
 
 正文提供关键公式推导、可复算例子、适用边界，以及与各章公式对应的 NumPy/标准库教学代码。
 
-全书有 234 道可运行代码练习、49 张脚本生成的图，以及 27 组共 109 个[主清单合成 WAV](codes/chapters/ch00/audio/MANIFEST.json)。[练习与音频实验手册](codes/chapters/ch00/research/05_exercises_and_audio.md)逐题列出输入、答案、试听条件与代码入口。音频是数学合成样本，不是真实语音或正式听测；第 6 章两组合成 AEC 音频的参数也不完全等同于 E06-07～20 手算题。
+全书有 237 道可运行代码练习、50 张脚本生成的图，以及 27 组共 109 个[主清单合成 WAV](codes/chapters/ch00/audio/MANIFEST.json)。[练习与音频实验手册](codes/chapters/ch00/research/05_exercises_and_audio.md)逐题列出输入、答案、试听条件与代码入口。音频是数学合成样本，不是真实语音或正式听测；第 6 章两组合成 AEC 音频的参数也不完全等同于 E06-07～20 手算题。
 
-另有五套独立管理的合成资产：[双耳时间差与声级差](codes/chapters/ch01/binaural_audio/MANIFEST.json) 5 个双声道 WAV、[GSS 教学链](codes/chapters/ch08/gss_audio/MANIFEST.json) 5 个 WAV 与状态、[自由场移动声源](codes/chapters/ch09/moving_audio/MANIFEST.json) 3 个 WAV 与轨迹真值、[观测到追踪](codes/chapters/ch09/tracking_audio/MANIFEST.json) 2 个 WAV 与逐帧观测，以及[附录 B 房间题](codes/chapters/appendix_b/room_audio/MANIFEST.json) 18 个白噪声 WAV、结果图和[数值报告](codes/chapters/appendix_b/room_audio/RESULTS.json)。它们均不并入主 109 个样本。另有 DEMAND 真实同步录音摘录及 3 个派生 WAV，[数据说明与许可](codes/chapters/ch02/real_audio/README.md)独立保存。
+另有六套独立管理的合成资产：[双耳时间差与声级差](codes/chapters/ch01/binaural_audio/MANIFEST.json) 5 个双声道 WAV、[有限窗STFT卷积](codes/chapters/ch02/stft_audio/MANIFEST.json) 3 个单声道 WAV、[GSS 教学链](codes/chapters/ch08/gss_audio/MANIFEST.json) 5 个 WAV 与状态、[自由场移动声源](codes/chapters/ch09/moving_audio/MANIFEST.json) 3 个 WAV 与轨迹真值、[观测到追踪](codes/chapters/ch09/tracking_audio/MANIFEST.json) 2 个 WAV 与逐帧观测，以及[附录 B 房间题](codes/chapters/appendix_b/room_audio/MANIFEST.json) 18 个白噪声 WAV、结果图和[数值报告](codes/chapters/appendix_b/room_audio/RESULTS.json)。它们均不并入主 109 个样本。另有 DEMAND 真实同步录音摘录及 3 个派生 WAV，[数据说明与许可](codes/chapters/ch02/real_audio/README.md)独立保存。
 
 从[按章代码地图](codes/chapters/README.md)查找每章的教学实现、实验和报告；其中的数值、合成波形与外部接口诊断各有适用边界。第 6 章的 [SpeexDSP 真实配对录音接口实验](codes/chapters/ch00/research/02_aec_wpe_separation.md#aec)仅使用本地缓存，不再分发录音或声称真值 ERLE。[源码研究手册](codes/chapters/ch00/research/README.md)详列算法实现、工业配置、原始来源、许可、已运行实验与尚未验证的范围。
 
@@ -17,7 +17,7 @@ English version: [README_EN.md](README_EN.md)
 | 目录/文件 | 说明 |
 |---|---|
 | `chapters/` | 教程正文 14 篇 Markdown（`00_overview.md` 是入口，`01`～`11` 是 11 章正文，`12`/`13` 是附录 A/B） |
-| `figures/` | 49 张插图（`fig01`～`fig49_*.png`），全部由脚本生成、可复现 |
+| `figures/` | 50 张插图（`fig01`～`fig50_*.png`），全部由脚本生成、可复现 |
 | `codes/chapters/` | 导读、第 1～11 章及附录 A/B 的源码、实验、报告和资产；逐章目录与命令见[代码地图](codes/chapters/README.md) |
 | `codes/chapters/ch00/audio/MANIFEST.json`、各章 `audio/` | 主清单统一管理 27 组、109 个按章节存放的本书合成 WAV；由脚本生成，不直接编辑 |
 | `codes/chapters/ch01/binaural_audio/`、`codes/chapters/ch08/gss_audio/`、`codes/chapters/ch09/moving_audio/`、`codes/chapters/ch09/tracking_audio/`、`codes/chapters/appendix_b/room_audio/` | 五套独立合成实验资产，分别为 5、5、3、2、18 个 WAV；中间状态、轨迹/逐帧观测或房间数值报告随各自清单保存 |
@@ -27,7 +27,7 @@ English version: [README_EN.md](README_EN.md)
 | `codes/chapters/*/reports/` | 随算法所属章保存的小规模运行报告；与源码获取状态、论文全量评测分开 |
 | `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
 | `site/` | 20 个网页：14 个教程页（含首页）及 `research/` 下 6 个研究手册页；构建产物，可再生 |
-| `dist/` | [当前合订 PDF](dist/microphone-array-tutorial.pdf) 与可再生的合订 HTML；PDF 含 14 个顶级、121 个二级、503 个三级书签，共 638 个 |
+| `dist/` | [当前合订 PDF](dist/microphone-array-tutorial.pdf) 与可再生的合订 HTML；PDF 含 14 个顶级、121 个二级、506 个三级书签，共 641 个 |
 
 ## 章节导览
 
@@ -67,7 +67,7 @@ python3 -m venv .venv
 .venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 
-# 3. 先生成 109 个音频，再生成 49 张图（图 34～36、40～41、43～45、47、49 读取生成的音频）
+# 3. 先生成 109 个音频，再生成 50 张图（图 34～36、40～41、43～45、47、49 读取生成的音频）
 .venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
 .venv/bin/python scripts/make_figures.py
 .venv/bin/python scripts/make_aec_figures.py

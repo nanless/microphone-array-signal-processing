@@ -78,7 +78,14 @@ def recursive_covariance(
     *,
     forgetting_factor: float,
 ) -> np.ndarray:
-    """Update frequency-wise second moments from one channels x frequency snapshot."""
+    """Update frequency-wise second moments from one channels x frequency snapshot.
+
+    The caller must supply a Hermitian positive-semidefinite previous state,
+    normally zero or an earlier valid estimate.  Shape/finite checks and final
+    symmetrization do not validate or repair a negative old eigenvalue.  With a
+    valid state and 0 <= forgetting_factor < 1, both terms are PSD and so is
+    their convex combination, apart from floating-point roundoff.
+    """
     old = np.asarray(previous, dtype=complex)
     x = np.asarray(snapshot, dtype=complex)
     if old.ndim != 3 or old.shape[1] != old.shape[2]:

@@ -42,7 +42,7 @@ def validate_project(project: dict[str, object]) -> None:
         if not isinstance(path, str) or not path or path.startswith("/") or ".." in Path(path).parts:
             raise ValueError(f"{project_id}: entrypoint must be a relative repository path")
     for path in project.get("source_paths", []):
-        if not isinstance(path, str) or not re.fullmatch(r"[A-Za-z0-9_.\-/]+", path) or path.startswith("/") or ".." in Path(path).parts:
+        if not isinstance(path, str) or not re.fullmatch(r"[A-Za-z0-9_. \-/]+", path) or path.startswith("/") or ".." in Path(path).parts:
             raise ValueError(f"{project_id}: source selection must use literal relative paths")
 
 

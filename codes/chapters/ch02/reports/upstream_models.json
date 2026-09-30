@@ -1,0 +1,718 @@
+{
+  "schema_version": 1,
+  "executed_at_utc": "2026-09-30T13:20:34.162016+00:00",
+  "audit_source": "codes/chapters/ch02/examples/audit_upstream_models.py",
+  "audit_source_sha256": "86f824d086eb19782eb25e1ff93a1deb841d7bc623162cc1badd619d0625fcf0",
+  "sources": {
+    "lock_sha256": "6e6ed68abddd8b927b05019aefdce13e370c3064e7b9bb22bb61437626631323",
+    "projects": {
+      "pyroomacoustics": {
+        "url": "https://github.com/LCAV/pyroomacoustics.git",
+        "revision": "0dd39f2614b7fc44b2cc63dbe7d60f4641068890",
+        "release": "v0.10.0",
+        "license": "MIT",
+        "worktree_clean": true,
+        "source_sha256": {
+          "pyroomacoustics/parameters.py": "dac6389cdaf949659cb2d8dbe01655593f423b35492bc857a43c4af9b24b4ed2",
+          "pyroomacoustics/doa/doa.py": "8332e1fc9234ff37613b6cddcae2e4d67dc73f624fb8640dcdd5b5721b6e110c",
+          "pyroomacoustics/acoustics.py": "3196254709071ab1061982133f05be94e7da554f2619db98d829203839d7c4d2",
+          "pyroomacoustics/experimental/rt60.py": "c066a78677371003818123efe3b8e1a7dbd75c8a21de6404ab94ea95c0e2c1f3",
+          "LICENSE": "0922c9a0c1f5bb35a1e0df7b56954864e27cfc625fc3b041acde0707ce797e46"
+        },
+        "lock_entry_sha256": "a984aa2f13bab7616164932114c4b42192bebd78dce00786686fd1cc60942f2f"
+      },
+      "acoular": {
+        "url": "https://github.com/acoular/acoular.git",
+        "revision": "13d3d7df74ac1a8135c7ec71da098cbbc03d8652",
+        "release": null,
+        "license": "BSD-3-Clause",
+        "worktree_clean": true,
+        "source_sha256": {
+          "acoular/fastFuncs.py": "07e8f4b07b5b47ff4703ae360d90b967f8407a8c95238371fb6d9f6ce5f97a5f",
+          "acoular/fbeamform.py": "451f0258cb176d663a57f33377078bb36d6fb1ad074f02033493aafaa5354d11",
+          "LICENSE": "b5bc3bfa7c76d388170a8f29f8dc3047bc3ca0abcd3160781f4ec54d3e95f69f"
+        },
+        "lock_entry_sha256": "5287e02ac95cf6b206c626ffd34ed3f3f7c30cd743954b98775065c5b858e099"
+      },
+      "doatools": {
+        "url": "https://github.com/morriswmz/doatools.py.git",
+        "revision": "9469db201e0418aef6b97583ef54b6fec2769502",
+        "release": null,
+        "license": "MIT",
+        "worktree_clean": true,
+        "source_sha256": {
+          "doatools/model/sources.py": "0fe676c55c4b6f2e73ad99323398bd71bc8d80bbf8c56b24f9313af85e980e25",
+          "doatools/utils/math.py": "0b1e286ecb1c89811225bb72c0d263de6a82d647b3617ca23cab6346e4331148",
+          "doatools/performance/utils.py": "a54d0d34fdab9dcb34e86abf93103e426c6a8948b4d848a4ae18662f42cef394",
+          "doatools/performance/crb.py": "aedc92e2d4e4006c31dad01601bde0d6b1a1b0402f3e028bc0daa34b1d592d6c",
+          "LICENSE.md": "39ddd5dcfeb6eb77f18c99e8955341dc7b4d4823a3a121e0124e20de336b507a"
+        },
+        "lock_entry_sha256": "4c352513e5e82f8c474d4979edd3190977aed51fe056a3e952118af894dc4240"
+      }
+    }
+  },
+  "scope": "original-method AST extraction and execution; not full-package validation",
+  "environment": {
+    "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
+    "executable": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/bin/python",
+    "numpy": "2.5.3",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O"
+  },
+  "tolerances": {
+    "default_absolute": 1e-12,
+    "default_relative": 0.0,
+    "acoular_absolute": 2e-06,
+    "rt60_absolute_s": 1e-10,
+    "crb_absolute": 1e-14,
+    "crb_relative": 1e-12
+  },
+  "scaffold": {
+    "upstream_modified": false,
+    "upstream_imports_executed": false,
+    "extractions": [
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/pyroomacoustics/pyroomacoustics/parameters.py",
+        "name": "calculate_speed_of_sound",
+        "start_line": 226,
+        "end_line": 247,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/pyroomacoustics/pyroomacoustics/doa/doa.py",
+        "name": "ModeVector",
+        "start_line": 21,
+        "end_line": 134,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/pyroomacoustics/pyroomacoustics/acoustics.py",
+        "name": "rt60_eyring",
+        "start_line": 1132,
+        "end_line": 1155,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/pyroomacoustics/pyroomacoustics/experimental/rt60.py",
+        "name": "_fit_exp_and_extrapolate",
+        "start_line": 38,
+        "end_line": 72,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/pyroomacoustics/pyroomacoustics/experimental/rt60.py",
+        "name": "measure_rt60",
+        "start_line": 75,
+        "end_line": 201,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/acoular/acoular/fastFuncs.py",
+        "name": "_transferCoreFunc",
+        "start_line": 893,
+        "end_line": 897,
+        "removed_decorators": [
+          "lazyjit(nb.guvectorize([(nb.float64[:], nb.float64[:], nb.float64[:], nb.complex128[:])], '(),(m),()->(m)', nopython=True, target=PARALLEL_OPTION, cache=CACHED_OPTION, fastmath=FAST_OPTION))"
+        ]
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/acoular/acoular/fbeamform.py",
+        "name": "SteeringVector._steer_funcs_freq dictionary only",
+        "start_line": 145,
+        "end_line": 153,
+        "removed_decorators": [],
+        "traits_Dict_constructor_executed": false
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/model/sources.py",
+        "name": "_validate_sensor_location_ndim",
+        "start_line": 9,
+        "end_line": 11,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/model/sources.py",
+        "name": "SourcePlacement",
+        "start_line": 13,
+        "end_line": 155,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/model/sources.py",
+        "name": "FarField1DSourcePlacement",
+        "start_line": 157,
+        "end_line": 322,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/utils/math.py",
+        "name": "projm",
+        "start_line": 39,
+        "end_line": 56,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/performance/utils.py",
+        "name": "reduce_output_matrix",
+        "start_line": 45,
+        "end_line": 59,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/performance/crb.py",
+        "name": "crb_det_farfield_1d",
+        "start_line": 75,
+        "end_line": 141,
+        "removed_decorators": []
+      }
+    ],
+    "own_adapters": [
+      "SimpleNamespace grid xyz",
+      "ArrayAdapter.steering_matrix"
+    ],
+    "runtime_not_required": [
+      "SciPy nonlinear fit",
+      "Traits",
+      "Numba JIT"
+    ]
+  },
+  "all_expected_behaviors_observed": true,
+  "results": {
+    "pyroomacoustics": {
+      "speed": [
+        {
+          "temperature_c": 20,
+          "relative_humidity_percent": 0,
+          "pressure_kpa": 101.325,
+          "output_m_s": 343.4,
+          "expected_m_s": 343.4
+        },
+        {
+          "temperature_c": 20,
+          "relative_humidity_percent": 50,
+          "pressure_kpa": 101.325,
+          "output_m_s": 344.02,
+          "expected_m_s": 344.02
+        },
+        {
+          "temperature_c": 20,
+          "relative_humidity_percent": 50,
+          "pressure_kpa": 80,
+          "output_m_s": 344.02,
+          "expected_m_s": 344.02
+        }
+      ],
+      "mode_vector": {
+        "sensor_xy_m": [
+          [
+            -0.1,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.1,
+            0.0
+          ]
+        ],
+        "fs_hz": 8000,
+        "nfft": 8,
+        "frequency_index": 1,
+        "frequency_hz": 1000,
+        "c_m_s": 343,
+        "reference_channel_zero_based": 1,
+        "cases": [
+          {
+            "mode": "near",
+            "precompute": false,
+            "grid_xyz": [
+              0.2,
+              0.0,
+              0.0
+            ],
+            "grid_identity": "absolute source position in metres",
+            "relative_response": [
+              {
+                "real": -0.25808171383637907,
+                "imag": 0.9661230920453551
+              },
+              {
+                "real": 1.0,
+                "imag": 2.5796517395745434e-17
+              },
+              {
+                "real": -0.258081713836378,
+                "imag": -0.9661230920453553
+              }
+            ],
+            "expected_response": [
+              {
+                "real": -0.25808171383637757,
+                "imag": 0.9661230920453553
+              },
+              {
+                "real": 1.0,
+                "imag": 0.0
+              },
+              {
+                "real": -0.2580817138363782,
+                "imag": -0.9661230920453552
+              }
+            ]
+          },
+          {
+            "mode": "near",
+            "precompute": true,
+            "grid_xyz": [
+              0.2,
+              0.0,
+              0.0
+            ],
+            "grid_identity": "absolute source position in metres",
+            "relative_response": [
+              {
+                "real": -0.25808171383637907,
+                "imag": 0.9661230920453551
+              },
+              {
+                "real": 1.0,
+                "imag": 2.5796517395745434e-17
+              },
+              {
+                "real": -0.258081713836378,
+                "imag": -0.9661230920453553
+              }
+            ],
+            "expected_response": [
+              {
+                "real": -0.25808171383637757,
+                "imag": 0.9661230920453553
+              },
+              {
+                "real": 1.0,
+                "imag": 0.0
+              },
+              {
+                "real": -0.2580817138363782,
+                "imag": -0.9661230920453552
+              }
+            ]
+          },
+          {
+            "mode": "far",
+            "precompute": false,
+            "grid_xyz": [
+              1.0,
+              0.0,
+              0.0
+            ],
+            "grid_identity": "unit direction; not a source range",
+            "relative_response": [
+              {
+                "real": -0.25808171383637796,
+                "imag": -0.9661230920453552
+              },
+              {
+                "real": 1.0,
+                "imag": 0.0
+              },
+              {
+                "real": -0.25808171383637796,
+                "imag": 0.9661230920453552
+              }
+            ],
+            "expected_response": [
+              {
+                "real": -0.2580817138363782,
+                "imag": -0.9661230920453552
+              },
+              {
+                "real": 1.0,
+                "imag": 0.0
+              },
+              {
+                "real": -0.2580817138363782,
+                "imag": 0.9661230920453552
+              }
+            ]
+          },
+          {
+            "mode": "far",
+            "precompute": true,
+            "grid_xyz": [
+              1.0,
+              0.0,
+              0.0
+            ],
+            "grid_identity": "unit direction; not a source range",
+            "relative_response": [
+              {
+                "real": -0.25808171383637796,
+                "imag": -0.9661230920453552
+              },
+              {
+                "real": 1.0,
+                "imag": 0.0
+              },
+              {
+                "real": -0.25808171383637796,
+                "imag": 0.9661230920453552
+              }
+            ],
+            "expected_response": [
+              {
+                "real": -0.2580817138363782,
+                "imag": -0.9661230920453552
+              },
+              {
+                "real": 1.0,
+                "imag": 0.0
+              },
+              {
+                "real": -0.2580817138363782,
+                "imag": 0.9661230920453552
+              }
+            ]
+          }
+        ],
+        "independent_physical_near_response": [
+          {
+            "real": -0.1720544758909184,
+            "imag": -0.6440820613635703
+          },
+          {
+            "real": 1.0,
+            "imag": 0.0
+          },
+          {
+            "real": -0.5161634276727564,
+            "imag": 1.9322461840907104
+          }
+        ],
+        "physical_near_amplitudes": [
+          0.6666666666666666,
+          1.0,
+          2.0
+        ],
+        "odd_fft": {
+          "classification": "rejected",
+          "exception": "Signal length must be even."
+        },
+        "upper_doa_constructor_executed": false
+      },
+      "eyring": {
+        "surface_m2": 100.0,
+        "volume_m3": 56.0,
+        "energy_absorption": 0.2,
+        "c_m_s": 343.0,
+        "cases": [
+          {
+            "air_absorption_parameter_per_m": 0.0,
+            "output_s": 0.4043304943745113,
+            "expected_fixed_source_s": 0.4043304943745113,
+            "independent_positive_absorption_reference_s": 0.4043304943745113,
+            "classification": "zero_air_reference"
+          },
+          {
+            "air_absorption_parameter_per_m": 0.001,
+            "output_s": 0.4084304751218133,
+            "expected_fixed_source_s": 0.4084304751218133,
+            "independent_positive_absorption_reference_s": 0.4003120098750091,
+            "classification": "positive_but_increases_with_absorption"
+          },
+          {
+            "air_absorption_parameter_per_m": 0.01,
+            "output_s": 0.44944777467913616,
+            "expected_fixed_source_s": 0.44944777467913616,
+            "independent_positive_absorption_reference_s": 0.36744496826106327,
+            "classification": "positive_but_increases_with_absorption"
+          },
+          {
+            "air_absorption_parameter_per_m": 0.1,
+            "output_s": -105.34634931000221,
+            "expected_fixed_source_s": -105.34634931000221,
+            "independent_positive_absorption_reference_s": 0.2017780244267862,
+            "classification": "negative_time_invalid"
+          }
+        ],
+        "room_simulation_executed": false
+      },
+      "measure_rt60": {
+        "fs_hz": 16000,
+        "target_t60_s": 0.6,
+        "decay_db": 20,
+        "energy_thres": 1.0,
+        "linear_domain_fit": false,
+        "plot": false,
+        "expected_derivation": "h squared has -60/target dB per second; geometric tail sum preserves slope away from truncation",
+        "cases": [
+          {
+            "name": "analytic_exponential",
+            "sample_count": 32000,
+            "input": "exp(-3*ln(10)*n/(fs*target_t60))",
+            "input_float64_sha256": "65b51a11b657e0e44d1c8654edac715583c1f2d0931b2b917d02200ada221f77",
+            "output_s": 0.6000000000000001,
+            "expected_s": 0.6,
+            "measurement_valid_for_fixture": true,
+            "classification": "valid_analytic_decay",
+            "warnings": [],
+            "zero_energy_edc_classification": null
+          },
+          {
+            "name": "zero_energy",
+            "sample_count": 8,
+            "input": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "input_float64_sha256": "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b",
+            "output_s": 0.0,
+            "expected_s": 0.0,
+            "measurement_valid_for_fixture": false,
+            "classification": "zero_energy",
+            "warnings": [
+              {
+                "category": "RuntimeWarning",
+                "message": "divide by zero encountered in log10"
+              },
+              {
+                "category": "RuntimeWarning",
+                "message": "invalid value encountered in subtract"
+              }
+            ],
+            "zero_energy_edc_classification": "undefined_log_and_normalization"
+          },
+          {
+            "name": "below_5db_decay",
+            "sample_count": 3,
+            "input": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "input_float64_sha256": "04ae04134c8318578c932394683055fea108f3f586ff5b055613752c5f03e6f5",
+            "output_s": 0.0,
+            "expected_s": 0.0,
+            "measurement_valid_for_fixture": false,
+            "classification": "below_5db_decay",
+            "warnings": [],
+            "zero_energy_edc_classification": null
+          }
+        ]
+      }
+    },
+    "acoular": {
+      "reference_distance_m": 0.2,
+      "mic_distances_m": [
+        0.3,
+        0.2,
+        0.1
+      ],
+      "frequency_hz": 1000,
+      "c_m_s": 343,
+      "transfer": [
+        {
+          "real": -0.17205442984898886,
+          "imag": -0.6440820693969728
+        },
+        {
+          "real": 1.0,
+          "imag": 0.0
+        },
+        {
+          "real": -0.5161632895469666,
+          "imag": 1.932246208190918
+        }
+      ],
+      "independent_transfer": [
+        {
+          "real": -0.1720544758909184,
+          "imag": -0.6440820613635703
+        },
+        {
+          "real": 1.0,
+          "imag": 0.0
+        },
+        {
+          "real": -0.5161634276727564,
+          "imag": 1.9322461840907104
+        }
+      ],
+      "cases": [
+        {
+          "steer_type": "classic",
+          "weights": [
+            {
+              "real": -0.08602721545631331,
+              "imag": -0.322041036689339
+            },
+            {
+              "real": 0.3333333333333333,
+              "imag": 0.0
+            },
+            {
+              "real": -0.08602721545631331,
+              "imag": 0.3220410366893389
+            }
+          ],
+          "target_response": {
+            "real": 1.222222216727125,
+            "imag": -1.3877787807814457e-17
+          },
+          "squared_weight_norm": 0.3333333333333333,
+          "expected_target_response": 1.2222222222222223,
+          "expected_squared_weight_norm": 0.3333333333333333
+        },
+        {
+          "steer_type": "inverse",
+          "weights": [
+            {
+              "real": -0.1290408239821983,
+              "imag": -0.48306155802028733
+            },
+            {
+              "real": 0.3333333333333333,
+              "imag": 0.0
+            },
+            {
+              "real": -0.0430136079940661,
+              "imag": 0.16102051934009579
+            }
+          ],
+          "target_response": {
+            "real": 1.0,
+            "imag": 4.831540451226308e-18
+          },
+          "squared_weight_norm": 0.3888888923233246,
+          "expected_target_response": 1.0,
+          "expected_squared_weight_norm": 0.3888888888888889
+        },
+        {
+          "steer_type": "true level",
+          "weights": [
+            {
+              "real": -0.031601834372854354,
+              "imag": -0.11830078945060091
+            },
+            {
+              "real": 0.18367347124157798,
+              "imag": -9.090961374819606e-20
+            },
+            {
+              "real": -0.09480550311856305,
+              "imag": 0.35490236835180267
+            }
+          ],
+          "target_response": {
+            "real": 1.0,
+            "imag": 0.0
+          },
+          "squared_weight_norm": 0.18367347124157798,
+          "expected_target_response": 1.0,
+          "expected_squared_weight_norm": 0.1836734693877551
+        },
+        {
+          "steer_type": "true location",
+          "weights": [
+            {
+              "real": -0.0425724308099488,
+              "imag": -0.15936898200992416
+            },
+            {
+              "real": 0.24743583090138607,
+              "imag": -6.123447132199934e-20
+            },
+            {
+              "real": -0.1277172924298464,
+              "imag": 0.4781069460297724
+            }
+          ],
+          "target_response": {
+            "real": 1.3471506213107072,
+            "imag": -2.7755575615628914e-17
+          },
+          "squared_weight_norm": 0.3333333333333333,
+          "expected_target_response": 1.3471506281091268,
+          "expected_squared_weight_norm": 0.3333333333333333
+        }
+      ],
+      "numba_compilation_executed": false,
+      "traits_pipeline_executed": false
+    },
+    "doatools": {
+      "array": "own six-sensor ideal ULA adapter",
+      "spacing_m": 0.014,
+      "wavelength_m": 0.343,
+      "source_second_moment": [
+        [
+          10.0
+        ]
+      ],
+      "noise_variance": 1.0,
+      "independent_snapshots": 100,
+      "cases": [
+        {
+          "angle_deg": 0.0,
+          "source_unit": "rad",
+          "variance_unit": "rad^2",
+          "variance": 0.00043441457486652314,
+          "expected_variance": 0.0004344145748665233,
+          "standard_deviation_deg": 1.1941938389179014
+        },
+        {
+          "angle_deg": 60.0,
+          "source_unit": "rad",
+          "variance_unit": "rad^2",
+          "variance": 0.001737658299466092,
+          "expected_variance": 0.0017376582994660932,
+          "standard_deviation_deg": 2.3883876778358024
+        },
+        {
+          "angle_deg": 0.0,
+          "source_unit": "deg",
+          "variance_unit": "deg^2",
+          "variance": 1.4260989249094744,
+          "expected_variance": 1.4260989249094749,
+          "standard_deviation_deg": 1.1941938389179012
+        },
+        {
+          "angle_deg": 60.0,
+          "source_unit": "deg",
+          "variance_unit": "deg^2",
+          "variance": 5.704395699637895,
+          "expected_variance": 5.7043956996378995,
+          "standard_deviation_deg": 2.388387677835802
+        }
+      ],
+      "independent_formula": "6/(T*SNR*M*(M^2-1)*(2*pi*d*cos(theta)/lambda)^2)",
+      "invalid_P": {
+        "classification": "rejected_1d_P",
+        "exception": "The sample covariance matrix of the source signals must be a K x K matrix, where K is the number of sources."
+      },
+      "full_ArrayDesign_or_DOA_estimator_executed": false
+    }
+  },
+  "not_executed": [
+    "full-package import",
+    "room generation",
+    "upper DOA pipeline",
+    "pyfar deconvolution",
+    "HARK complex spectrum loading",
+    "LabVIEW humid-air model",
+    "equipment or ISO acceptance"
+  ],
+  "command": [
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/bin/python",
+    "-m",
+    "codes.chapters.ch02.examples.audit_upstream_models",
+    "--report",
+    "codes/chapters/ch02/reports/upstream_models.json"
+  ]
+}

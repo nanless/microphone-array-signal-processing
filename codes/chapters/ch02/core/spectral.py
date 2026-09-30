@@ -72,11 +72,18 @@ def istft(
     length: int | None = None,
     denominator_floor: float = 1e-12,
 ) -> np.ndarray:
-    """Invert :func:`stft` by weighted overlap-add.
+    """Synthesize a real waveform from a one-sided spectrum by WOLA.
 
     The synthesis divides by the accumulated squared window.  Samples whose
-    denominator is zero are rejected instead of silently returning a corrupt
-    boundary value.
+    denominator is at or below ``denominator_floor`` are rejected.
+
+    Unmodified real-input STFT coefficients reconstruct the input on supported
+    samples. Arbitrarily modified coefficients need not be a realizable STFT;
+    synthesis is a real projection, not a promise to reproduce those spectra.
+    NumPy irfft ignores the imaginary part of DC and, for even n_fft only, of
+    Nyquist. The last bin of an odd-length transform remains complex and its
+    imaginary part contributes to the output. Negative-frequency coefficients
+    are supplied by conjugate symmetry. No coefficient is modified in place.
     """
     coefficients = validate_cft(spectra)
     if isinstance(n_fft, (bool, np.bool_)) or not isinstance(n_fft, (int, np.integer)) or n_fft < 2:

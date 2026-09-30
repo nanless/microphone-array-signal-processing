@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "source_script": "scripts/make_figures.py",
+  "source_script_sha256": "61583d82652be622260fb3b44307b7ecb977d20ab771373e01dfd14816f356f2",
+  "exercise": "E02-16",
+  "input": [
+    1.0,
+    2.0,
+    3.0,
+    4.0
+  ],
+  "impulse_response": [
+    1.0,
+    0.0,
+    0.5
+  ],
+  "periodic_hann": [
+    0.0,
+    0.5,
+    1.0,
+    0.5
+  ],
+  "hop_samples": 2,
+  "frame_starts_samples": [
+    -2,
+    0,
+    2,
+    4
+  ],
+  "retained_output_samples": 6,
+  "synthesis_denominator": [
+    1.0,
+    0.5,
+    1.0,
+    0.5,
+    1.0,
+    0.5
+  ],
+  "linear_full": [
+    1.0,
+    2.0,
+    3.5,
+    5.0,
+    1.5,
+    2.0
+  ],
+  "wola_outputs": {
+    "identity": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      0.0,
+      0.0
+    ],
+    "fft4": [
+      1.0,
+      3.0,
+      3.0,
+      4.5,
+      0.0,
+      1.0
+    ],
+    "fft8_keep4": [
+      1.0,
+      1.9999999999999998,
+      3.0,
+      4.5,
+      0.0,
+      1.0
+    ]
+  },
+  "errors_against_linear": {
+    "fft4": [
+      0.0,
+      1.0,
+      -0.5,
+      -0.5,
+      -1.5,
+      -1.0
+    ],
+    "fft8_keep4": [
+      0.0,
+      -2.220446049250313e-16,
+      -0.5,
+      -0.5,
+      -1.5,
+      -1.0
+    ]
+  },
+  "fft8_control": "linear convolution of each windowed four-point frame; only original four-point synthesis support retained; not a complete filtering implementation",
+  "randomness": "none; deterministic artificial samples",
+  "amplitude_unit": "dimensionless teaching sample values, not normalized PCM"
+}

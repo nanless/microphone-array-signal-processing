@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""生成教程插图（图 1～25、33～36、40～49；图 26～32、37～39 见 make_aec_figures.py）。
+"""生成教程插图（图 1～25、33～36、40～50；图 26～32、37～39 见 make_aec_figures.py）。
 
 用法（仓库根目录）：
-    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～49 → figures/
+    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～50 → figures/
 """
 from pathlib import Path
 import hashlib
@@ -3550,6 +3550,86 @@ def fig_fft_block_boundary():
          {'AudioManifestDigest': hashlib.sha256(manifest_path.read_bytes()).hexdigest()})
 
 
+
+def fig_stft_convolution():
+    """Show two independent finite-window effects, retaining all six samples."""
+    source = np.array([1., 2., 3., 4., 0., 0.])
+    impulse = np.array([1., 0., .5])
+    window = np.array([0., .5, 1., .5])
+    frame_starts = (-2, 0, 2, 4)
+    denominator = np.zeros(6)
+    numerators = {"identity": np.zeros(6), "fft4": np.zeros(6), "fft8_keep4": np.zeros(6)}
+    for start in frame_starts:
+        indices = start + np.arange(4)
+        valid = (indices >= 0) & (indices < 6)
+        segment = np.zeros(4)
+        segment[valid] = source[indices[valid]]
+        segment *= window
+        filtered = {"identity": segment}
+        for key, size in (("fft4", 4), ("fft8_keep4", 8)):
+            filtered[key] = np.fft.irfft(np.fft.rfft(segment, n=size)
+                                * np.fft.rfft(impulse, n=size), n=size)[:4]
+        denominator[indices[valid]] += window[valid]**2
+        for key in numerators:
+            numerators[key][indices[valid]] += filtered[key][valid] * window[valid]
+    if np.any(denominator <= 0):
+        raise ValueError("Figure 50 needs full nonzero synthesis support")
+    outputs = {key: value / denominator for key, value in numerators.items()}
+    linear = np.convolve(source[:4], impulse, mode="full")
+    # Hand/Fraction-derived controls; FFT roundoff is not a second evidence source.
+    expected = {"identity": [1, 2, 3, 4, 0, 0], "fft4": [1, 3, 3, 4.5, 0, 1],
+                "fft8_keep4": [1, 2, 3, 4.5, 0, 1]}
+    for key in expected:
+        if not np.allclose(outputs[key], expected[key], atol=2e-14, rtol=0):
+            raise ValueError(f"Figure 50 disagrees with hand calculation: {key}")
+    if not np.array_equal(linear, [1, 2, 3.5, 5, 1.5, 2]):
+        raise ValueError("Figure 50 full linear convolution differs")
+    report = {"schema_version": 1, "source_script": "scripts/make_figures.py",
+              "source_script_sha256": source_script_digest(), "exercise": "E02-16",
+              "input": source[:4].tolist(), "impulse_response": impulse.tolist(),
+              "periodic_hann": window.tolist(), "hop_samples": 2,
+              "frame_starts_samples": list(frame_starts), "retained_output_samples": 6,
+              "synthesis_denominator": denominator.tolist(),
+              "linear_full": linear.tolist(), "wola_outputs": {k: v.tolist() for k, v in outputs.items()},
+              "errors_against_linear": {k: (outputs[k]-linear).tolist()
+                                        for k in ("fft4", "fft8_keep4")},
+              "fft8_control": "linear convolution of each windowed four-point frame; only original four-point synthesis support retained; not a complete filtering implementation",
+              "randomness": "none; deterministic artificial samples",
+              "amplitude_unit": "dimensionless teaching sample values, not normalized PCM"}
+    report_path = CODE_CHAPTERS / "ch02/reports/figure50_stft_convolution.json"
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False)+"\n")
+    fig, axes = plt.subplots(3, 1, figsize=(9.5, 7.0), sharex=True, sharey=True)
+    samples = np.arange(6)
+    rows = ((linear, C_BLUE, '(a) 完整线性卷积：保留六点与尾部'),
+            (outputs['fft4'], C_RED, '(b) 四点逐帧乘法 + WOLA：存在圆折叠与窗支持误差'),
+            (outputs['fft8_keep4'], C_PURPLE, '(c) 每帧补八点、只取原四点支持：去圆折叠后仍有误差'))
+    for index, (ax, (values, color, title)) in enumerate(zip(axes, rows)):
+        if index:
+            ax.plot(samples, linear, '--', color=C_BLUE, lw=1.3,
+                    marker='o', mfc='white', ms=6, label='完整线性卷积参考')
+        ax.vlines(samples, 0, values, color=color, linewidth=2.5)
+        ax.scatter(samples, values, color=color, marker='s' if index else 'o',
+                   s=52, zorder=4, label='当前输出')
+        for sample, value in zip(samples, values):
+            offset = (10, -18) if index and value > 0 else (0, 9)
+            ax.annotate(f'{value:g}', (sample, value), xytext=offset,
+                        textcoords='offset points',
+                        ha='left' if index and value > 0 else 'center', color=color,
+                        bbox=dict(facecolor='white', edgecolor='none', pad=.4))
+        ax.set_title(title, loc='left')
+        ax.axhline(0, color=C_MAIN, lw=.7)
+        ax.set(xlim=(-.35, 5.35), ylim=(-.2, 6.2), ylabel='样本幅度')
+        ax.set_xticks(samples)
+        ax.grid(axis='y', ls=':', alpha=.3)
+        if index:
+            ax.legend(loc='upper left', ncol=2, frameon=False)
+    axes[-1].set_xlabel('输出样本位置 n（六点共用同一时间原点）')
+    fig.suptitle('图50  有限窗的逐帧乘法为何不等于完整卷积', fontsize=FS_SUP)
+    fig.tight_layout(rect=(0, 0, 1, .95), h_pad=1.3)
+    save(fig, 'fig50_stft_convolution.png')
+
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -3592,6 +3672,7 @@ def main():
     fig_selection_audio_tradeoff()
     fig_fft_signed_bins()
     fig_fft_block_boundary()
+    fig_stft_convolution()
     print("ALL DONE")
 
 

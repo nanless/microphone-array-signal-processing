@@ -67,3 +67,17 @@ Vo RFS 追踪源码归档单独取得和核验：
 该作者ZIP仅作许可允许的学术研究阅读，保留62个选定源文件及原声明。其descriptor是官方网页快照，
 并非`.dsc`、官方校验和或签名；锁表SHA-256为本次取得后本地计算。完整归档只在忽略缓存中，
 选定目录不含预编译MEX或数据，未运行MATLAB/MEX。不能把两项归档与Git来源混算。
+
+
+## 第二章高精度环境校准参考
+
+原作者湿空气声速项目固定为`5c7e6652cf2fd7b4c52e83d8fa3782b3c56e61de`。
+获取工具支持路径中的字面ASCII空格，仍拒绝通配符、换行、绝对路径和父目录越界。
+目录`source labview files/`的43个VI、`LICENSE`与`ReadMe.txt`已按选集取得，
+没有取得预编译EXE、论文PDF或LabVIEW运行时。VI是LabVIEW保存的图形源码；
+此处取得文件没有证明已查看框图或执行模型。具体假设与运行依赖见
+[第二章环境参数研究](../research/01_spatial_and_tracking.md#12-声速参数必须与实际实现一致)。
+
+```bash
+.venv/bin/python codes/chapters/ch00/upstream/fetch_upstreams.py --project speed-of-sound-in-air
+```

@@ -27,6 +27,7 @@ class SourceResearchTests(unittest.TestCase):
             'pystoi': 'LICENSE', 'visqol': 'LICENSE', 'libsndfile': 'COPYING',
             'lib-xcore-math': 'LICENSE.rst', 'e2e-ad-aec': 'LICENSE',
             'integrated-aec-nr': 'LICENSE.md', 'nbss': 'LICENSE',
+            'speed-of-sound-in-air': 'LICENSE',
         }
         coverage = (ROOT / 'codes/chapters/ch00/COVERAGE.md').read_text()
         for project_id, license_file in expected.items():
