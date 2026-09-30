@@ -11,7 +11,7 @@
 | [ch02](ch02/) | `ch02.chapter02_experiments` | E02-09～18；传播、频谱、协方差与采样，不是设备测量 |
 | [ch03](ch03/) | `ch03.chapter03_experiments`、`ch03.coarray_covariance_exercise`、`ch03.examples.self_calibration_demo` | E03-07～17 与单独的受外部相位锚约束标定示例；几何、模糊、校准和虚拟滞后统计，不是全盲设备标定 |
 | [ch04](ch04/) | `ch04.chapter04_experiments`、`ch04.doa_resolution_trials` | E04-08、E04-12～18；分辨率试验保留分类计数与统计分母 |
-| [ch05](ch05/) | `ch05.chapter05_experiments`、`ch05.beamformer_common_input_demo` | E05 练习；同输入波束权重比较限于所声明的阵列与噪声条件 |
+| [ch05](ch05/) | `ch05.chapter05_experiments`、`ch05.beamformer_common_input_demo` | E05-01～22练习；同输入波束比较与独立导数约束PCM限于所声明条件；`ch05.examples.generate_derivative_audio --check`只读核验七源/实际PCM，原方法审计另记 |
 | [ch06](ch06/) | `ch06.chapter06_experiments`、`ch06.aec_algorithm_minicases`、`ch06.aec_partitioned_demo` | E06-22～33 及 AEC 算法缩例；外部库或录音示例另有依赖 |
 | [ch07](ch07/) | `ch07.chapter07_experiments`、`ch07.wpe_temporal_contract` | E07 练习及在线 WPE 分块连续性、未来帧影响 |
 | [ch08](ch08/) | `ch08.chapter08_experiments`、`ch08.gss_activity_error_demo` | E08 练习及固定密度下活动标注误差；不是官方 GPU 整链 |
@@ -34,7 +34,7 @@
 `MVDR target response` 应接近 1；STFT 重建误差接近浮点舍入。极高的匹配无噪声 AEC ERLE 是算术
 收敛检查，队列示例中的超期次数则来自构造的负载，二者均不代表设备测量。完整核对步骤见导读。
 
-旧的 `codes.examples.*` 和 `codes.array_tutorial.*` 导入路径已经退出仓内接口。运行时使用上表中的章节模块；修改题目时改唯一真实源文件，再核对全书 245 个稳定练习 ID、对应章节和覆盖表。
+旧的 `codes.examples.*` 和 `codes.array_tutorial.*` 导入路径已经退出仓内接口。运行时使用上表中的章节模块；修改题目时改唯一真实源文件，再核对全书 250 个稳定练习 ID、对应章节和覆盖表。
 
 双耳、STFT卷积、多频几何、房间、主音频、GSS、移动和追踪资产的清单，以及某些工业报告，会校验生成器的**路径和完整源码摘要**。生成器已归入相应章节的 `examples/`；原生 C/C++ 探针与调用它的 Python 文件放在同一目录。更改这些文件后，应从真实新源重生资产并核对参数、逐文件摘要和报告，再同步构建与测试。
 

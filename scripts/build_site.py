@@ -44,6 +44,8 @@ TRACKING_AUDIO_ROOT = CODE_CHAPTERS / "ch09" / "tracking_audio"
 GSS_AUDIO_ROOT = CODE_CHAPTERS / "ch08" / "gss_audio"
 BINAURAL_AUDIO_ROOT = CODE_CHAPTERS / "ch01" / "binaural_audio"
 STFT_AUDIO_ROOT = CODE_CHAPTERS / "ch02" / "stft_audio"
+DERIVATIVE_AUDIO_ROOT = CODE_CHAPTERS / "ch05" / "derivative_audio"
+DERIVATIVE_AUDIO_WAVS = {"derivative_reference.wav": 1, "derivative_array.wav": 3, "derivative_single.wav": 1, "derivative_constrained.wav": 1}
 FOCUS_AUDIO_ROOT = CODE_CHAPTERS / "ch04" / "focus_audio"
 FOCUS_AUDIO_WAVS = {"focus_reference.wav": 1, "focus_delayed_source.wav": 1, "focus_array.wav": 4, "focus_known_focused.wav": 4}
 GEOMETRY_AUDIO_ROOT = CODE_CHAPTERS / "ch03" / "geometry_audio"
@@ -106,6 +108,9 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .main p{margin:0 0 1.05em}.main li>p{margin:.35em 0}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
 .audio-sample{display:block;width:min(100%,460px);margin:8px 0 18px}.audio-sample:focus-visible{outline:3px solid #e67e22}
+/* 表格列宽不能压掉原生播放按钮；手机上的表格可横向滚动。 */
+td .audio-sample{width:280px;min-width:280px}
+table:has(td .audio-sample) td:last-child{min-width:180px}
 table{border-collapse:collapse;margin:14px 0;max-width:100%}
 .table-scroll{max-width:100%;overflow-x:auto}
 .table-scroll:focus-visible{outline:3px solid #e67e22;outline-offset:2px}
@@ -476,6 +481,48 @@ def stage_focus_audio(source, destination):
     return expected
 
 
+def stage_derivative_audio(source, destination):
+    """Validate and copy E05-22 assets; numerical scores are checked by the generator."""
+    import wave
+    expected = set(DERIVATIVE_AUDIO_WAVS) | {"MANIFEST.json"}
+    if (source.is_symlink() or {p.name for p in source.iterdir()} != expected
+            or any(p.is_symlink() or not p.is_file() for p in source.iterdir())):
+        raise ValueError("导数约束目录必须恰含四份普通WAV及独立清单")
+    manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+    if (set(manifest["files"]) != set(DERIVATIVE_AUDIO_WAVS)
+            or manifest["sample_rate_hz"] != 16000 or manifest["samples_per_channel"] != 32002
+            or manifest["common_export_gain"] != 1):
+        raise ValueError("导数约束清单集合、采样率、完整长度或共同增益不符")
+    required_sources = {"codes/chapters/ch05/core/derivative_audio.py",
+                        "codes/chapters/ch05/examples/generate_derivative_audio.py",
+                        "codes/chapters/ch05/core/beamforming.py",
+                        "codes/chapters/ch04/core/covariance.py",
+                        "codes/chapters/ch03/core/geometry.py",
+                        "codes/chapters/ch02/core/conventions.py",
+                        "codes/chapters/ch00/core/audio_samples.py"}
+    if set(manifest["source_sha256"]) != required_sources:
+        raise ValueError("导数约束必须记录七个真实生成源")
+    for name, digest in manifest["source_sha256"].items():
+        if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest:
+            raise ValueError(f"导数约束生成源摘要过期：{name}")
+    for name, channels in DERIVATIVE_AUDIO_WAVS.items():
+        path, record = source / name, manifest["files"][name]
+        if (record["sample_rate_hz"] != 16000 or record["channels"] != channels
+                or record["samples_per_channel"] != 32002
+                or hashlib.sha256(path.read_bytes()).hexdigest() != record["sha256"]):
+            raise ValueError(f"导数约束摘要或参数不符：{name}")
+        with wave.open(str(path), "rb") as wav:
+            if (wav.getframerate(), wav.getnchannels(), wav.getsampwidth(),
+                    wav.getnframes(), wav.getcomptype()) != (16000, channels, 2, 32002, "NONE"):
+                raise ValueError(f"导数约束PCM格式不符：{name}")
+            if len(wav.readframes(32002)) != 32002*channels*2:
+                raise ValueError(f"导数约束PCM数据截断：{name}")
+    destination.mkdir()
+    for name in sorted(expected):
+        shutil.copy2(source / name, destination / name)
+    return expected
+
+
 def stage_tracking_audio(source, destination):
     """Validate the independent PCM-to-observation experiment before publishing."""
     import wave
@@ -558,7 +605,7 @@ def source_digest():
     paths += [main_audio_manifest_path(CODE_CHAPTERS)]
     paths += sorted(main_audio_sources())
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "build_markdown_helpers.py",
@@ -714,6 +761,9 @@ def rewrite_site_links(html, source_path):
         if target.parent == GEOMETRY_AUDIO_ROOT.resolve() and target.name in (set(GEOMETRY_AUDIO_WAVS) | {"MANIFEST.json"}):
             relative = os.path.relpath("geometry_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
+        if target.parent == DERIVATIVE_AUDIO_ROOT.resolve() and target.name in (set(DERIVATIVE_AUDIO_WAVS) | {"MANIFEST.json"}):
+            relative = os.path.relpath("derivative_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
+            return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
         if target.parent == FOCUS_AUDIO_ROOT.resolve() and target.name in (set(FOCUS_AUDIO_WAVS) | {"MANIFEST.json"}):
             relative = os.path.relpath("focus_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
@@ -729,7 +779,7 @@ def rewrite_site_links(html, source_path):
         # input as a download link; only the explicit mono derivatives play.
         if parsed.path.endswith("real_audio/demand_nriver_16ch_10s.wav"):
             return match.group(0)
-        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|stft_audio|geometry_audio|focus_audio)/[a-z0-9_]+\.wav", parsed.path):
+        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|stft_audio|geometry_audio|focus_audio|derivative_audio)/[a-z0-9_]+\.wav", parsed.path):
             return match.group(0)
         safe_href = escape(href, quote=True)
         safe_label = escape(re.sub(r'<[^>]+>', '', unescape(label)), quote=True)
@@ -1035,6 +1085,10 @@ def main():
         (OUT / "focus_audio").mkdir(exist_ok=True)
         stale += [path for path in (OUT / "focus_audio").iterdir()
                   if path.is_file() and path.name not in focus_names]
+        derivative_names = stage_derivative_audio(DERIVATIVE_AUDIO_ROOT, temp_out / "derivative_audio")
+        (OUT / "derivative_audio").mkdir(exist_ok=True)
+        stale += [path for path in (OUT / "derivative_audio").iterdir()
+                  if path.is_file() and path.name not in derivative_names]
         publish_files([(temp_out / name, OUT / name) for name in sorted(expected)] +
                       [(temp_out / "audio" / name, OUT / "audio" / name) for name in audio_names] +
                       [(temp_out / "real_audio" / name, OUT / "real_audio" / name)
@@ -1054,7 +1108,9 @@ def main():
                       [(temp_out / "geometry_audio" / name, OUT / "geometry_audio" / name)
                        for name in sorted(geometry_names)] +
                       [(temp_out / "focus_audio" / name, OUT / "focus_audio" / name)
-                       for name in sorted(focus_names)], stale)
+                       for name in sorted(focus_names)] +
+                      [(temp_out / "derivative_audio" / name, OUT / "derivative_audio" / name)
+                       for name in sorted(derivative_names)], stale)
     print("DONE", len(expected), "pages")
 
 

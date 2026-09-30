@@ -14,7 +14,7 @@ from codes.chapters.ch05.beamformer_common_input_demo import run_experiment
 class ChapterFiveExamplesTest(unittest.TestCase):
     def test_catalog_is_complete_and_strict_json(self):
         results = ex.run_exercises()
-        self.assertEqual(set(results), {f'E05-{i:02d}' for i in range(8, 18)})
+        self.assertEqual(set(results), {f'E05-{i:02d}' for i in range(8, 23)})
         json.dumps(results, allow_nan=False)
 
     def test_gsc_solution_matches_inverse_variance_weights(self):
@@ -115,6 +115,67 @@ class ChapterFiveExamplesTest(unittest.TestCase):
         for row, expected in zip(rows, [np.eye(2)/2, np.diag([1., 0]), 1e-288*np.eye(2)]):
             np.testing.assert_allclose(row['covariance'], expected, atol=0, rtol=1e-14)
         self.assertEqual([r['weight_concentration_count'] for r in rows], [2, 1, 2])
+
+    def test_derivative_constraint_has_rational_noise_and_local_complex_flatness(self):
+        rows = {r['method']: r for r in ex.derivative_lcmv()['cases']}
+        np.testing.assert_allclose(rows['single']['weights'], [4/7, 2/7, 1/7])
+        np.testing.assert_allclose(rows['constrained']['weights'], [4/13, 5/13, 4/13])
+        for key, power, wng, derivative in [('single', 4/7, 7/3, -3j/7),
+                                           ('constrained', 10/13, 169/57, 0), ('DSB', 7/9, 3, 0)]:
+            row = rows[key]
+            self.assertAlmostEqual(row['output_noise_power'], power)
+            self.assertAlmostEqual(row['wng_linear'], wng)
+            self.assertAlmostEqual(row['complex_response_derivative_at_zero'], derivative)
+            self.assertEqual([r['phi_rad'] for r in row['responses']], [0., .1, .2, .3])
+            for response in row['responses']:
+                phi = response['phi_rad']
+                expected = ((2+5*math.cos(phi)-3j*math.sin(phi))/7 if key == 'single' else
+                            (5+8*math.cos(phi))/13 if key == 'constrained' else (1+2*math.cos(phi))/3)
+                self.assertAlmostEqual(response['complex_response'], expected)
+
+    def test_norm_ball_optimum_has_nonunit_nominal_response_and_general_wng(self):
+        nominal, robust = ex.norm_ball_robust()['cases']
+        t = 1/(2-math.sqrt(2)/5)
+        np.testing.assert_allclose(robust['weights'], [t, t])
+        self.assertAlmostEqual(robust['nominal_response'], 2*t)
+        self.assertAlmostEqual(robust['worst_case_amplitude'], 1)
+        self.assertAlmostEqual(nominal['worst_case_amplitude'], 1-math.sqrt(2)/10)
+        self.assertAlmostEqual(robust['general_wng_linear'], 2)
+        self.assertNotAlmostEqual(robust['unit_response_only_shortcut'], 2)
+        # Cauchy: every feasible w has ||w|| >= 1/(sqrt(2)-epsilon).
+        self.assertAlmostEqual(robust['weight_norm_squared'], 1/(math.sqrt(2)-.2)**2)
+
+    def test_souden_selects_complex_reference_not_unit_source_response(self):
+        report = ex.souden_reference_channel()
+        self.assertEqual(report['trace_normalizer'], 12)
+        for row, expected, reference in zip(report['cases'], ([.5, .5+.5j], [.25-.25j, .5]), (2, 1+1j)):
+            np.testing.assert_allclose(row['souden_weights'], expected)
+            np.testing.assert_allclose(row['rtf_mvdr_weights'], expected)
+            self.assertAlmostEqual(row['souden_measurements']['target_response'], reference)
+            self.assertAlmostEqual(row['mwf_measurements']['target_response'], reference*12/13)
+        second = report['cases'][1]['mwf_measurements']
+        self.assertAlmostEqual(second['output_noise_power'], 72/169)
+        self.assertAlmostEqual(second['reference_target_distortion_power'], 6/169)
+        self.assertAlmostEqual(second['reference_mse'], 6/13)
+        control = report['full_rank_control']
+        np.testing.assert_array_equal(control['target_covariance'], [[2, 0], [0, 1]])
+        self.assertEqual(control['trace_normalizer'], 3)
+        np.testing.assert_allclose(control['souden_weights'], [2/3, 0], atol=1e-15)
+        np.testing.assert_allclose(control['general_mwf_weights'], [2/3, 0], atol=1e-15)
+        np.testing.assert_allclose(control['rank_one_trace_shortcut_weights'], [1/2, 0], atol=1e-15)
+        self.assertAlmostEqual(control['reference_target_distortion_power'], 2/9)
+        self.assertAlmostEqual(control['output_noise_power'], 4/9)
+
+    def test_om_lsa_is_bayes_and_geometric_combination_only(self):
+        report = ex.om_lsa_probability_combination()
+        self.assertEqual(report['nu'], 3)
+        for row, odds in zip(report['cases'][:2], (4*math.exp(-3), math.exp(-3))):
+            p = 1/(1+odds)
+            self.assertAlmostEqual(row['posterior_presence_probability'], p)
+            self.assertAlmostEqual(row['geometric_gain'], .8**p*.1**(1-p))
+            self.assertLess(row['geometric_gain'], row['arithmetic_mix_for_comparison'])
+        self.assertEqual(report['cases'][2]['posterior_presence_probability'], 1)
+        self.assertEqual(report['cases'][3]['posterior_presence_probability'], 0)
 
     def test_common_input_comparison_has_independent_rank_one_inverse(self):
         phase = 2*math.pi*2000*.04/343

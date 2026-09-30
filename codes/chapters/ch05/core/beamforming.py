@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import numpy as np
 
 from codes.chapters.ch02.core.conventions import finite_real_scalar, finite_real_array, validate_cft, validate_frequencies, validate_positions
@@ -58,12 +59,51 @@ def diffuse_coherence(
     """Return the 3-D isotropic diffuse-field sinc coherence matrices."""
     microphones = validate_positions(positions)
     frequencies = validate_frequencies(frequencies_hz)
-    if not np.isfinite(sound_speed) or sound_speed <= 0.0:
+    sound_speed = finite_real_scalar(sound_speed, "sound_speed")
+    if sound_speed <= 0.0:
         raise ValueError("sound_speed must be positive")
-    separations = np.linalg.norm(
-        microphones[:, None, :] - microphones[None, :, :], axis=-1
-    )
-    return np.sinc(2.0 * frequencies[:, None, None] * separations[None, :, :] / sound_speed)
+    # Preserve the ordinary arithmetic, including existing figure values.
+    # Finite coordinates can nevertheless overflow a squared norm, or have
+    # a nonzero distance lost to underflow; 2*f may also overflow prematurely.
+    with np.errstate(over="ignore", invalid="ignore", under="ignore"):
+        differences = microphones[:, None, :] - microphones[None, :, :]
+        separations = np.linalg.norm(differences, axis=-1)
+        result = np.sinc(2.0 * frequencies[:, None, None] * separations[None, :, :] / sound_speed)
+    lost_distance = (separations == 0) & np.any(differences != 0, axis=-1)
+    if np.all(np.isfinite(result)) and not np.any(lost_distance):
+        return result
+    result = np.ones((len(frequencies), len(microphones), len(microphones)))
+    for m in range(len(microphones)):
+        for n in range(m):
+            delta = differences[m, n]
+            if np.all(np.isfinite(delta)):
+                scale = float(np.max(abs(delta)))
+                reduced = delta/scale if scale else delta
+            else:
+                # Opposite near-limit coordinates can have a true distance
+                # above float64 even when f*distance/c is representable.
+                scale = float(np.max(abs(microphones[[m, n]])))
+                reduced = microphones[m]/scale - microphones[n]/scale
+            norm = math.hypot(*reduced)
+            for k, frequency in enumerate(frequencies):
+                if frequency == 0 or scale == 0:
+                    continue
+                mantissa, exponent = 1., 0
+                for factor, sign in ((2., 1), (float(frequency), 1), (scale, 1),
+                                     (norm, 1), (sound_speed, -1)):
+                    value, power = math.frexp(factor)
+                    mantissa = mantissa*value if sign == 1 else mantissa/value
+                    exponent += sign*power
+                try:
+                    argument = math.ldexp(mantissa, exponent)
+                    phase = math.pi*argument
+                    if not math.isfinite(phase):
+                        raise OverflowError
+                except OverflowError as error:
+                    raise ValueError("diffuse coherence phase exceeds floating-point range") from error
+                coherence = math.sin(phase)/phase if phase else 1.
+                result[k, m, n] = result[k, n, m] = coherence
+    return result
 
 
 def mvdr_weights(
@@ -189,15 +229,26 @@ def lcmv_weights(
 
 
 def blocking_matrix(constraints: np.ndarray, *, rtol: float = 1e-12) -> np.ndarray:
-    """Return an orthonormal basis ``B`` for the null space of ``C.H``."""
-    if not np.isfinite(rtol) or not 0.0 <= rtol < 1.0:
+    """Return a basis of ``null(C.H)`` after independent column-unit scaling.
+
+    ``rtol`` judges normalized numerical dependence. Redundant/zero columns
+    are legal when at least one column is nonzero; full row rank returns an
+    M-by-zero basis, correctly leaving no adaptive degree of freedom.
+    """
+    rtol = finite_real_scalar(rtol, "rtol")
+    if not 0.0 <= rtol < 1.0:
         raise ValueError("rtol must be finite and in [0, 1)")
     c = np.asarray(constraints, dtype=complex)
     if c.ndim == 1:
         c = c[:, None]
-    if c.ndim != 2 or c.shape[1] < 1 or not np.all(np.isfinite(c)):
+    if c.ndim != 2 or min(c.shape) < 1 or not np.all(np.isfinite(c)):
         raise ValueError("constraints must be a finite channels x constraints matrix")
-    left, singular_values, _ = np.linalg.svd(c, full_matrices=True)
+    scales = np.max(np.maximum(abs(c.real), abs(c.imag)), axis=0)
+    nonzero = scales > 0
+    if not np.any(nonzero):
+        raise np.linalg.LinAlgError("at least one non-zero constraint is required")
+    normalized = c[:, nonzero].real/scales[nonzero] + 1j*(c[:, nonzero].imag/scales[nonzero])
+    left, singular_values, _ = np.linalg.svd(normalized, full_matrices=True)
     threshold = rtol * singular_values[0] if singular_values.size else 0.0
     rank = int(np.sum(singular_values > threshold))
     if rank == 0:
@@ -220,8 +271,15 @@ def wiener_gain(
         raise ValueError("power arrays must be finite")
     if np.any(output < 0.0) or np.any(noise < 0.0):
         raise ValueError("power arrays must be non-negative")
+    gain_floor = finite_real_scalar(gain_floor, "gain_floor")
+    power_floor = finite_real_scalar(power_floor, "power_floor")
     if not 0.0 <= gain_floor <= 1.0:
         raise ValueError("gain_floor must be in [0, 1]")
     if not np.isfinite(power_floor) or power_floor <= 0.0:
         raise ValueError("power_floor must be finite and positive")
-    return np.maximum(1.0 - noise / np.maximum(output, power_floor), gain_floor)
+    protected = np.maximum(output, power_floor)
+    # noise/output > 1 is certain to hit the nonnegative gain floor. Avoid
+    # computing an overflowing ratio that cannot affect the returned gain.
+    ratio = np.ones(output.shape)
+    np.divide(noise, protected, out=ratio, where=noise <= protected)
+    return np.maximum(1.0 - ratio, gain_floor)

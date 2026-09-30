@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/make_figures.py::fig_wpe",
-  "source_sha256": "17324f85c84c24538600d149ddb2bb336d8243fa195fb13b1c6518c4433ff62b",
+  "source_sha256": "752742a757fb00bdd472722413c1407cbda1c2ec98d9dda4fd87628c32aae576",
   "data_type": "mathematical synthetic signal and impulse response; not real speech or measured RIR",
   "parameters": {
     "sample_rate_hz": 16000,

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>空间处理与追踪源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="fa343eafbb45"><style>
+<meta name="source-digest" content="1e0a85fe898c"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -17,6 +17,9 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .main p{margin:0 0 1.05em}.main li>p{margin:.35em 0}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
 .audio-sample{display:block;width:min(100%,460px);margin:8px 0 18px}.audio-sample:focus-visible{outline:3px solid #e67e22}
+/* 表格列宽不能压掉原生播放按钮；手机上的表格可横向滚动。 */
+td .audio-sample{width:280px;min-width:280px}
+table:has(td .audio-sample) td:last-child{min-width:180px}
 table{border-collapse:collapse;margin:14px 0;max-width:100%}
 .table-scroll{max-width:100%;overflow-x:auto}
 .table-scroll:focus-visible{outline:3px solid #e67e22;outline-offset:2px}
@@ -291,7 +294,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="01_spatial_and_tracking.html#sec-u-a16f6b51b4">收录边界</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="空间处理与声源追踪算法实现和工业使用条件" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-8b9c858ba6">空间处理与声源追踪：算法、实现和工业使用条件</h1>
-<p>基础索引核实日期：2026-09-22；第 1 章相关研究及最小原生调用、第 2 章相关资料与原方法提取调用核实于 2026-09-30，第 4 章相关原始资料及有限原方法调用核实于 2026-10-01，第 5 章相关研究小节及所列实验、源码入口核实于 2026-09-28；DCASE 2026 任务状态及近年候选的后续复核日期见各条 2026-09-29 记录。对应正文第 1～5 章和第 9 章。这里按算法的输入、计算步骤和可检查结果整理源码，既包括语音前端，也包括直接相关的球阵录音与工业噪声源成像。后两类任务的输出不同，不能把声源功率图或 Ambisonics 解码结果当成增强语音。</p>
+<p>基础索引核实日期：2026-09-22；第 1 章相关研究及最小原生调用、第 2 章相关资料与原方法提取调用核实于 2026-09-30，第 4 章相关原始资料及有限原方法调用核实于 2026-10-01，第 5 章相关研究小节、原论文与限定原函数审计复核于 2026-10-01（历史报告仍保留原执行日期）；DCASE 2026 任务状态及近年候选的后续复核日期见各条 2026-09-29 记录。对应正文第 1～5 章和第 9 章。这里按算法的输入、计算步骤和可检查结果整理源码，既包括语音前端，也包括直接相关的球阵录音与工业噪声源成像。后两类任务的输出不同，不能把声源功率图或 Ambisonics 解码结果当成增强语音。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="阅读与复现方式" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-37b31460d5">阅读与复现方式</h2>
 <p>先运行本书的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/ch02_05_baselines.py"><code>ch02_05_baselines.py</code></a> 和 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/ch06_09_baselines.py"><code>ch06_09_baselines.py</code></a>，确认时延正负、共轭、通道顺序和角度零点。再按下面的文件入口阅读外部实现。外部目录位于 <code>codes/chapters/ch00/upstream/_downloads/&lt;项目 ID&gt;/</code>，由锁定清单和获取工具管理。下载、导入、单次演示成功、论文实验复现和设备验收是不同结果。</p>
 <p>本文的“最小实验”是建议的独立验证方案，未附运行结果的方案均未在本文中宣称通过。固定版本源码中的静态疑点集中放在末节；它们不能被隐藏在“有官方实现”的分类里。外部包缺少编译器、求解器、MATLAB、模型或测量数据时，仍可阅读源码，但不能据此声称运行验证完成。</p>
@@ -949,11 +952,14 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>加窗的优化对象。</strong> <a href="https://doi.org/10.1109/JRPROC.1946.225956">Dolph 1946</a>研究对称、等间距、同相激励的 broadside 阵列，控制等波纹旁瓣与首零点主瓣宽度；不能把这个结论直接用于任意几何的最小 HPBW。<a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.windows.chebwin.html">SciPy 1.18 的 <code>chebwin</code></a>按 dB 旁瓣衰减生成对称窗，返回的最大窗值为 1，不保证窗之和为 1。用作空间加权时还须根据导向向量归一化目标响应。它和 §26 的球谐 Dolph 扩展是两个接口。</p>
 <span id="sof-的固定-fir-波束与离线设计诊断" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-u-5d040e18f9">SOF 的固定 FIR 波束与离线设计诊断</h4>
 <p>SOF TDFB 将离线设计的滤波器系数用于运行时 FIR 波束形成；设计脚本、固件配置和设备上实际执行应分别核对。固定源码的 <code>src/audio/tdfb/tune/sof_bf_design.m</code> 使用 <code>sinc</code> 构造扩散噪声相干矩阵，再计算方向性与白噪声增益。这里 MATLAB/Octave 的标准 <code>sinc(x)</code> 是 <code>sin(pi*x)/(pi*x)</code>；本章三维扩散场相干度需要的参数是 <code>2*f*d/c</code>，不是脚本第 123 行的 <code>2*pi*f*d/c</code>。</p>
+<p><strong>固定系数与方向控制是不同环节。</strong> 2026-10-01 重读同一锁定提交 <code>b6c6a05d52536313fe8e8752b1c4e069b1cc4002</code>，其中已经有方向估计与 IPC 控制，不是仅在后来版本才出现。<a href="https://github.com/thesofproject/sof/blob/b6c6a05d52536313fe8e8752b1c4e069b1cc4002/src/audio/tdfb/tdfb.c#L511"><code>tdfb.c</code> 第 511～523 行</a>把请求的方位映射到已有角度滤波器组；处理流程在 FIR 输出后调用方向估计，并在变化时通知控制端。<a href="https://github.com/thesofproject/sof/blob/b6c6a05d52536313fe8e8752b1c4e069b1cc4002/src/audio/tdfb/tdfb_direction.c#L539"><code>tdfb_direction.c</code> 第 539～571 行</a>计算通道时差和方向，更新的是 <code>az_value_estimate</code> 与变化标记；<a href="https://github.com/thesofproject/sof/blob/b6c6a05d52536313fe8e8752b1c4e069b1cc4002/src/audio/tdfb/tdfb_ipc4.c#L124"><code>tdfb_ipc4.c</code> 第 124～151 行</a>则把方位控制写入 <code>az_value</code>、触发系数组选取，并可开关方向更新。估计、通知、控制写入和选择固定系数共同组成可能的跟随链路，不能把“固定 FIR”解释成“没有方向控制”。</p>
+<p>上述估计函数没有直接将估计值回写成控制方位，也没有根据实时 SCM 重新求解 MVDR 权重。<a href="https://thesofproject.github.io/latest/developer_guides/firmware/tdfb.html">当前架构说明</a>与固定提交的具体行为须分别看待；仅凭网页对 autonomous DOA 或动态 IPC 的描述，不能声称本书已经运行完整自动跟随。这里是逐文件 BSD-3-Clause 源码的静态核验，没有编译固件、发出设备控制或测试方向跟随延迟。</p>
 <p>同一脚本的 DI 循环计算 <code>denom2</code>，WNG 循环第 271 行另算 <code>denom=wᴴw</code>，但第 272 行使用的仍是 <code>denom2</code>，因此读到了上一循环最后一个频点的量。这是固定版本的设计诊断问题，不能拿它输出的 WNG 曲线验证本章定义；也不等于所有已经部署的 SOF 滤波器都失效。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/examples/audit_sof_tdfb_design.py">独立静态诊断脚本</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/reports/sof_tdfb_design_audit.json">逐项报告</a>记录固定版本、源码摘要及独立数值对照。报告中的两频点权重是本书为隔离分母问题构造的例子，不是实际 SOF 滤波器；该检查没有执行 MATLAB/Octave 或固件。</p>
 <p><a href="https://thesofproject.github.io/latest/developer_guides/algorithms/tdfb/time_domain_fixed_beamformer.html">官方设计说明</a>中的旧目录、频点数、窗与加载值也不能移植解释固定提交：页面使用 <code>tools/tune/tdfb</code>，说明为 512 个频点与 Kaiser 窗；所核源码使用 <code>src/audio/tdfb/tune</code>、1024 点 FFT（513 个非负频点）与 Hann 窗。加载量的 dB 值及 <code>10^(mu_db/20)</code> 转换须以实际脚本为准，不能改写成未经核对的功率转换。目标设备还须核对麦坐标、系数格式、采样率、增益与饱和处理；本书未用这次静态诊断声称固件运行或实时性能通过。</p>
 <span id="sec-30" class="anchor-alias" aria-hidden="true"></span><span id="21-lcmvfrost-与-gsc" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-7e24e6c4ae">21. LCMV、Frost 与 GSC</h3>
 <p>对应 §5.5～5.6。LCMV 直接求满足多个线性约束的最小功率解；Frost 在时域抽头空间投影更新以保持约束；GSC 用固定支路和阻塞后的自适应支路实现同类约束结构。本书教学包给 LCMV 闭式解、GSC 阻塞基线及 <code>gsc.py::ScalarGSCNLMS</code> 的单参考状态更新。后者保留复数系数、先输出再更新、逐样本冻结和跨块状态；输入固定支路及参考支路由调用者提供，不估计方向或阻塞矩阵。音频例采用已知活动区间控制更新，只检查目标泄漏与冻结的作用，不能称为实际 VAD 或工业 GSC。持续子带自适应可另读 BTK2.0，不能把其实现直接登记为正文时域 Frost。</p>
 <p>最小实验先检查约束矩阵独立性和阻塞残差，再将目标方向偏移少量，测量目标泄漏到参考支路后被抵消的程度。工业中冻结条件、步长、滤波长度、双讲/活动控制和状态复位必须与滤波器一起审查。约束保持不等于目标真实方向仍在约束集合中。</p>
+<p><strong>求解器返回有限数不等于约束可行。</strong> 本次<a href="#beamformer-upstream-audit">固定 pb_bss 原方法审计</a>实际调用 <code>get_lcmv_vector</code>：两条约束都取 <code>[1,1]</code>，却要求 <code>Cᴴw=[1,0]</code>，本来就无解；原辅助函数遇到奇异约束矩阵改用最小二乘，返回 <code>[.25,.25]</code>，实际 <code>Cᴴw=[.5,.5]</code>，约束残差范数为 <code>1/sqrt(2)</code>。这是不相容输入下的返回行为，不是 LCMV 理论错误。与正文 E05-04 的复响应共轭检查一起，调用者应检查约束独立性、可行性和实际残差。另一个同名族接口 <code>get_lcmv_vector_souden</code> 在固定源码中立即抛 <code>NotImplementedError</code>，本次也保留了该真实异常；不能按函数名认为它已经可用。</p>
 <p>BTK2.0 是 Kumatani、McDonough 等作者的空间信号处理工具箱。固定 <code>btk20</code> 源码先读 <code>btk20_src/unit_test/test_online_beamforming.py::online_beamforming</code>，再读 <code>btk20_src/lib/pybeamformer.py::SubbandGSCLMSBeamformer</code> 与 <code>SubbandGSCRLSBeamformer</code>；C++ 对应入口包括 <code>btk20_src/beamformer/beamformer.{h,cc}::SubbandGSCRLS</code>。这些类包含跨帧自适应状态，不只是构造一个阻塞矩阵。<a href="https://github.com/kkumatani/distant_speech_recognition/blob/feff19ec8bcb770f6530fe280dc3ccafc2f5984a/btk20_src/lib/pybeamformer.py">固定 Python 更新器</a>。</p>
 <p>演示输入是逐通道音频、阵列位置、带时间标记的目标方向和分析/合成滤波器组系数。示例声速常数为 <code>343740.0</code>，与毫米制坐标配套；本书米制坐标必须转换。滤波器组的子带数、抽取率、原型滤波器长度决定时频处理与等待，不能直接沿用本书 Hann STFT 的帧数和延迟。</p>
 <p>构建文件默认目标 Python 2.7，要求 SWIG 3、GSL、NumPy 和 libsndfile，CUDA 9 为可选；部分 Python 算法还使用 SciPy 或 pygsl。旧环境说明不能当作现代 Python 或目标设备的相容性保证。滤波器系数演示通过 <code>pickle</code> 载入，只应使用自己生成或可信来源的文件，不能为方便运行而加载不可信二进制对象。<a href="https://github.com/kkumatani/distant_speech_recognition/blob/feff19ec8bcb770f6530fe280dc3ccafc2f5984a/btk20_src/CMakeLists.txt">固定构建条件</a>、<a href="https://github.com/kkumatani/distant_speech_recognition/blob/feff19ec8bcb770f6530fe280dc3ccafc2f5984a/btk20_src/unit_test/test_online_beamforming.py">固定在线演示</a>。</p>
@@ -1299,8 +1305,15 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>对应 §5.9。GEV 最大化目标和噪声输出功率之比，输入两组厄米协方差，输出最大广义特征值对应的波束向量。pb_bss <code>extraction/beamformer.py::get_gev_vector</code> 调用广义特征值求解；ESPnet <code>enh/layers/beamformer.py::get_gev_vector</code> 提供张量实现。pb_bss 函数中的文献定位为 Warsitz 与 Haeb-Umbach 2007 年论文，归一化讨论见其 §III.A。<a href="https://github.com/fgnt/pb_bss/blob/10acc347fc9ea21e3d312806a0bd751d0d0af183/pb_bss/extraction/beamformer.py">pb_bss 官方源码</a>。pb_bss 为 MIT，ESPnet 为 Apache-2.0，使用本书总清单锁定的提交。</p>
 <p>最小手算取目标协方差 <code>diag(4,1)</code>、噪声协方差 <code>diag(1,2)</code>，两个广义特征值为 4 和 0.5，最优方向为第一通道；该向量乘 10 后信噪比不变，输出幅度却增大 10 倍。因此广义特征向量不是直接满足参考通道幅度的增强输出。加入奇异噪声协方差测试加载、数值失败及状态输出；任意改用一般 <code>eig</code> 不能证明非厄米输入合理。</p>
 <p>固定 pb_bss 优先尝试可选 Cython 后端，否则调用 SciPy；<code>use_eig</code> 决定是否采用一般特征分解，不会修复错误的协方差模型。ESPnet 的 <code>get_gev_vector</code> 默认 <code>mode='power'</code>、3 次迭代，最后归一化并作相位连续性修正；<code>evd</code> 路径求解失败时还有替代向量分支。三次幂迭代不必等于精确最大广义特征向量，近重根、极小初始投影和参考通道都会影响结果。这里尚未用相同张量实际运行两包来比较收敛或误差。</p>
+<p><a id="beamformer-upstream-audit"></a></p>
+<p><strong>固定原方法实跑范围，2026-10-01。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/examples/audit_upstream_beamformers.py">审计工具</a>从所锁 pb_bss 的 <code>beamformer.py</code>、<code>math/solve.py</code> 提取 12 个原函数 AST，保留函数体和默认参数，用 NumPy 2.5.3、SciPy 1.18.1 的线性代数依赖执行 31 个确定性小输入。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/reports/upstream_beamformers.json">真实报告</a>绑定当前工具与完整锁表 SHA、原 Git blob/文件与函数片段 SHA、运行前后 HEAD/clean、输入、输出、警告、异常及独立手算期望。上游目录未修改，原函数没有兼容 facade；GEV 明确关闭可选 Cython 标记，只执行 SciPy 后备路径。有效对角模型的最大特征方向为第一通道；奇异噪声模型抛出的 <code>ValueError</code> 仍记录为失败。</p>
+<p>默认执行只核验并打印摘要；只有加 <code>--report</code> 才生成报告。可在已有隔离环境中复跑：</p>
+<pre><code class="language-bash">/private/tmp/masp-ch04-pra-venv/bin/python -m codes.chapters.ch05.examples.audit_upstream_beamformers
+/private/tmp/masp-ch04-pra-venv/bin/python -m codes.chapters.ch05.examples.audit_upstream_beamformers --report codes/chapters/ch05/reports/upstream_beamformers.json
+</code></pre>
+<p>这个临时环境的路径不是永久安装承诺；所需包版本与真实解释器路径在报告中。该审计没有导入完整 pb_bss/ESPnet/Torch 包、运行增强波形、测论文指标或验证设备。<code>stable_solve</code> 的正常与奇异例采用它实际要求的二维列矩阵右端；直接传 NumPy 常见的一维右端会 <code>IndexError</code>，另列负例。普通数值比较使用绝对容差 <code>2e-14</code>；极小 SCM 用 <code>1e-303</code>，避免把零误判成正确的 <code>1e-290</code>。GEV 则比较特征向量张成的方向，允许任意整体符号与相位。</p>
 <span id="20242026-年方法的有限选型补充" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-u-ea48fb89da">2024～2026 年方法的有限选型补充</h4>
-<p>下列方法针对已有链路中的具体限制，不据年份或不同论文指标排序。Deng 等的接收状态于 2026-09-29 复核；其余原文与代码状态按各自记录核实。</p>
+<p>下列方法针对已有链路中的具体限制，不据年份或不同论文指标排序。Deng 等的正式出版元数据及 Tammen 原文相关章节于 2026-10-01 复核；其他代码和许可状态保留各条所述边界。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
 <tr>
@@ -1319,28 +1332,57 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>联合学习 SCM/WNG，2026</td>
-<td>已接收 INTERSPEECH 2026；所链 arXiv v1 是预印本；未核到官方代码</td>
+<td>已正式发表于 Interspeech 2026；arXiv v1 仍为预印本版本；未核到官方代码</td>
 </tr>
 </tbody>
 </table></div>
 <p><a href="https://www.isca-archive.org/interspeech_2024/tammen24_interspeech.pdf">Tammen 等，Interspeech 2024</a> §2–3 将固定时间平均换成对瞬时 SCM 的注意力聚合，并用随机通道训练、TAC 和特征选择减弱通道数量/排列依赖。它仍通过 SCM 计算 MVDR，所解决的是移动目标下的统计量跟踪。原文式(2)可使用整段帧，不能自动声称因果；§4 是模拟移动语音叠加 CHiME-3/DEMAND 录音噪声，非真实移动说话人测试。最小选型应固定掩码，对照递归平均和注意力聚合，再改变通道排列与数目。当前未核到可取得的作者实现，故不设正文独立目录或声称已经复现。</p>
+<p>其 §4.2 还明确：注意力估计器训练时用 oracle Wiener-like 掩码，评价时改用网络掩码。训练和推理的输入来源要分开写；原实验结果不能被解释成“训练全程没有理想掩码”。这里没有训练注意力网络或复算表 1。</p>
 <p><a href="https://doi.org/10.1109/LSP.2025.3599455">Cheong、Kim 与 Shin，SPL 2025</a>的 iDeepPE 把波束阶段估计的语音存在概率、目标/噪声 PSD 传给后滤参数估计，补充只看单通道波束输出的信息；<a href="https://sapl.gist.ac.kr/wp-content/uploads/2025/08/Integrated_DNN-Based_Parameter_Estimation_for_Multichannel_Speech_Enhancement.pdf">作者版 §II–III</a>保留 MVDR 加 LSA 结构，并采用远场的相位型 RTF 近似。最小对照应固定前级输出，仅比较独立后滤与融合估计；不能把整个网络改善归因于某个协方差公式。</p>
 <p><a href="https://github.com/CSeIn/iDeepPE/tree/c2cdc26ddafd33bf3bda45640c06febef9092365">官方固定源码</a>中 <code>evaluate.py</code> 调用非因果 BMC-MCRA 与双网络，<code>make_mvdr_out.py</code> 用 oracle 参数准备后滤训练数据，不能当作部署推理入口。主要阅读路径是 <code>models/conformer_cmgan.py</code>、<code>util/oracle_test_mse.py</code>、<code>util/gain.py</code> 和 <code>evaluate.py</code>。固定根目录及所核核心文件未见明确代码许可，故只保留索引，不复制到本地源码集合；训练数据与权重另行核许可。未训练、推理或重测论文分数。</p>
-<p><a href="https://arxiv.org/abs/2606.24137v1">Deng 等，arXiv:2606.24137v1，2026</a> §2–3 将噪声掩码与频率相关的 WNG 下限共同学习，并将稳健 MVDR 作为可微层。它针对手工固定加载/门限不能随场景调整的问题，但依赖远场、阵列几何与目标方向，仍不能消除误差集之外的失配。可选型的对照是同一掩码下固定 WNG 和预测 WNG 的失真、噪声及失配曲线。arXiv v1 的 Comments 标明已接收 INTERSPEECH 2026，<a href="https://www.isca-archive.org/interspeech_2026/index.html">ISCA 官方该届索引</a>也列出同题同作者；本文链接仍是预印本版本，未核定正式单篇 DOI 或页码。此项未核到官方代码和可复算配置，不进入正文目录，也不把作者结果写成本书实测。</p>
+<p><a href="https://www.isca-archive.org/interspeech_2026/deng26d_interspeech.html">Deng 等正式论文，Interspeech 2026，pp.6996–7001</a>，DOI <a href="https://doi.org/10.21437/Interspeech.2026-2212">10.21437/Interspeech.2026-2212</a>，§2–3 将噪声估计与频率相关的 WNG 下限共同学习，并将稳健 MVDR 作为可微层。<a href="https://www.isca-archive.org/interspeech_2026/deng26d_interspeech.pdf">正式 PDF</a>说明复掩码先生成噪声估计，再平均其外积得到 SCM；不是直接把任意复数掩码作为外积的权重。它针对手工固定加载/门限不能随场景调整的问题，但依赖远场、阵列几何与目标方向，仍不能消除误差集之外的失配。可选型的对照是同一噪声估计下固定 WNG 和预测 WNG 的失真、噪声及失配曲线。<a href="https://arxiv.org/abs/2606.24137v1">arXiv:2606.24137v1</a>仍是预印本版本，不能与正式版页码混用。此项未核到官方代码和可复算完整配置，不进入正文独立目录；未运行网络或 QEP，不把作者结果写成本书实测。</p>
 <span id="sec-57" class="anchor-alias" aria-hidden="true"></span><span id="47-bangev-的盲解析尺度归一化" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-a3f8971b9f">47. BAN：GEV 的盲解析尺度归一化</h3>
 <p>对应 §5.9。pb_bss <code>blind_analytic_normalization</code> 使用噪声协方差计算尺度，分子为 <code>sqrt(wᴴ Rn² w)</code>，分母为 <code>|wᴴ Rn w|</code>，再乘原向量。它不需要已知目标导向，但也因此不能保证对任意真实目标传递函数满足单位响应。函数显式将零分母位置的增益置零，工程中仍应把这种退化与正常增强区分。</p>
-<p>本书手算取 <code>Rn=I</code>、任意非零向量 <code>w</code>，该比例为 <code>1/||w||</code>，得到单位范数权重；单位范数并不等于 <code>wᴴa=1</code>。最小实验比较同一 GEV 向量乘正数、负数及复相位后的 BAN 输出：功率尺度约束与复相位相干性是不同问题。连续帧/频点特征向量还要处理任意相位，ESPnet 的 <code>gev_phase_correction</code> 是可阅读入口，但不能把它的平滑方向约定当成通用目标相位恢复。<a href="https://github.com/espnet/espnet/blob/be79590bb2ff26ffb01bc825c5f68cb9418b7f0d/espnet2/enh/layers/beamformer.py">ESPnet 波束源码</a>。</p>
-<p><strong>同名接口不一定同尺度。</strong> 在所锁 ESPnet 提交中，<code>blind_analytic_normalization</code> 返回的是增益而不是乘完增益的向量，分母还包含通道数的平方 <code>C²</code> 及 <code>eps</code>；pb_bss 返回的则是已缩放向量，且没有这个 <code>C²</code>。忽略 <code>eps</code>、令 <code>Rn=I</code>、两通道单位范数向量，前者增益为 <code>1/4</code>、后者为 1。因此比较波形幅度前必须核对调用方施加增益的位置。该差异由固定源码读取得到，尚未实际调用两包 BAN；不把任一实现名称视为另一实现数值正确性的证明。</p>
+<p>本书手算取 <code>Rn=I</code>、任意非零向量 <code>w</code>，该比例为 <code>1/||w||</code>，得到单位范数权重；单位范数并不等于 <code>wᴴa=1</code>。本次<a href="#beamformer-upstream-audit">原函数调用</a>令 <code>w=[1,1]</code> 并分别乘 <code>1、2、−1、j</code>，前两个输出均为 <code>[1,1]/sqrt(2)</code>，后两个分别保留负号和 <code>j</code> 相位。对真实目标 <code>a=[1,1]</code>，输出响应分别是 <code>sqrt(2)、sqrt(2)、−sqrt(2)、−j*sqrt(2)</code>，没有恢复单位目标响应。全零向量返回全零，报告将其单列为退化。连续帧/频点特征向量还要处理任意相位，ESPnet 的 <code>gev_phase_correction</code> 是可阅读入口，但不能把它的平滑方向约定当成通用目标相位恢复。<a href="https://github.com/espnet/espnet/blob/be79590bb2ff26ffb01bc825c5f68cb9418b7f0d/espnet2/enh/layers/beamformer.py">ESPnet 波束源码</a>。</p>
+<p><strong>同名接口不一定同尺度。</strong> 在所锁 ESPnet 提交中，<code>blind_analytic_normalization</code> 返回的是增益而不是乘完增益的向量，分母还包含通道数的平方 <code>C²</code> 及 <code>eps</code>；pb_bss 返回的则是已缩放向量，且没有这个 <code>C²</code>。忽略 <code>eps</code>、令 <code>Rn=I</code>、两通道单位范数向量，前者增益为 <code>1/4</code>、后者为 1。因此比较波形幅度前必须核对调用方施加增益的位置。ESPnet 这部分仍为固定源码静态读取，未实际调用 Torch BAN；pb_bss 的限定原函数调用不能被写成两包运行比较。</p>
 <span id="sec-58" class="anchor-alias" aria-hidden="true"></span><span id="48-rtf相对参考通道的传递向量" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-3b28883a77">48. RTF：相对参考通道的传递向量</h3>
 <p>对应 §5.4、§5.9。单目标秩一模型下，目标 SCM 的主特征向量与目标传递向量同方向；有色噪声可结合噪声 SCM 的广义特征分解或幂迭代估计。pb_bss <code>get_pca_vector</code> 与 ESPnet <code>get_rtf</code> 分别提供这些入口；不能在包含多个同等功率目标的全秩 SCM 上无条件称主特征向量为“目标 RTF”。</p>
 <p>ESPnet <code>get_rtf</code> 明确说明函数自身没有执行参考通道归一化。若估计传递向量为 <code>(2,1+j)</code>，以通道 0 为参考应得到 <code>(1,0.5+0.5j)</code>；若参考系数接近零，直接除法会放大误差。读码需继续追到消费该向量的 MVDR 层，检查参考向量、复共轭和是否重复归一化。最小实验固定目标，改变参考通道、加入近零参考响应及近简并特征值，记录相位、范数、目标响应和帧间跳变，而不是只检查输出张量尺寸。</p>
 <p>掩码 SCM 的输入约定也不同：pb_bss 通常把时间轴放在最后，ESPnet 使用形如 <code>(...,F,C,T)</code> 的复谱与相应掩码，后者还提供通道掩码归约选项。共同的非负标量权重可保持外积和半正定；负掩码、错误通道轴或空支撑不能靠分母加 <code>eps</code> 获得物理有效性。pb_bss 的整数掩码还涉及原地浮点归一化，旧布尔转换使用 <code>np.asfarray</code>，不能未经 dtype 检查就承诺 NumPy 2 的所有输入类型可用。</p>
+<p>本次原 <code>get_power_spectral_density_matrix</code> 调用使用一个频点、两通道和两个单位快拍，即 <code>X[0]=I2</code>，检查掩码类型与支撑。普通浮点掩码 <code>[1,1]</code> 得到 <code>I2/2</code>；整数同值掩码抛原地除法类型错误，布尔同值掩码因 NumPy 2 移除 <code>np.asfarray</code> 抛 <code>AttributeError</code>。负掩码 <code>[2,−1]</code> 被接受并得到 <code>diag(2,−1)</code>，其负特征值证明这不是有效协方差。全零支撑返回零矩阵，仍不能用于没有另行恢复策略的逆矩阵计算。</p>
+<p>两项掩码都为 <code>1e-300</code> 时，原函数的分母下限 <code>1e-10</code> 使结果约为 <code>1e-290*I2</code>，而不是未加下限时的 <code>I2/2</code>。这是输入极小尺度和原接口下限共同导致的结果，不应套用本书另一个接口的 <code>1e-12</code>。报告保留了每个输入 dtype、输出与异常，不把强制转换后的重跑冒充原输入成功。</p>
 <p><strong>Souden 与自动参考选择。</strong> pb_bss <code>get_mvdr_vector_souden</code> 先求解 <code>Rn*Phi=Rs</code>，以 <code>trace(Phi)</code> 归一化后取参考列；参考可显式指定，也可按输出 SNR 选择。单目标秩一条件下才能把它与相应 RTF 无失真解联系起来；全秩目标 SCM 时要重新界定估计对象。其 <code>stable_solve</code> 遇奇异矩阵会逐矩阵改用最小二乘，有限返回值不自动证明无失真约束成立。ESPnet 的 Souden 路径另含加载与分母下限，极端尺度下不应假定二者逐点相等。</p>
+<p>对应正文 <a href="../05_beamforming.html#e05-20">E05-20</a>，令物理目标传递向量 <code>b=[2,1+j]</code>、目标功率 3、<code>Rs=3bbᴴ</code>、<code>Rn=diag(2,1)</code>，则独立按分量求得 <code>q=bᴴRn⁻¹b=4</code>。迹化简的第 <code>r</code> 列为 <code>w_r=conj(b_r)*Rn⁻¹b/q</code>，因此 <code>w_rᴴb=b_r</code>：保持的是参考通道目标声像，不是对未归一化物理 <code>b</code> 的单位响应。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">参考通道</th>
+<th scope="col">原函数权重</th>
+<th scope="col">独立目标响应</th>
+<th scope="col">对应 RTF</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td><code>[.5,.5+.5j]</code></td>
+<td><code>2</code></td>
+<td><code>b/2</code></td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>[.25−.25j,.5]</code></td>
+<td><code>1+j</code></td>
+<td><code>b/(1+j)</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>参考 1 的复数例子专门检验共轭因子；仅测实数参考 0 会掩盖这个错误。对 <code>a=b/b_r</code> 才有 <code>w_rᴴa=1</code>，要求 <code>b_r≠0</code>。本书独立推导和原函数实跑互证，但不把数学符号缺失的论文文本提取当作完整原式目视核验。全秩 <code>Rs=diag(2,1),Rn=I2</code> 时原迹归一化列为 <code>[2/3,0]</code>，不能要求对每个独立目标声像都无失真。自动参考的对照 <code>Rs=diag(1,4),Rn=I2</code> 实际选通道 1、输出 <code>[0,.8]</code>，说明下面 MERL 的固定缺陷不适用于 Souden 接口。</p>
 <p>另一个名称相近的 <code>get_mvdr_vector_merl</code> 有独立问题：固定版本把每个候选参考通道的输出功率全部相加，再对单个标量 <code>argmax</code>，因此总选第 0 列。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/examples/audit_beamformer_reference.py">诊断脚本</a>从固定原文件提取这个函数的原始 AST，仅提供 NumPy 依赖后执行，没有改写函数或执行整个模块；普通包导入因缺少 <code>paderbox</code> 失败。不能把这个提取调用称为原包完整运行。</p>
 <p>输入只有一个频点，噪声 SCM 为 <code>I2</code>、目标 SCM 为 <code>diag(1,4)</code>。独立按标量功率算得两候选输出 SNR 为 1、4，应选权重 <code>(0,0.8)</code>，原函数实际返回 <code>(0.2,0)</code>；交换两路目标功率后，第 0 列恰是正确参考，得到 <code>(0.8,0)</code>。这一对测试说明固定实现的选择缺陷，不能推断同文件的 Souden 接口也有此错。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/reports/beamformer_reference_audit.json">逐项报告</a>记录原文件、函数片段与诊断脚本摘要、环境和两次完整输出；上游源码保持原样，失败仍保留。</p>
 <span id="sec-59" class="anchor-alias" aria-hidden="true"></span><span id="49-mwfsdw-mwf-与秩一化简" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-305fd5299c">49. MWF、SDW-MWF 与秩一化简</h3>
 <p>对应 §5.7、§5.9。以参考通道目标声像为估计对象，一般 SDW-MWF 解由 <code>(Rs+mu Rn)w=Rs e_ref</code> 得到。ESPnet <code>get_sdw_mwf_vector</code> 明确提供该解，并有 <code>approx_low_rank_psd_speech</code> 选项；<code>mu=1</code> 对应普通 MWF。其 <code>get_mwf_vector</code> 的参数虽名为 <code>psd_n</code>，docstring 指的是观测协方差，不能因为变量名含 n 就传入纯噪声 SCM。</p>
-<p>pb_bss <code>get_wmwf_vector</code> 实际计算 <code>Phi/(mu+trace(Phi))</code> 的参考列，其中 <code>Phi=Rn^-1 Rs</code>，这是秩一目标条件下的化简。独立手算反例取 <code>Rn=I</code>、<code>Rs=diag(2,1)</code>、<code>mu=1</code>、参考 0：一般解第一项为 <code>2/3</code>，该迹化简第一项为 <code>2/(1+3)=1/2</code>。改成 <code>Rs=diag(2,0)</code> 后两者均为 <code>2/3</code>。这定位了模型边界，不说明秩一方法本身错误；本机尚未运行外部包数值测试。</p>
+<p>pb_bss <code>get_wmwf_vector</code> 实际计算 <code>Phi/(mu+trace(Phi))</code> 的参考列，其中 <code>Phi=Rn^-1 Rs</code>，这是秩一目标条件下的化简。独立手算反例取 <code>Rn=I</code>、<code>Rs=diag(2,1)</code>、<code>mu=1</code>、参考 0：一般解第一项为 <code>2/3</code>，该迹化简第一项为 <code>2/(1+3)=1/2</code>。改成 <code>Rs=diag(2,0)</code> 后两者均为 <code>2/3</code>。本次<a href="#beamformer-upstream-audit">原函数提取调用</a>得到的两个结果分别为 <code>[.5,0]</code> 和 <code>[2/3,0]</code>，与上述手算相符。一般 MWF 的期望由标量 <code>2/(2+1)</code> 独立计算，不从上游输出反造答案。这定位了模型边界，不说明秩一方法本身错误；没有运行完整外部包或增强音频链。</p>
 <p>最小工程实验应同时比较全秩与秩一 SCM，并记录目标失真、残留噪声和所用参考。令 <code>mu→0</code> 在非奇异全秩情形接近参考通道直通，并不普遍等于 MVDR；只有相应秩一模型和极限解释下才能作该联系。源码文档里的简短等价描述应随假设阅读，不能直接复制进算法对比表。</p>
 <span id="sec-60" class="anchor-alias" aria-hidden="true"></span><span id="50-mcra由局部最小值控制噪声更新" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-2973a53a28">50. MCRA：由局部最小值控制噪声更新</h3>
 <p>对应 §5.7。最小值控制递归平均（MCRA）不是直接把短时谱的最小值当作当前噪声，而是由平滑谱相对于局部最小值的关系估计语音存在可能性，再控制噪声谱递推。最小值窗口、谱平滑、语音存在平滑和噪声更新是不同的时间尺度。起点文献为 <a href="https://israelcohen.com/wp-content/uploads/2018/05/SPL_Jan2002.pdf">Cohen 与 Berdugo，IEEE Signal Processing Letters 2002 原文</a>，§II 给递推噪声估计，§III 给由最小值控制的语音存在估计。</p>

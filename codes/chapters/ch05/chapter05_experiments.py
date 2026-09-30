@@ -1,4 +1,4 @@
-"""E05-08--17: exact small models and an actual GSC waveform teaching chain.
+"""E05-08--22: small models and strictly checked published waveform fixtures.
 
 Run .venv/bin/python -m codes.chapters.ch05.chapter05_experiments. No files are
 written. These are original deterministic examples, not upstream benchmarks.
@@ -12,11 +12,18 @@ if __name__ == "__main__" and not __package__:
     _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
 
 import json
+import hashlib
+import io
+import math
+from pathlib import Path
+import wave
 import numpy as np
 
 from codes.chapters.ch00.core.audio_samples import gsc_gate_case
 from codes.chapters.ch05.core.beamforming import lcmv_weights, mvdr_weights
 from codes.chapters.ch08.core.separation import masked_spatial_covariance
+
+ROOT = Path(__file__).resolve().parents[3]
 
 
 def gsc_lcmv_equivalence() -> dict:
@@ -174,8 +181,65 @@ def first_order_spatial_rank() -> dict:
             'cases': rows, 'limits': 'Condition numbers depend on this basis scale. No radial inverse, scattering or hardware performance is modeled.'}
 
 
-def gsc_audio_results() -> dict:
-    return gsc_gate_case()['parameters']
+def gsc_audio_results(*, audio_dir: Path | None = None, manifest_path: Path | None = None) -> dict:
+    """Keep the floating model, independently read the four published PCM files.
+
+    This never regenerates or repairs an asset. The main manifest's existing
+    source set is authoritative; no new generator dependency is invented.
+    """
+    from codes.chapters.ch00.examples.generate_audio_samples import INPUTS
+    from codes.chapters.ch00.core.audio_samples import read_pcm16
+    audio_dir = ROOT/'codes/chapters/ch05/audio' if audio_dir is None else Path(audio_dir)
+    manifest_path = ROOT/'codes/chapters/ch00/audio/MANIFEST.json' if manifest_path is None else Path(manifest_path)
+    manifest = json.loads(manifest_path.read_text())
+    sources = {path: hashlib.sha256((ROOT/path).read_bytes()).hexdigest() for path in INPUTS}
+    if manifest.get('generator_inputs') != sources:
+        raise ValueError('published GSC main manifest source set or SHA is stale')
+    entries = {row['file']: row for row in manifest['files']}
+    if len(entries) != len(manifest['files']):
+        raise ValueError('published main manifest has duplicate file names')
+    names = ['gsc_reference.wav', 'gsc_array.wav', 'gsc_always_adapt.wav', 'gsc_gate_frozen.wav']
+    integer, files = {}, {}
+    for name in names:
+        blob = (audio_dir/name).read_bytes()
+        digest = hashlib.sha256(blob).hexdigest()
+        info = entries.get(name, {})
+        channels = 2 if name == 'gsc_array.wav' else 1
+        if (info.get('sha256') != digest or info.get('chapter') != 'ch05'
+                or info.get('common_export_gain') != 1.0
+                or info.get('sample_rate_hz') != 16000 or info.get('channels') != channels
+                or info.get('samples') != 32000):
+            raise ValueError('published GSC manifest/WAV mismatch: '+name)
+        with wave.open(io.BytesIO(blob), 'rb') as reader:
+            actual = (reader.getframerate(), reader.getnchannels(), reader.getnframes(),
+                      reader.getsampwidth(), reader.getcomptype())
+            if actual != (16000, channels, 32000, 2, 'NONE'):
+                raise ValueError('published GSC PCM format mismatch: '+name)
+        rate, decoded = read_pcm16(blob)
+        integer[name] = np.rint(decoded*32768).astype(np.int64)
+        files[name] = {'sha256': digest, 'sample_rate_hz': rate, 'channels': channels,
+                       'samples_per_channel': decoded.shape[1], 'common_export_gain': 1.0}
+    start, stop = 16000, 30000
+    reference = integer['gsc_reference.wav'][0, start:stop]
+    denominator = int(reference@reference)  # bounded PCM16, 14000 points: safe int64
+    if denominator <= 0:
+        raise ValueError('published GSC reference needs positive PCM energy in the scoring interval')
+    scores = {}
+    for key in ('always_adapt', 'gate_frozen'):
+        y = integer['gsc_'+key+'.wav'][0, start:stop]
+        cross, squared_error = int(reference@y), int((y-reference)@(y-reference))
+        scores[key] = {'reference_projection_gain': cross/denominator,
+                       'normalized_reference_error': math.sqrt(squared_error/denominator),
+                       'integer_reference_cross_sum': cross, 'integer_error_squared_sum': squared_error,
+                       'integer_reference_squared_sum': denominator,
+                       'decoded_reference_squared_sum': denominator/32768**2,
+                       'sample_denominator': stop-start}
+    result = dict(gsc_gate_case()['parameters'])
+    result['published_audio'] = {'files': files, 'source_sha256': sources,
+                               'scoring_interval_samples': [start, stop],
+                               'pcm_decode_divisor': 32768, 'actual_pcm_measurements': scores,
+                               'alignment': 'original sample clock/gain; projection is diagnostic only'}
+    return result
 
 
 def nonnegative_mask_model() -> dict:
@@ -202,6 +266,117 @@ def nonnegative_mask_model() -> dict:
             'cases': rows, 'limits': 'Weights need not sum to 1 or lie below 1. Support and concentration are not probability confidence.'}
 
 
+def derivative_lcmv() -> dict:
+    noise = np.diag([1., 2., 4.])
+    target, derivative = np.ones(3), np.array([-1j, 0., 1j])
+    c = np.column_stack((target, derivative))
+    methods = [('single', mvdr_weights(noise, target)),
+               ('constrained', lcmv_weights(noise, c, [1., 0.])), ('DSB', target/3)]
+    rows = []
+    for method, weights in methods:
+        responses = []
+        for phase in (0., .1, .2, .3):
+            a = np.exp(1j*phase*np.array([-1., 0., 1.]))
+            b = np.vdot(weights, a)
+            responses.append({'phi_rad': phase, 'complex_response': b,
+                              'response_magnitude': float(abs(b)), 'response_phase_rad': float(np.angle(b)),
+                              'response_error_squared': float(abs(b-1)**2)})
+        rows.append({'method': method, 'weights': weights, 'nominal_response': np.vdot(weights, target),
+                     'complex_response_derivative_at_zero': np.vdot(weights, derivative),
+                     'output_noise_power': float(np.vdot(weights, noise@weights).real),
+                     'wng_linear': float(abs(np.vdot(weights, target))**2/np.vdot(weights, weights).real),
+                     'responses': responses})
+    return {'noise_covariance': noise, 'phase_centre': 'middle microphone',
+            'derivative_variable': 'phi=2*pi*f*d*sin(theta)/c, not degrees',
+            'constraints': c, 'constraint_responses': [1., 0.], 'cases': rows,
+            'limits': 'Fixed exact covariance; derivative constraint is local complex-response flatness and costs freedom/noise power.'}
+
+
+def norm_ball_robust() -> dict:
+    epsilon = .2
+    t = 1/(2-math.sqrt(2)*epsilon)
+    rows = []
+    for method, value in [('nominal_unit_response', .5), ('worst_case_unit_response', t)]:
+        w = np.full(2, value)
+        norm = float(np.linalg.norm(w))
+        perturbation = -epsilon*w/norm
+        response = float(w@np.ones(2))
+        rows.append({'method': method, 'weights': w, 'nominal_response': response,
+                     'weight_norm_squared': norm**2, 'white_noise_output_power': norm**2,
+                     'attaining_perturbation': perturbation, 'worst_case_amplitude': response-epsilon*norm,
+                     'general_wng_linear': response**2/norm**2,
+                     'unit_response_only_shortcut': 1/norm**2})
+    return {'nominal_target': [1., 1.], 'noise_covariance': np.eye(2), 'uncertainty_radius': epsilon,
+            'infeasible_radius_from': math.sqrt(2), 'cases': rows,
+            'limits': 'Exact white-noise norm-ball solution only; nominal response is not forced to 1. No SOCP solver or physical DOA uncertainty distribution is modeled.'}
+
+
+def souden_reference_channel() -> dict:
+    b, noise, power = np.array([2., 1+1j]), np.diag([2., 1.]), 3.
+    speech = power*np.outer(b, b.conj())
+    product = np.linalg.solve(noise, speech)
+    trace = np.trace(product).real
+    rows = []
+    for channel in (0, 1):
+        reference = np.eye(2)[:, channel]
+        souden = product@reference/trace
+        mwf = np.linalg.solve(speech+noise, speech@reference)
+        rtf = b/b[channel]
+        row = {'reference_channel_zero_based': channel, 'reference_target_transfer': b[channel],
+               'rtf': rtf, 'souden_weights': souden, 'rtf_mvdr_weights': mvdr_weights(noise, rtf)}
+        for label, w in [('souden', souden), ('mwf', mwf)]:
+            response = np.vdot(w, b)
+            pn = float(np.vdot(w, noise@w).real)
+            distortion = float(power*abs(response-b[channel])**2)
+            row[label+'_measurements'] = {'weights': w, 'target_response': response,
+                                          'output_noise_power': pn, 'reference_target_distortion_power': distortion,
+                                          'reference_mse': pn+distortion}
+        rows.append(row)
+    full_target, full_noise, reference = np.diag([2., 1.]), np.eye(2), np.array([1., 0.])
+    full_product = np.linalg.solve(full_noise, full_target)
+    full_souden = full_product@reference/np.trace(full_product).real
+    error = full_souden-reference
+    control = {'target_covariance': full_target, 'noise_covariance': full_noise,
+               'reference_channel_zero_based': 0, 'trace_normalizer': float(np.trace(full_product).real),
+               'souden_weights': full_souden,
+               'reference_target_distortion_power': float(error@full_target@error),
+               'output_noise_power': float(full_souden@full_noise@full_souden),
+               'general_mwf_weights': np.linalg.solve(full_target+full_noise, full_target@reference),
+               'rank_one_trace_shortcut_weights': full_target@reference/(1+np.trace(full_target)),
+               'limits': 'Full-rank target is legal; no single transfer vector makes this trace expression distortionless. The general MWF coincidence here is specific to this diagonal example.'}
+    return {'target_transfer': b, 'noise_covariance': noise, 'target_covariance': speech,
+            'source_power': power, 'trace_normalizer': float(trace), 'cases': rows,
+            'full_rank_control': control,
+            'diagonal_loading': 0., 'trace_denominator_epsilon': 0.,
+            'limits': 'Rank-one exact target covariance and explicit complex reference; original analytic fixture, not a TorchAudio package benchmark.'}
+
+
+def om_lsa_probability_combination() -> dict:
+    xi, gamma, g_present, g_absent = 3., 4., .8, .1
+    nu = gamma*xi/(1+xi)
+    rows = []
+    for q in (.5, .2, 0., 1.):
+        if q in (0., 1.):
+            posterior = 1-q
+        else:
+            log_odds_absent = math.log(q)-math.log1p(-q)+math.log1p(xi)-nu
+            posterior = 1/(1+math.exp(log_odds_absent))
+        gain = math.exp(posterior*math.log(g_present)+(1-posterior)*math.log(g_absent))
+        rows.append({'prior_absence_probability': q, 'posterior_presence_probability': posterior,
+                     'geometric_gain': gain, 'arithmetic_mix_for_comparison': posterior*g_present+(1-posterior)*g_absent})
+    return {'prior_snr_linear': xi, 'posterior_snr_linear': gamma, 'nu': nu,
+            'given_conditional_gain': g_present, 'absence_gain_floor': g_absent, 'cases': rows,
+            'limits': 'Bayes probability and geometric combination only; conditional gain .8 is supplied, not obtained by an LSA integral. No MCRA/IMCRA state or complete OM-LSA is run.'}
+
+
+def derivative_audio_results() -> dict:
+    from codes.chapters.ch05.examples.generate_derivative_audio import check_assets, DEFAULT_OUTPUT
+    manifest = check_assets(DEFAULT_OUTPUT)
+    return {'parameters': manifest['parameters'], 'files': manifest['files'],
+            'source_sha256': manifest['source_sha256'], 'samples': manifest['samples'],
+            'float_decomposition': manifest['float_decomposition'], 'limits': manifest['limits']}
+
+
 def _pack(value):
     if isinstance(value, np.ndarray):
         return {'real': value.real.tolist(), 'imag': value.imag.tolist()} if np.iscomplexobj(value) else value.tolist()
@@ -219,12 +394,15 @@ def _pack(value):
 def run_exercises() -> dict:
     functions = [gsc_lcmv_equivalence, gsc_statistical_boundary, frost_finite_step,
                  zelinski_pair_difference, coherent_noise_pair, target_covariance_contamination,
-                 gev_mwf_scale, first_order_spatial_rank, gsc_audio_results, nonnegative_mask_model]
+                 gev_mwf_scale, first_order_spatial_rank, gsc_audio_results, nonnegative_mask_model,
+                 derivative_lcmv, norm_ball_robust, souden_reference_channel,
+                 om_lsa_probability_combination, derivative_audio_results]
     results = {}
     for index, function in enumerate(functions, 8):
         result = function()
         result['metadata'] = {'kind': 'original deterministic teaching experiment',
-                              'numpy_version': np.__version__, 'randomness': 'none'}
+                              'numpy_version': np.__version__,
+                              'randomness': 'fixed white-noise seed 20260522' if index == 22 else 'none'}
         results[f'E05-{index:02d}'] = _pack(result)
     return results
 

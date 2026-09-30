@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""生成教程插图（图 1～25、33～36、40～52；图 26～32、37～39 见 make_aec_figures.py）。
+"""生成教程插图（图 1～25、33～36、40～56；图 26～32、37～39 见 make_aec_figures.py）。
 
 用法（仓库根目录）：
-    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～52 → figures/
+    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～56 → figures/
 """
 from pathlib import Path
 import hashlib
@@ -3850,6 +3850,92 @@ def fig_coherent_frequency_rank():
     save(fig, "fig54_coherent_frequency_rank.png")
 
 
+def fig_derivative_constraints():
+    """E05-18/22 analytic complex responses and expected powers, not PCM scores."""
+    phi = np.linspace(.001, .5, 500)
+    responses = {
+        "单约束": (4*np.exp(-1j*phi)+2+np.exp(1j*phi))/7,
+        "零导数约束": (8*np.cos(phi)+5)/13,
+    }
+    colors = {"单约束": C_BLUE, "零导数约束": C_ORANGE}
+    fig = plt.figure(figsize=(9.4, 7.2))
+    grid = fig.add_gridspec(2, 2, height_ratios=(1.15, 1))
+    complex_ax, error_ax, power_ax = fig.add_subplot(grid[0, 0]), fig.add_subplot(grid[0, 1]), fig.add_subplot(grid[1, :])
+    for label, response in responses.items():
+        complex_ax.plot(response.real, response.imag, color=colors[label], label=label)
+        error_ax.semilogy(phi, abs(response-1)**2, color=colors[label], label=label)
+    complex_ax.plot([1], [0], marker="*", color=C_GREEN, ms=10, label="单位复响应")
+    for frequency, phase in ((1000, .1), (3000, .3)):
+        ordinary = (4*np.exp(-1j*phase)+2+np.exp(1j*phase))/7
+        constrained = (8*np.cos(phase)+5)/13
+        complex_ax.scatter([ordinary.real, constrained.real], [ordinary.imag, 0],
+                           c=[C_BLUE, C_ORANGE], s=28, zorder=5)
+        complex_ax.annotate(f"{frequency//1000} kHz", (ordinary.real, ordinary.imag),
+                            xytext=(-9, -15), textcoords="offset points", ha="right")
+        error_ax.axvline(phase, color=".6", ls=":", alpha=.6)
+    complex_ax.set(xlabel="复响应实部", ylabel="复响应虚部", title="幅度相近，复响应仍有差别")
+    complex_ax.legend(loc="lower right")
+    complex_ax.grid(ls=":", alpha=.3)
+    error_ax.set(xlabel=r"相位步长 $\phi$（rad）", ylabel=r"复响应误差 $|B(\phi)-1|^2$",
+                 title="一阶平坦是局部性质")
+    error_ax.grid(ls=":", alpha=.3)
+    error_ax.legend()
+    phases = np.array([.1, .3])
+    single = (4*np.exp(-1j*phases)+2+np.exp(1j*phases))/7
+    constrained = (8*np.cos(phases)+5)/13
+    target_error = .08**2/2*np.array([np.sum(abs(single-1)**2), np.sum(abs(constrained-1)**2)])
+    noise_expected = .02**2*np.array([4/7, 10/13])
+    unit = 1e-4
+    x = np.arange(2)
+    power_ax.bar(x, noise_expected/unit, color=".75", label="噪声期望功率")
+    power_ax.bar(x, target_error/unit, bottom=noise_expected/unit,
+                 color=C_PURPLE, label="干净目标失真功率")
+    for index, value in enumerate((noise_expected+target_error)/unit):
+        power_ax.text(index, value+.07, f"总误差期望 {value:.4f}", ha="center")
+    power_ax.set(xticks=x, xticklabels=["单约束：w=[4,2,1]/7", "零导数：w=[4,5,4]/13"],
+                 ylabel=r"功率／$10^{-4}$", ylim=(0, 4.4), title="目标更接近参考，噪声代价仍须单算")
+    power_ax.legend(loc="upper left", ncol=2)
+    power_ax.grid(axis="y", ls=":", alpha=.3)
+    power_ax.set_axisbelow(True)
+    fig.suptitle("图55  导数约束：复响应平坦与输出噪声的取舍", fontsize=FS_SUP)
+    fig.text(.5, .035, "三麦中心坐标−0.04/0/0.04 m，c=343 m/s；每音幅度0.08，φ=0.1/0.3。\n"
+             "观测端独立白噪σ=0.02×[1,√2,2]；下图为解析期望，无随机抽样或PCM评分。",
+             ha="center", fontsize=FS_SMALL)
+    fig.tight_layout(rect=(0, .13, 1, .93))
+    save(fig, "fig55_derivative_constraints.png")
+
+
+def fig_omlsa_probability():
+    """Bayes posterior and given-conditional-gain combination only, E05-21."""
+    gamma = np.linspace(0, 10, 501)
+    xi, present_gain, absent_gain = 3., .8, .1
+    fig, axes = plt.subplots(1, 2, figsize=(9.4, 4.6))
+    for q, color in ((.5, C_BLUE), (.2, C_ORANGE)):
+        posterior = 1/(1+q/(1-q)*(1+xi)*np.exp(-gamma*xi/(1+xi)))
+        gain = np.exp(posterior*np.log(present_gain)+(1-posterior)*np.log(absent_gain))
+        axes[0].plot(gamma, posterior, color=color, label=f"先验缺席概率 q={q}")
+        axes[1].plot(gamma, gain, color=color, label=f"几何组合，q={q}")
+        at_four = 1/(1+q/(1-q)*(1+xi)*np.exp(-4*xi/(1+xi)))
+        axes[0].scatter([4], [at_four], color=color, zorder=5)
+        axes[1].scatter([4], [np.exp(at_four*np.log(.8)+(1-at_four)*np.log(.1))], color=color, zorder=5)
+        if q == .5:
+            arithmetic = posterior*present_gain+(1-posterior)*absent_gain
+            axes[1].plot(gamma, arithmetic, color=C_BLUE, ls="--", label="算术组合对照，q=0.5")
+    axes[0].set(ylabel=r"后验存在概率 $p_s$", title="从似然与先验得到后验", ylim=(0, 1.02))
+    axes[1].set(ylabel="幅度增益（无量纲）", title="给定条件增益的组合", ylim=(0, .9))
+    for ax in axes:
+        ax.set_xlabel(r"后验信噪比 $\gamma=|Y|^2/\phi_n$（线性）")
+        ax.axvline(4, color=".6", ls=":", alpha=.7)
+        ax.legend(loc="lower right")
+        ax.grid(ls=":", alpha=.3)
+    fig.suptitle("图56  语音存在概率与对数谱增益组合", fontsize=FS_SUP)
+    fig.text(.5, .035, "ξ=3；给定存在时增益0.8、缺席时增益0.1；圆点为γ=4的手算例。\n"
+             "只计算后验及组合，未实现完整LSA条件增益、MCRA/IMCRA噪声估计或听测。",
+             ha="center", fontsize=FS_SMALL)
+    fig.tight_layout(rect=(0, .18, 1, .91))
+    save(fig, "fig56_omlsa_probability.png")
+
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -3897,6 +3983,8 @@ def main():
     fig_hexagon_multifrequency()
     fig_focus_noise()
     fig_coherent_frequency_rank()
+    fig_derivative_constraints()
+    fig_omlsa_probability()
     print("ALL DONE")
 
 

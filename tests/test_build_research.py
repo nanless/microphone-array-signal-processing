@@ -307,6 +307,14 @@ class ResearchBuildTest(unittest.TestCase):
                 with self.subTest(focus_asset=name):
                     self.assertEqual((output / "focus_audio" / name).read_bytes(),
                                      (focus_source / name).read_bytes())
+            derivative_source = ROOT / "codes/chapters/ch05/derivative_audio"
+            derivative_names = {"derivative_reference.wav", "derivative_array.wav", "derivative_single.wav",
+                                "derivative_constrained.wav", "MANIFEST.json"}
+            self.assertEqual({path.name for path in (output / "derivative_audio").iterdir()}, derivative_names)
+            for name in derivative_names:
+                with self.subTest(derivative_asset=name):
+                    self.assertEqual((output / "derivative_audio" / name).read_bytes(),
+                                     (derivative_source / name).read_bytes())
             pages = {}
             for path in output.rglob("*.html"):
                 parser = Links()
@@ -356,10 +364,11 @@ class ResearchBuildTest(unittest.TestCase):
                                              (output / "binaural_audio").resolve(),
                                              (output / "stft_audio").resolve(),
                                              (output / "geometry_audio").resolve(),
-                                             (output / "focus_audio").resolve()}:
+                                             (output / "focus_audio").resolve(),
+                                             (output / "derivative_audio").resolve()}:
                             owner = {"gss_audio": "ch08", "moving_audio": "ch09",
                                      "tracking_audio": "ch09", "binaural_audio": "ch01", "stft_audio": "ch02",
-                                     "geometry_audio": "ch03", "focus_audio": "ch04"}[target.parent.name]
+                                     "geometry_audio": "ch03", "focus_audio": "ch04", "derivative_audio": "ch05"}[target.parent.name]
                             source = ROOT / "codes" / "chapters" / owner / target.parent.name / target.name
                             self.assertTrue(target.is_file())
                             self.assertEqual(target.read_bytes(), source.read_bytes())

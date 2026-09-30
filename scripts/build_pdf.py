@@ -174,6 +174,9 @@ h1,h2,h3,h4{break-after:avoid}
 #ch-4 h3#ch-4-sec-u-fb9eb739a1~p{margin-bottom:.2em}
 #ch-4 h3#ch-4-sec-u-fb9eb739a1{margin-bottom:.5em}
 #ch-4 h3#ch-4-sec-u-fb9eb739a1~p>mjx-container[display="true"]{margin:.5em 0}
+/* E05-22 保留字号与全部推导，仅收紧段间空隙，避免边界段独占末页。 */
+#ch-5 h3#ch-5-sec-u-bca30faf33~p{margin-bottom:.3em;line-height:1.62}
+#ch-5 h3#ch-5-sec-u-bca30faf33~table{margin:8px 0}
 /* 显式短引导及第5章表格题注跟随内容，长推导仍可自然跨页。 */
 .chap p.keep-next,#ch-5 p:has(+table){break-after:avoid;page-break-after:avoid}
 /* 第10章末尾四条总结作为一个完整列表，避免仅末两条占据下一页。 */
@@ -799,7 +802,7 @@ def print_pdf(combined, pdf, timeout_min_pages=100):
 
 
 def check_figures():
-    """合订前检查：正文引用的图必须存在、非空，并覆盖 54 个唯一文件。"""
+    """合订前检查：正文引用的图必须存在、非空，并覆盖 56 个唯一文件。"""
     missing = []
     refs = set()
     for fname, _ in CHAPTERS:
@@ -811,8 +814,8 @@ def check_figures():
                 missing.append(f"{fname}: {m.group(1)}")
     if missing:
         raise SystemExit("缺图，中止：\n" + "\n".join(missing))
-    if len(refs) != 54:
-        raise SystemExit(f"唯一图片数异常：期望 54，实际 {len(refs)}")
+    if len(refs) != 56:
+        raise SystemExit(f"唯一图片数异常：期望 56，实际 {len(refs)}")
     print(f"图片检查通过（{len(CHAPTERS)} 篇、{len(refs)} 张唯一图片）")
 
 

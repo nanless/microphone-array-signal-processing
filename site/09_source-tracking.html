@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 9 章 · 声源追踪 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="fa343eafbb45"><style>
+<meta name="source-digest" content="1e0a85fe898c"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -17,6 +17,9 @@ a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3
 .main p{margin:0 0 1.05em}.main li>p{margin:.35em 0}
 .main img{max-width:100%;height:auto;display:block;margin:14px auto;border:1px solid #eee;min-height:40px;background:#f6f8fb}
 .audio-sample{display:block;width:min(100%,460px);margin:8px 0 18px}.audio-sample:focus-visible{outline:3px solid #e67e22}
+/* 表格列宽不能压掉原生播放按钮；手机上的表格可横向滚动。 */
+td .audio-sample{width:280px;min-width:280px}
+table:has(td .audio-sample) td:last-child{min-width:180px}
 table{border-collapse:collapse;margin:14px 0;max-width:100%}
 .table-scroll{max-width:100%;overflow-x:auto}
 .table-scroll:focus-visible{outline:3px solid #e67e22;outline-offset:2px}

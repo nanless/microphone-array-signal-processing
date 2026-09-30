@@ -1,0 +1,3895 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-09-30T21:32:02.945643+00:00",
+  "verified_date_asia_shanghai": "2026-10-01",
+  "audit_source_sha256": "497287df29b3fb0d31c94d2edd66c0d0d36c1e46520a940b48875112807437e4",
+  "lock_sha256": "a6f1075392ccecbe850aef2d55f49b8264fc580710613891e21041e968d67242",
+  "lock_entry": {
+    "id": "pb_bss",
+    "url": "https://github.com/fgnt/pb_bss.git",
+    "revision": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+    "license": "MIT",
+    "scope": "cACGMM, spatial mixture models and beamforming",
+    "fetch_enabled": true,
+    "note": "Statistical model toolkit; speaker activities and a complete GSS pipeline are separate inputs/components.",
+    "entrypoints": [
+      "LICENSE",
+      "pb_bss/distribution/cacgmm.py",
+      "pb_bss/extraction/beamformer.py",
+      "pb_bss/math/solve.py"
+    ]
+  },
+  "before": {
+    "head": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+    "status": "",
+    "untracked_python": []
+  },
+  "after": {
+    "head": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+    "status": "",
+    "untracked_python": []
+  },
+  "original_files": {
+    "pb_bss/math/solve.py": {
+      "sha256": "be440ee6f252e42a6ae5d7b6f3cc7205da5d4c29bcb01cae7885ab9f8c6a53ed",
+      "git_blob": "55fb235ca12b9eefa99f1afc7ad6bc90b9e13bbb",
+      "parse_warnings": []
+    },
+    "pb_bss/extraction/beamformer.py": {
+      "sha256": "8bc6700fbe07b50caeb640503bbf827798c883a3fc12b9790f93ab2ee9453e53",
+      "git_blob": "89ef2ea8af35058fe2e3400e890795b5c3866be5",
+      "parse_warnings": [
+        "invalid escape sequence '\\`'"
+      ]
+    },
+    "LICENSE": {
+      "sha256": "48241e1eae6ab4c15c5718992ca60d3d15961212a4e324e09e5dbfbc79b78214",
+      "git_blob": "dbb5ffdda37b3ea9855fdda4adaa193a7bdf6175"
+    }
+  },
+  "original_functions": {
+    "stable_solve": {
+      "file": "pb_bss/math/solve.py",
+      "first_line": 20,
+      "last_line": 114,
+      "source_segment_sha256": "d290247551a515992d4a3289cc765e55f614e50de21196b40b03c3435a7a2fac",
+      "body_modified": false
+    },
+    "get_power_spectral_density_matrix": {
+      "file": "pb_bss/extraction/beamformer.py",
+      "first_line": 59,
+      "last_line": 160,
+      "source_segment_sha256": "d0475124e6e7e785b17903e37492a68cb25a1126b488615807fe2d4f9c6f025e",
+      "body_modified": false
+    },
+    "get_mvdr_vector": {
+      "file": "pb_bss/extraction/beamformer.py",
+      "first_line": 230,
+      "last_line": 260,
+      "source_segment_sha256": "8b2443d0232a58d4f39ebf76428851c0a77e9dc74fd447e2e1e6051e36d2adc2",
+      "body_modified": false
+    },
+    "get_mvdr_vector_merl": {
+      "file": "pb_bss/extraction/beamformer.py",
+      "first_line": 263,
+      "last_line": 289,
+      "source_segment_sha256": "30c4f08002dcf2695e2b8d251854ffc8d78e5bfb4d0c2e9b8927862486a79997",
+      "body_modified": false
+    },
+    "get_gev_vector": {
+      "file": "pb_bss/extraction/beamformer.py",
+      "first_line": 292,
+      "last_line": 364,
+      "source_segment_sha256": "6569a703ae4cfa6b4be6a696436c6bbc4390d4b0cc63a7e392cbaaa4860e2114",
+      "body_modified": false
+    },
+    "_get_gev_vector": {
+      "file": "pb_bss/extraction/beamformer.py",
+      "first_line": 367,
+      "last_line": 411,
+      "source_segment_sha256": "6cc85c6a7cc7e44ce5afe23c20006e165852ab7425a15b8477fdb877887385ab",
+      "body_modified": false
+    },
+    "get_lcmv_vector": {
+      "file": "pb_bss/extraction/beamformer.py",
+      "first_line": 414,
+      "last_line": 456,
+      "source_segment_sha256": "a9a62eeaef35d9c08d76d5cac566a2fdfc0e55e96b86735110b08f5c92471184",
+      "body_modified": false
+    },
+    "blind_analytic_normalization": {
+      "file": "pb_bss/extraction/beamformer.py",
+      "first_line": 459,
+      "last_line": 488,
+      "source_segment_sha256": "13b72231107a7eba0ccb4ce2740155fd9ff1b17ad7fd7bf0c35d188b5111736e",
+      "body_modified": false
+    },
+    "get_optimal_reference_channel": {
+      "file": "pb_bss/extraction/beamformer.py",
+      "first_line": 601,
+      "last_line": 624,
+      "source_segment_sha256": "b8678de73baefb96de56b153d81ff2dbf5d52e3d145f4c4851a948a94143e30f",
+      "body_modified": false
+    },
+    "get_mvdr_vector_souden": {
+      "file": "pb_bss/extraction/beamformer.py",
+      "first_line": 627,
+      "last_line": 698,
+      "source_segment_sha256": "bc45c1b36945b94494e29586260eca64faf1821df775c6c30dc2c3429dee6483",
+      "body_modified": false
+    },
+    "get_wmwf_vector": {
+      "file": "pb_bss/extraction/beamformer.py",
+      "first_line": 701,
+      "last_line": 753,
+      "source_segment_sha256": "6ff9dca0f8a84bf42c46fecfe6513c3d1354b51fbd1ab70668b00dd39b4d252a",
+      "body_modified": false
+    },
+    "get_lcmv_vector_souden": {
+      "file": "pb_bss/extraction/beamformer.py",
+      "first_line": 756,
+      "last_line": 823,
+      "source_segment_sha256": "7e039f728b2428a705b994705e657ed638a7f23acb02ff1a92438c891eb468c0",
+      "body_modified": false
+    }
+  },
+  "environment": {
+    "executable": "/private/tmp/masp-ch04-pra-venv/bin/python",
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O"
+  },
+  "scope": {
+    "execution": "Twelve unchanged original function ASTs with original Python bodies",
+    "dependencies": "NumPy/SciPy linalg and original stable_solve; no compatibility facade",
+    "backend": "Explicit c_gev_available=False and c_eig_available=False; SciPy fallback only",
+    "excluded": "No complete pb_bss/ESPnet/Torch/Cython import, waveform, paper benchmark, firmware or device validation",
+    "inputs": "Deterministic exact two-channel covariance and complex snapshots; no random trials",
+    "upstream_modified": false
+  },
+  "results": {
+    "stable_solve_regular": {
+      "function": "stable_solve",
+      "inputs": [
+        {
+          "shape": [
+            2,
+            2
+          ],
+          "dtype": "float64",
+          "real": [
+            [
+              2.0,
+              0.0
+            ],
+            [
+              0.0,
+              4.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            2,
+            1
+          ],
+          "dtype": "float64",
+          "real": [
+            [
+              2.0
+            ],
+            [
+              8.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0
+            ],
+            [
+              0.0
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "valid_model",
+      "explanation": "",
+      "expected_output": {
+        "shape": [
+          2,
+          1
+        ],
+        "dtype": "float64",
+        "real": [
+          [
+            1.0
+          ],
+          [
+            2.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0
+          ],
+          [
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": null,
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          2,
+          1
+        ],
+        "dtype": "float64",
+        "real": [
+          [
+            1.0
+          ],
+          [
+            2.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0
+          ],
+          [
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true
+    },
+    "stable_solve_singular": {
+      "function": "stable_solve",
+      "inputs": [
+        {
+          "shape": [
+            2,
+            2
+          ],
+          "dtype": "float64",
+          "real": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            2,
+            1
+          ],
+          "dtype": "float64",
+          "real": [
+            [
+              1.0
+            ],
+            [
+              1.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0
+            ],
+            [
+              0.0
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "least_squares_fallback",
+      "explanation": "Inconsistent first equation is not satisfied.",
+      "expected_output": {
+        "shape": [
+          2,
+          1
+        ],
+        "dtype": "float64",
+        "real": [
+          [
+            0.0
+          ],
+          [
+            1.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0
+          ],
+          [
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": null,
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          2,
+          1
+        ],
+        "dtype": "float64",
+        "real": [
+          [
+            0.0
+          ],
+          [
+            1.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0
+          ],
+          [
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true
+    },
+    "stable_solve_vector_rhs": {
+      "function": "stable_solve",
+      "inputs": [
+        {
+          "shape": [
+            2,
+            2
+          ],
+          "dtype": "float64",
+          "real": [
+            [
+              2.0,
+              0.0
+            ],
+            [
+              0.0,
+              4.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            2
+          ],
+          "dtype": "float64",
+          "real": [
+            2.0,
+            8.0
+          ],
+          "imag": [
+            0.0,
+            0.0
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "expected_exception",
+      "explanation": "Original helper requires a matrix RHS; NumPy solve vector API is not inherited.",
+      "expected_output": null,
+      "independent_reference": null,
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": null,
+      "exception": {
+        "type": "IndexError",
+        "message": "tuple index out of range"
+      },
+      "expected_behavior_verified": true
+    },
+    "mvdr_regular": {
+      "function": "get_mvdr_vector",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "valid_model",
+      "explanation": "",
+      "expected_output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.5,
+            0.5
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": null,
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.5,
+            0.5
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true
+    },
+    "mvdr_singular": {
+      "function": "get_mvdr_vector",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "float64",
+          "real": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "model_boundary",
+      "explanation": "Finite feasible output has noise 1; true PSD optimum [1,0] has noise 0.",
+      "expected_output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "float64",
+        "real": [
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": {
+        "true_optimum": [
+          1,
+          0
+        ],
+        "true_minimum_noise": 0
+      },
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true,
+      "observables": {
+        "target_response": {
+          "real": 1.0,
+          "imag": 0.0
+        },
+        "output_noise_power": 1.0
+      }
+    },
+    "souden_rank_one_ref0": {
+      "function": "get_mvdr_vector_souden",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                12.0,
+                6.0
+              ],
+              [
+                6.0,
+                6.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                -6.0
+              ],
+              [
+                6.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                2.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {
+        "ref_channel": 0
+      },
+      "classification": "valid_model",
+      "explanation": "",
+      "expected_output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.5,
+            0.5
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.5
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": {
+        "q": 4.0,
+        "reference_response": {
+          "real": 2.0,
+          "imag": 0.0
+        },
+        "formula": "conj(b_ref) * Rn^-1 b / q"
+      },
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.5,
+            0.5
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.5
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true,
+      "observables": {
+        "physical_target_response": {
+          "real": 2.0,
+          "imag": 0.0
+        }
+      }
+    },
+    "souden_rank_one_ref1": {
+      "function": "get_mvdr_vector_souden",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                12.0,
+                6.0
+              ],
+              [
+                6.0,
+                6.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                -6.0
+              ],
+              [
+                6.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                2.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {
+        "ref_channel": 1
+      },
+      "classification": "valid_model",
+      "explanation": "",
+      "expected_output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.25,
+            0.5
+          ]
+        ],
+        "imag": [
+          [
+            -0.25,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": {
+        "q": 4.0,
+        "reference_response": {
+          "real": 1.0,
+          "imag": 1.0
+        },
+        "formula": "conj(b_ref) * Rn^-1 b / q"
+      },
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.25,
+            0.5
+          ]
+        ],
+        "imag": [
+          [
+            -0.25,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true,
+      "observables": {
+        "physical_target_response": {
+          "real": 1.0,
+          "imag": 1.0
+        }
+      }
+    },
+    "souden_full_rank": {
+      "function": "get_mvdr_vector_souden",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                2.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {
+        "ref_channel": 0
+      },
+      "classification": "model_boundary",
+      "explanation": "Full-rank trace expression is not distortionless for every target image.",
+      "expected_output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.6666666666666666,
+            0.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": null,
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.6666666666666666,
+            0.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true
+    },
+    "souden_auto_reference": {
+      "function": "get_mvdr_vector_souden",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                4.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {
+        "return_ref_channel": true
+      },
+      "classification": "valid_model",
+      "explanation": "",
+      "expected_output": [
+        {
+          "shape": [
+            1,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              0.0,
+              0.8
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "finite": true
+        },
+        1
+      ],
+      "independent_reference": {
+        "candidate_output_snr": [
+          1,
+          4
+        ]
+      },
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": [
+        {
+          "shape": [
+            1,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              0.0,
+              0.8
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "finite": true
+        },
+        1
+      ],
+      "exception": null,
+      "expected_behavior_verified": true
+    },
+    "optimal_reference_direct": {
+      "function": "get_optimal_reference_channel",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                0.2,
+                0.0
+              ],
+              [
+                0.0,
+                0.8
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                4.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "valid_model",
+      "explanation": "",
+      "expected_output": 1,
+      "independent_reference": {
+        "candidate_output_snr": [
+          1,
+          4
+        ]
+      },
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": 1,
+      "exception": null,
+      "expected_behavior_verified": true
+    },
+    "wmwf_full_rank": {
+      "function": "get_wmwf_vector",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                2.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {
+        "reference_channel": 0,
+        "distortion_weight": 1.0
+      },
+      "classification": "model_boundary",
+      "explanation": "",
+      "expected_output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.5,
+            0.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": {
+        "general_mwf_weights": [
+          0.6666666666666666,
+          0
+        ],
+        "general_mwf_scalar_calculation": "2/(2+1)",
+        "trace_scalar_calculation": "2/(1+3)"
+      },
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.5,
+            0.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true
+    },
+    "wmwf_rank_one": {
+      "function": "get_wmwf_vector",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                2.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {
+        "reference_channel": 0,
+        "distortion_weight": 1.0
+      },
+      "classification": "valid_model",
+      "explanation": "",
+      "expected_output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.6666666666666666,
+            0.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": {
+        "general_mwf_weights": [
+          0.6666666666666666,
+          0
+        ],
+        "general_mwf_scalar_calculation": "2/(2+1)",
+        "trace_scalar_calculation": "2/(1+2)"
+      },
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.6666666666666666,
+            0.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true
+    },
+    "ban_positive": {
+      "function": "blind_analytic_normalization",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "valid_model",
+      "explanation": "",
+      "expected_output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "float64",
+        "real": [
+          [
+            0.7071067811865475,
+            0.7071067811865475
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": {
+        "norm": 1.0,
+        "target_response": 1.4142135623730951
+      },
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.7071067811865476,
+            0.7071067811865476
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true,
+      "observables": {
+        "weight_norm": 1.0,
+        "target_response": {
+          "real": 1.4142135623730951,
+          "imag": 0.0
+        }
+      }
+    },
+    "ban_positive_double": {
+      "function": "blind_analytic_normalization",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              2.0,
+              2.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "valid_model",
+      "explanation": "",
+      "expected_output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "float64",
+        "real": [
+          [
+            0.7071067811865475,
+            0.7071067811865475
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": {
+        "norm": 1.0,
+        "target_response": 1.4142135623730951
+      },
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.7071067811865476,
+            0.7071067811865476
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true,
+      "observables": {
+        "weight_norm": 1.0,
+        "target_response": {
+          "real": 1.4142135623730951,
+          "imag": 0.0
+        }
+      }
+    },
+    "ban_negative": {
+      "function": "blind_analytic_normalization",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              -1.0,
+              -1.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "valid_model",
+      "explanation": "",
+      "expected_output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "float64",
+        "real": [
+          [
+            -0.7071067811865475,
+            -0.7071067811865475
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": {
+        "norm": 1.0,
+        "target_response": -1.4142135623730951
+      },
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            -0.7071067811865476,
+            -0.7071067811865476
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true,
+      "observables": {
+        "weight_norm": 1.0,
+        "target_response": {
+          "real": -1.4142135623730951,
+          "imag": 0.0
+        }
+      }
+    },
+    "ban_phase_j": {
+      "function": "blind_analytic_normalization",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "imag": [
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "valid_model",
+      "explanation": "",
+      "expected_output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "imag": [
+          [
+            0.7071067811865475,
+            0.7071067811865475
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": {
+        "norm": 1.0,
+        "target_response": {
+          "real": 0.0,
+          "imag": -1.4142135623730951
+        }
+      },
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "imag": [
+          [
+            0.7071067811865476,
+            0.7071067811865476
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true,
+      "observables": {
+        "weight_norm": 1.0,
+        "target_response": {
+          "real": 0.0,
+          "imag": -1.4142135623730951
+        }
+      }
+    },
+    "ban_zero": {
+      "function": "blind_analytic_normalization",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "degenerate_zero_output",
+      "explanation": "Explicit zero-denominator branch; not a normalized target response.",
+      "expected_output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": null,
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true
+    },
+    "gev_public": {
+      "function": "get_gev_vector",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                4.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                2.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "valid_model",
+      "explanation": "",
+      "expected_output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            1.0,
+            0.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": {
+        "generalized_eigenvalues": [
+          4.0,
+          0.5
+        ]
+      },
+      "comparison": "span_residual",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            1.0,
+            0.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true
+    },
+    "gev_fallback": {
+      "function": "_get_gev_vector",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                4.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                2.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "valid_model",
+      "explanation": "",
+      "expected_output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            1.0,
+            0.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": {
+        "generalized_eigenvalues": [
+          4.0,
+          0.5
+        ]
+      },
+      "comparison": "span_residual",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            1.0,
+            0.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true
+    },
+    "gev_singular_noise": {
+      "function": "get_gev_vector",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                4.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "expected_exception",
+      "explanation": "",
+      "expected_output": null,
+      "independent_reference": null,
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": null,
+      "exception": {
+        "type": "ValueError",
+        "message": "Error for frequency 0\nphi_xx: [[4.+0.j 0.+0.j]\n [0.+0.j 1.+0.j]]\nphi_nn: [[1.+0.j 0.+0.j]\n [0.+0.j 0.+0.j]]"
+      },
+      "expected_behavior_verified": true
+    },
+    "lcmv_complex_response": {
+      "function": "get_lcmv_vector",
+      "inputs": [
+        {
+          "shape": [
+            2,
+            1,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ]
+            ],
+            [
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ]
+            ],
+            [
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            1.0,
+            -0.0
+          ],
+          "imag": [
+            0.0,
+            -1.0
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "valid_model",
+      "explanation": "",
+      "expected_output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            1.0,
+            -0.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            -1.0
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": {
+        "desired_wH_C": [
+          1,
+          {
+            "real": 0.0,
+            "imag": 1.0
+          }
+        ]
+      },
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            1.0,
+            0.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            -1.0
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true,
+      "observables": {
+        "wH_C": {
+          "shape": [
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            1.0,
+            0.0
+          ],
+          "imag": [
+            -0.0,
+            1.0
+          ],
+          "finite": true
+        },
+        "CH_w": {
+          "shape": [
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            1.0,
+            0.0
+          ],
+          "imag": [
+            0.0,
+            -1.0
+          ],
+          "finite": true
+        }
+      }
+    },
+    "lcmv_incompatible_constraints": {
+      "function": "get_lcmv_vector",
+      "inputs": [
+        {
+          "shape": [
+            2,
+            1,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            [
+              [
+                1.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ]
+            ],
+            [
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            2
+          ],
+          "dtype": "int64",
+          "real": [
+            1,
+            0
+          ],
+          "imag": [
+            0,
+            0
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "constraint_violation",
+      "explanation": "Least-squares result violates incompatible hard constraints.",
+      "expected_output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.25,
+            0.25
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": {
+        "requested_CH_w": [
+          1,
+          0
+        ],
+        "least_squares_CH_w": [
+          0.5,
+          0.5
+        ],
+        "constraint_residual_norm": 0.7071067811865475
+      },
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.25,
+            0.25
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true,
+      "observables": {
+        "CH_w": {
+          "shape": [
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            0.5,
+            0.5
+          ],
+          "imag": [
+            0.0,
+            0.0
+          ],
+          "finite": true
+        },
+        "constraint_residual_norm": 0.7071067811865476
+      }
+    },
+    "lcmv_souden_unimplemented": {
+      "function": "get_lcmv_vector_souden",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                12.0,
+                6.0
+              ],
+              [
+                6.0,
+                6.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                -6.0
+              ],
+              [
+                6.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                12.0,
+                6.0
+              ],
+              [
+                6.0,
+                6.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                -6.0
+              ],
+              [
+                6.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {
+        "ref_channel": 0
+      },
+      "classification": "expected_exception",
+      "explanation": "",
+      "expected_output": null,
+      "independent_reference": null,
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": null,
+      "exception": {
+        "type": "NotImplementedError",
+        "message": "This is not yet thoroughly tested. It also misses the response vector,thus it is unclear, how to select, which speaker to attend to."
+      },
+      "expected_behavior_verified": true
+    },
+    "merl_reference_1": {
+      "function": "get_mvdr_vector_merl",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "int64",
+          "real": [
+            [
+              [
+                1,
+                0
+              ],
+              [
+                0,
+                4
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0,
+                0
+              ],
+              [
+                0,
+                0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "float64",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "reference_selection_failure",
+      "explanation": "",
+      "expected_output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "float64",
+        "real": [
+          [
+            0.2,
+            0.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": {
+        "correct_weights": [
+          0,
+          0.8
+        ],
+        "candidate_output_snr": [
+          1,
+          4
+        ]
+      },
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "float64",
+        "real": [
+          [
+            0.2,
+            0.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true
+    },
+    "merl_reference_4": {
+      "function": "get_mvdr_vector_merl",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "int64",
+          "real": [
+            [
+              [
+                4,
+                0
+              ],
+              [
+                0,
+                1
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0,
+                0
+              ],
+              [
+                0,
+                0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "float64",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "diagnostic_control",
+      "explanation": "",
+      "expected_output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "float64",
+        "real": [
+          [
+            0.8,
+            0.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": {
+        "correct_weights": [
+          0.8,
+          0
+        ],
+        "candidate_output_snr": [
+          4,
+          1
+        ]
+      },
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          1,
+          2
+        ],
+        "dtype": "float64",
+        "real": [
+          [
+            0.8,
+            0.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true
+    },
+    "scm_float": {
+      "function": "get_power_spectral_density_matrix",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2
+          ],
+          "dtype": "float64",
+          "real": [
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "valid_model",
+      "explanation": "",
+      "expected_output": {
+        "shape": [
+          1,
+          2,
+          2
+        ],
+        "dtype": "float64",
+        "real": [
+          [
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.0,
+              0.5
+            ]
+          ]
+        ],
+        "imag": [
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": null,
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          1,
+          2,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.0,
+              0.5
+            ]
+          ]
+        ],
+        "imag": [
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true
+    },
+    "scm_integer": {
+      "function": "get_power_spectral_density_matrix",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2
+          ],
+          "dtype": "int64",
+          "real": [
+            [
+              1,
+              1
+            ]
+          ],
+          "imag": [
+            [
+              0,
+              0
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "expected_exception",
+      "explanation": "",
+      "expected_output": null,
+      "independent_reference": null,
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": null,
+      "exception": {
+        "type": "UFuncTypeError",
+        "message": "Cannot cast ufunc 'divide' output from dtype('float64') to dtype('int64') with casting rule 'same_kind'"
+      },
+      "expected_behavior_verified": true
+    },
+    "scm_boolean": {
+      "function": "get_power_spectral_density_matrix",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2
+          ],
+          "dtype": "bool",
+          "real": [
+            [
+              true,
+              true
+            ]
+          ],
+          "imag": [
+            [
+              false,
+              false
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "expected_exception",
+      "explanation": "",
+      "expected_output": null,
+      "independent_reference": null,
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": null,
+      "exception": {
+        "type": "AttributeError",
+        "message": "`np.asfarray` was removed in the NumPy 2.0 release. Use `np.asarray` with a proper dtype instead."
+      },
+      "expected_behavior_verified": true
+    },
+    "scm_negative": {
+      "function": "get_power_spectral_density_matrix",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2
+          ],
+          "dtype": "float64",
+          "real": [
+            [
+              2.0,
+              -1.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "invalid_psd_accepted",
+      "explanation": "",
+      "expected_output": {
+        "shape": [
+          1,
+          2,
+          2
+        ],
+        "dtype": "float64",
+        "real": [
+          [
+            [
+              2.0,
+              0.0
+            ],
+            [
+              0.0,
+              -1.0
+            ]
+          ]
+        ],
+        "imag": [
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": null,
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          1,
+          2,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            [
+              2.0,
+              0.0
+            ],
+            [
+              0.0,
+              -1.0
+            ]
+          ]
+        ],
+        "imag": [
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true
+    },
+    "scm_zero": {
+      "function": "get_power_spectral_density_matrix",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2
+          ],
+          "dtype": "float64",
+          "real": [
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "degenerate_zero_support",
+      "explanation": "",
+      "expected_output": {
+        "shape": [
+          1,
+          2,
+          2
+        ],
+        "dtype": "float64",
+        "real": [
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        ],
+        "imag": [
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": null,
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 2e-14,
+      "warnings": [],
+      "output": {
+        "shape": [
+          1,
+          2,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        ],
+        "imag": [
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true
+    },
+    "scm_tiny": {
+      "function": "get_power_spectral_density_matrix",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            2,
+            2
+          ],
+          "dtype": "complex128",
+          "real": [
+            [
+              [
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "imag": [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          "finite": true
+        },
+        {
+          "shape": [
+            1,
+            2
+          ],
+          "dtype": "float64",
+          "real": [
+            [
+              1e-300,
+              1e-300
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "finite": true
+        }
+      ],
+      "kwargs": {},
+      "classification": "denominator_floor",
+      "explanation": "",
+      "expected_output": {
+        "shape": [
+          1,
+          2,
+          2
+        ],
+        "dtype": "float64",
+        "real": [
+          [
+            [
+              1e-290,
+              0.0
+            ],
+            [
+              0.0,
+              1e-290
+            ]
+          ]
+        ],
+        "imag": [
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        ],
+        "finite": true
+      },
+      "independent_reference": {
+        "unfloored_nonzero_normalized_diagonal": [
+          0.5,
+          0.5
+        ]
+      },
+      "comparison": "absolute_tolerance",
+      "absolute_tolerance": 1e-303,
+      "warnings": [],
+      "output": {
+        "shape": [
+          1,
+          2,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            [
+              9.999999999999999e-291,
+              0.0
+            ],
+            [
+              0.0,
+              9.999999999999999e-291
+            ]
+          ]
+        ],
+        "imag": [
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        ],
+        "finite": true
+      },
+      "exception": null,
+      "expected_behavior_verified": true
+    }
+  },
+  "status": "expected_behaviors_verified_failures_preserved",
+  "case_count": 31
+}

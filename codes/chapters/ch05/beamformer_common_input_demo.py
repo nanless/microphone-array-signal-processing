@@ -79,6 +79,8 @@ def run_experiment() -> dict:
             "white_noise_gain_db": float(
                 10 * np.log10(1.0 / norm_squared)
             ),
+            "white_noise_gain_reference": "nominal design steering at 0 degrees",
+            "true_target_white_noise_gain_db": float(10*np.log10(abs(true_response)**2/norm_squared)),
             "interference_plus_noise_output_power": noise_power,
             "true_target_output_sinr_db": float(
                 10 * np.log10(target_power * abs(true_response) ** 2 / noise_power)
@@ -92,6 +94,7 @@ def run_experiment() -> dict:
             "sound_speed_m_s": sound_speed_m_s,
             "design_target_deg": design_target_deg,
             "true_target_deg": true_target_deg,
+            "white_noise_gain_direction_deg": design_target_deg,
             "interferer_deg": interferer_deg,
             "target_power": target_power,
             "interferer_power": interferer_power,

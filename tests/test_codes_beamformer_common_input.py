@@ -36,6 +36,18 @@ class BeamformerCommonInputTests(unittest.TestCase):
         self.assertAlmostEqual(dsb["interference_plus_noise_output_power"],
                                expected_power, places=12)
 
+    def test_nominal_and_true_white_noise_gain_use_their_respective_response(self):
+        self.assertEqual(self.report["model"]["white_noise_gain_direction_deg"], 0)
+        for row in self.rows.values():
+            self.assertEqual(row["white_noise_gain_reference"], "nominal design steering at 0 degrees")
+            # The ratio of true to nominal WNG is the target power gain.
+            self.assertAlmostEqual(row["true_target_white_noise_gain_db"],
+                                   row["white_noise_gain_db"] + row["true_target_gain_db"], places=12)
+        phase = 2*math.pi*2000*.04*math.sin(math.radians(10))/343
+        response = abs(sum(complex(math.cos(m*phase), math.sin(m*phase)) for m in range(4))/4)
+        self.assertAlmostEqual(self.rows["DSB"]["true_target_white_noise_gain_db"],
+                               10*math.log10(4*response**2), places=12)
+
     def test_null_and_loading_tradeoff_are_not_single_metric_rankings(self):
         self.assertLess(self.rows["LCMV"]["interferer_response_abs"], 1e-12)
         self.assertGreater(self.rows["MVDR_loaded"]["white_noise_gain_db"],

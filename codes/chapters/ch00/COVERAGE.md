@@ -118,7 +118,7 @@
 | §5.3 | 超指向波束 | 本仓库可运行基线 | `codes/chapters/ch05/core/beamforming.py::superdirective_weights` | 低频 WNG 与麦误差 |
 | §5.3 专栏 | 差分麦克风阵 DMA | 原理索引 | 正文一阶算例与高阶模型 | 超指向接口不覆盖全部 DMA |
 | §5.4 | MVDR 与相对对角加载 | 本仓库可运行基线 | `codes/chapters/ch05/core/beamforming.py::mvdr_weights`；共用加载核 `codes/chapters/ch04/core/covariance.py::_load_covariance`；`codes/chapters/ch05/beamformer_common_input_demo.py` | 加载按平均特征值缩放 |
-| §5.4.1 | 最坏情形稳健波束 | 原理索引 | 正文误差集模型 | 经验加载不等于明确误差集优化 |
+| §5.4.1 | 最坏情形稳健波束 | 原理索引 | 正文误差集模型 | 经验加载不等于误差集优化；E05-19仅双麦白噪闭式，未实现通用SOC求解器 |
 | §5.4.1 | 显式 WNG 约束设计 | 原理索引 | 正文约束与选型 | WNG 计算不等于约束优化器 |
 | §5.4.1 | 特征空间波束 | 原理索引 | Chang–Yeh 1992；空间研究 §22 | 子空间维数/高SNR/导向投影；未取得作者完整实现 |
 | §5.4.1 | 干扰加噪声协方差重构 | 原理索引 | Gu–Leshem 2012；空间研究 §22 | 排除目标角域与流形假设；Capon函数不是完整重构算法 |
@@ -134,11 +134,11 @@
 | §5.7.1 | IMCRA | 原理索引 | 正文与空间研究的作者软件入口 | 不把普通最小值跟踪称 IMCRA |
 | §5.7.2 | OM-LSA | 原理索引 | 正文及作者方法说明 | 不以 Wiener 或其他 MMSE 增益代替 |
 | §5.5 后的 MWF 专题；§5.7.2 | 全秩 SDW-MWF | 外部参考实现 | `espnet`：`espnet2/enh/layers/beamformer.py::get_sdw_mwf_vector` | 独立均方误差问题；失真权重与参考通道，非 LCMV 子类 |
-| 研究扩展：空间后滤 | 秩一迹化简 WMWF | 外部参考实现 | `pb_bss`：`pb_bss/extraction/beamformer.py::get_wmwf_vector` | 不代表一般全秩 MWF |
+| 研究扩展：空间后滤 | 秩一迹化简 WMWF | 外部参考实现 | `pb_bss`：`pb_bss/extraction/beamformer.py::get_wmwf_vector` | 秩一迹化简；12原函数审计已实调，全秩反例不等于一般MWF |
 | §5.9 | GEV 波束权重 | 外部参考实现 | `pb_bss`：同文件 `get_gev_vector` | 广义特征向量尺度不确定 |
 | §5.9 | BAN 缩放 | 外部参考实现 | `pb_bss`：同文件 `blind_analytic_normalization` | pb_bss返回权重、ESPnet返回增益且含C²差异；不保证无失真 |
 | §5.9；空间 §48 | 秩一目标 SCM 的 PCA-RTF 方向 | 外部参考实现 | `pb_bss`：`pb_bss/extraction/beamformer.py::get_pca_vector` | 特征向量还需选参考/尺度；全秩目标不能直接认作唯一RTF |
-| §5.9；空间 §48 | Souden 参考通道 MVDR | 外部参考实现 | `pb_bss`：同文件 `get_mvdr_vector_souden` | 秩一条件与参考选择分别核对；MERL入口固定版提取调用失败另记 |
+| §5.9；空间 §48 | Souden 参考通道 MVDR | 外部参考实现 | `pb_bss`：同文件 `get_mvdr_vector_souden` | 秩一复参考因子/全秩边界见E05-20；[原方法审计](research/01_spatial_and_tracking.md#beamformer-upstream-audit)已实调；MERL失败另记 |
 | §5.9 | RTF 幂迭代估计 | 外部参考实现 | `espnet`：`espnet2/enh/layers/beamformer.py::get_rtf` | 函数本身不完成参考通道归一 |
 | §5.9、§8.4 | 掩码空间协方差 | 本仓库可运行基线 | `codes/chapters/ch08/core/separation.py::masked_spatial_covariance` | 轴序、空掩码、保留原始功率 |
 | §5.9、§8.4 | 两通道掩码 MVDR | 本仓库可运行基线 | `codes/chapters/ch08/core/separation.py::mask_mvdr_2x2` | 限定 2×2；非零掩码公共缩放不应改变结果；不是完整神经系统 |
@@ -161,7 +161,7 @@
 | 研究扩展：空间 §30 | 移动源时域声学成像 | 外部参考实现 | `acoular`：`acoular/tbeamform.py` | 轨迹/传播真值，不直接输出增强语音 |
 | 研究扩展：空间近年候选 | ASA 注意力空间协方差聚合（2024） | 原理索引 | Tammen 等 Interspeech 2024 原论文 | 注意力帧权重与通道不变性；未核实作者代码，不冒充已复现 |
 | 研究扩展：空间近年候选 | iDeepPE 参数估计与后滤融合（2025） | 原理索引 | `ideeppe`固定索引：`evaluate.py` | 未建立代码许可，不获取；默认非因果噪声估计，oracle训练准备不等于推理 |
-| 研究扩展：空间近年候选 | 可学习 WNG 阈值的稳健波束（2026） | 原理索引 | 已接收 INTERSPEECH 2026；所链 [arXiv:2606.24137v1](https://arxiv.org/abs/2606.24137v1) 为预印本 | 已知远场方向、双头mask/阈值；未取得作者代码和完整训练复现；不推测最终 DOI |
+| 研究扩展：空间近年候选 | 可学习 WNG 阈值的稳健波束（2026） | 原理索引 | 正式 INTERSPEECH 2026，6996～7001页，[DOI 10.21437/Interspeech.2026-2212](https://www.isca-archive.org/interspeech_2026/deng26d_interspeech.html)；所链 [arXiv:2606.24137v1](https://arxiv.org/abs/2606.24137v1) 为预印本 | 已知远场方向、双头mask/阈值；未取得作者代码和完整训练复现；未执行作者网络与QEP |
 
 ## 回声消除与自适应控制
 
@@ -376,12 +376,12 @@
 
 ## 章节代码练习与音频映射
 
-245 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 300 行算法统计。补充的空间精算、增强步骤、时间状态模块分别提供3/5/4道题。三个原有 `exercises_` 模块各自提供 `run_exercises()`，分别有 28/23/25 道题；AEC 小实验另有 4 道，进阶 AEC 手算另有 10 道；E03-07、E04-08、E09-06 与 E10-13 由独立实验入口提供。E04-08 的 200 次独立双源抽样只说明固定模型中的分辨事件频率和 Wilson 区间。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
+250 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 300 行算法统计。补充的空间精算、增强步骤、时间状态模块分别提供3/5/4道题。三个原有 `exercises_` 模块各自提供 `run_exercises()`，分别有 28/23/25 道题；AEC 小实验另有 4 道，进阶 AEC 手算另有 10 道；E03-07、E04-08、E09-06 与 E10-13 由独立实验入口提供。E04-08 的 200 次独立双源抽样只说明固定模型中的分辨事件频率和 Wilson 区间。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
 
 | 章节与稳定 ID | 练习入口 | 回归测试 |
 |---|---|---|
 | 第 6 章：E06-22～33（12题） | [AEC 状态、数值与指标实验](../ch06/chapter06_experiments.py) | [独立测试](../../../tests/test_codes_chapter06_experiments.py)、[数值边界](../../../tests/test_codes_aec_numerical_boundaries.py) |
-| 第 5 章：E05-08～17（10题） | [约束、谱估计与状态实验](../ch05/chapter05_experiments.py) | [独立测试](../../../tests/test_codes_chapter05_experiments.py)、[GSC状态测试](../../../tests/test_codes_gsc.py) |
+| 第 5 章：E05-08～22（15题） | [约束、谱估计与状态实验](../ch05/chapter05_experiments.py) | [独立测试](../../../tests/test_codes_chapter05_experiments.py)、[GSC状态测试](../../../tests/test_codes_gsc.py) |
 | 第 4 章：E04-12～23（12题） | [定位逐步实验](../ch04/chapter04_experiments.py) | [独立测试](../../../tests/test_codes_chapter04_experiments.py) |
 | 第 3 章：E03-08～17（10题） | [几何与校准逐步实验](../ch03/chapter03_experiments.py) | [独立测试](../../../tests/test_codes_chapter03_experiments.py) |
 | 第 2 章：E02-09～18（10题） | [声学模型逐步实验](../ch02/chapter02_experiments.py) | [独立测试](../../../tests/test_codes_chapter02_experiments.py) |
@@ -435,7 +435,7 @@
 本仓库不提交下载缓存、模型权重或未经授权的第三方语料。109 个自行合成的教学 WAV 按章放在 `codes/chapters/*/audio/`，单一总清单位于 `codes/chapters/ch00/audio/MANIFEST.json`；许可明确的 DEMAND 小型摘录和派生文件位于 `codes/chapters/ch02/real_audio/`，不包含完整下载归档。独立上游工作目录的取得、许可保留与未执行项目按来源状态记录报告。算法、源码或排除范围变化时，同步修改本表、研究说明、来源清单和真实验证记录。
 
 
-真实数据练习 R01 使用 [prepare_real_recordings.py](../ch02/examples/prepare_real_recordings.py) 与 [real_recordings.py](../ch02/core/real_recordings.py)，测试见 [test_codes_real_recordings.py](../../../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 245 道合成/手算代码题。数据来源和许可另见 [real_audio/](../ch02/real_audio/README.md)。
+真实数据练习 R01 使用 [prepare_real_recordings.py](../ch02/examples/prepare_real_recordings.py) 与 [real_recordings.py](../ch02/core/real_recordings.py)，测试见 [test_codes_real_recordings.py](../../../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 250 道合成/手算代码题。数据来源和许可另见 [real_audio/](../ch02/real_audio/README.md)。
 
 四组模型与边界练习对应以下独立实现；主音频新增的 4 个 interpolation 文件验证固定滤波误差，不是完整采样率转换性能。
 

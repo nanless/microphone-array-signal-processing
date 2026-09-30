@@ -1,0 +1,1173 @@
+{
+  "schema_version": 1,
+  "sample_rate_hz": 16000,
+  "samples_per_channel": 32002,
+  "common_export_gain": 1.0,
+  "source_sha256": {
+    "codes/chapters/ch05/core/derivative_audio.py": "e530d9f2339eb5017bc2624ddcc2aa9f2dc16f49a9868332e3775e3a016a7e6e",
+    "codes/chapters/ch05/examples/generate_derivative_audio.py": "a39d4f9a14076e5870e760d62b19d7deed4556bad70ab85c02cd8e756df9a48c",
+    "codes/chapters/ch05/core/beamforming.py": "481f79a66fcc4c1f232704ee3a516b596d28ebc89d9045c494b71f6206b77216",
+    "codes/chapters/ch04/core/covariance.py": "d704be037100ee53caf6e2130fbabbe14ce6eeff9e3d11dde389fd368d271249",
+    "codes/chapters/ch03/core/geometry.py": "5a680848301358415f74647199a4c57b65086f0b2580f91706c912ad208d7bdb",
+    "codes/chapters/ch02/core/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385",
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8"
+  },
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "origin": "original fixed derivative-constraint free-field two-tone synthesis",
+  "parameters": {
+    "exercise_id": "E05-22",
+    "sample_rate_hz": 16000,
+    "samples_per_channel": 32002,
+    "source_active_interval_s": [
+      0.0,
+      2.0
+    ],
+    "sound_speed_m_s": 343.0,
+    "positions_m": [
+      [
+        -0.04,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.04,
+        0.0
+      ]
+    ],
+    "channel_order": [
+      0,
+      1,
+      2
+    ],
+    "azimuth_deg": 7.843941679416739,
+    "phase_centre": "middle microphone/array centre",
+    "frequencies_hz": [
+      1000.0,
+      3000.0
+    ],
+    "phase_per_spacing_rad": [
+      0.1,
+      0.3
+    ],
+    "source_amplitude_per_frequency": 0.08,
+    "fade_duration_s": 0.02,
+    "fade": "continuous linear envelope min(clip(t/.02),clip((2-t)/.02)); zero outside [0,2]",
+    "common_propagation_delay_samples": 1.0,
+    "propagation_model": "reference=F(t-1/fs); x_m_clean=F(t-1/fs+r_m dot u/c)",
+    "noise_model": "independent zero-mean Gaussian observation noise at every recording sample, including the two tail samples",
+    "noise_variance_per_channel": [
+      0.0004,
+      0.0008,
+      0.0016
+    ],
+    "seed": 20260522,
+    "random_bit_generator": "PCG64",
+    "single_weights": [
+      0.5714285714285714,
+      0.2857142857142857,
+      0.14285714285714285
+    ],
+    "constrained_weights": [
+      0.30769230769230765,
+      0.3846153846153846,
+      0.30769230769230765
+    ],
+    "weight_model": "nominal broadside exact diagonal covariance; real causal one-tap filter-and-sum",
+    "scoring_interval_samples": [
+      2400,
+      29600
+    ],
+    "scoring_samples_per_channel": 27200,
+    "phasor_convention": "cos coefficient minus j*sin coefficient; absolute sample clock; output/reference ratio",
+    "expected_population_steady_window": {
+      "single": {
+        "response_real_imag": [
+          [
+            0.9964315466271612,
+            -0.04278574999149778
+          ],
+          [
+            0.9680974922325757,
+            -0.1266515171405741
+          ]
+        ],
+        "steady_clean_distortion_mean_square": 6.04855393845401e-05,
+        "white_noise_mean_square": 0.00022857142857142857,
+        "total_reference_mean_square": 0.0002890569679559687,
+        "weight_norm_squared": 0.42857142857142855
+      },
+      "constrained": {
+        "response_real_imag": [
+          [
+            0.9969256401710926,
+            7.002913214210914e-19
+          ],
+          [
+            0.9725147625388343,
+            -4.951944239072687e-18
+          ]
+        ],
+        "steady_clean_distortion_mean_square": 2.4476478932936524e-06,
+        "white_noise_mean_square": 0.00030769230769230765,
+        "total_reference_mean_square": 0.0003101399555856013,
+        "weight_norm_squared": 0.33727810650887563
+      }
+    },
+    "expected_clean_reference_mean_square": 0.0064,
+    "common_export_gain": 1.0,
+    "alignment": "fixed shared propagation clock and gain, no fitted correction"
+  },
+  "files": {
+    "derivative_reference.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples_per_channel": 32002,
+      "sha256": "990b06a74f498b61230a24ae77608d4b58dd827ca76cf62ad62f05890090e699"
+    },
+    "derivative_array.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 3,
+      "samples_per_channel": 32002,
+      "sha256": "b317f0ef3eb5ed4959e133bf7c1ae6c69c32af96f65a310224a6653d1f082adb"
+    },
+    "derivative_single.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples_per_channel": 32002,
+      "sha256": "73edaf765a42eac408cb451fb13a5a1d28f913724c314a24a430d2b6428cb253"
+    },
+    "derivative_constrained.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples_per_channel": 32002,
+      "sha256": "7ba5de2713136a819ab5f34ea63510ed2022c16b3f117aa08b1224ea430e28f2"
+    }
+  },
+  "samples": {
+    "reference": {
+      "file": "derivative_reference.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator_per_channel": 27200,
+        "channels": 1,
+        "real_ls_design_columns": 4,
+        "reference_squared_sum": 174.07999999999888,
+        "error_squared_sum_per_channel": [
+          0.0
+        ],
+        "total_reference_mse_per_channel": [
+          0.0
+        ],
+        "normalized_reference_error_per_channel": [
+          0.0
+        ],
+        "reference_phasor_real_imag": [
+          [
+            0.07391036260089691,
+            -0.030614674589220934
+          ],
+          [
+            0.030614674589165305,
+            -0.07391036260092013
+          ]
+        ],
+        "phasor_real_imag": [
+          [
+            [
+              0.07391036260089691,
+              -0.030614674589220934
+            ]
+          ],
+          [
+            [
+              0.030614674589165305,
+              -0.07391036260092013
+            ]
+          ]
+        ],
+        "response_estimate_real_imag": [
+          [
+            [
+              1.0,
+              -2.369589822487498e-18
+            ]
+          ],
+          [
+            [
+              1.0,
+              1.9469483533311658e-17
+            ]
+          ]
+        ],
+        "response_estimate_magnitude": [
+          [
+            1.0
+          ],
+          [
+            1.0
+          ]
+        ],
+        "response_estimate_phase_rad": [
+          [
+            -2.369589822487498e-18
+          ],
+          [
+            1.9469483533311658e-17
+          ]
+        ],
+        "response_estimate_error_squared": [
+          [
+            5.614955926836332e-36
+          ],
+          [
+            3.790607890538938e-34
+          ]
+        ],
+        "response_scope": "input/reference LS estimate, affected by any noise/quantization in the supplied input; no component separation",
+        "peak": 0.16
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator_per_channel": 27200,
+        "channels": 1,
+        "real_ls_design_columns": 4,
+        "reference_squared_sum": 174.08582512289286,
+        "error_squared_sum_per_channel": [
+          0.0
+        ],
+        "total_reference_mse_per_channel": [
+          0.0
+        ],
+        "normalized_reference_error_per_channel": [
+          0.0
+        ],
+        "reference_phasor_real_imag": [
+          [
+            0.07390866540542207,
+            -0.030613971587765194
+          ],
+          [
+            0.030616401922911856,
+            -0.07391453275314482
+          ]
+        ],
+        "phasor_real_imag": [
+          [
+            [
+              0.07390866540542207,
+              -0.030613971587765194
+            ]
+          ],
+          [
+            [
+              0.030616401922911856,
+              -0.07391453275314482
+            ]
+          ]
+        ],
+        "response_estimate_real_imag": [
+          [
+            [
+              1.0,
+              1.542214432484896e-17
+            ]
+          ],
+          [
+            [
+              1.0,
+              -1.5377943577172261e-19
+            ]
+          ]
+        ],
+        "response_estimate_magnitude": [
+          [
+            1.0
+          ],
+          [
+            1.0
+          ]
+        ],
+        "response_estimate_phase_rad": [
+          [
+            1.542214432484896e-17
+          ],
+          [
+            -1.5377943577172261e-19
+          ]
+        ],
+        "response_estimate_error_squared": [
+          [
+            2.3784253557647094e-34
+          ],
+          [
+            2.364811486626936e-38
+          ]
+        ],
+        "response_scope": "input/reference LS estimate, affected by any noise/quantization in the supplied input; no component separation",
+        "peak": 0.160003662109375,
+        "pcm_decode_divisor": 32768,
+        "integer_reference_squared_sum": 186923231400,
+        "integer_error_squared_sum_per_channel": [
+          0
+        ],
+        "integer_cross_sum_per_channel": [
+          186923231400
+        ]
+      },
+      "quantization_max_abs_error": 1.5136718750002887e-05
+    },
+    "array": {
+      "file": "derivative_array.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator_per_channel": 27200,
+        "channels": 3,
+        "real_ls_design_columns": 4,
+        "reference_squared_sum": 174.07999999999888,
+        "error_squared_sum_per_channel": [
+          19.382780751138277,
+          21.82103417805378,
+          51.91303390261726
+        ],
+        "total_reference_mse_per_channel": [
+          0.0007126022334977308,
+          0.0008022439036049183,
+          0.0019085674228903403
+        ],
+        "normalized_reference_error_per_channel": [
+          0.33368263212822624,
+          0.3540488807188483,
+          0.5460894247525927
+        ],
+        "reference_phasor_real_imag": [
+          [
+            0.07391036260089691,
+            -0.030614674589220934
+          ],
+          [
+            0.030614674589165305,
+            -0.07391036260092013
+          ]
+        ],
+        "phasor_real_imag": [
+          [
+            [
+              0.07011812797005314,
+              -0.037816956904935896
+            ],
+            [
+              0.07352785102145644,
+              -0.030481108556841736
+            ],
+            [
+              0.07613136488075643,
+              -0.023459205935692794
+            ]
+          ],
+          [
+            [
+              0.007517637103172282,
+              -0.07951715089023811
+            ],
+            [
+              0.030757197099080282,
+              -0.07412475487152076
+            ],
+            [
+              0.05127922051945864,
+              -0.061764190517427535
+            ]
+          ]
+        ],
+        "response_estimate_real_imag": [
+          [
+            [
+              0.990657826994058,
+              -0.10131583229652841
+            ],
+            [
+              0.9949436484136016,
+              -0.0002872740073233238
+            ],
+            [
+              0.9914207405438593,
+              0.09325914762834969
+            ]
+          ],
+          [
+            [
+              0.9542642920129148,
+              -0.2935563147757201
+            ],
+            [
+              1.0031576704252507,
+              0.0006203657480841724
+            ],
+            [
+              0.958579744731981,
+              0.2967461232080446
+            ]
+          ]
+        ],
+        "response_estimate_magnitude": [
+          [
+            0.9958251995498645,
+            0.9949436898864799,
+            0.9957973455462215
+          ],
+          [
+            0.9983965389341106,
+            1.0031578622463553,
+            1.003460706081426
+          ]
+        ],
+        "response_estimate_phase_rad": [
+          [
+            -0.10191692348904653,
+            -0.00028873393965405563,
+            0.09379018301996725
+          ],
+          [
+            -0.29843817337116013,
+            0.0006184129247978458,
+            0.3002119816380877
+          ]
+        ],
+        "response_estimate_error_squared": [
+          [
+            0.010352174070411219,
+            2.5649217720557096e-05,
+            0.008770872309182103
+          ],
+          [
+            0.08826706492978159,
+            1.0355736175899127e-05,
+            0.08977389918547182
+          ]
+        ],
+        "response_scope": "input/reference LS estimate, affected by any noise/quantization in the supplied input; no component separation",
+        "peak": 0.293466752151776
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator_per_channel": 27200,
+        "channels": 3,
+        "real_ls_design_columns": 4,
+        "reference_squared_sum": 174.08582512289286,
+        "error_squared_sum_per_channel": [
+          19.38319040555507,
+          21.82107938453555,
+          51.913647449575365
+        ],
+        "total_reference_mse_per_channel": [
+          0.0007126172943218775,
+          0.0008022455656079247,
+          0.0019085899797638
+        ],
+        "normalized_reference_error_per_channel": [
+          0.3336805754766475,
+          0.35404332395072335,
+          0.5460835152514103
+        ],
+        "reference_phasor_real_imag": [
+          [
+            0.07390866540542207,
+            -0.030613971587765194
+          ],
+          [
+            0.030616401922911856,
+            -0.07391453275314482
+          ]
+        ],
+        "phasor_real_imag": [
+          [
+            [
+              0.0701181794744596,
+              -0.03781689340668045
+            ],
+            [
+              0.07352783459598171,
+              -0.03048104492564372
+            ],
+            [
+              0.07613150879553042,
+              -0.023459169589068483
+            ]
+          ],
+          [
+            [
+              0.007517593294107053,
+              -0.07951711665351838
+            ],
+            [
+              0.03075712400891477,
+              -0.07412468106139901
+            ],
+            [
+              0.05127925900716125,
+              -0.061764133582289805
+            ]
+          ]
+        ],
+        "response_estimate_real_imag": [
+          [
+            [
+              0.9906808669411066,
+              -0.10131717914978716
+            ],
+            [
+              0.9949660016360368,
+              -0.00028662431731855156
+            ],
+            [
+              0.9914449951192427,
+              0.09326239737293834
+            ]
+          ],
+          [
+            [
+              0.9542098488742892,
+              -0.2935400948862257
+            ],
+            [
+              1.0030998717456643,
+              0.000619839766574587
+            ],
+            [
+              0.9585251896527736,
+              0.29673009800070027
+            ]
+          ]
+        ],
+        "response_estimate_magnitude": [
+          [
+            0.9958482569719408,
+            0.9949660429206121,
+            0.9958217978688472
+          ],
+          [
+            0.9983397332544208,
+            1.0031000632526668,
+            1.0034038520248916
+          ]
+        ],
+        "response_estimate_phase_rad": [
+          [
+            -0.10191591506918464,
+            -0.00028807447582989055,
+            0.09379115101878925
+          ],
+          [
+            -0.29843867908610466,
+            0.00061792420190892,
+            0.3002128035553973
+          ]
+        ],
+        "response_estimate_error_squared": [
+          [
+            0.010352017031839425,
+            2.5423293027662834e-05,
+            0.008771062872257639
+          ],
+          [
+            0.08826252524592981,
+            9.993406175794978e-06,
+            0.0897689109528436
+          ]
+        ],
+        "response_scope": "input/reference LS estimate, affected by any noise/quantization in the supplied input; no component separation",
+        "peak": 0.29345703125,
+        "pcm_decode_divisor": 32768,
+        "integer_reference_squared_sum": 186923231400,
+        "integer_error_squared_sum_per_channel": [
+          20812542221,
+          23430205580,
+          55741854503
+        ],
+        "integer_cross_sum_per_channel": [
+          181772362954,
+          186742508335,
+          182247124275
+        ]
+      },
+      "quantization_max_abs_error": 1.525865152010586e-05
+    },
+    "single": {
+      "file": "derivative_single.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator_per_channel": 27200,
+        "channels": 1,
+        "real_ls_design_columns": 4,
+        "reference_squared_sum": 174.07999999999888,
+        "error_squared_sum_per_channel": [
+          7.768855768567952
+        ],
+        "total_reference_mse_per_channel": [
+          0.00028561969737382175
+        ],
+        "normalized_reference_error_per_channel": [
+          0.2112535862764463
+        ],
+        "reference_phasor_real_imag": [
+          [
+            0.07391036260089691,
+            -0.030614674589220934
+          ],
+          [
+            0.030614674589165305,
+            -0.07391036260092013
+          ]
+        ],
+        "phasor_real_imag": [
+          [
+            [
+              0.07195136840055451,
+              -0.03366989295273138
+            ]
+          ],
+          [
+            [
+              0.020409166161472616,
+              -0.07544032911734601
+            ]
+          ]
+        ],
+        "response_estimate_real_imag": [
+          [
+            [
+              0.9919913350496129,
+              -0.04465410422462997
+            ]
+          ],
+          [
+            [
+              0.9688503219477353,
+              -0.12517691491409574
+            ]
+          ]
+        ],
+        "response_estimate_magnitude": [
+          [
+            0.9929958700002822
+          ],
+          [
+            0.9769033761665691
+          ]
+        ],
+        "response_estimate_phase_rad": [
+          [
+            -0.044984243478255456
+          ],
+          [
+            -0.12848969446946124
+          ]
+        ],
+        "response_estimate_error_squared": [
+          [
+            0.0020581277383916736
+          ],
+          [
+            0.01663956247017051
+          ]
+        ],
+        "response_scope": "input/reference LS estimate, affected by any noise/quantization in the supplied input; no component separation",
+        "peak": 0.21212774751056243
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator_per_channel": 27200,
+        "channels": 1,
+        "real_ls_design_columns": 4,
+        "reference_squared_sum": 174.08582512289286,
+        "error_squared_sum_per_channel": [
+          7.769132475368679
+        ],
+        "total_reference_mse_per_channel": [
+          0.00028562987041796614
+        ],
+        "normalized_reference_error_per_channel": [
+          0.21125381390640144
+        ],
+        "reference_phasor_real_imag": [
+          [
+            0.07390866540542207,
+            -0.030613971587765194
+          ],
+          [
+            0.030616401922911856,
+            -0.07391453275314482
+          ]
+        ],
+        "phasor_real_imag": [
+          [
+            [
+              0.07195122865628496,
+              -0.033669808754011876
+            ]
+          ],
+          [
+            [
+              0.020409046325792945,
+              -0.07544039993391821
+            ]
+          ]
+        ],
+        "response_estimate_real_imag": [
+          [
+            [
+              0.9920120979098431,
+              -0.04465482573358001
+            ]
+          ],
+          [
+            [
+              0.9687959053692472,
+              -0.12517157519161298
+            ]
+          ]
+        ],
+        "response_estimate_magnitude": [
+          [
+            0.9930166443019898
+          ],
+          [
+            0.976848723956872
+          ]
+        ],
+        "response_estimate_phase_rad": [
+          [
+            -0.04498402907346037
+          ],
+          [
+            -0.12849141125684693
+          ]
+        ],
+        "response_estimate_error_squared": [
+          [
+            0.002057860041098332
+          ],
+          [
+            0.016641618757674597
+          ]
+        ],
+        "response_scope": "input/reference LS estimate, affected by any noise/quantization in the supplied input; no component separation",
+        "peak": 0.212127685546875,
+        "pcm_decode_divisor": 32768,
+        "integer_reference_squared_sum": 186923231400,
+        "integer_error_squared_sum_per_channel": [
+          8342042475
+        ],
+        "integer_cross_sum_per_channel": [
+          183260110456
+        ]
+      },
+      "quantization_max_abs_error": 1.5258590893778984e-05
+    },
+    "constrained": {
+      "file": "derivative_constrained.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator_per_channel": 27200,
+        "channels": 1,
+        "real_ls_design_columns": 4,
+        "reference_squared_sum": 174.07999999999888,
+        "error_squared_sum_per_channel": [
+          8.352641438265175
+        ],
+        "total_reference_mse_per_channel": [
+          0.0003070824058185726
+        ],
+        "normalized_reference_error_per_channel": [
+          0.2190470860549217
+        ],
+        "reference_phasor_real_imag": [
+          [
+            0.07391036260089691,
+            -0.030614674589220934
+          ],
+          [
+            0.030614674589165305,
+            -0.07391036260092013
+          ]
+        ],
+        "phasor_real_imag": [
+          [
+            [
+              0.07327978665465538,
+              -0.030577707242055625
+            ]
+          ],
+          [
+            [
+              0.029921031998917325,
+              -0.0719807030760205
+            ]
+          ]
+        ],
+        "response_estimate_real_imag": [
+          [
+            [
+              0.9925409624784362,
+              -0.0025894699007176915
+            ]
+          ],
+          [
+            [
+              0.9743972691619875,
+              0.001220081728439966
+            ]
+          ]
+        ],
+        "response_estimate_magnitude": [
+          [
+            0.9925443403455521
+          ],
+          [
+            0.9743980330182133
+          ]
+        ],
+        "response_estimate_phase_rad": [
+          [
+            -0.0026089240883181105
+          ],
+          [
+            0.0012521392756498968
+          ]
+        ],
+        "response_estimate_error_squared": [
+          [
+            6.234259511482024e-05
+          ],
+          [
+            0.0006569884257877871
+          ]
+        ],
+        "response_scope": "input/reference LS estimate, affected by any noise/quantization in the supplied input; no component separation",
+        "peak": 0.2111719811888711
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator_per_channel": 27200,
+        "channels": 1,
+        "real_ls_design_columns": 4,
+        "reference_squared_sum": 174.08582512289286,
+        "error_squared_sum_per_channel": [
+          8.352890094742179
+        ],
+        "total_reference_mse_per_channel": [
+          0.0003070915476008154
+        ],
+        "normalized_reference_error_per_channel": [
+          0.2190466816489619
+        ],
+        "reference_phasor_real_imag": [
+          [
+            0.07390866540542207,
+            -0.030613971587765194
+          ],
+          [
+            0.030616401922911856,
+            -0.07391453275314482
+          ]
+        ],
+        "phasor_real_imag": [
+          [
+            [
+              0.07327969847987297,
+              -0.030577763417953843
+            ]
+          ],
+          [
+            [
+              0.02992107284264582,
+              -0.07198061493443939
+            ]
+          ]
+        ],
+        "response_estimate_real_imag": [
+          [
+            [
+              0.992563005027048,
+              -0.0025905999240909837
+            ]
+          ],
+          [
+            [
+              0.9743414725826115,
+              0.0012209061538164966
+            ]
+          ]
+        ],
+        "response_estimate_magnitude": [
+          [
+            0.9925663857678692
+          ],
+          [
+            0.9743422375152831
+          ]
+        ],
+        "response_estimate_phase_rad": [
+          [
+            -0.0026100046329266377
+          ],
+          [
+            0.0012530571151584762
+          ]
+        ],
+        "response_estimate_error_squared": [
+          [
+            6.202010219441392e-05
+          ],
+          [
+            0.0006598506410653043
+          ]
+        ],
+        "response_scope": "input/reference LS estimate, affected by any noise/quantization in the supplied input; no component separation",
+        "peak": 0.211181640625,
+        "pcm_decode_divisor": 32768,
+        "integer_reference_squared_sum": 186923231400,
+        "integer_error_squared_sum_per_channel": [
+          8968847446
+        ],
+        "integer_cross_sum_per_channel": [
+          183829931630
+        ]
+      },
+      "quantization_max_abs_error": 1.5258431437135782e-05
+    }
+  },
+  "float_decomposition": {
+    "single": {
+      "sample_denominator": 27200,
+      "scoring_interval_samples": [
+        2400,
+        29600
+      ],
+      "clean_distortion_mean_square": 6.0485539384398116e-05,
+      "noise_mean_square": 0.00022587012048466313,
+      "twice_clean_error_noise_cross_mean": -7.359624952395291e-07,
+      "total_reference_mean_square": 0.00028561969737382175,
+      "decomposition_sum": 0.00028561969737382175,
+      "clean_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator_per_channel": 27200,
+        "channels": 1,
+        "real_ls_design_columns": 4,
+        "reference_squared_sum": 174.07999999999888,
+        "error_squared_sum_per_channel": [
+          1.6452066712556288
+        ],
+        "total_reference_mse_per_channel": [
+          6.0485539384398116e-05
+        ],
+        "normalized_reference_error_per_channel": [
+          0.09721556217402781
+        ],
+        "reference_phasor_real_imag": [
+          [
+            0.07391036260089691,
+            -0.030614674589220934
+          ],
+          [
+            0.030614674589165305,
+            -0.07391036260092013
+          ]
+        ],
+        "phasor_real_imag": [
+          [
+            [
+              0.07233674510514267,
+              -0.033667737846444244
+            ]
+          ],
+          [
+            [
+              0.02027713013948316,
+              -0.07542983166743507
+            ]
+          ]
+        ],
+        "response_estimate_real_imag": [
+          [
+            [
+              0.9964315466271697,
+              -0.04278574999144895
+            ]
+          ],
+          [
+            [
+              0.9680974922326482,
+              -0.12665151714043707
+            ]
+          ]
+        ],
+        "response_estimate_magnitude": [
+          [
+            0.9973497117441525
+          ],
+          [
+            0.9763469471766256
+          ]
+        ],
+        "response_estimate_phase_rad": [
+          [
+            -0.04291261521995385
+          ],
+          [
+            -0.1300863727797945
+          ]
+        ],
+        "response_estimate_error_squared": [
+          [
+            0.0018433542618048373
+          ],
+          [
+            0.01705837679582037
+          ]
+        ],
+        "response_scope": "input/reference LS estimate, affected by any noise/quantization in the supplied input; no component separation",
+        "peak": 0.15716232310884365
+      },
+      "scope": "actual unquantized generated components; no claim of PCM component separation"
+    },
+    "constrained": {
+      "sample_denominator": 27200,
+      "scoring_interval_samples": [
+        2400,
+        29600
+      ],
+      "clean_distortion_mean_square": 2.447647893282068e-06,
+      "noise_mean_square": 0.0003048796287387153,
+      "twice_clean_error_noise_cross_mean": -2.4487081342478234e-07,
+      "total_reference_mean_square": 0.0003070824058185726,
+      "decomposition_sum": 0.0003070824058185726,
+      "clean_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator_per_channel": 27200,
+        "channels": 1,
+        "real_ls_design_columns": 4,
+        "reference_squared_sum": 174.07999999999888,
+        "error_squared_sum_per_channel": [
+          0.06657602269727225
+        ],
+        "total_reference_mse_per_channel": [
+          2.447647893282068e-06
+        ],
+        "normalized_reference_error_per_channel": [
+          0.019556200636251554
+        ],
+        "reference_phasor_real_imag": [
+          [
+            0.07391036260089691,
+            -0.030614674589220934
+          ],
+          [
+            0.030614674589165305,
+            -0.07391036260092013
+          ]
+        ],
+        "phasor_real_imag": [
+          [
+            [
+              0.07368313555117731,
+              -0.030520554063489067
+            ]
+          ],
+          [
+            [
+              0.029773222988287478,
+              -0.0718789187339979
+            ]
+          ]
+        ],
+        "response_estimate_real_imag": [
+          [
+            [
+              0.9969256401711005,
+              -7.698841696567437e-16
+            ]
+          ],
+          [
+            [
+              0.9725147625388992,
+              -3.953524755480255e-15
+            ]
+          ]
+        ],
+        "response_estimate_magnitude": [
+          [
+            0.9969256401711005
+          ],
+          [
+            0.9725147625388992
+          ]
+        ],
+        "response_estimate_phase_rad": [
+          [
+            -7.722583697662845e-16
+          ],
+          [
+            -4.065259374735835e-15
+          ]
+        ],
+        "response_estimate_error_squared": [
+          [
+            9.451688357550813e-06
+          ],
+          [
+            0.0007554382782930968
+          ]
+        ],
+        "response_scope": "input/reference LS estimate, affected by any noise/quantization in the supplied input; no component separation",
+        "peak": 0.15755523221686038
+      },
+      "scope": "actual unquantized generated components; no claim of PCM component separation"
+    }
+  },
+  "pcm": "signed little-endian PCM16, round-to-nearest-even, no dither or per-file gain",
+  "pcm_encode_multiplier": 32768,
+  "pcm_decode_divisor": 32768,
+  "pcm_quantization_step": 3.0517578125e-05,
+  "pcm_half_step_error_bound": 1.52587890625e-05,
+  "limits": "Original mathematical free-field fixture, not speech, room or device recording. Propagation evaluates a continuous two-tone source with its envelope, not a sampled fractional-delay filter. Noise is added independently at the three observations; its exact diagonal covariance is supplied to fixed one-tap weights, not estimated online. Derivative constraints impose local complex-response flatness on the middle-microphone phase centre and increase output noise in this model. Float component truth and actual PCM total-reference measurements are separate. No posterior delay/gain fitting or per-file normalization is applied; playback is not a DOA or quality test.",
+  "listening": "Start at low volume; no automatic playback. Three-channel playback/downmixing is device dependent."
+}

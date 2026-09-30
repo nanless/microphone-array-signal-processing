@@ -165,7 +165,7 @@ def masked_spatial_covariance(spectrum: np.ndarray, mask: np.ndarray, *, epsilon
             real_m, real_e = np.frexp(np.asarray(x[f].real, dtype=float))
             imag_m, imag_e = np.frexp(np.asarray(x[f].imag, dtype=float))
 
-            def sum_products(parts):
+            def sum_products(parts, *, positive=False):
                 # Accumulate weighted complex outer products in exponent form.
                 # Zero-weight outliers and tiny positive weights cannot erase
                 # smaller contributing samples by selecting a global peak.
@@ -177,6 +177,14 @@ def masked_spatial_covariance(spectrum: np.ndarray, mask: np.ndarray, *, epsilon
                     exponents.extend((we + ae + be - denominator_exponent)[use])
                 if not mantissas:
                     return 0.
+                if positive:
+                    # A positive diagonal must be rounded only AFTER its
+                    # terms have been summed: two individually sub-half-ulp
+                    # powers can together produce a representable subnormal.
+                    exponent = max(exponents)
+                    total = math.fsum(math.ldexp(float(m), int(e-exponent))
+                                      for m, e in zip(mantissas, exponents))
+                    return math.ldexp(total, int(exponent))
                 # Restore each already-normalized contribution before fsum:
                 # a shared exponent could erase a tiny residual when much
                 # larger positive and negative cross terms cancel exactly.
@@ -191,8 +199,10 @@ def masked_spatial_covariance(spectrum: np.ndarray, mask: np.ndarray, *, epsilon
                               for n in range(m + 1, x.shape[1])]
                     for m, n in pairs:
                         re = sum_products([(real_m[m], real_e[m], real_m[n], real_e[n], 1),
-                                           (imag_m[m], imag_e[m], imag_m[n], imag_e[n], 1)])
-                        im = sum_products([(imag_m[m], imag_e[m], real_m[n], real_e[n], 1),
+                                           (imag_m[m], imag_e[m], imag_m[n], imag_e[n], 1)], positive=m == n)
+                        if m == n and re == 0 and np.any((weights[f] > 0) & (x[f, m] != 0)):
+                            raise ValueError("positive masked SCM diagonal underflows float64 range")
+                        im = 0. if m == n else sum_products([(imag_m[m], imag_e[m], real_m[n], real_e[n], 1),
                                            (real_m[m], real_e[m], imag_m[n], imag_e[n], -1)])
                         result[f, m, n] = complex(re, im)
                         result[f, n, m] = complex(re, -im)
@@ -208,6 +218,9 @@ def masked_spatial_covariance(spectrum: np.ndarray, mask: np.ndarray, *, epsilon
         covariance = numerator / np.maximum(denominator, epsilon)
     if not np.all(np.isfinite(covariance)):
         raise ValueError("masked SCM result exceeds the float64 range")
+    active = np.any((weights[:, None, :] > 0) & (x != 0), axis=-1)
+    if np.any(active & (covariance.diagonal(axis1=1, axis2=2).real == 0)):
+        raise ValueError("positive masked SCM diagonal underflows float64 range")
     return covariance
 
 
