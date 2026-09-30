@@ -28,6 +28,12 @@
 .venv/bin/python -m codes.chapters.appendix_b.appendix_b_experiments
 ```
 
+第一次运行可先按[导读的动手复现](../../chapters/00_overview.md#sec-u-6d43c0086f)准备环境，再运行三组跨章基线。
+它们只打印计算结果，不生成或改写音频。读输出时先找输入与对应约束：`GCC-PHAT tau12 (samples): 3.0`
+表示第一个输入相对第二个晚 3 点，在 16 kHz 下是 187.5 μs；`DSB target response` 和
+`MVDR target response` 应接近 1；STFT 重建误差接近浮点舍入。极高的匹配无噪声 AEC ERLE 是算术
+收敛检查，队列示例中的超期次数则来自构造的负载，二者均不代表设备测量。完整核对步骤见导读。
+
 旧的 `codes.examples.*` 和 `codes.array_tutorial.*` 导入路径已经退出仓内接口。运行时使用上表中的章节模块；修改题目时改唯一真实源文件，再核对全书 231 个稳定练习 ID、对应章节和覆盖表。
 
 房间、主音频、GSS、移动和追踪资产的清单，以及某些工业报告，会校验生成器的**路径和完整源码摘要**。生成器已归入相应章节的 `examples/`；原生 C/C++ 探针与调用它的 Python 文件放在同一目录。更改这些文件后，应从真实新源重生资产并核对参数、逐文件摘要和报告，再同步构建与测试。

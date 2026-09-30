@@ -558,6 +558,55 @@ def expected_outline(documents=None):
     return result
 
 
+def expected_outline_heading_ids(documents=None):
+    """Independent source heading ids, in the published outline's order."""
+    if documents is None:
+        documents = {path.name: path.read_text(encoding="utf-8")
+                     for path in CHAPTERS.glob("*.md")}
+    result = []
+    for index, (name, _label) in enumerate(EXPECTED_CHAPTERS):
+        chapter_id = f"ch-{index}"
+        ids = [chapter_id]
+        section_level = 2 if name == "00_overview.md" else 3
+        for level, _title, primary in semantic_heading_ids(documents[name]):
+            if (level == section_level or
+                    (name in EXPECTED_SUBSECTION_COUNTS and level == section_level + 1)):
+                ids.append(f"{chapter_id}-{primary}")
+        result.append(ids)
+    return result
+
+
+def bookmark_destination_issues(reader, bookmark, heading_id):
+    """Reject title matches on TOC pages and wrong positions on the same page."""
+    issues = []
+    named = reader.named_destinations
+    matches = [named[key] for key in (heading_id, "/" + heading_id) if key in named]
+    if not matches:
+        return [f"PDF 缺少标题命名目标：{heading_id}"]
+    signatures = []
+    for destination in matches:
+        try:
+            page = reader.get_destination_page_number(destination)
+        except Exception:
+            return [f"PDF 标题命名目标无法解析：{heading_id}"]
+        if page is None or not 0 <= page < len(reader.pages):
+            return [f"PDF 标题命名目标越界：{heading_id}"]
+        signatures.append((page, tuple(destination.dest_array[1:])))
+    if any(signature != signatures[0] for signature in signatures[1:]):
+        return [f"PDF 标题命名目标歧义：{heading_id}"]
+    try:
+        page = reader.get_destination_page_number(bookmark)
+        signature = (page, tuple(bookmark.dest_array[1:]))
+    except Exception:
+        return [f"PDF 书签目标无法解析：{heading_id}"]
+    if page is None or not 0 <= page < len(reader.pages):
+        return [f"PDF 书签目标越界：{heading_id}"]
+    if signature != signatures[0]:
+        issues.append(f"PDF 书签与正文命名目标不一致：{heading_id} -> p{page + 1}，"
+                      f"应为 p{signatures[0][0] + 1} 的指定标题位置")
+    return issues
+
+
 def extract_figure_references(text: str):
     pattern = re.compile(r"!\[([^\]]*)\]\(\.\./figures/(fig(\d{2})_[^\s)\"]+\.png)(?:\s+\"[^\"]*\")?\)")
     return [(match.group(1), match.group(2), int(match.group(3)))
@@ -1032,11 +1081,13 @@ def check_pdf(errors: list[str], notices: list[str]):
     if radicals:
         fail(errors, f"PDF 文本层含部首类错误码位：{len(radicals)} 个")
     expected = expected_outline()
+    expected_ids = expected_outline_heading_ids()
     actual = pdf_outline_tree(reader.outline)
     if [item[0].title for item in actual] != [label for label, _ in expected]:
         fail(errors, "PDF 顶级书签标题或顺序与源 Markdown 不一致")
     else:
-        for (parent, children), (label, expected_children) in zip(actual, expected):
+        for (parent, children), (label, expected_children), heading_ids in zip(
+                actual, expected, expected_ids):
             if [child.title for child, _subchildren in children] != [
                     title for title, _subtitles in expected_children]:
                 fail(errors, f"PDF 节书签标题或顺序不一致：{label}")
@@ -1049,7 +1100,10 @@ def check_pdf(errors: list[str], notices: list[str]):
                     fail(errors, f"PDF 子节书签标题或顺序不一致：{label} / {child.title}")
                 destinations.append(child)
                 destinations.extend(subchild for subchild, _ in subchildren)
-            for destination in destinations:
+            if len(destinations) != len(heading_ids):
+                fail(errors, f"PDF 书签与源标题目标数量不一致：{label}")
+            for destination, heading_id in zip(destinations, heading_ids):
+                errors.extend(bookmark_destination_issues(reader, destination, heading_id))
                 page_no = reader.get_destination_page_number(destination)
                 page_text = extracted[page_no] if 0 <= page_no < len(extracted) else ""
                 if not bookmark_title_matches_page(destination.title, page_text):

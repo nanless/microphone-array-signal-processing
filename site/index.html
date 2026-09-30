@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>导读与导航 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="14bcf8fd1aec"><style>
+<meta name="source-digest" content="5bb655885815"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -129,10 +129,52 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>全套教程配了 49 张图，图 18～20、图 26～32 和图 36～39 在第 6 章。插图分为几何示意、指定条件下的仿真和系统框图，阅读时要同时核对图注中的参数。</p>
 <hr />
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-9d988aa5ab">1. 这是一份什么样的教程</h2>
-<p>这是一份讲麦克风阵列的教程。零基础可以从头读，读完还可以当手册查。</p>
+<p>这份教程不要求预先学过麦克风阵列。推导会用到单位换算、三角函数、复数和矩阵；不熟悉这些工具时，可按需查<a href="12_appendix-symbols-math.html#sec-12-3">附录 A §12.3</a>，再回到当前算例。读完后，各章的公式、边界和排错内容也可作为手册查阅。</p>
 <p>文里配了 49 张图。第一次阅读时，可以先看图和算例，再回到公式核对条件与计算步骤。</p>
-<p>教程从一个具体问题讲起：你站在 3 米外跟音箱说话，它怎样从噪声、混响和自身播放声中提取你的语音。全书依次讨论阵列几何、声源定位、定向拾音、回声与混响处理、重叠语音分离、移动声源追踪、系统评测和场景选型。</p>
-<p>各章先建立直觉，再给出公式、符号、算例和适用边界。比较实验数字前，要先核对阵列几何、房间、数据集、实现和评测口径；条件不同的结果只能用于观察趋势。</p>
+<p>教程从一个具体问题讲起：你站在 3 米外跟音箱说话，它怎样从噪声、混响和自身播放声中提取你的语音。如果另一个人同时讲话，或者你边说边走，系统还会遇到分离和追踪问题。这些任务需要的输入、输出和评价方式不同：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">任务</th>
+<th scope="col">在这个场景中解决什么</th>
+<th scope="col">输出或必要信息</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>声源定位：估计波达方向（Direction of Arrival，DOA）</td>
+<td>判断讲话声相对阵列来自哪个方向</td>
+<td>方向估计；不直接得到增强后的语音</td>
+</tr>
+<tr>
+<td>波束形成（Beamforming）</td>
+<td>利用多通道空间差异定向拾音</td>
+<td>加权合成的音频；需要方向或空间统计量</td>
+</tr>
+<tr>
+<td>声学回声消除（Acoustic Echo Cancellation，AEC）</td>
+<td>减弱音箱自己播放后又被录入的声音</td>
+<td>处理后的音频；需要与实际播放对应的参考</td>
+</tr>
+<tr>
+<td>加权预测误差去混响（Weighted Prediction Error，WPE）</td>
+<td>减弱房间反射造成的晚期拖尾</td>
+<td>延迟历史预测后的残差；需验证目标是否受损</td>
+</tr>
+<tr>
+<td>语音分离（Speech Separation）</td>
+<td>区分同时讲话的不同声源</td>
+<td>多路输出或指定目标的音频；需处理输出对应关系</td>
+</tr>
+<tr>
+<td>声源追踪（Source Tracking）</td>
+<td>将含噪、间断的方向观测组织成连续轨迹</td>
+<td>方向、运动状态及不确定度；需注明状态时刻</td>
+</tr>
+</tbody>
+</table></div>
+<p>全书依次讨论阵列几何、上述处理方法、系统评测和场景选型。它们按任务条件启用，具体参考依赖见<a href="10_engineering-practice.html#sec-10-1">§10.1</a>。</p>
+<p>各章先建立直觉，再给出公式、符号、算例和适用边界。比较实验数字前，要先核对阵列几何、房间、数据集、实现和评测口径。条件不同的结果应先分别解释各自实验内的趋势；跨实验讨论差异时，还需对齐共同条件，并说明未对齐的因素。</p>
 <hr />
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-06e6cf7b78">2. 14 个文件一览</h2>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -165,7 +207,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td><code><a href="02_basics-signal-model.html">02_basics-signal-model.md</a></code></td>
 <td>图2～图7，共 6 张</td>
 <td>进阶</td>
-<td>时延与流形；STFT与统计；波束度量，分三单元</td>
+<td>时延与流形；短时频谱与统计；波束度量，分三单元</td>
 </tr>
 <tr>
 <td>03</td>
@@ -219,7 +261,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <tr>
 <td>10</td>
 <td><code><a href="10_engineering-practice.html">10_engineering-practice.md</a></code></td>
-<td>图25、图40、图45，另引用图23</td>
+<td>图23、图25、图40、图45，共 4 张</td>
 <td>进阶</td>
 <td>模块依赖；设备时序；资源与评测，分三单元</td>
 </tr>
@@ -260,10 +302,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <ul>
 <li>2.1 节讲时延：声音到达每个麦克风有先有后。采样率 16 kHz 时，一个采样间隔是 62.5 微秒；声速取 343 m/s 时，声音在这段时间传播约 2.1 厘米。亚采样时差可通过互相关峰插值或频域相位斜率拟合估计；多路录音还须同步采样或补偿相对时钟偏移。</li>
 <li>2.2 节讲远场和近场：对中心对称孔径，常用相位曲率尺度是两倍孔径平方除以波长；其他几何要按参考点到最远阵元的距离推导。分界同时取决于孔径和频率。</li>
-<li>2.3 节讲导向矢量：时域的移位变成频域的相位旋转。导向矢量就是每个方向对应的标准相位组合，后面定位和波束形成都要用它。</li>
-<li>2.4 节讲房间混响：声音经反射形成拖尾，$T_{60}$ 描述能量衰减 60 dB 所需时间，DRR（直达混响比）描述直达声与混响的相对能量。</li>
-<li>2.5 节讲 STFT（短时傅里叶变换）：把波形分帧后得到复数时频表示，再由多通道快拍估计协方差矩阵。</li>
-<li>2.6 节讲主瓣宽度、旁瓣、DI、WNG，还介绍分辨率尺度、栅瓣条件和 CRLB（克拉美－罗下界）。</li>
+<li>2.3 节讲导向矢量：时域的移位变成频域的相位旋转。在等幅远场模型中，导向矢量描述各通道相对参考麦的相位组合，后面定位和波束形成都要用它；近场或含散射时，还需加入距离与幅度信息。</li>
+<li>2.4 节讲房间混响：声音经反射形成拖尾，$T_{60}$ 描述能量衰减 60 dB 所需时间，直达混响比（Direct-to-Reverberant Ratio，DRR）描述直达声与混响的相对能量。</li>
+<li>2.5 节讲短时傅里叶变换（Short-Time Fourier Transform，STFT）：把波形分帧后得到复数时频表示，再由多通道快拍估计协方差矩阵。</li>
+<li>2.6 节讲主瓣宽度、旁瓣、DI、WNG，还介绍分辨率尺度、栅瓣条件和克拉美－罗下界（Cramér–Rao Lower Bound，CRLB）。</li>
 </ul>
 <p>本章结束时，读者应能从时延推到相位和导向矢量，解释协方差矩阵各元素的含义，并查清后续章节使用的基础符号。</p>
 <span id="sec-7" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-c167e03230"><a href="03_array-geometry.html">03 · 阵列几何形态</a></h3>
@@ -271,43 +313,59 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>双麦只有一条物理基线，正横、端射和中间角度是相对该基线的连续工作方向。随后比较线阵、圆阵、方阵、球阵、螺旋阵和分布式阵列。</p>
 <p>共线阵列无法分辨绕阵列轴的方位，继续在同一直线上增加麦克风也不能消除这种几何模糊。端射附近的时延对角度变化不敏感，同样的时延误差会对应更大的角度误差。</p>
 <p>本章归纳四条设计规律：孔径和波长的比值影响分辨率；圆阵在水平面各方向都能利用孔径；挡板会改变阵列流形；增加麦数能改善白噪声增益和统计稳定性，但收益取决于几何、频段和噪声场。</p>
-<p>稀疏阵只占用密集参考网格中的部分候选位置，再把麦对位置差组织成差分协同阵。例子中的 6 麦嵌套阵产生 23 个连续的有符号滞后；要把这些滞后用于 MUSIC，还需构造虚拟协方差并做空间平滑或等价重构。</p>
+<p>本书的网格化稀疏阵算例只占用密集参考网格中的部分候选位置，再把麦对位置差组织成差分协同阵；一般稀疏阵设计也可连续选址，不要求预设网格。例子中的 6 麦嵌套阵产生 23 个连续的有符号滞后；要把这些滞后用于子空间定位，还需构造虚拟协方差并做空间平滑或等价重构。</p>
 <p>读者可以据此说明阵列形态怎样限制可观测方向、孔径和无混叠频带，并按覆盖范围、同步条件和安装空间筛选几何方案。</p>
 <span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-1465331363"><a href="04_doa-estimation.html">04 · 声源定位 DOA 估计</a></h3>
-<p>5 张图，较难。DOA 是波达方向（Direction of Arrival），也就是判断声音从哪来。本章算法种类多，建议分两次读。</p>
+<p>5 张图，较难。DOA 估计判断声音相对指定坐标系从哪个方向传来。本章算法种类多，建议先读时差与扫描，再读子空间与学习方法。</p>
 <p><a href="04_doa-estimation.html#sec-4-10">§4.10 四麦分数采样时差</a>把 4 cm 阵列的几何时差、理想相量计算和四通道合成 WAV 放在同一练习中；它只验证指定模型，不替代真实房间的定位评测。</p>
 <p>本章把方法分为四类：两阶段法（互相关估时差＋几何解算）、空间扫描、子空间法，以及稀疏与学习方法。</p>
 <ul>
-<li>GCC-PHAT（广义互相关相位变换）从相位随频率的变化估计时延，混响会拖宽或扰乱相关峰；需要亚采样时差时，可对相关峰插值。图 13 用 16 kHz、64 ms 分析帧和 150 次固定种子试验构造随机衰减尾。它用于说明固定尾能量时 $T_{60}$ 与 DRR 的联合作用，以及仿真参数口径可能改变趋势；该图不能当作“$T_{60}$ 越长性能越差”的单调证据，也不代表真实房间的通用正确率。</li>
-<li>SRP（可控响应功率）在每个候选位置累加各麦对的相关响应，再寻找最大值。算例里真点得分 6.0，偏 1.8 米的点 5.64，镜像点 2.08。粗到细两级搜索可减少需要评估的网格点；实际耗时取决于搜索范围、网格间距、麦对数、实现和硬件。</li>
-<li>几何解算包括 Chan 算法和泰勒迭代。GDOP（精度稀释）描述几何摆位不好时误差怎样被放大。</li>
-<li>扫描法包括 Bartlett 与 Capon（最小方差谱估计）。双麦例子中，0° 与 30° 两个候选方向的谱值比分别为 1.8 和 5.0；这里的 30° 不是旁瓣位置，不能把这个比值称为旁瓣抑制比。</li>
+<li>
+<p>广义互相关相位变换（Generalized Cross-Correlation with Phase Transform，GCC-PHAT）从相位随频率的变化估计时延，混响会拖宽或扰乱相关峰；需要亚采样时差时，可对相关峰插值。</p>
+<p>图 13 用 16 kHz、64 ms 分析帧和每条件 150 次固定种子试验构造随机衰减尾。它用于说明固定尾能量时 $T_{60}$ 与 DRR 的联合作用，以及仿真参数口径可能改变趋势；该图不能当作“$T_{60}$ 越长性能越差”的单调证据，也不代表真实房间的通用正确率。</p>
+</li>
+<li>
+<p>可控响应功率（Steered Response Power，SRP）在每个候选位置累加各麦对的相关响应，再寻找最大值。本书的理想相关峰手算中，真点得分 6.0，偏 1.8 m 的候选点得分 5.64，镜像方向候选点得分 2.08；这些不是录音中测得的相关峰。粗到细两级搜索可减少需要评估的网格点；实际耗时取决于搜索范围、网格间距、麦对数、实现和硬件。</p>
+</li>
+<li>
+<p>几何解算包括 Chan 算法和泰勒迭代。几何精度稀释（Geometric Dilution of Precision，GDOP）描述几何摆位不好时误差怎样被放大。</p>
+</li>
+<li>
+<p>扫描法包括 Bartlett 与 Capon（最小方差谱估计）。双麦例子比较 0° 与 30°：Bartlett 的两方向谱值比为 1.8，Capon 为 5.0，两个比值均为 0° 谱值除以 30° 谱值。这里的 30° 不是旁瓣位置，不能把这些比值称为旁瓣抑制比。</p>
+</li>
 </ul>
-<p>子空间法 MUSIC（多重信号分类）利用信号子空间与噪声子空间的正交关系寻找谱峰。相干信号会使源协方差秩下降，均匀线阵可在满足子阵条件时用空间平滑恢复可用秩。ESPRIT（旋转不变子空间法）利用阵列的平移结构直接解角度，不用逐格扫描。</p>
-<p>DNN（深度神经网络）方法可用带方向标签的多通道数据学习定位特征，效果取决于训练数据是否覆盖测试阵列、房间、噪声和声源数。CRLB（克拉美－罗下界）用来分析指定观测模型下的方差下界；对已知波形的时延估计，有效带宽增大通常会增加 Fisher 信息，但具体幂次和系数取决于 SNR、频谱和参数定义。</p>
+<p>多重信号分类（Multiple Signal Classification，MUSIC）利用信号子空间与噪声子空间的正交关系寻找谱峰。相干信号会使源协方差秩下降，均匀线阵可在满足子阵条件时用空间平滑恢复可用秩。旋转不变子空间法（Estimation of Signal Parameters via Rotational Invariance Techniques，ESPRIT）利用阵列的平移结构直接解角度，不用逐格扫描。</p>
+<p>深度神经网络（Deep Neural Network，DNN）方法可用带方向标签的多通道数据学习定位特征，效果取决于训练数据是否覆盖测试阵列、房间、噪声和声源数。</p>
+<p>CRLB 用来分析指定观测模型下的方差下界；对已知波形的时延估计，有效带宽增大通常会增加 Fisher 信息，但具体幂次和系数取决于信噪比（Signal-to-Noise Ratio，SNR）、频谱和参数定义。</p>
 <p>完成本章后，读者应能按阵列几何、源数、混响和计算预算比较四类定位方法，并解释互相关峰受多径影响、MUSIC 在相干源下失效的原因。</p>
 <span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-b926900cde"><a href="05_beamforming.html">05 · 波束形成 Beamforming</a></h3>
-<p>3 张图，较难。波束形成对多通道信号加权求和，在保持目标方向响应的同时降低指定噪声场或干扰方向的输出功率。正文给出可复算的权重和响应例子。</p>
+<p>3 张图，较难。波束形成对多通道信号加权求和。正文主线讨论在保持指定目标响应的约束下，降低某类噪声或干扰的输出功率；维纳滤波和广义特征值方法使用不同的优化目标，另作说明。各方法都给出相应的模型条件。</p>
 <p>三类噪声需要不同模型：麦克风自身噪声用 WNG 评价，延迟求和是解析基线；弥散场用 DI 评价，可比较超指向设计；定向干扰则检查零陷和最小方差无失真响应（Minimum Variance Distortionless Response，MVDR）波束形成器的输出。</p>
-<p>DSB（延迟求和波束形成）的权重是导向矢量除以麦克风数，理想独立白噪声下 WNG 等于麦克风数。超指向在低频提高 DI 时可能显著降低 WNG。两麦端射算例在指定间距和频率下得到约 −10 dB 的 WNG 与约 6 dB 的 DI；间距减半时，该算例的 WNG 再降低约 6 dB。</p>
-<p>MVDR 分四步推导。算例中，噪声协方差所含的定向干扰信息使 30° 处响应降至 −23.8 dB。LCMV（线性约束最小方差）加入多条约束，MWF（多通道维纳滤波）权衡降噪与失真。GSC（广义旁瓣对消器）分成固定波束、阻塞矩阵、自适应对消三路；在约束与实现一致时，它可表示 LCMV 解。</p>
+<p>延迟求和波束形成器（Delay-and-Sum Beamformer，DSB）的权重是导向矢量除以麦克风数；在等幅远场、目标正确对齐和各麦独立同功率噪声模型下，线性 WNG 等于麦克风数。超指向在低频提高 DI 时可能显著降低 WNG。</p>
+<p>两麦端射算例在间距为波长的 0.05 倍、三维各向同性弥散场条件下，得到约 −10.6 dB 的 WNG 与 6.0 dB 的 DI；间距减半时，该算例的 WNG 再降低约 6 dB。这一取舍不是任意几何与噪声场的保证。</p>
+<p>MVDR 分四步推导。算例中，噪声协方差所含的定向干扰信息使 30° 处响应降至 −23.8 dB。线性约束最小方差（Linearly Constrained Minimum Variance，LCMV）加入多条约束，多通道维纳滤波（Multichannel Wiener Filter，MWF）权衡降噪与失真。</p>
+<p>广义旁瓣对消器（Generalized Sidelobe Canceller，GSC）由固定波束、阻塞矩阵和自适应对消器组成；在约束与实现一致时，它可表示 LCMV 解。</p>
 <p>后置滤波调整时频增益，球谐方法用于球阵和球面声场表示。DNN 方法包括掩码估计、掩码结合 MVDR 和直接端到端映射。</p>
 <p>本章要求读者能计算 WNG 与 DI，说明 MVDR 怎样利用协方差中的空间信息抑制定向干扰，并比较 GSC 与 LCMV 的约束表达。</p>
 <span id="sec-10" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-eaccb0e42d"><a href="06_aec.html">06 · 声学回声消除 AEC</a></h3>
-<p>14 张图（图18～20、图26～32、图36～39，另引用图23），较难。图 18、图 26～32 解释回声模型、收敛与工程条件，图 36 展示非线性残留；图 37～38 分别说明子带交叉项和 IPNLMS/RLS/Kalman 的不同状态，图 39 拆开 PBFDAF 的预测和更新。</p>
-<p>AEC（声学回声消除）处理设备自己播放、又被自身麦克风收进来的声音。能预测回声波形时可估计后相减，这是本章区分减法处理与增益抑制的起点。</p>
-<p>NLMS（归一化最小均方自适应滤波）给出基础更新式。PBFDAF（分区块频域自适应滤波）把长路径分区，按频点使用多个历史参考块更新；在第 6 章规定的同一分块、误差和归一化口径下，它就是频域多抽头 NLMS 的具体实现，不是与之并列的新算法。</p>
-<p>子带方法、IPNLMS 和 FDKF（频域卡尔曼滤波）分别改变信号表示、系数分配或状态估计。扬声器非线性会限制线性 AEC，需根据失真来源考虑非线性模型或神经网络。DTD（双讲检测）用于控制近端和远端同时活动时的自适应更新。</p>
-<p>AEC 与其他模块的参考关系见 §10.1 和图 23。评测要同时考虑远端单讲时的 ERLE、双讲稳定性、近端语音损伤和主观听测；ERLE 高并不能证明近端语音无损。WebRTC AEC3 可作为公开实现参考。</p>
+<p>14 张图（图18～20、图26～32、图36～39，另引用图23），较难。图 18、图 26～32 解释回声模型、收敛与工程条件，图 36 展示非线性残留；图 37～38 分别说明子带交叉项、比例更新、递归最小二乘（Recursive Least Squares，RLS）和卡尔曼的不同状态，图 39 拆开分区频域方法的预测和更新。</p>
+<p>AEC 处理设备自己播放、又被自身麦克风收进来的声音。经典线性方法利用播放参考估计回声波形后相减；无法准确建模的残余可再由增益抑制处理。这两步的参考、输出取点与目标语音损伤需要分别验证。</p>
+<p>归一化最小均方自适应滤波（Normalized Least Mean Squares，NLMS）给出基础更新式。分区块频域自适应滤波（Partitioned-Block Frequency-Domain Adaptive Filtering，PBFDAF）把长路径分区，按频点使用多个历史参考块更新；在第 6 章规定的同一分块、误差和归一化口径下，它就是频域多抽头 NLMS 的具体实现，不是与之并列的新算法。</p>
+<p>子带方法、改进比例归一化最小均方（Improved Proportionate Normalized Least Mean Squares，IPNLMS）和频域卡尔曼滤波（Frequency-Domain Kalman Filter，FDKF）分别改变信号表示、系数分配或状态估计。扬声器非线性会限制线性 AEC，需根据失真来源考虑非线性模型或神经网络。</p>
+<p>双讲检测（Double-Talk Detection，DTD）用于控制近端和远端同时活动时的自适应更新。</p>
+<p>AEC 与其他模块的参考关系见 §10.1 和图 23。评测要同时考虑远端单讲时的回声返回损失增强（Echo Return Loss Enhancement，ERLE）、双讲稳定性、近端语音损伤和主观听测；ERLE 高并不能证明近端语音无损。WebRTC AEC3 可作为公开实现参考。</p>
 <p>读者应能确定回声参考取点，解释 AEC 与波束顺序的条件，并为线性路径、非线性失真和双讲分别选择验证方法。</p>
 <span id="sec-11" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-526b37e71a"><a href="07_wpe-dereverberation.html">07 · 去混响 WPE</a></h3>
 <p>2 张图（图21、图24），进阶。讨论怎样利用跨帧预测估计并减弱晚期混响。</p>
-<p>WPE（加权预测误差去混响）用历史帧预测晚期混响并相减，保护延迟用于避免直接预测当前直达声。正文算例在指定条件下展示混响能量变化；预测延迟和阶数要按帧长、混响与语音损伤验证。多人重叠语音在第 8 章讨论，模块启用条件和参考关系见 §10.1。</p>
-<p>本章给出保护延迟 $\Delta$ 和预测阶数的选择依据，比较单通道与多通道 WPE，并说明 MINT、倒谱和谱方差方法各自依赖的假设。</p>
+<p>WPE 用延迟历史帧预测晚期混响并相减。保护延迟降低误预测当前希望保留的直达声和早期反射的风险，不能保证预测项只含晚期混响。</p>
+<p>正文算例在指定条件下展示混响能量变化；预测延迟和阶数要按帧长、混响与语音损伤验证。多人重叠语音在第 8 章讨论，模块启用条件和参考关系见 §10.1。</p>
+<p>本章给出保护延迟 $\Delta$ 和预测阶数的选择依据，比较单通道与多通道 WPE，并说明已知路径逆滤波、倒谱和谱方差方法各自依赖的假设。</p>
 <span id="sec-12" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-2aefd39b5f"><a href="08_speech-separation.html">08 · 语音分离</a></h3>
 <p>2 张专属图（图42、图43，另引用链路总图23），进阶。讨论重叠语音的分离方法，以及时频掩码怎样连接分离、协方差估计和波束形成。</p>
-<p>三条路线包括经典盲源分离（AuxIVA、ILRMA、MNMF、TRINICON）、GSS（导引源分离，用说话人活动标注处理输出排列）和深度分离（掩码估计、深度聚类、PIT、Conv-TasNet、状态空间模型及查询型分离）。§8.2 与图 23 说明处理顺序；§8.3、§8.4 和 §8.6 分别展开三条路线。实际模块启用条件见 §10.1。</p>
-<p>读者应能按源数、秩和统计假设区分各模型，复算 AuxIVA 的逐行投影、ILRMA 的谱更新和 MNMF 的源图像重构，解释活动信息如何影响 GSS。23道代码题进一步区分分离、尺度恢复和跨块身份；图43及四个合成音频演示仅用重叠信号作排列关联，静音时明确保留不确定性。</p>
+<p>三条路线包括经典盲源分离、导引源分离（Guided Source Separation，GSS）和深度分离。盲分离利用独立性及谱或空间统计模型；GSS 用说话人活动标注约束空间聚类，再以掩码估计协方差并计算目标波束；深度方法学习掩码、波形表示或查询条件与输出之间的映射。</p>
+<p><a href="08_speech-separation.html#sec-8-2">§8.2</a> 与图 23 说明处理顺序；<a href="08_speech-separation.html#sec-8-3">§8.3</a>、<a href="08_speech-separation.html#sec-8-4">§8.4</a> 和 <a href="08_speech-separation.html#sec-8-6">§8.6</a> 分别展开三条路线。具体方法名与缩写可查<a href="12_appendix-symbols-math.html#sec-12-2">附录 A §12.2</a>，实际模块启用条件见 §10.1。</p>
+<p>读者应能按源数、秩和统计假设区分各模型，复算独立向量分析的逐行投影、独立低秩模型的谱更新和多通道非负矩阵分解的源图像重构，解释活动信息如何影响 GSS。</p>
+<p>23 道代码题进一步区分分离、尺度恢复和跨块身份；图 43 及四个合成音频演示仅用重叠信号作排列关联，静音时明确保留不确定性。</p>
 <span id="sec-13" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-b086da143c"><a href="09_source-tracking.html">09 · 声源追踪 Source Tracking</a></h3>
 <p>2 张本章新图（图 22、图 44），另引用图 23；进阶。讨论方向观测随目标运动、漏检和野点变化时，怎样估计连续轨迹。状态可以包括角度、角速度和角加速度。</p>
 <p>声音观测有四类困难：</p>
@@ -317,14 +375,16 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>说话人数会变化；</li>
 <li>角度观测与状态之间可能是非线性关系。</li>
 </ul>
-<p>KF（卡尔曼滤波）由状态预测、观测更新和协方差递推组成，观测与预测的权重由噪声模型决定，不是固定比例。PF（粒子滤波）用带权粒子近似后验分布，并通过重采样缓解权重退化。</p>
-<p>本章有19道代码练习；图44从实际导出的双麦PCM计算时差观测，再进行缺测门控和追踪。两份合成音频采用独立清单，不是真实说话人录音。</p>
-<p>多人追踪还会用到 IMM（交互多模型）、PHD（概率假设密度）、LMB 和 TBD（检测前追踪）。§9.4 讨论定位与波束之间的反馈；更新限幅、静默保持和重置条件都应由目标运动与帧率确定。</p>
+<p>卡尔曼滤波（Kalman Filter，KF）由状态预测、观测更新和协方差递推组成，观测与预测的权重由噪声模型决定，不是固定比例。粒子滤波（Particle Filter，PF）用带权粒子近似后验分布，并通过重采样缓解权重退化。交互多模型（Interacting Multiple Model，IMM）用于在预设运动模式之间切换；单个目标也可以使用它。</p>
+<p>本章有 19 道代码练习；图 44 从实际导出的双麦脉冲编码调制（Pulse-Code Modulation，PCM）音频计算时差观测，再进行缺测门控和追踪。两份合成音频采用独立清单，不是真实说话人录音。</p>
+<p>多人追踪还需处理观测与轨迹的关联、目标数和身份。概率假设密度（Probability Hypothesis Density，PHD）传播目标强度，积分表示期望人数；标记多伯努利（Labeled Multi-Bernoulli，LMB）保留目标标签；检测前追踪（Track-Before-Detect，TBD）利用尚未越过检测阈值的谱证据。它们解决的子问题不同，不能仅按“多人算法”互相替换。</p>
+<p>§9.4 讨论定位与波束之间的反馈；更新限幅、静默保持和重置条件都应由目标运动与帧率确定。</p>
 <p>完成本章后，读者应能说明追踪器在定位与波束之间传递什么状态，比较单目标与多目标方法，并设置方向更新、静默保持和重捕获条件。</p>
 <span id="sec-14" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-12c1de60a0"><a href="10_engineering-practice.html">10 · 工程实现、评测与产业实践</a></h3>
-<p>本章的图 40 展示采样时钟漂移逐渐改变双麦平均的幅度，图 45 展示分块 AGC 的实际 PCM 与状态，图 25 展示端到端延迟关键路径，另引用图 23 的参考依赖关系。图 23 不表示每个项目都要启用全部模块。第 10 章按启用条件说明 AEC、WPE、定位、波束、NS 和后端的取点关系，并把延迟分为前瞻、缓冲、计算、调度和解码关键路径。</p>
-<p>硬件部分区分数字样本格式、模拟动态范围、初始时差和 SRO（采样率偏移）。资源预算分别使用 MAC/s、MIPS、RTF、峰值内存和功耗，续航用 Wh 与整机平均功率计算。</p>
-<p>评测部分说明 SI-SDR、STOI、PESQ/POLQA、WER/CER、OSPA 与主观听测各自回答什么问题。</p>
+<p>本章有四张图：图 23 说明参考依赖，图 25 展示延迟拆分示意，图 40 展示采样时钟漂移逐渐改变双麦平均的幅度，图 45 展示分块自动增益控制（Automatic Gain Control，AGC）的实际 PCM 与状态。</p>
+<p>图 23 不表示每个项目都要启用全部模块。第 10 章按启用条件说明 AEC、WPE、定位、波束、噪声抑制与后端的取点关系，并按前瞻、缓冲、计算、调度和解码核算实际延迟关键路径。</p>
+<p>硬件部分区分数字样本格式、模拟动态范围、初始时差和采样率偏移（Sampling Rate Offset，SRO）。资源预算分开计算每秒乘加数、每秒指令数、处理时间与新增音频时长之比、峰值内存和功耗；续航用电池能量（Wh）除以整机平均功率计算。各口径的定义见<a href="10_engineering-practice.html#sec-10-4">§10.4</a>。</p>
+<p>评测部分分别检查波形保真度、语音可懂度、感知质量、识别错误、追踪集合误差和主观听感。指标名称、缩写与适用条件见<a href="10_engineering-practice.html#sec-10-5">§10.5</a>；不同任务的指标不能互相代替。</p>
 <p>本章结束时，读者应能编制延迟、同步和标定预算，选择与任务相符的评测指标，并列出部署时还需验证的资源与故障状态。</p>
 <span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-6b8b888152"><a href="11_selection-guide.html">11 · 总结与选型指南</a></h3>
 <p>入门。11.1 从输出任务、覆盖区域、频带、干扰、目标运动和硬件边界六方面定义问题；11.2 给出不同模块的启用与替换条件；11.3 说明几何和算法怎样共同决定性能。</p>
@@ -339,12 +399,24 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <hr />
 <span id="sec-18" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-d8087d6ad6">4. 阅读顺序</h2>
 <ol>
-<li>先读本页，再读第 1 章，建立问题意识。</li>
-<li>读第 2 章，补齐全书共用的信号模型。符号不懂时查附录 A。</li>
-<li>几何线从第 3 章开始，了解阵列形态怎样限制观测信息，再用 §11.1～§11.3 形成候选几何。</li>
-<li>空间处理线依次关联第 4 章的定位、第 9 章的追踪和第 5 章的波束。第 2、5、8 章介绍的时频掩码可用于估计目标或噪声协方差，再交给 MVDR 或分离模块。</li>
-<li>干扰处理线包括第 6 章的回声消除、第 7 章的去混响和第 8 章的语音分离；启用条件和参考依赖见 §10.1 与图 23。</li>
-<li>工程线用第 10 章核对链路、硬件、评测和芯片，再到第 11 章形成方案。</li>
+<li>
+<p>先读本页，再读第 1 章，建立问题意识。</p>
+</li>
+<li>
+<p>读第 2 章，补齐全书共用的信号模型。符号不懂时查附录 A。</p>
+</li>
+<li>
+<p>几何线从第 3 章开始，了解阵列形态怎样限制观测信息，再用 §11.1～§11.3 形成候选几何。</p>
+</li>
+<li>
+<p>空间处理线依次关联第 4 章的定位、第 9 章的追踪和第 5 章的波束。第 2、5、8 章介绍的时频掩码可用于估计目标或噪声协方差，再交给 MVDR 或分离模块。</p>
+</li>
+<li>
+<p>干扰处理线包括第 6 章的回声消除、第 7 章的去混响和第 8 章的语音分离；启用条件和参考依赖见 §10.1 与图 23。</p>
+</li>
+<li>
+<p>工程线用第 10 章核对链路、硬件、评测和芯片，再到第 11 章形成方案。</p>
+</li>
 </ol>
 <p>附录 A（文件 12）汇总符号、术语和数学。附录 B（文件 13）提供学习路径、领域地图、前沿、排错、练习和复现说明。</p>
 <p>完成第 11 章后，工程读者可到 §10.10 制定联调与验收计划，遇到问题查 §13.4。研究读者可读 §13.3，再做 §13.6 的第 16、17 题，分别练习房间仿真和论文系统复核。两篇附录均可按需查阅。</p>
@@ -352,25 +424,59 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="sec-19" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-f8c026c402">5. 三条阅读路径</h2>
 <span id="sec-u-b7a71b077a" class="anchor-alias" aria-hidden="true"></span><span id="sec-20" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-3937b1b94e">路径 A：零基础入门（能复现演示）</h3>
 <ol>
-<li>先读本页和第 1 章，再读 §11.1～§11.3，了解选型需要哪些输入条件。</li>
-<li>02 按三个学习单元精读。推导可以先跳，重点是会读图 2～图 7。</li>
-<li>03 读表格与算例。04 读 4.2、4.3 节与算例，对照看图 12、图 14。05 读 5.1、5.2、5.4 节，完成一次手算，对照看图 16。</li>
-<li>第 6 章读 §6.1.1、§6.1.2、§6.6（AEC 在阵列里放哪）和 §6.8，对照看图 18。第 7 章读 §7.1 的直觉部分和 §7.8 的保护延迟、抽头数换算，对照看图 21、图 24。第 8 章读 §8.1 的分离任务和 §8.4 的掩码用途。第 9 章读 §9.2 的卡尔曼滤波五步。</li>
-<li>阅读 §10.1、§10.4 和 §10.6，了解参考链路、资源口径与房间仿真。按需查附录 A，再做附录 B 的第 2、3、5、7、10、11、14 题，并用 §13.4 检查常见问题。</li>
-<li>终点：运行第 8 节的随仓教学基线，复算一个麦间时差和一次波束目标方向响应，说明采样率、导向方向与模型边界。有多通道硬件时，可进一步实测完整方向响应。</li>
+<li>
+<p>先读本页和第 1 章，再读 <a href="11_selection-guide.html#sec-11-1">§11.1～§11.3</a>，了解选型需要哪些输入条件。</p>
+</li>
+<li>
+<p>第 2 章按三个学习单元阅读。第一次可先看图 2～图 7 和变量解释，再返回推导；需要补数学时查附录 A。先做 <a href="01_problem-definition.html#sec-u-13bdf48a99">E01-01</a>，检查“麦数增加”怎样依赖噪声相关性，再做 <a href="01_problem-definition.html#sec-u-f277de1aa7">E01-02</a>，区分音量变小与信噪比改善。</p>
+</li>
+<li>
+<p>第 3 章读表格与算例。第 4 章读 <a href="04_doa-estimation.html#sec-4-2">§4.2</a>、<a href="04_doa-estimation.html#sec-4-3">§4.3</a>，对照图 12、图 14；用 <a href="04_doa-estimation.html#sec-u-10983698db">E04-01</a> 核对交换通道后的时差符号。第 5 章读 <a href="05_beamforming.html#sec-5-1">§5.1</a>、<a href="05_beamforming.html#sec-5-2">§5.2</a>、<a href="05_beamforming.html#sec-5-4">§5.4</a>，先复算双麦目标响应，再做 <a href="05_beamforming.html#sec-u-fd25e81d6c">E05-02</a> 检查加载的收益与代价，对照图 16。</p>
+</li>
+<li>
+<p>回声处理从 <a href="06_aec.html#sec-6-1">§6.1</a> 的参考、卷积和更新开始，再读 <a href="06_aec.html#sec-6-6">§6.6</a> 的阵列顺序与 <a href="06_aec.html#sec-6-8">§6.8</a> 的公开实现，对照图 18。</p>
+<p>去混响读 <a href="07_wpe-dereverberation.html#sec-7-1">§7.1</a> 和 <a href="07_wpe-dereverberation.html#sec-7-8">§7.8</a>，核对保护延迟、抽头数和分析窗，对照图 21、图 24。分离读 <a href="08_speech-separation.html#sec-8-1">§8.1</a> 与 <a href="08_speech-separation.html#sec-8-4">§8.4</a>，了解输出任务和活动导引。追踪读 <a href="09_source-tracking.html#sec-9-2">§9.2</a>，走通一次预测与观测更新。</p>
+</li>
+<li>
+<p>阅读 <a href="10_engineering-practice.html#sec-10-1">§10.1</a>、<a href="10_engineering-practice.html#sec-10-4">§10.4</a> 和 <a href="10_engineering-practice.html#sec-10-6">§10.6</a>，了解参考链路、资源口径与房间仿真。再做附录 B 的第 2、3、5、7、10、11、14 题，并用 <a href="13_appendix-guide.html#sec-13-4">§13.4</a> 检查常见问题。</p>
+</li>
+<li>
+<p>完成判据：运行第 8 节的随仓教学基线，能独立复算麦间时差和波束目标响应，说明采样率、导向方向与模型边界。有多通道硬件时，可进一步实测完整方向响应；合成演示通过不能替代这一步。</p>
+</li>
 </ol>
 <span id="sec-u-efc5552983" class="anchor-alias" aria-hidden="true"></span><span id="sec-21" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-f958564d39">路径 B：工程实现（形成可验证的前端方案）</h3>
 <ol>
-<li>用 §11.1～§11.5 写清任务、几何、场景、模块启用条件和验收指标。第 5 章重点读 MVDR、稳健化与后置滤波；第 6 章核对回声参考、双讲和与波束的顺序条件；第 7 章根据目标房间验证 WPE；第 8 章在确有重叠语音需求时选择分离方法。更换阵列前阅读 §13.3 的泛化专栏。</li>
-<li>通读第 10 章，按关键路径核算延迟，区分多设备同步与 SRO，统一评测、算力和功耗口径。再查 §13.4，完成 §13.6 的第 7、8、9、11、14、15 题。</li>
-<li>终点：输出延迟、同步、标定三张预算表。对照 WebRTC AEC3 检查回声消除，分开评价远端单讲残余、双讲稳定性、近端损伤与主观质量；资源和时序仍须在目标设备测量。</li>
+<li>
+<p>用 <a href="11_selection-guide.html#sec-11-1">§11.1～§11.5</a> 写清任务、几何、场景、模块启用条件和验收指标。</p>
+<p>第 5 章重点读 MVDR、稳健化与后置滤波；第 6 章核对回声参考、双讲和与波束的顺序条件；第 7 章根据目标房间验证 WPE；第 8 章在确有重叠语音需求时选择分离方法。更换阵列前阅读 <a href="13_appendix-guide.html#sec-13-3">§13.3</a> 的泛化专栏。</p>
+</li>
+<li>
+<p>通读第 10 章，按关键路径核算延迟，区分多设备同步与 SRO，统一评测、算力和功耗口径。再查 <a href="13_appendix-guide.html#sec-13-4">§13.4</a>，完成 <a href="13_appendix-guide.html#sec-13-6">§13.6</a> 的第 7、8、9、11、14、15 题。</p>
+</li>
+<li>
+<p>完成判据：输出延迟、同步、标定三张预算表。对照 WebRTC AEC3 检查回声消除，分开评价远端单讲残余、双讲稳定性、近端损伤与主观质量；资源和时序仍须在目标设备测量。</p>
+</li>
 </ol>
 <span id="sec-22" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-03c61e4770">路径 C：研究复现与公开评测（长期）</h3>
 <ol>
-<li>02 的 CRLB 给出指定观测模型和正则条件下无偏估计方差的下界。03 的稀疏阵列。04 的 4.6、4.7 节（空间平滑、宽带子空间方法、学习型定位、ACCDOA 声事件定位表示）。05 的 RTF（相对传递函数）版 MVDR、球谐方法、掩码＋GEV（广义特征值波束形成）、端到端网络。</li>
-<li>06 的 FDKF、混合神经卡尔曼。07 的在线 WPE。08 的扩散模型、GSS 与掩码协方差估计。09 的 PHD、LMB、TBD。10 的指标口径（SI-SDR 和 BSS-eval 两套指标不能直接比数值）＋CHiME、LibriCSS、STARSS 数据集。</li>
-<li>用附录 B §13.2 查领域资料，阅读 §13.3 中与课题相关的方向和泛化专栏，再做 §13.6 的第 6、8、12、13、16、17 题，分别覆盖定位分辨、稳健波束、分离、追踪、房间仿真和论文系统复核。阅读 CHiME-8 系统报告时，可把实际前端结构与图 23 对照。</li>
-<li>终点：在一个公开数据集上固定阵列、训练/测试划分和指标，分别实现一个解析基线与一个数据驱动基线，并记录模型版本、输入特征和推理资源。</li>
+<li>
+<p>定位研究先区分“观测信息不足”和“估计器没有利用好信息”。读第 2 章的 CRLB、第 3 章的几何可观测性，再读 <a href="04_doa-estimation.html#sec-4-6">§4.6</a>、<a href="04_doa-estimation.html#sec-4-7">§4.7</a>，比较空间平滑、宽带处理与学习方法；记录源数、快拍、相干性和阵列失配，不能只比较谱峰高度。</p>
+</li>
+<li>
+<p>拾音与回声研究先确定约束对象和递推状态。第 5 章比较目标相对传递函数约束、球谐表示、掩码波束与端到端方法；第 6 章比较频域卡尔曼和神经卡尔曼改变了哪些变量；第 7 章核对在线 WPE 的历史、更新时刻与未来等待。各自先保留可复算的解析基线，再增加学习模块。</p>
+</li>
+<li>
+<p>重叠语音与追踪研究先确定输出音轨和身份如何对应。第 8 章比较盲分离、GSS、掩码协方差与连续分离；第 9 章区分集合位置、人数和标签误差。扩散先验用于盲分离的研究另见 <a href="13_appendix-guide.html#sec-13-3">§13.3</a>，不要把它当作第 8 章已经运行的教学基线。</p>
+</li>
+<li>
+<p>公开评测先按任务选数据。<a href="https://www.chimechallenge.org/challenges/chime8/task1/">CHiME-8 Task 1</a> 关注多设备远场会议转写与说话人归属；<a href="https://github.com/chenzhuo1011/libri_css">LibriCSS</a> 用语音录音回放形成连续语音分离与识别评测录音；<a href="https://zenodo.org/records/7880637">STARSS23 v1.1.0</a> 提供空间声事件检测与定位数据。上述任务与版本入口核实于 2026-09-30。它们的标签、通道与评分目标不同，不能把同一个“提升”数字横向排名。按<a href="10_engineering-practice.html#sec-10-5">§10.5</a> 和<a href="10_engineering-practice.html#sec-10-6">§10.6</a> 固定参考、划分和评分协议。</p>
+</li>
+<li>
+<p>用 <a href="13_appendix-guide.html#sec-13-2">§13.2</a> 查领域资料，再读 §13.3 中与课题相关的方向和泛化专栏。做 <a href="13_appendix-guide.html#sec-13-6">§13.6</a> 的第 6、8、12、13、16、17 题，分别覆盖定位分辨、稳健波束、分离、追踪、房间仿真和论文系统复核。阅读 CHiME-8 系统报告时，可把实际前端结构与图 23 对照。</p>
+</li>
+<li>
+<p>完成判据：在一个公开数据集上固定阵列、训练/测试划分和指标，分别实现一个解析基线与一个数据驱动基线，记录模型版本、输入特征和推理资源。将源码获取、依赖构建、示例运行与数值对照分开记录，失败或缺失的步骤也应保留。</p>
+</li>
 </ol>
 <hr />
 <span id="sec-u-6ef8e18126" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-d538d6d0a5" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-0943a9ed3c" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-1e5d8a2bad" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-d8fd1002de" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-627ed3907e" class="anchor-alias" aria-hidden="true"></span><span id="sec-23" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-3a0278b879">6. 插图地图：49 张图在哪篇</h2>
@@ -530,21 +636,21 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>fig21_wpe</td>
 <td>07</td>
 <td>仿真</td>
-<td>共用谱幅参考值比较干净、混响和 WPE 输出；统计量按 10 ms 直达延迟对齐干净参考，再报告静音帧能量占比与活跃帧复增益对齐谱域 NMSE</td>
+<td>共用谱幅参考值比较干净、混响和 WPE 输出；统计量按 10 ms 直达延迟对齐干净参考，再报告静音帧能量占比与活跃帧复增益对齐谱域归一化均方误差</td>
 </tr>
 <tr>
 <td>图22</td>
 <td>fig22_tracking</td>
 <td>09</td>
 <td>仿真</td>
-<td>单目标PF轨迹及ESS；两目标人工PHD强度示意，非PHD递推</td>
+<td>单目标 PF 轨迹及有效粒子数；两目标人工 PHD 强度示意，非 PHD 递推</td>
 </tr>
 <tr>
 <td>图23</td>
 <td>fig23_pipeline</td>
-<td>08、09、10</td>
+<td>10；06、08、09 引用</td>
 <td>系统框图</td>
-<td>播放参考与主链、方向/GSS/分离三支路；R、S、M、D、C 的取点与条件控制（08、09 只引用）</td>
+<td>播放参考与主链、方向/GSS/分离三支路；R、S、M、D、C 的取点与条件控制</td>
 </tr>
 <tr>
 <td>图24</td>
@@ -614,7 +720,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>fig33_gcc_two_ways</td>
 <td>04</td>
 <td>对照</td>
-<td>两条 128 点输入用 256 点零填充 FFT 求互谱并做 IFFT，与时域滑动乘加得到同一条线性互相关曲线、同一个峰；PHAT 加权不在本图范围内</td>
+<td>两条 128 点输入用 256 点零填充快速傅里叶变换求互谱，再逆变换，与时域滑动乘加得到同一条线性互相关曲线、同一个峰；PHAT 加权不在本图范围内</td>
 </tr>
 <tr>
 <td>图34</td>
@@ -677,7 +783,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>fig42_gss_flow</td>
 <td>08</td>
 <td>系统框图</td>
-<td>方向单位化、活动约束、原始复谱SCM及目标波束的独立依赖</td>
+<td>方向单位化、活动约束、原始复谱的空间协方差及目标波束的独立依赖</td>
 </tr>
 <tr>
 <td>图43</td>
@@ -690,15 +796,15 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>图44</td>
 <td>fig44_tracking_audio</td>
 <td>09</td>
-<td>连续运动合成PCM实算</td>
-<td>同一音频的GCC方位、缺测门控、KF与逐帧方差；状态时刻和整帧可用时刻分开</td>
+<td>连续运动合成 PCM 实算</td>
+<td>同一音频的广义互相关方位、缺测门控、KF 与逐帧方差；状态时刻和整帧可用时刻分开</td>
 </tr>
 <tr>
 <td>图45</td>
 <td>fig45_agc_blocks</td>
 <td>10</td>
 <td>合成 PCM 与块状态</td>
-<td>四路共同增益音频的10 ms RMS，以及10/100 ms块在整块到达后的增益；不是设备性能图</td>
+<td>四路共同增益音频的 10 ms 均方根，以及 10/100 ms 块在整块到达后的增益；不是设备性能图</td>
 </tr>
 <tr>
 <td>图46</td>
@@ -711,15 +817,15 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>图47</td>
 <td>fig47_selection_audio_tradeoff</td>
 <td>11</td>
-<td>合成PCM读回</td>
-<td>同一三音混合输入经过3/9抽头FIR后，从PCM重测500/1500Hz目标保持、3500Hz干扰衰减与对齐误差；不代表自然语音质量</td>
+<td>合成 PCM 读回</td>
+<td>同一三音混合输入经过 3/9 抽头有限冲激响应滤波器后，从 PCM 重测 500/1500 Hz 目标保持、3500 Hz 干扰衰减与对齐误差；不代表自然语音质量</td>
 </tr>
 <tr>
 <td>图48</td>
 <td>fig48_fft_frequencies</td>
 <td>12</td>
 <td>频点约定图</td>
-<td>8 点 DFT 的完整有符号频率与实信号单边频率；Nyquist 格点只有一个</td>
+<td>8 点离散傅里叶变换的完整有符号频率与实信号单边频率；Nyquist 格点只有一个</td>
 </tr>
 <tr>
 <td>图49</td>
@@ -741,55 +847,141 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>WNG 和 DI 的权衡：02 的 2.6 节提出，05 详细计算，11 用于条件化选型。</li>
 <li>混响这条线：02 的 2.4 节讲混响是什么，04、05、06、07 讲各自怎么对付它。</li>
 <li>掩码估计：02 讲语音稀疏性，05 和 08 用掩码估计目标或噪声协方差，并把它们交给波束形成或导引分离。</li>
-<li>减法和乘法：06 的 6.1 节讲能预测波形就做减法，05 的 5.7 节讲只能估计幅度就做乘法。</li>
+<li>回声减法与谱增益：第 6 章 <a href="06_aec.html#sec-6-1">§6.1</a> 讲经典 AEC 怎样利用播放参考估计回声波形并相减；第 5 章 <a href="05_beamforming.html#sec-5-7">§5.7</a> 讲仅估计干扰功率的实数后置增益怎样缩放谱幅度。复掩码等方法还可改变相位，见 <a href="08_speech-separation.html#sec-8-6">§8.6</a>；不能把减法与乘法概括成所有增强方法的二选一规则。</li>
 <li>几何上限：03 讲摆位定的上限，04、09、10 都要回来看它。</li>
 <li>标定和同步：10 的 10.2 节讲标定同步，13 的附录 B 13.4 节讲排错时怎么查它。</li>
 </ol>
 <hr />
 <span id="sec-25" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-6d43c0086f">8. 动手复现</h2>
-<p><code>codes/</code> 先提供与公式相对应的小规模教学基线，<code>scripts/</code> 再生成书中的图。前者适合逐步检查时延、矩阵形状、约束残差和边界输入；后者适合复现正文的完整示意或仿真条件。算法覆盖状态见 <code>codes/chapters/ch00/COVERAGE.md</code>，第三方官方实现、固定提交和许可证边界见 <code>codes/chapters/ch00/THIRD_PARTY.md</code>。</p>
-<p>在仓库根目录先运行三组章节例子：</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/README.md"><code>codes/</code></a> 提供与公式对应的小规模教学基线，<code>scripts/</code> 生成书中的图。先用基线检查时延、矩阵形状、约束残差和边界输入，再复现正文的完整示意或仿真条件。各方法实际覆盖哪些步骤，见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/COVERAGE.md">算法覆盖表</a>；外部实现身份、固定版本和许可边界见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/THIRD_PARTY.md">第三方记录</a>。</p>
+<p>从网站直接进入本页时，先按<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/README.md#快速开始">README 的快速开始</a>建立虚拟环境并安装 <code>requirements.txt</code> 中的固定依赖。以下命令都在仓库根目录执行。Windows 将 <code>.venv/bin/python</code> 换成 <code>.venv\Scripts\python</code>；已有环境的读者可直接运行。</p>
 <pre><code class="language-bash">.venv/bin/python codes/chapters/ch00/cross_chapter/ch02_05_baselines.py
 .venv/bin/python codes/chapters/ch00/cross_chapter/ch06_09_baselines.py
 .venv/bin/python codes/chapters/ch10/examples/ch10_engineering_baselines.py
-.venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 </code></pre>
-<p>再运行第 13.7 节列出的绘图命令，可重新生成 49 张图；运行时间取决于机器。具体构建步骤和错误处理见 <code>scripts/README.md</code>。Windows 上需把命令中的 <code>.venv/bin/python</code> 换成 <code>.venv\Scripts\python</code>。</p>
+<p>三组程序只打印结果，不生成音频。第一次运行先核对以下输出，再返回对应章节手算；程序正常结束只是第一步，结果的单位与成立条件还需核对。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">输出</th>
+<th scope="col">怎样核对</th>
+<th scope="col">支持什么判断</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>STFT round-trip maximum error</code></td>
+<td>在本例浮点精度下接近零，本机约为 $8.9\times10^{-16}$；末位可随环境变化</td>
+<td>指定窗、帧移和长度下的分析/重建一致，不能证明降噪有效</td>
+</tr>
+<tr>
+<td><code>GCC-PHAT tau12 (samples): 3.0</code></td>
+<td>第一个输入的脉冲位于第 23 点，第二个位于第 20 点；$3/16000$ s = 187.5 μs</td>
+<td>第一个输入晚 3 点，检查输入次序和时差正号；换通道后符号应相反</td>
+</tr>
+<tr>
+<td><code>DSB target response</code>、<code>MVDR target response</code></td>
+<td>复数结果接近 1，虚部接近舍入误差；用共轭内积 $\vec w^H\vec a$ 独立核对</td>
+<td>指定导向下单位目标响应成立，不能保证失配或其他方向的效果</td>
+</tr>
+<tr>
+<td><code>matched-noiseless ERLE</code></td>
+<td>回声由同一三抽头路径合成，没有近端声和噪声；只看是否收敛到该路径</td>
+<td>极高值属于算术收敛检查，不能当作设备回声消除性能</td>
+</tr>
+<tr>
+<td>工程例子的 <code>Schedule</code></td>
+<td>输入处理时间为 6、7、18、18、4 ms，新增帧周期为 10 ms</td>
+<td>用构造的超期和排队解释实时预算，不是处理器实测速率</td>
+</tr>
+</tbody>
+</table></div>
+<p>随后运行代码回归，检查正常、退化和错误输入。需要排查某个章节时，可先按<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/README.md">代码地图</a>选择对应入口和测试。</p>
+<pre><code class="language-bash">.venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
+</code></pre>
+<p>要复现生成过程时，再按<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/scripts/README.md">构建说明</a>生成音频、重画相关图并核验。附录 B 的 <a href="13_appendix-guide.html#sec-13-7">§13.7</a>列出 49 张图的复现入口；房间题重生需固定版本的独立环境和新输出目录。图有问题时修改绘图源，音频有问题时修改生成源。</p>
 <p>另有 231 道带答案的<a href="research/05_exercises_and_audio.html">章节代码练习与音频实验</a>，从第 1 章到附录 B 使用 E01-01 等稳定编号。第 6 章 E06-07～E06-20 包含算法边界手算与子带、IPNLMS、RLS、Kalman 的小规模复算；附录 B 的 E13-03～10 复算房间结果、相位与来源证据。每道题对应输入、执行代码和可核查结果；附录 B 的 1～17 题另用一套编号。</p>
-<p>109 个 WAV 样本由本书合成，分为 27 组，覆盖对齐平均、四麦分数采样时差、AEC、WPE、已知矩阵解混、工程失真、双声道声像，以及相关噪声、极性错误、病态求逆、非线性回声、四种 AEC 自适应方法、两带跨项、功率谱减、时钟漂移、线性插值失真、一采样对齐误差、房间衰减、双麦差分校准、纯音时差歧义、GSC 目标泄漏门控、AEC 参考断流、WPE 可预测目标损伤、整块 AGC 控制，以及第11章同一三音混合输入的3/9抽头FIR选型。先运行 <code>codes/chapters/ch00/examples/generate_audio_samples.py</code>，再按手册比较参考、输入和输出；网页提供不自动播放的试听控件。</p>
-<p>另有四套独立清单管理的合成资产：<a href="gss_audio/MANIFEST.json">GSS 五路音频与中间状态</a>、<a href="moving_audio/MANIFEST.json">自由场移动声源三路音频与轨迹真值</a>、<a href="tracking_audio/MANIFEST.json">第 9 章两路追踪音频与逐帧观测</a>，以及<a href="room_audio/MANIFEST.json">附录 B 六位置房间题的 18 个白噪声 WAV 和结果报告</a>。它们均不计入主清单 109 个样本，四套的生成模型和评分条件也不能互相替代。</p>
+<p>音频按生成模型和证据用途选择，以下各行独立管理。试听前先调低播放音量；网页控件默认不自动播放，载入文件和客观读回检查不等于人工听测。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">资产与清单</th>
+<th scope="col">WAV 数量</th>
+<th scope="col">先看什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/audio/MANIFEST.json">主合成清单</a></td>
+<td>27 组、109 个</td>
+<td>对齐与平均、AEC/WPE、已知矩阵解混及工程反例；完整组目录见音频手册</td>
+</tr>
+<tr>
+<td><a href="gss_audio/MANIFEST.json">GSS 教学链</a></td>
+<td>5 个</td>
+<td>活动约束、共同增益与中间状态；不是已运行官方 GPU 整链</td>
+</tr>
+<tr>
+<td><a href="moving_audio/MANIFEST.json">自由场移动声源</a></td>
+<td>3 个</td>
+<td>连续传播时延、距离衰减与轨迹真值</td>
+</tr>
+<tr>
+<td><a href="tracking_audio/MANIFEST.json">PCM 观测到追踪</a></td>
+<td>2 个</td>
+<td>从导出后重读的音频计算时差、门控与逐帧状态</td>
+</tr>
+<tr>
+<td><a href="room_audio/MANIFEST.json">六位置房间题</a></td>
+<td>18 个</td>
+<td>白噪声源、仅直达与完整房间响应；结合独立数值报告</td>
+</tr>
+<tr>
+<td><a href="real_audio/MANIFEST.json">DEMAND 真实摘录与派生</a></td>
+<td>4 个</td>
+<td>环境录音的通道相关项；没有干净语音或位置真值</td>
+</tr>
+</tbody>
+</table></div>
+<p>主清单按章保存，每组使用共同导出增益。它包括空间处理与极性/相关噪声反例，回声和去混响的参考、更新及损伤例子，以及时钟、插值、断流、AGC、分块卷积和 FIR 选型实验。四套独立合成资产及真实录音均不计入主 109 个样本，生成条件和评分参考不能互相替代。</p>
+<p>已有随仓样本可先只读核对，无需先重写文件：</p>
+<pre><code class="language-bash">.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py --check
+.venv/bin/python codes/chapters/ch02/examples/prepare_real_recordings.py --check
+</code></pre>
 <p>三组反例见附录 B 图 35，非线性残留见第 6 章图 36。图 37 解释两带子带模型的交叉项；图 38 分别展示 IPNLMS、RLS 和卡尔曼滤波的受控状态变化，三幅子图不构成性能排名。图 39 展示分区块频域自适应滤波（PBFDAF）如何用播放参考的历史块预测回声、计算残差并更新滤波器。</p>
 <p>对应的 AEC 合成音频在研究手册第 15～16 节；谱减试听与前奏数字在第 18 节。音频可用于听辨指定合成条件下的差别，图 39 则用于核对 PBFDAF 的信号与更新路径。</p>
-<p>真实录音另存于 <code>codes/chapters/ch02/real_audio/</code>：DEMAND 河流场景的 10 s、16 通道摘录，以及单麦、双麦平均、16 麦平均三个派生文件。数据采用 CC BY-SA 3.0，来源、许可和修改记录随文件保留。该实验检验实际通道间的相关项，不提供干净语音参考或语音增强分数。</p>
+<p>真实录音来自 <a href="https://zenodo.org/records/1227121">DEMAND v1.0 官方记录</a>。本书保留 NRIVER 河流场景前 10 s 的同步 16 通道摘录，并生成单麦、双麦平均和 16 麦平均三个派生文件。数据采用 CC BY-SA 3.0；摘录区间、通道次序和处理改动见<a href="real_audio/MANIFEST.json">数据清单</a>与<a href="real_audio/ATTRIBUTION.txt">署名及修改记录</a>，来源和许可于 2026-09-30 复核。</p>
+<p>这个真实录音实验检验通道间的相关项，不提供干净语音参考或语音增强分数。它与本书的数学合成信号用途不同。</p>
 <p><img alt="图34 合成音频的波形与分段能量" src="../figures/fig34_audio_examples.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图 34 直接读取已导出的 PCM：<strong>(a)</strong> 在 500～520 ms 对比晚到 3 个采样的参考、单麦与对齐平均；<strong>(b)</strong> 用 20 ms 块 RMS 标出 1.2～1.8 s 的已知双讲冻结；<strong>(c)</strong> 对比含 40 ms、80 ms 副本的输入、离线 WPE 和无回声参考。三组均为 16 kHz 合成信号，每组共用导出增益，不作单文件峰值归一化。</p>
-<p>图中的波形接近、能量降低和主观听感是不同证据。谐波目标本身可预测，WPE 也可能损伤它；已知冻结掩码不代表实现了双讲检测。样本不能用于报告真实语音 MOS 或产品性能。</p>
+<p>图 34 直接读取已导出的 PCM：<strong>(a)</strong> 在 500～520 ms 对比晚到 3 个采样的参考、单麦与对齐平均；<strong>(b)</strong> 用 20 ms 块的均方根（Root Mean Square，RMS）标出 1.2～1.8 s 的已知双讲冻结；<strong>(c)</strong> 对比含 40 ms、80 ms 副本的输入、离线 WPE 和无回声参考。三组均为 16 kHz 合成信号，每组共用导出增益，不作单文件峰值归一化。</p>
+<p>图中的波形接近、能量降低和主观听感是不同证据。谐波目标本身可预测，WPE 也可能损伤它；已知冻结掩码不代表实现了双讲检测。样本不能用于报告真实语音平均意见分（Mean Opinion Score，MOS）或产品性能。</p>
 <p>这些 NumPy/标准库程序用于复算。进一步阅读<a href="research/index.html">源码研究手册</a>：</p>
 <ul>
 <li><a href="research/01_spatial_and_tracking.html">空间处理与追踪</a>展开宽带定位、球谐编码、工业声源成像和数据关联；</li>
 <li><a href="research/02_aec_wpe_separation.html">AEC、WPE 与语音分离</a>展开自适应控制、跨帧状态、盲分离和神经系统；</li>
 <li><a href="research/03_industrial_deployment.html">工业部署与评测</a>展开设备接口、重采样、固件、推理运行时和官方评分器。</li>
 </ul>
-<p>官方源码的固定版本、获取策略与许可边界见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCES.lock.json">锁定清单</a>。可按需获取到 Git 忽略的 <code>codes/chapters/ch00/upstream/_downloads/</code>；该目录的实际内容随本地环境而异，不随本书 Git 提交。</p>
-<p>锁定清单对应的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCE_STATUS.json">本地源码核验记录</a>只报告获取与源码范围状态，不代表依赖构建、示例运行或数值对照已经完成。完整设备实现还要核对参考取点、时钟、缓冲及连续状态；代码、模型、数据和示例录音的许可证分别适用。</p>
+<p>官方 Git 源码按完整提交固定，见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCES.lock.json">Git 锁表</a>；发布归档按文件摘要固定，见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/ARCHIVE_SOURCES.lock.json">归档锁表</a>。可按需获取到 Git 忽略的 <code>codes/chapters/ch00/upstream/_downloads/</code>；实际内容随本地环境而异，不随本书 Git 提交。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCE_STATUS.json">Git 源码核验记录</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/ARCHIVE_SOURCE_STATUS.json">归档核验记录</a>只报告来源与源码范围。研究手册的四类证据表另区分教学复算、源码核验、方法运行和设备验收。完整设备实现还要检查参考取点、时钟、缓冲及连续状态；代码、模型、数据和示例录音的许可证分别适用。</p>
 <hr />
 <span id="sec-26" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-ccd87eee7f">9. 常见问题</h2>
 <p><strong>图片看不到怎么办？</strong></p>
 <p>请保留仓库目录结构并从仓库中打开文档；图片使用相对路径，单独复制 Markdown 文件会使链接失效。</p>
 <p><strong>先读哪篇？</strong></p>
-<p>先读本页，再读 01 和 11，再读 02。之后按第 5 节的路径走。赶时间只读 11 也能得到选型结论。</p>
+<p>先读本页，再读第 1 章和第 11 章的问题与约束部分，再读第 2 章。之后按第 5 节的路径走。时间有限时，可先用第 11 章整理候选方案及需要测量的条件；具体性能和最终选择仍需对应模型与实验支持。</p>
 <p><strong>公式看不懂怎么办？</strong></p>
 <p>先查第 2 章和附录 A 中的符号、术语与数学基础。第 4 章的定位谱与时差看图 11、图 12，第 5 章的波束权衡看图 15、图 16，第 7 章的 WPE 帧关系与结果看图 24、图 21；第 8 章的 GSS 依赖和跨块拼接分别看图 42、图 43，盲分离的矩阵步骤仍须对照正文算例。</p>
 <p><strong>想跑实验怎么办？</strong></p>
 <p>先按第 8 节运行章节教学基线，确认公式约定和边界输入，再重绘 49 张图。之后可按锁定版本用 pyroomacoustics 建立房间仿真基线。公开数据、模型和硬件实验应根据任务、许可证与设备条件选择，练习入口见附录 B 的 §13.1、§13.6。</p>
 <p><strong>不同实验的绝对数值能比吗？</strong></p>
-<p>不能。阵列几何、房间、信噪比、数据集、实现和评测口径不同，绝对数值不能直接横向比较。先确认条件一致，再比较趋势和量级。</p>
+<p>阵列几何、房间、信噪比、数据集、实现和评测口径不同时，绝对数值不能直接横向排名；总体趋势也可能受场景组成等因素影响。先分别解释各自实验内的变化，再核对共同条件、基线和统计方式。条件可比时才讨论方法差异，仍需报告未对齐的因素与失败项。</p>
 <hr />
 <span id="sec-27" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-cc2724a31a">附录：下一步清单</h2>
 <ul>
 <li>[ ] 读完本页，选一条第 5 节的路径。</li>
 <li>[ ] 阅读第 1 章和第 11 章，分别明确问题定义与选型条件。</li>
 <li>[ ] 阅读第 2 章，学会读图 7（主瓣、旁瓣、零陷、主瓣宽度、栅瓣）。</li>
+<li>[ ] 按路径 A 完成 E01-01、E01-02、E04-01 和 E05-02，能解释噪声相关性、音量与信噪比、时差符号和加载代价。</li>
 <li>[ ] 按第 2 节的学习单元读第 4～8 章；每完成一种方法，先手算对应练习，再用代码复核。</li>
 <li>[ ] 对照第 8 节画一遍 49 张图，打开 <code>figures/</code> 对照正文看图。</li>
 <li>[ ] 运行 <code>codes/chapters/</code> 的三组基线，并从 <code>codes/chapters/ch00/COVERAGE.md</code> 选一个原理索引项目核对其官方实现边界。</li>

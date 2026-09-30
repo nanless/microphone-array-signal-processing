@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码研究导读 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="14bcf8fd1aec"><style>
+<meta name="source-digest" content="5bb655885815"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -150,6 +150,38 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>读维护者测试，区分形状测试、数值测试、音频质量测试和硬件测试。</li>
 <li>用本书的小规模输入或独立解析例做一次对照。运行成功和输出数值可信是两个不同结论。</li>
 </ol>
+<p>阅读结果时，按证据实际回答的问题区分以下四类：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">证据</th>
+<th scope="col">能支持的判断</th>
+<th scope="col">现有记录或检查入口</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>教学基线</td>
+<td>指定模型、输入和边界下的公式与数字可复算</td>
+<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/COVERAGE.md">覆盖状态</a>、<a href="05_exercises_and_audio.html">练习与音频实验</a></td>
+</tr>
+<tr>
+<td>源码核验</td>
+<td>固定版本、本地文件和所选源码范围符合清单</td>
+<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCE_STATUS.json">Git 源码状态</a>、<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/ARCHIVE_SOURCE_STATUS.json">归档源码状态</a></td>
+</tr>
+<tr>
+<td>方法运行</td>
+<td>指定环境、输入和配置下的接口或数值结果</td>
+<td><a href="04_source_reproduction.html">实际运行记录与未执行范围</a></td>
+</tr>
+<tr>
+<td>设备验收</td>
+<td>目标设备上的时序、资源、声学效果与异常恢复满足规格</td>
+<td><a href="03_industrial_deployment.html">设备检查步骤与测量边界</a>；以明确记录的实测为准</td>
+</tr>
+</tbody>
+</table></div>
 <p>本地取得源码的状态由获取工具生成，见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/upstream/README.md">源码获取说明</a>。
 许可与依赖属于各上游项目；本手册不把不同项目的源码合并成一个重新授权的软件包。</p>
 <p>第4章另有 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/reports/doatools_esprit_reference.json">doatools ESPRIT 固定接口对照</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/reports/figure13_gcc_reverb.json">图13的逐次统计</a>。默认加权的原版偏差、取消加权与独立参考分开记录；完整数字、适用范围与源码入口见空间篇第14节。</p>

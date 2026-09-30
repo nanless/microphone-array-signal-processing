@@ -1,4 +1,5 @@
 import importlib.util
+import io
 import os
 import tempfile
 import unittest
@@ -22,6 +23,175 @@ def load(name, path):
 build_pdf = load("build_pdf", ROOT / "scripts" / "build_pdf.py")
 build_site = load("build_site", ROOT / "scripts" / "build_site.py")
 quality_check = load("quality_check", ROOT / "scripts" / "quality_check.py")
+
+
+class PdfHeadingDestinationTest(unittest.TestCase):
+    """Independent PDF objects distinguish heading identity from repeated text."""
+
+    @staticmethod
+    def fixture_bytes(named, bookmarks=(), page_texts=None):
+        from pypdf import PdfWriter
+        from pypdf.generic import (
+            ArrayObject, BooleanObject, DecodedStreamObject, DictionaryObject, Fit, FloatObject,
+            NameObject, NumberObject, TextStringObject,
+        )
+
+        writer = PdfWriter()
+        pages = [writer.add_blank_page(width=595, height=842) for _ in range(3)]
+        structure = DictionaryObject({NameObject("/Type"): NameObject("/StructTreeRoot")})
+        structure_ref = writer._add_object(structure)
+        structure_children, parent_entries = ArrayObject(), ArrayObject()
+        font = writer._add_object(DictionaryObject({
+            NameObject("/Type"): NameObject("/Font"),
+            NameObject("/Subtype"): NameObject("/Type1"),
+            NameObject("/BaseFont"): NameObject("/Helvetica"),
+        }))
+        for index, (page, text) in enumerate(zip(
+                pages, page_texts or ["Contents", "Body", "Body"])):
+            # Literal ASCII heading text is intentionally repeated on distinct pages.
+            stream = DecodedStreamObject()
+            stream.set_data(("/P <</MCID 0>> BDC "
+                             f"BT /F1 12 Tf 50 750 Td ({text}) Tj ET EMC").encode("ascii"))
+            page[NameObject("/Contents")] = writer._add_object(stream)
+            page[NameObject("/Resources")] = DictionaryObject({
+                NameObject("/Font"): DictionaryObject({NameObject("/F1"): font}),
+            })
+            page[NameObject("/StructParents")] = NumberObject(index)
+            element_ref = writer._add_object(DictionaryObject({
+                NameObject("/Type"): NameObject("/StructElem"),
+                NameObject("/S"): NameObject("/P"),
+                NameObject("/P"): structure_ref,
+                NameObject("/Pg"): page.indirect_reference,
+                NameObject("/K"): NumberObject(0),
+            }))
+            structure_children.append(element_ref)
+            parent_entries.extend([NumberObject(index), ArrayObject([element_ref])])
+        structure[NameObject("/K")] = structure_children
+        structure[NameObject("/ParentTree")] = writer._add_object(DictionaryObject({
+            NameObject("/Nums"): parent_entries,
+        }))
+        writer._root_object[NameObject("/StructTreeRoot")] = structure_ref
+        writer._root_object[NameObject("/MarkInfo")] = DictionaryObject({
+            NameObject("/Marked"): BooleanObject(True),
+        })
+        for name, page_number, left, top, zoom in named:
+            page_reference = (pages[page_number].indirect_reference
+                              if 0 <= page_number < len(pages)
+                              else NumberObject(page_number))
+            destination = ArrayObject([
+                page_reference, NameObject("/XYZ"), FloatObject(left),
+                FloatObject(top), FloatObject(zoom),
+            ])
+            writer.add_named_destination_array(TextStringObject(name), destination)
+        for title, page_number, left, top, zoom in bookmarks:
+            writer.add_outline_item(title, page_number,
+                                    fit=Fit.xyz(left=left, top=top, zoom=zoom))
+        output = io.BytesIO()
+        writer.write(output)
+        return output.getvalue()
+
+    def fixture_reader(self, named, bookmarks=(), page_texts=None):
+        from pypdf import PdfReader
+        return PdfReader(io.BytesIO(self.fixture_bytes(named, bookmarks, page_texts)))
+
+    def test_heading_destination_accepts_bare_and_chrome_slash_names(self):
+        for key in ("ch-0", "/ch-0"):
+            with self.subTest(key=key):
+                reader = self.fixture_reader([(key, 1, 37, 713, 1.25)])
+                destination = build_pdf.heading_destination(reader, "ch-0")
+                self.assertEqual(reader.get_destination_page_number(destination), 1)
+                self.assertEqual(destination.typ, "/XYZ")
+                self.assertEqual(float(destination.left), 37)
+                self.assertEqual(float(destination.top), 713)
+                self.assertEqual(float(destination.zoom), 1.25)
+
+    def test_heading_destination_accepts_equivalent_dual_names(self):
+        reader = self.fixture_reader([
+            ("ch-0", 1, 37, 713, 1.25), ("/ch-0", 1, 37, 713, 1.25),
+        ])
+        destination = build_pdf.heading_destination(reader, "ch-0")
+        self.assertEqual(reader.get_destination_page_number(destination), 1)
+        self.assertEqual(float(destination.top), 713)
+
+    def test_heading_destination_rejects_missing_and_unresolvable_pages(self):
+        for named in ([], [("/ch-0", 999, 37, 713, 1.25)]):
+            with self.subTest(named=named):
+                reader = self.fixture_reader(named)
+                with self.assertRaises(SystemExit):
+                    build_pdf.heading_destination(reader, "ch-0")
+
+    def test_heading_destination_rejects_ambiguous_page_or_view(self):
+        for other in (("/ch-0", 2, 37, 713, 1.25),
+                      ("/ch-0", 1, 37, 600, 1.25)):
+            with self.subTest(other=other):
+                reader = self.fixture_reader([("ch-0", 1, 37, 713, 1.25), other])
+                with self.assertRaises(SystemExit):
+                    build_pdf.heading_destination(reader, "ch-0")
+
+    def test_bookmarks_follow_ids_despite_repeated_or_missing_heading_text(self):
+        from pypdf import PdfReader
+        named = [
+            ("/ch-0", 1, 30, 760, 1.1),
+            ("/ch-0-first", 1, 31, 640, 1.2),
+            ("/ch-0-second", 2, 32, 720, 1.3),
+            ("/ch-0-math", 2, 33, 510, 1.4),
+        ]
+        outline = [("Repeated title", "ch-0", [
+            ("Repeated title", "ch-0-first", []),
+            ("Repeated title", "ch-0-second", [(r"$\Delta$ math", "ch-0-math")]),
+        ])]
+        with tempfile.TemporaryDirectory() as temporary:
+            pdf_path = Path(temporary) / "heading-identities.pdf"
+            pdf_path.write_bytes(self.fixture_bytes(
+                named, page_texts=["Repeated title", "Repeated title", "Body only"]))
+            original = PdfReader(pdf_path)
+            self.assertIn("Repeated title", original.pages[0].extract_text())
+            self.assertIn("Repeated title", original.pages[1].extract_text())
+            self.assertNotIn("math", original.pages[2].extract_text())
+            build_pdf.add_bookmarks(pdf_path, outline)
+            reader = PdfReader(pdf_path)
+            chapter, children = reader.outline
+            first, second, grandchildren = children
+            destinations = [chapter, first, second, grandchildren[0]]
+            for bookmark, (page, left, top, zoom) in zip(destinations, [
+                (1, 30, 760, 1.1), (1, 31, 640, 1.2),
+                (2, 32, 720, 1.3), (2, 33, 510, 1.4),
+            ]):
+                self.assertEqual(reader.get_destination_page_number(bookmark), page)
+                self.assertEqual(bookmark.typ, "/XYZ")
+                self.assertEqual(float(bookmark.left), left)
+                self.assertEqual(float(bookmark.top), top)
+                self.assertAlmostEqual(float(bookmark.zoom), zoom)
+            self.assertEqual(set(reader.named_destinations), {row[0] for row in named})
+            self.assertTrue(reader.trailer["/Root"]["/MarkInfo"]["/Marked"])
+            tree = reader.trailer["/Root"]["/StructTreeRoot"]
+            self.assertEqual(len(tree["/K"]), 3)
+            self.assertEqual(len(tree["/ParentTree"]["/Nums"]), 6)
+            self.assertEqual([page["/StructParents"] for page in reader.pages], [0, 1, 2])
+
+    def test_bookmark_gate_accepts_same_page_and_top_and_rejects_wrong_page(self):
+        for bookmark_page, expected_ok in ((1, True), (0, False)):
+            with self.subTest(bookmark_page=bookmark_page):
+                reader = self.fixture_reader(
+                    [("/ch-0", 1, 37, 713, 1.25)],
+                    [("Repeated title", bookmark_page, 37, 713, 1.25)],
+                    page_texts=["Repeated title", "Repeated title", "Body only"])
+                bookmark = reader.outline[0]
+                issues = quality_check.bookmark_destination_issues(reader, bookmark, "ch-0")
+                self.assertEqual(issues == [], expected_ok)
+
+    def test_bookmark_gate_rejects_wrong_top_even_when_page_and_title_match(self):
+        reader = self.fixture_reader(
+            [("/ch-0", 1, 37, 713, 1.25)], [("Repeated title", 1, 37, 600, 1.25)])
+        self.assertTrue(quality_check.bookmark_destination_issues(
+            reader, reader.outline[0], "ch-0"))
+
+    def test_bookmark_gate_rejects_missing_and_unresolvable_named_target(self):
+        for named in ([], [("/ch-0", 999, 37, 713, 1.25)]):
+            with self.subTest(named=named):
+                reader = self.fixture_reader(named, [("Repeated title", 1, 37, 713, 1.25)])
+                self.assertTrue(quality_check.bookmark_destination_issues(
+                    reader, reader.outline[0], "ch-0"))
 
 
 class BuildHelpersTest(unittest.TestCase):

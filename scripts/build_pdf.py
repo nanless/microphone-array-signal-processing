@@ -28,8 +28,8 @@
   - Chrome 输出结构标签；克隆页面写书签以保留标签。仍需人工检查公式辅助文本和阅读顺序。
   - 页眉页脚关闭（--no-pdf-header-footer），PDF 内无页码——Chrome 无头打印不支持
     CSS 生成页码，要页码得换 WeasyPrint/Prince 链路。
-  - 节书签定位靠"节标题文本首次出现页"逐章顺序搜索，标题串进正文会指偏，
-    偏差一般不超过 1 页；章书签用同样方法，目录页自动排除。
+  - 篇、节、子节书签使用 HTML id 对应的 PDF 命名目标，保留页内定位；
+    缺失、越界或歧义目标会拒绝构建，避免目录同名标题误定位。
   - Chrome 153+ 实测写完 PDF 进程常不退出：本脚本看文件大小（稳定 15 秒即收工，
     主动 kill），不傻等进程结束；超时/页数（<100 页）判失败。
 """
@@ -540,6 +540,27 @@ def locate(texts, key, start, skip):
     return None
 
 
+def heading_destination(reader, heading_id):
+    """Resolve the exact printed HTML anchor; never infer it from title text."""
+    destinations = reader.named_destinations
+    matches = [destinations[key] for key in (heading_id, "/" + heading_id)
+               if key in destinations]
+    if not matches:
+        raise SystemExit(f"PDF 缺少标题命名目标：{heading_id}")
+    signatures = []
+    for destination in matches:
+        try:
+            page = reader.get_destination_page_number(destination)
+        except Exception as exc:
+            raise SystemExit(f"PDF 标题命名目标无法解析：{heading_id}") from exc
+        if page is None or not 0 <= page < len(reader.pages):
+            raise SystemExit(f"PDF 标题命名目标越界：{heading_id}: {page}")
+        signatures.append((page, tuple(destination.dest_array[1:])))
+    if any(signature != signatures[0] for signature in signatures[1:]):
+        raise SystemExit(f"PDF 标题命名目标歧义：{heading_id}")
+    return matches[0]
+
+
 def add_bookmarks(pdf_path, outline):
     """按 outline 写三级大纲（篇 + 节 + 指定子节），校验后原子替换 PDF。"""
     try:
@@ -547,15 +568,6 @@ def add_bookmarks(pdf_path, outline):
     except ImportError as e:
         raise SystemExit("缺少 pypdf，无法写入并校验书签") from e
     reader = PdfReader(str(pdf_path))
-    texts = []
-    for p in reader.pages:
-        try:
-            texts.append(p.extract_text() or "")
-        except Exception:
-            texts.append("")
-    ch_labels = [label for label, _, _ in outline]
-    toc_pages = {i for i, t in enumerate(texts)
-                 if sum(1 for label in ch_labels if norm(label) in norm(t)) >= 3}
     # Chrome 的 PDF 页面含结构标签；append(reader) 会丢掉文档根的
     # StructTreeRoot 和每页的 StructParents。完整克隆后再追加书签。
     writer = PdfWriter(clone_from=reader)
@@ -567,30 +579,25 @@ def add_bookmarks(pdf_path, outline):
     })
     from pypdf.generic import NameObject, TextStringObject
     writer._root_object.update({NameObject("/Lang"): TextStringObject("zh-CN")})
-    prev, n_ch, n_sec, n_subsec = -1, 0, 0, 0
-    for label, _cid, secs in outline:
-        page_no = locate(texts, label, prev + 1, toc_pages)
-        if page_no is None:
-            print(f"章书签跳过（找不到起始页）：{label}")
-            continue
-        parent = writer.add_outline_item(label, page_no)
-        prev, n_ch = page_no, n_ch + 1
-        sprev = page_no
-        for title, _sid, subsecs in secs:
-            # 从本节往后找标题出现处；注意用 sp 而不是 sp+1——一页可能挤多个节，
-            # +1 会跳过同页后面的节。标题串进正文时会指偏（一般 ≤1 页）。
-            sp = locate(texts, title, sprev, toc_pages)
-            if sp is None:
-                continue
-            section_parent = writer.add_outline_item(title, sp, parent=parent)
-            sprev, n_sec = sp, n_sec + 1
-            subprev = sp
-            for subtitle, _subid in subsecs:
-                subpage = locate(texts, subtitle, subprev, toc_pages)
-                if subpage is None:
-                    continue
-                writer.add_outline_item(subtitle, subpage, parent=section_parent)
-                subprev, n_subsec = subpage, n_subsec + 1
+    n_ch, n_sec, n_subsec = 0, 0, 0
+
+    def add_heading(title, heading_id, parent=None):
+        from pypdf.generic import Fit
+        destination = heading_destination(reader, heading_id)
+        target = destination.dest_array
+        return writer.add_outline_item(
+            title, reader.get_destination_page_number(destination),
+            parent=parent, fit=Fit(str(target[1]), tuple(target[2:])))
+
+    for label, cid, secs in outline:
+        parent = add_heading(label, cid)
+        n_ch += 1
+        for title, sid, subsecs in secs:
+            section_parent = add_heading(title, sid, parent)
+            n_sec += 1
+            for subtitle, subid in subsecs:
+                add_heading(subtitle, subid, section_parent)
+                n_subsec += 1
     expected_secs = sum(len(secs) for _, _, secs in outline)
     expected_subsecs = sum(len(subsecs) for _, _, secs in outline
                            for _title, _sid, subsecs in secs)
