@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""生成教程插图（图 1～25、33～36、40～50；图 26～32、37～39 见 make_aec_figures.py）。
+"""生成教程插图（图 1～25、33～36、40～52；图 26～32、37～39 见 make_aec_figures.py）。
 
 用法（仓库根目录）：
-    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～50 → figures/
+    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～52 → figures/
 """
 from pathlib import Path
 import hashlib
@@ -1287,7 +1287,7 @@ def fig_tradeoffs():
 
     ax = axes[0]
     ax.plot(mic_counts, ideal_wng_db, "o-", color=C_BLUE, lw=2,
-            label=r"理想 WNG=$10\log_{10}M$")
+            label=r"理想 $\mathrm{WNG}_{\rm dB}=10\log_{10}M$")
     for m, gain in zip(mic_counts, ideal_wng_db):
         ax.annotate(f"{gain:.1f}", (m, gain), xytext=(0, 7), textcoords="offset points",
                     ha="center", fontsize=FS_TINY, color=C_BLUE)
@@ -1526,8 +1526,8 @@ def fig_sparse_array():
             for p2 in pos:
                 lags.add(p1 - p2)
         return sorted(lags)
-    for y, (name, pos, c) in enumerate([("ULA：连续滞后 -5..5（11个）", ula, C_BLUE),
-                                        ("嵌套阵：连续滞后 -11..11（23个）", nested, C_RED),
+    for y, (name, pos, c) in enumerate([("ULA：连续滞后 −5～5（11个）", ula, C_BLUE),
+                                        ("嵌套阵：连续滞后 −11～11（23个）", nested, C_RED),
                                         ("互质阵：17个滞后；中心连续13个", coprime, C_GREEN)]):
         lags = coarray(pos)
         ax.scatter(lags, np.full(len(lags), 2 - y, dtype=float), marker="|", s=400, c=c, lw=2.5)
@@ -3630,6 +3630,129 @@ def fig_stft_convolution():
     save(fig, 'fig50_stft_convolution.png')
 
 
+def near_planar_sensitivity():
+    """E03-16: unconstrained component sensitivity, not an angular CRB."""
+    heights_m = np.array([.0004, .004, .04])
+    return {"heights_m": heights_m, "condition_numbers": .04 / heights_m,
+            "absolute_delta_u_z": 343. * 1e-6 / heights_m,
+            "mirror_delay_separation_us": 2 * heights_m * np.sqrt(.75) / 343. * 1e6}
+
+
+def fig_near_planar_sensitivity():
+    data = near_planar_sensitivity()
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 4.8))
+    heights_mm = data["heights_m"] * 1000
+    ax = axes[0]
+    ax.loglog(heights_mm, data["absolute_delta_u_z"], "o-", color=C_RED,
+              lw=2, label=r"$|\Delta u_z|=c\,|\Delta\tau_z|/h$")
+    for h, error, cond in zip(heights_mm, data["absolute_delta_u_z"], data["condition_numbers"]):
+        ax.annotate(f"{error:g}\n条件数 {cond:g}", (h, error), xytext=(0, 12),
+                    textcoords="offset points", ha="left" if h == .4 else "right" if h == 40 else "center",
+                    fontsize=FS_SMALL)
+    ax.set_ylim(.004, 3)
+    ax.set_xticks(heights_mm, labels=["0.4", "4", "40"])
+    ax.set_xlabel("第四只麦离开平面的高度 h（mm）")
+    ax.set_ylabel("线性逆的分量变化 |Δu_z|（无单位）")
+    ax.set_title("(a) 三个几何均满秩；同为 +1 μs 扰动")
+    ax.legend(loc="lower left")
+    ax.grid(which="both", ls=":", alpha=.4)
+    ax = axes[1]
+    ax.loglog(heights_mm, data["mirror_delay_separation_us"], "o-", color=C_BLUE, lw=2)
+    for h, value in zip(heights_mm, data["mirror_delay_separation_us"]):
+        ax.annotate(f"{value:.3f} μs", (h, value), xytext=(0, 10),
+                    textcoords="offset points", ha="left" if h == .4 else "right" if h == 40 else "center",
+                    fontsize=FS_SMALL)
+    ax.set_xticks(heights_mm, labels=["0.4", "4", "40"])
+    ax.set_ylim(.7, 600)
+    ax.set_xlabel("第四只麦离开平面的高度 h（mm）")
+    ax.set_ylabel("上下镜像第三路 TDOA 的间隔（μs）")
+    ax.set_title("(b) 镜像的时差间隔也随高度缩小")
+    ax.grid(which="both", ls=":", alpha=.4)
+    fig.suptitle("图51  满秩几何的线性敏感性与镜像时差", fontsize=FS_SUP)
+    fig.text(.5, .015, "G=diag(40,40,h) mm，u=(0.3,0.4,√0.75)，c=343 m/s。分量变化不是角误差。",
+             ha="center", fontsize=FS_SMALL)
+    fig.tight_layout(rect=(0, .07, 1, .94))
+    save(fig, "fig51_near_planar_sensitivity.png")
+
+
+def hexagon_frequency_evidence():
+    """Independently construct the E03-09 pair and profile an unknown source."""
+    radius, speed = .0375, 343.
+    beta = speed / (8000 * np.sqrt(3) * radius)
+    x = np.sqrt(1 - beta * beta)
+    directions = np.array([[x, beta], [x, -beta]])
+    alpha = np.arange(6) * np.pi / 3
+    positions = radius * np.column_stack([np.cos(alpha), np.sin(alpha)])
+    theta = np.rad2deg(np.arctan2(directions[:, 0], directions[:, 1]))
+    grid = np.linspace(0, 180, 1801)
+    look = np.column_stack([np.sin(np.deg2rad(grid)), np.cos(np.deg2rad(grid))])
+    baselines = positions - positions[0]
+    powers, residuals, phase_ratios = {}, {}, {}
+    for frequency in (4000, 8000):
+        a = np.exp(2j * np.pi * frequency / speed * (baselines @ directions.T))
+        scanned = np.exp(2j * np.pi * frequency / speed * (baselines @ look.T))
+        powers[frequency] = np.abs(a[:, 0].conj() @ scanned / 6) ** 2
+        inner = np.vdot(a[:, 1], a[:, 0])
+        coefficient = inner / np.vdot(a[:, 1], a[:, 1])
+        difference = a[:, 0] - coefficient * a[:, 1]
+        residuals[frequency] = float(np.vdot(difference, difference).real / 6)
+        phase_ratios[frequency] = a[:, 1] / a[:, 0]
+    return {"positions_m": positions, "directions": directions, "angles_deg": theta,
+            "grid_deg": grid, "power_coherence": powers,
+            "wrong_direction_residual": residuals, "relative_ratios": phase_ratios}
+
+
+def fig_hexagon_multifrequency():
+    data = hexagon_frequency_evidence()
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 5.3))
+    ax = axes[0]
+    positions = data["positions_m"] * 1000
+    ax.scatter(positions[:, 0], positions[:, 1], s=70, color=C_MAIN, zorder=4)
+    for m, (x, y) in enumerate(positions):
+        offset = (5, -14) if m == 5 else (-18, -14) if m == 4 else (5, 6)
+        ax.annotate(f"m={m}", (x, y), xytext=offset, textcoords="offset points", fontsize=FS_SMALL)
+    for i, (direction, color) in enumerate(zip(data["directions"], (C_BLUE, C_RED))):
+        ax.annotate("", xy=55 * direction, xytext=(0, 0),
+                    arrowprops={"arrowstyle": "->", "color": color, "lw": 2})
+        ax.text(61 * direction[0], 61 * direction[1],
+                f"{'u' if i == 0 else 'v'}\n{data['angles_deg'][i]:.2f}°",
+                color=color, ha="center", va="center", fontsize=FS_SMALL)
+    ax.plot([0, 0], [0, 60], ":", color=".5")
+    ax.text(3, 56, "+y，θ=0°", ha="left", va="top", fontsize=FS_SMALL)
+    ax.set_xlim(-50, 75)
+    ax.set_ylim(-56, 67)
+    ax.set_aspect("equal")
+    ax.set_xlabel("x（mm）")
+    ax.set_ylabel("y（mm）")
+    ax.set_title("(a) 相同六麦与两个水平方向")
+    ax.grid(ls=":", alpha=.3)
+    ax = axes[1]
+    for f, color in ((4000, C_BLUE), (8000, C_ORANGE)):
+        ax.plot(data["grid_deg"], data["power_coherence"][f], color=color,
+                lw=1.8, ls="-" if f == 4000 else "--", label=f"{f // 1000} kHz")
+    for angle in data["angles_deg"]:
+        ax.axvline(angle, color=".45", ls="--", lw=.9)
+    ax.scatter(data["angles_deg"], [1, 1], color=C_ORANGE, zorder=5)
+    ax.scatter(data["angles_deg"], [1, 1 / 9], color=C_BLUE, zorder=6)
+    ax.set_xlim(0, 180)
+    ax.set_ylim(-.03, 1.18)
+    ax.set_xticks([0, 45, 90, 135, 180])
+    ax.set_xlabel("候选方位角 θ（°，从 +y 向 +x）")
+    ax.set_ylabel("归一化流形相干功率（无单位）")
+    ax.set_title("(b) 允许每频未知公共复幅度")
+    ax.text(.5, .99, "v 处：8 kHz = 1；4 kHz = 1/9", transform=ax.transAxes,
+            ha="center", va="top", fontsize=FS_SMALL)
+    handles, labels = ax.get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", bbox_to_anchor=(.77, .055),
+               ncol=2, frameon=False, fontsize=FS_SMALL)
+    ax.grid(ls=":", alpha=.3)
+    fig.suptitle("图52  第二个频率怎样区分单频别名", fontsize=FS_SUP)
+    fig.text(.5, .015, "半径37.5 mm、c=343 m/s、各向同性远场相位模型。错误方向残差为1−相干功率。",
+             ha="center", fontsize=FS_SMALL)
+    fig.tight_layout(rect=(0, .16, 1, .94))
+    save(fig, "fig52_hexagon_multifrequency.png")
+
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -3673,6 +3796,8 @@ def main():
     fig_fft_signed_bins()
     fig_fft_block_boundary()
     fig_stft_convolution()
+    fig_near_planar_sensitivity()
+    fig_hexagon_multifrequency()
     print("ALL DONE")
 
 

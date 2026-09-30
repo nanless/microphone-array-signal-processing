@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from codes.chapters.ch02.core.conventions import finite_real_scalar
+from codes.chapters.ch02.core.conventions import finite_real_array, finite_real_scalar
 
 
 def ula_prediction(
@@ -29,7 +29,7 @@ def ula_prediction(
     ``g[m]*exp(+1j*2*pi*f*m*d*sin(theta)/c)``.  Source spectra include their
     unknown frame-wise complex phases and amplitudes.
     """
-    angles = np.asarray(angles_deg, dtype=float)
+    angles = finite_real_array(angles_deg, "angles_deg")
     gain = np.asarray(gains, dtype=complex)
     source = np.asarray(source_spectra, dtype=complex)
     if (angles.ndim != 1 or gain.ndim != 1 or source.ndim != 2
@@ -42,10 +42,17 @@ def ula_prediction(
     speed = finite_real_scalar(sound_speed, "sound_speed")
     if spacing <= 0 or frequency <= 0 or speed <= 0:
         raise ValueError("spacing, frequency and sound speed must be positive")
-    kd = 2.0 * np.pi * frequency * spacing / speed
-    steering = np.exp(1j * kd * np.sin(np.deg2rad(angles[:, None]))
-                      * np.arange(gain.size)[None, :])
-    return source[:, :, None] * steering[:, None, :] * gain[None, None, :]
+    with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+        kd = 2.0 * np.pi * frequency * spacing / speed
+        phase = kd * np.sin(np.deg2rad(angles[:, None])) * np.arange(gain.size)[None, :]
+    if not np.all(np.isfinite(phase)):
+        raise ValueError("ULA phase exceeds supported numerical range")
+    steering = np.exp(1j * phase)
+    with np.errstate(over="ignore", invalid="ignore"):
+        prediction = source[:, :, None] * steering[:, None, :] * gain[None, None, :]
+    if not np.all(np.isfinite(prediction)):
+        raise ValueError("ULA prediction exceeds supported numerical range")
+    return prediction
 
 
 def _profile_sources(observations: np.ndarray, gains: np.ndarray,
@@ -154,6 +161,8 @@ def fit_anchored_ula(
             or max_iterations < 1):
         raise ValueError("invalid physical parameters, angle interval or stopping rule")
     kd = 2.0 * np.pi * frequency * spacing / speed
+    if not np.isfinite(kd):
+        raise ValueError("ULA phase exceeds supported numerical range")
     if kd * max(abs(np.sin(np.deg2rad(low))), abs(np.sin(np.deg2rad(high)))) >= np.pi:
         raise ValueError("anchored adjacent pair aliases in this angle interval")
     total_energy = float(np.sum(np.abs(x) ** 2))
@@ -172,7 +181,7 @@ def fit_anchored_ula(
             raise ValueError("anchored-pair phase implies a direction outside the stated interval")
         angles = np.rad2deg(np.arcsin(sine))
     else:
-        angles = np.asarray(initial_angles_deg, dtype=float)
+        angles = finite_real_array(initial_angles_deg, "initial_angles_deg")
         if (angles.shape != (x.shape[0],) or not np.all(np.isfinite(angles))
                 or np.any(angles < low) or np.any(angles > high)):
             raise ValueError("initial angles must be finite and inside the stated interval")

@@ -44,6 +44,8 @@ TRACKING_AUDIO_ROOT = CODE_CHAPTERS / "ch09" / "tracking_audio"
 GSS_AUDIO_ROOT = CODE_CHAPTERS / "ch08" / "gss_audio"
 BINAURAL_AUDIO_ROOT = CODE_CHAPTERS / "ch01" / "binaural_audio"
 STFT_AUDIO_ROOT = CODE_CHAPTERS / "ch02" / "stft_audio"
+GEOMETRY_AUDIO_ROOT = CODE_CHAPTERS / "ch03" / "geometry_audio"
+GEOMETRY_AUDIO_WAVS = {"geometry_reference.wav": 1, "geometry_u.wav": 6, "geometry_v.wav": 6}
 STFT_AUDIO_WAVS = {"stft_roundtrip.wav", "full_convolution.wav", "framewise_mtf.wav"}
 
 
@@ -394,6 +396,45 @@ def stage_stft_audio(source, destination):
     return expected
 
 
+def stage_geometry_audio(source, destination):
+    """Publish three multichannel geometry fixtures with full propagation envelopes."""
+    import wave
+    expected = set(GEOMETRY_AUDIO_WAVS) | {"MANIFEST.json"}
+    if (source.is_symlink() or {p.name for p in source.iterdir()} != expected
+            or any(p.is_symlink() or not p.is_file() for p in source.iterdir())):
+        raise ValueError("多频几何目录必须恰含三份普通WAV及独立清单")
+    manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+    if (set(manifest["files"]) != set(GEOMETRY_AUDIO_WAVS)
+            or manifest["sample_rate_hz"] != 32000
+            or manifest["common_export_gain"] != 1):
+        raise ValueError("多频几何清单集合、采样率或共同增益不符")
+    required_sources = {"codes/chapters/ch03/core/geometry_audio.py",
+                        "codes/chapters/ch03/examples/generate_geometry_audio.py",
+                        "codes/chapters/ch03/core/geometry.py",
+                        "codes/chapters/ch02/core/conventions.py",
+                        "codes/chapters/ch00/core/audio_samples.py"}
+    if set(manifest["source_sha256"]) != required_sources:
+        raise ValueError("多频几何必须记录真实生成源与PCM编码源")
+    for name, digest in manifest["source_sha256"].items():
+        if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest:
+            raise ValueError(f"多频几何生成源摘要过期：{name}")
+    for name in set(GEOMETRY_AUDIO_WAVS):
+        path, record = source / name, manifest["files"][name]
+        if (record["channels"] != GEOMETRY_AUDIO_WAVS[name] or record["samples_per_channel"] != 64000
+                or hashlib.sha256(path.read_bytes()).hexdigest() != record["sha256"]):
+            raise ValueError(f"多频几何摘要或参数不符：{name}")
+        with wave.open(str(path), "rb") as wav:
+            if (wav.getframerate(), wav.getnchannels(), wav.getsampwidth(),
+                    wav.getnframes(), wav.getcomptype()) != (32000, GEOMETRY_AUDIO_WAVS[name], 2, 64000, "NONE"):
+                raise ValueError(f"多频几何PCM格式不符：{name}")
+            if len(wav.readframes(64000)) != 64000 * GEOMETRY_AUDIO_WAVS[name] * 2:
+                raise ValueError(f"多频几何PCM数据截断：{name}")
+    destination.mkdir()
+    for name in sorted(expected):
+        shutil.copy2(source / name, destination / name)
+    return expected
+
+
 def stage_tracking_audio(source, destination):
     """Validate the independent PCM-to-observation experiment before publishing."""
     import wave
@@ -476,7 +517,7 @@ def source_digest():
     paths += [main_audio_manifest_path(CODE_CHAPTERS)]
     paths += sorted(main_audio_sources())
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "build_markdown_helpers.py",
@@ -629,6 +670,9 @@ def rewrite_site_links(html, source_path):
         if target.parent == STFT_AUDIO_ROOT.resolve() and target.name in (STFT_AUDIO_WAVS | {"MANIFEST.json"}):
             relative = os.path.relpath("stft_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
+        if target.parent == GEOMETRY_AUDIO_ROOT.resolve() and target.name in (set(GEOMETRY_AUDIO_WAVS) | {"MANIFEST.json"}):
+            relative = os.path.relpath("geometry_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
+            return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
         return repository_url(parsed, target)
 
     html = rewrite_href_targets(html, transform)
@@ -641,7 +685,7 @@ def rewrite_site_links(html, source_path):
         # input as a download link; only the explicit mono derivatives play.
         if parsed.path.endswith("real_audio/demand_nriver_16ch_10s.wav"):
             return match.group(0)
-        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|stft_audio)/[a-z0-9_]+\.wav", parsed.path):
+        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|stft_audio|geometry_audio)/[a-z0-9_]+\.wav", parsed.path):
             return match.group(0)
         safe_href = escape(href, quote=True)
         safe_label = escape(re.sub(r'<[^>]+>', '', unescape(label)), quote=True)
@@ -939,6 +983,10 @@ def main():
         (OUT / "stft_audio").mkdir(exist_ok=True)
         stale += [path for path in (OUT / "stft_audio").iterdir()
                   if path.is_file() and path.name not in stft_names]
+        geometry_names = stage_geometry_audio(GEOMETRY_AUDIO_ROOT, temp_out / "geometry_audio")
+        (OUT / "geometry_audio").mkdir(exist_ok=True)
+        stale += [path for path in (OUT / "geometry_audio").iterdir()
+                  if path.is_file() and path.name not in geometry_names]
         publish_files([(temp_out / name, OUT / name) for name in sorted(expected)] +
                       [(temp_out / "audio" / name, OUT / "audio" / name) for name in audio_names] +
                       [(temp_out / "real_audio" / name, OUT / "real_audio" / name)
@@ -954,7 +1002,9 @@ def main():
                       [(temp_out / "binaural_audio" / name, OUT / "binaural_audio" / name)
                        for name in sorted(binaural_names)] +
                       [(temp_out / "stft_audio" / name, OUT / "stft_audio" / name)
-                       for name in sorted(stft_names)], stale)
+                       for name in sorted(stft_names)] +
+                      [(temp_out / "geometry_audio" / name, OUT / "geometry_audio" / name)
+                       for name in sorted(geometry_names)], stale)
     print("DONE", len(expected), "pages")
 
 

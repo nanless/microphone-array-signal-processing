@@ -1,0 +1,982 @@
+{
+  "schema_version": 1,
+  "sample_rate_hz": 32000,
+  "samples_per_channel": 64000,
+  "common_export_gain": 1.0,
+  "origin": "original deterministic mathematical plane-wave synthesis",
+  "source_sha256": {
+    "codes/chapters/ch03/core/geometry_audio.py": "f1054daa26da08c387e3e82d7211c511a9ea729d4e339c60e0f8c7bc385e155f",
+    "codes/chapters/ch03/examples/generate_geometry_audio.py": "9ec8c939340f330f3394a0c7ecf018e7be8cb8d0ed3db2eb3fbbae8615cd02fa",
+    "codes/chapters/ch03/core/geometry.py": "5a680848301358415f74647199a4c57b65086f0b2580f91706c912ad208d7bdb",
+    "codes/chapters/ch02/core/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385",
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8"
+  },
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "pcm": "signed little-endian PCM16, round-to-nearest-even, no dither or per-file gain",
+  "parameters": {
+    "exercise_id": "E03-17",
+    "sample_rate_hz": 32000,
+    "samples_per_channel": 64000,
+    "duration_s": 2.0,
+    "sound_speed_m_s": 343.0,
+    "positions_m": [
+      [
+        0.0375,
+        0.0
+      ],
+      [
+        0.018750000000000003,
+        0.032475952641916446
+      ],
+      [
+        -0.018749999999999992,
+        0.03247595264191645
+      ],
+      [
+        -0.0375,
+        4.592425496802574e-18
+      ],
+      [
+        -0.018750000000000017,
+        -0.03247595264191644
+      ],
+      [
+        0.018750000000000003,
+        -0.032475952641916446
+      ]
+    ],
+    "channel_order": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "reference_channel_zero_based": 0,
+    "directions_xy": [
+      [
+        0.7511743891820081,
+        0.6601038077734722
+      ],
+      [
+        0.7511743891820081,
+        -0.6601038077734722
+      ]
+    ],
+    "azimuths_deg": [
+      48.69220975756258,
+      131.30779024243745
+    ],
+    "frequencies_hz": [
+      4000.0,
+      8000.0
+    ],
+    "tone_amplitudes": [
+      0.08,
+      0.08
+    ],
+    "source_active_interval_s": [
+      0.1,
+      1.9
+    ],
+    "linear_fade_duration_s": 0.02,
+    "common_base_delay_s": 0.002,
+    "common_export_gain": 1.0,
+    "reference_model": "F(t-b), on the array-centre time axis, not microphone 0",
+    "observation_model": "x_m(t)=F(t-b+r_m dot u/c)",
+    "delay_implementation": "continuous source evaluation, not an estimated delay or sampled interpolation filter",
+    "scoring_interval_samples": [
+      4800,
+      59200
+    ],
+    "scoring_samples_per_channel": 54400,
+    "phase_convention": "cos coefficient - j*sin coefficient, under exp(+j*2*pi*f*t) synthesis",
+    "profile_definition": "min_alpha sum_m |z_m-alpha*a_m|^2 / sum_m |z_m|^2, independently per frequency",
+    "randomness": "none",
+    "noise": "none"
+  },
+  "files": {
+    "geometry_reference.wav": {
+      "sample_rate_hz": 32000,
+      "channels": 1,
+      "samples_per_channel": 64000,
+      "sha256": "3c8eeb5eb842f6a8de330113fb15c76cee8169d0a5d09c85a02be30a984fb7a1"
+    },
+    "geometry_u.wav": {
+      "sample_rate_hz": 32000,
+      "channels": 6,
+      "samples_per_channel": 64000,
+      "sha256": "4b3366583709847b314ffc6f2468a3dad719eb4e211ebe5dbc329fbc6dc9cca2"
+    },
+    "geometry_v.wav": {
+      "sample_rate_hz": 32000,
+      "channels": 6,
+      "samples_per_channel": 64000,
+      "sha256": "e5bf86059a102c25203570bb9643401d2a45cf99d3431f36e271f2c3da81a90b"
+    }
+  },
+  "samples": {
+    "reference": {
+      "file": "geometry_reference.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          4800,
+          59200
+        ],
+        "samples_per_channel": 54400,
+        "channels": 1,
+        "tones": [
+          {
+            "frequency_hz": 4000.0,
+            "phasor_real_imag": [
+              [
+                -2.806531510188577e-15,
+                -0.0800000000000001
+              ]
+            ],
+            "amplitudes": [
+              0.0800000000000001
+            ],
+            "relative_steering_real_imag": [
+              [
+                1.0,
+                3.3722992691042425e-31
+              ]
+            ],
+            "observed_phasor_squared_sum": 0.006400000000000016
+          },
+          {
+            "frequency_hz": 8000.0,
+            "phasor_real_imag": [
+              [
+                -6.297325234894339e-15,
+                -0.08000000000000597
+              ]
+            ],
+            "amplitudes": [
+              0.08000000000000597
+            ],
+            "relative_steering_real_imag": [
+              [
+                1.0,
+                3.8324348381480205e-30
+              ]
+            ],
+            "observed_phasor_squared_sum": 0.006400000000000955
+          }
+        ],
+        "time_domain_squared_sum": 348.1599999999997,
+        "two_tone_fit_residual_squared_sum": 4.132016529737143e-21,
+        "peak": 0.1365685424955373
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          4800,
+          59200
+        ],
+        "samples_per_channel": 54400,
+        "channels": 1,
+        "tones": [
+          {
+            "frequency_hz": 4000.0,
+            "phasor_real_imag": [
+              [
+                2.0579314165674042e-13,
+                -0.0799903081948631
+              ]
+            ],
+            "amplitudes": [
+              0.0799903081948631
+            ],
+            "relative_steering_real_imag": [
+              [
+                1.0,
+                1.3327234940413344e-29
+              ]
+            ],
+            "observed_phasor_squared_sum": 0.006398449405109182
+          },
+          {
+            "frequency_hz": 8000.0,
+            "phasor_real_imag": [
+              [
+                4.110703676837235e-13,
+                -0.08000183105469344
+              ]
+            ],
+            "amplitudes": [
+              0.08000183105469344
+            ],
+            "relative_steering_real_imag": [
+              [
+                1.0,
+                -1.5410200765207442e-28
+              ]
+            ],
+            "observed_phasor_squared_sum": 0.006400292972103712
+          }
+        ],
+        "time_domain_squared_sum": 348.12579303979874,
+        "two_tone_fit_residual_squared_sum": 3.796349497284393e-07,
+        "peak": 0.136566162109375
+      },
+      "quantization_max_abs_error": 1.5256602910979772e-05
+    },
+    "direction_u": {
+      "file": "geometry_u.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          4800,
+          59200
+        ],
+        "samples_per_channel": 54400,
+        "channels": 6,
+        "tones": [
+          {
+            "frequency_hz": 4000.0,
+            "phasor_real_imag": [
+              [
+                0.07046419236758059,
+                0.03787872217993334
+              ],
+              [
+                0.041046937922328906,
+                0.06866694173472754
+              ],
+              [
+                0.0410469379224177,
+                -0.06866694173467403
+              ],
+              [
+                -0.0704641923675779,
+                0.03787872217993889
+              ],
+              [
+                -0.041046937922322786,
+                0.06866694173473106
+              ],
+              [
+                -0.04104693792242259,
+                -0.06866694173467214
+              ]
+            ],
+            "amplitudes": [
+              0.07999999999999986,
+              0.07999999999999993,
+              0.07999999999999957,
+              0.0800000000000001,
+              0.07999999999999982,
+              0.08000000000000045
+            ],
+            "relative_steering_real_imag": [
+              [
+                1.0,
+                6.353595476043624e-18
+              ],
+              [
+                0.8583367716835246,
+                0.5130867240300678
+              ],
+              [
+                0.045519268898748945,
+                -0.998963460872777
+              ],
+              [
+                -0.5516257518797565,
+                0.8340917394765995
+              ],
+              [
+                -0.04551926889736632,
+                0.9989634608728432
+              ],
+              [
+                -0.8583367716842282,
+                -0.5130867240289034
+              ]
+            ],
+            "observed_phasor_squared_sum": 0.03839999999999996,
+            "candidate_profiles": {
+              "direction_u": {
+                "unknown_complex_alpha_real_imag": [
+                  0.07046419236759754,
+                  0.03787872217990203
+                ],
+                "residual_squared_sum": 1.493848370254536e-26,
+                "observed_phasor_squared_sum": 0.03839999999999996,
+                "relative_residual": 3.8902301308711915e-25,
+                "candidate_squared_norm": 6.0
+              },
+              "direction_v": {
+                "unknown_complex_alpha_real_imag": [
+                  -0.023488064122532487,
+                  -0.012626240726634028
+                ],
+                "residual_squared_sum": 0.0341333333333333,
+                "observed_phasor_squared_sum": 0.03839999999999996,
+                "relative_residual": 0.888888888888889,
+                "candidate_squared_norm": 6.0
+              }
+            }
+          },
+          {
+            "frequency_hz": 8000.0,
+            "phasor_real_imag": [
+              [
+                -0.06672733915813175,
+                0.04413006015038904
+              ],
+              [
+                -0.07046419236754602,
+                -0.037878722180015464
+              ],
+              [
+                0.07046419236764406,
+                -0.037878722179832944
+              ],
+              [
+                0.06672733915813846,
+                0.044130060150378625
+              ],
+              [
+                0.0704641923675402,
+                -0.037878722180026636
+              ],
+              [
+                -0.07046419236764995,
+                -0.03787872217982246
+              ]
+            ],
+            "amplitudes": [
+              0.0800000000000081,
+              0.08000000000000829,
+              0.08000000000000823,
+              0.08000000000000797,
+              0.08000000000000845,
+              0.08000000000000845
+            ],
+            "relative_steering_real_imag": [
+              [
+                1.0,
+                2.4713899654157837e-19
+              ],
+              [
+                0.47348402724820454,
+                0.8808024045952791
+              ],
+              [
+                -0.9958559923178492,
+                -0.0909441727909747
+              ],
+              [
+                -0.3914180597262168,
+                -0.9202129658509273
+              ],
+              [
+                -0.995855992318102,
+                -0.09094417278823909
+              ],
+              [
+                0.473484027250619,
+                0.8808024045939834
+              ]
+            ],
+            "observed_phasor_squared_sum": 0.038400000000007914,
+            "candidate_profiles": {
+              "direction_u": {
+                "unknown_complex_alpha_real_imag": [
+                  -0.06672733915809194,
+                  0.044130060150449485
+                ],
+                "residual_squared_sum": 5.989273672571818e-26,
+                "observed_phasor_squared_sum": 0.038400000000007914,
+                "relative_residual": 1.5597066855652562e-24,
+                "candidate_squared_norm": 6.0
+              },
+              "direction_v": {
+                "unknown_complex_alpha_real_imag": [
+                  -0.06672733915809191,
+                  0.04413006015044951
+                ],
+                "residual_squared_sum": 5.994572252516217e-26,
+                "observed_phasor_squared_sum": 0.038400000000007914,
+                "relative_residual": 1.5610865240924432e-24,
+                "candidate_squared_norm": 6.0
+              }
+            }
+          }
+        ],
+        "time_domain_squared_sum": 2088.96,
+        "two_tone_fit_residual_squared_sum": 2.702679374317593e-20,
+        "peak": 0.13913113410272962
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          4800,
+          59200
+        ],
+        "samples_per_channel": 54400,
+        "channels": 6,
+        "tones": [
+          {
+            "frequency_hz": 4000.0,
+            "phasor_real_imag": [
+              [
+                0.07045293641002935,
+                0.037879522720248866
+              ],
+              [
+                0.041044877591022565,
+                0.06866476101291619
+              ],
+              [
+                0.04104487759137551,
+                -0.06866476101270536
+              ],
+              [
+                -0.0704529364102243,
+                0.03787952271988778
+              ],
+              [
+                -0.041044877591375144,
+                0.06866476101270613
+              ],
+              [
+                -0.04104487759102242,
+                -0.06866476101291719
+              ]
+            ],
+            "amplitudes": [
+              0.07999046499620745,
+              0.07999707108027719,
+              0.07999707108027732,
+              0.07999046499620815,
+              0.07999707108027779,
+              0.07999707108027798
+            ],
+            "relative_steering_real_imag": [
+              [
+                1.0,
+                1.7518355927855367e-17
+              ],
+              [
+                0.8584422011943177,
+                0.5130713067569147
+              ],
+              [
+                0.04543954601705752,
+                -0.9990497616567258
+              ],
+              [
+                -0.5514998946473129,
+                0.8341749613864113
+              ],
+              [
+                -0.04543954601704887,
+                0.9990497616567322
+              ],
+              [
+                -0.8584422011943221,
+                -0.5130713067569267
+              ]
+            ],
+            "observed_phasor_squared_sum": 0.03839507450631102,
+            "candidate_profiles": {
+              "direction_u": {
+                "unknown_complex_alpha_real_imag": [
+                  0.07045967294800509,
+                  0.0378762927215243
+                ],
+                "residual_squared_sum": 1.3271240751925904e-10,
+                "observed_phasor_squared_sum": 0.03839507450631102,
+                "relative_residual": 3.4564956371537975e-09,
+                "candidate_squared_norm": 6.0
+              },
+              "direction_v": {
+                "unknown_complex_alpha_real_imag": [
+                  -0.023489143806183728,
+                  -0.012626821121317697
+                ],
+                "residual_squared_sum": 0.03412801557604701,
+                "observed_phasor_squared_sum": 0.03839507450631102,
+                "relative_residual": 0.8888644185450759,
+                "candidate_squared_norm": 6.0
+              }
+            }
+          },
+          {
+            "frequency_hz": 8000.0,
+            "phasor_real_imag": [
+              [
+                -0.06672668457054676,
+                0.04412841796841022
+              ],
+              [
+                -0.07046508789043814,
+                -0.037872314453490104
+              ],
+              [
+                0.0704650878908274,
+                -0.03787231445276518
+              ],
+              [
+                0.06672668457009329,
+                0.04412841796909628
+              ],
+              [
+                0.07046508789082774,
+                -0.037872314452765427
+              ],
+              [
+                -0.07046508789043827,
+                -0.03787231445349041
+              ]
+            ],
+            "amplitudes": [
+              0.07999854815040054,
+              0.07999775505269636,
+              0.07999775505269605,
+              0.07999854815040074,
+              0.07999775505269646,
+              0.07999775505269664
+            ],
+            "relative_steering_real_imag": [
+              [
+                1.0,
+                -1.1270508571786849e-17
+              ],
+              [
+                0.4735572462018694,
+                0.8807517850481745
+              ],
+              [
+                -0.9958403659532046,
+                -0.09100625162055269
+              ],
+              [
+                -0.3914412641737046,
+                -0.9202030953556378
+              ],
+              [
+                -0.9958403659532099,
+                -0.09100625162055248
+              ],
+              [
+                0.47355724620186873,
+                0.8807517850481786
+              ]
+            ],
+            "observed_phasor_squared_sum": 0.03839809866622877,
+            "candidate_profiles": {
+              "direction_u": {
+                "unknown_complex_alpha_real_imag": [
+                  -0.06672568704199303,
+                  0.044128967524591126
+                ],
+                "residual_squared_sum": 1.501542744810388e-10,
+                "observed_phasor_squared_sum": 0.03839809866622877,
+                "relative_residual": 3.910461186795686e-09,
+                "candidate_squared_norm": 6.0
+              },
+              "direction_v": {
+                "unknown_complex_alpha_real_imag": [
+                  -0.06672568704199301,
+                  0.04412896752459117
+                ],
+                "residual_squared_sum": 1.5015427448321463e-10,
+                "observed_phasor_squared_sum": 0.03839809866622877,
+                "relative_residual": 3.910461186852351e-09,
+                "candidate_squared_norm": 6.0
+              }
+            }
+          }
+        ],
+        "time_domain_squared_sum": 2088.774314522743,
+        "two_tone_fit_residual_squared_sum": 4.229874794718565e-06,
+        "peak": 0.139129638671875
+      },
+      "quantization_max_abs_error": 1.5257951764324762e-05
+    },
+    "direction_v": {
+      "file": "geometry_v.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          4800,
+          59200
+        ],
+        "samples_per_channel": 54400,
+        "channels": 6,
+        "tones": [
+          {
+            "frequency_hz": 4000.0,
+            "phasor_real_imag": [
+              [
+                0.07046419236758059,
+                0.03787872217993334
+              ],
+              [
+                -0.04104693792242259,
+                -0.06866694173467214
+              ],
+              [
+                -0.041046937922322786,
+                0.06866694173473106
+              ],
+              [
+                -0.0704641923675779,
+                0.03787872217993889
+              ],
+              [
+                0.0410469379224177,
+                -0.06866694173467403
+              ],
+              [
+                0.041046937922328906,
+                0.06866694173472754
+              ]
+            ],
+            "amplitudes": [
+              0.07999999999999986,
+              0.08000000000000045,
+              0.07999999999999982,
+              0.0800000000000001,
+              0.07999999999999957,
+              0.07999999999999993
+            ],
+            "relative_steering_real_imag": [
+              [
+                1.0,
+                6.353595476043624e-18
+              ],
+              [
+                -0.8583367716842282,
+                -0.5130867240289034
+              ],
+              [
+                -0.04551926889736632,
+                0.9989634608728432
+              ],
+              [
+                -0.5516257518797565,
+                0.8340917394765995
+              ],
+              [
+                0.045519268898748945,
+                -0.998963460872777
+              ],
+              [
+                0.8583367716835246,
+                0.5130867240300678
+              ]
+            ],
+            "observed_phasor_squared_sum": 0.038399999999999955,
+            "candidate_profiles": {
+              "direction_u": {
+                "unknown_complex_alpha_real_imag": [
+                  -0.023488064122532487,
+                  -0.01262624072663402
+                ],
+                "residual_squared_sum": 0.03413333333333329,
+                "observed_phasor_squared_sum": 0.038399999999999955,
+                "relative_residual": 0.8888888888888888,
+                "candidate_squared_norm": 6.0
+              },
+              "direction_v": {
+                "unknown_complex_alpha_real_imag": [
+                  0.07046419236759754,
+                  0.03787872217990202
+                ],
+                "residual_squared_sum": 1.4954431124708617e-26,
+                "observed_phasor_squared_sum": 0.038399999999999955,
+                "relative_residual": 3.8943831053928735e-25,
+                "candidate_squared_norm": 6.0
+              }
+            }
+          },
+          {
+            "frequency_hz": 8000.0,
+            "phasor_real_imag": [
+              [
+                -0.06672733915813175,
+                0.04413006015038904
+              ],
+              [
+                -0.07046419236764995,
+                -0.03787872217982246
+              ],
+              [
+                0.0704641923675402,
+                -0.037878722180026636
+              ],
+              [
+                0.06672733915813846,
+                0.044130060150378625
+              ],
+              [
+                0.07046419236764406,
+                -0.037878722179832944
+              ],
+              [
+                -0.07046419236754602,
+                -0.037878722180015464
+              ]
+            ],
+            "amplitudes": [
+              0.0800000000000081,
+              0.08000000000000845,
+              0.08000000000000845,
+              0.08000000000000797,
+              0.08000000000000823,
+              0.08000000000000829
+            ],
+            "relative_steering_real_imag": [
+              [
+                1.0,
+                2.4713899654157837e-19
+              ],
+              [
+                0.473484027250619,
+                0.8808024045939834
+              ],
+              [
+                -0.995855992318102,
+                -0.09094417278823909
+              ],
+              [
+                -0.3914180597262168,
+                -0.9202129658509273
+              ],
+              [
+                -0.9958559923178492,
+                -0.0909441727909747
+              ],
+              [
+                0.47348402724820454,
+                0.8808024045952791
+              ]
+            ],
+            "observed_phasor_squared_sum": 0.038400000000007914,
+            "candidate_profiles": {
+              "direction_u": {
+                "unknown_complex_alpha_real_imag": [
+                  -0.06672733915809194,
+                  0.04413006015044947
+                ],
+                "residual_squared_sum": 5.997495221948339e-26,
+                "observed_phasor_squared_sum": 0.038400000000007914,
+                "relative_residual": 1.5618477140487247e-24,
+                "candidate_squared_norm": 6.0
+              },
+              "direction_v": {
+                "unknown_complex_alpha_real_imag": [
+                  -0.06672733915809191,
+                  0.04413006015044951
+                ],
+                "residual_squared_sum": 5.995394855714064e-26,
+                "observed_phasor_squared_sum": 0.038400000000007914,
+                "relative_residual": 1.5613007436752156e-24,
+                "candidate_squared_norm": 6.0
+              }
+            }
+          }
+        ],
+        "time_domain_squared_sum": 2088.96,
+        "two_tone_fit_residual_squared_sum": 2.702679374317593e-20,
+        "peak": 0.13913113410272962
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          4800,
+          59200
+        ],
+        "samples_per_channel": 54400,
+        "channels": 6,
+        "tones": [
+          {
+            "frequency_hz": 4000.0,
+            "phasor_real_imag": [
+              [
+                0.07045293641002935,
+                0.037879522720248866
+              ],
+              [
+                -0.04104487759102242,
+                -0.06866476101291719
+              ],
+              [
+                -0.041044877591375144,
+                0.06866476101270613
+              ],
+              [
+                -0.0704529364102243,
+                0.03787952271988778
+              ],
+              [
+                0.04104487759137551,
+                -0.06866476101270536
+              ],
+              [
+                0.041044877591022565,
+                0.06866476101291619
+              ]
+            ],
+            "amplitudes": [
+              0.07999046499620745,
+              0.07999707108027798,
+              0.07999707108027779,
+              0.07999046499620815,
+              0.07999707108027732,
+              0.07999707108027719
+            ],
+            "relative_steering_real_imag": [
+              [
+                1.0,
+                1.7518355927855367e-17
+              ],
+              [
+                -0.8584422011943221,
+                -0.5130713067569267
+              ],
+              [
+                -0.04543954601704887,
+                0.9990497616567322
+              ],
+              [
+                -0.5514998946473129,
+                0.8341749613864113
+              ],
+              [
+                0.04543954601705752,
+                -0.9990497616567258
+              ],
+              [
+                0.8584422011943177,
+                0.5130713067569147
+              ]
+            ],
+            "observed_phasor_squared_sum": 0.03839507450631102,
+            "candidate_profiles": {
+              "direction_u": {
+                "unknown_complex_alpha_real_imag": [
+                  -0.023489143806183728,
+                  -0.012626821121317695
+                ],
+                "residual_squared_sum": 0.03412801557604701,
+                "observed_phasor_squared_sum": 0.03839507450631102,
+                "relative_residual": 0.8888644185450759,
+                "candidate_squared_norm": 6.0
+              },
+              "direction_v": {
+                "unknown_complex_alpha_real_imag": [
+                  0.0704596729480051,
+                  0.037876292721524284
+                ],
+                "residual_squared_sum": 1.3271240751999528e-10,
+                "observed_phasor_squared_sum": 0.03839507450631102,
+                "relative_residual": 3.4564956371729728e-09,
+                "candidate_squared_norm": 6.0
+              }
+            }
+          },
+          {
+            "frequency_hz": 8000.0,
+            "phasor_real_imag": [
+              [
+                -0.06672668457054676,
+                0.04412841796841022
+              ],
+              [
+                -0.07046508789043827,
+                -0.03787231445349041
+              ],
+              [
+                0.07046508789082774,
+                -0.037872314452765427
+              ],
+              [
+                0.06672668457009329,
+                0.04412841796909628
+              ],
+              [
+                0.0704650878908274,
+                -0.03787231445276518
+              ],
+              [
+                -0.07046508789043814,
+                -0.037872314453490104
+              ]
+            ],
+            "amplitudes": [
+              0.07999854815040054,
+              0.07999775505269664,
+              0.07999775505269646,
+              0.07999854815040074,
+              0.07999775505269605,
+              0.07999775505269636
+            ],
+            "relative_steering_real_imag": [
+              [
+                1.0,
+                -1.1270508571786849e-17
+              ],
+              [
+                0.47355724620186873,
+                0.8807517850481786
+              ],
+              [
+                -0.9958403659532099,
+                -0.09100625162055248
+              ],
+              [
+                -0.3914412641737046,
+                -0.9202030953556378
+              ],
+              [
+                -0.9958403659532046,
+                -0.09100625162055269
+              ],
+              [
+                0.4735572462018694,
+                0.8807517850481745
+              ]
+            ],
+            "observed_phasor_squared_sum": 0.03839809866622877,
+            "candidate_profiles": {
+              "direction_u": {
+                "unknown_complex_alpha_real_imag": [
+                  -0.06672568704199304,
+                  0.04412896752459114
+                ],
+                "residual_squared_sum": 1.5015427448116865e-10,
+                "observed_phasor_squared_sum": 0.03839809866622877,
+                "relative_residual": 3.910461186799067e-09,
+                "candidate_squared_norm": 6.0
+              },
+              "direction_v": {
+                "unknown_complex_alpha_real_imag": [
+                  -0.06672568704199301,
+                  0.04412896752459117
+                ],
+                "residual_squared_sum": 1.5015427448321463e-10,
+                "observed_phasor_squared_sum": 0.03839809866622877,
+                "relative_residual": 3.910461186852351e-09,
+                "candidate_squared_norm": 6.0
+              }
+            }
+          }
+        ],
+        "time_domain_squared_sum": 2088.774314522743,
+        "two_tone_fit_residual_squared_sum": 4.229874794718565e-06,
+        "peak": 0.139129638671875
+      },
+      "quantization_max_abs_error": 1.5257951764324762e-05
+    }
+  },
+  "limits": "Mathematical synchronized, omnidirectional, equal-amplitude far-field model, no room, speech, noise or physical device. Each frequency has a separate unknown complex source coefficient in matching; the mono source reference is not used to fit direction. The 8 kHz equality concerns steady relative phase, not full-record finite envelopes. Six-channel playback may be downmixed or reordered by a browser/device and is not DOA evidence. No DOA estimator, sampled fractional-delay algorithm or formal listening study is run.",
+  "listening": "Start at low volume; no automatic playback. Six-channel playback is device-dependent."
+}

@@ -16,8 +16,22 @@ import numpy as np
 POSITIONS = np.array([0, 1, 3], dtype=int)  # half-wavelength grid units
 
 
+def _is_hermitian(matrix: np.ndarray) -> bool:
+    """Compare at a common safe scale; zero is exactly Hermitian."""
+    scale = max(float(np.max(abs(matrix.real))), float(np.max(abs(matrix.imag))))
+    if scale == 0:
+        return True
+    scaled = matrix.real / scale + 1j * (matrix.imag / scale)
+    return bool(np.allclose(scaled, scaled.conj().T, atol=1e-12, rtol=1e-12))
+
+
 def average_ordered_lags(covariance: np.ndarray, positions: np.ndarray = POSITIONS) -> dict[int, complex]:
-    """Average R[i,j] over equal signed differences p[i]-p[j]."""
+    """Average finite Hermitian R[i,j] over signed integer p[i]-p[j].
+
+    This is a reordering tool, not a PSD validator. The caller must establish
+    that an input described as a physical covariance has the required model.
+    Python integers preserve differences exceeding a fixed-width integer dtype.
+    """
     matrix = np.asarray(covariance, dtype=complex)
     coordinates = np.asarray(positions)
     if (matrix.shape != (coordinates.size, coordinates.size)
@@ -25,24 +39,38 @@ def average_ordered_lags(covariance: np.ndarray, positions: np.ndarray = POSITIO
             or np.any(~np.isfinite(matrix)) or np.any(~np.isfinite(coordinates))
             or np.any(coordinates != np.rint(coordinates))):
         raise ValueError("require finite square covariance and integer one-dimensional positions")
-    if not np.allclose(matrix, matrix.conj().T, atol=1e-12, rtol=1e-12):
-        raise ValueError("physical covariance must be Hermitian")
+    if not _is_hermitian(matrix):
+        raise ValueError("input statistics must be Hermitian")
+    coordinates = [int(p) for p in coordinates]
     grouped: dict[int, list[complex]] = {}
     for i, pi in enumerate(coordinates):
         for j, pj in enumerate(coordinates):
-            grouped.setdefault(int(pi-pj), []).append(matrix[i, j])
-    return {lag: complex(np.mean(values)) for lag, values in sorted(grouped.items())}
+            grouped.setdefault(pi-pj, []).append(matrix[i, j])
+    result = {}
+    for lag, values in sorted(grouped.items()):
+        # Preserve ordinary finite means. Only an overflowing accumulation
+        # needs division before summing; a finite average can still exist.
+        with np.errstate(over="ignore", invalid="ignore"):
+            mean = np.mean(values)
+        if not np.isfinite(mean):
+            mean = sum(value / len(values) for value in values)
+        if not np.isfinite(mean):
+            raise ValueError("lag average exceeds supported floating-point range")
+        result[lag] = complex(mean)
+    return result
 
 
 def virtual_toeplitz(lags: dict[int, complex], size: int) -> np.ndarray:
     """Fill a contiguous virtual ULA; this operation alone does not ensure PSD."""
-    if not isinstance(size, int) or size < 1:
+    if isinstance(size, (bool, np.bool_)) or not isinstance(size, (int, np.integer)) or size < 1:
         raise ValueError("size must be a positive integer")
     required = set(range(1-size, size))
     if not required.issubset(lags):
         raise ValueError("all signed lags in the requested contiguous segment are required")
     result = np.array([[lags[i-j] for j in range(size)] for i in range(size)], dtype=complex)
-    if not np.allclose(result, result.conj().T, atol=1e-12, rtol=1e-12):
+    if not np.all(np.isfinite(result)):
+        raise ValueError("lag values must be finite")
+    if not _is_hermitian(result):
         raise ValueError("lag values must satisfy conjugate symmetry")
     return result
 

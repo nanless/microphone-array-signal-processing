@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 3 章 · 阵列几何形态 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f713b32fbf06"><style>
+<meta name="source-digest" content="b9fc722eb2ad"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -90,6 +90,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-5c2c81e7e4">E03-12：从两次复数观测手算一个通道标定系数</a></li>
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-7546abddea">E03-13：互质阵有 17 个滞后，为什么虚拟矩阵不能直接取 9 维？</a></li>
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-14dd6cd96a">E03-14：1% 增益误差怎样变成后方残留？</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-7c5959552c">E03-15：参考麦带噪时，残差更小为什么仍会标错？</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-ef3f6c82d2">E03-16：几何始终满秩，为什么靠近平面仍很敏感？</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-45ef2e2df1">E03-17：允许每频源幅不同，多频还能分开混叠方向吗？</a></li>
 </ul>
 <div class="chap"><a href="04_doa-estimation.html">第 4 章 · 声源定位（DOA 估计）</a></div>
 <div class="chap"><a href="05_beamforming.html">第 5 章 · 波束形成</a></div>
@@ -138,6 +141,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-5c2c81e7e4">E03-12：从两次复数观测手算一个通道标定系数</a></li>
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-7546abddea">E03-13：互质阵有 17 个滞后，为什么虚拟矩阵不能直接取 9 维？</a></li>
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-14dd6cd96a">E03-14：1% 增益误差怎样变成后方残留？</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-7c5959552c">E03-15：参考麦带噪时，残差更小为什么仍会标错？</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-ef3f6c82d2">E03-16：几何始终满秩，为什么靠近平面仍很敏感？</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-45ef2e2df1">E03-17：允许每频源幅不同，多频还能分开混叠方向吗？</a></li>
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是正文第 3 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
@@ -327,8 +333,11 @@ G(f)=\frac{|B(f,0)|^2}{2}=2\sin^2p,\\
 <p>把相对参考麦的基线逐行写成矩阵 $\mathbf G\in\mathbb R^{(M-1)\times3}$，把有向时延排成 $\vec\tau\in\mathbb R^{M-1}$。式(3-1)给出</p>
 <p>$$\mathbf G\vec u=-c\vec\tau,\qquad
 \|\vec u\|_2=1.\tag{3-5}$$</p>
-<p>每行只测量 $\vec u$ 在一条基线上的投影。线阵的 $\mathbf G$ 秩为 1，只固定一个方向分量；若该投影的绝对值小于 1，剩余两分量在单位球上形成一圈方向；投影等于 ±1 时，这个圆才退化为相应的端射单点。非共线平面阵的秩为 2，固定平面内两个分量，法向分量一般还剩正负两个解；当平面内两分量平方和恰等于 1 时，法向分量为零，两解合并为平面内一个方向。非共面阵可使秩达到 3，在准确的有向 TDOA 下唯一确定方向向量；实际数据还要检查估计向量的长度、残差和条件数。</p>
+<p>每行只测量 $\vec u$ 在一条基线上的投影。线阵的 $\mathbf G$ 秩为 1，只固定一个方向分量；若该投影的绝对值小于 1，剩余两分量在单位球上形成一圈方向；投影等于 ±1 时，这个圆才退化为相应的端射单点。</p>
+<p>非共线平面阵的秩为 2，固定平面内两个分量，法向分量一般还剩正负两个解；当平面内两分量平方和恰等于 1 时，法向分量为零，两解合并为平面内一个方向。</p>
+<p>非共面阵可使秩达到 3，在准确的有向 TDOA 下唯一确定方向向量。<strong>唯一性回答有没有不同解，稳定性回答输入稍有变化时解会变多少。</strong> 一只麦只比阵列平面高出很小距离时，法向时差依然提供第三个独立约束，却可能小到容易被测量误差影响。因此实际数据还要检查估计向量的长度、残差和条件数。</p>
 <p>例如水平阵测得 $u_x=0.3,u_y=0.4$，则 $u_z^2=1-0.3^2-0.4^2=0.75$，上下两解为 $u_z=\pm\sqrt{0.75}$。将更多麦加在同一水平面上，不会使两解的时延不同；加入已知高度的第四麦才会提供法向投影。E03-10 给出完整时延数字。</p>
+<p>E03-16 再把第四麦的高度由 40 mm 缩小到 4 mm、0.4 mm：三个布局始终满秩，但无单位约束线性逆的法向分量敏感性依次放大。若平面内投影已经准确，单位长度本身可给出法向分量的绝对值，额外时差还用于判断正负；带噪时不能把线性逆的分量变化直接当成完整方向的角误差。</p>
 <p>这里假设已经取得有向传播时差。如果只观测一个频点的相位，相位还会模 $2\pi$ 重复，满秩也不能自动排除这种窄带歧义；§3.2.2 将单独检查它。</p>
 <p>端射分辨率下降是另一类问题。对麦 1 位于 $x=0$、麦 2 位于 $x=d$ 的排列，显式使用 $\tau_{12}=t_1-t_2=d\sin\theta/c=-\tau_{21}$，则 $\theta\to\pm90°$ 时导数趋近于零，同样的时延误差会对应更大的角度区间；这与 §2.6 CRB 中 $\cos\theta\to0$ 时下界发散一致。</p>
 <span id="sec-4" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-83d5019885">算例 3-2 端射灵敏度——同一个 10 μs 误差在不同方向的影响</h3>
@@ -368,7 +377,7 @@ G(f)=\frac{|B(f,0)|^2}{2}=2\sin^2p,\\
 <p><strong>挡板效应必须纳入导向模型</strong>：麦克风装在刚性圆柱或球体上时，绕射和散射会改变跨通道的幅相响应。某些频段和方向上，它能增加可辨的幅相差；另一些位置也可能出现阴影或共振。因此应使用相应的解析散射模型或实测阵列流形，不能把挡板一概等效为固定倍数的“虚拟孔径”。</p>
 </li>
 <li>
-<p><strong>麦克风数量没有通用最优值</strong>：增加麦克风通常能提高统计稳定性和可控自由度，但收益取决于是否同时增加孔径、噪声相关性、带宽、算法和计算预算。对独立等功率自噪声，理想 DSB 的 WNG 为 $10\log_{10}M$，麦数翻倍增加约 3 dB；这只是特定噪声模型下的基准，不能单独决定产品所需的麦克风数量。</p>
+<p><strong>麦克风数量没有通用最优值</strong>：增加麦克风通常能提高统计稳定性和可控自由度，但收益取决于是否同时增加孔径、噪声相关性、带宽、算法和计算预算。对独立等功率自噪声，目标精确对齐的理想等权 DSB 有线性白噪声增益 $\mathrm{WNG}=M$，对应 $\mathrm{WNG}_{\rm dB}=10\log_{10}M$；麦数翻倍使这个信噪比倍率的分贝值增加约 3 dB。这只是特定噪声模型下的基准，不能单独决定产品所需的麦克风数量。</p>
 </li>
 </ol>
 <h3 id="sec-3-2-2">3.2.2 算例 3-3：6 麦圆环的数字</h3>
@@ -394,6 +403,8 @@ f_{\rm check}&=\frac{c}{2d}=\frac{343}{2\times0.0375}\\
 <p>这里 $\mathbb Z$ 表示整数集。这个判据比较完整阵列，不只比较一对麦；还必须让 $\vec u,\vec v$ 属于允许的方向域。E03-09 在 8 kHz 明确构造一对水平方向，并逐通道核对相位整周。</p>
 <p>阵列平面上下两侧的镜像时延歧义与上述单侧方向域内的窄带相位混叠是不同问题，即使频率低于 4.6 kHz 也仍可能存在。</p>
 <p>可选措施包括降低高频子带权重、采用非均匀间距以减弱周期性歧义，以及定位时主要使用无混叠频段、增强时再利用高频信息。</p>
+<p><strong>多频比较需要允许源幅度随频率变化。</strong> 已知几何与通道响应时，同一方向在不同频点对应不同的相对导向。判断候选方向，不能要求其预测的绝对谱幅与观测相等：声源每个频点本来就可以有不同的未知复幅度。应先在每个频点拟合这个公共复幅度，再检查剩下的跨通道误差；式(3-19)给出这种消元计算。</p>
+<p>E03-17 沿用 E03-09 的两个方向，证明它们在 8 kHz 完全重合、在 4 kHz 可分；同时给出两频仍共同混叠的 ULA 反例。多频能否提供新信息取决于实际频率、几何和允许的方向域，不能只数频点的个数。这个比较假定通道响应已知；未知通道相位能否被联合估计，另见 §3.4.1。</p>
 <p><strong>第 3 步：波长与孔径的比</strong>。阵列孔径（阵列的最大尺寸）$D = 2r = 7.5$ cm。</p>
 <ul>
 <li>1 kHz：波长 $\lambda = c/f = 343/1000 = 0.343$ m $= 34.3$ cm，孔径比 $D/\lambda = 0.075/0.343 \approx 0.22$——<strong>整个阵列只有约五分之一波长大小</strong>；</li>
@@ -449,7 +460,7 @@ B(f,\theta;\theta_0)&=\frac1M\sum_{m=0}^{M-1}e^{\mathrm j\psi_m}.
 <p><strong>这两个结果怎么读</strong>：1 kHz 下精确阵因子在可视范围内没有 −3 dB 交点，只能说明波束方向选择性很弱；不能把近似式给出的 145° 当成实际 HPBW。8 kHz 下近似估计约为 18.1°，精确离散阵因子的半功率求交为 18.73°，近似低估约 3.2%。主瓣确实收窄，但小阵列的有限阵元效应仍可看见。只要几何和转向不变，处在窄主瓣近似的适用区间时，频率减半会使 HPBW 约增大一倍。</p>
 <p>8 kHz 时 $d/\lambda\approx0.700>1/2$，因此这个阵列不能保证任意转向都无栅瓣。当前正横转向的等高条件要求 $\sin\theta=\pm\lambda/d\approx\pm1.429$，超出物理范围，所以本例没有等高栅瓣；转向 $60°$ 时则可能出现另一个等高方向。频率高、主瓣窄和没有混叠不是同一件事，E03-08 会分别输出这些检查。</p>
 <p><img alt="图9 麦克风数量、理想白噪声增益与数据项规模" src="../figures/fig09_tradeoffs.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图 9（a）在目标精确对齐、各通道噪声独立同方差的条件下，按 $10\log_{10}M$ 画出理想 DSB 白噪声增益。（b）分别按 $M$、$M(M-1)/2$ 和 $M^2$ 计算输入通道、无序麦对与完整协方差矩阵的元素数量。右图的纵轴采用以 2 为底的对数刻度。这些数量用于说明数据结构怎样随 $M$ 增长，不等同于具体实现的运行时间、功耗或价格。</p>
+<p>图 9（a）在目标精确对齐、各通道噪声独立同方差的条件下，按 $\mathrm{WNG}_{\rm dB}=10\log_{10}M$ 画出理想等权 DSB 白噪声增益的分贝值。（b）分别按 $M$、$M(M-1)/2$ 和 $M^2$ 计算输入通道、无序麦对与完整协方差矩阵的元素数量。右图的纵轴采用以 2 为底的对数刻度。这些数量用于说明数据结构怎样随 $M$ 增长，不等同于具体实现的运行时间、功耗或价格。</p>
 <blockquote>
 <p>§3.3 转向非均匀稀疏阵，说明怎样从差分协同阵构造连续虚拟统计量。</p>
 </blockquote>
@@ -463,6 +474,32 @@ B(f,\theta;\theta_0)&=\frac1M\sum_{m=0}^{M-1}e^{\mathrm j\psi_m}.
 <p>这 23 个数是连续的<strong>有符号差分滞后</strong>，不是 23 路彼此独立的物理快拍。按连续单侧滞后 $0,\ldots,L$ 可组织成 $L+1$ 维虚拟矩阵：均匀例为 6 维，嵌套例为 12 维；具体构造仍要检查模型和矩阵性质。</p>
 <p>在模型和秩条件满足时，部分协同阵方法可能估计多于物理麦数的非相干源。可分辨源数仍取决于连续单侧滞后长度、重构方法、平滑后的矩阵维数、信噪比和快拍数，不能直接等同于 23。</p>
 <p>还要分清三种长度。物理位置从 0 到 $L$ 的跨度是 $L$；有符号差集从 $-L$ 到 $L$ 的跨度是 $2L$；以 $0,\ldots,L$ 为索引的虚拟协方差所对应的 ULA 孔径仍是 $L$。本例嵌套阵物理跨度本来就是 11，连续虚拟索引让这段孔径可按更密集的二阶统计结构利用，并没有把麦克风移到更远处。</p>
+<p><strong>比较布局时固定共同条件。</strong> 图 10 的三种布局有不同物理跨度，不能用它们的差集数量直接比较常规波束宽度。本书另取六麦、物理跨度均为 0.11 m、4 kHz、自由场全向远场模型、水平正横转向及每路 $1/6$ 的等权 DSB，按式(3-8)寻找最近的半功率交点。传感器自噪声独立、等功率且与源不相关。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">同孔径六麦布局，$x$ 坐标 / m</th>
+<th scope="col" style="text-align: right;">精确 HPBW / °</th>
+<th scope="col" style="text-align: right;">线性 WNG</th>
+<th scope="col" style="text-align: right;">$\mathrm{WNG}_{\rm dB}$ / dB</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ULA：0、0.022、0.044、0.066、0.088、0.11</td>
+<td style="text-align: right;">33.867</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">7.782</td>
+</tr>
+<tr>
+<td>嵌套：0、0.01、0.02、0.03、0.07、0.11</td>
+<td style="text-align: right;">33.869</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">7.782</td>
+</tr>
+</tbody>
+</table></div>
+<p>两行的常规主瓣宽度在本条件下很接近；白噪声增益相同，是因为目标响应为 1、权重平方和同为 $6(1/6)^2=1/6$。连续滞后结构不同，并不必然使等权 DSB 的主瓣大幅改变。这里没有比较旁瓣、混叠角域、有限样本协同阵估计或房间定位误差，不能由这个表推出两种阵列所有任务性能相同。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/chapter03_experiments.py">第 3 章补充实验</a>提供这组固定条件复算。</p>
 <p>差分集合只给出虚拟位置的候选索引。要把这些位置用于子空间估计，还需要从协方差中构造相应的二阶统计量。</p>
 <span id="sec-u-20a0d88f74" class="anchor-alias" aria-hidden="true"></span><span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-3-3-2">3.3.2 物理协方差怎样给出虚拟滞后</h3>
 <p>考虑一个固定频点：远场源两两不相关、均值为零；所有通道使用相同理想响应；传感器噪声与源不相关，跨通道独立且方差同为 $\sigma_n^2$。令 $P_k$ 是第 $k$ 个源在参考麦的功率，$\vec b_{ij}=\vec r_i-\vec r_j$ 是基线，$k_f=2\pi f/c$ 是波数、单位 rad/m，则</p>
@@ -498,7 +535,7 @@ r[-\ell]&=r[\ell]^*.
 <p>前面的理想公式假设各通道增益和相位一致、阵元位置准确，并忽略壳体散射、声学耦合和电串扰。实际偏差会使导向模型与观测不匹配。本节把常见偏差写进模型，再说明怎样测量和补偿。</p>
 <span id="sec-11" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-3-4-1">3.4.1 增益相位自校准：利用未知声源的多位置观测</h3>
 <p>先区分已知方向标定与未知方向联合估计。前者用已知几何和校准声源求通道误差；后者还要估计声源方向，必须先问哪些未知量能由观测分开。交替优化即使收敛，也不能替代可辨识性检查。</p>
-<p>在一个固定频点，令 $q$ 表示依次录制的声源场景、$t$ 表示该场景中的帧、$m=0,\ldots,M-1$ 表示通道。假设每个场景只有一个远场窄带源，各场景共用不变的通道复增益；把模型和本节使用的未归一化复数残差平方和写在一起：</p>
+<p>在一个固定频点，令 $q=1,\ldots,Q$ 表示依次录制的声源场景、$t=1,\ldots,T$ 表示该场景中的帧、$m=0,\ldots,M-1$ 表示通道。这里为简明取每个场景相同的帧数；$\boldsymbol\theta\in\mathbb R^Q$ 存各场景的方向，$\mathbf S\in\mathbb C^{Q\times T}$ 存源复谱，$\vec g\in\mathbb C^M$ 存通道复增益，$\vec x_{qt},\vec n_{qt}\in\mathbb C^M$ 分别是观测和噪声。假设每个场景只有一个远场窄带源，各场景共用不变的通道复增益；把模型和本节使用的未归一化复数残差平方和写在一起：</p>
 <p>$$\begin{aligned}
 g_m(f)&=[1+\Delta g_m(f)]e^{\mathrm j\Delta\phi_m(f)},\\
 \vec x_{qt}&=\operatorname{diag}(\vec g)\vec a(\theta_q)s_{qt}+\vec n_{qt},\\
@@ -518,6 +555,9 @@ g'_ma_m(\theta'_q)
 \end{aligned}$$</p>
 <p>这里改动的是每个方向的<strong>正弦值</strong>，不是把每个角度简单加上同一个度数；$m=0$ 时仍有 $g'_0=g_0=1$。因此，即使录到多个不同的未知方向，只要任意复增益的相位斜率也未知，这两套参数仍会逐帧产生完全相同的无噪声观测。</p>
 <p>可用下面的四麦小例子检查：$d=4$ cm、$f=1$ kHz、$c=343$ m/s，原方向是 $[-40°,0°,35°]$，令 $\delta=0.15$，新方向约为 $[-29.524°,8.627°,46.351°]$，均处于 $[-60°,60°]$。同时给第 $m$ 路增益乘上 $e^{-\mathrm j kmd(0.15)}$，第 1 路相位就相对原值改变约 $-6.297°$；两套模型逐样本预测的最大差在本书双精度合成中约为 $7.0\times10^{-16}$。这个差是浮点舍入量级，不是定位误差，也不说明哪一套方向是真值。</p>
+<p><strong>跨频约束是否能解除这项歧义，取决于通道模型。</strong> 若每个频点都允许任意未知的 $g_m(f)$，则每频都能乘上 $e^{-\mathrm j2\pi fmd\delta/c}$，共同的方向正弦偏移仍能被吸收。增加频点本身没有限制这项自由度。</p>
+<p>若有依据认为同一个未知复增益在 $f_1,f_2$ 两频间保持不变，那么两种补偿相位也必须相等，即 $(f_2-f_1)md\delta/c\in\mathbb Z$。ULA 含相邻基线 $m=1$ 时，非零偏移的最小周期为 $c/[d|f_2-f_1|]$。例如 $d=0.04$ m、两频相差 1 kHz，周期为 8.575，大于正弦方向域中任何两点的最大差 2，因此可排除这项非零斜坡。这个结论依赖跨频复增益确实不变；不能用于任意频率响应。</p>
+<p>若通道未知量含固定的物理时间偏移 $\epsilon_m$，模型为 $g_m(f)=h_m e^{-\mathrm j2\pi f\epsilon_m}$，则改成 $\epsilon'_m=\epsilon_m+md\delta/c$ 又能在全部频率吸收方向偏移。已知通道响应下的多频方向比较见 E03-17；联合校准还需要可信的外部时钟、相位锚或其他约束。解除这一项歧义，也不等于解除几何镜像和所有空间混叠。</p>
 <p>导向矢量 $\vec{a}(\theta)$ 的每个分量都会乘上这个误差，不同通道的相对误差可能使 MUSIC 谱峰变宽或偏移，也可能使波束零陷变浅。若所有通道只有同一个非零复增益，则归一化后的相对流形不变；共同尺度不是方向失配。麦克风阵列实测校准的一个原始例子见 <a href="https://doi.org/10.1109/TSA.2004.834459" title="citation">Sachar、Silverman 与 Patterson 2005，IEEE Transactions on Speech and Audio Processing，13(1):42–52</a>。</p>
 <p><strong>已知方向时先走通最小二乘。</strong> 对某一待校准通道，令 $z_i$ 是由已知方向和可靠参考信号算出的理想复谱，$y_i$ 是该通道实测复谱，$i=1,\ldots,Q$ 标识不同帧或校准条件。模型为 $y_i=gz_i+n_i$，估计问题是</p>
 <p>$$\begin{aligned}
@@ -526,7 +566,8 @@ g'_ma_m(\theta'_q)
 \hat g&=\frac{\sum_i z_i^*y_i}{\sum_i|z_i|^2}.
 \end{aligned}\tag{3-12}$$</p>
 <p>将平方展开为 $|y_i|^2-gz_iy_i^*-g^*z_i^*y_i+|g|^2|z_i|^2$，收集关于 $g$ 的二次项，最小点满足 $g\sum|z_i|^2=\sum z_i^*y_i$。分母是校准激励能量，必须为正；零能量时应拒绝估计。E03-12 从两个复数观测算出 $\hat g=0.94+0.5\mathrm j$，并逐项核对残差。</p>
-<p>这个公式假设 $z_i$ 可视为已知输入。若参考麦本身含显著噪声，直接用带噪 $X_m/X_0$ 或把 $X_0$ 当精确输入会引入误差变量问题，尤其在参考能量很小时容易不稳定。实测需要足够激励、多帧统计和独立复测；最小二乘教学题不证明一般录音上的无偏性。</p>
+<p><strong>原始噪声与拟合残差需要分开。</strong> 模型中的 $\vec n=\vec y-g\vec z$ 使用真实增益；拟合残差 $\vec r=\vec y-\hat g\vec z$ 使用估计增益。式(3-12)使 $\vec z^H\vec r=0$，因为最小点已把输入方向上的可拟合部分吸收到系数中；它并不要求有限记录恰好满足 $\vec z^H\vec n=0$。E03-12 显示原始噪声的内积为 −0.3，而拟合残差的内积为零。</p>
+<p>这个公式假设 $z_i$ 可视为已知输入。若参考麦本身含显著噪声，直接用带噪 $X_m/X_0$ 或把 $X_0$ 当精确输入会引入误差变量问题，尤其在参考能量很小时容易不稳定。E03-15 用四个等权观测展示：真实增益为 2，带噪输入的最小二乘系数却为 1.6，并且训练残差比代入真增益时更小。重复同一组记录不会改变这个系数。实测需要足够激励、参考噪声模型、多帧统计和独立复测；这些条件不能省略为“数据够多就无偏”。</p>
 <p><strong>未知方向不等于完全无锚。</strong> <a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2004/06/2004-ivantash-icme.pdf">Tashev《Gain Self-Calibration Procedure for Microphone Arrays》ICME 论文，2004，§2–3</a>先估方向，再利用该方向与各路接收能量更新<strong>增益</strong>；其简化模型把位置视为足够准确，并把通道响应修正简化为增益修正。<a href="https://doi.org/10.1007/BF01201215">Weiss 与 Friedlander《Eigenstructure Methods for Direction Finding with Sensor Gain and Phase Uncertainties》，1990，摘要</a>讨论方向与各传感器增益、相位的联合估计。方法名称或论文摘要都不能使上面这个任意复增益 ULA 反例自动消失；必须核对各自的模型和额外约束。</p>
 <p><strong>本书的受锚约束教学演示</strong>给出一条可运行的最小路径，而非复现上述论文算法。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/examples/self_calibration_demo.py">演示入口</a>生成四麦、三个依次录制的单源场景，每场景 48 帧单频复谱；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/core/calibration.py">估计实现</a>固定 $g_0=1$，还要求从观测之外独立测得相邻第 1 路相对第 0 路的相位，增益幅度仍由数据估计。角度限制在 $[-60°,60°]$，相邻麦在该角域内不得相位折叠。这个外部相位锚约束住上面的共同相位斜率；如果锚本身错了，数据残差并不能替它纠错。</p>
 <p>实现最小化式(3-11)的 $J$：固定增益时先对每帧未知源复谱做最小二乘消元，在角域内用网格和局部搜索更新每个场景的方向；固定方向和源复谱时，再用复数最小二乘更新通道增益，并将第 1 路相位约束在外部测量值上。它记录初始与每轮目标值、轮数和停止状态；目标值停止下降或达到迭代上限，不等于找到全局最优。</p>
@@ -628,7 +669,8 @@ J(\vec v)=\|\mathbf C\vec v-\vec x\|_2^2
 <p>若按同一采样索引比较两节点的物理采样时间，50 ppm、标称 1 小时对应的时间差大小为 $0.18/1.00005\approx0.179991$ s；这与累计采样数差的换算口径不同。该表只作数量级分析，不替代设备时钟的温漂与统计测量。</p>
 <p>增益失配一行的两个 dB 数有不同分母。−40 dB 是后方残差相对一只麦克风输入幅度的电平；−31 dB 先把前方响应归一到 0 dB，再读后方零陷的相对电平。读波束图时应使用后一个口径，不能把两数当成同一零陷深度。</p>
 <p>位置误差造成的相位偏差随频率增大；增益漂移、耦合和噪声则未必遵循同一单调关系。依赖精确相消的零陷和超指向设计通常最敏感。</p>
-<p>固定一体式阵列可在受控条件下标定相对通道响应；是否出厂写入补偿系数，取决于具体设备和流程。例如，<a href="https://wiki.analog.com/resources/tools-software/sigmastudio/toolbox/adialgorithms/offlinemicrophonematch">ADI 的 SigmaStudio 离线麦克风匹配说明</a>只涉及两路输入的电平匹配；<a href="https://www.ti.com/lit/pdf/SLAAEH6">TI 的 TAC5x1x 系列应用说明 SLAAEH6，2024</a>列出增益和相位校准功能。这些具体功能不能直接证明某款设备完成了几何或全频带阵列流形标定。</p>
+<p>固定一体式阵列可在受控条件下标定相对通道响应；是否出厂写入补偿系数，取决于具体设备和流程。例如，<a href="https://wiki.analog.com/resources/tools-software/sigmastudio/toolbox/adialgorithms/offlinemicrophonematch">ADI 的 SigmaStudio 离线麦克风匹配说明</a>只涉及两路输入的电平匹配。</p>
+<p><a href="https://www.ti.com/lit/pdf/SLAAEH6">TI 的 TAC5x1x 系列应用说明 SLAAEH6，2024，§1 与图 1-1</a>描述两路模数转换器（Analog-to-Digital Converter，ADC）输入与四路脉冲密度调制（Pulse Density Modulation，PDM）数字麦输入，经 6 路到 4 路的多路选择器（Mux）选择送入输出处理路径。六个候选输入不等于同时输出六路独立采集。器件的增益调整与按调制器时钟周期设置的通道延迟，可用于通道匹配；时间延迟产生的相位随频率变化，不能当成任意频率无关的固定相位旋转。这些具体功能不能直接证明某款设备完成了几何或全频带阵列流形标定。</p>
 <p>分布式阵列还需处理节点位置、时钟偏移和采样率漂移，并根据设备移动或时钟变化决定是否在线更新。</p>
 <p><strong>一种可核验的工程流程</strong>分三步：</p>
 <ol>
@@ -759,7 +801,7 @@ J(\vec v)=\|\mathbf C\vec v-\vec x\|_2^2
 <p>这不证明有限样本误差已经消失，也不是恢复了原始麦信号。若 $X$ 用 V 表示，直接滞后矩阵 $\mathbf T$ 的单位为 V²，$\mathbf R_{\rm ss}$ 的单位则为 V⁴；两者不能直接把特征值当作同一种声功率来比较。<a href="https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/estimation/coarray.py" title="citation">固定版 doatools 的 <code>CoarrayACMBuilder1D</code></a>分别提供直接重排与空间平滑模式，调用时应明确模式；原始方法和构造条件见 <a href="https://doi.org/10.1109/TSP.2010.2049264" title="citation">Pal 与 Vaidyanathan 2010 第 IV 节</a>。</p>
 <p><strong>相干源为什么不能按同一滞后直接解释？</strong> 另取物理 ULA 位置 $p=\{0,1,2\}$、两个方向仍为 $0°$ 与 $30°$，但两源现在播放同一个单位功率复波形，且没有噪声。两个导向向量相加得到 $\vec v=[2,1+\mathrm j,0]^\top$，所以 $\mathbf R=\vec v\vec v^H$。同为滞后 1 的两个元素变成 $R_{10}=2+2\mathrm j$、$R_{21}=0$，已经不是同一个总体值。把它们平均不能恢复“两个互不相关源各有单位功率”的模型。</p>
 <p>先手算这些外积与滞后，再运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/coarray_covariance_exercise.py">E03-07 原例</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/chapter03_experiments.py">第 3 章补充实验</a>核对原例、平滑对照和相干反例。这些都是窄带统计计算，没有生成四通道声音，也没有证明三只麦在任意 SNR 或快拍数下都能分辨四个声源。</p>
-<p>下面 E03-08～14 使用同一个补充实验入口：</p>
+<p>下面 E03-08～17 使用同一个补充实验入口：</p>
 <pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch03.chapter03_experiments
 </code></pre>
 <p>题干与答案中未特别说明的声速均为 343 m/s。浮点复算保留中间精度，表格最后舍入；没有输入随机噪声的例子，不报告定位准确率或实测信噪比。</p>
@@ -845,7 +887,11 @@ a&=\sqrt{1-b^2}\approx0.75117439,\\
 &=4.7+2.5\mathrm j.
 \end{aligned}$$</p>
 <p>所以 $\hat g=(4.7+2.5\mathrm j)/5=0.94+0.5\mathrm j$。第二项乘的是 $z_2^*=-2\mathrm j$；忘记共轭就会得到另一个错误问题。</p>
-<p>预测值为 $[0.94+0.5\mathrm j,-1+1.88\mathrm j]^\top$，残差 $\vec y-\hat g\vec z=[0.16,-0.08\mathrm j]^\top$，平方和为 $0.16^2+0.08^2=0.032$。两次误差与输入并非恰好正交，因此估计值和真实增益相差 −0.06；有限观测不会自动返回真值。</p>
+<p>预测值为 $[0.94+0.5\mathrm j,-1+1.88\mathrm j]^\top$，拟合残差 $\vec r=\vec y-\hat g\vec z=[0.16,-0.08\mathrm j]^\top$，平方和为 $0.16^2+0.08^2=0.032$。</p>
+<p><strong>参考答案：原始误差与拟合残差的两种内积。</strong> 题干加入的原始误差是 $\vec n=[0.1,-0.2\mathrm j]^\top$，它与输入的内积为</p>
+<p>$$\vec z^H\vec n=0.1+(-2\mathrm j)(-0.2\mathrm j)=-0.3.$$</p>
+<p>由 $\vec y=g\vec z+\vec n$ 代入式(3-12)，增益误差为 $\hat g-g=(\vec z^H\vec n)/(\vec z^H\vec z)=-0.3/5=-0.06$。有限观测的原始误差并非恰好正交，所以不会自动返回真值。</p>
+<p>拟合残差则满足 $\vec z^H\vec r=0.16+(-2\mathrm j)(-0.08\mathrm j)=0$。这是本题最小二乘最优点的正交条件，与原始误差内积不为零并不矛盾。不能用“残差和输入正交”证明估计增益等于真实物理增益。</p>
 <p>零激励时分母为零，没有任何信息能区分候选 $g$，代码应拒绝估计。很弱的激励也会使相对误差敏感；本题没有对带噪参考、源方向未知或随方向变化的壳体响应作通用校准。得到一个非零系数后，还应在未参与拟合的方向与频点复测。</p>
 <h3 id="sec-u-7546abddea">E03-13：互质阵有 17 个滞后，为什么虚拟矩阵不能直接取 9 维？</h3>
 <p>图 10 的互质阵位置为 $\{0,3,4,6,8,9\}$，单位为某个固定设计频率的半波长。枚举全部 36 个有序麦对，求不同滞后集合、重数、缺失位置与连续中心段。和六麦 ULA、六麦嵌套阵比较物理跨度及可直接填成的连续虚拟矩阵维数。</p>
@@ -904,11 +950,331 @@ x_2(t)&=1.01[F(t-b-\tau)+B(t-b)].
 <p><a href="audio/dma_calibration_corrected.wav">播放已知增益校正输出</a><audio class="audio-sample" controls preload="none" aria-label="播放已知增益校正输出" src="audio/dma_calibration_corrected.wav">请使用上方 WAV 链接下载。</audio></p>
 <p><strong>参考答案：稳定段计算。</strong> 只在前段 $[0.15,0.65)$ s 和后段 $[0.95,1.45)$ s 测量，避开包络与传播边界。四文件使用共同导出增益 1，不分别归一化。1 kHz 理想前方幅度相对输入为 $2\sin(2\pi\times1000\times0.01/343)=0.364321$，所以目标输出幅度约为 $0.25\times0.364321=0.091080$。</p>
 <p>令 $p=2\pi\times1000\times\tau$，失配后的前方比为 $|1-1.01e^{-\mathrm j2p}|\approx0.3663$。后方对齐后仍剩 $|1-1.01|=0.01$ 倍输入，即幅度 0.0025，相对一只麦的后方输入是 −40 dB。这个后方纯音频率与前方不同，因此不能把跨段幅度比称为同一频率波束图的前后比；同频率 −31.3 dB 零陷口径见算例 3-1。</p>
-<p>理想真值校正使后方数学残差为零，校正输出与目标参考相同；PCM 读回还要检查量化、通道顺序和文件摘要。有限噪声、温漂、方向相关响应与估计误差都未进入本题，不能据此宣称产品可实现无限深零陷。先调低音量再试听；读回与浏览器加载不等于标准主观评价。</p>
+<p><strong>参考答案：浮点生成值与实际 PCM 分开核对。</strong> 补充实验入口真实读取上述四个已发布 WAV，核对主清单中的生成源及 WAV 摘要、16 kHz、每通道 32000 点和共同增益 1。前、后评分区间分别为 $[2400,10400)$、$[15200,23200)$，每段分母均为 8000 点。对该段频率拟合余弦与正弦系数，取两系数平方和的平方根作为幅度，不把整个段的混合功率当作纯音幅度。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">输出与评分段</th>
+<th scope="col" style="text-align: right;">合成浮点幅度</th>
+<th scope="col" style="text-align: right;">PCM 实读幅度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>目标参考／理想校正，前段 1 kHz</td>
+<td style="text-align: right;">0.09108024</td>
+<td style="text-align: right;">0.09107869</td>
+</tr>
+<tr>
+<td>增益失配输出，前段 1 kHz</td>
+<td style="text-align: right;">0.09156864</td>
+<td style="text-align: right;">0.09156944</td>
+</tr>
+<tr>
+<td>增益失配输出，后段 1.6 kHz</td>
+<td style="text-align: right;">0.00250000</td>
+<td style="text-align: right;">0.00249743</td>
+</tr>
+<tr>
+<td>目标参考／理想校正，后段 1.6 kHz</td>
+<td style="text-align: right;">0／浮点舍入量级</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table></div>
+<p>浮点生成的校正输出与目标参考全段最大绝对差约为 $2.8\times10^{-17}$；两文件 PCM 重读的对应采样值完全相同。这是本题真值增益与确定性源模型的结果。有限噪声、温漂、方向相关响应与估计误差都未进入本题，不能据此宣称产品可实现无限深零陷。先调低音量再试听；读回与浏览器加载不等于标准主观评价。</p>
+<p><a id="e03-15"></a></p>
+<h3 id="sec-u-7c5959552c">E03-15：参考麦带噪时，残差更小为什么仍会标错？</h3>
+<p>把一个真实通道增益为 $g=2$ 的系统写成 $y_i=2s_i$；输出暂不加噪声。校准者无法直接取得干净输入 $s_i$，只能测得带噪参考 $z_i=s_i+e_i$。用下面四个等权观测按式(3-12)估计增益。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">观测 $i$</th>
+<th scope="col" style="text-align: right;">干净输入 $s_i$</th>
+<th scope="col" style="text-align: right;">参考噪声 $e_i$</th>
+<th scope="col" style="text-align: right;">可用参考 $z_i$</th>
+<th scope="col" style="text-align: right;">输出 $y_i$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.5</td>
+<td style="text-align: right;">1.5</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr>
+<td>2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">−0.5</td>
+<td style="text-align: right;">0.5</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr>
+<td>3</td>
+<td style="text-align: right;">−1</td>
+<td style="text-align: right;">0.5</td>
+<td style="text-align: right;">−0.5</td>
+<td style="text-align: right;">−2</td>
+</tr>
+<tr>
+<td>4</td>
+<td style="text-align: right;">−1</td>
+<td style="text-align: right;">−0.5</td>
+<td style="text-align: right;">−1.5</td>
+<td style="text-align: right;">−2</td>
+</tr>
+</tbody>
+</table></div>
+<p>所有幅度采用相同的示意单位，通道增益无量纲。求 $\hat g$、拟合残差及平方和，检查参考与拟合残差是否正交；再将真实增益 2 直接乘可用参考 $z$，比较两种预测的残差。若把四个观测完整重复 100 次，结果会改变吗？</p>
+<p><strong>参考答案：分子中的噪声项相消，分母中的噪声能量没有相消。</strong> 本题 $\sum s_i e_i=0$、$\sum s_i^2=4$、$\sum e_i^2=1$，因此</p>
+<p>$$\begin{aligned}
+\vec z^H\vec y
+&=1.5\times2+0.5\times2+(-0.5)\times(-2)+(-1.5)\times(-2)\\
+&=8,\\
+\vec z^H\vec z
+&=1.5^2+0.5^2+(-0.5)^2+(-1.5)^2=5,\\
+\hat g&=8/5=1.6.
+\end{aligned}$$</p>
+<p>若能使用干净 $s$，分子仍为 8、分母为 4，才能得到 2。带噪参考的分母多出了噪声能量，普通最小二乘却把全部参考能量视为真实输入，因而本题的系数向零缩小。</p>
+<p><strong>参考答案：正交残差没有证明物理参数正确。</strong> $1.6\vec z=[2.4,0.8,-0.8,-2.4]^\top$，所以</p>
+<p>$$\begin{aligned}
+\vec r&=\vec y-1.6\vec z=[-0.4,1.2,-1.2,0.4]^\top,\\
+\|\vec r\|_2^2&=0.16+1.44+1.44+0.16=3.2,\\
+\vec z^H\vec r&=-0.6+0.6+0.6-0.6=0.
+\end{aligned}$$</p>
+<p>代入真实 $g=2$，但仍用带噪 $z$ 作预测，误差为 $\vec y-2\vec z=-2\vec e=[-1,1,-1,1]^\top$，平方和为 4。最小二乘系数 1.6 的训练残差确实更小；它最小化的是“从带噪参考预测输出”的误差，没有恢复题设的干净输入物理增益。</p>
+<p><strong>参考答案：更多观测需要正确的参考模型。</strong> 完整重复四点 100 次，分子和分母同时乘以 100，比例仍为 1.6。本题四点恰好穷举 $s=\pm1$、$e=\pm0.5$ 的独立等权组合，故有限二阶量与这个离散总体的二阶量相同。</p>
+<p>更一般地，设 $z=s+e$、$y=gs$，$s,e$ 为零均值且不相关，$P_s=E|s|^2>0$、$P_e=E|e|^2$。展开总体二阶量得到</p>
+<p>$$\begin{aligned}
+E[z^*y]&=gE[(s+e)^*s]=gP_s,\\
+E|z|^2&=P_s+P_e,\\
+g_{\rm ratio}
+&=\frac{E[z^*y]}{E|z|^2}
+=\frac{gP_s}{P_s+P_e}.
+\end{aligned}\tag{3-17}$$</p>
+<p>$g_{\rm ratio}$ 是总体二阶比值；适当的大样本条件下，样本最小二乘比例趋向这个量。不能把“总体期望之比”当作任意有限记录中“比例的期望”。当 $P_e=0$ 时恢复 $g$；本题 $P_s=1,P_e=0.25$，给出 $2/1.25=1.6$。若参考噪声与源相关，或输出噪声也与参考相关，分子及分母还会有额外交叉项，上式不再适用。</p>
+<p>这个反例不要求实际麦噪声只有两个取值，也没有证明所有估计都会向零偏；它展示普通最小二乘把有误差的参考视作精确输入时的一种明确失效。增加激励、多帧统计和独立复测都有价值，但仍须处理参考噪声与模型误差。</p>
+<p><a id="e03-16"></a></p>
+<h3 id="sec-u-ef3f6c82d2">E03-16：几何始终满秩，为什么靠近平面仍很敏感？</h3>
+<p>四只同步理想麦的位置为 $(0,0,0),(0.04,0,0),(0,0.04,0),(0,0,h)$ m，以第一只为参考。真方向为 $\vec u=(0.3,0.4,\sqrt{0.75})^\top$。分别取 $h=0.04,0.004,0.0004$ m，求基线矩阵的秩和二范数条件数、第三条相对 TDOA，以及上下镜像方向在这条 TDOA 上的间隔。</p>
+<p>再只给第三条 TDOA 加上 $+1\ \mu s$，其余两条保持准确。先求<strong>没有施加单位长度约束的线性逆解</strong>，检查 $u_z$ 的变化；再说明该向量能否直接当作物理方向。这里的 $1\ \mu s$ 只是固定误差预算，不声称某个实际设备能达到这个时差精度。</p>
+<p><strong>参考答案：三个矩阵都有逆，但最小尺度不同。</strong> 基线逐行排列给出</p>
+<p>$$\mathbf G=\begin{bmatrix}
+0.04&0&0\\0&0.04&0\\0&0&h
+\end{bmatrix}.$$</p>
+<p>三个 $h$ 均严格为正，所以秩都是 3。奇异值就是正对角元素；在本题 $h\le0.04$ 下，条件数为 $0.04/h$，依次为 1、10、100。三个坐标轴都使用 m，条件数的比较没有混用长度单位。</p>
+<p>第一、二条真 TDOA 始终为 $-0.04\times0.3/343=-34.9854\ \mu s$、$-0.04\times0.4/343=-46.6472\ \mu s$。第三条则为 $\tau_z=-h\sqrt{0.75}/343$。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">第四麦高度 $h$ / mm</th>
+<th scope="col" style="text-align: right;">秩</th>
+<th scope="col" style="text-align: right;">$\kappa_2(\mathbf G)$</th>
+<th scope="col" style="text-align: right;">第三真 TDOA / μs</th>
+<th scope="col" style="text-align: right;">上下镜像 TDOA 间隔 / μs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>40</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">−100.9942</td>
+<td style="text-align: right;">201.9884</td>
+</tr>
+<tr>
+<td>4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">−10.0994</td>
+<td style="text-align: right;">20.1988</td>
+</tr>
+<tr>
+<td>0.4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">−1.0099</td>
+<td style="text-align: right;">2.0199</td>
+</tr>
+</tbody>
+</table></div>
+<p>镜像方向把 $u_z$ 换成 $-u_z$，第三条时差随之反号，因此间隔为 $2h\sqrt{0.75}/c$。高度缩小十倍，区分这两个具体镜像方向的时差也缩小十倍。$h=0$ 时这条间隔归零，矩阵才真正降为秩 2。</p>
+<p><strong>参考答案：从误差的输入位置逐项求解。</strong> 写 $\hat{\vec\tau}=\vec\tau+\Delta\vec\tau$，其中 $\Delta\vec\tau=(0,0,10^{-6})^\top$ s。由式(3-5)的线性部分分别求真值和带误差解，然后相减：</p>
+<p>$$\begin{aligned}
+\hat{\vec u}_{\rm lin}&=-c\mathbf G^{-1}\hat{\vec\tau},\\
+\Delta\vec u_{\rm lin}
+&=\hat{\vec u}_{\rm lin}-\vec u
+=-c\mathbf G^{-1}\Delta\vec\tau,\\
+\Delta u_{z,\rm lin}&=-\frac{c\,\Delta\tau_z}{h}.
+\end{aligned}\tag{3-18}$$</p>
+<p>$c\Delta\tau_z$ 为长度，除以 $h$ 后是无量纲方向分量。$\Delta\tau_z>0$ 表示第四麦相对到达更晚，所以法向正投影减小；这个符号与式(3-1)一致。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">高度 $h$ / mm</th>
+<th scope="col" style="text-align: right;">$+1\ \mu s$ 引起的 $\Delta u_{z,\rm lin}$</th>
+<th scope="col" style="text-align: right;">$\hat u_{z,\rm lin}$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>40</td>
+<td style="text-align: right;">−0.008575</td>
+<td style="text-align: right;">0.857450</td>
+</tr>
+<tr>
+<td>4</td>
+<td style="text-align: right;">−0.085750</td>
+<td style="text-align: right;">0.780275</td>
+</tr>
+<tr>
+<td>0.4</td>
+<td style="text-align: right;">−0.857500</td>
+<td style="text-align: right;">0.008525</td>
+</tr>
+</tbody>
+</table></div>
+<p>例如最后一行直接代入 $-343\times10^{-6}/0.0004=-0.8575$。相同输入误差造成的分量变化扩大一百倍，但几何仍满秩。</p>
+<p><strong>参考答案：单位约束不能悄悄省去。</strong> 由于本题其他两条时差准确，无约束解仍有 $\hat u_x=0.3,\hat u_y=0.4$。有效方向却要求 $\hat u_z^2=1-0.3^2-0.4^2=0.75$，只允许 $\hat u_z=\pm\sqrt{0.75}$；表中的带误差线性解一般不满足它。例如最小高度那行的平方长度为 $0.25+0.008525^2\approx0.250073$，远小于 1。</p>
+<p>把误差改成 $-1\ \mu s$，同一高度的 $\hat u_{z,\rm lin}$ 约为 1.723525，甚至单个分量就超过 1。这些结果诊断时差与单位方向模型的不一致；它们不是有效的方向估计。将向量直接归一化会同时改变已经准确的平面内投影，不等于求出了带约束的最优解。</p>
+<p>若已准确知道平面内两个投影，单位长度本身可给法向分量的绝对值，额外时差主要帮助判断正负；一般带噪条件下，还需联合利用全部观测，说明误差协方差和单位约束求解方式。因此不能将本题的线性分量增益称为完整角误差、最优约束估计误差或 CRB。</p>
+<p><img alt="图51 近共面布局的无约束线性分量敏感性与镜像时差" src="../figures/fig51_near_planar_sensitivity.png" onerror="this.alt+='（图缺失）'" /></p>
+<p>图 51 使用本题相同的理想坐标、$c=343$ m/s 和 $\vec u=(0.3,0.4,\sqrt{0.75})^\top$。（a）画固定 $1\ \mu s$ 第三时差误差对应的 $|\Delta u_{z,\rm lin}|$；（b）画上下镜像方向的第三 TDOA 间隔，单位 μs。两条曲线均由上述解析式计算，没有定位器、音频评分或实测误差分布。读图时要同时看高度与误差尺度，不能从“满秩”推出精度保证。</p>
+<p><a id="e03-17"></a></p>
+<h3 id="sec-u-45ef2e2df1">E03-17：允许每频源幅不同，多频还能分开混叠方向吗？</h3>
+<p>沿用 E03-09 的六麦圆环、$r=0.0375$ m、参考麦 $(r,0,0)$，以及按 <strong>8 kHz 波长</strong>构造后保持不变的两个方向</p>
+<p>$$\vec u=(a,b,0)^\top,\qquad\vec v=(a,-b,0)^\top,$$</p>
+<p>其中 $b=(343/8000)/(\sqrt3r)\approx0.66010381$、$a=\sqrt{1-b^2}\approx0.75117439$。比较 4 kHz 和 8 kHz 的相对导向，不能在换频率时重新计算方向 $a,b$。</p>
+<p>阵列坐标、同步和通道响应均已知；每个频点只有一个无噪声远场源，但源复幅度可以逐频自由变化。先对候选方向拟合一个公共复幅度，再求归一化残差。最后给一个两频仍共同混叠的线阵反例，说明为什么频点数量本身不保证消歧。</p>
+<p><strong>参考答案：逐通道的相位整周数。</strong> 六麦按 $m=0,\ldots,5$ 的圆周坐标顺序排列。方向差 $\vec u-\vec v=(0,2b,0)^\top$，投影只涉及 $y$ 坐标。相位整周数是 $\vec b_m^\top(\vec u-\vec v)/\lambda_f$，因此</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">频率</th>
+<th scope="col">逐通道相位差 / 周</th>
+<th scope="col">相对导向比 $a_m(f,\vec u)/a_m(f,\vec v)$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>8 kHz</td>
+<td>$[0,1,1,0,-1,-1]$</td>
+<td>$[1,1,1,1,1,1]$</td>
+</tr>
+<tr>
+<td>4 kHz</td>
+<td>$[0,1/2,1/2,0,-1/2,-1/2]$</td>
+<td>$[1,-1,-1,1,-1,-1]$</td>
+</tr>
+</tbody>
+</table></div>
+<p>8 kHz 每项都是整周，两方向完全等价。4 kHz 有四项多转了半周，不能由同一个公共复数倍数把一整条导向变成另一条；这正是可区分的信息。</p>
+<p><strong>参考答案：把未知公共复幅度消掉。</strong> 固定一个频点，令 $\vec a_t$ 为真方向导向、$\vec a_c$ 为候选导向，均为非零向量。以单位真源幅度说明计算；任意非零真源幅度最终会在归一化比例中约掉。</p>
+<p>$$\begin{aligned}
+\hat\beta
+&=\underset{\beta\in\mathbb C}{\arg\min}
+  \|\vec a_t-\beta\vec a_c\|_2^2\\
+&=\frac{\vec a_c^H\vec a_t}{\vec a_c^H\vec a_c},\\
+\rho_f&=\frac{|\vec a_c^H\vec a_t|}
+ {\|\vec a_c\|_2\|\vec a_t\|_2},\\
+\epsilon_f
+&=\frac{\|\vec a_t-\hat\beta\vec a_c\|_2^2}
+ {\|\vec a_t\|_2^2}
+=1-\rho_f^2.
+\end{aligned}\tag{3-19}$$</p>
+<p>第一行是式(3-12)的向量形式。把最优 $\hat\beta$ 代入平方展开，残差能量为 $\|\vec a_t\|^2-|\vec a_c^H\vec a_t|^2/\|\vec a_c\|^2$；再除以非零参考能量得到最后一行。$\rho_f$ 是归一化相干幅度，$\rho_f^2$ 是相干功率，$\epsilon_f$ 是归一化残差能量，三者均无量纲。零能量观测没有这种归一化方向证据。</p>
+<p>本题每个导向分量模为 1，所以两向量的平方范数均为 6。在 4 kHz，$\vec a_c^H\vec a_t=1-1-1+1-1-1=-2$，故最优 $\hat\beta=-2/6=-1/3$。复数归一化内积为 −1/3，其<strong>模</strong>才是 $\rho_f=1/3$；残差为 $1-1/9=8/9$。在 8 kHz，内积为 6，得到 $\hat\beta=1,\rho_f=1,\epsilon_f=0$。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">频率 / kHz</th>
+<th scope="col">候选方向</th>
+<th scope="col" style="text-align: right;">相干功率 $\rho_f^2$</th>
+<th scope="col" style="text-align: right;">残差 $\epsilon_f$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4</td>
+<td>正确 $\vec u$</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>4</td>
+<td>错误 $\vec v$</td>
+<td style="text-align: right;">$1/9$</td>
+<td style="text-align: right;">$8/9$</td>
+</tr>
+<tr>
+<td>8</td>
+<td>正确 $\vec u$</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>8</td>
+<td>错误 $\vec v$</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table></div>
+<p>4 kHz 提供了 8 kHz 缺失的相对空间信息。若两频观测能量不同，汇总残差还需要说明能量或权重分母；不能将表中两个比例随意称为整体 SNR 或定位成功率。</p>
+<p><img alt="图52 六麦圆环两方向的多频相对流形比较" src="../figures/fig52_hexagon_multifrequency.png" onerror="this.alt+='（图缺失）'" /></p>
+<p>图 52（a）画本题六个坐标及两个水平方向，方位零点为 $+y$；（b）在 $0°$～$180°$ 内扫描候选方向，以真方向 $\vec u$ 为参考，画式(3-19)的相干功率 $\rho_f^2$。错误方向 $\vec v$ 在 8 kHz 仍为 1，在 4 kHz 为 $1/9$；对应残差分别为 0 和 $8/9$。图是已知理想流形的解析计算，PCM 音频的频点估计误差另行测量，两者不能混称。</p>
+<p><strong>音频复算：分开有限包络与稳定相位。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/examples/generate_geometry_audio.py">生成入口</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/core/geometry_audio.py">连续源及测量实现</a>使用同一个双音源，每个正弦的幅度为 0.08，频率为 4 kHz、8 kHz。源活动区间为 $[0.1,1.9)$ s，两端各有 20 ms 线性淡入淡出；共同基准传播延迟 $b_0=2$ ms。这里 $b_0$ 是时间，不能与前面方向分量 $b$ 混用。</p>
+<p>令带包络的双音源为 $F(t)$，保存圆心时轴参考 $F(t-b_0)$，以及两个方向各自的六路观测 $x_m(t)=F(t-b_0+\vec r_m^\top\vec u/c)$ 或 $F(t-b_0+\vec r_m^\top\vec v/c)$。每个文件均为 32 kHz、2 s、每通道 64000 点、共同导出增益 1。通道顺序与圆环的 $m=0,\ldots,5$ 一致。传播时差通过连续源函数在对应时刻求值，没有运行采样后分数时延插值或时差估计器。</p>
+<ul>
+<li><a href="geometry_audio/geometry_reference.wav">圆心源参考：单声道</a><audio class="audio-sample" controls preload="none" aria-label="圆心源参考：单声道" src="geometry_audio/geometry_reference.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="geometry_audio/geometry_u.wav">方向 $\vec u$：六声道观测</a><audio class="audio-sample" controls preload="none" aria-label="方向 $\vec u$：六声道观测" src="geometry_audio/geometry_u.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="geometry_audio/geometry_v.wav">方向 $\vec v$：六声道观测</a><audio class="audio-sample" controls preload="none" aria-label="方向 $\vec v$：六声道观测" src="geometry_audio/geometry_v.wav">请使用上方 WAV 链接下载。</audio></li>
+</ul>
+<p>圆心源参考供了解输入与试听，不是麦 0 的干净记录，也不参与候选方向拟合。先调低音量；浏览器或设备可能把六声道混成较少通道或改变路由，播放结果不能作为方向消歧证据。</p>
+<p>测量统一使用每路采样区间 $[4800,59200)$，即 $[0.15,1.85)$ s，共 54400 点，避开所有通道的传播与淡变边界。先同时拟合 4 kHz、8 kHz 的余弦与正弦四列，将每频系数写成复相量 $z_m=C_m-\mathrm jD_m$；再以六个复相量为观测，对每个候选导向求式(3-19)中的最优公共复系数。记录的是 $\sum_m|z_m-\hat\alpha a_m|^2/\sum_m|z_m|^2$，不是完整双音时域误差，也不是相对于单声道参考的 SNR。</p>
+<p>以方向 $\vec u$ 的观测拟合错误候选 $\vec v$，结果如下。解析列使用理想导向；浮点列先从实际合成的有限样本拟合双音，再作方向比较；PCM 列读取导出的 16 位有符号 PCM 后重复测量。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">频率 / kHz</th>
+<th scope="col" style="text-align: right;">理想解析残差</th>
+<th scope="col" style="text-align: right;">合成浮点残差</th>
+<th scope="col" style="text-align: right;">PCM 实读残差</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4</td>
+<td style="text-align: right;">$8/9$</td>
+<td style="text-align: right;">0.88888889</td>
+<td style="text-align: right;">0.88886442</td>
+</tr>
+<tr>
+<td>8</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">约 $1.6\times10^{-24}$</td>
+<td style="text-align: right;">约 $3.9\times10^{-9}$</td>
+</tr>
+</tbody>
+</table></div>
+<p>4 kHz 的 PCM 残差分子约为 0.03412802，观测六相量平方和分母约为 0.03839507，按未舍入值相除得 0.88886442。8 kHz 的分子约为 $1.50\times10^{-10}$、分母约为 0.03839810。分母是六通道该频复相量的平方和，不是 54400 点，也不是包含两频的总功率。</p>
+<p>正确候选 $\vec u$ 的 PCM 残差在 4 kHz、8 kHz 也分别约为 $3.46\times10^{-9}$、$3.91\times10^{-9}$。这些微小非零量来自量化后相量不再精确落在理想导向上；8 kHz 错误候选与正确候选仍给出相同的理想相对流形。不能把微小舍入差解释成消歧或定位置信度。三个文件使用同一导出增益，实际最大量化误差均不超过半个量化步长 $1/65536$。</p>
+<p>8 kHz 的整周等价只适用于稳定纯音相位。两方向的有限包络仍按实际传播时差移动，文件两端不必完全相同；不能把稳定窗结论扩成全段波形相同。<a href="geometry_audio/MANIFEST.json">独立音频清单</a>分别保存浮点结果、PCM 重读结果、每频六通道相量、拟合复系数、残差分子及观测能量分母。</p>
+<p>在仓库根目录执行：</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch03.examples.generate_geometry_audio
+.venv/bin/python -m codes.chapters.ch03.examples.generate_geometry_audio --check
+</code></pre>
+<p>第一条生成独立文件与清单，第二条只核对现有资产及生成源摘要，不重写文件。这组三个文件独立于主音频的 109 个样本；全部来自数学模型，没有真实录音、声源定位器运行或标准主观听测。</p>
+<p><strong>参考答案：两个频点也可能重复同一歧义。</strong> 另取四麦 ULA，$x_m=0.1m$ m，方向限定为 $[-90°,90°]$。取 $\sin\theta_+=0.8575$、$\sin\theta_-=-0.8575$，对应 $\theta_\pm\approx\pm59.03703°$。相邻麦两方向的投影差为 $0.1\times(0.8575+0.8575)=0.1715$ m。</p>
+<p>在 2 kHz，波长 $343/2000=0.1715$ m，每条相对基线的相位差为 $m$ 周；在 4 kHz，波长减半，相位差为 $2m$ 周。两频的完整相对导向均相同，候选方向的 $\epsilon_f$ 都为零。增加这一个频点没有新增区分证据。</p>
+<p>若改用 1 kHz，整周数为 $m/2$，导向比为 $[1,-1,1,-1]$，内积为零，$\rho_f=0,\epsilon_f=1$。应检查实际的频率集合，而非简单宣称“宽带必然消歧”。这个反例是另一个阵列；不能移到本题 4 kHz 已无单侧相位歧义的六边形上。</p>
+<p>上述比较允许每频一个公共未知源幅度，没有允许逐通道任意未知复增益。若通道相位或时钟未知，还须使用 §3.4.1 所述校准约束；本题也没有加入房间反射、同时多源、随机噪声或设备测量。</p>
 <p>更多跨章练习和音频条件见<a href="research/05_exercises_and_audio.html">实验总览</a>。整数延迟音频只提供已知通道时差；E03-14 则提供连续源模型的差分失配对照。两者都没有模拟真实麦克风外壳，不能据此推断挡板收益或设备标定精度。<a href="research/05_exercises_and_audio.html#25-双麦差分的增益失配与理想校正">差分音频参数与读回记录</a>另列量化与试听边界。</p>
 <hr />
 <blockquote>
-<p>📄 本篇信息：配图 3 张 ｜ <a href="index.html">回首页</a></p>
+<p>📄 本篇信息：配图 5 张 ｜ <a href="index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="02_basics-signal-model.html">← 上一篇</a></span><span><a href="04_doa-estimation.html">下一篇 →</a></span></div>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>

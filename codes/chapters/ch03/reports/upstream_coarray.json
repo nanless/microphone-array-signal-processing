@@ -1,0 +1,1585 @@
+{
+  "schema_version": 1,
+  "executed_at_utc": "2026-09-30T16:30:28.293751+00:00",
+  "executed_at_local": "2026-10-01T00:30:28.293751+08:00",
+  "audit_source": "codes/chapters/ch03/examples/audit_upstream_coarray.py",
+  "audit_source_sha256": "7a3bc077c187667a9ac9fcc9fe128edc42377f8c06f91738c92c944a15d57cbe",
+  "sources": {
+    "lock_sha256": "6e6ed68abddd8b927b05019aefdce13e370c3064e7b9bb22bb61437626631323",
+    "lock_entry_sha256": "4c352513e5e82f8c474d4979edd3190977aed51fe056a3e952118af894dc4240",
+    "url": "https://github.com/morriswmz/doatools.py.git",
+    "revision": "9469db201e0418aef6b97583ef54b6fec2769502",
+    "license": "MIT",
+    "implementation_identity": "maintainer's independent implementation, not Pal author code",
+    "worktree_clean": true,
+    "files": [
+      {
+        "path": "doatools/model/array_elements.py",
+        "sha256": "365bddeff15f413420c22a03f8d4360cd6f3b794d82a5ac1e5e2fbb7ca50fb5f",
+        "git_blob_oid": "84015328cfdaaf0ed062387700a9acd5f4b8a2c7",
+        "definitions": [
+          "ArrayElement",
+          "IsotropicScalarSensor"
+        ]
+      },
+      {
+        "path": "doatools/model/perturbations.py",
+        "sha256": "aa5bf08e9dd078c58cb698d8c43631970ee95ca6ce03a67e8f41181fdde1fd49",
+        "git_blob_oid": "627b9d36cd1c3282e40e921747e71eb67956b281",
+        "definitions": [
+          "ArrayPerturbation",
+          "LocationErrors",
+          "GainErrors",
+          "PhaseErrors",
+          "MutualCoupling"
+        ]
+      },
+      {
+        "path": "doatools/model/arrays.py",
+        "sha256": "02a08374c51fea1a5f8c2f5431dbd817c31c40316f61c05f8877ba0f822eb1bf",
+        "git_blob_oid": "6d19a232c35aba2d2c1bb198b1c03712b6ac7187",
+        "definitions": [
+          "ArrayDesign",
+          "GridBasedArrayDesign",
+          "UniformLinearArray",
+          "NestedArray",
+          "CoPrimeArray"
+        ]
+      },
+      {
+        "path": "doatools/model/coarray.py",
+        "sha256": "8bb686753c85ac3e7635dde7586e478dc3f878d6e85b98d79c4cee58f95f1d03",
+        "git_blob_oid": "6fc54b9e313db1de2c703bffa8cde97eb8edfa36",
+        "definitions": [
+          "compute_location_differences",
+          "WeightFunction1D"
+        ]
+      },
+      {
+        "path": "doatools/utils/math.py",
+        "sha256": "0b1e286ecb1c89811225bb72c0d263de6a82d647b3617ca23cab6346e4331148",
+        "git_blob_oid": "56c298f914bc614f52e1e26c3f2d53482f9e43d4",
+        "definitions": [
+          "vec"
+        ]
+      },
+      {
+        "path": "doatools/estimation/core.py",
+        "sha256": "63a0e2d9a3561c0270aaa2d6f207777257ccff607bd11d72dab5c3f5419649d8",
+        "git_blob_oid": "09deb3b6c5c54f9348ae186bcc802462553fa5ca",
+        "definitions": [
+          "ensure_covariance_size"
+        ]
+      },
+      {
+        "path": "doatools/estimation/coarray.py",
+        "sha256": "26028a116fb22cb2de583d7ed112bd5c0b0446f1c802d89a66ffbb17a2c4869c",
+        "git_blob_oid": "ee9d3e5dd86af891e2c99c3cb9932fde4bc492c0",
+        "definitions": [
+          "CoarrayACMBuilder1D"
+        ]
+      },
+      {
+        "path": "LICENSE.md",
+        "sha256": "39ddd5dcfeb6eb77f18c99e8955341dc7b4d4823a3a121e0124e20de336b507a",
+        "git_blob_oid": "44c4071ad5a8e3262012b9b9d3b2d95c608b730c",
+        "definitions": []
+      }
+    ]
+  },
+  "upstream_clean_before_and_after": true,
+  "scope": "unchanged original-method AST extraction with a local NumPy compatibility facade",
+  "environment": {
+    "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
+    "numpy": "2.5.3",
+    "executable": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/bin/python",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O"
+  },
+  "tolerances": {
+    "absolute": 1e-14,
+    "relative": 0.0,
+    "amplitude_scale_absolute": 1e-12,
+    "physical_covariance_guard_absolute": 1e-14,
+    "guard_scope": "only the fixed small physical fixtures; not a general scale-invariant validator"
+  },
+  "scaffold": {
+    "upstream_files_modified": false,
+    "full_package_import_executed": false,
+    "definitions_changed": false,
+    "extractions": [
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/model/array_elements.py",
+        "name": "ArrayElement",
+        "start_line": 4,
+        "end_line": 85,
+        "definition_ast_sha256": "cea381e33ca4b0633a11d6847e755635d6b27093ad516ad869fe3c7cf2b5d2d5",
+        "body_or_decorators_changed": false
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/model/array_elements.py",
+        "name": "IsotropicScalarSensor",
+        "start_line": 87,
+        "end_line": 106,
+        "definition_ast_sha256": "ecfdad23fc483ad30706c91c6a667be95e23738ce1c12ae3e4dabe8ff0b6ff59",
+        "body_or_decorators_changed": false
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/model/perturbations.py",
+        "name": "ArrayPerturbation",
+        "start_line": 4,
+        "end_line": 124,
+        "definition_ast_sha256": "0926003125596a6e59a05580f4e1215c2eccd1acae49f270ba3c2359fa6ecafe",
+        "body_or_decorators_changed": false
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/model/perturbations.py",
+        "name": "LocationErrors",
+        "start_line": 126,
+        "end_line": 165,
+        "definition_ast_sha256": "6af93a672d1cb76ec78c3263a8e58a5321d9b9a7bb7bb041fb17ccb565b5e886",
+        "body_or_decorators_changed": false
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/model/perturbations.py",
+        "name": "GainErrors",
+        "start_line": 167,
+        "end_line": 222,
+        "definition_ast_sha256": "c5fd5f70d4baa87c217cf23fd32f0e057965117def6791628ae5572ea08cfe9d",
+        "body_or_decorators_changed": false
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/model/perturbations.py",
+        "name": "PhaseErrors",
+        "start_line": 224,
+        "end_line": 280,
+        "definition_ast_sha256": "767ca1e0006483d879e455c3f92dd795729f2845c933aefbf548fcbe19ad2da6",
+        "body_or_decorators_changed": false
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/model/perturbations.py",
+        "name": "MutualCoupling",
+        "start_line": 282,
+        "end_line": 333,
+        "definition_ast_sha256": "22ef0a7a178491de78dfe0787c2811e41b5cf2220926b1eb40d3e2dd3d64bdce",
+        "body_or_decorators_changed": false
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/model/arrays.py",
+        "name": "ArrayDesign",
+        "start_line": 10,
+        "end_line": 442,
+        "definition_ast_sha256": "039aef09d3913e4528fdcd90946490f901e6459881200880d6c97e7174d88437",
+        "body_or_decorators_changed": false
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/model/arrays.py",
+        "name": "GridBasedArrayDesign",
+        "start_line": 444,
+        "end_line": 533,
+        "definition_ast_sha256": "c348f2a61eae5c3fadf2ca20c79beab484a041f7b496f13ee7f018c62cdca92f",
+        "body_or_decorators_changed": false
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/model/arrays.py",
+        "name": "UniformLinearArray",
+        "start_line": 535,
+        "end_line": 551,
+        "definition_ast_sha256": "a1c5b3e3c035596b5898bc6e02b13d715a65a817774234e6a30efb95657e4896",
+        "body_or_decorators_changed": false
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/model/arrays.py",
+        "name": "NestedArray",
+        "start_line": 553,
+        "end_line": 588,
+        "definition_ast_sha256": "17493c1a8b08e18e1f6831f36f007bb304f9cd47aaebbe03dc5f02e2d84290e4",
+        "body_or_decorators_changed": false
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/model/arrays.py",
+        "name": "CoPrimeArray",
+        "start_line": 590,
+        "end_line": 640,
+        "definition_ast_sha256": "bd4a3a6a7bd9d0bfceab3334bbcbee81c5e9b378fff19d042ab3f23a9704e8e5",
+        "body_or_decorators_changed": false
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/model/coarray.py",
+        "name": "compute_location_differences",
+        "start_line": 5,
+        "end_line": 21,
+        "definition_ast_sha256": "07a70aa257701dd0bb36281c23da6bed726d486e164ae0ff0d8749bc13d28279",
+        "body_or_decorators_changed": false
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/model/coarray.py",
+        "name": "WeightFunction1D",
+        "start_line": 34,
+        "end_line": 185,
+        "definition_ast_sha256": "c4e7d9118c3ee12ca1ce42cc918abd23d959e0e297f83857781766b51e3d75ab",
+        "body_or_decorators_changed": false
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/utils/math.py",
+        "name": "vec",
+        "start_line": 5,
+        "end_line": 17,
+        "definition_ast_sha256": "bceeb9aacb5addfd3598ffedbd198becb5ff9866297340ac5619a00b0fb1eb05",
+        "body_or_decorators_changed": false
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/estimation/core.py",
+        "name": "ensure_covariance_size",
+        "start_line": 8,
+        "end_line": 18,
+        "definition_ast_sha256": "da021baa63bd40c626dbaee108772eba47d816dea3f723f237fddda31e7ce8f2",
+        "body_or_decorators_changed": false
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/estimation/coarray.py",
+        "name": "CoarrayACMBuilder1D",
+        "start_line": 7,
+        "end_line": 103,
+        "definition_ast_sha256": "d13b0c1011c50e7d1f58507f5789206809cda7056f30cec9edb30d7b66b78178",
+        "body_or_decorators_changed": false
+      }
+    ],
+    "local_numpy_aliases": {
+      "float_": "float64",
+      "complex_": "complex128"
+    },
+    "global_numpy_modified": false,
+    "own_guard_used_for_positive_physical_inputs_only": true,
+    "independent_expectations": [
+      "ordered-pair enumeration",
+      "lag averaging and direct Toeplitz fill",
+      "TT^H/4",
+      "hand-derived eigenvalues",
+      "diagonal or matrix multiplication"
+    ]
+  },
+  "results": {
+    "layouts": [
+      {
+        "case": "nested",
+        "d0_m": 0.02,
+        "physical_count": 6,
+        "indices_in_original_channel_order": [
+          0,
+          1,
+          2,
+          3,
+          7,
+          11
+        ],
+        "positions_m": [
+          0.0,
+          0.02,
+          0.04,
+          0.06,
+          0.14,
+          0.22
+        ],
+        "signed_lags": [
+          -11,
+          -10,
+          -9,
+          -8,
+          -7,
+          -6,
+          -5,
+          -4,
+          -3,
+          -2,
+          -1,
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "multiplicity": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          2,
+          3,
+          6,
+          3,
+          2,
+          1,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ordered_pair_count": 36,
+        "central_signed_size": 23,
+        "virtual_size": 12
+      },
+      {
+        "case": "coprime_m",
+        "d0_m": 0.02,
+        "physical_count": 6,
+        "indices_in_original_channel_order": [
+          0,
+          3,
+          6,
+          9,
+          4,
+          8
+        ],
+        "positions_m": [
+          0.0,
+          0.06,
+          0.12,
+          0.18,
+          0.08,
+          0.16
+        ],
+        "signed_lags": [
+          -9,
+          -8,
+          -6,
+          -5,
+          -4,
+          -3,
+          -2,
+          -1,
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          8,
+          9
+        ],
+        "multiplicity": [
+          1,
+          1,
+          2,
+          2,
+          2,
+          3,
+          2,
+          2,
+          6,
+          2,
+          2,
+          3,
+          2,
+          2,
+          2,
+          1,
+          1
+        ],
+        "ordered_pair_count": 36,
+        "central_signed_size": 13,
+        "virtual_size": 7
+      },
+      {
+        "case": "coprime_default_2m",
+        "d0_m": 0.02,
+        "physical_count": 9,
+        "indices_in_original_channel_order": [
+          0,
+          3,
+          6,
+          9,
+          4,
+          8,
+          12,
+          16,
+          20
+        ],
+        "positions_m": [
+          0.0,
+          0.06,
+          0.12,
+          0.18,
+          0.08,
+          0.16,
+          0.24,
+          0.32,
+          0.4
+        ],
+        "signed_lags": [
+          -20,
+          -17,
+          -16,
+          -14,
+          -13,
+          -12,
+          -11,
+          -10,
+          -9,
+          -8,
+          -7,
+          -6,
+          -5,
+          -4,
+          -3,
+          -2,
+          -1,
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          16,
+          17,
+          20
+        ],
+        "multiplicity": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          3,
+          1,
+          1,
+          2,
+          4,
+          1,
+          3,
+          2,
+          5,
+          4,
+          2,
+          2,
+          9,
+          2,
+          2,
+          4,
+          5,
+          2,
+          3,
+          1,
+          4,
+          2,
+          1,
+          1,
+          3,
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        "ordered_pair_count": 81,
+        "central_signed_size": 29,
+        "virtual_size": 15
+      }
+    ],
+    "covariances": [
+      {
+        "case": "ideal_E03_07",
+        "physical_indices": [
+          0,
+          1,
+          3
+        ],
+        "physical_count": 3,
+        "virtual_count": 4,
+        "input": {
+          "real": [
+            [
+              2.1,
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              2.1,
+              0.0
+            ],
+            [
+              1.0,
+              0.0,
+              2.1
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              -1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              -1.0,
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        "physical_eigenvalues": [
+          0.09999999999999964,
+          2.1,
+          4.1
+        ],
+        "lags_in_order": [
+          -3,
+          -2,
+          -1,
+          0,
+          1,
+          2,
+          3
+        ],
+        "independent_lag_values": {
+          "real": [
+            1.0,
+            0.0,
+            1.0,
+            2.1,
+            1.0,
+            0.0,
+            1.0
+          ],
+          "imag": [
+            1.0,
+            0.0,
+            -1.0,
+            0.0,
+            1.0,
+            0.0,
+            -1.0
+          ]
+        },
+        "da": {
+          "real": [
+            [
+              2.1,
+              1.0,
+              0.0,
+              1.0
+            ],
+            [
+              1.0,
+              2.1,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              2.1,
+              1.0
+            ],
+            [
+              1.0,
+              0.0,
+              1.0,
+              2.1
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              -1.0,
+              0.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0,
+              -1.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              -1.0
+            ],
+            [
+              -1.0,
+              0.0,
+              1.0,
+              0.0
+            ]
+          ]
+        },
+        "ss_default": {
+          "real": [
+            [
+              2.1025,
+              1.05,
+              0.0,
+              1.05
+            ],
+            [
+              1.05,
+              2.1025,
+              1.05,
+              0.0
+            ],
+            [
+              0.0,
+              1.05,
+              2.1025,
+              1.05
+            ],
+            [
+              1.05,
+              0.0,
+              1.05,
+              2.1025
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              -1.05,
+              0.0,
+              1.05
+            ],
+            [
+              1.05,
+              0.0,
+              -1.05,
+              0.0
+            ],
+            [
+              0.0,
+              1.05,
+              0.0,
+              -1.05
+            ],
+            [
+              -1.05,
+              0.0,
+              1.05,
+              0.0
+            ]
+          ]
+        },
+        "da_eigenvalues": [
+          0.09999999999999956,
+          0.09999999999999985,
+          4.1,
+          4.1
+        ],
+        "ss_eigenvalues": [
+          0.002499999999999828,
+          0.002500000000000093,
+          4.202500000000001,
+          4.202500000000001
+        ],
+        "hand_expected_da_eigenvalues": [
+          0.1,
+          0.1,
+          4.1,
+          4.1
+        ],
+        "hand_expected_ss_eigenvalues": [
+          0.0025,
+          0.0025,
+          4.2025,
+          4.2025
+        ],
+        "da_max_expected_error": 0.0,
+        "ss_max_expected_error": 0.0,
+        "amplitude_scale": 2,
+        "physical_covariance_scale": 4,
+        "da_scale": 4,
+        "ss_scale": 16,
+        "scaled_da_max_error": 0.0,
+        "scaled_ss_max_error": 0.0,
+        "input_psd": true,
+        "da_psd": true,
+        "ss_psd": true
+      },
+      {
+        "case": "single_snapshot_E03_07",
+        "physical_indices": [
+          0,
+          1,
+          3
+        ],
+        "physical_count": 3,
+        "virtual_count": 4,
+        "input": {
+          "real": [
+            [
+              1.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        "physical_eigenvalues": [
+          0.0,
+          0.0,
+          2.0
+        ],
+        "lags_in_order": [
+          -3,
+          -2,
+          -1,
+          0,
+          1,
+          2,
+          3
+        ],
+        "independent_lag_values": {
+          "real": [
+            1.0,
+            0.0,
+            0.0,
+            0.6666666666666666,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "imag": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "da": {
+          "real": [
+            [
+              0.6666666666666666,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.6666666666666666,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.6666666666666666,
+              0.0
+            ],
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.6666666666666666
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        "ss_default": {
+          "real": [
+            [
+              0.3611111111111111,
+              0.0,
+              0.0,
+              0.3333333333333333
+            ],
+            [
+              0.0,
+              0.1111111111111111,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.1111111111111111,
+              0.0
+            ],
+            [
+              0.3333333333333333,
+              0.0,
+              0.0,
+              0.3611111111111111
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        "da_eigenvalues": [
+          -0.3333333333333334,
+          0.6666666666666666,
+          0.6666666666666666,
+          1.6666666666666665
+        ],
+        "ss_eigenvalues": [
+          0.027777777777777804,
+          0.1111111111111111,
+          0.1111111111111111,
+          0.6944444444444444
+        ],
+        "hand_expected_da_eigenvalues": [
+          -0.3333333333333333,
+          0.6666666666666666,
+          0.6666666666666666,
+          1.6666666666666667
+        ],
+        "hand_expected_ss_eigenvalues": [
+          0.027777777777777776,
+          0.1111111111111111,
+          0.1111111111111111,
+          0.6944444444444444
+        ],
+        "da_max_expected_error": 0.0,
+        "ss_max_expected_error": 0.0,
+        "amplitude_scale": 2,
+        "physical_covariance_scale": 4,
+        "da_scale": 4,
+        "ss_scale": 16,
+        "scaled_da_max_error": 0.0,
+        "scaled_ss_max_error": 0.0,
+        "input_psd": true,
+        "da_psd": false,
+        "ss_psd": true
+      }
+    ],
+    "forward_given_perturbations": [
+      {
+        "case": "gain",
+        "parameters": [
+          0.1,
+          -0.2
+        ],
+        "parameter_units": "dimensionless",
+        "input": {
+          "real": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              1.0,
+              -1.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        "output": {
+          "real": [
+            [
+              1.1,
+              0.0
+            ],
+            [
+              0.8,
+              -0.8
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              1.1
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        "independent_expected": {
+          "real": [
+            [
+              1.1,
+              0.0
+            ],
+            [
+              0.8,
+              -0.8
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              1.1
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        "max_expected_error": 0.0,
+        "derivative_input": {
+          "real": [
+            [
+              2.0,
+              0.0
+            ],
+            [
+              2.0,
+              -2.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              2.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        "derivative_output": {
+          "real": [
+            [
+              2.2,
+              0.0
+            ],
+            [
+              1.6,
+              -1.6
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              2.2
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        "derivative_max_expected_error": 0.0,
+        "unknown_parameter_estimation_executed": false
+      },
+      {
+        "case": "phase",
+        "parameters": [
+          0.2,
+          -0.3
+        ],
+        "parameter_units": "radians",
+        "input": {
+          "real": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              1.0,
+              -1.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        "output": {
+          "real": [
+            [
+              0.9800665778412416,
+              -0.19866933079506122
+            ],
+            [
+              0.955336489125606,
+              -0.955336489125606
+            ]
+          ],
+          "imag": [
+            [
+              0.19866933079506122,
+              0.9800665778412416
+            ],
+            [
+              -0.29552020666133955,
+              0.29552020666133955
+            ]
+          ]
+        },
+        "independent_expected": {
+          "real": [
+            [
+              0.9800665778412416,
+              -0.19866933079506122
+            ],
+            [
+              0.955336489125606,
+              -0.955336489125606
+            ]
+          ],
+          "imag": [
+            [
+              0.19866933079506122,
+              0.9800665778412416
+            ],
+            [
+              -0.29552020666133955,
+              0.29552020666133955
+            ]
+          ]
+        },
+        "max_expected_error": 0.0,
+        "derivative_input": {
+          "real": [
+            [
+              2.0,
+              0.0
+            ],
+            [
+              2.0,
+              -2.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              2.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        "derivative_output": {
+          "real": [
+            [
+              1.9601331556824833,
+              -0.39733866159012243
+            ],
+            [
+              1.910672978251212,
+              -1.910672978251212
+            ]
+          ],
+          "imag": [
+            [
+              0.39733866159012243,
+              1.9601331556824833
+            ],
+            [
+              -0.5910404133226791,
+              0.5910404133226791
+            ]
+          ]
+        },
+        "derivative_max_expected_error": 0.0,
+        "unknown_parameter_estimation_executed": false
+      },
+      {
+        "case": "coupling",
+        "parameters": [
+          [
+            1.0,
+            0.1
+          ],
+          [
+            0.2,
+            1.0
+          ]
+        ],
+        "parameter_units": "dimensionless",
+        "input": {
+          "real": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              1.0,
+              -1.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        "output": {
+          "real": [
+            [
+              1.1,
+              -0.1
+            ],
+            [
+              1.2,
+              -1.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.2
+            ]
+          ]
+        },
+        "independent_expected": {
+          "real": [
+            [
+              1.1,
+              -0.1
+            ],
+            [
+              1.2,
+              -1.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.2
+            ]
+          ]
+        },
+        "max_expected_error": 0.0,
+        "derivative_input": {
+          "real": [
+            [
+              2.0,
+              0.0
+            ],
+            [
+              2.0,
+              -2.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              2.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        "derivative_output": {
+          "real": [
+            [
+              2.2,
+              -0.2
+            ],
+            [
+              2.4,
+              -2.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              2.0
+            ],
+            [
+              0.0,
+              0.4
+            ]
+          ]
+        },
+        "derivative_max_expected_error": 0.0,
+        "unknown_parameter_estimation_executed": false
+      },
+      {
+        "case": "locations_1d_to_2d",
+        "input_m": [
+          [
+            0.0
+          ],
+          [
+            0.04
+          ]
+        ],
+        "errors_m": [
+          [
+            0.001,
+            0.002
+          ],
+          [
+            -0.001,
+            0.003
+          ]
+        ],
+        "output_m": [
+          [
+            0.001,
+            0.002
+          ],
+          [
+            0.039,
+            0.003
+          ]
+        ],
+        "max_expected_error_m": 0.0,
+        "unknown_parameter_estimation_executed": false
+      }
+    ],
+    "negative_inputs": [
+      {
+        "case": "GainErrors_list",
+        "outcome": "exception",
+        "exception_type": "AttributeError",
+        "message": "'list' object has no attribute 'ndim'",
+        "input": [
+          0.1,
+          0.2
+        ],
+        "stage": "constructor",
+        "classification": "source_input_validation_defect",
+        "valid_model_input": false
+      },
+      {
+        "case": "PhaseErrors_list",
+        "outcome": "exception",
+        "exception_type": "AttributeError",
+        "message": "'list' object has no attribute 'ndim'",
+        "input": [
+          0.1,
+          0.2
+        ],
+        "stage": "constructor",
+        "classification": "source_input_validation_defect",
+        "valid_model_input": false
+      },
+      {
+        "case": "MutualCoupling_2x3_constructor",
+        "outcome": "returned",
+        "value": [
+          2,
+          3
+        ],
+        "input": [
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1
+          ]
+        ],
+        "stage": "constructor",
+        "classification": "source_input_validation_defect",
+        "valid_model_input": false
+      },
+      {
+        "case": "MutualCoupling_1d_constructor",
+        "outcome": "exception",
+        "exception_type": "IndexError",
+        "message": "tuple index out of range",
+        "input": [
+          1,
+          1
+        ],
+        "stage": "constructor",
+        "classification": "source_input_validation_defect",
+        "valid_model_input": false
+      },
+      {
+        "case": "covariance_3x4_da",
+        "outcome": "returned",
+        "value": {
+          "real": [
+            [
+              2.1,
+              1.0,
+              0.0,
+              1.0
+            ],
+            [
+              1.0,
+              2.1,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              2.1,
+              1.0
+            ],
+            [
+              1.0,
+              0.0,
+              1.0,
+              2.1
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              -1.0,
+              0.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0,
+              -1.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              -1.0
+            ],
+            [
+              -1.0,
+              0.0,
+              1.0,
+              0.0
+            ]
+          ]
+        },
+        "input": {
+          "real": [
+            [
+              2.1,
+              1.0,
+              1.0,
+              99.0
+            ],
+            [
+              1.0,
+              2.1,
+              0.0,
+              99.0
+            ],
+            [
+              1.0,
+              0.0,
+              2.1,
+              99.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              -1.0,
+              1.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              -1.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        "stage": "coarray_da_transform",
+        "classification": "source_input_validation_defect",
+        "valid_model_input": false,
+        "extra_fourth_column": [
+          99,
+          99,
+          99
+        ],
+        "extra_column_silently_ignored": true
+      },
+      {
+        "case": "covariance_3x2_da",
+        "outcome": "exception",
+        "exception_type": "IndexError",
+        "message": "index 6 is out of bounds for axis 0 with size 6",
+        "input": {
+          "real": [
+            [
+              2.1,
+              1.0
+            ],
+            [
+              1.0,
+              2.1
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "imag": [
+            [
+              0.0,
+              -1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              -1.0,
+              0.0
+            ]
+          ]
+        },
+        "stage": "coarray_da_transform",
+        "classification": "source_input_validation_defect",
+        "valid_model_input": false
+      }
+    ]
+  },
+  "all_expected_behaviors_observed": true,
+  "not_executed": [
+    "full doatools import and dependency validation",
+    "DOA or source-count estimator",
+    "unknown-error calibration",
+    "StructureFromSound MATLAB system",
+    "HARK measurement or Infineon firmware",
+    "hardware or equipment acceptance"
+  ],
+  "command": [
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/bin/python",
+    "-m",
+    "codes.chapters.ch03.examples.audit_upstream_coarray",
+    "--report",
+    "codes/chapters/ch03/reports/upstream_coarray.json"
+  ]
+}

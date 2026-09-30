@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>空间处理与追踪源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f713b32fbf06"><style>
+<meta name="source-digest" content="b9fc722eb2ad"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -1042,7 +1042,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>对应 §4.8。doatools <code>performance/crb.py</code> 的 <code>crb_sto_farfield_1d</code>、<code>crb_det_farfield_1d</code>、<code>crb_stouc_farfield_1d</code> 对应不同观测统计模型。CRB 是在参数模型、噪声和正则条件下的估计方差下界，不是从输入录音直接产生方向的算法，也不是混响房间的实测误差预测器。<a href="https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/performance/crb.py">作者源码</a>。</p>
 <p>建议同一几何上比较源功率、快拍数和角度分离的变化，检查方差单位是弧度平方还是角度平方，再与同模型重复仿真比较。明显低于所选 CRB 的结果可能来自口径不符、偏差估计器、真值泄漏或方差/均方误差混写，应先查实验模型，不能直接宣称突破统计下界。</p>
 <span id="sec-49" class="anchor-alias" aria-hidden="true"></span><span id="39-差分协同阵与虚拟协方差重建" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-17e7aaa6b6">39. 差分协同阵与虚拟协方差重建</h3>
-<p>对应<a href="../03_array-geometry.html">第 3 章</a>。本节同时检查几何、二阶统计量与标定接口：阵元位置给出传播模型，协同阵重排已有的统计量，标定则检验模型与设备是否一致。以下外部源码核实于 2026-09-28；除明确标出的本书复算外，没有新增执行外部 MATLAB 或 doatools 接口。</p>
+<p>对应<a href="../03_array-geometry.html">第 3 章</a>。本节同时检查几何、二阶统计量与标定接口：阵元位置给出传播模型，协同阵重排已有的统计量，标定则检验模型与设备是否一致。2026-10-01 重新核对本章原始论文与固定 doatools 源码，并执行下述原方法提取对照；MATLAB 系统、完整 doatools 包、DOA 估计器和设备测量仍未运行。其他项目的固定来源与核实日期分别保留在对应段落中。</p>
 <span id="391-从阵列参数到坐标与连续差集" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-39-1">39.1 从阵列参数到坐标与连续差集</h4>
 <p>固定 doatools 的 <a href="https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/model/arrays.py"><code>model/arrays.py</code></a>提供 <code>NestedArray</code>、<code>CoPrimeArray</code> 和若干预设几何。它们生成坐标，不自动搜索最优布置。<code>d0</code> 是基础网格的物理间距，不能在不同频点偷偷改成该频点的半波长，否则比较的已经是不同硬件。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -1071,6 +1071,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 </tbody>
 </table></div>
+<p>这些构造已在固定提交 <code>9469db201e0418aef6b97583ef54b6fec2769502</code> 的原定义上提取调用。统一取 <code>d0=0.02</code> m，嵌套阵、基本互质阵、默认扩展互质阵分别得到 23、17、35 个不同有符号滞后，中心连续长度分别为 23、13、29，单侧虚拟矩阵维数为 12、7、15。审计用独立的有序麦对双循环检查每个滞后与重数，没有把默认九麦配置当作六麦比较对象。doatools 是维护者的独立实现，其 MIT 许可与实现身份见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCES.lock.json">来源锁表</a>；它不是 Pal–Vaidyanathan 的原作者代码。</p>
 <p><a href="https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/model/coarray.py"><code>model/coarray.py::WeightFunction1D</code></a>先保存每个有符号差分滞后对应的协方差元素索引，再记录重复次数。对六麦嵌套阵，36 个有序麦对分布在 −11～11 的 23 个滞后上；零滞后对应 6 个对角元素。重复元素共享物理通道，不能按 36 次独立测量解释。</p>
 <p><code>get_central_ula_size()</code> 从零向正方向寻找第一个缺失整数，并利用差集对称性返回中心连续段的长度。若连续滞后为 $-L,\ldots,L$，其长度为 $2L+1$；排除负半部时返回 $L+1$。它不会对缺孔自动插值。该函数早期 docstring 的端点描述与实际循环有一位差异，读取时以 <code>while mv in self._index_map</code> 和返回表达式核对，本节采用实际代码的长度。</p>
 <p>物理嵌套阵跨度为 $11d_0$，差集从 $-11d_0$ 到 $11d_0$ 的跨度为 $22d_0$，用于增广的单侧虚拟阵列有 12 个位置、跨度仍为 $11d_0$。三种数量分别是物理孔径、差集跨度和虚拟矩阵维度，不能把“23 个滞后”读成 23 路录音或 23 个可分辨声源。</p>
@@ -1085,20 +1086,64 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>两条分支的数值单位不同。若输入麦克风谱单位为 V，$r[\ell]$ 与 $\mathbf T$ 的元素单位为 V²，$\mathbf R_{\rm ss}$ 则为 V⁴；输入幅度整体乘 $b$ 时，两者分别乘 $|b|^2$ 与 $|b|^4$。空间平滑矩阵用于构造子空间，不应直接当作新增物理通道的声功率，或与原始协方差按元素比较功率大小。</p>
 <span id="393-两组可独立复算的矩阵" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-39-3">39.3 两组可独立复算的矩阵</h4>
 <p>正文 <a href="../03_array-geometry.html#e03-07">E03-07</a>使用物理位置 <code>{0,1,3}</code>，两个互不相关的单位功率源来自 0° 与 30°，通道白噪声功率为 0.1。其四维直接增广矩阵特征值为 $0.1,0.1,4.1,4.1$，因而空间平滑的特征值为 $0.0025,0.0025,4.2025,4.2025$，逐项来自原值平方后除以 4。</p>
-<p>同题的一次快拍反例 $\vec x=[1,0,1]^\top$ 给出直接增广特征值 $-1/3,2/3,2/3,5/3$。空间平滑后的值则为 $1/36,1/9,1/9,25/36$。这些结果已用本书独立 NumPy 外积求和与矩阵乘法两条路线复算；没有调用 doatools，也不能说一次快拍就恢复了真实的两个声源。</p>
-<p>下一步外部对照应对同一输入分别调用 <code>da</code> 和 <code>ss</code>，保存滞后顺序、重数、矩阵及特征值，再逐项与上述手算对齐。固定源码使用 <code>np.complex_</code>，运行环境需核对 NumPy 相容性；目前没有把替换类型别名后的程序冒充原版运行。原始方法定位为 <a href="https://authors.library.caltech.edu/records/e8ge0-xc746">Pal–Vaidyanathan 2010 第 IV 节及 Caltech 所列勘误</a>；本节的矩阵对照只采用已明确列出的输入与代数关系。</p>
+<p>同题的一次快拍反例 $\vec x=[1,0,1]^\top$ 给出直接增广特征值 $-1/3,2/3,2/3,5/3$。空间平滑后的值则为 $1/36,1/9,1/9,25/36$。这些结果既用本书独立 NumPy 外积求和与矩阵乘法复算，也已与固定 doatools 原方法的提取调用对齐；一次快拍仍没有恢复真实的两个声源。</p>
+<p>实际入口为<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/examples/audit_upstream_coarray.py">原方法审计工具</a>，结果保存于<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/reports/upstream_coarray.json">严格 JSON 报告</a>。工具执行 <code>da</code> 与默认 <code>ss</code>，对上述两个相同输入保存物理矩阵、滞后顺序、输出矩阵及特征值；期望来自独立逐滞后平均、直接 Toeplitz 填充、$\mathbf T\mathbf T^H/4$ 和手算特征值。逐元素绝对容差为 $10^{-14}$，两组实际最大矩阵差均为 0。把源幅度乘 2，即输入协方差乘 4，实际 DA 乘 4、SS 乘 16；缩放检查绝对容差为 $10^{-12}$。这些容差只用于此处固定的小规模输入，不是对任意尺度设备数据的通用验收限值。</p>
+<p>运行环境为 Python 3.13.12、NumPy 2.5.3、macOS arm64。固定源码引用已经移除的 <code>np.float_</code> 与 <code>np.complex_</code>；工具在提取定义的局部命名空间内分别提供 <code>float64</code>、<code>complex128</code>，不改全局 NumPy、不改上游文件。AST 提取保留选中的原定义体及装饰器，跳过模块导入与其他顶层代码，因此这是有明确相容脚手架的原方法调用，不是完整原包运行。工具记录自身 SHA、完整锁表 SHA、条目 SHA、七个源码文件及许可文件的 SHA/Git blob、实际 HEAD 和执行前后的干净状态；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_ch03_upstream_coarray.py">独立测试</a>另以手写矩阵和解析分数核对。</p>
+<p>原始方法定位为 <a href="https://authors.library.caltech.edu/records/e8ge0-xc746">Pal–Vaidyanathan 2010 §IV-A、p4172～4174 及 Caltech 所列勘误</a>。正式记录和勘误入口可追溯；本节不把源码对照称为原作者完整系统复现。</p>
+<p>默认运行 <code>.venv/bin/python -m codes.chapters.ch03.examples.audit_upstream_coarray</code> 只输出报告；明确加上 <code>--report codes/chapters/ch03/reports/upstream_coarray.json</code> 才根据当前真实执行写报告。已有固定缓存缺失、HEAD 不符、工作树变脏或源文件与 Git blob 不同都会失败，不联网获取或覆盖缓存。</p>
 <span id="394-几何秩相位歧义与方向域" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-39-4">39.4 几何秩、相位歧义与方向域</h4>
 <p>时延模型的几何秩与窄带相位混叠是两次不同的检查。共线基线只能确定一个方向投影；非共线平面基线可以确定两个投影，但法向两侧仍有镜像。增加非共面基线可补足第三个投影，却不能单独保证单频相位在整个球面上唯一。还要检查相位绕回后是否有不同方向产生相同相对导向。</p>
 <p><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9757818/">Tucker、Zhao、Ahmad 与 Potter 2022 原文</a>的 §II～III 用相对首阵元的几何矩阵定义方向域；平面阵的完整单侧方向域映射为二维单位圆盘。§IV 的 Corollary 4 要求最短非零歧义格点的范数严格大于 2；§V-B 给出规则六边形相邻间距 $d=\lambda/\sqrt3$ 时圆盘恰好相切。相切已经存在一对相同相位方向，因此无歧义需要严格处于临界内侧。正文的 7.5 cm 环径例由此得到约 5.28 kHz 的临界频率。</p>
 <p>原文 §VI 也把无歧义限制为无噪声性质。近似相同的导向、高旁瓣、有限快拍和标定误差仍会造成大误差；不能把无歧义证明当成定位精度保证。若采用刚性挡板、方向性麦克风或实测流形，应重新比较完整复响应，不能直接套用各向同性传感器的纯相位判据。</p>
+<p><a href="../03_array-geometry.html#e03-16">E03-16</a>把第四麦高度依次缩小，却保持几何秩为 3：相同 $1\ \mu s$ 时差误差在无约束线性逆中引起的法向分量变化由 0.008575 增至 0.8575。这个计算诊断观测与单位方向约束的不一致，不能当作有效方向的角误差。</p>
+<p><a href="../03_array-geometry.html#e03-17">E03-17</a>先消去每频一个未知公共复源幅，再比较完整六麦流形：同一方向对在 8 kHz 残差为零、4 kHz 为 $8/9$；另一个 ULA 的 2/4 kHz 反例仍共同混叠。几何秩、单频相位唯一性、多频新增信息与带噪精度必须分别判断。</p>
 <p>原论文脚注明确指向 <a href="https://github.com/Zhao-Shen/Alias-free-Arrays/tree/4c80e169518d44f8333aac7f13c935286538f670">Alias-free-Arrays 作者仓库</a>。固定提交包含 <code>CreateFigure1a.m</code>～<code>CreateFigure2.m</code> 与 README，2026-09-28 核查未见代码许可证，因此只保留来源索引，不自动获取。其绘图代码也不等于带噪声阵列几何优化器。本书几何练习使用公开模型独立计算相对导向，不复制这些 MATLAB 脚本。</p>
 <span id="395-前向失配模型与校准器的区别" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-39-5">39.5 前向失配模型与校准器的区别</h4>
 <p>固定 doatools 的 <a href="https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/model/perturbations.py"><code>model/perturbations.py</code></a>可以把指定误差施加到模型：<code>LocationErrors</code> 加到坐标，<code>GainErrors</code> 逐通道乘 $1+g_m$，<code>PhaseErrors</code> 乘 $e^{\mathrm j\phi_m}$，<code>MutualCoupling</code> 左乘矩阵 $\mathbf C$。其中 $\phi_m$ 用弧度，$g_m=-0.1$ 表示实际增益 0.9。这些类接收已给定误差，不从录音估计误差，也不是自动校准算法。</p>
 <p>建议先用正文 E03-06 的已知双麦复增益检查前向响应，再把反向补偿和未知参数估计作为单独步骤。把全部通道乘同一非零复数可并入未知源幅度；相对校准需指定参考通道。参考通道本身含噪时，直接复谱比值会受分母噪声影响。多位置联合拟合还需检查参考能量、方向覆盖、模型残差与留出方向，不能从训练方向拟合准确推出全方向准确。</p>
+<p>固定原方法的合法输入对照使用 $\mathbf A=\begin{bmatrix}1&\mathrm j\\1&-1\end{bmatrix}$。增益误差 <code>[0.1,-0.2]</code> 与独立左乘 <code>diag(1.1,0.8)</code> 相符；相位误差 <code>[0.2,-0.3]</code> rad 与左乘对应复指数对角阵相符；耦合矩阵 <code>[[1,0.1],[0.2,1]]</code> 与独立矩阵乘法相符。另以一维坐标 <code>[[0],[0.04]]</code> m 加二维位置误差 <code>[[0.001,0.002],[-0.001,0.003]]</code> m，原方法得到 <code>[[0.001,0.002],[0.039,0.003]]</code> m。输出及传入的导数对照都保存在同一报告，未执行未知参数估计。</p>
+<p><a href="../03_array-geometry.html#e03-15">E03-15</a>单独展示带噪参考：真实物理增益为 2，四个等权观测的普通最小二乘系数为 1.6。残差平方和由代入真增益的 4 降到 3.2，仍没有恢复物理增益；完整重复这组观测只同时放大分子与分母，系数不变。该例把参考噪声、拟合目标与校准准确性分开，不能由残差正交或更小推断参数正确。</p>
 <p><strong>未知方向与任意复增益还有更深的不唯一性。</strong> 对间距 $d$ 的 ULA，令 $u_q=\sin\theta_q$、$\kappa=2\pi f/c$，单频第 $q$ 个单源场景的通道预测可写 $x_{mqt}=g_m e^{\mathrm j\kappa md u_q}b_{qt}$。只要全部 $u_q+\delta$ 仍在允许方向域，把每个方向余弦加同一个 $\delta$，同时令 $g'_m=g_m e^{-\mathrm j\kappa md\delta}$，每个观测的复数预测便逐项不变，而且 $g'_0=g_0$。固定参考通道、增加几个未知方向或增加同频快拍，都不足以确定绝对方向；若每个频率的通道相位可自由变化，简单叠加频点也不能自动解除这项自由度。<a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2004/06/2004-ivantash-icme.pdf">Tashev 2004 的作者原文</a>说明交替估计方向与通道参数的思路，但该论文处理的是增益校准；<a href="https://doi.org/10.1007/BF01201215">Weiss 与 Friedlander 1990</a>讨论方向与增益相位联合估计。下面的程序是本书独立写的受约束教学例，不是两篇论文的原实现。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/examples/self_calibration_demo.py">第 3 章受锚标定演示</a>先构造无锚反例：4 麦、间距 4 cm、1 kHz、声速 343 m/s，三场景真角为 −40°、0°、35°；方向余弦共同加 0.15，并让通道相位吸收反向斜率后，两套参数的逐样本复预测最大差约 $7.0\times10^{-16}$。随后给估计器一个<strong>另行测得</strong>的相邻通道相位 0°，固定参考麦增益为 1，在 −60°～60° 内交替剖面搜索方向、最小二乘更新各通道复增益与逐帧源谱。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/core/calibration.py">唯一数值核</a>记录每轮残差目标、收敛状态和低能量、越界或混叠拒绝条件；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_chapter03_self_calibration.py">独立边界测试</a>检查代数等价、正确锚与错误锚。固定种子 307、每场景 48 帧、复噪声 RMS 0.005 的一次合成运行于第 21 轮停止，三个角误差为约 +0.00561°、−0.01208°、−0.00282°；这不是跨条件性能分布。</p>
 <p>错误锚比低残差更值得注意：把相邻通道相位误设为 +5°，同一无噪声数据仍可拟合到约 $10^{-28}$ 的残差目标，却把正横场景估成约 −6.84°。因此优化目标下降不能证明外部相位锚正确。示例假设同步远场、每场景一个窄带源、已知几何和准确的外部相位锚；它没有运行真实硬件、混响或多个同时说话人的实验，也不保证全局最优。运行：<code>.venv/bin/python -m codes.chapters.ch03.examples.self_calibration_demo</code>，标准输出为 JSON，不生成音频文件。</p>
-<p>固定源码还有以下静态接口疑点，未在此执行错误路径：<code>GainErrors</code>、<code>PhaseErrors</code> 的列表转数组分支写入了拼错的局部变量，后面仍读取原对象的 <code>ndim</code>；<code>MutualCoupling</code> 的方阵校验使用 <code>and</code>，没有完整拒绝非方二维数组。合法模型对照可显式传入正确形状的 NumPy 数组，负例仍需在外部隔离环境中验证并记录；不能把这些类列成已验收的设备输入接口。</p>
+<p>固定源码的输入检查存在下列实际触发的故障。负例直接调用未改定义，不经过本书对合法物理协方差的形状、有限性、厄米性和半正定性检查；“函数返回了值”与“接受了有效模型”分别记录。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">原方法与输入</th>
+<th scope="col">固定源码行为与实际结果</th>
+<th scope="col">使用边界</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GainErrors([0.1,0.2])</code>、<code>PhaseErrors([0.1,0.2])</code></td>
+<td>列表转数组分支写入拼错的局部变量，后面仍读原列表的 <code>ndim</code>；两者均抛 <code>AttributeError</code></td>
+<td>合法对照显式传正确形状的 NumPy 数组；不称列表路径已通过</td>
+</tr>
+<tr>
+<td><code>MutualCoupling</code> 接收 2×3 数组</td>
+<td>方阵校验使用 <code>and</code>，构造器实际接受非方阵</td>
+<td>接受成功不构成合法耦合模型；调用前独立核对方阵与通道数</td>
+</tr>
+<tr>
+<td><code>MutualCoupling</code> 接收一维数组</td>
+<td>访问第二维长度时抛 <code>IndexError</code></td>
+<td>形状错误没有得到完整的接口诊断</td>
+</tr>
+<tr>
+<td><code>CoarrayACMBuilder1D</code> 接收 3×4 输入</td>
+<td><a href="https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/estimation/core.py#L14"><code>ensure_covariance_size</code></a>重复检查行数；把合法3×3矩阵附加一列 <code>[99,99,99]</code> 后仍返回相同 DA，额外列被静默忽略</td>
+<td>协方差必须先核对两个维度，不允许截断通道冒充输入相符</td>
+</tr>
+<tr>
+<td>同一构造器接收 3×2 输入</td>
+<td>行数检查仍放行，后续向量索引抛 <code>IndexError</code></td>
+<td>不由晚到的索引异常替代入口形状检查</td>
+</tr>
+</tbody>
+</table></div>
+<p>这些结果绑定上述固定提交与报告环境，不推断后续主分支是否已经修复，也没有补丁改写本地上游缓存。合法前向模型、错误输入表现、未知参数估计及设备验收是不同证据。</p>
 <p>串扰补偿还应注明噪声加入的位置。若观测为 $\vec x=\mathbf C\vec s+\vec n_{\rm post}$，左乘逆矩阵会改变后加噪声为 $\mathbf C^{-1}\vec n_{\rm post}$，病态矩阵可大幅放大它；若噪声在混合前已与信号共同经过 $\mathbf C$，就不能把同一句结论无条件套上去。方向相关壳体散射应进入实测流形，固定串扰矩阵不能代替它。</p>
 <span id="396-从-toa-距离到同步麦克风-tdoa-自标定" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-39-6">39.6 从 TOA 距离到同步麦克风 TDOA 自标定</h4>
 <p><a href="https://www.lunduniversity.lu.se/lup/publication/e90f122e-669e-44c8-8da8-41fae8645aae">Kuang 等 ICASSP 2013 的大学官方记录</a>明确讨论到达时间（Time of Arrival，TOA）给出的全部接收器—发射器距离。到达时间差（Time Difference of Arrival，TDOA）只提供距离差，未知发声时刻带来另一组未知量，不能直接套用 TOA 的最小数据要求。</p>

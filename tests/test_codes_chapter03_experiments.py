@@ -8,9 +8,9 @@ from codes.chapters.ch00.core.audio_samples import dma_calibration_case, prepare
 
 
 class Chapter03ExperimentsTest(unittest.TestCase):
-    def test_registry_has_seven_serializable_new_exercises(self):
+    def test_registry_has_ten_serializable_exercises(self):
         result=ch3.run_exercises()
-        self.assertEqual(set(result),{f'E03-{n:02}' for n in range(8,15)})
+        self.assertEqual(set(result),{f'E03-{n:02}' for n in range(8,18)})
         json.dumps(result,allow_nan=False)
 
     def test_ula_half_power_from_cosine_factorization(self):
@@ -166,6 +166,82 @@ class Chapter03ExperimentsTest(unittest.TestCase):
             self.assertLess(np.max(abs(data)),.8)
         # Known correction produces identical PCM to the ideal target output.
         self.assertEqual(files['dma_calibration_corrected.wav'][0],files['dma_calibration_target.wav'][0])
+
+    def test_published_dma_pcm_is_read_and_independent_projection_matches(self):
+        import wave
+        from pathlib import Path
+        root=Path(__file__).resolve().parents[1]
+        result=ch3.dma_gain_mismatch()['pcm_measurements']
+        self.assertEqual(len(result['files']),4)
+        self.assertEqual(result['corrected_target_max_abs_difference'],0)
+        for row in result['steady_interval_projection']:
+            start,stop=row['scoring_interval_samples'];frequency=row['frequency_hz']
+            time=np.arange(start,stop)/16000
+            # Orthogonal real sine/cosine sums on whole periods, independent
+            # of the implementation's least-squares route.
+            for name,amplitudes in row['projected_output_amplitudes'].items():
+                with wave.open(str(root/'codes/chapters/ch03/audio'/f'{name}.wav'),'rb') as wav:
+                    channels=wav.getnchannels();raw=wav.readframes(wav.getnframes())
+                pcm=np.frombuffer(raw,dtype='<i2').reshape(-1,channels).T/32768
+                expected=[]
+                for channel in pcm:
+                    s=2*np.mean(channel[start:stop]*np.sin(2*np.pi*frequency*time))
+                    c=2*np.mean(channel[start:stop]*np.cos(2*np.pi*frequency*time))
+                    expected.append(math.hypot(s,c))
+                np.testing.assert_allclose(amplitudes,expected,atol=1e-14)
+        back=result['steady_interval_projection'][1]
+        self.assertAlmostEqual(back['projected_output_amplitudes']['dma_calibration_mismatch'][0],.00249743384251357,places=14)
+
+    def test_noisy_reference_four_exact_outcomes(self):
+        result=ch3.noisy_calibration_reference()
+        self.assertEqual(result['noisy_reference'],[1.5,.5,-.5,-1.5])
+        self.assertEqual(result['numerator'],8)
+        self.assertEqual(result['denominator'],5)
+        self.assertAlmostEqual(result['estimated_gain'],8/5)
+        np.testing.assert_allclose(result['residual'],[-2/5,6/5,-6/5,2/5])
+        self.assertAlmostEqual(result['residual_mean_square'],4/5)
+        self.assertAlmostEqual(result['residual_squared_sum'],16/5)
+        self.assertAlmostEqual(result['true_gain_prediction_residual_squared_sum'],4)
+        self.assertAlmostEqual(result['reference_residual_inner_product'],0,places=14)
+        for row in result['repeated_estimates']:self.assertAlmostEqual(row['estimated_gain'],8/5)
+
+    def test_full_rank_height_sensitivity_from_scalar_inverse(self):
+        rows=ch3.nearly_planar_geometry()['cases']
+        for row,h,condition in zip(rows,[.04,.004,.0004],[1,10,100]):
+            self.assertEqual(row['rank'],3)
+            self.assertAlmostEqual(row['condition_number_2'],condition)
+            expected=[.3,.4,math.sqrt(.75)-343e-6/h]
+            np.testing.assert_allclose(row['raw_direction'],expected,atol=1e-15)
+            self.assertAlmostEqual(row['direction_error'][2],-343e-6/h)
+            self.assertAlmostEqual(row['mirror_normal_delay_separation_us'],2*h*math.sqrt(.75)/343*1e6)
+            self.assertAlmostEqual(row['raw_direction_norm'],math.sqrt(sum(v*v for v in expected)))
+            self.assertLess(row['linear_equation_residual_max_m'],1e-16)
+
+    def test_ring_two_frequency_profile_and_harmonic_counterexample(self):
+        result=ch3.multi_frequency_ambiguity();four,eight=result['ring_cases']
+        # At 4k, four of six ratios change sign; alpha=(2-4)/6=-1/3.
+        self.assertAlmostEqual(four['unknown_complex_alpha']['real'],-1/3)
+        self.assertAlmostEqual(four['profile_relative_residual'],8/9)
+        self.assertLess(eight['profile_relative_residual'],1e-26)
+        low,first,second=result['ula_counterexample']['cases']
+        self.assertAlmostEqual(low['adjacent_difference_cycles'],.5)
+        self.assertEqual(result['ula_counterexample']['positions_m'],[[0.,0.],[.1,0.],[.2,0.],[.1*3,0.]])
+        # Four alternating ratios [1,-1,1,-1] sum to zero: alpha=0,
+        # residual energy equals observed energy. Harmonic tones all align.
+        self.assertAlmostEqual(low['profile_relative_residual'],1.)
+        for row,cycle in ((first,1),(second,2)):
+            self.assertAlmostEqual(row['adjacent_difference_cycles'],cycle)
+            self.assertLess(row['max_relative_manifold_difference'],1e-14)
+            self.assertLess(row['profile_relative_residual'],1e-26)
+
+    def test_fair_comparison_has_equal_aperture_count_conditions(self):
+        result=ch3.fair_aperture_comparison();ula,nested=result['cases']
+        for row,expected in zip((ula,nested),[33.86671311704343,33.868640493790565]):
+            self.assertEqual(len(row['positions_m']),6)
+            self.assertEqual(row['physical_aperture_m'],.11)
+            self.assertAlmostEqual(row['exact_hpbw_deg'],expected,places=9)
+            self.assertEqual(row['wng_linear'],6)
+            self.assertAlmostEqual(row['wng_db'],10*math.log10(6))
 
 
 if __name__=='__main__':unittest.main()

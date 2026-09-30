@@ -1,4 +1,4 @@
-"""Explicit cross-module, chapter and research inventory for 237 exercises."""
+"""Explicit cross-module, chapter and research inventory for 240 exercises."""
 
 import json
 import re
@@ -49,7 +49,7 @@ EXPECTED = {
     "chapter06": {f"E06-{n:02d}" for n in range(22, 34)},
     "chapter05": {f"E05-{n:02d}" for n in range(8, 18)},
     "chapter04": {f"E04-{n:02d}" for n in range(12, 19)},
-    "chapter03": {f"E03-{n:02d}" for n in range(8, 15)},
+    "chapter03": {f"E03-{n:02d}" for n in range(8, 18)},
     "chapter02": {f"E02-{n:02d}" for n in range(9, 19)},
     "chapter01": {"E01-04", "E01-05", "E01-06", "E01-07", "E01-08", "E01-09"},
     "spatial_model": {"E02-08", "E04-11", "E05-07", "E12-05"},
@@ -136,9 +136,9 @@ class ExerciseCatalogTest(unittest.TestCase):
     def setUpClass(cls):
         cls.results = {name: run() for name, run in RUNNERS.items()}
 
-    def test_independent_inventory_has_237_unique_ids(self):
-        self.assertEqual(len(ALL_IDS), 237)
-        self.assertEqual(sum(map(len, EXPECTED.values())), 237)
+    def test_independent_inventory_has_240_unique_ids(self):
+        self.assertEqual(len(ALL_IDS), 240)
+        self.assertEqual(sum(map(len, EXPECTED.values())), 240)
 
     def test_each_module_returns_exact_assigned_ids(self):
         for name, results in self.results.items():
@@ -161,7 +161,7 @@ class ExerciseCatalogTest(unittest.TestCase):
                 text = chapters[0].read_text(encoding="utf-8")
                 self.assertRegex(text, rf"\b{re.escape(exercise_id)}\b")
 
-    def test_chapter_and_research_inventories_cover_exactly_237_ids(self):
+    def test_chapter_and_research_inventories_cover_exactly_240_ids(self):
         chapters = "\n".join(path.read_text(encoding="utf-8")
                              for path in (ROOT / "chapters").glob("*.md"))
         research = (ROOT / "codes/chapters/ch00/research/05_exercises_and_audio.md").read_text(encoding="utf-8")

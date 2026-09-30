@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>章节代码练习与音频实验 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f713b32fbf06"><style>
+<meta name="source-digest" content="b9fc722eb2ad"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -123,6 +123,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-36-2">36.2 同一间歇源的三条试听与实际PCM计算</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-36-3">36.3 E02-17：空间白噪声还缺一个条件</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-36-4">36.4 E02-18：幅度校正与功率校正分开计算</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-27a1cb9b21">37. 第三章：参数可辨识、数值稳定与多频证据</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-37-1">37.1 E03-15：参考噪声进入分母</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-37-2">37.2 E03-16：接近共面，却没有降秩</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-37-3">37.3 E03-17：逐频消除公共源幅度</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-37-4">37.4 三份独立连续传播音频</a></li>
 </ul>
 <div class="chap"><a href="../01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
 <div class="chap"><a href="../02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
@@ -203,10 +208,15 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-36-2">36.2 同一间歇源的三条试听与实际PCM计算</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-36-3">36.3 E02-17：空间白噪声还缺一个条件</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-36-4">36.4 E02-18：幅度校正与功率校正分开计算</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-27a1cb9b21">37. 第三章：参数可辨识、数值稳定与多频证据</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-37-1">37.1 E03-15：参考噪声进入分母</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-37-2">37.2 E03-16：接近共面，却没有降秩</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-37-3">37.3 E03-17：逐频消除公共源幅度</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-37-4">37.4 三份独立连续传播音频</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="章节代码练习与音频实验" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-c621965c02">章节代码练习与音频实验</h1>
 <p>先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。</p>
-<p>本页索引 237 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
+<p>本页索引 240 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
 <p>E06-07～E06-20 使用无量纲回声模型检查 AEC 的计算与边界，其中 E06-11～20 可用精确答案程序核对。第 15、16 节另提供参数不同的合成音频；试听文件本身不是题目真值。</p>
 <p>第 3～11、13～16、18、21～30、32～34 节对应主清单的 109 个数学合成样本。第 17 节的 18 个房间白噪声合成样本使用独立清单；第 12 节使用另行授权的真实同步录音。第 31 节的 2 份从 PCM 形成定位观测的追踪样本也使用独立清单。不同音频的来源和可作的比较不同，试听前先查看各节的条件。</p>
 <p>主音频按章存放，统一由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/examples/generate_audio_samples.py">生成器</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/audio/MANIFEST.json">清单</a>管理。清单记录每组模型、种子、共同导出增益、采样率、通道、帧数、量化误差、运行环境、源文件摘要与逐 WAV 摘要；不把某组的谐波模板套到其他组。PCM16 编码按最近偶数舍入，不加抖动或自动限幅，RMS 对全部通道与采样一起计算。运行生成器并附加 <code>--check</code> 时只在内存重算和读回比对，不重写资产；严格字节核对也比较 Python、NumPy 和平台记录，异机不通过不等于算法错误。生成中断造成清单与 WAV 不一致时须重新生成、核对，再构建图和网站；不要手改单个生成文件。样本没有真人录音或模型权重，客观读回和浏览器加载不等于正式听测。</p>
@@ -277,8 +287,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_spatial.py">空间练习</a>（01～06）；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/coarray_covariance_exercise.py">协同阵 E03-07</a></td>
 </tr>
 <tr>
-<td>第 3 章 E03-08～14</td>
-<td>精确波束宽度、完整相位歧义、平面镜像、后置噪声正则化、复增益最小二乘、互质洞和双麦差分校准</td>
+<td>第 3 章 E03-08～17</td>
+<td>精确波束宽度、完整相位歧义、平面镜像、后置噪声正则化、复增益最小二乘、互质洞、双麦差分、带噪参考、接近共面和多频相位</td>
 <td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/chapter03_experiments.py">几何与校准实验</a></td>
 </tr>
 <tr>
@@ -1000,6 +1010,31 @@ $$</p>
 </tbody>
 </table></div>
 <p>表中是连续模型采样后、PCM16 量化前的复指数投影结果，两个评分段都长 0.5 s，避开传播起止与包络。数字零表示理想模型零响应；浮点校正与目标参考的最大差约 $2.8\times10^{-17}$，导出后两个 PCM 文件字节相同。PCM 量化误差另按半个最低有效位检查，不把浮点残差当作真实设备零陷深度。</p>
+<p>实际重读已发布的 PCM16 文件后，在相同区间重新作复指数投影，得到下表。每段均为 8000 点；此处的幅度是采样后单频投影的估计值，分开列出量化前后的结果，不能把约 $10^{-6}$ 的变化解释成设备测量精度。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">PCM 重读稳态区间</th>
+<th scope="col" style="text-align: right;">理想目标参考幅度</th>
+<th scope="col" style="text-align: right;">未校正幅度</th>
+<th scope="col" style="text-align: right;">真值校正幅度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>前方 1000 Hz，[2400,10400) 点</td>
+<td style="text-align: right;">0.0910787</td>
+<td style="text-align: right;">0.0915694</td>
+<td style="text-align: right;">0.0910787</td>
+</tr>
+<tr>
+<td>后方 1600 Hz，[15200,23200) 点</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.0024974</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table></div>
 <p>这一实验解释“目标听起来变化很小，后方抑制却已受失配限制”的原因。已知增益校正不等于已估计出实际麦克风误差；真实设备还需要处理通道噪声、频率相关增益、延时误差、反射与壳体散射。生成函数 <code>dma_calibration_case</code> 见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/core/audio_samples.py">音频源</a>，<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/chapter03_experiments.py">第 3 章实验入口</a>给出两段的独立频率投影；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_chapter03_experiments.py">测试</a>用和差化积、后方幅度残差、共同增益和 PCM 读回验证。</p>
 <span id="sec-27" class="anchor-alias" aria-hidden="true"></span><span id="26-纯音的时差歧义与宽频相位约束" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-50bb14a451">26. 纯音的时差歧义与宽频相位约束</h2>
 <p>第 4 章 E04-18 使用 <code>doa_ambiguity</code> 组的两个双声道文件：<code>doa_ambiguity_tone.wav</code> 是 2000 Hz 纯音，<code>doa_ambiguity_broadband.wav</code> 是 365 个频率分量组成的宽频多正弦。二者均为数学合成的等幅自由场来声，长 2 s、16 kHz；没有真实录音、混响或附加噪声，也没有主观听音评价。两个文件共同导出增益为 1，没有逐文件峰值归一化。</p>
@@ -1745,6 +1780,93 @@ PSD还须写采样率、Hz分母、单边折叠和去均值策略。
 <p>三题与端点扩问可统一运行：</p>
 <pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch02.chapter02_experiments
 </code></pre>
+<span id="sec-66" class="anchor-alias" aria-hidden="true"></span><span id="37-第三章参数可辨识数值稳定与多频证据" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-27a1cb9b21">37. 第三章：参数可辨识、数值稳定与多频证据</h2>
+<p>E03-15～17分别补足带噪参考、接近共面、多频相位三个不同问题。运行<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/chapter03_experiments.py">单章入口</a>可复算这三题与旧E03-08～14；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/examples/self_calibration_demo.py">受外部相位锚约束的标定演示</a>仍为单独示例。未知源方向、未知通道增益和未知几何不是同一估计问题，不能用“自校准”一词省去各自前提。</p>
+<span id="sec-67" class="anchor-alias" aria-hidden="true"></span><span id="371-e03-15参考噪声进入分母" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-37-1">37.1 E03-15：参考噪声进入分母</h3>
+<p>输入为四个等权组合，$s=[1,1,-1,-1]$、$e=[0.5,-0.5,0.5,-0.5]$，可观测参考 $z=s+e$，输出 $y=2s$。这些是示意数学数据，不是麦克风噪声测量。普通复数最小二乘的共轭内积分子为 $z^Hy=8$，分母为 $z^Hz=5$，估值为1.6；真实干净输入的通道增益为2。</p>
+<p>两者不同的原因可以逐项看见：信号噪声交叉项 $\sum s_i e_i$ 为0，但分母还保留 $\sum e_i^2=1$。如果可用干净输入，分母才是4。本题没有使用噪声方差补偿器，也没有给估计器真值增益。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">用可观测参考作预测</th>
+<th scope="col" style="text-align: right;">参数</th>
+<th scope="col">预测误差向量</th>
+<th scope="col" style="text-align: right;">平方和 / 四点</th>
+<th scope="col" style="text-align: right;">残差均方</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>普通最小二乘</td>
+<td style="text-align: right;">1.6</td>
+<td>$[-0.4,1.2,-1.2,0.4]$</td>
+<td style="text-align: right;">3.2</td>
+<td style="text-align: right;">0.8</td>
+</tr>
+<tr>
+<td>真实物理增益</td>
+<td style="text-align: right;">2</td>
+<td>$[-1,1,-1,1]$</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table></div>
+<p>拟合残差与参考正交，$z^Hr=0$，只证明最小二乘的正规条件。训练残差更小不能证明恢复了物理参数。完整重复四点100次，分子、分母同时乘100，估值仍是1.6；这不是另一次独立噪声实验。</p>
+<p><a href="../03_array-geometry.html#e03-15">正文式(3-17)</a>在信号、参考噪声零均值且不相关时给总体二阶比值 $gP_s/(P_s+P_e)$。总体期望之比不等于任意有限样本比例的期望；输出噪声相关或源噪声相关时要重新展开交叉项。</p>
+<span id="sec-68" class="anchor-alias" aria-hidden="true"></span><span id="372-e03-16接近共面却没有降秩" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-37-2">37.2 E03-16：接近共面，却没有降秩</h3>
+<p>四个坐标为原点、x轴40mm、y轴40mm、z轴高度 $h$。各轴同以m计算，$G=\operatorname{diag}(0.04,0.04,h)$；真方向为 $(0.3,0.4,\sqrt{0.75})$。仅第三条TDOA加1μs时，<a href="../03_array-geometry.html#e03-16">正文式(3-18)</a>给无约束线性逆的 $\Delta u_z=-343\times10^{-6}/h$。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">高度 / mm</th>
+<th scope="col" style="text-align: right;">秩</th>
+<th scope="col" style="text-align: right;">条件数</th>
+<th scope="col" style="text-align: right;">无约束 $\Delta u_z$</th>
+<th scope="col" style="text-align: right;">上下镜像第三TDOA间隔 / μs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>40</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">−0.008575</td>
+<td style="text-align: right;">201.9884</td>
+</tr>
+<tr>
+<td>4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">−0.085750</td>
+<td style="text-align: right;">20.1988</td>
+</tr>
+<tr>
+<td>0.4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">−0.857500</td>
+<td style="text-align: right;">2.0199</td>
+</tr>
+</tbody>
+</table></div>
+<p>三者都可逆。高度缩小100倍，相同输入扰动的线性分量变化扩大100倍，镜像间隔则缩小100倍。图51按同一模型画这两种尺度，不将分量变化标成角误差或CRB。</p>
+<p>原始逆解还须检查单位长度。最小高度给 $(0.3,0.4,0.008525)$，平方长度约0.250073；它不是合法单位方向。归一化会改变本题原先准确的平面内投影，不能代替带单位约束、误差权重和物理边界的拟合。准确平面内投影已能确定 $|u_z|$，第三观测在这个特殊模型中主要区分正负；本题不冒称约束最优角估计器的精度分布。</p>
+<span id="sec-69" class="anchor-alias" aria-hidden="true"></span><span id="373-e03-17逐频消除公共源幅度" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-37-3">37.3 E03-17：逐频消除公共源幅度</h3>
+<p>沿用六麦半径37.5mm圆环，阵元角为 $m\pi/3$，方位角从+y向+x，参考阵元为 $m=0$。两个固定水平方向为 $(a,\pm b)$，$b=343/(8000\sqrt3\times0.0375)$、$a=\sqrt{1-b^2}$，方位48.69221°与131.30779°。换频率不改变这些坐标和方向。</p>
+<p>8kHz两方向的相对导向比为六个1；4kHz为 $[1,-1,-1,1,-1,-1]$。后者不能由一个公共复数倍把完整导向匹配。每频未知源幅度按<a href="../03_array-geometry.html#e03-17">正文式(3-19)</a>消元：$\hat\beta=a_c^Ha_t/(a_c^Ha_c)$，归一化残差为 $1-|a_c^Ha_t|^2/(\|a_c\|^2\|a_t\|^2)$。</p>
+<p>在4kHz，内积为−2，两个平方范数均6，所以复拟合系数为−1/3、相干幅度为1/3、相干功率为1/9、残差为8/9。8kHz则分别为1、1、1、0。公共源幅可以逐频变化；若进一步允许每个通道有自由未知响应，此辨识结论不成立。</p>
+<p>两个频点也可能重复同一歧义。四麦间距0.1m的ULA取方向正弦±0.8575，相邻两方向投影差0.1715m。在2kHz它是一波长，4kHz是两波长，两频都重合；1kHz才得到 $[1,-1,1,-1]$ 和残差1。频率集合须实际检查，不能按频点数量判断。</p>
+<span id="sec-70" class="anchor-alias" aria-hidden="true"></span><span id="374-三份独立连续传播音频" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-37-4">37.4 三份独立连续传播音频</h3>
+<p><a href="../geometry_audio/geometry_reference.wav">圆心时间轴双频源参考</a><audio class="audio-sample" controls preload="none" aria-label="圆心时间轴双频源参考" src="../geometry_audio/geometry_reference.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../geometry_audio/geometry_u.wav">方向u的六通道观测</a><audio class="audio-sample" controls preload="none" aria-label="方向u的六通道观测" src="../geometry_audio/geometry_u.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../geometry_audio/geometry_v.wav">方向v的六通道观测</a><audio class="audio-sample" controls preload="none" aria-label="方向v的六通道观测" src="../geometry_audio/geometry_v.wav">请使用上方 WAV 链接下载。</audio></p>
+<p>三文件为32kHz、PCM16、64000点（2s），源参考单声道，两观测各六声道；共同导出增益1，没有逐文件放大。每个纯音幅度0.08，频率4/8kHz；源激励区间[0.1,1.9)s，两边20ms线性淡变。共同传播基准为2ms，再按每个阵元的实际位置投影求到达时刻。圆心参考是 $F(t-b)$，不冒充参考麦0的精确激励，也不送给候选方向求解。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/core/geometry_audio.py">唯一信号与测量核</a>直接在连续源时刻求值，不宣称已经实现采样后的分数延迟滤波器。32kHz保证8kHz位于Nyquist以下；若改成16kHz，该频点不能一般表示任意复相位。最晚非零传播支持小于2s，保留尾部；有限包络边缘可以给出额外时差，8kHz稳定相位等价不意味着有限记录的所有采样等价。</p>
+<p>评分仅取[0.15,1.85)s，即4800:59200、每通道54400点，避开淡变和传播边界。四列实数cos/sin最小二乘联合分离两频，以cos系数减去j倍sin系数得到复数谱幅。观测方向求解只用六个通道的复幅与几何候选，每频消除一个公共未知复源幅；归一化分母是该频六通道复幅平方和，不把时间样本均方或源参考能量混作分母。</p>
+<p>解析、浮点、实际PCM评分和量化误差分别保存于<a href="../geometry_audio/MANIFEST.json">独立清单</a>，不计入109主样本。五个真实源为信号核、生成器、geometry.py、conventions.py、共享PCM编解码源；清单绑定各自SHA和每份WAV实际SHA。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/examples/generate_geometry_audio.py">生成入口</a>加 <code>--check</code> 时严格只读，重读实际PCM评分并拒绝缺失、额外、过期或变更的资产。</p>
+<p>播放前调低音量，所有网页控件不自动播放。浏览器或设备可能下混六声道，试听变化不是方向识别成绩；没有正式听测、真实语音、房间噪声或硬件标定。图52是理想解析流形，音频中的实际PCM拟合是另一层证据。</p>
+<p>实际 PCM 重读后，对方向 $\vec u$ 的六路观测逐频拟合，4 kHz 的相量平方和为 0.0383951，错误方向残差平方和约 0.0341280，比例为 0.8888644；正确方向比例约 $3.46\times10^{-9}$。8 kHz 的相量平方和为 0.0383981，两方向的残差比例均约 $3.91\times10^{-9}$。这些小残差来自 PCM 量化后的相量估计，不能写成数学上的零；浮点模型在错误方向分别给出 $8/9$ 与接近浮点舍入误差的零。原始有效数字、复系数和分母完整保存在清单中。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

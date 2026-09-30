@@ -42,13 +42,13 @@
 | 附录 A §12.3/E12-08 | FFT 分块线性卷积及故意错误的逐块循环对照 | 本仓库可运行基线 | `codes/chapters/appendix_a/core/math_foundations.py::fft_overlap_add`、`blockwise_circular_convolution` | 块长512、FIR长121、FFT至少632；错误对照丢失跨块尾部，不能作为正确实现 |
 | §2.5 | 批处理空间协方差 | 本仓库可运行基线 | `codes/chapters/ch03/core/covariance.py::spatial_covariance` | 共轭、快拍与功率归一 |
 | §2.5、§5.4 | 递推空间协方差 | 本仓库可运行基线 | `codes/chapters/ch03/core/covariance.py::recursive_covariance` | 遗忘因子、启动与非平稳性 |
-| §3.3 | 差分协同阵增广协方差 | 外部参考实现 | `doatools`：`doatools/estimation/coarray.py` | 默认ss为滞后段外积平均，da为直接增广；单位分别是功率平方与功率，有限样本da不保证半正定 |
+| §3.3 | 差分协同阵增广协方差 | 外部参考实现 | `doatools`：`doatools/estimation/coarray.py` | 固定原方法已执行DA/SS与缩放对照，见研究§39；默认ss为滞后段外积平均，da为直接增广；单位分别是功率平方与功率，有限样本da不保证半正定；未运行整包/DOA |
 | §3.3 | 稀疏阵几何优化 | 原理索引 | 正文差分集合与孔径分析 | 协方差重建不是几何优化器 |
 | §3.4.1 | 有外部相位锚的 DOA—复增益联合拟合与无锚歧义 | 本仓库可运行基线 | `codes/chapters/ch03/core/calibration.py::fit_anchored_ula`、`codes/chapters/ch03/examples/self_calibration_demo.py` | 单频 ULA、逐场景单源，须已独立测得相邻通道相位；无锚共同相位斜率不唯一；非全盲或原作者系统复现 |
 | §3.4.2 | 互耦补偿 | 原理索引 | 正文互耦矩阵模型及E03-11 | 区分混合前/后噪声；仅小矩阵正则化演示，不是未知耦合估计器 |
 | §3.4.3 | 麦位置自标定 | 外部参考实现 | `structure-from-sound`：`matlab/tdoa/calcresandjac.m`、`bundletdoa.m` | 同步麦、已知声速、足够不同源位；固定版依赖与路径需处理，未运行 |
 | §3.2.2 | 指定方向域相位歧义格点判别 | 原理索引 | Tucker等2022与`alias-free-arrays`固定索引 | 作者代码未建立许可，不自动获取；本书独立验证六边形方向对 |
-| §3.4 | 已知位置/增益/相位/互耦扰动前向模型 | 外部参考实现 | `doatools`：`doatools/model/perturbations.py` | 施加给定误差，不估计误差；固定版输入校验静态问题见研究§39 |
+| §3.4 | 已知位置/增益/相位/互耦扰动前向模型 | 外部参考实现 | `doatools`：`doatools/model/perturbations.py` | 施加给定误差，不估计误差；固定版列表/非方输入故障已实际触发，见原方法审计报告与研究§39 |
 
 ## 定位与搜索
 
@@ -375,14 +375,14 @@
 
 ## 章节代码练习与音频映射
 
-237 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 299 行算法统计。补充的空间精算、增强步骤、时间状态模块分别提供3/5/4道题。三个原有 `exercises_` 模块各自提供 `run_exercises()`，分别有 28/23/25 道题；AEC 小实验另有 4 道，进阶 AEC 手算另有 10 道；E03-07、E04-08、E09-06 与 E10-13 由独立实验入口提供。E04-08 的 200 次独立双源抽样只说明固定模型中的分辨事件频率和 Wilson 区间。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
+240 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 299 行算法统计。补充的空间精算、增强步骤、时间状态模块分别提供3/5/4道题。三个原有 `exercises_` 模块各自提供 `run_exercises()`，分别有 28/23/25 道题；AEC 小实验另有 4 道，进阶 AEC 手算另有 10 道；E03-07、E04-08、E09-06 与 E10-13 由独立实验入口提供。E04-08 的 200 次独立双源抽样只说明固定模型中的分辨事件频率和 Wilson 区间。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
 
 | 章节与稳定 ID | 练习入口 | 回归测试 |
 |---|---|---|
 | 第 6 章：E06-22～33（12题） | [AEC 状态、数值与指标实验](../ch06/chapter06_experiments.py) | [独立测试](../../../tests/test_codes_chapter06_experiments.py)、[数值边界](../../../tests/test_codes_aec_numerical_boundaries.py) |
 | 第 5 章：E05-08～17（10题） | [约束、谱估计与状态实验](../ch05/chapter05_experiments.py) | [独立测试](../../../tests/test_codes_chapter05_experiments.py)、[GSC状态测试](../../../tests/test_codes_gsc.py) |
 | 第 4 章：E04-12～18（7题） | [定位逐步实验](../ch04/chapter04_experiments.py) | [独立测试](../../../tests/test_codes_chapter04_experiments.py) |
-| 第 3 章：E03-08～14（7题） | [几何与校准逐步实验](../ch03/chapter03_experiments.py) | [独立测试](../../../tests/test_codes_chapter03_experiments.py) |
+| 第 3 章：E03-08～17（10题） | [几何与校准逐步实验](../ch03/chapter03_experiments.py) | [独立测试](../../../tests/test_codes_chapter03_experiments.py) |
 | 第 2 章：E02-09～18（10题） | [声学模型逐步实验](../ch02/chapter02_experiments.py) | [独立测试](../../../tests/test_codes_chapter02_experiments.py) |
 | 第 1 章：E01-04～09（6题） | [基础逐步实验](../ch01/chapter01_experiments.py) | [独立测试](../../../tests/test_codes_chapter01_experiments.py) |
 | 附录 A：E12-06～13（8题） | [数学与边界逐步实验](../appendix_a/appendix_a_experiments.py)，[分块卷积实现](../appendix_a/core/math_foundations.py) | [独立测试](../../../tests/test_codes_appendix_a_experiments.py) |
@@ -434,7 +434,7 @@
 本仓库不提交下载缓存、模型权重或未经授权的第三方语料。109 个自行合成的教学 WAV 按章放在 `codes/chapters/*/audio/`，单一总清单位于 `codes/chapters/ch00/audio/MANIFEST.json`；许可明确的 DEMAND 小型摘录和派生文件位于 `codes/chapters/ch02/real_audio/`，不包含完整下载归档。独立上游工作目录的取得、许可保留与未执行项目按来源状态记录报告。算法、源码或排除范围变化时，同步修改本表、研究说明、来源清单和真实验证记录。
 
 
-真实数据练习 R01 使用 [prepare_real_recordings.py](../ch02/examples/prepare_real_recordings.py) 与 [real_recordings.py](../ch02/core/real_recordings.py)，测试见 [test_codes_real_recordings.py](../../../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 237 道合成/手算代码题。数据来源和许可另见 [real_audio/](../ch02/real_audio/README.md)。
+真实数据练习 R01 使用 [prepare_real_recordings.py](../ch02/examples/prepare_real_recordings.py) 与 [real_recordings.py](../ch02/core/real_recordings.py)，测试见 [test_codes_real_recordings.py](../../../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 240 道合成/手算代码题。数据来源和许可另见 [real_audio/](../ch02/real_audio/README.md)。
 
 四组模型与边界练习对应以下独立实现；主音频新增的 4 个 interpolation 文件验证固定滤波误差，不是完整采样率转换性能。
 
