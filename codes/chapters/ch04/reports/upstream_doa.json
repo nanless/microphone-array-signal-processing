@@ -1,8 +1,8 @@
 {
-  "run_utc": "2026-09-30T17:58:05.653028+00:00",
-  "run_asia_shanghai": "2026-10-01T01:58:05.658340+08:00",
+  "run_utc": "2026-09-30T22:46:25.332484+00:00",
+  "run_asia_shanghai": "2026-10-01T06:46:25.332669+08:00",
   "audit_source_sha256": "1d475351c39762bbf359dcd0315e91ca142b33f5119993fd49552f4de6c6c641",
-  "lock_sha256": "a6f1075392ccecbe850aef2d55f49b8264fc580710613891e21041e968d67242",
+  "lock_sha256": "b33bc4d0467185b0c30c1c5f0914dbf684173ad79c0406f01bb99dd7297f8777",
   "lock_entries": {
     "pyroomacoustics": {
       "id": "pyroomacoustics",
@@ -27,6 +27,7 @@
         "pyroomacoustics/doa/tools_fri_doa_plane.py",
         "pyroomacoustics/beamforming.py",
         "pyroomacoustics/adaptive/rls.py",
+        "pyroomacoustics/adaptive/subband_lms.py",
         "LICENSE",
         "pyroomacoustics/parameters.py",
         "pyroomacoustics/acoustics.py",

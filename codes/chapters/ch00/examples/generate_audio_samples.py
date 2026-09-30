@@ -19,7 +19,7 @@ from codes.chapters.ch00.core.audio_samples import prepare_exports, SEED  # noqa
 from scripts.code_layout import MAIN_AUDIO_GROUP_CHAPTER, main_audio_path, main_audio_manifest_path  # noqa: E402
 
 INPUTS = ['codes/chapters/ch10/core/engineering.py', 'codes/chapters/ch00/examples/generate_audio_samples.py', 'codes/chapters/ch00/core/audio_samples.py',
-          'codes/chapters/ch06/core/aec.py', 'codes/chapters/ch06/core/aec_ipnlms.py',
+          'codes/chapters/ch06/core/aec.py', 'codes/chapters/ch06/core/aec_numeric.py', 'codes/chapters/ch06/core/aec_ipnlms.py',
           'codes/chapters/ch06/core/aec_rls.py', 'codes/chapters/ch06/core/aec_kalman_matrix.py',
           'codes/chapters/ch06/core/aec_subband.py', 'codes/chapters/ch05/core/gsc.py',
           'codes/chapters/ch10/core/noise_suppression.py',

@@ -21,6 +21,7 @@ from __future__ import annotations
 import numpy as np
 
 from codes.chapters.ch02.core.conventions import finite_real_array, finite_real_scalar
+from codes.chapters.ch06.core.aec_numeric import real_dot, exceptional_scale, rls_update
 
 
 class RLSState:
@@ -142,16 +143,21 @@ class RLSState:
             try:
                 with np.errstate(over="raise", divide="raise", invalid="raise",
                                  under="ignore"):
-                    prediction = float(weights @ u)
+                    prediction = real_dot(weights, u)
                     error = float(d[n] - prediction)
                     if should_update:
-                        q = p @ u
-                        denominator = float(self.forgetting_factor + u @ q)
-                        if denominator <= 0.0:
-                            raise ValueError("RLS innovation denominator is not positive")
-                        gain = q / denominator
-                        candidate_weights = weights + gain * error
-                        candidate_p = (p - np.outer(q, q) / denominator) / self.forgetting_factor
+                        exceptional_update = exceptional_scale(p, weights, u, d[n], self.forgetting_factor)
+                        if exceptional_update:
+                            candidate_weights, candidate_p = rls_update(weights, p, u, d[n],
+                                                                       self.forgetting_factor)
+                        else:
+                            q = p @ u
+                            denominator = float(self.forgetting_factor + u @ q)
+                            if denominator <= 0.0:
+                                raise ValueError("RLS innovation denominator is not positive")
+                            gain = q / denominator
+                            candidate_weights = weights + gain * error
+                            candidate_p = (p - np.outer(q, q) / denominator) / self.forgetting_factor
             except (FloatingPointError, OverflowError) as exc:
                 raise ValueError("RLS intermediate exceeds the float64 range") from exc
 
@@ -165,7 +171,8 @@ class RLSState:
                     raise ValueError("RLS update exceeds the float64 range")
                 # Algebraically symmetric. Averaging only removes round-off
                 # asymmetry; it is not a positive-definiteness repair.
-                candidate_p = 0.5 * candidate_p + 0.5 * candidate_p.T
+                if not exceptional_update or not np.array_equal(candidate_p, candidate_p.T):
+                    candidate_p = 0.5 * candidate_p + 0.5 * candidate_p.T
                 # Positive diagonal entries do not imply that the whole
                 # inverse correlation matrix is positive definite. This
                 # costly check is deliberate in a short-filter teaching

@@ -17,9 +17,12 @@ and not a real-time implementation strategy for a long acoustic path.
 
 from __future__ import annotations
 
+from fractions import Fraction
+
 import numpy as np
 
 from codes.chapters.ch02.core.conventions import finite_real_array, finite_real_scalar
+from codes.chapters.ch06.core.aec_numeric import exceptional_scale, ratio, rounded, real_dot
 
 
 def _covariance(value: object, name: str, length: int) -> np.ndarray:
@@ -119,6 +122,9 @@ class KalmanAECState:
         if not isinstance(freeze, (bool, np.bool_)):
             raise ValueError("freeze must be a bool")
         taps = np.concatenate(([x], self.history))
+        if exceptional_scale(self.transition, self.weights, self.covariance,
+                             self.process_covariance, self.observation_variance, taps, d):
+            return self._exceptional_step(taps, d, freeze)
         try:
             with np.errstate(over="raise", invalid="raise", divide="raise"):
                 prior_weights = self.transition * self.weights
@@ -127,7 +133,7 @@ class KalmanAECState:
                     + self.process_covariance
                 )
                 prior_covariance = _covariance(prior_covariance, "predicted covariance", self.filter_length)
-                prior_echo = float(taps @ prior_weights)
+                prior_echo = real_dot(taps, prior_weights)
                 prior_error = d - prior_echo
                 projected = prior_covariance @ taps
                 innovation_variance = float(taps @ projected + self.observation_variance)
@@ -150,7 +156,7 @@ class KalmanAECState:
                     posterior_covariance = _covariance(
                         posterior_covariance, "posterior covariance", self.filter_length
                     )
-                posterior_echo = float(taps @ posterior_weights)
+                posterior_echo = real_dot(taps, posterior_weights)
         except (FloatingPointError, OverflowError) as error:
             raise ValueError("Kalman intermediate exceeds float64 range") from error
         if not all(np.all(np.isfinite(item)) for item in (
@@ -174,6 +180,59 @@ class KalmanAECState:
             "posterior_covariance": posterior_covariance.copy(),
             "posterior_echo": posterior_echo,
         }
+
+    def _exceptional_step(self, taps: np.ndarray, observation: float, freeze: bool) -> dict:
+        """Evaluate the same update without rounding removable intermediate scales.
+
+        With exact ratios, P-vv.T/S is algebraically the Joseph expression. It
+        avoids rounding either Joseph product or Psi*K*K.T before their sum.
+        Returned/stored quantities are each rounded once; an unrepresentable
+        positive diagonal variance is rejected before any state is committed.
+        """
+        length = self.filter_length
+        a, psi, d = map(ratio, (self.transition, self.observation_variance, observation))
+        u = list(map(ratio, taps))
+        w = [a*ratio(item) for item in self.weights]
+        p = [[a*a*ratio(self.covariance[i, j]) + ratio(self.process_covariance[i, j])
+              for j in range(length)] for i in range(length)]
+        echo = sum((ui*wi for ui, wi in zip(u, w)), Fraction(0))
+        error = d-echo
+        projected = [sum((p[i][j]*u[j] for j in range(length)), Fraction(0))
+                     for i in range(length)]
+        innovation = sum((u[i]*projected[i] for i in range(length)), psi)
+        if innovation <= 0:
+            raise ValueError("innovation variance is not positive")
+        gain = [Fraction(0) if freeze else value/innovation for value in projected]
+        posterior_w = [w[i]+gain[i]*error for i in range(length)]
+        posterior_p = (p if freeze else
+                       [[p[i][j]-projected[i]*projected[j]/innovation
+                         for j in range(length)] for i in range(length)])
+        posterior_echo = sum((u[i]*posterior_w[i] for i in range(length)), Fraction(0))
+
+        def covariance_array(matrix, name):
+            result = np.array([[rounded(matrix[i][j], name, positive_variance=(i == j))
+                                for j in range(length)] for i in range(length)])
+            return _covariance(result, name, length)
+
+        prior_p_array = covariance_array(p, "predicted covariance")
+        posterior_p_array = covariance_array(posterior_p, "posterior covariance")
+        result = {
+            "taps": taps.copy(),
+            "prior_echo": rounded(echo, "Kalman prior echo"),
+            "prior_error": rounded(error, "Kalman prior error"),
+            "prior_weights": np.array([rounded(value, "Kalman prior weights") for value in w]),
+            "prior_covariance": prior_p_array,
+            "innovation_variance": rounded(innovation, "innovation variance", positive_variance=True),
+            "gain": np.array([rounded(value, "Kalman gain") for value in gain]),
+            "posterior_weights": np.array([rounded(value, "Kalman posterior weights")
+                                           for value in posterior_w]),
+            "posterior_covariance": posterior_p_array,
+            "posterior_echo": rounded(posterior_echo, "Kalman posterior echo"),
+        }
+        self.weights = result["posterior_weights"].copy()
+        self.covariance = posterior_p_array.copy()
+        self.history = taps[:-1].copy()
+        return result
 
     def process_block(
         self,

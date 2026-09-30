@@ -9,10 +9,14 @@ from __future__ import annotations
 import numpy as np
 
 from codes.chapters.ch02.core.conventions import finite_real_array, finite_real_scalar
+from codes.chapters.ch06.core.aec_numeric import exceptional_scale, exact_dot, rounded, nlms_weights
 
 
 def _scaled_dot(left: np.ndarray, right: np.ndarray) -> float:
-    """Compute a real dot product without overflowing removable scale factors."""
+    """Retain the ordinary scaled path; accumulate exceptional products exactly."""
+
+    if exceptional_scale(left, right):
+        return rounded(exact_dot(left, right), "NLMS prediction")
 
     left_scale = float(np.max(np.abs(left)))
     right_scale = float(np.max(np.abs(right)))
@@ -169,6 +173,9 @@ class NLMSState:
                 raise ValueError("NLMS prediction exceeds the float64 range") from error
 
             if frozen[n] or self.step_size == 0.0:
+                continue
+            if exceptional_scale(regression, weights, d[n], self.epsilon, self.step_size):
+                weights = nlms_weights(weights, regression, d[n], self.step_size, self.epsilon)
                 continue
             normalized = regression / scale
             normalized_energy = float(normalized @ normalized)

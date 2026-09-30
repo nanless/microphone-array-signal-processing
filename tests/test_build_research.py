@@ -315,6 +315,15 @@ class ResearchBuildTest(unittest.TestCase):
                 with self.subTest(derivative_asset=name):
                     self.assertEqual((output / "derivative_audio" / name).read_bytes(),
                                      (derivative_source / name).read_bytes())
+            apa_source = ROOT / "codes/chapters/ch06/apa_audio"
+            apa_names = {"apa_reference.wav", "apa_true_echo.wav", "apa_microphone.wav",
+                         "apa_nlms_residual.wav", "apa_apa2_residual.wav", "apa_apa4_residual.wav",
+                         "MANIFEST.json"}
+            self.assertEqual({path.name for path in (output / "apa_audio").iterdir()}, apa_names)
+            for name in apa_names:
+                with self.subTest(apa_asset=name):
+                    self.assertEqual((output / "apa_audio" / name).read_bytes(),
+                                     (apa_source / name).read_bytes())
             pages = {}
             for path in output.rglob("*.html"):
                 parser = Links()
@@ -323,6 +332,7 @@ class ResearchBuildTest(unittest.TestCase):
             self.assertEqual(len(pages), 20)
             room_links = set()
             room_images = set()
+            apa_links = set()
             for path, parsed in pages.items():
                 if path.parent.name == "research":
                     self.assertIn("../index.html", parsed.hrefs)
@@ -365,10 +375,15 @@ class ResearchBuildTest(unittest.TestCase):
                                              (output / "stft_audio").resolve(),
                                              (output / "geometry_audio").resolve(),
                                              (output / "focus_audio").resolve(),
-                                             (output / "derivative_audio").resolve()}:
+                                             (output / "derivative_audio").resolve(),
+                                             (output / "apa_audio").resolve()}:
                             owner = {"gss_audio": "ch08", "moving_audio": "ch09",
                                      "tracking_audio": "ch09", "binaural_audio": "ch01", "stft_audio": "ch02",
-                                     "geometry_audio": "ch03", "focus_audio": "ch04", "derivative_audio": "ch05"}[target.parent.name]
+                                     "geometry_audio": "ch03", "focus_audio": "ch04", "derivative_audio": "ch05",
+                                     "apa_audio": "ch06"}[target.parent.name]
+                            if target.parent.name == "apa_audio":
+                                self.assertIn(target.name, apa_names)
+                                apa_links.add(target.name)
                             source = ROOT / "codes" / "chapters" / owner / target.parent.name / target.name
                             self.assertTrue(target.is_file())
                             self.assertEqual(target.read_bytes(), source.read_bytes())
@@ -396,6 +411,7 @@ class ResearchBuildTest(unittest.TestCase):
                             room_images.add(target.name)
             self.assertEqual(room_links, room_names)
             self.assertEqual(room_images, {"ROOM_RESULTS.png"})
+            self.assertEqual(apa_links, apa_names)
 
 
 if __name__ == "__main__":

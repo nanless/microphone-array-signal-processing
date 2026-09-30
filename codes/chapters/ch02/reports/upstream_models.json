@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "executed_at_utc": "2026-09-30T17:55:56.899030+00:00",
+  "executed_at_utc": "2026-09-30T22:46:23.412380+00:00",
   "audit_source": "codes/chapters/ch02/examples/audit_upstream_models.py",
   "audit_source_sha256": "86f824d086eb19782eb25e1ff93a1deb841d7bc623162cc1badd619d0625fcf0",
   "sources": {
-    "lock_sha256": "a6f1075392ccecbe850aef2d55f49b8264fc580710613891e21041e968d67242",
+    "lock_sha256": "b33bc4d0467185b0c30c1c5f0914dbf684173ad79c0406f01bb99dd7297f8777",
     "projects": {
       "pyroomacoustics": {
         "url": "https://github.com/LCAV/pyroomacoustics.git",
@@ -19,7 +19,7 @@
           "pyroomacoustics/experimental/rt60.py": "c066a78677371003818123efe3b8e1a7dbd75c8a21de6404ab94ea95c0e2c1f3",
           "LICENSE": "0922c9a0c1f5bb35a1e0df7b56954864e27cfc625fc3b041acde0707ce797e46"
         },
-        "lock_entry_sha256": "a984aa2f13bab7616164932114c4b42192bebd78dce00786686fd1cc60942f2f"
+        "lock_entry_sha256": "30bb1f0d69f329712befda827a563d5db81fbd68dc5e996baf546a73d2e5b11f"
       },
       "acoular": {
         "url": "https://github.com/acoular/acoular.git",

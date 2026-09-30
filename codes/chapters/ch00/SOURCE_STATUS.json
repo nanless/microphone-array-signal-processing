@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "lock_sha256": "a6f1075392ccecbe850aef2d55f49b8264fc580710613891e21041e968d67242",
+  "lock_sha256": "b33bc4d0467185b0c30c1c5f0914dbf684173ad79c0406f01bb99dd7297f8777",
   "projects": [
     {
       "id": "pyroomacoustics",

@@ -5,7 +5,7 @@
     .venv/bin/python scripts/build_site.py
 
 产物：site/index.html（首页）+ site/01..13_*.html（13 篇正文），
-另有 site/research/index.html 和 5 篇独立研究页、主清单 109 个与独立实验 28 个合成 WAV，
+另有 site/research/index.html 和 5 篇独立研究页、主清单 109 个与独立实验 53 个合成 WAV，
 以及 4 个真实录音/派生 WAV；源码按章保存，发布 URL 保持原样。
 左侧边栏 = 首页 + 13 篇 + 每篇的二级及以下小节锚点，顶部面包屑，
 文末上一篇/下一篇（首页不输出该盒）。图片直接引用 ../figures/（不复制）。
@@ -45,6 +45,8 @@ GSS_AUDIO_ROOT = CODE_CHAPTERS / "ch08" / "gss_audio"
 BINAURAL_AUDIO_ROOT = CODE_CHAPTERS / "ch01" / "binaural_audio"
 STFT_AUDIO_ROOT = CODE_CHAPTERS / "ch02" / "stft_audio"
 DERIVATIVE_AUDIO_ROOT = CODE_CHAPTERS / "ch05" / "derivative_audio"
+APA_AUDIO_ROOT = CODE_CHAPTERS / "ch06" / "apa_audio"
+APA_AUDIO_WAVS = {"apa_" + name + ".wav" for name in ("reference", "true_echo", "microphone", "nlms_residual", "apa2_residual", "apa4_residual")}
 DERIVATIVE_AUDIO_WAVS = {"derivative_reference.wav": 1, "derivative_array.wav": 3, "derivative_single.wav": 1, "derivative_constrained.wav": 1}
 FOCUS_AUDIO_ROOT = CODE_CHAPTERS / "ch04" / "focus_audio"
 FOCUS_AUDIO_WAVS = {"focus_reference.wav": 1, "focus_delayed_source.wav": 1, "focus_array.wav": 4, "focus_known_focused.wav": 4}
@@ -135,7 +137,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{display:block;margin:20px auto;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
-@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}}
+@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td{min-width:8em}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 """
 
@@ -523,6 +525,20 @@ def stage_derivative_audio(source, destination):
     return expected
 
 
+def stage_apa_audio(source, destination):
+    """Read and validate six real PCM files before atomic publication."""
+    import sys
+    if str(ROOT.resolve()) not in sys.path:
+        sys.path.insert(0, str(ROOT.resolve()))
+    from codes.chapters.ch06.examples.generate_apa_audio import check_assets
+    check_assets(source, replay=False)
+    expected = APA_AUDIO_WAVS | {"MANIFEST.json"}
+    destination.mkdir()
+    for name in sorted(expected):
+        shutil.copy2(source / name, destination / name)
+    return expected
+
+
 def stage_tracking_audio(source, destination):
     """Validate the independent PCM-to-observation experiment before publishing."""
     import wave
@@ -605,7 +621,7 @@ def source_digest():
     paths += [main_audio_manifest_path(CODE_CHAPTERS)]
     paths += sorted(main_audio_sources())
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "build_markdown_helpers.py",
@@ -764,6 +780,9 @@ def rewrite_site_links(html, source_path):
         if target.parent == DERIVATIVE_AUDIO_ROOT.resolve() and target.name in (set(DERIVATIVE_AUDIO_WAVS) | {"MANIFEST.json"}):
             relative = os.path.relpath("derivative_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
+        if target.parent == APA_AUDIO_ROOT.resolve() and target.name in (APA_AUDIO_WAVS | {"MANIFEST.json"}):
+            relative = os.path.relpath("apa_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
+            return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
         if target.parent == FOCUS_AUDIO_ROOT.resolve() and target.name in (set(FOCUS_AUDIO_WAVS) | {"MANIFEST.json"}):
             relative = os.path.relpath("focus_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
@@ -779,7 +798,7 @@ def rewrite_site_links(html, source_path):
         # input as a download link; only the explicit mono derivatives play.
         if parsed.path.endswith("real_audio/demand_nriver_16ch_10s.wav"):
             return match.group(0)
-        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|stft_audio|geometry_audio|focus_audio|derivative_audio)/[a-z0-9_]+\.wav", parsed.path):
+        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|stft_audio|geometry_audio|focus_audio|derivative_audio|apa_audio)/[a-z0-9_]+\.wav", parsed.path):
             return match.group(0)
         safe_href = escape(href, quote=True)
         safe_label = escape(re.sub(r'<[^>]+>', '', unescape(label)), quote=True)
@@ -838,11 +857,21 @@ def render(md_text, source_path=None):
     html = re.sub(r"<(h[1-4])>(.*?)</\1>", repl, html, flags=re.S)
     html = re.sub(r'<th(?=[\s>])(?![^>]*\bscope=)([^>]*)>',
                   r'<th scope="col"\1>', html, flags=re.S)
+    # These engineering tables need phrases rather than single-character
+    # columns on phones. Keep the change local to chapter 6 and screen CSS.
+    if source_path.name == "06_aec.md":
+        def aec_table(match):
+            inner = match.group(1)
+            headers = re.findall(r'<th\b[^>]*>(.*?)</th>', inner, flags=re.S)
+            labels = {unescape(re.sub(r'<[^>]+>', '', value)).strip() for value in headers}
+            readable = bool(labels & {"训练参考", "仍需实测的资源", "它实际解决什么"})
+            return '<table'+(' class="aec-readable-table"' if readable else '')+'>'+inner+'</table>'
+        html = re.sub(r'<table>(.*?)</table>', aec_table, html, flags=re.S)
     # 保留 table 原生语义；横向滚动由可聚焦的外层区域承担，键盘用户也能操作宽表。
     html = re.sub(
-        r"<table>(.*?)</table>",
+        r"<table([^>]*)>(.*?)</table>",
         (r'<div class="table-scroll" tabindex="0" role="region" '
-         r'aria-label="数据表，可横向滚动"><table>\1</table></div>'),
+         r'aria-label="数据表，可横向滚动"><table\1>\2</table></div>'),
         html,
         flags=re.S,
     )
@@ -1089,6 +1118,10 @@ def main():
         (OUT / "derivative_audio").mkdir(exist_ok=True)
         stale += [path for path in (OUT / "derivative_audio").iterdir()
                   if path.is_file() and path.name not in derivative_names]
+        apa_names = stage_apa_audio(APA_AUDIO_ROOT, temp_out / "apa_audio")
+        (OUT / "apa_audio").mkdir(exist_ok=True)
+        stale += [path for path in (OUT / "apa_audio").iterdir()
+                  if path.is_file() and path.name not in apa_names]
         publish_files([(temp_out / name, OUT / name) for name in sorted(expected)] +
                       [(temp_out / "audio" / name, OUT / "audio" / name) for name in audio_names] +
                       [(temp_out / "real_audio" / name, OUT / "real_audio" / name)
@@ -1110,7 +1143,9 @@ def main():
                       [(temp_out / "focus_audio" / name, OUT / "focus_audio" / name)
                        for name in sorted(focus_names)] +
                       [(temp_out / "derivative_audio" / name, OUT / "derivative_audio" / name)
-                       for name in sorted(derivative_names)], stale)
+                       for name in sorted(derivative_names)] +
+                      [(temp_out / "apa_audio" / name, OUT / "apa_audio" / name)
+                       for name in sorted(apa_names)], stale)
     print("DONE", len(expected), "pages")
 
 

@@ -516,6 +516,21 @@ class BuildHelpersTest(unittest.TestCase):
         self.assertIn(".main p{margin:0 0 1.05em}", build_site.CSS)
         self.assertIn("p{margin:0 0 .85em;break-inside:avoid;orphans:2;widows:2}", build_pdf.CSS)
 
+    def test_aec_mobile_explanation_width_is_local_to_selected_headers(self):
+        for label in ("训练参考", "仍需实测的资源", "它实际解决什么"):
+            source = f"| 算法 | {label} |\n| --- | --- |\n| A | 完整说明 |\n"
+            with self.subTest(label=label):
+                html, _ = build_site.render(source, ROOT / "chapters/06_aec.md")
+                self.assertIn('<table class="aec-readable-table">', html)
+                self.assertIn('class="table-scroll" tabindex="0"', html)
+                self.assertIn('scope="col"', html)
+                unrelated, _ = build_site.render(source, ROOT / "chapters/05_beamforming.md")
+                self.assertNotIn('aec-readable-table', unrelated)
+        similar, _ = build_site.render(
+            "| 算法 | 训练参考的另一种含义 |\n| --- | --- |\n| A | 说明 |\n",
+            ROOT / "chapters/06_aec.md")
+        self.assertNotIn('aec-readable-table', similar)
+
     def test_site_render_wraps_table_in_focusable_scroll_region(self):
         html, _ = build_site.render("| 列 |\n|---|\n| 值 |")
         self.assertIn('class="table-scroll" tabindex="0"', html)
@@ -613,10 +628,10 @@ class BuildHelpersTest(unittest.TestCase):
         )
 
     def test_figure_semantics_accept_any_reuse_and_reject_mismatch_or_orphan(self):
-        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 57)]
+        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 59)]
         refs.extend([("图1 复用", "fig01_x.png", 1),
                      ("图23 复用", "fig23_x.png", 23)])
-        names = [f"fig{i:02d}_x.png" for i in range(1, 57)]
+        names = [f"fig{i:02d}_x.png" for i in range(1, 59)]
         self.assertEqual(quality_check.figure_inventory_issues(refs, names), [])
         bad_refs = list(refs)
         bad_refs[0] = ("图2 错配", "fig01_x.png", 1)

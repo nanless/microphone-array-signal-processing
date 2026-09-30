@@ -16,18 +16,19 @@ HISTORICAL_SEQUENTIAL_IDS = json.loads(
 
 HISTORICAL_SECTION_IDS = {
     "00_overview.md": {
-        "sec-u-36fa20efde": "sec-u-5c63f4d83e",  # 54 张历史标题
-        "sec-u-3ebc13ca5a": "sec-u-5c63f4d83e",  # 52 张历史标题
-        "sec-u-1e72416790": "sec-u-5c63f4d83e",  # 50 张历史标题
-        "sec-u-3a0278b879": "sec-u-5c63f4d83e",  # 49 张历史标题
+        "sec-u-5c63f4d83e": "sec-u-5edae53c5f",  # 56 张历史标题
+        "sec-u-36fa20efde": "sec-u-5edae53c5f",  # 54 张历史标题
+        "sec-u-3ebc13ca5a": "sec-u-5edae53c5f",  # 52 张历史标题
+        "sec-u-1e72416790": "sec-u-5edae53c5f",  # 50 张历史标题
+        "sec-u-3a0278b879": "sec-u-5edae53c5f",  # 49 张历史标题
         "sec-u-b7a71b077a": "sec-u-3937b1b94e",  # 路径 A：去掉无依据的周数
         "sec-u-efc5552983": "sec-u-f958564d39",  # 路径 B：去掉无依据的周数
-        "sec-u-6ef8e18126": "sec-u-5c63f4d83e",  # 插图地图：40 张历史标题
-        "sec-u-d538d6d0a5": "sec-u-5c63f4d83e",  # 41 张历史标题
-        "sec-u-0943a9ed3c": "sec-u-5c63f4d83e",  # 43 张历史标题
-        "sec-u-1e5d8a2bad": "sec-u-5c63f4d83e",  # 44 张历史标题
-        "sec-u-d8fd1002de": "sec-u-5c63f4d83e",  # 45 张历史标题
-        "sec-u-627ed3907e": "sec-u-5c63f4d83e",  # 47 张历史标题
+        "sec-u-6ef8e18126": "sec-u-5edae53c5f",  # 插图地图：40 张历史标题
+        "sec-u-d538d6d0a5": "sec-u-5edae53c5f",  # 41 张历史标题
+        "sec-u-0943a9ed3c": "sec-u-5edae53c5f",  # 43 张历史标题
+        "sec-u-1e5d8a2bad": "sec-u-5edae53c5f",  # 44 张历史标题
+        "sec-u-d8fd1002de": "sec-u-5edae53c5f",  # 45 张历史标题
+        "sec-u-627ed3907e": "sec-u-5edae53c5f",  # 47 张历史标题
     },
     "01_problem-definition.md": {
         "sec-u-05ec932a34": "sec-u-c36b7ac16e",  # 客厅里的远场语音问题：标题改为远距离

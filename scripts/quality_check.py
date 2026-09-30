@@ -34,6 +34,7 @@ TRACKING_AUDIO_ROOT = CODE_CHAPTERS / "ch09" / "tracking_audio"
 GSS_AUDIO_ROOT = CODE_CHAPTERS / "ch08" / "gss_audio"
 BINAURAL_AUDIO_ROOT = CODE_CHAPTERS / "ch01" / "binaural_audio"
 DERIVATIVE_AUDIO_ROOT = ROOT / "codes/chapters/ch05/derivative_audio"
+APA_AUDIO_ROOT = ROOT / "codes/chapters/ch06/apa_audio"
 FOCUS_AUDIO_ROOT = ROOT / "codes/chapters/ch04/focus_audio"
 GEOMETRY_AUDIO_ROOT = ROOT / "codes/chapters/ch03/geometry_audio"
 STFT_AUDIO_ROOT = ROOT / "codes/chapters/ch02/stft_audio"
@@ -67,7 +68,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "03_array-geometry.md": 31,
     "04_doa-estimation.md": 45,
     "05_beamforming.md": 41,
-    "06_aec.md": 60,
+    "06_aec.md": 67,
     "07_wpe-dereverberation.md": 48,
     "08_speech-separation.md": 52,
     "09_source-tracking.md": 52,
@@ -95,10 +96,10 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 121
-EXPECTED_SUBSECTION_COUNT = 519
-EXPECTED_OUTLINE_ITEM_COUNT = 654
-EXPECTED_FIGURE_NUMBERS = set(range(1, 57))
-# 研究附站使用独立显式清单，不挤占 14 篇教程或 654 项 PDF 大纲基线。
+EXPECTED_SUBSECTION_COUNT = 526
+EXPECTED_OUTLINE_ITEM_COUNT = 661
+EXPECTED_FIGURE_NUMBERS = set(range(1, 59))
+# 研究附站使用独立显式清单，不挤占 14 篇教程或 661 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
     ("README.md", "index.html"),
@@ -682,7 +683,7 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56)
+            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
@@ -692,6 +693,11 @@ def check_figures(errors: list[str]):
                 with Image.open(path) as image:
                     if image.info.get("AudioManifestDigest") != expected:
                         fail(errors, "图44独立追踪音频清单摘要失效")
+            if number == 58:
+                expected = hashlib.sha256((APA_AUDIO_ROOT / "MANIFEST.json").read_bytes()).hexdigest()
+                with Image.open(path) as image:
+                    if image.info.get("AudioManifestDigest") != expected:
+                        fail(errors, "图58独立APA音频清单摘要失效")
             if number in (34, 35, 36, 40, 41, 43, 45, 47, 49):
                 expected = hashlib.sha256((ROOT / "codes/chapters/ch00/audio/MANIFEST.json").read_bytes()).hexdigest()
                 with Image.open(path) as image:
@@ -971,7 +977,7 @@ def site_source_digest():
     paths += sorted(main_audio_path(CODE_CHAPTERS, record["group"], record["file"])
                     for record in manifest["files"])
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
@@ -1275,7 +1281,7 @@ def check_real_audio(errors):
         parser = Players()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         allowed_audio_roots = ("../audio/", "../real_audio/", "../room_audio/",
-                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/")
+                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/")
         if any(not (p.get("src") or "").startswith(allowed_audio_roots)
                for p in parser.items):
             fail(errors, "未知试听控件来源")
@@ -1805,6 +1811,107 @@ def check_derivative_audio(errors):
         fail(errors, f"导数约束实验检查失败：{exc}")
 
 
+def check_apa_audio(errors):
+    """Independent PCM integer scoring and visible controls for E06-39."""
+    import math
+    import struct
+    source, published = APA_AUDIO_ROOT, SITE / "apa_audio"
+    wav_names = {"apa_"+key+".wav" for key in ("reference", "true_echo", "microphone", "nlms_residual", "apa2_residual", "apa4_residual")}
+    expected_files = wav_names | {"MANIFEST.json"}
+    required_sources = {"codes/chapters/ch06/core/apa_audio.py",
+                        "codes/chapters/ch06/examples/generate_apa_audio.py",
+                        "codes/chapters/ch06/core/aec.py",
+                        "codes/chapters/ch06/core/aec_numeric.py",
+                        "codes/chapters/ch06/core/aec_affine_projection.py",
+                        "codes/chapters/ch02/core/conventions.py",
+                        "codes/chapters/ch00/core/audio_samples.py"}
+    try:
+        for folder in (source, published):
+            if (folder.is_symlink() or {p.name for p in folder.iterdir()} != expected_files
+                    or any(p.is_symlink() or not p.is_file() for p in folder.iterdir())):
+                raise ValueError("APA目录须恰含六普通WAV和清单")
+        for name in expected_files:
+            if (source/name).read_bytes() != (published/name).read_bytes():
+                raise ValueError("APA网页副本不同："+name)
+        manifest = json.loads((source/'MANIFEST.json').read_text())
+        if (set(manifest['files']) != wav_names or manifest['sample_rate_hz'] != 16000
+                or manifest['samples_per_channel'] != 32013 or manifest['common_export_gain'] != 1
+                or set(manifest['source_sha256']) != required_sources):
+            raise ValueError("APA清单参数或真实源集合不同")
+        for name, digest in manifest['source_sha256'].items():
+            if hashlib.sha256((ROOT/name).read_bytes()).hexdigest() != digest:
+                raise ValueError("APA真实源码摘要过期："+name)
+        measures = manifest['pcm_measurements']
+        if measures['holdout_interval_samples'] != [24000, 32000] or measures['pcm_decode_divisor'] != 32768:
+            raise ValueError("APA评分窗或PCM解码分母不同")
+        actual_sums = {}
+        for name in wav_names:
+            path, record = source/name, manifest['files'][name]
+            if (record['sample_rate_hz'], record['channels'], record['samples_per_channel']) != (16000, 1, 32013) or hashlib.sha256(path.read_bytes()).hexdigest() != record['sha256']:
+                raise ValueError("APA文件参数或摘要不同："+name)
+            with wave.open(str(path), 'rb') as reader:
+                if (reader.getframerate(), reader.getnchannels(), reader.getsampwidth(), reader.getnframes(), reader.getcomptype()) != (16000, 1, 2, 32013, 'NONE'):
+                    raise ValueError("APA实际PCM格式不同："+name)
+                raw = reader.readframes(32013)
+            if len(raw) != 64026:
+                raise ValueError("APA实际PCM截断："+name)
+            integers = struct.unpack('<32013h', raw)
+            squared = sum(v*v for v in integers[24000:32000])
+            key = name[4:-4]
+            actual_sums[key] = squared
+            score = measures['powers'][key]
+            if (score['integer_squared_sum'] != squared or score['sample_denominator'] != 8000
+                    or score['mean_square'] != squared/(32768**2*8000)):
+                raise ValueError("APA实际整数评分不符："+name)
+        if actual_sums['microphone'] <= 0:
+            raise ValueError("APA麦克风评分分母须严格正")
+        for key in ('nlms_residual', 'apa2_residual', 'apa4_residual'):
+            ratio = measures['ratios'][key]
+            denominator = actual_sums[key]
+            if ratio['integer_numerator'] != actual_sums['microphone'] or ratio['integer_denominator'] != denominator or ratio['zero_output'] != (denominator == 0):
+                raise ValueError("APA实际功率比分母不符")
+            expected_db = 10*math.log10(actual_sums['microphone']/denominator) if denominator else None
+            reported = ratio['microphone_to_residual_total_power_ratio_db']
+            if ((expected_db is None and reported is not None)
+                    or (expected_db is not None and
+                        (isinstance(reported, bool) or not isinstance(reported, (int, float))
+                         or not math.isfinite(reported) or abs(expected_db-reported) > 1e-12))):
+                raise ValueError("APA实际总功率比不同")
+        class VisiblePlayers(HTMLParser):
+            def __init__(self):
+                super().__init__()
+                self.stack, self.items, self.links = [], [], set()
+            def handle_starttag(self, tag, attrs):
+                values = dict(attrs)
+                hidden = (tag == 'template' or 'hidden' in values or 'inert' in values
+                          or values.get('aria-hidden', '').lower() == 'true')
+                if tag not in {'area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'}:
+                    self.stack.append((tag, hidden))
+                if any(flag for _, flag in self.stack):
+                    return
+                if tag == 'audio':
+                    self.items.append(values)
+                if tag == 'a':
+                    self.links.add(values.get('href'))
+            def handle_endtag(self, tag):
+                for index in range(len(self.stack)-1, -1, -1):
+                    if self.stack[index][0] == tag:
+                        del self.stack[index:]
+                        break
+        for page, prefix in ((SITE/'06_aec.html', ''), (SITE/'research/05_exercises_and_audio.html', '../')):
+            parser = VisiblePlayers()
+            parser.feed(page.read_text())
+            players = [p for p in parser.items if (p.get('src') or '').startswith(prefix+'apa_audio/')]
+            if len(players) != 6 or {p.get('src') for p in players} != {prefix+'apa_audio/'+name for name in wav_names}:
+                raise ValueError("APA六个可见播放器缺失或重复："+page.name)
+            if any('autoplay' in p or 'controls' not in p or p.get('preload') != 'none' or not p.get('aria-label') for p in players):
+                raise ValueError("APA播放器标签或控件不同")
+            if prefix+'apa_audio/MANIFEST.json' not in parser.links:
+                raise ValueError("APA独立清单链接缺失")
+    except Exception as exc:
+        fail(errors, f"APA实验检查失败：{exc}")
+
+
 def check_tracking_audio(errors):
     """Verify published PCM, regeneration provenance and real observation controls."""
     source, published = TRACKING_AUDIO_ROOT, SITE/"tracking_audio"
@@ -1926,7 +2033,7 @@ def check_audio(errors):
             fail(errors, "音频实验组不符")
         expected_inputs = {"scripts/code_layout.py", "codes/chapters/ch00/examples/generate_audio_samples.py", "codes/chapters/ch00/core/audio_samples.py",
                            "codes/chapters/ch10/core/engineering.py",
-                           "codes/chapters/ch06/core/aec.py", "codes/chapters/ch06/core/aec_ipnlms.py",
+                           "codes/chapters/ch06/core/aec.py", "codes/chapters/ch06/core/aec_numeric.py", "codes/chapters/ch06/core/aec_ipnlms.py",
                            "codes/chapters/ch06/core/aec_rls.py", "codes/chapters/ch06/core/aec_kalman_matrix.py",
                            "codes/chapters/ch06/core/aec_subband.py",
                            "codes/chapters/ch07/core/dereverberation.py",
@@ -2030,6 +2137,7 @@ def main():
     check_geometry_audio(errors)
     check_focus_audio(errors)
     check_derivative_audio(errors)
+    check_apa_audio(errors)
     check_combined_html(errors)
     check_pdf(errors, notices)
     for item in notices:

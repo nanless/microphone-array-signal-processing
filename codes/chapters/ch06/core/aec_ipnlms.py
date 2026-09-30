@@ -11,6 +11,7 @@ from __future__ import annotations
 import numpy as np
 
 from codes.chapters.ch02.core.conventions import finite_real_array, finite_real_scalar
+from codes.chapters.ch06.core.aec_numeric import real_dot, exceptional_scale, ipnlms_weights
 
 
 def _tap_gains(weights: np.ndarray, kappa: float, gain_floor: float) -> np.ndarray:
@@ -143,15 +144,20 @@ class IPNLMSState:
             try:
                 with np.errstate(over="raise", invalid="raise", divide="raise",
                                  under="ignore"):
-                    prediction = float(weights @ u)
+                    prediction = real_dot(weights, u)
                     error = float(d[n] - prediction)
                     if not frozen[n] and self.step_size and np.any(u):
-                        gains = _tap_gains(weights, self.kappa, self.gain_floor)
-                        denominator = float(u @ (gains * u) + self.denominator_floor)
-                        if not (np.all(np.isfinite(gains))
-                                and np.isfinite(denominator) and denominator > 0.0):
-                            raise ValueError("IPNLMS normalization exceeds float64 range")
-                        candidate = weights + (self.step_size * error / denominator) * gains * u
+                        if exceptional_scale(weights, u, d[n], self.denominator_floor,
+                                             self.gain_floor, self.step_size):
+                            candidate = ipnlms_weights(weights, u, d[n], self.step_size,
+                                                       self.kappa, self.denominator_floor, self.gain_floor)
+                        else:
+                            gains = _tap_gains(weights, self.kappa, self.gain_floor)
+                            denominator = float(u @ (gains * u) + self.denominator_floor)
+                            if not (np.all(np.isfinite(gains))
+                                    and np.isfinite(denominator) and denominator > 0.0):
+                                raise ValueError("IPNLMS normalization exceeds float64 range")
+                            candidate = weights + (self.step_size * error / denominator) * gains * u
             except FloatingPointError as exc:
                 raise ValueError("IPNLMS intermediate exceeds float64 range") from exc
             if not np.isfinite(prediction) or not np.isfinite(error):

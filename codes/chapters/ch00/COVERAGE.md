@@ -9,7 +9,7 @@
 - **原理索引**：已有原理或来源依据，但尚未形成唯一、许可明确且承担对应计算的源码映射；代码可见而许可不明时也保留此状态，并说明原因。
 - **明确排除**：指定软件的身份或许可不满足本书当前收录方式；不表示删除相应方法的学术讨论。
 
-算法表共 300 行：本仓库可运行基线 57 行、外部参考实现 175 行、原理索引 67 行、明确排除 1 行。练习映射单独计数，不因题数增加算法行；MDL、功率谱减、受控 NCC 双讲检测与 cACGMM 教学迭代属于本地基线。覆盖表仍有原理索引，不表示全书全部算法已经运行。
+算法表共 302 行：本仓库可运行基线 58 行、外部参考实现 175 行、原理索引 68 行、明确排除 1 行。练习映射单独计数，不因题数增加算法行；MDL、功率谱减、受控 NCC 双讲检测与 cACGMM 教学迭代属于本地基线。覆盖表仍有原理索引，不表示全书全部算法已经运行。
 
 源码取得与入口核对见 [SOURCE_STATUS.json](SOURCE_STATUS.json)；该文件中的依赖验证和执行字段未开展时为 `not_run`，不承载方法级数值实验结果。实际运行及数值对照见[复现记录](research/04_source_reproduction.md)、[增强研究记录](research/02_aec_wpe_separation.md)和 [WPE 独立对照脚本](../ch07/examples/compare_wpe_reference.py)。工业接口与 SBL 的限定实验报告按主题放在 `codes/chapters/ch04/reports/`、`codes/chapters/ch10/reports/` 等对应章节；实际调用外部代码不将它改列为本仓库教学基线。覆盖状态不是测试结果。完整提交、官方地址、许可与来源 ID 见 [SOURCES.lock.json](SOURCES.lock.json)。表内本仓库教学源文件使用相对于仓库根目录的完整路径；第三方项目的内部路径仍相对于各自项目根目录。出现“同文件”时仅继承上一行文件，不继承其算法或验证结论。
 
@@ -179,11 +179,13 @@
 | §6.2 后续子带专题 | 两带 Haar 对角子带 NLMS 教学近似 | 本仓库可运行基线 | `codes/chapters/ch06/core/aec_subband.py::HaarDiagonalSubbandNLMSState`、`codes/chapters/ch06/aec_ipnlms_subband_demo.py`、`codes/chapters/ch06/aec_advanced_exercises.py` | 只读取同带历史；不是任意回声路径的精确模型或完整 NSAF；两点 Haar 不代表工业滤波器组 |
 | §6.2 后续子带专题 | 已知两抽头路径的精确交叉带映射 | 本仓库可运行基线 | `codes/chapters/ch06/core/aec_subband.py::two_tap_crossband_matrices`、`two_tap_subband_outputs`；时域卷积独立测试 | 固定已知路径的代数对照，不是交叉带自适应器；完美重建不保证对角辨识 |
 | §6.2 后续子带专题 | 两带 Haar 全交叉自适应块 NLMS | 本仓库可运行基线 | `codes/chapters/ch06/core/aec_subband.py::HaarCrossbandNLMSState`、`fir_crossband_matrices`；`codes/chapters/ch06/aec_crossband_demo.py`；`tests/test_codes_aec_crossband.py` | 任意有限实数时域 FIR 在该两带块模型内可表示；每块四路 FIR、外部冻结、成块等待；非工业滤波器组、非 Lee–Gan NSAF |
-| §6.2 后续子带专题 | 一般子带自适应 AEC/NSAF | 原理索引 | 正文模型与 Lee–Gan 原论文；固定版 `pyroomacoustics` 可查 `adaptive/subband_lms.py`（尚未单独登记锁清单入口） | 原型滤波器、抽取/混叠、跨带耦合和延迟依实现而变；NSAF 的全带抽头更新不同于本书两带逐输出带 FIR |
+| §6.2 后续子带专题 | 一般子带自适应 AEC/NSAF | 原理索引 | 正文模型与 Lee–Gan 原论文；固定版 `pyroomacoustics` 可查 `adaptive/subband_lms.py`（已在固定0.10.0锁清单登记，未运行此方法） | 原型滤波器、抽取/混叠、跨带耦合和延迟依实现而变；NSAF 的全带抽头更新不同于本书两带逐输出带 FIR |
+| §6.2 仿射投影专题；E06-34～39 | 正则实数APA有限窗口 | 本仓库可运行基线 | `codes/chapters/ch06/core/aec_affine_projection.py::APAState`、`codes/chapters/ch06/aec_affine_projection_demo.py`与`codes/chapters/ch06/examples/generate_apa_audio.py`；外部`pyaec`：`time_domain_adaptive_filters/apa.py`，实际原函数报告见研究APA审计 | 同一旧权重重新计算全窗误差；启动只用真实观测，冻结仍保留观测窗，恢复污染须显式清窗；正则可计算不等于可辨识，无DTD/延迟搜索/完整AEC；原函数丢尾和复虚部警告保留 |
 | §6.2 后续 RLS 专题 | 常规实数时域 RLS | 本仓库可运行基线 | `codes/chapters/ch06/core/aec_rls.py::RLSState`、`codes/chapters/ch06/aec_rls_demo.py`、`codes/chapters/ch06/aec_rls_kalman_comparison.py`、`tests/test_codes_aec_rls.py`；A04 另列 pyroomacoustics、pyaec、MetaAF 源码 | 含初始约束的指数加权最小二乘；逆相关矩阵 $O(L^2)$，教学代码每样本 Cholesky 正定检查另需 $O(L^3)$；无自动 DTD、延迟搜索或 RES |
 | §6.2；研究扩展：增强 A04 | 快/块/广义频域 RLS | 外部参考实现 | `pyroomacoustics`：`adaptive/rls.py` 的 BlockRLS；`metaaf`：`optimizer_rls.py`；GFDAF 论文另见 A04 | BlockRLS 和 GFDAF 不是本书逐样本精确 RLS 的改名；MetaAF 核心与 AEC zoo 许可不同 |
 | §6.2 | 短实数 FIR 矩阵 Kalman | 本仓库可运行基线 | `codes/chapters/ch06/core/aec_kalman_matrix.py::KalmanAECState`、`codes/chapters/ch06/aec_kalman_matrix_demo.py`、`tests/test_codes_aec_kalman_matrix.py` | 已知 $Q,\Psi$ 的 Joseph 协方差更新，未估计噪声或实现频域分区 |
-| §6.2 | FDKF | 外部参考实现 | 增强 A04；`pyaec`：`frequency_domain_adaptive_filters/fdkf.py::fdkf`；`codes/chapters/ch06/examples/audit_aec_upstream_interfaces.py` | 固定原函数在 NumPy 2.5.3 因 `np.complex` 失败，未输出音频；标量教学递推式(6-17)不是完整 FDKF；AEC3/Speex 不自动归为卡尔曼 |
+| 研究扩展：增强A19；E06-38诊断 | 立体声路径先验暖启与能量差过程噪声 | 原理索引 | Wang等Interspeech2025，DOI 10.21437/Interspeech.2025-1572，原§2～3；固定位置预校准路径 | 未确认作者源码/许可，未运行完整方法；已知先验可改变初值与过程模型，却不恢复观测矩阵秩；E38仅先验选解/错误先验的独立留出诊断，非论文性能复现 |
+| §6.2 | FDKF | 外部参考实现 | 增强 A04；`pyaec`：`frequency_domain_adaptive_filters/fdkf.py::fdkf`；`codes/chapters/ch06/examples/audit_aec_upstream_interfaces.py` | 固定原函数在 NumPy 2.5.3 因 `np.complex` 失败，未输出音频；标量教学递推式(6-21)不是完整 FDKF；AEC3/Speex 不自动归为卡尔曼 |
 | §6.2 | 分区 FDKF 与 VD/SD-PBFDKF | 外部参考实现 | 增强 A04；`pyaec`、`echocatzh-pfdkf`、`subband-kalman-aec` 固定源码；外部接口报告 | pyaec 在 `np.complex` 失败；echocatzh 原接口已实调默认后滤与关闭后滤的不同取点；非同条件整链性能对照，后者仅 `.m`、README、许可 |
 | §6.3 | Volterra 非线性 AEC | 原理索引 | 正文路径模型；`pyaec/nonlinear_adaptive_filters/volterra.py::svf` 可查受限二因子二阶级联 | 未执行该函数；受限级联不等于完整 Volterra 核；阶数、过拟合及未见削波另验 |
 | §6.3 | Hammerstein 非线性路径 | 原理索引 | 正文级联模型 | 非线性位于线性动态系统之前 |
@@ -376,10 +378,11 @@
 
 ## 章节代码练习与音频映射
 
-250 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 300 行算法统计。补充的空间精算、增强步骤、时间状态模块分别提供3/5/4道题。三个原有 `exercises_` 模块各自提供 `run_exercises()`，分别有 28/23/25 道题；AEC 小实验另有 4 道，进阶 AEC 手算另有 10 道；E03-07、E04-08、E09-06 与 E10-13 由独立实验入口提供。E04-08 的 200 次独立双源抽样只说明固定模型中的分辨事件频率和 Wilson 区间。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
+256 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 302 行算法统计。补充的空间精算、增强步骤、时间状态模块分别提供3/5/4道题。三个原有 `exercises_` 模块各自提供 `run_exercises()`，分别有 28/23/25 道题；AEC 小实验另有 4 道，进阶 AEC 手算另有 10 道；E03-07、E04-08、E09-06 与 E10-13 由独立实验入口提供。E04-08 的 200 次独立双源抽样只说明固定模型中的分辨事件频率和 Wilson 区间。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
 
 | 章节与稳定 ID | 练习入口 | 回归测试 |
 |---|---|---|
+| 第6章：E06-34～39（6题） | [APA五个完整缩例](../ch06/aec_affine_projection_demo.py)、[有色参考训练/留出](../ch06/examples/generate_apa_audio.py) | [状态/手算测试](../../../tests/test_codes_aec_affine_projection.py)、[PCM实验测试](../../../tests/test_codes_aec_apa_audio.py) |
 | 第 6 章：E06-22～33（12题） | [AEC 状态、数值与指标实验](../ch06/chapter06_experiments.py) | [独立测试](../../../tests/test_codes_chapter06_experiments.py)、[数值边界](../../../tests/test_codes_aec_numerical_boundaries.py) |
 | 第 5 章：E05-08～22（15题） | [约束、谱估计与状态实验](../ch05/chapter05_experiments.py) | [独立测试](../../../tests/test_codes_chapter05_experiments.py)、[GSC状态测试](../../../tests/test_codes_gsc.py) |
 | 第 4 章：E04-12～23（12题） | [定位逐步实验](../ch04/chapter04_experiments.py) | [独立测试](../../../tests/test_codes_chapter04_experiments.py) |
@@ -435,7 +438,7 @@
 本仓库不提交下载缓存、模型权重或未经授权的第三方语料。109 个自行合成的教学 WAV 按章放在 `codes/chapters/*/audio/`，单一总清单位于 `codes/chapters/ch00/audio/MANIFEST.json`；许可明确的 DEMAND 小型摘录和派生文件位于 `codes/chapters/ch02/real_audio/`，不包含完整下载归档。独立上游工作目录的取得、许可保留与未执行项目按来源状态记录报告。算法、源码或排除范围变化时，同步修改本表、研究说明、来源清单和真实验证记录。
 
 
-真实数据练习 R01 使用 [prepare_real_recordings.py](../ch02/examples/prepare_real_recordings.py) 与 [real_recordings.py](../ch02/core/real_recordings.py)，测试见 [test_codes_real_recordings.py](../../../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 250 道合成/手算代码题。数据来源和许可另见 [real_audio/](../ch02/real_audio/README.md)。
+真实数据练习 R01 使用 [prepare_real_recordings.py](../ch02/examples/prepare_real_recordings.py) 与 [real_recordings.py](../ch02/core/real_recordings.py)，测试见 [test_codes_real_recordings.py](../../../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 256 道合成/手算代码题。数据来源和许可另见 [real_audio/](../ch02/real_audio/README.md)。
 
 四组模型与边界练习对应以下独立实现；主音频新增的 4 个 interpolation 文件验证固定滤波误差，不是完整采样率转换性能。
 

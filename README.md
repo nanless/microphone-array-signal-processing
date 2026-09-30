@@ -4,11 +4,13 @@
 
 正文提供关键公式推导、可复算例子、适用边界，以及与各章公式对应的 NumPy/标准库教学代码。
 
-全书有 250 道可运行代码练习、56 张脚本生成的图，以及 27 组共 109 个[主清单合成 WAV](codes/chapters/ch00/audio/MANIFEST.json)。[练习与音频实验手册](codes/chapters/ch00/research/05_exercises_and_audio.md)逐题列出输入、答案、试听条件与代码入口。音频是数学合成样本，不是真实语音或正式听测；第 6 章两组合成 AEC 音频的参数也不完全等同于 E06-07～20 手算题。
+全书有 256 道可运行代码练习、58 张脚本生成的图，以及 27 组共 109 个[主清单合成 WAV](codes/chapters/ch00/audio/MANIFEST.json)。[练习与音频实验手册](codes/chapters/ch00/research/05_exercises_and_audio.md)逐题列出输入、答案、试听条件与代码入口。音频是数学合成样本，不是真实语音或正式听测；第 6 章两组合成 AEC 音频的参数也不完全等同于 E06-07～20 手算题。
 
 第四章另有[四份已知酉聚焦合成WAV](codes/chapters/ch04/focus_audio/MANIFEST.json)：用稳定窗逐频复幅度与实际PCM检查相干双源的多频协方差秩；指定角度和频率分量已知，不作为盲定位或正式听测结果。
 
 第五章另有[四份导数约束三麦合成WAV](codes/chapters/ch05/derivative_audio/MANIFEST.json)：同一两音和观测噪声输入比较单约束与零导数权重，分开目标失真、噪声代价和实际PCM总误差。共同因果参考不作后验增益或时移补偿；不是语音或设备实录。
+
+第六章另有[六份有色参考APA合成WAV](codes/chapters/ch06/apa_audio/MANIFEST.json)：同源NLMS与APA的训练后冻结比较，保留13点非零卷积尾；无噪声和含噪声的浮点分量、8000点实际PCM总功率分别报告。较高投影阶数在本次含噪条件下有更大留出误差，不能据此作设备或语音质量排名。
 
 第三章另有[多频几何音频](codes/chapters/ch03/geometry_audio/MANIFEST.json)：32 kHz 的双频源及两方向六通道观测，共3个独立数学样本；稳定窗的实际PCM相位拟合与完整条件见手册。
 
@@ -23,7 +25,7 @@ English version: [README_EN.md](README_EN.md)
 | 目录/文件 | 说明 |
 |---|---|
 | `chapters/` | 教程正文 14 篇 Markdown（`00_overview.md` 是入口，`01`～`11` 是 11 章正文，`12`/`13` 是附录 A/B） |
-| `figures/` | 56 张插图（`fig01`～`fig56_*.png`），全部由脚本生成、可复现 |
+| `figures/` | 58 张插图（`fig01`～`fig58_*.png`），全部由脚本生成、可复现 |
 | `codes/chapters/` | 导读、第 1～11 章及附录 A/B 的源码、实验、报告和资产；逐章目录与命令见[代码地图](codes/chapters/README.md) |
 | `codes/chapters/ch00/audio/MANIFEST.json`、各章 `audio/` | 主清单统一管理 27 组、109 个按章节存放的本书合成 WAV；由脚本生成，不直接编辑 |
 | `codes/chapters/ch01/binaural_audio/`、`codes/chapters/ch08/gss_audio/`、`codes/chapters/ch09/moving_audio/`、`codes/chapters/ch09/tracking_audio/`、`codes/chapters/appendix_b/room_audio/` | 五套独立合成实验资产，分别为 5、5、3、2、18 个 WAV；中间状态、轨迹/逐帧观测或房间数值报告随各自清单保存 |
@@ -35,7 +37,7 @@ English version: [README_EN.md](README_EN.md)
 | `codes/chapters/*/reports/` | 随算法所属章保存的小规模运行报告；与源码获取状态、论文全量评测分开 |
 | `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
 | `site/` | 20 个网页：14 个教程页（含首页）及 `research/` 下 6 个研究手册页；构建产物，可再生 |
-| `dist/` | [当前合订 PDF](dist/microphone-array-tutorial.pdf) 与可再生的合订 HTML；PDF 含 14 个顶级、121 个二级、519 个三级书签，共 654 个 |
+| `dist/` | [当前合订 PDF](dist/microphone-array-tutorial.pdf) 与可再生的合订 HTML；PDF 含 14 个顶级、121 个二级、526 个三级书签，共 661 个 |
 
 ## 章节导览
 
@@ -75,8 +77,9 @@ python3 -m venv .venv
 .venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 
-# 3. 先生成 109 个音频，再生成 56 张图（图 34～36、40～41、43～45、47、49 读取生成的音频）
+# 3. 先生成 109 个音频，再生成 58 张图（图 34～36、40～41、43～45、47、49、58 读取生成的音频）
 .venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
+.venv/bin/python -m codes.chapters.ch06.examples.generate_apa_audio
 .venv/bin/python scripts/make_figures.py
 .venv/bin/python scripts/make_aec_figures.py
 

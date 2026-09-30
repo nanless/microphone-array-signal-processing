@@ -23,6 +23,9 @@ import math
 import numpy as np
 
 from codes.chapters.ch02.core.conventions import finite_real_scalar
+from codes.chapters.ch06.core.aec_numeric import (
+    exceptional_scale, ratio, rounded, complex_ratio, complex_product, rounded_complex,
+)
 
 
 def _finite_complex_scalar(value: object, name: str) -> complex:
@@ -48,6 +51,10 @@ def _product_ratio(first: float, second: float, divisor: float = 1.) -> float:
 
 
 def _squared_modulus_times(value: complex, variance: float) -> float:
+    if exceptional_scale(value, variance):
+        real, imag = complex_ratio(value)
+        return rounded((real*real+imag*imag)*ratio(variance), "scaled squared modulus",
+                       positive_variance=True)
     # Multiplying one component by variance first can itself lose the answer;
     # keep all three factors' exponents until the final conversion.
     def component_squared(component):
@@ -88,6 +95,9 @@ def scalar_kalman_step(
     if p < 0.0 or phi < 0.0 or psi <= 0.0:
         raise ValueError("variances require P >= 0, Phi >= 0, Psi > 0")
 
+    if exceptional_scale(w, a, x, d, p, phi, psi):
+        return _exceptional_scalar_step(w, p, a, phi, x, d, psi)
+
     try:
         with np.errstate(over="raise", invalid="raise", divide="raise",
                          under="ignore"):
@@ -117,6 +127,33 @@ def scalar_kalman_step(
         "posterior_weight": posterior_weight,
         "posterior_variance": float(posterior_variance),
         "posterior_error": posterior_error,
+    }
+
+
+def _exceptional_scalar_step(w, p, a, phi, x, d, psi) -> dict:
+    """Same complex scalar update with a single rounding of compound results."""
+    wr, ar, xr, dr = map(complex_ratio, (w, a, x, d))
+    p, phi, psi = map(ratio, (p, phi, psi))
+    prior_w = complex_product(ar, wr)
+    prior_p = (ar[0]*ar[0]+ar[1]*ar[1])*p+phi
+    echo = complex_product(xr, prior_w)
+    error = dr[0]-echo[0], dr[1]-echo[1]
+    denominator = (xr[0]*xr[0]+xr[1]*xr[1])*prior_p+psi
+    gain = prior_p*xr[0]/denominator, -prior_p*xr[1]/denominator
+    change = complex_product(gain, error)
+    posterior_w = prior_w[0]+change[0], prior_w[1]+change[1]
+    posterior_p = prior_p*psi/denominator
+    posterior_echo = complex_product(xr, posterior_w)
+    posterior_error = dr[0]-posterior_echo[0], dr[1]-posterior_echo[1]
+    return {
+        "prior_weight": rounded_complex(prior_w, "scalar prior weight"),
+        "prior_variance": rounded(prior_p, "scalar prior variance", positive_variance=True),
+        "prior_error": rounded_complex(error, "scalar prior error"),
+        "innovation_variance": rounded(denominator, "scalar innovation variance", positive_variance=True),
+        "gain": rounded_complex(gain, "scalar gain"),
+        "posterior_weight": rounded_complex(posterior_w, "scalar posterior weight"),
+        "posterior_variance": rounded(posterior_p, "scalar posterior variance", positive_variance=True),
+        "posterior_error": rounded_complex(posterior_error, "scalar posterior error"),
     }
 
 

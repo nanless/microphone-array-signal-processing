@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""生成教程插图（图 1～25、33～36、40～56；图 26～32、37～39 见 make_aec_figures.py）。
+"""生成教程插图（图 1～25、33～36、40～58；图 26～32、37～39 见 make_aec_figures.py）。
 
 用法（仓库根目录）：
-    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～56 → figures/
+    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～58 → figures/
 """
 from pathlib import Path
 import hashlib
@@ -3936,6 +3936,91 @@ def fig_omlsa_probability():
     save(fig, "fig56_omlsa_probability.png")
 
 
+def fig_affine_projection_geometry():
+    """E06-34 geometry, independently specified rational solutions."""
+    fig, ax = plt.subplots(figsize=(8.4, 5.9))
+    x = np.linspace(-.06, .72, 400)
+    ax.plot(x, 1.25-2*x, color=C_BLUE, lw=2, label=r"当前观测：$2w_0+w_1=5/4$")
+    ax.axvline(.5, color=C_GREEN, lw=2, label=r"上一观测：$w_0=1/2$")
+    points = [(5/12, 5/24, C_ORANGE, r"单列，$\delta=1$：$(5/12,5/24)$"),
+              (7/16, 3/16, C_PURPLE, r"两列，$\delta=1$：$(7/16,3/16)$"),
+              (.5, .25, C_RED, r"两列，$\delta=0$：$(1/2,1/4)$")]
+    for a, b, color, label in points:
+        ax.annotate('', (a, b), (0, 0), arrowprops={'arrowstyle': '->', 'color': color, 'lw': 1.8, 'alpha': .7})
+        ax.scatter([a], [b], color=color, s=50, zorder=5, label=label)
+    ax.scatter([0], [0], color='black', s=30, zorder=6, label='共同更新前权重 (0,0)')
+    ax.set(xlim=(-.055, .71), ylim=(-.06, .65), xlabel=r"第0抽头 $w_0$（无量纲）",
+           ylabel=r"第1抽头 $w_1$（无量纲）", aspect='equal')
+    ax.grid(ls=':', alpha=.3)
+    ax.legend(loc='upper left', fontsize=FS_SMALL)
+    fig.suptitle('图57  仿射投影：同时处理当前与上一观测的约束', fontsize=FS_SUP)
+    fig.text(.5, .025, 'L=2，μ=1；U的两列为[2,1]与[1,0]，d=[5/4,1/2]，均由同一旧权重重算误差。\n'
+             '正则两列后的误差为[3/16,1/16]；只有本例满列秩、δ=0、μ=1时同时落在两条约束线上。',
+             ha='center', fontsize=FS_SMALL)
+    fig.tight_layout(rect=(0, .13, 1, .93))
+    save(fig, 'fig57_affine_projection_geometry.png')
+
+
+def fig_affine_projection_learning():
+    """Plot generated same-input truth and actual PCM scores, never resimulate."""
+    manifest_path = CODE_CHAPTERS / 'ch06/apa_audio/MANIFEST.json'
+    manifest = json.loads(manifest_path.read_text())
+    for name, digest in manifest['source_sha256'].items():
+        if hashlib.sha256((Path(__file__).resolve().parents[1]/name).read_bytes()).hexdigest() != digest:
+            raise ValueError('APA figure source SHA is stale: '+name)
+    for name, record in manifest['files'].items():
+        if hashlib.sha256((manifest_path.parent/name).read_bytes()).hexdigest() != record['sha256']:
+            raise ValueError('APA figure WAV SHA is stale: '+name)
+    experiment = manifest['experiment']
+    p = experiment['parameters']
+    if (p['training_interval_samples'] != [0, 24000] or p['holdout_interval_samples'] != [24000, 32000]
+            or p['step_size'] != .2 or p['regularization'] != .001 or p['seed'] != 20261001):
+        raise ValueError('APA plotted experiment differs from the declared fixed model')
+    colors = {1: C_BLUE, 2: C_ORANGE, 4: C_PURPLE}
+    names = {1: 'NLMS（K=1）', 2: 'APA（K=2）', 4: 'APA（K=4）'}
+    fig = plt.figure(figsize=(9.5, 8.2))
+    grid = fig.add_gridspec(2, 2, height_ratios=[1.1, 1])
+    axes = [fig.add_subplot(grid[0, 0]), fig.add_subplot(grid[0, 1])]
+    for ax, condition, title in zip(axes, ('noiseless', 'noisy'), ('无观测噪声：路径辨识', '观测噪声σ=0.003：系数噪声')):
+        for order in (1, 2, 4):
+            trace = experiment['conditions'][condition][str(order)]['trace']
+            time = np.array([item['state_after_samples'] for item in trace])/16000
+            error = np.array([item['relative_path_error'] for item in trace])
+            ax.semilogy(time, np.where(error > 0, error, np.nan), color=colors[order], label=names[order])
+        ax.axvline(1.5, color='.4', ls='--', label='1.5 s后冻结')
+        ax.set(xlabel='状态时刻（s）', ylabel=r'相对路径误差 $\|\hat h-h\|/\|h\|$', title=title,
+               xlim=(0, 2.02), ylim=(1e-17, 2) if condition == 'noiseless' else (1e-3, 2))
+        ax.grid(ls=':', alpha=.3)
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(.5, .94),
+               ncol=4, fontsize=FS_SMALL)
+    ax = fig.add_subplot(grid[1, :])
+    x = np.arange(3)
+    methods = experiment['conditions']['noisy']
+    clean = [methods[str(k)]['holdout_float']['clean_echo_prediction_error_mse'] for k in (1, 2, 4)]
+    total = [methods[str(k)]['holdout_float']['total_prior_residual_mse'] for k in (1, 2, 4)]
+    pcm = [manifest['pcm_measurements']['powers'][key]['mean_square'] for key in ('nlms_residual', 'apa2_residual', 'apa4_residual')]
+    for shift, values, color, label in [(-.24, clean, C_GREEN, '浮点干净回声预测误差'),
+                                      (0, total, '.55', '浮点总先验残差'),
+                                      (.24, pcm, C_RED, '实际PCM总先验残差')]:
+        ax.bar(x+shift, np.asarray(values)/1e-6, width=.23, color=color, label=label)
+    noise = methods['1']['holdout_float']['observation_noise_mse']
+    ax.axhline(noise/1e-6, color='.3', ls=':', label='本次浮点观测噪声MSE')
+    ax.set(xticks=x, xticklabels=[names[k] for k in (1, 2, 4)], ylabel=r'MSE／$10^{-6}$',
+           title='冻结留出[24000,32000)，共同8000点：噪声条件下阶数更高未必更好',
+           ylim=(0, max(max(clean), max(total), max(pcm))/1e-6*1.35))
+    ax.grid(axis='y', ls=':', alpha=.3)
+    ax.set_axisbelow(True)
+    ax.legend(fontsize=FS_SMALL, ncol=2)
+    fig.suptitle('图58  有色参考下的收敛与噪声代价', fontsize=FS_SUP)
+    fig.text(.5, .025, '16 kHz，L=16，μ=0.2，δ=0.001，seed=20261001；AR系数0.98、激励σ=0.015。\n'
+             '同一输入/路径，先预测再更新；一次固定随机实验，无抽样区间。13点尾部保留但不计分。\n'
+             '训练输入为浮点；PCM仅实际读回评分。无语音、房间、双讲、设备或实时性能证据。',
+             ha='center', fontsize=FS_SMALL)
+    fig.tight_layout(rect=(0, .15, 1, .88))
+    save(fig, 'fig58_affine_projection_learning.png', {'AudioManifestDigest': hashlib.sha256(manifest_path.read_bytes()).hexdigest()})
+
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -3985,6 +4070,8 @@ def main():
     fig_coherent_frequency_rank()
     fig_derivative_constraints()
     fig_omlsa_probability()
+    fig_affine_projection_geometry()
+    fig_affine_projection_learning()
     print("ALL DONE")
 
 
