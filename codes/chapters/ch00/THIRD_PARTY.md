@@ -136,6 +136,7 @@ DEMAND v1.0 的 NRIVER 河流场景来自 [Zenodo 1227121](https://zenodo.org/re
 - **NKF-AEC、FN-SSL/IPDnet、DCASE 2022/2025 基线**：完整授权依据或第三方声明尚未建立，保留官方源码定位，不从“公开可见”推断完整使用与分发权限。
 - **NOTSOFAR-1、DNS、AEC 和 CHiME**：代码与数据的条款分开。NOTSOFAR-1 的 README 还对 dev-set-2 作了移除及用途说明，不能只看根目录数据许可便假定所有历史版本均可取得。推理脚本可能自动下载模型和数据，本次未执行。
 - **S4M、AudioSep、SGMSE、StoRM、ArrayDPS**：取得模型定义或推理代码，不等于取得完整训练配方、检查点与训练语料。是否因果及运行速度也必须绑定配置再测。
+- **ArrayDPS 实际调用**：2026-10-01 核对固定 `separate.py`→`src/sampler_spatial_v1_reverb_iva_8kHz.py`→FCP/IVA/STFT；通用 `src/sampler.py` 不是这条分离入口。原驾驶器用干净源 SDR 控制试验停止，部署时不能照搬；研究和合同审计明确与原文仅用混合重构的 ML 选择分开。此次仅静态审计，未运行 Torch、权重或采样，代码 MIT 与各类模型/语料权利仍分别记录。
 
 上述判断绑定表中提交。若要重新分发或用于产品，应读取相应提交的 LICENSE、COPYING、NOTICE、文件头及依赖许可；本表不是法律意见。本仓库尚无明确根许可证，不能据此替任何来源授予新的权利。
 

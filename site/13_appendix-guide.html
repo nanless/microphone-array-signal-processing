@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 B · 路径地图与练习 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="026ad29d8bcd"><style>
+<meta name="source-digest" content="35ac0a570bc8"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -44,7 +44,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{display:block;margin:20px auto;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
-@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td{min-width:8em}}
+@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
@@ -159,7 +159,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <ol>
 <li>运行 <code>codes/</code> 中只依赖 NumPy 的教学实现，核对手算结果、数组维度和退化边界。</li>
 <li>在隔离环境中用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线，记录房间、阵列和随机种子。</li>
-<li>先按 §13.7 生成图所依赖的音频和追踪清单，再运行 <code>scripts/</code> 中的两个绘图脚本，按当前参数复现 59 张编号图，并逐图核对正文条件。</li>
+<li>先按 §13.7 生成图所依赖的音频和追踪清单，再运行 <code>scripts/</code> 中的两个绘图脚本，按当前参数复现 60 张编号图，并逐图核对正文条件。</li>
 <li>按研究任务选择公开数据和固定版本参考系统，分别核对代码、模型与数据的许可和评测口径。</li>
 <li>在可用的多通道硬件上测实时性、同步和标定；仿真结果不能代替设备测量。</li>
 </ol>
@@ -1143,12 +1143,14 @@ $$</p>
 <p>图50～56均由确定性参数计算，不把图55期望标成单次PCM实测。</p>
 <p>图57是两观测APA的精确几何；图58读取独立APA清单，分开同源浮点分量与实际PCM总功率。需先生成其六个WAV，单seed曲线不是多次随机实验。</p>
 <p>图59读取第7章独立六WAV清单：先画已知路径逆的解析噪声增益及保留反射，再并列总体期望误差和固定27200点窗口的实际PCM误差。先运行该章生成器；这是数学合成的已知两稀疏路径，不是盲WPE或真实房间性能。</p>
-<p>图片写入 <code>figures/</code>，共 59 张：</p>
+<p>图60读取第8章独立六WAV清单：先比较500 Hz的幅度上限和1250 Hz的相位旋转，再分别显示解析与27200点实际PCM误差。先运行 <code>codes.chapters.ch08.examples.mask_representation_demo</code>；已知目标构造的掩码只检验表示边界，不是盲分离或网络性能。</p>
+<p>图片写入 <code>figures/</code>，共 60 张：</p>
 <pre><code class="language-bash">.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
 .venv/bin/python -m codes.chapters.ch09.examples.chapter09_tracking_audio
 .venv/bin/python -m codes.chapters.ch06.examples.generate_apa_audio
 .venv/bin/python -m codes.chapters.ch07.examples.mint_teaching_demo
-.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～59
+.venv/bin/python -m codes.chapters.ch08.examples.mask_representation_demo
+.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～60
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～39（回声消除专题）
 </code></pre>
 <p>Windows 上把 <code>.venv/bin/python</code> 换成 <code>.venv\Scripts\python</code>，其余不变。</p>

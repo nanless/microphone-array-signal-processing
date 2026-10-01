@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "executed_at_utc": "2026-10-01T00:28:45.241416+00:00",
-  "executed_at_local": "2026-10-01T08:28:45.241416+08:00",
+  "executed_at_utc": "2026-10-01T01:46:55.598255+00:00",
+  "executed_at_local": "2026-10-01T09:46:55.598255+08:00",
   "audit_source": "codes/chapters/ch03/examples/audit_upstream_coarray.py",
   "audit_source_sha256": "7a3bc077c187667a9ac9fcc9fe128edc42377f8c06f91738c92c944a15d57cbe",
   "sources": {
-    "lock_sha256": "21522c1823b2a5f084ec3e62382cb394b6076a6a2574e0422471229c23b07011",
+    "lock_sha256": "5cf610a5bee5a65c0b5bb77293f2bd6549446d22e635594fc313710f4109b8cf",
     "lock_entry_sha256": "4c352513e5e82f8c474d4979edd3190977aed51fe056a3e952118af894dc4240",
     "url": "https://github.com/morriswmz/doatools.py.git",
     "revision": "9469db201e0418aef6b97583ef54b6fec2769502",

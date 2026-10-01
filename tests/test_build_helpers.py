@@ -628,10 +628,10 @@ class BuildHelpersTest(unittest.TestCase):
         )
 
     def test_figure_semantics_accept_any_reuse_and_reject_mismatch_or_orphan(self):
-        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 60)]
+        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 61)]
         refs.extend([("图1 复用", "fig01_x.png", 1),
                      ("图23 复用", "fig23_x.png", 23)])
-        names = [f"fig{i:02d}_x.png" for i in range(1, 60)]
+        names = [f"fig{i:02d}_x.png" for i in range(1, 61)]
         self.assertEqual(quality_check.figure_inventory_issues(refs, names), [])
         bad_refs = list(refs)
         bad_refs[0] = ("图2 错配", "fig01_x.png", 1)
@@ -652,6 +652,30 @@ class BuildHelpersTest(unittest.TestCase):
                      source.replace('实现 | 主要源码', '主要源码 | 实现')):
             html, _ = build_site.render(near, ROOT/'chapters/07_wpe-dereverberation.md')
             self.assertNotIn('wpe-readable-table', html)
+
+    def test_separation_phone_tables_keep_phrases_and_exact_chapter_scope(self):
+        tables = [
+            ("路线", "代表", "思想", "局限"),
+            ("结构", "代表", "主要结构", "结果复现要求", "优点与限制"),
+            ("固定时轴输出", "解析MSE", "PCM误差整数能量 $E$", "实际PCM MSE", "实际PCM相对平方误差"),
+        ]
+        for labels in tables:
+            with self.subTest(headers=labels):
+                source = '| '+' | '.join(labels)+' |\n| '+' | '.join(['---']*len(labels))+' |\n| '+' | '.join(['短语']*len(labels))+' |\n'
+                html, _ = build_site.render(source, ROOT/'chapters/08_speech-separation.md')
+                self.assertIn('<table class="separation-readable-table">', html)
+                self.assertEqual(html.count('scope="col"'), len(labels))
+                self.assertIn('class="table-scroll" tabindex="0" role="region"', html)
+                for other in ('06_aec.md', '07_wpe-dereverberation.md'):
+                    html, _ = build_site.render(source, ROOT/'chapters'/other)
+                    self.assertNotIn('separation-readable-table', html)
+                for near in (source.replace(labels[0], '其他表头', 1),
+                             source.replace(' | '.join(labels), ' | '.join(reversed(labels)), 1)):
+                    html, _ = build_site.render(near, ROOT/'chapters/08_speech-separation.md')
+                    self.assertNotIn('separation-readable-table', html)
+        screen, printed = build_site.CSS.split('@media print', 1)
+        self.assertIn('.separation-readable-table td{min-width:8em}', screen)
+        self.assertNotIn('separation-readable-table', printed)
 
     def test_source_control_characters_catch_damaged_tex(self):
         self.assertEqual(quality_check.source_control_character_issues("正文\n\t数学\r\n"), [])

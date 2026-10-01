@@ -47,6 +47,9 @@ STFT_AUDIO_ROOT = CODE_CHAPTERS / "ch02" / "stft_audio"
 DERIVATIVE_AUDIO_ROOT = CODE_CHAPTERS / "ch05" / "derivative_audio"
 APA_AUDIO_ROOT = CODE_CHAPTERS / "ch06" / "apa_audio"
 MINT_AUDIO_ROOT = CODE_CHAPTERS / "ch07" / "mint_audio"
+MASK_AUDIO_ROOT = CODE_CHAPTERS / "ch08" / "mask_audio"
+MASK_AUDIO_WAVS = {"mask_" + name + ".wav" for name in
+                   ("target", "other", "mixture", "bounded_real", "unbounded_real", "complex_oracle")}
 MINT_AUDIO_WAVS = {"mint_reference.wav": 1, "mint_well_array.wav": 2,
                    "mint_near_array.wav": 2, "mint_well_exact.wav": 1,
                    "mint_near_exact.wav": 1, "mint_near_regularized.wav": 1}
@@ -141,7 +144,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{display:block;margin:20px auto;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
-@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td{min-width:8em}}
+@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 """
 
@@ -559,6 +562,20 @@ def stage_mint_audio(source, destination):
     return expected
 
 
+def stage_mask_audio(source, destination):
+    """Validate actual PCM and replay the fixed FFT representation experiment."""
+    import sys
+    if str(ROOT.resolve()) not in sys.path:
+        sys.path.insert(0, str(ROOT.resolve()))
+    from codes.chapters.ch08.examples.mask_representation_demo import check_assets
+    check_assets(source, replay=True)
+    expected = MASK_AUDIO_WAVS | {"MANIFEST.json"}
+    destination.mkdir()
+    for name in sorted(expected):
+        shutil.copy2(source / name, destination / name)
+    return expected
+
+
 def stage_tracking_audio(source, destination):
     """Validate the independent PCM-to-observation experiment before publishing."""
     import wave
@@ -585,6 +602,11 @@ def stage_tracking_audio(source, destination):
 
 def stage_gss_audio(source, destination):
     """核对受控 GSS 教学链的五路 PCM 与可复算中间状态。"""
+    import sys
+    if str(ROOT.resolve()) not in sys.path:
+        sys.path.insert(0, str(ROOT.resolve()))
+    from codes.chapters.ch08.examples.gss_teaching_demo import generate
+    generate(source, check=True)
     import wave
     import zipfile
     manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
@@ -641,7 +663,7 @@ def source_digest():
     paths += [main_audio_manifest_path(CODE_CHAPTERS)]
     paths += sorted(main_audio_sources())
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "build_markdown_helpers.py",
@@ -806,6 +828,9 @@ def rewrite_site_links(html, source_path):
         if target.parent == MINT_AUDIO_ROOT.resolve() and target.name in (set(MINT_AUDIO_WAVS) | {"MANIFEST.json"}):
             relative = os.path.relpath("mint_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
+        if target.parent == MASK_AUDIO_ROOT.resolve() and target.name in (MASK_AUDIO_WAVS | {"MANIFEST.json"}):
+            relative = os.path.relpath("mask_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
+            return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
         if target.parent == FOCUS_AUDIO_ROOT.resolve() and target.name in (set(FOCUS_AUDIO_WAVS) | {"MANIFEST.json"}):
             relative = os.path.relpath("focus_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
@@ -821,7 +846,7 @@ def rewrite_site_links(html, source_path):
         # input as a download link; only the explicit mono derivatives play.
         if parsed.path.endswith("real_audio/demand_nriver_16ch_10s.wav"):
             return match.group(0)
-        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|stft_audio|geometry_audio|focus_audio|derivative_audio|apa_audio|mint_audio)/[a-z0-9_]+\.wav", parsed.path):
+        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|stft_audio|geometry_audio|focus_audio|derivative_audio|apa_audio|mint_audio|mask_audio)/[a-z0-9_]+\.wav", parsed.path):
             return match.group(0)
         safe_href = escape(href, quote=True)
         safe_label = escape(re.sub(r'<[^>]+>', '', unescape(label)), quote=True)
@@ -898,6 +923,18 @@ def render(md_text, source_path=None):
             readable = labels == ["实现", "主要源码", "与教学基线的差别", "最小核对实验"]
             return '<table'+(' class="wpe-readable-table"' if readable else '')+'>'+inner+'</table>'
         html = re.sub(r'<table>(.*?)</table>', wpe_table, html, flags=re.S)
+    if source_path.name == "08_speech-separation.md":
+        def separation_table(match):
+            inner = match.group(1)
+            headers = re.findall(r'<th\b[^>]*>(.*?)</th>', inner, flags=re.S)
+            labels = tuple(unescape(re.sub(r'<[^>]+>', '', value)).strip() for value in headers)
+            readable = labels in {
+                ("路线", "代表", "思想", "局限"),
+                ("结构", "代表", "主要结构", "结果复现要求", "优点与限制"),
+                ("固定时轴输出", "解析MSE", "PCM误差整数能量 $E$", "实际PCM MSE", "实际PCM相对平方误差"),
+            }
+            return '<table'+(' class="separation-readable-table"' if readable else '')+'>'+inner+'</table>'
+        html = re.sub(r'<table>(.*?)</table>', separation_table, html, flags=re.S)
     # 保留 table 原生语义；横向滚动由可聚焦的外层区域承担，键盘用户也能操作宽表。
     html = re.sub(
         r"<table([^>]*)>(.*?)</table>",
@@ -997,7 +1034,36 @@ def research_sidebar(current, heads):
     return "\n".join(parts)
 
 
-def publish_files(replacements, removals=()):
+def _validate_publish_targets(targets, boundary=None):
+    """Preflight links before backups, replacement or stale-file removal."""
+    for target in map(Path, targets):
+        base = Path(boundary) if boundary is not None else target.parent
+        if not target.parent.is_relative_to(base):
+            raise ValueError('发布目标越出指定目录')
+        for parent in (target.parent, *target.parent.parents):
+            if parent.is_symlink() or (parent.exists() and not parent.is_dir()):
+                raise ValueError('发布目录必须为普通目录：'+str(parent))
+            if parent == base:
+                break
+        if target.is_symlink() or (target.exists() and not target.is_file()):
+            raise ValueError('发布目标必须为普通文件：'+str(target))
+
+
+def _validate_site_output(directory):
+    """Reject linked destination directories before creating or scanning them."""
+    directory = Path(directory)
+    subdirectories = ('research', 'audio', 'real_audio', 'room_audio', 'moving_audio',
+                      'tracking_audio', 'gss_audio', 'binaural_audio', 'stft_audio',
+                      'geometry_audio', 'focus_audio', 'derivative_audio', 'apa_audio',
+                      'mint_audio', 'mask_audio')
+    for folder in (directory, *(directory/name for name in subdirectories)):
+        if folder.is_symlink() or (folder.exists() and not folder.is_dir()):
+            raise ValueError('站点目标必须为普通目录：'+str(folder))
+        if folder.is_dir() and any(p.is_symlink() for p in folder.iterdir()):
+            raise ValueError('站点目标不能包含符号链接：'+str(folder))
+
+
+def publish_files(replacements, removals=(), *, boundary=None):
     """替换失败时恢复整批旧文件；不承诺断电或进程强杀时的原子性。"""
     replacements = [(Path(source), Path(target)) for source, target in replacements]
     targets = [target for _, target in replacements] + [Path(path) for path in removals]
@@ -1005,6 +1071,7 @@ def publish_files(replacements, removals=()):
         return
     if len(set(targets)) != len(targets):
         raise ValueError("发布目标重复")
+    _validate_publish_targets(targets, boundary)
     backup_dir = Path(tempfile.mkdtemp(prefix=".publish-backup-", dir=targets[0].parent))
     snapshots = []
     preserve_backup = False
@@ -1041,6 +1108,7 @@ def publish_files(replacements, removals=()):
 def main():
     names = [f for f, _ in CHAPTERS]
     expected = set(source_outputs().values())
+    _validate_site_output(OUT)
     with tempfile.TemporaryDirectory(prefix=".site-build-", dir=ROOT) as tmp:
         temp_out = Path(tmp)
         build_digest = source_digest()
@@ -1157,6 +1225,10 @@ def main():
         (OUT / "mint_audio").mkdir(exist_ok=True)
         stale += [path for path in (OUT / "mint_audio").iterdir()
                   if path.is_file() and path.name not in mint_names]
+        mask_names = stage_mask_audio(MASK_AUDIO_ROOT, temp_out / "mask_audio")
+        (OUT / "mask_audio").mkdir(exist_ok=True)
+        stale += [path for path in (OUT / "mask_audio").iterdir()
+                  if path.is_file() and path.name not in mask_names]
         publish_files([(temp_out / name, OUT / name) for name in sorted(expected)] +
                       [(temp_out / "audio" / name, OUT / "audio" / name) for name in audio_names] +
                       [(temp_out / "real_audio" / name, OUT / "real_audio" / name)
@@ -1182,7 +1254,9 @@ def main():
                       [(temp_out / "apa_audio" / name, OUT / "apa_audio" / name)
                        for name in sorted(apa_names)] +
                       [(temp_out / "mint_audio" / name, OUT / "mint_audio" / name)
-                       for name in sorted(mint_names)], stale)
+                       for name in sorted(mint_names)] +
+                      [(temp_out / "mask_audio" / name, OUT / "mask_audio" / name)
+                       for name in sorted(mask_names)], stale, boundary=OUT)
     print("DONE", len(expected), "pages")
 
 

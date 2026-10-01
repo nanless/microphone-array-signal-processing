@@ -19,7 +19,7 @@
 
     1. 运行 `codes/` 中只依赖 NumPy 的教学实现，核对手算结果、数组维度和退化边界。
     2. 在隔离环境中用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线，记录房间、阵列和随机种子。
-    3. 先按 §13.7 生成图所依赖的音频和追踪清单，再运行 `scripts/` 中的两个绘图脚本，按当前参数复现 59 张编号图，并逐图核对正文条件。
+    3. 先按 §13.7 生成图所依赖的音频和追踪清单，再运行 `scripts/` 中的两个绘图脚本，按当前参数复现 60 张编号图，并逐图核对正文条件。
     4. 按研究任务选择公开数据和固定版本参考系统，分别核对代码、模型与数据的许可和评测口径。
     5. 在可用的多通道硬件上测实时性、同步和标定；仿真结果不能代替设备测量。
 
@@ -726,14 +726,17 @@ $$
 
 图59读取第7章独立六WAV清单：先画已知路径逆的解析噪声增益及保留反射，再并列总体期望误差和固定27200点窗口的实际PCM误差。先运行该章生成器；这是数学合成的已知两稀疏路径，不是盲WPE或真实房间性能。
 
-图片写入 `figures/`，共 59 张：
+图60读取第8章独立六WAV清单：先比较500 Hz的幅度上限和1250 Hz的相位旋转，再分别显示解析与27200点实际PCM误差。先运行 `codes.chapters.ch08.examples.mask_representation_demo`；已知目标构造的掩码只检验表示边界，不是盲分离或网络性能。
+
+图片写入 `figures/`，共 60 张：
 
 ```bash
 .venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
 .venv/bin/python -m codes.chapters.ch09.examples.chapter09_tracking_audio
 .venv/bin/python -m codes.chapters.ch06.examples.generate_apa_audio
 .venv/bin/python -m codes.chapters.ch07.examples.mint_teaching_demo
-.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～59
+.venv/bin/python -m codes.chapters.ch08.examples.mask_representation_demo
+.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～60
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～39（回声消除专题）
 ```
 

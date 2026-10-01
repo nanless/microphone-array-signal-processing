@@ -164,7 +164,7 @@ class EnhancementParagraphTest(unittest.TestCase):
         paragraphs = items[0]["paragraph_texts"]
         anchors = (
             "cACGMM 空间聚类",
-            r"\tag{8-16}",
+            r"\tag{8-17}",
             "正定的形状矩阵",
             "混合模型的后验概率",
         )

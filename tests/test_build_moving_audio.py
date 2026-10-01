@@ -57,14 +57,14 @@ class GssAudioStagingTests(unittest.TestCase):
             self.assertEqual((self.root / "published" / name).read_bytes(),
                              (self.source / name).read_bytes())
 
-    def test_readme_is_optional_but_other_extras_are_rejected(self):
+    def test_all_extras_including_readme_are_rejected_before_staging(self):
         (self.source / "README.md").write_text("Source instructions only")
-        names = build_site.stage_gss_audio(self.source, self.root / "with_readme")
-        self.assertNotIn("README.md", names)
+        with self.assertRaises(ValueError):
+            build_site.stage_gss_audio(self.source, self.root / "with_readme")
         (self.source / "README.md").unlink()
         build_site.stage_gss_audio(self.source, self.root / "without_readme")
         (self.source / "README.md.bak").write_text("unexpected")
-        with self.assertRaisesRegex(ValueError, "集合"):
+        with self.assertRaises(ValueError):
             build_site.stage_gss_audio(self.source, self.root / "unexpected")
 
     def test_rejects_changed_state(self):
@@ -72,7 +72,7 @@ class GssAudioStagingTests(unittest.TestCase):
         data = bytearray(state.read_bytes())
         data[-1] ^= 1
         state.write_bytes(data)
-        with self.assertRaisesRegex(ValueError, "摘要"):
+        with self.assertRaisesRegex(ValueError, "stale|摘要"):
             build_site.stage_gss_audio(self.source, self.root / "published")
 
 

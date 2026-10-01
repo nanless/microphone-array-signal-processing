@@ -9,7 +9,7 @@
 - **原理索引**：已有原理或来源依据，但尚未形成唯一、许可明确且承担对应计算的源码映射；代码可见而许可不明时也保留此状态，并说明原因。
 - **明确排除**：指定软件的身份或许可不满足本书当前收录方式；不表示删除相应方法的学术讨论。
 
-算法表共 305 行：本仓库可运行基线 59 行、外部参考实现 176 行、原理索引 69 行、明确排除 1 行。练习映射单独计数，不因题数增加算法行；MDL、功率谱减、受控 NCC 双讲检测与 cACGMM 教学迭代属于本地基线。覆盖表仍有原理索引，不表示全书全部算法已经运行。
+算法表共 307 行：本仓库可运行基线 59 行、外部参考实现 177 行、原理索引 70 行、明确排除 1 行。练习映射单独计数，不因题数增加算法行；MDL、功率谱减、受控 NCC 双讲检测与 cACGMM 教学迭代属于本地基线。覆盖表仍有原理索引，不表示全书全部算法已经运行。
 
 源码取得与入口核对见 [SOURCE_STATUS.json](SOURCE_STATUS.json)；该文件中的依赖验证和执行字段未开展时为 `not_run`，不承载方法级数值实验结果。实际运行及数值对照见[复现记录](research/04_source_reproduction.md)、[增强研究记录](research/02_aec_wpe_separation.md)和 [WPE 独立对照脚本](../ch07/examples/compare_wpe_reference.py)。工业接口与 SBL 的限定实验报告按主题放在 `codes/chapters/ch04/reports/`、`codes/chapters/ch10/reports/` 等对应章节；实际调用外部代码不将它改列为本仓库教学基线。覆盖状态不是测试结果。完整提交、官方地址、许可与来源 ID 见 [SOURCES.lock.json](SOURCES.lock.json)。表内本仓库教学源文件使用相对于仓库根目录的完整路径；第三方项目的内部路径仍相对于各自项目根目录。出现“同文件”时仅继承上一行文件，不继承其算法或验证结论。
 
@@ -238,10 +238,12 @@
 | §8.3 | 满秩 MNMF | 外部参考实现 | `ssspy`：`ssspy/bss/mnmf.py::GaussMNMF` | 欠定模型不保证可辨识 |
 | §8.3；研究扩展：增强 B06 | FastMNMF | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/bss/fastmnmf.py` | 与受限作者整库许可分开 |
 | 研究扩展：增强 B06 | FastMNMF2 | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/bss/fastmnmf2.py` | 参数化、参考麦源图像 |
+| 研究扩展：增强 B06 | Distributed FastMNMF（2026预印本） | 原理索引 | 作者原文 arXiv:2605.19388v1 §3.1～4.1 | 子阵块对角近似省略跨阵协方差，仍需同步/校准；未核实作者代码许可、未取得代码/模型 |
 | 研究扩展：增强 B11 | 多帧满秩空间协方差分析 mfFCA | 外部参考实现 | `mffca`：`fca.py`、`main_synthetic.ipynb` | 固定作者源码仅内部评估，不修改或再分发；未运行整链 |
 | §8.3 | TRINICON | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/bss/trinicon.py` | 该实现固定两个输出 |
 | §8.4 | cACGMM | 本仓库可运行基线 | `codes/chapters/ch08/core/gss_teaching.py` 的受控 NumPy 活动导引迭代；`pb_bss`：`pb_bss/distribution/cacgmm.py` 与 `ssspy`：`ssspy/bss/cacgmm.py` 为外部对照入口 | 二麦合成复谱、给定活动；方向外积不保留原功率；ssspy 入口仅静态核对，未运行其 cACGMM 或官方 GPU/CHiME 整链 |
 | §8.4 | GSS 活动约束分离 | 外部参考实现 | `gss`：`gss/core/enhancer.py` 为官方整链；本书 `codes/chapters/ch08/examples/gss_teaching_demo.py` 已运行 cACGMM→SCM→MVDR 受控子链 | 本书无混响输入中 WPE 旁路；官方 CuPy/Lhotse、RTTM 与 CHiME 语料未运行，不能外推为完整官方复现 |
+| 研究扩展：增强 B09 | NeMo活动约束GSS掩码接口 | 外部参考实现 | `nemo_wpe`：`nemo/collections/audio/modules/masking.py::MaskEstimatorGSS` | 固定v2.4.0静态检查；未自动添加背景，返回掩码，不称已执行Torch整链 |
 | 研究扩展：增强 B10 | GPU-GSS 批处理 | 外部参考实现 | `gss`：`gss/core/`、`recipes/` | CUDA/CuPy、批量、显存 |
 | 研究扩展：增强 B10 | CuPy WPE 子实现 | 外部参考实现 | `wpe_gpu`：`wpe/` | GSS 子集，不覆盖全部在线接口 |
 
@@ -262,7 +264,7 @@
 | §8.6；研究扩展：增强 N09 | 连续语音分离 CSS | 外部参考实现 | `notsofar1`：`css/css.py`、`css/css_with_conformer/separate.py` | 窗口、跨块排列、槽位、配置；不执行资产下载 |
 | §13.3；研究扩展：增强 N10 | SGMSE+ | 外部参考实现 | `sgmse`：`enhancement.py`、`sgmse/model.py` | 采样器、权重和语料另核 |
 | §13.3；研究扩展：增强 N10 | StoRM | 外部参考实现 | `storm`：`enhancement.py`、`sgmse/model.py` | 再生成不等于 SGMSE 推理流程 |
-| §13.3；研究扩展：增强 N11 | ArrayDPS | 外部参考实现 | `arraydps`：`separate.py`、`src/sampler.py` | 传播模型、先验、WSJ 录音权利 |
+| §13.3；研究扩展：增强 N11 | ArrayDPS | 外部参考实现 | `arraydps`：`separate.py`、`src/sampler_spatial_v1_reverb_iva_8kHz.py` | 真值SDR参与停止/预算；论文ML选择另行记录，源码MIT与WSJ/权重许可分开 |
 | §8.6；研究扩展：增强 N12 | AudioSep | 外部参考实现 | `audiosep`：`pipeline.py` | 默认单声道 32 kHz，不是注册语音 TSE |
 | 附录 B §13.3；增强研究 N17 | DiCoW 条件目标说话人转写 | 外部参考实现 | `dicow-v1-inference`：`example.py`；`ts-asr-whisper-v1`：`src/main.py`、`src/train.py` | 固定源码已核，v1 推理需另取相配模型及两项 Pyannote gated 资产；`app.py` 在同一提交使用 v2 权重；未运行转写或论文评分 |
 | 附录 B §13.3；增强研究 N18 | FlowSep 文本查询声音分离 | 原理索引 | `flowsep` 固定提交及 `lass_inference.py` 来源入口 | 固定源码许可未建立，未取得源码、模型或数据，也未运行推理；不将论文公开等同再分发授权 |
@@ -381,7 +383,7 @@
 
 ## 章节代码练习与音频映射
 
-260 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 305 行算法统计。补充的空间精算、增强步骤、时间状态模块分别提供3/5/4道题。三个原有 `exercises_` 模块各自提供 `run_exercises()`，分别有 28/23/25 道题；AEC 小实验另有 4 道，进阶 AEC 手算另有 10 道；E03-07、E04-08、E09-06 与 E10-13 由独立实验入口提供。E04-08 的 200 次独立双源抽样只说明固定模型中的分辨事件频率和 Wilson 区间。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
+266 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 307 行算法统计。补充的空间精算、增强步骤、时间状态模块分别提供3/5/4道题。三个原有 `exercises_` 模块各自提供 `run_exercises()`，分别有 28/23/25 道题；AEC 小实验另有 4 道，进阶 AEC 手算另有 10 道；E03-07、E04-08、E09-06 与 E10-13 由独立实验入口提供。E04-08 的 200 次独立双源抽样只说明固定模型中的分辨事件频率和 Wilson 区间。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
 
 | 章节与稳定 ID | 练习入口 | 回归测试 |
 |---|---|---|
@@ -401,7 +403,7 @@
 | E09-10～19（10题） | [第9章逐步计算](../ch09/chapter09_experiments.py) | [独立解析测试](../../../tests/test_codes_chapter09_experiments.py)、[PCM音频](../../../tests/test_codes_tracking_audio.py) |
 | E10-18～27（10题） | [第10章工程逐步计算](../ch10/chapter10_experiments.py) | [独立解析与PCM测试](../../../tests/test_codes_chapter10_experiments.py)、[数值边界](../../../tests/test_codes_engineering_ch10_boundaries.py) |
 | E11-10～19（10题） | [第11章约束与选型逐步计算](../ch11/chapter11_experiments.py)；[小规模选型与评分模型](../ch11/core/selection.py)；[四路同增益FIR音频](audio/MANIFEST.json) | [独立解析、整数边界与PCM测试](../../../tests/test_codes_chapter11_experiments.py) |
-| E08-12～23（12题） | [第8章逐步计算](../ch08/chapter08_experiments.py) | [独立测试](../../../tests/test_codes_chapter08_experiments.py) |
+| E08-12～29（18题） | [第8章逐步计算](../ch08/chapter08_experiments.py) | [独立测试](../../../tests/test_codes_chapter08_experiments.py) |
 | E07-08～21（14题） | [第7章逐步计算](../ch07/chapter07_experiments.py) | [独立测试](../../../tests/test_codes_chapter07_experiments.py) |
 | E06-21、E07-06、E08-08～10（5题） | [增强逐步计算](cross_chapter/enhancement_step_exercises.py) | [独立测试](../../../tests/test_codes_enhancement_steps.py) |
 | E09-07～08、E10-15、E11-08（4题） | [时间与状态](cross_chapter/tracking_time_exercises.py) | [独立测试](../../../tests/test_codes_time_state_exercises.py) |
@@ -432,6 +434,8 @@
 
 另有六套独立合成资产：[双耳线索五路WAV](../ch01/binaural_audio/MANIFEST.json)、[STFT卷积三路WAV](../ch02/stft_audio/MANIFEST.json)、[GSS 五路 WAV 与中间状态](../ch08/gss_audio/MANIFEST.json)、[自由场移动声源三路 WAV 与轨迹真值](../ch09/moving_audio/MANIFEST.json)、[第 9 章两路追踪音频与逐帧观测](../ch09/tracking_audio/MANIFEST.json)，以及[附录 B 六位置房间题的 18 路 WAV、结果图与数值报告](../appendix_b/room_audio/MANIFEST.json)。它们不计入主清单的 109 个音频；合成模型与评分条件各自独立，均不等于真实语音或设备验证。
 
+第8章另有[六份已知掩码表示WAV](../ch08/mask_audio/MANIFEST.json)，对应E08-28与图60；全记录FFT和已知目标构造只检验表示范围，27200点实际PCM评分与解析、浮点结果分开，不计为新分离算法或工业性能覆盖。
+
 ## 未完成项怎样保留
 
 外部参考实现可以存在构建失败、兼容性问题或算法缺陷；CSSM/WAVES/TOPS 的静态问题与 WPE 已完成的合成数值对照应分别阅读，不能把项目数量当成通过率。只有骨干结构时，覆盖的是结构源码，不是完整训练、checkpoint 推理或论文表格。
@@ -441,7 +445,7 @@
 本仓库不提交下载缓存、模型权重或未经授权的第三方语料。109 个自行合成的教学 WAV 按章放在 `codes/chapters/*/audio/`，单一总清单位于 `codes/chapters/ch00/audio/MANIFEST.json`；许可明确的 DEMAND 小型摘录和派生文件位于 `codes/chapters/ch02/real_audio/`，不包含完整下载归档。独立上游工作目录的取得、许可保留与未执行项目按来源状态记录报告。算法、源码或排除范围变化时，同步修改本表、研究说明、来源清单和真实验证记录。
 
 
-真实数据练习 R01 使用 [prepare_real_recordings.py](../ch02/examples/prepare_real_recordings.py) 与 [real_recordings.py](../ch02/core/real_recordings.py)，测试见 [test_codes_real_recordings.py](../../../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 260 道合成/手算代码题。数据来源和许可另见 [real_audio/](../ch02/real_audio/README.md)。
+真实数据练习 R01 使用 [prepare_real_recordings.py](../ch02/examples/prepare_real_recordings.py) 与 [real_recordings.py](../ch02/core/real_recordings.py)，测试见 [test_codes_real_recordings.py](../../../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 266 道合成/手算代码题。数据来源和许可另见 [real_audio/](../ch02/real_audio/README.md)。
 
 四组模型与边界练习对应以下独立实现；主音频新增的 4 个 interpolation 文件验证固定滤波误差，不是完整采样率转换性能。
 

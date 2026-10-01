@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>章节代码练习与音频实验 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="026ad29d8bcd"><style>
+<meta name="source-digest" content="35ac0a570bc8"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -44,7 +44,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{display:block;margin:20px auto;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
-@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td{min-width:8em}}
+@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
@@ -147,6 +147,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="05_exercises_and_audio.html#sec-u-8fe712dac0">41. 第七章：相位、设计矩阵与已知路径逆的噪声代价</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-u-95bfc75e52">同一源、两场景和三组固定权重</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-u-8fad1bbde4">六个实际PCM与共同评分窗</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-54c9e757c5">42. 有界实掩码、无界实掩码与复掩码的表示能力</a></li>
 </ul>
 <div class="chap"><a href="../01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
 <div class="chap"><a href="../02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
@@ -248,10 +249,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="05_exercises_and_audio.html#sec-u-8fe712dac0">41. 第七章：相位、设计矩阵与已知路径逆的噪声代价</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-u-95bfc75e52">同一源、两场景和三组固定权重</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-u-8fad1bbde4">六个实际PCM与共同评分窗</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-54c9e757c5">42. 有界实掩码、无界实掩码与复掩码的表示能力</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="章节代码练习与音频实验" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-c621965c02">章节代码练习与音频实验</h1>
 <p>先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。</p>
-<p>本页索引 260 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
+<p>本页索引 266 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
 <p>E06-07～E06-20 使用无量纲回声模型检查 AEC 的计算与边界，其中 E06-11～20 可用精确答案程序核对。第 15、16 节另提供参数不同的合成音频；试听文件本身不是题目真值。</p>
 <p>第 3～11、13～16、18、21～30、32～34 节对应主清单的 109 个数学合成样本。第 17 节的 18 个房间白噪声合成样本使用独立清单；第 12 节使用另行授权的真实同步录音。第 31 节的 2 份从 PCM 形成定位观测的追踪样本也使用独立清单。第35～39节分别保存双耳、有限窗卷积、多频几何、已知聚焦与导数约束的独立样本。不同音频的来源和可作的比较不同，试听前先查看各节的条件。</p>
 <p>主音频按章存放，统一由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/examples/generate_audio_samples.py">生成器</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/audio/MANIFEST.json">清单</a>管理。清单记录每组模型、种子、共同导出增益、采样率、通道、帧数、量化误差、运行环境、源文件摘要与逐 WAV 摘要；不把某组的谐波模板套到其他组。PCM16 编码按最近偶数舍入，不加抖动或自动限幅，RMS 对全部通道与采样一起计算。运行生成器并附加 <code>--check</code> 时只在内存重算和读回比对，不重写资产；严格字节核对也比较 Python、NumPy 和平台记录，异机不通过不等于算法错误。生成中断造成清单与 WAV 不一致时须重新生成、核对，再构建图和网站；不要手改单个生成文件。样本没有真人录音或模型权重，客观读回和浏览器加载不等于正式听测。</p>
@@ -372,8 +374,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_enhancement.py">增强练习</a></td>
 </tr>
 <tr>
-<td>第 8 章 E08-12～23</td>
-<td>复数逐行IP、联合回投影、零参考、混合一致性、方向与功率、活动对称性、先验反例、NMF更新、欠定分解、合同对角化、相消掩码与CSS关联音频</td>
+<td>第 8 章 E08-12～29</td>
+<td>复数逐行IP、联合回投影、零参考、混合一致性、方向与功率、活动对称性、先验反例、NMF更新、欠定分解、合同对角化、相消掩码与CSS关联音频、白化反例、联合对角边界、雅可比、加权一致性、掩码表示及极性</td>
 <td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch08/chapter08_experiments.py">分离逐步实验</a></td>
 </tr>
 <tr>
@@ -2321,6 +2323,81 @@ PSD还须写采样率、Hz分母、单边折叠和去均值策略。
 .venv/bin/python -m codes.chapters.ch07.chapter07_experiments
 </code></pre>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/examples/mint_teaching_demo.py">生成入口</a>的 <code>--check</code> 先读取实际六文件、核来源和字节、重算PCM评分，再在内存重放当前源；不重写文件来修复过期清单。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/core/mint_teaching.py">唯一模型与评分核</a>保留输入位置、完整尾和评分口径。</p>
+<span id="sec-87" class="anchor-alias" aria-hidden="true"></span><span id="42-有界实掩码无界实掩码与复掩码的表示能力" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-54c9e757c5">42. 有界实掩码、无界实掩码与复掩码的表示能力</h2>
+<p>本组对应第8章 E08-28 与图60。六份16kHz、PCM16、单声道文件各32000点，共同导出增益1。目标为 $0.1\cos(2\pi500t)-0.1\sin(2\pi1250t)$；另一源为 $-0.08\cos(2\pi500t)+0.1\cos(2\pi1250t)$。混合在500Hz发生部分相消，在1250Hz改变相位。它们是数学纯音，不是语音或实录。</p>
+<p>先对未加包络的完整2秒周期混合做实数FFT，只保留已知频点1000与2500，其余数值泄漏格置零。有界实掩码在两格取1和0.5；无界实掩码取5和0.5；复数理想掩码取5和 $(1+j)/2$。逆变换后才对全部六路施加相同的320点平方正弦淡入、淡出，端点为零。试听文件上的包络产生额外谱分量，因此这里不是对试听文件估计STFT掩码，也不宣称已运行盲分离或神经网络。</p>
+<p>500Hz的目标复幅为0.1，混合复幅为0.02；恢复需增益5，有界实掩码无法做到。1250Hz的目标复幅为0.1j，混合为0.1+0.1j；实掩码0.5只得到0.05+0.05j，复掩码 $(1+j)/2$ 才恢复目标相位。详细计算见正文 E08-22、E08-28；复掩码原始定义见 Williamson、Wang、Wang（2016）§III-A，式(7)～(18)，<a href="https://the-aspire-group.github.io/publication_files/williamsonetal.cRM.2016.pdf">作者公开论文</a>。</p>
+<p>评分固定在半开采样区间[2400,29600)，即27200点，避开淡变且包含两频的完整周期。不拟合时移或增益，按PCM整数除以32768解码。目标整数能量为292062085900；均方误差分母为 $27200\times32768^2=29205777612800$。下表以目标为共同参考，数值越小表示该受控例子的逐样本误差越小。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">输出</th>
+<th scope="col" style="text-align: right;">解析稳态MSE</th>
+<th scope="col" style="text-align: right;">实际PCM误差平方和</th>
+<th scope="col" style="text-align: right;">实际PCM MSE</th>
+<th scope="col" style="text-align: right;">实际PCM相对平方误差</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>有界实掩码</td>
+<td style="text-align: right;">0.0057</td>
+<td style="text-align: right;">166479798100</td>
+<td style="text-align: right;">0.0057002351</td>
+<td style="text-align: right;">0.57001510</td>
+</tr>
+<tr>
+<td>无界实掩码</td>
+<td style="text-align: right;">0.0025</td>
+<td style="text-align: right;">73012418550</td>
+<td style="text-align: right;">0.0024999306</td>
+<td style="text-align: right;">0.24998938</td>
+</tr>
+<tr>
+<td>复数理想掩码</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table></div>
+<p>复数输出与目标的当前PCM逐字节相同；这只证明已知参考构造出的两频表示可恢复该输入。不能据此断言学习到的掩码、真实噪声或混响条件也有零误差。相位诊断另以绝对采样时轴上的四个cos/sin列联合最小二乘拟合，保留复幅、相位和残差，未用拟合结果补偿输出。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">试听文件</th>
+<th scope="col">作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../mask_audio/mask_target.wav">目标源</a><audio class="audio-sample" controls preload="none" aria-label="目标源" src="../mask_audio/mask_target.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>全部输出的共同评分参考</td>
+</tr>
+<tr>
+<td><a href="../mask_audio/mask_other.wav">另一源</a><audio class="audio-sample" controls preload="none" aria-label="另一源" src="../mask_audio/mask_other.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>相消与相位变化的成因</td>
+</tr>
+<tr>
+<td><a href="../mask_audio/mask_mixture.wav">混合</a><audio class="audio-sample" controls preload="none" aria-label="混合" src="../mask_audio/mask_mixture.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>两源逐点相加</td>
+</tr>
+<tr>
+<td><a href="../mask_audio/mask_bounded_real.wav">有界实掩码</a><audio class="audio-sample" controls preload="none" aria-label="有界实掩码" src="../mask_audio/mask_bounded_real.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>相消处增益不足，复相位不能旋转</td>
+</tr>
+<tr>
+<td><a href="../mask_audio/mask_unbounded_real.wav">无界实掩码</a><audio class="audio-sample" controls preload="none" aria-label="无界实掩码" src="../mask_audio/mask_unbounded_real.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>恢复500Hz幅度，1250Hz仍有相位误差</td>
+</tr>
+<tr>
+<td><a href="../mask_audio/mask_complex_oracle.wav">复数理想掩码</a><audio class="audio-sample" controls preload="none" aria-label="复数理想掩码" src="../mask_audio/mask_complex_oracle.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>已知目标下恢复两频幅度与相位</td>
+</tr>
+</tbody>
+</table></div>
+<p>请先调低音量。<a href="../mask_audio/MANIFEST.json">独立清单</a>保存四个真实源、每份WAV摘要、解析/浮点/实际PCM结果及整数分母；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch08/examples/mask_representation_demo.py">生成与只读检查入口</a>使用 <code>--check</code> 时不修复资产。六文件不并入主109个样本，也未进行人工听测。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

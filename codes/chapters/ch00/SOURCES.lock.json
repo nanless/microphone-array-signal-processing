@@ -442,13 +442,18 @@
       "license": "MIT",
       "fetch_enabled": true,
       "scope": "diffusion-prior unsupervised multichannel blind separation",
-      "note": "The checkpoint has no separate redistribution statement; SMS-WSJ generation code does not grant rights to the underlying WSJ audio.",
+      "note": "Author implementation. Fixed separate.py imports sampler_spatial_v1_reverb_iva_8kHz.Sampler, FCP and IVA/STFT helpers; src/sampler.py is a different generic sampler. Driver stopping uses clean-source SDR and must not be treated as deployment-only observation selection. Code MIT; weights, WSJ/LibriTTS and generated datasets retain independent terms. Source contracts inspected 2026-10-01; no Torch/GPU inference or weight acquisition.",
       "acquisition": "independent_source_checkout",
       "entrypoints": [
         "LICENSE",
+        "README.md",
         "separate.py",
-        "src/sampler.py"
-      ]
+        "src/sampler_spatial_v1_reverb_iva_8kHz.py",
+        "src/FCP.py",
+        "src/IVA.py",
+        "src/stft.py"
+      ],
+      "verified_at": "2026-10-01"
     },
     {
       "id": "doatools",

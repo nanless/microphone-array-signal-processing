@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "executed_at_utc": "2026-10-01T00:28:45.296962+00:00",
+  "executed_at_utc": "2026-10-01T01:46:55.646971+00:00",
   "audit_source": "codes/chapters/ch02/examples/audit_upstream_models.py",
   "audit_source_sha256": "86f824d086eb19782eb25e1ff93a1deb841d7bc623162cc1badd619d0625fcf0",
   "sources": {
-    "lock_sha256": "21522c1823b2a5f084ec3e62382cb394b6076a6a2574e0422471229c23b07011",
+    "lock_sha256": "5cf610a5bee5a65c0b5bb77293f2bd6549446d22e635594fc313710f4109b8cf",
     "projects": {
       "pyroomacoustics": {
         "url": "https://github.com/LCAV/pyroomacoustics.git",

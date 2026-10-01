@@ -38,6 +38,7 @@ BINAURAL_AUDIO_ROOT = CODE_CHAPTERS / "ch01" / "binaural_audio"
 DERIVATIVE_AUDIO_ROOT = ROOT / "codes/chapters/ch05/derivative_audio"
 APA_AUDIO_ROOT = ROOT / "codes/chapters/ch06/apa_audio"
 MINT_AUDIO_ROOT = ROOT / "codes/chapters/ch07/mint_audio"
+MASK_AUDIO_ROOT = ROOT / "codes/chapters/ch08/mask_audio"
 FOCUS_AUDIO_ROOT = ROOT / "codes/chapters/ch04/focus_audio"
 GEOMETRY_AUDIO_ROOT = ROOT / "codes/chapters/ch03/geometry_audio"
 STFT_AUDIO_ROOT = ROOT / "codes/chapters/ch02/stft_audio"
@@ -73,7 +74,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "05_beamforming.md": 41,
     "06_aec.md": 67,
     "07_wpe-dereverberation.md": 53,
-    "08_speech-separation.md": 52,
+    "08_speech-separation.md": 59,
     "09_source-tracking.md": 52,
     "10_engineering-practice.md": 47,
     "11_selection-guide.md": 29,
@@ -99,9 +100,9 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 121
-EXPECTED_SUBSECTION_COUNT = 531
-EXPECTED_OUTLINE_ITEM_COUNT = 666
-EXPECTED_FIGURE_NUMBERS = set(range(1, 60))
+EXPECTED_SUBSECTION_COUNT = 538
+EXPECTED_OUTLINE_ITEM_COUNT = 673
+EXPECTED_FIGURE_NUMBERS = set(range(1, 61))
 # 研究附站使用独立显式清单，不挤占 14 篇教程或 661 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
@@ -706,7 +707,7 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59)
+            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
@@ -732,6 +733,11 @@ def check_figures(errors: list[str]):
                 with Image.open(path) as image:
                     if image.info.get("AudioManifestDigest") != expected:
                         fail(errors, "图59独立已知路径逆音频清单摘要失效")
+            if number == 60:
+                expected = hashlib.sha256((MASK_AUDIO_ROOT / "MANIFEST.json").read_bytes()).hexdigest()
+                with Image.open(path) as image:
+                    if image.info.get("AudioManifestDigest") != expected:
+                        fail(errors, "图60独立FFT掩码音频清单摘要失效")
             if number in (34, 35, 36, 40, 41, 43, 45, 47, 49):
                 expected = hashlib.sha256((ROOT / "codes/chapters/ch00/audio/MANIFEST.json").read_bytes()).hexdigest()
                 with Image.open(path) as image:
@@ -1011,7 +1017,7 @@ def site_source_digest():
     paths += sorted(main_audio_path(CODE_CHAPTERS, record["group"], record["file"])
                     for record in manifest["files"])
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
@@ -1315,7 +1321,7 @@ def check_real_audio(errors):
         parser = Players()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         allowed_audio_roots = ("../audio/", "../real_audio/", "../room_audio/",
-                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../mint_audio/")
+                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../mint_audio/", "../mask_audio/")
         if any(not (p.get("src") or "").startswith(allowed_audio_roots)
                for p in parser.items):
             fail(errors, "未知试听控件来源")
@@ -2101,14 +2107,138 @@ def check_tracking_audio(errors):
     except Exception as exc:
         fail(errors,f"PCM观测追踪实验检查失败：{exc}")
 
+class VisibleMediaParser(HTMLParser):
+    """Collect usable media and links outside hidden or inert subtrees."""
+    def __init__(self):
+        super().__init__()
+        self.stack, self.items, self.links = [], [], set()
+
+    def handle_starttag(self, tag, attrs):
+        values = dict(attrs)
+        hidden = (tag in ('template', 'noscript') or (tag == 'dialog' and 'open' not in values) or
+                  'hidden' in values or 'inert' in values or
+                  values.get('aria-hidden', '').lower() == 'true' or
+                  bool(re.search(r'display\s*:\s*none|visibility\s*:\s*hidden', values.get('style', ''), re.I)))
+        if tag not in ('area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'):
+            self.stack.append((tag, hidden))
+        if not hidden and not any(item[1] for item in self.stack):
+            if tag == 'audio':
+                self.items.append(values)
+            if tag == 'a':
+                self.links.add(values.get('href'))
+
+    def handle_endtag(self, tag):
+        for index in range(len(self.stack)-1, -1, -1):
+            if self.stack[index][0] == tag:
+                del self.stack[index:]
+                break
+
+
+def _check_visible_audio(page, prefix, directory, names, links):
+    parser = VisibleMediaParser()
+    parser.feed(page.read_text(encoding='utf-8'))
+    base = prefix+directory+'/'
+    players = [p for p in parser.items if (p.get('src') or '').startswith(base)]
+    if (len(players) != len(names) or {p.get('src') for p in players} != {base+n for n in names} or
+            any('autoplay' in p or 'controls' not in p or p.get('preload') != 'none' or
+                not (p.get('aria-label') or '').strip() for p in players)):
+        raise ValueError(directory+'可见播放器集合/标签/加载属性不同：'+page.name)
+    if not {base+n for n in links} <= parser.links:
+        raise ValueError(directory+'可见独立资产链接缺失：'+page.name)
+
+
+def check_mask_audio(errors):
+    """Independently recompute integer errors and phase from actual PCM."""
+    import math
+    import struct
+    names = {key: 'mask_'+key+'.wav' for key in
+             ('target', 'other', 'mixture', 'bounded_real', 'unbounded_real', 'complex_oracle')}
+    sources = {'codes/chapters/ch08/core/mask_representation.py',
+               'codes/chapters/ch08/examples/mask_representation_demo.py',
+               'codes/chapters/ch02/core/conventions.py', 'codes/chapters/ch00/core/audio_samples.py'}
+    source, published = MASK_AUDIO_ROOT, SITE/'mask_audio'
+    try:
+        expected = set(names.values()) | {'MANIFEST.json'}
+        for folder in (source, published):
+            if (folder.is_symlink() or {p.name for p in folder.iterdir()} != expected or
+                    any(p.is_symlink() or not p.is_file() for p in folder.iterdir())):
+                raise ValueError('mask_audio必须恰含六普通WAV及清单')
+        manifest = json.loads((source/'MANIFEST.json').read_text())
+        if set(manifest['source_sha256']) != sources:
+            raise ValueError('mask_audio真实源集合不同')
+        for path in sources:
+            if hashlib.sha256((ROOT/path).read_bytes()).hexdigest() != manifest['source_sha256'][path]:
+                raise ValueError('mask_audio真实源摘要过期：'+path)
+        from codes.chapters.ch08.examples.mask_representation_demo import check_assets
+        check_assets(source, replay=True)
+        for name in expected:
+            if (source/name).read_bytes() != (published/name).read_bytes():
+                raise ValueError('mask_audio发布副本不同：'+name)
+        decoded = {}
+        for key, filename in names.items():
+            with wave.open(str(source/filename), 'rb') as wav:
+                if (wav.getframerate(), wav.getnchannels(), wav.getnframes(), wav.getsampwidth(), wav.getcomptype()) != (16000, 1, 32000, 2, 'NONE'):
+                    raise ValueError('mask_audio实际PCM尺寸不同')
+                raw = wav.readframes(32000)
+            decoded[key] = struct.unpack('<32000h', raw)[2400:29600]
+        truth = decoded['target']
+        denominator = sum(v*v for v in truth)
+        # Complete integer periods make the four analytic columns orthogonal.
+        # This scalar route is independent of the generator's array LS solver.
+        design = [[fn(2*math.pi*f*n/16000) for n in range(2400, 29600)]
+                  for f in (500, 1250) for fn in (math.cos, math.sin)]
+        for key, filename in names.items():
+            output = decoded[key]
+            numerator = sum((a-b)**2 for a, b in zip(output, truth))
+            score = manifest['samples'][key]['pcm_measurements']
+            for field, value in {'integer_reference_squared_sum': denominator,
+                                 'integer_error_squared_sum': numerator,
+                                 'integer_mse_denominator': 27200*32768**2,
+                                 'sample_denominator': 27200, 'pcm_decode_divisor': 32768}.items():
+                if type(score[field]) is not int or score[field] != value:
+                    raise ValueError('mask_audio真实整数统计不同：'+filename)
+            for field, value in {'total_reference_mse': numerator/(27200*32768**2),
+                                 'relative_squared_reference_error': numerator/denominator}.items():
+                if (type(score[field]) not in (int, float) or not math.isfinite(score[field]) or
+                        not math.isclose(score[field], value, rel_tol=1e-13, abs_tol=0)):
+                    raise ValueError('mask_audio真实PCM误差不同：'+filename)
+            coefficients = [2*math.fsum(v*x for v, x in zip(output, column))/(27200*32768)
+                            for column in design]
+            phase = score['phase_ls']
+            if phase['gain_or_time_compensation'] is not False or type(phase['rank']) is not int or phase['rank'] != 4:
+                raise ValueError('mask_audio相位诊断范围不同')
+            actual_coefficients = phase['coefficients']
+            if (len(actual_coefficients) != 4 or any(type(a) not in (int, float) or not math.isfinite(a) or
+                    not math.isclose(a, b, rel_tol=1e-11, abs_tol=2e-13)
+                    for a, b in zip(actual_coefficients, coefficients))):
+                raise ValueError('mask_audio独立相位系数不同：'+filename)
+            residual = math.fsum((v/32768-math.fsum(c*d[n] for c, d in zip(coefficients, design)))**2
+                                  for n, v in enumerate(output))
+            if not math.isclose(phase['residual_squared_sum'], residual, rel_tol=1e-7, abs_tol=1e-16):
+                raise ValueError('mask_audio独立相位残差不同：'+filename)
+        for page, prefix in ((SITE/'08_speech-separation.html', ''),
+                             (SITE/'research/05_exercises_and_audio.html', '../')):
+            _check_visible_audio(page, prefix, 'mask_audio', set(names.values()), {'MANIFEST.json'})
+    except Exception as exc:
+        fail(errors, f'掩码表示实验检查失败：{exc}')
+
+
 def check_gss_audio(errors):
     """独立核对教学 GSS 的五路 PCM、状态文件和站点副本。"""
     import zipfile
+    import math
+    import struct
     source, published = GSS_AUDIO_ROOT, SITE / "gss_audio"
     channels = {"source_1.wav": 1, "source_2.wav": 1, "mixture.wav": 2,
                 "enhanced_correct.wav": 1, "enhanced_missed.wav": 1}
     expected = set(channels) | {"MANIFEST.json", "STATE.npz"}
     try:
+        for folder in (source, published):
+            if (folder.is_symlink() or {p.name for p in folder.iterdir()} != expected or
+                    any(p.is_symlink() or not p.is_file() for p in folder.iterdir())):
+                raise ValueError('GSS必须恰含七普通资产')
+        from codes.chapters.ch08.examples.gss_teaching_demo import generate
+        generate(source, check=True)
         manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
         if (set(manifest["files"]) != expected - {"MANIFEST.json"}
                 or manifest["sample_rate_hz"] != 16000):
@@ -2125,9 +2255,6 @@ def check_gss_audio(errors):
         for name, digest in manifest["generator_inputs"].items():
             if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest:
                 raise ValueError(f"GSS 生成源码已变化：{name}")
-        for folder in (source, published):
-            if {path.name for path in folder.iterdir() if path.is_file()} - ({"README.md"} if folder == source else set()) != expected:
-                raise ValueError(f"GSS 文件集合不符：{folder}")
         for name in expected:
             original, copy = source / name, published / name
             if original.is_symlink() or copy.is_symlink() or original.read_bytes() != copy.read_bytes():
@@ -2136,6 +2263,7 @@ def check_gss_audio(errors):
                 raise ValueError(f"GSS 资产摘要不符：{name}")
         if not zipfile.is_zipfile(source / "STATE.npz"):
             raise ValueError("GSS 中间状态不是 NPZ")
+        decoded = {}
         for name, n_channels in channels.items():
             record = manifest["files"][name]
             with wave.open(str(source / name), "rb") as wav:
@@ -2143,13 +2271,31 @@ def check_gss_audio(errors):
                         wav.getnframes(), wav.getcomptype()) != (
                             16000, 2, n_channels, record["samples_per_channel"], "NONE"):
                     raise ValueError(f"GSS PCM 格式不符：{name}")
-        page = (SITE / "08_speech-separation.html").read_text(encoding="utf-8")
-        for name in channels:
-            if f'src="gss_audio/{name}"' not in page:
-                raise ValueError(f"第 8 章缺少 {name} 的试听控件")
-        for name in ("MANIFEST.json", "STATE.npz"):
-            if f'href="gss_audio/{name}"' not in page:
-                raise ValueError(f"第 8 章缺少 GSS {name} 链接")
+                raw = wav.readframes(record['samples_per_channel'])
+            count = record['samples_per_channel']*n_channels
+            decoded[name] = struct.unpack('<'+'h'*count, raw)[::n_channels][3200:23200]
+        reference = decoded['source_1.wav']
+        count = len(reference)
+        reference_total = sum(reference)
+        centered_ref = [v*count-reference_total for v in reference]
+        ref_energy = sum(v*v for v in centered_ref)
+        for key in ('mixture', 'enhanced_correct', 'enhanced_missed'):
+            values = decoded[key+'.wav']
+            total = sum(values)
+            centered = [v*count-total for v in values]
+            cross = sum(a*b for a, b in zip(centered, centered_ref))
+            energy = sum(v*v for v in centered)
+            residual_numerator = energy*ref_energy-cross*cross
+            if residual_numerator <= 0 or cross == 0:
+                raise ValueError('GSS独立评分须有非零投影及残差')
+            actual = 10*math.log10(cross*cross/residual_numerator)
+            recorded = manifest['pcm_si_sdr_db'][key]
+            if (type(recorded) not in (int, float) or not math.isfinite(recorded) or
+                    not math.isclose(recorded, actual, rel_tol=1e-12, abs_tol=1e-10)):
+                raise ValueError('GSS实际PCM中心化SI-SDR不同：'+key)
+        for page, prefix in ((SITE/'08_speech-separation.html', ''),
+                             (SITE/'research/05_exercises_and_audio.html', '../')):
+            _check_visible_audio(page, prefix, 'gss_audio', set(channels), {'MANIFEST.json', 'STATE.npz'})
     except Exception as exc:
         fail(errors, f"GSS 教学样本检查失败：{exc}")
 
@@ -2289,6 +2435,7 @@ def main():
     check_derivative_audio(errors)
     check_apa_audio(errors)
     check_mint_audio(errors)
+    check_mask_audio(errors)
     check_combined_html(errors)
     check_pdf(errors, notices)
     for item in notices:

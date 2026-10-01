@@ -11,7 +11,10 @@ import numpy as np
 
 from codes.chapters.ch07.core.dereverberation import offline_wpe
 from codes.chapters.ch02.core.conventions import finite_real_scalar
-from codes.chapters.ch08.core.separation import mask_mvdr_2x2, masked_spatial_covariance
+from codes.chapters.ch08.core.separation import (
+    mask_mvdr_2x2, masked_spatial_covariance, _finite_numeric_spectrum,
+    _checked_scale_components, _posterior_from_log_scores,
+)
 
 
 def guided_cacgmm_mvdr(
@@ -37,13 +40,16 @@ def guided_cacgmm_mvdr(
     likelihood and have no claimed monotonicity. The returned posterior uses
     ``e_step_shapes/priors``; ``shape_matrices`` and ``post_update_priors`` are
     AFTER the last update, not a second, unreported E step.
+    Float64 normalization that loses nonzero components, or a positive active
+    posterior that rounds to zero, is outside this teaching implementation's
+    support and raises ValueError; it is not classified as physical silence.
     """
 
-    x = np.asarray(spectrum, dtype=np.complex128)
+    x = _finite_numeric_spectrum(spectrum).astype(np.complex128)
     activity = np.asarray(speaker_activity)
     if x.ndim != 3 or x.shape[1] != 2 or min(x.shape) < 1 or not np.all(np.isfinite(x)):
         raise ValueError("spectrum must be a finite nonempty (F,2,T) complex array")
-    if activity.ndim != 2 or activity.shape[0] != x.shape[2] or activity.shape[1] < 1 or not np.all(np.isin(activity, [0, 1])):
+    if activity.dtype.kind not in "biuf" or activity.ndim != 2 or activity.shape[0] != x.shape[2] or activity.shape[1] < 1 or not np.all(np.isin(activity, [0, 1])):
         raise ValueError("activity must be a binary (T,J) array")
     if isinstance(iterations, bool) or not isinstance(iterations, int) or iterations < 1:
         raise ValueError("iterations must be a positive integer")
@@ -80,13 +86,22 @@ def guided_cacgmm_mvdr(
         peak = max(float(np.max(np.abs(samples.real))), float(np.max(np.abs(samples.imag))))
         working = samples
         if peak > 1e150 or (0 < peak < 1e-150):
-            working = np.empty_like(samples)
-            working.real, working.imag = samples.real / peak, samples.imag / peak
+            working = _checked_scale_components(samples, peak, "cACG input")
             with np.errstate(over="ignore"):
                 absolute_limit = absolute_energy_floor / np.float64(peak)
         else:
             absolute_limit = absolute_energy_floor
-        energy = np.linalg.norm(working, axis=1)
+        with np.errstate(under="ignore", over="ignore"):
+            energy = np.linalg.norm(working, axis=1)
+        # Preserve the ordinary summation path, replacing only vanished or
+        # overflowing norms by a stable four-real-component hypot reduction.
+        unusual = ((energy == 0) & np.any(working != 0, axis=1)) | ~np.isfinite(energy)
+        if np.any(unusual):
+            row = working[unusual]
+            energy[unusual] = np.hypot(np.hypot(row[:, 0].real, row[:, 0].imag),
+                                      np.hypot(row[:, 1].real, row[:, 1].imag))
+        if not np.all(np.isfinite(energy)):
+            raise ValueError("cACG row norm exceeds float64 support")
         limit = max(absolute_limit, relative_energy_floor * float(np.max(energy)))
         valid = energy > limit
         valid_points[f] = valid
@@ -97,7 +112,13 @@ def guided_cacgmm_mvdr(
             e_shapes[f] = identity
             e_priors[f, -1] = post_priors[f, -1] = 1
             continue
-        z = working[valid] / energy[valid, None]
+        with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+            z = working[valid] / energy[valid, None]
+        if not np.all(np.isfinite(z)):
+            z = _checked_scale_components(working[valid], energy[valid, None], "cACG unit row")
+        if (np.any((working[valid].real != 0) & (z.real == 0)) or
+                np.any((working[valid].imag != 0) & (z.imag == 0))):
+            raise ValueError("cACG unit row normalization loses nonzero components")
         active = allowed[valid]
         masses = np.maximum(active.sum(axis=0).astype(float), 0.05)
         priors = masses / masses.sum()
@@ -133,9 +154,7 @@ def guided_cacgmm_mvdr(
                     raise np.linalg.LinAlgError("cACG shape lost positive definiteness")
                 log_scores[:, j] = np.log(priors[j]) - logdet - channels * np.log(q)
             log_scores[~active] = -np.inf
-            maximum = np.max(log_scores, axis=1, keepdims=True)
-            scores = np.exp(log_scores - maximum)
-            gamma = scores / scores.sum(axis=1, keepdims=True)
+            gamma = _posterior_from_log_scores(log_scores)
             priors = np.maximum(gamma.mean(axis=0), 1e-4)
             priors /= priors.sum()
             for j in range(classes):
@@ -154,7 +173,9 @@ def guided_cacgmm_mvdr(
         actual_iterations[f] = iterations
 
     target_mask = posterior[:, target_speaker, :]
-    other_mask = posterior.sum(axis=1) - target_mask
+    # Subtraction from an almost-unit total erases a small but positive
+    # background mass. Sum the actual non-target classes instead.
+    other_mask = posterior[:, np.arange(classes) != target_speaker, :].sum(axis=1)
     target_scm = masked_spatial_covariance(x, target_mask)
     other_scm = masked_spatial_covariance(x, other_mask)
     output, weights, beam_diagnostics = mask_mvdr_2x2(x, target_mask, other_mask, return_diagnostics=True)

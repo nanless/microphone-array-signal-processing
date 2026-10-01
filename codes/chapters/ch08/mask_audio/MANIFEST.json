@@ -1,0 +1,727 @@
+{
+  "schema_version": 1,
+  "origin": "original known-bin offline mathematical representation",
+  "sample_rate_hz": 16000,
+  "samples_per_channel": 32000,
+  "common_export_gain": 1.0,
+  "source_sha256": {
+    "codes/chapters/ch08/core/mask_representation.py": "eca813a1490212a59ed2673e491b2cab86c0acce371079607aaf555076b2355d",
+    "codes/chapters/ch08/examples/mask_representation_demo.py": "d55abfe5e0a27b1ead7ca49494ac58014ea81cf3c2b013cf1d95cac9dad75308",
+    "codes/chapters/ch02/core/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385",
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8"
+  },
+  "parameters": {
+    "exercise_id": "E08-28",
+    "sample_rate_hz": 16000,
+    "samples_per_channel": 32000,
+    "frequencies_hz": [
+      500,
+      1250
+    ],
+    "positive_rfft_bins": [
+      1000,
+      2500
+    ],
+    "source": "target=.1*cos(500Hz)-.1*sin(1250Hz); other=-.08*cos(500Hz)+.1*cos(1250Hz)",
+    "fft": "full 32000-sample unwindowed periodic record; numpy rfft/irfft; only bins 1000/2500 retained",
+    "target_phasors": [
+      [
+        0.1,
+        0.0
+      ],
+      [
+        0.0,
+        0.1
+      ]
+    ],
+    "mixture_phasors": [
+      [
+        0.02,
+        0.0
+      ],
+      [
+        0.1,
+        0.1
+      ]
+    ],
+    "masks": {
+      "bounded_real": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.5,
+          0.0
+        ]
+      ],
+      "unbounded_real": [
+        [
+          5.0,
+          0.0
+        ],
+        [
+          0.5,
+          0.0
+        ]
+      ],
+      "complex_oracle": [
+        [
+          5.0,
+          0.0
+        ],
+        [
+          0.5,
+          0.5
+        ]
+      ]
+    },
+    "envelope": "after FFT operator: sin(linspace(0,pi/2,320)) squared at each end, reversed at end; endpoints zero",
+    "fade_samples_each_end": 320,
+    "scoring_interval_samples": [
+      2400,
+      29600
+    ],
+    "scoring_samples_per_channel": 27200,
+    "alignment": "same absolute source clock; no propagation or fitted gain/delay",
+    "common_export_gain": 1.0,
+    "algorithm_lookahead": "entire 2-second record; noncausal offline known mask",
+    "analytic_steady_reference_power": 0.01,
+    "analytic_steady_mse": {
+      "target": 0.0,
+      "other": 0.0262,
+      "mixture": 0.0082,
+      "bounded_real": 0.0057,
+      "unbounded_real": 0.0025,
+      "complex_oracle": 0.0
+    }
+  },
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "files": {
+    "mask_target.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sample_rate_hz": 16000,
+      "sha256": "57d30b971c104f48635ac05774ace4b7026cb68f6643afcf23811e19a098a82a"
+    },
+    "mask_other.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sample_rate_hz": 16000,
+      "sha256": "e84e0d43ba69931d8bcfd40f51511a18f4ad7759908a83d49bd1c15059cd54d6"
+    },
+    "mask_mixture.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sample_rate_hz": 16000,
+      "sha256": "b4e0c22f45ad961a4f3a7497c4c20d69daf781bf7958f2e8fcc3e655b2f2cf3a"
+    },
+    "mask_bounded_real.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sample_rate_hz": 16000,
+      "sha256": "14fcd26a611b1363fc961b745acaad987a4adba7eb280c10040407c63e773994"
+    },
+    "mask_unbounded_real.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sample_rate_hz": 16000,
+      "sha256": "3a9f824f461c3facccaff5e9679309fac87ce0d1998ea3d4de9dacac49eb6b01"
+    },
+    "mask_complex_oracle.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sample_rate_hz": 16000,
+      "sha256": "57d30b971c104f48635ac05774ace4b7026cb68f6643afcf23811e19a098a82a"
+    }
+  },
+  "samples": {
+    "target": {
+      "file": "mask_target.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator": 27200,
+        "reference_squared_sum": 271.99999999999943,
+        "error_squared_sum": 0.0,
+        "total_reference_mse": 0.0,
+        "relative_squared_reference_error": 0.0,
+        "phase_ls": {
+          "columns": "cos500,sin500,cos1250,sin1250 on absolute sample clock",
+          "rank": 4,
+          "sample_denominator": 27200,
+          "coefficients": [
+            0.09999999999999994,
+            -3.322111442808579e-17,
+            8.13036159444771e-18,
+            -0.09999999999999944
+          ],
+          "phasors_real_imag": [
+            [
+              0.09999999999999994,
+              3.322111442808579e-17
+            ],
+            [
+              8.13036159444771e-18,
+              0.09999999999999944
+            ]
+          ],
+          "amplitudes": [
+            0.09999999999999994,
+            0.09999999999999944
+          ],
+          "phases_radians": [
+            3.322111442808581e-16,
+            1.5707963267948966
+          ],
+          "residual_squared_sum": 4.4969871737242815e-27,
+          "gain_or_time_compensation": false
+        },
+        "peak": 0.2
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator": 27200,
+        "reference_squared_sum": 272.00401378795505,
+        "error_squared_sum": 0.0,
+        "total_reference_mse": 0.0,
+        "relative_squared_reference_error": 0.0,
+        "phase_ls": {
+          "columns": "cos500,sin500,cos1250,sin1250 on absolute sample clock",
+          "rank": 4,
+          "sample_denominator": 27200,
+          "coefficients": [
+            0.10000286593027545,
+            -3.2146105556860486e-14,
+            -1.2061831809807746e-14,
+            -0.09999860894370095
+          ],
+          "phasors_real_imag": [
+            [
+              0.10000286593027545,
+              3.2146105556860486e-14
+            ],
+            [
+              -1.2061831809807746e-14,
+              0.09999860894370095
+            ]
+          ],
+          "amplitudes": [
+            0.10000286593027545,
+            0.09999860894370095
+          ],
+          "phases_radians": [
+            3.214518429829158e-13,
+            1.5707963267950171
+          ],
+          "residual_squared_sum": 1.9927172430171914e-06,
+          "gain_or_time_compensation": false
+        },
+        "peak": 0.20001220703125,
+        "pcm_decode_divisor": 32768,
+        "integer_reference_squared_sum": 292062085900,
+        "integer_error_squared_sum": 0,
+        "integer_mse_denominator": 29205777612800
+      },
+      "quantization_max_abs_error": 1.5225095599641055e-05
+    },
+    "other": {
+      "file": "mask_other.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator": 27200,
+        "reference_squared_sum": 271.99999999999943,
+        "error_squared_sum": 712.6399999999999,
+        "total_reference_mse": 0.026199999999999994,
+        "relative_squared_reference_error": 2.620000000000005,
+        "phase_ls": {
+          "columns": "cos500,sin500,cos1250,sin1250 on absolute sample clock",
+          "rank": 4,
+          "sample_denominator": 27200,
+          "coefficients": [
+            -0.08000000000000003,
+            -4.057082548329891e-17,
+            0.10000000000000026,
+            8.027500594434408e-17
+          ],
+          "phasors_real_imag": [
+            [
+              -0.08000000000000003,
+              4.057082548329891e-17
+            ],
+            [
+              0.10000000000000026,
+              -8.027500594434408e-17
+            ]
+          ],
+          "amplitudes": [
+            0.08000000000000003,
+            0.10000000000000026
+          ],
+          "phases_radians": [
+            3.1415926535897927,
+            -8.027500594434387e-16
+          ],
+          "residual_squared_sum": 9.673673260550746e-28,
+          "gain_or_time_compensation": false
+        },
+        "peak": 0.18
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator": 27200,
+        "reference_squared_sum": 272.00401378795505,
+        "error_squared_sum": 712.6315955305472,
+        "total_reference_mse": 0.02619969101215247,
+        "relative_squared_reference_error": 2.6199304400195,
+        "phase_ls": {
+          "columns": "cos500,sin500,cos1250,sin1250 on absolute sample clock",
+          "rank": 4,
+          "sample_denominator": 27200,
+          "coefficients": [
+            -0.07999620560563701,
+            2.558904766722678e-14,
+            0.09999997110383065,
+            -1.2028761375702296e-14
+          ],
+          "phasors_real_imag": [
+            [
+              -0.07999620560563701,
+              -2.558904766722678e-14
+            ],
+            [
+              0.09999997110383065,
+              1.2028761375702296e-14
+            ]
+          ],
+          "amplitudes": [
+            0.07999620560563701,
+            0.09999997110383065
+          ],
+          "phases_radians": [
+            -3.1415926535894734,
+            1.202876485155456e-13
+          ],
+          "residual_squared_sum": 2.2745961854941288e-06,
+          "gain_or_time_compensation": false
+        },
+        "peak": 0.17999267578125,
+        "pcm_decode_divisor": 32768,
+        "integer_reference_squared_sum": 292062085900,
+        "integer_error_squared_sum": 765182349225,
+        "integer_mse_denominator": 29205777612800
+      },
+      "quantization_max_abs_error": 1.5201328631317314e-05
+    },
+    "mixture": {
+      "file": "mask_mixture.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator": 27200,
+        "reference_squared_sum": 271.99999999999943,
+        "error_squared_sum": 223.04000000000048,
+        "total_reference_mse": 0.008200000000000018,
+        "relative_squared_reference_error": 0.8200000000000035,
+        "phase_ls": {
+          "columns": "cos500,sin500,cos1250,sin1250 on absolute sample clock",
+          "rank": 4,
+          "sample_denominator": 27200,
+          "coefficients": [
+            0.019999999999999945,
+            -9.530795520409099e-17,
+            0.10000000000000028,
+            -0.09999999999999934
+          ],
+          "phasors_real_imag": [
+            [
+              0.019999999999999945,
+              9.530795520409099e-17
+            ],
+            [
+              0.10000000000000028,
+              0.09999999999999934
+            ]
+          ],
+          "amplitudes": [
+            0.019999999999999945,
+            0.14142135623730925
+          ],
+          "phases_radians": [
+            4.765397760204563e-15,
+            0.7853981633974436
+          ],
+          "residual_squared_sum": 7.268057764834532e-27,
+          "gain_or_time_compensation": false
+        },
+        "peak": 0.15718157518249326
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator": 27200,
+        "reference_squared_sum": 272.00401378795505,
+        "error_squared_sum": 223.04741465486586,
+        "total_reference_mse": 0.008200272597605363,
+        "relative_squared_reference_error": 0.8200151591466806,
+        "phase_ls": {
+          "columns": "cos500,sin500,cos1250,sin1250 on absolute sample clock",
+          "rank": 4,
+          "sample_denominator": 27200,
+          "coefficients": [
+            0.020000930418562685,
+            -6.542603528476434e-15,
+            0.10000117591320884,
+            -0.10000117591323243
+          ],
+          "phasors_real_imag": [
+            [
+              0.020000930418562685,
+              6.542603528476434e-15
+            ],
+            [
+              0.10000117591320884,
+              0.10000117591323243
+            ]
+          ],
+          "amplitudes": [
+            0.020000930418562685,
+            0.1414230192297343
+          ],
+          "phases_radians": [
+            3.271149587323349e-13,
+            0.7853981633975663
+          ],
+          "residual_squared_sum": 1.8928736325577947e-06,
+          "gain_or_time_compensation": false
+        },
+        "peak": 0.157196044921875,
+        "pcm_decode_divisor": 32768,
+        "integer_reference_squared_sum": 292062085900,
+        "integer_error_squared_sum": 239495337850,
+        "integer_mse_denominator": 29205777612800
+      },
+      "quantization_max_abs_error": 1.523848096052563e-05
+    },
+    "bounded_real": {
+      "file": "mask_bounded_real.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator": 27200,
+        "reference_squared_sum": 271.99999999999943,
+        "error_squared_sum": 155.0400000000001,
+        "total_reference_mse": 0.005700000000000004,
+        "relative_squared_reference_error": 0.5700000000000016,
+        "phase_ls": {
+          "columns": "cos500,sin500,cos1250,sin1250 on absolute sample clock",
+          "rank": 4,
+          "sample_denominator": 27200,
+          "coefficients": [
+            0.020000000000000014,
+            -5.322142529695292e-17,
+            0.050000000000000225,
+            -0.04999999999999961
+          ],
+          "phasors_real_imag": [
+            [
+              0.020000000000000014,
+              5.322142529695292e-17
+            ],
+            [
+              0.050000000000000225,
+              0.04999999999999961
+            ]
+          ],
+          "amplitudes": [
+            0.020000000000000014,
+            0.07071067811865463
+          ],
+          "phases_radians": [
+            2.661071264847644e-15,
+            0.7853981633974422
+          ],
+          "residual_squared_sum": 2.137796423625997e-23,
+          "gain_or_time_compensation": false
+        },
+        "peak": 0.08782958291633733
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator": 27200,
+        "reference_squared_sum": 272.00401378795505,
+        "error_squared_sum": 155.04639418795705,
+        "total_reference_mse": 0.005700235080439597,
+        "relative_squared_reference_error": 0.5700150965743684,
+        "phase_ls": {
+          "columns": "cos500,sin500,cos1250,sin1250 on absolute sample clock",
+          "rank": 4,
+          "sample_denominator": 27200,
+          "coefficients": [
+            0.01999905971909905,
+            -6.491724511324842e-15,
+            0.04999960665808776,
+            -0.049999606658099535
+          ],
+          "phasors_real_imag": [
+            [
+              0.01999905971909905,
+              6.491724511324842e-15
+            ],
+            [
+              0.04999960665808776,
+              0.049999606658099535
+            ]
+          ],
+          "amplitudes": [
+            0.01999905971909905,
+            0.07071012184919614
+          ],
+          "phases_radians": [
+            3.2460148639514595e-13,
+            0.7853981633975661
+          ],
+          "residual_squared_sum": 1.626398624146001e-06,
+          "gain_or_time_compensation": false
+        },
+        "peak": 0.08782958984375,
+        "pcm_decode_divisor": 32768,
+        "integer_reference_squared_sum": 292062085900,
+        "integer_error_squared_sum": 166479798100,
+        "integer_mse_denominator": 29205777612800
+      },
+      "quantization_max_abs_error": 1.5251798508015765e-05
+    },
+    "unbounded_real": {
+      "file": "mask_unbounded_real.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator": 27200,
+        "reference_squared_sum": 271.99999999999943,
+        "error_squared_sum": 68.00000000000023,
+        "total_reference_mse": 0.0025000000000000083,
+        "relative_squared_reference_error": 0.25000000000000133,
+        "phase_ls": {
+          "columns": "cos500,sin500,cos1250,sin1250 on absolute sample clock",
+          "rank": 4,
+          "sample_denominator": 27200,
+          "coefficients": [
+            0.10000000000000014,
+            -2.47529056238547e-17,
+            0.05000000000000026,
+            -0.04999999999999962
+          ],
+          "phasors_real_imag": [
+            [
+              0.10000000000000014,
+              2.47529056238547e-17
+            ],
+            [
+              0.05000000000000026,
+              0.04999999999999962
+            ]
+          ],
+          "amplitudes": [
+            0.10000000000000014,
+            0.07071067811865467
+          ],
+          "phases_radians": [
+            2.4752905623854665e-16,
+            0.785398163397442
+          ],
+          "residual_squared_sum": 3.1665550617132815e-23,
+          "gain_or_time_compensation": false
+        },
+        "peak": 0.16574442809904458
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator": 27200,
+        "reference_squared_sum": 272.00401378795505,
+        "error_squared_sum": 67.99811362288892,
+        "total_reference_mse": 0.002499930647900328,
+        "relative_squared_reference_error": 0.2499893758034685,
+        "phase_ls": {
+          "columns": "cos500,sin500,cos1250,sin1250 on absolute sample clock",
+          "rank": 4,
+          "sample_denominator": 27200,
+          "coefficients": [
+            0.09999717159077082,
+            -3.2182984106606506e-14,
+            0.050000549194115514,
+            -0.05000054919412726
+          ],
+          "phasors_real_imag": [
+            [
+              0.09999717159077082,
+              3.2182984106606506e-14
+            ],
+            [
+              0.050000549194115514,
+              0.05000054919412726
+            ]
+          ],
+          "amplitudes": [
+            0.09999717159077082,
+            0.0707114547964296
+          ],
+          "phases_radians": [
+            3.218389439884599e-13,
+            0.7853981633975657
+          ],
+          "residual_squared_sum": 2.703933316467474e-06,
+          "gain_or_time_compensation": false
+        },
+        "peak": 0.165740966796875,
+        "pcm_decode_divisor": 32768,
+        "integer_reference_squared_sum": 292062085900,
+        "integer_error_squared_sum": 73012418550,
+        "integer_mse_denominator": 29205777612800
+      },
+      "quantization_max_abs_error": 1.5231417687187887e-05
+    },
+    "complex_oracle": {
+      "file": "mask_complex_oracle.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator": 27200,
+        "reference_squared_sum": 271.99999999999943,
+        "error_squared_sum": 5.1405767985929835e-23,
+        "total_reference_mse": 1.8899179406591852e-27,
+        "relative_squared_reference_error": 1.8899179406591892e-25,
+        "phase_ls": {
+          "columns": "cos500,sin500,cos1250,sin1250 on absolute sample clock",
+          "rank": 4,
+          "sample_denominator": 27200,
+          "coefficients": [
+            0.10000000000000012,
+            2.2398920615049667e-17,
+            3.535838483990435e-16,
+            -0.09999999999999963
+          ],
+          "phasors_real_imag": [
+            [
+              0.10000000000000012,
+              -2.2398920615049667e-17
+            ],
+            [
+              3.535838483990435e-16,
+              0.09999999999999963
+            ]
+          ],
+          "amplitudes": [
+            0.10000000000000012,
+            0.09999999999999963
+          ],
+          "phases_radians": [
+            -2.239892061504964e-16,
+            1.570796326794893
+          ],
+          "residual_squared_sum": 5.140717892456636e-23,
+          "gain_or_time_compensation": false
+        },
+        "peak": 0.20000000000000018
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator": 27200,
+        "reference_squared_sum": 272.00401378795505,
+        "error_squared_sum": 0.0,
+        "total_reference_mse": 0.0,
+        "relative_squared_reference_error": 0.0,
+        "phase_ls": {
+          "columns": "cos500,sin500,cos1250,sin1250 on absolute sample clock",
+          "rank": 4,
+          "sample_denominator": 27200,
+          "coefficients": [
+            0.10000286593027545,
+            -3.2146105556860486e-14,
+            -1.2061831809807746e-14,
+            -0.09999860894370095
+          ],
+          "phasors_real_imag": [
+            [
+              0.10000286593027545,
+              3.2146105556860486e-14
+            ],
+            [
+              -1.2061831809807746e-14,
+              0.09999860894370095
+            ]
+          ],
+          "amplitudes": [
+            0.10000286593027545,
+            0.09999860894370095
+          ],
+          "phases_radians": [
+            3.214518429829158e-13,
+            1.5707963267950171
+          ],
+          "residual_squared_sum": 1.9927172430171914e-06,
+          "gain_or_time_compensation": false
+        },
+        "peak": 0.20001220703125,
+        "pcm_decode_divisor": 32768,
+        "integer_reference_squared_sum": 292062085900,
+        "integer_error_squared_sum": 0,
+        "integer_mse_denominator": 29205777612800
+      },
+      "quantization_max_abs_error": 1.5225095597167773e-05
+    }
+  },
+  "unwindowed_selected_mixture_phasors_real_imag": [
+    [
+      0.020000000000000035,
+      -6.430594214780073e-15
+    ],
+    [
+      0.10000000000001244,
+      0.09999999999998758
+    ]
+  ],
+  "discarded_bin_max_magnitude": 3.1617802459175786e-10,
+  "pcm_encode_multiplier": 32768,
+  "pcm_decode_divisor": 32768,
+  "pcm": "signed little-endian PCM16, round-to-nearest-even, no dither or per-file gain",
+  "pcm_quantization_step": 3.0517578125e-05,
+  "pcm_half_step_error_bound": 1.52587890625e-05,
+  "limits": "Known-bin full-record offline representation, not an estimated mask, blind separator, speech recording or listening evaluation. The same sin-squared listening envelope is applied after the rFFT operator. Nonselected numerical-leakage bins are set to zero. No delay/gain fitting, per-file normalization, dither or clipping. Phase LS measures the fixed absolute sample clock; it does not compensate the output.",
+  "listening": "Start at low volume; no automatic playback or listening study."
+}

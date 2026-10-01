@@ -294,14 +294,14 @@
   ],
   "si_sdr_db": {
     "reference_mic0": 1.2803283205764548,
-    "correct_activity_output": 13.76197656995226
+    "correct_activity_output": 13.761976569952274
   },
   "activity_error": {
     "missed_target_interval_seconds": [
       0.1,
       1.5
     ],
-    "correct_output_scored_si_sdr_db": 13.76197656995226,
+    "correct_output_scored_si_sdr_db": 13.761976569952274,
     "missed_output_scored_si_sdr_db": 1.2803283205764548,
     "missed_target_max_posterior": 0.0
   },
@@ -314,9 +314,9 @@
     "machine": "arm64"
   },
   "generator_inputs": {
-    "codes/chapters/ch08/examples/gss_teaching_demo.py": "a944d2433507c0acf4e5eee0f0f2b6532ebee32db17b01ef03e1c06fcd64227d",
-    "codes/chapters/ch08/core/gss_teaching.py": "32c1cba097822687cfddb26d7fd313ff182888022b180d415ac39e29d892b9cc",
-    "codes/chapters/ch08/core/separation.py": "df9e84fa6ebd46f677d613687b6495128ca90d519d781d89cdf9af81af67995a",
+    "codes/chapters/ch08/examples/gss_teaching_demo.py": "482a2b9051ad22f6b1c687e2fc3d28721cdaeeb7216e8358a0c3692cb9233d3d",
+    "codes/chapters/ch08/core/gss_teaching.py": "dbe3b55d66763b99a5b6dba082a04cae9c23b5484051511ec97bc6cefb482a7f",
+    "codes/chapters/ch08/core/separation.py": "cd5cc1e465188f16070d2f347c5234bea41d28d0be8f16f1bb24e47365feb888",
     "codes/chapters/ch02/core/spectral.py": "5ade0b101cc00615276b3b60c3659ece3e68ad614cd2cb2edeb568359f034059",
     "codes/chapters/ch02/core/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385",
     "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
@@ -356,7 +356,7 @@
       "sha256": "ebfad9f73fdf061140f04917e1449b1d47187728bccba3c9fe332a60901ee247"
     },
     "STATE.npz": {
-      "sha256": "d882d038c4ef13e109fd14962dff5142c34dd95fbcc637b0a89ecc2b839ecf9a"
+      "sha256": "ee8766f0bc82053d4cef26082809682d7cf22c6c8cb97c9728ae6fc524ec1d0f"
     }
   }
 }

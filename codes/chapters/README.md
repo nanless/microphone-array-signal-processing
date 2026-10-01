@@ -14,7 +14,7 @@
 | [ch05](ch05/) | `ch05.chapter05_experiments`、`ch05.beamformer_common_input_demo` | E05-01～22练习；同输入波束比较与独立导数约束PCM限于所声明条件；`ch05.examples.generate_derivative_audio --check`只读核验七源/实际PCM，原方法审计另记 |
 | [ch06](ch06/) | `ch06.chapter06_experiments`、`ch06.aec_algorithm_minicases`、`ch06.aec_partitioned_demo`、`ch06.aec_affine_projection_demo`、`ch06.examples.generate_apa_audio` | E06-22～39 及 AEC 算法缩例；外部库或录音示例另有依赖 |
 | [ch07](ch07/) | `ch07.chapter07_experiments`、`ch07.wpe_temporal_contract`、`ch07.examples.mint_teaching_demo`、`ch07.examples.audit_upstream_wpe_contracts` | E07-01～21；在线WPE时间/排列、设计矩阵求解与实际PCM逆滤波噪声权衡；`mint_teaching_demo --check`只读核验，NeMo仅固定源码静态检查 |
-| [ch08](ch08/) | `ch08.chapter08_experiments`、`ch08.gss_activity_error_demo` | E08 练习及固定密度下活动标注误差；不是官方 GPU 整链 |
+| [ch08](ch08/) | `ch08.chapter08_experiments`、`ch08.gss_activity_error_demo`、`ch08.examples.mask_representation_demo`、`ch08.examples.audit_upstream_separation_contracts` | E08-01～29及固定密度下活动标注误差；不是官方 GPU 整链 |
 | [ch09](ch09/) | `ch09.chapter09_experiments`、`ch09.tracking_crossing_dropout_demo` | E09-10～19；轨迹交叉、缺测、方向限速的合成反例 |
 | [ch10](ch10/) | `ch10.chapter10_experiments`、`ch10.spectral_subtraction_demo`、`ch10.sro_closed_loop_demo` | E10-13、E10-18～27；合成时间戳及有状态插值，不是声卡实时实测 |
 | [ch11](ch11/) | `ch11.chapter11_experiments` | E11-10～19；硬约束、评分和 FIR 取舍，示意分数不代表产品测量 |
@@ -34,7 +34,7 @@
 `MVDR target response` 应接近 1；STFT 重建误差接近浮点舍入。极高的匹配无噪声 AEC ERLE 是算术
 收敛检查，队列示例中的超期次数则来自构造的负载，二者均不代表设备测量。完整核对步骤见导读。
 
-旧的 `codes.examples.*` 和 `codes.array_tutorial.*` 导入路径已经退出仓内接口。运行时使用上表中的章节模块；修改题目时改唯一真实源文件，再核对全书 260 个稳定练习 ID、对应章节和覆盖表。
+旧的 `codes.examples.*` 和 `codes.array_tutorial.*` 导入路径已经退出仓内接口。运行时使用上表中的章节模块；修改题目时改唯一真实源文件，再核对全书 266 个稳定练习 ID、对应章节和覆盖表。
 
 双耳、STFT卷积、多频几何、房间、主音频、GSS、移动和追踪资产的清单，以及某些工业报告，会校验生成器的**路径和完整源码摘要**。生成器已归入相应章节的 `examples/`；原生 C/C++ 探针与调用它的 Python 文件放在同一目录。更改这些文件后，应从真实新源重生资产并核对参数、逐文件摘要和报告，再同步构建与测试。
 
@@ -52,7 +52,7 @@
 
 `ch00/` 集中保存[跨章练习](ch00/cross_chapter/)、[主音频生成器](ch00/examples/generate_audio_samples.py)、[Git 来源锁表](ch00/SOURCES.lock.json)、[归档锁表](ch00/ARCHIVE_SOURCES.lock.json)、[获取状态](ch00/SOURCE_STATUS.json)和[归档状态](ch00/ARCHIVE_SOURCE_STATUS.json)。状态由[获取工具](ch00/upstream/README.md)核验生成；忽略的 `_downloads/` 工作区可能含本地修改，不能覆盖或纳入提交。
 
-本书的主[合成音频清单](ch00/audio/MANIFEST.json)记录 27 组、109 个分章存放的 PCM16 WAV 的输入、所属章节、共同增益、种子、运行环境、生成源码与逐文件 SHA-256。另有第 1 章的 5 个[双耳线索 WAV](ch01/binaural_audio/MANIFEST.json)、第 2 章的 3 个[STFT卷积 WAV](ch02/stft_audio/MANIFEST.json)、第3章的3个[多频几何WAV](ch03/geometry_audio/MANIFEST.json)、第4章的4个[已知聚焦WAV](ch04/focus_audio/MANIFEST.json)、第5章的4个[导数约束WAV](ch05/derivative_audio/MANIFEST.json)、第6章的6个[有色参考APA WAV](ch06/apa_audio/MANIFEST.json)、第7章的6个[已知路径逆WAV](ch07/mint_audio/MANIFEST.json)、附录 B 的 18 个[房间合成 WAV 与结果报告](appendix_b/room_audio/RESULTS.json)、[GSS 教学链](ch08/gss_audio/MANIFEST.json)的 5 个 WAV 和中间状态、[连续移动声源](ch09/moving_audio/MANIFEST.json)的 3 个 WAV，以及[观测到追踪](ch09/tracking_audio/MANIFEST.json)的 2 个 WAV；这些是彼此独立的实验，不并入主 109 个样本。相同实验组使用共同导出增益，不逐文件做峰值归一化。生成物出现问题应修改生成源码并重新生成、只读核对清单，再重建图和站点；不得手改单个 WAV、清单或报告。
+本书的主[合成音频清单](ch00/audio/MANIFEST.json)记录 27 组、109 个分章存放的 PCM16 WAV 的输入、所属章节、共同增益、种子、运行环境、生成源码与逐文件 SHA-256。另有第 1 章的 5 个[双耳线索 WAV](ch01/binaural_audio/MANIFEST.json)、第 2 章的 3 个[STFT卷积 WAV](ch02/stft_audio/MANIFEST.json)、第3章的3个[多频几何WAV](ch03/geometry_audio/MANIFEST.json)、第4章的4个[已知聚焦WAV](ch04/focus_audio/MANIFEST.json)、第5章的4个[导数约束WAV](ch05/derivative_audio/MANIFEST.json)、第6章的6个[有色参考APA WAV](ch06/apa_audio/MANIFEST.json)、第7章的6个[已知路径逆WAV](ch07/mint_audio/MANIFEST.json)、第8章的6个[已知掩码表示WAV](ch08/mask_audio/MANIFEST.json)、附录 B 的 18 个[房间合成 WAV 与结果报告](appendix_b/room_audio/RESULTS.json)、[GSS 教学链](ch08/gss_audio/MANIFEST.json)的 5 个 WAV 和中间状态、[连续移动声源](ch09/moving_audio/MANIFEST.json)的 3 个 WAV，以及[观测到追踪](ch09/tracking_audio/MANIFEST.json)的 2 个 WAV；这些是彼此独立的实验，不并入主 109 个样本。相同实验组使用共同导出增益，不逐文件做峰值归一化。生成物出现问题应修改生成源码并重新生成、只读核对清单，再重建图和站点；不得手改单个 WAV、清单或报告。
 
 主音频由 `.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py` 生成，附加 `--check` 时只读重算并核对现有清单与 WAV。它们是数学合成样本，没有真人录音、模型权重或下载素材，不用于证明真实语音或设备效果；试听前先调低播放音量。各组的信号模型、参考、评分窗口和代码题见[音频实验手册](ch00/research/05_exercises_and_audio.md)。
 
@@ -77,3 +77,5 @@
 第三章的[多频几何实验](ch03/geometry_audio/MANIFEST.json)由 `ch03.examples.generate_geometry_audio` 生成；加 `--check` 时只读核对实际PCM、五个生成源及分母。双频源参考为单声道，两个方向观测各为六声道；六声道试听可能下混，方向证据使用稳定窗逐频拟合。`ch03.examples.audit_upstream_coarray` 对固定doatools原方法作有限范围提取调用，报告包括兼容适配和真实失败，不代表整包或未知误差校准。
 
 第四章 `ch04.chapter04_experiments` 的 E04-19～23 分别复算非酉聚焦噪声、AIC/MDL、相关误差GLS、双频酉聚焦秩和root-MUSIC解析多项式。`ch04.examples.generate_focus_audio` 生成四份独立合成WAV，加 `--check` 只读核对真实PCM、五个源摘要和评分分母。`ch04.examples.audit_upstream_doa` 对固定PRA/doatools原方法作限定模型复算；上游完整包、方法提取、辅助函数和兼容适配的结论分别阅读，不把局部诊断作为整链评测。
+
+第八章新增 E08-24～29 分别复算白化与独立性、联合合同对角化的边界、FastMNMF雅可比项、加权混合一致性、已知掩码表示及CSS增益/极性。`ch08.examples.mask_representation_demo --check`只读检查六实际PCM与四真实源；`ch08.examples.gss_teaching_demo --check`严格核验七普通资产和状态。上游分离合同报告分别记录原包、原函数提取、静态检查与导入失败，不能合称完整论文复现。

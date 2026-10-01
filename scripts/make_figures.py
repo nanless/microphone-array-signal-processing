@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""生成教程插图（图 1～25、33～36、40～59；图 26～32、37～39 见 make_aec_figures.py）。
+"""生成教程插图（图 1～25、33～36、40～60；图 26～32、37～39 见 make_aec_figures.py）。
 
 用法（仓库根目录）：
-    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～59 → figures/
+    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～60 → figures/
 """
 from pathlib import Path
 import hashlib
@@ -4108,6 +4108,57 @@ def fig_mint_noise_tradeoff():
         'AudioManifestDigest': hashlib.sha256((asset_root/'MANIFEST.json').read_bytes()).hexdigest()})
 
 
+def fig_mask_representation():
+    """Known complex phasors and separately labelled actual PCM errors."""
+    from codes.chapters.ch08.examples.mask_representation_demo import check_assets
+    asset_root = CODE_CHAPTERS/'ch08/mask_audio'
+    manifest = check_assets(asset_root, replay=True)
+    fig = plt.figure(figsize=(8.8, 9.4), layout='constrained')
+    grid = fig.add_gridspec(2, 2, height_ratios=(1.1, 1))
+    axes = [fig.add_subplot(grid[0, index]) for index in range(2)]
+    bottom = fig.add_subplot(grid[1, :])
+    for index, ax in enumerate(axes):
+        ax.axhline(0, color='#bbbbbb', lw=.8)
+        ax.axvline(0, color='#bbbbbb', lw=.8)
+        ax.set_aspect('equal')
+        ax.set_xlim(-.025, .135); ax.set_ylim(-.025, .14)
+        ax.set_xlabel('实部（数字幅度）'); ax.set_ylabel('虚部（数字幅度）')
+        ax.grid(ls=':', alpha=.4)
+    phasors = ((.02+0j, .1+0j, .02+0j), (.1+.1j, .1j, .05+.05j))
+    for index, (ax, values) in enumerate(zip(axes, phasors)):
+        mixture, target, real = values
+        for point, color, style in ((mixture, '#777777', '--'),
+                                    (target, C_BLUE, '-'), (real, C_RED, ':')):
+            ax.annotate('', xy=(point.real, point.imag), xytext=(0, 0),
+                        arrowprops=dict(arrowstyle='->', color=color, lw=2, linestyle=style))
+        ax.scatter([target.real], [target.imag], marker='o', s=70, facecolors='none', edgecolors=C_GREEN, lw=2, zorder=6)
+    axes[0].set_title('(a) 500 Hz：实掩码需要增益5')
+    axes[0].text(.018, .022, '混合＝有界实输出\n0.02', color=C_RED, fontsize=FS_SMALL)
+    axes[0].text(.098, .053, '目标＝无界实输出\n＝复数理想输出\n0.1', ha='center', color=C_BLUE, fontsize=FS_SMALL)
+    axes[1].set_title('(b) 1250 Hz：还需旋转相位')
+    axes[1].text(.101, .112, '混合\n0.1+0.1j', ha='center', color='#555555', fontsize=FS_SMALL)
+    axes[1].text(.066, .047, '两种实输出\n0.05+0.05j', color=C_RED, fontsize=FS_SMALL)
+    axes[1].text(.002, .112, '目标＝复数理想输出\n0.1j', color=C_BLUE, fontsize=FS_SMALL)
+    keys = ('bounded_real', 'unbounded_real', 'complex_oracle')
+    theory = [manifest['parameters']['analytic_steady_mse'][key] for key in keys]
+    pcm = [manifest['samples'][key]['pcm_measurements']['total_reference_mse'] for key in keys]
+    x = np.arange(3)
+    bottom.bar(x-.17, theory, .32, color=C_BLUE, hatch='//', label='解析稳态MSE')
+    bottom.bar(x+.17, pcm, .32, color=C_ORANGE, hatch='..', label='实际PCM MSE')
+    bottom.set_xticks(x, ('有界实掩码', '无界实掩码', '复数理想掩码'))
+    bottom.set_ylabel('相对共同目标的MSE（数字幅度平方）')
+    bottom.set_ylim(0, .0078); bottom.grid(axis='y', ls=':', alpha=.4)
+    bottom.set_title('(c) 固定27200点，不拟合时移或增益')
+    bottom.legend(loc='upper right', fontsize=FS_SMALL)
+    for index, (a, b) in enumerate(zip(theory, pcm)):
+        bottom.text(index, max(a, b)+.0002, f'解析 {a:.4g}\nPCM {b:.8g}', ha='center', fontsize=FS_SMALL)
+    fig.suptitle('图60  实数与复数掩码的表示边界', fontsize=FS_SUP)
+    fig.supxlabel('16 kHz、2秒已知双频；共同增益1，完整记录FFT后加共同包络。\n'
+                  '上排为未加包络的解析复幅；下排为解析与实际PCM，未运行盲估计或神经分离。', fontsize=FS_SMALL)
+    save(fig, 'fig60_mask_representation.png', {
+        'AudioManifestDigest': hashlib.sha256((asset_root/'MANIFEST.json').read_bytes()).hexdigest()})
+
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -4160,6 +4211,7 @@ def main():
     fig_affine_projection_geometry()
     fig_affine_projection_learning()
     fig_mint_noise_tradeoff()
+    fig_mask_representation()
     print("ALL DONE")
 
 

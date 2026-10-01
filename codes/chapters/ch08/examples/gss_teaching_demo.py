@@ -30,6 +30,24 @@ from codes.chapters.ch02.core.spectral import istft, stft
 
 ROOT = Path(__file__).resolve().parents[4]
 OUT = ROOT / "codes/chapters/ch08/gss_audio"
+ASSET_NAMES = {"source_1.wav", "source_2.wav", "mixture.wav", "enhanced_correct.wav",
+               "enhanced_missed.wav", "STATE.npz", "MANIFEST.json"}
+
+
+def _check_output_members(out_dir: Path, *, check: bool) -> None:
+    """Preflight before model execution or writes; never follow asset links."""
+    if out_dir.is_symlink() or (out_dir.exists() and not out_dir.is_dir()):
+        raise ValueError("GSS output must be an ordinary directory")
+    if not out_dir.exists():
+        if check:
+            raise ValueError("GSS output directory is missing")
+        return
+    members = list(out_dir.iterdir())
+    if any(member.is_symlink() or not member.is_file() for member in members):
+        raise ValueError("GSS members must be ordinary files without symlinks")
+    names = {member.name for member in members}
+    if names != ASSET_NAMES and (check or names):
+        raise ValueError("GSS asset set must contain exactly five WAVs, STATE.npz and MANIFEST.json")
 
 
 def fixture(seed: int = 20260924) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -110,6 +128,10 @@ def run_experiment() -> tuple[dict, dict[str, np.ndarray]]:
 
 
 def generate(out_dir: Path = OUT, *, check: bool = False) -> dict:
+    if type(check) is not bool:
+        raise ValueError("check must be boolean")
+    out_dir = Path(out_dir)
+    _check_output_members(out_dir, check=check)
     result, arrays = run_experiment()
     wav_names = ["source_1", "source_2", "mixture", "enhanced_correct", "enhanced_missed"]
     peak = max(float(np.max(np.abs(arrays[name]))) for name in wav_names)
@@ -139,8 +161,6 @@ def generate(out_dir: Path = OUT, *, check: bool = False) -> dict:
     result["files"] = files
     contents["MANIFEST.json"] = (json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + "\n").encode()
     if check:
-        if {p.name for p in out_dir.glob('*.wav')} != {name for name in contents if name.endswith('.wav')}:
-            raise ValueError("GSS WAV file set differs")
         for name, content in contents.items():
             if not (out_dir / name).is_file() or (out_dir / name).read_bytes() != content:
                 raise ValueError(f"GSS asset missing or stale: {name}")

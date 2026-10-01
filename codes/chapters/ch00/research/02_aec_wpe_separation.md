@@ -1,6 +1,6 @@
 # AEC、去混响与语音分离：算法、工业实现与源码研究
 
-WPE 原始资料、NARA 多通道历史排列与 NeMo 固定源码复核日期：2026-10-01；AEC 的 APA 原函数、APM 通道边界与神经方法分类复核日期：2026-10-01；AEC 原论文、接口诊断与近年候选原核实日期：2026-09-28；原核实日期：2026-09-22；AEC 工业接口与配对数据说明复核日期：2026-09-23；BSS/GSS 源码入口与实验复核日期：2026-09-24；WPE 与 cACGMM 源码入口于 2026-09-29 扩充并离线重核；推导练习及 Stream.FM、TF-Locoformer 静态审查日期：2026-09-26。对应正文 [第 6 章](../../../../chapters/06_aec.md)、[第 7 章](../../../../chapters/07_wpe-dereverberation.md) 与 [第 8 章](../../../../chapters/08_speech-separation.md)。本篇按处理对象分开说明算法、源码位置和复现实验；正式版本和许可边界由 [SOURCES.lock.json](../SOURCES.lock.json) 固定。
+BSS/GSS/CSS 固定源码合同、ArrayDPS 取点与参数层、神经方法身份复核日期：2026-10-01；WPE 原始资料、NARA 多通道历史排列与 NeMo 固定源码复核日期：2026-10-01；AEC 的 APA 原函数、APM 通道边界与神经方法分类复核日期：2026-10-01；AEC 原论文、接口诊断与近年候选原核实日期：2026-09-28；原核实日期：2026-09-22；AEC 工业接口与配对数据说明复核日期：2026-09-23；BSS/GSS 源码入口与实验复核日期：2026-09-24；WPE 与 cACGMM 源码入口于 2026-09-29 扩充并离线重核；推导练习及 Stream.FM、TF-Locoformer 静态审查日期：2026-09-26。对应正文 [第 6 章](../../../../chapters/06_aec.md)、[第 7 章](../../../../chapters/07_wpe-dereverberation.md) 与 [第 8 章](../../../../chapters/08_speech-separation.md)。本篇按处理对象分开说明算法、源码位置和复现实验；正式版本和许可边界由 [SOURCES.lock.json](../SOURCES.lock.json) 固定。
 
 “外部实现”表示可以找到承担该算法计算的代码，不表示本书已经训练、编译或测完该系统。本篇实际运行的结果单独列出，包括[教学基线测试](../../../../tests/test_codes_aec_wpe_sep_track.py)与 W01 的独立实现对照；未附执行结果的外部实验均为复现设计。外部代码、权重和数据分别遵守各自条款。
 
@@ -741,6 +741,11 @@ FastMNMF 以可联合对角化的空间协方差降低反复处理满矩阵的�
 
 作者整库的[固定许可](https://github.com/sekiguchi92/SoundSourceSeparation/blob/897fe87fea3d85a243d8a3fd36c2232bb0548ad3/LICENSE)进一步限定大学和研究机构中的学术研究，并非所有个人非商用用途均已获准。本书保留该索引与适用主体条件；已取得的 PRA 文件采用 MIT，许可判断不能跨仓库移用。
 
+**有限研究线索：跨阵列块近似。** [Distributed FastMNMF 作者预印本 v1，2026，§3.1～3.2](https://arxiv.org/html/2605.19388v1)讨论多个小阵列合并后矩阵求解量增大的问题：将空间协方差近似成按阵列分块的对角结构，每块使用自己的联合对角化矩阵，共享源谱模型，并舍弃跨阵列协方差。这改变了空间模型与求解步骤，不能只称为同一 FastMNMF 的硬件加速。
+
+原文假设已经同步、校准，传播延迟相对 STFT 窗较短；其 distributed 描述阵列的空间布置，仍集中处理观测，不是异步设备算法。§4.1 的同步、无附加噪声设置不能支持异步鲁棒结论。收录门槛中的问题、改动和假设可以核实；最小复现仍需阵列间初始化排列与共享谱模型，2026-10-01 未找到可信作者算法代码及明确许可。因此这里只保留选型线索，不新增正文算法目录、锁表条目或运行结果。
+
+
 ### B07　TRINICON 的时域块自适应
 
 [pyroomacoustics `bss/trinicon.py`](https://github.com/LCAV/pyroomacoustics/blob/v0.10.0/pyroomacoustics/bss/trinicon.py)提供依据[Aichner 等 2006 表 1](https://doi.org/10.1016/j.sigpro.2005.06.022)的时域块方法，并明确固定两个输出通道。输入轴序为 `(通道, 样本)`，与频域 BSS 接口不同。
@@ -789,6 +794,21 @@ GSS 用说话人活动约束空间聚类，随后由掩码估计 SCM 并生成�
 
 因此，前述教学链的严格门控与恒活动背景是明确选择的教学配置，不能作为官方默认最终掩码的接口契约。是否允许片段外目标的少量后验，需要结合上下文裁剪、SCM估计和任务指标判断；不能仅以关闭源输出非零就认定整套 GSS 无效。这里是固定源码控制流核对，没有运行官方 GPU 训练/预测。
 
+**固定接口的观测取点。** `gss/core/enhancer.py::enhance_batch()` 在各频率块执行 WPE，并将结果写回 `Obs`；`gss_block()`内部的方向归一化用于聚类，随后 `bf_block()`接收的是未作方向归一化的 WPE 观测。`souden_mvdr.py::_Cov_X` 调用功率 SCM 原函数，而不是把单位方向的外积当作声学功率。[GSS 2018 原文 §3.3、式(10)](https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf)中的原观测 SCM 与这一取点相符；GPU-GSS 2023 的式(6)～(7)使用的方向符号不能代替固定源码证据。
+
+本书[新合同审计](../../ch08/examples/audit_upstream_separation_contracts.py)提取 `get_power_spectral_density_matrix()` 原函数，仅以 NumPy 替代 CuPy 后端，未运行 GPU 波束整链。两麦三帧输入 `[[1,2,0],[0,0,3]]`、权重 `[1,1,0]` 得到 `diag(2.5,0)`；先按帧变成单位方向则得到 `diag(1,0)`；原观测幅度翻倍得到 `diag(10,0)`。将相同权重整体乘以 $10^{-12}$ 后，分母地板 $10^{-10}$ 生效，结果为 `diag(0.05,0)`，不再对掩码缩放不变。输入权重未被改写，全零掩码返回零矩阵。这些是有输入和手算期望的原函数算术验证，不是分离质量实验。
+
+**NeMo 的 GSS 层返回什么。** 已锁定 [NeMo v2.4.0 源码中的 `MaskEstimatorGSS`](https://github.com/NVIDIA/NeMo/blob/2381f42f6979449b5b99538f8f80135831009b51/nemo/collections/audio/modules/masking.py)接收 `(批次,麦克风,频点,帧)` 复观测和 `(批次,分量,帧)` 活动，返回 `(批次,分量,频点,帧)` 掩码。该类从活动输入确定分量数，没有自动增加背景类；调用者应显式提供背景活动。`MaskBasedBeamformer` 是另一个层，不能把掩码返回值直接称为增强波形。现有 Apache-2.0 选集包含这些源码；本书只静态核查，不导入 NeMo 或用操作桩代替 Torch。
+
+| 要迁移的条件 | GPU-GSS 固定调用 | NeMo 固定 GSS 层 |
+|---|---|---|
+| 输入组织 | 一段观测、活动与上下文，外层执行 WPE/波束 | 批次复谱与外部活动；层内返回掩码 |
+| 背景类 | GSS 入口构造始终活动背景 | 调用者在活动轴显式提供 |
+| 方向归一化 | 零范数除数保护；功率观测另用于波束 | $x/(\|x\|+\epsilon)$，小幅输入不严格单位范数 |
+| 后验算术 | 工程裁剪；部分路径不再归一 | 全分量最大对数密度平移后门控，分母另加 $\epsilon$ |
+
+NeMo 算术旁的[独立 NumPy 小例](../../ch08/reports/upstream_separation_contracts.json)与上游静态证据分别保存。权重 `[0.2,0.3,0.5]`、活动 `[0,1,1]`、相同密度与 $\epsilon=10^{-8}$ 时，按该公式计算的总质量略小于1；若非活动首分量的对数密度为1000、其他为0，先按全部分量平移会令活动分量指数下溢。只在活动支持集稳定计算的数学后验应为 `[0,3/8,5/8]`。这里没有执行 NeMo 算子，也不据函数名宣称门控更新使完整似然单调。
+
 ### B10　GPU-GSS 的批处理与资源边界
 
 GPU-GSS 把频点、段及相同目标的计算合并，提高 GPU 利用率。批处理策略会同时影响上下文复用、显存与输出片段，`max-batch-duration`、`max-segment-length` 和 `context-duration`是不同参数。[官方使用说明](https://github.com/desh2608/gss/blob/10fad18cae85e2e4342c77421abc70c9c5da23ed/README.md)给出 Lhotse、CuPy 与 CUDA 前提。
@@ -829,12 +849,18 @@ GPU-GSS 把频点、段及相同目标的计算合并，提高 GPU 利用率。�
 
 离线测试使用报告中的完整复数组，以标量点积、单位脉冲卷积、概率分数和源图像求和独立复算，不依赖外部缓存或网络。运行正式审计需要已有的 PRA 0.10.0 隔离环境与固定缓存；只读检查省略 `--report`，重生成才指定输出路径。没有下载模型、训练集、运行神经前向、ASR或设备计时。
 
+**2026-10-01 的实际复验。** [新审计工具](../../ch08/examples/audit_upstream_separation_contracts.py)与[新结果](../../ch08/reports/upstream_separation_contracts.json)另记当前 Python、NumPy、SciPy、真实解释器路径、全锁及工具摘要。原历史报告中的 `/tmp/room-pra-venv` 表示当时环境；当前使用 `/private/tmp/masp-ch04-pra-venv` 的 PRA 0.10.0，导入源仍与固定缓存一致。七方法诊断的全部数值与异常结果与历史一致，不改写过去的时间或路径。
+
+新工具同时绑定九个原工作树的 HEAD、Git blob 与逐文件 SHA-256，执行前后检查源码未变。ArrayDPS、NeMo及旧 NOTSOFAR 示例为静态合同核查；GSS 功率 SCM 和后验为原函数提取调用，回投影为原模块调用，PRA 为原包方法调用。ssspy `CACGMM` 的新整包导入尝试因缺少 `packaging` 失败；没有安装依赖或声称完成该类执行。Ono 2011 与 Kitamura 2016 的正式全文未在此次取得，原出处仍保留，不能把作者教材或后续论文的阅读记录改称这两篇全文实读。
+
 ```bash
-PYTHONDONTWRITEBYTECODE=1 /tmp/room-pra-venv/bin/python \
-  codes/chapters/ch08/examples/audit_separation_upstream_interfaces.py
-.venv/bin/python -m unittest discover -s tests \
-  -p 'test_codes_separation_upstream_interfaces.py' -v
+PYTHONDONTWRITEBYTECODE=1 /private/tmp/masp-ch04-pra-venv/bin/python -B \
+  -m codes.chapters.ch08.examples.audit_upstream_separation_contracts
+.venv/bin/python -B -m unittest discover -s tests \
+  -p 'test_codes_ch08_upstream_separation_contracts.py' -v
 ```
+
+以上命令默认只读；明确指定 `--report` 才写当前运行报告。新检查不下载模型、不运行 Torch/CuPy 整链或计算设备延迟。
 
 <a id="neural"></a>
 
@@ -886,7 +912,7 @@ SepFormer 把双路径中的序列模型换为注意力结构。[正式论文](h
 
 ### N07　Mamba-TasNet 与 Dual-Path Mamba
 
-[作者仓库](https://github.com/xi-j/Mamba-TasNet/tree/a35c692f27213781a11b1606c375cda1e1f0fb62)提供 `train_wsj0mix.py`、`hparams/WSJ0Mix/`、`modules/` 与 `inference.ipynb`，对应[Mamba-TasNet/Dual-Path Mamba 论文](https://arxiv.org/abs/2403.18257)。它与 SPMamba 不是同一个实现，不能交换配置或权重。
+[作者仓库](https://github.com/xi-j/Mamba-TasNet/tree/a35c692f27213781a11b1606c375cda1e1f0fb62)提供 `train_wsj0mix.py`、`hparams/WSJ0Mix/`、`modules/` 与 `inference.ipynb`，固定 README 分别关联 [Mamba-TasNet 的 Speech Slytherin 作者预印本](https://arxiv.org/abs/2407.09732)与 [Dual-Path Mamba 作者预印本](https://arxiv.org/abs/2403.18257)，不能将两个名字都指向后一篇。它与 SPMamba 不是同一个实现，不能交换配置或权重。
 
 先核对 WSJ0-2Mix 生成、动态混合、精度和模型大小，再检查双路径块和方向。失败实验比较单精度与低精度的非有限输出、长序列和源数失配。仓库 GPL-3.0 与 WSJ0 语料授权分别处理；GPL 代码可以作为独立本地研究源码取得，但与本书代码集成和再分发时须满足相应义务。checkpoint 不因代码可取得就自动进入本书分发范围。
 
@@ -906,7 +932,13 @@ CSS 在长录音上产生若干不重叠输出流，活动人数与槽位对应�
 
 NOTSOFAR-1 的固定源码从 `run_training_css_local.py` 进入 `css/training/train.py`，网络封装位于 `css/training/conformer_wrapper.py`；推理入口 [`run_inference.py`](https://github.com/microsoft/NOTSOFAR1-Challenge/blob/6f58e08b008f7530ba4141f0aeb02447c70b6fd7/run_inference.py)按配置选择单通道或多通道会话，再调用完整流水线。其默认调试配置虽只筛选一个会话，入口仍先请求下载整个指定开发集和模型，因此不能把直接运行脚本当成无下载的最小检查。本书已取得并核对源码入口，未执行这些自动下载或训练；数据、模型、识别后端与计算资源仍是额外前提。
 
-最小复现需要同一长录音的窗口、步幅、重叠匹配、泄漏处理及最终评分规则；不能仅对每块分别取最优 PIT 后拼接。E08-06 是一个不依赖模型权重的四点序列反例：两块各自的最优 PIT 都为 20 dB，第二块交换槽位后直接拼接的两条长流却都约为 −3.69 dB。失败实验还应在静音之后更换说话人，检查跨块匹配是否误连。cpWER、ORC-WER 和说话人归属 WER 的映射对象不同，应连同分段与转录协议固定。
+最小复现需要同一长录音的窗口、步幅、重叠匹配、泄漏处理及最终评分规则；不能仅对每块分别取最优 PIT 后拼接。E08-06 是一个不依赖模型权重的四点序列反例：两块各自的最优 PIT 都为 20 dB，第二块交换槽位后直接拼接的两条长流却都约为 −3.69 dB。失败实验还应在静音之后更换说话人，检查跨块匹配是否误连。
+
+[MeetEval 原文，2023，§3.2、式(3)与§3.4、式(5)](https://www.isca-archive.org/chime_2023/neumann23_chime.pdf)区分两种匹配：cpWER 对说话人分组、整段拼接后的流选择同一个全局排列；ORC-WER 将各参考片段分配到输出流并保持时间顺序，不要求一名说话人始终留在同一流。两者的分母都是参考词数，但匹配目标不同。
+
+按时间有 `A:a、B:c、A:b、B:d` 四个一词片段，输出 `H0="a d"、H1="c b"` 可取得 ORC-WER 的0/4，最优全局说话人排列下 cpWER 却为2/4。这个编辑距离小例由本书枚举，不是已运行 MeetEval；评分还须固定转录、分段和时间约束协议。
+
+固定源码还有一条与主流水线分开的旧示例：`css/css_with_conformer/separate.py::Separator` 的构造参数名是 `device`，同文件示例调用使用 `device_id`；原样执行到该调用会发生关键字合同冲突。主流水线 `css/css.py` 使用 `load_css_model()`，不能把这个静态示例问题外推为整个 NOTSOFAR 推理失败。本书没有执行两条神经路径。
 
 ### N10　SGMSE+、StoRM 与扩散迭代
 
@@ -916,9 +948,26 @@ NOTSOFAR-1 的固定源码从 `run_training_css_local.py` 进入 `css/training/t
 
 ### N11　ArrayDPS 与模型驱动的扩散分离
 
-[ArrayDPS 官方仓库](https://github.com/ArrayDPS/ArrayDPS/tree/750ac2b7c75458f4ca5bad203dafda528f575e55)将多通道观测模型与扩散先验结合，来源及固定版本见[THIRD_PARTY.md](../THIRD_PARTY.md)。从 `separate.py` 到 `src/sampler.py` 的 `Sampler`，分别识别扩散先验、观测一致性项和阵列/传播参数；生成得像语音并不证明它来自指定声源。
+[ArrayDPS 作者源码](https://github.com/ArrayDPS/ArrayDPS/tree/750ac2b7c75458f4ca5bad203dafda528f575e55)将多通道观测模型与单说话人扩散先验结合。[作者原文 v3，§2～3与附录 B/C](https://arxiv.org/html/2505.05657v3)以虚拟源和相对房间响应解释未知传播，再用 FCP 估计响应、重构各真实通道，并将观测残差指导与先验分数交替用于采样；IVA 提供初始化。观测似然采用近似，生成得像语音与来自指定声源仍须分别检验。
 
-最小实验固定双源混合与阵列模型，保存每次采样种子和条件参数；失败实验改变混响模型、源数或通道同步，观察数据一致性与听感是否冲突。SMS-WSJ 的生成程序不授予 WSJ 录音使用权，checkpoint 与示例音频也应独立检查。本书没有下载训练集、权重或把论文结果冒充已执行实验。
+固定调用从 `separate.py` 第414行进入 `src/sampler_spatial_v1_reverb_iva_8kHz.py::Sampler`，再读 `src/FCP.py`、`src/IVA.py` 和 `src/stft.py`。通用 `src/sampler.py` 是另一类逆问题采样器，没有这条驾驶器调用的 `separate()`，不能把它作为实际分离入口。原 `get_score_rec_guidance()` 比较重构混合与观测，参考通道指导也比较估计源之和与观测；这些核心步骤没有读取干净测试源。
+
+参数必须按消费层分开。下面数值来自原文实读和固定源码静态解析，未执行扩散采样。
+
+| 参数层 | FCP FFT/帧移 | FCP功率相对地板 | 历史/未来帧 |
+|---|---|---|---|
+| 原文附录 C.3 | 512/64点 | 0.001 | 按原文多帧模型固定 |
+| `Sampler` 构造默认 | 512/128点 | 0.01 | 0/0 |
+| `separate.py` 命令行默认 | 512/128点 | 0.01 | 20/0 |
+| README分离配方 | 512/128点 | 0.001 | 13/0 |
+
+论文与该源码配方的帧移不同；只按同名默认参数启动不能称为论文配置复现。命令行参数实际传入 `Sampler`，再传入 `FCP_V1`，因此应保存最终生效配置。IVA 初始化另用2048点FFT、256点帧移、Gaussian先验与100次迭代，不与FCP窗混算。
+
+**驾驶器的真值依赖。** `separate.py` 第161行用 `sources[:,0,:]` 对首麦源图像计算 SDR，变量虽名为 `max_snr`，保存的是最大 SDR。第180～186行按该量及试验预算决定继续或停止；命令行预算默认2/3/4，README配方为5/5/5，阈值也由18/13/10改为35/14/10。该驾驶器需要测试真值，不能原样作为部署停止规则。原文§4.2另外区分五次样本平均、真值最优指标的诊断，以及仅依赖混合重构质量的 ML 样本选择；最后一种选择与源码的真值停止不是同一条件。
+
+最小复现应固定双源观测、最终参数、每次采样种子与预算，使用观测支持的选择规则，并把真值评分留在离线评估。失败实验改变混响模型、源数或同步，检查观测一致性与各源正确性是否分离。当前[合同审计](../../ch08/examples/audit_upstream_separation_contracts.py)只解析这些入口、参数和停止条件，未导入 Torch、运行采样或计算原 SDR；[报告](../../ch08/reports/upstream_separation_contracts.json)固定了原源码、锁与工具摘要。
+
+MIT 代码、托管 checkpoint、LibriTTS、SMS-WSJ及其依赖的 WSJ 录音分别核权利；生成程序不授予录音授权。本书没有下载权重或训练集，取得完整固定源码也不等于完成论文复现。
 
 ### N12　AudioSep：文本条件与音频预处理
 
