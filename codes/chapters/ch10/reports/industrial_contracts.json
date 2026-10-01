@@ -1,0 +1,1497 @@
+{
+  "schema": "industrial-contracts-v1",
+  "status": "passed_limited_controlled_contracts",
+  "generated_at_utc": "2026-10-01T17:23:51.534930+00:00",
+  "tool_sha256": "fbd2255475d23a4b155266d757b97c1baeebcfa2a60708cd3e47d2fdc6424736",
+  "source_lock_sha256": "5cf610a5bee5a65c0b5bb77293f2bd6549446d22e635594fc313710f4109b8cf",
+  "source_cache": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads",
+  "sources_before": {
+    "cmsis_dsp": {
+      "revision": "83a2d7bc98c81b4bbe4a6f48b1f2ecf179868a0b",
+      "lock_url": "https://github.com/ARM-software/CMSIS-DSP.git",
+      "license": "Apache-2.0",
+      "clean": true,
+      "files": {
+        "Source/FilteringFunctions/arm_fir_q15.c": {
+          "sha256": "6016f7f884cd0c0bd45e7aed223c76e3c48f1779421fcc1ecf0b52dc2eff8186",
+          "git_blob": "1b1b0306df2f4fa3cec7251be16b628ba2f4cbf1",
+          "git_blob_sha256": "6016f7f884cd0c0bd45e7aed223c76e3c48f1779421fcc1ecf0b52dc2eff8186"
+        },
+        "Source/FilteringFunctions/arm_fir_init_q15.c": {
+          "sha256": "3dc74f28dbda071b199749018dea9ddec3f286a8f32a673b994a3704b34eaf22",
+          "git_blob": "05ef56d68c1a0910259f0ca443aa1dd0554bf528",
+          "git_blob_sha256": "3dc74f28dbda071b199749018dea9ddec3f286a8f32a673b994a3704b34eaf22"
+        },
+        "LICENSE": {
+          "sha256": "b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1",
+          "git_blob": "8dada3edaf50dbc082c9a125058f25def75e625a",
+          "git_blob_sha256": "b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1"
+        }
+      }
+    },
+    "speexdsp": {
+      "revision": "8e29a256ef0235ebbe7fcb8417b5ac7731eb8307",
+      "lock_url": "https://gitlab.xiph.org/xiph/speexdsp.git",
+      "license": "BSD-3-Clause; inspected source/header notices retained upstream",
+      "clean": true,
+      "files": {
+        "libspeexdsp/preprocess.c": {
+          "sha256": "5f7143d00f12af60759ea1b9249fba3615fd92fcead2671e9350fe6cf530ecbd",
+          "git_blob": "c085d83300f8979670ceea3abd6d1862631d3424",
+          "git_blob_sha256": "5f7143d00f12af60759ea1b9249fba3615fd92fcead2671e9350fe6cf530ecbd"
+        },
+        "libspeexdsp/arch.h": {
+          "sha256": "102f6a14a95f8ae0bcfc69270f3a9e3fbba08b63bba688ca524f71e3faa48c23",
+          "git_blob": "1cac3d9c89f3c6321e2c7fd26a659023eea65572",
+          "git_blob_sha256": "102f6a14a95f8ae0bcfc69270f3a9e3fbba08b63bba688ca524f71e3faa48c23"
+        },
+        "COPYING": {
+          "sha256": "2654a4264b2bfe298dedc508748d140111840c315cc8eb646a3a68c13fa75b01",
+          "git_blob": "7d6dc4aabd38f6e184028ff871744ac6b71b63ae",
+          "git_blob_sha256": "2654a4264b2bfe298dedc508748d140111840c315cc8eb646a3a68c13fa75b01"
+        }
+      }
+    },
+    "webrtc": {
+      "revision": "0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e",
+      "lock_url": "https://webrtc.googlesource.com/src",
+      "license": "BSD-3-Clause and PATENTS",
+      "clean": true,
+      "files": {
+        "common_audio/vad/webrtc_vad.c": {
+          "sha256": "1b494b4fd4bd3fd9eff03d4aadac2157a54859020a5c6a2a4dec15a871f539dd",
+          "git_blob": "6dd14d8b55ca996f4d239ce3c4d0d786deadc8d6",
+          "git_blob_sha256": "1b494b4fd4bd3fd9eff03d4aadac2157a54859020a5c6a2a4dec15a871f539dd"
+        },
+        "LICENSE": {
+          "sha256": "ab00a482b6a3902e40211b43c5d0441962ea99b6cc7c25c0f243fa270b78d482",
+          "git_blob": "4c41b7b251e2f7606c70fad48eb92c8a2bc8e357",
+          "git_blob_sha256": "ab00a482b6a3902e40211b43c5d0441962ea99b6cc7c25c0f243fa270b78d482"
+        },
+        "PATENTS": {
+          "sha256": "01462e2068d1a04c2274f3389773014c14ed9bc3446b28303543bd3e3c064145",
+          "git_blob": "190607ac2619bcb28f5c3af61a2fda3953364f7c",
+          "git_blob_sha256": "01462e2068d1a04c2274f3389773014c14ed9bc3446b28303543bd3e3c064145"
+        }
+      }
+    },
+    "rnnoise": {
+      "revision": "70f1d256acd4b34a572f999a05c87bf00b67730d",
+      "lock_url": "https://gitlab.xiph.org/xiph/rnnoise.git",
+      "license": "COPYING BSD-3-Clause; demo file header BSD-2-Clause",
+      "clean": true,
+      "files": {
+        "examples/rnnoise_demo.c": {
+          "sha256": "644064fcf3c1762e4d2e6341d59dc2db2e0cea4ba5d42e62767411e387014c98",
+          "git_blob": "0be505f7f115f1e8c142d7b128eb05e4bc5b27bf",
+          "git_blob_sha256": "644064fcf3c1762e4d2e6341d59dc2db2e0cea4ba5d42e62767411e387014c98"
+        },
+        "COPYING": {
+          "sha256": "45d37ca1cdb278c088e1aa85e0e65ca3a534ed86a28dcc96ca16810248a61d35",
+          "git_blob": "59d7d09c80c17e60a972bf730caf6a3e005b17b1",
+          "git_blob_sha256": "45d37ca1cdb278c088e1aa85e0e65ca3a534ed86a28dcc96ca16810248a61d35"
+        }
+      }
+    },
+    "fastenhancer": {
+      "revision": "f85223bd546b27f39dc0744e0310dcd246f750a4",
+      "lock_url": "https://github.com/aask1357/fastenhancer.git",
+      "license": "MIT code; weights/data not obtained or exercised",
+      "clean": true,
+      "files": {
+        "scripts/test_onnx.py": {
+          "sha256": "b6a93660a5e777677ae978bfc477dba09feefd8cba6e0f36e5746dd3caf1d344",
+          "git_blob": "ce536a83a5c4fbf555d4e698bb1a325fcce3c97e",
+          "git_blob_sha256": "b6a93660a5e777677ae978bfc477dba09feefd8cba6e0f36e5746dd3caf1d344"
+        },
+        "LICENSE": {
+          "sha256": "38164c22720cdccceb5f0dbb8f7218dcf17bac97ac536cad2e77c33dfbc45a18",
+          "git_blob": "b6b95f5fe47f2434bee81ca77f947b601973671c",
+          "git_blob_sha256": "38164c22720cdccceb5f0dbb8f7218dcf17bac97ac536cad2e77c33dfbc45a18"
+        }
+      }
+    }
+  },
+  "sources_after": {
+    "cmsis_dsp": {
+      "revision": "83a2d7bc98c81b4bbe4a6f48b1f2ecf179868a0b",
+      "lock_url": "https://github.com/ARM-software/CMSIS-DSP.git",
+      "license": "Apache-2.0",
+      "clean": true,
+      "files": {
+        "Source/FilteringFunctions/arm_fir_q15.c": {
+          "sha256": "6016f7f884cd0c0bd45e7aed223c76e3c48f1779421fcc1ecf0b52dc2eff8186",
+          "git_blob": "1b1b0306df2f4fa3cec7251be16b628ba2f4cbf1",
+          "git_blob_sha256": "6016f7f884cd0c0bd45e7aed223c76e3c48f1779421fcc1ecf0b52dc2eff8186"
+        },
+        "Source/FilteringFunctions/arm_fir_init_q15.c": {
+          "sha256": "3dc74f28dbda071b199749018dea9ddec3f286a8f32a673b994a3704b34eaf22",
+          "git_blob": "05ef56d68c1a0910259f0ca443aa1dd0554bf528",
+          "git_blob_sha256": "3dc74f28dbda071b199749018dea9ddec3f286a8f32a673b994a3704b34eaf22"
+        },
+        "LICENSE": {
+          "sha256": "b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1",
+          "git_blob": "8dada3edaf50dbc082c9a125058f25def75e625a",
+          "git_blob_sha256": "b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1"
+        }
+      }
+    },
+    "speexdsp": {
+      "revision": "8e29a256ef0235ebbe7fcb8417b5ac7731eb8307",
+      "lock_url": "https://gitlab.xiph.org/xiph/speexdsp.git",
+      "license": "BSD-3-Clause; inspected source/header notices retained upstream",
+      "clean": true,
+      "files": {
+        "libspeexdsp/preprocess.c": {
+          "sha256": "5f7143d00f12af60759ea1b9249fba3615fd92fcead2671e9350fe6cf530ecbd",
+          "git_blob": "c085d83300f8979670ceea3abd6d1862631d3424",
+          "git_blob_sha256": "5f7143d00f12af60759ea1b9249fba3615fd92fcead2671e9350fe6cf530ecbd"
+        },
+        "libspeexdsp/arch.h": {
+          "sha256": "102f6a14a95f8ae0bcfc69270f3a9e3fbba08b63bba688ca524f71e3faa48c23",
+          "git_blob": "1cac3d9c89f3c6321e2c7fd26a659023eea65572",
+          "git_blob_sha256": "102f6a14a95f8ae0bcfc69270f3a9e3fbba08b63bba688ca524f71e3faa48c23"
+        },
+        "COPYING": {
+          "sha256": "2654a4264b2bfe298dedc508748d140111840c315cc8eb646a3a68c13fa75b01",
+          "git_blob": "7d6dc4aabd38f6e184028ff871744ac6b71b63ae",
+          "git_blob_sha256": "2654a4264b2bfe298dedc508748d140111840c315cc8eb646a3a68c13fa75b01"
+        }
+      }
+    },
+    "webrtc": {
+      "revision": "0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e",
+      "lock_url": "https://webrtc.googlesource.com/src",
+      "license": "BSD-3-Clause and PATENTS",
+      "clean": true,
+      "files": {
+        "common_audio/vad/webrtc_vad.c": {
+          "sha256": "1b494b4fd4bd3fd9eff03d4aadac2157a54859020a5c6a2a4dec15a871f539dd",
+          "git_blob": "6dd14d8b55ca996f4d239ce3c4d0d786deadc8d6",
+          "git_blob_sha256": "1b494b4fd4bd3fd9eff03d4aadac2157a54859020a5c6a2a4dec15a871f539dd"
+        },
+        "LICENSE": {
+          "sha256": "ab00a482b6a3902e40211b43c5d0441962ea99b6cc7c25c0f243fa270b78d482",
+          "git_blob": "4c41b7b251e2f7606c70fad48eb92c8a2bc8e357",
+          "git_blob_sha256": "ab00a482b6a3902e40211b43c5d0441962ea99b6cc7c25c0f243fa270b78d482"
+        },
+        "PATENTS": {
+          "sha256": "01462e2068d1a04c2274f3389773014c14ed9bc3446b28303543bd3e3c064145",
+          "git_blob": "190607ac2619bcb28f5c3af61a2fda3953364f7c",
+          "git_blob_sha256": "01462e2068d1a04c2274f3389773014c14ed9bc3446b28303543bd3e3c064145"
+        }
+      }
+    },
+    "rnnoise": {
+      "revision": "70f1d256acd4b34a572f999a05c87bf00b67730d",
+      "lock_url": "https://gitlab.xiph.org/xiph/rnnoise.git",
+      "license": "COPYING BSD-3-Clause; demo file header BSD-2-Clause",
+      "clean": true,
+      "files": {
+        "examples/rnnoise_demo.c": {
+          "sha256": "644064fcf3c1762e4d2e6341d59dc2db2e0cea4ba5d42e62767411e387014c98",
+          "git_blob": "0be505f7f115f1e8c142d7b128eb05e4bc5b27bf",
+          "git_blob_sha256": "644064fcf3c1762e4d2e6341d59dc2db2e0cea4ba5d42e62767411e387014c98"
+        },
+        "COPYING": {
+          "sha256": "45d37ca1cdb278c088e1aa85e0e65ca3a534ed86a28dcc96ca16810248a61d35",
+          "git_blob": "59d7d09c80c17e60a972bf730caf6a3e005b17b1",
+          "git_blob_sha256": "45d37ca1cdb278c088e1aa85e0e65ca3a534ed86a28dcc96ca16810248a61d35"
+        }
+      }
+    },
+    "fastenhancer": {
+      "revision": "f85223bd546b27f39dc0744e0310dcd246f750a4",
+      "lock_url": "https://github.com/aask1357/fastenhancer.git",
+      "license": "MIT code; weights/data not obtained or exercised",
+      "clean": true,
+      "files": {
+        "scripts/test_onnx.py": {
+          "sha256": "b6a93660a5e777677ae978bfc477dba09feefd8cba6e0f36e5746dd3caf1d344",
+          "git_blob": "ce536a83a5c4fbf555d4e698bb1a325fcce3c97e",
+          "git_blob_sha256": "b6a93660a5e777677ae978bfc477dba09feefd8cba6e0f36e5746dd3caf1d344"
+        },
+        "LICENSE": {
+          "sha256": "38164c22720cdccceb5f0dbb8f7218dcf17bac97ac536cad2e77c33dfbc45a18",
+          "git_blob": "b6b95f5fe47f2434bee81ca77f947b601973671c",
+          "git_blob_sha256": "38164c22720cdccceb5f0dbb8f7218dcf17bac97ac536cad2e77c33dfbc45a18"
+        }
+      }
+    }
+  },
+  "scope": "fixed-source control flow and numerical helpers; substitutes are not actual model/audio/hardware execution",
+  "environment": {
+    "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
+    "executable": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/bin/python",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "byteorder": "little",
+    "compiler": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin25.6.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+    "numpy": "2.5.3"
+  },
+  "contracts": {
+    "cmsis_q15": {
+      "execution": "two complete original C translation units, scalar branch",
+      "substitutions": [
+        "q15/q31/q63 typedefs and FIR struct/prototypes",
+        "empty ARM_DSP_ATTRIBUTE",
+        "__SSAT: explicit signed-16 saturation for the tested int32 post-shift domain"
+      ],
+      "compile_defines": [],
+      "not_executed": [
+        "MVE/DSP/LOOPUNROLL kernels",
+        "ARM hardware/cycle timing"
+      ],
+      "scaffold_sha256": {
+        "filtering_functions.h": "1e92a83953f416e5a9ee47418e788a5329d9f0c707142d11989cf34a242c43d6",
+        "cmsis_contract.c": "b43b58be5debde5c2b6559b9b7f8986b7501e601cb399fd5e15009de710db8ce",
+        "arm_compiler_specific.h": "04171954576d38b4ba03ced59b5e354461ae7b049f06ef02c1b87d18092aa4a8"
+      },
+      "compile": {
+        "command": [
+          "/usr/bin/cc",
+          "-std=c11",
+          "-O2",
+          "-I",
+          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-_r9l1i7i",
+          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-_r9l1i7i/cmsis_contract.c",
+          "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/cmsis_dsp/Source/FilteringFunctions/arm_fir_q15.c",
+          "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/cmsis_dsp/Source/FilteringFunctions/arm_fir_init_q15.c",
+          "-o",
+          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-_r9l1i7i/cmsis_contract"
+        ],
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "stdout": "0 0 0 -1 -1 0\n0 32767 32767 32767 32767\n0 2 3 -4 8 -7 3 7\n0 2 3 -4 8 -7 3 7\n",
+      "stderr": "",
+      "cases": [
+        {
+          "name": "half_lsb",
+          "input_q15": [
+            1,
+            0,
+            -1,
+            0,
+            1
+          ],
+          "impulse_q15": [
+            16384,
+            16384,
+            0,
+            0
+          ],
+          "stored_coefficients_q15": [
+            0,
+            0,
+            16384,
+            16384
+          ],
+          "chunks": [
+            5
+          ],
+          "state_allocation_q15": 16,
+          "init_status": 0,
+          "observed_q15": [
+            0,
+            0,
+            -1,
+            -1,
+            0
+          ],
+          "expected_q15": [
+            0,
+            0,
+            -1,
+            -1,
+            0
+          ],
+          "exact": true
+        },
+        {
+          "name": "saturation",
+          "input_q15": [
+            -32768,
+            -32768,
+            -32768,
+            -32768
+          ],
+          "impulse_q15": [
+            -32768,
+            -32768,
+            0,
+            0
+          ],
+          "stored_coefficients_q15": [
+            0,
+            0,
+            -32768,
+            -32768
+          ],
+          "chunks": [
+            4
+          ],
+          "state_allocation_q15": 16,
+          "init_status": 0,
+          "observed_q15": [
+            32767,
+            32767,
+            32767,
+            32767
+          ],
+          "expected_q15": [
+            32767,
+            32767,
+            32767,
+            32767
+          ],
+          "exact": true
+        },
+        {
+          "name": "asymmetric_whole",
+          "input_q15": [
+            8,
+            16,
+            -8,
+            24,
+            -16,
+            0,
+            32
+          ],
+          "impulse_q15": [
+            8192,
+            -4096,
+            2048,
+            1024
+          ],
+          "stored_coefficients_q15": [
+            1024,
+            2048,
+            -4096,
+            8192
+          ],
+          "chunks": [
+            7
+          ],
+          "state_allocation_q15": 16,
+          "init_status": 0,
+          "observed_q15": [
+            2,
+            3,
+            -4,
+            8,
+            -7,
+            3,
+            7
+          ],
+          "expected_q15": [
+            2,
+            3,
+            -4,
+            8,
+            -7,
+            3,
+            7
+          ],
+          "exact": true
+        },
+        {
+          "name": "asymmetric_chunks",
+          "input_q15": [
+            8,
+            16,
+            -8,
+            24,
+            -16,
+            0,
+            32
+          ],
+          "impulse_q15": [
+            8192,
+            -4096,
+            2048,
+            1024
+          ],
+          "stored_coefficients_q15": [
+            1024,
+            2048,
+            -4096,
+            8192
+          ],
+          "chunks": [
+            2,
+            1,
+            4
+          ],
+          "state_allocation_q15": 16,
+          "init_status": 0,
+          "observed_q15": [
+            2,
+            3,
+            -4,
+            8,
+            -7,
+            3,
+            7
+          ],
+          "expected_q15": [
+            2,
+            3,
+            -4,
+            8,
+            -7,
+            3,
+            7
+          ],
+          "exact": true
+        }
+      ]
+    },
+    "speex_noise_helpers": {
+      "execution": "four unchanged original helper bodies and original floating arch.h macros",
+      "fragments": [
+        {
+          "name": "preproc_min_track_swap",
+          "first_line": 422,
+          "last_line": 430,
+          "sha256": "9b1b5fb0e940b0be1a225c2912cda91e8559662e8083d70fd2479a8a28fe1923"
+        },
+        {
+          "name": "preproc_min_track",
+          "first_line": 433,
+          "last_line": 441,
+          "sha256": "1a250617cf520d884a319de1380c11be1b8ccab454a92a3594b4c662c366c682"
+        },
+        {
+          "name": "preproc_update_prob",
+          "first_line": 444,
+          "last_line": 454,
+          "sha256": "b7c687873b6098bf4a6e0427dc89dfc4e9e61bf02b440610e98ff3deaa4a4c0a"
+        },
+        {
+          "name": "preproc_noise_update",
+          "first_line": 457,
+          "last_line": 465,
+          "sha256": "91ef2cd7fd7dcb0d91e2b69892b1953602a2e1292c50c24bb21070933e7e0baf"
+        }
+      ],
+      "defines": [
+        "FLOATING_POINT",
+        "OUTSIDE_SPEEX",
+        "NOISE_SHIFT=0"
+      ],
+      "substitutions": [
+        "own deterministic two-bin driver; no preprocess state"
+      ],
+      "not_executed": [
+        "complete speex_preprocess",
+        "FFT",
+        "speech classification",
+        "MCRA/IMCRA algorithm"
+      ],
+      "inputs": {
+        "S": [
+          10,
+          10
+        ],
+        "Smin": [
+          4,
+          3.99
+        ],
+        "noise": [
+          2,
+          2
+        ],
+        "rising_ps": [
+          6,
+          6
+        ],
+        "falling_ps": [
+          1,
+          1
+        ],
+        "beta": 0.25,
+        "beta_1": 0.75,
+        "min_track": {
+          "Smin": [
+            5,
+            7
+          ],
+          "Stmp": [
+            6,
+            4
+          ],
+          "S": [
+            3,
+            8
+          ]
+        },
+        "swap_S": [
+          9,
+          2
+        ]
+      },
+      "observed_rows": [
+        [
+          0.0,
+          1.0,
+          3.0,
+          2.0
+        ],
+        [
+          2.5,
+          1.75
+        ],
+        [
+          3.0,
+          7.0,
+          3.0,
+          4.0
+        ],
+        [
+          3.0,
+          2.0,
+          9.0,
+          2.0
+        ]
+      ],
+      "expected_rows": [
+        [
+          0.0,
+          1.0,
+          3.0,
+          2.0
+        ],
+        [
+          2.5,
+          1.75
+        ],
+        [
+          3.0,
+          7.0,
+          3.0,
+          4.0
+        ],
+        [
+          3.0,
+          2.0,
+          9.0,
+          2.0
+        ]
+      ],
+      "absolute_tolerance": 1e-06,
+      "scaffold_sha256": "96c0431acb062e3b87120e11b4f750ffe0a9dfe0c7e3f863b070703a32536cab",
+      "compile": {
+        "command": [
+          "/usr/bin/cc",
+          "-std=c11",
+          "-O2",
+          "-I",
+          "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/speexdsp/libspeexdsp",
+          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-_r9l1i7i/speex_contract.c",
+          "-o",
+          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-_r9l1i7i/speex_contract"
+        ],
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "stderr": ""
+    },
+    "webrtc_vad_router": {
+      "execution": "two unchanged original C bodies; classifier functions replaced by route counters",
+      "fragments": [
+        {
+          "name": "WebRtcVad_ValidRateAndFrameLength",
+          "first_line": 91,
+          "last_line": 114,
+          "sha256": "8d7cec9a6ebce8bce102c7ac4ede66177060d03c7f341dd9dba41d5ceef0d84e"
+        },
+        {
+          "name": "WebRtcVad_Process",
+          "first_line": 56,
+          "last_line": 89,
+          "sha256": "5305d850c722a8100fb99fb2da42c0cfe73c2e31bb0c7e5fa7ea4b1dadf14608"
+        }
+      ],
+      "substitutions": [
+        "minimal VadInstT.init_flag struct and fixed constants",
+        "WebRtcVad_CalcVad8khz returns 0",
+        "WebRtcVad_CalcVad16khz returns 1",
+        "WebRtcVad_CalcVad32khz returns 2",
+        "WebRtcVad_CalcVad48khz returns 3"
+      ],
+      "not_executed": [
+        "original CalcVad classifiers",
+        "actual speech decision",
+        "APM"
+      ],
+      "input_pcm": "zero signed-16 mono; amplitude not used by counter substitutes",
+      "observed_legal_rows": [
+        [
+          8000,
+          10,
+          0,
+          0
+        ],
+        [
+          8000,
+          20,
+          0,
+          0
+        ],
+        [
+          8000,
+          30,
+          0,
+          0
+        ],
+        [
+          16000,
+          10,
+          0,
+          1
+        ],
+        [
+          16000,
+          20,
+          0,
+          1
+        ],
+        [
+          16000,
+          30,
+          0,
+          1
+        ],
+        [
+          32000,
+          10,
+          0,
+          1
+        ],
+        [
+          32000,
+          20,
+          0,
+          1
+        ],
+        [
+          32000,
+          30,
+          0,
+          1
+        ],
+        [
+          48000,
+          10,
+          0,
+          1
+        ],
+        [
+          48000,
+          20,
+          0,
+          1
+        ],
+        [
+          48000,
+          30,
+          0,
+          1
+        ]
+      ],
+      "expected_legal_rows": [
+        [
+          8000,
+          10,
+          0,
+          0
+        ],
+        [
+          8000,
+          20,
+          0,
+          0
+        ],
+        [
+          8000,
+          30,
+          0,
+          0
+        ],
+        [
+          16000,
+          10,
+          0,
+          1
+        ],
+        [
+          16000,
+          20,
+          0,
+          1
+        ],
+        [
+          16000,
+          30,
+          0,
+          1
+        ],
+        [
+          32000,
+          10,
+          0,
+          1
+        ],
+        [
+          32000,
+          20,
+          0,
+          1
+        ],
+        [
+          32000,
+          30,
+          0,
+          1
+        ],
+        [
+          48000,
+          10,
+          0,
+          1
+        ],
+        [
+          48000,
+          20,
+          0,
+          1
+        ],
+        [
+          48000,
+          30,
+          0,
+          1
+        ]
+      ],
+      "negative_names": [
+        "44100Hz",
+        "15ms",
+        "null_handle",
+        "uninitialized",
+        "null_audio",
+        "zero_length"
+      ],
+      "negative_outputs": [
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "classifier_route_calls": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "scaffold_sha256": "c39aeb0837f91c19c744d3103c2785f2b2aed86f6cc748f3506145bd20f1f6b2",
+      "compile": {
+        "command": [
+          "/usr/bin/cc",
+          "-std=c11",
+          "-O2",
+          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-_r9l1i7i/vad_contract.c",
+          "-o",
+          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-_r9l1i7i/vad_contract"
+        ],
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "stderr": ""
+    },
+    "rnnoise_demo": {
+      "execution": "complete original demo main compiled with identity denoiser substitutes",
+      "substitutions": [
+        "own minimal rnnoise.h",
+        "rnnoise_create static state",
+        "rnnoise_destroy no-op",
+        "rnnoise_process_frame identity copy and input trace; returns .5"
+      ],
+      "not_executed": [
+        "RNNoise original neural/DSP core",
+        "weights",
+        "model lifecycle APIs",
+        "quality evaluation"
+      ],
+      "raw_pcm_format": "native-endian signed short, sizeof(short)=2 required by scaffold environment",
+      "amplitude_unit": "raw PCM integer magnitude represented as float, not divided by 32768",
+      "scaffold_sha256": {
+        "rnnoise.h": "063c6de47ea81e7ef81fb07e44d2d07aa88eb04955dcc8ef240304b5b7178871",
+        "rnnoise_adapter.c": "e0443270eea343b43dc51c9233d142b0d16c9fa4eccfc9e2061213de03dcb637"
+      },
+      "compile": {
+        "command": [
+          "/usr/bin/cc",
+          "-std=c11",
+          "-O2",
+          "-I",
+          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-_r9l1i7i",
+          "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/rnnoise/examples/rnnoise_demo.c",
+          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-_r9l1i7i/rnnoise_adapter.c",
+          "-o",
+          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-_r9l1i7i/rnnoise_demo_contract"
+        ],
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "cases": [
+        {
+          "input_samples": 1440,
+          "input_native_pcm16_sha256": "f0361043164b413d4f73d1c809ab2dad6d215b7cba646ee13e07339e11451804",
+          "complete_input_frames": 3,
+          "dropped_partial_samples": 0,
+          "output_samples": 960,
+          "expected_output_samples": 960,
+          "output_native_pcm16_sha256": "a201d5552ecc60cda20eab81815afc6f1377e63926c7c320a6675e7359ba914a",
+          "exact_identity_wrapper_match": true,
+          "process_first_values": [
+            1000.0,
+            1001.0,
+            1002.0
+          ],
+          "first_output": 1001,
+          "stderr": "first=1000\nfirst=1001\nfirst=1002\n"
+        },
+        {
+          "input_samples": 1457,
+          "input_native_pcm16_sha256": "bf0286bb80b04259c9f6a46524946cc7cd4d36e69ae4b7c40f54bd153f1d148f",
+          "complete_input_frames": 3,
+          "dropped_partial_samples": 17,
+          "output_samples": 960,
+          "expected_output_samples": 960,
+          "output_native_pcm16_sha256": "a201d5552ecc60cda20eab81815afc6f1377e63926c7c320a6675e7359ba914a",
+          "exact_identity_wrapper_match": true,
+          "process_first_values": [
+            1000.0,
+            1001.0,
+            1002.0
+          ],
+          "first_output": 1001,
+          "stderr": "first=1000\nfirst=1001\nfirst=1002\n"
+        },
+        {
+          "input_samples": 479,
+          "input_native_pcm16_sha256": "ad6aedb680a22160b854aaadeb8a6ef3ec326c962fe40bd956238e4a0035f8c4",
+          "complete_input_frames": 0,
+          "dropped_partial_samples": 479,
+          "output_samples": 0,
+          "expected_output_samples": 0,
+          "output_native_pcm16_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exact_identity_wrapper_match": true,
+          "process_first_values": [],
+          "first_output": null,
+          "stderr": ""
+        },
+        {
+          "input_samples": 0,
+          "input_native_pcm16_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "complete_input_frames": 0,
+          "dropped_partial_samples": 0,
+          "output_samples": 0,
+          "expected_output_samples": 0,
+          "output_native_pcm16_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exact_identity_wrapper_match": true,
+          "process_first_values": [],
+          "first_output": null,
+          "stderr": ""
+        }
+      ]
+    },
+    "fastenhancer_wrapper": {
+      "execution": "unchanged original main AST with named boundary substitutes",
+      "fragment": {
+        "name": "main",
+        "first_line": 11,
+        "last_line": 60,
+        "sha256": "732d2a12d11bc863efdbea6eab8a1dd9944835536dc393cb88270153ef9d6fd5"
+      },
+      "substitutions": [
+        "librosa.load memory zeros",
+        "ONNX session fake output ramp/state+1",
+        "SessionOptions/enums",
+        "tqdm identity",
+        "perf_counter returns 0 and .01",
+        "scipy.io.wavfile.write in-memory receiver"
+      ],
+      "not_executed": [
+        "librosa resampling",
+        "ONNXRuntime inference",
+        "model or weights",
+        "real timing or enhancement"
+      ],
+      "numpy_version": "2.5.3",
+      "cases": [
+        {
+          "source_samples": 1000,
+          "sample_rate_hz": 16000,
+          "n_fft": 512,
+          "hop_size": 256,
+          "fake_elapsed_seconds": 0.01,
+          "calls": [
+            {
+              "new_samples": 256,
+              "cache_input": [
+                0.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                1.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                2.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                3.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                4.0
+              ]
+            }
+          ],
+          "wrapper_denominator_samples": 1280,
+          "wrapper_printed_rtf": 0.125,
+          "expected_wrapper_rtf": 0.125,
+          "source_time_rtf": 0.16,
+          "source_time_classification": "positive_source_duration",
+          "saved_output_samples": 1000,
+          "crop_start": 256,
+          "first_saved_value": 0.00390625,
+          "last_saved_value": 0.0191497802734375,
+          "saved_dtype": "float32",
+          "saved_rate_hz": 16000,
+          "saved_samples_sha256": "243147e01926a1f7a8c4779048249d73804b82751de9e0f6a4b648525eb7eba3",
+          "stdout": "Preparing input... ✅\nCreating a ONNXRuntime session... ✅\nInferencing...\n>>> RTF: 0.125\nSaving the output audio... ✅\n"
+        },
+        {
+          "source_samples": 16000,
+          "sample_rate_hz": 16000,
+          "n_fft": 512,
+          "hop_size": 256,
+          "fake_elapsed_seconds": 0.01,
+          "calls": [
+            {
+              "new_samples": 256,
+              "cache_input": [
+                0.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                1.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                2.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                3.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                4.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                5.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                6.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                7.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                8.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                9.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                10.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                11.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                12.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                13.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                14.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                15.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                16.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                17.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                18.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                19.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                20.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                21.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                22.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                23.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                24.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                25.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                26.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                27.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                28.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                29.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                30.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                31.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                32.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                33.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                34.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                35.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                36.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                37.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                38.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                39.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                40.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                41.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                42.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                43.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                44.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                45.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                46.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                47.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                48.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                49.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                50.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                51.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                52.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                53.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                54.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                55.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                56.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                57.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                58.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                59.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                60.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                61.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                62.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                63.0
+              ]
+            }
+          ],
+          "wrapper_denominator_samples": 16384,
+          "wrapper_printed_rtf": 0.009765625,
+          "expected_wrapper_rtf": 0.009765625,
+          "source_time_rtf": 0.01,
+          "source_time_classification": "positive_source_duration",
+          "saved_output_samples": 16000,
+          "crop_start": 256,
+          "first_saved_value": 0.00390625,
+          "last_saved_value": 0.2480316162109375,
+          "saved_dtype": "float32",
+          "saved_rate_hz": 16000,
+          "saved_samples_sha256": "f7cd75be6968d435c3a17d30013b631748676da344e698a31e640a9375b513b4",
+          "stdout": "Preparing input... ✅\nCreating a ONNXRuntime session... ✅\nInferencing...\n>>> RTF: 0.009765625\nSaving the output audio... ✅\n"
+        },
+        {
+          "source_samples": 256,
+          "sample_rate_hz": 16000,
+          "n_fft": 512,
+          "hop_size": 256,
+          "fake_elapsed_seconds": 0.01,
+          "calls": [
+            {
+              "new_samples": 256,
+              "cache_input": [
+                0.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                1.0
+              ]
+            }
+          ],
+          "wrapper_denominator_samples": 512,
+          "wrapper_printed_rtf": 0.3125,
+          "expected_wrapper_rtf": 0.3125,
+          "source_time_rtf": 0.625,
+          "source_time_classification": "positive_source_duration",
+          "saved_output_samples": 256,
+          "crop_start": 256,
+          "first_saved_value": 0.00390625,
+          "last_saved_value": 0.0077972412109375,
+          "saved_dtype": "float32",
+          "saved_rate_hz": 16000,
+          "saved_samples_sha256": "13244bbe59779c50c065b4d68758ae664797453b9b223f1455c612f72b0639f4",
+          "stdout": "Preparing input... ✅\nCreating a ONNXRuntime session... ✅\nInferencing...\n>>> RTF: 0.3125\nSaving the output audio... ✅\n"
+        },
+        {
+          "source_samples": 1,
+          "sample_rate_hz": 16000,
+          "n_fft": 512,
+          "hop_size": 256,
+          "fake_elapsed_seconds": 0.01,
+          "calls": [
+            {
+              "new_samples": 256,
+              "cache_input": [
+                0.0
+              ]
+            },
+            {
+              "new_samples": 256,
+              "cache_input": [
+                1.0
+              ]
+            }
+          ],
+          "wrapper_denominator_samples": 512,
+          "wrapper_printed_rtf": 0.3125,
+          "expected_wrapper_rtf": 0.3125,
+          "source_time_rtf": 160.0,
+          "source_time_classification": "positive_source_duration",
+          "saved_output_samples": 1,
+          "crop_start": 256,
+          "first_saved_value": 0.00390625,
+          "last_saved_value": 0.00390625,
+          "saved_dtype": "float32",
+          "saved_rate_hz": 16000,
+          "saved_samples_sha256": "7c5c1d9451c2174c1707bf7f3174b294f8d4f28139a3b51c73cc210d920bb412",
+          "stdout": "Preparing input... ✅\nCreating a ONNXRuntime session... ✅\nInferencing...\n>>> RTF: 0.3125\nSaving the output audio... ✅\n"
+        },
+        {
+          "source_samples": 0,
+          "sample_rate_hz": 16000,
+          "n_fft": 512,
+          "hop_size": 256,
+          "fake_elapsed_seconds": 0.01,
+          "calls": [
+            {
+              "new_samples": 256,
+              "cache_input": [
+                0.0
+              ]
+            }
+          ],
+          "wrapper_denominator_samples": 256,
+          "wrapper_printed_rtf": 0.625,
+          "expected_wrapper_rtf": 0.625,
+          "source_time_rtf": null,
+          "source_time_classification": "undefined_zero_source_duration",
+          "saved_output_samples": 0,
+          "crop_start": 256,
+          "first_saved_value": null,
+          "last_saved_value": null,
+          "saved_dtype": "float32",
+          "saved_rate_hz": 16000,
+          "saved_samples_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "Preparing input... ✅\nCreating a ONNXRuntime session... ✅\nInferencing...\n>>> RTF: 0.625\nSaving the output audio... ✅\n"
+        }
+      ]
+    }
+  }
+}

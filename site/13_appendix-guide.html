@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 B · 路径地图与练习 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="46b942113f9d"><style>
+<meta name="source-digest" content="9787b2ac86cd"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -44,7 +44,8 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{display:block;margin:20px auto;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
-@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}.tracking-readable-table th,.tracking-readable-table td{min-width:8em}}
+@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}.tracking-readable-table th,.tracking-readable-table td{min-width:8em}.industrial-readable-table th,.industrial-readable-table td{min-width:8em}}
+@media(max-width:900px){.noise-readable-table th:first-child,.noise-readable-table td:first-child{min-width:6em}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
@@ -736,7 +737,7 @@ $$</p>
 <p>本题的 RIR 为实数，所以平方不需再取模；式(13-2)中若两项能量相等，DRR 为 0 dB。反射能量很小时，DRR 为较大的正数；这个数描述该仿真位置的直达与反射比例，不是定位准确率。</p>
 <p>只用零阶镜像生成较短的 RIR 再补零，会使两条 RIR 在不同长度下分别经历零相位滤波，差中可能混入滤波边界效应；处理位置与默认参数见<a href="https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/room.py#L2348-L2432">固定版 <code>room.py</code> 的 RIR 构建代码</a>及<a href="https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/parameters.py#L185-L195">默认参数</a>。四麦 DRR 先各自计算，再取中位数；中位数并非把四麦能量先合并后计算的 DRR。</p>
 <p><strong>混响时间怎样算。</strong> 从完整 RIR 的 Schroeder 倒向能量积分曲线，在 $-5$ 到 $-25$ dB 区间拟合 dB 对时间的直线，按斜率外推至 $-60$ dB；本题将它称为“$T_{20}$ 外推的 $T_{60}$”，不是实测房间混响时间。逐麦值与中位数都保留，区间不够时脚本报错。</p>
-<p>以 1 m、$-30°$ 条件的第 1 只麦为例，本书仿真的直达 RIR 能量约为 0.96774，反射 RIR 能量约为 0.24448，因而该麦 DRR 为 $10\log_{10}(0.96774/0.24448)\approx5.975$ dB；四麦 DRR 的中位数为 5.755 dB。同一只麦的 $-5$～$-25$ dB 拟合斜率约为 $-109.682$ dB/s，故外推 $T_{60}=-60/(-109.682)\approx0.547$ s。计算先用未舍入值，下面仅展示约数。</p>
+<p>以 1 m、$-30°$ 条件的第 1 只麦为例，本书仿真的直达 RIR 能量约为 0.96844，反射 RIR 能量约为 0.24448，因而该麦 DRR 为 $10\log_{10}(0.96844/0.24448)\approx5.975$ dB；四麦 DRR 的中位数为 5.755 dB。同一只麦的 $-5$～$-25$ dB 拟合斜率约为 $-109.682$ dB/s，故外推 $T_{60}=-60/(-109.682)\approx0.547$ s。计算先用未舍入值，下面仅展示约数。</p>
 <p><strong>第 16 题：六个位置的结果</strong></p>
 <p><strong>本书仿真结果。</strong> 2026 年 9 月 24 日用 pyroomacoustics 0.10.0、Python 3.13.12、NumPy 2.5.3、SciPy 1.18.1 实际运行脚本；镜像阶数为 40，声学和定位条件均如上，<code>PRA_NUM_THREADS=2</code>。表中的 $T_{60}$、DRR 都是四麦逐麦指标的中位数；方位估计按 1° 网格输出。为免把近似值当作精确值，下表距离、真方位、$T_{60}$、DRR 和绝对误差均保留三位小数。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -1145,13 +1146,15 @@ $$</p>
 <p>图59读取第7章独立六WAV清单：先画已知路径逆的解析噪声增益及保留反射，再并列总体期望误差和固定27200点窗口的实际PCM误差。先运行该章生成器；这是数学合成的已知两稀疏路径，不是盲WPE或真实房间性能。</p>
 <p>图60读取第8章独立六WAV清单：先比较500 Hz的幅度上限和1250 Hz的相位旋转，再分别显示解析与27200点实际PCM误差。先运行 <code>codes.chapters.ch08.examples.mask_representation_demo</code>；已知目标构造的掩码只检验表示边界，不是盲分离或网络性能。</p>
 <p>图61从第9章E20与E21的指定解析模型生成：相关观测不能被重复计为独立证据，固定阵列的纯方位观测不能辨认未知距离与速度的共同尺度。它不读取音频、不做随机抽样；数值报告在 <code>codes/chapters/ch09/reports/figure61_tracking_information.json</code>。</p>
-<p>图片写入 <code>figures/</code>，共 61 张：</p>
+<p>图62计算第10章的给定噪声软更新、有限尾部逆积分和非抢占阻塞。图63读取第10章<a href="noise_audio/MANIFEST.json">独立六WAV清单</a>，分开浮点分解与实际PCM总误差；已知方差对照使用额外真值，不能称盲估计。</p>
+<p>图片写入 <code>figures/</code>，共 63 张：</p>
 <pre><code class="language-bash">.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
 .venv/bin/python -m codes.chapters.ch09.examples.chapter09_tracking_audio
 .venv/bin/python -m codes.chapters.ch06.examples.generate_apa_audio
 .venv/bin/python -m codes.chapters.ch07.examples.mint_teaching_demo
 .venv/bin/python -m codes.chapters.ch08.examples.mask_representation_demo
-.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～61
+.venv/bin/python -m codes.chapters.ch10.examples.generate_noise_mismatch
+.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～63
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～39（回声消除专题）
 </code></pre>
 <p>Windows 上把 <code>.venv/bin/python</code> 换成 <code>.venv\Scripts\python</code>，其余不变。</p>

@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "script_sha256": "efbbcad2e62f651638fc0bdf7f9d0ba24118b73f1509ccb441494b4197d6f989",
+  "scope": "deterministic teaching counterexamples; no measured speech, room or hardware performance",
+  "soft_update": {
+    "power": [
+      9,
+      9,
+      9
+    ],
+    "initial_noise": 1,
+    "initial_probability": 0,
+    "alpha_p": "1/2",
+    "alpha_d": "4/5",
+    "rows": [
+      {
+        "indicator": 1,
+        "speech_probability": "1/2",
+        "retention": "9/10",
+        "soft_noise": "9/5",
+        "ungated_noise": "13/5",
+        "hard_noise": "1"
+      },
+      {
+        "indicator": 1,
+        "speech_probability": "3/4",
+        "retention": "19/20",
+        "soft_noise": "54/25",
+        "ungated_noise": "97/25",
+        "hard_noise": "1"
+      },
+      {
+        "indicator": 0,
+        "speech_probability": "3/8",
+        "retention": "7/8",
+        "soft_noise": "603/200",
+        "ungated_noise": "613/125",
+        "hard_noise": "13/5"
+      }
+    ]
+  },
+  "finite_tail": {
+    "sample_rate_hz": 10,
+    "time_s": [
+      0.0,
+      0.1,
+      0.2,
+      0.3
+    ],
+    "squared_impulse": [
+      1,
+      0.5,
+      0.25,
+      0.125
+    ],
+    "reverse_energy": [
+      1.875,
+      0.875,
+      0.375,
+      0.125
+    ],
+    "finite_db": [
+      0.0,
+      -3.3099321904142442,
+      -6.9897000433601875,
+      -11.760912590556813
+    ],
+    "infinite_db": [
+      0.0,
+      -3.010299956639812,
+      -6.020599913279624,
+      -9.030899869919436
+    ],
+    "infinite_t60_s": 1.9931568569324174,
+    "four_point_endpoint_extrapolation_s": 1.5304934767096845,
+    "not_rt20": "four points cover only 10 log10(15) dB; no -5 to -25 dB interval"
+  },
+  "nonpreemptive": {
+    "B_start_ms": -1,
+    "B_finish_ms": 14,
+    "A_release_ms": 0,
+    "A_deadline_ms": 10,
+    "A_start_ms": 14,
+    "A_finish_ms": 16,
+    "A_response_ms": 16,
+    "blocking_supremum_plus_service_ms": 17,
+    "utilization": 0.35
+  }
+}

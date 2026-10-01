@@ -63,6 +63,41 @@ def _finite_1d(values: np.ndarray | list[float], name: str) -> np.ndarray:
     return array
 
 
+def safe_convex_combination(left, right, fraction) -> np.ndarray:
+    """Compute ``(1-f)*left+f*right`` without losing recoverable tiny sums.
+
+    Ordinary arithmetic is unchanged. Only subnormal products/results and
+    overflow use exact binary-float rationals until the final conversion.
+    A genuinely nonzero final value outside float64 support is rejected.
+    """
+    a, b, f = np.broadcast_arrays(_finite_real_array(left, "left"),
+                                  _finite_real_array(right, "right"),
+                                  _finite_real_array(fraction, "fraction"))
+    if np.any((f < 0) | (f > 1)):
+        raise ValueError("fraction must lie in [0, 1]")
+    with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+        first, second = a * (1.0 - f), b * f
+        result = first + second
+    tiny = np.finfo(float).tiny
+    exceptional = (~np.isfinite(result)
+                   | ((a != 0) & (f != 1) & (np.abs(first) < tiny))
+                   | ((b != 0) & (f != 0) & (np.abs(second) < tiny))
+                   | ((result != 0) & (np.abs(result) < tiny))
+                   | ((result == 0) & ((first != 0) | (second != 0))))
+    result = np.array(result, copy=True)
+    for index in zip(*np.nonzero(exceptional)) if result.ndim else ([()] if exceptional else []):
+        weight = Fraction(float(f[index]))
+        exact = (1 - weight) * Fraction(float(a[index])) + weight * Fraction(float(b[index]))
+        try:
+            value = float(exact)
+        except OverflowError as error:
+            raise ValueError("convex combination exceeds float64 range") from error
+        if not math.isfinite(value) or (exact and value == 0):
+            raise ValueError("nonzero convex combination is outside float64 support")
+        result[index] = value
+    return result
+
+
 def estimate_sro_ppm(times_s: np.ndarray, delays_s: np.ndarray) -> tuple[float, float]:
     """Fit ``delay = intercept + slope * time`` and return first-order SRO ppm.
 
@@ -121,6 +156,8 @@ def estimate_sro_ppm(times_s: np.ndarray, delays_s: np.ndarray) -> tuple[float, 
         raise ValueError("SRO fit is outside finite float64 range") from error
     if not math.isfinite(ppm) or not math.isfinite(intercept):
         raise ValueError("SRO fit is outside finite float64 range")
+    if normalized_slope != 0 and ppm == 0:
+        raise ValueError("nonzero SRO ppm is below float64 support")
     return ppm, intercept
 
 
@@ -155,7 +192,7 @@ def resample_sro_to_reference(samples: np.ndarray, relative_sro_ppm: float,
     right = np.minimum(left + 1, signal.shape[-1] - 1)
     fraction = positions - left
     # Convex interpolation avoids overflowing b-a for opposite large values.
-    result = signal[..., left] * (1.0 - fraction) + signal[..., right] * fraction
+    result = safe_convex_combination(signal[..., left], signal[..., right], fraction)
     if not np.all(np.isfinite(result)):
         raise ValueError("interpolated samples exceed finite float64 range")
     return result
@@ -216,6 +253,9 @@ class PeakProtectAGC:
     may increase. Both are smoothing fractions in ``(0, 1]``. The complete
     input block must be buffered before its peak and output can be computed.
     Time-constant adjustment does not make peak statistics block-invariant.
+    A positive gain or nonzero output below float64 support is rejected before
+    gain state is committed, even if another mathematical representation could
+    recover the composite output.
     """
 
     target_peak: float = 0.8
@@ -245,13 +285,21 @@ class PeakProtectAGC:
         else:
             desired = min(self.max_gain, self.target_peak / peak)
             safety_ceiling = 1.0 / peak
+            if desired == 0:
+                raise ValueError("positive AGC gain is below float64 support; state unchanged")
         coefficient = self.attack if desired < self.gain else self.release
         # A convex combination preserves the desired gain when attack == 1.
         # gain + (desired - gain) can erase a small but representable desired
         # value, incorrectly muting finite high-amplitude input.
-        smoothed = (1.0 - coefficient) * self.gain + coefficient * desired
-        self.gain = min(smoothed, safety_ceiling, self.max_gain)
-        return samples * self.gain, self.gain
+        smoothed = float(safe_convex_combination(self.gain, desired, coefficient))
+        new_gain = min(smoothed, safety_ceiling, self.max_gain)
+        with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+            output = samples * new_gain
+        if (new_gain <= 0 or not np.all(np.isfinite(output))
+                or np.any((samples != 0) & (output == 0))):
+            raise ValueError("AGC output is outside float64 support; state unchanged")
+        self.gain = new_gain
+        return output, new_gain
 
 
 class RingBuffer:
@@ -422,7 +470,9 @@ def validate_telemetry(record: Mapping[str, object]) -> list[str]:
             errors.append(f"missing field: {name}")
             continue
         value = record[name]
-        if expected is bool:
+        if name == "dropped_samples" and value is None:
+            valid_type = True
+        elif expected is bool:
             valid_type = isinstance(value, (bool, np.bool_))
         elif expected is int:
             valid_type = isinstance(value, (int, np.integer)) and not isinstance(value, (bool, np.bool_))
@@ -454,4 +504,12 @@ def validate_telemetry(record: Mapping[str, object]) -> list[str]:
             errors.append(f"{name} must be non-negative")
     if isinstance(record.get("model_version"), str) and not record["model_version"].strip():
         errors.append("model_version must be non-empty")
+    if "known_dropped_samples" in record:
+        known = record["known_dropped_samples"]
+        if isinstance(known, (bool, np.bool_)) or not isinstance(known, Integral) or known < 0:
+            errors.append("known_dropped_samples must be a non-negative integer")
+        else:
+            total = record.get("dropped_samples")
+            if isinstance(total, Integral) and not isinstance(total, (bool, np.bool_)) and known > total:
+                errors.append("known_dropped_samples must not exceed known dropped_samples")
     return errors

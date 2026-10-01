@@ -628,10 +628,10 @@ class BuildHelpersTest(unittest.TestCase):
         )
 
     def test_figure_semantics_accept_any_reuse_and_reject_mismatch_or_orphan(self):
-        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 62)]
+        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 64)]
         refs.extend([("图1 复用", "fig01_x.png", 1),
                      ("图23 复用", "fig23_x.png", 23)])
-        names = [f"fig{i:02d}_x.png" for i in range(1, 62)]
+        names = [f"fig{i:02d}_x.png" for i in range(1, 64)]
         self.assertEqual(quality_check.figure_inventory_issues(refs, names), [])
         bad_refs = list(refs)
         bad_refs[0] = ("图2 错配", "fig01_x.png", 1)
@@ -695,6 +695,48 @@ class BuildHelpersTest(unittest.TestCase):
         screen, printed = build_site.CSS.split('@media print', 1)
         self.assertIn('.tracking-readable-table td{min-width:8em}', screen)
         self.assertNotIn('tracking-readable-table', printed)
+
+    def test_industrial_phone_tables_match_exact_headers_and_research_source(self):
+        tables = [
+            ("对照", "输出总帧数", "六个脉冲相对参考时间的峰值采样点偏移（帧）", "1～9 s 偏移增量（帧）", "部分消费调用", "输入取尽后补出帧数"),
+            ("接口", "需要核对的对象", "不能省略的条件"),
+            ("阅读位置", "要核对的变量/步骤", "独立判据"),
+            ("固定对象", "实际执行与输入", "独立核对结果", "代替项和未执行范围"),
+        ]
+        path = build_site.RESEARCH_ROOT/'03_industrial_deployment.md'
+        for labels in tables:
+            source = '| '+' | '.join(labels)+' |\n| '+' | '.join(['---']*len(labels))+' |\n| '+' | '.join(['短语']*len(labels))+' |\n'
+            html, _ = build_site.render(source,path)
+            self.assertIn('<table class="industrial-readable-table">',html)
+            self.assertIn('class="table-scroll" tabindex="0" role="region"',html)
+            self.assertEqual(html.count('scope="col"'),len(labels))
+            for other in (ROOT/'chapters/10_engineering-practice.md',
+                          build_site.RESEARCH_ROOT/'04_source_reproduction.md',
+                          ROOT/'chapters/03_industrial_deployment.md'):
+                html, _ = build_site.render(source,other)
+                self.assertNotIn('industrial-readable-table',html)
+            for near in (source.replace(labels[0],'另一个表头',1),
+                         source.replace(' | '.join(labels),' | '.join(reversed(labels)),1)):
+                html, _ = build_site.render(near,path)
+                self.assertNotIn('industrial-readable-table',html)
+        screen, printed = build_site.CSS.split('@media print',1)
+        self.assertIn('.industrial-readable-table td{min-width:8em}',screen)
+        self.assertNotIn('industrial-readable-table',printed)
+
+    def test_noise_tables_preserve_readable_first_column_in_own_chapter(self):
+        for labels in (("支路", "噪声功率来源", "能检查的问题"),
+                       ("输出", "阶跃前浮点 MSE", "阶跃前 PCM MSE", "阶跃后浮点 MSE", "阶跃后 PCM MSE")):
+            source = '| '+' | '.join(labels)+' |\n| '+' | '.join(['---']*len(labels))+' |\n| '+' | '.join(['短语']*len(labels))+' |\n'
+            html, _ = build_site.render(source,ROOT/'chapters/10_engineering-practice.md')
+            self.assertIn('<table class="noise-readable-table">',html)
+            for other in (ROOT/'chapters/09_source-tracking.md',build_site.RESEARCH_ROOT/'03_industrial_deployment.md'):
+                html, _ = build_site.render(source,other)
+                self.assertNotIn('noise-readable-table',html)
+            html, _ = build_site.render(source.replace(labels[0],'其它',1),ROOT/'chapters/10_engineering-practice.md')
+            self.assertNotIn('noise-readable-table',html)
+        screen, printed = build_site.CSS.split('@media print',1)
+        self.assertIn('.noise-readable-table td:first-child{min-width:6em}',screen)
+        self.assertNotIn('noise-readable-table',printed)
 
     def test_source_control_characters_catch_damaged_tex(self):
         self.assertEqual(quality_check.source_control_character_issues("正文\n\t数学\r\n"), [])

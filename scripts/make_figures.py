@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""生成教程插图（图 1～25、33～36、40～61；图 26～32、37～39 见 make_aec_figures.py）。
+"""生成教程插图（图 1～25、33～36、40～63；图 26～32、37～39 见 make_aec_figures.py）。
 
 用法（仓库根目录）：
-    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～61 → figures/
+    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～63 → figures/
 """
 from pathlib import Path
 import hashlib
@@ -4243,6 +4243,129 @@ def fig_tracking_information():
     target.write_text(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False)+'\n')
 
 
+def fig_engineering_limits():
+    """Three independently reproducible engineering counterexamples, not a benchmark."""
+    from fractions import Fraction
+    powers = [Fraction(9)] * 3
+    indicators = [1, 1, 0]
+    probability, soft, ungated, hard = Fraction(0), Fraction(1), Fraction(1), Fraction(1)
+    rows = []
+    for power, indicator in zip(powers, indicators):
+        probability = probability / 2 + Fraction(indicator, 2)
+        keep = Fraction(4, 5) + probability / 5
+        soft = keep * soft + (1-keep) * power
+        ungated = Fraction(4, 5)*ungated + power/5
+        if not indicator:
+            hard = Fraction(4, 5)*hard + power/5
+        rows.append({'indicator': indicator, 'speech_probability': str(probability),
+                     'retention': str(keep), 'soft_noise': str(soft),
+                     'ungated_noise': str(ungated), 'hard_noise': str(hard)})
+    time_s = np.arange(4)/10
+    finite_energy = np.array([15, 7, 3, 1], dtype=float)/8
+    finite_db = 10*np.log10(finite_energy/finite_energy[0])
+    infinite_db = -10*np.arange(4)*np.log10(2)
+    fig, axes = plt.subplots(3, 1, figsize=(9.5, 10.8))
+    fig.subplots_adjust(hspace=.62, top=.92, bottom=.09, left=.12, right=.96)
+    ax = axes[0]
+    for key, label, color, marker in [('soft_noise','软更新（给定存在统计）',C_BLUE,'o'),
+            ('ungated_noise','不门控',C_RED,'s'),('hard_noise','硬冻结',C_GREEN,'^')]:
+        ax.plot([0,1,2,3], [1]+[float(Fraction(row[key])) for row in rows],
+                color=color, marker=marker, lw=2, label=label)
+    ax.set(xlabel='更新次数（无量纲）', ylabel='噪声功率（任意共同单位）', xticks=[0,1,2,3])
+    ax.set_title('(a) 给定功率9、指示1/1/0：三种噪声递推不同')
+    ax.legend(loc='upper left', fontsize=FS_SMALL)
+    ax.grid(ls=':', alpha=.4)
+    ax = axes[1]
+    ax.plot(time_s, infinite_db, marker='o', color=C_BLUE, label='无限指数尾部：线性衰减')
+    ax.plot(time_s, finite_db, marker='s', color=C_RED, label='只保留4点：归一化逆积分')
+    ax.set(xlabel='时间 (s)', ylabel='归一化能量 (dB)', xticks=time_s)
+    ax.set_title('(b) 缺失尾部不能靠补零恢复（10 Hz 数学示例）')
+    ax.legend(loc='lower left', fontsize=FS_SMALL)
+    ax.grid(ls=':', alpha=.4)
+    ax = axes[2]
+    ax.broken_barh([(-1,15)], (.6,.25), facecolors=C_ORANGE)
+    ax.broken_barh([(14,2)], (.1,.25), facecolors=C_BLUE)
+    ax.annotate('低优先级B执行15 ms', (6.5,.725), ha='center', va='center')
+    ax.annotate('A', (15,.225), ha='center', va='center', color='white')
+    ax.axvline(0, color=C_GREEN, lw=1.8, label='A到达0 ms')
+    ax.axvline(10, color=C_RED, lw=1.8, ls='--', label='A截止10 ms')
+    ax.axvline(16, color=C_BLUE, lw=1.5, ls=':', label='A完成16 ms')
+    ax.set(xlabel='时间 (ms)', ylabel='任务', yticks=[.225,.725], yticklabels=['A','B'],
+           xlim=(-2,18), ylim=(0,1), xticks=[-1,0,5,10,14,16])
+    ax.set_title('(c) 非抢占：总利用率0.35，A仍超期')
+    ax.legend(loc='upper center', bbox_to_anchor=(.5,-.30), ncol=3, fontsize=FS_SMALL)
+    fig.suptitle('图62  噪声、有限尾部与任务阻塞：三个条件不能省略', fontsize=FS_SUP)
+    save(fig, 'fig62_engineering_limits.png')
+    report = {'schema_version':1, 'script_sha256':source_script_digest(),
+              'scope':'deterministic teaching counterexamples; no measured speech, room or hardware performance',
+              'soft_update': {'power':[9,9,9], 'initial_noise':1, 'initial_probability':0,
+                              'alpha_p':'1/2', 'alpha_d':'4/5', 'rows':rows},
+              'finite_tail':{'sample_rate_hz':10, 'time_s':time_s.tolist(),
+                             'squared_impulse':[1,.5,.25,.125],
+                             'reverse_energy':finite_energy.tolist(), 'finite_db':finite_db.tolist(),
+                             'infinite_db':infinite_db.tolist(),
+                             'infinite_t60_s':.6/np.log10(2),
+                             'four_point_endpoint_extrapolation_s':1.8/np.log10(15),
+                             'not_rt20':'four points cover only 10 log10(15) dB; no -5 to -25 dB interval'},
+              'nonpreemptive':{'B_start_ms':-1,'B_finish_ms':14,'A_release_ms':0,
+                               'A_deadline_ms':10,'A_start_ms':14,'A_finish_ms':16,
+                               'A_response_ms':16,'blocking_supremum_plus_service_ms':17,
+                               'utilization':.35}}
+    target = CODE_CHAPTERS/'ch10/reports/figure62_engineering_limits.json'
+    target.parent.mkdir(parents=True,exist_ok=True)
+    target.write_text(json.dumps(report,ensure_ascii=False,indent=2,allow_nan=False)+'\n')
+
+
+def fig_noise_mismatch():
+    """Plot fixed-estimate mismatch with actual integer-PCM scores."""
+    from codes.chapters.ch10.examples.generate_noise_mismatch import check_assets
+    from codes.chapters.ch10.core.noise_mismatch import build_fixture
+    directory = CODE_CHAPTERS/'ch10/noise_audio'
+    manifest = check_assets(directory)
+    fixture = build_fixture()
+    diagnostic = fixture['spectral']
+    fig, axes = plt.subplots(3,1,figsize=(9.5,10.5))
+    fig.subplots_adjust(hspace=.70,top=.91,bottom=.13,left=.12,right=.96)
+    ax=axes[0]
+    ax.step([0,1.2,2],[.03,.12,.12],where='post',color=C_BLUE,lw=2.5,label='生成噪声标准差')
+    for key,label,color in [('before_step','变化前评分',C_GREEN),('after_step','变化后评分',C_ORANGE)]:
+        start,stop=manifest['parameters']['score_windows'][key]
+        ax.axvspan(start/16000,stop/16000,color=color,alpha=.22,label=label+'：6400点')
+    ax.set(xlabel='时间 (s)',ylabel='噪声标准差（幅度）',xlim=(0,2),ylim=(0,.15))
+    ax.set_title('(a) 同一次噪声：1.2 s后期望功率增加16倍')
+    ax.legend(loc='upper left',fontsize=FS_SMALL)
+    ax.grid(ls=':',alpha=.4)
+    ax=axes[1]
+    frequencies=np.arange(257)*16000/512
+    ax.plot(frequencies,diagnostic['fixed_noise_power'],color=C_BLUE,lw=1.8,marker='o',markevery=24,ms=4,label='47个纯噪声前奏帧估计')
+    ax.plot(frequencies,diagnostic['polluted_noise_power'],color=C_RED,lw=1.8,ls='--',marker='s',markevery=24,ms=4,label='34个目标活跃帧估计')
+    for level,label,color in [(.03**2*192,'变化前已知方差期望',C_GREEN),(.12**2*192,'变化后已知方差期望',C_ORANGE)]:
+        ax.axhline(level,color=color,ls='-.' if color==C_GREEN else ':',lw=1.8,label=label)
+    ax.set(xlabel='频率 (Hz)',ylabel='未归一化DFT系数功率',xlim=(0,4000),yscale='log')
+    ax.set_title('(b) 目标污染在500和1500 Hz附近抬高固定估计')
+    ax.legend(loc='upper right',fontsize=FS_SMALL)
+    ax.grid(ls=':',alpha=.4)
+    ax=axes[2]
+    roles=[('noise_mixture.wav','共同输入',C_PURPLE),('noise_fixed.wav','纯前奏固定',C_BLUE),
+           ('noise_polluted.wav','目标污染固定',C_RED),('noise_known_variance.wav','已知方差对照',C_GREEN)]
+    x=np.arange(2);width=.18
+    for i,(filename,label,color) in enumerate(roles):
+        pcm=[manifest['pcm_analysis']['score_windows'][key]['scores'][filename]['nmse'] for key in ('before_step','after_step')]
+        floating=[manifest['floating_point']['score_windows'][key]['scores'][filename]['nmse'] for key in ('before_step','after_step')]
+        position=x+(i-1.5)*width
+        ax.bar(position,pcm,width=width,color=color,alpha=.8,hatch=['','//','xx','..'][i],edgecolor='black',linewidth=.5,label=label)
+        ax.scatter(position,floating,s=35,facecolors='none',edgecolors='black',zorder=5,
+                   label='空心点：未量化总误差' if i==0 else None)
+    ax.set(xticks=x,xticklabels=['变化前 [0.6,1.0) s','变化后 [1.4,1.8) s'],
+           ylabel='参考归一化均方误差（无量纲）',ylim=(0,2.05))
+    ax.set_title('(c) 柱：实际PCM总误差；同索引、共同增益，无对齐拟合')
+    ax.legend(loc='upper left',bbox_to_anchor=(0,-.20),ncol=2,fontsize=FS_SMALL)
+    ax.grid(axis='y',ls=':',alpha=.4)
+    fig.suptitle('图63  固定噪声估计：噪声变强与目标污染造成不同失配',fontsize=FS_SUP)
+    digest=hashlib.sha256((directory/'MANIFEST.json').read_bytes()).hexdigest()
+    save(fig,'fig63_noise_mismatch.png',extra_metadata={'AudioManifestDigest':digest})
+
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -4297,6 +4420,8 @@ def main():
     fig_mint_noise_tradeoff()
     fig_mask_representation()
     fig_tracking_information()
+    fig_engineering_limits()
+    fig_noise_mismatch()
     print("ALL DONE")
 
 

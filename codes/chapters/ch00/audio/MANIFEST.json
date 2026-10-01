@@ -33,7 +33,7 @@
   "pcm": "signed little-endian 16-bit, round-to-nearest-even; no dither; no per-file normalization",
   "listening": "Start at low device volume. No automatic playback. No formal listening study performed.",
   "generator_inputs": {
-    "codes/chapters/ch10/core/engineering.py": "3e59427d2c769df24b0fc5663ae10523e46168f719c53509cfcf59bfe4a6507e",
+    "codes/chapters/ch10/core/engineering.py": "a2a0bab10e37d843fd7ed77782ef5ab2447d173e6a654d0acc923fe310b73956",
     "codes/chapters/ch00/examples/generate_audio_samples.py": "fd1201ad77863b669802214580e33855091666e08fa27065cf976ee8a5a34aba",
     "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
     "codes/chapters/ch06/core/aec.py": "6f534c06a0e3a0376b9052a70eda7da776ad25eaf1eeae960be094d4d9037e37",
@@ -43,7 +43,7 @@
     "codes/chapters/ch06/core/aec_kalman_matrix.py": "0bb992aeb4ea6b0ba304ed4388bbdfd262960f0f7828b13feb981c09448025fd",
     "codes/chapters/ch06/core/aec_subband.py": "c287ea1c9e07c57dc4a8a7a45dac2012cae50bc089f78af7074880443c61b6a3",
     "codes/chapters/ch05/core/gsc.py": "e3fecf91ac661441520a28d3daa1ef0b29bf2b282a020efee6374cb30b846f75",
-    "codes/chapters/ch10/core/noise_suppression.py": "269911542edc187ce1b975e8f24f0d1e7412be9f664990a8c8db77bc2ccc7831",
+    "codes/chapters/ch10/core/noise_suppression.py": "fbef0765d532c7dfbd17f53e3cdd4799fb4457982344a0f0298b2137f9fd9de3",
     "codes/chapters/appendix_a/core/math_foundations.py": "6e9825aac7a80b86dca58122d698db2e5a22d7f9a8f4314e64ac8f671eb645cc",
     "codes/chapters/ch08/core/css.py": "3d3f334b7dae505dc3db0e1129fb017fbba564ceca3a4fabd82f25ccc8175a78",
     "codes/chapters/ch08/core/separation.py": "cd5cc1e465188f16070d2f347c5234bea41d28d0be8f16f1bb24e47365feb888",

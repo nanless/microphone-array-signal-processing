@@ -41,6 +41,9 @@ DERIVATIVE_AUDIO_ROOT = ROOT / "codes/chapters/ch05/derivative_audio"
 APA_AUDIO_ROOT = ROOT / "codes/chapters/ch06/apa_audio"
 MINT_AUDIO_ROOT = ROOT / "codes/chapters/ch07/mint_audio"
 MASK_AUDIO_ROOT = ROOT / "codes/chapters/ch08/mask_audio"
+NOISE_AUDIO_ROOT = CODE_CHAPTERS / "ch10" / "noise_audio"
+NOISE_AUDIO_WAVS = {"noise_" + name + ".wav" for name in
+                    ("reference", "component", "mixture", "fixed", "polluted", "known_variance")}
 FOCUS_AUDIO_ROOT = ROOT / "codes/chapters/ch04/focus_audio"
 GEOMETRY_AUDIO_ROOT = ROOT / "codes/chapters/ch03/geometry_audio"
 STFT_AUDIO_ROOT = ROOT / "codes/chapters/ch02/stft_audio"
@@ -78,7 +81,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "07_wpe-dereverberation.md": 53,
     "08_speech-separation.md": 59,
     "09_source-tracking.md": 56,
-    "10_engineering-practice.md": 47,
+    "10_engineering-practice.md": 54,
     "11_selection-guide.md": 29,
     "12_appendix-symbols-math.md": 27,
     "13_appendix-guide.md": 25,
@@ -102,9 +105,9 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 121
-EXPECTED_SUBSECTION_COUNT = 542
-EXPECTED_OUTLINE_ITEM_COUNT = 677
-EXPECTED_FIGURE_NUMBERS = set(range(1, 62))
+EXPECTED_SUBSECTION_COUNT = 549
+EXPECTED_OUTLINE_ITEM_COUNT = 684
+EXPECTED_FIGURE_NUMBERS = set(range(1, 64))
 # 研究附站使用独立显式清单，不挤占 14 篇教程或教程 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
@@ -709,7 +712,7 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61)
+            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
@@ -740,6 +743,13 @@ def check_figures(errors: list[str]):
                 with Image.open(path) as image:
                     if image.info.get("AudioManifestDigest") != expected:
                         fail(errors, "图60独立FFT掩码音频清单摘要失效")
+            if number == 63:
+                expected = hashlib.sha256((NOISE_AUDIO_ROOT / "MANIFEST.json").read_bytes()).hexdigest()
+                with Image.open(path) as image:
+                    if image.info.get("AudioManifestDigest") != expected:
+                        fail(errors, "图63独立噪声失配清单摘要失效")
+            if number == 62:
+                _check_engineering_limits_report(ROOT / "codes/chapters/ch10/reports/figure62_engineering_limits.json")
             if number == 61:
                 _check_tracking_information_report(ROOT / "codes/chapters/ch09/reports/figure61_tracking_information.json")
             if number in (34, 35, 36, 40, 41, 43, 45, 47, 49):
@@ -749,6 +759,58 @@ def check_figures(errors: list[str]):
                         fail(errors, f"图 {number} 音频清单摘要失效")
         except Exception as exc:
             fail(errors, f"图片无法解码：figures/{name}: {exc}")
+
+
+def _check_engineering_limits_report(path):
+    """Independent integer recurrence and geometric-series checks for figure62."""
+    import math
+    from fractions import Fraction
+    report = _read_tracking_manifest(path)
+    if (type(report.get('schema_version')) is not int or report.get('schema_version') != 1 or report.get('script_sha256') !=
+            hashlib.sha256((ROOT/'scripts/make_figures.py').read_bytes()).hexdigest()):
+        raise ValueError('图62真实绘图源摘要不同')
+    update = report['soft_update']
+    if (any(type(value) is not int for value in update['power']) or
+            type(update['initial_noise']) is not int or
+            type(update['initial_probability']) is not int or
+            update['power'] != [9,9,9] or update['initial_noise'] != 1 or
+            update['initial_probability'] != 0 or update['alpha_p'] != '1/2' or
+            update['alpha_d'] != '4/5'):
+        raise ValueError('图62噪声递推题设不同')
+    expected = [(1,'1/2','9/10','9/5','13/5','1'),
+                (1,'3/4','19/20','54/25','97/25','1'),
+                (0,'3/8','7/8','603/200','613/125','13/5')]
+    rows = update['rows']
+    if len(rows) != 3:
+        raise ValueError('图62递推次数不同')
+    for row, values in zip(rows,expected):
+        fields = ['indicator','speech_probability','retention','soft_noise','ungated_noise','hard_noise']
+        if type(row['indicator']) is not int or tuple(row[field] for field in fields) != values:
+            raise ValueError('图62独立分数递推不符')
+    finite = report['finite_tail']
+    def close(actual, expected):
+        if isinstance(actual,bool) or not isinstance(actual,(int,float)) or not math.isfinite(actual) or not math.isclose(actual,expected,rel_tol=2e-14,abs_tol=2e-14):
+            raise ValueError('图62独立逆积分数值不符')
+    if finite['sample_rate_hz'] != 10 or not finite['not_rt20']:
+        raise ValueError('图62截尾条件缺失')
+    if any(len(finite[key]) != 4 for key in ('squared_impulse','reverse_energy','time_s','finite_db','infinite_db')):
+        raise ValueError('图62逆积分数组长度不同')
+    for n in range(4):
+        close(finite['squared_impulse'][n],float(Fraction(1,2**n)))
+        energy=sum((Fraction(1,2**k) for k in range(n,4)),Fraction(0))
+        close(finite['reverse_energy'][n],float(energy))
+        close(finite['time_s'][n],n/10)
+        close(finite['finite_db'][n],10*math.log10(float(energy/Fraction(15,8))))
+        close(finite['infinite_db'][n],10*math.log10(2**(-n)))
+    close(finite['infinite_t60_s'],60/(10*math.log10(2)*10))
+    close(finite['four_point_endpoint_extrapolation_s'],60*.3/(10*math.log10(15)))
+    tasks = report['nonpreemptive']
+    expected_tasks={'B_start_ms':-1,'B_finish_ms':14,'A_release_ms':0,'A_deadline_ms':10,
+                    'A_start_ms':14,'A_finish_ms':16,'A_response_ms':16,
+                    'blocking_supremum_plus_service_ms':17,'utilization':.35}
+    if (tasks != expected_tasks or any(type(tasks[key]) is not type(value)
+                                      for key, value in expected_tasks.items())):
+        raise ValueError('图62非抢占时间线与上界不同')
 
 
 def _check_tracking_information_report(path):
@@ -1067,7 +1129,7 @@ def site_source_digest():
     paths += sorted(main_audio_path(CODE_CHAPTERS, record["group"], record["file"])
                     for record in manifest["files"])
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
@@ -1371,7 +1433,7 @@ def check_real_audio(errors):
         parser = Players()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         allowed_audio_roots = ("../audio/", "../real_audio/", "../room_audio/",
-                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../mint_audio/", "../mask_audio/")
+                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/")
         if any(not (p.get("src") or "").startswith(allowed_audio_roots)
                for p in parser.items):
             fail(errors, "未知试听控件来源")
@@ -2290,6 +2352,63 @@ def _check_visible_audio(page, prefix, directory, names, links):
         raise ValueError(directory+'可见独立资产链接缺失：'+page.name)
 
 
+def check_noise_audio(errors):
+    """Independent actual integer scoring plus current-source replay and visibility."""
+    import math
+    import struct
+    try:
+        from codes.chapters.ch10.examples.generate_noise_mismatch import check_assets, validate_asset_directory
+        source, published = NOISE_AUDIO_ROOT, SITE/'noise_audio'
+        validate_asset_directory(source, check=True)
+        validate_asset_directory(published, check=True)
+        manifest = check_assets(source)
+        source_paths = {
+            'codes/chapters/ch10/core/noise_mismatch.py',
+            'codes/chapters/ch10/examples/generate_noise_mismatch.py',
+            'codes/chapters/ch10/core/noise_suppression.py',
+            'codes/chapters/ch02/core/spectral.py',
+            'codes/chapters/ch02/core/conventions.py',
+            'codes/chapters/ch00/core/audio_samples.py'}
+        if set(manifest['source_sha256']) != source_paths:
+            raise ValueError('noise_audio真实源集合不同')
+        for path in source_paths:
+            if manifest['source_sha256'][path] != hashlib.sha256((ROOT/path).read_bytes()).hexdigest():
+                raise ValueError('noise_audio真实源摘要过期：'+path)
+        if set(manifest['files']) != NOISE_AUDIO_WAVS or manifest['common_export_gain'] != 1:
+            raise ValueError('noise_audio六文件与共同增益不同')
+        pcm = {}
+        for name in sorted(NOISE_AUDIO_WAVS | {'MANIFEST.json'}):
+            if (source/name).read_bytes() != (published/name).read_bytes():
+                raise ValueError('noise_audio发布副本不同：'+name)
+            if name.endswith('.wav'):
+                with wave.open(str(published/name),'rb') as reader:
+                    if (reader.getnchannels(),reader.getsampwidth(),reader.getframerate(),reader.getnframes(),reader.getcomptype()) != (1,2,16000,32000,'NONE'):
+                        raise ValueError('noise_audio实际PCM尺寸不同')
+                    data = reader.readframes(32000)
+                pcm[name] = struct.unpack('<32000h',data)
+        for key,(start,stop) in {'before_step':(9600,16000),'after_step':(22400,28800)}.items():
+            row = manifest['pcm_analysis']['score_windows'][key]
+            reference = pcm['noise_reference.wav'][start:stop]
+            denominator = sum(value*value for value in reference)
+            if row['sample_interval'] != [start,stop] or row['samples'] != 6400 or row['reference_squared_sum_pcm_integer'] != denominator or row['pcm_amplitude_denominator'] != 32768:
+                raise ValueError('noise_audio真实整数分母不同')
+            for filename in ('noise_mixture.wav','noise_fixed.wav','noise_polluted.wav','noise_known_variance.wav'):
+                numerator = sum((value-ref)**2 for value,ref in zip(pcm[filename][start:stop],reference))
+                score = row['scores'][filename]
+                if type(score['error_squared_sum_pcm_integer']) is not int or score['error_squared_sum_pcm_integer'] != numerator or not math.isclose(score['nmse'],numerator/denominator,rel_tol=1e-14,abs_tol=0) or not math.isclose(score['mse'],numerator/(6400*32768**2),rel_tol=1e-14,abs_tol=0):
+                    raise ValueError('noise_audio实际整数误差不同：'+filename)
+                if filename != 'noise_mixture.wav':
+                    floating = manifest['floating_point']['score_windows'][key]['scores'][filename]
+                    total = floating['target_distortion_mse']+floating['residual_noise_mse']+floating['twice_cross_term']
+                    if not math.isclose(total,floating['mse'],rel_tol=1e-12,abs_tol=1e-17):
+                        raise ValueError('noise_audio浮点分量与总体误差不符')
+        for page,prefix in ((SITE/'10_engineering-practice.html',''),
+                            (SITE/'research/05_exercises_and_audio.html','../')):
+            _check_visible_audio(page,prefix,'noise_audio',NOISE_AUDIO_WAVS,{'MANIFEST.json'})
+    except (OSError,ValueError,KeyError,TypeError,struct.error,wave.Error) as exc:
+        fail(errors,'独立噪声估计失配音频：'+str(exc))
+
+
 def check_mask_audio(errors):
     """Independently recompute integer errors and phase from actual PCM."""
     import math
@@ -2579,6 +2698,7 @@ def main():
     check_apa_audio(errors)
     check_mint_audio(errors)
     check_mask_audio(errors)
+    check_noise_audio(errors)
     check_combined_html(errors)
     check_pdf(errors, notices)
     for item in notices:

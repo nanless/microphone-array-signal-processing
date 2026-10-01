@@ -1,0 +1,349 @@
+{
+  "schema_version": 1,
+  "sample_rate_hz": 16000,
+  "common_export_gain": 1.0,
+  "origin": "mathematical synthetic two-tone/noise example; not speech or a recording",
+  "parameters": {
+    "sample_rate_hz": 16000,
+    "samples_per_channel": 32000,
+    "seed": 20261001,
+    "target_frequencies_hz": [
+      500,
+      1500
+    ],
+    "target_amplitudes": [
+      0.12,
+      0.08
+    ],
+    "noise_standard_deviations": [
+      0.03,
+      0.12
+    ],
+    "noise_step_sample": 19200,
+    "noise_type": "independent Gaussian mathematical samples with a deterministic variance step",
+    "noise_only_sample_interval": [
+      0,
+      6400
+    ],
+    "polluted_estimation_sample_interval": [
+      8000,
+      12800
+    ],
+    "target_onset_fade_sample_interval": [
+      6400,
+      6720
+    ],
+    "target_end_fade_samples": 320,
+    "fade": "sin squared, including exact endpoint zero",
+    "n_fft": 512,
+    "hop_samples": 128,
+    "window": "DFT-periodic Hann",
+    "center": true,
+    "pure_noise_frame_indices": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48
+    ],
+    "polluted_frame_indices": [
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95,
+      96,
+      97,
+      98
+    ],
+    "oversubtraction": 1.0,
+    "floor_ratio": 0.04,
+    "minimum_positive_bin_amplitude_gain": 0.2,
+    "known_variance_power": "D_t=sum_n sigma[n]^2*w[n]^2; include all points of each window across the step; padded variance is zero",
+    "known_variance_scope": "offline expected noise power from model, not observed noise realization, online tracking or clean recovery",
+    "score_windows": {
+      "before_step": [
+        9600,
+        16000
+      ],
+      "after_step": [
+        22400,
+        28800
+      ]
+    },
+    "alignment": "common sample origin; no gain/time matching; centered WOLA uses future samples",
+    "common_export_gain": 1.0
+  },
+  "floating_point": {
+    "score_windows": {
+      "before_step": {
+        "sample_interval": [
+          9600,
+          16000
+        ],
+        "samples": 6400,
+        "reference_squared_sum": 66.56000000000002,
+        "reference_power": 0.010400000000000003,
+        "scores": {
+          "noise_mixture.wav": {
+            "error_squared_sum": 5.883810605283078,
+            "mse": 0.000919345407075481,
+            "nmse": 0.08839859683418085
+          },
+          "noise_fixed.wav": {
+            "error_squared_sum": 2.1939411469293137,
+            "mse": 0.0003428033042077053,
+            "nmse": 0.032961856173817805,
+            "target_distortion_mse": 9.273882975687104e-09,
+            "residual_noise_mse": 0.00034268659058048586,
+            "twice_cross_term": 1.0743974424367294e-07,
+            "component_sum_mse": 0.00034280330420770523
+          },
+          "noise_polluted.wav": {
+            "error_squared_sum": 42.83441621759346,
+            "mse": 0.006692877533998978,
+            "nmse": 0.6435459167306707,
+            "target_distortion_mse": 0.00639146179400843,
+            "residual_noise_mse": 0.00030722535452424395,
+            "twice_cross_term": -5.809614533696934e-06,
+            "component_sum_mse": 0.006692877533998977
+          },
+          "noise_known_variance.wav": {
+            "error_squared_sum": 2.13971936528082,
+            "mse": 0.00033433115082512815,
+            "nmse": 0.0321472260408777,
+            "target_distortion_mse": 1.2969447471839482e-08,
+            "residual_noise_mse": 0.0003341924603616237,
+            "twice_cross_term": 1.2572101603257993e-07,
+            "component_sum_mse": 0.0003343311508251281
+          }
+        }
+      },
+      "after_step": {
+        "sample_interval": [
+          22400,
+          28800
+        ],
+        "samples": 6400,
+        "reference_squared_sum": 66.55999999999963,
+        "reference_power": 0.010399999999999942,
+        "scores": {
+          "noise_mixture.wav": {
+            "error_squared_sum": 94.4854457112562,
+            "mse": 0.014763350892383781,
+            "nmse": 1.4195529704215253
+          },
+          "noise_fixed.wav": {
+            "error_squared_sum": 88.8606322255983,
+            "mse": 0.013884473785249733,
+            "nmse": 1.3350455562740202,
+            "target_distortion_mse": 1.001705351879766e-07,
+            "residual_noise_mse": 0.013879924029473903,
+            "twice_cross_term": 4.449585240645071e-06,
+            "component_sum_mse": 0.013884473785249735
+          },
+          "noise_polluted.wav": {
+            "error_squared_sum": 120.0920019010858,
+            "mse": 0.018764375297044656,
+            "nmse": 1.804266855485073,
+            "target_distortion_mse": 0.0052991042510980215,
+            "residual_noise_mse": 0.0135452358955791,
+            "twice_cross_term": -7.996484963246578e-05,
+            "component_sum_mse": 0.018764375297044656
+          },
+          "noise_known_variance.wav": {
+            "error_squared_sum": 34.21513669478584,
+            "mse": 0.005346115108560288,
+            "nmse": 0.5140495296692612,
+            "target_distortion_mse": 6.60808191768481e-06,
+            "residual_noise_mse": 0.005308928821963845,
+            "twice_cross_term": 3.0578204678757366e-05,
+            "component_sum_mse": 0.005346115108560287
+          }
+        }
+      }
+    },
+    "scope": "gain-conditioned float decomposition; finite cross terms are not assumed zero; no PCM decomposition"
+  },
+  "pcm_analysis": {
+    "score_windows": {
+      "before_step": {
+        "sample_interval": [
+          9600,
+          16000
+        ],
+        "samples": 6400,
+        "reference_squared_sum_pcm_integer": 71466999200,
+        "pcm_amplitude_denominator": 32768,
+        "scores": {
+          "noise_mixture.wav": {
+            "error_squared_sum_pcm_integer": 6317581320,
+            "mse": 0.0009193290781695396,
+            "nmse": 0.08839858103346811
+          },
+          "noise_fixed.wav": {
+            "error_squared_sum_pcm_integer": 2355671092,
+            "mse": 0.00034279526036698374,
+            "nmse": 0.03296166228286244
+          },
+          "noise_polluted.wav": {
+            "error_squared_sum_pcm_integer": 45992001831,
+            "mse": 0.00669271711827605,
+            "nmse": 0.6435418073493143
+          },
+          "noise_known_variance.wav": {
+            "error_squared_sum_pcm_integer": 2297441362,
+            "mse": 0.0003343217194196768,
+            "nmse": 0.032146884404235625
+          }
+        }
+      },
+      "after_step": {
+        "sample_interval": [
+          22400,
+          28800
+        ],
+        "samples": 6400,
+        "reference_squared_sum_pcm_integer": 71466999200,
+        "pcm_amplitude_denominator": 32768,
+        "scores": {
+          "noise_mixture.wav": {
+            "error_squared_sum_pcm_integer": 101453155155,
+            "mse": 0.014763377134659094,
+            "nmse": 1.4195804537851646
+          },
+          "noise_fixed.wav": {
+            "error_squared_sum_pcm_integer": 95413204520,
+            "mse": 0.01388444863841869,
+            "nmse": 1.3350666123952775
+          },
+          "noise_polluted.wav": {
+            "error_squared_sum_pcm_integer": 128947055830,
+            "mse": 0.018764266253856476,
+            "nmse": 1.8042880948330065
+          },
+          "noise_known_variance.wav": {
+            "error_squared_sum_pcm_integer": 36738075941,
+            "mse": 0.005346093667467358,
+            "nmse": 0.5140565065309193
+          }
+        }
+      }
+    },
+    "scope": "actual PCM total error against actual PCM reference; no fitted gain, shift or noise decomposition"
+  },
+  "quantization": "signed little-endian PCM16; nearest-even; no dither; decoded amplitude=int16/32768",
+  "source_sha256": {
+    "codes/chapters/ch10/core/noise_mismatch.py": "d04f564ddad4490a8b8cc3040e670f48a03dca78b2b04e68c27dc078cfb56d40",
+    "codes/chapters/ch10/examples/generate_noise_mismatch.py": "e9c65f070ed5ccb02c11132fc4ddb66a12eb30345f974b5732521fb2bbd59765",
+    "codes/chapters/ch10/core/noise_suppression.py": "fbef0765d532c7dfbd17f53e3cdd4799fb4457982344a0f0298b2137f9fd9de3",
+    "codes/chapters/ch02/core/spectral.py": "5ade0b101cc00615276b3b60c3659ece3e68ad614cd2cb2edeb568359f034059",
+    "codes/chapters/ch02/core/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385",
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8"
+  },
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O"
+  },
+  "files": {
+    "noise_reference.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sha256": "932cc4eb6b32f45f842d73930a7cfecf35a54ec9c19e6bbea1da594bd891bf8f"
+    },
+    "noise_component.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sha256": "aac6b0b9d57a2c36e18e5528d02571fa3c0da6bc110dfc1f8ffecf6ac043a1b2"
+    },
+    "noise_mixture.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sha256": "6e254769eaab5c6dd01fd91948ce53eb369772376fe11b4649bdcbda7d8ee9e9"
+    },
+    "noise_fixed.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sha256": "9b9e938c3595394aebdbf40cb8eede97fdda99c55119d87e66e1447a13e94f79"
+    },
+    "noise_polluted.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sha256": "07672e0e54fb3c4fe4b6e4819819429c409727686596e32a8b3a78ad2b1cb8d3"
+    },
+    "noise_known_variance.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sha256": "476508b544c641db550dfa5603b1682c435ac0d97550503844c33be7666c0ff7"
+    }
+  }
+}

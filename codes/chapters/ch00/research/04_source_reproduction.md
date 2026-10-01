@@ -96,6 +96,10 @@ WPE 首先验证延迟回归向量、复共轭和加权正规方程。离线与�
 
 外部时间戳与模型运行时也应先检查协议。[工业研究 I01 与 I18](03_industrial_deployment.md)分别核对 PortAudio 的测点含义、ONNX Runtime 的设备缓冲绑定与同步接口。E10-17 实际运行的是构造时间戳的减法和样本映射；I18 的 GPU 绑定对照仍是实验设计。两者不能因为有可执行教学程序就统一登记为设备实验已通过。
 
+2026-10-01的[五项固定源码合同](03_industrial_deployment.md#industrial-controlled-contracts)进一步区分“执行原控制流”和“执行真实模型”。CMSIS只编译原标量FIR/初始化，Speex只调用四个原噪声助手；WebRTC VAD把实际分类器明确换为路由计数器，RNNoise把模型处理换为身份复制，FastEnhancer把加载、会话、计时和保存换为可检查的边界。它们能核验抽头顺序、跨块状态、合法帧、首尾计数和RTF分母，不能给出ARM周期、VAD正确率或降噪质量。
+
+本书SRO闭环的 `fit_delay_ppm` 当前直接调用[唯一NumPy拟合核](../../ch10/core/engineering.py)，使用项目 `.venv` 环境。它仍是精确合成时间戳、恒定速率和已知可解析波形的小例；统一实现并未使其变成实际设备盲估计。历史报告保留当时的路径、环境和执行条件。
+
 ## 5. 记录结果的必要字段
 
 获取、构建和数值实验分开记录。下表以 2026-09-23 的本机记录为底稿，已累计补入后续实验；SMP-PHAT 的隔离有符号索引适配与独立 DFT 对照于 2026-09-24 完成。它不是推荐配置的性能表：
@@ -115,6 +119,7 @@ WPE 首先验证延迟回归向量、复共轭和加权正规方程。离线与�
 | RobustSBL、BTK | 已取得固定源码 | MATLAB 或旧构建条件分别见空间研究 | 未运行 | 未测 |
 | DNN 控制 AEC、联合 AEC/NR、NBSS | 已取得源码子集 | 训练/推理依赖、数据和权重未齐备 | 未运行 | 未测 |
 | lib_xcore_math v3.0.0 | 已取得，与 lib_voice 依赖一致 | 未配置 XTC 与目标板 | 未运行宿主参考或 VPU 内核 | 未测 |
+| 五项工业源码合同 | 五个既有锁定项目，原文件/许可SHA及Git blob逐项核验 | 2026-10-01在项目Python/NumPy环境、C11标量编译器与临时目录执行；替身单独列出 | [新报告](../../ch10/reports/industrial_contracts.json)核CMSIS整数FIR、Speex两频点助手、VAD路由、RNNoise demo、FastEnhancer包装器；非整包/模型测试 | 未测 |
 
 “未运行”不同于“运行失败”；“存在编译器”也不同于“依赖验证通过”。获取工具报告中的 `execution: not_run`
 始终描述获取工具自身没有执行上游代码，具体方法的实验结果保存在独立研究记录，不反写成整个项目已通过。
@@ -171,6 +176,10 @@ WPE 首先验证延迟回归向量、复共轭和加权正规方程。离线与�
 
 PCM16 的七帧双通道读回得到帧数 3/3/1/0、标量项数 6/6/2/0，归一化误差为 0。
 完整条件和原始数值见[工业报告](../../ch10/reports/industrial_interfaces.json)及[工业研究](03_industrial_deployment.md)。
+
+第10章本次另以[合同脚本](../../ch10/examples/audit_industrial_contracts.py)生成[独立报告](../../ch10/reports/industrial_contracts.json)，不改上述历史三库报告或2026-09-28的STOI/DeepFilterNet报告。报告分别绑定原文件、许可证、HEAD和工具/锁表摘要，保存每项代替边界与运行前后清洁状态；CMSIS的期望来自整数卷积、Speex来自手写递推，VAD及demo来自合法帧与样本计数。
+
+FastEnhancer例使用受控假计时：1000点输入、512点窗、256点帧移、10 ms假耗时，原打印0.125而新增源时长分母为0.16；[E10-32](../../../../chapters/10_engineering-practice.md#e10-32)解释两者。原main的保存分支也在内存接收器上核对裁256点后取原长度，没有写模型输出文件。MCRA受控软更新的[E10-28](../../../../chapters/10_engineering-practice.md#e10-28)是本书给定局部统计的递推子链；Speex原助手的硬标记不能充当该原算法复现。
 
 [SBL 程序](../../ch04/examples/reproduce_sbl_reference.py)实际调用独立目录中未改动的作者实现，
 以四麦、200 个快拍、1° 网格核对两源定位。标准条件得到 −30°、30°；将两源均移出网格 0.5° 后，

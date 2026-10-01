@@ -51,6 +51,9 @@ DERIVATIVE_AUDIO_ROOT = CODE_CHAPTERS / "ch05" / "derivative_audio"
 APA_AUDIO_ROOT = CODE_CHAPTERS / "ch06" / "apa_audio"
 MINT_AUDIO_ROOT = CODE_CHAPTERS / "ch07" / "mint_audio"
 MASK_AUDIO_ROOT = CODE_CHAPTERS / "ch08" / "mask_audio"
+NOISE_AUDIO_ROOT = CODE_CHAPTERS / "ch10" / "noise_audio"
+NOISE_AUDIO_WAVS = {"noise_" + name + ".wav" for name in
+                    ("reference", "component", "mixture", "fixed", "polluted", "known_variance")}
 MASK_AUDIO_WAVS = {"mask_" + name + ".wav" for name in
                    ("target", "other", "mixture", "bounded_real", "unbounded_real", "complex_oracle")}
 MINT_AUDIO_WAVS = {"mint_reference.wav": 1, "mint_well_array.wav": 2,
@@ -147,7 +150,8 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{display:block;margin:20px auto;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
-@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}.tracking-readable-table th,.tracking-readable-table td{min-width:8em}}
+@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}.tracking-readable-table th,.tracking-readable-table td{min-width:8em}.industrial-readable-table th,.industrial-readable-table td{min-width:8em}}
+@media(max-width:900px){.noise-readable-table th:first-child,.noise-readable-table td:first-child{min-width:6em}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 """
 
@@ -584,6 +588,18 @@ def stage_mask_audio(source, destination):
     return expected
 
 
+def stage_noise_audio(source, destination):
+    """Publish only the fully replayed six-file noise-mismatch experiment."""
+    from codes.chapters.ch10.examples.generate_noise_mismatch import check_assets, validate_asset_directory
+    check_assets(source)
+    validate_asset_directory(destination, check=False)
+    expected = NOISE_AUDIO_WAVS | {"MANIFEST.json"}
+    destination.mkdir()
+    for name in sorted(expected):
+        shutil.copy2(source / name, destination / name)
+    return expected
+
+
 def _check_tracking_members(folder, expected):
     """Reject unexpected directories as well as linked or special members."""
     if (folder.is_symlink() or not folder.is_dir()
@@ -714,7 +730,7 @@ def source_digest():
     paths += [main_audio_manifest_path(CODE_CHAPTERS)]
     paths += sorted(main_audio_sources())
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "build_markdown_helpers.py",
@@ -879,6 +895,9 @@ def rewrite_site_links(html, source_path):
         if target.parent == MINT_AUDIO_ROOT.resolve() and target.name in (set(MINT_AUDIO_WAVS) | {"MANIFEST.json"}):
             relative = os.path.relpath("mint_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
+        if target.parent == NOISE_AUDIO_ROOT.resolve() and target.name in (NOISE_AUDIO_WAVS | {"MANIFEST.json"}):
+            relative = os.path.relpath("noise_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
+            return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
         if target.parent == MASK_AUDIO_ROOT.resolve() and target.name in (MASK_AUDIO_WAVS | {"MANIFEST.json"}):
             relative = os.path.relpath("mask_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
@@ -897,7 +916,7 @@ def rewrite_site_links(html, source_path):
         # input as a download link; only the explicit mono derivatives play.
         if parsed.path.endswith("real_audio/demand_nriver_16ch_10s.wav"):
             return match.group(0)
-        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|stft_audio|geometry_audio|focus_audio|derivative_audio|apa_audio|mint_audio|mask_audio)/[a-z0-9_]+\.wav", parsed.path):
+        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|stft_audio|geometry_audio|focus_audio|derivative_audio|apa_audio|mint_audio|mask_audio|noise_audio)/[a-z0-9_]+\.wav", parsed.path):
             return match.group(0)
         safe_href = escape(href, quote=True)
         safe_label = escape(re.sub(r'<[^>]+>', '', unescape(label)), quote=True)
@@ -997,7 +1016,31 @@ def render(md_text, source_path=None):
             }
             return '<table'+(' class="tracking-readable-table"' if readable else '')+'>'+inner+'</table>'
         html = re.sub(r'<table>(.*?)</table>', tracking_table, html, flags=re.S)
+    if source_path.name == "10_engineering-practice.md":
+        def noise_table(match):
+            inner = match.group(1)
+            headers = re.findall(r'<th\b[^>]*>(.*?)</th>', inner, flags=re.S)
+            labels = tuple(unescape(re.sub(r'<[^>]+>', '', value)).strip() for value in headers)
+            readable = labels in {
+                ("输出", "阶跃前浮点 MSE", "阶跃前 PCM MSE", "阶跃后浮点 MSE", "阶跃后 PCM MSE"),
+                ("支路", "噪声功率来源", "能检查的问题"),
+            }
+            return '<table'+(' class="noise-readable-table"' if readable else '')+'>'+inner+'</table>'
+        html = re.sub(r'<table>(.*?)</table>', noise_table, html, flags=re.S)
     # 保留 table 原生语义；横向滚动由可聚焦的外层区域承担，键盘用户也能操作宽表。
+    if source_path == RESEARCH_ROOT / "03_industrial_deployment.md":
+        def industrial_table(match):
+            inner = match.group(1)
+            headers = re.findall(r'<th\b[^>]*>(.*?)</th>', inner, flags=re.S)
+            labels = tuple(unescape(re.sub(r'<[^>]+>', '', value)).strip() for value in headers)
+            readable = labels in {
+                ("对照", "输出总帧数", "六个脉冲相对参考时间的峰值采样点偏移（帧）", "1～9 s 偏移增量（帧）", "部分消费调用", "输入取尽后补出帧数"),
+                ("接口", "需要核对的对象", "不能省略的条件"),
+                ("阅读位置", "要核对的变量/步骤", "独立判据"),
+                ("固定对象", "实际执行与输入", "独立核对结果", "代替项和未执行范围"),
+            }
+            return '<table'+(' class="industrial-readable-table"' if readable else '')+'>'+inner+'</table>'
+        html = re.sub(r'<table>(.*?)</table>', industrial_table, html, flags=re.S)
     html = re.sub(
         r"<table([^>]*)>(.*?)</table>",
         (r'<div class="table-scroll" tabindex="0" role="region" '
@@ -1114,10 +1157,12 @@ def _validate_publish_targets(targets, boundary=None):
 def _validate_site_output(directory):
     """Reject linked destination directories before creating or scanning them."""
     directory = Path(directory)
+    from codes.chapters.ch10.examples.generate_noise_mismatch import validate_asset_directory
+    validate_asset_directory(directory / "noise_audio", check=False)
     subdirectories = ('research', 'audio', 'real_audio', 'room_audio', 'moving_audio',
                       'tracking_audio', 'gss_audio', 'binaural_audio', 'stft_audio',
                       'geometry_audio', 'focus_audio', 'derivative_audio', 'apa_audio',
-                      'mint_audio', 'mask_audio')
+                      'mint_audio', 'mask_audio', 'noise_audio')
     for folder in (directory, *(directory/name for name in subdirectories)):
         if folder.is_symlink() or (folder.exists() and not folder.is_dir()):
             raise ValueError('站点目标必须为普通目录：'+str(folder))
@@ -1291,6 +1336,8 @@ def main():
         (OUT / "mask_audio").mkdir(exist_ok=True)
         stale += [path for path in (OUT / "mask_audio").iterdir()
                   if path.is_file() and path.name not in mask_names]
+        noise_names = stage_noise_audio(NOISE_AUDIO_ROOT, temp_out / "noise_audio")
+        (OUT / "noise_audio").mkdir(exist_ok=True)
         publish_files([(temp_out / name, OUT / name) for name in sorted(expected)] +
                       [(temp_out / "audio" / name, OUT / "audio" / name) for name in audio_names] +
                       [(temp_out / "real_audio" / name, OUT / "real_audio" / name)
@@ -1318,7 +1365,9 @@ def main():
                       [(temp_out / "mint_audio" / name, OUT / "mint_audio" / name)
                        for name in sorted(mint_names)] +
                       [(temp_out / "mask_audio" / name, OUT / "mask_audio" / name)
-                       for name in sorted(mask_names)], stale, boundary=OUT)
+                       for name in sorted(mask_names)] +
+                      [(temp_out / "noise_audio" / name, OUT / "noise_audio" / name)
+                       for name in sorted(noise_names)], stale, boundary=OUT)
     print("DONE", len(expected), "pages")
 
 

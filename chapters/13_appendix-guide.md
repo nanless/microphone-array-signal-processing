@@ -457,7 +457,7 @@ $$
 
 **混响时间怎样算。** 从完整 RIR 的 Schroeder 倒向能量积分曲线，在 $-5$ 到 $-25$ dB 区间拟合 dB 对时间的直线，按斜率外推至 $-60$ dB；本题将它称为“$T_{20}$ 外推的 $T_{60}$”，不是实测房间混响时间。逐麦值与中位数都保留，区间不够时脚本报错。
 
-以 1 m、$-30°$ 条件的第 1 只麦为例，本书仿真的直达 RIR 能量约为 0.96774，反射 RIR 能量约为 0.24448，因而该麦 DRR 为 $10\log_{10}(0.96774/0.24448)\approx5.975$ dB；四麦 DRR 的中位数为 5.755 dB。同一只麦的 $-5$～$-25$ dB 拟合斜率约为 $-109.682$ dB/s，故外推 $T_{60}=-60/(-109.682)\approx0.547$ s。计算先用未舍入值，下面仅展示约数。
+以 1 m、$-30°$ 条件的第 1 只麦为例，本书仿真的直达 RIR 能量约为 0.96844，反射 RIR 能量约为 0.24448，因而该麦 DRR 为 $10\log_{10}(0.96844/0.24448)\approx5.975$ dB；四麦 DRR 的中位数为 5.755 dB。同一只麦的 $-5$～$-25$ dB 拟合斜率约为 $-109.682$ dB/s，故外推 $T_{60}=-60/(-109.682)\approx0.547$ s。计算先用未舍入值，下面仅展示约数。
 
 **第 16 题：六个位置的结果**
 
@@ -730,7 +730,9 @@ $$
 
 图61从第9章E20与E21的指定解析模型生成：相关观测不能被重复计为独立证据，固定阵列的纯方位观测不能辨认未知距离与速度的共同尺度。它不读取音频、不做随机抽样；数值报告在 `codes/chapters/ch09/reports/figure61_tracking_information.json`。
 
-图片写入 `figures/`，共 61 张：
+图62计算第10章的给定噪声软更新、有限尾部逆积分和非抢占阻塞。图63读取第10章[独立六WAV清单](../codes/chapters/ch10/noise_audio/MANIFEST.json)，分开浮点分解与实际PCM总误差；已知方差对照使用额外真值，不能称盲估计。
+
+图片写入 `figures/`，共 63 张：
 
 ```bash
 .venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
@@ -738,7 +740,8 @@ $$
 .venv/bin/python -m codes.chapters.ch06.examples.generate_apa_audio
 .venv/bin/python -m codes.chapters.ch07.examples.mint_teaching_demo
 .venv/bin/python -m codes.chapters.ch08.examples.mask_representation_demo
-.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～61
+.venv/bin/python -m codes.chapters.ch10.examples.generate_noise_mismatch
+.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～63
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～39（回声消除专题）
 ```
 

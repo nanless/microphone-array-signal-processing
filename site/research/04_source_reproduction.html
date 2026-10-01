@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码获取与独立复现记录 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="46b942113f9d"><style>
+<meta name="source-digest" content="9787b2ac86cd"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -44,7 +44,8 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{display:block;margin:20px auto;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
-@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}.tracking-readable-table th,.tracking-readable-table td{min-width:8em}}
+@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}.tracking-readable-table th,.tracking-readable-table td{min-width:8em}.industrial-readable-table th,.industrial-readable-table td{min-width:8em}}
+@media(max-width:900px){.noise-readable-table th:first-child,.noise-readable-table td:first-child{min-width:6em}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
@@ -241,6 +242,8 @@ ERLE 不能把双讲中的近端语音解释成残余回声，也不能用参考
 连续重采样必须保留滤波历史和分数相位；逐块重新初始化会在块边界产生跳变，即使每块单独看起来正常。</p>
 <p>事件边界也要有独立期望。服务时间与到达周期严格相等时，一帧完成后应立即释放容量，再接收同刻到来的帧；不能让浮点乘法与累加的舍入差制造丢帧。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/engineering_boundary_exercises.py">工程边界练习 E10-16</a>以整数刻度手算作对照，另保留略大于周期的真实超期输入。AGC 的增益下降更新则要回到解析等式：平滑系数为 1 时增益应等于目标增益；“输出有限且不削波”并不能排除数值消减导致的错误静音。</p>
 <p>外部时间戳与模型运行时也应先检查协议。<a href="03_industrial_deployment.html">工业研究 I01 与 I18</a>分别核对 PortAudio 的测点含义、ONNX Runtime 的设备缓冲绑定与同步接口。E10-17 实际运行的是构造时间戳的减法和样本映射；I18 的 GPU 绑定对照仍是实验设计。两者不能因为有可执行教学程序就统一登记为设备实验已通过。</p>
+<p>2026-10-01的<a href="03_industrial_deployment.html#industrial-controlled-contracts">五项固定源码合同</a>进一步区分“执行原控制流”和“执行真实模型”。CMSIS只编译原标量FIR/初始化，Speex只调用四个原噪声助手；WebRTC VAD把实际分类器明确换为路由计数器，RNNoise把模型处理换为身份复制，FastEnhancer把加载、会话、计时和保存换为可检查的边界。它们能核验抽头顺序、跨块状态、合法帧、首尾计数和RTF分母，不能给出ARM周期、VAD正确率或降噪质量。</p>
+<p>本书SRO闭环的 <code>fit_delay_ppm</code> 当前直接调用<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/core/engineering.py">唯一NumPy拟合核</a>，使用项目 <code>.venv</code> 环境。它仍是精确合成时间戳、恒定速率和已知可解析波形的小例；统一实现并未使其变成实际设备盲估计。历史报告保留当时的路径、环境和执行条件。</p>
 <span id="sec-10" class="anchor-alias" aria-hidden="true"></span><span id="5-记录结果的必要字段" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-96ac81c5a8">5. 记录结果的必要字段</h2>
 <p>获取、构建和数值实验分开记录。下表以 2026-09-23 的本机记录为底稿，已累计补入后续实验；SMP-PHAT 的隔离有符号索引适配与独立 DFT 对照于 2026-09-24 完成。它不是推荐配置的性能表：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -345,6 +348,13 @@ ERLE 不能把双讲中的近端语音解释成残余回声，也不能用参考
 <td>未运行宿主参考或 VPU 内核</td>
 <td>未测</td>
 </tr>
+<tr>
+<td>五项工业源码合同</td>
+<td>五个既有锁定项目，原文件/许可SHA及Git blob逐项核验</td>
+<td>2026-10-01在项目Python/NumPy环境、C11标量编译器与临时目录执行；替身单独列出</td>
+<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/reports/industrial_contracts.json">新报告</a>核CMSIS整数FIR、Speex两频点助手、VAD路由、RNNoise demo、FastEnhancer包装器；非整包/模型测试</td>
+<td>未测</td>
+</tr>
 </tbody>
 </table></div>
 <p>“未运行”不同于“运行失败”；“存在编译器”也不同于“依赖验证通过”。获取工具报告中的 <code>execution: not_run</code>
@@ -393,6 +403,8 @@ ViSQOL 还需固定 speech/audio 模式、采样率和映射模型，不能混�
 幅度从 0.1 变为 0.05 后下降 6.0206 LU；静音记录为 <code>null</code> 并保留无有效门控能量的原因。</p>
 <p>PCM16 的七帧双通道读回得到帧数 3/3/1/0、标量项数 6/6/2/0，归一化误差为 0。
 完整条件和原始数值见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/reports/industrial_interfaces.json">工业报告</a>及<a href="03_industrial_deployment.html">工业研究</a>。</p>
+<p>第10章本次另以<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/examples/audit_industrial_contracts.py">合同脚本</a>生成<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/reports/industrial_contracts.json">独立报告</a>，不改上述历史三库报告或2026-09-28的STOI/DeepFilterNet报告。报告分别绑定原文件、许可证、HEAD和工具/锁表摘要，保存每项代替边界与运行前后清洁状态；CMSIS的期望来自整数卷积、Speex来自手写递推，VAD及demo来自合法帧与样本计数。</p>
+<p>FastEnhancer例使用受控假计时：1000点输入、512点窗、256点帧移、10 ms假耗时，原打印0.125而新增源时长分母为0.16；<a href="../10_engineering-practice.html#e10-32">E10-32</a>解释两者。原main的保存分支也在内存接收器上核对裁256点后取原长度，没有写模型输出文件。MCRA受控软更新的<a href="../10_engineering-practice.html#e10-28">E10-28</a>是本书给定局部统计的递推子链；Speex原助手的硬标记不能充当该原算法复现。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/examples/reproduce_sbl_reference.py">SBL 程序</a>实际调用独立目录中未改动的作者实现，
 以四麦、200 个快拍、1° 网格核对两源定位。标准条件得到 −30°、30°；将两源均移出网格 0.5° 后，
 各有 0.5° 网格误差。低信噪比和源数错设的两组达到 1000 次上限，仍作为未收敛结果保存。

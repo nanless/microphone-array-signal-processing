@@ -56,19 +56,9 @@ def recover_device_indices(timestamps_s: list[float]) -> tuple[list[int], list[d
 
 
 def fit_delay_ppm(reference_times_s: list[float], delays_s: list[float]) -> tuple[float, float]:
-    """Fit delay = intercept + slope * reference time, with no package dependency."""
-    if (len(reference_times_s) != len(delays_s) or len(delays_s) < 2
-            or not all(math.isfinite(v) for v in reference_times_s + delays_s)):
-        raise ValueError("fit inputs must have equal finite lengths >= 2")
-    mean_time = math.fsum(reference_times_s) / len(reference_times_s)
-    mean_delay = math.fsum(delays_s) / len(delays_s)
-    centered_times = [t - mean_time for t in reference_times_s]
-    denominator = math.fsum(t * t for t in centered_times)
-    if denominator == 0:
-        raise ValueError("reference times must vary")
-    slope = math.fsum(t * (d - mean_delay)
-                      for t, d in zip(centered_times, delays_s)) / denominator
-    return slope * 1e6, mean_delay - slope * mean_time
+    """Thin adapter to the chapter's unique finite real line-fit implementation."""
+    from codes.chapters.ch10.core.engineering import estimate_sro_ppm
+    return estimate_sro_ppm(reference_times_s, delays_s)
 
 
 class StatefulLinearClockCorrector:
@@ -77,6 +67,9 @@ class StatefulLinearClockCorrector:
     The phase (``next_output_index``) and last device sample survive each push.
     A missing device sample creates invalid outputs rather than being silently
     bridged. The caller must keep the same instance across chunks.
+    Reference/device indices are limited to exact float64 integers (2**53).
+    Nonzero initial/ongoing positions below float64 support are rejected;
+    a failed push leaves phase and previous-sample history unchanged.
     """
 
     def __init__(self, reference_rate_hz: float, device_rate_hz: float,
@@ -92,25 +85,31 @@ class StatefulLinearClockCorrector:
             raise ValueError("rates must be positive")
         if output_start_index >= reference_length:
             raise ValueError("output_start_index must be within the reference signal")
+        if reference_length - 1 > 2**53:
+            raise ValueError("reference indices exceed exact float64 integer support")
         first_position = device_start_s * reference_rate_hz
         if not math.isfinite(first_position):
             raise ValueError("initial clock position exceeds finite range")
+        if device_start_s != 0 and first_position == 0:
+            raise ValueError("nonzero initial clock position is below float64 support")
         self.reference_rate_hz = reference_rate_hz
         self.device_rate_hz = device_rate_hz
         self.device_start_s = device_start_s
         self.reference_length = reference_length
         self.next_output_index = max(output_start_index,
-                                     math.ceil(first_position - 1e-12))
+                                     math.ceil(first_position))
         self.previous: tuple[int, float] | None = None
 
     def push(self, device_indices: list[int], samples: list[float]) -> list[tuple[int, float | None]]:
-        from codes.chapters.ch10.core.engineering import _finite_scalar, _integer
+        from codes.chapters.ch10.core.engineering import _finite_scalar, _integer, safe_convex_combination
         indices = [_integer(i, "device index") for i in device_indices]
         values = [_finite_scalar(v, "sample") for v in samples]
         if len(indices) != len(values):
             raise ValueError("indices and samples must be equal-length finite sequences")
         if len(indices) == 0:
             return []
+        if indices[-1] > 2**53:
+            raise ValueError("device indices exceed exact float64 integer support; state unchanged")
         if any(right <= left for left, right in zip(indices, indices[1:])) or (self.previous and indices[0] <= self.previous[0]):
             raise ValueError("device indices must strictly increase across calls")
         known_indices = ([self.previous[0]] if self.previous else []) + indices
@@ -119,9 +118,16 @@ class StatefulLinearClockCorrector:
         next_output_index = self.next_output_index
         while next_output_index < self.reference_length:
             j = next_output_index
-            position = (j / self.reference_rate_hz - self.device_start_s) * self.device_rate_hz
+            try:
+                reference_time = j / self.reference_rate_hz
+                relative_time = reference_time - self.device_start_s
+                position = relative_time * self.device_rate_hz
+            except OverflowError as error:
+                raise ValueError("clock position exceeds finite range; state unchanged") from error
             if not math.isfinite(position):
                 raise ValueError("clock position exceeds finite range; state unchanged")
+            if (j != 0 and reference_time == 0) or (relative_time != 0 and position == 0):
+                raise ValueError("nonzero clock position is below float64 support; state unchanged")
             if position > known_indices[-1]:
                 break
             right = bisect_left(known_indices, position)
@@ -135,7 +141,7 @@ class StatefulLinearClockCorrector:
                     corrected = None
                 else:
                     fraction = position - known_indices[left]
-                    corrected = known_values[left] * (1 - fraction) + known_values[right] * fraction
+                    corrected = float(safe_convex_combination(known_values[left], known_values[right], fraction))
             if corrected is not None and not math.isfinite(corrected):
                 raise ValueError("interpolated sample exceeds finite range; state unchanged")
             emitted.append((j, corrected))
