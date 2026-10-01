@@ -271,6 +271,74 @@ $\left[\begin{smallmatrix}1/10&1/5\\1/10&1/5\end{smallmatrix}\right]$。
 
 默认命令只把当前审计写到标准输出；显式 `--report` 才原子保存[独立报告](../../appendix_a/reports/upstream_solver_contracts.json)。报告核对官方origin、完整HEAD、锁表摘要、两个原文件的SHA/Git blob、MIT许可、工具摘要和运行前后洁净状态，并保存四个原函数例、两个独立NumPy例的输入类型、输出、独立期望、容差、警告和失败分类。拒绝符号链接、词法 `..`、非普通目标与上游缓存内报告路径。不覆盖旧历史报告，不取得新源码；完整包、波束音频、模型和设备都未在这个审计中运行。
 
+<a id="appendix-b-reproduction"></a>
+
+### 附录 B：先对齐研究方向的任务与版本
+
+[附录B的研究速览](../../../../chapters/13_appendix-guide.md#sec-13-3)包含八类方向，但它们并不输出同一种结果。目标说话人提取输出音轨，DiCoW输出指定说话人的文字，CHiME-9 ECHI输出低延迟增强流；ArrayDPS的输出又有参考通道与混响源像的定义。选型前先固定目标，不能把不同任务的WER、SI-SDR或延迟写成统一排名。
+
+以下定位与实现边界于2026-10-02核查。论文只用实际阅读的相关节说明方法，不转引条件不齐的性能数字；各项目的完整固定提交、许可与本地选集仍以[锁表](../SOURCES.lock.json)为准。
+
+| 研究方向 | 对基线改变的步骤与输出 | 最小复现或选型时必须固定的条件 |
+|---|---|---|
+| 预训练识别后端 | CHiME-7/8若干系统在分割、GSS或波束之后使用Whisper/WavLM识别 | 作者综述v1的§4.2～4.4、表4～6分别记录系统组成；固定该系统的前端、权重、分词与评分，不能仅替换后端名称后沿用成绩 |
+| CHiME-8 DASR任务与基线 | Cornell等的报告介绍任务与ESPnet/NeMo两套基线，不是一个独立参赛系统 | 原文§5～6对应数据、分割与识别链；先选其中一套完整配置，再核设备物理通道和实际使用通道 |
+| 目标说话人提取 | TEA-PSE 3.0用注册条件串联幅度回归与复谱恢复；CIENet做逐帧注册谱交互；SonicSieve用结构提供的方向线索 | 注册语音、提示方向或声学结构是不同额外输入。核任务采样率、目标身份和非目标泄漏；SonicSieve还需其对齐的外接声学结构麦，不能迁移为任意手机纯软件效果 |
+| 生成式增强 | SGMSE+从条件随机微分方程采样；StoRM先判别式回归，再生成式恢复；FlowSep做文本查询的隐空间通用声音分离 | 固定实际采样分派、函数求值次数、输入非零条件与内容一致性；文本事件分离不自动成为多通道语音增强。没有确定权重许可和配置时只做结构检查 |
+| TF-GridNet | 从复数时频表示学习目标复谱，处理块交替沿频率、时间和跨帧路径交换信息 | 会议单通道无混响版、期刊多条件扩展与ESPnet单个分离类分别固定；必须记录输入麦数、输出源数、归一化和参考，不能把一类网络当成期刊完整两阶段链 |
+| 几何无关系统 | Kamo作者v2的局部分割、GSS嵌入、全局聚类/人数与TS-VAD细化构成分割链；通道选择、WPE/GSS、SP-MWF与识别组成后续链 | 按§2、§4.1～4.3.6记录活动标签、EV/C50通道选择与输出参考；几何无关不意味着任意时钟漂移、标签错误或残余错位已被解决 |
+| CHiME-9与DiCoW | ECHI处理流式助听增强；DiCoW以分割活动条件控制Whisper目标转写 | ECHI规则分别定义算法延迟与输出发射延迟；DiCoW的文字输出不能用于该增强排名。固定作者演示的v1/v2入口、分割权重与目标说话人 |
+| ArrayDPS | 把扩散先验与每采样步的相对RIR/FCP混合估计结合，目标为参考麦的混响源像 | 固定已知源数、同步通道、语音先验域、谱窗/帧移与停止/样本选择；400步采样和内层优化不能直接当作流式模块 |
+
+原始阅读入口分别为[CHiME-7/8作者综述v1](https://arxiv.org/html/2507.18161v1 "citation")、[Cornell等2024原报告§5～6](https://www.isca-archive.org/chime_2024/cornell24_chime.pdf "citation")、[TEA-PSE 3.0 §2](https://arxiv.org/pdf/2303.07704 "citation")、[CIENet §2.1～2.2，式(1)～(5)](https://arxiv.org/pdf/2402.17146 "citation")、[SonicSieve作者v3 §3～4](https://arxiv.org/html/2504.10793v3 "citation")、[TF-GridNet期刊作者稿§II～III](https://zqwang7.github.io/publications/TASLP2023_TF-GridNet.pdf "citation")及[Kamo作者v2 §2、§4](https://arxiv.org/html/2502.09859v2 "citation")。这里只引用对应选节，不称本书复现了这些模型的训练或整套会议系统。
+
+#### 有效入口、额外资产与计算边界
+
+[SGMSE+原论文](https://arxiv.org/pdf/2208.05830 "citation")的§II-B式(5)～(7)与§III描述条件扩散和采样；[StoRM原论文](https://arxiv.org/pdf/2212.11851 "citation")应单独对应回归与再生成流程。固定SGMSE提交 `1961cf4483e37df1bb92ccf0eb8b28bf6f44cb0e` 的 `sgmse/model.py::ScoreModel.enhance` 在OUVE/SBVE分支使用 `self.sde.sampler_type`，不能只记录同名公开形参；固定StoRM提交 `257e9636a7251ca40aa200753d5c0fe918e31879` 的 `StochasticRegenerationModel.enhance` 则按其形参选择PC/ODE。二者先按整输入峰值归一化，当前入口未显式保护零峰值，并直接使用CUDA；这些是本书的静态源码核查，不是模型运行结果。完整调用还需各自依赖、权重和数据权限，见[增强研究N10](02_aec_wpe_separation.md#sec-u-867bd32313)。
+
+ESPnet固定 `be79590bb2ff26ffb01bc825c5f68cb9418b7f0d` 的 `espnet2/enh/separator/tfgridnet_separator.py::TFGridNet.forward` 接收批量、采样点、麦克风轴，网络配置固定 `n_imics`，并以整记录的标准差缩放输入。代码中的归一化与因果性要按原实现核对，不能把注释中的RMS或网络名字当作完整接口定义。本书没有导入其Torch网络、取得权重或运行音频推理；Apache-2.0代码许可不扩展到任意训练数据。
+
+DiCoW演示固定 `e9326bd536bf632e823357438b210102903ba620` 的 `example.py` 使用v1，`app.py` 使用v2；二者均指向Pyannote 3.1分割条件，不能因同仓提交相同而合并成同版模型。相关训练仓 `TS-ASR-Whisper` 固定 `0ea6679d44405f5ff39188030123524686c198e9` 另有身份。代码Apache-2.0、两个DiCoW模型卡CC BY 4.0、分割模型门控条件分别核查；本书没有运行权重。详细许可与目标转写边界见[增强研究N17](02_aec_wpe_separation.md#sec-u-35c49c683c)。
+
+FlowSep固定 `d8164db58bd461ef5bb6df8ffd372b536ee6afb4` 仍按无明确代码许可的来源索引处理，未复制其源码或下载VAE/分离权重。TEA-PSE、CIENet、SonicSieve的原文阅读也不等于已有可重用的作者代码与模型。最小实验若缺少必要资产，应先在同一任务下作选型说明，不用一个未训练结构生成假成绩。[FlowSep的独立权重/数据边界](02_aec_wpe_separation.md#sec-u-372b17bd11)随其专题保留。
+
+ArrayDPS固定 `750ac2b7c75458f4ca5bad203dafda528f575e55` 的真实采样入口是 `src/sampler_spatial_v1_reverb_iva_8kHz.py::Sampler`；`separate.py` 是数据、采样预算与评分驾驶器。原论文§2式(1)～(5)定义参考通道1的全部混响源像，式(3)的相对RIR还依赖参考响应可逆的条件。干净语音扩散先验不会自动把输出目标改成无混响波形。[PMLR正式原文](https://proceedings.mlr.press/v267/xu25f.html "citation")的附录C.3使用512点FFT/64点帧移，固定CLI类配置默认为512/128，复现应明确选定其中一套条件。
+
+固定驾驶器读取干净参考计算SDR，并用它调整停止预算；原采样器本体没有把该真值作为输入。这一源码观察不外推为原论文不盲：论文§4.2分别报告五次样本均值、真值最佳样本与仅根据混合模型的最大似然选择。部署对照应自行声明无需干净参考的固定预算或可用选择准则，并分别计算质量与耗时。本书对这条扩散链只有固定代码的静态证据，未运行400步神经采样、权重或完整SMS-WSJ实验，详见[增强研究N11与独立报告](02_aec_wpe_separation.md#sec-u-3b78d29bc2)。
+
+#### ArrayDPS-Refine：单目标增强的有限研究入口
+
+[ArrayDPS-Refine作者v1](https://arxiv.org/html/2603.24385v1 "citation")的§2～3、式(1)～(16)与算法1讨论单目标增强：先把判别输出通过前向卷积预测与混合对齐，再由残差估计高斯噪声空间协方差，用这一协方差指导扩散采样；初始化也利用判别结果。最终单抽头对齐是另一步，可能继承判别输出中的错误。它针对判别增强中的非线性失真，改变似然模型与采样起点，和2025年的多源参考麦源像分离任务分别比较。
+
+这项候选的选型前提包括目标域的语音先验、剩余噪声的高斯/协方差近似、有效多通道混合与采样计算预算。2026-10-02核查的[ICASSP 2026正式程序单篇](https://www.cmsworkshops.com/ICASSP2026/view_paper.php?PaperNum=6235&bare=1 "citation")确认该论文的会议报告身份；方法引用仍明确使用作者v1，不补未核定的出版DOI或页码。[作者演示页](https://xzwy.github.io/ArrayDPSRefineDemo/ "citation")提供方法与试听，没有给出可核代码/权重许可入口。本书只保留这项问题、步骤与假设的研究索引，未取得或执行模型，未将它加入已复现算法或低延迟基线目录。
+
+<a id="tac-contracts"></a>
+
+### TAC作者源：共享结构核验与未执行原网络的界线
+
+附录B的通道置换问题需要区分两个性质：通道顺序改变时，通道索引输出按相同顺序重排，这是置换等变；跨通道平均不随顺序变化，这是聚合量的置换不变。加入一个通道通常改变平均值，所以支持可变通道数不等于数值输出不随麦数变化。[TAC作者论文v3 §2.1式(1)～(4)](https://arxiv.org/html/1910.14104v3 "citation")用共享变换、平均、拼接与残差连接说明这一步；[E13-11](../../../../chapters/13_appendix-guide.md#e13-11)分别手算交换通道、只复制一路与复制全部通道。
+
+本书通过获取工具取得作者[固定提交 `e3373b73358a96af6f64fdbe25327def8d6bd973`](https://github.com/yluo42/TAC/tree/e3373b73358a96af6f64fdbe25327def8d6bd973 "citation")的 `README.md`、`FaSNet.py`、`utility/__init__.py`、`utility/models.py` 四个文件，独立保存在被忽略的上游工作树。README明确声明CC-BY-NC-SA-3.0-US，源代码未随本教程再分发；没有取得音频、数据、权重或另一 `iFaSNet.py` 扩展。NumPy/PyTorch是原模块的依赖，但这一审计只使用标准库解析Python语法，不导入两模块或Torch。
+
+[只读合同工具](../../appendix_b/examples/audit_tac_contracts.py)核对origin、完整HEAD、四文件SHA与Git blob、README许可、锁表摘要及前后洁净状态，再执行十项静态AST检查。它不编译或执行原 `forward`，也没有把本书的独立NumPy夹具作为网络运行证据。
+
+| 核查对象 | 固定源中实际结构 | 证据所能支持的范围 |
+|---|---|---|
+| `DPRNN_TAC.__init__`与`forward` | 每个网络块有共享的transform/average/concat层；逐通道特征展开后使用同一组层 | 核实共享结构，而非验证已训练网络的质量或任意非法输入 |
+| 通道平均与拼接 | `num_mic.max()==0`取全部通道均值；否则按每项有效通道前缀取均值，再拼回各通道 | 核实原轴序和前缀协议；未实际测试混合零计数、空前缀或网络运行恢复 |
+| TAC残差 | 聚合分支经过共享变换和归一化后加入当前通道表示 | 核实残差位置；数学置换例由本书单独推导 |
+| `FaSNet_TAC.forward` | 用通道0中心段作为余弦特征参考，再估计各通道滤波器并平均输出 | 必须保持参考选择一致；不能由内部TAC直接证明整个包装器任意重排不变 |
+| 时域与网络范围 | 作者把原两阶段FaSNet改为单阶段TAC；段内RNN是双向，使用GroupNorm | 不是原FaSNet两阶段论文全复现，也没有因果、跨调用状态或有界延迟验证 |
+
+```bash
+.venv/bin/python -B -m codes.chapters.appendix_b.examples.audit_tac_contracts
+.venv/bin/python -B -m codes.chapters.appendix_b.examples.audit_tac_contracts --report codes/chapters/appendix_b/reports/tac_contracts.json
+```
+
+默认只输出JSON；仅显式 `--report` 原子保存[当前独立报告](../../appendix_b/reports/tac_contracts.json)。报告状态是 `passed_static_contracts`，保存十项结构定位与方法片段摘要，原运行调用计数为零；工具拒绝重复JSON字段、非有限数字、词法 `..`、符号链接、非普通目标和上游缓存内报告。报告不替代分离性能、权重/数据授权或设备验收。
+
+附录B的房间仿真、分数延迟和通道聚合数学例仍按各自的输入、脚本、PCM与统计窗口解释。对照时，[E13-12](../../../../chapters/13_appendix-guide.md#e13-12)复算共同尺度不变的DRR与极端数值边界，[E13-13](../../../../chapters/13_appendix-guide.md#e13-13)条件化时间原点与跨度后外推T20，[E13-14](../../../../chapters/13_appendix-guide.md#e13-14)按同源PCM与稳定评分窗比较同DRR的两条短RIR。这些独立练习不能由静态来源报告统一登记成原神经系统已运行。
+
 ## 6. 何时可以进入设备比较
 
 只有两套候选实现使用同一输入、评分区域和延迟口径，性能比较才有明确含义。硬件上再分别测量启动加载、

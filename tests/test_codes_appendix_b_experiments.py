@@ -15,7 +15,8 @@ from codes.chapters.appendix_b.appendix_b_experiments import (
     ROOM, _read_results, equal_drr_different_spectra, evidence_claims,
     four_mic_drr_and_convolution, paired_room_comparison, room_pcm_readback,
     room_pcm_srp_windows, run_exercises,
-    t20_from_edc_points, two_mic_srp_phase,
+    t20_from_edc_points, two_mic_srp_phase, shared_tac_fixture, scaled_rir_metrics,
+    conditioned_t20_times, response_audio_anchor,
 )
 from codes.chapters.appendix_b.examples.room_srp_exercise import plot_results, write_results
 
@@ -102,7 +103,7 @@ class AppendixBExperimentsTest(unittest.TestCase):
         # This is the independently fixed value of the currently published
         # export, not an expected value copied from the manifest under test.
         self.assertAlmostEqual(result["common_export_gain_from_manifest"],
-                               .151696899534143, delta=1e-13)
+                               .1516968997435788, delta=1e-13)
         self.assertLess(max(result["pcm_peak_absolute"].values()), .801)
         corrupted = copy.deepcopy(manifest)
         next(item for item in corrupted["files"] if item["case"] == "fixed_near_left"
@@ -112,7 +113,7 @@ class AppendixBExperimentsTest(unittest.TestCase):
 
     def test_e13_08_evidence_levels_do_not_skip_stages(self):
         result = run_exercises()
-        self.assertEqual(set(result), {f"E13-{number:02d}" for number in range(3, 11)})
+        self.assertEqual(set(result), {f"E13-{number:02d}" for number in range(3, 15)})
         stages = result["E13-08"]
         self.assertTrue(stages["cases_are_hypothetical"])
         self.assertEqual([len(stages[name]) for name in "ABC"], [2, 4, 5])
@@ -135,12 +136,16 @@ class AppendixBExperimentsTest(unittest.TestCase):
         self.assertEqual((result["n_fft"], result["hop_length"]), (512, 128))
         self.assertEqual(result["frequency_band_hz"], [300.0, 2000.0])
         expected = [
-            ("fixed_near_left", 38497, -29, -35, .8433347987, .4602513920),
-            ("fixed_near_right", 38497, 29, 35, .8406587686, .4611165190),
-            ("fixed_far_left", 38532, -32, -41, .6679868070, .4005346683),
-            ("fixed_far_right", 38532, 32, 39, .6645777262, .3915852496),
-            ("seeded_1", 38507, -40, -47, .8077866676, .4548248342),
-            ("seeded_2", 38478, 3, 3, .7080284069, .3815169288),
+            # Independently recomputed from current actual int16 bytes with
+            # sin^2 periodic Hann, a sliding-window FFT and raw pair phases.
+            # The rebuilt PRA environment changed 51 samples by one LSB;
+            # PHAT on the quiet tail consequently changes some peak digits.
+            ("fixed_near_left", 38497, -29, -35, .8433347979094756, .4602514450784251),
+            ("fixed_near_right", 38497, 29, 35, .8406587645307314, .4611163527954634),
+            ("fixed_far_left", 38532, -32, -41, .6679868354467086, .4005346768045548),
+            ("fixed_far_right", 38532, 32, 39, .6645775689121481, .3915850267002068),
+            ("seeded_1", 38507, -40, -47, .8077866715661713, .4548248369994118),
+            ("seeded_2", 38478, 3, 3, .7080284092131065, .3815171056500945),
         ]
         for row, (name, frames, first_angle, all_angle, first_peak, all_peak) in zip(
                 result["cases"], expected, strict=True):
@@ -194,6 +199,39 @@ class AppendixBExperimentsTest(unittest.TestCase):
                 write_results({"status": "pyroomacoustics_simulation_executed"},
                               plot, directory, result_path)
             self.assertEqual(result_path.read_bytes(), b"user results")
+
+    def test_e13_11_shared_maps_are_permutation_equivariant_not_copy_invariant(self):
+        result = shared_tac_fixture()
+        self.assertEqual(result['original']['output'], [7., 13.])
+        self.assertEqual(result['permuted']['output'], [13., 7.])
+        self.assertEqual(result['all_channels_duplicated']['output'], [7., 13., 7., 13.])
+        self.assertAlmostEqual(result['one_channel_duplicated']['mean'], 10/3)
+        np.testing.assert_allclose(result['one_channel_duplicated']['output'], [19/3, 19/3, 37/3], atol=2e-15)
+
+    def test_e13_12_common_scale_preserves_known_rir_metrics(self):
+        result = scaled_rir_metrics()
+        self.assertEqual([row['common_amplitude'] for row in result['cases']], [1., 1e-200, 1e200])
+        for row in result['cases']:
+            self.assertAlmostEqual(row['drr_db'], 10*math.log10(4), places=11)
+            self.assertAlmostEqual(row['t60_from_rir_s'], .6, delta=2e-7)
+
+    def test_e13_13_conditioning_recovers_endpoint_line(self):
+        cases = conditioned_t20_times()['cases']
+        for name, slope, t60 in (('large_origin', -5., 12.), ('tiny_span', -1e201, 6e-200), ('large_span', -1e-199, 6e200)):
+            self.assertLess(abs(cases[name]['slope_db_per_s']/slope-1), 1e-14)
+            self.assertLess(abs(cases[name]['t60_extrapolated_s']/t60-1), 1e-14)
+
+    def test_e13_14_formal_actual_pcm_preserves_integer_denominator(self):
+        result = response_audio_anchor()
+        self.assertEqual(result['parameters']['source_score'], [1600, 30400])
+        self.assertEqual(result['pcm_analysis']['integer_reference_squared_sum'], 309262788000)
+        errors = {'response_full_a.wav': 209299622400, 'response_full_b.wav': 99939578400}
+        for filename, error in errors.items():
+            row = result['pcm_analysis']['candidates'][filename]
+            self.assertEqual(row['integer_error_squared_sum'], error)
+            self.assertEqual(row['integer_reference_squared_sum'], 309262788000)
+            self.assertEqual(row['scored_samples'], 28800)
+            self.assertEqual(row['nmse'], error/309262788000)
 
 
 if __name__ == "__main__":

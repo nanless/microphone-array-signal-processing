@@ -1,0 +1,357 @@
+{
+  "schema_version": 1,
+  "sample_rate_hz": 16000,
+  "common_export_gain": 1.0,
+  "origin": "mathematical known RIR same-DRR contrast; not real room, speech or a recording",
+  "parameters": {
+    "sample_rate_hz": 16000,
+    "source_samples": 32000,
+    "samples_per_channel": 32002,
+    "full_tail_samples": 2,
+    "source_score": [
+      1600,
+      30400
+    ],
+    "scored_samples": 28800,
+    "frequencies_hz": [
+      2000,
+      4000
+    ],
+    "amplitudes": [
+      0.1,
+      0.1
+    ],
+    "envelope": "min(1,n/320,(31999-n)/320), n=0..31999; endpoints exactly zero",
+    "direct_rir": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "reflection_rirs": {
+      "a": [
+        0.0,
+        0.5,
+        0.5
+      ],
+      "b": [
+        0.0,
+        0.5,
+        -0.5
+      ]
+    },
+    "common_export_gain": 1.0,
+    "delay_fitting": false,
+    "gain_fitting": false,
+    "scope": "known complete mathematical convolution; not real room, speech, blind RIR/DRR estimation or listening study"
+  },
+  "analytic": {
+    "source_power": 0.01,
+    "source_tone_powers": [
+      0.005,
+      0.005
+    ],
+    "rir_drr_db": 3.010299956639812,
+    "candidates": {
+      "response_full_a.wav": {
+        "complex_response_real_imag": [
+          [
+            1.353553390593274,
+            -0.8535533905932737
+          ],
+          [
+            0.5,
+            -0.5000000000000001
+          ]
+        ],
+        "total_error_power": 0.00676776695296637,
+        "nmse": 0.676776695296637,
+        "direct_output_power": 0.01,
+        "reflection_output_power": 0.00676776695296637,
+        "full_energy_cross_term": -0.0014644660940672605,
+        "full_output_power": 0.015303300858899109
+      },
+      "response_full_b.wav": {
+        "complex_response_real_imag": [
+          [
+            1.3535533905932737,
+            0.14644660940672627
+          ],
+          [
+            1.5,
+            -0.49999999999999994
+          ]
+        ],
+        "total_error_power": 0.00323223304703363,
+        "nmse": 0.323223304703363,
+        "direct_output_power": 0.01,
+        "reflection_output_power": 0.00323223304703363,
+        "full_energy_cross_term": 0.008535533905932738,
+        "full_output_power": 0.021767766952966366
+      }
+    },
+    "reflections": {
+      "response_reflection_a.wav": {
+        "complex_response_real_imag": [
+          [
+            0.3535533905932739,
+            -0.8535533905932737
+          ],
+          [
+            -0.49999999999999994,
+            -0.5000000000000001
+          ]
+        ],
+        "output_power": 0.00676776695296637,
+        "source_to_reflection_output_energy_ratio_db": 1.695546045764949
+      },
+      "response_reflection_b.wav": {
+        "complex_response_real_imag": [
+          [
+            0.3535533905932737,
+            0.14644660940672627
+          ],
+          [
+            0.5,
+            -0.49999999999999994
+          ]
+        ],
+        "output_power": 0.00323223304703363,
+        "source_to_reflection_output_energy_ratio_db": 4.904973337291542
+      }
+    }
+  },
+  "floating_point": {
+    "scored_samples": 28800,
+    "reference_power": 0.01000000000000004,
+    "candidates": {
+      "response_full_a.wav": {
+        "direct_output_power": 0.01000000000000004,
+        "reflection_output_power": 0.006767766952966395,
+        "full_energy_cross_term": -0.0014644660940672709,
+        "full_output_power": 0.01530330085889916,
+        "total_error_power": 0.006767766952966395,
+        "nmse": 0.6767766952966368,
+        "component_identity_max_error": 2.7755575615628914e-17
+      },
+      "response_full_b.wav": {
+        "direct_output_power": 0.01000000000000004,
+        "reflection_output_power": 0.0032322330470336454,
+        "full_energy_cross_term": 0.008535533905932773,
+        "full_output_power": 0.021767766952966453,
+        "total_error_power": 0.0032322330470336454,
+        "nmse": 0.32322330470336325,
+        "component_identity_max_error": 2.7755575615628914e-17
+      }
+    },
+    "signals": {
+      "response_source.wav": {
+        "complex_tone_amplitudes_real_imag": [
+          [
+            0.10000000000000037,
+            -7.391957191933627e-18
+          ],
+          [
+            0.09999999999999411,
+            -3.9239687945244415e-18
+          ]
+        ],
+        "output_power": 0.01000000000000004
+      },
+      "response_reflection_a.wav": {
+        "complex_tone_amplitudes_real_imag": [
+          [
+            0.035355339059327404,
+            -0.08535533905932752
+          ],
+          [
+            -0.049999999999997095,
+            -0.05000000000000005
+          ]
+        ],
+        "output_power": 0.006767766952966395
+      },
+      "response_full_a.wav": {
+        "complex_tone_amplitudes_real_imag": [
+          [
+            0.13535533905932773,
+            -0.08535533905932761
+          ],
+          [
+            0.04999999999999704,
+            -0.050000000000000044
+          ]
+        ],
+        "output_power": 0.01530330085889916
+      },
+      "response_reflection_b.wav": {
+        "complex_tone_amplitudes_real_imag": [
+          [
+            0.03535533905932751,
+            0.014644660940672311
+          ],
+          [
+            0.04999999999999732,
+            -0.05000000000000005
+          ]
+        ],
+        "output_power": 0.0032322330470336454
+      },
+      "response_full_b.wav": {
+        "complex_tone_amplitudes_real_imag": [
+          [
+            0.1353553390593278,
+            0.014644660940672308
+          ],
+          [
+            0.14999999999999147,
+            -0.05000000000000005
+          ]
+        ],
+        "output_power": 0.021767766952966453
+      }
+    }
+  },
+  "pcm_analysis": {
+    "scored_samples": 28800,
+    "integer_reference_squared_sum": 309262788000,
+    "decoded_amplitude_denominator": 32768,
+    "candidates": {
+      "response_full_a.wav": {
+        "integer_error_squared_sum": 209299622400,
+        "integer_reference_squared_sum": 309262788000,
+        "scored_samples": 28800,
+        "mse": 0.0067682452499866486,
+        "nmse": 0.6767694999891161,
+        "score": [
+          1600,
+          30400
+        ],
+        "gain_fitting": false,
+        "delay_fitting": false
+      },
+      "response_full_b.wav": {
+        "integer_error_squared_sum": 99939578400,
+        "integer_reference_squared_sum": 309262788000,
+        "scored_samples": 28800,
+        "mse": 0.0032318050507456064,
+        "nmse": 0.32315423089311346,
+        "score": [
+          1600,
+          30400
+        ],
+        "gain_fitting": false,
+        "delay_fitting": false
+      }
+    },
+    "signals": {
+      "response_source.wav": {
+        "complex_tone_amplitudes_real_imag": [
+          [
+            0.1000020267336803,
+            1.2837890609270255e-13
+          ],
+          [
+            0.10000610351561894,
+            2.569390725608526e-13
+          ]
+        ],
+        "integer_output_squared_sum": 309262788000,
+        "scored_samples": 28800
+      },
+      "response_reflection_a.wav": {
+        "complex_tone_amplitudes_real_imag": [
+          [
+            0.03535605561800135,
+            -0.08535706898468662
+          ],
+          [
+            -0.04999542236314981,
+            -0.04999542236340963
+          ]
+        ],
+        "integer_output_squared_sum": 209276028000,
+        "scored_samples": 28800
+      },
+      "response_full_a.wav": {
+        "complex_tone_amplitudes_real_imag": [
+          [
+            0.1353580823516817,
+            -0.08535706898455822
+          ],
+          [
+            0.04999542236340659,
+            -0.049995422363152714
+          ]
+        ],
+        "integer_output_squared_sum": 473237568000,
+        "scored_samples": 28800
+      },
+      "response_reflection_b.wav": {
+        "complex_tone_amplitudes_real_imag": [
+          [
+            0.0353506608212637,
+            0.014642723151071462
+          ],
+          [
+            0.0500030517579381,
+            -0.05000305175768395
+          ]
+        ],
+        "integer_output_squared_sum": 99956260800,
+        "scored_samples": 28800
+      },
+      "response_full_b.wav": {
+        "complex_tone_amplitudes_real_imag": [
+          [
+            0.1353580823515534,
+            0.014644957749121695
+          ],
+          [
+            0.15000152587902577,
+            -0.049995422362895815
+          ]
+        ],
+        "integer_output_squared_sum": 673152919200,
+        "scored_samples": 28800
+      }
+    }
+  },
+  "quantization": "signed little-endian PCM16; nearest-even; no dither; decoded amplitude=int16/32768",
+  "source_sha256": {
+    "codes/chapters/appendix_b/core/response_audio.py": "39c69ee1277d3a43621706235834e2b05dbfe2281fd0b2d5a1a6f3f26fe529ad",
+    "codes/chapters/appendix_b/examples/generate_response_audio.py": "ce2892289ad63c6e3924f3a21213fdc5c8fb37da7459e3a573e1634913b795e2",
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8"
+  },
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O"
+  },
+  "files": {
+    "response_source.wav": {
+      "channels": 1,
+      "samples_per_channel": 32002,
+      "sha256": "2e6ed00aba996b044a2e3e05725543c95117234451b98b63c6ed3f6c4569faca"
+    },
+    "response_reflection_a.wav": {
+      "channels": 1,
+      "samples_per_channel": 32002,
+      "sha256": "8ff79b5a81279ab78134e6a7a69ea6ee63ba1d7f0798e82013f273b229fcf888"
+    },
+    "response_full_a.wav": {
+      "channels": 1,
+      "samples_per_channel": 32002,
+      "sha256": "cd0a13907890478ef0c99601d76088132a74f5d43f663af79f424b61d97bc371"
+    },
+    "response_reflection_b.wav": {
+      "channels": 1,
+      "samples_per_channel": 32002,
+      "sha256": "ff5d2a6e697c2dff95ae31b181a543bbfc479eea0f0a575f26cd9b6c1f90850d"
+    },
+    "response_full_b.wav": {
+      "channels": 1,
+      "samples_per_channel": 32002,
+      "sha256": "b8d37dd5e0d63e25404c691b6ecf1149e19f5c74592f3e4cfad08deeacd6c122"
+    }
+  }
+}

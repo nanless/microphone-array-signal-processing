@@ -8,7 +8,7 @@
   "assets": {
     "audio_manifest": {
       "file": "MANIFEST.json",
-      "sha256": "2d3b5d342c27ea0e8de7162beb9a4b9b810ffb0a0ca0b3b84d4434a15676edc9"
+      "sha256": "4a4729422f9c85c188fd8f0204103a18be36cc1da20cce30c44796132d43a3d9"
     },
     "figure": {
       "file": "ROOM_RESULTS.png",
@@ -103,12 +103,12 @@
   ],
   "convergence_check": {
     "case": "fixed_near_left",
-    "drr_change_db": 7.536038442168547e-07,
-    "previous_drr_db_median": 5.7552587620307545,
+    "drr_change_db": 7.553723389008837e-07,
+    "previous_drr_db_median": 5.755258753605107,
     "previous_max_order": 32,
-    "previous_t60_s_median": 0.5464806921017197,
+    "previous_t60_s_median": 0.5464806930141838,
     "scope": "one source position, median of four microphones; rerun at higher order if false",
-    "t60_change_s": 2.075487443575774e-06,
+    "t60_change_s": 2.0772496572840637e-06,
     "threshold_drr_db": 0.5,
     "threshold_t60_s": 0.02,
     "within_threshold": true
@@ -128,10 +128,23 @@
     "n_fft": 512
   },
   "drr": "10 log10(sum(h_direct^2)/sum((h_full-h_direct)^2)), per microphone; direct RIR uses fully absorbing walls at the same image order and RIR length",
+  "environment": {
+    "numpy": "2.5.3",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "pra_num_threads": "2",
+    "pyroomacoustics": "0.10.0",
+    "pyroomacoustics_source_sha256": {
+      "acoustics.py": "3196254709071ab1061982133f05be94e7da554f2619db98d829203839d7c4d2",
+      "parameters.py": "dac6389cdaf949659cb2d8dbe01655593f423b35492bc857a43c4af9b24b4ed2",
+      "room.py": "b4189f582459811f8dbbf3885882e115db60b7b48b4ca0a3672dbef39118e4dc"
+    },
+    "python": "3.13.12",
+    "scipy": "1.18.1"
+  },
   "fractional_delay_filter_length_samples": 81,
   "generator": {
     "path": "codes/chapters/appendix_b/examples/room_srp_exercise.py",
-    "sha256": "224d22b128fd6f523c895280ed4b5e42273336f02e67ec084ddde0ceb3b35800"
+    "sha256": "598509685594821f88c058be7bf0ce256b12032fbe36173804ee2a14ea62bf81"
   },
   "interpretation_limit": "one fixed synthetic room and six positions; no real-recording or population claim",
   "inverse_sabine_suggested_max_order": 40,
@@ -163,12 +176,12 @@
     {
       "absolute_doa_error_deg": 1.0,
       "distance_m": 1.0,
-      "drr_db_median": 5.75525800842691,
+      "drr_db_median": 5.755257998232768,
       "drr_db_per_mic": [
-        5.975229730382537,
-        5.6700953360546,
-        5.84042068079922,
-        5.635063697991674
+        5.975229728508459,
+        5.670095337538941,
+        5.840420658926596,
+        5.63506370760147
       ],
       "estimated_azimuth_deg": -29.0,
       "excitation_seed_sequence": [
@@ -189,24 +202,24 @@
         5.866025403784438,
         3.0
       ],
-      "t60_s_median": 0.5464827675891633,
+      "t60_s_median": 0.5464827702638411,
       "t60_s_per_mic": [
-        0.5470340876877549,
-        0.5487431190210575,
-        0.5339511156990165,
-        0.5459314474905718
+        0.547034089872667,
+        0.5487431196402222,
+        0.5339511153675471,
+        0.5459314506550151
       ],
       "true_azimuth_deg": -30.0
     },
     {
       "absolute_doa_error_deg": 1.0,
       "distance_m": 1.0,
-      "drr_db_median": 5.755258015128041,
+      "drr_db_median": 5.7552580195506975,
       "drr_db_per_mic": [
-        5.67009533713154,
-        5.975229739688645,
-        5.635063735034553,
-        5.840420693124541
+        5.670095332278565,
+        5.975229748822569,
+        5.635063732500537,
+        5.8404207068228295
       ],
       "estimated_azimuth_deg": 29.0,
       "excitation_seed_sequence": [
@@ -227,24 +240,24 @@
         5.866025403784438,
         3.0
       ],
-      "t60_s_median": 0.5464827675021644,
+      "t60_s_median": 0.5464827695416468,
       "t60_s_per_mic": [
-        0.5487431191029485,
-        0.5470340865319775,
-        0.5459314484723513,
-        0.5339511157274458
+        0.5487431191201866,
+        0.5470340884615572,
+        0.5459314506217362,
+        0.5339511159438106
       ],
       "true_azimuth_deg": 30.0
     },
     {
       "absolute_doa_error_deg": 2.0,
       "distance_m": 2.5,
-      "drr_db_median": -2.1133762771823963,
+      "drr_db_median": -2.113376272819646,
       "drr_db_per_mic": [
-        -2.0085100153895783,
-        -2.1564000626752224,
-        -2.07035249168957,
-        -2.238910245900629
+        -2.0085100209315363,
+        -2.1564000851390763,
+        -2.070352460500216,
+        -2.2389102562558003
       ],
       "estimated_azimuth_deg": -32.0,
       "excitation_seed_sequence": [
@@ -265,24 +278,24 @@
         7.165063509461097,
         3.0
       ],
-      "t60_s_median": 0.5526363227396529,
+      "t60_s_median": 0.5526363228833663,
       "t60_s_per_mic": [
-        0.557977841546823,
-        0.5526007724990302,
-        0.5526718729802755,
-        0.5405511662008894
+        0.5579778425902514,
+        0.552600773579523,
+        0.5526718721872096,
+        0.5405511670493598
       ],
       "true_azimuth_deg": -30.0
     },
     {
       "absolute_doa_error_deg": 2.0,
       "distance_m": 2.5,
-      "drr_db_median": -2.113376277769401,
+      "drr_db_median": -2.1133762790350317,
       "drr_db_per_mic": [
-        -2.1564000636219895,
-        -2.008510016497577,
-        -2.2389102462537864,
-        -2.070352491916813
+        -2.156400086109807,
+        -2.008510024759025,
+        -2.238910279911442,
+        -2.0703524719602564
       ],
       "estimated_azimuth_deg": 32.0,
       "excitation_seed_sequence": [
@@ -303,24 +316,24 @@
         7.165063509461097,
         3.0
       ],
-      "t60_s_median": 0.5526363216190768,
+      "t60_s_median": 0.5526363224851496,
       "t60_s_per_mic": [
-        0.5526007723247569,
-        0.5579778412673324,
-        0.5405511664904796,
-        0.5526718709133966
+        0.5526007743576892,
+        0.557977842304202,
+        0.5405511662930259,
+        0.5526718706126099
       ],
       "true_azimuth_deg": 30.0
     },
     {
       "absolute_doa_error_deg": 1.2435946594024188,
       "distance_m": 1.0988969772719597,
-      "drr_db_median": 4.866266502416243,
+      "drr_db_median": 4.866266488607674,
       "drr_db_per_mic": [
-        4.718197832119233,
-        4.725134688938989,
-        5.007398315893498,
-        5.046846564881356
+        4.718197837324463,
+        4.725134666892218,
+        5.00739831032313,
+        5.046846559262197
       ],
       "estimated_azimuth_deg": -40.0,
       "excitation_seed_sequence": [
@@ -341,24 +354,24 @@
         5.826275487565342,
         3.0
       ],
-      "t60_s_median": 0.5548065614592255,
+      "t60_s_median": 0.5548065625407648,
       "t60_s_per_mic": [
-        0.55481060530145,
-        0.5624587185383473,
-        0.5441214916416747,
-        0.5548025176170011
+        0.5548106066934738,
+        0.5624587178762603,
+        0.5441214901473695,
+        0.5548025183880557
       ],
       "true_azimuth_deg": -41.24359465940242
     },
     {
       "absolute_doa_error_deg": 0.6042419765987823,
       "distance_m": 1.9725438373405086,
-      "drr_db_median": -0.0030427398293687152,
+      "drr_db_median": -0.0030427194155554366,
       "drr_db_per_mic": [
-        -0.17594875063845355,
-        -0.21021508001168074,
-        0.16986327097971612,
-        0.19020443356481234
+        -0.17594873796837673,
+        -0.2102150904717229,
+        0.16986329913726586,
+        0.1902044293913424
       ],
       "estimated_azimuth_deg": 3.0,
       "excitation_seed_sequence": [
@@ -379,12 +392,12 @@
         6.970819691383463,
         3.0
       ],
-      "t60_s_median": 0.5629644038151669,
+      "t60_s_median": 0.5629644068198897,
       "t60_s_per_mic": [
-        0.5672771432090268,
-        0.5477566399760063,
-        0.5802115442653374,
-        0.5586516644213071
+        0.5672771463879612,
+        0.5477566424394564,
+        0.5802115438086488,
+        0.5586516672518181
       ],
       "true_azimuth_deg": 2.3957580234012177
     }
@@ -403,6 +416,15 @@
   "schema_version": 1,
   "sound_speed_m_s": 343.0,
   "source_position_seed": 20260924,
+  "source_sha256": {
+    "codes/chapters/appendix_b/core/room_metrics.py": "79e984ea8eb0afee3157247e06bf2f2a01056e411068168cfe134faf799a8e51",
+    "codes/chapters/appendix_b/examples/room_srp_exercise.py": "598509685594821f88c058be7bf0ce256b12032fbe36173804ee2a14ea62bf81",
+    "codes/chapters/ch02/core/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385",
+    "codes/chapters/ch02/core/spectral.py": "5ade0b101cc00615276b3b60c3659ece3e68ad614cd2cb2edeb568359f034059",
+    "codes/chapters/ch03/core/geometry.py": "5a680848301358415f74647199a4c57b65086f0b2580f91706c912ad208d7bdb",
+    "codes/chapters/ch04/core/covariance.py": "d704be037100ee53caf6e2130fbabbe14ce6eeff9e3d11dde389fd368d271249",
+    "codes/chapters/ch04/core/doa.py": "f3d7eaa8251b732efe0f9579fa2b32a71f506fb884d80b17503f09697b659ed4"
+  },
   "source_signal": "1 s independent PCG64 white Gaussian noise per case; no additive noise",
   "status": "pyroomacoustics_simulation_executed",
   "t60": "Schroeder T20 (-5 to -25 dB), linear dB fit extrapolated to 60 dB",

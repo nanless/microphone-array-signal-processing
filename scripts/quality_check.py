@@ -43,6 +43,9 @@ MINT_AUDIO_ROOT = ROOT / "codes/chapters/ch07/mint_audio"
 MASK_AUDIO_ROOT = ROOT / "codes/chapters/ch08/mask_audio"
 SCENARIO_AUDIO_ROOT = CODE_CHAPTERS / "ch11" / "scenario_audio"
 WEIGHTED_AUDIO_ROOT = CODE_CHAPTERS / "appendix_a" / "weighted_audio"
+RESPONSE_AUDIO_ROOT = CODE_CHAPTERS / "appendix_b" / "response_audio"
+RESPONSE_AUDIO_WAVS = {"response_" + name + ".wav" for name in
+                       ("source", "reflection_a", "reflection_b", "full_a", "full_b")}
 WEIGHTED_AUDIO_WAVS = {"weighted_" + name + ".wav" for name in
                        ("target", "array", "ols", "gls", "reversed")}
 SCENARIO_AUDIO_WAVS = {f"selection_{scene}_{kind}.wav" for scene in ("single", "dual")
@@ -90,7 +93,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "10_engineering-practice.md": 54,
     "11_selection-guide.md": 37,
     "12_appendix-symbols-math.md": 36,
-    "13_appendix-guide.md": 25,
+    "13_appendix-guide.md": 29,
 }
 # 上表为独立发布基线，不从待检 HTML 或构建器反推。
 EXPECTED_CHAPTERS = [
@@ -111,9 +114,9 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 121
-EXPECTED_SUBSECTION_COUNT = 566
-EXPECTED_OUTLINE_ITEM_COUNT = 701
-EXPECTED_FIGURE_NUMBERS = set(range(1, 66))
+EXPECTED_SUBSECTION_COUNT = 570
+EXPECTED_OUTLINE_ITEM_COUNT = 705
+EXPECTED_FIGURE_NUMBERS = set(range(1, 67))
 # 研究附站使用独立显式清单，不挤占 14 篇教程或教程 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
@@ -718,7 +721,7 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65)
+            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
@@ -761,6 +764,12 @@ def check_figures(errors: list[str]):
                     if image.info.get("AudioManifestDigest") != expected:
                         fail(errors, "图65已知噪声权重清单摘要失效")
                 _check_weighted_noise_report(ROOT / "codes/chapters/appendix_a/reports/figure65_weighted_noise.json")
+            if number == 66:
+                manifest_path = RESPONSE_AUDIO_ROOT / 'MANIFEST.json'
+                with Image.open(path) as image:
+                    if image.info.get('AudioManifestDigest') != hashlib.sha256(manifest_path.read_bytes()).hexdigest():
+                        fail(errors, '图66同DRR频响清单摘要失效')
+                _check_equal_drr_report(ROOT/'codes/chapters/appendix_b/reports/figure66_equal_drr_response.json')
             if number == 63:
                 expected = hashlib.sha256((NOISE_AUDIO_ROOT / "MANIFEST.json").read_bytes()).hexdigest()
                 with Image.open(path) as image:
@@ -1147,7 +1156,7 @@ def site_source_digest():
     paths += sorted(main_audio_path(CODE_CHAPTERS, record["group"], record["file"])
                     for record in manifest["files"])
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
@@ -1451,7 +1460,7 @@ def check_real_audio(errors):
         parser = Players()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         allowed_audio_roots = ("../audio/", "../real_audio/", "../room_audio/",
-                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/", "../scenario_audio/", "../weighted_audio/")
+                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/", "../scenario_audio/", "../weighted_audio/", "../response_audio/")
         if any(not (p.get("src") or "").startswith(allowed_audio_roots)
                for p in parser.items):
             fail(errors, "未知试听控件来源")
@@ -1471,6 +1480,9 @@ def check_room_audio(errors):
     import numpy as np
     root, published = ROOM_AUDIO_ROOT, SITE / "room_audio"
     try:
+        from codes.chapters.appendix_b.examples.check_room_assets import check_assets
+        check_assets(root)
+        check_assets(published)
         manifest = json.loads((root / "MANIFEST.json").read_text(encoding="utf-8"))
         records = manifest["files"]
         names = [record["file"] for record in records]
@@ -2594,6 +2606,88 @@ def check_weighted_audio(errors):
         fail(errors, '独立已知噪声加权音频：' + str(exc))
 
 
+def _response_integer_pcm(directory):
+    """Independent ordinary WAV/int scoring; no teaching analyzer is used."""
+    import struct
+    integers = {}
+    for name in ('source', 'full_a', 'full_b'):
+        with wave.open(str(directory / ('response_' + name + '.wav')), 'rb') as stream:
+            if (stream.getframerate(), stream.getnchannels(), stream.getsampwidth(),
+                    stream.getnframes(), stream.getcomptype()) != (16000, 1, 2, 32002, 'NONE'):
+                raise ValueError('response PCM format differs')
+            data = stream.readframes(32002)
+        if len(data) != 64004:
+            raise ValueError('response PCM is truncated')
+        integers[name] = struct.unpack('<32002h', data)
+    reference = integers['source'][1600:30400]
+    denominator = sum(x*x for x in reference)
+    if denominator == 0:
+        raise ValueError('response reference has zero energy')
+    result = {}
+    for name in ('full_a', 'full_b'):
+        numerator = sum((x-y)**2 for x, y in zip(integers[name][1600:30400], reference))
+        result['response_' + name + '.wav'] = {
+            'integer_error_squared_sum': numerator,
+            'integer_reference_squared_sum': denominator, 'scored_samples': 28800,
+            'mse': numerator/(28800*32768**2), 'nmse': numerator/denominator,
+        }
+    return result
+
+
+def _check_equal_drr_report(path):
+    import math
+    from codes.chapters.appendix_b.examples.generate_response_audio import validate_asset_directory
+    directory = ROOT / 'codes/chapters/appendix_b/response_audio'
+    validate_asset_directory(directory, check=True)
+    gains = {'a': [(2+math.sqrt(2))/4, .5], 'b': [(2-math.sqrt(2))/4, .5]}
+    expected = {
+        'schema_version': 1,
+        'script_sha256': hashlib.sha256((ROOT/'scripts/make_figures.py').read_bytes()).hexdigest(),
+        'audio_manifest_sha256': hashlib.sha256((directory/'MANIFEST.json').read_bytes()).hexdigest(),
+        'scope': 'known short FIRs and equal-power tones; no real room, blind estimation or listening test',
+        'score_window': [1600, 30400], 'frequencies_hz': [2000, 4000],
+        'rir_drr_db': 10*math.log10(2), 'reflection_squared_gain': gains,
+        'analytic_output_reflection_nmse': {name: sum(values)/2 for name, values in gains.items()},
+        'integer_pcm': _response_integer_pcm(directory),
+    }
+    _compare_selection_report(_read_tracking_manifest(path), expected)
+
+
+def check_response_audio(errors):
+    import struct
+    try:
+        from codes.chapters.appendix_b.examples.generate_response_audio import check_assets, validate_asset_directory
+        source, published = RESPONSE_AUDIO_ROOT, SITE/'response_audio'
+        manifest = check_assets(source)
+        validate_asset_directory(published, check=True)
+        expected_sources = {
+            'codes/chapters/appendix_b/core/response_audio.py',
+            'codes/chapters/appendix_b/examples/generate_response_audio.py',
+            'codes/chapters/ch00/core/audio_samples.py',
+        }
+        if set(manifest['source_sha256']) != expected_sources:
+            raise ValueError('response real source set differs')
+        for name in expected_sources:
+            if manifest['source_sha256'][name] != hashlib.sha256((ROOT/name).read_bytes()).hexdigest():
+                raise ValueError('response source SHA is stale')
+        if (set(manifest['files']) != RESPONSE_AUDIO_WAVS
+                or type(manifest['common_export_gain']) is not float
+                or manifest['common_export_gain'] != 1.):
+            raise ValueError('response five files/common gain differs')
+        for name in RESPONSE_AUDIO_WAVS | {'MANIFEST.json'}:
+            if (source/name).read_bytes() != (published/name).read_bytes():
+                raise ValueError('response site bytes differ: '+name)
+        for name, measured in _response_integer_pcm(published).items():
+            for field, expected in measured.items():
+                _compare_selection_report(manifest['pcm_analysis']['candidates'][name][field], expected,
+                                          'response PCM/'+name+'/'+field)
+        for page, prefix in ((SITE/'13_appendix-guide.html', ''),
+                             (SITE/'research/05_exercises_and_audio.html', '../')):
+            _check_visible_audio(page, prefix, 'response_audio', RESPONSE_AUDIO_WAVS, {'MANIFEST.json'})
+    except (OSError, ValueError, KeyError, TypeError, struct.error, wave.Error) as error:
+        fail(errors, '独立同DRR频响音频：'+str(error))
+
+
 def check_noise_audio(errors):
     """Independent actual integer scoring plus current-source replay and visibility."""
     import math
@@ -2942,6 +3036,7 @@ def main():
     check_mask_audio(errors)
     check_noise_audio(errors)
     check_weighted_audio(errors)
+    check_response_audio(errors)
     check_scenario_audio(errors)
     check_combined_html(errors)
     check_pdf(errors, notices)

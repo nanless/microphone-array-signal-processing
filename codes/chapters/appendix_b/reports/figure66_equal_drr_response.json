@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "script_sha256": "08d84b3b27d00f6f07ca4229ed30f8459be7e3ff8ca8d7605272f7ce4eca4edf",
+  "audio_manifest_sha256": "91af5b393389d33befa447c6fa97da8cc5f40a9de583b8eb3d11b691b0b5b9d4",
+  "scope": "known short FIRs and equal-power tones; no real room, blind estimation or listening test",
+  "score_window": [
+    1600,
+    30400
+  ],
+  "frequencies_hz": [
+    2000,
+    4000
+  ],
+  "rir_drr_db": 3.010299956639812,
+  "reflection_squared_gain": {
+    "a": [
+      0.8535533905932737,
+      0.5
+    ],
+    "b": [
+      0.1464466094067262,
+      0.5
+    ]
+  },
+  "analytic_output_reflection_nmse": {
+    "a": 0.6767766952966369,
+    "b": 0.32322330470336313
+  },
+  "integer_pcm": {
+    "response_full_a.wav": {
+      "integer_error_squared_sum": 209299622400,
+      "integer_reference_squared_sum": 309262788000,
+      "scored_samples": 28800,
+      "mse": 0.0067682452499866486,
+      "nmse": 0.6767694999891161
+    },
+    "response_full_b.wav": {
+      "integer_error_squared_sum": 99939578400,
+      "integer_reference_squared_sum": 309262788000,
+      "scored_samples": 28800,
+      "mse": 0.0032318050507456064,
+      "nmse": 0.32315423089311346
+    }
+  }
+}

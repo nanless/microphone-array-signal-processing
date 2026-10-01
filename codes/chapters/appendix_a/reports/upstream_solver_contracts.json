@@ -1,11 +1,11 @@
 {
-  "created_utc": "2026-10-01T19:32:24.401363+00:00",
+  "created_utc": "2026-10-01T20:33:19.389982+00:00",
   "tool_sha256": "da4a9d4a7bc5ff6ccd272f6c4c50b9513f04261f6c63e1c3759605fe9369e5f3",
   "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/pb_bss",
   "revision": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
   "origin": "https://github.com/fgnt/pb_bss.git",
-  "source_lock_sha256": "5cf610a5bee5a65c0b5bb77293f2bd6549446d22e635594fc313710f4109b8cf",
-  "source_lock_project_count": 99,
+  "source_lock_sha256": "55ab323ba665633141c4864763095046f9c6161ce2d88ca2aa9332dde7ec23f0",
+  "source_lock_project_count": 100,
   "sources": [
     {
       "path": "LICENSE",

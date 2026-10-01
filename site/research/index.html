@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码研究导读 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="47f010101314"><style>
+<meta name="source-digest" content="9d2a7b81b395"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -47,6 +47,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 @media(max-width:900px){.selection-readable-table{min-width:760px}.selection-readable-table th,.selection-readable-table td{min-width:10em}.selection-readable-table th:first-child,.selection-readable-table td:first-child{min-width:6em}}
 @media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}.tracking-readable-table th,.tracking-readable-table td{min-width:8em}.industrial-readable-table th,.industrial-readable-table td{min-width:8em}}
 @media(max-width:900px){.noise-readable-table th:first-child,.noise-readable-table td:first-child{min-width:6em}}
+@media screen and (max-width:900px){.source-contract-readable-table th,.source-contract-readable-table td{min-width:10em}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
@@ -92,7 +93,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCES.lock.json">SOURCES.lock.json</a>，逐算法覆盖状态见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/COVERAGE.md">COVERAGE.md</a>。
 同名算法在不同项目中可能采用不同归一化、频谱轴序和输出参考通道，不能直接比较两个函数的数组而不检查约定。</p>
 <p>本手册包括本页入口和以下 5 篇专题，共 6 个网页；与 14 个教程页合计为 20 页。</p>
-<p>锁表登记 99 个 Git 上游项目，其中 86 个已有本地工作区。截至 2026-10-01，离线核验 85 项通过；AEC Challenge 的真实录音文件有本地变动，未计通过。另 13 项只保留来源索引。<code>kaldialign</code>作为MeetEval编译依赖仅已取得源码，未构建或执行。</p>
+<p>锁表登记 100 个 Git 上游项目，其中 87 个已有本地工作区。截至 2026-10-02，离线核验 86 项通过；AEC Challenge 的真实录音文件有本地变动，仍保留失败。另 13 项只保留来源索引。<code>kaldialign</code>作为MeetEval编译依赖仅已取得源码，未构建或执行。TAC作者的四文件选集已在独立忽略目录取得；其README声明的非商业许可、静态结构审计与未运行原网络的边界见<a href="04_source_reproduction.html#tac-contracts">附录B源码合同</a>。</p>
 <p>空间篇从双耳线索、SAF 的 HRIR/HRTF 和 libmysofa 数据接口讲起，再讨论 SBL、RobustSBL、在线子带 GSC、SMP-PHAT 与多帧关联；增强篇讨论在线 WPE 接口对照、DNN 自适应控制和长序列分离；工程篇讨论重采样、响度、STOI/ESTOI、ViSQOL、文件帧读写、块浮点及STK分数延迟状态。增强篇另核查TF-Locoformer固定源码的时频结构、形状和配置边界。</p>
 <p>这份清单仍含未运行和仅原理说明的方法；具体条件与方法级结果以各专题为准。</p>
 <p>已执行的工业三库接口实验与 SBL 合成输入实验提供原创调用程序及<a href="04_source_reproduction.html">运行记录</a>。
@@ -133,7 +134,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <tr>
 <td><a href="05_exercises_and_audio.html">练习与音频实验</a></td>
 <td>第 1～11 章、附录 A/B</td>
-<td>237 道代码练习、109 个主合成音频、另 5 个双耳线索、3 个STFT卷积与 18 个房间合成音频，以及 DEMAND 真实录音摘录与派生音频的复算、许可和解释边界</td>
+<td>292 道代码练习、109 个主合成音频、另 5 个双耳线索、3 个STFT卷积与 18 个房间合成音频，以及 DEMAND 真实录音摘录与派生音频的复算、许可和解释边界</td>
 </tr>
 </tbody>
 </table></div>
@@ -146,6 +147,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>分离得分高而识别变差：核对分离输出的排列、通道参考、增益、时间对齐和评分区域，再检查语音损伤。</li>
 <li>线性求解返回有限数组，却不满足约束或与手算不符：先读<a href="04_source_reproduction.html#appendix-solver-contracts">附录 A 求解合同</a>，分开检查数据类型、数值秩、残差与物理目标。</li>
 <li>想更换为论文中的新方法：先对齐论文的输入条件、训练信息、因果性与输出目标，再决定是否替换现有模块。</li>
+<li>想复现附录B中的神经研究方向：从<a href="04_source_reproduction.html#appendix-b-reproduction">八类任务与版本边界</a>选择一个输出目标，再核对源码、权重、数据和计时范围；TAC的静态结构证据不代替原网络运行。</li>
 <li>想先复算一个答案、听辨一次时延或削波：从<a href="05_exercises_and_audio.html">练习与音频实验</a>选择稳定题号或音频组，并结合图 34 核对波形与参数。合成样例不是自然语音，也不代替正式听测。</li>
 </ul>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><span id="阅读源码的共同顺序" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-517ca81f96">阅读源码的共同顺序</h2>

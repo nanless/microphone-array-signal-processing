@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "executed_at_utc": "2026-10-01T01:46:55.646971+00:00",
+  "executed_at_utc": "2026-10-01T20:33:16.413339+00:00",
   "audit_source": "codes/chapters/ch02/examples/audit_upstream_models.py",
   "audit_source_sha256": "86f824d086eb19782eb25e1ff93a1deb841d7bc623162cc1badd619d0625fcf0",
   "sources": {
-    "lock_sha256": "5cf610a5bee5a65c0b5bb77293f2bd6549446d22e635594fc313710f4109b8cf",
+    "lock_sha256": "55ab323ba665633141c4864763095046f9c6161ce2d88ca2aa9332dde7ec23f0",
     "projects": {
       "pyroomacoustics": {
         "url": "https://github.com/LCAV/pyroomacoustics.git",
@@ -54,7 +54,7 @@
   "scope": "original-method AST extraction and execution; not full-package validation",
   "environment": {
     "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
-    "executable": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/bin/python",
+    "executable": "/private/tmp/masp-appb-pra-venv/bin/python",
     "numpy": "2.5.3",
     "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O"
   },
@@ -709,7 +709,7 @@
     "equipment or ISO acceptance"
   ],
   "command": [
-    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/bin/python",
+    "/private/tmp/masp-appb-pra-venv/bin/python",
     "-m",
     "codes.chapters.ch02.examples.audit_upstream_models",
     "--report",

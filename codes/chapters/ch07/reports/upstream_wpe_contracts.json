@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "created_utc": "2026-10-01T01:47:23.066228+00:00",
-  "verified_date_asia_shanghai": "2026-10-01",
+  "created_utc": "2026-10-01T20:34:04.842225+00:00",
+  "verified_date_asia_shanghai": "2026-10-02",
   "audit_source_sha256": "37b6b54c8ddab7e4a0a68bc3ddd79a1d172ab6101c7433144c0ee3f0ab8569d7",
-  "lock_sha256": "5cf610a5bee5a65c0b5bb77293f2bd6549446d22e635594fc313710f4109b8cf",
-  "source_status_sha256": "8865ed3c4d505dec86a8985af730a63b239830af87cfdb62c47d5c8e1600f36a",
+  "lock_sha256": "55ab323ba665633141c4864763095046f9c6161ce2d88ca2aa9332dde7ec23f0",
+  "source_status_sha256": "422868a25676cd436dc23b8e8aa9d907d8cff3273e7bc77975dd1306fb41c3ac",
   "lock_entries": {
     "nara_wpe": {
       "id": "nara_wpe",

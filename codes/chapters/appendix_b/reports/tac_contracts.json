@@ -1,0 +1,195 @@
+{
+  "created_utc": "2026-10-01T20:36:43.295309+00:00",
+  "tool_sha256": "17795245c1af54ead26355010397f4e83a452d21124674e97f3875f8cd8cb422",
+  "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/tac",
+  "revision": "e3373b73358a96af6f64fdbe25327def8d6bd973",
+  "origin": "https://github.com/yluo42/TAC.git",
+  "source_lock_sha256": "55ab323ba665633141c4864763095046f9c6161ce2d88ca2aa9332dde7ec23f0",
+  "source_lock_project_count": 100,
+  "sources": [
+    {
+      "path": "README.md",
+      "sha256": "d7d98dbb02fb58b907def8e0363e3deff639c8ce362bedb1e8fb5d5d0d617566",
+      "git_blob": "57edada9a0c3a8097f5fb2b0401978095dd82a16"
+    },
+    {
+      "path": "FaSNet.py",
+      "sha256": "d16eb8846f7d70ea7035b891b7f5464972aed27486c863ddb690bd073b73f93e",
+      "git_blob": "98661df8e0a302d639be027d0f985fcb8fc5e5e6"
+    },
+    {
+      "path": "utility/__init__.py",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "git_blob": "8b137891791fe96927ad78e64b0aad7bded08bdc"
+    },
+    {
+      "path": "utility/models.py",
+      "sha256": "9a545100d23ff00fb8b65cfb013f3554bf7d23224706eb4612839ca17e30b523",
+      "git_blob": "59bd48711ae521057daf54a0fec7bc9e48c09273"
+    }
+  ],
+  "selected_source_files": [
+    "README.md",
+    "FaSNet.py",
+    "utility/__init__.py",
+    "utility/models.py"
+  ],
+  "clean": true,
+  "status": "passed_static_contracts",
+  "before_clean": true,
+  "after_clean": true,
+  "license": {
+    "name": "CC-BY-NC-SA-3.0-US (README declaration; no separate LICENSE)",
+    "declaration_file": "README.md",
+    "sha256": "d7d98dbb02fb58b907def8e0363e3deff639c8ce362bedb1e8fb5d5d0d617566",
+    "local_source_only": true,
+    "upstream_code_redistributed": false,
+    "weights_or_audio_obtained": false
+  },
+  "execution": {
+    "audit": "source identity and Python AST inspection",
+    "original_modules_imported": [],
+    "original_functions_called": [],
+    "ast_extraction_for_execution": false,
+    "source_patch": false,
+    "substitutes": [],
+    "not_executed": [
+      "Torch network construction",
+      "original forward",
+      "training",
+      "weights",
+      "speech separation",
+      "latency measurement",
+      "hardware"
+    ]
+  },
+  "environment": {
+    "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "torch_available_to_auditor": false,
+    "torch_imported_by_audit": false
+  },
+  "contracts": [
+    {
+      "name": "shared_three_layer_groups",
+      "evidence_level": "static original AST only",
+      "method": "__init__",
+      "source": "utility/models.py",
+      "line_start": 123,
+      "line_end": 168,
+      "method_source_sha256": "8ea612fea99b4b76a72ec337b4f6cbb3b9c00770c3ab744152ee6fa1c6334d87",
+      "matched": true,
+      "interpretation": "one transform/average/concatenate layer group per network block; not one group per microphone"
+    },
+    {
+      "name": "shared_layer_application",
+      "evidence_level": "static original AST only",
+      "method": "forward",
+      "source": "utility/models.py",
+      "line_start": 170,
+      "line_end": 215,
+      "method_source_sha256": "cb24f1bbb8929e056057bc22171507d26ce9d42057f3425028700513ac1b6d4e",
+      "matched": true,
+      "interpretation": "the same block-indexed layers process flattened channel features"
+    },
+    {
+      "name": "fixed_channel_mean",
+      "evidence_level": "static original AST only",
+      "method": "forward",
+      "source": "utility/models.py",
+      "line_start": 170,
+      "line_end": 215,
+      "method_source_sha256": "cb24f1bbb8929e056057bc22171507d26ce9d42057f3425028700513ac1b6d4e",
+      "matched": true,
+      "interpretation": "zero maximum sentinel averages all channels on the original channel axis"
+    },
+    {
+      "name": "valid_prefix_mean",
+      "evidence_level": "static original AST only",
+      "method": "forward",
+      "source": "utility/models.py",
+      "line_start": 170,
+      "line_end": 215,
+      "method_source_sha256": "cb24f1bbb8929e056057bc22171507d26ce9d42057f3425028700513ac1b6d4e",
+      "matched": true,
+      "interpretation": "variable counts select each batch item valid channel prefix before its mean"
+    },
+    {
+      "name": "concatenation",
+      "evidence_level": "static original AST only",
+      "method": "forward",
+      "source": "utility/models.py",
+      "line_start": 170,
+      "line_end": 215,
+      "method_source_sha256": "cb24f1bbb8929e056057bc22171507d26ce9d42057f3425028700513ac1b6d4e",
+      "matched": true,
+      "interpretation": "individual channel features are concatenated with the broadcast aggregate"
+    },
+    {
+      "name": "residual",
+      "evidence_level": "static original AST only",
+      "method": "forward",
+      "source": "utility/models.py",
+      "line_start": 170,
+      "line_end": 215,
+      "method_source_sha256": "cb24f1bbb8929e056057bc22171507d26ce9d42057f3425028700513ac1b6d4e",
+      "matched": true,
+      "interpretation": "the TAC branch is added to the running channel-indexed representation"
+    },
+    {
+      "name": "noncausal_intra_and_group_norm",
+      "evidence_level": "static original AST only",
+      "method": "__init__",
+      "source": "utility/models.py",
+      "line_start": 123,
+      "line_end": 168,
+      "method_source_sha256": "8ea612fea99b4b76a72ec337b4f6cbb3b9c00770c3ab744152ee6fa1c6334d87",
+      "matched": true,
+      "interpretation": "intra-segment RNN is bidirectional and the implementation uses GroupNorm; no streaming guarantee"
+    },
+    {
+      "name": "single_stage_tac_module",
+      "evidence_level": "static original AST only",
+      "method": "__init__",
+      "source": "FaSNet.py",
+      "line_start": 269,
+      "line_end": 274,
+      "method_source_sha256": "a232940248baf24d97042288fd1bba56713fca0e8e05fd0e83cd5441cd3e71b5",
+      "matched": true,
+      "interpretation": "this author wrapper estimates all filters with one TAC module; not the original two-stage FaSNet"
+    },
+    {
+      "name": "reference_channel_zero",
+      "evidence_level": "static original AST only",
+      "method": "forward",
+      "source": "FaSNet.py",
+      "line_start": 276,
+      "line_end": 325,
+      "method_source_sha256": "1301c2e89995c5fba1cb7c6712b7a0e3f46d12c6ecf9ccebddafe0f7d79a5715",
+      "matched": true,
+      "interpretation": "cosine features use center segments of reference channel zero"
+    },
+    {
+      "name": "final_valid_channel_mean",
+      "evidence_level": "static original AST only",
+      "method": "forward",
+      "source": "FaSNet.py",
+      "line_start": 276,
+      "line_end": 325,
+      "method_source_sha256": "1301c2e89995c5fba1cb7c6712b7a0e3f46d12c6ecf9ccebddafe0f7d79a5715",
+      "matched": true,
+      "interpretation": "final waveform aggregation also distinguishes all channels from valid prefixes"
+    }
+  ],
+  "counts": {
+    "static_contracts": 10,
+    "original_runtime_calls": 0
+  },
+  "boundaries": [
+    "Channel-indexed TAC output is permutation equivariant under shared operations.",
+    "Channel mean is order invariant; adding or removing channels generally changes its value.",
+    "FaSNet reference channel must be kept consistent; a TAC block alone does not prove wrapper invariance.",
+    "num_mic zero sentinel and valid prefixes are inspected, not validated by network execution.",
+    "Independent teaching NumPy fixtures are not included as original network execution."
+  ]
+}

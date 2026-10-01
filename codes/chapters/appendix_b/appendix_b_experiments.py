@@ -1,4 +1,4 @@
-"""Appendix B E13-03..10: fixed-room calculations and evidence boundaries.
+"""Appendix B E13-03..14: fixed-room calculations and evidence boundaries.
 
 This module does not execute pyroomacoustics or create assets. E13-03,
 E13-07 and E13-09 read checked-in synthetic room results or PCM; the other
@@ -23,6 +23,8 @@ import numpy as np
 
 from codes.chapters.ch02.core.spectral import stft
 from codes.chapters.ch04.core.doa import srp_phat
+from codes.chapters.appendix_b.core.room_metrics import t20_from_edc_points, drr_db, measured_t60_from_t20
+from codes.chapters.appendix_b.examples.check_room_assets import check_assets as check_room_assets
 
 
 # codes/chapters/appendix_b/<module>.py is three directory levels below the repo.
@@ -31,18 +33,7 @@ ROOM = ROOT / "codes/chapters/appendix_b/room_audio"
 
 
 def _read_results() -> dict:
-    result = json.loads((ROOM / "RESULTS.json").read_text(encoding="utf-8"))
-    if result.get("schema_version") != 1 or len(result.get("results", [])) != 6:
-        raise ValueError("six-position room results are missing or malformed")
-    paths = ((ROOT / result["generator"]["path"], result["generator"]["sha256"]),
-             (ROOM / result["assets"]["figure"]["file"],
-              result["assets"]["figure"]["sha256"]),
-             (ROOM / result["assets"]["audio_manifest"]["file"],
-              result["assets"]["audio_manifest"]["sha256"]))
-    for path, expected in paths:
-        if hashlib.sha256(path.read_bytes()).hexdigest() != expected:
-            raise ValueError(f"room result provenance digest differs: {path.name}")
-    return result
+    return check_room_assets(ROOM)['results']
 
 
 def paired_room_comparison(rows: list[dict]) -> dict:
@@ -98,31 +89,6 @@ def four_mic_drr_and_convolution() -> dict:
             "reflected_output_energy": reflected_power,
             "cross_term_in_full_energy": cross_term,
             "full_output_energy": float(np.dot(full, full))}
-
-
-def t20_from_edc_points(times_s, decay_db) -> dict:
-    """Fit an exercise fixture with sampled -5 and -25 dB endpoints.
-
-    A measured RIR generally needs crossing interpolation, noise-floor checks
-    and a stated fit policy; this small calculation intentionally assumes its
-    three input points already include both interval endpoints.
-    """
-    times = np.asarray(times_s, dtype=float)
-    decay = np.asarray(decay_db, dtype=float)
-    if (times.ndim != 1 or decay.ndim != 1 or len(times) != len(decay)
-            or len(times) < 3 or not np.all(np.isfinite(times))
-            or not np.all(np.isfinite(decay)) or np.any(np.diff(times) <= 0)
-            or np.any(np.diff(decay) >= 0)):
-        raise ValueError("EDC points require three finite times and strictly falling dB")
-    indices = np.flatnonzero((decay >= -25.0) & (decay <= -5.0))
-    if (len(indices) < 3 or decay[indices[0]] != -5.0
-            or decay[indices[-1]] != -25.0):
-        raise ValueError("-5 to -25 dB fit interval is unavailable")
-    slope = float(np.polyfit(times[indices], decay[indices], 1)[0])
-    if not math.isfinite(slope) or slope >= 0:
-        raise ValueError("EDC slope must be finite and negative")
-    return {"slope_db_per_s": slope, "t20_s": -20.0 / slope,
-            "t60_extrapolated_s": -60.0 / slope}
 
 
 def two_mic_srp_phase() -> dict:
@@ -304,9 +270,59 @@ def evidence_claims(*, locked: bool, license_checked: bool, obtained: bool,
     return [name for name, flag in zip(names, flags) if flag]
 
 
+def shared_tac_fixture() -> dict:
+    """Shared scalar P=2x/R=id/S=u+v/residual; no learned network."""
+    report = {}
+    for name, values in (("original", [1., 3.]), ("permuted", [3., 1.]),
+                         ("one_channel_duplicated", [1., 1., 3.]),
+                         ("all_channels_duplicated", [1., 3., 1., 3.])):
+        x = np.array(values)
+        u = 2*x
+        mean = float(np.mean(u))
+        report[name] = {'input': x.tolist(), 'transformed': u.tolist(),
+                        'mean': mean, 'transformed_mean': mean,
+                        'output': (x+u+mean).tolist()}
+    report['scope'] = 'scalar shared-map fixture; permutation equivariance is not invariance to copying one channel'
+    return report
+
+
+def scaled_rir_metrics() -> dict:
+    """Same known models at three common amplitudes; scale-free metrics."""
+    fs = 16000
+    decay = np.exp(-3*math.log(10)/.6*np.arange(2*fs)/fs)
+    return {'full_rir_base': [1., .5], 'direct_rir_base': [1.],
+            'exponential_target_t60_s': .6, 'sample_rate_hz': fs,
+            'cases': [{'common_amplitude': scale,
+                       'drr_db': drr_db(np.array([1., .5])*scale, np.array([1.])*scale),
+                       't60_from_rir_s': measured_t60_from_t20(decay*scale)}
+                      for scale in (1., 1e-200, 1e200)],
+            'scope': 'amplitude-invariant noiseless RIR metrics, not observed-room validation'}
+
+
+def conditioned_t20_times() -> dict:
+    cases = {'large_origin': [1e16, 1e16+2, 1e16+4],
+             'tiny_span': [0., 1e-200, 2e-200],
+             'large_span': [0., 1e200, 2e200]}
+    return {'decay_db': [-5., -15., -25.],
+            'cases': {name: {'times_s': times, **t20_from_edc_points(times, [-5., -15., -25.])}
+                      for name, times in cases.items()},
+            'scope': 'time translation/scale conditioning; intervals were preselected'}
+
+
+def response_audio_anchor(directory=None) -> dict:
+    """Separate analytic/float model from checked actual five-WAV PCM."""
+    from codes.chapters.appendix_b.core.response_audio import build_fixture, analyze_fixture, analytic_results
+    from codes.chapters.appendix_b.examples.generate_response_audio import check_assets, OUTPUT
+    actual = check_assets(OUTPUT if directory is None else directory)
+    return {'parameters': actual['parameters'], 'analytic': analytic_results(),
+            'floating_point': analyze_fixture(build_fixture()),
+            'pcm_analysis': actual['pcm_analysis'], 'published_files': actual['files'],
+            'source_sha256': actual['source_sha256']}
+
+
 def run_exercises() -> dict:
     results = _read_results()
-    manifest = json.loads((ROOM / "MANIFEST.json").read_text(encoding="utf-8"))
+    manifest = check_room_assets(ROOM)["manifest"]
     edc = t20_from_edc_points([0.05, 0.15, 0.25], [-5.0, -15.0, -25.0])
     shifted = t20_from_edc_points([0.15, 0.25, 0.35], [-5.0, -15.0, -25.0])
     return {
@@ -324,6 +340,10 @@ def run_exercises() -> dict:
                                          obtained=True, executed=True, scored=True)},
         "E13-09": room_pcm_srp_windows(manifest, results),
         "E13-10": equal_drr_different_spectra(),
+        "E13-11": shared_tac_fixture(),
+        "E13-12": scaled_rir_metrics(),
+        "E13-13": conditioned_t20_times(),
+        "E13-14": response_audio_anchor(),
     }
 
 

@@ -11,6 +11,8 @@ import argparse
 import hashlib
 import json
 import math
+import platform
+import stat
 from pathlib import Path
 import sys
 import time
@@ -24,6 +26,9 @@ if str(ROOT) not in sys.path:
 
 from codes.chapters.ch04.core.doa import srp_phat
 from codes.chapters.ch02.core.spectral import stft
+from codes.chapters.appendix_b.core.room_metrics import (
+    real_array, drr_db, measured_t60_from_t20,
+)
 
 PRA_VERSION = "0.10.0"
 ROOM_DIM_M = (12.0, 10.0, 6.0)
@@ -37,6 +42,87 @@ N_FFT = 512
 HOP_LENGTH = 128
 FREQUENCY_BAND_HZ = (300.0, 2000.0)
 AZIMUTH_GRID_DEG = tuple(range(-80, 81))
+SOURCE_PATHS = (
+    'codes/chapters/appendix_b/examples/room_srp_exercise.py',
+    'codes/chapters/appendix_b/core/room_metrics.py',
+    'codes/chapters/ch02/core/spectral.py',
+    'codes/chapters/ch02/core/conventions.py',
+    'codes/chapters/ch04/core/doa.py',
+    'codes/chapters/ch03/core/geometry.py',
+    'codes/chapters/ch04/core/covariance.py',
+)
+
+
+def source_hashes():
+    return {name: hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in SOURCE_PATHS}
+
+
+def runtime_environment(pra):
+    """Bind installed original library files independently of this repo's code."""
+    import scipy
+    library = Path(pra.__file__).parent
+    return {'python': platform.python_version(), 'numpy': np.__version__,
+            'scipy': scipy.__version__, 'pyroomacoustics': pra.__version__,
+            'platform': platform.platform(), 'pra_num_threads':
+                __import__('os').environ.get('PRA_NUM_THREADS'),
+            'pyroomacoustics_source_sha256': {name: hashlib.sha256((library/name).read_bytes()).hexdigest()
+                for name in ('room.py', 'acoustics.py', 'parameters.py')}}
+
+
+def ordinary_path(path, *, directory=False):
+    """Reject lexical '..', symlinks and special files along the complete path."""
+    path = Path(path)
+    if '..' in path.parts:
+        raise ValueError('output path must not contain lexical parent traversal')
+    path = path.absolute()
+    for component in (*reversed(path.parents), path):
+        if component.is_symlink():
+            if str(component) in ('/tmp', '/var', '/etc') and component.resolve() == Path('/private')/component.name:
+                continue
+            raise ValueError(f'path must have ordinary ancestors and members: {component}')
+        if component.exists():
+            mode = component.stat().st_mode
+            is_dir = component != path or directory
+            if not (stat.S_ISDIR(mode) if is_dir else stat.S_ISREG(mode)):
+                raise ValueError(f'path has an invalid file type: {component}')
+    return path
+
+
+def validate_output_paths(*, plot=None, audio=None, results=None):
+    """Preflight all outputs together before simulation or a first file write."""
+    targets = []
+    for label, value in (('plot', plot), ('audio', audio), ('results', results)):
+        if value is None:
+            continue
+        path = ordinary_path(value, directory=label == 'audio')
+        if path.exists():
+            raise ValueError(f'{label} output already exists: {path}')
+        targets.append(path.resolve())
+    for i, a in enumerate(targets):
+        for b in targets[i+1:]:
+            if a == b or a in b.parents or b in a.parents:
+                raise ValueError('output paths must be disjoint, without aliases or containment')
+
+
+def strict_json(data):
+    def pairs(rows):
+        out = {}
+        for key, value in rows:
+            if key in out:
+                raise ValueError(f'duplicate JSON key: {key}')
+            out[key] = value
+        return out
+    def number(value):
+        result = float(value)
+        if not math.isfinite(result):
+            raise ValueError('JSON number exceeds finite range')
+        return result
+    def constant(value):
+        raise ValueError(f'nonfinite JSON constant: {value}')
+    try:
+        return json.loads(data.decode('utf-8'), object_pairs_hook=pairs, parse_float=number, parse_constant=constant)
+    except (UnicodeError, json.JSONDecodeError) as error:
+        raise ValueError('asset metadata must be strict UTF-8 JSON') from error
 
 
 def sabine_inputs() -> tuple[float, int, float, float]:
@@ -99,73 +185,45 @@ def configuration() -> dict:
 
 def validate_configuration(config: dict) -> None:
     """Reject source/microphone overlap, wall contact, or invalid Sabine input."""
-    if not 0.0 < config["sabine_energy_absorption"] < 1.0:
+    alpha = real_array(config["sabine_energy_absorption"], "absorption")
+    if alpha.ndim != 0 or not 0.0 < alpha < 1.0:
         raise ValueError("Sabine absorption must be strictly between zero and one")
-    dimensions = np.asarray(config["room_dimensions_m"], dtype=float)
-    center = np.asarray(config["array_center_m"], dtype=float)
-    microphones = np.asarray(config["microphones_m"], dtype=float)
+    for key in ('sample_rate_hz', 'sound_speed_m_s', 'target_t60_s'):
+        value = real_array(config[key], key)
+        if value.ndim != 0 or value <= 0:
+            raise ValueError(f'{key} must be a positive finite scalar')
+    if type(config['sample_rate_hz']) is not int:
+        raise ValueError('sample rate must be an integer')
+    dimensions = real_array(config["room_dimensions_m"], "room dimensions")
+    center = real_array(config["array_center_m"], "array center")
+    microphones = real_array(config["microphones_m"], "microphones")
+    if dimensions.shape != (3,) or center.shape != (3,) or np.any(dimensions <= 0):
+        raise ValueError("room dimensions and center require three finite coordinates")
     if microphones.shape != (4, 3) or np.any(microphones <= 0) or np.any(microphones >= dimensions):
         raise ValueError("all four microphones must be strictly inside the room")
     if not np.allclose(microphones.mean(axis=0), center, atol=1e-12):
         raise ValueError("array center and microphone coordinates disagree")
+    if not isinstance(config["cases"], list) or len(config["cases"]) != 6:
+        raise ValueError("exactly six source cases are required")
+    names = [case.get("name") for case in config["cases"]]
+    if len(set(names)) != 6 or any(type(name) is not str for name in names):
+        raise ValueError("source case names must be six distinct strings")
     for case in config["cases"]:
-        source = np.asarray(case["source_m"], dtype=float)
+        distance_label = real_array(case["distance_m"], "source distance")
+        angle_label = real_array(case["true_azimuth_deg"], "source angle")
+        if distance_label.ndim != 0 or angle_label.ndim != 0 or distance_label <= 0:
+            raise ValueError("source distance and angle must be finite scalar labels")
+        source = real_array(case["source_m"], "source coordinates")
         if source.shape != (3,) or np.any(source <= 0) or np.any(source >= dimensions):
             raise ValueError("every source must be strictly inside the room")
-        if np.min(np.linalg.norm(microphones - source, axis=1)) < 0.2:
+        if min(math.dist(mic, source) for mic in microphones) < 0.2:
             raise ValueError("a source is too close to a microphone")
-        distance = float(np.linalg.norm(source - center))
+        distance = math.dist(source, center)
         azimuth = math.degrees(math.atan2(source[0] - center[0], source[1] - center[1]))
         if not math.isclose(distance, case["distance_m"], abs_tol=1e-12):
             raise ValueError("source distance and coordinates disagree")
         if not math.isclose(azimuth, case["true_azimuth_deg"], abs_tol=1e-12):
             raise ValueError("source azimuth and coordinates disagree")
-
-
-def drr_db(full_rir: np.ndarray, direct_rir: np.ndarray) -> float:
-    """Decompose same-clock RIRs into direct path and reflected remainder."""
-    full = np.asarray(full_rir, dtype=float)
-    direct = np.asarray(direct_rir, dtype=float)
-    if full.ndim != 1 or direct.ndim != 1 or not full.size or not direct.size:
-        raise ValueError("RIRs must be nonempty one-dimensional arrays")
-    if not np.all(np.isfinite(full)) or not np.all(np.isfinite(direct)):
-        raise ValueError("RIRs must be finite")
-    length = max(full.size, direct.size)
-    direct_padded = np.pad(direct, (0, length - direct.size))
-    full_padded = np.pad(full, (0, length - full.size))
-    direct_power = float(np.dot(direct_padded, direct_padded))
-    reflected = full_padded - direct_padded
-    reflected_power = float(np.dot(reflected, reflected))
-    if direct_power <= 0.0 or reflected_power <= 0.0:
-        raise ValueError("DRR needs nonzero direct and reflected energy")
-    return 10.0 * math.log10(direct_power / reflected_power)
-
-
-def measured_t60_from_t20(rir: np.ndarray) -> float:
-    """Fit Schroeder decay from -5 to -25 dB, extrapolate slope to -60 dB.
-
-    Unlike a helper that silently shortens the fit interval, this raises when
-    the specified interval is unavailable. No tail trimming or noise-floor
-    correction is used; synthetic noiseless RIRs are the intended input.
-    """
-    impulse = np.asarray(rir, dtype=float)
-    if impulse.ndim != 1 or impulse.size < 2 or not np.all(np.isfinite(impulse)):
-        raise ValueError("RIR must be a finite one-dimensional vector")
-    energy = np.cumsum(np.square(impulse[::-1]))[::-1]
-    if energy[0] <= 0.0:
-        raise ValueError("RIR has no energy")
-    with np.errstate(divide="ignore"):
-        decay_db = 10.0 * np.log10(energy / energy[0])
-    start = np.flatnonzero(decay_db <= -5.0)
-    stop = np.flatnonzero(decay_db <= -25.0)
-    if not start.size or not stop.size or stop[0] - start[0] < 3:
-        raise ValueError("RIR does not contain a usable -5 to -25 dB decay interval")
-    sample_indices = np.arange(start[0], stop[0] + 1, dtype=float)
-    slope_db_s = np.polyfit(sample_indices / SAMPLE_RATE_HZ,
-                            decay_db[start[0]:stop[0] + 1], 1)[0]
-    if not math.isfinite(slope_db_s) or slope_db_s >= 0.0:
-        raise ValueError("T20 fit must have a negative finite slope")
-    return -60.0 / slope_db_s
 
 
 def _make_room(pra: object, source_m: list[float], microphones_m: list[list[float]],
@@ -251,8 +309,8 @@ def run_experiment(max_order: int | None = None) -> dict:
         raise RuntimeError("local image-order check disagrees with pyroomacoustics")
     if max_order is None:
         max_order = suggested_order
-    if isinstance(max_order, bool) or not isinstance(max_order, int) or max_order < 2:
-        raise ValueError("max_order must be an integer >= 2")
+    if isinstance(max_order, bool) or not isinstance(max_order, int) or not 2 <= max_order <= 80:
+        raise ValueError("max_order must be an integer in the teaching resource budget 2..80")
     previous_order = max(1, max_order - 8)
     anchor = config["cases"][0]
     previous = _room_metrics(pra, config, anchor, previous_order, with_doa=False)
@@ -268,6 +326,7 @@ def run_experiment(max_order: int | None = None) -> dict:
                                    if pra.constants.get("rir_hpf_enable") else None),
         "fractional_delay_filter_length_samples": int(pra.constants.get("frac_delay_length")),
         "elapsed_s": time.perf_counter() - started,
+        "source_sha256": source_hashes(), "environment": runtime_environment(pra),
         "convergence_check": {
             "case": anchor["name"], "previous_max_order": previous_order,
             "previous_t60_s_median": previous["t60_s_median"],
@@ -286,8 +345,7 @@ def plot_results(report: dict, path: Path) -> None:
     """Save aligned acoustic and localization bars for all six positions."""
     import matplotlib.pyplot as plt
 
-    if path.exists():
-        raise ValueError(f"plot output already exists: {path}")
+    validate_output_paths(plot=path)
 
     rows = report["results"]
     labels = [f"{r['name']}\n{r['distance_m']:.2f} m, {r['true_azimuth_deg']:+.1f}°"
@@ -325,7 +383,7 @@ def plot_results(report: dict, path: Path) -> None:
 
 def _write_pcm16(path: Path, samples: np.ndarray) -> str:
     """Write one- or four-channel PCM without hidden per-file normalization."""
-    frames = np.asarray(samples, dtype=float)
+    frames = real_array(samples, "PCM input")
     if (frames.ndim != 2 or frames.shape[0] == 0 or frames.shape[1] not in (1, 4)
             or not np.all(np.isfinite(frames))):
         raise ValueError("PCM input must be finite frames x 1 or 4 channels")
@@ -348,8 +406,7 @@ def export_audio(report: dict, directory: Path) -> dict:
         raise ValueError("audio export requires an executed room simulation")
     if pra.__version__ != report["pyroomacoustics_version_installed"]:
         raise ValueError("installed pyroomacoustics version differs from the report")
-    if directory.exists():
-        raise ValueError(f"audio output directory already exists: {directory}")
+    validate_output_paths(audio=directory)
     prepared = []
     peak = 0.0
     for case in report["cases"]:
@@ -411,7 +468,9 @@ def export_audio(report: dict, directory: Path) -> dict:
                    "source_float64_le_sha256": hashlib.sha256(
                        np.asarray(signal, dtype="<f8").tobytes()).hexdigest()}
                   for c, signal, _ in prepared],
-        "files": files,
+        "files": files, "source_sha256": source_hashes(),
+        "environment": report["environment"],
+        "pcm_scale": "writer int16=round_even(amplitude*32767); decode int16/32768",
     }
     (directory / "MANIFEST.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2)
                                                + "\n", encoding="utf-8")
@@ -437,15 +496,18 @@ def write_results(report: dict, figure: Path, audio_directory: Path, path: Path)
     """
     if report.get("status") != "pyroomacoustics_simulation_executed":
         raise ValueError("results require an executed room simulation")
-    if path.exists():
-        raise ValueError(f"results output already exists: {path}")
+    validate_output_paths(results=path)
+    ordinary_path(figure)
+    ordinary_path(audio_directory, directory=True)
     manifest = audio_directory / "MANIFEST.json"
+    ordinary_path(manifest)
     for item in (figure, manifest):
         if not item.is_file():
             raise ValueError(f"results asset is missing: {item}")
     source = Path(__file__).resolve()
     result = _without_runtime_fields(report)
     result["schema_version"] = 1
+    result["source_sha256"] = source_hashes()
     result["generator"] = {"path": "codes/chapters/appendix_b/examples/room_srp_exercise.py",
                            "sha256": hashlib.sha256(source.read_bytes()).hexdigest()}
     result["assets"] = {
@@ -477,9 +539,7 @@ def main() -> None:
     if args.results is not None and (args.plot is None or args.audio_dir is None):
         parser.error("--results requires both --plot and --audio-dir")
     try:
-        for output in (args.plot, args.audio_dir, args.results):
-            if output is not None and output.exists():
-                raise ValueError(f"output already exists: {output}")
+        validate_output_paths(plot=args.plot, audio=args.audio_dir, results=args.results)
         report = configuration() if args.check else run_experiment(args.max_order)
         if args.plot is not None:
             plot_results(report, args.plot)

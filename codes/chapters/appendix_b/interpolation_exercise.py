@@ -17,6 +17,7 @@ from pathlib import Path
 import numpy as np
 
 from codes.chapters.ch00.core.audio_samples import interpolation_case, prepare_exports, read_pcm16
+from codes.chapters.appendix_b.examples.check_main_interpolation import check_main_interpolation_assets
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / 'codes/chapters/ch00/audio/MANIFEST.json'
@@ -46,7 +47,7 @@ def run_exercises() -> dict:
         measured[output] = (np.array(amplitudes['interpolation_' + output]) /
                             amplitudes['interpolation_' + reference]).tolist()
 
-    manifest = json.loads(MANIFEST.read_text(encoding='utf-8'))
+    manifest, actual_buffers = check_main_interpolation_assets(ROOT, manifest_path=MANIFEST, audio_directory=PUBLISHED_AUDIO)
     records = {item['file']: item for item in manifest['files']
                if item.get('group') == 'interpolation'}
     if set(records) != set(files):
@@ -56,7 +57,7 @@ def run_exercises() -> dict:
     identical_to_regenerated = {}
     for name, (regenerated_blob, _) in files.items():
         path = PUBLISHED_AUDIO / name
-        blob = path.read_bytes()
+        blob = actual_buffers[name]
         digest = hashlib.sha256(blob).hexdigest()
         if digest != records[name]['sha256']:
             raise ValueError(f'published interpolation PCM digest differs: {name}')
@@ -67,6 +68,9 @@ def run_exercises() -> dict:
         published_amplitudes[name[:-4]] = measured_amplitude(pcm)
         published_hashes[name] = digest
         identical_to_regenerated[name] = blob == regenerated_blob
+    for reference in ("interpolation_ideal_half", "interpolation_ideal_one"):
+        if any(not np.isfinite(value) or value <= 0 for value in published_amplitudes[reference]):
+            raise ValueError("published PCM reference tone amplitude must be positive and finite")
     published_ratios = {}
     for output, reference in [('linear_half', 'ideal_half'), ('linear_twice', 'ideal_one')]:
         published_ratios[output] = (

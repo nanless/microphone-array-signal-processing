@@ -1,11 +1,11 @@
 {
-  "created_utc": "2026-10-01T18:39:22.468825+00:00",
+  "created_utc": "2026-10-01T20:33:20.432336+00:00",
   "tool_sha256": "d3e62c90b4ecb19652512480ad46ee5b356f1ffdfe31c3745ba3318eb5755327",
   "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/meeteval",
   "revision": "6e3dc81284f2d6928f7ef9e620fd3b6906daa429",
   "origin": "https://github.com/fgnt/meeteval.git",
-  "source_lock_sha256": "5cf610a5bee5a65c0b5bb77293f2bd6549446d22e635594fc313710f4109b8cf",
-  "source_lock_project_count": 99,
+  "source_lock_sha256": "55ab323ba665633141c4864763095046f9c6161ce2d88ca2aa9332dde7ec23f0",
+  "source_lock_project_count": 100,
   "sources": [
     {
       "path": "LICENSE",
@@ -86,9 +86,9 @@
       "/usr/bin/c++",
       "-std=c++17",
       "-O2",
-      "/private/tmp/masp-meeting-kernel-9xcp4gq2/driver.cc",
+      "/private/tmp/masp-meeting-kernel-f_eo5d8b/driver.cc",
       "-o",
-      "/private/tmp/masp-meeting-kernel-9xcp4gq2/driver"
+      "/private/tmp/masp-meeting-kernel-f_eo5d8b/driver"
     ],
     "compiler": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin25.6.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin\n",
     "compile_stderr": "",

@@ -3050,6 +3050,8 @@ def fig_interpolation_error():
     """Fixed-delay response from algebra, markers measured from published PCM."""
     import json
     import wave
+    from codes.chapters.appendix_b.interpolation_exercise import run_exercises
+    run_exercises()  # Strict current-source/full-file replay before measuring PCM.
     root = Path(__file__).resolve().parents[1]
     manifest_path = main_audio_manifest_path(CODE_CHAPTERS)
     manifest = json.loads(manifest_path.read_text())
@@ -4539,6 +4541,98 @@ def fig_weighted_noise():
          extra_metadata={'AudioManifestDigest': report['audio_manifest_sha256']})
 
 
+def fig_equal_drr_response():
+    """Equal RIR energies, different tone-weighted reflection and actual PCM."""
+    import math
+    import struct
+    import wave
+    from codes.chapters.appendix_b.examples.generate_response_audio import check_assets
+
+    directory = CODE_CHAPTERS / 'appendix_b/response_audio'
+    check_assets(directory)
+    integers = {}
+    for name in ('source', 'full_a', 'full_b'):
+        with wave.open(str(directory / f'response_{name}.wav'), 'rb') as stream:
+            if (stream.getframerate(), stream.getnchannels(), stream.getsampwidth(),
+                    stream.getnframes(), stream.getcomptype()) != (16000, 1, 2, 32002, 'NONE'):
+                raise ValueError('unexpected equal-DRR PCM format')
+            blob = stream.readframes(32002)
+        if len(blob) != 64004:
+            raise ValueError('truncated equal-DRR PCM')
+        integers[name] = struct.unpack('<32002h', blob)
+    lo, hi = 1600, 30400
+    reference = integers['source'][lo:hi]
+    denominator = sum(value * value for value in reference)
+    if denominator == 0:
+        raise ValueError('equal-DRR reference energy is zero')
+    actual = {}
+    for name in ('full_a', 'full_b'):
+        numerator = sum((y - r)**2 for y, r in zip(integers[name][lo:hi], reference))
+        actual['response_' + name + '.wav'] = {
+            'integer_error_squared_sum': numerator,
+            'integer_reference_squared_sum': denominator,
+            'scored_samples': hi - lo,
+            'mse': numerator / ((hi - lo) * 32768**2),
+            'nmse': numerator / denominator,
+        }
+    gains = {'a': [(2 + math.sqrt(2))/4, .5],
+             'b': [(2 - math.sqrt(2))/4, .5]}
+    analytic = {name: sum(values)/2 for name, values in gains.items()}
+    report = {
+        'schema_version': 1,
+        'script_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        'audio_manifest_sha256': hashlib.sha256((directory/'MANIFEST.json').read_bytes()).hexdigest(),
+        'scope': 'known short FIRs and equal-power tones; no real room, blind estimation or listening test',
+        'score_window': [lo, hi], 'frequencies_hz': [2000, 4000],
+        'rir_drr_db': 10 * math.log10(2),
+        'reflection_squared_gain': gains,
+        'analytic_output_reflection_nmse': analytic, 'integer_pcm': actual,
+    }
+    report_path = CODE_CHAPTERS / 'appendix_b/reports/figure66_equal_drr_response.json'
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False)+'\n')
+    fig, axes = plt.subplots(1, 3, figsize=(9.5, 4.3))
+    for offset, values, color, marker, label in (
+        (-.06, [0, .5, .5], C_BLUE, 'o', '反射 A'),
+        (.06, [0, .5, -.5], C_ORANGE, 's', '反射 B'),
+    ):
+        xs = np.arange(3) + offset
+        axes[0].vlines(xs, 0, values, color=color, linewidth=2)
+        axes[0].scatter(xs, values, color=color, marker=marker, s=45, label=label)
+    axes[0].axhline(0, color='0.4', lw=.8)
+    axes[0].set(xticks=[0, 1, 2], xlabel='抽头索引 n', ylabel='反射 RIR 系数', ylim=(-.7, .85))
+    axes[0].set_title('(a) 两者反射能量均 0.5', fontsize=FS_TITLE)
+    axes[0].legend(loc='upper left', fontsize=FS_SMALL)
+    for offset, name, color, hatch in ((-.17, 'a', C_BLUE, ''), (.17, 'b', C_ORANGE, '//')):
+        bars = axes[1].bar(np.arange(2)+offset, gains[name], width=.32,
+                           color=color, hatch=hatch, label='反射 '+name.upper())
+        axes[1].bar_label(bars, fmt='%.3f', padding=3 if offset < 0 else 18, fontsize=FS_SMALL)
+    axes[1].set(xticks=[0, 1], xticklabels=['2000 Hz', '4000 Hz'],
+                ylabel='反射功率增益 |Hᵣ|²', ylim=(0, 1.06))
+    axes[1].set_title('(b) 相同能量仍有不同频响', fontsize=FS_TITLE)
+    axes[1].legend(loc='upper right', fontsize=FS_SMALL)
+    for offset, values, color, hatch, label in (
+        (-.17, [analytic['a'], analytic['b']], C_GREEN, '//', '解析反射 / 源功率'),
+        (.17, [actual['response_full_a.wav']['nmse'], actual['response_full_b.wav']['nmse']],
+         C_PURPLE, '', '实际 PCM 总误差'),
+    ):
+        bars = axes[2].bar(np.arange(2)+offset, values, width=.32,
+                           color=color, hatch=hatch, label=label)
+        axes[2].bar_label(bars, fmt='%.4f', padding=3 if offset < 0 else 18, fontsize=FS_SMALL)
+    axes[2].set(xticks=[0, 1], xticklabels=['完整 A', '完整 B'],
+                ylabel='同源归一化均方（无量纲）', ylim=(0, 1.26))
+    axes[2].set_title('(c) 同窗 28800 点；不拟合增益', fontsize=FS_TITLE)
+    axes[2].legend(loc='upper right', fontsize=FS_SMALL)
+    for ax in axes:
+        ax.grid(axis='y', ls=':', alpha=.3)
+        ax.set_axisbelow(True)
+    fig.suptitle('图66  RIR 的 DRR 相同，给定双音的输出误差仍不同\n'
+                 '直达 [1,0,0]；RIR DRR 均 3.0103 dB；数学合成，共同增益 1', fontsize=FS_SUP)
+    fig.tight_layout(rect=(0, 0, 1, .96), w_pad=1.8)
+    save(fig, 'fig66_equal_drr_response.png',
+         extra_metadata={'AudioManifestDigest': report['audio_manifest_sha256']})
+
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -4597,6 +4691,7 @@ def main():
     fig_engineering_limits()
     fig_noise_mismatch()
     fig_weighted_noise()
+    fig_equal_drr_response()
     print("ALL DONE")
 
 

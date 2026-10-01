@@ -19,7 +19,7 @@
 
     1. 运行 `codes/` 中只依赖 NumPy 的教学实现，核对手算结果、数组维度和退化边界。
     2. 在隔离环境中用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线，记录房间、阵列和随机种子。
-    3. 先按 §13.7 生成图所依赖的音频和追踪清单，再运行 `scripts/` 中的两个绘图脚本，按当前参数复现 60 张编号图，并逐图核对正文条件。
+    3. 先按 §13.7 生成图所依赖的音频和追踪清单，再运行 `scripts/` 中的两个绘图脚本，按当前参数复现 66 张编号图，并逐图核对正文条件。
     4. 按研究任务选择公开数据和固定版本参考系统，分别核对代码、模型与数据的许可和评测口径。
     5. 在可用的多通道硬件上测实时性、同步和标定；仿真结果不能代替设备测量。
 
@@ -45,9 +45,9 @@
 
 **挑战赛**用于了解公开任务和评测口径。
 
-CHiME 覆盖远场、多说话人和多通道语音处理；CHiME-9 设置 MCoRec 多会话鸡尾酒会转写与会话聚类、ECHI 低延迟助听对话增强。[CHiME-10 官方任务页](https://www.chimechallenge.org/challenges/chime10/index "citation")列出 ECHI-2、URGENT、SG-TSE 三项任务；[官方日程页](https://www.chimechallenge.org/challenges/chime10/dates "citation")列出计划于 2027 年 2 月 4 日开放、提交期暂定为 2027 年 8～9 月。上述日程核实于 2026 年 9 月，参赛时应重新核对官方日期。
+CHiME 覆盖远场、多说话人和多通道语音处理；CHiME-9 设置 MCoRec 多会话鸡尾酒会转写与会话聚类、ECHI 低延迟助听对话增强。[CHiME-10 官方任务页](https://www.chimechallenge.org/challenges/chime10/index "citation")列出 ECHI-2、URGENT、SG-TSE 三项任务；[官方日程页](https://www.chimechallenge.org/challenges/chime10/dates "citation")列出计划于 2027 年 2 月 4 日开放、提交期暂定为 2027 年 8～9 月。上述日程核实于 2026 年 10 月 2 日，参赛时应重新核对官方日期。
 
-DCASE 2026 的挑战期及系统提交于 2026 年 6 月 15 日截止，并在 7 月 1 日公布结果；Task 3 是 Semantic Acoustic Imaging SELD，与 DCASE 2024 Task 3 的距离估计设置不同。以上状态核实于 2026 年 9 月，任务定义、[提交日期](https://dcase.community/challenge2026/submission "citation")与结果见 [DCASE 2026 官方页面](https://dcase.community/challenge2026/ "citation")和[结果公告](https://dcase.community/articles/dcase2026-challenge-results-published "citation")。
+DCASE 2026 的挑战期及系统提交于 2026 年 6 月 15 日截止，并在 7 月 1 日公布结果；Task 3 是 Semantic Acoustic Imaging SELD，与 DCASE 2024 Task 3 的距离估计设置不同。以上状态核实于 2026 年 10 月 2 日，任务定义、[提交日期](https://dcase.community/challenge2026/submission "citation")与结果见 [DCASE 2026 官方页面](https://dcase.community/challenge2026/ "citation")和[结果公告](https://dcase.community/articles/dcase2026-challenge-results-published "citation")。
 
 其他公开评测包括 REVERB 去混响评测、ICASSP DNS/AEC Challenge，以及已结束的 [SPEAR Challenge 2023](https://signalprocessingsociety.org/publications-resources/data-challenges/speech-enhancement-augmented-reality-spear-challenge-2023 "citation")。SPEAR 使用头戴式 6 通道设备研究 AR 语音增强；它的年份、阵列和任务条件不应外推为当前持续榜单。
 
@@ -82,7 +82,7 @@ CHiME-7/8（2023/2024）部分参赛系统使用 Whisper、WavLM 等预训练模
 
 #### 研究方向二：阵列无关系统
 
-CHiME-8 的 DASR 系统报告描述了不固定阵列拓扑的设计。其泛化范围只能以报告中的训练阵列、测试设备、任务和打分脚本为边界。[CHiME-8 DASR](https://www.isca-archive.org/chime_2024/cornell24_chime.html "citation")
+Cornell 等的 CHiME-8 DASR 报告定义远场多说话人识别任务，并给出 ESPnet 与 NeMo 两条基线。它不是一套特定通道聚合网络的系统报告；两条基线的分割、前端和识别配置应分别核对。原文 §5 介绍基线，§6 分析结果，泛化范围以相应训练条件、测试设备、任务和评分脚本为界。[CHiME-8 DASR 原报告](https://www.isca-archive.org/chime_2024/cornell24_chime.pdf "citation")
 
 #### 研究方向三：目标说话人提取
 
@@ -102,7 +102,9 @@ SGMSE+（Richter et al., IEEE/ACM TASLP 2023）在复数 STFT 域使用基于随
 
 FlowSep（ICASSP 2025）把整流流用于 VAE 隐空间中的文本查询通用音频分离，其结论不能直接外推到多通道语音增强。[原论文](https://doi.org/10.1109/ICASSP49660.2025.10890129 "citation")与[作者源码](https://github.com/Audio-AGI/FlowSep/tree/d8164db58bd461ef5bb6df8ffd372b536ee6afb4 "citation")已定位；该固定源码未见明确的根目录再分发许可，运行还需分别取得模型检查点和依赖资产。本书只将其列为研究入口，没有复制源码、取得模型或运行推理。
 
-多通道生成模型还需显式处理跨通道相位、空间协方差和实时性，目前与 §5.9 的掩码加解析波束属于不同成熟度的技术路线。
+多通道生成模型还需显式处理跨通道相位与空间协方差。与 §5.9 的掩码加解析波束比较时，应固定输出目标、采样步数、前瞻、状态和计算预算，分别测内容保持与空间一致性；方法名称不能代替成本或因果性检查。
+
+最小复现还要核对实际生效的采样器、权重与输入准备。锁定 SGMSE 的 `ScoreModel.enhance()` 在 OUVE 分支按 `self.sde.sampler_type` 分派，不能只记录同名调用参数；该入口还以输入峰值归一化，静态源码没有零输入保护，因此不能直接将全零片段当作合法推理测试。这里是固定入口的源码检查，没有运行模型权重；配置与边界见[生成式实现研究](../codes/chapters/ch00/research/04_source_reproduction.md#appendix-b-reproduction)。
 
 #### 研究方向五：TF-GridNet 与复数谱映射骨干
 
@@ -116,7 +118,9 @@ Wang 等的 ICASSP 2023 单通道会议版研究无混响的单通道说话人�
 
 #### 研究方向六：几何无关前端的期刊研究
 
-Kamo et al. 在 *Computer Speech & Language* 95:101820（2026）中整理了几何无关的多说话人远场识别系统，并在真实会议数据上评估。[Kamo et al., *Computer Speech & Language*](https://www.sciencedirect.com/science/article/pii/S0885230825000452 "citation") 它与 CHiME-8 的系统共同说明，不固定阵列拓扑可以作为明确的系统设计目标；泛化范围仍以论文的训练阵列、测试设备和数据为边界。
+Kamo et al. 在 *Computer Speech & Language* 95:101820（2026）中整理了几何无关的多说话人远场识别系统，并在真实会议数据上评估。作者 v2 原文的第2节与第4.1～4.3.6节给出实际模块顺序：先局部说话人分割，再以 GSS 输出提取说话人嵌入，跨块全局聚类并估计人数，随后用目标说话人语音活动检测（TS-VAD）细化活动区间。活动、人数和身份在这些步骤中分别估计，不能把它们统称为一个分离掩码。
+
+增强部分按特征值（EV）与早晚能量比（C50）选择通道，再做 WPE 与 GSS，接空间预测多通道维纳滤波（SP-MWF）；参考选择依据输出 SNR，之后做盲解析归一化（BAN）并送入 ASR。这里概述原系统的处理顺序，不将每一步扩为另一套算法教程；定义与手算分别见第 5、7、8 章。几何无关指不要求固定阵列坐标，不保证任意异步设备或未见声学域都有效。[期刊正式页面](https://www.sciencedirect.com/science/article/pii/S0885230825000452 "citation")、[作者 v2 方法与系统配置](https://arxiv.org/html/2502.09859v2 "citation")。
 
 #### 研究方向七：CHiME-9 与大模型后端
 
@@ -136,7 +140,13 @@ ArrayDPS（Xu et al., ICML 2025）处理“没有阵列几何、房间冲激响�
 
 它仍假设说话人数已知、各通道同步、混合可由卷积模型近似，而且单说话人先验要覆盖测试语音域；扩散先验不能替代源数估计、同步或域外验证。
 
-最小复现可沿用官方 SMS-WSJ 配置：两名说话人、3 通道、8 kHz，先下载作者提供的单说话人扩散模型，再运行 `separate.py`，设置 `num_speakers=2`、`n_channels=3`、`num_steps=400`，将输出与其 IVA 初始化按同一 SI-SDR 实现比较，同时记录总耗时和峰值显存。官方说明要求显存大于 7 GB；400 步扩散采样还嵌套相对 RIR 优化，因此它是离线研究候选，不应直接列入低延迟流式基线。[ArrayDPS 论文（PMLR 267）](https://proceedings.mlr.press/v267/xu25f.html "citation")、[官方实现与复现命令](https://github.com/ArrayDPS/ArrayDPS "citation")。
+原论文 §2 的输出目标是参考麦克风处各说话人的**混响源图像**，不是一律恢复无混响干净声。虚拟源用于建立相对响应模型，评分参考仍须按该输出取点准备。[ArrayDPS 正式论文（PMLR 267），§2～§3](https://proceedings.mlr.press/v267/xu25f.html "citation")。
+
+最小复现可沿用作者 SMS-WSJ 配方：两名说话人、3 通道、8 kHz，核对单说话人扩散模型及数据权利，固定 `num_speakers=2`、`n_channels=3`、`num_steps=400`，将输出与 IVA 初始化按同一参考与评分实现比较，并记录总耗时、采样种子和峰值显存。论文的 FCP 谱变换为 512 点 FFT、64 点帧移；固定源码与 README 配方使用 512/128 点，功率地板和历史帧数也应按实际消费层记录，不能把同名默认配置直接称为论文配置。官方 README 要求显存大于 7 GB；400 步采样还嵌套相对 RIR 优化，因此是离线研究候选，不能据此宣称低延迟流式运行。[固定作者实现](https://github.com/ArrayDPS/ArrayDPS/tree/750ac2b7c75458f4ca5bad203dafda528f575e55 "citation")。
+
+核心 `Sampler` 的混合重构指导不读取干净测试源；固定 `separate.py` 驾驶器却在第161行用 `sources[:,0,:]` 计算 SDR，并在第180～186行据真值指标与预算决定继续或停止。该驾驶器可以用于离线评价，不能原样作为没有参考语音的部署停止规则。
+
+原文 §4.2 另区分五次采样指标的均值与标准差、用真值挑最高指标的 Max 诊断，以及只按混合重构质量选择样本的 ML 规则。Mean 不表示把五条波形直接平均，Max 是 oracle 对照，ML 与上述真值停止也不同。本书只读原文与固定源码，没有取得权重或运行扩散推理；许可、参数层和最小合同检查见[ArrayDPS 实现研究](../codes/chapters/ch00/research/02_aec_wpe_separation.md#sec-u-3b78d29bc2)。
 
 #### 专题：神经网络前端的泛化失配与四类对策
 
@@ -159,9 +169,9 @@ ArrayDPS（Xu et al., ICML 2025）处理“没有阵列几何、房间冲激响�
 
 **阵列无关系统的常见结构**：各通道先独立提取特征，再用注意力或池化聚合成对通道顺序不敏感、可接受可变通道数的表示。中间量可选掩码、协方差或说话人活动；分离与波束部分采用 GSS 等解析方法，或使用满足几何无关要求的神经前端。后端再用预训练识别模型吸收残余失配。
 
-CHiME-8 DASR 与上面的“几何无关前端的期刊研究”给出了两类公开实例。复现时应画出实际流程图，并逐项标明训练数据、通道聚合方式、解析约束和测试阵列范围。
+CHiME-8 DASR 的两条任务基线与上面的“几何无关前端的期刊研究”提供了可分别检查的公开流程。复现时应画出实际流程图，并逐项标明训练数据、通道聚合方式、解析约束和测试阵列范围。
 
-**TAC 与 VarArray**。TAC（Transform-Average-Concatenate）先对各通道独立变换，再跨通道平均并把聚合结果拼回各通道，从结构上支持可变通道数和通道置换。
+**TAC 与 VarArray**。TAC（Transform-Average-Concatenate）对各通道使用同一变换，跨通道平均，再将平均特征拼回每一路。平均特征对通道置换不变，逐通道输出则随输入同样置换，称为置换等变。网络可接受不同通道数，不表示增加不同观测后输出仍相同；只复制一条通道还会改变平均权重。[原论文 §2.1，式(1)～式(4)](https://arxiv.org/html/1910.14104v3 "citation")与[E13-11 的标量手算](#e13-11)区分这些性质。
 
 VarArray 把 TAC、Conformer 分离和通道间相位差特征用于几何无关的连续语音分离，并在 AMI 会议转写上报告端到端 sa-WER 结果。它们为后续跨设备系统提供了结构基础。[VarArray, ICASSP 2022, DOI 10.1109/ICASSP43922.2022.9746876](https://doi.org/10.1109/ICASSP43922.2022.9746876 "citation")
 
@@ -169,7 +179,7 @@ VarArray 把 TAC、Conformer 分离和通道间相位差特征用于几何无关
 
 下面按“现象 → 优先检查项”列出八类常见问题。
 
-1. **MUSIC 没有峰 / 峰位置不稳定** → 先看样本协方差的秩与条件数。若直接用 $T$ 个 $M$ 维快照计算未中心二阶矩，矩阵秩不超过 $T$，所以 $T<M$ 时必然奇异；若先估计并减去样本均值，中心化后的 $T$ 个向量线性和为零，秩上限通常降为 $T-1$，所以 $T\le M$ 时必然奇异。快照数超过这一最低门槛也不代表估计已经稳定。
+1. **MUSIC 没有峰 / 峰位置不稳定** → 先看样本协方差的秩与条件数。若直接用 $T$ 个 $M$ 维快照计算未中心二阶矩，矩阵秩不超过 $T$，所以 $T<M$ 时必然奇异；若先估计并减去样本均值，中心化后的 $T$ 个向量线性和为零，秩必不超过 $\min(M,T-1)$，所以 $T\le M$ 时必然奇异。快照数超过这一最低门槛也不代表估计已经稳定。
 
     再检查源数 $K$ 和噪声底是否可分，最后检查直达声与反射是否强相干。空间平滑只适用于具有可分重叠子阵的几何，而且会缩短有效孔径；它不是所有混响场景的必选项（§2.5、§4.6）。
 
@@ -278,7 +288,7 @@ D_t(x)&=[1-p_D(x)]D^-(x)\\
 
 ### 13.6 思考与练习
 
-练习按学习主题排列，题 9 先用去混响图作对照，题 10～11 再回到回声消除；原有 1～17 的编号保持不变。修改脚本参数时，应同时记录随机种子、实验条件和输出指标。数值题附参考答案，综合题附思路提示。
+练习按学习主题排列，题 9 先用去混响图作对照，题 10～11 再回到回声消除。修改脚本参数时，应同时记录随机种子、实验条件和输出指标。数值题附参考答案，综合题附思路提示。
 
 **练习涉及的绘图函数**：先阅读参数与生成模型。需要改参数时，在个人实验副本中运行并保存到独立输出目录，不直接覆盖本书的出版插图或 `codes/chapters/ch00/reports/`。这些函数是出版图生成器，并非自动接受参数、同步改图注和报告的实验接口。记录实际输入时，要同时核对标题、图内固定文字、坐标、图注和 JSON 报告；任何一项仍写旧值，就不能用该图说明新条件。
 
@@ -457,11 +467,11 @@ $$
 
 **混响时间怎样算。** 从完整 RIR 的 Schroeder 倒向能量积分曲线，在 $-5$ 到 $-25$ dB 区间拟合 dB 对时间的直线，按斜率外推至 $-60$ dB；本题将它称为“$T_{20}$ 外推的 $T_{60}$”，不是实测房间混响时间。逐麦值与中位数都保留，区间不够时脚本报错。
 
-以 1 m、$-30°$ 条件的第 1 只麦为例，本书仿真的直达 RIR 能量约为 0.96844，反射 RIR 能量约为 0.24448，因而该麦 DRR 为 $10\log_{10}(0.96844/0.24448)\approx5.975$ dB；四麦 DRR 的中位数为 5.755 dB。同一只麦的 $-5$～$-25$ dB 拟合斜率约为 $-109.682$ dB/s，故外推 $T_{60}=-60/(-109.682)\approx0.547$ s。计算先用未舍入值，下面仅展示约数。
+以 1 m、$-30°$ 条件的第 1 只麦为例，本书仿真的直达 RIR 能量约为 0.96774，反射 RIR 能量约为 0.24448，因而该麦 DRR 为 $10\log_{10}(0.96774/0.24448)\approx5.975$ dB；四麦 DRR 的中位数为 5.755 dB。同一只麦的 $-5$～$-25$ dB 拟合斜率约为 $-109.682$ dB/s，故外推 $T_{60}=-60/(-109.682)\approx0.547$ s。计算先用未舍入值，下面仅展示约数。
 
 **第 16 题：六个位置的结果**
 
-**本书仿真结果。** 2026 年 9 月 24 日用 pyroomacoustics 0.10.0、Python 3.13.12、NumPy 2.5.3、SciPy 1.18.1 实际运行脚本；镜像阶数为 40，声学和定位条件均如上，`PRA_NUM_THREADS=2`。表中的 $T_{60}$、DRR 都是四麦逐麦指标的中位数；方位估计按 1° 网格输出。为免把近似值当作精确值，下表距离、真方位、$T_{60}$、DRR 和绝对误差均保留三位小数。
+**本书仿真结果。** 历史运行于 2026 年 9 月 24 日，用 pyroomacoustics 0.10.0、Python 3.13.12、NumPy 2.5.3、SciPy 1.18.1 实际运行脚本；镜像阶数为 40，声学和定位条件均如上，`PRA_NUM_THREADS=2`。表中的 $T_{60}$、DRR 都是四麦逐麦指标的中位数；方位估计按 1° 网格输出。为免把近似值当作精确值，下表距离、真方位、$T_{60}$、DRR 和绝对误差均保留三位小数。
 
 | 声源位置 | 距离 (m) | 真方位 (°) | $T_{20}$ 外推 $T_{60}$ (s) | DRR (dB) | SRP 方位 (°) | 绝对误差 (°) |
 |---|---:|---:|---:|---:|---:|---:|
@@ -473,6 +483,8 @@ $$
 | 种子位置 2 | 1.973 | +2.396 | 0.563 | −0.003 | +3 | 0.604 |
 
 逐位置原始数值、每麦指标、镜像阶数和参数见[机器可读的房间仿真结果报告](../codes/chapters/appendix_b/room_audio/RESULTS.json)。上表展示值按注明精度舍入，复算差值或检查收敛时应优先读取报告的未舍入值；该报告对应本书固定的 pyroomacoustics 0.10.0 隔离运行，不是独立房间实测。
+
+2026 年 10 月 2 日按同一条件重新运行；当前报告的 `environment` 保存 Python、NumPy、SciPy、pyroomacoustics 版本与线程数，`source_sha256` 保存实际源摘要。六个方位输出仍为 $[-29,29,-32,32,-40,3]^\circ$，DRR与T20外推值的末位随当前数值实现略有变化，表中三位小数保持一致。该重跑记录与上述历史日期分开，不把当前报告改称历史运行的原始字节。
 
 ![本题六个声源位置的房间仿真结果，依次比较 DRR、T20 外推混响时间与 SRP-PHAT 方位绝对误差](../codes/chapters/appendix_b/room_audio/ROOM_RESULTS.png)
 
@@ -693,6 +705,130 @@ $$
 
 这里的 $H(0)$ 与 $H(\pi)$ 是**带符号的实数频率响应**；若比较幅度，须另取绝对值。反射总能量相同，只约束跨全频带的平方积分，不固定每个频点的幅度与相位。因而 DRR 相同不足以保证增强、波束或定位算法的频率响应相同。[逐步实验 E13-10](../codes/chapters/appendix_b/appendix_b_experiments.py)复核能量与两个频点。本题是人为构造的短 RIR，不含真实墙面、连续衰减或噪声，不能由它计算物理 $T_{60}$ 或推断某个实际阵列的性能。
 
+#### E13-11：TAC 的平均不变，逐通道输出为何只是等变？
+
+<a id="e13-11"></a>
+
+**输入与模型。** 只看一帧，各通道特征为 $x_m$。所有通道共享变换 $P$，平均之后再共享变换 $R$，将两类特征沿特征轴拼接送入共享映射 $S$，最后加回本通道特征：
+
+$$
+ u_m=P(x_m),\quad \bar u=\frac1M\sum_{m=1}^M u_m,\quad
+ o_m=x_m+S\bigl([u_m,R(\bar u)]\bigr).\tag{13-6}
+$$
+
+这里 $M$ 是通道数，拼接后的维度须符合 $S$ 的输入，$S$ 的输出须与残差 $x_m$ 同维。原 TAC 的映射是学习得到的，本题改用固定标量 $P(x)=2x$、$R(z)=z$、$S([u,v])=u+v$，不训练网络。取 $x=[1,3]$，分别计算原输入、交换通道、只复制第一个通道、全部通道复制一遍的输出。
+
+**逐步计算。** 原输入给 $u=[2,6]$，平均为 $\bar u=(2+6)/2=4$。输出第一路为 $1+2+4=7$，第二路为 $3+6+4=13$。
+
+| 输入通道特征 | 变换后平均 $\bar u$ | 逐通道输出 |
+|---|---|---|
+| $[1,3]$ | $4$ | $[7,13]$ |
+| 交换为 $[3,1]$ | $4$ | $[13,7]$ |
+| 只复制首通道为 $[1,1,3]$ | $10/3$ | $[19/3,19/3,37/3]$ |
+| 全部复制为 $[1,3,1,3]$ | $4$ | $[7,13,7,13]$ |
+
+置换没有改变求和与通道数，所以平均不变；各路共享 $P$ 和 $S$，因此输出随输入同样置换。只复制第一路时，它在平均中的占比从 $1/2$ 变成 $2/3$，全部通道的聚合特征与输出都改变。等倍复制全部通道则把求和与分母同时乘2，平均保持不变。
+
+这些性质依赖共享映射、正确的通道平均和逐通道残差；插入固定通道编号、将通道展平成固定长向量，或给不同通道不同参数，都需重新证明。该夹具说明结构性质，不能证明新增麦克风必然提高分离质量，也不表示已执行原作者的训练模型。原始结构见[TAC §2.1，式(1)～式(4)](https://arxiv.org/html/1910.14104v3 "citation")；[逐步实验](../codes/chapters/appendix_b/appendix_b_experiments.py)返回四组中间量。
+
+#### E13-12：共同缩放不会改变 DRR，为什么直接平方会算错？
+
+<a id="e13-12"></a>
+
+**计算目标。** 取实数直达与反射分量，再构成完整 RIR。若两条分量同时乘同一个非零幅度 $c$，两项能量都乘 $c^2$，式(13-2)中的比例不变。但在浮点数里，先平方再求和可能得到零或无穷；这不等于输入真的没有能量。
+
+令 $s_{\mathrm d}=\max_n|h_{\mathrm d}[n]|$、$s_{\mathrm r}=\max_n|h_{\mathrm r}[n]|$，并定义 $q_{\mathrm d}=\sum_n(h_{\mathrm d}[n]/s_{\mathrm d})^2$、$q_{\mathrm r}=\sum_n(h_{\mathrm r}[n]/s_{\mathrm r})^2$。两项分量非零时，本书把相同比例改写为
+
+$$
+\mathrm{DRR}=20\bigl(\log_{10}s_{\mathrm d}-\log_{10}s_{\mathrm r}\bigr)
+ +10\bigl(\log_{10}q_{\mathrm d}-\log_{10}q_{\mathrm r}\bigr).\tag{13-7}
+$$
+
+此式先保存幅度的数量级，再计算归一化平方和，不需要先形成巨大或极小的能量比例。若某一分量严格为零，须先按指标定义单独处理：直达非零、反射零为正无穷；反之为负无穷；两者皆零不能定义比例。本书的有限指标接口要求两项均非零，对这些零能量情况明确报错，不用一个有限哨兵值替代指标定义。
+
+**共同尺度例。** 用 $h_{\mathrm d}=[1,0]$、$h_{\mathrm r}=[0,1/2]$，能量为 $1$ 与 $1/4$，所以 DRR 为 $10\log_{10}4\approx6.0206\ \mathrm{dB}$。共同乘 $10^{200}$ 或 $10^{-200}$ 后，数学结果仍为6.0206 dB；原始平方分别可能溢出或下溢，式(13-7)保留相同对数差。
+
+**比例本身也可能超出浮点范围。** 若直达幅度为 $10^{160}$、反射幅度为 $10^{-160}$，归一化平方和都为1，DRR 是 $20(160-(-160))=6400\ \mathrm{dB}$。6400这个对数结果可表示，并不要求 $10^{640}$ 的能量比也可表示。将两个幅度指数分别改为80与−80，同理得有限的3200 dB，能量比仍可能溢出。这里是数值边界夹具，不是物理房间可能达到的测量精度。
+
+对 Schroeder 曲线也有同类问题：$E[n]=\sum_{k=n}^{N-1}h[k]^2$，相对曲线为 $10\log_{10}(E[n]/E[0])$。共同非零幅度缩放应当在比例中消去，因此可先按整条 RIR 的最大幅度缩放再累计能量。缩放只保护数值计算，不补回有限尾部、噪声底或缺失的 $-5$～$-25$ dB 拟合区间；也不能把量化后的全零文件当作未量化弱信号。
+
+再固定 $h[n]=\exp(-3\ln(10)n/(0.6f_s))$、$f_s=16000\ \mathrm{Hz}$、$n=0,\ldots,31999$。其幅度平方每0.6 s下降60 dB，理想无限尾倒向能量也按同一斜率衰减；保存2 s尾部后，在规定区间拟合应得接近0.6 s的外推值。分别将整条 RIR 乘1、$10^{-200}$ 与 $10^{200}$，曲线与拟合结果应在数值精度内相同。这是有限指数夹具的缩放控制，不是三次房间测量。
+
+本书的[房间指标核](../codes/chapters/appendix_b/core/room_metrics.py)保留普通路径，对检测到的差分溢出、归一化非零分量或功率支持丢失明确拒绝。它是有限 float64 支持的教学实现，式(13-7)不保证任意极端动态范围都能计算。
+
+#### E13-13：时间原点和时间单位为何不应改变 T20 外推？
+
+<a id="e13-13"></a>
+
+**固定数据与目标。** 给定同一衰减直线的三点，先拟合 dB 对时间的斜率，再外推 $T_{60}=-60/\beta$。时间平移应只改变截距；改用另一时间单位应连同斜率单位换算，不能改变物理时长。若大时间起点使设计矩阵两列接近相关，先减去起点并按跨度条件化：
+
+$$
+\begin{aligned}
+ t_0&=t_{\min},\qquad \Delta t=t_{\max}-t_{\min}>0,\\
+ z_i&=\frac{t_i-t_0}{\Delta t},\qquad d_i=\alpha+\beta_z z_i,\\
+ \beta&=\frac{\beta_z}{\Delta t},\qquad T_{60}=-\frac{60\Delta t}{\beta_z}.
+\end{aligned}\tag{13-8}
+$$
+
+$d_i$ 为相对能量 dB，$z_i$ 无量纲，$\beta_z$ 为每单位 $z$ 的dB变化。截距 $\alpha$ 对应平移后的起点；不必用一个极大的绝对时间截距再反求衰减时长。
+
+**大起点手算。** 令 $t=[10^{16},10^{16}+2,10^{16}+4]\ \mathrm{s}$，对应 $d=[-5,-15,-25]\ \mathrm{dB}$。时间跨度为4 s，故 $z=[0,1/2,1]$；拟合给 $\alpha=-5$、$\beta_z=-20$。原单位斜率为 $-20/4=-5\ \mathrm{dB/s}$，$T_{20}=20/5=4\ \mathrm{s}$，$T_{60}=12\ \mathrm{s}$。不要将未条件化的浮点最小二乘输出直接当作另一种物理衰减。
+
+**单位尺度手算。** 再用 $t=[0,10^{-200},2\times10^{-200}]$ 与相同的三个dB值。$z$仍为 $[0,1/2,1]$，$\beta_z$仍为 $-20$；原时间单位斜率为 $-10^{201}$，$T_{20}=2\times10^{-200}$、$T_{60}=6\times10^{-200}$。反向使用大跨度 $[0,10^{200},2\times10^{200}]$ 时，斜率为 $-10^{-199}$，$T_{20}=2\times10^{200}$、$T_{60}=6\times10^{200}$。通用直线公式的输出时间单位随输入单位变化；但本仓接口参数 `times_s` 与返回字段明确固定为秒。原始时刻若以毫秒记录，须先除1000再传入接口，不能把毫秒数字直接输入后仍将返回值标成秒。
+
+条件化不能创造已经丢失的时刻差。例如浮点数中 $10^{20}+1$ 可能与 $10^{20}$ 相同，此时输入已经没有可分辨跨度，接口应拒绝。重复或非递增时间、非有限输入、非下降拟合，以及未覆盖规定衰减区间，均需分别检查。该题只拟合给定EDC点，不是从三点就证明真实房间衰减线性；[E13-05](#sec-u-199b14fd60)和第16题说明拟合区间与外推的声学条件。
+
+#### E13-14：两个同 DRR 的短 RIR，实际 PCM 输出还一样吗？
+
+<a id="e13-14"></a>
+
+**输入与参考。** 将 E13-10 的短 RIR 用于可听频带：采样率16 kHz，源为2000 Hz与4000 Hz各幅度0.1的余弦，长度32000点，乘共同包络 $\min(1,n/320,(31999-n)/320)$，端点为零。两组直达 RIR 都为 $[1,0,0]$，反射分别为 $[0,1/2,1/2]$ 与 $[0,1/2,-1/2]$。做完整线性卷积，五文件均保存32002点，共同导出增益1；同一源参考补两点尾零，不逐文件归一化。
+
+反射 RIR 能量都为 $1/2$，所以 DRR 同为3.0103 dB。源谱却会对它们不同的频率响应加权。完整卷积能量的 Parseval 表达式是
+
+$$
+ E_{y_{\mathrm r}}=\frac1{2\pi}\int_{-\pi}^{\pi}
+ |X(e^{j\omega})|^2|H_{\mathrm r}(e^{j\omega})|^2\,d\omega.\tag{13-9}
+$$
+
+$X$ 是有限源序列的离散时间傅里叶变换，$H_{\mathrm r}$ 是反射滤波器；积分覆盖全频带。固定RIR平方和只对应不加源谱权重的滤波器能量，不能直接等同于某条源波形的反射输出能量。
+
+**稳态两频手算。** 只统计源时轴半开区间 $[1600,30400)$ 共28800点，此处包络恒为1，两个频率分别包含3600与7200个整数周期。反射幅度平方为 $|H_{\mathrm r}^{(A)}|^2=\cos^2(\omega/2)$、$|H_{\mathrm r}^{(B)}|^2=\sin^2(\omega/2)$；每个源余弦功率均为 $0.1^2/2=0.005$。
+
+两频功率相加，同号反射A得 $0.005(1+\sqrt2/4)\approx0.006767767$，异号反射B得 $0.005(1-\sqrt2/4)\approx0.003232233$。下表将频点增益与最终功率分列。
+
+| 反射输出 | 2000 Hz幅度平方 | 4000 Hz幅度平方 | 稳态误差功率 |
+|---|---|---|---|
+| A：同号反射 | $(2+\sqrt2)/4$ | $1/2$ | 0.006767767 |
+| B：异号反射 | $(2-\sqrt2)/4$ | $1/2$ | 0.003232233 |
+
+这里“误差”是完整输出减同源直达参考，解析值等于对应反射输出。源参考功率为0.01，因此两项解析NMSE约为0.6767767与0.3232233。整段尾部能量和该稳态窗口功率仍是不同统计量。
+
+实际 PCM 按有符号整数除32768解码，完整输出与**发布源参考**逐样本相减，不拟合额外增益或时延。两文件各自量化后，完整输出减参考不必逐字节等于单独量化的反射文件。解析、未量化浮点和实际PCM的指标分别记录在[独立清单](../codes/chapters/appendix_b/response_audio/MANIFEST.json)；严格检查入口为 `.venv/bin/python -m codes.chapters.appendix_b.examples.generate_response_audio --check`，数值题由[附录 B 逐步实验](../codes/chapters/appendix_b/appendix_b_experiments.py)调用同一真实清单。
+
+**PCM整数复算。** 在上述窗口，源参考的整数平方和为 $D=309262788000$；每个完整输出减参考的整数差平方和记作 $E$。MSE先除以 $N\cdot32768^2=30923764531200$，单位是解码数字幅度平方；NMSE则直接用 $E/D$，无量纲。
+
+| 完整输出 | 整数误差平方和 $E$ | 实际PCM MSE | 实际PCM NMSE |
+|---|---:|---:|---:|
+| A | 209299622400 | 0.00676824525 | 0.676769500 |
+| B | 99939578400 | 0.00323180505 | 0.323154231 |
+
+这些整数来自逐样本读回后的差与平方和，除法先用完整整数，表中才舍入。量化后的源与输出一起参与评分，因此PCM结果不必等于解析反射功率；不能用单独发布的反射WAV能量替换此处的完整输出减参考误差。两组共有相同的RIR DRR，而此固定源谱下B的误差较小，只支持这组两频、窗口与指标的结论。
+
+![图66 同DRR短RIR的解析频响与同源输出误差](../figures/fig66_equal_drr_response.png)
+
+图66左面板显示两条短FIR的反射系数，中面板比较2000 Hz与4000 Hz的反射增益平方，右面板比较给定源谱下的解析反射NMSE与完整输出的实际PCM误差。RIR能量比相同不固定其相位或输出能量。它是已知短FIR的数学合成对照，不是实测房间、盲去混响或听测成绩。
+
+先降低播放音量，再按相同音量设置比较下列文件：
+
+- [同源参考](../codes/chapters/appendix_b/response_audio/response_source.wav)
+- [A反射输出](../codes/chapters/appendix_b/response_audio/response_reflection_a.wav)
+- [B反射输出](../codes/chapters/appendix_b/response_audio/response_reflection_b.wav)
+- [A完整输出](../codes/chapters/appendix_b/response_audio/response_full_a.wav)
+- [B完整输出](../codes/chapters/appendix_b/response_audio/response_full_b.wav)
+
+这些文件保留相同源、增益与两点卷积尾。试听可以帮助辨认频谱差异，不能替代上述误差计算，也不证明对真实语音的感知质量优劣。
+
 ### 13.7 复现说明
 
 先运行代码基线的单元测试和第 10 章示例，核对确定性输出：
@@ -708,7 +844,7 @@ $$
 
 第 10 章示例使用确定性输入，覆盖 SRO 直线拟合与线性重采样、VAD 迟滞与语音结束保持时间、峰值保护 AGC、固定容量环形缓冲、处理超时与队列模拟，以及 Q1.15 饱和量化。线性重采样、Python 环形缓冲和调度模拟都是教学基线，不应替换带抗混叠滤波的流式重采样器、无锁实时队列或目标系统测量。
 
-附录 B 逐步实验运行 E13-03～10 的固定手算与只读 PCM 检查，其中 E13-09 逐份核对房间 WAV 摘要后读取波形、重新计算两个时间窗的 SRP。它不运行第 16 题的房间仿真，也不下载第 17 题提及的外部系统；房间仿真要按第 16 题使用隔离依赖，并区分[结果报告](../codes/chapters/appendix_b/room_audio/RESULTS.json)的实际运行证据与本书构造的数学小例。
+附录 B 逐步实验运行 E13-03～14 的固定手算与只读 PCM 检查，其中 E13-09 逐份核对房间 WAV 摘要后读取波形、重新计算两个时间窗的 SRP。它不运行第 16 题的房间仿真，也不下载第 17 题提及的外部系统；房间仿真要按第 16 题使用隔离依赖，并区分[结果报告](../codes/chapters/appendix_b/room_audio/RESULTS.json)的实际运行证据与本书构造的数学小例。
 
 新增的[状态与时间练习](../codes/chapters/ch00/cross_chapter/tracking_time_exercises.py)分别对应 E09-07 的旧权重递推、E09-08 的测量到消费时间外推、E10-15 的预卷与结束事件、E11-08 的零失败风险上界。先按题面独立手算，再检查代码中间值；四题均有[独立边界测试](../tests/test_codes_time_state_exercises.py)，不需要模型权重或声卡。
 
@@ -728,20 +864,32 @@ $$
 
 图60读取第8章独立六WAV清单：先比较500 Hz的幅度上限和1250 Hz的相位旋转，再分别显示解析与27200点实际PCM误差。先运行 `codes.chapters.ch08.examples.mask_representation_demo`；已知目标构造的掩码只检验表示边界，不是盲分离或网络性能。
 
-图61从第9章E20与E21的指定解析模型生成：相关观测不能被重复计为独立证据，固定阵列的纯方位观测不能辨认未知距离与速度的共同尺度。它不读取音频、不做随机抽样；数值报告在 `codes/chapters/ch09/reports/figure61_tracking_information.json`。
+图61从第9章E20与E21的指定解析模型生成：相关观测不能被重复计为独立证据，在忽略传播时延、以源状态时刻取瞬时方位的模型中，固定阵列不能辨认未知距离与速度的共同尺度。这不等于固定接收时钟的迟滞声学波形也完全相同。它不读取音频、不做随机抽样；数值报告在 `codes/chapters/ch09/reports/figure61_tracking_information.json`。
 
 图62计算第10章的给定噪声软更新、有限尾部逆积分和非抢占阻塞。图63读取第10章[独立六WAV清单](../codes/chapters/ch10/noise_audio/MANIFEST.json)，分开浮点分解与实际PCM总误差；已知方差对照使用额外真值，不能称盲估计。
 
-图片写入 `figures/`，共 63 张：
+图64读取第11章同源单音与双音场景的八WAV清单，区分解析与实际PCM误差、共同场景权重和最坏场景。图65读取附录A的已知噪声权重五WAV，比较正确权重与反权重。图66读取本附录的同DRR短RIR五WAV，说明源谱和反射相位怎样改变输出；后三组也须先生成各自独立清单。
+
+图片写入 `figures/`，共 66 张编号图，另有第16题的房间补充图：
 
 ```bash
 .venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
+.venv/bin/python -m codes.chapters.ch01.examples.generate_binaural_cues
+.venv/bin/python -m codes.chapters.ch02.examples.generate_stft_convolution
+.venv/bin/python -m codes.chapters.ch03.examples.generate_geometry_audio
+.venv/bin/python -m codes.chapters.ch04.examples.generate_focus_audio
+.venv/bin/python -m codes.chapters.ch05.examples.generate_derivative_audio
+.venv/bin/python -m codes.chapters.ch08.examples.gss_teaching_demo
+.venv/bin/python -m codes.chapters.ch09.examples.moving_source_audio
 .venv/bin/python -m codes.chapters.ch09.examples.chapter09_tracking_audio
 .venv/bin/python -m codes.chapters.ch06.examples.generate_apa_audio
 .venv/bin/python -m codes.chapters.ch07.examples.mint_teaching_demo
 .venv/bin/python -m codes.chapters.ch08.examples.mask_representation_demo
 .venv/bin/python -m codes.chapters.ch10.examples.generate_noise_mismatch
-.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～65
+.venv/bin/python -m codes.chapters.ch11.examples.generate_selection_audio
+.venv/bin/python -m codes.chapters.appendix_a.examples.generate_weighted_audio
+.venv/bin/python -m codes.chapters.appendix_b.examples.generate_response_audio
+.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～66
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～39（回声消除专题）
 ```
 
@@ -753,4 +901,4 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`，其余不变�
 
 ---
 
-> 📄 本篇信息：编号图 2 张（图35、图41），另有房间题结果图 ｜ [回首页](00_overview.md)
+> 📄 本篇信息：编号图 3 张（图35、图41、图66），另有房间题结果图 ｜ [回首页](00_overview.md)

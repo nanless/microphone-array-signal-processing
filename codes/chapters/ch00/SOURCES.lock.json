@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "verified_at": "2026-10-01",
+  "verified_at": "2026-10-02",
   "notes": "Fixed source revisions for independent local research checkouts. Acquisition does not mean runtime validation or redistribution permission. LFS objects, submodules and common model/audio/archive files are omitted in new sparse working trees; upstream Git objects can still contain embedded assets. Code, models and datasets retain their respective terms.",
   "projects": [
     {
@@ -2041,6 +2041,27 @@
         "nemo/collections/audio/parts/submodules/multichannel.py",
         "nemo/collections/audio/parts/utils/audio.py",
         "tests/collections/audio/test_audio_modules.py"
+      ]
+    },
+    {
+      "id": "tac",
+      "url": "https://github.com/yluo42/TAC.git",
+      "revision": "e3373b73358a96af6f64fdbe25327def8d6bd973",
+      "license": "CC-BY-NC-SA-3.0-US (README declaration; no separate LICENSE)",
+      "fetch_enabled": true,
+      "scope": "shared Transform-Average-Concatenate channel aggregation and author single-stage FaSNet-TAC variant",
+      "note": "Verified 2026-10-02. Author README supplies the code license. Four literal source paths only; no audio, datasets, checkpoints or iFaSNet extension. Local ignored reference checkout, not redistributed with the tutorial. Static structure verification does not execute the PyTorch network or reproduce separation scores. FaSNet wrapper has a reference channel, distinct from permutation-equivariant internal TAC layers.",
+      "acquisition": "independent_source_checkout",
+      "source_paths": [
+        "README.md",
+        "FaSNet.py",
+        "utility/__init__.py",
+        "utility/models.py"
+      ],
+      "entrypoints": [
+        "README.md",
+        "utility/models.py",
+        "FaSNet.py"
       ]
     }
   ]

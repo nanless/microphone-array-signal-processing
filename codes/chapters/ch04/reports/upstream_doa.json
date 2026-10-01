@@ -1,8 +1,8 @@
 {
-  "run_utc": "2026-10-01T01:46:56.962202+00:00",
-  "run_asia_shanghai": "2026-10-01T09:46:56.962358+08:00",
+  "run_utc": "2026-10-01T20:33:17.925412+00:00",
+  "run_asia_shanghai": "2026-10-02T04:33:17.925555+08:00",
   "audit_source_sha256": "1d475351c39762bbf359dcd0315e91ca142b33f5119993fd49552f4de6c6c641",
-  "lock_sha256": "5cf610a5bee5a65c0b5bb77293f2bd6549446d22e635594fc313710f4109b8cf",
+  "lock_sha256": "55ab323ba665633141c4864763095046f9c6161ce2d88ca2aa9332dde7ec23f0",
   "lock_entries": {
     "pyroomacoustics": {
       "id": "pyroomacoustics",
@@ -91,7 +91,7 @@
     "wheel_source_equal": "byte exact"
   },
   "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
-  "executable": "/private/tmp/masp-ch04-pra-venv/bin/python",
+  "executable": "/private/tmp/masp-appb-pra-venv/bin/python",
   "environment": {
     "numpy": "2.5.3",
     "scipy": "1.18.1",

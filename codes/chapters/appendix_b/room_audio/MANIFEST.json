@@ -43,8 +43,8 @@
   "propagation_delay_and_gain_compensated": false,
   "channel_length_handling": "trailing zeros pad each channel to the longest convolution",
   "normalization": "one common gain for all source/full/direct files; no per-file peak scaling",
-  "common_gain": 0.151696899534143,
-  "maximum_pre_gain_peak": 5.273674033264872,
+  "common_gain": 0.1516968997435788,
+  "maximum_pre_gain_peak": 5.273674025983931,
   "maximum_post_gain_peak": 0.8,
   "excitation": "1 s independent PCG64 standard-normal float64 per case",
   "cases": [
@@ -135,7 +135,7 @@
       "channels": 1,
       "frames": 16000,
       "peak_before_gain": 4.11995082330482,
-      "peak_after_gain": 0.624983766128481,
+      "peak_after_gain": 0.6249837669913463,
       "sha256": "b9959b4c530c25d5051ee7b392665190780bf11e3e65fca6db017ebca28d8279"
     },
     {
@@ -144,9 +144,9 @@
       "file": "fixed_near_left_full.wav",
       "channels": 4,
       "frames": 38497,
-      "peak_before_gain": 5.159972635507012,
-      "peak_after_gain": 0.7827518504874343,
-      "sha256": "4264b7229584daccff6e61470dde732efb2f5bf8fadbecfd9393a0a2fb8e1dee"
+      "peak_before_gain": 5.159972669142041,
+      "peak_after_gain": 0.7827518566704469,
+      "sha256": "a19a86e4d001834d7963a5f04a2017a9da68c88e7987128cbfbd322adf7604f6"
     },
     {
       "case": "fixed_near_left",
@@ -155,7 +155,7 @@
       "channels": 4,
       "frames": 38497,
       "peak_before_gain": 4.051638798576734,
-      "peak_after_gain": 0.6146210437763308,
+      "peak_after_gain": 0.6146210446248889,
       "sha256": "a9fe3258c83c065369d53807666ee3152b0155fdbe5c18df96bb1aac0112f83f"
     },
     {
@@ -165,7 +165,7 @@
       "channels": 1,
       "frames": 16000,
       "peak_before_gain": 3.87783443058951,
-      "peak_after_gain": 0.5882554600271775,
+      "peak_after_gain": 0.5882554608393349,
       "sha256": "02334850c6df9bad91c9cf3238002335d42975d4cc482f5cdc1a92dc51b6d46d"
     },
     {
@@ -174,9 +174,9 @@
       "file": "fixed_near_right_full.wav",
       "channels": 4,
       "frames": 38497,
-      "peak_before_gain": 5.273674033264872,
+      "peak_before_gain": 5.273674025983931,
       "peak_after_gain": 0.8,
-      "sha256": "6d371f052f2a03b7782eae8fa1b5bce8da3949784c2ea9fb15d659e61e976b58"
+      "sha256": "30f060a8b27ca9a58c982df92bb2cab613cadd20ea2dfa53886081d33771ba8a"
     },
     {
       "case": "fixed_near_right",
@@ -185,7 +185,7 @@
       "channels": 4,
       "frames": 38497,
       "peak_before_gain": 4.086260824485141,
-      "peak_after_gain": 0.6198730977622268,
+      "peak_after_gain": 0.6198730986180361,
       "sha256": "9000bb2aafd07cdaa2dec4d54de55071540bf11e7629c8f5c49ddd1622061480"
     },
     {
@@ -195,7 +195,7 @@
       "channels": 1,
       "frames": 16000,
       "peak_before_gain": 4.133069152732317,
-      "peak_after_gain": 0.6269737760296998,
+      "peak_after_gain": 0.6269737768953125,
       "sha256": "4e8ae9185de24749ebedfcdaab0db04682cf430484a6e716a130312135628ae6"
     },
     {
@@ -204,9 +204,9 @@
       "file": "fixed_far_left_full.wav",
       "channels": 4,
       "frames": 38532,
-      "peak_before_gain": 2.8376042002396575,
-      "peak_after_gain": 0.43045575928141755,
-      "sha256": "4544b8f3929eecc89be7eed52f939ed0ab20635540dee85d4cc28637a8336210"
+      "peak_before_gain": 2.83760423881653,
+      "peak_after_gain": 0.4304557657277054,
+      "sha256": "62d85dbf77df0af27e6ce67e505ed9290b38a72d2953a0ebe41655a7755381a5"
     },
     {
       "case": "fixed_far_left",
@@ -215,7 +215,7 @@
       "channels": 4,
       "frames": 38532,
       "peak_before_gain": 1.6098005049169788,
-      "peak_after_gain": 0.24420174546440362,
+      "peak_after_gain": 0.24420174580155346,
       "sha256": "f72bb7aa3fbd23d29d404f6c045f3537e95de957aac017234daed00c87013e4a"
     },
     {
@@ -225,7 +225,7 @@
       "channels": 1,
       "frames": 16000,
       "peak_before_gain": 3.8416141599735836,
-      "peak_after_gain": 0.5827609572744539,
+      "peak_after_gain": 0.5827609580790254,
       "sha256": "98a9c2b66a93aee06a7766c617a7b741e0f0af185f947482367a33013fc49dbb"
     },
     {
@@ -234,9 +234,9 @@
       "file": "fixed_far_right_full.wav",
       "channels": 4,
       "frames": 38532,
-      "peak_before_gain": 2.9441403379712803,
-      "peak_after_gain": 0.4466169610636471,
-      "sha256": "80b3ac5a4e05be7e2a3f8df8e65cd3f391faae66b442f0ac13ff512666b1a8ed"
+      "peak_before_gain": 2.944140351698729,
+      "peak_after_gain": 0.4466169637626669,
+      "sha256": "0266ee0f6e72ecead6aec3c7b5dbfa1df1af370c2368878891c5c9a1126aa647"
     },
     {
       "case": "fixed_far_right",
@@ -245,8 +245,8 @@
       "channels": 4,
       "frames": 38532,
       "peak_before_gain": 1.6354486981032137,
-      "peak_after_gain": 0.24809249684940818,
-      "sha256": "1278370a80ab1e8c57f3ebcda497022f42dde9a87abde37728ce13e3d2d850ac"
+      "peak_after_gain": 0.2480924971919297,
+      "sha256": "80af5652564d75ee2c82ba9593ffa0dcaa765d256f8101030df8e7097d93a262"
     },
     {
       "case": "seeded_1",
@@ -255,7 +255,7 @@
       "channels": 1,
       "frames": 16000,
       "peak_before_gain": 4.125785666097439,
-      "peak_after_gain": 0.6258688936893905,
+      "peak_after_gain": 0.6258688945534777,
       "sha256": "a917bd7f29074e78a39888d3cf9b8bef7890082989285279d38bf81b7777bb48"
     },
     {
@@ -264,9 +264,9 @@
       "file": "seeded_1_full.wav",
       "channels": 4,
       "frames": 38507,
-      "peak_before_gain": 4.671417852112318,
-      "peak_after_gain": 0.7086396045938844,
-      "sha256": "c06ddb6e11513c019bcf546c90f62a0791c17946e50e5660f8d5509938cc64e6"
+      "peak_before_gain": 4.671417834942339,
+      "peak_after_gain": 0.708639602967614,
+      "sha256": "e86224265cdf01d0e7dc356969020c6fa500f8b29298578cb4223d2224673659"
     },
     {
       "case": "seeded_1",
@@ -275,8 +275,8 @@
       "channels": 4,
       "frames": 38507,
       "peak_before_gain": 4.027280212681183,
-      "peak_after_gain": 0.6109259218189395,
-      "sha256": "e3f17fc5bcb48e88145d09cb3169e4c7ca950373fa1e3be4a7e77d2d66bdb71e"
+      "peak_after_gain": 0.6109259226623962,
+      "sha256": "9e9a3cdd9eeaa3fa5b4bb67144a19b382f597a715488acb1d1a6dbaad3298685"
     },
     {
       "case": "seeded_2",
@@ -285,7 +285,7 @@
       "channels": 1,
       "frames": 16000,
       "peak_before_gain": 4.187523036944801,
-      "peak_after_gain": 0.6352342614323249,
+      "peak_after_gain": 0.6352342623093421,
       "sha256": "258598f2af81f3d46503a0879895a643153fd2e619de792d1bb55f22d7a6e0c2"
     },
     {
@@ -294,9 +294,9 @@
       "file": "seeded_2_full.wav",
       "channels": 4,
       "frames": 38478,
-      "peak_before_gain": 3.1831865665171417,
-      "peak_after_gain": 0.48287953277938445,
-      "sha256": "e7f86427e655851248052c88170ce5b08680b8eb508ec4c4d2b6f5feeddaab11"
+      "peak_before_gain": 3.183186543743359,
+      "peak_after_gain": 0.4828795299913454,
+      "sha256": "a22cac3ecfa4e1ff169c793f4c96dd78f30d56e5e4212f6fd15726c02df9f37a"
     },
     {
       "case": "seeded_2",
@@ -305,8 +305,31 @@
       "channels": 4,
       "frames": 38478,
       "peak_before_gain": 2.1727487071154306,
-      "peak_after_gain": 0.32959924233622856,
+      "peak_after_gain": 0.32959924279127994,
       "sha256": "a15c7206eb09b0176bc7eb54619b23891606748e9e17ef439aebd10e1019e367"
     }
-  ]
+  ],
+  "source_sha256": {
+    "codes/chapters/appendix_b/examples/room_srp_exercise.py": "598509685594821f88c058be7bf0ce256b12032fbe36173804ee2a14ea62bf81",
+    "codes/chapters/appendix_b/core/room_metrics.py": "79e984ea8eb0afee3157247e06bf2f2a01056e411068168cfe134faf799a8e51",
+    "codes/chapters/ch02/core/spectral.py": "5ade0b101cc00615276b3b60c3659ece3e68ad614cd2cb2edeb568359f034059",
+    "codes/chapters/ch02/core/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385",
+    "codes/chapters/ch04/core/doa.py": "f3d7eaa8251b732efe0f9579fa2b32a71f506fb884d80b17503f09697b659ed4",
+    "codes/chapters/ch03/core/geometry.py": "5a680848301358415f74647199a4c57b65086f0b2580f91706c912ad208d7bdb",
+    "codes/chapters/ch04/core/covariance.py": "d704be037100ee53caf6e2130fbabbe14ce6eeff9e3d11dde389fd368d271249"
+  },
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "pyroomacoustics": "0.10.0",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "pra_num_threads": "2",
+    "pyroomacoustics_source_sha256": {
+      "room.py": "b4189f582459811f8dbbf3885882e115db60b7b48b4ca0a3672dbef39118e4dc",
+      "acoustics.py": "3196254709071ab1061982133f05be94e7da554f2619db98d829203839d7c4d2",
+      "parameters.py": "dac6389cdaf949659cb2d8dbe01655593f423b35492bc857a43c4af9b24b4ed2"
+    }
+  },
+  "pcm_scale": "writer int16=round_even(amplitude*32767); decode int16/32768"
 }

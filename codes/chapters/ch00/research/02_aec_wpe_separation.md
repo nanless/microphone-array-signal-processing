@@ -1,6 +1,6 @@
 # AEC、去混响与语音分离：算法、工业实现与源码研究
 
-BSS/GSS/CSS 固定源码合同、ArrayDPS 取点与参数层、神经方法身份复核日期：2026-10-01；WPE 原始资料、NARA 多通道历史排列与 NeMo 固定源码复核日期：2026-10-01；AEC 的 APA 原函数、APM 通道边界与神经方法分类复核日期：2026-10-01；AEC 原论文、接口诊断与近年候选原核实日期：2026-09-28；原核实日期：2026-09-22；AEC 工业接口与配对数据说明复核日期：2026-09-23；BSS/GSS 源码入口与实验复核日期：2026-09-24；WPE 与 cACGMM 源码入口于 2026-09-29 扩充并离线重核；推导练习及 Stream.FM、TF-Locoformer 静态审查日期：2026-09-26。对应正文 [第 6 章](../../../../chapters/06_aec.md)、[第 7 章](../../../../chapters/07_wpe-dereverberation.md) 与 [第 8 章](../../../../chapters/08_speech-separation.md)。本篇按处理对象分开说明算法、源码位置和复现实验；正式版本和许可边界由 [SOURCES.lock.json](../SOURCES.lock.json) 固定。
+SGMSE+/StoRM实际采样分派与零峰值边界复核日期：2026-10-02；BSS/GSS/CSS 固定源码合同、ArrayDPS 取点与参数层、神经方法身份复核日期：2026-10-01；WPE 原始资料、NARA 多通道历史排列与 NeMo 固定源码复核日期：2026-10-01；AEC 的 APA 原函数、APM 通道边界与神经方法分类复核日期：2026-10-01；AEC 原论文、接口诊断与近年候选原核实日期：2026-09-28；原核实日期：2026-09-22；AEC 工业接口与配对数据说明复核日期：2026-09-23；BSS/GSS 源码入口与实验复核日期：2026-09-24；WPE 与 cACGMM 源码入口于 2026-09-29 扩充并离线重核；推导练习及 Stream.FM、TF-Locoformer 静态审查日期：2026-09-26。对应正文 [第 6 章](../../../../chapters/06_aec.md)、[第 7 章](../../../../chapters/07_wpe-dereverberation.md) 与 [第 8 章](../../../../chapters/08_speech-separation.md)。本篇按处理对象分开说明算法、源码位置和复现实验；正式版本和许可边界由 [SOURCES.lock.json](../SOURCES.lock.json) 固定。
 
 “外部实现”表示可以找到承担该算法计算的代码，不表示本书已经训练、编译或测完该系统。本篇实际运行的结果单独列出，包括[教学基线测试](../../../../tests/test_codes_aec_wpe_sep_track.py)与 W01 的独立实现对照；未附执行结果的外部实验均为复现设计。外部代码、权重和数据分别遵守各自条款。
 
@@ -849,9 +849,11 @@ GPU-GSS 把频点、段及相同目标的计算合并，提高 GPU 利用率。�
 
 离线测试使用报告中的完整复数组，以标量点积、单位脉冲卷积、概率分数和源图像求和独立复算，不依赖外部缓存或网络。运行正式审计需要已有的 PRA 0.10.0 隔离环境与固定缓存；只读检查省略 `--report`，重生成才指定输出路径。没有下载模型、训练集、运行神经前向、ASR或设备计时。
 
-**2026-10-01 的实际复验。** [新审计工具](../../ch08/examples/audit_upstream_separation_contracts.py)与[新结果](../../ch08/reports/upstream_separation_contracts.json)另记当前 Python、NumPy、SciPy、真实解释器路径、全锁及工具摘要。原历史报告中的 `/tmp/room-pra-venv` 表示当时环境；当前使用 `/private/tmp/masp-ch04-pra-venv` 的 PRA 0.10.0，导入源仍与固定缓存一致。七方法诊断的全部数值与异常结果与历史一致，不改写过去的时间或路径。
+**2026-10-01 的实际复验。** [新审计工具](../../ch08/examples/audit_upstream_separation_contracts.py)与[新结果](../../ch08/reports/upstream_separation_contracts.json)另记当前 Python、NumPy、SciPy、真实解释器路径、全锁及工具摘要。原历史报告中的 `/tmp/room-pra-venv` 表示当时环境；该轮使用 `/private/tmp/masp-ch04-pra-venv` 的 PRA 0.10.0，导入源仍与固定缓存一致。七方法诊断的全部数值与异常结果与历史一致，不改写过去的时间或路径。
 
 新工具同时绑定九个原工作树的 HEAD、Git blob 与逐文件 SHA-256，执行前后检查源码未变。ArrayDPS、NeMo及旧 NOTSOFAR 示例为静态合同核查；GSS 功率 SCM 和后验为原函数提取调用，回投影为原模块调用，PRA 为原包方法调用。ssspy `CACGMM` 的新整包导入尝试因缺少 `packaging` 失败；没有安装依赖或声称完成该类执行。Ono 2011 与 Kitamura 2016 的正式全文未在此次取得，原出处仍保留，不能把作者教材或后续论文的阅读记录改称这两篇全文实读。
+
+**2026-10-02 的当前锁表复验。** 新增TAC后，全锁摘要变化，现有合同用实际工具重新生成。此次第8章报告使用 `/private/tmp/masp-appb-pra-venv`（Python3.13.12、NumPy2.5.3、SciPy1.18.1、PRA0.10.0），既有环境已含 `packaging`，没有为该合同补装依赖。ssspy原包导入成功，并完成零次分离迭代的固定后验与一次形状更新核对，形状矩阵与独立期望最大误差为0；`n_iter_for_separation_quality=0`，不支持分离性能结论。2026-10-01缺依赖的尝试仍是历史事实；当前真实状态、限定输入和源身份见[同一当前报告](../../ch08/reports/upstream_separation_contracts.json)的 `attempted.ssspy_cacgmm_package`，不改写旧历史报告。
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 /private/tmp/masp-ch04-pra-venv/bin/python -B \
@@ -945,6 +947,8 @@ NOTSOFAR-1 的固定源码从 `run_training_css_local.py` 进入 `css/training/t
 分数模型沿噪声尺度学习条件生成，推理要经过多次采样或数值求解；预测—校正、随机种子和步数会影响速度与输出。官方入口为[SGMSE](https://github.com/sp-uhh/sgmse)和[StoRM](https://github.com/sp-uhh/storm)，相应论文与固定提交见[第三方来源说明](../THIRD_PARTY.md)。从各自 `enhancement.py` 读到 `sgmse/model.py`：SGMSE 的 `ScoreModel` 与 StoRM 的 `StochasticRegenerationModel`不是同一推理流程，不能仅按“扩散增强”标签共用 checkpoint。
 
 最小复现应固定目标是增强还是去混响、采样器、步数、SDE/噪声日程、归一化和权重。失败实验包含静音、短脉冲、未见噪声与目标缺失，检查是否生成输入没有支持的音节。报告随机重复的离散程度与完整采样耗时；不能只计一次网络前向。代码 MIT 不自动授予训练语料和权重的再分发权。
+
+还要确认参数由哪一层真正消费。固定 SGMSE `1961cf…` 的 `ScoreModel.enhance()` 在 OUVE/SBVE 路径读取 `self.sde.sampler_type`，只改变同名公开形参不保证切换采样器；固定 StoRM `257e96…` 的 `StochasticRegenerationModel.enhance()` 则在再生成分支按形参 `sampler_type` 选择 PC 或 ODE。两个入口都先除以整段输入峰值，所读代码未显式保护零峰值。因此非零输入、模型类型及实际生效分派须一起记录；静音应作为预期失败边界单独检查，不能直接把 NaN 输出纳入语音质量平均。此处证据为固定源码静态阅读，未执行原网络或取得权重。源码定位分别为 `sgmse/model.py` 第426～467行、第720～777行，版本与许可见[锁表](../SOURCES.lock.json)，附录 B 的[来源复现桥](04_source_reproduction.md#appendix-b-reproduction)区分这些条件与已运行实验。
 
 ### N11　ArrayDPS 与模型驱动的扩散分离
 

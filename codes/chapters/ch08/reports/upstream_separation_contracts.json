@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "created_at": "2026-10-01T01:52:45.096122+00:00",
-  "verified_at_local": "2026-10-01T09:52:45.096122+08:00",
+  "created_at": "2026-10-01T20:33:18.332934+00:00",
+  "verified_at_local": "2026-10-02T04:33:18.332934+08:00",
   "tool_sha256": "b3bcc1ea6a744f0601e31739ce0240eb31c4100494bcf9ff81deda579a0ad57f",
-  "source_lock_sha256": "5cf610a5bee5a65c0b5bb77293f2bd6549446d22e635594fc313710f4109b8cf",
+  "source_lock_sha256": "55ab323ba665633141c4864763095046f9c6161ce2d88ca2aa9332dde7ec23f0",
   "legacy_helper_sha256": "cb4dd83db4ead5c9973bf723deb372073f717f9fe4290c71fcbfd34d8c4e439b",
   "source_contract_sha256": "baaa015d4b3851ba265e6378820b1ba4df28baeb4e18a7e5a618d59618ec4b77",
   "sources": {
@@ -433,7 +433,7 @@
   "environment": {
     "python": "3.13.12",
     "numpy": "2.5.3",
-    "executable": "/private/tmp/masp-ch04-pra-venv/bin/python",
+    "executable": "/private/tmp/masp-appb-pra-venv/bin/python",
     "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
     "bytecode_writes": false,
     "upstream_patches": false
@@ -665,7 +665,7 @@
     "pra_original_methods": {
       "execution_kind": "original_installed_methods_matching_locked_file_hashes",
       "package_version": "0.10.0",
-      "package_directory": "/private/tmp/masp-ch04-pra-venv/lib/python3.13/site-packages/pyroomacoustics",
+      "package_directory": "/private/tmp/masp-appb-pra-venv/lib/python3.13/site-packages/pyroomacoustics",
       "scipy_version": "1.18.1",
       "input": {
         "real": [
@@ -3819,9 +3819,151 @@
   },
   "attempted": {
     "ssspy_cacgmm_package": {
-      "status": "failed",
-      "exception_type": "ModuleNotFoundError",
-      "message": "No module named 'packaging'",
+      "status": "executed",
+      "zero_iterations": {
+        "shape": [
+          2,
+          1,
+          4
+        ],
+        "mask_reference_error": 0.0,
+        "posterior": [
+          [
+            [
+              0.6961058787831811,
+              0.054022203552778494,
+              0.6961058787831811,
+              0.054022203552778494
+            ]
+          ],
+          [
+            [
+              0.303894121216819,
+              0.9459777964472216,
+              0.303894121216819,
+              0.9459777964472216
+            ]
+          ]
+        ],
+        "output_real": [
+          [
+            [
+              0.6961058787831811,
+              0.0,
+              1.3922117575663622,
+              0.0
+            ]
+          ],
+          [
+            [
+              0.303894121216819,
+              0.0,
+              0.607788242433638,
+              0.0
+            ]
+          ]
+        ],
+        "output_imag": [
+          [
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          ],
+          [
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          ]
+        ]
+      },
+      "shape_step": {
+        "observed_real": [
+          [
+            [
+              [
+                1.5,
+                0.0
+              ],
+              [
+                0.0,
+                0.5
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0.5,
+                0.0
+              ],
+              [
+                0.0,
+                1.5
+              ]
+            ]
+          ]
+        ],
+        "observed_imag": [
+          [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          ]
+        ],
+        "independent_expected": [
+          [
+            [
+              [
+                1.5,
+                0.0
+              ],
+              [
+                0.0,
+                0.5
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0.5,
+                0.0
+              ],
+              [
+                0.0,
+                1.5
+              ]
+            ]
+          ]
+        ],
+        "error": 0.0
+      },
+      "n_iter_for_separation_quality": 0,
       "execution_kind": "original_package_import_and_bounded_call_attempt",
       "stderr": "",
       "dependencies_installed": false,

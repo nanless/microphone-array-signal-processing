@@ -5,7 +5,7 @@
     .venv/bin/python scripts/build_site.py
 
 产物：site/index.html（首页）+ site/01..13_*.html（13 篇正文），
-另有 site/research/index.html 和 5 篇独立研究页、主清单 109 个与独立实验 84 个合成 WAV，
+另有 site/research/index.html 和 5 篇独立研究页、主清单 109 个与独立实验 89 个合成 WAV，
 以及 4 个真实录音/派生 WAV；源码按章保存，发布 URL 保持原样。
 左侧边栏 = 首页 + 13 篇 + 每篇的二级及以下小节锚点，顶部面包屑，
 文末上一篇/下一篇（首页不输出该盒）。图片直接引用 ../figures/（不复制）。
@@ -53,6 +53,9 @@ MINT_AUDIO_ROOT = CODE_CHAPTERS / "ch07" / "mint_audio"
 MASK_AUDIO_ROOT = CODE_CHAPTERS / "ch08" / "mask_audio"
 SCENARIO_AUDIO_ROOT = CODE_CHAPTERS / "ch11" / "scenario_audio"
 WEIGHTED_AUDIO_ROOT = CODE_CHAPTERS / "appendix_a" / "weighted_audio"
+RESPONSE_AUDIO_ROOT = CODE_CHAPTERS / "appendix_b" / "response_audio"
+RESPONSE_AUDIO_WAVS = {"response_" + name + ".wav" for name in
+                       ("source", "reflection_a", "reflection_b", "full_a", "full_b")}
 WEIGHTED_AUDIO_WAVS = {"weighted_" + name + ".wav" for name in
                        ("target", "array", "ols", "gls", "reversed")}
 SCENARIO_AUDIO_WAVS = {f"selection_{scene}_{kind}.wav" for scene in ("single", "dual")
@@ -159,6 +162,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 @media(max-width:900px){.selection-readable-table{min-width:760px}.selection-readable-table th,.selection-readable-table td{min-width:10em}.selection-readable-table th:first-child,.selection-readable-table td:first-child{min-width:6em}}
 @media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}.tracking-readable-table th,.tracking-readable-table td{min-width:8em}.industrial-readable-table th,.industrial-readable-table td{min-width:8em}}
 @media(max-width:900px){.noise-readable-table th:first-child,.noise-readable-table td:first-child{min-width:6em}}
+@media screen and (max-width:900px){.source-contract-readable-table th,.source-contract-readable-table td{min-width:10em}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 """
 
@@ -271,6 +275,12 @@ def stage_real_audio(source, destination):
 
 def stage_room_audio(source, destination):
     """Stage the separately generated, fixed-room synthetic experiment."""
+    from codes.chapters.appendix_b.examples.check_room_assets import check_assets
+    from codes.chapters.appendix_b.examples.room_srp_exercise import ordinary_path
+    ordinary_path(destination, directory=True)
+    if destination.exists():
+        raise ValueError("room staging destination already exists")
+    check_assets(source)
     manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
     records = manifest["files"]
     names = [record["file"] for record in records]
@@ -633,6 +643,20 @@ def stage_weighted_audio(source, destination):
     return expected
 
 
+def stage_response_audio(source, destination):
+    """Publish the replayed five-WAV, equal-RIR-DRR Appendix-B fixture."""
+    from codes.chapters.appendix_b.examples.generate_response_audio import (
+        check_assets, validate_asset_directory,
+    )
+    check_assets(source)
+    validate_asset_directory(destination, check=False)
+    expected = RESPONSE_AUDIO_WAVS | {"MANIFEST.json"}
+    destination.mkdir()
+    for name in sorted(expected):
+        shutil.copy2(source / name, destination / name)
+    return expected
+
+
 def _check_tracking_members(folder, expected):
     """Reject unexpected directories as well as linked or special members."""
     if (folder.is_symlink() or not folder.is_dir()
@@ -763,7 +787,7 @@ def source_digest():
     paths += [main_audio_manifest_path(CODE_CHAPTERS)]
     paths += sorted(main_audio_sources())
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "build_markdown_helpers.py",
@@ -931,6 +955,9 @@ def rewrite_site_links(html, source_path):
         if target.parent == SCENARIO_AUDIO_ROOT.resolve() and target.name in (SCENARIO_AUDIO_WAVS | {"MANIFEST.json"}):
             relative = os.path.relpath("scenario_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
+        if target.parent == RESPONSE_AUDIO_ROOT.resolve() and target.name in (RESPONSE_AUDIO_WAVS | {"MANIFEST.json"}):
+            relative = os.path.relpath("response_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
+            return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
         if target.parent == WEIGHTED_AUDIO_ROOT.resolve() and target.name in (WEIGHTED_AUDIO_WAVS | {"MANIFEST.json"}):
             relative = os.path.relpath("weighted_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
@@ -955,7 +982,7 @@ def rewrite_site_links(html, source_path):
         # input as a download link; only the explicit mono derivatives play.
         if parsed.path.endswith("real_audio/demand_nriver_16ch_10s.wav"):
             return match.group(0)
-        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|stft_audio|geometry_audio|focus_audio|derivative_audio|apa_audio|mint_audio|mask_audio|noise_audio|scenario_audio|weighted_audio)/[a-z0-9_]+\.wav", parsed.path):
+        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|stft_audio|geometry_audio|focus_audio|derivative_audio|apa_audio|mint_audio|mask_audio|noise_audio|scenario_audio|weighted_audio|response_audio)/[a-z0-9_]+\.wav", parsed.path):
             return match.group(0)
         safe_href = escape(href, quote=True)
         safe_label = escape(re.sub(r'<[^>]+>', '', unescape(label)), quote=True)
@@ -1092,6 +1119,14 @@ def render(md_text, source_path=None):
             }
             return '<table'+(' class="industrial-readable-table"' if readable else '')+'>'+inner+'</table>'
         html = re.sub(r'<table>(.*?)</table>', industrial_table, html, flags=re.S)
+    if source_path == RESEARCH_ROOT / "04_source_reproduction.md":
+        def source_contract_table(match):
+            inner = match.group(1)
+            headers = re.findall(r'<th\b[^>]*>(.*?)</th>', inner, flags=re.S)
+            labels = tuple(unescape(re.sub(r'<[^>]+>', '', value)).strip() for value in headers)
+            readable = labels == ("核查对象", "固定源中实际结构", "证据所能支持的范围")
+            return '<table'+(' class="source-contract-readable-table"' if readable else '')+'>'+inner+'</table>'
+        html = re.sub(r'<table>(.*?)</table>', source_contract_table, html, flags=re.S)
     html = re.sub(
         r"<table([^>]*)>(.*?)</table>",
         (r'<div class="table-scroll" tabindex="0" role="region" '
@@ -1214,10 +1249,12 @@ def _validate_site_output(directory):
     validate_scenario(directory / "scenario_audio", check=False)
     from codes.chapters.appendix_a.examples.generate_weighted_audio import validate_asset_directory as validate_weighted
     validate_weighted(directory / "weighted_audio", check=False)
+    from codes.chapters.appendix_b.examples.generate_response_audio import validate_asset_directory as validate_response
+    validate_response(directory / "response_audio", check=False)
     subdirectories = ('research', 'audio', 'real_audio', 'room_audio', 'moving_audio',
                       'tracking_audio', 'gss_audio', 'binaural_audio', 'stft_audio',
                       'geometry_audio', 'focus_audio', 'derivative_audio', 'apa_audio',
-                      'mint_audio', 'mask_audio', 'noise_audio', 'scenario_audio', 'weighted_audio')
+                      'mint_audio', 'mask_audio', 'noise_audio', 'scenario_audio', 'weighted_audio', 'response_audio')
     for folder in (directory, *(directory/name for name in subdirectories)):
         if folder.is_symlink() or (folder.exists() and not folder.is_dir()):
             raise ValueError('站点目标必须为普通目录：'+str(folder))
@@ -1397,6 +1434,8 @@ def main():
         (OUT / "scenario_audio").mkdir(exist_ok=True)
         weighted_names = stage_weighted_audio(WEIGHTED_AUDIO_ROOT, temp_out / "weighted_audio")
         (OUT / "weighted_audio").mkdir(exist_ok=True)
+        response_names = stage_response_audio(RESPONSE_AUDIO_ROOT, temp_out / "response_audio")
+        (OUT / "response_audio").mkdir(exist_ok=True)
         publish_files([(temp_out / name, OUT / name) for name in sorted(expected)] +
                       [(temp_out / "audio" / name, OUT / "audio" / name) for name in audio_names] +
                       [(temp_out / "real_audio" / name, OUT / "real_audio" / name)
@@ -1430,7 +1469,9 @@ def main():
                       [(temp_out / "scenario_audio" / name, OUT / "scenario_audio" / name)
                        for name in sorted(scenario_names)] +
                       [(temp_out / "weighted_audio" / name, OUT / "weighted_audio" / name)
-                       for name in sorted(weighted_names)], stale, boundary=OUT)
+                       for name in sorted(weighted_names)] +
+                      [(temp_out / "response_audio" / name, OUT / "response_audio" / name)
+                       for name in sorted(response_names)], stale, boundary=OUT)
     print("DONE", len(expected), "pages")
 
 

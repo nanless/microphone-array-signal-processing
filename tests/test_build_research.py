@@ -267,6 +267,17 @@ class ResearchBuildTest(unittest.TestCase):
                     with mock.patch.object(Path, "read_bytes", read):
                         self.assertNotEqual(before, digest())
 
+    def test_site_digests_bind_all_response_assets(self):
+        original_read = Path.read_bytes
+        for digest in (build_site.source_digest, quality_check.site_source_digest):
+            before = digest()
+            for changed in sorted(build_site.RESPONSE_AUDIO_ROOT.iterdir()):
+                def read(path):
+                    return original_read(path) + (b"changed" if path == changed else b"")
+                with self.subTest(digest=digest.__qualname__, asset=changed.name):
+                    with mock.patch.object(Path, "read_bytes", read):
+                        self.assertNotEqual(before, digest())
+
     def test_pdf_same_chapter_fragment_gets_chapter_prefix(self):
         result = build_pdf.rewrite_repository_links(
             '<a href="#sec-4-9">MDL</a><a href="#sec-1">章首</a>',
@@ -310,6 +321,13 @@ class ResearchBuildTest(unittest.TestCase):
                 with self.subTest(room_asset=name):
                     self.assertEqual((output / "room_audio" / name).read_bytes(),
                                      (room_source / name).read_bytes())
+            response_source = ROOT / "codes/chapters/appendix_b/response_audio"
+            response_names = build_site.RESPONSE_AUDIO_WAVS | {"MANIFEST.json"}
+            self.assertEqual(len(response_names), 6)
+            self.assertEqual({p.name for p in (output / "response_audio").iterdir()}, response_names)
+            for name in response_names:
+                self.assertEqual((output / "response_audio" / name).read_bytes(),
+                                 (response_source / name).read_bytes())
             focus_source = ROOT / "codes/chapters/ch04/focus_audio"
             focus_names = {"focus_reference.wav", "focus_delayed_source.wav", "focus_array.wav",
                            "focus_known_focused.wav", "MANIFEST.json"}
@@ -402,13 +420,14 @@ class ResearchBuildTest(unittest.TestCase):
                                              (output / "mask_audio").resolve(),
                                              (output / "noise_audio").resolve(),
                                              (output / "scenario_audio").resolve(),
-                                             (output / "weighted_audio").resolve()}:
+                                             (output / "weighted_audio").resolve(),
+                                             (output / "response_audio").resolve()}:
                             owner = {"gss_audio": "ch08", "moving_audio": "ch09",
                                      "tracking_audio": "ch09", "binaural_audio": "ch01", "stft_audio": "ch02",
                                      "geometry_audio": "ch03", "focus_audio": "ch04", "derivative_audio": "ch05",
                                      "apa_audio": "ch06", "mint_audio": "ch07", "mask_audio": "ch08",
                                      "noise_audio": "ch10", "scenario_audio": "ch11",
-                                     "weighted_audio": "appendix_a"}[target.parent.name]
+                                     "weighted_audio": "appendix_a", "response_audio": "appendix_b"}[target.parent.name]
                             if target.parent.name == "apa_audio":
                                 self.assertIn(target.name, apa_names)
                                 apa_links.add(target.name)

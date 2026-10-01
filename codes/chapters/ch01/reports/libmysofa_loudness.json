@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "executed_at_utc": "2026-10-01T01:46:56.198007+00:00",
+  "executed_at_utc": "2026-10-01T20:33:17.022966+00:00",
   "audit_source": "codes/chapters/ch01/examples/audit_libmysofa_loudness.py",
   "audit_source_sha256": "46e82008fc7ec7fbb92dec430824dcda66ff8155d0afe37a9f5e06278179f989",
   "scope": "original-method extracted call: mysofa_loudness only",
@@ -9,7 +9,7 @@
     "revision": "6cc5b15a73e9bd97810d03767082edda7f315881",
     "release": "v1.3.5",
     "license": "BSD-3-Clause; third-party code notices separate",
-    "lock_sha256": "5cf610a5bee5a65c0b5bb77293f2bd6549446d22e635594fc313710f4109b8cf",
+    "lock_sha256": "55ab323ba665633141c4864763095046f9c6161ce2d88ca2aa9332dde7ec23f0",
     "worktree_clean": true,
     "source_sha256": {
       "src/hrtf/loudness.c": "3aa186feb3f1da3df1a7c23a33388bf4a5395c4525f58ce7d671ed1a9caa157b",
@@ -29,15 +29,15 @@
       "-std=c99",
       "-O0",
       "-I",
-      "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/ch01-libmysofa-otgirtm_",
+      "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/ch01-libmysofa-na4k7iio",
       "-I",
       "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/libmysofa/src/hrtf",
-      "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/ch01-libmysofa-otgirtm_/probe.c",
+      "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/ch01-libmysofa-na4k7iio/probe.c",
       "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/libmysofa/src/hrtf/loudness.c",
       "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/libmysofa/src/hrtf/tools.c",
       "-lm",
       "-o",
-      "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/ch01-libmysofa-otgirtm_/probe"
+      "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/ch01-libmysofa-na4k7iio/probe"
     ],
     "stdout": "",
     "stderr": "",
