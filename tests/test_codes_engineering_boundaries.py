@@ -1,6 +1,7 @@
 """Independent event, amplitude, timestamp and sign-test expectations."""
 
 from itertools import product
+from fractions import Fraction
 import math
 import unittest
 
@@ -96,6 +97,19 @@ class EngineeringBoundaryTests(unittest.TestCase):
         self.assertEqual(result["one_sided_pvalue"], probability)
         self.assertEqual((result["pairs"], result["wins"], result["losses"], result["ties"]),
                          (6, 4, 1, 1))
+
+    def test_sign_test_preserves_exact_rationals_and_mixed_pairs(self):
+        f = paired_sign_test_lower_is_better
+        a = Fraction(2**60+1,2**60)
+        result = f([a,Fraction(10**400),Fraction(1,10**400),1.0],
+                   [Fraction(1),Fraction(10**400-1),0,Fraction(2**60+1,2**60)])
+        self.assertEqual((result['wins'],result['losses'],result['ties']),(3,1,0))
+        # 3 or 4 wins among four independent signs: (4+1)/16.
+        self.assertEqual(result['one_sided_pvalue'],5/16)
+        self.assertEqual(f([Fraction(1,2)],[.5])['ties'],1)
+        self.assertEqual(f([a],[Fraction(1)])['one_sided_pvalue'],.5)
+        for bad in (True,1j,'1',math.inf,math.nan):
+            with self.assertRaises(ValueError):f([Fraction(1)],[bad])
 
     def test_sign_test_all_ties_extremes_and_invalid_inputs(self):
         self.assertIsNone(paired_sign_test_lower_is_better([1, 2], [1, 2])["one_sided_pvalue"])

@@ -1,5 +1,10 @@
 """Independent arithmetic, small counterexamples and actual PCM for chapter 11."""
 import math
+import json
+import shutil
+import struct
+from fractions import Fraction
+from itertools import product
 from pathlib import Path
 import tempfile
 import unittest
@@ -7,8 +12,9 @@ import wave
 import numpy as np
 from codes.chapters.ch11.core.selection import (upper_limit_verdict, pareto_minima,
                                             small_slot_word_errors, token_edit_distance)
-from codes.chapters.ch00.core.audio_samples import selection_tradeoff_case, pcm16_bytes
-from codes.chapters.ch11.chapter11_experiments import run_experiments
+from codes.chapters.ch00.core.audio_samples import selection_tradeoff_case
+from codes.chapters.ch11.chapter11_experiments import run_experiments, audio_anchor, scenario_audio_anchor
+from codes.chapters.ch11.examples.generate_selection_audio import generate, check_main_selection_assets
 from codes.chapters.ch00.cross_chapter.engineering_boundary_exercises import paired_sign_test_lower_is_better
 from codes.chapters.ch00.cross_chapter.tracking_time_exercises import zero_failure_upper_bound
 
@@ -16,11 +22,17 @@ from codes.chapters.ch00.cross_chapter.tracking_time_exercises import zero_failu
 class Chapter11ExperimentsTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.results = run_experiments()
+        # Unit fixtures are generated only in a temporary directory. The main
+        # E19 branch always reads the already published four repository WAVs.
+        cls.temporary = tempfile.TemporaryDirectory()
+        cls.addClassCleanup(cls.temporary.cleanup)
+        cls.scenario_directory = Path(cls.temporary.name) / 'scenarios'
+        generate(cls.scenario_directory)
+        cls.results = run_experiments(scenario_directory=cls.scenario_directory)
         cls.audio = selection_tradeoff_case()
 
     def test_identifiers_and_pareto_analytic_intersection(self):
-        self.assertEqual(list(self.results), [f'E11-{i}' for i in range(10, 20)])
+        self.assertEqual(list(self.results), [f'E11-{i}' for i in range(10, 26)])
         x = self.results['E11-10']
         self.assertEqual(x['feasible'], ['A', 'B', 'C'])
         self.assertEqual(x['pareto'], ['A', 'B'])
@@ -175,30 +187,156 @@ class Chapter11ExperimentsTests(unittest.TestCase):
                 self.assertAlmostEqual(signals[name][0, n], expected, places=15)
 
     def test_pcm_readback_uses_pcm_reference_and_independent_fourier_projection(self):
-        # Real WAV bytes are written/read. DFT projection is independent of the
-        # generator's seven-column least squares fit (integer periods here).
+        # Read repository bytes, not fresh encoder output. Integer sums and a
+        # Fourier projection are independent of the entry's seven-column LS.
+        directory = Path(__file__).resolve().parents[1] / 'codes/chapters/ch11/audio'
+        values, integers = {}, {}
+        for name in self.audio['signals']:
+            with wave.open(str(directory/(name+'.wav')), 'rb') as wav:
+                self.assertEqual((wav.getnchannels(), wav.getframerate(), wav.getsampwidth(), wav.getnframes()),
+                                 (1, 16000, 2, 32000))
+                integers[name] = struct.unpack('<32000h', wav.readframes(32000))
+            values[name] = np.asarray(integers[name], dtype=float)/32768
+        clean = values['selection_clean'][1600:30400]
+        def amplitude(signal, f, start, stop):
+            return 2*abs(np.dot(signal[start:stop], np.exp(-2j*np.pi*f*np.arange(start, stop)/16000)))/(stop-start)
+        for length, expected_error in ((3, 91223542800), (9, 249713672400)):
+            name, delay = f'selection_fir{length}', (length-1)//2
+            output, start, stop = values[name], 1600+delay, 30400+delay
+            actual = self.results['E11-19']['pcm_analysis']['candidates'][name]
+            target = amplitude(output, 1500, start, stop)/amplitude(values['selection_clean'], 1500, 1600, 30400)
+            noise = amplitude(output, 3500, start, stop)/amplitude(values['selection_mixture'], 3500, 1600, 30400)
+            self.assertAlmostEqual(actual['target_1500_retention'], target, places=12)
+            self.assertAlmostEqual(actual['noise_attenuation_db'], -20*math.log10(noise), places=10)
+            denominator = sum(v*v for v in integers['selection_clean'][1600:30400])
+            numerator = sum((integers[name][i+delay]-integers['selection_clean'][i])**2 for i in range(1600,30400))
+            self.assertEqual((numerator,denominator), (expected_error,791595378000))
+            self.assertEqual(self.results['E11-19']['integer_analysis'][name]['integer_error_squared_sum'], numerator)
+            self.assertAlmostEqual(actual['aligned_total_nmse'], numerator/denominator, places=14)
+
+    def test_weighted_sum_cannot_reach_middle_nondominated_point(self):
+        x = self.results['E11-20']
+        self.assertEqual(x['pareto'], ['A','B','C'])
+        self.assertEqual((x['B_minimum_weight'],x['B_maximum_weight']), (float(Fraction(3,5)),float(Fraction(2,5))))
+        self.assertFalse(x['B_selectable_by_linear_weight'])
+        # The incompatible inequalities are exact, not a sampled weight grid.
+        self.assertGreater(Fraction(3,5),Fraction(2,5))
+        self.assertEqual((x['constraint_feasible'],x['constraint_winner']), (['B','C'],'B'))
+
+    def test_interval_dominance_checks_all_vertices_and_counterexamples(self):
+        x = self.results['E11-21']
+        self.assertTrue(x['A_dominates_B'])
+        self.assertFalse(x['A_dominates_C'])
+        self.assertFalse(x['C_dominates_A'])
+        for a in product((80,90),(Fraction(10,100),Fraction(12,100))):
+            for b in product((100,110),(Fraction(14,100),Fraction(16,100))):
+                self.assertTrue(all(av < bv for av,bv in zip(a,b)))
+        self.assertEqual([(r['A_dominates_C'],r['C_dominates_A']) for r in x['point_counterexamples']],
+                         [(False,True),(True,False)])
+        self.assertEqual(x['latency_verdicts'],{'A':'pass','B':'fail','C':'undetermined'})
+
+    def test_poisson_zero_events_uses_hours_not_trial_count(self):
+        x = self.results['E11-22']
+        rate = -math.log(.05)/2
+        self.assertAlmostEqual(x['poisson_rate_upper_per_hour'],rate)
+        self.assertAlmostEqual(math.exp(-2*rate),.05)
+        self.assertAlmostEqual(x['minimum_fixed_exposure_hours'],-math.log(.05)/.1)
+        self.assertGreater(x['poisson_rate_upper_per_hour'],.1)
+
+    def test_whole_utterance_cannot_be_split_between_output_slots(self):
+        x = self.results['E11-23']['cases']
+        self.assertEqual((x['whole']['orc_errors'],x['split']['orc_errors']), (2,0))
+        self.assertEqual((x['whole']['cp_errors'],x['split']['cp_errors']), (2,2))
+        self.assertEqual((x['whole']['reference_words'],x['split']['reference_words']), (2,2))
+        self.assertEqual(x['whole']['orc_wer'],1)
+
+    def test_time_constraint_allows_error_rate_above_one(self):
+        x = self.results['E11-24']
+        self.assertEqual(x['ordinary_errors'],0)
+        self.assertEqual([r['time_constrained_errors'] for r in x['cases']], [2,0,0])
+        self.assertEqual(x['cases'][0]['time_constrained_wer'],2)
+        from codes.chapters.ch11.core.selection import tiny_time_constrained_edit_distance
+        # Enumerate paths (rather than reproduce the core's dynamic program).
+        ref,hyp = ['a','b'],['a','x']
+        rt,ht = [(0,1),(2,3)],[(.2,.8),(10,11)]
+        def all_costs(i,j,cost):
+            if i==len(ref) and j==len(hyp):
+                yield cost
+            if i<len(ref):yield from all_costs(i+1,j,cost+1)
+            if j<len(hyp):yield from all_costs(i,j+1,cost+1)
+            if i<len(ref) and j<len(hyp):
+                overlap=max(rt[i][0],ht[j][0])<min(rt[i][1],ht[j][1])
+                yield from all_costs(i+1,j+1,cost+((ref[i]!=hyp[j]) if overlap else 2))
+        self.assertEqual(tiny_time_constrained_edit_distance(ref,hyp,rt,ht),min(all_costs(0,0,0)))
+
+    def test_scenario_composition_has_distinct_robust_objectives(self):
+        x = self.results['E11-25']
+        def response(length,frequency):
+            # Explicit finite cosine sum around the filter center.
+            half=(length-1)//2
+            return (1+2*sum(math.cos(2*math.pi*frequency*k/16000) for k in range(1,half+1)))
+        expected={}
+        for length in (3,9):
+            a=response(length,1500)/response(length,500)
+            v=response(length,3500)/response(length,500)
+            single,dual=v*v,((a-1)**2+v*v)/2
+            expected['fir'+str(length)]=(single,dual)
+            for scene,value in [('single',single),('dual',dual)]:
+                self.assertAlmostEqual(x['analytic']['candidates'][f'selection_{scene}_fir{length}.wav']['aligned_total_nmse'],value)
+        for key,(single,dual) in expected.items():
+            endpoints=[q*single+(1-q)*dual for q in (.25,.75)]
+            self.assertAlmostEqual(x['analytic']['selection']['worst_over_q_interval'][key],max(endpoints))
+            self.assertAlmostEqual(x['analytic']['selection']['worst_scene'][key],max(single,dual))
+            self.assertNotEqual(max(endpoints),max(single,dual))
+
+    def test_scenario_actual_pcm_integer_sums_and_missing_assets(self):
+        manifest=self.results['E11-25']['published_audio']
+        expected={'single':(395812398600,[87210066600,152494200]),
+                  'dual':(791595378000,[91223542800,249713672400])}
+        def read(stem):
+            with wave.open(str(self.scenario_directory/(stem+'.wav')),'rb') as w:
+                self.assertEqual((w.getframerate(),w.getnchannels(),w.getsampwidth(),w.getnframes()),(16000,1,2,32008))
+                return struct.unpack('<32008h',w.readframes(32008))
+        for scene,(den,errors) in expected.items():
+            ref=read(f'selection_{scene}_target')
+            self.assertEqual(sum(v*v for v in ref[1600:30400]),den)
+            for length,error in zip((3,9),errors):
+                stem=f'selection_{scene}_fir{length}';out=read(stem);delay=(length-1)//2
+                observed=sum((out[i+delay]-ref[i])**2 for i in range(1600,30400))
+                self.assertEqual(observed,error)
+                row=manifest['pcm_analysis']['candidates'][stem+'.wav']
+                self.assertEqual(row['integer_error_squared_sum'],observed)
+                self.assertAlmostEqual(row['aligned_total_nmse'],float(Fraction(error,den)))
+        with tempfile.TemporaryDirectory() as d:
+            with self.assertRaises(ValueError):scenario_audio_anchor(d)
+            self.assertEqual(list(Path(d).iterdir()),[])
+
+    def test_main_selection_check_rejects_bad_pcm_nan_and_boolean_without_repair(self):
+        root=Path(__file__).resolve().parents[1]
+        metadata=json.loads((root/'codes/chapters/ch00/audio/MANIFEST.json').read_text())
         with tempfile.TemporaryDirectory() as directory:
-            values = {}
-            for name, signal in self.audio['signals'].items():
-                path = Path(directory)/(name+'.wav')
-                path.write_bytes(pcm16_bytes(.8*signal))
-                with wave.open(str(path), 'rb') as wav:
-                    self.assertEqual((wav.getnchannels(), wav.getframerate(), wav.getnframes()), (1, 16000, 32000))
-                    values[name] = np.frombuffer(wav.readframes(32000), dtype='<i2').astype(float)/32768
-            clean = values['selection_clean'][1600:30400]
-            def amplitude(signal, f, start, stop):
-                return 2*abs(np.dot(signal[start:stop], np.exp(-2j*np.pi*f*np.arange(start, stop)/16000)))/(stop-start)
-            for length in (3, 9):
-                name, delay = f'selection_fir{length}', (length-1)//2
-                output, start, stop = values[name], 1600+delay, 30400+delay
-                actual = self.audio['pcm_analysis']['candidates'][name]
-                target = amplitude(output, 1500, start, stop)/amplitude(values['selection_clean'], 1500, 1600, 30400)
-                noise = amplitude(output, 3500, start, stop)/amplitude(values['selection_mixture'], 3500, 1600, 30400)
-                self.assertAlmostEqual(actual['target_1500_retention'], target, places=12)
-                self.assertAlmostEqual(actual['noise_attenuation_db'], -20*math.log10(noise), places=10)
-                self.assertAlmostEqual(actual['aligned_total_nmse'], np.dot(output[start:stop]-clean, output[start:stop]-clean)/np.dot(clean, clean), places=14)
-            self.assertGreater(self.audio['pcm_analysis']['candidates']['selection_fir3']['target_1500_retention'], .89)
-            self.assertLess(self.audio['pcm_analysis']['candidates']['selection_fir9']['target_1500_retention'], .21)
+            d=Path(directory)
+            paths=[*metadata['generator_inputs'],'codes/chapters/ch00/audio/MANIFEST.json',
+                   *[f'codes/chapters/ch11/audio/selection_{s}.wav' for s in ('clean','mixture','fir3','fir9')]]
+            for path in paths:
+                target=d/path;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(root/path,target)
+            check_main_selection_assets(d)
+            manifest=d/'codes/chapters/ch00/audio/MANIFEST.json';original=manifest.read_bytes()
+            for invalid in (float('nan'),True):
+                changed=json.loads(original);changed['groups']['selection_tradeoff']['common_export_gain']=invalid
+                manifest.write_text(json.dumps(changed))
+                before=(manifest.read_bytes(),manifest.stat().st_mtime_ns)
+                with self.assertRaises(ValueError):check_main_selection_assets(d)
+                self.assertEqual((manifest.read_bytes(),manifest.stat().st_mtime_ns),before)
+            manifest.write_bytes(original)
+            wav=d/'codes/chapters/ch11/audio/selection_fir3.wav'
+            damaged=bytearray(wav.read_bytes());damaged[-1]^=1;wav.write_bytes(damaged)
+            before=(wav.read_bytes(),wav.stat().st_mtime_ns)
+            with self.assertRaises(ValueError):check_main_selection_assets(d)
+            self.assertEqual((wav.read_bytes(),wav.stat().st_mtime_ns),before)
+
+    def test_computed_results_are_strict_json(self):
+        json.loads(json.dumps(self.results,allow_nan=False))
 
 
 if __name__ == '__main__':

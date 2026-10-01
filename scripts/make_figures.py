@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""生成教程插图（图 1～25、33～36、40～63；图 26～32、37～39 见 make_aec_figures.py）。
+"""生成教程插图（图 1～25、33～36、40～64；图 26～32、37～39 见 make_aec_figures.py）。
 
 用法（仓库根目录）：
-    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～63 → figures/
+    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～64 → figures/
 """
 from pathlib import Path
 import hashlib
@@ -3475,6 +3475,99 @@ def fig_selection_audio_tradeoff():
     save(fig, 'fig47_selection_audio_tradeoff.png',
          {'AudioManifestDigest': hashlib.sha256(manifest_path.read_bytes()).hexdigest()})
 
+def fig_selection_scenarios():
+    """Compare two tasks using real PCM; scenario averaging is not pooled energy."""
+    import json
+    import struct
+    import wave
+    import math
+    from codes.chapters.ch11.examples.generate_selection_audio import check_assets
+    folder = OUT.parent / 'codes/chapters/ch11/scenario_audio'
+    check_assets(folder)
+    manifest_path = folder / 'MANIFEST.json'
+    rates, integer_rows, analytic = {}, {}, {}
+    for scene, frequencies in [('single', (500,)), ('dual', (500, 1500))]:
+        def read(kind):
+            path = folder / f'selection_{scene}_{kind}.wav'
+            with wave.open(str(path), 'rb') as w:
+                if (w.getframerate(), w.getnchannels(), w.getsampwidth(), w.getnframes()) != (16000, 1, 2, 32008):
+                    raise ValueError('selection scenario PCM format differs')
+                return struct.unpack('<32008h', w.readframes(32008))
+        target = read('target')[1600:30400]
+        denominator = sum(v*v for v in target)
+        rates[scene], integer_rows[scene], analytic[scene] = {}, {}, {}
+        for length in (3, 9):
+            kind, delay = f'fir{length}', (length-1)//2
+            output = read(kind)[1600+delay:30400+delay]
+            numerator = sum((a-b)**2 for a,b in zip(output, target))
+            rates[scene][kind] = numerator / denominator
+            integer_rows[scene][kind] = {'source_window': [1600,30400],
+                'output_window': [1600+delay,30400+delay], 'scored_samples': 28800,
+                'integer_error_squared_sum': numerator, 'integer_reference_squared_sum': denominator}
+            def signed(frequency):
+                return sum(math.cos(2*math.pi*frequency*(k-delay)/16000)
+                           for k in range(length))/length
+            scale = abs(signed(500))
+            distortion = sum((signed(f)/scale-1)**2 for f in frequencies)
+            residual = (signed(3500)/scale)**2
+            analytic[scene][kind] = (distortion+residual)/len(frequencies)
+    def summary(table):
+        endpoints = {kind: [q*table['single'][kind]+(1-q)*table['dual'][kind]
+                            for q in (.25,.75)] for kind in ('fir3','fir9')}
+        crossing = ((table['dual']['fir9']-table['dual']['fir3']) /
+                    (table['single']['fir3']-table['dual']['fir3']+
+                     table['dual']['fir9']-table['single']['fir9']))
+        return {'q_single_weight': [.25,.75], 'endpoint_costs': endpoints,
+                'interval_worst': {k:max(v) for k,v in endpoints.items()},
+                'scene_worst': {k:max(table[s][k] for s in ('single','dual')) for k in ('fir3','fir9')},
+                'crossing_q_single': crossing}
+    record = {'schema_version': 1,
+        'script_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        'audio_manifest_sha256': hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
+        'scope': 'mathematical tones; scenario-weighted NMSE, not pooled reference energy or mean dB',
+        'integer_pcm': integer_rows, 'pcm_nmse': rates, 'analytic_nmse': analytic,
+        'pcm_decision': summary(rates), 'analytic_decision': summary(analytic)}
+    report_path = OUT.parent/'codes/chapters/ch11/reports/figure64_selection_scenarios.json'
+    report_path.parent.mkdir(parents=True,exist_ok=True)
+    report_path.write_text(json.dumps(record,ensure_ascii=False,indent=2,allow_nan=False)+'\n')
+    fig, axes = plt.subplots(1,2,figsize=(9.5,4.9),gridspec_kw={'width_ratios':[.95,1.05]})
+    for kind, offset, color, hatch in [('fir3',-.18,C_BLUE,''),('fir9',.18,C_GREEN,'//')]:
+        values = [rates[scene][kind] for scene in ('single','dual')]
+        xs = np.arange(2)+offset
+        axes[0].bar(xs,values,width=.33,color=color,hatch=hatch,edgecolor='black',lw=.7,
+                    label=f'{kind[3:]}抽头：实际PCM')
+        axes[0].scatter(xs,[analytic[scene][kind] for scene in ('single','dual')],
+                        marker='D',s=44,facecolors='white',edgecolors='black',zorder=4,
+                        label='解析控制' if kind=='fir3' else None)
+        for x,value in zip(xs,values):
+            axes[0].text(x,value*1.15,f'{value:.6f}',ha='center',fontsize=FS_SMALL)
+    axes[0].set(yscale='log',ylim=(1e-4,.85),ylabel='对齐NMSE（无量纲，对数纵轴，越低越好）')
+    axes[0].set_xticks([0,1],['单音目标\n500 Hz','双音目标\n500/1500 Hz'])
+    axes[0].set_title('(a) 同一候选在不同目标下排名改变',fontsize=FS_TITLE)
+    axes[0].legend(loc='lower right',fontsize=FS_SMALL)
+    axes[0].grid(axis='y',ls=':',alpha=.3)
+    q = np.linspace(0,1,201)
+    axes[1].axvspan(.25,.75,color='0.85',alpha=.5,label='题设组成区间')
+    for kind,color,style,marker in [('fir3',C_BLUE,'-','s'),('fir9',C_GREEN,'--','o')]:
+        loss = q*rates['single'][kind]+(1-q)*rates['dual'][kind]
+        axes[1].plot(q,loss,style,color=color,lw=2,label=f'{kind[3:]}抽头：共同权重')
+        endpoints = record['pcm_decision']['endpoint_costs'][kind]
+        axes[1].scatter([.25,.75],endpoints,color=color,marker=marker,s=52,zorder=5)
+    crossing=record['pcm_decision']['crossing_q_single']
+    value=crossing*rates['single']['fir3']+(1-crossing)*rates['dual']['fir3']
+    axes[1].scatter([crossing],[value],color='black',s=36,zorder=5)
+    axes[1].annotate(f'PCM交点 q≈{crossing:.4f}',xy=(crossing,value),xytext=(.02,.33),
+        arrowprops={'arrowstyle':'->','color':'black'},fontsize=FS_SMALL)
+    axes[1].set(xlim=(0,1),ylim=(0,.36),xlabel='单音目标场景共同权重 q（无量纲）',
+               ylabel='场景加权NMSE（无量纲，越低越好）')
+    axes[1].set_title('(b) 区间最坏值只比较两个端点',fontsize=FS_TITLE)
+    axes[1].legend(loc='lower left',fontsize=FS_SMALL)
+    axes[1].grid(ls=':',alpha=.3)
+    fig.suptitle('图64  先按目标评分，再声明部署组成（数学合成，实际PCM）',fontsize=FS_SUP)
+    fig.tight_layout(rect=(0,0,1,.94),w_pad=2.6)
+    save(fig,'fig64_selection_scenarios.png',{'AudioManifestDigest':record['audio_manifest_sha256']})
+
+
 def fig_fft_signed_bins():
     """Illustrate signed full-FFT bins versus the nonnegative real FFT grid."""
     n, fs = 8, 8000
@@ -4406,6 +4499,7 @@ def main():
     fig_agc_blocks()
     fig_selection_pareto()
     fig_selection_audio_tradeoff()
+    fig_selection_scenarios()
     fig_fft_signed_bins()
     fig_fft_block_boundary()
     fig_stft_convolution()

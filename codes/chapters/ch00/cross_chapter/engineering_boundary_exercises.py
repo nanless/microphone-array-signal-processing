@@ -14,7 +14,7 @@ if __name__ == "__main__" and not __package__:
 
 import json
 import math
-from numbers import Integral, Real
+from numbers import Integral, Rational, Real
 
 import numpy as np
 
@@ -67,7 +67,13 @@ def paired_sign_test_lower_is_better(baseline, candidate):
                 raise ValueError("observations must be finite real numbers, not booleans")
             if isinstance(value, Integral):
                 result.append(int(value))
+            elif isinstance(value, Rational):
+                # Preserve exact Fraction order, including mixed int/float pairs.
+                result.append(value)
             else:
+                if not isinstance(value, (float, np.floating)) or (
+                        isinstance(value, np.floating) and value.dtype.itemsize > 8):
+                    raise ValueError("only integers, rationals and <=64-bit floating observations are supported")
                 value = float(value)
                 if not math.isfinite(value):
                     raise ValueError("observations must be finite")

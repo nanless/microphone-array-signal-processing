@@ -302,6 +302,18 @@ TensorFlow Lite Micro 要求调用方先划出一块内存，供推理时的张�
 
 DI-cpWER 也不是身份准确率。固定 [`di_cp.py`](https://github.com/fgnt/meeteval/blob/6e3dc81284f2d6928f7ef9e620fd3b6906daa429/meeteval/wer/wer/di_cp.py) 的公开入口为 `greedy_di_cp_word_error_rate`：交换参考与假设送入贪心 ORC，再换回插入、删除计数，按原参考词数归一。这个实现的贪心结果不能默认等于穷举最小值；本书没有执行该生产入口。简化算法文档中的 `di_cp_lev` 另有形参与正文变量拼写不一致，提取原函数调用产生 `NameError`，不应把这段文档的故障扩大为生产实现的同类故障。
 
+#### 话段、词时间与诊断指标的适用范围
+
+作者后续原稿 [Word Error Rate Definitions and Algorithms for Long-Form Multi-talker Speech Recognition，2025，v1](https://arxiv.org/html/2508.02112v1)的 §IV-F 继续按完整参考话段定义 ORC；§V-A 式(10)加入词时间约束；§VI-A 讨论 DI-cpWER 的分析用途，§VII 算法1说明贪心分配。这里引用所读的明确v1版本。上述部分与固定源码的补充核实日期为 2026-10-02。
+
+参考话段是评分输入的一部分。把 `b c` 事后拆成 `b`、`c`，就增加了可独立分配的单元，不能拿更低的 ORC 分数证明输出改善。[E11-23](../../../../chapters/11_selection-guide.md#e11-23)分别枚举两种分段，保留固定的输出与词序。
+
+DI-cpWER 可以帮助诊断说话人归属约束对结果的影响，但作者 §VI-A 不建议用它给系统排名：改变假设分段可能改变可选分配，贪心算法还不保证全局最优。cpWER 与 DI-cpWER 的差值也不是独立测得的身份错误率。做选型时，应预先固定任务指标，把这个诊断量与正式排名指标分开保存。
+
+普通词编辑距离只比较词序。如果参考“春天”的区间为 `[0,1]` 秒，假设同词却在 `[10,11]` 秒，普通错误数为0；下面实际运行的固定时间核只能删除并插入，错误数为2。正重叠区间 `[0,1]` 与 `[0.5,1.5]` 则可以匹配，错误数为0。[E11-24](../../../../chapters/11_selection-guide.md#e11-24)说明词时间、容差与内容评分的关系；词元是预先分好的整个词，不把“春天”自动拆成两个汉字。
+
+触点边界须按版本另记。固定 [`levenshtein.h` 的 `overlaps`](https://github.com/fgnt/meeteval/blob/6e3dc81284f2d6928f7ef9e620fd3b6906daa429/meeteval/wer/matching/levenshtein.h#L94)使用严格正重叠，区间 `[0,1]` 与 `[1,2]` 仅端点相接，实际错误数为2。2025原稿式(10)以间隔大于容差为禁止条件；零容差下的等号边界不能直接代替这个固定实现的严格比较。该版本差异不推翻原论文的整体评分方法。实际使用 tcpWER 包装器还需固定容差及词时间生成方式；这里直接调用两核，不运行包装器，也不把较宽的容差解释为 DER 的排除评分区域。
+
 #### 缺失会话不能随意从统计分母中消失
 
 固定 [`apply_multi_file`](https://github.com/fgnt/meeteval/blob/6e3dc81284f2d6928f7ef9e620fd3b6906daa429/meeteval/io/seglst.py#L565) 按参考会话逐项调用评分函数。本书实际调用原分发函数，以“返回参考、假设片段数”的简单回调检查其会话选择；该回调不计算 WER。
@@ -332,9 +344,38 @@ DI-cpWER 也不是身份准确率。固定 [`di_cp.py`](https://github.com/fgnt/
 
 [诊断脚本](../../ch11/examples/audit_meeting_scoring_interfaces.py)与[固定报告](../../ch11/reports/meeting_scoring_interfaces.json)绑定源码提交、所读文件摘要、输入配置、脚本摘要和运行环境，区分四类证据：原 MeetEval 会话分发函数调用；原简化文档函数提取调用；原 CHiME 控制函数加模拟文件接口；未执行生产算法的静态核对。
 
-在既有隔离环境中，MeetEval 可以导入，但真实 `cp_word_error_rate` 调用因缺少编译扩展 `cy_levenshtein` 而失败。文档函数在同一环境中给出三人两槽例的 cp 错误数 2、ORC 错误数 0；这不能改写成生产包已算出对应 WER。没有运行 ASR、说话人分离、CHiME 音频评测、模型推理或设备测试。
+2026-09-28的隔离环境中，MeetEval 可以导入，但真实 `cp_word_error_rate` 调用因缺少编译扩展 `cy_levenshtein` 而失败。文档函数在同一环境中给出三人两槽例的 cp 错误数 2、ORC 错误数 0；这不能改写成生产包已算出对应 WER。没有运行 ASR、说话人分离、CHiME 音频评测、模型推理或设备测试。
 
 普通[离线测试](../../../../tests/test_codes_meeting_scoring_interfaces.py)不依赖下载目录、NumPy 或 SciPy，用独立全矩阵编辑距离与排列枚举核对记录。要重新执行外部诊断，需固定源码和含 NumPy/SciPy 的隔离环境；输出先放到新临时文件，再比较报告。脚本核对原文件摘要和干净工作树，不安装依赖、不编译扩展、不修正上游，也不下载会议录音。
+
+<a id="meeting-kernel-contracts"></a>
+
+#### 原C++词编辑核的独立执行合同
+
+[当前核审计工具](../../ch11/examples/audit_meeting_kernel_contracts.py)完整包含固定版原 `levenshtein.h`，实际调用 `levenshtein_distance_` 与 `time_constrained_levenshtein_distance_v2_`。自写驱动只把已分词文字映射成无符号词元，并传入以秒为单位的非负 double 区间；没有改写原方法、替换算法或加入 ORC 外层分配。
+
+九例均以插入、删除、替换代价1及正确匹配代价0运行。期望来自手算，[独立测试](../../../../tests/test_codes_meeting_kernel_contracts.py)另用完整二维编辑距离矩阵核对，不用原核输出生成期望。两词时间整体错位时，每个词都要删除并插入，总错误数为4；空输入按实际词数计错，双空为0。
+
+| 已分词输入与时间关系 | 普通错误数 | 固定时间核错误数 |
+|---|---:|---:|
+| 同词、完全分离 | 0 | 2 |
+| 同词、仅端点相接 | 0 | 2 |
+| 同词、严格正重叠 | 0 | 0 |
+| 异词、严格正重叠 | 1 | 1 |
+| 异词、完全分离 | 1 | 2 |
+| 空参考、假设两词 | 2 | 2 |
+| 参考两词、空假设 | 2 | 2 |
+| 双空 | 0 | 0 |
+| 同两词、两段时间均完全分离 | 0 | 4 |
+
+本机原核执行另存于[当前报告](../../ch11/reports/meeting_kernel_contracts.json)，2026-09-28的旧诊断保留。报告绑定99项锁表的实际摘要、固定 HEAD 与 origin、七个原文件的 Git blob/SHA、原 MIT 许可、工具和自写驱动摘要、编译器与实际命令，并核对源工作树执行前后洁净。其余六个文件只作接口、许可和来源核对；仅原头文件参与编译。中文词元不测试分词算法，时间区间也不是从录音估计的。
+
+```bash
+.venv/bin/python -B -m codes.chapters.ch11.examples.audit_meeting_kernel_contracts
+.venv/bin/python -B -m codes.chapters.ch11.examples.audit_meeting_kernel_contracts --report codes/chapters/ch11/reports/meeting_kernel_contracts.json
+```
+
+默认只输出 JSON；编译仅在临时目录，退出后清理。只有显式 `--report` 才写入普通 JSON 文件；输出路径拒绝符号链接、非目录父链、字面 `..` 与上游缓存内部路径，并原子替换报告。工具不下载或安装依赖，所需环境为 Python 标准库、Git 与 C++17 编译器。可选缓存或编译器缺失时，普通测试明确跳过原核实调；版本、来源或摘要不符则失败。原核成功没有补齐旧环境缺少的 Python 编译扩展，也不代表生产 cpWER/ORC-WER/tcpWER、ASR、说话人关联、模型或硬件已运行。
 
 ## 6. 怎样把项目变成可执行实验
 

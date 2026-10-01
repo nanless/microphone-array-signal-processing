@@ -1,0 +1,337 @@
+{
+  "created_utc": "2026-10-01T18:39:22.468825+00:00",
+  "tool_sha256": "d3e62c90b4ecb19652512480ad46ee5b356f1ffdfe31c3745ba3318eb5755327",
+  "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/meeteval",
+  "revision": "6e3dc81284f2d6928f7ef9e620fd3b6906daa429",
+  "origin": "https://github.com/fgnt/meeteval.git",
+  "source_lock_sha256": "5cf610a5bee5a65c0b5bb77293f2bd6549446d22e635594fc313710f4109b8cf",
+  "source_lock_project_count": 99,
+  "sources": [
+    {
+      "path": "LICENSE",
+      "sha256": "5515c2bdda551fa20d771e99ab31deebbb4f9626bef6f6c25f26125c964fd34c",
+      "git_blob": "fdd9c489404e6800e8d375dd2ac142e29687edca",
+      "role": "static contract/identity evidence"
+    },
+    {
+      "path": "README.md",
+      "sha256": "44f11b4e45e41e41e35a4e8c09b66b45a816c2c258463664b7853068daf201ef",
+      "git_blob": "d56c8dae8bf965d8f5ca81071f3119a3293821d2",
+      "role": "static contract/identity evidence"
+    },
+    {
+      "path": "meeteval/wer/matching/levenshtein.h",
+      "sha256": "04e013ba7265a6df8f261f793624ba425b57b7beee9ec9b572f4dd4f1e79ce06",
+      "git_blob": "9a54bf3750b50a8e42473b1c8ee4f2b16e1d986e",
+      "role": "native include"
+    },
+    {
+      "path": "meeteval/wer/matching/cy_levenshtein.pyx",
+      "sha256": "7f73fedd29315cc3dff9017833baf7f646ca0fc60b7b4e074e3659a834f265e2",
+      "git_blob": "a895c206895197be6f439a8c3a640dc7211aee23",
+      "role": "static contract/identity evidence"
+    },
+    {
+      "path": "meeteval/wer/wer/cp.py",
+      "sha256": "2ead616c81b2119e6381532fb337e550c1b12e4ae0ecdfcc96557df32404c1f2",
+      "git_blob": "83dfec0370445f1f030f60ba5bd41e92f805dfcf",
+      "role": "static contract/identity evidence"
+    },
+    {
+      "path": "meeteval/wer/wer/orc.py",
+      "sha256": "7aac2cfdaeb8fbe975aa5087baaa64bff99a08a6093aaffac014cfdb8b2ce9b7",
+      "git_blob": "caf66d352ffddc53113fce24231252a73618e1da",
+      "role": "static contract/identity evidence"
+    },
+    {
+      "path": "meeteval/wer/wer/time_constrained.py",
+      "sha256": "b2d6c0c18f4add17484edf53dbea8f9926f37216c9ccd7612871c92ce537435c",
+      "git_blob": "0a3847224637e74411f2480506d9099641d11ad5",
+      "role": "static contract/identity evidence"
+    }
+  ],
+  "clean": true,
+  "before_clean": true,
+  "after_clean": true,
+  "execution": {
+    "original_functions": [
+      "levenshtein_distance_",
+      "time_constrained_levenshtein_distance_v2_"
+    ],
+    "scope": "complete original header, two native kernels only",
+    "not_executed": [
+      "production Python cpWER/ORC-WER/tcpWER wrappers",
+      "ASR",
+      "diarization",
+      "models",
+      "hardware"
+    ],
+    "source_patch": false,
+    "algorithm_substitutes": [],
+    "scaffold": "self-authored caller; unsigned whole-word tokens and nonnegative double intervals",
+    "driver_license": "self-authored repository code; original included header remains MIT",
+    "driver_sha256": "72e8df9721fb4466f5cfa1b7167070803cf6aa22b9b7c69f7b2090aaaaec7987",
+    "token_encoding": {
+      "夏天": 1,
+      "春天": 2
+    },
+    "costs": {
+      "insertion": 1,
+      "deletion": 1,
+      "substitution": 1,
+      "correct": 0
+    },
+    "timing_rule": "strict positive interval overlap; zero collar, endpoint contact is forbidden",
+    "compile_command": [
+      "/usr/bin/c++",
+      "-std=c++17",
+      "-O2",
+      "/private/tmp/masp-meeting-kernel-9xcp4gq2/driver.cc",
+      "-o",
+      "/private/tmp/masp-meeting-kernel-9xcp4gq2/driver"
+    ],
+    "compiler": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin25.6.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin\n",
+    "compile_stderr": "",
+    "execution_stderr": ""
+  },
+  "license": {
+    "name": "MIT",
+    "path": "LICENSE",
+    "sha256": "5515c2bdda551fa20d771e99ab31deebbb4f9626bef6f6c25f26125c964fd34c"
+  },
+  "environment": {
+    "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "scientific_packages_required": false
+  },
+  "static_scope": "other six files verify identity, binding and wrapper contracts; not executed",
+  "historical_failure": "2026-09-28 separate report retained: Python production cp call lacked cy_levenshtein; native success does not erase it",
+  "cases": [
+    {
+      "name": "same_word_distant",
+      "ordinary": 0,
+      "timed": 2,
+      "reference_words": [
+        "春天"
+      ],
+      "hypothesis_words": [
+        "春天"
+      ],
+      "reference_intervals_s": [
+        [
+          0,
+          1
+        ]
+      ],
+      "hypothesis_intervals_s": [
+        [
+          10,
+          11
+        ]
+      ],
+      "expected_ordinary": 0,
+      "expected_timed": 2,
+      "status": "matched_independent_hand_expected"
+    },
+    {
+      "name": "same_word_touching",
+      "ordinary": 0,
+      "timed": 2,
+      "reference_words": [
+        "春天"
+      ],
+      "hypothesis_words": [
+        "春天"
+      ],
+      "reference_intervals_s": [
+        [
+          0,
+          1
+        ]
+      ],
+      "hypothesis_intervals_s": [
+        [
+          1,
+          2
+        ]
+      ],
+      "expected_ordinary": 0,
+      "expected_timed": 2,
+      "status": "matched_independent_hand_expected"
+    },
+    {
+      "name": "same_word_positive_overlap",
+      "ordinary": 0,
+      "timed": 0,
+      "reference_words": [
+        "春天"
+      ],
+      "hypothesis_words": [
+        "春天"
+      ],
+      "reference_intervals_s": [
+        [
+          0,
+          1
+        ]
+      ],
+      "hypothesis_intervals_s": [
+        [
+          0.5,
+          1.5
+        ]
+      ],
+      "expected_ordinary": 0,
+      "expected_timed": 0,
+      "status": "matched_independent_hand_expected"
+    },
+    {
+      "name": "different_word_overlap",
+      "ordinary": 1,
+      "timed": 1,
+      "reference_words": [
+        "春天"
+      ],
+      "hypothesis_words": [
+        "夏天"
+      ],
+      "reference_intervals_s": [
+        [
+          0,
+          1
+        ]
+      ],
+      "hypothesis_intervals_s": [
+        [
+          0,
+          1
+        ]
+      ],
+      "expected_ordinary": 1,
+      "expected_timed": 1,
+      "status": "matched_independent_hand_expected"
+    },
+    {
+      "name": "different_word_distant",
+      "ordinary": 1,
+      "timed": 2,
+      "reference_words": [
+        "春天"
+      ],
+      "hypothesis_words": [
+        "夏天"
+      ],
+      "reference_intervals_s": [
+        [
+          0,
+          1
+        ]
+      ],
+      "hypothesis_intervals_s": [
+        [
+          10,
+          11
+        ]
+      ],
+      "expected_ordinary": 1,
+      "expected_timed": 2,
+      "status": "matched_independent_hand_expected"
+    },
+    {
+      "name": "empty_reference",
+      "ordinary": 2,
+      "timed": 2,
+      "reference_words": [],
+      "hypothesis_words": [
+        "春天",
+        "夏天"
+      ],
+      "reference_intervals_s": [],
+      "hypothesis_intervals_s": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "expected_ordinary": 2,
+      "expected_timed": 2,
+      "status": "matched_independent_hand_expected"
+    },
+    {
+      "name": "empty_hypothesis",
+      "ordinary": 2,
+      "timed": 2,
+      "reference_words": [
+        "春天",
+        "夏天"
+      ],
+      "hypothesis_words": [],
+      "reference_intervals_s": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "hypothesis_intervals_s": [],
+      "expected_ordinary": 2,
+      "expected_timed": 2,
+      "status": "matched_independent_hand_expected"
+    },
+    {
+      "name": "both_empty",
+      "ordinary": 0,
+      "timed": 0,
+      "reference_words": [],
+      "hypothesis_words": [],
+      "reference_intervals_s": [],
+      "hypothesis_intervals_s": [],
+      "expected_ordinary": 0,
+      "expected_timed": 0,
+      "status": "matched_independent_hand_expected"
+    },
+    {
+      "name": "two_words_temporal_shift",
+      "ordinary": 0,
+      "timed": 4,
+      "reference_words": [
+        "春天",
+        "夏天"
+      ],
+      "hypothesis_words": [
+        "春天",
+        "夏天"
+      ],
+      "reference_intervals_s": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "hypothesis_intervals_s": [
+        [
+          10,
+          11
+        ],
+        [
+          12,
+          13
+        ]
+      ],
+      "expected_ordinary": 0,
+      "expected_timed": 4,
+      "status": "matched_independent_hand_expected"
+    }
+  ]
+}

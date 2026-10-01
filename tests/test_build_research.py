@@ -389,12 +389,13 @@ class ResearchBuildTest(unittest.TestCase):
                                              (output / "apa_audio").resolve(),
                                              (output / "mint_audio").resolve(),
                                              (output / "mask_audio").resolve(),
-                                             (output / "noise_audio").resolve()}:
+                                             (output / "noise_audio").resolve(),
+                                             (output / "scenario_audio").resolve()}:
                             owner = {"gss_audio": "ch08", "moving_audio": "ch09",
                                      "tracking_audio": "ch09", "binaural_audio": "ch01", "stft_audio": "ch02",
                                      "geometry_audio": "ch03", "focus_audio": "ch04", "derivative_audio": "ch05",
                                      "apa_audio": "ch06", "mint_audio": "ch07", "mask_audio": "ch08",
-                                     "noise_audio": "ch10"}[target.parent.name]
+                                     "noise_audio": "ch10", "scenario_audio": "ch11"}[target.parent.name]
                             if target.parent.name == "apa_audio":
                                 self.assertIn(target.name, apa_names)
                                 apa_links.add(target.name)

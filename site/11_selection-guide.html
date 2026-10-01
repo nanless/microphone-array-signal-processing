@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 11 章 · 总结与选型指南 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="9787b2ac86cd"><style>
+<meta name="source-digest" content="0f59ad3471e1"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -44,6 +44,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{display:block;margin:20px auto;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
+@media(max-width:900px){.selection-readable-table{min-width:760px}.selection-readable-table th,.selection-readable-table td{min-width:10em}.selection-readable-table th:first-child,.selection-readable-table td:first-child{min-width:6em}}
 @media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}.tracking-readable-table th,.tracking-readable-table td{min-width:8em}.industrial-readable-table th,.industrial-readable-table td{min-width:8em}}
 @media(max-width:900px){.noise-readable-table th:first-child,.noise-readable-table td:first-child{min-width:6em}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
@@ -74,6 +75,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-b1c49f9bf3">方法类别与启用条件</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-d96611f1d8">多人内容与身份的评分口径</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-991366ae59">四词手算：两条流在第二段交换</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-13a69615e6">话段边界与时间也属于评分协议</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-1ad6ffa9bb">输出槽位与目标条件</a></li>
 <li><a href="11_selection-guide.html#sec-11-3">11.3 几何与算法要一起选</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-d12e9fbcdd">平面镜像为什么不能靠换算法消除</a></li>
@@ -84,6 +86,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-01def5a266">硬约束要区分通过、失败与证据不足</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-2b5c122169">合格候选之间仍可能没有唯一最好方案</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-d142131458">固定评测组成，并检查模块之间的相互作用</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-c3ec50da50">部署场景组成未知时怎样比较</a></li>
 <li><a href="11_selection-guide.html#sec-11-6">11.6 练习</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-b322947d6d">题 1：带播放的周向语音终端（E11-05）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-7b9a84ce60">题 2：多人会议（E11-06）</a></li>
@@ -104,6 +107,12 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-961e1e4deb">题 17：唤醒阈值必须同时看漏检与误触发（E11-17）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-f1051be709">题 18：把残余对齐误差也放进SRO预算（E11-18）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-7c1e653813">题 19：噪声压得更多，为何总误差反而更大（E11-19）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-6734b7b1a2">题 20：非支配候选为何仍可能被所有线性权重遗漏（E11-20）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-ede6569aeb">题 21：区间内确定支配与跨硬阈值是两个判断（E11-21）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-77c060e225">题 22：两小时零误触发能支持多低的小时率（E11-22）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-0413f871c8">题 23：同样两个词，参考话段切分为何改变ORC（E11-23）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-2d3031f45b">题 24：同一个词在错误时刻出现，词错误还能为零吗（E11-24）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-26cfd5a644">题 25：场景组成变化后，哪种FIR才是合适候选（E11-25）</a></li>
 <li><a href="11_selection-guide.html#sec-11-7">11.7 后续阅读</a></li>
 </ul>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
@@ -117,6 +126,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-b1c49f9bf3">方法类别与启用条件</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-d96611f1d8">多人内容与身份的评分口径</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-991366ae59">四词手算：两条流在第二段交换</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-13a69615e6">话段边界与时间也属于评分协议</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-1ad6ffa9bb">输出槽位与目标条件</a></li>
 <li><a href="11_selection-guide.html#sec-11-3">11.3 几何与算法要一起选</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-d12e9fbcdd">平面镜像为什么不能靠换算法消除</a></li>
@@ -127,6 +137,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-01def5a266">硬约束要区分通过、失败与证据不足</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-2b5c122169">合格候选之间仍可能没有唯一最好方案</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-d142131458">固定评测组成，并检查模块之间的相互作用</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-c3ec50da50">部署场景组成未知时怎样比较</a></li>
 <li><a href="11_selection-guide.html#sec-11-6">11.6 练习</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-b322947d6d">题 1：带播放的周向语音终端（E11-05）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-7b9a84ce60">题 2：多人会议（E11-06）</a></li>
@@ -147,6 +158,12 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-961e1e4deb">题 17：唤醒阈值必须同时看漏检与误触发（E11-17）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-f1051be709">题 18：把残余对齐误差也放进SRO预算（E11-18）</a></li>
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-7c1e653813">题 19：噪声压得更多，为何总误差反而更大（E11-19）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-6734b7b1a2">题 20：非支配候选为何仍可能被所有线性权重遗漏（E11-20）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-ede6569aeb">题 21：区间内确定支配与跨硬阈值是两个判断（E11-21）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-77c060e225">题 22：两小时零误触发能支持多低的小时率（E11-22）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-0413f871c8">题 23：同样两个词，参考话段切分为何改变ORC（E11-23）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-2d3031f45b">题 24：同一个词在错误时刻出现，词错误还能为零吗（E11-24）</a></li>
+<li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-26cfd5a644">题 25：场景组成变化后，哪种FIR才是合适候选（E11-25）</a></li>
 <li><a href="11_selection-guide.html#sec-11-7">11.7 后续阅读</a></li>
 </ul></nav></details>
 <blockquote>
@@ -241,7 +258,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>多重信号分类（Multiple Signal Classification，MUSIC）用噪声子空间与候选方向导向矢量的正交关系搜索谱峰；旋转不变子空间法（Estimation of Signal Parameters via Rotational Invariance Techniques，ESPRIT）用信号子空间及平移不变子阵解算方向。两者都要检查源数、快拍数和阵列模型。</li>
 <li>最小方差无失真响应（Minimum Variance Distortionless Response，MVDR）在目标无失真约束下减小输出功率；线性约束最小方差（Linearly Constrained Minimum Variance，LCMV）可同时施加多条方向或响应约束。协方差估计和导向失配会影响两者。</li>
 </ul>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="selection-readable-table">
 <thead>
 <tr>
 <th scope="col">决策对象</th>
@@ -347,8 +364,12 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>原始 CSS 槽位可由不同说话人轮流复用。若三位说话人分别说一个词 <code>a</code>、<code>b</code>、<code>c</code>，两个槽输出 <code>a c</code> 和 <code>b</code>，内容全对仍会有非零 cpWER：一个槽不能同时一一匹配两位参考说话人。E11-16 将算出 cpWER 为 $2/3$，ORC-WER 为零。</p>
 <p>用于内容验收时可选择固定分段和时间顺序的 ORC-WER；需要按人验收时，先说明分割与身份关联怎样形成整场的说话人转写，再计算 cpWER 或明确规定的归属指标。</p>
 <p><a href="https://arxiv.org/pdf/2307.11394">MeetEval 作者论文</a>的 §3.2～3.5 区分这些分配约束。ORC-WER 不能在一句内部任意换流，并按参考语句时序组合；改变参考分段也可能改变最优分配。因此参考分段、同起点的排序规则和时间约束必须随评分配置固定。</p>
+<h3 id="sec-u-13a69615e6">话段边界与时间也属于评分协议</h3>
+<p>词元相同，并不保证评分问题相同。ORC-WER 把一条完整参考话段分配给一条输出流；若把同一句拆成多个话段，就增加了可选分配。应根据预定标注规则固定参考边界，不能根据某个系统的输出重新切分。<a href="#e11-23">E11-23</a>用同样的两个词计算切分前后的差异。</p>
+<p>普通编辑距离还会允许很早的参考词与很晚的同词假设匹配。在长会议中，同一个常用词会反复出现；这样的匹配可能掩盖时间错误。时间约束评分还需给出词时间区间、容差、时间戳来自真实标注还是近似，以及边界接触时是否允许匹配。<a href="https://www.isca-archive.org/chime_2023/neumann23_chime.pdf" title="citation">MeetEval 2023 原论文 §4，印刷第29～30页</a>说明时间约束及词级时间近似的作用。</p>
+<p><a href="#e11-24">E11-24</a>只展开单词序列的时间约束编辑距离，不把这个小核当成完整的时间约束最小排列词错误率（Time-Constrained minimum-Permutation Word Error Rate，tcpWER）工具。真实多人评分还要处理全局流分配、文本规范化、话段排序和时间容差。固定原实现的端点约定与论文定义须分别核对，不能仅凭同名接口认定一致。</p>
 <h3 id="sec-u-1ad6ffa9bb">输出槽位与目标条件</h3>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="selection-readable-table">
 <thead>
 <tr>
 <th scope="col">任务条件</th>
@@ -404,7 +425,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <h3 id="sec-u-d12e9fbcdd">平面镜像为什么不能靠换算法消除</h3>
 <p>沿用第 2 章远场单位方向与导向相位约定。令三个麦克风坐标依次为 $(0,0,0)$、$(0.04,0,0)$、$(0,0.04,0)$ m，两个候选方向为 $\boldsymbol u_+=(0.6,0,0.8)^\top$ 与 $\boldsymbol u_-=(0.6,0,-0.8)^\top$。两者的长度均为 1。</p>
 <p>以第一麦为参考，另外两麦的坐标与方向点乘，在两种方向下都等于 $0.024$ m 和 $0$。因此所有频率上的相对传播相位相同，理想观测本身不能区分这两个方向；增加快拍或更换谱峰搜索法不会产生缺少的垂直信息。</p>
-<p>若增加坐标为 $(0,0,0.04)$ m 的第四麦，它的投影分别为 $+0.032$ m 与 $-0.032$ m。取 $c=343$ m/s、$f=1$ kHz，对应导向相位分别为 $\pm2\pi f(0.032)/c\approx\pm0.58619$ rad，于是这对方向可分。这只是对该镜像二解的复算，不保证任意频率和方向均无空间混叠。更完整的几何可辨识性练习见第 3 章 E03-10。</p>
+<p>若增加坐标为 $(0,0,0.04)$ m 的第四麦，它的投影分别为 $+0.032$ m 与 $-0.032$ m。取 $c=343\ \mathrm{m/s}$、$f=1$ kHz，对应导向相位分别为 $\pm2\pi f(0.032)/c\approx\pm0.58619$ rad，于是这对方向可分。这只是对该镜像二解的复算，不保证任意频率和方向均无空间混叠。更完整的几何可辨识性练习见第 3 章 E03-10。</p>
 <span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-11-4">11.4 四个场景怎样推导方案</h2>
 <p>下表给的是推导方法，不是产品清单。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -506,7 +527,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>有干净参考时才可按相应条件使用 STOI/ESTOI 或 ViSQOL，静音过多、有效帧不足、参考错配及模型缺失必须进入失败记录。评分输入与失效边界见<a href="10_engineering-practice.html#sec-10-5">第 10 章评测体系</a>，固定源码入口另见<a href="research/03_industrial_deployment.html">工业部署研究</a>。</p>
 <h3 id="sec-11-5-2">11.5.2 完整决策例：未知参会者的连续转写</h3>
 <p>假设会议中共有 2～6 名未注册说话人，人数随时间变化，但任一时刻最多两人同时说话。系统要连续输出全部内容给 ASR，并要求端到端延迟可测但尚未给定阈值。先用硬约束筛选，再进入实测：</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="selection-readable-table">
 <thead>
 <tr>
 <th scope="col">条件或证据</th>
@@ -560,15 +581,20 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <h3 id="sec-u-01def5a266">硬约束要区分通过、失败与证据不足</h3>
 <p>先明确每条阈值约束的是确定预算、测量值还是概率。例如“任何输出不得超过 150 ms”和“该负载下延迟的 p99 不超过 150 ms”是不同要求。有限样本最大值并不自动等于系统的最坏情况保证；平均 RTF 合格也不能替代逐次截止期检查。</p>
 <p>若已有可信的指标范围，可比较整个范围与上界：范围全部合格才通过，范围全部超限则失败，跨越阈值或缺少必要指标时记为证据不足。范围是确定误差界、统计置信区间还是观测的最小至最大值，也要分别写明；后两者不能无条件当作确定界。E11-14 用两个指标演示三态判断。</p>
+<p>比较两个候选也应保留这些区间。若一个候选的最差端点仍好于另一个的最好端点，可以作出确定支配判断；区间交叠时，中点上的排序不能证明真实排序。<a href="#e11-21">E11-21</a>把候选间支配与相对硬阈值的判断分开计算。</p>
 <h3 id="sec-u-2b5c122169">合格候选之间仍可能没有唯一最好方案</h3>
 <p>硬约束筛选后，把质量、延迟与功耗放在同一张表中。如果 A 在所有约定指标上都不差于 C，且至少一项更好，可说 A 支配 C；留下的非支配候选往往各有代价。这个定义见<a href="https://ntrs.nasa.gov/api/citations/20170007991/downloads/20170007991.pdf">多目标设计原文第 7 页“Multi-Objective Optimization Problem Statement”节的式(3)</a>，本书只采用其中的支配关系，不采用其轨迹优化算法。</p>
 <p>若确实需要一个总分，应先统一指标方向，再除以明确的尺度并给出权重。不能把“毫秒+错误率+瓦”直接相加，也不能在看到结果后选择最有利于某候选的权重。E11-10 显示同一组非支配候选怎样随事先选择的权重改变排序。样本均值上的支配关系仍可能受估计误差影响，不能自动推广到所有场景。</p>
+<p>即使指标是精确输入，遍历线性权重也可能遗漏某个非支配候选。<a href="#e11-20">E11-20</a>给出三个有理数点：其中一个候选无法使任何线性加权总分最小，却能在明确的阈值任务中被选中。加权总分是一种表达偏好的方式，不能代替完整的可行性与非支配检查。</p>
 <p><img alt="图 46：先检查硬约束，再比较非支配候选" src="../figures/fig46_selection_pareto.png" onerror="this.alt+='（图缺失）'" /></p>
 <p><em>图 46：E11-10 的四个构造候选。(a) 横轴为延迟（ms），纵轴为 WER；功率分别为 A/B 0.8 W、C 1.0 W、D 0.7 W。先要求延迟不超过 150 ms、功率不超过 1 W，D 即使 WER 最低也不合格。合格集合中 A 支配 C，A 与 B 则各有优势。(b) 按式(11-4)比较 A/B 的归一化代价；质量权重 $w=4/7$ 时两者同分，权重变化会改变选择。图中的数值用于本书推导，不是四台设备的实测；(a) 的二维散点不能代替未画出的功率检查。</em></p>
 <h3 id="sec-u-d142131458">固定评测组成，并检查模块之间的相互作用</h3>
 <p>候选应使用共同的场景清单、参考、分词与评分器。部署场景比例与测试抽样比例不同时，先报告各场景结果，再按预先指定的共同权重汇总。E11-11 中，每个场景都较好的候选反而有更差的混合总分，原因只是两套测试的场景比例不同。</p>
 <p>失败文件保留数量与原因。只有指标本身存在已知上下界时，才可对缺失项构造完整均值的可能范围；这个范围不等于补出了分数，也不是置信区间，见 E11-12。多个场景各自具有 95% 覆盖率，也不意味着所有区间同时具有 95% 覆盖率，E11-13 给出联合处理。</p>
 <p>对于两个可能互相影响的模块 A、B，可在同一数据上测基线、仅 A、仅 B、A+B 四种配置。E11-15 用差中之差量化交互；它说明单模块增益不能简单相加，不证明实际的 WPE、波束或分离必有某种交互。调参和选择在开发集完成后，应锁定候选与验收规则，再运行独立测试。反复查看测试结果来改配置会改变原先声明的证据条件。</p>
+<h3 id="sec-u-c3ec50da50">部署场景组成未知时怎样比较</h3>
+<p>场景权重已知时，可按式(11-5)计算共同目标。若只能确定某个场景的占比范围，应保留各场景损失，并计算这个范围内的最坏组成；不能把范围中点擅自称为部署概率。对于两个场景，加权损失是占比的线性函数，因此闭区间内的最大值在端点取得。</p>
+<p>另一种任务是要求每个场景都尽量好，此时比较的是各场景损失的最大值。它相当于允许场景占比取整个范围，而非只取某个已知的占比区间。两种任务都可以用于选型，但目标和结果须分别命名。<a href="#e11-25">E11-25</a>把同两种FIR放在单音、双音目标场景中，分别复算固定组成、组成不确定与逐场景最坏损失，并读取八个独立PCM文件。</p>
 <span id="sec-7" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-11-6">11.6 练习</h2>
 <span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-b322947d6d">题 1：带播放的周向语音终端（E11-05）</h3>
 <p>需求是水平面周向覆盖，设备会播放音乐，主要任务是唤醒和单人指令。两种示意圆阵半径都为 4 cm，分别放 4 麦和 6 麦；声速取 343 m/s，需求频率上限 4 kHz。先以相邻麦弦长 $2r\sin(\pi/M)$ 与 $c/(2d_{\rm adjacent})$ 作<strong>单对筛查</strong>，再写出必要模块和两个关键对照实验。这个筛查不保证整个圆阵流形没有其他歧义。</p>
@@ -592,7 +618,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>答案要点</strong>：</p>
 <ol>
 <li><strong>阵元间距</strong>：空间混叠边界为 $f_{\mathrm{alias}}=c/(2d)=343/(2\times0.04)\approx4288$ Hz，因此 4 kHz 仍低于该理想远场边界，但余量只有约 288 Hz，实际还要考虑麦位误差与宽带过渡。</li>
-<li><strong>同步周期</strong>：80 ppm 经过 300 s 的漂移为 $80\times10^{-6}\times300=0.024$ s，即 24 ms，远超 0.1 ms；若只靠周期性重对齐，最大间隔应不超过 $0.1\ \mathrm{ms}/(80\times10^{-6})=1.25$ s。</li>
+<li><strong>同步周期</strong>：80 ppm 经过 300 s 的漂移为 $80\times10^{-6}\times300=0.024$ s，即 24 ms，远超 $0.1\ \mathrm{ms}$；若只靠周期性重对齐，最大间隔应不超过 $0.1\ \mathrm{ms}/(80\times10^{-6})=1.25$ s。</li>
 <li><strong>基础路径</strong>：总延迟为 $16+8+22+5+70=121$ ms，满足 150 ms，但只剩 29 ms 裕量。</li>
 <li><strong>加入分离器</strong>：串行加入后为 $121+48+18=187$ ms，不满足约束；除非改变可并行依赖、减少前瞻或更换后端后，重新测得关键路径低于 150 ms，否则不应启用该候选。仅让不同块流水执行主要改善吞吐，不能自动扣除单个输出在串行依赖中必须经历的等待。</li>
 </ol>
@@ -601,7 +627,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>候选模型计划评测 10 个文件，只有 8 个成功评分，成功文件的平均分为 3.8。能否直接报告“完整测试集得分 3.8”？应同时给出哪些数量？</p>
 <p>同一设备示意电池为 3.7 V、2000 mAh，电池可用容量、老化裕量及电池至负载的转换效率合计系数为 0.8；<strong>在转换电路输出端</strong>测得的整机负载功率，低功耗状态为 0.2 W、占时间 10%，处理状态为 1.2 W、占时间 90%。估计负载平均功率和续航。这里的输入是预算示意，不是某产品规格；若改在电池端测功率，转换效率不能再计入系数。</p>
 <p><strong>答案要点</strong>：评分覆盖为 $8/10=80\%$，3.8 只能标成成功子集的平均分；应保留总数 10、成功数 8、失败数 2、失败原因和各场景分布。缺失项不能擅自填 0 分，也不能悄悄从完整测试集删除；是否判整次评测无效应遵守预先规定的规则。</p>
-<p>容量先换成 $2$ Ah，标称能量为 $3.7\times2=7.4$ Wh；按题设综合系数，<strong>可交付负载</strong>的估算能量为 $7.4\times0.8=5.92$ Wh。负载平均功率为 $0.2\times0.1+1.2\times0.9=1.10$ W，续航约 $5.92/1.10=5.38$ h。<code>E11-02</code> 输出这组中间值；温度、各因素随电流的变化和状态转换消耗没有单独建模，所以它是估计，不是续航验收。</p>
+<p>容量先换成 $2$ Ah，标称能量为 $3.7\times2=7.4$ Wh；按题设综合系数，<strong>可交付负载</strong>的估算能量为 $7.4\times0.8=5.92$ Wh。负载平均功率为 $0.2\times0.1+1.2\times0.9=1.10$ W，续航约 $5.92/1.10=5.38\ \mathrm{h}\text{。}$<code>E11-02</code> 输出这组中间值；温度、各因素随电流的变化和状态转换消耗没有单独建模，所以它是估计，不是续航验收。</p>
 <span id="sec-13" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-994102bab0">题 6：平均文件分数与合并计数（E11-03）</h3>
 <p>两个文件分别有 10、90 个参考词，替换、删除和插入的错误数之和分别为 1、45。先计算各文件 WER，再比较“每个文件等权平均”和“先合并错误数与参考词数”的结果。假设两文件都成功评分，分词与文本规范化完全一致。</p>
 <p><strong>答案要点</strong>：两文件的 WER 为 $1/10=10\%$ 和 $45/90=50\%$。文件等权的宏平均为 $(10\%+50\%)/2=30\%$；合并计数为 $(1+45)/(10+90)=46\%$，相当于按参考词数加权。</p>
@@ -843,7 +869,7 @@ r_{\rm miss}&=N_{\rm miss}/N_+,\\
 \nu_{\rm FA}&=N_{\rm FA}/T_-.
 \end{aligned}\tag{11-11}
 $$</p>
-<p>前者无量纲，后者单位为次/小时。阈值0.5漏掉0.45，且被0.7误触发，故漏检率 $1/4=25\%$、误触发率 $1/2=0.5$ 次/小时。阈值0.75漏掉0.55与0.45，但没有负事件触发，故漏检率50%、误触发率0次/小时。零次观测不等于真实风险为零；应按预定负音频时长与统计模型补充不确定性分析。</p>
+<p>前者无量纲，后者单位为次/小时。阈值0.5漏掉0.45，且被0.7误触发，故漏检率 $1/4=25\%$、误触发率 $1/2=0.5$ 次/小时。阈值0.75漏掉0.55与0.45，但没有负事件触发，故漏检率50%、误触发率0次/小时。零次观测不等于真实风险为零；<a href="#e11-22">E11-22</a>在明确的固定暴露、恒定率模型下计算上界，它不同于 E11-08 的按试验失败概率。</p>
 <p>若给漏检和误触发赋予每次事件的示意代价 $c_m,c_f$，该固定样本上的代价为</p>
 <p>$$
 C=c_mN_{\rm miss}+c_fN_{\rm FA}.
@@ -887,6 +913,7 @@ $$</p>
 <p>最后一行适用于 $k=0,\ldots,L-1$，其余抽头为零；本题两个 $b_L$ 均非零。$f=0$ 等可去奇点用有限求和或连续极限求值。归一化后的频响是 $H_L(f)=e^{-j\omega d_L}D_L(f)/b_L$。注意 $D_L(f)$ 是带符号实数，幅度响应才取绝对值；不能在重建波形时丢掉负号。</p>
 <p>对 $L=3$，$D_3(f)=[1+2\cos(2\pi f/f_s)]/3$，所以每个抽头为 $1/[1+2\cos(\pi/16)]\approx0.33765868$。对 $L=9$，代入正弦比得到每个抽头约 0.12679924。两种滤波器的群延迟分别为1点和4点，即0.0625 ms与0.25 ms；音频保留这些延迟。实际线性卷积用零初始历史，并保留前32000个输出样本。</p>
 <p><strong>第二步：先核对稳态解析值。</strong> 将1500 Hz和3500 Hz代入式(11-14)，3抽头的幅度保留约为0.89916454与0.46940656，9抽头约为0.20591080与0.01959116。两个候选都保持500 Hz，但9抽头同时大幅压低了属于目标的1500 Hz分量。</p>
+<p>这些保留量是幅度的绝对值。9抽头在3500 Hz去除群延迟后的带符号响应约为 $-0.01959116$，重建时须保留这个相位翻转；本例两种候选的1500 Hz响应均为正。下面的损伤项采用带符号响应，不能对任意FIR都用幅度保留量减1。</p>
 <p>令 $A_L(f)=D_L(f)/b_L$，并只在去掉启动、淡入淡出和尾截断影响的稳态区评分。将输出区间比源区间后移 $d_L$ 点，定义误差 $e_L[n]=y[n+d_L]-s[n]$，并简记 $a_v=A_L(3500)$。归一均方误差（Normalized Mean-Square Error，NMSE）及3500 Hz噪声幅度衰减为</p>
 <p>$$
 \begin{aligned}
@@ -937,7 +964,185 @@ $$</p>
 <p><a href="audio/selection_mixture.wav">混合输入</a><audio class="audio-sample" controls preload="none" aria-label="混合输入" src="audio/selection_mixture.wav">请使用上方 WAV 链接下载。</audio></p>
 <p><a href="audio/selection_fir3.wav">3抽头输出</a><audio class="audio-sample" controls preload="none" aria-label="3抽头输出" src="audio/selection_fir3.wav">请使用上方 WAV 链接下载。</audio></p>
 <p><a href="audio/selection_fir9.wav">9抽头输出</a><audio class="audio-sample" controls preload="none" aria-label="9抽头输出" src="audio/selection_fir9.wav">请使用上方 WAV 链接下载。</audio></p>
-<p>运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch11/chapter11_experiments.py">chapter11_experiments.py</a> 的 <code>E11-19</code> 可核对解析、浮点与PCM三种结果；完整参数和音频解释见<a href="research/05_exercises_and_audio.html#33-选型取舍更安静的滤波器也可能损伤更多目标">音频研究手册第33节</a>。这里只评分稳态区，不把启动瞬态与文件末端被截掉的卷积尾部隐去后宣称全段都达到同一误差，也不由听到更安静推断ASR或听感必然更好。</p>
+<p>运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch11/chapter11_experiments.py">chapter11_experiments.py</a> 的 <code>E11-19</code> 可核对解析、浮点与PCM三种结果。入口先只读检查总清单、当前生成源摘要和四个正式WAV，再从实际PCM重算；文件缺失或摘要不符时拒绝评分，不自动重生。整数参考平方和为791595378000，3/9抽头误差平方和分别为91223542800和249713672400，除以同一参考能量后再取dB，量化解码的公共尺度会在比值中相消。</p>
+<p>完整参数和音频解释见<a href="research/05_exercises_and_audio.html#33-选型取舍更安静的滤波器也可能损伤更多目标">音频研究手册第33节</a>。这里只评分稳态区，不把启动瞬态与文件末端被截掉的卷积尾部隐去后宣称全段都达到同一误差，也不由听到更安静推断ASR或听感必然更好。</p>
+<p><a id="e11-20"></a></p>
+<h3 id="sec-u-6734b7b1a2">题 20：非支配候选为何仍可能被所有线性权重遗漏（E11-20）</h3>
+<p>三个构造候选的两个指标均已按事先声明的尺度归一化，且都越小越好：A为 $(0,1)$，B为 $(3/5,3/5)$，C为 $(1,0)$。不涉及设备测量误差。先找非支配集合，再问线性总分 $J_w=wx+(1-w)y$、$0\le w\le1$ 能否选择B。</p>
+<p><strong>检查非支配。</strong> A的第一指标小于B，但第二指标大于B；C的第二指标小于B，但第一指标大于B。A与C也各有一项优势，所以三者均不被其他候选支配。</p>
+<p>代入总分：A为 $1-w$，B恒为 $3/5$，C为 $w$。若B要成为最小值，必须同时不高于A和C。前一个条件给出 $3/5\le1-w$，即 $w\le2/5$；后一个给出 $3/5\le w$，即 $w\ge3/5$。两条件没有交集，故任何权重都不会选中B，允许并列最小也不能改变结论。</p>
+<p><strong>换成明确的阈值任务。</strong> 若要求第二指标 $y\le3/5$，并在通过者中最小化第一指标，A失败，B与C合格；B的第一指标为 $3/5\lt 1\text{，}$因此选B。这里改变的是任务偏好，数据和候选没有改变。</p>
+<p>这个有限反例说明，加权求和未必覆盖所有非支配候选，不说明加权求和没有用途。实际设计空间、非线性偏好和测量误差仍需另外处理。运行 E11-20 可核对非支配集合、两条权重不等式及阈值筛选；期望值来自上述有理数计算。</p>
+<p><a id="e11-21"></a></p>
+<h3 id="sec-u-ede6569aeb">题 21：区间内确定支配与跨硬阈值是两个判断（E11-21）</h3>
+<p>三个候选的延迟和WER范围如下。假定它们是确定包含真实指标的矩形界，允许每个候选在框内取任意点；不是置信区间，也没有给点出现的概率。两项均越小越好。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">候选</th>
+<th scope="col">延迟范围（ms）</th>
+<th scope="col">WER范围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>[80,90]</td>
+<td>[0.10,0.12]</td>
+</tr>
+<tr>
+<td>B</td>
+<td>[100,110]</td>
+<td>[0.14,0.16]</td>
+</tr>
+<tr>
+<td>C</td>
+<td>[85,95]</td>
+<td>[0.11,0.13]</td>
+</tr>
+</tbody>
+</table></div>
+<p>令候选A第 $j$ 项的界为 $[\ell_{A,j},u_{A,j}]$，B类似。下面是一条确定支配的充分条件：</p>
+<p>$$\begin{aligned}
+u_{A,j}&\le\ell_{B,j}\quad\text{对所有 }j,\\
+u_{A,k}&\lt \ell_{B,k}\quad\text{对至少一个 }k.
+\end{aligned}\tag{11-16}$$</p>
+<p>理由是，任何真实取值都有 $f_j(A)\le u_{A,j}\le\ell_{B,j}\le f_j(B)$；至少一项中间严格小于，就保证该项真实值也严格小于。A的最差延迟90仍小于B的最好延迟100，最差WER0.12仍小于B的最好WER0.14，因此A必支配B。</p>
+<p><strong>交叠时不强行排序。</strong> A与C不满足这一证据条件。取A为 $(90,0.12)$、C为 $(85,0.11)$，则C支配A；改取A为 $(80,0.10)$、C为 $(95,0.13)$，则A支配C。两组取值均合法，所以仅凭给定界无法确定两者的支配方向。条件不成立也不等于证明二者在真实点上必为非支配。</p>
+<p>再加硬条件“延迟不超过92 ms”。A上端90合格，B下端100超限，C的区间跨92，分别得到通过、失败、证据不足。这个结果判断的是候选与任务上界的关系，不是两个候选之间谁支配谁。</p>
+<p>运行 E11-21，核对确定支配、两组反例和三态结果。若额外知道各指标间的相关约束，应检查实际联合可行集；矩形范围没有利用这类信息。把观测最小值至最大值直接当成未来的确定界，也不满足本题前提。</p>
+<p><a id="e11-22"></a></p>
+<h3 id="sec-u-77c060e225">题 22：两小时零误触发能支持多低的小时率（E11-22）</h3>
+<p>事先固定 $T=2\ \mathrm{h}$ 的负音频暴露，观察到零误触发。假设计数服从齐次泊松过程（Homogeneous Poisson Process，HPP）：单位小时率 $\lambda$ 恒定，不相交时间段的计数独立，长度为T的区间计数具有均值 $\lambda T$。这些是题设的统计模型，不是由零计数验证出的事实。</p>
+<p>泊松概率质量函数在计数零处给出 $P(N=0)=e^{-\lambda T}$。令单侧尾概率为 $\alpha=0.05$，解出小时率上界，再解出目标小时率对应的测试时长：</p>
+<p>$$\begin{aligned}
+e^{-\lambda_{\mathrm U}T}&=\alpha,\\
+\lambda_{\mathrm U}&=\frac{-\ln\alpha}{T},\\
+\lambda_{\mathrm U}\le\lambda_0
+&\Longleftrightarrow T\ge\frac{-\ln\alpha}{\lambda_0}.
+\end{aligned}\tag{11-17}$$</p>
+<p>对数作用在无量纲概率上，T用小时，因此上界单位是次/小时。代入 $-\ln0.05\approx2.99573227355\text{，}$得到 $\lambda_{\mathrm U}\approx1.49786613678$ 次/小时。观察率确实为0，但2小时零事件不足以支持“真实小时率不超过0.1”的单侧95%声明。</p>
+<p>若希望零计数下的上界不超过 $\lambda_0=0.1$ 次/小时，应预定至少 $2.99573227355/0.1\approx29.95732273554$ 小时，并按该固定暴露方案完成测试。不能持续测试、只选一段零事件区间来报告同一覆盖声明。</p>
+<p>推导与 <a href="https://www.itl.nist.gov/div898/handbook/apr/section4/apr451.htm" title="citation">NIST 的 HPP 说明中“Confidence Interval Equation and Zero Fails Case”</a>一致：其零失败平均事件间隔下界为 $T/(-\ln\alpha)$，取倒数得到式(11-17)。<a href="https://www.itl.nist.gov/div898/handbook/eda/section3/eda366j.htm" title="citation">NIST 泊松分布定义</a>中的计数均值，在这里代为 $\lambda T$；相关原文核实于2026-10-02。</p>
+<p><strong>边界。</strong> 该率与E11-08一次会话是否失败的概率不是同一个量。非平稳背景、成簇误触发以及触发后抑制/去重引入的依赖，都可能破坏HPP前提。真实KWS应先固定事件定义、暴露条件和停止规则，再选择统计模型。运行 E11-22 只复算式(11-17)，没有测量唤醒系统。</p>
+<p><a id="e11-23"></a></p>
+<h3 id="sec-u-0413f871c8">题 23：同样两个词，参考话段切分为何改变ORC（E11-23）</h3>
+<p>同一个人完整说一句 a b，参考中只有一个含两个词的完整话段。系统给出两个槽：槽1为a，槽2为b。参考总词数始终为2。先按这个完整话段求ORC-WER与cpWER，再比较把参考错误地改为两个单词话段a、b后的结果；说话人标签始终不变。</p>
+<p><strong>完整话段的ORC。</strong> 一条参考话段只能整体归一槽。若给槽1，重组参考为a b和空串：槽1缺b，一次删除；槽2相对空参考多b，一次插入。总错误为2。若给槽2，则槽2缺a、槽1多a，总错误仍为2。只有两种可选分配，所以最小值为 $2/2=100\%$。</p>
+<p><strong>人为切分后的ORC。</strong> 若把参考换成两个话段，可以把a给槽1、b给槽2，两边完全相等，总编辑数0，ORC-WER变为0。词和系统输出都没变，改变的是可选分配集合。这个零值不能反过来证明原系统已完整保留一句在同一槽中的输出。</p>
+<p><strong>cpWER保持什么。</strong> 按说话人拼接后，两种参考切分都得到a b。为匹配两个假设槽，参考补一条空流；无论如何全局排列，都有一条流少一个词、另一条相对空流多一个词，因此cpWER仍为 $2/2=100\%$。</p>
+<p>ORC的整话段分配和时间顺序条件见 <a href="https://www.isca-archive.org/chime_2023/neumann23_chime.pdf" title="citation">MeetEval 2023 §3.3～3.4，式(4)～(5)，印刷第29页</a>。运行 E11-23 独立枚举本题全部分配与排列；不运行ASR或分离模型。真实参考边界应按数据集规则固定，不能为某个候选事后切分，也不能把本题ORC变化称为识别内容提升。</p>
+<p><a id="e11-24"></a></p>
+<h3 id="sec-u-2d3031f45b">题 24：同一个词在错误时刻出现，词错误还能为零吗（E11-24）</h3>
+<p>只有一个参考词a，时间区间为 $[0,1]\ \mathrm{s}$；假设也只有a，却在 $[10,11]\ \mathrm{s}$。先求普通单位代价编辑距离，再令时间容差 $c=0$，要求词对时间区间严格重叠才能作正确匹配或替换。插入、删除各<span style="white-space: nowrap">代价1。</span></p>
+<p>令参考、假设词序列为 $r_1,\ldots,r_m$ 与 $h_1,\ldots,h_n\text{，}$ $D_{ij}$为两者前缀的最小代价。边界 $D_{i0}=i$、$D_{0j}=j$。以 $\chi_{ij}$表示在固定时间协议下词对能匹配，则</p>
+<p>$$\begin{aligned}
+c_{ij}&=\begin{cases}
+\mathbf1[r_i\ne h_j],&\chi_{ij}=1,\\
+2,&\chi_{ij}=0,
+\end{cases}\\
+D_{ij}&=\min\{D_{i-1,j}+1,\ D_{i,j-1}+1,\\
+&\hspace{36mm}D_{i-1,j-1}+c_{ij}\}.
+\end{aligned}\tag{11-18}$$</p>
+<p>允许时相同词代价0、不同词代价1；不允许时对角代价设为2，与一次删除加一次插入相同，所以不会获得便宜的跨时替换。它只是记录最小错误代价，不主张每个最优编辑路径都有唯一的错误类别。</p>
+<p>普通编辑距离忽略时间，同词直接匹配，错误为0。时间区间相隔9 s，在本题零容差下不能匹配；$D_{11}=\min\{2,2,2\}=2$，参考词数1，时间约束词错误率为 $2/1=200\%$。插入会使WER超过100%，不能强制截到100%。</p>
+<p>若假设改在 $[0.2,0.8]\ \mathrm{s}$，与参考正重叠，结果为0。若容差足够大，也可恢复原先的同词匹配；容差必须预定，不能为了改善某系统的评分事后放宽。</p>
+<p>本书小核采用严格区间相交：对参考 $[a,b]$、假设 $[u,v]$，将参考扩为 $[a-c,b+c]$，再检查 $a-c\lt v$ 且 $b+c>u$。仅端点接触不算重叠。它对照锁定MeetEval原C++核的边界；论文时间gap定义的等号与固定实现的区别，以及受控原方法执行范围，另见<a href="research/03_industrial_deployment.html#meeting-kernel-contracts">评分接口研究</a>。本题两主例均避开等号，不能把本书小核称为已运行完整tcpWER包装器。</p>
+<p>运行 E11-24 可逐格核对式(11-18)。复杂多人场景还须按相应cp/ORC协议求流分配，并处理真实标注误差与词级时间近似；单词例不能证明某个ASR系统的时间标注可靠。</p>
+<p><a id="e11-25"></a></p>
+<h3 id="sec-u-26cfd5a644">题 25：场景组成变化后，哪种FIR才是合适候选（E11-25）</h3>
+<p>沿用E11-19的3/9抽头系数和500 Hz幅度归一规则，定义两个同采样率、同干扰的数学场景。S场景目标仅为幅度0.2的500 Hz余弦；D场景目标为幅度均0.2的500 Hz与1500 Hz两余弦。两场景干扰均为幅度0.2的3500 Hz余弦。都用2 s源、$20\ \mathrm{ms}$共同包络、16 kHz采样和零初始历史；滤波器只接收混合，没有访问真值。</p>
+<p><strong>固定输入能量。</strong> 在包络恒1、整数周期的稳态窗，导出增益前，S目标功率为 $0.2^2/2=0.02$，D目标功率为 $2\times0.2^2/2=0.04$，干扰功率均为0.02。因此两场景输入SNR分别为0 dB和 $10\log_{10}2\approx3.0103\ \mathrm{dB}$。只改变目标频谱同时改变了总目标能量，不能把这两个场景当成相同SNR的横向性能实验。</p>
+<p>每个场景的两个候选共用完全相同的混合。八份文件统一导出增益0.8；参考和混合补8个零；3抽头输出保留2点真实卷积尾后补6个零，9抽头输出保留8点真实卷积尾，每份32008点。群延迟仍为3抽头1点、9抽头4点，评分按已知延迟对齐，不拟合额外增益，也不评分包络边缘和补尾。</p>
+<p><strong>逐场景解析。</strong> 用式(11-14)去除群延迟的带符号响应 $A_L$。S场景500 Hz目标保持，只有3500 Hz干扰产生误差；误差与目标的单音能量相同尺度，NMSE为 $A_L(3500)^2$。D场景还增加1500 Hz目标损伤，目标总能量加倍，故NMSE为 $\{[A_L(1500)-1]^2+A_L(3500)^2\}/2$。代入同一组系数，得到：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">候选</th>
+<th scope="col" style="text-align: right;">S单音目标NMSE</th>
+<th scope="col" style="text-align: right;">D双音目标NMSE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3抽头</td>
+<td style="text-align: right;">0.2203425170</td>
+<td style="text-align: right;">0.1152551537</td>
+</tr>
+<tr>
+<td>9抽头</td>
+<td style="text-align: right;">0.0003838135</td>
+<td style="text-align: right;">0.3154807375</td>
+</tr>
+</tbody>
+</table></div>
+<p>NMSE均是线性无量纲比值。9抽头在S中更好，在D中更坏；这与E11-19中它同时抑制1500 Hz目标的解释一致。</p>
+<p><strong>固定共同组成。</strong> 令单音场景权重为q，双音权重为 $1-q$；两候选用相同q。记上表两列为 $\mathcal E_{L,S},\mathcal E_{L,D}$，则</p>
+<p>$$\begin{aligned}
+J_L(q)&=q\mathcal E_{L,S}+(1-q)\mathcal E_{L,D},\\
+0&\le q\le1.
+\end{aligned}\tag{11-19}$$</p>
+<p>先平均每个场景的NMSE，而不是先混合不同目标能量的分子分母，也不是先取dB再平均。令 $J_3(q)=J_9(q)$，整理差值：常数项为 $0.1152551537-0.3154807375$，q的系数为 $(0.2203425170-0.1152551537)-(0.0003838135-0.3154807375)\text{。}$用未舍入值求得交点约0.4765184941。</p>
+<p>q为0.25时，3/9抽头总分约为0.1415269945、0.2367065065，选3抽头；q为0.75时，约为0.1940706761、0.0791580445，选9抽头。候选没有变，排序反转来自任务组成变化，不能称为滤波器本身突然变好。</p>
+<p><strong>组成未知与逐场景最坏。</strong> 若部署只知道 $q\in[q_-,q_+]=[0.25,0.75]$，则每个候选在这个组成范围中的最坏分数为端点最大值；若要求每个场景都尽量好，则取两列中的最大值：</p>
+<p>$$\begin{aligned}
+R_L&=\max_{q\in[q_-,q_+]}J_L(q)\\
+&=\max\{J_L(q_-),J_L(q_+)\},\\
+S_L&=\max\{\mathcal E_{L,S},\mathcal E_{L,D}\}.
+\end{aligned}\tag{11-20}$$</p>
+<p>第一行的端点结论来自 $J_L$是线性函数。组成范围内，3/9抽头的 $R_L$分别为0.1940706761、0.2367065065，选3抽头。逐场景最坏的 $S_L$分别为0.2203425170、0.3154807375，也选3抽头，但目标和数值不同。后者相当于允许q取整个 $[0,1]$，不能把它与已限定组成区间的风险混写。q范围也不是q的概率分布，不据此声称统计置信度。</p>
+<p><img alt="图 64：相同FIR在不同目标频谱与场景组成下的选型" src="../figures/fig64_selection_scenarios.png" onerror="this.alt+='（图缺失）'" /></p>
+<p><em>图 64：左侧分别画S/D场景的实际PCM线性NMSE柱与解析点，纵轴用对数刻度；右侧用实际PCM结果计算两候选的共同组成总分，标出单音权重区间0.25～0.75及交点。解析交点与PCM交点分别约0.4765184941、0.4765204439，不将量化后的末位差异称为算法性能变化。限定组成最坏值与逐场景最大损失按式(11-20)分别计算。仅示本书数学合成频点的目标损伤和抑噪取舍，不代表自然语音或产品质量。</em></p>
+<p><strong>实际文件怎样计分。</strong> 源参考取半开区间 <code>[1600,30400)</code>，共有28800个采样；3/9抽头输出分别取 <code>[1601,30401)</code>、<code>[1604,30404)</code>，只补偿上述已知群延迟。把PCM16解码整数记为目标 $r_n$、对齐输出 $o_n$，逐点求 $E=\sum_n(o_n-r_n)^2$、$D=\sum_n r_n^2$，则NMSE为 $E/D$。若转成浮点功率，分子和分母都除以 $28800\times32768^2$，该因子在比值中消去。每个场景两候选共用同一个D，两个场景的D分别计算。</p>
+<p>严格只读核对正式八个WAV、清单与当前生成源后，实际整数结果为：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">场景与候选</th>
+<th scope="col" style="text-align: right;">目标整数能量D</th>
+<th scope="col" style="text-align: right;">误差整数能量E</th>
+<th scope="col" style="text-align: right;">实际PCM线性NMSE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S，3抽头</td>
+<td style="text-align: right;">395812398600</td>
+<td style="text-align: right;">87210066600</td>
+<td style="text-align: right;">0.2203318211</td>
+</tr>
+<tr>
+<td>S，9抽头</td>
+<td style="text-align: right;">395812398600</td>
+<td style="text-align: right;">152494200</td>
+<td style="text-align: right;">0.0003852689</td>
+</tr>
+<tr>
+<td>D，3抽头</td>
+<td style="text-align: right;">791595378000</td>
+<td style="text-align: right;">91223542800</td>
+<td style="text-align: right;">0.1152401155</td>
+</tr>
+<tr>
+<td>D，9抽头</td>
+<td style="text-align: right;">791595378000</td>
+<td style="text-align: right;">249713672400</td>
+<td style="text-align: right;">0.3154562032</td>
+</tr>
+</tbody>
+</table></div>
+<p>实际PCM结果代入式(11-19)，q为0.25时总分约0.1415130419、0.2366884696，仍选3抽头；q为0.75时约0.1940588947、0.0791530025，仍选9抽头。组成区间最坏值分别约0.1940588947、0.2366884696；逐场景最大值分别约0.2203318211、0.3154562032。两种最坏任务仍都选3抽头，数值与解析计算分别保留。</p>
+<p><strong>试听与复现。</strong> 先调低音量。每个场景按目标、混合、3抽头、9抽头的顺序比较；两场景的目标不同，不能单凭听起来更安静给总体评分。</p>
+<p><a href="scenario_audio/selection_single_target.wav">S单音目标</a><audio class="audio-sample" controls preload="none" aria-label="S单音目标" src="scenario_audio/selection_single_target.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="scenario_audio/selection_single_mixture.wav">S混合输入</a><audio class="audio-sample" controls preload="none" aria-label="S混合输入" src="scenario_audio/selection_single_mixture.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="scenario_audio/selection_single_fir3.wav">S三抽头输出</a><audio class="audio-sample" controls preload="none" aria-label="S三抽头输出" src="scenario_audio/selection_single_fir3.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="scenario_audio/selection_single_fir9.wav">S九抽头输出</a><audio class="audio-sample" controls preload="none" aria-label="S九抽头输出" src="scenario_audio/selection_single_fir9.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="scenario_audio/selection_dual_target.wav">D双音目标</a><audio class="audio-sample" controls preload="none" aria-label="D双音目标" src="scenario_audio/selection_dual_target.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="scenario_audio/selection_dual_mixture.wav">D混合输入</a><audio class="audio-sample" controls preload="none" aria-label="D混合输入" src="scenario_audio/selection_dual_mixture.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="scenario_audio/selection_dual_fir3.wav">D三抽头输出</a><audio class="audio-sample" controls preload="none" aria-label="D三抽头输出" src="scenario_audio/selection_dual_fir3.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="scenario_audio/selection_dual_fir9.wav">D九抽头输出</a><audio class="audio-sample" controls preload="none" aria-label="D九抽头输出" src="scenario_audio/selection_dual_fir9.wav">请使用上方 WAV 链接下载。</audio></p>
+<p>独立资产的生成与只读检查入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch11/examples/generate_selection_audio.py">generate_selection_audio.py</a>：在仓库根目录运行 <code>.venv/bin/python -m codes.chapters.ch11.examples.generate_selection_audio --check</code>。去掉 <code>--check</code>才会重新生成文件，评分入口不会自行修复或覆盖损坏资产。</p>
+<p>运行 E11-25，入口将解析与浮点模型、正式PCM评分分开。独立清单见 <a href="scenario_audio/MANIFEST.json">MANIFEST.json</a>，检查只读，不通过时拒绝评分。目标、混合与输出独立量化，因此实际PCM误差从输出和同域目标逐点相减求能量，不把解析频率衰减直接充作文件评分。只有已知且互不重叠的频点，使本例能解释目标和噪声各自作用；它不运行盲增强、ASR或主观听测。</p>
 <span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-11-7">11.7 后续阅读</h2>
 <p>要实现算法，可回到第 4～9 章查看定位、波束、AEC、WPE、分离和追踪。要制定整机预算和验收计划，见<a href="10_engineering-practice.html">第 10 章</a>。<a href="12_appendix-symbols-math.html">附录 A</a>汇总符号与数学工具，<a href="13_appendix-guide.html">附录 B</a>给出进一步阅读、练习和排错入口。</p>
 <hr />

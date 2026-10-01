@@ -41,6 +41,7 @@
 | 双耳线索源与生成物 | `codes/chapters/ch01/core/binaural_cues.py`、`codes/chapters/ch01/examples/generate_binaural_cues.py` → `codes/chapters/ch01/binaural_audio/` | 5 个双声道数学合成 WAV、独立清单；左声道在前，共同导出增益 1 | 复用主 PCM 编解码，清单绑定三个真实源的 SHA；分开浮点与 PCM 评分；不并入主 109 个或称为 HRTF/真实双耳录音；`--check` 只核对 |
 | 已知掩码源与生成物 | `codes/chapters/ch08/core/mask_representation.py`、`codes/chapters/ch08/examples/mask_representation_demo.py` → `codes/chapters/ch08/mask_audio/` | 6个16kHz、32000点单声道数学合成WAV与独立清单 | 全记录已知频点后加共同包络，增益1；27200点解析/浮点/PCM及整数分母分开，四真实源；不是估计掩码或盲分离，`--check`严格只读 |
 | GSS 教学链源与生成物 | `codes/chapters/ch08/core/gss_teaching.py`、`codes/chapters/ch08/examples/gss_teaching_demo.py` → `codes/chapters/ch08/gss_audio/` | 5 个数学合成 WAV、`STATE.npz` 和独立清单 | 只接受5个WAV、STATE.npz与清单共7个普通文件；生成及核验前拒绝额外成员和符号链接，`--check`内存重放且不写入；重生后核对共同增益、状态摘要与评分，不把教学子链称为已运行官方 GPU/CHiME 整链 |
+| 选型场景源与生成物 | `codes/chapters/ch11/core/selection_audio.py`、`codes/chapters/ch11/examples/generate_selection_audio.py` → `codes/chapters/ch11/scenario_audio/` | 两场景各参考/混合/3抽头/9抽头，共8个16kHz、32008点数学合成WAV与独立清单 | 共同增益0.8、完整8点尾；源1600:30400按已知群延迟对齐，解析/浮点分量/实际PCM整数误差分别记录；q为单音场景权重，区间组成最坏与逐场景最坏分开；三真实源，严格9普通成员/父链/JSON及完整重放，`--check`只读；不称自然语音或工业排名 |
 | 噪声估计失配源与生成物 | `codes/chapters/ch10/core/noise_mismatch.py`、`codes/chapters/ch10/examples/generate_noise_mismatch.py` → `codes/chapters/ch10/noise_audio/` | 6个16kHz、32000点、单声道数学合成WAV及独立清单 | 固定前奏/目标污染/已知方差对照共用输入与增益1；两6400点窗口分开浮点分解与真实PCM整数误差，完整源回放、严格JSON与父链检查；不称盲自适应或正式听测 |
 | 观测到追踪源与生成物 | `codes/chapters/ch09/core/tracking_audio.py`、`codes/chapters/ch09/examples/chapter09_tracking_audio.py` → `codes/chapters/ch09/tracking_audio/` | 2个独立连续运动合成WAV，PCM重读后计算GCC观测、门控与KF的逐帧清单 | 不混入主109个样本；保留浮点与PCM分开结果、状态时刻与可用时刻、各评分分母；`--check`只核对不重生 |
 | 移动声源源与生成物 | `codes/chapters/ch09/core/moving_source.py`、`codes/chapters/ch09/examples/moving_source_audio.py` → `codes/chapters/ch09/moving_audio/` | 3 个自由场数学合成 WAV 与轨迹真值清单 | 以传播时延和距离衰减的源模型生成；不与主 109 个 WAV 混算或称为真实录音 |
@@ -52,6 +53,8 @@
 | 源码研究文档 | `codes/chapters/ch00/research/*.md` | 逐算法源码入口、实现差异、工业配置与复现实验 | 与正文和覆盖表互链；区分建议实验和已执行结果 |
 | 项目说明源文件 | `README.md`、`README_EN.md`、`scripts/README.md` | 项目入口、英文说明、构建说明 | 直接修改；中英文共有信息要同步 |
 | 图 21 数值报告 | `scripts/make_figures.py::fig_wpe` → `codes/chapters/ch07/reports/figure21_wpe.json` | 同一信号的参数、帧选择、能量分母与谱域误差 | 随图重生；不将谱图显示频带当成指标统计频带 |
+| 图64选型报告与图 | `scripts/make_figures.py::fig_selection_scenarios` → `codes/chapters/ch11/reports/figure64_selection_scenarios.json` | 两场景实际PCM误差与解析控制、共同权重及最坏值 | 随独立音频清单真实生成；保留整数NMSE分母，不平均dB替代线性误差；不是设备排名 |
+| 第11章原时间核合同 | `codes/chapters/ch11/examples/audit_meeting_kernel_contracts.py` → `codes/chapters/ch11/reports/meeting_kernel_contracts.json` | 固定MeetEval两个原C++核九用例独立手算对照 | 明示编译driver和执行范围，核origin/blob/许可/源摘要及前后洁净；原生产Python评分器未运行，不改旧历史报告；仅显式普通文件路径原子写报告 |
 | 图62/63工程报告与图 | `scripts/make_figures.py::fig_engineering_limits`、`fig_noise_mismatch` | 图62保存限定软更新分数、有限尾部与阻塞时序；图63读取第10章独立噪声清单 | 随真实源生成，图62不是声学性能；图63浮点分解与实际PCM分开，已知方差对照不是盲估计 |
 | 图61信息边界报告 | `scripts/make_figures.py::fig_tracking_information` → `codes/chapters/ch09/reports/figure61_tracking_information.json` | 瞬时方位尺度零空间与相关观测的解析条件化 | 随图生成；纯几何忽略传播时延，不当作接收时钟的声学音频等价或误差覆盖率 |
 | 当前上游追踪合同 | `codes/chapters/ch09/examples/audit_upstream_tracking_contracts.py` → `codes/chapters/ch09/reports/upstream_tracking_contracts.json` | 固定源、原C调用、控制流提取与原Python方法的独立执行记录 | 由实际工具生成，保存执行范围和未执行条件；不改写历史报告或把替身控制流当完整算法运行 |
@@ -59,10 +62,10 @@
 | 构建源文件 | `scripts/build_site.py`、`scripts/build_pdf.py`、`scripts/heading_aliases.py`、`scripts/legacy_sequential_anchors.json` | 生成站点、合订 HTML 和 PDF，并保护已发布深链的原语义 | 页面结构或渲染有问题时修改这里；标题改号后逐项校验历史语义锚 |
 | PDF 公式第三方资源 | `scripts/vendor/mathjax-3.2.2/` | 固定版本的 MathJax 脚本、按需扩展和字体 | 保留上游许可及来源摘要；更新版本时同步更新构建核验与渲染抽查，不手改压缩脚本或字体 |
 | 插图生成物 | `figures/fig*.png` | 正文插图 | 由绘图脚本生成，不直接编辑 |
-| 站点生成物 | `site/*.html`、`site/research/*.html`、`site/real_audio/`、`site/room_audio/`、`site/gss_audio/`、`site/moving_audio/`、`site/tracking_audio/`、`site/noise_audio/`、`site/binaural_audio/`、`site/stft_audio/`、`site/geometry_audio/`、`site/focus_audio/`、`site/derivative_audio/`、`site/apa_audio/`、`site/mint_audio/`、`site/mask_audio/` | 14 篇教程、6 篇研究手册页面与真实录音、独立合成实验的媒体副本 | 由 `build_site.py` 生成，不直接编辑 |
+| 站点生成物 | `site/*.html`、`site/research/*.html`、`site/real_audio/`、`site/room_audio/`、`site/gss_audio/`、`site/moving_audio/`、`site/tracking_audio/`、`site/noise_audio/`、`site/scenario_audio/`、`site/binaural_audio/`、`site/stft_audio/`、`site/geometry_audio/`、`site/focus_audio/`、`site/derivative_audio/`、`site/apa_audio/`、`site/mint_audio/`、`site/mask_audio/` | 14 篇教程、6 篇研究手册页面与真实录音、独立合成实验的媒体副本 | 由 `build_site.py` 生成，不直接编辑 |
 | 合订生成物 | `dist/combined.html`、`dist/microphone-array-tutorial.pdf` | 合订 HTML 和 PDF | 由 `build_pdf.py` 生成，不直接编辑 |
 
-`chapters/` 当前包含 14 篇 Markdown，研究手册另有 6 篇网页源文件，项目当前有 63 张编号图和附录 B 房间题的一张补充结果图。文件数量、图号、章节名称或构建入口发生变化时，要同步
+`chapters/` 当前包含 14 篇 Markdown，研究手册另有 6 篇网页源文件，项目当前有 64 张编号图和附录 B 房间题的一张补充结果图。文件数量、图号、章节名称或构建入口发生变化时，要同步
 更新本节、README、导读中的文件地图和构建说明。
 
 `codes/chapters/` 含导读 `ch00`、第 1～11 章和附录 A/B。跨章内核按首次完整讲解所在章放入一个 `core/`，其他章节直接导入这一实现；全书索引、来源锁表、获取工具和跨章练习归 `ch00/`。原 `codes/examples/` 的 35 个薄兼容入口已经移除，仓内命令使用新模块名。生成音频、房间、状态和报告时，清单或报告记录的源路径与 SHA 必须来自当前真实源；迁移后要从新源重生并核对每个资产，不可只改清单字符串伪造一致性。历史运行报告中的旧路径代表当时的执行条件，不应改写为新路径下实测。
@@ -86,7 +89,8 @@
 .venv/bin/python -m codes.chapters.ch09.examples.moving_source_audio  # 独立连续移动双麦音频
 .venv/bin/python codes/chapters/ch02/examples/prepare_real_recordings.py --check  # 离线检查 4 个真实录音/派生 WAV
 .venv/bin/python -m codes.chapters.ch10.examples.generate_noise_mismatch  # 六独立噪声失配WAV
-.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～63
+.venv/bin/python -m codes.chapters.ch11.examples.generate_selection_audio  # 八独立两场景选型WAV；--check只读
+.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～64
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、图 37～39
 .venv/bin/python scripts/build_site.py        # chapters/ → site/*.html
 .venv/bin/python scripts/build_pdf.py         # chapters/ → 合订 HTML 和 PDF
@@ -358,7 +362,7 @@ ID｜文件与行号/图号｜类别｜严重度｜证据｜修改建议｜负�
 必要指标缺失的候选记为“证据不足”，不把单次点估计或样本最大值当成保证值。多个场景各自的
 单侧区间并不自动具有相同的联合覆盖率；声称同时满足时须说明联合方法和抽样前提。
 
-配对计数或排序若来自整数输入，不能先无条件转成浮点再比较，以免大整数改变次序或把胜负变平局。
+配对计数或排序若来自整数或精确有理数输入，不能先无条件转成浮点再比较，以免整数或有理数改变次序或把胜负变平局。
 极小但严格正的概率在浮点输出中下溢为零时，保留对数概率或显式下溢状态，不能报告成数学上零概率。
 
 本书仿真还要记录输入信号、随机种子、归一化方式、参数表和生成脚本。显示数字的有效位数不得超过
@@ -634,8 +638,8 @@ MathJax 公式统一缩到明显小于相邻正文；优先拆行、使用 `alig
 | 网页与 PDF 可访问性 | 自动检查网页语言、图片替代文本、标题层级、表头、焦点和导航；检查 PDF 文本层、语言、书签、结构标签和阅读顺序，并人工抽查宽表的键盘横向滚动 | 已支持的项目通过；构建链没有结构标签或不能保证阅读顺序时，必须在交付中明确写成限制，不能用“文本可搜索”代替标签化验收 |
 | 构建脚本或依赖 | 运行受影响命令及最小回归；检查退出状态和输出文件 | 命令正常结束；输出完整；未引入无关依赖或文件变化 |
 
-当前完整构建的基线是 63 张编号 PNG 和 1 张房间补图、14 个教程页面（首页加 13 篇）与 6 个研究手册页面，以及 PDF 的 14 个章级、121 个节级、
-549 个子节级书签，共 684 个大纲项。子节级书签来自第 1～11 章与附录 A/B；各篇独立数量见 `scripts/quality_check.py` 的显式清单。
+当前完整构建的基线是 64 张编号 PNG 和 1 张房间补图、14 个教程页面（首页加 13 篇）与 6 个研究手册页面，以及 PDF 的 14 个章级、121 个节级、
+557 个子节级书签，共 692 个大纲项。子节级书签来自第 1～11 章与附录 A/B；各篇独立数量见 `scripts/quality_check.py` 的显式清单。
 质量门禁应从独立的发布清单或显式常量读取这些基线，不能只从待检 Markdown 动态生成“期望值”
 再自我比较。构建后应核对数量和名称。若本次任务改变章节或图表结构，先更新发布清单、README 和本节，
 再按新值验收，不能为了通过检查保留过期数字。
@@ -693,7 +697,7 @@ Chrome 标签化输出和书签处理后的结构树必须同时保留；存在 
 - 先改源文件，再运行生成流程。不要直接修改可再生的网页、合订 HTML、PDF 或成品图片。
 - 插图只通过 `scripts/make_figures.py` 或 `scripts/make_aec_figures.py` 中相应函数生成。随机过程必须固定种子。
 - 每张 PNG 应记录生成它的脚本路径和脚本摘要。发布门禁核对摘要，脚本变化而图片未重画时必须失败。
-  全量发布还要在当前源文件上重新生成 63 张编号图；差异必须能追到本次缺陷记录或预期修改。
+  全量发布还要在当前源文件上重新生成 64 张编号图；差异必须能追到本次缺陷记录或预期修改。
 - 图片验收按网页约 860 px 正文宽度和 A4 约 165 mm 正文宽度检查。PNG 原尺寸清楚不等于嵌入后可读；
   正文、坐标、图例和注释都要在最终尺寸下检查有效字号。
 - 网页由 `chapters/` 和构建脚本生成；PDF 由合订 HTML 和 PDF 构建脚本生成。
@@ -797,6 +801,7 @@ Chrome 标签化输出和书签处理后的结构树必须同时保留；存在 
 - 音频生成源在 `codes/chapters/ch00/core/audio_samples.py` 和 `codes/chapters/ch00/examples/generate_audio_samples.py`。
   不直接修 WAV；改源后重建 `codes/chapters/ch00/audio/MANIFEST.json` 和受影响图、站点副本。清单记录输入摘要、环境、
   模型与参数、采样率、声道、时长、参考、时延、增益、随机种子、量化与文件摘要。
+- 词元评分的外层话段/输出流必须是显式有序词元序列；裸字符串或bytes不能静默按字符拆分。词元本身为字符串，中文分词协议须在输入前固定。非法区间形状明确拒绝，不能让隐式类型转换改变硬约束状态。
 - GSS 与自由场移动音频各有独立生成脚本、目录和清单。变更后同时核对中间状态或轨迹真值、每个 WAV 的
   帧数/通道/摘要，以及站点副本；不能用主音频清单的 109 个文件数掩盖独立资产缺失。
 - 不同音频组采用不同信号模型时，在清单中明确全局模板适用哪些组，其余逐组覆盖参数；不能让

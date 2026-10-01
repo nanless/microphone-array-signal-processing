@@ -41,6 +41,9 @@ DERIVATIVE_AUDIO_ROOT = ROOT / "codes/chapters/ch05/derivative_audio"
 APA_AUDIO_ROOT = ROOT / "codes/chapters/ch06/apa_audio"
 MINT_AUDIO_ROOT = ROOT / "codes/chapters/ch07/mint_audio"
 MASK_AUDIO_ROOT = ROOT / "codes/chapters/ch08/mask_audio"
+SCENARIO_AUDIO_ROOT = CODE_CHAPTERS / "ch11" / "scenario_audio"
+SCENARIO_AUDIO_WAVS = {f"selection_{scene}_{kind}.wav" for scene in ("single", "dual")
+                       for kind in ("target", "mixture", "fir3", "fir9")}
 NOISE_AUDIO_ROOT = CODE_CHAPTERS / "ch10" / "noise_audio"
 NOISE_AUDIO_WAVS = {"noise_" + name + ".wav" for name in
                     ("reference", "component", "mixture", "fixed", "polluted", "known_variance")}
@@ -82,7 +85,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "08_speech-separation.md": 59,
     "09_source-tracking.md": 56,
     "10_engineering-practice.md": 54,
-    "11_selection-guide.md": 29,
+    "11_selection-guide.md": 37,
     "12_appendix-symbols-math.md": 27,
     "13_appendix-guide.md": 25,
 }
@@ -105,9 +108,9 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 121
-EXPECTED_SUBSECTION_COUNT = 549
-EXPECTED_OUTLINE_ITEM_COUNT = 684
-EXPECTED_FIGURE_NUMBERS = set(range(1, 64))
+EXPECTED_SUBSECTION_COUNT = 557
+EXPECTED_OUTLINE_ITEM_COUNT = 692
+EXPECTED_FIGURE_NUMBERS = set(range(1, 65))
 # 研究附站使用独立显式清单，不挤占 14 篇教程或教程 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
@@ -712,7 +715,7 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63)
+            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
@@ -743,6 +746,12 @@ def check_figures(errors: list[str]):
                 with Image.open(path) as image:
                     if image.info.get("AudioManifestDigest") != expected:
                         fail(errors, "图60独立FFT掩码音频清单摘要失效")
+            if number == 64:
+                expected = hashlib.sha256((SCENARIO_AUDIO_ROOT / "MANIFEST.json").read_bytes()).hexdigest()
+                with Image.open(path) as image:
+                    if image.info.get("AudioManifestDigest") != expected:
+                        fail(errors, "图64跨场景清单摘要失效")
+                _check_selection_scenarios_report(ROOT / "codes/chapters/ch11/reports/figure64_selection_scenarios.json")
             if number == 63:
                 expected = hashlib.sha256((NOISE_AUDIO_ROOT / "MANIFEST.json").read_bytes()).hexdigest()
                 with Image.open(path) as image:
@@ -1129,7 +1138,7 @@ def site_source_digest():
     paths += sorted(main_audio_path(CODE_CHAPTERS, record["group"], record["file"])
                     for record in manifest["files"])
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
@@ -1433,7 +1442,7 @@ def check_real_audio(errors):
         parser = Players()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         allowed_audio_roots = ("../audio/", "../real_audio/", "../room_audio/",
-                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/")
+                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/", "../scenario_audio/")
         if any(not (p.get("src") or "").startswith(allowed_audio_roots)
                for p in parser.items):
             fail(errors, "未知试听控件来源")
@@ -2352,6 +2361,142 @@ def _check_visible_audio(page, prefix, directory, names, links):
         raise ValueError(directory+'可见独立资产链接缺失：'+page.name)
 
 
+def _selection_scenario_pcm(source):
+    """Independent standard-library PCM integer scoring, never repaired."""
+    import struct
+    pcm = {}
+    for scene in ('single','dual'):
+        for kind in ('target','mixture','fir3','fir9'):
+            filename = f'selection_{scene}_{kind}.wav'
+            with wave.open(str(source/filename),'rb') as w:
+                if (w.getframerate(),w.getnchannels(),w.getsampwidth(),w.getnframes(),w.getcomptype()) != (16000,1,2,32008,'NONE'):
+                    raise ValueError('selection scenario actual PCM format differs')
+                data = w.readframes(32008)
+            pcm[filename] = struct.unpack('<32008h',data)
+    rates, rows = {}, {}
+    for scene in ('single','dual'):
+        reference = pcm[f'selection_{scene}_target.wav'][1600:30400]
+        denominator = sum(v*v for v in reference)
+        if denominator <= 0:
+            raise ValueError('selection scenario reference has no energy')
+        rates[scene], rows[scene] = {}, {}
+        for length in (3,9):
+            kind,delay = f'fir{length}',(length-1)//2
+            output = pcm[f'selection_{scene}_{kind}.wav'][1600+delay:30400+delay]
+            numerator = sum((a-b)**2 for a,b in zip(output,reference))
+            rates[scene][kind] = numerator/denominator
+            rows[scene][kind] = {'source_window':[1600,30400],
+                'output_window':[1600+delay,30400+delay], 'scored_samples':28800,
+                'integer_error_squared_sum':numerator,'integer_reference_squared_sum':denominator}
+    return rates, rows
+
+
+def _selection_scenario_analytic():
+    """Sine-ratio control, independent of the plot's finite cosine sum."""
+    import math
+    result = {}
+    for scene in ('single','dual'):
+        result[scene] = {}
+        for length in (3,9):
+            def signed(f):
+                x=math.pi*f/16000
+                return math.sin(length*x)/(length*math.sin(x))
+            norm=abs(signed(500))
+            target_error=(signed(1500)/norm-1)**2 if scene=='dual' else 0.
+            result[scene][f'fir{length}']=(target_error+(signed(3500)/norm)**2)/(2 if scene=='dual' else 1)
+    return result
+
+
+def _selection_scenario_decision(table):
+    values = {kind:[(table['single'][kind]+3*table['dual'][kind])/4,
+                   (3*table['single'][kind]+table['dual'][kind])/4]
+              for kind in ('fir3','fir9')}
+    difference=table['dual']['fir9']-table['dual']['fir3']
+    slope=table['single']['fir3']-table['dual']['fir3']-table['single']['fir9']+table['dual']['fir9']
+    return {'q_single_weight':[.25,.75], 'endpoint_costs':values,
+            'interval_worst':{k:max(v) for k,v in values.items()},
+            'scene_worst':{k:max(table['single'][k],table['dual'][k]) for k in ('fir3','fir9')},
+            'crossing_q_single':difference/slope}
+
+
+def _compare_selection_report(actual,expected,where='report'):
+    import math
+    if type(actual) is not type(expected):
+        raise ValueError('selection report type differs: '+where)
+    if isinstance(expected,dict):
+        if actual.keys()!=expected.keys():
+            raise ValueError('selection report fields differ: '+where)
+        for key,value in expected.items():
+            _compare_selection_report(actual[key],value,where+'.'+key)
+    elif isinstance(expected,list):
+        if len(actual)!=len(expected):
+            raise ValueError('selection report list differs: '+where)
+        for index,(left,right) in enumerate(zip(actual,expected)):
+            _compare_selection_report(left,right,where+f'[{index}]')
+    elif isinstance(expected,float):
+        if not math.isfinite(actual) or not math.isclose(actual,expected,rel_tol=1e-13,abs_tol=1e-16):
+            raise ValueError('selection report numeric value differs: '+where)
+    elif actual!=expected:
+        raise ValueError('selection report value differs: '+where)
+
+
+def _check_selection_scenarios_report(path):
+    from codes.chapters.ch11.examples.generate_selection_audio import validate_asset_directory
+    folder=ROOT/'codes/chapters/ch11/scenario_audio'
+    validate_asset_directory(folder,check=True)
+    pcm,integers=_selection_scenario_pcm(folder)
+    analytic=_selection_scenario_analytic()
+    expected={'schema_version':1,
+        'script_sha256':hashlib.sha256((ROOT/'scripts/make_figures.py').read_bytes()).hexdigest(),
+        'audio_manifest_sha256':hashlib.sha256((folder/'MANIFEST.json').read_bytes()).hexdigest(),
+        'scope':'mathematical tones; scenario-weighted NMSE, not pooled reference energy or mean dB',
+        'integer_pcm':integers,'pcm_nmse':pcm,'analytic_nmse':analytic,
+        'pcm_decision':_selection_scenario_decision(pcm),
+        'analytic_decision':_selection_scenario_decision(analytic)}
+    _compare_selection_report(_read_tracking_manifest(path),expected)
+
+
+def check_scenario_audio(errors):
+    """Bind all eight actual WAVs, integer denominators and visible controls."""
+    import math
+    import struct
+    try:
+        from codes.chapters.ch11.examples.generate_selection_audio import check_assets,validate_asset_directory
+        source,published=SCENARIO_AUDIO_ROOT,SITE/'scenario_audio'
+        validate_asset_directory(source,check=True)
+        validate_asset_directory(published,check=True)
+        manifest=check_assets(source)
+        expected_sources={'codes/chapters/ch11/core/selection_audio.py',
+            'codes/chapters/ch11/examples/generate_selection_audio.py',
+            'codes/chapters/ch00/core/audio_samples.py'}
+        if set(manifest['source_sha256'])!=expected_sources:
+            raise ValueError('scenario source set differs')
+        for path in expected_sources:
+            if manifest['source_sha256'][path]!=hashlib.sha256((ROOT/path).read_bytes()).hexdigest():
+                raise ValueError('scenario source SHA is stale: '+path)
+        if set(manifest['files'])!=SCENARIO_AUDIO_WAVS or type(manifest['common_export_gain']) is not float or manifest['common_export_gain']!=.8:
+            raise ValueError('scenario eight files or common gain differs')
+        for filename in sorted(SCENARIO_AUDIO_WAVS|{'MANIFEST.json'}):
+            if (source/filename).read_bytes()!=(published/filename).read_bytes():
+                raise ValueError('scenario published bytes differ: '+filename)
+        rates,rows=_selection_scenario_pcm(published)
+        for scene in ('single','dual'):
+            for kind in ('fir3','fir9'):
+                filename=f'selection_{scene}_{kind}.wav'
+                measured=manifest['pcm_analysis']['candidates'][filename]
+                row=rows[scene][kind]
+                for field in ('integer_error_squared_sum','integer_reference_squared_sum','scored_samples'):
+                    if type(measured[field]) is not int or measured[field]!=row[field]:
+                        raise ValueError('scenario integer score differs: '+filename+'/'+field)
+                if not math.isclose(measured['aligned_total_nmse'],rates[scene][kind],rel_tol=1e-14,abs_tol=0):
+                    raise ValueError('scenario actual PCM NMSE differs: '+filename)
+        for page,prefix in ((SITE/'11_selection-guide.html',''),
+                            (SITE/'research/05_exercises_and_audio.html','../')):
+            _check_visible_audio(page,prefix,'scenario_audio',SCENARIO_AUDIO_WAVS,{'MANIFEST.json'})
+    except (OSError,ValueError,KeyError,TypeError,struct.error,wave.Error) as exc:
+        fail(errors,'独立两场景选型音频：'+str(exc))
+
+
 def check_noise_audio(errors):
     """Independent actual integer scoring plus current-source replay and visibility."""
     import math
@@ -2699,6 +2844,7 @@ def main():
     check_mint_audio(errors)
     check_mask_audio(errors)
     check_noise_audio(errors)
+    check_scenario_audio(errors)
     check_combined_html(errors)
     check_pdf(errors, notices)
     for item in notices:

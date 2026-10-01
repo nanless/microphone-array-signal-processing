@@ -1,0 +1,452 @@
+{
+  "schema_version": 1,
+  "sample_rate_hz": 16000,
+  "common_export_gain": 0.8,
+  "origin": "mathematical synthetic single/dual target tone/FIR example; not speech or a recording",
+  "parameters": {
+    "sample_rate_hz": 16000,
+    "source_samples": 32000,
+    "samples_per_channel": 32008,
+    "source_duration_s": 2.0,
+    "export_duration_s": 2.0005,
+    "component_amplitude": 0.2,
+    "source_score": [
+      1600,
+      30400
+    ],
+    "common_export_gain": 0.8,
+    "fade": "linear min(1,t/.02,(2-t)/.02), n=0..31999; then eight zeros",
+    "scene_target_frequencies_hz": {
+      "single": [
+        500
+      ],
+      "dual": [
+        500,
+        1500
+      ]
+    },
+    "noise_frequency_hz": 3500,
+    "target_steady_power": {
+      "single": 0.02,
+      "dual": 0.04
+    },
+    "input_steady_snr_db": {
+      "single": 0.0,
+      "dual": 3.010299956639812
+    },
+    "filters": {
+      "fir3": {
+        "taps": [
+          0.33765867787654247,
+          0.33765867787654247,
+          0.33765867787654247
+        ],
+        "group_delay_samples": 1,
+        "output_score": [
+          1601,
+          30401
+        ]
+      },
+      "fir9": {
+        "taps": [
+          0.12679924301562562,
+          0.12679924301562562,
+          0.12679924301562562,
+          0.12679924301562562,
+          0.12679924301562562,
+          0.12679924301562562,
+          0.12679924301562562,
+          0.12679924301562562,
+          0.12679924301562562
+        ],
+        "group_delay_samples": 4,
+        "output_score": [
+          1604,
+          30404
+        ]
+      }
+    },
+    "convolution": "causal full linear convolution with zero initial history; common 32008 length",
+    "score": "known group delay only; no gain/time fitting; no scoring of fade/startup/tail",
+    "pcm_fit": "DC and cos/sin orthogonal projections at three whole-cycle frequencies; no compensation"
+  },
+  "analytic": {
+    "candidates": {
+      "selection_single_fir3.wav": {
+        "signed_aligned_response": {
+          "500": 1.0,
+          "1500": 0.8991645378457402,
+          "3500": 0.46940655827349215
+        },
+        "reference_power": 0.02,
+        "target_distortion_power": 0.0,
+        "residual_noise_power": 0.0044068503390033075,
+        "cross_term_power": 0.0,
+        "total_error_power": 0.0044068503390033075,
+        "aligned_total_nmse": 0.22034251695016538
+      },
+      "selection_single_fir9.wav": {
+        "signed_aligned_response": {
+          "500": 1.0,
+          "1500": 0.205910797479593,
+          "3500": -0.0195911582083185
+        },
+        "reference_power": 0.02,
+        "target_distortion_power": 0.0,
+        "residual_noise_power": 7.676269598867306e-06,
+        "cross_term_power": 0.0,
+        "total_error_power": 7.676269598867306e-06,
+        "aligned_total_nmse": 0.0003838134799433653
+      },
+      "selection_dual_fir3.wav": {
+        "signed_aligned_response": {
+          "500": 1.0,
+          "1500": 0.8991645378457402,
+          "3500": 0.46940655827349215
+        },
+        "reference_power": 0.04,
+        "target_distortion_power": 0.00020335580855726306,
+        "residual_noise_power": 0.0044068503390033075,
+        "cross_term_power": 0.0,
+        "total_error_power": 0.004610206147560571,
+        "aligned_total_nmse": 0.11525515368901428
+      },
+      "selection_dual_fir9.wav": {
+        "signed_aligned_response": {
+          "500": 1.0,
+          "1500": 0.205910797479593,
+          "3500": -0.0195911582083185
+        },
+        "reference_power": 0.04,
+        "target_distortion_power": 0.012611553231189919,
+        "residual_noise_power": 7.676269598867306e-06,
+        "cross_term_power": 0.0,
+        "total_error_power": 0.012619229500788786,
+        "aligned_total_nmse": 0.31548073751971967
+      }
+    },
+    "selection": {
+      "q_definition": "single-tone scene weight; dual weight is 1-q",
+      "at_q": {
+        "0.25": {
+          "fir3": 0.14152699450430206,
+          "fir9": 0.23670650650977557
+        },
+        "0.75": {
+          "fir3": 0.1940706761348776,
+          "fir9": 0.07915804448988745
+        }
+      },
+      "equal_cost_single_weight": 0.47651849410377384,
+      "q_interval": [
+        0.25,
+        0.75
+      ],
+      "worst_over_q_interval": {
+        "fir3": 0.1940706761348776,
+        "fir9": 0.23670650650977557
+      },
+      "worst_scene": {
+        "fir3": 0.22034251695016538,
+        "fir9": 0.31548073751971967
+      }
+    }
+  },
+  "floating_point": {
+    "candidates": {
+      "selection_single_fir3.wav": {
+        "reference_power": 0.019999999999999997,
+        "target_distortion_power": 8.991099677406052e-28,
+        "residual_noise_power": 0.004406850339003305,
+        "cross_term_power": 1.063323253851414e-18,
+        "total_error_power": 0.004406850339003306,
+        "aligned_total_nmse": 0.22034251695016532
+      },
+      "selection_single_fir9.wav": {
+        "reference_power": 0.019999999999999997,
+        "target_distortion_power": 9.72039701782491e-28,
+        "residual_noise_power": 7.676269598867234e-06,
+        "cross_term_power": -8.119630194225346e-20,
+        "total_error_power": 7.67626959886715e-06,
+        "aligned_total_nmse": 0.0003838134799433576
+      },
+      "selection_dual_fir3.wav": {
+        "reference_power": 0.03999999999999994,
+        "target_distortion_power": 0.0002033558085572638,
+        "residual_noise_power": 0.004406850339003305,
+        "cross_term_power": 1.772248917835611e-17,
+        "total_error_power": 0.0046102061475605865,
+        "aligned_total_nmse": 0.11525515368901484
+      },
+      "selection_dual_fir9.wav": {
+        "reference_power": 0.03999999999999994,
+        "target_distortion_power": 0.01261155323118991,
+        "residual_noise_power": 7.676269598867234e-06,
+        "cross_term_power": 2.4918760631320592e-17,
+        "total_error_power": 0.012619229500788802,
+        "aligned_total_nmse": 0.31548073751972056
+      }
+    },
+    "selection": {
+      "q_definition": "single-tone scene weight; dual weight is 1-q",
+      "at_q": {
+        "0.25": {
+          "fir3": 0.14152699450430245,
+          "fir9": 0.23670650650977623
+        },
+        "0.75": {
+          "fir3": 0.1940706761348777,
+          "fir9": 0.07915804448988766
+        }
+      },
+      "equal_cost_single_weight": 0.4765184941037742,
+      "q_interval": [
+        0.25,
+        0.75
+      ],
+      "worst_over_q_interval": {
+        "fir3": 0.1940706761348777,
+        "fir9": 0.23670650650977623
+      },
+      "worst_scene": {
+        "fir3": 0.22034251695016532,
+        "fir9": 0.31548073751972056
+      }
+    }
+  },
+  "pcm_analysis": {
+    "candidates": {
+      "selection_single_fir3.wav": {
+        "integer_error_squared_sum": 87210066600,
+        "integer_reference_squared_sum": 395812398600,
+        "scored_samples": 28800,
+        "reference_score": [
+          1600,
+          30400
+        ],
+        "output_score": [
+          1601,
+          30401
+        ],
+        "aligned_total_nmse": 0.22033182110632346,
+        "aligned_total_nmse_db": -6.569227759636722,
+        "fitted_amplitudes": {
+          "500": 0.1599958264557027,
+          "1500": 1.144505051304565e-06,
+          "3500": 0.0751018079279292
+        },
+        "fitted_phasors_real_imag": {
+          "500": [
+            0.15692155151371084,
+            -0.031213637304440035
+          ],
+          "1500": [
+            -9.516211711101983e-07,
+            6.358529383092597e-07
+          ],
+          "3500": [
+            0.014651635892750925,
+            -0.07365874774736414
+          ]
+        },
+        "target_500_retention": 0.9999888068661686,
+        "target_1500_retention": null,
+        "noise_3500_retention": 0.46939077419152386,
+        "noise_attenuation_db": 6.5693090129883105
+      },
+      "selection_single_fir9.wav": {
+        "integer_error_squared_sum": 152494200,
+        "integer_reference_squared_sum": 395812398600,
+        "scored_samples": 28800,
+        "reference_score": [
+          1600,
+          30400
+        ],
+        "output_score": [
+          1604,
+          30404
+        ],
+        "aligned_total_nmse": 0.00038526888126641924,
+        "aligned_total_nmse_db": -34.14236068173773,
+        "fitted_amplitudes": {
+          "500": 0.16000041998406336,
+          "1500": 2.9727028166935654e-06,
+          "3500": 0.0031407298654254423
+        },
+        "fitted_phasors_real_imag": {
+          "500": [
+            0.11313738196345538,
+            -0.11313738196339822
+          ],
+          "1500": [
+            2.1020183199790337e-06,
+            2.102018320293707e-06
+          ],
+          "3500": [
+            -0.0022208313857147626,
+            -0.0022208313857201233
+          ]
+        },
+        "target_500_retention": 1.0000175168459629,
+        "target_1500_retention": null,
+        "noise_3500_retention": 0.019629748786783145,
+        "noise_attenuation_db": 34.14170516562797
+      },
+      "selection_dual_fir3.wav": {
+        "integer_error_squared_sum": 91223542800,
+        "integer_reference_squared_sum": 791595378000,
+        "scored_samples": 28800,
+        "reference_score": [
+          1600,
+          30400
+        ],
+        "output_score": [
+          1601,
+          30401
+        ],
+        "aligned_total_nmse": 0.1152401155126502,
+        "aligned_total_nmse_db": -9.38396315069849,
+        "fitted_amplitudes": {
+          "500": 0.15999392436061116,
+          "1500": 0.1438709304662949,
+          "3500": 0.07510442703656774
+        },
+        "fitted_phasors_real_imag": {
+          "500": [
+            0.15691968596684314,
+            -0.031213266224096054
+          ],
+          "1500": [
+            0.11962430677644209,
+            -0.0799304063638684
+          ],
+          "3500": [
+            0.014652146855498236,
+            -0.07366131653056467
+          ]
+        },
+        "target_500_retention": 0.9999849762315562,
+        "target_1500_retention": 0.8992328775882457,
+        "noise_3500_retention": 0.46939993429842314,
+        "noise_attenuation_db": 6.56913951050627
+      },
+      "selection_dual_fir9.wav": {
+        "integer_error_squared_sum": 249713672400,
+        "integer_reference_squared_sum": 791595378000,
+        "scored_samples": 28800,
+        "reference_score": [
+          1600,
+          30400
+        ],
+        "output_score": [
+          1604,
+          30404
+        ],
+        "aligned_total_nmse": 0.3154562031816209,
+        "aligned_total_nmse_db": -5.010609281373436,
+        "fitted_amplitudes": {
+          "500": 0.16000578851490516,
+          "1500": 0.032948010404094216,
+          "3500": 0.0031349054767143285
+        },
+        "fitted_phasors_real_imag": {
+          "500": [
+            0.1131411780880191,
+            -0.11314117808796097
+          ],
+          "1500": [
+            -0.02329776158333275,
+            -0.023297761583347128
+          ],
+          "3500": [
+            -0.002216712920961012,
+            -0.0022167129209660847
+          ]
+        },
+        "target_500_retention": 1.0000591288976473,
+        "target_1500_retention": 0.20593412519440213,
+        "noise_3500_retention": 0.019593045082215984,
+        "noise_attenuation_db": 34.15796124474867
+      }
+    },
+    "selection": {
+      "q_definition": "single-tone scene weight; dual weight is 1-q",
+      "at_q": {
+        "0.25": {
+          "fir3": 0.1415130419110685,
+          "fir9": 0.23668846960653228
+        },
+        "0.75": {
+          "fir3": 0.19405889470790516,
+          "fir9": 0.07915300245635504
+        }
+      },
+      "equal_cost_single_weight": 0.47652044389160503,
+      "q_interval": [
+        0.25,
+        0.75
+      ],
+      "worst_over_q_interval": {
+        "fir3": 0.19405889470790516,
+        "fir9": 0.23668846960653228
+      },
+      "worst_scene": {
+        "fir3": 0.22033182110632346,
+        "fir9": 0.3154562031816209
+      }
+    }
+  },
+  "quantization": "signed little-endian PCM16; nearest-even; no dither; decoded amplitude=int16/32768",
+  "source_sha256": {
+    "codes/chapters/ch11/core/selection_audio.py": "963555975ad159d104bcb8044c4243b46d87ab858acdf5634248206c28075eac",
+    "codes/chapters/ch11/examples/generate_selection_audio.py": "10a9d35464039346ba2ecaadf8b86c5da43ec87d336d6d779e9be9d7aa129aa7",
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8"
+  },
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O"
+  },
+  "files": {
+    "selection_single_target.wav": {
+      "channels": 1,
+      "samples_per_channel": 32008,
+      "sha256": "f66ddc6ff710247910f412f37252cc26d83bb4cbcedcbc825c751749a1356c16"
+    },
+    "selection_single_mixture.wav": {
+      "channels": 1,
+      "samples_per_channel": 32008,
+      "sha256": "cc8e031d68a1ae1e829d30286d3a5c008894a3ee494c4b70596db49c8950752b"
+    },
+    "selection_single_fir3.wav": {
+      "channels": 1,
+      "samples_per_channel": 32008,
+      "sha256": "47d901ab94ea72cc9b8ea0c3aa4cdfa6bb790c3629c7555752c3b2198308d7d6"
+    },
+    "selection_single_fir9.wav": {
+      "channels": 1,
+      "samples_per_channel": 32008,
+      "sha256": "13bd16f09f64724dcc362bf397b226a578ee8a26288faf0263193a71246b93fa"
+    },
+    "selection_dual_target.wav": {
+      "channels": 1,
+      "samples_per_channel": 32008,
+      "sha256": "11a5d779ac3658b21dcd317f78baac09c5d375c7467b8d64e0088e0a25ebb714"
+    },
+    "selection_dual_mixture.wav": {
+      "channels": 1,
+      "samples_per_channel": 32008,
+      "sha256": "603f33b48f04c562ede208d173ecb66adcaa6f4a754f633ab8d463cc413494a9"
+    },
+    "selection_dual_fir3.wav": {
+      "channels": 1,
+      "samples_per_channel": 32008,
+      "sha256": "5a26e2314d0e15f1ab8c740e9429a6e855aba6a8ec5bb3d0895d354e7732f17d"
+    },
+    "selection_dual_fir9.wav": {
+      "channels": 1,
+      "samples_per_channel": 32008,
+      "sha256": "9fe490d9d6b81f2145b96ed6c7264e6277fb13281c15fca71c41df52d92b26b9"
+    }
+  }
+}

@@ -235,6 +235,10 @@ SMP-PHAT 的原版复现发现了失败：在本机 Apple clang/arm64 上，固�
 
 比较候选时还要保存配对关系。E11-09 用同一六次会话的两列错误计数，分别报告合并 WER、四胜一负一平，以及预定单侧符号检验的 0.1875；[题干与推导](../../../../chapters/11_selection-guide.md#sec-11-6)写明独立性、平局和检验对象。它只复算本书构造的统计例子，没有执行 ASR，也不把“未达到显著性”解释成两个系统等效。
 
+第11章的[原词编辑核合同](03_industrial_deployment.md#meeting-kernel-contracts)另有[独立工具](../../ch11/examples/audit_meeting_kernel_contracts.py)与[报告](../../ch11/reports/meeting_kernel_contracts.json)：完整包含固定 MeetEval 原头文件，原生运行普通核与时间约束核的九个小输入，手算和独立二维矩阵分别核对期望。原方法不经 AST 提取或改写；自写 C++ 调用者只适配完整词元与给定秒区间。使用 `.venv/bin/python -B -m codes.chapters.ch11.examples.audit_meeting_kernel_contracts` 时只输出 JSON，显式 `--report` 才保存当前运行结果，且编译始终在临时目录。
+
+这个证据能揭示同词错时、仅端点相接、正重叠与空输入的固定版本行为，对应 [E11-24 词时间](../../../../chapters/11_selection-guide.md#e11-24)；[E11-23 话段边界](../../../../chapters/11_selection-guide.md#e11-23)则由本书独立枚举解释。原核工具不运行生产 cpWER/ORC-WER/tcpWER 包装器，更不运行 ASR、身份关联或设备。2026-09-28旧接口报告中的完整 Python 调用缺扩展失败保留为历史事实；新的原生两核成功不能覆盖那次失败，也不能说明完整包依赖已齐。
+
 ## 6. 何时可以进入设备比较
 
 只有两套候选实现使用同一输入、评分区域和延迟口径，性能比较才有明确含义。硬件上再分别测量启动加载、

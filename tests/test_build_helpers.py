@@ -628,10 +628,10 @@ class BuildHelpersTest(unittest.TestCase):
         )
 
     def test_figure_semantics_accept_any_reuse_and_reject_mismatch_or_orphan(self):
-        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 64)]
+        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 65)]
         refs.extend([("图1 复用", "fig01_x.png", 1),
                      ("图23 复用", "fig23_x.png", 23)])
-        names = [f"fig{i:02d}_x.png" for i in range(1, 64)]
+        names = [f"fig{i:02d}_x.png" for i in range(1, 65)]
         self.assertEqual(quality_check.figure_inventory_issues(refs, names), [])
         bad_refs = list(refs)
         bad_refs[0] = ("图2 错配", "fig01_x.png", 1)
@@ -695,6 +695,30 @@ class BuildHelpersTest(unittest.TestCase):
         screen, printed = build_site.CSS.split('@media print', 1)
         self.assertIn('.tracking-readable-table td{min-width:8em}', screen)
         self.assertNotIn('tracking-readable-table', printed)
+
+    def test_selection_phone_tables_match_exact_headers_and_chapter(self):
+        tables = [
+            ("决策对象", "适合先尝试的方案", "何时换方案", "同时检查的风险"),
+            ("任务条件", "一路波束/掩码波束", "连续语音分离（CSS）", "目标说话人提取（TSE）"),
+("条件或证据", "一路掩码波束", "两路 CSS", "注册声纹 TSE", "决定"),
+        ]
+        for labels in tables:
+            source = '| '+' | '.join(labels)+' |\n| '+' | '.join(['---']*len(labels))+' |\n| '+' | '.join(['短语']*len(labels))+' |\n'
+            html, _ = build_site.render(source, ROOT/'chapters/11_selection-guide.md')
+            self.assertIn('<table class="selection-readable-table">', html)
+            self.assertEqual(html.count('scope="col"'), len(labels))
+            self.assertIn('class="table-scroll" tabindex="0" role="region"', html)
+            for other in ('10_engineering-practice.md', '12_appendix-symbols-math.md'):
+                html, _ = build_site.render(source, ROOT/'chapters'/other)
+                self.assertNotIn('selection-readable-table', html)
+            for near in (source.replace(labels[0], '其他表头', 1),
+                         source.replace(' | '.join(labels), ' | '.join(reversed(labels)), 1)):
+                html, _ = build_site.render(near, ROOT/'chapters/11_selection-guide.md')
+                self.assertNotIn('selection-readable-table', html)
+        screen, printed = build_site.CSS.split('@media print', 1)
+        self.assertIn('.selection-readable-table{min-width:760px}', screen)
+        self.assertIn('.selection-readable-table td{min-width:10em}', screen)
+        self.assertNotIn('selection-readable-table', printed)
 
     def test_industrial_phone_tables_match_exact_headers_and_research_source(self):
         tables = [

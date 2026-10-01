@@ -5,6 +5,8 @@ Token scoring is exhaustive teaching enumeration (at most 4 streams, 6 reference
 utterances, 24 tokens per side), not a replacement for a production WER scorer.
 """
 from itertools import permutations, product
+from collections.abc import Sequence
+from fractions import Fraction
 import math
 from numbers import Integral
 import numpy as np
@@ -31,8 +33,35 @@ def _comparison_value(value):
     return value
 
 
+
+def _sequence(value, name):
+    if isinstance(value, (str, bytes, bytearray)) or not (
+            isinstance(value, Sequence) or isinstance(value, np.ndarray) and value.ndim >= 1):
+        raise ValueError(f'{name} must be an explicit ordered sequence')
+    return list(value)
+
+
+def _tokens(value, name):
+    result = _sequence(value, name)
+    if any(not isinstance(token, str) for token in result):
+        raise ValueError(f'{name} tokens must be strings')
+    return result
+
+
+def _bounds(value):
+    bounds = _sequence(value, 'interval')
+    if len(bounds) != 2:
+        raise ValueError('an interval needs lower and upper bounds')
+    lower, upper = [_comparison_value(v) for v in bounds]
+    if lower > upper:
+        raise ValueError('lower must not exceed upper')
+    return lower, upper
+
+
 def upper_limit_verdict(intervals, limits):
     """All metrics are minimized; None means unmeasured, equality is allowed."""
+    intervals = _sequence(intervals, 'intervals')
+    limits = _sequence(limits, 'limits')
     if len(intervals) != len(limits) or len(limits) == 0:
         raise ValueError('provide equally sized nonempty intervals and limits')
     statuses = []
@@ -41,11 +70,7 @@ def upper_limit_verdict(intervals, limits):
         if interval is None:
             statuses.append('undetermined')
             continue
-        if len(interval) != 2:
-            raise ValueError('an interval needs lower and upper bounds')
-        lower, upper = [_comparison_value(v) for v in interval]
-        if lower > upper:
-            raise ValueError('lower must not exceed upper')
+        lower, upper = _bounds(interval)
         statuses.append('fail' if lower > limit else
                         'pass' if upper <= limit else 'undetermined')
     return ('fail' if 'fail' in statuses else 'undetermined'
@@ -68,6 +93,8 @@ def pareto_minima(costs):
 
 def token_edit_distance(reference, hypothesis):
     """Unit-cost token insertions, deletions and substitutions."""
+    reference = _tokens(reference, 'reference')
+    hypothesis = _tokens(hypothesis, 'hypothesis')
     row = list(range(len(hypothesis) + 1))
     for i, token in enumerate(reference, 1):
         previous, row = row, [i]
@@ -85,6 +112,9 @@ def small_slot_word_errors(utterances, speakers, hypotheses):
     the caller. ORC concatenates assigned utterances in that order. cp pads
     empty streams to the larger speaker/slot count. Missing words are deletions.
     """
+    utterances = [_tokens(seq, 'utterance') for seq in _sequence(utterances, 'utterances')]
+    hypotheses = [_tokens(seq, 'hypothesis') for seq in _sequence(hypotheses, 'hypotheses')]
+    speakers = _sequence(speakers, 'speakers')
     if not 1 <= len(utterances) <= 6 or len(speakers) != len(utterances):
         raise ValueError('one to six labeled utterances required')
     if not 1 <= len(hypotheses) <= 4:
@@ -117,3 +147,79 @@ def small_slot_word_errors(utterances, speakers, hypotheses):
     return {'reference_words': words, 'cp_errors': cp, 'orc_errors': orc,
             'cp_wer': cp / words, 'orc_wer': orc / words,
             'orc_assignment_utterance_to_slot': list(best)}
+
+
+def interval_dominates(a, b):
+    """Certain dominance for minimized metrics, not dominance of midpoints.
+
+    Every upper bound of A must be <= the corresponding lower bound of B,
+    with at least one strict inequality. None means unknown and prevents a
+    positive claim; all provided bounds are validated even when unknown.
+    """
+    a, b = _sequence(a, 'a'), _sequence(b, 'b')
+    if not a or len(a) != len(b):
+        raise ValueError('equally sized nonempty metric intervals required')
+    left = [None if v is None else _bounds(v) for v in a]
+    right = [None if v is None else _bounds(v) for v in b]
+    if any(v is None for v in left + right):
+        return False
+    return all(x[1] <= y[0] for x, y in zip(left, right)) and any(
+        x[1] < y[0] for x, y in zip(left, right))
+
+
+def zero_event_poisson_upper_bound(exposure_hours, confidence=.95):
+    """One-sided zero-event HPP rate bound, in events/hour: -log(alpha)/T.
+
+    Assumes a precommitted exposure and homogeneous Poisson process; it is not
+    the per-session binomial bound. Nonrepresentable strictly positive final
+    rates raise ValueError rather than become zero/infinity.
+    """
+    exposure = _comparison_value(exposure_hours)
+    confidence = _comparison_value(confidence)
+    if exposure <= 0 or not 0 < confidence < 1:
+        raise ValueError('positive exposure and confidence strictly between 0 and 1 required')
+    numerator = -math.log1p(-confidence)
+    try:
+        rate = numerator / exposure
+    except OverflowError:
+        rate = float(Fraction(numerator) / Fraction(exposure))
+    if not math.isfinite(rate) or rate <= 0:
+        raise ValueError('positive Poisson rate exceeds float64 support')
+    return rate
+
+
+def tiny_time_constrained_edit_distance(reference_tokens, hypothesis_tokens,
+                                       reference_intervals, hypothesis_intervals, collar=0):
+    """Single-stream token DP with strict positive time overlap for diagonals.
+
+    Each explicit word interval must have positive duration. Expand each
+    reference interval by a nonnegative collar (seconds) on both sides;
+    touching endpoints do not overlap. Insertions/deletions cost one and are
+    unrestricted. This bounded model has no speaker permutation, timestamps
+    inferred from utterance text, or production tcpWER wrapper.
+    """
+    reference = _tokens(reference_tokens, 'reference')
+    hypothesis = _tokens(hypothesis_tokens, 'hypothesis')
+    if max(len(reference), len(hypothesis)) > 24:
+        raise ValueError('at most 24 tokens per side')
+    ri = [_bounds(v) for v in _sequence(reference_intervals, 'reference intervals')]
+    hi = [_bounds(v) for v in _sequence(hypothesis_intervals, 'hypothesis intervals')]
+    if len(ri) != len(reference) or len(hi) != len(hypothesis):
+        raise ValueError('one word interval per token required')
+    if any(lo >= up for lo, up in ri + hi):
+        raise ValueError('word intervals need positive duration')
+    collar = _comparison_value(collar)
+    if collar < 0:
+        raise ValueError('collar must be nonnegative')
+    # Exact rational arithmetic keeps large time origins and small collars from
+    # silently changing a touching endpoint into an overlap (or vice versa).
+    ri = [(Fraction(lo) - Fraction(collar), Fraction(up) + Fraction(collar)) for lo, up in ri]
+    hi = [(Fraction(lo), Fraction(up)) for lo, up in hi]
+    row = list(range(len(hypothesis) + 1))
+    for i, (token, interval) in enumerate(zip(reference, ri), 1):
+        old, row = row, [i]
+        for j, (other, times) in enumerate(zip(hypothesis, hi), 1):
+            overlap = max(interval[0], times[0]) < min(interval[1], times[1])
+            diagonal = old[j-1] + (token != other) if overlap else math.inf
+            row.append(min(row[-1] + 1, old[j] + 1, diagonal))
+    return row[-1]
