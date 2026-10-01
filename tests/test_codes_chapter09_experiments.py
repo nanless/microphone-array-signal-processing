@@ -1,18 +1,31 @@
 """Chapter 9 anchors independently derived from fractions/moments/geometry."""
 from fractions import Fraction as F
 import math
+from pathlib import Path
+import struct
+import tempfile
 import unittest
+from unittest.mock import patch
+import wave
 import numpy as np
-from codes.chapters.ch09.chapter09_experiments import run_experiments, small_set_distances, white_acceleration_covariance
+from codes.chapters.ch09.chapter09_experiments import (
+    actual_tracking_audio, run_experiments, small_set_distances, white_acceleration_covariance,
+)
+from codes.chapters.ch09.examples.chapter09_tracking_audio import generate
 
 
 class Chapter09ExperimentsTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.results = run_experiments()
+        cls.temporary = tempfile.TemporaryDirectory()
+        cls.addClassCleanup(cls.temporary.cleanup)
+        cls.audio_directory = Path(cls.temporary.name)/'tracking_audio'
+        # Only this temporary fixture is generated; published assets are read-only.
+        generate(cls.audio_directory)
+        cls.results = run_experiments(audio_directory=cls.audio_directory)
 
-    def test_ten_stable_ids(self):
-        self.assertEqual(set(self.results), {f'E09-{i:02}' for i in range(10, 20)})
+    def test_fourteen_stable_ids(self):
+        self.assertEqual(set(self.results), {f'E09-{i:02}' for i in range(10, 24)})
 
     def test_bearing_ekf_geometry_and_fraction_posterior(self):
         item = self.results['E09-10']
@@ -43,7 +56,13 @@ class Chapter09ExperimentsTests(unittest.TestCase):
         self.assertAlmostEqual(item['resultant_length'], math.cos(math.pi/180))
         self.assertIsNone(item['antipodal_angle_deg'])
         self.assertEqual(item['antipodal_status'], 'undefined_antipodal_mean')
-        self.assertEqual(item['support_after_second'], [0., 1.])
+        self.assertEqual(item['support_after_first'], [0., 1.])
+        self.assertEqual(item['linear_underflow_indices_after_first'], [0])
+        np.testing.assert_allclose(item['log_weights_after_first'], [-500000., 0.], atol=1e-8)
+        np.testing.assert_allclose(item['support_after_second'], [.5, .5], atol=1e-10)
+        np.testing.assert_allclose(item['log_weights_after_second'], [-math.log(2)]*2, atol=1e-10)
+        self.assertEqual(item['explicit_zero_prior_after_update'], [0., 1.])
+        self.assertEqual(item['prior_reset_method'], 'set_prior_weights')
 
     def test_jpda_normalizer_from_product_minus_collisions(self):
         item = self.results['E09-13']
@@ -130,6 +149,108 @@ class Chapter09ExperimentsTests(unittest.TestCase):
         self.assertEqual(item['first_available_time_s'], 512/16000)
         self.assertAlmostEqual(item['first_available_time_s']-item['first_state_time_s'], 256.5/16000)
         self.assertNotEqual(item['pcm_scores']['raw_valid_rmse_deg'], item['float_scores']['raw_valid_rmse_deg'])
+        self.assertEqual(item['asset_check'], 'strict_read_only_passed')
+
+    def test_audio_scores_decode_actual_file_not_replay_pcm(self):
+        path = self.audio_directory/'array_noisy.wav'
+        with wave.open(str(path), 'rb') as reader:
+            count, channels = reader.getnframes(), reader.getnchannels()
+            data = reader.readframes(count)
+        integers = struct.unpack('<'+str(count*channels)+'h', data)
+        expected = np.array([[integers[i*channels+j]/32768 for i in range(count)]
+                             for j in range(channels)])
+        from codes.chapters.ch09.core.tracking_audio import analyze_array
+        with patch('codes.chapters.ch09.chapter09_experiments.analyze_array', wraps=analyze_array) as score:
+            actual_tracking_audio(self.audio_directory)
+        score.assert_called_once()
+        np.testing.assert_array_equal(score.call_args.args[0], expected)
+
+    def test_audio_tampering_is_rejected_without_repair(self):
+        for member in ('array_noisy.wav', 'MANIFEST.json'):
+            with self.subTest(member=member), tempfile.TemporaryDirectory() as root:
+                directory = Path(root)/'tracking_audio'
+                generate(directory)
+                path = directory/member
+                changed = bytearray(path.read_bytes()); changed[-1] ^= 1
+                path.write_bytes(changed)
+                before = {p.name: p.read_bytes() for p in directory.iterdir()}
+                with self.assertRaises(ValueError):
+                    actual_tracking_audio(directory)
+                self.assertEqual(before, {p.name: p.read_bytes() for p in directory.iterdir()})
+
+    def test_small_set_tiny_positive_cutoff_and_power_status(self):
+        cutoff = 1e-200
+        empty = small_set_distances([], [30], cutoff=cutoff, order=2)
+        self.assertEqual(empty['ospa'], cutoff)
+        self.assertAlmostEqual(empty['gospa_alpha2']/cutoff, 1/math.sqrt(2))
+        near = small_set_distances([0], [cutoff/2], cutoff=cutoff, order=2)
+        self.assertEqual(near['ospa'], cutoff/2)
+        self.assertEqual(near['gospa_alpha2'], cutoff/2)
+        self.assertIsNone(near['matched_capped_cost_power'])
+        self.assertEqual(near['matched_capped_cost_power_status'], 'positive_power_underflow')
+        exact_zero = small_set_distances([0], [0], cutoff=cutoff, order=2)
+        self.assertEqual(exact_zero['matched_capped_cost_power'], 0)
+        self.assertEqual(exact_zero['matched_capped_cost_power_status'], 'representable')
+        with self.assertRaises(ValueError):
+            small_set_distances([0], [math.ulp(0.)], cutoff=180, order=2)
+
+    def test_correlated_observations_fraction_posterior(self):
+        item = self.results['E09-20']
+        rho = F(9, 10)
+        determinant = 4-(1+rho)**2
+        gain = (1-rho)/determinant
+        self.assertEqual(gain, F(10, 39))
+        np.testing.assert_allclose(item['joint_gain'], [float(gain)]*2)
+        self.assertAlmostEqual(item['joint_mean'], float(2*gain))
+        self.assertAlmostEqual(item['joint_variance'], float(1-2*gain))
+        self.assertAlmostEqual(item['wrong_independent_mean'], 2/3)
+        self.assertAlmostEqual(item['wrong_independent_variance'], 1/3)
+        self.assertGreater(item['joint_variance'], item['wrong_independent_variance'])
+
+    def test_full_time_bearing_scale_ambiguity_and_exact_rank(self):
+        item = self.results['E09-21']
+        np.testing.assert_array_equal(item['bearings_deg'], item['scaled_bearings_deg'])
+        np.testing.assert_allclose(item['ranges_m'], [math.sqrt(5), math.sqrt(8), math.sqrt(13)])
+        np.testing.assert_array_equal(item['scaled_ranges_m'], 2*np.array(item['ranges_m']))
+        rows = [[2, -1, 0, 0], [2, -2, 2, -2], [2, -3, 4, -6]]
+        np.testing.assert_array_equal(item['stacked_jacobian_without_positive_row_denominators'], rows)
+        # Exact nonzero 3x3 minor (columns0,1,3) proves rank>=3; one
+        # independent null direction proves rank<=3 without float SVD.
+        a,b,c = [[F(row[j]) for j in (0,1,3)] for row in rows]
+        determinant = a[0]*(b[1]*c[2]-b[2]*c[1])-a[1]*(b[0]*c[2]-b[2]*c[0])+a[2]*(b[0]*c[1]-b[1]*c[0])
+        self.assertEqual(determinant, 4)
+        self.assertEqual(item['stacked_rank'], 3)
+        self.assertTrue(all(sum(F(v)*u for v,u in zip(row, [1,2,1,0])) == 0 for row in rows))
+        np.testing.assert_array_equal(item['stacked_null_product'], [0,0,0])
+
+    def test_empty_observation_bernoulli_differs_from_poisson_phd(self):
+        item = self.results['E09-22']
+        r = F(4,5)
+        for case, detection, posterior in zip(item['cases'], [F(9,10), F(1,10)], [F(2,7), F(18,23)]):
+            numerator = r*(1-detection)
+            denominator = (1-r)+numerator
+            self.assertEqual(numerator/denominator, posterior)
+            self.assertAlmostEqual(case['empty_observation_probability'], float(denominator))
+            self.assertAlmostEqual(case['bernoulli_posterior_existence'], float(posterior))
+            self.assertAlmostEqual(case['different_poisson_phd_posterior_mass'], float(numerator))
+
+    def test_late_observation_joint_conditioning_replay_and_wrong_time(self):
+        item = self.results['E09-23']
+        # Independent inverse of S=[[3,2],[2,4]], determinant8.
+        inverse = [[F(1,2), F(-1,4)], [F(-1,4), F(3,8)]]
+        cross = [F(2),F(3)]
+        gain = [sum(cross[i]*inverse[i][j] for i in range(2)) for j in range(2)]
+        self.assertEqual(gain, [F(1,4), F(5,8)])
+        mean = 2*gain[0]-gain[1]
+        variance = 3-sum(g*x for g,x in zip(gain,cross))
+        self.assertEqual((mean, variance), (F(-1,8), F(5,8)))
+        self.assertAlmostEqual(item['joint_mean'], float(mean))
+        self.assertAlmostEqual(item['joint_variance'], float(variance))
+        self.assertAlmostEqual(item['chronological_replay'][-1]['mean'], float(mean))
+        self.assertAlmostEqual(item['chronological_replay'][-1]['variance'], float(variance))
+        self.assertEqual(item['drop_late_observation'], {'mean': -.75, 'variance': .75})
+        self.assertAlmostEqual(item['wrong_current_time_update']['mean'], 3/7)
+        self.assertAlmostEqual(item['wrong_current_time_update']['variance'], 3/7)
 
 
 if __name__ == '__main__':

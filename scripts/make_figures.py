@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""生成教程插图（图 1～25、33～36、40～60；图 26～32、37～39 见 make_aec_figures.py）。
+"""生成教程插图（图 1～25、33～36、40～61；图 26～32、37～39 见 make_aec_figures.py）。
 
 用法（仓库根目录）：
-    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～60 → figures/
+    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～61 → figures/
 """
 from pathlib import Path
 import hashlib
@@ -4159,6 +4159,90 @@ def fig_mask_representation():
         'AudioManifestDigest': hashlib.sha256((asset_root/'MANIFEST.json').read_bytes()).hexdigest()})
 
 
+def fig_tracking_information():
+    """Two different information limits, using exact specified toy models.
+
+    The stationary-observer example has a scaling symmetry at every time.
+    The correlated measurements refer to the same scalar state, not two
+    consecutive moving states. No audio or Monte Carlo results are implied.
+    """
+    times = np.linspace(0, 2, 101)
+    positions = np.column_stack((1+times, np.full_like(times, 2)))
+    bearings = np.rad2deg(np.arctan2(positions[:, 0], positions[:, 1]))
+    rho = np.linspace(0, 1, 101)
+    posterior_variance = (1+rho)/(3+rho)
+    fig = plt.figure(figsize=(9.2, 9.5), layout='constrained')
+    grid = fig.add_gridspec(2, 2, height_ratios=(1.1, 1))
+    geometric, angular = [fig.add_subplot(grid[0, index]) for index in range(2)]
+    uncertainty = fig.add_subplot(grid[1, :])
+    geometric.plot(positions[:, 0], positions[:, 1], color=C_BLUE, lw=2,
+                   label='p(t)=(1+t, 2) m')
+    geometric.plot(2*positions[:, 0], 2*positions[:, 1], color=C_ORANGE,
+                   lw=2, ls='--', label='2p(t)=(2+2t, 4) m')
+    for index, t in ((0, 0), (50, 1), (100, 2)):
+        x, y = positions[index]
+        geometric.plot([0, 2*x], [0, 2*y], ':', color='#999999', lw=1)
+        for scale, color in ((1, C_BLUE), (2, C_ORANGE)):
+            geometric.scatter([scale*x], [scale*y], c=color, s=34, zorder=5)
+            geometric.annotate(f'{t} s', (scale*x, scale*y), xytext=(0, 7),
+                               textcoords='offset points', ha='center', color=color)
+    geometric.scatter([0], [0], c='black', marker='^', s=65, label='固定阵列中心')
+    geometric.set(xlabel='x (m)', ylabel='y (m)', xlim=(-.3, 6.5), ylim=(-.25, 4.9))
+    geometric.set_aspect('equal')
+    geometric.set_title('(a) 位置与速度一起放大2倍')
+    geometric.legend(loc='lower right', fontsize=FS_SMALL)
+    geometric.grid(ls=':', alpha=.4)
+    angular.plot(times, bearings, color=C_BLUE, lw=2.5, label='原轨迹方位')
+    angular.plot(times, np.rad2deg(np.arctan2(2*positions[:, 0], 2*positions[:, 1])),
+                 color=C_ORANGE, lw=1.8, ls='--', label='放大轨迹方位（完全重合）')
+    angular.set(xlabel='时间 (s)', ylabel='从+y向+x的方位角 (°)',
+                xlim=(0, 2), ylim=(22, 64))
+    angular.set_title('(b) 全时间方向相同，距离不同')
+    angular.legend(loc='upper left', fontsize=FS_SMALL)
+    angular.grid(ls=':', alpha=.4)
+    uncertainty.plot(rho, posterior_variance, color=C_BLUE, lw=2,
+                     label=r'按真实相关性计算：$P^+=(1+\rho)/(3+\rho)$')
+    uncertainty.axhline(1/3, color=C_RED, lw=1.6, ls='--',
+                        label='误把两次观测当独立：方差1/3')
+    uncertainty.scatter([.9], [19/39], c=C_BLUE, s=45, zorder=5)
+    uncertainty.annotate('ρ=0.9：19/39≈0.4872', xy=(.9, 19/39),
+                         xytext=(.52, .425), arrowprops=dict(arrowstyle='->', color=C_BLUE))
+    uncertainty.scatter([1], [.5], facecolors='white', edgecolors=C_BLUE,
+                        s=75, linewidths=1.8, zorder=6)
+    uncertainty.annotate('ρ→1：方差→1/2\n退化为一份证据', xy=(1, .5),
+                         xytext=(.58, .515), arrowprops=dict(arrowstyle='->', color=C_BLUE))
+    uncertainty.set(xlabel='两次观测噪声的相关系数 ρ（无量纲）',
+                    ylabel='后验方差（与先验同单位）', xlim=(0, 1.04), ylim=(.30, .60))
+    uncertainty.set_title('(c) 同一标量状态：先验方差1，观测各方差1')
+    uncertainty.legend(loc='upper left', fontsize=FS_SMALL)
+    uncertainty.grid(ls=':', alpha=.4)
+    fig.suptitle('图61  更多方向或更多窗口，不一定增加独立信息', fontsize=FS_SUP)
+    fig.supxlabel('上排：瞬时方位，忽略传播时延；固定阵列，未知常速度。下排：同一状态联合观测。\n'
+                  '确定性解析算例；ρ=1只画单证据极限，不对奇异矩阵直接求逆；不是声学性能实验。',
+                  fontsize=FS_SMALL)
+    save(fig, 'fig61_tracking_information.png')
+    report = {
+        'schema_version': 1, 'script_sha256': source_script_digest(),
+        'scope': 'instantaneous bearing geometry ignoring propagation delay, and Gaussian conditioning; not receiver-time audio, a benchmark or repeated sampling',
+        'bearing_convention': 'atan2(x,y), zero on +y and positive toward +x',
+        'stationary_observer_xy_m': [0, 0],
+        'initial_position_m': [1, 2], 'velocity_m_s': [1, 0], 'comparison_scale': 2,
+        'time_s': times.tolist(), 'positions_xy_m': positions.tolist(),
+        'bearing_deg': bearings.tolist(),
+        'jacobian_rows_without_positive_denominators': [[2, -1, 0, 0], [2, -2, 2, -2], [2, -3, 4, -6]],
+        'scale_null_direction': [1, 2, 1, 0],
+        'same_scalar_state': {'prior_mean': 0, 'prior_variance': 1, 'observations': [1, 1],
+                              'measurement_variances': [1, 1], 'rho': rho.tolist(),
+                              'posterior_mean': (2/(3+rho)).tolist(),
+                              'posterior_variance': posterior_variance.tolist(),
+                              'rho_0_9_exact_mean': '20/39', 'rho_0_9_exact_variance': '19/39',
+                              'independent_assumption_variance': 1/3,
+                              'rho_1': 'single-measurement limit; singular batch inverse not performed'},
+    }
+    target = CODE_CHAPTERS/'ch09/reports/figure61_tracking_information.json'
+    target.write_text(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False)+'\n')
+
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -4212,6 +4296,7 @@ def main():
     fig_affine_projection_learning()
     fig_mint_noise_tradeoff()
     fig_mask_representation()
+    fig_tracking_information()
     print("ALL DONE")
 
 

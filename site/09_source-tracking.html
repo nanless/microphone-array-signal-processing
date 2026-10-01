@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 9 章 · 声源追踪 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="35ac0a570bc8"><style>
+<meta name="source-digest" content="46b942113f9d"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -44,7 +44,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{display:block;margin:20px auto;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
-@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}}
+@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}.tracking-readable-table th,.tracking-readable-table td{min-width:8em}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
@@ -123,6 +123,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-u-05ecd6b959">E09-17：改变角度单位，滤波结果应怎样变化</a></li>
 <li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-u-3de0d2f3f0">E09-18：两次半步为什么不能只加两个 Q</a></li>
 <li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-u-7ece4ea50e">E09-19：实际波形链的时间与评分分母</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-u-39b4692b75">E09-20：两条相关观测有多少独立信息？</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-u-69c7e3d1a6">E09-21：更多方位帧为什么仍不能确定距离尺度？</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-u-2d50ff5620">E09-22：空观测怎样改变目标存在概率？</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-u-99ab6e29dd">E09-23：迟到观测应回放、丢弃还是当作当前观测？</a></li>
 <li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-u-b51bd23596">新练习的实现边界</a></li>
 </ul>
 <div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a></div>
@@ -190,6 +194,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-u-05ecd6b959">E09-17：改变角度单位，滤波结果应怎样变化</a></li>
 <li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-u-3de0d2f3f0">E09-18：两次半步为什么不能只加两个 Q</a></li>
 <li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-u-7ece4ea50e">E09-19：实际波形链的时间与评分分母</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-u-39b4692b75">E09-20：两条相关观测有多少独立信息？</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-u-69c7e3d1a6">E09-21：更多方位帧为什么仍不能确定距离尺度？</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-u-2d50ff5620">E09-22：空观测怎样改变目标存在概率？</a></li>
+<li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-u-99ab6e29dd">E09-23：迟到观测应回放、丢弃还是当作当前观测？</a></li>
 <li>&nbsp;&nbsp;<a href="09_source-tracking.html#sec-u-b51bd23596">新练习的实现边界</a></li>
 </ul></nav></details>
 <blockquote>
@@ -249,6 +257,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>例如阵列中心在原点，声源在 $(1\ \mathrm m,2\ \mathrm m)$ 时，本书方位角是 $\operatorname{atan2}(1,2)\approx26.565^\circ$；交换参数得到 $\operatorname{atan2}(2,1)\approx63.435^\circ$，那是另一套零点约定。两者都能描述位置，但定位、追踪与波束控制必须先统一约定，不能直接互传。</p>
 <p>单个固定阵列的一次方位观测不能确定距离。令阵列中心为 $(0,0)$，声源在 $(1\ \mathrm m,1\ \mathrm m)$ 与 $(2\ \mathrm m,2\ \mathrm m)$ 时都得到 $45^\circ$；沿同一射线缩放位置不会改变 <code>atan2</code> 的结果。</p>
 <p>连续仅测方位观测只有在已知运动约束和足够的阵列—声源相对运动使系统可观测时，才可能逐步估计距离。否则，即使用扩展卡尔曼滤波（Extended Kalman Filter，EKF）或无迹卡尔曼滤波（Unscented Kalman Filter，UKF），径向位置仍不能由滤波器自行产生。</p>
+<p>在忽略传播时延的瞬时方位模型中，固定阵列观测未知常速度目标时，把初始位置与速度同时乘同一个正数，会在整个时间轴上保持方位相同；<a href="#e09-21">E09-21</a>给出完整三时刻反例。增加观测帧数可以减小已可观测方向的误差，但不能消除该模型的尺度歧义。</p>
 <p>位置级追踪通常还要引入已知中心不同的多个阵列、到达时间差（Time Difference of Arrival，TDOA）或距离观测，或利用满足可观测条件的移动阵列轨迹。<a href="https://doi.org/10.1080/00207178908559665" title="citation">仅测方位可观测性分析</a>。</p>
 <p>EKF 用该观测函数的雅可比做一阶线性化。UKF 的另一种办法是：在当前估计的均值周围选出少量代表性状态点，把每个点分别代入原来的非线性观测函数，再由变换后的点重算均值和协方差。这些代表性点称为 sigma 点，并不是另外观测到的声源。</p>
 <p>标准对称或缩放无迹变换的 UKF 通常传播 $2L+1$ 个 sigma 点；对位置—速度状态 $[x,y,\dot x,\dot y]^\top$，状态维数 $L=4$，因此是 9 个点。单纯方位—角速度状态只有 $L=2$，对应 5 个点。也有单纯形、球面径向等减少点数的变体，不能把 $2L+1$ 写成所有 UKF 的定义。</p>
@@ -260,7 +269,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 \vec s_t&=\mathbf F\vec s_{t-1}+\vec v_t,\\
 \vec z_t&=\mathbf H\vec s_t+\vec w_t.
 \end{aligned}\tag{9-1}$$</p>
-<p>其中 $\mathbf F\in\mathbb R^{d\times d}$ 是运动转移矩阵，$\mathbf H\in\mathbb R^{p\times d}$ 把 $d$ 维状态映射到 $p$ 维观测；$\vec v_t$、$\vec w_t$ 分别是过程噪声、观测噪声。本节假定两者零均值、跨时刻为白噪声，彼此及与初始估计误差不相关。于是 $\mathbf Q=E[\vec v_t\vec v_t^\top]$ 与 $\mathbf R=E[\vec w_t\vec w_t^\top]$ 才分别是 $d\times d$、$p\times p$ 协方差。若噪声有非零均值，应显式建模偏置；若存在相关噪声，下面被省略的交叉协方差项需要恢复。</p>
+<p>其中 $\mathbf F\in\mathbb R^{d\times d}$ 是运动转移矩阵，$\mathbf H\in\mathbb R^{p\times d}$ 把 $d$ 维状态映射到 $p$ 维观测；$\vec v_t$、$\vec w_t$ 分别是过程噪声、观测噪声。</p>
+<p>本节假定两者零均值、跨时刻为白噪声，彼此及与初始估计误差不相关。于是 $\mathbf Q=E[\vec v_t\vec v_t^\top]$ 与 $\mathbf R=E[\vec w_t\vec w_t^\top]$ 才分别是 $d\times d$、$p\times p$ 协方差。</p>
+<p>若噪声有非零均值，应显式建模偏置；若存在相关噪声，下面被省略的交叉协方差项需要恢复。</p>
 <p>$\hat{\vec s}_t^-$ 和 $\mathbf P_t^-$ 表示本次观测前的预测均值、误差协方差；不带减号的 $\hat{\vec s}_t,\mathbf P_t$ 表示更新后结果。$\mathbf P$ 为 $d\times d$，增益 $\mathbf K$ 为 $d\times p$。在这些二阶统计条件下，线性递推具有线性最小均方误差意义；进一步假定初态与噪声联合高斯，后验由均值和协方差完整描述，递推也是贝叶斯条件均值。经典起点见 <a href="https://people.duke.edu/~hpgavin/SystemID/References/Kalman-JBE-1960.pdf" title="citation">Kalman 1960 原文的 Optimal Estimates 与 Theorem 3</a>。</p>
 <p>协方差元素的单位由对应状态分量相乘决定。例如 $[\theta,\dot\theta]^\top$ 的对角线单位分别是 $\mathrm{deg}^2$ 和 $(\mathrm{deg/frame})^2$。若定位器只输出角度，$\vec z_t$ 退化为标量 $\theta_t^{obs}$，$\vec w_t$ 是观测噪声，$\mathbf R$ 也退化为角度方差。</p>
 <p>三分量角运动状态 $[\theta,\dot\theta,\ddot\theta]^\top$ 使用 $\mathbf H=[1,0,0]$，不是三维空间位置状态。下文两分量状态 $[\theta,\dot\theta]^\top$ 使用 $\mathbf H=[1,0]$；若速度以度/帧计，角度—速度互协方差的单位是度²/帧。</p>
@@ -304,7 +315,8 @@ r&=b\bmod360^\circ,\\
 \operatorname{wrap}_{180}(\alpha)&=r-180^\circ.
 \end{aligned}\tag{9-7}$$</p>
 <p>并在第 4 步使用 $\operatorname{wrap}_{180}(\theta_t^{obs}-\mathbf H\hat{\vec s}_t^-)$。预测和更新完成后，还应把状态中的角度分量按式(9-7)映射回同一表示区间；角速度等非角度分量不做环绕。</p>
-<p>浮点实现先把输入角度映射到规范区间，再作差并环绕，避免两个很大的等价角度相减时丢失小角差。这个操作没有把局部高斯模型变成任意圆周分布模型：后验跨越多个方向或接近对跖歧义时，应保留多峰或圆统计表示。</p>
+<p>式(9-7)定义精确的模运算。浮点实现先把输入角度映射到规范区间，再作差并环绕；已在区间内的小角度应保持原值，不能因先加180°而被舍入成零。大角度的输入本身若已丢失精细角差，环绕也不能恢复它。</p>
+<p>这个操作没有把局部高斯模型变成任意圆周分布模型：后验跨越多个方向或接近对跖歧义时，应保留多峰或圆统计表示。</p>
 <p>例如预测为 $+179^\circ$、观测为 $-179^\circ$，直接相减得到 $-358^\circ$，最短圆周角差却是 $+2^\circ$。不做环绕会让滤波器沿错误方向大幅更新，门控也可能把正确观测判成野点。</p>
 <p>若设备只搜索一个不跨边界的有限扇区，则应使用该扇区的边界模型，不能把 $-180^\circ$ 与 $+180^\circ$ 自动视为相邻。</p>
 <p>式(9-6)便于手算；浮点实现可使用数值上更稳健的 Joseph 形式</p>
@@ -396,7 +408,7 @@ k_*&=\frac{P^-}{P^-+R}.
 <p>算例 9-1 说明了单步卡尔曼递推。下表比较常见单目标追踪方法的假设、计算量和适用条件。</p>
 <p>α-β / α-β-γ 滤波器采用固定更新增益，因而在线更新可以不反复求解 Riccati 递推。如果模型、采样周期和噪声统计恒定，且固定增益取为对应卡尔曼滤波的稳态增益，它可以等价于该模型下的稳态卡尔曼滤波。</p>
 <p>经验选取的固定增益不保证这种最优性；模型或噪声条件变化时，固定增益也不会自行重新适配。α-β 的稳态关系见 <a href="https://doi.org/10.1155/2012/870890" title="citation">Ekstrand, <em>Some Aspects on Filter Design for Target Tracking</em>, §9.1</a>；α-β-γ 的增益稳定性和优化条件见 <a href="https://doi.org/10.9746/sicetr1965.38.361" title="citation">Kosuge 与 Ito, <em>Stability of an α-β-γ Filter and Optimal Gains</em>, 2002</a>。</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tracking-readable-table">
 <thead>
 <tr>
 <th scope="col">方法</th>
@@ -513,7 +525,8 @@ P_j^0&=\sum_i\omega_{i|j}
 a_t^{(i)}&=w_{t-1}^{(i)}g(z_t\mid x_t^{(i)}),\\
 w_t^{(i)}&=\frac{a_t^{(i)}}{\sum_j a_t^{(j)}}.
 \end{aligned}\tag{9-17}$$</p>
-<p>非均匀旧权重不能丢掉；一般提议分布还要乘状态转移密度与提议密度之比。E09-07 展示两次观测的差别。实际计算使用对数权重，归一化只在正先验支持上进行；先验为零的粒子不能仅因离新观测更近而重新获得质量。</p>
+<p>非均匀旧权重不能丢掉；一般提议分布还要乘状态转移密度与提议密度之比。E09-07 展示两次观测的差别。</p>
+<p>实际计算持续保存对数权重，每次加上本次对数似然后归一化。线性显示中一个很小的正权重可能下溢成0，但其有限对数权重仍属于支持集；不能下一帧再把这个显示值当作数学零先验。显式设为零的先验和重采样后被丢弃的候选则没有保留质量，两者区别见 E09-12。</p>
 <p>设本帧 10 个粒子的角度猜测（单位：度）为：</p>
 <p>$$\begin{aligned}
 (x_1,\ldots,x_5)&=(25,27,28,30,30),\\
@@ -765,7 +778,7 @@ S&=\sum_iw_i\sin\phi_i,\\
 <span id="sec-4" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-9-3">9.3 多目标追踪</h2>
 <h3 id="sec-9-3-1">9.3.1 数据关联与目标数</h3>
 <p>多目标追踪需要同时解决观测与轨迹的<strong>数据关联</strong>，并估计当前的<strong>声源数量</strong>。</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tracking-readable-table">
 <thead>
 <tr>
 <th scope="col">方法族</th>
@@ -877,8 +890,9 @@ D_t(x)=[1-p_D(x)]D_t^-(x)\\
 <p>该项把最短角差代入普通高斯密度，再与每度 $1/360$ 的均匀项混合。当标准差远小于180°时，高斯落在最短角区间外的质量很小；对任意大的标准差，它在该区间的积分小于1，混合系数不能再直接解释为严格圆周生成模型的杂波概率。因此它是窄角误差的教学近似，不是通用的归一圆周高斯模型。严格宽分布模型须另选环绕正态、归一截断密度或其他圆分布，连同参数含义一起验证。</p>
 <p>联合示例用 <code>.venv/bin/python -m codes.chapters.ch00.cross_chapter.ch06_09_baselines</code> 运行，测试见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_wpe_sep_track.py"><code>tests/test_codes_aec_wpe_sep_track.py</code></a>。测试覆盖 $179^\circ$ 与 $-179^\circ$ 的最短新息、缺测时角度方差增长、Joseph 更新后的对称半正定性、远距离高置信观测的对数权重、退化权重的系统重采样，以及对称后验下未定义的圆周均值。</p>
 <p>教学 Kalman 类的过程噪声矩阵 $Q$ 已按一次预测间隔离散化；若 <code>dt</code> 改变，不能继续照搬同一个 $Q$。粒子后验的圆周合向量接近零时，代码会明确报错，而不是返回由浮点残差决定的任意角度。</p>
+<p>这些教学接口采用float64，有限输入不保证所有中间运算都受支持。对已检测到的正方差或概率支持丢失，要安全计算、保留对数状态或明确报错，不能把数值下溢解释为确定状态或零概率；合法的零过程噪声与半正定协方差仍应接受。</p>
 <p>如何重算 $Q$ 取决于过程噪声模型，练习 E09-04 比较两种不同定义。粒子重采样阈值则按有效粒子数的同一尺度指定：<code>resample_if_needed()</code> 接受 $[0,N]$ 内有限实数，0 表示关闭，默认是 $N/2$；布尔值、数组、负数、超过粒子数或非有限值均报错，且不改变粒子和随机数状态。</p>
-<p>设备只搜索有限扇区时不能把两个扇区端点自动接成相邻方向；还需测试迟到/乱序观测、长缺测、错误时间戳、野点门控、目标交叉、轨迹出生/确认/删除、ID 重用和消息超时。无有效观测时只预测并传播协方差，超过有效期后回到搜索模式，不能把外推方向当作新观测。</p>
+<p>设备只搜索有限扇区时不能把两个扇区端点自动接成相邻方向；还需测试迟到/乱序观测、长缺测、错误时间戳、野点门控、目标交叉、轨迹出生/确认/删除、ID 重用和消息超时。<a href="#e09-23">E09-23</a>用同一随机游走比较按原时刻回放、丢弃迟到观测与错误的当前时刻更新。无有效观测时只预测并传播协方差，超过有效期后回到搜索模式，不能把外推方向当作新观测。</p>
 <h3 id="sec-u-b70bbe3259">两目标交叉、短暂缺测与控制限速</h3>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/tracking_crossing_dropout_demo.py"><code>tracking_crossing_dropout_demo.py</code></a> 使用确定的角度观测，不生成语音或设备录音。为便于手算，每步间隔刻意取 1 s；两条轨迹初态分别为 $[20^\circ,+10^\circ/\mathrm s]$、$[60^\circ,-10^\circ/\mathrm s]$，初始协方差都是 $I$，每步过程噪声 $Q=\operatorname{diag}(0.1,0.01)$，角度观测方差为 $1\ \mathrm{deg}^2$。这些是实验指定的滤波参数，并非从真实定位器标定得到。</p>
 <p>示例在 15° 门内穷举两轨与最多两条观测的一对一配对，优先关联最多的门内观测，再选择圆周角残差平方和最小者；若代价完全相等，按轨迹和观测输入顺序决定。</p>
@@ -1083,15 +1097,17 @@ r'_m(u)&=\vec n_m(u)^\top\vec v,\\
 <p>清单中的时间格点按声源轨迹的全局时钟取样；同一行 TDOA 比较的是该时刻发出的波到两麦的传播时间，并非两麦在同一采样索引处的波形峰差。逐帧值、坐标、统一增益及各文件摘要保存在清单中。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_moving_source.py">静止解析极限和符号测试</a>独立核对<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/examples/moving_source_audio.py">生成器</a>。</p>
 <p>这里没有墙面反射、空气吸收、声源和麦克风指向性，也没有多人交叉或活动缺测。听到的音高、声像和电平变化不能直接当作某个 DOA 追踪器的准确率；若要评价追踪，还需对输出运行固定定位器，按相同时间戳比较逐帧误差和漏检，并另报波束控制滞后。真实移动录音可另按 <a href="https://www.locata.lms.tf.fau.de/tasks/" title="citation">LOCATA 官方任务说明</a>选择任务 3（静止阵列、单移动说话人）；自行逐帧评分应选择带声源位置真值的开发集，并明确录音和真值版本。</p>
 <h3 id="sec-u-666f355e22">从带噪双麦波形到定位与追踪</h3>
-<p>前一组两音调样本用于核对传播模型；下面新增的独立实验真正对波形运行定位器，再把有效观测交给 KF。两组样本不能混用评分。先调低播放音量：</p>
+<p>前一组两音调样本用于核对传播模型；下面的独立实验对波形运行定位器，再把有效观测交给 KF。两组样本不能混用评分。先调低播放音量：</p>
 <p><a href="tracking_audio/source.wav">源参考：32音调与一次静默</a><audio class="audio-sample" controls preload="none" aria-label="源参考：32音调与一次静默" src="tracking_audio/source.wav">请使用上方 WAV 链接下载。</audio></p>
 <p><a href="tracking_audio/array_noisy.wav">运动传播后的带噪双麦信号</a><audio class="audio-sample" controls preload="none" aria-label="运动传播后的带噪双麦信号" src="tracking_audio/array_noisy.wav">请使用上方 WAV 链接下载。</audio></p>
 <p>这两份都是本书数学合成 WAV，独立保存在 <code>codes/chapters/ch09/tracking_audio/</code>，不计入主清单的 109 个样本或前述移动源 3 个文件。生成、量化、参数及逐帧结果见<a href="tracking_audio/MANIFEST.json">独立清单</a>；实现见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/core/tracking_audio.py"><code>tracking_audio.py</code></a>。</p>
-<p>几何、速度、声速与本节旧模型相同。采样率16 kHz、时长2 s；源由300～3400 Hz、间隔100 Hz的32条正弦等幅相加，每条幅度为 $1/\sqrt{32}$。随机生成器为PCG64、种子9001，先生成32个独立均匀相位，再按通道次序生成两路独立高斯传感器噪声，导出前标准差.01。源首尾采用20 ms线性淡入淡出；在发射时轴.8～.82 s淡出、.82～1.08 s为零、1.08～1.10 s淡入。它是带包络的多音调，不是真实语音或白噪声。</p>
+<p>几何、速度、声速与前述传播模型相同。采样率16 kHz、时长2 s；源由300～3400 Hz、间隔100 Hz的32条正弦等幅相加，每条幅度为 $1/\sqrt{32}$。随机生成器为PCG64、种子9001，先生成32个独立均匀相位，再按通道次序生成两路独立高斯传感器噪声，导出前标准差.01。</p>
+<p>源首尾采用20 ms线性淡入淡出；在发射时轴.8～.82 s淡出、.82～1.08 s为零、1.08～1.10 s淡入。它是带包络的多音调，不是真实语音或白噪声。</p>
 <p>两文件使用同一导出增益约0.4023136344，把共同最大峰值缩至.7，再量化为16位PCM。分析从实际PCM解码，已知共同增益只用于恢复固定RMS门限的尺度；不逐帧归一化，也不借干净参考判断活动。</p>
 <p><strong>定位与门控。</strong> 每帧512点、帧移160点，完整帧数为 $\lfloor(32000-512)/160\rfloor+1=197$。先用未加窗双通道块的所有样本计算均方根（Root Mean Square，RMS）；恢复导出前尺度后，仅RMS严格大于.04才定位。对称 Hann 窗使用 <code>numpy.hanning(512)</code>；调用 <code>gcc_phat(ch1,ch0)</code>，搜索时差限制为 $.1/343$ s，采用抛物线峰值插值。GCC-PHAT沿用第4章广义互相关相位变换的定义。</p>
 <p>按 $\tau_{1-0}=t_1-t_0$，当前几何的远场转换为 $\theta=\arcsin(-343\tau_{1-0}/.1)$。反正弦自变量超出 $[-1,1]$ 时记缺测，不强制裁成±90°。定位和RMS门控都不读取真值；有限距离与窗内运动意味着单一时差、远场角转换存在近似误差。</p>
-<p><strong>滤波取点。</strong> 首个有效方向初始化状态 $[z,0]^\top$，$P=\operatorname{diag}(4,400)$；之后每10 ms先预测，有观测才更新。角度测量方差为4度²，连续白角加速度强度为100度²/秒³，按实际.01 s重新构造 $Q$。这组 $R,Q$ 是教学指定值；重叠帧观测相关，不能把输出协方差直接解释为实测置信区间覆盖率。</p>
+<p><strong>滤波取点。</strong> 首个有效方向初始化状态 $[z,0]^\top$，$P=\operatorname{diag}(4,400)$；之后每10 ms先预测，有观测才更新。角度测量方差为4度²，连续白角加速度强度为100度²/秒³，按实际.01 s重新构造 $Q$。</p>
+<p>这组 $R,Q$ 是教学指定值；重叠帧观测相关，不能把输出协方差直接解释为实测置信区间覆盖率。<a href="#e09-20">E09-20</a>手算把相关证据误当独立证据时的方差变化。</p>
 <p><strong>状态与可用时刻。</strong> 帧起点为零起始样本 $n_0$ 时，状态对应接收窗中心；最早可用时刻采用半开区间块已采齐的边界：</p>
 <p>$$\begin{aligned}
 t_{\rm state}&=\frac{n_0+255.5}{16000},\\
@@ -1101,7 +1117,7 @@ t_{\rm available}&=\frac{n_0+512}{16000},\\
 \end{aligned}\tag{9-29}$$</p>
 <p>这里尚未加入定位运算、调度和播放缓冲延迟。输出是窗中心状态，不能称为采样完成时刻的零延迟方向。真值也按接收窗中心解到阵列中心的迟滞发射时刻，再计算该发射位置的方位；不能拿同数值发射时间的位置直接评分。</p>
 <p>逐帧清单另以 <code>measurement_time_s</code> 记录<strong>本帧有效观测</strong>所属的接收窗中心；有效时它等于 <code>state_time_s</code>，缺测时为 <code>null</code>。<code>last_valid_measurement_time_s</code> 保存最近一次有效观测的中心时刻，尚无有效观测时为 <code>null</code>。<code>state_time_s</code> 始终是本帧滤波或预测状态所属时刻，<code>available_time_s</code> 是整窗采齐的最早时刻。</p>
-<p>缺测后若需计算观测龄期，应从当前 <code>state_time_s</code> 减去最近有效观测时刻，不能把状态已预测到当前时刻误当作刚收到新观测。图 44 的横轴仍采用 <code>state_time_s</code>；新增字段用于核对观测龄期，不参与图中的原有评分。</p>
+<p>缺测后若需计算观测龄期，应从当前 <code>state_time_s</code> 减去最近有效观测时刻，不能把状态已预测到当前时刻误当作刚收到新观测。图 44 的横轴仍采用 <code>state_time_s</code>；这些字段用于核对观测龄期，不参与图中的原有评分。</p>
 <p><img alt="图44 带噪移动源的波形定位与追踪" src="../figures/fig44_tracking_audio.png" onerror="this.alt+='（图缺失）'" /></p>
 <p>图44使用上述同一组实际PCM波形处理结果：（a）比较传播真值、有效GCC方向和滤波输出；（b）显示状态时刻的角方差，缺测时只传播预测；（c）比较同一发射事件的真值时差与GCC亚采样峰，单位为采样点，左侧声源的通道1−通道0时差为正。三图横轴都是接收窗中心 <code>state_time</code>，灰区标记本次RMS门产生的缺测。</p>
 <p>图中的真值用于评分与显示，不参与定位、RMS门或KF更新。“滤波输出”含初始化帧、有效观测更新后的状态，以及缺测时的预测状态，清单逐帧保存取点类型。图中方差没有进行覆盖率校准，不能直接当作实测置信带。</p>
@@ -1166,7 +1182,7 @@ t_{\rm available}&=\frac{n_0+512}{16000},\\
 </li>
 </ol>
 <h3 id="sec-u-9d29271e5a">可运行练习的入口与约定</h3>
-<p>本章保留 E09-01～E09-09，并用 E09-10～E09-19 补充非线性变换、关联不确定度、集合指标与实际波形处理。</p>
+<p>本章保留 E09-01～E09-19；E09-20～E09-23分别检查相关观测、距离尺度、空观测存在概率与迟到观测。</p>
 <p>E09-01～E09-05 运行 <code>.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_enhancement</code>，源码见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_enhancement.py"><code>exercises_enhancement.py</code></a>；E09-06 使用本节的交叉实验脚本。这些练习使用方向数值，不通过左右声道音量模拟阵列定位；后者的声像不能代替麦克风传播时延模型。</p>
 <h3 id="sec-u-87e2fb92df">E09-01：把“每帧”改为“每秒”</h3>
 <p>初态 $[30^\circ,5^\circ/\mathrm s]$，$P=\operatorname{diag}(4,1)$；每 0.1 s 预测一次，采用已为此间隔离散化的 $Q=\operatorname{diag}(0.1,0.01)$。连续两次缺测，求状态和协方差。</p>
@@ -1200,7 +1216,7 @@ Q_c&=q\int_0^{\Delta t}\begin{bmatrix}u^2&u\\u&1\end{bmatrix}du\\
 <h3 id="sec-u-f90dd825f2">E09-06：交叉时为什么位置对了，身份仍可能错？</h3>
 <p>两轨都预测 $40^\circ$，先到的观测是 B 的 $39^\circ$，后到的是 A 的 $41^\circ$。按本节最小代价关联的并列代价规则分配，求两种一对一配对的平方残差和、错配数，以及无标签观测集对真值集的 OSPA。再从初态 $[20^\circ,10^\circ/\mathrm s]$、$P_0=I$ 出发，只预测两次且每步采用 $Q=\operatorname{diag}(0.1,0.01)$、$\Delta t=1$ s；求角度方差和最大 $5^\circ/\mathrm s$ 的波束控制角度。</p>
 <p><strong>解答</strong>：两个配对的代价均为 $1^2+1^2=2\ \mathrm{deg}^2$，按给定输入顺序会把 B 的观测配给 A、A 的观测配给 B，产生两次标签错配。观测集与真值集均为 $\{39^\circ,41^\circ\}$，因此无标签观测集 OSPA 为 0；这不表示滤波轨迹无误差或身份正确。</p>
-<p>两次无观测预测的角度方差为 $2.10,5.21\ \mathrm{deg}^2$；方向预测为 $30^\circ,40^\circ$，限速后的波束方向为 $25^\circ,30^\circ$。本题没有模拟说话人出生、删除、真实声场与设备时延，不能把单次并列代价当作方法的普遍错误率。</p>
+<p>两次无观测预测的角度方差为 $2.10,5.21\ \mathrm{deg}^2$；方向预测为 $30^\circ,40^\circ$，限速后的波束方向为 $25^\circ,30^\circ\text{。}$本题没有模拟说话人出生、删除、真实声场与设备时延，不能把单次并列代价当作方法的普遍错误率。</p>
 <h3 id="sec-u-e007faae85">E09-07：第二次观测为什么还要乘旧权重？</h3>
 <p>两个静止粒子为 $0^\circ,10^\circ$，初始权重各 0.5。两次条件独立的观测恰好都为 $0^\circ$，标准差均为 $10^\circ$；中间不重采样，不加入杂波或过程噪声。计算两次后验，并比较每次直接覆盖权重的错误实现。</p>
 <p><strong>解答</strong>：本题采用状态转移作为提议分布，即 bootstrap 粒子滤波。令 $g(z_t\mid x_t^{(i)})$ 表示第 $i$ 个粒子对本次观测的似然，使用前文式(9-17)保留旧权重。</p>
@@ -1258,7 +1274,7 @@ Q_c&=q\int_0^{\Delta t}\begin{bmatrix}u^2&u\\u&1\end{bmatrix}du\\
 </table></div>
 <p>新模式 1 的分歧项可以直接算为 $(27/29)(0-20/29)^2+(2/29)(10-20/29)^2$。另一种独立核算是“二阶矩减均值平方”：新模式 1 的 $P_1^0=(27/29)(1+0^2)+(2/29)(4+10^2)-(20/29)^2$。两个算法都给 $6415/841$。只保留 $35/29$ 会丢掉模型间的不确定性；混合方差比两项原方差都大，并不矛盾。</p>
 <p><strong>第 3 步：把交互与观测更新分开。</strong> 完整 IMM 接下来从各自的 $(x_j^0,P_j^0)$ 出发，使用对应运动模型预测并作观测更新。假设这两套更新额外给出的观测似然为 $L_1=0.2,L_2=0.8$，则未归一新权重为 $[29/200,44/200]$，归一后 $\mu^+=[29/73,44/73]\approx[0.397260,0.602740]$。这些似然是题设，用来复算贝叶斯权重；本题没有指定状态转移、过程噪声或观测值，不能冒称已经运行了两套 KF。最终状态融合也要保留更新后均值之间的外积项。</p>
-<p><strong>边界与实现检查。</strong> 若 $T=I$，每个模型只接收自己的旧状态，交互退化为不混合；若某个 $c_j=0$，这个目的模式不可达，条件概率无定义，需禁用或按另行声明的初始化策略处理。不同状态维度的静止、匀速和加速模型不能直接平均，须先定义状态映射与被补维度的不确定度。接近 $-180^\circ/180^\circ$ 时，也不能把两个原始角度直接算术平均；需在一致局部角度图中展开，或采用适当的圆统计混合。</p>
+<p><strong>边界与实现检查。</strong> 若 $T=I$，每个模型只接收自己的旧状态，交互退化为不混合；若某个 $c_j=0\text{，}$这个目的模式不可达，条件概率无定义，需禁用或按另行声明的初始化策略处理。不同状态维度的静止、匀速和加速模型不能直接平均，须先定义状态映射与被补维度的不确定度。接近 $-180^\circ/180^\circ$ 时，也不能把两个原始角度直接算术平均；需在一致局部角度图中展开，或采用适当的圆统计混合。</p>
 <p>固定 <a href="https://github.com/rlabbe/filterpy/blob/3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33/filterpy/kalman/IMM.py">FilterPy <code>IMM.py</code></a> 的 <code>predict()</code> 在传播前计算混合初值，<code>_compute_mixing_probabilities()</code> 实际执行 <code>mu @ M</code>；其类参数说明中的转移方向文字与这条赋值不一致。接入时应以明确约定和非对称矩阵小例核验，不可仅依据参数说明再转置矩阵。本书例题采用上述行转移约定。</p>
 <p>固定版本的实际调用还存在无观测 <code>predict()</code> 总体混合权重与新模式先验不一致的边界；研究记录将上游原行为与独立目标计算分开，不修改上游源码，见<a href="research/01_spatial_and_tracking.html#tracking-upstream-audit">追踪实现核查</a>。</p>
 <p>本题运行入口为 <code>.venv/bin/python -m codes.chapters.ch00.cross_chapter.enhancement_structure_exercises</code>，见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/enhancement_structure_exercises.py">原创复算代码</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_enhancement_structure.py">独立测试</a>。测试用有理数二阶矩核对方差，另检查全概率下的总体均值/协方差不变、恒等转移和不可达模式。它验证交互算术，不验证真实 DOA 精度或机动识别率。</p>
@@ -1295,8 +1311,12 @@ S_y&=2(0-1)^2+\tfrac12(1-1)^2\\
 <p><strong>题设。</strong> 两个粒子179°、−179°等权。计算算术均值、圆周均值、合向量长度和 ESS；再改成90°、−90°，解释结果。最后检查零先验权重能否由一次高似然观测恢复。</p>
 <p><strong>圆周计算。</strong> 第一组算术均值为0°；两个正弦抵消，余弦均为 $-\cos1^\circ$，所以圆周均值为−180°，$\rho=\cos1^\circ\approx.9998477$。第二组正弦与余弦都抵消，$\rho=0$，没有唯一均值方向。浮点实现应返回明确的未定义状态或报错，而非把残余舍入当成0°。</p>
 <p>两组的 ESS 都为 $1/(.5^2+.5^2)=2$。它只说明两粒子权重均衡，不说明分布单峰或方向可辨。即使圆周均值存在，也应按任务决定是否保留多个峰。</p>
-<p><strong>支持边界。</strong> 实现测试先令粒子为0°、10°、初始等权；用观测10°、标准差.01°且无杂波更新。理论上两权重仍为正，但第一个权重小到浮点下溢，实际存储变为 $[0,1]$。再给观测0°、标准差 $1.5\times10^{-154}$°，bootstrap 更新只能在现有正先验支持上归一，结果仍为 $[0,1]$。</p>
-<p>不能用不在支持内的0°粒子确定对数似然平移量，从而让唯一有效候选也下溢并误报“无支持”。本例用于测试数值极限，不是合理的声学噪声设定；若需要恢复已经丢失的候选，应通过明确的重生、扩散或重新初始化策略，而非擅自修改贝叶斯乘法。</p>
+<p><strong>正概率的显示下溢。</strong> 令粒子为0°、10°，初始等权；两次观测独立、标准差都为.01°、无杂波、不传播也不重采样。先观测10°，两个对数似然之差为 $-10^2/(2\times.01^2)=-500000$。归一化对数权重约为 $[-500000,0]$，两者仍有限；转为线性显示时得到 $[0,1]$，其中第一个0标记为正概率下溢。</p>
+<p>第二次观测0°时，0°粒子本次对数似然相对占优500000。累计两次证据后两个粒子的对数质量相同，所以后验为 $[.5,.5]$，归一化对数权重均为 $-\ln2$。若只存第一次的线性 $[0,1]$ 再取对数，就会错误地删去本来仍为正的候选；这不是贝叶斯乘法的要求。</p>
+<p><strong>真正的零支持。</strong> 另开一个滤波器，用 <code>set_prior_weights([0,1])</code> 明确指定先验，再给观测0°。第一个候选的对数先验是 $-\infty$，无论本次似然多高，乘积仍为0，后验保持 $[0,1]$。仅应在真正支持集上选择似然平移量。</p>
+<p>教学接口的 <code>log_weights</code> 返回对数状态副本，<code>weight_underflow_indices</code> 标出线性展示下溢位置。显式重设先验应使用 <code>set_prior_weights</code>，即使新值与当前线性展示相同，也会重新指定支持集。旧接口只兼容能检测到数值变化的 <code>weights</code> 直接编辑；同值原地写回无法表达可靠的重设，展示数组也不能充当无损状态。</p>
+<p>本例用于核查概率累计和数值支持，不代表合理的声学噪声设定。对数状态仍是float64：若有限输入导致相对对数似然超出其可表示范围，教学接口会明确报错并保留原状态，不能声称对数计算支持任意小的正标准差。</p>
+<p>重采样若已经删除候选，其恢复需要明确的提议、扩散或重新初始化策略；保存对数权重只能防止浮点显示造成的错误删除，不能创造没有采样到的候选。</p>
 <p><a id="e09-13"></a></p>
 <h3 id="sec-u-28fb5307a4">E09-13：JPDA 事件概率与关联协方差</h3>
 <p><strong>题设。</strong> 第一部分沿用 §9.3.2 的两轨预测30°、50°和观测15°、31°、48°，$p_D=.9,\sigma=3^\circ,\kappa=.01\ \mathrm{deg}^{-1}$。枚举全部联合事件；第二部分单独取一个标量轨迹，先验均值0、方差4，$R=1$，两个条件观测−2和+2，关联概率各.5且无漏检。</p>
@@ -1372,7 +1392,7 @@ P_{1|2}&=\tfrac23+\left(\tfrac25\right)^2
 <p>这个结果可以在时刻2到达时在线输出，却属于时刻1，并额外使用了一步之后的观测。它不能倒过来用于宣称时刻1当时已获得该精度，也不能在波束控制中当作时刻2的方向。</p>
 <p><a id="e09-17"></a></p>
 <h3 id="sec-u-05ecd6b959">E09-17：改变角度单位，滤波结果应怎样变化</h3>
-<p><strong>题设。</strong> 状态为 $[30^\circ,5^\circ/\mathrm s]^\top$，$P=\left[\begin{smallmatrix}4&1\\1&9\end{smallmatrix}\right]$，本次一秒间隔的 $Q=\operatorname{diag}(1,0)$；观测37°、$R=9\ \mathrm{deg}^2$。先用度计算，再把角度和角速度都改为弧度，验证后验和NIS一致。</p>
+<p><strong>题设。</strong> 状态为 $[30^\circ,5^\circ/\mathrm s]^\top$，$P=\left[\begin{smallmatrix}4&1\\1&9\end{smallmatrix}\right]$，本次一秒间隔的 $Q=\operatorname{diag}(1,0)$；观测37°、$R=9\ \mathrm{deg}^2\text{。}$先用度计算，再把角度和角速度都改为弧度，验证后验和NIS一致。</p>
 <p><strong>度制计算。</strong> 预测为 $[35,5]^\top$，预测协方差为 $\left[\begin{smallmatrix}16&10\\10&9\end{smallmatrix}\right]$。新息2°、$S=16+9=25\ \mathrm{deg}^2$，所以 $K=[.64,.4]^\top$。得到</p>
 <p>$$\begin{aligned}
 m^+&=\begin{bmatrix}36.28\\5.8\end{bmatrix},\\
@@ -1394,17 +1414,168 @@ Q(2h)&=F(h)Q(h)F(h)^\top+Q(h)\\
 <p><strong>缺测反例。</strong> 另取合法正定先验 $P=\left[\begin{smallmatrix}4&-1\\-1&1\end{smallmatrix}\right]$，$Q=0$，预测一秒。直接相乘得 $FPF^\top=\operatorname{diag}(3,1)$，角方差由4减至3。负的角度—速度互协方差让部分误差相互抵消；这不是得到了新观测。增加过程噪声相对于同一个 $FPF^\top$ 会增加半正定项，但不保证预测后的每个元素都大于预测前。</p>
 <p><a id="e09-19"></a></p>
 <h3 id="sec-u-7ece4ea50e">E09-19：实际波形链的时间与评分分母</h3>
-<p><strong>题设。</strong> 运行本章 <code>tracking_audio</code> 独立实验，从实际导出的 <code>array_noisy.wav</code> 解码后依次执行RMS门、GCC-PHAT和KF。核对197帧的由来，计算第一帧状态时间和最早可用时间，并按有效观测和缺测分别评分。干净源与传播真值只用于检查，不得输入观测门控。</p>
+<p><strong>题设。</strong> 运行本章 <code>tracking_audio</code> 独立实验。统一练习入口先严格核验实际目录中的清单、生成源SHA、文件集合与WAV字节，再从随仓 <code>array_noisy.wav</code> 读回PCM，重新依次执行RMS门、GCC-PHAT和KF；检查失败时不会重生文件。清单中浮点模型结果另列，不充当PCM重读结果。</p>
+<p>核对197帧的由来，计算第一帧状态时间和最早可用时间，并按有效观测和缺测分别评分。干净源与传播真值只用于检查，不得输入观测门控。</p>
 <p><strong>第1步：数帧。</strong> 最后一个完整块起点为 $196\times160=31360$；其终点31872不超过32000。再前进一次会得到32032，超过文件末尾，所以共有197个完整块，不补零产生额外观测。</p>
-<p><strong>第2步：定时。</strong> 首帧状态时刻为 $255.5/16000=.01596875$ s，最早可用时刻为 $512/16000=.032$ s；两者相差16.03125 ms。最后一帧的对应时刻为1.97596875 s和1.992 s。若用于控制，还需从状态时刻预测至实际生效时刻，并计入运算与缓冲延迟。</p>
+<p><strong>第2步：定时。</strong> 首帧状态时刻为 $255.5/16000=.01596875$ s，最早可用时刻为 $512/16000=.032\ \mathrm{s}\text{；}$两者相差16.03125 ms。最后一帧的对应时刻为1.97596875 s和1.992 s。若用于控制，还需从状态时刻预测至实际生效时刻，并计入运算与缓冲延迟。</p>
 <p><strong>第3步：核对门控。</strong> 197帧分成173个有效观测帧与24个缺测帧，后者全部发生在滤波器初始化之后。门来自带噪波形RMS和物理时差范围；若直接按干净源的.82～1.08 s静默区间删观测，忽略传播时间、窗口支持与噪声，就换成了真值门控实验。</p>
 <p><strong>第4步：核对结果。</strong> 实际PCM的173帧原始定位RMSE为2.8226°，同帧滤波输出为1.1505°；24帧仅预测误差为.3526°。先按清单逐帧角差平方求和，再各除自己的分母、开平方；不能把两个RMSE直接平均成全段RMSE，也不能把无观测记成零误差。</p>
 <p>本题未对协方差作覆盖率标定，没有重复试验，也没有身份评分。改变声学输入、门限或 $R,Q$ 后须完整重跑，不能沿用这些数字作为保证。</p>
+<p><a id="e09-20"></a></p>
+<h3 id="sec-u-39b4692b75">E09-20：两条相关观测有多少独立信息？</h3>
+<p><strong>题设。</strong> 一个静止的实标量状态 $x$ 的先验为 $\mathcal N(0,1)$，两条观测均为 $z_i=x+n_i$，实际观测向量为 $\vec z=[1,1]^\top$。噪声与状态独立、联合零均值高斯，噪声协方差为 $R=\left[\begin{smallmatrix}1&\rho\\\rho&1\end{smallmatrix}\right]$，取 $\rho=.9$。这里是同一状态的两条相关观测，不是在两时刻之间额外加入过程噪声。计算后验，再比较错当 $\rho=0$ 的结果。</p>
+<p><strong>第1步：区分噪声协方差与新息协方差。</strong> 观测矩阵是 $H=[1,1]^\top\in\mathbb R^{2\times1}$。先验状态误差同时进入两条新息，因此 $S=HPH^\top+R=\left[\begin{smallmatrix}2&1+\rho\\1+\rho&2\end{smallmatrix}\right]$。不能只把 $R$ 的非对角元素搬进 $S$；两条观测共享的状态还贡献了1。</p>
+<p>对 $-1\lt \rho\lt 1$，$S$ 可逆，式(9-4)给出增益行向量。将逆矩阵的行和约简，得到本书推导的同值观测后验：</p>
+<p>$$\begin{aligned}
+K&=\frac{[1,1]}{3+\rho},\\
+m^+&=\frac{2}{3+\rho},\\
+P^+&=1-KH=\frac{1+\rho}{3+\rho}.
+\end{aligned}\tag{9-31}$$</p>
+<p><strong>第2步：代入相关系数。</strong> $\rho=.9$ 时，$S=\left[\begin{smallmatrix}2&1.9\\1.9&2\end{smallmatrix}\right]$，行列式为 $.39=39/100$；$S^{-1}=\frac{100}{39}\left[\begin{smallmatrix}2&-1.9\\-1.9&2\end{smallmatrix}\right]$。左乘 $[1,1]$ 得 $K=[10/39,10/39]$，所以 $m^+=20/39\approx.512821$、$P^+=19/39\approx.487179$。</p>
+<p><strong>第3步：检查独立假设的代价。</strong> 错设 $\rho=0$，会得到 $K=[1/3,1/3]$、$m^+=2/3$、$P^+=1/3$。两条高度相关的证据被当成独立证据后，观测权重过大，后验方差过小。该误差不靠平滑输出曲线就能判断，必须检查噪声模型。</p>
+<p>当 $\rho\to1$，两条噪声趋于相同，式(9-31)的极限为 $m^+=P^+=.5$，与只使用一条观测一致。$\rho=1$ 时 $S$ 奇异；这个极限不表示普通求逆接口可以直接接受奇异矩阵。对重叠音频窗，应标定相关性或选用匹配的序列模型，不能由本例把所有窗的相关系数统一设为.9。</p>
+<p><a id="e09-21"></a></p>
+<h3 id="sec-u-69c7e3d1a6">E09-21：更多方位帧为什么仍不能确定距离尺度？</h3>
+<p><strong>题设。</strong> 固定阵列位于原点，只输出方位；目标按常速度运动，初始位置 $\vec p_0=[1,2]^\top$ m、速度 $\vec v=[1,0]^\top$ m/s。另一条候选轨迹的初始位置和速度都乘2。比较 $t=0,1,2$ s的方向与距离，并检查状态 $[x_0,y_0,v_x,v_y]^\top$ 是否能由这三次无噪方位唯一恢复。阵列没有测量幅度、距离或多阵列基线，速度大小也未知。</p>
+<p>本题采用同一源状态时刻的瞬时几何观测 $h(\vec p(t))\text{，}$忽略传播时延。前文移动音频按固定接收时钟求迟滞的发声位置，两倍距离会改变传播时间；本题不主张那两段接收波形或同一接收时刻的方位也完全等价。</p>
+<p><strong>第1步：写整个时间轴的观测等价关系。</strong> 令 $a>0\text{，}$只要目标不与阵列重合，本书方位约定下有</p>
+<p>$$\begin{aligned}
+\vec p(t)&=\vec p_0+t\vec v,\\
+\vec p_a(t)&=a\vec p_0+t(a\vec v)=a\vec p(t),\\
+\operatorname{atan2}(p_{a,x}(t),p_{a,y}(t))
+&=\operatorname{atan2}(p_x(t),p_y(t)).
+\end{aligned}\tag{9-32}$$</p>
+<p>正比例同时改变了距离和速度大小，却没有改变任意时刻的方位。这里的不可辨识发生在整段无噪观测，而不只是某一帧误差较大。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col" style="text-align: right;">t（s）</th>
+<th scope="col">原位置（m）</th>
+<th scope="col" style="text-align: right;">两轨共同方位（度）</th>
+<th scope="col" style="text-align: right;">原距离（m）</th>
+<th scope="col" style="text-align: right;">两倍轨迹距离（m）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">0</td>
+<td>(1,2)</td>
+<td style="text-align: right;">26.565051</td>
+<td style="text-align: right;">2.236068</td>
+<td style="text-align: right;">4.472136</td>
+</tr>
+<tr>
+<td style="text-align: right;">1</td>
+<td>(2,2)</td>
+<td style="text-align: right;">45.000000</td>
+<td style="text-align: right;">2.828427</td>
+<td style="text-align: right;">5.656854</td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td>(3,2)</td>
+<td style="text-align: right;">56.309932</td>
+<td style="text-align: right;">3.605551</td>
+<td style="text-align: right;">7.211103</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>第2步：核查局部零方向。</strong> 把式(9-12)的瞬时位置雅可比乘上从初始状态到位置的映射 $[I,tI]$，得到对四维初始状态的行雅可比。分别去掉各行的非零距离平方分母后，三行组成</p>
+<p>$$J_0=\begin{bmatrix}2&-1&0&0\\2&-2&2&-2\\2&-3&4&-6\end{bmatrix}.$$</p>
+<p>第一行减第二行、再消去第三行，或直接求三个独立主元，得到秩3。比例变化方向为 $\vec u=[1,2,1,0]^\top$，逐行相乘分别为 $2-2=0$、$2-4+2=0$、$2-6+4=0$。因此 $J_0\vec u=0$，四维状态中仍有一个尺度方向无法由这些方位约束。该导数零方向与式(9-32)的全局比例构造相互核对。</p>
+<p><img alt="图61 相关观测与仅测方位的尺度信息" src="../figures/fig61_tracking_information.png" onerror="this.alt+='（图缺失）'" /></p>
+<p>图61用本书解析模型比较相关观测的后验方差，并展示本题忽略传播时延的瞬时方位模型中，两条比例轨迹的共同方位与不同距离。它不包含实际PCM评分，也不是已运行的距离估计器；图中两种现象分别来自证据相关性和观测映射的尺度不变性。</p>
+<p><strong>边界。</strong> 已知速度大小、增加距离观测，或引入满足可观测条件的已知阵列运动，可能提供缺少的尺度约束。不能据此保证任意阵列机动都能恢复距离，也不能靠把KF换成UKF或增加粒子数消除观测本身的歧义。初值或先验可以选择一条候选，但若没有额外信息，选择结果不等于从方位数据测出了绝对尺度。</p>
+<p><a id="e09-22"></a></p>
+<h3 id="sec-u-2d50ff5620">E09-22：空观测怎样改变目标存在概率？</h3>
+<p><strong>题设。</strong> 只考虑“无目标”或“有一个目标”的Bernoulli存在模型，更新前存在概率为 $r=4/5\text{。}$条件于目标存在，它以固定已知概率 $p_D$ 被检测，至多产生一条观测；无目标时没有观测。本次无杂波、出生、存活预测或身份变化，实际观测集合为空。分别取 $p_D=.9$ 和 $.1$，求更新后的存在概率。</p>
+<p><strong>第1步：求空观测事件的概率。</strong> 不存在的先验概率为 $1-r$，此时空观测概率为1；存在的先验概率为 $r$，此时漏检概率为 $1-p_D$。两条互斥途径相加，得到 $P(Z=\varnothing)=(1-r)+r(1-p_D)=1-rp_D$。</p>
+<p><strong>第2步：按条件概率归一化。</strong> “存在且空观测”的联合概率为 $r(1-p_D)$。本书由Bayes公式直接推导：</p>
+<p>$$\begin{aligned}
+r^+&=P(\text{存在}\mid Z=\varnothing)\\
+&=\frac{r(1-p_D)}{1-rp_D},\\
+&\qquad 0\le r,p_D\le1,\\
+&\qquad 1-rp_D>0.
+\end{aligned}\tag{9-33}$$</p>
+<p>若分母为0，空观测是模型中不可能的条件事件，不能把0/0当作更新结果。该例采用随机有限集模型中的存在/独立检测事件，原始模型可参照 <a href="https://www.ee.cuhk.edu.hk/~wkma/publications/gmphd_2col.pdf" title="citation">Vo与Ma的GM-PHD作者稿§II-B、式(10)～(11)</a>；式(9-33)是本书单Bernoulli推导，不是Poisson PHD更新。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col" style="text-align: right;">$p_D$</th>
+<th scope="col" style="text-align: right;">“存在且漏检”概率</th>
+<th scope="col" style="text-align: right;">空观测总概率</th>
+<th scope="col" style="text-align: right;">Bernoulli后验存在概率</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">.9</td>
+<td style="text-align: right;">$2/25$</td>
+<td style="text-align: right;">$7/25$</td>
+<td style="text-align: right;">$2/7\approx.285714$</td>
+</tr>
+<tr>
+<td style="text-align: right;">.1</td>
+<td style="text-align: right;">$18/25$</td>
+<td style="text-align: right;">$23/25$</td>
+<td style="text-align: right;">$18/23\approx.782609$</td>
+</tr>
+</tbody>
+</table></div>
+<p>当 $p_D=0$ 时，空观测没有信息，式(9-33)退化为 $r^+=r$；当 $r=0$ 时，后验也为0。若先验已确定存在且 $p_D\lt 1$，漏检不会凭空改变这条确定先验，仍有 $r^+=1$。这些边界只核查本题模型，不代替实际轨迹的出生或存活预测。</p>
+<p>高检出率模型下，没看到目标更不符合“仍存在”；低检出率模型下，一次空观测对存在的否定较弱。声源静默使定位器的检出率下降，若仍按高 $p_D$ 解释空观测，就可能把静默错误地解释为离场。</p>
+<p><strong>第3步：分清四个量。</strong> 若改用预测人数为Poisson分布、总PHD质量也是 $r=.8$ 的另一模型，式(9-23)在空观测下给出质量 $(1-p_D)r$，即 $2/25$ 或 $18/25$。它是人数期望，不是上述Bernoulli存在概率；两种模型的先验人数分布不同，不能互换更新。</p>
+<p>发声活动概率描述当前发声证据；目标存在概率描述目标是否存在；PHD质量描述人数期望；轨迹标签描述维护的身份假设。一次空观测没有直接给出永久说话人身份。若 $p_D$ 随位置或活动变化，本题常数形式需要改为对状态条件检测模型积分，不能把未知 $p_D$ 的题设当作已标定事实。</p>
+<p><a id="e09-23"></a></p>
+<h3 id="sec-u-99ab6e29dd">E09-23：迟到观测应回放、丢弃还是当作当前观测？</h3>
+<p><strong>题设。</strong> 实标量随机游走 $x_t=x_{t-1}+v_t$，观测 $z_t=x_t+n_t$，$x_0\sim\mathcal N(0,1)$，$Q=R=1$；初态与全部过程、观测噪声相互独立、零均值高斯。实际观测为 $z_1=2,z_2=-1$，但到达顺序是先 $z_2$、后 $z_1$。最终要求估计时刻2的状态，比较按原时刻回放、丢弃迟到 $z_1$ 和错把 $z_1$ 当作时刻2新观测。所有策略共享观测模型，数据到达顺序不改变观测所属时刻。</p>
+<p><strong>第1步：先算按正确时间处理的参考。</strong> 预测至时刻1得 $P_1^-=2$，增益 $2/3$，更新得 $m_1=4/3,P_1=2/3$。再预测至时刻2得 $P_2^-=5/3$，增益 $5/8$，所以 $m_2=4/3+(5/8)(-1-4/3)=-1/8$、$P_2=5/8$。</p>
+<p>迟到后若保存了初态、动态模型和已处理观测，可以按原时间顺序重新计算，得到同一结果。这是回放；不能在当前状态上重复消耗旧观测。</p>
+<p><strong>第2步：用联合条件分布独立核对。</strong> 由 $x_1=x_0+v_1$、$x_2=x_0+v_1+v_2$，有 $\operatorname{Var}(x_1)=2$、$\operatorname{Var}(x_2)=3$、$\operatorname{Cov}(x_1,x_2)=2\text{。}$加入独立观测噪声后，$\vec Z=[z_1,z_2]^\top$ 的协方差是 $S_Z=\left[\begin{smallmatrix}3&2\\2&4\end{smallmatrix}\right]$，$C=\operatorname{Cov}(x_2,\vec Z)=[2,3]$。零均值联合高斯的当前状态条件式为</p>
+<p>$$\begin{aligned}
+K_Z&=CS_Z^{-1},\\
+m_{2\mid Z}&=K_Z\vec Z,\\
+P_{2\mid Z}&=3-CS_Z^{-1}C^\top.
+\end{aligned}\tag{9-34}$$</p>
+<p>$S_Z^{-1}=\frac18\left[\begin{smallmatrix}4&-2\\-2&3\end{smallmatrix}\right]$，故 $K_Z=[1/4,5/8]$。均值为 $(1/4)2+(5/8)(-1)=-1/8$；方差为 $3-[(1/4)2+(5/8)3]=5/8$。联合计算与顺时回放一致，因为两者使用了相同的跨时刻协方差。</p>
+<p><strong>第3步：比较另两种策略。</strong> 若先只处理 $z_2$，从初态预测两步得 $P_2^-=3$，增益 $3/4$，当前后验为 $m_2=-3/4,P_2=3/4$。丢弃迟到 $z_1$ 就保留该结果，损失了一条观测，但没有伪造其时间。</p>
+<p>若把迟到的 $z_1=2$ 当作当前独立观测，错误的新增益为 $(3/4)/(3/4+1)=3/7$，均值变成 $-3/4+(3/7)(2+3/4)=3/7$，方差也变成 $3/7$。这个更新遗漏了 $z_1$ 与当前状态、此前 $z_2$ 的跨时刻关系。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">策略</th>
+<th scope="col" style="text-align: right;">最终状态时刻</th>
+<th scope="col" style="text-align: right;">均值</th>
+<th scope="col" style="text-align: right;">方差</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>原时刻回放／联合条件计算</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">$-1/8$</td>
+<td style="text-align: right;">$5/8$</td>
+</tr>
+<tr>
+<td>丢弃迟到观测</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">$-3/4$</td>
+<td style="text-align: right;">$3/4$</td>
+</tr>
+<tr>
+<td>错当当前独立观测</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">$3/7$</td>
+<td style="text-align: right;">$3/7$</td>
+</tr>
+</tbody>
+</table></div>
+<p>错误策略甚至报告了更小方差，这不表示更多正确的信息。E09-16估计过去状态，本题估计当前状态；两者都需要核对时间与交叉协方差。一般乱序追踪还涉及缓存、存活/关联事件、控制与模型变化，不能把本题回放示例当作完整乱序接口。</p>
 <h3 id="sec-u-b51bd23596">新练习的实现边界</h3>
-<p>E09-10～E09-19 的统一入口为 <code>.venv/bin/python -m codes.chapters.ch09.chapter09_experiments</code>，见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/chapter09_experiments.py">原创复算代码</a>。前九题是小规模代数、概率或数值边界检查；E09-19 才运行指定波形链。它们不构成完整通用 EKF、UKF、JPDA、PHD 或多目标身份管理系统。</p>
+<p>E09-10～E09-23 的统一入口为 <code>.venv/bin/python -m codes.chapters.ch09.chapter09_experiments</code>，见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/chapter09_experiments.py">原创复算代码</a>。E09-19读取指定波形链，其余题是小规模代数、概率、时刻或数值边界检查。集合距离的实现先按截断尺度计算，避免很小的正距离因平方而归零；辅助代价幂超出float64表示范围时返回明确状态，不把它报告成精确0。它们不构成完整通用 EKF、UKF、JPDA、PHD 或多目标身份管理系统。</p>
 <hr />
 <blockquote>
-<p>📄 本篇信息：配图 3 张 ｜ <a href="index.html">回首页</a></p>
+<p>📄 本篇信息：配图 4 张 ｜ <a href="index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="08_speech-separation.html">← 上一篇</a></span><span><a href="10_engineering-practice.html">下一篇 →</a></span></div>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>

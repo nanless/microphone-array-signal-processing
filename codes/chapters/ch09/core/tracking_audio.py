@@ -14,7 +14,7 @@ from codes.chapters.ch00.core.audio_samples import pcm16_bytes
 from codes.chapters.ch02.core.conventions import finite_real_array, finite_real_scalar
 from codes.chapters.ch04.core.doa import gcc_phat
 from codes.chapters.ch09.core.moving_source import retarded_emission_times
-from codes.chapters.ch09.core.tracking import ConstantVelocityKalman
+from codes.chapters.ch09.core.tracking import ConstantVelocityKalman, white_acceleration_covariance
 
 FS = 16000
 SAMPLES = 32000
@@ -67,7 +67,10 @@ def analyze_array(waveform, *, export_gain=1.):
     export_gain = finite_real_scalar(export_gain, 'export_gain')
     if waveform.shape != (2, SAMPLES) or export_gain <= 0:
         raise ValueError('expected two channels, 32000 samples and positive export gain')
-    signal = waveform/export_gain
+    with np.errstate(over='ignore', under='ignore'):
+        signal = waveform/export_gain
+    if np.any((waveform != 0) & (signal == 0)):
+        raise ValueError('gain correction loses a nonzero sample')
     if not np.all(np.isfinite(signal)):
         raise ValueError('gain correction exceeds floating-point range')
     starts = np.arange(0, SAMPLES-WINDOW+1, HOP)
@@ -78,10 +81,19 @@ def analyze_array(waveform, *, export_gain=1.):
     tracker = None
     last_valid_measurement_time = None
     dt = HOP/FS
-    q = 100*np.array([[dt**3/3, dt**2/2], [dt**2/2, dt]])
+    q = white_acceleration_covariance(dt, 100.)
     for frame_index, start in enumerate(starts):
         block = signal[:, start:start+WINDOW]
-        rms = float(np.sqrt(np.mean(block**2)))
+        magnitude = float(np.max(np.abs(block)))
+        if magnitude and (magnitude > 1e140 or magnitude < 1e-140):
+            scaled = block/magnitude
+            if np.any((block != 0) & (scaled == 0)):
+                raise ValueError('RMS normalization loses a nonzero sample')
+            rms = magnitude*float(np.sqrt(np.mean(scaled**2)))
+        else:
+            rms = float(np.sqrt(np.mean(block**2)))
+        if not np.isfinite(rms) or (magnitude != 0 and rms == 0):
+            raise ValueError('positive RMS is outside float64 support')
         angle = tau = None
         reason = 'below_rms_gate'
         if rms > .04:

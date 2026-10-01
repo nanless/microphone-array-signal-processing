@@ -70,14 +70,25 @@ class TrackingBoundaries(unittest.TestCase):
         pf = CircularParticleFilter([0., 10.])
         pf.update(10., .01, clutter_probability=0.)
         np.testing.assert_array_equal(pf.weights, [0., 1.])
+        self.assertEqual(pf.weight_underflow_indices, [0])
+        self.assertTrue(np.isfinite(pf.log_weights[0]))
+        pf.update(0., .01, clutter_probability=0.)
+        np.testing.assert_allclose(pf.weights, [.5, .5], atol=1e-10)
         for std in (1.5e-154, 1e-300, np.nextafter(0., 1.)):
-            pf.update(0., std, clutter_probability=0.)
-            np.testing.assert_array_equal(pf.weights, [0., 1.])
+            before = pf.weights.copy(), pf.log_weights.copy()
+            with self.assertRaisesRegex(ValueError, 'log likelihood'):
+                pf.update(0., std, clutter_probability=0.)
+            np.testing.assert_array_equal(pf.weights, before[0])
+            np.testing.assert_array_equal(pf.log_weights, before[1])
 
     def test_particle_small_and_large_std_are_finite(self):
         for std in (np.nextafter(0., 1.), 1e-300, 1e308):
             for clutter in (0., .05, np.nextafter(0., 1.)):
                 pf = CircularParticleFilter([0., 10.])
+                if std < 1e-150 and clutter == 0:
+                    with self.assertRaises(ValueError):
+                        pf.update(0., std, clutter_probability=clutter)
+                    continue
                 with np.errstate(all='raise'):
                     pf.update(0., std, clutter_probability=clutter)
                 self.assertTrue(np.all(np.isfinite(pf.weights)))

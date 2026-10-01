@@ -728,7 +728,9 @@ $$
 
 图60读取第8章独立六WAV清单：先比较500 Hz的幅度上限和1250 Hz的相位旋转，再分别显示解析与27200点实际PCM误差。先运行 `codes.chapters.ch08.examples.mask_representation_demo`；已知目标构造的掩码只检验表示边界，不是盲分离或网络性能。
 
-图片写入 `figures/`，共 60 张：
+图61从第9章E20与E21的指定解析模型生成：相关观测不能被重复计为独立证据，固定阵列的纯方位观测不能辨认未知距离与速度的共同尺度。它不读取音频、不做随机抽样；数值报告在 `codes/chapters/ch09/reports/figure61_tracking_information.json`。
+
+图片写入 `figures/`，共 61 张：
 
 ```bash
 .venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
@@ -736,7 +738,7 @@ $$
 .venv/bin/python -m codes.chapters.ch06.examples.generate_apa_audio
 .venv/bin/python -m codes.chapters.ch07.examples.mint_teaching_demo
 .venv/bin/python -m codes.chapters.ch08.examples.mask_representation_demo
-.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～60
+.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～61
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～39（回声消除专题）
 ```
 

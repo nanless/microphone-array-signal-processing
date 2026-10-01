@@ -5,13 +5,14 @@
     .venv/bin/python scripts/build_site.py
 
 产物：site/index.html（首页）+ site/01..13_*.html（13 篇正文），
-另有 site/research/index.html 和 5 篇独立研究页、主清单 109 个与独立实验 53 个合成 WAV，
+另有 site/research/index.html 和 5 篇独立研究页、主清单 109 个与独立实验 65 个合成 WAV，
 以及 4 个真实录音/派生 WAV；源码按章保存，发布 URL 保持原样。
 左侧边栏 = 首页 + 13 篇 + 每篇的二级及以下小节锚点，顶部面包屑，
 文末上一篇/下一篇（首页不输出该盒）。图片直接引用 ../figures/（不复制）。
 数学公式用 MathJax CDN 渲染（离线时显示源码，页面顶部有提示）。
 """
 import os
+import sys
 import re
 import tempfile
 import hashlib
@@ -32,7 +33,9 @@ except ModuleNotFoundError:  # direct ``python scripts/build_site.py``
                                         restore_code, validate_url_schemes)
     from code_layout import MAIN_AUDIO_GROUP_CHAPTER, main_audio_manifest_path, main_audio_path
 
-ROOT = Path(__file__).parent.parent
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 SRC = ROOT / "chapters"
 OUT = ROOT / "site"
 CODE_CHAPTERS = ROOT / "codes" / "chapters"
@@ -144,7 +147,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{display:block;margin:20px auto;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
-@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}}
+@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}.tracking-readable-table th,.tracking-readable-table td{min-width:8em}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 """
 
@@ -301,9 +304,10 @@ def stage_room_audio(source, destination):
 def stage_moving_audio(source, destination):
     """按独立清单核对连续运动合成 PCM，避免发布缺失或错配样本。"""
     import wave
-    manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
-    records = manifest["files"]
     expected = set(MOVING_AUDIO_WAVS) | {"MANIFEST.json"}
+    _check_tracking_members(source, expected)
+    manifest = _read_tracking_manifest(source / "MANIFEST.json")
+    records = manifest["files"]
     if set(records) != set(MOVING_AUDIO_WAVS):
         raise ValueError("移动声源清单文件集合不符")
     if {path.name for path in source.iterdir() if path.is_file()} != expected:
@@ -329,6 +333,10 @@ def stage_moving_audio(source, destination):
                     wav.getnframes(), wav.getcomptype()) != (
                         16000, channels, 2, records[name]["samples_per_channel"], "NONE"):
                 raise ValueError(f"移动声源 PCM 格式不符：{name}")
+    from codes.chapters.ch09.examples.moving_source_audio import generate, _validate_directory
+    generate(source, check=True)
+    _validate_directory(destination, expected, check=False)
+    _validate_publish_targets([destination / name for name in expected], boundary=destination.parent)
     destination.mkdir()
     for name in sorted(expected):
         shutil.copy2(source / name, destination / name)
@@ -576,14 +584,53 @@ def stage_mask_audio(source, destination):
     return expected
 
 
+def _check_tracking_members(folder, expected):
+    """Reject unexpected directories as well as linked or special members."""
+    if (folder.is_symlink() or not folder.is_dir()
+            or {p.name for p in folder.iterdir()} != set(expected)
+            or any(p.is_symlink() or not p.is_file() for p in folder.iterdir())):
+        raise ValueError(f"移动/追踪音频目录文件集合或普通文件类型不符：{folder}")
+
+
+def _read_tracking_manifest(path):
+    """Strict JSON: reject duplicate fields, non-finite values and overflow."""
+    import math
+
+    def pairs(items):
+        result = {}
+        for key, value in items:
+            if key in result:
+                raise ValueError(f"音频清单重复字段：{key}")
+            result[key] = value
+        return result
+
+    def constant(value):
+        raise ValueError(f"音频清单含非有限数：{value}")
+
+    def finite(value):
+        if isinstance(value, float) and not math.isfinite(value):
+            raise ValueError("音频清单数值溢出或非有限")
+        if isinstance(value, dict):
+            for item in value.values():
+                finite(item)
+        elif isinstance(value, list):
+            for item in value:
+                finite(item)
+
+    result = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=pairs,
+                        parse_constant=constant)
+    if not isinstance(result, dict):
+        raise ValueError("音频清单根必须为对象")
+    finite(result)
+    return result
+
+
 def stage_tracking_audio(source, destination):
     """Validate the independent PCM-to-observation experiment before publishing."""
     import wave
     expected = set(TRACKING_AUDIO_WAVS) | {"MANIFEST.json"}
-    if (source.is_symlink() or {p.name for p in source.iterdir()} != expected
-            or any(p.is_symlink() or not p.is_file() for p in source.iterdir())):
-        raise ValueError("追踪音频目录必须恰有两份普通WAV及清单")
-    manifest = json.loads((source/"MANIFEST.json").read_text())
+    _check_tracking_members(source, expected)
+    manifest = _read_tracking_manifest(source/"MANIFEST.json")
     if set(manifest["files"]) != set(TRACKING_AUDIO_WAVS) or manifest["sample_rate_hz"] != 16000:
         raise ValueError("追踪音频清单集合或采样率不符")
     for name, channels in TRACKING_AUDIO_WAVS.items():
@@ -595,6 +642,10 @@ def stage_tracking_audio(source, destination):
             if (wav.getframerate(),wav.getnchannels(),wav.getsampwidth(),
                     wav.getnframes(),wav.getcomptype()) != (16000,channels,2,32000,"NONE"):
                 raise ValueError(f"追踪音频PCM格式不符：{name}")
+    from codes.chapters.ch09.examples.chapter09_tracking_audio import generate, _validate_directory
+    generate(source, check=True)
+    _validate_directory(destination, expected, check=False)
+    _validate_publish_targets([destination / name for name in expected], boundary=destination.parent)
     destination.mkdir()
     for name in sorted(expected):
         shutil.copy2(source/name,destination/name)
@@ -935,6 +986,17 @@ def render(md_text, source_path=None):
             }
             return '<table'+(' class="separation-readable-table"' if readable else '')+'>'+inner+'</table>'
         html = re.sub(r'<table>(.*?)</table>', separation_table, html, flags=re.S)
+    if source_path.name == "09_source-tracking.md":
+        def tracking_table(match):
+            inner = match.group(1)
+            headers = re.findall(r'<th\b[^>]*>(.*?)</th>', inner, flags=re.S)
+            labels = tuple(unescape(re.sub(r'<[^>]+>', '', value)).strip() for value in headers)
+            readable = labels in {
+                ("方法", "原理", "优点", "缺点", "适用"),
+                ("方法族", "代表", "思想", "声学表现"),
+            }
+            return '<table'+(' class="tracking-readable-table"' if readable else '')+'>'+inner+'</table>'
+        html = re.sub(r'<table>(.*?)</table>', tracking_table, html, flags=re.S)
     # 保留 table 原生语义；横向滚动由可聚焦的外层区域承担，键盘用户也能操作宽表。
     html = re.sub(
         r"<table([^>]*)>(.*?)</table>",

@@ -82,9 +82,39 @@ SOURCE_PATHS = (
 )
 
 
+def _validate_directory(directory, expected, *, check):
+    """Reject links/special files before any output write or read-through check.
+
+    Existing directories are either empty (new export) or contain exactly the
+    fixed assets. Parent components are checked without resolving away links.
+    """
+    if not isinstance(check, bool):
+        raise ValueError('check must be bool')
+    directory = Path(directory).absolute()
+    for parent in (*reversed(directory.parents), directory):
+        if (parent.is_symlink() and not
+                (str(parent) in ('/var', '/tmp', '/etc')
+                 and parent.resolve() == Path('/private')/parent.name)):
+            raise ValueError(f'audio directory ancestor is a symbolic link: {parent}')
+        if parent.exists() and not parent.is_dir():
+            raise ValueError(f'audio directory ancestor is not a directory: {parent}')
+    if not directory.exists():
+        if check:
+            raise ValueError('audio directory is missing')
+        return
+    members = list(directory.iterdir())
+    for member in members:
+        if member.is_symlink() or not member.is_file():
+            raise ValueError(f'audio member must be an ordinary file: {member}')
+    names = {member.name for member in members}
+    if names != set(expected) and (check or names):
+        raise ValueError('audio directory must contain exactly the expected members')
+
+
 def generate(out_dir: Path = OUT, *, check: bool = False) -> dict:
     """Generate assets or strictly check them in memory without writing."""
     out_dir = Path(out_dir)
+    _validate_directory(out_dir, ("source.wav", "static_array.wav", "moving_array.wav", "MANIFEST.json"), check=check)
     signals, metadata = build_fixture()
     assets, files = {}, {}
     for stem, waveform in signals.items():

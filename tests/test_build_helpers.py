@@ -628,10 +628,10 @@ class BuildHelpersTest(unittest.TestCase):
         )
 
     def test_figure_semantics_accept_any_reuse_and_reject_mismatch_or_orphan(self):
-        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 61)]
+        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 62)]
         refs.extend([("图1 复用", "fig01_x.png", 1),
                      ("图23 复用", "fig23_x.png", 23)])
-        names = [f"fig{i:02d}_x.png" for i in range(1, 61)]
+        names = [f"fig{i:02d}_x.png" for i in range(1, 62)]
         self.assertEqual(quality_check.figure_inventory_issues(refs, names), [])
         bad_refs = list(refs)
         bad_refs[0] = ("图2 错配", "fig01_x.png", 1)
@@ -676,6 +676,25 @@ class BuildHelpersTest(unittest.TestCase):
         screen, printed = build_site.CSS.split('@media print', 1)
         self.assertIn('.separation-readable-table td{min-width:8em}', screen)
         self.assertNotIn('separation-readable-table', printed)
+
+    def test_tracking_phone_comparison_tables_have_local_readable_columns(self):
+        for labels in (("方法", "原理", "优点", "缺点", "适用"),
+                       ("方法族", "代表", "思想", "声学表现")):
+            source = '| '+' | '.join(labels)+' |\n| '+' | '.join(['---']*len(labels))+' |\n| '+' | '.join(['短语']*len(labels))+' |\n'
+            html, _ = build_site.render(source, ROOT/'chapters/09_source-tracking.md')
+            self.assertIn('<table class="tracking-readable-table">', html)
+            self.assertEqual(html.count('scope="col"'), len(labels))
+            self.assertIn('class="table-scroll" tabindex="0" role="region"', html)
+            for other in ('08_speech-separation.md', '10_engineering-practice.md'):
+                html, _ = build_site.render(source, ROOT/'chapters'/other)
+                self.assertNotIn('tracking-readable-table', html)
+            for near in (source.replace(labels[0], '其他表头', 1),
+                         source.replace(' | '.join(labels), ' | '.join(reversed(labels)), 1)):
+                html, _ = build_site.render(near, ROOT/'chapters/09_source-tracking.md')
+                self.assertNotIn('tracking-readable-table', html)
+        screen, printed = build_site.CSS.split('@media print', 1)
+        self.assertIn('.tracking-readable-table td{min-width:8em}', screen)
+        self.assertNotIn('tracking-readable-table', printed)
 
     def test_source_control_characters_catch_damaged_tex(self):
         self.assertEqual(quality_check.source_control_character_issues("正文\n\t数学\r\n"), [])

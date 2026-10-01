@@ -652,8 +652,8 @@
     }
   },
   "source_sha256": {
-    "codes/chapters/ch09/examples/moving_source_audio.py": "f0ff163874473320487e61eb961925bf0dad136f08fafceb637b062cb52c4f8c",
-    "codes/chapters/ch09/core/moving_source.py": "5f9a3f7e94e451d6926ce72dc5e52f67855800fe5cb7bb2212f2da6c433335bb",
+    "codes/chapters/ch09/examples/moving_source_audio.py": "63e381b48237528166741c8cafa6d45e5adabe8dec26f0473217ee833c6d7c71",
+    "codes/chapters/ch09/core/moving_source.py": "4ccc164ebc8daa82394591f28f4ce83d31ff3929e8e2e237736cae59168a177a",
     "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
     "codes/chapters/ch02/core/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385"
   },

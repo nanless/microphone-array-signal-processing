@@ -1,4 +1,4 @@
-"""Ten deterministic teaching experiments E09-10..19; no file writes on import/run.
+"""Fourteen teaching experiments E09-10..23; no writes on import/run.
 
 These are small arithmetic/controlled-signal examples, not complete EKF, UKF,
 JPDA, PHD, GOSPA tracking systems or device evaluations. No upstream imports.
@@ -13,27 +13,18 @@ if __name__ == "__main__" and not __package__:
     _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
 
 from itertools import permutations, product
+from decimal import Decimal, localcontext
 import json
 import math
+from pathlib import Path
 import numpy as np
 from codes.chapters.ch02.core.conventions import finite_real_array, finite_real_scalar
-from codes.chapters.ch09.core.tracking import CircularParticleFilter, ConstantVelocityKalman, wrap_angle
-from codes.chapters.ch09.core.tracking_audio import build_fixture
-
-
-def white_acceleration_covariance(dt, density):
-    """Continuous white angular-acceleration density [deg²/s³], not variance."""
-    dt = finite_real_scalar(dt, 'dt')
-    density = finite_real_scalar(density, 'density')
-    if dt < 0 or density < 0:
-        raise ValueError('dt and density must be nonnegative')
-    try:
-        result = density*np.array([[dt**3/3, dt**2/2], [dt**2/2, dt]])
-    except OverflowError as error:
-        raise ValueError('process noise exceeds floating-point range') from error
-    if not np.all(np.isfinite(result)):
-        raise ValueError('process noise exceeds floating-point range')
-    return result
+from codes.chapters.ch09.core.tracking import (
+    CircularParticleFilter, ConstantVelocityKalman, wrap_angle,
+    white_acceleration_covariance,
+)
+from codes.chapters.ch09.core.tracking_audio import analyze_array, read_pcm16
+from codes.chapters.ch09.examples.chapter09_tracking_audio import OUTPUT as TRACKING_OUTPUT, generate
 
 
 def small_set_distances(truth, estimate, *, cutoff=10., order=1):
@@ -41,7 +32,11 @@ def small_set_distances(truth, estimate, *, cutoff=10., order=1):
 
     Exhaustive enumeration is intentionally small. This scores unordered
     position sets, never identity continuity. Empty/empty is zero; one empty
-    set has OSPA=c and GOSPA=(c^p*n/2)^(1/p).
+    set has OSPA=c and GOSPA=(c^p*n/2)^(1/p). Compute roots in cutoff-normalized
+    units, so a tiny positive c does not become zero by squaring it. A power
+    cost outside float64 is None with an explicit status, never a false zero.
+    Reject a lost nonzero normalized distance or final metric: this teaching
+    solver does not claim arbitrary finite-scale support.
     """
     first = finite_real_array(truth, 'truth')
     second = finite_real_array(estimate, 'estimate')
@@ -57,15 +52,36 @@ def small_set_distances(truth, estimate, *, cutoff=10., order=1):
     if first.size > second.size:
         first, second = second, first
     m, n = len(first), len(second)
-    if n == 0:
-        return {'ospa': 0., 'gospa_alpha2': 0., 'matched_capped_cost_power': 0., 'cardinality_difference': 0}
-    best = min(sum(min(cutoff, abs(float(wrap_angle(first[i]-second[j]))))**order
-                   for i, j in enumerate(assignment))
-               for assignment in permutations(range(n), m))
-    unmatched = cutoff**order*(n-m)
-    return {'ospa': float(((best+unmatched)/n)**(1/order)),
-            'gospa_alpha2': float((best+unmatched/2)**(1/order)),
-            'matched_capped_cost_power': float(best), 'cardinality_difference': n-m}
+    best_root, best_distances = math.inf, ()
+    for assignment in permutations(range(n), m):
+        distances = tuple(min(cutoff, abs(float(wrap_angle(first[i]-second[j]))))
+                          for i, j in enumerate(assignment))
+        normalized = tuple(distance/cutoff for distance in distances)
+        if any(d != 0 and unit == 0 for d, unit in zip(distances, normalized)):
+            raise ValueError('nonzero normalized set distance exceeds solver support')
+        root = math.fsum(normalized) if order == 1 else math.hypot(*normalized)
+        if root < best_root:
+            best_root, best_distances = root, distances
+    # Keep the restored powers in Decimal until the final root. Apart from
+    # protecting subnormal cutoffs, this preserves simple exact p=1 anchors
+    # such as (2+10)/2=6 without normalized-domain restoration rounding.
+    with localcontext() as context:
+        context.prec = 80
+        exact_power = sum((Decimal.from_float(d)**int(order) for d in best_distances), Decimal(0))
+        unmatched = Decimal.from_float(cutoff)**int(order)*(n-m)
+        ospa_power = (exact_power+unmatched)/n if n else Decimal(0)
+        gospa_power = exact_power+unmatched/2
+        ospa = float(ospa_power if order == 1 else ospa_power.sqrt())
+        gospa = float(gospa_power if order == 1 else gospa_power.sqrt())
+        power = float(exact_power)
+    if any(exact != 0 and value == 0 for exact, value in ((ospa_power, ospa), (gospa_power, gospa))):
+        raise ValueError('positive set metric exceeds floating-point range')
+    status = 'representable'
+    if exact_power != 0 and power == 0:
+        power, status = None, 'positive_power_underflow'
+    return {'ospa': ospa, 'gospa_alpha2': gospa,
+            'matched_capped_cost_power': power, 'matched_capped_cost_power_status': status,
+            'cardinality_difference': n-m}
 
 
 def jpda_anchor():
@@ -121,7 +137,28 @@ def _plain(value):
     return value
 
 
-def run_experiments():
+def actual_tracking_audio(audio_directory=TRACKING_OUTPUT):
+    """Strictly check published assets, then decode/analyze the actual WAV.
+
+    generate(check=True) may replay in memory to validate the source contract;
+    it never repairs files. The PCM result below is a new analysis of bytes
+    read from the checked directory, not that in-memory replay's result.
+    """
+    directory = Path(audio_directory)
+    manifest = generate(directory, check=True)
+    array_bytes = (directory/'array_noisy.wav').read_bytes()
+    analysis = analyze_array(read_pcm16(array_bytes), export_gain=manifest['common_export_gain'])
+    return {'audio_directory': str(directory), 'asset_check': 'strict_read_only_passed',
+        'files': manifest['files'], 'source_sha256': manifest['source_sha256'],
+        'float_scores': manifest['float_analysis']['scores'], 'pcm_scores': analysis['scores'],
+        'common_export_gain': manifest['common_export_gain'], 'config': manifest['analysis_config'],
+        'first_state_time_s': analysis['frames']['state_time_s'][0],
+        'first_available_time_s': analysis['frames']['available_time_s'][0],
+        'missing_state_times_s': [t for t, valid in zip(analysis['frames']['state_time_s'],
+                                                     analysis['frames']['observation_valid']) if not valid]}
+
+
+def run_experiments(*, audio_directory=TRACKING_OUTPUT):
     result = {}
     position, prior = np.array([1., 2.]), np.eye(2)*.25
     observation_variance, innovation = .01, .1
@@ -156,12 +193,21 @@ def run_experiments():
     supported = CircularParticleFilter([0., 10.])
     supported.update(10., .01, clutter_probability=0.)
     first = supported.weights.copy()
-    supported.update(0., 1.5e-154, clutter_probability=0.)
+    first_log = supported.log_weights
+    underflow = supported.weight_underflow_indices
+    supported.update(0., .01, clutter_probability=0.)
+    literal_zero = CircularParticleFilter([0., 10.])
+    literal_zero.set_prior_weights([0., 1.])
+    literal_zero.update(0., .01, clutter_probability=0.)
     result['E09-12'] = {'particles_deg': [179., -179.], 'linear_mean_deg': 0.,
         'circular_mean_deg': particles.estimate(), 'resultant_length': math.cos(math.radians(1)),
         'antipodal_status': status, 'antipodal_angle_deg': undefined_angle,
         'support_after_first': first, 'support_after_second': supported.weights,
-        'support_note': 'zero prior remains zero; the nearest unsupported particle must not set the likelihood shift'}
+        'log_weights_after_first': first_log, 'linear_underflow_indices_after_first': underflow,
+        'log_weights_after_second': supported.log_weights,
+        'explicit_zero_prior_after_update': literal_zero.weights,
+        'prior_reset_method': 'set_prior_weights',
+        'support_note': 'persistent finite log weights retain positive support; set_prior_weights explicitly resets support, including same-value displayed weights'}
 
     result['E09-13'] = jpda_anchor()
     # Enumerate the actual random sets: columns indicate presence at a,b.
@@ -244,14 +290,77 @@ def run_experiments():
         'wrong_Q_half_reused_for_full_interval': q_half,
         'negative_cross_prior': [[4., -1.], [-1., 1.]], 'prediction_without_observation': decreasing.covariance}
 
-    _, audio = build_fixture()
-    result['E09-19'] = {'audio_directory': 'codes/chapters/ch09/tracking_audio',
-        'float_scores': audio['float_analysis']['scores'], 'pcm_scores': audio['pcm_analysis']['scores'],
-        'common_export_gain': audio['common_export_gain'], 'config': audio['analysis_config'],
-        'first_state_time_s': audio['pcm_analysis']['frames']['state_time_s'][0],
-        'first_available_time_s': audio['pcm_analysis']['frames']['available_time_s'][0],
-        'missing_state_times_s': [t for t, valid in zip(audio['pcm_analysis']['frames']['state_time_s'],
-                                                     audio['pcm_analysis']['frames']['observation_valid']) if not valid]}
+    result['E09-19'] = actual_tracking_audio(audio_directory)
+
+    # E20: two measurements of one static scalar state, not two time steps.
+    observation_map = np.ones((2, 1))
+    correlated_noise = np.array([[1., .9], [.9, 1.]])
+    innovation_covariance = observation_map@observation_map.T+correlated_noise
+    joint_gain = np.linalg.solve(innovation_covariance, observation_map).T
+    independent_covariance = observation_map@observation_map.T+np.eye(2)
+    independent_gain = np.linalg.solve(independent_covariance, observation_map).T
+    result['E09-20'] = {'prior_mean': 0., 'prior_variance': 1., 'observations': [1., 1.],
+        'measurement_noise_covariance': correlated_noise, 'innovation_covariance': innovation_covariance,
+        'joint_gain': joint_gain[0], 'joint_mean': float((joint_gain@np.ones(2))[0]),
+        'joint_variance': float((1-joint_gain@observation_map)[0, 0]),
+        'wrong_independent_mean': float((independent_gain@np.ones(2))[0]),
+        'wrong_independent_variance': float((1-independent_gain@observation_map)[0, 0]),
+        'perfect_correlation_limit': {'mean': .5, 'variance': .5},
+        'scope': 'static state and correlated zero-mean Gaussian noise; rho=1 is a singular limit'}
+
+    initial = np.array([1., 2.]); velocity = np.array([1., 0.]); times = np.arange(3.)
+    positions = initial+times[:, None]*velocity
+    rows = np.column_stack((positions[:, 1], -positions[:, 0],
+                            times*positions[:, 1], -times*positions[:, 0]))
+    scale_null = np.r_[initial, velocity]
+    result['E09-21'] = {'array_center_m': [0., 0.], 'initial_position_m': initial,
+        'velocity_m_s': velocity, 'scale_factor': 2., 'times_s': times,
+        'positions_m': positions, 'scaled_positions_m': 2*positions,
+        'bearings_deg': np.rad2deg(np.arctan2(positions[:, 0], positions[:, 1])),
+        'scaled_bearings_deg': np.rad2deg(np.arctan2(2*positions[:, 0], 2*positions[:, 1])),
+        'ranges_m': np.hypot(positions[:, 0], positions[:, 1]),
+        'scaled_ranges_m': 2*np.hypot(positions[:, 0], positions[:, 1]),
+        'stacked_jacobian_without_positive_row_denominators': rows,
+        'stacked_rank': int(np.linalg.matrix_rank(rows)), 'scale_null_direction': scale_null,
+        'stacked_null_product': rows@scale_null,
+        'scope': 'fixed array, unknown constant Cartesian velocity; instantaneous geometric bearing at source-state time, propagation delay ignored; not equivalence of receiver-clock retarded audio'}
+
+    prior_existence = .8
+    cases = []
+    for detection_probability in (.9, .1):
+        empty_probability = 1-prior_existence*detection_probability
+        cases.append({'detection_probability': detection_probability,
+            'empty_observation_probability': empty_probability,
+            'bernoulli_posterior_existence': prior_existence*(1-detection_probability)/empty_probability,
+            'different_poisson_phd_posterior_mass': prior_existence*(1-detection_probability)})
+    result['E09-22'] = {'prior_existence': prior_existence, 'cases': cases,
+        'scope': 'at most one target, no clutter/birth/survival transition in this update, known constant detection probability; not VAD or identity'}
+
+    # E23: joint conditioning and chronological replay must agree at time 2.
+    observation_covariance = np.array([[3., 2.], [2., 4.]])
+    final_state_observation_cross = np.array([2., 3.])
+    joint_gain = np.linalg.solve(observation_covariance, final_state_observation_cross)
+    replay_mean, replay_variance = 0., 1.
+    replay = []
+    for observation in (2., -1.):
+        prior_variance = replay_variance+1
+        gain = prior_variance/(prior_variance+1)
+        replay_mean += gain*(observation-replay_mean)
+        replay_variance = (1-gain)*prior_variance
+        replay.append({'mean': replay_mean, 'variance': replay_variance})
+    drop_mean, drop_variance = -.75, .75
+    wrong_gain = drop_variance/(drop_variance+1)
+    result['E09-23'] = {'P0': 1., 'Q': 1., 'R': 1., 'observations_by_measurement_time': [2., -1.],
+        'arrival_order_measurement_times': [2, 1], 'final_state_time': 2,
+        'joint_observation_covariance': observation_covariance,
+        'final_state_observation_cross_covariance': final_state_observation_cross,
+        'joint_gain': joint_gain, 'joint_mean': float(joint_gain@np.array([2., -1.])),
+        'joint_variance': float(3-joint_gain@final_state_observation_cross),
+        'chronological_replay': replay,
+        'drop_late_observation': {'mean': drop_mean, 'variance': drop_variance},
+        'wrong_current_time_update': {'mean': drop_mean+wrong_gain*(2-drop_mean),
+                                      'variance': (1-wrong_gain)*drop_variance},
+        'scope': 'scalar Euclidean random walk; chronological replay uses original measurement times once, not a generic out-of-sequence tracker'}
     return _plain(result)
 
 

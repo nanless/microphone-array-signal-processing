@@ -17,8 +17,10 @@ from urllib.parse import unquote, urlparse
 
 try:
     from scripts.code_layout import MAIN_AUDIO_GROUP_CHAPTER, main_audio_manifest_path, main_audio_path
+    from scripts.build_site import _check_tracking_members, _read_tracking_manifest
 except ModuleNotFoundError:  # direct ``python scripts/quality_check.py``
     from code_layout import MAIN_AUDIO_GROUP_CHAPTER, main_audio_manifest_path, main_audio_path
+    from build_site import _check_tracking_members, _read_tracking_manifest
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -75,7 +77,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "06_aec.md": 67,
     "07_wpe-dereverberation.md": 53,
     "08_speech-separation.md": 59,
-    "09_source-tracking.md": 52,
+    "09_source-tracking.md": 56,
     "10_engineering-practice.md": 47,
     "11_selection-guide.md": 29,
     "12_appendix-symbols-math.md": 27,
@@ -100,10 +102,10 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 121
-EXPECTED_SUBSECTION_COUNT = 538
-EXPECTED_OUTLINE_ITEM_COUNT = 673
-EXPECTED_FIGURE_NUMBERS = set(range(1, 61))
-# 研究附站使用独立显式清单，不挤占 14 篇教程或 661 项 PDF 大纲基线。
+EXPECTED_SUBSECTION_COUNT = 542
+EXPECTED_OUTLINE_ITEM_COUNT = 677
+EXPECTED_FIGURE_NUMBERS = set(range(1, 62))
+# 研究附站使用独立显式清单，不挤占 14 篇教程或教程 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
     ("README.md", "index.html"),
@@ -707,7 +709,7 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60)
+            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
@@ -738,6 +740,8 @@ def check_figures(errors: list[str]):
                 with Image.open(path) as image:
                     if image.info.get("AudioManifestDigest") != expected:
                         fail(errors, "图60独立FFT掩码音频清单摘要失效")
+            if number == 61:
+                _check_tracking_information_report(ROOT / "codes/chapters/ch09/reports/figure61_tracking_information.json")
             if number in (34, 35, 36, 40, 41, 43, 45, 47, 49):
                 expected = hashlib.sha256((ROOT / "codes/chapters/ch00/audio/MANIFEST.json").read_bytes()).hexdigest()
                 with Image.open(path) as image:
@@ -745,6 +749,52 @@ def check_figures(errors: list[str]):
                         fail(errors, f"图 {number} 音频清单摘要失效")
         except Exception as exc:
             fail(errors, f"图片无法解码：figures/{name}: {exc}")
+
+
+def _check_tracking_information_report(path):
+    """Recompute figure61 using scalar geometry and averaged noise precision."""
+    import math
+    report = _read_tracking_manifest(path)
+    script = ROOT / 'scripts/make_figures.py'
+    if (report['script_sha256'] != hashlib.sha256(script.read_bytes()).hexdigest()
+            or report['schema_version'] != 1
+            or 'ignoring propagation delay' not in report['scope']
+            or report['stationary_observer_xy_m'] != [0, 0]
+            or report['initial_position_m'] != [1, 2] or report['velocity_m_s'] != [1, 0]
+            or report['comparison_scale'] != 2):
+        raise ValueError('图61生成源或瞬时几何模型不符')
+    def close(actual, expected):
+        if (type(actual) not in (int, float) or not math.isfinite(actual)
+                or not math.isclose(actual, expected, rel_tol=2e-13, abs_tol=1e-14)):
+            raise ValueError('图61独立解析复算不符')
+    times, positions, angles = report['time_s'], report['positions_xy_m'], report['bearing_deg']
+    if any(len(values) != 101 for values in (times, positions, angles)):
+        raise ValueError('图61几何采样数量不符')
+    for i, (time, position, angle) in enumerate(zip(times, positions, angles)):
+        close(time, i/50)
+        if len(position) != 2:
+            raise ValueError('图61位置维度不符')
+        close(position[0], 1+time); close(position[1], 2)
+        close(angle, math.degrees(math.atan2(1+time, 2)))
+    rows = report['jacobian_rows_without_positive_denominators']
+    if rows != [[2, -1, 0, 0], [2, -2, 2, -2], [2, -3, 4, -6]] or report['scale_null_direction'] != [1, 2, 1, 0]:
+        raise ValueError('图61雅可比/尺度零方向不符')
+    state = report['same_scalar_state']
+    if (state['prior_mean'] != 0 or state['prior_variance'] != 1 or state['observations'] != [1, 1]
+            or state['measurement_variances'] != [1, 1]
+            or state['rho_0_9_exact_mean'] != '20/39' or state['rho_0_9_exact_variance'] != '19/39'
+            or 'singular batch inverse not performed' not in state['rho_1']):
+        raise ValueError('图61相关观测模型或奇异极限说明不符')
+    close(state['independent_assumption_variance'], 1/3)
+    if any(len(state[key]) != 101 for key in ('rho', 'posterior_mean', 'posterior_variance')):
+        raise ValueError('图61相关性采样数量不符')
+    for i, (rho, mean, variance) in enumerate(zip(state['rho'], state['posterior_mean'], state['posterior_variance'])):
+        close(rho, i/100)
+        # The average of two same-state measurements has noise (1+rho)/2;
+        # scalar Bayesian precision adds its reciprocal to prior precision 1.
+        averaged_noise = (1+rho)/2
+        close(mean, 1/(1+averaged_noise))
+        close(variance, averaged_noise/(1+averaged_noise))
 
 
 def check_site(errors: list[str]):
@@ -1438,7 +1488,9 @@ def check_moving_audio(errors):
     expected_channels = {"source.wav": 1, "static_array.wav": 2, "moving_array.wav": 2}
     expected = set(expected_channels) | {"MANIFEST.json"}
     try:
-        manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+        for folder in (source, published):
+            _check_tracking_members(folder, expected)
+        manifest = _read_tracking_manifest(source / "MANIFEST.json")
         if (set(manifest["files"]) != set(expected_channels)
                 or manifest["sample_rate_hz"] != 16000
                 or "free field" not in manifest["model"]
@@ -1470,12 +1522,11 @@ def check_moving_audio(errors):
                         wav.getnframes(), wav.getcomptype()) != (
                             16000, 2, channels, record["samples_per_channel"], "NONE"):
                     raise ValueError(f"WAV 格式不符：{name}")
-        page = (SITE / "09_source-tracking.html").read_text(encoding="utf-8")
-        for name in expected_channels:
-            if f'src="moving_audio/{name}"' not in page:
-                raise ValueError(f"第 9 章缺少 {name} 的试听控件")
-        if 'href="moving_audio/MANIFEST.json"' not in page:
-            raise ValueError("第 9 章缺少移动声源真值清单链接")
+        from codes.chapters.ch09.examples.moving_source_audio import generate
+        generate(source, check=True)
+        for page, prefix in ((SITE / "09_source-tracking.html", ""),
+                             (SITE / "research/05_exercises_and_audio.html", "../")):
+            _check_visible_audio(page, prefix, "moving_audio", set(expected_channels), {"MANIFEST.json"})
     except Exception as exc:
         fail(errors, f"移动声源合成样本检查失败：{exc}")
 
@@ -2080,7 +2131,15 @@ def check_tracking_audio(errors):
         for name in expected:
             if (source/name).read_bytes() != (published/name).read_bytes():
                 raise ValueError(f"追踪音频网页副本不同：{name}")
-        manifest = json.loads((source/"MANIFEST.json").read_text())
+        manifest = _read_tracking_manifest(source/"MANIFEST.json")
+        required_sources = {
+            'codes/chapters/ch09/examples/chapter09_tracking_audio.py',
+            'codes/chapters/ch09/core/tracking_audio.py', 'codes/chapters/ch09/core/moving_source.py',
+            'codes/chapters/ch09/core/tracking.py', 'codes/chapters/ch04/core/doa.py',
+            'codes/chapters/ch04/core/covariance.py', 'codes/chapters/ch02/core/conventions.py',
+            'codes/chapters/ch00/core/audio_samples.py'}
+        if set(manifest.get('source_sha256', {})) != required_sources:
+            raise ValueError('追踪音频真实生成源集合不完整')
         for name,digest in manifest['source_sha256'].items():
             if hashlib.sha256((ROOT/name).read_bytes()).hexdigest() != digest:
                 raise ValueError(f"追踪音频生成源码已变化：{name}")
@@ -2092,20 +2151,95 @@ def check_tracking_audio(errors):
                 if (wav.getframerate(),wav.getnchannels(),wav.getsampwidth(),
                         wav.getnframes(),wav.getcomptype()) != (16000,channels,2,32000,'NONE'):
                     raise ValueError(f"追踪音频PCM格式不符：{name}")
-        frames = manifest['pcm_analysis']['frames']
-        if len(frames['state_time_s']) != 197 or any(len(v)!=197 for v in frames.values()):
-            raise ValueError("追踪音频逐帧结果长度不符")
-        if any(abs((a-t)-256.5/16000)>1e-12 for t,a in zip(
-                frames['state_time_s'],frames['available_time_s'])):
-            raise ValueError("帧中心和整帧可用时刻混淆")
-        page = (SITE/'09_source-tracking.html').read_text()
-        for name in expected-{'MANIFEST.json'}:
-            if f'src="tracking_audio/{name}"' not in page:
-                raise ValueError(f"第9章缺少追踪音频播放器：{name}")
-        if 'href="tracking_audio/MANIFEST.json"' not in page:
-            raise ValueError("第9章缺少追踪音频独立清单")
+        from codes.chapters.ch09.examples.chapter09_tracking_audio import generate
+        generate(source, check=True)
+        _check_tracking_frame_arithmetic(manifest, source/'array_noisy.wav')
+        for page, prefix in ((SITE/'09_source-tracking.html', ''),
+                             (SITE/'research/05_exercises_and_audio.html', '../')):
+            _check_visible_audio(page, prefix, 'tracking_audio', expected-{'MANIFEST.json'}, {'MANIFEST.json'})
     except Exception as exc:
         fail(errors,f"PCM观测追踪实验检查失败：{exc}")
+
+
+def _check_tracking_frame_arithmetic(manifest, array_path):
+    """Scalar, standard-library check independent of the KF/GCC array kernels."""
+    import math
+    import struct
+    with wave.open(str(array_path), 'rb') as wav:
+        pcm = struct.unpack('<64000h', wav.readframes(32000))
+
+    def close(actual, expected, label, *, tolerance=2e-12):
+        if (type(actual) not in (int, float) or not math.isfinite(actual)
+                or not math.isclose(actual, expected, rel_tol=2e-13, abs_tol=tolerance)):
+            raise ValueError('追踪音频独立标量复算不符：'+label)
+
+    for chain in ('float_analysis', 'pcm_analysis'):
+        frames, scores = manifest[chain]['frames'], manifest[chain]['scores']
+        if any(not isinstance(v, list) or len(v) != 197 for v in frames.values()):
+            raise ValueError('追踪音频逐帧结果长度不符')
+        valid, initialized, last = [], [], None
+        for i in range(197):
+            start, center = 160*i, (160*i+255.5)/16000
+            if type(frames['start_sample'][i]) is not int or frames['start_sample'][i] != start:
+                raise ValueError('追踪音频帧起点必须为真实整数样本编号')
+            close(frames['state_time_s'][i], center, '状态时刻')
+            close(frames['available_time_s'][i], (start+512)/16000, '可用时刻')
+            # Retarded-time quadratic solved for propagation delay; no Newton kernel.
+            px, py, vx, speed = -.8+.8*center, 1.5, .8, 343.
+            a, b, r2 = speed**2-vx**2, 2*px*vx, px*px+py*py
+            delay = 2*r2/(b+math.sqrt(b*b+4*a*r2))
+            emission = center-delay
+            source_x = -.8+.8*emission
+            close(frames['center_emission_time_s'][i], emission, '发射时刻')
+            close(frames['truth_angle_deg'][i], math.degrees(math.atan2(source_x, py)), '方向真值')
+            tau = (math.hypot(source_x-.05, py)-math.hypot(source_x+.05, py))/speed*16000
+            close(frames['truth_tau10_samples'][i], tau, '同发射事件时差')
+            flag = frames['observation_valid'][i]
+            if type(flag) is not bool:
+                raise ValueError('追踪音频观测标记必须为bool')
+            valid.append(flag)
+            if flag:
+                close(frames['measurement_time_s'][i], center, '观测时刻')
+                last = center
+                close(frames['observation_angle_deg'][i], math.degrees(math.asin(
+                    -343*frames['observation_tau10_samples'][i]/16000/.1)), '时差换算方向')
+            elif any(frames[key][i] is not None for key in
+                     ('measurement_time_s', 'observation_angle_deg', 'observation_tau10_samples')):
+                raise ValueError('缺测观测字段必须为null')
+            if last is None:
+                if frames['last_valid_measurement_time_s'][i] is not None:
+                    raise ValueError('初始化之前不能有最近观测时刻')
+            else:
+                close(frames['last_valid_measurement_time_s'][i], last, '最近有效观测时刻')
+            has_state = frames['filtered_angle_deg'][i] is not None
+            initialized.append(has_state)
+            expected_phase = ('uninitialized' if not has_state else
+                              'initialized_from_observation' if sum(initialized) == 1 else
+                              'posterior' if flag else 'prediction_only')
+            if frames['state_phase'][i] != expected_phase:
+                raise ValueError('追踪音频初始化/后验/预测状态混淆')
+            if has_state and frames['angle_variance_deg2'][i] < 0:
+                raise ValueError('追踪音频状态方差为负')
+            if chain == 'pcm_analysis':
+                codes = pcm[2*start:2*(start+512)]
+                rms = math.sqrt(math.fsum(v*v for v in codes)/1024)/32768/manifest['common_export_gain']
+                close(frames['rms_before_export'][i], rms, '实际PCM均方根')
+        counts = {'frame_count': 197, 'valid_observation_count': sum(valid),
+                  'missing_observation_count': sum(not v for v in valid),
+                  'initialized_missing_count': sum(s and not v for s, v in zip(initialized, valid))}
+        for field, value in counts.items():
+            if type(scores[field]) is not int or scores[field] != value:
+                raise ValueError('追踪音频评分整数分母不符：'+field)
+        for field, values, mask in (
+            ('raw_valid_rmse_deg', frames['observation_angle_deg'], valid),
+            ('filtered_valid_rmse_deg', frames['filtered_angle_deg'], [v and s for v, s in zip(valid, initialized)]),
+            ('filtered_missing_rmse_deg', frames['filtered_angle_deg'], [not v and s for v, s in zip(valid, initialized)])):
+            errors = [(x-t)**2 for x, t, selected in zip(values, frames['truth_angle_deg'], mask) if selected]
+            if not errors:
+                if scores[field] is not None:
+                    raise ValueError('空评分集合不能报告数值')
+            else:
+                close(scores[field], math.sqrt(math.fsum(errors)/len(errors)), field)
 
 class VisibleMediaParser(HTMLParser):
     """Collect usable media and links outside hidden or inert subtrees."""
@@ -2119,9 +2253,18 @@ class VisibleMediaParser(HTMLParser):
                   'hidden' in values or 'inert' in values or
                   values.get('aria-hidden', '').lower() == 'true' or
                   bool(re.search(r'display\s*:\s*none|visibility\s*:\s*hidden', values.get('style', ''), re.I)))
+        visible_summary = (tag == 'summary' and bool(self.stack)
+                           and self.stack[-1][0] == 'details' and not self.stack[-1][4])
+        if visible_summary:
+            parent = self.stack[-1]
+            self.stack[-1] = (*parent[:4], True)
         if tag not in ('area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'):
-            self.stack.append((tag, hidden))
-        if not hidden and not any(item[1] for item in self.stack):
+            self.stack.append((tag, hidden, tag == 'details' and 'open' not in values,
+                               visible_summary, False))
+        collapsed = any(item[2] and not (index+1 < len(self.stack)
+                        and self.stack[index+1][0] == 'summary' and self.stack[index+1][3])
+                        for index, item in enumerate(self.stack))
+        if not hidden and not collapsed and not any(item[1] for item in self.stack):
             if tag == 'audio':
                 self.items.append(values)
             if tag == 'a':

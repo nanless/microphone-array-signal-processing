@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import math
+from fractions import Fraction
 
 import numpy as np
 
@@ -14,8 +15,56 @@ def wrap_angle(angle: float | np.ndarray) -> float | np.ndarray:
     """Map degrees to ``[-180, 180)``."""
 
     # Reduce before adding 180 so large finite angles cannot overflow.
-    wrapped = (finite_real_array(angle, "angle") % 360.0 + 180.0) % 360.0 - 180.0
+    value = finite_real_array(angle, "angle")
+    wrapped = (value % 360.0 + 180.0) % 360.0 - 180.0
+    # Addition at the 180-degree scale cannot resolve very small directions.
+    wrapped = np.where(np.abs(value) < 1e-12, value, wrapped)
     return float(wrapped) if wrapped.ndim == 0 else wrapped
+
+
+def _finite_fraction(value, *, positive=False):
+    """Convert only the final exact compound result; never call a lost variance zero."""
+    try:
+        result = float(value)
+    except OverflowError as error:
+        raise ValueError("tracking result exceeds floating-point range") from error
+    if not math.isfinite(result) or (value != 0 and result == 0):
+        raise ValueError("nonzero tracking result is outside float64 support")
+    if positive and value < 0:
+        raise ValueError("negative tracking variance")
+    return result
+
+
+def _exceptional(*values):
+    nonzero = np.concatenate([np.asarray(v, float).reshape(-1) for v in values])
+    nonzero = np.abs(nonzero[nonzero != 0])
+    return bool(nonzero.size and (nonzero.min() < 1e-140 or nonzero.max() > 1e140))
+
+
+def white_acceleration_covariance(dt, density):
+    """Integrated white angular acceleration: dt seconds, density deg²/s³.
+
+    Zero interval/density is legal. Ordinary inputs retain the original order;
+    exceptional scales accumulate the full monomials exactly before conversion.
+    Unrepresentable strictly positive variances are rejected, not physical zero.
+    """
+    dt = finite_real_scalar(dt, "dt")
+    density = finite_real_scalar(density, "density")
+    if dt < 0 or density < 0:
+        raise ValueError("dt and density must be nonnegative")
+    if dt == 0 or density == 0:
+        return np.zeros((2, 2))
+    if not _exceptional(dt, density):
+        try:
+            with np.errstate(over="raise", invalid="raise", under="raise"):
+                ordinary = density*np.array([[dt**3/3, dt**2/2], [dt**2/2, dt]])
+            if np.all(ordinary > 0) and np.all(np.isfinite(ordinary)):
+                return ordinary
+        except (FloatingPointError, OverflowError):
+            pass
+    t, q = Fraction(dt), Fraction(density)
+    return np.array([[_finite_fraction(q*t**3/3, positive=True), _finite_fraction(q*t*t/2)],
+                     [_finite_fraction(q*t*t/2), _finite_fraction(q*t, positive=True)]])
 
 
 class ConstantVelocityKalman:
@@ -23,7 +72,10 @@ class ConstantVelocityKalman:
 
     ``process_noise`` is already discretized for one prediction interval.  If
     ``dt`` changes, the caller must supply a consistently scaled Q; this small
-    class does not infer a continuous white-acceleration density.
+    class does not infer a continuous white-acceleration density. Exceptional
+    state updates use exact rational compound arithmetic until final conversion.
+    Unrepresentable nonzero final entries and PSD normalization loss are rejected
+    atomically. This finite teaching interface is not an all-float64 solver.
     """
 
     def __init__(self, state: np.ndarray, covariance: np.ndarray, process_noise: np.ndarray):
@@ -45,9 +97,21 @@ class ConstantVelocityKalman:
         transition = np.array([[1.0, dt], [0.0, 1.0]])
         try:
             with np.errstate(over="raise", invalid="raise", divide="raise"):
-                state = transition @ self.state
+                if _exceptional(dt, self.state, self.covariance, self.process_noise):
+                    t = Fraction(dt)
+                    x = [Fraction(float(v)) for v in self.state]
+                    p = [[Fraction(float(v)) for v in row] for row in self.covariance]
+                    q = [[Fraction(float(v)) for v in row] for row in self.process_noise]
+                    state = np.array([_finite_fraction(x[0]+t*x[1]), float(x[1])])
+                    covariance = np.array([
+                        [_finite_fraction(p[0][0]+t*(p[0][1]+p[1][0])+t*t*p[1][1]+q[0][0], positive=True),
+                         _finite_fraction(p[0][1]+t*p[1][1]+q[0][1])],
+                        [_finite_fraction(p[1][0]+t*p[1][1]+q[1][0]),
+                         _finite_fraction(p[1][1]+q[1][1], positive=True)]])
+                else:
+                    state = transition @ self.state
+                    covariance = transition @ self.covariance @ transition.T + self.process_noise
                 state[0] = wrap_angle(state[0])
-                covariance = transition @ self.covariance @ transition.T + self.process_noise
                 covariance = _checked_covariance(covariance)
         except FloatingPointError as error:
             raise ValueError("predicted state or covariance exceeds floating-point range") from error
@@ -73,18 +137,31 @@ class ConstantVelocityKalman:
             raise ValueError("innovation variance must be positive and finite")
         try:
             with np.errstate(over="raise", invalid="raise", divide="raise"):
-                gain = (self.covariance[:, 0] / scale) / denominator
-                if not np.all(np.isfinite(gain)):
-                    raise ValueError("Kalman gain exceeds floating-point range")
-                state = self.state + gain * innovation
-                state[0] = wrap_angle(state[0])
-                residual_map = np.array([[1.0 - gain[0], 0.0], [-gain[1], 1.0]])
-                # Joseph form keeps covariance positive semidefinite better
-                # than subtracting nearly equal prior and correction matrices.
-                covariance = (
-                    residual_map @ self.covariance @ residual_map.T
-                    + measurement_variance * np.outer(gain, gain)
-                )
+                if _exceptional(self.covariance, measurement_variance, innovation):
+                    p = [[Fraction(float(v)) for v in row] for row in self.covariance]
+                    r = Fraction(measurement_variance)
+                    total = p[0][0]+r
+                    correction = [p[i][0]*Fraction(float(innovation))/total for i in range(2)]
+                    state = np.array([_finite_fraction(Fraction(float(self.state[i]))+correction[i])
+                                      for i in range(2)])
+                    state[0] = wrap_angle(state[0])
+                    # Algebraically Joseph, evaluated without separately rounded terms.
+                    covariance = np.array([[_finite_fraction(p[i][j]-p[i][0]*p[0][j]/total,
+                                                            positive=i == j)
+                                             for j in range(2)] for i in range(2)])
+                else:
+                    gain = (self.covariance[:, 0] / scale) / denominator
+                    if not np.all(np.isfinite(gain)):
+                        raise ValueError("Kalman gain exceeds floating-point range")
+                    state = self.state + gain * innovation
+                    state[0] = wrap_angle(state[0])
+                    residual_map = np.array([[1.0 - gain[0], 0.0], [-gain[1], 1.0]])
+                    # Joseph form keeps covariance positive semidefinite better
+                    # than subtracting nearly equal prior and correction matrices.
+                    covariance = (
+                        residual_map @ self.covariance @ residual_map.T
+                        + measurement_variance * np.outer(gain, gain)
+                    )
                 covariance = _checked_covariance(covariance)
         except FloatingPointError as error:
             raise ValueError("updated state or covariance exceeds floating-point range") from error
@@ -110,7 +187,13 @@ def _checked_covariance(matrix: np.ndarray, name: str = "tracking covariance") -
     scale = float(np.max(np.abs(matrix)))
     if scale == 0:
         return matrix.copy()
+    # A zero variance has an identically zero covariance row/column.
+    zero = np.diag(matrix) == 0
+    if np.any(matrix[zero] != 0) or np.any(matrix[:, zero] != 0):
+        raise ValueError(f"{name} has nonzero covariance with zero variance")
     unit = matrix / scale
+    if np.any((matrix != 0) & (unit == 0)):
+        raise ValueError(f"{name} normalization loses a nonzero entry")
     tolerance = 32 * matrix.shape[0] * np.finfo(float).eps
     if np.max(np.abs(unit - unit.T)) > tolerance:
         raise ValueError(f"{name} must be symmetric relative to its scale")
@@ -145,7 +228,12 @@ def systematic_resample(weights: np.ndarray, rng: np.random.Generator) -> np.nda
 
 
 class CircularParticleFilter:
-    """Angle-only SIR particle filter with a Gaussian-plus-uniform likelihood."""
+    """Angle-only SIR with persistent log posterior and linear display weights.
+
+    Finite log support survives exp underflow. Explicit set_prior_weights zero
+    priors and unselected resampling ancestors really remove support. Gaussian log penalties
+    outside float64 support are rejected atomically, not treated as zero density.
+    """
 
     def __init__(self, particles: np.ndarray):
         self.particles = finite_real_array(particles, "particles").copy()
@@ -153,6 +241,34 @@ class CircularParticleFilter:
             raise ValueError("particles must be a non-empty finite vector")
         self.particles = wrap_angle(self.particles)
         self.weights = np.full(self.particles.size, 1.0 / self.particles.size)
+        self._log_weights = np.log(self.weights)
+        self._weight_snapshot = self.weights.copy()
+        self.last_resample_ancestor_indices = None
+        self.last_resample_removed_indices = []
+
+    def set_prior_weights(self, weights):
+        """Explicitly replace the prior, even when its display values are unchanged.
+
+        Accept finite real nonnegative masses of the particle shape and positive
+        total mass. Actual input zeros get -inf logs; normalized positive masses
+        below the linear display range retain finite logs. Validation and full
+        normalization finish before either posterior representation is committed.
+        Legacy direct edits whose values differ from the snapshot are detected
+        on update; identical in-place writes cannot be detected and are not this
+        explicit reset API.
+        """
+        prior = finite_real_array(weights, "prior weights")
+        if prior.shape != self.particles.shape or np.any(prior < 0) or not np.any(prior > 0):
+            raise ValueError("prior weights must have the particle shape and positive nonnegative mass")
+        logs = np.log(prior, where=prior > 0, out=np.full_like(prior, -np.inf))
+        maximum = float(np.max(logs))
+        with np.errstate(under="ignore"):
+            unnormalized = np.exp(logs-maximum)
+            linear = unnormalized/float(np.sum(unnormalized))
+        log_weights = (logs-maximum)-math.log(float(np.sum(unnormalized)))
+        self.weights = linear
+        self._log_weights = log_weights
+        self._weight_snapshot = linear.copy()
 
     def predict(self, angular_velocity: float, dt: float, process_std: float, rng: np.random.Generator) -> None:
         angular_velocity = finite_real_scalar(angular_velocity, "angular_velocity")
@@ -185,10 +301,21 @@ class CircularParticleFilter:
             or not 0.0 <= clutter_probability < 1.0
         ):
             raise ValueError("invalid observation_std or clutter_probability")
+        # Legacy value-changing edits are recognized for compatibility. Use
+        # set_prior_weights to explicitly reset an unchanged linear display.
+        # A zero caused by exp underflow alone does not remove support.
+        weights = finite_real_array(self.weights, "weights")
+        if weights.shape != self.particles.shape or np.any(weights < 0) or not np.any(weights > 0):
+            raise ValueError("weights must have the particle shape and positive mass")
+        manually_changed = not np.array_equal(weights, self._weight_snapshot)
+        if manually_changed or not self.weight_underflow_indices:
+            prior_logs = np.log(weights, where=weights > 0, out=np.full_like(weights, -np.inf))
+        else:
+            prior_logs = self._log_weights.copy()
         error = wrap_angle(wrap_angle(observation) - self.particles)
         absolute_error = np.abs(error)
         if clutter_probability == 0.0:
-            support = self.weights > 0
+            support = np.isfinite(prior_logs)
             minimum = float(np.min(absolute_error[support]))
             delta = absolute_error - minimum
             log_likelihood = np.full_like(absolute_error, -np.inf)
@@ -202,6 +329,8 @@ class CircularParticleFilter:
                            - math.log(2.) - 2*math.log(observation_std))
             with np.errstate(over="ignore", under="ignore"):
                 log_likelihood[other] = -np.exp(log_penalty)
+            if np.any(~np.isfinite(log_likelihood[support])):
+                raise ValueError("positive particle log likelihood exceeds float64 support")
         else:
             with np.errstate(over="ignore", under="ignore", divide="ignore"):
                 log_gaussian = (-0.5 * (absolute_error / observation_std) ** 2
@@ -211,12 +340,10 @@ class CircularParticleFilter:
                     math.log1p(-clutter_probability) + log_gaussian,
                     math.log(clutter_probability) - math.log(360.0),
                 )
-        log_weights = np.log(
-            self.weights,
-            where=self.weights > 0,
-            out=np.full_like(self.weights, -np.inf),
-        )
-        log_weights += log_likelihood
+        with np.errstate(over="ignore", invalid="ignore"):
+            log_weights = prior_logs + log_likelihood
+        if np.any(np.isfinite(prior_logs) & np.isfinite(log_likelihood) & ~np.isfinite(log_weights)):
+            raise ValueError("positive particle log posterior exceeds float64 support")
         maximum = float(np.max(log_weights))
         if not np.isfinite(maximum):
             raise FloatingPointError("particle posterior has no finite support")
@@ -224,6 +351,25 @@ class CircularParticleFilter:
             unnormalized = np.exp(log_weights - maximum)
             weights = unnormalized / np.sum(unnormalized)
         self.weights = weights
+        self._log_weights = (log_weights-maximum)-math.log(float(np.sum(unnormalized)))
+        self._weight_snapshot = weights.copy()
+
+    @property
+    def log_weights(self):
+        """Copy of normalized log probabilities; -inf denotes actual removed support."""
+        if not np.array_equal(self.weights, self._weight_snapshot):
+            weights = finite_real_array(self.weights, "weights")
+            if weights.shape != self.particles.shape or np.any(weights < 0) or not np.any(weights > 0):
+                raise ValueError("invalid explicit particle prior")
+            return np.log(weights, where=weights > 0, out=np.full_like(weights, -np.inf))
+        return self._log_weights.copy()
+
+    @property
+    def weight_underflow_indices(self):
+        """Linear display zeros whose stored mathematical log probability is finite."""
+        if not np.array_equal(self.weights, self._weight_snapshot):
+            return []
+        return np.flatnonzero((self.weights == 0) & np.isfinite(self._log_weights)).tolist()
 
     @property
     def effective_sample_size(self) -> float:
@@ -250,6 +396,11 @@ class CircularParticleFilter:
         if self.effective_sample_size >= limit:
             return False
         indices = systematic_resample(self.weights, rng)
+        self.last_resample_ancestor_indices = indices.copy()
+        self.last_resample_removed_indices = sorted(set(range(self.particles.size))-set(indices.tolist()))
         self.particles = self.particles[indices]
         self.weights.fill(1.0 / self.weights.size)
+        # Ancestor selection explicitly discards unselected support.
+        self._log_weights = np.log(self.weights)
+        self._weight_snapshot = self.weights.copy()
         return True

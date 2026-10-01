@@ -106,19 +106,34 @@ class StableTrackingTest(unittest.TestCase):
         np.testing.assert_array_equal(tracker.state, before_state)
         np.testing.assert_array_equal(tracker.covariance, before_covariance)
 
-    def test_failed_update_does_not_change_filter(self):
-        # This rank-one PSD matrix permits an enormous velocity gain.  A
-        # 179-degree innovation makes the updated velocity unrepresentable.
+    def test_covariance_normalization_loss_is_rejected_before_construction(self):
+        # These float entries are not exactly rank-one PSD, and global
+        # normalization loses the nonzero first variance. Do not accept a
+        # changed statistical input in order to reach a later overflow test.
         prior = np.array([[1e-308, 1.0], [1.0, 1e308]])
-        tracker = ConstantVelocityKalman([0.0, 1.0], prior, np.zeros((2, 2)))
+        with self.assertRaisesRegex(ValueError, "normalization loses"):
+            ConstantVelocityKalman([0.0, 1.0], prior, np.zeros((2, 2)))
+
+    def test_failed_update_does_not_change_filter(self):
+        from fractions import Fraction
+        smallest = float.fromhex('0x0.0000000000001p-1022')
+        prior = np.diag([smallest, 2*smallest])
+        # Independent scalar conditioning: the exact positive posterior
+        # equals 2**-1075, whose nearest-even float64 value is zero.
+        posterior = Fraction(smallest)**2/(2*Fraction(smallest))
+        self.assertGreater(posterior, 0)
+        self.assertEqual(float(posterior), 0)
+        tracker = ConstantVelocityKalman([1.0, 2.0], prior, np.zeros((2, 2)))
         before_state = tracker.state.copy()
         before_covariance = tracker.covariance.copy()
+        before_process = tracker.process_noise.copy()
         with warnings.catch_warnings():
             warnings.simplefilter("error", RuntimeWarning)
-            with self.assertRaises(ValueError):
-                tracker.update(179.0, 1e-308)
+            with self.assertRaisesRegex(ValueError, "outside float64 support"):
+                tracker.update(3.0, smallest)
         np.testing.assert_array_equal(tracker.state, before_state)
         np.testing.assert_array_equal(tracker.covariance, before_covariance)
+        np.testing.assert_array_equal(tracker.process_noise, before_process)
 
     def test_systematic_resampling_accepts_large_equal_weights(self):
         with warnings.catch_warnings():

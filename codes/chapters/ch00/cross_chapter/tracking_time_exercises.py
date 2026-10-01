@@ -15,7 +15,7 @@ import numpy as np
 
 from codes.chapters.ch02.core.conventions import finite_real_array, finite_real_scalar
 from codes.chapters.ch10.core.engineering import HysteresisVAD
-from codes.chapters.ch09.core.tracking import CircularParticleFilter, ConstantVelocityKalman
+from codes.chapters.ch09.core.tracking import CircularParticleFilter, ConstantVelocityKalman, white_acceleration_covariance
 
 
 def predict_timestamped_direction(state, covariance, measurement_time_s,
@@ -39,9 +39,12 @@ def predict_timestamped_direction(state, covariance, measurement_time_s,
     # at the input timestamp scale, not a fixed application-level grace period.
     time_tolerance = 2 * max(math.ulp(measurement_time_s), math.ulp(consumption_time_s),
                              math.ulp(valid_for_s))
-    if not math.isfinite(dt) or dt > valid_for_s + time_tolerance:
+    if valid_for_s > 0 and time_tolerance >= valid_for_s:
+        raise ValueError("timestamp resolution cannot establish the requested state lifetime")
+    if (not math.isfinite(dt) or (valid_for_s == 0 and dt > 0)
+            or dt > valid_for_s + time_tolerance):
         raise ValueError("state has expired")
-    q = acceleration_density * np.array([[dt**3 / 3, dt**2 / 2], [dt**2 / 2, dt]])
+    q = white_acceleration_covariance(dt, acceleration_density)
     tracker = ConstantVelocityKalman(state, covariance, q)
     if dt:
         tracker.predict(dt)

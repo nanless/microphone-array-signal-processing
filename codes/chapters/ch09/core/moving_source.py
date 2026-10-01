@@ -13,6 +13,14 @@ import numpy as np
 from codes.chapters.ch02.core.conventions import finite_real_array, finite_real_scalar
 
 
+def _distance(offset):
+    """Preserve ordinary norm arithmetic; avoid squared extreme components."""
+    nonzero = np.abs(offset[offset != 0])
+    if nonzero.size and (nonzero.min() < 1e-140 or nonzero.max() > 1e140):
+        return np.hypot(offset[..., 0], offset[..., 1])
+    return np.linalg.norm(offset, axis=2)
+
+
 def retarded_emission_times(
     receiver_times: np.ndarray,
     microphones_xy: np.ndarray,
@@ -45,16 +53,23 @@ def retarded_emission_times(
             times = np.broadcast_to(t, (m.shape[0], t.size)).copy()
             for _ in range(12):
                 offset = p0[None, None, :] + times[:, :, None] * v[None, None, :] - m[:, None, :]
-                distance = np.linalg.norm(offset, axis=2)
+                distance = _distance(offset)
                 if np.any(distance <= 0):
                     raise ValueError("source crosses a point microphone; 1/r model is singular")
                 equation = times + distance / sound_speed - t[None, :]
-                slope = 1 + np.sum(offset * v[None, None, :], axis=2) / (sound_speed * distance)
+                exceptional = (np.max(np.abs(offset)) > 1e140
+                               or np.any((offset != 0) & (np.abs(offset) < 1e-140))
+                               or sound_speed < 1e-140 or sound_speed > 1e140)
+                if exceptional:
+                    # Dot unit direction with v/c; never form c*r or r*v.
+                    slope = 1 + np.sum((offset/distance[..., None])*(v/sound_speed), axis=2)
+                else:
+                    slope = 1 + np.sum(offset * v[None, None, :], axis=2) / (sound_speed * distance)
                 times -= equation / slope
             offset = p0[None, None, :] + times[:, :, None] * v[None, None, :] - m[:, None, :]
-            residual = times + np.linalg.norm(offset, axis=2) / sound_speed - t[None, :]
+            residual = times + _distance(offset) / sound_speed - t[None, :]
             if not np.all(np.isfinite(times)) or not np.all(np.isfinite(residual)) or np.max(np.abs(residual)) > 1e-10:
-                raise ArithmeticError("retarded-time solve did not converge")
+                raise ValueError("retarded-time solve did not converge within representable time resolution")
     except FloatingPointError as error:
         raise ValueError("retarded-time arithmetic exceeds floating-point range") from error
 
@@ -100,7 +115,7 @@ def free_field_array(
     m = np.asarray(microphones_xy)
     try:
         with np.errstate(over="raise", invalid="raise", divide="raise"):
-            distance = np.linalg.norm(p0[None, None, :] + emission[:, :, None] * v - m[:, None, :], axis=2)
+            distance = _distance(p0[None, None, :] + emission[:, :, None] * v - m[:, None, :])
             waveform = synthetic_source(emission) * (reference_distance_m / distance)
     except FloatingPointError as error:
         raise ValueError("free-field waveform exceeds floating-point range") from error

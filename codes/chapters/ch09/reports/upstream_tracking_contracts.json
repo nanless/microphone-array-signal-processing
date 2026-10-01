@@ -1,0 +1,1192 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-01T03:48:28.017625+00:00",
+  "tool_sha256": "32b13964b8c468007e6b3beca9a29fbe9930be84eedc1127769186f8aa72a7c3",
+  "source_lock_sha256": "5cf610a5bee5a65c0b5bb77293f2bd6549446d22e635594fc313710f4109b8cf",
+  "source_status_sha256": "8865ed3c4d505dec86a8985af730a63b239830af87cfdb62c47d5c8e1600f36a",
+  "environment": {
+    "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
+    "executable": "/private/tmp/masp-ch04-pra-venv/bin/python",
+    "numpy": "2.5.3",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O"
+  },
+  "sources_before": {
+    "odas": {
+      "head": "bcb845434495e293df3d48f1203b7a86e1852449",
+      "tracked_clean": true,
+      "files": {
+        "LICENSE": {
+          "sha256": "d80055b1eac9fdb001f429f262c79ce6a7619b85064a759f17b0b33bbb9c8b2a",
+          "git_blob": "d5a6cb64f9f52b2892bd48f88194ae514bf38751"
+        },
+        "src/system/kalman2kalman.c": {
+          "sha256": "c6dc032c43504c0a98a5015ebebfe1e74be63f72a2484f79550c80a56f3d9b65",
+          "git_blob": "ad8e06f481bf7692acde9e29a900575648dec95b"
+        },
+        "src/signal/kalman.c": {
+          "sha256": "b3cbd730ea5a466ec2924b055efada63da260cc805462c02db16c6ee6cbac102",
+          "git_blob": "39b4ca1cf1ecebbfb42c1caa647a3d5da428047b"
+        },
+        "src/utils/matrix.c": {
+          "sha256": "bf61ae5e49840d0ad4d978cf1934b6bb7d96ff38451aeb5382d55c11dd2abd1a",
+          "git_blob": "8117a53d1d3667a77a8e25745597daac91119d77"
+        },
+        "include/odas/system/kalman2kalman.h": {
+          "sha256": "2c37c6fd1a92cf70a9030a7538924b9c9bbce24f4a5ff39d0cd5fcbfb9037442",
+          "git_blob": "d98ebdb39b093c362692ef1b536458d56934186d"
+        },
+        "include/odas/signal/kalman.h": {
+          "sha256": "6ed7d7f5b5040ad7fb000c555fa2a5c48eeed70a7b1dced0a6722b3fcda0789e",
+          "git_blob": "ebbcfa331f2e8357accd5e77bb070aa7811e63c1"
+        },
+        "include/odas/signal/postprob.h": {
+          "sha256": "e528c3b6da2ca3790ed589b95405ef8d095c043998db4a8175207adbb2afac9d",
+          "git_blob": "402d48e0ecd0f9c4026924b96c214260c8431299"
+        },
+        "include/odas/signal/pot.h": {
+          "sha256": "56e632d71e7e2f0653a4f71fe7fcaafb1aaf936044c2c855d3bb664f28d39e31",
+          "git_blob": "bd84962552b85b65b816dd557dffedd71e6438ce"
+        },
+        "include/odas/signal/target.h": {
+          "sha256": "cd8f18a5e923c187875d847951c69c2679c2ddef5f858c7e875f93a7d75d7ea6",
+          "git_blob": "798ce58b8b78fc51f89f967d4523cdc772ca9505"
+        },
+        "include/odas/utils/matrix.h": {
+          "sha256": "acd4892c480ed07d7aba398cc0f3026e62d5914540f35a4098f95856a7adf602",
+          "git_blob": "204a593521dcd930223bb9de8abfb342ed053609"
+        }
+      },
+      "license": "MIT",
+      "lock_entry_sha256": "175375652b3e28dd9813ef2e7e12d8171248de93461d6fd7b89c7cddde7e3ff3"
+    },
+    "spatial-audio-framework": {
+      "head": "18fd5aba46e20787b51f28f7197a68506c965c07",
+      "tracked_clean": true,
+      "files": {
+        "LICENSE.md": {
+          "sha256": "0148c9bfe5f2093cd06cecd3359bc16bc29a2200863a59af81a90b7922c67af3",
+          "git_blob": "a19aa87fe94984bdbf7909ec344c05b7cca5465f"
+        },
+        "framework/modules/saf_tracker/saf_tracker.c": {
+          "sha256": "dd36f1878cddf0f54e16f9ac6e742afc46de2654d5af1cc288d3f3813adf7b10",
+          "git_blob": "289f16aed4b1dafefdd21f5fefd88daadaad078c"
+        },
+        "framework/modules/saf_tracker/saf_tracker.h": {
+          "sha256": "68425a5b74d1ba545c9dba583492aed00c24b77cb6aa49df6dcdcec25a230c2b",
+          "git_blob": "89729d278e755207fc28081bce97a9df2e2a2c14"
+        }
+      },
+      "license": "ISC core; GPL-2.0-or-later optional tracker module (individual headers control)",
+      "lock_entry_sha256": "3626e1987e43e851f4d60e085619dbf7d865b8827930285d50754c6a7736edc6"
+    },
+    "filterpy": {
+      "head": "3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33",
+      "tracked_clean": true,
+      "files": {
+        "LICENSE": {
+          "sha256": "8ffce1097f1b1c0fba42e4449ef49aa05cb7b45566dd0989407839dba07af99c",
+          "git_blob": "558870702fa539764c1efba5028240066b9c960e"
+        },
+        "filterpy/common/discretization.py": {
+          "sha256": "b3e625792e777bfef93f8a7d9020624c8750f66fc482eeec7b3b2c5ae2fdea96",
+          "git_blob": "697d67da5ec990d818738b4e772d3d200f2327d5"
+        }
+      },
+      "license": "MIT",
+      "lock_entry_sha256": "5abbacdb064e214c11292cd4823f09c05dfe4641c7d92200e0e30c4c88abd71f"
+    },
+    "stonesoup": {
+      "head": "8d1edeb07ef8505ed065cbef435cfb5e517d9bdc",
+      "tracked_clean": true,
+      "files": {
+        "LICENSE": {
+          "sha256": "2462f3d8a857f601e266f048a4ff051366c1e05f098cf3a1524eaf922f879815",
+          "git_blob": "6eaaea90802bb0e300414b3c7aaf3951ca255fdd"
+        },
+        "stonesoup/dataassociator/probability.py": {
+          "sha256": "d472902c229095cdbb20c7feee2a2ea89aa7bd3e77fdb84147f8a60cfaa3be36",
+          "git_blob": "f373417f29521b6335ea145f02ee11db520fd62c"
+        },
+        "stonesoup/hypothesiser/probability.py": {
+          "sha256": "ab9832c864d130429ded5515ed588995d3729a321f49587c28504494ef034455",
+          "git_blob": "270db9abe6c47325f75ccecb4c1dc216837aa1f4"
+        }
+      },
+      "license": "MIT",
+      "lock_entry_sha256": "85a1e0ede55fe58ac5b1a6ee3fabc446ef697a6206c6f18b94d61372e92e6779"
+    }
+  },
+  "python": {
+    "execution": "unchanged AST definitions; not full packages",
+    "filterpy_q": {
+      "dt": 0.5,
+      "discrete_acceleration_variance": 2.0,
+      "continuous_density": 2.0,
+      "discrete": [
+        [
+          0.03125,
+          0.125
+        ],
+        [
+          0.125,
+          0.5
+        ]
+      ],
+      "continuous": [
+        [
+          0.08333333333333333,
+          0.25
+        ],
+        [
+          0.25,
+          1.0
+        ]
+      ],
+      "absolute_tolerance": 1e-15,
+      "fragment_sha256": {
+        "Q_discrete_white_noise": "950cc0c3a8e26859f73cfd2b626c63c90e9ab612576979ca9f86e67b72434f61",
+        "Q_continuous_white_noise": "606518515aa7d2f9c94d5c54366ffb0930b173a8d31ca694f627cf4710af0328"
+      },
+      "adapters": [
+        "NumPy array/eye/dot/np namespace",
+        "single-block block_diag adapter"
+      ],
+      "not_called": [
+        "dim3/4",
+        "general SciPy block_diag",
+        "order_by_derivative"
+      ]
+    },
+    "jpda_isvalid": {
+      "events": [
+        {
+          "assignment": [
+            -1,
+            -1
+          ],
+          "valid": true
+        },
+        {
+          "assignment": [
+            -1,
+            0
+          ],
+          "valid": true
+        },
+        {
+          "assignment": [
+            -1,
+            1
+          ],
+          "valid": true
+        },
+        {
+          "assignment": [
+            -1,
+            2
+          ],
+          "valid": true
+        },
+        {
+          "assignment": [
+            0,
+            -1
+          ],
+          "valid": true
+        },
+        {
+          "assignment": [
+            0,
+            0
+          ],
+          "valid": false
+        },
+        {
+          "assignment": [
+            0,
+            1
+          ],
+          "valid": true
+        },
+        {
+          "assignment": [
+            0,
+            2
+          ],
+          "valid": true
+        },
+        {
+          "assignment": [
+            1,
+            -1
+          ],
+          "valid": true
+        },
+        {
+          "assignment": [
+            1,
+            0
+          ],
+          "valid": true
+        },
+        {
+          "assignment": [
+            1,
+            1
+          ],
+          "valid": false
+        },
+        {
+          "assignment": [
+            1,
+            2
+          ],
+          "valid": true
+        },
+        {
+          "assignment": [
+            2,
+            -1
+          ],
+          "valid": true
+        },
+        {
+          "assignment": [
+            2,
+            0
+          ],
+          "valid": true
+        },
+        {
+          "assignment": [
+            2,
+            1
+          ],
+          "valid": true
+        },
+        {
+          "assignment": [
+            2,
+            2
+          ],
+          "valid": false
+        }
+      ],
+      "valid_count": 13,
+      "fragment_sha256": {
+        "isvalid": "b02ae33f008015fc00265bd4dbd440c63a39ad91fc027f46085fe142378ef343"
+      },
+      "adapters": [
+        "minimal class shell",
+        "SimpleNamespace hypothesis",
+        "identity-labelled object detections",
+        "None missed detections"
+      ],
+      "not_called": [
+        "JPDA.associate",
+        "enumerate_JPDA_hypotheses",
+        "PDAHypothesiser",
+        "updater",
+        "metric"
+      ]
+    }
+  },
+  "native": {
+    "odas": {
+      "command": [
+        "/usr/bin/cc",
+        "-std=c11",
+        "-O0",
+        "-I",
+        "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/odas/include/odas",
+        "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/odas/src/system/kalman2kalman.c",
+        "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/odas/src/signal/kalman.c",
+        "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/odas/src/utils/matrix.c",
+        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-tracking-lif4yimy/odas_contract.c",
+        "-lm",
+        "-o",
+        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-tracking-lif4yimy/odas_contract"
+      ],
+      "compiler": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin25.6.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+      "compile_stdout": "",
+      "compile_stderr": "",
+      "harness_sha256": "31e3043f4111308262b7e1e349c9afa11f41060b97286061d05b0ac305aac736",
+      "raw_output": "0.5 0 0.0400000028 0.0100000007 1 0 1.25 0.5 1.03999996\n",
+      "execution": "original three C translation units; handwritten inputs",
+      "input": {
+        "dt": 0.5,
+        "sigmaQ": 0.2,
+        "sigmaR": 0.1,
+        "epsilon": 1e-10,
+        "state": [
+          1,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "covariance": "identity6"
+      },
+      "output_order": [
+        "F03",
+        "Q00",
+        "Q33",
+        "R00",
+        "direction_x",
+        "velocity_x",
+        "P00",
+        "P03",
+        "P33"
+      ],
+      "actual": [
+        0.5,
+        0.0,
+        0.0400000028,
+        0.0100000007,
+        1.0,
+        0.0,
+        1.25,
+        0.5,
+        1.03999996
+      ],
+      "independent_expected": [
+        0.5,
+        0.0,
+        0.04,
+        0.01,
+        1.0,
+        0.0,
+        1.25,
+        0.5,
+        1.04
+      ],
+      "absolute_tolerance": 1e-06,
+      "not_run": [
+        "mod_sst",
+        "association",
+        "update",
+        "ODAS application",
+        "audio",
+        "hardware"
+      ]
+    },
+    "saf": {
+      "command": [
+        "/usr/bin/cc",
+        "-std=c11",
+        "-O0",
+        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-tracking-lif4yimy/saf_step_contract.c",
+        "-lm",
+        "-o",
+        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-tracking-lif4yimy/saf_step_contract"
+      ],
+      "compiler": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin25.6.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+      "compile_stdout": "",
+      "compile_stderr": "",
+      "harness_sha256": "56097d9a5fad50577a9853a60e4a89ea8fa224abe106ffeec3f1eb79391c9e7a",
+      "raw_output": "empty1 1 0 9 1 101\nempty2 2 0 9 1 101\nresume 0 3 1 12 3\ntwoobs 0 4 3 13 1 0\ncopy 404 404 404 404 0.25 0.25 0.25 0.25 404\n",
+      "execution": "unchanged original tracker3d_step body with explicit dependency substitutes",
+      "fragment_sha256": "8e4ea4dbc219cf45a4ba7601c2febe1f858e6b2d5cf3d850dfe1f99691b08080",
+      "actual": {
+        "empty1": [
+          1.0,
+          0.0,
+          9.0,
+          1.0,
+          101.0
+        ],
+        "empty2": [
+          2.0,
+          0.0,
+          9.0,
+          1.0,
+          101.0
+        ],
+        "resume": [
+          0.0,
+          3.0,
+          1.0,
+          12.0,
+          3.0
+        ],
+        "twoobs": [
+          0.0,
+          4.0,
+          3.0,
+          13.0,
+          1.0,
+          0.0
+        ],
+        "copy": [
+          404.0,
+          404.0,
+          404.0,
+          404.0,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          404.0
+        ]
+      },
+      "independent_expected": {
+        "empty1": [
+          1,
+          0,
+          9,
+          1,
+          101
+        ],
+        "empty2": [
+          2,
+          0,
+          9,
+          1,
+          101
+        ],
+        "resume": [
+          0,
+          3,
+          1,
+          12,
+          3
+        ],
+        "twoobs": [
+          0,
+          4,
+          3,
+          13,
+          1,
+          0
+        ],
+        "copy": [
+          404,
+          404,
+          404,
+          404,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          404
+        ]
+      },
+      "absolute_tolerance": 0,
+      "adapters": [
+        "minimal tracker/particle/mean/covariance structs",
+        "tracker3d_predict counter and +1 marker",
+        "tracker3d_update tick counter only",
+        "eff_particles forced branch selector",
+        "tracker3d_getMaxParticleIdx weight argmax",
+        "tracker3d_particleCopy struct memcpy",
+        "realloc1d C realloc"
+      ],
+      "not_run": [
+        "tracker3d_create",
+        "original prediction/update",
+        "birth/death",
+        "Gaussian likelihood",
+        "actual ESS",
+        "RBMCDA",
+        "BLAS",
+        "MEX",
+        "LOCATA",
+        "hardware"
+      ],
+      "inputs": {
+        "empty_then_resume": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "dt": "one caller tick per step; no real elapsed-time clock in substitute",
+        "one_particle": {
+          "id": 101,
+          "marker_x": 9,
+          "variance_x": 1
+        },
+        "copy": {
+          "particle_ids": [
+            101,
+            202,
+            303,
+            404
+          ],
+          "weights": [
+            0.1,
+            0.1,
+            0.1,
+            0.7
+          ],
+          "forced_ess": 0,
+          "Np": 4,
+          "W_avg_coeff": 0
+        }
+      }
+    }
+  },
+  "historical_current_recheck": {
+    "historical_tool_sha256": "8d45e9d5f364c2b2f013ef7878d4bd580907b9c90c2b6ee0c667ba3fe38e121f",
+    "scope": "current execution, not modification of September report",
+    "sources_verified_before_and_after": {
+      "filterpy": {
+        "head": "3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33",
+        "files": {
+          "LICENSE": {
+            "sha256": "8ffce1097f1b1c0fba42e4449ef49aa05cb7b45566dd0989407839dba07af99c",
+            "git_blob": "558870702fa539764c1efba5028240066b9c960e"
+          },
+          "filterpy/__init__.py": {
+            "sha256": "329536b1ff39c3fdc3621983a98ecd0ad4a2327ea0694750f46d6358a89fe67e",
+            "git_blob": "1ce33a237280fe8fd99bd1fbdbb21c73337c1eb5"
+          },
+          "filterpy/common/helpers.py": {
+            "sha256": "45ac0d338a5ae96caae37ccaced7ad1e45a4d848da17d4a8023e59213ef62f02",
+            "git_blob": "108a3ae9fb5ff8b3d11588473f3d1d4f0318880c"
+          },
+          "filterpy/kalman/EKF.py": {
+            "sha256": "44421460b96bc911e2cf81ca97009d84594de5a448be1c8a3a5de752575a547a",
+            "git_blob": "5e83aec01b93daed6ed7221cb4842e35f081fa1a"
+          },
+          "filterpy/kalman/IMM.py": {
+            "sha256": "22b86f0fef3989445e61243cfe78f1b141ab373622a4583c249ba34f2d9ef556",
+            "git_blob": "84808fa4cdf913a606822375c67e8e0000754540"
+          },
+          "filterpy/kalman/kalman_filter.py": {
+            "sha256": "602923a445aa167a43a721bef5b8e17bb31b0f43e1b08c880f414460eebcf689",
+            "git_blob": "994b5969f8598e820583f0bd4e17c6e012ccbf42"
+          },
+          "filterpy/kalman/sigma_points.py": {
+            "sha256": "cfa457511eb6f1dbe95f452e1b2e5b489187b64707c5e7bc2b15f30dad17df9e",
+            "git_blob": "37875ae177be18dac5baf565d9e36e4309b5d979"
+          },
+          "filterpy/kalman/unscented_transform.py": {
+            "sha256": "3c499c584c7f6e3f0091b1817853926533a80efa689285d7a4fcfa73bd55be75",
+            "git_blob": "871add0b2a6a35b249ca47cef4a76066e8bf23c2"
+          },
+          "filterpy/stats/stats.py": {
+            "sha256": "576b407938a36b7292f862cf414527e1adc8419d19241f529b6ec2942f31f374",
+            "git_blob": "b30301217911c486b1830e99999967371f12fb45"
+          }
+        }
+      },
+      "stonesoup": {
+        "head": "8d1edeb07ef8505ed065cbef435cfb5e517d9bdc",
+        "files": {
+          "LICENSE": {
+            "sha256": "2462f3d8a857f601e266f048a4ff051366c1e05f098cf3a1524eaf922f879815",
+            "git_blob": "6eaaea90802bb0e300414b3c7aaf3951ca255fdd"
+          },
+          "stonesoup/mixturereducer/gaussianmixture.py": {
+            "sha256": "ac8d5eacebb7e2e3458ab7125707915b77f57e23b9b19e87c2c8d52c4b803aa4",
+            "git_blob": "d39fe1e97d0f90255ffa49bc5e38d5de5eddce45"
+          }
+        }
+      }
+    },
+    "filterpy": {
+      "execution": "original package classes/functions imported from verified checkout",
+      "filterpy_version": "1.4.5",
+      "scipy_version": "1.18.1",
+      "imm_predict_only": [
+        {
+          "mu": [
+            0.75,
+            0.25
+          ],
+          "cbar": [
+            0.7250000000000001,
+            0.275
+          ],
+          "omega": [
+            [
+              0.9310344827586207,
+              0.27272727272727276
+            ],
+            [
+              0.06896551724137931,
+              0.7272727272727273
+            ]
+          ],
+          "mean": 2.5,
+          "variance": 20.5,
+          "second_raw_moment": 26.75,
+          "component_means": [
+            0.0,
+            10.0
+          ],
+          "component_variances": [
+            1.0,
+            4.0
+          ]
+        },
+        {
+          "mu": [
+            0.75,
+            0.25
+          ],
+          "cbar": [
+            0.7250000000000001,
+            0.275
+          ],
+          "omega": [
+            [
+              0.9310344827586207,
+              0.27272727272727276
+            ],
+            [
+              0.06896551724137931,
+              0.7272727272727273
+            ]
+          ],
+          "mean": 2.335423197492163,
+          "variance": 19.60065742278476,
+          "second_raw_moment": 25.05485893416928,
+          "component_means": [
+            0.6896551724137931,
+            7.272727272727273
+          ],
+          "component_variances": [
+            7.627824019024969,
+            23.016528925619838
+          ]
+        },
+        {
+          "mu": [
+            0.75,
+            0.25
+          ],
+          "cbar": [
+            0.7250000000000001,
+            0.275
+          ],
+          "omega": [
+            [
+              0.9310344827586207,
+              0.27272727272727276
+            ],
+            [
+              0.06896551724137931,
+              0.7272727272727273
+            ]
+          ],
+          "mean": 2.227081101797349,
+          "variance": 18.979045114529804,
+          "second_raw_moment": 23.938935348512697,
+          "component_means": [
+            1.1436601448492056,
+            5.477343972641779
+          ],
+          "component_variances": [
+            11.47174096503031,
+            27.415345923575103
+          ]
+        },
+        {
+          "mu": [
+            0.75,
+            0.25
+          ],
+          "cbar": [
+            0.7250000000000001,
+            0.275
+          ],
+          "omega": [
+            [
+              0.9310344827586207,
+              0.27272727272727276
+            ],
+            [
+              0.06896551724137931,
+              0.7272727272727273
+            ]
+          ],
+          "mean": 2.1557587190515464,
+          "variance": 18.557019151464164,
+          "second_raw_moment": 23.20431480623093,
+          "component_means": [
+            1.442534891593521,
+            4.2954302014256225
+          ],
+          "component_variances": [
+            13.777202469948532,
+            26.792210459364554
+          ]
+        }
+      ],
+      "imm_update_none_fresh": {
+        "before": {
+          "mu": [
+            0.75,
+            0.25
+          ],
+          "cbar": [
+            0.7250000000000001,
+            0.275
+          ],
+          "omega": [
+            [
+              0.9310344827586207,
+              0.27272727272727276
+            ],
+            [
+              0.06896551724137931,
+              0.7272727272727273
+            ]
+          ],
+          "mean": 2.335423197492163,
+          "variance": 19.60065742278476,
+          "second_raw_moment": 25.05485893416928,
+          "component_means": [
+            0.6896551724137931,
+            7.272727272727273
+          ],
+          "component_variances": [
+            7.627824019024969,
+            23.016528925619838
+          ]
+        },
+        "after": {
+          "mu": [
+            0.7250000000000001,
+            0.2749999999999999
+          ],
+          "cbar": [
+            0.7075,
+            0.2924999999999999
+          ],
+          "omega": [
+            [
+              0.92226148409894,
+              0.24786324786324795
+            ],
+            [
+              0.07773851590106005,
+              0.7521367521367521
+            ]
+          ],
+          "mean": 2.4999999999999996,
+          "variance": 20.499999999999996,
+          "second_raw_moment": 26.749999999999993,
+          "component_means": [
+            0.6896551724137931,
+            7.272727272727273
+          ],
+          "component_variances": [
+            7.627824019024969,
+            23.016528925619838
+          ]
+        },
+        "likelihoods": [
+          2.2250738585072014e-308,
+          2.2250738585072014e-308
+        ]
+      },
+      "imm_update_none_after_measurement": {
+        "after_real_measurement": {
+          "mu": [
+            0.9279008171172274,
+            0.07209918288277264
+          ],
+          "cbar": [
+            0.8495305719820592,
+            0.15046942801794086
+          ],
+          "omega": [
+            [
+              0.9830261122411271,
+              0.6166706615024757
+            ],
+            [
+              0.016973887758872857,
+              0.3833293384975243
+            ]
+          ],
+          "mean": 0.09600388333306412,
+          "variance": 0.8927740153769471,
+          "second_raw_moment": 0.9019907609919757,
+          "component_means": [
+            0.0799338478500552,
+            0.3028217481073643
+          ],
+          "component_variances": [
+            0.88409592061742,
+            0.9583620096352374
+          ]
+        },
+        "before": {
+          "mu": [
+            0.9279008171172274,
+            0.07209918288277264
+          ],
+          "cbar": [
+            0.8495305719820592,
+            0.15046942801794086
+          ],
+          "omega": [
+            [
+              0.9830261122411271,
+              0.6166706615024757
+            ],
+            [
+              0.016973887758872857,
+              0.3833293384975243
+            ]
+          ],
+          "mean": 0.08960446714459747,
+          "variance": 0.8893801072038117,
+          "second_raw_moment": 0.8974090677360789,
+          "component_means": [
+            0.08371712205183361,
+            0.16537331921479168
+          ],
+          "component_variances": [
+            0.886185437755945,
+            0.9243078124979133
+          ]
+        },
+        "after": {
+          "mu": [
+            0.9040275777715678,
+            0.09597242222843218
+          ],
+          "cbar": [
+            0.8328193044400974,
+            0.16718069555990253
+          ],
+          "omega": [
+            [
+              0.9769524021076927,
+              0.5407487836702088
+            ],
+            [
+              0.023047597892307318,
+              0.4592512163297911
+            ]
+          ],
+          "mean": 0.09155386508352513,
+          "variance": 0.8904226384937982,
+          "second_raw_moment": 0.8988047487055305,
+          "component_means": [
+            0.08371712205183361,
+            0.16537331921479168
+          ],
+          "component_variances": [
+            0.886185437755945,
+            0.9243078124979133
+          ]
+        },
+        "previous_measurement_likelihoods": [
+          0.13212615475980008,
+          0.027065926265244608
+        ],
+        "retained_innovation_variances": [
+          8.627824019024969,
+          24.016528925619838
+        ],
+        "likelihoods_used_by_none": [
+          0.1358186554132128,
+          0.0814057245343635
+        ]
+      },
+      "ekf": {
+        "predict_update": {
+          "calls": [
+            {
+              "function": "HJacobian",
+              "x": 1.0
+            },
+            {
+              "function": "Hx",
+              "x": 2.0
+            }
+          ],
+          "mean": 2.0,
+          "variance": 0.23529411764705885,
+          "gain": 0.47058823529411764,
+          "innovation_variance": 17.0,
+          "stored_x_prior": 1.0,
+          "stored_P_prior": 1.0
+        },
+        "predict_then_update": {
+          "calls": [
+            {
+              "function": "HJacobian",
+              "x": 2.0
+            },
+            {
+              "function": "Hx",
+              "x": 2.0
+            }
+          ],
+          "mean": 2.0,
+          "variance": 0.061538461538461535,
+          "gain": 0.24615384615384617,
+          "innovation_variance": 65.0,
+          "stored_x_prior": 2.0,
+          "stored_P_prior": 4.0
+        }
+      },
+      "angle": {
+        "merged_default": {
+          "innovation_degrees": -358.0,
+          "unwrapped_mean_degrees": 0.0
+        },
+        "separate_wrapped": {
+          "innovation_degrees": 2.0,
+          "unwrapped_mean_degrees": 180.0
+        }
+      },
+      "unscented_transform": {
+        "points": [
+          [
+            0.0
+          ],
+          [
+            1.0
+          ],
+          [
+            -1.0
+          ]
+        ],
+        "Wm": [
+          0.0,
+          0.5,
+          0.5
+        ],
+        "Wc": [
+          2.0,
+          0.5,
+          0.5
+        ],
+        "mean": 1.0,
+        "variance": 2.0
+      }
+    },
+    "stonesoup_reducer": {
+      "execution": "unchanged AST-extracted original methods with minimal state containers",
+      "stonesoup_package_executed": false,
+      "package_import_probe": "ModuleNotFoundError: No module named 'ordered_set'",
+      "not_tested": [
+        "PHDUpdater",
+        "TaggedWeightedGaussianState branch",
+        "merge orchestration",
+        "MHT/OR-Tools"
+      ],
+      "records": [
+        {
+          "method": "prune",
+          "input_weights": [
+            0.1,
+            0.4,
+            0.5
+          ],
+          "input_means": [
+            0,
+            1,
+            2
+          ],
+          "input_variances": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "output_weights": [
+            0.45,
+            0.55
+          ],
+          "output_means": [
+            1.0,
+            2.0
+          ],
+          "output_variances": [
+            1.0,
+            1.0
+          ],
+          "mass_before": 1.0,
+          "mass_after": 1.0
+        },
+        {
+          "method": "prune",
+          "input_weights": [
+            0.1,
+            0.1
+          ],
+          "input_means": [
+            0,
+            1
+          ],
+          "input_variances": [
+            1.0,
+            1.0
+          ],
+          "output_weights": [],
+          "output_means": [],
+          "output_variances": [],
+          "mass_before": 0.2,
+          "mass_after": 0
+        },
+        {
+          "method": "truncate",
+          "input_weights": [
+            0.4,
+            0.6
+          ],
+          "input_means": [
+            0,
+            1
+          ],
+          "input_variances": [
+            1.0,
+            1.0
+          ],
+          "output_weights": [
+            1.0
+          ],
+          "output_means": [
+            1.0
+          ],
+          "output_variances": [
+            1.0
+          ],
+          "mass_before": 1.0,
+          "mass_after": 1.0
+        },
+        {
+          "method": "merge_components",
+          "input_weights": [
+            0.8,
+            0.7
+          ],
+          "input_means": [
+            0,
+            1
+          ],
+          "input_variances": [
+            1.0,
+            1.0
+          ],
+          "output_weights": [
+            1.0
+          ],
+          "output_means": [
+            0.4666666666666666
+          ],
+          "output_variances": [
+            1.248888888888889
+          ],
+          "mass_before": 1.5,
+          "mass_after": 1.0
+        }
+      ]
+    }
+  },
+  "sources_after": {
+    "odas": {
+      "head": "bcb845434495e293df3d48f1203b7a86e1852449",
+      "tracked_clean": true,
+      "files": {
+        "LICENSE": {
+          "sha256": "d80055b1eac9fdb001f429f262c79ce6a7619b85064a759f17b0b33bbb9c8b2a",
+          "git_blob": "d5a6cb64f9f52b2892bd48f88194ae514bf38751"
+        },
+        "src/system/kalman2kalman.c": {
+          "sha256": "c6dc032c43504c0a98a5015ebebfe1e74be63f72a2484f79550c80a56f3d9b65",
+          "git_blob": "ad8e06f481bf7692acde9e29a900575648dec95b"
+        },
+        "src/signal/kalman.c": {
+          "sha256": "b3cbd730ea5a466ec2924b055efada63da260cc805462c02db16c6ee6cbac102",
+          "git_blob": "39b4ca1cf1ecebbfb42c1caa647a3d5da428047b"
+        },
+        "src/utils/matrix.c": {
+          "sha256": "bf61ae5e49840d0ad4d978cf1934b6bb7d96ff38451aeb5382d55c11dd2abd1a",
+          "git_blob": "8117a53d1d3667a77a8e25745597daac91119d77"
+        },
+        "include/odas/system/kalman2kalman.h": {
+          "sha256": "2c37c6fd1a92cf70a9030a7538924b9c9bbce24f4a5ff39d0cd5fcbfb9037442",
+          "git_blob": "d98ebdb39b093c362692ef1b536458d56934186d"
+        },
+        "include/odas/signal/kalman.h": {
+          "sha256": "6ed7d7f5b5040ad7fb000c555fa2a5c48eeed70a7b1dced0a6722b3fcda0789e",
+          "git_blob": "ebbcfa331f2e8357accd5e77bb070aa7811e63c1"
+        },
+        "include/odas/signal/postprob.h": {
+          "sha256": "e528c3b6da2ca3790ed589b95405ef8d095c043998db4a8175207adbb2afac9d",
+          "git_blob": "402d48e0ecd0f9c4026924b96c214260c8431299"
+        },
+        "include/odas/signal/pot.h": {
+          "sha256": "56e632d71e7e2f0653a4f71fe7fcaafb1aaf936044c2c855d3bb664f28d39e31",
+          "git_blob": "bd84962552b85b65b816dd557dffedd71e6438ce"
+        },
+        "include/odas/signal/target.h": {
+          "sha256": "cd8f18a5e923c187875d847951c69c2679c2ddef5f858c7e875f93a7d75d7ea6",
+          "git_blob": "798ce58b8b78fc51f89f967d4523cdc772ca9505"
+        },
+        "include/odas/utils/matrix.h": {
+          "sha256": "acd4892c480ed07d7aba398cc0f3026e62d5914540f35a4098f95856a7adf602",
+          "git_blob": "204a593521dcd930223bb9de8abfb342ed053609"
+        }
+      },
+      "license": "MIT",
+      "lock_entry_sha256": "175375652b3e28dd9813ef2e7e12d8171248de93461d6fd7b89c7cddde7e3ff3"
+    },
+    "spatial-audio-framework": {
+      "head": "18fd5aba46e20787b51f28f7197a68506c965c07",
+      "tracked_clean": true,
+      "files": {
+        "LICENSE.md": {
+          "sha256": "0148c9bfe5f2093cd06cecd3359bc16bc29a2200863a59af81a90b7922c67af3",
+          "git_blob": "a19aa87fe94984bdbf7909ec344c05b7cca5465f"
+        },
+        "framework/modules/saf_tracker/saf_tracker.c": {
+          "sha256": "dd36f1878cddf0f54e16f9ac6e742afc46de2654d5af1cc288d3f3813adf7b10",
+          "git_blob": "289f16aed4b1dafefdd21f5fefd88daadaad078c"
+        },
+        "framework/modules/saf_tracker/saf_tracker.h": {
+          "sha256": "68425a5b74d1ba545c9dba583492aed00c24b77cb6aa49df6dcdcec25a230c2b",
+          "git_blob": "89729d278e755207fc28081bce97a9df2e2a2c14"
+        }
+      },
+      "license": "ISC core; GPL-2.0-or-later optional tracker module (individual headers control)",
+      "lock_entry_sha256": "3626e1987e43e851f4d60e085619dbf7d865b8827930285d50754c6a7736edc6"
+    },
+    "filterpy": {
+      "head": "3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33",
+      "tracked_clean": true,
+      "files": {
+        "LICENSE": {
+          "sha256": "8ffce1097f1b1c0fba42e4449ef49aa05cb7b45566dd0989407839dba07af99c",
+          "git_blob": "558870702fa539764c1efba5028240066b9c960e"
+        },
+        "filterpy/common/discretization.py": {
+          "sha256": "b3e625792e777bfef93f8a7d9020624c8750f66fc482eeec7b3b2c5ae2fdea96",
+          "git_blob": "697d67da5ec990d818738b4e772d3d200f2327d5"
+        }
+      },
+      "license": "MIT",
+      "lock_entry_sha256": "5abbacdb064e214c11292cd4823f09c05dfe4641c7d92200e0e30c4c88abd71f"
+    },
+    "stonesoup": {
+      "head": "8d1edeb07ef8505ed065cbef435cfb5e517d9bdc",
+      "tracked_clean": true,
+      "files": {
+        "LICENSE": {
+          "sha256": "2462f3d8a857f601e266f048a4ff051366c1e05f098cf3a1524eaf922f879815",
+          "git_blob": "6eaaea90802bb0e300414b3c7aaf3951ca255fdd"
+        },
+        "stonesoup/dataassociator/probability.py": {
+          "sha256": "d472902c229095cdbb20c7feee2a2ea89aa7bd3e77fdb84147f8a60cfaa3be36",
+          "git_blob": "f373417f29521b6335ea145f02ee11db520fd62c"
+        },
+        "stonesoup/hypothesiser/probability.py": {
+          "sha256": "ab9832c864d130429ded5515ed588995d3729a321f49587c28504494ef034455",
+          "git_blob": "270db9abe6c47325f75ccecb4c1dc216837aa1f4"
+        }
+      },
+      "license": "MIT",
+      "lock_entry_sha256": "85a1e0ede55fe58ac5b1a6ee3fabc446ef697a6206c6f18b94d61372e92e6779"
+    }
+  }
+}
