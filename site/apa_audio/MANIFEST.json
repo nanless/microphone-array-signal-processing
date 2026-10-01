@@ -9,7 +9,7 @@
     "codes/chapters/ch06/core/aec.py": "6f534c06a0e3a0376b9052a70eda7da776ad25eaf1eeae960be094d4d9037e37",
     "codes/chapters/ch06/core/aec_numeric.py": "23e0251d4c161cfe757606156f8b1a7472cc33e729544096eb8ce76255108236",
     "codes/chapters/ch06/core/aec_affine_projection.py": "41dcc604e0fa96ccad1284e22ee3b6e858a212244fb70cb05d9827c268992f1b",
-    "codes/chapters/ch02/core/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385",
+    "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
     "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8"
   },
   "environment": {

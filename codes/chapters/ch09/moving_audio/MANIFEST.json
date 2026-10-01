@@ -655,7 +655,7 @@
     "codes/chapters/ch09/examples/moving_source_audio.py": "63e381b48237528166741c8cafa6d45e5adabe8dec26f0473217ee833c6d7c71",
     "codes/chapters/ch09/core/moving_source.py": "4ccc164ebc8daa82394591f28f4ce83d31ff3929e8e2e237736cae59168a177a",
     "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
-    "codes/chapters/ch02/core/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385"
+    "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7"
   },
   "environment": {
     "python": "3.13.12",

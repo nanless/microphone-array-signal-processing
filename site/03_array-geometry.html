@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 3 章 · 阵列几何形态 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="9d2a7b81b395"><style>
+<meta name="source-digest" content="7a2d63df4e2e"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -29,7 +29,7 @@ pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:a
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
 mjx-container[jax="CHTML"]{font-size:110%!important;overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
-mjx-assistive-mml{width:1px!important;height:1px!important}
+body mjx-assistive-mml{width:1px!important;max-width:1px!important;min-width:0!important;height:1px!important;overflow:hidden!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
 .pn a{color:#2f6db3;text-decoration:none}.pn .off{color:#aaa}
@@ -44,14 +44,187 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{display:block;margin:20px auto;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
+.tutorial-math-tail{display:inline-block;white-space:nowrap;overflow-wrap:normal;vertical-align:baseline;overflow:visible}
+.tutorial-math-tail mjx-assistive-mml{max-width:1px!important;min-width:0!important;white-space:normal}
+.tutorial-exercise-id{white-space:nowrap;overflow-wrap:normal}
 @media(max-width:900px){.selection-readable-table{min-width:760px}.selection-readable-table th,.selection-readable-table td{min-width:10em}.selection-readable-table th:first-child,.selection-readable-table td:first-child{min-width:6em}}
 @media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}.tracking-readable-table th,.tracking-readable-table td{min-width:8em}.industrial-readable-table th,.industrial-readable-table td{min-width:8em}}
 @media(max-width:900px){.noise-readable-table th:first-child,.noise-readable-table td:first-child{min-width:6em}}
 @media screen and (max-width:900px){.source-contract-readable-table th,.source-contract-readable-table td{min-width:10em}}
+@media screen and (max-width:900px){.tutorial-budget-table{min-width:var(--tutorial-table-width)}.tutorial-budget-table .tutorial-short-column{min-width:var(--tutorial-column-width);overflow-wrap:normal}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
-window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']]}};
+/* Shared publication layout. TeX, code, links and attributes remain intact. */
+(function () {
+  "use strict";
+  const mathClass = "tutorial-math-tail";
+  const idClass = "tutorial-exercise-id";
+  const ignored = "pre,code,a,script,style,textarea,mjx-container";
+  const suffix = /^(\s*(?:(?:m\/s[²³]?|rad\/s|rad\/m|deg\/s|μs|µs|ns|ms|s|dBFS|dB|kHz|MHz|Hz|ppm|rad|cm|mm|m|V|deg|°|%|％)(?:[²³])?(?=$|[\s，。；、：！？）,.!?;:)\]\u4e00-\u9fff])\s*[，。；、：！？）,.;:!?\]]?|[，。；、：！？）,.;:!?\]]))/;
+  let ready = false;
+  let scheduled = false;
+  let printing = false;
+
+  function roots() {
+    const candidates = Array.from(document.querySelectorAll("main.main,.chap"));
+    return candidates.filter(root => !candidates.some(other => other !== root && other.contains(root)));
+  }
+
+  function unwrapMath(root) {
+    for (const wrapper of root.querySelectorAll("." + mathClass)) {
+      const children = Array.from(wrapper.childNodes);
+      wrapper.replaceWith(...children);
+      // Merge only our adjacent ordinary text, never normalize a MathJax subtree.
+      for (const node of children) {
+        if (node.nodeType !== Node.TEXT_NODE) continue;
+        while (node.nextSibling && node.nextSibling.nodeType === Node.TEXT_NODE) {
+          node.data += node.nextSibling.data;
+          node.nextSibling.remove();
+        }
+      }
+    }
+  }
+
+  function protectExerciseIds(root) {
+    let count = 0;
+    {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      const nodes = [];
+      let node;
+      while ((node = walker.nextNode())) {
+        if (!node.parentElement.closest(ignored + ",." + idClass)) nodes.push(node);
+      }
+      for (const text of nodes) {
+        // A filename/path or a longer identifier is not a stable exercise ID.
+        const pattern = /(^|[^\p{L}\p{N}\p{M}_/\\.-])(E\d{2}-\d{2})(?![\p{L}\p{N}\p{M}_/\\-]|\.[\p{L}\p{N}\p{M}])/gu;
+        const matches = Array.from(text.data.matchAll(pattern));
+        for (const match of matches.reverse()) {
+          const start = match.index + match[1].length;
+          text.splitText(start + match[2].length);
+          const middle = text.splitText(start);
+          const span = document.createElement("span");
+          span.className = idClass;
+          middle.before(span);
+          span.append(middle);
+          count++;
+        }
+      }
+    }
+    return count;
+  }
+
+  function markShortLeads(root) {
+    let count = 0;
+    for (const paragraph of root.querySelectorAll("p")) {
+      if (paragraph.closest("pre,code,a,script,style,textarea")) continue;
+      const significant = Array.from(paragraph.childNodes).filter(node =>
+        node.nodeType !== Node.TEXT_NODE || node.data.trim());
+      const next = paragraph.nextElementSibling;
+      const anchorOnly = significant.length === 1 &&
+        significant[0].nodeType === Node.ELEMENT_NODE &&
+        significant[0].tagName === "A" && significant[0].id &&
+        !significant[0].hasAttribute("href") &&
+        Array.from(significant[0].childNodes).every(node =>
+          node.nodeType === Node.TEXT_NODE && !node.data.trim());
+      paragraph.classList.toggle("tutorial-anchor-only", !!anchorOnly);
+      const short = significant.length === 1 &&
+        significant[0].nodeType === Node.ELEMENT_NODE &&
+        significant[0].tagName === "STRONG" &&
+        paragraph.textContent.trim().length <= 60 &&
+        next && /^(P|UL|OL|BLOCKQUOTE)$/.test(next.tagName) &&
+        next.textContent.trim().length > 0;
+      paragraph.classList.toggle("tutorial-short-lead", !!short);
+      if (short) count++;
+    }
+    return count;
+  }
+
+  function apply() {
+    const content = roots();
+    for (const root of content) unwrapMath(root);
+    const plans = [];
+    const hosts = new Map();
+    let skippedWide = 0;
+    let idCount = 0;
+    let leadCount = 0;
+    for (const root of content) {
+      idCount += protectExerciseIds(root);
+      leadCount += markShortLeads(root);
+      // Read every width before any math wrapper is inserted, to avoid repeated
+      // synchronous layout across thousands of formulas in the combined book.
+      for (const math of root.querySelectorAll('mjx-container:not([display="true"])')) {
+        if (math.closest("pre,code,a,script,style,textarea")) continue;
+        const text = math.nextSibling;
+        if (!text || text.nodeType !== Node.TEXT_NODE) continue;
+        const match = text.data.match(suffix);
+        if (!match || match[0].length > 16) continue;
+        const host = math.closest("p,li,td,th,h1,h2,h3,h4");
+        if (!host) continue;
+        if (!hosts.has(host)) {
+          const style = getComputedStyle(host);
+          hosts.set(host, host.clientWidth - parseFloat(style.paddingLeft || 0) -
+            parseFloat(style.paddingRight || 0));
+        }
+        const range = document.createRange();
+        range.setStart(text, 0);
+        range.setEnd(text, match[0].length);
+        const style = getComputedStyle(math);
+        const width = math.getBoundingClientRect().width + range.getBoundingClientRect().width +
+          parseFloat(style.marginLeft || 0) + parseFloat(style.marginRight || 0);
+        if (width > hosts.get(host) - 8) {
+          skippedWide++;
+          continue;
+        }
+        plans.push({math, text, length: match[0].length});
+      }
+    }
+    for (const {math, text, length} of plans) {
+      const wrapper = document.createElement("span");
+      wrapper.className = mathClass;
+      math.before(wrapper);
+      wrapper.append(math);
+      text.splitText(length);
+      wrapper.append(text);
+    }
+    ready = true;
+    const result = {grouped: plans.length, skippedWide, newExerciseIds: idCount, shortLeads: leadCount};
+    window.ArrayTutorialLayout.lastRun = result;
+    return result;
+  }
+
+  function schedule() {
+    if (!ready || scheduled || printing) return;
+    scheduled = true;
+    requestAnimationFrame(() => {
+      scheduled = false;
+      if (printing) return;
+      apply();
+    });
+  }
+
+  window.ArrayTutorialLayout = {apply, lastRun: null};
+  window.addEventListener("resize", schedule);
+  // Chrome fires beforeprint while screen styles still apply. Remove screen
+  // groups before they can enlarge the print layout. The combined book is
+  // measured at its fixed A4 geometry during pageReady instead. Do not mutate
+  // thousands of nodes after the browser has begun its print snapshot: this
+  // can truncate the final pages even when a small fixture prints correctly.
+  // A synthetic beforeprint event is not a print test.
+  window.addEventListener("beforeprint", () => {
+    printing = true;
+    if (ready && document.documentElement.dataset.tutorialPrintLayout !== "a4") {
+      for (const root of roots()) unwrapMath(root);
+    }
+  });
+  window.addEventListener("afterprint", () => {
+    printing = false;
+    if (document.documentElement.dataset.tutorialPrintLayout !== "a4") schedule();
+  });
+  if (document.fonts) document.fonts.addEventListener("loadingdone", schedule);
+})();
+
+window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']]}, startup: {pageReady: () => MathJax.startup.defaultPageReady().then(() => document.fonts.ready).then(() => ArrayTutorialLayout.apply())}};
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
  onerror="document.getElementById('offnote').style.display='block';document.getElementById('offnote').textContent='公式渲染脚本加载失败：当前显示的是公式源码。';"></script>

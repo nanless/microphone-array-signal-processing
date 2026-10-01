@@ -19,7 +19,7 @@
 | [ch10](ch10/) | `ch10.chapter10_experiments`、`ch10.spectral_subtraction_demo`、`ch10.sro_closed_loop_demo` | E10-13、E10-18～33；合成时间戳及有状态插值，不是声卡实时实测 |
 | [ch11](ch11/) | `ch11.chapter11_experiments` | E11-10～25；硬约束、评分和 FIR 取舍，示意分数不代表产品测量 |
 | [appendix_a](appendix_a/) | `appendix_a.appendix_a_experiments` | E12-06～19；复投影、已知噪声加权、截断与正则、相关共轭、EVD前提及实际PCM；旧01～05仍复用跨章唯一实现 |
-| [appendix_b](appendix_b/) | `appendix_b.appendix_b_experiments`、`appendix_b.interpolation_exercise` | E13-02～10；E13-02 读回主音频 PCM，E13-03～10 核查房间结果、PCM、来源证据或解析反例，不重跑房间仿真 |
+| [appendix_b](appendix_b/) | `appendix_b.appendix_b_experiments`、`appendix_b.interpolation_exercise` | E13-02～14；E13-02 读回主音频 PCM，E13-03～14 核查房间结果、PCM、来源证据、TAC共享结构、能量尺度、时间条件化与同DRR输出，不重跑房间仿真 |
 
 从仓库根目录使用模块形式运行，例如：
 

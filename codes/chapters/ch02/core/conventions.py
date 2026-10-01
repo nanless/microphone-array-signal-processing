@@ -2,7 +2,9 @@
 
 The implementation follows the forward Fourier transform
 ``exp(-1j * 2*pi*f*t)``.  Directions point from the array towards the source,
-and a multichannel STFT is always arranged as channels x frequency x frames.
+and the basic STFT in ``spectral.py`` outputs channels x frequency x frames.
+Consumers such as WPE and separation use frequency x channels x frames;
+callers explicitly convert axes according to each consumer's interface contract.
 """
 
 from __future__ import annotations

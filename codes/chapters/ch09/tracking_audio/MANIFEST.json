@@ -6926,7 +6926,7 @@
     "codes/chapters/ch09/core/tracking.py": "7df5c5aca6f7c4b3783c2b2382ed00fafd54a81b773963a29c322f8281a35dbd",
     "codes/chapters/ch04/core/doa.py": "f3d7eaa8251b732efe0f9579fa2b32a71f506fb884d80b17503f09697b659ed4",
     "codes/chapters/ch04/core/covariance.py": "d704be037100ee53caf6e2130fbabbe14ce6eeff9e3d11dde389fd368d271249",
-    "codes/chapters/ch02/core/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385",
+    "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
     "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8"
   },
   "environment": {

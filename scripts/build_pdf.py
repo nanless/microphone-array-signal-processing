@@ -42,6 +42,7 @@ import shutil
 import subprocess
 import tempfile
 import time
+import unicodedata
 from pathlib import Path
 
 try:
@@ -113,14 +114,18 @@ PDF_THIRD_LEVEL_CHAPTER_IDS = {
 
 CSS = """
 @page{size:A4;margin:16mm 15mm 18mm}
-body{font-family:"STHeiti","Hiragino Sans GB","Microsoft YaHei",sans-serif;font-size:16px;line-height:1.75;color:#1a1a2e;max-width:860px;margin:0 auto;padding:24px}
+/* Match the A4 content width before printing; the print snapshot must not
+   receive thousands of late DOM changes from a different screen layout. */
+body{font-family:"STHeiti","Hiragino Sans GB","Microsoft YaHei",sans-serif;font-size:16px;line-height:1.75;color:#1a1a2e;max-width:180mm;margin:0 auto;padding:0}
 p{margin:0 0 .85em;break-inside:avoid;orphans:2;widows:2}li>p{margin:.3em 0}
 p:has(+ p > mjx-container[display="true"]){break-after:avoid;page-break-after:avoid}
 p:has(> mjx-container[display="true"]){break-before:avoid;page-break-before:avoid}
 img{max-width:100%;height:auto;display:block;margin:12px auto}
-table{border-collapse:collapse;margin:12px 0;display:block;overflow-x:visible;max-width:100%}
+table{border-collapse:collapse;margin:12px 0;display:table;width:100%;table-layout:fixed;overflow-x:visible;max-width:100%}
 th,td{border:1px solid #dfe3ea;padding:5px 9px;font-size:13.5px;text-align:left}
 th{background:#f0f4f9}code{font-family:"STHeiti",monospace;background:#f0f3f7;padding:1px 5px;border-radius:4px;font-size:13px}
+td,th{word-break:break-word;overflow-wrap:anywhere}
+mjx-container{font-size:100%!important;max-width:100%}
 pre{font-family:"STHeiti",monospace;background:#f4f6f9;padding:12px;border-radius:6px;overflow-x:visible;white-space:pre-wrap}
 pre code{background:none;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:12px 0;padding:6px 12px;background:#f2f7fd}
@@ -139,6 +144,9 @@ h3{font-size:16.5px}h4{font-size:15px}
 .toc .sec{font-size:12.5px;color:#333;padding-left:18px}
 .toc .subsec{font-size:11.5px;color:#555;padding-left:18px}
 .anchor-alias{display:none}
+.tutorial-math-tail{display:inline-block;white-space:nowrap;overflow-wrap:normal;vertical-align:baseline;overflow:visible}
+.tutorial-math-tail mjx-assistive-mml{max-width:1px!important;min-width:0!important;white-space:normal}
+.tutorial-exercise-id{white-space:nowrap;overflow-wrap:normal}
 .book-end{text-align:center;color:#777;margin:36px 0 8px;font-size:13px}
 .book-ending{break-inside:avoid;page-break-inside:avoid}
 /* MathJax 的 serif 中文回退在部分 macOS 字体中会生成部首码位的 ToUnicode。 */
@@ -154,6 +162,8 @@ td,th{word-break:break-word;overflow-wrap:anywhere}
 /* MathJax 的行内长式与展示式均需留在 A4 正文宽度内。 */
 mjx-container{font-size:100%!important;max-width:100%}
 h1,h2,h3,h4{break-after:avoid}
+.chap p.tutorial-short-lead{break-after:avoid;page-break-after:avoid}
+.chap p.tutorial-anchor-only{margin:0;break-after:avoid;page-break-after:avoid}
 /* 第2章的图注和短引导句随其解释对象排版，避免只剩一行或孤立图注。 */
 #ch-2 p:has(+ol),#ch-2 p:has(+ul){break-after:avoid;page-break-after:avoid}
 #ch-2 p:has(>img[src$="fig03_near_far_field.png"]),#ch-2 p:has(>img[src$="fig05_room_acoustics.png"]){break-after:avoid;page-break-after:avoid}
@@ -229,12 +239,35 @@ def plain_text(html):
     return re.sub(r"\s+", " ", t).strip()
 
 
+def toc_label(title):
+    """Keep complete exercise IDs together without changing link destinations.
+
+    Filenames, paths and longer Unicode identifiers are not exercise labels.
+    The span is present before MathJax/printing, so print capture stays stable.
+    """
+    def identifier_char(char):
+        return bool(char) and (char == '_' or unicodedata.category(char)[0] in 'LNM')
+
+    def protect(match):
+        before = title[match.start() - 1] if match.start() else ''
+        after = title[match.end():match.end() + 1]
+        suffix = title[match.end() + 1:match.end() + 2]
+        if (identifier_char(before) or before in ('/', '\\', '.', '-') or
+                identifier_char(after) or after in ('/', '\\', '-') or
+                (after == '.' and identifier_char(suffix))):
+            return match.group(0)
+        return f'<span class="tutorial-exercise-id">{match.group(0)}</span>'
+
+    return re.sub(r'E[0-9]{2}-[0-9]{2}', protect, title)
+
+
 def source_digest():
     """发布输入的稳定摘要；避免把生成物自身所在提交写回生成物造成循环漂移。"""
     digest = hashlib.sha256()
     paths = sorted(SRC.glob("*.md"))
     paths += [build_site.RESEARCH_ROOT / name for name, _ in build_site.RESEARCH]
     paths += [ROOT / "scripts" / "build_site.py", ROOT / "scripts" / "build_markdown_helpers.py",
+              build_site.INLINE_LAYOUT_PATH,
               ROOT / "scripts" / "heading_aliases.py",
               ROOT / "scripts" / "legacy_sequential_anchors.json"]
     paths += sorted(path for path in MATHJAX_DIR.rglob("*") if path.is_file())
@@ -462,10 +495,10 @@ def build_html(build_date=None):
         if secs:
             toc.append('<ul class="sec">')
             for title, sid, subsecs in secs:
-                toc.append(f'<li><a href="#{sid}">{title}</a>')
+                toc.append(f'<li><a href="#{sid}">{toc_label(title)}</a>')
                 if subsecs:
                     toc.append('<ul class="subsec">')
-                    toc.extend(f'<li><a href="#{subid}">{subtitle}</a></li>'
+                    toc.extend(f'<li><a href="#{subid}">{toc_label(subtitle)}</a></li>'
                                for subtitle, subid in subsecs)
                     toc.append('</ul>')
                 toc.append('</li>')
@@ -477,9 +510,10 @@ def build_html(build_date=None):
              f'<div class="sub">深入浅出 · 从阵列摆位到工程选型（合订本）</div>'
              f'<div class="meta">构建日期 {date_s} · 源文件 sha256 {source_digest()} · '
              f'共 14 篇：导读、11 章正文、2 篇附录</div></div>')
-    page = ("<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\">"
+    page = ("<!DOCTYPE html><html lang=\"zh-CN\" data-tutorial-print-layout=\"a4\"><head><meta charset=\"utf-8\">"
             f"<title>麦克风阵列信号处理教程（合订本）</title><style>{CSS}</style>"
-            "<script>\nwindow.MathJax = {tex: {inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], displayMath: [['$$', '$$']]}, chtml: {fontURL: '../scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2'}};\n</script>"
+            "<script>\n" + build_site.INLINE_LAYOUT_PATH.read_text(encoding="utf-8") +
+            "\nwindow.MathJax = {tex: {inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], displayMath: [['$$', '$$']]}, chtml: {fontURL: '../scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2'}, startup: {pageReady: () => MathJax.startup.defaultPageReady().then(() => document.fonts.ready).then(() => ArrayTutorialLayout.apply())}};\n</script>"
             "<script defer src=\"../scripts/vendor/mathjax-3.2.2/tex-mml-chtml.js\"></script>"
             "</head><body>" + cover + "\n".join(toc) + "\n".join(body_parts)
             + '</body></html>')

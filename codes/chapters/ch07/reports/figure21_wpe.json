@@ -5,7 +5,7 @@
   "generator_inputs": {
     "scripts/make_figures.py": "08d84b3b27d00f6f07ca4229ed30f8459be7e3ff8ca8d7605272f7ce4eca4edf",
     "codes/chapters/ch07/core/dereverberation.py": "39c93bf31d1b1deac607cd734bbacee596cdacce2d58c4b5c304b04df7e04eb7",
-    "codes/chapters/ch02/core/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385"
+    "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7"
   },
   "data_type": "mathematical synthetic signal and impulse response; not real speech or measured RIR",
   "parameters": {

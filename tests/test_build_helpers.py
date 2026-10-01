@@ -3,6 +3,7 @@ import io
 import os
 import tempfile
 import unittest
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from unittest import mock
 
@@ -195,6 +196,170 @@ class PdfHeadingDestinationTest(unittest.TestCase):
 
 
 class BuildHelpersTest(unittest.TestCase):
+    @staticmethod
+    def budget_fixture(headers, *, aligned=False):
+        cells = ['`$x<y$`', '$z^H z$', '[证据](https://example.org/source)',
+                 '完整说明', '第五列'][:len(headers)]
+        separators = ['---'] * len(headers)
+        if aligned:
+            separators[0] = ':---:'
+        return ('| ' + ' | '.join(headers) + ' |\n| ' +
+                ' | '.join(separators) + ' |\n| ' + ' | '.join(cells) + ' |\n')
+
+    def test_narrow_table_budget_matches_complete_headers_and_exact_source(self):
+        # Published contracts are specified independently of the policy dictionary.
+        cases = [
+            (ROOT / 'chapters/00_overview.md',
+             ('编号', '文件', '配图', '难度', '建议学习单元'), 60, {1: 3, 4: 6}),
+            (ROOT / 'chapters/00_overview.md',
+             ('图', '文件', '所在文档', '类型', '内容'), 60, {1: 5, 4: 6}),
+            (ROOT / 'chapters/12_appendix-symbols-math.md',
+             ('权重', '误差均方的逐项计算', '解析 MSE', '解析 NMSE（除以 $0.02$）'),
+             52, {1: 6}),
+            (build_site.RESEARCH_ROOT / '05_exercises_and_audio.md',
+             ('题号', '输入和计算', '能支持的结论'), 36, {1: 6}),
+        ]
+        for path, headers, width, columns in cases:
+            with self.subTest(path=path, headers=headers):
+                html, _ = build_site.render(self.budget_fixture(headers), path)
+                self.assertNotIn('tutorial-budget-table', build_site.render(
+                    self.budget_fixture(headers), ROOT / 'chapters/fixture.md')[0])
+                self.assertNotIn('tutorial-budget-table', build_site.render(
+                    self.budget_fixture(tuple(reversed(headers))), path)[0])
+                document = ET.fromstring('<fixture>' + html + '</fixture>')
+                table = document.find('.//table')
+                self.assertIsNotNone(table)
+                self.assertIn('tutorial-budget-table', table.get('class', '').split())
+                self.assertIn(f'--tutorial-table-width:{width}em', table.get('style', ''))
+                self.assertIsNotNone(table.find('thead/tr'))
+                self.assertIsNotNone(table.find('tbody/tr'))
+                self.assertEqual([''.join(th.itertext()) for th in table.findall('thead/tr/th')],
+                                 list(headers))
+                for row in table.findall('.//tr'):
+                    self.assertEqual(len(row), len(headers))
+                    for index, cell in enumerate(row, 1):
+                        if cell.tag == 'th':
+                            self.assertEqual(cell.get('scope'), 'col')
+                        if index in columns:
+                            self.assertIn('tutorial-short-column', cell.get('class', '').split())
+                            self.assertIn(f'--tutorial-column-width:{columns[index]}em',
+                                          cell.get('style', ''))
+                        else:
+                            self.assertNotIn('tutorial-short-column', cell.get('class', '').split())
+                region = document.find('.//div[@class="table-scroll"]')
+                self.assertEqual(region.get('role'), 'region')
+                self.assertEqual(region.get('tabindex'), '0')
+                self.assertIs(region.find('table'), table)
+
+    def test_narrow_table_budget_rejects_similar_headers_and_wrong_file(self):
+        path = ROOT / 'chapters/12_appendix-symbols-math.md'
+        headers = ('符号', '含义')
+        source = self.budget_fixture(headers)
+        # resolve() accepts the same file spelled through a parent directory.
+        alias = path.parent / '..' / 'chapters' / path.name
+        self.assertIn('tutorial-budget-table', build_site.render(source, alias)[0])
+        for other in (ROOT / 'chapters/11_selection-guide.md',
+                      build_site.RESEARCH_ROOT / path.name,
+                      ROOT / 'copied' / path.name):
+            with self.subTest(other=other):
+                self.assertNotIn('tutorial-budget-table', build_site.render(source, other)[0])
+        for near in (('含义', '符号'), ('符号', '含义说明'), ('符号',),
+                     ('符号', '含义', '附加列'), ('符号', '含义', '含义')):
+            with self.subTest(headers=near):
+                self.assertNotIn('tutorial-budget-table',
+                                 build_site.render(self.budget_fixture(near), path)[0])
+        unrelated = self.budget_fixture(('观测', '条件'))
+        combined, _ = build_site.render(source + '\n' + unrelated, path)
+        plain, _ = build_site.render(unrelated, path)
+        combined_tables = ET.fromstring('<fixture>' + combined + '</fixture>').findall('.//table')
+        plain_table = ET.fromstring('<fixture>' + plain + '</fixture>').find('.//table')
+        self.assertEqual(len(combined_tables), 2)
+        self.assertEqual(ET.tostring(combined_tables[1]), ET.tostring(plain_table))
+
+    def test_narrow_table_budget_preserves_alignment_math_code_and_links(self):
+        path = build_site.RESEARCH_ROOT / '05_exercises_and_audio.md'
+        source = self.budget_fixture(('题号', '输入和计算', '能支持的结论'), aligned=True)
+        html, _ = build_site.render(source, path)
+        baseline, _ = build_site.render(source, ROOT / 'chapters/fixture.md')
+        table = ET.fromstring('<fixture>' + html + '</fixture>').find('.//table')
+        ordinary = ET.fromstring('<fixture>' + baseline + '</fixture>').find('.//table')
+        self.assertEqual(len(list(table.iter())), len(list(ordinary.iter())))
+        for actual, original in zip(table.iter(), ordinary.iter()):
+            self.assertEqual(actual.tag, original.tag)
+            self.assertEqual(actual.text, original.text)
+            self.assertEqual(actual.tail, original.tail)
+            # Policy additions must retain the original attributes, especially alignment.
+            for key, value in original.attrib.items():
+                if key == 'style':
+                    self.assertIn(value, actual.get(key, ''))
+                elif key == 'class':
+                    self.assertTrue(set(value.split()).issubset(actual.get(key, '').split()))
+                else:
+                    self.assertEqual(actual.get(key), value)
+        self.assertIn('text-align: center;', table.find('thead/tr/th').get('style'))
+        self.assertEqual(table.find('tbody/tr/td/code').text, '$x<y$')
+        self.assertEqual(table.find('tbody/tr')[1].text, '$z^H z$')
+        self.assertEqual(table.find('.//a').get('href'), 'https://example.org/source')
+        self.assertEqual(table.find('.//a').text, '证据')
+        for quote in ('"', "'"):
+            with self.subTest(existing_attribute_quote=quote):
+                raw = (f'<table class={quote}original-table{quote} '
+                       f'style={quote}border-collapse:collapse{quote}>'
+                       '<thead><tr>'
+                       f'<th class={quote}original-header{quote} '
+                       f'style={quote}text-align:center{quote}>题号</th>'
+                       '<th>输入和计算</th><th>能支持的结论</th></tr></thead>'
+                       '<tbody><tr><td>例</td><td>计算</td><td>边界</td></tr></tbody></table>')
+                rendered, _ = build_site.render(raw, path)
+                # XML parsing also rejects duplicate class/style attributes.
+                preserved = ET.fromstring('<fixture>' + rendered + '</fixture>').find('.//table')
+                self.assertIn('original-table', preserved.get('class').split())
+                self.assertIn('tutorial-budget-table', preserved.get('class').split())
+                self.assertIn('border-collapse:collapse', preserved.get('style'))
+                first_header = preserved.find('thead/tr/th')
+                self.assertIn('original-header', first_header.get('class').split())
+                self.assertIn('tutorial-short-column', first_header.get('class').split())
+                self.assertIn('text-align:center', first_header.get('style'))
+                self.assertEqual(first_header.get('scope'), 'col')
+
+    def test_narrow_table_budget_css_is_screen_only_and_keeps_native_display(self):
+        mobile = ('@media screen and (max-width:900px){'
+                  '.tutorial-budget-table{min-width:var(--tutorial-table-width)}'
+                  '.tutorial-budget-table .tutorial-short-column{'
+                  'min-width:var(--tutorial-column-width);overflow-wrap:normal}}')
+        self.assertIn(mobile, build_site.CSS)
+        self.assertNotIn('tutorial-budget-table', build_site.CSS.replace(mobile, ''))
+        self.assertNotIn('tutorial-short-column', build_pdf.CSS)
+        self.assertNotIn('tutorial-budget-table', build_pdf.CSS)
+        self.assertNotIn('display:block', mobile)
+
+    def test_shared_inline_layout_changes_both_publisher_and_gate_digests(self):
+        # Substitute bytes in memory: no real asset or source file is rewritten.
+        inline = (ROOT / 'scripts/inline_layout.js').resolve()
+        contents = [b'window.fixtureLayout = 1;']
+        visited = set()
+        def fixture_bytes(path):
+            path = path.resolve()
+            visited.add(path)
+            if path == inline:
+                return contents[0]
+            return ('unchanged fixture: ' + path.relative_to(ROOT).as_posix()).encode('utf-8')
+        with mock.patch.object(Path, 'read_bytes', fixture_bytes):
+            before = (build_site.source_digest(), quality_check.site_source_digest(),
+                      build_pdf.source_digest(), quality_check.source_digest())
+            self.assertIn(inline, visited)
+            self.assertEqual(before[0], before[1])
+            self.assertEqual(before[2], before[3])
+            self.assertEqual(before, (build_site.source_digest(), quality_check.site_source_digest(),
+                                      build_pdf.source_digest(), quality_check.source_digest()))
+            contents[0] = b'window.fixtureLayout = 2;'
+            after = (build_site.source_digest(), quality_check.site_source_digest(),
+                     build_pdf.source_digest(), quality_check.source_digest())
+        self.assertEqual(after[0], after[1])
+        self.assertEqual(after[2], after[3])
+        for old, new in zip(before, after):
+            self.assertNotEqual(old, new)
+
     def test_terminal_rule_is_removed_without_touching_internal_section_rule(self):
         html = '<p>定义</p><hr />\n<p>章末正文</p>\n<hr />\n'
         self.assertEqual(build_pdf.strip_terminal_rule(html),
@@ -224,7 +389,21 @@ class BuildHelpersTest(unittest.TestCase):
 
     def test_narrow_screen_math_keeps_local_scroll_and_accessible_copy(self):
         self.assertIn('max-width:100%;min-width:0!important', build_site.CSS)
-        self.assertIn('mjx-assistive-mml{width:1px!important;height:1px!important}', build_site.CSS)
+        import re
+        for label, css in (('site', build_site.CSS), ('pdf', build_pdf.CSS)):
+            with self.subTest(publisher=label):
+                # The body selector must outrank MathJax's later element-only rule.
+                rule = re.search(r'body\s+mjx-assistive-mml\s*\{([^}]*)\}', css)
+                self.assertIsNotNone(rule)
+                properties = dict(item.strip().split(':', 1)
+                                  for item in rule.group(1).split(';') if item.strip())
+                for key, value in (('width', '1px!important'),
+                                   ('max-width', '1px!important'),
+                                   ('min-width', '0!important'),
+                                   ('height', '1px!important'),
+                                   ('overflow', 'hidden!important')):
+                    self.assertEqual(properties.get(key), value)
+                self.assertNotRegex(css, r'mjx-assistive-mml[^}]*display\s*:\s*none')
         self.assertIn('mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}', build_site.CSS)
         self.assertNotIn('mjx-assistive-mml{display:none', build_site.CSS)
 
@@ -294,6 +473,73 @@ class BuildHelpersTest(unittest.TestCase):
         html = '<hr><blockquote>\n<p>📄 <a href="#ch-0">回首页</a></p>\n</blockquote>'
         cleaned = build_pdf.remove_page_info(html)
         self.assertNotIn("blockquote", cleaned)
+
+    def test_toc_exercise_id_protection_preserves_labels_links_and_outline(self):
+        import re
+        positives = (
+            ('题15（E11-15）', ['E11-15']),
+            ('E11-14 与 E11-15', ['E11-14', 'E11-15']),
+            ('（E11-15）。', ['E11-15']),
+            ('E11-15.', ['E11-15']),
+        )
+        negatives = (
+            'codes/E11-15/chapter.py', 'E11-15.py', './E11-15',
+            '题E11-15', 'E11-15题', 'αE11-15', 'E11-15α',
+            'E111-15', 'E11-150', 'E111-150', 'E11-15-extra',
+            r'C:\cases\E11-15.py', r'folder\E11-15', r'E11-15\result',
+            '\u0301E11-15', 'E11-15\u0301',
+            '\u0903E11-15', 'E11-15\u0903',
+            '\u20ddE11-15', 'E11-15\u20dd',
+            'E11-15.\u0301', 'E１１-１５',
+        )
+        for title, expected_ids in positives:
+            with self.subTest(title=title):
+                label = ET.fromstring('<label>' + build_pdf.toc_label(title) + '</label>')
+                self.assertEqual(''.join(label.itertext()), title)
+                self.assertEqual([span.text for span in label.findall('span')], expected_ids)
+                for span in label.findall('span'):
+                    self.assertEqual(span.attrib, {'class': 'tutorial-exercise-id'})
+        for title in negatives:
+            with self.subTest(unchanged_identifier=title):
+                self.assertEqual(build_pdf.toc_label(title), title)
+
+        # Exercise labels are wrapped only in the real generated TOC, not in
+        # source headings, bookmark text, link destinations or code content.
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory)
+            filename = '11_selection-guide.md'
+            title = positives[0][0]
+            subtitle = positives[1][0]
+            (source / filename).write_text(
+                '# 夹具\n\n## ' + title + '\n\n### ' + subtitle +
+                '\n\n`E11-15.py` 与 $x^H x$ 保留。\n\n## codes/E11-15/chapter.py\n\n末段保留。\n' +
+                '\n'.join('\n## ' + negative + '\n\n反例正文保留。\n'
+                          for negative in negatives[-11:]),
+                encoding='utf-8')
+            with mock.patch.object(build_pdf, 'SRC', source), \
+                    mock.patch.object(build_pdf, 'CHAPTERS', [(filename, '选型夹具')]), \
+                    mock.patch.object(build_pdf, 'PDF_THIRD_LEVEL_CHAPTER_IDS', {'ch-0'}), \
+                    mock.patch.object(build_pdf, 'source_digest', return_value='fixture'), \
+                    mock.patch.object(build_pdf, 'check_mathjax_assets'), \
+                    mock.patch('sys.stdout', new=io.StringIO()):
+                actual, actual_outline = build_pdf.build_html('2026-10-02')
+                with mock.patch.object(build_pdf, 'toc_label', side_effect=lambda text: text):
+                    baseline, baseline_outline = build_pdf.build_html('2026-10-02')
+                restored_outline = build_pdf.outline_from_html(actual)
+        self.assertEqual(actual_outline, baseline_outline)
+        self.assertEqual(actual_outline[0][2][0][0], title)
+        self.assertEqual(actual_outline[0][2][0][2][0][0], subtitle)
+        self.assertEqual(restored_outline, baseline_outline)
+        def toc_links(page):
+            fragment = re.search(r'<section class="toc-page">.*?</section>', page, re.S)
+            self.assertIsNotNone(fragment)
+            return ET.fromstring(fragment.group(0)).findall('.//a')
+        actual_links, baseline_links = toc_links(actual), toc_links(baseline)
+        self.assertEqual([(link.attrib, ''.join(link.itertext())) for link in actual_links],
+                         [(link.attrib, ''.join(link.itertext())) for link in baseline_links])
+        self.assertEqual([span.text for link in actual_links for span in link.findall('span')],
+                         ['E11-15', 'E11-14', 'E11-15'])
+        self.assertEqual(actual.split('</section>', 1)[1], baseline.split('</section>', 1)[1])
 
     def test_outline_restores_sections(self):
         html = (

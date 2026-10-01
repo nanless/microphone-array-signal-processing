@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 A · 符号术语数学 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="9d2a7b81b395"><style>
+<meta name="source-digest" content="7a2d63df4e2e"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -29,7 +29,7 @@ pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:a
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
 mjx-container[jax="CHTML"]{font-size:110%!important;overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
-mjx-assistive-mml{width:1px!important;height:1px!important}
+body mjx-assistive-mml{width:1px!important;max-width:1px!important;min-width:0!important;height:1px!important;overflow:hidden!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
 .pn a{color:#2f6db3;text-decoration:none}.pn .off{color:#aaa}
@@ -44,14 +44,187 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{display:block;margin:20px auto;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
+.tutorial-math-tail{display:inline-block;white-space:nowrap;overflow-wrap:normal;vertical-align:baseline;overflow:visible}
+.tutorial-math-tail mjx-assistive-mml{max-width:1px!important;min-width:0!important;white-space:normal}
+.tutorial-exercise-id{white-space:nowrap;overflow-wrap:normal}
 @media(max-width:900px){.selection-readable-table{min-width:760px}.selection-readable-table th,.selection-readable-table td{min-width:10em}.selection-readable-table th:first-child,.selection-readable-table td:first-child{min-width:6em}}
 @media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}.tracking-readable-table th,.tracking-readable-table td{min-width:8em}.industrial-readable-table th,.industrial-readable-table td{min-width:8em}}
 @media(max-width:900px){.noise-readable-table th:first-child,.noise-readable-table td:first-child{min-width:6em}}
 @media screen and (max-width:900px){.source-contract-readable-table th,.source-contract-readable-table td{min-width:10em}}
+@media screen and (max-width:900px){.tutorial-budget-table{min-width:var(--tutorial-table-width)}.tutorial-budget-table .tutorial-short-column{min-width:var(--tutorial-column-width);overflow-wrap:normal}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
-window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']]}};
+/* Shared publication layout. TeX, code, links and attributes remain intact. */
+(function () {
+  "use strict";
+  const mathClass = "tutorial-math-tail";
+  const idClass = "tutorial-exercise-id";
+  const ignored = "pre,code,a,script,style,textarea,mjx-container";
+  const suffix = /^(\s*(?:(?:m\/s[²³]?|rad\/s|rad\/m|deg\/s|μs|µs|ns|ms|s|dBFS|dB|kHz|MHz|Hz|ppm|rad|cm|mm|m|V|deg|°|%|％)(?:[²³])?(?=$|[\s，。；、：！？）,.!?;:)\]\u4e00-\u9fff])\s*[，。；、：！？）,.;:!?\]]?|[，。；、：！？）,.;:!?\]]))/;
+  let ready = false;
+  let scheduled = false;
+  let printing = false;
+
+  function roots() {
+    const candidates = Array.from(document.querySelectorAll("main.main,.chap"));
+    return candidates.filter(root => !candidates.some(other => other !== root && other.contains(root)));
+  }
+
+  function unwrapMath(root) {
+    for (const wrapper of root.querySelectorAll("." + mathClass)) {
+      const children = Array.from(wrapper.childNodes);
+      wrapper.replaceWith(...children);
+      // Merge only our adjacent ordinary text, never normalize a MathJax subtree.
+      for (const node of children) {
+        if (node.nodeType !== Node.TEXT_NODE) continue;
+        while (node.nextSibling && node.nextSibling.nodeType === Node.TEXT_NODE) {
+          node.data += node.nextSibling.data;
+          node.nextSibling.remove();
+        }
+      }
+    }
+  }
+
+  function protectExerciseIds(root) {
+    let count = 0;
+    {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      const nodes = [];
+      let node;
+      while ((node = walker.nextNode())) {
+        if (!node.parentElement.closest(ignored + ",." + idClass)) nodes.push(node);
+      }
+      for (const text of nodes) {
+        // A filename/path or a longer identifier is not a stable exercise ID.
+        const pattern = /(^|[^\p{L}\p{N}\p{M}_/\\.-])(E\d{2}-\d{2})(?![\p{L}\p{N}\p{M}_/\\-]|\.[\p{L}\p{N}\p{M}])/gu;
+        const matches = Array.from(text.data.matchAll(pattern));
+        for (const match of matches.reverse()) {
+          const start = match.index + match[1].length;
+          text.splitText(start + match[2].length);
+          const middle = text.splitText(start);
+          const span = document.createElement("span");
+          span.className = idClass;
+          middle.before(span);
+          span.append(middle);
+          count++;
+        }
+      }
+    }
+    return count;
+  }
+
+  function markShortLeads(root) {
+    let count = 0;
+    for (const paragraph of root.querySelectorAll("p")) {
+      if (paragraph.closest("pre,code,a,script,style,textarea")) continue;
+      const significant = Array.from(paragraph.childNodes).filter(node =>
+        node.nodeType !== Node.TEXT_NODE || node.data.trim());
+      const next = paragraph.nextElementSibling;
+      const anchorOnly = significant.length === 1 &&
+        significant[0].nodeType === Node.ELEMENT_NODE &&
+        significant[0].tagName === "A" && significant[0].id &&
+        !significant[0].hasAttribute("href") &&
+        Array.from(significant[0].childNodes).every(node =>
+          node.nodeType === Node.TEXT_NODE && !node.data.trim());
+      paragraph.classList.toggle("tutorial-anchor-only", !!anchorOnly);
+      const short = significant.length === 1 &&
+        significant[0].nodeType === Node.ELEMENT_NODE &&
+        significant[0].tagName === "STRONG" &&
+        paragraph.textContent.trim().length <= 60 &&
+        next && /^(P|UL|OL|BLOCKQUOTE)$/.test(next.tagName) &&
+        next.textContent.trim().length > 0;
+      paragraph.classList.toggle("tutorial-short-lead", !!short);
+      if (short) count++;
+    }
+    return count;
+  }
+
+  function apply() {
+    const content = roots();
+    for (const root of content) unwrapMath(root);
+    const plans = [];
+    const hosts = new Map();
+    let skippedWide = 0;
+    let idCount = 0;
+    let leadCount = 0;
+    for (const root of content) {
+      idCount += protectExerciseIds(root);
+      leadCount += markShortLeads(root);
+      // Read every width before any math wrapper is inserted, to avoid repeated
+      // synchronous layout across thousands of formulas in the combined book.
+      for (const math of root.querySelectorAll('mjx-container:not([display="true"])')) {
+        if (math.closest("pre,code,a,script,style,textarea")) continue;
+        const text = math.nextSibling;
+        if (!text || text.nodeType !== Node.TEXT_NODE) continue;
+        const match = text.data.match(suffix);
+        if (!match || match[0].length > 16) continue;
+        const host = math.closest("p,li,td,th,h1,h2,h3,h4");
+        if (!host) continue;
+        if (!hosts.has(host)) {
+          const style = getComputedStyle(host);
+          hosts.set(host, host.clientWidth - parseFloat(style.paddingLeft || 0) -
+            parseFloat(style.paddingRight || 0));
+        }
+        const range = document.createRange();
+        range.setStart(text, 0);
+        range.setEnd(text, match[0].length);
+        const style = getComputedStyle(math);
+        const width = math.getBoundingClientRect().width + range.getBoundingClientRect().width +
+          parseFloat(style.marginLeft || 0) + parseFloat(style.marginRight || 0);
+        if (width > hosts.get(host) - 8) {
+          skippedWide++;
+          continue;
+        }
+        plans.push({math, text, length: match[0].length});
+      }
+    }
+    for (const {math, text, length} of plans) {
+      const wrapper = document.createElement("span");
+      wrapper.className = mathClass;
+      math.before(wrapper);
+      wrapper.append(math);
+      text.splitText(length);
+      wrapper.append(text);
+    }
+    ready = true;
+    const result = {grouped: plans.length, skippedWide, newExerciseIds: idCount, shortLeads: leadCount};
+    window.ArrayTutorialLayout.lastRun = result;
+    return result;
+  }
+
+  function schedule() {
+    if (!ready || scheduled || printing) return;
+    scheduled = true;
+    requestAnimationFrame(() => {
+      scheduled = false;
+      if (printing) return;
+      apply();
+    });
+  }
+
+  window.ArrayTutorialLayout = {apply, lastRun: null};
+  window.addEventListener("resize", schedule);
+  // Chrome fires beforeprint while screen styles still apply. Remove screen
+  // groups before they can enlarge the print layout. The combined book is
+  // measured at its fixed A4 geometry during pageReady instead. Do not mutate
+  // thousands of nodes after the browser has begun its print snapshot: this
+  // can truncate the final pages even when a small fixture prints correctly.
+  // A synthetic beforeprint event is not a print test.
+  window.addEventListener("beforeprint", () => {
+    printing = true;
+    if (ready && document.documentElement.dataset.tutorialPrintLayout !== "a4") {
+      for (const root of roots()) unwrapMath(root);
+    }
+  });
+  window.addEventListener("afterprint", () => {
+    printing = false;
+    if (document.documentElement.dataset.tutorialPrintLayout !== "a4") schedule();
+  });
+  if (document.fonts) document.fonts.addEventListener("loadingdone", schedule);
+})();
+
+window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']]}, startup: {pageReady: () => MathJax.startup.defaultPageReady().then(() => document.fonts.ready).then(() => ArrayTutorialLayout.apply())}};
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
  onerror="document.getElementById('offnote').style.display='block';document.getElementById('offnote').textContent='公式渲染脚本加载失败：当前显示的是公式源码。';"></script>
@@ -179,128 +352,128 @@ kf_s/N,&0\leq k\lt \lceil N/2\rceil,\\
 (k-N)f_s/N,&\lceil N/2\rceil\leq k\lt N.
 \end{cases}\tag{12-1}$$</p>
 <p>偶数 $N$ 的 Nyquist 格点在式(12-1)中记为 $-f_s/2$，在实信号单边谱中记为 $+f_s/2$；这两个复指数在整数采样时刻完全相同，并不是两个可独立观测的频点。<a href="https://numpy.org/doc/stable/reference/generated/numpy.fft.fftfreq.html" title="citation">NumPy 完整频率排列</a>与<a href="https://numpy.org/doc/stable/reference/generated/numpy.fft.rfftfreq.html" title="citation">实谱单边排列</a>分别说明了这两种约定（NumPy 2.5 在线文档，2026-09-28 核实）。</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:34em">
 <thead>
 <tr>
-<th scope="col">符号</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">符号</th>
 <th scope="col">含义</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>$M$, $d$, $D$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$M$, $d$, $D$</td>
 <td>麦数、阵元间距、阵列孔径</td>
 </tr>
 <tr>
-<td>$c$, $\lambda$, $f$，$f_k$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$c$, $\lambda$, $f$，$f_k$</td>
 <td>声速（示例常取 343 m/s）、波长、连续物理频率（Hz）、单边 DFT/STFT 第 $k$ 个频点的非负物理频率 $f_k=kf_s/N$；完整双边 DFT 的负频率索引按上文换算</td>
 </tr>
 <tr>
-<td>$\theta$, $\theta_0$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\theta$, $\theta_0$</td>
 <td>正横方向起算的入射角、波束指向角；端射为 $\pm90°$</td>
 </tr>
 <tr>
-<td>$\vec u(\theta)$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\vec u(\theta)$</td>
 <td>从阵列指向声源的单位向量；声波传播方向为 $-\vec u$</td>
 </tr>
 <tr>
-<td>$\vec{r}_m$, $\vec{p}$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\vec{r}_m$, $\vec{p}$</td>
 <td>第 $m$ 个麦克风的位置向量、声源位置向量</td>
 </tr>
 <tr>
-<td>$t$, $n$, $k$, $\ell$, $L$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$t$, $n$, $k$, $\ell$, $L$</td>
 <td>连续时间、离散采样索引、频点索引、帧索引、用于统计的快拍数；第 2 章式(2-6)、式(2-7)及本附录式(12-3)均用 $L$。其他章节若用 $T$ 或复用 $k$ 作滞后号，以当地公式的定义为准</td>
 </tr>
 <tr>
-<td>$\psi$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\psi$</td>
 <td>相邻两麦在指向补偿后的残余相位差（§2.6、§5.2）</td>
 </tr>
 <tr>
-<td>$\vec{a}(\theta)$, $\vec{w}$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\vec{a}(\theta)$, $\vec{w}$</td>
 <td>导向矢量、波束权重</td>
 </tr>
 <tr>
-<td>$\hat{\mathbf{R}}$, $\mathbf{R}_{nn}$, $\mathbf{R}_{ss}$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\hat{\mathbf{R}}$, $\mathbf{R}_{nn}$, $\mathbf{R}_{ss}$</td>
 <td>空间协方差矩阵、噪声协方差矩阵、目标协方差矩阵</td>
 </tr>
 <tr>
-<td>$\mathbf{\Gamma}$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\mathbf{\Gamma}$</td>
 <td>球面各向同性弥散噪声场的相干矩阵；水平面入射模型另见 §5.1</td>
 </tr>
 <tr>
-<td>$\mathbf{E}_n$（$\mathbf{E}_s$）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\mathbf{E}_n$（$\mathbf{E}_s$）</td>
 <td>噪声（信号）子空间的特征向量基（§4.6）</td>
 </tr>
 <tr>
-<td>$\sigma^2$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\sigma^2$</td>
 <td>噪声方差/功率（白噪声下协方差为 $\sigma^2\mathbf{I}$）</td>
 </tr>
 <tr>
-<td>$\mathbf{C}$, $\vec{f}$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\mathbf{C}$, $\vec{f}$</td>
 <td>LCMV 约束矩阵与约束值向量，$\mathbf{C}^H\vec{w}=\vec{f}$（§5.5）</td>
 </tr>
 <tr>
-<td>$\vec{e}_r$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\vec{e}_r$</td>
 <td>参考麦选择向量（第 $r$ 位为 1 的单位向量，见<a href="05_beamforming.html#sec-u-fb93744989">第 5 章 MWF 专题</a>的参考麦选择，MWF/SDW 用）</td>
 </tr>
 <tr>
-<td>$\mathbf{B}$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\mathbf{B}$</td>
 <td>GSC 阻塞矩阵，满足 $\mathbf{B}^H\vec{a}(\theta_0)=\vec{0}$（§5.6）</td>
 </tr>
 <tr>
-<td>$\Phi(f)$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\Phi(f)$</td>
 <td>在 §4.2 表示 GCC 的频率加权函数；在 §5.7 表示功率谱。两处符号相同，含义须根据所在公式区分。</td>
 </tr>
 <tr>
-<td>$\mathbf{P}$, $\mathbf{K}$, $\mathbf{Q}$, $\mathbf{F}$, $\mathbf{H}$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\mathbf{P}$, $\mathbf{K}$, $\mathbf{Q}$, $\mathbf{F}$, $\mathbf{H}$</td>
 <td>卡尔曼滤波：误差协方差、卡尔曼增益、过程噪声协方差、状态转移、观测矩阵（§9.2）</td>
 </tr>
 <tr>
-<td>$V$, $A$, $S$, $\bar\alpha$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$V$, $A$, $S$, $\bar\alpha$</td>
 <td>房间体积、等效吸声面积、总表面积、平均吸声系数（§2.4）</td>
 </tr>
 <tr>
-<td>$\mu_{\mathrm{NLMS}}$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\mu_{\mathrm{NLMS}}$</td>
 <td>归一化最小均方（Normalized Least Mean Squares，NLMS）步长（§6.1）；第 6 章给出理想无噪声单步收缩条件 $0\lt \mu\lt 2$；它不是任意有色随机输入的均方稳定保证，实际取值还受正则项、观测误差和时变路径影响</td>
 </tr>
 <tr>
-<td>$\mu_{\mathrm{SDW}}$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\mu_{\mathrm{SDW}}$</td>
 <td>语音失真加权多通道维纳滤波（Speech-Distortion-Weighted Multichannel Wiener Filter，SDW-MWF）的失真—降噪折中系数（<a href="05_beamforming.html#sec-u-fb93744989">第 5 章 MWF 专题</a>）；与上一行的 NLMS 步长不是同一物理量</td>
 </tr>
 <tr>
-<td>$\varepsilon_{\mathrm{NLMS}}$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\varepsilon_{\mathrm{NLMS}}$</td>
 <td>归一化最小均方（Normalized Least Mean Squares，NLMS）更新分母中的小正数，与输入能量同量纲，使零输入时分母仍为正，并限制低能量时的更新幅度（§6.1）</td>
 </tr>
 <tr>
-<td>$\delta$, $\eta$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\delta$, $\eta$</td>
 <td>绝对对角加载 $\mathbf R+\delta\mathbf I$ 中的 $\delta$ 与 $\mathbf R$ 同量纲；相对加载 $\mathbf R+\eta\,\mathrm{tr}(\mathbf R)\mathbf I/M$ 中的 $\eta$ 无量纲（§5.4）</td>
 </tr>
 <tr>
-<td>$\tau_{ij}$，TDOA</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\tau_{ij}$，TDOA</td>
 <td>$\tau_{ij}=t_i-t_j$；到达时间差（Time Difference of Arrival，TDOA）。远场下 $\tau_{m1}=-(\vec r_m-\vec r_1)^\top\vec u/c$</td>
 </tr>
 <tr>
-<td>$T_{60}$，DRR，$d_c$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$T_{60}$，DRR，$d_c$</td>
 <td>混响时间、直达混响比（Direct-to-Reverberant Ratio，DRR；dB 域读数）、临界距离</td>
 </tr>
 <tr>
-<td>WNG，DI，HPBW，SLL</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">WNG，DI，HPBW，SLL</td>
 <td>白噪声增益（White Noise Gain，WNG）、指向性指数（Directivity Index，DI）、半功率波束宽度（Half-Power Beamwidth，HPBW）、旁瓣电平（Side-Lobe Level，SLL）</td>
 </tr>
 <tr>
-<td>RTF</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">RTF</td>
 <td>波束与空间模型中指相对传递函数（Relative Transfer Function）；工程与选型中指实时因子（Real-Time Factor），即累计服务耗时/新推进音频时长；重叠分析窗不能把重复样本再计入分母。两者同缩写、不同量，按章节语境区分</td>
 </tr>
 <tr>
-<td>$h(n)$，$\hat{\vec{w}}$，ERLE</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$h(n)$，$\hat{\vec{w}}$，ERLE</td>
 <td>回声路径、AEC 自适应滤波器、回声返回损失增强（Echo Return Loss Enhancement，ERLE）</td>
 </tr>
 <tr>
-<td>$G(k,f)$, $\Delta$, $K$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$G(k,f)$, $\Delta$, $K$</td>
 <td>WPE 预测系数、保护延迟、预测阶数。第 7 章局部用 $k$ 表示滞后帧号、$f$ 表示<strong>无量纲离散频点索引</strong>，不同于上表按 Hz 计的连续物理频率 $f$；换算及索引范围见 §7.1</td>
 </tr>
 <tr>
-<td>PHD/RFS</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">PHD/RFS</td>
 <td>概率假设密度（Probability Hypothesis Density，PHD）/随机有限集（Random Finite Set，RFS）</td>
 </tr>
 </tbody>
@@ -316,443 +489,443 @@ kf_s/N,&0\leq k\lt \lceil N/2\rceil,\\
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-12-2">12.2 术语词典</h2>
 <p>下表按主题解释正文和相关文献中常见的术语。</p>
 <span id="sec-4" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-e2e1cb6329">信号与数学基础</h3>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:32em">
 <thead>
 <tr>
-<th scope="col">术语</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">术语</th>
 <th scope="col">解释</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>STFT（短时傅里叶变换）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">STFT（短时傅里叶变换）</td>
 <td>把波形分成重叠短帧，并对每帧计算频谱，得到时间—频率复数表示。窗长与帧移按频率分辨率、时变性和延迟要求选择；逐频点处理可把宽带问题近似拆成多个窄带问题（§2.5）</td>
 </tr>
 <tr>
-<td>快拍（snapshot）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">快拍（snapshot）</td>
 <td>某一帧、某一频点上，$M$ 个麦克风复数谱排成的列向量——阵列的一张“空间照片”（§2.5）</td>
 </tr>
 <tr>
-<td>空间协方差矩阵 $\hat{\mathbf{R}}$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">空间协方差矩阵 $\hat{\mathbf{R}}$</td>
 <td>阵列文献常把快拍外积的时间平均称为空间协方差。若未减均值，它严格说是未中心化样本二阶矩；与采用相同分母的中心化样本协方差只在<strong>本批快拍的样本均值恰为零</strong>时相等。总体零均值并不能保证有限样本均值为零。它是 Capon/MVDR/MUSIC 的常见输入，准确口径见第 2 章式(2-6)、式(2-7)。</td>
 </tr>
 <tr>
-<td>特征分解 / 子空间</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">特征分解 / 子空间</td>
 <td>把厄米矩阵拆成特征值与特征向量。要把 $K$ 个较大特征值对应的特征向量解释为 $K$ 维信号子空间，需源协方差满秩、由各源导向矢量组成的矩阵满列秩、$K\lt M$、空间白噪声、源与噪声的交叉二阶矩为零及模型正确；有限快拍还会带来估计误差。其余噪声底特征向量张成噪声子空间（图6d、§4.6）</td>
 </tr>
 <tr>
-<td>超定方程组</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">超定方程组</td>
 <td>方程比未知数多，通常无精确解、只可求最小二乘解——TDOA 定位的麦对多于未知数时就是这样（见§4.4）</td>
 </tr>
 <tr>
-<td>双曲线定位</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">双曲线定位</td>
 <td>在二维平面，一对麦测出的非退化距离差对应以两麦为焦点的双曲线的一支；在三维空间，对应双叶双曲面的一叶。多个独立麦对的交集可约束声源位置，退化时也可能没有唯一交点（§4.4）。</td>
 </tr>
 <tr>
-<td>常规波束分辨率 / 超分辨</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">常规波束分辨率 / 超分辨</td>
 <td>常规波束主瓣宽度的量级约为 $\lambda/D$；子空间方法在模型正确、信噪比和快拍数足够时可形成更窄谱峰，因此称为超分辨（§2.6、§4.6）</td>
 </tr>
 <tr>
-<td>波束图（beampattern）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">波束图（beampattern）</td>
 <td>波束形成器对各个方向的增益图，主瓣/旁瓣/零陷都在上面读（图7a）</td>
 </tr>
 <tr>
-<td>自由度（DOF）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">自由度（DOF）</td>
 <td>可调参数的个数。逐频点 $M$ 麦复权重有 $M$ 个复数参数；每条<strong>独立的复线性约束</strong>通常减少一个复自由度，重复约束不再额外消耗，约束相矛盾则无可行解（§5.5）。稀疏阵用差分协同阵在满足二阶统计模型条件时增加虚拟维数，不能把它当作额外的物理麦克风（§3.3）。</td>
 </tr>
 <tr>
-<td>抽头（tap）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">抽头（tap）</td>
 <td>FIR 滤波器的一个系数。“128 个抽头”表示 128 个系数；按多项式阶数定义时对应 127 阶，阅读文献时需核对作者采用的口径（§6.1）</td>
 </tr>
 <tr>
-<td>优先效应（precedence effect）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">优先效应（precedence effect）</td>
 <td>先到声与短延迟后到声携带不同方向线索时，在两声相似、延迟及听觉任务满足相应条件下，方位判断常更偏向先到声；不表示所有反射都被忽略。<a href="01_problem-definition.html#sec-1-1">第 1 章 §1.1</a>给出定义与 Wallach 等 1949 年原始出处；§2.4 解释房间反射模型。</td>
 </tr>
 <tr>
-<td>拉格朗日乘子法</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">拉格朗日乘子法</td>
 <td>带约束求极值的标准工具：“约束写成等式加到目标里，再求导令零”，MVDR 的闭式解就是这么推的（§5.4）</td>
 </tr>
 <tr>
-<td>GCC-PHAT 频谱相位加权</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">GCC-PHAT 频谱相位加权</td>
 <td>每个频点把非零互功率谱 $G_{12}(f)$ 除以 $|G_{12}(f)|$，使其模为 1、保留相位；零模频点须跳过或作数值保护。它改变时延估计中的频率权重，不能据此声称麦克风间噪声已被空间白化（§4.2）。<a href="https://doi.org/10.1109/TASSP.1976.1162830" title="citation">Knapp 与 Carter 的 GCC 原始论文</a></td>
 </tr>
 <tr>
-<td>空间噪声白化（spatial noise whitening）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">空间噪声白化（spatial noise whitening）</td>
 <td>在同一频点、正定噪声协方差 $\mathbf R_{nn}$ 已知时，对通道快拍施加矩阵 $\mathbf W$，使 $\mathbf W\mathbf R_{nn}\mathbf W^H=\mathbf I$；导向矢量也须改为 $\mathbf W\vec a$。它处理的是通道间的噪声协方差，不能与 GCC-PHAT 的逐频点标量加权混用。估计误差或病态矩阵需另行处理（E12-04）。</td>
 </tr>
 <tr>
-<td>sinc 函数</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">sinc 函数</td>
 <td>本书定义 $\mathrm{sinc}(x)=\sin(\pi x)/(\pi x)$。球面各向同性弥散场中的两麦相干系数具有 sinc 形式；若声源只在水平面各向同性分布，则对应零阶贝塞尔函数 $J_0(2\pi fd/c)$（§5.1）。另一些文献把 sinc 定义为 $\sin x/x$，代入公式前必须先核对定义</td>
 </tr>
 <tr>
-<td>SNR（信噪比）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">SNR（信噪比）</td>
 <td>信号功率与噪声功率之比，常以 dB 表示。输出 SNR 减去输入 SNR 得到 SNR 增益。SER 在 AEC 语境中比较近端目标与回声功率，使用时应明确分子、分母和测量时段（§5.1、§6.1）</td>
 </tr>
 <tr>
-<td>dB（分贝）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">dB（分贝）</td>
 <td>比值的对数表示；功率比使用 $10\log_{10}$，幅度比使用 $20\log_{10}$。两种写法只有在两边功率与幅度平方使用相同比例常数时才对应同一物理变化（§12.3.2）。</td>
 </tr>
 <tr>
-<td>FFT（快速傅里叶变换）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">FFT（快速傅里叶变换）</td>
 <td>离散傅里叶变换的高效算法，把一帧时域样本转换为各频点的复数谱；STFT 对连续短帧重复这一运算（§2.5）</td>
 </tr>
 <tr>
-<td>DNN（深度神经网络）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">DNN（深度神经网络）</td>
 <td>由多层参数化变换组成、通过数据优化的模型。本教程主要用于估计时频掩码、方向概率或增强信号（§4.7、§5.9）</td>
 </tr>
 <tr>
-<td>远场 / 近场</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">远场 / 近场</td>
 <td>远场中波前可近似为平面，导向模型主要由方向决定；近场采用球面波模型，还要考虑距离和通道幅度差。$2D^2/\lambda$ 可作为检查波前相位曲率的距离尺度，但不是单独决定远近场的硬边界；还要检查 $r\gg D$、允许的相位误差和通道幅度差（§2.2）</td>
 </tr>
 </tbody>
 </table></div>
 <span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-6c0ad368cf">房间声学</h3>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:32em">
 <thead>
 <tr>
-<th scope="col">术语</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">术语</th>
 <th scope="col">解释</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>RIR（房间脉冲响应）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">RIR（房间脉冲响应）</td>
 <td>在指定声源、接收位置和系统近似线性时，RIR 描述从声源到麦克风的声学传递路径；干净信号与 RIR 卷积可得到该路径下的接收信号（§2.4）</td>
 </tr>
 <tr>
-<td>$T_{60}$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$T_{60}$</td>
 <td>混响时间：房间声能衰减 60 dB 所需时间。具体数值取决于房间体积、表面吸声和测量频带</td>
 </tr>
 <tr>
-<td>直达混响比（Direct-to-Reverberant Ratio，DRR）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">直达混响比（Direct-to-Reverberant Ratio，DRR）</td>
 <td>直达声能量 ÷ 混响声能量，dB 域读数：DRR（dB）&gt;0 直达占优，DRR（dB）&lt;0 混响占优；负值绝对值越大，混响能量相对越高</td>
 </tr>
 <tr>
-<td>临界距离 $d_c$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">临界距离 $d_c$</td>
 <td>在给定声源指向性与扩散场假设下，直达声和混响声能量相等、即 DRR=0 的距离；Sabine 近似下常写成 $d_c\approx0.057\sqrt{QV/T_{60}}$，其中 $Q$ 是声源指向因子。取全向声源 $Q=1$ 时才化为 $0.057\sqrt{V/T_{60}}$（§2.4）</td>
 </tr>
 <tr>
-<td>镜像法</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">镜像法</td>
 <td>把墙面反射等效成墙后镜像声源的仿真方法（Allen &amp; Berkley 1979），pyroomacoustics 的核心</td>
 </tr>
 <tr>
-<td>弥散噪声场</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">弥散噪声场</td>
 <td>来自大量方向、没有单一主导入射方向的声场模型。晚期混响常用这一模型近似；麦克风附近的湍流风噪通常不满足各向同性弥散场假设</td>
 </tr>
 </tbody>
 </table></div>
 <span id="sec-6" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-e6ba229b05">自适应滤波、增强与分离</h3>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:32em">
 <thead>
 <tr>
-<th scope="col">术语</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">术语</th>
 <th scope="col">解释</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>LMS / NLMS / RLS</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">LMS / NLMS / RLS</td>
 <td>最小均方（Least Mean Squares，LMS）结构简单；归一化最小均方（Normalized LMS，NLMS）按输入功率归一化步长；递归最小二乘（Recursive Least Squares，RLS）利用输入相关矩阵的递推逆，通常收敛更快，但计算量和存储量也更大。实际差距取决于输入相关性、滤波长度和参数设置（<a href="05_beamforming.html#sec-5-6">GSC §5.6</a>、<a href="06_aec.html#sec-6-1-2">NLMS §6.1.2</a>、<a href="06_aec.html#sec-6-2-5">RLS §6.2.5</a>）</td>
 </tr>
 <tr>
-<td>音乐噪声</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">音乐噪声</td>
 <td>谱减类方法过度估计噪声后残留的随机孤立谱峰，听起来像叮咚作响的流水声（§5.7）</td>
 </tr>
 <tr>
-<td>ICA / IVA</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">ICA / IVA</td>
 <td>ICA 利用源间统计独立性估计解混矩阵；IVA 把同一输出在各频点的分量组成向量联合估计，以降低频点间排列不一致（§8.3）</td>
 </tr>
 <tr>
-<td>PIT</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">PIT</td>
 <td>排列不变训练在训练时选择与参考源匹配代价最小的输出排列；它不保证跨长录音的身份连续（§8.1）</td>
 </tr>
 </tbody>
 </table></div>
 <span id="sec-7" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-41074552da">波束形成与阵列度量</h3>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:32em">
 <thead>
 <tr>
-<th scope="col">术语</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">术语</th>
 <th scope="col">解释</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>导向矢量 $\vec{a}(\theta)$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">导向矢量 $\vec{a}(\theta)$</td>
 <td>指定频率和声源方向或位置时，各通道相对参考的复响应向量，包含幅度与相位；理想远场、同增益全向麦模型常简化为仅有相位差，近场与实测流形还要保留幅度差（§2.3）</td>
 </tr>
 <tr>
-<td>转向（steering）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">转向（steering）</td>
 <td>把波束对准某个方向：按导向矢量补偿各通道时延/相位</td>
 </tr>
 <tr>
-<td>主瓣 / 旁瓣 / 零陷</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">主瓣 / 旁瓣 / 零陷</td>
 <td>波束图中目标指向附近的主要响应区、主瓣外的局部峰，以及响应接近零的方向（图 7a）</td>
 </tr>
 <tr>
-<td>栅瓣</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">栅瓣</td>
 <td>空间采样混叠产生的高旁瓣；均匀线阵在特定间距和转向下可出现与主瓣等高的方向歧义（§2.6、图 7b）</td>
 </tr>
 <tr>
-<td>白噪声增益（White Noise Gain，WNG）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">白噪声增益（White Noise Gain，WNG）</td>
 <td>衡量波束权重对各通道独立等功率白噪声的放大或抑制；在等幅理想目标导向、目标已对齐且无失真归一化下，$M$ 元等权 DSB 达到 $10\log_{10}M$ dB（§2.6）</td>
 </tr>
 <tr>
-<td>指向性指数（Directivity Index，DI）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">指向性指数（Directivity Index，DI）</td>
 <td>指定各向同性弥散场与归一化口径下的方向性收益（§2.6）</td>
 </tr>
 <tr>
-<td>半功率波束宽度（Half-Power Beamwidth，HPBW）/旁瓣电平（Side-Lobe Level，SLL）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">半功率波束宽度（Half-Power Beamwidth，HPBW）/旁瓣电平（Side-Lobe Level，SLL）</td>
 <td>HPBW 是主瓣两个 −3 dB 点间的角宽；SLL 是最高旁瓣相对主瓣的电平（§2.6、§5.2）</td>
 </tr>
 <tr>
-<td>CRLB / CRB（克拉美－罗下界，Cramér–Rao Lower Bound）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">CRLB / CRB（克拉美－罗下界，Cramér–Rao Lower Bound）</td>
 <td>给定概率模型和正则条件下，无偏估计器方差的下界；模型、参数化或偏差条件改变，下界也改变（§2.6）</td>
 </tr>
 <tr>
-<td>MVDR（最小方差无失真响应）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">MVDR（最小方差无失真响应）</td>
 <td>在 $\vec{w}^H\vec{a}=1$ 的约束下最小化输出噪声功率。它保护目标方向或 RTF，同时压低噪声（§5.4）</td>
 </tr>
 <tr>
-<td>MWF（多通道维纳滤波）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">MWF（多通道维纳滤波）</td>
 <td>最小化指定参考目标与输出之间的均方误差，允许目标失真与噪声残留共同进入代价；SDW-MWF 改变噪声项的权重。秩一化简和极限的条件见本表后的独立说明及<a href="05_beamforming.html#sec-u-fb93744989">第 5 章 MWF 专题</a>。</td>
 </tr>
 <tr>
-<td>相对传递函数（Relative Transfer Function，RTF）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">相对传递函数（Relative Transfer Function，RTF）</td>
 <td>各通道相对参考通道的声学传递响应；是否包含早期反射取决于估计目标和时间窗，混响中 MVDR 常保护 RTF 而不是自由场导向矢量（§5.4）</td>
 </tr>
 <tr>
-<td>对角加载</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">对角加载</td>
 <td>求逆前在协方差矩阵上增加对角项，以改善条件数并降低对失配的敏感性。绝对加载写成 $\mathbf R+\delta\mathbf I$，相对加载写成 $\mathbf R+\eta\operatorname{tr}(\mathbf R)\mathbf I/M$；两种参数的量纲和缩放行为不同（§5.4、§12.3）</td>
 </tr>
 <tr>
-<td>相干源</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">相干源</td>
 <td>在所分析频点，完全相干的多个源分量互为固定复数倍，使源协方差降秩；未去相关的标准 MUSIC 因此失去相应信号子空间条件。高度相关但非完全相干时未必严格降秩，却可能更难在有限快拍下分辨；空间平滑可在满足阵列与维数条件时改善这一问题（§4.6）</td>
 </tr>
 <tr>
-<td>空间平滑</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">空间平滑</td>
 <td>把线阵切成重叠子阵分别估协方差再平均，牺牲孔径换去相干（§4.6）</td>
 </tr>
 <tr>
-<td>差分协同阵</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">差分协同阵</td>
 <td>由全部阵元位置差组成的有符号滞后集合。在互不相干源和通道响应一致等条件下，可由二阶统计重构虚拟协方差；连续滞后数、虚拟矩阵维数和物理孔径须分别计算，不能把差集的正负跨度当作物理孔径增加一倍（§3.3）</td>
 </tr>
 <tr>
-<td>GEV 波束形成器</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">GEV 波束形成器</td>
 <td>最大化输出信噪比的波束形成器（广义特征值问题的解），与 MVDR（见本组 MVDR 行）并列的掩码后处理选项（§5.9）</td>
 </tr>
 <tr>
-<td>GSS（导引源分离）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">GSS（导引源分离）</td>
 <td>利用方向或说话人活动信息引导空间聚类与波束形成的分离方法；常用 cACGMM 估计时频掩码，并用活动标注约束输出排列（§8.4）</td>
 </tr>
 <tr>
-<td>WDO（W-不重叠正交性，W-disjoint orthogonality）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">WDO（W-不重叠正交性，W-disjoint orthogonality）</td>
 <td>近似认为不同源在时频平面的非零支撑较少重叠，从而可逐时频点选取主导声源；它强于“互不相关”。例如两组系数 $[1,1]$ 与 $[1,-1]$ 的内积为 0，但两个位置都同时非零，故不能由正交或零互协方差推出 WDO。强混响或多人同时发声会削弱这一近似（§8.6）。<a href="https://doi.org/10.1109/TSP.2004.828896" title="citation">Yılmaz 与 Rickard 原始论文</a></td>
 </tr>
 </tbody>
 </table></div>
 <h3 id="sec-u-c1e472a7cd">MWF 的参考目标、秩一化简与噪声权重极限</h3>
-<p>多通道维纳滤波（Multichannel Wiener Filter，MWF）的参考目标是所选麦克风上的目标声像，不必等于原始源信号。语音失真加权多通道维纳滤波（Speech-Distortion-Weighted Multichannel Wiener Filter，SDW-MWF）沿用目标与噪声不相关的模型，最小化“目标失真 + $\mu$ 倍残余噪声”的均方代价。本书第 5 章式(5-13)定义 $\vec w_{\mathrm{SDW}}=(\mathbf R_{ss}+\mu\mathbf R_{nn})^{-1}\mathbf R_{ss}\vec e_r$；$\mu=1$ 为普通 MWF，增大 $\mu$ 会提高残余噪声的代价。相关原始模型及参考取点见<a href="05_beamforming.html#sec-u-fb93744989">第 5 章专题</a>。</p>
+<p>多通道维纳滤波（Multichannel Wiener Filter，MWF）的参考目标是所选麦克风上的目标声像，不必等于原始源信号。语音失真加权多通道维纳滤波（Speech-Distortion-Weighted Multichannel Wiener Filter，SDW-MWF）沿用目标与噪声不相关的模型，最小化“目标失真 + $\mu$ 倍残余噪声”的均方代价。本书第 5 章式(5-12)定义 $\vec w_{\mathrm{SDW}}=(\mathbf R_{ss}+\mu\mathbf R_{nn})^{-1}\mathbf R_{ss}\vec e_r$；$\mu=1$ 为普通 MWF，增大 $\mu$ 会提高残余噪声的代价。相关原始模型及参考取点见<a href="05_beamforming.html#sec-u-fb93744989">第 5 章专题</a>。</p>
 <p>若目标是秩一模型 $\mathbf R_{ss}=\phi_s\vec a\vec a^H$，源功率 $\phi_s>0$，噪声协方差 $\mathbf R_{nn}$ 厄米正定，并把参考响应归一化为 $a_r=\vec e_r^H\vec a=1$，则令 $q=\vec a^H\mathbf R_{nn}^{-1}\vec a>0$，可把 SDW-MWF 写成无失真 MVDR 权重乘实标量 $G_\mu=\phi_s q/(\mu+\phi_s q)$。参考归一化条件不能省略：一般复参考响应还会带来 $a_r^*$ 因子，输出保护的是该参考声像。<a href="05_beamforming.html#e05-20">第 5 章 E05-20</a>给出复参考的具体计算；<a href="https://arxiv.org/pdf/1707.00201" title="citation">Wang 等作者预印本（2017），§§2、3.1～3.2，式(1)～(13)</a>说明了对应的失真加噪声目标和秩一形式。</p>
 <p>对于固定、半正定的 $\mathbf R_{ss}$，若 $\mathbf R_{nn}$ 正定，可把总矩阵写成 $\mu(\mathbf R_{nn}+\mathbf R_{ss}/\mu)$，括号中的矩阵最小特征值不低于 $\lambda_{\min}(\mathbf R_{nn})>0$，其逆范数有统一上界。因此总逆矩阵包含趋零的 $1/\mu$，权重在 $\mu\to\infty$ 时趋零。若噪声矩阵有零空间，这个论证缺少可逆的极限矩阵，不能照搬。E12-12 比较正定噪声与噪声零空间；“每个有限 $\mu$ 下总矩阵可逆”不是权重必趋零的充分条件。</p>
 <span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-9dd3091211">定位与追踪</h3>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:32em">
 <thead>
 <tr>
-<th scope="col">术语</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">术语</th>
 <th scope="col">解释</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>到达时间差（Time Difference of Arrival，TDOA）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">到达时间差（Time Difference of Arrival，TDOA）</td>
 <td>本书定义 $\tau_{ij}=t_i-t_j$；同一声源到达一对麦克风的带符号时间差，是远场和近场定位的重要观测量（§2.1）</td>
 </tr>
 <tr>
-<td>DOA（波达方向）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">DOA（波达方向）</td>
 <td>声从哪个方向来，一般指角度。TDOA 是两路麦克风信号的到达时间差；紧凑阵列中常为几十到几百微秒。远场模型下，可结合麦克风间距和声速把 TDOA 换算成入射角（§4.1、§4.4）</td>
 </tr>
 <tr>
-<td>ITD / ILD</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">ITD / ILD</td>
 <td>双耳时间差（Interaural Time Difference，ITD）/双耳声级差（Interaural Level Difference，ILD）。双重理论把低频细结构 ITD 与高频 ILD 视为主要线索，但不是硬分界：低频可有 ILD，调制高频声也可提供包络 ITD（§1.1）</td>
 </tr>
 <tr>
-<td>HRTF</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">HRTF</td>
 <td>头相关传递函数：头、耳廓和躯干对声音的方向相关滤波；其谱形是判断俯仰和减少前后混淆的重要线索之一，并非唯一线索（§1.1）</td>
 </tr>
 <tr>
-<td>鸡尾酒会效应</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">鸡尾酒会效应</td>
 <td>人类在多人嘈杂环境中选择性聆听的能力；对应机器的波束形成 + 语音分离（§1.1、§8.1）</td>
 </tr>
 <tr>
-<td>GCC-PHAT</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">GCC-PHAT</td>
 <td>广义互相关的相位变换加权：每个非零互谱频点先除以该频点的模，再对频率求逆变换并按约定搜索时延峰。噪声、混响、周期信号或零互谱频点可能造成多峰、偏峰或无定义，峰值不是无需核查的真值（§4.2、E12-09）。</td>
 </tr>
 <tr>
-<td>SRP-PHAT</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">SRP-PHAT</td>
 <td>遍历候选位置并汇总各麦对 PHAT 相关值的定位方法，是常用的稳健基线之一（§4.3）</td>
 </tr>
 <tr>
-<td>Capon / MUSIC / ESPRIT</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">Capon / MUSIC / ESPRIT</td>
 <td>Capon 逐方向计算最小方差谱；MUSIC 利用导向矢量与噪声子空间的正交性形成伪谱；ESPRIT 利用阵列的平移不变结构直接估计参数。三者的协方差、源数和几何条件不同（§4.5、§4.6）</td>
 </tr>
 <tr>
-<td>GDOP（几何精度因子）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">GDOP（几何精度因子）</td>
 <td>同样的时延误差经过不同几何布局会产生不同的位置误差。阵列孔径较小、麦对基线方向单一或目标位于不利方位时，几何误差放大通常更明显（§4.4）</td>
 </tr>
 <tr>
-<td>VAD（语音活动检测）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">VAD（语音活动检测）</td>
 <td>判断“当前帧有没有人在说话”，给定位/更新做门控</td>
 </tr>
 <tr>
-<td>时频掩码（Time-Frequency Mask，TF-mask）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">时频掩码（Time-Frequency Mask，TF-mask）</td>
 <td>定义在时频网格上的权重或选择函数，用于加权目标、干扰或噪声统计量。二值掩码和理想比值掩码常限制在 $[0,1]$，但复值掩码、幅度比掩码及某些网络输出可以超出该区间；使用时必须写明类型、取值域和作用对象（§5.4、§5.9）</td>
 </tr>
 <tr>
-<td>新息（innovation）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">新息（innovation）</td>
 <td>卡尔曼滤波里“观测 − 预测”的差，用它修正状态估计（§9.2）</td>
 </tr>
 <tr>
-<td>EKF（扩展卡尔曼滤波） / UKF（无迹卡尔曼滤波）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">EKF（扩展卡尔曼滤波） / UKF（无迹卡尔曼滤波）</td>
 <td>两种非线性卡尔曼滤波。EKF 用雅可比做局部线性化；UKF 让一组 sigma 点通过非线性函数。UKF 可减小某些非线性变换的近似误差，但不保证总比 EKF 稳或准，仍取决于模型、调参和数值实现（§9.2）</td>
 </tr>
 <tr>
-<td>JPDA / MHT</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">JPDA / MHT</td>
 <td>多目标追踪中解决“观测属于谁”的两类经典方法：联合概率数据关联 / 多假设跟踪（§9.3）</td>
 </tr>
 <tr>
-<td>锥面模糊</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">锥面模糊</td>
 <td>线阵只观测方向在阵列轴上的投影，同一时延可对应绕阵列轴的一圈方向；平面阵的两侧则是法向镜像歧义，二者不要混为一种（§3.1）</td>
 </tr>
 <tr>
-<td>FIR 滤波器</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">FIR 滤波器</td>
 <td>有限长冲激响应滤波器：输出 = 输入最近若干样本的加权和，抽头数（抽头见本表“信号与数学基础”组）就是加权长度（§5.1、§6.1）</td>
 </tr>
 <tr>
-<td>重采样（粒子滤波）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">重采样（粒子滤波）</td>
 <td>按当前权重抽取粒子索引并重置等权；高权粒子被保留或复制的机会较大，但不是确定性删小留大（<a href="09_source-tracking.html#sec-9-2-4">§9.2.4 算例 9-2：粒子加权与重采样</a>）</td>
 </tr>
 <tr>
-<td>概率假设密度（Probability Hypothesis Density，PHD）滤波</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">概率假设密度（Probability Hypothesis Density，PHD）滤波</td>
 <td>传播随机有限集（Random Finite Set，RFS）的一阶矩（强度函数）。某一区域上 $D(\vec x)$ 的积分给出该区域内目标数的期望值；实际目标状态常从强度峰或高斯分量提取，峰的个数本身不等于人数（§9.3）</td>
 </tr>
 <tr>
-<td>OSPA（最优子模式分配距离）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">OSPA（最优子模式分配距离）</td>
 <td>多目标追踪误差度量，同时罚定位误差和人数错误（§10.5 评测指标表）</td>
 </tr>
 </tbody>
 </table></div>
 <span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-91410707a4">系统与硬件</h3>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:32em">
 <thead>
 <tr>
-<th scope="col">术语</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">术语</th>
 <th scope="col">解释</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>AEC</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">AEC</td>
 <td>声学回声消除（Acoustic Echo Cancellation，AEC）：用已知的播放信号做参考，估计回声副本再相减（§6.1）</td>
 </tr>
 <tr>
-<td>DTD（双讲检测）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">DTD（双讲检测）</td>
 <td>检测近端语音与远端播放同时活动的状态，用于冻结、减小步长或切换到稳健的 AEC 更新策略（<a href="06_aec.html#sec-6-4">§6.4</a>）</td>
 </tr>
 <tr>
-<td>回声返回损失增强（Echo Return Loss Enhancement，ERLE）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">回声返回损失增强（Echo Return Loss Enhancement，ERLE）</td>
 <td>衡量同一窗口内回声分量的能量衰减；真实录音通常用远端单讲近似。双讲若无独立回声及残余回声真值，不能用混合输入／总输出功率比代替；设备、路径、取点与窗口须说明（§6.7）</td>
 </tr>
 <tr>
-<td>WPE</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">WPE</td>
 <td>加权预测误差去混响：用过去帧预测晚期混响拖尾再减掉（§7.1）</td>
 </tr>
 <tr>
-<td>SI-SDR / STOI / PESQ / WER</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">SI-SDR / STOI / PESQ / WER</td>
 <td>尺度不变信号失真比 / 短时客观可懂度 / 感知语音质量客观评估 / 词错误率。它们的输入、对齐、单位和解释不同；PESQ 是旧研究常用客观指标，不是受试者主观评分，ITU-T P.862 的撤销及 P.863 现行口径见 §10.5。</td>
 </tr>
 <tr>
-<td>SDR / SIR / SAR</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">SDR / SIR / SAR</td>
 <td>BSS Eval 原始指标组：信号失真比 / 信号干扰比 / 信号伪影比。原始定义允许参考滤波对齐；不同工具和版本的尺度、排列及滤波窗口口径不能直接互换。复现旧论文时记录具体实现与版本，和尺度不变的 SI-SDR 分开报告（§10.5）。</td>
 </tr>
 <tr>
-<td>MEMS 麦克风</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">MEMS 麦克风</td>
 <td>使用微机电工艺制造的微型麦克风，是小型阵列中的常见器件</td>
 </tr>
 <tr>
-<td>PDM / I2S / TDM</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">PDM / I2S / TDM</td>
 <td>常见数字音频接口。单线承载的通道数、时隙和位宽由具体控制器及协议配置决定；阵列通道应共享或校准采样时钟（§10.2）</td>
 </tr>
 <tr>
-<td>dBA</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">dBA</td>
 <td>A 计权声级：按规定的 A 计权频率响应处理后得到的声级。它不是未加权 dB，比较数据时要核对参考量和计权方式</td>
 </tr>
 <tr>
-<td>AOP（声学过载点）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">AOP（声学过载点）</td>
 <td>在数据手册规定的测试条件下，麦克风输出达到指定失真阈值时的输入声压级；比较器件时必须同时核对阈值、频率和供电条件（§10.2）</td>
 </tr>
 <tr>
-<td>孔径（aperture）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">孔径（aperture）</td>
 <td>阵列的最大跨度 $D$；分辨率 ≈ 波长/孔径</td>
 </tr>
 <tr>
-<td>阵列流形（manifold）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">阵列流形（manifold）</td>
 <td>全体候选方向或位置的导向矢量集合，即阵列的方向响应模型；几何定义见 §2.3，实测标定见 §3.4 与 §10.2</td>
 </tr>
 <tr>
-<td>AFE（音频前端）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">AFE（音频前端）</td>
 <td>Audio Front End：位于采集与识别、通信或交互后端之间的音频处理部分，可包含 AEC、去混响、波束、降噪和电平控制；实际模块由任务决定（§10.1）</td>
 </tr>
 <tr>
-<td>双讲（double-talk）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">双讲（double-talk）</td>
 <td>远端播放与近端用户同时发声。近端语音出现在麦克风或误差信号中，不应出现在理想的远端参考信号中；它会使 AEC 的误差不再只含路径失配，因此需用 DTD 控制自适应更新（<a href="06_aec.html#sec-6-4">§6.4</a>）</td>
 </tr>
 <tr>
-<td>MOS（平均意见分）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">MOS（平均意见分）</td>
 <td>按规定听测流程收集受试者评分并取统计量。量表、问题、材料和受试者筛选由具体标准规定；客观模型只能在其验证范围内近似预测主观质量（§10.5）</td>
 </tr>
 <tr>
-<td>CHiME</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">CHiME</td>
 <td>面向复杂声学场景的公开挑战系列，不同届次覆盖远场识别、会议转写、分离或增强等不同任务；数据生成方式和指标应按当届说明读取（附录 B 13.2）</td>
 </tr>
 <tr>
-<td>KWS（关键词唤醒）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">KWS（关键词唤醒）</td>
 <td>Keyword Spotting：检测预设关键词的模型。可作为低功耗常驻任务，也可与 VAD、AEC 或增强共享前端；取点和运行方式由功耗及训练数据决定（§10.3、§10.9）</td>
 </tr>
 <tr>
-<td>BOM（物料清单）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">BOM（物料清单）</td>
 <td>Bill of Materials：列明设备所需物料及数量；按目标产量的采购单价汇总才得到 BOM 成本。未列入清单的接口、结构增量及标定、维护费用另行核算，已列入的物料不得重复计费（§11.1）</td>
 </tr>
 <tr>
-<td>HATS（人工头）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">HATS（人工头）</td>
 <td>Head and Torso Simulator：带耳廓、耳模拟器和躯干声学结构的测试装置；测量话筒位于设备规定的测量位置，并按其校准口径表示耳参考点或近似鼓膜处的声压，不能写成“话筒置于人的鼓膜”。装置定义与耳模拟器的测量位置须分别查 <a href="https://www.itu.int/rec/T-REC-P.58/en" title="citation">ITU-T P.58（03/2023，§§3.1.3～3.1.5、9.2）</a> 与 <a href="https://www.itu.int/rec/T-REC-P.57/en" title="citation">ITU-T P.57（06/2021）</a>（2026-09-28 核实）。</td>
 </tr>
 <tr>
-<td>NLP（非线性处理）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">NLP（非线性处理）</td>
 <td>Non-Linear Processing：AEC 里接在线性滤波器之后的残余回声抑制（谱减式/神经式），对付扬声器非线性失真等线性滤波器消不掉的部分；<a href="06_aec.html#sec-6-8">§6.8</a>解释处理结构，<a href="06_aec.html#sec-6-12">§6.12</a>解释工作点。注意与自然语言处理（Natural Language Processing）同缩写，语境区分</td>
 </tr>
 <tr>
-<td>PBFDAF</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">PBFDAF</td>
 <td>分区块频域自适应滤波：把长回声路径分块并用 FFT 计算卷积与更新。第 6 章式(6-5)与同配置的频域多抽头 NLMS 更新逐分量相同；相对逐样本时域实现能节省多少计算取决于滤波长度、分块、FFT 库和硬件（§6.2）</td>
 </tr>
 <tr>
-<td>IPNLMS</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">IPNLMS</td>
 <td>改进比例 NLMS：按抽头幅度分配各系数的更新量。常见定义中，混合系数 $\alpha=-1$ 退化为 NLMS，$\alpha=1$ 接近纯比例更新，$\alpha=0$ 是两部分的折中；具体取值要与所用公式和数据一同验证（§6.2）</td>
 </tr>
 <tr>
-<td>CNG（舒适噪声）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">CNG（舒适噪声）</td>
 <td>Comfort Noise Generation：残余抑制压得太狠时补回的轻微背景噪声，避免通话“死寂”听感（§6.8）</td>
 </tr>
 <tr>
-<td>pAEC</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">pAEC</td>
 <td>个性化 AEC：把目标说话人的声纹嵌入作为条件，在双讲中增强目标说话人；定义和隐私要求见 §6.5、§6.13</td>
 </tr>
 <tr>
-<td>barge-in（打断）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">barge-in（打断）</td>
 <td>设备播放 TTS 或音乐时用户直接说话的交互状态。系统需在自发声期间保留近端语音或唤醒词，并让 VAD/KWS 使用合适的 AEC 后取点（§6.5）</td>
 </tr>
 <tr>
-<td>TCLw</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">TCLw</td>
 <td>加权终端耦合损耗：免提终端回声衰减的测试指标。阈值、信号和收敛窗口必须按产品适用的标准版本及测试条款核对，不能跨标准套用一个固定数值（§6.7）</td>
 </tr>
 </tbody>
@@ -1046,7 +1219,7 @@ $$</p>
 </table></div>
 <p>两块在 $n=2$ 重叠，故该点为 $1+3=4$，其余点照原位置保留。错误的两点循环卷积则分别为 $[2,2.5]$、$[5,5.5]$，拼接成 $[2,2.5,5,5.5]$：第一块尾项 1 绕回到 $n=0$，第二块尾项 2 绕回到 $n=2$，末尾 $n=4$ 也丢失。E12-01 只检查一次短卷积；本题说明连续分块时还必须保留并相加跨块尾部。对于长度 $B$ 的新输入和 $L_h$ 抽头 FIR，每块的线性结果长 $B+L_h-1$，FFT 长度至少达到这个长度才可避免本块循环别名。</p>
 <p><img alt="图49 分块线性卷积的重叠尾部与错误循环绕回" src="../figures/fig49_fft_block_boundary.png" onerror="this.alt+='（图缺失）'" /></p>
-<p>图 49 把上述两点手算扩展到下文的 16 kHz PCM 脉冲音频，而不是直接画小序列 $x=[1,2,3,4]$。（a）为正确线性卷积，（b）为刻意构造的错误逐块循环卷积；两图使用相同的 $B=512$、$h[0]=1$、$h[120]=0.6$、输入脉冲与共同导出增益 1。首脉冲在 $n=500$（31.25 ms），竖虚线标出 $n=512$（32 ms）块边界。正确尾部在 $n=620$（38.75 ms），错误实现却将尾部绕回到 $n=108$（6.75 ms）。左、右两图的纵轴都是最终 PCM 读回幅度；图中的提前脉冲不是物理声学预回声。</p>
+<p>图 49 把上述两点手算扩展到下文的 16 kHz PCM 脉冲音频，而不是直接画小序列 $x=[1,2,3,4]$。（a）为正确线性卷积，（b）为刻意构造的错误逐块循环卷积；两图使用相同的 $B=512$、$h[0]=1$、$h[120]=0.6$、输入脉冲与共同导出增益 1。首脉冲在 $n=500$（$31.25\,\mathrm{ms}$），竖虚线标出 $n=512$（$32\,\mathrm{ms}$）块边界。正确尾部在 $n=620$（$38.75\,\mathrm{ms}$），错误实现却将尾部绕回到 $n=108$（$6.75\,\mathrm{ms}$）。左、右两图的纵轴都是最终 PCM 读回幅度；图中的提前脉冲不是物理声学预回声。</p>
 <p>下面三个<a href="research/05_exercises_and_audio.html">数学合成音频</a>把同一问题换成可听的块边界。先降低音量，再分别播放。</p>
 <ul>
 <li><a href="audio/math_block_dry.wav">干脉冲</a><audio class="audio-sample" controls preload="none" aria-label="干脉冲" src="audio/math_block_dry.wav">请使用上方 WAV 链接下载。</audio></li>
@@ -1172,10 +1345,10 @@ n_2[n]&=0.06e[n]\cos(2\pi4000n/16000)\text{。}
 {\sum_{n\in\mathcal W}|s[n]|^2}\text{。}
 \end{aligned}\tag{12-7}$$</p>
 <p>MSE 的单位是数字幅度平方，NMSE 无量纲；解析或浮点比较使用对应浮点目标，PCM 比较使用实际读回的量化目标。不能混用两种参考分母。将解析目标项消去，误差是 $y-s=w_1n_1+w_2n_2$。窗口内交叉平均为零，解析误差均方为 $w_1^2P_{n_1}+w_2^2P_{n_2}$：</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:52em">
 <thead>
 <tr>
-<th scope="col">权重</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:6em">权重</th>
 <th scope="col">误差均方的逐项计算</th>
 <th scope="col" style="text-align: right;">解析 MSE</th>
 <th scope="col" style="text-align: right;">解析 NMSE（除以 $0.02$）</th>
@@ -1183,19 +1356,19 @@ n_2[n]&=0.06e[n]\cos(2\pi4000n/16000)\text{。}
 </thead>
 <tbody>
 <tr>
-<td>OLS</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">OLS</td>
 <td>$0.25(0.00045)+0.25(0.0018)$</td>
 <td style="text-align: right;">0.0005625</td>
 <td style="text-align: right;">0.028125</td>
 </tr>
 <tr>
-<td>GLS</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">GLS</td>
 <td>$0.64(0.00045)+0.04(0.0018)$</td>
 <td style="text-align: right;">0.0003600</td>
 <td style="text-align: right;">0.018000</td>
 </tr>
 <tr>
-<td>反权</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">反权</td>
 <td>$0.04(0.00045)+0.64(0.0018)$</td>
 <td style="text-align: right;">0.0011700</td>
 <td style="text-align: right;">0.058500</td>
@@ -1215,10 +1388,10 @@ n_2[n]&=0.06e[n]\cos(2\pi4000n/16000)\text{。}
 </ul>
 <p>输出由同一未量化输入加权后分别量化；发布的双通道输入另外量化，重加权其 PCM 不要求与发布输出逐字节相同。没有为评分拟合额外增益或时延。PCM16 按整数除以 32768 解码；若 $E_I$ 是输出与目标的整数差平方和、$D_I$ 是目标整数平方和，MSE 的分母为 $28800\times32768^2$，NMSE 为 $E_I/D_I$。各文件摘要、真实生成源、解析/浮点/PCM 三种口径与实际整数和见<a href="weighted_audio/MANIFEST.json">独立清单</a>。</p>
 <p>正式五个 WAV 经严格只读核验后，本书再用标准库 <code>wave</code>、<code>struct</code> 读出整数样值独立求和。28800 点目标整数能量为 $D_I=618489148320$，MSE 的整数分母为 $28800\times32768^2=30923764531200$。结果如下；表中 PCM 小数为舍入显示，精确比值可由整数和复算。</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:50em">
 <thead>
 <tr>
-<th scope="col">输出</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:6em">输出</th>
 <th scope="col" style="text-align: right;">实际整数误差平方和 $E_I$</th>
 <th scope="col" style="text-align: right;">实际 PCM MSE</th>
 <th scope="col" style="text-align: right;">实际 PCM NMSE</th>
@@ -1226,19 +1399,19 @@ n_2[n]&=0.06e[n]\cos(2\pi4000n/16000)\text{。}
 </thead>
 <tbody>
 <tr>
-<td>OLS</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">OLS</td>
 <td style="text-align: right;">17394760800</td>
 <td style="text-align: right;">$5.62504632\times10^{-4}$</td>
 <td style="text-align: right;">0.028124601</td>
 </tr>
 <tr>
-<td>GLS</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">GLS</td>
 <td style="text-align: right;">11131529760</td>
 <td style="text-align: right;">$3.59966839\times10^{-4}$</td>
 <td style="text-align: right;">0.017997939</td>
 </tr>
 <tr>
-<td>反权</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">反权</td>
 <td style="text-align: right;">36180064800</td>
 <td style="text-align: right;">$1.16997608\times10^{-3}$</td>
 <td style="text-align: right;">0.058497493</td>

@@ -64,7 +64,7 @@
 | 图61信息边界报告 | `scripts/make_figures.py::fig_tracking_information` → `codes/chapters/ch09/reports/figure61_tracking_information.json` | 瞬时方位尺度零空间与相关观测的解析条件化 | 随图生成；纯几何忽略传播时延，不当作接收时钟的声学音频等价或误差覆盖率 |
 | 当前上游追踪合同 | `codes/chapters/ch09/examples/audit_upstream_tracking_contracts.py` → `codes/chapters/ch09/reports/upstream_tracking_contracts.json` | 固定源、原C调用、控制流提取与原Python方法的独立执行记录 | 由实际工具生成，保存执行范围和未执行条件；不改写历史报告或把替身控制流当完整算法运行 |
 | 绘图源文件 | `scripts/make_figures.py`、`scripts/make_aec_figures.py` | 生成全部插图 | 图有问题时修改这里，不手工修 PNG |
-| 构建源文件 | `scripts/build_site.py`、`scripts/build_pdf.py`、`scripts/heading_aliases.py`、`scripts/legacy_sequential_anchors.json` | 生成站点、合订 HTML 和 PDF，并保护已发布深链的原语义 | 页面结构或渲染有问题时修改这里；标题改号后逐项校验历史语义锚 |
+| 构建源文件 | `scripts/build_site.py`、`scripts/build_pdf.py`、`scripts/inline_layout.js`、`scripts/heading_aliases.py`、`scripts/legacy_sequential_anchors.json` | 生成站点、合订 HTML 和 PDF，共用有限行内排版保护，并保护已发布深链的原语义 | 页面结构或渲染有问题时修改这里；标题改号后逐项校验历史语义锚；共享脚本变化须进入两种产物的源摘要 |
 | PDF 公式第三方资源 | `scripts/vendor/mathjax-3.2.2/` | 固定版本的 MathJax 脚本、按需扩展和字体 | 保留上游许可及来源摘要；更新版本时同步更新构建核验与渲染抽查，不手改压缩脚本或字体 |
 | 插图生成物 | `figures/fig*.png` | 正文插图 | 由绘图脚本生成，不直接编辑 |
 | 站点生成物 | `site/*.html`、`site/research/*.html`、`site/real_audio/`、`site/room_audio/`、`site/gss_audio/`、`site/moving_audio/`、`site/tracking_audio/`、`site/noise_audio/`、`site/scenario_audio/`、`site/weighted_audio/`、`site/response_audio/`、`site/binaural_audio/`、`site/stft_audio/`、`site/geometry_audio/`、`site/focus_audio/`、`site/derivative_audio/`、`site/apa_audio/`、`site/mint_audio/`、`site/mask_audio/` | 14 篇教程、6 篇研究手册页面与真实录音、独立合成实验的媒体副本 | 由 `build_site.py` 生成，不直接编辑 |
@@ -548,6 +548,8 @@ MathJax 公式统一缩到明显小于相邻正文；优先拆行、使用 `alig
 
 段落修改必须在生成后的网页和 PDF 中抽查。源文件出现空行，只能证明 Markdown 有分段意图，不能证明
 最终版式的段间距、列表层级和跨页效果已经清楚。
+
+行内公式后的短单位和标点、稳定题号应按成品宽度检查断行；保护范围只包括明确相邻的小组，不能把长式、代码、链接或整段一律设为不可断行。手机改到纸版、视窗宽度变化或字体加载完成后，应按实际宽度重新核验。短引导标题不能孤立在页末，但也不能因此把长推导或整张长表强制留在一页。滚动容器的字形外伸、实际裁切和整页横向溢出分别检查，不能仅凭scrollWidth大于clientWidth判定失败。
 
 ## 6. 文风规范
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 11 章 · 总结与选型指南 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="9d2a7b81b395"><style>
+<meta name="source-digest" content="7a2d63df4e2e"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -29,7 +29,7 @@ pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:a
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
 mjx-container[jax="CHTML"]{font-size:110%!important;overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
-mjx-assistive-mml{width:1px!important;height:1px!important}
+body mjx-assistive-mml{width:1px!important;max-width:1px!important;min-width:0!important;height:1px!important;overflow:hidden!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
 .pn a{color:#2f6db3;text-decoration:none}.pn .off{color:#aaa}
@@ -44,14 +44,187 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{display:block;margin:20px auto;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
+.tutorial-math-tail{display:inline-block;white-space:nowrap;overflow-wrap:normal;vertical-align:baseline;overflow:visible}
+.tutorial-math-tail mjx-assistive-mml{max-width:1px!important;min-width:0!important;white-space:normal}
+.tutorial-exercise-id{white-space:nowrap;overflow-wrap:normal}
 @media(max-width:900px){.selection-readable-table{min-width:760px}.selection-readable-table th,.selection-readable-table td{min-width:10em}.selection-readable-table th:first-child,.selection-readable-table td:first-child{min-width:6em}}
 @media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}.tracking-readable-table th,.tracking-readable-table td{min-width:8em}.industrial-readable-table th,.industrial-readable-table td{min-width:8em}}
 @media(max-width:900px){.noise-readable-table th:first-child,.noise-readable-table td:first-child{min-width:6em}}
 @media screen and (max-width:900px){.source-contract-readable-table th,.source-contract-readable-table td{min-width:10em}}
+@media screen and (max-width:900px){.tutorial-budget-table{min-width:var(--tutorial-table-width)}.tutorial-budget-table .tutorial-short-column{min-width:var(--tutorial-column-width);overflow-wrap:normal}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
-window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']]}};
+/* Shared publication layout. TeX, code, links and attributes remain intact. */
+(function () {
+  "use strict";
+  const mathClass = "tutorial-math-tail";
+  const idClass = "tutorial-exercise-id";
+  const ignored = "pre,code,a,script,style,textarea,mjx-container";
+  const suffix = /^(\s*(?:(?:m\/s[²³]?|rad\/s|rad\/m|deg\/s|μs|µs|ns|ms|s|dBFS|dB|kHz|MHz|Hz|ppm|rad|cm|mm|m|V|deg|°|%|％)(?:[²³])?(?=$|[\s，。；、：！？）,.!?;:)\]\u4e00-\u9fff])\s*[，。；、：！？）,.;:!?\]]?|[，。；、：！？）,.;:!?\]]))/;
+  let ready = false;
+  let scheduled = false;
+  let printing = false;
+
+  function roots() {
+    const candidates = Array.from(document.querySelectorAll("main.main,.chap"));
+    return candidates.filter(root => !candidates.some(other => other !== root && other.contains(root)));
+  }
+
+  function unwrapMath(root) {
+    for (const wrapper of root.querySelectorAll("." + mathClass)) {
+      const children = Array.from(wrapper.childNodes);
+      wrapper.replaceWith(...children);
+      // Merge only our adjacent ordinary text, never normalize a MathJax subtree.
+      for (const node of children) {
+        if (node.nodeType !== Node.TEXT_NODE) continue;
+        while (node.nextSibling && node.nextSibling.nodeType === Node.TEXT_NODE) {
+          node.data += node.nextSibling.data;
+          node.nextSibling.remove();
+        }
+      }
+    }
+  }
+
+  function protectExerciseIds(root) {
+    let count = 0;
+    {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      const nodes = [];
+      let node;
+      while ((node = walker.nextNode())) {
+        if (!node.parentElement.closest(ignored + ",." + idClass)) nodes.push(node);
+      }
+      for (const text of nodes) {
+        // A filename/path or a longer identifier is not a stable exercise ID.
+        const pattern = /(^|[^\p{L}\p{N}\p{M}_/\\.-])(E\d{2}-\d{2})(?![\p{L}\p{N}\p{M}_/\\-]|\.[\p{L}\p{N}\p{M}])/gu;
+        const matches = Array.from(text.data.matchAll(pattern));
+        for (const match of matches.reverse()) {
+          const start = match.index + match[1].length;
+          text.splitText(start + match[2].length);
+          const middle = text.splitText(start);
+          const span = document.createElement("span");
+          span.className = idClass;
+          middle.before(span);
+          span.append(middle);
+          count++;
+        }
+      }
+    }
+    return count;
+  }
+
+  function markShortLeads(root) {
+    let count = 0;
+    for (const paragraph of root.querySelectorAll("p")) {
+      if (paragraph.closest("pre,code,a,script,style,textarea")) continue;
+      const significant = Array.from(paragraph.childNodes).filter(node =>
+        node.nodeType !== Node.TEXT_NODE || node.data.trim());
+      const next = paragraph.nextElementSibling;
+      const anchorOnly = significant.length === 1 &&
+        significant[0].nodeType === Node.ELEMENT_NODE &&
+        significant[0].tagName === "A" && significant[0].id &&
+        !significant[0].hasAttribute("href") &&
+        Array.from(significant[0].childNodes).every(node =>
+          node.nodeType === Node.TEXT_NODE && !node.data.trim());
+      paragraph.classList.toggle("tutorial-anchor-only", !!anchorOnly);
+      const short = significant.length === 1 &&
+        significant[0].nodeType === Node.ELEMENT_NODE &&
+        significant[0].tagName === "STRONG" &&
+        paragraph.textContent.trim().length <= 60 &&
+        next && /^(P|UL|OL|BLOCKQUOTE)$/.test(next.tagName) &&
+        next.textContent.trim().length > 0;
+      paragraph.classList.toggle("tutorial-short-lead", !!short);
+      if (short) count++;
+    }
+    return count;
+  }
+
+  function apply() {
+    const content = roots();
+    for (const root of content) unwrapMath(root);
+    const plans = [];
+    const hosts = new Map();
+    let skippedWide = 0;
+    let idCount = 0;
+    let leadCount = 0;
+    for (const root of content) {
+      idCount += protectExerciseIds(root);
+      leadCount += markShortLeads(root);
+      // Read every width before any math wrapper is inserted, to avoid repeated
+      // synchronous layout across thousands of formulas in the combined book.
+      for (const math of root.querySelectorAll('mjx-container:not([display="true"])')) {
+        if (math.closest("pre,code,a,script,style,textarea")) continue;
+        const text = math.nextSibling;
+        if (!text || text.nodeType !== Node.TEXT_NODE) continue;
+        const match = text.data.match(suffix);
+        if (!match || match[0].length > 16) continue;
+        const host = math.closest("p,li,td,th,h1,h2,h3,h4");
+        if (!host) continue;
+        if (!hosts.has(host)) {
+          const style = getComputedStyle(host);
+          hosts.set(host, host.clientWidth - parseFloat(style.paddingLeft || 0) -
+            parseFloat(style.paddingRight || 0));
+        }
+        const range = document.createRange();
+        range.setStart(text, 0);
+        range.setEnd(text, match[0].length);
+        const style = getComputedStyle(math);
+        const width = math.getBoundingClientRect().width + range.getBoundingClientRect().width +
+          parseFloat(style.marginLeft || 0) + parseFloat(style.marginRight || 0);
+        if (width > hosts.get(host) - 8) {
+          skippedWide++;
+          continue;
+        }
+        plans.push({math, text, length: match[0].length});
+      }
+    }
+    for (const {math, text, length} of plans) {
+      const wrapper = document.createElement("span");
+      wrapper.className = mathClass;
+      math.before(wrapper);
+      wrapper.append(math);
+      text.splitText(length);
+      wrapper.append(text);
+    }
+    ready = true;
+    const result = {grouped: plans.length, skippedWide, newExerciseIds: idCount, shortLeads: leadCount};
+    window.ArrayTutorialLayout.lastRun = result;
+    return result;
+  }
+
+  function schedule() {
+    if (!ready || scheduled || printing) return;
+    scheduled = true;
+    requestAnimationFrame(() => {
+      scheduled = false;
+      if (printing) return;
+      apply();
+    });
+  }
+
+  window.ArrayTutorialLayout = {apply, lastRun: null};
+  window.addEventListener("resize", schedule);
+  // Chrome fires beforeprint while screen styles still apply. Remove screen
+  // groups before they can enlarge the print layout. The combined book is
+  // measured at its fixed A4 geometry during pageReady instead. Do not mutate
+  // thousands of nodes after the browser has begun its print snapshot: this
+  // can truncate the final pages even when a small fixture prints correctly.
+  // A synthetic beforeprint event is not a print test.
+  window.addEventListener("beforeprint", () => {
+    printing = true;
+    if (ready && document.documentElement.dataset.tutorialPrintLayout !== "a4") {
+      for (const root of roots()) unwrapMath(root);
+    }
+  });
+  window.addEventListener("afterprint", () => {
+    printing = false;
+    if (document.documentElement.dataset.tutorialPrintLayout !== "a4") schedule();
+  });
+  if (document.fonts) document.fonts.addEventListener("loadingdone", schedule);
+})();
+
+window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']]}, startup: {pageReady: () => MathJax.startup.defaultPageReady().then(() => document.fonts.ready).then(() => ArrayTutorialLayout.apply())}};
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
  onerror="document.getElementById('offnote').style.display='block';document.getElementById('offnote').textContent='公式渲染脚本加载失败：当前显示的是公式源码。';"></script>
@@ -429,32 +602,32 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>若增加坐标为 $(0,0,0.04)$ m 的第四麦，它的投影分别为 $+0.032$ m 与 $-0.032$ m。取 $c=343\ \mathrm{m/s}$、$f=1$ kHz，对应导向相位分别为 $\pm2\pi f(0.032)/c\approx\pm0.58619$ rad，于是这对方向可分。这只是对该镜像二解的复算，不保证任意频率和方向均无空间混叠。更完整的几何可辨识性练习见第 3 章 E03-10。</p>
 <span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-11-4">11.4 四个场景怎样推导方案</h2>
 <p>下表给的是推导方法，不是产品清单。</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:36em">
 <thead>
 <tr>
-<th scope="col">场景</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:6em">场景</th>
 <th scope="col">条件变化</th>
 <th scope="col">方案怎样变化</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>带扬声器的语音终端</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">带扬声器的语音终端</td>
 <td>若要求播放时仍能唤醒或通话</td>
 <td>AEC 成为必要候选；数字参考应覆盖实际混音、均衡与播放增益。圆阵、线阵或平面阵由覆盖区域和外形决定。无明显晚期混响时不必默认加 WPE。</td>
 </tr>
 <tr>
-<td>会议室</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">会议室</td>
 <td>若多人重叠较少，只需一路会议音频</td>
 <td>先比较多波束选择和自适应波束。只有重叠说话造成任务失败，且需要独立语流时，再增加分离。远距离和长混响房间要用实测决定 WPE。</td>
 </tr>
 <tr>
-<td>车载</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">车载</td>
 <td>若麦克风跨多个时钟域</td>
 <td>先解决 SRO 和时间戳，再谈分区波束。播放参考需覆盖音乐、导航和通话混音。算法要在怠速、行驶、开窗和空调状态分别测试。</td>
 </tr>
 <tr>
-<td>耳机或助听设备</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">耳机或助听设备</td>
 <td>若监听路径对延迟和电池很敏感</td>
 <td>监听与通话上行可采用不同链路。固定双麦波束和轻量 NS 是候选基线，不是必选答案；法规、反馈路径、佩戴变化和听觉安全优先。</td>
 </tr>
@@ -465,48 +638,48 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="sec-6" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-11-5">11.5 把候选方案写成可验证的规格</h2>
 <h3 id="sec-11-5-1">11.5.1 先写规格和证据口径</h3>
 <p>为了复现实验并比较方案，候选方案的规格应覆盖以下内容：</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:30em">
 <thead>
 <tr>
-<th scope="col">项目</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:6em">项目</th>
 <th scope="col">应写内容</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>任务</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">任务</td>
 <td>输入、输出、目标声源数、是否需要身份连续</td>
 </tr>
 <tr>
-<td>几何</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">几何</td>
 <td>坐标、尺寸公差、声孔和遮挡、工作频带</td>
 </tr>
 <tr>
-<td>场景</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">场景</td>
 <td>距离、角度、房间、噪声、播放和运动状态</td>
 </tr>
 <tr>
-<td>链路</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">链路</td>
 <td>每个模块的启用条件、取点、旁路和控制信号</td>
 </tr>
 <tr>
-<td>资源</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">资源</td>
 <td>目标硬件上的 RTF、已测帧耗时范围、峰值内存、平均/峰值功耗及测量条件</td>
 </tr>
 <tr>
-<td>成本</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">成本</td>
 <td>目标产量、BOM 采购成本；未计入 BOM 的接口与结构成本、标定和维护费用另列，已计物料不重复计入；区分一次性与逐台成本</td>
 </tr>
 <tr>
-<td>延迟</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">延迟</td>
 <td>前瞻、缓冲、计算、调度和解码关键路径</td>
 </tr>
 <tr>
-<td>指标</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">指标</td>
 <td>任务指标、语音损伤、稳定性、置信区间和样本量</td>
 </tr>
 <tr>
-<td>异常处理</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">异常处理</td>
 <td>通道失效、方向低置信度、网络断开和算力过载时的行为</td>
 </tr>
 </tbody>
@@ -933,10 +1106,10 @@ $$</p>
 $$</p>
 <p>代入后，3抽头的 $\mathcal E_L\approx0.11525515$，即 $-9.38340$ dB；9抽头约为0.31548074，即 $-5.01027$ dB。噪声衰减则分别为6.56902 dB与34.15880 dB。NMSE越低越好，而本题噪声衰减越大越好：9抽头的噪声更小，但目标损伤使总误差更大。</p>
 <p><strong>第三步：核对实际PCM读回，保留同一评分口径。</strong> 四路波形统一乘以0.8，导出16位PCM WAV，再从文件域计算。幅度由直流项与三个已知频率的正弦、余弦联合最小二乘拟合得到；目标1500 Hz保留量除以同域干净参考的拟合幅度，噪声3500 Hz保留量除以同域混合输入的拟合幅度。NMSE与同域干净PCM按上述已知延迟对齐，不作增益拟合。实际读回为：</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:44em">
 <thead>
 <tr>
-<th scope="col">候选</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:6em">候选</th>
 <th scope="col">1500 Hz目标幅度保留</th>
 <th scope="col">3500 Hz噪声衰减（dB）</th>
 <th scope="col">对齐NMSE（dB）</th>
@@ -944,13 +1117,13 @@ $$</p>
 </thead>
 <tbody>
 <tr>
-<td>3抽头</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">3抽头</td>
 <td>0.89923</td>
 <td>6.56914</td>
 <td>−9.38396</td>
 </tr>
 <tr>
-<td>9抽头</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">9抽头</td>
 <td>0.20593</td>
 <td>34.15796</td>
 <td>−5.01061</td>
@@ -1096,10 +1269,10 @@ S_L&=\max\{\mathcal E_{L,S},\mathcal E_{L,D}\}.
 <p><em>图 64：左侧分别画S/D场景的实际PCM线性NMSE柱与解析点，纵轴用对数刻度；右侧用实际PCM结果计算两候选的共同组成总分，标出单音权重区间0.25～0.75及交点。解析交点与PCM交点分别约0.4765184941、0.4765204439，不将量化后的末位差异称为算法性能变化。限定组成最坏值与逐场景最大损失按式(11-20)分别计算。仅示本书数学合成频点的目标损伤和抑噪取舍，不代表自然语音或产品质量。</em></p>
 <p><strong>实际文件怎样计分。</strong> 源参考取半开区间 <code>[1600,30400)</code>，共有28800个采样；3/9抽头输出分别取 <code>[1601,30401)</code>、<code>[1604,30404)</code>，只补偿上述已知群延迟。把PCM16解码整数记为目标 $r_n$、对齐输出 $o_n$，逐点求 $E=\sum_n(o_n-r_n)^2$、$D=\sum_n r_n^2$，则NMSE为 $E/D$。若转成浮点功率，分子和分母都除以 $28800\times32768^2$，该因子在比值中消去。每个场景两候选共用同一个D，两个场景的D分别计算。</p>
 <p>严格只读核对正式八个WAV、清单与当前生成源后，实际整数结果为：</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:50em">
 <thead>
 <tr>
-<th scope="col">场景与候选</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">场景与候选</th>
 <th scope="col" style="text-align: right;">目标整数能量D</th>
 <th scope="col" style="text-align: right;">误差整数能量E</th>
 <th scope="col" style="text-align: right;">实际PCM线性NMSE</th>
@@ -1107,25 +1280,25 @@ S_L&=\max\{\mathcal E_{L,S},\mathcal E_{L,D}\}.
 </thead>
 <tbody>
 <tr>
-<td>S，3抽头</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">S，3抽头</td>
 <td style="text-align: right;">395812398600</td>
 <td style="text-align: right;">87210066600</td>
 <td style="text-align: right;">0.2203318211</td>
 </tr>
 <tr>
-<td>S，9抽头</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">S，9抽头</td>
 <td style="text-align: right;">395812398600</td>
 <td style="text-align: right;">152494200</td>
 <td style="text-align: right;">0.0003852689</td>
 </tr>
 <tr>
-<td>D，3抽头</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">D，3抽头</td>
 <td style="text-align: right;">791595378000</td>
 <td style="text-align: right;">91223542800</td>
 <td style="text-align: right;">0.1152401155</td>
 </tr>
 <tr>
-<td>D，9抽头</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">D，9抽头</td>
 <td style="text-align: right;">791595378000</td>
 <td style="text-align: right;">249713672400</td>
 <td style="text-align: right;">0.3154562032</td>

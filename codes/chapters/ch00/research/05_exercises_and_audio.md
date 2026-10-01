@@ -75,9 +75,9 @@ E06-07～E06-20 使用无量纲回声模型检查 AEC 的计算与边界，其�
 | 第 10 章 E10-18～27 | 重叠帧 RTF、谱减均值与地板、Q15、关键路径、时钟相位、内存寿命、流式插值、混叠、遥测与整块 AGC 音频 | [工程逐步实验](../../ch10/chapter10_experiments.py) |
 | 第 11 章 E11-01～07 | 资源约束、失败率统计、WER 聚合、延迟分位数和三个场景选型决策 | [工程练习](../cross_chapter/exercises_engineering.py) |
 | 第 11 章 E11-10～25 | 非支配候选、场景权重、评分缺失、同时风险、硬界三态、模块交互、CSS槽位、唤醒阈值、精确SRO、FIR取舍、非支持加权、区间支配、零FA暴露、话段/时间及跨场景选型 | [选型逐步实验](../../ch11/chapter11_experiments.py)；音频见§33与§44 |
-| 附录 A E12-01～04 | 卷积、复二阶矩、秩亏最小二乘、空间白化与 PHAT 的区别 | 同上 |
+| 附录 A E12-01～04 | 卷积、复二阶矩、秩亏最小二乘、空间白化与 PHAT 的区别 | [工程练习](../cross_chapter/exercises_engineering.py) |
 | 附录 A E12-06～19 | 有符号 FFT 频点、复内积、分块卷积、相关符号、有限快拍秩、正规方程条件数、SDW 噪声零空间极限、加载尺度、复LS残差、已知噪声WLS、数值秩、共轭反序和 `eigh` 前提 | [附录 A 逐步实验](../../appendix_a/appendix_a_experiments.py)；音频见§34与§45 |
-| 附录 B E13-01 | 同组共同增益与独立归一化 | 同上 |
+| 附录 B E13-01 | 同组共同增益与独立归一化 | [工程练习](../cross_chapter/exercises_engineering.py) |
 | 附录 B E13-03～14 | 六位置配对、DRR与频响、T20、SRP相位和评分窗口、房间PCM、证据层级、TAC结构、幅度与时间尺度及同DRR输出 | [附录 B 逐步实验](../../appendix_b/appendix_b_experiments.py)；房间资产见§17，四题逐步答案与独立五WAV见§46 |
 
 另有12道逐步练习，均保留原题编号并追加：
@@ -1670,7 +1670,7 @@ E11-19另核主清单的19个真实源与四条主音频，PCM成绩来自正式
 
 [教学核](../../appendix_a/core/weighted_audio.py)与[生成入口](../../appendix_a/examples/generate_weighted_audio.py)复用主PCM编解码，绑定三个真实源摘要。独立目录只接受五WAV和清单共六个普通文件；拒绝链接父链、额外成员、重复或非有限JSON、过期源与不符的PCM。`--check`读取实际文件并在内存完整重放，失败时不写入或修复。新五文件不混入主109份WAV。
 
-[当前原核执行报告](../../appendix_a/reports/upstream_solver_contracts.json)另绑定pb_bss提交`10acc347fc9ea21e3d312806a0bd751d0d0af183`、MIT许可与完整原`solve.py`摘要。完整模块加载后仅调用`stable_solve`四例：浮点秩亏、整数秩亏、非奇异整数控制和PSD零空间。整数秩亏例观察到原回退以整数`zeros_like(B)`接收浮点最小二乘结果，产生全零；报告保留这个失败，不修补上游或改写历史运行报告。另两例直接运行NumPy显式阈值，不称为pb_bss参数实验。
+[当前原核执行报告](../../appendix_a/reports/upstream_solver_contracts.json)另绑定pb_bss固定提交`10acc347fc9ea21e3d312806a0bd751d0d0af183`对应的源码身份、MIT许可与完整原`solve.py`摘要。完整模块加载后仅调用`stable_solve`四例：浮点秩亏、整数秩亏、非奇异整数控制和PSD零空间。整数秩亏例观察到原回退以整数`zeros_like(B)`接收浮点最小二乘结果，产生全零；报告保留这个失败，不修补上游或改写历史运行报告。另两例直接运行NumPy显式阈值，不称为pb_bss参数实验。
 
 PSD例进一步用独立约束推导说明：方程最小二乘返回值经归一化，不保证求得MVDR零噪声最优解。没有调用原上游波束形成器、完整包、模型、GPU或硬件。源码入口与实际执行范围详见[复现手册的求解器合同](04_source_reproduction.md#appendix-solver-contracts)；[独立测试](../../../../tests/test_codes_upstream_solver_contracts.py)核对精确身份、输入不变、解析期望和已知dtype失败。
 

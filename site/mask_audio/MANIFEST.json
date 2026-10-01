@@ -7,7 +7,7 @@
   "source_sha256": {
     "codes/chapters/ch08/core/mask_representation.py": "eca813a1490212a59ed2673e491b2cab86c0acce371079607aaf555076b2355d",
     "codes/chapters/ch08/examples/mask_representation_demo.py": "d55abfe5e0a27b1ead7ca49494ac58014ea81cf3c2b013cf1d95cac9dad75308",
-    "codes/chapters/ch02/core/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385",
+    "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
     "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8"
   },
   "parameters": {

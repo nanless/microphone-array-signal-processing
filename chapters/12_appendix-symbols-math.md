@@ -152,7 +152,7 @@ $d_{ij}$ 是两麦间距，$f$ 是 Hz 频率，$c$ 是声速；当 $i=j$ 或 $f=
 
 #### MWF 的参考目标、秩一化简与噪声权重极限
 
-多通道维纳滤波（Multichannel Wiener Filter，MWF）的参考目标是所选麦克风上的目标声像，不必等于原始源信号。语音失真加权多通道维纳滤波（Speech-Distortion-Weighted Multichannel Wiener Filter，SDW-MWF）沿用目标与噪声不相关的模型，最小化“目标失真 + $\mu$ 倍残余噪声”的均方代价。本书第 5 章式(5-13)定义 $\vec w_{\mathrm{SDW}}=(\mathbf R_{ss}+\mu\mathbf R_{nn})^{-1}\mathbf R_{ss}\vec e_r$；$\mu=1$ 为普通 MWF，增大 $\mu$ 会提高残余噪声的代价。相关原始模型及参考取点见[第 5 章专题](05_beamforming.md#sec-u-fb93744989)。
+多通道维纳滤波（Multichannel Wiener Filter，MWF）的参考目标是所选麦克风上的目标声像，不必等于原始源信号。语音失真加权多通道维纳滤波（Speech-Distortion-Weighted Multichannel Wiener Filter，SDW-MWF）沿用目标与噪声不相关的模型，最小化“目标失真 + $\mu$ 倍残余噪声”的均方代价。本书第 5 章式(5-12)定义 $\vec w_{\mathrm{SDW}}=(\mathbf R_{ss}+\mu\mathbf R_{nn})^{-1}\mathbf R_{ss}\vec e_r$；$\mu=1$ 为普通 MWF，增大 $\mu$ 会提高残余噪声的代价。相关原始模型及参考取点见[第 5 章专题](05_beamforming.md#sec-u-fb93744989)。
 
 若目标是秩一模型 $\mathbf R_{ss}=\phi_s\vec a\vec a^H$，源功率 $\phi_s>0$，噪声协方差 $\mathbf R_{nn}$ 厄米正定，并把参考响应归一化为 $a_r=\vec e_r^H\vec a=1$，则令 $q=\vec a^H\mathbf R_{nn}^{-1}\vec a>0$，可把 SDW-MWF 写成无失真 MVDR 权重乘实标量 $G_\mu=\phi_s q/(\mu+\phi_s q)$。参考归一化条件不能省略：一般复参考响应还会带来 $a_r^*$ 因子，输出保护的是该参考声像。[第 5 章 E05-20](05_beamforming.md#e05-20)给出复参考的具体计算；[Wang 等作者预印本（2017），§§2、3.1～3.2，式(1)～(13)](https://arxiv.org/pdf/1707.00201 "citation")说明了对应的失真加噪声目标和秩一形式。
 
@@ -555,7 +555,7 @@ $$\vec w_\delta
 
 ![图49 分块线性卷积的重叠尾部与错误循环绕回](../figures/fig49_fft_block_boundary.png)
 
-图 49 把上述两点手算扩展到下文的 16 kHz PCM 脉冲音频，而不是直接画小序列 $x=[1,2,3,4]$。（a）为正确线性卷积，（b）为刻意构造的错误逐块循环卷积；两图使用相同的 $B=512$、$h[0]=1$、$h[120]=0.6$、输入脉冲与共同导出增益 1。首脉冲在 $n=500$（31.25 ms），竖虚线标出 $n=512$（32 ms）块边界。正确尾部在 $n=620$（38.75 ms），错误实现却将尾部绕回到 $n=108$（6.75 ms）。左、右两图的纵轴都是最终 PCM 读回幅度；图中的提前脉冲不是物理声学预回声。
+图 49 把上述两点手算扩展到下文的 16 kHz PCM 脉冲音频，而不是直接画小序列 $x=[1,2,3,4]$。（a）为正确线性卷积，（b）为刻意构造的错误逐块循环卷积；两图使用相同的 $B=512$、$h[0]=1$、$h[120]=0.6$、输入脉冲与共同导出增益 1。首脉冲在 $n=500$（$31.25\,\mathrm{ms}$），竖虚线标出 $n=512$（$32\,\mathrm{ms}$）块边界。正确尾部在 $n=620$（$38.75\,\mathrm{ms}$），错误实现却将尾部绕回到 $n=108$（$6.75\,\mathrm{ms}$）。左、右两图的纵轴都是最终 PCM 读回幅度；图中的提前脉冲不是物理声学预回声。
 
 下面三个[数学合成音频](../codes/chapters/ch00/research/05_exercises_and_audio.md)把同一问题换成可听的块边界。先降低音量，再分别播放。
 

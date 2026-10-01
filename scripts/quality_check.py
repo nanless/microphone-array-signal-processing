@@ -1130,6 +1130,7 @@ def source_digest():
     paths = sorted(CHAPTERS.glob("*.md"))
     paths += [RESEARCH_ROOT / name for name, _ in EXPECTED_RESEARCH_PAGES]
     paths += [ROOT / "scripts" / "build_site.py", ROOT / "scripts" / "build_markdown_helpers.py",
+              ROOT / "scripts" / "inline_layout.js",
               ROOT / "scripts" / "heading_aliases.py",
               ROOT / "scripts" / "legacy_sequential_anchors.json"]
     paths += sorted(path for path in (ROOT / "scripts" / "vendor" / "mathjax-3.2.2").rglob("*")
@@ -1160,7 +1161,7 @@ def site_source_digest():
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
-              ("build_site.py", "build_markdown_helpers.py", "heading_aliases.py",
+              ("build_site.py", "build_markdown_helpers.py", "inline_layout.js", "heading_aliases.py",
                "legacy_sequential_anchors.json", "code_layout.py", "make_figures.py",
                "make_aec_figures.py")]
     paths.append(ROOT / "requirements.txt")

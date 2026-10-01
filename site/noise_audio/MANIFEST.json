@@ -306,7 +306,7 @@
     "codes/chapters/ch10/examples/generate_noise_mismatch.py": "e9c65f070ed5ccb02c11132fc4ddb66a12eb30345f974b5732521fb2bbd59765",
     "codes/chapters/ch10/core/noise_suppression.py": "fbef0765d532c7dfbd17f53e3cdd4799fb4457982344a0f0298b2137f9fd9de3",
     "codes/chapters/ch02/core/spectral.py": "5ade0b101cc00615276b3b60c3659ece3e68ad614cd2cb2edeb568359f034059",
-    "codes/chapters/ch02/core/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385",
+    "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
     "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8"
   },
   "environment": {

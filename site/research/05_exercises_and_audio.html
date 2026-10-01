@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>章节代码练习与音频实验 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="9d2a7b81b395"><style>
+<meta name="source-digest" content="7a2d63df4e2e"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -29,7 +29,7 @@ pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:a
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
 mjx-container[jax="CHTML"]{font-size:110%!important;overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
-mjx-assistive-mml{width:1px!important;height:1px!important}
+body mjx-assistive-mml{width:1px!important;max-width:1px!important;min-width:0!important;height:1px!important;overflow:hidden!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
 .pn a{color:#2f6db3;text-decoration:none}.pn .off{color:#aaa}
@@ -44,14 +44,187 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{display:block;margin:20px auto;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
+.tutorial-math-tail{display:inline-block;white-space:nowrap;overflow-wrap:normal;vertical-align:baseline;overflow:visible}
+.tutorial-math-tail mjx-assistive-mml{max-width:1px!important;min-width:0!important;white-space:normal}
+.tutorial-exercise-id{white-space:nowrap;overflow-wrap:normal}
 @media(max-width:900px){.selection-readable-table{min-width:760px}.selection-readable-table th,.selection-readable-table td{min-width:10em}.selection-readable-table th:first-child,.selection-readable-table td:first-child{min-width:6em}}
 @media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}.tracking-readable-table th,.tracking-readable-table td{min-width:8em}.industrial-readable-table th,.industrial-readable-table td{min-width:8em}}
 @media(max-width:900px){.noise-readable-table th:first-child,.noise-readable-table td:first-child{min-width:6em}}
 @media screen and (max-width:900px){.source-contract-readable-table th,.source-contract-readable-table td{min-width:10em}}
+@media screen and (max-width:900px){.tutorial-budget-table{min-width:var(--tutorial-table-width)}.tutorial-budget-table .tutorial-short-column{min-width:var(--tutorial-column-width);overflow-wrap:normal}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
-window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']]}};
+/* Shared publication layout. TeX, code, links and attributes remain intact. */
+(function () {
+  "use strict";
+  const mathClass = "tutorial-math-tail";
+  const idClass = "tutorial-exercise-id";
+  const ignored = "pre,code,a,script,style,textarea,mjx-container";
+  const suffix = /^(\s*(?:(?:m\/s[²³]?|rad\/s|rad\/m|deg\/s|μs|µs|ns|ms|s|dBFS|dB|kHz|MHz|Hz|ppm|rad|cm|mm|m|V|deg|°|%|％)(?:[²³])?(?=$|[\s，。；、：！？）,.!?;:)\]\u4e00-\u9fff])\s*[，。；、：！？）,.;:!?\]]?|[，。；、：！？）,.;:!?\]]))/;
+  let ready = false;
+  let scheduled = false;
+  let printing = false;
+
+  function roots() {
+    const candidates = Array.from(document.querySelectorAll("main.main,.chap"));
+    return candidates.filter(root => !candidates.some(other => other !== root && other.contains(root)));
+  }
+
+  function unwrapMath(root) {
+    for (const wrapper of root.querySelectorAll("." + mathClass)) {
+      const children = Array.from(wrapper.childNodes);
+      wrapper.replaceWith(...children);
+      // Merge only our adjacent ordinary text, never normalize a MathJax subtree.
+      for (const node of children) {
+        if (node.nodeType !== Node.TEXT_NODE) continue;
+        while (node.nextSibling && node.nextSibling.nodeType === Node.TEXT_NODE) {
+          node.data += node.nextSibling.data;
+          node.nextSibling.remove();
+        }
+      }
+    }
+  }
+
+  function protectExerciseIds(root) {
+    let count = 0;
+    {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      const nodes = [];
+      let node;
+      while ((node = walker.nextNode())) {
+        if (!node.parentElement.closest(ignored + ",." + idClass)) nodes.push(node);
+      }
+      for (const text of nodes) {
+        // A filename/path or a longer identifier is not a stable exercise ID.
+        const pattern = /(^|[^\p{L}\p{N}\p{M}_/\\.-])(E\d{2}-\d{2})(?![\p{L}\p{N}\p{M}_/\\-]|\.[\p{L}\p{N}\p{M}])/gu;
+        const matches = Array.from(text.data.matchAll(pattern));
+        for (const match of matches.reverse()) {
+          const start = match.index + match[1].length;
+          text.splitText(start + match[2].length);
+          const middle = text.splitText(start);
+          const span = document.createElement("span");
+          span.className = idClass;
+          middle.before(span);
+          span.append(middle);
+          count++;
+        }
+      }
+    }
+    return count;
+  }
+
+  function markShortLeads(root) {
+    let count = 0;
+    for (const paragraph of root.querySelectorAll("p")) {
+      if (paragraph.closest("pre,code,a,script,style,textarea")) continue;
+      const significant = Array.from(paragraph.childNodes).filter(node =>
+        node.nodeType !== Node.TEXT_NODE || node.data.trim());
+      const next = paragraph.nextElementSibling;
+      const anchorOnly = significant.length === 1 &&
+        significant[0].nodeType === Node.ELEMENT_NODE &&
+        significant[0].tagName === "A" && significant[0].id &&
+        !significant[0].hasAttribute("href") &&
+        Array.from(significant[0].childNodes).every(node =>
+          node.nodeType === Node.TEXT_NODE && !node.data.trim());
+      paragraph.classList.toggle("tutorial-anchor-only", !!anchorOnly);
+      const short = significant.length === 1 &&
+        significant[0].nodeType === Node.ELEMENT_NODE &&
+        significant[0].tagName === "STRONG" &&
+        paragraph.textContent.trim().length <= 60 &&
+        next && /^(P|UL|OL|BLOCKQUOTE)$/.test(next.tagName) &&
+        next.textContent.trim().length > 0;
+      paragraph.classList.toggle("tutorial-short-lead", !!short);
+      if (short) count++;
+    }
+    return count;
+  }
+
+  function apply() {
+    const content = roots();
+    for (const root of content) unwrapMath(root);
+    const plans = [];
+    const hosts = new Map();
+    let skippedWide = 0;
+    let idCount = 0;
+    let leadCount = 0;
+    for (const root of content) {
+      idCount += protectExerciseIds(root);
+      leadCount += markShortLeads(root);
+      // Read every width before any math wrapper is inserted, to avoid repeated
+      // synchronous layout across thousands of formulas in the combined book.
+      for (const math of root.querySelectorAll('mjx-container:not([display="true"])')) {
+        if (math.closest("pre,code,a,script,style,textarea")) continue;
+        const text = math.nextSibling;
+        if (!text || text.nodeType !== Node.TEXT_NODE) continue;
+        const match = text.data.match(suffix);
+        if (!match || match[0].length > 16) continue;
+        const host = math.closest("p,li,td,th,h1,h2,h3,h4");
+        if (!host) continue;
+        if (!hosts.has(host)) {
+          const style = getComputedStyle(host);
+          hosts.set(host, host.clientWidth - parseFloat(style.paddingLeft || 0) -
+            parseFloat(style.paddingRight || 0));
+        }
+        const range = document.createRange();
+        range.setStart(text, 0);
+        range.setEnd(text, match[0].length);
+        const style = getComputedStyle(math);
+        const width = math.getBoundingClientRect().width + range.getBoundingClientRect().width +
+          parseFloat(style.marginLeft || 0) + parseFloat(style.marginRight || 0);
+        if (width > hosts.get(host) - 8) {
+          skippedWide++;
+          continue;
+        }
+        plans.push({math, text, length: match[0].length});
+      }
+    }
+    for (const {math, text, length} of plans) {
+      const wrapper = document.createElement("span");
+      wrapper.className = mathClass;
+      math.before(wrapper);
+      wrapper.append(math);
+      text.splitText(length);
+      wrapper.append(text);
+    }
+    ready = true;
+    const result = {grouped: plans.length, skippedWide, newExerciseIds: idCount, shortLeads: leadCount};
+    window.ArrayTutorialLayout.lastRun = result;
+    return result;
+  }
+
+  function schedule() {
+    if (!ready || scheduled || printing) return;
+    scheduled = true;
+    requestAnimationFrame(() => {
+      scheduled = false;
+      if (printing) return;
+      apply();
+    });
+  }
+
+  window.ArrayTutorialLayout = {apply, lastRun: null};
+  window.addEventListener("resize", schedule);
+  // Chrome fires beforeprint while screen styles still apply. Remove screen
+  // groups before they can enlarge the print layout. The combined book is
+  // measured at its fixed A4 geometry during pageReady instead. Do not mutate
+  // thousands of nodes after the browser has begun its print snapshot: this
+  // can truncate the final pages even when a small fixture prints correctly.
+  // A synthetic beforeprint event is not a print test.
+  window.addEventListener("beforeprint", () => {
+    printing = true;
+    if (ready && document.documentElement.dataset.tutorialPrintLayout !== "a4") {
+      for (const root of roots()) unwrapMath(root);
+    }
+  });
+  window.addEventListener("afterprint", () => {
+    printing = false;
+    if (document.documentElement.dataset.tutorialPrintLayout !== "a4") schedule();
+  });
+  if (document.fonts) document.fonts.addEventListener("loadingdone", schedule);
+})();
+
+window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']]}, startup: {pageReady: () => MathJax.startup.defaultPageReady().then(() => document.fonts.ready).then(() => ArrayTutorialLayout.apply())}};
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
  onerror="document.getElementById('offnote').style.display='block';document.getElementById('offnote').textContent='公式渲染脚本加载失败：当前显示的是公式源码。';"></script>
@@ -461,7 +634,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <tr>
 <td>附录 A E12-01～04</td>
 <td>卷积、复二阶矩、秩亏最小二乘、空间白化与 PHAT 的区别</td>
-<td>同上</td>
+<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_engineering.py">工程练习</a></td>
 </tr>
 <tr>
 <td>附录 A E12-06～19</td>
@@ -471,7 +644,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <tr>
 <td>附录 B E13-01</td>
 <td>同组共同增益与独立归一化</td>
-<td>同上</td>
+<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_engineering.py">工程练习</a></td>
 </tr>
 <tr>
 <td>附录 B E13-03～14</td>
@@ -2661,42 +2834,42 @@ PSD还须写采样率、Hz分母、单边折叠和去均值策略。
 <span id="sec-100" class="anchor-alias" aria-hidden="true"></span><span id="45-附录-a已知噪声权重与求解器前提" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-a1fe918538">45. 附录 A：已知噪声权重与求解器前提</h2>
 <p>本节对应<a href="../12_appendix-symbols-math.html#e12-14">E12-14～19</a>。复最小二乘的正交条件使用共轭转置；已知噪声协方差改变残差的度量；截断小奇异值与ridge改变求解目标的方式不同。三件事先分开复算，再用同一双通道输入检查权重的代价。</p>
 <span id="sec-101" class="anchor-alias" aria-hidden="true"></span><span id="451-六道新题分别核对什么" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-45-1">45.1 六道新题分别核对什么</h3>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:36em">
 <thead>
 <tr>
-<th scope="col">题号</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:6em">题号</th>
 <th scope="col">输入和计算</th>
 <th scope="col">能支持的结论</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>E12-14</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">E12-14</td>
 <td>$A=[1,j]^{\mathsf T}$、$b=[1,1]^{\mathsf T}$；解为$(1-j)/2$，残差平方和1</td>
 <td>$A^Hr=0$；误用$A^{\mathsf T}A=0$会破坏正规方程</td>
 </tr>
 <tr>
-<td>E12-15</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">E12-15</td>
 <td>相同目标的两观测，噪声方差比1:4；已知协方差下权重4/5、1/5</td>
 <td>OLS随机误差方差5/4，GLS为4/5；不是每次噪声样本都更好</td>
 </tr>
 <tr>
-<td>E12-16</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">E12-16</td>
 <td>$A=\operatorname{diag}(1,10^{-8})$；显式<code>rcond</code>为$10^{-10}$和$10^{-6}$</td>
 <td>数值秩分别2、1；方阵返回空<code>residuals</code>仍可能有非零实际残差</td>
 </tr>
 <tr>
-<td>E12-17</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">E12-17</td>
 <td>三点复序列逐滞后乘加，再交换序列</td>
 <td>$R_{21}[q]=R_{12}^*[-q]$，没有共轭会丢掉正确峰</td>
 </tr>
 <tr>
-<td>E12-18</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">E12-18</td>
 <td>非Hermitian两三角与含虚对角输入，记录<code>eigh</code>实际有效矩阵</td>
 <td>API按指定三角和实对角处理；返回特征值不证明原矩阵满足前提</td>
 </tr>
 <tr>
-<td>E12-19</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">E12-19</td>
 <td>同一合成输入的三种固定权重，读回五WAV与整数分母</td>
 <td>已知正确权重改善本模型的总误差；没有估计协方差或进行语音质量评测</td>
 </tr>
@@ -2715,10 +2888,10 @@ PSD还须写采样率、Hz分母、单边折叠和去均值策略。
 <p>试听时保持同一音量。三种权重分别为(0.5,0.5)、(0.8,0.2)、(0.2,0.8)，各自总和1，保持相同目标。稳定窗固定为半开区间[1600,30400)，共28800点、1.8 s。三条频率在该窗内各有整数周期，因此有限窗交叉均值为零；这不是随机独立性或高斯噪声假设。目标功率0.02，两噪声功率0.00045、0.0018，已知比例1:4。</p>
 <span id="sec-103" class="anchor-alias" aria-hidden="true"></span><span id="453-解析浮点分量与实际整数pcm" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-45-3">45.3 解析、浮点分量与实际整数PCM</h3>
 <p>解析残余功率为$0.00045w_1^2+0.0018w_2^2$。权重保持目标，故解析目标失真和交叉项均零。未量化波形另保存实际浮点分量及重构残值，不能把有限精度零强写成解析零。</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:60em">
 <thead>
 <tr>
-<th scope="col">输出</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:6em">输出</th>
 <th scope="col" style="text-align: right;">解析MSE</th>
 <th scope="col" style="text-align: right;">实际PCM误差整数平方和$E$</th>
 <th scope="col" style="text-align: right;">实际PCM MSE</th>
@@ -2727,21 +2900,21 @@ PSD还须写采样率、Hz分母、单边折叠和去均值策略。
 </thead>
 <tbody>
 <tr>
-<td>OLS</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">OLS</td>
 <td style="text-align: right;">0.0005625</td>
 <td style="text-align: right;">17394760800</td>
 <td style="text-align: right;">0.0005625046324</td>
 <td style="text-align: right;">0.028124601454</td>
 </tr>
 <tr>
-<td>GLS</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">GLS</td>
 <td style="text-align: right;">0.00036</td>
 <td style="text-align: right;">11131529760</td>
 <td style="text-align: right;">0.0003599668387</td>
 <td style="text-align: right;">0.017997938671</td>
 </tr>
 <tr>
-<td>反置</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">反置</td>
 <td style="text-align: right;">0.00117</td>
 <td style="text-align: right;">36180064800</td>
 <td style="text-align: right;">0.0011699760798</td>
@@ -2756,7 +2929,7 @@ PSD还须写采样率、Hz分母、单边折叠和去均值策略。
 .venv/bin/python -m codes.chapters.appendix_a.appendix_a_experiments
 </code></pre>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_a/core/weighted_audio.py">教学核</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_a/examples/generate_weighted_audio.py">生成入口</a>复用主PCM编解码，绑定三个真实源摘要。独立目录只接受五WAV和清单共六个普通文件；拒绝链接父链、额外成员、重复或非有限JSON、过期源与不符的PCM。<code>--check</code>读取实际文件并在内存完整重放，失败时不写入或修复。新五文件不混入主109份WAV。</p>
-<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_a/reports/upstream_solver_contracts.json">当前原核执行报告</a>另绑定pb_bss提交<code>10acc347fc9ea21e3d312806a0bd751d0d0af183</code>、MIT许可与完整原<code>solve.py</code>摘要。完整模块加载后仅调用<code>stable_solve</code>四例：浮点秩亏、整数秩亏、非奇异整数控制和PSD零空间。整数秩亏例观察到原回退以整数<code>zeros_like(B)</code>接收浮点最小二乘结果，产生全零；报告保留这个失败，不修补上游或改写历史运行报告。另两例直接运行NumPy显式阈值，不称为pb_bss参数实验。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_a/reports/upstream_solver_contracts.json">当前原核执行报告</a>另绑定pb_bss固定提交<code>10acc347fc9ea21e3d312806a0bd751d0d0af183</code>对应的源码身份、MIT许可与完整原<code>solve.py</code>摘要。完整模块加载后仅调用<code>stable_solve</code>四例：浮点秩亏、整数秩亏、非奇异整数控制和PSD零空间。整数秩亏例观察到原回退以整数<code>zeros_like(B)</code>接收浮点最小二乘结果，产生全零；报告保留这个失败，不修补上游或改写历史运行报告。另两例直接运行NumPy显式阈值，不称为pb_bss参数实验。</p>
 <p>PSD例进一步用独立约束推导说明：方程最小二乘返回值经归一化，不保证求得MVDR零噪声最优解。没有调用原上游波束形成器、完整包、模型、GPU或硬件。源码入口与实际执行范围详见<a href="04_source_reproduction.html#appendix-solver-contracts">复现手册的求解器合同</a>；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_upstream_solver_contracts.py">独立测试</a>核对精确身份、输入不变、解析期望和已知dtype失败。</p>
 <span id="sec-105" class="anchor-alias" aria-hidden="true"></span><span id="46-附录-b通道聚合数值尺度与同drr输出" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-a6996550c6">46. 附录 B：通道聚合、数值尺度与同DRR输出</h2>
 <p>本节补齐<a href="../13_appendix-guide.html#e13-11">E13-11～14</a>的输入、中间量、答案与独立音频。四题分别处理结构性质、幅度尺度、时间尺度和源谱加权；它们不是四种新的分离算法，也不把静态源码检查或数学合成WAV当作原神经网络、真实房间或听测成绩。</p>
@@ -2892,10 +3065,10 @@ $$</p>
 <p>对完整有限卷积，Parseval等式把反射输出能量写为 $\frac1{2\pi}\int_{-\pi}^{\pi}|X(e^{j\omega})|^2|H_{\mathrm r}(e^{j\omega})|^2\,d\omega$。RIR平方和相同，只固定未加源谱权重的滤波器能量；不是任意源输入下反射输出能量相同的条件。该积分是完整序列能量，不能直接冒充选定稳定窗的均方。</p>
 <p><strong>第三步：分清总输出功率与误差。</strong> 未量化完整输出 $y=x+y_{\mathrm r}$ 的功率含交叉项，$P_y=P_x+P_{y_{\mathrm r}}+2\langle x,y_{\mathrm r}\rangle$。本例A的两倍交叉项约−0.001464466094，B约0.008535533906，故完整输出功率约0.015303300859、0.021767766953。完整输出相对源参考的误差是 $y-x=y_{\mathrm r}$，所以误差功率仍是上表反射功率；不要以总输出更大或更小替代误差结论。有限窗正交来自所选频率和整数周期，不是随机独立性。</p>
 <p><strong>第四步：从正式PCM重新求整数误差。</strong> 参考和完整输出均从正式WAV读回。用原PCM整数逐样本作差，误差平方和记为 $E$，参考整数平方和为 $D=309262788000$。MSE为 $E/(28800\times32768^2)$，分母为30923764531200，单位是解码数字幅度平方；NMSE为 $E/D$，无量纲。不拟合时移或增益。</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:60em">
 <thead>
 <tr>
-<th scope="col">完整输出</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:6em">完整输出</th>
 <th scope="col" style="text-align: right;">解析稳态MSE</th>
 <th scope="col" style="text-align: right;">实际PCM整数误差平方和 $E$</th>
 <th scope="col" style="text-align: right;">实际PCM MSE</th>
@@ -2904,14 +3077,14 @@ $$</p>
 </thead>
 <tbody>
 <tr>
-<td>A</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">A</td>
 <td style="text-align: right;">0.006767766953</td>
 <td style="text-align: right;">209299622400</td>
 <td style="text-align: right;">0.00676824524999</td>
 <td style="text-align: right;">0.676769499989</td>
 </tr>
 <tr>
-<td>B</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">B</td>
 <td style="text-align: right;">0.003232233047</td>
 <td style="text-align: right;">99939578400</td>
 <td style="text-align: right;">0.00323180505075</td>

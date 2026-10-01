@@ -40,6 +40,7 @@ SRC = ROOT / "chapters"
 OUT = ROOT / "site"
 CODE_CHAPTERS = ROOT / "codes" / "chapters"
 RESEARCH_ROOT = CODE_CHAPTERS / "ch00" / "research"
+INLINE_LAYOUT_PATH = ROOT / "scripts" / "inline_layout.js"
 REAL_AUDIO_ROOT = CODE_CHAPTERS / "ch02" / "real_audio"
 ROOM_AUDIO_ROOT = CODE_CHAPTERS / "appendix_b" / "room_audio"
 MOVING_AUDIO_ROOT = CODE_CHAPTERS / "ch09" / "moving_audio"
@@ -116,6 +117,37 @@ REPOSITORY_BLOB_BASE = "https://github.com/nanless/microphone-array-signal-proce
 LABEL_BY_FNAME = {f: l for f, l in CHAPTERS}
 LABEL_BY_FNAME[HOME_FNAME] = "🏠 导读与导航（首页）"
 
+# Exact source/header contracts, not table positions. Budgets apply only on
+# narrow screens; print tables retain the existing A4 column layout.
+NARROW_TABLE_POLICIES = {
+    SRC / "00_overview.md": {
+        ("编号", "文件", "配图", "难度", "建议学习单元"): (60, {1: 3, 4: 6}),
+        ("图", "文件", "所在文档", "类型", "内容"): (60, {1: 5, 4: 6}),
+    },
+    SRC / "11_selection-guide.md": {
+        ("场景", "条件变化", "方案怎样变化"): (36, {1: 6}),
+        ("项目", "应写内容"): (30, {1: 6}),
+        ("候选", "1500 Hz目标幅度保留", "3500 Hz噪声衰减（dB）", "对齐NMSE（dB）"): (44, {1: 6}),
+        ("场景与候选", "目标整数能量D", "误差整数能量E", "实际PCM线性NMSE"): (50, {1: 8}),
+    },
+    SRC / "12_appendix-symbols-math.md": {
+        ("符号", "含义"): (34, {1: 8}),
+        ("术语", "解释"): (32, {1: 8}),
+        ("权重", "误差均方的逐项计算", "解析 MSE", "解析 NMSE（除以 $0.02$）"): (52, {1: 6}),
+        ("输出", "实际整数误差平方和 $E_I$", "实际 PCM MSE", "实际 PCM NMSE"): (50, {1: 6}),
+    },
+    SRC / "13_appendix-guide.md": {
+        ("声源位置", "距离 (m)", "真方位 (°)", "$T_{20}$ 外推 $T_{60}$ (s)", "DRR (dB)", "SRP 方位 (°)", "绝对误差 (°)"): (64, {1: 8}),
+        ("声源位置", "完整 WAV 帧数", "前 1 秒 SRP 方位", "整段 SRP 方位", "后者减前者"): (60, {1: 8}),
+        ("完整输出", "整数误差平方和 $E$", "实际PCM MSE", "实际PCM NMSE"): (48, {1: 6}),
+    },
+    RESEARCH_ROOT / "05_exercises_and_audio.md": {
+        ("题号", "输入和计算", "能支持的结论"): (36, {1: 6}),
+        ("输出", "解析MSE", "实际PCM误差整数平方和$E$", "实际PCM MSE", "实际PCM NMSE"): (60, {1: 6}),
+        ("完整输出", "解析稳态MSE", "实际PCM整数误差平方和 $E$", "实际PCM MSE", "实际PCM NMSE"): (60, {1: 6}),
+    },
+}
+
 CSS = """
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
@@ -144,7 +176,7 @@ pre{background:#1a1a2e;color:#e8ecf3;padding:14px;border-radius:8px;overflow-x:a
 pre code{background:none;color:inherit;padding:0}
 blockquote{border-left:3px solid #2f6db3;margin:14px 0;padding:8px 14px;background:#f2f7fd;color:#333}
 mjx-container[jax="CHTML"]{font-size:110%!important;overflow-x:auto;overflow-y:hidden;max-width:100%;min-width:0!important}
-mjx-assistive-mml{width:1px!important;height:1px!important}
+body mjx-assistive-mml{width:1px!important;max-width:1px!important;min-width:0!important;height:1px!important;overflow:hidden!important}
 pre,.table-scroll,mjx-container[jax="CHTML"]{overflow-wrap:normal}
 .pn{display:flex;justify-content:space-between;margin:30px 0 10px;padding-top:16px;border-top:1px solid #e5e8ee}
 .pn a{color:#2f6db3;text-decoration:none}.pn .off{color:#aaa}
@@ -159,10 +191,14 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{display:block;margin:20px auto;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
+.tutorial-math-tail{display:inline-block;white-space:nowrap;overflow-wrap:normal;vertical-align:baseline;overflow:visible}
+.tutorial-math-tail mjx-assistive-mml{max-width:1px!important;min-width:0!important;white-space:normal}
+.tutorial-exercise-id{white-space:nowrap;overflow-wrap:normal}
 @media(max-width:900px){.selection-readable-table{min-width:760px}.selection-readable-table th,.selection-readable-table td{min-width:10em}.selection-readable-table th:first-child,.selection-readable-table td:first-child{min-width:6em}}
 @media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}.tracking-readable-table th,.tracking-readable-table td{min-width:8em}.industrial-readable-table th,.industrial-readable-table td{min-width:8em}}
 @media(max-width:900px){.noise-readable-table th:first-child,.noise-readable-table td:first-child{min-width:6em}}
 @media screen and (max-width:900px){.source-contract-readable-table th,.source-contract-readable-table td{min-width:10em}}
+@media screen and (max-width:900px){.tutorial-budget-table{min-width:var(--tutorial-table-width)}.tutorial-budget-table .tutorial-short-column{min-width:var(--tutorial-column-width);overflow-wrap:normal}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 """
 
@@ -171,7 +207,8 @@ PAGE = """<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <title>{title} · 麦克风阵列信号处理教程</title>
 <meta name="source-digest" content="{source_digest}"><style>{css}</style>
 <script>
-window.MathJax = {{tex: {{inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], displayMath: [['$$', '$$']]}}}};
+{inline_layout_script}
+window.MathJax = {{tex: {{inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], displayMath: [['$$', '$$']]}}, startup: {{pageReady: () => MathJax.startup.defaultPageReady().then(() => document.fonts.ready).then(() => ArrayTutorialLayout.apply())}}}};
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
  onerror="document.getElementById('offnote').style.display='block';document.getElementById('offnote').textContent='公式渲染脚本加载失败：当前显示的是公式源码。';"></script>
@@ -791,6 +828,7 @@ def source_digest():
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "build_markdown_helpers.py",
+              INLINE_LAYOUT_PATH,
               ROOT / "scripts" / "heading_aliases.py",
               ROOT / "scripts" / "legacy_sequential_anchors.json",
               ROOT / "scripts" / "code_layout.py",
@@ -1127,6 +1165,46 @@ def render(md_text, source_path=None):
             readable = labels == ("核查对象", "固定源中实际结构", "证据所能支持的范围")
             return '<table'+(' class="source-contract-readable-table"' if readable else '')+'>'+inner+'</table>'
         html = re.sub(r'<table>(.*?)</table>', source_contract_table, html, flags=re.S)
+    policies = NARROW_TABLE_POLICIES.get(source_path.resolve(), {})
+    if policies:
+        def budget_table(match):
+            attrs, inner = match.group(1), match.group(2)
+            headers = re.findall(r'<th\b[^>]*>(.*?)</th>', inner, flags=re.S)
+            labels = tuple(unescape(re.sub(r'<[^>]+>', '', value)).strip() for value in headers)
+            policy = policies.get(labels)
+            if policy is None:
+                return match.group(0)
+            width, columns = policy
+            def layout_attrs(original, class_name, variable):
+                # Raw HTML can already carry class/style; never emit duplicate
+                # attributes or discard its existing presentation contract.
+                for name, addition, separator in (("class", class_name, " "), ("style", variable, ";")):
+                    pattern = rf'\b{name}\s*=\s*(?:"([^"]*)"|\'([^\']*)\'|([^\s>]+))'
+                    existing = re.search(pattern, original)
+                    if existing:
+                        value = next(value for value in existing.groups() if value is not None)
+                        value = value.rstrip(";") + separator + addition
+                        original = (original[:existing.start()] +
+                                    f'{name}="{escape(unescape(value), quote=True)}"' + original[existing.end():])
+                    else:
+                        original += f' {name}="{addition}"'
+                return original
+            # Preserve native table roles, header scope, text, links and TeX.
+            attrs = layout_attrs(attrs, "tutorial-budget-table", f"--tutorial-table-width:{width}em")
+            def budget_row(row):
+                column = 0
+                def budget_cell(cell):
+                    nonlocal column
+                    column += 1
+                    if column not in columns:
+                        return cell.group(0)
+                    tag, cell_attrs, content = cell.group(1), cell.group(2), cell.group(3)
+                    cell_attrs = layout_attrs(cell_attrs, "tutorial-short-column", f"--tutorial-column-width:{columns[column]}em")
+                    return f'<{tag}{cell_attrs}>{content}</{tag}>'
+                return re.sub(r'<(th|td)(\b[^>]*)>(.*?)</\1>', budget_cell, row.group(0), flags=re.S)
+            inner = re.sub(r'<tr\b[^>]*>.*?</tr>', budget_row, inner, flags=re.S)
+            return f'<table{attrs}>{inner}</table>'
+        html = re.sub(r'<table([^>]*)>(.*?)</table>', budget_table, html, flags=re.S)
     html = re.sub(
         r"<table([^>]*)>(.*?)</table>",
         (r'<div class="table-scroll" tabindex="0" role="region" '
@@ -1311,6 +1389,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix=".site-build-", dir=ROOT) as tmp:
         temp_out = Path(tmp)
         build_digest = source_digest()
+        inline_layout_script = INLINE_LAYOUT_PATH.read_text(encoding="utf-8")
         home_md = (SRC / HOME_FNAME).read_text(encoding="utf-8")
         home_heads = parse_headings(home_md)
         home_html, home_n = render(home_md, SRC / HOME_FNAME)
@@ -1320,6 +1399,7 @@ def main():
             title="导读与导航", css=CSS, crumb="导读与导航",
             home_href="index.html",
             source_digest=build_digest,
+            inline_layout_script=inline_layout_script,
             sidebar=sidebar_with_anchors(None, home_heads), toc=toc,
             body=home_html, pn=""), encoding="utf-8")
         for i, (fname, label) in enumerate(CHAPTERS):
@@ -1339,6 +1419,7 @@ def main():
                 title=label, css=CSS, crumb=label,
                 home_href="index.html",
                 source_digest=build_digest,
+                inline_layout_script=inline_layout_script,
                 sidebar=sidebar_with_anchors(fname, heads), toc=toc,
                 body=body, pn=pn), encoding="utf-8")
         (temp_out / "research").mkdir()
@@ -1352,6 +1433,7 @@ def main():
             (temp_out / "research" / html_name).write_text(PAGE.format(
                 title=label, css=CSS, crumb=label, home_href="../index.html",
                 source_digest=build_digest, sidebar=research_sidebar(fname, heads),
+                inline_layout_script=inline_layout_script,
                 toc=sub_list(html_name, heads)[0], body=body, pn=""), encoding="utf-8")
         built = {path.relative_to(temp_out).as_posix() for path in temp_out.rglob("*.html")}
         if built != expected:

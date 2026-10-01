@@ -313,7 +313,7 @@
     "codes/chapters/appendix_b/examples/room_srp_exercise.py": "598509685594821f88c058be7bf0ce256b12032fbe36173804ee2a14ea62bf81",
     "codes/chapters/appendix_b/core/room_metrics.py": "79e984ea8eb0afee3157247e06bf2f2a01056e411068168cfe134faf799a8e51",
     "codes/chapters/ch02/core/spectral.py": "5ade0b101cc00615276b3b60c3659ece3e68ad614cd2cb2edeb568359f034059",
-    "codes/chapters/ch02/core/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385",
+    "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
     "codes/chapters/ch04/core/doa.py": "f3d7eaa8251b732efe0f9579fa2b32a71f506fb884d80b17503f09697b659ed4",
     "codes/chapters/ch03/core/geometry.py": "5a680848301358415f74647199a4c57b65086f0b2580f91706c912ad208d7bdb",
     "codes/chapters/ch04/core/covariance.py": "d704be037100ee53caf6e2130fbabbe14ce6eeff9e3d11dde389fd368d271249"
