@@ -70,7 +70,7 @@ class FigureAlgorithmTest(unittest.TestCase):
         captured = []
         original_save = figures.save
         try:
-            def capture(figure, _name):
+            def capture(figure, _name, _metadata=None):
                 figures.finalize_figure(figure)
                 figure.canvas.draw()
                 captured.append(figure)

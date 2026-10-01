@@ -1,4 +1,4 @@
-"""Ten WPE/MINT arithmetic and audio experiments, E07-08 through E07-17.
+"""Fourteen WPE/MINT arithmetic and audio experiments, E07-08 through E07-21.
 
 These are small declared models, not benchmarks. Complex arrays are encoded
 as separate real/imag lists for strict JSON. Importing does not run or write.
@@ -11,8 +11,15 @@ if __name__ == "__main__" and not __package__:
     from pathlib import Path as _ChapterEntryPath
     _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[3]))
 import json
+import hashlib
+import io
+import struct
+import wave
+from pathlib import Path
+from fractions import Fraction
 import numpy as np
-from codes.chapters.ch00.core.audio_samples import wpe_predictable_case
+
+ROOT = Path(__file__).resolve().parents[3]
 
 
 def _complex(value) -> dict:
@@ -170,17 +177,176 @@ def loaded_wpd_factorization() -> dict:
             'scope': 'load the full stacked covariance first; the residual spatial problem includes delta I + delta G^H G'}
 
 
-def predictable_target_audio() -> dict:
-    case = wpe_predictable_case()
-    return {'files': [name+'.wav' for name in case['signals']], **case['parameters'], 'scope': case['limits']}
+def _actual_pcm_integers(blob, *, channels, samples):
+    try:
+        with wave.open(io.BytesIO(blob)) as reader:
+            if (reader.getnchannels(), reader.getnframes(), reader.getframerate(), reader.getsampwidth(),
+                    reader.getcomptype()) != (channels, samples, 16000, 2, 'NONE'):
+                raise ValueError('actual WAV must have the declared PCM16 format')
+            raw = reader.readframes(samples)
+    except (wave.Error, EOFError) as error:
+        raise ValueError('invalid actual WAV') from error
+    if len(raw) != 2*channels*samples:
+        raise ValueError('truncated actual PCM data')
+    return struct.unpack('<'+'h'*(channels*samples), raw)
 
 
-def run_experiments() -> dict:
+def predictable_target_audio(repo_root=ROOT) -> dict:
+    """Read the four published PCM files; never synthesize or repair them."""
+    from codes.chapters.ch00.examples.generate_audio_samples import INPUTS
+    root = Path(repo_root)
+    manifest_path = root/'codes/chapters/ch00/audio/MANIFEST.json'
+    try:
+        manifest = json.loads(manifest_path.read_text(),
+                              parse_constant=lambda _: (_ for _ in ()).throw(ValueError('nonfinite manifest')))
+    except (OSError, json.JSONDecodeError, UnicodeError) as error:
+        raise ValueError('main audio manifest is missing or invalid') from error
+    if not isinstance(manifest, dict):
+        raise ValueError('main audio manifest must be an object')
+    sources = manifest.get('generator_inputs', {})
+    if set(sources) != set(INPUTS):
+        raise ValueError('main audio source set differs from current generator')
+    try:
+        if any(hashlib.sha256((root/path).read_bytes()).hexdigest() != sha for path, sha in sources.items()):
+            raise ValueError('main audio source SHA is stale')
+    except OSError as error:
+        raise ValueError('main audio source file is missing') from error
+    group = manifest.get('groups', {}).get('wpe_predictable', {})
+    parameters = group.get('parameters', {})
+    if (type(group.get('common_export_gain')) not in (int, float) or group['common_export_gain'] != 1
+            or parameters.get('sample_rate_hz') != 16000 or parameters.get('samples') != 32000
+            or parameters.get('score_windows_samples') != {'steady_target': [6400, 14400],
+                                                          'post_source_tail': [16000, 32000]}):
+        raise ValueError('actual predictable-audio parameters differ from E07-17')
+    names = ['wpe_predictable_'+part for part in ('target', 'reverberant', 'oracle_inverse', 'output')]
+    records = manifest.get('files', [])
+    decoded, summary = {}, {}
+    for name in names:
+        filename = name+'.wav'
+        matches = [record for record in records if record.get('file') == filename]
+        if len(matches) != 1 or matches[0].get('chapter') != 'ch07' or matches[0].get('group') != 'wpe_predictable':
+            raise ValueError('missing or ambiguous main audio record: '+filename)
+        path = root/'codes/chapters/ch07/audio'/filename
+        if path.is_symlink() or not path.is_file():
+            raise ValueError('actual WAV missing or not a regular file: '+filename)
+        blob = path.read_bytes()
+        sha = hashlib.sha256(blob).hexdigest()
+        if sha != matches[0].get('sha256'):
+            raise ValueError('actual WAV SHA mismatch: '+filename)
+        decoded[name] = _actual_pcm_integers(blob, channels=1, samples=32000)
+        summary[filename] = {'sha256': sha, 'channels': 1, 'samples_per_channel': 32000,
+                             'sample_rate_hz': 16000, 'sample_width_bytes': 2}
+    truth = decoded[names[0]][6400:14400]
+    denominator = sum(v*v for v in truth)
+    if denominator <= 0:
+        raise ValueError('actual PCM reference power is zero; projection and relative error undefined')
+    scores, measurements = {}, {}
+    for name in names:
+        y = decoded[name]
+        numerator = sum((a-b)**2 for a, b in zip(y[6400:14400], truth))
+        cross = sum(a*b for a, b in zip(y[6400:14400], truth))
+        tail = sum(v*v for v in y[16000:32000])
+        scores[name] = {'steady_projection_gain': cross/denominator,
+                        'steady_relative_squared_reference_error': numerator/denominator,
+                        'tail_mean_square': tail/(16000*32768**2)}
+        measurements[name] = {**scores[name], 'integer_reference_squared_sum': denominator,
+                               'integer_error_squared_sum': numerator, 'integer_output_reference_cross_sum': cross,
+                               'integer_tail_squared_sum': tail, 'steady_sample_denominator': 8000,
+                               'tail_sample_denominator': 16000, 'pcm_decode_divisor': 32768}
+    before = measurements[names[1]]['integer_tail_squared_sum']
+    after = measurements[names[3]]['integer_tail_squared_sum']
+    if before <= 0 or after <= 0:
+        raise ValueError('declared tail power ratio requires two positive powers')
+    ratio = float(10*np.log10(after/before))
+    actual_scores = {'files': scores, 'output_to_input_tail_power_ratio_db': ratio}
+    recorded = parameters.get('pcm_to_pcm_reference_scores')
+    if (recorded != actual_scores
+            or type(recorded['output_to_input_tail_power_ratio_db']) not in (int, float)
+            or any(type(value) not in (int, float)
+                   for record in recorded['files'].values() for value in record.values())):
+        raise ValueError('main audio actual PCM scores differ from manifest')
+    return {'files': [name+'.wav' for name in names], **parameters,
+            'published_audio': {'manifest': 'codes/chapters/ch00/audio/MANIFEST.json',
+                                'source_sha256': sources, 'files': summary, 'pcm_measurements': measurements,
+                                'tail_ratio_integer_numerator': after, 'tail_ratio_integer_denominator': before,
+                                'output_to_input_tail_power_ratio_db': ratio},
+            'scope': group.get('limits')}
+
+
+def real_cepstrum_phase_ambiguity() -> dict:
+    h1, h2 = np.array([1., .5]), np.array([.5, 1.])
+    H1, H2 = np.fft.fft(h1, 8), np.fft.fft(h2, 8)
+    c1, c2 = np.fft.ifft(np.log(abs(H1)**2)).real, np.fft.ifft(np.log(abs(H2)**2)).real
+    return {'fft_size': 8, 'h_minimum_phase': h1.tolist(), 'h_maximum_phase': h2.tolist(),
+            'spectrum_minimum_phase': _complex(H1), 'spectrum_maximum_phase': _complex(H2),
+            'magnitude_squared_minimum_phase': (abs(H1)**2).tolist(),
+            'magnitude_squared_maximum_phase': (abs(H2)**2).tolist(),
+            'real_cepstrum_minimum_phase': c1.tolist(), 'real_cepstrum_maximum_phase': c2.tolist(),
+            'polynomial_zeros': [-.5, -2.],
+            'first_eight_causal_inverse_minimum_phase': [(-.5)**n for n in range(8)],
+            'first_eight_causal_inverse_maximum_phase': [2*(-2.)**n for n in range(8)],
+            'finite_dft_c0_closed_form': float(np.log(255/256)/4), 'continuous_cepstrum_c0': 0.,
+            'scope': 'log power real cepstrum loses phase; finite DFT wraps cepstral coefficients. Inverse prefixes are not exact finite-length inverse FIRs.'}
+
+
+def design_normal_comparison() -> dict:
+    from dataclasses import asdict, is_dataclass
+    from codes.chapters.ch07.core.dereverberation import solve_prediction_design
+    design = np.array([[1., 1.], [0., 1e-9]], complex)
+    target = np.array([0., -1e-9], complex)
+    cases = {}
+    for solver in ('design_lstsq', 'normal'):
+        g, diagnostic = solve_prediction_design(design, target, diagonal_loading=0,
+                                                solver=solver, return_diagnostics=True)
+        if is_dataclass(diagnostic):
+            diagnostic = asdict(diagnostic)
+        residual = target-design@g
+        # Condition infinity is a mathematical rank diagnostic, not JSON NaN.
+        diagnostic = dict(diagnostic)
+        for key, value in list(diagnostic.items()):
+            if isinstance(value, (float, np.floating)) and not np.isfinite(value):
+                diagnostic[key] = None
+                diagnostic[key+'_status'] = 'infinite' if np.isinf(value) else 'undefined'
+        cases[solver] = {'coefficients': _complex(g), 'residual': _complex(residual),
+                          'residual_squared_sum': float(np.vdot(residual, residual).real),
+                          'diagnostic': diagnostic}
+    return {'design': _complex(design), 'target': _complex(target),
+            'exact_coefficients': [1., -1.], 'cases': cases,
+            'scope': 'unregularized finite two-column example; forming A^H A squares conditioning and can erase a distinguishing small row'}
+
+
+def constrained_regularized_mint() -> dict:
+    from codes.chapters.ch07.core.mint_teaching import constrained_design
+    a, b = Fraction(1, 2), Fraction(49, 100)
+    exact = constrained_design(a, b, 0)
+    regularized = constrained_design(a, b, Fraction(1, 10000))
+    exact['cost_at_regularization_1e_4'] = float(Fraction(4901, 10000))
+    return {'a': .5, 'b': .49, 'regularization': .0001,
+            'exact_inverse': exact, 'regularized': regularized,
+            'scope': 'fixed direct coefficient sum=1; reflection distortion versus weight-norm penalty, not a general MINT optimum'}
+
+
+def actual_mint_audio(directory=None) -> dict:
+    from codes.chapters.ch07.examples.mint_teaching_demo import DEFAULT_OUTPUT, check_assets
+    return check_assets(DEFAULT_OUTPUT if directory is None else Path(directory))
+
+
+def run_experiments(*, repo_root=ROOT, mint_directory=None) -> dict:
     functions = [complex_weighted_fit, power_floor_and_smoothing, history_permutation,
                  frame_count_and_rank, frame_window_overlap, exponential_statistics,
                  mint_near_common_zero, wpe_resource_budget, loaded_wpd_factorization,
-                 predictable_target_audio]
-    return {f'E07-{i:02d}': function() for i, function in enumerate(functions, 8)}
+                 predictable_target_audio, real_cepstrum_phase_ambiguity,
+                 design_normal_comparison, constrained_regularized_mint, actual_mint_audio]
+    result = {}
+    for i, function in enumerate(functions, 8):
+        if function is predictable_target_audio:
+            value = function(repo_root)
+        elif function is actual_mint_audio:
+            value = function(mint_directory)
+        else:
+            value = function()
+        result[f'E07-{i:02d}'] = value
+    return result
 
 
 if __name__ == '__main__':

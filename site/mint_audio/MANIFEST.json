@@ -1,0 +1,743 @@
+{
+  "schema_version": 1,
+  "origin": "original fixed known-path mathematical synthesis",
+  "sample_rate_hz": 16000,
+  "samples_per_channel": 32512,
+  "common_export_gain": 1.0,
+  "source_sha256": {
+    "codes/chapters/ch07/core/mint_teaching.py": "4a7be3378d80d3018fe095766610b915d72ae625903e4c7054bdf1e5a10e103a",
+    "codes/chapters/ch07/examples/mint_teaching_demo.py": "06e2866965d45a8eb3993837574fcddad67ad11eb413082034ebd07bd40a33e8",
+    "codes/chapters/ch02/core/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385",
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8"
+  },
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "parameters": {
+    "exercise_id": "E07-21",
+    "sample_rate_hz": 16000,
+    "samples_per_channel": 32512,
+    "source_samples": 32000,
+    "source_frequencies_hz": [
+      200,
+      500,
+      900,
+      1200
+    ],
+    "amplitude_per_frequency": 0.05,
+    "source_phase": "cosines on absolute sample clock, initial phase zero",
+    "source_active_interval_samples": [
+      0,
+      32000
+    ],
+    "fade_samples_each_end": 320,
+    "fade": "sin(linspace(0,pi/2,320)) squared, endpoint included; reversed at end",
+    "reflection_delay_samples": 512,
+    "reflection_delay_seconds": 0.032,
+    "paths": {
+      "first": [
+        1.0,
+        0.5
+      ],
+      "well_second": [
+        1.0,
+        -0.5
+      ],
+      "near_second": [
+        1.0,
+        0.49
+      ]
+    },
+    "path_tap_positions": [
+      0,
+      512
+    ],
+    "negative_time_samples": "zero",
+    "complete_tail_samples": 512,
+    "noise_model": "two independent Rademacher draws times sqrt(5e-7), added after each path at ALL 32512 samples",
+    "noise_variance_per_channel": 5e-07,
+    "noise_shared_across_conditions": true,
+    "seed": 20261001,
+    "random_bit_generator": "PCG64",
+    "random_draw": "integers(0,2,size=(2,32512),dtype=int64), map 0/1 to -1/+1",
+    "steady_source_population_mean_square": 0.005,
+    "regularization": 0.0001,
+    "regularization_interpretation": "noise variance / declared steady source power = 5e-7/.005",
+    "designs": {
+      "well_exact": {
+        "weights": [
+          0.5,
+          0.5
+        ],
+        "weights_exact": [
+          "1/2",
+          "1/2"
+        ],
+        "direct_response": 1.0,
+        "reflection_response": 0.0,
+        "weight_norm_squared": 0.5,
+        "reflection_cost": 0.0,
+        "regularization_cost": 0.0,
+        "total_cost": 0.0,
+        "regularization": 0.0,
+        "scope": "direct coefficient sum is one; only reflection and weight norm are penalized",
+        "population_noise_mean_square": 2.5e-07,
+        "population_clean_error_mean_square": 0.0,
+        "population_total_reference_mse": 2.5e-07
+      },
+      "near_exact": {
+        "weights": [
+          -49.0,
+          50.0
+        ],
+        "weights_exact": [
+          "-49",
+          "50"
+        ],
+        "direct_response": 1.0,
+        "reflection_response": 0.0,
+        "weight_norm_squared": 4901.0,
+        "reflection_cost": 0.0,
+        "regularization_cost": 0.0,
+        "total_cost": 0.0,
+        "regularization": 0.0,
+        "scope": "direct coefficient sum is one; only reflection and weight norm are penalized",
+        "population_noise_mean_square": 0.0024505,
+        "population_clean_error_mean_square": 0.0,
+        "population_total_reference_mse": 0.0024505
+      },
+      "near_regularized": {
+        "weights": [
+          -16.0,
+          17.0
+        ],
+        "weights_exact": [
+          "-16",
+          "17"
+        ],
+        "direct_response": 1.0,
+        "reflection_response": 0.33,
+        "weight_norm_squared": 545.0,
+        "reflection_cost": 0.1089,
+        "regularization_cost": 0.0545,
+        "total_cost": 0.1634,
+        "regularization": 0.0001,
+        "scope": "direct coefficient sum is one; only reflection and weight norm are penalized",
+        "population_noise_mean_square": 0.0002725,
+        "population_clean_error_mean_square": 0.0005445000000000001,
+        "population_total_reference_mse": 0.000817
+      }
+    },
+    "scoring_interval_samples": [
+      2400,
+      29600
+    ],
+    "scoring_samples_per_channel": 27200,
+    "tail_interval_samples": [
+      32000,
+      32512
+    ],
+    "alignment": "same source sample clock; fixed causal one-tap outputs; no fitted gain or delay",
+    "common_export_gain": 1.0,
+    "channel_order": [
+      "first_path",
+      "second_path"
+    ],
+    "statistics": "one finite fixed-seed fixture; population expectations and actual cross terms are distinct"
+  },
+  "files": {
+    "mint_reference.wav": {
+      "channels": 1,
+      "samples_per_channel": 32512,
+      "sample_rate_hz": 16000,
+      "sha256": "6fbff74f0078355849806df4ea8b85420db59a5c66927bf60e5f0e532ea576df"
+    },
+    "mint_well_array.wav": {
+      "channels": 2,
+      "samples_per_channel": 32512,
+      "sample_rate_hz": 16000,
+      "sha256": "1ce83e7840cf2a0ee0daf5249e5fc396f67f8784581b4853cab8b6acf676ff0c"
+    },
+    "mint_near_array.wav": {
+      "channels": 2,
+      "samples_per_channel": 32512,
+      "sample_rate_hz": 16000,
+      "sha256": "5a4f135b897ba4a0c8cd11b97ce5c72f671282a172373a1e7d6db3b941642c83"
+    },
+    "mint_well_exact.wav": {
+      "channels": 1,
+      "samples_per_channel": 32512,
+      "sample_rate_hz": 16000,
+      "sha256": "732a943ea0150bae83bcbf87ba209503df1ae3439a4f1c5ebf56a3638fa42e37"
+    },
+    "mint_near_exact.wav": {
+      "channels": 1,
+      "samples_per_channel": 32512,
+      "sample_rate_hz": 16000,
+      "sha256": "b077695dfa56db5f1762857c8962c1da5fa644f16cce0c6dc5c3eb0fe9ae3ba1"
+    },
+    "mint_near_regularized.wav": {
+      "channels": 1,
+      "samples_per_channel": 32512,
+      "sample_rate_hz": 16000,
+      "sha256": "bc149b436ea6366e8f64cfbe5df804a0403828431a8ff71b4269e48d0a85f855"
+    }
+  },
+  "samples": {
+    "reference": {
+      "file": "mint_reference.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator_per_channel": 27200,
+        "reference_squared_sum": 135.99999999999997,
+        "error_squared_sum_per_channel": [
+          0.0
+        ],
+        "total_reference_mse_per_channel": [
+          0.0
+        ],
+        "relative_squared_reference_error_per_channel": [
+          0.0
+        ],
+        "projection_gain_per_channel": [
+          1.0
+        ],
+        "tail_interval_samples": [
+          32000,
+          32512
+        ],
+        "tail_samples_per_channel": 512,
+        "tail_mean_square_per_channel": [
+          0.0
+        ],
+        "peak_per_channel": [
+          0.2
+        ]
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator_per_channel": 27200,
+        "reference_squared_sum": 135.99586689844728,
+        "error_squared_sum_per_channel": [
+          0.0
+        ],
+        "total_reference_mse_per_channel": [
+          0.0
+        ],
+        "relative_squared_reference_error_per_channel": [
+          0.0
+        ],
+        "projection_gain_per_channel": [
+          1.0
+        ],
+        "tail_interval_samples": [
+          32000,
+          32512
+        ],
+        "tail_samples_per_channel": 512,
+        "tail_mean_square_per_channel": [
+          0.0
+        ],
+        "peak_per_channel": [
+          0.20001220703125
+        ],
+        "pcm_decode_divisor": 32768,
+        "integer_reference_squared_sum": 146024450180,
+        "integer_error_squared_sum_per_channel": [
+          0
+        ],
+        "integer_output_reference_cross_sum_per_channel": [
+          146024450180
+        ],
+        "integer_tail_squared_sum_per_channel": [
+          0
+        ]
+      },
+      "quantization_max_abs_error": 1.5245881950908024e-05
+    },
+    "well_array": {
+      "file": "mint_well_array.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator_per_channel": 27200,
+        "reference_squared_sum": 135.99999999999997,
+        "error_squared_sum_per_channel": [
+          34.01868809213558,
+          34.0057723917235
+        ],
+        "total_reference_mse_per_channel": [
+          0.0012506870622108668,
+          0.001250212220283952
+        ],
+        "relative_squared_reference_error_per_channel": [
+          0.2501374124421734,
+          0.2500424440567905
+        ],
+        "projection_gain_per_channel": [
+          0.9613312071563487,
+          1.0386174517026836
+        ],
+        "tail_interval_samples": [
+          32000,
+          32512
+        ],
+        "tail_samples_per_channel": 512,
+        "tail_mean_square_per_channel": [
+          0.0007449013578079953,
+          0.0007407160692001001
+        ],
+        "peak_per_channel": [
+          0.20070710678118656,
+          0.20843253164058964
+        ]
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator_per_channel": 27200,
+        "reference_squared_sum": 135.99586689844728,
+        "error_squared_sum_per_channel": [
+          34.01791495550424,
+          34.00563770532608
+        ],
+        "total_reference_mse_per_channel": [
+          0.0012506586380700087,
+          0.0012502072685781646
+        ],
+        "relative_squared_reference_error_per_channel": [
+          0.2501393294614355,
+          0.2500490528195187
+        ],
+        "projection_gain_per_channel": [
+          0.9613462070972203,
+          1.0386413938353787
+        ],
+        "tail_interval_samples": [
+          32000,
+          32512
+        ],
+        "tail_samples_per_channel": 512,
+        "tail_mean_square_per_channel": [
+          0.0007449142940458842,
+          0.0007407353023154428
+        ],
+        "peak_per_channel": [
+          0.200714111328125,
+          0.20843505859375
+        ],
+        "pcm_decode_divisor": 32768,
+        "integer_reference_squared_sum": 146024450180,
+        "integer_error_squared_sum_per_channel": [
+          36526458053,
+          36513275456
+        ],
+        "integer_output_reference_cross_sum_per_channel": [
+          140380051324,
+          151667038469
+        ],
+        "integer_tail_squared_sum_per_channel": [
+          409520964,
+          407223539
+        ]
+      },
+      "quantization_max_abs_error": 1.5252629187482818e-05
+    },
+    "near_array": {
+      "file": "mint_near_array.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator_per_channel": 27200,
+        "reference_squared_sum": 135.99999999999997,
+        "error_squared_sum_per_channel": [
+          34.01868809213558,
+          32.67487105611098
+        ],
+        "total_reference_mse_per_channel": [
+          0.0012506870622108668,
+          0.0012012820241217273
+        ],
+        "relative_squared_reference_error_per_channel": [
+          0.2501374124421734,
+          0.2402564048243455
+        ],
+        "projection_gain_per_channel": [
+          0.9613312071563487,
+          0.9621357455948835
+        ],
+        "tail_interval_samples": [
+          32000,
+          32512
+        ],
+        "tail_samples_per_channel": 512,
+        "tail_mean_square_per_channel": [
+          0.0007449013578079953,
+          0.0007211658888183118
+        ],
+        "peak_per_channel": [
+          0.20070710678118656,
+          0.20070710678118656
+        ]
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator_per_channel": 27200,
+        "reference_squared_sum": 135.99586689844728,
+        "error_squared_sum_per_channel": [
+          34.01791495550424,
+          32.674915817566216
+        ],
+        "total_reference_mse_per_channel": [
+          0.0012506586380700087,
+          0.001201283669763464
+        ],
+        "relative_squared_reference_error_per_channel": [
+          0.2501393294614355,
+          0.24026403568547922
+        ],
+        "projection_gain_per_channel": [
+          0.9613462070972203,
+          0.9621445958249729
+        ],
+        "tail_interval_samples": [
+          32000,
+          32512
+        ],
+        "tail_samples_per_channel": 512,
+        "tail_mean_square_per_channel": [
+          0.0007449142940458842,
+          0.0007211346328404034
+        ],
+        "peak_per_channel": [
+          0.200714111328125,
+          0.200714111328125
+        ],
+        "pcm_decode_divisor": 32768,
+        "integer_reference_squared_sum": 146024450180,
+        "integer_error_squared_sum_per_channel": [
+          36526458053,
+          35084423709
+        ],
+        "integer_output_reference_cross_sum_per_channel": [
+          140380051324,
+          140496635599
+        ],
+        "integer_tail_squared_sum_per_channel": [
+          409520964,
+          396447957
+        ]
+      },
+      "quantization_max_abs_error": 1.5252629187482818e-05
+    },
+    "well_exact": {
+      "file": "mint_well_exact.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator_per_channel": 27200,
+        "reference_squared_sum": 135.99999999999997,
+        "error_squared_sum_per_channel": [
+          0.006758999999999967
+        ],
+        "total_reference_mse_per_channel": [
+          2.4849264705882235e-07
+        ],
+        "relative_squared_reference_error_per_channel": [
+          4.969852941176448e-05
+        ],
+        "projection_gain_per_channel": [
+          0.999974329429516
+        ],
+        "tail_interval_samples": [
+          32000,
+          32512
+        ],
+        "tail_samples_per_channel": 512,
+        "tail_mean_square_per_channel": [
+          2.5390624999999977e-07
+        ],
+        "peak_per_channel": [
+          0.20070710678118656
+        ]
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator_per_channel": 27200,
+        "reference_squared_sum": 135.99586689844728,
+        "error_squared_sum_per_channel": [
+          0.006727054715156555
+        ],
+        "total_reference_mse_per_channel": [
+          2.473181880572263e-07
+        ],
+        "relative_squared_reference_error_per_channel": [
+          4.946514087946419e-05
+        ],
+        "projection_gain_per_channel": [
+          0.9999800473140189
+        ],
+        "tail_interval_samples": [
+          32000,
+          32512
+        ],
+        "tail_samples_per_channel": 512,
+        "tail_mean_square_per_channel": [
+          2.501838025636971e-07
+        ],
+        "peak_per_channel": [
+          0.200714111328125
+        ],
+        "pcm_decode_divisor": 32768,
+        "integer_reference_squared_sum": 146024450180,
+        "integer_error_squared_sum_per_channel": [
+          7223120
+        ],
+        "integer_output_reference_cross_sum_per_channel": [
+          146021536600
+        ],
+        "integer_tail_squared_sum_per_channel": [
+          137540
+        ]
+      },
+      "quantization_max_abs_error": 1.5245881950908024e-05
+    },
+    "near_exact": {
+      "file": "mint_near_exact.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator_per_channel": 27200,
+        "reference_squared_sum": 135.99999999999997,
+        "error_squared_sum_per_channel": [
+          67.05539999999971
+        ],
+        "total_reference_mse_per_channel": [
+          0.0024652720588235187
+        ],
+        "relative_squared_reference_error_per_channel": [
+          0.4930544117647038
+        ],
+        "projection_gain_per_channel": [
+          1.0015581290830762
+        ],
+        "tail_interval_samples": [
+          32000,
+          32512
+        ],
+        "tail_samples_per_channel": 512,
+        "tail_mean_square_per_channel": [
+          0.0024122187499999977
+        ],
+        "peak_per_channel": [
+          0.27000357133747
+        ]
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator_per_channel": 27200,
+        "reference_squared_sum": 135.99586689844728,
+        "error_squared_sum_per_channel": [
+          67.0569096300751
+        ],
+        "total_reference_mse_per_channel": [
+          0.0024653275599292317
+        ],
+        "relative_squared_reference_error_per_channel": [
+          0.4930804969253129
+        ],
+        "projection_gain_per_channel": [
+          1.0015686160825645
+        ],
+        "tail_interval_samples": [
+          32000,
+          32512
+        ],
+        "tail_samples_per_channel": 512,
+        "tail_mean_square_per_channel": [
+          0.002412473644653801
+        ],
+        "peak_per_channel": [
+          0.269989013671875
+        ],
+        "pcm_decode_divisor": 32768,
+        "integer_reference_squared_sum": 146024450180,
+        "integer_error_squared_sum_per_channel": [
+          72001808458
+        ],
+        "integer_output_reference_cross_sum_per_channel": [
+          146253506481
+        ],
+        "integer_tail_squared_sum_per_channel": [
+          1326271412
+        ]
+      },
+      "quantization_max_abs_error": 1.523091814714661e-05
+    },
+    "near_regularized": {
+      "file": "mint_near_regularized.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator_per_channel": 27200,
+        "reference_squared_sum": 135.99999999999997,
+        "error_squared_sum_per_channel": [
+          22.301103511910792
+        ],
+        "total_reference_mse_per_channel": [
+          0.0008198935114673085
+        ],
+        "relative_squared_reference_error_per_channel": [
+          0.16397870229346173
+        ],
+        "projection_gain_per_channel": [
+          0.9750083606114361
+        ],
+        "tail_interval_samples": [
+          32000,
+          32512
+        ],
+        "tail_samples_per_channel": 512,
+        "tail_mean_square_per_channel": [
+          0.0006582607151613021
+        ],
+        "peak_per_channel": [
+          0.223334523779156
+        ]
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "sample_denominator_per_channel": 27200,
+        "reference_squared_sum": 135.99586689844728,
+        "error_squared_sum_per_channel": [
+          22.301422759890556
+        ],
+        "total_reference_mse_per_channel": [
+          0.0008199052485253881
+        ],
+        "relative_squared_reference_error_per_channel": [
+          0.1639860333148491
+        ],
+        "projection_gain_per_channel": [
+          0.9750227344153387
+        ],
+        "tail_interval_samples": [
+          32000,
+          32512
+        ],
+        "tail_samples_per_channel": 512,
+        "tail_mean_square_per_channel": [
+          0.0006582567966688657
+        ],
+        "peak_per_channel": [
+          0.22332763671875
+        ],
+        "pcm_decode_divisor": 32768,
+        "integer_reference_squared_sum": 146024450180,
+        "integer_error_squared_sum_per_channel": [
+          23945970352
+        ],
+        "integer_output_reference_cross_sum_per_channel": [
+          142377158706
+        ],
+        "integer_tail_squared_sum_per_channel": [
+          361880501
+        ]
+      },
+      "quantization_max_abs_error": 1.5254863777207014e-05
+    }
+  },
+  "float_decomposition": {
+    "well_exact": {
+      "sample_denominator": 27200,
+      "clean_error_squared_sum": 1.243286783938164e-31,
+      "noise_squared_sum": 0.006758999999999993,
+      "twice_clean_error_noise_cross_sum": -2.2833805561246933e-19,
+      "clean_error_mean_square": 4.570907293890309e-36,
+      "noise_mean_square": 2.484926470588233e-07,
+      "twice_clean_error_noise_cross_mean": -8.394781456340785e-24,
+      "decomposed_total_mean_square": 2.484926470588233e-07
+    },
+    "near_exact": {
+      "sample_denominator": 27200,
+      "clean_error_squared_sum": 2.6827544184805283e-27,
+      "noise_squared_sum": 67.05539999999993,
+      "twice_clean_error_noise_cross_sum": -1.2613227369710045e-15,
+      "clean_error_mean_square": 9.863067715001942e-32,
+      "noise_mean_square": 0.002465272058823527,
+      "twice_clean_error_noise_cross_mean": -4.63721594474634e-20,
+      "decomposed_total_mean_square": 0.002465272058823527
+    },
+    "near_regularized": {
+      "sample_denominator": 27200,
+      "clean_error_squared_sum": 14.810399999999989,
+      "noise_squared_sum": 7.456608000000003,
+      "twice_clean_error_noise_cross_sum": 0.03409551191083827,
+      "clean_error_mean_square": 0.0005444999999999996,
+      "noise_mean_square": 0.0002741400000000001,
+      "twice_clean_error_noise_cross_mean": 1.2535114673102304e-06,
+      "decomposed_total_mean_square": 0.0008198935114673098
+    }
+  },
+  "finite_noise_statistics": {
+    "scoring_interval_samples": [
+      2400,
+      29600
+    ],
+    "sample_denominator": 27200,
+    "mean_per_channel": [
+      7.798971851322211e-07,
+      3.6395201972836934e-07
+    ],
+    "uncentered_second_moment": [
+      [
+        5.000000000000083e-07,
+        -3.0147058823529406e-09
+      ],
+      [
+        -3.0147058823529406e-09,
+        5.000000000000083e-07
+      ]
+    ]
+  },
+  "pcm_encode_multiplier": 32768,
+  "pcm_decode_divisor": 32768,
+  "pcm": "signed little-endian PCM16, round-to-nearest-even, no dither or per-file gain",
+  "pcm_quantization_step": 3.0517578125e-05,
+  "pcm_half_step_error_bound": 1.52587890625e-05,
+  "limits": "Original known-path mathematical synthesis; no speech, measured room or listening study. Noise is added after the two paths, with common draws across conditions. Rademacher population means/cross moments are not substituted for finite-record moments. Fixed causal one-tap filters preserve the direct coefficient sum, not every frequency response. The constrained regularizer penalizes the delayed reflection and weight norm; it is not a general MINT optimum. Float component scores and actual PCM total errors are separate. No posterior gain/time fitting, clipping, dither or per-file normalization. A 512-sample reflection has 512 polynomial zeros; coefficient difference is not zero distance.",
+  "listening": "Start at low volume; no automatic playback or listening study."
+}

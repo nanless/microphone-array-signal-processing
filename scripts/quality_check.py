@@ -22,6 +22,8 @@ except ModuleNotFoundError:  # direct ``python scripts/quality_check.py``
 
 
 ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 CHAPTERS = ROOT / "chapters"
 SITE = ROOT / "site"
 DIST = ROOT / "dist"
@@ -35,6 +37,7 @@ GSS_AUDIO_ROOT = CODE_CHAPTERS / "ch08" / "gss_audio"
 BINAURAL_AUDIO_ROOT = CODE_CHAPTERS / "ch01" / "binaural_audio"
 DERIVATIVE_AUDIO_ROOT = ROOT / "codes/chapters/ch05/derivative_audio"
 APA_AUDIO_ROOT = ROOT / "codes/chapters/ch06/apa_audio"
+MINT_AUDIO_ROOT = ROOT / "codes/chapters/ch07/mint_audio"
 FOCUS_AUDIO_ROOT = ROOT / "codes/chapters/ch04/focus_audio"
 GEOMETRY_AUDIO_ROOT = ROOT / "codes/chapters/ch03/geometry_audio"
 STFT_AUDIO_ROOT = ROOT / "codes/chapters/ch02/stft_audio"
@@ -69,7 +72,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "04_doa-estimation.md": 45,
     "05_beamforming.md": 41,
     "06_aec.md": 67,
-    "07_wpe-dereverberation.md": 48,
+    "07_wpe-dereverberation.md": 53,
     "08_speech-separation.md": 52,
     "09_source-tracking.md": 52,
     "10_engineering-practice.md": 47,
@@ -96,9 +99,9 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 121
-EXPECTED_SUBSECTION_COUNT = 526
-EXPECTED_OUTLINE_ITEM_COUNT = 661
-EXPECTED_FIGURE_NUMBERS = set(range(1, 59))
+EXPECTED_SUBSECTION_COUNT = 531
+EXPECTED_OUTLINE_ITEM_COUNT = 666
+EXPECTED_FIGURE_NUMBERS = set(range(1, 60))
 # 研究附站使用独立显式清单，不挤占 14 篇教程或 661 项 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
@@ -663,6 +666,26 @@ def png_provenance_issues(image_path: Path, script_path: Path):
     return issues
 
 
+def wpe_figure_provenance_issues(metadata, report):
+    """图21须同时绑定绘图源、唯一WPE核及其标量验证源。"""
+    paths = ("scripts/make_figures.py",
+             "codes/chapters/ch07/core/dereverberation.py",
+             "codes/chapters/ch02/core/conventions.py")
+    expected = {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
+                for name in paths}
+    issues = []
+    try:
+        inputs = json.loads(metadata.get("GeneratorInputs", ""))
+    except (TypeError, ValueError):
+        inputs = None
+    if inputs != expected:
+        issues.append("图21 PNG真实生成输入摘要失效")
+    if (not isinstance(report, dict) or report.get("generator_inputs") != expected or
+            report.get("source_sha256") != expected[paths[0]]):
+        issues.append("图21数值报告真实生成输入摘要失效")
+    return issues
+
+
 def check_figures(errors: list[str]):
     references = []
     for path in CHAPTERS.glob("*.md"):
@@ -683,11 +706,17 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58)
+            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
                 fail(errors, f"PNG 溯源失效：figures/{name}: {issue}")
+            if number == 21:
+                report_path = ROOT / "codes/chapters/ch07/reports/figure21_wpe.json"
+                with Image.open(path) as image:
+                    for issue in wpe_figure_provenance_issues(
+                            image.info, json.loads(report_path.read_text(encoding="utf-8"))):
+                        fail(errors, issue)
             if number == 44:
                 expected = hashlib.sha256((ROOT / "codes/chapters/ch09/tracking_audio/MANIFEST.json").read_bytes()).hexdigest()
                 with Image.open(path) as image:
@@ -698,6 +727,11 @@ def check_figures(errors: list[str]):
                 with Image.open(path) as image:
                     if image.info.get("AudioManifestDigest") != expected:
                         fail(errors, "图58独立APA音频清单摘要失效")
+            if number == 59:
+                expected = hashlib.sha256((MINT_AUDIO_ROOT / "MANIFEST.json").read_bytes()).hexdigest()
+                with Image.open(path) as image:
+                    if image.info.get("AudioManifestDigest") != expected:
+                        fail(errors, "图59独立已知路径逆音频清单摘要失效")
             if number in (34, 35, 36, 40, 41, 43, 45, 47, 49):
                 expected = hashlib.sha256((ROOT / "codes/chapters/ch00/audio/MANIFEST.json").read_bytes()).hexdigest()
                 with Image.open(path) as image:
@@ -977,7 +1011,7 @@ def site_source_digest():
     paths += sorted(main_audio_path(CODE_CHAPTERS, record["group"], record["file"])
                     for record in manifest["files"])
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
@@ -1281,7 +1315,7 @@ def check_real_audio(errors):
         parser = Players()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         allowed_audio_roots = ("../audio/", "../real_audio/", "../room_audio/",
-                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/")
+                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../mint_audio/")
         if any(not (p.get("src") or "").startswith(allowed_audio_roots)
                for p in parser.items):
             fail(errors, "未知试听控件来源")
@@ -1912,6 +1946,122 @@ def check_apa_audio(errors):
         fail(errors, f"APA实验检查失败：{exc}")
 
 
+def check_mint_audio(errors):
+    """Independent PCM integer scores, source hashes and usable media controls."""
+    import math
+    import struct
+    source, published = MINT_AUDIO_ROOT, SITE / 'mint_audio'
+    names = {'reference': ('mint_reference.wav', 1), 'well_array': ('mint_well_array.wav', 2),
+             'near_array': ('mint_near_array.wav', 2), 'well_exact': ('mint_well_exact.wav', 1),
+             'near_exact': ('mint_near_exact.wav', 1), 'near_regularized': ('mint_near_regularized.wav', 1)}
+    wav_names = {name for name, _ in names.values()}
+    expected = wav_names | {'MANIFEST.json'}
+    sources = {'codes/chapters/ch07/core/mint_teaching.py',
+               'codes/chapters/ch07/examples/mint_teaching_demo.py',
+               'codes/chapters/ch02/core/conventions.py', 'codes/chapters/ch00/core/audio_samples.py'}
+    try:
+        for folder in (source, published):
+            if (folder.is_symlink() or {p.name for p in folder.iterdir()} != expected or
+                    any(p.is_symlink() or not p.is_file() for p in folder.iterdir())):
+                raise ValueError('独立MINT目录必须恰有六普通WAV及清单')
+        def reject_nonfinite(value):
+            raise ValueError('MINT清单不能含非有限JSON数字：'+value)
+        manifest = json.loads((source/'MANIFEST.json').read_text(), parse_constant=reject_nonfinite)
+        if (set(manifest['source_sha256']) != sources or set(manifest['files']) != wav_names or
+                set(manifest['samples']) != set(names) or type(manifest['sample_rate_hz']) is not int or
+                manifest['sample_rate_hz'] != 16000 or type(manifest['samples_per_channel']) is not int or
+                manifest['samples_per_channel'] != 32512 or type(manifest['common_export_gain']) not in (int, float) or
+                manifest['common_export_gain'] != 1):
+            raise ValueError('MINT来源/文件集合或共同格式不符')
+        for name in sources:
+            if hashlib.sha256((ROOT/name).read_bytes()).hexdigest() != manifest['source_sha256'][name]:
+                raise ValueError('MINT真实源摘要过期：'+name)
+        from codes.chapters.ch07.examples.mint_teaching_demo import check_assets
+        # This read-only replay binds every float field to its source; the
+        # independent integer scoring below checks the actual stored PCM.
+        check_assets(source, replay=True)
+        for name in expected:
+            if (source/name).read_bytes() != (published/name).read_bytes():
+                raise ValueError('MINT发布副本不同：'+name)
+        decoded = {}
+        for key, (filename, channels) in names.items():
+            path = source/filename
+            record = manifest['files'][filename]
+            if (record['sample_rate_hz'], record['channels'], record['samples_per_channel']) != (16000, channels, 32512):
+                raise ValueError('MINT清单尺寸不同：'+filename)
+            if hashlib.sha256(path.read_bytes()).hexdigest() != record['sha256']:
+                raise ValueError('MINT真实WAV摘要不同：'+filename)
+            with wave.open(str(path), 'rb') as wav:
+                if (wav.getframerate(), wav.getnchannels(), wav.getnframes(), wav.getsampwidth(), wav.getcomptype()) != (16000, channels, 32512, 2, 'NONE'):
+                    raise ValueError('MINT实际PCM格式不同：'+filename)
+                raw = wav.readframes(32512)
+            values = struct.unpack('<'+'h'*(32512*channels), raw)
+            decoded[key] = [values[channel::channels] for channel in range(channels)]
+        truth = decoded['reference'][0][2400:29600]
+        denominator = sum(v*v for v in truth)
+        if denominator <= 0:
+            raise ValueError('MINT参考评分能量必须为正')
+        for key, (filename, channels) in names.items():
+            sample = manifest['samples'][key]
+            scores = sample['pcm_measurements']
+            error_sums = [sum((v-r)**2 for v, r in zip(channel[2400:29600], truth)) for channel in decoded[key]]
+            cross = [sum(v*r for v, r in zip(channel[2400:29600], truth)) for channel in decoded[key]]
+            tails = [sum(v*v for v in channel[32000:32512]) for channel in decoded[key]]
+            expected_ints = {'integer_reference_squared_sum': denominator,
+                             'sample_denominator_per_channel': 27200, 'tail_samples_per_channel': 512,
+                             'pcm_decode_divisor': 32768}
+            if any(type(scores[k]) is not int or scores[k] != v for k, v in expected_ints.items()):
+                raise ValueError('MINT整数分母不同：'+filename)
+            for field, actual in (('integer_error_squared_sum_per_channel', error_sums),
+                                  ('integer_output_reference_cross_sum_per_channel', cross),
+                                  ('integer_tail_squared_sum_per_channel', tails)):
+                if (not isinstance(scores[field], list) or len(scores[field]) != channels or
+                        any(type(v) is not int for v in scores[field]) or scores[field] != actual):
+                    raise ValueError('MINT真实PCM整数统计不同：'+filename)
+            for field, actual in (
+                    ('total_reference_mse_per_channel', [v/(32768**2*27200) for v in error_sums]),
+                    ('relative_squared_reference_error_per_channel', [v/denominator for v in error_sums]),
+                    ('projection_gain_per_channel', [v/denominator for v in cross]),
+                    ('tail_mean_square_per_channel', [v/(32768**2*512) for v in tails])):
+                recorded = scores[field]
+                if (not isinstance(recorded, list) or len(recorded) != channels or
+                        any(type(v) not in (int, float) or not math.isfinite(v) or
+                            not math.isclose(v, a, rel_tol=1e-13, abs_tol=0) for v, a in zip(recorded, actual))):
+                    raise ValueError('MINT实际PCM浮点评分不同：'+filename)
+            error = sample['quantization_max_abs_error']
+            if (sample['file'] != filename or scores['scoring_interval_samples'] != [2400, 29600] or
+                    scores['tail_interval_samples'] != [32000, 32512] or
+                    type(error) not in (int, float) or not math.isfinite(error) or not 0 <= error <= 1/65536):
+                raise ValueError('MINT评分区域或量化边界不同：'+filename)
+        class VisiblePlayers(HTMLParser):
+            def __init__(self):
+                super().__init__(); self.stack = []; self.items = []; self.links = set()
+            def handle_starttag(self, tag, attrs):
+                values = dict(attrs)
+                hidden = (tag in ('template', 'noscript') or 'hidden' in values or 'inert' in values or values.get('aria-hidden', '').lower() == 'true' or
+                          bool(re.search(r'display\s*:\s*none|visibility\s*:\s*hidden', values.get('style', ''), re.I)))
+                if tag not in ('br', 'img', 'meta', 'link', 'input', 'hr', 'source', 'wbr'):
+                    self.stack.append((tag, hidden))
+                if not any(item[1] for item in self.stack):
+                    if tag == 'audio': self.items.append(values)
+                    if tag == 'a': self.links.add(values.get('href'))
+            def handle_endtag(self, tag):
+                for index in range(len(self.stack)-1, -1, -1):
+                    if self.stack[index][0] == tag:
+                        del self.stack[index:]; break
+        for page, prefix in ((SITE/'07_wpe-dereverberation.html', ''),
+                             (SITE/'research/05_exercises_and_audio.html', '../')):
+            parser = VisiblePlayers(); parser.feed(page.read_text())
+            players = [p for p in parser.items if (p.get('src') or '').startswith(prefix+'mint_audio/')]
+            if (len(players) != 6 or {p.get('src') for p in players} != {prefix+'mint_audio/'+name for name in wav_names} or
+                    any('autoplay' in p or 'controls' not in p or p.get('preload') != 'none' or not p.get('aria-label') for p in players)):
+                raise ValueError('MINT六可见播放器或属性不同：'+page.name)
+            if prefix+'mint_audio/MANIFEST.json' not in parser.links:
+                raise ValueError('MINT独立清单链接缺失')
+    except Exception as exc:
+        fail(errors, f'MINT实验检查失败：{exc}')
+
+
 def check_tracking_audio(errors):
     """Verify published PCM, regeneration provenance and real observation controls."""
     source, published = TRACKING_AUDIO_ROOT, SITE/"tracking_audio"
@@ -2138,6 +2288,7 @@ def main():
     check_focus_audio(errors)
     check_derivative_audio(errors)
     check_apa_audio(errors)
+    check_mint_audio(errors)
     check_combined_html(errors)
     check_pdf(errors, notices)
     for item in notices:

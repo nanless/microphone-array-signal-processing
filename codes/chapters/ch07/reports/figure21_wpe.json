@@ -1,7 +1,12 @@
 {
   "schema_version": 1,
   "generator": "scripts/make_figures.py::fig_wpe",
-  "source_sha256": "13bf402d513a961ba3328e343694e289ce10e96ba7e5839c6ffa4efc528542df",
+  "source_sha256": "a82f35781c7969e66142c34d86b86bda2159a47fb0b1bc9f332476a87a2955f6",
+  "generator_inputs": {
+    "scripts/make_figures.py": "a82f35781c7969e66142c34d86b86bda2159a47fb0b1bc9f332476a87a2955f6",
+    "codes/chapters/ch07/core/dereverberation.py": "39c93bf31d1b1deac607cd734bbacee596cdacce2d58c4b5c304b04df7e04eb7",
+    "codes/chapters/ch02/core/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385"
+  },
   "data_type": "mathematical synthetic signal and impulse response; not real speech or measured RIR",
   "parameters": {
     "sample_rate_hz": 16000,
@@ -47,14 +52,14 @@
     "input": {
       "quiet_energy": 11884.23581846863,
       "total_energy": 677482.1699634285,
-      "quiet_energy_ratio_db": -17.55926608988597,
-      "active_scale_aligned_nmse_db": -8.666965204694867
+      "quiet_energy_ratio_db": -17.559266089885973,
+      "active_scale_aligned_nmse_db": -8.66696520469487
     },
     "output": {
-      "quiet_energy": 4119.550343237914,
-      "total_energy": 424136.9458751631,
-      "quiet_energy_ratio_db": -20.126562902383608,
-      "active_scale_aligned_nmse_db": -7.697679148892545
+      "quiet_energy": 4119.550343239196,
+      "total_energy": 424136.9458755755,
+      "quiet_energy_ratio_db": -20.12656290238649,
+      "active_scale_aligned_nmse_db": -7.697679148898113
     }
   }
 }

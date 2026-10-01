@@ -1,13 +1,21 @@
 # -*- coding: utf-8 -*-
-"""生成教程插图（图 1～25、33～36、40～58；图 26～32、37～39 见 make_aec_figures.py）。
+"""生成教程插图（图 1～25、33～36、40～59；图 26～32、37～39 见 make_aec_figures.py）。
 
 用法（仓库根目录）：
-    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～58 → figures/
+    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～59 → figures/
 """
 from pathlib import Path
 import hashlib
 import json
 import platform
+import sys
+
+# Direct script execution starts Python's search path in scripts/; the chapter
+# kernels live in the repository root and must also resolve in this entry mode.
+REPOSITORY_ROOT = Path(__file__).resolve().parent.parent
+if str(REPOSITORY_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPOSITORY_ROOT))
+
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -1733,19 +1741,62 @@ def solve_wpe_filter(weighted_covariance, weighted_cross, relative_loading=1e-6)
     return filt, float(loading)
 
 
+def _normalized_spectral_vector(value):
+    """组件归一，非零丢失时明确拒绝当前 float64 支持范围。"""
+    scale = float(max(np.max(np.abs(value.real)), np.max(np.abs(value.imag))))
+    if scale == 0:
+        return value.copy(), scale
+    normalized = np.empty_like(value)
+    normalized.real, normalized.imag = value.real / scale, value.imag / scale
+    if (np.any((value.real != 0) & (normalized.real == 0)) or
+            np.any((value.imag != 0) & (normalized.imag == 0))):
+        raise ValueError("谱指标归一化超出当前 float64 求值支持范围")
+    return normalized, scale
+
+
+def _spectral_inputs(spectrum, frame_mask):
+    value = np.asarray(spectrum, dtype=complex)
+    mask = np.asarray(frame_mask)
+    if (value.ndim != 2 or any(size == 0 for size in value.shape) or
+            not np.all(np.isfinite(value)) or mask.dtype.kind != "b" or
+            mask.shape != (value.shape[1],) or not np.any(mask)):
+        raise ValueError("须有限非空 F×T 谱及含至少一帧的布尔评分掩码")
+    return value, mask
+
+
 def scale_aligned_spectral_nmse_db(reference, estimate, frame_mask):
-    """在指定帧上用一个复数增益对齐后计算谱域 NMSE。"""
-    reference = np.asarray(reference, dtype=complex)
-    estimate = np.asarray(estimate, dtype=complex)
-    frame_mask = np.asarray(frame_mask, dtype=bool)
-    if reference.shape != estimate.shape or frame_mask.shape != (reference.shape[1],):
-        raise ValueError("谱矩阵须同形，frame_mask 长度须等于帧数")
-    r = reference[:, frame_mask].ravel()
-    x = estimate[:, frame_mask].ravel()
-    gain = np.vdot(x, r) / max(float(np.vdot(x, x).real), np.finfo(float).eps)
-    error_power = float(np.vdot(r - gain * x, r - gain * x).real)
-    reference_power = max(float(np.vdot(r, r).real), np.finfo(float).eps)
-    return 10 * np.log10(max(error_power / reference_power, np.finfo(float).eps))
+    """单一复增益谱 NMSE；零参考未定义，零估计为 0 dB，精确匹配为 −∞。"""
+    reference, frame_mask = _spectral_inputs(reference, frame_mask)
+    estimate, _ = _spectral_inputs(estimate, frame_mask)
+    if reference.shape != estimate.shape:
+        raise ValueError("参考与估计谱矩阵须同形")
+    r, reference_scale = _normalized_spectral_vector(reference[:, frame_mask].ravel())
+    x, estimate_scale = _normalized_spectral_vector(estimate[:, frame_mask].ravel())
+    if reference_scale == 0:
+        raise ValueError("零参考能量的 NMSE 未定义")
+    if estimate_scale == 0:
+        return 0.0
+    gain = np.vdot(x, r) / np.vdot(x, x).real
+    error, error_scale = _normalized_spectral_vector(r - gain * x)
+    if error_scale == 0:
+        return float("-inf")
+    # 先在各自归一域内求能量，再在对数域组合，避免把小误差平方成零。
+    return float(10 * (np.log10(np.vdot(error, error).real) +
+                        2 * np.log10(error_scale) - np.log10(np.vdot(r, r).real)))
+
+
+def quiet_energy_ratio_db(spectrum, frame_mask):
+    """指定帧能量/全部帧能量；真零分子为 −∞，零总能量未定义。"""
+    spectrum, frame_mask = _spectral_inputs(spectrum, frame_mask)
+    total, total_scale = _normalized_spectral_vector(spectrum.ravel())
+    quiet, quiet_scale = _normalized_spectral_vector(spectrum[:, frame_mask].ravel())
+    if total_scale == 0:
+        raise ValueError("零总能量的占比未定义")
+    if quiet_scale == 0:
+        return float("-inf")
+    return float(10 * (np.log10(np.vdot(quiet, quiet).real) +
+                        2 * (np.log10(quiet_scale) - np.log10(total_scale)) -
+                        np.log10(np.vdot(total, total).real)))
 
 
 def smooth_power_valid(power, width=5):
@@ -1799,33 +1850,10 @@ def wpe_dereverb(Y, K=10, delay=3, iters=3):
     F, T = Y.shape
     if K == 0 or iters == 0 or T == 0 or F == 0 or T <= delay + K - 1:
         return Y.copy()
-    # 每个频点先用实部/虚部的共同尺度归一化，避免求模平方时上溢或下溢。
-    # X 与其功率共同缩放不改变正规方程；结果最后恢复原来的幅度单位。
-    scales = np.maximum(np.max(np.abs(Y.real), axis=1), np.max(np.abs(Y.imag), axis=1))
-    active = scales > 0
-    safe_scales = np.where(active, scales, 1.0)
-    normalized = Y.real / safe_scales[:, None] + 1j * (Y.imag / safe_scales[:, None])
-    X = normalized.copy()
-    t0, Ypast, ycur = wpe_past_frames(normalized, K, delay)
-    peak_power = np.max(np.abs(normalized) ** 2, axis=1, keepdims=True)
-    lam_floor = 1e-5 * peak_power
-    for _ in range(iters):
-        lam = np.maximum(smooth_power_valid(np.abs(X) ** 2, width=5), lam_floor)
-        G = np.zeros((F, K), dtype=complex)
-        for f in np.flatnonzero(active):
-            P = Ypast[f]
-            # 对该频点全部权重乘同一个正数，同时缩放相对加载，不改变解。
-            ww = np.min(lam[f, t0:]) / lam[f, t0:]
-            Rw = (P * ww[None, :]) @ P.conj().T
-            rw = (P * ww[None, :]) @ ycur[f].conj()
-            G[f], _ = solve_wpe_filter(Rw, rw, relative_loading=1e-6)
-        X[:, t0:] = ycur - np.einsum("fk,fkt->ft", G.conj(), Ypast)
-    with np.errstate(over="ignore", invalid="ignore"):
-        output = X * safe_scales[:, None]
-    if not np.all(np.isfinite(output)):
-        raise ValueError("WPE 输出不能由当前浮点类型表示")
-    output[:, :t0] = Y[:, :t0]
-    return output
+    # 绘图变体仅指定居中五帧功率上下文；唯一WPE求解及边界在第7章核。
+    from codes.chapters.ch07.core.dereverberation import offline_wpe
+    return offline_wpe(Y, taps=K, delay=delay, iterations=iters,
+                       diagonal_loading=1e-6, power_floor=1e-5, power_context=2)
 
 
 def fig_wpe():
@@ -1857,12 +1885,8 @@ def fig_wpe():
     aligned_frame_power = np.mean(np.abs(Yc_aligned) ** 2, axis=0)
     active = aligned_frame_power >= 0.10 * aligned_frame_power.max()
     quiet = aligned_frame_power <= 0.01 * aligned_frame_power.max()
-    def quiet_energy_ratio_db(spectrum):
-        quiet_energy = np.sum(np.abs(spectrum[:, quiet]) ** 2)
-        total_energy = np.sum(np.abs(spectrum) ** 2)
-        return 10 * np.log10(max(quiet_energy / total_energy, np.finfo(float).eps))
-    rev_quiet_db = quiet_energy_ratio_db(Yr)
-    wpe_quiet_db = quiet_energy_ratio_db(Xd)
+    rev_quiet_db = quiet_energy_ratio_db(Yr, quiet)
+    wpe_quiet_db = quiet_energy_ratio_db(Xd, quiet)
     rev_nmse_db = scale_aligned_spectral_nmse_db(Yc_aligned, Yr, active)
     wpe_nmse_db = scale_aligned_spectral_nmse_db(Yc_aligned, Xd, active)
     # 保持三谱图的纵横比，同时缩小源画布；A4 等宽嵌入时字号随之增大。
@@ -1902,11 +1926,18 @@ def fig_wpe():
     cb.set_label("相对谱能量 (dB)", fontsize=FS_LABEL + 2)
     cb.outline.set_linewidth(1.3)
     fig._footer_axis = footer
-    save(fig, "fig21_wpe.png")
+    wpe_sources = {
+        name: hashlib.sha256((OUT.parent / name).read_bytes()).hexdigest()
+        for name in ("scripts/make_figures.py",
+                     "codes/chapters/ch07/core/dereverberation.py",
+                     "codes/chapters/ch02/core/conventions.py")}
+    save(fig, "fig21_wpe.png", {
+        "GeneratorInputs": json.dumps(wpe_sources, sort_keys=True)})
     report = {
         "schema_version": 1,
         "generator": "scripts/make_figures.py::fig_wpe",
         "source_sha256": source_script_digest(),
+        "generator_inputs": wpe_sources,
         "data_type": "mathematical synthetic signal and impulse response; not real speech or measured RIR",
         "parameters": {"sample_rate_hz": fs, "duration_seconds": 1.4,
             "seed": FIGURE_SEEDS["wpe"], "rir_length_samples": L,
@@ -4021,6 +4052,62 @@ def fig_affine_projection_learning():
     save(fig, 'fig58_affine_projection_learning.png', {'AudioManifestDigest': hashlib.sha256(manifest_path.read_bytes()).hexdigest()})
 
 
+def fig_mint_noise_tradeoff():
+    """Known sparse-path inverse: analytic coefficient sweep and actual PCM."""
+    from codes.chapters.ch07.core.mint_teaching import regularized_weights
+    from codes.chapters.ch07.examples.mint_teaching_demo import check_assets
+    asset_root = CODE_CHAPTERS / 'ch07/mint_audio'
+    manifest = check_assets(asset_root, replay=True)
+    differences = np.logspace(-4, 0, 241)
+    exact = np.array([regularized_weights(.5, .5-d, 0) for d in differences])
+    regularized = np.array([regularized_weights(.5, .5-d, .0001) for d in differences])
+    fig, axes = plt.subplots(3, 1, figsize=(8.8, 12.0), layout='constrained')
+    for weights, color, style, label in (
+            (exact, C_BLUE, '-', '精确逆，λ=0'),
+            (regularized, C_ORANGE, '--', '直达约束正则，λ=0.0001')):
+        norm = np.sum(weights**2, axis=1)
+        reflection = .5*weights[:, 0]+(.5-differences)*weights[:, 1]
+        axes[0].loglog(differences, norm, color=color, ls=style, lw=2, label=label)
+        axes[1].semilogx(differences, abs(reflection), color=color, ls=style, lw=2)
+    for ax in axes[:2]:
+        ax.axvline(.01, color=C_PURPLE, ls=':', lw=1.3)
+        ax.set_xlabel('反射系数差 |a−b|（无量纲），a=0.5')
+        ax.grid(ls=':', alpha=.4)
+    axes[0].set_ylabel('理论噪声增益 ‖u‖²（无量纲）')
+    axes[0].set_title('(a) 后路径等方差独立噪声：精确逆可放大噪声')
+    axes[0].legend(loc='upper right', fontsize=FS_SMALL)
+    axes[0].scatter([.01, .01], [4901, 545], c=[C_BLUE, C_ORANGE],
+                    marker='o', edgecolors='white', zorder=5)
+    axes[1].set_ylabel('剩余反射幅度 |a u₁+b u₂|')
+    axes[1].set_ylim(-.025, .53)
+    axes[1].set_title('(b) 正则保留部分反射；直接项系数 u₁+u₂=1')
+    axes[1].scatter([.01], [.33], c=C_ORANGE, marker='o', edgecolors='white', zorder=5)
+    axes[1].annotate('|a−b|=0.01：剩余反射 0.33', xy=(.01, .33),
+                     xytext=(.04, .40), fontsize=FS_SMALL,
+                     arrowprops=dict(arrowstyle='->', color=C_ORANGE))
+    keys = ('well_exact', 'near_exact', 'near_regularized')
+    expected = [manifest['parameters']['designs'][key]['population_total_reference_mse'] for key in keys]
+    actual = [manifest['samples'][key]['pcm_measurements']['total_reference_mse_per_channel'][0]
+              for key in keys]
+    x = np.arange(3)
+    axes[2].bar(x-.17, expected, .32, color=C_BLUE, hatch='//', label='总体期望：反射误差＋噪声')
+    axes[2].bar(x+.17, actual, .32, color=C_ORANGE, hatch='..', label='单个固定样例：实际PCM总误差')
+    axes[2].set_yscale('log')
+    axes[2].set_xticks(x, ['分离系数，精确逆\n(0.5, −0.5)',
+                         '接近系数，精确逆\n(0.5, 0.49)', '接近系数，正则逆\n(0.5, 0.49)'])
+    axes[2].set_ylabel('相对共同参考的MSE（数字幅度平方）')
+    axes[2].set_title('(c) 16 kHz合成四音样本，27200点评分')
+    axes[2].legend(loc='upper left', fontsize=FS_SMALL)
+    axes[2].set_ylim(1e-7, 3e-2)
+    axes[2].grid(axis='y', ls=':', alpha=.4)
+    fig.suptitle('图59  已知两稀疏路径的逆滤波与噪声代价', fontsize=FS_SUP)
+    fig.supxlabel('h₁=δ+0.5δ₅₁₂，h₂=δ+bδ₅₁₂；噪声方差0.0000005，源稳态功率0.005。\n'
+                  '共同增益1，seed20261001；无时移/增益拟合；不是盲WPE、实录或通用MINT。',
+                  fontsize=FS_SMALL)
+    save(fig, 'fig59_mint_noise_tradeoff.png', {
+        'AudioManifestDigest': hashlib.sha256((asset_root/'MANIFEST.json').read_bytes()).hexdigest()})
+
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -4072,6 +4159,7 @@ def main():
     fig_omlsa_probability()
     fig_affine_projection_geometry()
     fig_affine_projection_learning()
+    fig_mint_noise_tradeoff()
     print("ALL DONE")
 
 

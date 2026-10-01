@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 7 章 · 去混响（WPE） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5fbcae4fdfb5"><style>
+<meta name="source-digest" content="026ad29d8bcd"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -44,7 +44,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{display:block;margin:20px auto;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
-@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td{min-width:8em}}
+@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td{min-width:8em}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
@@ -75,6 +75,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-0b5dac507c">先定义历史向量与概率模型</a></li>
 <li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-dcd3516f11">从条件似然到加权最小二乘</a></li>
 <li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-357fd1b554">展开复数二次型，再解正规方程</a></li>
+<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-8b711e16e7">直接设计矩阵求解：避免条件数平方</a></li>
 <li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-f3b6f4d31d">功率更新、地板与完整一轮</a></li>
 <li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-a2127fc156">算例 7-3：加权最小二乘求解器的手算（单抽头 $K=1$、3 个有效帧）</a></li>
 <li><a href="07_wpe-dereverberation.html#sec-7-3">7.3 多通道 WPE</a></li>
@@ -121,6 +122,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-efaaa2eff5">E07-15：从矩阵维数算内存，而不是猜运行速度</a></li>
 <li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-30d7c8d48a">E07-16：整块加载后，后级协方差少了哪一项？</a></li>
 <li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-cfc202bb16">E07-17：拖尾减少时，持续目标还保住了吗？</a></li>
+<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-e91d71e179">E07-18：实倒谱相同，为什么仍不能恢复相位？</a></li>
+<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-08c080b787">E07-19：原设计满秩，为什么正规方程回退也救不回来？</a></li>
+<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-478a0f00c4">E07-20：保留直达系数时，怎样在残余反射与噪声之间取舍？</a></li>
+<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-f7410ace89">E07-21：精确逆与受限正则逆的六个PCM文件</a></li>
 <li><a href="07_wpe-dereverberation.html#sec-7-10">7.10 研究方向</a></li>
 </ul>
 <div class="chap"><a href="08_speech-separation.html">第 8 章 · 语音分离</a></div>
@@ -144,6 +149,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-0b5dac507c">先定义历史向量与概率模型</a></li>
 <li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-dcd3516f11">从条件似然到加权最小二乘</a></li>
 <li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-357fd1b554">展开复数二次型，再解正规方程</a></li>
+<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-8b711e16e7">直接设计矩阵求解：避免条件数平方</a></li>
 <li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-f3b6f4d31d">功率更新、地板与完整一轮</a></li>
 <li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-a2127fc156">算例 7-3：加权最小二乘求解器的手算（单抽头 $K=1$、3 个有效帧）</a></li>
 <li><a href="07_wpe-dereverberation.html#sec-7-3">7.3 多通道 WPE</a></li>
@@ -190,6 +196,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-efaaa2eff5">E07-15：从矩阵维数算内存，而不是猜运行速度</a></li>
 <li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-30d7c8d48a">E07-16：整块加载后，后级协方差少了哪一项？</a></li>
 <li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-cfc202bb16">E07-17：拖尾减少时，持续目标还保住了吗？</a></li>
+<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-e91d71e179">E07-18：实倒谱相同，为什么仍不能恢复相位？</a></li>
+<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-08c080b787">E07-19：原设计满秩，为什么正规方程回退也救不回来？</a></li>
+<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-478a0f00c4">E07-20：保留直达系数时，怎样在残余反射与噪声之间取舍？</a></li>
+<li>&nbsp;&nbsp;<a href="07_wpe-dereverberation.html#sec-u-f7410ace89">E07-21：精确逆与受限正则逆的六个PCM文件</a></li>
 <li><a href="07_wpe-dereverberation.html#sec-7-10">7.10 研究方向</a></li>
 </ul></nav></details>
 <blockquote>
@@ -429,6 +439,8 @@ E(n)&=X(n)-\hat r(n).
 \exp\!\left(-\frac{|E|^2}{\lambda}\right).
 \tag{7-3}$$</p>
 <p>这里没有实高斯指数中的额外 $1/2$，因为实、虚两部分的方差各为 $\lambda/2$。$\lambda$ 与谱值模平方同量纲，不是幅度。</p>
+<p>这个密度用于内部复频点的工作模型。实波形的DC分量，以及偶数长度STFT的Nyquist分量，必须为实数；非零方差的实随机变量不能同时满足这里的proper复高斯假设。</p>
+<p>若这些端点改用零均值实高斯、方差仍为 $\lambda$，每帧负对数似然中与参数有关的部分是 $\tfrac12\log\lambda+E^2/(2\lambda)$。它整体为相应复数准则的一半，因此本章同形式的加权预测与未加载方差更新仍可使用，但不能把式(7-3)称作实端点的准确概率密度。单边谱端点约定见<a href="02_basics-signal-model.html#sec-2-5">第2章信号模型</a>。</p>
 <h3 id="sec-u-dcd3516f11">从条件似然到加权最小二乘</h3>
 <p>固定启动历史，只对历史完整的有效帧 $n\in\mathcal V$ 计算。给定过去观测后，假定当前创新按式(7-3)分布；链式法则把这些条件密度相乘。将条件似然简记为 $L$，其中 $E(n)$ 按式(7-2)计算：</p>
 <p>$$L=\prod_{n\in\mathcal V}
@@ -469,6 +481,20 @@ J(\vec g)&=\sum_{n\in\mathcal V}
 \delta&=\epsilon\operatorname{tr}(\mathbf R)/K.
 \end{aligned}\tag{7-8}$$</p>
 <p>$\epsilon\ge0$ 无量纲，$\delta$ 与 $\mathbf R$ 同量纲。固定 $\lambda$ 和 $\delta$ 后，式(7-8)最小化的是 $J+\delta\|\vec g\|^2$。加载可以改善条件数，却改变了原加权拟合目标；E07-08给出原残差目标反而上升的例子。若迹为零，相对加载仍为零，应旁路或另行定义绝对下限。正定时可以用Cholesky分解，不必显式形成逆矩阵。</p>
+<h3 id="sec-u-8b711e16e7">直接设计矩阵求解：避免条件数平方</h3>
+<p>正规方程把每一帧的信息先压成二阶统计量。若数据已接近线性相关，这一步还会放大求解的数值困难。</p>
+<p>把多输出情况也包括进来：设历史长度为 $D$，有效帧数为 $T_v$，当前通道数为 $M$，令正权重为 $w_n=1/\lambda_n$。设计矩阵 $A\in\mathbb C^{T_v\times D}$ 的第 $n$ 行为 $\sqrt{w_n}q_n^H$；目标矩阵 $B\in\mathbb C^{T_v\times M}$ 的第 $n$ 行为 $\sqrt{w_n}\vec X_n^H$。单输出时 $B$ 退化为一列。</p>
+<p>这个共轭方向来自先把预测残差取共轭：$\vec E_n^H=\vec X_n^H-q_n^HG$。因此加权平方和就是 $\|AG-B\|_F^2$，而 $A^HA=R$、$A^HB=P$。下标 $F$ 表示把矩阵所有元素的平方模相加后开方的Frobenius范数。本书把加载写成增广最小二乘：</p>
+<p>$$\begin{aligned}
+\hat G&=\arg\min_G\left\|
+\begin{bmatrix}A\\\sqrt\delta I_D\end{bmatrix}G
+-\begin{bmatrix}B\\0\end{bmatrix}\right\|_F^2,\\
+\delta&=\epsilon\|A\|_F^2/D.
+\end{aligned}\tag{7-9}$$</p>
+<p>增广下半部分贡献 $\delta\|G\|_F^2$，所以它与式(7-8)是同一个固定权重、固定加载的目标；$\delta=0$ 时可直接省去零行。</p>
+<p>$A$ 满列秩时，二范数条件数满足 $\kappa_2(A^HA)=\kappa_2(A)^2$。直接对设计矩阵作QR分解（分解为具有正交列的矩阵与上三角矩阵）或奇异值分解（Singular Value Decomposition，SVD）可以避开先平方条件数的这一步；它不能消除原数据本身的病态，也不能创造缺失观测。QR与SVD的不同秩条件见<a href="https://www.netlib.org/lapack/lug/node27.html">LAPACK用户指南，线性最小二乘</a>。</p>
+<p>本书的 <code>solver="design_lstsq"</code> 把增广矩阵直接交给NumPy的最小二乘求解，不先生成 $R$，更不根据已平方的 $R$ 的数值秩拒绝原设计。默认 <code>solver="normal"</code> 保留正规方程路径；其奇异回退也是对正规矩阵作最小二乘，所以无法补回形成 $A^HA$ 时丢失的信息。<a href="#e07-19">E07-19</a>用一个两行矩阵把这种区别逐步算出。</p>
+<p>两条路径的条件数诊断分别对应增广设计矩阵与已加载正规矩阵，不能把它们当成同一尺度的数字比较。设计求解仍受本书float64实现的保守乘积范围限制，不承诺处理任意极端尺度。</p>
 <h3 id="sec-u-f3b6f4d31d">功率更新、地板与完整一轮</h3>
 <p>固定系数后，令 $a_n=|E(n)|^2$。每帧目标为 $a_n/\lambda+\log\lambda$，导数为 $(\lambda-a_n)/\lambda^2$。</p>
 <p>正残差能量下，导数在 $\lambda=a_n$ 两侧由负变正。零残差时，目标沿 $\lambda\downarrow0$ 无界下降，没有严格正的内部最优值。因此应区分</p>
@@ -476,7 +502,7 @@ J(\vec g)&=\sum_{n\in\mathcal V}
 \hat\lambda(n)&=a_n\quad(a_n>0),\\
 \hat\lambda_{\mathrm{floor}}(n)
 &=\max\{a_n,\lambda_{\min}\}.
-\end{aligned}\tag{7-9}$$</p>
+\end{aligned}\tag{7-10}$$</p>
 <p>第二行是给定固定正下限、约束 $\lambda\ge\lambda_{\min}$ 后的精确解。时间平滑则又是一次模型或估计策略的改变，通常不是逐帧原似然的最小化，见E07-09。全零频点也不能仅靠相对地板避免除零，应单独旁路。</p>
 <p>每个频点的一轮工程迭代可以按以下顺序执行：</p>
 <ol>
@@ -509,7 +535,7 @@ G^*_{m,m'}(k)X_{m'}(n-k).$$</p>
 <p>$$\begin{aligned}
 \hat r_m(n)&=\sum_{k=\Delta}^{\Delta+K-1}b_{m,k}(n),\\
 X_m(n)&=E_m(n)+\hat r_m(n).
-\end{aligned}\tag{7-10}$$</p>
+\end{aligned}\tag{7-11}$$</p>
 <p>每个滞后 $k$ 对应一个 $M\times M$ 系数矩阵。把 $K$ 个滞后的所有通道历史堆叠后，回归向量长度为 $MK$，联合系数可写成 $MK\times M$。因此每个频点的正规方程矩阵是 $MK\times MK$，而不是单通道的 $K\times K$。</p>
 <p>为防止“尺寸相同但顺序不同”的错误，先固定lag-major顺序：每个滞后内依次放第1至第 $M$ 路，再放下一个滞后。令当前列向量为 $\vec X_n\in\mathbb C^M$，历史为 $q_n\in\mathbb C^{D}$，$D=MK$。$G$ 的第 $m$ 列是预测第 $m$ 路的全部历史系数，形状为 $D\times M$：</p>
 <p>$$\begin{aligned}
@@ -518,18 +544,27 @@ R&=\sum_{n\in\mathcal V}q_nq_n^H/\lambda_n,\\
 P&=\sum_{n\in\mathcal V}q_n\vec X_n^H/\lambda_n,\\
 RG&=P,\\
 \vec E_n&=\vec X_n-G^Hq_n.
-\end{aligned}\tag{7-11}$$</p>
+\end{aligned}\tag{7-12}$$</p>
 <p>$R$ 为 $D\times D$，$P$ 为 $D\times M$，最后一行输出为 $M\times1$。一次分解 $R$ 后可以求解 $M$ 个右端，不必为每个输出重新分解同一个矩阵。E07-08从连续六帧构造两维复数正规方程，E07-10检查同时置换历史和系数时输出保持不变。</p>
 <h3 id="sec-u-a1433201fb">共享功率是一项模型选择</h3>
 <p>本书多通道实现用各通道预测残差的平方模均值更新一个共享 $\lambda(n,f)$，因此各输出通道使用相同的帧权重。这个平均来自把残差协方差限制为 $\lambda I_M$ 的球形复高斯工作模型；并非仅从“有 $M$ 个通道”就必然得到，也不保证真实早期声场在空间上独立同分布。</p>
-<p>若允许每通道不同方差或一般空间协方差，似然与更新都会改变。增益未校准的强通道会支配均值；<a href="#e07-06">E07-06</a>给出推导、数字例子和边界。</p>
+<p>更一般的空间协方差需要分清哪些量固定、哪些量更新。增益未校准的强通道会支配单位阵模型中的均值；<a href="#e07-06">E07-06</a>给出推导、数字例子和边界。</p>
 <p>这个模型的负对数似然中，$\log\lambda$ 出现 $M$ 次。令 $A_n=\sum_m|E_m(n)|^2$，每帧贡献及导数为</p>
 <p>$$\begin{aligned}
 \ell_n(\lambda)&=M\log\lambda+A_n/\lambda,\\
 \ell_n'(\lambda)&=M/\lambda-A_n/\lambda^2,\\
 \hat\lambda_n&=A_n/M\quad(A_n>0).
-\end{aligned}\tag{7-12}$$</p>
+\end{aligned}\tag{7-13}$$</p>
 <p>全零残差仍没有正的无约束内部最优值。平均分母为 $M$ 来自这一个共享参数模型，不能凭多通道数量直接指定。原论文的逐通道方差与缩放单位阵（scaled identity）结构分别见<a href="https://www.audiolabs-erlangen.de/resources/aps-w23/papers/sap_Yoshioka2012.pdf">Yoshioka与Nakatani，2012，§V-A、§V-B</a>。紧凑阵列各路功率变化接近可作为建模理由，不构成真实残差空间独立的证明。</p>
+<p>例如声明 $\vec E_n\sim\mathcal{CN}(0,\lambda_n C)$，其中 $C\in\mathbb C^{M\times M}$ 是已知、正定、所有帧共用的空间形状矩阵。每帧负对数似然含 $M\log\lambda_n+\log\det C+\vec E_n^HC^{-1}\vec E_n/\lambda_n$。固定所有正的 $\lambda_n$，对 $G^*$ 求导仍能得到</p>
+<p>$$\begin{aligned}
+(RG-P)C^{-1}&=0\quad\Longrightarrow\quad RG=P,\\
+\hat\lambda_n&=\frac{\vec E_n^HC^{-1}\vec E_n}{M}
+\quad(\vec E_n\ne0).
+\end{aligned}\tag{7-14}$$</p>
+<p>第一行说明：时间不变的可逆 $C$ 可以从这一次预测器的正规方程右侧消去，固定相同权重时 $G$ 不必改变。<a href="https://groups.uni-paderborn.de/nt/pubs/2018/ITG_2018_Drude_Paper.pdf">Drude等，2018，§4式(4)后的说明</a>也指出这一取消条件。第二行却改变了功率更新，因此下一轮的帧权重及最终迭代结果仍可能改变；不能把“当前固定功率的解相同”扩大成整条迭代相同。</p>
+<p>取 $C=\begin{bmatrix}1&1/2\\1/2&1\end{bmatrix}$，则 $C^{-1}=\tfrac43\begin{bmatrix}1&-1/2\\-1/2&1\end{bmatrix}$。同相残差 $(1,1)^T$ 的二次型是 $4/3$，共享功率为 $2/3$；反相残差 $(1,-1)^T$ 的二次型是4，共享功率为2。若用 $C=I$，两者的共享功率都为1。相同总平方模没有消除空间形状的影响。</p>
+<p>若 $C$ 随帧变化，一般不能从求和后的导数中提取同一个右乘矩阵，上述取消就不再成立。逐通道自由更新方差也不等同于固定 $C$。若同时估计 $C$ 与 $\lambda_n$，还须指定尺度约定，例如 $\operatorname{tr}(C)=M$，否则把 $C$ 乘正常数、把 $\lambda_n$ 除以该常数会给出相同协方差。</p>
 <h3 id="sec-u-7fe53e9b52">帧数、阶数与计算成本</h3>
 <p>例如 $M=8,K=10$ 时 $D=80$，$R$ 为 $80\times80$。总帧数为 $T$ 时，完整历史对应的有效帧数为 $T_v=\max(0,T-\Delta-K+1)$。有效帧数若少于80，未加载统计矩阵必然秩亏；等于或多于80也可能因通道相关、静音或重复观测而病态。应该同时检查有效数据、数值秩与条件数。</p>
 <p>令有效帧数为 $T_v$。每个频点、每次迭代的主要数量级如下；这些是运算阶数，不是硬件速度测量。</p>
@@ -571,15 +606,17 @@ RG&=P,\\
 Q(Y)&=\sum_{n\in\mathcal Q,f}|Y(n,f)|^2,\\
 T(Y)&=\sum_{n,f}|Y(n,f)|^2,\\
 L_Q(Y)&=10\log_{10}\frac{Q(Y)}{T(Y)}.
-\end{aligned}\tag{7-13}$$</p>
+\end{aligned}\tag{7-15}$$</p>
 <p>这里分母包括全部帧。混响与输出的静音能量占比分别为−17.56、−20.13 dB；其绝对静音谱能量则由11884.24降为4119.55，相比下降4.60 dB。占比与绝对能量比不是同一指标，因为全段总能量也由677482.17变为424136.95。</p>
 <p>另把活动帧全部频点展开为向量 $y$，干净参考为 $s$。只拟合一个全局复数增益 $a$，定义增益对齐归一化均方误差（Normalized Mean Squared Error，NMSE）：</p>
 <p>$$\begin{aligned}
 a&=\frac{y^Hs}{y^Hy},\\
 \mathrm{NMSE}&=\frac{\|ay-s\|^2}{\|s\|^2},\\
 L_{\mathrm{NMSE}}&=10\log_{10}\mathrm{NMSE}.
-\end{aligned}\tag{7-14}$$</p>
+\end{aligned}\tag{7-16}$$</p>
 <p>本例 $y^Hy$ 与 $s^Hs$ 都为正。该校准不是逐频增益，也不是时移补偿；全局复增益只是这项谱误差指标允许消除的自由度。</p>
+<p>指标的零能量边界应单独处理：$T(Y)=0$ 时静音能量占比没有定义；$T(Y)>0$、$Q(Y)=0$ 时其对数值为 $-\infty$。</p>
+<p>参考 $s$ 为零时NMSE没有定义；输出 $y=0$ 而参考能量为正时，不拟合增益直接得到NMSE为1。完全拟合时NMSE为0，对数同样为 $-\infty$。图上若为显示设置有限下限，那只是显示规则，不能把它记成真实误差，也不能用带单位的绝对小常数破坏整体缩放等变性。</p>
 <p>混响与输出的指标分别为−8.67、−7.70 dB，输出反而变差约0.97 dB。因此本例同时显示拖尾能量减少与活动段参考误差增加，不能把拖尾减少直接写成语音保真改善。</p>
 <p>图中使用居中5帧均值估计功率，包含两帧未来信息；功率下限为每频原观测最大功率的 $10^{-5}$，相对对角加载为 $10^{-6}$。全段求系数本身也依赖未来。卷积结果截取1.4 s，未显示之后的完整物理尾声，因此图中指标不用于估计真实 $T_{60}$。生成参数、选帧和数字见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/reports/figure21_wpe.json">图21统计记录</a>。</p>
 <h3 id="sec-u-3e2046c71e">与空间处理组成系统</h3>
@@ -598,14 +635,14 @@ L_{\mathrm{NMSE}}&=10\log_{10}\mathrm{NMSE}.
 R_t&=\alpha R_{t-1}+\frac{q_tq_t^H}{\lambda_t},\\
 r_t&=\alpha r_{t-1}+\frac{q_tX_t^*}{\lambda_t},\\
 (R_t+\delta I)g_t&=r_t.
-\end{aligned}\tag{7-15}$$</p>
-<p>$\alpha\in[0,1]$ 是遗忘因子；$\delta\ge0$ 与 $R_t$ 同量纲。多输出时只需把互相关向量改成与式(7-11)一致的多列矩阵。在未加载的可解条件下，展开递推可看出旧样本被赋予指数下降的权重；先验初始化也会按同一规则衰减。E07-13给出显式的批量等价式。</p>
+\end{aligned}\tag{7-17}$$</p>
+<p>$\alpha\in[0,1]$ 是遗忘因子；$\delta\ge0$ 与 $R_t$ 同量纲。多输出时只需把互相关向量改成与式(7-12)一致的多列矩阵。在未加载的可解条件下，展开递推可看出旧样本被赋予指数下降的权重；先验初始化也会按同一规则衰减。E07-13给出显式的批量等价式。</p>
 <p>本书这一流程先用旧系数生成当前输出，再更新统计量供下一帧使用：</p>
 <p>$$E_t^{\mathrm{prior}}=X_t-g_{t-1}^Hq_t.
-\tag{7-16}$$</p>
+\tag{7-18}$$</p>
 <p>使用当帧新系数输出仍可能是因果运算，但已经是不同的输出定义；不能混用两者评分。启动时可用零系数或声明的旁路。不能把离线居中平滑直接放入此流程。</p>
 <h3 id="sec-u-98dff12dd4">三帧因果递推小例</h3>
-<p>取单频点、单抽头实数特例，$\Delta=3$，连续观测为 $[1,2,1,0.8,1.6,1.0]$。从零起始的 $t=3$ 起，三组历史和当前值 $(q_t,X_t)$ 为 $(1,0.8),(2,1.6),(1,1.0)$。固定 $\alpha=0.5$、$\lambda_t=1$，式(7-15)退化成 $R_t=\alpha R_{t-1}+q_t^2$、$r_t=\alpha r_{t-1}+q_tX_t$，以及 $g_t=r_t/(R_t+\delta)$。</p>
+<p>取单频点、单抽头实数特例，$\Delta=3$，连续观测为 $[1,2,1,0.8,1.6,1.0]$。从零起始的 $t=3$ 起，三组历史和当前值 $(q_t,X_t)$ 为 $(1,0.8),(2,1.6),(1,1.0)$。固定 $\alpha=0.5$、$\lambda_t=1$，式(7-17)退化成 $R_t=\alpha R_{t-1}+q_t^2$、$r_t=\alpha r_{t-1}+q_tX_t$，以及 $g_t=r_t/(R_t+\delta)$。</p>
 <p>本例为便于手算取 $\delta=0$，在首个有效帧前初始化 $R_2=r_2=0$：</p>
 <ol>
 <li>第 1 次更新（$t=3$）：$R_3=1$，$r_3=0.8$，$g_3=0.8$；</li>
@@ -659,6 +696,8 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 </tbody>
 </table></div>
 <p>无状态接口传入以当前帧结尾的缓冲；有状态接口在写入当前值 40 <strong>之前</strong>先从自己的旧缓冲取历史。图24和本章公式对应表中第一行的离线索引，不能把逐帧接口的 <code>delay=1</code> 直接改写成书中的 $\Delta=1$。移植参数时，应先用这种带时间标签的小输入核对实际帧号。</p>
+<p>历史展开排列是另一项独立检查。固定两通道六帧为 $[10,20,30,40,50,60]$ 与 $[100,200,300,400,500,600]$，当前 $t=5$，$K=2$、<code>delay=1</code>。离线历史为 $[50,500,40,400]$，先滞后、后通道；无状态接口从含当前帧的缓冲取到 $[40,30,400,300]$，先通道、后由新到旧；有状态接口从尚未写入当前帧的旧缓冲取到 $[20,30,200,300]$，先通道、后由旧到新。这里同时存在帧号与排列差异。</p>
+<p>即便修正了实际滞后，也必须同步置换系数和统计矩阵，不能原样搬用滤波器。固定版本的真实调用与整数标签检查见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/reports/upstream_wpe_contracts.json">接口布局审计</a>。</p>
 <p>同一文件的 <code>OnlineWPE.step_block()</code>要求包含指定历史长度的缓冲形状；锁定版本 <code>_get_prediction()</code>还注明只支持 <code>block_shift=1</code>。它不能被当作任意帧移的块处理器。TensorFlow 路线在 <code>tf_wpe.py</code> 中另有 <code>block_wpe_step()</code> 和 <code>recursive_wpe()</code>，依赖、状态和接口也不同。<a href="https://github.com/fgnt/nara_wpe/blob/a166779cca2088817e330481bd20af1a2c598555/nara_wpe/wpe.py"><code>nara_wpe</code> NumPy 源码</a>、<a href="https://github.com/fgnt/nara_wpe/blob/a166779cca2088817e330481bd20af1a2c598555/nara_wpe/tf_wpe.py">TensorFlow 源码</a></p>
 <h2 id="sec-7-6">7.6 与其他模块组合及失效边界</h2>
 <h3 id="sec-u-c406205243">网络输出决定模块位置</h3>
@@ -710,9 +749,9 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 <p>$$\begin{aligned}
 &\min_{\bar{\vec w}}\ \bar{\vec w}^H\bar{\mathbf R}\bar{\vec w},\\
 &\text{s.t.}\quad\bar{\vec w}^H\bar{\vec v}=1.
-\end{aligned}\tag{7-17}$$</p>
-<p>当 $\bar{\mathbf R}$ 厄米正定且导向向量非零时，对式(7-17)作与 §5.4 相同的复数拉格朗日求导，先得到 $\bar{\mathbf R}\bar{\vec w}=\eta\bar{\vec v}$。由正定性，$\bar{\vec v}^H\bar{\mathbf R}^{-1}\bar{\vec v}>0$，代回无失真约束可求出归一化系数，得到</p>
-<p>$$\bar{\vec w}_{\mathrm{WPD}}=\frac{\bar{\mathbf R}^{-1}\bar{\vec v}}{\bar{\vec v}^H\bar{\mathbf R}^{-1}\bar{\vec v}}\text{。}\tag{7-18}$$</p>
+\end{aligned}\tag{7-19}$$</p>
+<p>当 $\bar{\mathbf R}$ 厄米正定且导向向量非零时，对式(7-19)作与 §5.4 相同的复数拉格朗日求导，先得到 $\bar{\mathbf R}\bar{\vec w}=\eta\bar{\vec v}$。由正定性，$\bar{\vec v}^H\bar{\mathbf R}^{-1}\bar{\vec v}>0$，代回无失真约束可求出归一化系数，得到</p>
+<p>$$\bar{\vec w}_{\mathrm{WPD}}=\frac{\bar{\mathbf R}^{-1}\bar{\vec v}}{\bar{\vec v}^H\bar{\mathbf R}^{-1}\bar{\vec v}}\text{。}\tag{7-20}$$</p>
 <p>最小维度检查：2 麦、1 个历史块时，$\bar{\vec x}$ 和 $\bar{\vec w}$ 都有 4 个元素。若 $\bar{\mathbf R}=\operatorname{diag}(2,1,4,4)$、$\vec v=[1,1]^\top$，则扩展约束向量为 $\bar{\vec v}=[1,1,0,0]^\top$。</p>
 <p>此时 $\bar{\mathbf R}^{-1}\bar{\vec v}=[0.5,1,0,0]^\top$，分母为 1.5，故</p>
 <p>$$\bar{\vec w}=[1/3,2/3,0,0]^\top，$$</p>
@@ -724,17 +763,21 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 <p>这里的“联合”并不排斥分步计算。在同一组正权重、同一有效帧和同一导向约束下，可以先解多通道 WPE，再对其残差解<strong>加权 MPDR</strong>，得到与整块 WPD 相同的输出。关键是两步共同对应原目标，而非任意选两个模块串联。<a href="#e07-07">E07-07</a>通过完整平方和一个四维例子说明这种等价，以及不同加载为什么会破坏直接比较。</p>
 <h2 id="sec-7-7">7.7 可执行教学基线与复现实验</h2>
 <h3 id="sec-u-e6c77eb174">教学实现与诊断取点</h3>
-<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/core/dereverberation.py"><code>codes/chapters/ch07/core/dereverberation.py</code></a> 提供只依赖 NumPy 的最小离线 WPE。<code>offline_wpe()</code> 接收复数 STFT，单通道轴序为 <code>(频点, 帧)</code>，多通道轴序为 <code>(频点, 通道, 帧)</code>，输出保持相同形状；它实现保护延迟、按滞后堆叠多通道历史、共享功率权重、相对对角加载和复共轭预测。计算前逐频点以共同幅度归一化各通道和各帧，输出再恢复原幅度，以免极小或极大但有限的输入在平方时下溢或上溢。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/core/dereverberation.py"><code>codes/chapters/ch07/core/dereverberation.py</code></a> 提供只依赖 NumPy 的最小离线 WPE。<code>offline_wpe()</code> 接收复数 STFT，单通道轴序为 <code>(频点, 帧)</code>，多通道轴序为 <code>(频点, 通道, 帧)</code>，输出保持相同形状；它实现保护延迟、按滞后堆叠多通道历史、共享功率权重、相对对角加载和复共轭预测。计算前逐频点以共同幅度归一化各通道和各帧，输出再恢复原幅度。这能处理许多共同缩放输入，但有限输入并不保证所有混合尺度的中间乘积都能用float64表示。</p>
 <p><code>taps=0</code>、迭代次数为零、记录短于首个有效回归帧或整个频点为零时直接旁路。输入各维不能为空、数值必须有限；阶数、延迟和迭代次数必须为整数，功率下限必须是有限正数。输入必须是复谱，不能把幅度谱传入后再补相位。</p>
-<p>默认调用仍只返回谱数组。设 <code>return_diagnostics=True</code> 时另返回逐频点诊断：加载后正规矩阵在各轮中的最小数值秩、最大条件数、进入最小范数最小二乘回退的次数，以及未求解时的旁路原因。数值秩依赖浮点精度和矩阵尺度，不是语音质量或混响强度评分。</p>
-<p>当前基线在 <code>np.linalg.solve</code> 抛出奇异矩阵错误后用 <code>np.linalg.lstsq</code> 求最小范数解；它不会自行增加加载、减小 $K$ 或根据音质旁路。调用方应检查诊断和参考信号，在需要时调整加载、阶数或旁路策略；求得有限残差不等于保住了直达声。</p>
+<p>默认 <code>power_context=0</code> 不平滑。取2时，对每帧功率作居中5帧均值；边缘仅按实际存在的帧数除，不把缺失帧作为零加入平均。这个选项在内部帧使用两帧未来信息，图21采用它；即使设为0，整段估计系数仍然是离线计算。</p>
+<p>默认调用仍只返回谱数组。设 <code>return_diagnostics=True</code> 时另返回逐频点诊断：<code>solver</code> 与 <code>matrix_kind</code> 指明实际求解路径；<code>min_rank</code>、<code>max_condition_number</code> 给出该路径实际矩阵在各轮中的最小数值秩和最大条件数，另有正规方程最小二乘回退次数及旁路原因。默认模式诊断加载后正规矩阵，<code>design_lstsq</code> 模式诊断增广设计矩阵。数值秩依赖浮点精度和矩阵尺度，不是语音质量或混响强度评分。</p>
+<p>默认正规方程路径在 <code>np.linalg.solve</code> 抛出奇异矩阵错误后用 <code>np.linalg.lstsq</code> 求最小范数解；它不会自行增加加载、减小 $K$ 或根据音质旁路。调用方应检查诊断和参考信号，在需要时调整加载、阶数或旁路策略；求得有限残差不等于保住了直达声。</p>
+<p>实现对归一化丢失非零分量、正权重变零及超出支持范围的功率、统计或预测分量乘积明确报 <code>ValueError</code>，恢复输出时也检查非零量是否变零。乘积检查采用保守的非零分量幅度下界；不相遇或最终抵消的极端项也可能被拒绝。它界定的是这一个教学求解器的支持范围，不是数学结果的可表示性。</p>
+<p>例如输入 $[10^{308},10^{108},0]$ 在一次单抽头预测中可能先产生约 $10^{-400}$ 的归一化预测，再恢复为约 $10^{-92}$ 的原尺度项；直接把中间项当零会教错输出。当前实现选择明确拒绝这一范围，保留输入而不返回伪零结果。</p>
+<p>合法零输入及可表示的小系数仍有独立测试，见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_wpe_numerics.py">数值与设计矩阵回归</a>。</p>
 <p>可试听一组独立的 2.25 s、16 kHz 单通道数学合成夹具：<a href="audio/wpe_dry.wav">无回声参考</a><audio class="audio-sample" controls preload="none" aria-label="无回声参考" src="audio/wpe_dry.wav">请使用上方 WAV 链接下载。</audio>、<a href="audio/wpe_reverberant.wav">稀疏回声观测</a><audio class="audio-sample" controls preload="none" aria-label="稀疏回声观测" src="audio/wpe_reverberant.wav">请使用上方 WAV 链接下载。</audio>、<a href="audio/wpe_output.wav">离线 WPE 输出</a><audio class="audio-sample" controls preload="none" aria-label="离线 WPE 输出" src="audio/wpe_output.wav">请使用上方 WAV 链接下载。</audio>。三条 WAV 使用共同导出增益 1，可比较停音后拖尾及有声段谐波的变化；它们不同于图21的 1.4 s 随机衰减 RIR 仿真，只供现象试听，不能充当真实房间或语音质量测试。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/audio/MANIFEST.json">主音频清单</a>和<a href="research/05_exercises_and_audio.html#5-wpe-的预测与目标损伤">练习与音频手册</a>给出生成条件与边界。</p>
 <h3 id="sec-u-24aba87cac">低残差不等于保住了目标</h3>
 <p>取一个频点、单通道六帧全为 $1+0j$，设 $K=2$、$\Delta=1$、迭代一次、对角加载为零。有效帧 $n=2,3,4,5$ 的历史向量全为 $[1,1]^\top$，所以 $\mathbf R=4\begin{bmatrix}1&1\\1&1\end{bmatrix}$、$\vec r=[4,4]^\top$；$\mathbf R$ 的秩为 1。最小范数解 $\vec g=[1/2,1/2]^\top$ 把这些帧预测为 1，残差为零（双精度实现中约在 $10^{-16}$ 量级）。前两帧因缺少完整历史而原样保留。</p>
 <p>该输入没有给出晚期混响真值，却会使可预测的目标分量几乎消失，故不能把残差小解读为去混响成功。若为改善数值条件而加对角加载，也仍须检查目标失真；正则化不能单独证明模型的声学假设成立。</p>
 <p>联合示例用 <code>.venv/bin/python -m codes.chapters.ch00.cross_chapter.ch06_09_baselines</code> 运行，边界测试见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_wpe_sep_track.py"><code>tests/test_codes_aec_wpe_sep_track.py</code></a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_wpe_mask_diagnostics.py"><code>tests/test_codes_wpe_mask_diagnostics.py</code></a>。测试固定检查 $K=0$、短输入、全零频点、单抽头复共轭方向、多通道形状、整体幅度缩放等变性、秩亏诊断与非零微小掩码。实际音频管线还要自行固定 STFT 的窗、帧移、<code>center</code>/补零约定与 ISTFT 长度，并测试短语音、静音权重、病态矩阵、通道交换及块边界。</p>
 <p>该基线是整段离线估计，不宣称因果或实时。离线、在线、学习功率与联合滤波的源代码入口分别如下，完整读码顺序和失效实验见 <a href="research/02_aec_wpe_separation.html#wpe">WPE 源码研究</a>。</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="wpe-readable-table">
 <thead>
 <tr>
 <th scope="col">实现</th>
@@ -869,7 +912,7 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 <p><strong>解答</strong>：有效帧为 1、2、3，历史均为 $[1,1,1]$。A 的功率权重为 $[1,1,1]$，$R=3,r=3,g=1$，有效帧输出全为零。B 的权重为 $[1,1,1/4]$，$R=9/4$、$r=1+1+2/4=5/2$，故 $g=10/9$；第 1 帧输出由 0 变成 $1-10/9=-1/9$，第 3 帧输出为 $8/9$。</p>
 <p>本书的这个反例直接运行 <code>offline_wpe()</code>，各功率均高于下限。第 1 帧的回归量没有未来样本，但它使用的系数由整段录音估计，因此整个处理不是因果的。这里没有采用图21的居中平滑，单靠全段统计已经会产生未来依赖；单个输入未发现变化，也不能证明另一实现一定因果。</p>
 <h3 id="sec-u-a8ed0e0134">E07-05：WPD 的历史权重什么时候不为零？</h3>
-<p>按式(7-17)、式(7-18)，取当前两麦及一个历史块组成四维向量，扩展导向为 $\bar v=[1,1,0,0]^\top$。给定加权协方差</p>
+<p>按式(7-19)、式(7-20)，取当前两麦及一个历史块组成四维向量，扩展导向为 $\bar v=[1,1,0,0]^\top$。给定加权协方差</p>
 <p>$$\bar R=\begin{bmatrix}2&0&1&0\\0&1&0&0\\1&0&2&0\\0&0&0&1\end{bmatrix}，$$</p>
 <p>求满足 $\bar w^\top\bar v=1$ 的最小功率权重，并与强制历史权重为零比较。</p>
 <p><strong>解答</strong>：解 $\bar R u=\bar v$。第 1、3 行给出 $2u_1+u_3=1$、$u_1+2u_3=0$，所以 $u_1=2/3,u_3=-1/3$；另两项为 $u_2=1,u_4=0$。分母 $\bar v^\top u=5/3$，得到 $\bar w=[0.4,0.6,-0.2,0]^\top$。约束为 $0.4+0.6=1$，目标值为 $\bar w^\top\bar R\bar w=0.6$。</p>
@@ -878,7 +921,7 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 <p><a id="e07-06"></a></p>
 <h3 id="sec-u-a07890c1cc">E07-06：共享 WPE 功率为什么除以通道数？</h3>
 <p>固定一个频点、一帧和预测系数，不进行时间平滑。两通道复残差为 $E_1=1+\mathrm j$、$E_2=2$。在 $\vec E\sim\mathcal{CN}(0,\lambda I_M)$ 的工作模型下求共享方差，再把第二个通道乘以 2，比较估计。</p>
-<p><strong>第 1 步：把通道数写入似然。</strong> 对 $M$ 维 proper 复高斯向量，协方差行列式是 $\lambda^M$，指数中的二次型是 $\sum_m|E_m|^2/\lambda$。忽略与 $\lambda$ 无关的常数后，负对数似然与式(7-12)相同。令导数为零，相当于 $M\lambda=\sum_m|E_m|^2$，所以正的共享方差等于各通道残差功率的平均。</p>
+<p><strong>第 1 步：把通道数写入似然。</strong> 对 $M$ 维 proper 复高斯向量，协方差行列式是 $\lambda^M$，指数中的二次型是 $\sum_m|E_m|^2/\lambda$。忽略与 $\lambda$ 无关的常数后，负对数似然与式(7-13)相同。令导数为零，相当于 $M\lambda=\sum_m|E_m|^2$，所以正的共享方差等于各通道残差功率的平均。</p>
 <p><strong>第 2 步：代入本题。</strong> $|1+\mathrm j|^2=2$，$|2|^2=4$，故 $\hat\lambda=(2+4)/2=3$。若逐通道单独估计，得到的是 2 和 4；共享模型通过同一个参数约束两通道，不能把这三个数混用。</p>
 <p><strong>第 3 步：改变通道增益。</strong> 第二路乘以 2 后，残差为 $[1+\mathrm j,4]$，其功率变为 16，共享估计为 $(2+16)/2=9$；把所有通道都乘以 2 则得到 $4\times3=12$。单通道增益变化和全阵列共同缩放并不等价。若共同乘以非零常数 $c$，同时令 $\lambda$ 乘以 $|c|^2$，正规方程中分子与分母抵消，$R$ 和 $P$ 保持不变。另一种操作是只把全部逆功率权重乘同一正常数，此时两边才共同缩放。逐通道增益不均匀通常还会改变各帧相对权重，不满足上述共同缩放关系。</p>
 <p>全零残差时，无约束似然把最优值推向 $\lambda\downarrow0$，没有正的内部极小值，也不能对零功率取倒数。实际 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/core/dereverberation.py"><code>offline_wpe()</code></a>另设相对功率地板，并对完全静音频点旁路，因此实现不是无约束的逐帧极大似然。代码与独立检查见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/enhancement_step_exercises.py">enhancement_step_exercises.py</a> 的 <code>E07-06</code>。本题只核对功率更新，不证明球形模型符合真实房间。</p>
@@ -903,7 +946,7 @@ u&=h+Gw,\\
 h_\star&=-Gw_\star,\\
 w_\star&=\frac{S^{-1}v}{v^HS^{-1}v},\\
 y_t&=w_\star^H(x_t-G^Hq_t).
-\end{aligned}\tag{7-19}$$</p>
+\end{aligned}\tag{7-21}$$</p>
 <p>核对完整平方时，用 $CG=B^H$ 展开平方：它产生两项原有的交叉项，额外产生 $w^HBC^{-1}B^Hw$，恰好抵消 $S$ 中被减去的项。第二项非负，而无失真约束只涉及 $w^Hv=1$，所以每个固定 $w$ 下都能取 $h=-Gw$ 把第二项降到零。剩下的就是对 $S$ 作加权 MPDR。</p>
 <p><strong>第 3 步：解释为什么第一步是 WPE。</strong> $CG=B^H$ 正是以全部当前通道为输出的加权预测正规方程。把 $z_t=x_t-G^Hq_t$ 代入 $\sum_tz_tz_t^H/\lambda_t$，得到 $A-BG-G^HB^H+G^HCG=S$。因此 $S$ 是<strong>预测残差的同权加权协方差</strong>，而非随意指定的后级噪声协方差。这里的 $z_t$ 只是本题临时残差记号。</p>
 <p><strong>第 4 步：逐项代入。</strong> 本题 $A=\operatorname{diag}(2,1)$、$B=\operatorname{diag}(1,0)$、$C=\operatorname{diag}(2,1)$、$v=[1,1]^\top$。</p>
@@ -948,7 +991,7 @@ y_t&=w_\star^H(x_t-G^Hq_t).
 <p>给整块 $\bar R$ 加 $\delta I$ 后，代数分解依然成立，但得到的是 $G_\delta=(C+\delta I)^{-1}B^H$ 和 $S_\delta=A+\delta I-BG_\delta$。只对 WPE 历史块加载，再直接用其残差的经验协方差做后级，通常不是同一个 $S_\delta$；两模块各自的相对加载也不能自动视为同一个正则化问题。因此“串联即可等价”必须连同权重、统计帧和正则化一起核对。</p>
 <p>分解依据见 <a href="https://arxiv.org/pdf/1910.13707">Boeddeker 等，ICASSP 2020，§4 和附录</a>；本题的完整平方、数字和快照为本书复算。运行 <code>.venv/bin/python -m codes.chapters.ch00.cross_chapter.enhancement_structure_exercises</code>；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/enhancement_structure_exercises.py">代码</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_enhancement_structure.py">独立测试</a>另检查复数互相关、共同缩放、零互相关与奇异矩阵。这里没有运行真实音频，也不从目标值较小推断语音质量必然更好。</p>
 <h3 id="sec-u-9134240666">E07-08：复数加权求解与加载后的正交性</h3>
-<p>本题及E07-09～17统一运行 <code>.venv/bin/python -m codes.chapters.ch07.chapter07_experiments</code>，入口见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/chapter07_experiments.py">chapter07_experiments.py</a>。数值题检查代数和边界；只有E07-17包含可听波形，不将其他题的复谱当真实录音。</p>
+<p>本题及E07-09～21统一运行 <code>.venv/bin/python -m codes.chapters.ch07.chapter07_experiments</code>，入口见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/chapter07_experiments.py">chapter07_experiments.py</a>。数值题检查代数和边界；E07-17和E07-21包含可听波形，不将其他题的复谱当真实录音。</p>
 <p><strong>题设。</strong> 两麦、单抽头、$\Delta=3$，共有六帧。前3帧的通道列向量依次为 $(1,0)^T,(0,1)^T,(1,\mathrm j)^T$；后3帧第一路为 $0,-\mathrm j/2,3$，第二路全为0。只求第一输出的预测器，指定有效帧的逆功率权重为 $1,2,1$。这些是给定共享功率的一次求解，不在题内交替更新功率。</p>
 <p><strong>第1步：构造实际历史。</strong> 有效帧是3、4、5，它们读取第0、1、2帧，所以历史恰好是上述三个二维向量。由式(7-7)，三项外积及互相关累加得到</p>
 <p>$$R=\begin{bmatrix}2&-\mathrm j\\\mathrm j&3\end{bmatrix},\qquad
@@ -1023,7 +1066,7 @@ R_z&=A-BG_\delta-G_\delta^HB^H\\
 &\quad+G_\delta^HCG_\delta,\\
 S_\delta&=R_z+\delta I
 +\delta G_\delta^HG_\delta.
-\end{aligned}\tag{7-20}$$</p>
+\end{aligned}\tag{7-22}$$</p>
 <p>第二行关系可由 $(C+\delta I)G_\delta=B^H$ 代回第一行验证。本题 $R_z=\operatorname{diag}(14/9,1)$，必须加的修正为 $\operatorname{diag}(10/9,1)$。两者相加才等于 $S_\delta$；只加一个I会漏掉 $G_\delta^HG_\delta$。</p>
 <p><strong>第3步：比较最终权重。</strong> 用正确Sδ得到当前权重 $(3/7,4/7)^T$、历史权重 $(-1/7,0)^T$，与直接求解已加载四维问题一致，带加载目标值为8/7。若误用 $R_z+I=\operatorname{diag}(23/9,2)$，当前权重变成 $(18/41,23/41)^T$、历史为 $(-6/41,0)^T$，已经不是同一个解。</p>
 <p>因此，分别对WPE和后级做看似相同的加载，并不自动等于对原联合问题加载。这个例子只检验固定统计量下的正则化一致性，不据目标值比较语音质量。</p>
@@ -1033,7 +1076,7 @@ S_\delta&=R_z+\delta I
 d[n]&=0.65x[n-512],\\
 x[n]&=s[n]+d[n],\\
 s_{\mathrm{oracle}}[n]&=x[n]-d[n].
-\end{aligned}\tag{7-21}$$</p>
+\end{aligned}\tag{7-23}$$</p>
 <p>这里 $d[n]$ 只是延迟反馈项的简记。这是一条已知数学路径，512点对应32 ms，不是真实房间或人声。最后一行是真值已知的逆滤波，代入前两行即可逐样本恢复s；盲WPE没有得到系数0.65这一先验。文件截取到2 s，不计更远的尾声。</p>
 <p>四个文件以共同增益1导出，不分别归一化。播放前先调低音量：</p>
 <p><a href="audio/wpe_predictable_target.wav">纯音目标</a><audio class="audio-sample" controls preload="none" aria-label="纯音目标" src="audio/wpe_predictable_target.wav">请使用上方 WAV 链接下载。</audio></p>
@@ -1045,7 +1088,7 @@ s_{\mathrm{oracle}}[n]&=x[n]-d[n].
 <p>$$\begin{aligned}
 g&=\frac{s^Ty}{s^Ts},\\
 \eta&=\frac{\|y-s\|^2}{\|s\|^2}.
-\end{aligned}\tag{7-22}$$</p>
+\end{aligned}\tag{7-24}$$</p>
 <p>这里g只用于报告幅度传递，<strong>不</strong>把输出除以g后再计算η，也不拟合时移。实际PCM文件对PCM目标评分如下：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
@@ -1075,6 +1118,194 @@ g&=\frac{s^Ty}{s^Ts},\\
 </table></div>
 <p><strong>为什么不能只看尾声？</strong> 在目标停止后的 $[1,2)$ s窗口，WPE尾声均方功率相对观测下降约11.66 dB；但目标稳态增益也降为约0.53，并未保持单位增益。该频率在32 ms延迟内正好经历32个周期，目标本身高度可预测，不能假定预测器只会拟合不需要的尾声。若忽略起止过程，反馈稳态增益是 $1/(1-0.65)\approx2.8571$；表中2.8046还受有限启动和评分窗口影响。</p>
 <p>浮点真值逆的最大误差约 $2.8\times10^{-17}$；PCM逆输出与PCM目标相同。盲输出的浮点与PCM评分略有量化差别，上表固定采用后者。全部处理参数、两种精度评分及复现代码见<a href="research/05_exercises_and_audio.html">练习及音频手册</a>。本题是单个确定性合成反例，不是听感研究，也不以尾声能量变化声称识别率或可懂度改善。</p>
+<p><a id="e07-18"></a></p>
+<h3 id="sec-u-e91d71e179">E07-18：实倒谱相同，为什么仍不能恢复相位？</h3>
+<p><strong>题设。</strong> 两条实FIR路径为 $h_1=[1,1/2]$、$h_2=[1/2,1]$，负时间为零。对它们各补零到8点后计算离散傅里叶变换。采用自然对数功率的倒谱，即常规对数幅度实倒谱的两倍；谱值都非零，所以本题不设置地板。证明两条实倒谱相同，再检查三个频率的复响应。</p>
+<p><strong>第1步：把幅度和相位分开。</strong> 由FIR定义，$H_1(\omega)=1+\tfrac12e^{-\mathrm j\omega}$，$H_2(\omega)=\tfrac12+e^{-\mathrm j\omega}$，其中 $\omega$ 是弧度/采样点。分别乘以共轭后，两者都得到 $5/4+\cos\omega$。因此每个8点DFT频点上的幅度相同，对数幅度也相同。本题对数功率倒谱定义为</p>
+<p>$$c_r[q]=\frac18\sum_{k=0}^{7}
+\log|H(2\pi k/8)|^2\,e^{\mathrm j2\pi kq/8}.
+\tag{7-25}$$</p>
+<p>$q$ 是倒频率采样点索引。两组相同的输入对数功率经过相同逆DFT，逐项得到相同的 $c_r[q]$。若改用 $\log|H|$，所得序列只是本题的一半，仍无法区分两条路径。</p>
+<p><strong>第2步：复算复数值。</strong></p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">$\omega$（弧度/采样点）</th>
+<th scope="col">$H_1$</th>
+<th scope="col">$H_2$</th>
+<th scope="col" style="text-align: right;">共同平方模</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>$3/2$</td>
+<td>$3/2$</td>
+<td style="text-align: right;">$9/4$</td>
+</tr>
+<tr>
+<td>$\pi/2$</td>
+<td>$1-\mathrm j/2$</td>
+<td>$1/2-\mathrm j$</td>
+<td style="text-align: right;">$5/4$</td>
+</tr>
+<tr>
+<td>$\pi$</td>
+<td>$1/2$</td>
+<td>$-1/2$</td>
+<td style="text-align: right;">$1/4$</td>
+</tr>
+</tbody>
+</table></div>
+<p>中间一行的相位分别为 $-\arctan(1/2)\approx-0.46365$ rad和 $-\arctan(2)\approx-1.10715$ rad；最后一行相位分别为0与 $\pi$，都具有相同幅度。由此可见，幅度谱及其实倒谱没有保留这些相位差。</p>
+<p><strong>结论与边界。</strong> 只按实倒谱切除某一区域，不能确定应该恢复哪一条原复响应。本题两条路径的零点分别为 $-1/2$ 和 $-2$；若额外声明最小相位等先验，可以排除其中一个，但那是增加先验，不是从原实倒谱得到新信息。复倒谱还要处理相位解缠及支路，不能简单把实倒谱改名为复倒谱。<a href="https://dsp-group.mit.edu/wp-content/uploads/2024/11/nonnlinearfiltering_1968.pdf">Oppenheim等，1968</a>给出原始同态处理框架；这里的两条路径、DFT表和不唯一性证明为本书构造。本题执行入口返回两条路径的频响及实倒谱，不包含盲房间恢复或音频质量测量。</p>
+<p><a id="e07-19"></a></p>
+<h3 id="sec-u-08c080b787">E07-19：原设计满秩，为什么正规方程回退也救不回来？</h3>
+<p><strong>题设。</strong> 本书直接给定两个实回归快照，权重均为1，取 $\varepsilon=10^{-9}$，不加载：</p>
+<p>$$A=\begin{bmatrix}1&1\\0&\varepsilon\end{bmatrix},\qquad
+b=\begin{bmatrix}0\\-\varepsilon\end{bmatrix}.$$</p>
+<p>这是固定设计矩阵及目标，不声称来自一段连续语音。求精确系数，再比较 <code>solve_prediction_design()</code> 的 <code>normal</code> 与 <code>design_lstsq</code>。与WPE复数约定连接时，每行应解释为 $\sqrt{w_n}q_n^H$，目标为 $\sqrt{w_n}X_n^*$，不能把共轭方向颠倒。</p>
+<p><strong>第1步：先用代数确定答案。</strong> $\det A=\varepsilon\ne0$，第二行给 $g_2=-1$，第一行给 $g_1=1$。所以唯一精确解是 $(1,-1)^T$，拟合残差为零。原矩阵的最大奇异值约为 $\sqrt2$，最小约为 $\varepsilon/\sqrt2$，故条件数约为 $2/\varepsilon=2\times10^9$；唯一并不代表稳定。</p>
+<p><strong>第2步：查看形成正规方程时丢了什么。</strong> 精确算术给出</p>
+<p>$$A^TA=\begin{bmatrix}1&1\\1&1+10^{-18}\end{bmatrix},\qquad
+A^Tb=\begin{bmatrix}0\\-10^{-18}\end{bmatrix}.$$</p>
+<p>float64在1附近的间距约为 $2.22\times10^{-16}$，因此 $1+10^{-18}$ 舍入为1。数值正规矩阵两列相同，秩变为1；但直接设计中的 $10^{-9}$ 仍被保留。已经舍入的矩阵无法再区分两个参数的差。</p>
+<p><strong>第3步：分析两条实际求解路径。</strong> <code>normal</code> 在奇异矩阵错误后对舍入的正规矩阵作最小二乘。它的最佳两项和为 $-10^{-18}/2$；最小范数再把和平均分配，得到约 $(-2.5\times10^{-19},-2.5\times10^{-19})^T$。<code>design_lstsq</code> 直接对原 $A$ 求解，恢复约 $(1,-1)^T$。前者的原设计平方误差约 $10^{-18}$，虽数值很小，系数却与精确答案明显不同。额外指定未用于拟合的行 $(1,-1)$ 时，真系数预测为2，正规方程回退解预测约为0；这只诊断该例未辨识的差方向，不冒充真实测试语音。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">求解路径</th>
+<th scope="col">实际诊断矩阵</th>
+<th scope="col" style="text-align: right;">数值秩</th>
+<th scope="col" style="text-align: right;">二范数条件数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>normal</code></td>
+<td>舍入后的 $A^TA$</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">$\infty$</td>
+</tr>
+<tr>
+<td><code>design_lstsq</code></td>
+<td>原设计 $A$</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">约 $2\times10^9$</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>加载与支持边界。</strong> 如需同一个固定 $\delta>0$ 的正则目标，直接路径按式(7-9)增广 $\sqrt\delta I$，正规路径加 $\delta I$；不能只给其中一条加载后声称算法更准确。加载会抑制本题的弱差方向，也会改变答案。直接设计求解解决的是避免预先平方条件数这一项困难；极端尺度、原始病态、有限样本与模型错误仍须独立检查。本题的唯一求解核与诊断在<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/core/dereverberation.py">WPE数值核</a>，独立两行代数及复数加载测试在<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_wpe_numerics.py">数值回归</a>。</p>
+<p><a id="e07-20"></a></p>
+<h3 id="sec-u-478a0f00c4">E07-20：保留直达系数时，怎样在残余反射与噪声之间取舍？</h3>
+<p><strong>题设。</strong> 沿用E07-14两条已知路径，第二个抽头可以在同一个任意正延迟 $L$：$h_1=\delta[n]+a\delta[n-L]$、$h_2=\delta[n]+b\delta[n-L]$。只允许两个实常数权重，并保留直达系数 $u_1+u_2=1$。取 $a=0.5,b=0.49$，比较精确逆与带权重惩罚的受限设计；这不是任意长FIR的通用MINT最优解。</p>
+<p><strong>第1步：把两个约束量化为一个变量。</strong> 令 $u_1=t,u_2=1-t$，残留反射系数为 $r=b+(a-b)t$。本书指定优化目标为 $r^2+\lambda(u_1^2+u_2^2)$，$\lambda\ge0$ 无量纲。本题的 $\lambda$ 专指逆滤波正则系数，区别于前文WPE中有功率量纲的帧方差。它只惩罚反射和权重，直达和固定为1。对 $t$ 求导，令 $d=a-b$，得到</p>
+<p>$$\begin{aligned}
+J(t)&=(b+dt)^2+\lambda[t^2+(1-t)^2],\\
+\frac{J'(t)}2&=db+d^2t+\lambda(2t-1),\\
+t_\star&=\frac{\lambda-db}{d^2+2\lambda}
+\quad(d^2+2\lambda>0).
+\end{aligned}\tag{7-26}$$</p>
+<p>分母为正时目标严格凸。$d=0,\lambda=0$ 时，任何满足权重和为1的解具有相同反射，不能使用最后一行；$d=0,\lambda>0$ 则选 $t=1/2$，但没有消掉公共反射。</p>
+<p><strong>第2步：逐项代入三种设计。</strong></p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">$\lambda$</th>
+<th scope="col">$u_1,u_2$</th>
+<th scope="col" style="text-align: right;">残留反射 $r$</th>
+<th scope="col" style="text-align: right;">噪声方差倍数 $\|u\|^2$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>$-49,50$</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">4901</td>
+</tr>
+<tr>
+<td>$10^{-4}$</td>
+<td>$-16,17$</td>
+<td style="text-align: right;">0.33</td>
+<td style="text-align: right;">545</td>
+</tr>
+<tr>
+<td>$10^{-2}$</td>
+<td>$17/67,50/67$</td>
+<td style="text-align: right;">$33/67$</td>
+<td style="text-align: right;">$2789/4489\approx0.6213$</td>
+</tr>
+</tbody>
+</table></div>
+<p>例如第二行分子为 $0.0001-0.01\times0.49=-0.0048$，分母为 $0.0001+0.0002=0.0003$，所以 $t=-16$，$r=0.49-0.16=0.33$。加载没有创造更准确的路径信息，而是主动留下反射以减少权重幅度。</p>
+<p><strong>第3步：说明这个目标何时等于总体误差。</strong> 设每路噪声在路径之后加入，相互独立、零均值、等方差 $\sigma^2$，且与源独立。设延迟源在评分区的总体均方为 $P_s>0$。权重和为1使当前直达项准确减去，输出对源的误差只剩 $r s[n-L]+u_1\nu_1[n]+u_2\nu_2[n]$。展开平方并按这些独立条件去掉交叉项，得到</p>
+<p>$$\begin{aligned}
+\operatorname{MSE}_{\mathrm{population}}
+&=r^2P_s+\sigma^2\|u\|^2,\\
+\lambda&=\sigma^2/P_s,\\
+\operatorname{MSE}_{\mathrm{population}}/P_s
+&=r^2+\lambda\|u\|^2.
+\end{aligned}\tag{7-27}$$</p>
+<p>源不必跨时白：直接项已由约束消去，误差中没有需要与当前源去相关的第二个源项。若噪声先于路径加入、路间相关、与源相关或方差不同，不能直接使用此式。真实有限记录的噪声互乘和源—噪声交叉项也不必恰好为零。</p>
+<p>当 $P_s=0.005$、$\sigma^2=5\times10^{-7}$ 时，$\lambda=10^{-4}$。精确逆的总体误差为0.0024505；受限正则设计为 $0.33^2\times0.005+545\times5\times10^{-7}=0.000817$。后者减少噪声代价，却有0.0005445的干净反射误差。若噪声不存在，精确逆的干净误差为零，本题正则设计不会更好。$\lambda=10^{-2}$ 那一行展示更强的权重惩罚，不能把它当作当前噪声比例对应的总体MSE最优解。</p>
+<p><img alt="图59 已知双路径的反射与噪声取舍" src="../figures/fig59_mint_noise_tradeoff.png" onerror="this.alt+='（图缺失）'" /></p>
+<p>图59的横轴是反射系数差 $|a-b|$，不是多项式零点之间的距离。解析噪声方差倍数、总体误差与有限PCM误差采用不同标记；这些量的分母及含义不同。E07-21把本题的512点反射路径和三种输出做成真实生成并读回的合成PCM，检验有限交叉项及量化后的差异。</p>
+<p><a id="e07-21"></a></p>
+<h3 id="sec-u-f7410ace89">E07-21：精确逆与受限正则逆的六个PCM文件</h3>
+<p><strong>输入与已知条件。</strong> 本题为确定路径的数学合成，不是真实房间或盲去混响。采样率16 kHz，源长32000点，四个初始相位为零的余弦频率为200、500、900、1200 Hz，各幅度0.05。首尾320点（20 ms）使用含端点的平方正弦淡变；补512点尾部后所有文件为32512点，即2.032 s。</p>
+<p>两麦路径的抽头位于0与512点：第一路反射系数为0.5，第二路分别为−0.5或0.49。</p>
+<p>用同一源采样时轴，不拟合增益或时移。各路在路径之后叠加独立Rademacher噪声，即等概率取 $\pm\sqrt{5\times10^{-7}}$；种子20261001、PCG64、先生成两路全部32512点，再由同一噪声用于两种路径条件。噪声也覆盖尾部。对应离散观测模型为</p>
+<p>$$\begin{aligned}
+x_1[n]&=s[n]+0.5s[n-512]+\nu_1[n],\\
+x_2[n]&=s[n]+b s[n-512]+\nu_2[n],\\
+y[n]&=u_1x_1[n]+u_2x_2[n],\qquad u_1+u_2=1.
+\end{aligned}\tag{7-28}$$</p>
+<p>负时间源为零，$b=-0.5$ 或0.49。没有路径估计阶段，三组权重直接来自E07-14和E07-20。先对未量化的双通道观测加权，再分别量化各输出；发布的双通道WAV另行量化，因此不要求重新加权其PCM与发布输出逐字节相同。</p>
+<p><strong>文件与播放。</strong> 六个PCM16 WAV使用共同增益1，不逐文件峰值归一化。两个array为双通道，其余为单通道；量化采用乘32768、舍入到最近偶数整数、读回除32768，无抖动或削波。请先调低音量：</p>
+<ul>
+<li><a href="mint_audio/mint_reference.wav">源参考</a><audio class="audio-sample" controls preload="none" aria-label="源参考" src="mint_audio/mint_reference.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="mint_audio/mint_well_array.wav">反射系数差为1的双麦观测</a><audio class="audio-sample" controls preload="none" aria-label="反射系数差为1的双麦观测" src="mint_audio/mint_well_array.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="mint_audio/mint_near_array.wav">反射系数差为0.01的双麦观测</a><audio class="audio-sample" controls preload="none" aria-label="反射系数差为0.01的双麦观测" src="mint_audio/mint_near_array.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="mint_audio/mint_well_exact.wav">差为1的精确逆输出</a><audio class="audio-sample" controls preload="none" aria-label="差为1的精确逆输出" src="mint_audio/mint_well_exact.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="mint_audio/mint_near_exact.wav">差为0.01的精确逆输出</a><audio class="audio-sample" controls preload="none" aria-label="差为0.01的精确逆输出" src="mint_audio/mint_near_exact.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="mint_audio/mint_near_regularized.wav">差为0.01的受限正则输出</a><audio class="audio-sample" controls preload="none" aria-label="差为0.01的受限正则输出" src="mint_audio/mint_near_regularized.wav">请使用上方 WAV 链接下载。</audio></li>
+</ul>
+<p><strong>先固定评分区间。</strong> 稳态窗为样本 $[2400,29600)$，每通道27200点。MSE取该窗内 $\sum_n(y[n]-s[n])^2/27200$，不校准输出；相对平方误差除以同窗参考平方和。二者与式(7-16)拟合全局复增益的谱域NMSE不同，也不是回声消除或语音识别指标。末512点保留供完整尾部核对，不参与此稳态评分。</p>
+<p>读回整数PCM后，参考平方和为146024450180。三种输出误差的整数平方和分别为7223120、72001808458、23945970352。因此每行的PCM MSE可独立由误差整数和除以 $27200\times32768^2$ 复算，相对平方误差则直接由两个整数和相除。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">已知路径输出</th>
+<th scope="col" style="text-align: right;">总体理论MSE</th>
+<th scope="col" style="text-align: right;">有限浮点MSE</th>
+<th scope="col" style="text-align: right;">实际PCM MSE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$b=-0.5$，精确逆</td>
+<td style="text-align: right;">$2.5000\times10^{-7}$</td>
+<td style="text-align: right;">$2.4849\times10^{-7}$</td>
+<td style="text-align: right;">$2.4732\times10^{-7}$</td>
+</tr>
+<tr>
+<td>$b=0.49$，精确逆</td>
+<td style="text-align: right;">0.0024505</td>
+<td style="text-align: right;">0.0024653</td>
+<td style="text-align: right;">0.0024653</td>
+</tr>
+<tr>
+<td>$b=0.49$，$\lambda=10^{-4}$</td>
+<td style="text-align: right;">0.0008170</td>
+<td style="text-align: right;">0.0008199</td>
+<td style="text-align: right;">0.0008199</td>
+</tr>
+</tbody>
+</table></div>
+<p>三行实际PCM相对平方误差分别约为0.00004947、0.49308050、0.16398603。精确逆对干净路径的反射抵消关系仍成立，但差为0.01的权重将后路径噪声明显放大。受限正则输出主动保留反射，所以总误差减小并不意味着每个干净源频率都无失真。</p>
+<p><strong>为什么实际值不等于理论值？</strong> 有限记录的噪声互乘均值为约 $-3.0147\times10^{-9}$，没有恰好为零。正则输出的有限浮点误差可分为干净误差0.0005445000、输出噪声0.0002741400、两倍交叉项0.0000012535；三者相加约0.0008198935。将总体期望的交叉项零直接代替这个固定种子的实际项，会得到另一个数字。PCM再包含独立量化差异，不能把误差全部解释成噪声方差变化。</p>
+<p><strong>复现与限制。</strong> 运行 <code>.venv/bin/python -m codes.chapters.ch07.examples.mint_teaching_demo</code> 生成，追加 <code>--check</code> 仅只读检查；唯一模型在<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/core/mint_teaching.py">mint_teaching.py</a>，实际文件、取点、源摘要及浮点/PCM结果在<a href="mint_audio/MANIFEST.json">独立清单</a>。这是一个固定源、固定种子的已知路径比较，未做人声、听感或真实房间验证；它不能给出盲WPE、一般MINT或其他噪声条件的统一排名。</p>
 <span id="sec-7-1-3" class="anchor-alias" aria-hidden="true"></span><span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-7-10">7.10 研究方向</h2>
 <p>WPE 的改进主要围绕四个限制展开：</p>
 <ul>
@@ -1085,13 +1316,14 @@ g&=\frac{s^Ty}{s^Ts},\\
 </ul>
 <p>神经网络可以为这些解析结构估计功率、掩码或先验，但比较结果时要对齐数据集、通道数、因果性和延迟。本章不列无法按这些条件复核的近期性能数字。</p>
 <p><strong>MetaAF WPE改变系数更新规则。</strong> 固定频域预测结构后，用学习到的GRU/FGRU优化器生成更新量，以处理手工更新规则对信号和路径变化的适应问题。<a href="https://github.com/adobe-research/MetaAF/blob/56c4665bdc51c2e0595a7c0cd9b1266408adceff/zoo/wpe/wpe.py">固定源码 <code>zoo/wpe/wpe.py</code></a>的直接乘法参数约定与本章共轭系数不同，需要先核对。一项可行的最小检查是暂以预先指定的更新量替代网络输出，手算两步系数、预测与状态推进，再比较相同结构下的固定和学习更新器；这是建议实验，本书没有训练或运行该网络权重。</p>
-<p><strong>VACE-WPE改变回归输入。</strong> <a href="https://doi.org/10.1109/TASLP.2022.3205752">Yang与Chang（2022）</a>为单麦观测生成虚拟第二通道，再执行双通道预测；虚拟通道没有增加独立物理麦克风或真实阵列孔径。该配置的功率网络只使用实际观测，因此也不能直接套用两路残差平均的功率模型。<a href="https://github.com/dreadbird06/tso_vace_wpe/tree/10ee77dd020d58af508feb77251f9353208cb33a">固定源码</a>采用离线前端。一项最小检查是固定给定的虚拟复谱与正功率，先验证两通道排列、零输入和求解结果，再加载网络比较有无虚拟通道；本书未运行PyTorch推理，不能把这一方案写成已完成的神经实验。两种扩展的依赖、许可证和复核边界见<a href="research/02_aec_wpe_separation.html#wpe">研究手册W09</a>。</p>
+<p><strong>VACE-WPE改变回归输入。</strong> <a href="https://doi.org/10.1109/TASLP.2022.3205752">Yang与Chang（2022）</a>为单麦观测生成虚拟第二通道，再执行双通道预测；虚拟通道没有增加独立物理麦克风或真实阵列孔径。该配置的功率网络只使用实际观测，因此也不能直接套用两路残差平均的功率模型。<a href="https://github.com/dreadbird06/tso_vace_wpe/tree/10ee77dd020d58af508feb77251f9353208cb33a">固定源码</a>采用离线前端。</p>
+<p>一项最小检查是固定给定的虚拟复谱与正功率，先验证两通道排列、零输入和求解结果，再加载网络比较有无虚拟通道；本书未运行PyTorch推理，不能把这一方案写成已完成的神经实验。两种扩展的依赖、许可证和复核边界见<a href="research/02_aec_wpe_separation.html#wpe">研究手册W09</a>。</p>
 <p>生成式恢复是另一条路线。例如<a href="https://doi.org/10.1109/TASLPRO.2026.3696215">Stream.FM（2026）正式论文</a>（卷34，3087～3101页；另有<a href="https://arxiv.org/abs/2512.19442v3">v3作者版</a>）用逐帧流匹配处理包含去混响在内的语音恢复任务。</p>
 <p>它学习从受损观测到恢复信号的条件生成过程，不是用 WPE 的延迟线性回归替换一个更好的功率估计器。流式运行还要为数值求解的各阶段分别维护历史；网络单次调用因果不等于完整采样器已经能跨音频块续算。固定源码入口、已发现的状态接口问题与未执行边界见<a href="research/02_aec_wpe_separation.html#streamfm">研究手册 N14</a>。本书没有运行该模型权重，不能据此声称它在本章合成例上优于 WPE。</p>
 <p>参数设置应先在目标数据上把直达声和早期反射的损伤控制在声明的指标阈值内，再根据晚期拖尾长度和可用帧数选择 $K$。保护延迟不能保证早期成分完全不变；弱混响时可以旁路 WPE。多说话人分离见第 8 章。</p>
 <hr />
 <blockquote>
-<p>📄 本篇信息：配图 2 张 ｜ <a href="index.html">回首页</a></p>
+<p>📄 本篇信息：配图 3 张 ｜ <a href="index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="06_aec.html">← 上一篇</a></span><span><a href="08_speech-separation.html">下一篇 →</a></span></div>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>

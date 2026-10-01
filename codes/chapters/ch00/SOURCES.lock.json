@@ -1998,6 +1998,45 @@
         "said/__init__.py",
         "said/cli.py"
       ]
+    },
+    {
+      "id": "nemo_wpe",
+      "url": "https://github.com/NVIDIA/NeMo.git",
+      "revision": "2381f42f6979449b5b99538f8f80135831009b51",
+      "release": "v2.4.0",
+      "verified_at": "2026-10-01",
+      "license": "Apache-2.0",
+      "license_sha256": "43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1",
+      "fetch_enabled": true,
+      "scope": "MaskBasedDereverbWPE and WPEFilter fixed-source interface comparison",
+      "acquisition": "independent_source_checkout",
+      "note": "Official NVIDIA/NeMo URL now redirects to NVIDIA-NeMo/Speech. Exact selected sources and license only, not a complete installable NeMo distribution. Amplitude mask is squared for power; later iterations regress the previous residual. Invalid lengths are masked before statistics and loading uses diag_reg*trace(Q)+eps without dimension division. Audited statically; Torch/frameworks/models/data are not installed or executed. Version 25.07 documentation is separate from this tag identity. Code license does not cover arbitrary models or datasets. No NOTICE file exists at the checked fixed root path.",
+      "source_paths": [
+        "LICENSE",
+        "README.md",
+        "setup.py",
+        "requirements/requirements_audio.txt",
+        "requirements/requirements_common.txt",
+        "nemo/collections/audio/modules/masking.py",
+        "nemo/collections/audio/modules/transforms.py",
+        "nemo/collections/audio/models/enhancement.py",
+        "nemo/collections/audio/parts/submodules/multichannel.py",
+        "nemo/collections/audio/parts/utils/audio.py",
+        "tests/collections/audio/test_audio_modules.py"
+      ],
+      "entrypoints": [
+        "LICENSE",
+        "README.md",
+        "setup.py",
+        "requirements/requirements_audio.txt",
+        "requirements/requirements_common.txt",
+        "nemo/collections/audio/modules/masking.py",
+        "nemo/collections/audio/modules/transforms.py",
+        "nemo/collections/audio/models/enhancement.py",
+        "nemo/collections/audio/parts/submodules/multichannel.py",
+        "nemo/collections/audio/parts/utils/audio.py",
+        "tests/collections/audio/test_audio_modules.py"
+      ]
     }
   ]
 }

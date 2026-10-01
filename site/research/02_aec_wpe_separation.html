@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AEC、WPE 与分离源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5fbcae4fdfb5"><style>
+<meta name="source-digest" content="026ad29d8bcd"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -44,7 +44,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .topbtn{display:block;margin:20px auto;background:#1a1a2e;color:#fff;border-radius:50%;width:42px;height:42px;text-align:center;line-height:42px;text-decoration:none;font-size:18px}
 .offline-note{display:none;background:#fff7e6;border:1px solid #e6c87a;color:#7a5b00;padding:8px 14px;font-size:13.5px}
 .anchor-alias{display:block;position:relative;top:-60px;visibility:hidden}
-@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td{min-width:8em}}
+@media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td{min-width:8em}}
 @media print{.topbar,.side,.pn,.topbtn,.toc-mobile{display:none}.main{padding:0}.table-scroll{overflow:visible}table{display:table}a{color:#000;text-decoration:none}pre{white-space:pre-wrap;background:#fff;color:#000;border:1px solid #ccc}}
 </style>
 <script>
@@ -212,7 +212,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="02_aec_wpe_separation.html#sec-u-604eb85ad9">6. 复现实验的共同记录表</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="aec去混响与语音分离算法工业实现与源码研究" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-bc69826562">AEC、去混响与语音分离：算法、工业实现与源码研究</h1>
-<p>AEC 的 APA 原函数、APM 通道边界与神经方法分类复核日期：2026-10-01；AEC 原论文、接口诊断与近年候选原核实日期：2026-09-28；原核实日期：2026-09-22；AEC 工业接口与配对数据说明复核日期：2026-09-23；BSS/GSS 源码入口与实验复核日期：2026-09-24；WPE 与 cACGMM 源码入口于 2026-09-29 扩充并离线重核；推导练习及 Stream.FM、TF-Locoformer 静态审查日期：2026-09-26。对应正文 <a href="../06_aec.html">第 6 章</a>、<a href="../07_wpe-dereverberation.html">第 7 章</a> 与 <a href="../08_speech-separation.html">第 8 章</a>。本篇按处理对象分开说明算法、源码位置和复现实验；正式版本和许可边界由 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCES.lock.json">SOURCES.lock.json</a> 固定。</p>
+<p>WPE 原始资料、NARA 多通道历史排列与 NeMo 固定源码复核日期：2026-10-01；AEC 的 APA 原函数、APM 通道边界与神经方法分类复核日期：2026-10-01；AEC 原论文、接口诊断与近年候选原核实日期：2026-09-28；原核实日期：2026-09-22；AEC 工业接口与配对数据说明复核日期：2026-09-23；BSS/GSS 源码入口与实验复核日期：2026-09-24；WPE 与 cACGMM 源码入口于 2026-09-29 扩充并离线重核；推导练习及 Stream.FM、TF-Locoformer 静态审查日期：2026-09-26。对应正文 <a href="../06_aec.html">第 6 章</a>、<a href="../07_wpe-dereverberation.html">第 7 章</a> 与 <a href="../08_speech-separation.html">第 8 章</a>。本篇按处理对象分开说明算法、源码位置和复现实验；正式版本和许可边界由 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCES.lock.json">SOURCES.lock.json</a> 固定。</p>
 <p>“外部实现”表示可以找到承担该算法计算的代码，不表示本书已经训练、编译或测完该系统。本篇实际运行的结果单独列出，包括<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_aec_wpe_sep_track.py">教学基线测试</a>与 W01 的独立实现对照；未附执行结果的外部实验均为复现设计。外部代码、权重和数据分别遵守各自条款。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="1-先确定信号接口和要解决的问题" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-a50069874f">1. 先确定信号接口和要解决的问题</h2>
 <p>AEC 使用已知播放参考，估计并减去由它产生的声学回声；WPE 使用麦克风自己的延迟历史，预测晚期混响；盲分离依靠独立性、源谱或空间模型区分多个未知声源；监督分离还需要训练参考或目标条件。把这些模块都称作“消噪”，会遗漏不同的输入和验收条件。</p>
@@ -847,6 +847,41 @@ PATH=/path/to/depot_tools:$PATH DEPOT_TOOLS_UPDATE=0 \
 <span id="sec-21" class="anchor-alias" aria-hidden="true"></span><span id="w02-逐帧递推-wpe" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-737de64b9e">W02　逐帧递推 WPE</h3>
 <p><code>nara_wpe/wpe.py</code> 的 <code>OnlineWPE</code> 保存逆相关矩阵、预测抽头、功率和输入缓冲；<code>step_frame()</code> 接收 <code>(频点, 通道)</code>。该实现先由旧状态输出当前预测残差，再更新状态，这与每次对增长的整段录音重新运行离线 <code>wpe()</code>不同。逐帧递推依据见<a href="https://www.isca-archive.org/interspeech_2017/caroselli17_interspeech.pdf">Caroselli 等，Interspeech 2017，§3</a>及<a href="https://groups.uni-paderborn.de/nt/pubs/2018/ITG_2018_Drude_Paper.pdf">Drude 等，ITG 2018，§4.3 式(11)～(17)</a>。Kinoshita 2017 的神经功率实验采用另一种分块配置，见 W04。</p>
 <p>锁定的 0.0.11 版不能把三个接口的同名 <code>delay</code> 直接当作同一个时间索引。单频点、单通道、单抽头取帧 <code>[10,20,30,40]</code>，在 $t=3$ 令 <code>delay=1</code>、固定预测抽头为 1：离线 <code>build_y_tilde()</code> 取 $X_{t-1}=30$，残差为 10；无状态 <code>online_wpe_step()</code> 取 $X_{t-2}=20$，残差为 20；有状态 <code>OnlineWPE.step_frame()</code> 在写入当前帧前从旧缓冲取 $X_{t-3}=10$，残差为 30。这是该固定版本的接口行为，不是 WPE 理论规定必须相差两帧。</p>
+<p><strong>多抽头还要迁移排列。</strong> 两个通道分别取 <code>[10,20,30,40,50,60]</code> 和 <code>[100,200,300,400,500,600]</code>，固定两个抽头、<code>delay=1</code>，当前为零起始第5帧。无状态接口收到第2～5帧的窗口，状态类在当前帧写入前持有第1～4帧。未修改原模块的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/examples/audit_upstream_wpe_contracts.py">新审计</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/reports/upstream_wpe_contracts.json">实际报告</a>核到：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">0.0.11 接口</th>
+<th scope="col">实际展开的历史</th>
+<th scope="col">展开顺序</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>build_y_tilde()</code></td>
+<td><code>[50,500,40,400]</code></td>
+<td>抽头优先，同一抽头内列通道；新到旧</td>
+</tr>
+<tr>
+<td><code>online_wpe_step()</code></td>
+<td><code>[40,30,400,300]</code></td>
+<td>通道优先，同一通道内列抽头；新到旧</td>
+</tr>
+<tr>
+<td><code>OnlineWPE._get_prediction()</code>，二维逐帧输入</td>
+<td><code>[20,30,200,300]</code></td>
+<td>通道优先，同一通道内列抽头；旧到新</td>
+</tr>
+</tbody>
+</table></div>
+<p>人为把第一输出的四个预测系数设为 <code>[1,2,3,4]</code>，另一输出设为零，当前第一路为60。两个预测值分别按表中四项加权：</p>
+<p>$$
+\begin{aligned}
+p_{\mathrm{stateless}}&=40+2\times30+3\times400+4\times300=2500,\\
+p_{\mathrm{state}}&=20+2\times30+3\times200+4\times300=1880.
+\end{aligned}
+$$</p>
+<p>因此无状态预测残差为 $60-2500=-2440$，状态类为 $60-1880=-1820$。这些整数是独立手算，原方法实际输出与之相同；人为系数只检查取点与排列，不代表已收敛的去混响滤波器。移植时须分别核对<strong>帧索引</strong>和<strong>系数对应的通道/抽头排列</strong>，统一保护延迟仍不够。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/examples/compare_online_wpe_reference.py">在线接口对照</a>先按数组切片手算上述三项，再用一份精简的 NumPy 适配参考与未修改的 0.0.11 源码逐帧比较。参考程序保留该版本的缓冲顺序和数值保护规则，随附上游 MIT 声明；程序间一致性用于确认版本行为，独立期望来自抽头手算及另行用分数复算的实数、复数启动例。</p>
 <p>固定种子 20260922、形状 <code>(48,2,1)</code>（帧、频点、通道）、2 抽头、<code>delay=2</code>、遗忘因子 0.95 时，NumPy 递推与上游连续输出的最大绝对误差为 <code>2.39e-15</code>。同一对象处理整段或外层分成两块，输出最大差为 0；在零起始第 24 帧重建对象，差异从第 24 帧立即出现，整段最大绝对差约为 2.56。数值为无单位合成复谱上的状态回归，不是语音质量或实时性测量。</p>
 <p>最小实验逐帧输入一个固定记录并保留状态，再检查把同一帧流分成不同外层批次是否改变结果。失败实验中途错误重建 <code>OnlineWPE</code>，查看启动段反复出现；另测静音、设备重启和房间突变。遗忘因子与功率估计共同决定跟踪，不应仅报告 <code>taps</code> 和 <code>delay</code>；换版本或接口时还必须重新核对 <code>delay</code> 对应的实际时间戳。</p>
@@ -863,6 +898,47 @@ PATH=/path/to/depot_tools:$PATH DEPOT_TOOLS_UPDATE=0 \
 <p><strong>ESPnet 参数究竟在哪里生效。</strong> 固定版默认掩码网络类型为 <code>blstmp</code>，抽头 5、延迟 3、迭代 1。掩码只在第一轮乘到观测功率上；随后跨通道平均并用外层绝对地板 <code>eps=1e-6</code> 限制。后续迭代的功率来自上轮残差，但回归目标仍是原观测。默认双向网络和全段统计均不支持直接宣称流式。</p>
 <p><code>diagonal_loading</code>、<code>diag_eps</code>、<code>use_torch_solver</code> 虽出现在构造器并被保存，却没有在 <code>forward()</code> 读出或传给 <code>wpe_one_iteration()</code>；底层 <code>get_filter_matrix_conj()</code> 固定使用默认 <code>eps=1e-10</code> 加单位矩阵后调用 <code>.inverse()</code>。这与同仓库波束模块的开关语义不同。外层 <code>eps</code> 也不能自动当成该矩阵加载量。</p>
 <p><code>MaskEstimator</code> 第 82 行调用非原位 <code>masked_fill()</code> 后丢弃返回值，因此该行本身没有清零掩码。外层 <code>DNN_WPE</code> 在求解后清输出 padding，不等于先从相关统计中排除补齐帧。实际调用要保证上游有效区与补零约定；<code>normalization=True</code> 的时间归一化还没有给掩码总和加正地板，全零掩码会构成除零边界。这些是固定源码与 AST 证据，本机没有执行 PyTorch 网络或权重；不能写成完整 ESPnet 推理失败率。</p>
+<p><a id="nemo-wpe"></a></p>
+<p><strong>NeMo：同名 WPE 的参数与数据流不能直接移植。</strong> <a href="https://docs.nvidia.com/nemo-framework/user-guide/25.07/nemotoolkit/audio/api.html">官方25.07 API文档</a>列出 <code>MaskBasedDereverbWPE</code> 与 <code>WPEFilter</code>；本书另固定官方 <code>v2.4.0</code> 提交 <code>2381f42f6979449b5b99538f8f80135831009b51</code>。文档版本与代码提交分别记录，没有证据表明该文档构建恰好使用这一 SHA。原 <code>NVIDIA/NeMo</code> 仓库网页现重定向 <code>NVIDIA-NeMo/Speech</code>，本节入口仍固定同一提交。</p>
+<p><a href="https://github.com/NVIDIA-NeMo/Speech/blob/2381f42f6979449b5b99538f8f80135831009b51/nemo/collections/audio/modules/masking.py#L1028-L1063"><code>masking.py::MaskBasedDereverbWPE.forward()</code></a>接收 <code>(批,通道,频点,帧)</code> 复谱、有效长度与可选掩码，返回 <code>(复谱,长度)</code>。<a href="https://github.com/NVIDIA-NeMo/Speech/blob/2381f42f6979449b5b99538f8f80135831009b51/nemo/collections/audio/parts/submodules/multichannel.py#L754-L1034"><code>multichannel.py::WPEFilter</code></a>构造延迟历史，估计加权统计并求线性方程；它明确采用 batch 统计，没有持续输入缓存。外层完整模型另由 <a href="https://github.com/NVIDIA-NeMo/Speech/blob/2381f42f6979449b5b99538f8f80135831009b51/nemo/collections/audio/models/enhancement.py#L99-L134"><code>enhancement.py</code> 99～134行</a>按编码、掩码估计、处理、解码顺序调用，不应把频域处理类称为直接波形接口。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">核对项</th>
+<th scope="col">固定 NeMo 行为</th>
+<th scope="col">移植时的影响</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>功率与掩码</td>
+<td>第一轮 $\lambda=(m|X|)^2$，然后跨通道平均；掩码默认幅度范围 $10^{-10}$～1</td>
+<td>与 ESPnet 的观测功率乘掩码不同；不能共享未经换算的同一个 mask</td>
+</tr>
+<tr>
+<td>后续迭代观测</td>
+<td><code>self.filter(input=output, power=power)</code>，上一轮输出同时成为新观测和功率来源</td>
+<td>与始终预测原观测、只重估功率的 WPE 迭代不同</td>
+</tr>
+<tr>
+<td>启动与有效长度</td>
+<td>历史左补零，全部启动帧参与统计；统计前将有效长度外的权重清零</td>
+<td>不等于 NARA <code>valid</code>；也不等于先求解再清输出 padding</td>
+</tr>
+<tr>
+<td>功率与矩阵保护</td>
+<td>权重为通道均功率加 <code>eps</code> 的倒数；启用加载时向矩阵加 <code>diag_reg*trace(Q)+eps</code></td>
+<td>迹加载没有除以通道数×抽头数；两处 <code>eps</code> 及其尺度须分别声明</td>
+</tr>
+<tr>
+<td>求解与关闭加载</td>
+<td>直接 <code>torch.linalg.solve</code>；<code>diag_reg=None/0</code> 跳过矩阵加载分支</td>
+<td>不保证奇异矩阵自动最小二乘回退；功率中的 <code>eps</code> 仍存在</td>
+</tr>
+</tbody>
+</table></div>
+<p>默认内部精度为 <code>complex128</code>，<code>num_iterations=1</code>、<code>diag_reg=1e-6</code>、<code>eps=1e-8</code>。真实Torch算子、完整NeMo、权重与音频链均未运行；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/reports/upstream_wpe_contracts.json">新审计报告</a>仅绑定原文件并检查12项 AST事实。原许可为 <a href="https://github.com/NVIDIA-NeMo/Speech/blob/2381f42f6979449b5b99538f8f80135831009b51/LICENSE">Apache-2.0</a>，本地只取得11份许可、源码、依赖和测试文件。完整包还依赖Torch、NeMo/Lightning/Hydra等；所取选集不构成可直接导入的安装包，代码许可也不代表模型与数据许可。</p>
+<p><strong>独立 NumPy 例子只解释差异。</strong> 幅度2、幅度掩码0.5给功率1；若把0.5当功率掩码则得到2。再取一频一通道 <code>[1,2,3,4]</code>，单抽头、延迟1、零补历史、全帧统计，无加载及加性地板，先人为指定单位功率。第一轮系数 $20/14=10/7$，残差为 <code>[1,4/7,1/7,-2/7]</code>。第二轮共同使用这份残差的平方作功率：继续预测原观测得到系数 $146/101$、输出 <code>[1,56/101,11/101,-34/101]</code>；把残差当新观测得到系数 $28/103$、输出 <code>[1,216/721,-9/721,-234/721]</code>。这些分数来自独立标量正规方程，说明改变回归输入会改变问题；初始单位功率是本书控制条件，<strong>不是NeMo默认完整输出</strong>，也没有用NumPy桩冒充Torch执行。</p>
 <span id="sec-24" class="anchor-alias" aria-hidden="true"></span><span id="w05-wpd同时利用当前通道与延迟历史" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-1910126ff5">W05　WPD：同时利用当前通道与延迟历史</h3>
 <p>WPD 把当前帧与历史帧一起放入无失真滤波问题。它的约束只施加在扩展向量的当前目标分量，历史部分用于削弱可预测晚期混响。<a href="https://doi.org/10.1109/LSP.2019.2911179">Nakatani 与 Kinoshita，IEEE Signal Processing Letters 2019</a>（<a href="https://arxiv.org/abs/1812.08400">作者版</a>）提出统一的加权功率最小化准则；同作者的<a href="https://arxiv.org/abs/1908.02710">EUSIPCO 2019 论文</a>进一步给出生成模型、概率表述和最大似然推导。前者是 WPD 的原始论文，后者解释该准则的统计依据。</p>
 <p>参考实现入口为 <a href="https://github.com/espnet/espnet/blob/be79590bb2ff26ffb01bc825c5f68cb9418b7f0d/espnet2/enh/layers/beamformer.py">ESPnet <code>beamformer.py</code></a> 的 WPD 相关函数及 <code>dnn_beamformer.py</code> 的类型选择；固定源码的调用差异见下文。</p>
@@ -877,6 +953,7 @@ PATH=/path/to/depot_tools:$PATH DEPOT_TOOLS_UPDATE=0 \
 <p><strong>已知路径的 MINT。</strong> <a href="https://www.kanedayyy.jp/asp/pub/sig_ac/MINT1988paper.pdf">Miyoshi、Kaneda 1988 作者全文</a>研究已知有限脉冲响应的多输入/输出逆滤波结构；本章最小例限定单源、多观测、通道多项式无公共零且逆滤波器长度足够。公共零、路径估计误差、近公共零以及混合后噪声会破坏精确逆或使噪声放大。互素只是存在性条件，不是良好条件数或抗噪保证。本轮已锁库中没有确认可直接映射该原始 MINT 的入口；一般矩阵逆或波束形成不算 MINT 实现。正文小例属于本书独立代数，不能称为作者软件已复现。</p>
 <p><strong>倒谱滤波。</strong> <a href="https://dsp-group.mit.edu/wp-content/uploads/2024/11/nonnlinearfiltering_1968.pdf">Oppenheim、Schafer、Stockham 1968 原文</a> §VI 的 Echo Removal 讨论复杂倒谱中的简单回声分离。该 MIT 文件是同年 TAU 重印本，首面注明原刊为 Proceedings of the IEEE 56(8), 1264–1291，正式 DOI 为 <a href="https://doi.org/10.1109/PROC.1968.6570">10.1109/PROC.1968.6570</a>。作者说明梳状滤波需要回声时间；非等间隔回声不再有同样集中的倒谱位置。短时分块还会带来边缘误差。</p>
 <p>本章若定义实倒谱为 <code>IFFT(log(|X|²))</code>，它是 <code>IFFT(log|X|)</code> 的两倍，且不包含原相位。零谱须声明正地板；lifter 只修改倒频率系数，不能独自恢复任意房间传递函数的相位。保留观测相位属于另加的合成约定，不是无失真逆卷积证明。已锁库的 MFCC liftering 也不能直接归为去混响实现。</p>
+<p>本章新增的 <a href="../07_wpe-dereverberation.html#e07-18">E07-18</a>用相同幅度谱、不同相位检查这一信息缺口；<a href="../07_wpe-dereverberation.html#e07-19">E07-19</a>把加权回归写成设计矩阵并比较 QR/SVD 的病态边界；<a href="../07_wpe-dereverberation.html#e07-20">E07-20</a>在 MINT 噪声例上检验带约束的正则化。它们是本书独立小例，不是取得原作者完整房间处理软件；<a href="../07_wpe-dereverberation.html#e07-21">E07-21</a>另从实际PCM重读计算已知分量的目标损伤与拖尾，避免用内存浮点评分代替交付音频。</p>
 <p><strong>晚期谱方差。</strong> <a href="https://israelcohen.com/wp-content/uploads/2018/05/SPL_Sep2009.pdf">Habets、Gannot、Cohen 2009，SPL 16(9), 770–773</a> §II～IV 根据 RIR 统计模型估计晚期谱方差，并显式考虑直达声能量。模型依赖频率相关的混响时间与直混比；扩散衰减近似有混合时间和 Schroeder 频率边界。其 §V-C 配合对数谱幅度增益；不能把它与任意维纳增益或单个指数递推混为一谈。功率在一帧时移 H 秒后的指数衰减与幅度不同，见正文的独立单位换算例。</p>
 <p>固定 SpeexDSP 的 <code>preprocess.c</code> 虽保留 <code>SET_DEREVERB</code>，相关新能量更新已注释，level/decay 控制也留有重新启用提示；把零初始化估计只乘衰减不会产生晚期估计。故本轮不把该 API 登记成已工作的谱方差去混响器。三个传统路线目前分别作为原理及本书小例索引，没有新增原始软件性能声明。</p>
 <span id="w08-工业证据btk-和-gss-的实际取点" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-087519cc0d">W08　工业证据、BTK 和 GSS 的实际取点</h3>
@@ -890,6 +967,7 @@ PATH=/path/to/depot_tools:$PATH DEPOT_TOOLS_UPDATE=0 \
 <p><strong>MetaAF WPE 改更新器。</strong> <a href="https://arxiv.org/abs/2204.11942">MetaAF 原论文</a>研究学习自适应滤波更新；固定提交的 <a href="https://github.com/adobe-research/MetaAF/blob/56c4665bdc51c2e0595a7c0cd9b1266408adceff/zoo/wpe/wpe.py"><code>zoo/wpe/wpe.py</code></a>保留频域预测结构，让 GRU/FGRU 优化器生成系数更新。<code>WPEOLA</code> 从缓冲末帧的通道 0 取目标，较早 <code>n_taps</code> 帧作为输入；断言缓冲帧数等于抽头数加延迟。代码直接以 <code>w*d_input</code> 求预测，其参数约定不能直接替换成正文的共轭系数。</p>
 <p>平方根 Hann 分析窗与配对合成窗属于 OLA 配置；示例训练命令使用 512 点窗、256 点移、5 抽头、延迟 2、1/4/8 麦。内层归一损失的地板是最大目标功率的 <code>1e-3</code>，梯度特征的除法却没有同一地板；不能用损失有限推断全部特征对静音安全。REVERB 数据路径、匹配权重、JAX/Haiku 和训练环境仍是完整复现前提。核心 <code>metaaf/</code> 的 UIUC/NCSA 与 <code>zoo/</code> 的 Adobe 非商业研究许可分别保留；源码取得不表示商业授权或运行通过。</p>
 <p><code>nara_wpe_eval.py::fit_nara()</code> 把完整历史窗传给 <code>OnlineWPE.step_frame()</code>，超出该方法文档写出的 <code>(频点,通道)</code> 输入，但固定实现的内部代码实际支持三维整窗。W11 的受控调用与直接单帧输入逐项一致，推翻了仅凭文档产生的不兼容怀疑。检查提取未修改函数、使用真实 NARA 状态类，并用已知复谱替代 STFT 边界；没有执行 JAX、真实分帧或 MetaAF 网络。</p>
+<p><a href="https://arxiv.org/pdf/2204.11942">MetaAF 原文 §VII-C、图13</a>还讨论了不同指标的相反趋势：MetaWPE 的混响抑制指标 SRR 提高，但部分配置的 STOI 降低。更多可预测能量被减去不等于目标更完整，不能仅按预测残差或 SRR 选择学习更新器。这里转述原文的指标边界，没有在本机复跑其语音实验或新增跨条件性能表。</p>
 <p><strong>VACE-WPE 改回归输入。</strong> <a href="https://doi.org/10.1109/TASLP.2022.3205752">Yang、Chang 2022 正式论文</a>及<a href="https://arxiv.org/pdf/2112.13569">作者版 §II-A、图 1</a>在单麦场景生成虚拟第二通道，再执行双通道神经 WPE；PSD 网络只看实际观测，虚拟通道不参与其共享功率估计。TSO 版本还用说话人嵌入目标微调，故声纹任务优化不等于普遍音质最优。虚拟通道没有增加独立物理传感器或真实阵列孔径。</p>
 <p><a href="https://github.com/dreadbird06/tso_vace_wpe/tree/10ee77dd020d58af508feb77251f9353208cb33a">MIT 官方源码</a>从 <code>VACEWPE.forward()</code> 读到 <code>wpe_mb_torch()</code>、PSD 的 <code>LstmDnnNet</code> 和 <code>VACENet</code>。输入为 <code>(批,时间)</code> 波形，堆成两通道后批量求解；这是离线前端。<code>run.py</code> 设置 1024/256 点 STFT、延迟 3、普通/虚拟通道抽头 30/15，并在输入上施加动态范围增益；复现时不能忽略该增益和 checkpoint 里的归一化参数。本书仅取得许可和源码依赖，不取得 <code>models/</code>、<code>data/</code> 或运行 PyTorch 推理。</p>
 <p>VACE 的 <code>wpe_th_utils.py</code> 原生复数分支逐频取时间最大功率的 <code>1e-10</code> 为地板，零 PSD 的最大值仍为零，不能保证全静音安全。历史零填充后全部帧参与统计，按抽头再通道排列。求解按 LU、<code>linalg.solve</code>、逆矩阵、伪逆依次尝试；实虚双张量分支另走 <code>math_utils.py</code>，不能以原生复数分支的检查代替它。以上仅静态核对，源码存在回退路径不代表所有奇异矩阵都返回有限正确解。</p>
@@ -919,8 +997,15 @@ PATH=/path/to/depot_tools:$PATH DEPOT_TOOLS_UPDATE=0 \
 </tbody>
 </table></div>
 <p>前两项缺少本书可直接运行的匹配官方配方，不新增正文大节或跨条件数字排行。对分布式算法的最小教学诊断可先固定已知时差检查回归帧；这只验证索引，不等于复现原论文的跨频带补偿、子集优化或真实房间收益。2026 年候选不以年份自动替换本章基线。</p>
+<p><a id="two-stage-dereverb"></a></p>
+<p><strong>训练目标可以明确选择要保留的早声。</strong> <a href="https://doi.org/10.1186/s13636-023-00285-8">Lemercier 等2023正式论文，DOI10.1186/s13636-023-00285-8</a>（<a href="https://arxiv.org/pdf/2204.02978">作者原文</a> §2.4、3、4）针对有限WPE滤长后仍有残余的问题：在WPE输出端而非只对PSD施加训练损失，再用神经PSD驱动的单通道维纳后滤。其目标可按使用者需求改变；实验的助听器目标取RIR前40ms，人工耳蜗目标实际取前16ms，后者也不能笼统写成“纯直达真值”。训练还把初始化段排除在损失之外，因此训练后的稳定段收益不能代替启动段验收。</p>
+<p><a href="https://www.inf.uni-hamburg.de/en/inst/ab/sp/publications/tasl2022-dereverberation.html">作者机构补充页</a>连接 <a href="https://github.com/sp-uhh/2sderev"><code>sp-uhh/2sderev</code></a>。截至2026-10-01，本次读到的仓库只提供推理，说明训练代码未开放，且未核到明确源码许可；本书不取得该源码、Google Drive权重或音频。该方法用于解释“早声目标、残余后滤和初始化”三个选型维度，保留原理索引，没有复现实测或新增正文算法目录。</p>
+<p><a id="pnp-wpe-candidate"></a></p>
+<p><strong>PnPWPE 仍是有限研究线索。</strong> <a href="https://arxiv.org/pdf/2312.02773">2023作者预印本</a> §II～III、式(22)～(38)把带加性噪声辅助变量的WPE与RED语音先验组成分裂迭代；这改变目标函数，不是只把原功率替换成网络输出。涉及去噪器的推导有额外条件，不能把任意DNN都当作满足该先验的算子。本次未确认可许可执行的完整作者代码、匹配去噪器/权重与正式版本细节，因此不新增正文目录、性能表或下载，不把一个自写恒等去噪器称为复现论文方法。</p>
 <span id="w11-固定源码诊断与检索范围" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-841a085a72">W11　固定源码诊断与检索范围</h3>
 <p>本轮核实日期为 2026-09-28。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/examples/audit_wpe_upstream_interfaces.py">诊断脚本</a>、<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/reports/wpe_upstream_interfaces.json">JSON 报告</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_wpe_upstream_interfaces.py">离线独立测试</a>绑定固定提交、所读文件摘要、脚本摘要与输入配置。脚本不下载、不改上游，也不加载神经权重；摘要不符时拒绝套用旧结论。</p>
+<p><strong>2026-10-01新增验证单独记录。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/examples/audit_upstream_wpe_contracts.py">新工具</a>、<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/reports/upstream_wpe_contracts.json">新报告</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_ch07_upstream_wpe_contracts.py">独立测试</a>不改写上述历史报告。先核当前 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCE_STATUS.json">SOURCE_STATUS</a>确实绑定当前锁、两项来源已完成获取核验，再检查原HEAD、文件SHA、Git blob和运行前后工作树；报告同时绑定自身脚本与锁摘要。NARA执行原完整NumPy模块及多抽头标签、零输入和错形状例；无状态历史用只读Python返回剖析读取原函数局部变量，没有替换其body。NeMo仅静态AST，独立NumPy例另列为本书计算，没有Torch兼容桩。</p>
+<p>本次环境为macOS arm64、Python3.13.12、NumPy2.5.3；click可用，SciPy/Torch/TF/JAX/CuPy仍未安装。旧工具另真实重跑到临时目录，原NARA和MetaAF包装函数的限定结果与历史范围一致；没有真实STFT/iSTFT、神经网络、GPU或设备运行。下面关于2026-09-28缺依赖的句子保留当时环境事实，不能外推为当前环境状态。</p>
 <p><strong>实际执行的 NARA 反例。</strong> 输入为两个频点、一个通道、六帧的纯实 <code>complex128</code> 复谱：第一频点 <code>[1,2,1,4,2,1]</code>，第二频点为 <code>1e-8*[1,3,2,1,5,2]</code>；单抽头、延迟 1、一次迭代、有效历史、无平滑。<code>v6/v7</code> 的全频地板使第二频点六个逆功率都为 <code>6.25e8</code>，回归系数为 <code>13/20</code>。<code>v8</code> 逐频计算，系数为 <code>2940/5693</code>。独立分数正规方程得到同一结果；这证明处理范围会影响此输入，不说明哪一种语音质量更好。</p>
 <p>辅助 <code>get_power()</code> 对 <code>arange(1,13).reshape(2,1,6)</code> 取 <code>psd_context=1</code>，输出两行均为 <code>[25,34,45,58,73,90]</code>，对应跨频率平均而非时间平均；<code>psd_context=(0,2)</code> 则实际抛出 <code>ValueError</code>。离线主函数使用的是另一条 <code>get_power_inverse()</code> 路径，不能把辅助函数问题扩大成所有 WPE 都失败。</p>
 <p>ESPnet 的未消费开关、丢弃掩码返回及固定逆矩阵调用由 AST 检查；TensorFlow、BTK、GPU-GSS 是静态源码阅读，均未执行对应框架或原生算子。MetaAF 原函数 AST 提取加真实 NARA 状态类的调用已经执行：STFT 桩提供 <code>arange(1,73)</code> 排成一通道、八帧、九频点的复谱，逆变换桩只捕获复谱并返回占位零数组；捕获结果与直接单帧调用差为 0。占位返回不是去混响音频。主环境缺 SciPy，既有房间环境缺 click，因此本轮没有运行真实 STFT/iSTFT 或整个 MetaAF 包。长静音溢出由独立<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/examples/wpe_silence_boundary.py">状态边界实验</a>报告，不在此重复实现。</p>

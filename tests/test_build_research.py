@@ -325,6 +325,15 @@ class ResearchBuildTest(unittest.TestCase):
                     self.assertEqual((output / "apa_audio" / name).read_bytes(),
                                      (apa_source / name).read_bytes())
             pages = {}
+            mint_source = ROOT / "codes/chapters/ch07/mint_audio"
+            mint_names = {"mint_reference.wav", "mint_well_array.wav", "mint_near_array.wav",
+                          "mint_well_exact.wav", "mint_near_exact.wav", "mint_near_regularized.wav",
+                          "MANIFEST.json"}
+            self.assertEqual({path.name for path in (output / "mint_audio").iterdir()}, mint_names)
+            for name in mint_names:
+                with self.subTest(mint_asset=name):
+                    self.assertEqual((output / "mint_audio" / name).read_bytes(),
+                                     (mint_source / name).read_bytes())
             for path in output.rglob("*.html"):
                 parser = Links()
                 parser.feed(path.read_text(encoding="utf-8"))
@@ -333,6 +342,7 @@ class ResearchBuildTest(unittest.TestCase):
             room_links = set()
             room_images = set()
             apa_links = set()
+            mint_links = set()
             for path, parsed in pages.items():
                 if path.parent.name == "research":
                     self.assertIn("../index.html", parsed.hrefs)
@@ -376,14 +386,18 @@ class ResearchBuildTest(unittest.TestCase):
                                              (output / "geometry_audio").resolve(),
                                              (output / "focus_audio").resolve(),
                                              (output / "derivative_audio").resolve(),
-                                             (output / "apa_audio").resolve()}:
+                                             (output / "apa_audio").resolve(),
+                                             (output / "mint_audio").resolve()}:
                             owner = {"gss_audio": "ch08", "moving_audio": "ch09",
                                      "tracking_audio": "ch09", "binaural_audio": "ch01", "stft_audio": "ch02",
                                      "geometry_audio": "ch03", "focus_audio": "ch04", "derivative_audio": "ch05",
-                                     "apa_audio": "ch06"}[target.parent.name]
+                                     "apa_audio": "ch06", "mint_audio": "ch07"}[target.parent.name]
                             if target.parent.name == "apa_audio":
                                 self.assertIn(target.name, apa_names)
                                 apa_links.add(target.name)
+                            if target.parent.name == "mint_audio":
+                                self.assertIn(target.name, mint_names)
+                                mint_links.add(target.name)
                             source = ROOT / "codes" / "chapters" / owner / target.parent.name / target.name
                             self.assertTrue(target.is_file())
                             self.assertEqual(target.read_bytes(), source.read_bytes())
@@ -412,6 +426,7 @@ class ResearchBuildTest(unittest.TestCase):
             self.assertEqual(room_links, room_names)
             self.assertEqual(room_images, {"ROOM_RESULTS.png"})
             self.assertEqual(apa_links, apa_names)
+            self.assertEqual(mint_links, mint_names)
 
 
 if __name__ == "__main__":

@@ -320,7 +320,7 @@
     "codes/chapters/ch02/core/spectral.py": "5ade0b101cc00615276b3b60c3659ece3e68ad614cd2cb2edeb568359f034059",
     "codes/chapters/ch02/core/conventions.py": "2a9c16037b411d5448ca5b6c511918d639826ca072a8c2911a6084372d2ae385",
     "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
-    "codes/chapters/ch07/core/dereverberation.py": "42a492cab6b0df26bbda4ea8928d065126a8c05aa17598aa58aef14d9fe6bf55"
+    "codes/chapters/ch07/core/dereverberation.py": "39c93bf31d1b1deac607cd734bbacee596cdacce2d58c4b5c304b04df7e04eb7"
   },
   "pcm": "little-endian signed PCM16, nearest-even rounding, no dither; common gain for all files",
   "score": "reference mic0 source1, [3200,23200) samples, centered SI-SDR; no time alignment, float and decoded PCM reported separately",

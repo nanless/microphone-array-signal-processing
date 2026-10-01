@@ -628,16 +628,30 @@ class BuildHelpersTest(unittest.TestCase):
         )
 
     def test_figure_semantics_accept_any_reuse_and_reject_mismatch_or_orphan(self):
-        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 59)]
+        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 60)]
         refs.extend([("图1 复用", "fig01_x.png", 1),
                      ("图23 复用", "fig23_x.png", 23)])
-        names = [f"fig{i:02d}_x.png" for i in range(1, 59)]
+        names = [f"fig{i:02d}_x.png" for i in range(1, 60)]
         self.assertEqual(quality_check.figure_inventory_issues(refs, names), [])
         bad_refs = list(refs)
         bad_refs[0] = ("图2 错配", "fig01_x.png", 1)
         issues = quality_check.figure_inventory_issues(bad_refs, names + ["fig39_orphan.png"])
         self.assertTrue(any("不匹配" in item for item in issues))
         self.assertTrue(any("孤立 PNG" in item for item in issues))
+
+    def test_wpe_phone_implementation_table_uses_exact_headers_and_scope(self):
+        source = '| 实现 | 主要源码 | 与教学基线的差别 | 最小核对实验 |\n| --- | --- | --- | --- |\n| A | code | 区别 | 核对 |\n'
+        html, _ = build_site.render(source, ROOT/'chapters/07_wpe-dereverberation.md')
+        self.assertIn('<table class="wpe-readable-table">', html)
+        self.assertIn('class="table-scroll" tabindex="0" role="region"', html)
+        self.assertEqual(html.count('scope="col"'), 4)
+        for other in ('06_aec.md', '08_speech-separation.md'):
+            html, _ = build_site.render(source, ROOT/'chapters'/other)
+            self.assertNotIn('wpe-readable-table', html)
+        for near in (source.replace('最小核对实验', '另一实验'),
+                     source.replace('实现 | 主要源码', '主要源码 | 实现')):
+            html, _ = build_site.render(near, ROOT/'chapters/07_wpe-dereverberation.md')
+            self.assertNotIn('wpe-readable-table', html)
 
     def test_source_control_characters_catch_damaged_tex(self):
         self.assertEqual(quality_check.source_control_character_issues("正文\n\t数学\r\n"), [])
