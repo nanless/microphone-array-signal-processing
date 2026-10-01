@@ -802,7 +802,7 @@ def print_pdf(combined, pdf, timeout_min_pages=100):
 
 
 def check_figures():
-    """合订前检查：正文引用的图必须存在、非空，并覆盖 64 个编号文件。"""
+    """合订前检查：正文引用的图必须存在、非空，并覆盖 65 个编号文件。"""
     missing = []
     refs = set()
     for fname, _ in CHAPTERS:
@@ -814,8 +814,8 @@ def check_figures():
                 missing.append(f"{fname}: {m.group(1)}")
     if missing:
         raise SystemExit("缺图，中止：\n" + "\n".join(missing))
-    if len(refs) != 64:
-        raise SystemExit(f"唯一图片数异常：期望 64，实际 {len(refs)}")
+    if len(refs) != 65:
+        raise SystemExit(f"唯一图片数异常：期望 65，实际 {len(refs)}")
     print(f"图片检查通过（{len(CHAPTERS)} 篇、{len(refs)} 张唯一图片）")
 
 

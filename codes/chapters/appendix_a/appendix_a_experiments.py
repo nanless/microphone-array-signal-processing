@@ -1,4 +1,4 @@
-"""E12-06..13: reproducible mathematical counterexamples for Appendix A.
+"""E12-06..19: reproducible mathematical counterexamples for Appendix A.
 
 All values are constructed teaching inputs, not measurements. The audio case
 is mathematical PCM16 synthesis; no file is written by importing or running
@@ -17,13 +17,15 @@ import json
 
 import numpy as np
 
-from codes.chapters.ch00.core.audio_samples import math_block_case
+from codes.chapters.appendix_a.examples.check_main_math_audio import check_main_math_assets, ROOT
+from codes.chapters.appendix_a.examples.generate_weighted_audio import check_assets, OUTPUT
+from codes.chapters.appendix_a.core.weighted_audio import build_fixture, analyze_fixture, analytic_results
 from codes.chapters.appendix_a.core.math_foundations import (
     blockwise_circular_convolution, fft_overlap_add,
 )
 
 
-def run_experiments() -> dict:
+def run_experiments(*, repo_root=ROOT, weighted_directory=OUTPUT) -> dict:
     """Return stable exercise IDs, inputs, and JSON-safe intermediate results."""
     results = {}
 
@@ -59,7 +61,7 @@ def run_experiments() -> dict:
 
     x = np.array([1., 2., 3., 4.])
     h = np.array([1., .5])
-    audio = math_block_case()
+    audio = check_main_math_assets(repo_root)
     results['E12-08'] = {
         'input': x.tolist(), 'filter': h.tolist(), 'block_size': 2,
         'linear_output': fft_overlap_add(x, h, 2).tolist(),
@@ -71,6 +73,9 @@ def run_experiments() -> dict:
             'first_wrong_wrap_sample': audio['parameters']['first_wrong_wrap_sample'],
             'float_analysis': audio['float_analysis'],
             'pcm_analysis': audio['pcm_analysis'],
+            'integer_analysis': audio['integer_analysis'],
+            'published_files': audio['published_files'],
+            'source_sha256': audio['source_sha256'],
         },
     }
 
@@ -158,6 +163,94 @@ def run_experiments() -> dict:
         'scale_factor': scale_factor, 'cases': cases,
         'scope': 'fixed absolute load changes under covariance scaling; trace-relative load scales with the covariance',
     }
+    def complex_record(value):
+        value = np.asarray(value)
+        return {'real':value.real.tolist(), 'imag':value.imag.tolist()}
+
+    design = np.array([[1], [1j]], dtype=complex)
+    rhs = np.ones(2, dtype=complex)
+    solution = np.linalg.lstsq(design, rhs, rcond=None)[0]
+    residual = design@solution-rhs
+    results['E12-14'] = {'design':complex_record(design), 'rhs':complex_record(rhs),
+        'solution':complex_record(solution), 'residual':complex_record(residual),
+        'hermitian_orthogonality':complex_record(design.conj().T@residual),
+        'transpose_gram':complex_record(design.T@design),
+        'residual_squared_sum':float(np.vdot(residual,residual).real)}
+
+    design = np.ones((2,1))
+    rhs = np.array([0.,2.])
+    covariance = np.diag([1.,4.])
+    precision = np.diag([1.,.25])
+    rows = {}
+    for name, weight in (('ols',np.eye(2)), ('gls',precision)):
+        solution = np.linalg.solve(design.T@weight@design, design.T@weight@rhs)
+        residual = design@solution-rhs
+        coefficient = np.linalg.solve(design.T@weight@design, design.T@weight)
+        rows[name] = {'solution':solution.tolist(),'residual':residual.tolist(),
+            'weighted_orthogonality':(design.T@weight@residual).tolist(),
+            'ordinary_orthogonality':(design.T@residual).tolist(),
+            'weighted_residual_squared_sum':float(residual@weight@residual),
+            'common_noise_precision_cost':float(residual@precision@residual),
+            'parameter_variance':float((coefficient@covariance@coefficient.T)[0,0])}
+    results['E12-15'] = {'design':design.tolist(),'rhs':rhs.tolist(),
+        'noise_covariance':covariance.tolist(),'cases':rows,
+        'variance_scope':'zero-mean noise with stated covariance; separate from this fixed rhs residual'}
+
+    epsilon = 1e-8
+    design = np.diag([1.,epsilon])
+    rhs = np.array([1.,epsilon])
+    cases = []
+    for cutoff in (1e-10,1e-6):
+        solution, residual_array, rank, singular = np.linalg.lstsq(design,rhs,rcond=cutoff)
+        residual = design@solution-rhs
+        cases.append({'rcond':cutoff,'effective_singular_value_threshold':float(cutoff*singular[0]),
+            'rank':int(rank),'singular_values':singular.tolist(),
+            'solution':solution.tolist(),'returned_residual_array':residual_array.tolist(),
+            'actual_residual_norm':float(np.linalg.norm(residual))})
+    delta = 1e-16
+    ridge = np.linalg.solve(design.T@design+delta*np.eye(2),design.T@rhs)
+    results['E12-16'] = {'numpy_version':np.__version__,
+        'design':design.tolist(),'rhs':rhs.tolist(),'cases':cases,
+        'ridge_delta':delta,'ridge_solution':ridge.tolist(),
+        'ridge_residual_squared_sum':float(np.sum((design@ridge-rhs)**2)),
+        'ridge_penalty':float(delta*np.sum(ridge**2)),
+        'ridge_scope':'ridge minimizes squared residual plus delta times squared parameter norm; not the truncated SVD rule'}
+
+    x1 = np.array([0,1,1j]);x2=np.array([1,1j,0])
+    lags = list(range(-2,3))
+    proper = np.array([sum(x1[n]*x2[n-q].conjugate() for n in range(3) if 0<=n-q<3) for q in lags])
+    exchanged = np.array([sum(x2[n]*x1[n-q].conjugate() for n in range(3) if 0<=n-q<3) for q in lags])
+    wrong = np.array([sum(x1[n]*x2[n-q] for n in range(3) if 0<=n-q<3) for q in lags])
+    results['E12-17'] = {'x1':complex_record(x1),'x2':complex_record(x2),'lags_samples':lags,
+        'r12':complex_record(proper),'r21':complex_record(exchanged),
+        'r21_magnitude_peak_lag_samples':lags[int(np.argmax(np.abs(exchanged)))],
+        'without_conjugate':complex_record(wrong),
+        'magnitude_peak_lag_samples':lags[int(np.argmax(np.abs(proper)))],
+        'scope':'zero-extended finite complex correlation; magnitude selects a lag, phase remains complex'}
+
+    asymmetric = np.array([[1.,100.],[0.,2.]])
+    imaginary_diagonal = np.diag([1+5j,2-3j])
+    cases=[]
+    for label, matrix, triangle in (('asymmetric_lower',asymmetric,'L'),
+        ('asymmetric_upper',asymmetric,'U'),('imaginary_diagonal',imaginary_diagonal,'L')):
+        eigenvalues, eigenvectors = np.linalg.eigh(matrix, UPLO=triangle)
+        effective = np.diag(matrix.diagonal().real).astype(complex)
+        if triangle=='L':
+            effective += np.tril(matrix,-1)+np.tril(matrix,-1).conj().T
+        else:
+            effective += np.triu(matrix,1)+np.triu(matrix,1).conj().T
+        cases.append({'label':label,'input':complex_record(matrix),'UPLO':triangle,
+            'effective_hermitian_matrix':complex_record(effective),'eigenvalues':eigenvalues.tolist(),
+            'eigenvectors':complex_record(eigenvectors),
+            'original_matrix_residual_frobenius':float(np.linalg.norm(matrix@eigenvectors-eigenvectors*eigenvalues)),
+            'effective_matrix_residual_frobenius':float(np.linalg.norm(effective@eigenvectors-eigenvectors*eigenvalues))})
+    results['E12-18'] = {'cases':cases,'scope':'raw NumPy interface demonstration, not a validated EVD or permission to repair invalid covariance'}
+
+    published = check_assets(weighted_directory)
+    fixture = build_fixture()
+    results['E12-19'] = {'parameters':fixture['parameters'],'analytic':analytic_results(),
+        'floating_point':analyze_fixture(fixture),'pcm_analysis':published['pcm_analysis'],
+        'published_files':published['files'],'source_sha256':published['source_sha256']}
     return results
 
 

@@ -239,6 +239,11 @@ def run_exercises() -> dict:
         "solution": solution.tolist(), "rank": int(rank),
         "singular_values": singular_values.tolist(),
         "residual_norm": float(np.linalg.norm(a @ solution - b)),
+        "numpy_version": np.__version__, "input_dtype": str(a.dtype),
+        "requested_rcond": None,
+        "effective_rcond": float(np.finfo(a.dtype).eps * max(a.shape)),
+        "singular_value_cutoff": float(np.finfo(a.dtype).eps * max(a.shape)
+                                       * singular_values[0]),
     }
     noise_covariance = np.diag([4., 1.])
     whitening = np.diag([.5, 1.])

@@ -18,7 +18,7 @@
 | [ch09](ch09/) | `ch09.chapter09_experiments`、`ch09.tracking_crossing_dropout_demo` | E09-10～23；轨迹交叉、缺测、方向限速的合成反例 |
 | [ch10](ch10/) | `ch10.chapter10_experiments`、`ch10.spectral_subtraction_demo`、`ch10.sro_closed_loop_demo` | E10-13、E10-18～33；合成时间戳及有状态插值，不是声卡实时实测 |
 | [ch11](ch11/) | `ch11.chapter11_experiments` | E11-10～25；硬约束、评分和 FIR 取舍，示意分数不代表产品测量 |
-| [appendix_a](appendix_a/) | `appendix_a.appendix_a_experiments` | E12-06～13；短向量、矩阵和合成脉冲的数学边界 |
+| [appendix_a](appendix_a/) | `appendix_a.appendix_a_experiments` | E12-06～19；复投影、已知噪声加权、截断与正则、相关共轭、EVD前提及实际PCM；旧01～05仍复用跨章唯一实现 |
 | [appendix_b](appendix_b/) | `appendix_b.appendix_b_experiments`、`appendix_b.interpolation_exercise` | E13-02～10；E13-02 读回主音频 PCM，E13-03～10 核查房间结果、PCM、来源证据或解析反例，不重跑房间仿真 |
 
 从仓库根目录使用模块形式运行，例如：
@@ -34,7 +34,7 @@
 `MVDR target response` 应接近 1；STFT 重建误差接近浮点舍入。极高的匹配无噪声 AEC ERLE 是算术
 收敛检查，队列示例中的超期次数则来自构造的负载，二者均不代表设备测量。完整核对步骤见导读。
 
-旧的 `codes.examples.*` 和 `codes.array_tutorial.*` 导入路径已经退出仓内接口。运行时使用上表中的章节模块；修改题目时改唯一真实源文件，再核对全书 282 个稳定练习 ID、对应章节和覆盖表。
+旧的 `codes.examples.*` 和 `codes.array_tutorial.*` 导入路径已经退出仓内接口。运行时使用上表中的章节模块；修改题目时改唯一真实源文件，再核对全书 288 个稳定练习 ID、对应章节和覆盖表。
 
 双耳、STFT卷积、多频几何、房间、主音频、GSS、移动和追踪资产的清单，以及某些工业报告，会校验生成器的**路径和完整源码摘要**。生成器已归入相应章节的 `examples/`；原生 C/C++ 探针与调用它的 Python 文件放在同一目录。更改这些文件后，应从真实新源重生资产并核对参数、逐文件摘要和报告，再同步构建与测试。
 
@@ -85,3 +85,5 @@
 第10章共33题，扩展入口计算E10-18～33；[六个独立噪声失配WAV](ch10/noise_audio/MANIFEST.json)由 `ch10.examples.generate_noise_mismatch` 管理，不并入主109。纯前奏固定、目标污染与已知方差对照使用同一输入和导出增益；浮点分量与两个6400点实际PCM窗口分开。[工业合同工具](ch10/examples/audit_industrial_contracts.py)只运行明确限定的固定原源码接口，模型与ARM性能不在执行范围，历史报告不改写。
 
 第11章 E11-10～25 从题设与正式文件计算：E19先只读核主清单真实源和四WAV，再按已知延迟作整数误差评分；E25使用 `ch11.examples.generate_selection_audio` 的八个独立两场景WAV，完整尾部与共同增益0.8保留，不并入主109个。`--check`完整回放且不修复资产。`ch11.examples.audit_meeting_kernel_contracts` 只执行固定MeetEval的两个原C++核，默认输出到终端，显式 `--report` 才写报告；不代表完整Python评分器运行。
+
+附录A共19题。E12-08通过 `appendix_a.examples.check_main_math_audio` 核当前19个真实源与主清单，再读三个正式脉冲WAV；内存浮点模型分开列出。E12-19的[五个独立已知噪声权重WAV](appendix_a/weighted_audio/MANIFEST.json)由 `appendix_a.examples.generate_weighted_audio` 管理，`--check`只读完整回放，不并入主109。目标和两个不同频率干扰共同包络/增益1，OLS/GLS/反权用同一双通道输入，三权重和均1；稳态28800点的解析、浮点分量和实际PCM整数评分分开。`appendix_a.examples.audit_upstream_solver_contracts` 只执行固定pb_bss完整原模块中的辅助函数，保留整数dtype失败与独立NumPy比较，只有显式 `--report` 写当前报告。

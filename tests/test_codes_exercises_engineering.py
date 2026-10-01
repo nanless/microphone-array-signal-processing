@@ -98,6 +98,18 @@ class EngineeringExerciseTests(unittest.TestCase):
         self.assertEqual(result["rank"], 1)
         self.assertLess(result["residual_norm"], 1e-12)
 
+    def test_rank_cutoff_diagnostics_match_the_float64_call(self):
+        result = self.results["E12-03"]
+        self.assertEqual(result["numpy_version"], np.__version__)
+        self.assertEqual(result["input_dtype"], "float64")
+        self.assertIsNone(result["requested_rcond"])
+        # IEEE binary64 epsilon is 2**-52; the matrix has two rows/columns.
+        self.assertEqual(result["effective_rcond"], 2**-51)
+        self.assertAlmostEqual(result["singular_value_cutoff"],
+                               2**-51 * 10**.5, delta=2e-30)
+        self.assertGreater(result["singular_value_cutoff"],
+                           result["singular_values"][1])
+
     def test_common_listening_gain(self):
         result = self.results["E13-01"]
         self.assertEqual(result["common_gain"], 2.)

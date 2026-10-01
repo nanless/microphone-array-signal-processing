@@ -2,7 +2,7 @@
 
 先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。
 
-本页索引 282 道带稳定编号的代码题，以及独立的真实录音练习 R01。`E01-01` 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。
+本页索引 288 道带稳定编号的代码题，以及独立的真实录音练习 R01。`E01-01` 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。
 
 E06-07～E06-20 使用无量纲回声模型检查 AEC 的计算与边界，其中 E06-11～20 可用精确答案程序核对。第 15、16 节另提供参数不同的合成音频；试听文件本身不是题目真值。
 
@@ -75,7 +75,7 @@ E06-07～E06-20 使用无量纲回声模型检查 AEC 的计算与边界，其�
 | 第 11 章 E11-01～07 | 资源约束、失败率统计、WER 聚合、延迟分位数和三个场景选型决策 | [工程练习](../cross_chapter/exercises_engineering.py) |
 | 第 11 章 E11-10～25 | 非支配候选、场景权重、评分缺失、同时风险、硬界三态、模块交互、CSS槽位、唤醒阈值、精确SRO、FIR取舍、非支持加权、区间支配、零FA暴露、话段/时间及跨场景选型 | [选型逐步实验](../../ch11/chapter11_experiments.py)；音频见§33与§44 |
 | 附录 A E12-01～04 | 卷积、复二阶矩、秩亏最小二乘、空间白化与 PHAT 的区别 | 同上 |
-| 附录 A E12-06～13 | 有符号 FFT 频点、复内积、分块卷积与可听边界、相关符号、有限快拍秩、正规方程条件数、SDW 噪声零空间极限、绝对与相对对角加载的尺度检查 | [附录 A 逐步实验](../../appendix_a/appendix_a_experiments.py)；音频见§34 |
+| 附录 A E12-06～19 | 有符号 FFT 频点、复内积、分块卷积、相关符号、有限快拍秩、正规方程条件数、SDW 噪声零空间极限、加载尺度、复LS残差、已知噪声WLS、数值秩、共轭反序和 `eigh` 前提 | [附录 A 逐步实验](../../appendix_a/appendix_a_experiments.py)；音频见§34与§45 |
 | 附录 B E13-01 | 同组共同增益与独立归一化 | 同上 |
 | 附录 B E13-03～10 | 六位置配对、DRR 与频响、T20、SRP 相位和评分窗口、已发布房间 PCM、源码证据层级 | [附录 B 逐步实验](../../appendix_b/appendix_b_experiments.py)；房间资产与独立结果见§17 |
 
@@ -1025,7 +1025,9 @@ E09-10～18分别检验 EKF、UT、圆周均值、关联后验混合、人数分
 
 ### 34.2 复算与代码边界
 
-运行 `.venv/bin/python -m codes.chapters.appendix_a.appendix_a_experiments` 可查看 E12-06～13 的 JSON 输出。其中 E12-08 同时列出两块四点手算和本节音频的浮点、PCM 指定位置；E12-13 列出同一正对角协方差在原尺度与十倍尺度下，绝对及迹相对加载的实际加性项、MVDR 权重、条件数和目标响应。[音频生成源](../core/audio_samples.py)的 `math_block_case` 明确保存脉冲位置、滤波器、块长、两种计算路径、共同增益和最后一枚非零响应。完整文件参数与 SHA-256 见[主音频清单](../audio/MANIFEST.json)的 `groups.math_block` 和三条 `files` 记录；相同源文件的其它 106 个 WAV 在本节加入后逐文件 SHA-256 不变。
+运行 `.venv/bin/python -m codes.chapters.appendix_a.appendix_a_experiments` 可查看 E12-06～19 的 JSON 输出。其中 E12-08先由[只读检查器](../../appendix_a/examples/check_main_math_audio.py)核19个真实生成源、清单与完整组三文件重放，再以 `wave/struct` 读取正式PCM的指定位置和整数误差，缺失或过期直接失败，不自动修复。E12-13 列出同一正对角协方差在原尺度与十倍尺度下，绝对及迹相对加载的实际加性项、MVDR 权重、条件数和目标响应。[音频生成源](../core/audio_samples.py)的 `math_block_case` 明确保存脉冲位置、滤波器、块长、两种计算路径、共同增益和最后一枚非零响应。完整文件参数与 SHA-256 见[主音频清单](../audio/MANIFEST.json)的 `groups.math_block` 和三条 `files` 记录。
+
+FFT教学核只接受有限实一维数值输入。两输入均有非零项时，每条输入的非零二进制指数跨度不超过40，非零项乘积满足保守的规格化范围检查；还核对FFT和谱乘法中间值有限。这是明确的支持政策，不是逐点相对误差保证。跨度极大、非规格化乘积或中间溢出会被拒绝，即使最终数学结果可以表示；调用者不能把拒绝改写成数学卷积不存在。[边界测试](../../../../tests/test_codes_appendix_a_boundaries.py)以直接有理数和极端输入检查这些情况。此次重生109份正式主WAV后，全部文件字节保持原样，只有真实源摘要随修改更新。
 
 [独立测试](../../../../tests/test_codes_appendix_a_experiments.py)用直接逐脉冲放置构造预期输出，不调用被测 FFT 函数来形成期望；再编码并读回 PCM，核对文件格式、峰值位置、量化和边界。[单边谱测试](../../../../tests/test_codes_spatial_model.py)另检查可表示的 $10^{308}$ 均方在谱计算时不能被中间平方误判为溢出，以及低于浮点可表示范围的严格正功率不能被误报为数学零。运行 `.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py --check` 只会重算并比对清单与 WAV，不修改文件。新组的比较只支持这个确定性错误示例，不表示实际产品会产生同样大小的听感伪影。
 
@@ -1613,3 +1615,58 @@ E03-15～17分别补足带噪参考、接近共面、多频相位三个不同问
 生成源为[场景核](../../ch11/core/selection_audio.py)与[独立生成入口](../../ch11/examples/generate_selection_audio.py)，复用既有PCM编解码。清单绑定三个真实源摘要，保存八条WAV各自摘要、共同增益、完整尾长、窗口与整数分母。独立目录只接受八WAV与清单共九个普通文件；父链、额外成员、链接、非有限/重复JSON与过期源均拒绝。`--check`在内存完整重放并核对现有文件，失败时不改写或修复文件。
 
 E11-19另核主清单的19个真实源与四条主音频，PCM成绩来自正式文件，浮点结果继续来自数学模型。新八WAV不并入主109，旧四WAV不替换成补尾的新场景文件。频率投影、实际文件整数误差、浏览器加载与播放控制的核验只能支持各自范围，不能替代人工听测、真实语音评测或目标硬件验收。
+
+## 45. 附录 A：已知噪声权重与求解器前提
+
+本节对应[E12-14～19](../../../../chapters/12_appendix-symbols-math.md#e12-14)。复最小二乘的正交条件使用共轭转置；已知噪声协方差改变残差的度量；截断小奇异值与ridge改变求解目标的方式不同。三件事先分开复算，再用同一双通道输入检查权重的代价。
+
+### 45.1 六道新题分别核对什么
+
+| 题号 | 输入和计算 | 能支持的结论 |
+|---|---|---|
+| E12-14 | $A=[1,j]^{\mathsf T}$、$b=[1,1]^{\mathsf T}$；解为$(1-j)/2$，残差平方和1 | $A^Hr=0$；误用$A^{\mathsf T}A=0$会破坏正规方程 |
+| E12-15 | 相同目标的两观测，噪声方差比1:4；已知协方差下权重4/5、1/5 | OLS随机误差方差5/4，GLS为4/5；不是每次噪声样本都更好 |
+| E12-16 | $A=\operatorname{diag}(1,10^{-8})$；显式`rcond`为$10^{-10}$和$10^{-6}$ | 数值秩分别2、1；方阵返回空`residuals`仍可能有非零实际残差 |
+| E12-17 | 三点复序列逐滞后乘加，再交换序列 | $R_{21}[q]=R_{12}^*[-q]$，没有共轭会丢掉正确峰 |
+| E12-18 | 非Hermitian两三角与含虚对角输入，记录`eigh`实际有效矩阵 | API按指定三角和实对角处理；返回特征值不证明原矩阵满足前提 |
+| E12-19 | 同一合成输入的三种固定权重，读回五WAV与整数分母 | 已知正确权重改善本模型的总误差；没有估计协方差或进行语音质量评测 |
+
+[Netlib LAPACK Users' Guide 的 Linear Least Squares、式(2.1)与表2.3](https://www.netlib.org/lapack/lug/node27.html)区分满秩、秩亏与最小范数；[Generalized Linear Least Squares、式(2.3)后的可逆噪声因子说明](https://www.netlib.org/lapack/lug/node28.html)给出加权最小二乘等价关系。[NumPy `lstsq`](https://numpy.org/doc/2.5/reference/generated/numpy.linalg.lstsq.html)和[`eigh`](https://numpy.org/doc/2.5/reference/generated/numpy.linalg.eigh.html)分别说明阈值、残差返回条件及输入三角约定。接口资料核实于2026-10-02；本书实际运行NumPy2.5.3，不推断宿主链接的LAPACK版本。
+
+### 45.2 同一目标、两种噪声和三种权重
+
+五个文件均为数学合成PCM16，16 kHz、32000点，公共导出增益1。双通道文件的通道1在前。目标是700 Hz、幅度0.2的余弦，两路噪声分别为3500 Hz、幅度0.03和4000 Hz、幅度0.06的余弦。所有分量共用包络`min(1,n/640,(31999-n)/640)`，首尾零点保留；这是瞬时加权，没有卷积尾或处理时延。
+
+- [共同目标参考](../../appendix_a/weighted_audio/weighted_target.wav)
+- [同一双通道输入](../../appendix_a/weighted_audio/weighted_array.wav)
+- [等权OLS输出](../../appendix_a/weighted_audio/weighted_ols.wav)
+- [正确方差权重GLS输出](../../appendix_a/weighted_audio/weighted_gls.wav)
+- [反置权重输出](../../appendix_a/weighted_audio/weighted_reversed.wav)
+
+试听时保持同一音量。三种权重分别为(0.5,0.5)、(0.8,0.2)、(0.2,0.8)，各自总和1，保持相同目标。稳定窗固定为半开区间[1600,30400)，共28800点、1.8 s。三条频率在该窗内各有整数周期，因此有限窗交叉均值为零；这不是随机独立性或高斯噪声假设。目标功率0.02，两噪声功率0.00045、0.0018，已知比例1:4。
+
+### 45.3 解析、浮点分量与实际整数PCM
+
+解析残余功率为$0.00045w_1^2+0.0018w_2^2$。权重保持目标，故解析目标失真和交叉项均零。未量化波形另保存实际浮点分量及重构残值，不能把有限精度零强写成解析零。
+
+| 输出 | 解析MSE | 实际PCM误差整数平方和$E$ | 实际PCM MSE | 实际PCM NMSE |
+|---|---:|---:|---:|---:|
+| OLS | 0.0005625 | 17394760800 | 0.0005625046324 | 0.028124601454 |
+| GLS | 0.00036 | 11131529760 | 0.0003599668387 | 0.017997938671 |
+| 反置 | 0.00117 | 36180064800 | 0.0011699760798 | 0.058497493284 |
+
+实际PCM参考整数平方和共同为$D=618489148320$。每条PCM MSE按$E/(28800\cdot32768^2)$求出，NMSE按$E/D$求出；参考与输出都来自正式文件，不混用浮点参考，也不拟合增益或时移。上述整数值由实际`wave/struct`读回复算，与[独立清单](../../appendix_a/weighted_audio/MANIFEST.json)一致。图65的[数值报告](../../appendix_a/reports/figure65_weighted_noise.json)保留同一整数分子、分母与绘图源摘要。
+
+### 45.4 重建、只读核验与原上游求解器
+
+```bash
+.venv/bin/python -m codes.chapters.appendix_a.examples.generate_weighted_audio
+.venv/bin/python -m codes.chapters.appendix_a.examples.generate_weighted_audio --check
+.venv/bin/python -m codes.chapters.appendix_a.appendix_a_experiments
+```
+
+[教学核](../../appendix_a/core/weighted_audio.py)与[生成入口](../../appendix_a/examples/generate_weighted_audio.py)复用主PCM编解码，绑定三个真实源摘要。独立目录只接受五WAV和清单共六个普通文件；拒绝链接父链、额外成员、重复或非有限JSON、过期源与不符的PCM。`--check`读取实际文件并在内存完整重放，失败时不写入或修复。新五文件不混入主109份WAV。
+
+[当前原核执行报告](../../appendix_a/reports/upstream_solver_contracts.json)另绑定pb_bss提交`10acc347fc9ea21e3d312806a0bd751d0d0af183`、MIT许可与完整原`solve.py`摘要。完整模块加载后仅调用`stable_solve`四例：浮点秩亏、整数秩亏、非奇异整数控制和PSD零空间。整数秩亏例观察到原回退以整数`zeros_like(B)`接收浮点最小二乘结果，产生全零；报告保留这个失败，不修补上游或改写历史运行报告。另两例直接运行NumPy显式阈值，不称为pb_bss参数实验。
+
+PSD例进一步用独立约束推导说明：方程最小二乘返回值经归一化，不保证求得MVDR零噪声最优解。没有调用原上游波束形成器、完整包、模型、GPU或硬件。源码入口与实际执行范围详见[复现手册的求解器合同](04_source_reproduction.md#appendix-solver-contracts)；[独立测试](../../../../tests/test_codes_upstream_solver_contracts.py)核对精确身份、输入不变、解析期望和已知dtype失败。

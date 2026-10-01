@@ -1,0 +1,203 @@
+{
+  "schema_version": 1,
+  "sample_rate_hz": 16000,
+  "common_export_gain": 1.0,
+  "origin": "mathematical known-covariance fixed-weight example; not random noise, speech or a recording",
+  "parameters": {
+    "sample_rate_hz": 16000,
+    "samples_per_channel": 32000,
+    "source_score": [
+      1600,
+      30400
+    ],
+    "scored_samples": 28800,
+    "target_frequency_hz": 700,
+    "target_amplitude": 0.2,
+    "noise_frequencies_hz": [
+      3500,
+      4000
+    ],
+    "noise_amplitudes": [
+      0.03,
+      0.06
+    ],
+    "envelope": "min(1,n/640,(31999-n)/640), n=0..31999; endpoints exactly zero",
+    "weights": {
+      "weighted_ols": [
+        0.5,
+        0.5
+      ],
+      "weighted_gls": [
+        0.8,
+        0.2
+      ],
+      "weighted_reversed": [
+        0.2,
+        0.8
+      ]
+    },
+    "noise_covariance_on_score": [
+      [
+        0.00045,
+        0.0
+      ],
+      [
+        0.0,
+        0.0018
+      ]
+    ],
+    "common_export_gain": 1.0,
+    "delay_samples": 0,
+    "limits": "deterministic finite-window orthogonality, not random independence, estimated covariance, speech or listening-study evidence"
+  },
+  "analytic": {
+    "target_power": 0.02,
+    "noise_covariance": [
+      [
+        0.00045,
+        0.0
+      ],
+      [
+        0.0,
+        0.0018
+      ]
+    ],
+    "candidates": {
+      "weighted_ols.wav": {
+        "target_distortion_power": 0.0,
+        "residual_noise_power": 0.0005625,
+        "cross_term": 0.0,
+        "total_error_power": 0.0005625,
+        "nmse": 0.028124999999999997
+      },
+      "weighted_gls.wav": {
+        "target_distortion_power": 0.0,
+        "residual_noise_power": 0.0003600000000000001,
+        "cross_term": 0.0,
+        "total_error_power": 0.0003600000000000001,
+        "nmse": 0.018000000000000002
+      },
+      "weighted_reversed.wav": {
+        "target_distortion_power": 0.0,
+        "residual_noise_power": 0.0011700000000000002,
+        "cross_term": 0.0,
+        "total_error_power": 0.0011700000000000002,
+        "nmse": 0.05850000000000001
+      }
+    }
+  },
+  "floating_point": {
+    "scored_samples": 28800,
+    "reference_power": 0.020000000000000004,
+    "candidates": {
+      "weighted_ols.wav": {
+        "target_distortion_power": 0.0,
+        "residual_noise_power": 0.0005625000000000026,
+        "cross_term": 0.0,
+        "total_error_power": 0.0005625000000000026,
+        "nmse": 0.028125000000000122,
+        "component_identity_max_error": 3.469446951953614e-17
+      },
+      "weighted_gls.wav": {
+        "target_distortion_power": 0.0,
+        "residual_noise_power": 0.0003600000000000021,
+        "cross_term": 0.0,
+        "total_error_power": 0.0003600000000000022,
+        "nmse": 0.018000000000000106,
+        "component_identity_max_error": 5.377642775528102e-17
+      },
+      "weighted_reversed.wav": {
+        "target_distortion_power": 0.0,
+        "residual_noise_power": 0.0011700000000000013,
+        "cross_term": 0.0,
+        "total_error_power": 0.0011700000000000013,
+        "nmse": 0.05850000000000005,
+        "component_identity_max_error": 6.245004513516506e-17
+      }
+    }
+  },
+  "pcm_analysis": {
+    "scored_samples": 28800,
+    "integer_reference_squared_sum": 618489148320,
+    "decoded_amplitude_denominator": 32768,
+    "candidates": {
+      "weighted_ols.wav": {
+        "integer_error_squared_sum": 17394760800,
+        "integer_reference_squared_sum": 618489148320,
+        "scored_samples": 28800,
+        "mse": 0.0005625046323984861,
+        "nmse": 0.028124601453799684,
+        "score": [
+          1600,
+          30400
+        ],
+        "gain_fitting": false,
+        "delay_fitting": false
+      },
+      "weighted_gls.wav": {
+        "integer_error_squared_sum": 11131529760,
+        "integer_reference_squared_sum": 618489148320,
+        "scored_samples": 28800,
+        "mse": 0.0003599668387323618,
+        "nmse": 0.01799793867076979,
+        "score": [
+          1600,
+          30400
+        ],
+        "gain_fitting": false,
+        "delay_fitting": false
+      },
+      "weighted_reversed.wav": {
+        "integer_error_squared_sum": 36180064800,
+        "integer_reference_squared_sum": 618489148320,
+        "scored_samples": 28800,
+        "mse": 0.0011699760798364878,
+        "nmse": 0.05849749328387699,
+        "score": [
+          1600,
+          30400
+        ],
+        "gain_fitting": false,
+        "delay_fitting": false
+      }
+    }
+  },
+  "quantization": "signed little-endian PCM16; nearest-even; no dither; decoded amplitude=int16/32768",
+  "source_sha256": {
+    "codes/chapters/appendix_a/core/weighted_audio.py": "a59ba864a29d1f8925a95f00bfd9fc92670f758c8c59d34478cce14f27797936",
+    "codes/chapters/appendix_a/examples/generate_weighted_audio.py": "86b14d5016a3cd6586be36b18089b8c22f95480e853fcdcf7eaded8c7245491b",
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8"
+  },
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O"
+  },
+  "files": {
+    "weighted_target.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sha256": "386017860cfdb3929a9db6667145230f3094f60dbabfc121f6453c2e95ca3c0a"
+    },
+    "weighted_array.wav": {
+      "channels": 2,
+      "samples_per_channel": 32000,
+      "sha256": "91c68754d22478c33323df43d652e246fa256560549f2eac32b8ad1bcebcb095"
+    },
+    "weighted_ols.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sha256": "81f8792a02f97990e2365947b6f682a386a667b564d92fccef5023c6f1d34ef1"
+    },
+    "weighted_gls.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sha256": "399cfc5dfa43b72c2ccf53654ed902cf62588ca6b9e79457df70201ffbbfa448"
+    },
+    "weighted_reversed.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sha256": "be55808a383aff0e3d490d0d0e4d21350dc339041eba6d9d98d6a26538c85054"
+    }
+  }
+}

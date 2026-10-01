@@ -239,6 +239,38 @@ SMP-PHAT 的原版复现发现了失败：在本机 Apple clang/arm64 上，固�
 
 这个证据能揭示同词错时、仅端点相接、正重叠与空输入的固定版本行为，对应 [E11-24 词时间](../../../../chapters/11_selection-guide.md#e11-24)；[E11-23 话段边界](../../../../chapters/11_selection-guide.md#e11-23)则由本书独立枚举解释。原核工具不运行生产 cpWER/ORC-WER/tcpWER 包装器，更不运行 ASR、身份关联或设备。2026-09-28旧接口报告中的完整 Python 调用缺扩展失败保留为历史事实；新的原生两核成功不能覆盖那次失败，也不能说明完整包依赖已齐。
 
+<a id="appendix-solver-contracts"></a>
+
+### 附录 A：最小二乘回退、数值秩与物理目标
+
+矩阵求解成功后还要问两个问题：结果是否满足所需的优化目标，数组类型是否保存了求解器返回的数值。[附录 A 的 E12-03](../../../../chapters/12_appendix-symbols-math.md#sec-u-3899a8c1b7)说明零残差不保证参数唯一；[E12-05](../../../../chapters/12_appendix-symbols-math.md#sec-u-935c1036ea)说明奇异协方差中的最小范数线性方程解，不自动成为约束噪声最小化的解。这两个判断分别涉及代数目标和物理目标，不能用“输出有限”替代。
+
+本书于2026-10-02在Python 3.13.12、NumPy 2.5.3环境中运行[限定审计工具](../../appendix_a/examples/audit_upstream_solver_contracts.py)。工具完整加载固定 `pb_bss` 提交 `10acc347fc9ea21e3d312806a0bd751d0d0af183` 的[原 `pb_bss/math/solve.py`](https://github.com/fgnt/pb_bss/blob/10acc347fc9ea21e3d312806a0bd751d0d0af183/pb_bss/math/solve.py "citation")，仅调用 `stable_solve`；不做AST提取、源码补丁或算法替身，也不导入完整 `pb_bss` 包。该模块是维护者提供的通用求解助手，按原[MIT许可证](https://github.com/fgnt/pb_bss/blob/10acc347fc9ea21e3d312806a0bd751d0d0af183/LICENSE "citation")使用，不是本书自行实现的求解器。
+
+原函数先尝试 `numpy.linalg.solve`；矩阵奇异时，逐矩阵回退到 `numpy.linalg.lstsq`。对
+$\mathbf A=\left[\begin{smallmatrix}1&1\\2&2\end{smallmatrix}\right]$、$\mathbf B=\mathbf I_2$，令两行参数之和为 $s$，第一列残差最小化为 $(s-1)^2+(2s)^2$，驻点 $s=1/5$；第二列则为 $s^2+(2s-1)^2$，驻点 $s=2/5$。在每列固定和的解中，两个分量取相等值使范数最小，因此独立期望为
+$\left[\begin{smallmatrix}1/10&1/5\\1/10&1/5\end{smallmatrix}\right]$。
+
+| 原函数输入 | 实际输出或分类 | 能说明的边界 |
+|---|---|---|
+| 上述奇异 $\mathbf A$，浮点 $\mathbf B=\mathbf I_2$ | 最小范数矩阵与手算一致，绝对容差 $10^{-14}$ | 这个限定浮点回退例符合最小二乘目标 |
+| 同一 $\mathbf A$，整数 $\mathbf B=\mathbf I_2$ | 返回整数全零；记录为 `observed_integer_fallback_truncation` | 原回退分支以 `zeros_like(B)` 建结果数组，浮点结果赋入整数数组时被截断；没有警告也不代表有效 |
+| $\mathbf A=\mathbf I_2$，整数 $\mathbf B=\mathbf I_2$ | 返回浮点单位阵 | 整数右端项不是所有路径都会失败；此处没有进入奇异回退 |
+| $\mathbf A=\operatorname{diag}(0,1)$，浮点 $\mathbf B=[1,1]^\top$ | 最小二乘结果为 $[0,1]^\top$ | 不代表该向量是奇异MVDR最优权重 |
+
+最后一行的物理对照完全由本书手算：若把 $\mathbf A$ 视为噪声协方差、目标导向取 $[1,1]^\top$，约束是 $w_1+w_2=1$，输出噪声功率为 $|w_2|^2$。权重 $[1,0]^\top$ 满足约束且功率为零；归一化后的最小二乘方向 $[0,1]^\top$ 则功率为1。工具没有调用上游波束形成器，不能把这个目标差异诊断写成已运行完整MVDR链。
+
+另外两例直接调用NumPy接口，与上游调用分栏记录。取 $\mathbf A=\operatorname{diag}(1,10^{-8})$、$\vec b=[1,10^{-8}]^\top$，显式 `rcond=1e-6` 得秩1、解 $[1,0]^\top$、残差范数 $10^{-8}$；`rcond=1e-10` 得秩2、解 $[1,1]^\top$、残差零。两次返回的残差数组都为空，因为矩阵为方阵，接口条件是 $M\leq N$。判秩和残差各自记录，依据[NumPy 2.5接口的Parameters/Returns](https://numpy.org/doc/stable/reference/generated/numpy.linalg.lstsq.html "citation")（2026-10-02核实）。`stable_solve` 本身没有向调用者暴露这两个 `rcond` 参数。
+
+[E12-16截断与ridge](../../../../chapters/12_appendix-symbols-math.md#e12-16)进一步区分删去弱方向与连续收缩；[E12-18厄米输入检查](../../../../chapters/12_appendix-symbols-math.md#e12-18)则提醒 `eigh` 使用指定三角且忽略对角虚部，不能把分解成功当作输入协方差有效的证明。这两个练习由本书入口实现，不属于上述原函数的执行范围。[Netlib LAPACK最小二乘驱动说明](https://www.netlib.org/lapack/lug/node27.html "citation")的式(2.1)/表2.3区分满秩QR/LQ与秩亏求解，支持先说明目标、秩假设和截断策略，再选择接口；本书没有另行编译这些Fortran驱动。
+
+```bash
+.venv/bin/python -B -m codes.chapters.appendix_a.examples.audit_upstream_solver_contracts
+.venv/bin/python -B -m codes.chapters.appendix_a.examples.audit_upstream_solver_contracts --report codes/chapters/appendix_a/reports/upstream_solver_contracts.json
+```
+
+默认命令只把当前审计写到标准输出；显式 `--report` 才原子保存[独立报告](../../appendix_a/reports/upstream_solver_contracts.json)。报告核对官方origin、完整HEAD、锁表摘要、两个原文件的SHA/Git blob、MIT许可、工具摘要和运行前后洁净状态，并保存四个原函数例、两个独立NumPy例的输入类型、输出、独立期望、容差、警告和失败分类。拒绝符号链接、词法 `..`、非普通目标与上游缓存内报告路径。不覆盖旧历史报告，不取得新源码；完整包、波束音频、模型和设备都未在这个审计中运行。
+
 ## 6. 何时可以进入设备比较
 
 只有两套候选实现使用同一输入、评分区域和延迟口径，性能比较才有明确含义。硬件上再分别测量启动加载、

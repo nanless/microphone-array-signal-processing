@@ -741,7 +741,7 @@ $$
 .venv/bin/python -m codes.chapters.ch07.examples.mint_teaching_demo
 .venv/bin/python -m codes.chapters.ch08.examples.mask_representation_demo
 .venv/bin/python -m codes.chapters.ch10.examples.generate_noise_mismatch
-.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～64
+.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～65
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～39（回声消除专题）
 ```
 

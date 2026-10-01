@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码研究导读 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="0f59ad3471e1"><style>
+<meta name="source-digest" content="47f010101314"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -144,6 +144,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>定位峰方向相反：从时延正号、阵列坐标、FFT 相位和导向矢量的共轭关系检查，再讨论算法分辨率。</li>
 <li>离线运行良好而设备失效：先检查音频时钟、参考取点、块长、历史状态和输入增益；这些条件会同时影响多个模块。</li>
 <li>分离得分高而识别变差：核对分离输出的排列、通道参考、增益、时间对齐和评分区域，再检查语音损伤。</li>
+<li>线性求解返回有限数组，却不满足约束或与手算不符：先读<a href="04_source_reproduction.html#appendix-solver-contracts">附录 A 求解合同</a>，分开检查数据类型、数值秩、残差与物理目标。</li>
 <li>想更换为论文中的新方法：先对齐论文的输入条件、训练信息、因果性与输出目标，再决定是否替换现有模块。</li>
 <li>想先复算一个答案、听辨一次时延或削波：从<a href="05_exercises_and_audio.html">练习与音频实验</a>选择稳定题号或音频组，并结合图 34 核对波形与参数。合成样例不是自然语音，也不代替正式听测。</li>
 </ul>

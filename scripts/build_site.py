@@ -5,7 +5,7 @@
     .venv/bin/python scripts/build_site.py
 
 产物：site/index.html（首页）+ site/01..13_*.html（13 篇正文），
-另有 site/research/index.html 和 5 篇独立研究页、主清单 109 个与独立实验 65 个合成 WAV，
+另有 site/research/index.html 和 5 篇独立研究页、主清单 109 个与独立实验 84 个合成 WAV，
 以及 4 个真实录音/派生 WAV；源码按章保存，发布 URL 保持原样。
 左侧边栏 = 首页 + 13 篇 + 每篇的二级及以下小节锚点，顶部面包屑，
 文末上一篇/下一篇（首页不输出该盒）。图片直接引用 ../figures/（不复制）。
@@ -52,6 +52,9 @@ APA_AUDIO_ROOT = CODE_CHAPTERS / "ch06" / "apa_audio"
 MINT_AUDIO_ROOT = CODE_CHAPTERS / "ch07" / "mint_audio"
 MASK_AUDIO_ROOT = CODE_CHAPTERS / "ch08" / "mask_audio"
 SCENARIO_AUDIO_ROOT = CODE_CHAPTERS / "ch11" / "scenario_audio"
+WEIGHTED_AUDIO_ROOT = CODE_CHAPTERS / "appendix_a" / "weighted_audio"
+WEIGHTED_AUDIO_WAVS = {"weighted_" + name + ".wav" for name in
+                       ("target", "array", "ols", "gls", "reversed")}
 SCENARIO_AUDIO_WAVS = {f"selection_{scene}_{kind}.wav" for scene in ("single", "dual")
                        for kind in ("target", "mixture", "fir3", "fir9")}
 NOISE_AUDIO_ROOT = CODE_CHAPTERS / "ch10" / "noise_audio"
@@ -616,6 +619,20 @@ def stage_scenario_audio(source, destination):
     return expected
 
 
+def stage_weighted_audio(source, destination):
+    """Publish only the replayed known-noise, five-WAV Appendix-A fixture."""
+    from codes.chapters.appendix_a.examples.generate_weighted_audio import (
+        check_assets, validate_asset_directory,
+    )
+    check_assets(source)
+    validate_asset_directory(destination, check=False)
+    expected = WEIGHTED_AUDIO_WAVS | {"MANIFEST.json"}
+    destination.mkdir()
+    for name in sorted(expected):
+        shutil.copy2(source / name, destination / name)
+    return expected
+
+
 def _check_tracking_members(folder, expected):
     """Reject unexpected directories as well as linked or special members."""
     if (folder.is_symlink() or not folder.is_dir()
@@ -746,7 +763,7 @@ def source_digest():
     paths += [main_audio_manifest_path(CODE_CHAPTERS)]
     paths += sorted(main_audio_sources())
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "build_markdown_helpers.py",
@@ -914,6 +931,9 @@ def rewrite_site_links(html, source_path):
         if target.parent == SCENARIO_AUDIO_ROOT.resolve() and target.name in (SCENARIO_AUDIO_WAVS | {"MANIFEST.json"}):
             relative = os.path.relpath("scenario_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
+        if target.parent == WEIGHTED_AUDIO_ROOT.resolve() and target.name in (WEIGHTED_AUDIO_WAVS | {"MANIFEST.json"}):
+            relative = os.path.relpath("weighted_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
+            return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
         if target.parent == NOISE_AUDIO_ROOT.resolve() and target.name in (NOISE_AUDIO_WAVS | {"MANIFEST.json"}):
             relative = os.path.relpath("noise_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
@@ -935,7 +955,7 @@ def rewrite_site_links(html, source_path):
         # input as a download link; only the explicit mono derivatives play.
         if parsed.path.endswith("real_audio/demand_nriver_16ch_10s.wav"):
             return match.group(0)
-        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|stft_audio|geometry_audio|focus_audio|derivative_audio|apa_audio|mint_audio|mask_audio|noise_audio|scenario_audio)/[a-z0-9_]+\.wav", parsed.path):
+        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|stft_audio|geometry_audio|focus_audio|derivative_audio|apa_audio|mint_audio|mask_audio|noise_audio|scenario_audio|weighted_audio)/[a-z0-9_]+\.wav", parsed.path):
             return match.group(0)
         safe_href = escape(href, quote=True)
         safe_label = escape(re.sub(r'<[^>]+>', '', unescape(label)), quote=True)
@@ -1192,10 +1212,12 @@ def _validate_site_output(directory):
     validate_asset_directory(directory / "noise_audio", check=False)
     from codes.chapters.ch11.examples.generate_selection_audio import validate_asset_directory as validate_scenario
     validate_scenario(directory / "scenario_audio", check=False)
+    from codes.chapters.appendix_a.examples.generate_weighted_audio import validate_asset_directory as validate_weighted
+    validate_weighted(directory / "weighted_audio", check=False)
     subdirectories = ('research', 'audio', 'real_audio', 'room_audio', 'moving_audio',
                       'tracking_audio', 'gss_audio', 'binaural_audio', 'stft_audio',
                       'geometry_audio', 'focus_audio', 'derivative_audio', 'apa_audio',
-                      'mint_audio', 'mask_audio', 'noise_audio', 'scenario_audio')
+                      'mint_audio', 'mask_audio', 'noise_audio', 'scenario_audio', 'weighted_audio')
     for folder in (directory, *(directory/name for name in subdirectories)):
         if folder.is_symlink() or (folder.exists() and not folder.is_dir()):
             raise ValueError('站点目标必须为普通目录：'+str(folder))
@@ -1373,6 +1395,8 @@ def main():
         (OUT / "noise_audio").mkdir(exist_ok=True)
         scenario_names = stage_scenario_audio(SCENARIO_AUDIO_ROOT, temp_out / "scenario_audio")
         (OUT / "scenario_audio").mkdir(exist_ok=True)
+        weighted_names = stage_weighted_audio(WEIGHTED_AUDIO_ROOT, temp_out / "weighted_audio")
+        (OUT / "weighted_audio").mkdir(exist_ok=True)
         publish_files([(temp_out / name, OUT / name) for name in sorted(expected)] +
                       [(temp_out / "audio" / name, OUT / "audio" / name) for name in audio_names] +
                       [(temp_out / "real_audio" / name, OUT / "real_audio" / name)
@@ -1404,7 +1428,9 @@ def main():
                       [(temp_out / "noise_audio" / name, OUT / "noise_audio" / name)
                        for name in sorted(noise_names)] +
                       [(temp_out / "scenario_audio" / name, OUT / "scenario_audio" / name)
-                       for name in sorted(scenario_names)], stale, boundary=OUT)
+                       for name in sorted(scenario_names)] +
+                      [(temp_out / "weighted_audio" / name, OUT / "weighted_audio" / name)
+                       for name in sorted(weighted_names)], stale, boundary=OUT)
     print("DONE", len(expected), "pages")
 
 

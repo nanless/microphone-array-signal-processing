@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>章节代码练习与音频实验 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="0f59ad3471e1"><style>
+<meta name="source-digest" content="47f010101314"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -162,6 +162,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-44-2">44.2 两场景共用候选定义和导出增益</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-44-3">44.3 先看每个场景，再选择汇总目标</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-44-4">44.4 重建、核验与实际运行范围</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-a1fe918538">45. 附录 A：已知噪声权重与求解器前提</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-45-1">45.1 六道新题分别核对什么</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-45-2">45.2 同一目标、两种噪声和三种权重</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-45-3">45.3 解析、浮点分量与实际整数PCM</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-45-4">45.4 重建、只读核验与原上游求解器</a></li>
 </ul>
 <div class="chap"><a href="../01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
 <div class="chap"><a href="../02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
@@ -276,10 +281,15 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-44-2">44.2 两场景共用候选定义和导出增益</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-44-3">44.3 先看每个场景，再选择汇总目标</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-44-4">44.4 重建、核验与实际运行范围</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-a1fe918538">45. 附录 A：已知噪声权重与求解器前提</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-45-1">45.1 六道新题分别核对什么</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-45-2">45.2 同一目标、两种噪声和三种权重</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-45-3">45.3 解析、浮点分量与实际整数PCM</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-45-4">45.4 重建、只读核验与原上游求解器</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="章节代码练习与音频实验" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-c621965c02">章节代码练习与音频实验</h1>
 <p>先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。</p>
-<p>本页索引 282 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
+<p>本页索引 288 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
 <p>E06-07～E06-20 使用无量纲回声模型检查 AEC 的计算与边界，其中 E06-11～20 可用精确答案程序核对。第 15、16 节另提供参数不同的合成音频；试听文件本身不是题目真值。</p>
 <p>第 3～11、13～16、18、21～30、32～34 节对应主清单的 109 个数学合成样本。第 17 节的 18 个房间白噪声合成样本使用独立清单；第 12 节使用另行授权的真实同步录音。第 31 节的 2 份从 PCM 形成定位观测的追踪样本也使用独立清单。第35～39节分别保存双耳、有限窗卷积、多频几何、已知聚焦与导数约束的独立样本。不同音频的来源和可作的比较不同，试听前先查看各节的条件。</p>
 <p>主音频按章存放，统一由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/examples/generate_audio_samples.py">生成器</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/audio/MANIFEST.json">清单</a>管理。清单记录每组模型、种子、共同导出增益、采样率、通道、帧数、量化误差、运行环境、源文件摘要与逐 WAV 摘要；不把某组的谐波模板套到其他组。PCM16 编码按最近偶数舍入，不加抖动或自动限幅，RMS 对全部通道与采样一起计算。运行生成器并附加 <code>--check</code> 时只在内存重算和读回比对，不重写资产；严格字节核对也比较 Python、NumPy 和平台记录，异机不通过不等于算法错误。生成中断造成清单与 WAV 不一致时须重新生成、核对，再构建图和网站；不要手改单个生成文件。样本没有真人录音或模型权重，客观读回和浏览器加载不等于正式听测。</p>
@@ -440,9 +450,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>同上</td>
 </tr>
 <tr>
-<td>附录 A E12-06～13</td>
-<td>有符号 FFT 频点、复内积、分块卷积与可听边界、相关符号、有限快拍秩、正规方程条件数、SDW 噪声零空间极限、绝对与相对对角加载的尺度检查</td>
-<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_a/appendix_a_experiments.py">附录 A 逐步实验</a>；音频见§34</td>
+<td>附录 A E12-06～19</td>
+<td>有符号 FFT 频点、复内积、分块卷积、相关符号、有限快拍秩、正规方程条件数、SDW 噪声零空间极限、加载尺度、复LS残差、已知噪声WLS、数值秩、共轭反序和 <code>eigh</code> 前提</td>
+<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_a/appendix_a_experiments.py">附录 A 逐步实验</a>；音频见§34与§45</td>
 </tr>
 <tr>
 <td>附录 B E13-01</td>
@@ -1624,7 +1634,8 @@ $$</p>
 </table></div>
 <p>表中的浮点零忽略 FFT 计算产生的约机器精度残值；导出的 PCM16 零确为零。PCM 数值来自将每条完整波形编码成小端 PCM16 <strong>再读回</strong>的采样，不是把浮点结果直接抄进表。幅度 0.3 与 0.18 分别舍入到整数 9830 与 5898，再除以 32768 得表中读数。十个脉冲使正确与错误文件在二十个非零样本位置不同：每一回错误链都把一枚延迟响应从下一块挪到当前块的前部，直接响应仍在原位。计数阈值为 $10^{-12}$，只用于排除 FFT 舍入残值，不用于主观听感判断。</p>
 <span id="sec-61" class="anchor-alias" aria-hidden="true"></span><span id="342-复算与代码边界" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-34-2">34.2 复算与代码边界</h3>
-<p>运行 <code>.venv/bin/python -m codes.chapters.appendix_a.appendix_a_experiments</code> 可查看 E12-06～13 的 JSON 输出。其中 E12-08 同时列出两块四点手算和本节音频的浮点、PCM 指定位置；E12-13 列出同一正对角协方差在原尺度与十倍尺度下，绝对及迹相对加载的实际加性项、MVDR 权重、条件数和目标响应。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/core/audio_samples.py">音频生成源</a>的 <code>math_block_case</code> 明确保存脉冲位置、滤波器、块长、两种计算路径、共同增益和最后一枚非零响应。完整文件参数与 SHA-256 见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/audio/MANIFEST.json">主音频清单</a>的 <code>groups.math_block</code> 和三条 <code>files</code> 记录；相同源文件的其它 106 个 WAV 在本节加入后逐文件 SHA-256 不变。</p>
+<p>运行 <code>.venv/bin/python -m codes.chapters.appendix_a.appendix_a_experiments</code> 可查看 E12-06～19 的 JSON 输出。其中 E12-08先由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_a/examples/check_main_math_audio.py">只读检查器</a>核19个真实生成源、清单与完整组三文件重放，再以 <code>wave/struct</code> 读取正式PCM的指定位置和整数误差，缺失或过期直接失败，不自动修复。E12-13 列出同一正对角协方差在原尺度与十倍尺度下，绝对及迹相对加载的实际加性项、MVDR 权重、条件数和目标响应。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/core/audio_samples.py">音频生成源</a>的 <code>math_block_case</code> 明确保存脉冲位置、滤波器、块长、两种计算路径、共同增益和最后一枚非零响应。完整文件参数与 SHA-256 见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/audio/MANIFEST.json">主音频清单</a>的 <code>groups.math_block</code> 和三条 <code>files</code> 记录。</p>
+<p>FFT教学核只接受有限实一维数值输入。两输入均有非零项时，每条输入的非零二进制指数跨度不超过40，非零项乘积满足保守的规格化范围检查；还核对FFT和谱乘法中间值有限。这是明确的支持政策，不是逐点相对误差保证。跨度极大、非规格化乘积或中间溢出会被拒绝，即使最终数学结果可以表示；调用者不能把拒绝改写成数学卷积不存在。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_appendix_a_boundaries.py">边界测试</a>以直接有理数和极端输入检查这些情况。此次重生109份正式主WAV后，全部文件字节保持原样，只有真实源摘要随修改更新。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_appendix_a_experiments.py">独立测试</a>用直接逐脉冲放置构造预期输出，不调用被测 FFT 函数来形成期望；再编码并读回 PCM，核对文件格式、峰值位置、量化和边界。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_spatial_model.py">单边谱测试</a>另检查可表示的 $10^{308}$ 均方在谱计算时不能被中间平方误判为溢出，以及低于浮点可表示范围的严格正功率不能被误报为数学零。运行 <code>.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py --check</code> 只会重算并比对清单与 WAV，不修改文件。新组的比较只支持这个确定性错误示例，不表示实际产品会产生同样大小的听感伪影。</p>
 <span id="sec-62" class="anchor-alias" aria-hidden="true"></span><span id="35-双耳时间差声级差与相反线索" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-b1ae7435b8">35. 双耳时间差、声级差与相反线索</h2>
 <p>本组对应第 1 章 E01-08，与主清单的 109 个样本分开管理。五个文件都是数学合成的双声道 PCM16，通道次序为左、右，采样率 16 kHz，共 32008 帧，即 2.0005 s。共同导出增益为 1。没有真人、头部散射、耳廓滤波或房间响应，也没有进行正式听测。</p>
@@ -2632,6 +2643,106 @@ PSD还须写采样率、Hz分母、单边折叠和去均值策略。
 </code></pre>
 <p>生成源为<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch11/core/selection_audio.py">场景核</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch11/examples/generate_selection_audio.py">独立生成入口</a>，复用既有PCM编解码。清单绑定三个真实源摘要，保存八条WAV各自摘要、共同增益、完整尾长、窗口与整数分母。独立目录只接受八WAV与清单共九个普通文件；父链、额外成员、链接、非有限/重复JSON与过期源均拒绝。<code>--check</code>在内存完整重放并核对现有文件，失败时不改写或修复文件。</p>
 <p>E11-19另核主清单的19个真实源与四条主音频，PCM成绩来自正式文件，浮点结果继续来自数学模型。新八WAV不并入主109，旧四WAV不替换成补尾的新场景文件。频率投影、实际文件整数误差、浏览器加载与播放控制的核验只能支持各自范围，不能替代人工听测、真实语音评测或目标硬件验收。</p>
+<span id="sec-100" class="anchor-alias" aria-hidden="true"></span><span id="45-附录-a已知噪声权重与求解器前提" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-a1fe918538">45. 附录 A：已知噪声权重与求解器前提</h2>
+<p>本节对应<a href="../12_appendix-symbols-math.html#e12-14">E12-14～19</a>。复最小二乘的正交条件使用共轭转置；已知噪声协方差改变残差的度量；截断小奇异值与ridge改变求解目标的方式不同。三件事先分开复算，再用同一双通道输入检查权重的代价。</p>
+<span id="sec-101" class="anchor-alias" aria-hidden="true"></span><span id="451-六道新题分别核对什么" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-45-1">45.1 六道新题分别核对什么</h3>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">题号</th>
+<th scope="col">输入和计算</th>
+<th scope="col">能支持的结论</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E12-14</td>
+<td>$A=[1,j]^{\mathsf T}$、$b=[1,1]^{\mathsf T}$；解为$(1-j)/2$，残差平方和1</td>
+<td>$A^Hr=0$；误用$A^{\mathsf T}A=0$会破坏正规方程</td>
+</tr>
+<tr>
+<td>E12-15</td>
+<td>相同目标的两观测，噪声方差比1:4；已知协方差下权重4/5、1/5</td>
+<td>OLS随机误差方差5/4，GLS为4/5；不是每次噪声样本都更好</td>
+</tr>
+<tr>
+<td>E12-16</td>
+<td>$A=\operatorname{diag}(1,10^{-8})$；显式<code>rcond</code>为$10^{-10}$和$10^{-6}$</td>
+<td>数值秩分别2、1；方阵返回空<code>residuals</code>仍可能有非零实际残差</td>
+</tr>
+<tr>
+<td>E12-17</td>
+<td>三点复序列逐滞后乘加，再交换序列</td>
+<td>$R_{21}[q]=R_{12}^*[-q]$，没有共轭会丢掉正确峰</td>
+</tr>
+<tr>
+<td>E12-18</td>
+<td>非Hermitian两三角与含虚对角输入，记录<code>eigh</code>实际有效矩阵</td>
+<td>API按指定三角和实对角处理；返回特征值不证明原矩阵满足前提</td>
+</tr>
+<tr>
+<td>E12-19</td>
+<td>同一合成输入的三种固定权重，读回五WAV与整数分母</td>
+<td>已知正确权重改善本模型的总误差；没有估计协方差或进行语音质量评测</td>
+</tr>
+</tbody>
+</table></div>
+<p><a href="https://www.netlib.org/lapack/lug/node27.html">Netlib LAPACK Users' Guide 的 Linear Least Squares、式(2.1)与表2.3</a>区分满秩、秩亏与最小范数；<a href="https://www.netlib.org/lapack/lug/node28.html">Generalized Linear Least Squares、式(2.3)后的可逆噪声因子说明</a>给出加权最小二乘等价关系。<a href="https://numpy.org/doc/2.5/reference/generated/numpy.linalg.lstsq.html">NumPy <code>lstsq</code></a>和<a href="https://numpy.org/doc/2.5/reference/generated/numpy.linalg.eigh.html"><code>eigh</code></a>分别说明阈值、残差返回条件及输入三角约定。接口资料核实于2026-10-02；本书实际运行NumPy2.5.3，不推断宿主链接的LAPACK版本。</p>
+<span id="sec-102" class="anchor-alias" aria-hidden="true"></span><span id="452-同一目标两种噪声和三种权重" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-45-2">45.2 同一目标、两种噪声和三种权重</h3>
+<p>五个文件均为数学合成PCM16，16 kHz、32000点，公共导出增益1。双通道文件的通道1在前。目标是700 Hz、幅度0.2的余弦，两路噪声分别为3500 Hz、幅度0.03和4000 Hz、幅度0.06的余弦。所有分量共用包络<code>min(1,n/640,(31999-n)/640)</code>，首尾零点保留；这是瞬时加权，没有卷积尾或处理时延。</p>
+<ul>
+<li><a href="../weighted_audio/weighted_target.wav">共同目标参考</a><audio class="audio-sample" controls preload="none" aria-label="共同目标参考" src="../weighted_audio/weighted_target.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="../weighted_audio/weighted_array.wav">同一双通道输入</a><audio class="audio-sample" controls preload="none" aria-label="同一双通道输入" src="../weighted_audio/weighted_array.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="../weighted_audio/weighted_ols.wav">等权OLS输出</a><audio class="audio-sample" controls preload="none" aria-label="等权OLS输出" src="../weighted_audio/weighted_ols.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="../weighted_audio/weighted_gls.wav">正确方差权重GLS输出</a><audio class="audio-sample" controls preload="none" aria-label="正确方差权重GLS输出" src="../weighted_audio/weighted_gls.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="../weighted_audio/weighted_reversed.wav">反置权重输出</a><audio class="audio-sample" controls preload="none" aria-label="反置权重输出" src="../weighted_audio/weighted_reversed.wav">请使用上方 WAV 链接下载。</audio></li>
+</ul>
+<p>试听时保持同一音量。三种权重分别为(0.5,0.5)、(0.8,0.2)、(0.2,0.8)，各自总和1，保持相同目标。稳定窗固定为半开区间[1600,30400)，共28800点、1.8 s。三条频率在该窗内各有整数周期，因此有限窗交叉均值为零；这不是随机独立性或高斯噪声假设。目标功率0.02，两噪声功率0.00045、0.0018，已知比例1:4。</p>
+<span id="sec-103" class="anchor-alias" aria-hidden="true"></span><span id="453-解析浮点分量与实际整数pcm" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-45-3">45.3 解析、浮点分量与实际整数PCM</h3>
+<p>解析残余功率为$0.00045w_1^2+0.0018w_2^2$。权重保持目标，故解析目标失真和交叉项均零。未量化波形另保存实际浮点分量及重构残值，不能把有限精度零强写成解析零。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">输出</th>
+<th scope="col" style="text-align: right;">解析MSE</th>
+<th scope="col" style="text-align: right;">实际PCM误差整数平方和$E$</th>
+<th scope="col" style="text-align: right;">实际PCM MSE</th>
+<th scope="col" style="text-align: right;">实际PCM NMSE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OLS</td>
+<td style="text-align: right;">0.0005625</td>
+<td style="text-align: right;">17394760800</td>
+<td style="text-align: right;">0.0005625046324</td>
+<td style="text-align: right;">0.028124601454</td>
+</tr>
+<tr>
+<td>GLS</td>
+<td style="text-align: right;">0.00036</td>
+<td style="text-align: right;">11131529760</td>
+<td style="text-align: right;">0.0003599668387</td>
+<td style="text-align: right;">0.017997938671</td>
+</tr>
+<tr>
+<td>反置</td>
+<td style="text-align: right;">0.00117</td>
+<td style="text-align: right;">36180064800</td>
+<td style="text-align: right;">0.0011699760798</td>
+<td style="text-align: right;">0.058497493284</td>
+</tr>
+</tbody>
+</table></div>
+<p>实际PCM参考整数平方和共同为$D=618489148320$。每条PCM MSE按$E/(28800\cdot32768^2)$求出，NMSE按$E/D$求出；参考与输出都来自正式文件，不混用浮点参考，也不拟合增益或时移。上述整数值由实际<code>wave/struct</code>读回复算，与<a href="../weighted_audio/MANIFEST.json">独立清单</a>一致。图65的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_a/reports/figure65_weighted_noise.json">数值报告</a>保留同一整数分子、分母与绘图源摘要。</p>
+<span id="sec-104" class="anchor-alias" aria-hidden="true"></span><span id="454-重建只读核验与原上游求解器" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-45-4">45.4 重建、只读核验与原上游求解器</h3>
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.appendix_a.examples.generate_weighted_audio
+.venv/bin/python -m codes.chapters.appendix_a.examples.generate_weighted_audio --check
+.venv/bin/python -m codes.chapters.appendix_a.appendix_a_experiments
+</code></pre>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_a/core/weighted_audio.py">教学核</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_a/examples/generate_weighted_audio.py">生成入口</a>复用主PCM编解码，绑定三个真实源摘要。独立目录只接受五WAV和清单共六个普通文件；拒绝链接父链、额外成员、重复或非有限JSON、过期源与不符的PCM。<code>--check</code>读取实际文件并在内存完整重放，失败时不写入或修复。新五文件不混入主109份WAV。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_a/reports/upstream_solver_contracts.json">当前原核执行报告</a>另绑定pb_bss提交<code>10acc347fc9ea21e3d312806a0bd751d0d0af183</code>、MIT许可与完整原<code>solve.py</code>摘要。完整模块加载后仅调用<code>stable_solve</code>四例：浮点秩亏、整数秩亏、非奇异整数控制和PSD零空间。整数秩亏例观察到原回退以整数<code>zeros_like(B)</code>接收浮点最小二乘结果，产生全零；报告保留这个失败，不修补上游或改写历史运行报告。另两例直接运行NumPy显式阈值，不称为pb_bss参数实验。</p>
+<p>PSD例进一步用独立约束推导说明：方程最小二乘返回值经归一化，不保证求得MVDR零噪声最优解。没有调用原上游波束形成器、完整包、模型、GPU或硬件。源码入口与实际执行范围详见<a href="04_source_reproduction.html#appendix-solver-contracts">复现手册的求解器合同</a>；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_upstream_solver_contracts.py">独立测试</a>核对精确身份、输入不变、解析期望和已知dtype失败。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

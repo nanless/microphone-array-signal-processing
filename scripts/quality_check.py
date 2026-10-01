@@ -42,6 +42,9 @@ APA_AUDIO_ROOT = ROOT / "codes/chapters/ch06/apa_audio"
 MINT_AUDIO_ROOT = ROOT / "codes/chapters/ch07/mint_audio"
 MASK_AUDIO_ROOT = ROOT / "codes/chapters/ch08/mask_audio"
 SCENARIO_AUDIO_ROOT = CODE_CHAPTERS / "ch11" / "scenario_audio"
+WEIGHTED_AUDIO_ROOT = CODE_CHAPTERS / "appendix_a" / "weighted_audio"
+WEIGHTED_AUDIO_WAVS = {"weighted_" + name + ".wav" for name in
+                       ("target", "array", "ols", "gls", "reversed")}
 SCENARIO_AUDIO_WAVS = {f"selection_{scene}_{kind}.wav" for scene in ("single", "dual")
                        for kind in ("target", "mixture", "fir3", "fir9")}
 NOISE_AUDIO_ROOT = CODE_CHAPTERS / "ch10" / "noise_audio"
@@ -86,7 +89,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "09_source-tracking.md": 56,
     "10_engineering-practice.md": 54,
     "11_selection-guide.md": 37,
-    "12_appendix-symbols-math.md": 27,
+    "12_appendix-symbols-math.md": 36,
     "13_appendix-guide.md": 25,
 }
 # 上表为独立发布基线，不从待检 HTML 或构建器反推。
@@ -108,9 +111,9 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 14
 EXPECTED_SECTION_COUNT = 121
-EXPECTED_SUBSECTION_COUNT = 557
-EXPECTED_OUTLINE_ITEM_COUNT = 692
-EXPECTED_FIGURE_NUMBERS = set(range(1, 65))
+EXPECTED_SUBSECTION_COUNT = 566
+EXPECTED_OUTLINE_ITEM_COUNT = 701
+EXPECTED_FIGURE_NUMBERS = set(range(1, 66))
 # 研究附站使用独立显式清单，不挤占 14 篇教程或教程 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
@@ -715,7 +718,7 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64)
+            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
@@ -752,6 +755,12 @@ def check_figures(errors: list[str]):
                     if image.info.get("AudioManifestDigest") != expected:
                         fail(errors, "图64跨场景清单摘要失效")
                 _check_selection_scenarios_report(ROOT / "codes/chapters/ch11/reports/figure64_selection_scenarios.json")
+            if number == 65:
+                expected = hashlib.sha256((WEIGHTED_AUDIO_ROOT / "MANIFEST.json").read_bytes()).hexdigest()
+                with Image.open(path) as image:
+                    if image.info.get("AudioManifestDigest") != expected:
+                        fail(errors, "图65已知噪声权重清单摘要失效")
+                _check_weighted_noise_report(ROOT / "codes/chapters/appendix_a/reports/figure65_weighted_noise.json")
             if number == 63:
                 expected = hashlib.sha256((NOISE_AUDIO_ROOT / "MANIFEST.json").read_bytes()).hexdigest()
                 with Image.open(path) as image:
@@ -1138,7 +1147,7 @@ def site_source_digest():
     paths += sorted(main_audio_path(CODE_CHAPTERS, record["group"], record["file"])
                     for record in manifest["files"])
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
@@ -1442,7 +1451,7 @@ def check_real_audio(errors):
         parser = Players()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         allowed_audio_roots = ("../audio/", "../real_audio/", "../room_audio/",
-                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/", "../scenario_audio/")
+                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/", "../scenario_audio/", "../weighted_audio/")
         if any(not (p.get("src") or "").startswith(allowed_audio_roots)
                for p in parser.items):
             fail(errors, "未知试听控件来源")
@@ -2497,6 +2506,94 @@ def check_scenario_audio(errors):
         fail(errors,'独立两场景选型音频：'+str(exc))
 
 
+def _weighted_integer_pcm(directory):
+    """Measure the five actual WAVs independently of teaching/plot analyses."""
+    import struct
+    integers = {}
+    for filename in sorted(WEIGHTED_AUDIO_WAVS):
+        channels = 2 if filename == 'weighted_array.wav' else 1
+        with wave.open(str(Path(directory) / filename), 'rb') as wav:
+            if (wav.getframerate(), wav.getnchannels(), wav.getsampwidth(),
+                    wav.getnframes(), wav.getcomptype()) != (16000, channels, 2, 32000, 'NONE'):
+                raise ValueError('weighted PCM format differs: ' + filename)
+            raw = wav.readframes(32000)
+        if len(raw) != channels * 64000:
+            raise ValueError('weighted PCM is truncated: ' + filename)
+        integers[filename] = struct.unpack('<' + str(channels * 32000) + 'h', raw)
+    lo, hi = 1600, 30400
+    reference = integers['weighted_target.wav'][lo:hi]
+    denominator = sum(int(v) ** 2 for v in reference)
+    if denominator == 0:
+        raise ValueError('weighted reference energy is zero')
+    result = {}
+    for method in ('ols', 'gls', 'reversed'):
+        filename = 'weighted_' + method + '.wav'
+        numerator = sum((int(y) - int(r)) ** 2 for y, r in
+                        zip(integers[filename][lo:hi], reference))
+        result[filename] = {
+            'integer_error_squared_sum': numerator,
+            'integer_reference_squared_sum': denominator,
+            'scored_samples': hi - lo, 'mse': numerator / ((hi - lo) * 32768**2),
+            'nmse': numerator / denominator,
+        }
+    return result
+
+
+def _check_weighted_noise_report(path):
+    from codes.chapters.appendix_a.examples.generate_weighted_audio import validate_asset_directory
+    directory = ROOT / 'codes/chapters/appendix_a/weighted_audio'
+    validate_asset_directory(directory, check=True)
+    expected = {
+        'schema_version': 1,
+        'script_sha256': hashlib.sha256((ROOT / 'scripts/make_figures.py').read_bytes()).hexdigest(),
+        'audio_manifest_sha256': hashlib.sha256((directory / 'MANIFEST.json').read_bytes()).hexdigest(),
+        'scope': 'known deterministic orthogonal tones; no covariance estimation or listening test',
+        'score_window': [1600, 30400],
+        'weights': {'ols': [.5, .5], 'gls': [.8, .2], 'reversed': [.2, .8]},
+        'analytic_mse': {'ols': 9 / 16000, 'gls': 9 / 25000, 'reversed': 117 / 100000},
+        'integer_pcm': _weighted_integer_pcm(directory),
+    }
+    _compare_selection_report(_read_tracking_manifest(path), expected)
+
+
+def check_weighted_audio(errors):
+    import struct
+    try:
+        from codes.chapters.appendix_a.examples.generate_weighted_audio import (
+            check_assets, validate_asset_directory,
+        )
+        source, published = WEIGHTED_AUDIO_ROOT, SITE / 'weighted_audio'
+        validate_asset_directory(source, check=True)
+        validate_asset_directory(published, check=True)
+        manifest = check_assets(source)
+        expected_sources = {
+            'codes/chapters/appendix_a/core/weighted_audio.py',
+            'codes/chapters/appendix_a/examples/generate_weighted_audio.py',
+            'codes/chapters/ch00/core/audio_samples.py',
+        }
+        if set(manifest['source_sha256']) != expected_sources:
+            raise ValueError('weighted real source set differs')
+        for path in expected_sources:
+            if manifest['source_sha256'][path] != hashlib.sha256((ROOT / path).read_bytes()).hexdigest():
+                raise ValueError('weighted source SHA is stale: ' + path)
+        if (set(manifest['files']) != WEIGHTED_AUDIO_WAVS
+                or type(manifest['common_export_gain']) is not float
+                or manifest['common_export_gain'] != 1.):
+            raise ValueError('weighted five files/common gain differs')
+        for filename in WEIGHTED_AUDIO_WAVS | {'MANIFEST.json'}:
+            if (source / filename).read_bytes() != (published / filename).read_bytes():
+                raise ValueError('weighted published bytes differ: ' + filename)
+        for filename, measured in _weighted_integer_pcm(published).items():
+            row = manifest['pcm_analysis']['candidates'][filename]
+            for field, expected in measured.items():
+                _compare_selection_report(row[field], expected, 'weighted PCM/' + filename + '/' + field)
+        for page, prefix in ((SITE / '12_appendix-symbols-math.html', ''),
+                             (SITE / 'research/05_exercises_and_audio.html', '../')):
+            _check_visible_audio(page, prefix, 'weighted_audio', WEIGHTED_AUDIO_WAVS, {'MANIFEST.json'})
+    except (OSError, ValueError, KeyError, TypeError, struct.error, wave.Error) as exc:
+        fail(errors, '独立已知噪声加权音频：' + str(exc))
+
+
 def check_noise_audio(errors):
     """Independent actual integer scoring plus current-source replay and visibility."""
     import math
@@ -2844,6 +2941,7 @@ def main():
     check_mint_audio(errors)
     check_mask_audio(errors)
     check_noise_audio(errors)
+    check_weighted_audio(errors)
     check_scenario_audio(errors)
     check_combined_html(errors)
     check_pdf(errors, notices)

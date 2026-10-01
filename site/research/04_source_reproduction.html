@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码获取与独立复现记录 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="0f59ad3471e1"><style>
+<meta name="source-digest" content="47f010101314"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -74,6 +74,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="04_source_reproduction.html#sec-u-96ac81c5a8">5. 记录结果的必要字段</a></li>
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-ac4d3025b1">工程接口实验与待扩展的评分检查</a></li>
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-88c5e110dd">已执行实验与可重跑入口</a></li>
+<li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-1cd13055df">附录 A：最小二乘回退、数值秩与物理目标</a></li>
 <li><a href="04_source_reproduction.html#sec-u-56cf8b0bbf">6. 何时可以进入设备比较</a></li>
 <li><a href="04_source_reproduction.html#sec-u-678e07d1d5">7. 固定延迟组件的实际接口对照</a></li>
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-6d973a34e1">第6章外部 AEC 接口诊断</a></li>
@@ -105,6 +106,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="04_source_reproduction.html#sec-u-96ac81c5a8">5. 记录结果的必要字段</a></li>
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-ac4d3025b1">工程接口实验与待扩展的评分检查</a></li>
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-88c5e110dd">已执行实验与可重跑入口</a></li>
+<li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-1cd13055df">附录 A：最小二乘回退、数值秩与物理目标</a></li>
 <li><a href="04_source_reproduction.html#sec-u-56cf8b0bbf">6. 何时可以进入设备比较</a></li>
 <li><a href="04_source_reproduction.html#sec-u-678e07d1d5">7. 固定延迟组件的实际接口对照</a></li>
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-6d973a34e1">第6章外部 AEC 接口诊断</a></li>
@@ -449,15 +451,60 @@ ViSQOL 还需固定 speech/audio 模式、采样率和映射模型，不能混�
 <p>比较候选时还要保存配对关系。E11-09 用同一六次会话的两列错误计数，分别报告合并 WER、四胜一负一平，以及预定单侧符号检验的 0.1875；<a href="../11_selection-guide.html#sec-11-6">题干与推导</a>写明独立性、平局和检验对象。它只复算本书构造的统计例子，没有执行 ASR，也不把“未达到显著性”解释成两个系统等效。</p>
 <p>第11章的<a href="03_industrial_deployment.html#meeting-kernel-contracts">原词编辑核合同</a>另有<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch11/examples/audit_meeting_kernel_contracts.py">独立工具</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch11/reports/meeting_kernel_contracts.json">报告</a>：完整包含固定 MeetEval 原头文件，原生运行普通核与时间约束核的九个小输入，手算和独立二维矩阵分别核对期望。原方法不经 AST 提取或改写；自写 C++ 调用者只适配完整词元与给定秒区间。使用 <code>.venv/bin/python -B -m codes.chapters.ch11.examples.audit_meeting_kernel_contracts</code> 时只输出 JSON，显式 <code>--report</code> 才保存当前运行结果，且编译始终在临时目录。</p>
 <p>这个证据能揭示同词错时、仅端点相接、正重叠与空输入的固定版本行为，对应 <a href="../11_selection-guide.html#e11-24">E11-24 词时间</a>；<a href="../11_selection-guide.html#e11-23">E11-23 话段边界</a>则由本书独立枚举解释。原核工具不运行生产 cpWER/ORC-WER/tcpWER 包装器，更不运行 ASR、身份关联或设备。2026-09-28旧接口报告中的完整 Python 调用缺扩展失败保留为历史事实；新的原生两核成功不能覆盖那次失败，也不能说明完整包依赖已齐。</p>
-<span id="sec-13" class="anchor-alias" aria-hidden="true"></span><span id="6-何时可以进入设备比较" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-56cf8b0bbf">6. 何时可以进入设备比较</h2>
+<p><a id="appendix-solver-contracts"></a></p>
+<span id="sec-13" class="anchor-alias" aria-hidden="true"></span><span id="附录-a最小二乘回退数值秩与物理目标" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-1cd13055df">附录 A：最小二乘回退、数值秩与物理目标</h3>
+<p>矩阵求解成功后还要问两个问题：结果是否满足所需的优化目标，数组类型是否保存了求解器返回的数值。<a href="../12_appendix-symbols-math.html#sec-u-3899a8c1b7">附录 A 的 E12-03</a>说明零残差不保证参数唯一；<a href="../12_appendix-symbols-math.html#sec-u-935c1036ea">E12-05</a>说明奇异协方差中的最小范数线性方程解，不自动成为约束噪声最小化的解。这两个判断分别涉及代数目标和物理目标，不能用“输出有限”替代。</p>
+<p>本书于2026-10-02在Python 3.13.12、NumPy 2.5.3环境中运行<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_a/examples/audit_upstream_solver_contracts.py">限定审计工具</a>。工具完整加载固定 <code>pb_bss</code> 提交 <code>10acc347fc9ea21e3d312806a0bd751d0d0af183</code> 的<a href="https://github.com/fgnt/pb_bss/blob/10acc347fc9ea21e3d312806a0bd751d0d0af183/pb_bss/math/solve.py" title="citation">原 <code>pb_bss/math/solve.py</code></a>，仅调用 <code>stable_solve</code>；不做AST提取、源码补丁或算法替身，也不导入完整 <code>pb_bss</code> 包。该模块是维护者提供的通用求解助手，按原<a href="https://github.com/fgnt/pb_bss/blob/10acc347fc9ea21e3d312806a0bd751d0d0af183/LICENSE" title="citation">MIT许可证</a>使用，不是本书自行实现的求解器。</p>
+<p>原函数先尝试 <code>numpy.linalg.solve</code>；矩阵奇异时，逐矩阵回退到 <code>numpy.linalg.lstsq</code>。对
+$\mathbf A=\left[\begin{smallmatrix}1&1\\2&2\end{smallmatrix}\right]$、$\mathbf B=\mathbf I_2$，令两行参数之和为 $s$，第一列残差最小化为 $(s-1)^2+(2s)^2$，驻点 $s=1/5$；第二列则为 $s^2+(2s-1)^2$，驻点 $s=2/5$。在每列固定和的解中，两个分量取相等值使范数最小，因此独立期望为
+$\left[\begin{smallmatrix}1/10&1/5\\1/10&1/5\end{smallmatrix}\right]$。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">原函数输入</th>
+<th scope="col">实际输出或分类</th>
+<th scope="col">能说明的边界</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>上述奇异 $\mathbf A$，浮点 $\mathbf B=\mathbf I_2$</td>
+<td>最小范数矩阵与手算一致，绝对容差 $10^{-14}$</td>
+<td>这个限定浮点回退例符合最小二乘目标</td>
+</tr>
+<tr>
+<td>同一 $\mathbf A$，整数 $\mathbf B=\mathbf I_2$</td>
+<td>返回整数全零；记录为 <code>observed_integer_fallback_truncation</code></td>
+<td>原回退分支以 <code>zeros_like(B)</code> 建结果数组，浮点结果赋入整数数组时被截断；没有警告也不代表有效</td>
+</tr>
+<tr>
+<td>$\mathbf A=\mathbf I_2$，整数 $\mathbf B=\mathbf I_2$</td>
+<td>返回浮点单位阵</td>
+<td>整数右端项不是所有路径都会失败；此处没有进入奇异回退</td>
+</tr>
+<tr>
+<td>$\mathbf A=\operatorname{diag}(0,1)$，浮点 $\mathbf B=[1,1]^\top$</td>
+<td>最小二乘结果为 $[0,1]^\top$</td>
+<td>不代表该向量是奇异MVDR最优权重</td>
+</tr>
+</tbody>
+</table></div>
+<p>最后一行的物理对照完全由本书手算：若把 $\mathbf A$ 视为噪声协方差、目标导向取 $[1,1]^\top$，约束是 $w_1+w_2=1$，输出噪声功率为 $|w_2|^2$。权重 $[1,0]^\top$ 满足约束且功率为零；归一化后的最小二乘方向 $[0,1]^\top$ 则功率为1。工具没有调用上游波束形成器，不能把这个目标差异诊断写成已运行完整MVDR链。</p>
+<p>另外两例直接调用NumPy接口，与上游调用分栏记录。取 $\mathbf A=\operatorname{diag}(1,10^{-8})$、$\vec b=[1,10^{-8}]^\top$，显式 <code>rcond=1e-6</code> 得秩1、解 $[1,0]^\top$、残差范数 $10^{-8}$；<code>rcond=1e-10</code> 得秩2、解 $[1,1]^\top$、残差零。两次返回的残差数组都为空，因为矩阵为方阵，接口条件是 $M\leq N$。判秩和残差各自记录，依据<a href="https://numpy.org/doc/stable/reference/generated/numpy.linalg.lstsq.html" title="citation">NumPy 2.5接口的Parameters/Returns</a>（2026-10-02核实）。<code>stable_solve</code> 本身没有向调用者暴露这两个 <code>rcond</code> 参数。</p>
+<p><a href="../12_appendix-symbols-math.html#e12-16">E12-16截断与ridge</a>进一步区分删去弱方向与连续收缩；<a href="../12_appendix-symbols-math.html#e12-18">E12-18厄米输入检查</a>则提醒 <code>eigh</code> 使用指定三角且忽略对角虚部，不能把分解成功当作输入协方差有效的证明。这两个练习由本书入口实现，不属于上述原函数的执行范围。<a href="https://www.netlib.org/lapack/lug/node27.html" title="citation">Netlib LAPACK最小二乘驱动说明</a>的式(2.1)/表2.3区分满秩QR/LQ与秩亏求解，支持先说明目标、秩假设和截断策略，再选择接口；本书没有另行编译这些Fortran驱动。</p>
+<pre><code class="language-bash">.venv/bin/python -B -m codes.chapters.appendix_a.examples.audit_upstream_solver_contracts
+.venv/bin/python -B -m codes.chapters.appendix_a.examples.audit_upstream_solver_contracts --report codes/chapters/appendix_a/reports/upstream_solver_contracts.json
+</code></pre>
+<p>默认命令只把当前审计写到标准输出；显式 <code>--report</code> 才原子保存<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_a/reports/upstream_solver_contracts.json">独立报告</a>。报告核对官方origin、完整HEAD、锁表摘要、两个原文件的SHA/Git blob、MIT许可、工具摘要和运行前后洁净状态，并保存四个原函数例、两个独立NumPy例的输入类型、输出、独立期望、容差、警告和失败分类。拒绝符号链接、词法 <code>..</code>、非普通目标与上游缓存内报告路径。不覆盖旧历史报告，不取得新源码；完整包、波束音频、模型和设备都未在这个审计中运行。</p>
+<span id="sec-14" class="anchor-alias" aria-hidden="true"></span><span id="6-何时可以进入设备比较" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-56cf8b0bbf">6. 何时可以进入设备比较</h2>
 <p>只有两套候选实现使用同一输入、评分区域和延迟口径，性能比较才有明确含义。硬件上再分别测量启动加载、
 稳定运行、最慢帧、峰值内存和功耗状态；平均实时系数小于一仍可能发生连续帧超期。</p>
 <p>实际设备的验收条件由产品覆盖距离、房间、声音类型和可接受损伤决定。本书的手算输入与教学示例用于检验算法，
 它们不能直接成为出厂阈值。工业项目的具体入口和测量方法见 <a href="03_industrial_deployment.html">工业部署与评测</a>。</p>
-<span id="sec-14" class="anchor-alias" aria-hidden="true"></span><span id="7-固定延迟组件的实际接口对照" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-678e07d1d5">7. 固定延迟组件的实际接口对照</h2>
+<span id="sec-15" class="anchor-alias" aria-hidden="true"></span><span id="7-固定延迟组件的实际接口对照" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-678e07d1d5">7. 固定延迟组件的实际接口对照</h2>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/examples/run_stk_delay_probe.py">STK DelayL探针</a>先核对官方地址、完整提交、稀疏选择和清洁工作区，再在临时目录编译两份上游C++源文件。它把零延迟、半采样、一采样、保留状态分块和逐块清空五项分别对照解析FIR。已执行配置、零误差边界与0.1519102855的重置差异见<a href="03_industrial_deployment.html#i29stkdelayl">工业I29</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/reports/stk_delay.json">报告</a>。</p>
 <p>这项检查不下载权重、不访问音频设备，也不需要重新授权本书使用整个STK工具箱。第三方源码保留在独立的被忽略目录；提交的是本书调用探针、锁表和可复核报告。运行失败应保留实际错误与来源状态，不能用静态源码说明代替运行记录。</p>
-<span id="sec-15" class="anchor-alias" aria-hidden="true"></span><span id="第6章外部-aec-接口诊断" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-6d973a34e1">第6章外部 AEC 接口诊断</h3>
+<span id="sec-16" class="anchor-alias" aria-hidden="true"></span><span id="第6章外部-aec-接口诊断" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-6d973a34e1">第6章外部 AEC 接口诊断</h3>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/examples/audit_aec_upstream_interfaces.py">诊断入口</a>不下载依赖、不修补上游。它先核对固定提交和原文件摘要，再实际调用 pyaec 的 RLS/Kalman/FDKF/PFDKF 及 echocatzh 的初始块接口。pyaec 的尾截断和 <code>np.complex</code> 失败保留在<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/reports/aec_upstream_interfaces.json">报告</a>中；echocatzh 的默认后滤输出另列，不能等同于线性残差。</p>
 <p>DTLN 部分用原 <code>process_file</code> 函数的 AST、内存输入和假解释器检查文件填充、状态及输出缩放，明确没有运行神经网络。这类测试可以发现接口问题，不能据此报告语音效果、实时性或论文复现成功。输入、逐项结果及源码入口见<a href="02_aec_wpe_separation.html#aec">研究 A18</a>。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>

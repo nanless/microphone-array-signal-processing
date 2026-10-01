@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "script_sha256": "839956749a939489ad6ea9ef702354d373f4ddc00a9d84df1d5f3b83195b932d",
+  "audio_manifest_sha256": "3e7306e9017480418d96c31db5fd2ece91d3f529fd0435e6896fd503799d54dd",
+  "scope": "known deterministic orthogonal tones; no covariance estimation or listening test",
+  "score_window": [
+    1600,
+    30400
+  ],
+  "weights": {
+    "ols": [
+      0.5,
+      0.5
+    ],
+    "gls": [
+      0.8,
+      0.2
+    ],
+    "reversed": [
+      0.2,
+      0.8
+    ]
+  },
+  "analytic_mse": {
+    "ols": 0.0005625,
+    "gls": 0.00036,
+    "reversed": 0.00117
+  },
+  "integer_pcm": {
+    "weighted_ols.wav": {
+      "integer_error_squared_sum": 17394760800,
+      "integer_reference_squared_sum": 618489148320,
+      "scored_samples": 28800,
+      "mse": 0.0005625046323984861,
+      "nmse": 0.028124601453799684
+    },
+    "weighted_gls.wav": {
+      "integer_error_squared_sum": 11131529760,
+      "integer_reference_squared_sum": 618489148320,
+      "scored_samples": 28800,
+      "mse": 0.0003599668387323618,
+      "nmse": 0.01799793867076979
+    },
+    "weighted_reversed.wav": {
+      "integer_error_squared_sum": 36180064800,
+      "integer_reference_squared_sum": 618489148320,
+      "scored_samples": 28800,
+      "mse": 0.0011699760798364878,
+      "nmse": 0.05849749328387699
+    }
+  }
+}

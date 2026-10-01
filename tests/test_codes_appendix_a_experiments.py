@@ -1,7 +1,9 @@
-"""Independent arithmetic and PCM oracles for Appendix A E12-06..13."""
+"""Independent arithmetic and real temporary PCM oracles for E12-06..19."""
 
 import json
+import tempfile
 import unittest
+from pathlib import Path
 
 import numpy as np
 
@@ -10,15 +12,22 @@ from codes.chapters.appendix_a.core.math_foundations import (
     blockwise_circular_convolution, fft_overlap_add,
 )
 from codes.chapters.appendix_a.appendix_a_experiments import run_experiments
+from codes.chapters.appendix_a.examples.generate_weighted_audio import generate
+from tests.test_codes_appendix_a_boundaries import main_fixture
 
 
 class AppendixAMathTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.rows = run_experiments()
+        cls.temporary = tempfile.TemporaryDirectory()
+        cls.addClassCleanup(cls.temporary.cleanup)
+        root = main_fixture(Path(cls.temporary.name)/'repo')
+        directory = Path(cls.temporary.name)/'weighted'
+        generate(directory)
+        cls.rows = run_experiments(repo_root=root, weighted_directory=directory)
 
     def test_exact_ids_and_json(self):
-        self.assertEqual(set(self.rows), {f'E12-{number:02d}' for number in range(6, 14)})
+        self.assertEqual(set(self.rows), {f'E12-{number:02d}' for number in range(6, 20)})
         json.dumps(self.rows, allow_nan=False)
 
     def test_signed_bins_and_complex_norm(self):
@@ -141,6 +150,91 @@ class AppendixAMathTests(unittest.TestCase):
                 np.testing.assert_allclose(case['weights'], weights, rtol=0, atol=1e-15)
                 self.assertAlmostEqual(case['condition_2'], condition, places=12)
                 self.assertAlmostEqual(case['target_response'], 1, places=12)
+
+    def test_complex_ls_residual_and_conjugate(self):
+        row=self.rows['E12-14']
+        np.testing.assert_allclose(row['solution']['real'],[.5],atol=2e-16)
+        np.testing.assert_allclose(row['solution']['imag'],[-.5],atol=2e-16)
+        np.testing.assert_allclose(row['residual']['real'],[-.5,-.5],atol=2e-16)
+        np.testing.assert_allclose(row['residual']['imag'],[-.5,.5],atol=2e-16)
+        np.testing.assert_allclose(row['hermitian_orthogonality']['real'],[0],atol=1e-15)
+        self.assertEqual(row['transpose_gram'],{'real':[[0.]],'imag':[[0.]]})
+        self.assertAlmostEqual(row['residual_squared_sum'],1)
+
+    def test_weighted_ls_is_orthogonal_in_its_actual_metric(self):
+        row=self.rows['E12-15']['cases']
+        self.assertEqual(row['ols']['solution'],[1])
+        self.assertAlmostEqual(row['gls']['solution'][0],2/5)
+        np.testing.assert_allclose(row['gls']['residual'],[2/5,-8/5],atol=1e-16)
+        self.assertAlmostEqual(row['gls']['weighted_orthogonality'][0],0)
+        self.assertAlmostEqual(row['gls']['ordinary_orthogonality'][0],-6/5)
+        self.assertAlmostEqual(row['gls']['weighted_residual_squared_sum'],4/5)
+        self.assertAlmostEqual(row['gls']['parameter_variance'],4/5)
+        self.assertEqual(row['ols']['parameter_variance'],5/4)
+        # Evaluate both residuals with the same known C^-1 metric:
+        # OLS: 1 + 1/4; GLS: (2/5)^2 + (1/4)*(-8/5)^2.
+        self.assertEqual(row['ols']['weighted_residual_squared_sum'],2)
+        self.assertEqual(row['ols']['common_noise_precision_cost'],5/4)
+        self.assertAlmostEqual(row['gls']['common_noise_precision_cost'],4/5)
+
+    def test_rcond_rank_and_ridge_are_different_rules(self):
+        row=self.rows['E12-16'];first,second=row['cases']
+        self.assertEqual(row['numpy_version'],np.__version__)
+        self.assertEqual(first['effective_singular_value_threshold'],1e-10)
+        self.assertEqual(second['effective_singular_value_threshold'],1e-6)
+        self.assertEqual((first['rank'],second['rank']),(2,1))
+        self.assertEqual(first['solution'],[1,1]);self.assertEqual(second['solution'],[1,0])
+        self.assertEqual(first['returned_residual_array'],[])
+        self.assertEqual(second['returned_residual_array'],[])
+        self.assertEqual(first['actual_residual_norm'],0)
+        self.assertEqual(second['actual_residual_norm'],1e-8)
+        self.assertAlmostEqual(row['ridge_solution'][0],1)
+        self.assertAlmostEqual(row['ridge_solution'][1],.5)
+        self.assertAlmostEqual(row['ridge_residual_squared_sum']/1e-16,.25)
+        self.assertAlmostEqual(row['ridge_penalty']/1e-16,1.25)
+
+    def test_complex_correlation_phase_and_conjugate(self):
+        row=self.rows['E12-17']
+        self.assertEqual(row['r12'],{'real':[0,0,0,2,0],'imag':[0,0,-1,0,1]})
+        self.assertEqual(row['without_conjugate'],{'real':[0]*5,'imag':[0,0,1,0,1]})
+        self.assertEqual(row['magnitude_peak_lag_samples'],1)
+        self.assertEqual(row['r21'],{'real':[0,2,0,0,0],'imag':[-1,0,1,0,0]})
+        self.assertEqual(row['r21_magnitude_peak_lag_samples'],-1)
+
+    def test_eigh_uses_triangle_not_original_asymmetric_input(self):
+        lower,upper,diagonal=self.rows['E12-18']['cases']
+        self.assertEqual(lower['eigenvalues'],[1,2])
+        # Upper Hermitian reconstruction [[1,100],[100,2]] has trace3
+        # and gap sqrt(1+4*100^2), independently from the called solver.
+        np.testing.assert_allclose(upper['eigenvalues'],[(3-np.sqrt(40001))/2,(3+np.sqrt(40001))/2],atol=2e-14)
+        for case in (lower,upper):
+            self.assertAlmostEqual(case['original_matrix_residual_frobenius'],100)
+            self.assertLess(case['effective_matrix_residual_frobenius'],1e-12)
+        self.assertEqual(diagonal['eigenvalues'],[1,2])
+        self.assertAlmostEqual(diagonal['original_matrix_residual_frobenius'],np.sqrt(34))
+        for case in (lower,diagonal):
+            np.testing.assert_array_equal(case['eigenvectors']['real'],np.eye(2))
+            np.testing.assert_array_equal(case['eigenvectors']['imag'],np.zeros((2,2)))
+        # Independently solve each two-row eigen-equation. For eigenvalue l,
+        # [100,l-1] is a real eigenvector; its overall sign is not unique.
+        vectors=np.array(upper['eigenvectors']['real'])
+        np.testing.assert_array_equal(upper['eigenvectors']['imag'],np.zeros((2,2)))
+        for column,value in enumerate(((3-np.sqrt(40001))/2,(3+np.sqrt(40001))/2)):
+            expected=np.array([100.,value-1.])
+            expected/=np.sqrt(100**2+(value-1)**2)
+            actual=vectors[:,column]
+            self.assertAlmostEqual(abs(float(actual@expected)),1,places=14)
+            self.assertAlmostEqual(float(actual@actual),1,places=14)
+
+    def test_weighted_audio_anchor_reads_integer_report(self):
+        row=self.rows['E12-19']
+        self.assertEqual(row['parameters']['source_score'],[1600,30400])
+        pcm=row['pcm_analysis']
+        self.assertEqual(pcm['integer_reference_squared_sum'],618489148320)
+        for name,E in [('weighted_ols.wav',17394760800),('weighted_gls.wav',11131529760),('weighted_reversed.wav',36180064800)]:
+            candidate=pcm['candidates'][name]
+            self.assertEqual(candidate['integer_error_squared_sum'],E)
+            self.assertEqual(candidate['nmse'],E/618489148320)
 
 
 if __name__ == '__main__':

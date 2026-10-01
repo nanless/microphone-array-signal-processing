@@ -1,0 +1,385 @@
+{
+  "created_utc": "2026-10-01T19:32:24.401363+00:00",
+  "tool_sha256": "da4a9d4a7bc5ff6ccd272f6c4c50b9513f04261f6c63e1c3759605fe9369e5f3",
+  "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/pb_bss",
+  "revision": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+  "origin": "https://github.com/fgnt/pb_bss.git",
+  "source_lock_sha256": "5cf610a5bee5a65c0b5bb77293f2bd6549446d22e635594fc313710f4109b8cf",
+  "source_lock_project_count": 99,
+  "sources": [
+    {
+      "path": "LICENSE",
+      "sha256": "48241e1eae6ab4c15c5718992ca60d3d15961212a4e324e09e5dbfbc79b78214",
+      "git_blob": "dbb5ffdda37b3ea9855fdda4adaa193a7bdf6175",
+      "role": "license"
+    },
+    {
+      "path": "pb_bss/math/solve.py",
+      "sha256": "be440ee6f252e42a6ae5d7b6f3cc7205da5d4c29bcb01cae7885ab9f8c6a53ed",
+      "git_blob": "55fb235ca12b9eefa99f1afc7ad6bc90b9e13bbb",
+      "role": "complete original Python module"
+    }
+  ],
+  "clean": true,
+  "before_clean": true,
+  "after_clean": true,
+  "license": {
+    "name": "MIT",
+    "path": "LICENSE",
+    "sha256": "48241e1eae6ab4c15c5718992ca60d3d15961212a4e324e09e5dbfbc79b78214"
+  },
+  "execution": {
+    "module": "pb_bss/math/solve.py",
+    "original_functions_called": [
+      "stable_solve"
+    ],
+    "scope": "complete unmodified module loaded; one function called",
+    "source_patch": false,
+    "ast_extraction": false,
+    "substitutes": [],
+    "not_executed": [
+      "full pb_bss package",
+      "_lstsq helper",
+      "beamformers",
+      "models",
+      "audio",
+      "hardware"
+    ]
+  },
+  "environment": {
+    "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
+    "numpy": "2.5.3",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "numpy_linalg_wrapper_sha256": "fb51e084cbb05b72a571a088299222055f3f176792ea9ea66186327a31ec787f"
+  },
+  "original_lstsq_default": {
+    "argument": "rcond omitted by original stable_solve",
+    "runtime_default": "NumPy 2.x eps * max(M,N)",
+    "float64_2_by_2_ratio": 4.440892098500626e-16
+  },
+  "comparison_tolerance": {
+    "absolute": 1e-14,
+    "relative": 0
+  },
+  "oracle": "independent Fraction 1/10,1/5 and diagonal/constraint closed forms",
+  "cases": [
+    {
+      "name": "singular_float_rhs",
+      "execution": "original stable_solve",
+      "matrix": [
+        [
+          1.0,
+          1.0
+        ],
+        [
+          2.0,
+          2.0
+        ]
+      ],
+      "rhs": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ],
+      "matrix_dtype": "float64",
+      "rhs_dtype": "float64",
+      "output_dtype": "float64",
+      "output": [
+        [
+          0.09999999999999996,
+          0.19999999999999993
+        ],
+        [
+          0.09999999999999996,
+          0.19999999999999993
+        ]
+      ],
+      "independent_expected": [
+        [
+          0.1,
+          0.2
+        ],
+        [
+          0.1,
+          0.2
+        ]
+      ],
+      "matched_expected": true,
+      "classification": "matched_independent_expected",
+      "warnings": [],
+      "error": null,
+      "inputs_unchanged": true
+    },
+    {
+      "name": "singular_integer_rhs",
+      "execution": "original stable_solve",
+      "matrix": [
+        [
+          1.0,
+          1.0
+        ],
+        [
+          2.0,
+          2.0
+        ]
+      ],
+      "rhs": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "matrix_dtype": "float64",
+      "rhs_dtype": "int64",
+      "output_dtype": "int64",
+      "output": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "independent_expected": [
+        [
+          0.1,
+          0.2
+        ],
+        [
+          0.1,
+          0.2
+        ]
+      ],
+      "matched_expected": false,
+      "classification": "observed_integer_fallback_truncation",
+      "warnings": [],
+      "error": null,
+      "inputs_unchanged": true,
+      "cause_static": "original fallback allocates zeros_like(B), then assigns floating lstsq results"
+    },
+    {
+      "name": "nonsingular_integer_rhs",
+      "execution": "original stable_solve",
+      "matrix": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ],
+      "rhs": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "matrix_dtype": "float64",
+      "rhs_dtype": "int64",
+      "output_dtype": "float64",
+      "output": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ],
+      "independent_expected": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ],
+      "matched_expected": true,
+      "classification": "matched_independent_expected",
+      "warnings": [],
+      "error": null,
+      "inputs_unchanged": true
+    },
+    {
+      "name": "psd_nullspace_ls",
+      "execution": "original stable_solve",
+      "matrix": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ],
+      "rhs": [
+        [
+          1.0
+        ],
+        [
+          1.0
+        ]
+      ],
+      "matrix_dtype": "float64",
+      "rhs_dtype": "float64",
+      "output_dtype": "float64",
+      "output": [
+        [
+          0.0
+        ],
+        [
+          1.0
+        ]
+      ],
+      "independent_expected": [
+        [
+          0.0
+        ],
+        [
+          1.0
+        ]
+      ],
+      "matched_expected": true,
+      "classification": "matched_independent_expected",
+      "warnings": [],
+      "error": null,
+      "inputs_unchanged": true,
+      "independent_mvdr_model": {
+        "covariance": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "steering": [
+          1,
+          1
+        ],
+        "constraint": "w^H a = 1",
+        "optimal_weight": [
+          1,
+          0
+        ],
+        "optimal_noise_power": 0,
+        "normalized_ls_weight": [
+          0,
+          1
+        ],
+        "normalized_ls_noise_power": 1,
+        "derivation": "noise power = |w2|^2; w1+w2=1 admits w2=0",
+        "execution": "hand-derived optimization only; no upstream beamformer called"
+      }
+    }
+  ],
+  "numpy_comparisons": [
+    {
+      "name": "numpy_rcond_1e-06",
+      "execution": "independent NumPy comparison; not pb_bss parameter",
+      "matrix": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1e-08
+        ]
+      ],
+      "rhs": [
+        1.0,
+        1e-08
+      ],
+      "dtype": "float64",
+      "rcond": 1e-06,
+      "cutoff": 1e-06,
+      "singular_values": [
+        1.0,
+        1e-08
+      ],
+      "rank": 1,
+      "output": [
+        1.0,
+        0.0
+      ],
+      "independent_expected": [
+        1.0,
+        0.0
+      ],
+      "returned_residual_array": [],
+      "explicit_residual_norm": 1e-08,
+      "expected_residual_norm": 1e-08,
+      "empty_residual_reason": "M=N, so M<=N in this API",
+      "classification": "matched_independent_expected"
+    },
+    {
+      "name": "numpy_rcond_1e-10",
+      "execution": "independent NumPy comparison; not pb_bss parameter",
+      "matrix": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1e-08
+        ]
+      ],
+      "rhs": [
+        1.0,
+        1e-08
+      ],
+      "dtype": "float64",
+      "rcond": 1e-10,
+      "cutoff": 1e-10,
+      "singular_values": [
+        1.0,
+        1e-08
+      ],
+      "rank": 2,
+      "output": [
+        1.0,
+        1.0
+      ],
+      "independent_expected": [
+        1.0,
+        1.0
+      ],
+      "returned_residual_array": [],
+      "explicit_residual_norm": 0.0,
+      "expected_residual_norm": 0.0,
+      "empty_residual_reason": "M=N, so M<=N in this API",
+      "classification": "matched_independent_expected"
+    }
+  ],
+  "counts": {
+    "original_function_cases": 4,
+    "independent_numpy_cases": 2,
+    "original_matches": 3,
+    "original_known_dtype_failures": 1
+  }
+}

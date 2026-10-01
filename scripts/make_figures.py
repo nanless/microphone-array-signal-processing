@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""生成教程插图（图 1～25、33～36、40～64；图 26～32、37～39 见 make_aec_figures.py）。
+"""生成教程插图（图 1～25、33～36、40～65；图 26～32、37～39 见 make_aec_figures.py）。
 
 用法（仓库根目录）：
-    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～64 → figures/
+    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～65 → figures/
 """
 from pathlib import Path
 import hashlib
@@ -4459,6 +4459,86 @@ def fig_noise_mismatch():
     save(fig,'fig63_noise_mismatch.png',extra_metadata={'AudioManifestDigest':digest})
 
 
+def fig_weighted_noise():
+    """Known weights and independently measured published PCM, not estimated SCM."""
+    import struct
+    import wave
+    from codes.chapters.appendix_a.examples.generate_weighted_audio import check_assets
+
+    directory = CODE_CHAPTERS / 'appendix_a/weighted_audio'
+    check_assets(directory)
+    waveforms = {}
+    for name in ('target', 'ols', 'gls', 'reversed'):
+        with wave.open(str(directory / f'weighted_{name}.wav'), 'rb') as wav:
+            if (wav.getframerate(), wav.getnchannels(), wav.getsampwidth(),
+                    wav.getnframes(), wav.getcomptype()) != (16000, 1, 2, 32000, 'NONE'):
+                raise ValueError('unexpected weighted PCM format')
+            raw = wav.readframes(32000)
+        if len(raw) != 64000:
+            raise ValueError('truncated weighted PCM')
+        waveforms[name] = struct.unpack('<32000h', raw)
+    lo, hi = 1600, 30400
+    reference = waveforms['target'][lo:hi]
+    denominator = sum(value * value for value in reference)
+    if denominator == 0:
+        raise ValueError('weighted reference energy is zero')
+    methods = ('ols', 'gls', 'reversed')
+    weights = {'ols': [.5, .5], 'gls': [.8, .2], 'reversed': [.2, .8]}
+    analytic = {'ols': 9 / 16000, 'gls': 9 / 25000, 'reversed': 117 / 100000}
+    integer_pcm = {}
+    for method in methods:
+        numerator = sum((y - r) ** 2 for y, r in zip(waveforms[method][lo:hi], reference))
+        integer_pcm[f'weighted_{method}.wav'] = {
+            'integer_error_squared_sum': numerator,
+            'integer_reference_squared_sum': denominator,
+            'scored_samples': hi - lo, 'mse': numerator / ((hi - lo) * 32768**2),
+            'nmse': numerator / denominator,
+        }
+    report = {
+        'schema_version': 1,
+        'script_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        'audio_manifest_sha256': hashlib.sha256((directory / 'MANIFEST.json').read_bytes()).hexdigest(),
+        'scope': 'known deterministic orthogonal tones; no covariance estimation or listening test',
+        'score_window': [lo, hi], 'weights': weights, 'analytic_mse': analytic,
+        'integer_pcm': integer_pcm,
+    }
+    report_path = CODE_CHAPTERS / 'appendix_a/reports/figure65_weighted_noise.json'
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(json.dumps(report, indent=2, ensure_ascii=False, allow_nan=False) + '\n')
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 4.7))
+    xs = np.arange(3)
+    labels = ['等权 OLS', '已知 GLS', '故意反权']
+    for channel, color, hatch in ((0, C_BLUE, ''), (1, C_ORANGE, '//')):
+        bars = axes[0].bar(xs + (channel - .5) * .32,
+                           [weights[method][channel] for method in methods], width=.32,
+                           color=color, hatch=hatch, label=f'输入通道 {channel + 1}')
+        axes[0].bar_label(bars, fmt='%.1f', padding=3, fontsize=FS_SMALL)
+    axes[0].set(xticks=xs, xticklabels=labels, ylim=(0, 1.06),
+                ylabel='固定合成权重（无量纲）')
+    axes[0].set_title('(a) 三方法的权重和都为 1', fontsize=FS_TITLE)
+    axes[0].legend(loc='upper left', fontsize=FS_SMALL)
+    for offset, values, color, hatch, label in (
+        (-.16, [analytic[m] * 1e4 for m in methods], C_GREEN, '//', '解析整数周期'),
+        (.16, [integer_pcm[f'weighted_{m}.wav']['mse'] * 1e4 for m in methods],
+         C_PURPLE, '', '实际 PCM 读回'),
+    ):
+        bars = axes[1].bar(xs + offset, values, width=.32, color=color, hatch=hatch, label=label)
+        # Different vertical offsets keep near-identical paired values readable.
+        axes[1].bar_label(bars, fmt='%.3f', padding=3 if offset < 0 else 20,
+                          fontsize=FS_SMALL)
+    axes[1].set(xticks=xs, xticklabels=labels, ylim=(0, 14.8),
+                ylabel='稳态误差均方 ×10⁴\n（归一化幅度平方）')
+    axes[1].set_title('(b) 同一参考、同一 28800 点窗', fontsize=FS_TITLE)
+    axes[1].legend(loc='upper left', fontsize=FS_SMALL)
+    for ax in axes:
+        ax.grid(axis='y', ls=':', alpha=.3)
+        ax.set_axisbelow(True)
+    fig.suptitle('图65  同一目标的三种已知噪声权重（共同增益 1）', fontsize=FS_SUP)
+    fig.tight_layout(rect=(0, 0, 1, .92), w_pad=2)
+    save(fig, 'fig65_weighted_noise.png',
+         extra_metadata={'AudioManifestDigest': report['audio_manifest_sha256']})
+
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -4516,6 +4596,7 @@ def main():
     fig_tracking_information()
     fig_engineering_limits()
     fig_noise_mismatch()
+    fig_weighted_noise()
     print("ALL DONE")
 
 
