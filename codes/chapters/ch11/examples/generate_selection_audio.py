@@ -22,87 +22,37 @@ from codes.chapters.ch11.core.selection_audio import (
     decode_pcm, measure_pcm,
 )
 
+from codes.chapters.ch00.io_contracts import (
+    validate_asset_directory as _shared_asset_directory, strict_json_loads, same_metadata,
+)
+
 ROOT = Path(__file__).resolve().parents[4]
 OUTPUT = ROOT/'codes/chapters/ch11/scenario_audio'
 SOURCE_PATHS = (
     'codes/chapters/ch11/core/selection_audio.py',
     'codes/chapters/ch11/examples/generate_selection_audio.py',
     'codes/chapters/ch00/core/audio_samples.py',
+    'codes/chapters/ch00/io_contracts.py',
 )
 MEMBERS = tuple(stem+'.wav' for stem in STEMS)+('MANIFEST.json',)
 
 
 def validate_asset_directory(directory, *, check: bool):
-    """Check every ancestor and exact ordinary members before reading/writing.
-
-    Empty/new directories are allowed only for generation. The sole permitted
-    path aliases are system /tmp, /var and /etc to their /private equivalents.
-    """
-    if type(check) is not bool:
-        raise ValueError('check must be bool')
-    if '..' in Path(directory).parts:
-        raise ValueError('audio directory must not contain lexical parent traversal')
-    directory = Path(directory).absolute()
-    for component in (*reversed(directory.parents), directory):
-        if component.is_symlink() and not (
-                str(component) in ('/tmp', '/var', '/etc')
-                and component.resolve() == Path('/private')/component.name):
-            raise ValueError(f'audio ancestor must be an ordinary directory: {component}')
-        if component.exists() and not component.is_dir():
-            raise ValueError(f'audio ancestor must be a directory: {component}')
-    if not directory.exists():
-        if check:
-            raise ValueError('audio directory is missing')
-        return
-    members = list(directory.iterdir())
-    if any(member.is_symlink() or not member.is_file() for member in members):
-        raise ValueError('audio members must be ordinary files')
-    names = {member.name for member in members}
-    if names != set(MEMBERS) and (check or names):
-        raise ValueError('audio directory must contain exactly the nine expected members')
+    """Shared path preflight with this experiment's exact member policy."""
+    return _shared_asset_directory(directory, MEMBERS, check=check)
 
 
 def _strict_json(data: bytes):
-    def object_pairs(pairs):
-        result = {}
-        for key, value in pairs:
-            if key in result:
-                raise ValueError(f'duplicate JSON key: {key}')
-            result[key] = value
-        return result
-    def parse_float(value):
-        number = float(value)
-        if not math.isfinite(number):
-            raise ValueError('JSON number exceeds finite float64 range')
-        return number
-    def parse_constant(value):
-        raise ValueError(f'nonfinite JSON constant: {value}')
-    try:
-        return json.loads(data.decode('utf-8'), object_pairs_hook=object_pairs,
-                          parse_float=parse_float, parse_constant=parse_constant)
-    except (UnicodeError, json.JSONDecodeError) as error:
-        raise ValueError('manifest must be strict UTF-8 JSON') from error
+    return strict_json_loads(data)
 
 
 def _same_metadata(actual, expected, path='manifest'):
-    if type(actual) is not type(expected):
-        raise ValueError(f'{path} has an invalid type')
-    if isinstance(expected, dict):
-        if actual.keys() != expected.keys():
-            raise ValueError(f'{path} has missing or extra fields')
-        for name in expected:
-            _same_metadata(actual[name], expected[name], path+'.'+name)
-    elif isinstance(expected, list):
-        if len(actual) != len(expected):
-            raise ValueError(f'{path} has the wrong length')
-        for i, (left, right) in enumerate(zip(actual, expected)):
-            _same_metadata(left, right, path+f'[{i}]')
-    elif actual != expected:
-        raise ValueError(f'{path} differs from current source/PCM replay')
+    if not same_metadata(actual, expected):
+        raise ValueError(f'{path} has invalid types or differs from current source/PCM replay')
 
 
 def expected_assets():
-    """Pure full replay, with source hashes from the actual three dependencies."""
+    """Pure full replay, with source hashes from the actual four dependencies."""
     fixture = build_fixture()
     buffers = {}
     for name, signal in fixture['signals'].items():
@@ -157,11 +107,10 @@ def generate(directory=OUTPUT, *, check=False):
     return metadata
 
 
-
 def check_main_selection_assets(repo_root=ROOT):
     """Read the four published main WAVs; never generate or repair any asset.
 
-    Verifies strict JSON, all 19 genuine main-source digests, the four stored
+    Verifies strict JSON, all 20 genuine main-source digests, the four stored
     file hashes/formats and complete current byte replay of this group. The
     old return keys remain, but PCM analysis comes from actual file integers.
     """
@@ -184,7 +133,7 @@ def check_main_selection_assets(repo_root=ROOT):
         raise ValueError('invalid main manifest schema')
     sources = manifest.get('generator_inputs')
     if not isinstance(sources,dict) or set(sources) != set(INPUTS):
-        raise ValueError('main source set must match the nineteen actual dependencies')
+        raise ValueError('main source set must match the twenty actual dependencies')
     for path, digest in sources.items():
         source = repo_root/path
         if source.is_symlink() or not source.is_file() or not isinstance(digest,str) or (

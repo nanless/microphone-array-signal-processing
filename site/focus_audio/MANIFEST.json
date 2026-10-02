@@ -6,10 +6,11 @@
   "origin": "original deterministic known-component focusing synthesis",
   "source_sha256": {
     "codes/chapters/ch04/core/focus_audio.py": "0ddc83110540bc96ee5e1a5e57242948e600f2c2c4c965b059f1797dc6414c83",
-    "codes/chapters/ch04/examples/generate_focus_audio.py": "5d1dacd9740106e7169aa41935182f13c6b76243099bff8ceaa37d9bedda1d68",
+    "codes/chapters/ch04/examples/generate_focus_audio.py": "4c8eeebb46cbd40fcdaabd432b16e634f774ec2350d5f2e8cbb0595f04f40862",
     "codes/chapters/ch03/core/geometry.py": "5a680848301358415f74647199a4c57b65086f0b2580f91706c912ad208d7bdb",
     "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
-    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8"
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
   },
   "environment": {
     "python": "3.13.12",

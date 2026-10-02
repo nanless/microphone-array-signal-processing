@@ -12,13 +12,16 @@ if __name__ == '__main__' and not __package__:
 import argparse
 import hashlib
 import json
-import math
 import platform
 from pathlib import Path
 import numpy as np
 from codes.chapters.ch00.core.audio_samples import pcm16_bytes
 from codes.chapters.ch10.core.noise_mismatch import (
     SAMPLE_RATE, SAMPLES, STEMS, build_fixture, analyze_fixture, analyze_pcm,
+)
+
+from codes.chapters.ch00.io_contracts import (
+    validate_asset_directory as _shared_asset_directory, strict_json_loads, same_metadata,
 )
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -30,81 +33,27 @@ SOURCE_PATHS = (
     'codes/chapters/ch02/core/spectral.py',
     'codes/chapters/ch02/core/conventions.py',
     'codes/chapters/ch00/core/audio_samples.py',
+    'codes/chapters/ch00/io_contracts.py',
 )
 MEMBERS = tuple(stem+'.wav' for stem in STEMS)+('MANIFEST.json',)
 
 
 def validate_asset_directory(directory, *, check: bool):
-    """Check every ancestor and exact ordinary members before reading/writing.
-
-    Empty/new directories are allowed only for generation. The sole permitted
-    path aliases are system /tmp, /var and /etc to their /private equivalents.
-    """
-    if type(check) is not bool:
-        raise ValueError('check must be bool')
-    if '..' in Path(directory).parts:
-        raise ValueError('audio directory must not contain lexical parent traversal')
-    directory = Path(directory).absolute()
-    for component in (*reversed(directory.parents), directory):
-        if component.is_symlink() and not (
-                str(component) in ('/tmp', '/var', '/etc')
-                and component.resolve() == Path('/private')/component.name):
-            raise ValueError(f'audio ancestor must be an ordinary directory: {component}')
-        if component.exists() and not component.is_dir():
-            raise ValueError(f'audio ancestor must be a directory: {component}')
-    if not directory.exists():
-        if check:
-            raise ValueError('audio directory is missing')
-        return
-    members = list(directory.iterdir())
-    if any(member.is_symlink() or not member.is_file() for member in members):
-        raise ValueError('audio members must be ordinary files')
-    names = {member.name for member in members}
-    if names != set(MEMBERS) and (check or names):
-        raise ValueError('audio directory must contain exactly the seven expected members')
+    """Shared path preflight with this experiment's exact member policy."""
+    return _shared_asset_directory(directory, MEMBERS, check=check)
 
 
 def _strict_json(data: bytes):
-    def object_pairs(pairs):
-        result = {}
-        for key, value in pairs:
-            if key in result:
-                raise ValueError(f'duplicate JSON key: {key}')
-            result[key] = value
-        return result
-    def parse_float(value):
-        number = float(value)
-        if not math.isfinite(number):
-            raise ValueError('JSON number exceeds finite float64 range')
-        return number
-    def parse_constant(value):
-        raise ValueError(f'nonfinite JSON constant: {value}')
-    try:
-        return json.loads(data.decode('utf-8'), object_pairs_hook=object_pairs,
-                          parse_float=parse_float, parse_constant=parse_constant)
-    except (UnicodeError, json.JSONDecodeError) as error:
-        raise ValueError('manifest must be strict UTF-8 JSON') from error
+    return strict_json_loads(data)
 
 
 def _same_metadata(actual, expected, path='manifest'):
-    if type(actual) is not type(expected):
-        raise ValueError(f'{path} has an invalid type')
-    if isinstance(expected, dict):
-        if actual.keys() != expected.keys():
-            raise ValueError(f'{path} has missing or extra fields')
-        for name in expected:
-            _same_metadata(actual[name], expected[name], path+'.'+name)
-    elif isinstance(expected, list):
-        if len(actual) != len(expected):
-            raise ValueError(f'{path} has the wrong length')
-        for i, (left, right) in enumerate(zip(actual, expected)):
-            _same_metadata(left, right, path+f'[{i}]')
-    elif actual != expected:
-        raise ValueError(f'{path} differs from current source/PCM replay')
+    if not same_metadata(actual, expected):
+        raise ValueError(f'{path} has invalid types or differs from current source/PCM replay')
 
 
 def expected_assets():
-    """Pure full replay, with source hashes from the actual six dependencies."""
+    """Pure full replay, with source hashes from the actual seven dependencies."""
     fixture = build_fixture()
     buffers = {}
     for name, signal in fixture['signals'].items():

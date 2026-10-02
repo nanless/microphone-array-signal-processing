@@ -17,20 +17,39 @@ ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(ROOT))
 from codes.chapters.ch00.core.audio_samples import prepare_exports, SEED  # noqa: E402
 from scripts.code_layout import MAIN_AUDIO_GROUP_CHAPTER, main_audio_path, main_audio_manifest_path  # noqa: E402
+from codes.chapters.ch00.io_contracts import (
+    validate_parent_chain, validate_asset_directory as _shared_asset_directory, strict_json_loads, same_metadata,
+)
 
-INPUTS = ['codes/chapters/ch10/core/engineering.py', 'codes/chapters/ch00/examples/generate_audio_samples.py', 'codes/chapters/ch00/core/audio_samples.py',
-          'codes/chapters/ch06/core/aec.py', 'codes/chapters/ch06/core/aec_numeric.py', 'codes/chapters/ch06/core/aec_ipnlms.py',
-          'codes/chapters/ch06/core/aec_rls.py', 'codes/chapters/ch06/core/aec_kalman_matrix.py',
-          'codes/chapters/ch06/core/aec_subband.py', 'codes/chapters/ch05/core/gsc.py',
-          'codes/chapters/ch10/core/noise_suppression.py',
-          'codes/chapters/appendix_a/core/math_foundations.py',
-          'codes/chapters/ch08/core/css.py', 'codes/chapters/ch08/core/separation.py',
-          'codes/chapters/ch07/core/dereverberation.py',
-          'codes/chapters/ch02/core/spectral.py', 'codes/chapters/ch02/core/conventions.py',
-          'codes/chapters/ch03/core/geometry.py', 'scripts/code_layout.py']
+
+INPUTS = [
+    'codes/chapters/ch10/core/engineering.py',
+    'codes/chapters/ch00/examples/generate_audio_samples.py',
+    'codes/chapters/ch00/core/audio_samples.py',
+    'codes/chapters/ch06/core/aec.py',
+    'codes/chapters/ch06/core/aec_numeric.py',
+    'codes/chapters/ch06/core/aec_ipnlms.py',
+    'codes/chapters/ch06/core/aec_rls.py',
+    'codes/chapters/ch06/core/aec_kalman_matrix.py',
+    'codes/chapters/ch06/core/aec_subband.py',
+    'codes/chapters/ch05/core/gsc.py',
+    'codes/chapters/ch10/core/noise_suppression.py',
+    'codes/chapters/appendix_a/core/math_foundations.py',
+    'codes/chapters/ch08/core/css.py',
+    'codes/chapters/ch08/core/separation.py',
+    'codes/chapters/ch07/core/dereverberation.py',
+    'codes/chapters/ch02/core/spectral.py',
+    'codes/chapters/ch02/core/conventions.py',
+    'codes/chapters/ch03/core/geometry.py',
+    'scripts/code_layout.py',
+    'codes/chapters/ch00/io_contracts.py',
+]
 
 
 def generate(destination: Path, check: bool = False) -> dict:
+    if type(check) is not bool:
+        raise ValueError('check must be bool')
+    destination = validate_parent_chain(destination)
     files, groups = prepare_exports()
     if set(groups) != set(MAIN_AUDIO_GROUP_CHAPTER):
         raise ValueError('main audio groups lack a unique chapter destination')
@@ -53,8 +72,19 @@ def generate(destination: Path, check: bool = False) -> dict:
                 'generator_inputs': {p: hashlib.sha256((ROOT/p).read_bytes()).hexdigest() for p in INPUTS},
                 'groups': groups, 'files': records}
     target = main_audio_manifest_path(destination)
+    by_directory = {target.parent: {'MANIFEST.json'}}
+    for filename, (_, info) in files.items():
+        output = main_audio_path(destination, info['group'], filename)
+        by_directory.setdefault(output.parent, set()).add(filename)
+    for directory, members in by_directory.items():
+        _shared_asset_directory(directory, members, check=check)
+    # Reject audio in an unexpected chapter, without treating unrelated chapter
+    # source files or independent asset directories as main audio members.
+    for directory in Path(destination).glob('*/audio'):
+        if directory not in by_directory:
+            raise ValueError('unexpected main audio chapter directory')
     if check:
-        if not target.is_file() or json.loads(target.read_text()) != manifest:
+        if not target.is_file() or not same_metadata(strict_json_loads(target.read_text()), manifest):
             raise ValueError('audio manifest missing or stale; regenerate explicitly')
         actual = {p.name for p in destination.glob('*/audio/*.wav')}
         if actual != set(files):

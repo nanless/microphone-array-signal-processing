@@ -26,16 +26,21 @@ from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 try:
     from scripts.build_markdown_helpers import (ALLOWED_LINK_SCHEMES, protect_code,
-                                                restore_code, validate_url_schemes)
+        restore_code, validate_url_schemes, render_markdown, parsed_markdown_headings,
+        map_table_cell_text)
     from scripts.code_layout import MAIN_AUDIO_GROUP_CHAPTER, main_audio_manifest_path, main_audio_path
 except ModuleNotFoundError:  # direct ``python scripts/build_site.py``
     from build_markdown_helpers import (ALLOWED_LINK_SCHEMES, protect_code,
-                                        restore_code, validate_url_schemes)
+        restore_code, validate_url_schemes, render_markdown, parsed_markdown_headings,
+        map_table_cell_text)
     from code_layout import MAIN_AUDIO_GROUP_CHAPTER, main_audio_manifest_path, main_audio_path
 
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+from codes.chapters.ch00.io_contracts import (
+    validate_parent_chain, validate_asset_directory, strict_json_loads,
+)
 SRC = ROOT / "chapters"
 OUT = ROOT / "site"
 CODE_CHAPTERS = ROOT / "codes" / "chapters"
@@ -78,15 +83,63 @@ GEOMETRY_AUDIO_WAVS = {"geometry_reference.wav": 1, "geometry_u.wav": 6, "geomet
 STFT_AUDIO_WAVS = {"stft_roundtrip.wav", "full_convolution.wav", "framewise_mtf.wav"}
 
 
+def _preflight_asset_stage(source, destination, members):
+    """Inspect the complete source and a new destination before any copying."""
+    try:
+        validate_asset_directory(source, members, check=True)
+    except ValueError as error:
+        raise ValueError("媒体源目录必须恰含指定普通WAV、清单及必要许可/状态文件：" + str(error)) from error
+    destination = validate_parent_chain(destination)
+    if destination.exists():
+        raise ValueError("media staging destination already exists")
+
+
+def _read_asset_manifest(path, *, per_channel_rms=False):
+    """Strict JSON with explicit structural numeric types, not model scoring."""
+    validate_parent_chain(path)
+    manifest = strict_json_loads(Path(path).read_text(encoding="utf-8"))
+    if not isinstance(manifest, dict):
+        raise ValueError("音频清单根必须为对象")
+    integer_fields = {"schema_version", "sample_rate_hz", "channels",
+                      "samples_per_channel", "sample_width_bytes"}
+    numeric_fields = {"common_export_gain", "peak", "rms", "duration_s",
+                      "quantization_max_abs_error", "quantization_max_abs_error_bound"}
+    def types(value):
+        if isinstance(value, dict):
+            for key, item in value.items():
+                if key in integer_fields and type(item) is not int:
+                    raise ValueError(f"音频元数据字段必须为整数：{key}")
+                if key in numeric_fields:
+                    if key == "rms" and per_channel_rms:
+                        if (not isinstance(item, list) or not item
+                                or type(value.get("channels")) is not int
+                                or len(item) != value["channels"]):
+                            raise ValueError("每通道RMS须与该WAV通道数一致")
+                        numbers = item
+                    else:
+                        numbers = [item]
+                    if any(type(number) not in (int, float) for number in numbers):
+                        raise ValueError(f"音频元数据字段必须为真实数值：{key}")
+                types(item)
+        elif isinstance(value, list):
+            for item in value:
+                types(item)
+    types(manifest)
+    return manifest
+
+
 def main_audio_sources():
     """Map only declared chapter-owned WAVs to their stable published names."""
-    manifest = json.loads(main_audio_manifest_path(CODE_CHAPTERS).read_text(encoding="utf-8"))
+    manifest = _read_asset_manifest(main_audio_manifest_path(CODE_CHAPTERS))
     result = {}
     for record in manifest["files"]:
         chapter = MAIN_AUDIO_GROUP_CHAPTER[record["group"]]
         if record.get("chapter") != chapter:
             raise ValueError(f"音频章节归属不符：{record['file']}")
-        result[main_audio_path(CODE_CHAPTERS, record["group"], record["file"]).resolve()] = record["file"]
+        path = validate_parent_chain(main_audio_path(CODE_CHAPTERS, record["group"], record["file"]))
+        if not path.is_file() or path.resolve() in result:
+            raise ValueError("主音频文件缺失或重复")
+        result[path.resolve()] = record["file"]
     return result
 
 CHAPTERS = [
@@ -285,7 +338,8 @@ def publish_real_audio_readme(source_text, destination):
 
 def stage_real_audio(source, destination):
     """Stage a fixed data release with attribution, separate from synthetic audio."""
-    manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+    _preflight_asset_stage(source, destination, REAL_AUDIO_FILES)
+    manifest = _read_asset_manifest(source / "MANIFEST.json", per_channel_rms=True)
     records = manifest["files"]
     if len(records) != 4 or {r["file"] for r in records} != REAL_AUDIO_WAVS:
         raise ValueError("真实录音清单必须匹配四个独立发布文件")
@@ -318,7 +372,7 @@ def stage_room_audio(source, destination):
     if destination.exists():
         raise ValueError("room staging destination already exists")
     check_assets(source)
-    manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+    manifest = _read_asset_manifest(source / "MANIFEST.json")
     records = manifest["files"]
     names = [record["file"] for record in records]
     if (len(records) != 18 or len(names) != len(set(names)) or
@@ -404,19 +458,21 @@ def stage_moving_audio(source, destination):
 
 def stage_binaural_audio(source, destination):
     """Publish five independent time/level cue fixtures with complete tails."""
+    _preflight_asset_stage(source, destination, BINAURAL_AUDIO_WAVS | {"MANIFEST.json"})
     import wave
     expected = BINAURAL_AUDIO_WAVS | {"MANIFEST.json"}
     if (source.is_symlink() or {p.name for p in source.iterdir()} != expected
             or any(p.is_symlink() or not p.is_file() for p in source.iterdir())):
         raise ValueError("双耳线索目录必须恰含五份普通WAV及独立清单")
-    manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+    manifest = _read_asset_manifest(source / "MANIFEST.json")
     if (set(manifest["files"]) != BINAURAL_AUDIO_WAVS
             or manifest["sample_rate_hz"] != 16000
             or manifest["common_export_gain"] != 1):
         raise ValueError("双耳线索清单集合、采样率或共同增益不符")
     required_sources = {"codes/chapters/ch01/core/binaural_cues.py",
                         "codes/chapters/ch01/examples/generate_binaural_cues.py",
-                        "codes/chapters/ch00/core/audio_samples.py"}
+                        "codes/chapters/ch00/core/audio_samples.py",
+                        'codes/chapters/ch00/io_contracts.py'}
     if set(manifest["source_sha256"]) != required_sources:
         raise ValueError("双耳线索必须记录真实生成源与PCM编码源")
     for name, digest in manifest["source_sha256"].items():
@@ -441,12 +497,13 @@ def stage_binaural_audio(source, destination):
 
 def stage_stft_audio(source, destination):
     """Publish three independent finite-window convolution fixtures with complete tails."""
+    _preflight_asset_stage(source, destination, STFT_AUDIO_WAVS | {"MANIFEST.json"})
     import wave
     expected = STFT_AUDIO_WAVS | {"MANIFEST.json"}
     if (source.is_symlink() or {p.name for p in source.iterdir()} != expected
             or any(p.is_symlink() or not p.is_file() for p in source.iterdir())):
         raise ValueError("STFT卷积目录必须恰含三份普通WAV及独立清单")
-    manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+    manifest = _read_asset_manifest(source / "MANIFEST.json")
     if (set(manifest["files"]) != STFT_AUDIO_WAVS
             or manifest["sample_rate_hz"] != 16000
             or manifest["common_export_gain"] != 1):
@@ -455,7 +512,8 @@ def stage_stft_audio(source, destination):
                         "codes/chapters/ch02/examples/generate_stft_convolution.py",
                         "codes/chapters/ch02/core/spectral.py",
                         "codes/chapters/ch02/core/conventions.py",
-                        "codes/chapters/ch00/core/audio_samples.py"}
+                        "codes/chapters/ch00/core/audio_samples.py",
+                        'codes/chapters/ch00/io_contracts.py'}
     if set(manifest["source_sha256"]) != required_sources:
         raise ValueError("STFT卷积必须记录真实生成源与PCM编码源")
     for name, digest in manifest["source_sha256"].items():
@@ -480,12 +538,13 @@ def stage_stft_audio(source, destination):
 
 def stage_geometry_audio(source, destination):
     """Publish three multichannel geometry fixtures with full propagation envelopes."""
+    _preflight_asset_stage(source, destination, set(GEOMETRY_AUDIO_WAVS) | {"MANIFEST.json"})
     import wave
     expected = set(GEOMETRY_AUDIO_WAVS) | {"MANIFEST.json"}
     if (source.is_symlink() or {p.name for p in source.iterdir()} != expected
             or any(p.is_symlink() or not p.is_file() for p in source.iterdir())):
         raise ValueError("多频几何目录必须恰含三份普通WAV及独立清单")
-    manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+    manifest = _read_asset_manifest(source / "MANIFEST.json")
     if (set(manifest["files"]) != set(GEOMETRY_AUDIO_WAVS)
             or manifest["sample_rate_hz"] != 32000
             or manifest["common_export_gain"] != 1):
@@ -494,7 +553,8 @@ def stage_geometry_audio(source, destination):
                         "codes/chapters/ch03/examples/generate_geometry_audio.py",
                         "codes/chapters/ch03/core/geometry.py",
                         "codes/chapters/ch02/core/conventions.py",
-                        "codes/chapters/ch00/core/audio_samples.py"}
+                        "codes/chapters/ch00/core/audio_samples.py",
+                        'codes/chapters/ch00/io_contracts.py'}
     if set(manifest["source_sha256"]) != required_sources:
         raise ValueError("多频几何必须记录真实生成源与PCM编码源")
     for name, digest in manifest["source_sha256"].items():
@@ -519,12 +579,13 @@ def stage_geometry_audio(source, destination):
 
 def stage_focus_audio(source, destination):
     """Publish four known-unitary focusing fixtures with complete propagation tails."""
+    _preflight_asset_stage(source, destination, set(FOCUS_AUDIO_WAVS) | {"MANIFEST.json"})
     import wave
     expected = set(FOCUS_AUDIO_WAVS) | {"MANIFEST.json"}
     if (source.is_symlink() or {p.name for p in source.iterdir()} != expected
             or any(p.is_symlink() or not p.is_file() for p in source.iterdir())):
         raise ValueError("已知酉聚焦目录必须恰含四份普通WAV及独立清单")
-    manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+    manifest = _read_asset_manifest(source / "MANIFEST.json")
     if (set(manifest["files"]) != set(FOCUS_AUDIO_WAVS)
             or manifest["sample_rate_hz"] != 16000
             or manifest["common_export_gain"] != 1):
@@ -533,7 +594,8 @@ def stage_focus_audio(source, destination):
                         "codes/chapters/ch04/examples/generate_focus_audio.py",
                         "codes/chapters/ch03/core/geometry.py",
                         "codes/chapters/ch02/core/conventions.py",
-                        "codes/chapters/ch00/core/audio_samples.py"}
+                        "codes/chapters/ch00/core/audio_samples.py",
+                        'codes/chapters/ch00/io_contracts.py'}
     if set(manifest["source_sha256"]) != required_sources:
         raise ValueError("已知酉聚焦必须记录真实生成源与PCM编码源")
     for name, digest in manifest["source_sha256"].items():
@@ -558,12 +620,13 @@ def stage_focus_audio(source, destination):
 
 def stage_derivative_audio(source, destination):
     """Validate and copy E05-22 assets; numerical scores are checked by the generator."""
+    _preflight_asset_stage(source, destination, set(DERIVATIVE_AUDIO_WAVS) | {"MANIFEST.json"})
     import wave
     expected = set(DERIVATIVE_AUDIO_WAVS) | {"MANIFEST.json"}
     if (source.is_symlink() or {p.name for p in source.iterdir()} != expected
             or any(p.is_symlink() or not p.is_file() for p in source.iterdir())):
         raise ValueError("导数约束目录必须恰含四份普通WAV及独立清单")
-    manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+    manifest = _read_asset_manifest(source / "MANIFEST.json")
     if (set(manifest["files"]) != set(DERIVATIVE_AUDIO_WAVS)
             or manifest["sample_rate_hz"] != 16000 or manifest["samples_per_channel"] != 32002
             or manifest["common_export_gain"] != 1):
@@ -574,7 +637,8 @@ def stage_derivative_audio(source, destination):
                         "codes/chapters/ch04/core/covariance.py",
                         "codes/chapters/ch03/core/geometry.py",
                         "codes/chapters/ch02/core/conventions.py",
-                        "codes/chapters/ch00/core/audio_samples.py"}
+                        "codes/chapters/ch00/core/audio_samples.py",
+                        'codes/chapters/ch00/io_contracts.py'}
     if set(manifest["source_sha256"]) != required_sources:
         raise ValueError("导数约束必须记录七个真实生成源")
     for name, digest in manifest["source_sha256"].items():
@@ -600,6 +664,7 @@ def stage_derivative_audio(source, destination):
 
 def stage_apa_audio(source, destination):
     """Read and validate six real PCM files before atomic publication."""
+    _preflight_asset_stage(source, destination, APA_AUDIO_WAVS | {"MANIFEST.json"})
     import sys
     if str(ROOT.resolve()) not in sys.path:
         sys.path.insert(0, str(ROOT.resolve()))
@@ -614,6 +679,7 @@ def stage_apa_audio(source, destination):
 
 def stage_mint_audio(source, destination):
     """Validate independent known-path inverse PCM before publication."""
+    _preflight_asset_stage(source, destination, set(MINT_AUDIO_WAVS) | {"MANIFEST.json"})
     import sys
     if str(ROOT.resolve()) not in sys.path:
         sys.path.insert(0, str(ROOT.resolve()))
@@ -630,6 +696,7 @@ def stage_mint_audio(source, destination):
 
 def stage_mask_audio(source, destination):
     """Validate actual PCM and replay the fixed FFT representation experiment."""
+    _preflight_asset_stage(source, destination, MASK_AUDIO_WAVS | {"MANIFEST.json"})
     import sys
     if str(ROOT.resolve()) not in sys.path:
         sys.path.insert(0, str(ROOT.resolve()))
@@ -644,6 +711,7 @@ def stage_mask_audio(source, destination):
 
 def stage_noise_audio(source, destination):
     """Publish only the fully replayed six-file noise-mismatch experiment."""
+    _preflight_asset_stage(source, destination, NOISE_AUDIO_WAVS | {"MANIFEST.json"})
     from codes.chapters.ch10.examples.generate_noise_mismatch import check_assets, validate_asset_directory
     check_assets(source)
     validate_asset_directory(destination, check=False)
@@ -656,6 +724,7 @@ def stage_noise_audio(source, destination):
 
 def stage_scenario_audio(source, destination):
     """Publish the replayed eight-WAV chapter-11 scenario comparison."""
+    _preflight_asset_stage(source, destination, SCENARIO_AUDIO_WAVS | {"MANIFEST.json"})
     from codes.chapters.ch11.examples.generate_selection_audio import check_assets, validate_asset_directory
     check_assets(source)
     validate_asset_directory(destination, check=False)
@@ -668,6 +737,7 @@ def stage_scenario_audio(source, destination):
 
 def stage_weighted_audio(source, destination):
     """Publish only the replayed known-noise, five-WAV Appendix-A fixture."""
+    _preflight_asset_stage(source, destination, WEIGHTED_AUDIO_WAVS | {"MANIFEST.json"})
     from codes.chapters.appendix_a.examples.generate_weighted_audio import (
         check_assets, validate_asset_directory,
     )
@@ -682,6 +752,7 @@ def stage_weighted_audio(source, destination):
 
 def stage_response_audio(source, destination):
     """Publish the replayed five-WAV, equal-RIR-DRR Appendix-B fixture."""
+    _preflight_asset_stage(source, destination, RESPONSE_AUDIO_WAVS | {"MANIFEST.json"})
     from codes.chapters.appendix_b.examples.generate_response_audio import (
         check_assets, validate_asset_directory,
     )
@@ -763,6 +834,7 @@ def stage_tracking_audio(source, destination):
 
 def stage_gss_audio(source, destination):
     """核对受控 GSS 教学链的五路 PCM 与可复算中间状态。"""
+    _preflight_asset_stage(source, destination, set(GSS_AUDIO_WAVS) | {"STATE.npz", "MANIFEST.json"})
     import sys
     if str(ROOT.resolve()) not in sys.path:
         sys.path.insert(0, str(ROOT.resolve()))
@@ -770,7 +842,7 @@ def stage_gss_audio(source, destination):
     generate(source, check=True)
     import wave
     import zipfile
-    manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+    manifest = _read_asset_manifest(source / "MANIFEST.json")
     records = manifest["files"]
     expected = set(GSS_AUDIO_WAVS) | {"STATE.npz", "MANIFEST.json"}
     if (set(records) != expected - {"MANIFEST.json"}
@@ -783,7 +855,8 @@ def stage_gss_audio(source, destination):
                     "codes/chapters/ch02/core/spectral.py",
                     "codes/chapters/ch02/core/conventions.py",
                     "codes/chapters/ch00/core/audio_samples.py",
-                    "codes/chapters/ch07/core/dereverberation.py"}
+                    "codes/chapters/ch07/core/dereverberation.py",
+                    'codes/chapters/ch00/io_contracts.py'}
     if set(manifest.get("generator_inputs", {})) != source_paths:
         raise ValueError("GSS 生成源码清单不完整")
     for name, digest in manifest["generator_inputs"].items():
@@ -834,6 +907,7 @@ def source_digest():
               ROOT / "scripts" / "code_layout.py",
               ROOT / "scripts" / "make_figures.py",
               ROOT / "scripts" / "make_aec_figures.py", ROOT / "requirements.txt"]
+    paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
         digest.update(path.relative_to(ROOT).as_posix().encode("utf-8"))
         digest.update(b"\0")
@@ -843,29 +917,9 @@ def source_digest():
 
 
 def parse_headings(md):
-    """掃 md 源码标题，跳过围栏代码块，避免幽灵条目。"""
-    heads = []
-    fence_char = None
-    fence_len = 0
-    for line in md.splitlines():
-        s = line.strip()
-        marker = re.match(r"^(`{3,}|~{3,})", s)
-        if marker and fence_char is None:
-            fence_char = marker.group(1)[0]
-            fence_len = len(marker.group(1))
-            continue
-        if (marker and fence_char is not None
-                and marker.group(1)[0] == fence_char
-                and len(marker.group(1)) >= fence_len):
-            fence_char = None
-            fence_len = 0
-            continue
-        if fence_char is not None:
-            continue
-        m = re.match(r"^(#{1,4})\s+(.*)$", line)
-        if m:
-            heads.append((len(m.group(1)), clean_label(m.group(2))))
-    return heads
+    """Use the pinned Markdown grammar while retaining our label/anchor policy."""
+    return [(level, clean_label(label)) for level, label in parsed_markdown_headings(md)
+            if level <= 4]
 
 
 def heading_anchor(text, fallback_index):
@@ -1039,19 +1093,7 @@ def render(md_text, source_path=None):
         from heading_aliases import historical_aliases, has_historical_sequential_aliases
     is_research = source_path.resolve().parent == RESEARCH_ROOT.resolve()
     records = heading_records(parse_headings(md_text))
-    # 数学段暂存：防 markdown 吃下划线、防浏览器吞 <，转完再贴回
-    repo = []
-
-    def stash(m):
-        repo.append(m.group(0).replace("<", r"\lt "))
-        return f"@@MATH{len(repo) - 1}@@"
-
-    md_text, code_repo = protect_code(md_text)
-    md_text = re.sub(r"\$\$.*?\$\$", stash, md_text, flags=re.S)
-    md_text = re.sub(r"\$[^$]+?\$", stash, md_text, flags=re.S)
-    md_text = restore_code(md_text, code_repo)
-    html = markdown.markdown(md_text, extensions=["tables", "fenced_code", "sane_lists"])
-    html = re.sub(r"@@MATH(\d+)@@", lambda m: repo[int(m.group(1))], html)
+    html = render_markdown(md_text)
     validate_url_schemes(html)
     counter = [0]
     research_slugs = Counter()
@@ -1240,7 +1282,8 @@ def render(md_text, source_path=None):
             return f'{pre}<a href="{prefix}{fname.replace(".md", ".html")}">{fname}</a>'
         return m.group(0)
 
-    html = re.sub(r'(^|[\s>(])((?:0\d|1\d)_[^<\s)"]+\.md)', bare_link, html)
+    html = map_table_cell_text(html, lambda text: re.sub(
+        r'(^|[\s>(])((?:0\d|1\d)_[^<\s)"]+\.md)', bare_link, text))
     return html, counter[0]
 
 

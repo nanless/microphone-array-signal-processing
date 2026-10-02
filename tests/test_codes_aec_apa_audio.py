@@ -95,6 +95,7 @@ class APAActualAudio(unittest.TestCase):
             'codes/chapters/ch06/core/aec_affine_projection.py',
             'codes/chapters/ch02/core/conventions.py',
             'codes/chapters/ch00/core/audio_samples.py',
+            'codes/chapters/ch00/io_contracts.py',
         }
         self.assertEqual(set(self.manifest['source_sha256']), expected_sources)
         for path in expected_sources:

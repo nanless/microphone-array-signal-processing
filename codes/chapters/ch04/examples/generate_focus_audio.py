@@ -21,14 +21,19 @@ from codes.chapters.ch04.core.focus_audio import (
     FILE_NAMES, LIMITS, SAMPLE_RATE, SAMPLES, generate_signals, parameters, measure_signal,
 )
 
+from codes.chapters.ch00.io_contracts import (
+    validate_asset_directory as _shared_asset_directory, strict_json_loads, same_metadata,
+)
+
 ROOT = Path(__file__).resolve().parents[4]
 DEFAULT_OUTPUT = Path(__file__).resolve().parents[1]/"focus_audio"
 SOURCE_PATHS = (
-    "codes/chapters/ch04/core/focus_audio.py",
-    "codes/chapters/ch04/examples/generate_focus_audio.py",
-    "codes/chapters/ch03/core/geometry.py",
-    "codes/chapters/ch02/core/conventions.py",
-    "codes/chapters/ch00/core/audio_samples.py",
+    'codes/chapters/ch04/core/focus_audio.py',
+    'codes/chapters/ch04/examples/generate_focus_audio.py',
+    'codes/chapters/ch03/core/geometry.py',
+    'codes/chapters/ch02/core/conventions.py',
+    'codes/chapters/ch00/core/audio_samples.py',
+    'codes/chapters/ch00/io_contracts.py',
 )
 
 
@@ -68,15 +73,18 @@ def prepare_assets() -> tuple[dict[str, bytes], dict]:
 def check_assets(output: Path) -> dict:
     """Read-check exact file set, current sources, actual WAVs and new scores."""
     output = Path(output)
+    _shared_asset_directory(output, set(FILE_NAMES.values()) | {'MANIFEST.json'}, check=True)
     expected_names = set(FILE_NAMES.values()) | {"MANIFEST.json"}
     if not output.is_dir() or {p.name for p in output.iterdir()} != expected_names:
         raise ValueError("focus_audio must contain exactly four WAVs and MANIFEST.json")
-    manifest = json.loads((output/"MANIFEST.json").read_text())
+    manifest = strict_json_loads((output/"MANIFEST.json").read_text())
+    if not isinstance(manifest, dict):
+        raise ValueError('manifest must be an object')
     current_sources = {path: _sha((ROOT/path).read_bytes()) for path in SOURCE_PATHS}
     if manifest.get("source_sha256") != current_sources:
         raise ValueError("focus_audio source set or SHA is stale")
     expected_blobs, expected_manifest = prepare_assets()
-    if manifest != expected_manifest:
+    if not same_metadata(manifest, expected_manifest):
         raise ValueError("focus_audio manifest parameters or numerical measurements are stale")
     for name, filename in FILE_NAMES.items():
         blob = (output/filename).read_bytes()
@@ -106,6 +114,7 @@ def main(argv=None) -> int:
     if args.check:
         manifest = check_assets(args.output_dir)
     else:
+        _shared_asset_directory(args.output_dir, set(FILE_NAMES.values()) | {'MANIFEST.json'}, check=False)
         blobs, manifest = prepare_assets()
         args.output_dir.mkdir(parents=True, exist_ok=True)
         for filename, blob in blobs.items():

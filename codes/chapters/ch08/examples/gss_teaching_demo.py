@@ -28,6 +28,10 @@ from codes.chapters.ch08.core.separation import si_sdr
 from codes.chapters.ch02.core.spectral import istft, stft
 
 
+from codes.chapters.ch00.io_contracts import (
+    validate_asset_directory as _shared_asset_directory,
+)
+
 ROOT = Path(__file__).resolve().parents[4]
 OUT = ROOT / "codes/chapters/ch08/gss_audio"
 ASSET_NAMES = {"source_1.wav", "source_2.wav", "mixture.wav", "enhanced_correct.wav",
@@ -35,19 +39,7 @@ ASSET_NAMES = {"source_1.wav", "source_2.wav", "mixture.wav", "enhanced_correct.
 
 
 def _check_output_members(out_dir: Path, *, check: bool) -> None:
-    """Preflight before model execution or writes; never follow asset links."""
-    if out_dir.is_symlink() or (out_dir.exists() and not out_dir.is_dir()):
-        raise ValueError("GSS output must be an ordinary directory")
-    if not out_dir.exists():
-        if check:
-            raise ValueError("GSS output directory is missing")
-        return
-    members = list(out_dir.iterdir())
-    if any(member.is_symlink() or not member.is_file() for member in members):
-        raise ValueError("GSS members must be ordinary files without symlinks")
-    names = {member.name for member in members}
-    if names != ASSET_NAMES and (check or names):
-        raise ValueError("GSS asset set must contain exactly five WAVs, STATE.npz and MANIFEST.json")
+    _shared_asset_directory(out_dir, ASSET_NAMES, check=check)
 
 
 def fixture(seed: int = 20260924) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -138,7 +130,7 @@ def generate(out_dir: Path = OUT, *, check: bool = False) -> dict:
     gain = 0.7 / peak
     result["common_export_gain"] = gain
     result["environment"] = {"python": platform.python_version(), "numpy": np.__version__, "system": platform.system(), "machine": platform.machine()}
-    sources = ["codes/chapters/ch08/examples/gss_teaching_demo.py", "codes/chapters/ch08/core/gss_teaching.py", "codes/chapters/ch08/core/separation.py", "codes/chapters/ch02/core/spectral.py", "codes/chapters/ch02/core/conventions.py", "codes/chapters/ch00/core/audio_samples.py", "codes/chapters/ch07/core/dereverberation.py"]
+    sources = ["codes/chapters/ch08/examples/gss_teaching_demo.py", "codes/chapters/ch08/core/gss_teaching.py", "codes/chapters/ch08/core/separation.py", "codes/chapters/ch02/core/spectral.py", "codes/chapters/ch02/core/conventions.py", "codes/chapters/ch00/core/audio_samples.py", "codes/chapters/ch07/core/dereverberation.py", 'codes/chapters/ch00/io_contracts.py']
     result["generator_inputs"] = {path: hashlib.sha256((ROOT / path).read_bytes()).hexdigest() for path in sources}
     result["pcm"] = "little-endian signed PCM16, nearest-even rounding, no dither; common gain for all files"
     result["score"] = "reference mic0 source1, [3200,23200) samples, centered SI-SDR; no time alignment, float and decoded PCM reported separately"

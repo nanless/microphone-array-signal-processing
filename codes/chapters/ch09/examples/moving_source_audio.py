@@ -104,7 +104,7 @@ def _validate_directory(directory, expected, *, check):
         return
     members = list(directory.iterdir())
     for member in members:
-        if member.is_symlink() or not member.is_file():
+        if member.is_symlink() or not member.is_file() or member.stat().st_nlink != 1:
             raise ValueError(f'audio member must be an ordinary file: {member}')
     names = {member.name for member in members}
     if names != set(expected) and (check or names):

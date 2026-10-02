@@ -17,7 +17,8 @@ class BinauralPublicationTest(unittest.TestCase):
              "consistent.wav", "conflicting.wav"}
     SOURCES = ("codes/chapters/ch01/core/binaural_cues.py",
                "codes/chapters/ch01/examples/generate_binaural_cues.py",
-               "codes/chapters/ch00/core/audio_samples.py")
+               "codes/chapters/ch00/core/audio_samples.py",
+               'codes/chapters/ch00/io_contracts.py')
 
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()

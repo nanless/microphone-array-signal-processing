@@ -1,4 +1,4 @@
-"""Read-only current 19-source and full four-WAV interpolation audit."""
+"""Read-only current 20-source and full four-WAV interpolation audit."""
 from __future__ import annotations
 import hashlib
 import io
@@ -40,7 +40,7 @@ def check_main_interpolation_assets(repo_root=ROOT, *, manifest_path=None, audio
         raise ValueError('invalid main audio manifest schema')
     sources = manifest.get('generator_inputs')
     if not isinstance(sources, dict) or set(sources) != set(INPUTS):
-        raise ValueError('main source set must match all nineteen real dependencies')
+        raise ValueError('main source set must match all twenty real dependencies')
     for name, digest in sources.items():
         source = ordinary_path(root/name)
         if (not source.is_file() or type(digest) is not str or hashlib.sha256(source.read_bytes()).hexdigest() != digest

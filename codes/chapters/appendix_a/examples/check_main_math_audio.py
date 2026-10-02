@@ -21,7 +21,7 @@ def _ordinary_path(target):
 
 
 def check_main_math_assets(repo_root=ROOT):
-    """Current 19 sources, full math_block replay, formats and actual integers.
+    """Current 20 sources, full math_block replay, formats and actual integers.
 
     Floating-point construction and published PCM are separate fields. The
     latter reads wave/struct bytes from disk and supplies exact integer sums.
@@ -37,7 +37,7 @@ def check_main_math_assets(repo_root=ROOT):
         raise ValueError('invalid main manifest schema')
     sources = manifest.get('generator_inputs')
     if not isinstance(sources, dict) or set(sources) != set(INPUTS):
-        raise ValueError('main sources must match all nineteen true dependencies')
+        raise ValueError('main sources must match all twenty true dependencies')
     for name, digest in sources.items():
         path = repo_root/name
         _ordinary_path(path)

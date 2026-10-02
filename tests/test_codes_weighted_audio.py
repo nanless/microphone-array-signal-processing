@@ -66,7 +66,7 @@ class WeightedAudioTests(unittest.TestCase):
                 self.assertEqual(row['integer_reference_squared_sum'],D)
                 self.assertEqual(row['scored_samples'],28800)
                 self.assertEqual(row['nmse'],E/D)
-            self.assertEqual(len(metadata['source_sha256']),3)
+            self.assertEqual(len(metadata['source_sha256']),4)
             self.assertEqual(metadata['common_export_gain'],1.)
 
     def test_cli_check_does_not_write(self):

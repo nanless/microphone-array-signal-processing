@@ -17,8 +17,17 @@ import subprocess
 import sys
 from urllib.parse import urlparse
 
+REPOSITORY_ROOT = Path(__file__).resolve().parents[4]
+if __package__ in (None, ""):
+    sys.path.insert(0, str(REPOSITORY_ROOT))
+from codes.chapters.ch00.io_contracts import (
+    strict_json_loads, validate_parent_chain, validate_report_destination,
+    write_json_report,
+)
 
 LOCK_FILE = Path(__file__).resolve().parents[1] / "SOURCES.lock.json"
+ARCHIVE_LOCK_FILE = LOCK_FILE.with_name("ARCHIVE_SOURCES.lock.json")
+SHARED_IO_FILE = LOCK_FILE.parent / "io_contracts.py"
 DEFAULT_DESTINATION = Path(__file__).resolve().parent / "_downloads"
 PROJECT_ID = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
 FULL_GIT_SHA = re.compile(r"^[0-9a-f]{40}$")
@@ -47,7 +56,9 @@ def validate_project(project: dict[str, object]) -> None:
 
 
 def load_projects() -> dict[str, dict[str, object]]:
-    data = json.loads(LOCK_FILE.read_text(encoding="utf-8"))
+    data = strict_json_loads(LOCK_FILE.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError("SOURCES.lock.json: lock must be an object")
     projects = data.get("projects")
     if not isinstance(projects, list):
         raise ValueError("SOURCES.lock.json: projects must be a list")
@@ -83,10 +94,16 @@ def run_git(arguments: list[str], cwd: Path | None = None) -> str:
     return completed.stdout.strip()
 
 
+def sparse_patterns(project: dict[str, object]) -> list[str]:
+    """The complete ordered policy used for new checkouts and verification."""
+    includes = ["/" + p for p in project["source_paths"]] if project.get("source_paths") else ["/*"]
+    return includes + [f"!**/*.{ext}" for ext in OMITTED_EXTENSIONS]
+
+
 def inspect_project(project: dict[str, object], destination: Path) -> dict[str, object]:
     """Inspect a checkout without fetching or changing its files."""
     validate_project(project)
-    root = destination.resolve()
+    root = validate_parent_chain(destination).resolve()
     target = root / str(project["id"])
     if target.is_symlink():
         raise ValueError(f"refusing symlink checkout: {target}")
@@ -109,14 +126,14 @@ def inspect_project(project: dict[str, object], destination: Path) -> dict[str, 
     sparse_file = target / ".git" / "info" / "sparse-checkout"
     sparse = sparse_file.exists()
     patterns = sparse_file.read_text(encoding="utf-8").splitlines() if sparse else []
-    requested = ["/" + p for p in project["source_paths"]] if project.get("source_paths") else ["/*"]
-    selected = [p for p in patterns if p and not p.startswith(("!", "#"))]
-    scope_matches = selected == requested if sparse else not project.get("source_paths")
+    expected = sparse_patterns(project)
+    scope_matches = patterns == expected if sparse else not project.get("source_paths")
     record.update(status="entrypoints_missing" if missing else "source_verified", missing_entrypoints=missing,
                   execution="not_run", dependency_validation="not_run",
                   asset_policy="sparse_source_checkout" if sparse else "existing_checkout_preserved",
                   requested_source_paths=project.get("source_paths", ["repository"]),
-                  observed_sparse_patterns=patterns, source_selection_verified=bool(scope_matches))
+                  observed_sparse_patterns=patterns, expected_sparse_patterns=expected if sparse else [],
+                  source_selection_verified=bool(scope_matches))
     if not scope_matches:
         record["status"] = "source_selection_mismatch"
     return record
@@ -129,7 +146,7 @@ def fetch_project(project: dict[str, object], destination: Path) -> dict[str, ob
         raise ValueError(f"{project_id} is index-only; follow its official build instructions")
     url = str(project["url"])
     revision = str(project["revision"])
-    destination = destination.resolve()
+    destination = validate_parent_chain(destination).resolve()
     target = destination / project_id
     if target.is_symlink():
         raise ValueError(f"refusing symlink checkout: {target}")
@@ -152,9 +169,7 @@ def fetch_project(project: dict[str, object], destination: Path) -> dict[str, ob
         run_git(["fetch", "--depth", "1", "--filter=blob:none", "origin", revision], cwd=target)
         # Sparse working trees retain source and notices while omitting common
         # model/audio/archive assets. Git objects are still upstream-owned data.
-        includes = ["/" + p for p in project["source_paths"]] if project.get("source_paths") else ["/*"]
-        run_git(["sparse-checkout", "set", "--no-cone", *includes,
-                 *[f"!**/*.{ext}" for ext in OMITTED_EXTENSIONS]], cwd=target)
+        run_git(["sparse-checkout", "set", "--no-cone", *sparse_patterns(project)], cwd=target)
         run_git(["checkout", "--detach", revision], cwd=target)
         actual = run_git(["rev-parse", "HEAD"], cwd=target)
         if actual != revision:
@@ -204,22 +219,27 @@ def main() -> int:
     else:
         selected = [project for project in projects.values() if project.get("fetch_enabled", False)]
 
+    protected = (args.destination, DEFAULT_DESTINATION, Path(__file__).resolve().parent,
+                 LOCK_FILE, ARCHIVE_LOCK_FILE, SHARED_IO_FILE)
+    report = (validate_report_destination(args.report, forbidden_roots=protected)
+              if args.report else None)
     records = []
     for project in selected:
         try:
             record = (inspect_project(project, args.destination) if args.verify
-                      else fetch_project(project, args.destination.resolve()))
+                      else fetch_project(project, args.destination))
         except (ValueError, OSError, subprocess.SubprocessError) as error:
             record = {"id": project["id"], "revision": project["revision"],
                       "status": "failed", "error": str(error)}
             print(f"{project['id']}: {error}", file=sys.stderr, flush=True)
         records.append(record)
-    if args.report:
-        args.report.parent.mkdir(parents=True, exist_ok=True)
-        args.report.write_text(json.dumps({"schema_version": 1,
-                                         "lock_sha256": hashlib.sha256(LOCK_FILE.read_bytes()).hexdigest(),
-                                         "projects": records},
-                                         ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if report:
+        write_json_report(report, {"schema_version": 1,
+            "lock_sha256": hashlib.sha256(LOCK_FILE.read_bytes()).hexdigest(),
+            "report_sources": {path.relative_to(REPOSITORY_ROOT).as_posix():
+                               hashlib.sha256(path.read_bytes()).hexdigest()
+                               for path in (Path(__file__).resolve(), SHARED_IO_FILE)},
+            "projects": records}, forbidden_roots=protected)
     counts = {s: sum(r["status"] == s for r in records) for s in sorted({r["status"] for r in records})}
     print(json.dumps(counts, ensure_ascii=False))
     return 0 if all(r["status"] in ("source_verified", "index_only") for r in records) else 1

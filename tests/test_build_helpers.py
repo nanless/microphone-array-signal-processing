@@ -720,12 +720,16 @@ class BuildHelpersTest(unittest.TestCase):
         self.assertIs(build_site.restore_code, build_pdf.restore_code)
         for source in (
                 '````python\n`$x$`\n```\nstill code\n````\n$y$\n',
-                '~~~text\r\n$x$\r\n~~~\r\n`$y$`',
-                '```python\nunterminated $x$\n'):
+                '~~~text\r\n$x$\r\n~~~\r\n`$y$`'):
             with self.subTest(source=source):
                 shielded, repo = build_site.protect_code(source)
                 self.assertIn('@@CODETOKEN0@@', shielded)
                 self.assertEqual(build_pdf.restore_code(shielded, repo), source)
+        # An unclosed fence is ordinary text in the pinned Markdown extension,
+        # not a reason to hide the rest of a document from math or headings.
+        source = '```python\nunterminated $x$\n'
+        shielded, repo = build_site.protect_code(source)
+        self.assertEqual(build_pdf.restore_code(shielded, repo), source)
 
     def test_publishers_share_link_policy_and_existing_errors(self):
         self.assertIs(build_site.validate_url_schemes, build_pdf.validate_url_schemes)

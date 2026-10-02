@@ -47,11 +47,13 @@ from pathlib import Path
 
 try:
     from scripts import build_site
-    from scripts.build_markdown_helpers import protect_code, restore_code, validate_url_schemes
+    from scripts.build_markdown_helpers import (protect_code, restore_code, validate_url_schemes,
+                                               shield_math, unshield_math)
     from scripts.heading_aliases import historical_aliases, has_historical_sequential_aliases
 except ModuleNotFoundError:  # 直接执行脚本时使用同目录模块。
     import build_site
-    from build_markdown_helpers import protect_code, restore_code, validate_url_schemes
+    from build_markdown_helpers import (protect_code, restore_code, validate_url_schemes,
+                                       shield_math, unshield_math)
     from heading_aliases import historical_aliases, has_historical_sequential_aliases
 
 ROOT = Path(__file__).parent.parent
@@ -211,28 +213,6 @@ th,code,pre,blockquote{-webkit-print-color-adjust:exact;print-color-adjust:exact
 """
 
 
-def shield_math(md):
-    """数学段暂存：防 markdown 吃下划线（_x_→斜体），防浏览器吞 <（i<j）。
-    转完 markdown 再原样贴回。"""
-    repo = []
-
-    def stash(m):
-        repo.append(m.group(0).replace("<", r"\lt "))
-        return f"@@MATH{len(repo) - 1}@@"
-
-    md, code_repo = protect_code(md)
-    md = re.sub(r"\$\$.*?\$\$", stash, md, flags=re.S)
-    md = re.sub(r"\$[^$]+?\$", stash, md, flags=re.S)
-    md = restore_code(md, code_repo)
-    return md, repo
-
-
-def unshield_math(html, repo):
-    def back(m):
-        return repo[int(m.group(1))]
-    return re.sub(r"@@MATH(\d+)@@", back, html)
-
-
 def plain_text(html):
     """去标签取纯文本（书签标题用）。"""
     t = re.sub(r"<[^>]+>", "", html)
@@ -274,6 +254,7 @@ def source_digest():
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "make_figures.py",
               ROOT / "scripts" / "make_aec_figures.py", ROOT / "requirements.txt"]
+    paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
         digest.update(path.relative_to(ROOT).as_posix().encode("utf-8"))
         digest.update(b"\0")

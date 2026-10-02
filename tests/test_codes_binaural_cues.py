@@ -166,7 +166,7 @@ class BinauralCueTest(unittest.TestCase):
             result = subprocess.run([sys.executable, '-m', 'codes.chapters.ch01.examples.generate_binaural_cues',
                                      '--check', '--output', str(missing)], capture_output=True, text=True)
             self.assertEqual(result.returncode, 1)
-            self.assertIn('missing=', result.stderr)
+            self.assertIn('asset directory is missing', result.stderr)
             self.assertFalse(missing.exists())
 
     def test_analysis_rejects_silence_complex_and_wrong_shape(self):

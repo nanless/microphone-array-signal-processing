@@ -8,7 +8,9 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from codes.chapters.ch00.upstream.fetch_upstreams import inspect_project, run_git, validate_project
+from codes.chapters.ch00.upstream.fetch_upstreams import (
+    inspect_project, run_git, validate_project, OMITTED_EXTENSIONS,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -92,7 +94,8 @@ class CodesIntegrationTests(unittest.TestCase):
             info = root / "fixture" / ".git" / "info"
             info.mkdir(parents=True)
             (info / "sparse-checkout").write_text(
-                "/source labview files/\n/LICENSE\n!**/*.exe\n")
+                "/source labview files/\n/LICENSE\n"
+                + "".join(f"!**/*.{extension}\n" for extension in OMITTED_EXTENSIONS))
             with patch("codes.chapters.ch00.upstream.fetch_upstreams.run_git",
                        side_effect=(project["revision"], project["url"], "")):
                 result = inspect_project(project, root)

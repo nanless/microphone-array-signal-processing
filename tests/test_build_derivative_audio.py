@@ -20,7 +20,8 @@ class DerivativePublicationTest(unittest.TestCase):
                         "codes/chapters/ch04/core/covariance.py",
                "codes/chapters/ch03/core/geometry.py",
                "codes/chapters/ch02/core/conventions.py",
-               "codes/chapters/ch00/core/audio_samples.py")
+               "codes/chapters/ch00/core/audio_samples.py",
+               'codes/chapters/ch00/io_contracts.py')
 
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()

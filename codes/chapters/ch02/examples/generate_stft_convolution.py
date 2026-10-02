@@ -23,13 +23,20 @@ from codes.chapters.ch02.core.stft_convolution import (
     OUTPUT_SAMPLES, SAMPLE_RATE, SOURCE_SAMPLES, build_convolution_audio, measure_waveform,
 )
 
+from codes.chapters.ch00.io_contracts import (
+    validate_asset_directory as _shared_asset_directory, strict_json_loads, same_metadata,
+)
+
 ROOT = Path(__file__).resolve().parents[4]
 DEFAULT_DIRECTORY = ROOT / "codes/chapters/ch02/stft_audio"
-SOURCE_PATHS = ("codes/chapters/ch02/core/stft_convolution.py",
-                "codes/chapters/ch02/examples/generate_stft_convolution.py",
-                "codes/chapters/ch02/core/spectral.py",
-                "codes/chapters/ch02/core/conventions.py",
-                "codes/chapters/ch00/core/audio_samples.py")
+SOURCE_PATHS = (
+    'codes/chapters/ch02/core/stft_convolution.py',
+    'codes/chapters/ch02/examples/generate_stft_convolution.py',
+    'codes/chapters/ch02/core/spectral.py',
+    'codes/chapters/ch02/core/conventions.py',
+    'codes/chapters/ch00/core/audio_samples.py',
+    'codes/chapters/ch00/io_contracts.py',
+)
 
 
 def wav_metadata(payload: bytes) -> dict:
@@ -122,11 +129,12 @@ def check_assets(directory: Path = DEFAULT_DIRECTORY) -> dict:
     payloads, expected = expected_assets()
     directory = Path(directory)
     required = set(payloads) | {"MANIFEST.json"}
-    actual = {path.name for path in directory.iterdir()} if directory.is_dir() else set()
+    _shared_asset_directory(directory, required, check=True)
+    actual = {path.name for path in directory.iterdir()}
     if actual != required:
         raise ValueError(f"Asset set differs: missing={sorted(required-actual)}, extra={sorted(actual-required)}")
-    published = json.loads((directory/"MANIFEST.json").read_text(encoding="utf-8"))
-    if published != expected:
+    published = strict_json_loads((directory/"MANIFEST.json").read_text(encoding="utf-8"))
+    if not same_metadata(published, expected):
         raise ValueError("Manifest differs from current sources, runtime, parameters or measurements")
     actual_signals = {}
     for name in CASE_NAMES:
@@ -151,8 +159,7 @@ def generate_assets(directory: Path = DEFAULT_DIRECTORY) -> dict:
     payloads, manifest = expected_assets()
     directory = Path(directory)
     required = set(payloads) | {"MANIFEST.json"}
-    if directory.exists() and ({path.name for path in directory.iterdir()} - required):
-        raise ValueError("Refusing to overwrite a directory containing unrelated assets")
+    _shared_asset_directory(directory, required, check=False)
     directory.mkdir(parents=True, exist_ok=True)
     for filename, payload in payloads.items():
         (directory/filename).write_bytes(payload)

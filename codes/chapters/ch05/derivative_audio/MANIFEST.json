@@ -5,12 +5,13 @@
   "common_export_gain": 1.0,
   "source_sha256": {
     "codes/chapters/ch05/core/derivative_audio.py": "e530d9f2339eb5017bc2624ddcc2aa9f2dc16f49a9868332e3775e3a016a7e6e",
-    "codes/chapters/ch05/examples/generate_derivative_audio.py": "a39d4f9a14076e5870e760d62b19d7deed4556bad70ab85c02cd8e756df9a48c",
+    "codes/chapters/ch05/examples/generate_derivative_audio.py": "62d309e1265dbef30344ae19424d1857184b022fb60934868be311944ed2374c",
     "codes/chapters/ch05/core/beamforming.py": "481f79a66fcc4c1f232704ee3a516b596d28ebc89d9045c494b71f6206b77216",
     "codes/chapters/ch04/core/covariance.py": "d704be037100ee53caf6e2130fbabbe14ce6eeff9e3d11dde389fd368d271249",
     "codes/chapters/ch03/core/geometry.py": "5a680848301358415f74647199a4c57b65086f0b2580f91706c912ad208d7bdb",
     "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
-    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8"
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
   },
   "environment": {
     "python": "3.13.12",

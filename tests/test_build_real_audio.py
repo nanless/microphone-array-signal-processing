@@ -26,7 +26,8 @@ class RealAudioPublishingTests(unittest.TestCase):
         shutil.copytree(ROOT / "codes/chapters/ch02/real_audio", self.source)
         self.site.mkdir()
         build_site.stage_real_audio(self.source, self.site / "real_audio")
-        for name in ("codes/chapters/ch02/core/real_recordings.py", "codes/chapters/ch02/examples/prepare_real_recordings.py"):
+        for name in ("codes/chapters/ch02/core/real_recordings.py", "codes/chapters/ch02/examples/prepare_real_recordings.py",
+                     'codes/chapters/ch00/io_contracts.py'):
             target = self.root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / name, target)

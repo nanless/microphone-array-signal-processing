@@ -29,6 +29,7 @@ SOURCE_NAMES = {
     "codes/chapters/ch06/core/aec_affine_projection.py",
     "codes/chapters/ch02/core/conventions.py",
     "codes/chapters/ch00/core/audio_samples.py",
+    "codes/chapters/ch00/io_contracts.py",
 }
 
 
@@ -238,7 +239,8 @@ class APAQualityTest(unittest.TestCase):
                     self.manifest["pcm_measurements"]["ratios"][key][
                         "microphone_to_residual_total_power_ratio_db"] = reported
                     self.save_manifest()
-                    self.rejected("实际总功率比不同")
+                    self.rejected("nonfinite JSON" if type(reported) is float and not math.isfinite(reported)
+                                  else "实际总功率比不同")
 
     def test_finite_ratio_reports_inside_absolute_tolerance_are_legal(self):
         sums = {}
@@ -338,7 +340,8 @@ class APAQualityTest(unittest.TestCase):
             with self.subTest(reported=reported):
                 measurements["ratios"][key]["microphone_to_residual_total_power_ratio_db"] = reported
                 self.save_manifest()
-                self.rejected("实际总功率比不同")
+                self.rejected("nonfinite JSON" if type(reported) is float and not math.isfinite(reported)
+                              else "实际总功率比不同")
 
     def test_valid_zero_microphone_pcm_cannot_define_a_power_ratio(self):
         name = "apa_microphone.wav"

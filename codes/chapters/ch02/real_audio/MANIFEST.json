@@ -213,7 +213,8 @@
   },
   "generator_inputs": {
     "codes/chapters/ch02/core/real_recordings.py": "37bf3cec32722895d8c5aced99a4bca1769a5188a184c62354ca93620d08ae90",
-    "codes/chapters/ch02/examples/prepare_real_recordings.py": "0a8bf7c30cff2389ffab08b3fd53b8ae242a27447b7ddbfb8a9f349cccb8120e"
+    "codes/chapters/ch02/examples/prepare_real_recordings.py": "695dbcf92ef9fd58dca15f02de902a9232eba53f5261d4556c33b85224dc2886",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
   },
   "metrics": {
     "exercise_id": "R01",

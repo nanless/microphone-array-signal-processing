@@ -39,7 +39,7 @@ class FocusAudioTests(unittest.TestCase):
         self.assertEqual(set(self.manifest['source_sha256']), {
             'codes/chapters/ch04/core/focus_audio.py', 'codes/chapters/ch04/examples/generate_focus_audio.py',
             'codes/chapters/ch03/core/geometry.py', 'codes/chapters/ch02/core/conventions.py',
-            'codes/chapters/ch00/core/audio_samples.py'})
+            'codes/chapters/ch00/core/audio_samples.py', 'codes/chapters/ch00/io_contracts.py'})
         self.assertEqual(self.manifest['common_export_gain'], 1)
         for filename, blob in self.blobs.items():
             self.assertEqual(self.pcm(blob).shape[0], 4 if filename in ('focus_array.wav','focus_known_focused.wav') else 1)

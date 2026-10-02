@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>空间处理与追踪源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="7a2d63df4e2e"><style>
+<meta name="source-digest" content="d82b081fa20a"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -1581,6 +1581,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="54-固定追踪上游的实际调用与失败边界" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-04c8077699">54. 固定追踪上游的实际调用与失败边界</h3>
 <p><a id="tracking-contract-audit"></a></p>
 <p>本节于 2026-09-28 使用既有隔离环境执行<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/examples/audit_tracking_upstream_interfaces.py">诊断脚本</a>，原始结果保存在<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/reports/tracking_upstream_interfaces.json">JSON 报告</a>。2026-10-01 的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/examples/audit_upstream_tracking_contracts.py">新合同工具</a>在当前隔离环境重新调用该工具的只读函数，把当前执行结果记录在<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/reports/upstream_tracking_contracts.json">新报告</a>的 <code>historical_current_recheck</code>，没有改写本节的历史报告。脚本绑定自身摘要、精确输入、上游提交与被调用文件摘要，运行前核查独立 checkout、固定 HEAD 和未修改的跟踪文件。它不下载依赖，不改 FilterPy 或 Stone Soup。此前主环境没有 SciPy、未运行这些接口的记录仍然有效；本节新增的是另一环境中的有限方法调用，不能追溯性地改写旧验证范围。</p>
+<p>2026-10-02 在同一隔离环境复验时，整工作区的稀疏选集核验与所用原文件身份分别记录。SAF、FilterPy 和 Stone Soup 的旧选集不匹配保持原状态；官方 origin、固定提交、许可与所用文件摘要、完整工作区洁净状态独立核对后，才执行上述限定方法。当前报告的 <code>acquisition_record</code> 和 <code>source_selection_verified</code> 保留取得层事实，<code>required_source_identity_verified</code> 只表示所用原文件满足执行合同。</p>
 <span id="541-imm模式先验与输出时刻" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-54-1">54.1 IMM：模式先验与输出时刻</h4>
 <p>两模型都是标量 KF，初始均值 0、10，方差 1、4，模式概率 0.75、0.25；两者状态转移和观测矩阵均为 1，过程方差 0、观测方差 1。行转移矩阵第一行为 <code>(0.9,0.1)</code>，第二行为 <code>(0.2,0.8)</code>。这些是无量纲接口诊断输入，不是目标运动的标定数据。</p>
 <p>一次交互后两模式先验为 0.725、0.275，条件均值约为 0.689655、7.272727。物理状态没有运动且没有新观测，按联合概率求和，整体均值仍应为 2.5、方差 20.5、原始二阶矩 26.75；这些是本书独立概率计算。原 <code>IMMEstimator.predict()</code> 却用旧模式概率融合，返回均值 2.335423、方差 19.600657，原始二阶矩 25.054859。再连续调用时，旧模式权重未推进，整体矩继续改变。报告逐次保留全部 <code>mu</code>、<code>cbar</code>、混合系数及子滤波器状态，不只给一个错误标签。</p>

@@ -43,6 +43,10 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 | `make_aec_figures.py` | 10 张回声消除专题图（原 7 张另加两带子带、IPNLMS/RLS/Kalman 状态图及 PBFDAF 流程图）。风格与上一个脚本统一（六色/五级字号/dpi150） | `figures/fig26`～`fig32_*`、`fig37`～`fig39_*` |
 | `build_site.py` | 生成 14 个教程页和 6 个研究页，保留旧版语义及顺序深链；编号图直接引用 `figures/`，独立音频与状态按各自清单核验并复制；站点 MathJax 在线加载 | `site/` 下的网页及独立媒体副本 |
 | `build_pdf.py` | 合订本脚本。14 篇合成带封面和三级目录的 HTML，Chrome 标签化打印 A4 PDF，再以保留结构树的方式写三级书签；第 1～13 章的源 h4 进入第三级。常用 flag：`--html-only`、`--pdf-only`、`--no-bookmarks`、`--build-date YYYY-MM-DD` | `dist/combined.html` 与 `dist/microphone-array-tutorial.pdf` |
+| `build_markdown_helpers.py` | 两构建器共享的Markdown数学与代码边界处理；保留代码、原始HTML及转义美元符的语义，数学暂存标识避开原文 | 供构建器导入，无独立产物 |
+| `code_layout.py` | 主音频组到首讲章节的唯一映射及路径查询；生成器、构建和检查共同使用这一布局 | 各章 `audio/` 路径，不单独生成文件 |
+| `heading_aliases.py`、`legacy_sequential_anchors.json` | 按主题维护已发布节号和顺序深链；构建器插入历史别名，门禁另外核对主题与唯一性 | 网页和合订HTML中的兼容锚点 |
+| `../codes/chapters/ch00/io_contracts.py` | 音频生成和上游获取共用的路径、成员、严格JSON、元数据类型和报告写入原语；各调用者保留独立清单、评分与许可逻辑 | 无独立产物；实际参与生成的源摘要进入相应清单 |
 | `inline_layout.js` | 站点与合订本共用的成品排版辅助。等待公式与字体完成后，只保护适合当前宽度的行内公式及紧邻短单位/标点、可见普通文字中的稳定题号；短粗体引导在纸版跟随下一段。视窗和字体变化后重新核对宽度。合订预览在打印前即采用 A4 正文几何，打印期间不重排 DOM；单页网站打印前拆除屏幕分组，结束后恢复。保留 TeX、代码、链接、辅助公式树和长式的滚动接口。脚本内容计入两种产物及独立门禁的源摘要 | 由两个构建器嵌入 HTML；无单独生成物 |
 | `quality_check.py` | 发布门禁。用独立基线检查 14 篇/121 节/570 个指定子节/66 图，核对图号、alt、公式编号与引用、小节语义链接、PNG 绘图脚本摘要、网页导航和 PDF 三级书签。确定性问题阻断发布，高风险口语只提醒人工复核 | 通过、失败清单，以及不阻断发布的人工复核与可访问性提示 |
 
@@ -65,11 +69,11 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 
 第 11 章 [`chapter11_experiments.py`](../codes/chapters/ch11/chapter11_experiments.py) 包含 E11-10～25 十六道选型计算。图 46 读取本书构造的四候选表；图 47 在四个实际导出的 FIR 音频通过摘要校验后，从 PCM 重新投影频率并核对对齐误差。图64另读两场景八个独立WAV，共同增益与完整尾部保留。三图的条件、数据与脚本入口见[第 11 章](../chapters/11_selection-guide.md)和[音频实验 §33与§44](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
 
-附录 A 的入口复算E12-06～19。E12-08先核19个真实主生成源，再读正式三WAV的整数样本；源摘要过期、文件缺失或PCM不符时直接失败。E12-19核对`weighted_audio/`严格六成员与三个真实源，在同一28800点稳定窗比较三种固定权重。图65从实际PCM读整数分子、分母，随图生成`appendix_a/reports/figure65_weighted_noise.json`。参数与试听入口见[音频实验§45](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
+附录 A 的入口复算E12-06～19。E12-08先核20个真实主生成源，再读正式三WAV的整数样本；源摘要过期、文件缺失或PCM不符时直接失败。E12-19核对`weighted_audio/`严格六成员与四个真实源，在同一28800点稳定窗比较三种固定权重。图65从实际PCM读整数分子、分母，随图生成`appendix_a/reports/figure65_weighted_noise.json`。参数与试听入口见[音频实验§45](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
 
 固定pb_bss原求解器的本地合同可运行`.venv/bin/python -B -m codes.chapters.appendix_a.examples.audit_upstream_solver_contracts --report codes/chapters/appendix_a/reports/upstream_solver_contracts.json`。工具校验精确提交、许可、源码与洁净状态，完整加载原模块，仅调用`stable_solve`四例；另两例直接调用NumPy。原整数回退截断失败保留为真实结果，不改上游，不把局部调用当成完整波束形成。
 
-附录B的 E13-11～14 分别复算共享TAC聚合、DRR/EDC安全尺度、T20时间条件化与同DRR频响对照。`appendix_b.examples.generate_response_audio --check`只读核三真实源、严格六成员及五WAV完整内存回放。图66独立读实际PCM整数，保存`appendix_b/reports/figure66_equal_drr_response.json`；解析反射能量与实际完整输出误差分别显示。参数、五个播放器和答案见[音频实验§46](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
+附录B的 E13-11～14 分别复算共享TAC聚合、DRR/EDC安全尺度、T20时间条件化与同DRR频响对照。`appendix_b.examples.generate_response_audio --check`只读核四真实源、严格六成员及五WAV完整内存回放。图66独立读实际PCM整数，保存`appendix_b/reports/figure66_equal_drr_response.json`；解析反射能量与实际完整输出误差分别显示。参数、五个播放器和答案见[音频实验§46](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
 
 `appendix_b.examples.check_room_assets` 默认核21普通成员、七真实源、绑定报告及18PCM；`--replay`另需固定PRA环境并实际重跑，不把只读结构/PCM检查称为重跑房间。`appendix_b.examples.audit_tac_contracts`只读核固定作者原源的10个静态合同，显式`--report`才写报告，原神经网络调用为0。
 
@@ -166,7 +170,7 @@ PRA_NUM_THREADS=2 /tmp/masp-room-pra/bin/python -m codes.chapters.appendix_b.exa
 .venv/bin/python -m codes.chapters.ch02.examples.audit_upstream_models --report codes/chapters/ch02/reports/upstream_models.json
 ```
 
-第一条包含 E02-09～18；第二条只读核对 `codes/chapters/ch02/stft_audio/` 的三份 WAV、真实 PCM 评分、参数和五个生成源摘要。建站时独立核验后复制到 `site/stft_audio/`，不混入主 109 个样本。图 50 的六点确定性结果由 `make_figures.py` 同次写入 `codes/chapters/ch02/reports/figure50_stft_convolution.json`；逐帧补零但丢掉滤波尾部的对照不能称为完整卷积实现。
+第一条包含 E02-09～18；第二条只读核对 `codes/chapters/ch02/stft_audio/` 的三份 WAV、真实 PCM 评分、参数和六个生成源摘要。建站时独立核验后复制到 `site/stft_audio/`，不混入主 109 个样本。图 50 的六点确定性结果由 `make_figures.py` 同次写入 `codes/chapters/ch02/reports/figure50_stft_convolution.json`；逐帧补零但丢掉滤波尾部的对照不能称为完整卷积实现。
 
 第三条要求已经取得锁定的 pyroomacoustics、Acoular 和 doatools 源码。它验证精确提交、原文件和清洁工作区，提取原方法进行调用，再写报告；不运行完整包、设备或房间仿真。Acoular 数值核去掉 JIT 装饰器，doatools 使用本书理想阵列适配器，运行范围随报告保存。入口、逐步计算及试听见[练习与音频实验 §36](../codes/chapters/ch00/research/05_exercises_and_audio.md#36-第二章有限窗卷积二阶交叉项与窗归一化)。
 
@@ -179,7 +183,7 @@ PRA_NUM_THREADS=2 /tmp/masp-room-pra/bin/python -m codes.chapters.appendix_b.exa
 .venv/bin/python -m codes.chapters.ch03.examples.audit_upstream_coarray --report codes/chapters/ch03/reports/upstream_coarray.json
 ```
 
-章节入口复算E03-08～17，另读取随仓四份DMA PCM。独立三WAV由五个真实源生成；32 kHz、2 s、源单声道与两个六声道观测，实际读回在4800:59200稳定窗逐频拟合。六声道播放可能下混，不作为耳听定位成绩；多频检查只证明指定方向对的可辨识信息。图51的变化是无单位约束线性解的方向分量，不是角误差；图52是解析流形相干功率。固定doatools审计需要已核验的本地源码缓存，只提取明确的原方法并局部适配NumPy类型别名，不导入完整软件或运行未知误差校准。
+章节入口复算E03-08～17，另读取随仓四份DMA PCM。独立三WAV由六个真实源生成；32 kHz、2 s、源单声道与两个六声道观测，实际读回在4800:59200稳定窗逐频拟合。六声道播放可能下混，不作为耳听定位成绩；多频检查只证明指定方向对的可辨识信息。图51的变化是无单位约束线性解的方向分量，不是角误差；图52是解析流形相干功率。固定doatools审计需要已核验的本地源码缓存，只提取明确的原方法并局部适配NumPy类型别名，不导入完整软件或运行未知误差校准。
 
 
 ### 第四章聚焦与固定源码诊断
@@ -190,7 +194,7 @@ PRA_NUM_THREADS=2 /tmp/masp-room-pra/bin/python -m codes.chapters.appendix_b.exa
 .venv/bin/python -m codes.chapters.ch04.chapter04_experiments
 ```
 
-四份独立WAV由五个真实源生成；16kHz、每通道32024点，共同增益1。参考/源2各单声道，未聚焦与已知分量聚焦各四声道；2400:29600稳定窗以cos/sin实最小二乘拟合后固定除以0.08取外积，两个频率等权池化。不是盲定位、完整CSSM或正式听测。图53/54从独立解析总体矩阵计算，源值和PCM值分别记录。
+四份独立WAV由六个真实源生成；16kHz、每通道32024点，共同增益1。参考/源2各单声道，未聚焦与已知分量聚焦各四声道；2400:29600稳定窗以cos/sin实最小二乘拟合后固定除以0.08取外积，两个频率等权池化。不是盲定位、完整CSSM或正式听测。图53/54从独立解析总体矩阵计算，源值和PCM值分别记录。
 
 `ch04.examples.audit_upstream_doa` 需要已核验的PRA/doatools固定源码缓存及独立pyroomacoustics0.10.0环境，`--report`是唯一写报告入口；调用范围、源SHA、依赖版本、原始失败与适配分别记录。TOPS原类、CSSM/WAVES辅助函数和root-MUSIC提取方法不具有相同运行范围。`ch04.examples.audit_said_compression`只加载固定SAID原压缩单文件，不安装Torch、下载权重或执行神经网络；其报告与经典DOA报告独立。
 
@@ -203,7 +207,7 @@ PRA_NUM_THREADS=2 /tmp/masp-room-pra/bin/python -m codes.chapters.appendix_b.exa
 .venv/bin/python -m codes.chapters.ch05.chapter05_experiments
 ```
 
-四WAV共用增益1和一采样因果参考，16kHz、每通道32002点；七个实际源摘要包含唯一波束核与协方差核。2400:29600窗的解析期望、浮点clean/noise/交叉项和实际PCM总误差分别保存，PCM不虚构可观测的干净/噪声分解。`--check`重新读回与复算但不重生文件；发布复制检查只验证集合、来源、格式、摘要和播放器，数值评分由生成器与独立回归验收。图55/56各从解析响应和高斯密度模型计算，不把期望标成实测。
+四WAV共用增益1和一采样因果参考，16kHz、每通道32002点；八个实际源摘要包含唯一波束核与协方差核。2400:29600窗的解析期望、浮点clean/noise/交叉项和实际PCM总误差分别保存，PCM不虚构可观测的干净/噪声分解。`--check`重新读回与复算但不重生文件；发布复制检查只验证集合、来源、格式、摘要和播放器，数值评分由生成器与独立回归验收。图55/56各从解析响应和高斯密度模型计算，不把期望标成实测。
 
 [原方法审计工具](../codes/chapters/ch05/examples/audit_upstream_beamformers.py)需要既有SciPy环境和锁定的pb_bss独立源码缓存；默认只读，显式`--report`才写报告。工具提取12个原函数执行31个限定输入，保留异常、退化和约束违约；不是完整包、GPU网络或工业整链性能验收。具体运行环境、原源码片段与摘要在[真实报告](../codes/chapters/ch05/reports/upstream_beamformers.json)中，不默认假设历史临时环境仍存在。
 

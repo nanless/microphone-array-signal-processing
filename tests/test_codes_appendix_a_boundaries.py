@@ -79,7 +79,11 @@ class AppendixABoundaries(unittest.TestCase):
             row=report['integer_analysis']
             self.assertEqual(row['integer_error_squared_sum'],20*5898**2)
             self.assertEqual(row['integer_reference_squared_sum'],10*(9830**2+5898**2))
-            self.assertEqual(len(report['source_sha256']),19)
+            self.assertEqual(len(report['source_sha256']),20)
+            io_source='codes/chapters/ch00/io_contracts.py'
+            self.assertIn(io_source,report['source_sha256'])
+            self.assertEqual(report['source_sha256'][io_source],
+                             hashlib.sha256((root/io_source).read_bytes()).hexdigest())
 
     def test_main_tamper_missing_format_json_and_source_are_not_repaired(self):
         for mutation in ('missing','bytes','format','zero','source','duplicate','nonfinite','overflow','bool'):

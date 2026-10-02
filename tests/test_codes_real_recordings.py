@@ -114,6 +114,8 @@ class RealRecordingTests(unittest.TestCase):
     def test_corrupt_excerpt_and_metadata_are_not_repaired(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory)
+            for name in ('README.md', 'LICENSE.txt', 'ATTRIBUTION.txt'):
+                (output/name).write_bytes((DEFAULT_OUTPUT/name).read_bytes())
             for name in FILENAMES:
                 (output / name).write_bytes((DEFAULT_OUTPUT / name).read_bytes())
             manifest = (DEFAULT_OUTPUT / "MANIFEST.json").read_bytes()

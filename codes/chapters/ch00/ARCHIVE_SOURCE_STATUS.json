@@ -1,6 +1,10 @@
 {
   "schema_version": 1,
   "lock_sha256": "73bedd847da71c1afea9d3507d3594dbc471c2ce5729d8579a48a1b3fc1e40bc",
+  "report_sources": {
+    "codes/chapters/ch00/upstream/fetch_archives.py": "1775beb57f90ee74ec3192f4330c5591f9111a9b9bdf8664755250f098c55fad",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
+  },
   "projects": [
     {
       "id": "harktool5-3.5.0",

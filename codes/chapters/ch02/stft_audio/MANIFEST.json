@@ -7,10 +7,11 @@
   "common_export_gain": 1.0,
   "source_sha256": {
     "codes/chapters/ch02/core/stft_convolution.py": "bd949afc3c4cd8f01fdd3f7b2a4f3a1835f695d79c7bc535d145e25cc56c590c",
-    "codes/chapters/ch02/examples/generate_stft_convolution.py": "40df9961f79c31f0f16c09aab2cc6fe610fd33d41f7ff9208afd468b3a1ec3cb",
+    "codes/chapters/ch02/examples/generate_stft_convolution.py": "41dbd59b101dff8629d50a93e0b8c922de0b845f3c7116e751233c95591c69ce",
     "codes/chapters/ch02/core/spectral.py": "5ade0b101cc00615276b3b60c3659ece3e68ad614cd2cb2edeb568359f034059",
     "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
-    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8"
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
   },
   "environment": {
     "python": "3.13.12",

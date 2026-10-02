@@ -20,6 +20,10 @@ from codes.chapters.ch07.core.mint_teaching import (
     FILE_NAMES, LIMITS, SAMPLE_RATE, SAMPLES, measure_signal, parameters, run_experiment,
 )
 
+from codes.chapters.ch00.io_contracts import (
+    validate_asset_directory as _shared_asset_directory, strict_json_loads, same_metadata,
+)
+
 ROOT = Path(__file__).resolve().parents[4]
 DEFAULT_OUTPUT = Path(__file__).resolve().parents[1]/'mint_audio'
 SOURCE_PATHS = (
@@ -27,6 +31,7 @@ SOURCE_PATHS = (
     'codes/chapters/ch07/examples/mint_teaching_demo.py',
     'codes/chapters/ch02/core/conventions.py',
     'codes/chapters/ch00/core/audio_samples.py',
+    'codes/chapters/ch00/io_contracts.py',
 )
 
 
@@ -68,37 +73,11 @@ def prepare_assets() -> tuple[dict[str, bytes], dict]:
 
 
 def _members(output, *, checking):
-    output = Path(output)
-    if output.is_symlink() or (output.exists() and not output.is_dir()):
-        raise ValueError('mint_audio output must be a directory, not a symlink or file')
-    if not output.exists():
-        if checking:
-            raise ValueError('mint_audio directory is missing')
-        return
-    members = list(output.iterdir())
-    allowed = set(FILE_NAMES.values()) | {'MANIFEST.json'}
-    if any(p.is_symlink() or not p.is_file() for p in members):
-        raise ValueError('mint_audio members must be regular files, not symlinks or directories')
-    names = {p.name for p in members}
-    if (checking and names != allowed) or not names <= allowed:
-        raise ValueError('mint_audio must contain exactly six WAVs and MANIFEST.json')
+    return _shared_asset_directory(output, set(FILE_NAMES.values()) | {'MANIFEST.json'}, check=checking)
 
 
 def _strict_equal(actual, expected):
-    """Do not accept booleans masquerading as integer denominators or gains."""
-    if isinstance(expected, dict):
-        return (isinstance(actual, dict) and actual.keys() == expected.keys()
-                and all(_strict_equal(actual[k], v) for k, v in expected.items()))
-    if isinstance(expected, list):
-        return (isinstance(actual, list) and len(actual) == len(expected)
-                and all(_strict_equal(a, b) for a, b in zip(actual, expected)))
-    if isinstance(expected, bool):
-        return type(actual) is bool and actual == expected
-    if isinstance(expected, int):
-        return type(actual) is int and actual == expected
-    if isinstance(expected, float):
-        return type(actual) in (int, float) and np.isfinite(actual) and actual == expected
-    return type(actual) is type(expected) and actual == expected
+    return same_metadata(actual, expected, allow_int_for_float=True)
 
 
 def check_assets(output: Path = DEFAULT_OUTPUT, *, replay=True) -> dict:
@@ -107,8 +86,7 @@ def check_assets(output: Path = DEFAULT_OUTPUT, *, replay=True) -> dict:
     output = Path(output)
     _members(output, checking=True)
     try:
-        manifest = json.loads((output/'MANIFEST.json').read_text(),
-                              parse_constant=lambda _: (_ for _ in ()).throw(ValueError('nonfinite JSON')))
+        manifest = strict_json_loads((output/'MANIFEST.json').read_text())
     except (json.JSONDecodeError, UnicodeError) as error:
         raise ValueError('invalid mint_audio manifest') from error
     if not isinstance(manifest, dict):

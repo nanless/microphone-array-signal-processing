@@ -178,7 +178,7 @@ class GSSMemberSafetyTests(unittest.TestCase):
             link.unlink()
             (directory/'EXTRA.txt').write_text('extra')
             with patch.object(demo, 'run_experiment', side_effect=AssertionError('must not run')):
-                with self.assertRaisesRegex(ValueError, 'exactly'):
+                with self.assertRaisesRegex(ValueError, r"asset member set differs: missing=\[.*\], extra=\['EXTRA\.txt'\]"):
                     demo.generate(directory)
                 with self.assertRaises(ValueError):
                     demo.generate(directory, check=True)

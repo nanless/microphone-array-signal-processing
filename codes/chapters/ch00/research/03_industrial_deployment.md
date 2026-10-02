@@ -368,7 +368,7 @@ DI-cpWER 可以帮助诊断说话人归属约束对结果的影响，但作者 �
 | 双空 | 0 | 0 |
 | 同两词、两段时间均完全分离 | 0 | 4 |
 
-本机原核执行另存于[当前报告](../../ch11/reports/meeting_kernel_contracts.json)，2026-09-28的旧诊断保留。报告绑定99项锁表的实际摘要、固定 HEAD 与 origin、七个原文件的 Git blob/SHA、原 MIT 许可、工具和自写驱动摘要、编译器与实际命令，并核对源工作树执行前后洁净。其余六个文件只作接口、许可和来源核对；仅原头文件参与编译。中文词元不测试分词算法，时间区间也不是从录音估计的。
+本机原核执行另存于[当前报告](../../ch11/reports/meeting_kernel_contracts.json)，2026-09-28的旧诊断保留。报告绑定100项锁表的实际摘要、固定 HEAD 与 origin、七个原文件的 Git blob/SHA、原 MIT 许可、工具和自写驱动摘要、编译器与实际命令，并核对源工作树执行前后洁净。其余六个文件只作接口、许可和来源核对；仅原头文件参与编译。中文词元不测试分词算法，时间区间也不是从录音估计的。
 
 ```bash
 .venv/bin/python -B -m codes.chapters.ch11.examples.audit_meeting_kernel_contracts

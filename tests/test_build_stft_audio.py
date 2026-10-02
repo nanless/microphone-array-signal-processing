@@ -18,7 +18,8 @@ class STFTPublicationTest(unittest.TestCase):
                "codes/chapters/ch02/examples/generate_stft_convolution.py",
                "codes/chapters/ch02/core/spectral.py",
                "codes/chapters/ch02/core/conventions.py",
-               "codes/chapters/ch00/core/audio_samples.py")
+               "codes/chapters/ch00/core/audio_samples.py",
+               'codes/chapters/ch00/io_contracts.py')
 
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()

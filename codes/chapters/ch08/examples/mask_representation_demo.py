@@ -19,12 +19,19 @@ from codes.chapters.ch08.core.mask_representation import (
     FILE_NAMES, LIMITS, SAMPLE_RATE, SAMPLES, measure_signal, parameters, run_experiment,
 )
 
+from codes.chapters.ch00.io_contracts import (
+    validate_asset_directory as _shared_asset_directory, strict_json_loads, same_metadata,
+)
+
 ROOT = Path(__file__).resolve().parents[4]
 DEFAULT_OUTPUT = ROOT/'codes/chapters/ch08/mask_audio'
-SOURCE_PATHS = ('codes/chapters/ch08/core/mask_representation.py',
-                'codes/chapters/ch08/examples/mask_representation_demo.py',
-                'codes/chapters/ch02/core/conventions.py',
-                'codes/chapters/ch00/core/audio_samples.py')
+SOURCE_PATHS = (
+    'codes/chapters/ch08/core/mask_representation.py',
+    'codes/chapters/ch08/examples/mask_representation_demo.py',
+    'codes/chapters/ch02/core/conventions.py',
+    'codes/chapters/ch00/core/audio_samples.py',
+    'codes/chapters/ch00/io_contracts.py',
+)
 
 
 def _sha(blob):
@@ -67,34 +74,11 @@ def prepare_assets() -> tuple[dict, dict[str, bytes]]:
 
 
 def _members(output, *, checking):
-    if output.is_symlink() or (output.exists() and not output.is_dir()):
-        raise ValueError('mask_audio output must be an ordinary directory')
-    if not output.exists():
-        if checking:
-            raise ValueError('mask_audio directory missing')
-        return
-    members = list(output.iterdir())
-    if any(p.is_symlink() or not p.is_file() for p in members):
-        raise ValueError('mask_audio members must be ordinary files without symlinks')
-    names, allowed = {p.name for p in members}, set(FILE_NAMES.values()) | {'MANIFEST.json'}
-    if names != allowed and (checking or names):
-        raise ValueError('mask_audio requires exactly six WAVs and MANIFEST.json')
+    return _shared_asset_directory(output, set(FILE_NAMES.values()) | {'MANIFEST.json'}, check=checking)
 
 
 def _strict_equal(actual, expected):
-    if isinstance(expected, dict):
-        return (isinstance(actual, dict) and actual.keys() == expected.keys() and
-                all(_strict_equal(actual[k], v) for k, v in expected.items()))
-    if isinstance(expected, list):
-        return (isinstance(actual, list) and len(actual) == len(expected) and
-                all(_strict_equal(a, b) for a, b in zip(actual, expected)))
-    if isinstance(expected, bool):
-        return type(actual) is bool and actual == expected
-    if isinstance(expected, int):
-        return type(actual) is int and actual == expected
-    if isinstance(expected, float):
-        return type(actual) in (int, float) and np.isfinite(actual) and actual == expected
-    return type(actual) is type(expected) and actual == expected
+    return same_metadata(actual, expected, allow_int_for_float=True)
 
 
 def check_assets(directory: Path = DEFAULT_OUTPUT, *, replay=True) -> dict:
@@ -104,8 +88,7 @@ def check_assets(directory: Path = DEFAULT_OUTPUT, *, replay=True) -> dict:
     directory = Path(directory)
     _members(directory, checking=True)
     try:
-        manifest = json.loads((directory/'MANIFEST.json').read_text(),
-                              parse_constant=lambda _: (_ for _ in ()).throw(ValueError('nonfinite JSON')))
+        manifest = strict_json_loads((directory/'MANIFEST.json').read_text())
     except (json.JSONDecodeError, UnicodeError) as exc:
         raise ValueError('invalid mask_audio manifest') from exc
     if not isinstance(manifest, dict):

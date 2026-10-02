@@ -24,7 +24,17 @@ import zipfile
 from urllib.parse import urlparse
 from urllib.request import urlopen
 
+REPOSITORY_ROOT = Path(__file__).resolve().parents[4]
+if __package__ in (None, ""):
+    sys.path.insert(0, str(REPOSITORY_ROOT))
+from codes.chapters.ch00.io_contracts import (
+    strict_json_loads, validate_parent_chain, validate_report_destination,
+    write_json_report,
+)
+
 LOCK_FILE = Path(__file__).resolve().parents[1] / "ARCHIVE_SOURCES.lock.json"
+GIT_LOCK_FILE = LOCK_FILE.with_name("SOURCES.lock.json")
+SHARED_IO_FILE = LOCK_FILE.parent / "io_contracts.py"
 DEFAULT_DESTINATION = Path(__file__).resolve().parent / "_downloads"
 MAX_ARCHIVE_BYTES = 8 * 1024 * 1024
 MAX_DESCRIPTOR_BYTES = 128 * 1024
@@ -71,7 +81,9 @@ def validate_project(project: dict) -> None:
 
 
 def load_projects() -> dict[str, dict]:
-    data = json.loads(LOCK_FILE.read_text(encoding="utf-8"))
+    data = strict_json_loads(LOCK_FILE.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError("archive lock must be an object")
     if data.get("schema_version") != 1:
         raise ValueError("unsupported lock schema")
     result = {}
@@ -103,8 +115,9 @@ def read_regular(path: Path, limit: int) -> bytes:
 
 
 def local_root(path: Path, create: bool = False) -> Path:
-    if path.is_symlink():
-        raise ValueError(f"symlink directory: {path}")
+    path = validate_parent_chain(path)
+    if path.exists() and not path.is_dir():
+        raise ValueError(f"source/cache root must be an ordinary directory: {path}")
     if create:
         path.mkdir(parents=True, exist_ok=True)
     return path.resolve()
@@ -316,21 +329,28 @@ def main(argv: list[str] | None = None) -> int:
     if args.project and args.project not in projects:
         parser.error("unknown locked project")
     selected = [projects[args.project]] if args.project else list(projects.values())
+    cache = args.cache or args.destination / ".archive-cache"
+    protected = (args.destination, cache, DEFAULT_DESTINATION, Path(__file__).resolve().parent,
+                 LOCK_FILE, GIT_LOCK_FILE, SHARED_IO_FILE)
+    report = (validate_report_destination(args.report, forbidden_roots=protected)
+              if args.report else None)
     records = []
     for project in selected:
         try:
-            record = acquire(project, args.destination, args.cache or args.destination / ".archive-cache",
+            record = acquire(project, args.destination, cache,
                              download=not args.verify)
         except (ValueError, OSError, tarfile.TarError, lzma.LZMAError,
                 zipfile.BadZipFile, EOFError, RuntimeError, NotImplementedError) as error:
             record = {"id": project["id"], "status": "failed", "error": str(error),
                       "execution": "not_run", "dependency_validation": "not_run"}
         records.append(record)
-    if args.report:
-        args.report.parent.mkdir(parents=True, exist_ok=True)
-        args.report.write_text(json.dumps({"schema_version": 1,
+    if report:
+        write_json_report(report, {"schema_version": 1,
             "lock_sha256": hashlib.sha256(LOCK_FILE.read_bytes()).hexdigest(),
-            "projects": records}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            "report_sources": {path.relative_to(REPOSITORY_ROOT).as_posix():
+                               hashlib.sha256(path.read_bytes()).hexdigest()
+                               for path in (Path(__file__).resolve(), SHARED_IO_FILE)},
+            "projects": records}, forbidden_roots=protected)
     print(json.dumps([{k: v for k, v in r.items() if k != "files"} for r in records], ensure_ascii=False))
     return 0 if all(r["status"] == "source_verified" for r in records) else 1
 

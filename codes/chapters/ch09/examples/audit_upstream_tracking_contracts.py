@@ -73,30 +73,55 @@ def stable_digest(value):
                              allow_nan=False).encode())
 
 
+def unique_projects(rows):
+    """Do not let duplicate identities silently overwrite provenance."""
+    result = {}
+    for row in rows:
+        name = row["id"]
+        if not isinstance(name, str) or name in result:
+            raise ValueError("duplicate or invalid source identity: " + str(name))
+        result[name] = row
+    return result
+
+
 def verify_sources(cache=CACHE):
-    """Verify independent fixed HEAD, tracked cleanliness, bytes and Git blobs."""
-    locks = {p["id"]: p for p in json.loads(LOCK.read_text())["projects"]}
+    """Verify required source identity separately from whole-checkout selection.
+
+    A recorded sparse-selection mismatch stays a mismatch. It can accompany a
+    method call only after independently checking origin, fixed HEAD, complete
+    worktree cleanliness, and every required original file and license below.
+    """
+    locks = unique_projects(json.loads(LOCK.read_text())["projects"])
     status_path = LOCK.with_name("SOURCE_STATUS.json")
     status_report = json.loads(status_path.read_text())
     if status_report["lock_sha256"] != digest(LOCK.read_bytes()):
         raise ValueError("SOURCE_STATUS does not describe the current lock")
-    statuses = {p["id"]: p for p in status_report["projects"]}
+    statuses = unique_projects(status_report["projects"])
     env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+    env.update(GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL=os.devnull)
     results = {}
     for name, revision in REVISIONS.items():
-        if statuses[name]["status"] != "source_verified" or statuses[name]["revision"] != revision:
-            raise ValueError("SOURCE_STATUS source not verified: " + name)
+        acquisition = statuses[name]
+        selection = acquisition.get("status") == "source_verified"
+        if (acquisition.get("status") not in ("source_verified", "source_selection_mismatch")
+                or acquisition.get("revision") != revision
+                or acquisition.get("missing_entrypoints") != []
+                or acquisition.get("source_selection_verified") is not selection):
+            raise ValueError("SOURCE_STATUS source identity unavailable: " + name)
         checkout = cache / name
         def git(*args):
             return subprocess.check_output(["git", "-C", str(checkout), *args],
                                            env=env, stderr=subprocess.PIPE)
         if locks[name]["revision"] != revision or git("rev-parse", "HEAD").decode().strip() != revision:
             raise ValueError("fixed HEAD mismatch: " + name)
+        origin = git("remote", "get-url", "origin").decode().strip()
+        if origin != locks[name]["url"]:
+            raise ValueError("official origin mismatch: " + name)
         if Path(git("rev-parse", "--show-toplevel").decode().strip()).resolve() != checkout.resolve():
             raise ValueError("not an independent checkout: " + name)
-        status = git("status", "--porcelain", "--untracked-files=no").decode()
+        status = git("status", "--porcelain", "--untracked-files=all").decode()
         if status:
-            raise ValueError("tracked upstream changes: " + name)
+            raise ValueError("upstream worktree changes: " + name)
         files = {}
         for relative, expected in FILES[name].items():
             path = checkout / relative
@@ -106,6 +131,10 @@ def verify_sources(cache=CACHE):
             files[relative] = {"sha256": expected,
                                "git_blob": git("rev-parse", "HEAD:" + relative).decode().strip()}
         results[name] = {"head": revision, "tracked_clean": True, "files": files,
+                         "origin": origin, "worktree_clean": True,
+                         "acquisition_record": acquisition,
+                         "source_selection_verified": selection,
+                         "required_source_identity_verified": True,
                          "license": locks[name]["license"],
                          "lock_entry_sha256": stable_digest(locks[name])}
     return results

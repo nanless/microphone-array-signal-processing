@@ -30,7 +30,7 @@ class GeometryAudioTest(unittest.TestCase):
         self.assertEqual(set(self.blobs),{'geometry_reference.wav','geometry_u.wav','geometry_v.wav'})
         self.assertEqual(self.manifest['common_export_gain'],1)
         self.assertEqual(self.manifest['sample_rate_hz'],32000)
-        self.assertEqual(len(self.manifest['source_sha256']),5)
+        self.assertEqual(len(self.manifest['source_sha256']),6)
         self.assertEqual(set(self.manifest['source_sha256']),set(generator.SOURCE_PATHS))
         for filename,blob in self.blobs.items():
             with wave.open(io.BytesIO(blob),'rb') as wav:

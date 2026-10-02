@@ -6920,7 +6920,7 @@
   },
   "retarded_equation_max_residual_s": 2.220446049250313e-16,
   "source_sha256": {
-    "codes/chapters/ch09/examples/chapter09_tracking_audio.py": "1b50f4d3960c5a7925b66624f5e8cb4178737cfa3118f4d9bca02bd56da2f9e4",
+    "codes/chapters/ch09/examples/chapter09_tracking_audio.py": "b952dd82b57b43d6630575c5aa5a80edd700871b13504dc2b0f1c5adaf652733",
     "codes/chapters/ch09/core/tracking_audio.py": "a868fc2a5ee11ae6b081b72b6f6ea6d9178958582f463f51edc7c08c9b11ea08",
     "codes/chapters/ch09/core/moving_source.py": "4ccc164ebc8daa82394591f28f4ce83d31ff3929e8e2e237736cae59168a177a",
     "codes/chapters/ch09/core/tracking.py": "7df5c5aca6f7c4b3783c2b2382ed00fafd54a81b773963a29c322f8281a35dbd",

@@ -399,8 +399,9 @@
   "quantization": "signed little-endian PCM16; nearest-even; no dither; decoded amplitude=int16/32768",
   "source_sha256": {
     "codes/chapters/ch11/core/selection_audio.py": "963555975ad159d104bcb8044c4243b46d87ab858acdf5634248206c28075eac",
-    "codes/chapters/ch11/examples/generate_selection_audio.py": "10a9d35464039346ba2ecaadf8b86c5da43ec87d336d6d779e9be9d7aa129aa7",
-    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8"
+    "codes/chapters/ch11/examples/generate_selection_audio.py": "63e9662e0da543cb6595b1a9b82c0db9cc9d8b3f482aea39c3326fd68bfd2065",
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
   },
   "environment": {
     "python": "3.13.12",

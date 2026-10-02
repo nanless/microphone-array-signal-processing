@@ -1148,6 +1148,8 @@ Habets 与 Cohen 2006 的 §III 先复述标准几何组合，随后把语音缺
 
 本节于 2026-09-28 使用既有隔离环境执行[诊断脚本](../../ch09/examples/audit_tracking_upstream_interfaces.py)，原始结果保存在[JSON 报告](../../ch09/reports/tracking_upstream_interfaces.json)。2026-10-01 的[新合同工具](../../ch09/examples/audit_upstream_tracking_contracts.py)在当前隔离环境重新调用该工具的只读函数，把当前执行结果记录在[新报告](../../ch09/reports/upstream_tracking_contracts.json)的 `historical_current_recheck`，没有改写本节的历史报告。脚本绑定自身摘要、精确输入、上游提交与被调用文件摘要，运行前核查独立 checkout、固定 HEAD 和未修改的跟踪文件。它不下载依赖，不改 FilterPy 或 Stone Soup。此前主环境没有 SciPy、未运行这些接口的记录仍然有效；本节新增的是另一环境中的有限方法调用，不能追溯性地改写旧验证范围。
 
+2026-10-02 在同一隔离环境复验时，整工作区的稀疏选集核验与所用原文件身份分别记录。SAF、FilterPy 和 Stone Soup 的旧选集不匹配保持原状态；官方 origin、固定提交、许可与所用文件摘要、完整工作区洁净状态独立核对后，才执行上述限定方法。当前报告的 `acquisition_record` 和 `source_selection_verified` 保留取得层事实，`required_source_identity_verified` 只表示所用原文件满足执行合同。
+
 #### 54.1 IMM：模式先验与输出时刻
 
 两模型都是标量 KF，初始均值 0、10，方差 1、4，模式概率 0.75、0.25；两者状态转移和观测矩阵均为 1，过程方差 0、观测方差 1。行转移矩阵第一行为 `(0.9,0.1)`，第二行为 `(0.2,0.8)`。这些是无量纲接口诊断输入，不是目标运动的标定数据。

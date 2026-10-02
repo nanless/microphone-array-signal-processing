@@ -15,18 +15,30 @@
 .venv/bin/python codes/chapters/ch00/upstream/fetch_upstreams.py --verify --report tmp/source-verification.json
 ```
 
-`--all` 只处理 `fetch_enabled: true` 的项目。现有目录的官方地址、提交、工作树及入口文件符合清单时，
+`--all` 只处理 `fetch_enabled: true` 的项目。现有目录的官方地址、提交、工作树、入口文件和完整选集政策符合清单时，
 直接复用；不符合时保留目录并报告错误。单个项目失败后继续处理其他项目，最终以非零退出状态和 JSON 报告
 保留失败记录。`--verify` 只检查本地，不联网；报告中的 `execution: not_run` 明确表示未执行该项目。
 
-报告同时记录请求的源码范围和工作区实际稀疏规则。子集清单改变而旧工作区不符合时，返回
-`source_selection_mismatch`，不自动删除旧内容。Git 调用清理外层仓库选择与配置环境变量，避免命令被重定向到本书仓库；
+报告同时记录请求的源码范围、`observed_sparse_patterns`实际规则和`expected_sparse_patterns`当前预期。
+稀疏工作区须按顺序完整匹配包含路径与32条排除规则；少一条、额外排除、增加包含路径、注释或顺序改变都返回
+`source_selection_mismatch`，不自动修改规则或删除旧内容。2026-10-02的22个工作区仍使用20条排除规则，
+因此当前核验不再把它们计为通过；历史运行结果仍保留当时的条件。
+Git 调用清理外层仓库选择与配置环境变量，避免命令被重定向到本书仓库；
 该工具也不读取用户全局或系统 Git 配置。需要网络代理时应使用环境级代理配置，不能依赖全局 Git URL 重写。
 
 新下载使用稀疏工作树，省略常见权重、音频、动态库、NumPy 数组和归档扩展名；完整列表位于
 `fetch_upstreams.py` 的 `OMITTED_EXTENSIONS`。它不递归取得子模块，并通过 `GIT_LFS_SKIP_SMUDGE=1`
 阻止 LFS 资产自动展开。仍可能存在源码内嵌模型系数和 Git 跟踪资源，不能据此声称所有第三方资产均已排除。
-原有下载目录保持原样，报告标为 `existing_checkout_preserved`。
+原有非稀疏下载目录保持原样，报告标为 `existing_checkout_preserved`；只有锁表没有要求`source_paths`子集时，
+才可按这一保留政策通过核验。它不证明该工作区已排除全部模型或数据。
+
+两个工具共用标准库实现[`io_contracts.py`](../io_contracts.py)来读取严格JSON和核对报告路径。
+锁表拒绝重复字段、非有限数值与浮点溢出；报告在下载、建立缓存或写源码之前预检，拒绝词法`..`、
+普通父链中的符号链接、目录或特殊文件、硬链接报告，以及覆盖源码工具、共享IO源、下载目录、缓存或两份锁表的路径。
+常规macOS系统别名`/tmp`、`/var`、`/etc`仍可指向对应`/private`目录。
+显式`--report`才写报告：先序列化有限JSON，再在同目录写临时文件并替换普通报告；预检或替换失败时保留旧报告。
+这些是本地非并发流程的预检合同，不宣称防止并发路径替换。新报告的`report_sources`绑定实际获取工具和共享IO源摘要，
+与锁表摘要及`execution: not_run`分开记录；历史报告不追改为当前工具运行。
 
 独立本地下载适合阅读大型框架或 copyleft 项目的源码。再分发、商业集成、权重和数据使用仍按各自条款判断。
 WebRTC 的这一份工作树只包含主源码库，不是 `depot_tools` 管理的完整构建环境；其他含子模块的项目同理。

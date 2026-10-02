@@ -6,10 +6,11 @@
   "origin": "original deterministic mathematical plane-wave synthesis",
   "source_sha256": {
     "codes/chapters/ch03/core/geometry_audio.py": "f1054daa26da08c387e3e82d7211c511a9ea729d4e339c60e0f8c7bc385e155f",
-    "codes/chapters/ch03/examples/generate_geometry_audio.py": "9ec8c939340f330f3394a0c7ecf018e7be8cb8d0ed3db2eb3fbbae8615cd02fa",
+    "codes/chapters/ch03/examples/generate_geometry_audio.py": "b8b3ff3c1a6a25ffa0c522b7163eddd21e47b519529aa92dd881a12cb9b48337",
     "codes/chapters/ch03/core/geometry.py": "5a680848301358415f74647199a4c57b65086f0b2580f91706c912ad208d7bdb",
     "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
-    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8"
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
   },
   "environment": {
     "python": "3.13.12",

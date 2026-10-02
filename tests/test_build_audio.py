@@ -136,7 +136,7 @@ class AudioQualityTest(unittest.TestCase):
         for field, value, error in [('sample_rate_hz', 8000, '采样率或时长'),
                                     ('duration_s', 99, '采样率或时长'),
                                     ('rms', .7, 'RMS 不符'),
-                                    ('rms', float('nan'), 'RMS 不符'),
+                                    ('rms', float('nan'), 'nonfinite JSON'),
                                     ('group', 'aec', '章节归属')]:
             with self.subTest(field=field, value=value):
                 self.manifest['files'][0] = {**original, field: value}
@@ -154,9 +154,11 @@ class AudioQualityTest(unittest.TestCase):
         self.assert_rejected("音频比较组增益不一致")
 
     def test_nonfinite_peak_and_consistently_invalid_gain_are_rejected(self):
+        original_peak = self.manifest['files'][0]['peak']
         self.manifest['files'][0]['peak'] = float('nan')
         self.save_manifest()
-        self.assert_rejected('音频峰值不符')
+        self.assert_rejected('nonfinite JSON')
+        self.manifest['files'][0]['peak'] = original_peak
         group = self.manifest['files'][0]['group']
         for gain in (-1, 0, 2, float('inf')):
             self.manifest['groups'][group]['common_export_gain'] = gain
@@ -164,7 +166,7 @@ class AudioQualityTest(unittest.TestCase):
                 if record['group'] == group:
                     record['common_export_gain'] = gain
             self.save_manifest()
-            self.assert_rejected('音频比较组增益非法')
+            self.assert_rejected('nonfinite JSON' if gain == float('inf') else '音频比较组增益非法')
 
     def test_invalid_quantization_error_is_rejected(self):
         self.manifest["files"][0]["quantization_max_abs_error"] = 1 / 32768

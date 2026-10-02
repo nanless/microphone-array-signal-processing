@@ -8,6 +8,7 @@ import sys
 import hashlib
 import json
 import wave
+import math
 import unicodedata
 from collections import Counter
 from html import unescape
@@ -18,14 +19,20 @@ from urllib.parse import unquote, urlparse
 try:
     from scripts.code_layout import MAIN_AUDIO_GROUP_CHAPTER, main_audio_manifest_path, main_audio_path
     from scripts.build_site import _check_tracking_members, _read_tracking_manifest
+    from scripts.build_markdown_helpers import code_block_ranges, parsed_markdown_headings
 except ModuleNotFoundError:  # direct ``python scripts/quality_check.py``
     from code_layout import MAIN_AUDIO_GROUP_CHAPTER, main_audio_manifest_path, main_audio_path
     from build_site import _check_tracking_members, _read_tracking_manifest
+    from build_markdown_helpers import code_block_ranges, parsed_markdown_headings
 
 
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+from codes.chapters.ch00.io_contracts import (
+    strict_json_loads, validate_asset_directory, validate_parent_chain,
+)
+
 CHAPTERS = ROOT / "chapters"
 SITE = ROOT / "site"
 DIST = ROOT / "dist"
@@ -187,27 +194,10 @@ def fail(errors: list[str], message: str):
 
 
 def strip_fenced_code(text: str):
-    lines = []
-    fence_char = None
-    fence_len = 0
-    for line in text.splitlines():
-        marker = re.match(r"^\s*(`{3,}|~{3,})", line)
-        if marker and fence_char is None:
-            fence_char = marker.group(1)[0]
-            fence_len = len(marker.group(1))
-            lines.append("")
-            continue
-        if (marker and fence_char is not None and marker.group(1)[0] == fence_char
-                and len(marker.group(1)) >= fence_len):
-            fence_char = None
-            fence_len = 0
-            lines.append("")
-            continue
-        if fence_char is None:
-            lines.append(line)
-        else:
-            lines.append("")
-    return "\n".join(lines)
+    """Mask native root fences and raw code, preserving source line positions."""
+    for start, end in sorted(code_block_ranges(text), reverse=True):
+        text = text[:start] + re.sub(r"[^\r\n]", " ", text[start:end]) + text[end:]
+    return text
 
 
 def strip_inline_code(text: str):
@@ -289,12 +279,7 @@ def semantic_heading_ids(text: str):
 
 
 def markdown_headings(text: str):
-    headings = []
-    for line in strip_fenced_code(text).splitlines():
-        match = re.match(r"^(#{1,6})\s+(.+)$", line)
-        if match:
-            headings.append((len(match.group(1)), match.group(2).strip()))
-    return headings
+    return parsed_markdown_headings(text)
 
 
 def section_count_from_markdown(text: str, overview=False):
@@ -1139,6 +1124,7 @@ def source_digest():
     paths += [ROOT / "scripts" / name for name in
               ("build_pdf.py", "make_figures.py", "make_aec_figures.py")]
     paths.append(ROOT / "requirements.txt")
+    paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
         digest.update(path.relative_to(ROOT).as_posix().encode("utf-8"))
         digest.update(b"\0")
@@ -1165,6 +1151,7 @@ def site_source_digest():
                "legacy_sequential_anchors.json", "code_layout.py", "make_figures.py",
                "make_aec_figures.py")]
     paths.append(ROOT / "requirements.txt")
+    paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
         digest.update(path.relative_to(ROOT).as_posix().encode("utf-8"))
         digest.update(b"\0")
@@ -1360,14 +1347,68 @@ EXPECTED_REAL_AUDIO_SOURCE_LINKS = {
 }
 
 
+def _validate_audio_metadata(value, path="manifest", *, per_channel_rms=False):
+    """Check publication metadata types, not the family's signal model.
+
+    This finite field policy is independent of the builder. Boolean controls
+    and arbitrary numerical diagnostics retain their own family validators.
+    """
+    integer_fields = {"schema_version", "sample_rate_hz", "channels", "samples",
+                      "samples_per_channel", "frames", "sample_width_bytes"}
+    number_fields = {"common_export_gain", "common_gain", "duration_s", "rms",
+                     "peak", "quantization_max_abs_error", "quantization_max_abs_error_bound"}
+
+    def numbers(item, location):
+        if isinstance(item, list):
+            for index, entry in enumerate(item):
+                numbers(entry, f"{location}[{index}]")
+        else:
+            try:
+                valid = type(item) in (int, float) and math.isfinite(item)
+            except OverflowError:
+                valid = False
+            if not valid:
+                raise ValueError("audio metadata must be a finite non-bool number: " + location)
+
+    if isinstance(value, dict):
+        for key, item in value.items():
+            location = path + "." + key
+            if (key in integer_fields and type(item) is not int
+                    and not (key in {"samples", "frames"} and isinstance(item, dict))):
+                raise ValueError("audio metadata must be an exact integer: " + location)
+            if key in number_fields:
+                if key == "rms" and per_channel_rms:
+                    if (not isinstance(item, list) or not item
+                            or type(value.get("channels")) is not int
+                            or len(item) != value["channels"]
+                            or any(type(number) not in (int, float) for number in item)):
+                        raise ValueError("per-channel RMS must match the WAV channel count: " + location)
+                elif type(item) not in (int, float):
+                    raise ValueError("audio metadata must be a scalar number: " + location)
+                numbers(item, location)
+            _validate_audio_metadata(item, location, per_channel_rms=per_channel_rms)
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            _validate_audio_metadata(item, f"{path}[{index}]", per_channel_rms=per_channel_rms)
+    return value
+
+
+def _read_audio_manifest(path, *, per_channel_rms=False):
+    """Read ordinary JSON without duplicate-key or numeric coercion shortcuts."""
+    validate_parent_chain(path)
+    manifest = strict_json_loads(Path(path).read_bytes())
+    if not isinstance(manifest, dict):
+        raise ValueError("audio manifest root must be an object")
+    return _validate_audio_metadata(manifest, per_channel_rms=per_channel_rms)
+
+
 def check_real_audio(errors):
     """Independent inventory and PCM/attribution checks for the DEMAND excerpt."""
     import numpy as np
     root = REAL_AUDIO_ROOT
     try:
         for folder in (root, SITE / "real_audio"):
-            if {p.name for p in folder.iterdir() if p.is_file()} != EXPECTED_REAL_AUDIO_FILES:
-                fail(errors, "真实录音文件或许可集合不符")
+            validate_asset_directory(folder, EXPECTED_REAL_AUDIO_FILES, check=True)
         for name in EXPECTED_REAL_AUDIO_FILES:
             source, published = root / name, SITE / "real_audio" / name
             if (source.is_symlink() or published.is_symlink() or
@@ -1420,12 +1461,13 @@ def check_real_audio(errors):
                 fail(errors, f"真实录音署名缺少 {required}")
         if "creativecommons.org/licenses/by-sa/3.0" not in (root / "LICENSE.txt").read_text(encoding="utf-8"):
             fail(errors, "真实录音许可地址缺失")
-        manifest = json.loads((root / "MANIFEST.json").read_text(encoding="utf-8"))
-        expected_inputs = {"codes/chapters/ch02/core/real_recordings.py", "codes/chapters/ch02/examples/prepare_real_recordings.py"}
+        manifest = _read_audio_manifest(root / "MANIFEST.json", per_channel_rms=True)
+        expected_inputs = {"codes/chapters/ch02/core/real_recordings.py", "codes/chapters/ch02/examples/prepare_real_recordings.py",
+                           'codes/chapters/ch00/io_contracts.py'}
         if set(manifest["generator_inputs"]) != expected_inputs:
             fail(errors, "真实录音生成来源清单不符")
         for name in expected_inputs:
-            if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != manifest["generator_inputs"].get(name):
+            if hashlib.sha256(validate_parent_chain(ROOT / name).read_bytes()).hexdigest() != manifest["generator_inputs"].get(name):
                 fail(errors, f"真实录音生成源过期：{name}")
         records = manifest["files"]
         if len(records) != 4 or {r["file"] for r in records} != set(EXPECTED_REAL_AUDIO_CHANNELS):
@@ -1451,27 +1493,17 @@ def check_real_audio(errors):
                 fail(errors, f"真实录音峰值不符：{path.name}")
             if not np.isfinite(record["common_export_gain"]) or record["common_export_gain"] != 1:
                 fail(errors, f"真实录音共同增益应为 1：{path.name}")
-        class Players(HTMLParser):
-            def __init__(self):
-                super().__init__()
-                self.items = []
-            def handle_starttag(self, tag, attrs):
-                if tag == "audio":
-                    self.items.append(dict(attrs))
-        parser = Players()
+        parser = VisibleMediaParser()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         allowed_audio_roots = ("../audio/", "../real_audio/", "../room_audio/",
                                "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/", "../scenario_audio/", "../weighted_audio/", "../response_audio/")
         if any(not (p.get("src") or "").startswith(allowed_audio_roots)
                for p in parser.items):
             fail(errors, "未知试听控件来源")
-        real = [p for p in parser.items if (p.get("src") or "").startswith("../real_audio/")]
-        if len(real) != 3 or {p.get("src") for p in real} != {
-                "../real_audio/" + name for name, channels in EXPECTED_REAL_AUDIO_CHANNELS.items() if channels == 1}:
-            fail(errors, "真实录音试听控件集合不符")
-        if any("autoplay" in p or "controls" not in p or p.get("preload") != "none"
-               or not p.get("aria-label") for p in real):
-            fail(errors, "真实录音试听控件必须有标签和控制且不自动播放")
+        _check_visible_audio(
+            SITE / "research/05_exercises_and_audio.html", "../", "real_audio",
+            {name for name, channels in EXPECTED_REAL_AUDIO_CHANNELS.items() if channels == 1}, set(),
+        )
     except Exception as exc:
         fail(errors, f"真实录音检查失败：{exc}")
 
@@ -1484,7 +1516,7 @@ def check_room_audio(errors):
         from codes.chapters.appendix_b.examples.check_room_assets import check_assets
         check_assets(root)
         check_assets(published)
-        manifest = json.loads((root / "MANIFEST.json").read_text(encoding="utf-8"))
+        manifest = _read_audio_manifest(root / "MANIFEST.json")
         records = manifest["files"]
         names = [record["file"] for record in records]
         cases = {record["case"] for record in records}
@@ -1496,8 +1528,7 @@ def check_room_audio(errors):
                 any(not re.fullmatch(r"[a-z0-9_]+\.wav", name) for name in names)):
             raise ValueError("房间合成音频必须是六组三联、共18个安全文件名")
         for folder in (root, published):
-            if {path.name for path in folder.iterdir() if path.is_file()} != expected:
-                raise ValueError(f"房间样本文件集合不符：{folder}")
+            validate_asset_directory(folder, expected, check=True)
         if (manifest["provenance"] != "mathematically synthesized white Gaussian noise, not recorded speech"
                 or manifest["pyroomacoustics_version"] != "0.10.0"
                 or manifest["sample_rate_hz"] != 16000
@@ -1513,7 +1544,7 @@ def check_room_audio(errors):
                 int.from_bytes(png[16:20], "big") < 1200 or
                 int.from_bytes(png[20:24], "big") < 1000):
             raise ValueError("房间结果图格式或尺寸不符")
-        report = json.loads((root / "RESULTS.json").read_text(encoding="utf-8"))
+        report = strict_json_loads((root / "RESULTS.json").read_bytes())
         if (report.get("schema_version") != 1 or
                 report.get("status") != "pyroomacoustics_simulation_executed" or
                 report.get("pyroomacoustics_version_installed") != "0.10.0" or
@@ -1582,8 +1613,8 @@ def check_moving_audio(errors):
     expected = set(expected_channels) | {"MANIFEST.json"}
     try:
         for folder in (source, published):
-            _check_tracking_members(folder, expected)
-        manifest = _read_tracking_manifest(source / "MANIFEST.json")
+            validate_asset_directory(folder, expected, check=True)
+        manifest = _read_audio_manifest(source / "MANIFEST.json")
         if (set(manifest["files"]) != set(expected_channels)
                 or manifest["sample_rate_hz"] != 16000
                 or "free field" not in manifest["model"]
@@ -1596,11 +1627,10 @@ def check_moving_audio(errors):
         if set(manifest.get("source_sha256", {})) != source_paths:
             raise ValueError("移动声源生成源码清单不完整")
         for name, digest in manifest["source_sha256"].items():
-            if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest:
+            if hashlib.sha256(validate_parent_chain(ROOT / name).read_bytes()).hexdigest() != digest:
                 raise ValueError(f"移动声源生成源码已变化：{name}")
         for folder in (source, published):
-            if {path.name for path in folder.iterdir() if path.is_file()} != expected:
-                raise ValueError(f"文件集合不符：{folder}")
+            validate_asset_directory(folder, expected, check=True)
         for name in expected:
             original, copy = source / name, published / name
             if original.is_symlink() or copy.is_symlink() or original.read_bytes() != copy.read_bytes():
@@ -1633,22 +1663,21 @@ def check_binaural_audio(errors):
     expected = wav_names | {"MANIFEST.json"}
     required_sources = {"codes/chapters/ch01/core/binaural_cues.py",
                         "codes/chapters/ch01/examples/generate_binaural_cues.py",
-                        "codes/chapters/ch00/core/audio_samples.py"}
+                        "codes/chapters/ch00/core/audio_samples.py",
+                        'codes/chapters/ch00/io_contracts.py'}
     try:
         for folder in (source, published):
-            if (folder.is_symlink() or {p.name for p in folder.iterdir()} != expected
-                    or any(p.is_symlink() or not p.is_file() for p in folder.iterdir())):
-                raise ValueError(f"双耳线索文件集合或类型不符：{folder}")
+            validate_asset_directory(folder, expected, check=True)
         for name in expected:
             if (source / name).read_bytes() != (published / name).read_bytes():
                 raise ValueError(f"双耳线索网页副本不同：{name}")
-        manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+        manifest = _read_audio_manifest(source / "MANIFEST.json")
         if (set(manifest["files"]) != wav_names or manifest["sample_rate_hz"] != 16000
                 or manifest["common_export_gain"] != 1
                 or set(manifest["source_sha256"]) != required_sources):
             raise ValueError("双耳线索清单参数或真实源集合不符")
         for name, digest in manifest["source_sha256"].items():
-            if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest:
+            if hashlib.sha256(validate_parent_chain(ROOT / name).read_bytes()).hexdigest() != digest:
                 raise ValueError(f"双耳线索生成源码已变化：{name}")
         for name in wav_names:
             path, record = source / name, manifest["files"][name]
@@ -1663,27 +1692,7 @@ def check_binaural_audio(errors):
                     raise ValueError(f"双耳线索PCM数据截断：{name}")
         for page, prefix in ((SITE / "01_problem-definition.html", ""),
                              (SITE / "research/05_exercises_and_audio.html", "../")):
-            text = page.read_text(encoding="utf-8")
-            class CuePlayers(HTMLParser):
-                def __init__(self):
-                    super().__init__()
-                    self.items = []
-                def handle_starttag(self, tag, attrs):
-                    if tag == "audio":
-                        self.items.append(dict(attrs))
-            parser = CuePlayers()
-            parser.feed(text)
-            players = [item for item in parser.items
-                       if (item.get("src") or "").startswith(prefix + "binaural_audio/")]
-            expected = {prefix + "binaural_audio/" + name for name in wav_names}
-            if len(players) != 5 or {item.get("src") for item in players} != expected:
-                raise ValueError(f"缺少双耳线索播放器或集合不符：{page.name}")
-            if any("autoplay" in item or "controls" not in item
-                   or item.get("preload") != "none" or not item.get("aria-label")
-                   for item in players):
-                raise ValueError(f"双耳线索播放器控制或标签不符：{page.name}")
-            if f'href="{prefix}binaural_audio/MANIFEST.json"' not in text:
-                raise ValueError(f"缺少双耳线索独立清单：{page.name}")
+            _check_visible_audio(page, prefix, "binaural_audio", wav_names, {"MANIFEST.json"})
     except Exception as exc:
         fail(errors, f"双耳线索实验检查失败：{exc}")
 
@@ -1697,22 +1706,21 @@ def check_stft_audio(errors):
                         "codes/chapters/ch02/examples/generate_stft_convolution.py",
                         "codes/chapters/ch02/core/spectral.py",
                         "codes/chapters/ch02/core/conventions.py",
-                        "codes/chapters/ch00/core/audio_samples.py"}
+                        "codes/chapters/ch00/core/audio_samples.py",
+                        'codes/chapters/ch00/io_contracts.py'}
     try:
         for folder in (source, published):
-            if (folder.is_symlink() or {p.name for p in folder.iterdir()} != expected
-                    or any(p.is_symlink() or not p.is_file() for p in folder.iterdir())):
-                raise ValueError(f"STFT卷积文件集合或类型不符：{folder}")
+            validate_asset_directory(folder, expected, check=True)
         for name in expected:
             if (source / name).read_bytes() != (published / name).read_bytes():
                 raise ValueError(f"STFT卷积网页副本不同：{name}")
-        manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+        manifest = _read_audio_manifest(source / "MANIFEST.json")
         if (set(manifest["files"]) != wav_names or manifest["sample_rate_hz"] != 16000
                 or manifest["common_export_gain"] != 1
                 or set(manifest["source_sha256"]) != required_sources):
             raise ValueError("STFT卷积清单参数或真实源集合不符")
         for name, digest in manifest["source_sha256"].items():
-            if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest:
+            if hashlib.sha256(validate_parent_chain(ROOT / name).read_bytes()).hexdigest() != digest:
                 raise ValueError(f"STFT卷积生成源码已变化：{name}")
         for name in wav_names:
             path, record = source / name, manifest["files"][name]
@@ -1727,30 +1735,7 @@ def check_stft_audio(errors):
                     raise ValueError(f"STFT卷积PCM数据截断：{name}")
         for page, prefix in ((SITE / "02_basics-signal-model.html", ""),
                              (SITE / "research/05_exercises_and_audio.html", "../")):
-            text = page.read_text(encoding="utf-8")
-            class CuePlayers(HTMLParser):
-                def __init__(self):
-                    super().__init__()
-                    self.items = []
-                    self.links = set()
-                def handle_starttag(self, tag, attrs):
-                    if tag == "audio":
-                        self.items.append(dict(attrs))
-                    elif tag == "a":
-                        self.links.add(dict(attrs).get("href"))
-            parser = CuePlayers()
-            parser.feed(text)
-            players = [item for item in parser.items
-                       if (item.get("src") or "").startswith(prefix + "stft_audio/")]
-            expected = {prefix + "stft_audio/" + name for name in wav_names}
-            if len(players) != 3 or {item.get("src") for item in players} != expected:
-                raise ValueError(f"缺少STFT卷积播放器或集合不符：{page.name}")
-            if any("autoplay" in item or "controls" not in item
-                   or item.get("preload") != "none" or not item.get("aria-label")
-                   for item in players):
-                raise ValueError(f"STFT卷积播放器控制或标签不符：{page.name}")
-            if prefix + "stft_audio/MANIFEST.json" not in parser.links:
-                raise ValueError(f"缺少STFT卷积独立清单：{page.name}")
+            _check_visible_audio(page, prefix, "stft_audio", wav_names, {"MANIFEST.json"})
     except Exception as exc:
         fail(errors, f"STFT卷积实验检查失败：{exc}")
 
@@ -1764,22 +1749,21 @@ def check_geometry_audio(errors):
                         "codes/chapters/ch03/examples/generate_geometry_audio.py",
                         "codes/chapters/ch03/core/geometry.py",
                         "codes/chapters/ch02/core/conventions.py",
-                        "codes/chapters/ch00/core/audio_samples.py"}
+                        "codes/chapters/ch00/core/audio_samples.py",
+                        'codes/chapters/ch00/io_contracts.py'}
     try:
         for folder in (source, published):
-            if (folder.is_symlink() or {p.name for p in folder.iterdir()} != expected
-                    or any(p.is_symlink() or not p.is_file() for p in folder.iterdir())):
-                raise ValueError(f"多频几何文件集合或类型不符：{folder}")
+            validate_asset_directory(folder, expected, check=True)
         for name in expected:
             if (source / name).read_bytes() != (published / name).read_bytes():
                 raise ValueError(f"多频几何网页副本不同：{name}")
-        manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+        manifest = _read_audio_manifest(source / "MANIFEST.json")
         if (set(manifest["files"]) != wav_names or manifest["sample_rate_hz"] != 32000
                 or manifest["common_export_gain"] != 1
                 or set(manifest["source_sha256"]) != required_sources):
             raise ValueError("多频几何清单参数或真实源集合不符")
         for name, digest in manifest["source_sha256"].items():
-            if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest:
+            if hashlib.sha256(validate_parent_chain(ROOT / name).read_bytes()).hexdigest() != digest:
                 raise ValueError(f"多频几何生成源码已变化：{name}")
         for name in wav_names:
             path, record = source / name, manifest["files"][name]
@@ -1794,39 +1778,7 @@ def check_geometry_audio(errors):
                     raise ValueError(f"多频几何PCM数据截断：{name}")
         for page, prefix in ((SITE / "03_array-geometry.html", ""),
                              (SITE / "research/05_exercises_and_audio.html", "../")):
-            text = page.read_text(encoding="utf-8")
-            class CuePlayers(HTMLParser):
-                def __init__(self):
-                    super().__init__()
-                    self.items = []
-                    self.links = set()
-                    self.template_depth = 0
-                def handle_starttag(self, tag, attrs):
-                    if tag == "template":
-                        self.template_depth += 1
-                        return
-                    if self.template_depth:
-                        return
-                    if tag == "audio":
-                        self.items.append(dict(attrs))
-                    elif tag == "a":
-                        self.links.add(dict(attrs).get("href"))
-                def handle_endtag(self, tag):
-                    if tag == "template" and self.template_depth:
-                        self.template_depth -= 1
-            parser = CuePlayers()
-            parser.feed(text)
-            players = [item for item in parser.items
-                       if (item.get("src") or "").startswith(prefix + "geometry_audio/")]
-            expected = {prefix + "geometry_audio/" + name for name in wav_names}
-            if len(players) != 3 or {item.get("src") for item in players} != expected:
-                raise ValueError(f"缺少多频几何播放器或集合不符：{page.name}")
-            if any("autoplay" in item or "controls" not in item
-                   or item.get("preload") != "none" or not item.get("aria-label")
-                   for item in players):
-                raise ValueError(f"多频几何播放器控制或标签不符：{page.name}")
-            if prefix + "geometry_audio/MANIFEST.json" not in parser.links:
-                raise ValueError(f"缺少多频几何独立清单：{page.name}")
+            _check_visible_audio(page, prefix, "geometry_audio", wav_names, {"MANIFEST.json"})
     except Exception as exc:
         fail(errors, f"多频几何实验检查失败：{exc}")
 
@@ -1840,22 +1792,21 @@ def check_focus_audio(errors):
                         "codes/chapters/ch04/examples/generate_focus_audio.py",
                         "codes/chapters/ch03/core/geometry.py",
                         "codes/chapters/ch02/core/conventions.py",
-                        "codes/chapters/ch00/core/audio_samples.py"}
+                        "codes/chapters/ch00/core/audio_samples.py",
+                        'codes/chapters/ch00/io_contracts.py'}
     try:
         for folder in (source, published):
-            if (folder.is_symlink() or {p.name for p in folder.iterdir()} != expected
-                    or any(p.is_symlink() or not p.is_file() for p in folder.iterdir())):
-                raise ValueError(f"已知酉聚焦文件集合或类型不符：{folder}")
+            validate_asset_directory(folder, expected, check=True)
         for name in expected:
             if (source / name).read_bytes() != (published / name).read_bytes():
                 raise ValueError(f"已知酉聚焦网页副本不同：{name}")
-        manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+        manifest = _read_audio_manifest(source / "MANIFEST.json")
         if (set(manifest["files"]) != wav_names or manifest["sample_rate_hz"] != 16000
                 or manifest["common_export_gain"] != 1
                 or set(manifest["source_sha256"]) != required_sources):
             raise ValueError("已知酉聚焦清单参数或真实源集合不符")
         for name, digest in manifest["source_sha256"].items():
-            if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest:
+            if hashlib.sha256(validate_parent_chain(ROOT / name).read_bytes()).hexdigest() != digest:
                 raise ValueError(f"已知酉聚焦生成源码已变化：{name}")
         for name in wav_names:
             path, record = source / name, manifest["files"][name]
@@ -1870,39 +1821,7 @@ def check_focus_audio(errors):
                     raise ValueError(f"已知酉聚焦PCM数据截断：{name}")
         for page, prefix in ((SITE / "04_doa-estimation.html", ""),
                              (SITE / "research/05_exercises_and_audio.html", "../")):
-            text = page.read_text(encoding="utf-8")
-            class CuePlayers(HTMLParser):
-                def __init__(self):
-                    super().__init__()
-                    self.items = []
-                    self.links = set()
-                    self.template_depth = 0
-                def handle_starttag(self, tag, attrs):
-                    if tag == "template":
-                        self.template_depth += 1
-                        return
-                    if self.template_depth:
-                        return
-                    if tag == "audio":
-                        self.items.append(dict(attrs))
-                    elif tag == "a":
-                        self.links.add(dict(attrs).get("href"))
-                def handle_endtag(self, tag):
-                    if tag == "template" and self.template_depth:
-                        self.template_depth -= 1
-            parser = CuePlayers()
-            parser.feed(text)
-            players = [item for item in parser.items
-                       if (item.get("src") or "").startswith(prefix + "focus_audio/")]
-            expected = {prefix + "focus_audio/" + name for name in wav_names}
-            if len(players) != 4 or {item.get("src") for item in players} != expected:
-                raise ValueError(f"缺少已知酉聚焦播放器或集合不符：{page.name}")
-            if any("autoplay" in item or "controls" not in item
-                   or item.get("preload") != "none" or not item.get("aria-label")
-                   for item in players):
-                raise ValueError(f"已知酉聚焦播放器控制或标签不符：{page.name}")
-            if prefix + "focus_audio/MANIFEST.json" not in parser.links:
-                raise ValueError(f"缺少已知酉聚焦独立清单：{page.name}")
+            _check_visible_audio(page, prefix, "focus_audio", wav_names, {"MANIFEST.json"})
     except Exception as exc:
         fail(errors, f"已知酉聚焦实验检查失败：{exc}")
 
@@ -1918,22 +1837,21 @@ def check_derivative_audio(errors):
                         "codes/chapters/ch04/core/covariance.py",
                         "codes/chapters/ch03/core/geometry.py",
                         "codes/chapters/ch02/core/conventions.py",
-                        "codes/chapters/ch00/core/audio_samples.py"}
+                        "codes/chapters/ch00/core/audio_samples.py",
+                        'codes/chapters/ch00/io_contracts.py'}
     try:
         for folder in (source, published):
-            if (folder.is_symlink() or {p.name for p in folder.iterdir()} != expected
-                    or any(p.is_symlink() or not p.is_file() for p in folder.iterdir())):
-                raise ValueError(f"导数约束文件集合或类型不符：{folder}")
+            validate_asset_directory(folder, expected, check=True)
         for name in expected:
             if (source / name).read_bytes() != (published / name).read_bytes():
                 raise ValueError(f"导数约束网页副本不同：{name}")
-        manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+        manifest = _read_audio_manifest(source / "MANIFEST.json")
         if (set(manifest["files"]) != wav_names or manifest["sample_rate_hz"] != 16000 or manifest["samples_per_channel"] != 32002
                 or manifest["common_export_gain"] != 1
                 or set(manifest["source_sha256"]) != required_sources):
             raise ValueError("导数约束清单参数或真实源集合不符")
         for name, digest in manifest["source_sha256"].items():
-            if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest:
+            if hashlib.sha256(validate_parent_chain(ROOT / name).read_bytes()).hexdigest() != digest:
                 raise ValueError(f"导数约束生成源码已变化：{name}")
         for name in wav_names:
             path, record = source / name, manifest["files"][name]
@@ -1948,49 +1866,7 @@ def check_derivative_audio(errors):
                     raise ValueError(f"导数约束PCM数据截断：{name}")
         for page, prefix in ((SITE / "05_beamforming.html", ""),
                              (SITE / "research/05_exercises_and_audio.html", "../")):
-            text = page.read_text(encoding="utf-8")
-            class CuePlayers(HTMLParser):
-                def __init__(self):
-                    super().__init__()
-                    self.items = []
-                    self.links = set()
-                    self.template_depth = 0
-                    self.visibility_stack = []
-                def handle_starttag(self, tag, attrs):
-                    values = dict(attrs)
-                    hidden = ("hidden" in values or "inert" in values
-                              or values.get("aria-hidden", "").lower() == "true")
-                    if tag not in {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"}:
-                        self.visibility_stack.append((tag, hidden))
-                    if tag == "template":
-                        self.template_depth += 1
-                        return
-                    if self.template_depth or any(flag for _, flag in self.visibility_stack):
-                        return
-                    if tag == "audio":
-                        self.items.append(dict(attrs))
-                    elif tag == "a":
-                        self.links.add(dict(attrs).get("href"))
-                def handle_endtag(self, tag):
-                    for index in range(len(self.visibility_stack)-1, -1, -1):
-                        if self.visibility_stack[index][0] == tag:
-                            del self.visibility_stack[index:]
-                            break
-                    if tag == "template" and self.template_depth:
-                        self.template_depth -= 1
-            parser = CuePlayers()
-            parser.feed(text)
-            players = [item for item in parser.items
-                       if (item.get("src") or "").startswith(prefix + "derivative_audio/")]
-            expected = {prefix + "derivative_audio/" + name for name in wav_names}
-            if len(players) != 4 or {item.get("src") for item in players} != expected:
-                raise ValueError(f"缺少导数约束播放器或集合不符：{page.name}")
-            if any("autoplay" in item or "controls" not in item
-                   or item.get("preload") != "none" or not item.get("aria-label")
-                   for item in players):
-                raise ValueError(f"导数约束播放器控制或标签不符：{page.name}")
-            if prefix + "derivative_audio/MANIFEST.json" not in parser.links:
-                raise ValueError(f"缺少导数约束独立清单：{page.name}")
+            _check_visible_audio(page, prefix, "derivative_audio", wav_names, {"MANIFEST.json"})
     except Exception as exc:
         fail(errors, f"导数约束实验检查失败：{exc}")
 
@@ -2008,22 +1884,24 @@ def check_apa_audio(errors):
                         "codes/chapters/ch06/core/aec_numeric.py",
                         "codes/chapters/ch06/core/aec_affine_projection.py",
                         "codes/chapters/ch02/core/conventions.py",
-                        "codes/chapters/ch00/core/audio_samples.py"}
+                        "codes/chapters/ch00/core/audio_samples.py",
+                        'codes/chapters/ch00/io_contracts.py'}
     try:
         for folder in (source, published):
-            if (folder.is_symlink() or {p.name for p in folder.iterdir()} != expected_files
-                    or any(p.is_symlink() or not p.is_file() for p in folder.iterdir())):
-                raise ValueError("APA目录须恰含六普通WAV和清单")
+            try:
+                validate_asset_directory(folder, expected_files, check=True)
+            except ValueError as exc:
+                raise ValueError("APA目录须恰含六普通WAV和清单：" + str(exc)) from exc
         for name in expected_files:
             if (source/name).read_bytes() != (published/name).read_bytes():
                 raise ValueError("APA网页副本不同："+name)
-        manifest = json.loads((source/'MANIFEST.json').read_text())
+        manifest = _read_audio_manifest(source / "MANIFEST.json")
         if (set(manifest['files']) != wav_names or manifest['sample_rate_hz'] != 16000
                 or manifest['samples_per_channel'] != 32013 or manifest['common_export_gain'] != 1
                 or set(manifest['source_sha256']) != required_sources):
             raise ValueError("APA清单参数或真实源集合不同")
         for name, digest in manifest['source_sha256'].items():
-            if hashlib.sha256((ROOT/name).read_bytes()).hexdigest() != digest:
+            if hashlib.sha256(validate_parent_chain(ROOT/name).read_bytes()).hexdigest() != digest:
                 raise ValueError("APA真实源码摘要过期："+name)
         measures = manifest['pcm_measurements']
         if measures['holdout_interval_samples'] != [24000, 32000] or measures['pcm_decode_divisor'] != 32768:
@@ -2061,37 +1939,9 @@ def check_apa_audio(errors):
                         (isinstance(reported, bool) or not isinstance(reported, (int, float))
                          or not math.isfinite(reported) or abs(expected_db-reported) > 1e-12))):
                 raise ValueError("APA实际总功率比不同")
-        class VisiblePlayers(HTMLParser):
-            def __init__(self):
-                super().__init__()
-                self.stack, self.items, self.links = [], [], set()
-            def handle_starttag(self, tag, attrs):
-                values = dict(attrs)
-                hidden = (tag == 'template' or 'hidden' in values or 'inert' in values
-                          or values.get('aria-hidden', '').lower() == 'true')
-                if tag not in {'area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'}:
-                    self.stack.append((tag, hidden))
-                if any(flag for _, flag in self.stack):
-                    return
-                if tag == 'audio':
-                    self.items.append(values)
-                if tag == 'a':
-                    self.links.add(values.get('href'))
-            def handle_endtag(self, tag):
-                for index in range(len(self.stack)-1, -1, -1):
-                    if self.stack[index][0] == tag:
-                        del self.stack[index:]
-                        break
-        for page, prefix in ((SITE/'06_aec.html', ''), (SITE/'research/05_exercises_and_audio.html', '../')):
-            parser = VisiblePlayers()
-            parser.feed(page.read_text())
-            players = [p for p in parser.items if (p.get('src') or '').startswith(prefix+'apa_audio/')]
-            if len(players) != 6 or {p.get('src') for p in players} != {prefix+'apa_audio/'+name for name in wav_names}:
-                raise ValueError("APA六个可见播放器缺失或重复："+page.name)
-            if any('autoplay' in p or 'controls' not in p or p.get('preload') != 'none' or not p.get('aria-label') for p in players):
-                raise ValueError("APA播放器标签或控件不同")
-            if prefix+'apa_audio/MANIFEST.json' not in parser.links:
-                raise ValueError("APA独立清单链接缺失")
+        for page, prefix in ((SITE / "06_aec.html", ""),
+                             (SITE / "research/05_exercises_and_audio.html", "../")):
+            _check_visible_audio(page, prefix, "apa_audio", wav_names, {"MANIFEST.json"})
     except Exception as exc:
         fail(errors, f"APA实验检查失败：{exc}")
 
@@ -2108,15 +1958,12 @@ def check_mint_audio(errors):
     expected = wav_names | {'MANIFEST.json'}
     sources = {'codes/chapters/ch07/core/mint_teaching.py',
                'codes/chapters/ch07/examples/mint_teaching_demo.py',
-               'codes/chapters/ch02/core/conventions.py', 'codes/chapters/ch00/core/audio_samples.py'}
+               'codes/chapters/ch02/core/conventions.py', 'codes/chapters/ch00/core/audio_samples.py',
+               'codes/chapters/ch00/io_contracts.py'}
     try:
         for folder in (source, published):
-            if (folder.is_symlink() or {p.name for p in folder.iterdir()} != expected or
-                    any(p.is_symlink() or not p.is_file() for p in folder.iterdir())):
-                raise ValueError('独立MINT目录必须恰有六普通WAV及清单')
-        def reject_nonfinite(value):
-            raise ValueError('MINT清单不能含非有限JSON数字：'+value)
-        manifest = json.loads((source/'MANIFEST.json').read_text(), parse_constant=reject_nonfinite)
+            validate_asset_directory(folder, expected, check=True)
+        manifest = _read_audio_manifest(source / 'MANIFEST.json')
         if (set(manifest['source_sha256']) != sources or set(manifest['files']) != wav_names or
                 set(manifest['samples']) != set(names) or type(manifest['sample_rate_hz']) is not int or
                 manifest['sample_rate_hz'] != 16000 or type(manifest['samples_per_channel']) is not int or
@@ -2124,7 +1971,7 @@ def check_mint_audio(errors):
                 manifest['common_export_gain'] != 1):
             raise ValueError('MINT来源/文件集合或共同格式不符')
         for name in sources:
-            if hashlib.sha256((ROOT/name).read_bytes()).hexdigest() != manifest['source_sha256'][name]:
+            if hashlib.sha256(validate_parent_chain(ROOT/name).read_bytes()).hexdigest() != manifest['source_sha256'][name]:
                 raise ValueError('MINT真实源摘要过期：'+name)
         from codes.chapters.ch07.examples.mint_teaching_demo import check_assets
         # This read-only replay binds every float field to its source; the
@@ -2183,31 +2030,9 @@ def check_mint_audio(errors):
                     scores['tail_interval_samples'] != [32000, 32512] or
                     type(error) not in (int, float) or not math.isfinite(error) or not 0 <= error <= 1/65536):
                 raise ValueError('MINT评分区域或量化边界不同：'+filename)
-        class VisiblePlayers(HTMLParser):
-            def __init__(self):
-                super().__init__(); self.stack = []; self.items = []; self.links = set()
-            def handle_starttag(self, tag, attrs):
-                values = dict(attrs)
-                hidden = (tag in ('template', 'noscript') or 'hidden' in values or 'inert' in values or values.get('aria-hidden', '').lower() == 'true' or
-                          bool(re.search(r'display\s*:\s*none|visibility\s*:\s*hidden', values.get('style', ''), re.I)))
-                if tag not in ('br', 'img', 'meta', 'link', 'input', 'hr', 'source', 'wbr'):
-                    self.stack.append((tag, hidden))
-                if not any(item[1] for item in self.stack):
-                    if tag == 'audio': self.items.append(values)
-                    if tag == 'a': self.links.add(values.get('href'))
-            def handle_endtag(self, tag):
-                for index in range(len(self.stack)-1, -1, -1):
-                    if self.stack[index][0] == tag:
-                        del self.stack[index:]; break
-        for page, prefix in ((SITE/'07_wpe-dereverberation.html', ''),
-                             (SITE/'research/05_exercises_and_audio.html', '../')):
-            parser = VisiblePlayers(); parser.feed(page.read_text())
-            players = [p for p in parser.items if (p.get('src') or '').startswith(prefix+'mint_audio/')]
-            if (len(players) != 6 or {p.get('src') for p in players} != {prefix+'mint_audio/'+name for name in wav_names} or
-                    any('autoplay' in p or 'controls' not in p or p.get('preload') != 'none' or not p.get('aria-label') for p in players)):
-                raise ValueError('MINT六可见播放器或属性不同：'+page.name)
-            if prefix+'mint_audio/MANIFEST.json' not in parser.links:
-                raise ValueError('MINT独立清单链接缺失')
+        for page, prefix in ((SITE / "07_wpe-dereverberation.html", ""),
+                             (SITE / "research/05_exercises_and_audio.html", "../")):
+            _check_visible_audio(page, prefix, "mint_audio", wav_names, {"MANIFEST.json"})
     except Exception as exc:
         fail(errors, f'MINT实验检查失败：{exc}')
 
@@ -2217,14 +2042,12 @@ def check_tracking_audio(errors):
     source, published = TRACKING_AUDIO_ROOT, SITE/"tracking_audio"
     expected = {"source.wav","array_noisy.wav","MANIFEST.json"}
     try:
-        for folder in (source,published):
-            if (folder.is_symlink() or {p.name for p in folder.iterdir()} != expected
-                    or any(p.is_symlink() or not p.is_file() for p in folder.iterdir())):
-                raise ValueError(f"追踪音频文件集合或类型不符：{folder}")
+        for folder in (source, published):
+            validate_asset_directory(folder, expected, check=True)
         for name in expected:
             if (source/name).read_bytes() != (published/name).read_bytes():
                 raise ValueError(f"追踪音频网页副本不同：{name}")
-        manifest = _read_tracking_manifest(source/"MANIFEST.json")
+        manifest = _read_audio_manifest(source / "MANIFEST.json")
         required_sources = {
             'codes/chapters/ch09/examples/chapter09_tracking_audio.py',
             'codes/chapters/ch09/core/tracking_audio.py', 'codes/chapters/ch09/core/moving_source.py',
@@ -2234,7 +2057,7 @@ def check_tracking_audio(errors):
         if set(manifest.get('source_sha256', {})) != required_sources:
             raise ValueError('追踪音频真实生成源集合不完整')
         for name,digest in manifest['source_sha256'].items():
-            if hashlib.sha256((ROOT/name).read_bytes()).hexdigest() != digest:
+            if hashlib.sha256(validate_parent_chain(ROOT/name).read_bytes()).hexdigest() != digest:
                 raise ValueError(f"追踪音频生成源码已变化：{name}")
         for name,channels in {"source.wav":1,"array_noisy.wav":2}.items():
             path = source/name
@@ -2374,13 +2197,17 @@ def _check_visible_audio(page, prefix, directory, names, links):
     parser = VisibleMediaParser()
     parser.feed(page.read_text(encoding='utf-8'))
     base = prefix+directory+'/'
+    label = {"binaural_audio": "双耳线索", "stft_audio": "STFT卷积",
+             "geometry_audio": "多频几何", "focus_audio": "已知酉聚焦",
+             "derivative_audio": "导数约束"}.get(directory, directory)
     players = [p for p in parser.items if (p.get('src') or '').startswith(base)]
-    if (len(players) != len(names) or {p.get('src') for p in players} != {base+n for n in names} or
-            any('autoplay' in p or 'controls' not in p or p.get('preload') != 'none' or
-                not (p.get('aria-label') or '').strip() for p in players)):
-        raise ValueError(directory+'可见播放器集合/标签/加载属性不同：'+page.name)
+    if len(players) != len(names) or {p.get('src') for p in players} != {base+n for n in names}:
+        raise ValueError('缺少'+label+'播放器或可见播放器缺失或重复（集合不符）：'+page.name)
+    if any('autoplay' in p or 'controls' not in p or p.get('preload') != 'none' or
+           not (p.get('aria-label') or '').strip() for p in players):
+        raise ValueError(label+'播放器标签或控件不同（控制/加载属性不符）：'+page.name)
     if not {base+n for n in links} <= parser.links:
-        raise ValueError(directory+'可见独立资产链接缺失：'+page.name)
+        raise ValueError('缺少'+label+'独立清单：可见独立资产链接缺失（独立清单链接缺失）：'+page.name)
 
 
 def _selection_scenario_pcm(source):
@@ -2487,14 +2314,15 @@ def check_scenario_audio(errors):
         source,published=SCENARIO_AUDIO_ROOT,SITE/'scenario_audio'
         validate_asset_directory(source,check=True)
         validate_asset_directory(published,check=True)
-        manifest=check_assets(source)
+        manifest = _validate_audio_metadata(check_assets(source))
         expected_sources={'codes/chapters/ch11/core/selection_audio.py',
             'codes/chapters/ch11/examples/generate_selection_audio.py',
-            'codes/chapters/ch00/core/audio_samples.py'}
+            'codes/chapters/ch00/core/audio_samples.py',
+                          'codes/chapters/ch00/io_contracts.py'}
         if set(manifest['source_sha256'])!=expected_sources:
             raise ValueError('scenario source set differs')
         for path in expected_sources:
-            if manifest['source_sha256'][path]!=hashlib.sha256((ROOT/path).read_bytes()).hexdigest():
+            if manifest['source_sha256'][path]!=hashlib.sha256(validate_parent_chain(ROOT/path).read_bytes()).hexdigest():
                 raise ValueError('scenario source SHA is stale: '+path)
         if set(manifest['files'])!=SCENARIO_AUDIO_WAVS or type(manifest['common_export_gain']) is not float or manifest['common_export_gain']!=.8:
             raise ValueError('scenario eight files or common gain differs')
@@ -2578,16 +2406,17 @@ def check_weighted_audio(errors):
         source, published = WEIGHTED_AUDIO_ROOT, SITE / 'weighted_audio'
         validate_asset_directory(source, check=True)
         validate_asset_directory(published, check=True)
-        manifest = check_assets(source)
+        manifest = _validate_audio_metadata(check_assets(source))
         expected_sources = {
             'codes/chapters/appendix_a/core/weighted_audio.py',
             'codes/chapters/appendix_a/examples/generate_weighted_audio.py',
             'codes/chapters/ch00/core/audio_samples.py',
-        }
+
+            'codes/chapters/ch00/io_contracts.py'}
         if set(manifest['source_sha256']) != expected_sources:
             raise ValueError('weighted real source set differs')
         for path in expected_sources:
-            if manifest['source_sha256'][path] != hashlib.sha256((ROOT / path).read_bytes()).hexdigest():
+            if manifest['source_sha256'][path] != hashlib.sha256(validate_parent_chain(ROOT / path).read_bytes()).hexdigest():
                 raise ValueError('weighted source SHA is stale: ' + path)
         if (set(manifest['files']) != WEIGHTED_AUDIO_WAVS
                 or type(manifest['common_export_gain']) is not float
@@ -2659,17 +2488,18 @@ def check_response_audio(errors):
     try:
         from codes.chapters.appendix_b.examples.generate_response_audio import check_assets, validate_asset_directory
         source, published = RESPONSE_AUDIO_ROOT, SITE/'response_audio'
-        manifest = check_assets(source)
+        manifest = _validate_audio_metadata(check_assets(source))
         validate_asset_directory(published, check=True)
         expected_sources = {
             'codes/chapters/appendix_b/core/response_audio.py',
             'codes/chapters/appendix_b/examples/generate_response_audio.py',
             'codes/chapters/ch00/core/audio_samples.py',
-        }
+
+            'codes/chapters/ch00/io_contracts.py'}
         if set(manifest['source_sha256']) != expected_sources:
             raise ValueError('response real source set differs')
         for name in expected_sources:
-            if manifest['source_sha256'][name] != hashlib.sha256((ROOT/name).read_bytes()).hexdigest():
+            if manifest['source_sha256'][name] != hashlib.sha256(validate_parent_chain(ROOT/name).read_bytes()).hexdigest():
                 raise ValueError('response source SHA is stale')
         if (set(manifest['files']) != RESPONSE_AUDIO_WAVS
                 or type(manifest['common_export_gain']) is not float
@@ -2698,18 +2528,19 @@ def check_noise_audio(errors):
         source, published = NOISE_AUDIO_ROOT, SITE/'noise_audio'
         validate_asset_directory(source, check=True)
         validate_asset_directory(published, check=True)
-        manifest = check_assets(source)
+        manifest = _validate_audio_metadata(check_assets(source))
         source_paths = {
             'codes/chapters/ch10/core/noise_mismatch.py',
             'codes/chapters/ch10/examples/generate_noise_mismatch.py',
             'codes/chapters/ch10/core/noise_suppression.py',
             'codes/chapters/ch02/core/spectral.py',
             'codes/chapters/ch02/core/conventions.py',
-            'codes/chapters/ch00/core/audio_samples.py'}
+            'codes/chapters/ch00/core/audio_samples.py',
+            'codes/chapters/ch00/io_contracts.py'}
         if set(manifest['source_sha256']) != source_paths:
             raise ValueError('noise_audio真实源集合不同')
         for path in source_paths:
-            if manifest['source_sha256'][path] != hashlib.sha256((ROOT/path).read_bytes()).hexdigest():
+            if manifest['source_sha256'][path] != hashlib.sha256(validate_parent_chain(ROOT/path).read_bytes()).hexdigest():
                 raise ValueError('noise_audio真实源摘要过期：'+path)
         if set(manifest['files']) != NOISE_AUDIO_WAVS or manifest['common_export_gain'] != 1:
             raise ValueError('noise_audio六文件与共同增益不同')
@@ -2754,19 +2585,18 @@ def check_mask_audio(errors):
              ('target', 'other', 'mixture', 'bounded_real', 'unbounded_real', 'complex_oracle')}
     sources = {'codes/chapters/ch08/core/mask_representation.py',
                'codes/chapters/ch08/examples/mask_representation_demo.py',
-               'codes/chapters/ch02/core/conventions.py', 'codes/chapters/ch00/core/audio_samples.py'}
+               'codes/chapters/ch02/core/conventions.py', 'codes/chapters/ch00/core/audio_samples.py',
+               'codes/chapters/ch00/io_contracts.py'}
     source, published = MASK_AUDIO_ROOT, SITE/'mask_audio'
     try:
         expected = set(names.values()) | {'MANIFEST.json'}
         for folder in (source, published):
-            if (folder.is_symlink() or {p.name for p in folder.iterdir()} != expected or
-                    any(p.is_symlink() or not p.is_file() for p in folder.iterdir())):
-                raise ValueError('mask_audio必须恰含六普通WAV及清单')
-        manifest = json.loads((source/'MANIFEST.json').read_text())
+            validate_asset_directory(folder, expected, check=True)
+        manifest = _read_audio_manifest(source / "MANIFEST.json")
         if set(manifest['source_sha256']) != sources:
             raise ValueError('mask_audio真实源集合不同')
         for path in sources:
-            if hashlib.sha256((ROOT/path).read_bytes()).hexdigest() != manifest['source_sha256'][path]:
+            if hashlib.sha256(validate_parent_chain(ROOT/path).read_bytes()).hexdigest() != manifest['source_sha256'][path]:
                 raise ValueError('mask_audio真实源摘要过期：'+path)
         from codes.chapters.ch08.examples.mask_representation_demo import check_assets
         check_assets(source, replay=True)
@@ -2833,12 +2663,10 @@ def check_gss_audio(errors):
     expected = set(channels) | {"MANIFEST.json", "STATE.npz"}
     try:
         for folder in (source, published):
-            if (folder.is_symlink() or {p.name for p in folder.iterdir()} != expected or
-                    any(p.is_symlink() or not p.is_file() for p in folder.iterdir())):
-                raise ValueError('GSS必须恰含七普通资产')
+            validate_asset_directory(folder, expected, check=True)
         from codes.chapters.ch08.examples.gss_teaching_demo import generate
         generate(source, check=True)
-        manifest = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+        manifest = _read_audio_manifest(source / "MANIFEST.json")
         if (set(manifest["files"]) != expected - {"MANIFEST.json"}
                 or manifest["sample_rate_hz"] != 16000):
             raise ValueError("GSS 清单集合或采样率不符")
@@ -2848,11 +2676,12 @@ def check_gss_audio(errors):
                         "codes/chapters/ch02/core/spectral.py",
                         "codes/chapters/ch02/core/conventions.py",
                         "codes/chapters/ch00/core/audio_samples.py",
-                        "codes/chapters/ch07/core/dereverberation.py"}
+                        "codes/chapters/ch07/core/dereverberation.py",
+                        'codes/chapters/ch00/io_contracts.py'}
         if set(manifest.get("generator_inputs", {})) != source_paths:
             raise ValueError("GSS 生成源码清单不完整")
         for name, digest in manifest["generator_inputs"].items():
-            if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest:
+            if hashlib.sha256(validate_parent_chain(ROOT / name).read_bytes()).hexdigest() != digest:
                 raise ValueError(f"GSS 生成源码已变化：{name}")
         for name in expected:
             original, copy = source / name, published / name
@@ -2903,7 +2732,7 @@ def check_audio(errors):
     """Independent published PCM inventory, provenance, format and player checks."""
     root = CODE_CHAPTERS
     try:
-        manifest = json.loads(main_audio_manifest_path(root).read_text())
+        manifest = _read_audio_manifest(main_audio_manifest_path(root))
         records = manifest["files"]
         names = {stem + ".wav" for stem in EXPECTED_AUDIO_STEMS}
         if manifest.get("schema_version") != 2 or len(records) != 109 or {r["file"] for r in records} != names:
@@ -2916,8 +2745,16 @@ def check_audio(errors):
                 continue
             expected_by_chapter[chapter].add(record["file"])
         for chapter, expected_files in expected_by_chapter.items():
-            if {p.name for p in (root / chapter / "audio").glob("*.wav")} != expected_files:
-                fail(errors, f"{chapter} 源音频文件集合不符")
+            members = expected_files | ({"MANIFEST.json"} if chapter == "ch00" else set())
+            try:
+                validate_asset_directory(root / chapter / "audio", members, check=True)
+            except ValueError as exc:
+                raise ValueError(f"{chapter} 源音频文件集合不符（或父链/普通文件类型不符）：{exc}") from exc
+        validate_asset_directory(root / "ch00/audio", {"MANIFEST.json"}, check=True)
+        try:
+            validate_asset_directory(SITE / "audio", names, check=True)
+        except ValueError as exc:
+            raise ValueError(f"站点音频文件集合不符（或父链/普通文件类型不符）：{exc}") from exc
         site_audio_entries = list((SITE / "audio").iterdir())
         if ({p.name for p in site_audio_entries} != names or
                 any(not p.is_file() or p.is_symlink() for p in site_audio_entries)):
@@ -2935,13 +2772,14 @@ def check_audio(errors):
                            "codes/chapters/ch02/core/spectral.py", "codes/chapters/ch02/core/conventions.py",
                            "codes/chapters/ch03/core/geometry.py",
                            "codes/chapters/ch10/core/noise_suppression.py", "codes/chapters/appendix_a/core/math_foundations.py", "codes/chapters/ch05/core/gsc.py",
-                           "codes/chapters/ch08/core/css.py", "codes/chapters/ch08/core/separation.py"}
+                           "codes/chapters/ch08/core/css.py", "codes/chapters/ch08/core/separation.py",
+                           'codes/chapters/ch00/io_contracts.py'}
         if set(manifest["generator_inputs"]) != expected_inputs:
             fail(errors, "音频生成来源清单不完整")
         for name, expected in manifest["generator_inputs"].items():
             if name not in expected_inputs:
                 continue
-            if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != expected:
+            if hashlib.sha256(validate_parent_chain(ROOT / name).read_bytes()).hexdigest() != expected:
                 fail(errors, f"音频生成源过期：{name}")
         import numpy as np
         for record in records:
@@ -2992,23 +2830,16 @@ def check_audio(errors):
                 fail(errors, f"音频比较组增益不一致：{name}")
             if not 0 <= record["quantization_max_abs_error"] <= .5/32768 + 1e-15:
                 fail(errors, f"音频量化误差超限：{name}")
-        class AudioParser(HTMLParser):
-            def __init__(self):
-                super().__init__()
-                self.players = []
-            def handle_starttag(self, tag, attrs):
-                if tag == "audio":
-                    self.players.append(dict(attrs))
-        parser = AudioParser()
+        parser = VisibleMediaParser()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
-        synthetic_players = [p for p in parser.players if (p.get("src") or "").startswith("../audio/")]
+        synthetic_players = [p for p in parser.items if (p.get("src") or "").startswith("../audio/")]
         expected_players = Counter({"../audio/" + n: 1 for n in names})
         # The moving-source comparison repeats the existing panning sample.
         expected_players["../audio/tracking_pan.wav"] += 1
         if Counter(p.get("src") for p in synthetic_players) != expected_players:
             fail(errors, "试听控件集合不符")
-        for player in parser.players:
-            if "autoplay" in player or "controls" not in player or player.get("preload") != "none" or not player.get("aria-label"):
+        for player in parser.items:
+            if "autoplay" in player or "controls" not in player or player.get("preload") != "none" or not (player.get("aria-label") or "").strip():
                 fail(errors, "试听控件必须有标签和控制、不自动播放或预加载")
     except Exception as exc:
         fail(errors, f"音频检查失败：{exc}")

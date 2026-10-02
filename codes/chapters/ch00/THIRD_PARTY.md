@@ -1,8 +1,8 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 100 个 Git 上游项目；已在 `codes/chapters/ch00/upstream/_downloads/` 取得 87 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件，DiCoW v1 演示与 TS-ASR-Whisper v1 训练源码于 2026-09-28 按固定提交取得。2026-09-30 新增原作者湿空气声速模型，2026-10-01取得SAID及NeMo WPE固定源码，2026-10-02取得TAC四文件并离线重核，86 个通过、AEC Challenge 的 5 个真实录音有本地变动而未计通过，另 13 项仅登记来源。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 100 个 Git 上游项目；已在 `codes/chapters/ch00/upstream/_downloads/` 取得 87 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件，DiCoW v1 演示与 TS-ASR-Whisper v1 训练源码于 2026-09-28 按固定提交取得。2026-09-30 新增原作者湿空气声速模型，2026-10-01取得SAID及NeMo WPE固定源码，2026-10-02取得TAC四文件。当前离线核验逐条比较完整源码包含规则及32条扩展名排除规则：64项通过、22项旧工作区仅有20条排除规则而记为 `source_selection_mismatch`、13项仅登记来源，AEC Challenge 的5个真实录音有本地变动而记为失败。旧工作区均保留，不自动补规则或删除文件。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
-“已取得”只说明来源、提交、工作区状态和指定入口符合清单，不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
+“已取得”表示本地存在独立来源工作区；是否符合当前提交、工作区状态、指定入口和完整选集政策，以状态报告分别判断。取得源码不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
 ## 官方源码与用途
 
@@ -57,7 +57,7 @@ SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构�
 | [sound-field-analysis](https://github.com/AppliedAcousticsChalmers/sound_field_analysis-py/tree/4b03ee123d98370c55f744c4f8d7c955fbc099f1) | 球谐变换、径向滤波及球阵声场 | MIT | 已取得独立源码 |
 | [spherical-array-processing](https://github.com/polarch/Spherical-Array-Processing/tree/f192aac652b023ee4ab8673adce20ec13bf5450c) | 球谐编码、SH-MVDR/LCMV/MUSIC/ESPRIT | BSD-3-Clause | 已取得独立源码 |
 | [spatial-audio-framework](https://github.com/leomccormack/Spatial_Audio_Framework/tree/18fd5aba46e20787b51f28f7197a68506c965c07) | C/C++ 球阵处理、功率图、HRIR/HRTF 与可选追踪 | ISC core；本轮saf_tracker文件头GPL-2.0-or-later，其他模块逐文件核对 | 已取得独立源码 |
-| [libmysofa](https://github.com/hoene/libmysofa/tree/6cc5b15a73e9bd97810d03767082edda7f315881) | SOFA读取、HRIR方向插值与归一化接口 | BSD-3-Clause，第三方源码声明分别保留 | 已取得源码子集；未编译或数值运行，不含SOFA测量数据 |
+| [libmysofa](https://github.com/hoene/libmysofa/tree/6cc5b15a73e9bd97810d03767082edda7f315881) | SOFA读取、HRIR方向插值与归一化接口 | BSD-3-Clause，第三方源码声明分别保留 | 已取得源码子集；已在临时隔离构建中调用原loudness/tools的归一化方法，两人工输入及零能量退化见[当前报告](../ch01/reports/libmysofa_loudness.json)；未运行SOFA解析、插值或完整渲染，不含测量数据 |
 | [pyfar](https://github.com/pyfar/pyfar/tree/0bfe1e8b7d71ab83edd3ea3b5fab7b28761d114a) | 指数扫频、频带受限谱反卷积、信号与频谱单位接口 | MIT，保留作者声明；测量数据许可另核 | v0.8.1固定源码已取得；未安装、未运行或实机测量 |
 | [frida-original](https://github.com/LCAV/FRIDA/tree/ff5d51e498805b862c342dd216ccfffb22444b7f) | FRIDA 原论文仿真和录音实验 | MIT | 已取得独立源码 |
 | [acoular](https://github.com/acoular/acoular/tree/13d3d7df74ac1a8135c7ec71da098cbbc03d8652) | DAMAS、CLEAN-SC、CMF 与移动声源成像 | BSD-3-Clause | 已取得独立源码 |
@@ -73,7 +73,7 @@ SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构�
 | [dns-challenge](https://github.com/microsoft/DNS-Challenge/tree/591184a9fcb2cbdec02520fed81a32bbbf9d73ff) | 降噪挑战配方及 DNSMOS | MIT for code (LICENSE-CODE); data terms separate | 已取得独立源码 |
 | [aec-challenge](https://github.com/microsoft/AEC-Challenge/tree/6c633d0a9d2a143a0e364899b91b06f127315b18) | 回声挑战与 AECMOS | MIT for repository code; assets separately | 已有独立工作树；5 个录音本地有改动，离线核验失败，未覆盖 |
 | [chime-utils](https://github.com/chimechallenge/chime-utils/tree/152882404f572d40769ef02bf91c5a9a9cfc9c78) | 会议数据整理、活动与评测工具 | MIT | 已取得独立源码 |
-| [ssspy](https://github.com/tky823/ssspy/tree/38b9389e8b1914422561f1936d9b28d042d62d2c) | FDICA、IVA、ILRMA、MNMF、FastMNMF、cACGMM 与尺度恢复 | Apache-2.0 | 已取得独立源码；cACGMM 入口仅静态核对，未运行 |
+| [ssspy](https://github.com/tky823/ssspy/tree/38b9389e8b1914422561f1936d9b28d042d62d2c) | FDICA、IVA、ILRMA、MNMF、FastMNMF、cACGMM 与尺度恢复 | Apache-2.0 | 已取得独立源码；2026-10-02隔离PRA环境成功导入原包，限定CACGMM零次分离迭代的后验及一次形状更新见[当前报告](../ch08/reports/upstream_separation_contracts.json)；不称完整分离性能复现，2026-10-01缺packaging的历史尝试保留 |
 | [pb_bss](https://github.com/fgnt/pb_bss/tree/10acc347fc9ea21e3d312806a0bd751d0d0af183) | 空间聚类、GEV、BAN 与波束参考 | MIT | 已取得独立源码 |
 | [gss](https://github.com/desh2608/gss/tree/10fad18cae85e2e4342c77421abc70c9c5da23ed) | 活动引导分离及 GPU 批处理 | MIT | 已取得独立源码 |
 | [wpe_gpu](https://github.com/desh2608/wpe/tree/bd2857b5b8de36df4f436a93574c088bea142042) | CuPy 离线 WPE 与 GPU-GSS 去混响 | MIT | 已取得独立源码 |
@@ -249,11 +249,11 @@ PRA的AuxIVA、ILRMA、FastMNMF/FastMNMF2、TRINICON，ssspy的回投影，以�
 | 来源与固定范围 | 本地状态 | 许可与解释边界 |
 |---|---|---|
 | [Vo RFS tracking toolbox](https://ba-tuong.vo-au.com/codes.html)，`vo-rfs-tracking-updated` | 作者ZIP共565949字节；已取得62个选定MATLAB/C源码及readme，逐字节核对通过；没有执行MATLAB或编译MEX | 包readme限学术/研究用途，逐文件声明保留；不能概括为可自由再分发的开源。选集只含线性高斯CPHD、GLMB、LMB、joint变体及直接公共函数，不含预编译MEX、图或数据 |
-| [SAF tracker](https://github.com/leomccormack/Spatial_Audio_Framework/tree/18fd5aba46e20787b51f28f7197a68506c965c07/framework/modules/saf_tracker) | 既有固定源码增加tracker和MEX包装入口核查，未编译执行 | 被核查tracker文件头为GPL-2.0-or-later；RBMCDA用粒子表示关联等离散变量，给定关联后用Kalman处理连续位置，不等于普通位置粒子滤波 |
+| [SAF tracker](https://github.com/leomccormack/Spatial_Audio_Framework/tree/18fd5aba46e20787b51f28f7197a68506c965c07/framework/modules/saf_tracker) | 该次核查增加tracker和MEX包装入口，2026-09-28尚未编译执行；当前原step限定C合同另见[运行报告](../ch09/reports/upstream_tracking_contracts.json) | 被核查tracker文件头为GPL-2.0-or-later；RBMCDA用粒子表示关联等离散变量，给定关联后用Kalman处理连续位置，不等于普通位置粒子滤波 |
 | [Neural-SRP](https://github.com/egrinstein/neural_srp/tree/0ec639f028987ca3d9d3764331f6d65ff455f9a8) | 仅固定来源索引与有限选型候选；未获取源码/权重或运行 | 未建立代码许可；论文的CC BY不能代替仓库许可。训练/评测源数、阵列和任务边界不可由网络结构外推 |
 
 Vo归档SHA-256为`fb22c9edecb56049b7f8ede1e1522384f0c4e6bfb5e5577f3bd482f6367ef46a`。
 配套descriptor是作者下载页的固定快照，摘要为`a4903db625b19ed77c69b495b9655257bd3b1e7ebd3fe5d27bfcec52ef6d2984`；
 这两个值均为本次取得后本地计算，不是作者公布的独立校验值或数字签名。
-[归档锁表](ARCHIVE_SOURCES.lock.json)现有HARK与Vo两项，与97个Git项目分开计数。
+该次核查时，[归档锁表](ARCHIVE_SOURCES.lock.json)登记HARK与Vo两项，与当时97个Git项目分开计数。
 完整压缩包仍在忽略缓存中，包含未选取资产；只有选定工作树排除了二进制、图和数据。缓存及源码工作树不随本书提交推送。
