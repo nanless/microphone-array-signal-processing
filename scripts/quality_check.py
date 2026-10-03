@@ -51,6 +51,7 @@ MASK_AUDIO_ROOT = ROOT / "codes/chapters/ch08/mask_audio"
 SCENARIO_AUDIO_ROOT = CODE_CHAPTERS / "ch11" / "scenario_audio"
 WEIGHTED_AUDIO_ROOT = CODE_CHAPTERS / "appendix_a" / "weighted_audio"
 RESPONSE_AUDIO_ROOT = CODE_CHAPTERS / "appendix_b" / "response_audio"
+IMAGING_AUDIO_ROOT = CODE_CHAPTERS / "ch14" / "imaging_audio"
 RESPONSE_AUDIO_WAVS = {"response_" + name + ".wav" for name in
                        ("source", "reflection_a", "reflection_b", "full_a", "full_b")}
 WEIGHTED_AUDIO_WAVS = {"weighted_" + name + ".wav" for name in
@@ -84,6 +85,7 @@ EXPECTED_SECTION_COUNTS = {
     "11_selection-guide.md": 7,
     "12_appendix-symbols-math.md": 4,
     "13_appendix-guide.md": 7,
+    "14_acoustic-imaging.md": 14,
 }
 # 第 1～13 章的源 h4 进入合订目录和 PDF 第三级书签。此表是独立发布
 # 基线，不从构建脚本或待检产物反推。
@@ -101,6 +103,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "11_selection-guide.md": 37,
     "12_appendix-symbols-math.md": 36,
     "13_appendix-guide.md": 29,
+    "14_acoustic-imaging.md": 61,
 }
 # 上表为独立发布基线，不从待检 HTML 或构建器反推。
 EXPECTED_CHAPTERS = [
@@ -116,15 +119,16 @@ EXPECTED_CHAPTERS = [
     ("09_source-tracking.md", "第 9 章 · 声源追踪"),
     ("10_engineering-practice.md", "第 10 章 · 工程实现、评测与产业实践"),
     ("11_selection-guide.md", "第 11 章 · 总结与选型指南"),
+    ("14_acoustic-imaging.md", "扩展专题Ⅰ · 声学成像与噪声源诊断"),
     ("12_appendix-symbols-math.md", "附录 A · 符号术语数学"),
     ("13_appendix-guide.md", "附录 B · 路径地图与练习"),
 ]
-EXPECTED_CHAPTER_COUNT = 14
-EXPECTED_SECTION_COUNT = 121
-EXPECTED_SUBSECTION_COUNT = 570
-EXPECTED_OUTLINE_ITEM_COUNT = 705
-EXPECTED_FIGURE_NUMBERS = set(range(1, 67))
-# 研究附站使用独立显式清单，不挤占 14 篇教程或教程 PDF 大纲基线。
+EXPECTED_CHAPTER_COUNT = 15
+EXPECTED_SECTION_COUNT = 135
+EXPECTED_SUBSECTION_COUNT = 631
+EXPECTED_OUTLINE_ITEM_COUNT = 781
+EXPECTED_FIGURE_NUMBERS = set(range(1, 70))
+# 研究附站使用独立显式清单，不挤占 15 篇教程或教程 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
     ("README.md", "index.html"),
@@ -574,7 +578,7 @@ def expected_outline_heading_ids(documents=None):
                      for path in CHAPTERS.glob("*.md")}
     result = []
     for index, (name, _label) in enumerate(EXPECTED_CHAPTERS):
-        chapter_id = f"ch-{index}"
+        chapter_id = "ch-" + str(int(name.split("_", 1)[0]))
         ids = [chapter_id]
         section_level = 2 if name == "00_overview.md" else 3
         for level, _title, primary in semantic_heading_ids(documents[name]):
@@ -706,7 +710,7 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66)
+            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
@@ -771,6 +775,200 @@ def check_figures(errors: list[str]):
                         fail(errors, f"图 {number} 音频清单摘要失效")
         except Exception as exc:
             fail(errors, f"图片无法解码：figures/{name}: {exc}")
+
+
+IMAGING_FIGURE_REPORTS = {
+    67: 'figure67_imaging_psf.json',
+    68: 'figure68_imaging_model_checks.json',
+    69: 'figure69_imaging_calibration.json',
+}
+IMAGING_FIGURE_SOURCES = (
+    'scripts/make_figures.py', 'codes/chapters/ch14/core/imaging.py',
+    'codes/chapters/ch02/core/conventions.py', 'codes/chapters/ch00/io_contracts.py',
+)
+
+
+def _check_imaging_figure_report(path, number):
+    """Read current source-bound reports against independent fixed controls.
+
+    No drawing/teaching function is imported, no report is repaired, and no
+    image is generated. The independent controls fix the declared inputs;
+    changing the report's inputs cannot manufacture a matching expectation.
+    PNG decoding, script provenance and final visual QA remain separate checks.
+    """
+    import numpy as np
+    from fractions import Fraction
+    report = strict_json_loads(validate_parent_chain(path).read_bytes())
+    if (not isinstance(report, dict)
+            or set(report) != {'schema_version', 'scope', 'source_sha256', 'results'}
+            or type(report['schema_version']) is not int or report['schema_version'] != 1
+            or report['scope'] != 'deterministic teaching controls; no industrial measurement'
+            or not isinstance(report['source_sha256'], dict)
+            or set(report['source_sha256']) != set(IMAGING_FIGURE_SOURCES)
+            or not isinstance(report['results'], dict)):
+        raise ValueError(f'图{number}报告结构、范围或四源集合不同')
+    for relative in IMAGING_FIGURE_SOURCES:
+        actual = hashlib.sha256(validate_parent_chain(ROOT / relative).read_bytes()).hexdigest()
+        if report['source_sha256'][relative] != actual:
+            raise ValueError(f'图{number}真实源摘要过期：{relative}')
+
+    def reject_bool(value):
+        if isinstance(value, list):
+            for item in value:
+                reject_bool(item)
+        elif type(value) not in (int, float):
+            raise ValueError(f'图{number}数值字段含非数字或布尔值')
+
+    def close(actual, expected, label):
+        reject_bool(actual)
+        a, b = np.asarray(actual, dtype=float), np.asarray(expected, dtype=float)
+        if (a.shape != b.shape or not np.isfinite(a).all()
+                or not np.allclose(a, b, rtol=2e-12, atol=2e-14)):
+            raise ValueError(f'图{number}独立数值不符：{label}')
+
+    def complex_close(actual, expected, label):
+        if not isinstance(actual, dict) or set(actual) != {'real', 'imag'}:
+            raise ValueError(f'图{number}复数存储不同：{label}')
+        close(actual['real'], np.real(expected), label+' real')
+        close(actual['imag'], np.imag(expected), label+' imag')
+
+    def exact_int(actual, expected, label):
+        if type(actual) is not int or actual != expected:
+            raise ValueError(f'图{number}整数条件不同：{label}')
+
+    a = np.array([[1, 1], [1, np.exp(-2j*np.pi/3)]])
+    w, q = a/2, np.array([1., .25])
+    p = np.array([[1., .25], [.25, 1.]])
+
+    def two_cell(data):
+        complex_close(data['A'], a, '两格负相位传播')
+        complex_close(data['W'], w, '两格权重')
+        close(data['P'], p, '两格PSF')
+        close(data['q'], q, '两格边际源量')
+        for key, expected_r, expected_b, inverse, relative in (
+                ('independent', a@np.diag(q)@a.conj().T, [17/16, .5], q, 0.),
+                ('coherent', np.outer(a@np.array([1., .5]), (a@np.array([1., .5])).conj()),
+                 [21/16, .75], [1.2, .45], np.sqrt(.15))):
+            case = data['cases'][key]
+            complex_close(case['R'], expected_r, key+' CSM')
+            close(case['b'], expected_b, key+'扫描量')
+            close(case['q_inverse'], inverse, key+'逆解')
+            close(case['full_csm_residual']['relative_frobenius'], relative, key+'完整CSM残差')
+        gamma = np.linspace(-1., 1., 41)
+        close(data['coherence_gamma'], gamma, '互相干控制点')
+        close(data['coherence_inverse_q'], np.column_stack([1+.2*gamma, .25+.2*gamma]),
+              '交叉项改变非相干逆解')
+
+    data = report['results']
+    if number in (67, 68):
+        two_cell(data['two_cell'])
+    if number == 67:
+        spatial = data['spherical_scan']
+        close(spatial['frequency_hz'], 4000., '频率')
+        close(spatial['sound_speed_m_s'], 343., '声速')
+        close(spatial['grid_shape'], [21, 21], '网格形状')
+        close(spatial['source_grid_indices'], [215, 225], '真实源格')
+        close(spatial['reference_position_m'], [0, 0, 0], '参考位置')
+        angles = 2*np.pi*np.arange(8)/8
+        microphones = np.column_stack([.2*np.cos(angles), .2*np.sin(angles), np.zeros(8)])
+        axis = np.linspace(-.3, .3, 21)
+        xx, yy = np.meshgrid(axis, axis, indexing='xy')
+        grid = np.column_stack([xx.ravel(), yy.ravel(), np.full(441, .6)])
+        close(spatial['microphones_m'], microphones, '8麦几何')
+        close(spatial['grid_m'], grid, '441格坐标')
+        close(spatial['grid_axis_m'], axis, '坐标轴')
+        close(spatial['source_positions_m'], grid[[215, 225]], '真实源坐标')
+        close(spatial['q'], q, '空间扫描边际源量')
+        distances = np.linalg.norm(grid[None, :, :]-microphones[:, None, :], axis=2)
+        reference = np.linalg.norm(grid, axis=1)
+        transfer = reference[None, :]/distances*np.exp(
+            -2j*np.pi*4000/343*(distances-reference[None, :]))
+        weights = transfer/np.sum(np.abs(transfer)**2, axis=0)
+        csm = transfer[:, [215, 225]]@np.diag(q)@transfer[:, [215, 225]].conj().T
+        # Each scalar quadratic is evaluated independently of teaching scan code.
+        scan = np.array([np.vdot(col, csm@col).real for col in weights.T])
+        columns = np.abs(weights.conj().T@transfer[:, [215, 225]])**2
+        complex_close(spatial['A'], transfer, '球面传播')
+        complex_close(spatial['W'], weights, '球面权重')
+        complex_close(spatial['R'], csm, '已知两源CSM')
+        close(spatial['psf_columns'], columns, '两源PSF列')
+        close(spatial['b'], scan, '完整二维扫描')
+        direction = grid/np.linalg.norm(grid, axis=1)[:, None]
+        plane = np.exp(2j*np.pi*4000/343*(microphones@direction.T))/8
+        close(spatial['plane_mismatch_b'], [np.vdot(col, csm@col).real for col in plane.T],
+              '错误平面波模型')
+        close(spatial['dirty_grid_sum'], scan.sum(), '扫描格求和')
+        close(spatial['source_power_sum'], 1.25, '源总量')
+        if len(spatial['local_peaks']) != 2:
+            raise ValueError('图67两处局部峰数量不同')
+        for source_index, grid_index in enumerate((215, 225)):
+            local = np.flatnonzero(np.linalg.norm(grid[:, :2]-grid[grid_index, :2], axis=1) <= .09+1e-12)
+            peak = int(local[np.argmax(scan[local])])
+            row = spatial['local_peaks'][source_index]
+            exact_int(row['peak_grid_index'], peak, '局部峰格索引')
+            close(row['peak_position_m'], grid[peak], '局部峰位置')
+            close(row['position_error_m'], np.linalg.norm(grid[peak]-grid[grid_index]), '峰偏移')
+    elif number == 68:
+        if type(data['log_plot_floor']) is not float or data['log_plot_floor'] != 1e-16:
+            raise ValueError('图68对数显示地板不同')
+        for name, passes in (('forward', 1), ('forward_backward', 2)):
+            result = data[name]
+            exact_int(result['iterations'], 8, '外层轮数')
+            exact_int(result['passes_per_iteration'], passes, '每轮扫描次数')
+            if result['sweep'] != name:
+                raise ValueError('图68遍历方向不同')
+            close(result['relaxation'], 1., '松弛系数')
+            # Exact rational closed form for this two-cell zero-start control.
+            # Forward: e1=(1/16)^n, e2=-e1/4. The final reverse pass also
+            # updates e1=-e2/4, reducing e1 by 16 without another e2 update.
+            history = [[0., 0.]]
+            for n in range(1, 9):
+                error = Fraction(1, 16**n)
+                history.append([float(1+error/(16 if passes == 2 else 1)), float(Fraction(1, 4)-error/4)])
+            close(result['history'], history, name+'精确分数逐轮状态')
+            close(result['q'], history[-1], name+'末轮状态')
+            close(result['scan_residual_history'], np.asarray(history)@p.T-[17/16, .5], name+'扫描残差')
+        clean = data['rank_one_clean_sc']
+        exact_int(clean['completed_iterations'], 20, 'CLEAN轮数')
+        close(clean['damping'], .6, 'CLEAN扣除比例')
+        if len(clean['steps']) != 20:
+            raise ValueError('图68 CLEAN逐轮记录数量不同')
+        for n, step in enumerate(clean['steps'], 1):
+            power = 2*.4**(n-1)
+            exact_int(step['iteration'], n, 'CLEAN轮序')
+            exact_int(step['peak_index'], 0, 'CLEAN唯一峰格')
+            close(step['peak_power'], power, 'CLEAN扣除前功率')
+            close(step['allocated_power'], .6*power, 'CLEAN本轮分配')
+            close(step['residual_scan'], [2*.4**n], 'CLEAN扣除后扫描')
+            complex_close(step['h'], np.ones(2), 'CLEAN分量')
+            complex_close(step['component_csm'], power*np.ones((2, 2)), 'CLEAN分量CSM')
+        cumulative = 2*(1-.4**np.arange(1, 21))
+        close(data['rank_one_cumulative'], cumulative, 'CLEAN累计分配')
+        close(clean['clean_map'], [cumulative[-1]], 'CLEAN末轮累计图')
+        complex_close(clean['residual_csm'], 2*.4**20*np.ones((2, 2)), 'CLEAN末轮残余CSM')
+    elif number == 69:
+        gains = np.linspace(.4, 2.2, 61)
+        close(data['second_channel_gain'], gains, '已知增益控制')
+        close(data['uncalibrated_scan'], (1+gains)**2/4, '校准前扫描')
+        close(data['calibrated_scan'], np.ones(61), '校准后扫描')
+        close(data['unequal_amplitude_diagonal_controls'], [1., 8/25, 16/25, 1.], '不等幅删对角控制')
+        close(data['different_csm_objective_optima'], [41/25, 41/21, 87/35], '三种明确拟合目标')
+        close(data['intercept_prediction'], -8/5, '独立截距预期')
+        close(data['region_db_relative_to_one'],
+              [10*np.log10(5/4), 10*np.log10(25/16), -10*np.log10(2)], '线性量汇总后的dB')
+        if data['scope'] != 'analytic controls; default-intercept estimate is independent mathematics, not sklearn execution':
+            raise ValueError('图69截距执行范围说明不同')
+    else:
+        raise ValueError('unknown imaging figure identity')
+
+
+def check_imaging_figures(errors):
+    """Strictly read three reports, preserving every failed source/numeric check."""
+    for number, filename in IMAGING_FIGURE_REPORTS.items():
+        try:
+            _check_imaging_figure_report(ROOT/'codes/chapters/ch14/reports'/filename, number)
+        except (OSError, ValueError, KeyError, TypeError, IndexError) as error:
+            fail(errors, f'图{number}声学成像报告：{error}')
 
 
 def _check_engineering_limits_report(path):
@@ -873,8 +1071,8 @@ def _check_tracking_information_report(path):
 
 def check_site(errors: list[str]):
     pages = sorted(SITE.glob("*.html"))
-    if len(pages) != 14:
-        fail(errors, f"站点页面数应为 14，实际 {len(pages)}")
+    if len(pages) != 15:
+        fail(errors, f"站点页面数应为 15，实际 {len(pages)}")
     documents = {path.name: path.read_text(encoding="utf-8")
                  for path in CHAPTERS.glob("*.md")}
     source_by_page = {"index.html": "00_overview.md"}
@@ -930,16 +1128,8 @@ def check_site(errors: list[str]):
     # 研究目录与教程目录存在同名 index.html，须按完整目标路径查片段。
     check_site_links(errors)
 
-    ordered = ["index.html"] + [
-        f"{index:02d}_{slug}.html" for index, slug in (
-            (1, "problem-definition"), (2, "basics-signal-model"),
-            (3, "array-geometry"), (4, "doa-estimation"),
-            (5, "beamforming"), (6, "aec"), (7, "wpe-dereverberation"),
-            (8, "speech-separation"), (9, "source-tracking"),
-            (10, "engineering-practice"), (11, "selection-guide"),
-            (12, "appendix-symbols-math"), (13, "appendix-guide"),
-        )
-    ]
+    ordered = ["index.html"] + [name.replace(".md", ".html")
+        for name, _ in EXPECTED_CHAPTERS[1:]]
     for index, name in enumerate(ordered[1:], 1):
         page_text = (SITE / name).read_text(encoding="utf-8") if (SITE / name).exists() else ""
         match = re.search(r'<div class="pn">.*?href="([^"]+)".*?href="([^"]+)".*?</div>',
@@ -1067,7 +1257,7 @@ def check_combined_html(errors: list[str]):
     text = path.read_text(encoding="utf-8")
     if "file://" in text:
         fail(errors, "dist/combined.html 含 file:// 链接")
-    if re.search(r'href="(?:\./)?(?:0\d|1[0-3])_[^"]+\.html', text):
+    if re.search(r'href="(?:\./)?(?:\d{2})_[^"]+\.html', text):
         fail(errors, "dist/combined.html 含分篇 HTML 死链")
     if re.search(r"<blockquote>\s*</blockquote>", text, flags=re.S):
         fail(errors, "dist/combined.html 含空引用块，打印后会留下无文字色条")
@@ -1079,13 +1269,14 @@ def check_combined_html(errors: list[str]):
     expected_ids = set()
     expected_images = Counter()
     for index, (name, _label) in enumerate(EXPECTED_CHAPTERS):
-        expected_ids.add(f"ch-{index}")
+        chapter_id = "ch-" + str(int(name.split("_", 1)[0]))
+        expected_ids.add(chapter_id)
         section_level = 2 if name == "00_overview.md" else 3
         for level, _title, primary in semantic_heading_ids(documents[name]):
             if (level == section_level
                     or (name in EXPECTED_SUBSECTION_COUNTS
                         and level == section_level + 1)):
-                expected_ids.add(f"ch-{index}-{primary}")
+                expected_ids.add(f"{chapter_id}-{primary}")
         expected_images.update(
             f"../figures/{figure_name}"
             for _alt, figure_name, _number in extract_figure_references(documents[name])
@@ -1143,7 +1334,7 @@ def site_source_digest():
     paths += sorted(main_audio_path(CODE_CHAPTERS, record["group"], record["file"])
                     for record in manifest["files"])
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
@@ -1496,7 +1687,7 @@ def check_real_audio(errors):
         parser = VisibleMediaParser()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         allowed_audio_roots = ("../audio/", "../real_audio/", "../room_audio/",
-                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/", "../scenario_audio/", "../weighted_audio/", "../response_audio/")
+                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/", "../scenario_audio/", "../weighted_audio/", "../response_audio/", "../imaging_audio/")
         if any(not (p.get("src") or "").startswith(allowed_audio_roots)
                for p in parser.items):
             fail(errors, "未知试听控件来源")
@@ -2519,6 +2710,55 @@ def check_response_audio(errors):
         fail(errors, '独立同DRR频响音频：'+str(error))
 
 
+def check_imaging_audio(errors):
+    """Check published bytes and independently recover single-tone PCM CSMs."""
+    try:
+        import numpy as np
+        from codes.chapters.ch14.examples.generate_imaging_audio import check_assets
+        names = {'source_1.wav': 1, 'source_2_phase_code.wav': 1,
+                 'source_2_coherent.wav': 1, 'array_phase_code.wav': 2,
+                 'array_coherent.wav': 2}
+        source, published = IMAGING_AUDIO_ROOT, SITE / 'imaging_audio'
+        check_assets(source)
+        members = set(names) | {'MANIFEST.json'}
+        validate_asset_directory(published, members, check=True)
+        pcm = {}
+        for name in sorted(members):
+            if (source / name).read_bytes() != (published / name).read_bytes():
+                raise ValueError('imaging published bytes differ: ' + name)
+            if name.endswith('.wav'):
+                with wave.open(str(published / name), 'rb') as reader:
+                    if (reader.getnchannels(), reader.getsampwidth(), reader.getframerate(),
+                            reader.getnframes(), reader.getcomptype()) != (names[name], 2, 24000, 48004, 'NONE'):
+                        raise ValueError('imaging actual PCM format differs: ' + name)
+                    data = reader.readframes(48004)
+                pcm[name] = np.frombuffer(data, dtype='<i2').reshape(48004, names[name]).T / 32768.
+        def csm(signal):
+            phasors = []
+            for block in range(20):
+                indices = np.arange(2400 * block + 252, 2400 * block + 2160)
+                phasors.append(2 / 1908 * (signal[:, indices] @
+                    np.exp(-2j * np.pi * 2000 * indices / 24000)))
+            z = np.stack(phasors, axis=1)
+            return (z @ z.conj().T) / 40 / .02
+        a = np.array([[1, 1], [1, np.exp(-2j * np.pi / 3)]])
+        expected = {
+            'array_phase_code.wav': (a * np.array([1, .25])) @ a.conj().T,
+            'array_coherent.wav': np.outer(a @ np.array([1, .5]), (a @ np.array([1, .5])).conj()),
+        }
+        # Derived from half-PCM-step phasor error, 0.3 peak and fixed 0.02 scale.
+        error_bound = (2 * .3 / 32768 + 1 / 32768**2) / .02
+        for name, reference in expected.items():
+            actual = csm(pcm[name])
+            if np.max(np.abs(actual - reference)) > error_bound:
+                raise ValueError('imaging actual PCM CSM exceeds quantization bound: ' + name)
+        for page, prefix in ((SITE / '14_acoustic-imaging.html', ''),
+                             (SITE / 'research/05_exercises_and_audio.html', '../')):
+            _check_visible_audio(page, prefix, 'imaging_audio', set(names), {'MANIFEST.json'})
+    except (OSError, ValueError, KeyError, TypeError, wave.Error) as error:
+        fail(errors, '独立声学成像音频：' + str(error))
+
+
 def check_noise_audio(errors):
     """Independent actual integer scoring plus current-source replay and visibility."""
     import math
@@ -2850,6 +3090,7 @@ def main():
     notices: list[str] = []
     check_sources(errors, notices)
     check_figures(errors)
+    check_imaging_figures(errors)
     check_site(errors)
     check_research_site(errors)
     check_audio(errors)
@@ -2869,6 +3110,7 @@ def main():
     check_noise_audio(errors)
     check_weighted_audio(errors)
     check_response_audio(errors)
+    check_imaging_audio(errors)
     check_scenario_audio(errors)
     check_combined_html(errors)
     check_pdf(errors, notices)

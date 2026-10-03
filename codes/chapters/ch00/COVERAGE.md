@@ -9,7 +9,7 @@
 - **原理索引**：已有原理或来源依据，但尚未形成唯一、许可明确且承担对应计算的源码映射；代码可见而许可不明时也保留此状态，并说明原因。
 - **明确排除**：指定软件的身份或许可不满足本书当前收录方式；不表示删除相应方法的学术讨论。
 
-算法表共 309 行：本仓库可运行基线 59 行、外部参考实现 178 行、原理索引 71 行、明确排除 1 行。练习映射单独计数，不因题数增加算法行；MDL、功率谱减、受控 NCC 双讲检测与 cACGMM 教学迭代属于本地基线。覆盖表仍有原理索引，不表示全书全部算法已经运行。
+算法表共 311 行：本仓库可运行基线 63 行、外部参考实现 176 行、原理索引 71 行、明确排除 1 行。练习映射单独计数，不因题数增加算法行；MDL、功率谱减、受控 NCC 双讲检测与 cACGMM 教学迭代属于本地基线。覆盖表仍有原理索引，不表示全书全部算法已经运行。
 
 源码取得与入口核对见 [SOURCE_STATUS.json](SOURCE_STATUS.json)；该文件中的依赖验证和执行字段未开展时为 `not_run`，不承载方法级数值实验结果。实际运行及数值对照见[复现记录](research/04_source_reproduction.md)、[增强研究记录](research/02_aec_wpe_separation.md)和 [WPE 独立对照脚本](../ch07/examples/compare_wpe_reference.py)。工业接口与 SBL 的限定实验报告按主题放在 `codes/chapters/ch04/reports/`、`codes/chapters/ch10/reports/` 等对应章节；实际调用外部代码不将它改列为本仓库教学基线。覆盖状态不是测试结果。完整提交、官方地址、许可与来源 ID 见 [SOURCES.lock.json](SOURCES.lock.json)。表内本仓库教学源文件使用相对于仓库根目录的完整路径；第三方项目的内部路径仍相对于各自项目根目录。出现“同文件”时仅继承上一行文件，不继承其算法或验证结论。
 
@@ -156,10 +156,12 @@
 | 研究扩展：空间 §26 | 球谐 ESPRIT | 外部参考实现 | `spherical-array-processing`：`sphESPRIT.m` | 与阵元 ULA 结构不同 |
 | 研究扩展：空间 §27 | C/C++ 球阵编码块处理 | 外部参考实现 | `spatial-audio-framework`：`examples/src/array2sh/array2sh.c` | 核心 ISC、可选 GPL 模块与后端另核 |
 | 研究扩展：空间 §23 | Acoustic Rake | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/beamforming.py::rake_mvdr_filters` | 需要反射模型，不是通用去混响器 |
-| 研究扩展：空间 §28 | DAMAS | 外部参考实现 | `acoular`：`acoular/fbeamform.py::BeamformerDamas` | 输出功率图，依赖 PSF |
-| 研究扩展：空间 §29 | CLEAN-SC | 外部参考实现 | `acoular`：同文件 `BeamformerCleansc` | 减去量、停止与弱源保留 |
-| 研究扩展：空间 §30 | CMF | 外部参考实现 | `acoular`：同文件 `BeamformerCMF` | 约束、缩放与残差 |
-| 研究扩展：空间 §30 | SODIX | 外部参考实现 | `acoular`：同文件 `BeamformerSODIX` | 源强和指向性可辨识性 |
+| 专题Ⅰ §14.5、E14-03；空间 §28 | DAMAS 双向与前向教学控制 | 本仓库可运行基线 | `codes/chapters/ch14/core/imaging.py::damas_gauss_seidel`；外部 `acoular`：`BeamformerDamas`、`damasSolverGaussSeidel` | 原论文每轮前后扫；原Acoular仅前扫/dirty初值/单位对角；不保证唯一或等同残差NNLS |
+| 专题Ⅰ §14.6、E14-11；空间 §29 | 完整CSM CLEAN-SC | 本仓库可运行基线 | `codes/chapters/ch14/core/imaging.py::clean_sc_full_csm`；外部 `acoular`：`BeamformerCleansc` | 教学采用作者full-CSM式；原full支路单源20轮过量分配保留在合同；DR隐式式不混用 |
+| 专题Ⅰ §14.7、E14-12；空间 §30 | 原CMF与可选目标 | 外部参考实现 | `acoular`：`acoular/fbeamform.py::BeamformerCMF`；[限定合同](../ch14/reports/upstream_imaging_contracts.json) | 原字典已调用；半三角无√2与默认截距改变目标；sklearn估计器未执行，非原稀疏约束论文整链 |
+| 专题Ⅰ §14.5、E14-08 | 扫描域小系统NNLS | 本仓库可运行基线 | `codes/chapters/ch14/core/imaging.py::finite_nnls` | 至多8列活动集枚举和KKT；不反演441未知格；与DAMAS的目标和固定点不同 |
+| 专题Ⅰ §14.7、E14-12、E14-16 | 简化CSM拟合及已知白噪声辨识 | 本仓库可运行基线 | `codes/chapters/ch14/core/imaging.py::hermitian_real_vector`、`single_source_csm_fit`、`finite_nnls` | 完整Frobenius和有限非负小系统；单源/白噪声LS无约束、另报告非负性；不含原CMF全部稀疏约束；一麦源噪声拆分不可辨 |
+| 研究扩展：空间 §30 | SODIX | 外部参考实现 | `acoular`：`acoular/fbeamform.py::BeamformerSODIX` | 源强和指向性可辨识性 |
 | 研究扩展：空间 §30 | 移动源时域声学成像 | 外部参考实现 | `acoular`：`acoular/tbeamform.py` | 轨迹/传播真值，不直接输出增强语音 |
 | 研究扩展：空间近年候选 | ASA 注意力空间协方差聚合（2024） | 原理索引 | Tammen 等 Interspeech 2024 原论文 | 注意力帧权重与通道不变性；未核实作者代码，不冒充已复现 |
 | 研究扩展：空间近年候选 | iDeepPE 参数估计与后滤融合（2025） | 原理索引 | `ideeppe`固定索引：`evaluate.py` | 未建立代码许可，不获取；默认非因果噪声估计，oracle训练准备不等于推理 |
@@ -388,10 +390,11 @@
 
 ## 章节代码练习与音频映射
 
-292 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 309 行算法统计。补充的空间精算、增强步骤、时间状态模块分别提供3/5/4道题。三个原有 `exercises_` 模块各自提供 `run_exercises()`，分别有 28/23/25 道题；AEC 小实验另有 4 道，进阶 AEC 手算另有 10 道；E03-07、E04-08、E09-06 与 E10-13 由独立实验入口提供。E04-08 的 200 次独立双源抽样只说明固定模型中的分辨事件频率和 Wilson 区间。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
+308 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 311 行算法统计。补充的空间精算、增强步骤、时间状态模块分别提供3/5/4道题。三个原有 `exercises_` 模块各自提供 `run_exercises()`，分别有 28/23/25 道题；AEC 小实验另有 4 道，进阶 AEC 手算另有 10 道；E03-07、E04-08、E09-06 与 E10-13 由独立实验入口提供。E04-08 的 200 次独立双源抽样只说明固定模型中的分辨事件频率和 Wilson 区间。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
 
 | 章节与稳定 ID | 练习入口 | 回归测试 |
 |---|---|---|
+| 扩展专题Ⅰ：E14-01～16（16题） | [成像逐层复算](../ch14/chapter14_exercises.py)、[五份快拍音频](../ch14/imaging_audio/MANIFEST.json)、[原源合同](../ch14/reports/upstream_imaging_contracts.json) | [独立教学/PCM测试](../../../tests/test_codes_imaging.py)、[原源和目标测试](../../../tests/test_codes_imaging_contracts.py) |
 | 第6章：E06-34～39（6题） | [APA五个完整缩例](../ch06/aec_affine_projection_demo.py)、[有色参考训练/留出](../ch06/examples/generate_apa_audio.py) | [状态/手算测试](../../../tests/test_codes_aec_affine_projection.py)、[PCM实验测试](../../../tests/test_codes_aec_apa_audio.py) |
 | 第 6 章：E06-22～33（12题） | [AEC 状态、数值与指标实验](../ch06/chapter06_experiments.py) | [独立测试](../../../tests/test_codes_chapter06_experiments.py)、[数值边界](../../../tests/test_codes_aec_numerical_boundaries.py) |
 | 第 5 章：E05-08～22（15题） | [约束、谱估计与状态实验](../ch05/chapter05_experiments.py) | [独立测试](../../../tests/test_codes_chapter05_experiments.py)、[GSC状态测试](../../../tests/test_codes_gsc.py) |
@@ -450,7 +453,7 @@
 本仓库不提交下载缓存、模型权重或未经授权的第三方语料。109 个自行合成的教学 WAV 按章放在 `codes/chapters/*/audio/`，单一总清单位于 `codes/chapters/ch00/audio/MANIFEST.json`；许可明确的 DEMAND 小型摘录和派生文件位于 `codes/chapters/ch02/real_audio/`，不包含完整下载归档。独立上游工作目录的取得、许可保留与未执行项目按来源状态记录报告。算法、源码或排除范围变化时，同步修改本表、研究说明、来源清单和真实验证记录。
 
 
-真实数据练习 R01 使用 [prepare_real_recordings.py](../ch02/examples/prepare_real_recordings.py) 与 [real_recordings.py](../ch02/core/real_recordings.py)，测试见 [test_codes_real_recordings.py](../../../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 292 道合成/手算代码题。数据来源和许可另见 [real_audio/](../ch02/real_audio/README.md)。
+真实数据练习 R01 使用 [prepare_real_recordings.py](../ch02/examples/prepare_real_recordings.py) 与 [real_recordings.py](../ch02/core/real_recordings.py)，测试见 [test_codes_real_recordings.py](../../../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 308 道合成/手算代码题。数据来源和许可另见 [real_audio/](../ch02/real_audio/README.md)。
 
 四组模型与边界练习对应以下独立实现；主音频新增的 4 个 interpolation 文件验证固定滤波误差，不是完整采样率转换性能。
 

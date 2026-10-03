@@ -4,7 +4,7 @@
 
 正文提供关键公式推导、可复算例子、适用边界，以及与各章公式对应的 NumPy/标准库教学代码。
 
-全书有 292 道可运行代码练习、66 张脚本生成的图，以及 27 组共 109 个[主清单合成 WAV](codes/chapters/ch00/audio/MANIFEST.json)。[练习与音频实验手册](codes/chapters/ch00/research/05_exercises_and_audio.md)逐题列出输入、答案、试听条件与代码入口。音频是数学合成样本，不是真实语音或正式听测；第 6 章两组合成 AEC 音频的参数也不完全等同于 E06-07～20 手算题。
+全书有 308 道可运行代码练习、69 张脚本生成的图，以及 27 组共 109 个[主清单合成 WAV](codes/chapters/ch00/audio/MANIFEST.json)。[练习与音频实验手册](codes/chapters/ch00/research/05_exercises_and_audio.md)逐题列出输入、答案、试听条件与代码入口。音频是数学合成样本，不是真实语音或正式听测；第 6 章两组合成 AEC 音频的参数也不完全等同于 E06-07～20 手算题。
 
 第四章另有[四份已知酉聚焦合成WAV](codes/chapters/ch04/focus_audio/MANIFEST.json)：用稳定窗逐频复幅度与实际PCM检查相干双源的多频协方差秩；指定角度和频率分量已知，不作为盲定位或正式听测结果。
 
@@ -32,13 +32,15 @@
 
 English version: [README_EN.md](README_EN.md)
 
+扩展专题Ⅰ另有[五份成像快拍WAV](codes/chapters/ch14/imaging_audio/MANIFEST.json)：同源、共同增益1、完整4点传播尾，比较指定快拍集交叉项抵消与完全相干。实际PCM、浮点和解析CSM分开；播放混合不能证明源强反演正确。
+
 ## 目录结构
 
 | 目录/文件 | 说明 |
 |---|---|
-| `chapters/` | 教程正文 14 篇 Markdown（`00_overview.md` 是入口，`01`～`11` 是 11 章正文，`12`/`13` 是附录 A/B） |
-| `figures/` | 66 张插图（`fig01`～`fig66_*.png`），全部由脚本生成、可复现 |
-| `codes/chapters/` | 导读、第 1～11 章及附录 A/B 的源码、实验、报告和资产；逐章目录与命令见[代码地图](codes/chapters/README.md) |
+| `chapters/` | 教程正文 15 篇 Markdown（`00_overview.md` 是入口，`01`～`11` 是 11 章正文，`14` 是扩展专题Ⅰ，`12`/`13` 是附录 A/B；阅读顺序以导航为准） |
+| `figures/` | 69 张插图（`fig01`～`fig69_*.png`），全部由脚本生成、可复现 |
+| `codes/chapters/` | 导读、第 1～11 章、扩展专题Ⅰ及附录 A/B 的源码、实验、报告和资产；逐章目录与命令见[代码地图](codes/chapters/README.md) |
 | `codes/chapters/ch00/audio/MANIFEST.json`、各章 `audio/` | 主清单统一管理 27 组、109 个按章节存放的本书合成 WAV；由脚本生成，不直接编辑 |
 | `codes/chapters/ch01/binaural_audio/`、`codes/chapters/ch08/gss_audio/`、`codes/chapters/ch09/moving_audio/`、`codes/chapters/ch09/tracking_audio/`、`codes/chapters/appendix_b/room_audio/` | 五套独立合成实验资产，分别为 5、5、3、2、18 个 WAV；中间状态、轨迹/逐帧观测或房间数值报告随各自清单保存 |
 | `codes/chapters/ch02/stft_audio/`、`codes/chapters/ch03/geometry_audio/` | 另外两套独立合成实验，各3个WAV；完整卷积与稳定窗多频相位分别评分，生成源和PCM摘要随各自清单保存 |
@@ -49,14 +51,15 @@ English version: [README_EN.md](README_EN.md)
 | `codes/chapters/appendix_b/response_audio/` | 五份同DRR已知短FIR频响对照WAV；四真实生成源、完整尾部、共同增益与实际PCM整数评分 |
 | `codes/chapters/ch08/mask_audio/`、`codes/chapters/ch10/noise_audio/` | 两套独立数学合成实验，各6个WAV；已知掩码表示与固定噪声估计失配分别记录解析、浮点和实际PCM评分 |
 | `codes/chapters/ch11/scenario_audio/`、`codes/chapters/appendix_a/weighted_audio/` | 选型场景8个WAV与已知噪声加权5个WAV；各有独立清单、共同增益、评分窗和整数分母 |
+| `codes/chapters/ch14/imaging_audio/` | 五份独立24kHz成像快拍WAV，真实源摘要、48004点完整记录及38160点评分快拍集随清单保存 |
 | `codes/chapters/ch00/io_contracts.py` | 生成器和源码获取工具共用的文件路径、普通成员、严格JSON及报告写入检查；数值模型和各资产清单仍由所属章维护 |
 | `codes/chapters/ch02/real_audio/` | DEMAND 真实同步录音摘录、派生均值、独立清单与数据许可；不是合成数据 |
 | `codes/chapters/ch00/research/` | 详细源码研究手册：算法步骤、状态与配置、代码入口、失败实验和工业复现 |
 | `codes/chapters/ch00/upstream/_downloads/` | 本机按需取得的第三方源码缓存，已被 Git 忽略；可能含本地修改，不属于本书提交的文档或教学代码，取得与核验方法见[源码获取说明](codes/chapters/ch00/upstream/README.md) |
 | `codes/chapters/*/reports/` | 随算法所属章保存的小规模运行报告；与源码获取状态、论文全量评测分开 |
 | `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
-| `site/` | 20 个网页：14 个教程页（含首页）及 `research/` 下 6 个研究手册页；构建产物，可再生 |
-| `dist/` | [当前合订 PDF](dist/microphone-array-tutorial.pdf) 与可再生的合订 HTML；PDF 含 14 个顶级、121 个二级、570 个三级书签，共 705 个 |
+| `site/` | 21 个网页：15 个教程页（含首页）及 `research/` 下 6 个研究手册页；构建产物，可再生 |
+| `dist/` | [当前合订 PDF](dist/microphone-array-tutorial.pdf) 与可再生的合订 HTML；PDF 含 15 个顶级、135 个二级、631 个三级书签，共 781 个 |
 
 ## 章节导览
 
@@ -74,6 +77,7 @@ English version: [README_EN.md](README_EN.md)
 | 第 9 章 | `chapters/09_source-tracking.md` | KF 手算、粒子滤波、PHD 多目标、定位—追踪—波束接口 | 进阶 |
 | 第 10 章 | `chapters/10_engineering-practice.md` | 参考链路、关键路径延迟、SRO/标定、资源预算与评测 | 进阶 |
 | 第 11 章 | `chapters/11_selection-guide.md` | 条件化选型、场景约束、可验证规格与练习 | 入门 |
+| 专题Ⅰ | `chapters/14_acoustic-imaging.md` | CSM、球面扫描、PSF、DAMAS/CLEAN-SC/简化CMF、校准与区域量；16道逐步代码题 | 较难 |
 | 附录 A | `chapters/12_appendix-symbols-math.md` | 符号表、术语定义、预备数学速览 | 查阅 |
 | 附录 B | `chapters/13_appendix-guide.md` | 学习路径、领域地图、研究前沿、排错、17 道综合书面题与 E13-01～14 代码题、复现说明 | 查阅 |
 
@@ -96,7 +100,7 @@ python3 -m venv .venv
 .venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 
-# 3. 先生成 109 个音频，再生成 66 张图（图 34～36、40～41、43～45、47、49、58～60、63～66 读取生成的音频）
+# 3. 先生成 109 个音频，再生成 69 张图（图 34～36、40～41、43～45、47、49、58～60、63～66 读取生成的音频）
 .venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
 .venv/bin/python -m codes.chapters.ch06.examples.generate_apa_audio
 .venv/bin/python -m codes.chapters.ch07.examples.mint_teaching_demo
@@ -105,6 +109,7 @@ python3 -m venv .venv
 .venv/bin/python -m codes.chapters.ch11.examples.generate_selection_audio  # 8 份独立场景 WAV；--check 只核对
 .venv/bin/python -m codes.chapters.appendix_a.examples.generate_weighted_audio  # 5 份独立已知噪声权重 WAV；--check 只核对
 .venv/bin/python -m codes.chapters.appendix_b.examples.generate_response_audio  # 5 份独立同DRR频响对照 WAV；--check 只核对
+.venv/bin/python -m codes.chapters.ch14.examples.generate_imaging_audio  # 五份快拍WAV；--check只读
 .venv/bin/python scripts/make_figures.py
 .venv/bin/python scripts/make_aec_figures.py
 

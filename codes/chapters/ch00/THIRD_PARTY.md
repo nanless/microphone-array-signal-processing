@@ -60,7 +60,7 @@ SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构�
 | [libmysofa](https://github.com/hoene/libmysofa/tree/6cc5b15a73e9bd97810d03767082edda7f315881) | SOFA读取、HRIR方向插值与归一化接口 | BSD-3-Clause，第三方源码声明分别保留 | 已取得源码子集；已在临时隔离构建中调用原loudness/tools的归一化方法，两人工输入及零能量退化见[当前报告](../ch01/reports/libmysofa_loudness.json)；未运行SOFA解析、插值或完整渲染，不含测量数据 |
 | [pyfar](https://github.com/pyfar/pyfar/tree/0bfe1e8b7d71ab83edd3ea3b5fab7b28761d114a) | 指数扫频、频带受限谱反卷积、信号与频谱单位接口 | MIT，保留作者声明；测量数据许可另核 | v0.8.1固定源码已取得；未安装、未运行或实机测量 |
 | [frida-original](https://github.com/LCAV/FRIDA/tree/ff5d51e498805b862c342dd216ccfffb22444b7f) | FRIDA 原论文仿真和录音实验 | MIT | 已取得独立源码 |
-| [acoular](https://github.com/acoular/acoular/tree/13d3d7df74ac1a8135c7ec71da098cbbc03d8652) | DAMAS、CLEAN-SC、CMF 与移动声源成像 | BSD-3-Clause | 已取得独立源码 |
+| [acoular](https://github.com/acoular/acoular/tree/13d3d7df74ac1a8135c7ec71da098cbbc03d8652) | DAMAS、CLEAN-SC、CMF 与移动声源成像 | BSD-3-Clause | 已取得独立源码 ；完整选集不匹配与本轮所用原文件身份分开；21项限定原方法控制保留8项目标差异，CMF估计器未运行，见[成像合同](research/01_spatial_and_tracking.md#imaging-contract-audit) |
 | [lib-voice](https://github.com/xmos/lib_voice/tree/c9f1a9bf95cd88c7950adf4bf631c217f900ad25) | XMOS AEC、IC、NS、AGC 语音前端 | XMOS Public Licence v1 | 已取得独立源码 |
 | [sof](https://github.com/thesofproject/sof/tree/b6c6a05d52536313fe8e8752b1c4e069b1cc4002) | DSP 固件、拓扑与音频缓冲 | BSD-3-Clause and per-file licenses | 已取得独立源码 |
 | [alsa-lib](https://github.com/alsa-project/alsa-lib/tree/f84cd4ced7b36fddb8e4ee24404cf7c091d27020) | PCM 设备、采样格式及环形缓冲 | LGPL-2.1; see individual file notices | 已取得独立源码 |

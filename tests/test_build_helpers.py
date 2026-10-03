@@ -511,14 +511,14 @@ class BuildHelpersTest(unittest.TestCase):
             title = positives[0][0]
             subtitle = positives[1][0]
             (source / filename).write_text(
-                '# 夹具\n\n## ' + title + '\n\n### ' + subtitle +
-                '\n\n`E11-15.py` 与 $x^H x$ 保留。\n\n## codes/E11-15/chapter.py\n\n末段保留。\n' +
-                '\n'.join('\n## ' + negative + '\n\n反例正文保留。\n'
+                '## 夹具\n\n### ' + title + '\n\n#### ' + subtitle +
+                '\n\n`E11-15.py` 与 $x^H x$ 保留。\n\n### codes/E11-15/chapter.py\n\n末段保留。\n' +
+                '\n'.join('\n### ' + negative + '\n\n反例正文保留。\n'
                           for negative in negatives[-11:]),
                 encoding='utf-8')
             with mock.patch.object(build_pdf, 'SRC', source), \
                     mock.patch.object(build_pdf, 'CHAPTERS', [(filename, '选型夹具')]), \
-                    mock.patch.object(build_pdf, 'PDF_THIRD_LEVEL_CHAPTER_IDS', {'ch-0'}), \
+                    mock.patch.object(build_pdf, 'PDF_THIRD_LEVEL_CHAPTER_IDS', {'ch-11'}), \
                     mock.patch.object(build_pdf, 'source_digest', return_value='fixture'), \
                     mock.patch.object(build_pdf, 'check_mathjax_assets'), \
                     mock.patch('sys.stdout', new=io.StringIO()):
@@ -540,6 +540,39 @@ class BuildHelpersTest(unittest.TestCase):
         self.assertEqual([span.text for link in actual_links for span in link.findall('span')],
                          ['E11-15', 'E11-14', 'E11-15'])
         self.assertEqual(actual.split('</section>', 1)[1], baseline.split('</section>', 1)[1])
+
+    def test_inserted_topic_keeps_appendix_heading_and_exercise_identity(self):
+        """Reading order changes cannot retarget already-published ch-12 links."""
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory)
+            names = ('00_overview.md', '14_acoustic-imaging.md',
+                     '12_appendix-symbols-math.md', '13_appendix-guide.md')
+            (source / names[0]).write_text('# 导读\n\n## 路径\n\n末段。\n')
+            (source / names[1]).write_text(
+                '## 专题\n\n### 14.1 模型\n\n'
+                '[旧附录](12_appendix-symbols-math.html#e12-01)\n\n末段。\n')
+            (source / names[2]).write_text(
+                '## 数学\n\n### 12.1 原主题\n\n<a id="e12-01"></a>\n\n末段。\n')
+            (source / names[3]).write_text('## 路径\n\n### 13.1 原路径\n\n末段。\n')
+            chapters = [(name, name) for name in names]
+            with mock.patch.object(build_pdf, 'SRC', source), \
+                    mock.patch.object(build_pdf, 'CHAPTERS', chapters), \
+                    mock.patch.object(build_pdf, 'source_digest', return_value='fixture'), \
+                    mock.patch.object(build_pdf, 'check_mathjax_assets'), \
+                    mock.patch('sys.stdout', new=io.StringIO()):
+                page, outline = build_pdf.build_html('2026-10-04')
+            self.assertEqual([item[1] for item in outline],
+                             ['ch-0', 'ch-14', 'ch-12', 'ch-13'])
+            self.assertIn('id="ch-12-sec-12-1"', page)
+            self.assertIn('id="ch-12-e12-01"', page)
+            self.assertIn('href="#ch-12-e12-01"', page)
+            self.assertNotIn('id="ch-2-sec-12-1"', page)
+            self.assertIn('全书完', page)
+            documents = {name: (source / name).read_text() for name in names}
+            with mock.patch.object(quality_check, 'EXPECTED_CHAPTERS', chapters):
+                expected = quality_check.expected_outline_heading_ids(documents)
+            self.assertEqual([ids[0] for ids in expected],
+                             ['ch-0', 'ch-14', 'ch-12', 'ch-13'])
 
     def test_outline_restores_sections(self):
         html = (
@@ -878,10 +911,10 @@ class BuildHelpersTest(unittest.TestCase):
         )
 
     def test_figure_semantics_accept_any_reuse_and_reject_mismatch_or_orphan(self):
-        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 67)]
+        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 70)]
         refs.extend([("图1 复用", "fig01_x.png", 1),
                      ("图23 复用", "fig23_x.png", 23)])
-        names = [f"fig{i:02d}_x.png" for i in range(1, 67)]
+        names = [f"fig{i:02d}_x.png" for i in range(1, 70)]
         self.assertEqual(quality_check.figure_inventory_issues(refs, names), [])
         bad_refs = list(refs)
         bad_refs[0] = ("图2 错配", "fig01_x.png", 1)

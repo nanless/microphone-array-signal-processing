@@ -65,11 +65,11 @@ class ResearchQualityTests(unittest.TestCase):
         self.assertEqual(self.issues(), [])
 
     def test_explicit_baselines_preserve_tutorial_pdf_and_figure_counts(self):
-        self.assertEqual(quality.EXPECTED_CHAPTER_COUNT, 14)
-        self.assertEqual(quality.EXPECTED_SECTION_COUNT, 121)
-        self.assertEqual(quality.EXPECTED_SUBSECTION_COUNT, 570)
-        self.assertEqual(quality.EXPECTED_OUTLINE_ITEM_COUNT, 705)
-        self.assertEqual(quality.EXPECTED_FIGURE_NUMBERS, set(range(1, 67)))
+        self.assertEqual(quality.EXPECTED_CHAPTER_COUNT, 15)
+        self.assertEqual(quality.EXPECTED_SECTION_COUNT, 135)
+        self.assertEqual(quality.EXPECTED_SUBSECTION_COUNT, 631)
+        self.assertEqual(quality.EXPECTED_OUTLINE_ITEM_COUNT, 781)
+        self.assertEqual(quality.EXPECTED_FIGURE_NUMBERS, set(range(1, 70)))
         self.assertEqual(quality.EXPECTED_RESEARCH_PAGE_COUNT, 6)
         self.assertEqual(quality.EXPECTED_RESEARCH_PAGES, (
             ("README.md", "index.html"),
@@ -159,7 +159,7 @@ class PublishedResearchQualityTests(unittest.TestCase):
         self.assertEqual(quality.collaboration_baseline_issues(current), [])
         self.assertEqual(quality.collaboration_baseline_issues("历史记录196/329。\n" + current), [])
         self.assertTrue(quality.collaboration_baseline_issues(current.replace("个章级", "个旧章级")))
-        self.assertTrue(quality.collaboration_baseline_issues(current.replace("14 个章级", "13 个章级")))
+        self.assertTrue(quality.collaboration_baseline_issues(current.replace("15 个章级", "14 个章级")))
         self.assertTrue(quality.collaboration_baseline_issues(current + "\n" + current))
 
     def test_independent_source_digests_match_publishers(self):

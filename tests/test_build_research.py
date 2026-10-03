@@ -172,9 +172,9 @@ class ResearchBuildTest(unittest.TestCase):
     def render(self, markdown, source):
         return build_site.render(markdown, source)[0]
 
-    def test_explicit_page_map_has_14_tutorial_and_6_research_pages(self):
+    def test_explicit_page_map_has_15_tutorial_and_6_research_pages(self):
         paths = list(build_site.source_outputs().values())
-        self.assertEqual(len(paths), 20)
+        self.assertEqual(len(paths), 21)
         self.assertEqual(sum(path.startswith("research/") for path in paths), 6)
         self.assertEqual(build_site.source_outputs()[RESEARCH / "README.md"], "research/index.html")
 
@@ -363,15 +363,26 @@ class ResearchBuildTest(unittest.TestCase):
                 with self.subTest(mint_asset=name):
                     self.assertEqual((output / "mint_audio" / name).read_bytes(),
                                      (mint_source / name).read_bytes())
+            imaging_source = ROOT / "codes/chapters/ch14/imaging_audio"
+            imaging_names = {"source_1.wav", "source_2_phase_code.wav", "source_2_coherent.wav",
+                             "array_phase_code.wav", "array_coherent.wav", "MANIFEST.json"}
+            self.assertEqual({path.name for path in imaging_source.iterdir()}, imaging_names)
+            self.assertEqual({path.name for path in (output / "imaging_audio").iterdir()}, imaging_names)
+            for name in imaging_names:
+                with self.subTest(imaging_asset=name):
+                    self.assertTrue((output / "imaging_audio" / name).is_file())
+                    self.assertEqual((output / "imaging_audio" / name).read_bytes(),
+                                     (imaging_source / name).read_bytes())
             for path in output.rglob("*.html"):
                 parser = Links()
                 parser.feed(path.read_text(encoding="utf-8"))
                 pages[path.resolve()] = parser
-            self.assertEqual(len(pages), 20)
+            self.assertEqual(len(pages), 21)
             room_links = set()
             room_images = set()
             apa_links = set()
             mint_links = set()
+            imaging_links = set()
             for path, parsed in pages.items():
                 if path.parent.name == "research":
                     self.assertIn("../index.html", parsed.hrefs)
@@ -389,6 +400,13 @@ class ResearchBuildTest(unittest.TestCase):
                             self.assertEqual(target.read_bytes(), (room_source / target.name).read_bytes())
                             self.assertFalse(uri.fragment)
                             room_links.add(target.name)
+                            continue
+                        if target.parent == (output / "imaging_audio").resolve():
+                            self.assertIn(target.name, imaging_names)
+                            self.assertTrue(target.is_file())
+                            self.assertEqual(target.read_bytes(), (imaging_source / target.name).read_bytes())
+                            self.assertFalse(uri.fragment)
+                            imaging_links.add(target.name)
                             continue
                         if target.parent == (output / "real_audio").resolve():
                             self.assertIn(target.name, {
@@ -463,6 +481,7 @@ class ResearchBuildTest(unittest.TestCase):
             self.assertEqual(room_images, {"ROOM_RESULTS.png"})
             self.assertEqual(apa_links, apa_names)
             self.assertEqual(mint_links, mint_names)
+            self.assertEqual(imaging_links, imaging_names)
 
 
 if __name__ == "__main__":

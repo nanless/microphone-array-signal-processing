@@ -1314,3 +1314,58 @@ FFT 接口约定由 [NumPy `rfft`](https://numpy.org/doc/stable/reference/genera
 ## 收录边界
 
 除 §19 已逐项列出的 SBL 与 RobustSBL 外，其他稀疏贝叶斯变体、原子范数、完整最坏情形稳健波束以及本文未逐项收录的神经定位方法，仍需要逐论文确认代码与模型；不能用同名 GitHub 搜索结果替代作者来源。本文已分别记录实际取得的外部实现、官方实现存在但再分发许可未建立的索引、只核实到原理的算法和版本疑点。深度波束与 WPD 的完整增强链、分离及神经噪声抑制见本目录其他研究文档；同一函数在多个算法条目中被调用，不等于取得了多套独立工程系统。本次没有声称穷尽定位算法领域。
+
+
+<a id="imaging-contract-audit"></a>
+
+## 声学成像：原始方法、固定源码与实际执行边界
+
+对应[扩展专题Ⅰ](../../../../chapters/14_acoustic-imaging.md)，完整输入、推导和16道分步题在那里展开。本节用于选择原始资料、定位源码接口和区分实际执行范围。声学成像输出频率与空间网格上的源量估计；它与输出目标语音波形的增强链具有不同的输出合同。
+
+### 原始资料怎样连接到实现
+
+| 原始资料 | 本轮读取的位置与模型 | 正文采用与边界 |
+|---|---|---|
+| [Brooks、Humphreys，AIAA 2004-2954 DAMAS 原文](https://ntrs.nasa.gov/api/citations/20080015889/downloads/20080015889.pdf) | 非相干源、扫描图与点扩散矩阵、非负迭代；原外层迭代包括前向和反向扫描 | 保留一般对角除法与两种轮次；NASA 重印记录年份不改写为论文首次年份。DAMAS 截断更新不能直接称为最小化扫描平方残差的 NNLS |
+| [Sijtsma，NLR-TP-2007-345](https://reports.nlr.nl/server/api/core/bitstreams/813b0521-b37c-4aff-be61-7a8bceaa06d4/content) | §4.6 式(32)～(34) 的完整CSM分量剥离，与删对角后需要额外迭代的分支分开 | 正文实现作者 full-CSM 教学式，推导剩余矩阵的半正定条件；扣出的相干分量不自动等于一个真实源 |
+| [Yardibi 等，2008](https://doi.org/10.1121/1.2896754) | §V 式(22) 含非负源量、非负噪声量与源量总和约束；相关源扩展改变模型 | 本书小型无噪声/已知白噪声拟合只用于目标比较，不称为完成原 CMF-C 或全部约束优化 |
+| [Chardon、Picheral、Ollivier，DAMAS 与协方差拟合分析](https://gilleschardon.fr/papers/damascmf.pdf) | 比较 DAMAS 的二次型驻点和协方差残差，等价性需要相应 Gram 模型 | 明确扫描 NNLS、DAMAS 更新与完整CSM拟合的目标差别，不由同名变量或非负输出推断等价 |
+| [Sarradj，BeBeC-2012-11](https://www.bebec.eu/fileadmin/bebec/downloads/bebec-2012/papers/BeBeC-2012-11.pdf)；[2012 期刊论文](https://doi.org/10.1155/2012/292695) | 三维位置和不同导向归一化的量纲与峰行为 | 采用球面传播与显式源参考位置；单位响应不意味着多源混合峰必在真位置。两篇原文分别引用 |
+| [NASA 2017 阵列校准报告](https://ntrs.nasa.gov/api/citations/20170006081/downloads/20170006081.pdf) | 通道、阵列几何及测量环境的校准条件 | 工业配置须保存幅相校准、温度、流动与坐标条件；本书数字WAV不能证明绝对声压校准 |
+
+### 固定 Acoular 26.08 的源码身份
+
+原项目为[Acoular](https://github.com/acoular/acoular/tree/13d3d7df74ac1a8135c7ec71da098cbbc03d8652)，固定提交 `13d3d7df74ac1a8135c7ec71da098cbbc03d8652`，BSD-3-Clause。已有下载缓存位于 `codes/chapters/ch00/upstream/_downloads/acoular/`，由来源锁表管理，不把忽略缓存重复提交到本书树。许可文件SHA-256为 `b5bc3bfa7c76d388170a8f29f8dc3047bc3ca0abcd3160781f4ec54d3e95f69f`。
+
+[本轮合同工具](../../ch14/examples/audit_upstream_imaging_contracts.py)在执行前后分别核官方origin、固定HEAD、所用文件的原Git blob和SHA、普通文件身份与工作区洁净。`fbeamform.py`、`fastFuncs.py`、`spectra.py`、`version.py`和LICENSE逐项身份随[当前实际报告](../../ch14/reports/upstream_imaging_contracts.json)保存。完整来源选集仍为 `source_selection_mismatch`，这是获取范围状态；所用原文件身份通过不把完整选集改成成功。
+
+本轮有限调用采用原AST方法体，移除JIT装饰器，以协议对象代替Traits构造，自定义网格驱动代替原JIT分派，NumPy FFT代替SciPy FFT。原数学方法体没有修补；这些调用没有覆盖完整包、Numba并行、HDF5缓存、完整风洞数据链或CMF估计器。工具默认只读stdout，显式 `--report` 才写当前报告。
+
+```bash
+.venv/bin/python -m codes.chapters.ch14.examples.audit_upstream_imaging_contracts
+.venv/bin/python -m codes.chapters.ch14.examples.audit_upstream_imaging_contracts --report codes/chapters/ch14/reports/upstream_imaging_contracts.json
+.venv/bin/python -m unittest tests.test_codes_imaging_contracts -v
+```
+
+### 二十一项限定控制的实际结果
+
+报告记录21项数值控制：13项与所声明的独立目标一致，8项观察到原实现行为与比较目标不同；另有1个CMF估计器未运行。审计完成不代表21项都是方法正确性通过。下表保留重要差别及其使用条件。
+
+| 合同 | 实际原方法结果与独立控制 | 使用限制 |
+|---|---|---|
+| 完整CSM扫描与PSF | 两格PSF为 `[[1,.25],[.25,1]]`；原DAMAS类由扫描图初始化，前向20次得到本控制源量 `(1,.2)` | 正文部分例采用零初始化和 `(1,.25)`，不能把不同输入或双向轮次混作同一运行记录 |
+| GS与扫描NNLS | `b=(1,0)` 时原截断GS为 `(1,0)`，平方残差 `1/16`；独立扫描NNLS为 `(16/17,0)`，残差 `1/17` | 这是目标差异，不凭非负输出称原GS实现了扫描NNLS |
+| 原full CLEAN-SC | `C=2·ones(2,2)`、扣除比例 `.6`：2步原输出 `2.10176635`，作者full式 `1.68`；20步原输出 `4.81250286`，作者式 `1.99999998` | 原 `r_diag=False` 仍保留删对角分量的内部迭代。上游不改写，正文使用作者full式；原 `r_diag=True` 对称限定控制一致，不推广到任意输入 |
+| 对角删除与裁零 | 本控制原输出 `(.9,0)`，第二格裁零前为 `−.3` | 裁零会隐藏负扫描量；不证明删对角观测仍是正定功率矩阵 |
+| CMF半三角目标 | `a=(1,2)`、`R=diag(1,10)`，原字典的未加权半三角独立最优为 `41/21`；完整Frobenius目标为 `41/25` | 原字典非对角实虚分量没有√2权重。只执行原字典/观测向量方法，未执行原估计器 |
+| CMF默认截距 | 固定源码构造 `LinearRegression(positive=True)`，未显式取消默认截距；含截距数学解 `87/35`、截距 `−8/5` | [官方接口](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html)默认 `fit_intercept=True`。本环境没有sklearn，数字是独立数学预期，不能写为原估计器实测 |
+| 谱完整帧数 | 128点内部整数频余弦原积分 `.5`；200点记录实际只消费一帧，原除数1.5625导致积分 `.32` | 评分按实际完整帧数；没有把部分尾帧当完整帧运行 |
+| 单边谱端点 | 同128点矩形窗的单位DC和Nyquist信号，原积分均2，时域均方均1 | 端点不能使用内部正频率的翻倍因子；未以更改上游掩盖结果 |
+
+独立合同测试还覆盖错误origin、HEAD、文件摘要、脏工作区、路径与报告写入边界。测试使用本地Git夹具；原实际数值结果由工具调用取得，不用夹具成功替代外部运行。
+
+### 工业入口与先进方法怎样继续研究
+
+固定源码中的风洞入口为 `examples/wind_tunnel_examples/example_airfoil_in_open_jet_freq_domain_methods.py`，另有CMF、导向与区域选择示例。工业复现应保存测量通道次序、校准文件、CSM窗与完整帧计数、网格/声源参考、剪切层或流动模型、对角处理、正则与区域积分。源码的下载入口使用浮动分支，配套数据许可须独立核实；本轮未取得风洞数据或运行该整链，不记录设备性能排名。
+
+DAMAS-C/CMF-C用于允许源间相关的模型，HR-CLEAN-SC关注多个分量与峰选择，SODIX引入不同的源表示和约束，移动/旋转源还需要运动轨迹与接收时刻模型。它们应逐一核观测、目标与额外假设，不能只更换算法名就沿用本章非相干PSF矩阵。上述扩展本轮仅保留研究入口，没有宣称运行。近场声全息的重建面与正则逆问题、DCASE的语义事件输出也不由本章功率成像覆盖。

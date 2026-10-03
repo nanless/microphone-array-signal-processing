@@ -18,6 +18,7 @@
 | [ch09](ch09/) | `ch09.chapter09_experiments`、`ch09.tracking_crossing_dropout_demo` | E09-10～23；轨迹交叉、缺测、方向限速的合成反例 |
 | [ch10](ch10/) | `ch10.chapter10_experiments`、`ch10.spectral_subtraction_demo`、`ch10.sro_closed_loop_demo` | E10-13、E10-18～33；合成时间戳及有状态插值，不是声卡实时实测 |
 | [ch11](ch11/) | `ch11.chapter11_experiments` | E11-10～25；硬约束、评分和 FIR 取舍，示意分数不代表产品测量 |
+| [ch14](ch14/) | `ch14.chapter14_exercises`、`ch14.examples.generate_imaging_audio`、`ch14.examples.audit_upstream_imaging_contracts` | E14-01～16；球面CSM/PSF、DAMAS前/双向、有限小矩阵NNLS、作者full-CSM CLEAN-SC及目标失配；五独立PCM及固定原方法差异分开 |
 | [appendix_a](appendix_a/) | `appendix_a.appendix_a_experiments` | E12-06～19；复投影、已知噪声加权、截断与正则、相关共轭、EVD前提及实际PCM；旧01～05仍复用跨章唯一实现 |
 | [appendix_b](appendix_b/) | `appendix_b.appendix_b_experiments`、`appendix_b.interpolation_exercise` | E13-02～14；E13-02 读回主音频 PCM，E13-03～14 核查房间结果、PCM、来源证据、TAC共享结构、能量尺度、时间条件化与同DRR输出，不重跑房间仿真 |
 
@@ -34,7 +35,7 @@
 `MVDR target response` 应接近 1；STFT 重建误差接近浮点舍入。极高的匹配无噪声 AEC ERLE 是算术
 收敛检查，队列示例中的超期次数则来自构造的负载，二者均不代表设备测量。完整核对步骤见导读。
 
-旧的 `codes.examples.*` 和 `codes.array_tutorial.*` 导入路径已经退出仓内接口。运行时使用上表中的章节模块；修改题目时改唯一真实源文件，再核对全书 292 个稳定练习 ID、对应章节和覆盖表。
+旧的 `codes.examples.*` 和 `codes.array_tutorial.*` 导入路径已经退出仓内接口。运行时使用上表中的章节模块；修改题目时改唯一真实源文件，再核对全书 308 个稳定练习 ID、对应章节和覆盖表。
 
 双耳、STFT卷积、多频几何、房间、主音频、GSS、移动和追踪资产的清单，以及某些工业报告，会校验生成器的**路径和完整源码摘要**。生成器已归入相应章节的 `examples/`；原生 C/C++ 探针与调用它的 Python 文件放在同一目录。更改这些文件后，应从真实新源重生资产并核对参数、逐文件摘要和报告，再同步构建与测试。
 
@@ -89,3 +90,5 @@
 附录A共19题。E12-08通过 `appendix_a.examples.check_main_math_audio` 核当前20个真实源与主清单，再读三个正式脉冲WAV；内存浮点模型分开列出。E12-19的[五个独立已知噪声权重WAV](appendix_a/weighted_audio/MANIFEST.json)由 `appendix_a.examples.generate_weighted_audio` 管理，`--check`只读完整回放，不并入主109。目标和两个不同频率干扰共同包络/增益1，OLS/GLS/反权用同一双通道输入，三权重和均1；稳态28800点的解析、浮点分量和实际PCM整数评分分开。`appendix_a.examples.audit_upstream_solver_contracts` 只执行固定pb_bss完整原模块中的辅助函数，保留整数dtype失败与独立NumPy比较，只有显式 `--report` 写当前报告。
 
 附录B共14题。E13-03～14入口统一为 `appendix_b.appendix_b_experiments`；主插值四WAV先核20真实源与完整PCM回放。E11～13分别拆解TAC共享聚合、安全能量尺度和T20时间条件化，E14使用[五个独立同DRR对照WAV](appendix_b/response_audio/MANIFEST.json)，四真实源、共同增益1及完整两点尾。`appendix_b.examples.generate_response_audio --check`只读核全部清单/字节/实际整数评分；不并入主109。房间资产的 `appendix_b.examples.check_room_assets` 核21普通成员、七真实源、报告绑定和18PCM；`--replay`需隔离PRA环境真实重跑。`appendix_b.examples.audit_tac_contracts`只核固定原源的10个静态合同，不导入Torch或执行原网络。
+
+扩展专题Ⅰ采用文件/代码身份14，阅读时放在第11章后、附录前，不改附录身份12/13。`ch14.chapter14_exercises`只读复算16题；`ch14.examples.generate_imaging_audio --check`严格核六普通成员及当前真实源、完整PCM回放，五份WAV不并入主109。`ch14.examples.audit_upstream_imaging_contracts`默认终端，只在显式`--report`时写当前合同；固定Acoular源码身份、整选集不匹配、方法相符/已确认差异/未执行分开。没有运行完整Acoular包、JIT/HDF5或风洞录音。

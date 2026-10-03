@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 A · 符号术语数学 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="d82b081fa20a"><style>
+<meta name="source-digest" content="38e21c32c9ce"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -242,6 +242,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="09_source-tracking.html">第 9 章 · 声源追踪</a></div>
 <div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a></div>
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
+<div class="chap"><a href="14_acoustic-imaging.html">扩展专题Ⅰ · 声学成像与噪声源诊断</a></div>
 <div class="chap cur" aria-current="page">附录 A · 符号术语数学</div>
 <ul>
 <li><a href="12_appendix-symbols-math.html#sec-u-78b6668a18">附录 A：符号、术语与数学基础</a></li>
@@ -334,7 +335,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是附录 A（正文共 11 章，另有附录 A/B），可独立查阅，前后篇见下方导航。</p>
-<p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a> ｜ 下一篇：<a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></p>
+<p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="14_acoustic-imaging.html">扩展专题Ⅰ · 声学成像与噪声源诊断</a> ｜ 下一篇：<a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></p>
 </blockquote>
 <hr />
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-78b6668a18">附录 A：符号、术语与数学基础</h1>
@@ -471,6 +472,14 @@ kf_s/N,&0\leq k\lt \lceil N/2\rceil,\\
 <tr>
 <td class="tutorial-short-column" style="--tutorial-column-width:8em">$G(k,f)$, $\Delta$, $K$</td>
 <td>WPE 预测系数、保护延迟、预测阶数。第 7 章局部用 $k$ 表示滞后帧号、$f$ 表示<strong>无量纲离散频点索引</strong>，不同于上表按 Hz 计的连续物理频率 $f$；换算及索引范围见 §7.1</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\mathbf A$, $\mathbf P$, $\vec q$, $\vec b$（专题Ⅰ）</td>
+<td>成像传播字典、PSF矩阵、参考位置的候选源均方值、扫描输出均方值；$P_{ij}=|\vec w_i^H\vec a_j|^2$，行是扫描格、列是源格。与第9章卡尔曼误差协方差$\mathbf P$分开定义（§14.4）</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">CSM、$\mathbf R$（专题Ⅰ）</td>
+<td>互谱矩阵（Cross-Spectral Matrix）；未归一化FFT外积、每Hz谱密度、每频点均方值与单频复幅度均方矩阵有不同标度，见§14.3；数字量未校准时不能称Pa²</td>
 </tr>
 <tr>
 <td class="tutorial-short-column" style="--tutorial-column-width:8em">PHD/RFS</td>
@@ -1423,7 +1432,7 @@ n_2[n]&=0.06e[n]\cos(2\pi4000n/16000)\text{。}
 <hr />
 <blockquote>
 <p>📄 本篇信息：配图 3 张 ｜ <a href="index.html">回首页</a></p>
-</blockquote><div class="pn"><span><a href="11_selection-guide.html">← 上一篇</a></span><span><a href="13_appendix-guide.html">下一篇 →</a></span></div>
+</blockquote><div class="pn"><span><a href="14_acoustic-imaging.html">← 上一篇</a></span><span><a href="13_appendix-guide.html">下一篇 →</a></span></div>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

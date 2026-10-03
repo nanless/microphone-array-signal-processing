@@ -1,6 +1,6 @@
 > ⚠️ 本篇是教程第 11 章。前后篇见下方导航。
 >
-> 🏠 首页导读：[00_overview.md](00_overview.md) ｜ 上一篇：[10_engineering-practice.md](10_engineering-practice.md) ｜ 下一篇：[12_appendix-symbols-math.md](12_appendix-symbols-math.md)
+> 🏠 首页导读：[00_overview.md](00_overview.md) ｜ 上一篇：[10_engineering-practice.md](10_engineering-practice.md) ｜ 下一篇：[14_acoustic-imaging.md](14_acoustic-imaging.md)
 
 ---
 
@@ -848,6 +848,8 @@ S_L&=\max\{\mathcal E_{L,S},\mathcal E_{L,D}\}.
 运行 E11-25，入口将解析与浮点模型、正式PCM评分分开。独立清单见 [MANIFEST.json](../codes/chapters/ch11/scenario_audio/MANIFEST.json)，检查只读，不通过时拒绝评分。目标、混合与输出独立量化，因此实际PCM误差从输出和同域目标逐点相减求能量，不把解析频率衰减直接充作文件评分。只有已知且互不重叠的频点，使本例能解释目标和噪声各自作用；它不运行盲增强、ASR或主观听测。
 
 ### 11.7 后续阅读
+
+需要估计工业噪声源的空间贡献时，继续阅读[扩展专题Ⅰ：声学成像](14_acoustic-imaging.md)，分别核对扫描图、源强反演、校准、频带与区域量。它的输出和本章语音增强音频不同。
 
 要实现算法，可回到第 4～9 章查看定位、波束、AEC、WPE、分离和追踪。要制定整机预算和验收计划，见[第 10 章](10_engineering-practice.md)。[附录 A](12_appendix-symbols-math.md)汇总符号与数学工具，[附录 B](13_appendix-guide.md)给出进一步阅读、练习和排错入口。
 

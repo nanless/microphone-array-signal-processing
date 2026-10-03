@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""合订本构建脚本：14 篇文档 → 单页 HTML → Chrome 无头打印 A4 PDF。
+"""合订本构建脚本：15 篇文档 → 单页 HTML → Chrome 无头打印 A4 PDF。
 
 做的事情（按顺序）：
-  1. 读 chapters/ 14 篇 Markdown，用 markdown 库转 HTML（数学段先 shield 再贴回，
+  1. 读 chapters/ 15 篇 Markdown，用 markdown 库转 HTML（数学段先 shield 再贴回，
      与 build_site.py 同逻辑，保证两端渲染一致）。
   2. 每篇包进 <div class="chap">，篇标题记 id="ch-{i}"；统一标题层级后，
      编号小节使用 ch-{i}-sec-x-y 稳定标识，并保留旧顺序别名。
@@ -96,6 +96,7 @@ CHAPTERS = [
     ("09_source-tracking.md", "第 9 章 · 声源追踪"),
     ("10_engineering-practice.md", "第 10 章 · 工程实现、评测与产业实践"),
     ("11_selection-guide.md", "第 11 章 · 总结与选型指南"),
+    ("14_acoustic-imaging.md", "扩展专题Ⅰ · 声学成像与噪声源诊断"),
     ("12_appendix-symbols-math.md", "附录 A · 符号术语数学"),
     ("13_appendix-guide.md", "附录 B · 路径地图与练习"),
 ]
@@ -108,9 +109,24 @@ PDF_THIRD_LEVEL_FILES = {
     "09_source-tracking.md", "10_engineering-practice.md",
     "11_selection-guide.md", "12_appendix-symbols-math.md",
     "13_appendix-guide.md",
+    "14_acoustic-imaging.md",
 }
+
+
+def chapter_number(filename):
+    """Published identity follows the source name, independently of reading order.
+
+    Appending or inserting a topic must never reassign ch-12/ch-13, or any
+    heading/exercise destination already used by the existing appendices.
+    """
+    match = re.fullmatch(r"(\d{2})_[^/]+\.md", filename)
+    if match is None:
+        raise ValueError("chapter source requires a stable two-digit identity")
+    return int(match.group(1))
+
+
 PDF_THIRD_LEVEL_CHAPTER_IDS = {
-    f"ch-{index}" for index, (name, _label) in enumerate(CHAPTERS)
+    f"ch-{chapter_number(name)}" for name, _label in CHAPTERS
     if name in PDF_THIRD_LEVEL_FILES
 }
 
@@ -263,7 +279,7 @@ def source_digest():
     return digest.hexdigest()[:12]
 
 
-HTML_TO_CH = {fname.replace(".md", ".html"): i for i, (fname, _) in enumerate(CHAPTERS)}
+HTML_TO_CH = {fname.replace(".md", ".html"): chapter_number(fname) for fname, _ in CHAPTERS}
 REPOSITORY_BLOB_BASE = "https://github.com/nanless/microphone-array-signal-processing/blob/main/"
 
 
@@ -299,7 +315,7 @@ def rewrite_book_links(html):
         elif re.fullmatch(r"sec-(?:\d+(?:-\d+)*|u-[0-9a-f]{10}(?:-\d+)?)", fragment):
             # sec-1 是分篇页标题；合订时该重复标题被外层 ch-N 标题替代。
             target = f"ch-{idx}" if fragment == "sec-1" else f"ch-{idx}-{fragment}"
-        elif is_exercise_anchor(fragment, SRC / CHAPTERS[idx][0]):
+        elif is_exercise_anchor(fragment, SRC / fname.replace(".html", ".md")):
             target = f"ch-{idx}-{fragment}"
         else:
             raise ValueError(f"合订本无法映射章节锚点：{fname}#{fragment}")
@@ -313,7 +329,7 @@ def rewrite_book_links(html):
 def rewrite_repository_links(html, source_path=None):
     """把源码相对链接改为可移植的仓库链接，避免 PDF 泄露构建机路径。"""
     source_path = source_path or SRC / "00_overview.md"
-    chapters = {(SRC / name).resolve(): i for i, (name, _) in enumerate(CHAPTERS)}
+    chapters = {(SRC / name).resolve(): chapter_number(name) for name, _ in CHAPTERS}
 
     def transform(href):
         parsed, target = build_site.local_link_target(href, source_path)
@@ -379,14 +395,18 @@ def resolve_build_date(explicit=None):
 
 def build_html(build_date=None):
     check_mathjax_assets()
-    """合 14 篇为单页 HTML。返回 (page, outline)，outline 为
+    """按阅读顺序合并所有教程源为单页 HTML。返回 (page, outline)，outline 为
     [(章label, 章id, [(节title, 节id, [(子节title, 子节id), ...]), ...]), ...]，
     供印刷目录和书签定位用。"""
     import markdown
     body_parts = []
     outline = []  # 章级
     n_imgs = 0
-    for i, (fname, label) in enumerate(CHAPTERS):
+    identities = [chapter_number(fname) for fname, _label in CHAPTERS]
+    if len(identities) != len(set(identities)):
+        raise ValueError("chapter source identities must be unique")
+    for position, (fname, label) in enumerate(CHAPTERS):
+        i = chapter_number(fname)
         md, repo = shield_math((SRC / fname).read_text(encoding="utf-8"))
         html = markdown.markdown(md, extensions=["tables", "fenced_code", "sane_lists"])
         html = unshield_math(html, repo)
@@ -434,7 +454,7 @@ def build_html(build_date=None):
             r'<h[12][^>]*\bid="([^"]+)"[^>]*>.*?</h[12]>',
             r'<span id="\1" class="anchor-alias"></span>',
             html, count=1, flags=re.S)
-        if i > 0:
+        if fname != "00_overview.md":
             html = re.sub(
                 r"<h([34])([^>]*)>(.*?)</h\1>",
                 lambda m: (f"<h{int(m.group(1)) - 1}{m.group(2)}>{m.group(3)}"
@@ -465,7 +485,7 @@ def build_html(build_date=None):
         html = re.sub(r"<h([23])([^>]*)>(.*?)</h\1>", tag_outline_heading,
                       html, flags=re.S)
         n_imgs += len(re.findall(r"<img ", html))
-        if i == len(CHAPTERS) - 1:
+        if position == len(CHAPTERS) - 1:
             html = append_book_end(html)
         body_parts.append(f'<div class="chap" id="ch-{i}"><h1>{label}</h1>{html}</div>')
         outline.append((label, f"ch-{i}", secs))
@@ -490,7 +510,7 @@ def build_html(build_date=None):
     cover = (f'<div class="cover"><h1>麦克风阵列信号处理教程</h1>'
              f'<div class="sub">深入浅出 · 从阵列摆位到工程选型（合订本）</div>'
              f'<div class="meta">构建日期 {date_s} · 源文件 sha256 {source_digest()} · '
-             f'共 14 篇：导读、11 章正文、2 篇附录</div></div>')
+             f'共 {len(CHAPTERS)} 篇：导读、11 章正文、1 篇扩展专题、2 篇附录</div></div>')
     page = ("<!DOCTYPE html><html lang=\"zh-CN\" data-tutorial-print-layout=\"a4\"><head><meta charset=\"utf-8\">"
             f"<title>麦克风阵列信号处理教程（合订本）</title><style>{CSS}</style>"
             "<script>\n" + build_site.INLINE_LAYOUT_PATH.read_text(encoding="utf-8") +
@@ -817,7 +837,7 @@ def print_pdf(combined, pdf, timeout_min_pages=100):
 
 
 def check_figures():
-    """合订前检查：正文引用的图必须存在、非空，并覆盖 66 个编号文件。"""
+    """合订前检查：正文引用的图必须存在、非空，并覆盖 69 个编号文件。"""
     missing = []
     refs = set()
     for fname, _ in CHAPTERS:
@@ -829,8 +849,8 @@ def check_figures():
                 missing.append(f"{fname}: {m.group(1)}")
     if missing:
         raise SystemExit("缺图，中止：\n" + "\n".join(missing))
-    if len(refs) != 66:
-        raise SystemExit(f"唯一图片数异常：期望 66，实际 {len(refs)}")
+    if len(refs) != 69:
+        raise SystemExit(f"唯一图片数异常：期望 69，实际 {len(refs)}")
     print(f"图片检查通过（{len(CHAPTERS)} 篇、{len(refs)} 张唯一图片）")
 
 

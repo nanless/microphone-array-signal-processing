@@ -1,6 +1,6 @@
 > ⚠️ 本篇是附录 A（正文共 11 章，另有附录 A/B），可独立查阅，前后篇见下方导航。
 >
-> 🏠 首页导读：[`00_overview.md`](00_overview.md) ｜ 上一篇：[11_selection-guide.md](11_selection-guide.md) ｜ 下一篇：[13_appendix-guide.md](13_appendix-guide.md)
+> 🏠 首页导读：[`00_overview.md`](00_overview.md) ｜ 上一篇：[14_acoustic-imaging.md](14_acoustic-imaging.md) ｜ 下一篇：[13_appendix-guide.md](13_appendix-guide.md)
 
 ---
 
@@ -60,6 +60,8 @@ kf_s/N,&0\leq k<\lceil N/2\rceil,\\
 | RTF | 波束与空间模型中指相对传递函数（Relative Transfer Function）；工程与选型中指实时因子（Real-Time Factor），即累计服务耗时/新推进音频时长；重叠分析窗不能把重复样本再计入分母。两者同缩写、不同量，按章节语境区分 |
 | $h(n)$，$\hat{\vec{w}}$，ERLE | 回声路径、AEC 自适应滤波器、回声返回损失增强（Echo Return Loss Enhancement，ERLE） |
 | $G(k,f)$, $\Delta$, $K$ | WPE 预测系数、保护延迟、预测阶数。第 7 章局部用 $k$ 表示滞后帧号、$f$ 表示**无量纲离散频点索引**，不同于上表按 Hz 计的连续物理频率 $f$；换算及索引范围见 §7.1 |
+| $\mathbf A$, $\mathbf P$, $\vec q$, $\vec b$（专题Ⅰ） | 成像传播字典、PSF矩阵、参考位置的候选源均方值、扫描输出均方值；$P_{ij}=|\vec w_i^H\vec a_j|^2$，行是扫描格、列是源格。与第9章卡尔曼误差协方差$\mathbf P$分开定义（§14.4） |
+| CSM、$\mathbf R$（专题Ⅰ） | 互谱矩阵（Cross-Spectral Matrix）；未归一化FFT外积、每Hz谱密度、每频点均方值与单频复幅度均方矩阵有不同标度，见§14.3；数字量未校准时不能称Pa² |
 | PHD/RFS | 概率假设密度（Probability Hypothesis Density，PHD）/随机有限集（Random Finite Set，RFS） |
 
 表中 $\psi$ 的“残余”是相对于目标指向 $\theta_0$ 而言：来自 $\theta$ 的波先按 $\theta_0$ 补偿，之后相邻两麦还相差

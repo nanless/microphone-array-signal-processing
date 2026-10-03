@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 11 章 · 总结与选型指南 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="d82b081fa20a"><style>
+<meta name="source-digest" content="38e21c32c9ce"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -289,6 +289,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-26cfd5a644">题 25：场景组成变化后，哪种FIR才是合适候选（E11-25）</a></li>
 <li><a href="11_selection-guide.html#sec-11-7">11.7 后续阅读</a></li>
 </ul>
+<div class="chap"><a href="14_acoustic-imaging.html">扩展专题Ⅰ · 声学成像与噪声源诊断</a></div>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div>
 <div class="chap"><a href="research/index.html">源码研究</a></div></nav>
@@ -342,7 +343,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是教程第 11 章。前后篇见下方导航。</p>
-<p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a> ｜ 下一篇：<a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></p>
+<p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a> ｜ 下一篇：<a href="14_acoustic-imaging.html">扩展专题Ⅰ · 声学成像与噪声源诊断</a></p>
 </blockquote>
 <hr />
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-ecf5494b60">11. 总结与选型指南</h1>
@@ -1318,11 +1319,12 @@ S_L&=\max\{\mathcal E_{L,S},\mathcal E_{L,D}\}.
 <p>独立资产的生成与只读检查入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch11/examples/generate_selection_audio.py">generate_selection_audio.py</a>：在仓库根目录运行 <code>.venv/bin/python -m codes.chapters.ch11.examples.generate_selection_audio --check</code>。去掉 <code>--check</code>才会重新生成文件，评分入口不会自行修复或覆盖损坏资产。</p>
 <p>运行 E11-25，入口将解析与浮点模型、正式PCM评分分开。独立清单见 <a href="scenario_audio/MANIFEST.json">MANIFEST.json</a>，检查只读，不通过时拒绝评分。目标、混合与输出独立量化，因此实际PCM误差从输出和同域目标逐点相减求能量，不把解析频率衰减直接充作文件评分。只有已知且互不重叠的频点，使本例能解释目标和噪声各自作用；它不运行盲增强、ASR或主观听测。</p>
 <span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-11-7">11.7 后续阅读</h2>
+<p>需要估计工业噪声源的空间贡献时，继续阅读<a href="14_acoustic-imaging.html">扩展专题Ⅰ：声学成像</a>，分别核对扫描图、源强反演、校准、频带与区域量。它的输出和本章语音增强音频不同。</p>
 <p>要实现算法，可回到第 4～9 章查看定位、波束、AEC、WPE、分离和追踪。要制定整机预算和验收计划，见<a href="10_engineering-practice.html">第 10 章</a>。<a href="12_appendix-symbols-math.html">附录 A</a>汇总符号与数学工具，<a href="13_appendix-guide.html">附录 B</a>给出进一步阅读、练习和排错入口。</p>
 <hr />
 <blockquote>
 <p>📄 <a href="index.html">回首页</a></p>
-</blockquote><div class="pn"><span><a href="10_engineering-practice.html">← 上一篇</a></span><span><a href="12_appendix-symbols-math.html">下一篇 →</a></span></div>
+</blockquote><div class="pn"><span><a href="10_engineering-practice.html">← 上一篇</a></span><span><a href="14_acoustic-imaging.html">下一篇 →</a></span></div>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

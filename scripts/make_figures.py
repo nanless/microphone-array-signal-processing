@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""生成教程插图（图 1～25、33～36、40～65；图 26～32、37～39 见 make_aec_figures.py）。
+"""生成教程插图（图 1～25、33～36、40～69；图 26～32、37～39 见 make_aec_figures.py）。
 
 用法（仓库根目录）：
-    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～65 → figures/
+    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～69 → figures/
 """
 from pathlib import Path
 import hashlib
@@ -4633,6 +4633,179 @@ def fig_equal_drr_response():
          extra_metadata={'AudioManifestDigest': report['audio_manifest_sha256']})
 
 
+def _imaging_report(name, data):
+    """Bind current teaching and drawing sources; never infer provenance."""
+    from codes.chapters.ch00.io_contracts import write_json_report
+    sources = ('scripts/make_figures.py', 'codes/chapters/ch14/core/imaging.py',
+               'codes/chapters/ch02/core/conventions.py',
+               'codes/chapters/ch00/io_contracts.py')
+    def plain(value):
+        if isinstance(value, np.ndarray):
+            if np.iscomplexobj(value):
+                return {'real': value.real.tolist(), 'imag': value.imag.tolist()}
+            return value.tolist()
+        if isinstance(value, np.generic):
+            return value.item()
+        if isinstance(value, dict):
+            return {key: plain(item) for key, item in value.items()}
+        if isinstance(value, (list, tuple)):
+            return [plain(item) for item in value]
+        return value
+    report = {'schema_version': 1, 'scope': 'deterministic teaching controls; no industrial measurement',
+              'source_sha256': {path: hashlib.sha256((REPOSITORY_ROOT / path).read_bytes()).hexdigest()
+                                for path in sources}, 'results': plain(data)}
+    write_json_report(CODE_CHAPTERS / 'ch14' / 'reports' / name, report)
+
+
+def fig_imaging_psf():
+    from codes.chapters.ch14.core.imaging import two_cell_experiment, spherical_scan_experiment
+    small, spatial = two_cell_experiment(), spherical_scan_experiment()
+    _imaging_report('figure67_imaging_psf.json', {'two_cell': small, 'spherical_scan': spatial})
+    fig, axes = plt.subplots(3, 2, figsize=(9.5, 10.2))
+    axes = axes.ravel()
+    mic, positions = spatial['microphones_m'], spatial['source_positions_m']
+    axes[0].scatter(mic[:, 0], mic[:, 1], color=C_BLUE, s=45, label='8 麦：z=0')
+    axes[0].scatter(positions[:, 0], positions[:, 1], color=C_RED, s=80, marker='*', label='两源：z=0.6 m')
+    axes[0].scatter([0], [0], color=C_MAIN, marker='+', s=70, label='参考位置')
+    axes[0].add_patch(plt.Rectangle((-.3, -.3), .6, .6, fill=False, ls=':', color=C_MAIN))
+    axes[0].set(xlim=(-.34, .34), ylim=(-.34, .34), xlabel='x（m）', ylabel='y（m）', aspect='equal')
+    axes[0].set_title('(a) 蓝点8麦(z=0)，红星2源(z=0.6 m)')
+    axes[0].annotate('参考点', xy=(0, 0), xytext=(.03, -.07),
+                     arrowprops={'arrowstyle': '->', 'color': C_MAIN})
+    axes[1].imshow(small['P'], vmin=0, vmax=1.1, cmap='Blues')
+    for i in range(2):
+        for j in range(2):
+            axes[1].text(j, i, f"{small['P'][i, j]:.2f}", ha='center', va='center',
+                         color='white' if i == j else C_MAIN, fontsize=14)
+    axes[1].set(xticks=[0, 1], yticks=[0, 1], xticklabels=['源格 1', '源格 2'],
+                yticklabels=['扫描格 1', '扫描格 2'], xlabel='列：放置单位源', ylabel='行：扫描位置')
+    axes[1].set_title('(b) 两格 PSF：每一列是一处单位源')
+    for ax, values, title in ((axes[2], spatial['psf_columns'][:, 0], '(c) 二维强源 PSF；匹配点响应为 1'),
+                              (axes[3], spatial['b'], '(d) 同尺度双源扫描图；有旁瓣与泄漏')):
+        im = ax.imshow(values.reshape(21, 21), origin='lower', extent=(-.315, .315, -.315, .315),
+                       vmin=0, vmax=1.1, cmap='viridis', interpolation='nearest')
+        ax.scatter(positions[:, 0], positions[:, 1], marker='+', color='white', s=85)
+        ax.set(xlabel='x（m）', ylabel='y（m）'); ax.set_title(title)
+        fig.colorbar(im, ax=ax, shrink=.78, label='参考均方值比')
+    peak = spatial['local_peaks'][1]['peak_position_m']
+    axes[3].plot(peak[0], peak[1], 'x', color='#ffb74d', ms=9)
+    axes[3].annotate('弱源局部峰偏 30 mm', xy=peak[:2], xytext=(-.27, -.25), color='white',
+                     arrowprops={'arrowstyle': '->', 'color': 'white'})
+    x = np.arange(2)
+    case = small['cases']['independent']
+    for offset, values, label, color in ((-.24, small['q'], '源真值', C_GREEN),
+                                        (0, case['b'], '常规扫描', C_BLUE),
+                                        (.24, case['q_inverse'], '两格反演', C_ORANGE)):
+        axes[4].bar(x + offset, values, .23, label=label, color=color)
+    axes[4].set(xticks=x, xticklabels=['格 1', '格 2'], ylabel='数字参考均方值比', ylim=(0, 1.3))
+    axes[4].set_title('(e) 两格反演；不能直接相加扫描值')
+    axes[4].legend()
+    axis = spatial['grid_axis_m']
+    axes[5].plot(axis, spatial['b'].reshape(21, 21)[10], color=C_BLUE, label='球面匹配模型')
+    axes[5].plot(axis, spatial['plane_mismatch_b'].reshape(21, 21)[10], '--', color=C_RED, label='错误平面波模型')
+    for position in positions:
+        axes[5].axvline(position[0], ls=':', color=C_GREEN)
+    axes[5].set(xlabel='y=0 切线上的 x（m）', ylabel='参考均方值比')
+    axes[5].set_title('(f) 同一 CSM；传播模型改变扫描结果')
+    axes[5].legend()
+    fig.suptitle('图67  声源贡献、PSF 与扫描图各表示什么\n'
+                 '二维控制：4 kHz、c=343 m/s、21×21 格；不反演 441 个未知源', fontsize=FS_SUP)
+    fig.tight_layout(rect=(0, 0, 1, .95), h_pad=2., w_pad=2.)
+    save(fig, 'fig67_imaging_psf.png')
+
+
+def fig_imaging_model_checks():
+    from codes.chapters.ch14.core.imaging import two_cell_experiment, damas_gauss_seidel, clean_sc_full_csm
+    small = two_cell_experiment(); independent = small['cases']['independent']; coherent = small['cases']['coherent']
+    iterations = 8
+    forward = damas_gauss_seidel(small['P'], independent['b'], iterations=iterations)
+    bidirectional = damas_gauss_seidel(small['P'], independent['b'], iterations=iterations, sweep='forward_backward')
+    clean = clean_sc_full_csm(2 * np.ones((2, 2)), np.full((2, 1), .5), iterations=20, damping=.6)
+    allocated = np.array([step['allocated_power'] for step in clean['steps']])
+    _imaging_report('figure68_imaging_model_checks.json',
+                    {'two_cell': small, 'forward': forward, 'forward_backward': bidirectional,
+                     'rank_one_clean_sc': clean, 'rank_one_cumulative': np.cumsum(allocated),
+                     'log_plot_floor': 1e-16})
+    fig, axes = plt.subplots(2, 2, figsize=(9.5, 7.8))
+    for result, label, color in ((forward, '每轮仅前向扫描', C_BLUE),
+                                 (bidirectional, '原式每轮前向＋反向', C_ORANGE)):
+        error = np.max(abs(result['history'] - small['q']), axis=1)
+        axes[0, 0].semilogy(np.arange(iterations + 1), np.maximum(error, 1e-16), 'o-', color=color, label=label)
+    axes[0, 0].set(xlabel='外层轮数（两种每轮工作量不同）', ylabel='最大源量误差（绘图下限 1e-16）')
+    axes[0, 0].set_title('(a) 同输入、零初始化；迭代定义明确')
+    axes[0, 0].legend()
+    gamma, estimates = small['coherence_gamma'], small['coherence_inverse_q']
+    for j, color in enumerate((C_BLUE, C_RED)):
+        axes[0, 1].plot(gamma, estimates[:, j], color=color, label=f'错误非相干模型：源 {j + 1}')
+        axes[0, 1].axhline(small['q'][j], ls=':', color=color)
+    axes[0, 1].set(xlabel='实数互相干系数 γ', ylabel='参考源量比')
+    axes[0, 1].set_title('(b) 同样边际源量；交叉项改变估计')
+    axes[0, 1].legend(fontsize=FS_SMALL)
+    x = np.arange(2)
+    axes[1, 0].bar(x - .15, small['q'], .3, color=C_GREEN, label='实际边际源量')
+    axes[1, 0].bar(x + .15, coherent['q_inverse'], .3, color=C_RED, label='非相干逆解')
+    axes[1, 0].set(xticks=x, xticklabels=['源格 1', '源格 2'], ylabel='参考源量比', ylim=(0, 1.8))
+    axes[1, 0].set_title('(c) 相干：扫描残差零，源量仍然错误')
+    axes[1, 0].text(.5, 1.5, '完整 CSM 相对残差 = 0.3873', ha='center')
+    axes[1, 0].legend()
+    count = np.arange(1, len(allocated) + 1)
+    axes[1, 1].plot(count, np.cumsum(allocated), color=C_BLUE, label='累计分配到峰的量')
+    axes[1, 1].plot(count, 2 * .4**count, '--', color=C_ORANGE, label='剩余单源扫描量')
+    axes[1, 1].axhline(2, color=C_GREEN, ls=':', label='原单源量 2')
+    axes[1, 1].set(xlabel='完整 CSM CLEAN-SC 外层轮数', ylabel='数字参考均方值', ylim=(0, 2.2))
+    axes[1, 1].set_title('(d) 作者 full-CSM 式；扣除比例 0.6')
+    axes[1, 1].legend()
+    for ax in axes.ravel():
+        ax.grid(ls=':', alpha=.3)
+        ax.set_axisbelow(True)
+    fig.suptitle('图68  收敛、模型残差与物理正确性分别核对\n'
+                 '两格控制及单源 CLEAN-SC 教学式；没有执行完整 Acoular 包', fontsize=FS_SUP)
+    fig.tight_layout(rect=(0, 0, 1, .94), h_pad=2., w_pad=2.)
+    save(fig, 'fig68_imaging_model_checks.png')
+
+
+def fig_imaging_calibration():
+    gains = np.linspace(.4, 2.2, 61)
+    uncorrected = (1 + gains)**2 / 4
+    dr = np.array([1., 8 / 25, 16 / 25, 1.])
+    fits = np.array([41 / 25, 41 / 21, 87 / 35])
+    db = np.array([10 * np.log10(1.25), 10 * np.log10(1.5625), 10 * np.log10(.25) / 2])
+    _imaging_report('figure69_imaging_calibration.json', {
+        'second_channel_gain': gains, 'uncalibrated_scan': uncorrected, 'calibrated_scan': np.ones_like(gains),
+        'unequal_amplitude_diagonal_controls': dr, 'different_csm_objective_optima': fits,
+        'region_db_relative_to_one': db, 'intercept_prediction': -8 / 5,
+        'scope': 'analytic controls; default-intercept estimate is independent mathematics, not sklearn execution'})
+    fig, axes = plt.subplots(2, 2, figsize=(9.5, 7.8))
+    axes[0, 0].plot(gains, uncorrected, color=C_RED, label='未修正：((1+g)/2)²')
+    axes[0, 0].plot(gains, np.ones_like(gains), '--', color=C_GREEN, label='数据除以已知增益 g')
+    axes[0, 0].set(xlabel='第二通道幅度增益 g', ylabel='同相单位源的扫描量')
+    axes[0, 0].set_title('(a) 校准影响绝对量；不按各图峰归一')
+    axes[0, 0].legend()
+    bars = axes[0, 1].bar(np.arange(4), dr, color=[C_GREEN, C_BLUE, C_RED, C_ORANGE])
+    axes[0, 1].set(xticks=np.arange(4), xticklabels=['完整', 'DR', 'DR×2', 'DR×25/8'],
+                   ylabel='匹配扫描量', ylim=(0, 1.23))
+    axes[0, 1].set_title('(b) 单源 a=(1,2)：两麦因子 2 不够')
+    axes[0, 1].bar_label(bars, labels=['1', '8/25', '16/25', '1'], padding=4)
+    bars = axes[1, 0].bar(np.arange(3), fits, color=[C_GREEN, C_BLUE, C_RED])
+    axes[1, 0].set(xticks=np.arange(3), xticklabels=['完整 Frobenius', '半三角未加权', '半三角＋截距'],
+                   ylabel='各目标最优的单源系数', ylim=(0, 3.1))
+    axes[1, 0].set_title('(c) a=(1,2)、R=diag(1,10)；目标不同')
+    axes[1, 0].bar_label(bars, labels=['41/25', '41/21', '87/35'], padding=4)
+    axes[1, 0].text(1, 2.94, '含截距：数学预期，未调用 sklearn', ha='center', fontsize=FS_SMALL)
+    bars = axes[1, 1].bar(np.arange(3), db, color=[C_GREEN, C_BLUE, C_RED])
+    axes[1, 1].set(xticks=np.arange(3), xticklabels=['源量求和后 dB', '扫描量求和后 dB', '错误平均两源 dB'],
+                   ylabel='相对参考量 1 的 dB', ylim=(-4., 3.))
+    axes[1, 1].set_title('(d) 先确定线性量，再求和和取对数')
+    axes[1, 1].bar_label(bars, labels=[f'{value:.4f}' for value in db], padding=4)
+    for ax in axes.ravel():
+        ax.grid(axis='y', ls=':', alpha=.3)
+        ax.set_axisbelow(True)
+    fig.suptitle('图69  校准、对角处理、拟合目标与汇总口径\n'
+                 '固定解析控制；数字参考量与绝对 Pa²/SPL 分开', fontsize=FS_SUP)
+    fig.tight_layout(rect=(0, 0, 1, .94), h_pad=2., w_pad=2.)
+    save(fig, 'fig69_imaging_calibration.png')
+
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -4692,6 +4865,9 @@ def main():
     fig_noise_mismatch()
     fig_weighted_noise()
     fig_equal_drr_response()
+    fig_imaging_psf()
+    fig_imaging_model_checks()
+    fig_imaging_calibration()
     print("ALL DONE")
 
 
