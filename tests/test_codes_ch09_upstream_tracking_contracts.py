@@ -13,6 +13,7 @@ from unittest.mock import patch
 
 import numpy as np
 
+from codes.chapters.ch00.core.source_history import verify_lock_binding, verify_status_binding
 from codes.chapters.ch09.examples import audit_upstream_tracking_contracts as audit
 
 
@@ -87,19 +88,21 @@ class FixedTrackingContracts(unittest.TestCase):
 
 
 class ReadOnlyContracts(unittest.TestCase):
-    def test_current_report_binds_real_source_and_preserves_acquisition_states(self):
+    def test_historical_report_binds_current_used_sources_and_preserves_acquisition_states(self):
         path = audit.ROOT / "codes/chapters/ch09/reports/upstream_tracking_contracts.json"
         report = json.loads(path.read_text())
         self.assertEqual(report["tool_sha256"],
                          hashlib.sha256(Path(audit.__file__).read_bytes()).hexdigest())
-        self.assertEqual(report["source_lock_sha256"],
-                         hashlib.sha256(audit.LOCK.read_bytes()).hexdigest())
+        verify_lock_binding(report["source_lock_sha256"], tuple(audit.REVISIONS),
+                            current_lock=audit.LOCK)
         status_path = audit.LOCK.with_name("SOURCE_STATUS.json")
-        self.assertEqual(report["source_status_sha256"],
-                         hashlib.sha256(status_path.read_bytes()).hexdigest())
+        binding = verify_status_binding(report["source_status_sha256"], report["source_lock_sha256"],
+                                        tuple(audit.REVISIONS), current_status=status_path,
+                                        current_lock=audit.LOCK)
         rows = {row["id"]: row for row in json.loads(status_path.read_text())["projects"]}
         self.assertEqual(report["sources_before"], report["sources_after"])
         for name, source in report["sources_before"].items():
+            self.assertEqual(source["acquisition_record"], binding["records"][name])
             self.assertEqual(source["acquisition_record"], rows[name])
             self.assertIs(source["required_source_identity_verified"], True)
             self.assertIs(source["source_selection_verified"], rows[name]["source_selection_verified"])

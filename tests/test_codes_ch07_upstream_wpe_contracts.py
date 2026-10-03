@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 
 import numpy as np
 
+from codes.chapters.ch00.core.source_history import verify_lock_binding
 from codes.chapters.ch07.examples import audit_upstream_wpe_contracts as audit
 
 REPORT = audit.ROOT/'codes/chapters/ch07/reports/upstream_wpe_contracts.json'
@@ -152,7 +153,8 @@ class SavedReportTests(unittest.TestCase):
     def test_report_binds_real_sources_and_scope(self):
         r = self.report
         self.assertEqual(r['audit_source_sha256'], audit.sha(audit.__file__))
-        self.assertEqual(r['lock_sha256'], audit.sha(audit.LOCK))
+        binding = verify_lock_binding(r['lock_sha256'], tuple(audit.SOURCES), current_lock=audit.LOCK)
+        self.assertEqual(r['lock_entries'], binding['records'])
         self.assertEqual(r['before'], r['after'])
         for project, spec in audit.SOURCES.items():
             self.assertEqual(r['lock_entries'][project]['revision'], spec['revision'])

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>章节代码练习与音频实验 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="38e21c32c9ce"><style>
+<meta name="source-digest" content="f3c31ce171c8"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -353,6 +353,13 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-47-3">47.3 评分窗、复幅度与单位</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-47-4">47.4 重建与严格只读核验</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-47-5">47.5 固定上游的方法合同</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-0703c10be1">48. 分布式协同增强：从指定目标到真实广播状态</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-48-1">48.1 先确定要估计什么</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-48-2">48.2 24题的输入、答案与代码控制</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-48-3">48.3 17份音频分别改变了什么</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-48-4">48.4 用真实整数评分，保留不同分母</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-48-5">48.5 时钟、交叉功率与缺口控制</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-48-6">48.6 重建、只读回放与原源码范围</a></li>
 </ul>
 <div class="chap"><a href="../01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
 <div class="chap"><a href="../02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
@@ -366,6 +373,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="../10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a></div>
 <div class="chap"><a href="../11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
 <div class="chap"><a href="../14_acoustic-imaging.html">扩展专题Ⅰ · 声学成像与噪声源诊断</a></div>
+<div class="chap"><a href="../15_distributed-enhancement.html">扩展专题Ⅱ · 分布式麦克风协同增强</a></div>
 <div class="chap"><a href="../12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
 <div class="chap"><a href="../13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
@@ -485,12 +493,19 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-47-3">47.3 评分窗、复幅度与单位</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-47-4">47.4 重建与严格只读核验</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-47-5">47.5 固定上游的方法合同</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-0703c10be1">48. 分布式协同增强：从指定目标到真实广播状态</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-48-1">48.1 先确定要估计什么</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-48-2">48.2 24题的输入、答案与代码控制</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-48-3">48.3 17份音频分别改变了什么</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-48-4">48.4 用真实整数评分，保留不同分母</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-48-5">48.5 时钟、交叉功率与缺口控制</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-48-6">48.6 重建、只读回放与原源码范围</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="章节代码练习与音频实验" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-c621965c02">章节代码练习与音频实验</h1>
 <p>先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。</p>
-<p>本页索引 308 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
+<p>本页索引 332 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
 <p>E06-07～E06-20 使用无量纲回声模型检查 AEC 的计算与边界，其中 E06-11～20 可用精确答案程序核对。第 15、16 节另提供参数不同的合成音频；试听文件本身不是题目真值。</p>
-<p>第 3～11、13～16、18、21～30、32～34 节对应主清单的 109 个数学合成样本。第 17 节的 18 个房间白噪声合成样本使用独立清单；第 12 节使用另行授权的真实同步录音。第 31 节的 2 份从 PCM 形成定位观测的追踪样本也使用独立清单。第35～39节分别保存双耳、有限窗卷积、多频几何、已知聚焦与导数约束的独立样本。第46节另保存附录B同DRR短RIR的五个独立样本。不同音频的来源和可作的比较不同，试听前先查看各节的条件。</p>
+<p>第 3～11、13～16、18、21～30、32～34 节对应主清单的 109 个数学合成样本。第 17 节的 18 个房间白噪声合成样本使用独立清单；第 12 节使用另行授权的真实同步录音。第 31 节的 2 份从 PCM 形成定位观测的追踪样本也使用独立清单。第35～39节分别保存双耳、有限窗卷积、多频几何、已知聚焦与导数约束的独立样本。第48节保存分布式协同增强的17个独立样本；第47节保存成像的五个快拍样本。第46节另保存附录B同DRR短RIR的五个独立样本。不同音频的来源和可作的比较不同，试听前先查看各节的条件。</p>
 <p>主音频按章存放，统一由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/examples/generate_audio_samples.py">生成器</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/audio/MANIFEST.json">清单</a>管理。清单记录每组模型、种子、共同导出增益、采样率、通道、帧数、量化误差、运行环境、源文件摘要与逐 WAV 摘要；不把某组的谐波模板套到其他组。PCM16 编码按最近偶数舍入，不加抖动或自动限幅，RMS 对全部通道与采样一起计算。运行生成器并附加 <code>--check</code> 时只在内存重算和读回比对，不重写资产；严格字节核对也比较 Python、NumPy 和平台记录，异机不通过不等于算法错误。生成中断造成清单与 WAV 不一致时，先保留异常目录，再生成到新的空目录核对，通过后更新受影响资产并构建图和网站；不要手改单个生成文件。样本没有真人录音或模型权重，客观读回和浏览器加载不等于正式听测。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/io_contracts.py">共享文件IO</a>负责写入前的普通父目录、文件成员与严格JSON检查；各生成器继续负责自己的模型、清单结构和评分。已有非空目录须符合该资产的完整成员集合，重复键、非有限数值与把布尔值写成数值参数都会被拒绝。检查适用于本地非并发工作流，不把有限的写前检查当成并发文件系统安全保证。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="1-按章节运行" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-08633b42fc">1. 按章节运行</h2>
@@ -3275,6 +3290,326 @@ e^{-\mathrm j2\pi 2000n/24000},\\
 <span id="sec-116" class="anchor-alias" aria-hidden="true"></span><span id="475-固定上游的方法合同" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-47-5">47.5 固定上游的方法合同</h3>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch14/examples/audit_upstream_imaging_contracts.py">原Acoular限定工具</a>默认只输出终端，只有显式<code>--report</code>写当前<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch14/reports/upstream_imaging_contracts.json">合同报告</a>。原源码身份、完整选集不匹配、限定方法相符、已确认差异和依赖缺失分别保存；详细条件见<a href="01_spatial_and_tracking.html#imaging-contract-audit">空间源码研究</a>。</p>
 <p>本书CLEAN-SC教学核采用作者完整CSM公式；固定Acoular的full支路在独立单源控制中会过量分配，不能作为正确答案。CMF半三角权重及默认截距也分别改变目标。原类方法的提取调用不等于Traits对象图、Numba JIT、HDF5、sklearn估计器或真实风洞整链运行。</p>
+<p><a id="distributed-exercises-audio"></a></p>
+<span id="sec-117" class="anchor-alias" aria-hidden="true"></span><span id="48-分布式协同增强从指定目标到真实广播状态" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-0703c10be1">48. 分布式协同增强：从指定目标到真实广播状态</h2>
+<span id="sec-118" class="anchor-alias" aria-hidden="true"></span><span id="481-先确定要估计什么" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-48-1">48.1 先确定要估计什么</h3>
+<p><a href="../15_distributed-enhancement.html">扩展专题Ⅱ</a>在第5章MWF基础上增加节点间的任务相关压缩。四个观测的已知目标响应为$[1,1/2,2,-1/2]^\top$；节点1估计$s$，节点2估计$2s$。不是从少量广播恢复每个原通道，而是检查最优权重是否属于所保留的观测空间。传播方向、协方差和目标均已知，不能称为盲网络增强。</p>
+<p>白噪声控制中，节点1集中式权重为$[2,1,4,-1]^\top/13$，NMSE为$2/13$；仅本地为$4/9$。相关噪声控制的最优权重为$[25,4,11,-24]^\top/69$，NMSE为$8/69$；沿用白噪声的远端方向仍是$2/13$。同一种压缩维数不保证同一种信息损失，必须同时核目标、噪声统计和广播方向。</p>
+<span id="sec-119" class="anchor-alias" aria-hidden="true"></span><span id="482-24题的输入答案与代码控制" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-48-2">48.2 24题的输入、答案与代码控制</h3>
+<p>唯一<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch15/chapter15_exercises.py">题目入口</a>调用<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch15/core/distributed.py">数值核</a>，不打印一份硬编码答案替代计算。正文逐题给出计算过程；下表用于找到真正需要复算的量。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">题号</th>
+<th scope="col">输入与核心检查</th>
+<th scope="col">手算或实际控制结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E15-01</td>
+<td>四麦分两节点，选择本地参考与块协方差</td>
+<td>共轭外积、参考提取与各节点目标分别定义</td>
+</tr>
+<tr>
+<td>E15-02</td>
+<td>空间不相关单位噪声</td>
+<td>$q=11/2$；权重$[2,1,4,-1]^\top/13$；失真$4/169$、噪声$22/169$</td>
+</tr>
+<tr>
+<td>E15-03</td>
+<td>仅保留节点1两麦</td>
+<td>权重$[4,2]^\top/9$；MSE$4/9$</td>
+</tr>
+<tr>
+<td>E15-04</td>
+<td>广播$2x_3-x_4/2$</td>
+<td>原坐标接收权重$[2,1,2]^\top/13$，有效权重恢复集中式</td>
+</tr>
+<tr>
+<td>E15-05</td>
+<td>噪声交叉项$R_{13}=1/5,R_{14}=4/5$</td>
+<td>最小特征值$1-\sqrt{17}/5>0$；旧方向损失$34/897$</td>
+</tr>
+<tr>
+<td>E15-06</td>
+<td>适配广播$11x_3-24x_4$</td>
+<td>手算局部权重$[25,4,1]^\top/69$；代码广播方向另除69、接收系数相应变换，有效权重相同，MSE$8/69$</td>
+</tr>
+<tr>
+<td>E15-07</td>
+<td>正文目标$(1+\mathrm j)s$；代码另用复传播向量的第二麦参考</td>
+<td>正文MSE$4/13$；代码MSE$1/26$，各自目标功率不同，NMSE均$2/13$</td>
+</tr>
+<tr>
+<td>E15-08</td>
+<td>正文复尺度$2\mathrm j$；代码另检极大/极小实尺度</td>
+<td>广播与接收系数/统计一起变换，有效全局权重不变；零向量另处理</td>
+</tr>
+<tr>
+<td>E15-09</td>
+<td>正文白噪声、初值$[1,0]^\top$三步；代码另留相关噪声六步</td>
+<td>第二次广播后节点1实际MSE$23108/105625$；旧求解快照不能替代实际输出</td>
+</tr>
+<tr>
+<td>E15-10</td>
+<td>相关噪声、目标响应分块初值</td>
+<td>当前全局残差低于$10^{-8}$需要14次更新，加2次初始化共16次</td>
+</tr>
+<tr>
+<td>E15-11</td>
+<td>同一相关噪声与初值，同时及半步混合</td>
+<td>26/28与76/78次更新/总求解；不是$rS$-DANSE$^+$原定理算法</td>
+</tr>
+<tr>
+<td>E15-12</td>
+<td>两独立潜在目标，远端只发$x_3+x_4$</td>
+<td>完整观测两目标MSE均$1/4$；压缩后第二目标为$1/2$</td>
+</tr>
+<tr>
+<td>E15-13</td>
+<td>零广播</td>
+<td>普通正定求解拒绝；显式删除无信息列后回退本地$4/9$</td>
+</tr>
+<tr>
+<td>E15-14</td>
+<td>非PSD、病态与加载</td>
+<td>非对角2/对角1的矩阵特征值3/−1；加载改变目标，原目标另评分</td>
+</tr>
+<tr>
+<td>E15-15</td>
+<td>PCM16、float32、复谱与发送份数</td>
+<td>16kHz每路PCM256kbit/s；FFT512/H256复谱1.028Mbit/s；代码H128需加倍</td>
+</tr>
+<tr>
+<td>E15-16</td>
+<td>四节点各两麦、每节点一路广播，complex128</td>
+<td>局部维数5；单矩阵400B/节点、1600B/全网，集中式1024B</td>
+</tr>
+<tr>
+<td>E15-17</td>
+<td>已知100ppm、连续状态SRC</td>
+<td>32004设备点支持32000参考点；257点分块与整段逐点相同</td>
+</tr>
+<tr>
+<td>E15-18</td>
+<td>连续5个160点包缺失</td>
+<td>缺口内补零$461/676$、本地回退$4/9$；稳窗与缺口窗分别评分</td>
+</tr>
+<tr>
+<td>E15-19</td>
+<td>实际远端标量先量化再读回</td>
+<td>接收增量上界$(2/13)/(2\cdot32768)$，约$2.347506\times10^{-6}$</td>
+</tr>
+<tr>
+<td>E15-20</td>
+<td>解析、浮点分量与整数PCM</td>
+<td>实际整数E/D独立重读；不拟合增益/时延，分母随参考量化</td>
+</tr>
+<tr>
+<td>E15-21</td>
+<td>三变量Jacobi控制，非DANSE</td>
+<td>同时迭代特征值−1.8导致发散；半步控制可收敛，不能当DANSE反例</td>
+</tr>
+<tr>
+<td>E15-22</td>
+<td>三项步长条件</td>
+<td>$1/(i+1)$满足趋零且总和发散；固定/几何步长不满足全部条件</td>
+</tr>
+<tr>
+<td>E15-23</td>
+<td>三节点链、指定根1、标量1/2/3</td>
+<td>四条定向消息；总和6，减自身后5/4/3；不包含TI滤波变换</td>
+</tr>
+<tr>
+<td>E15-24</td>
+<td>已知二麦正定噪声的rank-1 GEVD</td>
+<td>广义特征值5/1，权重$[0,0.4]^\top$、MSE0.2；非完整网络GEVD</td>
+</tr>
+</tbody>
+</table></div>
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch15.chapter15_exercises
+.venv/bin/python -m codes.chapters.ch15.chapter15_exercises --exercise E15-09
+.venv/bin/python -m codes.chapters.ch15.chapter15_exercises --exercise E15-24
+</code></pre>
+<p>广播状态变化时，接收系数可以暂时不更新，但接收到的信号已经改变。<code>outputs_at_last_solve</code>是过去求解时的提案；<code>cached_outputs</code>由当前广播和缓存接收系数组合。图71用后者评分，预算按真实矩阵求解计数，含两次初始本地求解。上述停止器使用已知全局统计，不伪装成现实节点可直接得到的在线残差。</p>
+<span id="sec-120" class="anchor-alias" aria-hidden="true"></span><span id="483-17份音频分别改变了什么" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-48-3">48.3 17份音频分别改变了什么</h3>
+<p>所有文件16kHz、32000点、共同导出增益1。目标700/1300Hz的峰幅为0.1/0.06，稳窗均方功率0.0068；四个干扰方向使用1900/2300/2900/3500Hz，指定seed1502026。即时混合没有卷积尾部。这里的“white”只表示所声明窗内的空间协方差为$0.0068\mathbf I$，经该目标功率归一化后才为单位阵，声音仍是有限确定性余弦，不是时间白噪声，也不证明统计独立。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">文件</th>
+<th scope="col">通道及比较对象</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../distributed_audio/reference_node1.wav">reference_node1.wav</a><audio class="audio-sample" controls preload="none" aria-label="reference_node1.wav" src="../distributed_audio/reference_node1.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>一路干目标$s$；节点1共同参考</td>
+</tr>
+<tr>
+<td><a href="../distributed_audio/reference_node2.wav">reference_node2.wav</a><audio class="audio-sample" controls preload="none" aria-label="reference_node2.wav" src="../distributed_audio/reference_node2.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>一路干目标$2s$；独立量化的节点2参考</td>
+</tr>
+<tr>
+<td><a href="../distributed_audio/array_white.wav">array_white.wav</a><audio class="audio-sample" controls preload="none" aria-label="array_white.wav" src="../distributed_audio/array_white.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>四路观测$x_1,x_2,x_3,x_4$，空间不相关干扰</td>
+</tr>
+<tr>
+<td><a href="../distributed_audio/array_correlated.wav">array_correlated.wav</a><audio class="audio-sample" controls preload="none" aria-label="array_correlated.wav" src="../distributed_audio/array_correlated.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>同源四路观测，已知相关干扰</td>
+</tr>
+<tr>
+<td><a href="../distributed_audio/local_node1.wav">local_node1.wav</a><audio class="audio-sample" controls preload="none" aria-label="local_node1.wav" src="../distributed_audio/local_node1.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>仅节点1两路观测的MWF</td>
+</tr>
+<tr>
+<td><a href="../distributed_audio/central_white.wav">central_white.wav</a><audio class="audio-sample" controls preload="none" aria-label="central_white.wav" src="../distributed_audio/central_white.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>空间不相关模型的集中式参考</td>
+</tr>
+<tr>
+<td><a href="../distributed_audio/compressed_white.wav">compressed_white.wav</a><audio class="audio-sample" controls preload="none" aria-label="compressed_white.wav" src="../distributed_audio/compressed_white.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>相同输入的正确固定压缩，与上一份字节相同是设计控制</td>
+</tr>
+<tr>
+<td><a href="../distributed_audio/central_correlated.wav">central_correlated.wav</a><audio class="audio-sample" controls preload="none" aria-label="central_correlated.wav" src="../distributed_audio/central_correlated.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>相关模型的集中式参考</td>
+</tr>
+<tr>
+<td><a href="../distributed_audio/compressed_correlated.wav">compressed_correlated.wav</a><audio class="audio-sample" controls preload="none" aria-label="compressed_correlated.wav" src="../distributed_audio/compressed_correlated.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>相同输入的已知适配方向，与上一份字节相同</td>
+</tr>
+<tr>
+<td><a href="../distributed_audio/stale_correlated.wav">stale_correlated.wav</a><audio class="audio-sample" controls preload="none" aria-label="stale_correlated.wav" src="../distributed_audio/stale_correlated.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>相关模型沿用旧白噪声方向，信息损失</td>
+</tr>
+<tr>
+<td><a href="../distributed_audio/central_node2_correlated.wav">central_node2_correlated.wav</a><audio class="audio-sample" controls preload="none" aria-label="central_node2_correlated.wav" src="../distributed_audio/central_node2_correlated.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>节点2集中式输出，参考是$2s$</td>
+</tr>
+<tr>
+<td><a href="../distributed_audio/remote_scalar_white.wav">remote_scalar_white.wav</a><audio class="audio-sample" controls preload="none" aria-label="remote_scalar_white.wav" src="../distributed_audio/remote_scalar_white.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>远端广播$2x_3-x_4/2$，不是增强输出</td>
+</tr>
+<tr>
+<td><a href="../distributed_audio/transport_pcm16_white.wav">transport_pcm16_white.wav</a><audio class="audio-sample" controls preload="none" aria-label="transport_pcm16_white.wav" src="../distributed_audio/transport_pcm16_white.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>远端广播先真实PCM16量化/重读再融合</td>
+</tr>
+<tr>
+<td><a href="../distributed_audio/clock_misaligned_white.wav">clock_misaligned_white.wav</a><audio class="audio-sample" controls preload="none" aria-label="clock_misaligned_white.wav" src="../distributed_audio/clock_misaligned_white.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>远端快100ppm、按相同索引直接融合</td>
+</tr>
+<tr>
+<td><a href="../distributed_audio/clock_linear_corrected_white.wav">clock_linear_corrected_white.wav</a><audio class="audio-sample" controls preload="none" aria-label="clock_linear_corrected_white.wav" src="../distributed_audio/clock_linear_corrected_white.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>已知真实速率、连续状态线性SRC后融合</td>
+</tr>
+<tr>
+<td><a href="../distributed_audio/packet_zerofill_white.wav">packet_zerofill_white.wav</a><audio class="audio-sample" controls preload="none" aria-label="packet_zerofill_white.wav" src="../distributed_audio/packet_zerofill_white.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>指定800点缺口远端补零，冻结接收系数</td>
+</tr>
+<tr>
+<td><a href="../distributed_audio/packet_local_fallback_white.wav">packet_local_fallback_white.wav</a><audio class="audio-sample" controls preload="none" aria-label="packet_local_fallback_white.wav" src="../distributed_audio/packet_local_fallback_white.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>相同缺口显式切换到本地MWF</td>
+</tr>
+</tbody>
+</table></div>
+<span id="sec-121" class="anchor-alias" aria-hidden="true"></span><span id="484-用真实整数评分保留不同分母" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-48-4">48.4 用真实整数评分，保留不同分母</h3>
+<p>评分稳窗为1600:30400，共28800点；缺口窗16000:16800，共800点。解析协方差、导出前浮点分量与实际PCM总误差各自存入<a href="../distributed_audio/MANIFEST.json">清单</a>。整数参考$D[n]$和输出$Y[n]$分别计算$E=\sum(Y-D)^2$、$D_{\rm energy}=\sum D[n]^2$；NMSE为两者之比，不平均dB。下面每行来自实际WAV整数，不由理论倍数构造。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">输出</th>
+<th scope="col" style="text-align: right;">稳窗整数E</th>
+<th scope="col" style="text-align: right;">稳窗整数参考能量</th>
+<th scope="col" style="text-align: right;">PCM NMSE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>local_node1</code></td>
+<td style="text-align: right;">93459728160</td>
+<td style="text-align: right;">210281178240</td>
+<td style="text-align: right;">0.444451229</td>
+</tr>
+<tr>
+<td><code>central_white</code></td>
+<td style="text-align: right;">32352145920</td>
+<td style="text-align: right;">210281178240</td>
+<td style="text-align: right;">0.153851839</td>
+</tr>
+<tr>
+<td><code>compressed_white</code></td>
+<td style="text-align: right;">32352145920</td>
+<td style="text-align: right;">210281178240</td>
+<td style="text-align: right;">0.153851839</td>
+</tr>
+<tr>
+<td><code>central_correlated</code></td>
+<td style="text-align: right;">24381142920</td>
+<td style="text-align: right;">210281178240</td>
+<td style="text-align: right;">0.115945436</td>
+</tr>
+<tr>
+<td><code>compressed_correlated</code></td>
+<td style="text-align: right;">24381142920</td>
+<td style="text-align: right;">210281178240</td>
+<td style="text-align: right;">0.115945436</td>
+</tr>
+<tr>
+<td><code>stale_correlated</code></td>
+<td style="text-align: right;">32353470360</td>
+<td style="text-align: right;">210281178240</td>
+<td style="text-align: right;">0.153858137</td>
+</tr>
+<tr>
+<td><code>central_node2_correlated</code></td>
+<td style="text-align: right;">97517652480</td>
+<td style="text-align: right;">841117066920</td>
+<td style="text-align: right;">0.115938264</td>
+</tr>
+<tr>
+<td><code>transport_pcm16_white</code></td>
+<td style="text-align: right;">32351043960</td>
+<td style="text-align: right;">210281178240</td>
+<td style="text-align: right;">0.153846598</td>
+</tr>
+<tr>
+<td><code>clock_misaligned_white</code></td>
+<td style="text-align: right;">73784582591</td>
+<td style="text-align: right;">210281178240</td>
+<td style="text-align: right;">0.350885339</td>
+</tr>
+<tr>
+<td><code>clock_linear_corrected_white</code></td>
+<td style="text-align: right;">28540554452</td>
+<td style="text-align: right;">210281178240</td>
+<td style="text-align: right;">0.135725673</td>
+</tr>
+<tr>
+<td><code>packet_zerofill_white</code></td>
+<td style="text-align: right;">35436873520</td>
+<td style="text-align: right;">210281178240</td>
+<td style="text-align: right;">0.168521376</td>
+</tr>
+<tr>
+<td><code>packet_local_fallback_white</code></td>
+<td style="text-align: right;">34049578760</td>
+<td style="text-align: right;">210281178240</td>
+<td style="text-align: right;">0.161924044</td>
+</tr>
+</tbody>
+</table></div>
+<p>节点2分母841117066920不是节点1分母210281178240的精确四倍：单独量化后，解析幅度倍数不再推出整数能量倍数。PCM总误差含参考/输出量化，不能用浮点分量功率直接取代。</p>
+<span id="sec-122" class="anchor-alias" aria-hidden="true"></span><span id="485-时钟交叉功率与缺口控制" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-48-5">48.5 时钟、交叉功率与缺口控制</h3>
+<p>已知速率16,001.6Hz的远端输入提供32,004点；校正输出32,000点，没有无效参考点。最后同索引漂移约3.19958个参考样本。远端波形重建NMSE约从0.743173变为0.002916，最终融合浮点稳窗NMSE约从0.350880变为0.135724；两指标的参考和分母不同，不能互相替代。同步控制为2/13，SRC控制改变噪声与频率响应，不能称其超越原观测模型的LMMSE下界。</p>
+<p>图72分开画目标失真、残余噪声、其它分量及有符号交叉功率。缺口补零的全稳窗PCM NMSE约0.168521，缺口内约0.681955；本地回退分别约0.161924与0.444451。相同缺口中全窗平均误差较小不意味着缺口期间仍维持全网增强。实际远端PCM16运输另检查半步长误差界，不能用最终输出量化代替传输量化。</p>
+<span id="sec-123" class="anchor-alias" aria-hidden="true"></span><span id="486-重建只读回放与原源码范围" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-48-6">48.6 重建、只读回放与原源码范围</h3>
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch15.examples.generate_distributed_audio
+.venv/bin/python -m codes.chapters.ch15.examples.generate_distributed_audio --check
+.venv/bin/python -m codes.chapters.ch15.examples.audit_upstream_distributed_contracts
+</code></pre>
+<p>唯一<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch15/examples/generate_distributed_audio.py">生成器</a>绑定九个真实源摘要，严格接受17个WAV和清单共18个普通成员。<code>--check</code>只读重放完整PCM字节、浮点分量、真实整数指标与来源，不改资产。硬链接、符号链接、额外成员、重复JSON键、非有限数字与来源失配均不能被记为通过。</p>
+<p>图70～72由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/scripts/make_figures.py">绘图源</a>生成，相关<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch15/reports">报告目录</a>保留全部计算状态。固定MATLAB代码仅静态合同与独立数字控制，未运行WOLA；固定paderwasn只提取三个原NumPy助手受限调用，16组中13组匹配、1组短输入差异及2组无观测都原样保留。详见<a href="04_source_reproduction.html#distributed-reproduction">来源与许可</a>及<a href="03_industrial_deployment.html#distributed-network-deployment">工业时间轴与载荷</a>。本书没有真实网络、原完整DANSE/TI整链、自然语音或正式主观听测结果。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

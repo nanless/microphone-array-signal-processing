@@ -52,6 +52,23 @@ SCENARIO_AUDIO_ROOT = CODE_CHAPTERS / "ch11" / "scenario_audio"
 WEIGHTED_AUDIO_ROOT = CODE_CHAPTERS / "appendix_a" / "weighted_audio"
 RESPONSE_AUDIO_ROOT = CODE_CHAPTERS / "appendix_b" / "response_audio"
 IMAGING_AUDIO_ROOT = CODE_CHAPTERS / "ch14" / "imaging_audio"
+DISTRIBUTED_AUDIO_ROOT = CODE_CHAPTERS / "ch15" / "distributed_audio"
+DISTRIBUTED_AUDIO_CHANNELS = {
+    name+'.wav': (4 if name.startswith('array_') else 1) for name in (
+        'reference_node1', 'reference_node2', 'array_white', 'array_correlated',
+        'local_node1', 'central_white', 'compressed_white', 'central_correlated',
+        'compressed_correlated', 'stale_correlated', 'central_node2_correlated',
+        'remote_scalar_white', 'transport_pcm16_white', 'clock_misaligned_white',
+        'clock_linear_corrected_white', 'packet_zerofill_white', 'packet_local_fallback_white',
+    )
+}
+DISTRIBUTED_AUDIO_SOURCES = (
+    'codes/chapters/ch15/core/distributed.py', 'codes/chapters/ch15/core/distributed_audio.py',
+    'codes/chapters/ch15/examples/generate_distributed_audio.py', 'codes/chapters/ch02/core/conventions.py',
+    'codes/chapters/ch04/core/covariance.py', 'codes/chapters/ch10/sro_closed_loop_demo.py',
+    'codes/chapters/ch10/core/engineering.py', 'codes/chapters/ch00/core/audio_samples.py',
+    'codes/chapters/ch00/io_contracts.py',
+)
 RESPONSE_AUDIO_WAVS = {"response_" + name + ".wav" for name in
                        ("source", "reflection_a", "reflection_b", "full_a", "full_b")}
 WEIGHTED_AUDIO_WAVS = {"weighted_" + name + ".wav" for name in
@@ -86,6 +103,7 @@ EXPECTED_SECTION_COUNTS = {
     "12_appendix-symbols-math.md": 4,
     "13_appendix-guide.md": 7,
     "14_acoustic-imaging.md": 14,
+    "15_distributed-enhancement.md": 16,
 }
 # 第 1～13 章的源 h4 进入合订目录和 PDF 第三级书签。此表是独立发布
 # 基线，不从构建脚本或待检产物反推。
@@ -104,6 +122,8 @@ EXPECTED_SUBSECTION_COUNTS = {
     "12_appendix-symbols-math.md": 36,
     "13_appendix-guide.md": 29,
     "14_acoustic-imaging.md": 61,
+    # 39 separately navigable topics and 24 exercise headings, manually read.
+    "15_distributed-enhancement.md": 63,
 }
 # 上表为独立发布基线，不从待检 HTML 或构建器反推。
 EXPECTED_CHAPTERS = [
@@ -120,15 +140,26 @@ EXPECTED_CHAPTERS = [
     ("10_engineering-practice.md", "第 10 章 · 工程实现、评测与产业实践"),
     ("11_selection-guide.md", "第 11 章 · 总结与选型指南"),
     ("14_acoustic-imaging.md", "扩展专题Ⅰ · 声学成像与噪声源诊断"),
+    ("15_distributed-enhancement.md", "扩展专题Ⅱ · 分布式麦克风协同增强"),
     ("12_appendix-symbols-math.md", "附录 A · 符号术语数学"),
     ("13_appendix-guide.md", "附录 B · 路径地图与练习"),
 ]
-EXPECTED_CHAPTER_COUNT = 15
-EXPECTED_SECTION_COUNT = 135
-EXPECTED_SUBSECTION_COUNT = 631
-EXPECTED_OUTLINE_ITEM_COUNT = 781
-EXPECTED_FIGURE_NUMBERS = set(range(1, 70))
-# 研究附站使用独立显式清单，不挤占 15 篇教程或教程 PDF 大纲基线。
+EXPECTED_CHAPTER_COUNT = 16
+EXPECTED_SECTION_COUNT = 151
+EXPECTED_SUBSECTION_COUNT = 694
+EXPECTED_OUTLINE_ITEM_COUNT = 861
+EXPECTED_FIGURE_NUMBERS = set(range(1, 73))
+EXPECTED_EXERCISE_COUNT = 332
+EXPECTED_EXERCISE_COUNTS = {
+    '01_problem-definition.md': 9, '02_basics-signal-model.md': 18,
+    '03_array-geometry.md': 17, '04_doa-estimation.md': 23,
+    '05_beamforming.md': 22, '06_aec.md': 39, '07_wpe-dereverberation.md': 21,
+    '08_speech-separation.md': 29, '09_source-tracking.md': 23,
+    '10_engineering-practice.md': 33, '11_selection-guide.md': 25,
+    '12_appendix-symbols-math.md': 19, '13_appendix-guide.md': 14,
+    '14_acoustic-imaging.md': 16, '15_distributed-enhancement.md': 24,
+}
+# 研究附站使用独立显式清单，不挤占 16 篇教程或教程 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
 EXPECTED_RESEARCH_PAGES = (
     ("README.md", "index.html"),
@@ -330,6 +361,31 @@ def structure_issues(documents: dict[str, str]):
     return issues
 
 
+def exercise_ids_from_markdown(text):
+    """Only actual exercise titles; references, tables and code do not count."""
+    result = []
+    for level, title in markdown_headings(text):
+        if level == 4 and (re.match(r'^E\d{2}-\d{2}\b', title) or re.match(r'^题\s+\d+', title)):
+            result.extend(re.findall(r'\bE\d{2}-\d{2}\b', title))
+    # Appendix B's first two pre-existing exercises are bold block labels.
+    result.extend(re.findall(r'^\s*\*\*(E\d{2}-\d{2})[：\s]', strip_fenced_code(text), re.M))
+    return result
+
+
+def exercise_definition_issues(documents):
+    issues, all_ids = [], []
+    for filename, count in EXPECTED_EXERCISE_COUNTS.items():
+        found = exercise_ids_from_markdown(documents.get(filename, ''))
+        chapter = filename[:2]
+        expected = {f'E{chapter}-{i:02d}' for i in range(1, count+1)}
+        if len(found) != count or set(found) != expected:
+            issues.append(f'练习题干集不符合基线：{filename}，缺失 {sorted(expected-set(found))}，多出 {sorted(set(found)-expected)}，题干数 {len(found)}/{count}')
+        all_ids.extend(found)
+    if len(all_ids) != EXPECTED_EXERCISE_COUNT or len(set(all_ids)) != EXPECTED_EXERCISE_COUNT:
+        issues.append(f'可执行练习题干应为 {EXPECTED_EXERCISE_COUNT} 个唯一ID，实际 {len(all_ids)} 个题干/{len(set(all_ids))} 个唯一ID')
+    return issues
+
+
 def formula_semantic_issues(documents: dict[str, str]):
     issues = []
     definitions: dict[str, str] = {}
@@ -499,6 +555,7 @@ def check_sources(errors: list[str], notices: list[str]):
     documents = {path.name: path.read_text(encoding="utf-8")
                  for path in sorted(CHAPTERS.glob("*.md"))}
     errors.extend(structure_issues(documents))
+    errors.extend(exercise_definition_issues(documents))
     errors.extend(formula_semantic_issues(documents))
     errors.extend(section_reference_issues(documents))
 
@@ -710,7 +767,7 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69)
+            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
@@ -1071,8 +1128,8 @@ def _check_tracking_information_report(path):
 
 def check_site(errors: list[str]):
     pages = sorted(SITE.glob("*.html"))
-    if len(pages) != 15:
-        fail(errors, f"站点页面数应为 15，实际 {len(pages)}")
+    if len(pages) != EXPECTED_CHAPTER_COUNT:
+        fail(errors, f"站点页面数应为 {EXPECTED_CHAPTER_COUNT}，实际 {len(pages)}")
     documents = {path.name: path.read_text(encoding="utf-8")
                  for path in CHAPTERS.glob("*.md")}
     source_by_page = {"index.html": "00_overview.md"}
@@ -1334,7 +1391,7 @@ def site_source_digest():
     paths += sorted(main_audio_path(CODE_CHAPTERS, record["group"], record["file"])
                     for record in manifest["files"])
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
@@ -1687,7 +1744,7 @@ def check_real_audio(errors):
         parser = VisibleMediaParser()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         allowed_audio_roots = ("../audio/", "../real_audio/", "../room_audio/",
-                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/", "../scenario_audio/", "../weighted_audio/", "../response_audio/", "../imaging_audio/")
+                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/", "../scenario_audio/", "../weighted_audio/", "../response_audio/", "../imaging_audio/", "../distributed_audio/")
         if any(not (p.get("src") or "").startswith(allowed_audio_roots)
                for p in parser.items):
             fail(errors, "未知试听控件来源")
@@ -2710,6 +2767,256 @@ def check_response_audio(errors):
         fail(errors, '独立同DRR频响音频：'+str(error))
 
 
+def _distributed_integer_pcm(directory):
+    """Read actual PCM with stdlib integers; never use the generating scorer."""
+    import struct
+    members = set(DISTRIBUTED_AUDIO_CHANNELS) | {'MANIFEST.json'}
+    validate_asset_directory(directory, members, check=True)
+    channels = {}
+    for name, count in DISTRIBUTED_AUDIO_CHANNELS.items():
+        with wave.open(str(directory / name), 'rb') as reader:
+            if (reader.getnchannels(), reader.getsampwidth(), reader.getframerate(),
+                    reader.getnframes(), reader.getcomptype()) != (count, 2, 16000, 32000, 'NONE'):
+                raise ValueError('distributed actual PCM format differs: ' + name)
+            raw = reader.readframes(32000)
+        if len(raw) != 64000 * count:
+            raise ValueError('distributed PCM length differs: ' + name)
+        flat = struct.unpack('<' + str(32000 * count) + 'h', raw)
+        channels[name[:-4]] = [flat[c::count] for c in range(count)]
+    measurements = {}
+    non_outputs = {'reference_node1', 'reference_node2', 'array_white', 'array_correlated', 'remote_scalar_white'}
+    for key, data in channels.items():
+        reference = None if key in non_outputs else ('reference_node2' if key == 'central_node2_correlated' else 'reference_node1')
+        windows = {}
+        for label, (start, stop) in {'steady': (1600, 30400), 'packet': (16000, 16800)}.items():
+            n = stop - start
+            powers = [sum(v*v for v in ch[start:stop]) for ch in data]
+            row = {'samples': n, 'integer_squared_sum_by_channel': powers,
+                   'mean_square_by_channel': [v / (n * 32768**2) for v in powers]}
+            if reference is not None:
+                target = channels[reference][0][start:stop]
+                E = sum((v-r)**2 for v, r in zip(data[0][start:stop], target))
+                D = sum(r*r for r in target)
+                row.update(reference_energy=D/32768**2, total_mse=E/(n*32768**2),
+                           normalized_mse=E/D, integer_error_squared_sum_E=E,
+                           integer_reference_squared_sum_D=D, integer_sample_denominator=n,
+                           integer_nmse_E_over_D=E/D)
+            windows[label] = row
+        measurements[key] = {'reference_key': reference, 'windows': windows}
+    return measurements
+
+
+def check_distributed_audio(errors):
+    """Exact member/copy checks, current-source replay and independent integer E/D."""
+    try:
+        from codes.chapters.ch15.examples.generate_distributed_audio import check_assets
+        source, published = DISTRIBUTED_AUDIO_ROOT, SITE / 'distributed_audio'
+        manifest = check_assets(source)
+        members = set(DISTRIBUTED_AUDIO_CHANNELS) | {'MANIFEST.json'}
+        validate_asset_directory(published, members, check=True)
+        if set(manifest['source_sha256']) != set(DISTRIBUTED_AUDIO_SOURCES):
+            raise ValueError('distributed generating source set differs')
+        for path in DISTRIBUTED_AUDIO_SOURCES:
+            if manifest['source_sha256'][path] != hashlib.sha256(validate_parent_chain(ROOT/path).read_bytes()).hexdigest():
+                raise ValueError('distributed current source SHA differs: ' + path)
+        for name in members:
+            if (source/name).read_bytes() != (published/name).read_bytes():
+                raise ValueError('distributed published bytes differ: ' + name)
+        for key, expected in _distributed_integer_pcm(published).items():
+            declared = manifest['samples'][key]['pcm_measurements']
+            if declared['reference_key'] != expected['reference_key']:
+                raise ValueError('distributed scoring reference differs: ' + key)
+            for label, row in expected['windows'].items():
+                for field, value in row.items():
+                    _compare_selection_report(declared['windows'][label][field], value,
+                                              'distributed PCM/' + key + '/' + label + '/' + field)
+        for page, prefix in ((SITE/'15_distributed-enhancement.html', ''),
+                             (SITE/'research/05_exercises_and_audio.html', '../')):
+            _check_visible_audio(page, prefix, 'distributed_audio', set(DISTRIBUTED_AUDIO_CHANNELS), {'MANIFEST.json'})
+    except (OSError, ValueError, KeyError, TypeError, wave.Error) as error:
+        fail(errors, '独立分布式协同音频：' + str(error))
+
+
+def _check_distributed_figure_report(path, number):
+    """Reconstruct costs and update chronology from equations, independently."""
+    import numpy as np
+    report = _read_tracking_manifest(path)
+    fields={'schema_version','scope','source_sha256','results'}
+    if number in (70,72):fields.add('audio_manifest_sha256')
+    if (set(report)!=fields or report['scope'] !=
+            'known-statistics finite teaching controls; not blind DANSE or industrial performance'):
+        raise ValueError('distributed figure fields/execution scope differ')
+    expected_sources = set(DISTRIBUTED_AUDIO_SOURCES) | {'scripts/make_figures.py'}
+    if number == 71:
+        expected_sources = {'scripts/make_figures.py', 'codes/chapters/ch15/core/distributed.py',
+                            'codes/chapters/ch02/core/conventions.py', 'codes/chapters/ch04/core/covariance.py',
+                            'codes/chapters/ch00/io_contracts.py'}
+    if type(report['schema_version']) is not int or report['schema_version'] != 1 or set(report['source_sha256']) != expected_sources:
+        raise ValueError('distributed figure source/schema differs')
+    for name in expected_sources:
+        if report['source_sha256'][name] != hashlib.sha256(validate_parent_chain(ROOT/name).read_bytes()).hexdigest():
+            raise ValueError('distributed figure current source SHA differs: ' + name)
+    def close(actual, expected, label):
+        if not np.allclose(actual, expected, rtol=2e-11, atol=2e-14):
+            raise ValueError('distributed figure independent value differs: ' + label)
+    def z(value):
+        return np.asarray(value['real']) + 1j*np.asarray(value['imag'])
+    def component(row):
+        fields = ('target_distortion_power', 'noise_power', 'other_error_power',
+                  'target_noise_cross_power', 'target_other_cross_power', 'noise_other_cross_power')
+        close(row['total_mse'], sum(row[f] for f in fields), 'signed component sum')
+        close(row['normalized_mse'], row['total_mse']/row['reference_power'], 'float reference denominator')
+    data = report['results']
+    if number in (70, 72):
+        manifest_path = DISTRIBUTED_AUDIO_ROOT/'MANIFEST.json'
+        if report['audio_manifest_sha256'] != hashlib.sha256(manifest_path.read_bytes()).hexdigest():
+            raise ValueError('distributed figure audio manifest SHA differs')
+        manifest = _read_tracking_manifest(manifest_path)
+        pcm = _distributed_integer_pcm(DISTRIBUTED_AUDIO_ROOT)
+        def score(key, label, declared):
+            row = pcm[key]['windows'][label]
+            expected = {'E': row['integer_error_squared_sum_E'], 'D': row['integer_reference_squared_sum_D'],
+                        'samples': row['samples'], 'nmse': row['integer_nmse_E_over_D']}
+            _compare_selection_report(declared, expected, f'figure{number}/{key}/{label}')
+        if number == 70:
+            expected = {'local_node1': 4/9, 'central_white': 2/13, 'compressed_white': 2/13,
+                        'stale_correlated': 2/13, 'central_correlated': 8/69, 'compressed_correlated': 8/69}
+            if set(data['rows']) != set(expected) or data['window'] != [1600,30400]:
+                raise ValueError('figure70 cases/scoring window differ')
+            for key, target in expected.items():
+                row = data['rows'][key]
+                close(row['analytic']['normalized_mse'], target, 'fixed rational cost')
+                close(row['analytic']['total_mse'], .0068*target, 'absolute model cost')
+                a = np.array([1.,.5,2.,-.5]); noise=np.eye(4)
+                if key.endswith('correlated'):
+                    noise[0,2]=noise[2,0]=.2;noise[0,3]=noise[3,0]=.8
+                w = np.array([4,2,0,0])/9 if key=='local_node1' else (
+                    np.array([25,4,11,-24])/69 if key in ('central_correlated','compressed_correlated') else
+                    np.array([2,1,4,-1])/13)
+                close([row['analytic']['target_distortion'],row['analytic']['noise_power'],
+                       row['analytic']['reference_target_power']],
+                      [.0068*(w@a-1)**2,.0068*(w@noise@w),.0068], 'independent signal/noise quadratic forms')
+                component(row['float'])
+                _compare_selection_report(row['float'], manifest['samples'][key]['float_components']['steady'], 'figure70 float')
+                score(key, 'steady', row['pcm'])
+        else:
+            expected = {'compressed_white', 'clock_misaligned_white', 'clock_linear_corrected_white',
+                        'packet_zerofill_white', 'packet_local_fallback_white'}
+            if set(data['rows']) != expected:
+                raise ValueError('figure72 case set differs')
+            for key, row in data['rows'].items():
+                labels = ('steady', 'packet') if key.startswith('packet_') else ('steady',)
+                for label in labels:
+                    floating = row['float_components'][label] if len(labels)>1 else row['float_components']
+                    component(floating)
+                    _compare_selection_report(floating, manifest['samples'][key]['float_components'][label], 'figure72 float')
+                    score(key, label, row['pcm'][label] if len(labels)>1 else row['pcm'])
+            for key, expected in (('packet_zerofill_white',461/676), ('packet_local_fallback_white',4/9)):
+                close(data['rows'][key]['float_components']['packet']['normalized_mse'], expected, 'gap rational control')
+            cross = [[data['rows'][key]['float_components']['other_error_power']/ .0068,
+                      data['rows'][key]['float_components']['target_noise_cross_power']/ .0068]
+                     for key in ('compressed_white', 'clock_misaligned_white', 'clock_linear_corrected_white')]
+            close(data['cross_terms'], cross, 'signed cross panel')
+            _compare_selection_report(data['clock'], manifest['float_clock_control'], 'figure72 known-rate SRC')
+            if data['parameters']['scoring_windows_samples'] != {'steady':[1600,30400], 'packet':[16000,16800]}:
+                raise ValueError('figure72 gap/global windows differ')
+        return
+    if number != 71:
+        raise ValueError('unknown distributed figure')
+    a = np.array([1., .5, 2., -.5]); Rs = np.outer(a,a); Rn = np.eye(4)
+    Rn[0,2] = Rn[2,0] = .2; Rn[0,3] = Rn[3,0] = .8; Rx = Rs+Rn
+    close(data['model']['Rs'], Rs, 'source covariance'); close(data['model']['correlated'], Rn, 'noise covariance')
+    close(data['model']['a'],a,'steering vector');close(data['model']['white'],np.eye(4),'white covariance')
+    if data['model']['nodes']!=[[0,1],[2,3]] or data['model']['references']!=[0,2]:
+        raise ValueError('figure71 node/reference model differs')
+    if set(data['trajectories']) != {'round_robin','simultaneous','simultaneous_half'}:
+        raise ValueError('figure71 trajectory set differs')
+    for key,scale in (('central_node1',1),('central_node2',4)):
+        close([data[key]['total_mse'],data[key]['reference_target_power'],data[key]['normalized_mse']],
+              [scale*8/69,scale,8/69],'centralized reference-specific anchor')
+    nodes, refs = ([0,1],[2,3]), (0,2)
+    for name, (schedule, alpha, budget, solved) in {'round_robin': ('round_robin',1.,40,14),
+            'simultaneous': ('simultaneous',1.,100,26), 'simultaneous_half': ('simultaneous',.5,100,76)}.items():
+        run = data['trajectories'][name]
+        if (run['schedule'],run['relaxation'],run['max_update_solves'],run['update_solve_count'],
+                run['initial_local_solve_count'],run['total_solve_count']) != (schedule,alpha,budget,solved,2,solved+2):
+            raise ValueError('figure71 actual solve budget differs: '+name)
+        before = [a[list(ids)].astype(complex) for ids in nodes]
+        last = [np.zeros(4,complex) for _ in nodes]; last_versions=[0,0]
+        coefficients=[];peer_maps=[[],[]]
+        for k, ids in enumerate(nodes):
+            last[k][list(ids)] = np.linalg.solve(Rx[np.ix_(ids,ids)], Rs[list(ids),refs[k]])
+            coefficients.append(last[k][list(ids)].copy())
+        count=0
+        for epoch, h in enumerate(run['history'],1):
+            active = [(epoch-1)%2] if schedule=='round_robin' else [0,1]
+            count += len(active)
+            if (h['epoch'] != epoch or h['active_nodes'] != active or h['update_solve_count'] != count
+                    or h['total_solve_count'] != count+2 or len(h['solutions']) != len(active)):
+                raise ValueError('figure71 chronology/solve count differs')
+            close([z(v) for v in h['compressions_before']], before, 'old broadcast snapshot')
+            after = [v.copy() for v in before]
+            for sol, k in zip(h['solutions'],active):
+                peer=1-k
+                close([z(v) for v in sol['incoming_compressions']],before,'shared old snapshot')
+                T = np.zeros((3,4),complex); T[:2,list(nodes[k])] = np.eye(2); T[2,list(nodes[peer])] = before[peer].conj()
+                u=np.linalg.solve(T@Rx@T.conj().T,T@Rs[:,refs[k]])
+                close(z(sol['raw_projection']),T,'solve projection');close(z(sol['raw_compressed_weights']),u,'raw solve coefficients')
+                close(z(sol['weights']),T.conj().T@u,'old solve proposal')
+                after[k]=(1-alpha)*before[k]+alpha*u[:2]
+                close(z(sol['new_compression']),after[k],'relaxed local broadcast')
+                last[k]=T.conj().T@u;last_versions[k]=count
+                coefficients[k]=u;peer_maps[k]=[peer]
+            close([z(v) for v in h['compressions_after']],after,'new broadcasts')
+            for k in range(2):
+                peer_map=h['receiver_peer_maps'][k]
+                if peer_map!=peer_maps[k]:raise ValueError('figure71 stale receiver peer map differs')
+                close(z(h['receiver_coefficients_raw_coordinates'][k]),coefficients[k],'frozen receiver coefficients')
+                T=np.zeros((2+len(peer_map),4),complex)
+                T[:2,list(nodes[k])]=np.eye(2)
+                for j,p in enumerate(peer_map):T[2+j,list(nodes[p])]=after[p].conj()
+                u=z(h['receiver_coefficients_raw_coordinates'][k]); w=T.conj().T@u
+                close(z(h['current_receiver_projections'][k]),T,'current receive projection')
+                close(z(h['cached_outputs'][k]),w,'current effective output')
+                close(z(h['outputs_at_last_solve'][k]),last[k],'preserved proposal snapshot')
+                e=np.eye(4)[:,refs[k]];dist=float(np.real((w-e).conj()@Rs@(w-e)));noise=float(np.real(w.conj()@Rn@w))
+                c=h['cached_components'][k]
+                close([c['target_distortion'],c['noise_power'],c['total_mse'],c['normalized_mse']],
+                      [dist,noise,dist+noise,(dist+noise)/Rs[refs[k],refs[k]]],'arbitrary effective weight full cost')
+                close([c['reference_target_power'],c['target_noise_cross_term']],
+                      [Rs[refs[k],refs[k]],0.],'model target denominator/uncorrelated cross')
+                residual=np.linalg.norm(Rx@w-Rs[:,refs[k]])/np.linalg.norm(Rs[:,refs[k]])
+                close(h['normal_equation_relative_residuals'][k],residual,'current residual')
+            if h['output_last_update'] != last_versions or h['output_age_in_update_solves'] != [count-v for v in last_versions]:
+                raise ValueError('figure71 receiver coefficient versions differ')
+            for sol in h['solutions']:
+                k=sol['node'];w=z(sol['weights']);e=np.eye(4)[:,refs[k]]
+                dist=float(np.real((w-e).conj()@Rs@(w-e)));noise=float(np.real(w.conj()@Rn@w))
+                close([sol['components']['target_distortion'],sol['components']['noise_power'],sol['components']['total_mse']],
+                      [dist,noise,dist+noise],'old proposal cost')
+                close(z(sol['effective_weights_after_broadcast']),z(h['cached_outputs'][k]),'active output after simultaneous receive')
+            before=after
+        if count!=solved or max(run['history'][-1]['normal_equation_relative_residuals'])>1e-8:
+            raise ValueError('figure71 final stopping condition fails')
+        if (run['unused_update_budget']!=budget-solved or run['tolerance']!=1e-8
+                or run['status']!='known_covariance_residual_reached'):
+            raise ValueError('figure71 final stop/budget metadata differs')
+        for field in ('compressions', 'cached_outputs', 'receiver_coefficients_raw_coordinates'):
+            history_field='compressions_after' if field=='compressions' else field
+            close([z(v) for v in run[field]],[z(v) for v in run['history'][-1][history_field]],'final '+field)
+        if run['receiver_peer_maps'] != peer_maps:raise ValueError('figure71 final receiver mapping differs')
+        if len(run['history'])>1 and max(run['history'][-2]['normal_equation_relative_residuals'])<=1e-8:
+            raise ValueError('figure71 unnecessary post-stop solves')
+
+
+def check_distributed_figures(errors):
+    for number, name in {70:'compression',71:'updates',72:'transport'}.items():
+        try:
+            _check_distributed_figure_report(ROOT/f'codes/chapters/ch15/reports/figure{number}_distributed_{name}.json',number)
+        except (OSError, ValueError, KeyError, TypeError, IndexError, wave.Error) as error:
+            fail(errors, f'图{number}分布式协同报告：{error}')
+
+
 def check_imaging_audio(errors):
     """Check published bytes and independently recover single-tone PCM CSMs."""
     try:
@@ -3091,6 +3398,7 @@ def main():
     check_sources(errors, notices)
     check_figures(errors)
     check_imaging_figures(errors)
+    check_distributed_figures(errors)
     check_site(errors)
     check_research_site(errors)
     check_audio(errors)
@@ -3111,6 +3419,7 @@ def main():
     check_weighted_audio(errors)
     check_response_audio(errors)
     check_imaging_audio(errors)
+    check_distributed_audio(errors)
     check_scenario_audio(errors)
     check_combined_html(errors)
     check_pdf(errors, notices)

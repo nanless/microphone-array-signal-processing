@@ -13,6 +13,8 @@
 | 论文实验 | 数据划分、权重、配置、评分版本 | 按原文统计口径报告结果和偏差 | 另一房间/阵列具有同等表现 |
 | 设备链路 | 硬件、驱动、固件、参考取点、时钟、功耗状态 | 连续运行、延迟、语音损伤、异常恢复 | 所有产品场景均已覆盖 |
 
+分布式波形增强还要固定节点参考、广播维数、滤波版本和共同样本标签。学习入口为[扩展专题Ⅱ](../../../../chapters/15_distributed-enhancement.md)，实际原源码执行范围见本篇[固定分布式合同](#distributed-reproduction)，网络时钟与码率口径见[工业部署§8](03_industrial_deployment.md#distributed-network-deployment)。
+
 ## 2. 固定提交与本地文件
 
 [锁定清单](../SOURCES.lock.json) 保存官方仓库地址和完整 Git 提交。获取工具检出独立仓库，
@@ -360,3 +362,92 @@ ArrayDPS固定 `750ac2b7c75458f4ca5bad203dafda528f575e55` 的真实采样入口�
 [诊断入口](../../ch06/examples/audit_aec_upstream_interfaces.py)不下载依赖、不修补上游。它先核对固定提交和原文件摘要，再实际调用 pyaec 的 RLS/Kalman/FDKF/PFDKF 及 echocatzh 的初始块接口。pyaec 的尾截断和 `np.complex` 失败保留在[报告](../../ch06/reports/aec_upstream_interfaces.json)中；echocatzh 的默认后滤输出另列，不能等同于线性残差。
 
 DTLN 部分用原 `process_file` 函数的 AST、内存输入和假解释器检查文件填充、状态及输出缩放，明确没有运行神经网络。这类测试可以发现接口问题，不能据此报告语音效果、实时性或论文复现成功。输入、逐项结果及源码入口见[研究 A18](02_aec_wpe_separation.md#aec)。
+
+<a id="distributed-reproduction"></a>
+
+## 8. 固定分布式源码：静态合同、原函数与完整算法
+
+2026-10-04的[审计入口](../../ch15/examples/audit_upstream_distributed_contracts.py)和[当前报告](../../ch15/reports/upstream_distributed_contracts.json)固定两套独立上游工作树。工具不获取源码、不安装依赖、不改写上游；运行前后核对官方origin、完整HEAD、实际使用的源码/许可SHA和Git blob、洁净状态及完整锁表摘要。报告的`acquisition_scope`另存全部稀疏选集状态，`files`说明这次实际依赖的文件；不能用少数入口匹配替代完整选集核验，也不把获取过程的`execution=not_run`改成整包成功。
+
+| 上游与完整提交 | 本次所用入口 | 许可与范围 |
+|---|---|---|
+| [AlexanderBertrandLab/Old_Code](https://github.com/AlexanderBertrandLab/Old_Code/tree/a24b73fcd2dc028659535d07bb08068b06108616 "citation")，`a24b73fcd2dc028659535d07bb08068b06108616` | `WOLA_DANSE1.m`，版本1.4；17586B，SHA256 `54fd630bd7f34ac3d9a97db2a30cee6c7a6a1bc496274b53f9ba9f756ce0772b` | 文件头保留2010年版权及三条再分发条件，无根LICENSE且缺标准BSD免责声明，登记为`LicenseRef-Bertrand-DANSE-3-Conditions`。不能标为BSD-3-Clause；未取得四个数据ZIP或运行MATLAB |
+| [fgnt/paderwasn](https://github.com/fgnt/paderwasn/tree/cd7054fcf72da637e4a5e11f035e8979691faf70 "citation")，`cd7054fcf72da637e4a5e11f035e8979691faf70` | `synchronization/sync.py`、`time_shift_estimation.py`、`utils.py`、`sro_estimation.py`，以及根README/setup/许可 | 根[LICENSE](https://github.com/fgnt/paderwasn/blob/cd7054fcf72da637e4a5e11f035e8979691faf70/LICENSE "citation")为MIT，SHA256 `60be4f44a5baa0db1ed1c9f1bc3ea5f7274b2032bb57bd87c054fa27efaa81fe`；仅三个原助手函数受限执行，完整同步包未导入 |
+
+### 三个原函数在16组顶层用例中的实际行为
+
+本次环境为macOS arm64、Python 3.13.12、NumPy 2.5.3。工具从锁定原文件提取函数定义的AST，保留函数参数与数学body，保存原定义/执行定义/数学body的摘要及起止行。三个定义本来都没有装饰器；周围模块及其导入没有执行。执行命名空间只提供NumPy及先提取的原`golden_section_max_search`，没有把自写估计器冒充原函数，也没有导入完整`paderwasn`包。
+
+| 原入口 | 顶层用例与独立期望 | 实际记录与含义 |
+|---|---|---|
+| [`sync.py::coarse_sync`，5～34行](https://github.com/fgnt/paderwasn/blob/cd7054fcf72da637e4a5e11f035e8979691faf70/paderwasn/synchronization/sync.py#L5-L34 "citation") | 32点脉冲的−3、0、+4点偏移及+4点反极性；独立峰位置差和保留支持长度 | 四例偏移完全匹配，输入未改动；这是整样本粗对齐，不是SRO估计 |
+| 同一`coarse_sync` | 两路相同4点脉冲，请求`len_sync=8`，独立偏移应为0 | 原函数按请求长度减`len_sync-1`，返回−4并把两路裁成空数组；记`observed_original_behavior_difference`，保留原失败 |
+| 同一`coarse_sync` | 两路8点全零，无可辨识相关峰 | 返回−7、两路各剩1点；原数值有限但无可辨识时延，另记无观测状态 |
+| [`time_shift_estimation.py::max_time_lag_search`，9～49行](https://github.com/fgnt/paderwasn/blob/cd7054fcf72da637e4a5e11f035e8979691faf70/paderwasn/synchronization/time_shift_estimation.py#L9-L49 "citation") | 64点全谱的解析线性相位，已知延迟0、3、−5、2.25、31.75、32、33；Nyquist频点显式置零 | 七例按模64比较，误差均在原黄金搜索`1e-4`样本容差内。31.75得到约−32.25002，允许周期等价，不强行把返回值说成始终位于半开有符号区间 |
+| [`utils.py::golden_section_max_search`，5～50行](https://github.com/fgnt/paderwasn/blob/cd7054fcf72da637e4a5e11f035e8979691faf70/paderwasn/synchronization/utils.py#L5-L50 "citation") | 在`(-1,1)`内最大化两条凹二次函数，解析顶点−0.3、0.6 | 两例与独立顶点匹配，使用原默认区间收缩容差 |
+| 同一`max_time_lag_search` | 64点全零谱，无时延观测 | 返回约−31.50002；目标函数处处相等，数字不具有测量意义，记无观测状态 |
+
+合计16组顶层用例：13组匹配独立期望，1组短输入差异，2组无峰却返回数值。GCC搜索内部还调用原黄金搜索助手，这个嵌套过程不另计为顶层用例。容差来自优化搜索的区间收缩，不是设备时钟精度、ppm成绩或自然语音同步质量。静音用例说明调用者需要输入/活动和可辨识性检查，不能仅以“返回有限数字”把结果纳入评分。
+
+固定`setup.py`的`install_requires`为空，不表示完整包没有依赖。README另外列出固定的`paderbox`与`lazy_dataset`；同步模块还导入SciPy窗与`paderbox`的STFT/分帧。这里只略去三函数不使用的模块导入以限定执行范围，未安装上述依赖、运行OnlineWACD/DWACD、完整SRO/STO估计、重采样器、波束或录音数据。[原README](https://github.com/fgnt/paderwasn/blob/cd7054fcf72da637e4a5e11f035e8979691faf70/README.md "citation")与[同步源码](https://github.com/fgnt/paderwasn/tree/cd7054fcf72da637e4a5e11f035e8979691faf70/paderwasn/synchronization "citation")提供后续整包研究入口。
+
+### 原MATLAB静态合同与五项独立控制
+
+报告保存14项原MATLAB静态行合同，包括帧首VAD、内部/外部滤波器分工、广播版本生效次序、顺序token的作用、普通EVD、直接逆矩阵、窗函数和循环终点；配置与论文实验分开记录，详见[工业I34](03_industrial_deployment.md#distributed-network-deployment)。本机MATLAB与Octave运行时均不可用，未安装运行时、未运行原WOLA链、GEVD-DANSE、真实网络或数据集。
+
+另有五项**数学控制或控制流复写**，不称原MATLAB运行结果：
+
+| 独立控制 | 可复算的结果 | 它检查的边界 |
+|---|---|---|
+| 512点对称Hann、256点帧移 | 两窗重叠和最小约0.99692610，最大约0.99999055，偏离1最大约0.00307390 | 对称窗不自动满足此未经修正的恒等增益合同；没有模拟完整原WOLA音频 |
+| 差协方差$\operatorname{diag}(-9,-1)$ | 先选代数最大−1再取绝对值，形成$\operatorname{diag}(0,1)$；正半定投影则为零 | 不是选绝对值最大9，也不是删去负特征值 |
+| 初始外部值/目标1，事件后新目标3，平滑系数0.5 | 四帧广播版本为`[1,1,2,2.5]`；事件后的第二个广播帧才受新目标影响 | 明确先广播、再向旧目标平滑、最后改目标；内部两个节点仍逐帧更新 |
+| 8个相同二维噪声快拍 | 协方差秩1，即使快拍数8大于维数2 | 足够帧数不保证正定，原`inv`无加载 |
+| 输入24点、窗8点、帧移4点的原循环边界 | 零基起点`[0,4,8,12]`，最后处理到20；完整合法起点16未进入循环 | 末4点未处理，没有通过停止循环完成排尾 |
+
+这五项控制中的配置用于隔离数学或时序问题，不是原论文的实验配置。正文的自适应广播教学核、独立数学音频和图报告同样有各自真实源与输入，不借用这份静态记录证明原MATLAB性能。
+
+### 复跑与尚未执行的候选
+
+```bash
+.venv/bin/python -B -m codes.chapters.ch15.examples.audit_upstream_distributed_contracts
+.venv/bin/python -B -m codes.chapters.ch15.examples.audit_upstream_distributed_contracts --report codes/chapters/ch15/reports/upstream_distributed_contracts.json
+.venv/bin/python -B -m unittest tests.test_codes_distributed_contracts -v
+```
+
+默认仅输出严格JSON，显式`--report`才通过公共IO原语保存当前报告。工具拒绝上游缓存、源码、锁表、审查记录与旧历史报告作为输出，并检查普通父链/成员、符号链接、硬链接、词法`..`及非有限数值。有限写前检查与原子替换不宣称消除并发竞态或保证崩溃持久性。离线测试以独立临时Git仓库验证错误origin、完整HEAD、摘要、脏工作树和控制失败；官方缓存缺失时可选原函数实调明确跳过，版本不符则报错。当前报告状态为`audit_completed_with_original_differences_and_unobserved_peaks`，保留实际差异与无观测输出，不把整份报告改名为全部算法通过。
+
+[p-didier/danse固定提交](https://github.com/p-didier/danse/tree/3f08ffd6e578a8c5301e9310d29dc31112eb20f7 "citation")`3f08ffd6e578a8c5301e9310d29dc31112eb20f7`的完整tree未见明确代码许可，本书只登记索引，未获取代码或其`pyANFgen`子模块；源码可见不等于取得再分发授权。它可帮助定位SRO-DANSE的作者实现，不能因有链接就登记成已运行。
+
+[TI-DANSE+作者批处理仓](https://github.com/p-didier/tidanseplus_batch/tree/0fcc0da19ce9e50bafc978ce1f315bac610d4c0b "citation")固定为`0fcc0da19ce9e50bafc978ce1f315bac610d4c0b`。同一提交的[根LICENSE](https://github.com/p-didier/tidanseplus_batch/blob/0fcc0da19ce9e50bafc978ce1f315bac610d4c0b/LICENSE "citation")写MIT及2026版权，[README的License段](https://github.com/p-didier/tidanseplus_batch/blob/0fcc0da19ce9e50bafc978ce1f315bac610d4c0b/README.md "citation")却写GPL-3.0-or-later及2025版权，存在真实矛盾。锁表保留冲突和限定研究范围，不能任选一个标签当作完整可分发许可。该仓用于定位批处理主入口与论文配置，本书未运行TI-DANSE+、原GEVD算法或论文语音指标；2025会议稿与2026扩展预印本的不同证明范围见[工业I35](03_industrial_deployment.md#distributed-network-deployment)。
+
+<a id="historical-source-bindings"></a>
+
+## 9. 来源索引扩充后怎样核验旧报告
+
+整表SHA标识报告运行时实际读取的全部字节。新增五个分布式项目后，当前锁表从100项变为105项，其摘要自然改变；这不意味着旧报告曾在105项索引下运行。直接给旧报告换成当前摘要会伪造执行条件，直接要求所有旧报告等于当前整表摘要也会把无关的索引扩充误判成所用算法来源改变。
+
+本书保存提交`a215b4630c0c21a8744cf27436a2c9ffa9c00053`中两份文件的**原始字节**，文件名包含完整SHA。它们不是重新序列化的JSON，也不是手工删去五项所得的新表。
+
+| 固定快照 | 使用范围 |
+|---|---|
+| [100项来源锁表](../source_snapshots/SOURCES.55ab323ba665633141c4864763095046f9c6161ce2d88ca2aa9332dde7ec23f0.json) | 第1～9章十份固定原实现报告所记录的锁表摘要；其中第4章DOA和SAID分为两份 |
+| [当时的获取状态](../source_snapshots/SOURCE_STATUS.e3b3176d835837441224e4906b7c2befadcdc4fe2ce6163245b7d9a9ad0d9229.json) | 第9章追踪报告记录的状态摘要；该状态中的`lock_sha256`精确指向上一行 |
+
+100项锁表的完整SHA-256：
+
+```text
+55ab323ba665633141c4864763095046f9c6161ce2d88ca2aa9332dde7ec23f0
+```
+
+当时获取状态的完整SHA-256：
+
+```text
+e3b3176d835837441224e4906b7c2befadcdc4fe2ce6163245b7d9a9ad0d9229
+```
+
+[只读核验函数](../core/source_history.py)先核当前表真实字节SHA；历史摘要只允许明确登记的快照，并核文件完整SHA、严格JSON、普通父链/文件和唯一项目ID。随后按每份报告明确列出的使用项目，将历史与当前的**整个项目记录**逐字段、逐类型比较，而非只比仓库名或提交号。来源地址、提交、许可、源码入口、选择政策或获取状态中任一使用字段变化都会使这项沿用检查失败；与该报告无关的新项目可以存在。
+
+第9章还核历史状态绑定历史锁表、当前状态绑定当前锁表，以及ODAS、Spatial Audio Framework、FilterPy、Stone Soup四项完整状态记录一致。原`source_selection_verified=false`与选集不匹配原样保留，不将获取失败升级为原方法运行成功。第7章报告另有更早的状态摘要；上面的状态快照**不覆盖它**，不据此补写核验结论。
+
+这些检查验证来源身份的延续，不是重新执行旧算法。原报告的工具摘要、所用原文件/blob、官方origin、完整HEAD、前后洁净状态、执行范围、失败观察与数值断言仍分别检查；各报告原有项目摘要的JSON序列化口径也保持。若使用项目确实改变，应保留旧证据并另行运行和保存新报告，不能通过更换摘要消除差异。

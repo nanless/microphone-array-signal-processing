@@ -6,6 +6,7 @@ import shutil
 import unittest
 from unittest.mock import patch
 
+from codes.chapters.ch00.core.source_history import verify_lock_binding
 from codes.chapters.ch01.examples import audit_libmysofa_loudness as audit
 
 REPORT = audit.ROOT / "codes/chapters/ch01/reports/libmysofa_loudness.json"
@@ -22,10 +23,10 @@ class LoudnessReportTest(unittest.TestCase):
     def setUpClass(cls):
         cls.report = strict_load(REPORT.read_text(encoding="utf-8"))
 
-    def test_report_is_bound_to_current_audit_and_lock(self):
+    def test_report_binds_current_audit_historical_lock_and_unchanged_used_project(self):
         r = self.report
         self.assertEqual(r["audit_source_sha256"], audit.sha256(Path(audit.__file__)))
-        self.assertEqual(r["source"]["lock_sha256"], audit.sha256(audit.LOCK))
+        verify_lock_binding(r["source"]["lock_sha256"], ("libmysofa",), current_lock=audit.LOCK)
         self.assertEqual(r["source"]["revision"], audit.REVISION)
         self.assertTrue(r["source"]["worktree_clean"])
         self.assertFalse(r["scaffold"]["upstream_patched"])

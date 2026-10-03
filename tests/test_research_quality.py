@@ -65,11 +65,14 @@ class ResearchQualityTests(unittest.TestCase):
         self.assertEqual(self.issues(), [])
 
     def test_explicit_baselines_preserve_tutorial_pdf_and_figure_counts(self):
-        self.assertEqual(quality.EXPECTED_CHAPTER_COUNT, 15)
-        self.assertEqual(quality.EXPECTED_SECTION_COUNT, 135)
-        self.assertEqual(quality.EXPECTED_SUBSECTION_COUNT, 631)
-        self.assertEqual(quality.EXPECTED_OUTLINE_ITEM_COUNT, 781)
-        self.assertEqual(quality.EXPECTED_FIGURE_NUMBERS, set(range(1, 70)))
+        self.assertEqual(quality.EXPECTED_CHAPTER_COUNT, 16)
+        self.assertEqual(quality.EXPECTED_SECTION_COUNT, 151)
+        self.assertEqual(quality.EXPECTED_SUBSECTION_COUNT, 694)
+        self.assertEqual(quality.EXPECTED_OUTLINE_ITEM_COUNT, 861)
+        self.assertEqual(quality.EXPECTED_FIGURE_NUMBERS, set(range(1, 73)))
+        self.assertEqual(quality.EXPECTED_EXERCISE_COUNT, 332)
+        self.assertEqual(quality.EXPECTED_SECTION_COUNTS['15_distributed-enhancement.md'], 16)
+        self.assertEqual(quality.EXPECTED_SUBSECTION_COUNTS['15_distributed-enhancement.md'], 63)
         self.assertEqual(quality.EXPECTED_RESEARCH_PAGE_COUNT, 6)
         self.assertEqual(quality.EXPECTED_RESEARCH_PAGES, (
             ("README.md", "index.html"),
@@ -84,6 +87,22 @@ class ResearchQualityTests(unittest.TestCase):
         (self.site / "research" / "04_source_reproduction.html").unlink()
         self.assertTrue(any("研究页面集" in issue and "04_source_reproduction.html" in issue
                             for issue in self.issues()))
+
+    def test_exercise_count_reads_definitions_and_rejects_missing_replaced_duplicates(self):
+        from scripts import build_site
+        documents = {name: (build_site.SRC/name).read_text(encoding='utf-8')
+                     for name, _ in quality.EXPECTED_CHAPTERS}
+        self.assertEqual(quality.exercise_definition_issues(documents), [])
+        key = '15_distributed-enhancement.md'
+        original = documents[key]
+        # Keep the registry/reference mentions: removing the title still loses a definition.
+        documents[key] = original.replace('#### E15-24', '#### 控制24', 1)
+        self.assertTrue(quality.exercise_definition_issues(documents))
+        documents[key] = original.replace('#### E15-24', '#### E15-23', 1)
+        self.assertTrue(quality.exercise_definition_issues(documents))
+        self.assertEqual(quality.exercise_ids_from_markdown(
+            '#### E15-01 题干\n\n参考 E15-02\n\n| E15-03 |\n\n'
+            '```markdown\n#### E15-04 假题干\n```\n'), ['E15-01'])
 
     def test_same_count_wrong_filename_does_not_satisfy_manifest(self):
         (self.site / "research" / "04_source_reproduction.html").rename(
@@ -159,7 +178,7 @@ class PublishedResearchQualityTests(unittest.TestCase):
         self.assertEqual(quality.collaboration_baseline_issues(current), [])
         self.assertEqual(quality.collaboration_baseline_issues("历史记录196/329。\n" + current), [])
         self.assertTrue(quality.collaboration_baseline_issues(current.replace("个章级", "个旧章级")))
-        self.assertTrue(quality.collaboration_baseline_issues(current.replace("15 个章级", "14 个章级")))
+        self.assertTrue(quality.collaboration_baseline_issues(current.replace("16 个章级", "15 个章级")))
         self.assertTrue(quality.collaboration_baseline_issues(current + "\n" + current))
 
     def test_independent_source_digests_match_publishers(self):

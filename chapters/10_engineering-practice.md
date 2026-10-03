@@ -720,6 +720,8 @@ $E[n]$ 表示从索引 $n$ 到所保留尾端的剩余能量；$D[n]$ 单位是 
 
 ### 10.7 分布式阵列
 
+[扩展专题Ⅱ](15_distributed-enhancement.md)进一步推导节点特定MWF、压缩信号的线性信息损失、广播更新与通信预算。其已知时钟和掉包实验沿用本章同步基础，分别保存解析、浮点与实际PCM结果；单一教学控制不代表无线系统实测。
+
 分布式系统要分别解决三类问题：
 
 1. **时间轴**：初始时差、SRO、丢包和网络抖动要分开估计。长录音首尾对齐只能发现累计误差，不能代替运行时监测。
@@ -862,7 +864,7 @@ PipeWire 的 `capture/source/sink/playback` 依次是麦克风采集、应用读
 .venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering
 ```
 
-E10-13 运行独立的 [`spectral_subtraction_demo.py`](../codes/chapters/ch10/spectral_subtraction_demo.py)；E10-15 使用 [`tracking_time_exercises.py`](../codes/chapters/ch00/cross_chapter/tracking_time_exercises.py)，E10-16～17 使用 [`engineering_boundary_exercises.py`](../codes/chapters/ch00/cross_chapter/engineering_boundary_exercises.py)。各程序按稳定编号输出中间量和结果；它们不访问声卡，也不代表硬件性能测量。E10-18～27 使用 [`chapter10_experiments.py`](../codes/chapters/ch10/chapter10_experiments.py)，运行方式为 `.venv/bin/python -m codes.chapters.ch10.chapter10_experiments`。
+E10-13 运行独立的 [`spectral_subtraction_demo.py`](../codes/chapters/ch10/spectral_subtraction_demo.py)；E10-15 使用 [`tracking_time_exercises.py`](../codes/chapters/ch00/cross_chapter/tracking_time_exercises.py)，E10-16～17 使用 [`engineering_boundary_exercises.py`](../codes/chapters/ch00/cross_chapter/engineering_boundary_exercises.py)。各程序按稳定编号输出中间量和结果；它们不访问声卡，也不代表硬件性能测量。E10-18～33 使用 [`chapter10_experiments.py`](../codes/chapters/ch10/chapter10_experiments.py)，运行方式为 `.venv/bin/python -m codes.chapters.ch10.chapter10_experiments`。
 
 #### E10-01：把初始错位与 SRO 分开
 

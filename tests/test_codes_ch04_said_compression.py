@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import unittest
 
+from codes.chapters.ch00.core.source_history import verify_lock_binding
 from codes.chapters.ch04.examples import audit_said_compression as audit
 
 REPORT = audit.ROOT / 'codes/chapters/ch04/reports/said_compression.json'
@@ -20,7 +21,7 @@ class CompressionReportTests(unittest.TestCase):
 
     def test_actual_source_and_lock_binding(self):
         self.assertEqual(self.report['audit_source_sha256'], audit.sha(Path(audit.__file__)))
-        self.assertEqual(self.report['lock_sha256'], audit.sha(audit.LOCK))
+        verify_lock_binding(self.report['lock_sha256'], (audit.PROJECT,), current_lock=audit.LOCK)
         self.assertEqual(self.report['before'], self.report['after'])
         self.assertEqual(self.report['before']['head'], audit.REVISION)
         self.assertEqual(self.report['before']['status'], '')

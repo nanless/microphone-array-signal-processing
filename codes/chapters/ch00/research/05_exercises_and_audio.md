@@ -2,11 +2,11 @@
 
 先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。
 
-本页索引 308 道带稳定编号的代码题，以及独立的真实录音练习 R01。`E01-01` 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。
+本页索引 332 道带稳定编号的代码题，以及独立的真实录音练习 R01。`E01-01` 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。
 
 E06-07～E06-20 使用无量纲回声模型检查 AEC 的计算与边界，其中 E06-11～20 可用精确答案程序核对。第 15、16 节另提供参数不同的合成音频；试听文件本身不是题目真值。
 
-第 3～11、13～16、18、21～30、32～34 节对应主清单的 109 个数学合成样本。第 17 节的 18 个房间白噪声合成样本使用独立清单；第 12 节使用另行授权的真实同步录音。第 31 节的 2 份从 PCM 形成定位观测的追踪样本也使用独立清单。第35～39节分别保存双耳、有限窗卷积、多频几何、已知聚焦与导数约束的独立样本。第46节另保存附录B同DRR短RIR的五个独立样本。不同音频的来源和可作的比较不同，试听前先查看各节的条件。
+第 3～11、13～16、18、21～30、32～34 节对应主清单的 109 个数学合成样本。第 17 节的 18 个房间白噪声合成样本使用独立清单；第 12 节使用另行授权的真实同步录音。第 31 节的 2 份从 PCM 形成定位观测的追踪样本也使用独立清单。第35～39节分别保存双耳、有限窗卷积、多频几何、已知聚焦与导数约束的独立样本。第48节保存分布式协同增强的17个独立样本；第47节保存成像的五个快拍样本。第46节另保存附录B同DRR短RIR的五个独立样本。不同音频的来源和可作的比较不同，试听前先查看各节的条件。
 
 主音频按章存放，统一由[生成器](../examples/generate_audio_samples.py)和[清单](../audio/MANIFEST.json)管理。清单记录每组模型、种子、共同导出增益、采样率、通道、帧数、量化误差、运行环境、源文件摘要与逐 WAV 摘要；不把某组的谐波模板套到其他组。PCM16 编码按最近偶数舍入，不加抖动或自动限幅，RMS 对全部通道与采样一起计算。运行生成器并附加 `--check` 时只在内存重算和读回比对，不重写资产；严格字节核对也比较 Python、NumPy 和平台记录，异机不通过不等于算法错误。生成中断造成清单与 WAV 不一致时，先保留异常目录，再生成到新的空目录核对，通过后更新受影响资产并构建图和网站；不要手改单个生成文件。样本没有真人录音或模型权重，客观读回和浏览器加载不等于正式听测。
 
@@ -1871,3 +1871,115 @@ e^{-\mathrm j2\pi 2000n/24000},\\
 [原Acoular限定工具](../../ch14/examples/audit_upstream_imaging_contracts.py)默认只输出终端，只有显式`--report`写当前[合同报告](../../ch14/reports/upstream_imaging_contracts.json)。原源码身份、完整选集不匹配、限定方法相符、已确认差异和依赖缺失分别保存；详细条件见[空间源码研究](01_spatial_and_tracking.md#imaging-contract-audit)。
 
 本书CLEAN-SC教学核采用作者完整CSM公式；固定Acoular的full支路在独立单源控制中会过量分配，不能作为正确答案。CMF半三角权重及默认截距也分别改变目标。原类方法的提取调用不等于Traits对象图、Numba JIT、HDF5、sklearn估计器或真实风洞整链运行。
+
+<a id="distributed-exercises-audio"></a>
+
+## 48. 分布式协同增强：从指定目标到真实广播状态
+
+### 48.1 先确定要估计什么
+
+[扩展专题Ⅱ](../../../../chapters/15_distributed-enhancement.md)在第5章MWF基础上增加节点间的任务相关压缩。四个观测的已知目标响应为$[1,1/2,2,-1/2]^\top$；节点1估计$s$，节点2估计$2s$。不是从少量广播恢复每个原通道，而是检查最优权重是否属于所保留的观测空间。传播方向、协方差和目标均已知，不能称为盲网络增强。
+
+白噪声控制中，节点1集中式权重为$[2,1,4,-1]^\top/13$，NMSE为$2/13$；仅本地为$4/9$。相关噪声控制的最优权重为$[25,4,11,-24]^\top/69$，NMSE为$8/69$；沿用白噪声的远端方向仍是$2/13$。同一种压缩维数不保证同一种信息损失，必须同时核目标、噪声统计和广播方向。
+
+### 48.2 24题的输入、答案与代码控制
+
+唯一[题目入口](../../ch15/chapter15_exercises.py)调用[数值核](../../ch15/core/distributed.py)，不打印一份硬编码答案替代计算。正文逐题给出计算过程；下表用于找到真正需要复算的量。
+
+| 题号 | 输入与核心检查 | 手算或实际控制结果 |
+|---|---|---|
+| E15-01 | 四麦分两节点，选择本地参考与块协方差 | 共轭外积、参考提取与各节点目标分别定义 |
+| E15-02 | 空间不相关单位噪声 | $q=11/2$；权重$[2,1,4,-1]^\top/13$；失真$4/169$、噪声$22/169$ |
+| E15-03 | 仅保留节点1两麦 | 权重$[4,2]^\top/9$；MSE$4/9$ |
+| E15-04 | 广播$2x_3-x_4/2$ | 原坐标接收权重$[2,1,2]^\top/13$，有效权重恢复集中式 |
+| E15-05 | 噪声交叉项$R_{13}=1/5,R_{14}=4/5$ | 最小特征值$1-\sqrt{17}/5>0$；旧方向损失$34/897$ |
+| E15-06 | 适配广播$11x_3-24x_4$ | 手算局部权重$[25,4,1]^\top/69$；代码广播方向另除69、接收系数相应变换，有效权重相同，MSE$8/69$ |
+| E15-07 | 正文目标$(1+\mathrm j)s$；代码另用复传播向量的第二麦参考 | 正文MSE$4/13$；代码MSE$1/26$，各自目标功率不同，NMSE均$2/13$ |
+| E15-08 | 正文复尺度$2\mathrm j$；代码另检极大/极小实尺度 | 广播与接收系数/统计一起变换，有效全局权重不变；零向量另处理 |
+| E15-09 | 正文白噪声、初值$[1,0]^\top$三步；代码另留相关噪声六步 | 第二次广播后节点1实际MSE$23108/105625$；旧求解快照不能替代实际输出 |
+| E15-10 | 相关噪声、目标响应分块初值 | 当前全局残差低于$10^{-8}$需要14次更新，加2次初始化共16次 |
+| E15-11 | 同一相关噪声与初值，同时及半步混合 | 26/28与76/78次更新/总求解；不是$rS$-DANSE$^+$原定理算法 |
+| E15-12 | 两独立潜在目标，远端只发$x_3+x_4$ | 完整观测两目标MSE均$1/4$；压缩后第二目标为$1/2$ |
+| E15-13 | 零广播 | 普通正定求解拒绝；显式删除无信息列后回退本地$4/9$ |
+| E15-14 | 非PSD、病态与加载 | 非对角2/对角1的矩阵特征值3/−1；加载改变目标，原目标另评分 |
+| E15-15 | PCM16、float32、复谱与发送份数 | 16kHz每路PCM256kbit/s；FFT512/H256复谱1.028Mbit/s；代码H128需加倍 |
+| E15-16 | 四节点各两麦、每节点一路广播，complex128 | 局部维数5；单矩阵400B/节点、1600B/全网，集中式1024B |
+| E15-17 | 已知100ppm、连续状态SRC | 32004设备点支持32000参考点；257点分块与整段逐点相同 |
+| E15-18 | 连续5个160点包缺失 | 缺口内补零$461/676$、本地回退$4/9$；稳窗与缺口窗分别评分 |
+| E15-19 | 实际远端标量先量化再读回 | 接收增量上界$(2/13)/(2\cdot32768)$，约$2.347506\times10^{-6}$ |
+| E15-20 | 解析、浮点分量与整数PCM | 实际整数E/D独立重读；不拟合增益/时延，分母随参考量化 |
+| E15-21 | 三变量Jacobi控制，非DANSE | 同时迭代特征值−1.8导致发散；半步控制可收敛，不能当DANSE反例 |
+| E15-22 | 三项步长条件 | $1/(i+1)$满足趋零且总和发散；固定/几何步长不满足全部条件 |
+| E15-23 | 三节点链、指定根1、标量1/2/3 | 四条定向消息；总和6，减自身后5/4/3；不包含TI滤波变换 |
+| E15-24 | 已知二麦正定噪声的rank-1 GEVD | 广义特征值5/1，权重$[0,0.4]^\top$、MSE0.2；非完整网络GEVD |
+
+```bash
+.venv/bin/python -m codes.chapters.ch15.chapter15_exercises
+.venv/bin/python -m codes.chapters.ch15.chapter15_exercises --exercise E15-09
+.venv/bin/python -m codes.chapters.ch15.chapter15_exercises --exercise E15-24
+```
+
+广播状态变化时，接收系数可以暂时不更新，但接收到的信号已经改变。`outputs_at_last_solve`是过去求解时的提案；`cached_outputs`由当前广播和缓存接收系数组合。图71用后者评分，预算按真实矩阵求解计数，含两次初始本地求解。上述停止器使用已知全局统计，不伪装成现实节点可直接得到的在线残差。
+
+### 48.3 17份音频分别改变了什么
+
+所有文件16kHz、32000点、共同导出增益1。目标700/1300Hz的峰幅为0.1/0.06，稳窗均方功率0.0068；四个干扰方向使用1900/2300/2900/3500Hz，指定seed1502026。即时混合没有卷积尾部。这里的“white”只表示所声明窗内的空间协方差为$0.0068\mathbf I$，经该目标功率归一化后才为单位阵，声音仍是有限确定性余弦，不是时间白噪声，也不证明统计独立。
+
+| 文件 | 通道及比较对象 |
+|---|---|
+| [reference_node1.wav](../../ch15/distributed_audio/reference_node1.wav) | 一路干目标$s$；节点1共同参考 |
+| [reference_node2.wav](../../ch15/distributed_audio/reference_node2.wav) | 一路干目标$2s$；独立量化的节点2参考 |
+| [array_white.wav](../../ch15/distributed_audio/array_white.wav) | 四路观测$x_1,x_2,x_3,x_4$，空间不相关干扰 |
+| [array_correlated.wav](../../ch15/distributed_audio/array_correlated.wav) | 同源四路观测，已知相关干扰 |
+| [local_node1.wav](../../ch15/distributed_audio/local_node1.wav) | 仅节点1两路观测的MWF |
+| [central_white.wav](../../ch15/distributed_audio/central_white.wav) | 空间不相关模型的集中式参考 |
+| [compressed_white.wav](../../ch15/distributed_audio/compressed_white.wav) | 相同输入的正确固定压缩，与上一份字节相同是设计控制 |
+| [central_correlated.wav](../../ch15/distributed_audio/central_correlated.wav) | 相关模型的集中式参考 |
+| [compressed_correlated.wav](../../ch15/distributed_audio/compressed_correlated.wav) | 相同输入的已知适配方向，与上一份字节相同 |
+| [stale_correlated.wav](../../ch15/distributed_audio/stale_correlated.wav) | 相关模型沿用旧白噪声方向，信息损失 |
+| [central_node2_correlated.wav](../../ch15/distributed_audio/central_node2_correlated.wav) | 节点2集中式输出，参考是$2s$ |
+| [remote_scalar_white.wav](../../ch15/distributed_audio/remote_scalar_white.wav) | 远端广播$2x_3-x_4/2$，不是增强输出 |
+| [transport_pcm16_white.wav](../../ch15/distributed_audio/transport_pcm16_white.wav) | 远端广播先真实PCM16量化/重读再融合 |
+| [clock_misaligned_white.wav](../../ch15/distributed_audio/clock_misaligned_white.wav) | 远端快100ppm、按相同索引直接融合 |
+| [clock_linear_corrected_white.wav](../../ch15/distributed_audio/clock_linear_corrected_white.wav) | 已知真实速率、连续状态线性SRC后融合 |
+| [packet_zerofill_white.wav](../../ch15/distributed_audio/packet_zerofill_white.wav) | 指定800点缺口远端补零，冻结接收系数 |
+| [packet_local_fallback_white.wav](../../ch15/distributed_audio/packet_local_fallback_white.wav) | 相同缺口显式切换到本地MWF |
+
+### 48.4 用真实整数评分，保留不同分母
+
+评分稳窗为1600:30400，共28800点；缺口窗16000:16800，共800点。解析协方差、导出前浮点分量与实际PCM总误差各自存入[清单](../../ch15/distributed_audio/MANIFEST.json)。整数参考$D[n]$和输出$Y[n]$分别计算$E=\sum(Y-D)^2$、$D_{\rm energy}=\sum D[n]^2$；NMSE为两者之比，不平均dB。下面每行来自实际WAV整数，不由理论倍数构造。
+
+| 输出 | 稳窗整数E | 稳窗整数参考能量 | PCM NMSE |
+|---|---:|---:|---:|
+| `local_node1` | 93459728160 | 210281178240 | 0.444451229 |
+| `central_white` | 32352145920 | 210281178240 | 0.153851839 |
+| `compressed_white` | 32352145920 | 210281178240 | 0.153851839 |
+| `central_correlated` | 24381142920 | 210281178240 | 0.115945436 |
+| `compressed_correlated` | 24381142920 | 210281178240 | 0.115945436 |
+| `stale_correlated` | 32353470360 | 210281178240 | 0.153858137 |
+| `central_node2_correlated` | 97517652480 | 841117066920 | 0.115938264 |
+| `transport_pcm16_white` | 32351043960 | 210281178240 | 0.153846598 |
+| `clock_misaligned_white` | 73784582591 | 210281178240 | 0.350885339 |
+| `clock_linear_corrected_white` | 28540554452 | 210281178240 | 0.135725673 |
+| `packet_zerofill_white` | 35436873520 | 210281178240 | 0.168521376 |
+| `packet_local_fallback_white` | 34049578760 | 210281178240 | 0.161924044 |
+
+节点2分母841117066920不是节点1分母210281178240的精确四倍：单独量化后，解析幅度倍数不再推出整数能量倍数。PCM总误差含参考/输出量化，不能用浮点分量功率直接取代。
+
+### 48.5 时钟、交叉功率与缺口控制
+
+已知速率16,001.6Hz的远端输入提供32,004点；校正输出32,000点，没有无效参考点。最后同索引漂移约3.19958个参考样本。远端波形重建NMSE约从0.743173变为0.002916，最终融合浮点稳窗NMSE约从0.350880变为0.135724；两指标的参考和分母不同，不能互相替代。同步控制为2/13，SRC控制改变噪声与频率响应，不能称其超越原观测模型的LMMSE下界。
+
+图72分开画目标失真、残余噪声、其它分量及有符号交叉功率。缺口补零的全稳窗PCM NMSE约0.168521，缺口内约0.681955；本地回退分别约0.161924与0.444451。相同缺口中全窗平均误差较小不意味着缺口期间仍维持全网增强。实际远端PCM16运输另检查半步长误差界，不能用最终输出量化代替传输量化。
+
+### 48.6 重建、只读回放与原源码范围
+
+```bash
+.venv/bin/python -m codes.chapters.ch15.examples.generate_distributed_audio
+.venv/bin/python -m codes.chapters.ch15.examples.generate_distributed_audio --check
+.venv/bin/python -m codes.chapters.ch15.examples.audit_upstream_distributed_contracts
+```
+
+唯一[生成器](../../ch15/examples/generate_distributed_audio.py)绑定九个真实源摘要，严格接受17个WAV和清单共18个普通成员。`--check`只读重放完整PCM字节、浮点分量、真实整数指标与来源，不改资产。硬链接、符号链接、额外成员、重复JSON键、非有限数字与来源失配均不能被记为通过。
+
+图70～72由[绘图源](../../../../scripts/make_figures.py)生成，相关[报告目录](../../ch15/reports/)保留全部计算状态。固定MATLAB代码仅静态合同与独立数字控制，未运行WOLA；固定paderwasn只提取三个原NumPy助手受限调用，16组中13组匹配、1组短输入差异及2组无观测都原样保留。详见[来源与许可](04_source_reproduction.md#distributed-reproduction)及[工业时间轴与载荷](03_industrial_deployment.md#distributed-network-deployment)。本书没有真实网络、原完整DANSE/TI整链、自然语音或正式主观听测结果。

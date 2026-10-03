@@ -1,6 +1,6 @@
 > 本篇是扩展专题Ⅰ。文件、公式和练习使用稳定身份 14；第 1～11 章的学习主线与附录 A/B 的既有标识保留。本篇接在选型指南之后，数学预备内容可随时回查附录。
 >
-> 🏠 首页导读：[00_overview.md](00_overview.md) ｜ 上一篇：[11_selection-guide.md](11_selection-guide.md) ｜ 下一篇：[12_appendix-symbols-math.md](12_appendix-symbols-math.md)
+> 🏠 首页导读：[00_overview.md](00_overview.md) ｜ 上一篇：[11_selection-guide.md](11_selection-guide.md) ｜ 下一篇：[15_distributed-enhancement.md](15_distributed-enhancement.md)
 
 ---
 

@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 
 import numpy as np
 
+from codes.chapters.ch00.core.source_history import verify_lock_binding
 from codes.chapters.ch06.examples import audit_upstream_apa as audit
 
 REPORT = audit.ROOT / 'codes/chapters/ch06/reports/upstream_apa.json'
@@ -28,7 +29,7 @@ class APAReportTests(unittest.TestCase):
 
     def test_provenance_and_current_source(self):
         self.assertEqual(self.report['audit_source_sha256'], audit.sha(audit.__file__))
-        self.assertEqual(self.report['lock_sha256'], audit.sha(audit.LOCK))
+        verify_lock_binding(self.report['lock_sha256'], ('pyaec',), current_lock=audit.LOCK)
         entry = next(p for p in json.loads(audit.LOCK.read_text())['projects'] if p['id'] == 'pyaec')
         self.assertEqual(self.report['lock_entry'], entry)
         self.assertEqual(entry['revision'], audit.REVISION)

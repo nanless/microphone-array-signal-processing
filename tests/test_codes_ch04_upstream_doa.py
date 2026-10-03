@@ -7,6 +7,7 @@ import unittest
 
 import numpy as np
 
+from codes.chapters.ch00.core.source_history import verify_lock_binding
 from codes.chapters.ch04.examples import audit_upstream_doa as audit
 
 REPORT = audit.ROOT / 'codes/chapters/ch04/reports/upstream_doa.json'
@@ -28,7 +29,7 @@ class ReportTests(unittest.TestCase):
 
     def test_provenance_and_scope(self):
         self.assertEqual(self.report['audit_source_sha256'], audit.sha(Path(audit.__file__)))
-        self.assertEqual(self.report['lock_sha256'], audit.sha(audit.LOCK))
+        verify_lock_binding(self.report['lock_sha256'], tuple(audit.REVISIONS), current_lock=audit.LOCK)
         for project, revision in audit.REVISIONS.items():
             self.assertEqual(self.report['before'][project]['head'], revision)
             self.assertEqual(self.report['after'][project], self.report['before'][project])

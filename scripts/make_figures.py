@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""生成教程插图（图 1～25、33～36、40～69；图 26～32、37～39 见 make_aec_figures.py）。
+"""生成教程插图（图 1～25、33～36、40～72；图 26～32、37～39 见 make_aec_figures.py）。
 
 用法（仓库根目录）：
-    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～69 → figures/
+    .venv/bin/python scripts/make_figures.py      # 图 1～25、33～36、40～72 → figures/
 """
 from pathlib import Path
 import hashlib
@@ -4806,6 +4806,187 @@ def fig_imaging_calibration():
     save(fig, 'fig69_imaging_calibration.png')
 
 
+def _distributed_audio_control():
+    """Replay the frozen fixture and independently read its real PCM integers."""
+    import wave
+    from codes.chapters.ch15.examples.generate_distributed_audio import check_assets
+    folder = CODE_CHAPTERS / 'ch15/distributed_audio'
+    check_assets(folder)
+    manifest = json.loads((folder / 'MANIFEST.json').read_text())
+    pcm = {}
+    for key, record in manifest['samples'].items():
+        if not record['pcm_measurements'].get('reference_key'):
+            continue
+        reference_key = record['pcm_measurements']['reference_key']
+        def read(name):
+            with wave.open(str(folder / (name+'.wav')), 'rb') as wav:
+                if (wav.getframerate(), wav.getnchannels(), wav.getsampwidth(), wav.getnframes()) != (16000, 1, 2, 32000):
+                    raise ValueError('distributed PCM format differs')
+                return np.frombuffer(wav.readframes(32000), dtype='<i2').astype(np.int64)
+        y, d = read(key), read(reference_key)
+        pcm[key] = {}
+        for window, (start, stop) in manifest['parameters']['scoring_windows_samples'].items():
+            error = y[start:stop]-d[start:stop]
+            e = sum(int(v)*int(v) for v in error)
+            denominator = sum(int(v)*int(v) for v in d[start:stop])
+            expected = record['pcm_measurements']['windows'][window]
+            if (e != expected['integer_error_squared_sum_E'] or denominator != expected['integer_reference_squared_sum_D']):
+                raise ValueError('independent PCM E/D differs')
+            pcm[key][window] = {'E': e, 'D': denominator, 'samples': stop-start, 'nmse': e/denominator}
+    return manifest, pcm
+
+
+def _distributed_report(name, data, manifest=None):
+    from codes.chapters.ch00.io_contracts import write_json_report
+    from codes.chapters.ch15.examples.generate_distributed_audio import SOURCE_PATHS
+    sources = (('scripts/make_figures.py', *SOURCE_PATHS) if manifest is not None else
+               ('scripts/make_figures.py', 'codes/chapters/ch15/core/distributed.py',
+                'codes/chapters/ch02/core/conventions.py', 'codes/chapters/ch04/core/covariance.py',
+                'codes/chapters/ch00/io_contracts.py'))
+    def plain(value):
+        if isinstance(value, np.ndarray):
+            return {'real': value.real.tolist(), 'imag': value.imag.tolist()} if np.iscomplexobj(value) else value.tolist()
+        if isinstance(value, np.generic):
+            return value.item()
+        if isinstance(value, dict):
+            return {k: plain(v) for k, v in value.items()}
+        if isinstance(value, (list, tuple)):
+            return [plain(v) for v in value]
+        return value
+    report = {'schema_version': 1, 'scope': 'known-statistics finite teaching controls; not blind DANSE or industrial performance',
+              'source_sha256': {p: hashlib.sha256((REPOSITORY_ROOT/p).read_bytes()).hexdigest() for p in sources},
+              'results': plain(data)}
+    if manifest is not None:
+        report['audio_manifest_sha256'] = hashlib.sha256((CODE_CHAPTERS/'ch15/distributed_audio/MANIFEST.json').read_bytes()).hexdigest()
+    write_json_report(CODE_CHAPTERS/'ch15/reports'/name, report)
+    return report
+
+
+def fig_distributed_compression():
+    manifest, pcm = _distributed_audio_control()
+    scenes = [('white', ['local_node1', 'central_white', 'compressed_white'], ['仅本地', '集中式', '正确压缩']),
+              ('correlated', ['central_correlated', 'stale_correlated', 'compressed_correlated'], ['集中式', '旧方向', '适配方向'])]
+    rows = {}
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 4.8), sharey=True)
+    for ax, (scene, keys, labels) in zip(axes, scenes):
+        target, noise, values = [], [], []
+        for key in keys:
+            analytic = manifest['samples'][key]['finite_window_analytic_expected']['steady']
+            power = analytic['reference_target_power']
+            target.append(analytic['target_distortion']/power)
+            noise.append(analytic['noise_power']/power)
+            values.append(pcm[key]['steady']['nmse'])
+            rows[key] = {'analytic': analytic, 'float': manifest['samples'][key]['float_components']['steady'], 'pcm': pcm[key]['steady']}
+        x = np.arange(len(keys))
+        ax.bar(x, target, color=C_ORANGE, edgecolor='black', lw=.5, label='解析：目标失真')
+        ax.bar(x, noise, bottom=target, color=C_BLUE, hatch='//', edgecolor='black', lw=.5, label='解析：噪声残留')
+        ax.scatter(x, values, s=64, marker='D', facecolor='white', edgecolor='black', zorder=4, label='实际PCM总误差')
+        for i, value in enumerate(values):
+            ax.text(i, value+.015, f'{value:.6f}', ha='center', fontsize=FS_SMALL)
+        ax.set_xticks(x, labels)
+        ax.set(ylim=(0, .56), ylabel='误差 / 同窗目标功率（无量纲）')
+        ax.grid(axis='y', ls=':', alpha=.3)
+        ax.set_title('(a) 空间不相关噪声' if scene=='white' else '(b) 相关噪声：方向须适配', fontsize=FS_TITLE)
+    axes[0].legend(loc='upper right', fontsize=FS_SMALL)
+    fig.suptitle('图70  固定压缩是否保留指定目标的最优方向', fontsize=FS_SUP)
+    fig.tight_layout(rect=(0, 0, 1, .94), w_pad=2)
+    report = _distributed_report('figure70_distributed_compression.json', {'window': [1600,30400], 'rows': rows,
+                                 'comparison_scope': 'same inputs within each panel; two noise covariance models differ'}, manifest)
+    save(fig, 'fig70_distributed_compression.png', {'AudioManifestDigest': report['audio_manifest_sha256']})
+
+
+def fig_distributed_updates():
+    from codes.chapters.ch15.core.distributed import run_covariance_experiments
+    result = run_covariance_experiments()
+    names = [('round_robin', '轮转', C_BLUE, '-'), ('simultaneous', '同时', C_RED, '--'),
+             ('simultaneous_half', '同时 + 0.5混合', C_GREEN, '-.')]
+    fig, axes = plt.subplots(2, 1, figsize=(9.5, 6.8), sharex=True)
+    traces = {}
+    optimum = result['cases']['correlated']['central_components']['normalized_mse']
+    for name, label, color, style in names:
+        run = result[name]; history = run['history']
+        budgets = [h['total_solve_count'] for h in history]
+        actual = [[c['normalized_mse'] for c in h['cached_components']] for h in history]
+        worst = [max(values) for values in actual]
+        residuals = [max(h['normal_equation_relative_residuals']) for h in history]
+        axes[0].plot(budgets, worst, style, color=color, lw=2, label=f'{label}：共{run["total_solve_count"]}次')
+        axes[1].semilogy(budgets, residuals, style, color=color, lw=2)
+        axes[0].scatter(budgets[-1], worst[-1], color=color, s=38)
+        axes[1].scatter(budgets[-1], residuals[-1], color=color, s=38)
+        traces[name] = run
+    axes[0].axhline(optimum, color='black', ls=':', lw=1.5, label='集中式：同参考NMSE')
+    axes[0].set(ylabel='两节点较大NMSE（各自参考归一化）', ylim=(.10,.49))
+    axes[0].set_title('(a) 广播改变后重组当前有效权重再评分', fontsize=FS_TITLE)
+    axes[0].legend(loc='upper right', fontsize=FS_SMALL)
+    axes[1].axhline(1e-8, color='black', ls=':', lw=1.3)
+    axes[1].set(xlabel='累计节点求解数（含2次初始本地求解）', ylabel='两节点较大相对正规方程残差', ylim=(1e-9, 2), xlim=(2,80))
+    axes[1].set_title('(b) 已知全局统计残差；不是在线可得停止器', fontsize=FS_TITLE)
+    for ax in axes:
+        ax.grid(ls=':', alpha=.3)
+    fig.suptitle('图71  已知相关噪声的有限更新轨迹（不同调度不作普遍速度排名）', fontsize=FS_SUP)
+    fig.tight_layout(rect=(0,0,1,.95), h_pad=1.4)
+    _distributed_report('figure71_distributed_updates.json', {'model': result['model'], 'trajectories': traces,
+        'central_node1': result['cases']['correlated']['central_components'], 'central_node2': result['cases']['correlated']['node2_components'],
+        'plotted': 'current-broadcast worst normalized MSE and worst global normal-equation relative residual; not old solve snapshots'})
+    save(fig, 'fig71_distributed_updates.png')
+
+
+def fig_distributed_transport():
+    manifest, pcm = _distributed_audio_control()
+    fig, axes = plt.subplots(3, 1, figsize=(9.5, 9))
+    rows = {}
+    keys = ['compressed_white', 'clock_misaligned_white', 'clock_linear_corrected_white']
+    x = np.arange(3)
+    for field, label, color, hatch in [('target_distortion_power', '浮点：目标失真', C_ORANGE, ''),
+                                     ('noise_power', '浮点：噪声残留', C_BLUE, '//')]:
+        vals = [manifest['samples'][k]['float_components']['steady'][field]/manifest['samples'][k]['float_components']['steady']['reference_power'] for k in keys]
+        bottom = np.zeros(3) if field=='target_distortion_power' else np.array([manifest['samples'][k]['float_components']['steady']['target_distortion_power']/manifest['samples'][k]['float_components']['steady']['reference_power'] for k in keys])
+        axes[0].bar(x, vals, bottom=bottom, color=color, hatch=hatch, edgecolor='black', lw=.5, label=label)
+    for key in keys:
+        c = manifest['samples'][key]['float_components']['steady']
+        rows[key] = {'float_components': c, 'pcm': pcm[key]['steady']}
+    values = [pcm[k]['steady']['nmse'] for k in keys]
+    axes[0].scatter(x, values, marker='D', facecolor='white', edgecolor='black', s=66, zorder=4, label='实际PCM总误差')
+    for i, value in enumerate(values):
+        axes[0].text(i, value+.015, f'{value:.6f}', ha='center', fontsize=FS_SMALL)
+    axes[0].set_xticks(x, ['同步固定压缩', '远端快100ppm', '已知速率线性校正'])
+    axes[0].set(ylabel='稳窗NMSE（28800点）', ylim=(0,.49))
+    axes[0].set_title('(a) SRC改变观测统计；三个控制不共用同一下界', fontsize=FS_TITLE)
+    axes[0].legend(loc='upper right', fontsize=FS_SMALL)
+    # Cross powers are signed, and cannot be silently folded into a positive stack.
+    signed = []
+    for key in keys:
+        c = rows[key]['float_components']; power = c['reference_power']
+        signed.append([c['other_error_power']/power, (c['target_noise_cross_power']+c['target_other_cross_power']+c['noise_other_cross_power'])/power])
+    for column, label, offset, color in [(0,'其它分量功率',-.16,C_PURPLE),(1,'三项交叉功率之和',.16,C_GREEN)]:
+        axes[1].bar(x+offset, np.array(signed)[:,column], width=.3, color=color, edgecolor='black', lw=.5, label=label)
+    axes[1].axhline(0,color='black',lw=.8)
+    axes[1].set_xticks(x, ['同步固定压缩', '远端快100ppm', '已知速率线性校正'])
+    axes[1].set(ylabel='功率 / 同窗目标功率')
+    axes[1].set_title('(b) 保留其它项和有符号交叉项，不能套独立性', fontsize=FS_TITLE)
+    axes[1].legend(loc='upper right',fontsize=FS_SMALL)
+    packet_keys = ['packet_zerofill_white', 'packet_local_fallback_white']
+    for i, key in enumerate(packet_keys):
+        rows[key] = {'float_components': manifest['samples'][key]['float_components'], 'pcm': pcm[key]}
+    for window, label, offset, color in [('steady','整个稳窗：28800点',-.17,C_BLUE),('packet','缺口内：800点',.17,C_ORANGE)]:
+        vals = [pcm[k][window]['nmse'] for k in packet_keys]
+        positions = np.arange(2)+offset
+        axes[2].bar(positions,vals,width=.32,color=color,edgecolor='black',lw=.5,label=label)
+        for i,value in zip(positions,vals):
+            axes[2].text(i,value+.018,f'{value:.6f}',ha='center',fontsize=FS_SMALL)
+    axes[2].set_xticks([0,1],['远端补零，保留接收系数','显式回退本地MWF'])
+    axes[2].set(ylabel='实际PCM NMSE（同窗参考）',ylim=(0,.92))
+    axes[2].set_title('(c) 同一5包缺口：整段平均与缺口内评分分开',fontsize=FS_TITLE)
+    axes[2].legend(loc='upper right',fontsize=FS_SMALL)
+    for ax in axes:
+        ax.grid(axis='y',ls=':',alpha=.3)
+    fig.suptitle('图72  有限数学音频的时钟与缺口控制（共同导出增益1）',fontsize=FS_SUP)
+    fig.tight_layout(rect=(0,0,1,.96),h_pad=1.6)
+    report = _distributed_report('figure72_distributed_transport.json', {'rows': rows, 'clock': manifest['float_clock_control'],
+        'parameters': manifest['parameters'], 'cross_terms': signed, 'scope': 'known-rate SRC and two fixed missing-packet policies; not blind synchronization or network measurements'}, manifest)
+    save(fig,'fig72_distributed_transport.png',{'AudioManifestDigest':report['audio_manifest_sha256']})
+
+
 def main():
     """生成本脚本负责的全部图片。"""
     fig_geometries()
@@ -4868,6 +5049,9 @@ def main():
     fig_imaging_psf()
     fig_imaging_model_checks()
     fig_imaging_calibration()
+    fig_distributed_compression()
+    fig_distributed_updates()
+    fig_distributed_transport()
     print("ALL DONE")
 
 

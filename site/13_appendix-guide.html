@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 B · 路径地图与练习 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="38e21c32c9ce"><style>
+<meta name="source-digest" content="f3c31ce171c8"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -243,6 +243,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a></div>
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
 <div class="chap"><a href="14_acoustic-imaging.html">扩展专题Ⅰ · 声学成像与噪声源诊断</a></div>
+<div class="chap"><a href="15_distributed-enhancement.html">扩展专题Ⅱ · 分布式麦克风协同增强</a></div>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
 <div class="chap cur" aria-current="page">附录 B · 路径地图与练习</div>
 <ul>
@@ -1483,7 +1484,8 @@ $$</p>
 <p>图62计算第10章的给定噪声软更新、有限尾部逆积分和非抢占阻塞。图63读取第10章<a href="noise_audio/MANIFEST.json">独立六WAV清单</a>，分开浮点分解与实际PCM总误差；已知方差对照使用额外真值，不能称盲估计。</p>
 <p>图64读取第11章同源单音与双音场景的八WAV清单，区分解析与实际PCM误差、共同场景权重和最坏场景。图65读取附录A的已知噪声权重五WAV，比较正确权重与反权重。图66读取本附录的同DRR短RIR五WAV，说明源谱和反射相位怎样改变输出；后三组也须先生成各自独立清单。</p>
 <p>图67～69由声学成像专题的解析控制生成，分别检查PSF、相干失配、完整CSM剥离、校准与区域量。其16道练习和五份独立音频见<a href="14_acoustic-imaging.html">扩展专题Ⅰ</a>。</p>
-<p>图片写入 <code>figures/</code>，共 69 张编号图，另有第16题的房间补充图：</p>
+<p>图70～72与24道E15题见<a href="15_distributed-enhancement.html">分布式协同增强专题</a>。17份独立WAV使用即时已知协方差混合；时钟、量化和缺包有不同误差来源，不能把它们并入主109样本或称为真实无线录音。</p>
+<p>图片写入 <code>figures/</code>，共 72 张编号图，另有第16题的房间补充图：</p>
 <pre><code class="language-bash">.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
 .venv/bin/python -m codes.chapters.ch01.examples.generate_binaural_cues
 .venv/bin/python -m codes.chapters.ch02.examples.generate_stft_convolution
@@ -1500,7 +1502,7 @@ $$</p>
 .venv/bin/python -m codes.chapters.ch11.examples.generate_selection_audio
 .venv/bin/python -m codes.chapters.appendix_a.examples.generate_weighted_audio
 .venv/bin/python -m codes.chapters.appendix_b.examples.generate_response_audio
-.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～69
+.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～72
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～39（回声消除专题）
 </code></pre>
 <p>Windows 上把 <code>.venv/bin/python</code> 换成 <code>.venv\Scripts\python</code>，其余不变。</p>

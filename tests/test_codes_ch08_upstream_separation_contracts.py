@@ -7,6 +7,7 @@ import unittest
 
 import numpy as np
 
+from codes.chapters.ch00.core.source_history import verify_lock_binding
 from codes.chapters.ch08.examples import audit_upstream_separation_contracts as audit
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,7 +28,7 @@ class SeparationContractsTest(unittest.TestCase):
     def test_final_tool_lock_legacy_and_fixed_sources_are_bound(self):
         r = self.r
         self.assertEqual(r['tool_sha256'], audit.sha(audit.__file__))
-        self.assertEqual(r['source_lock_sha256'], audit.sha(audit.LOCK))
+        verify_lock_binding(r['source_lock_sha256'], tuple(audit.SOURCES), current_lock=audit.LOCK)
         self.assertEqual(r['legacy_helper_sha256'], audit.sha(audit.LEGACY))
         self.assertEqual(r['sources'], audit.SOURCES)
         self.assertEqual(r['source_contract_sha256'], audit.digest(audit.SOURCES))

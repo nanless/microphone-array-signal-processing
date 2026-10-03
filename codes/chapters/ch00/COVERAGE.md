@@ -9,7 +9,7 @@
 - **原理索引**：已有原理或来源依据，但尚未形成唯一、许可明确且承担对应计算的源码映射；代码可见而许可不明时也保留此状态，并说明原因。
 - **明确排除**：指定软件的身份或许可不满足本书当前收录方式；不表示删除相应方法的学术讨论。
 
-算法表共 311 行：本仓库可运行基线 63 行、外部参考实现 176 行、原理索引 71 行、明确排除 1 行。练习映射单独计数，不因题数增加算法行；MDL、功率谱减、受控 NCC 双讲检测与 cACGMM 教学迭代属于本地基线。覆盖表仍有原理索引，不表示全书全部算法已经运行。
+算法表共 324 行：本仓库可运行基线 66 行、外部参考实现 180 行、原理索引 77 行、明确排除 1 行。练习映射单独计数，不因题数增加算法行；MDL、功率谱减、受控 NCC 双讲检测与 cACGMM 教学迭代属于本地基线。覆盖表仍有原理索引，不表示全书全部算法已经运行。
 
 源码取得与入口核对见 [SOURCE_STATUS.json](SOURCE_STATUS.json)；该文件中的依赖验证和执行字段未开展时为 `not_run`，不承载方法级数值实验结果。实际运行及数值对照见[复现记录](research/04_source_reproduction.md)、[增强研究记录](research/02_aec_wpe_separation.md)和 [WPE 独立对照脚本](../ch07/examples/compare_wpe_reference.py)。工业接口与 SBL 的限定实验报告按主题放在 `codes/chapters/ch04/reports/`、`codes/chapters/ch10/reports/` 等对应章节；实际调用外部代码不将它改列为本仓库教学基线。覆盖状态不是测试结果。完整提交、官方地址、许可与来源 ID 见 [SOURCES.lock.json](SOURCES.lock.json)。表内本仓库教学源文件使用相对于仓库根目录的完整路径；第三方项目的内部路径仍相对于各自项目根目录。出现“同文件”时仅继承上一行文件，不继承其算法或验证结论。
 
@@ -349,6 +349,19 @@
 | §10.9.1；工业 I13 | SOF 固定 FIR 波束 | 外部参考实现 | `sof`：`src/audio/tdfb/tdfb_generic.c` | 滤波组/方向，不是 SCM 自适应 MVDR |
 | §10.9.1；工业 I14 | SOF 固件 SRC | 外部参考实现 | `sof`：`src/audio/src/` | 固定比转换不等于异步补偿 |
 | §10.7 | 分布式阵列同步/融合 | 原理索引 | 正文分布式模型 | SRO 拟合不是完整网络系统 |
+| 专题Ⅱ §15.5～8、E15-04～08 | 指定LMMSE任务的固定线性压缩 | 本仓库可运行基线 | `codes/chapters/ch15/core/distributed.py::compressed_mwf` | 已知总体协方差、归一接收坐标；不称一般非线性充分统计或有限码率无损 |
+| 专题Ⅱ §15.9～10、E15-09～11 | 有限顺序、同时与固定松弛广播更新 | 本仓库可运行基线 | `codes/chapters/ch15/core/distributed.py::distributed_updates` | 真实广播前求解与广播后当前接收分开；停止看所有实际有效权重；非rS+定理完整实现 |
+| 专题Ⅱ §15.12、E15-24 | 已知统计的秩一GEVD-MWF白化控制 | 本仓库可运行基线 | `codes/chapters/ch15/core/distributed.py::gevd_control` | 两维白化与λ−1目标重构，不是完整分布式GEVD-DANSE |
+| 专题Ⅱ §15.13；工业 §8 | 作者WOLA-DANSE脚本 | 外部参考实现 | `danse-wola`：`WOLA_DANSE1.m` | 固定作者三条件文件头；静态与独立控制，不运行原MATLAB/WOLA声学整链 |
+| 专题Ⅱ §15.12；工业 §8 | OnlineWACD采样率偏差估计 | 外部参考实现 | `paderwasn`：`paderwasn/synchronization/sro_estimation.py::OnlineWACD` | 已取得原源；SciPy/paderbox及完整估计器未运行，三个helper调用不能替代 |
+| 专题Ⅱ §15.12；工业 §8 | DWACD动态相干漂移估计 | 外部参考实现 | `paderwasn`：`paderwasn/synchronization/sro_estimation.py::DynamicWACD` | 活动/窗口与声学相位条件；原论文定位另记，不称本书盲SRO实测 |
+| 专题Ⅱ §15.12；工业 §8 | TI-DANSE+ 2025批量协方差实验 | 外部参考实现 | `tidanseplus-batch`：`main.py`、`package/asc.py`、`package/online.py` | 同提交MIT/GPL声明冲突，源码仅本地忽略目录研究；原实验/依赖未执行 |
+| 专题Ⅱ §15.11；工业 §8 | TI-DANSE 2017拓扑无关融合 | 原理索引 | Szurley、Bertrand、Moonen原论文§III/IV；本地E15-23仅树消息控制 | 精确同样本求和、目标维数和G可逆；四消息加法不替代完整算法 |
+| 专题Ⅱ §15.12；工业 §8 | 分布式GEVD-DANSE 2016 | 原理索引 | 原论文§IV-B/F及附录B；`danse-python`仅来源身份索引 | 正定SCM、特征间隙与固定秩；没有主项目许可，不取原网络实现 |
+| 专题Ⅱ §15.12；工业 §8 | SRO-GEVD-DANSE 2023 | 原理索引 | 作者arXiv:2211.02489v2、算法1/2 | 常量时钟偏差与相干漂移/WOLA条件；已知真值线性SRC不是原估计器 |
+| 专题Ⅱ §15.12；工业 §8 | TI-GEVD-DANSE 2024共同规范化 | 原理索引 | EUSIPCO 2024作者稿§III/IV | 协方差与滤波器共享同一坐标变换；未运行完整网络GEVD，不能独立归一每向量冒充 |
+| 专题Ⅱ §15.12；工业 §8 | TI-DANSE+ 2026扩展 | 原理索引 | 作者arXiv:2506.02797v2、定理1/2与§III-G/IV-D | 目标秩、统计重构和实验条件分别核；2025批量源码不自动复现该版 |
+| 专题Ⅱ §15.12 | TI-dMWF 2026全局与局部源模型 | 原理索引 | 作者arXiv:2607.05561v1、模型与Remark1 | 只在一节点局部或全部节点共同的源条件；部分子集可见源不援引原证明 |
 | §10.10 | 遥测记录校验 | 本仓库可运行基线 | `codes/chapters/ch10/core/engineering.py::validate_telemetry`、`codes/chapters/ch10/engineering/telemetry_schema.json` | 留存、隐私、统计窗、时钟域 |
 
 ## 任务评分与排除范围
@@ -390,11 +403,12 @@
 
 ## 章节代码练习与音频映射
 
-308 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 311 行算法统计。补充的空间精算、增强步骤、时间状态模块分别提供3/5/4道题。三个原有 `exercises_` 模块各自提供 `run_exercises()`，分别有 28/23/25 道题；AEC 小实验另有 4 道，进阶 AEC 手算另有 10 道；E03-07、E04-08、E09-06 与 E10-13 由独立实验入口提供。E04-08 的 200 次独立双源抽样只说明固定模型中的分辨事件频率和 Wilson 区间。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
+332 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 324 行算法统计。补充的空间精算、增强步骤、时间状态模块分别提供3/5/4道题。三个原有 `exercises_` 模块各自提供 `run_exercises()`，分别有 28/23/25 道题；AEC 小实验另有 4 道，进阶 AEC 手算另有 10 道；E03-07、E04-08、E09-06 与 E10-13 由独立实验入口提供。E04-08 的 200 次独立双源抽样只说明固定模型中的分辨事件频率和 Wilson 区间。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
 
 | 章节与稳定 ID | 练习入口 | 回归测试 |
 |---|---|---|
 | 扩展专题Ⅰ：E14-01～16（16题） | [成像逐层复算](../ch14/chapter14_exercises.py)、[五份快拍音频](../ch14/imaging_audio/MANIFEST.json)、[原源合同](../ch14/reports/upstream_imaging_contracts.json) | [独立教学/PCM测试](../../../tests/test_codes_imaging.py)、[原源和目标测试](../../../tests/test_codes_imaging_contracts.py) |
+| 扩展专题Ⅱ：E15-01～24（24题） | [分布式逐步复算](../ch15/chapter15_exercises.py)、[17份传输控制音频](../ch15/distributed_audio/MANIFEST.json)、[固定原源合同](../ch15/reports/upstream_distributed_contracts.json) | [独立数学/状态测试](../../../tests/test_codes_distributed.py)、[PCM资产测试](../../../tests/test_codes_distributed_audio.py)、[上游合同测试](../../../tests/test_codes_distributed_contracts.py) |
 | 第6章：E06-34～39（6题） | [APA五个完整缩例](../ch06/aec_affine_projection_demo.py)、[有色参考训练/留出](../ch06/examples/generate_apa_audio.py) | [状态/手算测试](../../../tests/test_codes_aec_affine_projection.py)、[PCM实验测试](../../../tests/test_codes_aec_apa_audio.py) |
 | 第 6 章：E06-22～33（12题） | [AEC 状态、数值与指标实验](../ch06/chapter06_experiments.py) | [独立测试](../../../tests/test_codes_chapter06_experiments.py)、[数值边界](../../../tests/test_codes_aec_numerical_boundaries.py) |
 | 第 5 章：E05-08～22（15题） | [约束、谱估计与状态实验](../ch05/chapter05_experiments.py) | [独立测试](../../../tests/test_codes_chapter05_experiments.py)、[GSC状态测试](../../../tests/test_codes_gsc.py) |
@@ -453,7 +467,7 @@
 本仓库不提交下载缓存、模型权重或未经授权的第三方语料。109 个自行合成的教学 WAV 按章放在 `codes/chapters/*/audio/`，单一总清单位于 `codes/chapters/ch00/audio/MANIFEST.json`；许可明确的 DEMAND 小型摘录和派生文件位于 `codes/chapters/ch02/real_audio/`，不包含完整下载归档。独立上游工作目录的取得、许可保留与未执行项目按来源状态记录报告。算法、源码或排除范围变化时，同步修改本表、研究说明、来源清单和真实验证记录。
 
 
-真实数据练习 R01 使用 [prepare_real_recordings.py](../ch02/examples/prepare_real_recordings.py) 与 [real_recordings.py](../ch02/core/real_recordings.py)，测试见 [test_codes_real_recordings.py](../../../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 308 道合成/手算代码题。数据来源和许可另见 [real_audio/](../ch02/real_audio/README.md)。
+真实数据练习 R01 使用 [prepare_real_recordings.py](../ch02/examples/prepare_real_recordings.py) 与 [real_recordings.py](../ch02/core/real_recordings.py)，测试见 [test_codes_real_recordings.py](../../../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 332 道合成/手算代码题。数据来源和许可另见 [real_audio/](../ch02/real_audio/README.md)。
 
 四组模型与边界练习对应以下独立实现；主音频新增的 4 个 interpolation 文件验证固定滤波误差，不是完整采样率转换性能。
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 10 章 · 工程实现、评测与产业实践 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="38e21c32c9ce"><style>
+<meta name="source-digest" content="f3c31ce171c8"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -312,6 +312,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ul>
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
 <div class="chap"><a href="14_acoustic-imaging.html">扩展专题Ⅰ · 声学成像与噪声源诊断</a></div>
+<div class="chap"><a href="15_distributed-enhancement.html">扩展专题Ⅱ · 分布式麦克风协同增强</a></div>
 <div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div>
 <div class="chap"><a href="research/index.html">源码研究</a></div></nav>
@@ -1225,6 +1226,7 @@ $$</p>
 <li>pyroomacoustics 版本和拟合方法。</li>
 </ul>
 <span id="sec-18" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-7">10.7 分布式阵列</h2>
+<p><a href="15_distributed-enhancement.html">扩展专题Ⅱ</a>进一步推导节点特定MWF、压缩信号的线性信息损失、广播更新与通信预算。其已知时钟和掉包实验沿用本章同步基础，分别保存解析、浮点与实际PCM结果；单一教学控制不代表无线系统实测。</p>
 <p>分布式系统要分别解决三类问题：</p>
 <ol>
 <li><strong>时间轴</strong>：初始时差、SRO、丢包和网络抖动要分开估计。长录音首尾对齐只能发现累计误差，不能代替运行时监测。</li>
@@ -1538,7 +1540,7 @@ $$</p>
 <p>以下二十七题的输入均为本书构造的教学数据。先手算，再运行 E10-01～12 与 E10-14 的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_engineering.py"><code>exercises_engineering.py</code></a>：</p>
 <pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering
 </code></pre>
-<p>E10-13 运行独立的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/spectral_subtraction_demo.py"><code>spectral_subtraction_demo.py</code></a>；E10-15 使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/tracking_time_exercises.py"><code>tracking_time_exercises.py</code></a>，E10-16～17 使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/engineering_boundary_exercises.py"><code>engineering_boundary_exercises.py</code></a>。各程序按稳定编号输出中间量和结果；它们不访问声卡，也不代表硬件性能测量。E10-18～27 使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/chapter10_experiments.py"><code>chapter10_experiments.py</code></a>，运行方式为 <code>.venv/bin/python -m codes.chapters.ch10.chapter10_experiments</code>。</p>
+<p>E10-13 运行独立的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/spectral_subtraction_demo.py"><code>spectral_subtraction_demo.py</code></a>；E10-15 使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/tracking_time_exercises.py"><code>tracking_time_exercises.py</code></a>，E10-16～17 使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/engineering_boundary_exercises.py"><code>engineering_boundary_exercises.py</code></a>。各程序按稳定编号输出中间量和结果；它们不访问声卡，也不代表硬件性能测量。E10-18～33 使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/chapter10_experiments.py"><code>chapter10_experiments.py</code></a>，运行方式为 <code>.venv/bin/python -m codes.chapters.ch10.chapter10_experiments</code>。</p>
 <h3 id="sec-u-3a2ce1aea0">E10-01：把初始错位与 SRO 分开</h3>
 <p>在参考时间 $[0,10,20]$ s 测得相对延迟 $[2,3,4]$ ms。按 §10.2 的一阶模型求截距、ppm、600 s 累积漂移，以及设备转到参考速率所需的“输出/输入”比例。</p>
 <p>答案：斜率为 $(4-2)\ \mathrm{ms}/20\ \mathrm{s}=10^{-4}$，即 100 ppm；截距为 2 ms。累计漂移约 $10^{-4}\times600=0.06$ s，即 60 ms，不含初始的 2 ms；比例约 $1/1.0001=0.99990001$。这组点恰好共线，不能据此认为实录估计也没有噪声，或首尾两点足以识别丢样。</p>

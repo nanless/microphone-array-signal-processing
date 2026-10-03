@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "verified_at": "2026-10-02",
+  "verified_at": "2026-10-04",
   "notes": "Fixed source revisions for independent local research checkouts. Acquisition does not mean runtime validation or redistribution permission. LFS objects, submodules and common model/audio/archive files are omitted in new sparse working trees; upstream Git objects can still contain embedded assets. Code, models and datasets retain their respective terms.",
   "projects": [
     {
@@ -2063,6 +2063,123 @@
         "utility/models.py",
         "FaSNet.py"
       ]
+    },
+    {
+      "id": "danse-wola",
+      "url": "https://github.com/AlexanderBertrandLab/Old_Code.git",
+      "revision": "a24b73fcd2dc028659535d07bb08068b06108616",
+      "verified_at": "2026-10-04",
+      "license": "LicenseRef-Bertrand-DANSE-3-Conditions",
+      "license_scope": "WOLA_DANSE1.m file header: copyright 2010 and three redistribution conditions; no standalone root LICENSE and no standard BSD disclaimer",
+      "fetch_enabled": true,
+      "scope": "Author WOLA-DANSE v1.4 MATLAB signal/statistics/update control-flow source",
+      "acquisition": "independent_source_checkout",
+      "source_paths": [
+        "WOLA_DANSE1.m"
+      ],
+      "entrypoints": [
+        "WOLA_DANSE1.m"
+      ],
+      "source_sha256": {
+        "WOLA_DANSE1.m": "54fd630bd7f34ac3d9a97db2a30cee6c7a6a1bc496274b53f9ba9f756ce0772b"
+      },
+      "note": "Only the fixed MATLAB file is acquired; four example-data ZIPs are omitted. File-header terms are retained without relabelling as BSD-3-Clause. No MATLAB/Octave runtime or original WOLA audio chain has been run. Static contracts and independent scalar/timing controls are separate evidence."
+    },
+    {
+      "id": "paderwasn",
+      "url": "https://github.com/fgnt/paderwasn.git",
+      "revision": "cd7054fcf72da637e4a5e11f035e8979691faf70",
+      "verified_at": "2026-10-04",
+      "license": "MIT",
+      "license_sha256": "60be4f44a5baa0db1ed1c9f1bc3ea5f7274b2032bb57bd87c054fa27efaa81fe",
+      "fetch_enabled": true,
+      "scope": "Original synchronization helpers, online and dynamic weighted-average coherence-drift source, STO and sync/beamforming integration",
+      "acquisition": "independent_source_checkout",
+      "source_paths": [
+        "LICENSE",
+        "README.md",
+        "setup.py",
+        "paderwasn/__init__.py",
+        "paderwasn/synchronization",
+        "paderwasn/source_extraction",
+        "paderwasn/experiments/sro_estimation_methods.py",
+        "paderwasn/experiments/sto_estimation.py"
+      ],
+      "entrypoints": [
+        "LICENSE",
+        "README.md",
+        "setup.py",
+        "paderwasn/synchronization/sro_estimation.py",
+        "paderwasn/synchronization/sync.py",
+        "paderwasn/synchronization/time_shift_estimation.py",
+        "paderwasn/synchronization/utils.py"
+      ],
+      "note": "Original coarse_sync, golden_section_max_search and max_time_lag_search are extracted with their exact AST bodies and executed on bounded controls using NumPy only. This does not import the complete modules or execute OnlineWACD/DWACD, full SRO/STO estimation, beamforming or a speech benchmark. SciPy/paderbox and external recordings remain separate dependencies; setup.py declares no install_requires. The helper utils.py is under paderwasn/synchronization; no root paderwasn/utils.py is selected."
+    },
+    {
+      "id": "danse-python",
+      "url": "https://github.com/p-didier/danse.git",
+      "revision": "3f08ffd6e578a8c5301e9310d29dc31112eb20f7",
+      "verified_at": "2026-10-04",
+      "license": "No license declared in the fixed 85-member tree",
+      "fetch_enabled": false,
+      "scope": "Author Python DANSE / GEVD and sampling-clock research reference",
+      "acquisition": "index_only",
+      "entrypoints": [
+        "README.md"
+      ],
+      "note": "No license file was present in the fixed complete tree. Keep an identity/source index until the main-project terms are established; an independently licensed pyANFgen submodule does not license this project. Main source, submodule data, dependencies and audio experiments are not acquired or run."
+    },
+    {
+      "id": "wasn-platform",
+      "url": "https://github.com/CN-UPB/WASN.git",
+      "revision": "9b2590eb104abcde2a35af52c74d64ce30bf5ae2",
+      "verified_at": "2026-10-04",
+      "license": "Apache-2.0",
+      "license_sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "fetch_enabled": false,
+      "scope": "Hardware/deployment framework and DXCP-PhaT synchronization reference",
+      "acquisition": "index_only",
+      "entrypoints": [
+        "LICENSE",
+        "README.md"
+      ],
+      "note": "Fixed root LICENSE and README have been checked. The hardware framework is indexed separately from this chapter covariance controls; source modules, device firmware, dependencies and real-time hardware deployment have not been inspected or run. Acquisition can be enabled in a deployment-focused stage after exact source/firmware component boundaries are checked."
+    },
+    {
+      "id": "tidanseplus-batch",
+      "url": "https://github.com/p-didier/tidanseplus_batch.git",
+      "revision": "0fcc0da19ce9e50bafc978ce1f315bac610d4c0b",
+      "verified_at": "2026-10-04",
+      "license": "LicenseRef-MIT-GPL-Declaration-Conflict",
+      "license_declarations": {
+        "LICENSE": "MIT; copyright 2026 Paul Didier",
+        "README.md": "GPL-3.0-or-later; copyright 2025 Paul Didier"
+      },
+      "license_sha256": "5e6dddf85c7a64a966bafe1b49f7ad20d0f7f82cb445e3a73f2f336933a38da1",
+      "readme_sha256": "c702be35acc6c8e9f27fa17c920125e1c4a7f9dea265a0d41f3eec959819d8e6",
+      "fetch_enabled": true,
+      "scope": "Author TI-DANSE+ batch covariance experiment source, not live-network WOLA audio",
+      "acquisition": "independent_source_checkout",
+      "source_paths": [
+        "LICENSE",
+        "README.md",
+        "requirements.txt",
+        "main.py",
+        "pp.py",
+        "cfg_files",
+        "package"
+      ],
+      "entrypoints": [
+        "LICENSE",
+        "README.md",
+        "requirements.txt",
+        "main.py",
+        "cfg_files/main_cfg.yaml",
+        "package/asc.py",
+        "package/online.py"
+      ],
+      "note": "The same fixed commit has conflicting MIT root and GPL-3.0-or-later README declarations. Preserve both in an ignored local source checkout for research; do not claim a single redistribution permission or publish the source with this tutorial. No dependency installation, original experiment or paper performance reproduction has run. The 2025 conference source identity does not automatically reproduce the 2026 extension."
     }
   ]
 }

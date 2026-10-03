@@ -172,9 +172,9 @@ class ResearchBuildTest(unittest.TestCase):
     def render(self, markdown, source):
         return build_site.render(markdown, source)[0]
 
-    def test_explicit_page_map_has_15_tutorial_and_6_research_pages(self):
+    def test_explicit_page_map_has_16_tutorial_and_6_research_pages(self):
         paths = list(build_site.source_outputs().values())
-        self.assertEqual(len(paths), 21)
+        self.assertEqual(len(paths), 22)
         self.assertEqual(sum(path.startswith("research/") for path in paths), 6)
         self.assertEqual(build_site.source_outputs()[RESEARCH / "README.md"], "research/index.html")
 
@@ -377,7 +377,7 @@ class ResearchBuildTest(unittest.TestCase):
                 parser = Links()
                 parser.feed(path.read_text(encoding="utf-8"))
                 pages[path.resolve()] = parser
-            self.assertEqual(len(pages), 21)
+            self.assertEqual(len(pages), 22)
             room_links = set()
             room_images = set()
             apa_links = set()
@@ -439,13 +439,15 @@ class ResearchBuildTest(unittest.TestCase):
                                              (output / "noise_audio").resolve(),
                                              (output / "scenario_audio").resolve(),
                                              (output / "weighted_audio").resolve(),
-                                             (output / "response_audio").resolve()}:
+                                             (output / "response_audio").resolve(),
+                                             (output / "distributed_audio").resolve()}:
                             owner = {"gss_audio": "ch08", "moving_audio": "ch09",
                                      "tracking_audio": "ch09", "binaural_audio": "ch01", "stft_audio": "ch02",
                                      "geometry_audio": "ch03", "focus_audio": "ch04", "derivative_audio": "ch05",
                                      "apa_audio": "ch06", "mint_audio": "ch07", "mask_audio": "ch08",
                                      "noise_audio": "ch10", "scenario_audio": "ch11",
-                                     "weighted_audio": "appendix_a", "response_audio": "appendix_b"}[target.parent.name]
+                                     "weighted_audio": "appendix_a", "response_audio": "appendix_b",
+                                     "distributed_audio": "ch15"}[target.parent.name]
                             if target.parent.name == "apa_audio":
                                 self.assertIn(target.name, apa_names)
                                 apa_links.add(target.name)

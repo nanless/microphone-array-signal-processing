@@ -1,6 +1,6 @@
 > ⚠️ 本篇是附录 A（正文共 11 章，另有附录 A/B），可独立查阅，前后篇见下方导航。
 >
-> 🏠 首页导读：[`00_overview.md`](00_overview.md) ｜ 上一篇：[14_acoustic-imaging.md](14_acoustic-imaging.md) ｜ 下一篇：[13_appendix-guide.md](13_appendix-guide.md)
+> 🏠 首页导读：[`00_overview.md`](00_overview.md) ｜ 上一篇：[15_distributed-enhancement.md](15_distributed-enhancement.md) ｜ 下一篇：[13_appendix-guide.md](13_appendix-guide.md)
 
 ---
 
@@ -46,6 +46,9 @@ kf_s/N,&0\leq k<\lceil N/2\rceil,\\
 | $\sigma^2$ | 噪声方差/功率（白噪声下协方差为 $\sigma^2\mathbf{I}$） |
 | $\mathbf{C}$, $\vec{f}$ | LCMV 约束矩阵与约束值向量，$\mathbf{C}^H\vec{w}=\vec{f}$（§5.5） |
 | $\vec{e}_r$ | 参考麦选择向量（第 $r$ 位为 1 的单位向量，见[第 5 章 MWF 专题](05_beamforming.md#sec-u-fb93744989)的参考麦选择，MWF/SDW 用） |
+| $U,u$（专题Ⅱ） | 节点总数与节点索引；节点 $u$ 持有 $M_u$ 个本地麦克风，总麦数为 $M=\sum_u M_u$ |
+| $S,Q$（专题Ⅱ） | 潜在共同信号维数与每节点广播维数；原证明常要求 $Q=S$。此处 $Q$ 不是房间声学的声源指向因子 |
+| $\mathbf T_u,\vec h_u$（专题Ⅱ） | $\mathbf T_u^H$将全观测压缩为节点可用观测，$\vec h_u$是相应接收权重；压缩后代价仍针对同一节点参考目标 |
 | $\mathbf{B}$ | GSC 阻塞矩阵，满足 $\mathbf{B}^H\vec{a}(\theta_0)=\vec{0}$（§5.6） |
 | $\Phi(f)$ | 在 §4.2 表示 GCC 的频率加权函数；在 §5.7 表示功率谱。两处符号相同，含义须根据所在公式区分。 |
 | $\mathbf{P}$, $\mathbf{K}$, $\mathbf{Q}$, $\mathbf{F}$, $\mathbf{H}$ | 卡尔曼滤波：误差协方差、卡尔曼增益、过程噪声协方差、状态转移、观测矩阵（§9.2） |
@@ -128,6 +131,8 @@ $d_{ij}$ 是两麦间距，$f$ 是 Hz 频率，$c$ 是声速；当 $i=j$ 或 $f=
 | 音乐噪声 | 谱减类方法过度估计噪声后残留的随机孤立谱峰，听起来像叮咚作响的流水声（§5.7） |
 | ICA / IVA | ICA 利用源间统计独立性估计解混矩阵；IVA 把同一输出在各频点的分量组成向量联合估计，以降低频点间排列不一致（§8.3） |
 | PIT | 排列不变训练在训练时选择与参考源匹配代价最小的输出排列；它不保证跨长录音的身份连续（§8.1） |
+| DANSE | 分布式自适应节点特定信号估计（Distributed Adaptive Node-Specific Signal Estimation）；节点交换压缩本地信号并更新接收权重。参数更新异步与采样时钟异步分别处理，见[专题Ⅱ](15_distributed-enhancement.md) |
+| GEVD | 广义特征值分解（Generalized Eigenvalue Decomposition）；在噪声度量中分解混合统计。GEVD-MWF按选定秩重构目标协方差，不等于最大信噪比的GEV波束，见[专题Ⅱ§15.12](15_distributed-enhancement.md#sec-15-12) |
 
 #### 波束形成与阵列度量
 

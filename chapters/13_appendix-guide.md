@@ -872,7 +872,9 @@ $X$ 是有限源序列的离散时间傅里叶变换，$H_{\mathrm r}$ 是反射
 
 图67～69由声学成像专题的解析控制生成，分别检查PSF、相干失配、完整CSM剥离、校准与区域量。其16道练习和五份独立音频见[扩展专题Ⅰ](14_acoustic-imaging.md)。
 
-图片写入 `figures/`，共 69 张编号图，另有第16题的房间补充图：
+图70～72与24道E15题见[分布式协同增强专题](15_distributed-enhancement.md)。17份独立WAV使用即时已知协方差混合；时钟、量化和缺包有不同误差来源，不能把它们并入主109样本或称为真实无线录音。
+
+图片写入 `figures/`，共 72 张编号图，另有第16题的房间补充图：
 
 ```bash
 .venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
@@ -891,7 +893,7 @@ $X$ 是有限源序列的离散时间傅里叶变换，$H_{\mathrm r}$ 是反射
 .venv/bin/python -m codes.chapters.ch11.examples.generate_selection_audio
 .venv/bin/python -m codes.chapters.appendix_a.examples.generate_weighted_audio
 .venv/bin/python -m codes.chapters.appendix_b.examples.generate_response_audio
-.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～69
+.venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～72
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～39（回声消除专题）
 ```
 

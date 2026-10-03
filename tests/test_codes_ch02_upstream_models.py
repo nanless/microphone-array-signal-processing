@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 import numpy as np
 
+from codes.chapters.ch00.core.source_history import verify_lock_binding
 from codes.chapters.ch02.examples import audit_upstream_models as audit
 
 
@@ -26,7 +27,8 @@ class ReportTests(unittest.TestCase):
 
     def test_current_source_and_lock_bindings(self):
         self.assertEqual(self.report["audit_source_sha256"], audit.sha256(Path(audit.__file__)))
-        self.assertEqual(self.report["sources"]["lock_sha256"], audit.sha256(audit.LOCK))
+        verify_lock_binding(self.report["sources"]["lock_sha256"], tuple(audit.PROJECTS),
+                            current_lock=audit.LOCK)
         lock = json.loads(audit.LOCK.read_text())
         for name, spec in audit.PROJECTS.items():
             source = self.report["sources"]["projects"][name]

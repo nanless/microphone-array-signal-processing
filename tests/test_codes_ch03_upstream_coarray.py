@@ -9,6 +9,7 @@ from unittest.mock import patch
 
 import numpy as np
 
+from codes.chapters.ch00.core.source_history import verify_lock_binding
 from codes.chapters.ch03.examples import audit_upstream_coarray as audit
 
 
@@ -32,7 +33,8 @@ class ReportTests(unittest.TestCase):
 
     def test_current_script_lock_and_selected_source_bindings(self):
         self.assertEqual(self.report["audit_source_sha256"], audit.sha256(Path(audit.__file__)))
-        self.assertEqual(self.report["sources"]["lock_sha256"], audit.sha256(audit.LOCK))
+        verify_lock_binding(self.report["sources"]["lock_sha256"], ("doatools",),
+                            current_lock=audit.LOCK)
         entry = next(p for p in json.loads(audit.LOCK.read_text())["projects"] if p["id"] == "doatools")
         canonical = json.dumps(entry, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
         self.assertEqual(self.report["sources"]["lock_entry_sha256"], hashlib.sha256(canonical.encode()).hexdigest())
@@ -183,7 +185,13 @@ class GuardTests(unittest.TestCase):
         global_aliases_before = {name: hasattr(np, name) for name in ("float_", "complex_")}
         result = audit.run_audit()
         current = strict_json(before)
-        self.assertEqual(result["sources"], current["sources"])
+        for report in (result, current):
+            verify_lock_binding(report["sources"]["lock_sha256"], ("doatools",),
+                                current_lock=audit.LOCK)
+        # Each complete lock is verified above; every other source field must
+        # still match the historical execution, including its entry digest.
+        self.assertEqual({k: v for k, v in result["sources"].items() if k != "lock_sha256"},
+                         {k: v for k, v in current["sources"].items() if k != "lock_sha256"})
         self.assertEqual(result["results"], current["results"])
         self.assertTrue(result["all_expected_behaviors_observed"])
         self.assertEqual(REPORT.read_bytes(), before)

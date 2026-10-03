@@ -7,9 +7,9 @@
 [SOURCES.lock.json](../SOURCES.lock.json)，逐算法覆盖状态见 [COVERAGE.md](../COVERAGE.md)。
 同名算法在不同项目中可能采用不同归一化、频谱轴序和输出参考通道，不能直接比较两个函数的数组而不检查约定。
 
-本手册包括本页入口和以下 5 篇专题，共 6 个网页；与 15 个教程页合计为 21 页。
+本手册包括本页入口和以下 5 篇专题，共 6 个网页；与 16 个教程页合计为 21 页。
 
-锁表登记 100 个 Git 上游项目，其中 87 个已有本地工作区。截至 2026-10-02，按完整稀疏选集政策离线核验64项通过，22个已取得的工作区仍使用旧排除规则，报告为选集不匹配并保留原样；AEC Challenge 的真实录音文件有本地变动，仍保留失败。另13项只保留来源索引。选集不匹配不等于源码未取得，也不代表算法运行失败。`kaldialign`作为MeetEval编译依赖仅已取得源码，未构建或执行。TAC作者的四文件选集已在独立忽略目录取得；其README声明的非商业许可、静态结构审计与未运行原网络的边界见[附录B源码合同](04_source_reproduction.md#tac-contracts)。
+锁表登记 105 个 Git 上游项目，其中 90 个已有本地工作区。截至 2026-10-04，按完整稀疏选集政策离线核验67项通过，22个已取得的工作区仍使用旧排除规则，报告为选集不匹配并保留原样；AEC Challenge 的真实录音文件有本地变动，仍保留失败。另15项只保留来源索引。选集不匹配不等于源码未取得，也不代表算法运行失败。`kaldialign`作为MeetEval编译依赖仅已取得源码，未构建或执行。TAC作者的四文件选集已在独立忽略目录取得；其README声明的非商业许可、静态结构审计与未运行原网络的边界见[附录B源码合同](04_source_reproduction.md#tac-contracts)。
 
 空间篇从双耳线索、SAF 的 HRIR/HRTF 和 libmysofa 数据接口讲起，再讨论 SBL、RobustSBL、在线子带 GSC、SMP-PHAT 与多帧关联；增强篇讨论在线 WPE 接口对照、DNN 自适应控制和长序列分离；工程篇讨论重采样、响度、STOI/ESTOI、ViSQOL、文件帧读写、块浮点及STK分数延迟状态。增强篇另核查TF-Locoformer固定源码的时频结构、形状和配置边界。
 
@@ -31,7 +31,7 @@
 | [回声、去混响与语音分离](02_aec_wpe_separation.md) | 第 6～8 章 | 自适应控制、在线状态、盲分离目标、神经结构、训练和推理依赖 |
 | [工业部署与评测](03_industrial_deployment.md) | 第 10～11 章、附录 B | 设备回调、时钟与重采样、嵌入式处理、推理运行时和评分 |
 | [取得源码后怎样复现](04_source_reproduction.md) | 全书 | 提交核对、输入适配、最小实验、独立数值校验和结果登记 |
-| [练习与音频实验](05_exercises_and_audio.md) | 第 1～11 章、扩展专题Ⅰ、附录 A/B | 308 道代码练习、109 个主合成音频、另 5 个双耳线索、3 个STFT卷积与 18 个房间合成音频，以及 DEMAND 真实录音摘录与派生音频的复算、许可和解释边界 |
+| [练习与音频实验](05_exercises_and_audio.md) | 第 1～11 章、扩展专题Ⅰ/Ⅱ、附录 A/B | 332 道代码练习、109 个主合成音频、另 5 个双耳线索、3 个STFT卷积与 18 个房间合成音频，以及 DEMAND 真实录音摘录与派生音频的复算、许可和解释边界 |
 
 研究手册中的“实验”分两种。已执行的结果明确记录输入、环境和输出；建议读者执行的实验写明步骤和判据，
 不预填性能数字。外部项目有源码，不代表本机已经完成安装、训练、推理或产品验收。
@@ -69,3 +69,5 @@
 第4章另有 [doatools ESPRIT 固定接口对照](../../ch04/reports/doatools_esprit_reference.json)和[图13的逐次统计](../../ch04/reports/figure13_gcc_reverb.json)。默认加权的原版偏差、取消加权与独立参考分开记录；完整数字、适用范围与源码入口见空间篇第14节。
 
 扩展专题Ⅰ新增[声学成像正文](../../../../chapters/14_acoustic-imaging.md)、[逐层源码合同](01_spatial_and_tracking.md#imaging-contract-audit)和[16题及五WAV实验](05_exercises_and_audio.md#sec-47-1)。输出是参考声压贡献及区域量；原算法、教学控制和工业条件分别核对。
+
+分布式专题Ⅱ将[节点目标与压缩条件](../../../../chapters/15_distributed-enhancement.md)、[原论文与工业网络](03_industrial_deployment.md#distributed-network-deployment)、[固定源码合同](04_source_reproduction.md#distributed-reproduction)和[24题及17WAV](05_exercises_and_audio.md#sec-48-1)互链。原统计算法、已知真值音频、源码获取与完整设备执行分别记录。

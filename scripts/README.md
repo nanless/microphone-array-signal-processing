@@ -20,9 +20,9 @@
 .venv/bin/python -m codes.chapters.ch11.examples.generate_selection_audio  # 8 份独立场景 WAV；--check 只核对
 .venv/bin/python -m codes.chapters.appendix_a.examples.generate_weighted_audio  # 五份独立已知噪声加权WAV；图65读取
 .venv/bin/python -m codes.chapters.appendix_b.examples.generate_response_audio  # 五份同DRR短FIR对照WAV；图66读取
-.venv/bin/python scripts/make_figures.py      # 生成图 1～25、图 33～36、40～69 → figures/
+.venv/bin/python scripts/make_figures.py      # 生成图 1～25、图 33～36、40～72 → figures/
 .venv/bin/python scripts/make_aec_figures.py  # 生成图 26～32、37～39（回声消除专题）→ figures/
-.venv/bin/python scripts/build_site.py        # 15 个教程页 + 6 个研究页，共 21 页 → site/
+.venv/bin/python scripts/build_site.py        # 16 个教程页 + 6 个研究页，共 22 页 → site/
 .venv/bin/python scripts/build_pdf.py         # 合订 chapters/ → dist/combined.html → dist/microphone-array-tutorial.pdf（需 Chrome）
 .venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py --check  # 只核对音频、参数与摘要，不重写文件
 .venv/bin/python codes/chapters/ch02/examples/prepare_real_recordings.py --check  # 真实录音及派生文件，离线核对
@@ -39,18 +39,18 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 | `../codes/chapters/appendix_b/examples/room_srp_exercise.py` | `--check` 只核固定几何与 Sabine 输入；`--run` 才用 pyroomacoustics 0.10.0 实算六位置 RIR、T60、DRR 和 SRP。写 `--results` 时还须同时指定 `--plot` 与 `--audio-dir`；已有目标会拒绝覆盖 | `codes/chapters/appendix_b/room_audio/` 已收入 18 个合成 WAV、清单、`ROOM_RESULTS.png` 及 `RESULTS.json`；重生成时先输出到另一个新目录核对 |
 | `../codes/chapters/ch08/examples/gss_teaching_demo.py`、`../codes/chapters/ch09/examples/moving_source_audio.py` | 分别生成受控活动导引处理链和连续自由场双麦实验；数学合成，不是设备实测 | `codes/chapters/ch08/gss_audio/` 的 5 个 WAV、状态及清单；`codes/chapters/ch09/moving_audio/` 的 3 个 WAV 与真值清单 |
 | `../codes/chapters/ch02/examples/prepare_real_recordings.py` | 默认及 `--check` 均离线只读；`--prepare` 从固定本地归档重建；`--download` 显式获取约 99 MB 归档并重建 | `codes/chapters/ch02/real_audio/`：4 个 WAV、清单；署名与许可独立保留 |
-| `make_figures.py` | 生成图 1～25 和图 33～36、40～69。只用 numpy 和 matplotlib，不依赖 scipy；随机种子固定。图 34～36、40～41、43～45、47、49、58～60、63～66 读取已生成的音频，必须先运行音频生成器。图 13 的蒙特卡洛统计耗时最长 | `figures/fig01`～`fig25_*.png`、`fig33_*`～`fig36_*`、`fig40_*`～`fig69_*` |
+| `make_figures.py` | 生成图 1～25 和图 33～36、40～72。只用 numpy 和 matplotlib，不依赖 scipy；随机种子固定。图 34～36、40～41、43～45、47、49、58～60、63～70、72 读取已生成的音频，必须先运行音频生成器。图 13 的蒙特卡洛统计耗时最长 | `figures/fig01`～`fig25_*.png`、`fig33_*`～`fig36_*`、`fig40_*`～`fig72_*` |
 | `make_aec_figures.py` | 10 张回声消除专题图（原 7 张另加两带子带、IPNLMS/RLS/Kalman 状态图及 PBFDAF 流程图）。风格与上一个脚本统一（六色/五级字号/dpi150） | `figures/fig26`～`fig32_*`、`fig37`～`fig39_*` |
-| `build_site.py` | 生成 15 个教程页和 6 个研究页，保留旧版语义及顺序深链；编号图直接引用 `figures/`，独立音频与状态按各自清单核验并复制；站点 MathJax 在线加载 | `site/` 下的网页及独立媒体副本 |
-| `build_pdf.py` | 合订本脚本。15 篇合成带封面和三级目录的 HTML，Chrome 标签化打印 A4 PDF，再以保留结构树的方式写三级书签；第 1～13 章的源 h4 进入第三级。常用 flag：`--html-only`、`--pdf-only`、`--no-bookmarks`、`--build-date YYYY-MM-DD` | `dist/combined.html` 与 `dist/microphone-array-tutorial.pdf` |
+| `build_site.py` | 生成 16 个教程页和 6 个研究页，保留旧版语义及顺序深链；编号图直接引用 `figures/`，独立音频与状态按各自清单核验并复制；站点 MathJax 在线加载 | `site/` 下的网页及独立媒体副本 |
+| `build_pdf.py` | 合订本脚本。16 篇合成带封面和三级目录的 HTML，Chrome 标签化打印 A4 PDF，再以保留结构树的方式写三级书签；第 1～13 章的源 h4 进入第三级。常用 flag：`--html-only`、`--pdf-only`、`--no-bookmarks`、`--build-date YYYY-MM-DD` | `dist/combined.html` 与 `dist/microphone-array-tutorial.pdf` |
 | `build_markdown_helpers.py` | 两构建器共享的Markdown数学与代码边界处理；保留代码、原始HTML及转义美元符的语义，数学暂存标识避开原文 | 供构建器导入，无独立产物 |
 | `code_layout.py` | 主音频组到首讲章节的唯一映射及路径查询；生成器、构建和检查共同使用这一布局 | 各章 `audio/` 路径，不单独生成文件 |
 | `heading_aliases.py`、`legacy_sequential_anchors.json` | 按主题维护已发布节号和顺序深链；构建器插入历史别名，门禁另外核对主题与唯一性 | 网页和合订HTML中的兼容锚点 |
 | `../codes/chapters/ch00/io_contracts.py` | 音频生成和上游获取共用的路径、成员、严格JSON、元数据类型和报告写入原语；各调用者保留独立清单、评分与许可逻辑 | 无独立产物；实际参与生成的源摘要进入相应清单 |
 | `inline_layout.js` | 站点与合订本共用的成品排版辅助。等待公式与字体完成后，只保护适合当前宽度的行内公式及紧邻短单位/标点、可见普通文字中的稳定题号；短粗体引导在纸版跟随下一段。视窗和字体变化后重新核对宽度。合订预览在打印前即采用 A4 正文几何，打印期间不重排 DOM；单页网站打印前拆除屏幕分组，结束后恢复。保留 TeX、代码、链接、辅助公式树和长式的滚动接口。脚本内容计入两种产物及独立门禁的源摘要 | 由两个构建器嵌入 HTML；无单独生成物 |
-| `quality_check.py` | 发布门禁。用独立基线检查 15 篇/135 节/631 个指定子节/69 图，核对图号、alt、公式编号与引用、小节语义链接、PNG 绘图脚本摘要、网页导航和 PDF 三级书签。确定性问题阻断发布，高风险口语只提醒人工复核 | 通过、失败清单，以及不阻断发布的人工复核与可访问性提示 |
+| `quality_check.py` | 发布门禁。用独立基线检查 16 篇/151 节/694 个指定子节/72 图，核对图号、alt、公式编号与引用、小节语义链接、PNG 绘图脚本摘要、网页导航和 PDF 三级书签。确定性问题阻断发布，高风险口语只提醒人工复核 | 通过、失败清单，以及不阻断发布的人工复核与可访问性提示 |
 
-308 道稳定编号的代码题可从各章入口复算，例如：
+332 道稳定编号的代码题可从各章入口复算，例如：
 
 ```bash
 .venv/bin/python -m codes.chapters.ch04.chapter04_experiments
@@ -87,13 +87,13 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 
 研究页入口为 `site/research/index.html`，对应 `codes/chapters/ch00/research/README.md`；其余五页保留研究文件名。研究页与正文互链，源码及未生成网页的代码文档链接指向 GitHub 中的原文件，不把 `.md` 猜成不存在的 `.html`。外部链接不改写。
 
-合订本仍只有 15 篇教程：跨章链接指向内部锚点，研究文档和源码链接指向仓库原文件。两种构建摘要均纳入六篇研究源文件，修改后应重新构建。
+合订本仍只有 16 篇教程：跨章链接指向内部锚点，研究文档和源码链接指向仓库原文件。两种构建摘要均纳入六篇研究源文件，修改后应重新构建。
 
 `codes/chapters/ch10/core/engineering.py` 中的工程基线只依赖 NumPy。它包括 SRO 拟合与教学用线性重采样、VAD 迟滞与 hangover、峰值保护 AGC、固定容量环形缓冲、deadline/队列模拟、Q1.15 量化和遥测字段校验。运行 `.venv/bin/python -m unittest tests.test_codes_engineering -v` 可执行对应回归测试。代码范围、上游实现与许可证边界以 `codes/chapters/README.md`、`codes/chapters/ch00/COVERAGE.md`、`codes/chapters/ch00/THIRD_PARTY.md` 和 `codes/chapters/ch00/SOURCES.lock.json` 为准。
 
 **发布与验收说明**
 
-**书签与人工抽查**：合订本 PDF 顶层是导读、11 章正文、1 篇扩展专题和 2 篇附录，第二层来自各篇实际小节；第 1～14 章共有 631 个源 h4 作为第三级书签，并保持在各自父节之下。
+**书签与人工抽查**：合订本 PDF 顶层是导读、11 章正文、2 篇扩展专题和 2 篇附录，第二层来自各篇实际小节；第 1～11 章、两篇扩展专题与附录共有 694 个源 h4 作为第三级书签，并保持在各自父节之下。
 
 书签使用 HTML 标题 id 对应的 PDF 命名目标，保留页内定位。命名目标缺失、越界或同名却指向不同位置时构建失败；发布门禁独立比较每项书签与正文目标的页码及视图参数。目录和正文可能出现同名标题，仅检查落页文字不能识别误跳到目录的问题。
 
@@ -107,7 +107,7 @@ PDF 正文固定为 16 px，MathJax 公式按 100% 字号打印；网页公式�
 
 **PDF 可访问性边界**：Chrome 使用 `--export-tagged-pdf` 导出结构树，pypdf 完整克隆页面后添加书签；构建和发布门禁检查标记根、父树及页面连接。标签存在不等于公式辅助文本、阅读顺序或 PDF/UA 已完整验收，最终版仍需辅助技术实测。
 
-**独立结构基线**：发布门禁的独立结构基线为 15 个顶级书签、135 个二级书签、631 个三级书签，共 781 个大纲项，以及图 1～69。它还检查图号与 alt、公式编号与引用、小节语义链接、每个源 h2/h3/h4 标题是否真的出现在当前页导航中（源 h1 可排除），以及 PNG 中的 `SourceScript` 和完整 `SourceScriptDigest`。
+**独立结构基线**：发布门禁的独立结构基线为 16 个顶级书签、151 个二级书签、694 个三级书签，共 861 个大纲项，以及图 1～72。它还检查图号与 alt、公式编号与引用、小节语义链接、每个源 h2/h3/h4 标题是否真的出现在当前页导航中（源 h1 可排除），以及 PNG 中的 `SourceScript` 和完整 `SourceScriptDigest`。
 
 修改绘图脚本后未重画的 PNG 会使门禁失败；高风险口语命中只输出人工复核提示。
 
@@ -117,7 +117,7 @@ PDF 正文固定为 16 px，MathJax 公式按 100% 字号打印；网页公式�
 
 ## 附录 B 房间仿真复算
 
-第 16 题的六位置房间重算需要 `pyroomacoustics==0.10.0`。可在临时虚拟环境安装，保留仓库 `.venv` 的主依赖集；下列命令以 Python 3.13 的 macOS/Linux 环境为例。没有该依赖仍能生成正文的 69 张编号图，并查阅随仓的附录 B 结果图和 18 个房间 WAV。固定版本说明见[官方 PyPI 页面](https://pypi.org/project/pyroomacoustics/0.10.0/)。
+第 16 题的六位置房间重算需要 `pyroomacoustics==0.10.0`。可在临时虚拟环境安装，保留仓库 `.venv` 的主依赖集；下列命令以 Python 3.13 的 macOS/Linux 环境为例。没有该依赖仍能生成正文的 72 张编号图，并查阅随仓的附录 B 结果图和 18 个房间 WAV。固定版本说明见[官方 PyPI 页面](https://pypi.org/project/pyroomacoustics/0.10.0/)。
 
 在有 Python 3.13 的 macOS/Linux 主机上，可从仓库根目录用新目录复算，不覆盖本书样本：
 
@@ -222,13 +222,25 @@ PRA_NUM_THREADS=2 /tmp/masp-room-pra/bin/python -m codes.chapters.appendix_b.exa
 
 ## 扩展专题Ⅰ：成像实验与稳定章节身份
 
-新增阅读顺序为第11章→扩展专题Ⅰ→附录A→附录B。源文件前缀14、公式14-x、练习E14与合订目标ch-14保持一致；附录仍使用原12/13身份。`build_pdf.chapter_number`从文件名取稳定身份，不由列表位置重新编号，旧附录书签与练习深链须同时验收。
+新增阅读顺序为第11章→扩展专题Ⅰ→扩展专题Ⅱ→附录A→附录B。源文件前缀14、公式14-x、练习E14与合订目标ch-14保持一致；附录仍使用原12/13身份。`build_pdf.chapter_number`从文件名取稳定身份，不由列表位置重新编号，旧附录书签与练习深链须同时验收。
 
 ```bash
 .venv/bin/python -m codes.chapters.ch14.chapter14_exercises
 .venv/bin/python -m codes.chapters.ch14.examples.generate_imaging_audio
+.venv/bin/python -m codes.chapters.ch15.examples.generate_distributed_audio  # 17 independent WAVs; --check只读
 .venv/bin/python -m codes.chapters.ch14.examples.generate_imaging_audio --check
 .venv/bin/python -m codes.chapters.ch14.examples.audit_upstream_imaging_contracts
 ```
 
 16题只读计算；五个独立24kHz数学WAV保留完整四点传播尾，不混入主109份。图67～69分别复算PSF与二维泄漏、非相干模型及full-CSM CLEAN-SC、校准与不同拟合目标。三报告绑定当前四个真实源；原Acoular限定调用报告保留目标差异与未执行条件。源、PCM、图和网页/PDF验收分别记，不能用其中一项代替另一项。详见[音频实验§47](../codes/chapters/ch00/research/05_exercises_and_audio.md#sec-47-1)与[原源合同](../codes/chapters/ch00/research/01_spatial_and_tracking.md#imaging-contract-audit)。
+
+
+## 扩展专题Ⅱ的已知统计、音频与原源码合同
+
+```bash
+.venv/bin/python -m codes.chapters.ch15.chapter15_exercises
+.venv/bin/python -m codes.chapters.ch15.examples.generate_distributed_audio --check
+.venv/bin/python -m codes.chapters.ch15.examples.audit_upstream_distributed_contracts
+```
+
+24题覆盖任务相关压缩、真实广播更新、退化输入、时钟、缺口、树消息与GEVD。17个独立WAV用共同增益1和九个冻结真实源；图70/72先完整只读回放，再独立读整数PCM核E/D。图71记录广播改变后的当前有效权重，旧求解快照另列；预算含初始两次求解。原MATLAB仅静态合同及独立控制；paderwasn仅三个NumPy助手原函数，未执行完整网络或WOLA链。详见[实验§48](../codes/chapters/ch00/research/05_exercises_and_audio.md#distributed-exercises-audio)。

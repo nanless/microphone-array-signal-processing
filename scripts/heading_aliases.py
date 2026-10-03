@@ -16,6 +16,8 @@ HISTORICAL_SEQUENTIAL_IDS = json.loads(
 
 HISTORICAL_SECTION_IDS = {
     "00_overview.md": {
+        "sec-u-2afd7c6509": "sec-u-461c9549d0",  # 15文件→16文件，同一文件地图
+        "sec-u-9c77d218fe": "sec-u-dacd520d2c",  # 69图→72图，同一插图地图
         "sec-u-06e6cf7b78": "sec-u-2afd7c6509",  # 14文件→15文件，原文件地图
         "sec-u-ec3f837100": "sec-u-9c77d218fe",  # 66图→69图，仍是同一插图地图
         "sec-u-8657cda209": "sec-u-ec3f837100",  # 65 figure map keeps its original topic

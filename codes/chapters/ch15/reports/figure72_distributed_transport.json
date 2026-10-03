@@ -1,0 +1,306 @@
+{
+  "schema_version": 1,
+  "scope": "known-statistics finite teaching controls; not blind DANSE or industrial performance",
+  "source_sha256": {
+    "scripts/make_figures.py": "e703a0ae703aef373458812c1d93a94708116136a8e6caa70f0ab22a73668e9d",
+    "codes/chapters/ch15/core/distributed.py": "f0e97412194b705b965b18dcb760b65c9ea69f011791006f502518a87214f0c0",
+    "codes/chapters/ch15/core/distributed_audio.py": "2f2117f0e5aa378e4d598aaa49a31c28e4227e799577f854d6ffd0e836699ade",
+    "codes/chapters/ch15/examples/generate_distributed_audio.py": "141a78c9f149802c47b66a94f32b92866e9f93e9f0a59e97eb5d822c86986c12",
+    "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
+    "codes/chapters/ch04/core/covariance.py": "d704be037100ee53caf6e2130fbabbe14ce6eeff9e3d11dde389fd368d271249",
+    "codes/chapters/ch10/sro_closed_loop_demo.py": "a572e60eaac16cdb20c378b955e2bea4590b6531d788ad72d27cce9ad9ac400a",
+    "codes/chapters/ch10/core/engineering.py": "a2a0bab10e37d843fd7ed77782ef5ab2447d173e6a654d0acc923fe310b73956",
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
+  },
+  "results": {
+    "rows": {
+      "compressed_white": {
+        "float_components": {
+          "samples": 28800,
+          "reference_power": 0.006799999999999997,
+          "target_distortion_power": 0.00016094674556212988,
+          "noise_power": 0.0008852071005917134,
+          "other_error_power": 9.312250920890247e-35,
+          "target_noise_cross_power": 6.262698090636929e-19,
+          "target_other_cross_power": 1.5949813899355966e-19,
+          "noise_other_cross_power": -3.7199815349831223e-22,
+          "total_mse": 0.001046153846153844,
+          "normalized_mse": 0.1538461538461536,
+          "component_sum": 0.001046153846153844,
+          "decomposition_residual": 0.0
+        },
+        "pcm": {
+          "E": 32352145920,
+          "D": 210281178240,
+          "samples": 28800,
+          "nmse": 0.15385183871794536
+        }
+      },
+      "clock_misaligned_white": {
+        "float_components": {
+          "samples": 28800,
+          "reference_power": 0.006799999999999997,
+          "target_distortion_power": 0.001500984184421887,
+          "noise_power": 0.0008851597318821157,
+          "other_error_power": 5.72722318349423e-35,
+          "target_noise_cross_power": -1.566758807253239e-07,
+          "target_other_cross_power": 3.917213282933218e-20,
+          "noise_other_cross_power": -1.3618693895818007e-21,
+          "total_mse": 0.0023859872404232776,
+          "normalized_mse": 0.3508804765328351,
+          "component_sum": 0.002385987240423277,
+          "decomposition_residual": 4.336808689942018e-19
+        },
+        "pcm": {
+          "E": 73784582591,
+          "D": 210281178240,
+          "samples": 28800,
+          "nmse": 0.35088533937539346
+        }
+      },
+      "clock_linear_corrected_white": {
+        "float_components": {
+          "samples": 28800,
+          "reference_power": 0.006799999999999997,
+          "target_distortion_power": 0.00017588298581604293,
+          "noise_power": 0.000747041193051624,
+          "other_error_power": 8.447275055741735e-35,
+          "target_noise_cross_power": -8.894407532759122e-10,
+          "target_other_cross_power": 2.4912324584376333e-20,
+          "noise_other_cross_power": -6.672662462563342e-21,
+          "total_mse": 0.0009229232894269137,
+          "normalized_mse": 0.1357240131510168,
+          "component_sum": 0.0009229232894269136,
+          "decomposition_residual": 1.0842021724855044e-19
+        },
+        "pcm": {
+          "E": 28540554452,
+          "D": 210281178240,
+          "samples": 28800,
+          "nmse": 0.13572567307676886
+        }
+      },
+      "packet_zerofill_white": {
+        "float_components": {
+          "steady": {
+            "samples": 28800,
+            "reference_power": 0.006799999999999997,
+            "target_distortion_power": 0.00027970085470085406,
+            "noise_power": 0.0008662064431295143,
+            "other_error_power": 1.079849901951958e-34,
+            "target_noise_cross_power": 1.5085317977420188e-18,
+            "target_other_cross_power": -1.828882008332308e-19,
+            "noise_other_cross_power": -5.7134405984817366e-21,
+            "total_mse": 0.0011459072978303696,
+            "normalized_mse": 0.1685157790927015,
+            "component_sum": 0.0011459072978303698,
+            "decomposition_residual": -2.168404344971009e-19
+          },
+          "packet": {
+            "samples": 800,
+            "reference_power": 0.006799999999999953,
+            "target_distortion_power": 0.004436094674556182,
+            "noise_power": 0.00020118343195266126,
+            "other_error_power": 5.8860528628724405e-36,
+            "target_noise_cross_power": 4.0068859688546787e-17,
+            "target_other_cross_power": 1.09182683705612e-19,
+            "noise_other_cross_power": -7.211434461466057e-22,
+            "total_mse": 0.004637278106508884,
+            "normalized_mse": 0.6819526627218995,
+            "component_sum": 0.004637278106508884,
+            "decomposition_residual": 0.0
+          }
+        },
+        "pcm": {
+          "steady": {
+            "E": 35436873520,
+            "D": 210281178240,
+            "samples": 28800,
+            "nmse": 0.16852137607653533
+          },
+          "packet": {
+            "E": 3983398320,
+            "D": 5841143840,
+            "samples": 800,
+            "nmse": 0.6819551836271849
+          }
+        }
+      },
+      "packet_local_fallback_white": {
+        "float_components": {
+          "steady": {
+            "samples": 28800,
+            "reference_power": 0.006799999999999997,
+            "target_distortion_power": 0.0001937873880893823,
+            "noise_power": 0.0009072572462885792,
+            "other_error_power": 1.0945331324985625e-34,
+            "target_noise_cross_power": 2.164413878641722e-18,
+            "target_other_cross_power": -1.7603653906131984e-19,
+            "noise_other_cross_power": -6.190607281496953e-21,
+            "total_mse": 0.0011010446343779636,
+            "normalized_mse": 0.16191832858499472,
+            "component_sum": 0.0011010446343779636,
+            "decomposition_residual": 0.0
+          },
+          "packet": {
+            "samples": 800,
+            "reference_power": 0.006799999999999953,
+            "target_distortion_power": 0.0013432098765432004,
+            "noise_power": 0.001679012345679,
+            "other_error_power": 5.874568283064906e-35,
+            "target_noise_cross_power": 6.368386720745356e-17,
+            "target_other_cross_power": 3.5584250749440525e-19,
+            "noise_other_cross_power": -1.78991440346944e-20,
+            "total_mse": 0.003022222222222265,
+            "normalized_mse": 0.44444444444445386,
+            "component_sum": 0.0030222222222222647,
+            "decomposition_residual": 4.336808689942018e-19
+          }
+        },
+        "pcm": {
+          "steady": {
+            "E": 34049578760,
+            "D": 210281178240,
+            "samples": 28800,
+            "nmse": 0.1619240440109111
+          },
+          "packet": {
+            "E": 2596103560,
+            "D": 5841143840,
+            "samples": 800,
+            "nmse": 0.444451229264712
+          }
+        }
+      }
+    },
+    "clock": {
+      "device_input_samples": 32004,
+      "reference_output_samples": 32000,
+      "invalid_reference_indices": [],
+      "whole_vs_chunked_exact_equal": true,
+      "uncorrected_peer_reconstruction_nmse": 0.7431725006174519,
+      "corrected_peer_reconstruction_nmse": 0.0029155839168726657,
+      "peer_reconstruction_reference_energy": 4369.679999999999,
+      "same_index_drift_samples_last": 3.1995800419958003,
+      "same_index_time_definition": "reference n/fs minus device n/fd, positive for faster device",
+      "limitations": "known true rate; interpolation changes frequency response; not blind SRO estimation or original synchronous model"
+    },
+    "parameters": {
+      "sample_rate_hz": 16000,
+      "samples_per_channel": 32000,
+      "body_samples": 32000,
+      "complete_convolution_tail_samples": 0,
+      "tail_scope": "instantaneous mixture; no FIR tail exists",
+      "seed": 1502026,
+      "target_frequencies_hz": [
+        700,
+        1300
+      ],
+      "target_peak_amplitudes": [
+        0.1,
+        0.06
+      ],
+      "noise_basis_frequencies_hz": [
+        1900,
+        2300,
+        2900,
+        3500
+      ],
+      "noise_basis_peak_amplitude": 0.11661903789690602,
+      "phase_rule": "default_rng(1502026).uniform(-pi,pi,6), two target phases then four noise phases",
+      "envelope": "clip(min(n/1600,(31999-n)/1600),0,1), with n=fs*t on device clock",
+      "target_steady_mean_square": 0.0068000000000000005,
+      "a": [
+        1.0,
+        0.5,
+        2.0,
+        -0.5
+      ],
+      "nodes_zero_based": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "reference_microphones_zero_based": [
+        0,
+        2
+      ],
+      "reference_target_factors": [
+        1.0,
+        2.0
+      ],
+      "channel_order": "x1,x2,x3,x4",
+      "covariance_units": "digital amplitude squared, not Pa squared",
+      "scoring_windows_samples": {
+        "steady": [
+          1600,
+          30400
+        ],
+        "packet": [
+          16000,
+          16800
+        ]
+      },
+      "steady_scoring_samples": 28800,
+      "packet_scoring_samples": 800,
+      "common_export_gain": 1.0,
+      "clock": {
+        "true_ppm": 100.0,
+        "true_device_rate_hz": 16001.6,
+        "initial_offset_s": 0.0,
+        "chunk_samples": 257,
+        "device_samples_for_right_endpoint_support": 32004,
+        "rate_is_known": true,
+        "estimator_run": false,
+        "correction": "existing StatefulLinearClockCorrector, state retained across calls; no antialias filter"
+      },
+      "packet": {
+        "missing_interval_samples": [
+          16000,
+          16800
+        ],
+        "known_flag": true,
+        "packet_samples": 160,
+        "consecutive_missing_packets": 5,
+        "reference_timeline_preserved": true,
+        "policies": [
+          "remote zero with frozen global weights",
+          "explicit local MWF fallback"
+        ]
+      },
+      "transport": {
+        "remote_vector": [
+          2.0,
+          -0.5
+        ],
+        "receiver_coefficient": 0.15384615384615385,
+        "quantized_signal": "z=2*x3-.5*x4",
+        "format": "PCM16 encode/read back before receiver fusion",
+        "output_error_half_step_bound": 2.3475060096153847e-06
+      },
+      "orthogonality_scope": "finite declared integer-cycle windows only, not random-process independence"
+    },
+    "cross_terms": [
+      [
+        1.3694486648368016e-32,
+        1.1549940439761096e-16
+      ],
+      [
+        8.422387034550341e-33,
+        -2.304057069489502e-05
+      ],
+      [
+        1.2422463317267263e-32,
+        -1.308001107731872e-07
+      ]
+    ],
+    "scope": "known-rate SRC and two fixed missing-packet policies; not blind synchronization or network measurements"
+  },
+  "audio_manifest_sha256": "b1108d38f23d8d886b6a5e7de5ef30e2a64dea61bd394ca91b7ff9b14debcdfb"
+}

@@ -13,6 +13,7 @@ from zoneinfo import ZoneInfo
 
 import numpy as np
 
+from codes.chapters.ch00.core.source_history import verify_lock_binding
 from codes.chapters.ch05.examples import audit_upstream_beamformers as audit
 
 REPORT = audit.ROOT / 'codes/chapters/ch05/reports/upstream_beamformers.json'
@@ -41,7 +42,7 @@ class SavedReportTests(unittest.TestCase):
 
     def test_current_tool_lock_and_original_function_identity(self):
         self.assertEqual(self.report['audit_source_sha256'], audit.sha(audit.__file__))
-        self.assertEqual(self.report['lock_sha256'], audit.sha(audit.LOCK))
+        verify_lock_binding(self.report['lock_sha256'], ('pb_bss',), current_lock=audit.LOCK)
         entry = next(p for p in json.loads(audit.LOCK.read_text())['projects'] if p['id'] == 'pb_bss')
         self.assertEqual(self.report['lock_entry'], entry)
         self.assertEqual(entry['revision'], '10acc347fc9ea21e3d312806a0bd751d0d0af183')

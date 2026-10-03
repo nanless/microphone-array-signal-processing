@@ -97,6 +97,7 @@ CHAPTERS = [
     ("10_engineering-practice.md", "第 10 章 · 工程实现、评测与产业实践"),
     ("11_selection-guide.md", "第 11 章 · 总结与选型指南"),
     ("14_acoustic-imaging.md", "扩展专题Ⅰ · 声学成像与噪声源诊断"),
+    ("15_distributed-enhancement.md", "扩展专题Ⅱ · 分布式麦克风协同增强"),
     ("12_appendix-symbols-math.md", "附录 A · 符号术语数学"),
     ("13_appendix-guide.md", "附录 B · 路径地图与练习"),
 ]
@@ -110,6 +111,7 @@ PDF_THIRD_LEVEL_FILES = {
     "11_selection-guide.md", "12_appendix-symbols-math.md",
     "13_appendix-guide.md",
     "14_acoustic-imaging.md",
+    "15_distributed-enhancement.md",
 }
 
 
@@ -837,7 +839,7 @@ def print_pdf(combined, pdf, timeout_min_pages=100):
 
 
 def check_figures():
-    """合订前检查：正文引用的图必须存在、非空，并覆盖 69 个编号文件。"""
+    """合订前检查：正文引用的图必须存在、非空，并覆盖 72 个编号文件。"""
     missing = []
     refs = set()
     for fname, _ in CHAPTERS:
@@ -849,8 +851,8 @@ def check_figures():
                 missing.append(f"{fname}: {m.group(1)}")
     if missing:
         raise SystemExit("缺图，中止：\n" + "\n".join(missing))
-    if len(refs) != 69:
-        raise SystemExit(f"唯一图片数异常：期望 69，实际 {len(refs)}")
+    if len(refs) != 72:
+        raise SystemExit(f"唯一图片数异常：期望 72，实际 {len(refs)}")
     print(f"图片检查通过（{len(CHAPTERS)} 篇、{len(refs)} 张唯一图片）")
 
 
