@@ -1,8 +1,11 @@
 """Independent matrices and fixed-source evidence for the ch03 method audit."""
 import ast
 import hashlib
+import io
 import json
+import os
 from pathlib import Path
+from contextlib import redirect_stdout
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -31,11 +34,20 @@ class ReportTests(unittest.TestCase):
     def setUp(self):
         self.report = strict_json(REPORT.read_text(encoding="utf-8"))
 
-    def test_current_script_lock_and_selected_source_bindings(self):
-        self.assertEqual(self.report["audit_source_sha256"], audit.sha256(Path(audit.__file__)))
-        verify_lock_binding(self.report["sources"]["lock_sha256"], ("doatools",),
-                            current_lock=audit.LOCK)
-        entry = next(p for p in json.loads(audit.LOCK.read_text())["projects"] if p["id"] == "doatools")
+    def test_historical_script_lock_and_selected_source_bindings(self):
+        source = self.report["audit_source"]
+        revision = audit.HISTORICAL_SCRIPT_REVISION + ":" + source
+        original = (audit.run_git(["show", revision], cwd=audit.ROOT) + "\n").encode()
+        self.assertEqual(len(original), int(audit.run_git(["cat-file", "-s", revision], cwd=audit.ROOT)))
+        self.assertEqual(hashlib.sha256(original).hexdigest(), audit.HISTORICAL_SCRIPT_SHA256)
+        self.assertEqual(self.report["audit_source_sha256"], audit.HISTORICAL_SCRIPT_SHA256)
+        report_revision = audit.HISTORICAL_SCRIPT_REVISION + ":" + str(REPORT.relative_to(audit.ROOT))
+        original_report = (audit.run_git(["show", report_revision], cwd=audit.ROOT) + "\n").encode()
+        self.assertEqual(len(original_report), int(audit.run_git(["cat-file", "-s", report_revision], cwd=audit.ROOT)))
+        self.assertEqual(REPORT.read_bytes(), original_report)
+        binding = verify_lock_binding(self.report["sources"]["lock_sha256"], ("doatools",),
+                                      current_lock=audit.LOCK)
+        entry = binding["records"]["doatools"]
         canonical = json.dumps(entry, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
         self.assertEqual(self.report["sources"]["lock_entry_sha256"], hashlib.sha256(canonical.encode()).hexdigest())
         self.assertEqual(self.report["sources"]["revision"], "9469db201e0418aef6b97583ef54b6fec2769502")
@@ -144,29 +156,12 @@ class GuardTests(unittest.TestCase):
             self.assertEqual(records[0]["definition_ast_sha256"], hashlib.sha256(
                 ast.dump(tree_node, include_attributes=False).encode()).hexdigest())
 
-    def test_bad_head_dirty_checkout_or_blob_difference_rejects_without_mutation(self):
-        with tempfile.TemporaryDirectory() as temp:
-            cache = Path(temp)
-            checkout = cache / "doatools"
-            (checkout / ".git").mkdir(parents=True)
-            source = checkout / "fixture.py"
-            source.write_bytes(b"fixed source\n")
-            lock = cache / "lock.json"
-            lock.write_text(json.dumps({"projects": [{"id": "doatools", "revision": audit.REVISION,
-                                                       "license": "MIT", "url": audit.URL}]}))
-            for responses in ([b"wrong-head\n"], [audit.REVISION.encode(), b" M fixture.py\n"],
-                              [audit.REVISION.encode(), b"", b"different Git blob\n"]):
-                with patch.object(audit, "DEFINITIONS", {"fixture.py": ("selected",)}), \
-                     patch.object(audit, "_git", side_effect=responses), self.assertRaises(ValueError):
-                    audit.verify_sources(cache, lock)
-                self.assertEqual(source.read_bytes(), b"fixed source\n")
-
     def test_report_write_is_atomic_and_never_targets_upstream(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             target = root / "report.json"
             target.write_text('{"old": true}\n')
-            with patch.object(audit.os, "replace", side_effect=OSError("interrupted publication")), \
+            with patch("codes.chapters.ch00.io_contracts.os.replace", side_effect=OSError("interrupted publication")), \
                  self.assertRaises(OSError):
                 audit.write_report(target, {"new": True})
             self.assertEqual(strict_json(target.read_text()), {"old": True})
@@ -188,14 +183,210 @@ class GuardTests(unittest.TestCase):
         for report in (result, current):
             verify_lock_binding(report["sources"]["lock_sha256"], ("doatools",),
                                 current_lock=audit.LOCK)
-        # Each complete lock is verified above; every other source field must
-        # still match the historical execution, including its entry digest.
-        self.assertEqual({k: v for k, v in result["sources"].items() if k != "lock_sha256"},
-                         {k: v for k, v in current["sources"].items() if k != "lock_sha256"})
+        for key in ("lock_entry_sha256", "url", "revision", "license", "implementation_identity"):
+            self.assertEqual(result["sources"][key], current["sources"][key])
+        for actual, historical in zip(result["sources"]["files"], current["sources"]["files"]):
+            self.assertEqual({key: actual[key] for key in historical}, historical)
         self.assertEqual(result["results"], current["results"])
         self.assertTrue(result["all_expected_behaviors_observed"])
         self.assertEqual(REPORT.read_bytes(), before)
         self.assertEqual({name: hasattr(np, name) for name in ("float_", "complex_")}, global_aliases_before)
+
+    def test_report_policy_rejects_before_original_methods_run(self):
+        for target in (REPORT, audit.LOCK, audit.STATUS, audit.CACHE / "report.json",
+                       audit.ROOT / "README.md", audit.CURRENT_REPORT.with_name("other.json")):
+            with self.subTest(target=target), patch.object(audit, "run_audit") as run:
+                with self.assertRaises(ValueError):
+                    audit.main(["--report", str(target)])
+                run.assert_not_called()
+
+    def test_report_links_hardlinks_directories_and_traversal_reject_before_execution(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            real = root / "real"
+            real.mkdir()
+            leaf = real / "original.json"
+            leaf.write_text("{}")
+            linked = root / "linked"
+            linked.symlink_to(real, target_is_directory=True)
+            symlink = root / "symbolic.json"
+            symlink.symlink_to(leaf)
+            hardlink = root / "hard.json"
+            os.link(leaf, hardlink)
+            for target in (linked / "new.json", symlink, hardlink, real, root / "x/../new.json"):
+                with self.subTest(target=target), patch.object(audit, "run_audit") as run:
+                    with self.assertRaises(ValueError):
+                        audit.main(["--report", str(target)])
+                    run.assert_not_called()
+            self.assertEqual(leaf.read_text(), "{}")
+
+    def test_execution_rejects_source_or_shared_dependency_change(self):
+        for changed_part in ("sources", "dependencies"):
+            with self.subTest(changed_part=changed_part), \
+                 patch.object(audit, "source_dependencies", side_effect=[{"helper": "before"},
+                    {"helper": "after" if changed_part == "dependencies" else "before"}]), \
+                 patch.object(audit, "verify_sources", side_effect=[{"identity": "before"},
+                    {"identity": "after" if changed_part == "sources" else "before"}]), \
+                 patch.object(audit, "load_methods", return_value=({}, [])), \
+                 patch.object(audit, "audit_layouts", return_value=[]), \
+                 patch.object(audit, "audit_covariances", return_value=([], None, None)), \
+                 patch.object(audit, "audit_perturbations", return_value=[]), \
+                 patch.object(audit, "audit_invalid_inputs", return_value=[]):
+                with self.assertRaisesRegex(ValueError, "changed during execution"):
+                    audit.run_audit()
+
+    def test_default_cli_stdout_is_read_only(self):
+        with patch.object(audit, "run_audit", return_value={"finite": True}), \
+             patch.object(audit, "write_report") as write, redirect_stdout(io.StringIO()) as output:
+            audit.main([])
+        self.assertTrue(audit.strict_json_loads(output.getvalue())["finite"])
+        write.assert_not_called()
+
+
+class SourceIntegrityTests(unittest.TestCase):
+    """Real local Git fixtures exercise identity failures without network/cache writes."""
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.base = Path(temporary.name)
+        self.checkout = self.base / "doatools"
+        audit.run_git(["init", str(self.checkout)])
+        audit.run_git(["config", "user.name", "offline test"], cwd=self.checkout)
+        audit.run_git(["config", "user.email", "offline@example.invalid"], cwd=self.checkout)
+        self.source = self.checkout / "fixture.py"
+        self.source.write_bytes(b"locked source\n")
+        (self.checkout / "LICENSE.md").write_bytes(b"fixture licence\n")
+        audit.run_git(["add", "fixture.py", "LICENSE.md"], cwd=self.checkout)
+        audit.run_git(["commit", "-m", "offline fixture"], cwd=self.checkout)
+        self.revision = audit.run_git(["rev-parse", "HEAD"], cwd=self.checkout)
+        self.origin = "https://example.invalid/fixture.git"
+        audit.run_git(["remote", "add", "origin", self.origin], cwd=self.checkout)
+        self.entry = {"id": "doatools", "revision": self.revision, "url": self.origin,
+                      "license": "MIT", "entrypoints": ["fixture.py", "LICENSE.md"]}
+        self.lock = self.base / "lock.json"
+        self.status = self.base / "status.json"
+        self.lock.write_text(json.dumps({"schema_version": 1, "projects": [self.entry]}))
+        self.status.write_text(json.dumps({"schema_version": 1, "lock_sha256": audit.sha256(self.lock),
+            "projects": [{"id": "doatools", "revision": self.revision,
+                          "status": "source_verified", "source_selection_verified": True}]}))
+        for patcher in (patch.object(audit, "REVISION", self.revision),
+                        patch.object(audit, "URL", self.origin),
+                        patch.object(audit, "DEFINITIONS", {"fixture.py": ("selected",)})):
+            patcher.start()
+            self.addCleanup(patcher.stop)
+
+    def verify(self):
+        return audit.verify_sources(self.base, self.lock, self.status)
+
+    def test_actual_origin_head_dirty_and_blob_difference_fail(self):
+        self.assertTrue(self.verify()["used_source_identity_verified"])
+        audit.run_git(["remote", "set-url", "origin", "https://example.invalid/other.git"], cwd=self.checkout)
+        with self.assertRaisesRegex(ValueError, "origin"):
+            self.verify()
+        audit.run_git(["remote", "set-url", "origin", self.origin], cwd=self.checkout)
+        self.source.write_bytes(b"changed source\n")
+        with self.assertRaisesRegex(ValueError, "clean"):
+            self.verify()
+        original = audit._git
+        def hide_dirty(checkout, *args):
+            return "" if args[0] == "status" else original(checkout, *args)
+        with patch.object(audit, "_git", side_effect=hide_dirty):
+            with self.assertRaisesRegex(ValueError, "blob"):
+                self.verify()
+        self.assertEqual(self.source.read_bytes(), b"changed source\n")
+        audit.run_git(["add", "fixture.py"], cwd=self.checkout)
+        audit.run_git(["commit", "-m", "new head"], cwd=self.checkout)
+        with self.assertRaisesRegex(ValueError, "HEAD"):
+            self.verify()
+
+    def test_inherited_git_routing_and_configuration_are_ignored(self):
+        with patch.dict(os.environ, {"GIT_DIR": "/absent", "GIT_WORK_TREE": "/absent",
+                "GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": "remote.origin.url",
+                "GIT_CONFIG_VALUE_0": "https://example.invalid/forged.git"}):
+            self.assertEqual(self.verify()["actual_origin"], self.origin)
+
+    def test_git_newline_normalization_does_not_hide_different_source_bytes(self):
+        audit.run_git(["config", "core.autocrlf", "true"], cwd=self.checkout)
+        self.source.write_bytes(b"locked source\r\n")
+        # Exercise blob verification independently of the cleanliness check.
+        # A normal hash-object can hash normalized LF content under this config.
+        self.assertEqual(audit.run_git(["hash-object", "--", str(self.source)], cwd=self.checkout),
+                         audit.run_git(["rev-parse", "HEAD:fixture.py"], cwd=self.checkout))
+        original = audit._git
+        def hide_dirty(checkout, *args):
+            return "" if args[0] == "status" else original(checkout, *args)
+        with patch.object(audit, "_git", side_effect=hide_dirty):
+            with self.assertRaisesRegex(ValueError, "blob"):
+                self.verify()
+        self.assertEqual(self.source.read_bytes(), b"locked source\r\n")
+
+    def test_strict_source_documents_and_unbound_status_reject(self):
+        original_lock, original_status = self.lock.read_bytes(), self.status.read_bytes()
+        for invalid in (b'{"schema_version":1,"schema_version":1,"projects":[]}',
+                        b'{"value":NaN}', b'{"value":1e999}', b'[]', b'\xff',
+                        b'{"schema_version":true,"projects":[]}',
+                        b'{"schema_version":1,"projects":[{"id":"x"},{"id":"x"}]}'):
+            for path in (self.lock, self.status):
+                with self.subTest(path=path, invalid=invalid):
+                    path.write_bytes(invalid)
+                    with self.assertRaises(ValueError):
+                        self.verify()
+                    self.lock.write_bytes(original_lock)
+                    self.status.write_bytes(original_status)
+        state = audit.strict_json_loads(original_status)
+        state["lock_sha256"] = "0"*64
+        self.status.write_text(json.dumps(state))
+        with self.assertRaisesRegex(ValueError, "bind"):
+            self.verify()
+
+    def test_linked_source_licence_checkout_and_metadata_reject(self):
+        for path in (self.source, self.checkout / "LICENSE.md", self.lock, self.status):
+            raw = path.read_bytes()
+            outside = self.base / (path.name + ".outside")
+            outside.write_bytes(raw)
+            path.unlink()
+            path.symlink_to(outside)
+            with self.assertRaises(ValueError):
+                self.verify()
+            path.unlink()
+            path.write_bytes(raw)
+        alias = self.base / "alias"
+        alias.symlink_to(self.base, target_is_directory=True)
+        with self.assertRaises(ValueError):
+            audit.verify_sources(alias, self.lock, self.status)
+
+    def test_live_selection_mismatch_does_not_upgrade_used_file_identity(self):
+        self.entry["source_paths"] = ["fixture.py", "LICENSE.md"]
+        self.lock.write_text(json.dumps({"schema_version": 1, "projects": [self.entry]}))
+        state = audit.strict_json_loads(self.status.read_bytes())
+        state["lock_sha256"] = audit.sha256(self.lock)
+        state["projects"][0].update(status="source_selection_mismatch", source_selection_verified=False)
+        self.status.write_text(json.dumps(state))
+        result = self.verify()
+        self.assertTrue(result["used_source_identity_verified"])
+        self.assertFalse(result["recorded_acquisition"]["source_selection_verified"])
+        self.assertEqual(result["live_acquisition_scope"]["status"], "source_selection_mismatch")
+        self.assertFalse(result["live_acquisition_scope"]["source_selection_verified"])
+
+
+@unittest.skipUnless(audit.CURRENT_REPORT.is_file(), "Current report has not yet been generated")
+class CurrentReportTests(unittest.TestCase):
+    def test_current_dependencies_sources_and_historical_numeric_results(self):
+        current = audit.strict_json_loads(audit.CURRENT_REPORT.read_bytes())
+        historical = audit.strict_json_loads(REPORT.read_bytes())
+        self.assertEqual(current["schema_version"], 2)
+        self.assertEqual(current["audit_source_sha256"], audit.sha256(Path(audit.__file__)))
+        self.assertEqual(current["source_sha256"], audit.source_dependencies())
+        self.assertEqual(current["sources"]["lock_sha256"], audit.sha256(audit.LOCK))
+        self.assertEqual(current["sources"]["status_sha256"], audit.sha256(audit.STATUS))
+        self.assertEqual(current["sources"]["actual_origin"], audit.URL)
+        self.assertTrue(current["sources"]["used_source_identity_verified"])
+        self.assertEqual(current["sources"]["live_acquisition_scope"]["status"], "source_selection_mismatch")
+        self.assertFalse(current["sources"]["live_acquisition_scope"]["source_selection_verified"])
+        verification = current["source_verification"]
+        self.assertTrue(verification["before_after_equal"])
+        self.assertEqual(verification["canonical_sources_before_sha256"], verification["canonical_sources_after_sha256"])
+        self.assertEqual(current["results"], historical["results"])
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>空间处理与追踪源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="50383d27a8cc"><style>
+<meta name="source-digest" content="17f5777effb6"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -313,6 +313,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-39-6">39.6 从 TOA 距离到同步麦克风 TDOA 自标定</a></li>
 <li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-39-7">39.7 固定校准代码的运行前提与障碍</a></li>
 <li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-39-8">39.8 实测阵列流形怎样进入工程系统</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-39-9">39.9 已知方向如何分开位置和固定通道时延</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-39-10">39.10 异步多阵列标定增加了哪些观测</a></li>
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-u-8e8254667a">40. IMM 多运动模型交互</a></li>
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-u-e0bdc331bd">41. icoDOA、Cross3D 与神经方向追踪</a></li>
 <li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-u-e25935b3df">GCC 向量、GCC-PHAT 图与 STFT 相位图：三个不同的分类输入</a></li>
@@ -448,6 +450,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-39-6">39.6 从 TOA 距离到同步麦克风 TDOA 自标定</a></li>
 <li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-39-7">39.7 固定校准代码的运行前提与障碍</a></li>
 <li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-39-8">39.8 实测阵列流形怎样进入工程系统</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-39-9">39.9 已知方向如何分开位置和固定通道时延</a></li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-39-10">39.10 异步多阵列标定增加了哪些观测</a></li>
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-u-8e8254667a">40. IMM 多运动模型交互</a></li>
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-u-e0bdc331bd">41. icoDOA、Cross3D 与神经方向追踪</a></li>
 <li>&nbsp;&nbsp;&nbsp;&nbsp;— <a href="01_spatial_and_tracking.html#sec-u-e25935b3df">GCC 向量、GCC-PHAT 图与 STFT 相位图：三个不同的分类输入</a></li>
@@ -1355,10 +1359,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="393-两组可独立复算的矩阵" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-39-3">39.3 两组可独立复算的矩阵</h4>
 <p>正文 <a href="../03_array-geometry.html#e03-07">E03-07</a>使用物理位置 <code>{0,1,3}</code>，两个互不相关的单位功率源来自 0° 与 30°，通道白噪声功率为 0.1。其四维直接增广矩阵特征值为 $0.1,0.1,4.1,4.1$，因而空间平滑的特征值为 $0.0025,0.0025,4.2025,4.2025$，逐项来自原值平方后除以 4。</p>
 <p>同题的一次快拍反例 $\vec x=[1,0,1]^\top$ 给出直接增广特征值 $-1/3,2/3,2/3,5/3$。空间平滑后的值则为 $1/36,1/9,1/9,25/36$。这些结果既用本书独立 NumPy 外积求和与矩阵乘法复算，也已与固定 doatools 原方法的提取调用对齐；一次快拍仍没有恢复真实的两个声源。</p>
-<p>实际入口为<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/examples/audit_upstream_coarray.py">原方法审计工具</a>，结果保存于<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/reports/upstream_coarray.json">严格 JSON 报告</a>。工具执行 <code>da</code> 与默认 <code>ss</code>，对上述两个相同输入保存物理矩阵、滞后顺序、输出矩阵及特征值；期望来自独立逐滞后平均、直接 Toeplitz 填充、$\mathbf T\mathbf T^H/4$ 和手算特征值。逐元素绝对容差为 $10^{-14}$，两组实际最大矩阵差均为 0。把源幅度乘 2，即输入协方差乘 4，实际 DA 乘 4、SS 乘 16；缩放检查绝对容差为 $10^{-12}$。这些容差只用于此处固定的小规模输入，不是对任意尺度设备数据的通用验收限值。</p>
-<p>运行环境为 Python 3.13.12、NumPy 2.5.3、macOS arm64。固定源码引用已经移除的 <code>np.float_</code> 与 <code>np.complex_</code>；工具在提取定义的局部命名空间内分别提供 <code>float64</code>、<code>complex128</code>，不改全局 NumPy、不改上游文件。AST 提取保留选中的原定义体及装饰器，跳过模块导入与其他顶层代码，因此这是有明确相容脚手架的原方法调用，不是完整原包运行。工具记录自身 SHA、完整锁表 SHA、条目 SHA、七个源码文件及许可文件的 SHA/Git blob、实际 HEAD 和执行前后的干净状态；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_ch03_upstream_coarray.py">独立测试</a>另以手写矩阵和解析分数核对。</p>
+<p>实际入口为<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/examples/audit_upstream_coarray.py">原方法审计工具</a>，当前结果保存于<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/reports/upstream_coarray_contracts.json">执行合同报告</a>，<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/reports/upstream_coarray.json">原历史报告</a>保留当时的字节与运行身份。工具执行 <code>da</code> 与默认 <code>ss</code>，对上述两个相同输入保存物理矩阵、滞后顺序、输出矩阵及特征值；期望来自独立逐滞后平均、直接 Toeplitz 填充、$\mathbf T\mathbf T^H/4$ 和手算特征值。逐元素绝对容差为 $10^{-14}$，两组实际最大矩阵差均为 0。把源幅度乘 2，即输入协方差乘 4，实际 DA 乘 4、SS 乘 16；缩放检查绝对容差为 $10^{-12}$。这些容差只用于此处固定的小规模输入，不是对任意尺度设备数据的通用验收限值。</p>
+<p>运行环境为 Python 3.13.12、NumPy 2.5.3、macOS arm64。固定源码引用已经移除的 <code>np.float_</code> 与 <code>np.complex_</code>；工具在提取定义的局部命名空间内分别提供 <code>float64</code>、<code>complex128</code>，不改全局 NumPy、不改上游文件。AST 提取保留选中的原定义体及装饰器，跳过模块导入与其他顶层代码，因此这是有明确相容脚手架的原方法调用，不是完整原包运行。当前工具用严格 JSON 读取锁表，隔离会改变 Git 目标或配置的环境变量，核对官方 origin、固定 HEAD、七个所用源码与许可的 SHA/Git blob，以及执行前后洁净状态。完整稀疏选集另由获取工具核验：此 doatools 工作区仍使用旧排除规则，真实状态是 <code>source_selection_mismatch</code>；限定原方法身份匹配与执行成功没有把它升级为选集通过。工具还记录自身和所调用公共工具的实际摘要；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_ch03_upstream_coarray.py">独立测试</a>另以手写矩阵和解析分数核对。</p>
 <p>原始方法定位为 <a href="https://authors.library.caltech.edu/records/e8ge0-xc746">Pal–Vaidyanathan 2010 §IV-A、p4172～4174 及 Caltech 所列勘误</a>。正式记录和勘误入口可追溯；本节不把源码对照称为原作者完整系统复现。</p>
-<p>默认运行 <code>.venv/bin/python -m codes.chapters.ch03.examples.audit_upstream_coarray</code> 只输出报告；明确加上 <code>--report codes/chapters/ch03/reports/upstream_coarray.json</code> 才根据当前真实执行写报告。已有固定缓存缺失、HEAD 不符、工作树变脏或源文件与 Git blob 不同都会失败，不联网获取或覆盖缓存。</p>
+<p>默认运行 <code>.venv/bin/python -m codes.chapters.ch03.examples.audit_upstream_coarray</code> 只输出报告；明确加上 <code>--report codes/chapters/ch03/reports/upstream_coarray_contracts.json</code> 才根据当前真实执行写新的当前报告；仓内其他路径、历史报告和符号链接父链在执行前拒绝，仓外普通报告路径也须通过路径检查。该有限写前检查不保证消除并发文件系统竞态。已有固定缓存缺失、HEAD 不符、工作树变脏或源文件与 Git blob 不同都会失败，不联网获取或覆盖缓存。</p>
 <span id="394-几何秩相位歧义与方向域" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-39-4">39.4 几何秩、相位歧义与方向域</h4>
 <p>时延模型的几何秩与窄带相位混叠是两次不同的检查。共线基线只能确定一个方向投影；非共线平面基线可以确定两个投影，但法向两侧仍有镜像。增加非共面基线可补足第三个投影，却不能单独保证单频相位在整个球面上唯一。还要检查相位绕回后是否有不同方向产生相同相对导向。</p>
 <p><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9757818/">Tucker、Zhao、Ahmad 与 Potter 2022 原文</a>的 §II～III 用相对首阵元的几何矩阵定义方向域；平面阵的完整单侧方向域映射为二维单位圆盘。§IV 的 Corollary 4 要求最短非零歧义格点的范数严格大于 2；§V-B 给出规则六边形相邻间距 $d=\lambda/\sqrt3$ 时圆盘恰好相切。相切已经存在一对相同相位方向，因此无歧义需要严格处于临界内侧。正文的 7.5 cm 环径例由此得到约 5.28 kHz 的临界频率。</p>
@@ -1475,6 +1479,49 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>一个固件配置实例是 <a href="https://documentation.infineon.com/psocedge/docs/fqo1761931960980">Infineon AN240916 的 BeamForming Configuration</a>（2026-09-28 核实）。其双麦接口给出 20～100 mm 麦距和 0～180° 角度参数；接入前须转换本书坐标约定并核对通道次序。厂商说明波束图是示意，实际场景仍需测量；<code>audio-voice-core</code> 是单独授权交付的算法库，公开应用示例不能作为算法核心已经开源的证据。</p>
 <p>该文档直接指向<a href="https://github.com/Infineon/mtb-example-psoc-edge-ae-application/tree/955a61090acf7caddd75fc74161fc0fb40aa7ae5">官方 AE 应用固定源码</a>。仓库根 <code>LICENSE</code> 是 Infineon EULA，不能仅因公开可读就将整个应用标为 Apache-2.0。不过 <code>proj_cm55/source/audio_enhancement_application/audio_enhancement/GeneratedSource/</code> 下的 <code>cy_afe_configurator_settings.c</code> 和 <code>.h</code> 各自明确写有 Apache-2.0 许可头。本书的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCES.lock.json">Git 来源锁表</a>只选择这两个配置文件，并保留根许可供核对；其余应用包装代码、配置器项目和核心库不因这两个文件的许可而变成开放源码。</p>
 <p>阅读配置头中的 <code>AFE_PARAM_ID_MIC_DIST</code>、<code>AFE_PARAM_ID_ANGLE_RANGE_A</code> 和 <code>AFE_PARAM_ID_ANGLE_RANGE_B</code>，可以追踪麦距与角域怎样进入部署接口；配置 C 文件保存生成的常量数组。它们由配置器生成，不能代替配置器算法源码，也不是可独立运行的波束形成器。本节没有构建、刷写或执行 Infineon 应用；涉及核心库的算法性能不由这两个配置文件证明。</p>
+<span id="399-已知方向如何分开位置和固定通道时延" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-39-9">39.9 已知方向如何分开位置和固定通道时延</h4>
+<p>正文 <a href="../03_array-geometry.html#e03-18">E03-18</a>限定为一个远场声源、已知外部方向和声速，未知量是一条三维麦克风基线及固定相对通道延迟。正延迟表示第二通道的观测更晚；它与传播时差相加，不能由一次朝向的相位差单独分开。</p>
+<p>把时间延迟乘声速得到长度后，设计矩阵的每行是 $[-\vec u_q^\top,1]$。四方向 $+x,-x,+y,+z$ 可解四个未知量，前两时差的平均先确定固定延迟。仅检查方向矩阵 $\mathbf U$ 的秩还不够：四方位同俯仰30°时，$\mathbf U$ 秩3，但常数列与高度列相关；高度加1cm同时延迟加约14.5773μs，全部观测不变。改变正则化不能补出没有采集到的信息。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/core/baseline_calibration.py">唯一教学核</a>使用增广矩阵最小二乘，秩不足时明确拒绝。六份<a href="../baseline_audio/MANIFEST.json">独立合成音频</a>从真实PCM相量读回四训练方向的时差，并用未参与拟合的方向检验预测；这是给定模型的数值闭环，没有从未知房间或机器人轨迹估计方向。500Hz单音只在已知总时差绝对值小于1ms时可用相位主值直接反推；整数周歧义、任意频率相关电子相位、声速未知尺度和时钟漂移须另建模型。</p>
+<span id="3910-异步多阵列标定增加了哪些观测" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-39-10">39.10 异步多阵列标定增加了哪些观测</h4>
+<p>已知方向的一条基线线性逆问题、同步麦克风的几何自标定，以及独立设备的时钟标定有不同未知量。固定电子延迟不随记录时间变化；采样时钟速率误差则使时间差随时间积累。把首设备的相对时间偏移设为零，只是选择参考，不能据此认定所有采样时钟已经同步。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:54em">
+<thead>
+<tr>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">原始路线</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:15em">输入与额外前提</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:16em">求解目标和关键改变</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:15em">本书当前证据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em"><a href="https://link.springer.com/article/10.1186/s13636-021-00210-x">Gburrek等2021，§1～2</a></td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">各节点已知阵内几何、阵内通道同步；节点粗时间同步关联同一源段，方向及声学距离估计；本文为二维</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">联合恢复节点几何，以距离提供尺度；该路线不要求跨节点精确TDOA</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">已读原文，未执行作者系统或设备</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em"><a href="https://arxiv.org/html/2405.19813v1">Wang等2024预印本v1，§II～III</a></td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">已知阵内几何、阵内同步，跨阵列TDOA/DOA与声源运动的里程计</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">同时建模节点位姿、固定偏移、速率漂移及源位置；雅可比秩给局部可辨识条件</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">原文模型与秩条件已读；没有将局部可辨识写成全局唯一或成功率保证</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em"><a href="https://arxiv.org/html/2502.06195v1">Zhang等2025预印本v1，§II～III</a></td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">时间TDOA-S、空间TDOA-M、DOA、里程计和已知事件时间间隔</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">利用同阵跨事件时差与同事件跨阵时差的不同时间项，初始化后做加权非线性拟合</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">固定作者链接源码静态核；未运行MATLAB、DOA/里程计整链或实录数据</td>
+</tr>
+</tbody>
+</table></div>
+<p>表内论文年份和节号绑定所链版本，2024与2025两项按预印本介绍，不猜测最终出版版本或通用工业默认。观测更多是否有用取决于它们提供的独立信息；相同角度覆盖、共同参考误差和额外先验须一起检查。没有同一数据、坐标约定、时间基准与评分协议，不能把三条路线按论文数字排序。</p>
+<p>2025路线的时间TDOA-S包含本节点漂移乘已知事件间隔，空间TDOA-M包含节点间相对offset和相对drift项。原 <a href="https://github.com/AISLAB-sustech/Hybrid-TDOA-Multi-Calib/blob/4cc21cb06b9f82f83cc90d65a418f2b100748254/gt_generation.m#L24">gt_generation.m</a>固定首阵列位姿及相对offset，却仍估首阵列drift；已知事件间隔提供时间尺度。实录入口从 <code>dt.mat</code> 读间隔并从位移数据构造里程计，这些输入不能在“只靠录音标定”的表述里省掉。</p>
+<p>作者预印本链接的 <a href="https://github.com/AISLAB-sustech/Hybrid-TDOA-Multi-Calib/tree/4cc21cb06b9f82f83cc90d65a418f2b100748254">Hybrid固定源码</a>在GitHub标为 <code>zcj808</code> 项目的fork。核实于2026-10-04，main/HEAD为完整提交 <code>4cc21cb06b9f82f83cc90d65a418f2b100748254</code>；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCES.lock.json">来源锁表</a>仅登记 <code>hybrid-tdoa-multi-calib</code>，许可为 <code>NOASSERTION</code>，不自动获取或随书复制。根列表与四个普通许可候选请求未建立代码许可，不据此断言完整树没有任何授权。</p>
+<p>读码顺序为 <code>sim_main.m</code> 或 <code>real_main.m</code> → <code>init_estimator.m</code> → <code>GN_Solver.m</code> → <code>compute_J.m</code>，再核 <code>gt_generation.m</code> 的时间基准及 <code>high2low.m/low2high.m</code> 的参考参数。DOA前端另读 <a href="https://github.com/AISLAB-sustech/Hybrid-TDOA-Multi-Calib/blob/4cc21cb06b9f82f83cc90d65a418f2b100748254/SRP-PHAT-DOA.py#L351">SRP-PHAT-DOA.py:351～404</a>。该入口使用已知平面六麦环，在394行主动取方向z分量的绝对值，395行翻转y；上半球选择来自先验，不能说平面阵凭声学独立辨出上下两侧。Jacobian的局部DOA用接收传播方向，本书 $\vec u$ 指向声源，适配须核对符号和坐标变换。</p>
+<p>固定静态身份中，README的SHA-256为 <code>c54031c5dd6b4537249a4e5f6933dfe121b1dc97ccdc11cb7ba3f6193eed7a77</code>，<code>compute_J.m</code>为 <code>fd82d0e8dc9f9d7937b870557c595043d96ada74c7eeb5984a2f32b04238f42b</code>。这些身份只追溯已读响应，不等于完成本地选集取得、依赖构建或原系统运行。</p>
+<p>静态检查还发现几个复现前须核对的范围：仿真入口首段含 <code>clc7</code>；GN用正规方程并按时间截断；仿真只保存收敛试次，随后统计中间四分位样本；<code>compute_error.m</code>用旋转后的单个固定向量夹角，并非完整SO(3)测地旋转误差。SRP配置声速346m/s，实录数据构造/求解配置另设340m/s。这里只记录原文件配置与实现定义，没有虚构运行报错或判定设备误差；尚未运行MATLAB、PyTorch前端、OneDrive音频、<code>.mat</code>真值或完整比较。</p>
+<p>建议实验从E03-18的满秩与同俯仰退化开始，再把方向测量噪声、错误声速、固定延迟和随时间变化的时钟项分别加入。进入非线性多阵列实验时，应先固定参考位姿、相对offset和事件时间基准，使用留出事件报告残差、对齐后几何误差及失败分母。该段是实验设计，不是已经执行的上游结果。</p>
 <span id="sec-50" class="anchor-alias" aria-hidden="true"></span><span id="40-imm-多运动模型交互" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-8e8254667a">40. IMM 多运动模型交互</h3>
 <p>对应 §9.2 的运动建模扩展。FilterPy <code>kalman/IMM.py::IMMEstimator</code> 维护多个滤波器、模式概率与 Markov 转移概率，先按模式概率混合状态和协方差，再执行各模型的预测与更新。所有被混合状态应有相同维度和物理含义，不能直接把角度状态与笛卡尔位置相加。<a href="https://github.com/rlabbe/filterpy/blob/3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33/filterpy/kalman/IMM.py">作者源码</a>。</p>
 <p>建议给匀速、转弯和静默三段轨迹，比较单模型与多模型的跟随延迟和协方差。必须核对转移矩阵方向及归一化，而不是凭行列名称猜测；长期缺测时不能把模式概率改变解释成观测证据。源突然停止说话是活动状态变化，并不必然代表其运动模式改变。</p>

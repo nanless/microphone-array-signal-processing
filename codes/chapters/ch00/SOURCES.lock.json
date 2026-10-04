@@ -2251,6 +2251,26 @@
         "scoring/scripts/eval_continuous.sh"
       ],
       "note": "The fixed HEAD/master and complete 1593-member tree were checked on 2026-10-04; these paths select 27 ordinary program/license/configuration files. The 715 sample CTMs, 715 reference STMs, speaker-enrollment JSONL and separately unverified NIST-derived RT04 GLM are excluded, as are external audio, acoustic models, SCTK, PyKaldi and Docker. get_vad.py acknowledges py-webrtcvad-derived code; keep the complete original license notices. Install and data-download script text is retained but never executed by acquisition. The original continuous scoring wrapper has Windows/Linux branches and requires SCTK plus GLM/STM/CTM; utterance-wise lowest WER uses ground-truth segmentation and is a different protocol. Original interface limitations are preserved; no ASR, official scoring, CSS model, dataset or paper performance has been run or reproduced. The root MIT text and py-webrtcvad MIT notice are complete, but the original final WebRTC BSD disclaimer ends at DAMAG; preserve that original byte sequence rather than silently repairing upstream terms. No WebRTC C source is part of this subset; the installed external VAD dependency retains separate terms. asr/python/get_wer.py retains duplicate functions and cumulative E/R in the development loop, and two run_wer shell scripts pass the unsupported --data_path flag; these are static observations, not runtime test results."
+    },
+    {
+      "id": "hybrid-tdoa-multi-calib",
+      "url": "https://github.com/AISLAB-sustech/Hybrid-TDOA-Multi-Calib.git",
+      "revision": "4cc21cb06b9f82f83cc90d65a418f2b100748254",
+      "license": "NOASSERTION",
+      "scope": "Author-linked hybrid temporal/spatial TDOA multi-array calibration with DOA and robot odometry; known array-internal geometry and time-interval reference",
+      "fetch_enabled": false,
+      "acquisition": "index_only",
+      "verified_at": "2026-10-04",
+      "entrypoints": [
+        "README.md",
+        "GN_Solver.m",
+        "compute_J.m",
+        "gt_generation.m",
+        "sim_main.m",
+        "real_main.m",
+        "SRP-PHAT-DOA.py"
+      ],
+      "note": "Author repository linked by arXiv:2502.06195v1; GitHub identifies a fork of zcj808/Hybrid-TDOA-Multi-Calib. HEAD/main fixed with ls-remote. Root listing and fixed LICENSE, LICENSE.md, LICENSE.txt and COPYING requests did not establish code permission. Establish the applicable code license before automated acquisition or redistribution. Fixed source was statically inspected through original file responses only; no managed checkout, MATLAB solver, DOA/odometry chain, OneDrive data, dependencies or paper performance has run. The solver fixes the first array pose and relative offset but still estimates first-array drift with a known event-interval reference; the planar SRP entry chooses abs(z) and a coordinate conversion. Paper publication and visible source do not license code or data."
     }
   ]
 }

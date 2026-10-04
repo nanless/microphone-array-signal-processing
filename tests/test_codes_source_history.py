@@ -207,9 +207,31 @@ class RealHistoricalSourceTests(unittest.TestCase):
         old=json.loads(path.read_text());ids=[p['id'] for p in old['projects']]
         self.assertEqual(len(ids),100);result=history.verify_lock_binding(OLD_LOCK_SHA,ids)
         self.assertEqual(result['records'],{p['id']:p for p in old['projects']})
-        current=json.loads(history.LOCK.read_text());self.assertEqual(len(current['projects']),106)
+        current=json.loads(history.LOCK.read_text());self.assertEqual(len(current['projects']),107)
         self.assertEqual({p['id'] for p in current['projects']}-set(ids),
-                         {'danse-python','danse-wola','paderwasn','tidanseplus-batch','wasn-platform','libricss'})
+                         {'danse-python','danse-wola','paderwasn','tidanseplus-batch','wasn-platform','libricss',
+                          'hybrid-tdoa-multi-calib'})
+
+    def test_chapter03_index_addition_preserves_all_106_previous_source_records(self):
+        lock_sha='6dab41b1542cfa2cd4731ef4c8a3e807b343dc807f209c4eea17503e203ebf59'
+        status_sha='1142cc2290d93ea33e6b2dcdf72b9b52307efdd837b84c1739262c2c968186d6'
+        raw_lock=(history.SNAPSHOT_ROOT/f'SOURCES.{lock_sha}.json').read_bytes()
+        raw_status=(history.SNAPSHOT_ROOT/f'SOURCE_STATUS.{status_sha}.json').read_bytes()
+        self.assertEqual(sha(raw_lock),lock_sha);self.assertEqual(sha(raw_status),status_sha)
+        old=json.loads(raw_lock);ids=[row['id'] for row in old['projects']]
+        self.assertEqual(len(ids),106)
+        self.assertTrue(history.verify_lock_binding(lock_sha,ids)['historical'])
+        result=history.verify_status_binding(status_sha,lock_sha,ids)
+        self.assertTrue(result['historical'])
+        self.assertEqual(result['records'],{row['id']:row for row in json.loads(raw_status)['projects']})
+        current=json.loads(history.LOCK.read_bytes())
+        entry=next(row for row in current['projects'] if row['id']=='hybrid-tdoa-multi-calib')
+        self.assertEqual(entry['revision'],'4cc21cb06b9f82f83cc90d65a418f2b100748254')
+        self.assertIs(entry['fetch_enabled'],False)
+        self.assertEqual((entry['license'],entry['acquisition']),('NOASSERTION','index_only'))
+        status=json.loads(history.STATUS.read_bytes())
+        row=next(row for row in status['projects'] if row['id']==entry['id'])
+        self.assertEqual(row,{'id':entry['id'],'revision':entry['revision'],'status':'index_only'})
 
     def test_previous_105_lock_preserves_104_records_and_rejects_changed_wasn_policy(self):
         path=history.SNAPSHOT_ROOT/f'SOURCES.{HARMONY_LOCK_SHA}.json'

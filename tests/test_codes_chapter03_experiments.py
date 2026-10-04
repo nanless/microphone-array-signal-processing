@@ -8,10 +8,25 @@ from codes.chapters.ch00.core.audio_samples import dma_calibration_case, prepare
 
 
 class Chapter03ExperimentsTest(unittest.TestCase):
-    def test_registry_has_ten_serializable_exercises(self):
+    def test_registry_has_eleven_serializable_exercises(self):
         result=ch3.run_exercises()
-        self.assertEqual(set(result),{f'E03-{n:02}' for n in range(8,18)})
+        self.assertEqual(set(result),{f'E03-{n:02}' for n in range(8,19)})
         json.dumps(result,allow_nan=False)
+
+    def test_known_direction_baseline_matches_scalar_hand_solution(self):
+        result = ch3.known_direction_baseline()
+        np.testing.assert_allclose(result['input_delays_s'],
+                                   [20e-6-.04/343, 20e-6+.04/343,
+                                    20e-6-.03/343, 20e-6-.02/343], atol=2e-20)
+        np.testing.assert_allclose(result['fit']['baseline_m'], [.04, .03, .02], atol=2e-17)
+        self.assertAlmostEqual(result['fit']['offset_s'], 20e-6, delta=3e-20)
+        self.assertAlmostEqual(result['heldout']['observed_delay_s'], 20e-6-.048/343)
+        self.assertLess(abs(result['heldout']['residual_delay_s']), 2e-19)
+        counter = result['same_elevation_counterexample']
+        self.assertEqual(counter['direction_rank'], 3)
+        self.assertEqual(counter['augmented_rank'], 3)
+        self.assertTrue(counter['rejected'])
+        self.assertLess(counter['max_delay_difference_s'], 2e-20)
 
     def test_ula_half_power_from_cosine_factorization(self):
         rows=ch3.exact_beamwidths()['cases'];low,high=rows[:2]

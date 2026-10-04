@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>章节代码练习与音频实验 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="50383d27a8cc"><style>
+<meta name="source-digest" content="17f5777effb6"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -372,6 +372,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-50-2">50.2 四份实际WAV与完整IR评分</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-50-3">50.3 源码与只读复算</a></li>
 <li><a href="05_exercises_and_audio.html#sec-u-b8ed441b40">51. 第二章：端点合法的谱为何还可能不一致</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-461361f106">52. E03-18：已知方向、位置与固定通道时延</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-52-1">52.1 四方向的手算与退化对照</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-52-2">52.2 六份连续传播合成音频</a></li>
 </ul>
 <div class="chap"><a href="../01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
 <div class="chap"><a href="../02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
@@ -522,10 +525,13 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-50-2">50.2 四份实际WAV与完整IR评分</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-50-3">50.3 源码与只读复算</a></li>
 <li><a href="05_exercises_and_audio.html#sec-u-b8ed441b40">51. 第二章：端点合法的谱为何还可能不一致</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-461361f106">52. E03-18：已知方向、位置与固定通道时延</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-52-1">52.1 四方向的手算与退化对照</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-52-2">52.2 六份连续传播合成音频</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="章节代码练习与音频实验" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-c621965c02">章节代码练习与音频实验</h1>
 <p>先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。</p>
-<p>本页索引 335 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
+<p>本页索引 336 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
 <p>E06-07～E06-20 使用无量纲回声模型检查 AEC 的计算与边界，其中 E06-11～20 可用精确答案程序核对。第 15、16 节另提供参数不同的合成音频；试听文件本身不是题目真值。</p>
 <p>第 3～11、13～16、18、21～30、32～34 节对应主清单的 109 个数学合成样本。第 17 节的 18 个房间白噪声合成样本使用独立清单；第 12 节使用另行授权的真实同步录音。第 31 节的 2 份从 PCM 形成定位观测的追踪样本也使用独立清单。第35～39节分别保存双耳、有限窗卷积、多频几何、已知聚焦与导数约束的独立样本。第48节保存分布式协同增强的17个独立样本；第47节保存成像的五个快拍样本。第46节另保存附录B同DRR短RIR的五个独立样本。不同音频的来源和可作的比较不同，试听前先查看各节的条件。</p>
 <p>主音频按章存放，统一由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/examples/generate_audio_samples.py">生成器</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/audio/MANIFEST.json">清单</a>管理。清单记录每组模型、种子、共同导出增益、采样率、通道、帧数、量化误差、运行环境、源文件摘要与逐 WAV 摘要；不把某组的谐波模板套到其他组。PCM16 编码按最近偶数舍入，不加抖动或自动限幅，RMS 对全部通道与采样一起计算。运行生成器并附加 <code>--check</code> 时只在内存重算和读回比对，不重写资产；严格字节核对也比较 Python、NumPy 和平台记录，异机不通过不等于算法错误。生成中断造成清单与 WAV 不一致时，先保留异常目录，再生成到新的空目录核对，通过后更新受影响资产并构建图和网站；不要手改单个生成文件。样本没有真人录音或模型权重，客观读回和浏览器加载不等于正式听测。</p>
@@ -598,8 +604,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_spatial.py">空间练习</a>（01～06）；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/coarray_covariance_exercise.py">协同阵 E03-07</a></td>
 </tr>
 <tr>
-<td>第 3 章 E03-08～17</td>
-<td>精确波束宽度、完整相位歧义、平面镜像、后置噪声正则化、复增益最小二乘、互质洞、双麦差分、带噪参考、接近共面和多频相位</td>
+<td>第 3 章 E03-08～18</td>
+<td>精确波束宽度、完整相位歧义、平面镜像、后置噪声正则化、复增益最小二乘、互质洞、双麦差分、带噪参考、接近共面、多频相位、已知方向基线与固定延迟</td>
 <td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/chapter03_experiments.py">几何与校准实验</a></td>
 </tr>
 <tr>
@@ -3884,6 +3890,59 @@ e^{-\mathrm j2\pi 2000n/24000},\\
 <p>中帧逆变换为<code>[1,0,−1,0]</code>，但两邻帧全零；它们分别要求共享的物理样本0和2同时为0与±1，故没有波形同时满足这些指定谱。WOLA把两套要求平均为<code>[1/2,0,−1/2,0]</code>，重新分析得到<code>[1/2,−1/2,1/2]</code>、<code>[0,1,0]</code>、<code>[−1/2,−1/2,−1/2]</code>。再次分析—合成不再改变它，说明已回到可实现的谱集合。</p>
 <p>完整DFT误差的单边权重为<code>[1,2,1]</code>；原能量8、重分析能量4、残差能量4，相对残差1/2。内部频点等权一次会丢掉负频率配对，改变最小二乘度量。只有说明配套合成和度量，才可以称正交投影；完美重构本身保证的首先是幂等一致性操作。</p>
 <p>唯一<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch02/core/stft_consistency.py">数值核</a>复用现有STFT，不重写共享实现。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_stft_consistency.py">独立测试</a>按完整DFT与逐样本折中计算；单章入口返回E02-20的三帧、波形和三项能量。该题不用音频文件，两个共享样本的矛盾已经足以复算；它不执行Griffin–Lim幅度迭代，不证明分离质量或说话人身份改善。</p>
+<span id="sec-134" class="anchor-alias" aria-hidden="true"></span><span id="52-e03-18已知方向位置与固定通道时延" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-461361f106">52. E03-18：已知方向、位置与固定通道时延</h2>
+<p>先读<a href="../03_array-geometry.html#e03-18">正文E03-18</a>，运行<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/chapter03_experiments.py">单章入口</a>。唯一<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/core/baseline_calibration.py">线性逆核</a>接收已知单位方向、有向时差和已知声速，不从录音估计声源方向。固定基线为 $(0.04,0.03,0.02)$m，声速343m/s，通道1的固定电子延迟为20μs；正值使通道1更晚。</p>
+<span id="sec-135" class="anchor-alias" aria-hidden="true"></span><span id="521-四方向的手算与退化对照" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-52-1">52.1 四方向的手算与退化对照</h3>
+<p>时差是传播投影与固定相对延迟之和。未知延迟乘声速成为长度，使增广矩阵的四列都无量纲、四个未知都以米计；不能把以秒和以米混列的条件数直接解释为几何性能。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">已知方向</th>
+<th scope="col" style="text-align: right;">基线投影/m</th>
+<th scope="col" style="text-align: right;">理想总时差/μs</th>
+<th scope="col">解题作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>+x</td>
+<td style="text-align: right;">0.04</td>
+<td style="text-align: right;">−96.618076</td>
+<td>和−x的平均消去位置投影</td>
+</tr>
+<tr>
+<td>−x</td>
+<td style="text-align: right;">−0.04</td>
+<td style="text-align: right;">+136.618076</td>
+<td>两方向平均得20μs，半差乘声速得4cm</td>
+</tr>
+<tr>
+<td>+y</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">−67.463557</td>
+<td>已知固定延迟后求3cm</td>
+</tr>
+<tr>
+<td>+z</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">−38.309038</td>
+<td>已知固定延迟后求2cm</td>
+</tr>
+</tbody>
+</table></div>
+<p>四方位同俯仰30°时，高度列始终是−1/2。方向矩阵秩3，增广矩阵仍仅秩3；高度加1cm、电子延迟加约14.577260μs后观测全部不变。核明确拒绝给出唯一估计，正则化或伪逆代表解不能证明恢复真值。声速也未知时还有长度尺度歧义；方向测量误差、频率相关通道相位和速率漂移均超出当前线性模型。</p>
+<span id="sec-136" class="anchor-alias" aria-hidden="true"></span><span id="522-六份连续传播合成音频" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-52-2">52.2 六份连续传播合成音频</h3>
+<p><a href="../baseline_audio/baseline_source.wav">500Hz单声道源</a><audio class="audio-sample" controls preload="none" aria-label="500Hz单声道源" src="../baseline_audio/baseline_source.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../baseline_audio/baseline_train_px.wav">+x训练双声道观测</a><audio class="audio-sample" controls preload="none" aria-label="+x训练双声道观测" src="../baseline_audio/baseline_train_px.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../baseline_audio/baseline_train_nx.wav">−x训练双声道观测</a><audio class="audio-sample" controls preload="none" aria-label="−x训练双声道观测" src="../baseline_audio/baseline_train_nx.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../baseline_audio/baseline_train_py.wav">+y训练双声道观测</a><audio class="audio-sample" controls preload="none" aria-label="+y训练双声道观测" src="../baseline_audio/baseline_train_py.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../baseline_audio/baseline_train_pz.wav">+z训练双声道观测</a><audio class="audio-sample" controls preload="none" aria-label="+z训练双声道观测" src="../baseline_audio/baseline_train_pz.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../baseline_audio/baseline_heldout.wav">第五方向留出双声道观测</a><audio class="audio-sample" controls preload="none" aria-label="第五方向留出双声道观测" src="../baseline_audio/baseline_heldout.wav">请使用上方 WAV 链接下载。</audio></p>
+<p>六文件都为16kHz、32000点、PCM16、共同导出增益1。源幅度0.2，激励[0.1,1.9)s，两端20ms线性淡变；两通道有共同2ms传播基准，再给通道1增加当前方向的总时差。信号通过连续源时刻求值产生，未使用采样后插值滤波器。源支持和最晚传播尾都在2s记录内。</p>
+<p>测量只取2400:29600，共27200点、850个500Hz周期，避开传播包络边缘。在每个通道上用cos/sin两列拟合，复相量为cos系数减j倍sin系数，再由通道相量比的主值相位反推总时差。这里已知时差绝对值小于1ms；单音不能确定跨越整周的时差，也不能处理任意未知电子相位。</p>
+<p>四训练方向的读回时差交给唯一逆核，留出方向 $(0.6,0.8,0)$不参与拟合。理想留出时差为约−119.941691μs；报告分别比较由估计参数预测的时差、留出文件实际相量时差和给定真值。另保存把固定延迟强设为零时的位置偏差，训练残差和留出残差不能混称“定位精度”。</p>
+<p><a href="../baseline_audio/MANIFEST.json">独立清单</a>分开解析、浮点与实际PCM的相量、时差、训练估计和留出检验。功率另用稳定窗的真实PCM整数平方和E及分母D记录，每通道D为27200×32768²，总功率分母还乘通道数；不能把双声道能量和除以单通道分母。六个真实依赖和每WAV都绑定SHA，生成环境、量化误差、同增益和固定方向完整保存。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/examples/generate_baseline_audio.py">生成器</a>加<code>--check</code>严格只读重放；额外文件、链接父链、过期源或改动样本都会失败。不与主109或旧多频几何三WAV混算。播放前调低音量，控件不自动播放；这些数学单音没有自然语音、混响、设备录音或主观听测，浏览器回放不能代替时差读回和未知条件验证。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

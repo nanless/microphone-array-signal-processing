@@ -1,0 +1,1068 @@
+{
+  "schema_version": 1,
+  "exercise_id": "E03-18",
+  "sample_rate_hz": 16000,
+  "samples_per_channel": 32000,
+  "common_export_gain": 1.0,
+  "origin": "original deterministic mathematical known-direction synthesis",
+  "source_sha256": {
+    "codes/chapters/ch03/core/baseline_audio.py": "3857a638fd394d627b4a81bd0107ca386762ba54504f7ecb49f44bde17e157e4",
+    "codes/chapters/ch03/examples/generate_baseline_audio.py": "e4fe1250df69d8fe20be0edce883b646fc5a4632be2da75abeda54636c0604ad",
+    "codes/chapters/ch03/core/baseline_calibration.py": "ad8272d2c81b54492f2cdda3bee2cce726eaffcc9050433761900be995aff2e9",
+    "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
+  },
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "parameters": {
+    "exercise_id": "E03-18",
+    "sample_rate_hz": 16000,
+    "samples_per_channel": 32000,
+    "duration_s": 2.0,
+    "frequency_hz": 500.0,
+    "source_amplitude": 0.2,
+    "source_active_interval_s": [
+      0.1,
+      1.9
+    ],
+    "linear_fade_duration_s": 0.02,
+    "common_base_delay_s": 0.002,
+    "common_export_gain": 1.0,
+    "sound_speed_m_s": 343.0,
+    "baseline_m": [
+      0.04,
+      0.03,
+      0.02
+    ],
+    "fixed_channel_offset_s": 2e-05,
+    "training_directions_xyz": [
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        -1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "heldout_direction_xyz": [
+      0.6,
+      0.8,
+      0.0
+    ],
+    "channel_order": [
+      "reference_microphone_0",
+      "microphone_1"
+    ],
+    "direction_convention": "unit vector from array toward source",
+    "delay_model": "tau=-u dot baseline/c+offset; positive tau means channel 1 arrives later",
+    "waveform_model": "x0=F(t-base), x1=F(t-base-tau); mono source is F(t-base)",
+    "delay_implementation": "continuous source evaluation, no sampled interpolation",
+    "scoring_interval_samples": [
+      2400,
+      29600
+    ],
+    "scoring_samples_per_channel": 27200,
+    "scoring_cycles": 850,
+    "phase_delay_prior_abs_upper_bound_s": 0.001,
+    "phasor_convention": "z=C-jD from cos/sin LS; tau=-arg(z1*conj(z0))/(2*pi*f)",
+    "randomness": "none",
+    "noise": "none"
+  },
+  "pcm": {
+    "format": "signed little-endian PCM16",
+    "scale": 32768,
+    "rounding": "nearest, ties to even",
+    "dither": "none",
+    "clipping": "rejected",
+    "max_rounding_error_bound": 1.52587890625e-05
+  },
+  "files": {
+    "baseline_source.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "90a53b407e4dc9e59301166a91b084d9681b97803ccde6cd569522d369e402d7",
+      "peak": 0.20001220703125,
+      "quantization_max_abs_error": 1.5180615427309863e-05
+    },
+    "baseline_train_px.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples_per_channel": 32000,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "3af6d723affa215f04f175bec1eecbb8963fe11105823babf76232e7769c30c8",
+      "peak": 0.20001220703125,
+      "quantization_max_abs_error": 1.5180615427309863e-05
+    },
+    "baseline_train_nx.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples_per_channel": 32000,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "70191b35f38bf63f8b60089bff4510da521bc01325f6823050ec86b59b501c3f",
+      "peak": 0.20001220703125,
+      "quantization_max_abs_error": 1.5254862926195045e-05
+    },
+    "baseline_train_py.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples_per_channel": 32000,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "af5364340200e7deabf75f5d1d0b0b73dfc81966326dd50601f170180600e4a2",
+      "peak": 0.20001220703125,
+      "quantization_max_abs_error": 1.524790541357346e-05
+    },
+    "baseline_train_pz.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples_per_channel": 32000,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "2bd415350e1ccc3a51e39ff468ea885b7cad7a5e7923b1ed9ac1915019653fcb",
+      "peak": 0.20001220703125,
+      "quantization_max_abs_error": 1.518885589863253e-05
+    },
+    "baseline_heldout.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples_per_channel": 32000,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "78accc01f4a8eb68a4946f2623bef303edec2d766da5c96696cee3953682dfe6",
+      "peak": 0.20001220703125,
+      "quantization_max_abs_error": 1.5255293441335943e-05
+    }
+  },
+  "samples": {
+    "source": {
+      "file": "baseline_source.wav",
+      "analytic": {
+        "channels": 1,
+        "phasor_real_imag": [
+          [
+            4.898587196589413e-17,
+            -0.2
+          ]
+        ],
+        "amplitudes": [
+          0.2
+        ],
+        "mean_square_per_channel": [
+          0.020000000000000004
+        ],
+        "mean_square_all_channels": 0.020000000000000004
+      },
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 1,
+        "phasor_real_imag": [
+          [
+            -1.0168929879327814e-15,
+            -0.19999999999999996
+          ]
+        ],
+        "amplitudes": [
+          0.19999999999999996
+        ],
+        "squared_sum_per_channel": [
+          544.0000000000001
+        ],
+        "mean_square_per_channel": [
+          0.020000000000000004
+        ],
+        "mean_square_all_channels": 0.020000000000000004,
+        "known_tone_fit_residual_squared_sum_per_channel": [
+          4.0319024174445783e-23
+        ],
+        "peak": 0.2
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 1,
+        "phasor_real_imag": [
+          [
+            6.423540881754319e-14,
+            -0.200005423598461
+          ]
+        ],
+        "amplitudes": [
+          0.200005423598461
+        ],
+        "squared_sum_per_channel": [
+          544.0295059233904
+        ],
+        "mean_square_per_channel": [
+          0.020001084776595235
+        ],
+        "mean_square_all_channels": 0.020001084776595235,
+        "known_tone_fit_residual_squared_sum_per_channel": [
+          1.1477127677010884e-06
+        ],
+        "peak": 0.20001220703125
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 1,
+        "integer_squared_sum_E_per_channel": [
+          584147234000
+        ],
+        "integer_denominator_D_per_channel": 29205777612800,
+        "mean_square_per_channel": [
+          0.020001084776595235
+        ],
+        "integer_squared_sum_E_all_channels": 584147234000,
+        "integer_denominator_D_all_channels": 29205777612800,
+        "mean_square_all_channels": 0.020001084776595235
+      }
+    },
+    "train_px": {
+      "file": "baseline_train_px.wav",
+      "analytic": {
+        "channels": 2,
+        "phasor_real_imag": [
+          [
+            4.898587196589413e-17,
+            -0.2
+          ],
+          [
+            0.05977902428114883,
+            -0.19085719335669227
+          ]
+        ],
+        "amplitudes": [
+          0.2,
+          0.2
+        ],
+        "mean_square_per_channel": [
+          0.020000000000000004,
+          0.020000000000000004
+        ],
+        "mean_square_all_channels": 0.020000000000000004,
+        "relative_phase_rad": 0.3035346371427573,
+        "delay_s": -9.661807580174928e-05
+      },
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "phasor_real_imag": [
+          [
+            -1.0168929879327814e-15,
+            -0.19999999999999996
+          ],
+          [
+            0.059779024281146044,
+            -0.19085719335669318
+          ]
+        ],
+        "amplitudes": [
+          0.19999999999999996,
+          0.20000000000000004
+        ],
+        "squared_sum_per_channel": [
+          544.0000000000001,
+          544.0
+        ],
+        "mean_square_per_channel": [
+          0.020000000000000004,
+          0.02
+        ],
+        "mean_square_all_channels": 0.020000000000000004,
+        "known_tone_fit_residual_squared_sum_per_channel": [
+          4.031899592317196e-23,
+          1.348618420610866e-23
+        ],
+        "peak": 0.2,
+        "relative_phase_rad": 0.30353463714274875,
+        "delay_s": -9.661807580174657e-05
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "phasor_real_imag": [
+          [
+            6.423540881754319e-14,
+            -0.200005423598461
+          ],
+          [
+            0.0597743010263762,
+            -0.19085748887690268
+          ]
+        ],
+        "amplitudes": [
+          0.200005423598461,
+          0.19999887030578165
+        ],
+        "squared_sum_per_channel": [
+          544.0295059233904,
+          543.9938559196889
+        ],
+        "mean_square_per_channel": [
+          0.020001084776595235,
+          0.019999774114694446
+        ],
+        "mean_square_all_channels": 0.02000042944564484,
+        "known_tone_fit_residual_squared_sum_per_channel": [
+          1.1477127677009565e-06,
+          1.4388802583956985e-06
+        ],
+        "peak": 0.20001220703125,
+        "relative_phase_rad": 0.30351165868616087,
+        "delay_s": -9.66107615318454e-05
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "integer_squared_sum_E_per_channel": [
+          584147234000,
+          584108955100
+        ],
+        "integer_denominator_D_per_channel": 29205777612800,
+        "mean_square_per_channel": [
+          0.020001084776595235,
+          0.019999774114694446
+        ],
+        "integer_squared_sum_E_all_channels": 1168256189100,
+        "integer_denominator_D_all_channels": 58411555225600,
+        "mean_square_all_channels": 0.02000042944564484
+      }
+    },
+    "train_nx": {
+      "file": "baseline_train_nx.wav",
+      "analytic": {
+        "channels": 2,
+        "phasor_real_imag": [
+          [
+            4.898587196589413e-17,
+            -0.2
+          ],
+          [
+            -0.0832283980119644,
+            -0.18185992896831904
+          ]
+        ],
+        "amplitudes": [
+          0.2,
+          0.2
+        ],
+        "mean_square_per_channel": [
+          0.020000000000000004,
+          0.020000000000000004
+        ],
+        "mean_square_all_channels": 0.020000000000000004,
+        "relative_phase_rad": -0.42919834328634904,
+        "delay_s": 0.0001366180758017493
+      },
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "phasor_real_imag": [
+          [
+            -1.0168929879327814e-15,
+            -0.19999999999999996
+          ],
+          [
+            -0.08322839801198126,
+            -0.18185992896831127
+          ]
+        ],
+        "amplitudes": [
+          0.19999999999999996,
+          0.19999999999999998
+        ],
+        "squared_sum_per_channel": [
+          544.0000000000001,
+          544.0
+        ],
+        "mean_square_per_channel": [
+          0.020000000000000004,
+          0.02
+        ],
+        "mean_square_all_channels": 0.020000000000000004,
+        "known_tone_fit_residual_squared_sum_per_channel": [
+          4.031899592317196e-23,
+          1.461224021464852e-23
+        ],
+        "peak": 0.2,
+        "relative_phase_rad": -0.42919834328643575,
+        "delay_s": 0.00013661807580177688
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "phasor_real_imag": [
+          [
+            6.423540881754319e-14,
+            -0.200005423598461
+          ],
+          [
+            -0.08322253878797532,
+            -0.18185922550166042
+          ]
+        ],
+        "amplitudes": [
+          0.200005423598461,
+          0.1999969221322664
+        ],
+        "squared_sum_per_channel": [
+          544.0295059233904,
+          543.9832576550543
+        ],
+        "mean_square_per_channel": [
+          0.020001084776595235,
+          0.01999938447261229
+        ],
+        "mean_square_all_channels": 0.020000234624603763,
+        "known_tone_fit_residual_squared_sum_per_channel": [
+          1.1477127677009565e-06,
+          1.1266886942777896e-06
+        ],
+        "peak": 0.20001220703125,
+        "relative_phase_rad": -0.4291731676578449,
+        "delay_s": 0.00013661006215030553
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "integer_squared_sum_E_per_channel": [
+          584147234000,
+          584097575300
+        ],
+        "integer_denominator_D_per_channel": 29205777612800,
+        "mean_square_per_channel": [
+          0.020001084776595235,
+          0.01999938447261229
+        ],
+        "integer_squared_sum_E_all_channels": 1168244809300,
+        "integer_denominator_D_all_channels": 58411555225600,
+        "mean_square_all_channels": 0.020000234624603763
+      }
+    },
+    "train_py": {
+      "file": "baseline_train_py.wav",
+      "analytic": {
+        "channels": 2,
+        "phasor_real_imag": [
+          [
+            4.898587196589413e-17,
+            -0.2
+          ],
+          [
+            0.04207196669729994,
+            -0.19552480563401997
+          ]
+        ],
+        "amplitudes": [
+          0.2,
+          0.2
+        ],
+        "mean_square_per_channel": [
+          0.020000000000000004,
+          0.020000000000000004
+        ],
+        "mean_square_all_channels": 0.020000000000000004,
+        "relative_phase_rad": 0.211943014589119,
+        "delay_s": -6.746355685131196e-05
+      },
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "phasor_real_imag": [
+          [
+            -1.0168929879327814e-15,
+            -0.19999999999999996
+          ],
+          [
+            0.04207196669731733,
+            -0.1955248056340162
+          ]
+        ],
+        "amplitudes": [
+          0.19999999999999996,
+          0.19999999999999998
+        ],
+        "squared_sum_per_channel": [
+          544.0000000000001,
+          544.0
+        ],
+        "mean_square_per_channel": [
+          0.020000000000000004,
+          0.02
+        ],
+        "mean_square_all_channels": 0.020000000000000004,
+        "known_tone_fit_residual_squared_sum_per_channel": [
+          4.031899592317196e-23,
+          5.720553856929316e-23
+        ],
+        "peak": 0.2,
+        "relative_phase_rad": 0.21194301458921422,
+        "delay_s": -6.746355685134227e-05
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "phasor_real_imag": [
+          [
+            6.423540881754319e-14,
+            -0.200005423598461
+          ],
+          [
+            0.04207467115777494,
+            -0.19552765209019962
+          ]
+        ],
+        "amplitudes": [
+          0.200005423598461,
+          0.20000335168426817
+        ],
+        "squared_sum_per_channel": [
+          544.0295059233904,
+          544.0182347781956
+        ],
+        "mean_square_per_channel": [
+          0.020001084776595235,
+          0.020000670396257192
+        ],
+        "mean_square_all_channels": 0.020000877586426213,
+        "known_tone_fit_residual_squared_sum_per_channel": [
+          1.1477127677009565e-06,
+          1.4629977471514834e-06
+        ],
+        "peak": 0.20001220703125,
+        "relative_phase_rad": 0.21195324024491138,
+        "delay_s": -6.746681177864339e-05
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "integer_squared_sum_E_per_channel": [
+          584147234000,
+          584135131700
+        ],
+        "integer_denominator_D_per_channel": 29205777612800,
+        "mean_square_per_channel": [
+          0.020001084776595235,
+          0.020000670396257192
+        ],
+        "integer_squared_sum_E_all_channels": 1168282365700,
+        "integer_denominator_D_all_channels": 58411555225600,
+        "mean_square_all_channels": 0.020000877586426213
+      }
+    },
+    "train_pz": {
+      "file": "baseline_train_pz.wav",
+      "analytic": {
+        "channels": 2,
+        "phasor_real_imag": [
+          [
+            4.898587196589413e-17,
+            -0.2
+          ],
+          [
+            0.02401221298766439,
+            -0.19855330172886837
+          ]
+        ],
+        "amplitudes": [
+          0.2,
+          0.2
+        ],
+        "mean_square_per_channel": [
+          0.020000000000000004,
+          0.020000000000000004
+        ],
+        "mean_square_all_channels": 0.020000000000000004,
+        "relative_phase_rad": 0.12035139203548069,
+        "delay_s": -3.8309037900874634e-05
+      },
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "phasor_real_imag": [
+          [
+            -1.0168929879327814e-15,
+            -0.19999999999999996
+          ],
+          [
+            0.02401221298764905,
+            -0.1985533017288703
+          ]
+        ],
+        "amplitudes": [
+          0.19999999999999996,
+          0.20000000000000007
+        ],
+        "squared_sum_per_channel": [
+          544.0000000000001,
+          544.0000000000001
+        ],
+        "mean_square_per_channel": [
+          0.020000000000000004,
+          0.020000000000000004
+        ],
+        "mean_square_all_channels": 0.020000000000000004,
+        "known_tone_fit_residual_squared_sum_per_channel": [
+          4.031899592317196e-23,
+          5.391038070835462e-23
+        ],
+        "peak": 0.2,
+        "relative_phase_rad": 0.12035139203540887,
+        "delay_s": -3.830903790085177e-05
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "phasor_real_imag": [
+          [
+            6.423540881754319e-14,
+            -0.200005423598461
+          ],
+          [
+            0.024013186022631992,
+            -0.1985570831593394
+          ]
+        ],
+        "amplitudes": [
+          0.200005423598461,
+          0.20000387090179617
+        ],
+        "squared_sum_per_channel": [
+          544.0295059233904,
+          544.0210592932999
+        ],
+        "mean_square_per_channel": [
+          0.020001084776595235,
+          0.02000077423872426
+        ],
+        "mean_square_all_channels": 0.020000929507659748,
+        "known_tone_fit_residual_squared_sum_per_channel": [
+          1.1477127677009565e-06,
+          1.383748061320815e-06
+        ],
+        "peak": 0.20001220703125,
+        "relative_phase_rad": 0.1203539519554051,
+        "delay_s": -3.8309852748694414e-05
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "integer_squared_sum_E_per_channel": [
+          584147234000,
+          584138164500
+        ],
+        "integer_denominator_D_per_channel": 29205777612800,
+        "mean_square_per_channel": [
+          0.020001084776595235,
+          0.02000077423872426
+        ],
+        "integer_squared_sum_E_all_channels": 1168285398500,
+        "integer_denominator_D_all_channels": 58411555225600,
+        "mean_square_all_channels": 0.020000929507659748
+      }
+    },
+    "heldout": {
+      "file": "baseline_heldout.wav",
+      "analytic": {
+        "channels": 2,
+        "phasor_real_imag": [
+          [
+            4.898587196589413e-17,
+            -0.2
+          ],
+          [
+            0.07359084540706178,
+            -0.18596878090764035
+          ]
+        ],
+        "amplitudes": [
+          0.2,
+          0.2
+        ],
+        "mean_square_per_channel": [
+          0.020000000000000004,
+          0.020000000000000004
+        ],
+        "mean_square_all_channels": 0.020000000000000004,
+        "relative_phase_rad": 0.37680793518566785,
+        "delay_s": -0.00011994169096209912
+      },
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "phasor_real_imag": [
+          [
+            -1.0168929879327814e-15,
+            -0.19999999999999996
+          ],
+          [
+            0.07359084540704912,
+            -0.18596878090764532
+          ]
+        ],
+        "amplitudes": [
+          0.19999999999999996,
+          0.19999999999999998
+        ],
+        "squared_sum_per_channel": [
+          544.0000000000001,
+          543.9999999999998
+        ],
+        "mean_square_per_channel": [
+          0.020000000000000004,
+          0.01999999999999999
+        ],
+        "mean_square_all_channels": 0.019999999999999997,
+        "known_tone_fit_residual_squared_sum_per_channel": [
+          4.031899592317196e-23,
+          4.114010509789856e-23
+        ],
+        "peak": 0.2,
+        "relative_phase_rad": 0.3768079351856052,
+        "delay_s": -0.00011994169096207917
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "phasor_real_imag": [
+          [
+            6.423540881754319e-14,
+            -0.200005423598461
+          ],
+          [
+            0.07359043379222198,
+            -0.18597126471093847
+          ]
+        ],
+        "amplitudes": [
+          0.200005423598461,
+          0.20000215809813995
+        ],
+        "squared_sum_per_channel": [
+          544.0295059233904,
+          544.0117418766022
+        ],
+        "mean_square_per_channel": [
+          0.020001084776595235,
+          0.020000431686639786
+        ],
+        "mean_square_all_channels": 0.02000075823161751,
+        "known_tone_fit_residual_squared_sum_per_channel": [
+          1.1477127677009565e-06,
+          1.7593807894214882e-06
+        ],
+        "peak": 0.20001220703125,
+        "relative_phase_rad": 0.37680145193794196,
+        "delay_s": -0.0001199396272802534
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "integer_squared_sum_E_per_channel": [
+          584147234000,
+          584128160000
+        ],
+        "integer_denominator_D_per_channel": 29205777612800,
+        "mean_square_per_channel": [
+          0.020001084776595235,
+          0.020000431686639786
+        ],
+        "integer_squared_sum_E_all_channels": 1168275394000,
+        "integer_denominator_D_all_channels": 58411555225600,
+        "mean_square_all_channels": 0.02000075823161751
+      }
+    }
+  },
+  "calibration": {
+    "analytic": {
+      "training_names": [
+        "train_px",
+        "train_nx",
+        "train_py",
+        "train_pz"
+      ],
+      "solver": {
+        "baseline_m": [
+          0.039999999999999994,
+          0.030000000000000006,
+          0.020000000000000007
+        ],
+        "offset_s": 2.000000000000003e-05,
+        "rank": 4,
+        "condition_number": 3.2255049266776945,
+        "predicted_delays_s": [
+          -9.661807580174921e-05,
+          0.00013661807580174926,
+          -6.746355685131194e-05,
+          -3.830903790087462e-05
+        ],
+        "residual_delays_s": [
+          -6.776263578034403e-20,
+          2.710505431213761e-20,
+          -1.3552527156068805e-20,
+          -1.3552527156068805e-20
+        ]
+      },
+      "baseline_error_m": [
+        -6.938893903907228e-18,
+        6.938893903907228e-18,
+        6.938893903907228e-18
+      ],
+      "offset_error_s": 2.710505431213761e-20,
+      "heldout": {
+        "direction_xyz": [
+          0.6,
+          0.8,
+          0.0
+        ],
+        "known_truth_delay_s": -0.00011994169096209912,
+        "measured_delay_s": -0.00011994169096209912,
+        "predicted_delay_s": -0.0001199416909620991,
+        "prediction_minus_measurement_s": 2.710505431213761e-20,
+        "prediction_minus_truth_s": 2.710505431213761e-20
+      },
+      "fixed_zero_offset_control": {
+        "offset_s": 0.0,
+        "baseline_m": [
+          0.039999999999999994,
+          0.02314,
+          0.013139999999999997
+        ],
+        "baseline_error_m": [
+          -6.938893903907228e-18,
+          -0.006859999999999998,
+          -0.006860000000000003
+        ],
+        "heldout_predicted_delay_s": -0.0001239416909620991,
+        "heldout_prediction_minus_measurement_s": -3.999999999999989e-06,
+        "heldout_prediction_minus_truth_s": -3.999999999999989e-06,
+        "meaning": "deliberately omitted offset; not the augmented calibrated estimator"
+      }
+    },
+    "float": {
+      "training_names": [
+        "train_px",
+        "train_nx",
+        "train_py",
+        "train_pz"
+      ],
+      "solver": {
+        "baseline_m": [
+          0.04000000000000427,
+          0.030000000000015608,
+          0.019999999999997357
+        ],
+        "offset_s": 2.0000000000015187e-05,
+        "rank": 4,
+        "condition_number": 3.2255049266776945,
+        "predicted_delays_s": [
+          -9.661807580174653e-05,
+          0.00013661807580177688,
+          -6.746355685134227e-05,
+          -3.8309037900851743e-05
+        ],
+        "residual_delays_s": [
+          -4.0657581468206416e-20,
+          0.0,
+          0.0,
+          -2.710505431213761e-20
+        ]
+      },
+      "baseline_error_m": [
+        4.2674197509029455e-15,
+        1.560904183683931e-14,
+        -2.643718577388654e-15
+      ],
+      "offset_error_s": 1.5185606678375096e-17,
+      "heldout": {
+        "direction_xyz": [
+          0.6,
+          0.8,
+          0.0
+        ],
+        "known_truth_delay_s": -0.00011994169096209912,
+        "measured_delay_s": -0.00011994169096207917,
+        "predicted_delay_s": -0.00011994169096212779,
+        "prediction_minus_measurement_s": -4.8612914908818805e-17,
+        "prediction_minus_truth_s": -2.8663594935085523e-17
+      },
+      "fixed_zero_offset_control": {
+        "offset_s": 0.0,
+        "baseline_m": [
+          0.04000000000000426,
+          0.0231400000000104,
+          0.013139999999992156
+        ],
+        "baseline_error_m": [
+          4.260480856999038e-15,
+          -0.0068599999999896,
+          -0.006860000000007844
+        ],
+        "heldout_predicted_delay_s": -0.00012394169096213083,
+        "heldout_prediction_minus_measurement_s": -4.000000000051651e-06,
+        "heldout_prediction_minus_truth_s": -4.000000000031702e-06,
+        "meaning": "deliberately omitted offset; not the augmented calibrated estimator"
+      }
+    },
+    "pcm": {
+      "training_names": [
+        "train_px",
+        "train_nx",
+        "train_py",
+        "train_pz"
+      ],
+      "solver": {
+        "baseline_m": [
+          0.03999737126148887,
+          0.030000996496140603,
+          0.020000159548868097
+        ],
+        "offset_s": 1.999965030923009e-05,
+        "rank": 4,
+        "condition_number": 3.2255049266776945,
+        "predicted_delays_s": [
+          -9.661076153184533e-05,
+          0.0001366100621503055,
+          -6.746681177864338e-05,
+          -3.830985274869439e-05
+        ],
+        "residual_delays_s": [
+          -6.776263578034403e-20,
+          2.710505431213761e-20,
+          -1.3552527156068805e-20,
+          -2.0328790734103208e-20
+        ]
+      },
+      "baseline_error_m": [
+        -2.6287385111317674e-06,
+        9.964961406039308e-07,
+        1.595488680963819e-07
+      ],
+      "offset_error_s": -3.4969076991172264e-10,
+      "heldout": {
+        "direction_xyz": [
+          0.6,
+          0.8,
+          0.0
+        ],
+        "known_truth_delay_s": -0.00011994169096209912,
+        "measured_delay_s": -0.0001199396272802534,
+        "predicted_delay_s": -0.00011993976646571395,
+        "prediction_minus_measurement_s": -1.3918546056099126e-10,
+        "prediction_minus_truth_s": 1.9244963851694497e-09
+      },
+      "fixed_zero_offset_control": {
+        "offset_s": 0.0,
+        "baseline_m": [
+          0.039997371261488876,
+          0.023141116440074685,
+          0.013140279492802182
+        ],
+        "baseline_error_m": [
+          -2.6287385111248285e-06,
+          -0.006858883559925314,
+          -0.006859720507197818
+        ],
+        "heldout_predicted_delay_s": -0.00012393969652756,
+        "heldout_prediction_minus_measurement_s": -4.0000692473065946e-06,
+        "heldout_prediction_minus_truth_s": -3.998005565460864e-06,
+        "meaning": "deliberately omitted offset; not the augmented calibrated estimator"
+      }
+    }
+  },
+  "limits": "Known-direction, synchronized mathematical far-field tone observations with a fixed channel offset, no speech, room, noise or measured device. The single-tone phase delay requires the supplied |tau| < 1 ms prior; it is not blind GCC or phase unwrapping. Cos/sin LS measures a known 500 Hz phasor on an 850-period stable window. The held-out direction is excluded from fitting. The zero-offset fit is a deliberately misspecified control, not the calibrated estimate. Readback and playback are not localization accuracy or a formal listening study. Files use a common gain of 1 and continuous source evaluation, not a sampled fractional-delay filter. Finite waveform edges are excluded from scoring.",
+  "listening": "Start at low volume; never autoplay. Stereo playback is not baseline calibration evidence."
+}

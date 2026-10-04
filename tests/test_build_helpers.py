@@ -224,6 +224,9 @@ class BuildHelpersTest(unittest.TestCase):
              52, {1: 6}),
             (build_site.RESEARCH_ROOT / '05_exercises_and_audio.md',
              ('题号', '输入和计算', '能支持的结论'), 36, {1: 6}),
+            (build_site.RESEARCH_ROOT / '01_spatial_and_tracking.md',
+             ('原始路线', '输入与额外前提', '求解目标和关键改变', '本书当前证据'),
+             54, {1: 8, 2: 15, 3: 16, 4: 15}),
         ]
         for path, headers, width, columns in cases:
             with self.subTest(path=path, headers=headers):

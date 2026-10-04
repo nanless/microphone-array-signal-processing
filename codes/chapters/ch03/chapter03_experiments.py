@@ -1,4 +1,4 @@
-"""E03-08..17: deterministic geometry, ambiguity and calibration calculations.
+"""E03-08..18: deterministic geometry, ambiguity and calibration calculations.
 
 Run ``.venv/bin/python -m codes.chapters.ch03.chapter03_experiments``. The extra
 E03-07 result and metadata are separate from the exercise IDs. No imports write
@@ -24,6 +24,7 @@ from codes.chapters.ch03.core.geometry import plane_wave_delays, plane_wave_stee
 from codes.chapters.ch00.core.audio_samples import dma_calibration_case, read_pcm16
 from codes.chapters.ch03.coarray_covariance_exercise import average_ordered_lags, virtual_toeplitz
 from codes.chapters.ch03.core.geometry_audio import geometry_parameters
+from codes.chapters.ch03.core.baseline_calibration import solve_baseline
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -376,10 +377,62 @@ def fair_aperture_comparison():
             'limits':'No DOA estimator is evaluated. Similar broadside half-power widths do not imply equal sidelobes, all-angle aliasing or source-resolution probability.'}
 
 
+def known_direction_baseline():
+    """E03-18: external directions separate position from a fixed delay."""
+    speed, offset = 343., 20e-6
+    baseline = np.array([.04, .03, .02])
+    directions = np.array([[1., 0, 0], [-1., 0, 0], [0, 1., 0], [0, 0, 1.]])
+    delays = -directions@baseline/speed+offset
+    fitted = solve_baseline(directions, delays, sound_speed=speed)
+    heldout_direction = np.array([.6, .8, 0.])
+    heldout_delay = -heldout_direction@baseline/speed+offset
+    heldout_prediction = (-heldout_direction@np.asarray(fitted['baseline_m'])/speed
+                          + fitted['offset_s'])
+    radial = np.sqrt(3)/2
+    constant_elevation = np.array([[0, radial, .5], [radial, 0, .5],
+                                   [0, -radial, .5], [-radial, 0, .5]])
+    degenerate_delays = -constant_elevation@baseline/speed+offset
+    alternate_baseline = baseline + np.array([0., 0., .01])
+    alternate_offset = offset+.005/speed
+    alternate_delays = -constant_elevation@alternate_baseline/speed+alternate_offset
+    try:
+        solve_baseline(constant_elevation, degenerate_delays, sound_speed=speed)
+    except ValueError as error:
+        rejected, reason = True, str(error)
+    else:
+        raise AssertionError('same-elevation augmented design must be rejected')
+    return {
+        'sound_speed_m_s': speed, 'directions': directions.tolist(),
+        'true_baseline_m': baseline.tolist(), 'true_offset_s': offset,
+        'input_delays_s': delays.tolist(), 'fit': fitted,
+        'incorrect_zero_offset_baseline_m': [float(speed*(delays[1]-delays[0])/2),
+                                             float(-speed*delays[2]),
+                                             float(-speed*delays[3])],
+        'heldout': {'direction': heldout_direction.tolist(),
+                    'observed_delay_s': float(heldout_delay),
+                    'predicted_delay_s': float(heldout_prediction),
+                    'residual_delay_s': float(heldout_delay-heldout_prediction)},
+        'same_elevation_counterexample': {
+            'elevation_deg': 30., 'directions': constant_elevation.tolist(),
+            'direction_rank': int(np.linalg.matrix_rank(constant_elevation)),
+            'augmented_rank': int(np.linalg.matrix_rank(
+                np.column_stack((-constant_elevation, np.ones(4))))),
+            'baseline_alternative_m': alternate_baseline.tolist(),
+            'offset_alternative_s': float(alternate_offset),
+            'max_delay_difference_s': float(np.max(abs(alternate_delays-degenerate_delays))),
+            'rejected': rejected, 'reason': reason},
+        'limits': 'Known unit source directions and known sound speed; one far-field '
+                  'source per scene and one fixed relative channel delay. No blind '
+                  'position or clock estimator, phase unwrapping, room or device '
+                  'measurement. Changing both baseline and sound speed by a common '
+                  'factor preserves delays; sound speed is an external scale anchor.'}
+
+
 def run_exercises():
     return {f'E03-{number:02}':function() for number,function in enumerate(
         (exact_beamwidths,hexagon_ambiguity,planar_mirror,coupling_regularization,gain_least_squares,coprime_holes,dma_gain_mismatch,
-         noisy_calibration_reference,nearly_planar_geometry,multi_frequency_ambiguity),8)}
+         noisy_calibration_reference,nearly_planar_geometry,multi_frequency_ambiguity,
+         known_direction_baseline),8)}
 
 
 if __name__=='__main__':

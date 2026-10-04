@@ -9,7 +9,7 @@
 | [ch00](ch00/) | `ch00.cross_chapter.*` | 全书索引、跨章练习、主音频清单与上游来源 |
 | [ch01](ch01/) | `ch01.chapter01_experiments` | E01-04～10；有限记录、残余延迟、球头、混合功率、ILD/WNG与频率相关响应；数学输入及实际PCM读回 |
 | [ch02](ch02/) | `ch02.chapter02_experiments` | E02-09～20；传播、频谱、协方差、采样、已知激励辨识与STFT一致性，不是设备测量 |
-| [ch03](ch03/) | `ch03.chapter03_experiments`、`ch03.coarray_covariance_exercise`、`ch03.examples.self_calibration_demo` | E03-07～17 与单独的受外部相位锚约束标定示例；几何、模糊、校准和虚拟滞后统计，不是全盲设备标定 |
+| [ch03](ch03/) | `ch03.chapter03_experiments`、`ch03.coarray_covariance_exercise`、`ch03.examples.self_calibration_demo` | E03-07～18 与单独的受外部相位锚约束标定示例；几何、模糊、校准和虚拟滞后统计，不是全盲设备标定 |
 | [ch04](ch04/) | `ch04.chapter04_experiments`、`ch04.doa_resolution_trials` | E04-08、E04-12～23；包括非酉聚焦噪声、AIC/MDL、相关误差GLS、双频酉秩与解析root-MUSIC；分辨率试验保留分类计数与统计分母 |
 | [ch05](ch05/) | `ch05.chapter05_experiments`、`ch05.beamformer_common_input_demo` | E05-01～22练习；同输入波束比较与独立导数约束PCM限于所声明条件；`ch05.examples.generate_derivative_audio --check`只读核验八源/实际PCM，原方法审计另记 |
 | [ch06](ch06/) | `ch06.chapter06_experiments`、`ch06.aec_algorithm_minicases`、`ch06.aec_partitioned_demo`、`ch06.aec_affine_projection_demo`、`ch06.examples.generate_apa_audio` | E06-22～39 及 AEC 算法缩例；外部库或录音示例另有依赖 |
@@ -36,7 +36,9 @@
 `MVDR target response` 应接近 1；STFT 重建误差接近浮点舍入。极高的匹配无噪声 AEC ERLE 是算术
 收敛检查，队列示例中的超期次数则来自构造的负载，二者均不代表设备测量。完整核对步骤见导读。
 
-旧的 `codes.examples.*` 和 `codes.array_tutorial.*` 导入路径已经退出仓内接口。运行时使用上表中的章节模块；修改题目时改唯一真实源文件，再核对全书 335 个稳定练习 ID、对应章节和覆盖表。
+旧的 `codes.examples.*` 和 `codes.array_tutorial.*` 导入路径已经退出仓内接口。运行时使用上表中的章节模块；修改题目时改唯一真实源文件，再核对全书 336 个稳定练习 ID、对应章节和覆盖表。
+
+第3章E03-18从四已知方向反求三维基线及固定相对通道时延；同俯仰反例检查的是增广矩阵秩。先运行`.venv/bin/python -m codes.chapters.ch03.examples.generate_baseline_audio --check`只读核对六份[独立音频](ch03/baseline_audio/MANIFEST.json)，首次生成去掉`--check`。500Hz单音、2400:29600稳定窗和已知总时差小于1ms是相位反推前提；实际PCM训练拟合与第五方向的留出预测分别记录。原协同阵工具默认stdout，新[当前合同报告](ch03/reports/upstream_coarray_contracts.json)保留完整选集不匹配及限定原方法成功两个状态，不能覆盖旧历史报告。
 
 第2章E02-19用已知激励辨识数字FIR，E02-20检查三重叠帧的STFT一致性。先用`.venv/bin/python -m codes.chapters.ch02.examples.generate_sweep_audio --check`只读核对四份[独立WAV](ch02/sweep_audio/MANIFEST.json)，再运行单章入口；首次生成去掉`--check`。源32000点、三响应32160点、共同增益1，实际PCM与浮点的全65536点IR评分分开；真值支持不用于裁剪估计。原方法合同工具默认stdout，新[当前报告](ch02/reports/upstream_model_contracts.json)与旧历史报告分开，取得源码和限定方法运行不等于完整上游或设备验收。
 
@@ -58,7 +60,7 @@
 
 来源索引扩充后，旧运行报告仍保留当时的整表摘要。[历史快照](ch00/source_snapshots/)保存真实原始字节；[只读核验核](ch00/core/source_history.py)检查已登记快照的完整SHA，以及报告实际使用项目的全部来源/获取记录是否仍与当前一致。它不改报告、不重跑算法，也不把旧选集失败改成通过；具体配对和覆盖范围见[复现手册](ch00/research/04_source_reproduction.md#historical-source-bindings)。
 
-本书的主[合成音频清单](ch00/audio/MANIFEST.json)记录 27 组、109 个分章存放的 PCM16 WAV 的输入、所属章节、共同增益、种子、运行环境、生成源码与逐文件 SHA-256。另有二十套独立合成实验，共119个WAV；双耳、方向谱形、STFT卷积、数字扫频、几何、聚焦、导数约束、APA、已知逆、掩码、GSS、移动、追踪、噪声失配、选型、成像、分布式、已知权重、同DRR和房间的逐套清单及用途见[导读的完整音频表](../../chapters/00_overview.md#sec-u-6d43c0086f)。它们不并入主109，GSS状态与房间数值报告也不能按WAV计数。
+本书的主[合成音频清单](ch00/audio/MANIFEST.json)记录 27 组、109 个分章存放的 PCM16 WAV 的输入、所属章节、共同增益、种子、运行环境、生成源码与逐文件 SHA-256。另有二十一套独立合成实验，共125个WAV；双耳、方向谱形、STFT卷积、数字扫频、几何、基线标定、聚焦、导数约束、APA、已知逆、掩码、GSS、移动、追踪、噪声失配、选型、成像、分布式、已知权重、同DRR和房间的逐套清单及用途见[导读的完整音频表](../../chapters/00_overview.md#audio-assets)。它们不并入主109，GSS状态与房间数值报告也不能按WAV计数。
 
 相同合成实验组使用共同导出增益，不逐文件做峰值归一化。生成物出现问题应修改生成源码并重新生成、只读核对清单，再重建图和站点；不得手改单个 WAV、清单或报告。
 
@@ -66,11 +68,11 @@
 
 [DEMAND 数据说明](ch02/real_audio/README.md)记录 10 秒同步 16 通道真实环境录音摘录和 3 个派生文件的来源、通道及 CC BY-SA 3.0 条件。它们没有干净语音或位置真值，不用于声学增强性能结论。另一个 AEC 真实成对录音实验只使用本地忽略的 Microsoft AEC Challenge 缓存；其文件与可选输出不进入本书发布音频。正确、全零及错位参考的结果只是固定片段的接口观察，不是真值 ERLE。
 
-外部代码由[固定 Git 来源清单](ch00/SOURCES.lock.json)和[独立归档清单](ch00/ARCHIVE_SOURCES.lock.json)管理，来源、许可证与用途见[第三方记录](ch00/THIRD_PARTY.md)。截至 2026-10-04，106 个 Git 项目中有 92 个本地工作区；按完整32条排除规则核验，[状态报告](ch00/SOURCE_STATUS.json)分别记录69项通过、22项旧稀疏规则不匹配、14项仅索引和1项本地修改失败。22个工作区仍只有20条排除规则，保留原样，不自动修复；AEC Challenge 缓存中有本地修改的真实录音，核验没有把它当成通过。取得源码、构建依赖、实际运行和复现论文性能是不同层级；固定版诊断的执行条件与失败记录见[复现手册](ch00/research/04_source_reproduction.md)。
+外部代码由[固定 Git 来源清单](ch00/SOURCES.lock.json)和[独立归档清单](ch00/ARCHIVE_SOURCES.lock.json)管理，来源、许可证与用途见[第三方记录](ch00/THIRD_PARTY.md)。截至 2026-10-04，107 个 Git 项目中有 92 个本地工作区；按完整32条排除规则核验，[状态报告](ch00/SOURCE_STATUS.json)分别记录69项通过、22项旧稀疏规则不匹配、15项仅索引和1项本地修改失败。22个工作区仍只有20条排除规则，保留原样，不自动修复；AEC Challenge 缓存中有本地修改的真实录音，核验没有把它当成通过。取得源码、构建依赖、实际运行和复现论文性能是不同层级；固定版诊断的执行条件与失败记录见[复现手册](ch00/research/04_source_reproduction.md)。
 
 本轮补取的WASN同步源码与LibriCSS评测工具分别保存在独立忽略目录，固定提交、许可与选集见[复现入口](ch00/research/04_source_reproduction.md#overview-source-entrypoints)。它们仍未安装、运行设备或执行官方评分；LibriCSS原评分包装与脚本的接口限制保留。
 
-上游获取工具放在[源码工具目录](ch00/upstream/README.md)。下载源码留在 Git 忽略的独立工作区，不随本书推送；已有工作区及修改必须保留。HARKTOOL5 与 Vo RFS 的归档摘要和选择范围单独记录，不混入 106 个 Git 项目数。本仓库根目录目前没有明确的 `LICENSE` 或 `COPYING`，源码可见不等于已经获得复制、修改或再分发许可；第三方项目的许可证也不自动覆盖本书、模型或数据。
+上游获取工具放在[源码工具目录](ch00/upstream/README.md)。下载源码留在 Git 忽略的独立工作区，不随本书推送；已有工作区及修改必须保留。HARKTOOL5 与 Vo RFS 的归档摘要和选择范围单独记录，不混入 107 个 Git 项目数。本仓库根目录目前没有明确的 `LICENSE` 或 `COPYING`，源码可见不等于已经获得复制、修改或再分发许可；第三方项目的许可证也不自动覆盖本书、模型或数据。
 
 
 第二章的`E02-16～18`分别检查有限窗卷积、源噪声二阶交叉项与窗的幅度/功率归一化。

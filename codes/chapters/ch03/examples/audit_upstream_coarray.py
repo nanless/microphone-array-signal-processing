@@ -16,19 +16,34 @@ from datetime import datetime, timezone
 import hashlib
 import json
 import math
-import os
 from pathlib import Path
 import platform
-import subprocess
 import sys
-import tempfile
 import warnings
 
 import numpy as np
 
+from codes.chapters.ch00.io_contracts import (
+    strict_json_loads, validate_parent_chain, validate_report_destination,
+    write_json_report,
+)
+from codes.chapters.ch00.upstream.fetch_upstreams import (
+    inspect_project, run_git, validate_project,
+)
+
 ROOT = Path(__file__).resolve().parents[4]
 LOCK = ROOT / "codes/chapters/ch00/SOURCES.lock.json"
 CACHE = ROOT / "codes/chapters/ch00/upstream/_downloads"
+STATUS = LOCK.with_name("SOURCE_STATUS.json")
+CURRENT_REPORT = ROOT / "codes/chapters/ch03/reports/upstream_coarray_contracts.json"
+HISTORICAL_REPORT = CURRENT_REPORT.with_name("upstream_coarray.json")
+HISTORICAL_SCRIPT_REVISION = "a8ca49224b34f2c970a128261e165c31d587ccda"
+HISTORICAL_SCRIPT_SHA256 = "7a3bc077c187667a9ac9fcc9fe128edc42377f8c06f91738c92c944a15d57cbe"
+SOURCE_DEPENDENCIES = (
+    "codes/chapters/ch03/examples/audit_upstream_coarray.py",
+    "codes/chapters/ch00/io_contracts.py",
+    "codes/chapters/ch00/upstream/fetch_upstreams.py",
+)
 REVISION = "9469db201e0418aef6b97583ef54b6fec2769502"
 URL = "https://github.com/morriswmz/doatools.py.git"
 DEFINITIONS = {
@@ -50,42 +65,95 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _git(checkout: Path, *arguments: str) -> bytes:
-    return subprocess.run(["git", *arguments], cwd=checkout, check=True,
-                          capture_output=True, timeout=60).stdout
+def ordinary_file(path: Path) -> Path:
+    path = validate_parent_chain(path)
+    if not path.is_file():
+        raise ValueError(f"An existing ordinary file is required: {path}")
+    return path
 
 
-def verify_sources(cache: Path = CACHE, lock_path: Path = LOCK) -> dict:
-    """Bind the selected lock entry, clean HEAD and actual Git blob bytes."""
-    checkout = cache / "doatools"
-    if not (checkout / ".git").exists():
-        raise FileNotFoundError(f"Existing fixed checkout required: {checkout}")
-    lock_bytes = lock_path.read_bytes()
-    entries = [p for p in json.loads(lock_bytes)["projects"] if p["id"] == "doatools"]
+def report_target(path: Path) -> Path:
+    target = validate_report_destination(path, forbidden_roots=(CACHE, LOCK, STATUS,
+        HISTORICAL_REPORT, ROOT / "codes/chapters/ch00/source_snapshots"))
+    if target.resolve().is_relative_to(ROOT.resolve()) and target.resolve() != CURRENT_REPORT.resolve():
+        raise ValueError("Only the current coarray-contract report may be written inside the repository")
+    return target
+
+
+def _git(checkout: Path, *arguments: str) -> str:
+    """Shared Git runner removes inherited GIT_* routing/configuration variables."""
+    return run_git(list(arguments), cwd=checkout)
+
+
+def verify_sources(cache: Path = CACHE, lock_path: Path = LOCK,
+                   status_path: Path = STATUS) -> dict:
+    """Verify used blobs independently of complete recorded/live selection state."""
+    lock_bytes = ordinary_file(lock_path).read_bytes()
+    status_bytes = ordinary_file(status_path).read_bytes()
+    lock, status = strict_json_loads(lock_bytes), strict_json_loads(status_bytes)
+    lock_digest = hashlib.sha256(lock_bytes).hexdigest()
+    for document in (lock, status):
+        if (type(document) is not dict or type(document.get("schema_version")) is not int
+                or document["schema_version"] != 1 or type(document.get("projects")) is not list
+                or any(type(row) is not dict for row in document["projects"])):
+            raise ValueError("Source documents require schema 1 with object project records")
+        ids = [row.get("id") for row in document["projects"]]
+        if any(type(name) is not str for name in ids) or len(ids) != len(set(ids)):
+            raise ValueError("Source project records require unique string IDs")
+    if status.get("lock_sha256") != lock_digest:
+        raise ValueError("Current source status must bind actual current lock bytes")
+    checkout = validate_parent_chain(cache / "doatools")
+    validate_parent_chain(checkout / ".git")
+    if not checkout.is_dir() or not (checkout / ".git").is_dir():
+        raise ValueError(f"Existing independent ordinary checkout required: {checkout}")
+    entries = [p for p in lock["projects"] if p["id"] == "doatools"]
     if len(entries) != 1:
         raise ValueError("Expected exactly one doatools lock entry")
     entry = entries[0]
-    if (entry["revision"], entry["license"], entry["url"].rstrip("/")) != (REVISION, "MIT", URL):
+    validate_project(entry)
+    if (entry["revision"], entry["license"], entry["url"]) != (REVISION, "MIT", URL):
         raise ValueError("Review the changed doatools lock before running")
-    head = _git(checkout, "rev-parse", "HEAD").decode().strip()
+    if _git(checkout, "rev-parse", "--show-toplevel") != str(checkout.resolve()):
+        raise ValueError("Checkout must be its own Git top level")
+    origin = _git(checkout, "remote", "get-url", "origin")
+    if origin != URL:
+        raise ValueError("Unexpected actual upstream origin")
+    head = _git(checkout, "rev-parse", "HEAD")
     if head != REVISION:
         raise ValueError(f"Unexpected doatools HEAD: {head}")
     if _git(checkout, "status", "--porcelain", "--untracked-files=all"):
         raise ValueError("The doatools worktree is not clean")
     files = []
     for relative in (*DEFINITIONS, "LICENSE.md"):
-        actual = (checkout / relative).read_bytes()
-        if actual != _git(checkout, "show", f"{head}:{relative}"):
+        path = ordinary_file(checkout / relative)
+        actual = path.read_bytes()
+        blob = _git(checkout, "rev-parse", f"{head}:{relative}")
+        actual_blob = _git(checkout, "hash-object", "--no-filters", "--", str(path))
+        if actual_blob != blob:
             raise ValueError(f"Source bytes differ from fixed Git blob: {relative}")
         files.append({"path": relative, "sha256": hashlib.sha256(actual).hexdigest(),
-                      "git_blob_oid": _git(checkout, "rev-parse", f"{head}:{relative}").decode().strip(),
+                      "bytes": len(actual), "git_blob_oid": blob, "actual_blob_oid": actual_blob,
                       "definitions": list(DEFINITIONS.get(relative, ()))})
+    states = [row for row in status["projects"] if row["id"] == "doatools"]
+    if len(states) != 1 or states[0].get("revision") != head:
+        raise ValueError("Current acquisition record must bind fixed revision")
+    if (type(states[0].get("status")) is not str
+            or type(states[0].get("source_selection_verified")) is not bool):
+        raise ValueError("Acquisition must retain status and boolean selection")
+    live = inspect_project(entry, cache)
     canonical = json.dumps(entry, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
-    return {"lock_sha256": hashlib.sha256(lock_bytes).hexdigest(),
+    return {"lock_sha256": lock_digest, "status_sha256": hashlib.sha256(status_bytes).hexdigest(),
             "lock_entry_sha256": hashlib.sha256(canonical.encode()).hexdigest(),
             "url": entry["url"], "revision": head, "license": "MIT",
+            "actual_origin": origin, "used_source_identity_verified": True,
+            "lock_entry": entry, "recorded_acquisition": states[0],
+            "live_acquisition_scope": live,
             "implementation_identity": "maintainer's independent implementation, not Pal author code",
             "worktree_clean": True, "files": files}
+
+
+def source_dependencies() -> dict:
+    return {relative: sha256(ordinary_file(ROOT / relative)) for relative in SOURCE_DEPENDENCIES}
 
 
 class CompatibleNumpy:
@@ -294,21 +362,33 @@ def audit_invalid_inputs(ns: dict, builder, ideal) -> list:
 
 
 def run_audit(cache: Path = CACHE) -> dict:
+    dependencies = source_dependencies()
     tool_digest = sha256(Path(__file__))
+    started = datetime.now(timezone.utc).isoformat()
     sources_before = verify_sources(cache)
     ns, extractions = load_methods(cache / "doatools")
     layouts = audit_layouts(ns)
     covariances, builder, ideal = audit_covariances(ns)
     perturbations = audit_perturbations(ns)
     negatives = audit_invalid_inputs(ns, builder, ideal)
-    if verify_sources(cache) != sources_before or sha256(Path(__file__)) != tool_digest:
+    sources_after = verify_sources(cache)
+    if sources_after != sources_before or source_dependencies() != dependencies:
         raise ValueError("Audit source, lock or upstream changed during execution")
     executed_at = datetime.now(timezone.utc)
     report = {
-        "schema_version": 1, "executed_at_utc": executed_at.isoformat(),
+        "schema_version": 2, "executed_at_utc": executed_at.isoformat(),
         "executed_at_local": executed_at.astimezone().isoformat(),
         "audit_source": str(Path(__file__).resolve().relative_to(ROOT)),
         "audit_source_sha256": tool_digest, "sources": sources_before,
+        "source_sha256": dependencies,
+        "source_verification": {"started_at_utc": started, "before_after_equal": True,
+            "canonical_sources_before_sha256": hashlib.sha256(json.dumps(
+                sources_before, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()).hexdigest(),
+            "canonical_sources_after_sha256": hashlib.sha256(json.dumps(
+                sources_after, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()).hexdigest(),
+            "shared_dependencies_before_after_equal": True,
+            "scope": "Actual origin/HEAD/used blobs/licence/clean tree, complete live selection, lock/status bytes and local helper SHA rechecked after execution"},
+        "selection_status_boundary": "Complete acquisition selection is independent of used-file identity and numerical behavior; source_selection_mismatch is not upgraded",
         "upstream_clean_before_and_after": True,
         "scope": "unchanged original-method AST extraction with a local NumPy compatibility facade",
         "environment": {"python": sys.version, "numpy": np.__version__,
@@ -329,39 +409,29 @@ def run_audit(cache: Path = CACHE) -> dict:
         "not_executed": ["full doatools import and dependency validation", "DOA or source-count estimator",
                          "unknown-error calibration", "StructureFromSound MATLAB system",
                          "HARK measurement or Infineon firmware", "hardware or equipment acceptance"]}
-    json.dumps(report, allow_nan=False)
+    strict_json_loads(json.dumps(report, allow_nan=False))
     return report
 
 
 def write_report(path: Path, report: dict) -> None:
-    """Publish only after the audit succeeds; never permit an upstream write."""
-    if path.resolve().is_relative_to(CACHE.resolve()):
-        raise ValueError("Report output must be outside upstream checkouts")
-    content = json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = None
-    try:
-        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent,
-                                         prefix=".upstream-coarray-", suffix=".tmp", delete=False) as out:
-            temporary = Path(out.name)
-            out.write(content)
-        os.replace(temporary, path)
-    finally:
-        if temporary is not None:
-            temporary.unlink(missing_ok=True)
+    """Finite, ordinary-path preflight and replacement; no concurrent-race guarantee."""
+    write_json_report(report_target(path), report,
+                      forbidden_roots=(CACHE, LOCK, STATUS, HISTORICAL_REPORT))
 
 
-def main() -> None:
+def main(argv=None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--report", type=Path, help="Explicitly generate a current strict JSON report")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
+    target = report_target(args.report) if args.report is not None else None
     report = run_audit()
-    report["command"] = [sys.executable, "-m", "codes.chapters.ch03.examples.audit_upstream_coarray", *sys.argv[1:]]
+    report["command"] = [sys.executable, "-m", "codes.chapters.ch03.examples.audit_upstream_coarray",
+                         *(sys.argv[1:] if argv is None else argv)]
     if args.report is None:
         print(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False))
     else:
-        write_report(args.report, report)
-        print(f"Original-method audit completed; report: {args.report}")
+        write_report(target, report)
+        print(f"Original-method audit completed; report: {target}")
 
 
 if __name__ == "__main__":

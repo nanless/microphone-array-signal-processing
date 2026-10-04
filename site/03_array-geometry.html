@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 3 章 · 阵列几何形态 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="50383d27a8cc"><style>
+<meta name="source-digest" content="17f5777effb6"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -274,6 +274,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-7c5959552c">E03-15：参考麦带噪时，残差更小为什么仍会标错？</a></li>
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-ef3f6c82d2">E03-16：几何始终满秩，为什么靠近平面仍很敏感？</a></li>
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-45ef2e2df1">E03-17：允许每频源幅不同，多频还能分开混叠方向吗？</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-fd5bb0b3d9">E03-18：已知方向能把麦克风位置与固定时延分开吗？</a></li>
 </ul>
 <div class="chap"><a href="04_doa-estimation.html">第 4 章 · 声源定位（DOA 估计）</a></div>
 <div class="chap"><a href="05_beamforming.html">第 5 章 · 波束形成</a></div>
@@ -327,6 +328,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-7c5959552c">E03-15：参考麦带噪时，残差更小为什么仍会标错？</a></li>
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-ef3f6c82d2">E03-16：几何始终满秩，为什么靠近平面仍很敏感？</a></li>
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-45ef2e2df1">E03-17：允许每频源幅不同，多频还能分开混叠方向吗？</a></li>
+<li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-fd5bb0b3d9">E03-18：已知方向能把麦克风位置与固定时延分开吗？</a></li>
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是教程正文第 3 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。</p>
@@ -437,7 +439,7 @@ Y(f)&=X_1(f)-e^{-\mathrm j2\pi fd/c}X_2(f).
 <p>$$\begin{aligned}
 B(f,\beta)&=1-e^{-\mathrm jp(1+\cos\beta)},\\
 \frac{|B(f,\beta)|}{|B(f,0)|}
-&=\frac{|\sin[\tfrac p2(1+\cos\beta)]|}{|\sin p|}\quad(\sin p\ne0),\\
+&=\frac{|\sin[\tfrac p2(1+\cos\beta)]|}{|\sin p|},\\
 &\xrightarrow{p\to0}\frac{1+\cos\beta}{2}.
 \end{aligned}\tag{3-3}$$</p>
 <p>第二步用了 $|1-e^{-\mathrm jx}|=2|\sin(x/2)|$。归一化只在 $\sin p\ne0$、前方响应非零时有定义：不能直接代入 $p=0$ 或其他 $p$ 为 $\pi$ 的整数倍的频点。最后一步是沿着分母非零的频点令 $p\to0$，分别将小角度的正弦换为其自变量，得到低频心形的全角度表达式。</p>
@@ -721,20 +723,21 @@ r[-\ell]&=r[\ell]^*.
 <p>在一个固定频点，令 $q=1,\ldots,Q$ 表示依次录制的声源场景、$t=1,\ldots,T$ 表示该场景中的帧、$m=0,\ldots,M-1$ 表示通道。这里为简明取每个场景相同的帧数；$\boldsymbol\theta\in\mathbb R^Q$ 存各场景的方向，$\mathbf S\in\mathbb C^{Q\times T}$ 存源复谱，$\vec g\in\mathbb C^M$ 存通道复增益，$\vec x_{qt},\vec n_{qt}\in\mathbb C^M$ 分别是观测和噪声。假设每个场景只有一个远场窄带源，各场景共用不变的通道复增益；把模型和本节使用的未归一化复数残差平方和写在一起：</p>
 <p>$$\begin{aligned}
 g_m(f)&=[1+\Delta g_m(f)]e^{\mathrm j\Delta\phi_m(f)},\\
-\vec x_{qt}&=\operatorname{diag}(\vec g)\vec a(\theta_q)s_{qt}+\vec n_{qt},\\
-J(\vec g,\boldsymbol\theta,\mathbf S)
-&=\sum_{q,t,m}|x_{qtm}-g_ma_m(\theta_q)s_{qt}|^2.
+\vec x_{qt}&=\operatorname{diag}(\vec g)\vec a(\theta_q)s_{qt}\\
+&\quad+\vec n_{qt},\\
+J&=\sum_{q,t,m}|e_{qtm}|^2,\\
+e_{qtm}&=x_{qtm}-g_ma_m(\theta_q)s_{qt}.
 \end{aligned}\tag{3-11}$$</p>
-<p>$\Delta g_m$ 是相对幅度误差、无量纲，且此参数化要求 $1+\Delta g_m>0$；$\Delta\phi_m$ 是相位误差、单位 rad；$s_{qt}$ 是参考处每帧未知的源复谱，$\vec n_{qt}$ 是噪声。逐通道增益构成对角矩阵，尚未包含通道间串扰。相位和增益通常随频率变化，单个频点的修正不能不经检查地用于整个语音频带。</p>
+<p>$\Delta g_m$ 是相对幅度误差、无量纲，且此参数化要求 $1+\Delta g_m>0$；$\Delta\phi_m$ 是相位误差、单位 rad；$s_{qt}$ 是参考处每帧未知的源复谱，$\vec n_{qt}$ 是噪声，$e_{qtm}$ 是逐元素拟合残差；目标函数 $J$ 依赖待估的 $\vec g$、$\boldsymbol\theta$ 和 $\mathbf S$。逐通道增益构成对角矩阵，尚未包含通道间串扰。相位和增益通常随频率变化，单个频点的修正不能不经检查地用于整个语音频带。</p>
 <p>仅由观测，公共源幅度与全部 $g_m$ 的共同复尺度不能分开。相对标定通常选择参考通道，令 $g_0=1$；这表示以参考通道为基准，不表示它已具备绝对声压校准。</p>
 <p><strong>固定参考麦仍不能消除线阵的方向—相位斜率歧义。</strong> 对间距 $d$ 的均匀线阵，本书以正横为 $0°$ 的导向约定给出 $a_m(\theta)=e^{\mathrm j kmd\sin\theta}$，其中 $k=2\pi f/c$。任选一个使所有新方向仍在可用角域内的共同偏移 $\delta$，令</p>
 <p>$$\begin{aligned}
-\sin\theta'_q&=\sin\theta_q+\delta,\qquad
-g'_m=g_m e^{-\mathrm j kmd\delta},\\
+\sin\theta'_q&=\sin\theta_q+\delta,\\
+g'_m&=g_m e^{-\mathrm j kmd\delta},\\
 g'_ma_m(\theta'_q)
-&=g_m e^{-\mathrm j kmd\delta}
-  e^{\mathrm j kmd(\sin\theta_q+\delta)}
- =g_ma_m(\theta_q).
+&=g_m e^{-\mathrm j kmd\delta}\\
+&\quad\times e^{\mathrm j kmd(\sin\theta_q+\delta)}\\
+&=g_ma_m(\theta_q).
 \end{aligned}$$</p>
 <p>这里改动的是每个方向的<strong>正弦值</strong>，不是把每个角度简单加上同一个度数；$m=0$ 时仍有 $g'_0=g_0=1$。因此，即使录到多个不同的未知方向，只要任意复增益的相位斜率也未知，这两套参数仍会逐帧产生完全相同的无噪声观测。</p>
 <p>可用下面的四麦小例子检查：$d=4$ cm、$f=1$ kHz、$c=343$ m/s，原方向是 $[-40°,0°,35°]$，令 $\delta=0.15$，新方向约为 $[-29.524°,8.627°,46.351°]$，均处于 $[-60°,60°]$。同时给第 $m$ 路增益乘上 $e^{-\mathrm j kmd(0.15)}$，第 1 路相位就相对原值改变约 $-6.297°$；两套模型逐样本预测的最大差在本书双精度合成中约为 $7.0\times10^{-16}$。这个差是浮点舍入量级，不是定位误差，也不说明哪一套方向是真值。</p>
@@ -792,6 +795,8 @@ J(\vec v)=\|\mathbf C\vec v-\vec x\|_2^2
 <li><strong>有锚点标定</strong>：在多个已知位置播放信号，由 TDOA 反解麦克风坐标；</li>
 <li><strong>无锚点自标定</strong>：同时估计声源位置与麦克风位置，要求声源运动或多位置观测满足可辨识条件。</li>
 </ul>
+<p><strong>先走通已知方向的一条基线。</strong> 若已有多个外部已知的远场方向，可以由相对 TDOA 反求参考麦到另一只麦的三维基线；各次发声的公共传播时间在通道差中约去，不必知道它们的发声时刻。通道还可能含一个固定的相对采集时延。方向改变时，几何投影改变，固定时延却保持不变；这给了区分两者的机会。E03-18 用四个已知方向手算这四个未知量，并用第五个未参与拟合的方向复测。</p>
+<p>有已知方向不等于有足够独立的约束。三维基线和固定时延共需四个独立参数方向；所有声源都位于相同俯仰角时，法向位置与固定时延仍可能互相抵消，甚至方向矩阵本身满秩也不够。必须检查含常量列的增广矩阵，具体模型、单位和退化反例见式(3-20)、式(3-21)。这些是本书从平面波模型推导的有锚小例，声速由外部给定；不是未知声源和未知麦位置的全盲自标定，也没有估计随时间变化的采样率漂移。</p>
 <p>无外部锚时，观测至少不能区分整体平移、旋转和镜像；只用方向观测时还可能不能确定尺度。实现中固定参考麦和坐标轴，是选择一个坐标规范，以报告该坐标系中的代表解；它不能单独建立外部世界中的绝对坐标。</p>
 <p>若观测本身不能确定尺度，还须加入已知距离；若需要房间世界坐标，则要提供外部锚点或等价约束。这些不唯一性可由距离差对刚体变换的不变性直接验证，属于本书几何分析。</p>
 <p>若实际求解 TDOA 自标定，还必须明确发声时刻和接收机时钟是否已知；基于全部绝对传播时间或距离的到达时间（Time of Arrival，TOA）方法，不能直接当作仅有时间差的解法。</p>
@@ -984,7 +989,7 @@ J(\vec v)=\|\mathbf C\vec v-\vec x\|_2^2
 <p>这不证明有限样本误差已经消失，也不是恢复了原始麦信号。若 $X$ 用 V 表示，直接滞后矩阵 $\mathbf T$ 的单位为 V²，$\mathbf R_{\rm ss}$ 的单位则为 V⁴；两者不能直接把特征值当作同一种声功率来比较。<a href="https://github.com/morriswmz/doatools.py/blob/9469db201e0418aef6b97583ef54b6fec2769502/doatools/estimation/coarray.py" title="citation">固定版 doatools 的 <code>CoarrayACMBuilder1D</code></a>分别提供直接重排与空间平滑模式，调用时应明确模式；原始方法和构造条件见 <a href="https://doi.org/10.1109/TSP.2010.2049264" title="citation">Pal 与 Vaidyanathan 2010 第 IV 节</a>。</p>
 <p><strong>相干源为什么不能按同一滞后直接解释？</strong> 另取物理 ULA 位置 $p=\{0,1,2\}$、两个方向仍为 $0°$ 与 $30°$，但两源现在播放同一个单位功率复波形，且没有噪声。两个导向向量相加得到 $\vec v=[2,1+\mathrm j,0]^\top$，所以 $\mathbf R=\vec v\vec v^H$。同为滞后 1 的两个元素变成 $R_{10}=2+2\mathrm j$、$R_{21}=0$，已经不是同一个总体值。把它们平均不能恢复“两个互不相关源各有单位功率”的模型。</p>
 <p>先手算这些外积与滞后，再运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/coarray_covariance_exercise.py">E03-07 原例</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/chapter03_experiments.py">第 3 章补充实验</a>核对原例、平滑对照和相干反例。这些都是窄带统计计算，没有生成四通道声音，也没有证明三只麦在任意 SNR 或快拍数下都能分辨四个声源。</p>
-<p>下面 E03-08～17 使用同一个补充实验入口：</p>
+<p>下面 E03-08～18 使用同一个补充实验入口：</p>
 <pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch03.chapter03_experiments
 </code></pre>
 <p>题干与答案中未特别说明的声速均为 343 m/s。浮点复算保留中间精度，表格最后舍入；没有输入随机噪声的例子，不报告定位准确率或实测信噪比。</p>
@@ -1214,10 +1219,12 @@ x_2(t)&=1.01[F(t-b-\tau)+B(t-b)].
 <p><strong>参考答案：分子中的噪声项相消，分母中的噪声能量没有相消。</strong> 本题 $\sum s_i e_i=0$、$\sum s_i^2=4$、$\sum e_i^2=1$，因此</p>
 <p>$$\begin{aligned}
 \vec z^H\vec y
-&=1.5\times2+0.5\times2+(-0.5)\times(-2)+(-1.5)\times(-2)\\
+&=1.5\times2+0.5\times2\\
+&\quad+(-0.5)\times(-2)+(-1.5)\times(-2)\\
 &=8,\\
 \vec z^H\vec z
-&=1.5^2+0.5^2+(-0.5)^2+(-1.5)^2=5,\\
+&=1.5^2+0.5^2\\
+&\quad+(-0.5)^2+(-1.5)^2=5,\\
 \hat g&=8/5=1.6.
 \end{aligned}$$</p>
 <p>若能使用干净 $s$，分子仍为 8、分母为 4，才能得到 2。带噪参考的分母多出了噪声能量，普通最小二乘却把全部参考能量视为真实输入，因而本题的系数向零缩小。</p>
@@ -1288,8 +1295,8 @@ g_{\rm ratio}
 <p>$$\begin{aligned}
 \hat{\vec u}_{\rm lin}&=-c\mathbf G^{-1}\hat{\vec\tau},\\
 \Delta\vec u_{\rm lin}
-&=\hat{\vec u}_{\rm lin}-\vec u
-=-c\mathbf G^{-1}\Delta\vec\tau,\\
+&=\hat{\vec u}_{\rm lin}-\vec u\\
+&=-c\mathbf G^{-1}\Delta\vec\tau,\\
 \Delta u_{z,\rm lin}&=-\frac{c\,\Delta\tau_z}{h}.
 \end{aligned}\tag{3-18}$$</p>
 <p>$c\Delta\tau_z$ 为长度，除以 $h$ 后是无量纲方向分量。$\Delta\tau_z>0$ 表示第四麦相对到达更晚，所以法向正投影减小；这个符号与式(3-1)一致。</p>
@@ -1454,6 +1461,121 @@ g_{\rm ratio}
 <p>在 2 kHz，波长 $343/2000=0.1715$ m，每条相对基线的相位差为 $m$ 周；在 4 kHz，波长减半，相位差为 $2m$ 周。两频的完整相对导向均相同，候选方向的 $\epsilon_f$ 都为零。增加这一个频点没有新增区分证据。</p>
 <p>若改用 1 kHz，整周数为 $m/2$，导向比为 $[1,-1,1,-1]$，内积为零，$\rho_f=0,\epsilon_f=1$。应检查实际的频率集合，而非简单宣称“宽带必然消歧”。这个反例是另一个阵列；不能移到本题 4 kHz 已无单侧相位歧义的六边形上。</p>
 <p>上述比较允许每频一个公共未知源幅度，没有允许逐通道任意未知复增益。若通道相位或时钟未知，还须使用 §3.4.1 所述校准约束；本题也没有加入房间反射、同时多源、随机噪声或设备测量。</p>
+<p><a id="e03-18"></a></p>
+<h3 id="sec-u-fd5bb0b3d9">E03-18：已知方向能把麦克风位置与固定时延分开吗？</h3>
+<p>两只理想全向麦的参考位置为原点，另一只麦的未知基线为 $\vec b=(b_x,b_y,b_z)^\top$，单位 m。分别从外部已知的 $+x,-x,+y,+z$ 四个方向依次播放单源；声速已知为 343 m/s。假定每个声源足够远，通道响应一致，但麦 1 的记录比麦 0 多一个在所有场景中不变的相对时延 $\delta_t$。这里正 $\delta_t$ 表示额外滞后，不是采样率漂移。</p>
+<p>以 $q$ 表示播放场景，观测 $\tau_q=t_{1,q}-t_{0,q}$。本书从式(3-1)加入上述固定通道时延，得到</p>
+<p>$$\begin{aligned}
+\tau_q&=-\frac{\vec u_q^\top\vec b}{c}+\delta_t,\\
+\ell_t&=c\delta_t,\\
+\vec x&=(b_x,b_y,b_z,\ell_t)^\top,\\
+\mathbf D&=[-\mathbf U,\vec1_Q],\\
+\mathbf D\vec x&=c\vec\tau.
+\end{aligned}\tag{3-20}$$</p>
+<p>$\mathbf U\in\mathbb R^{Q\times3}$ 的第 $q$ 行是已知单位方向 $\vec u_q^\top$，$\vec1_Q$ 是 $Q$ 维全1列；$\vec\tau$ 用 s，$c\vec\tau$ 用 m。这里的 $\vec x$ 是四个长度参数，不是前面表示麦克风谱的观测向量。$\mathbf D$ 的元素无量纲，四个未知量统一用 m，因此其条件数不因选择秒或毫秒报告时延而改变。</p>
+<p><strong>题干。</strong> 表中时延由真基线 $(0.04,0.03,0.02)$ m、固定时延 $20\ \mu s$ 合成；估计时只给方向、时延和声速，真值只供事后核对。保留中间精度，完成以下计算：求四个未知量；用未参加拟合的方向 $(0.6,0.8,0)^\top$ 预测时延；再把训练方向换成方位 $0°,90°,180°,270°$、共同俯仰 $30°$，检查是否仍能唯一求解。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">已知训练方向</th>
+<th scope="col" style="text-align: right;">观测 $\tau_q$ / μs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$+x$</td>
+<td style="text-align: right;">−96.6180758</td>
+</tr>
+<tr>
+<td>$-x$</td>
+<td style="text-align: right;">136.6180758</td>
+</tr>
+<tr>
+<td>$+y$</td>
+<td style="text-align: right;">−67.4635569</td>
+</tr>
+<tr>
+<td>$+z$</td>
+<td style="text-align: right;">−38.3090379</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>参考答案：从两条相反方向求固定时延。</strong> 前两行分别为 $\tau_{+x}=-b_x/c+\delta_t$ 和 $\tau_{-x}=b_x/c+\delta_t$。相加消去 $b_x$，相减消去 $\delta_t$：</p>
+<p>$$\begin{aligned}
+\delta_t&=\frac{\tau_{+x}+\tau_{-x}}2=20\ \mu s,\\
+b_x&=\frac c2(\tau_{-x}-\tau_{+x})=0.04\ \mathrm m,\\
+b_y&=c(\delta_t-\tau_{+y})=0.03\ \mathrm m,\\
+b_z&=c(\delta_t-\tau_{+z})=0.02\ \mathrm m.
+\end{aligned}$$</p>
+<p>这些等式使用未舍入的合成时延；仅用表中七位小数反求时会有相应的舍入误差。$\ell_t=343\times20\times10^{-6}=0.00686$ m。四行的增广矩阵为</p>
+<p>$$\mathbf D=\begin{bmatrix}
+-1&0&0&1\\1&0&0&1\\0&-1&0&1\\0&0&-1&1
+\end{bmatrix}.$$</p>
+<p>它秩为4，二范数条件数约为3.23；这证明本例的四个未知参数可分开，不能证明某台设备能达到相应精度。留出方向的投影为 $0.6\times0.04+0.8\times0.03=0.048$ m，预测时延为 $-0.048/343+20\ \mu s\approx-119.9416910\ \mu s$。</p>
+<p>若误设 $\delta_t=0$，四行的等权位置最小二乘会得到 $(0.04,0.02314,0.01314)$ m。相反的 x 方向使该分量中的固定时延相消；y、z 每个方向只出现一次，便把 $c\delta_t=6.86$ mm 吸收到位置中。多给观测之前，应先检查拟合模型是否包含这些观测共有的未知量。</p>
+<p><strong>参考答案：更多场景仍需增广满秩。</strong> 共同俯仰 $30°$ 时，每个方向的 $u_z=1/2$。四条方向向量为</p>
+<p>$$\mathbf U=\begin{bmatrix}
+0&\sqrt3/2&1/2\\
+\sqrt3/2&0&1/2\\
+0&-\sqrt3/2&1/2\\
+-\sqrt3/2&0&1/2
+\end{bmatrix}.$$</p>
+<p>$\mathbf U$ 本身秩为3，但 $\mathbf D$ 的法向列恒为 $-1/2$，与常量列成比例，所以增广秩只有3。增加 $b_z$ 10 mm，同时增加 $\ell_t$ 5 mm，全部行的变化均为 $-(1/2)\times10+5=0$ mm。因此另一组基线 $(0.04,0.03,0.03)$ m与固定时延 $20+5000/343\approx34.5772595\ \mu s$ 产生完全相同的时延。</p>
+<p>已知方向多、方向矩阵满秩，都不能替代增广秩检查。同一俯仰再增加更多方位仍保留这项自由度；增加不同俯仰后也要重新检查整个增广矩阵，不能只数场景数量。</p>
+<p><strong>数值求解与边界。</strong> 有更多独立方向或测量误差时，用等权最小二乘：</p>
+<p>$$\begin{aligned}
+\hat{\vec x}&=\underset{\vec v\in\mathbb R^4}{\arg\min}
+ \|\mathbf D\vec v-c\vec\tau\|_2^2,\\
+\hat{\vec b}&=\hat{\vec x}_{1:3},\\
+\hat\delta_t&=\hat x_4/c,\\
+\hat{\vec\tau}&=\mathbf D\hat{\vec x}/c,\\
+\vec r_\tau&=\vec\tau-\hat{\vec\tau}.
+\end{aligned}\tag{3-21}$$</p>
+<p>这里 $\hat{\vec x}_{1:3}$ 表示前三个分量；$\vec r_\tau$ 是秒单位的拟合残差。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/core/baseline_calibration.py">唯一反求核</a>先核对实数有限输入、单位方向、正声速、长度与增广秩，再调用 <code>lstsq</code>；它不先形成 $\mathbf D^\top\mathbf D$，也不对秩不足输入悄悄返回一个伪逆代表解。返回值保留基线、固定时延、秩、条件数、预测时延和观测减预测的残差。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_ch03_baseline_calibration.py">独立数学测试</a>另以四条标量方程、同俯仰零空间和五观测的精确残差检验。</p>
+<p>恰好四个独立观测可以插值得到零训练残差，故零残差本身不是精度证据；应使用额外方向复测，必要时按已知的时延误差协方差加权。这个核采用等权拟合，没有估计误差协方差或定位准确率。如果声速也未知，把基线与声速同时乘以同一个正数不会改变 $\vec b/c$，时延不能单独确定米制尺度。错误方向、反射、方向相关相位误差、固定时延变化或时钟漂移，也不由满秩检查自动修复。</p>
+<p><strong>音频复算：先测固定频点相位，再求基线。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/examples/generate_baseline_audio.py">独立生成入口</a>生成六份数学合成音频，16 kHz、32000点、共同导出增益1。同一连续源 $F(t)$ 是幅度0.2的500 Hz正弦，活动区间 $[0.1,1.9)$ s，两端各有20 ms线性淡入淡出；共同传播基准为 $b_0=2$ ms。五个双通道场景均为 $x_0(t)=F(t-b_0)$、$x_1(t)=F(t-b_0-\tau_q)$，源参考另存为单声道。四训练方向后使用 $(0.6,0.8,0)$ 留出方向，声源、几何与时延模型相同。</p>
+<ul>
+<li><a href="baseline_audio/baseline_source.wav">源参考：单声道</a><audio class="audio-sample" controls preload="none" aria-label="源参考：单声道" src="baseline_audio/baseline_source.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="baseline_audio/baseline_train_px.wav">$+x$训练：双声道</a><audio class="audio-sample" controls preload="none" aria-label="$+x$训练：双声道" src="baseline_audio/baseline_train_px.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="baseline_audio/baseline_train_nx.wav">$-x$训练：双声道</a><audio class="audio-sample" controls preload="none" aria-label="$-x$训练：双声道" src="baseline_audio/baseline_train_nx.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="baseline_audio/baseline_train_py.wav">$+y$训练：双声道</a><audio class="audio-sample" controls preload="none" aria-label="$+y$训练：双声道" src="baseline_audio/baseline_train_py.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="baseline_audio/baseline_train_pz.wav">$+z$训练：双声道</a><audio class="audio-sample" controls preload="none" aria-label="$+z$训练：双声道" src="baseline_audio/baseline_train_pz.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="baseline_audio/baseline_heldout.wav">留出方向：双声道</a><audio class="audio-sample" controls preload="none" aria-label="留出方向：双声道" src="baseline_audio/baseline_heldout.wav">请使用上方 WAV 链接下载。</audio></li>
+</ul>
+<p>每份记录统一取 $[2400,29600)$ 点，即 $[0.15,1.85)$ s，共27200点、850个500 Hz周期，避开所有传播和淡变边界。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/core/baseline_audio.py">连续源及测量核</a>先拟合余弦、正弦两列，写复相量 $z_m=C_m-\mathrm jD_m$，再求 $\tau=-\operatorname{Arg}(z_1z_0^*)/(2\pi\times500)$。这一步<strong>依赖先验 $|\tau|\lt 1$ ms</strong>，500 Hz主值相位只选取这一周期内的时延；它不是宽带 GCC、相位解缠或盲同步器。源参考不参加时延拟合，两个通道各自的相量提供相对相位。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">反求量</th>
+<th scope="col" style="text-align: right;">理想值／合成浮点</th>
+<th scope="col" style="text-align: right;">实际PCM反求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$b_x$ / mm</td>
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">39.99737</td>
+</tr>
+<tr>
+<td>$b_y$ / mm</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">30.00100</td>
+</tr>
+<tr>
+<td>$b_z$ / mm</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">20.00016</td>
+</tr>
+<tr>
+<td>$\delta_t$ / μs</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">19.99965</td>
+</tr>
+</tbody>
+</table></div>
+<p>理想留出时延为 −119.9416910 μs；PCM训练反求的参数预测 −119.9397665 μs，留出PCM自身测得 −119.9396273 μs。观测减预测约为 $+0.0001392\ \mu s$，预测减理想真值约为 $+0.0019245\ \mu s$，两者参考不同；留出残差小不能证明误差相对真值同样小。<a href="baseline_audio/MANIFEST.json">独立音频清单</a>分别保留解析时延、合成浮点测量、实际PCM测量、训练反求和留出比较。</p>
+<p>这组文件通过连续源函数在相应时刻求值，没有运行采样后分数延迟滤波器。它们独立于主109份音频，不含房间、噪声、设备测量或主观评分；正弦模型的高相位精度不能当作实录系统的标定精度。先调低音量再试听。执行生成入口的 <code>--check</code> 只核对现有文件和当前源，不重写资产。</p>
 <p>更多跨章练习和音频条件见<a href="research/05_exercises_and_audio.html">实验总览</a>。整数延迟音频只提供已知通道时差；E03-14 则提供连续源模型的差分失配对照。两者都没有模拟真实麦克风外壳，不能据此推断挡板收益或设备标定精度。<a href="research/05_exercises_and_audio.html#25-双麦差分的增益失配与理想校正">差分音频参数与读回记录</a>另列量化与试听边界。</p>
 <hr />
 <blockquote>

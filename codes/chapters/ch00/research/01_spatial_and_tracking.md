@@ -871,13 +871,13 @@ Chan–Ho 的 1994 方法把距离差定位整理为两阶段加权代数估计�
 
 同题的一次快拍反例 $\vec x=[1,0,1]^\top$ 给出直接增广特征值 $-1/3,2/3,2/3,5/3$。空间平滑后的值则为 $1/36,1/9,1/9,25/36$。这些结果既用本书独立 NumPy 外积求和与矩阵乘法复算，也已与固定 doatools 原方法的提取调用对齐；一次快拍仍没有恢复真实的两个声源。
 
-实际入口为[原方法审计工具](../../ch03/examples/audit_upstream_coarray.py)，结果保存于[严格 JSON 报告](../../ch03/reports/upstream_coarray.json)。工具执行 `da` 与默认 `ss`，对上述两个相同输入保存物理矩阵、滞后顺序、输出矩阵及特征值；期望来自独立逐滞后平均、直接 Toeplitz 填充、$\mathbf T\mathbf T^H/4$ 和手算特征值。逐元素绝对容差为 $10^{-14}$，两组实际最大矩阵差均为 0。把源幅度乘 2，即输入协方差乘 4，实际 DA 乘 4、SS 乘 16；缩放检查绝对容差为 $10^{-12}$。这些容差只用于此处固定的小规模输入，不是对任意尺度设备数据的通用验收限值。
+实际入口为[原方法审计工具](../../ch03/examples/audit_upstream_coarray.py)，当前结果保存于[执行合同报告](../../ch03/reports/upstream_coarray_contracts.json)，[原历史报告](../../ch03/reports/upstream_coarray.json)保留当时的字节与运行身份。工具执行 `da` 与默认 `ss`，对上述两个相同输入保存物理矩阵、滞后顺序、输出矩阵及特征值；期望来自独立逐滞后平均、直接 Toeplitz 填充、$\mathbf T\mathbf T^H/4$ 和手算特征值。逐元素绝对容差为 $10^{-14}$，两组实际最大矩阵差均为 0。把源幅度乘 2，即输入协方差乘 4，实际 DA 乘 4、SS 乘 16；缩放检查绝对容差为 $10^{-12}$。这些容差只用于此处固定的小规模输入，不是对任意尺度设备数据的通用验收限值。
 
-运行环境为 Python 3.13.12、NumPy 2.5.3、macOS arm64。固定源码引用已经移除的 `np.float_` 与 `np.complex_`；工具在提取定义的局部命名空间内分别提供 `float64`、`complex128`，不改全局 NumPy、不改上游文件。AST 提取保留选中的原定义体及装饰器，跳过模块导入与其他顶层代码，因此这是有明确相容脚手架的原方法调用，不是完整原包运行。工具记录自身 SHA、完整锁表 SHA、条目 SHA、七个源码文件及许可文件的 SHA/Git blob、实际 HEAD 和执行前后的干净状态；[独立测试](../../../../tests/test_codes_ch03_upstream_coarray.py)另以手写矩阵和解析分数核对。
+运行环境为 Python 3.13.12、NumPy 2.5.3、macOS arm64。固定源码引用已经移除的 `np.float_` 与 `np.complex_`；工具在提取定义的局部命名空间内分别提供 `float64`、`complex128`，不改全局 NumPy、不改上游文件。AST 提取保留选中的原定义体及装饰器，跳过模块导入与其他顶层代码，因此这是有明确相容脚手架的原方法调用，不是完整原包运行。当前工具用严格 JSON 读取锁表，隔离会改变 Git 目标或配置的环境变量，核对官方 origin、固定 HEAD、七个所用源码与许可的 SHA/Git blob，以及执行前后洁净状态。完整稀疏选集另由获取工具核验：此 doatools 工作区仍使用旧排除规则，真实状态是 `source_selection_mismatch`；限定原方法身份匹配与执行成功没有把它升级为选集通过。工具还记录自身和所调用公共工具的实际摘要；[独立测试](../../../../tests/test_codes_ch03_upstream_coarray.py)另以手写矩阵和解析分数核对。
 
 原始方法定位为 [Pal–Vaidyanathan 2010 §IV-A、p4172～4174 及 Caltech 所列勘误](https://authors.library.caltech.edu/records/e8ge0-xc746)。正式记录和勘误入口可追溯；本节不把源码对照称为原作者完整系统复现。
 
-默认运行 `.venv/bin/python -m codes.chapters.ch03.examples.audit_upstream_coarray` 只输出报告；明确加上 `--report codes/chapters/ch03/reports/upstream_coarray.json` 才根据当前真实执行写报告。已有固定缓存缺失、HEAD 不符、工作树变脏或源文件与 Git blob 不同都会失败，不联网获取或覆盖缓存。
+默认运行 `.venv/bin/python -m codes.chapters.ch03.examples.audit_upstream_coarray` 只输出报告；明确加上 `--report codes/chapters/ch03/reports/upstream_coarray_contracts.json` 才根据当前真实执行写新的当前报告；仓内其他路径、历史报告和符号链接父链在执行前拒绝，仓外普通报告路径也须通过路径检查。该有限写前检查不保证消除并发文件系统竞态。已有固定缓存缺失、HEAD 不符、工作树变脏或源文件与 Git blob 不同都会失败，不联网获取或覆盖缓存。
 
 #### 39.4 几何秩、相位歧义与方向域
 
@@ -973,6 +973,39 @@ Chan–Ho 的 1994 方法把距离差定位整理为两阶段加权代数估计�
 该文档直接指向[官方 AE 应用固定源码](https://github.com/Infineon/mtb-example-psoc-edge-ae-application/tree/955a61090acf7caddd75fc74161fc0fb40aa7ae5)。仓库根 `LICENSE` 是 Infineon EULA，不能仅因公开可读就将整个应用标为 Apache-2.0。不过 `proj_cm55/source/audio_enhancement_application/audio_enhancement/GeneratedSource/` 下的 `cy_afe_configurator_settings.c` 和 `.h` 各自明确写有 Apache-2.0 许可头。本书的[Git 来源锁表](../SOURCES.lock.json)只选择这两个配置文件，并保留根许可供核对；其余应用包装代码、配置器项目和核心库不因这两个文件的许可而变成开放源码。
 
 阅读配置头中的 `AFE_PARAM_ID_MIC_DIST`、`AFE_PARAM_ID_ANGLE_RANGE_A` 和 `AFE_PARAM_ID_ANGLE_RANGE_B`，可以追踪麦距与角域怎样进入部署接口；配置 C 文件保存生成的常量数组。它们由配置器生成，不能代替配置器算法源码，也不是可独立运行的波束形成器。本节没有构建、刷写或执行 Infineon 应用；涉及核心库的算法性能不由这两个配置文件证明。
+
+
+#### 39.9 已知方向如何分开位置和固定通道时延
+
+正文 [E03-18](../../../../chapters/03_array-geometry.md#e03-18)限定为一个远场声源、已知外部方向和声速，未知量是一条三维麦克风基线及固定相对通道延迟。正延迟表示第二通道的观测更晚；它与传播时差相加，不能由一次朝向的相位差单独分开。
+
+把时间延迟乘声速得到长度后，设计矩阵的每行是 $[-\vec u_q^\top,1]$。四方向 $+x,-x,+y,+z$ 可解四个未知量，前两时差的平均先确定固定延迟。仅检查方向矩阵 $\mathbf U$ 的秩还不够：四方位同俯仰30°时，$\mathbf U$ 秩3，但常数列与高度列相关；高度加1cm同时延迟加约14.5773μs，全部观测不变。改变正则化不能补出没有采集到的信息。
+
+[唯一教学核](../../ch03/core/baseline_calibration.py)使用增广矩阵最小二乘，秩不足时明确拒绝。六份[独立合成音频](../../ch03/baseline_audio/MANIFEST.json)从真实PCM相量读回四训练方向的时差，并用未参与拟合的方向检验预测；这是给定模型的数值闭环，没有从未知房间或机器人轨迹估计方向。500Hz单音只在已知总时差绝对值小于1ms时可用相位主值直接反推；整数周歧义、任意频率相关电子相位、声速未知尺度和时钟漂移须另建模型。
+
+#### 39.10 异步多阵列标定增加了哪些观测
+
+已知方向的一条基线线性逆问题、同步麦克风的几何自标定，以及独立设备的时钟标定有不同未知量。固定电子延迟不随记录时间变化；采样时钟速率误差则使时间差随时间积累。把首设备的相对时间偏移设为零，只是选择参考，不能据此认定所有采样时钟已经同步。
+
+| 原始路线 | 输入与额外前提 | 求解目标和关键改变 | 本书当前证据 |
+|---|---|---|---|
+| [Gburrek等2021，§1～2](https://link.springer.com/article/10.1186/s13636-021-00210-x) | 各节点已知阵内几何、阵内通道同步；节点粗时间同步关联同一源段，方向及声学距离估计；本文为二维 | 联合恢复节点几何，以距离提供尺度；该路线不要求跨节点精确TDOA | 已读原文，未执行作者系统或设备 |
+| [Wang等2024预印本v1，§II～III](https://arxiv.org/html/2405.19813v1) | 已知阵内几何、阵内同步，跨阵列TDOA/DOA与声源运动的里程计 | 同时建模节点位姿、固定偏移、速率漂移及源位置；雅可比秩给局部可辨识条件 | 原文模型与秩条件已读；没有将局部可辨识写成全局唯一或成功率保证 |
+| [Zhang等2025预印本v1，§II～III](https://arxiv.org/html/2502.06195v1) | 时间TDOA-S、空间TDOA-M、DOA、里程计和已知事件时间间隔 | 利用同阵跨事件时差与同事件跨阵时差的不同时间项，初始化后做加权非线性拟合 | 固定作者链接源码静态核；未运行MATLAB、DOA/里程计整链或实录数据 |
+
+表内论文年份和节号绑定所链版本，2024与2025两项按预印本介绍，不猜测最终出版版本或通用工业默认。观测更多是否有用取决于它们提供的独立信息；相同角度覆盖、共同参考误差和额外先验须一起检查。没有同一数据、坐标约定、时间基准与评分协议，不能把三条路线按论文数字排序。
+
+2025路线的时间TDOA-S包含本节点漂移乘已知事件间隔，空间TDOA-M包含节点间相对offset和相对drift项。原 [gt_generation.m](https://github.com/AISLAB-sustech/Hybrid-TDOA-Multi-Calib/blob/4cc21cb06b9f82f83cc90d65a418f2b100748254/gt_generation.m#L24)固定首阵列位姿及相对offset，却仍估首阵列drift；已知事件间隔提供时间尺度。实录入口从 `dt.mat` 读间隔并从位移数据构造里程计，这些输入不能在“只靠录音标定”的表述里省掉。
+
+作者预印本链接的 [Hybrid固定源码](https://github.com/AISLAB-sustech/Hybrid-TDOA-Multi-Calib/tree/4cc21cb06b9f82f83cc90d65a418f2b100748254)在GitHub标为 `zcj808` 项目的fork。核实于2026-10-04，main/HEAD为完整提交 `4cc21cb06b9f82f83cc90d65a418f2b100748254`；[来源锁表](../SOURCES.lock.json)仅登记 `hybrid-tdoa-multi-calib`，许可为 `NOASSERTION`，不自动获取或随书复制。根列表与四个普通许可候选请求未建立代码许可，不据此断言完整树没有任何授权。
+
+读码顺序为 `sim_main.m` 或 `real_main.m` → `init_estimator.m` → `GN_Solver.m` → `compute_J.m`，再核 `gt_generation.m` 的时间基准及 `high2low.m/low2high.m` 的参考参数。DOA前端另读 [SRP-PHAT-DOA.py:351～404](https://github.com/AISLAB-sustech/Hybrid-TDOA-Multi-Calib/blob/4cc21cb06b9f82f83cc90d65a418f2b100748254/SRP-PHAT-DOA.py#L351)。该入口使用已知平面六麦环，在394行主动取方向z分量的绝对值，395行翻转y；上半球选择来自先验，不能说平面阵凭声学独立辨出上下两侧。Jacobian的局部DOA用接收传播方向，本书 $\vec u$ 指向声源，适配须核对符号和坐标变换。
+
+固定静态身份中，README的SHA-256为 `c54031c5dd6b4537249a4e5f6933dfe121b1dc97ccdc11cb7ba3f6193eed7a77`，`compute_J.m`为 `fd82d0e8dc9f9d7937b870557c595043d96ada74c7eeb5984a2f32b04238f42b`。这些身份只追溯已读响应，不等于完成本地选集取得、依赖构建或原系统运行。
+
+静态检查还发现几个复现前须核对的范围：仿真入口首段含 `clc7`；GN用正规方程并按时间截断；仿真只保存收敛试次，随后统计中间四分位样本；`compute_error.m`用旋转后的单个固定向量夹角，并非完整SO(3)测地旋转误差。SRP配置声速346m/s，实录数据构造/求解配置另设340m/s。这里只记录原文件配置与实现定义，没有虚构运行报错或判定设备误差；尚未运行MATLAB、PyTorch前端、OneDrive音频、`.mat`真值或完整比较。
+
+建议实验从E03-18的满秩与同俯仰退化开始，再把方向测量噪声、错误声速、固定延迟和随时间变化的时钟项分别加入。进入非线性多阵列实验时，应先固定参考位姿、相对offset和事件时间基准，使用留出事件报告残差、对齐后几何误差及失败分母。该段是实验设计，不是已经执行的上游结果。
 
 ### 40. IMM 多运动模型交互
 

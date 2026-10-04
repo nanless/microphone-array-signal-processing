@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>导读与导航 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="50383d27a8cc"><style>
+<meta name="source-digest" content="17f5777effb6"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -515,7 +515,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>共线阵列无法分辨绕阵列轴的方位，继续在同一直线上增加麦克风也不能消除这种几何模糊。端射附近的时延对角度变化不敏感，同样的时延误差会对应更大的角度误差。</p>
 <p>本章归纳四条设计规律：孔径和波长的比值影响分辨率；圆阵在水平面各方向都能利用孔径；挡板会改变阵列流形；增加麦数能改善白噪声增益和统计稳定性，但收益取决于几何、频段和噪声场。</p>
 <p>本书的网格化稀疏阵算例只占用密集参考网格中的部分候选位置，再把麦对位置差组织成差分协同阵；一般稀疏阵设计也可连续选址，不要求预设网格。例子中的 6 麦嵌套阵产生 23 个连续的有符号滞后；要把这些滞后用于子空间定位，还需构造虚拟协方差并做空间平滑或等价重构。</p>
-<p>E03-15～17分别复算带噪参考的标定偏差、近共面满秩几何的线性分量敏感性，以及逐频消除未知源幅后的方向证据；多频试听使用独立清单。</p>
+<p>E03-15～18分别复算带噪参考的标定偏差、近共面满秩几何的线性分量敏感性、逐频消除未知源幅后的方向证据，以及已知方向下的位置与固定通道时延反求。多频几何和四方向标定使用各自独立的音频清单；留出方向检验与训练拟合分开。</p>
 <p>读者可以据此说明阵列形态怎样限制可观测方向、孔径和无混叠频带，并按覆盖范围、同步条件和安装空间筛选几何方案。</p>
 <span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-1465331363"><a href="04_doa-estimation.html">04 · 声源定位 DOA 估计</a></h3>
 <p>7 张图，较难。DOA 估计判断声音相对指定坐标系从哪个方向传来。本章算法种类多，建议先读时差与扫描，再读子空间与学习方法。</p>
@@ -1288,7 +1288,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <pre><code class="language-bash">.venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 </code></pre>
 <p>要复现生成过程时，再按<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/scripts/README.md">构建说明</a>生成音频、重画相关图并核验。附录 B 的 <a href="13_appendix-guide.html#sec-13-7">§13.7</a>列出 72 张图的复现入口；房间题重生需固定版本的独立环境和新输出目录。图有问题时修改绘图源，音频有问题时修改生成源。</p>
-<p>另有 335 道带答案的<a href="research/05_exercises_and_audio.html">章节代码练习与音频实验</a>，覆盖第 1～11 章、两篇扩展专题与附录 A/B，使用 E01-01、E14-01、E15-01 等稳定编号。第 6 章 E06-07～E06-20 包含算法边界手算与子带、IPNLMS、RLS、Kalman 的小规模复算；附录 B 的 E13-03～10 复算房间结果、相位与来源证据；E13-11～14检验TAC共享结构、数值尺度、时间条件化与同DRR音频。每道题对应输入、执行代码和可核查结果；附录 B 的 1～17 题另用一套编号。</p>
+<p>另有 336 道带答案的<a href="research/05_exercises_and_audio.html">章节代码练习与音频实验</a>，覆盖第 1～11 章、两篇扩展专题与附录 A/B，使用 E01-01、E14-01、E15-01 等稳定编号。第 6 章 E06-07～E06-20 包含算法边界手算与子带、IPNLMS、RLS、Kalman 的小规模复算；附录 B 的 E13-03～10 复算房间结果、相位与来源证据；E13-11～14检验TAC共享结构、数值尺度、时间条件化与同DRR音频。每道题对应输入、执行代码和可核查结果；附录 B 的 1～17 题另用一套编号。</p>
+<p><a id="audio-assets"></a></p>
 <p>音频按生成模型和证据用途选择，以下各行独立管理。试听前先调低播放音量；网页控件默认不自动播放，载入文件和客观读回检查不等于人工听测。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
@@ -1318,6 +1319,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td><a href="sweep_audio/MANIFEST.json">数字扫频与路径辨识</a></td>
 <td>4 个</td>
 <td>已知激励和完整、加噪、截尾响应；分开浮点与PCM的全IR及已知支持评分，不是实房间测量或谐波分离</td>
+</tr>
+<tr>
+<td><a href="baseline_audio/MANIFEST.json">已知方向基线与固定时延</a></td>
+<td>6 个</td>
+<td>四训练方向与一个留出方向的双声道观测、单声道源；稳定窗PCM相位读回，不是盲标定或设备实测</td>
 </tr>
 <tr>
 <td><a href="stft_audio/MANIFEST.json">有限窗STFT卷积</a></td>
@@ -1411,7 +1417,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 </tbody>
 </table></div>
-<p>主清单按章保存，每组使用共同导出增益。它包括空间处理与极性/相关噪声反例，回声和去混响的参考、更新及损伤例子，以及时钟、插值、断流、AGC、分块卷积和 FIR 选型实验。二十套独立合成资产（共119个WAV）及4个真实录音摘录与派生文件均不计入主 109 个样本，生成条件和评分参考不能互相替代。</p>
+<p>主清单按章保存，每组使用共同导出增益。它包括空间处理与极性/相关噪声反例，回声和去混响的参考、更新及损伤例子，以及时钟、插值、断流、AGC、分块卷积和 FIR 选型实验。二十一套独立合成资产（共125个WAV）及4个真实录音摘录与派生文件均不计入主 109 个样本，生成条件和评分参考不能互相替代。</p>
 <p>已有随仓样本可先只读核对，无需先重写文件：</p>
 <pre><code class="language-bash">.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py --check
 .venv/bin/python codes/chapters/ch02/examples/prepare_real_recordings.py --check

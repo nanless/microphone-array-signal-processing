@@ -1,8 +1,8 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 106 个 Git 上游项目；已在 `codes/chapters/ch00/upstream/_downloads/` 取得 92 个独立源码工作区。其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件，DiCoW v1 演示与 TS-ASR-Whisper v1 训练源码于 2026-09-28 按固定提交取得。2026-09-30 新增原作者湿空气声速模型，2026-10-01取得SAID及NeMo WPE固定源码，2026-10-02取得TAC四文件，2026-10-04另取得作者WOLA-DANSE、paderwasn与TI-DANSE+ batch三个限定源码选集，并取得WASN的11个与LibriCSS的27个源码/说明/许可文件。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 107 个 Git 上游项目；已在 `codes/chapters/ch00/upstream/_downloads/` 取得 92 个独立源码工作区。其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件，DiCoW v1 演示与 TS-ASR-Whisper v1 训练源码于 2026-09-28 按固定提交取得。2026-09-30 新增原作者湿空气声速模型，2026-10-01取得SAID及NeMo WPE固定源码，2026-10-02取得TAC四文件，2026-10-04另取得作者WOLA-DANSE、paderwasn与TI-DANSE+ batch三个限定源码选集，并取得WASN的11个与LibriCSS的27个源码/说明/许可文件。
 
-当前离线核验逐条比较完整源码包含规则及32条扩展名排除规则：69项通过、22项旧工作区仅有20条排除规则而记为 `source_selection_mismatch`、14项仅登记来源，AEC Challenge 的5个真实录音有本地变动而记为失败。旧工作区均保留，不自动补规则或删除文件。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+当前离线核验逐条比较完整源码包含规则及32条扩展名排除规则：69项通过、22项旧工作区仅有20条排除规则而记为 `source_selection_mismatch`、15项仅登记来源，AEC Challenge 的5个真实录音有本地变动而记为失败。旧工作区均保留，不自动补规则或删除文件。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”表示本地存在独立来源工作区；是否符合当前提交、工作区状态、指定入口和完整选集政策，以状态报告分别判断。取得源码不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -27,6 +27,7 @@ SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构�
 
 | 项目与固定版本 | 对应算法或工程功能 | 代码许可摘要 | 本地获取范围 |
 |---|---|---|---|
+| [Hybrid-TDOA作者链接](https://github.com/AISLAB-sustech/Hybrid-TDOA-Multi-Calib/tree/4cc21cb06b9f82f83cc90d65a418f2b100748254) | 时间/空间TDOA、DOA与里程计的异步多阵列位姿/时钟标定 | NOASSERTION；2026-10-04根列表及四许可候选请求未建立代码许可 | 仅索引固定提交和入口，未建立受管理本地工作树、未复制出版源码/音频/数据；原文件静态观察与未执行边界见空间研究§39.10 |
 | [作者WOLA-DANSE](https://github.com/AlexanderBertrandLab/Old_Code/tree/a24b73fcd2dc028659535d07bb08068b06108616) | v1.4有限WOLA、VAD统计、内/外权重时序 | `.m`文件头2010版权及三再分发条件，未标为标准BSD3 | 固定17586字节原`.m`已取得；不取四数据ZIP，不运行原MATLAB。14静态合同与独立数学控制另记 |
 | [paderwasn](https://github.com/fgnt/paderwasn/tree/cd7054fcf72da637e4a5e11f035e8979691faf70) | OnlineWACD、DWACD、STO及同步/波束源码 | MIT，固定根LICENSE原样保留 | 同步目录、source_extraction和直接实验入口已取；3原AST helper执行16例，不等于完整SRO/STO估计器或语音整链 |
 | [作者TI-DANSE+ batch](https://github.com/p-didier/tidanseplus_batch/tree/0fcc0da19ce9e50bafc978ce1f315bac610d4c0b) | 2025批量协方差与拓扑更新实验 | 同提交根LICENSE为MIT2026，README为GPL3-or-later2025；声明冲突如实保留 | 源码、配置和两许可声明已取到忽略独立工作区供研究；不随本书分发，不声称单一许可或运行原实验 |
