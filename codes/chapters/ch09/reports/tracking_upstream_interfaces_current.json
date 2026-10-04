@@ -1,0 +1,2020 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-04T16:43:46.069886+00:00",
+  "harness_sha256": "52273ebfbe456cc2d2fe03c235872fee5bbeaffa33b0be0ed86b26abff05a9b7",
+  "source_config_sha256": "e73d6446f7feb9827a661ac83c74d47e80bb4beee139e274f2569c9da7efb4de",
+  "source_lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+  "source_status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+  "actual_dependencies_sha256": {
+    "codes/chapters/ch09/examples/audit_tracking_upstream_interfaces.py": "52273ebfbe456cc2d2fe03c235872fee5bbeaffa33b0be0ed86b26abff05a9b7",
+    "codes/chapters/ch04/core/upstream_contracts.py": "8400275d56d40d54a89d6093a4d0646cba4d4f858f8fbeaea4d1ca60f34b90c4",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
+    "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
+  },
+  "sources": {
+    "filterpy": {
+      "files": {
+        "LICENSE": "8ffce1097f1b1c0fba42e4449ef49aa05cb7b45566dd0989407839dba07af99c",
+        "filterpy/__init__.py": "329536b1ff39c3fdc3621983a98ecd0ad4a2327ea0694750f46d6358a89fe67e",
+        "filterpy/common/helpers.py": "45ac0d338a5ae96caae37ccaced7ad1e45a4d848da17d4a8023e59213ef62f02",
+        "filterpy/kalman/EKF.py": "44421460b96bc911e2cf81ca97009d84594de5a448be1c8a3a5de752575a547a",
+        "filterpy/kalman/IMM.py": "22b86f0fef3989445e61243cfe78f1b141ab373622a4583c249ba34f2d9ef556",
+        "filterpy/kalman/kalman_filter.py": "602923a445aa167a43a721bef5b8e17bb31b0f43e1b08c880f414460eebcf689",
+        "filterpy/kalman/sigma_points.py": "cfa457511eb6f1dbe95f452e1b2e5b489187b64707c5e7bc2b15f30dad17df9e",
+        "filterpy/kalman/unscented_transform.py": "3c499c584c7f6e3f0091b1817853926533a80efa689285d7a4fcfa73bd55be75",
+        "filterpy/stats/stats.py": "576b407938a36b7292f862cf414527e1adc8419d19241f529b6ec2942f31f374"
+      },
+      "revision": "3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33"
+    },
+    "stonesoup": {
+      "files": {
+        "LICENSE": "2462f3d8a857f601e266f048a4ff051366c1e05f098cf3a1524eaf922f879815",
+        "stonesoup/mixturereducer/gaussianmixture.py": "ac8d5eacebb7e2e3458ab7125707915b77f57e23b9b19e87c2c8d52c4b803aa4"
+      },
+      "revision": "8d1edeb07ef8505ed065cbef435cfb5e517d9bdc"
+    }
+  },
+  "config": {
+    "imm": {
+      "means": [
+        0.0,
+        10.0
+      ],
+      "variances": [
+        1.0,
+        4.0
+      ],
+      "mu": [
+        0.75,
+        0.25
+      ],
+      "transition_rows_old_columns_new": [
+        [
+          0.9,
+          0.1
+        ],
+        [
+          0.2,
+          0.8
+        ]
+      ],
+      "F": 1.0,
+      "Q": 0.0,
+      "H": 1.0,
+      "R": 1.0,
+      "predict_only_steps": 3,
+      "stale_likelihood_sequence": [
+        "predict",
+        "update(0)",
+        "predict",
+        "update(None)"
+      ]
+    },
+    "ekf": {
+      "x": 1.0,
+      "P": 1.0,
+      "F": 2.0,
+      "Q": 0.0,
+      "R": 1.0,
+      "z": 4.0,
+      "h": "x**2",
+      "HJacobian": "2*x"
+    },
+    "ekf_angle": {
+      "x_degrees": 179.0,
+      "z_degrees": -179.0,
+      "P": 1.0,
+      "R": 1.0
+    },
+    "unscented_transform": {
+      "mean": 0.0,
+      "variance": 1.0,
+      "alpha": 1.0,
+      "beta": 2.0,
+      "kappa": 0.0,
+      "transform": "x**2"
+    },
+    "reducer": {
+      "prune_threshold": 0.2,
+      "max_number_components": 1,
+      "prune_weights": [
+        0.1,
+        0.4,
+        0.5
+      ],
+      "all_pruned_weights": [
+        0.1,
+        0.1
+      ],
+      "truncate_weights": [
+        0.4,
+        0.6
+      ],
+      "merge_weights": [
+        0.8,
+        0.7
+      ],
+      "component_means": "zero-based component index",
+      "component_variance": 1.0
+    },
+    "scope": "dimensionless scalar arithmetic except explicitly labelled degree example; no acoustic data or hardware timing"
+  },
+  "source_identities": {
+    "filterpy": {
+      "project": "filterpy",
+      "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/filterpy",
+      "origin": "https://github.com/rlabbe/filterpy.git",
+      "head": "3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33",
+      "lock_entry": {
+        "id": "filterpy",
+        "url": "https://github.com/rlabbe/filterpy.git",
+        "revision": "3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33",
+        "license": "MIT",
+        "fetch_enabled": true,
+        "scope": "Kalman, EKF, UKF and particle-filter references",
+        "acquisition": "independent_source_checkout",
+        "note": "Angle residuals, timestamps and discrete process noise require explicit adaptation.",
+        "entrypoints": [
+          "filterpy/kalman/kalman_filter.py",
+          "filterpy/kalman/EKF.py",
+          "filterpy/kalman/UKF.py",
+          "filterpy/kalman/IMM.py",
+          "filterpy/monte_carlo/resampling.py",
+          "LICENSE",
+          "filterpy/gh/gh_filter.py",
+          "filterpy/common/discretization.py",
+          "filterpy/kalman/sigma_points.py",
+          "filterpy/kalman/unscented_transform.py"
+        ]
+      },
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+      "source_document_paths": {
+        "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+        "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+      },
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+      "recorded_complete_selection": {
+        "id": "filterpy",
+        "revision": "3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33",
+        "status": "source_selection_mismatch",
+        "missing_entrypoints": [],
+        "execution": "not_run",
+        "dependency_validation": "not_run",
+        "asset_policy": "sparse_source_checkout",
+        "requested_source_paths": [
+          "repository"
+        ],
+        "observed_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz"
+        ],
+        "expected_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "source_selection_verified": false
+      },
+      "live_complete_selection": {
+        "id": "filterpy",
+        "revision": "3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33",
+        "status": "source_selection_mismatch",
+        "source_selection_verified": false,
+        "missing_entrypoints": [],
+        "observed_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz"
+        ],
+        "expected_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "requested_source_paths": [
+          "repository"
+        ],
+        "asset_policy": "sparse_source_checkout"
+      },
+      "used_source_identity": "verified",
+      "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+      "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+      "ignored_members_before": [],
+      "used_files": {
+        "LICENSE": {
+          "sha256": "8ffce1097f1b1c0fba42e4449ef49aa05cb7b45566dd0989407839dba07af99c",
+          "bytes": 1084,
+          "git_blob": "558870702fa539764c1efba5028240066b9c960e",
+          "actual_blob": "558870702fa539764c1efba5028240066b9c960e"
+        },
+        "filterpy/__init__.py": {
+          "sha256": "329536b1ff39c3fdc3621983a98ecd0ad4a2327ea0694750f46d6358a89fe67e",
+          "bytes": 689,
+          "git_blob": "1ce33a237280fe8fd99bd1fbdbb21c73337c1eb5",
+          "actual_blob": "1ce33a237280fe8fd99bd1fbdbb21c73337c1eb5"
+        },
+        "filterpy/common/helpers.py": {
+          "sha256": "45ac0d338a5ae96caae37ccaced7ad1e45a4d848da17d4a8023e59213ef62f02",
+          "bytes": 14251,
+          "git_blob": "108a3ae9fb5ff8b3d11588473f3d1d4f0318880c",
+          "actual_blob": "108a3ae9fb5ff8b3d11588473f3d1d4f0318880c"
+        },
+        "filterpy/kalman/EKF.py": {
+          "sha256": "44421460b96bc911e2cf81ca97009d84594de5a448be1c8a3a5de752575a547a",
+          "bytes": 14027,
+          "git_blob": "5e83aec01b93daed6ed7221cb4842e35f081fa1a",
+          "actual_blob": "5e83aec01b93daed6ed7221cb4842e35f081fa1a"
+        },
+        "filterpy/kalman/IMM.py": {
+          "sha256": "22b86f0fef3989445e61243cfe78f1b141ab373622a4583c249ba34f2d9ef556",
+          "bytes": 8683,
+          "git_blob": "84808fa4cdf913a606822375c67e8e0000754540",
+          "actual_blob": "84808fa4cdf913a606822375c67e8e0000754540"
+        },
+        "filterpy/kalman/kalman_filter.py": {
+          "sha256": "602923a445aa167a43a721bef5b8e17bb31b0f43e1b08c880f414460eebcf689",
+          "bytes": 58739,
+          "git_blob": "994b5969f8598e820583f0bd4e17c6e012ccbf42",
+          "actual_blob": "994b5969f8598e820583f0bd4e17c6e012ccbf42"
+        },
+        "filterpy/kalman/sigma_points.py": {
+          "sha256": "cfa457511eb6f1dbe95f452e1b2e5b489187b64707c5e7bc2b15f30dad17df9e",
+          "bytes": 16341,
+          "git_blob": "37875ae177be18dac5baf565d9e36e4309b5d979",
+          "actual_blob": "37875ae177be18dac5baf565d9e36e4309b5d979"
+        },
+        "filterpy/kalman/unscented_transform.py": {
+          "sha256": "3c499c584c7f6e3f0091b1817853926533a80efa689285d7a4fcfa73bd55be75",
+          "bytes": 3548,
+          "git_blob": "871add0b2a6a35b249ca47cef4a76066e8bf23c2",
+          "actual_blob": "871add0b2a6a35b249ca47cef4a76066e8bf23c2"
+        },
+        "filterpy/stats/stats.py": {
+          "sha256": "576b407938a36b7292f862cf414527e1adc8419d19241f529b6ec2942f31f374",
+          "bytes": 32181,
+          "git_blob": "b30301217911c486b1830e99999967371f12fb45",
+          "actual_blob": "b30301217911c486b1830e99999967371f12fb45"
+        },
+        "docs/conf.py": {
+          "sha256": "574d7ec492f020bdd8821620fda69fe63f7736fe082b30fee5a6393788a79c37",
+          "bytes": 11304,
+          "git_blob": "8ece64967bce74fa6e0e3f3c948d5eaeace1381d",
+          "actual_blob": "8ece64967bce74fa6e0e3f3c948d5eaeace1381d"
+        },
+        "filterpy/common/__init__.py": {
+          "sha256": "82414368398c2173deff71b332bce73aae9c2be40392aefd2b227ff4e7dbf568",
+          "bytes": 521,
+          "git_blob": "006b9c173e2c6e90681286b8e4aac856cd39048a",
+          "actual_blob": "006b9c173e2c6e90681286b8e4aac856cd39048a"
+        },
+        "filterpy/common/discretization.py": {
+          "sha256": "b3e625792e777bfef93f8a7d9020624c8750f66fc482eeec7b3b2c5ae2fdea96",
+          "bytes": 9087,
+          "git_blob": "697d67da5ec990d818738b4e772d3d200f2327d5",
+          "actual_blob": "697d67da5ec990d818738b4e772d3d200f2327d5"
+        },
+        "filterpy/common/kinematic.py": {
+          "sha256": "17b04d743f82224995ad785cedc7756e2ce38a487aeed0ae2f5966165f2e9d8d",
+          "bytes": 4793,
+          "git_blob": "1201d7c7411a223cb8bc982b639b7f63090838d2",
+          "actual_blob": "1201d7c7411a223cb8bc982b639b7f63090838d2"
+        },
+        "filterpy/common/tests/test_discretization.py": {
+          "sha256": "2e51112a0f6824227e3250cdd1060bf4c30a9cf6f51bce97f68d3e14f6d9ac24",
+          "bytes": 2662,
+          "git_blob": "87e6fd5b5849a9723c97300d5d165bcb5dea0841",
+          "actual_blob": "87e6fd5b5849a9723c97300d5d165bcb5dea0841"
+        },
+        "filterpy/common/tests/test_helpers.py": {
+          "sha256": "4ad567cf180463cf07535acbfc12ec841e503f7edfd4fb5199148bef7f269d1b",
+          "bytes": 5440,
+          "git_blob": "adab97abb67f33913934b62db234761614f50e81",
+          "actual_blob": "adab97abb67f33913934b62db234761614f50e81"
+        },
+        "filterpy/discrete_bayes/__init__.py": {
+          "sha256": "f2d1c9cde9bd5e3e515d5e1c3d0f2317d9776ff4cd5252d80ba6afe9853ec0d8",
+          "bytes": 543,
+          "git_blob": "fac5c0110c945dbb8124030d8e33164cf935b34c",
+          "actual_blob": "fac5c0110c945dbb8124030d8e33164cf935b34c"
+        },
+        "filterpy/discrete_bayes/discrete_bayes.py": {
+          "sha256": "bbf3535328138049c8def6af7ac947d53c5162cffb9fc0201138d314d17b6026",
+          "bytes": 3420,
+          "git_blob": "084ba8c67975d1453ace33891ada838cdccf5136",
+          "actual_blob": "084ba8c67975d1453ace33891ada838cdccf5136"
+        },
+        "filterpy/discrete_bayes/tests/test_discrete_bayes.py": {
+          "sha256": "23e43d4d21f5e579a511ed2042a656a320b0fc411c61bd272e5310cd31a540c0",
+          "bytes": 1201,
+          "git_blob": "b8d0d968824a8efbf7f1cda29903c0496fad9c48",
+          "actual_blob": "b8d0d968824a8efbf7f1cda29903c0496fad9c48"
+        },
+        "filterpy/examples/GetRadar.py": {
+          "sha256": "fef13f4ddc019c9412f0ce409c983771760740c78efb953eee8d9ec92af5a588",
+          "bytes": 1118,
+          "git_blob": "ae1dbf35a8e81c44955a1884eefc2db6e1e2d652",
+          "actual_blob": "ae1dbf35a8e81c44955a1884eefc2db6e1e2d652"
+        },
+        "filterpy/examples/RadarUKF.py": {
+          "sha256": "e128a7e52ac6c0bcd6014f92085d93cebaeeec79f5803f9ae4829e019ac6f714",
+          "bytes": 1809,
+          "git_blob": "1bd8a7aebbbb9a1c0ba550ec648230d18e3799d6",
+          "actual_blob": "1bd8a7aebbbb9a1c0ba550ec648230d18e3799d6"
+        },
+        "filterpy/examples/__init__.py": {
+          "sha256": "ae9f965bc739b628073d932da281da491539b25a6d4c2f33d3d8666150fdbedb",
+          "bytes": 280,
+          "git_blob": "e8bd52ef77c623dc8d2ce76e0366df83bae11367",
+          "actual_blob": "e8bd52ef77c623dc8d2ce76e0366df83bae11367"
+        },
+        "filterpy/examples/bearing_only.py": {
+          "sha256": "79df3b63f9ed3c9a2aee46d385cd4566719392c872637c537830a23e3f8740d7",
+          "bytes": 2042,
+          "git_blob": "420d25d62bcf98f0781d4913b45bfb3a1af2bce5",
+          "actual_blob": "420d25d62bcf98f0781d4913b45bfb3a1af2bce5"
+        },
+        "filterpy/examples/radar_sim.py": {
+          "sha256": "8b5f8d09cf704ef4a22bf10a623f002ed531f61f3377cccfebcac4ed745948c3",
+          "bytes": 1210,
+          "git_blob": "245abaf2659dda93c5a218d0f2388995adba2dad",
+          "actual_blob": "245abaf2659dda93c5a218d0f2388995adba2dad"
+        },
+        "filterpy/gh/__init__.py": {
+          "sha256": "a29b919cf1e9e571149275afdf7d95b1701beb782100a187b1fd4bce44bd84d7",
+          "bytes": 464,
+          "git_blob": "636f116ff38295d91f214b13278041e75eceeeae",
+          "actual_blob": "636f116ff38295d91f214b13278041e75eceeeae"
+        },
+        "filterpy/gh/gh_filter.py": {
+          "sha256": "4d06fb43585a20bc1155b49c0c11aac36c898102f902377f372a12aa2818cad5",
+          "bytes": 28611,
+          "git_blob": "260109ff711893fa26e01550a3f087da7d665ef0",
+          "actual_blob": "260109ff711893fa26e01550a3f087da7d665ef0"
+        },
+        "filterpy/gh/tests/test_gh.py": {
+          "sha256": "b164b05bc9bd967e7da532fa6d8039224af9f10d0e94a1dc71f595cdfe0133e3",
+          "bytes": 3679,
+          "git_blob": "293b58e2c83cad4f324cf0a147b4c5a948e5548a",
+          "actual_blob": "293b58e2c83cad4f324cf0a147b4c5a948e5548a"
+        },
+        "filterpy/hinfinity/__init__.py": {
+          "sha256": "813cdc1f579a9ba0cba61005a55c61067b0e4573244422fca9591b749600a4f1",
+          "bytes": 548,
+          "git_blob": "6fbceb85da962cf44a83f86720eb941ece7ad7bb",
+          "actual_blob": "6fbceb85da962cf44a83f86720eb941ece7ad7bb"
+        },
+        "filterpy/hinfinity/hinfinity_filter.py": {
+          "sha256": "506a0ae1bc982a630805fef780cf44f1f5051508f5de4e6c15d3f7b56bb45deb",
+          "bytes": 8133,
+          "git_blob": "9ed320ea3f75d0b40cd8a0d364ed46071b1f6db5",
+          "actual_blob": "9ed320ea3f75d0b40cd8a0d364ed46071b1f6db5"
+        },
+        "filterpy/hinfinity/tests/test_hinfinity.py": {
+          "sha256": "336fe0b357079ac1647e517ff15865128b5ada1c338c97713c395de0528c7816",
+          "bytes": 1205,
+          "git_blob": "2e12fdbf5a3793c8b3cd3021dd9caeefb6f28685",
+          "actual_blob": "2e12fdbf5a3793c8b3cd3021dd9caeefb6f28685"
+        },
+        "filterpy/kalman/CubatureKalmanFilter.py": {
+          "sha256": "61e3d8cf30b465a418a022c955d559001d7008afee94b491cae4c2fd53ce5b00",
+          "bytes": 13231,
+          "git_blob": "bae2a1a57959377db7b04fd5f3aed9894ed73622",
+          "actual_blob": "bae2a1a57959377db7b04fd5f3aed9894ed73622"
+        },
+        "filterpy/kalman/UKF.py": {
+          "sha256": "7ee81aefbf0193f58f325d2c15496d526b7c97524dfd808b55f91bb71283d228",
+          "bytes": 28113,
+          "git_blob": "f8baf19c29e5c0fde519ee66da5cf3a78db34392",
+          "actual_blob": "f8baf19c29e5c0fde519ee66da5cf3a78db34392"
+        },
+        "filterpy/kalman/__init__.py": {
+          "sha256": "7d096353b901243edf948337fd85842bc98bb6a84c9d0232ca92ed6621ae38e2",
+          "bytes": 816,
+          "git_blob": "6809310af32125231379437c7998b9efac042750",
+          "actual_blob": "6809310af32125231379437c7998b9efac042750"
+        },
+        "filterpy/kalman/ensemble_kalman_filter.py": {
+          "sha256": "370a437e28d162deb35aa3b1c1f172bce6f65ec95a3a11327eb736a93ae08f22",
+          "bytes": 9086,
+          "git_blob": "83b9bb566bb25b0c7aa4af81553ebf583fe8c76f",
+          "actual_blob": "83b9bb566bb25b0c7aa4af81553ebf583fe8c76f"
+        },
+        "filterpy/kalman/fading_memory.py": {
+          "sha256": "17a563e8bb59ef7d4651f0603ae3754f34085c836805815b3d9c331d60c47db8",
+          "bytes": 14472,
+          "git_blob": "36c9dcc9f2ee7b92f1c3a3acdce860669804286d",
+          "actual_blob": "36c9dcc9f2ee7b92f1c3a3acdce860669804286d"
+        },
+        "filterpy/kalman/fixed_lag_smoother.py": {
+          "sha256": "7bfd94f0fc0ac59f943513f62fa0bd7a381ebd1be039167f2cb68deeb56b8ca1",
+          "bytes": 10157,
+          "git_blob": "d265fa172dbe6a4b9ace89d435c5cfeebe262b22",
+          "actual_blob": "d265fa172dbe6a4b9ace89d435c5cfeebe262b22"
+        },
+        "filterpy/kalman/information_filter.py": {
+          "sha256": "34ab0bfff4e1948febfa2c0d15926bc55b5f983c15acebc07ec2caf2a2beec0f",
+          "bytes": 12890,
+          "git_blob": "46724d3e025ee3abd87af753e3220b18e1c94bac",
+          "actual_blob": "46724d3e025ee3abd87af753e3220b18e1c94bac"
+        },
+        "filterpy/kalman/mmae.py": {
+          "sha256": "a7c236d64bbb3ea725040d2bff56672b71c8a5360ce35c486719742c7a86432b",
+          "bytes": 6370,
+          "git_blob": "f28d9debf353e55c4456ea170d910b9c0015eda1",
+          "actual_blob": "f28d9debf353e55c4456ea170d910b9c0015eda1"
+        },
+        "filterpy/kalman/square_root.py": {
+          "sha256": "4b1427585c143502a64fee92f7bd203c313c91590e39c09fe6e1b7327aca1ade",
+          "bytes": 10556,
+          "git_blob": "d776182a9a1ca01ef6aced38e421cf7d51a8d130",
+          "actual_blob": "d776182a9a1ca01ef6aced38e421cf7d51a8d130"
+        },
+        "filterpy/kalman/tests/test_ckf.py": {
+          "sha256": "7ffe1744471557d88343b5ef08b1f655630ac9403230fc37a27f789334c2cbf0",
+          "bytes": 1608,
+          "git_blob": "6fd4c3960df17d52848d76b1f2b0a0c3a39a5457",
+          "actual_blob": "6fd4c3960df17d52848d76b1f2b0a0c3a39a5457"
+        },
+        "filterpy/kalman/tests/test_ekf.py": {
+          "sha256": "9731fce0b833b536dbc4a93e2fc2f3287a38c416b6ddda383ea17b8231cab2c6",
+          "bytes": 2765,
+          "git_blob": "005985c3d2f9dfda9709421a17c418c8f254d89c",
+          "actual_blob": "005985c3d2f9dfda9709421a17c418c8f254d89c"
+        },
+        "filterpy/kalman/tests/test_enkf.py": {
+          "sha256": "38d1722b2d7e470b3a68b5230576f1ec0b24b1e6b9dce6cba2d06670ae0fc2f9",
+          "bytes": 3356,
+          "git_blob": "dd0e7b9e34e9c39ac40c85700a775864703e8957",
+          "actual_blob": "dd0e7b9e34e9c39ac40c85700a775864703e8957"
+        },
+        "filterpy/kalman/tests/test_fls.py": {
+          "sha256": "f8e8d48090b795a2e8cc79772f577e3f26435fe783ac73a9331096a32d1ae0cf",
+          "bytes": 3070,
+          "git_blob": "86e3a29ca0dbf39c47d832d337d0b9f706fa2b8a",
+          "actual_blob": "86e3a29ca0dbf39c47d832d337d0b9f706fa2b8a"
+        },
+        "filterpy/kalman/tests/test_fm.py": {
+          "sha256": "3051478ca7fa338bd2df184a5920064f946eed6a0b5fa85ed63dbfe84d267c3e",
+          "bytes": 2467,
+          "git_blob": "6294dd4c642a432f722ee01d4e5001f334a444d8",
+          "actual_blob": "6294dd4c642a432f722ee01d4e5001f334a444d8"
+        },
+        "filterpy/kalman/tests/test_imm.py": {
+          "sha256": "24ef0860a6641776de0fda3379eedcada8938b3a76f038ea7c7e1cbba8f694ee",
+          "bytes": 7459,
+          "git_blob": "aa71fc24480c4e55b5dd50bc3751819efca2c3b8",
+          "actual_blob": "aa71fc24480c4e55b5dd50bc3751819efca2c3b8"
+        },
+        "filterpy/kalman/tests/test_information.py": {
+          "sha256": "d46dfcaac227e94263a4f9cea1b997aee698e4b26a1d689bb986bd3620958564",
+          "bytes": 4555,
+          "git_blob": "978cf9f3f3fada29c27f377983dee9b251ab0a29",
+          "actual_blob": "978cf9f3f3fada29c27f377983dee9b251ab0a29"
+        },
+        "filterpy/kalman/tests/test_kf.py": {
+          "sha256": "8e056c0e32984ef8c74a13847d1e0e2c4a352d0322b1b6645c0530ea68023320",
+          "bytes": 18394,
+          "git_blob": "81bb958531680abb3c23e571fda6e53f45cbd108",
+          "actual_blob": "81bb958531680abb3c23e571fda6e53f45cbd108"
+        },
+        "filterpy/kalman/tests/test_mmae.py": {
+          "sha256": "d9db809adf81cb2b852bfed45a38f5cf3c84fb2f1548bcf1e83864a52567c68f",
+          "bytes": 5027,
+          "git_blob": "54cf9f1f729fbaa97e0ce59b1620d5be55008275",
+          "actual_blob": "54cf9f1f729fbaa97e0ce59b1620d5be55008275"
+        },
+        "filterpy/kalman/tests/test_rts.py": {
+          "sha256": "cbf6a450235a4b4aba4b45d3aeb884d65469e2c62d996d0a68ae8055d17b5d92",
+          "bytes": 1603,
+          "git_blob": "4d724881c37748171d997d20dd3573c1e3a1f41f",
+          "actual_blob": "4d724881c37748171d997d20dd3573c1e3a1f41f"
+        },
+        "filterpy/kalman/tests/test_sensor_fusion.py": {
+          "sha256": "0d46168182377fd13d5975fa22c1c2ddea0004c5a0759e5e9180afd8e0f19560",
+          "bytes": 3065,
+          "git_blob": "60d5abdb864826817d381f74918a67e4e6b21062",
+          "actual_blob": "60d5abdb864826817d381f74918a67e4e6b21062"
+        },
+        "filterpy/kalman/tests/test_sqrtkf.py": {
+          "sha256": "d3f0e68b7192afc89fd8ac11966dd16c04f45cfd1ec566259a9fada97b25b98d",
+          "bytes": 3437,
+          "git_blob": "d29d16947c8475c548195fbdb1adbe2138e2b81a",
+          "actual_blob": "d29d16947c8475c548195fbdb1adbe2138e2b81a"
+        },
+        "filterpy/kalman/tests/test_ukf.py": {
+          "sha256": "68f2566ac7a205326b7d12e6dbe99411e047f1fd71c69008cce48786e3d5cbee",
+          "bytes": 28614,
+          "git_blob": "b2f0d45d3aa2e65ae5d1def2e74f12dd6267b042",
+          "actual_blob": "b2f0d45d3aa2e65ae5d1def2e74f12dd6267b042"
+        },
+        "filterpy/kalman/tests/ukf2.py": {
+          "sha256": "71a675314507394f4606db8e2872b4480b5b71251dd90591efbf0b6b794b3fd7",
+          "bytes": 47471,
+          "git_blob": "989bf5bc37f71e38116b9a0bba67e02e1536772f",
+          "actual_blob": "989bf5bc37f71e38116b9a0bba67e02e1536772f"
+        },
+        "filterpy/leastsq/__init__.py": {
+          "sha256": "f15bc4ed36a47066de146e5b7bf24cd976dd13f8d6cd97b1bb7b7c0cb90d7551",
+          "bytes": 525,
+          "git_blob": "0fcafb7d9ac41130d4388a7447e96768628a18d5",
+          "actual_blob": "0fcafb7d9ac41130d4388a7447e96768628a18d5"
+        },
+        "filterpy/leastsq/least_squares.py": {
+          "sha256": "62d782dab8b0bb693df09f8ac17ec3c23c8827f3daf6ed1311e1c8c91e7d23ec",
+          "bytes": 6016,
+          "git_blob": "2610b14ec3d05a1f3f7e8e23c704b593cb454a8c",
+          "actual_blob": "2610b14ec3d05a1f3f7e8e23c704b593cb454a8c"
+        },
+        "filterpy/leastsq/tests/test_lsq.py": {
+          "sha256": "fd2021312e795cafb63423d6275f008ab3b439a9286abd96552e1c189b5c1581",
+          "bytes": 8911,
+          "git_blob": "80db08096106baacc60aef39a5a1f1c39e8cf339",
+          "actual_blob": "80db08096106baacc60aef39a5a1f1c39e8cf339"
+        },
+        "filterpy/memory/__init__.py": {
+          "sha256": "ec6eb18f343ac1f3e1ca6984527206814c380a07370151138cce343e9d6cf298",
+          "bytes": 542,
+          "git_blob": "2bbccc0e5c390979ce03b6b32c45fc778c10b261",
+          "actual_blob": "2bbccc0e5c390979ce03b6b32c45fc778c10b261"
+        },
+        "filterpy/memory/fading_memory.py": {
+          "sha256": "0f0c27baba8ab902124699b18a29b49f0d65cab7de60d78e76264cf3a137b587",
+          "bytes": 5947,
+          "git_blob": "8b2f66e77df2a77c477244326c31b58982bf0e01",
+          "actual_blob": "8b2f66e77df2a77c477244326c31b58982bf0e01"
+        },
+        "filterpy/memory/tests/test_fading_memory.py": {
+          "sha256": "e40ca9cbb7fe5860ca48138dcfc5b5009c64e1ffe5a84f0092b5fb73ce9302eb",
+          "bytes": 1896,
+          "git_blob": "17205729f52191ca44c233f6b11881c05e468e5e",
+          "actual_blob": "17205729f52191ca44c233f6b11881c05e468e5e"
+        },
+        "filterpy/monte_carlo/__init__.py": {
+          "sha256": "9c9e69814e27591676d502d0beb5fe3f98df94196938a38a715d4d7e853ca195",
+          "bytes": 536,
+          "git_blob": "d5d92420f3d9905574b21b95eebef8e827e11a5c",
+          "actual_blob": "d5d92420f3d9905574b21b95eebef8e827e11a5c"
+        },
+        "filterpy/monte_carlo/resampling.py": {
+          "sha256": "e9f08a78f905776c27682db0d30ebc0b507f02d5c55c8715066ffa0988b7d405",
+          "bytes": 5220,
+          "git_blob": "e6578715672857588808454301eb0146828979c2",
+          "actual_blob": "e6578715672857588808454301eb0146828979c2"
+        },
+        "filterpy/stats/__init__.py": {
+          "sha256": "b7edef1894163b473f9ad583731247ca0a0ff017feb5a997b7ea74ee9b7e32ee",
+          "bytes": 433,
+          "git_blob": "98e61f7765886349f0462ba404180a9ac6cfa324",
+          "actual_blob": "98e61f7765886349f0462ba404180a9ac6cfa324"
+        },
+        "filterpy/stats/tests/test_stats.py": {
+          "sha256": "9dae97793aa3e7981f448a479e60d84a1a09f79e9ade7b7af04f34e8856d296b",
+          "bytes": 10168,
+          "git_blob": "61e9a9398048abc7a3a4acba722add6c3f37980e",
+          "actual_blob": "61e9a9398048abc7a3a4acba722add6c3f37980e"
+        },
+        "setup.py": {
+          "sha256": "a518c7a9885623f0035c30ebf0a0820ad5812eb983ad333be67fe18e086bd5e5",
+          "bytes": 4001,
+          "git_blob": "eb7064774deeaa13d181ae1310daf09ffa8b614c",
+          "actual_blob": "eb7064774deeaa13d181ae1310daf09ffa8b614c"
+        }
+      },
+      "clean_before": true,
+      "clean_after": true,
+      "ignored_members_after": []
+    },
+    "stonesoup": {
+      "project": "stonesoup",
+      "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/stonesoup",
+      "origin": "https://github.com/dstl/Stone-Soup.git",
+      "head": "8d1edeb07ef8505ed065cbef435cfb5e517d9bdc",
+      "lock_entry": {
+        "id": "stonesoup",
+        "url": "https://github.com/dstl/Stone-Soup.git",
+        "revision": "8d1edeb07ef8505ed065cbef435cfb5e517d9bdc",
+        "license": "MIT",
+        "fetch_enabled": true,
+        "scope": "state estimation and multi-target tracking framework",
+        "note": "Externally linked sample data is not covered automatically by the code license. Point-process base-class documentation does not imply every named RFS filter is implemented.",
+        "acquisition": "independent_source_checkout",
+        "entrypoints": [
+          "stonesoup/dataassociator/neighbour.py",
+          "stonesoup/dataassociator/probability.py",
+          "stonesoup/updater/pointprocess.py",
+          "stonesoup/hypothesiser/gaussianmixture.py",
+          "stonesoup/mixturereducer/gaussianmixture.py",
+          "stonesoup/metricgenerator/ospametric.py",
+          "docs/tutorials/08_JPDATutorial.py",
+          "LICENSE",
+          "stonesoup/hypothesiser/probability.py"
+        ]
+      },
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+      "source_document_paths": {
+        "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+        "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+      },
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+      "recorded_complete_selection": {
+        "id": "stonesoup",
+        "revision": "8d1edeb07ef8505ed065cbef435cfb5e517d9bdc",
+        "status": "source_selection_mismatch",
+        "missing_entrypoints": [],
+        "execution": "not_run",
+        "dependency_validation": "not_run",
+        "asset_policy": "sparse_source_checkout",
+        "requested_source_paths": [
+          "repository"
+        ],
+        "observed_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz"
+        ],
+        "expected_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "source_selection_verified": false
+      },
+      "live_complete_selection": {
+        "id": "stonesoup",
+        "revision": "8d1edeb07ef8505ed065cbef435cfb5e517d9bdc",
+        "status": "source_selection_mismatch",
+        "source_selection_verified": false,
+        "missing_entrypoints": [],
+        "observed_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz"
+        ],
+        "expected_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "requested_source_paths": [
+          "repository"
+        ],
+        "asset_policy": "sparse_source_checkout"
+      },
+      "used_source_identity": "verified",
+      "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+      "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+      "ignored_members_before": [],
+      "used_files": {
+        "LICENSE": {
+          "sha256": "2462f3d8a857f601e266f048a4ff051366c1e05f098cf3a1524eaf922f879815",
+          "bytes": 1494,
+          "git_blob": "6eaaea90802bb0e300414b3c7aaf3951ca255fdd",
+          "actual_blob": "6eaaea90802bb0e300414b3c7aaf3951ca255fdd"
+        },
+        "stonesoup/mixturereducer/gaussianmixture.py": {
+          "sha256": "ac8d5eacebb7e2e3458ab7125707915b77f57e23b9b19e87c2c8d52c4b803aa4",
+          "bytes": 13034,
+          "git_blob": "d39fe1e97d0f90255ffa49bc5e38d5de5eddce45",
+          "actual_blob": "d39fe1e97d0f90255ffa49bc5e38d5de5eddce45"
+        }
+      },
+      "clean_before": true,
+      "clean_after": true,
+      "ignored_members_after": []
+    }
+  },
+  "environment": {
+    "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
+    "executable": "/private/tmp/masp-appb-pra-venv/bin/python",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "numpy": "2.5.3"
+  },
+  "filterpy": {
+    "execution": "original package classes/functions imported from verified checkout",
+    "source_identity": {
+      "project": "filterpy",
+      "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/filterpy",
+      "origin": "https://github.com/rlabbe/filterpy.git",
+      "head": "3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33",
+      "lock_entry": {
+        "id": "filterpy",
+        "url": "https://github.com/rlabbe/filterpy.git",
+        "revision": "3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33",
+        "license": "MIT",
+        "fetch_enabled": true,
+        "scope": "Kalman, EKF, UKF and particle-filter references",
+        "acquisition": "independent_source_checkout",
+        "note": "Angle residuals, timestamps and discrete process noise require explicit adaptation.",
+        "entrypoints": [
+          "filterpy/kalman/kalman_filter.py",
+          "filterpy/kalman/EKF.py",
+          "filterpy/kalman/UKF.py",
+          "filterpy/kalman/IMM.py",
+          "filterpy/monte_carlo/resampling.py",
+          "LICENSE",
+          "filterpy/gh/gh_filter.py",
+          "filterpy/common/discretization.py",
+          "filterpy/kalman/sigma_points.py",
+          "filterpy/kalman/unscented_transform.py"
+        ]
+      },
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+      "source_document_paths": {
+        "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+        "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+      },
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+      "recorded_complete_selection": {
+        "id": "filterpy",
+        "revision": "3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33",
+        "status": "source_selection_mismatch",
+        "missing_entrypoints": [],
+        "execution": "not_run",
+        "dependency_validation": "not_run",
+        "asset_policy": "sparse_source_checkout",
+        "requested_source_paths": [
+          "repository"
+        ],
+        "observed_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz"
+        ],
+        "expected_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "source_selection_verified": false
+      },
+      "live_complete_selection": {
+        "id": "filterpy",
+        "revision": "3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33",
+        "status": "source_selection_mismatch",
+        "source_selection_verified": false,
+        "missing_entrypoints": [],
+        "observed_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz"
+        ],
+        "expected_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "requested_source_paths": [
+          "repository"
+        ],
+        "asset_policy": "sparse_source_checkout"
+      },
+      "used_source_identity": "verified",
+      "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+      "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+      "ignored_members_before": [],
+      "used_files": {
+        "LICENSE": {
+          "sha256": "8ffce1097f1b1c0fba42e4449ef49aa05cb7b45566dd0989407839dba07af99c",
+          "bytes": 1084,
+          "git_blob": "558870702fa539764c1efba5028240066b9c960e",
+          "actual_blob": "558870702fa539764c1efba5028240066b9c960e"
+        },
+        "filterpy/__init__.py": {
+          "sha256": "329536b1ff39c3fdc3621983a98ecd0ad4a2327ea0694750f46d6358a89fe67e",
+          "bytes": 689,
+          "git_blob": "1ce33a237280fe8fd99bd1fbdbb21c73337c1eb5",
+          "actual_blob": "1ce33a237280fe8fd99bd1fbdbb21c73337c1eb5"
+        },
+        "filterpy/common/helpers.py": {
+          "sha256": "45ac0d338a5ae96caae37ccaced7ad1e45a4d848da17d4a8023e59213ef62f02",
+          "bytes": 14251,
+          "git_blob": "108a3ae9fb5ff8b3d11588473f3d1d4f0318880c",
+          "actual_blob": "108a3ae9fb5ff8b3d11588473f3d1d4f0318880c"
+        },
+        "filterpy/kalman/EKF.py": {
+          "sha256": "44421460b96bc911e2cf81ca97009d84594de5a448be1c8a3a5de752575a547a",
+          "bytes": 14027,
+          "git_blob": "5e83aec01b93daed6ed7221cb4842e35f081fa1a",
+          "actual_blob": "5e83aec01b93daed6ed7221cb4842e35f081fa1a"
+        },
+        "filterpy/kalman/IMM.py": {
+          "sha256": "22b86f0fef3989445e61243cfe78f1b141ab373622a4583c249ba34f2d9ef556",
+          "bytes": 8683,
+          "git_blob": "84808fa4cdf913a606822375c67e8e0000754540",
+          "actual_blob": "84808fa4cdf913a606822375c67e8e0000754540"
+        },
+        "filterpy/kalman/kalman_filter.py": {
+          "sha256": "602923a445aa167a43a721bef5b8e17bb31b0f43e1b08c880f414460eebcf689",
+          "bytes": 58739,
+          "git_blob": "994b5969f8598e820583f0bd4e17c6e012ccbf42",
+          "actual_blob": "994b5969f8598e820583f0bd4e17c6e012ccbf42"
+        },
+        "filterpy/kalman/sigma_points.py": {
+          "sha256": "cfa457511eb6f1dbe95f452e1b2e5b489187b64707c5e7bc2b15f30dad17df9e",
+          "bytes": 16341,
+          "git_blob": "37875ae177be18dac5baf565d9e36e4309b5d979",
+          "actual_blob": "37875ae177be18dac5baf565d9e36e4309b5d979"
+        },
+        "filterpy/kalman/unscented_transform.py": {
+          "sha256": "3c499c584c7f6e3f0091b1817853926533a80efa689285d7a4fcfa73bd55be75",
+          "bytes": 3548,
+          "git_blob": "871add0b2a6a35b249ca47cef4a76066e8bf23c2",
+          "actual_blob": "871add0b2a6a35b249ca47cef4a76066e8bf23c2"
+        },
+        "filterpy/stats/stats.py": {
+          "sha256": "576b407938a36b7292f862cf414527e1adc8419d19241f529b6ec2942f31f374",
+          "bytes": 32181,
+          "git_blob": "b30301217911c486b1830e99999967371f12fb45",
+          "actual_blob": "b30301217911c486b1830e99999967371f12fb45"
+        },
+        "docs/conf.py": {
+          "sha256": "574d7ec492f020bdd8821620fda69fe63f7736fe082b30fee5a6393788a79c37",
+          "bytes": 11304,
+          "git_blob": "8ece64967bce74fa6e0e3f3c948d5eaeace1381d",
+          "actual_blob": "8ece64967bce74fa6e0e3f3c948d5eaeace1381d"
+        },
+        "filterpy/common/__init__.py": {
+          "sha256": "82414368398c2173deff71b332bce73aae9c2be40392aefd2b227ff4e7dbf568",
+          "bytes": 521,
+          "git_blob": "006b9c173e2c6e90681286b8e4aac856cd39048a",
+          "actual_blob": "006b9c173e2c6e90681286b8e4aac856cd39048a"
+        },
+        "filterpy/common/discretization.py": {
+          "sha256": "b3e625792e777bfef93f8a7d9020624c8750f66fc482eeec7b3b2c5ae2fdea96",
+          "bytes": 9087,
+          "git_blob": "697d67da5ec990d818738b4e772d3d200f2327d5",
+          "actual_blob": "697d67da5ec990d818738b4e772d3d200f2327d5"
+        },
+        "filterpy/common/kinematic.py": {
+          "sha256": "17b04d743f82224995ad785cedc7756e2ce38a487aeed0ae2f5966165f2e9d8d",
+          "bytes": 4793,
+          "git_blob": "1201d7c7411a223cb8bc982b639b7f63090838d2",
+          "actual_blob": "1201d7c7411a223cb8bc982b639b7f63090838d2"
+        },
+        "filterpy/common/tests/test_discretization.py": {
+          "sha256": "2e51112a0f6824227e3250cdd1060bf4c30a9cf6f51bce97f68d3e14f6d9ac24",
+          "bytes": 2662,
+          "git_blob": "87e6fd5b5849a9723c97300d5d165bcb5dea0841",
+          "actual_blob": "87e6fd5b5849a9723c97300d5d165bcb5dea0841"
+        },
+        "filterpy/common/tests/test_helpers.py": {
+          "sha256": "4ad567cf180463cf07535acbfc12ec841e503f7edfd4fb5199148bef7f269d1b",
+          "bytes": 5440,
+          "git_blob": "adab97abb67f33913934b62db234761614f50e81",
+          "actual_blob": "adab97abb67f33913934b62db234761614f50e81"
+        },
+        "filterpy/discrete_bayes/__init__.py": {
+          "sha256": "f2d1c9cde9bd5e3e515d5e1c3d0f2317d9776ff4cd5252d80ba6afe9853ec0d8",
+          "bytes": 543,
+          "git_blob": "fac5c0110c945dbb8124030d8e33164cf935b34c",
+          "actual_blob": "fac5c0110c945dbb8124030d8e33164cf935b34c"
+        },
+        "filterpy/discrete_bayes/discrete_bayes.py": {
+          "sha256": "bbf3535328138049c8def6af7ac947d53c5162cffb9fc0201138d314d17b6026",
+          "bytes": 3420,
+          "git_blob": "084ba8c67975d1453ace33891ada838cdccf5136",
+          "actual_blob": "084ba8c67975d1453ace33891ada838cdccf5136"
+        },
+        "filterpy/discrete_bayes/tests/test_discrete_bayes.py": {
+          "sha256": "23e43d4d21f5e579a511ed2042a656a320b0fc411c61bd272e5310cd31a540c0",
+          "bytes": 1201,
+          "git_blob": "b8d0d968824a8efbf7f1cda29903c0496fad9c48",
+          "actual_blob": "b8d0d968824a8efbf7f1cda29903c0496fad9c48"
+        },
+        "filterpy/examples/GetRadar.py": {
+          "sha256": "fef13f4ddc019c9412f0ce409c983771760740c78efb953eee8d9ec92af5a588",
+          "bytes": 1118,
+          "git_blob": "ae1dbf35a8e81c44955a1884eefc2db6e1e2d652",
+          "actual_blob": "ae1dbf35a8e81c44955a1884eefc2db6e1e2d652"
+        },
+        "filterpy/examples/RadarUKF.py": {
+          "sha256": "e128a7e52ac6c0bcd6014f92085d93cebaeeec79f5803f9ae4829e019ac6f714",
+          "bytes": 1809,
+          "git_blob": "1bd8a7aebbbb9a1c0ba550ec648230d18e3799d6",
+          "actual_blob": "1bd8a7aebbbb9a1c0ba550ec648230d18e3799d6"
+        },
+        "filterpy/examples/__init__.py": {
+          "sha256": "ae9f965bc739b628073d932da281da491539b25a6d4c2f33d3d8666150fdbedb",
+          "bytes": 280,
+          "git_blob": "e8bd52ef77c623dc8d2ce76e0366df83bae11367",
+          "actual_blob": "e8bd52ef77c623dc8d2ce76e0366df83bae11367"
+        },
+        "filterpy/examples/bearing_only.py": {
+          "sha256": "79df3b63f9ed3c9a2aee46d385cd4566719392c872637c537830a23e3f8740d7",
+          "bytes": 2042,
+          "git_blob": "420d25d62bcf98f0781d4913b45bfb3a1af2bce5",
+          "actual_blob": "420d25d62bcf98f0781d4913b45bfb3a1af2bce5"
+        },
+        "filterpy/examples/radar_sim.py": {
+          "sha256": "8b5f8d09cf704ef4a22bf10a623f002ed531f61f3377cccfebcac4ed745948c3",
+          "bytes": 1210,
+          "git_blob": "245abaf2659dda93c5a218d0f2388995adba2dad",
+          "actual_blob": "245abaf2659dda93c5a218d0f2388995adba2dad"
+        },
+        "filterpy/gh/__init__.py": {
+          "sha256": "a29b919cf1e9e571149275afdf7d95b1701beb782100a187b1fd4bce44bd84d7",
+          "bytes": 464,
+          "git_blob": "636f116ff38295d91f214b13278041e75eceeeae",
+          "actual_blob": "636f116ff38295d91f214b13278041e75eceeeae"
+        },
+        "filterpy/gh/gh_filter.py": {
+          "sha256": "4d06fb43585a20bc1155b49c0c11aac36c898102f902377f372a12aa2818cad5",
+          "bytes": 28611,
+          "git_blob": "260109ff711893fa26e01550a3f087da7d665ef0",
+          "actual_blob": "260109ff711893fa26e01550a3f087da7d665ef0"
+        },
+        "filterpy/gh/tests/test_gh.py": {
+          "sha256": "b164b05bc9bd967e7da532fa6d8039224af9f10d0e94a1dc71f595cdfe0133e3",
+          "bytes": 3679,
+          "git_blob": "293b58e2c83cad4f324cf0a147b4c5a948e5548a",
+          "actual_blob": "293b58e2c83cad4f324cf0a147b4c5a948e5548a"
+        },
+        "filterpy/hinfinity/__init__.py": {
+          "sha256": "813cdc1f579a9ba0cba61005a55c61067b0e4573244422fca9591b749600a4f1",
+          "bytes": 548,
+          "git_blob": "6fbceb85da962cf44a83f86720eb941ece7ad7bb",
+          "actual_blob": "6fbceb85da962cf44a83f86720eb941ece7ad7bb"
+        },
+        "filterpy/hinfinity/hinfinity_filter.py": {
+          "sha256": "506a0ae1bc982a630805fef780cf44f1f5051508f5de4e6c15d3f7b56bb45deb",
+          "bytes": 8133,
+          "git_blob": "9ed320ea3f75d0b40cd8a0d364ed46071b1f6db5",
+          "actual_blob": "9ed320ea3f75d0b40cd8a0d364ed46071b1f6db5"
+        },
+        "filterpy/hinfinity/tests/test_hinfinity.py": {
+          "sha256": "336fe0b357079ac1647e517ff15865128b5ada1c338c97713c395de0528c7816",
+          "bytes": 1205,
+          "git_blob": "2e12fdbf5a3793c8b3cd3021dd9caeefb6f28685",
+          "actual_blob": "2e12fdbf5a3793c8b3cd3021dd9caeefb6f28685"
+        },
+        "filterpy/kalman/CubatureKalmanFilter.py": {
+          "sha256": "61e3d8cf30b465a418a022c955d559001d7008afee94b491cae4c2fd53ce5b00",
+          "bytes": 13231,
+          "git_blob": "bae2a1a57959377db7b04fd5f3aed9894ed73622",
+          "actual_blob": "bae2a1a57959377db7b04fd5f3aed9894ed73622"
+        },
+        "filterpy/kalman/UKF.py": {
+          "sha256": "7ee81aefbf0193f58f325d2c15496d526b7c97524dfd808b55f91bb71283d228",
+          "bytes": 28113,
+          "git_blob": "f8baf19c29e5c0fde519ee66da5cf3a78db34392",
+          "actual_blob": "f8baf19c29e5c0fde519ee66da5cf3a78db34392"
+        },
+        "filterpy/kalman/__init__.py": {
+          "sha256": "7d096353b901243edf948337fd85842bc98bb6a84c9d0232ca92ed6621ae38e2",
+          "bytes": 816,
+          "git_blob": "6809310af32125231379437c7998b9efac042750",
+          "actual_blob": "6809310af32125231379437c7998b9efac042750"
+        },
+        "filterpy/kalman/ensemble_kalman_filter.py": {
+          "sha256": "370a437e28d162deb35aa3b1c1f172bce6f65ec95a3a11327eb736a93ae08f22",
+          "bytes": 9086,
+          "git_blob": "83b9bb566bb25b0c7aa4af81553ebf583fe8c76f",
+          "actual_blob": "83b9bb566bb25b0c7aa4af81553ebf583fe8c76f"
+        },
+        "filterpy/kalman/fading_memory.py": {
+          "sha256": "17a563e8bb59ef7d4651f0603ae3754f34085c836805815b3d9c331d60c47db8",
+          "bytes": 14472,
+          "git_blob": "36c9dcc9f2ee7b92f1c3a3acdce860669804286d",
+          "actual_blob": "36c9dcc9f2ee7b92f1c3a3acdce860669804286d"
+        },
+        "filterpy/kalman/fixed_lag_smoother.py": {
+          "sha256": "7bfd94f0fc0ac59f943513f62fa0bd7a381ebd1be039167f2cb68deeb56b8ca1",
+          "bytes": 10157,
+          "git_blob": "d265fa172dbe6a4b9ace89d435c5cfeebe262b22",
+          "actual_blob": "d265fa172dbe6a4b9ace89d435c5cfeebe262b22"
+        },
+        "filterpy/kalman/information_filter.py": {
+          "sha256": "34ab0bfff4e1948febfa2c0d15926bc55b5f983c15acebc07ec2caf2a2beec0f",
+          "bytes": 12890,
+          "git_blob": "46724d3e025ee3abd87af753e3220b18e1c94bac",
+          "actual_blob": "46724d3e025ee3abd87af753e3220b18e1c94bac"
+        },
+        "filterpy/kalman/mmae.py": {
+          "sha256": "a7c236d64bbb3ea725040d2bff56672b71c8a5360ce35c486719742c7a86432b",
+          "bytes": 6370,
+          "git_blob": "f28d9debf353e55c4456ea170d910b9c0015eda1",
+          "actual_blob": "f28d9debf353e55c4456ea170d910b9c0015eda1"
+        },
+        "filterpy/kalman/square_root.py": {
+          "sha256": "4b1427585c143502a64fee92f7bd203c313c91590e39c09fe6e1b7327aca1ade",
+          "bytes": 10556,
+          "git_blob": "d776182a9a1ca01ef6aced38e421cf7d51a8d130",
+          "actual_blob": "d776182a9a1ca01ef6aced38e421cf7d51a8d130"
+        },
+        "filterpy/kalman/tests/test_ckf.py": {
+          "sha256": "7ffe1744471557d88343b5ef08b1f655630ac9403230fc37a27f789334c2cbf0",
+          "bytes": 1608,
+          "git_blob": "6fd4c3960df17d52848d76b1f2b0a0c3a39a5457",
+          "actual_blob": "6fd4c3960df17d52848d76b1f2b0a0c3a39a5457"
+        },
+        "filterpy/kalman/tests/test_ekf.py": {
+          "sha256": "9731fce0b833b536dbc4a93e2fc2f3287a38c416b6ddda383ea17b8231cab2c6",
+          "bytes": 2765,
+          "git_blob": "005985c3d2f9dfda9709421a17c418c8f254d89c",
+          "actual_blob": "005985c3d2f9dfda9709421a17c418c8f254d89c"
+        },
+        "filterpy/kalman/tests/test_enkf.py": {
+          "sha256": "38d1722b2d7e470b3a68b5230576f1ec0b24b1e6b9dce6cba2d06670ae0fc2f9",
+          "bytes": 3356,
+          "git_blob": "dd0e7b9e34e9c39ac40c85700a775864703e8957",
+          "actual_blob": "dd0e7b9e34e9c39ac40c85700a775864703e8957"
+        },
+        "filterpy/kalman/tests/test_fls.py": {
+          "sha256": "f8e8d48090b795a2e8cc79772f577e3f26435fe783ac73a9331096a32d1ae0cf",
+          "bytes": 3070,
+          "git_blob": "86e3a29ca0dbf39c47d832d337d0b9f706fa2b8a",
+          "actual_blob": "86e3a29ca0dbf39c47d832d337d0b9f706fa2b8a"
+        },
+        "filterpy/kalman/tests/test_fm.py": {
+          "sha256": "3051478ca7fa338bd2df184a5920064f946eed6a0b5fa85ed63dbfe84d267c3e",
+          "bytes": 2467,
+          "git_blob": "6294dd4c642a432f722ee01d4e5001f334a444d8",
+          "actual_blob": "6294dd4c642a432f722ee01d4e5001f334a444d8"
+        },
+        "filterpy/kalman/tests/test_imm.py": {
+          "sha256": "24ef0860a6641776de0fda3379eedcada8938b3a76f038ea7c7e1cbba8f694ee",
+          "bytes": 7459,
+          "git_blob": "aa71fc24480c4e55b5dd50bc3751819efca2c3b8",
+          "actual_blob": "aa71fc24480c4e55b5dd50bc3751819efca2c3b8"
+        },
+        "filterpy/kalman/tests/test_information.py": {
+          "sha256": "d46dfcaac227e94263a4f9cea1b997aee698e4b26a1d689bb986bd3620958564",
+          "bytes": 4555,
+          "git_blob": "978cf9f3f3fada29c27f377983dee9b251ab0a29",
+          "actual_blob": "978cf9f3f3fada29c27f377983dee9b251ab0a29"
+        },
+        "filterpy/kalman/tests/test_kf.py": {
+          "sha256": "8e056c0e32984ef8c74a13847d1e0e2c4a352d0322b1b6645c0530ea68023320",
+          "bytes": 18394,
+          "git_blob": "81bb958531680abb3c23e571fda6e53f45cbd108",
+          "actual_blob": "81bb958531680abb3c23e571fda6e53f45cbd108"
+        },
+        "filterpy/kalman/tests/test_mmae.py": {
+          "sha256": "d9db809adf81cb2b852bfed45a38f5cf3c84fb2f1548bcf1e83864a52567c68f",
+          "bytes": 5027,
+          "git_blob": "54cf9f1f729fbaa97e0ce59b1620d5be55008275",
+          "actual_blob": "54cf9f1f729fbaa97e0ce59b1620d5be55008275"
+        },
+        "filterpy/kalman/tests/test_rts.py": {
+          "sha256": "cbf6a450235a4b4aba4b45d3aeb884d65469e2c62d996d0a68ae8055d17b5d92",
+          "bytes": 1603,
+          "git_blob": "4d724881c37748171d997d20dd3573c1e3a1f41f",
+          "actual_blob": "4d724881c37748171d997d20dd3573c1e3a1f41f"
+        },
+        "filterpy/kalman/tests/test_sensor_fusion.py": {
+          "sha256": "0d46168182377fd13d5975fa22c1c2ddea0004c5a0759e5e9180afd8e0f19560",
+          "bytes": 3065,
+          "git_blob": "60d5abdb864826817d381f74918a67e4e6b21062",
+          "actual_blob": "60d5abdb864826817d381f74918a67e4e6b21062"
+        },
+        "filterpy/kalman/tests/test_sqrtkf.py": {
+          "sha256": "d3f0e68b7192afc89fd8ac11966dd16c04f45cfd1ec566259a9fada97b25b98d",
+          "bytes": 3437,
+          "git_blob": "d29d16947c8475c548195fbdb1adbe2138e2b81a",
+          "actual_blob": "d29d16947c8475c548195fbdb1adbe2138e2b81a"
+        },
+        "filterpy/kalman/tests/test_ukf.py": {
+          "sha256": "68f2566ac7a205326b7d12e6dbe99411e047f1fd71c69008cce48786e3d5cbee",
+          "bytes": 28614,
+          "git_blob": "b2f0d45d3aa2e65ae5d1def2e74f12dd6267b042",
+          "actual_blob": "b2f0d45d3aa2e65ae5d1def2e74f12dd6267b042"
+        },
+        "filterpy/kalman/tests/ukf2.py": {
+          "sha256": "71a675314507394f4606db8e2872b4480b5b71251dd90591efbf0b6b794b3fd7",
+          "bytes": 47471,
+          "git_blob": "989bf5bc37f71e38116b9a0bba67e02e1536772f",
+          "actual_blob": "989bf5bc37f71e38116b9a0bba67e02e1536772f"
+        },
+        "filterpy/leastsq/__init__.py": {
+          "sha256": "f15bc4ed36a47066de146e5b7bf24cd976dd13f8d6cd97b1bb7b7c0cb90d7551",
+          "bytes": 525,
+          "git_blob": "0fcafb7d9ac41130d4388a7447e96768628a18d5",
+          "actual_blob": "0fcafb7d9ac41130d4388a7447e96768628a18d5"
+        },
+        "filterpy/leastsq/least_squares.py": {
+          "sha256": "62d782dab8b0bb693df09f8ac17ec3c23c8827f3daf6ed1311e1c8c91e7d23ec",
+          "bytes": 6016,
+          "git_blob": "2610b14ec3d05a1f3f7e8e23c704b593cb454a8c",
+          "actual_blob": "2610b14ec3d05a1f3f7e8e23c704b593cb454a8c"
+        },
+        "filterpy/leastsq/tests/test_lsq.py": {
+          "sha256": "fd2021312e795cafb63423d6275f008ab3b439a9286abd96552e1c189b5c1581",
+          "bytes": 8911,
+          "git_blob": "80db08096106baacc60aef39a5a1f1c39e8cf339",
+          "actual_blob": "80db08096106baacc60aef39a5a1f1c39e8cf339"
+        },
+        "filterpy/memory/__init__.py": {
+          "sha256": "ec6eb18f343ac1f3e1ca6984527206814c380a07370151138cce343e9d6cf298",
+          "bytes": 542,
+          "git_blob": "2bbccc0e5c390979ce03b6b32c45fc778c10b261",
+          "actual_blob": "2bbccc0e5c390979ce03b6b32c45fc778c10b261"
+        },
+        "filterpy/memory/fading_memory.py": {
+          "sha256": "0f0c27baba8ab902124699b18a29b49f0d65cab7de60d78e76264cf3a137b587",
+          "bytes": 5947,
+          "git_blob": "8b2f66e77df2a77c477244326c31b58982bf0e01",
+          "actual_blob": "8b2f66e77df2a77c477244326c31b58982bf0e01"
+        },
+        "filterpy/memory/tests/test_fading_memory.py": {
+          "sha256": "e40ca9cbb7fe5860ca48138dcfc5b5009c64e1ffe5a84f0092b5fb73ce9302eb",
+          "bytes": 1896,
+          "git_blob": "17205729f52191ca44c233f6b11881c05e468e5e",
+          "actual_blob": "17205729f52191ca44c233f6b11881c05e468e5e"
+        },
+        "filterpy/monte_carlo/__init__.py": {
+          "sha256": "9c9e69814e27591676d502d0beb5fe3f98df94196938a38a715d4d7e853ca195",
+          "bytes": 536,
+          "git_blob": "d5d92420f3d9905574b21b95eebef8e827e11a5c",
+          "actual_blob": "d5d92420f3d9905574b21b95eebef8e827e11a5c"
+        },
+        "filterpy/monte_carlo/resampling.py": {
+          "sha256": "e9f08a78f905776c27682db0d30ebc0b507f02d5c55c8715066ffa0988b7d405",
+          "bytes": 5220,
+          "git_blob": "e6578715672857588808454301eb0146828979c2",
+          "actual_blob": "e6578715672857588808454301eb0146828979c2"
+        },
+        "filterpy/stats/__init__.py": {
+          "sha256": "b7edef1894163b473f9ad583731247ca0a0ff017feb5a997b7ea74ee9b7e32ee",
+          "bytes": 433,
+          "git_blob": "98e61f7765886349f0462ba404180a9ac6cfa324",
+          "actual_blob": "98e61f7765886349f0462ba404180a9ac6cfa324"
+        },
+        "filterpy/stats/tests/test_stats.py": {
+          "sha256": "9dae97793aa3e7981f448a479e60d84a1a09f79e9ade7b7af04f34e8856d296b",
+          "bytes": 10168,
+          "git_blob": "61e9a9398048abc7a3a4acba722add6c3f37980e",
+          "actual_blob": "61e9a9398048abc7a3a4acba722add6c3f37980e"
+        },
+        "setup.py": {
+          "sha256": "a518c7a9885623f0035c30ebf0a0820ad5812eb983ad333be67fe18e086bd5e5",
+          "bytes": 4001,
+          "git_blob": "eb7064774deeaa13d181ae1310daf09ffa8b614c",
+          "actual_blob": "eb7064774deeaa13d181ae1310daf09ffa8b614c"
+        }
+      },
+      "clean_before": true,
+      "clean_after": true,
+      "ignored_members_after": []
+    },
+    "imported_modules": {
+      "filterpy": "filterpy/__init__.py",
+      "filterpy.common": "filterpy/common/__init__.py",
+      "filterpy.common.discretization": "filterpy/common/discretization.py",
+      "filterpy.common.helpers": "filterpy/common/helpers.py",
+      "filterpy.common.kinematic": "filterpy/common/kinematic.py",
+      "filterpy.discrete_bayes": "filterpy/discrete_bayes/__init__.py",
+      "filterpy.discrete_bayes.discrete_bayes": "filterpy/discrete_bayes/discrete_bayes.py",
+      "filterpy.gh": "filterpy/gh/__init__.py",
+      "filterpy.gh.gh_filter": "filterpy/gh/gh_filter.py",
+      "filterpy.hinfinity": "filterpy/hinfinity/__init__.py",
+      "filterpy.hinfinity.hinfinity_filter": "filterpy/hinfinity/hinfinity_filter.py",
+      "filterpy.kalman": "filterpy/kalman/__init__.py",
+      "filterpy.kalman.CubatureKalmanFilter": "filterpy/kalman/CubatureKalmanFilter.py",
+      "filterpy.kalman.EKF": "filterpy/kalman/EKF.py",
+      "filterpy.kalman.IMM": "filterpy/kalman/IMM.py",
+      "filterpy.kalman.UKF": "filterpy/kalman/UKF.py",
+      "filterpy.kalman.ensemble_kalman_filter": "filterpy/kalman/ensemble_kalman_filter.py",
+      "filterpy.kalman.fading_memory": "filterpy/kalman/fading_memory.py",
+      "filterpy.kalman.fixed_lag_smoother": "filterpy/kalman/fixed_lag_smoother.py",
+      "filterpy.kalman.information_filter": "filterpy/kalman/information_filter.py",
+      "filterpy.kalman.kalman_filter": "filterpy/kalman/kalman_filter.py",
+      "filterpy.kalman.mmae": "filterpy/kalman/mmae.py",
+      "filterpy.kalman.sigma_points": "filterpy/kalman/sigma_points.py",
+      "filterpy.kalman.square_root": "filterpy/kalman/square_root.py",
+      "filterpy.kalman.unscented_transform": "filterpy/kalman/unscented_transform.py",
+      "filterpy.leastsq": "filterpy/leastsq/__init__.py",
+      "filterpy.leastsq.least_squares": "filterpy/leastsq/least_squares.py",
+      "filterpy.memory": "filterpy/memory/__init__.py",
+      "filterpy.memory.fading_memory": "filterpy/memory/fading_memory.py",
+      "filterpy.monte_carlo": "filterpy/monte_carlo/__init__.py",
+      "filterpy.monte_carlo.resampling": "filterpy/monte_carlo/resampling.py",
+      "filterpy.stats": "filterpy/stats/__init__.py",
+      "filterpy.stats.stats": "filterpy/stats/stats.py"
+    },
+    "imported_module_count": 33,
+    "external_dependencies": {
+      "numpy": {
+        "version": "2.5.3",
+        "file": "/private/tmp/masp-appb-pra-venv/lib/python3.13/site-packages/numpy/__init__.py"
+      },
+      "scipy": {
+        "version": "1.18.1",
+        "file": "/private/tmp/masp-appb-pra-venv/lib/python3.13/site-packages/scipy/__init__.py"
+      }
+    },
+    "ekf_predict_update_none": {
+      "before": {
+        "mean": 1.0,
+        "variance": 1.0,
+        "gain": 0.0,
+        "innovation_variance": 0.0
+      },
+      "exception": {
+        "type": "TypeError",
+        "message": "unsupported operand type(s) for -: 'NoneType' and 'float'"
+      },
+      "after": {
+        "mean": 1.0,
+        "variance": 1.0,
+        "gain": 0.47058823529411764,
+        "innovation_variance": 17.0
+      },
+      "scope": "original combined method failed after partial state mutation; not an atomic prediction"
+    },
+    "filterpy_version": "1.4.5",
+    "scipy_version": "1.18.1",
+    "imm_predict_only": [
+      {
+        "mu": [
+          0.75,
+          0.25
+        ],
+        "cbar": [
+          0.7250000000000001,
+          0.275
+        ],
+        "omega": [
+          [
+            0.9310344827586207,
+            0.27272727272727276
+          ],
+          [
+            0.06896551724137931,
+            0.7272727272727273
+          ]
+        ],
+        "mean": 2.5,
+        "variance": 20.5,
+        "second_raw_moment": 26.75,
+        "component_means": [
+          0.0,
+          10.0
+        ],
+        "component_variances": [
+          1.0,
+          4.0
+        ]
+      },
+      {
+        "mu": [
+          0.75,
+          0.25
+        ],
+        "cbar": [
+          0.7250000000000001,
+          0.275
+        ],
+        "omega": [
+          [
+            0.9310344827586207,
+            0.27272727272727276
+          ],
+          [
+            0.06896551724137931,
+            0.7272727272727273
+          ]
+        ],
+        "mean": 2.335423197492163,
+        "variance": 19.60065742278476,
+        "second_raw_moment": 25.05485893416928,
+        "component_means": [
+          0.6896551724137931,
+          7.272727272727273
+        ],
+        "component_variances": [
+          7.627824019024969,
+          23.016528925619838
+        ]
+      },
+      {
+        "mu": [
+          0.75,
+          0.25
+        ],
+        "cbar": [
+          0.7250000000000001,
+          0.275
+        ],
+        "omega": [
+          [
+            0.9310344827586207,
+            0.27272727272727276
+          ],
+          [
+            0.06896551724137931,
+            0.7272727272727273
+          ]
+        ],
+        "mean": 2.227081101797349,
+        "variance": 18.979045114529804,
+        "second_raw_moment": 23.938935348512697,
+        "component_means": [
+          1.1436601448492056,
+          5.477343972641779
+        ],
+        "component_variances": [
+          11.47174096503031,
+          27.415345923575103
+        ]
+      },
+      {
+        "mu": [
+          0.75,
+          0.25
+        ],
+        "cbar": [
+          0.7250000000000001,
+          0.275
+        ],
+        "omega": [
+          [
+            0.9310344827586207,
+            0.27272727272727276
+          ],
+          [
+            0.06896551724137931,
+            0.7272727272727273
+          ]
+        ],
+        "mean": 2.1557587190515464,
+        "variance": 18.557019151464164,
+        "second_raw_moment": 23.20431480623093,
+        "component_means": [
+          1.442534891593521,
+          4.2954302014256225
+        ],
+        "component_variances": [
+          13.777202469948532,
+          26.792210459364554
+        ]
+      }
+    ],
+    "imm_update_none_fresh": {
+      "before": {
+        "mu": [
+          0.75,
+          0.25
+        ],
+        "cbar": [
+          0.7250000000000001,
+          0.275
+        ],
+        "omega": [
+          [
+            0.9310344827586207,
+            0.27272727272727276
+          ],
+          [
+            0.06896551724137931,
+            0.7272727272727273
+          ]
+        ],
+        "mean": 2.335423197492163,
+        "variance": 19.60065742278476,
+        "second_raw_moment": 25.05485893416928,
+        "component_means": [
+          0.6896551724137931,
+          7.272727272727273
+        ],
+        "component_variances": [
+          7.627824019024969,
+          23.016528925619838
+        ]
+      },
+      "after": {
+        "mu": [
+          0.7250000000000001,
+          0.2749999999999999
+        ],
+        "cbar": [
+          0.7075,
+          0.2924999999999999
+        ],
+        "omega": [
+          [
+            0.92226148409894,
+            0.24786324786324795
+          ],
+          [
+            0.07773851590106005,
+            0.7521367521367521
+          ]
+        ],
+        "mean": 2.4999999999999996,
+        "variance": 20.499999999999996,
+        "second_raw_moment": 26.749999999999993,
+        "component_means": [
+          0.6896551724137931,
+          7.272727272727273
+        ],
+        "component_variances": [
+          7.627824019024969,
+          23.016528925619838
+        ]
+      },
+      "likelihoods": [
+        2.2250738585072014e-308,
+        2.2250738585072014e-308
+      ]
+    },
+    "imm_update_none_after_measurement": {
+      "after_real_measurement": {
+        "mu": [
+          0.9279008171172274,
+          0.07209918288277264
+        ],
+        "cbar": [
+          0.8495305719820592,
+          0.15046942801794086
+        ],
+        "omega": [
+          [
+            0.9830261122411271,
+            0.6166706615024757
+          ],
+          [
+            0.016973887758872857,
+            0.3833293384975243
+          ]
+        ],
+        "mean": 0.09600388333306412,
+        "variance": 0.8927740153769471,
+        "second_raw_moment": 0.9019907609919757,
+        "component_means": [
+          0.0799338478500552,
+          0.3028217481073643
+        ],
+        "component_variances": [
+          0.88409592061742,
+          0.9583620096352374
+        ]
+      },
+      "before": {
+        "mu": [
+          0.9279008171172274,
+          0.07209918288277264
+        ],
+        "cbar": [
+          0.8495305719820592,
+          0.15046942801794086
+        ],
+        "omega": [
+          [
+            0.9830261122411271,
+            0.6166706615024757
+          ],
+          [
+            0.016973887758872857,
+            0.3833293384975243
+          ]
+        ],
+        "mean": 0.08960446714459747,
+        "variance": 0.8893801072038117,
+        "second_raw_moment": 0.8974090677360789,
+        "component_means": [
+          0.08371712205183361,
+          0.16537331921479168
+        ],
+        "component_variances": [
+          0.886185437755945,
+          0.9243078124979133
+        ]
+      },
+      "after": {
+        "mu": [
+          0.9040275777715678,
+          0.09597242222843218
+        ],
+        "cbar": [
+          0.8328193044400974,
+          0.16718069555990253
+        ],
+        "omega": [
+          [
+            0.9769524021076927,
+            0.5407487836702088
+          ],
+          [
+            0.023047597892307318,
+            0.4592512163297911
+          ]
+        ],
+        "mean": 0.09155386508352513,
+        "variance": 0.8904226384937982,
+        "second_raw_moment": 0.8988047487055305,
+        "component_means": [
+          0.08371712205183361,
+          0.16537331921479168
+        ],
+        "component_variances": [
+          0.886185437755945,
+          0.9243078124979133
+        ]
+      },
+      "previous_measurement_likelihoods": [
+        0.13212615475980008,
+        0.027065926265244608
+      ],
+      "retained_innovation_variances": [
+        8.627824019024969,
+        24.016528925619838
+      ],
+      "likelihoods_used_by_none": [
+        0.1358186554132128,
+        0.0814057245343635
+      ]
+    },
+    "ekf": {
+      "predict_update": {
+        "calls": [
+          {
+            "function": "HJacobian",
+            "x": 1.0
+          },
+          {
+            "function": "Hx",
+            "x": 2.0
+          }
+        ],
+        "mean": 2.0,
+        "variance": 0.23529411764705885,
+        "gain": 0.47058823529411764,
+        "innovation_variance": 17.0,
+        "stored_x_prior": 1.0,
+        "stored_P_prior": 1.0
+      },
+      "predict_then_update": {
+        "calls": [
+          {
+            "function": "HJacobian",
+            "x": 2.0
+          },
+          {
+            "function": "Hx",
+            "x": 2.0
+          }
+        ],
+        "mean": 2.0,
+        "variance": 0.061538461538461535,
+        "gain": 0.24615384615384617,
+        "innovation_variance": 65.0,
+        "stored_x_prior": 2.0,
+        "stored_P_prior": 4.0
+      }
+    },
+    "angle": {
+      "merged_default": {
+        "innovation_degrees": -358.0,
+        "unwrapped_mean_degrees": 0.0
+      },
+      "separate_wrapped": {
+        "innovation_degrees": 2.0,
+        "unwrapped_mean_degrees": 180.0
+      }
+    },
+    "unscented_transform": {
+      "points": [
+        [
+          0.0
+        ],
+        [
+          1.0
+        ],
+        [
+          -1.0
+        ]
+      ],
+      "Wm": [
+        0.0,
+        0.5,
+        0.5
+      ],
+      "Wc": [
+        2.0,
+        0.5,
+        0.5
+      ],
+      "mean": 1.0,
+      "variance": 2.0
+    }
+  },
+  "stonesoup_reducer": {
+    "execution": "unchanged AST-extracted original methods with minimal state containers",
+    "stonesoup_package_executed": false,
+    "package_import_probe": "not_run: package import deliberately excluded from this AST-only current audit; historical failed import remains in its original report",
+    "not_tested": [
+      "PHDUpdater",
+      "TaggedWeightedGaussianState branch",
+      "merge orchestration",
+      "MHT/OR-Tools"
+    ],
+    "records": [
+      {
+        "method": "prune",
+        "input_weights": [
+          0.1,
+          0.4,
+          0.5
+        ],
+        "input_means": [
+          0,
+          1,
+          2
+        ],
+        "input_variances": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "output_weights": [
+          0.45,
+          0.55
+        ],
+        "output_means": [
+          1.0,
+          2.0
+        ],
+        "output_variances": [
+          1.0,
+          1.0
+        ],
+        "mass_before": 1.0,
+        "mass_after": 1.0
+      },
+      {
+        "method": "prune",
+        "input_weights": [
+          0.1,
+          0.1
+        ],
+        "input_means": [
+          0,
+          1
+        ],
+        "input_variances": [
+          1.0,
+          1.0
+        ],
+        "output_weights": [],
+        "output_means": [],
+        "output_variances": [],
+        "mass_before": 0.2,
+        "mass_after": 0
+      },
+      {
+        "method": "truncate",
+        "input_weights": [
+          0.4,
+          0.6
+        ],
+        "input_means": [
+          0,
+          1
+        ],
+        "input_variances": [
+          1.0,
+          1.0
+        ],
+        "output_weights": [
+          1.0
+        ],
+        "output_means": [
+          1.0
+        ],
+        "output_variances": [
+          1.0
+        ],
+        "mass_before": 1.0,
+        "mass_after": 1.0
+      },
+      {
+        "method": "merge_components",
+        "input_weights": [
+          0.8,
+          0.7
+        ],
+        "input_means": [
+          0,
+          1
+        ],
+        "input_variances": [
+          1.0,
+          1.0
+        ],
+        "output_weights": [
+          1.0
+        ],
+        "output_means": [
+          0.4666666666666666
+        ],
+        "output_variances": [
+          1.248888888888889
+        ],
+        "mass_before": 1.5,
+        "mass_after": 1.0
+      }
+    ]
+  },
+  "static_only": [
+    "ODAS",
+    "SAF tracker3d",
+    "icoDOA/Cross3D",
+    "StoneSoup JPDA/GOSPA/MHT"
+  ],
+  "not_run": [
+    "audio corpus",
+    "hardware",
+    "neural inference/training",
+    "MATLAB Vo toolbox",
+    "StoneSoup package import/PHD"
+  ]
+}

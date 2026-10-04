@@ -47,8 +47,23 @@ class TrackingPublicationTests(unittest.TestCase):
 
     def html(self, prefix):
         base = prefix+self.directory+'/'
-        return ''.join(f'<audio controls preload="none" aria-label="sample {name}" src="{base}{name}"></audio>'
-                       for name in sorted(self.original['files']))+f'<a href="{base}MANIFEST.json">Manifest</a>'
+        names = sorted(self.original['files'])
+        if self.directory == 'tracking_audio':
+            names += ['array_noisy.wav'] if not prefix else ['source.wav', 'array_noisy.wav']
+        return ''.join(f'<audio controls preload="none" aria-label="sample {name} section {index}" src="{base}{name}"></audio>'
+                       for index, name in enumerate(names))+f'<a href="{base}MANIFEST.json">Manifest</a>'
+
+    def test_each_section_requires_its_declared_recording_and_count(self):
+        for page, prefix in self.pages:
+            valid = self.html(prefix)
+            base = prefix+self.directory+'/'
+            # A correct total with the wrong recording must also fail.
+            alternate = 'array_noisy.wav' if self.directory == 'tracking_audio' else 'moving_array.wav'
+            page.write_text(valid.replace(f'src="{base}{alternate}"',
+                                          f'src="{base}source.wav"', 1))
+            self.assertTrue(self.issues())
+            page.write_text(valid)
+        self.assertEqual(self.issues(), [])
 
     def save(self):
         for folder in (self.source, self.published):

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "verified_at": "2026-10-04",
+  "verified_at": "2026-10-05",
   "notes": "Fixed source revisions for independent local research checkouts. Acquisition does not mean runtime validation or redistribution permission. LFS objects, submodules and common model/audio/archive files are omitted in new sparse working trees; upstream Git objects can still contain embedded assets. Code, models and datasets retain their respective terms.",
   "projects": [
     {
@@ -2423,6 +2423,77 @@
       ],
       "scope": "MeanFlow one-step correction: sixteen author core, training/evaluation entry, config and licence texts for static research",
       "note": "Fixed author implementation for arXiv:2606.09677v1. Partial MIT core selection, not standalone: backbone source with Apache-notice helpers and NVIDIA-NC CUDA kernels excluded. No torch/CUDA execution, checkpoints, speech datasets or paper benchmark results. Original per-file notices retained; selected source identity is separate from full dependency closure."
+    },
+    {
+      "id": "locata-io",
+      "url": "https://github.com/cevers/sap_locata_io.git",
+      "revision": "632468f49b13ca5a9f2f51c064d91183c06622fa",
+      "license": "ODC-BY-1.0 explicitly in selected .m headers",
+      "fetch_enabled": true,
+      "scope": "Fixed author LOCATA I/O and single-source MUSIC source selection; static source study, not standalone or MATLAB execution",
+      "source_paths": [
+        "main.m",
+        "utils/MUSIC.m",
+        "utils/check_results.m",
+        "utils/csv2struct.m",
+        "utils/elapsed_time.m",
+        "utils/get_truth.m",
+        "utils/init.m",
+        "utils/load_data.m",
+        "utils/mycart2sph.m",
+        "utils/plot_results.m",
+        "utils/results2csv.m",
+        "utils/stft.m",
+        "utils/struct2csv.m",
+        "utils/struct2position.m",
+        "utils/struct2time.m"
+      ],
+      "entrypoints": [
+        "main.m",
+        "utils/MUSIC.m",
+        "utils/get_truth.m",
+        "utils/stft.m"
+      ],
+      "note": "Independently reviewed 2026-10-05. Each selected author .m explicitly names ODC-BY v1.0 in its own header; retain all notices. No repository-wide license is inferred. License anchor main.m SHA-256 3a14c9bd4b483515b1496ab2b18e68fb593ca5135ca10924fd844b96866cf67a. README and files without established permission are excluded; datasets, dependencies and MATLAB are not acquired or run. MUSIC assumes one source and uses external MATLAB toolboxes/data; no corpus, scoring, or acoustic benchmark executed.",
+      "acquisition": "independent_source_checkout",
+      "verified_at": "2026-10-05"
+    },
+    {
+      "id": "locata-eval",
+      "url": "https://github.com/cevers/sap_locata_eval.git",
+      "revision": "2787cdabf21bc96453c0d4f3c66db9c9c9f40434",
+      "license": "ODC-BY-1.0 explicitly in selected .m headers; BSD-2-Clause only utils/munkres/ helper",
+      "fetch_enabled": true,
+      "scope": "Fixed author LOCATA evaluation logic and licensed assignment helper source selection; static source study, not standalone or MATLAB execution",
+      "source_paths": [
+        "figures_for_paper.m",
+        "functions/append_baseline_results.m",
+        "functions/array_index.m",
+        "functions/measures.m",
+        "functions/measures_statistics.m",
+        "functions/read_ground_truth.m",
+        "main_evaluation.m",
+        "utils/elapsed_time.m",
+        "utils/get_truth.m",
+        "utils/init.m",
+        "utils/load_data.m",
+        "utils/munkres/license.txt",
+        "utils/munkres/munkres.m",
+        "utils/mycart2sph.m",
+        "utils/struct2position.m",
+        "utils/struct2time.m"
+      ],
+      "entrypoints": [
+        "main_evaluation.m",
+        "functions/measures.m",
+        "functions/measures_statistics.m",
+        "functions/read_ground_truth.m",
+        "utils/munkres/munkres.m",
+        "utils/munkres/license.txt"
+      ],
+      "note": "Independently reviewed 2026-10-05. Each selected author .m explicitly names ODC-BY v1.0 in its own header; retain all notices. No repository-wide license is inferred. License anchor main_evaluation.m SHA-256 696e66ca69a6e27e3d085444463e84bd3fc6addcbaeb83cb83350893909a6851. The nested Munkres license SHA-256 1376fb7ea22678c345ac2c1af8489a66077289754cc7a5b0053d0d90b07c6730 applies only to that BSD helper; identical unnested utils/munkres.m is excluded to avoid ambiguity. README and files without established permission are excluded; datasets, dependencies and MATLAB are not acquired or run. MathWorks internal angdiff.m, unlicensed Hungarian.m/stats_for_paper.m/latexTable/rm_VAD_legend.m are excluded; measures/main still reference excluded helpers, so this partial selection cannot be presented as a runnable full evaluator.",
+      "acquisition": "independent_source_checkout",
+      "verified_at": "2026-10-05"
     }
   ]
 }

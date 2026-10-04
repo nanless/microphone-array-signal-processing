@@ -69,6 +69,10 @@ PROJECTS = {
     'streamfm': ('https://github.com/sp-uhh/streamfm.git', 'ab2700c1154acc5c2ce67a5344182028336413f5', 'AGPL-3.0; weights and datasets separately', 'LICENSE', '8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef'),
     'tf-locoformer': ('https://github.com/merlresearch/tf-locoformer.git', '7a615460d347ff7334a13dbb831d16280da72cdc', 'Apache-2.0 and per-file SPDX notices; weights and data separately', 'LICENSE.md', '0b3204d175388251410569d1e6ae8efc9e7e4ae2572ef11ace4015e0ca8d61b7'),
     'overiva-author': ('https://github.com/onolab-tmu/overiva.git', '1cb3189112889ebfe2ccbbde0f55b1db6020fc48', 'MIT', 'LICENSE', 'a872a2a232076ca5034f53a33709efecfe61c7481dbda84b595549f7015f03bc'),
+    'odas': ('https://github.com/introlab/odas.git', 'bcb845434495e293df3d48f1203b7a86e1852449', 'MIT', 'LICENSE', 'd80055b1eac9fdb001f429f262c79ce6a7619b85064a759f17b0b33bbb9c8b2a'),
+    'spatial-audio-framework': ('https://github.com/leomccormack/Spatial_Audio_Framework.git', '18fd5aba46e20787b51f28f7197a68506c965c07', 'ISC core; GPL-2.0-or-later optional tracker module (individual headers control)', 'LICENSE.md', '0148c9bfe5f2093cd06cecd3359bc16bc29a2200863a59af81a90b7922c67af3'),
+    'filterpy': ('https://github.com/rlabbe/filterpy.git', '3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33', 'MIT', 'LICENSE', '8ffce1097f1b1c0fba42e4449ef49aa05cb7b45566dd0989407839dba07af99c'),
+    'stonesoup': ('https://github.com/dstl/Stone-Soup.git', '8d1edeb07ef8505ed065cbef435cfb5e517d9bdc', 'MIT', 'LICENSE', '2462f3d8a857f601e266f048a4ff051366c1e05f098cf3a1524eaf922f879815'),
 
 }
 

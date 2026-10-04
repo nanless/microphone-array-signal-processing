@@ -19,6 +19,7 @@ import json
 from pathlib import Path
 
 import numpy as np
+from codes.chapters.ch00.io_contracts import same_metadata, strict_json_loads, validate_asset_directory
 
 from codes.chapters.ch00.core.audio_samples import pcm16_bytes
 from codes.chapters.ch09.core.moving_source import free_field_array, synthetic_source
@@ -78,37 +79,71 @@ def build_fixture(sample_rate: int = 16000, duration_seconds: float = 2.0) -> tu
 
 SOURCE_PATHS = (
     'codes/chapters/ch09/examples/moving_source_audio.py', 'codes/chapters/ch09/core/moving_source.py',
-    'codes/chapters/ch00/core/audio_samples.py', 'codes/chapters/ch02/core/conventions.py',
+    'codes/chapters/ch00/core/audio_samples.py', 'codes/chapters/ch00/io_contracts.py', 'codes/chapters/ch02/core/conventions.py',
 )
 
 
-def _validate_directory(directory, expected, *, check):
-    """Reject links/special files before any output write or read-through check.
+# Reviewed literal values/types, independent of build_fixture return metadata.
+REQUIRED_MODEL = {'model': 'continuous moving point source in 2-D free field; exact retarded emission time and 1/r '
+          'pressure; no reflection, HRTF, microphone directivity or measured noise',
+ 'sample_rate_hz': 16000,
+ 'duration_seconds': 2.0,
+ 'sound_speed_m_per_s': 343.0,
+ 'microphones_xy_m': [[-0.05, 0.0], [0.05, 0.0]],
+ 'source_start_xy_m': [-0.8, 1.5],
+ 'source_velocity_xy_m_per_s': [0.8, 0.0],
+ 'source_signal': 'deterministic 220 and 320 Hz sinusoids with 20 ms raised onset; not speech',
+ 'truth_step_samples': 160,
+ 'limits': 'free-field point-source teaching fixture, not a room, speech, hardware recording, or '
+           'measured tracking benchmark'}
 
-    Existing directories are either empty (new export) or contain exactly the
-    fixed assets. Parent components are checked without resolving away links.
+def _validate_model(signals, metadata):
+    """Reject internal model drift before writing any existing asset.
+
+    This is a trusted-code regression contract, not a hostile-code sandbox.
+    The shared physical kernels retain the sole waveform implementation.
     """
-    if not isinstance(check, bool):
-        raise ValueError('check must be bool')
-    directory = Path(directory).absolute()
-    for parent in (*reversed(directory.parents), directory):
-        if (parent.is_symlink() and not
-                (str(parent) in ('/var', '/tmp', '/etc')
-                 and parent.resolve() == Path('/private')/parent.name)):
-            raise ValueError(f'audio directory ancestor is a symbolic link: {parent}')
-        if parent.exists() and not parent.is_dir():
-            raise ValueError(f'audio directory ancestor is not a directory: {parent}')
-    if not directory.exists():
-        if check:
-            raise ValueError('audio directory is missing')
-        return
-    members = list(directory.iterdir())
-    for member in members:
-        if member.is_symlink() or not member.is_file() or member.stat().st_nlink != 1:
-            raise ValueError(f'audio member must be an ordinary file: {member}')
-    names = {member.name for member in members}
-    if names != set(expected) and (check or names):
-        raise ValueError('audio directory must contain exactly the expected members')
+    if type(metadata) is not dict or set(metadata) != set(REQUIRED_MODEL) | {
+            'truth', 'common_export_gain', 'retarded_equation_max_residual_seconds'}:
+        raise ValueError('moving model metadata fields differ')
+    if not same_metadata({key: metadata[key] for key in REQUIRED_MODEL}, REQUIRED_MODEL):
+        raise ValueError('moving fixed model values or true types differ')
+    if type(signals) is not dict or set(signals) != {'source', 'static_array', 'moving_array'}:
+        raise ValueError('three declared moving waveform members required')
+    for key, signal in signals.items():
+        if (not isinstance(signal, np.ndarray) or signal.dtype.kind != 'f'
+                or signal.shape != (1 if key == 'source' else 2, 32000)
+                or not np.isfinite(signal).all()):
+            raise ValueError('fixed finite real floating waveform required: ' + key)
+    times = np.arange(32000) / 16000
+    microphones = np.array([[-.05, 0.], [.05, 0.]])
+    moving, emission = free_field_array(times, microphones,
+        source_start_xy=(-.8, 1.5), source_velocity_xy=(.8, 0.))
+    static, _ = free_field_array(times, microphones,
+        source_start_xy=(-.8, 1.5), source_velocity_xy=(0., 0.))
+    source = synthetic_source(times)[None, :]
+    gain = .70 / max(float(np.max(abs(x))) for x in (source, moving, static))
+    expected_signals = {'source': source * gain, 'static_array': static * gain, 'moving_array': moving * gain}
+    if any(not np.array_equal(signals[key], value) for key, value in expected_signals.items()):
+        raise ValueError('moving waveform differs from the declared shared-kernel model')
+    frame_times = np.arange(0, 32000, 160) / 16000
+    px = -.8 + .8 * frame_times
+    distances = np.sqrt((px[:, None] - microphones[None, :, 0]) ** 2 + 1.5 ** 2)
+    expected_truth = {'time_seconds': frame_times.tolist(),
+        'angle_degrees_from_positive_y': np.degrees(np.arctan2(px, 1.5)).tolist(),
+        'mic1_minus_mic0_travel_time_seconds': ((distances[:, 1]-distances[:, 0])/343.).tolist()}
+    residual = float(np.max(abs(emission + np.linalg.norm(
+        np.array([-.8, 1.5])[None, None, :] + emission[:, :, None] * np.array([.8, 0.])
+        - microphones[:, None, :], axis=2) / 343. - times[None, :])))
+    for key, expected in {'truth': expected_truth, 'common_export_gain': gain,
+            'retarded_equation_max_residual_seconds': residual}.items():
+        if not same_metadata(metadata[key], expected):
+            raise ValueError('moving model truth, gain or numerical metadata differs: ' + key)
+
+
+def _validate_directory(directory, expected, *, check):
+    """Local preflight only; no concurrency or crash-persistence guarantee."""
+    return validate_asset_directory(directory, expected, check=check)
 
 
 def generate(out_dir: Path = OUT, *, check: bool = False) -> dict:
@@ -116,6 +151,7 @@ def generate(out_dir: Path = OUT, *, check: bool = False) -> dict:
     out_dir = Path(out_dir)
     _validate_directory(out_dir, ("source.wav", "static_array.wav", "moving_array.wav", "MANIFEST.json"), check=check)
     signals, metadata = build_fixture()
+    _validate_model(signals, metadata)
     assets, files = {}, {}
     for stem, waveform in signals.items():
         name = f"{stem}.wav"
@@ -130,6 +166,9 @@ def generate(out_dir: Path = OUT, *, check: bool = False) -> dict:
     metadata["propagation_scope"] = "assigned retarded-time 1/r pressure model; no moving-monopole radiation-amplitude correction"
     assets['MANIFEST.json'] = (json.dumps(metadata, ensure_ascii=False, indent=2, allow_nan=False)+'\n').encode()
     if check:
+        recorded = strict_json_loads((out_dir/'MANIFEST.json').read_bytes())
+        if not same_metadata(recorded, metadata):
+            raise ValueError('manifest differs from current fixed model, source identities or scores')
         for name, data in assets.items():
             path = out_dir/name
             if not path.is_file() or path.read_bytes() != data:

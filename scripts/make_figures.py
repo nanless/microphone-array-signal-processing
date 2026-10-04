@@ -3225,9 +3225,10 @@ def fig_css_overlap():
 
 
 def fig_tracking_audio():
-    """Plot only the analysis recomputed from the independently exported PCM."""
+    """Replay-check exported PCM and its analysis before plotting manifest fields."""
+    from codes.chapters.ch09.examples.chapter09_tracking_audio import generate
     manifest_path = Path(__file__).resolve().parents[1]/'codes/chapters/ch09/tracking_audio/MANIFEST.json'
-    manifest = json.loads(manifest_path.read_text())
+    manifest = generate(manifest_path.parent, check=True)
     frames = manifest['pcm_analysis']['frames']
     t = np.asarray(frames['state_time_s'])
     valid = np.asarray(frames['observation_valid'],dtype=bool)

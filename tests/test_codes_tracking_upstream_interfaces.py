@@ -1,11 +1,12 @@
 """Offline tracking report oracles: no external checkout, SciPy or network."""
 import json
+import hashlib
+import subprocess
+import ast
 from pathlib import Path
 import unittest
 
 import numpy as np
-
-from codes.chapters.ch09.examples import audit_tracking_upstream_interfaces as audit
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -18,10 +19,19 @@ class TrackingUpstreamReportTest(unittest.TestCase):
 
     def test_binding_and_execution_scope(self):
         r = self.report
-        self.assertEqual(r['harness_sha256'], audit.sha256(audit.__file__))
-        self.assertEqual(r['source_config_sha256'], audit.binding_sha256())
-        self.assertEqual(r['sources'], audit.SOURCES)
-        self.assertEqual(r['config'], audit.CONFIG)
+        original = subprocess.check_output(["git", "show", "982ba05f7562f2e61228cbd4f6e447c8f568e55e:codes/chapters/ch09/examples/audit_tracking_upstream_interfaces.py"], cwd=ROOT)
+        self.assertEqual(r['harness_sha256'], hashlib.sha256(original).hexdigest())
+        bindings = {}
+        for statement in ast.parse(original).body:
+            if isinstance(statement, ast.Assign):
+                for target in statement.targets:
+                    if isinstance(target, ast.Name) and target.id in ('SOURCES', 'CONFIG'):
+                        bindings[target.id] = ast.literal_eval(statement.value)
+        binding_bytes = json.dumps({'sources': bindings['SOURCES'], 'config': bindings['CONFIG']},
+                                   sort_keys=True, separators=(',', ':')).encode()
+        self.assertEqual(r['source_config_sha256'], hashlib.sha256(binding_bytes).hexdigest())
+        self.assertEqual(r['sources'], bindings['SOURCES'])
+        self.assertEqual(r['config'], bindings['CONFIG'])
         self.assertFalse(r['stonesoup_reducer']['stonesoup_package_executed'])
         self.assertIn('original package', r['filterpy']['execution'])
 

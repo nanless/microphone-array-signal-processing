@@ -1,4 +1,4 @@
-"""Fourteen teaching experiments E09-10..23; no writes on import/run.
+"""Teaching experiments E09-10..26; no writes on import/run.
 
 These are small arithmetic/controlled-signal examples, not complete EKF, UKF,
 JPDA, PHD, GOSPA tracking systems or device evaluations. No upstream imports.
@@ -25,6 +25,12 @@ from codes.chapters.ch09.core.tracking import (
 )
 from codes.chapters.ch09.core.tracking_audio import analyze_array, read_pcm16
 from codes.chapters.ch09.examples.chapter09_tracking_audio import OUTPUT as TRACKING_OUTPUT, generate
+from codes.chapters.ch09.core.imm_teaching import imm_missing_observation_example
+from codes.chapters.ch09.examples.tracking_lifecycle_demo import run_demo as lifecycle_demo
+from codes.chapters.ch09.core.spherical_tracking import (
+    direction_from_angles, angles_from_direction, rotate_direction,
+    normalized_direction_covariance, vmf_static_update, vmf_resultant_length,
+)
 
 
 def small_set_distances(truth, estimate, *, cutoff=10., order=1):
@@ -361,6 +367,26 @@ def run_experiments(*, audio_directory=TRACKING_OUTPUT):
         'wrong_current_time_update': {'mean': drop_mean+wrong_gain*(2-drop_mean),
                                       'variance': (1-wrong_gain)*drop_variance},
         'scope': 'scalar Euclidean random walk; chronological replay uses original measurement times once, not a generic out-of-sequence tracker'}
+    result['E09-24'] = imm_missing_observation_example()
+    result['E09-25'] = lifecycle_demo(audio_directory)
+    rotation = np.array([[0., -1., 0.], [1., 0., 0.], [0., 0., 1.]])
+    array_direction = direction_from_angles(30., 0.)
+    world_direction = rotate_direction(array_direction, rotation)
+    sphere_update = vmf_static_update([0., 1., 0.], 3., [1., 0., 0.], 4.)
+    result['E09-26'] = {
+        'array_angles_deg': [30., 0.], 'array_direction': array_direction,
+        'array_to_world': rotation, 'world_direction': world_direction,
+        'world_angles': angles_from_direction(world_direction),
+        'north_pole_from_two_azimuths': [direction_from_angles(0., 90.), direction_from_angles(120., 90.)],
+        'north_pole_angles': angles_from_direction([0., 0., 1.]),
+        'local_normalization': normalized_direction_covariance([0., 2., 0.], np.eye(3)*.04),
+        'static_vmf_posterior': sphere_update,
+        'posterior_angles': angles_from_direction(sphere_update['mean_direction']),
+        'posterior_resultant_length': vmf_resultant_length(5.),
+        'uniform_polar_cap_10deg_probability': (1-math.cos(math.radians(10)))/2,
+        'equal_theta_phi_grid_density_ratio_at_80deg': 1/math.cos(math.radians(80)),
+        'scope': 'known proper rotation and one static independent vMF likelihood; not dynamic FvMFF, pose estimation or a calibrated tangent filter',
+    }
     return _plain(result)
 
 

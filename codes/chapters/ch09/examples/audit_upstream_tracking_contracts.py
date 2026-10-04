@@ -3,9 +3,14 @@
 ODAS: three unchanged C translation units and original headers. SAF: unchanged
 tracker3d_step body with named counter/state substitutes, not RBMCDA execution.
 FilterPy Q and Stone Soup isvalid: unchanged AST definitions with named adapters.
-The historical interface tool may be rerun in memory; its report is never edited.
+The sibling interface tool is a new current execution; historical reports are never edited.
 """
 from __future__ import annotations
+
+if __name__ == "__main__" and not __package__:
+    import sys as _sys
+    from pathlib import Path as _Path
+    _sys.path.insert(0, str(_Path(__file__).resolve().parents[4]))
 
 import argparse
 import ast
@@ -24,6 +29,10 @@ import tempfile
 from types import SimpleNamespace
 
 import numpy as np
+from codes.chapters.ch04.core import upstream_contracts as contracts
+
+CURRENT = Path(__file__).resolve().parents[1] / "reports/upstream_tracking_contracts_current.json"
+INTERFACE = Path(__file__).with_name("audit_tracking_upstream_interfaces.py")
 
 ROOT = Path(__file__).resolve().parents[4]
 LOCK = ROOT / "codes/chapters/ch00/SOURCES.lock.json"
@@ -85,59 +94,32 @@ def unique_projects(rows):
 
 
 def verify_sources(cache=CACHE):
-    """Verify required source identity separately from whole-checkout selection.
-
-    A recorded sparse-selection mismatch stays a mismatch. It can accompany a
-    method call only after independently checking origin, fixed HEAD, complete
-    worktree cleanliness, and every required original file and license below.
-    """
-    locks = unique_projects(json.loads(LOCK.read_text())["projects"])
-    status_path = LOCK.with_name("SOURCE_STATUS.json")
-    status_report = json.loads(status_path.read_text())
-    if status_report["lock_sha256"] != digest(LOCK.read_bytes()):
-        raise ValueError("SOURCE_STATUS does not describe the current lock")
-    statuses = unique_projects(status_report["projects"])
-    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
-    env.update(GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL=os.devnull)
-    results = {}
+    identities = {}
     for name, revision in REVISIONS.items():
-        acquisition = statuses[name]
+        identity = contracts.verify_project(name, Path(cache) / name,
+            relatives=tuple(FILES[name]), lock_path=LOCK,
+            status_path=LOCK.with_name("SOURCE_STATUS.json"))
+        if identity["head"] != revision:
+            raise ValueError("fixed HEAD mismatch: " + name)
+        acquisition = identity["recorded_complete_selection"]
         selection = acquisition.get("status") == "source_verified"
         if (acquisition.get("status") not in ("source_verified", "source_selection_mismatch")
-                or acquisition.get("revision") != revision
+                or acquisition.get("revision") != identity["head"]
                 or acquisition.get("missing_entrypoints") != []
                 or acquisition.get("source_selection_verified") is not selection):
-            raise ValueError("SOURCE_STATUS source identity unavailable: " + name)
-        checkout = cache / name
-        def git(*args):
-            return subprocess.check_output(["git", "-C", str(checkout), *args],
-                                           env=env, stderr=subprocess.PIPE)
-        if locks[name]["revision"] != revision or git("rev-parse", "HEAD").decode().strip() != revision:
-            raise ValueError("fixed HEAD mismatch: " + name)
-        origin = git("remote", "get-url", "origin").decode().strip()
-        if origin != locks[name]["url"]:
-            raise ValueError("official origin mismatch: " + name)
-        if Path(git("rev-parse", "--show-toplevel").decode().strip()).resolve() != checkout.resolve():
-            raise ValueError("not an independent checkout: " + name)
-        status = git("status", "--porcelain", "--untracked-files=all").decode()
-        if status:
-            raise ValueError("upstream worktree changes: " + name)
-        files = {}
+            raise ValueError("source identity unavailable: " + name)
         for relative, expected in FILES[name].items():
-            path = checkout / relative
-            data = path.read_bytes()
-            if path.is_symlink() or digest(data) != expected or data != git("show", "HEAD:" + relative):
+            if identity["used_files"][relative]["sha256"] != expected:
                 raise ValueError("source bytes mismatch: " + name + "/" + relative)
-            files[relative] = {"sha256": expected,
-                               "git_blob": git("rev-parse", "HEAD:" + relative).decode().strip()}
-        results[name] = {"head": revision, "tracked_clean": True, "files": files,
-                         "origin": origin, "worktree_clean": True,
-                         "acquisition_record": acquisition,
-                         "source_selection_verified": selection,
-                         "required_source_identity_verified": True,
-                         "license": locks[name]["license"],
-                         "lock_entry_sha256": stable_digest(locks[name])}
-    return results
+        # Keep familiar compatibility fields while storing the full contract.
+        identity.update(acquisition_record=identity["recorded_complete_selection"],
+            source_selection_verified=identity["live_complete_selection"]["source_selection_verified"],
+            required_source_identity_verified=True, worktree_clean=True,
+            tracked_clean=True, files=identity["used_files"],
+            license=identity["lock_entry"]["license"],
+            lock_entry_sha256=stable_digest(identity["lock_entry"]))
+        identities[name] = identity
+    return identities
 
 
 def extract_python(path, names, class_name=None):
@@ -312,50 +294,34 @@ def c_contracts(cache):
 
 
 def historical_recheck(cache):
-    path = Path(__file__).with_name("audit_tracking_upstream_interfaces.py")
-    spec = importlib.util.spec_from_file_location("tracking_historical_recheck", path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    module.verify_sources(cache)
-    before = {}
-    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
-    for name, binding in module.SOURCES.items():
-        before[name] = {"head": binding["revision"], "files": {
-            relative: {"sha256": expected,
-                       "git_blob": subprocess.check_output(
-                           ["git", "-C", str(cache / name), "rev-parse", "HEAD:" + relative],
-                           env=env, text=True).strip()}
-            for relative, expected in binding["files"].items()}}
-    try:
-        actual = module.run_filterpy(cache)
-    except ImportError as error:
-        actual = {"execution": "not_run", "error": type(error).__name__ + ": " + str(error)}
-    reducer = module.run_reducer_extraction(cache)
-    module.verify_sources(cache)
-    return {"historical_tool_sha256": digest(path.read_bytes()),
-            "scope": "current execution, not modification of September report",
-            "sources_verified_before_and_after": before,
-            "filterpy": actual, "stonesoup_reducer": reducer}
+    # This is a new current execution of the sibling interface tool. Its SHA
+    # is a real dependency; neither historical JSON/tool binding is rewritten.
+    from codes.chapters.ch09.examples import audit_tracking_upstream_interfaces as module
+    report = module.run(cache)
+    return {"current_interface_tool_sha256": digest(INTERFACE.read_bytes()),
+            "scope": "new current execution; the two original historical reports remain unchanged",
+            "source_identities": report["source_identities"],
+            "filterpy": report["filterpy"], "stonesoup_reducer": report["stonesoup_reducer"]}
 
 
 def run(cache=CACHE):
     sys.dont_write_bytecode = True
+    deps = contracts.dependencies(Path(__file__), (INTERFACE,))
     before = verify_sources(cache)
     report = {"schema_version": 1, "generated_at": datetime.now(timezone.utc).isoformat(),
               "tool_sha256": digest(Path(__file__).read_bytes()),
-              "source_lock_sha256": digest(LOCK.read_bytes()),
-              "source_status_sha256": digest(LOCK.with_name("SOURCE_STATUS.json").read_bytes()),
+              "source_lock_sha256": contracts.sha(LOCK),
+              "source_status_sha256": contracts.sha(LOCK.with_name("SOURCE_STATUS.json")),
+              "actual_dependencies_sha256": deps,
               "environment": {"python": sys.version, "executable": sys.executable,
                               "numpy": np.__version__, "platform": platform.platform()},
-              "sources_before": before, "python": python_contracts(cache),
-              "native": c_contracts(cache), "historical_current_recheck": historical_recheck(cache)}
-    after = verify_sources(cache)
-    if (after != before or digest(LOCK.read_bytes()) != report["source_lock_sha256"]
-            or digest(Path(__file__).read_bytes()) != report["tool_sha256"]
-            or digest(LOCK.with_name("SOURCE_STATUS.json").read_bytes()) != report["source_status_sha256"]):
-        raise ValueError("source or lock changed during audit")
-    report["sources_after"] = after
-    json.dumps(report, allow_nan=False)  # no NaN/Infinity success records
+              "source_identities": before, "python": python_contracts(cache),
+              "native": c_contracts(cache), "current_interface_recheck": historical_recheck(cache)}
+    for identity in before.values():
+        contracts.check_unchanged(identity)
+    if contracts.dependencies(Path(__file__), (INTERFACE,)) != deps:
+        raise ValueError("Actual audit dependencies changed during execution")
+    json.dumps(report, allow_nan=False)
     return report
 
 
@@ -364,19 +330,15 @@ def main():
     parser.add_argument("--source-root", type=Path, default=CACHE)
     parser.add_argument("--report", type=Path)
     args = parser.parse_args()
+    if args.report is not None and args.report.suffix != ".json":
+        raise ValueError("Report destination must use .json")
+    target = None if args.report is None else contracts.report_target(
+        args.report, CURRENT, (CACHE, args.source_root))
     report = run(args.source_root)
-    rendered = json.dumps(report, indent=2, ensure_ascii=False, allow_nan=False) + "\n"
-    if args.report is None:
-        print(rendered, end="")
+    if target is None:
+        print(json.dumps(report, indent=2, ensure_ascii=False, allow_nan=False))
     else:
-        # Report destinations never overwrite source or ignored upstream cache.
-        target = args.report.resolve()
-        official = ROOT / "codes/chapters/ch09/reports/upstream_tracking_contracts.json"
-        if (target.suffix != ".json" or target.is_relative_to(args.source_root.resolve())
-                or (target.is_relative_to(ROOT) and target != official)):
-            raise ValueError("report must be JSON outside the upstream cache")
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(rendered)
+        contracts.write_report(target, report, CURRENT, (CACHE, args.source_root))
         print(target)
 
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 A · 符号术语数学 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="88408a687172"><style>
+<meta name="source-digest" content="b232a8dba19b"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -389,6 +389,14 @@ kf_s/N,&0\leq k\lt \lceil N/2\rceil,\\
 <td>从阵列指向声源的单位向量；声波传播方向为 $-\vec u$</td>
 </tr>
 <tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\phi_{\mathrm{el}}$, $\vec u(\theta,\phi_{\mathrm{el}})$（第9章三维方向）</td>
+<td>俯仰从水平面朝+z为正，范围$[-90^\circ,90^\circ]$；方位仍从+y朝+x为正。极点方位无定义，积分的球面面积因子以弧度写成$\cos\phi_{\mathrm{el}}$（E09-26）</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\mathbf R_{\mathrm{WA}}$（第9章姿态）</td>
+<td>把阵列坐标的指源单位向量转换到世界坐标的已知正交旋转，行列式为+1、逆变换为其转置；不是空间协方差。右手z轴正旋转与本书方位的正方向相反（E09-26）</td>
+</tr>
+<tr>
 <td class="tutorial-short-column" style="--tutorial-column-width:8em">$\vec{r}_m$, $\vec{p}$</td>
 <td>第 $m$ 个麦克风的位置向量、声源位置向量</td>
 </tr>
@@ -398,7 +406,7 @@ kf_s/N,&0\leq k\lt \lceil N/2\rceil,\\
 </tr>
 <tr>
 <td class="tutorial-short-column" style="--tutorial-column-width:8em">$\psi$</td>
-<td>相邻两麦在指向补偿后的残余相位差（§2.6、§5.2）</td>
+<td>相邻两麦在指向补偿后的残余相位差（§2.6、§5.2）；E09-26局部另定义为右手绕+z的已知姿态角，两者不能混用</td>
 </tr>
 <tr>
 <td class="tutorial-short-column" style="--tutorial-column-width:8em">$\vec{a}(\theta)$, $\vec{w}$</td>
@@ -451,6 +459,14 @@ kf_s/N,&0\leq k\lt \lceil N/2\rceil,\\
 <tr>
 <td class="tutorial-short-column" style="--tutorial-column-width:8em">$\mathbf{P}$, $\mathbf{K}$, $\mathbf{Q}$, $\mathbf{F}$, $\mathbf{H}$</td>
 <td>卡尔曼滤波：误差协方差、卡尔曼增益、过程噪声协方差、状态转移、观测矩阵（§9.2）</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\mu_j$, $c_j$, $L_j$（第9章IMM）</td>
+<td>模式后验概率、经过行转移矩阵的模式先验、模式条件观测似然密度。标量度制角观测的$L_j$单位为$\mathrm{deg}^{-1}$，它不是无量纲事件概率；缺测不提供新$L_j$（E09-24）</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\kappa_{\mathrm{vMF}}$, $\vec\mu_{\mathrm{vMF}}$, $A(k)$（第9章球面概率）</td>
+<td>vMF无量纲集中度、单位集中方向、期望向量的长度。E09-26局部缩写为$k$和$\vec m$；均匀分布集中方向无定义。它们不同于IMM模式概率$\mu_j$、PHD杂波强度$\kappa_t(z)$和标量均值（E09-26）</td>
 </tr>
 <tr>
 <td class="tutorial-short-column" style="--tutorial-column-width:8em">$V$, $A$, $S$, $\bar\alpha$</td>

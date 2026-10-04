@@ -295,6 +295,22 @@ class BuildHelpersTest(unittest.TestCase):
              ('路线', '处理的对象', '新增的模型条件', '本书实际范围'),
              54, {1: 10, 2: 12, 3: 17, 4: 15}),
         ]
+        cases.extend([
+            (ROOT / 'chapters/09_source-tracking.md',
+             ('t（s）', '观测与真标签', '分配至 A/B', '错配数', '硬关联角误差 A/B（度）',
+              '真值关联角误差 A/B（度）', 'A 角度方差（度²）'),
+             63, {1: 5, 2: 11, 3: 8, 4: 6, 5: 12, 6: 12, 7: 9}),
+            (ROOT / 'chapters/09_source-tracking.md',
+             ('追踪输出字段', '含义与单位', '消费方必须检查'), 52, {1: 14, 2: 18, 3: 20}),
+            (ROOT / 'chapters/09_source-tracking.md',
+             ('状态时刻（s）', '模式1概率', '模式2概率', '均值（度）', '方差（平方度）'),
+             53, {1: 8, 2: 11, 3: 11, 4: 11, 5: 12}),
+            (build_site.RESEARCH_ROOT / '01_spatial_and_tracking.md',
+             ('固定原来源', '实际选集', '文件许可及边界'), 48, {1: 10, 2: 15, 3: 23}),
+            (build_site.RESEARCH_ROOT / '05_exercises_and_audio.md',
+             ('协议', '首次确认事件可用时刻（s）', '退役帧与可用时刻', '再次确认可用时刻（s）',
+              '已确认发布帧数/总帧数'), 66, {1: 12, 2: 14, 3: 14, 4: 14, 5: 12}),
+        ])
         for path, headers, width, columns in cases:
             with self.subTest(path=path, headers=headers):
                 html, _ = build_site.render(self.budget_fixture(headers), path)
@@ -987,10 +1003,10 @@ class BuildHelpersTest(unittest.TestCase):
         )
 
     def test_figure_semantics_accept_any_reuse_and_reject_mismatch_or_orphan(self):
-        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 77)]
+        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 78)]
         refs.extend([("图1 复用", "fig01_x.png", 1),
                      ("图23 复用", "fig23_x.png", 23)])
-        names = [f"fig{i:02d}_x.png" for i in range(1, 77)]
+        names = [f"fig{i:02d}_x.png" for i in range(1, 78)]
         self.assertEqual(quality_check.figure_inventory_issues(refs, names), [])
         bad_refs = list(refs)
         bad_refs[0] = ("图2 错配", "fig01_x.png", 1)

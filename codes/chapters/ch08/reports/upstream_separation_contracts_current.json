@@ -1,19 +1,19 @@
 {
   "schema_version": 2,
-  "created_at": "2026-10-04T14:28:17.379842+00:00",
-  "verified_at_local": "2026-10-04T22:28:17.379842+08:00",
+  "created_at": "2026-10-04T16:43:47.348210+00:00",
+  "verified_at_local": "2026-10-05T00:43:47.348210+08:00",
   "tool_sha256": "4a54932f263ba872cc3f1598d756d73886b215e68b9140f8217c0fb39bde6e50",
-  "source_lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
+  "source_lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
   "current_helper_sha256": "402e182dc93ae70f40d507deb1f5750e3997787a2bf1051ebdbe625170e00e46",
   "historical_helper_sha256": "cb4dd83db4ead5c9973bf723deb372073f717f9fe4290c71fcbfd34d8c4e439b",
   "actual_dependency_sha256": {
     "codes/chapters/ch08/examples/audit_upstream_separation_contracts.py": "4a54932f263ba872cc3f1598d756d73886b215e68b9140f8217c0fb39bde6e50",
-    "codes/chapters/ch04/core/upstream_contracts.py": "f4ede23fef31d6b1d37db6ac5a28797edd3a9c27f32d5c20974d6fe83eec65e5",
+    "codes/chapters/ch04/core/upstream_contracts.py": "8400275d56d40d54a89d6093a4d0646cba4d4f858f8fbeaea4d1ca60f34b90c4",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4",
     "codes/chapters/ch08/examples/audit_separation_upstream_interfaces.py": "402e182dc93ae70f40d507deb1f5750e3997787a2bf1051ebdbe625170e00e46"
   },
-  "source_status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
+  "source_status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
   "source_identities": {
     "arraydps": {
       "project": "arraydps",
@@ -40,12 +40,12 @@
         ],
         "verified_at": "2026-10-01"
       },
-      "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
       "recorded_complete_selection": {
         "id": "arraydps",
         "revision": "750ac2b7c75458f4ca5bad203dafda528f575e55",
@@ -264,12 +264,12 @@
           "asteroid/masknn/norms.py"
         ]
       },
-      "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
       "recorded_complete_selection": {
         "id": "asteroid",
         "revision": "fce87469132760fbab41c20616ea0f0e079aad38",
@@ -462,12 +462,12 @@
           "espnet2/enh/separator/tfgridnet_separator.py"
         ]
       },
-      "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
       "recorded_complete_selection": {
         "id": "espnet",
         "revision": "be79590bb2ff26ffb01bc825c5f68cb9418b7f0d",
@@ -656,12 +656,12 @@
           "gss/core/gss.py"
         ]
       },
-      "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
       "recorded_complete_selection": {
         "id": "gss",
         "revision": "10fad18cae85e2e4342c77421abc70c9c5da23ed",
@@ -905,12 +905,12 @@
           "inference.ipynb"
         ]
       },
-      "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
       "recorded_complete_selection": {
         "id": "mamba_tasnet",
         "revision": "a35c692f27213781a11b1606c375cda1e1f0fb62",
@@ -1141,12 +1141,12 @@
           "tests/collections/audio/test_audio_modules.py"
         ]
       },
-      "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
       "recorded_complete_selection": {
         "id": "nemo_wpe",
         "revision": "2381f42f6979449b5b99538f8f80135831009b51",
@@ -1422,12 +1422,12 @@
         ],
         "note": "Source inspection only. Inference entrypoint automatically downloads models/data; it is not executed. README warns dev-set-2 is challenge-only and removed for legal reasons. Dataset availability/terms do not follow code MIT license."
       },
-      "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
       "recorded_complete_selection": {
         "id": "notsofar1",
         "revision": "6f58e08b008f7530ba4141f0aeb02447c70b6fd7",
@@ -1668,12 +1668,12 @@
           "pyroomacoustics/bss/trinicon.py"
         ]
       },
-      "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
       "recorded_complete_selection": {
         "id": "pyroomacoustics",
         "revision": "0dd39f2614b7fc44b2cc63dbe7d60f4641068890",
@@ -1781,12 +1781,12 @@
           "ssspy/algorithm/projection_back.py"
         ]
       },
-      "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
       "recorded_complete_selection": {
         "id": "ssspy",
         "revision": "38b9389e8b1914422561f1936d9b28d042d62d2c",
@@ -2747,12 +2747,12 @@
         ],
         "verified_at": "2026-10-01"
       },
-      "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
       "recorded_complete_selection": {
         "id": "arraydps",
         "revision": "750ac2b7c75458f4ca5bad203dafda528f575e55",
@@ -2971,12 +2971,12 @@
           "asteroid/masknn/norms.py"
         ]
       },
-      "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
       "recorded_complete_selection": {
         "id": "asteroid",
         "revision": "fce87469132760fbab41c20616ea0f0e079aad38",
@@ -3169,12 +3169,12 @@
           "espnet2/enh/separator/tfgridnet_separator.py"
         ]
       },
-      "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
       "recorded_complete_selection": {
         "id": "espnet",
         "revision": "be79590bb2ff26ffb01bc825c5f68cb9418b7f0d",
@@ -3363,12 +3363,12 @@
           "gss/core/gss.py"
         ]
       },
-      "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
       "recorded_complete_selection": {
         "id": "gss",
         "revision": "10fad18cae85e2e4342c77421abc70c9c5da23ed",
@@ -3612,12 +3612,12 @@
           "inference.ipynb"
         ]
       },
-      "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
       "recorded_complete_selection": {
         "id": "mamba_tasnet",
         "revision": "a35c692f27213781a11b1606c375cda1e1f0fb62",
@@ -3848,12 +3848,12 @@
           "tests/collections/audio/test_audio_modules.py"
         ]
       },
-      "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
       "recorded_complete_selection": {
         "id": "nemo_wpe",
         "revision": "2381f42f6979449b5b99538f8f80135831009b51",
@@ -4129,12 +4129,12 @@
         ],
         "note": "Source inspection only. Inference entrypoint automatically downloads models/data; it is not executed. README warns dev-set-2 is challenge-only and removed for legal reasons. Dataset availability/terms do not follow code MIT license."
       },
-      "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
       "recorded_complete_selection": {
         "id": "notsofar1",
         "revision": "6f58e08b008f7530ba4141f0aeb02447c70b6fd7",
@@ -4375,12 +4375,12 @@
           "pyroomacoustics/bss/trinicon.py"
         ]
       },
-      "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
       "recorded_complete_selection": {
         "id": "pyroomacoustics",
         "revision": "0dd39f2614b7fc44b2cc63dbe7d60f4641068890",
@@ -4488,12 +4488,12 @@
           "ssspy/algorithm/projection_back.py"
         ]
       },
-      "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
       "recorded_complete_selection": {
         "id": "ssspy",
         "revision": "38b9389e8b1914422561f1936d9b28d042d62d2c",

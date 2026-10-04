@@ -6,6 +6,12 @@ containers: this is not execution of the Stone Soup package or its PHD filter.
 """
 from __future__ import annotations
 
+# Keep both documented direct-file and module entry points.
+if __name__ == "__main__" and not __package__:
+    import sys as _sys
+    from pathlib import Path as _Path
+    _sys.path.insert(0, str(_Path(__file__).resolve().parents[4]))
+
 import argparse
 import ast
 from datetime import datetime, timezone
@@ -20,6 +26,12 @@ from types import SimpleNamespace
 from operator import attrgetter
 
 import numpy as np
+from codes.chapters.ch04.core import upstream_contracts as contracts
+
+ROOT = Path(__file__).resolve().parents[4]
+CACHE = contracts.CACHE
+CURRENT = ROOT / "codes/chapters/ch09/reports/tracking_upstream_interfaces_current.json"
+PROTECTED = (CACHE,)
 
 CODES = Path(__file__).resolve().parents[3]
 SOURCES = {'filterpy': {'files': {'LICENSE': '8ffce1097f1b1c0fba42e4449ef49aa05cb7b45566dd0989407839dba07af99c',
@@ -62,23 +74,49 @@ def binding_sha256():
                                     sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
-def verify_sources(root):
-    locks = {p["id"]: p for p in json.loads((CODES / "chapters/ch00/SOURCES.lock.json").read_text())["projects"]}
-    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+def verify_sources(root=CACHE):
+    identities = {}
     for name, spec in SOURCES.items():
-        checkout = root / name
-        def git(*args):
-            return subprocess.check_output(["git", "-C", str(checkout), *args],
-                                           env=env, text=True, stderr=subprocess.PIPE).strip()
-        if locks[name]["revision"] != spec["revision"] or git("rev-parse", "HEAD") != spec["revision"]:
-            raise ValueError("revision mismatch: " + name)
-        if Path(git("rev-parse", "--show-toplevel")).resolve() != checkout.resolve():
-            raise ValueError("expected independent checkout: " + name)
-        if git("status", "--porcelain", "--untracked-files=no"):
-            raise ValueError("upstream tracked files modified: " + name)
-        for relative, digest in spec["files"].items():
-            if sha256(checkout / relative) != digest:
+        identity = contracts.verify_project(name, Path(root) / name,
+            relatives=tuple(spec["files"]), all_python=name == "filterpy")
+        acquisition = identity["recorded_complete_selection"]
+        selection = acquisition.get("status") == "source_verified"
+        if (acquisition.get("status") not in ("source_verified", "source_selection_mismatch")
+                or acquisition.get("revision") != identity["head"]
+                or acquisition.get("missing_entrypoints") != []
+                or acquisition.get("source_selection_verified") is not selection):
+            raise ValueError("source identity unavailable: " + name)
+        for relative, expected in spec["files"].items():
+            if identity["used_files"][relative]["sha256"] != expected:
                 raise ValueError("source digest mismatch: " + name + "/" + relative)
+        identities[name] = identity
+    return identities
+
+
+def loaded_filterpy_modules(identity):
+    """All imported original modules must belong to the preflighted checkout.
+
+    Tracked Python files are checked before import. This records which were
+    actually imported; checking a file does not assert its every method ran.
+    External NumPy/SciPy installations are environment dependencies, not the
+    fixed author repository, and are identified separately in the report.
+    """
+    checkout = Path(identity["checkout"])
+    loaded = {}
+    for name, module in sorted(sys.modules.items()):
+        if name == "filterpy" or name.startswith("filterpy."):
+            filename = getattr(module, "__file__", None)
+            if not filename:
+                raise ValueError("FilterPy module has no ordinary source: " + name)
+            path = contracts.ordinary_file(filename)
+            try:
+                relative = path.relative_to(checkout).as_posix()
+            except ValueError as error:
+                raise ValueError("Imported a foreign FilterPy module: " + name) from error
+            if relative not in identity["used_files"]:
+                raise ValueError("FilterPy module was not verified before import: " + relative)
+            loaded[name] = relative
+    return loaded
 
 
 def scalar(x):
@@ -86,6 +124,10 @@ def scalar(x):
 
 
 def run_filterpy(root):
+    sys.dont_write_bytecode = True
+    identity = contracts.verify_project("filterpy", Path(root) / "filterpy",
+        relatives=tuple(SOURCES["filterpy"]["files"]), all_python=True)
+    loaded_filterpy_modules(identity)  # Reject preexisting foreign modules first.
     sys.path.insert(0, str((root / "filterpy").resolve()))
     import filterpy
     import scipy
@@ -163,6 +205,21 @@ def run_filterpy(root):
         ekf[name] = {"calls": seen, "mean": scalar(f.x), "variance": scalar(f.P),
                      "gain": scalar(f.K), "innovation_variance": scalar(f.S),
                      "stored_x_prior": scalar(f.x_prior), "stored_P_prior": scalar(f.P_prior)}
+    # The docstring promises prediction for None, but this fixed combined
+    # implementation subtracts None after changing S/K. Keep the actual error.
+    f = make_ekf()
+    before_none = {"mean": scalar(f.x), "variance": scalar(f.P),
+                   "gain": scalar(f.K), "innovation_variance": scalar(f.S)}
+    try:
+        f.predict_update(None, lambda x: 2*x, lambda x: x*x)
+    except Exception as error:
+        none_error = {"type": type(error).__name__, "message": str(error)}
+    else:
+        raise AssertionError("Fixed original EKF None failure changed")
+    none_record = {"before": before_none, "exception": none_error,
+        "after": {"mean": scalar(f.x), "variance": scalar(f.P),
+                  "gain": scalar(f.K), "innovation_variance": scalar(f.S)},
+        "scope": "original combined method failed after partial state mutation; not an atomic prediction"}
     angle = {}
     for name in ["merged_default", "separate_wrapped"]:
         f = make_ekf(True)
@@ -179,7 +236,14 @@ def run_filterpy(root):
     points = MerweScaledSigmaPoints(1, alpha=1., beta=2., kappa=0.)
     sigmas = points.sigma_points(np.array([0.]), np.array([[1.]]))
     mean, cov = unscented_transform(sigmas**2, points.Wm, points.Wc)
+    loaded = loaded_filterpy_modules(identity)
+    contracts.check_unchanged(identity)
     return {"execution": "original package classes/functions imported from verified checkout",
+            "source_identity": identity, "imported_modules": loaded,
+            "imported_module_count": len(loaded),
+            "external_dependencies": {"numpy": {"version": np.__version__, "file": np.__file__},
+                                      "scipy": {"version": scipy.__version__, "file": scipy.__file__}},
+            "ekf_predict_update_none": none_record,
             "filterpy_version": filterpy.__version__, "scipy_version": scipy.__version__,
             "imm_predict_only": states, "imm_update_none_fresh": fresh_none,
             "imm_update_none_after_measurement": stale_none,
@@ -189,13 +253,9 @@ def run_filterpy(root):
 
 
 def run_reducer_extraction(root):
-    sys.path.insert(0, str((root / "stonesoup").resolve()))
-    try:
-        from stonesoup.mixturereducer.gaussianmixture import GaussianMixtureReducer
-    except ImportError as exc:
-        package_probe = type(exc).__name__ + ": " + str(exc)
-    else:
-        package_probe = "import succeeded; reducer calls below still use AST extraction"
+    # Do not import the package and leave a partly initialized Stone Soup in
+    # sys.modules. These three original bodies use explicit minimal adapters.
+    package_probe = "not_run: package import deliberately excluded from this AST-only current audit; historical failed import remains in its original report"
     source = root / "stonesoup/stonesoup/mixturereducer/gaussianmixture.py"
     tree = ast.parse(source.read_text())
     node = next(n for n in tree.body if isinstance(n, ast.ClassDef) and n.name == "GaussianMixtureReducer")
@@ -235,25 +295,46 @@ def run_reducer_extraction(root):
             "records": records}
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source-root", type=Path, default=CODES / "chapters/ch00/upstream/_downloads")
-    parser.add_argument("--output", type=Path, default=CODES / "chapters/ch09/reports/tracking_upstream_interfaces.json")
-    args = parser.parse_args()
+def run(root=CACHE):
     sys.dont_write_bytecode = True
-    verify_sources(args.source_root)
+    deps = contracts.dependencies(Path(__file__))
+    identities = verify_sources(root)
     report = {"schema_version": 1, "generated_at": datetime.now(timezone.utc).isoformat(),
               "harness_sha256": sha256(__file__), "source_config_sha256": binding_sha256(),
+              "source_lock_sha256": contracts.sha(contracts.LOCK),
+              "source_status_sha256": contracts.sha(contracts.STATUS),
+              "actual_dependencies_sha256": deps,
               "sources": SOURCES, "config": CONFIG,
+              "source_identities": identities,
               "environment": {"python": sys.version, "executable": sys.executable,
                               "platform": platform.platform(), "numpy": np.__version__},
-              "filterpy": run_filterpy(args.source_root),
-              "stonesoup_reducer": run_reducer_extraction(args.source_root),
+              "filterpy": run_filterpy(root),
+              "stonesoup_reducer": run_reducer_extraction(root),
               "static_only": ["ODAS", "SAF tracker3d", "icoDOA/Cross3D", "StoneSoup JPDA/GOSPA/MHT"],
-              "not_run": ["audio corpus", "hardware", "neural inference/training", "MATLAB Vo toolbox"]}
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False)+"\n")
-    print(args.output)
+              "not_run": ["audio corpus", "hardware", "neural inference/training", "MATLAB Vo toolbox", "StoneSoup package import/PHD"]}
+    for identity in identities.values():
+        contracts.check_unchanged(identity)
+    if contracts.dependencies(Path(__file__)) != deps:
+        raise ValueError("Actual audit dependencies changed during execution")
+    json.dumps(report, allow_nan=False)
+    return report
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--source-root", type=Path, default=CACHE)
+    parser.add_argument("--output", type=Path)
+    args = parser.parse_args()
+    if args.output is not None and args.output.suffix != ".json":
+        raise ValueError("Report destination must use .json")
+    target = None if args.output is None else contracts.report_target(
+        args.output, CURRENT, (*PROTECTED, args.source_root))
+    report = run(args.source_root)
+    if target is None:
+        print(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False))
+    else:
+        contracts.write_report(target, report, CURRENT, (*PROTECTED, args.source_root))
+        print(target)
 
 
 if __name__ == "__main__":

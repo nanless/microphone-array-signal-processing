@@ -245,6 +245,11 @@ NARROW_TABLE_POLICIES = {
     SRC / "08_speech-separation.md": {
         ("后窗输出", "每声道整数误差", "实际PCM MSE", "实际PCM相对误差"): (44, {1: 8, 2: 13, 3: 11, 4: 12}),
     },
+    SRC / "09_source-tracking.md": {
+        ("t（s）", "观测与真标签", "分配至 A/B", "错配数", "硬关联角误差 A/B（度）", "真值关联角误差 A/B（度）", "A 角度方差（度²）"): (63, {1: 5, 2: 11, 3: 8, 4: 6, 5: 12, 6: 12, 7: 9}),
+        ("追踪输出字段", "含义与单位", "消费方必须检查"): (52, {1: 14, 2: 18, 3: 20}),
+        ("状态时刻（s）", "模式1概率", "模式2概率", "均值（度）", "方差（平方度）"): (53, {1: 8, 2: 11, 3: 11, 4: 11, 5: 12}),
+    },
     SRC / "11_selection-guide.md": {
         ("场景", "条件变化", "方案怎样变化"): (36, {1: 6}),
         ("项目", "应写内容"): (30, {1: 6}),
@@ -263,6 +268,7 @@ NARROW_TABLE_POLICIES = {
         ("完整输出", "整数误差平方和 $E$", "实际PCM MSE", "实际PCM NMSE"): (48, {1: 6}),
     },
     RESEARCH_ROOT / "01_spatial_and_tracking.md": {
+        ("固定原来源", "实际选集", "文件许可及边界"): (48, {1: 10, 2: 15, 3: 23}),
         ("原始路线", "输入与额外前提", "求解目标和关键改变", "本书当前证据"): (54, {1: 8, 2: 15, 3: 16, 4: 15}),
         ("路线", "处理的对象", "新增的模型条件", "本书实际范围"): (54, {1: 10, 2: 12, 3: 17, 4: 15}),
         ("源码入口", "实际操作", "与本章的关系及限制"): (64, {1: 32, 2: 18, 3: 22}),
@@ -273,6 +279,7 @@ NARROW_TABLE_POLICIES = {
         ("要核的条件", "固定源码静态事实", "不能推出的判断"): (48, {1: 8, 2: 24, 3: 16}),
     },
     RESEARCH_ROOT / "05_exercises_and_audio.md": {
+        ("协议", "首次确认事件可用时刻（s）", "退役帧与可用时刻", "再次确认可用时刻（s）", "已确认发布帧数/总帧数"): (66, {1: 12, 2: 14, 3: 14, 4: 14, 5: 12}),
         ("文件", "取点或输出", "查看重点"): (60, {1: 20, 2: 18, 3: 22}),
         ("取点或输出", "切换窗整数E", "稳定窗整数E", "尾窗整数E"): (52, {1: 16, 2: 12, 3: 12, 4: 12}),
         ("文件", "输出整数能量E_y", "误差整数能量E_e", "实际PCM功率E_y/D", "实际PCM总MSE E_e/D", "实际PCM NMSE"): (72, {1: 8, 2: 13, 3: 13, 4: 13, 5: 13, 6: 12}),
@@ -518,6 +525,7 @@ def stage_moving_audio(source, destination):
     source_paths = {"codes/chapters/ch09/examples/moving_source_audio.py",
                     "codes/chapters/ch09/core/moving_source.py",
                     "codes/chapters/ch00/core/audio_samples.py",
+                    "codes/chapters/ch00/io_contracts.py",
                     "codes/chapters/ch02/core/conventions.py"}
     if set(manifest.get("source_sha256", {})) != source_paths:
         raise ValueError("移动声源生成源码清单不完整")
@@ -1130,7 +1138,8 @@ def source_digest():
               ROOT / "scripts" / "make_beamforming_figures.py",
               ROOT / "scripts" / "make_reference_figures.py",
               ROOT / "scripts" / "make_delay_figures.py",
-              ROOT / "scripts" / "make_css_figures.py", ROOT / "requirements.txt"]
+              ROOT / "scripts" / "make_css_figures.py",
+              ROOT / "scripts" / "make_tracking_figures.py", ROOT / "requirements.txt"]
     paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
         digest.update(path.relative_to(ROOT).as_posix().encode("utf-8"))

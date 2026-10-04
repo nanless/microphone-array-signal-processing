@@ -95,7 +95,8 @@ class EnhancementParagraphTest(unittest.TestCase):
             ("06_aec.md", "#### 6.2.4 IPNLMS：", "**两抽头手算。**", "比例归一化最小均方", 8),
             ("06_aec.md", "第一行描述路径的漂移或突变", "下式是便于复算", "同写为", 4),
             ("08_speech-separation.md", "**AuxIVA（", "设统计帧数为", "标准实现仍是整段迭代", 3),
-            ("09_source-tracking.md", "多目标追踪还要估计", "#### 9.3.3 可执行基线", "最优子模式分配距离", 2),
+            ("09_source-tracking.md", "PHD 强度 $D_t(x)$", "下面的递推针对", "PHD 避免显式枚举", 2),
+            ("09_source-tracking.md", "粒子或高斯混合只是表示", "#### 9.3.3 可执行基线", "这些方法分别处理关联", 2),
             ("09_source-tracking.md", "GM-PHD 的高斯权重和", "MHT 已有可阅读的受限参考", "JPDA 也需要明确", 2),
         ]
         for filename, start, end, second_start, expected_paragraphs in cases:

@@ -24,8 +24,8 @@ class Chapter09ExperimentsTests(unittest.TestCase):
         generate(cls.audio_directory)
         cls.results = run_experiments(audio_directory=cls.audio_directory)
 
-    def test_fourteen_stable_ids(self):
-        self.assertEqual(set(self.results), {f'E09-{i:02}' for i in range(10, 24)})
+    def test_seventeen_stable_ids(self):
+        self.assertEqual(set(self.results), {f'E09-{i:02}' for i in range(10, 27)})
 
     def test_bearing_ekf_geometry_and_fraction_posterior(self):
         item = self.results['E09-10']

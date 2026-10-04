@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source_script": "scripts/make_figures.py",
-  "source_script_sha256": "d65c3662aee4929a1ebb030c13df4413ce7abbf36f28d6ddab29a2e084b1b1d9",
+  "source_script_sha256": "9af488505ac62aac3f8b73c80bb11c61d0e06a7c66d43ab6a931abe70fd98bf5",
   "exercise": "E02-16",
   "input": [
     1.0,

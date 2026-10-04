@@ -1,8 +1,8 @@
 {
-  "run_utc": "2026-10-04T14:27:53.934152+00:00",
-  "run_asia_shanghai": "2026-10-04T22:27:53.934757+08:00",
+  "run_utc": "2026-10-04T16:43:28.339957+00:00",
+  "run_asia_shanghai": "2026-10-05T00:43:28.345074+08:00",
   "audit_source_sha256": "1934582b929a5765ef88f1542f9f4a7976c0d5e02f294db681e7cf2814421999",
-  "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
+  "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
   "lock_entry": {
     "id": "said-spatial-imaging",
     "url": "https://github.com/IN03X/SAID.git",
@@ -100,12 +100,12 @@
         "said/cli.py"
       ]
     },
-    "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
+    "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
     "source_document_paths": {
       "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
       "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
     },
-    "status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
+    "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
     "recorded_complete_selection": {
       "id": "said-spatial-imaging",
       "revision": "cf52ede4f38361cdbb03aa93c8254109583dfe2b",
@@ -426,7 +426,7 @@
   },
   "report_source_sha256": {
     "codes/chapters/ch04/examples/audit_said_compression.py": "1934582b929a5765ef88f1542f9f4a7976c0d5e02f294db681e7cf2814421999",
-    "codes/chapters/ch04/core/upstream_contracts.py": "f4ede23fef31d6b1d37db6ac5a28797edd3a9c27f32d5c20974d6fe83eec65e5",
+    "codes/chapters/ch04/core/upstream_contracts.py": "8400275d56d40d54a89d6093a4d0646cba4d4f858f8fbeaea4d1ca60f34b90c4",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },

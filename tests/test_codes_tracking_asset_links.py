@@ -33,7 +33,22 @@ class TrackingAssetLinkTest(unittest.TestCase):
                     self.assertEqual(wav.read_bytes(),(original/wav.name).read_bytes());count+=1
                 metadata=module.generate(directory,check=True)
                 self.assertEqual(set(metadata['source_sha256']),set(module.SOURCE_PATHS))
-                self.assertNotIn('codes/chapters/ch00/io_contracts.py',module.SOURCE_PATHS)
+                expected = {'codes/chapters/ch09/examples/moving_source_audio.py',
+                    'codes/chapters/ch09/core/moving_source.py',
+                    'codes/chapters/ch00/core/audio_samples.py',
+                    'codes/chapters/ch02/core/conventions.py',
+                    'codes/chapters/ch00/io_contracts.py'} if name == 'moving' else {
+                    'codes/chapters/ch09/examples/chapter09_tracking_audio.py',
+                    'codes/chapters/ch09/core/tracking_audio.py',
+                    'codes/chapters/ch09/core/moving_source.py',
+                    'codes/chapters/ch09/core/tracking.py',
+                    'codes/chapters/ch04/core/doa.py',
+                    'codes/chapters/ch04/core/covariance.py',
+                    'codes/chapters/ch02/core/conventions.py',
+                    'codes/chapters/ch00/core/audio_samples.py',
+                    'codes/chapters/ch00/io_contracts.py'}
+                self.assertEqual(set(module.SOURCE_PATHS), expected)
+                self.assertEqual(len(module.SOURCE_PATHS), 5 if name == 'moving' else 9)
         self.assertEqual(count,5)
 
     def test_normal_checks_do_not_change_content_or_mtime(self):

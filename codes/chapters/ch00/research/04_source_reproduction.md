@@ -574,4 +574,12 @@ e3b3176d835837441224e4906b7c2befadcdc4fe2ce6163245b7d9a9ad0d9229
 新增前原110项锁表SHA为`eec80748e5f1fcc01d33e281b91a4482f52566d8e6b74bdb737e017604ec6487`，原状态SHA为`4cc8cbd48e3e98b51a24705468415d10654aa349f3946fb98ef48e9c4856f4f6`；原字节保存于[source_snapshots](../source_snapshots/)并由[source_history.py](../core/source_history.py)登记。加入OverIVA后的111项当时用真实工具离线核验，71项通过、22项原选集不匹配、17项仅索引、1项原AEC缓存失败，真实退出1。当时94项有独立受管理工作区。旧报告继续保留真实历史身份，当前方法执行与源码取得状态分别记录。
 
 
-随后按固定`375ac4dee2a8e193aaa48553289499a6f43d93e6`取得MeCo的16个MIT核心/入口/配置原文本，共95305字节。部分选集不包括混合许可骨干和NVIDIA NC CUDA，缺少独立运行闭包；未执行Torch/CUDA或取得权重与数据。具体原输入、默认参数、JVP与评价边界见[增强N19](02_aec_wpe_separation.md#meco-candidate)。新增前111项原锁/状态再次按原字节保存并登记，当前112项实际离线核验为72通过、22原选集不匹配、17仅索引、1原AEC失败，真实退出1；95项有受管理工作区。所有原111项完整状态保持，来源取得不是性能成绩。
+随后按固定`375ac4dee2a8e193aaa48553289499a6f43d93e6`取得MeCo的16个MIT核心/入口/配置原文本，共95305字节。部分选集不包括混合许可骨干和NVIDIA NC CUDA，缺少独立运行闭包；未执行Torch/CUDA或取得权重与数据。具体原输入、默认参数、JVP与评价边界见[增强N19](02_aec_wpe_separation.md#meco-candidate)。新增前111项原锁/状态再次按原字节保存并登记，当时112项实际离线核验为72通过、22原选集不匹配、17仅索引、1原AEC失败，真实退出1；95项有受管理工作区。所有原111项完整状态保持，来源取得不是性能成绩。
+
+## 第9章：114项来源身份与当前追踪报告
+
+2026-10-05按逐文件许可取得LOCATA I/O与eval的15/16个文本选集；不是完整MATLAB运行环境，未取得数据或执行官方评分。范围、原语句静态疑点与许可分别见[空间研究§61.4](01_spatial_and_tracking.md#tracking-model-lifecycle-sphere)及[第三方记录](../THIRD_PARTY.md)。完整锁表114项实际离线核验为74通过、22原选集不匹配、17索引和1原AEC缓存失败，工具退出1；97个项目有独立受管理工作区，原112项状态逐项保留。
+
+扩充前的[112项原锁字节](../source_snapshots/SOURCES.d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a.json)和[原获取状态字节](../source_snapshots/SOURCE_STATUS.e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da.json)按完整SHA登记，旧执行报告不换成新锁表身份。当前第4～8章14个直接消费者实际重新执行后绑定新锁表，原故障/未运行边界保留；不能只改JSON字符串。
+
+第9章两个工具默认stdout；接口工具显式`--output`写[当前接口报告](../../ch09/reports/tracking_upstream_interfaces_current.json)，原方法合同工具显式`--report`写[当前原方法合同](../../ch09/reports/upstream_tracking_contracts_current.json)，路径均须通过安全检查，不覆盖两旧历史报告。ODAS限定原C、SAF控制流替身、FilterPy原包/原方法和StoneSoup三个原AST方法各记执行范围；完整稀疏选集不匹配不抹去。FilterPy本轮预检63个跟踪源文件，33个实际导入模块分别记录；EKF组合接口`None`的原TypeError及部分K/S更新保留，不能改写成原包缺测路径成功。

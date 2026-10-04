@@ -1,8 +1,8 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 112 个 Git 上游项目；已在 `codes/chapters/ch00/upstream/_downloads/` 取得 95 个独立源码工作区。其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件，DiCoW v1 演示与 TS-ASR-Whisper v1 训练源码于 2026-09-28 按固定提交取得。2026-09-30 新增原作者湿空气声速模型，2026-10-01取得SAID及NeMo WPE固定源码，2026-10-02取得TAC四文件，2026-10-04另取得作者WOLA-DANSE、paderwasn与TI-DANSE+ batch三个限定源码选集，并取得WASN的11个与LibriCSS的27个源码/说明/许可文件。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 114 个 Git 上游项目；已在 `codes/chapters/ch00/upstream/_downloads/` 取得 97 个独立源码工作区。其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件，DiCoW v1 演示与 TS-ASR-Whisper v1 训练源码于 2026-09-28 按固定提交取得。2026-09-30 新增原作者湿空气声速模型，2026-10-01取得SAID及NeMo WPE固定源码，2026-10-02取得TAC四文件，2026-10-04另取得作者WOLA-DANSE、paderwasn与TI-DANSE+ batch三个限定源码选集，并取得WASN的11个与LibriCSS的27个源码/说明/许可文件。
 
-当前离线核验逐条比较完整源码包含规则及32条扩展名排除规则：72项通过、22项旧工作区仅有20条排除规则而记为 `source_selection_mismatch`、17项仅登记来源，AEC Challenge 的5个真实录音有本地变动而记为失败。旧工作区均保留，不自动补规则或删除文件。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+当前离线核验逐条比较完整源码包含规则及32条扩展名排除规则：74项通过、22项旧工作区仅有20条排除规则而记为 `source_selection_mismatch`、17项仅登记来源，AEC Challenge 的5个真实录音有本地变动而记为失败。旧工作区均保留，不自动补规则或删除文件。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”表示本地存在独立来源工作区；是否符合当前提交、工作区状态、指定入口和完整选集政策，以状态报告分别判断。取得源码不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -38,6 +38,8 @@ SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构�
 | [SAID](https://github.com/IN03X/SAID/tree/cf52ede4f38361cdbb03aa93c8254109583dfe2b) | Audio2Sph球面方向编码、Sph2Imaging逐源能量图与类别、DCASE 2026 Track A压缩提交 | 原创源MIT，所列第三方组件MIT/Apache-2.0；权重独立非商业研究条款，AudioMAE权重CC BY-NC 4.0 | 固定源码选集及完整LICENSES/第三方声明已取得；未取检查点或said/demo_data，未运行网络、训练或榜单评测；原压缩单文件实验范围见空间研究 |
 | [TAC作者单阶段FaSNet变体](https://github.com/yluo42/TAC/tree/e3373b73358a96af6f64fdbe25327def8d6bd973) | 共享通道变换、平均和拼接；与参考通道封装分别核对 | README声明CC BY-NC-SA 3.0 US，固定树无独立LICENSE；不能误称MIT或自由商用 | 2026-10-02取得README、FaSNet.py、utility/__init__.py、utility/models.py四文件，只在忽略的独立工作区保留；静态合同核查未执行Torch网络，不取音频/模型/训练数据 |
 | [pyroomacoustics](https://github.com/LCAV/pyroomacoustics/tree/0dd39f2614b7fc44b2cc63dbe7d60f4641068890) | 房间仿真、STFT、DOA、波束、盲分离及通用 RLS/BlockRLS 自适应滤波；后者不是完整 AEC 链路 | MIT | 已取得独立源码 |
+| [LOCATA I/O](https://github.com/cevers/sap_locata_io/tree/632468f49b13ca5a9f2f51c064d91183c06622fa) | MATLAB读写、真值/坐标及MUSIC基线的固定原源码 | 15个选中文件各自头声明ODC-BY1.0；不推广到完整库或数据 | 2026-10-05取得15文本82549B，原blob/HEAD/许可和选集核对；未运行MATLAB或录音，静态时间/坐标差异见空间研究§61.4 |
+| [LOCATA eval](https://github.com/cevers/sap_locata_eval/tree/2787cdabf21bc96453c0d4f3c66db9c9c9f40434) | 活动、关联、集合误差及时效评价的固定原源码 | 14作者.m头声明ODC-BY1.0，munkres源码/许可为BSD两条款 | 2026-10-05取得16文本128834B；排除未授权/MathWorks内部文件，非独立运行闭包，未官方评分或取得数据 |
 | [odas](https://github.com/introlab/odas/tree/bcb845434495e293df3d48f1203b7a86e1852449) | 定位、追踪、分离与后滤波的实时 C 链路 | MIT | 已取得独立源码 |
 | [NeMo v2.4.0 WPE](https://github.com/NVIDIA/NeMo/tree/2381f42f6979449b5b99538f8f80135831009b51) | 幅度掩码WPE、长度屏蔽和多轮回归输入契约 | Apache-2.0；完整LICENSE保留，固定根NOTICE不存在 | 2026-10-01取得11个精确源码/许可文件；原NeMo URL现重定向NVIDIA-NeMo/Speech；不是完整可安装框架，未装Torch/模型或运行原算子 |
 | [nara_wpe](https://github.com/fgnt/nara_wpe/tree/a166779cca2088817e330481bd20af1a2c598555) | 离线、块在线和逐帧在线 WPE | MIT | 已取得独立源码 |
@@ -273,7 +275,7 @@ Vo归档SHA-256为`fb22c9edecb56049b7f8ede1e1522384f0c4e6bfb5e5577f3bd482f6367ef
 
 ## 第4章直达路径与产品接口的新增索引
 
-2026-10-04静态核两项完整提交及所读入口摘要，当前Git索引共109项、92个已取得工作区。两项新增都只索引，不取得发布源码、二进制或数据；当前状态17项index_only，既有失败和选集不匹配保留。
+2026-10-04静态核两项完整提交及所读入口摘要，当时Git索引共109项、92个已取得工作区。两项新增都只索引，不取得发布源码、二进制或数据；当时状态17项index_only，既有失败和选集不匹配保留。
 
 | 固定来源 | 许可与源码边界 | 本轮实际研究 |
 |---|---|---|
@@ -283,3 +285,9 @@ Vo归档SHA-256为`fb22c9edecb56049b7f8ede1e1522384f0c4e6bfb5e5577f3bd482f6367ef
 逐算法模型、计算及限制见[空间研究58/59](research/01_spatial_and_tracking.md#sec-u-1ca23edba5)。当前来源锁保存各入口SHA；历史原报告仍绑定当时整锁及工具字节，不因新增两项改写旧实验记录。
 
 本机静态研究另在Git忽略的`upstream/_downloads/.research-only/`保留两份固定原文件选集：DP-RTF四文件、ESP-SR七入口，逐blob/SHA核对并保留原许可声明。它们不随书发布，不是Git工作树或完整设备实现，未运行算法，不计入92个受管理源码工作区，也不改变当前17项仅索引状态；详细获取范围见[来源研究记录](research/04_source_reproduction.md)。
+
+### 第9章当前逐文件选集（2026-10-05）
+
+LOCATA的完整原仓库许可未建立；只获取锁表逐项列出的31个许可明确文本。I/O的15个`.m`分别保留ODC-BY1.0头；eval的14个作者`.m`分别保留同类声明，另两文件`utils/munkres/{munkres.m,license.txt}`保留Yi Cao原版权与BSD两条款。原许可锚是两库的`main.m`/`main_evaluation.m`，eval另保留munkres完整许可；逐路径正选集与完整SHA见锁表和受管理原源码。没有复制LOCATA录音、MAT评分文件、权重或许可不明助手，也不把固定选集称作完整可安装软件。
+
+实际文件均在忽略的独立原Git工作树，完整官方origin/提交、实际选集与原blob核对通过；源码核验不是算法执行。静态发现的坐标、窗与FFT支持、发布时间和评分语句差异见[空间研究§61.4](research/01_spatial_and_tracking.md#tracking-model-lifecycle-sphere)。2026-10-05整表114项离线核验为74通过、22旧选集不匹配、17索引与1旧AEC缓存失败，旧问题保留；全部算法或LOCATA评分没有因此升级为已运行。

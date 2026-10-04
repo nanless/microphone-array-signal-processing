@@ -142,7 +142,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "06_aec.md": 71,  # reference-gain topic and E40/E41/E42 are four independent h4 topics
     "07_wpe-dereverberation.md": 58,
     "08_speech-separation.md": 63,  # OverIVA topic and three separately navigable exercises
-    "09_source-tracking.md": 56,
+    "09_source-tracking.md": 62,  # three independent topics and E09-24/25/26
     "10_engineering-practice.md": 54,
     "11_selection-guide.md": 37,
     "12_appendix-symbols-math.md": 36,
@@ -172,15 +172,15 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 16
 EXPECTED_SECTION_COUNT = 151
-EXPECTED_SUBSECTION_COUNT = 720
-EXPECTED_OUTLINE_ITEM_COUNT = 887
-EXPECTED_FIGURE_NUMBERS = set(range(1, 77))
-EXPECTED_EXERCISE_COUNT = 349
+EXPECTED_SUBSECTION_COUNT = 726
+EXPECTED_OUTLINE_ITEM_COUNT = 893
+EXPECTED_FIGURE_NUMBERS = set(range(1, 78))
+EXPECTED_EXERCISE_COUNT = 352
 EXPECTED_EXERCISE_COUNTS = {
     '01_problem-definition.md': 10, '02_basics-signal-model.md': 20,
     '03_array-geometry.md': 18, '04_doa-estimation.md': 25,
     '05_beamforming.md': 24, '06_aec.md': 42, '07_wpe-dereverberation.md': 24,
-    '08_speech-separation.md': 32, '09_source-tracking.md': 23,
+    '08_speech-separation.md': 32, '09_source-tracking.md': 26,
     '10_engineering-practice.md': 33, '11_selection-guide.md': 25,
     '12_appendix-symbols-math.md': 19, '13_appendix-guide.md': 14,
     '14_acoustic-imaging.md': 16, '15_distributed-enhancement.md': 24,
@@ -793,7 +793,7 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_css_figures.py" if number == 76 else "make_delay_figures.py" if number == 75 else "make_reference_figures.py" if number == 74 else "make_beamforming_figures.py" if number == 73 else "make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72)
+            script_name = ("make_tracking_figures.py" if number == 77 else "make_css_figures.py" if number == 76 else "make_delay_figures.py" if number == 75 else "make_reference_figures.py" if number == 74 else "make_beamforming_figures.py" if number == 73 else "make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
@@ -1396,7 +1396,7 @@ def source_digest():
                     if path.is_file())
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
-              ("build_pdf.py", "make_figures.py", "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py", "make_delay_figures.py", "make_css_figures.py")]
+              ("build_pdf.py", "make_figures.py", "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py", "make_delay_figures.py", "make_css_figures.py", "make_tracking_figures.py")]
     paths.append(ROOT / "requirements.txt")
     paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
@@ -1423,7 +1423,7 @@ def site_source_digest():
     paths += [ROOT / "scripts" / name for name in
               ("build_site.py", "build_markdown_helpers.py", "inline_layout.js", "heading_aliases.py",
                "legacy_sequential_anchors.json", "code_layout.py", "make_figures.py",
-               "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py", "make_delay_figures.py", "make_css_figures.py")]
+               "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py", "make_delay_figures.py", "make_css_figures.py", "make_tracking_figures.py")]
     paths.append(ROOT / "requirements.txt")
     paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
@@ -1897,7 +1897,8 @@ def check_moving_audio(errors):
         source_paths = {"codes/chapters/ch09/examples/moving_source_audio.py",
                         "codes/chapters/ch09/core/moving_source.py",
                         "codes/chapters/ch00/core/audio_samples.py",
-                        "codes/chapters/ch02/core/conventions.py"}
+                        "codes/chapters/ch02/core/conventions.py",
+                        "codes/chapters/ch00/io_contracts.py"}
         if set(manifest.get("source_sha256", {})) != source_paths:
             raise ValueError("移动声源生成源码清单不完整")
         for name, digest in manifest["source_sha256"].items():
@@ -2327,7 +2328,7 @@ def check_tracking_audio(errors):
             'codes/chapters/ch09/core/tracking_audio.py', 'codes/chapters/ch09/core/moving_source.py',
             'codes/chapters/ch09/core/tracking.py', 'codes/chapters/ch04/core/doa.py',
             'codes/chapters/ch04/core/covariance.py', 'codes/chapters/ch02/core/conventions.py',
-            'codes/chapters/ch00/core/audio_samples.py'}
+            'codes/chapters/ch00/core/audio_samples.py', 'codes/chapters/ch00/io_contracts.py'}
         if set(manifest.get('source_sha256', {})) != required_sources:
             raise ValueError('追踪音频真实生成源集合不完整')
         for name,digest in manifest['source_sha256'].items():
@@ -2346,9 +2347,159 @@ def check_tracking_audio(errors):
         _check_tracking_frame_arithmetic(manifest, source/'array_noisy.wav')
         for page, prefix in ((SITE/'09_source-tracking.html', ''),
                              (SITE/'research/05_exercises_and_audio.html', '../')):
-            _check_visible_audio(page, prefix, 'tracking_audio', expected-{'MANIFEST.json'}, {'MANIFEST.json'})
+            counts = {'source.wav': 1, 'array_noisy.wav': 2} if not prefix else {
+                'source.wav': 2, 'array_noisy.wav': 2}
+            _check_visible_audio(page, prefix, 'tracking_audio', expected-{'MANIFEST.json'},
+                                 {'MANIFEST.json'}, expected_counts=counts)
     except Exception as exc:
         fail(errors,f"PCM观测追踪实验检查失败：{exc}")
+
+
+def check_tracking_lifecycle_figure(errors):
+    """Check figure77's fixed PCM events and both clocks independently of the FSM."""
+    try:
+        from PIL import Image
+        source = ROOT / "codes/chapters/ch09/tracking_audio"
+        validate_asset_directory(source, {"source.wav", "array_noisy.wav", "MANIFEST.json"}, check=True)
+        report = _read_audio_manifest(ROOT / "codes/chapters/ch09/reports/figure77_tracking_lifecycle.json")
+        required = {
+            "scripts/make_tracking_figures.py", "codes/chapters/ch09/core/lifecycle.py",
+            "codes/chapters/ch09/examples/tracking_lifecycle_demo.py",
+            "codes/chapters/ch09/examples/chapter09_tracking_audio.py",
+            "codes/chapters/ch09/core/tracking_audio.py", "codes/chapters/ch09/core/moving_source.py",
+            "codes/chapters/ch09/core/tracking.py", "codes/chapters/ch04/core/doa.py",
+            "codes/chapters/ch04/core/covariance.py", "codes/chapters/ch02/core/conventions.py",
+            "codes/chapters/ch00/core/audio_samples.py", "codes/chapters/ch00/io_contracts.py"}
+        actual_sources = {name: hashlib.sha256(validate_parent_chain(ROOT/name).read_bytes()).hexdigest()
+                          for name in required}
+        actual_inputs = {name: hashlib.sha256((source/name).read_bytes()).hexdigest()
+                         for name in ("source.wav", "array_noisy.wav", "MANIFEST.json")}
+        if (type(report.get("schema_version")) is not int or report["schema_version"] != 1
+                or report.get("exercise_id") != "E09-25"
+                or not same_metadata(report.get("source_sha256"), actual_sources)
+                or not same_metadata(report.get("input_sha256"), actual_inputs)
+                or report.get("script_sha256") != actual_sources["scripts/make_tracking_figures.py"]):
+            raise ValueError("figure77 source or actual PCM identity differs")
+        manifest = _read_audio_manifest(source/"MANIFEST.json")
+        _check_tracking_frame_arithmetic(manifest, source/"array_noisy.wav")
+        analysis = manifest["pcm_analysis"]
+        frames = analysis["frames"]
+        if not same_metadata(report.get("analysis_scores"), analysis["scores"]):
+            raise ValueError("figure77 does not use the verified actual PCM analysis")
+        valid = [not 82 <= i <= 105 for i in range(197)]
+        if not same_metadata(frames["observation_valid"], valid):
+            raise ValueError("figure77 fixed observation support differs")
+        phases = [1 if i < 2 else 2 if i < 100 else 0 if i < 106 else 3 if i < 108 else 4
+                  for i in range(197)]
+        last = [320*i+511 if i < 82 or i > 105 else 26431 for i in range(197)]
+        plot = {
+            "state_time_s": [(320*i+511)/32000 for i in range(197)],
+            "available_time_s": [(320*i+1024)/32000 for i in range(197)],
+            "observation_angle_deg": frames["observation_angle_deg"],
+            "filtered_angle_deg": frames["filtered_angle_deg"], "valid": valid,
+            "last_valid_measurement_ticks": last,
+            "state_age_s": [(320*i+511-last[i])/32000 for i in range(197)],
+            "available_age_s": [(320*i+1024-last[i])/32000 for i in range(197)],
+            "lifecycle_phase_code": phases}
+        if not same_metadata(report.get("plot_data"), plot):
+            raise ValueError("figure77 plotted clocks, ages or states differ")
+        for name, expiry, publications in (("lifecycle",100,187), ("state_age_comparison",102,189)):
+            section = report[name]
+            if section.get("scope") != (
+                    "one already-associated slot; deterministic teaching thresholds only; "
+                    "no Bernoulli/LMB inference, multi-target assignment, permanent speaker identity, "
+                    "motion-filter reset or prediction to publication time"):
+                raise ValueError("figure77 lifecycle execution scope differs")
+            expected_counts = {"frames":197, "allocated_local_ids":2,
+                               "confirmed_publications":publications, "expired_events":1}
+            if not same_metadata(section["counts"], expected_counts) or len(section["rows"]) != 197:
+                raise ValueError("figure77 event or publication denominator differs")
+            parameters = section["parameters"]
+            for key, expected in (("sample_rate_hz",16000), ("window_samples",512),
+                    ("tick_denominator_hz",32000), ("confirmation_frames",3),
+                    ("maximum_age_ticks",6400), ("maximum_age_s",.2),
+                    ("age_clock","available" if name == "lifecycle" else "state")):
+                if not same_metadata(parameters.get(key),expected):
+                    raise ValueError("figure77 time or threshold contract differs")
+            fixed_parameters = {
+                "sample_rate_hz":16000, "window_samples":512,
+                "tick_denominator_hz":32000, "confirmation_frames":3,
+                "maximum_age_ticks":6400, "maximum_age_s":.2,
+                "age_clock":"available" if name == "lifecycle" else "state",
+                "expiry_comparison":"strictly greater; equality retained",
+                "measurement_epoch":"receiver window centre",
+                "event_publication_epoch":"complete receiver window availability",
+                "expiry_order":"age old candidate/track before applying the incoming observation"}
+            if not same_metadata(parameters,fixed_parameters):
+                raise ValueError("figure77 complete timing protocol differs")
+            expected_events = [(0,"candidate",1),(2,"confirmed",1),(expiry,"expired",1),
+                               (106,"candidate",2),(108,"confirmed",2)]
+            events = section["events"]
+            if len(events) != 5:
+                raise ValueError("figure77 event sequence length differs")
+            for row, (i,event,identity) in zip(events,expected_events):
+                values = {"frame":i,"event":event,"track_id":identity,
+                          "state_tick":320*i+511,"available_tick":320*i+1024,
+                          "state_time_s":(320*i+511)/32000,
+                          "publication_time_s":(320*i+1024)/32000}
+                for key, expected in values.items():
+                    if not same_metadata(row.get(key),expected):
+                        raise ValueError("figure77 event identity or epoch differs")
+            age = 6593 if name == "lifecycle" else 6720
+            if (not same_metadata(events[2].get("age_ticks"),age)
+                    or not same_metadata(events[2].get("age_s"),age/32000)):
+                raise ValueError("figure77 exact expiry boundary differs")
+            full_events = []
+            for i,event,identity in expected_events:
+                entry = {"frame":i,"event":event,"track_id":identity,
+                         "state_tick":320*i+511,"available_tick":320*i+1024,
+                         "state_time_s":(320*i+511)/32000,
+                         "publication_time_s":(320*i+1024)/32000}
+                if event == "expired":
+                    entry.update(age_ticks=age,age_s=age/32000)
+                full_events.append(entry)
+            if not same_metadata(events,full_events):
+                raise ValueError("figure77 complete event records differ")
+            for i, row in enumerate(section["rows"]):
+                confirmed = 2 <= i < expiry or i >= 108
+                absent = expiry <= i < 106
+                last_tick = None if absent else 320*i+511 if valid[i] else 26431
+                now = 320*i + (1024 if name == "lifecycle" else 511)
+                age_tick = None if last_tick is None else now-last_tick
+                expected_row = {
+                    "frame":i,"observation_valid":valid[i],
+                    "state_tick":320*i+511,"available_tick":320*i+1024,
+                    "state_time_s":(320*i+511)/32000,
+                    "publication_time_s":(320*i+1024)/32000,
+                    "phase":"absent" if absent else "confirmed" if confirmed else "tentative",
+                    "track_id":None if absent else 1 if i < 106 else 2,
+                    "consecutive_valid_frames":i+1 if i < 82 else 0 if i < 106 else i-105,
+                    "last_valid_measurement_tick":last_tick,
+                    "last_valid_measurement_time_s":None if last_tick is None else last_tick/32000,
+                    "age_ticks":age_tick,"age_s":None if age_tick is None else age_tick/32000,
+                    "publish_confirmed":confirmed,
+                    "events":[event for frame,event,_ in expected_events if frame == i]}
+                if not same_metadata(row,expected_row):
+                    raise ValueError("figure77 complete per-frame publication contract differs")
+        if not same_metadata(report.get("parameters"),report["lifecycle"]["parameters"]):
+            raise ValueError("figure77 primary protocol differs")
+        if report.get("limits") != (
+                "Actual two-channel synthetic PCM is re-read after strict read-only asset verification. "
+                "Only its GCC validity and declared sample timestamps drive lifecycle events. "
+                "Confirmation is delayed until three consecutive valid frames; a local ID is not permanent speaker identity. "
+                "The underlying original KF remains a separate continuous diagnostic and is not reset by this one-slot manager. "
+                "Available-time age and state-time age are different contracts. "
+                "No new WAV, Bernoulli/LMB filter, multi-target association, hardware result or formal listening study."):
+            raise ValueError("figure77 PCM and execution limits differ")
+        with Image.open(validate_parent_chain(ROOT/"figures/fig77_tracking_lifecycle.png")) as picture:
+            if (picture.info.get("SourceScript") != "scripts/make_tracking_figures.py"
+                    or picture.info.get("SourceScriptDigest") != report["script_sha256"]
+                    or picture.info.get("AudioManifestDigest") != actual_inputs["MANIFEST.json"]
+                    or picture.info.get("SourceClosureDigest") !=
+                       hashlib.sha256(json.dumps(actual_sources,sort_keys=True).encode()).hexdigest()):
+                raise ValueError("figure77 PNG source and actual PCM provenance differ")
+    except Exception as error:
+        fail(errors,"图77实际PCM、生命周期与时刻："+str(error))
 
 
 def _check_tracking_frame_arithmetic(manifest, array_path):
@@ -2467,7 +2618,7 @@ class VisibleMediaParser(HTMLParser):
                 break
 
 
-def _check_visible_audio(page, prefix, directory, names, links):
+def _check_visible_audio(page, prefix, directory, names, links, *, expected_counts=None):
     parser = VisibleMediaParser()
     parser.feed(page.read_text(encoding='utf-8'))
     base = prefix+directory+'/'
@@ -2475,7 +2626,9 @@ def _check_visible_audio(page, prefix, directory, names, links):
              "geometry_audio": "多频几何", "focus_audio": "已知酉聚焦",
              "phase_audio": "已知逐频相位", "derivative_audio": "导数约束"}.get(directory, directory)
     players = [p for p in parser.items if (p.get('src') or '').startswith(base)]
-    if len(players) != len(names) or {p.get('src') for p in players} != {base+n for n in names}:
+    required = ({base+n: 1 for n in names} if expected_counts is None else
+                {base+n: count for n, count in expected_counts.items()})
+    if set(required) != {base+n for n in names} or Counter(p.get('src') for p in players) != required:
         raise ValueError('缺少'+label+'播放器或可见播放器缺失或重复（集合不符）：'+page.name)
     if any('autoplay' in p or 'controls' not in p or p.get('preload') != 'none' or
            not (p.get('aria-label') or '').strip() for p in players):
@@ -3981,6 +4134,7 @@ def main():
     check_room_audio(errors)
     check_moving_audio(errors)
     check_tracking_audio(errors)
+    check_tracking_lifecycle_figure(errors)
     check_gss_audio(errors)
     check_binaural_audio(errors)
     check_spectral_audio(errors)

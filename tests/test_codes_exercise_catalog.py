@@ -1,4 +1,4 @@
-"""Explicit cross-module, chapter and research inventory for 346 exercises."""
+"""Explicit cross-module, chapter and research inventory for 352 exercises."""
 
 import json
 import re
@@ -53,8 +53,8 @@ EXPECTED = {
     "appendix_a": {f"E12-{n:02d}" for n in range(6, 20)},
     "chapter11": {f"E11-{n:02d}" for n in range(10, 26)},
     "chapter10": {f"E10-{n:02d}" for n in range(18, 34)},
-    "chapter09": {f"E09-{n:02d}" for n in range(10, 24)},
-    "chapter08": {f"E08-{n:02d}" for n in range(12, 30)},
+    "chapter09": {f"E09-{n:02d}" for n in range(10, 27)},
+    "chapter08": {f"E08-{n:02d}" for n in range(12, 33)},
     "chapter07": {f"E07-{n:02d}" for n in range(8, 25)},
     "chapter06": {f"E06-{n:02d}" for n in range(22, 34)} | {"E06-40", "E06-41"},
     "chapter05": {f"E05-{n:02d}" for n in range(8, 25)},
@@ -146,9 +146,9 @@ class ExerciseCatalogTest(unittest.TestCase):
     def setUpClass(cls):
         cls.results = {name: run() for name, run in RUNNERS.items()}
 
-    def test_independent_inventory_has_346_unique_ids(self):
-        self.assertEqual(len(ALL_IDS), 346)
-        self.assertEqual(sum(map(len, EXPECTED.values())), 346)
+    def test_independent_inventory_has_352_unique_ids(self):
+        self.assertEqual(len(ALL_IDS), 352)
+        self.assertEqual(sum(map(len, EXPECTED.values())), 352)
 
     def test_each_module_returns_exact_assigned_ids(self):
         for name, results in self.results.items():
@@ -171,7 +171,7 @@ class ExerciseCatalogTest(unittest.TestCase):
                 text = chapters[0].read_text(encoding="utf-8")
                 self.assertRegex(text, rf"\b{re.escape(exercise_id)}\b")
 
-    def test_chapter_and_research_inventories_cover_exactly_346_ids(self):
+    def test_chapter_and_research_inventories_cover_exactly_352_ids(self):
         chapters = "\n".join(path.read_text(encoding="utf-8")
                              for path in (ROOT / "chapters").glob("*.md"))
         research = (ROOT / "codes/chapters/ch00/research/05_exercises_and_audio.md").read_text(encoding="utf-8")

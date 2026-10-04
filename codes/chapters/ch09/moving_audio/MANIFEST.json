@@ -652,9 +652,10 @@
     }
   },
   "source_sha256": {
-    "codes/chapters/ch09/examples/moving_source_audio.py": "04cb9c5be9c11604a7d4728ad9f2d526c8685ca2de49f23821ecdb186e40fa5e",
+    "codes/chapters/ch09/examples/moving_source_audio.py": "ac5d2bf510c6f45bc909094055a5e3ec063a0c86da78a55b10f46c86d805cbd5",
     "codes/chapters/ch09/core/moving_source.py": "4ccc164ebc8daa82394591f28f4ce83d31ff3929e8e2e237736cae59168a177a",
     "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7"
   },
   "environment": {

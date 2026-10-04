@@ -97,3 +97,12 @@ Vo RFS 追踪源码归档单独取得和核验：
 ```bash
 .venv/bin/python codes/chapters/ch00/upstream/fetch_upstreams.py --project speed-of-sound-in-air
 ```
+
+## 第9章LOCATA的限定文本选集
+
+```bash
+.venv/bin/python codes/chapters/ch00/upstream/fetch_upstreams.py --project locata-io
+.venv/bin/python codes/chapters/ch00/upstream/fetch_upstreams.py --project locata-eval
+```
+
+这两个固定提交分别取得15和16个许可明确文本，只用于原源码研究；排除未经授权的助手、录音和MAT数据。ODC-BY文件头与munkres BSD两条款分别保留，完整清单见[SOURCES.lock.json](../SOURCES.lock.json)。选集缺少原入口所需依赖，不提供可运行完整评分器的承诺；静态差异见[空间研究§61.4](../research/01_spatial_and_tracking.md#tracking-model-lifecycle-sphere)。

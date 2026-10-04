@@ -9,7 +9,7 @@
 - **原理索引**：已有原理或来源依据，但尚未形成唯一、许可明确且承担对应计算的源码映射；代码可见而许可不明时也保留此状态，并说明原因。
 - **明确排除**：指定软件的身份或许可不满足本书当前收录方式；不表示删除相应方法的学术讨论。
 
-算法表共 346 行：本仓库可运行基线 73 行、外部参考实现 184 行、原理索引 88 行、明确排除 1 行。练习映射单独计数，不因题数增加算法行；已知激励的逐频正则反卷积新增唯一教学核，同一行保留pyfar外部对照及其限定运行边界。第6章新增一行已知播放增益顺序与历史尾声控制，复用NLMS与NCC，不计作新的自适应算法。MDL、功率谱减、受控 NCC 活动判别与 cACGMM 教学迭代属于本地基线。覆盖表仍有原理索引，不表示全书全部算法已经运行。
+算法表共 348 行：本仓库可运行基线 76 行、外部参考实现 183 行、原理索引 88 行、明确排除 1 行。练习映射单独计数，不因题数增加算法行；已知激励的逐频正则反卷积新增唯一教学核，同一行保留pyfar外部对照及其限定运行边界。第6章新增一行已知播放增益顺序与历史尾声控制，复用NLMS与NCC，不计作新的自适应算法。MDL、功率谱减、受控 NCC 活动判别与 cACGMM 教学迭代属于本地基线。覆盖表仍有原理索引，不表示全书全部算法已经运行。
 
 源码取得与入口核对见 [SOURCE_STATUS.json](SOURCE_STATUS.json)；该文件中的依赖验证和执行字段未开展时为 `not_run`，不承载方法级数值实验结果。实际运行及数值对照见[复现记录](research/04_source_reproduction.md)、[增强研究记录](research/02_aec_wpe_separation.md)和 [WPE 独立对照脚本](../ch07/examples/compare_wpe_reference.py)。工业接口与 SBL 的限定实验报告按主题放在 `codes/chapters/ch04/reports/`、`codes/chapters/ch10/reports/` 等对应章节；实际调用外部代码不将它改列为本仓库教学基线。覆盖状态不是测试结果。完整提交、官方地址、许可与来源 ID 见 [SOURCES.lock.json](SOURCES.lock.json)。表内本仓库教学源文件使用相对于仓库根目录的完整路径；第三方项目的内部路径仍相对于各自项目根目录。出现“同文件”时仅继承上一行文件，不继承其算法或验证结论。
 
@@ -19,7 +19,7 @@
 
 2026-09-29 第 4 章把 GCC 向量 MLP、共素阵 GCC-PHAT 图 CNN 与 STFT 相位图 CNN 分作三条原理索引。只核论文方法；未核到与论文逐项对应、许可明确且可再分发的作者实现，不能把相关但不同年份的代码当作该论文整链复现。图 11/14/33 的图文口径已按当前绘图源核对。
 
-第9章当前复核以[合同报告](../ch09/reports/upstream_tracking_contracts.json)分开记录ODAS原C、SAF原step计数替身与FilterPy/JPDA原方法。旧历史报告及来源锁保持原执行条件；增加sPIT原理索引不表示作者模型已取得或运行。23道代码题和图61另按解析、实际PCM与接口合同各自验收。
+第9章的[当前接口报告](../ch09/reports/tracking_upstream_interfaces_current.json)与[当前原方法合同](../ch09/reports/upstream_tracking_contracts_current.json)分开记录ODAS原C、SAF原step计数替身与FilterPy/JPDA原方法。两份旧历史报告及来源锁保持原执行条件；sPIT仅为原理索引。26道代码题、图61和图77分别按解析、实际PCM与接口合同核查。新增两个限定机制行是单槽生命周期和一次静态vMF条件化；IMM原行增加完整标量教学递推，不把三道练习直接计作三个新算法。
 
 2026-10-04 第5章复核另登记逐通道已知预滤波、原相位连续化函数及在线逐通道掩码原理三项及PAN原理索引；E23的三份相位控制不是新GEV算法，不另计算法行。当前限定执行见三份新的current报告，旧三报告保持真实原字节与747ec历史工具身份。
 
@@ -303,7 +303,9 @@
 | §9.2 | 角度—角速度 Kalman | 本仓库可运行基线 | `codes/chapters/ch09/core/tracking.py::ConstantVelocityKalman` | 最短角差、Joseph 更新、Q 的离散化 |
 | §9.2 | EKF | 外部参考实现 | `filterpy`：`filterpy/kalman/EKF.py` | 观测雅可比、角度残差；固定版组合接口线性化点与分步调用不同，见追踪接口报告 |
 | §9.2 | UKF | 外部参考实现 | `filterpy`：`filterpy/kalman/UKF.py` | sigma 点、圆周均值 |
-| §9.2；研究扩展：空间 §40 | IMM | 外部参考实现 | `filterpy`：`filterpy/kalman/IMM.py` | 同维同义状态与模式转移；固定版缺测/模式先验实际诊断见追踪接口报告 |
+| §9.2；E09-24；空间研究§40/61 | IMM交互与标量随机游走递推 | 本仓库可运行基线 | `codes/chapters/ch09/core/imm_teaching.py::ScalarRandomWalkIMM`；外部对照`filterpy`：`filterpy/kalman/IMM.py` | 同一局部展开角坐标、固定时间步和已知Q/R/T；完整密度、对数模式质量、连续缺测与均值间散布，不含未知偏置/环绕/通用运动模型；原接口与教学实现分开记录 |
+| §9.3；E09-25；空间研究§61 | 单槽候选、确认与退役管理 | 本仓库可运行基线 | `codes/chapters/ch09/core/lifecycle.py::teaching_lifecycle`；实际PCM入口`examples/tracking_lifecycle_demo.py`归第9章 | 已关联单槽、整数半样本tick、连续命中与严格超时；两时钟协议分栏，局部ID不是永久说话人身份，不含多目标关联/概率存在推断或KF重置 |
+| §9.2；E09-26；空间研究§61 | 已知姿态方向转换与静态vMF条件化 | 本仓库可运行基线 | `codes/chapters/ch09/core/spherical_tracking.py` | 指源单位向量、已知正交旋转；归一化协方差只是一阶局部近似，静态独立vMF似然按自然参数相加；非完整动态FvMFF或未知姿态估计 |
 | §9.2.4 | 圆周 SIR 粒子滤波 | 本仓库可运行基线 | `codes/chapters/ch09/core/tracking.py::CircularParticleFilter` | 对数权重、多峰均值无定义 |
 | §9.2.4 | 系统重采样 | 本仓库可运行基线 | `codes/chapters/ch09/core/tracking.py::systematic_resample` | 权重归一、随机种子 |
 | §9.3；研究扩展：空间 §33 | 最近邻关联 | 外部参考实现 | `stonesoup`：`stonesoup/dataassociator/neighbour.py` | 单轨最近不等于全局最优 |
@@ -447,10 +449,10 @@
 | 第 6～9 章：`E06-01`～`E06-20`、`E07-01`～`E07-05`、`E08-01`～`E08-07`、`E09-01`～`E09-06`（38 题） | [exercises_enhancement.py](cross_chapter/exercises_enhancement.py)（23 题）；[AEC 四个边界小例](../ch06/aec_algorithm_minicases.py)（`E06-07`～`E06-10`）；[AEC 十个进阶手算](../ch06/aec_advanced_exercises.py)（`E06-11`～`E06-20`）；[交叉追踪 E09-06](../ch09/tracking_crossing_dropout_demo.py) | [test_codes_exercises_enhancement.py](../../../tests/test_codes_exercises_enhancement.py)、[test_codes_aec_minicases.py](../../../tests/test_codes_aec_minicases.py)、[test_codes_aec_advanced_exercises.py](../../../tests/test_codes_aec_advanced_exercises.py)、[test_codes_tracking_crossing_dropout.py](../../../tests/test_codes_tracking_crossing_dropout.py) |
 | 第 10～11 章、附录 A/B：`E10-01`～`E10-14`、`E11-01`～`E11-07`、`E12-01`～`E12-04`、`E13-01`（26 题） | [exercises_engineering.py](cross_chapter/exercises_engineering.py)（25 题）；[谱减 E10-13](../ch10/spectral_subtraction_demo.py)（1 题） | [test_codes_exercises_engineering.py](../../../tests/test_codes_exercises_engineering.py)、[test_codes_spectral_subtraction.py](../../../tests/test_codes_spectral_subtraction.py) |
 | E02-07、E04-10、E05-06（3题） | [空间精算](cross_chapter/spatial_precision_exercises.py) | [独立测试](../../../tests/test_codes_spatial_precision.py) |
-| E09-10～23（14题） | [第9章逐步计算](../ch09/chapter09_experiments.py) | [独立解析测试](../../../tests/test_codes_chapter09_experiments.py)、[PCM音频](../../../tests/test_codes_tracking_audio.py) |
+| E09-10～26（17题） | [第9章逐步计算](../ch09/chapter09_experiments.py) | [独立解析测试](../../../tests/test_codes_chapter09_experiments.py)、[PCM音频](../../../tests/test_codes_tracking_audio.py) |
 | E10-18～33（16题） | [第10章工程逐步计算](../ch10/chapter10_experiments.py) | [独立解析与PCM测试](../../../tests/test_codes_chapter10_experiments.py)、[数值边界](../../../tests/test_codes_engineering_ch10_boundaries.py) |
 | E11-10～25（16题） | [第11章约束与选型逐步计算](../ch11/chapter11_experiments.py)；[小规模选型与评分模型](../ch11/core/selection.py)；[四路同增益FIR音频](audio/MANIFEST.json)、[独立双场景八WAV](../ch11/scenario_audio/MANIFEST.json)；[原词编辑核合同](../ch11/reports/meeting_kernel_contracts.json) | [独立解析、整数边界与PCM测试](../../../tests/test_codes_chapter11_experiments.py)、[完整资产回放](../../../tests/test_codes_selection_audio.py)、[原核身份与执行](../../../tests/test_codes_meeting_kernel_contracts.py) |
-| E08-12～29（18题） | [第8章逐步计算](../ch08/chapter08_experiments.py) | [独立测试](../../../tests/test_codes_chapter08_experiments.py) |
+| E08-12～32（21题） | [第8章逐步计算](../ch08/chapter08_experiments.py) | [独立测试](../../../tests/test_codes_chapter08_experiments.py) |
 | E07-08～21（14题） | [第7章逐步计算](../ch07/chapter07_experiments.py) | [独立测试](../../../tests/test_codes_chapter07_experiments.py) |
 | E06-21、E07-06、E08-08～10（5题） | [增强逐步计算](cross_chapter/enhancement_step_exercises.py) | [独立测试](../../../tests/test_codes_enhancement_steps.py) |
 | E09-07～08、E10-15、E11-08（4题） | [时间与状态](cross_chapter/tracking_time_exercises.py) | [独立测试](../../../tests/test_codes_time_state_exercises.py) |

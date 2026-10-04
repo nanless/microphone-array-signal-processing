@@ -1,5 +1,6 @@
 """Independent small-model expectations; no download and no upstream writes."""
 from fractions import Fraction
+import ast
 import copy
 import hashlib
 import json
@@ -88,24 +89,27 @@ class FixedTrackingContracts(unittest.TestCase):
 
 
 class ReadOnlyContracts(unittest.TestCase):
-    def test_historical_report_binds_current_used_sources_and_preserves_acquisition_states(self):
+    def test_historical_report_binds_original_tool_and_acquisition_states(self):
         path = audit.ROOT / "codes/chapters/ch09/reports/upstream_tracking_contracts.json"
         report = json.loads(path.read_text())
-        self.assertEqual(report["tool_sha256"],
-                         hashlib.sha256(Path(audit.__file__).read_bytes()).hexdigest())
-        verify_lock_binding(report["source_lock_sha256"], tuple(audit.REVISIONS),
+        original = subprocess.check_output(["git", "show",
+            "982ba05f7562f2e61228cbd4f6e447c8f568e55e:codes/chapters/ch09/examples/audit_upstream_tracking_contracts.py"], cwd=audit.ROOT)
+        self.assertEqual(report["tool_sha256"], hashlib.sha256(original).hexdigest())
+        revisions = next(ast.literal_eval(statement.value) for statement in ast.parse(original).body
+                         if isinstance(statement, ast.Assign) and
+                         any(isinstance(target, ast.Name) and target.id == 'REVISIONS'
+                             for target in statement.targets))
+        verify_lock_binding(report["source_lock_sha256"], tuple(revisions),
                             current_lock=audit.LOCK)
         status_path = audit.LOCK.with_name("SOURCE_STATUS.json")
         binding = verify_status_binding(report["source_status_sha256"], report["source_lock_sha256"],
-                                        tuple(audit.REVISIONS), current_status=status_path,
+                                        tuple(revisions), current_status=status_path,
                                         current_lock=audit.LOCK)
-        rows = {row["id"]: row for row in json.loads(status_path.read_text())["projects"]}
         self.assertEqual(report["sources_before"], report["sources_after"])
         for name, source in report["sources_before"].items():
             self.assertEqual(source["acquisition_record"], binding["records"][name])
-            self.assertEqual(source["acquisition_record"], rows[name])
             self.assertIs(source["required_source_identity_verified"], True)
-            self.assertIs(source["source_selection_verified"], rows[name]["source_selection_verified"])
+            self.assertIs(source["source_selection_verified"], binding["records"][name]["source_selection_verified"])
 
     def test_source_function_fragment_is_exact(self):
         if not (audit.CACHE / "spatial-audio-framework").is_dir():
@@ -146,14 +150,19 @@ class SourceIdentityFixtures(unittest.TestCase):
                  "-c", "commit.gpgsign=false", "commit", "-qm", "identity fixture")
         self.revision = self.git("rev-parse", "HEAD").strip()
         self.lock = self.root / "SOURCES.lock.json"
-        self.lock.write_text(json.dumps({"projects": [{"id": "fixture",
-            "revision": self.revision, "url": self.origin, "license": "Fixture-only"}]}))
+        self.lock.write_text(json.dumps({"schema_version": 1, "projects": [{"id": "fixture",
+            "revision": self.revision, "url": self.origin, "license": "Fixture-only",
+            "fetch_enabled": True, "source_paths": ["method.py", "LICENSE"], "entrypoints": ["method.py"]}]}))
+        (self.checkout / ".git/info/sparse-checkout").write_text("/*\n!*.wav\n")
+        patcher = patch.dict(audit.contracts.PROJECTS, {"fixture": (self.origin,
+            self.revision, "Fixture-only", "LICENSE", audit.digest(self.contents["LICENSE"]))})
+        patcher.start(); self.addCleanup(patcher.stop)
         self.row = {"id": "fixture", "revision": self.revision,
                     "status": "source_selection_mismatch", "missing_entrypoints": [],
                     "source_selection_verified": False,
                     "observed_sparse_patterns": ["/*", "!*.wav"],
                     "expected_sparse_patterns": ["/*", "!*.wav", "!*.mat"]}
-        self.status = {"lock_sha256": audit.digest(self.lock.read_bytes()),
+        self.status = {"schema_version": 1, "lock_sha256": audit.digest(self.lock.read_bytes()),
                        "projects": [self.row]}
         self.save_status()
         for attribute, value in (("LOCK", self.lock),
@@ -181,7 +190,8 @@ class SourceIdentityFixtures(unittest.TestCase):
         self.assertEqual(before, self.lock.with_name("SOURCE_STATUS.json").read_bytes())
         self.row.update(status="source_verified", source_selection_verified=True)
         self.save_status()
-        self.assertIs(audit.verify_sources(self.cache)["fixture"]["source_selection_verified"], True)
+        self.assertIs(audit.verify_sources(self.cache)["fixture"]["source_selection_verified"], False)
+        self.assertIs(audit.verify_sources(self.cache)["fixture"]["recorded_complete_selection"]["source_selection_verified"], True)
 
     def test_failed_missing_stale_and_inconsistent_records_are_rejected(self):
         original = copy.deepcopy(self.row)
@@ -206,7 +216,7 @@ class SourceIdentityFixtures(unittest.TestCase):
     def test_duplicate_status_and_lock_ids_are_rejected(self):
         self.status["projects"].append(copy.deepcopy(self.row))
         self.save_status()
-        with self.assertRaisesRegex(ValueError, "duplicate"):
+        with self.assertRaisesRegex(ValueError, "unique"):
             audit.verify_sources(self.cache)
         self.status["projects"].pop()
         lock = json.loads(self.lock.read_text())
@@ -214,12 +224,12 @@ class SourceIdentityFixtures(unittest.TestCase):
         self.lock.write_text(json.dumps(lock))
         self.status["lock_sha256"] = audit.digest(self.lock.read_bytes())
         self.save_status()
-        with self.assertRaisesRegex(ValueError, "duplicate"):
+        with self.assertRaisesRegex(ValueError, "unique"):
             audit.verify_sources(self.cache)
 
     def test_wrong_origin_and_head_are_rejected(self):
         self.git("remote", "set-url", "origin", self.origin + "-nearby")
-        with self.assertRaisesRegex(ValueError, "origin mismatch"):
+        with self.assertRaisesRegex(ValueError, "origin or HEAD"):
             audit.verify_sources(self.cache)
         self.git("remote", "set-url", "origin", self.origin)
         with patch.object(audit, "REVISIONS", {"fixture": "0"*40}):
@@ -231,11 +241,11 @@ class SourceIdentityFixtures(unittest.TestCase):
     def test_tracked_and_untracked_changes_are_rejected(self):
         method = self.checkout / "method.py"
         method.write_bytes(b"changed\n")
-        with self.assertRaisesRegex(ValueError, "worktree changes"):
+        with self.assertRaisesRegex(ValueError, "entirely clean"):
             audit.verify_sources(self.cache)
         method.write_bytes(self.contents["method.py"])
         (self.checkout / "untracked.py").write_text("pass\n")
-        with self.assertRaisesRegex(ValueError, "worktree changes"):
+        with self.assertRaisesRegex(ValueError, "entirely clean"):
             audit.verify_sources(self.cache)
 
     def test_original_file_and_license_digests_are_required(self):

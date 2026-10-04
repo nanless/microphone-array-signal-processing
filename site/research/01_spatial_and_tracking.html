@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>空间处理与追踪源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="88408a687172"><style>
+<meta name="source-digest" content="b232a8dba19b"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -369,6 +369,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-60-2">60.2 在线逐通道掩码的原始计算</a></li>
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-60-3">60.3 固定SOF设计与实际输出的取点</a></li>
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-60-4">60.4 当前调用、历史报告与有限收录清单</a></li>
+<li><a href="01_spatial_and_tracking.html#sec-u-8cfa326416">61. 第9章：模式证据、生命周期与球面方向</a></li>
+<li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-61-1">61.1 IMM 的密度归一与缺测协议</a></li>
+<li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-61-2">61.2 从实际PCM观测到确认、过期与新ID</a></li>
+<li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-61-3">61.3 三维方向、已知姿态与一次静态vMF更新</a></li>
+<li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-61-4">61.4 LOCATA的逐文件取得范围与静态接口差异</a></li>
 </ul>
 <div class="chap"><a href="02_aec_wpe_separation.html">AEC、WPE 与分离源码研究</a></div>
 <div class="chap"><a href="03_industrial_deployment.html">工业音频实现研究</a></div>
@@ -521,6 +526,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-60-2">60.2 在线逐通道掩码的原始计算</a></li>
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-60-3">60.3 固定SOF设计与实际输出的取点</a></li>
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-60-4">60.4 当前调用、历史报告与有限收录清单</a></li>
+<li><a href="01_spatial_and_tracking.html#sec-u-8cfa326416">61. 第9章：模式证据、生命周期与球面方向</a></li>
+<li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-61-1">61.1 IMM 的密度归一与缺测协议</a></li>
+<li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-61-2">61.2 从实际PCM观测到确认、过期与新ID</a></li>
+<li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-61-3">61.3 三维方向、已知姿态与一次静态vMF更新</a></li>
+<li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-61-4">61.4 LOCATA的逐文件取得范围与静态接口差异</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="空间处理与声源追踪算法实现和工业使用条件" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-8b9c858ba6">空间处理与声源追踪：算法、实现和工业使用条件</h1>
 <p>基础索引核实日期：2026-09-22；第 1 章相关研究核实于2026-09-30、原归一化报告执行于2026-10-01 UTC，本轮原始资料/源码复查及原插值控制执行于2026-10-04；第 2 章历史资料与原方法提取调用核实于2026-09-30，当前原始资料/源码及限定合同复核于2026-10-04，第 4 章相关原始资料及有限原方法调用核实于 2026-10-01，第 5 章相关研究小节、原论文与限定原函数审计复核于 2026-10-01（历史报告仍保留原执行日期）；第 9 章原始资料与限定接口合同复核于 2026-10-01，保留 2026-09-28 的历史运行记录；DCASE 2026 任务状态及近年候选的后续复核日期见各条 2026-09-29 记录。对应正文第 1～5 章和第 9 章。这里按算法的输入、计算步骤和可检查结果整理源码，既包括语音前端，也包括直接相关的球阵录音与工业噪声源成像。后两类任务的输出不同，不能把声源功率图或 Ambisonics 解码结果当成增强语音。</p>
@@ -1737,6 +1747,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><a id="tracking-contract-audit"></a></p>
 <p>本节于 2026-09-28 使用既有隔离环境执行<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/examples/audit_tracking_upstream_interfaces.py">诊断脚本</a>，原始结果保存在<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/reports/tracking_upstream_interfaces.json">JSON 报告</a>。2026-10-01 的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/examples/audit_upstream_tracking_contracts.py">新合同工具</a>在当前隔离环境重新调用该工具的只读函数，把当前执行结果记录在<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/reports/upstream_tracking_contracts.json">新报告</a>的 <code>historical_current_recheck</code>，没有改写本节的历史报告。脚本绑定自身摘要、精确输入、上游提交与被调用文件摘要，运行前核查独立 checkout、固定 HEAD 和未修改的跟踪文件。它不下载依赖，不改 FilterPy 或 Stone Soup。此前主环境没有 SciPy、未运行这些接口的记录仍然有效；本节新增的是另一环境中的有限方法调用，不能追溯性地改写旧验证范围。</p>
 <p>2026-10-02 在同一隔离环境复验时，整工作区的稀疏选集核验与所用原文件身份分别记录。SAF、FilterPy 和 Stone Soup 的旧选集不匹配保持原状态；官方 origin、固定提交、许可与所用文件摘要、完整工作区洁净状态独立核对后，才执行上述限定方法。当前报告的 <code>acquisition_record</code> 和 <code>source_selection_verified</code> 保留取得层事实，<code>required_source_identity_verified</code> 只表示所用原文件满足执行合同。</p>
+<p><strong>当前工具与历史报告分开核对。</strong> 2026-10-05 的修订不覆盖上述两份原报告；历史工具字节固定于本仓库提交 <code>982ba05f7562f2e61228cbd4f6e447c8f568e55e</code>。新运行分别保存到<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/reports/tracking_upstream_interfaces_current.json">当前接口报告</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/reports/upstream_tracking_contracts_current.json">当前合同报告</a>。两工具默认只向终端输出，显式写报告时先检查目标，再执行计算，写入前重复有限检查。仓内只接受指定的新报告，原历史报告、源码和上游缓存均不作为输出目标。</p>
+<p>原文件身份、完整获取选集和方法执行范围分别记录。FilterPy 预核可用的原 Python 文件，再检查实际导入模块的来源；这不表示执行了所有已核方法。Stone Soup 的三个缩减方法采用原 AST 提取调用，当前不再通过尝试导入整个包来执行无关模块。官方 origin、固定提交、所用 Git blob、许可、真实本地依赖及运行前后状态都进入当前报告；旧选集不匹配不会因限定调用成功而改变。</p>
 <span id="541-imm模式先验与输出时刻" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-54-1">54.1 IMM：模式先验与输出时刻</h4>
 <p>两模型都是标量 KF，初始均值 0、10，方差 1、4，模式概率 0.75、0.25；两者状态转移和观测矩阵均为 1，过程方差 0、观测方差 1。行转移矩阵第一行为 <code>(0.9,0.1)</code>，第二行为 <code>(0.2,0.8)</code>。这些是无量纲接口诊断输入，不是目标运动的标定数据。</p>
 <p>一次交互后两模式先验为 0.725、0.275，条件均值约为 0.689655、7.272727。物理状态没有运动且没有新观测，按联合概率求和，整体均值仍应为 2.5、方差 20.5、原始二阶矩 26.75；这些是本书独立概率计算。原 <code>IMMEstimator.predict()</code> 却用旧模式概率融合，返回均值 2.335423、方差 19.600657，原始二阶矩 25.054859。再连续调用时，旧模式权重未推进，整体矩继续改变。报告逐次保留全部 <code>mu</code>、<code>cbar</code>、混合系数及子滤波器状态，不只给一个错误标签。</p>
@@ -1763,6 +1775,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </table></div>
 <p>合并接口先在旧状态 1 求雅可比 2，再把预测状态 2 送入平方观测函数；分步接口在预测后线性化。两条路径本例的新息均为零，所以均值同为 2，只有协方差显示差异。合并路径还把旧状态记入 <code>x_prior/P_prior</code>；因此不能只对照最终均值或字段名称。</p>
 <p>另一例把先验设为 179°、观测设为 −179°，两方差均为 1。合并接口默认相减得到 −358° 新息；分步 <code>update(residual=...)</code> 用最短角差得到 2° 新息，更新后的局部展开均值为 180°。最终是否显示为 −180° 是另一个坐标表示步骤。</p>
+<p><strong>缺测还要检查失败后的状态。</strong> 固定原 <code>EKF.py::predict_update</code> 的说明把 <code>z=None</code> 描述为只预测，但完整函数没有该分支。对上面的平方观测模型实际调用缺测合并接口，原函数在新息相减时报 <code>TypeError</code>；此时 <code>x/P</code> 仍为 1，内部增益已为 $8/17$，新息方差已为 17。因此它既没有完成纯预测，也不能当成状态完全不变的原子失败。当前报告保留异常和失败前后字段。调用方应在缺测时明确走 <code>predict()</code>，并按自己的状态时间协议维护其余字段，不能由便利接口的名称推断缺测行为。</p>
 <span id="543-无迹变换与高斯混合缩减" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-54-3">54.3 无迹变换与高斯混合缩减</h4>
 <p>原 <code>MerweScaledSigmaPoints</code> 取一维标准正态、α=1、β=2、κ=0，sigma 点是 0、1、−1。平方变换后的 <code>unscented_transform</code> 输出均值 1、方差 2，与标准正态二阶和四阶矩独立复算一致。这只验证一个确定性变换，不代表完整 UKF 追踪已经验证。</p>
 <p>Stone Soup 包导入实际被缺少 <code>ordered_set</code> 阻断。本节调用的是 AST 提取的未修改 <code>prune</code>、<code>truncate</code>、<code>merge_components</code>，依赖替身只保存 <code>mean/covar/weight/timestamp</code>，没有声称执行完整包、PHD 更新器或带标签分支。</p>
@@ -1825,7 +1838,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><a href="https://github.com/egrinstein/neural_srp/tree/0ec639f028987ca3d9d3764331f6d65ff455f9a8">作者仓库</a>固定 HEAD 为 <code>0ec639f028987ca3d9d3764331f6d65ff455f9a8</code>。<code>visualize_locata.py</code> 与 <code>visualize_tau.py</code> 分别对应论文表 3/4 与表 5，配置通过 <code>params.json</code> 消费；这是后续最小复现入口。当前已读根说明和目录未建立代码许可，论文的 CC BY 不能代替软件授权，故未取得该源码/权重、不添加正文算法目录，也不冒称运行过预训练模型。</p>
 <p><strong>沿用 icoDOA/Cross3D，暂不把 IPDnet 变成已执行追踪器。</strong> 前者已有固定 AGPL 源码，§41 核其轴与历史边界；后者根 README 仅写 MIT，其 <code>IPDnet/Dataset.py</code> 明称修改自 Cross3D/icoCNN，却没有完整继承条件说明。这里缺少的是派生仿真代码的清楚授权记录，不是因为 AGPL 或研究限制一概禁止本地取得。网络、仿真和数据许可应分别解决，不能用已训练 DOA 输出替代跨帧身份评估。</p>
 <p><strong>sPIT 仅补充训练机制线索。</strong> <a href="https://eurasip.org/Proceedings/Eusipco/Eusipco2023/pdfs/0000251.pdf">Diaz-Guerra、Politis、Virtanen 的 EUSIPCO 2023 原文</a> pp.251～255，§2～3 式(1)～(4)说明：逐帧 PIT 允许输出身份迅速交换；滑窗 PIT 先对最近若干帧的配对距离求和，再选统一排列用于当前训练损失。它改变监督训练的排列选择，不是在部署时借助真值做关联。ACCDOA 零向量可填补不活动槽位，仍有固定最大输出容量；因果历史窗和居中窗的可用信息不同。§4 的模拟多源条件不能外推为任意人数、设备或保证无身份切换。四项门槛中，问题、改变步骤和假设可由原文说明，最小两轨历史窗配对可手算，但本轮未建立作者训练代码及明确许可的复现入口，因此只留短线索，不增正文模型目录、不开新来源锁、不取权重。正文 <a href="../09_source-tracking.html#e09-21">E09-21</a>讨论位置尺度与可观测性，训练技巧不能消除物理观测本身的歧义。</p>
-<p>LOCATA 官方 <a href="https://github.com/cevers/sap_locata_io">I/O 框架</a>与<a href="https://github.com/cevers/sap_locata_eval">评价框架</a>分开负责读写/基线和参赛输出评价；本轮未建立这两个软件仓库的完整许可，也未执行其 MATLAB 评分。已有论文中的任务、版本、阵列与真值条件仍须原样保留，不能把教学自由场移动音频称为 LOCATA 复现。上述有限清单没有声称穷尽追踪方法。</p>
+<p>LOCATA 官方 <a href="https://github.com/cevers/sap_locata_io">I/O 框架</a>与<a href="https://github.com/cevers/sap_locata_eval">评价框架</a>分开负责读写/基线和参赛输出评价；2026-09-28时未建立这两个软件仓库的完整许可，也未执行其 MATLAB 评分；2026-10-05的逐文件许可选集与静态差异见下文§61.4。已有论文中的任务、版本、阵列与真值条件仍须原样保留，不能把教学自由场移动音频称为 LOCATA 复现。上述有限清单没有声称穷尽追踪方法。</p>
 <span id="sec-64" class="anchor-alias" aria-hidden="true"></span><span id="可复算的工程配置与验收记录" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-b28005a110">可复算的工程配置与验收记录</h2>
 <p>以下是独立实验设计，不是已测性能表。每次只改变一个条件，保存随机种子、输入、真值、源代码提交和实际依赖版本。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -2214,6 +2227,84 @@ C_{\rm PAN}&=\frac{\vec w^H\mathbf R_n\vec a}{\vec w^H\mathbf R_n\vec w},\\
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/reports/beamformer_reference_current.json">reference当前报告</a>仍记录pb_bss正常导入缺少paderbox、MERL单原函数提取的误选参考，以及PRA原 <code>rake_distortionless_filters</code> 在浮点切片处真实失败、没有输出滤波器。PRA安装目录的85份Python源与固定Git blob逐字节核对；两个安装二进制只登记本机SHA，不宣称由固定Git源码复现构建。所用原文件身份与完整选集状态分栏，运行前后源码和许可保持洁净。</p>
 <p>三个工具默认只读stdout；只有显式 <code>--report</code> 才写指定新current报告或普通外部文件。写前拒绝历史报告、仓内其他文件、缓存、符号链接父链及非普通目标；这些有限检查不保证消除并发竞态或崩溃持久性。旧三报告与旧工具Git身份保留。重新执行命令及范围见<a href="04_source_reproduction.html#beamforming-current-contracts">复现手册</a>。</p>
 <p>本轮对<a href="https://arxiv.org/abs/2609.27552">重尾spiked-MVDR预印本2609.27552</a>的候选审查没有纳入正文：其通用阵列控制使用100元ULA、200快拍与重尾纹理，没有STFT语音、房间、麦克风实录或设备证据，不能移植为本书声学性能结论。WPD已经由第7章介绍并有对应练习，这里只保留跨章引用。本轮是有限问题清单的研究，不宣称穷尽不断更新的全部阵列算法。</p>
+<p><a id="tracking-model-lifecycle-sphere"></a></p>
+<span id="61-第9章模式证据生命周期与球面方向" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-8cfa326416">61. 第9章：模式证据、生命周期与球面方向</h2>
+<p>2026-10-05 的补充对应正文 E09-24～26。已有34式和23题分别覆盖关联、人数、相关观测、尺度与迟到时刻；新增内容补齐三个独立环节，仍归第9章。完整复算步骤见<a href="../09_source-tracking.html#e09-24">正文练习</a>与<a href="05_exercises_and_audio.html#tracking-model-lifecycle-sphere-exercises">音频手册</a>。</p>
+<span id="611-imm-的密度归一与缺测协议" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-61-1">61.1 IMM 的密度归一与缺测协议</h3>
+<p>原始 IMM 的来源身份见§40。教学核<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/core/imm_teaching.py">imm_teaching.py</a>只维护同义标量局部角度的低、高过程方差随机游走模式，固定每步1s；它没有角速度、转弯动力学或偏置状态。这个限定使每个模式的预测、观测密度和融合矩都能手算，而不是用外给似然代替两套滤波器。</p>
+<p>E09-24 的共同初值均值0、方差1，过程方差分别0、4，测量方差1，模式概率为0.8、0.2，行转移矩阵为 <code>[[.9,.1],[.2,.8]]</code>。观测3到来时，模式先验0.76、0.24；两个新息相同，方差分别2、6，完整高斯密度约0.0297325723、0.0769331614。后验模式概率约0.5503254309、0.4496745691。密度含 $1/\sqrt{2\pi S_j}$，不能只比较残差指数：在零新息下，方差2的密度仍是方差6的 $\sqrt3$ 倍。</p>
+<p>融合均值约1.9496745691，方差约0.8973588741。随后两步缺测不产生任何观测似然，只推进模式 Markov 先验和条件状态；总体均值保持，方差约增至2.5564476676、4.1178098232。这里的概率变化来自转移模型，不是新声学证据。核保留对数模式质量，显示下溢和真正零先验分别处理；非法输入或不可达模式拒绝后不提交部分新状态。</p>
+<p>固定偏置与真实运动都可能形成持续新息。增加过程方差只能让当前状态更容易移动，不能凭这一变化证明已经识别了运动或估计了传感器偏置；需要增加相应模型或独立标定证据。</p>
+<span id="612-从实际pcm观测到确认过期与新id" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-61-2">61.2 从实际PCM观测到确认、过期与新ID</h3>
+<p><a href="https://arxiv.org/pdf/1909.01008">LOCATA 原论文</a>§VI.A 把连续观测确认、短缺测保持及终止规则引起的延迟分开；§VI.B.4 的及时性指标还依赖发声活动区间。这些原则支持检查生命周期，但不提供本书示例的统一产品阈值，也不把局部轨迹ID定义为说话人身份。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/core/lifecycle.py">lifecycle.py</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/examples/tracking_lifecycle_demo.py">实际PCM示例</a>复用<a href="05_exercises_and_audio.html#sec-u-eb5a66336a">音频手册§31</a>的两份合成WAV。前端仍是同一组197帧、173有效观测和24缺测；不读取未来观测完成候选确认，不额外生成一套声音来增加文件数。连续3个有效帧确认、200ms有效期是显式教学规则，均不等于贝叶斯存在概率。</p>
+<p>时钟用每秒32000个整数单位表示：16kHz样本的一半采样周期为一单位，因此窗中心与窗末可用时刻都可精确记录。过期检查采用当前数据可用时刻减最近有效观测时刻，年龄严格大于6400单位才删除，相等时保留。检查先于新观测处理；很晚才恢复的观测不能掩盖老轨已经过期。</p>
+<p>实际事件是第0帧建立候选、第2帧在0.052s确认、第100帧在1.032s过期；第106帧建立新候选，第108帧在1.112s确认。旧ID1不复用，新候选为ID2。第100帧年龄为6593/32000s，已超过0.2s；若明确改用状态龄期协议，删除会晚两帧；不能把该协议称作默认的可用时刻龄期。这些规则只管理单条检测链的生命周期，没有运行多人关联、人物识别、Bernoulli/LMB 或 LOCATA 评分。完整事件和图77的数值报告保留时钟字段与实际PCM来源。</p>
+<span id="613-三维方向已知姿态与一次静态vmf更新" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-61-3">61.3 三维方向、已知姿态与一次静态vMF更新</h3>
+<p><a href="https://www.mit.edu/~paris/pubs/traa-mlsp2014.pdf">Traa、Smaragdis 的2014年作者原文</a>§2.1式(2)采用单位球面上的 Fisher–von Mises 密度，§2.2式(3)给出右手旋转，§4的动态预测另含近似。本书<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/core/spherical_tracking.py">spherical_tracking.py</a>仅运行已知坐标与姿态变换、归一化的局部协方差和一次独立静态似然条件化，不能称完整论文滤波器。</p>
+<p>本书方位从+y朝+x增大，仰角朝+z增大。标准右手z轴旋转+90°会把本书方位30°变为−60°，而不是120°；把阵列向量变到世界坐标的矩阵与其逆必须区分。阵列已知姿态没有增加距离观测，也不能替代姿态误差标定。</p>
+<p>精确极点的方位无定义；等方位、等仰角网格也不是等球面面积，积分须包含 $\cos\phi_{\mathrm{el}}$ 的面积因子。归一化向量的协方差采用 $J=(I-uu^\top)/\|v\|$ 的一阶局部近似，去除径向扰动；它没有把任意三维Gaussian变成精确球面后验。</p>
+<p>静态例的先验浓度3、均值方向+y，独立观测浓度4、方向+x。自然参数相加得到 <code>[4,3,0]</code>，后验浓度5、单位均值方向 <code>[.8,.6,0]</code>。期望向量长度 $A(5)\approx0.800090804$，与单位方向不同。自然参数完全抵消时输出均匀分布与无定义方向；不凭空指定方位。浓度参数也不能在宽分布、极点或任意坐标下直接解释为角度方差的精确倒数。</p>
+<span id="614-locata的逐文件取得范围与静态接口差异" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-61-4">61.4 LOCATA的逐文件取得范围与静态接口差异</h3>
+<p>2026-10-05重新检查官方两个仓库的固定原文件头，按明确的逐文件许可取得31个文本文件，总计211383字节。它们在<code>codes/chapters/ch00/upstream/_downloads/{locata-io,locata-eval}/</code>中分别保留独立Git工作树；不随本书提交复制，不包含LOCATA录音、模型或评分数据。全部正选集、固定提交与入口见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCES.lock.json">来源锁表</a>，实际离线获取状态见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCE_STATUS.json">SOURCE_STATUS.json</a>。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:48em">
+<thead>
+<tr>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:10em">固定原来源</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:15em">实际选集</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:23em">文件许可及边界</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em"><a href="https://github.com/cevers/sap_locata_io/tree/632468f49b13ca5a9f2f51c064d91183c06622fa">I/O：632468f49b13ca5a9f2f51c064d91183c06622fa</a></td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">15个<code>.m</code>、82549字节，覆盖主入口及MUSIC、STFT、CSV、真值、坐标助手</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:23em">各自原文件头声明ODC-BY1.0；不把这一声明推广为完整仓库的软件许可或数据授权</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em"><a href="https://github.com/cevers/sap_locata_eval/tree/2787cdabf21bc96453c0d4f3c66db9c9c9f40434">评价：2787cdabf21bc96453c0d4f3c66db9c9c9f40434</a></td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">16个文本、128834字节，包括14个作者<code>.m</code>及munkres源码/许可</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:23em">作者文件头分别声明ODC-BY1.0；<code>utils/munkres/</code>两文件采用保留Yi Cao版权的BSD两条款，不能混称同一种许可</td>
+</tr>
+</tbody>
+</table></div>
+<p>许可不明的Hungarian、MathWorks标记为内部使用的<code>angdiff.m</code>以及若干辅助脚本未纳入选集。原主入口还引用被排除的<code>read_participants_results</code>、<code>stats_for_paper</code>等；需要MAT文件、工具箱和完整运行条件。因此这些选集用于阅读原方法，不能直接作为可独立运行的官方评分包。实际核了origin、完整HEAD、逐文件SHA与原Git blob及前后洁净状态，没有执行MATLAB、原MUSIC或LOCATA评分。</p>
+<p>静态核读发现的具体差异如下。每项仅说明固定源码的语句，不能替代其运行路径的实测，也不修改上游来消除原差异。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">原源码入口</th>
+<th scope="col">固定语句与需要核对的合同</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/cevers/sap_locata_io/blob/632468f49b13ca5a9f2f51c064d91183c06622fa/utils/mycart2sph.m#L56-L59">mycart2sph.m 56～59行</a></td>
+<td><code>el=acos(z/r)</code>是从+z计的极角；<code>az=atan2(y,x)-π/2</code>从+y朝−x增大。两者不能按名字直接套成本书朝+x的方位和水平俯仰</td>
+</tr>
+<tr>
+<td><a href="https://github.com/cevers/sap_locata_io/blob/632468f49b13ca5a9f2f51c064d91183c06622fa/utils/MUSIC.m#L103-L119">MUSIC参数</a>及<a href="https://github.com/cevers/sap_locata_io/blob/632468f49b13ca5a9f2f51c064d91183c06622fa/utils/stft.m#L92-L104">stft.m 92～104行</a></td>
+<td>分析窗0.03fs、FFT1024；48kHz时窗1440点长于FFT。原调用使用<code>fft(y,num_FFT,1)</code>，须核截断的有效支持；时间戳加NFFT/2，不直接等于完整窗支持中心</td>
+</tr>
+<tr>
+<td><a href="https://github.com/cevers/sap_locata_io/blob/632468f49b13ca5a9f2f51c064d91183c06622fa/utils/MUSIC.m#L130-L136">MUSIC块时刻</a>及<a href="https://github.com/cevers/sap_locata_io/blob/632468f49b13ca5a9f2f51c064d91183c06622fa/utils/MUSIC.m#L226-L249">离线插值</a></td>
+<td>块时刻取首尾帧时间均值；插值可能使用后续bracket。原main的<a href="https://github.com/cevers/sap_locata_io/blob/632468f49b13ca5a9f2f51c064d91183c06622fa/main.m#L242-L244">242～244行</a>只计MUSIC调用耗时，不能当作数据可用时钟或端到端延迟</td>
+</tr>
+<tr>
+<td><a href="https://github.com/cevers/sap_locata_eval/blob/2787cdabf21bc96453c0d4f3c66db9c9c9f40434/functions/measures.m#L152-L194">measures.m 152～194行</a></td>
+<td>关联代价遍历<code>all_src_idx</code>而非仅活动源；原极角缓存<code>error_el_ss</code>赋入方位代价。需要另行真实控制确认活动与角度指标，不能据函数名保证评价正确</td>
+</tr>
+<tr>
+<td><a href="https://github.com/cevers/sap_locata_eval/blob/2787cdabf21bc96453c0d4f3c66db9c9c9f40434/functions/measures.m#L198-L203">measures.m 198～203行</a></td>
+<td>OSPA距离矩阵先被<code>(:)</code>拉平再传给未取得的Hungarian依赖；本书的独立集合距离不能冒充原评分器执行</td>
+</tr>
+<tr>
+<td><a href="https://github.com/cevers/sap_locata_eval/blob/2787cdabf21bc96453c0d4f3c66db9c9c9f40434/functions/measures.m#L284-L307">measures.m 284～307行</a></td>
+<td><code>find(this_miss,first)</code>取首个非零缺测项，再使用全局真值时间索引。对<code>[1,1,0]</code>，独立语句追踪会给起始缺测数0而不是2；这只是静态反例，未运行MATLAB及时性评分</td>
+</tr>
+</tbody>
+</table></div>
+<p>VAP起始代码检查0→1转换，初始已经活动的区间还须独立核边界。论文§VI.B.4的指标定义与这份固定程序的行为应分别记录；不能从论文定义推断代码已经正确执行，也不能由这些静态疑点声称论文结果错误。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>
