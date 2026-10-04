@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 5 章 · 波束形成 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="7fd9efb3e8ea"><style>
+<meta name="source-digest" content="f82c588994c1"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -267,6 +267,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-0ecc49cf49">算例 5-4：残留噪声谱估计与逐点增益</a></li>
 <li><a href="05_beamforming.html#sec-5-8">5.8 球谐域波束形成：以球阵为例</a></li>
 <li><a href="05_beamforming.html#sec-5-9">5.9 深度神经网络（Deep Neural Network，简称 DNN）波束形成</a></li>
+<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-eb31a2fa4d">从逐频信噪比到复数波形参考</a></li>
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-5-9-1">5.9.1 可执行基线与上线检查</a></li>
 <li><a href="05_beamforming.html#sec-5-10">5.10 波束形成算法总对比</a></li>
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-9c4e3959ec">同输入算例：零陷、WNG 与目标损伤</a></li>
@@ -294,6 +295,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-ab39e3c2bb">E05-20：Souden 权重怎样保留参考麦的复数声像？</a></li>
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-f3d0e40267">E05-21：同一谱能量为何会得到不同的语音存在概率？</a></li>
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-bca30faf33">E05-22：局部目标响应改善能保证波形总误差更小吗？</a></li>
+<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-e8fcec5128">E05-23：每个频点的信噪比相同，为什么波形仍会改变？</a></li>
+<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-9dcb5dc891">E05-24：逐通道掩码为什么可能改变协方差的秩？</a></li>
 </ul>
 <div class="chap"><a href="06_aec.html">第 6 章 · 声学回声消除（AEC）</a></div>
 <div class="chap"><a href="07_wpe-dereverberation.html">第 7 章 · 去混响（WPE）</a></div>
@@ -336,6 +339,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-0ecc49cf49">算例 5-4：残留噪声谱估计与逐点增益</a></li>
 <li><a href="05_beamforming.html#sec-5-8">5.8 球谐域波束形成：以球阵为例</a></li>
 <li><a href="05_beamforming.html#sec-5-9">5.9 深度神经网络（Deep Neural Network，简称 DNN）波束形成</a></li>
+<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-eb31a2fa4d">从逐频信噪比到复数波形参考</a></li>
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-5-9-1">5.9.1 可执行基线与上线检查</a></li>
 <li><a href="05_beamforming.html#sec-5-10">5.10 波束形成算法总对比</a></li>
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-9c4e3959ec">同输入算例：零陷、WNG 与目标损伤</a></li>
@@ -363,6 +367,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-ab39e3c2bb">E05-20：Souden 权重怎样保留参考麦的复数声像？</a></li>
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-f3d0e40267">E05-21：同一谱能量为何会得到不同的语音存在概率？</a></li>
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-bca30faf33">E05-22：局部目标响应改善能保证波形总误差更小吗？</a></li>
+<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-e8fcec5128">E05-23：每个频点的信噪比相同，为什么波形仍会改变？</a></li>
+<li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-9dcb5dc891">E05-24：逐通道掩码为什么可能改变协方差的秩？</a></li>
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是教程正文第 5 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。</p>
@@ -631,33 +637,33 @@ H_f&=1-e^{-\mathrm j2\omega T},\\
 <p><strong>提高阶数改变了什么</strong>：多个一阶差分单元级联可形成高阶方向图，并提供更多可配置零点。阶数增加并不对应一个脱离条件的固定 DI 增量。理想 DI 取决于采用球面还是柱面弥散场、目标方向图和归一化方式；换成 dB 后也不能概括为“每阶线性增加”。</p>
 <p>高阶差分包含更强的相消和低频均衡，通常增大权重范数，使阵元自噪声和增益、相位、位置误差更容易进入输出。</p>
 <p>设计时应按每个频点同时报告方向图、DI、WNG、条件数和失配扫描，而不是只按阶数选型。<a href="https://doi.org/10.1007/1-4020-7769-6_2" title="citation">Elko, <em>Differential Microphone Arrays</em></a></p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:52em">
 <thead>
 <tr>
-<th scope="col">设计变化</th>
-<th scope="col">可能获得的能力</th>
-<th scope="col">同时增加的风险</th>
-<th scope="col">必须固定的比较条件</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">设计变化</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:14em">可能获得的能力</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:15em">同时增加的风险</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:15em">必须固定的比较条件</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>增加差分阶数</td>
-<td>可配置更多零点和更细的空间变化</td>
-<td>权重范数增大，低频自噪声和失配更易被放大</td>
-<td>频率、间距、噪声场、目标图形与均衡器</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">增加差分阶数</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">可配置更多零点和更细的空间变化</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">权重范数增大，低频自噪声和失配更易被放大</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">频率、间距、噪声场、目标图形与均衡器</td>
 </tr>
 <tr>
-<td>减小阵元间距</td>
-<td>在更高频率前维持 $\kappa d\ll1$ 近似</td>
-<td>通道观测更相似，差分后的 WNG 可能降低</td>
-<td>麦克风自噪声、标定残差与数值精度</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">减小阵元间距</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">在更高频率前维持 $\kappa d\ll1$ 近似</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">通道观测更相似，差分后的 WNG 可能降低</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">麦克风自噪声、标定残差与数值精度</td>
 </tr>
 <tr>
-<td>增强低频均衡</td>
-<td>补偿差分器的低频衰减</td>
-<td>同时放大低频传感器噪声和风噪</td>
-<td>最大增益、削波余量与 WNG 下限</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">增强低频均衡</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">补偿差分器的低频衰减</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">同时放大低频传感器噪声和风噪</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">最大增益、削波余量与 WNG 下限</td>
 </tr>
 </tbody>
 </table></div>
@@ -798,41 +804,41 @@ L(\vec w,\lambda)&=\vec w^H\mathbf R_{nn}\vec w\\
 <p>在无失真约束下，显式约束 $\|\vec w\|^2\le\delta$ 就是在设置 WNG 下限。若该约束在最优点处有效，其拉格朗日乘子会产生同形的对角加载。</p>
 <p>给定 $\delta$ 对应的 $\alpha$ 依赖 $\hat{\mathbf R}$、$\vec a$ 和频点，不能把任意加载量与任意 WNG 门限视为相同。$\alpha$ 应按协方差条件数、器件失配仿真和所需 WNG 扫描选择。<a href="https://doi.org/10.1109/TSP.2003.812831" title="citation">Li, Stoica &amp; Wang, IEEE TSP 2003</a> E05-07 给出一组可手算的协方差，从 WNG 下限反推最小加载，并检查为此增加的干扰残留。</p>
 <p><strong>对角加载的代价表（相对加载量 $\alpha$ 从小到大）</strong>：</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:71em">
 <thead>
 <tr>
-<th scope="col">$\alpha$ 取值</th>
-<th scope="col">加载相对平均特征值的大小</th>
-<th scope="col">白噪声增益</th>
-<th scope="col">指向性/零陷深度</th>
-<th scope="col">稳健性</th>
-<th scope="col">适用场合</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:9em">$\alpha$ 取值</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:13em">加载相对平均特征值的大小</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:10em">白噪声增益</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:12em">指向性/零陷深度</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:13em">稳健性</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:14em">适用场合</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>较小</td>
-<td>只轻微抬高特征值</td>
-<td>接近未加载解</td>
-<td>接近未加载解</td>
-<td>小快拍下求逆仍可能病态</td>
-<td>快拍充足、标定较好的离线处理</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">较小</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">只轻微抬高特征值</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">接近未加载解</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">接近未加载解</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">小快拍下求逆仍可能病态</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">快拍充足、标定较好的离线处理</td>
 </tr>
 <tr>
-<td>中等（由验证集确定）</td>
-<td>小特征值被抬高</td>
-<td>通常回升</td>
-<td>通常变浅</td>
-<td>对估计误差和轻微失配较稳</td>
-<td>按 WNG 与目标失真联合调参</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">中等（由验证集确定）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">小特征值被抬高</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">通常回升</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">通常变浅</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">对估计误差和轻微失配较稳</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">按 WNG 与目标失真联合调参</td>
 </tr>
 <tr>
-<td>较大</td>
-<td>加载项主导小特征值，继续增大时可主导整个矩阵</td>
-<td>趋近 DSB 上限</td>
-<td>深零陷逐渐变浅</td>
-<td>解逐渐接近固定波束</td>
-<td>稳健模式或诊断对照</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">较大</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">加载项主导小特征值，继续增大时可主导整个矩阵</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">趋近 DSB 上限</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">深零陷逐渐变浅</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">解逐渐接近固定波束</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">稳健模式或诊断对照</td>
 </tr>
 </tbody>
 </table></div>
@@ -853,58 +859,58 @@ L(\vec w,\lambda)&=\vec w^H\mathbf R_{nn}\vec w\\
 <p><strong>方法 4：前后向空间平滑（Forward-Backward Spatial Smoothing）</strong>。均匀线阵可切成重叠子阵，先平均前向子阵协方差，再加入共轭反转的后向项。该处理可恢复部分相干源条件下的协方差秩。代价是子阵长度小于原阵列，因而有效孔径和剩余自由度下降；子阵数量必须同时满足去相关与可分辨性要求。</p>
 <p>平滑后的协方差属于较小子阵，必须配套子阵导向矢量与输出结构，不能直接代入原 $M$ 通道权重公式。早期反射也可能属于希望保留的目标 RTF，去相关处理不自动等于语音去混响。<a href="https://doi.org/10.1109/TASSP.1985.1164649" title="citation">Shan, Wax &amp; Kailath, <em>IEEE TASSP</em>, 1985（空间平滑）</a>、<a href="https://doi.org/10.1109/29.17496" title="citation">Pillai &amp; Kwon, <em>IEEE TASSP</em>, 1989（前后向扩展）</a></p>
 <p><strong>方法选择表</strong>（对角加载主要处理病态求逆和权重范数，其他误差还需针对性处理）：</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:76em">
 <thead>
 <tr>
-<th scope="col">现象</th>
-<th scope="col">主要误差来源</th>
-<th scope="col">首选</th>
-<th scope="col">备选/联合</th>
-<th scope="col">验证重点</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:15em">现象</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:10em">主要误差来源</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:18em">首选</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:16em">备选/联合</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:17em">验证重点</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>DOA 偏差达到设备验证集中的高分位值时，目标响应下降</td>
-<td>A 导向失配</td>
-<td>最差情况优化（$\epsilon$ 按 DOA 误差定）</td>
-<td>导数约束（LCMV，§5.5）降低主瓣内响应起伏</td>
-<td>先测 DOA 误差分布和目标响应，再定 $\epsilon$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">DOA 偏差达到设备验证集中的高分位值时，目标响应下降</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">A 导向失配</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">最差情况优化（$\epsilon$ 按 DOA 误差定）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">导数约束（LCMV，§5.5）降低主瓣内响应起伏</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:17em">先测 DOA 误差分布和目标响应，再定 $\epsilon$</td>
 </tr>
 <tr>
-<td>更换麦克风批次后结果变化明显</td>
-<td>A 通道不一致</td>
-<td>通道标定 + 最差情况优化</td>
-<td>对角加载</td>
-<td>用批次间标定残差设置不确定集</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">更换麦克风批次后结果变化明显</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">A 通道不一致</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">通道标定 + 最差情况优化</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">对角加载</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:17em">用批次间标定残差设置不确定集</td>
 </tr>
 <tr>
-<td>噪声段含目标，自适应后目标衰减</td>
-<td>D 目标自消</td>
-<td>改善 VAD/SPP 与协方差估计</td>
-<td>特征空间投影</td>
-<td>同时报目标响应和噪声降低量</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">噪声段含目标，自适应后目标衰减</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">D 目标自消</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">改善 VAD/SPP 与协方差估计</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">特征空间投影</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:17em">同时报目标响应和噪声降低量</td>
 </tr>
 <tr>
-<td>快拍少、噪声时变，求逆病态</td>
-<td>B 估计误差</td>
-<td>对角加载 + 协方差重构</td>
-<td>减少约束或降阶</td>
-<td>扫描加载量、WNG 与目标失真</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">快拍少、噪声时变，求逆病态</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">B 估计误差</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">对角加载 + 协方差重构</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">减少约束或降阶</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:17em">扫描加载量、WNG 与目标失真</td>
 </tr>
 <tr>
-<td>相干源使依赖子空间的协方差处理退化</td>
-<td>C 相干</td>
-<td>满足条件的子阵空间平滑</td>
-<td>重新定义目标 RTF 约束</td>
-<td>配套子阵维度，区分目标反射与干扰</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">相干源使依赖子空间的协方差处理退化</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">C 相干</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">满足条件的子阵空间平滑</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">重新定义目标 RTF 约束</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:17em">配套子阵维度，区分目标反射与干扰</td>
 </tr>
 <tr>
-<td>低频 WNG 很低、权重范数很大</td>
-<td>超指向固有</td>
-<td>WNG 约束/对角加载，分频段设计</td>
-<td>降阶 DMA</td>
-<td>见算例 5-1 第 7 步</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">低频 WNG 很低、权重范数很大</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">超指向固有</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">WNG 约束/对角加载，分频段设计</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">降阶 DMA</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:17em">见算例 5-1 第 7 步</td>
 </tr>
 </tbody>
 </table></div>
@@ -982,49 +988,49 @@ G_\mu&=\frac{\phi_s q}{\mu+\phi_s q},\\
 <p>第一行是复数 LMS 的瞬时负梯度步：对 $|y(l)|^2$ 求导得到与 $\vec x(l)y^*(l)$ 同向的梯度。投影矩阵 $\mathbf{P}=\mathbf{I}-\mathbf{C}(\mathbf{C}^H\mathbf{C})^{-1}\mathbf{C}^H$ 把更新限制在约束零空间，$\vec{w}_q=\mathbf{C}(\mathbf{C}^H\mathbf{C})^{-1}\vec{f}$ 是满足约束的最小范数特解。约束模型匹配时，更新不改变受约束的目标响应；指向或传递函数失配时，真实目标仍可能失真。步长太大会发散，太小则跟不上非平稳干扰。</p>
 <p>Frost 原文处理宽带实数抽头，并以总输出功率为目标；目标模型匹配且目标与噪声不相关时，固定目标响应使它等价于最小化噪声功率。这里使用可兼容复数观测的共轭写法，实数情形将 $H$ 换为转置即可。E05-10 分别算真实双麦两抽头更新和复数代数检查。<a href="https://doi.org/10.1109/PROC.1972.8817" title="citation">Frost 1972，§II–III、式(16)、(19)–(22)</a></p>
 <p><strong>Frost 与 GSC 对照表</strong>（同一类 LCMV 约束的两种实现结构）：</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:46em">
 <thead>
 <tr>
-<th scope="col"></th>
-<th scope="col">Frost（1972）</th>
-<th scope="col">GSC</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em"></th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:19em">Frost（1972）</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:19em">GSC</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>域</td>
-<td>时域 FIR 抽头</td>
-<td>频域逐频点（TF-GSC）或时域皆可</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">域</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:19em">时域 FIR 抽头</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:19em">频域逐频点（TF-GSC）或时域皆可</td>
 </tr>
 <tr>
-<td>约束实现方式</td>
-<td>投影矩阵 $\mathbf{P}$，每步投影到约束可行集合</td>
-<td>固定上支路 + 阻塞矩阵，下支路在约束零空间内自适应</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">约束实现方式</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:19em">投影矩阵 $\mathbf{P}$，每步投影到约束可行集合</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:19em">固定上支路 + 阻塞矩阵，下支路在约束零空间内自适应</td>
 </tr>
 <tr>
-<td>自适应算法</td>
-<td>原始 Frost 使用带投影的 LMS；也可研究其他受约束更新</td>
-<td>下支路可使用 LMS、NLMS、RLS 等无约束更新</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">自适应算法</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:19em">原始 Frost 使用带投影的 LMS；也可研究其他受约束更新</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:19em">下支路可使用 LMS、NLMS、RLS 等无约束更新</td>
 </tr>
 <tr>
-<td>收敛与跟踪</td>
-<td>由自适应算法、输入协方差特征值分布、步长和约束实现共同决定</td>
-<td>还受阻塞矩阵、下支路输入统计和所选自适应算法影响；结构本身不保证比 Frost 更快</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">收敛与跟踪</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:19em">由自适应算法、输入协方差特征值分布、步长和约束实现共同决定</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:19em">还受阻塞矩阵、下支路输入统计和所选自适应算法影响；结构本身不保证比 Frost 更快</td>
 </tr>
 <tr>
-<td>失配症状</td>
-<td>目标泄漏进 LMS，实际目标不再满足设计约束</td>
-<td>目标泄漏进阻塞矩阵下支路，被当作干扰对消</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">失配症状</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:19em">目标泄漏进 LMS，实际目标不再满足设计约束</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:19em">目标泄漏进阻塞矩阵下支路，被当作干扰对消</td>
 </tr>
 <tr>
-<td>延迟</td>
-<td>不含 STFT 分帧等待，但仍有滤波器群时延、约束对齐延迟、输入输出缓冲和硬件分块延迟</td>
-<td>频域版另有窗、帧移、重叠相加和前瞻造成的等待；时域版仍有滤波与缓冲延迟</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">延迟</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:19em">不含 STFT 分帧等待，但仍有滤波器群时延、约束对齐延迟、输入输出缓冲和硬件分块延迟</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:19em">频域版另有窗、帧移、重叠相加和前瞻造成的等待；时域版仍有滤波与缓冲延迟</td>
 </tr>
 <tr>
-<td>约束实现</td>
-<td>每次更新后投影回约束子空间</td>
-<td>固定支路与阻塞矩阵从结构上满足约束</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">约束实现</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:19em">每次更新后投影回约束子空间</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:19em">固定支路与阻塞矩阵从结构上满足约束</td>
 </tr>
 </tbody>
 </table></div>
@@ -1268,6 +1274,12 @@ b_n=4\pi\mathrm j^n j_n(\kappa r)。
 <p><strong>掩码尺度与空掩码的边界例子</strong>：取四帧两麦复谱 $\vec x_1=\vec x_2=[1,1]^\top$、$\vec x_3=\vec x_4=[1,-1]^\top$，目标掩码为 $[1,1,0,0]$，干扰掩码为 $[0,0,1,1]$。目标方向 $[1,1]^\top$ 与干扰方向 $[1,-1]^\top$ 正交；采用默认正对角加载 $10^{-6}$ 的两麦基线得到 $\vec w=[1/2,1/2]^\top$，输出为 $[1,1,0,0]$。把非零目标掩码的 1 全部改成 $10^{-300}$，峰值归一化后权重和输出不变；把目标掩码改成全零，则退回参考麦，输出变成 $[1,1,1,1]$。</p>
 <p>这是本书代码的确定性算例，不表明极小网络概率具有可信统计量；两组掩码只由两帧构成，也不能推断真实语音分离性能。</p>
 <p>端到端网络也可以直接估计复数权重、时域滤波器或输出波形。它不再自动满足无失真、WNG 或因果约束，必须把阵列泛化、前瞻帧数、目标失真和目标硬件上的资源消耗列入评测。若与 ASR 联合训练，还应固定后端识别器和评分脚本，同时报告前端信号指标与词错误率（Word Error Rate，WER）。<a href="https://doi.org/10.1109/TASLP.2022.3229261" title="citation">Gu et al., IEEE/ACM TASLP 2023</a></p>
+<h3 id="sec-u-eb31a2fa4d">从逐频信噪比到复数波形参考</h3>
+<p>GEV 的自由尺度不只影响音量。设某个频点的权重为 $\vec w$，目标响应为 $g=\vec w^H\vec a$。将权重乘非零复标量 $c$ 后，输出要乘的是 $c^*$，目标响应也变为 $c^*g$。式(5-33)在下方练习中逐项列出。</p>
+<p>同一频点的目标和噪声功率都乘 $|c|^2$，输出 SNR 因而不变。各频点采用不同的相位时，分量在重建波形中的相对位置却会改变。E05-14 的实数倍尺度表不能单独说明这件事；<a href="#e05-23">E05-23</a>给出两频声音、共轭方向和实际 PCM 误差。</p>
+<p>若已知可靠的目标 RTF，并且 $g\ne0$，可以用 $\vec w/g^*$ 将该 RTF 的复响应归一为1；不能直接除以 $g$。当 $g$ 很小时，这个操作会放大权重和估计误差，还须检查 WNG 与参考通道。这个已知 RTF 的归一化不是盲算法，也不是仅固定特征向量某一元素的相位。参考麦声像的定义另见 E05-20。</p>
+<p>正实数的功率归一化不会消除任意复相位。逐频幅度保持、逐频 SNR 保持与保留参考波形是不同要求；跨帧权重还要检查相位连续性。关于窄带 SNR 准则与宽带目标失真的区别，可读 <a href="https://www.iwaenc.org/proceedings/2006/pdf/A17.pdf" title="citation">Warsitz 与 Haeb-Umbach 2006，§2～3、式(6)～(11)</a>。此处引用其准则比较；其会议版归一化公式不能直接替换本章所引2007年期刊版的定义。</p>
+<p>另一个容易混淆的变化发生在外积之前：式(5-21)让所有通道共享一个标量统计权重；若每个通道先乘不同的掩码平方根，观测向量本身已改变。即使所得矩阵仍半正定，其通道幅度关系和秩也可能变化，不能只把它解释为更可靠的样本平均。<a href="#e05-24">E05-24</a>将这个变化与分母归一化分别算出。</p>
 <span id="sec-16" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-5-9-1">5.9.1 可执行基线与上线检查</h3>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/core/beamforming.py"><code>beamforming.py</code></a> 提供 DSB、弥散场相干矩阵、加载超指向/MVDR、LCMV、GSC 阻塞矩阵和 Wiener 增益的原创 NumPy 基线。权重约定为输出 $Y=\vec w^H\vec x$；该波束基线的 <code>apply_beamformer()</code> 接收 <code>通道 × 频点 × 帧</code>（CFT）谱，逐频点权重为 <code>频点 × 通道</code>（FM），输出为 <code>频点 × 帧</code>（FT）。</p>
 <p>第8章的掩码接口采用另一种明确轴序：<code>masked_spatial_covariance()</code> 和 <code>mask_mvdr_2x2()</code> 接收 <code>频点 × 通道 × 帧</code>（FMT）复谱与FT掩码。从上述CFT谱接入时，先用 <code>spectra_cft.swapaxes(0, 1)</code> 转成FMT；不能只改形状注释。<code>mask_mvdr_2x2()</code> 返回FT输出和FM权重，后者可按同一 $\vec w^H\vec x$ 约定用于波束基线。接口及旁路诊断见<a href="08_speech-separation.html#sec-8-7">第8章教学实现</a>。</p>
@@ -1291,97 +1303,97 @@ b_n=4\pi\mathrm j^n j_n(\kappa r)。
 <p>Cohen 的<a href="https://israelcohen.com/software/" title="citation">官方软件页</a>介绍了 MATLAB OM-LSA/IMCRA，但本次未取得可核验版本与许可的下载包。已下载的 WebRTC 则可从 <code>quantile_noise_estimator.cc</code>、<code>noise_estimator.cc</code>、<code>speech_probability_estimator.cc</code> 阅读分位数跟踪和语音概率控制；它们不是 IMCRA 或 OM-LSA 的逐式实现。研究文档为这些算法分别给出噪声阶跃、持续弱语音、启动和零输入的检查方案。</p>
 <span id="sec-17" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-5-10">5.10 波束形成算法总对比</h2>
 <p>不同方法的混响抑制量不能脱离阵列、数据、因果性和指标压成星级。下表只比较可由定义确定的目标、输入与失败条件；运算量仍要按通道数、频点数、滤波长度和实现测量。</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:85em">
 <thead>
 <tr>
-<th scope="col">方法</th>
-<th scope="col">优化目标或固定规则</th>
-<th scope="col">需要的统计量/先验</th>
-<th scope="col">目标保持条件</th>
-<th scope="col">主要失败模式</th>
-<th scope="col">主要计算</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:10em">方法</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:15em">优化目标或固定规则</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:16em">需要的统计量/先验</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:14em">目标保持条件</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:16em">主要失败模式</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:14em">主要计算</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>DSB</td>
-<td>导向后等权平均</td>
-<td>导向矢量或时延</td>
-<td>导向匹配</td>
-<td>空间分辨率有限；混叠或导向误差</td>
-<td>延迟/相位补偿与求和</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">DSB</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">导向后等权平均</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">导向矢量或时延</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">导向匹配</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">空间分辨率有限；混叠或导向误差</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">延迟/相位补偿与求和</td>
 </tr>
 <tr>
-<td>超指向</td>
-<td>在弥散场模型下最大化 DI</td>
-<td>阵列几何、弥散相干矩阵</td>
-<td>精确模型与单位响应约束</td>
-<td>低频 WNG、阵元失配、矩阵病态</td>
-<td>每频点线性方程求解</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">超指向</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">在弥散场模型下最大化 DI</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">阵列几何、弥散相干矩阵</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">精确模型与单位响应约束</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">低频 WNG、阵元失配、矩阵病态</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">每频点线性方程求解</td>
 </tr>
 <tr>
-<td>DMA</td>
-<td>小间距差分形成目标图形</td>
-<td>间距、内部延迟、均衡器</td>
-<td>$\kappa d\ll1$ 近似及标定成立</td>
-<td>自噪声和失配经差分、均衡放大</td>
-<td>延迟、FIR 与求和</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">DMA</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">小间距差分形成目标图形</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">间距、内部延迟、均衡器</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">$\kappa d\ll1$ 近似及标定成立</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">自噪声和失配经差分、均衡放大</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">延迟、FIR 与求和</td>
 </tr>
 <tr>
-<td>MVDR</td>
-<td>无失真约束下最小输出噪声</td>
-<td>噪声 SCM、导向矢量或 RTF</td>
-<td>约束向量等于真实目标传递向量</td>
-<td>SCM 误差、目标泄漏、导向失配</td>
-<td>SCM 估计与矩阵求解</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">MVDR</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">无失真约束下最小输出噪声</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">噪声 SCM、导向矢量或 RTF</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">约束向量等于真实目标传递向量</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">SCM 误差、目标泄漏、导向失配</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">SCM 估计与矩阵求解</td>
 </tr>
 <tr>
-<td>LCMV</td>
-<td>多个线性约束下最小输出功率</td>
-<td>SCM、全部约束向量与响应</td>
-<td>约束模型匹配且可行</td>
-<td>约束占用自由度、约束失配</td>
-<td>MVDR 外加小型约束矩阵求解</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">LCMV</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">多个线性约束下最小输出功率</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">SCM、全部约束向量与响应</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">约束模型匹配且可行</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">约束占用自由度、约束失配</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">MVDR 外加小型约束矩阵求解</td>
 </tr>
 <tr>
-<td>GSC</td>
-<td>在约束零空间内自适应对消</td>
-<td>固定支路、阻塞矩阵、噪声参考</td>
-<td>固定支路满足约束且精确阻塞</td>
-<td>目标泄漏到阻塞支路</td>
-<td>阻塞变换与自适应滤波</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">GSC</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">在约束零空间内自适应对消</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">固定支路、阻塞矩阵、噪声参考</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">固定支路满足约束且精确阻塞</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">目标泄漏到阻塞支路</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">阻塞变换与自适应滤波</td>
 </tr>
 <tr>
-<td>MWF</td>
-<td>最小化指定参考目标的MSE</td>
-<td>目标与噪声二阶矩、零交叉二阶矩、参考麦</td>
-<td>允许参考目标失真</td>
-<td>统计失配或参考目标选错</td>
-<td>二阶矩估计与矩阵求解</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">MWF</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">最小化指定参考目标的MSE</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">目标与噪声二阶矩、零交叉二阶矩、参考麦</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">允许参考目标失真</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">统计失配或参考目标选错</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">二阶矩估计与矩阵求解</td>
 </tr>
 <tr>
-<td>SDW-MWF</td>
-<td>最小化分量代价 $J_n+J_s/\mu$</td>
-<td>两分量二阶矩、参考麦、$\mu>0$</td>
-<td>不保证严格无失真</td>
-<td>统计失配和失真—噪声权重不适当</td>
-<td>二阶矩估计与矩阵求解</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">SDW-MWF</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">最小化分量代价 $J_n+J_s/\mu$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">两分量二阶矩、参考麦、$\mu>0$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">不保证严格无失真</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">统计失配和失真—噪声权重不适当</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">二阶矩估计与矩阵求解</td>
 </tr>
 <tr>
-<td>掩码 + MVDR/GEV</td>
-<td>网络估计 SCM，解析层求权重</td>
-<td>多通道谱、训练得到的掩码</td>
-<td>MVDR 还需正确 RTF；GEV 需定尺度</td>
-<td>掩码泄漏、训练分布和阵列变化</td>
-<td>网络推理、SCM 与矩阵求解</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">掩码 + MVDR/GEV</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">网络估计 SCM，解析层求权重</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">多通道谱、训练得到的掩码</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">MVDR 还需正确 RTF；GEV 需定尺度</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">掩码泄漏、训练分布和阵列变化</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">网络推理、SCM 与矩阵求解</td>
 </tr>
 <tr>
-<td>端到端滤波</td>
-<td>按训练损失直接估计权重或输出</td>
-<td>训练数据与固定输入定义</td>
-<td>由损失和结构决定，通常无硬保证</td>
-<td>域外阵列、未知设备、目标失真</td>
-<td>由模型、上下文和硬件决定</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">端到端滤波</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">按训练损失直接估计权重或输出</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">训练数据与固定输入定义</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">由损失和结构决定，通常无硬保证</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">域外阵列、未知设备、目标失真</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">由模型、上下文和硬件决定</td>
 </tr>
 </tbody>
 </table></div>
@@ -1531,30 +1543,30 @@ B(30^\circ)&=\frac{1+j}{2(\beta+1)}。
 <p>名义导向为 $\vec a_0=[1,1]^\top$，比较 $\vec w_A=[0.5,0.5]^\top$ 与 $\vec w_B=[2,-1]^\top$。两者都满足 $\vec w^H\vec a_0=1$。真实导向为 $\vec a_0+\vec e$，只知道复向量误差满足 $\|\vec e\|_2\le\epsilon=0.02$。求目标复响应偏离 1 的上界，并构造达到上界的误差。</p>
 <p><strong>第一步：把响应误差写成内积。</strong> 名义响应为 1，因此 $\vec w^H(\vec a_0+\vec e)-1=\vec w^H\vec e$。柯西-施瓦茨不等式给出 $|\vec w^H\vec e|\le\|\vec w\|_2\|\vec e\|_2\le\epsilon\|\vec w\|_2$。再用单位名义响应下 $G_{\mathrm{WNG}}=1/\|\vec w\|_2^2$，响应误差界也可写成 $\epsilon/\sqrt{G_{\mathrm{WNG}}}$。</p>
 <p><strong>第二步：逐项计算。</strong> A 的权重平方范数为 $0.25+0.25=0.5$；B 为 $4+1=5$。两者对理想目标的响应相同，权重范数却相差 $\sqrt{10}$ 倍。</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:54em">
 <thead>
 <tr>
-<th scope="col">权重</th>
-<th scope="col" style="text-align: right;">线性 WNG</th>
-<th scope="col" style="text-align: right;">WNG／dB</th>
-<th scope="col" style="text-align: right;">复响应误差上界</th>
-<th scope="col" style="text-align: right;">可保证的响应幅度下界</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">权重</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:10em" class="tutorial-short-column">线性 WNG</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:10em" class="tutorial-short-column">WNG／dB</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:12em" class="tutorial-short-column">复响应误差上界</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:14em" class="tutorial-short-column">可保证的响应幅度下界</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>A：等权平均</td>
-<td style="text-align: right;">2.0</td>
-<td style="text-align: right;">3.0103</td>
-<td style="text-align: right;">0.014142</td>
-<td style="text-align: right;">0.985858</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">A：等权平均</td>
+<td style="text-align: right;--tutorial-column-width:10em" class="tutorial-short-column">2.0</td>
+<td style="text-align: right;--tutorial-column-width:10em" class="tutorial-short-column">3.0103</td>
+<td style="text-align: right;--tutorial-column-width:12em" class="tutorial-short-column">0.014142</td>
+<td style="text-align: right;--tutorial-column-width:14em" class="tutorial-short-column">0.985858</td>
 </tr>
 <tr>
-<td>B：差分示例</td>
-<td style="text-align: right;">0.2</td>
-<td style="text-align: right;">−6.9897</td>
-<td style="text-align: right;">0.044721</td>
-<td style="text-align: right;">0.955279</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">B：差分示例</td>
+<td style="text-align: right;--tutorial-column-width:10em" class="tutorial-short-column">0.2</td>
+<td style="text-align: right;--tutorial-column-width:10em" class="tutorial-short-column">−6.9897</td>
+<td style="text-align: right;--tutorial-column-width:12em" class="tutorial-short-column">0.044721</td>
+<td style="text-align: right;--tutorial-column-width:14em" class="tutorial-short-column">0.955279</td>
 </tr>
 </tbody>
 </table></div>
@@ -1587,44 +1599,44 @@ G_{\mathrm{WNG}}(\varepsilon)&=\frac1{1/2+50/h^2}。
 \end{aligned}$$</p>
 <p>由于 $\varepsilon\ge0$，这里取正平方根。最小绝对加载为 9；若接口使用 $\mathbf R+\alpha\operatorname{tr}(\mathbf R)\mathbf I/M$，本题 $M=2$、平均对角元素为 11，因此相对加载参数为 $\alpha=9/11\approx0.818182$。绝对加载 9 与相对加载 9 是两个不同配置。</p>
 <p><strong>第三步：把抗误差收益和干扰代价分别算出。</strong> 在 $\varepsilon=9$ 时，$\vec w=[0.5+0.25j,0.5-0.25j]^\top$。其范数平方为 0.625，WNG 为 1.6；干扰响应为 $\vec w^H\vec b=0.25+0.25j$，功率增益为 0.125。原声场输出噪声功率是 $10\times0.125+0.625=1.875$。</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:63em">
 <thead>
 <tr>
-<th scope="col" style="text-align: right;">绝对加载 $\varepsilon$</th>
-<th scope="col" style="text-align: right;">相对加载 $\alpha=\varepsilon/11$</th>
-<th scope="col" style="text-align: right;">线性 WNG</th>
-<th scope="col" style="text-align: right;">干扰功率增益 $|\vec w^H\vec b|^2$</th>
-<th scope="col" style="text-align: right;">原协方差输出噪声功率</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">绝对加载 $\varepsilon$</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">相对加载 $\alpha=\varepsilon/11$</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:11em" class="tutorial-short-column">线性 WNG</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">干扰功率增益 $|\vec w^H\vec b|^2$</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:17em" class="tutorial-short-column">原协方差输出噪声功率</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0.000000</td>
-<td style="text-align: right;">1.095023</td>
-<td style="text-align: right;">0.004132</td>
-<td style="text-align: right;">0.954545</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">0</td>
+<td style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">0.000000</td>
+<td style="text-align: right;--tutorial-column-width:11em" class="tutorial-short-column">1.095023</td>
+<td style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">0.004132</td>
+<td style="text-align: right;--tutorial-column-width:17em" class="tutorial-short-column">0.954545</td>
 </tr>
 <tr>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">0.727273</td>
-<td style="text-align: right;">1.566161</td>
-<td style="text-align: right;">0.112188</td>
-<td style="text-align: right;">1.760388</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">8</td>
+<td style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">0.727273</td>
+<td style="text-align: right;--tutorial-column-width:11em" class="tutorial-short-column">1.566161</td>
+<td style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">0.112188</td>
+<td style="text-align: right;--tutorial-column-width:17em" class="tutorial-short-column">1.760388</td>
 </tr>
 <tr>
-<td style="text-align: right;">9</td>
-<td style="text-align: right;">0.818182</td>
-<td style="text-align: right;">1.600000</td>
-<td style="text-align: right;">0.125000</td>
-<td style="text-align: right;">1.875000</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">9</td>
+<td style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">0.818182</td>
+<td style="text-align: right;--tutorial-column-width:11em" class="tutorial-short-column">1.600000</td>
+<td style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">0.125000</td>
+<td style="text-align: right;--tutorial-column-width:17em" class="tutorial-short-column">1.875000</td>
 </tr>
 <tr>
-<td style="text-align: right;">20</td>
-<td style="text-align: right;">1.818182</td>
-<td style="text-align: right;">1.811499</td>
-<td style="text-align: right;">0.229448</td>
-<td style="text-align: right;">2.846514</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">20</td>
+<td style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">1.818182</td>
+<td style="text-align: right;--tutorial-column-width:11em" class="tutorial-short-column">1.811499</td>
+<td style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">0.229448</td>
+<td style="text-align: right;--tutorial-column-width:17em" class="tutorial-short-column">2.846514</td>
 </tr>
 </tbody>
 </table></div>
@@ -1896,37 +1908,37 @@ u&=(x_1-x_2)/2=.02s+.25i。
 =\frac{\sum_n m_n|\vec x_n^H\vec z|^2}{D}\ge0,$$</p>
 <p>其中 $D>0$ 为式(5-21)的保护分母。</p>
 <p><strong>第二步：区分三个统计描述。</strong> 权重总质量是 $\sum m_n$，正支持数是非零权重的个数。再计算权重集中程度对应的数量 $(\sum m_n)^2/\sum m_n^2$；它在均匀权重时等于支持数。极小值应先按最大权重缩放再计算，避免平方下溢。</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:54em">
 <thead>
 <tr>
-<th scope="col">权重</th>
-<th scope="col" style="text-align: right;">总质量</th>
-<th scope="col" style="text-align: right;">正支持数</th>
-<th scope="col" style="text-align: right;">集中程度对应数量</th>
-<th scope="col">输出矩阵</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">权重</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:12em" class="tutorial-short-column">总质量</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">正支持数</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:12em" class="tutorial-short-column">集中程度对应数量</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:13em">输出矩阵</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>$[1,1]$</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">2</td>
-<td>$\mathbf I/2$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$[1,1]$</td>
+<td style="text-align: right;--tutorial-column-width:12em" class="tutorial-short-column">2</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">2</td>
+<td style="text-align: right;--tutorial-column-width:12em" class="tutorial-short-column">2</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">$\mathbf I/2$</td>
 </tr>
 <tr>
-<td>$[1,0]$</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">1</td>
-<td>$\operatorname{diag}(1,0)$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$[1,0]$</td>
+<td style="text-align: right;--tutorial-column-width:12em" class="tutorial-short-column">1</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">1</td>
+<td style="text-align: right;--tutorial-column-width:12em" class="tutorial-short-column">1</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">$\operatorname{diag}(1,0)$</td>
 </tr>
 <tr>
-<td>两项均为 $10^{-300}$</td>
-<td style="text-align: right;">$2\times10^{-300}$</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">2</td>
-<td>$10^{-288}\mathbf I$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">两项均为 $10^{-300}$</td>
+<td style="text-align: right;--tutorial-column-width:12em" class="tutorial-short-column">$2\times10^{-300}$</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">2</td>
+<td style="text-align: right;--tutorial-column-width:12em" class="tutorial-short-column">2</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">$10^{-288}\mathbf I$</td>
 </tr>
 </tbody>
 </table></div>
@@ -1939,11 +1951,11 @@ u&=(x_1-x_2)/2=.02s+.25i。
 <p>比较只要求名义单位响应的 MVDR、额外要求一阶复导数为零的 LCMV，以及等权 DSB。计算权重、输出噪声功率、名义 WNG，并检查 $\phi=0.2$ 时的复响应。</p>
 <p><strong>第一步：把导数写成第二列约束。</strong> 波束响应为 $B(\phi)=\vec w^H\vec a(\phi)$。因此 $\vec a'(0)=[-\mathrm j,0,\mathrm j]^\top$，约束与目标函数是</p>
 <p>$$\begin{gathered}
-\mathbf C=[\vec a(0),\vec a'(0)]
-=\begin{bmatrix}1&-\mathrm j\\1&0\\1&\mathrm j\end{bmatrix},\qquad
+\mathbf C=[\vec a(0),\vec a'(0)],\\
+\mathbf C=\begin{bmatrix}1&-\mathrm j\\1&0\\1&\mathrm j\end{bmatrix},\\
 \vec f=\begin{bmatrix}1\\0\end{bmatrix},\\
-\min_{\vec w}\ \vec w^H\mathbf R_n\vec w,
-\qquad \mathbf C^H\vec w=\vec f。
+\min_{\vec w}\ \vec w^H\mathbf R_n\vec w,\\
+\mathbf C^H\vec w=\vec f。
 \end{gathered}\tag{5-26}$$</p>
 <p>这里 $\mathbf C$ 为 $3\times2$，$\vec f$ 为 $2\times1$。第二个约束给出 $\mathrm j w_1-\mathrm j w_3=0$，所以 $w_1=w_3=t$；第一个约束给出 $w_2=1-2t$。</p>
 <p>角度以弧度表示时，$\partial B/\partial\theta=(\partial B/\partial\phi)(2\pi fd/c)\cos\theta$。在本题的正横方向、$f,d>0$ 时，令相位导数为零等价于令角度导数为零；端射等链式系数为零的位置不能用这句话判断约束是否有效。</p>
@@ -1951,9 +1963,10 @@ u&=(x_1-x_2)/2=.02s+.25i。
 <p>$$\begin{aligned}
 P_n(t)&=5|t|^2+2|1-2t|^2\\
 &=13x^2-8x+2+13y^2,\\
-x_{opt}&=4/13,\qquad y_{opt}=0,\\
-\vec w_D&=\frac1{13}[4,5,4]^\top,\qquad
-P_{n,D}=10/13。
+x_{opt}&=4/13,\\
+y_{opt}&=0,\\
+\vec w_D&=\frac1{13}[4,5,4]^\top,\\
+P_{n,D}&=10/13。
 \end{aligned}\tag{5-27}$$</p>
 <p>令对 $x$ 的导数 $26x-8=0$，对 $y$ 的导数 $26y=0$，便得到这个唯一最小值。下标 $D$ 在本题表示导数约束权重。</p>
 <p><strong>第三步：在同一噪声模型下建立对照。</strong> 单约束 MVDR 的未归一化向量为 $[1,1/2,1/4]^\top$，元素和为 $7/4$，所以 $\vec w_V=[4,2,1]^\top/7$。DSB 为 $\vec w_{DSB}=[1,1,1]^\top/3$。</p>
@@ -2001,13 +2014,14 @@ B_{DSB}(\phi)&=(1+2\cos\phi)/3。
 <p><a id="e05-19"></a></p>
 <h3 id="sec-u-0a1ab334a4">E05-19：最坏范数球约束为什么不保持名义单位响应？</h3>
 <p><strong>题设。</strong> 两麦名义导向向量为 $\vec a_0=[1,1]^\top$，噪声协方差为 $\mathbf I$，真实向量为 $\vec a_0+\vec e$。允许任意复误差 $\|\vec e\|_2\le\epsilon$，取 $\epsilon=0.2$；向量和半径沿用此处的单位幅度归一化。要求误差球内的最低幅度响应不小于1，求最小噪声权重。</p>
-<p><strong>第一步：把最坏误差化成一个复平面圆盘。</strong> 固定 $\vec w$ 后，$\vec w^H\vec e$ 可遍历半径 $\epsilon\|\vec w\|$ 的复圆盘。若 $\vec w\ne0$，任意圆盘内的 $z$ 都能由 $\vec e=\vec w z/\|\vec w\|^2$ 实现。离原点最近的总响应因此为</p>
-<p>$$\begin{gathered}
-\min_{\|\vec e\|\le\epsilon}|\vec w^H(\vec a_0+\vec e)|
-=\max\{0,|\vec w^H\vec a_0|-\epsilon\|\vec w\|\},\\
-\min_{\vec w}\ \|\vec w\|^2,\qquad
-|\vec w^H\vec a_0|-\epsilon\|\vec w\|\ge1。
-\end{gathered}\tag{5-28}$$</p>
+<p><strong>第一步：把最坏误差化成一个复平面圆盘。</strong> 固定 $\vec w$ 后，$\vec w^H\vec e$ 可遍历半径 $\epsilon\|\vec w\|$ 的复圆盘。若 $\vec w\ne0$，任意圆盘内的 $z$ 都能由 $\vec e=\vec w z/\|\vec w\|^2$ 实现。离原点最近的总响应给出最坏幅度。</p>
+<p>记名义幅度 $b=|\vec w^H\vec a_0|$、误差圆盘半径 $r=\epsilon\|\vec w\|$，最坏幅度为 $b_{\min}$。这两个缩写只用于本题：</p>
+<p>$$\begin{aligned}
+b_{\min}&=\min_{\|\vec e\|\le\epsilon}|\vec w^H(\vec a_0+\vec e)|,\\
+b_{\min}&=\max\{0,b-r\},\\
+\min_{\vec w}&\ \|\vec w\|^2,\\
+&b-r\ge1。
+\end{aligned}\tag{5-28}$$</p>
 <p>整体旋转权重的相位不改变目标函数或幅度约束，可以把名义响应选为正实数。这是计算的相位选择，不是对所有实际向量施加相同相位约束。<a href="https://doi.org/10.1109/TSP.2002.806865" title="citation">Vorobyov 等 2003，§III-A/B、式(18)～(29)</a>给出了范数球最坏情况形式和相应凸优化处理。</p>
 <p><strong>第二步：求最小范数而不调用优化器。</strong> 柯西–施瓦茨不等式给出 $|\vec w^H\vec a_0|\le\sqrt2\|\vec w\|$。可行性要求 $(\sqrt2-\epsilon)\|\vec w\|\ge1$；在 $\epsilon\lt \sqrt2$ 时，取 $\vec w$ 与 $\vec a_0$ 同方向即可达到下界。写成 $\vec w=[t,t]^\top$，有</p>
 <p>$$t=\frac1{2-\sqrt2\epsilon}\approx0.582357835。$$</p>
@@ -2034,30 +2048,30 @@ B_{DSB}(\phi)&=(1+2\cos\phi)/3。
 \end{aligned}\tag{5-30}$$</p>
 <p>最后一步用到了 $q_b$ 为实数。乘在权重上的是 $b_r^*$，输出 $\vec w^H\vec b$ 才是 $b_r$；漏掉共轭会把参考响应变为 $b_r^*$。参考值恰为实数时，这个错误容易被掩盖。</p>
 <p><strong>第二步：分别选择两个参考麦。</strong> 本题 $\mathbf R_n^{-1}\vec b=[1,1+\mathrm j]^\top$，$q_b=2+|1+\mathrm j|^2=4$。也可逐项检查 $\mathbf R_s=\begin{bmatrix}12&6-6\mathrm j\\6+6\mathrm j&6\end{bmatrix}$，迹分母为 $12/2+6=12$。</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:64em">
 <thead>
 <tr>
-<th scope="col">参考麦</th>
-<th scope="col">参考目标传递 $b_r$</th>
-<th scope="col">Souden 权重 $\vec w_{S,r}$</th>
-<th scope="col">输出目标响应 $\vec w^H\vec b$</th>
-<th scope="col" style="text-align: right;">输出噪声功率</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">参考麦</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:12em">参考目标传递 $b_r$</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:19em">Souden 权重 $\vec w_{S,r}$</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:13em">输出目标响应 $\vec w^H\vec b$</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:12em" class="tutorial-short-column">输出噪声功率</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>第1麦</td>
-<td>$2$</td>
-<td>$[1/2,(1+\mathrm j)/2]^\top$</td>
-<td>$2$</td>
-<td style="text-align: right;">$1$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">第1麦</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">$2$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:19em">$[1/2,(1+\mathrm j)/2]^\top$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">$2$</td>
+<td style="text-align: right;--tutorial-column-width:12em" class="tutorial-short-column">$1$</td>
 </tr>
 <tr>
-<td>第2麦</td>
-<td>$1+\mathrm j$</td>
-<td>$[(1-\mathrm j)/4,1/2]^\top$</td>
-<td>$1+\mathrm j$</td>
-<td style="text-align: right;">$1/2$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">第2麦</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">$1+\mathrm j$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:19em">$[(1-\mathrm j)/4,1/2]^\top$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">$1+\mathrm j$</td>
+<td style="text-align: right;--tutorial-column-width:12em" class="tutorial-short-column">$1/2$</td>
 </tr>
 </tbody>
 </table></div>
@@ -2076,17 +2090,19 @@ B_{DSB}(\phi)&=(1+2\cos\phi)/3。
 <p><strong>第一步：由概率密度比得到后验。</strong> 两种复高斯密度分别为</p>
 <p>$$f_0(Y)=\frac{e^{-\gamma}}{\pi\phi_n},\qquad
 f_1(Y)=\frac{e^{-\gamma/(1+\xi)}}{\pi\phi_n(1+\xi)}。$$</p>
-<p>所以 $f_0/f_1=(1+\xi)e^{-\gamma\xi/(1+\xi)}$。Bayes 公式分子为 $(1-q_0)f_1$，分母为 $q_0f_0+(1-q_0)f_1$；约去共同项得到</p>
-<p>$$p_s=\left[1+\frac{q_0}{1-q_0}(1+\xi)
-\exp\!\left(-\frac{\gamma\xi}{1+\xi}\right)\right]^{-1}。
-\tag{5-31}$$</p>
+<p>所以 $f_0/f_1=(1+\xi)e^{-\gamma\xi/(1+\xi)}$。Bayes 公式分子为 $(1-q_0)f_1$，分母为 $q_0f_0+(1-q_0)f_1$；约去共同项即可用密度比计算存在后验。</p>
+<p>记密度比为 $\ell=f_0/f_1$，得到等价的短行形式：</p>
+<p>$$\begin{aligned}
+\ell&=(1+\xi)\exp\!\left(-\frac{\gamma\xi}{1+\xi}\right),\\
+p_s&=\left[1+\frac{q_0}{1-q_0}\ell\right]^{-1}。
+\end{aligned}\tag{5-31}$$</p>
 <p>式(5-31)在 $0\lt q_0\lt 1$ 时可直接使用。密度是连续变量的密度值，不是单点概率；它们可以大于1，单位在比值中消去。这里的推导和增益组合对应 <a href="https://israelcohen.com/wp-content/uploads/2018/05/sp_Nov2001.pdf" title="citation">Cohen 与 Berdugo 2001，§2、式(6)～(16)，印刷页2406～2407</a>中的两假设建模。</p>
 <p><strong>第二步：分开先验与观测的贡献。</strong> 本题密度比是 $4e^{-3}\approx0.1991482735$。若 $q_0=0.5$，先验比为1，所以 $p_s=1/(1+4e^{-3})\approx0.8339252302$。若 $q_0=0.2$，先验比为 $1/4$，所以 $p_s=1/(1+e^{-3})\approx0.9525741268$。</p>
 <p>两次观测能量完全相同，变化的是先验：较小的缺席先验使存在后验提高。后验必须与所用噪声功率、分布模型和先验一起解释，不能把它当作跨设备天然校准的置信度。</p>
-<p><strong>第三步：在对数域做组合。</strong> 条件增益均严格为正时，</p>
+<p><strong>第三步：在对数域做组合。</strong> 条件增益均严格为正时，记 $u=p_s\log G_{H_1}$、$v=(1-p_s)\log G_{min}$。两项分别来自存在和缺席假设：</p>
 <p>$$\begin{aligned}
-\log G&=p_s\log G_{H_1}+(1-p_s)\log G_{min},\\
-G&=\exp\{p_s\log G_{H_1}+(1-p_s)\log G_{min}\}。
+\log G&=u+v,\\
+G&=\exp(u+v)。
 \end{aligned}\tag{5-32}$$</p>
 <p>这里可统一采用自然对数；指数还原得到 $G=G_{H_1}^{p_s}G_{min}^{1-p_s}$。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -2124,7 +2140,8 @@ G&=\exp\{p_s\log G_{H_1}+(1-p_s)\log G_{min}\}。
 <p>权重是瞬时实数加权：单约束用 $[4,2,1]/7$，导数约束用 $[4,5,4]/13$。本题不需要 STFT、协方差在线估计或未来帧；三路都围绕同一中央参考比较，不额外拟合延迟或整体增益。</p>
 <p><strong>第二步：分别计算目标误差和期望噪声。</strong> 评分稳态窗口固定为 $[2400,29600)$，共有27200个样本。两种频率在该窗口均含整数个周期且相互正交，每个源分量的均方为 $0.08^2/2=0.0032$。所以目标单独通过权重后的误差均方为</p>
 <p>$$P_{err,s}=0.0032\big(|B(0.1)-1|^2+|B(0.3)-1|^2\big)。$$</p>
-<p>这不是只算幅度差：单约束响应的虚部也要计入。利用 E05-18 的 $B_V$、$B_D$，再乘以本题噪声尺度，得到</p>
+<p>这不是只算幅度差：单约束响应的虚部也要计入。利用 E05-18 的 $B_V$、$B_D$，即可分别求出两组目标误差。</p>
+<p>噪声协方差的共同尺度为 $0.02^2=0.0004$。E05-18 中单约束权重的噪声功率为 $4/7$，因此本题的期望输出噪声功率为 $0.0004\times4/7\approx2.28571429\times10^{-4}$。导数权重对应 $10/13$，同样得到 $0.0004\times10/13\approx3.07692308\times10^{-4}$。目标误差与期望噪声相加，结果列于下表：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
 <tr>
@@ -2138,13 +2155,13 @@ G&=\exp\{p_s\log G_{H_1}+(1-p_s)\log G_{min}\}。
 <tr>
 <td>单约束 MVDR</td>
 <td style="text-align: right;">$6.04855394\times10^{-5}$</td>
-<td style="text-align: right;">$0.0004\times4/7\approx2.28571429\times10^{-4}$</td>
+<td style="text-align: right;">$2.28571429\times10^{-4}$</td>
 <td style="text-align: right;">$2.89056968\times10^{-4}$</td>
 </tr>
 <tr>
 <td>导数 LCMV</td>
 <td style="text-align: right;">$2.44764789\times10^{-6}$</td>
-<td style="text-align: right;">$0.0004\times10/13\approx3.07692308\times10^{-4}$</td>
+<td style="text-align: right;">$3.07692308\times10^{-4}$</td>
 <td style="text-align: right;">$3.10139956\times10^{-4}$</td>
 </tr>
 </tbody>
@@ -2245,9 +2262,176 @@ python -m codes.chapters.ch05.examples.generate_derivative_audio --check
 </code></pre>
 <p>生成会发布四个样本；<code>--check</code> 只读核对已有资产。理论算例亦可通过 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/chapter05_experiments.py"><code>chapter05_experiments.py</code></a>复算。</p>
 <p><strong>边界。</strong> 本题只在已知几何、固定偏角和指定噪声模型下比较两个权重，不是未知 DOA 估计、真实语音听评或工业实时测试。试听可以比较实际输出，但不能代替目标分量评分，更不能凭声音较轻就推断目标保真更好。</p>
+<p><a id="e05-23"></a></p>
+<h3 id="sec-u-e8fcec5128">E05-23：每个频点的信噪比相同，为什么波形仍会改变？</h3>
+<p><strong>题设。</strong> 某个频点已求出一组 GEV 权重，但没有固定其复数尺度。先推导改变权重相位对输出的影响，再用两频已知分量重合成声音。源为500 Hz和1500 Hz两个余弦，每项幅度0.1，采样率16 kHz，活动段长2 s；首尾各320点（20 ms）用包含端点的正弦平方包络淡入淡出。三份声音采用同一包络、采样时钟和增益，没有噪声。</p>
+<p>本题实际运行的是已知分量重合成。它不从音频估计 GEV 权重，不运行 STFT 或 BAN，也不把纯音波形误差解释为语音听感分数。</p>
+<p><strong>第一步：权重的相位到输出时要取共轭。</strong> 设 $\vec w$ 在一个频点的目标响应为 $g=\vec w^H\vec a$，将权重乘任意非零复数 $c$：</p>
+<p>$$\begin{aligned}
+\widetilde{\vec w}&=c\vec w,\\
+\widetilde Y&=c^*Y,\\
+\widetilde g&=c^*g。
+\end{aligned}\tag{5-33}$$</p>
+<p>因此 $c=+\mathrm j$ 时，输出相位改变的是 $-\pi/2$，不是 $+\pi/2$。目标、噪声的输出功率都乘 $|c|^2$；只要噪声功率为正，其比值保持不变。尤其 $|c|=1$ 时，两个功率本身也不变。这个逐频代数结论不要求所有频点使用同一个 $c$。</p>
+<p><strong>第二步：把两频分量分别合成。</strong> 为缩短式子，记 $C_f(t)=\cos(2\pi ft)$、$S_f(t)=\sin(2\pi ft)$，这里 $f$ 的单位为 Hz、$t$ 的单位为秒。以下只写包络等于1的稳态段：</p>
+<p>$$\begin{aligned}
+s(t)&=0.1(C_{500}+C_{1500}),\\
+y_F(t)&=0.1(C_{500}-C_{1500}),\\
+y_Q(t)&=0.1(C_{500}+S_{1500})。
+\end{aligned}\tag{5-34}$$</p>
+<p>$y_F$ 将1500 Hz的权重乘 $-1$，输出该分量随之翻号；$y_Q$ 将该权重乘 $+\mathrm j$，实际输出因共轭乘 $-\mathrm j$。按 $C_f(t)=\operatorname{Re}e^{+\mathrm j2\pi ft}$ 的约定，有 $\operatorname{Re}[-\mathrm j e^{+\mathrm j2\pi ft}]=S_f(t)$。500 Hz分量始终保持原相位。三个合成声音的首尾都额外乘同一个淡入淡出包络。</p>
+<p>正频率改变复相位时，负频率应作相应共轭改变，才能得到实数波形；不能只改完整 FFT 数组的一半后丢掉输出虚部。本题直接按实数三角函数合成，避开了这项实现歧义。</p>
+<p><strong>第三步：同功率为什么没有选定参考波形？</strong> 评分窗为样本 $[2400,29600)$，共27200点、1.7 s；500 Hz和1500 Hz分别包含850和2550个周期。该窗处于共同包络的稳态段，余弦与正弦各自均方为 $1/2$，不同频率的交叉均值为0。</p>
+<p>参考和两个输出的均方因此都为 $0.1^2/2+0.1^2/2=0.01$。定义同窗误差均方 $P_e=N^{-1}\sum_n(y[n]-s[n])^2$，参考均方 $P_s=N^{-1}\sum_n s[n]^2$；NMSE为 $P_e/P_s$，归一误差NRMSE为其平方根。本题不拟合增益或延迟。</p>
+<p>翻号输出的误差是 $-0.2C_{1500}$，正交相位输出的误差是 $0.1(S_{1500}-C_{1500})$，故</p>
+<p>$$\begin{aligned}
+P_{e,F}&=0.2^2/2=0.02,\\
+P_{e,Q}&=0.1^2(1/2+1/2)\\
+&=0.01。
+\end{aligned}\tag{5-35}$$</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">已知分量合成</th>
+<th scope="col" style="text-align: right;">输出均方</th>
+<th scope="col" style="text-align: right;">相对参考的误差均方</th>
+<th scope="col" style="text-align: right;">NMSE</th>
+<th scope="col" style="text-align: right;">NRMSE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>原相位参考</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>高频翻号 $y_F$</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">$\sqrt2$</td>
+</tr>
+<tr>
+<td>高频正交相位 $y_Q$</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table></div>
+<p>这个表没有噪声，所以不能把它标成三份音频的有限SNR比较。第一步说明的是含噪声逐频模型中 SNR 对共同复尺度的不可辨识性；本表另用无噪声参考隔离波形变化。</p>
+<p><strong>第四步：能否解释为同一个纯延迟？</strong> 假如 $y_F(t)=s(t-\tau)$，保留500 Hz相位要求 $500\tau$ 为整数。这样 $1500\tau=3(500\tau)$ 也为整数，不可能同时成为高频翻号所需的半整数。</p>
+<p>对 $y_Q$，1500 Hz输出相位为 $-\pi/2$，共同延迟需满足 $1500\tau=1/4$ 加整数，同样与 $500\tau$ 为整数矛盾。因此两个输出都不能由给参考加一个共同纯延迟得到。这一判断只使用所列两个非零谱线，不说明任意频谱相位变化都不可由延迟解释。</p>
+<p><strong>第五步：读回实际 PCM，再与解析值分开。</strong> 三个单声道文件均为32000点，采用共同增益1、16位PCM，评分仍取上述27200点稳态窗：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">文件</th>
+<th scope="col">已知分量的用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="phase_audio/phase_reference.wav">原相位参考</a><audio class="audio-sample" controls preload="none" aria-label="原相位参考" src="phase_audio/phase_reference.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>500/1500 Hz两个余弦</td>
+</tr>
+<tr>
+<td><a href="phase_audio/phase_flip.wav">高频翻号</a><audio class="audio-sample" controls preload="none" aria-label="高频翻号" src="phase_audio/phase_flip.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>保留低频，高频余弦翻号</td>
+</tr>
+<tr>
+<td><a href="phase_audio/phase_quadrature.wav">高频正交相位</a><audio class="audio-sample" controls preload="none" aria-label="高频正交相位" src="phase_audio/phase_quadrature.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>保留低频，高频改为正弦</td>
+</tr>
+</tbody>
+</table></div>
+<p>PCM评分把真实整数样本除以32768，直接按输出整数减参考整数形成残差。记整数样本为 $q[n]$，输出整数能量为 $E_y=\sum_nq_y[n]^2$，整数误差能量为 $E_e=\sum_n(q_y[n]-q_s[n])^2$。三份文件共用解码分母 $D=27200\times32768^2=29205777612800$；参考整数能量为 $E_s=292026771800$。输出均方为 $E_y/D$，误差均方为 $E_e/D$，NMSE为 $E_e/E_s$。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">实际PCM</th>
+<th scope="col" style="text-align: right;">输出整数能量 $E_y$</th>
+<th scope="col" style="text-align: right;">整数误差能量 $E_e$</th>
+<th scope="col" style="text-align: right;">NMSE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>原相位参考</td>
+<td style="text-align: right;">292026771800</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>高频翻号</td>
+<td style="text-align: right;">292035584600</td>
+<td style="text-align: right;">584062356400</td>
+<td style="text-align: right;">2.0000301781</td>
+</tr>
+<tr>
+<td>高频正交相位</td>
+<td style="text-align: right;">292051763500</td>
+<td style="text-align: right;">292037208100</td>
+<td style="text-align: right;">1.0000357375</td>
+</tr>
+</tbody>
+</table></div>
+<p>实际PCM的三个输出均方约为0.0099989384、0.0099992402、0.0099997941；量化后的功率略有不同，不再精确等于解析的0.01。两种输出的误差均方约为0.0199981786和0.0099992958。这里没有给每份文件单独调增益。</p>
+<p>相量拟合只用于诊断各频率的实际复相位，没有用来补偿评分。例如高频输出／参考复比，翻号文件约为 $-1.0000658234$，正交相位文件约为 $-0.0000183123-1.0000681577\mathrm j$，其量化偏差也须保留。参数、文件SHA、解析／浮点／PCM分栏及完整复比见独立<a href="phase_audio/MANIFEST.json">清单</a>，不能用前表解析值替代读回结果。</p>
+<p><img alt="图73：同功率的两频分量与参考波形" src="../figures/fig73_phase_reference.png" onerror="this.alt+='（图缺失）'" /></p>
+<p><strong>图73</strong>比较已知分量重合成的波形与误差，并使用相同参考和稳态窗。它说明相同逐频功率没有选定唯一参考波形；图中的声音没有盲估计、GEV、STFT或BAN处理，也没有语音质量排名。</p>
+<p>生成源为<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/core/phase_audio.py">phase_audio.py</a>，入口为<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/examples/generate_phase_audio.py">generate_phase_audio.py</a>。<code>--check</code>只读重放并核对已发布PCM；本题解析输出与实际清单的入口为<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/chapter05_experiments.py">chapter05_experiments.py</a>：</p>
+<pre><code class="language-bash">python -m codes.chapters.ch05.examples.generate_phase_audio --check
+python -m codes.chapters.ch05.chapter05_experiments
+</code></pre>
+<p><strong>边界。</strong> 本题没有测试任意逐频权重的因果FIR实现；真实STFT还存在窗、帧移和跨帧更新的影响。实际目标相位是否必须保持，应由参考声像与任务决定；纯音波形不同本身不能证明可懂度下降。若要将GEV输出归一到已知RTF，可计算 $g=\vec w^H\vec a$，在 $g\ne0$ 时采用 $\vec w/g^*$；这要求可靠的RTF，参考响应过小时仍可能放大误差。</p>
+<p><a id="e05-24"></a></p>
+<h3 id="sec-u-9dcb5dc891">E05-24：逐通道掩码为什么可能改变协方差的秩？</h3>
+<p><strong>题设。</strong> 单频两通道、两快拍都为 $\vec x_1=\vec x_2=[1,1]^\top$。比较所有通道共享的标量权重与逐通道平方根预滤。两者的统计分母也分别核对。所有掩码都为给定的实数非负数，没有网络估计、随机快拍或真实语音。</p>
+<p>逐通道预滤的研究例见 <a href="https://arxiv.org/pdf/2607.26623" title="citation">Middelberg 等，<em>A Study on Online Mask-based Beamforming Using Per-channel Masking for Spatially Distributed Microphones</em>，2026年7月29日作者预印本v1，§3.1、式(5)、(6)、(8)</a>。其式(6)以窗口帧数 $P$ 为分母；不是本章式(5-21)的掩码总质量分母。下面只隔离这项预滤运算，不复现论文的网络、滑窗更新或Souden增强整链。</p>
+<p><strong>第一步：先看原始观测。</strong> 两份快拍方向完全相同，未中心化二阶矩为</p>
+<p>$$\begin{aligned}
+\mathbf R_0&=\frac12\sum_{n=1}^2\vec x_n\vec x_n^H\\
+&=\begin{bmatrix}1&1\\1&1\end{bmatrix}。
+\end{aligned}\tag{5-36}$$</p>
+<p>特征向量 $[1,1]^\top$ 对应特征值2，$[1,-1]^\top$ 对应特征值0，故秩为1。本题没有从这个秩估计真实源数；它是给定两列矩阵的代数性质。</p>
+<p>记第 $n$ 个快拍的通道掩码列向量为 $\vec m_n$，$\odot$ 表示逐元素相乘，平方根也逐元素计算。先得到 $\vec z_n=\sqrt{\vec m_n}\odot\vec x_n$，再构造 $\mathbf R_{\rm pre}=\tfrac12\sum_n\vec z_n\vec z_n^H$。本题窗口帧数为 $P=2$。</p>
+<p><strong>第二步：固定不同的通道增益，会怎样改变约束对象？</strong> 让每份快拍都用 $\vec m_n=[1,1/4]^\top$。两份预滤向量均为 $\widetilde{\vec a}=[1,1/2]^\top$，因此</p>
+<p>$$\mathbf R_{\rm pre}
+=\begin{bmatrix}1&1/2\\1/2&1/4\end{bmatrix}。
+\tag{5-37}$$</p>
+<p>该矩阵仍为秩1，非零特征值为 $1+1/4=5/4$，但通道幅度比已经从1变为1/2。其主特征向量按参考通道0归一后为 $\widetilde{\vec a}$，不再是原来的 $\vec a=[1,1]^\top$。</p>
+<p>作为失配控制，另外规定用于求权重的噪声矩阵为 $\mathbf R_n=\mathbf I_2$。按这个伪RTF求无失真MVDR，未归一化向量为 $\widetilde{\vec a}$，分母为 $5/4$，故权重为 $[4/5,2/5]^\top$。</p>
+<p>它对预滤方向的响应为 $4/5+(2/5)(1/2)=1$；若把同一权重施于<strong>原始观测</strong>，对原目标的响应却为 $4/5+2/5=6/5$。这说明单位约束保护的是所传入的向量，不能把预滤后的通道比例直接当成原观测的真实RTF。这个伪RTF控制不是论文的Souden公式复现，也不意味着逐通道掩码必然导致固定的20%误差。</p>
+<p><strong>第三步：掩码随快拍改变，还可能改变秩。</strong> 第一份快拍用 $[1,1/4]^\top$，第二份改用 $[1/4,1]^\top$，于是 $\vec z_1=[1,1/2]^\top$、$\vec z_2=[1/2,1]^\top$。</p>
+<p>分别记 $\mathbf R_1=\vec z_1\vec z_1^H$、$\mathbf R_2=\vec z_2\vec z_2^H$。两份外积为</p>
+<p>$$\begin{aligned}
+\mathbf R_1&=\begin{bmatrix}1&1/2\\1/2&1/4\end{bmatrix},\\
+\mathbf R_2&=\begin{bmatrix}1/4&1/2\\1/2&1\end{bmatrix}。
+\end{aligned}$$</p>
+<p>再逐元素相加并除以2：</p>
+<p>$$\begin{aligned}
+\mathbf R_{\rm alt}&=(\mathbf R_1+\mathbf R_2)/2\\
+&=\begin{bmatrix}5/8&1/2\\1/2&5/8\end{bmatrix}。
+\end{aligned}\tag{5-38}$$</p>
+<p>这个等对角矩阵的两个特征值为 $5/8+1/2=9/8$ 和 $5/8-1/2=1/8$，都严格为正；行列式为 $(9/8)(1/8)=9/64$，秩变为2。</p>
+<p>每份快拍的外积都是秩1，但两份<strong>预滤后</strong>的向量不再共线，其和便可能为秩2。不能据此说原始声音增加了一个独立源；新方向来自随快拍变化的通道预滤。若将这个新矩阵继续套入单一传递向量的秩一推导，须重新检查前提。</p>
+<p><strong>第四步：与共享标量掩码、两种分母分别比较。</strong> 上述两种控制中，每份通道掩码的算术均值都为 $\bar m_n=(1+1/4)/2=5/8$。若把这个标量共同用于所有原通道，并按快拍数2平均，得到 $\mathbf R_{\rm scalar,P}=(5/8)\mathbf R_0$。它的非零特征值为 $5/4$，另一个仍为0，秩仍为1。共享标量只能改变每份原快拍的共同尺度，不会在本题制造新通道方向。</p>
+<p>若采用式(5-21)，分母改为权重和 $5/8+5/8=5/4$，则</p>
+<p>$$\mathbf R_{\rm scalar,W}
+=\frac{(5/4)\mathbf R_0}{5/4}
+=\mathbf R_0。
+$$</p>
+<p>这里的权重和高于保护阈值。两个标量估计矩阵只差整体尺度，秩都为1；它们又都不同于交替逐通道预滤所得的秩2矩阵。分母口径与通道预滤是两项独立变化，不能用“用了掩码”将其合并。</p>
+<p><strong>边界与复算。</strong> 非负逐通道预滤后的外积平均仍半正定，但合法矩阵不自动具有正确的目标／噪声语义。本题没有证明哪种掩码策略在语音数据中更好，也没有测在线跟踪速度。实际方法应检查预滤如何改变跨通道幅相、目标矩阵的秩、参考声像、噪声统计与输出取点，再讨论性能。</p>
+<p>本题代码为<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/chapter05_experiments.py">chapter05_experiments.py</a>的 <code>channel_mask_prefilter_model()</code>；输出同时保留原矩阵、两种逐通道预滤矩阵、按帧数和按质量归一的标量矩阵，以及两种目标上的响应。独立测试直接核对有理数矩阵与 $6/5$、1两个响应，不把函数自己的输出用作唯一预期。</p>
 <hr />
 <blockquote>
-<p>📄 本篇信息：配图 5 张 ｜ <a href="index.html">回首页</a></p>
+<p>📄 本篇信息：配图 6 张 ｜ <a href="index.html">回首页</a></p>
 </blockquote><div class="pn"><span><a href="04_doa-estimation.html">← 上一篇</a></span><span><a href="06_aec.html">下一篇 →</a></span></div>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>

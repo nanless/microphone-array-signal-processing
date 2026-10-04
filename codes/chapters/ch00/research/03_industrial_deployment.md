@@ -202,6 +202,11 @@ Sound Open Firmware（SOF）将波束形成放入 DSP 固件及拓扑系统。�
 
 离线设计脚本还须单独核查。第5章已对同一固定版的 `sof_bf_design.m` 记录归一化 `sinc` 自变量和 WNG 分母变量的两个问题，见[独立诊断脚本](../../ch05/examples/audit_sof_tdfb_design.py)及[原始报告](../../ch05/reports/sof_tdfb_design_audit.json)。那是固定源码静态核对与 Python 数学反例，未运行 MATLAB、生成并测试真实 SOF FIR 或刷写固件；本节不把官网响应图或源码存在当作设计与板端性能已验收。
 
+2026-10-04的[新SOF合同报告](../../ch05/reports/sof_tdfb_design_current.json)重新核验七份固定原文件、Git blob与许可，另记录可选方位仿真分支的 `nmi` 在方位循环内重置、最终只保留最后方位的静态控制流。此分支未执行MATLAB/Octave，没有生成实际FIR或设备WAV；原两个问题及历史报告仍保留。
+
+理论频率权重到固件还经过逐麦峰位裁切、有限抽头、系数量化、支路累加和饱和。固定 `tdfb_generic.c` 的S16/S24输出要按对应格式舍入并饱和，S32分支另有移位饱和；输出位图决定哪些滤波支路进入同一输出。应分别固定理想响应、实际导出系数、定点尺度和输出取点，不能把一个浮点方向图当作板端测量。细节与限定证据见[空间研究§60](01_spatial_and_tracking.md#per-channel-mask-evidence)。
+
+
 ### I14：SOF 的采样率转换与拓扑
 
 [`src/audio/src/`](https://github.com/thesofproject/sof/tree/b6c6a05d52536313fe8e8752b1c4e069b1cc4002/src/audio/src)提供固件采样率转换模块；其模块名 `src` 表示 Sample Rate Conversion，不能与目录通常表示的“source”混淆。固定比率转换、异步时钟补偿及驱动同步是不同功能，选择时要查看实际拓扑中实例化的模块。

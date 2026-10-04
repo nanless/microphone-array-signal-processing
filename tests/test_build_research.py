@@ -371,6 +371,13 @@ class ResearchBuildTest(unittest.TestCase):
                 with self.subTest(derivative_asset=name):
                     self.assertEqual((output / "derivative_audio" / name).read_bytes(),
                                      (derivative_source / name).read_bytes())
+            phase_source = ROOT / "codes/chapters/ch05/phase_audio"
+            phase_names = {"phase_reference.wav", "phase_flip.wav", "phase_quadrature.wav", "MANIFEST.json"}
+            self.assertEqual({path.name for path in (output / "phase_audio").iterdir()}, phase_names)
+            for name in phase_names:
+                with self.subTest(phase_asset=name):
+                    self.assertEqual((output / "phase_audio" / name).read_bytes(),
+                                     (phase_source / name).read_bytes())
             apa_source = ROOT / "codes/chapters/ch06/apa_audio"
             apa_names = {"apa_reference.wav", "apa_true_echo.wav", "apa_microphone.wav",
                          "apa_nlms_residual.wav", "apa_apa2_residual.wav", "apa_apa4_residual.wav",
@@ -464,6 +471,7 @@ class ResearchBuildTest(unittest.TestCase):
                                              (output / "reflection_audio").resolve(),
                                              (output / "focus_audio").resolve(),
                                              (output / "derivative_audio").resolve(),
+                                             (output / "phase_audio").resolve(),
                                              (output / "apa_audio").resolve(),
                                              (output / "mint_audio").resolve(),
                                              (output / "mask_audio").resolve(),
@@ -474,7 +482,7 @@ class ResearchBuildTest(unittest.TestCase):
                                              (output / "distributed_audio").resolve()}:
                             owner = {"gss_audio": "ch08", "moving_audio": "ch09",
                                      "tracking_audio": "ch09", "binaural_audio": "ch01", "spectral_audio": "ch01", "stft_audio": "ch02", "sweep_audio": "ch02",
-                                     "geometry_audio": "ch03", "baseline_audio": "ch03", "reflection_audio": "ch04", "focus_audio": "ch04", "derivative_audio": "ch05",
+                                     "geometry_audio": "ch03", "baseline_audio": "ch03", "reflection_audio": "ch04", "focus_audio": "ch04", "derivative_audio": "ch05", "phase_audio": "ch05",
                                      "apa_audio": "ch06", "mint_audio": "ch07", "mask_audio": "ch08",
                                      "noise_audio": "ch10", "scenario_audio": "ch11",
                                      "weighted_audio": "appendix_a", "response_audio": "appendix_b",

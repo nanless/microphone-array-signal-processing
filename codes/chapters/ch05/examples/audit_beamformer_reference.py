@@ -12,18 +12,19 @@ import ast
 from datetime import datetime, timezone
 import hashlib
 import importlib
+import importlib.util
 import json
-import os
 from pathlib import Path
 import platform
-import subprocess
 import sys
 import traceback
 import warnings
 
 import numpy as np
+from codes.chapters.ch04.core import upstream_contracts as contracts
 
 ROOT = Path(__file__).resolve().parents[3]
+CURRENT_REPORT = ROOT / 'chapters/ch05/reports/beamformer_reference_current.json'
 SOURCES = {
     "pb_bss": {
         "revision": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
@@ -64,33 +65,20 @@ CONFIG = {
 
 
 def digest(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    return contracts.sha(path)
 
 
 def configuration_sha256() -> str:
     return hashlib.sha256(json.dumps(CONFIG, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
-def verify_source(path: Path, specification: dict) -> None:
-    if not (path / ".git").exists():
-        raise FileNotFoundError("Fetch the locked source separately; this diagnostic never downloads")
-    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
-
-    def git(*args):
-        return subprocess.check_output(["git", "-C", str(path), *args], env=env,
-                                       text=True, stderr=subprocess.PIPE).strip()
-
-    if Path(git("rev-parse", "--show-toplevel")).resolve() != path.resolve():
-        raise ValueError("expected an independent upstream checkout")
-    if git("rev-parse", "HEAD") != specification["revision"]:
-        raise ValueError("upstream revision mismatch")
-    if git("status", "--porcelain", "--untracked-files=no"):
-        raise ValueError("tracked upstream files are modified")
-    if git("ls-files", "--others", "--exclude-standard", "--", "*.py"):
-        raise ValueError("untracked Python source in upstream checkout")
+def verify_source(path: Path, specification: dict) -> dict:
+    project = next(name for name, spec in SOURCES.items() if spec == specification)
+    identity = contracts.verify_project(project, path, specification['files'], all_python=True)
     for name, expected in specification["files"].items():
-        if digest(path / name) != expected:
+        if identity['used_files'][name]['sha256'] != expected:
             raise ValueError("upstream source hash mismatch: " + name)
+    return identity
 
 
 def independent_diagonal_reference(diagonal: list[float]) -> dict:
@@ -151,19 +139,38 @@ def run_pb_bss(source: Path) -> dict:
                       else "unexpected_diagnostic_result"}
 
 
-def run_pra() -> dict:
-    import pyroomacoustics as pra
-    from pyroomacoustics.soundsource import SoundSource
-
-    installed = Path(pra.__file__).resolve().parent
-    if pra.__version__ != "0.10.0":
-        raise ValueError("expected installed pyroomacoustics 0.10.0")
+def run_pra(source: Path) -> dict:
+    if any(n == 'pyroomacoustics' or n.startswith('pyroomacoustics.') for n in sys.modules):
+        raise RuntimeError('run in a fresh process without pyroomacoustics imported')
+    specification = importlib.util.find_spec('pyroomacoustics')
+    if specification is None or not specification.submodule_search_locations or len(specification.submodule_search_locations) != 1:
+        raise ImportError('one ordinary installed pyroomacoustics package required')
+    installed = contracts.validate_parent_chain(Path(next(iter(specification.submodule_search_locations))))
     installed_hashes = {}
+    # Check every installed original Python source against its fixed Git blob,
+    # including modules imported by the package initialization.
+    installed_python = {}
+    for path in sorted(installed.rglob('*.py')):
+        relative = 'pyroomacoustics/' + str(path.relative_to(installed))
+        original = contracts.ordinary_file(source / relative)
+        if (digest(path) != contracts.sha(original)
+                or contracts.git(source, 'hash-object', '--no-filters', '--', str(original))
+                != contracts.git(source, 'rev-parse', 'HEAD:' + relative)):
+            raise ValueError('installed original Python source differs: ' + relative)
+        installed_python[relative] = digest(path)
     for name in ("beamforming.py", "soundsource.py"):
         value = digest(installed / name)
         if value != SOURCES["pyroomacoustics"]["files"]["pyroomacoustics/" + name]:
             raise ValueError("installed pyroomacoustics source differs: " + name)
         installed_hashes[name] = value
+    binaries = {str(path.relative_to(installed)): {'sha256': digest(path), 'size_bytes': path.stat().st_size}
+                for path in sorted(installed.rglob('*')) if path.suffix in ('.so', '.pyd', '.dylib')}
+    # The top-level package has not executed before its Python-source preflight.
+    # Binary hashes identify installed artifacts; they do not establish their build provenance.
+    import pyroomacoustics as pra
+    from pyroomacoustics.soundsource import SoundSource
+    if pra.__version__ != "0.10.0" or Path(pra.__file__).parent != installed:
+        raise ValueError("expected verified installed pyroomacoustics 0.10.0 path")
     c = CONFIG["pyroomacoustics"]
     if pra.constants.get("c") != c["sound_speed_m_s"]:
         raise ValueError("installed pyroomacoustics sound-speed default differs")
@@ -183,27 +190,40 @@ def run_pra() -> dict:
     expected = bool(failure and failure["type"] == "TypeError"
                     and "slice indices" in failure["message"]
                     and failure["traceback"][-1]["line"] == 1375)
+    for relative, expected_sha in installed_python.items():
+        if digest(installed / Path(relative).relative_to('pyroomacoustics')) != expected_sha:
+            raise ValueError('installed original source changed during method call')
+    for relative, metadata in binaries.items():
+        if digest(installed / relative) != metadata['sha256']:
+            raise ValueError('installed binary artifact changed during method call')
     return {"execution_kind": "installed_original_package_method_call", "package_version": pra.__version__,
             "installed_path": str(installed), "installed_source_sha256": installed_hashes,
+            "installed_python_preflight_sha256": installed_python,
+            "installed_artifact_sha256": binaries,
+            "installed_artifact_scope": "installed binary identities only; no fixed-Git binary or reproducible-build attestation",
+            "installed_sources_unchanged_after": True,
             "exception": failure, "status": "failed_float_slice_index" if expected else "unexpected_diagnostic_result",
             "filters_computed": failure is None, "upstream_modified": False,
             "scope": "Only this method/input was called; no original Rake performance or other methods validated"}
 
 
 def run_experiment(download_root: Path | None = None) -> dict:
-    base = (download_root or ROOT / "chapters/ch00/upstream/_downloads").resolve()
+    base = contracts.validate_parent_chain(download_root or ROOT / "chapters/ch00/upstream/_downloads")
+    identities = {}
     for name, specification in SOURCES.items():
-        verify_source(base / name, specification)
+        identities[name] = verify_source(base / name, specification)
     bytecode = sys.dont_write_bytecode
     sys.dont_write_bytecode = True
     try:
         import scipy
         pb = run_pb_bss(base / "pb_bss")
-        pra = run_pra()
+        pra = run_pra(base / 'pyroomacoustics')
     finally:
         sys.dont_write_bytecode = bytecode
     expected = (pb["status"] == "failed_reference_selection"
                 and pra["status"] == "failed_float_slice_index")
+    for identity in identities.values():
+        contracts.check_unchanged(identity)
     return {"schema_version": 1, "created_utc": datetime.now(timezone.utc).isoformat(),
             "status": "original_failures_preserved" if expected else "unexpected_diagnostic_result",
             "environment": {"python": platform.python_version(), "numpy": np.__version__,
@@ -212,6 +232,8 @@ def run_experiment(download_root: Path | None = None) -> dict:
             "configuration": CONFIG,
             "provenance": {"sources": SOURCES, "harness_sha256": digest(Path(__file__)),
                            "configuration_sha256": configuration_sha256(), "upstream_modified": False},
+            "source_identities": identities,
+            "report_source_sha256": contracts.dependencies(Path(__file__)),
             "pb_bss": pb, "pyroomacoustics": pra,
             "limitations": ["No upstream patch, package installation or network request",
                             "No enhanced waveform, perceptual score, benchmark timing or full upstream validation",
@@ -220,13 +242,14 @@ def run_experiment(download_root: Path | None = None) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path, default=ROOT / "chapters/ch05/reports/beamformer_reference_audit.json")
+    parser.add_argument("--output", "--report", dest='output', type=Path,
+                        help='Explicit new current report or ordinary path outside the repository; default stdout')
     args = parser.parse_args()
+    target = contracts.report_target(args.output, CURRENT_REPORT, (contracts.CACHE,)) if args.output else None
     report = run_experiment()
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + "\n")
-    print(json.dumps({"report": str(args.output), "pb_bss": report["pb_bss"]["status"],
-                      "pyroomacoustics": report["pyroomacoustics"]["status"]}, ensure_ascii=False))
+    if target is not None:
+        contracts.write_report(target, report, CURRENT_REPORT, (contracts.CACHE,))
+    print(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False))
     if "unexpected_diagnostic_result" in (report["pb_bss"]["status"], report["pyroomacoustics"]["status"]):
         raise SystemExit(1)
 

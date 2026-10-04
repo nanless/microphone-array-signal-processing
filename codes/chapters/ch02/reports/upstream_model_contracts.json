@@ -1,11 +1,11 @@
 {
   "schema_version": 2,
-  "executed_at_utc": "2026-10-04T05:27:07.267566+00:00",
+  "executed_at_utc": "2026-10-04T09:39:09.077150+00:00",
   "audit_source": "codes/chapters/ch02/examples/audit_upstream_models.py",
   "audit_source_sha256": "efd9bf05059d48360201bd2078933791b402d8259dccabd94308a1acc75f92e0",
   "sources": {
-    "lock_sha256": "6dab41b1542cfa2cd4731ef4c8a3e807b343dc807f209c4eea17503e203ebf59",
-    "status_sha256": "1142cc2290d93ea33e6b2dcdf72b9b52307efdd837b84c1739262c2c968186d6",
+    "lock_sha256": "a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505",
+    "status_sha256": "abc28f6f15512da8267618bca318b10033909ec2afdb6090b6aa2d0f1281f0e9",
     "projects": {
       "pyroomacoustics": {
         "url": "https://github.com/LCAV/pyroomacoustics.git",
@@ -1017,10 +1017,10 @@
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },
   "source_verification": {
-    "started_at_utc": "2026-10-04T05:27:06.657813+00:00",
+    "started_at_utc": "2026-10-04T09:39:08.396658+00:00",
     "before_after_equal": true,
-    "canonical_sources_before_sha256": "109ccb2fce8868b2633f66bf0dd09d51bc58898695b7dff9ed30f15d579b64b2",
-    "canonical_sources_after_sha256": "109ccb2fce8868b2633f66bf0dd09d51bc58898695b7dff9ed30f15d579b64b2",
+    "canonical_sources_before_sha256": "f5ab5ed606b62fb36a64c0e808addbdde0008fd43481f4d53e5733b031b8ac71",
+    "canonical_sources_after_sha256": "f5ab5ed606b62fb36a64c0e808addbdde0008fd43481f4d53e5733b031b8ac71",
     "shared_dependencies_before_after_equal": true,
     "scope": "Actual origin/HEAD/used blobs/licences/clean tree, complete live selection, lock/status bytes and local helper SHA rechecked after execution"
   },

@@ -7,6 +7,7 @@ import unittest
 import numpy as np
 
 from codes.chapters.ch05.examples import audit_sof_tdfb_design as audit
+from codes.chapters.ch04.core import upstream_contracts as contracts
 
 
 class SofTdfbAuditTests(unittest.TestCase):
@@ -28,12 +29,16 @@ class SofTdfbAuditTests(unittest.TestCase):
         # The last frequency happens to agree; one passing point cannot validate the loop.
         self.assertEqual(fixture["white_noise_denominators"], [.5, 1.])
 
-    def test_report_is_current_and_keeps_execution_boundary(self):
+    def test_historical_report_binds_original_tool_and_keeps_execution_boundary(self):
         root = Path(__file__).resolve().parents[1]
         report = json.loads((root / "codes/chapters/ch05/reports/sof_tdfb_design_audit.json").read_text())
         self.assertEqual(report["provenance"]["revision"], audit.REVISION)
         self.assertEqual(report["provenance"]["source_sha256"], audit.SOURCE_HASHES)
-        self.assertEqual(report["provenance"]["harness_sha256"], hashlib.sha256(Path(audit.__file__).read_bytes()).hexdigest())
+        relative = str(Path(audit.__file__).resolve().relative_to(contracts.ROOT))
+        spec = '747ec3fec96ef20c7c128cc4291fd7bb9ee36c34:' + relative
+        original = (contracts.git(contracts.ROOT, 'show', spec) + '\n').encode()
+        self.assertEqual(len(original), int(contracts.git(contracts.ROOT, 'cat-file', '-s', spec)))
+        self.assertEqual(report["provenance"]["harness_sha256"], hashlib.sha256(original).hexdigest())
         self.assertEqual(report["mathematical_examples"], audit.independent_examples())
         scope = report["execution_scope"]
         self.assertTrue(scope["source_verification"])

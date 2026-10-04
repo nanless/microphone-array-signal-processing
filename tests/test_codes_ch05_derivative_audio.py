@@ -30,6 +30,28 @@ class DerivativeAudioTest(unittest.TestCase):
         (output/'MANIFEST.json').write_text(json.dumps(self.manifest, allow_nan=False))
         return output
 
+    def test_fixed_true_contract_rejects_all_wrong_declarations_before_waveform_generation(self):
+        import copy
+        for key in generator.REQUIRED_PARAMETERS:
+            p = copy.deepcopy(self.manifest['parameters'])
+            p[key] = 'false declaration'
+            with self.subTest(key=key), mock.patch.object(generator, 'parameters', return_value=p), mock.patch.object(generator, 'generate_signals', side_effect=AssertionError('guard must precede waveform')):
+                with self.assertRaisesRegex(ValueError, 'true parameters'):
+                    generator.prepare_assets()
+        for key in ('sample_rate_hz', 'samples_per_channel', 'seed', 'common_export_gain', 'common_propagation_delay_samples', 'source_amplitude_per_frequency'):
+            p = copy.deepcopy(self.manifest['parameters']); p[key] = True
+            with self.subTest(type=key), mock.patch.object(generator, 'parameters', return_value=p):
+                with self.assertRaises(ValueError): generator.prepare_assets()
+
+    def test_bad_true_contract_cannot_write_or_create_directory(self):
+        import copy
+        p = copy.deepcopy(self.manifest['parameters']); p['phasor_convention'] = 'reversed sign'
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)/'not-created'
+            with mock.patch.object(generator, 'parameters', return_value=p), mock.patch.object(Path, 'write_bytes', side_effect=AssertionError('must guard before writing')), mock.patch.object(Path, 'write_text', side_effect=AssertionError('must guard before writing')):
+                with self.assertRaises(ValueError): generator.main(['--output-dir', str(output)])
+            self.assertFalse(output.exists())
+
     def test_geometry_delays_full_tail_and_weights_are_independent_hand_values(self):
         p = self.manifest['parameters']
         self.assertEqual(p['seed'], 20260522)

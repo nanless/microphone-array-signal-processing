@@ -14,7 +14,7 @@ from codes.chapters.ch05.beamformer_common_input_demo import run_experiment
 class ChapterFiveExamplesTest(unittest.TestCase):
     def test_catalog_is_complete_and_strict_json(self):
         results = ex.run_exercises()
-        self.assertEqual(set(results), {f'E05-{i:02d}' for i in range(8, 23)})
+        self.assertEqual(set(results), {f'E05-{i:02d}' for i in range(8, 25)})
         json.dumps(results, allow_nan=False)
 
     def test_gsc_solution_matches_inverse_variance_weights(self):

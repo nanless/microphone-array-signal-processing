@@ -38,11 +38,63 @@ SOURCE_PATHS = (
 )
 
 
+# Fixed values and exact types, independent of the descriptive function at runtime.
+REQUIRED_PARAMETERS = {'exercise_id': 'E05-22',
+ 'sample_rate_hz': 16000,
+ 'samples_per_channel': 32002,
+ 'source_active_interval_s': [0.0, 2.0],
+ 'sound_speed_m_s': 343.0,
+ 'positions_m': [[-0.04, 0.0], [0.0, 0.0], [0.04, 0.0]],
+ 'channel_order': [0, 1, 2],
+ 'azimuth_deg': 7.843941679416739,
+ 'phase_centre': 'middle microphone/array centre',
+ 'frequencies_hz': [1000.0, 3000.0],
+ 'phase_per_spacing_rad': [0.1, 0.3],
+ 'source_amplitude_per_frequency': 0.08,
+ 'fade_duration_s': 0.02,
+ 'fade': 'continuous linear envelope min(clip(t/.02),clip((2-t)/.02)); zero outside [0,2]',
+ 'common_propagation_delay_samples': 1.0,
+ 'propagation_model': 'reference=F(t-1/fs); x_m_clean=F(t-1/fs+r_m dot u/c)',
+ 'noise_model': 'independent zero-mean Gaussian observation noise at every recording sample, '
+                'including the two tail samples',
+ 'noise_variance_per_channel': [0.0004, 0.0008, 0.0016],
+ 'seed': 20260522,
+ 'random_bit_generator': 'PCG64',
+ 'single_weights': [0.5714285714285714, 0.2857142857142857, 0.14285714285714285],
+ 'constrained_weights': [0.30769230769230765, 0.3846153846153846, 0.30769230769230765],
+ 'weight_model': 'nominal broadside exact diagonal covariance; real causal one-tap filter-and-sum',
+ 'scoring_interval_samples': [2400, 29600],
+ 'scoring_samples_per_channel': 27200,
+ 'phasor_convention': 'cos coefficient minus j*sin coefficient; absolute sample clock; '
+                      'output/reference ratio',
+ 'expected_population_steady_window': {'single': {'response_real_imag': [[0.9964315466271612,
+                                                                          -0.04278574999149778],
+                                                                         [0.9680974922325757,
+                                                                          -0.1266515171405741]],
+                                                  'steady_clean_distortion_mean_square': 6.04855393845401e-05,
+                                                  'white_noise_mean_square': 0.00022857142857142857,
+                                                  'total_reference_mean_square': 0.0002890569679559687,
+                                                  'weight_norm_squared': 0.42857142857142855},
+                                       'constrained': {'response_real_imag': [[0.9969256401710926,
+                                                                               7.002913214210914e-19],
+                                                                              [0.9725147625388343,
+                                                                               -4.951944239072687e-18]],
+                                                       'steady_clean_distortion_mean_square': 2.4476478932936524e-06,
+                                                       'white_noise_mean_square': 0.00030769230769230765,
+                                                       'total_reference_mean_square': 0.0003101399555856013,
+                                                       'weight_norm_squared': 0.33727810650887563}},
+ 'expected_clean_reference_mean_square': 0.0064,
+ 'common_export_gain': 1.0,
+ 'alignment': 'fixed shared propagation clock and gain, no fitted correction'}
+
 def _sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
 def prepare_assets() -> tuple[dict[str, bytes], dict]:
+    true_parameters = parameters()
+    if not same_metadata(true_parameters, REQUIRED_PARAMETERS):
+        raise ValueError("derivative true parameters differ from the fixed asset contract")
     signals = generate_signals()
     blobs, decoded, files, samples = {}, {}, {}, {}
     for key, x in signals.items():
@@ -64,12 +116,13 @@ def prepare_assets() -> tuple[dict[str, bytes], dict]:
                 'environment': {'python': platform.python_version(), 'numpy': np.__version__,
                                 'system': platform.system(), 'machine': platform.machine()},
                 'origin': 'original fixed derivative-constraint free-field two-tone synthesis',
-                'parameters': parameters(), 'files': files, 'samples': samples,
+                'parameters': true_parameters, 'files': files, 'samples': samples,
                 'float_decomposition': measure_float_decomposition(),
                 'pcm': 'signed little-endian PCM16, round-to-nearest-even, no dither or per-file gain',
                 'pcm_encode_multiplier': 32768, 'pcm_decode_divisor': 32768,
                 'pcm_quantization_step': 1/32768, 'pcm_half_step_error_bound': .5/32768,
                 'limits': LIMITS, 'listening': 'Start at low volume; no automatic playback. Three-channel playback/downmixing is device dependent.'}
+    strict_json_loads(json.dumps(manifest, allow_nan=False))
     return blobs, manifest
 
 

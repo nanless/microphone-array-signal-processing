@@ -11,7 +11,7 @@
 | [ch02](ch02/) | `ch02.chapter02_experiments` | E02-09～20；传播、频谱、协方差、采样、已知激励辨识与STFT一致性，不是设备测量 |
 | [ch03](ch03/) | `ch03.chapter03_experiments`、`ch03.coarray_covariance_exercise`、`ch03.examples.self_calibration_demo` | E03-07～18 与单独的受外部相位锚约束标定示例；几何、模糊、校准和虚拟滞后统计，不是全盲设备标定 |
 | [ch04](ch04/) | `ch04.chapter04_experiments`、`ch04.doa_resolution_trials` | E04-08、E04-12～25；包括非酉聚焦噪声、AIC/MDL、相关误差GLS、双频酉秩与解析root-MUSIC；分辨率试验保留分类计数与统计分母 |
-| [ch05](ch05/) | `ch05.chapter05_experiments`、`ch05.beamformer_common_input_demo` | E05-01～22练习；同输入波束比较与独立导数约束PCM限于所声明条件；`ch05.examples.generate_derivative_audio --check`只读核验八源/实际PCM，原方法审计另记 |
+| [ch05](ch05/) | `ch05.chapter05_experiments`、`ch05.beamformer_common_input_demo` | E05-01～24练习；同输入波束、独立导数约束与逐频相位PCM限于所声明条件；`ch05.examples.generate_derivative_audio --check`只读核验八源/实际PCM，`ch05.examples.generate_phase_audio --check`核五源及三PCM；当前原方法审计与历史报告分开 |
 | [ch06](ch06/) | `ch06.chapter06_experiments`、`ch06.aec_algorithm_minicases`、`ch06.aec_partitioned_demo`、`ch06.aec_affine_projection_demo`、`ch06.examples.generate_apa_audio` | E06-22～39 及 AEC 算法缩例；外部库或录音示例另有依赖 |
 | [ch07](ch07/) | `ch07.chapter07_experiments`、`ch07.wpe_temporal_contract`、`ch07.examples.mint_teaching_demo`、`ch07.examples.audit_upstream_wpe_contracts` | E07-01～21；在线WPE时间/排列、设计矩阵求解与实际PCM逆滤波噪声权衡；`mint_teaching_demo --check`只读核验，NeMo仅固定源码静态检查 |
 | [ch08](ch08/) | `ch08.chapter08_experiments`、`ch08.gss_activity_error_demo`、`ch08.examples.mask_representation_demo`、`ch08.examples.audit_upstream_separation_contracts` | E08-01～29及固定密度下活动标注误差；不是官方 GPU 整链 |
@@ -36,7 +36,7 @@
 `MVDR target response` 应接近 1；STFT 重建误差接近浮点舍入。极高的匹配无噪声 AEC ERLE 是算术
 收敛检查，队列示例中的超期次数则来自构造的负载，二者均不代表设备测量。完整核对步骤见导读。
 
-旧的 `codes.examples.*` 和 `codes.array_tutorial.*` 导入路径已经退出仓内接口。运行时使用上表中的章节模块；修改题目时改唯一真实源文件，再核对全书 338 个稳定练习 ID、对应章节和覆盖表。
+旧的 `codes.examples.*` 和 `codes.array_tutorial.*` 导入路径已经退出仓内接口。运行时使用上表中的章节模块；修改题目时改唯一真实源文件，再核对全书 340 个稳定练习 ID、对应章节和覆盖表。
 
 第4章E04-24用同源直达与反射说明高相干和秩一不足以确认直达方向；E04-25逐行解人工Q2帧CTF首比，区分整路径比与真实STFT近似。四份[独立PCM控制](ch04/reflection_audio/MANIFEST.json)由`codes.chapters.ch04.examples.generate_reflection_audio`生成，附加`--check`严格只读重放；原源当前报告与历史报告分开保存，详见[研究58/59](ch00/research/01_spatial_and_tracking.md#sec-u-1ca23edba5)。
 
@@ -62,7 +62,7 @@
 
 来源索引扩充后，旧运行报告仍保留当时的整表摘要。[历史快照](ch00/source_snapshots/)保存真实原始字节；[只读核验核](ch00/core/source_history.py)检查已登记快照的完整SHA，以及报告实际使用项目的全部来源/获取记录是否仍与当前一致。它不改报告、不重跑算法，也不把旧选集失败改成通过；具体配对和覆盖范围见[复现手册](ch00/research/04_source_reproduction.md#historical-source-bindings)。
 
-本书的主[合成音频清单](ch00/audio/MANIFEST.json)记录 27 组、109 个分章存放的 PCM16 WAV 的输入、所属章节、共同增益、种子、运行环境、生成源码与逐文件 SHA-256。另有二十二套独立合成实验，共129个WAV；双耳、方向谱形、STFT卷积、数字扫频、几何、基线标定、相干反射、聚焦、导数约束、APA、已知逆、掩码、GSS、移动、追踪、噪声失配、选型、成像、分布式、已知权重、同DRR和房间的逐套清单及用途见[导读的完整音频表](../../chapters/00_overview.md#audio-assets)。它们不并入主109，GSS状态与房间数值报告也不能按WAV计数。
+本书的主[合成音频清单](ch00/audio/MANIFEST.json)记录 27 组、109 个分章存放的 PCM16 WAV 的输入、所属章节、共同增益、种子、运行环境、生成源码与逐文件 SHA-256。另有二十三套独立合成实验，共132个WAV；双耳、方向谱形、STFT卷积、数字扫频、几何、基线标定、相干反射、聚焦、导数约束、逐频相位、APA、已知逆、掩码、GSS、移动、追踪、噪声失配、选型、成像、分布式、已知权重、同DRR和房间的逐套清单及用途见[导读的完整音频表](../../chapters/00_overview.md#audio-assets)。它们不并入主109，GSS状态与房间数值报告也不能按WAV计数。
 
 相同合成实验组使用共同导出增益，不逐文件做峰值归一化。生成物出现问题应修改生成源码并重新生成、只读核对清单，再重建图和站点；不得手改单个 WAV、清单或报告。
 

@@ -15,6 +15,7 @@ import numpy as np
 
 from codes.chapters.ch00.core.source_history import verify_lock_binding
 from codes.chapters.ch05.examples import audit_upstream_beamformers as audit
+from codes.chapters.ch04.core import upstream_contracts as contracts
 
 REPORT = audit.ROOT / 'codes/chapters/ch05/reports/upstream_beamformers.json'
 CAN_RUN = (importlib.util.find_spec('scipy') is not None
@@ -40,8 +41,16 @@ class SavedReportTests(unittest.TestCase):
         self.report = strict_json(REPORT.read_text())
         self.rows = self.report['results']
 
-    def test_current_tool_lock_and_original_function_identity(self):
-        self.assertEqual(self.report['audit_source_sha256'], audit.sha(audit.__file__))
+    def test_historical_tool_lock_and_original_function_identity(self):
+        relative = str(Path(audit.__file__).resolve().relative_to(contracts.ROOT))
+        spec = '747ec3fec96ef20c7c128cc4291fd7bb9ee36c34:' + relative
+        original = (contracts.git(contracts.ROOT, 'show', spec) + '\n').encode()
+        self.assertEqual(len(original), int(contracts.git(contracts.ROOT, 'cat-file', '-s', spec)))
+        self.assertEqual(self.report['audit_source_sha256'], hashlib.sha256(original).hexdigest())
+        historic_functions = next(ast.literal_eval(node.value) for node in ast.parse(original).body
+                                  if isinstance(node, ast.Assign)
+                                  and isinstance(node.targets[0], ast.Name)
+                                  and node.targets[0].id == 'FUNCTIONS')
         verify_lock_binding(self.report['lock_sha256'], ('pb_bss',), current_lock=audit.LOCK)
         entry = next(p for p in json.loads(audit.LOCK.read_text())['projects'] if p['id'] == 'pb_bss')
         self.assertEqual(self.report['lock_entry'], entry)
@@ -51,8 +60,8 @@ class SavedReportTests(unittest.TestCase):
         self.assertEqual(self.report['before']['head'], entry['revision'])
         self.assertEqual(self.report['before']['status'], '')
         self.assertEqual(self.report['before']['untracked_python'], [])
-        self.assertEqual(set(self.report['original_functions']), set(audit.FUNCTIONS))
-        self.assertEqual({r['function'] for r in self.rows.values()}, set(audit.FUNCTIONS))
+        self.assertEqual(set(self.report['original_functions']), set(historic_functions))
+        self.assertEqual({r['function'] for r in self.rows.values()}, set(historic_functions))
         self.assertEqual(len(self.report['original_functions']), 12)
         self.assertEqual(set(self.report['original_files']), set(audit.SOURCE_SHA))
         self.assertTrue(all(not f['body_modified'] for f in self.report['original_functions'].values()))
@@ -207,7 +216,7 @@ class OriginalExecutionTests(unittest.TestCase):
         self.assertEqual(report['status'], 'expected_behaviors_verified_failures_preserved')
         self.assertEqual(report['before'], report['after'])
         self.assertEqual(REPORT.read_bytes(), report_before)
-        self.assertEqual(report['case_count'], 31)
+        self.assertEqual(report['case_count'], 33)
 
     def test_default_cli_does_not_rewrite_saved_report(self):
         report_before = REPORT.read_bytes()
@@ -215,8 +224,8 @@ class OriginalExecutionTests(unittest.TestCase):
                                   'codes.chapters.ch05.examples.audit_upstream_beamformers'],
                                  cwd=audit.ROOT, check=True, capture_output=True, text=True)
         summary = strict_json(result.stdout)
-        self.assertIsNone(summary['report'])
-        self.assertEqual(summary['unexpected_cases'], [])
+        self.assertEqual(summary['case_count'], 33)
+        self.assertTrue(all(row['expected_behavior_verified'] for row in summary['results'].values()))
         self.assertEqual(REPORT.read_bytes(), report_before)
 
 

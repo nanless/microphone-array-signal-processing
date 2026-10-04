@@ -1,0 +1,388 @@
+{
+  "schema_version": 1,
+  "verified_at": "2026-10-04",
+  "created_utc": "2026-10-04T09:15:04.945661+00:00",
+  "status": "static_source_inconsistencies_with_independent_scalar_examples",
+  "execution_scope": {
+    "source_verification": true,
+    "python_scalar_examples": true,
+    "matlab_or_octave_design": false,
+    "fir_filter_generation": false,
+    "firmware_or_hardware": false,
+    "upstream_modified": false
+  },
+  "provenance": {
+    "url": "https://github.com/thesofproject/sof",
+    "revision": "b6c6a05d52536313fe8e8752b1c4e069b1cc4002",
+    "source_sha256": {
+      "LICENCE": "cb6a9aa5baac3ea573feebcdc298526f701e2b7cd005a22208799778e26f0068",
+      "src/audio/tdfb/tune/sof_bf_design.m": "d5c7863bc1088df42231622fb525ecd0344324aecccf3dd1da7afa2debe03cf9",
+      "src/audio/tdfb/tune/sof_bf_defaults.m": "07297c12736170f60cc3724fa66cf5e1876790f0e8a7de198a119eabb50b9438",
+      "src/audio/tdfb/tune/sof_bf_paths.m": "574612f29672fffdd05fc1950ee62ccc206ad62221a42512ab2d326580b09d24",
+      "src/audio/tdfb/tdfb_generic.c": "73216798217a1fa4012bb4fe90ba7fda091809b6f7580f1d6c05f2e004344909",
+      "src/audio/tdfb/tdfb.c": "704dbd9c5b30ae2011be9d6cbc78b809f7b82947669ba99d8a15b4001d7873c5",
+      "src/audio/tdfb/tdfb.h": "8f29aec9e1b80bd74330a0d86f03ddefe1357ba905bb7e97ba2673a0fa3f9ccc"
+    },
+    "harness_sha256": "c764560d9f2a9eb461190a95f7d3f8b40e936187f96986be9393f371d1a8b1a7"
+  },
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O"
+  },
+  "source_identity": {
+    "project": "sof",
+    "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/sof",
+    "origin": "https://github.com/thesofproject/sof.git",
+    "head": "b6c6a05d52536313fe8e8752b1c4e069b1cc4002",
+    "lock_entry": {
+      "id": "sof",
+      "url": "https://github.com/thesofproject/sof.git",
+      "revision": "b6c6a05d52536313fe8e8752b1c4e069b1cc4002",
+      "license": "BSD-3-Clause and per-file licenses",
+      "scope": "DSP 固件中的固定时域波束、采样率转换和拓扑",
+      "fetch_enabled": true,
+      "note": "2026-09-22 官方源目录、LICENCE 和 git ls-remote 已核实；总体许可不能覆盖所有依赖，需保留逐文件声明；运行还需目标 DSP、工具链、拓扑及固件配置。",
+      "entrypoints": [
+        "src/audio/tdfb",
+        "src/audio/tdfb/tdfb_generic.c",
+        "src/audio/src",
+        "LICENCE",
+        "src/audio/tdfb/tune/sof_bf_design.m",
+        "src/audio/tdfb/tune/sof_bf_defaults.m",
+        "src/audio/tdfb/tune/sof_bf_paths.m"
+      ]
+    },
+    "lock_sha256": "a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505",
+    "source_document_paths": {
+      "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+      "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+    },
+    "status_sha256": "abc28f6f15512da8267618bca318b10033909ec2afdb6090b6aa2d0f1281f0e9",
+    "recorded_complete_selection": {
+      "id": "sof",
+      "revision": "b6c6a05d52536313fe8e8752b1c4e069b1cc4002",
+      "status": "source_verified",
+      "missing_entrypoints": [],
+      "execution": "not_run",
+      "dependency_validation": "not_run",
+      "asset_policy": "sparse_source_checkout",
+      "requested_source_paths": [
+        "repository"
+      ],
+      "observed_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "expected_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "source_selection_verified": true
+    },
+    "live_complete_selection": {
+      "id": "sof",
+      "revision": "b6c6a05d52536313fe8e8752b1c4e069b1cc4002",
+      "status": "source_verified",
+      "source_selection_verified": true,
+      "missing_entrypoints": [],
+      "observed_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "expected_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "requested_source_paths": [
+        "repository"
+      ],
+      "asset_policy": "sparse_source_checkout"
+    },
+    "used_source_identity": "verified",
+    "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+    "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+    "ignored_members_before": [],
+    "used_files": {
+      "LICENCE": {
+        "sha256": "cb6a9aa5baac3ea573feebcdc298526f701e2b7cd005a22208799778e26f0068",
+        "bytes": 6482,
+        "git_blob": "1f72cd21c9df983dfbf89ed10d9e0ab379e90f95",
+        "actual_blob": "1f72cd21c9df983dfbf89ed10d9e0ab379e90f95"
+      },
+      "src/audio/tdfb/tune/sof_bf_design.m": {
+        "sha256": "d5c7863bc1088df42231622fb525ecd0344324aecccf3dd1da7afa2debe03cf9",
+        "bytes": 15102,
+        "git_blob": "5121ebe6630f5ecaf2fa0d493e2fe93dfc236166",
+        "actual_blob": "5121ebe6630f5ecaf2fa0d493e2fe93dfc236166"
+      },
+      "src/audio/tdfb/tune/sof_bf_defaults.m": {
+        "sha256": "07297c12736170f60cc3724fa66cf5e1876790f0e8a7de198a119eabb50b9438",
+        "bytes": 2005,
+        "git_blob": "cf8e8838ed32522992bab81022442573f7bcbaee",
+        "actual_blob": "cf8e8838ed32522992bab81022442573f7bcbaee"
+      },
+      "src/audio/tdfb/tune/sof_bf_paths.m": {
+        "sha256": "574612f29672fffdd05fc1950ee62ccc206ad62221a42512ab2d326580b09d24",
+        "bytes": 691,
+        "git_blob": "9a6a351bdf7dc592234adca38eeb9e676255c804",
+        "actual_blob": "9a6a351bdf7dc592234adca38eeb9e676255c804"
+      },
+      "src/audio/tdfb/tdfb_generic.c": {
+        "sha256": "73216798217a1fa4012bb4fe90ba7fda091809b6f7580f1d6c05f2e004344909",
+        "bytes": 5257,
+        "git_blob": "ba4e44c8073f07646fe64ce2d07bdf2c644f7702",
+        "actual_blob": "ba4e44c8073f07646fe64ce2d07bdf2c644f7702"
+      },
+      "src/audio/tdfb/tdfb.c": {
+        "sha256": "704dbd9c5b30ae2011be9d6cbc78b809f7b82947669ba99d8a15b4001d7873c5",
+        "bytes": 27880,
+        "git_blob": "eed22f39563211ea75d7d278191bc5594942a574",
+        "actual_blob": "eed22f39563211ea75d7d278191bc5594942a574"
+      },
+      "src/audio/tdfb/tdfb.h": {
+        "sha256": "8f29aec9e1b80bd74330a0d86f03ddefe1357ba905bb7e97ba2673a0fa3f9ccc",
+        "bytes": 3651,
+        "git_blob": "1787fef919e6e13a58251abb73f3b2a089d4f98a",
+        "actual_blob": "1787fef919e6e13a58251abb73f3b2a089d4f98a"
+      }
+    },
+    "clean_before": true,
+    "clean_after": true,
+    "ignored_members_after": []
+  },
+  "report_source_sha256": {
+    "codes/chapters/ch05/examples/audit_sof_tdfb_design.py": "c764560d9f2a9eb461190a95f7d3f8b40e936187f96986be9393f371d1a8b1a7",
+    "codes/chapters/ch04/core/upstream_contracts.py": "6712197a2d0718ba4e82ad8df8f2f5bd938a8785f3769b77a83aafbeff5ff483",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
+    "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
+  },
+  "findings": [
+    {
+      "id": "SOF-TDFB-COHERENCE",
+      "file": "src/audio/tdfb/tune/sof_bf_design.m",
+      "line": 123,
+      "expression": "sinc(2*pi*f*lnm/bf.c)",
+      "condition": "standard MATLAB/Octave normalized sinc; no local sinc.m",
+      "effect": "extra pi in the spherical diffuse-coherence argument"
+    },
+    {
+      "id": "SOF-TDFB-WNG",
+      "file": "src/audio/tdfb/tune/sof_bf_design.m",
+      "line": 272,
+      "expression": "wng = num / denom2",
+      "condition": "denom computed at line 271; denom2 retained from last DI iteration",
+      "effect": "white-noise gain uses the last diffuse denominator, not current white-noise denominator"
+    },
+    {
+      "id": "SOF-TDFB-DIFFUSE-RESET",
+      "file": "src/audio/tdfb/tune/sof_bf_design.m",
+      "line": 412,
+      "expression": "nmi = zeros(nti, bf.mic_n)",
+      "condition": "optional create_simulation_data; azimuth loop begins at line 405, reset occurs inside each angle",
+      "effect": "post-loop output retains only the last azimuth contribution; this branch was not executed",
+      "execution": "static_source_only; no MATLAB, audio generation or firmware execution"
+    }
+  ],
+  "fixed_source_defaults": {
+    "design_fft_length": 1024,
+    "nonnegative_frequency_bins": 513,
+    "sample_rate_hz": 16000,
+    "fir_taps": 64,
+    "window": "hann",
+    "filter_type": "SDB",
+    "mu_db": -40,
+    "track_doa": 0
+  },
+  "documentation_boundary": {
+    "url": "https://thesofproject.github.io/latest/developer_guides/algorithms/tdfb/time_domain_fixed_beamformer.html",
+    "observed": "design description mentions old tools/tune/tdfb/bf_design.m, 512 bins, Kaiser and mu -50",
+    "interpretation": "floating documentation is not the parameter authority for the locked source"
+  },
+  "mathematical_examples": {
+    "coherence": {
+      "frequency_hz": 1000.0,
+      "distance_m": 0.05,
+      "sound_speed_m_s": 343.0,
+      "phase_radians": 0.9159162255363829,
+      "correct_normalized_sinc_argument": 0.2915451895043732,
+      "spherical_coherence_sin_phase_over_phase": 0.8659317716129994,
+      "fixed_source_expression_with_standard_sinc": 0.09073897733712175,
+      "randomness": "none"
+    },
+    "wng_loop_fixture": {
+      "identity": "independently chosen two-frequency weights; not designed SOF filters",
+      "weights_rows": [
+        [
+          0.5,
+          0.5
+        ],
+        [
+          1.0,
+          0.0
+        ]
+      ],
+      "steering": [
+        1.0,
+        1.0
+      ],
+      "last_frequency_diffuse_coherence": [
+        [
+          1.0,
+          0.2
+        ],
+        [
+          0.2,
+          1.0
+        ]
+      ],
+      "target_powers": [
+        1.0,
+        1.0
+      ],
+      "white_noise_denominators": [
+        0.5,
+        1.0
+      ],
+      "stale_last_di_denominator": 1.0,
+      "correct_wng_linear": [
+        2.0,
+        1.0
+      ],
+      "stale_denominator_wng_linear": [
+        1.0,
+        1.0
+      ]
+    },
+    "loading_conversion": {
+      "fixed_default_mu_db": -40.0,
+      "fixed_source_10_power_mu_db_over_20": 0.01,
+      "if_interpreted_as_power_db_10_power_mu_db_over_10": 0.0001,
+      "interpretation": "record implementation convention; do not silently replace it"
+    }
+  }
+}

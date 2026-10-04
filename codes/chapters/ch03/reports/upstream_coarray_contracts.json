@@ -1,12 +1,12 @@
 {
   "schema_version": 2,
-  "executed_at_utc": "2026-10-04T06:31:23.943867+00:00",
-  "executed_at_local": "2026-10-04T14:31:23.943867+08:00",
+  "executed_at_utc": "2026-10-04T09:39:08.610464+00:00",
+  "executed_at_local": "2026-10-04T17:39:08.610464+08:00",
   "audit_source": "codes/chapters/ch03/examples/audit_upstream_coarray.py",
   "audit_source_sha256": "fa3860c30a3a6a03a77d18752fc9ffcef790e8d6e5b908ac1cdc60af6c9ee748",
   "sources": {
-    "lock_sha256": "5dbf0c55fac57d82915ce01c20d7a96505147aaaed550558ce5e6c1c24da1fd0",
-    "status_sha256": "230269d62683e0726efb2c87a1661f8179ada3ee041b7b7df266190e471e2652",
+    "lock_sha256": "a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505",
+    "status_sha256": "abc28f6f15512da8267618bca318b10033909ec2afdb6090b6aa2d0f1281f0e9",
     "lock_entry_sha256": "4c352513e5e82f8c474d4979edd3190977aed51fe056a3e952118af894dc4240",
     "url": "https://github.com/morriswmz/doatools.py.git",
     "revision": "9469db201e0418aef6b97583ef54b6fec2769502",
@@ -279,10 +279,10 @@
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },
   "source_verification": {
-    "started_at_utc": "2026-10-04T06:31:23.761128+00:00",
+    "started_at_utc": "2026-10-04T09:39:08.397142+00:00",
     "before_after_equal": true,
-    "canonical_sources_before_sha256": "4e024b455d1b6f9aa8c0f13a7388b696bcee2096c7120f3e025db1406b2d6988",
-    "canonical_sources_after_sha256": "4e024b455d1b6f9aa8c0f13a7388b696bcee2096c7120f3e025db1406b2d6988",
+    "canonical_sources_before_sha256": "f3c8379d09e1f6737cce31dee3b2ff776a4d7a2d383bb6f928815cd9e7efe02c",
+    "canonical_sources_after_sha256": "f3c8379d09e1f6737cce31dee3b2ff776a4d7a2d383bb6f928815cd9e7efe02c",
     "shared_dependencies_before_after_equal": true,
     "scope": "Actual origin/HEAD/used blobs/licence/clean tree, complete live selection, lock/status bytes and local helper SHA rechecked after execution"
   },

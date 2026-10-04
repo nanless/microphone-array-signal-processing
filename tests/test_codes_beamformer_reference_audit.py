@@ -9,6 +9,16 @@ import unittest
 import numpy as np
 
 from codes.chapters.ch05.examples import audit_beamformer_reference as audit
+from codes.chapters.ch04.core import upstream_contracts as contracts
+
+
+def historical_script():
+    relative = str(Path(audit.__file__).resolve().relative_to(contracts.ROOT))
+    spec = '747ec3fec96ef20c7c128cc4291fd7bb9ee36c34:' + relative
+    payload = (contracts.git(contracts.ROOT, 'show', spec) + '\n').encode()
+    if len(payload) != int(contracts.git(contracts.ROOT, 'cat-file', '-s', spec)):
+        raise ValueError('Historical tool bytes are not exact')
+    return payload
 
 
 class BeamformerReferenceAuditTests(unittest.TestCase):
@@ -19,7 +29,7 @@ class BeamformerReferenceAuditTests(unittest.TestCase):
     def test_provenance_binds_exact_source_configuration_and_script(self):
         p = self.report["provenance"]
         self.assertEqual(p["sources"], audit.SOURCES)
-        self.assertEqual(p["harness_sha256"], hashlib.sha256(Path(audit.__file__).read_bytes()).hexdigest())
+        self.assertEqual(p["harness_sha256"], hashlib.sha256(historical_script()).hexdigest())
         self.assertEqual(p["configuration_sha256"], audit.configuration_sha256())
         self.assertEqual(self.report["configuration"], audit.CONFIG)
         self.assertFalse(p["upstream_modified"])

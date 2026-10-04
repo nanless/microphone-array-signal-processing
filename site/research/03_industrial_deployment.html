@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>工业音频实现研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="7fd9efb3e8ea"><style>
+<meta name="source-digest" content="f82c588994c1"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -534,6 +534,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>固定时域波束依赖离线设计的滤波器组、麦克风几何和方向选择。部署清单应包括拓扑、输入输出通道映射、滤波系数、格式、采样率、固件/ABI 版本和方向控制。它不等价于从当前噪声协方差重新求解的 MVDR。<a href="https://github.com/thesofproject/sof/blob/b6c6a05d52536313fe8e8752b1c4e069b1cc4002/src/audio/tdfb/tdfb_generic.c">实现文件</a></p>
 <p>用脉冲确认各麦到各输出的实际滤波器；再用已知角度声源复测方向响应。交换两个输入通道、改变麦位和施加增益误差，检查目标衰减与噪声放大。通用 C 路径和目标 DSP 路径还应在约定容差内比较。</p>
 <p>离线设计脚本还须单独核查。第5章已对同一固定版的 <code>sof_bf_design.m</code> 记录归一化 <code>sinc</code> 自变量和 WNG 分母变量的两个问题，见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/examples/audit_sof_tdfb_design.py">独立诊断脚本</a>及<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/reports/sof_tdfb_design_audit.json">原始报告</a>。那是固定源码静态核对与 Python 数学反例，未运行 MATLAB、生成并测试真实 SOF FIR 或刷写固件；本节不把官网响应图或源码存在当作设计与板端性能已验收。</p>
+<p>2026-10-04的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/reports/sof_tdfb_design_current.json">新SOF合同报告</a>重新核验七份固定原文件、Git blob与许可，另记录可选方位仿真分支的 <code>nmi</code> 在方位循环内重置、最终只保留最后方位的静态控制流。此分支未执行MATLAB/Octave，没有生成实际FIR或设备WAV；原两个问题及历史报告仍保留。</p>
+<p>理论频率权重到固件还经过逐麦峰位裁切、有限抽头、系数量化、支路累加和饱和。固定 <code>tdfb_generic.c</code> 的S16/S24输出要按对应格式舍入并饱和，S32分支另有移位饱和；输出位图决定哪些滤波支路进入同一输出。应分别固定理想响应、实际导出系数、定点尺度和输出取点，不能把一个浮点方向图当作板端测量。细节与限定证据见<a href="01_spatial_and_tracking.html#per-channel-mask-evidence">空间研究§60</a>。</p>
 <span id="sec-20" class="anchor-alias" aria-hidden="true"></span><span id="i14sof-的采样率转换与拓扑" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-cc488404cc">I14：SOF 的采样率转换与拓扑</h3>
 <p><a href="https://github.com/thesofproject/sof/tree/b6c6a05d52536313fe8e8752b1c4e069b1cc4002/src/audio/src"><code>src/audio/src/</code></a>提供固件采样率转换模块；其模块名 <code>src</code> 表示 Sample Rate Conversion，不能与目录通常表示的“source”混淆。固定比率转换、异步时钟补偿及驱动同步是不同功能，选择时要查看实际拓扑中实例化的模块。</p>
 <p>需要保存输入/输出速率、滤波系数组、块调度、通道数、样本格式和计算资源。增加一个 SRC 会改变滤波延迟、缓存需求与频带边缘，不能仅因输出文件采样率正确就认为链路已对齐。</p>

@@ -31,7 +31,7 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 from codes.chapters.ch00.io_contracts import (
-    strict_json_loads, validate_asset_directory, validate_parent_chain,
+    same_metadata, strict_json_loads, validate_asset_directory, validate_parent_chain,
 )
 
 CHAPTERS = ROOT / "chapters"
@@ -48,6 +48,8 @@ BINAURAL_AUDIO_ROOT = CODE_CHAPTERS / "ch01" / "binaural_audio"
 SPECTRAL_AUDIO_ROOT = CODE_CHAPTERS / "ch01" / "spectral_audio"
 SPECTRAL_AUDIO_CHANNELS = {'flat_source.wav': 1, 'flat_stereo.wav': 2,
                            'tilted_source.wav': 1, 'tilted_stereo.wav': 2}
+PHASE_AUDIO_ROOT = CODE_CHAPTERS / "ch05" / "phase_audio"
+PHASE_AUDIO_WAVS = {"phase_reference.wav", "phase_flip.wav", "phase_quadrature.wav"}
 DERIVATIVE_AUDIO_ROOT = ROOT / "codes/chapters/ch05/derivative_audio"
 APA_AUDIO_ROOT = ROOT / "codes/chapters/ch06/apa_audio"
 MINT_AUDIO_ROOT = ROOT / "codes/chapters/ch07/mint_audio"
@@ -126,7 +128,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "02_basics-signal-model.md": 49,  # 新增E19、独立数字扫频主题与E20
     "03_array-geometry.md": 32,
     "04_doa-estimation.md": 48,
-    "05_beamforming.md": 41,
+    "05_beamforming.md": 44,
     "06_aec.md": 67,
     "07_wpe-dereverberation.md": 53,
     "08_speech-separation.md": 59,
@@ -160,14 +162,14 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 16
 EXPECTED_SECTION_COUNT = 151
-EXPECTED_SUBSECTION_COUNT = 704
-EXPECTED_OUTLINE_ITEM_COUNT = 871
-EXPECTED_FIGURE_NUMBERS = set(range(1, 73))
-EXPECTED_EXERCISE_COUNT = 338
+EXPECTED_SUBSECTION_COUNT = 707
+EXPECTED_OUTLINE_ITEM_COUNT = 874
+EXPECTED_FIGURE_NUMBERS = set(range(1, 74))
+EXPECTED_EXERCISE_COUNT = 340
 EXPECTED_EXERCISE_COUNTS = {
     '01_problem-definition.md': 10, '02_basics-signal-model.md': 20,
     '03_array-geometry.md': 18, '04_doa-estimation.md': 25,
-    '05_beamforming.md': 22, '06_aec.md': 39, '07_wpe-dereverberation.md': 21,
+    '05_beamforming.md': 24, '06_aec.md': 39, '07_wpe-dereverberation.md': 21,
     '08_speech-separation.md': 29, '09_source-tracking.md': 23,
     '10_engineering-practice.md': 33, '11_selection-guide.md': 25,
     '12_appendix-symbols-math.md': 19, '13_appendix-guide.md': 14,
@@ -781,7 +783,7 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72)
+            script_name = ("make_beamforming_figures.py" if number == 73 else "make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
@@ -1384,7 +1386,7 @@ def source_digest():
                     if path.is_file())
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
-              ("build_pdf.py", "make_figures.py", "make_aec_figures.py")]
+              ("build_pdf.py", "make_figures.py", "make_aec_figures.py", "make_beamforming_figures.py")]
     paths.append(ROOT / "requirements.txt")
     paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
@@ -1405,13 +1407,13 @@ def site_source_digest():
     paths += sorted(main_audio_path(CODE_CHAPTERS, record["group"], record["file"])
                     for record in manifest["files"])
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, SPECTRAL_AUDIO_ROOT, STFT_AUDIO_ROOT, SWEEP_AUDIO_ROOT, BASELINE_AUDIO_ROOT, REFLECTION_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, SPECTRAL_AUDIO_ROOT, STFT_AUDIO_ROOT, SWEEP_AUDIO_ROOT, BASELINE_AUDIO_ROOT, REFLECTION_AUDIO_ROOT, PHASE_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
               ("build_site.py", "build_markdown_helpers.py", "inline_layout.js", "heading_aliases.py",
                "legacy_sequential_anchors.json", "code_layout.py", "make_figures.py",
-               "make_aec_figures.py")]
+               "make_aec_figures.py", "make_beamforming_figures.py")]
     paths.append(ROOT / "requirements.txt")
     paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
@@ -1758,7 +1760,7 @@ def check_real_audio(errors):
         parser = VisibleMediaParser()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         allowed_audio_roots = ("../audio/", "../real_audio/", "../room_audio/",
-                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../spectral_audio/", "../stft_audio/", "../sweep_audio/", "../baseline_audio/", "../reflection_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/", "../scenario_audio/", "../weighted_audio/", "../response_audio/", "../imaging_audio/", "../distributed_audio/")
+                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../spectral_audio/", "../stft_audio/", "../sweep_audio/", "../baseline_audio/", "../reflection_audio/", "../phase_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/", "../scenario_audio/", "../weighted_audio/", "../response_audio/", "../imaging_audio/", "../distributed_audio/")
         if any(not (p.get("src") or "").startswith(allowed_audio_roots)
                for p in parser.items):
             fail(errors, "未知试听控件来源")
@@ -2461,7 +2463,7 @@ def _check_visible_audio(page, prefix, directory, names, links):
     base = prefix+directory+'/'
     label = {"binaural_audio": "双耳线索", "stft_audio": "STFT卷积",
              "geometry_audio": "多频几何", "focus_audio": "已知酉聚焦",
-             "derivative_audio": "导数约束"}.get(directory, directory)
+             "phase_audio": "已知逐频相位", "derivative_audio": "导数约束"}.get(directory, directory)
     players = [p for p in parser.items if (p.get('src') or '').startswith(base)]
     if len(players) != len(names) or {p.get('src') for p in players} != {base+n for n in names}:
         raise ValueError('缺少'+label+'播放器或可见播放器缺失或重复（集合不符）：'+page.name)
@@ -2998,6 +3000,92 @@ def check_reflection_audio(errors):
             _check_visible_audio(page, prefix, 'reflection_audio', set(REFLECTION_AUDIO_CHANNELS), {'MANIFEST.json'})
     except (OSError, ValueError, KeyError, TypeError, StopIteration, wave.Error, struct.error) as error:
         fail(errors, '独立相干反射音频：' + str(error))
+
+
+def check_phase_audio(errors):
+    """Replay true sources, then independently score actual signed PCM integers."""
+    try:
+        from codes.chapters.ch05.examples.generate_phase_audio import check_assets
+        source, published = PHASE_AUDIO_ROOT, SITE/'phase_audio'
+        manifest = check_assets(source)
+        members = PHASE_AUDIO_WAVS | {'MANIFEST.json'}
+        validate_asset_directory(published, members, check=True)
+        sources = {'codes/chapters/ch05/core/phase_audio.py',
+                   'codes/chapters/ch05/examples/generate_phase_audio.py',
+                   'codes/chapters/ch02/core/conventions.py',
+                   'codes/chapters/ch00/core/audio_samples.py',
+                   'codes/chapters/ch00/io_contracts.py'}
+        if set(manifest['source_sha256']) != sources:
+            raise ValueError('phase true source identities differ')
+        for name in members:
+            if (source/name).read_bytes() != (published/name).read_bytes():
+                raise ValueError('phase published bytes differ: '+name)
+        integers = {}
+        for name in PHASE_AUDIO_WAVS:
+            with wave.open(str(published/name), 'rb') as stream:
+                if (stream.getframerate(), stream.getnchannels(), stream.getsampwidth(),
+                    stream.getnframes(), stream.getcomptype()) != (16000, 1, 2, 32000, 'NONE'):
+                    raise ValueError('phase literal format differs: '+name)
+                payload = stream.readframes(32000)
+            if len(payload) != 64000:
+                raise ValueError('phase incomplete PCM payload')
+            integers[name] = [v[0] for v in struct.iter_unpack('<h', payload)][2400:29600]
+        reference = integers['phase_reference.wav']
+        ref_energy = sum(v*v for v in reference)
+        denominator = 27200*32768**2
+        for key, row in manifest['samples'].items():
+            pcm = integers[row['file']]
+            energy = sum(v*v for v in pcm)
+            error = sum((v-r)**2 for v, r in zip(pcm, reference))
+            expected = {'scoring_interval_samples': [2400,29600], 'samples_per_channel': 27200,
+                        'channels': 1, 'integer_squared_sum_E_per_channel': [energy],
+                        'integer_denominator_D_per_channel': denominator,
+                        'mean_square_per_channel': [energy/denominator],
+                        'integer_squared_sum_E_all_channels': energy,
+                        'integer_denominator_D_all_channels': denominator,
+                        'mean_square_all_channels': energy/denominator,
+                        'integer_reference_squared_sum': ref_energy,
+                        'integer_error_squared_sum_per_channel': [error],
+                        'total_reference_mse_per_channel': [error/denominator],
+                        'normalized_squared_reference_error_per_channel': [error/ref_energy]}
+            if row['pcm_integer_measurements'] != expected:
+                raise ValueError('phase independent integer scores differ: '+key)
+        for page, prefix in ((SITE/'05_beamforming.html',''),
+                             (SITE/'research/05_exercises_and_audio.html','../')):
+            _check_visible_audio(page, prefix, 'phase_audio', PHASE_AUDIO_WAVS, {'MANIFEST.json'})
+    except (OSError, ValueError, KeyError, TypeError, wave.Error, struct.error) as error:
+        fail(errors, '独立逐频相位音频：'+str(error))
+
+
+def check_phase_figure(errors):
+    """Check the numeric report and every actual plotting/audio dependency."""
+    try:
+        from PIL import Image
+        manifest_path = PHASE_AUDIO_ROOT/'MANIFEST.json'
+        manifest = strict_json_loads(manifest_path.read_bytes())
+        path = ROOT/'codes/chapters/ch05/reports/figure73_phase_reference.json'
+        report = strict_json_loads(path.read_bytes())
+        source_paths = set(manifest['source_sha256']) | {'scripts/make_figures.py', 'scripts/make_beamforming_figures.py'}
+        if set(report['source_sha256']) != source_paths:
+            raise ValueError('figure73 true plotting dependency set differs')
+        for name, digest in report['source_sha256'].items():
+            if hashlib.sha256(validate_parent_chain(ROOT/name).read_bytes()).hexdigest() != digest:
+                raise ValueError('figure73 actual source SHA differs: '+name)
+        manifest_sha = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+        if (type(report['figure']) is not int or report['figure'] != 73 or report['exercise_id'] != 'E05-23'
+                or report['audio_manifest_sha256'] != manifest_sha
+                or not same_metadata(report['parameters'], manifest['parameters'])
+                or not same_metadata(report['samples'], manifest['samples'])
+                or report['wav_sha256'] != {n:r['sha256'] for n,r in manifest['files'].items()}):
+            raise ValueError('figure73 actual audio/report mismatch')
+        with Image.open(ROOT/'figures/fig73_phase_reference.png') as picture:
+            metadata = picture.info
+        if (metadata.get('AudioManifestDigest') != manifest_sha
+                or metadata.get('NumericalReportDigest') != hashlib.sha256(path.read_bytes()).hexdigest()
+                or strict_json_loads(metadata.get('GeneratorInputs','{}')) != report['source_sha256']):
+            raise ValueError('figure73 PNG input or numerical-report identity differs')
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        fail(errors, '图73真实来源与评分：'+str(error))
 
 
 def check_distributed_audio(errors):
@@ -3607,6 +3695,8 @@ def main():
     check_sweep_audio(errors)
     check_baseline_audio(errors)
     check_reflection_audio(errors)
+    check_phase_audio(errors)
+    check_phase_figure(errors)
     check_geometry_audio(errors)
     check_focus_audio(errors)
     check_derivative_audio(errors)

@@ -5,7 +5,7 @@
   "common_export_gain": 1.0,
   "source_sha256": {
     "codes/chapters/ch05/core/derivative_audio.py": "e530d9f2339eb5017bc2624ddcc2aa9f2dc16f49a9868332e3775e3a016a7e6e",
-    "codes/chapters/ch05/examples/generate_derivative_audio.py": "62d309e1265dbef30344ae19424d1857184b022fb60934868be311944ed2374c",
+    "codes/chapters/ch05/examples/generate_derivative_audio.py": "92c9e82e177020a5b59806370839d9893723c94c774d558c4328f3a89ad65bbf",
     "codes/chapters/ch05/core/beamforming.py": "481f79a66fcc4c1f232704ee3a516b596d28ebc89d9045c494b71f6206b77216",
     "codes/chapters/ch04/core/covariance.py": "d704be037100ee53caf6e2130fbabbe14ce6eeff9e3d11dde389fd368d271249",
     "codes/chapters/ch03/core/geometry.py": "5a680848301358415f74647199a4c57b65086f0b2580f91706c912ad208d7bdb",

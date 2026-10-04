@@ -19,7 +19,7 @@
 
     1. 运行 `codes/` 中只依赖 NumPy 的教学实现，核对手算结果、数组维度和退化边界。
     2. 在隔离环境中用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线，记录房间、阵列和随机种子。
-    3. 先按 §13.7 生成图所依赖的音频和追踪清单，再运行 `scripts/` 中的两个绘图脚本，按当前参数复现 72 张编号图，并逐图核对正文条件。
+    3. 先按 §13.7 生成图所依赖的音频和追踪清单，再运行 `scripts/` 中的三个绘图脚本，按当前参数复现 73 张编号图，并逐图核对正文条件。
     4. 按研究任务选择公开数据和固定版本参考系统，分别核对代码、模型与数据的许可和评测口径。
     5. 在可用的多通道硬件上测实时性、同步和标定；仿真结果不能代替设备测量。
 
@@ -876,7 +876,9 @@ $X$ 是有限源序列的离散时间傅里叶变换，$H_{\mathrm r}$ 是反射
 
 图70～72与24道E15题见[分布式协同增强专题](15_distributed-enhancement.md)。17份独立WAV使用即时已知协方差混合；时钟、量化和缺包有不同误差来源，不能把它们并入主109样本或称为真实无线录音。
 
-图片写入 `figures/`，共 72 张编号图，另有第16题的房间补充图：
+图73读取第5章三份已知双音PCM。相位反号和正交变化保持解析稳态功率，却增加同钟参考误差；量化后三份功率分别保存，不假定完全相等。它由独立绘图脚本生成，不重写其他图的源摘要。
+
+图片写入 `figures/`，共 73 张编号图，另有第16题的房间补充图：
 
 ```bash
 .venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
@@ -885,6 +887,7 @@ $X$ 是有限源序列的离散时间傅里叶变换，$H_{\mathrm r}$ 是反射
 .venv/bin/python -m codes.chapters.ch03.examples.generate_geometry_audio
 .venv/bin/python -m codes.chapters.ch04.examples.generate_focus_audio
 .venv/bin/python -m codes.chapters.ch05.examples.generate_derivative_audio
+.venv/bin/python -m codes.chapters.ch05.examples.generate_phase_audio
 .venv/bin/python -m codes.chapters.ch08.examples.gss_teaching_demo
 .venv/bin/python -m codes.chapters.ch09.examples.moving_source_audio
 .venv/bin/python -m codes.chapters.ch09.examples.chapter09_tracking_audio
@@ -899,6 +902,7 @@ $X$ 是有限源序列的离散时间傅里叶变换，$H_{\mathrm r}$ 是反射
 .venv/bin/python -m codes.chapters.ch15.examples.generate_distributed_audio
 .venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～72
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～39（回声消除专题）
+.venv/bin/python scripts/make_beamforming_figures.py  # 图73：已知双音的实际PCM与解析相位
 ```
 
 Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`，其余不变。

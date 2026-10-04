@@ -1,0 +1,2296 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-10-04T09:14:58.413706+00:00",
+  "status": "original_failures_preserved",
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "executable": "/private/tmp/masp-appb-pra-venv/bin/python"
+  },
+  "configuration": {
+    "pb_bss": {
+      "function": "get_mvdr_vector_merl",
+      "shape": "(frequency=1, channels=2, channels=2)",
+      "target_diagonal_cases": [
+        [
+          1.0,
+          4.0
+        ],
+        [
+          4.0,
+          1.0
+        ]
+      ],
+      "noise_covariance": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ],
+      "matrix_type": "exact diagonal PSDs; no audio, snapshots or randomness"
+    },
+    "pyroomacoustics": {
+      "method": "Beamformer.rake_distortionless_filters",
+      "microphone_positions_m": [
+        [
+          0.0,
+          0.05
+        ],
+        [
+          0.0,
+          0.0
+        ]
+      ],
+      "sample_rate_hz": 8000,
+      "fft_length": 64,
+      "filter_length": 32,
+      "source_position_m": [
+        1.0,
+        1.0
+      ],
+      "interferer_position_m": [
+        -1.0,
+        1.0
+      ],
+      "noise_covariance": "identity of dimension 64 (channels * filter_length)",
+      "delay_s": 0.001,
+      "epsilon": 0.005,
+      "sound_speed_m_s": 343.0,
+      "randomness": "none; analytic direct-path SoundSource objects, no room simulation"
+    }
+  },
+  "provenance": {
+    "sources": {
+      "pb_bss": {
+        "revision": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+        "files": {
+          "pb_bss/extraction/beamformer.py": "8bc6700fbe07b50caeb640503bbf827798c883a3fc12b9790f93ab2ee9453e53",
+          "LICENSE": "48241e1eae6ab4c15c5718992ca60d3d15961212a4e324e09e5dbfbc79b78214"
+        }
+      },
+      "pyroomacoustics": {
+        "revision": "0dd39f2614b7fc44b2cc63dbe7d60f4641068890",
+        "files": {
+          "pyroomacoustics/beamforming.py": "04142595a0fd0b76404d92dbe2aaa93613b4037a774e309595d3c7792a492387",
+          "pyroomacoustics/soundsource.py": "1e367bc85867ad7f94dad47fdf283e3d5282d83533e48ddfab906c0195a35f4c",
+          "LICENSE": "0922c9a0c1f5bb35a1e0df7b56954864e27cfc625fc3b041acde0707ce797e46"
+        }
+      }
+    },
+    "harness_sha256": "fb3f01b3e3a988a62b3b9b424fa0d66759a03b6813657db4769bc3e9349aa19c",
+    "configuration_sha256": "f16ba075590c1456694b31d74638e25d21cef02a882e43d54b1665619f032f31",
+    "upstream_modified": false
+  },
+  "source_identities": {
+    "pb_bss": {
+      "project": "pb_bss",
+      "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/pb_bss",
+      "origin": "https://github.com/fgnt/pb_bss.git",
+      "head": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+      "lock_entry": {
+        "id": "pb_bss",
+        "url": "https://github.com/fgnt/pb_bss.git",
+        "revision": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+        "license": "MIT",
+        "scope": "cACGMM, spatial mixture models and beamforming",
+        "fetch_enabled": true,
+        "note": "Statistical model toolkit; speaker activities and a complete GSS pipeline are separate inputs/components.",
+        "entrypoints": [
+          "LICENSE",
+          "pb_bss/distribution/cacgmm.py",
+          "pb_bss/extraction/beamformer.py",
+          "pb_bss/math/solve.py"
+        ]
+      },
+      "lock_sha256": "a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505",
+      "source_document_paths": {
+        "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+        "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+      },
+      "status_sha256": "abc28f6f15512da8267618bca318b10033909ec2afdb6090b6aa2d0f1281f0e9",
+      "recorded_complete_selection": {
+        "id": "pb_bss",
+        "revision": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+        "status": "source_verified",
+        "missing_entrypoints": [],
+        "execution": "not_run",
+        "dependency_validation": "not_run",
+        "asset_policy": "sparse_source_checkout",
+        "requested_source_paths": [
+          "repository"
+        ],
+        "observed_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "expected_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "source_selection_verified": true
+      },
+      "live_complete_selection": {
+        "id": "pb_bss",
+        "revision": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+        "status": "source_verified",
+        "source_selection_verified": true,
+        "missing_entrypoints": [],
+        "observed_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "expected_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "requested_source_paths": [
+          "repository"
+        ],
+        "asset_policy": "sparse_source_checkout"
+      },
+      "used_source_identity": "verified",
+      "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+      "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+      "ignored_members_before": [
+        "pb_bss/__pycache__/__init__.cpython-313.pyc",
+        "pb_bss/evaluation/__pycache__/__init__.cpython-313.pyc",
+        "pb_bss/evaluation/__pycache__/module_mir_eval.cpython-313.pyc",
+        "pb_bss/evaluation/__pycache__/module_pesq.cpython-313.pyc",
+        "pb_bss/evaluation/__pycache__/module_si_sdr.cpython-313.pyc",
+        "pb_bss/evaluation/__pycache__/module_srmr.cpython-313.pyc",
+        "pb_bss/evaluation/__pycache__/module_stoi.cpython-313.pyc",
+        "pb_bss/transform/__pycache__/__init__.cpython-313.pyc",
+        "pb_bss/transform/__pycache__/gammatone.cpython-313.pyc",
+        "pb_bss/transform/__pycache__/griffin_lim_module.cpython-313.pyc"
+      ],
+      "used_files": {
+        "LICENSE": {
+          "sha256": "48241e1eae6ab4c15c5718992ca60d3d15961212a4e324e09e5dbfbc79b78214",
+          "bytes": 1111,
+          "git_blob": "dbb5ffdda37b3ea9855fdda4adaa193a7bdf6175",
+          "actual_blob": "dbb5ffdda37b3ea9855fdda4adaa193a7bdf6175"
+        },
+        "pb_bss/extraction/beamformer.py": {
+          "sha256": "8bc6700fbe07b50caeb640503bbf827798c883a3fc12b9790f93ab2ee9453e53",
+          "bytes": 29542,
+          "git_blob": "89ef2ea8af35058fe2e3400e890795b5c3866be5",
+          "actual_blob": "89ef2ea8af35058fe2e3400e890795b5c3866be5"
+        },
+        "pb_bss/__init__.py": {
+          "sha256": "06e057344aad4b23b7ff65c337fc721afd454780748b34b2b819d19a6ec41e03",
+          "bytes": 166,
+          "git_blob": "bc1581918cffdbed5dc7d9797feb92aeb378281f",
+          "actual_blob": "bc1581918cffdbed5dc7d9797feb92aeb378281f"
+        },
+        "pb_bss/distribution/__init__.py": {
+          "sha256": "6444606ef6e55c76d4b9a0a9afcf5c7598cea95f4ae38217c9bd1ed2c7f29791",
+          "bytes": 1247,
+          "git_blob": "77f4d29004959c4eb399721a8193ba671397daf6",
+          "actual_blob": "77f4d29004959c4eb399721a8193ba671397daf6"
+        },
+        "pb_bss/distribution/cacgmm.py": {
+          "sha256": "dc3fd3fa05200d8a8ce8c70f3ab2533214c17b6098724a32793a0d32f0886891",
+          "bytes": 12411,
+          "git_blob": "b980a92eb993e839bb2cb26649598e5d0375c1fe",
+          "actual_blob": "b980a92eb993e839bb2cb26649598e5d0375c1fe"
+        },
+        "pb_bss/distribution/cbmm.py": {
+          "sha256": "1e7d4af49344cab1e104815de83e9668f941b549eb419100d5fe0a2c2aa7e6d0",
+          "bytes": 7884,
+          "git_blob": "d55c2da50fcd01558e6a5f282de32eb3dfceb6cb",
+          "actual_blob": "d55c2da50fcd01558e6a5f282de32eb3dfceb6cb"
+        },
+        "pb_bss/distribution/complex_angular_central_gaussian.py": {
+          "sha256": "144806c200fe914d81fe2475bc5ec3185330e52463e145fdd6f66bf99e5ff312",
+          "bytes": 10926,
+          "git_blob": "29eabdec381fb094cfb828d0dad30c2d266a279c",
+          "actual_blob": "29eabdec381fb094cfb828d0dad30c2d266a279c"
+        },
+        "pb_bss/distribution/complex_bingham.py": {
+          "sha256": "f72e9f696314bca3126c8a3567ca1f1b9454f9df90a3b631d0a12a30d6555c21",
+          "bytes": 23429,
+          "git_blob": "3717b2b0dbe8745f6b16112ad1432cc84e9f16ec",
+          "actual_blob": "3717b2b0dbe8745f6b16112ad1432cc84e9f16ec"
+        },
+        "pb_bss/distribution/complex_bingham_utils.py": {
+          "sha256": "7341302f00f6ca2bc5c1f297a708c1cb57c49a91be4f01eb3f9e683896ef865e",
+          "bytes": 11348,
+          "git_blob": "539f92844f69030fb1ebc4599ca0f90e2422b7a8",
+          "actual_blob": "539f92844f69030fb1ebc4599ca0f90e2422b7a8"
+        },
+        "pb_bss/distribution/complex_circular_symmetric_gaussian.py": {
+          "sha256": "936da4fe4e853be04e7451ada12fb335076eb2768c1305763d22fb34fd99f005",
+          "bytes": 3610,
+          "git_blob": "520a711e33330ac3965473b1a9d6c0d579625eae",
+          "actual_blob": "520a711e33330ac3965473b1a9d6c0d579625eae"
+        },
+        "pb_bss/distribution/complex_watson.py": {
+          "sha256": "256cba5b74303535269fc068f6b45f180e34158be5a54feba6e3587df78c12ab",
+          "bytes": 10061,
+          "git_blob": "fbc983b8f157f94bc8eddfe992da8c4291076105",
+          "actual_blob": "fbc983b8f157f94bc8eddfe992da8c4291076105"
+        },
+        "pb_bss/distribution/cwmm.py": {
+          "sha256": "e30fbd814f8538b14756ac95141e10f1b5d80ad8a7f1a2973e387dd9d75d4ed8",
+          "bytes": 8225,
+          "git_blob": "dac6a5d6d890af56f85ed0c11baac0e71e1fe57d",
+          "actual_blob": "dac6a5d6d890af56f85ed0c11baac0e71e1fe57d"
+        },
+        "pb_bss/distribution/gaussian.py": {
+          "sha256": "ef25d4870933537865ff6dc95390ad895bbd563156f864425ed55061a9de8f48",
+          "bytes": 6817,
+          "git_blob": "c9bb420045b82fca1b392aca0f62acfd475ce30c",
+          "actual_blob": "c9bb420045b82fca1b392aca0f62acfd475ce30c"
+        },
+        "pb_bss/distribution/gcacgmm.py": {
+          "sha256": "b8106fa51b7623935c8c7c22cea411ffe7c30fa58d65bd7f5d2620edfb272513",
+          "bytes": 11378,
+          "git_blob": "f17a41ca6dd7e46f724bc87cd8bb9591857b9d9c",
+          "actual_blob": "f17a41ca6dd7e46f724bc87cd8bb9591857b9d9c"
+        },
+        "pb_bss/distribution/gmm.py": {
+          "sha256": "a7824a7b1c958b930b07ab856c56561bb56b395dc98de19ee929c75e240e9ac3",
+          "bytes": 6794,
+          "git_blob": "379ea10b05ae25f17c29cb7b6c91141e67affb0e",
+          "actual_blob": "379ea10b05ae25f17c29cb7b6c91141e67affb0e"
+        },
+        "pb_bss/distribution/mixture_model_utils.py": {
+          "sha256": "1f8a6f04d7f0d0d0af8c41f2777d1f4aa399201f78524898df9ae6ca46dd82d9",
+          "bytes": 10327,
+          "git_blob": "e71308dd6336e1bc67e2558a8ca5adcb59eff3aa",
+          "actual_blob": "e71308dd6336e1bc67e2558a8ca5adcb59eff3aa"
+        },
+        "pb_bss/distribution/utils.py": {
+          "sha256": "e6d26b68d05a4fe23e77fed5b83ca3e86e79b362ab8acf03b0c0db8f7f0c9fbe",
+          "bytes": 11686,
+          "git_blob": "e0c55ce00d9a0201e6517d5720a1efe76d7e5df5",
+          "actual_blob": "e0c55ce00d9a0201e6517d5720a1efe76d7e5df5"
+        },
+        "pb_bss/distribution/vmfcacgmm.py": {
+          "sha256": "f265554d83cc0e8c24d10047309eace3c0389a1264cf3105be57b243a4c3ea1c",
+          "bytes": 10585,
+          "git_blob": "cbbbc58c9e258fa5cc4a6be88c2c2ee80458d86a",
+          "actual_blob": "cbbbc58c9e258fa5cc4a6be88c2c2ee80458d86a"
+        },
+        "pb_bss/distribution/vmfmm.py": {
+          "sha256": "d95829886510693c4f6e5683875139316dc108f4b4d52871e243fe56dbad8e9d",
+          "bytes": 5466,
+          "git_blob": "8fb74824df80656d0b43f71dd2d16f9a97ecc4d0",
+          "actual_blob": "8fb74824df80656d0b43f71dd2d16f9a97ecc4d0"
+        },
+        "pb_bss/distribution/von_mises_fisher.py": {
+          "sha256": "4ab4faa698c7457d36aacb749bb4711925f2b836d8b42d80e6447d2d7f0a7401",
+          "bytes": 4382,
+          "git_blob": "944ebbdf3c926e98995f142e328ac602d51ca0f4",
+          "actual_blob": "944ebbdf3c926e98995f142e328ac602d51ca0f4"
+        },
+        "pb_bss/evaluation/__init__.py": {
+          "sha256": "faacaa195cd805670a690cfa26f4ef84b874625bdaecce1d81d9e1981c6aadcf",
+          "bytes": 240,
+          "git_blob": "a3c0bade972660f69db22c9cb6e8e3b199d80dc4",
+          "actual_blob": "a3c0bade972660f69db22c9cb6e8e3b199d80dc4"
+        },
+        "pb_bss/evaluation/module_mir_eval.py": {
+          "sha256": "f8c3c557400888044ecc5a7be378f1760ced3e8531833e4d86dd3b812e6059e8",
+          "bytes": 5175,
+          "git_blob": "834cc945e283789c8fcfea73c995a928f6aba644",
+          "actual_blob": "834cc945e283789c8fcfea73c995a928f6aba644"
+        },
+        "pb_bss/evaluation/module_pesq.py": {
+          "sha256": "1884f9db4c89beca0f2cf09aba946e578703b454b6a1885cc0efe342bf9f675d",
+          "bytes": 2773,
+          "git_blob": "3adb3c24228e290e058648537b8af29d0d52e2e3",
+          "actual_blob": "3adb3c24228e290e058648537b8af29d0d52e2e3"
+        },
+        "pb_bss/evaluation/module_si_sdr.py": {
+          "sha256": "009b2e83739dc0d340f1f4e66558f9caa8efcef5463b9f08f416f310db25f3b1",
+          "bytes": 1756,
+          "git_blob": "74c0a8e11a505bea693ab4621b062e87695ee13d",
+          "actual_blob": "74c0a8e11a505bea693ab4621b062e87695ee13d"
+        },
+        "pb_bss/evaluation/module_srmr.py": {
+          "sha256": "99f373f72e2d112fcc302f5c01ef884eedb518ae6ef6e1f2d4b72bff3fee9a34",
+          "bytes": 6973,
+          "git_blob": "22dc76da983ade6fd2549a3e9fc5d83a5aaabdcb",
+          "actual_blob": "22dc76da983ade6fd2549a3e9fc5d83a5aaabdcb"
+        },
+        "pb_bss/evaluation/module_stoi.py": {
+          "sha256": "3392fe151a688cc94e42498dae580d8a64e395b9c822df92453d820903edecf6",
+          "bytes": 651,
+          "git_blob": "ca6126cd4d7deb25bf6297fa7cb373aadc866499",
+          "actual_blob": "ca6126cd4d7deb25bf6297fa7cb373aadc866499"
+        },
+        "pb_bss/evaluation/sxr_module.py": {
+          "sha256": "ac1a212e88fbdd2f9930616c914ce193181b4230d281c371a9bfca16e0c3867f",
+          "bytes": 9330,
+          "git_blob": "21d3c817b47a3571b67693c0318a644a5cf02f79",
+          "actual_blob": "21d3c817b47a3571b67693c0318a644a5cf02f79"
+        },
+        "pb_bss/evaluation/wrapper.py": {
+          "sha256": "8a05f8eb7e655ee5ad634949fa2f72e64c6ede5c2cedc899bcd59e31770b2d73",
+          "bytes": 20221,
+          "git_blob": "6034c82dd562210da69f61713de5b67156bc5697",
+          "actual_blob": "6034c82dd562210da69f61713de5b67156bc5697"
+        },
+        "pb_bss/extraction/__init__.py": {
+          "sha256": "17dfe51ed275e8c84f520e1c75ca9cece823e382c813f78912fcadd1d0c1405b",
+          "bytes": 176,
+          "git_blob": "4c5a1c4cf8bc31e2fac79ecd05ddedf1724405e1",
+          "actual_blob": "4c5a1c4cf8bc31e2fac79ecd05ddedf1724405e1"
+        },
+        "pb_bss/extraction/beamform_utils.py": {
+          "sha256": "256aee0d64a997edf4f78cc3ad8d4149db7931be32dfc3a8497d7af09de00db7",
+          "bytes": 4888,
+          "git_blob": "6c159c14d6c6fa204977f510ee6c607c0332e3a9",
+          "actual_blob": "6c159c14d6c6fa204977f510ee6c607c0332e3a9"
+        },
+        "pb_bss/extraction/beamformer_wrapper.py": {
+          "sha256": "0b95e56993fdfeb19b2f499779228fc72ec7b128419129b478704c4a77fac78d",
+          "bytes": 7782,
+          "git_blob": "28f73d271b8e41ea42e9c794d111fc9f0483f0c0",
+          "actual_blob": "28f73d271b8e41ea42e9c794d111fc9f0483f0c0"
+        },
+        "pb_bss/extraction/cythonized/__init__.py": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0,
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+          "actual_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        },
+        "pb_bss/extraction/mask_module.py": {
+          "sha256": "25b6c6ba997f8ae0e883950b4b558c35adf0bcb882cbf3f147611a1b7e8885b1",
+          "bytes": 17777,
+          "git_blob": "8d60d0a8af0562799034c361ebbf46d282f9c00e",
+          "actual_blob": "8d60d0a8af0562799034c361ebbf46d282f9c00e"
+        },
+        "pb_bss/initializer/__init__.py": {
+          "sha256": "0eaae030fb6764fc7a6e6300c66df412b860fad6b2c2926f5d690e647ea3d4e6",
+          "bytes": 70,
+          "git_blob": "7a7cec0a283dcf436ad721c49bc65a9c870000ad",
+          "actual_blob": "7a7cec0a283dcf436ad721c49bc65a9c870000ad"
+        },
+        "pb_bss/initializer/deflation.py": {
+          "sha256": "a69dba346c2ceb4163868ca28ae75d5fc8aaf2391ac9b33aaf361ddd78eec1cc",
+          "bytes": 2355,
+          "git_blob": "0a92eb38661b3b8c97031514807df202c9b1418b",
+          "actual_blob": "0a92eb38661b3b8c97031514807df202c9b1418b"
+        },
+        "pb_bss/initializer/deterministic.py": {
+          "sha256": "84f61b9540d7f30ff655d1f1a6a1ba34ae996c57f827065d2eb4f67150686d01",
+          "bytes": 3007,
+          "git_blob": "3cfaef68458a5c322d3c58af271e783f3bb9e2fd",
+          "actual_blob": "3cfaef68458a5c322d3c58af271e783f3bb9e2fd"
+        },
+        "pb_bss/initializer/iid.py": {
+          "sha256": "ecf68bc843e8895f9ec5dfe4ac3c6fc9b2f180faf2a182037e408d4024cc1c70",
+          "bytes": 7041,
+          "git_blob": "53983eda61e41c5b1172e21cac02c0c4a290a578",
+          "actual_blob": "53983eda61e41c5b1172e21cac02c0c4a290a578"
+        },
+        "pb_bss/math/__init__.py": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0,
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+          "actual_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        },
+        "pb_bss/math/solve.py": {
+          "sha256": "be440ee6f252e42a6ae5d7b6f3cc7205da5d4c29bcb01cae7885ab9f8c6a53ed",
+          "bytes": 3794,
+          "git_blob": "55fb235ca12b9eefa99f1afc7ad6bc90b9e13bbb",
+          "actual_blob": "55fb235ca12b9eefa99f1afc7ad6bc90b9e13bbb"
+        },
+        "pb_bss/permutation_alignment.py": {
+          "sha256": "8c794835de9ab21075280fc4ca7b8bfdad2aa612af82f9663b79bb041b06d0b3",
+          "bytes": 27931,
+          "git_blob": "1bfdb671d18b36ccba4408968a5b780ca926e82d",
+          "actual_blob": "1bfdb671d18b36ccba4408968a5b780ca926e82d"
+        },
+        "pb_bss/testing/__init__.py": {
+          "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "bytes": 1,
+          "git_blob": "8b137891791fe96927ad78e64b0aad7bded08bdc",
+          "actual_blob": "8b137891791fe96927ad78e64b0aad7bded08bdc"
+        },
+        "pb_bss/testing/dummy_data.py": {
+          "sha256": "e2c76b7229c7e3d9ed0a80a3bc8d04973c6ca306105c1d0c07c5f13a1a684e0e",
+          "bytes": 4103,
+          "git_blob": "c8f0a1a64c04123a37ea21950a1d2f5f1a03c85c",
+          "actual_blob": "c8f0a1a64c04123a37ea21950a1d2f5f1a03c85c"
+        },
+        "pb_bss/testing/module_asserts.py": {
+          "sha256": "5e96a433a9d2ff0a426563e0285cb8fd923fd668e3c8d3c5ee952b913aaf6b8e",
+          "bytes": 3525,
+          "git_blob": "581e4e94e26dd964cd867c41041140a6dfbc3435",
+          "actual_blob": "581e4e94e26dd964cd867c41041140a6dfbc3435"
+        },
+        "pb_bss/testing/random_utils.py": {
+          "sha256": "c6828f4bcd94a935ec4d87b6940d561eaa09fd5ca59eaaadcd49925042e592c0",
+          "bytes": 2211,
+          "git_blob": "47d7b3f644da5a8f4ae97ff0fabd70af112c9923",
+          "actual_blob": "47d7b3f644da5a8f4ae97ff0fabd70af112c9923"
+        },
+        "pb_bss/transform/__init__.py": {
+          "sha256": "986ac7de7cec19760c23629a51d5c242b7da8ebca43353ead7cbafe03137e647",
+          "bytes": 80,
+          "git_blob": "38cad65eaa36aca4f36caed79e86c872c55c3410",
+          "actual_blob": "38cad65eaa36aca4f36caed79e86c872c55c3410"
+        },
+        "pb_bss/transform/gammatone.py": {
+          "sha256": "04efb1d61f1f680c6e6e6412f3038752cbdf3211e035fbecf3d0ee23b7022c48",
+          "bytes": 3784,
+          "git_blob": "5d3f6601676465253cd3ff02291bee346809d88c",
+          "actual_blob": "5d3f6601676465253cd3ff02291bee346809d88c"
+        },
+        "pb_bss/transform/griffin_lim_module.py": {
+          "sha256": "7aab5e93d2eda863a99d230a4298b2cc9effd0314bc54f0983bf5a4202603ada",
+          "bytes": 3848,
+          "git_blob": "cf0eebaac08d9f5c3ec09ec4eb550e4ee678e6d8",
+          "actual_blob": "cf0eebaac08d9f5c3ec09ec4eb550e4ee678e6d8"
+        },
+        "pb_bss/utils.py": {
+          "sha256": "26aed452b409c0728df8ad2349729d488c8730c4e67af73143c3042bec29aea2",
+          "bytes": 9767,
+          "git_blob": "e3f39c9babb72952cd1506d0f780ddee45bfc267",
+          "actual_blob": "e3f39c9babb72952cd1506d0f780ddee45bfc267"
+        },
+        "setup.py": {
+          "sha256": "2f6725717cc6f9aba62e091d0d455d5e61d15db4b0014401bf13dde8beca3ce2",
+          "bytes": 1872,
+          "git_blob": "7532aca6785d688cf10667c7ca81833e909cd1ad",
+          "actual_blob": "7532aca6785d688cf10667c7ca81833e909cd1ad"
+        },
+        "tests/test_distribution/test_cacgmm.py": {
+          "sha256": "8799acb818fe0882dd4a1507b8063cc888717563ad6dd5dcdef87df7f1642264",
+          "bytes": 6241,
+          "git_blob": "626190aa18e80a958c255020c2a158486785fdef",
+          "actual_blob": "626190aa18e80a958c255020c2a158486785fdef"
+        },
+        "tests/test_distribution/test_complex_angular_central_gaussian.py": {
+          "sha256": "d5cc3452146fdc0d8f54d120207786e8cd9a9c7121721358eeb7821fedb9bf31",
+          "bytes": 1176,
+          "git_blob": "2ba4e8ac4379564b07d75b7d03a390b170172de6",
+          "actual_blob": "2ba4e8ac4379564b07d75b7d03a390b170172de6"
+        },
+        "tests/test_distribution/test_complex_watson.py": {
+          "sha256": "87be88bbaad279a4f3bdc326cc0cc012dd0e3d1f9013be96cd0aeafca7dc57bd",
+          "bytes": 761,
+          "git_blob": "7ab743db1913447a33662e3b36d35e0442e54829",
+          "actual_blob": "7ab743db1913447a33662e3b36d35e0442e54829"
+        },
+        "tests/test_distribution/test_cwmm.py": {
+          "sha256": "0ab0d5a49f3435dde8e4755b4ff740b6b7a30771b9f6a545a01962f6be972413",
+          "bytes": 1360,
+          "git_blob": "95b4eada53e3d46a08729b2e2a7266abd89f114b",
+          "actual_blob": "95b4eada53e3d46a08729b2e2a7266abd89f114b"
+        },
+        "tests/test_distribution/test_gaussian.py": {
+          "sha256": "f30042c75c483777c33ce3623cf9fd9087df2ec9090a4c6828658eb34e71a9d0",
+          "bytes": 1346,
+          "git_blob": "e7b0e339917d665680ec7e95951bc6bdeb17deff",
+          "actual_blob": "e7b0e339917d665680ec7e95951bc6bdeb17deff"
+        },
+        "tests/test_distribution/test_gcacgmm.py": {
+          "sha256": "8f4f2ea1868688b6b6724f995345c9a5a2a73b5f698e3eef735b57e6f3caf26e",
+          "bytes": 1092,
+          "git_blob": "63b970cbc5c6a7e2caea70f668f337a661c01903",
+          "actual_blob": "63b970cbc5c6a7e2caea70f668f337a661c01903"
+        },
+        "tests/test_distribution/test_gmm.py": {
+          "sha256": "582780ea778a0600611c4285b35f69acbbef7f1aa90f2db0e511f4d9780bc886",
+          "bytes": 2847,
+          "git_blob": "0476ea7a49c13cebff6b65bcd0e52572ceae67cf",
+          "actual_blob": "0476ea7a49c13cebff6b65bcd0e52572ceae67cf"
+        },
+        "tests/test_distribution/test_spatial_mm.py": {
+          "sha256": "ed661f250d2250138c3939a902b1a2dc0b671a6b1ab0384f6c61b7d0fca58b92",
+          "bytes": 5066,
+          "git_blob": "e9a22c926375c749d53caf71c061376e44694cee",
+          "actual_blob": "e9a22c926375c749d53caf71c061376e44694cee"
+        },
+        "tests/test_distribution/test_vmfmm.py": {
+          "sha256": "18dbcaafa22992a1daa7e09df951fa9048cb3b432f0f7af4888b1bb8bb703abf",
+          "bytes": 1430,
+          "git_blob": "43865354e475a34c08f58e6e00e267347d36f672",
+          "actual_blob": "43865354e475a34c08f58e6e00e267347d36f672"
+        },
+        "tests/test_distribution/test_von_mises_fisher.py": {
+          "sha256": "cf19720de62db4ebff28bf96a08721148a1e302fb33d9b01a8e59ca83cd4f2b1",
+          "bytes": 1429,
+          "git_blob": "f71cf84b76e986982228c0447aa806b21c91314f",
+          "actual_blob": "f71cf84b76e986982228c0447aa806b21c91314f"
+        },
+        "tests/test_evaluation/test_mir_eval.py": {
+          "sha256": "2f27e45eec44b35829c9f0d9c2b28c2098e70b8e74281a491bf02c75f20ae77e",
+          "bytes": 2118,
+          "git_blob": "1951b877b4bbddff8c8ce14d1133e6c00f33984b",
+          "actual_blob": "1951b877b4bbddff8c8ce14d1133e6c00f33984b"
+        },
+        "tests/test_evaluation/test_pesq.py": {
+          "sha256": "9100a9b6b949718ae6e18c1d30a76e25fd88468f8898201f37aa241c39a062a8",
+          "bytes": 3797,
+          "git_blob": "74235d3e2146249de8a28da4ecd03960c3379d48",
+          "actual_blob": "74235d3e2146249de8a28da4ecd03960c3379d48"
+        },
+        "tests/test_evaluation/test_sxr.py": {
+          "sha256": "6cbb463a1845c35813bf5413c035ae3aa87920e1ad66853ad381c17878a35b66",
+          "bytes": 6529,
+          "git_blob": "1dcc42fb5807db04da1ea9eff77a4987ccc5ee1d",
+          "actual_blob": "1dcc42fb5807db04da1ea9eff77a4987ccc5ee1d"
+        },
+        "tests/test_evaluation/test_wrapper.py": {
+          "sha256": "d02b21bd70d7860fdd16c10da4badac8b37384f8e42e80c6f1dd08969a7866c3",
+          "bytes": 3743,
+          "git_blob": "507a51f2e378e70a6eb68db2b6daf9365ee4128f",
+          "actual_blob": "507a51f2e378e70a6eb68db2b6daf9365ee4128f"
+        },
+        "tests/test_evaluation/test_wrapper_values.py": {
+          "sha256": "89571ce9b220b445940880c20ed6902c7e641e165c438215cd33ab5ed4522350",
+          "bytes": 5282,
+          "git_blob": "2f7750be3fb5c8815c169dba38ee80064f1dd256",
+          "actual_blob": "2f7750be3fb5c8815c169dba38ee80064f1dd256"
+        },
+        "tests/test_extraction/test_beamformer.py": {
+          "sha256": "94c8dbf9482e3908f25747a058f89ecf9680d954fe40d26b1468906f7cf2b095",
+          "bytes": 12197,
+          "git_blob": "e3482ba2dc0b9a60844247e6b0053231bff45d09",
+          "actual_blob": "e3482ba2dc0b9a60844247e6b0053231bff45d09"
+        },
+        "tests/test_extraction/test_beamformer_wrapper.py": {
+          "sha256": "7ce11272c29c4ed92280b56d150431599287a4f67be9bd560235ab9f3897a6dd",
+          "bytes": 3424,
+          "git_blob": "846f6cea90b1c99bd7eea0290c4597b1378e1dd7",
+          "actual_blob": "846f6cea90b1c99bd7eea0290c4597b1378e1dd7"
+        },
+        "tests/test_extraction/test_covariance_matrix.py": {
+          "sha256": "460a9500be31e2a7e19881cf8eda222613c74bc7398524e3ad7c415604deed21",
+          "bytes": 6420,
+          "git_blob": "0dc61b90204b6e68fb4e4d238ef2f4f6c21c67c5",
+          "actual_blob": "0dc61b90204b6e68fb4e4d238ef2f4f6c21c67c5"
+        },
+        "tests/test_extraction/test_mask_module.py": {
+          "sha256": "d5b59cc0d7bfc5074c93b393299e67bc2ffb066ca7588f3dab564b0b73464e0a",
+          "bytes": 10666,
+          "git_blob": "21f7a11c8610fa7b7e442892c8725389230950b0",
+          "actual_blob": "21f7a11c8610fa7b7e442892c8725389230950b0"
+        },
+        "tests/test_utils.py": {
+          "sha256": "7d1c0dbb0eab11cf6acea4cc035ac9fd6fdf2e712fdd7f071d424db5be99e919",
+          "bytes": 858,
+          "git_blob": "2ff69684974268f788519740561522e9bf78a620",
+          "actual_blob": "2ff69684974268f788519740561522e9bf78a620"
+        }
+      },
+      "clean_before": true,
+      "clean_after": true,
+      "ignored_members_after": [
+        "pb_bss/__pycache__/__init__.cpython-313.pyc",
+        "pb_bss/evaluation/__pycache__/__init__.cpython-313.pyc",
+        "pb_bss/evaluation/__pycache__/module_mir_eval.cpython-313.pyc",
+        "pb_bss/evaluation/__pycache__/module_pesq.cpython-313.pyc",
+        "pb_bss/evaluation/__pycache__/module_si_sdr.cpython-313.pyc",
+        "pb_bss/evaluation/__pycache__/module_srmr.cpython-313.pyc",
+        "pb_bss/evaluation/__pycache__/module_stoi.cpython-313.pyc",
+        "pb_bss/transform/__pycache__/__init__.cpython-313.pyc",
+        "pb_bss/transform/__pycache__/gammatone.cpython-313.pyc",
+        "pb_bss/transform/__pycache__/griffin_lim_module.cpython-313.pyc"
+      ]
+    },
+    "pyroomacoustics": {
+      "project": "pyroomacoustics",
+      "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/pyroomacoustics",
+      "origin": "https://github.com/LCAV/pyroomacoustics.git",
+      "head": "0dd39f2614b7fc44b2cc63dbe7d60f4641068890",
+      "lock_entry": {
+        "id": "pyroomacoustics",
+        "url": "https://github.com/LCAV/pyroomacoustics.git",
+        "revision": "0dd39f2614b7fc44b2cc63dbe7d60f4641068890",
+        "release": "v0.10.0",
+        "license": "MIT",
+        "fetch_enabled": true,
+        "scope": "room simulation, STFT, DOA, beamforming, BSS, and general-purpose real-valued RLS/BlockRLS adaptive filters",
+        "note": "The book's optional reproduction environment and this source revision are pinned to 0.10.0. Current main was separately inspected at ff7d61f219e4eb41489963c4bb5f57bea5bc2c69. CSSM/WAVES/TOPS static indexing concerns are documented in codes/chapters/ch00/research/01_spatial_and_tracking.md; acquisition is not numerical validation.",
+        "acquisition": "independent_source_checkout",
+        "entrypoints": [
+          "pyroomacoustics/room.py",
+          "pyroomacoustics/transform/stft.py",
+          "pyroomacoustics/doa/music.py",
+          "pyroomacoustics/doa/normmusic.py",
+          "pyroomacoustics/doa/srp.py",
+          "pyroomacoustics/doa/cssm.py",
+          "pyroomacoustics/doa/waves.py",
+          "pyroomacoustics/doa/tops.py",
+          "pyroomacoustics/doa/frida.py",
+          "pyroomacoustics/doa/tools_fri_doa_plane.py",
+          "pyroomacoustics/beamforming.py",
+          "pyroomacoustics/adaptive/rls.py",
+          "pyroomacoustics/adaptive/subband_lms.py",
+          "LICENSE",
+          "pyroomacoustics/parameters.py",
+          "pyroomacoustics/acoustics.py",
+          "pyroomacoustics/experimental/rt60.py",
+          "pyroomacoustics/doa/doa.py",
+          "pyroomacoustics/bss/auxiva.py",
+          "pyroomacoustics/bss/common.py",
+          "pyroomacoustics/bss/fastmnmf.py",
+          "pyroomacoustics/bss/fastmnmf2.py",
+          "pyroomacoustics/bss/ilrma.py",
+          "pyroomacoustics/bss/trinicon.py"
+        ]
+      },
+      "lock_sha256": "a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505",
+      "source_document_paths": {
+        "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+        "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+      },
+      "status_sha256": "abc28f6f15512da8267618bca318b10033909ec2afdb6090b6aa2d0f1281f0e9",
+      "recorded_complete_selection": {
+        "id": "pyroomacoustics",
+        "revision": "0dd39f2614b7fc44b2cc63dbe7d60f4641068890",
+        "status": "source_verified",
+        "missing_entrypoints": [],
+        "execution": "not_run",
+        "dependency_validation": "not_run",
+        "asset_policy": "existing_checkout_preserved",
+        "requested_source_paths": [
+          "repository"
+        ],
+        "observed_sparse_patterns": [],
+        "expected_sparse_patterns": [],
+        "source_selection_verified": true
+      },
+      "live_complete_selection": {
+        "id": "pyroomacoustics",
+        "revision": "0dd39f2614b7fc44b2cc63dbe7d60f4641068890",
+        "status": "source_verified",
+        "source_selection_verified": true,
+        "missing_entrypoints": [],
+        "observed_sparse_patterns": [],
+        "expected_sparse_patterns": [],
+        "requested_source_paths": [
+          "repository"
+        ],
+        "asset_policy": "existing_checkout_preserved"
+      },
+      "used_source_identity": "verified",
+      "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+      "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+      "ignored_members_before": [
+        "pyroomacoustics/bss/__pycache__/common.cpython-313.pyc"
+      ],
+      "used_files": {
+        "LICENSE": {
+          "sha256": "0922c9a0c1f5bb35a1e0df7b56954864e27cfc625fc3b041acde0707ce797e46",
+          "bytes": 1058,
+          "git_blob": "faa9d4ecdd27b2138955f73d1167853e99605b38",
+          "actual_blob": "faa9d4ecdd27b2138955f73d1167853e99605b38"
+        },
+        "pyroomacoustics/beamforming.py": {
+          "sha256": "04142595a0fd0b76404d92dbe2aaa93613b4037a774e309595d3c7792a492387",
+          "bytes": 48967,
+          "git_blob": "817379b2a2681f29aa3be3770aa1efb610a85a6b",
+          "actual_blob": "817379b2a2681f29aa3be3770aa1efb610a85a6b"
+        },
+        "pyroomacoustics/soundsource.py": {
+          "sha256": "1e367bc85867ad7f94dad47fdf283e3d5282d83533e48ddfab906c0195a35f4c",
+          "bytes": 11373,
+          "git_blob": "f316437ddccb446a23fff1e12b7b6f7a74e144c1",
+          "actual_blob": "f316437ddccb446a23fff1e12b7b6f7a74e144c1"
+        },
+        "docs/conf.py": {
+          "sha256": "edd6176594a690033c7811f556c20c1d327a45b6e2b1bfb7a68d115126588bc8",
+          "bytes": 10740,
+          "git_blob": "761baa3a2a852fed7a8ddcfcbb22fdc573fb767e",
+          "actual_blob": "761baa3a2a852fed7a8ddcfcbb22fdc573fb767e"
+        },
+        "docs/make_materials_table.py": {
+          "sha256": "2419eeab42b80ce2a4846195267d5d1997c384feead3178e335e46065d078f90",
+          "bytes": 2074,
+          "git_blob": "6a36efc74cf1ef186e839f2af4142fe5dc03339a",
+          "actual_blob": "6a36efc74cf1ef186e839f2af4142fe5dc03339a"
+        },
+        "examples/adaptive_filter_stft_domain.py": {
+          "sha256": "6655904b97a67ff6ca678224333bf3254aaa589486278c63c5af9c164c43a564",
+          "bytes": 3176,
+          "git_blob": "e1d80eb9b815e1991fadc295782f3f28135eaf21",
+          "actual_blob": "e1d80eb9b815e1991fadc295782f3f28135eaf21"
+        },
+        "examples/adaptive_filters.py": {
+          "sha256": "9c08d561eafaaac7962dd8600f143f3a53bd538f817a9ece23e7c425253c4319",
+          "bytes": 1781,
+          "git_blob": "e4b0df0ea983f36f2fdf1e52370247490d45f50e",
+          "actual_blob": "e4b0df0ea983f36f2fdf1e52370247490d45f50e"
+        },
+        "examples/beamforming_delay_and_sum.py": {
+          "sha256": "11304ad25e17487f6964eb22cffc3862b8b38ab60d2762e670c1de0a224aa51a",
+          "bytes": 760,
+          "git_blob": "9e882af2cf5dead7af73cf165256393b9f2abb35",
+          "actual_blob": "9e882af2cf5dead7af73cf165256393b9f2abb35"
+        },
+        "examples/beamforming_time_domain.py": {
+          "sha256": "8179f7f69a84a25ee5637b08de79e41782faffc1e94e8d37f841bb28b58ec3fb",
+          "bytes": 7135,
+          "git_blob": "47053504cb48b20a18691c897ea384729e456744",
+          "actual_blob": "47053504cb48b20a18691c897ea384729e456744"
+        },
+        "examples/bss_example.py": {
+          "sha256": "0cc6999de834f2f84cad939b94498f752186b69c921e39464c94aceab511a749",
+          "bytes": 11273,
+          "git_blob": "6db579ac5df98675a432003d8b29a052d996bf91",
+          "actual_blob": "6db579ac5df98675a432003d8b29a052d996bf91"
+        },
+        "examples/bss_live.py": {
+          "sha256": "07e5c91bd0811a7ed8be8d8bd4bb4762513913e660eef08fe01a68e6b823ee0c",
+          "bytes": 7034,
+          "git_blob": "adfb9ffc9d2ba7814d1cb812838e3361b6750e7c",
+          "actual_blob": "adfb9ffc9d2ba7814d1cb812838e3361b6750e7c"
+        },
+        "examples/cmu_arctic_corpus.py": {
+          "sha256": "25933bd564ef1b5cc84d4f018bb98136c7a2512d354631bde3024863896b41d9",
+          "bytes": 1552,
+          "git_blob": "f7f4d027a2996f7d8c55a0abbe1142dde2f80436",
+          "actual_blob": "f7f4d027a2996f7d8c55a0abbe1142dde2f80436"
+        },
+        "examples/datasets.py": {
+          "sha256": "2e4484562a108f13162dead537c58ed47c8c5c5d5c311be2f2cb1550161f2e68",
+          "bytes": 1698,
+          "git_blob": "ab9e1644f219eeb3b61a2aeb8480f6eeabc84ce7",
+          "actual_blob": "ab9e1644f219eeb3b61a2aeb8480f6eeabc84ce7"
+        },
+        "examples/directivities/cardioid_function.py": {
+          "sha256": "3ec22d85826298a769d0cafb415658c9eb04581aa5c864cd891b352753b7a3f2",
+          "bytes": 1576,
+          "git_blob": "408ee2be5de79ab42f5968d8e9349c448699b2c6",
+          "actual_blob": "408ee2be5de79ab42f5968d8e9349c448699b2c6"
+        },
+        "examples/directivities/circular_mic_array.py": {
+          "sha256": "46b1208a8c67ad39912d056873017d33fbe8094a093d029a68cbc77a3b87ec92",
+          "bytes": 966,
+          "git_blob": "aac5363747fe719cd37eac057e03a33b09ce87dc",
+          "actual_blob": "aac5363747fe719cd37eac057e03a33b09ce87dc"
+        },
+        "examples/directivities/mic_array.py": {
+          "sha256": "c5af8cdb30ce50d8fb58bf759d05b610af6ea8f5b17886ae3406f0bebbe8ff63",
+          "bytes": 763,
+          "git_blob": "bfbc782bcf6338bab8be3f510b7917d66a9c9a9c",
+          "actual_blob": "bfbc782bcf6338bab8be3f510b7917d66a9c9a9c"
+        },
+        "examples/directivities/mic_array_diff_directivities.py": {
+          "sha256": "c6f141f7062db6f8d0aec84989498f3ba35ece7a1ae9f853f9a886aa802de3a6",
+          "bytes": 995,
+          "git_blob": "953a64a489f4bb84d4dc5a7b8d79794460eb642e",
+          "actual_blob": "953a64a489f4bb84d4dc5a7b8d79794460eb642e"
+        },
+        "examples/directivities/plot_directivity_2D.py": {
+          "sha256": "bc3b214df502a52c09cfd95ee24fdfb6704f9a15d75ae2c95db87f192bcbf9ab",
+          "bytes": 942,
+          "git_blob": "9b5d39ec341c84314bd84463960cd852aab362e7",
+          "actual_blob": "9b5d39ec341c84314bd84463960cd852aab362e7"
+        },
+        "examples/directivities/plot_directivity_3D.py": {
+          "sha256": "4a45965dea87dc9f5a63c2d04f3f563ed8957260fc8228b81297c76b046764bd",
+          "bytes": 535,
+          "git_blob": "bafa3764efa13cfce9894930662883121609232e",
+          "actual_blob": "bafa3764efa13cfce9894930662883121609232e"
+        },
+        "examples/directivities/simulate_binaural_recording.py": {
+          "sha256": "1dd26e2f1a32529eecf3b4e31ce38a0e374a35f49fed0a66d828e0fc370bb9d2",
+          "bytes": 4982,
+          "git_blob": "1616373e738c4a1889147fc34976a447d025f6fe",
+          "actual_blob": "1616373e738c4a1889147fc34976a447d025f6fe"
+        },
+        "examples/directivities/simulation_with_measured_directivity.py": {
+          "sha256": "04505ed329827766f0e5feb78de20200992c6bf64d86d57b1dced5af4b469a79",
+          "bytes": 4954,
+          "git_blob": "f4291666246e9ae450a17c1330fab319ffc57f72",
+          "actual_blob": "f4291666246e9ae450a17c1330fab319ffc57f72"
+        },
+        "examples/directivities/source_and_microphone.py": {
+          "sha256": "d77011bce5eec5a41c11c8ddbf915fbc2f84e0df6b748fb57152b04b24ba2d08",
+          "bytes": 1510,
+          "git_blob": "04c8e92111a5cdca017862d486c91517f33f13a7",
+          "actual_blob": "04c8e92111a5cdca017862d486c91517f33f13a7"
+        },
+        "examples/doa_algorithms.py": {
+          "sha256": "a561dc9ab2c120cae72cf8e326e394b416039e6115a557a7f682c3f0c70fe2fa",
+          "bytes": 4251,
+          "git_blob": "90fbd3ac0dbc438f9b2662babc9fb7f5b631a51a",
+          "actual_blob": "90fbd3ac0dbc438f9b2662babc9fb7f5b631a51a"
+        },
+        "examples/doa_anechoic_room.py": {
+          "sha256": "613bf15c590469e7ff0b8f811001cbd717d0248ba792e896495fb1839485073f",
+          "bytes": 1708,
+          "git_blob": "98b43534a577e1f9ad78eee445de0570c5d2ec58",
+          "actual_blob": "98b43534a577e1f9ad78eee445de0570c5d2ec58"
+        },
+        "examples/google_speech_commands_corpus.py": {
+          "sha256": "0ee44653002e0e403bba422717be656b59bbd8b792d14fe89543296d5ae589fd",
+          "bytes": 1926,
+          "git_blob": "f10a2340b901a822c7a42fb850753b5cb2c5952a",
+          "actual_blob": "f10a2340b901a822c7a42fb850753b5cb2c5952a"
+        },
+        "examples/hmm_training.py": {
+          "sha256": "5a1b2d3b51a43fdd4dac45b6068b54b602c5ecdad601077b061ab53dd86be92d",
+          "bytes": 2169,
+          "git_blob": "4ee0792f98c5643d3661fd9951c37de2084cb32e",
+          "actual_blob": "4ee0792f98c5643d3661fd9951c37de2084cb32e"
+        },
+        "examples/noise_reduction_spectral_subtraction.py": {
+          "sha256": "a0493b46612314c20bcd619b83d2a395e6c52ff5eadd7e463f90f5bbc79fdcde",
+          "bytes": 3927,
+          "git_blob": "2971f96bed00958ba8c10908d61f1a0281f61f78",
+          "actual_blob": "2971f96bed00958ba8c10908d61f1a0281f61f78"
+        },
+        "examples/noise_reduction_subspace.py": {
+          "sha256": "789ca0fd1a9df361614c1313cb810f3ceece739939638f473c5194b22aed7493",
+          "bytes": 2938,
+          "git_blob": "97bdfaa49291362944be49eced65f080552f9f07",
+          "actual_blob": "97bdfaa49291362944be49eced65f080552f9f07"
+        },
+        "examples/noise_reduction_wiener_filtering.py": {
+          "sha256": "9e4dff88e2a0a6cd3da3af7021be20e155c835e13a22b18294b7d7492725c846",
+          "bytes": 3097,
+          "git_blob": "3137e3d974a39a530f394c11e8b21e196feee31e",
+          "actual_blob": "3137e3d974a39a530f394c11e8b21e196feee31e"
+        },
+        "examples/octave_band_filterbank.py": {
+          "sha256": "a2893c7d7403515437ee12db86c97cbdc1f1534eba866a6557fdd7bd43d1834e",
+          "bytes": 7731,
+          "git_blob": "876823440a2c393f0185a6ae1aac41c542c49d3b",
+          "actual_blob": "876823440a2c393f0185a6ae1aac41c542c49d3b"
+        },
+        "examples/plot_directivity_2D.py": {
+          "sha256": "a20b0b0d1f40b52675ba3cdf40e9fff6c8a112425d0420f5cd4f9343e32b1765",
+          "bytes": 944,
+          "git_blob": "b380003cbee5984822529bfc9a7db81f6668e245",
+          "actual_blob": "b380003cbee5984822529bfc9a7db81f6668e245"
+        },
+        "examples/plot_directivity_3D.py": {
+          "sha256": "3e484b03ec89185d0ec3b9248709e96296e943b14f1dd8d123af6f4b6dde1bc4",
+          "bytes": 639,
+          "git_blob": "7887ac57891c7aa9e59ce89eac2a6ed488edbb18",
+          "actual_blob": "7887ac57891c7aa9e59ce89eac2a6ed488edbb18"
+        },
+        "examples/plot_directivity_one_shot.py": {
+          "sha256": "6365b2251d58d6af0242f83028b6b80c2dbc54d57c30dd7e503011bdbf86dc47",
+          "bytes": 1726,
+          "git_blob": "9a41c2c7b546817f378970b121623718d0347d65",
+          "actual_blob": "9a41c2c7b546817f378970b121623718d0347d65"
+        },
+        "examples/randomized_image_method.py": {
+          "sha256": "6e868096e690691d1edeeb388a85c42be2f3d5865a588f7d0c5cab288155c2bc",
+          "bytes": 4417,
+          "git_blob": "3207d0a7913f9790fc8173879deeebbf95b5754d",
+          "actual_blob": "3207d0a7913f9790fc8173879deeebbf95b5754d"
+        },
+        "examples/raytracing.py": {
+          "sha256": "ca1e82001b444a5b0daee589ad19e893073c97546ceddd2431c33a17bf8faad6",
+          "bytes": 2773,
+          "git_blob": "59c414e56da6ce35dcb4aae095ec3b10ce18e579",
+          "actual_blob": "59c414e56da6ce35dcb4aae095ec3b10ce18e579"
+        },
+        "examples/room_L_shape_3d_rt.py": {
+          "sha256": "c3a9b0013baa703d20b03b6beb27a03319ab9518665d7dc281f91edffea04def",
+          "bytes": 1611,
+          "git_blob": "5cc7d868dfc750cee8c91e004ccd7bd31ec5031d",
+          "actual_blob": "5cc7d868dfc750cee8c91e004ccd7bd31ec5031d"
+        },
+        "examples/room_complex_wall_materials.py": {
+          "sha256": "1d47d3b252affa778cd6b7f4b844785cd36301bfc8c8e9cfd0eef44b2cadbafa",
+          "bytes": 1992,
+          "git_blob": "41bb1905a1080c1feede5828a59c0f98713a852c",
+          "actual_blob": "41bb1905a1080c1feede5828a59c0f98713a852c"
+        },
+        "examples/room_from_rt60.py": {
+          "sha256": "e32d06be9a8371a1fd973b4fc756879132ceb8bc92b0d302d9f341c5bc96184e",
+          "bytes": 3204,
+          "git_blob": "9ee7ebfc10080837e54c572e3a37500d0c8f4c48",
+          "actual_blob": "9ee7ebfc10080837e54c572e3a37500d0c8f4c48"
+        },
+        "examples/room_from_stl.py": {
+          "sha256": "9accf11a405c5e05d3cc6d4c9ae546ea2d1d7087acaa9d18d392e268a63707e9",
+          "bytes": 2015,
+          "git_blob": "12063d94ff10d2827887351d36f7678cb233a5c7",
+          "actual_blob": "12063d94ff10d2827887351d36f7678cb233a5c7"
+        },
+        "examples/room_shoebox_3d_rt.py": {
+          "sha256": "7812df13c29b1a215541857d11a8657d481884ff6aa4c77fb6276f28be86ca9b",
+          "bytes": 3176,
+          "git_blob": "793c80c257657a5fa6c8a387781dc8905b1614ee",
+          "actual_blob": "793c80c257657a5fa6c8a387781dc8905b1614ee"
+        },
+        "examples/stft_block_processing.py": {
+          "sha256": "f8bb092592662571ee38fa4a05babe5d01ca8d67f450174fa90094d222eea84e",
+          "bytes": 2215,
+          "git_blob": "843656f40993f32c2308e36da07a1251656f1a91",
+          "actual_blob": "843656f40993f32c2308e36da07a1251656f1a91"
+        },
+        "examples/timit_corpus.py": {
+          "sha256": "3fabf257707546bca04546531f41d64ebfa754195cab203a37acc087e0a72971",
+          "bytes": 2231,
+          "git_blob": "e2dbd572637a2d1013e888c93c6664a750b775e7",
+          "actual_blob": "e2dbd572637a2d1013e888c93c6664a750b775e7"
+        },
+        "pyroomacoustics/__init__.py": {
+          "sha256": "0ed7d227ed39cb5a5a6c7994877dfee8855d14e5400f53bd9b3a3c0e3efc5baa",
+          "bytes": 3730,
+          "git_blob": "acaa290e1e6ba46b669eb4191c0038b0d7bff479",
+          "actual_blob": "acaa290e1e6ba46b669eb4191c0038b0d7bff479"
+        },
+        "pyroomacoustics/acoustics.py": {
+          "sha256": "3196254709071ab1061982133f05be94e7da554f2619db98d829203839d7c4d2",
+          "bytes": 36950,
+          "git_blob": "d6becec68609bf9a163cc3e9dac16882a8699db3",
+          "actual_blob": "d6becec68609bf9a163cc3e9dac16882a8699db3"
+        },
+        "pyroomacoustics/adaptive/__init__.py": {
+          "sha256": "493e6d9b7e68ecbdd552385c982ee11c84db7879726cc9857bf2414d6e6cf7a5",
+          "bytes": 3653,
+          "git_blob": "728817785c88e00e5c547a8907b337a478fb081d",
+          "actual_blob": "728817785c88e00e5c547a8907b337a478fb081d"
+        },
+        "pyroomacoustics/adaptive/adaptive_filter.py": {
+          "sha256": "06a4e1df0b4441743535c4b3bd911bb2f460277ad79d4bc7f044f331592288bf",
+          "bytes": 1192,
+          "git_blob": "8bfb307db5a46ccd70626b771040387bee2b4745",
+          "actual_blob": "8bfb307db5a46ccd70626b771040387bee2b4745"
+        },
+        "pyroomacoustics/adaptive/data_structures.py": {
+          "sha256": "1a15289625fd6673c6f2996c368d1b4974e5eba884c0f5670ca9f91a37118dc5",
+          "bytes": 4746,
+          "git_blob": "88c74a89795464fa911892fdb50e6e0aba1b600f",
+          "actual_blob": "88c74a89795464fa911892fdb50e6e0aba1b600f"
+        },
+        "pyroomacoustics/adaptive/lms.py": {
+          "sha256": "77cac8b1373ead313d2bb401ec33167a6234092b71db5c2332e08fd8f00237aa",
+          "bytes": 3037,
+          "git_blob": "dac915b867a02432e24859c6ae793473c645777d",
+          "actual_blob": "dac915b867a02432e24859c6ae793473c645777d"
+        },
+        "pyroomacoustics/adaptive/rls.py": {
+          "sha256": "228ca23a2cb8253f40b645d3c4804cd958b729e6b18babc43db10b1b722bd7ec",
+          "bytes": 5821,
+          "git_blob": "bf5549b790c8c4dea17ebaf294742315da5708c5",
+          "actual_blob": "bf5549b790c8c4dea17ebaf294742315da5708c5"
+        },
+        "pyroomacoustics/adaptive/subband_lms.py": {
+          "sha256": "d3b55f2aacd030df694e901bb9baf5039b11aea98dcb003037a609689252f2ec",
+          "bytes": 3345,
+          "git_blob": "70c0cf9247203ec1b693207f00f8a3715833e469",
+          "actual_blob": "70c0cf9247203ec1b693207f00f8a3715833e469"
+        },
+        "pyroomacoustics/adaptive/tests/test_adaptive.py": {
+          "sha256": "33ebc672bfd2f9c80afd51ed5933676623f41b46bc8ede6bf3cafbd26c69bf89",
+          "bytes": 1854,
+          "git_blob": "24157ba7e802edfbc1b7f5955f0f17bf39cea160",
+          "actual_blob": "24157ba7e802edfbc1b7f5955f0f17bf39cea160"
+        },
+        "pyroomacoustics/adaptive/tests/test_adaptive_frequency.py": {
+          "sha256": "eb89d62ddeb7bafaaaab62d1fb760934c20019ffae16f0d3d99c791567d03927",
+          "bytes": 1967,
+          "git_blob": "7da09a5496b0ee032a0631e43f01b63a7715ba73",
+          "actual_blob": "7da09a5496b0ee032a0631e43f01b63a7715ba73"
+        },
+        "pyroomacoustics/adaptive/util.py": {
+          "sha256": "673a1036f530eb57a9c62c53dd93fc35f1ab5c0c4ac11ba43770710478a3d299",
+          "bytes": 7190,
+          "git_blob": "cea9300528c4d86ce6195364c28606145531ae62",
+          "actual_blob": "cea9300528c4d86ce6195364c28606145531ae62"
+        },
+        "pyroomacoustics/bss/__init__.py": {
+          "sha256": "c730059635ea660cc6ec76b4b32e65556e9295143c6d123bf896d9024dcae290",
+          "bytes": 2479,
+          "git_blob": "194c8f0688485aa3cc7ad2ac9887271b50c6ef48",
+          "actual_blob": "194c8f0688485aa3cc7ad2ac9887271b50c6ef48"
+        },
+        "pyroomacoustics/bss/auxiva.py": {
+          "sha256": "61016f0b27b8b4f1cfecdddb99c3f11f038552695abb299d10b6855d3c24ad6a",
+          "bytes": 8751,
+          "git_blob": "4d3110d17f53ebd4e73345cad9dbe038bad1e8d4",
+          "actual_blob": "4d3110d17f53ebd4e73345cad9dbe038bad1e8d4"
+        },
+        "pyroomacoustics/bss/common.py": {
+          "sha256": "d142a27bdbd80e8a4f0c31e78759c9884f6ed44c0609b89e38902d86e50ee11c",
+          "bytes": 7472,
+          "git_blob": "b076b266910a4b3f5a48022f0fcd90a2c7539837",
+          "actual_blob": "b076b266910a4b3f5a48022f0fcd90a2c7539837"
+        },
+        "pyroomacoustics/bss/fastmnmf.py": {
+          "sha256": "a13c253bc971d4dab7ae8f3d87ab7c309eb6b560b44e2b4c09b7018b50540518",
+          "bytes": 9135,
+          "git_blob": "cbab55d6358d5127264deabd5c3e28b6d2f9956f",
+          "actual_blob": "cbab55d6358d5127264deabd5c3e28b6d2f9956f"
+        },
+        "pyroomacoustics/bss/fastmnmf2.py": {
+          "sha256": "378ff43327cb7968e1ae08e0acf7b7099ad0267e11ae0559cf4d82a18b44093c",
+          "bytes": 7913,
+          "git_blob": "92b6ad7a8d9b6db36cb2005e42ff4619767c8461",
+          "actual_blob": "92b6ad7a8d9b6db36cb2005e42ff4619767c8461"
+        },
+        "pyroomacoustics/bss/ilrma.py": {
+          "sha256": "1bed68575f0bbfc899aade4f2f17f5210004b30ea7f0737b8acba3ccb5bd15b3",
+          "bytes": 6628,
+          "git_blob": "a1c2cfe5fe9acf5129787a143681c42e057a43b6",
+          "actual_blob": "a1c2cfe5fe9acf5129787a143681c42e057a43b6"
+        },
+        "pyroomacoustics/bss/sparseauxiva.py": {
+          "sha256": "870d221caa7feeea056b905b901c095bd1aea6480b58a50c6df0fe61bbb7529d",
+          "bytes": 6645,
+          "git_blob": "d9fb801717d7b73833e055e2f9c4e11d4d28f8fa",
+          "actual_blob": "d9fb801717d7b73833e055e2f9c4e11d4d28f8fa"
+        },
+        "pyroomacoustics/bss/tests/test_bss.py": {
+          "sha256": "62811f50c5845caaa013b724a783b694dafa4e5dbfd3cd4a11ce0c9f7f85b610",
+          "bytes": 5647,
+          "git_blob": "24e0aee5bc19aac4303442f9108273cf1d697f91",
+          "actual_blob": "24e0aee5bc19aac4303442f9108273cf1d697f91"
+        },
+        "pyroomacoustics/bss/tests/test_trinicon.py": {
+          "sha256": "a276e52020267e2654d4baee0986bf11af7b360b7de1a546047e6e4194b73f5b",
+          "bytes": 4930,
+          "git_blob": "f023ff3d28f4bb405cf11f7a1d3305dc384e9e50",
+          "actual_blob": "f023ff3d28f4bb405cf11f7a1d3305dc384e9e50"
+        },
+        "pyroomacoustics/bss/trinicon.py": {
+          "sha256": "4202bb2b0834f982e246db37131c902fb078b533989512f81a6e162742b663fe",
+          "bytes": 6259,
+          "git_blob": "57d981886c6050d89018784c456a9c3cf32c0eca",
+          "actual_blob": "57d981886c6050d89018784c456a9c3cf32c0eca"
+        },
+        "pyroomacoustics/datasets/__init__.py": {
+          "sha256": "b96d0bcda6c32e800286fa8b207c3455dee3630f40f3bdab5bb22ca93657b3aa",
+          "bytes": 4629,
+          "git_blob": "6165a503390037542fa7b62852be744966671b2d",
+          "actual_blob": "6165a503390037542fa7b62852be744966671b2d"
+        },
+        "pyroomacoustics/datasets/base.py": {
+          "sha256": "b6c6d33eab60e1be2f25fbc10fc68b16a0c792623d0dd16efe7be1a081bcb9a4",
+          "bytes": 8938,
+          "git_blob": "0dfb4d2d74a31644c579fce74040ffc0984089be",
+          "actual_blob": "0dfb4d2d74a31644c579fce74040ffc0984089be"
+        },
+        "pyroomacoustics/datasets/cmu_arctic.py": {
+          "sha256": "e1bdb8ac9d539039c181e9da24666214aaae283bfcf1c3a1c1094b7f460e14de",
+          "bytes": 10429,
+          "git_blob": "f9836197860a5ccce988a01cb31bc1c1fc56cea7",
+          "actual_blob": "f9836197860a5ccce988a01cb31bc1c1fc56cea7"
+        },
+        "pyroomacoustics/datasets/google_speech_commands.py": {
+          "sha256": "a50b4fda483d8aee9dd762d81451d756c5a1a02a030638e6c455717b8b4b4e39",
+          "bytes": 7531,
+          "git_blob": "5d7bb3eb0b19609deea3f65a26c086f3a480bc73",
+          "actual_blob": "5d7bb3eb0b19609deea3f65a26c086f3a480bc73"
+        },
+        "pyroomacoustics/datasets/sofa.py": {
+          "sha256": "aa74fd982482f95835542cf790186f6aead6a9d8f367ef0ef94aa6a40a18f267",
+          "bytes": 8643,
+          "git_blob": "6e2594b0966c298c9631a3b22287dff415cce8df",
+          "actual_blob": "6e2594b0966c298c9631a3b22287dff415cce8df"
+        },
+        "pyroomacoustics/datasets/tests/test_corpus_base.py": {
+          "sha256": "63affb24f20f46bd1ee5287dec4af34c95a07f3024e4a7239b944add36315a03",
+          "bytes": 3104,
+          "git_blob": "b49a7b278201671e5cfab9a219e84645a2e46432",
+          "actual_blob": "b49a7b278201671e5cfab9a219e84645a2e46432"
+        },
+        "pyroomacoustics/datasets/tests/test_download_uncompress.py": {
+          "sha256": "31f8624c332848e218b06ddf951da4ac5d89dcf6fa618cdb69f1bcc92294f3f5",
+          "bytes": 453,
+          "git_blob": "9d683d0b7ce5f7f863ce3a2f8a5e15365bed5f1b",
+          "actual_blob": "9d683d0b7ce5f7f863ce3a2f8a5e15365bed5f1b"
+        },
+        "pyroomacoustics/datasets/timit.py": {
+          "sha256": "e95f97ec5e1c22f20242557783ce794bee72af3eaaf042bc6f3d10d27a02e90a",
+          "bytes": 15582,
+          "git_blob": "2e8dc7d7a23fbcb1ad2b7fc0e0848a9e812aa8bb",
+          "actual_blob": "2e8dc7d7a23fbcb1ad2b7fc0e0848a9e812aa8bb"
+        },
+        "pyroomacoustics/datasets/utils.py": {
+          "sha256": "e83a2db4a72399f91b1eb0a241507a2a37472de712c89e0945bdd22d1f486aa1",
+          "bytes": 5042,
+          "git_blob": "57a958ba75fd79824d12a28f5848f38ccfdcf409",
+          "actual_blob": "57a958ba75fd79824d12a28f5848f38ccfdcf409"
+        },
+        "pyroomacoustics/denoise/__init__.py": {
+          "sha256": "f4466eb401e587b1fabbf96d711fd9ca1d048d99269aa53bec8fdd8728b055f9",
+          "bytes": 1165,
+          "git_blob": "789d6cc09750d3ead0af56e97125918322e3af91",
+          "actual_blob": "789d6cc09750d3ead0af56e97125918322e3af91"
+        },
+        "pyroomacoustics/denoise/iterative_wiener.py": {
+          "sha256": "4f35175752807b18a51796f774ef3695d78ad42d3dbd9ec605bcd4c5629f2bf8",
+          "bytes": 15509,
+          "git_blob": "e40b474c37f9365aa21c0c8863725d6d4fc3360e",
+          "actual_blob": "e40b474c37f9365aa21c0c8863725d6d4fc3360e"
+        },
+        "pyroomacoustics/denoise/spectral_subtraction.py": {
+          "sha256": "6c634c11293c485ae9e3bcde033e97cd2a5ef517ab48b2a52ef1fc7665ae915c",
+          "bytes": 8000,
+          "git_blob": "edae40556486180a07cd181cff6121535c60473b",
+          "actual_blob": "edae40556486180a07cd181cff6121535c60473b"
+        },
+        "pyroomacoustics/denoise/subspace.py": {
+          "sha256": "f364f9776daf9b6ff92e52de1c38ce67457c8da1d1087c0a6018a90654a36413",
+          "bytes": 11765,
+          "git_blob": "ddd1b51e9e368606ff5f7dd769fd0db079dc1d4d",
+          "actual_blob": "ddd1b51e9e368606ff5f7dd769fd0db079dc1d4d"
+        },
+        "pyroomacoustics/denoise/tests/test_iterative_wiener.py": {
+          "sha256": "5b0cd796101be94fce4f3c8770c97234ff6a51a7580aceedcba774c8b16c0099",
+          "bytes": 999,
+          "git_blob": "60f466970a8b02c73dc0698991e76a2f5ce54f37",
+          "actual_blob": "60f466970a8b02c73dc0698991e76a2f5ce54f37"
+        },
+        "pyroomacoustics/denoise/tests/test_subspace.py": {
+          "sha256": "05ca8a000439822000f68a55bae8554f32e8e668606143f711dd19d96567a57f",
+          "bytes": 2973,
+          "git_blob": "77bb405777b3e5cde19d8c5f96c40435175e8041",
+          "actual_blob": "77bb405777b3e5cde19d8c5f96c40435175e8041"
+        },
+        "pyroomacoustics/directivities/__init__.py": {
+          "sha256": "b568046366fbc7fd899b9c4e2995d0239b4c7ed53052c8e97ff1498558382866",
+          "bytes": 4594,
+          "git_blob": "3656746d837f50006163f2279835516b3956000b",
+          "actual_blob": "3656746d837f50006163f2279835516b3956000b"
+        },
+        "pyroomacoustics/directivities/analytic.py": {
+          "sha256": "ad73684fa88c0f7df1581adaea5740801f0b850942f8ceaf3d494fb204c17e2e",
+          "bytes": 18910,
+          "git_blob": "5f52dcf886534aa799a0b6f7867d138b6e76626c",
+          "actual_blob": "5f52dcf886534aa799a0b6f7867d138b6e76626c"
+        },
+        "pyroomacoustics/directivities/base.py": {
+          "sha256": "16bfd3ced040bf7283380b0e4bed1a667c402127dc575b82b53d130b3804ea77",
+          "bytes": 7185,
+          "git_blob": "14bca9e37a2eaeed9dd68dc16e1a8299fcd20b3a",
+          "actual_blob": "14bca9e37a2eaeed9dd68dc16e1a8299fcd20b3a"
+        },
+        "pyroomacoustics/directivities/direction.py": {
+          "sha256": "e0d9b46913129857c85b23a1003695117e6388f60aa07731cebc5f5626412bb6",
+          "bytes": 7780,
+          "git_blob": "16780e878d86ba6691b3ee25f1d87ad4e4c999d4",
+          "actual_blob": "16780e878d86ba6691b3ee25f1d87ad4e4c999d4"
+        },
+        "pyroomacoustics/directivities/harmonics.py": {
+          "sha256": "7e741e16135f54f8cd4288ddaa5e29e24306d2fa546c5287031ac2a2fdfdbc80",
+          "bytes": 6088,
+          "git_blob": "bd5f6be599a8ba53bc2d7e51372bb36b5765b4b6",
+          "actual_blob": "bd5f6be599a8ba53bc2d7e51372bb36b5765b4b6"
+        },
+        "pyroomacoustics/directivities/histogram.py": {
+          "sha256": "3e4c6503f0c9147004d5bffd1b82ef7e7eab6745a52b22424806b13b8330ce6c",
+          "bytes": 3881,
+          "git_blob": "e24f6f2a52559ce18b9a6800ff7dfb6c3b72480c",
+          "actual_blob": "e24f6f2a52559ce18b9a6800ff7dfb6c3b72480c"
+        },
+        "pyroomacoustics/directivities/integration.py": {
+          "sha256": "ebd8b722302efd53a0f501761809872cf7515a19bdab137098d9009586b9f9d6",
+          "bytes": 5437,
+          "git_blob": "7aab525067798fdd2a74489ee48b996d63818b08",
+          "actual_blob": "7aab525067798fdd2a74489ee48b996d63818b08"
+        },
+        "pyroomacoustics/directivities/interp.py": {
+          "sha256": "9ba15bcb5176e5288d54a1fa2c1497678e82a0306d334e6f843dd75f38f7878b",
+          "bytes": 8312,
+          "git_blob": "c0809532002ce219b2625c56ea69948b5781b259",
+          "actual_blob": "c0809532002ce219b2625c56ea69948b5781b259"
+        },
+        "pyroomacoustics/directivities/measured.py": {
+          "sha256": "8571a9627c1330c21fde02199f87249ca588f19ac1a52dd12aa1f87d7c8cdb1e",
+          "bytes": 20965,
+          "git_blob": "894bd6eb21b604d423936bd598d1a044441b8654",
+          "actual_blob": "894bd6eb21b604d423936bd598d1a044441b8654"
+        },
+        "pyroomacoustics/directivities/sofa.py": {
+          "sha256": "adc03c4487937a04e4bce571104c963a1d91660448f641aed313a250cc2ac039",
+          "bytes": 11711,
+          "git_blob": "2f074b1c31f93b19d7ccb6f98a1d0b5cf3bc2e57",
+          "actual_blob": "2f074b1c31f93b19d7ccb6f98a1d0b5cf3bc2e57"
+        },
+        "pyroomacoustics/directivities/tests/test_cardioid_energy.py": {
+          "sha256": "3fee1ded4d7c87ab2525a86ed7047bcd4df096ff940c025fa53f0d27a1b415fb",
+          "bytes": 1656,
+          "git_blob": "42df2cebd17868e98c60baa6dc757279d1ace6b5",
+          "actual_blob": "42df2cebd17868e98c60baa6dc757279d1ace6b5"
+        },
+        "pyroomacoustics/directivities/tests/test_cardioid_energy_distribution.py": {
+          "sha256": "d9fe5c88010c6080ecbd258a8244acf297e9a10d16784540cc2d81c61a5adb32",
+          "bytes": 2662,
+          "git_blob": "689d2f79f6d8bfba738dabe6cc007530038a92e4",
+          "actual_blob": "689d2f79f6d8bfba738dabe6cc007530038a92e4"
+        },
+        "pyroomacoustics/directivities/tests/test_directive_energy_rt_vs_ism.py": {
+          "sha256": "b18f899580a6369295e68c3d08901c4b4f0189b3eaf2e8fd9addab5c6d9d8f0f",
+          "bytes": 10402,
+          "git_blob": "f3cc3beb592c613f2397d711e42c82a94079adf7",
+          "actual_blob": "f3cc3beb592c613f2397d711e42c82a94079adf7"
+        },
+        "pyroomacoustics/directivities/tests/test_harmonics_directivities.py": {
+          "sha256": "a3412ce491dcfb5469bdd890f447115084607859bfa2c9d2a8694c63da9b3f67",
+          "bytes": 1094,
+          "git_blob": "30ea9cc776f711188cbc5e3a0f8f55b4246a1111",
+          "actual_blob": "30ea9cc776f711188cbc5e3a0f8f55b4246a1111"
+        },
+        "pyroomacoustics/directivities/tests/test_measured_energy_distribution.py": {
+          "sha256": "f98724621c3f9646923266313d8abaa0650a874ef8160965f913a6028a2c19e1",
+          "bytes": 5985,
+          "git_blob": "d98aaddc9d3734fa05328c2f5c70b451d9ff3ec8",
+          "actual_blob": "d98aaddc9d3734fa05328c2f5c70b451d9ff3ec8"
+        },
+        "pyroomacoustics/directivities/tests/test_omni_global_delay.py": {
+          "sha256": "769e52ac8b6d7ee4bf1e7a00e7ab18389ca5fdc0f6d87f29400c65dc3b4438cd",
+          "bytes": 1685,
+          "git_blob": "8230a1ab0ac913fb6dd719491da2a77eab45ab2f",
+          "actual_blob": "8230a1ab0ac913fb6dd719491da2a77eab45ab2f"
+        },
+        "pyroomacoustics/directivities/tests/test_sofa_directivities.py": {
+          "sha256": "2f78538b1212187a1aa9c2aa9407c1203f61ce512d608f1785a26c66c0ccd2b4",
+          "bytes": 21146,
+          "git_blob": "2eaeab1f1b185940dec29b70bda2ca4ad2be6987",
+          "actual_blob": "2eaeab1f1b185940dec29b70bda2ca4ad2be6987"
+        },
+        "pyroomacoustics/directivities/tests/test_source_directivities.py": {
+          "sha256": "10c7eb25acff5bc3ed87443c4ab91b3a4b97aeecbe0188d789bda12554e96e94",
+          "bytes": 1176,
+          "git_blob": "fd8ca3b0efcabec58ee03e19eaa96e9e4367b20a",
+          "actual_blob": "fd8ca3b0efcabec58ee03e19eaa96e9e4367b20a"
+        },
+        "pyroomacoustics/directivities/tests/test_source_directivities_nonshoebox.py": {
+          "sha256": "1a82c70217f7e086c506ccce37c95d33a5066b89d420383731c8da21f0235bd5",
+          "bytes": 2220,
+          "git_blob": "86af8879749dc82f96833e52eac812626fb36edc",
+          "actual_blob": "86af8879749dc82f96833e52eac812626fb36edc"
+        },
+        "pyroomacoustics/directivities/tests/test_source_directivity_flipping.py": {
+          "sha256": "3d2b0cb07cc4a0941492155513fa476f9d6f98e68303c045ffdffd6807f9c2bc",
+          "bytes": 7868,
+          "git_blob": "102e0d3531459f020b2e0e9c14bc2935f0034dcc",
+          "actual_blob": "102e0d3531459f020b2e0e9c14bc2935f0034dcc"
+        },
+        "pyroomacoustics/doa/__init__.py": {
+          "sha256": "1da0ec2510f9a20b6db7b6ad77ffa43d4236a06fe1acb55a432f15f7a5d57aa3",
+          "bytes": 4912,
+          "git_blob": "057d52c67cdb1deeb87c38c3fbe00fdd32b9ec5e",
+          "actual_blob": "057d52c67cdb1deeb87c38c3fbe00fdd32b9ec5e"
+        },
+        "pyroomacoustics/doa/cssm.py": {
+          "sha256": "df467df5b518ecaf508cac25b996c70cdc56ec753b303db960e48e7457e86218",
+          "bytes": 4810,
+          "git_blob": "c40adcdb889a2b708c0db330f4a4438a31ae6d50",
+          "actual_blob": "c40adcdb889a2b708c0db330f4a4438a31ae6d50"
+        },
+        "pyroomacoustics/doa/detect_peaks.py": {
+          "sha256": "daf9bdf65d162b43aac4914296399470b5a51606d7688eb9023b1ad993dad443",
+          "bytes": 6994,
+          "git_blob": "ed3d122008ec55151c51f33bb63ea67aea947622",
+          "actual_blob": "ed3d122008ec55151c51f33bb63ea67aea947622"
+        },
+        "pyroomacoustics/doa/doa.py": {
+          "sha256": "8332e1fc9234ff37613b6cddcae2e4d67dc73f624fb8640dcdd5b5721b6e110c",
+          "bytes": 19459,
+          "git_blob": "132b70cb37651f737fda815f0350500854d0428e",
+          "actual_blob": "132b70cb37651f737fda815f0350500854d0428e"
+        },
+        "pyroomacoustics/doa/frida.py": {
+          "sha256": "ba35b882aa812f92a73203faba521bad4ec2e87c88ecb0d197826680d2d7f9df",
+          "bytes": 9460,
+          "git_blob": "6e51a0e6346627cc771db370119c9c22dac43488",
+          "actual_blob": "6e51a0e6346627cc771db370119c9c22dac43488"
+        },
+        "pyroomacoustics/doa/grid.py": {
+          "sha256": "61babdb6fee8f30e28d26101721ceccd1d0ddf2d5c4f744e77310558741ee1d6",
+          "bytes": 13358,
+          "git_blob": "28013cfa08fec4f28fecc315f9095be03a47b570",
+          "actual_blob": "28013cfa08fec4f28fecc315f9095be03a47b570"
+        },
+        "pyroomacoustics/doa/music.py": {
+          "sha256": "1a51555b04c34bf1cfae0ded621862eada327d83c5466fb6fb36b2d7d9eabd90",
+          "bytes": 6412,
+          "git_blob": "07cf6a6d3857af27f8ce876f21373b3e4a9d85e2",
+          "actual_blob": "07cf6a6d3857af27f8ce876f21373b3e4a9d85e2"
+        },
+        "pyroomacoustics/doa/normmusic.py": {
+          "sha256": "fbaaed8e75104179d22b880c5fda4e7d5afbb43ec42e0f4883910ab219809fa7",
+          "bytes": 1813,
+          "git_blob": "b91a1eb1ccc5b5fcb8fdb347a8f644c98da5cf70",
+          "actual_blob": "b91a1eb1ccc5b5fcb8fdb347a8f644c98da5cf70"
+        },
+        "pyroomacoustics/doa/plotters.py": {
+          "sha256": "c98defbb7eb505fffe10b068275cf81bf933823ccacf4c19068c15bd730275d7",
+          "bytes": 16261,
+          "git_blob": "764f3d24967b1ee7ed5624d9515b905a3c6f72c1",
+          "actual_blob": "764f3d24967b1ee7ed5624d9515b905a3c6f72c1"
+        },
+        "pyroomacoustics/doa/srp.py": {
+          "sha256": "2ffd37c4c681a31ea13d6d3cdecf3b5b7f110c4e440c0a23951eea90617f4a0e",
+          "bytes": 4411,
+          "git_blob": "7bc8438e4f610d4774549ee69d414ce358e6e78a",
+          "actual_blob": "7bc8438e4f610d4774549ee69d414ce358e6e78a"
+        },
+        "pyroomacoustics/doa/tests/test_doa.py": {
+          "sha256": "8ec3719a8095d2316994e0c508e4f1aaf10ec5f6fe6464d17e0dc4945e641b1d",
+          "bytes": 4238,
+          "git_blob": "dfd9903b1be6ccafc711ac6d37513fa8208f6670",
+          "actual_blob": "dfd9903b1be6ccafc711ac6d37513fa8208f6670"
+        },
+        "pyroomacoustics/doa/tests/test_grid.py": {
+          "sha256": "a564688cf85d9779e4bc0490950a3be5d9ef799999b79a0c6022cd12f9167363",
+          "bytes": 2591,
+          "git_blob": "a46f31d48f20de9263a8a8e5ed9489ddc0ea7543",
+          "actual_blob": "a46f31d48f20de9263a8a8e5ed9489ddc0ea7543"
+        },
+        "pyroomacoustics/doa/tests/test_utils.py": {
+          "sha256": "c7b63e5038b92a0f392807d540341ce6c4141266f1607c3f5c5e5f4a9057637b",
+          "bytes": 782,
+          "git_blob": "856211b8d516d058f6dc0ed3f26be06fb1401ace",
+          "actual_blob": "856211b8d516d058f6dc0ed3f26be06fb1401ace"
+        },
+        "pyroomacoustics/doa/tools_fri_doa_plane.py": {
+          "sha256": "7dd4391abd3d195fb37274a8362d76b668dcb5dbc07dbb75e970791ead9ee86a",
+          "bytes": 69505,
+          "git_blob": "255685b4d62ae60225cde0539058cab8eac5e188",
+          "actual_blob": "255685b4d62ae60225cde0539058cab8eac5e188"
+        },
+        "pyroomacoustics/doa/tops.py": {
+          "sha256": "815fdd063c5afb481b8181882b86f9901a22461dd141d94f55b211a7456d4a25",
+          "bytes": 4339,
+          "git_blob": "7a9eb0c472ef49b9c807ea2069bfcbfa4c925d27",
+          "actual_blob": "7a9eb0c472ef49b9c807ea2069bfcbfa4c925d27"
+        },
+        "pyroomacoustics/doa/utils.py": {
+          "sha256": "cb6e286bb2d29045f1dc623e0634257af4e2fd021a3007124d8314a35279226e",
+          "bytes": 7409,
+          "git_blob": "0ff9d1493fb5e4fc9665bc2d0978f7d29ba2ef4d",
+          "actual_blob": "0ff9d1493fb5e4fc9665bc2d0978f7d29ba2ef4d"
+        },
+        "pyroomacoustics/doa/waves.py": {
+          "sha256": "08eeecfe5f402689a11dcda4e051c72963f6387ab0cd7236a7751edc02d659c3",
+          "bytes": 4707,
+          "git_blob": "e05102627e0c53486e88b07b1566fee6ea16ca0e",
+          "actual_blob": "e05102627e0c53486e88b07b1566fee6ea16ca0e"
+        },
+        "pyroomacoustics/experimental/__init__.py": {
+          "sha256": "669a66e23fadf1a0ab6ebbc98f8c587a7f110a8daba2feee62d13d179b2d8093",
+          "bytes": 636,
+          "git_blob": "74b76607074667bd0524521ccc20c25f7c836049",
+          "actual_blob": "74b76607074667bd0524521ccc20c25f7c836049"
+        },
+        "pyroomacoustics/experimental/deconvolution.py": {
+          "sha256": "c1a0d576e39d24d6bb7375aee2b201b03eab6c4dd94ddd0959b36d7194c8e78f",
+          "bytes": 3092,
+          "git_blob": "3d457ab22c5126f22c18818f55c5a619c3a07085",
+          "actual_blob": "3d457ab22c5126f22c18818f55c5a619c3a07085"
+        },
+        "pyroomacoustics/experimental/delay_calibration.py": {
+          "sha256": "5a8860c31ab0110afc800fc744ec2668ee1a233f6d667f3ccc714bddcac05307",
+          "bytes": 3600,
+          "git_blob": "839637adbb773b3f7bd32901192fe8b6c05edb3c",
+          "actual_blob": "839637adbb773b3f7bd32901192fe8b6c05edb3c"
+        },
+        "pyroomacoustics/experimental/localization.py": {
+          "sha256": "409f8c442c2baafeb50277cd5ad09de5c69ec6b0000ac8d118ae7673fec84864",
+          "bytes": 5586,
+          "git_blob": "e2485b2cb4398f478f12cce2d87d460c3f69735b",
+          "actual_blob": "e2485b2cb4398f478f12cce2d87d460c3f69735b"
+        },
+        "pyroomacoustics/experimental/measure_ir.py": {
+          "sha256": "75d5abbcd81d5d49afff2ec051c9aa754f4751b8f0345bdace91b8dcde29cc3f",
+          "bytes": 9727,
+          "git_blob": "b598a832c093228426fbb63285e2177c574c857f",
+          "actual_blob": "b598a832c093228426fbb63285e2177c574c857f"
+        },
+        "pyroomacoustics/experimental/physics.py": {
+          "sha256": "d6a32527d4fdd422cb9676cc9affc4af88ec3757e00dced4ed4a797c39de4706",
+          "bytes": 397,
+          "git_blob": "165eeb0db93dc37cbb59f09f10ac18b3929d9a6a",
+          "actual_blob": "165eeb0db93dc37cbb59f09f10ac18b3929d9a6a"
+        },
+        "pyroomacoustics/experimental/point_cloud.py": {
+          "sha256": "7a95fc9b76a00c441cdbc3f8a57ede8d549f161fadaf661cf2f1485a00b2063d",
+          "bytes": 12719,
+          "git_blob": "ec25e03f397c2eb8348fe7dfc58bb1b873c4dda0",
+          "actual_blob": "ec25e03f397c2eb8348fe7dfc58bb1b873c4dda0"
+        },
+        "pyroomacoustics/experimental/rt60.py": {
+          "sha256": "c066a78677371003818123efe3b8e1a7dbd75c8a21de6404ab94ea95c0e2c1f3",
+          "bytes": 6673,
+          "git_blob": "6a3162e2e4900a8799ab2b76a1d38373e5f889d0",
+          "actual_blob": "6a3162e2e4900a8799ab2b76a1d38373e5f889d0"
+        },
+        "pyroomacoustics/experimental/signals.py": {
+          "sha256": "5b767d283794be3cc55d5cc67727a3ba6f685217f8767f04f63092e38f5614b6",
+          "bytes": 2800,
+          "git_blob": "243591101d2001bd83a955d2544cf805eb1cf510",
+          "actual_blob": "243591101d2001bd83a955d2544cf805eb1cf510"
+        },
+        "pyroomacoustics/experimental/tests/test_deconvolution.py": {
+          "sha256": "bf5032492ad2f5b2539587cf514d65eb7becc87165ac4dec576fd2eadbc542ed",
+          "bytes": 2414,
+          "git_blob": "c6bed504e3717902a3f10546b6662e6be4494735",
+          "actual_blob": "c6bed504e3717902a3f10546b6662e6be4494735"
+        },
+        "pyroomacoustics/experimental/tests/test_measure_rt60.py": {
+          "sha256": "abe726eed3d54442e1f55b81516d83782b23e4496723a827e77e692a0f6b1252",
+          "bytes": 2352,
+          "git_blob": "05a825769207ac5854ae9e5cccb891508f387204",
+          "actual_blob": "05a825769207ac5854ae9e5cccb891508f387204"
+        },
+        "pyroomacoustics/metrics.py": {
+          "sha256": "392ac03810a66bbaea52d13ae7b910e7cc7b8cad278bb64a5ea82a3aaee45480",
+          "bytes": 9597,
+          "git_blob": "0f0b05c070da8a54d5919caac7df8bf898640ed2",
+          "actual_blob": "0f0b05c070da8a54d5919caac7df8bf898640ed2"
+        },
+        "pyroomacoustics/multirate.py": {
+          "sha256": "10faf630c80ba72cd904a889e4894a59a2fc5956070a264ceadcb280bebd57bc",
+          "bytes": 2861,
+          "git_blob": "4edb237b3a3275eddb0b032363573cebaef53aa4",
+          "actual_blob": "4edb237b3a3275eddb0b032363573cebaef53aa4"
+        },
+        "pyroomacoustics/parameters.py": {
+          "sha256": "dac6389cdaf949659cb2d8dbe01655593f423b35492bc857a43c4af9b24b4ed2",
+          "bytes": 21926,
+          "git_blob": "e36853133fc48fad36f2813e0f9eeda05a5a18b7",
+          "actual_blob": "e36853133fc48fad36f2813e0f9eeda05a5a18b7"
+        },
+        "pyroomacoustics/phase/__init__.py": {
+          "sha256": "15eb01f9dadb23995d8ebac21e9a139a9260973314bd978b35d1bdb4101e15cd",
+          "bytes": 535,
+          "git_blob": "49cb25905f834f14f88fbfb2a948fcf47ebc7948",
+          "actual_blob": "49cb25905f834f14f88fbfb2a948fcf47ebc7948"
+        },
+        "pyroomacoustics/phase/gl.py": {
+          "sha256": "24b7c8fde9b8317f5f91c2c6f16fe82a0e97e4d7f21660ee2a2b5a1219274217",
+          "bytes": 6191,
+          "git_blob": "e31d02a4712246f0e357d258d6891e8d21d8be52",
+          "actual_blob": "e31d02a4712246f0e357d258d6891e8d21d8be52"
+        },
+        "pyroomacoustics/phase/tests/test_gl.py": {
+          "sha256": "efefceaccaa05e86be222dcbc2b9c4dc22196ef62842ad27c13702da6ff090f1",
+          "bytes": 2112,
+          "git_blob": "91d776997aa9d1221492deed1aca38cf46e2d645",
+          "actual_blob": "91d776997aa9d1221492deed1aca38cf46e2d645"
+        },
+        "pyroomacoustics/random/__init__.py": {
+          "sha256": "ceadb1a48a89b5823d3219fb7b230add8bcf539be179aac68f4a891e18ddd830",
+          "bytes": 1522,
+          "git_blob": "7bce0453205e6efb3839be6ca0a53a4281d6f42c",
+          "actual_blob": "7bce0453205e6efb3839be6ca0a53a4281d6f42c"
+        },
+        "pyroomacoustics/random/distributions.py": {
+          "sha256": "8143d0b755ee480fcc005c99b3b742da451987211f2f20f1516f90a9a9d617b6",
+          "bytes": 3760,
+          "git_blob": "30a5334131aca3aff2cbacd63b85fab12069a06d",
+          "actual_blob": "30a5334131aca3aff2cbacd63b85fab12069a06d"
+        },
+        "pyroomacoustics/random/generator.py": {
+          "sha256": "ec2913d582cd238e0406c69a3de328baddc35845e728b689d436f6b992db7b85",
+          "bytes": 2789,
+          "git_blob": "efc95938572ebd38c2c1e806349b28e92d1bc1b1",
+          "actual_blob": "efc95938572ebd38c2c1e806349b28e92d1bc1b1"
+        },
+        "pyroomacoustics/random/sampler.py": {
+          "sha256": "16721080251af485a13d1728c39137e50c60c018c2f86d48d1b6b10915d67f48",
+          "bytes": 2206,
+          "git_blob": "9c7b6b79a96dd1636855dbf157326d61fd20dd19",
+          "actual_blob": "9c7b6b79a96dd1636855dbf157326d61fd20dd19"
+        },
+        "pyroomacoustics/random/spherical.py": {
+          "sha256": "215b83462ec582dd0664971c751fa8e21b62473521cd2e2cf2ea8d99ed98f38d",
+          "bytes": 3209,
+          "git_blob": "e3cd920fbdb33ec9f03050c5d99b9fbd7f079553",
+          "actual_blob": "e3cd920fbdb33ec9f03050c5d99b9fbd7f079553"
+        },
+        "pyroomacoustics/random/tests/test_distributions.py": {
+          "sha256": "f0e66c8559f52b026e54c6600b037a326f6fab1c54b49f2a04c178c1ebddb70b",
+          "bytes": 2006,
+          "git_blob": "2abbc5b828126d457099aea5c42c91f91dbdc5bf",
+          "actual_blob": "2abbc5b828126d457099aea5c42c91f91dbdc5bf"
+        },
+        "pyroomacoustics/random/tests/test_rejection.py": {
+          "sha256": "ad9c3f8097dadcb4851e2ceae234b28b2150c189c35258ab0a6e24642712c70a",
+          "bytes": 2718,
+          "git_blob": "3c3d7f6c52f778254d95dcf3e7b7a00b158026d0",
+          "actual_blob": "3c3d7f6c52f778254d95dcf3e7b7a00b158026d0"
+        },
+        "pyroomacoustics/random/tests/test_spherical.py": {
+          "sha256": "f1439d1780f28dc774b74a10e5dfa32b7223a027f6718836af3af6eb5a3684d3",
+          "bytes": 1194,
+          "git_blob": "4e9991a04f4ae01e6eded872cd1077abaf6b8e8f",
+          "actual_blob": "4e9991a04f4ae01e6eded872cd1077abaf6b8e8f"
+        },
+        "pyroomacoustics/recognition.py": {
+          "sha256": "efd873824f7cddc9db8bff2ebdc1e6468d26392d80c86e065553afa7fcadb4a8",
+          "bytes": 12713,
+          "git_blob": "d2b68e0e072790c99799f8a291c4478093be7d74",
+          "actual_blob": "d2b68e0e072790c99799f8a291c4478093be7d74"
+        },
+        "pyroomacoustics/room.py": {
+          "sha256": "b4189f582459811f8dbbf3885882e115db60b7b48b4ca0a3672dbef39118e4dc",
+          "bytes": 119988,
+          "git_blob": "dc0b446c5474afc37ccef73aa36a9a01d91b6847",
+          "actual_blob": "dc0b446c5474afc37ccef73aa36a9a01d91b6847"
+        },
+        "pyroomacoustics/simulation/__init__.py": {
+          "sha256": "59aedc3ee41abb4fc687bc1f789e463f4a8472240f76d922e37edc9453eb38ce",
+          "bytes": 64,
+          "git_blob": "ede5538c188c31053bb42774bc13654a81e6cef7",
+          "actual_blob": "ede5538c188c31053bb42774bc13654a81e6cef7"
+        },
+        "pyroomacoustics/simulation/ism.py": {
+          "sha256": "d3fab7322346e3b95d2d4f357b100af83f2eef3c98af3cbe53dd93454d297bca",
+          "bytes": 9470,
+          "git_blob": "ca7c135c4981cc34ae86620a82d2107db7e254ba",
+          "actual_blob": "ca7c135c4981cc34ae86620a82d2107db7e254ba"
+        },
+        "pyroomacoustics/simulation/rt.py": {
+          "sha256": "8229f07ecda05bf8a0d3ad10f582db017b07d62f14984424af2675512ac10450",
+          "bytes": 10414,
+          "git_blob": "685091cb27dd5be069cffe477e30cd9c393b156e",
+          "actual_blob": "685091cb27dd5be069cffe477e30cd9c393b156e"
+        },
+        "pyroomacoustics/sync.py": {
+          "sha256": "b2b37d3a575848ea16cc72ab3e7ee53855e8b781168d832ccb5025ade3525abb",
+          "bytes": 2989,
+          "git_blob": "61ce3bd797c05e8070aaf05e20810b11f404c6a4",
+          "actual_blob": "61ce3bd797c05e8070aaf05e20810b11f404c6a4"
+        },
+        "pyroomacoustics/tests/test_air_absorption.py": {
+          "sha256": "98c95b9bde44da6d1277fded1f48fd906337a247df0da0b2135be259f6e7f158",
+          "bytes": 933,
+          "git_blob": "38cea712c5babab32e484755c77ea2d7fef4f2dc",
+          "actual_blob": "38cea712c5babab32e484755c77ea2d7fef4f2dc"
+        },
+        "pyroomacoustics/tests/test_anechoic_room.py": {
+          "sha256": "c0c11b108bdf1ecff263db5469a45d1d3dc6d48d1c0e1240248c66149e081196",
+          "bytes": 2384,
+          "git_blob": "431f6be5b4026071050f665ecfd736c75d009d70",
+          "actual_blob": "431f6be5b4026071050f665ecfd736c75d009d70"
+        },
+        "pyroomacoustics/tests/test_angle_function.py": {
+          "sha256": "25f14424526b198d2f11ecac0cebd0e8cfe7b79d83089509fb087f4cdd1bf858",
+          "bytes": 2349,
+          "git_blob": "2b691f357a5738169d1bbb7bbf8ebbb4f4dc653e",
+          "actual_blob": "2b691f357a5738169d1bbb7bbf8ebbb4f4dc653e"
+        },
+        "pyroomacoustics/tests/test_autocorr.py": {
+          "sha256": "af421573e362f0699dabeb1e0e1a423fe3669aef6864c8a6d929640b00126344",
+          "bytes": 2948,
+          "git_blob": "bfffd16b0aca66546a0cc9090bbfe0bcf3959c7a",
+          "actual_blob": "bfffd16b0aca66546a0cc9090bbfe0bcf3959c7a"
+        },
+        "pyroomacoustics/tests/test_bandpass_filterbank.py": {
+          "sha256": "20e2388501c188130fccf26c6b5741edbc04d2b0d1869161768dc83cfd51b893",
+          "bytes": 2301,
+          "git_blob": "1522d2bbd7b2aef94698374ac8c2633a04090d8c",
+          "actual_blob": "1522d2bbd7b2aef94698374ac8c2633a04090d8c"
+        },
+        "pyroomacoustics/tests/test_build_rir.py": {
+          "sha256": "06fe7ee40840b5dfa7590091ad38c44e302d2bf2100b7c937626a840a78236b7",
+          "bytes": 8262,
+          "git_blob": "85503b51814da890167a1cb6f4255064a34d90b7",
+          "actual_blob": "85503b51814da890167a1cb6f4255064a34d90b7"
+        },
+        "pyroomacoustics/tests/test_create_noisy_signal.py": {
+          "sha256": "3841767ba595881bb3a38bd6c850b5d7c9023c2cdd82dc769502304c7709b0f1",
+          "bytes": 1168,
+          "git_blob": "62da9972d89218644a02fcf996ce0773f053e213",
+          "actual_blob": "62da9972d89218644a02fcf996ce0773f053e213"
+        },
+        "pyroomacoustics/tests/test_from_corners_extrude.py": {
+          "sha256": "a857db7ca286f1c10d713fd2b5a817209ed39b3f4d45b3e7cf14df7a43fb83af",
+          "bytes": 2315,
+          "git_blob": "a816f062cfac74f8a14e7bedb71fea81a1fcc026",
+          "actual_blob": "a816f062cfac74f8a14e7bedb71fea81a1fcc026"
+        },
+        "pyroomacoustics/tests/test_hpf.py": {
+          "sha256": "e194419b830142a40e6738a1efb194fe8ee53009917e35f4f8a3f5a8a6e06af4",
+          "bytes": 1069,
+          "git_blob": "ea472d0c1d443b2ebbb15ad63bfc51afb858623e",
+          "actual_blob": "ea472d0c1d443b2ebbb15ad63bfc51afb858623e"
+        },
+        "pyroomacoustics/tests/test_issue_115.py": {
+          "sha256": "290420ccc579fd0d5ea0478629a498ccd2b956e658b2512a605f45523fa30188",
+          "bytes": 2504,
+          "git_blob": "a2accfb2efe0344bb4db46aaa04fe80e48f92eaf",
+          "actual_blob": "a2accfb2efe0344bb4db46aaa04fe80e48f92eaf"
+        },
+        "pyroomacoustics/tests/test_issue_162.py": {
+          "sha256": "657e8344af982b104bef95e885e92a7203c1e2c2f8de180954bac383144b2f30",
+          "bytes": 727,
+          "git_blob": "66e6479d0691e117ad12783433701ec6dee0461e",
+          "actual_blob": "66e6479d0691e117ad12783433701ec6dee0461e"
+        },
+        "pyroomacoustics/tests/test_issue_22.py": {
+          "sha256": "e98f524092a3ef2e74f13181caec58976005b1ffdac8dba10d65ecc452caf183",
+          "bytes": 1381,
+          "git_blob": "31df1b8acc3c22df592fdcde2de06a0f274cc6eb",
+          "actual_blob": "31df1b8acc3c22df592fdcde2de06a0f274cc6eb"
+        },
+        "pyroomacoustics/tests/test_issue_235.py": {
+          "sha256": "ab1302806417c0121e9b0e4a5fd997391bd363830e59665f5d53ae8785728fe2",
+          "bytes": 127,
+          "git_blob": "da26a38028546de9c0736d13e8de7d40397b3eae",
+          "actual_blob": "da26a38028546de9c0736d13e8de7d40397b3eae"
+        },
+        "pyroomacoustics/tests/test_issue_236.py": {
+          "sha256": "968a9ab2d5e987e4f255648ea48cc7de44f04043712f4d28891c71b3107ef080",
+          "bytes": 1749,
+          "git_blob": "271d277bac90ec63d832d2c72c39deb49442ca8f",
+          "actual_blob": "271d277bac90ec63d832d2c72c39deb49442ca8f"
+        },
+        "pyroomacoustics/tests/test_issue_313.py": {
+          "sha256": "1ab7ac380ea55a12c97d3a832c6492ed8d25cdbd0b6e293767fbbb6539e73d2e",
+          "bytes": 1306,
+          "git_blob": "0eb48efe0cbfb93ebf49a1135a9ef7e18dd39ea0",
+          "actual_blob": "0eb48efe0cbfb93ebf49a1135a9ef7e18dd39ea0"
+        },
+        "pyroomacoustics/tests/test_issue_348.py": {
+          "sha256": "b113c2a974c49a2ce53e84c8bdd891bf401fecffe6225fe081a23242e0213bfb",
+          "bytes": 505,
+          "git_blob": "0c76c368aeec9f00dfa2cad570555f85bd1a86af",
+          "actual_blob": "0c76c368aeec9f00dfa2cad570555f85bd1a86af"
+        },
+        "pyroomacoustics/tests/test_issue_353.py": {
+          "sha256": "efec277ca9497f89f8147ceecbc83912f41fe93ca91ee95ddc4a84d513825af4",
+          "bytes": 3750,
+          "git_blob": "db3b4dc985659f383a190576c797b69c3f6b1e47",
+          "actual_blob": "db3b4dc985659f383a190576c797b69c3f6b1e47"
+        },
+        "pyroomacoustics/tests/test_issue_69.py": {
+          "sha256": "5b888a0fbb9b647a5d064e48c3236774c254ccf15f7d6b92dad356cf91cc1ae3",
+          "bytes": 1749,
+          "git_blob": "a14471be96f284092bcba83504ff06cba5b9f378",
+          "actual_blob": "a14471be96f284092bcba83504ff06cba5b9f378"
+        },
+        "pyroomacoustics/tests/test_issue_87.py": {
+          "sha256": "15d8c9ed100f7ff5a92f325d7a34670d7caee0cb62a307e68e282e4b585c6df5",
+          "bytes": 859,
+          "git_blob": "7553843cf51a73631fb01ff78043d7a692a1aa25",
+          "actual_blob": "7553843cf51a73631fb01ff78043d7a692a1aa25"
+        },
+        "pyroomacoustics/tests/test_materials.py": {
+          "sha256": "1e6d130c06cee9d2443f8cc55f1422ea84645d79e0dc2207f4b8c07afbda30aa",
+          "bytes": 2741,
+          "git_blob": "a0954c3501c99043e6c11b7c050ac1b33d7aabe2",
+          "actual_blob": "a0954c3501c99043e6c11b7c050ac1b33d7aabe2"
+        },
+        "pyroomacoustics/tests/test_metrics.py": {
+          "sha256": "1cb517167d6f1e0243a958a6cb11c83fadce272fd7c5867a3b9d70ca61c08656",
+          "bytes": 1381,
+          "git_blob": "b0450264893aedeab8adb9818f08f605d599c4af",
+          "actual_blob": "b0450264893aedeab8adb9818f08f605d599c4af"
+        },
+        "pyroomacoustics/tests/test_microphone_array.py": {
+          "sha256": "203ca039e280e6e452dfe13a82eceda0aa41e89f9152b2ac8d7563ace94b0d58",
+          "bytes": 3111,
+          "git_blob": "66e5bbb1c0a3b6fac8179f6ff5aa061507dc48b2",
+          "actual_blob": "66e5bbb1c0a3b6fac8179f6ff5aa061507dc48b2"
+        },
+        "pyroomacoustics/tests/test_octave_bands.py": {
+          "sha256": "8870b7fbb8593e4e6576037a30832b4983e2473b30dfa746b2dec6f3cc3715cd",
+          "bytes": 2845,
+          "git_blob": "1fccff992fa94207874dc110e81cf11ccec27fb6",
+          "actual_blob": "1fccff992fa94207874dc110e81cf11ccec27fb6"
+        },
+        "pyroomacoustics/tests/test_rake_filters.py": {
+          "sha256": "34ba348f23a8e97752554b3db01035116f7412dbc2fd266e1e9f5b7e6c5e010a",
+          "bytes": 1391,
+          "git_blob": "e7a939949c594331911fa4e246c04eab54d3d39c",
+          "actual_blob": "e7a939949c594331911fa4e246c04eab54d3d39c"
+        },
+        "pyroomacoustics/tests/test_random_ism.py": {
+          "sha256": "8c0403f0b4fd96d6d1ffd5a44bc9daf574f879af0f255f25c1ff79d443c1fc6f",
+          "bytes": 1315,
+          "git_blob": "43bc6743433c997a179e206ce73f1d872c979cf6",
+          "actual_blob": "43bc6743433c997a179e206ce73f1d872c979cf6"
+        },
+        "pyroomacoustics/tests/test_resample.py": {
+          "sha256": "5d47fd27beb0ff4631b57caf7a51d884f9cda82a99f3bac4db24adf0371229e9",
+          "bytes": 3074,
+          "git_blob": "ef50a9003dbab4099a0b1354701fbffbf3622f6a",
+          "actual_blob": "ef50a9003dbab4099a0b1354701fbffbf3622f6a"
+        },
+        "pyroomacoustics/tests/test_rir_hpf.py": {
+          "sha256": "f2071c330bfc17ca3cc47c4eb7361a4b407156bba4a94916537df2dc0525d2f8",
+          "bytes": 1121,
+          "git_blob": "d88b879aecc7b2e9a4c800ad642fdc69fd42f841",
+          "actual_blob": "d88b879aecc7b2e9a4c800ad642fdc69fd42f841"
+        },
+        "pyroomacoustics/tests/test_room_add.py": {
+          "sha256": "35c798bd1ab028ac19be5207b233817dd3952b13ea39c4f1cad9ed7d99e03c35",
+          "bytes": 7553,
+          "git_blob": "c56a279673ba57bc9dc34b85056fab398546fa31",
+          "actual_blob": "c56a279673ba57bc9dc34b85056fab398546fa31"
+        },
+        "pyroomacoustics/tests/test_room_is_insided.py": {
+          "sha256": "a5abd5f120f07bf84ae0d7265ffcdddf7e88b8148306cbc3ee49121ef22042dd",
+          "bytes": 2265,
+          "git_blob": "68be33634346526345d3f1236613db34d881815c",
+          "actual_blob": "68be33634346526345d3f1236613db34d881815c"
+        },
+        "pyroomacoustics/tests/test_room_mix.py": {
+          "sha256": "677f3cf8f5735fee1d3182903e0226dfc0e26fce99bef69f58490489eb175a3a",
+          "bytes": 2597,
+          "git_blob": "6cac9989d643341a88e19e18cb39acf09df86c66",
+          "actual_blob": "6cac9989d643341a88e19e18cb39acf09df86c66"
+        },
+        "pyroomacoustics/tests/test_room_plot.py": {
+          "sha256": "a4cf72f70b18a5c1867805c69ede68da42611e794e79ec0d0a0ad98fc78e221b",
+          "bytes": 385,
+          "git_blob": "1456601e4f3647481a3a9f88c6e4ded6d262edc7",
+          "actual_blob": "1456601e4f3647481a3a9f88c6e4ded6d262edc7"
+        },
+        "pyroomacoustics/tests/test_room_scattering_rt60.py": {
+          "sha256": "5dc80a4a706a70b14a7af6c44c92ffab907f442d9111ad30225d2550cd654854",
+          "bytes": 1786,
+          "git_blob": "8f9f18123767cdf0ce937aefda6141759d513607",
+          "actual_blob": "8f9f18123767cdf0ce937aefda6141759d513607"
+        },
+        "pyroomacoustics/tests/test_rt60.py": {
+          "sha256": "f25374c6831e855e8d4d7ae8550b58217322ddbc1507ff3a1008e4f52cd575ad",
+          "bytes": 1730,
+          "git_blob": "bb700ad45024bd1e2e71e46c4eb371d48d66759c",
+          "actual_blob": "bb700ad45024bd1e2e71e46c4eb371d48d66759c"
+        },
+        "pyroomacoustics/tests/test_rt_multiband_energy.py": {
+          "sha256": "1cfcd61a3ba5201e0f70b1f216fc66f166edde876f5adf47400a166caf96d768",
+          "bytes": 9492,
+          "git_blob": "bf8280a7e10b1677979d45992a0a7c7095bd9d8d",
+          "actual_blob": "bf8280a7e10b1677979d45992a0a7c7095bd9d8d"
+        },
+        "pyroomacoustics/tests/test_shoebox_constants.py": {
+          "sha256": "d45e9a07f9942f813d87f9824e8b7f9b4e17b5249dae2542cc32d341d57fc25d",
+          "bytes": 531,
+          "git_blob": "5bbfecdbb8f06d745c9f23cd039887974b99308a",
+          "actual_blob": "5bbfecdbb8f06d745c9f23cd039887974b99308a"
+        },
+        "pyroomacoustics/tests/test_soundsource.py": {
+          "sha256": "c4f5d62b770caf465a9106ff121dd584f2ab01c015d178a9b3d983a301cfaaf4",
+          "bytes": 298,
+          "git_blob": "c8c713d17ab9390f04ca2ea5aeaa56706cf67f29",
+          "actual_blob": "c8c713d17ab9390f04ca2ea5aeaa56706cf67f29"
+        },
+        "pyroomacoustics/tests/test_sync.py": {
+          "sha256": "182b3f2a7233634ed74a73021db0b3270b4bb47277c113133aec4c0ee6e4b3b8",
+          "bytes": 1942,
+          "git_blob": "5ccfce620999c6c727337619532c0dfcbe158567",
+          "actual_blob": "5ccfce620999c6c727337619532c0dfcbe158567"
+        },
+        "pyroomacoustics/tests/test_visibility_shoebox2d.py": {
+          "sha256": "b28383b1506a8e83d79f358a9514a8f9072f4f316f770d5367dd489f02b895d0",
+          "bytes": 3427,
+          "git_blob": "217338e84d88c5fd8fa2a1bdb17602e275a4a73f",
+          "actual_blob": "217338e84d88c5fd8fa2a1bdb17602e275a4a73f"
+        },
+        "pyroomacoustics/tests/test_visibility_shoebox3d.py": {
+          "sha256": "77dfb5a9fc22f09576c32e23e84f202cc85f41cac19cd016e86fe95484667d79",
+          "bytes": 5823,
+          "git_blob": "7732eff69b9db4151a3caa7370cb1f3229050b35",
+          "actual_blob": "7732eff69b9db4151a3caa7370cb1f3229050b35"
+        },
+        "pyroomacoustics/tests/test_visibility_uroom.py": {
+          "sha256": "9227bd361c0efc3ca1208cafa1d71218ce352ed65ac219e7fcd79f5212a07a58",
+          "bytes": 1980,
+          "git_blob": "25fd0585e686173113ff01745e2e10d9012c2401",
+          "actual_blob": "25fd0585e686173113ff01745e2e10d9012c2401"
+        },
+        "pyroomacoustics/tests/test_volume_area.py": {
+          "sha256": "7e17dbfb7045db3c0de52fcfcb5e09bd508bca983ab7415eb194bd285a07caff",
+          "bytes": 1633,
+          "git_blob": "7309b46df7d52828c8cd404602a00214121f0c90",
+          "actual_blob": "7309b46df7d52828c8cd404602a00214121f0c90"
+        },
+        "pyroomacoustics/tests/tests_libroom/test_ccw3p.py": {
+          "sha256": "2057430e8a57d9c911bde6be66211a8fdee8a22d83f90fb90384a1208653bcb8",
+          "bytes": 2393,
+          "git_blob": "b4c492e57f73741277c4ac6b62cc853436da6b26",
+          "actual_blob": "b4c492e57f73741277c4ac6b62cc853436da6b26"
+        },
+        "pyroomacoustics/tests/tests_libroom/test_geometry_routines.py": {
+          "sha256": "62da6a8804dee674fbf27db6933e9cddf7eb7679efd178d3065097826592e4ca",
+          "bytes": 10315,
+          "git_blob": "713464cf69db7bc46f1817c9365c448e3535996d",
+          "actual_blob": "713464cf69db7bc46f1817c9365c448e3535996d"
+        },
+        "pyroomacoustics/tests/tests_libroom/test_is_inside_2d_polygon.py": {
+          "sha256": "23828508ce153eae961279749e09e02a5877b833157ecc1e2cd4a450cd339d91",
+          "bytes": 3377,
+          "git_blob": "3a6a8a634a22ea308b5968deae73cacbe6eba503",
+          "actual_blob": "3a6a8a634a22ea308b5968deae73cacbe6eba503"
+        },
+        "pyroomacoustics/tests/tests_libroom/test_microphone.py": {
+          "sha256": "e5f05a45af1d8a8f9a9b59fb4171cf23f5910a9d28dc266bb20d78de6ccd7f71",
+          "bytes": 2242,
+          "git_blob": "269229a9590f095a9e4b3c15e5acb5f8af79b4ec",
+          "actual_blob": "269229a9590f095a9e4b3c15e5acb5f8af79b4ec"
+        },
+        "pyroomacoustics/tests/tests_libroom/test_ray_energy.py": {
+          "sha256": "b03fb4506aa5b3320da1ab2921c542111e626a84ffe1b51feae83dcc2594a746",
+          "bytes": 6286,
+          "git_blob": "7189c92f337bd416ce8f5eed8ee4ff5d092b51e8",
+          "actual_blob": "7189c92f337bd416ce8f5eed8ee4ff5d092b51e8"
+        },
+        "pyroomacoustics/tests/tests_libroom/test_room_broadcast_n_bands.py": {
+          "sha256": "250f370eee2f9a4ec5ae806f7cd84ed733270491e8941d58c971a38f3fd26fa0",
+          "bytes": 3258,
+          "git_blob": "38fc5f5604c84dd36a98f764c3cea3305e76f701",
+          "actual_blob": "38fc5f5604c84dd36a98f764c3cea3305e76f701"
+        },
+        "pyroomacoustics/tests/tests_libroom/test_room_construct.py": {
+          "sha256": "e03145726de84fc1732778a13304f78b0996e81fc89e9d4762e1174c1a9e3c09",
+          "bytes": 2563,
+          "git_blob": "9e661342fbc06e3c7363e3ff3185a2733a42e756",
+          "actual_blob": "9e661342fbc06e3c7363e3ff3185a2733a42e756"
+        },
+        "pyroomacoustics/tests/tests_libroom/test_room_walls.py": {
+          "sha256": "825a67a3ab09c269102c4d106c0e22b9ad057cf1b926198b121bf2bc8b2baf81",
+          "bytes": 15823,
+          "git_blob": "8e9708f99a4edd45040cde6cd8d181cfd854be67",
+          "actual_blob": "8e9708f99a4edd45040cde6cd8d181cfd854be67"
+        },
+        "pyroomacoustics/tests/tests_libroom/test_sample_lambertian_reflection.py": {
+          "sha256": "6c009f594640f4db2625b380160b91b5382a1b9916eb23fb1e6407b531fd3041",
+          "bytes": 3829,
+          "git_blob": "b358dfad9abe5258685ab5b3856f1a528b51f997",
+          "actual_blob": "b358dfad9abe5258685ab5b3856f1a528b51f997"
+        },
+        "pyroomacoustics/tests/tests_libroom/test_shoebox_simple.py": {
+          "sha256": "6d9e5aa37e42d092fa98e77955a249ae55186e5b72af4357e44fc321e2afc3d1",
+          "bytes": 1481,
+          "git_blob": "af3be64a6833b278bf33c6a094fc286970db41c8",
+          "actual_blob": "af3be64a6833b278bf33c6a094fc286970db41c8"
+        },
+        "pyroomacoustics/tests/tests_libroom/test_wall_construct.py": {
+          "sha256": "263e2e93815a6014257540333f68e82113f0ec66f78200d46f8e2a86073a1cbc",
+          "bytes": 3984,
+          "git_blob": "3e35868be30a9a4a1f1d26ea093ea55ca5564279",
+          "actual_blob": "3e35868be30a9a4a1f1d26ea093ea55ca5564279"
+        },
+        "pyroomacoustics/tests/tests_libroom/test_wall_intersection.py": {
+          "sha256": "156d6f3dda5dc4e11d33df143cc705e7dc77327a810efcfccb03103c94ceec90",
+          "bytes": 11471,
+          "git_blob": "ebd31be664c1456600683184a49b7aab68cb7d4d",
+          "actual_blob": "ebd31be664c1456600683184a49b7aab68cb7d4d"
+        },
+        "pyroomacoustics/tests/tests_libroom/test_wall_side_reflect.py": {
+          "sha256": "ba12dc8fd7a83d1b6ba41414bd384c643ded7f9dc448bd13e0381ef304ebcf0e",
+          "bytes": 5545,
+          "git_blob": "1478376f2dcf4d98833c86970286ff101ae42bc3",
+          "actual_blob": "1478376f2dcf4d98833c86970286ff101ae42bc3"
+        },
+        "pyroomacoustics/transform/__init__.py": {
+          "sha256": "e53b794e0847b07bc20b686009e02b1b32f9bc6db3e9da0cced242d28c8b4c87",
+          "bytes": 560,
+          "git_blob": "e11fb411dba0b442b2082d6355e8251a975888b0",
+          "actual_blob": "e11fb411dba0b442b2082d6355e8251a975888b0"
+        },
+        "pyroomacoustics/transform/dft.py": {
+          "sha256": "218f0710ba15238e5a7e01cca5e568402859f110de91696bf51623e12198d04b",
+          "bytes": 9140,
+          "git_blob": "e67dbed12501ae03c40814e1f21e63cab021497f",
+          "actual_blob": "e67dbed12501ae03c40814e1f21e63cab021497f"
+        },
+        "pyroomacoustics/transform/stft.py": {
+          "sha256": "de7f545d00e4beb532b3bbbae0149a19b92a6140f3408fde1b3fe83e3cd04595",
+          "bytes": 28976,
+          "git_blob": "73dd75f244626fd1b0e20c570f8ecd28c8e9fa18",
+          "actual_blob": "73dd75f244626fd1b0e20c570f8ecd28c8e9fa18"
+        },
+        "pyroomacoustics/transform/tests/test_dft.py": {
+          "sha256": "e7a0f0744c7c073b035a9f43f4f8f1ee0322a9288e061cb9055626604bf98497",
+          "bytes": 4724,
+          "git_blob": "4bca514c86fbca62735a133aee7c523c9f06ded0",
+          "actual_blob": "4bca514c86fbca62735a133aee7c523c9f06ded0"
+        },
+        "pyroomacoustics/transform/tests/test_dft_timing.py": {
+          "sha256": "209822911f47e4889d16f3ddc3391a64e2e33b3c4b1f1c90376f08e63f607a21",
+          "bytes": 2899,
+          "git_blob": "4c2523fd1bda5ce18080337681f6aa7f0e1d772f",
+          "actual_blob": "4c2523fd1bda5ce18080337681f6aa7f0e1d772f"
+        },
+        "pyroomacoustics/transform/tests/test_stft.py": {
+          "sha256": "33ea7cbd5417bb9b6f0d645b9b73ba0c43d83762cad2c386ed942a8865cf3d33",
+          "bytes": 31814,
+          "git_blob": "a44f28f573317626d18b369999e36617f7ec7433",
+          "actual_blob": "a44f28f573317626d18b369999e36617f7ec7433"
+        },
+        "pyroomacoustics/transform/tests/test_stft_oneshot.py": {
+          "sha256": "cee6093e9fb53098bcb08be66638d13977dd93c59f9344316566e841d129ff05",
+          "bytes": 3800,
+          "git_blob": "6471e10e8dba37d713458cf8e125e7e90b4a6815",
+          "actual_blob": "6471e10e8dba37d713458cf8e125e7e90b4a6815"
+        },
+        "pyroomacoustics/transform/tests/test_stft_timing.py": {
+          "sha256": "70938550d9bbfacee868fc4b03cbf78dd5483d410dc4b7643e5c03311d0d771f",
+          "bytes": 3131,
+          "git_blob": "c1e74d53a6a4bb593c376a304385d2e3130268a9",
+          "actual_blob": "c1e74d53a6a4bb593c376a304385d2e3130268a9"
+        },
+        "pyroomacoustics/utilities.py": {
+          "sha256": "9fe6989cbae61c022f91a1f107ce818325430417e59a4c56338995d3298942d9",
+          "bytes": 26327,
+          "git_blob": "3b9bf9ea4dc43b41224a24cf760f99f6f1d06686",
+          "actual_blob": "3b9bf9ea4dc43b41224a24cf760f99f6f1d06686"
+        },
+        "pyroomacoustics/version.py": {
+          "sha256": "bf8ce62a3b0a38f65ba7a06b5a8cfb88ae124f4b1d65d521f5b41226696e679a",
+          "bytes": 23,
+          "git_blob": "61fb31cae0fa46c861a191a7f499615d6da8ecda",
+          "actual_blob": "61fb31cae0fa46c861a191a7f499615d6da8ecda"
+        },
+        "pyroomacoustics/windows.py": {
+          "sha256": "650411aca973e06e9bc2200066d03321a21b38efba2adc4d7e16d7965c4dab0d",
+          "bytes": 21427,
+          "git_blob": "3e7b592b514115e0d948e885149d04a08ebec1b0",
+          "actual_blob": "3e7b592b514115e0d948e885149d04a08ebec1b0"
+        },
+        "setup.py": {
+          "sha256": "cdaf8c57a3fd9660ee441439bc22c0c8d30d5800217ff22f4cfa056a48ee9df7",
+          "bytes": 7425,
+          "git_blob": "6a2246ba3eb00726c957533cb9cf547ed1cc9ced",
+          "actual_blob": "6a2246ba3eb00726c957533cb9cf547ed1cc9ced"
+        }
+      },
+      "clean_before": true,
+      "clean_after": true,
+      "ignored_members_after": [
+        "pyroomacoustics/bss/__pycache__/common.cpython-313.pyc"
+      ]
+    }
+  },
+  "report_source_sha256": {
+    "codes/chapters/ch05/examples/audit_beamformer_reference.py": "fb3f01b3e3a988a62b3b9b424fa0d66759a03b6813657db4769bc3e9349aa19c",
+    "codes/chapters/ch04/core/upstream_contracts.py": "6712197a2d0718ba4e82ad8df8f2f5bd938a8785f3769b77a83aafbeff5ff483",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
+    "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
+  },
+  "pb_bss": {
+    "execution_kind": "unmodified_function_ast_extraction",
+    "package_import_probe": {
+      "status": "failed",
+      "exception_type": "ModuleNotFoundError",
+      "message": "No module named 'paderbox'",
+      "algorithm_called": false
+    },
+    "upstream_function_modified": false,
+    "function_sha256": "30c4f08002dcf2695e2b8d251854ffc8d78e5bfb4d0c2e9b8927862486a79997",
+    "function_first_line": 263,
+    "function_last_line": 289,
+    "results": [
+      {
+        "target_diagonal": [
+          1.0,
+          4.0
+        ],
+        "actual_weights": [
+          [
+            0.2,
+            0.0
+          ]
+        ],
+        "analytic_reference": {
+          "candidate_output_snr_linear": [
+            1.0,
+            4.0
+          ],
+          "selected_channel": 1,
+          "weights": [
+            0.0,
+            0.8
+          ]
+        },
+        "reference_selection_correct": false
+      },
+      {
+        "target_diagonal": [
+          4.0,
+          1.0
+        ],
+        "actual_weights": [
+          [
+            0.8,
+            0.0
+          ]
+        ],
+        "analytic_reference": {
+          "candidate_output_snr_linear": [
+            4.0,
+            1.0
+          ],
+          "selected_channel": 0,
+          "weights": [
+            0.8,
+            0.0
+          ]
+        },
+        "reference_selection_correct": true
+      }
+    ],
+    "status": "failed_reference_selection"
+  },
+  "pyroomacoustics": {
+    "execution_kind": "installed_original_package_method_call",
+    "package_version": "0.10.0",
+    "installed_path": "/private/tmp/masp-appb-pra-venv/lib/python3.13/site-packages/pyroomacoustics",
+    "installed_source_sha256": {
+      "beamforming.py": "04142595a0fd0b76404d92dbe2aaa93613b4037a774e309595d3c7792a492387",
+      "soundsource.py": "1e367bc85867ad7f94dad47fdf283e3d5282d83533e48ddfab906c0195a35f4c"
+    },
+    "installed_python_preflight_sha256": {
+      "pyroomacoustics/__init__.py": "0ed7d227ed39cb5a5a6c7994877dfee8855d14e5400f53bd9b3a3c0e3efc5baa",
+      "pyroomacoustics/acoustics.py": "3196254709071ab1061982133f05be94e7da554f2619db98d829203839d7c4d2",
+      "pyroomacoustics/adaptive/__init__.py": "493e6d9b7e68ecbdd552385c982ee11c84db7879726cc9857bf2414d6e6cf7a5",
+      "pyroomacoustics/adaptive/adaptive_filter.py": "06a4e1df0b4441743535c4b3bd911bb2f460277ad79d4bc7f044f331592288bf",
+      "pyroomacoustics/adaptive/data_structures.py": "1a15289625fd6673c6f2996c368d1b4974e5eba884c0f5670ca9f91a37118dc5",
+      "pyroomacoustics/adaptive/lms.py": "77cac8b1373ead313d2bb401ec33167a6234092b71db5c2332e08fd8f00237aa",
+      "pyroomacoustics/adaptive/rls.py": "228ca23a2cb8253f40b645d3c4804cd958b729e6b18babc43db10b1b722bd7ec",
+      "pyroomacoustics/adaptive/subband_lms.py": "d3b55f2aacd030df694e901bb9baf5039b11aea98dcb003037a609689252f2ec",
+      "pyroomacoustics/adaptive/util.py": "673a1036f530eb57a9c62c53dd93fc35f1ab5c0c4ac11ba43770710478a3d299",
+      "pyroomacoustics/beamforming.py": "04142595a0fd0b76404d92dbe2aaa93613b4037a774e309595d3c7792a492387",
+      "pyroomacoustics/bss/__init__.py": "c730059635ea660cc6ec76b4b32e65556e9295143c6d123bf896d9024dcae290",
+      "pyroomacoustics/bss/auxiva.py": "61016f0b27b8b4f1cfecdddb99c3f11f038552695abb299d10b6855d3c24ad6a",
+      "pyroomacoustics/bss/common.py": "d142a27bdbd80e8a4f0c31e78759c9884f6ed44c0609b89e38902d86e50ee11c",
+      "pyroomacoustics/bss/fastmnmf.py": "a13c253bc971d4dab7ae8f3d87ab7c309eb6b560b44e2b4c09b7018b50540518",
+      "pyroomacoustics/bss/fastmnmf2.py": "378ff43327cb7968e1ae08e0acf7b7099ad0267e11ae0559cf4d82a18b44093c",
+      "pyroomacoustics/bss/ilrma.py": "1bed68575f0bbfc899aade4f2f17f5210004b30ea7f0737b8acba3ccb5bd15b3",
+      "pyroomacoustics/bss/sparseauxiva.py": "870d221caa7feeea056b905b901c095bd1aea6480b58a50c6df0fe61bbb7529d",
+      "pyroomacoustics/bss/trinicon.py": "4202bb2b0834f982e246db37131c902fb078b533989512f81a6e162742b663fe",
+      "pyroomacoustics/datasets/__init__.py": "b96d0bcda6c32e800286fa8b207c3455dee3630f40f3bdab5bb22ca93657b3aa",
+      "pyroomacoustics/datasets/base.py": "b6c6d33eab60e1be2f25fbc10fc68b16a0c792623d0dd16efe7be1a081bcb9a4",
+      "pyroomacoustics/datasets/cmu_arctic.py": "e1bdb8ac9d539039c181e9da24666214aaae283bfcf1c3a1c1094b7f460e14de",
+      "pyroomacoustics/datasets/google_speech_commands.py": "a50b4fda483d8aee9dd762d81451d756c5a1a02a030638e6c455717b8b4b4e39",
+      "pyroomacoustics/datasets/sofa.py": "aa74fd982482f95835542cf790186f6aead6a9d8f367ef0ef94aa6a40a18f267",
+      "pyroomacoustics/datasets/timit.py": "e95f97ec5e1c22f20242557783ce794bee72af3eaaf042bc6f3d10d27a02e90a",
+      "pyroomacoustics/datasets/utils.py": "e83a2db4a72399f91b1eb0a241507a2a37472de712c89e0945bdd22d1f486aa1",
+      "pyroomacoustics/denoise/__init__.py": "f4466eb401e587b1fabbf96d711fd9ca1d048d99269aa53bec8fdd8728b055f9",
+      "pyroomacoustics/denoise/iterative_wiener.py": "4f35175752807b18a51796f774ef3695d78ad42d3dbd9ec605bcd4c5629f2bf8",
+      "pyroomacoustics/denoise/spectral_subtraction.py": "6c634c11293c485ae9e3bcde033e97cd2a5ef517ab48b2a52ef1fc7665ae915c",
+      "pyroomacoustics/denoise/subspace.py": "f364f9776daf9b6ff92e52de1c38ce67457c8da1d1087c0a6018a90654a36413",
+      "pyroomacoustics/directivities/__init__.py": "b568046366fbc7fd899b9c4e2995d0239b4c7ed53052c8e97ff1498558382866",
+      "pyroomacoustics/directivities/analytic.py": "ad73684fa88c0f7df1581adaea5740801f0b850942f8ceaf3d494fb204c17e2e",
+      "pyroomacoustics/directivities/base.py": "16bfd3ced040bf7283380b0e4bed1a667c402127dc575b82b53d130b3804ea77",
+      "pyroomacoustics/directivities/direction.py": "e0d9b46913129857c85b23a1003695117e6388f60aa07731cebc5f5626412bb6",
+      "pyroomacoustics/directivities/harmonics.py": "7e741e16135f54f8cd4288ddaa5e29e24306d2fa546c5287031ac2a2fdfdbc80",
+      "pyroomacoustics/directivities/histogram.py": "3e4c6503f0c9147004d5bffd1b82ef7e7eab6745a52b22424806b13b8330ce6c",
+      "pyroomacoustics/directivities/integration.py": "ebd8b722302efd53a0f501761809872cf7515a19bdab137098d9009586b9f9d6",
+      "pyroomacoustics/directivities/interp.py": "9ba15bcb5176e5288d54a1fa2c1497678e82a0306d334e6f843dd75f38f7878b",
+      "pyroomacoustics/directivities/measured.py": "8571a9627c1330c21fde02199f87249ca588f19ac1a52dd12aa1f87d7c8cdb1e",
+      "pyroomacoustics/directivities/sofa.py": "adc03c4487937a04e4bce571104c963a1d91660448f641aed313a250cc2ac039",
+      "pyroomacoustics/doa/__init__.py": "1da0ec2510f9a20b6db7b6ad77ffa43d4236a06fe1acb55a432f15f7a5d57aa3",
+      "pyroomacoustics/doa/cssm.py": "df467df5b518ecaf508cac25b996c70cdc56ec753b303db960e48e7457e86218",
+      "pyroomacoustics/doa/detect_peaks.py": "daf9bdf65d162b43aac4914296399470b5a51606d7688eb9023b1ad993dad443",
+      "pyroomacoustics/doa/doa.py": "8332e1fc9234ff37613b6cddcae2e4d67dc73f624fb8640dcdd5b5721b6e110c",
+      "pyroomacoustics/doa/frida.py": "ba35b882aa812f92a73203faba521bad4ec2e87c88ecb0d197826680d2d7f9df",
+      "pyroomacoustics/doa/grid.py": "61babdb6fee8f30e28d26101721ceccd1d0ddf2d5c4f744e77310558741ee1d6",
+      "pyroomacoustics/doa/music.py": "1a51555b04c34bf1cfae0ded621862eada327d83c5466fb6fb36b2d7d9eabd90",
+      "pyroomacoustics/doa/normmusic.py": "fbaaed8e75104179d22b880c5fda4e7d5afbb43ec42e0f4883910ab219809fa7",
+      "pyroomacoustics/doa/plotters.py": "c98defbb7eb505fffe10b068275cf81bf933823ccacf4c19068c15bd730275d7",
+      "pyroomacoustics/doa/srp.py": "2ffd37c4c681a31ea13d6d3cdecf3b5b7f110c4e440c0a23951eea90617f4a0e",
+      "pyroomacoustics/doa/tools_fri_doa_plane.py": "7dd4391abd3d195fb37274a8362d76b668dcb5dbc07dbb75e970791ead9ee86a",
+      "pyroomacoustics/doa/tops.py": "815fdd063c5afb481b8181882b86f9901a22461dd141d94f55b211a7456d4a25",
+      "pyroomacoustics/doa/utils.py": "cb6e286bb2d29045f1dc623e0634257af4e2fd021a3007124d8314a35279226e",
+      "pyroomacoustics/doa/waves.py": "08eeecfe5f402689a11dcda4e051c72963f6387ab0cd7236a7751edc02d659c3",
+      "pyroomacoustics/experimental/__init__.py": "669a66e23fadf1a0ab6ebbc98f8c587a7f110a8daba2feee62d13d179b2d8093",
+      "pyroomacoustics/experimental/deconvolution.py": "c1a0d576e39d24d6bb7375aee2b201b03eab6c4dd94ddd0959b36d7194c8e78f",
+      "pyroomacoustics/experimental/delay_calibration.py": "5a8860c31ab0110afc800fc744ec2668ee1a233f6d667f3ccc714bddcac05307",
+      "pyroomacoustics/experimental/localization.py": "409f8c442c2baafeb50277cd5ad09de5c69ec6b0000ac8d118ae7673fec84864",
+      "pyroomacoustics/experimental/measure_ir.py": "75d5abbcd81d5d49afff2ec051c9aa754f4751b8f0345bdace91b8dcde29cc3f",
+      "pyroomacoustics/experimental/physics.py": "d6a32527d4fdd422cb9676cc9affc4af88ec3757e00dced4ed4a797c39de4706",
+      "pyroomacoustics/experimental/point_cloud.py": "7a95fc9b76a00c441cdbc3f8a57ede8d549f161fadaf661cf2f1485a00b2063d",
+      "pyroomacoustics/experimental/rt60.py": "c066a78677371003818123efe3b8e1a7dbd75c8a21de6404ab94ea95c0e2c1f3",
+      "pyroomacoustics/experimental/signals.py": "5b767d283794be3cc55d5cc67727a3ba6f685217f8767f04f63092e38f5614b6",
+      "pyroomacoustics/metrics.py": "392ac03810a66bbaea52d13ae7b910e7cc7b8cad278bb64a5ea82a3aaee45480",
+      "pyroomacoustics/multirate.py": "10faf630c80ba72cd904a889e4894a59a2fc5956070a264ceadcb280bebd57bc",
+      "pyroomacoustics/parameters.py": "dac6389cdaf949659cb2d8dbe01655593f423b35492bc857a43c4af9b24b4ed2",
+      "pyroomacoustics/phase/__init__.py": "15eb01f9dadb23995d8ebac21e9a139a9260973314bd978b35d1bdb4101e15cd",
+      "pyroomacoustics/phase/gl.py": "24b7c8fde9b8317f5f91c2c6f16fe82a0e97e4d7f21660ee2a2b5a1219274217",
+      "pyroomacoustics/random/__init__.py": "ceadb1a48a89b5823d3219fb7b230add8bcf539be179aac68f4a891e18ddd830",
+      "pyroomacoustics/random/distributions.py": "8143d0b755ee480fcc005c99b3b742da451987211f2f20f1516f90a9a9d617b6",
+      "pyroomacoustics/random/generator.py": "ec2913d582cd238e0406c69a3de328baddc35845e728b689d436f6b992db7b85",
+      "pyroomacoustics/random/sampler.py": "16721080251af485a13d1728c39137e50c60c018c2f86d48d1b6b10915d67f48",
+      "pyroomacoustics/random/spherical.py": "215b83462ec582dd0664971c751fa8e21b62473521cd2e2cf2ea8d99ed98f38d",
+      "pyroomacoustics/recognition.py": "efd873824f7cddc9db8bff2ebdc1e6468d26392d80c86e065553afa7fcadb4a8",
+      "pyroomacoustics/room.py": "b4189f582459811f8dbbf3885882e115db60b7b48b4ca0a3672dbef39118e4dc",
+      "pyroomacoustics/simulation/__init__.py": "59aedc3ee41abb4fc687bc1f789e463f4a8472240f76d922e37edc9453eb38ce",
+      "pyroomacoustics/simulation/ism.py": "d3fab7322346e3b95d2d4f357b100af83f2eef3c98af3cbe53dd93454d297bca",
+      "pyroomacoustics/simulation/rt.py": "8229f07ecda05bf8a0d3ad10f582db017b07d62f14984424af2675512ac10450",
+      "pyroomacoustics/soundsource.py": "1e367bc85867ad7f94dad47fdf283e3d5282d83533e48ddfab906c0195a35f4c",
+      "pyroomacoustics/sync.py": "b2b37d3a575848ea16cc72ab3e7ee53855e8b781168d832ccb5025ade3525abb",
+      "pyroomacoustics/transform/__init__.py": "e53b794e0847b07bc20b686009e02b1b32f9bc6db3e9da0cced242d28c8b4c87",
+      "pyroomacoustics/transform/dft.py": "218f0710ba15238e5a7e01cca5e568402859f110de91696bf51623e12198d04b",
+      "pyroomacoustics/transform/stft.py": "de7f545d00e4beb532b3bbbae0149a19b92a6140f3408fde1b3fe83e3cd04595",
+      "pyroomacoustics/utilities.py": "9fe6989cbae61c022f91a1f107ce818325430417e59a4c56338995d3298942d9",
+      "pyroomacoustics/version.py": "bf8ce62a3b0a38f65ba7a06b5a8cfb88ae124f4b1d65d521f5b41226696e679a",
+      "pyroomacoustics/windows.py": "650411aca973e06e9bc2200066d03321a21b38efba2adc4d7e16d7965c4dab0d"
+    },
+    "installed_artifact_sha256": {
+      "build_rir.cpython-313-darwin.so": {
+        "sha256": "67778deff54d8c2683a4bbecbd4621944ccea0d2efd67966d81e994584ebdb39",
+        "size_bytes": 513792
+      },
+      "libroom.cpython-313-darwin.so": {
+        "sha256": "d422ad91c8b4730bdc18be3e8a2f2b140fb0019a67bb09362790baefce5bfab2",
+        "size_bytes": 2687552
+      }
+    },
+    "installed_artifact_scope": "installed binary identities only; no fixed-Git binary or reproducible-build attestation",
+    "installed_sources_unchanged_after": true,
+    "exception": {
+      "type": "TypeError",
+      "message": "slice indices must be integers or None or have an __index__ method",
+      "traceback": [
+        {
+          "file": "audit_beamformer_reference.py",
+          "line": 180,
+          "function": "run_pra",
+          "statement": "beamformer.rake_distortionless_filters("
+        },
+        {
+          "file": "beamforming.py",
+          "line": 1375,
+          "function": "rake_distortionless_filters",
+          "statement": "K_nq = np.dot(H[:, L:], H[:, L:].T) + R_n"
+        }
+      ]
+    },
+    "status": "failed_float_slice_index",
+    "filters_computed": false,
+    "upstream_modified": false,
+    "scope": "Only this method/input was called; no original Rake performance or other methods validated"
+  },
+  "limitations": [
+    "No upstream patch, package installation or network request",
+    "No enhanced waveform, perceptual score, benchmark timing or full upstream validation",
+    "A failing original method is not a source acquisition failure"
+  ]
+}

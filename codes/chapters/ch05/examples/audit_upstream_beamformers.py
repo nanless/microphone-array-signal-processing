@@ -1,7 +1,7 @@
 """Read-only, fixed pb_bss function diagnostics for Chapter 5.
 
 Requires NumPy 2 and SciPy; uses the existing locked checkout, without downloads,
-package imports, Cython, dependency installation, or upstream patches. Twelve
+package imports, Cython, dependency installation, or upstream patches. Thirteen
 unchanged function ASTs are executed with their NumPy/SciPy dependencies. This
 is not a complete package, enhanced-waveform, paper benchmark, or device test.
 Only an explicit --report PATH writes an output file.
@@ -16,19 +16,19 @@ import hashlib
 import json
 import math
 import operator
-import os
 from pathlib import Path
 import platform
-import subprocess
 import sys
 import warnings
 from zoneinfo import ZoneInfo
 
 import numpy as np
+from codes.chapters.ch04.core import upstream_contracts as contracts
 
 ROOT = Path(__file__).resolve().parents[4]
 LOCK = ROOT / 'codes/chapters/ch00/SOURCES.lock.json'
 CACHE = ROOT / 'codes/chapters/ch00/upstream/_downloads'
+CURRENT_REPORT = ROOT / 'codes/chapters/ch05/reports/upstream_beamformers_current.json'
 PROJECT = 'pb_bss'
 REVISION = '10acc347fc9ea21e3d312806a0bd751d0d0af183'
 SOURCE_SHA = {
@@ -41,35 +41,22 @@ FUNCTIONS = (
     'get_mvdr_vector_merl', 'get_gev_vector', '_get_gev_vector',
     'get_lcmv_vector', 'blind_analytic_normalization',
     'get_optimal_reference_channel', 'get_mvdr_vector_souden',
-    'get_wmwf_vector', 'get_lcmv_vector_souden',
+    'get_wmwf_vector', 'get_lcmv_vector_souden', 'phase_correction',
 )
 ATOL = 2e-14
 
 
 def sha(path):
-    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    return contracts.sha(path)
 
 
-def git(directory, *args, binary=False):
-    env = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
-    value = subprocess.check_output(['git', '-C', str(directory), *args],
-                                    env=env, text=not binary)
-    return value if binary else value.strip()
+def git(directory, *args):
+    return contracts.git(directory, *args)
 
 
 def checkout_state(directory):
-    if not (directory / '.git').exists():
-        raise FileNotFoundError('Existing independent locked pb_bss checkout required')
-    if Path(git(directory, 'rev-parse', '--show-toplevel')).resolve() != directory.resolve():
-        raise RuntimeError('Expected an independent upstream checkout')
-    state = {'head': git(directory, 'rev-parse', 'HEAD'),
-             'status': git(directory, 'status', '--porcelain', '--untracked-files=no'),
-             'untracked_python': [p for p in git(directory, 'ls-files', '--others',
-                                                '--exclude-standard').splitlines()
-                                  if p.endswith('.py')]}
-    if state['head'] != REVISION or state['status'] or state['untracked_python']:
-        raise RuntimeError('Upstream revision or source cleanliness differs')
-    return state
+    identity = contracts.verify_project(PROJECT, directory, SOURCE_SHA)
+    return {'head': identity['head'], 'status': '', 'untracked_python': []}
 
 
 def encode(value):
@@ -117,10 +104,11 @@ def extract_functions(directory):
                  'c_gev_available': False, 'c_eig_available': False}
     files, functions = {}, {}
     for relative, expected_sha in SOURCE_SHA.items():
-        path = directory / relative
+        path = contracts.ordinary_file(directory / relative)
         data = path.read_bytes()
-        original = git(directory, 'show', 'HEAD:'+relative, binary=True)
-        if data != original or sha(path) != expected_sha:
+        if (git(directory, 'hash-object', '--no-filters', '--', str(path))
+                != git(directory, 'rev-parse', 'HEAD:' + relative)
+                or sha(path) != expected_sha):
             raise RuntimeError('Original file hash differs: '+relative)
         files[relative] = {'sha256': sha(path),
                            'git_blob': git(directory, 'rev-parse', 'HEAD:'+relative)}
@@ -142,7 +130,7 @@ def extract_functions(directory):
                     'source_segment_sha256': hashlib.sha256(segment.encode()).hexdigest(),
                     'body_modified': False}
     if set(functions) != set(FUNCTIONS):
-        raise RuntimeError('Expected twelve original functions')
+        raise RuntimeError('Expected thirteen original functions')
     return namespace, files, functions, scipy.__version__
 
 
@@ -289,25 +277,31 @@ def run_cases(namespace):
              message_contains='Cannot cast' if name == 'integer' else ('asfarray' if name == 'boolean' else ''),
              reference={'unfloored_nonzero_normalized_diagonal': [.5, .5]} if name == 'tiny' else None,
              atol=1e-303 if name == 'tiny' else ATOL)
+    phase_input = np.array([[1, 1], [-1, -1], [1, 1]], complex)
+    case('phase_correction_2d', 'phase_correction', (phase_input,), np.ones((3, 2), complex),
+         reference={'frequency_axis': 0, 'independent_same_phase_weights': [[1, 1]] * 3},
+         explanation='Two-dimensional frequency-by-channel input accumulates along frequency.')
+    case('phase_correction_3d', 'phase_correction', (phase_input[None],),
+         np.array([[[1, 1], [1, 1], [-1, -1]]], complex),
+         classification='phase_axis_failure',
+         reference={'frequency_axis': 1, 'independent_same_phase_weights': [[[1, 1]] * 3]},
+         explanation='Original axis=0 accumulates along batch: final frequency retains a pi phase reversal. Original function is unchanged.',
+         observable=lambda w: {'target_response_by_frequency': np.einsum('bfc,c->bf', w.conj(), np.ones(2)),
+                               'weight_norm_squared_by_frequency': np.sum(abs(w)**2, axis=-1)})
     return rows
 
 
 def build_report(cache=CACHE):
     if int(np.__version__.split('.')[0]) < 2:
         raise RuntimeError('This fixed compatibility audit requires NumPy >=2')
-    directory = Path(cache).resolve() / PROJECT
-    lock_sha = sha(LOCK)
-    entries = [p for p in json.loads(LOCK.read_text())['projects'] if p['id'] == PROJECT]
-    if len(entries) != 1 or entries[0]['revision'] != REVISION or entries[0]['license'] != 'MIT':
-        raise RuntimeError('Locked pb_bss identity or license differs')
-    before = checkout_state(directory)
+    directory = contracts.validate_parent_chain(cache) / PROJECT
+    identity = contracts.verify_project(PROJECT, directory, SOURCE_SHA)
+    lock_sha, entry = identity['lock_sha256'], identity['lock_entry']
+    before = {'head': identity['head'], 'status': '', 'untracked_python': []}
     namespace, files, functions, scipy_version = extract_functions(directory)
     results = run_cases(namespace)
-    after = checkout_state(directory)
-    if after != before:
-        raise RuntimeError('Upstream checkout changed during audit')
-    if sha(LOCK) != lock_sha:
-        raise RuntimeError('Source lock changed during audit')
+    contracts.check_unchanged(identity)
+    after = dict(before)
     # Re-read original files after calls; no silently changed source is accepted.
     for relative, metadata in files.items():
         if sha(directory / relative) != metadata['sha256']:
@@ -317,12 +311,14 @@ def build_report(cache=CACHE):
     return {'schema_version': 1, 'created_utc': utc.isoformat(),
         'verified_date_asia_shanghai': utc.astimezone(ZoneInfo('Asia/Shanghai')).date().isoformat(),
         'audit_source_sha256': sha(__file__), 'lock_sha256': lock_sha,
-        'lock_entry': entries[0], 'before': before, 'after': after,
+        'lock_entry': entry, 'before': before, 'after': after,
+        'source_identity': identity,
+        'report_source_sha256': contracts.dependencies(Path(__file__)),
         'original_files': files, 'original_functions': functions,
         'environment': {'executable': sys.executable, 'python': platform.python_version(),
                         'numpy': np.__version__, 'scipy': scipy_version,
                         'platform': platform.platform()},
-        'scope': {'execution': 'Twelve unchanged original function ASTs with original Python bodies',
+        'scope': {'execution': 'Thirteen unchanged original function ASTs with original Python bodies',
                   'dependencies': 'NumPy/SciPy linalg and original stable_solve; no compatibility facade',
                   'backend': 'Explicit c_gev_available=False and c_eig_available=False; SciPy fallback only',
                   'excluded': 'No complete pb_bss/ESPnet/Torch/Cython import, waveform, paper benchmark, firmware or device validation',
@@ -337,18 +333,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--report', type=Path, help='Explicit opt-in output path; default writes no file')
     args = parser.parse_args()
+    target = contracts.report_target(args.report, CURRENT_REPORT, (CACHE,)) if args.report else None
     report = build_report()
     serialized = json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False)+'\n'
-    if args.report is not None:
-        target = args.report.resolve()
-        if target == Path(__file__).resolve() or target == LOCK.resolve() or CACHE.resolve() in target.parents:
-            raise ValueError('Refusing to overwrite source, lock, or upstream cache')
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(serialized)
-    print(json.dumps({'status': report['status'], 'case_count': report['case_count'],
-                      'report': str(args.report) if args.report else None,
-                      'unexpected_cases': [k for k, v in report['results'].items()
-                                           if not v['expected_behavior_verified']]}, ensure_ascii=False))
+    if target is not None:
+        contracts.write_report(target, report, CURRENT_REPORT, (CACHE,))
+    print(serialized, end='')
     if report['status'] == 'unexpected_behavior':
         raise SystemExit(1)
 

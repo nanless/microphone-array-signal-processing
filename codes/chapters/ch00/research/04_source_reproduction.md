@@ -516,3 +516,30 @@ e3b3176d835837441224e4906b7c2befadcdc4fe2ce6163245b7d9a9ad0d9229
 六个第4章原源工具现在统一使用[当前合同核](../../ch04/core/upstream_contracts.py)：sanitized Git、官方origin、固定HEAD、全部声明使用的原blob与许可SHA、跟踪/未忽略成员的前后洁净及忽略成员前后清单，真实完整选集与所用源码身份分栏。默认stdout不写报告；两个audit显式写入仅允许新[DOA当前报告](../../ch04/reports/upstream_doa_contracts.json)、[SAID当前报告](../../ch04/reports/said_compression_contracts.json)或仓外普通路径。四个旧reproduce入口的output/workdir只能仓外，历史报告/源码/上游及链接父链执行前拒绝。有限路径检查不保证消除并发竞态。
 
 本轮使用既有`/private/tmp/masp-appb-pra-venv`真实运行PRA 0.10.0完整TOPS及限定原helper；原峰49°与独立30°分别保留，root-MUSIC原dtype错误与局部门面分开，SAID只执行四个压缩格式助手。ESPRIT与SBL另实际输出到仓外，不给旧报告改成新运行。SMP的FFTW条件不足，本轮没有重建原C；旧失败/临时适配历史与独立DFT测试仍分别说明。DP-RTF MATLAB、完整DPD、FRIDA、学习网络、核心二进制和硬件未执行；详细条件及许可见[空间研究58/59](01_spatial_and_tracking.md#sec-u-1ca23edba5)。
+
+
+<a id="beamforming-current-contracts"></a>
+
+## 11. 第5章当前原方法合同与相位控制
+
+2026-10-04实际运行三项限定合同；所有结果由真实工具生成，没有改上游、旧三报告或原获取状态。重新调用可使用具备报告所列PRA/NumPy/SciPy版本的隔离环境；下面临时路径只描述本机本轮环境，不是永久安装位置。
+
+```bash
+/private/tmp/masp-appb-pra-venv/bin/python -m codes.chapters.ch05.examples.audit_upstream_beamformers --report codes/chapters/ch05/reports/upstream_beamformers_current.json
+/private/tmp/masp-appb-pra-venv/bin/python -m codes.chapters.ch05.examples.audit_beamformer_reference --report codes/chapters/ch05/reports/beamformer_reference_current.json
+/private/tmp/masp-appb-pra-venv/bin/python -m codes.chapters.ch05.examples.audit_sof_tdfb_design --report codes/chapters/ch05/reports/sof_tdfb_design_current.json
+```
+
+| 工具与当前报告 | 实际执行 | 原问题及未执行边界 |
+|---|---|---|
+| [pb_bss合同](../../ch05/reports/upstream_beamformers_current.json) | 13个未修改原函数AST，33个确定性用例；原stable_solve与SciPy后备 | 5项原异常保留；二维/三维相位轴对照有原符号差异；未导入完整pb_bss/ESPnet/Torch、可选Cython、增强波形或论文基准 |
+| [reference合同](../../ch05/reports/beamformer_reference_current.json) | MERL单原函数AST两组控制、原PRA方法调用；安装85份Python源逐fixed blob核对 | pb_bss普通导入缺paderbox、MERL误选、PRA浮点切片失败，没有得到Rake滤波器；二进制只登记安装文件SHA，不声称可复现源码构建 |
+| [SOF合同](../../ch05/reports/sof_tdfb_design_current.json) | 七份固定源码/许可静态核验与三组独立标量计算 | sinc/WNG/最后方位控制流问题；没有MATLAB/Octave、实际FIR设计、固件或设备执行 |
+
+去掉 `--report` 时三项默认都只输出stdout。指定报告前先核普通父链与目标：仓内只接受该工具的新current路径；旧报告、其他仓内源文件、缓存与符号链接目标被拒绝。工具绑定当前真实工具、共享合同、IO与获取工具SHA，同时核官方origin、固定HEAD、所用原Git blob与逐文件许可；所用文件核验和完整选集状态分栏。写前检查有限，不保证消除并发竞态或崩溃持久性。
+
+三份历史报告分别是[原31项pb_bss](../../ch05/reports/upstream_beamformers.json)、[原reference](../../ch05/reports/beamformer_reference_audit.json)、[原SOF](../../ch05/reports/sof_tdfb_design_audit.json)。它们保留原字节与修改时刻；旧工具身份从本仓库固定提交747ec3fec96ef20c7c128cc4291fd7bb9ee36c34的Git blob核对，不将当前工具SHA替换进去伪造重跑。
+
+共享合同增加pb_bss/SOF固定项目身份后，两个第4章当前消费者[DOA合同](../../ch04/reports/upstream_doa_contracts.json)和[SAID合同](../../ch04/reports/said_compression_contracts.json)也实际重新执行，报告绑定更新后的真实合同源。此前六份第4章历史报告未改写；这只是依赖消费者的限定重跑，不是把其他章节提前列为完成。
+
+本书[E05-23相位音频](05_exercises_and_audio.md#phase-reference-audio)与E05-24预滤波矩阵采用独立已知模型，不调用上述原算法来生成“理想答案”。三份PCM的实际量化功率和参考误差分开评分，图73绑定真实源；模型正确与工业系统性能是不同验证范围。

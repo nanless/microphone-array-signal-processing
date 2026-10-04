@@ -1,0 +1,512 @@
+{
+  "figure": 73,
+  "exercise_id": "E05-23",
+  "source_sha256": {
+    "codes/chapters/ch05/core/phase_audio.py": "a232668481a58afad162ae5c01a338796893bb6faf6cb3a9ab046689d2b6fec4",
+    "codes/chapters/ch05/examples/generate_phase_audio.py": "5b83fd7cb6128e1522a2d737058c226ddfca192863db3dda341806c0b26c5036",
+    "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
+    "scripts/make_figures.py": "d65c3662aee4929a1ebb030c13df4413ce7abbf36f28d6ddab29a2e084b1b1d9",
+    "scripts/make_beamforming_figures.py": "fe0bd0d181a1f51db0d012e9e71f156f06d4a796a924b9d707d63ac8e17012cf"
+  },
+  "audio_manifest_sha256": "8a6bafd510b5a0e14e0b3994e88193adc02f4d2c36bf1ee5a2cdde022f3e58dc",
+  "wav_sha256": {
+    "phase_reference.wav": "06e2e84fdf729fee17eecd8191d84a11d585ffb821404d0b6e9471f9a0d02d01",
+    "phase_flip.wav": "a87c7abf8dc06d3ee2acbce4ac5447a9568c2e4ce9354eeb5a4acc4eed0a0645",
+    "phase_quadrature.wav": "253cd8ac5d91daf0099cbab1459b302baa78f717566d7a9b8cbce3f69c1fb3d3"
+  },
+  "parameters": {
+    "exercise_id": "E05-23",
+    "sample_rate_hz": 16000,
+    "samples_per_channel": 32000,
+    "frequencies_hz": [
+      500.0,
+      1500.0
+    ],
+    "source_amplitude_per_frequency": 0.1,
+    "source_duration_s": 2.0,
+    "fade_samples": 320,
+    "fade": "squared sine, endpoints included, common envelope",
+    "common_export_gain": 1.0,
+    "channel_order": [
+      "mono_known_component_output"
+    ],
+    "target_channel_model": "two identical target channels for each known frequency component",
+    "base_weights_real_imag": [
+      [
+        0.5,
+        0.0
+      ],
+      [
+        0.5,
+        0.0
+      ]
+    ],
+    "high_weight_multiplier_real_imag": {
+      "reference": [
+        1.0,
+        0.0
+      ],
+      "flip": [
+        -1.0,
+        0.0
+      ],
+      "quadrature": [
+        0.0,
+        1.0
+      ]
+    },
+    "output_model": "A[n]*0.1*(cos(500Hz)+cos(1500Hz)); high output -cos for flip, +sin for quadrature",
+    "application_convention": "y=w^H*x; output multiplier is conjugate of weight multiplier",
+    "generation_model": "known real frequency components resynthesized before common envelope; no STFT",
+    "propagation_delay_samples": 0,
+    "algorithm_delay_samples": 0,
+    "scoring_interval_samples": [
+      2400,
+      29600
+    ],
+    "samples_in_scoring_window": 27200,
+    "scoring_cycles_per_frequency": [
+      850,
+      2550
+    ],
+    "phasor_convention": "cos coefficient minus j*sin coefficient; absolute sample clock",
+    "alignment": "original sample clock and gain; no fitted correction",
+    "noise": "none",
+    "randomness": "none"
+  },
+  "samples": {
+    "reference": {
+      "file": "phase_reference.wav",
+      "analytic": {
+        "mean_square": 0.01,
+        "reference_mean_square": 0.01,
+        "total_reference_mse": 0.0,
+        "normalized_squared_reference_error": 0.0,
+        "response_real_imag": [
+          [
+            1.0,
+            0.0
+          ],
+          [
+            1.0,
+            0.0
+          ]
+        ],
+        "common_pure_delay_possible": true,
+        "delay_control": "preserving 500Hz requires 500*tau integer; then 1500*tau is also integer"
+      },
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 1,
+        "squared_sum": 271.9999999999998,
+        "reference_squared_sum": 271.9999999999998,
+        "error_squared_sum": 0.0,
+        "mean_square": 0.009999999999999992,
+        "total_reference_mse": 0.0,
+        "normalized_squared_reference_error": 0.0,
+        "phasor_real_imag": [
+          [
+            0.10000000000000034,
+            -7.799159571112442e-18
+          ],
+          [
+            0.0999999999999998,
+            -2.7871643708388804e-21
+          ]
+        ],
+        "reference_phasor_real_imag": [
+          [
+            0.10000000000000034,
+            -7.799159571112442e-18
+          ],
+          [
+            0.0999999999999998,
+            -2.7871643708388804e-21
+          ]
+        ],
+        "response_real_imag": [
+          [
+            1.0,
+            -3.9958491371759455e-33
+          ],
+          [
+            0.9999999999999999,
+            -8.009141021004695e-37
+          ]
+        ],
+        "real_projection_columns": 4,
+        "projection_scope": "known integer-cycle cos/sin diagnostic; no correction applied",
+        "peak": 0.2
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 1,
+        "squared_sum": 271.9711249694228,
+        "reference_squared_sum": 271.9711249694228,
+        "error_squared_sum": 0.0,
+        "mean_square": 0.009998938417993486,
+        "total_reference_mse": 0.0,
+        "normalized_squared_reference_error": 0.0,
+        "phasor_real_imag": [
+          [
+            0.09999722812565232,
+            1.4744764145811858e-17
+          ],
+          [
+            0.09999215516925263,
+            5.551952888536085e-17
+          ]
+        ],
+        "reference_phasor_real_imag": [
+          [
+            0.09999722812565232,
+            1.4744764145811858e-17
+          ],
+          [
+            0.09999215516925263,
+            5.551952888536085e-17
+          ]
+        ],
+        "response_real_imag": [
+          [
+            1.0,
+            9.622815189438245e-33
+          ],
+          [
+            0.9999999999999999,
+            7.396500058177363e-33
+          ]
+        ],
+        "real_projection_columns": 4,
+        "projection_scope": "known integer-cycle cos/sin diagnostic; no correction applied",
+        "peak": 0.20001220703125
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 1,
+        "integer_squared_sum_E_per_channel": [
+          292026771800
+        ],
+        "integer_denominator_D_per_channel": 29205777612800,
+        "mean_square_per_channel": [
+          0.009998938417993486
+        ],
+        "integer_squared_sum_E_all_channels": 292026771800,
+        "integer_denominator_D_all_channels": 29205777612800,
+        "mean_square_all_channels": 0.009998938417993486,
+        "integer_reference_squared_sum": 292026771800,
+        "integer_error_squared_sum_per_channel": [
+          0
+        ],
+        "total_reference_mse_per_channel": [
+          0.0
+        ],
+        "normalized_squared_reference_error_per_channel": [
+          0.0
+        ]
+      }
+    },
+    "flip": {
+      "file": "phase_flip.wav",
+      "analytic": {
+        "mean_square": 0.01,
+        "reference_mean_square": 0.01,
+        "total_reference_mse": 0.02,
+        "normalized_squared_reference_error": 2.0,
+        "response_real_imag": [
+          [
+            1.0,
+            0.0
+          ],
+          [
+            -1.0,
+            0.0
+          ]
+        ],
+        "common_pure_delay_possible": false,
+        "delay_control": "preserving 500Hz requires 500*tau integer; then 1500*tau is also integer"
+      },
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 1,
+        "squared_sum": 272.0000000000002,
+        "reference_squared_sum": 271.9999999999998,
+        "error_squared_sum": 544.0000000000005,
+        "mean_square": 0.010000000000000009,
+        "total_reference_mse": 0.020000000000000018,
+        "normalized_squared_reference_error": 2.0000000000000036,
+        "phasor_real_imag": [
+          [
+            0.10000000000000042,
+            1.3871980755359348e-17
+          ],
+          [
+            -0.09999999999999988,
+            1.7387335941163528e-17
+          ]
+        ],
+        "reference_phasor_real_imag": [
+          [
+            0.10000000000000034,
+            -7.799159571112442e-18
+          ],
+          [
+            0.0999999999999998,
+            -2.7871643708388804e-21
+          ]
+        ],
+        "response_real_imag": [
+          [
+            1.0000000000000009,
+            2.1671140326471724e-16
+          ],
+          [
+            -1.0000000000000007,
+            1.7384548776792724e-16
+          ]
+        ],
+        "real_projection_columns": 4,
+        "projection_scope": "known integer-cycle cos/sin diagnostic; no correction applied",
+        "peak": 0.15363555134228327
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 1,
+        "squared_sum": 271.9793325290084,
+        "reference_squared_sum": 271.9711249694228,
+        "error_squared_sum": 543.9504574984312,
+        "mean_square": 0.009999240166507661,
+        "total_reference_mse": 0.019998178584501147,
+        "normalized_squared_reference_error": 2.0000301780550656,
+        "phasor_real_imag": [
+          [
+            0.09999366403350184,
+            1.3904478937055458e-17
+          ],
+          [
+            -0.09999873698990176,
+            -4.507557428010536e-17
+          ]
+        ],
+        "reference_phasor_real_imag": [
+          [
+            0.09999722812565232,
+            1.4744764145811858e-17
+          ],
+          [
+            0.09999215516925263,
+            5.551952888536085e-17
+          ]
+        ],
+        "response_real_imag": [
+          [
+            0.9999643580905463,
+            -8.39782954936101e-18
+          ],
+          [
+            -1.0000658233702233,
+            1.0448428749311083e-16
+          ]
+        ],
+        "real_projection_columns": 4,
+        "projection_scope": "known integer-cycle cos/sin diagnostic; no correction applied",
+        "peak": 0.15362548828125
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 1,
+        "integer_squared_sum_E_per_channel": [
+          292035584600
+        ],
+        "integer_denominator_D_per_channel": 29205777612800,
+        "mean_square_per_channel": [
+          0.009999240166507661
+        ],
+        "integer_squared_sum_E_all_channels": 292035584600,
+        "integer_denominator_D_all_channels": 29205777612800,
+        "mean_square_all_channels": 0.009999240166507661,
+        "integer_reference_squared_sum": 292026771800,
+        "integer_error_squared_sum_per_channel": [
+          584062356400
+        ],
+        "total_reference_mse_per_channel": [
+          0.019998178584501147
+        ],
+        "normalized_squared_reference_error_per_channel": [
+          2.0000301780550656
+        ]
+      }
+    },
+    "quadrature": {
+      "file": "phase_quadrature.wav",
+      "analytic": {
+        "mean_square": 0.01,
+        "reference_mean_square": 0.01,
+        "total_reference_mse": 0.01,
+        "normalized_squared_reference_error": 1.0,
+        "response_real_imag": [
+          [
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0
+          ]
+        ],
+        "common_pure_delay_possible": false,
+        "delay_control": "preserving 500Hz requires 500*tau integer; then 1500*tau is also integer"
+      },
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 1,
+        "squared_sum": 272.0000000000003,
+        "reference_squared_sum": 271.9999999999998,
+        "error_squared_sum": 272.00000000000034,
+        "mean_square": 0.01000000000000001,
+        "total_reference_mse": 0.010000000000000012,
+        "normalized_squared_reference_error": 1.000000000000002,
+        "phasor_real_imag": [
+          [
+            0.10000000000000026,
+            -2.0788101296341166e-17
+          ],
+          [
+            -2.4311458238670795e-17,
+            -0.10000000000000077
+          ]
+        ],
+        "reference_phasor_real_imag": [
+          [
+            0.10000000000000034,
+            -7.799159571112442e-18
+          ],
+          [
+            0.0999999999999998,
+            -2.7871643708388804e-21
+          ]
+        ],
+        "response_real_imag": [
+          [
+            0.9999999999999992,
+            -1.2988941725228686e-16
+          ],
+          [
+            -2.4308671074300005e-16,
+            -1.0000000000000095
+          ]
+        ],
+        "real_projection_columns": 4,
+        "projection_scope": "known integer-cycle cos/sin diagnostic; no correction applied",
+        "peak": 0.18477590650225736
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 1,
+        "squared_sum": 271.99440030381083,
+        "reference_squared_sum": 271.9711249694228,
+        "error_squared_sum": 271.9808445312083,
+        "mean_square": 0.009999794128816575,
+        "total_reference_mse": 0.009999295754823834,
+        "normalized_squared_reference_error": 1.000035737476861,
+        "phasor_real_imag": [
+          [
+            0.09999897040030399,
+            3.222246313869303e-07
+          ],
+          [
+            -1.831088881680589e-06,
+            -0.09999897040030371
+          ]
+        ],
+        "reference_phasor_real_imag": [
+          [
+            0.09999722812565232,
+            1.4744764145811858e-17
+          ],
+          [
+            0.09999215516925263,
+            5.551952888536085e-17
+          ]
+        ],
+        "response_real_imag": [
+          [
+            1.0000174232294667,
+            3.222335632816655e-06
+          ],
+          [
+            -1.8312325388293743e-05,
+            -1.0000681576573636
+          ]
+        ],
+        "real_projection_columns": 4,
+        "projection_scope": "known integer-cycle cos/sin diagnostic; no correction applied",
+        "peak": 0.184783935546875
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 1,
+        "integer_squared_sum_E_per_channel": [
+          292051763500
+        ],
+        "integer_denominator_D_per_channel": 29205777612800,
+        "mean_square_per_channel": [
+          0.009999794128816575
+        ],
+        "integer_squared_sum_E_all_channels": 292051763500,
+        "integer_denominator_D_all_channels": 29205777612800,
+        "mean_square_all_channels": 0.009999794128816575,
+        "integer_reference_squared_sum": 292026771800,
+        "integer_error_squared_sum_per_channel": [
+          292037208100
+        ],
+        "total_reference_mse_per_channel": [
+          0.009999295754823834
+        ],
+        "normalized_squared_reference_error_per_channel": [
+          1.000035737476861
+        ]
+      }
+    }
+  },
+  "limits": "Original known-component mathematical resynthesis, not speech, room or device audio. The two identical target channels have base weight [0.5,0.5]. Only the high-frequency weight is multiplied by -1 or +j; conjugate application makes its output respectively -cos or +sin. No GEV eigensolver, STFT, BAN or unknown frequency-component extraction is executed. No noise is added. Equal output energy does not establish reference waveform preservation. The steady integer-cycle window excludes fades; scores preserve gain and clock. Cos/sin projections are diagnostics, never applied as gain or delay compensation. Playback is not a formal listening or intelligibility study.",
+  "plot_scope": "actual PCM excerpt, known-frequency projections, actual PCM power and total reference error; no noise or SNR experiment"
+}

@@ -1,23 +1,24 @@
 """Offline SOF TDFB source audit and independent scalar counterexamples.
 
 This does not execute MATLAB, Octave, FIR design or firmware. It verifies the
-locked unmodified source, records two expressions, and evaluates their scalar
+locked unmodified source, records three static inconsistencies, and evaluates scalar
 mathematical consequences. No upstream code is patched or imported.
 """
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 import hashlib
 import json
 import math
-import os
 from pathlib import Path
 import platform
-import subprocess
 
 import numpy as np
+from codes.chapters.ch04.core import upstream_contracts as contracts
 
 ROOT = Path(__file__).resolve().parents[3]
+CURRENT_REPORT = ROOT / 'chapters/ch05/reports/sof_tdfb_design_current.json'
 REVISION = "b6c6a05d52536313fe8e8752b1c4e069b1cc4002"
 SOURCE_HASHES = {
     "LICENCE": "cb6a9aa5baac3ea573feebcdc298526f701e2b7cd005a22208799778e26f0068",
@@ -72,35 +73,25 @@ def independent_examples() -> dict:
     }
 
 
-def verify_source(source_dir: Path) -> None:
-    source_dir = source_dir.resolve()
-    if not (source_dir / ".git").exists():
-        raise FileNotFoundError("Fetch the locked SOF checkout separately; this audit is offline")
-    env = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
-
-    def git(*args):
-        return subprocess.check_output(["git", "-C", str(source_dir), *args],
-                                       env=env, text=True, stderr=subprocess.PIPE).strip()
-
-    if Path(git("rev-parse", "--show-toplevel")).resolve() != source_dir:
-        raise ValueError("expected an independent SOF checkout")
-    if git("rev-parse", "HEAD") != REVISION:
-        raise ValueError("SOF revision differs from the audit")
-    if git("status", "--porcelain", "--untracked-files=no"):
-        raise ValueError("tracked SOF files were modified")
+def verify_source(source_dir: Path) -> dict:
+    identity = contracts.verify_project('sof', source_dir, SOURCE_HASHES)
+    source_dir = Path(identity['checkout'])
     # An unexpected local sinc implementation would invalidate our premise.
     if any(path.name.lower() == "sinc.m" for path in source_dir.rglob("*.m")):
         raise ValueError("local sinc.m requires a separate shadowing audit")
     for name, expected in SOURCE_HASHES.items():
-        if hashlib.sha256((source_dir / name).read_bytes()).hexdigest() != expected:
+        if identity['used_files'][name]['sha256'] != expected:
             raise ValueError("fixed source hash mismatch: " + name)
+    return identity
 
 
 def run_audit(source_dir: Path | None = None) -> dict:
-    source_dir = (source_dir or ROOT / "chapters/ch00/upstream/_downloads/sof").resolve()
-    verify_source(source_dir)
-    return {
-        "schema_version": 1, "verified_at": "2026-09-28",
+    source_dir = contracts.validate_parent_chain(source_dir or ROOT / "chapters/ch00/upstream/_downloads/sof")
+    identity = verify_source(source_dir)
+    created = datetime.now(timezone.utc)
+    report = {
+        "schema_version": 1, "verified_at": created.date().isoformat(),
+        "created_utc": created.isoformat(),
         "status": "static_source_inconsistencies_with_independent_scalar_examples",
         "execution_scope": {
             "source_verification": True, "python_scalar_examples": True,
@@ -114,6 +105,8 @@ def run_audit(source_dir: Path | None = None) -> dict:
         },
         "environment": {"python": platform.python_version(), "numpy": np.__version__,
                         "platform": platform.platform()},
+        "source_identity": identity,
+        "report_source_sha256": contracts.dependencies(Path(__file__)),
         "findings": [
             {"id": "SOF-TDFB-COHERENCE", "file": "src/audio/tdfb/tune/sof_bf_design.m",
              "line": 123, "expression": "sinc(2*pi*f*lnm/bf.c)",
@@ -123,6 +116,11 @@ def run_audit(source_dir: Path | None = None) -> dict:
              "line": 272, "expression": "wng = num / denom2",
              "condition": "denom computed at line 271; denom2 retained from last DI iteration",
              "effect": "white-noise gain uses the last diffuse denominator, not current white-noise denominator"},
+            {"id": "SOF-TDFB-DIFFUSE-RESET", "file": "src/audio/tdfb/tune/sof_bf_design.m",
+             "line": 412, "expression": "nmi = zeros(nti, bf.mic_n)",
+             "condition": "optional create_simulation_data; azimuth loop begins at line 405, reset occurs inside each angle",
+             "effect": "post-loop output retains only the last azimuth contribution; this branch was not executed",
+             "execution": "static_source_only; no MATLAB, audio generation or firmware execution"},
         ],
         "fixed_source_defaults": {
             "design_fft_length": 1024, "nonnegative_frequency_bins": 513,
@@ -136,18 +134,21 @@ def run_audit(source_dir: Path | None = None) -> dict:
         },
         "mathematical_examples": independent_examples(),
     }
+    contracts.check_unchanged(identity)
+    return report
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source-dir", type=Path)
-    parser.add_argument("--output", type=Path)
+    parser.add_argument("--output", "--report", dest='output', type=Path)
     args = parser.parse_args()
+    protected = (contracts.CACHE, args.source_dir) if args.source_dir else (contracts.CACHE,)
+    target = contracts.report_target(args.output, CURRENT_REPORT, protected) if args.output else None
     report = run_audit(args.source_dir)
     payload = json.dumps(report, indent=2, ensure_ascii=False, allow_nan=False) + "\n"
-    if args.output:
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(payload, encoding="utf-8")
+    if target is not None:
+        contracts.write_report(target, report, CURRENT_REPORT, protected)
     else:
         print(payload, end="")
 

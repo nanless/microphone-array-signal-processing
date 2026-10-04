@@ -1111,13 +1111,15 @@ ACCDOA 的向量模与方向、multi-ACCDOA 的输出槽位和持久说话人 ID
 
 <a id="beamformer-upstream-audit"></a>
 
-**固定原方法实跑范围，2026-10-01。** [审计工具](../../ch05/examples/audit_upstream_beamformers.py)从所锁 pb_bss 的 `beamformer.py`、`math/solve.py` 提取 12 个原函数 AST，保留函数体和默认参数，用 NumPy 2.5.3、SciPy 1.18.1 的线性代数依赖执行 31 个确定性小输入。[真实报告](../../ch05/reports/upstream_beamformers.json)绑定当前工具与完整锁表 SHA、原 Git blob/文件与函数片段 SHA、运行前后 HEAD/clean、输入、输出、警告、异常及独立手算期望。上游目录未修改，原函数没有兼容 facade；GEV 明确关闭可选 Cython 标记，只执行 SciPy 后备路径。有效对角模型的最大特征方向为第一通道；奇异噪声模型抛出的 `ValueError` 仍记录为失败。
+**固定原方法实跑范围，2026-10-01。** [审计工具](../../ch05/examples/audit_upstream_beamformers.py)从所锁 pb_bss 的 `beamformer.py`、`math/solve.py` 提取 12 个原函数 AST，保留函数体和默认参数，用 NumPy 2.5.3、SciPy 1.18.1 的线性代数依赖执行 31 个确定性小输入。[历史报告](../../ch05/reports/upstream_beamformers.json)绑定当次工具与完整锁表 SHA、原 Git blob/文件与函数片段 SHA、运行前后 HEAD/clean、输入、输出、警告、异常及独立手算期望。上游目录未修改，原函数没有兼容 facade；GEV 明确关闭可选 Cython 标记，只执行 SciPy 后备路径。有效对角模型的最大特征方向为第一通道；奇异噪声模型抛出的 `ValueError` 仍记录为失败。
+
+2026-10-04 用[当前工具](../../ch05/examples/audit_upstream_beamformers.py)再次实际调用13个未修改原函数、33个确定性输入，见[新报告](../../ch05/reports/upstream_beamformers_current.json)。增加原 `phase_correction` 的二维/三维对照；原5项异常仍保留，33项“符合预期行为”包含对原失败的核对，不能解释为33项算法成功。旧31项报告及其工具身份保持真实历史字节，独立测试从本仓库提交747ec3fec96ef20c7c128cc4291fd7bb9ee36c34读取旧工具的Git原blob，未给历史报告替换当前源摘要。
 
 默认执行只核验并打印摘要；只有加 `--report` 才生成报告。可在已有隔离环境中复跑：
 
 ```bash
 /private/tmp/masp-ch04-pra-venv/bin/python -m codes.chapters.ch05.examples.audit_upstream_beamformers
-/private/tmp/masp-ch04-pra-venv/bin/python -m codes.chapters.ch05.examples.audit_upstream_beamformers --report codes/chapters/ch05/reports/upstream_beamformers.json
+/private/tmp/masp-ch04-pra-venv/bin/python -m codes.chapters.ch05.examples.audit_upstream_beamformers --report codes/chapters/ch05/reports/upstream_beamformers_current.json
 ```
 
 这个临时环境的路径不是永久安装承诺；所需包版本与真实解释器路径在报告中。该审计没有导入完整 pb_bss/ESPnet/Torch 包、运行增强波形、测论文指标或验证设备。`stable_solve` 的正常与奇异例采用它实际要求的二维列矩阵右端；直接传 NumPy 常见的一维右端会 `IndexError`，另列负例。普通数值比较使用绝对容差 `2e-14`；极小 SCM 用 `1e-303`，避免把零误判成正确的 `1e-290`。GEV 则比较特征向量张成的方向，允许任意整体符号与相位。
@@ -1533,3 +1535,53 @@ CTF首系数是RIR第一段与分析/合成窗相应权重的组合，不是无�
 锁表只登记七个入口的固定SHA和不同许可层，`fetch_enabled=false`、`acquisition=index_only`。没有取得二进制、权重、测试音频或设备依赖，没有运行厂商648例。读者后续应在适用许可及支持设备上核布局、坐标、VAD与状态、真实频率映射和错误码，再分别测声学效果与时间期限；本书此处是接口研究，不是新增本地Capon替代实现。
 
 本机研究文件选集位于Git忽略的`codes/chapters/ch00/upstream/_downloads/.research-only/esp-sr-doa-76581015af70/`，只导出上述七个已核原blob，包含根LICENSE及所读头文件的原许可声明。`RESEARCH_ACQUISITION.json`记录官方origin、固定提交、各blob/SHA和非发布、非运行范围。该目录不是完整1156文件树的检出，也不含链接的算法库；七个接口文件不能算作已取得整个DOA实现。
+
+
+<a id="per-channel-mask-evidence"></a>
+
+## 60. 第5章：相位连续化、逐通道掩码与工业输出边界
+
+本节于2026-10-04定向复核，连接正文E05-23、E05-24和[音频手册§55](05_exercises_and_audio.md#phase-reference-audio)。新增内容隔离两个模型问题：GEV逐频方向的尺度/相位自由度，以及各通道预滤波怎样改变空间统计。它们仍属于本书既有波束章节，不增设独立章节。
+
+### 60.1 原函数的维度合同与相位锚
+
+固定[pb_bss原源码](https://github.com/fgnt/pb_bss/blob/10acc347fc9ea21e3d312806a0bd751d0d0af183/pb_bss/extraction/beamformer.py#L517-L560)的 `phase_correction` 对相邻频率向量的内积取相角，再累乘相位因子。二维输入F×C时，`axis=0`是频率；三维B×F×C时，同一行累乘却沿batch。不能用“函数名是相位校正”来推断支持所有前导批次维度。
+
+[当前原函数报告](../../ch05/reports/upstream_beamformers_current.json)实际提取完整原函数体，不修上游。两种输入都使用三频权重符号(+,-,+)，每频两个通道相同；二维结果成为(+,+,+)，三维单batch结果却是(+,+,-)。真实目标取全1向量时，三维输出复响应为(2,2,-2)，权重平方范数均为2。范数或功率核查不能看见最后一频的反号。此处只定位固定原函数的轴合同，没有运行完整pb_bss包、神经网络或增强波形；正文三份PCM是独立的已知相位控制。
+
+相位连续也不自动决定目标的绝对参考相位。[Warsitz与Haeb-Umbach，2006原文§2–3](https://groups.uni-paderborn.de/nt/pubs/2006/WaHa06-2.pdf)将最大输出SNR与语音失真控制分开讨论；它的归一公式与后来的实现不能只因同名BAN就互换。[2019作者机构元数据与摘要](https://graz.elsevierpure.com/en/publications/eigenvector-based-speech-mask-estimation-for-multi-channel-speech)，DOI10.1109/TASLP.2019.2941592，可核相位感知归一这一研究路线，但本次未以摘要代替全文推导或声称运行作者网络。
+
+[Pfeifenberger等2017原ISCA论文](https://www.isca-archive.org/interspeech_2017/pfeifenberger17_interspeech.pdf)§3.1式(12)、(13)给出相位感知归一（PAN）。将该单源秩一模型的目标向量记为 $\vec a$，要求 $\|\vec a\|_2=1$ 且已选择参考复相位；非零GEV方向记为 $\vec w$，噪声矩阵为正定 $\mathbf R_n$：
+
+$$\begin{aligned}
+C_{\rm PAN}&=\frac{\vec w^H\mathbf R_n\vec a}{\vec w^H\mathbf R_n\vec w},\\
+\vec w_{\rm PAN}&=C_{\rm PAN}\vec w。
+\end{aligned}$$
+
+在 $\vec w\propto\mathbf R_n^{-1}\vec a$ 这一精确GEV方向条件下，上式可恢复该已锚定目标向量的MVDR响应；任意非GEV向量不能照搬这项等价。单位范数本身没有确定全局相位：$\vec a$ 和 $e^{\mathrm j\psi}\vec a$ 同范数，估计主特征向量后仍要选参考相位。
+
+一个独立代数控制取 $\mathbf R_n=\mathbf I$、$\vec a=[1,1]^T/\sqrt2$、$\vec w=\mathrm j\vec a$。分母为1，分子为 $-\mathrm j$，故 $C_{\rm PAN}=-\mathrm j$，新权重等于 $\vec a$，其目标响应为1。只做单位范数缩放则仍留下 $\mathrm j\vec a$，输出目标响应为 $-\mathrm j$。这是手算控制，不是原作者网络或完整PAN音频链运行。
+
+该2017论文的式(16)使用居中的协方差窗，§6设置250ms窗与32ms STFT、50%重叠；中心窗约需半窗未来观测，还要计入帧可用时刻，不能称零前瞻。2017的逻辑回归系统与上述2019扩展论文分别登记；本次未核到许可明确且可取得的作者网络代码，没有训练、运行网络或复算论文成绩。
+
+### 60.2 在线逐通道掩码的原始计算
+
+[Middelberg、Voit、Doclo与Corey，2026年7月29日作者预印本v1](https://arxiv.org/html/2607.26623v1)§3式(5)、(6)、(8)先将各通道观测乘对应掩码的平方根，再对最后P帧的处理后向量外积求均值。分母为P；它与共同标量掩码在原观测外积上的加权、除以掩码总质量是不同操作。每项外积半正定，平均仍半正定，但不能据此推断保留原RTF或单源秩一结构。
+
+正文E05-24用固定两通道、两帧控制独立复算该差别，没有训练掩码网络、估计未知目标或实现论文完整在线Souden链。原文§4–5使用16kHz、512点STFT、256点hop、平方根Hann窗和200/500/1000ms缓冲；频率上的双向LSTM与时间上的单向LSTM应分别判断。时间单向也还要等分析帧到齐，hop的16ms不能充当全部端到端延迟。论文的紧凑/分布式阵列仿真不等于实际无线时钟、传输或硬件测量。
+
+本次原文未提供可核对、许可明确的作者源码入口，故仅登记原理与独立教学控制，没有取得或运行完整作者实现。已有[Deng等Interspeech2026正式论文](https://www.isca-archive.org/interspeech_2026/deng26d_interspeech.html)仍归§46；其复掩码先构造噪声声像，再平均外积，不当作任意复标量协方差权重，也不重复增设算法章。
+
+### 60.3 固定SOF设计与实际输出的取点
+
+本轮还实际重新生成[SOF当前静态合同](../../ch05/reports/sof_tdfb_design_current.json)。固定 `sof_bf_design.m` 的归一化sinc自变量与WNG分母问题保留；新增的可选仿真分支在方位循环内重置 `nmi`，循环后只留下最后一次方位的数据。这是静态控制流与独立标量控制，不是已经执行MATLAB并生成错误WAV的证据。默认 `create_simulation_data=false`，没有运行MATLAB/Octave、设计实际FIR、刷写固件或测试设备。
+
+固定 `tdfb_generic.c` 使用每支路FIR累加、Q格式缩放、输出位图路由和饱和；设计脚本的逐麦峰位裁切、有限抽头和板端量化也与理想频率权重不同。应分别记录理论权重、导出的FIR系数、固件输出取点和数字饱和，不能仅用理想WNG曲线证明设备效果。[固定SOF目录](https://github.com/thesofproject/sof/tree/b6c6a05d52536313fe8e8752b1c4e069b1cc4002/src/audio/tdfb)
+
+### 60.4 当前调用、历史报告与有限收录清单
+
+[reference当前报告](../../ch05/reports/beamformer_reference_current.json)仍记录pb_bss正常导入缺少paderbox、MERL单原函数提取的误选参考，以及PRA原 `rake_distortionless_filters` 在浮点切片处真实失败、没有输出滤波器。PRA安装目录的85份Python源与固定Git blob逐字节核对；两个安装二进制只登记本机SHA，不宣称由固定Git源码复现构建。所用原文件身份与完整选集状态分栏，运行前后源码和许可保持洁净。
+
+三个工具默认只读stdout；只有显式 `--report` 才写指定新current报告或普通外部文件。写前拒绝历史报告、仓内其他文件、缓存、符号链接父链及非普通目标；这些有限检查不保证消除并发竞态或崩溃持久性。旧三报告与旧工具Git身份保留。重新执行命令及范围见[复现手册](04_source_reproduction.md#beamforming-current-contracts)。
+
+本轮对[重尾spiked-MVDR预印本2609.27552](https://arxiv.org/abs/2609.27552)的候选审查没有纳入正文：其通用阵列控制使用100元ULA、200快拍与重尾纹理，没有STFT语音、房间、麦克风实录或设备证据，不能移植为本书声学性能结论。WPD已经由第7章介绍并有对应练习，这里只保留跨章引用。本轮是有限问题清单的研究，不宣称穷尽不断更新的全部阵列算法。

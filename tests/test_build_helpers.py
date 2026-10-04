@@ -196,6 +196,26 @@ class PdfHeadingDestinationTest(unittest.TestCase):
 
 
 class BuildHelpersTest(unittest.TestCase):
+    def test_research_figure_image_uses_published_relative_path(self):
+        source = build_site.RESEARCH_ROOT / '05_exercises_and_audio.md'
+        original = ('<img src="../../../../figures/fig73_phase_reference.png?view=1&amp;mode=pcm#plot" alt="PCM">'
+                    '<img src="https://example.org/figures/control.png">'
+                    '<img src="../../../../figures/missing.png">'
+                    '<code>&lt;img src="../../../../figures/fig73_phase_reference.png"&gt;</code>')
+        actual = build_site.rewrite_site_links(original, source)
+        self.assertIn('src="../../figures/fig73_phase_reference.png?view=1&amp;mode=pcm#plot"', actual)
+        for unchanged in ('<img src="https://example.org/figures/control.png">',
+                          '<img src="../../../../figures/missing.png">',
+                          '<code>&lt;img src="../../../../figures/fig73_phase_reference.png"&gt;</code>'):
+            self.assertIn(unchanged, actual)
+        chapter = build_site.SRC / '05_beamforming.md'
+        self.assertEqual(build_site.rewrite_site_links(
+            '<img src="../figures/fig73_phase_reference.png">', chapter),
+            '<img src="../figures/fig73_phase_reference.png">')
+        self.assertEqual(build_site.rewrite_site_links(
+            '<img data-src="../../../../figures/fig73_phase_reference.png" src = "../../../../figures/fig73_phase_reference.png">', source),
+            '<img data-src="../../../../figures/fig73_phase_reference.png" src = "../../figures/fig73_phase_reference.png">')
+
     @staticmethod
     def budget_fixture(headers, *, aligned=False):
         cells = ['`$x<y$`', '$z^H z$', '[证据](https://example.org/source)',
@@ -225,6 +245,32 @@ class BuildHelpersTest(unittest.TestCase):
             (ROOT / 'chapters/06_aec.md',
              ('#', '征兆', '量测', '工具/信号', '判断依据'),
              70, {1: 3, 2: 9, 3: 10, 4: 20, 5: 18}),
+            (ROOT / 'chapters/05_beamforming.md',
+             ('设计变化', '可能获得的能力', '同时增加的风险', '必须固定的比较条件'),
+             52, {1: 8, 2: 14, 3: 15, 4: 15}),
+            (ROOT / 'chapters/05_beamforming.md',
+             ('', 'Frost（1972）', 'GSC'), 46, {1: 8, 2: 19, 3: 19}),
+            (ROOT / 'chapters/05_beamforming.md',
+             ('权重', '总质量', '正支持数', '集中程度对应数量', '输出矩阵'),
+             54, {1: 8, 2: 12, 3: 9, 4: 12, 5: 13}),
+            (ROOT / 'chapters/05_beamforming.md',
+             ('参考麦', r'参考目标传递 $b_r$', r'Souden 权重 $\vec w_{S,r}$', r'输出目标响应 $\vec w^H\vec b$', '输出噪声功率'),
+             64, {1: 8, 2: 12, 3: 19, 4: 13, 5: 12}),
+            (ROOT / 'chapters/05_beamforming.md',
+             ('权重', '线性 WNG', 'WNG／dB', '复响应误差上界', '可保证的响应幅度下界'),
+             54, {1: 8, 2: 10, 3: 10, 4: 12, 5: 14}),
+            (ROOT / 'chapters/05_beamforming.md',
+             (r'绝对加载 $\varepsilon$', r'相对加载 $\alpha=\varepsilon/11$', '线性 WNG', r'干扰功率增益 $|\vec w^H\vec b|^2$', '原协方差输出噪声功率'),
+             63, {1: 9, 2: 13, 3: 11, 4: 13, 5: 17}),
+            (ROOT / 'chapters/05_beamforming.md',
+             (r'$\alpha$ 取值', '加载相对平均特征值的大小', '白噪声增益', '指向性/零陷深度', '稳健性', '适用场合'),
+             71, {1: 9, 2: 13, 3: 10, 4: 12, 5: 13, 6: 14}),
+            (ROOT / 'chapters/05_beamforming.md',
+             ('现象', '主要误差来源', '首选', '备选/联合', '验证重点'),
+             76, {1: 15, 2: 10, 3: 18, 4: 16, 5: 17}),
+            (ROOT / 'chapters/05_beamforming.md',
+             ('方法', '优化目标或固定规则', '需要的统计量/先验', '目标保持条件', '主要失败模式', '主要计算'),
+             85, {1: 10, 2: 15, 3: 16, 4: 14, 5: 16, 6: 14}),
             (ROOT / 'chapters/12_appendix-symbols-math.md',
              ('权重', '误差均方的逐项计算', '解析 MSE', '解析 NMSE（除以 $0.02$）'),
              52, {1: 6}),
@@ -233,6 +279,9 @@ class BuildHelpersTest(unittest.TestCase):
             (build_site.RESEARCH_ROOT / '05_exercises_and_audio.md',
              ('实际文件/通道', '整数能量E', '每通道分母D', '实际PCM均方'),
              50, {1: 14, 2: 11, 3: 13, 4: 12}),
+            (build_site.RESEARCH_ROOT / '05_exercises_and_audio.md',
+             ('文件', '输出整数能量E_y', '误差整数能量E_e', '实际PCM功率E_y/D', '实际PCM总MSE E_e/D', '实际PCM NMSE'),
+             72, {1: 8, 2: 13, 3: 13, 4: 13, 5: 13, 6: 12}),
             (build_site.RESEARCH_ROOT / '01_spatial_and_tracking.md',
              ('原始路线', '输入与额外前提', '求解目标和关键改变', '本书当前证据'),
              54, {1: 8, 2: 15, 3: 16, 4: 15}),
@@ -932,10 +981,10 @@ class BuildHelpersTest(unittest.TestCase):
         )
 
     def test_figure_semantics_accept_any_reuse_and_reject_mismatch_or_orphan(self):
-        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 73)]
+        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 74)]
         refs.extend([("图1 复用", "fig01_x.png", 1),
                      ("图23 复用", "fig23_x.png", 23)])
-        names = [f"fig{i:02d}_x.png" for i in range(1, 73)]
+        names = [f"fig{i:02d}_x.png" for i in range(1, 74)]
         self.assertEqual(quality_check.figure_inventory_issues(refs, names), [])
         bad_refs = list(refs)
         bad_refs[0] = ("图2 错配", "fig01_x.png", 1)

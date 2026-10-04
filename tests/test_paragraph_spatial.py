@@ -204,12 +204,30 @@ class SpatialParagraphTest(unittest.TestCase):
             self.assertIn(explanation, lists[0][2])
             self.assertNotIn("<pre>", html)
 
-    def test_rank_one_mwf_relation_stays_in_its_parameter_item(self):
-        source, path = chapter_fragment("05_beamforming.md", "- $\\mathbf{R}_{ss},", "### Frost 波束形成器：时域约束更新")
-        html, lists = rendered_lists("- $\\mathbf{R}_{ss},"+source, path)
-        self.assertEqual([len(items) for items in lists], [2])
-        self.assertIn(r"\frac{\phi_s q}{\mu+\phi_s q}", lists[0][1])
-        self.assertIn("目标协方差满秩", lists[0][1])
+    def test_mwf_cost_conditions_and_rank_one_relation_have_separate_blocks(self):
+        start = "### 多通道维纳滤波与秩一目标模型"
+        source, path = chapter_fragment(
+            "05_beamforming.md", start, "### Frost 波束形成器：时域约束更新"
+        )
+        html, lists = rendered_lists(start + source, path)
+        self.assertEqual(lists, [])
+        paragraphs = re.findall(r"<p>(.*?)</p>", html, flags=re.S)
+        # Locate technical paragraphs by their complete distinctive content,
+        # rather than requiring a historical list layout that no longer exists.
+        checks = ("定义 $s_{out}", r"\tag{5-12}", "真实混合输出",
+                  r"\mu\to\infty", "只有秩一目标模型", r"\tag{5-13}",
+                  "可先验证", "目标二阶矩满秩")
+        indices = []
+        for needle in checks:
+            found = [i for i, paragraph in enumerate(paragraphs) if needle in paragraph]
+            self.assertEqual(len(found), 1, needle)
+            indices.append(found[0])
+        self.assertEqual(indices, sorted(set(indices)))
+        for tag in (r"\tag{5-12}", r"\tag{5-13}"):
+            formula = next(p.strip() for p in paragraphs if tag in p)
+            self.assertTrue(formula.startswith("$$") and formula.endswith("$$"))
+        self.assertIn(r"\frac{\phi_s q}{\mu+\phi_s q}", html)
+        self.assertIn(r"a_r=1", paragraphs[indices[4]])
         self.assertNotIn("<pre>", html)
 
     def test_accdoa_external_and_book_azimuths_are_complementary(self):

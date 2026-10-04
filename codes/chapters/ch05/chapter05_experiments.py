@@ -1,4 +1,4 @@
-"""E05-08--22: small models and strictly checked published waveform fixtures.
+"""E05-08--24: small models and strictly checked published waveform fixtures.
 
 Run .venv/bin/python -m codes.chapters.ch05.chapter05_experiments. No files are
 written. These are original deterministic examples, not upstream benchmarks.
@@ -377,6 +377,65 @@ def derivative_audio_results() -> dict:
             'float_decomposition': manifest['float_decomposition'], 'limits': manifest['limits']}
 
 
+def frequency_phase_ambiguity(*, include_published: bool = True) -> dict:
+    """Known two-tone phase reconstruction, not an executed GEV/STFT/BAN.
+
+    Weight phase is conjugated in y=w.H x. Exact target response and SNR
+    invariance refer to each fixed frequency; the actual assets have no noise.
+    """
+    cases = []
+    for name, factor in [('reference', 1.+0j), ('flip', -1.+0j), ('quadrature', 1j)]:
+        output_factor = factor.conjugate()
+        error = .1**2/2*abs(output_factor-1)**2
+        cases.append({'case': name, 'low_frequency_hz': 500., 'high_frequency_hz': 1500.,
+                      'high_weight_factor': factor, 'high_output_factor': output_factor,
+                      'per_tone_amplitude': .1, 'steady_reference_mean_square': .01,
+                      'steady_output_mean_square': .01, 'steady_error_mean_square': error,
+                      'steady_nmse': error/.01, 'steady_nrmse': math.sqrt(error/.01)})
+    result = {'cases': cases, 'scoring_interval_samples': [2400, 29600],
+              'sample_denominator': 27200, 'pure_delay_control':
+              '500*tau integer implies 1500*tau integer; neither the half-integer flip '
+              'nor the quarter-cycle high-frequency phase can occur while preserving low phase.',
+              'limits': 'Original known-component reconstruction with exact per-frequency phases. '
+              'No GEV estimation, STFT filtering, BAN, noise, causal FIR design or listening score is run.'}
+    if include_published:
+        from codes.chapters.ch05.examples.generate_phase_audio import check_assets, DEFAULT_OUTPUT
+        result['published_audio'] = check_assets(DEFAULT_OUTPUT)
+    return result
+
+
+def channel_mask_prefilter_model() -> dict:
+    """Two exact /P SCM controls: channel prefilters differ from scalar weights.
+
+    The response test applies a deliberately inferred pseudo-RTF to ORIGINAL
+    observations, rather than reproducing the paper's full Souden pipeline.
+    """
+    x = np.ones((2, 2))  # channels x snapshots, two copies of the same direction
+    original = x@x.T/2
+    rows = []
+    for name, mask in [('constant_channel_gains', np.array([[1., 1.], [.25, .25]])),
+                       ('alternating_channel_gains', np.array([[1., .25], [.25, 1.]]))]:
+        filtered = np.sqrt(mask)*x
+        covariance = filtered@filtered.T/2
+        scalar = mask.mean(axis=0)
+        scalar_over_frames = (x*scalar[None, :])@x.T/2
+        scalar_over_mass = (x*scalar[None, :])@x.T/scalar.sum()
+        rows.append({'case': name, 'channel_masks': mask, 'prefiltered_snapshots': filtered,
+                     'frame_average_scm': covariance, 'eigenvalues': np.linalg.eigvalsh(covariance),
+                     'rank': int(np.linalg.matrix_rank(covariance)),
+                     'scalar_mask_per_snapshot': scalar, 'scalar_frame_average_scm': scalar_over_frames,
+                     'scalar_mass_normalized_scm': scalar_over_mass})
+    pseudo = np.array([1., .5])
+    weight = mvdr_weights(np.eye(2), pseudo)
+    return {'original_snapshots': x, 'original_scm': original, 'original_rank': 1,
+            'frame_denominator': 2, 'cases': rows, 'noise_scm': np.eye(2),
+            'pseudo_rtf': pseudo, 'pseudo_rtf_mvdr_weights': weight,
+            'response_on_original_target': np.vdot(weight, np.ones(2)),
+            'response_on_prefiltered_target': np.vdot(weight, pseudo),
+            'limits': 'Exact deterministic channel-mask algebra. No network, target/noise mask estimation, '
+            'Souden paper reproduction, online state or speech enhancement performance is run.'}
+
+
 def _pack(value):
     if isinstance(value, np.ndarray):
         return {'real': value.real.tolist(), 'imag': value.imag.tolist()} if np.iscomplexobj(value) else value.tolist()
@@ -396,7 +455,8 @@ def run_exercises() -> dict:
                  zelinski_pair_difference, coherent_noise_pair, target_covariance_contamination,
                  gev_mwf_scale, first_order_spatial_rank, gsc_audio_results, nonnegative_mask_model,
                  derivative_lcmv, norm_ball_robust, souden_reference_channel,
-                 om_lsa_probability_combination, derivative_audio_results]
+                 om_lsa_probability_combination, derivative_audio_results,
+                 frequency_phase_ambiguity, channel_mask_prefilter_model]
     results = {}
     for index, function in enumerate(functions, 8):
         result = function()

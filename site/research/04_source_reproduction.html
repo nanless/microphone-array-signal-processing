@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码获取与独立复现记录 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="7fd9efb3e8ea"><style>
+<meta name="source-digest" content="f82c588994c1"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -268,6 +268,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-d50665334b">LibriCSS：评分协议也是系统输入的一部分</a></li>
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-c6545a4faa">获取、核验与当前真实状态</a></li>
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-af06dd4c7e">第4章新增来源与当前限定调用</a></li>
+<li><a href="04_source_reproduction.html#sec-u-a91662f52c">11. 第5章当前原方法合同与相位控制</a></li>
 </ul>
 <div class="chap"><a href="05_exercises_and_audio.html">章节代码练习与音频实验</a></div>
 <div class="chap"><a href="../01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
@@ -316,6 +317,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-d50665334b">LibriCSS：评分协议也是系统输入的一部分</a></li>
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-c6545a4faa">获取、核验与当前真实状态</a></li>
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-af06dd4c7e">第4章新增来源与当前限定调用</a></li>
+<li><a href="04_source_reproduction.html#sec-u-a91662f52c">11. 第5章当前原方法合同与相位控制</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="取得源码后怎样复现" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-515383f30b">取得源码后怎样复现</h1>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="1-先确定复现对象" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-630cc32c87">1. 先确定复现对象</h2>
@@ -1014,6 +1016,43 @@ $\left[\begin{smallmatrix}1/10&1/5\\1/10&1/5\end{smallmatrix}\right]$。</p>
 <p>本机另在<code>codes/chapters/ch00/upstream/_downloads/.research-only/</code>导出DP-RTF四个原文件（4863字节）及ESP-SR七个所读入口（33830字节），逐文件对照固定Git blob及锁表SHA，原许可/版权声明保留。两个选集各带<code>RESEARCH_ACQUISITION.json</code>，明确是固定对象的文件导出，不是洁净Git工作树，不含二进制、权重、音频或数据集，未运行算法。该忽略缓存不进入提交推送，也不升级受管理109项的获取状态或92个独立工作区数量；静态研究、取得完整实现和获得再分发许可分别判断。</p>
 <p>六个第4章原源工具现在统一使用<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/core/upstream_contracts.py">当前合同核</a>：sanitized Git、官方origin、固定HEAD、全部声明使用的原blob与许可SHA、跟踪/未忽略成员的前后洁净及忽略成员前后清单，真实完整选集与所用源码身份分栏。默认stdout不写报告；两个audit显式写入仅允许新<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/reports/upstream_doa_contracts.json">DOA当前报告</a>、<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/reports/said_compression_contracts.json">SAID当前报告</a>或仓外普通路径。四个旧reproduce入口的output/workdir只能仓外，历史报告/源码/上游及链接父链执行前拒绝。有限路径检查不保证消除并发竞态。</p>
 <p>本轮使用既有<code>/private/tmp/masp-appb-pra-venv</code>真实运行PRA 0.10.0完整TOPS及限定原helper；原峰49°与独立30°分别保留，root-MUSIC原dtype错误与局部门面分开，SAID只执行四个压缩格式助手。ESPRIT与SBL另实际输出到仓外，不给旧报告改成新运行。SMP的FFTW条件不足，本轮没有重建原C；旧失败/临时适配历史与独立DFT测试仍分别说明。DP-RTF MATLAB、完整DPD、FRIDA、学习网络、核心二进制和硬件未执行；详细条件及许可见<a href="01_spatial_and_tracking.html#sec-u-1ca23edba5">空间研究58/59</a>。</p>
+<p><a id="beamforming-current-contracts"></a></p>
+<span id="sec-31" class="anchor-alias" aria-hidden="true"></span><span id="11-第5章当前原方法合同与相位控制" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-a91662f52c">11. 第5章当前原方法合同与相位控制</h2>
+<p>2026-10-04实际运行三项限定合同；所有结果由真实工具生成，没有改上游、旧三报告或原获取状态。重新调用可使用具备报告所列PRA/NumPy/SciPy版本的隔离环境；下面临时路径只描述本机本轮环境，不是永久安装位置。</p>
+<pre><code class="language-bash">/private/tmp/masp-appb-pra-venv/bin/python -m codes.chapters.ch05.examples.audit_upstream_beamformers --report codes/chapters/ch05/reports/upstream_beamformers_current.json
+/private/tmp/masp-appb-pra-venv/bin/python -m codes.chapters.ch05.examples.audit_beamformer_reference --report codes/chapters/ch05/reports/beamformer_reference_current.json
+/private/tmp/masp-appb-pra-venv/bin/python -m codes.chapters.ch05.examples.audit_sof_tdfb_design --report codes/chapters/ch05/reports/sof_tdfb_design_current.json
+</code></pre>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">工具与当前报告</th>
+<th scope="col">实际执行</th>
+<th scope="col">原问题及未执行边界</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/reports/upstream_beamformers_current.json">pb_bss合同</a></td>
+<td>13个未修改原函数AST，33个确定性用例；原stable_solve与SciPy后备</td>
+<td>5项原异常保留；二维/三维相位轴对照有原符号差异；未导入完整pb_bss/ESPnet/Torch、可选Cython、增强波形或论文基准</td>
+</tr>
+<tr>
+<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/reports/beamformer_reference_current.json">reference合同</a></td>
+<td>MERL单原函数AST两组控制、原PRA方法调用；安装85份Python源逐fixed blob核对</td>
+<td>pb_bss普通导入缺paderbox、MERL误选、PRA浮点切片失败，没有得到Rake滤波器；二进制只登记安装文件SHA，不声称可复现源码构建</td>
+</tr>
+<tr>
+<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/reports/sof_tdfb_design_current.json">SOF合同</a></td>
+<td>七份固定源码/许可静态核验与三组独立标量计算</td>
+<td>sinc/WNG/最后方位控制流问题；没有MATLAB/Octave、实际FIR设计、固件或设备执行</td>
+</tr>
+</tbody>
+</table></div>
+<p>去掉 <code>--report</code> 时三项默认都只输出stdout。指定报告前先核普通父链与目标：仓内只接受该工具的新current路径；旧报告、其他仓内源文件、缓存与符号链接目标被拒绝。工具绑定当前真实工具、共享合同、IO与获取工具SHA，同时核官方origin、固定HEAD、所用原Git blob与逐文件许可；所用文件核验和完整选集状态分栏。写前检查有限，不保证消除并发竞态或崩溃持久性。</p>
+<p>三份历史报告分别是<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/reports/upstream_beamformers.json">原31项pb_bss</a>、<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/reports/beamformer_reference_audit.json">原reference</a>、<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/reports/sof_tdfb_design_audit.json">原SOF</a>。它们保留原字节与修改时刻；旧工具身份从本仓库固定提交747ec3fec96ef20c7c128cc4291fd7bb9ee36c34的Git blob核对，不将当前工具SHA替换进去伪造重跑。</p>
+<p>共享合同增加pb_bss/SOF固定项目身份后，两个第4章当前消费者<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/reports/upstream_doa_contracts.json">DOA合同</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/reports/said_compression_contracts.json">SAID合同</a>也实际重新执行，报告绑定更新后的真实合同源。此前六份第4章历史报告未改写；这只是依赖消费者的限定重跑，不是把其他章节提前列为完成。</p>
+<p>本书<a href="05_exercises_and_audio.html#phase-reference-audio">E05-23相位音频</a>与E05-24预滤波矩阵采用独立已知模型，不调用上述原算法来生成“理想答案”。三份PCM的实际量化功率和参考误差分开评分，图73绑定真实源；模型正确与工业系统性能是不同验证范围。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

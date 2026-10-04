@@ -1,4 +1,4 @@
-"""Shared fixed-source and finite write-preflight contracts for chapter 4.
+"""Shared fixed-source and finite write-preflight contracts, first used in chapter 4.
 
 Used original blobs, complete acquisition selection, and actual method execution
 are separate records. Checks do not eliminate concurrent filesystem races.
@@ -21,6 +21,13 @@ STATUS = LOCK.with_name("SOURCE_STATUS.json")
 CACHE = LOCK.parent / "upstream/_downloads"
 HISTORICAL_REVISION = "e4d54a158d892b224e37cc49b93066e667babf08"
 PROJECTS = {
+    "pb_bss": ("https://github.com/fgnt/pb_bss.git",
+        "10acc347fc9ea21e3d312806a0bd751d0d0af183", "MIT", "LICENSE",
+        "48241e1eae6ab4c15c5718992ca60d3d15961212a4e324e09e5dbfbc79b78214"),
+    "sof": ("https://github.com/thesofproject/sof.git",
+        "b6c6a05d52536313fe8e8752b1c4e069b1cc4002",
+        "BSD-3-Clause and per-file licenses", "LICENCE",
+        "cb6a9aa5baac3ea573feebcdc298526f701e2b7cd005a22208799778e26f0068"),
     "pyroomacoustics": ("https://github.com/LCAV/pyroomacoustics.git",
         "0dd39f2614b7fc44b2cc63dbe7d60f4641068890", "MIT", "LICENSE",
         "0922c9a0c1f5bb35a1e0df7b56954864e27cfc625fc3b041acde0707ce797e46"),
