@@ -7,6 +7,7 @@ import unittest
 
 import numpy as np
 from codes.chapters.ch07.examples import audit_wpe_upstream_interfaces as audit
+from tests.test_codes_ch07_source_contracts import old_bytes
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -18,7 +19,7 @@ class WPEInterfaceReportTests(unittest.TestCase):
 
     def test_report_bound_to_harness_sources_inputs(self):
         r = self.report
-        self.assertEqual(r['harness_sha256'], hashlib.sha256(Path(audit.__file__).read_bytes()).hexdigest())
+        self.assertEqual(r['harness_sha256'], hashlib.sha256(old_bytes(audit.__file__)).hexdigest())
         self.assertEqual(r['source_config_sha256'], audit.binding_sha256())
         self.assertEqual(r['config'], audit.CONFIG)
         self.assertEqual(r['sources'], audit.SOURCES)

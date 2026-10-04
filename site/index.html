@@ -1,12 +1,12 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>导读与导航 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="b9a4256417d5"><style>
+<meta name="source-digest" content="f9d33402bd52"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
-@media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
+@media screen{.main a[id^="e06-"],.main a[id^="e07-"]{scroll-margin-top:60px}}
 a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
 .skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
 .skip-link:focus{top:8px}
@@ -258,7 +258,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="index.html#sec-u-3937b1b94e">路径 A：零基础入门（能复现演示）</a></li>
 <li>&nbsp;&nbsp;<a href="index.html#sec-u-f958564d39">路径 B：工程实现（形成可验证的前端方案）</a></li>
 <li>&nbsp;&nbsp;<a href="index.html#sec-u-03c61e4770">路径 C：研究复现与公开评测（长期）</a></li>
-<li><a href="index.html#sec-u-dccee38a3d">6. 插图地图：74 张编号图在哪篇</a></li>
+<li><a href="index.html#sec-u-55e537d650">6. 插图地图：75 张编号图在哪篇</a></li>
 <li><a href="index.html#sec-u-e996348528">7. 十处跨文档联系</a></li>
 <li><a href="index.html#sec-u-6d43c0086f">8. 动手复现</a></li>
 <li><a href="index.html#sec-u-ccd87eee7f">9. 常见问题</a></li>
@@ -305,7 +305,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="index.html#sec-u-3937b1b94e">路径 A：零基础入门（能复现演示）</a></li>
 <li>&nbsp;&nbsp;<a href="index.html#sec-u-f958564d39">路径 B：工程实现（形成可验证的前端方案）</a></li>
 <li>&nbsp;&nbsp;<a href="index.html#sec-u-03c61e4770">路径 C：研究复现与公开评测（长期）</a></li>
-<li><a href="index.html#sec-u-dccee38a3d">6. 插图地图：74 张编号图在哪篇</a></li>
+<li><a href="index.html#sec-u-55e537d650">6. 插图地图：75 张编号图在哪篇</a></li>
 <li><a href="index.html#sec-u-e996348528">7. 十处跨文档联系</a></li>
 <li><a href="index.html#sec-u-6d43c0086f">8. 动手复现</a></li>
 <li><a href="index.html#sec-u-ccd87eee7f">9. 常见问题</a></li>
@@ -314,11 +314,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-50ba72ce3a">多麦克风阵列信号处理教程 · 导读与导航</h1>
 <p>本页是全套教程的入口，教程正文一共 16 个文件：本页导读＋11 章正文＋2 篇扩展专题＋2 篇附录。另有 6 篇<a href="research/index.html">源码研究手册</a>网页，展开实现与工业复现，不计入正文篇数。</p>
 <p>11 章正文、扩展专题和 2 篇附录既可顺序阅读，也可按第 5 节的学习路径选读。每篇开头都列出上一篇、下一篇和首页链接。</p>
-<p>全套教程配了 74 张编号图，另有 1 张附录 B 房间题补充图，图 18～20、图 26～32、图 36～39 以及图57～58、图74在第 6 章。插图分为几何示意、指定条件下的仿真和系统框图，阅读时要同时核对图注中的参数。</p>
+<p>全套教程配了 75 张编号图，另有 1 张附录 B 房间题补充图，图 18～20、图 26～32、图 36～39 以及图57～58、图74在第 6 章。插图分为几何示意、指定条件下的仿真和系统框图，阅读时要同时核对图注中的参数。</p>
 <hr />
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-9d988aa5ab">1. 这是一份什么样的教程</h2>
 <p>这份教程不要求预先学过麦克风阵列。推导会用到单位换算、三角函数、复数和矩阵；不熟悉这些工具时，可按需查<a href="12_appendix-symbols-math.html#sec-12-3">附录 A §12.3</a>，再回到当前算例。读完后，各章的公式、边界和排错内容也可作为手册查阅。</p>
-<p>文里配了 74 张编号图和 1 张房间题补充图。第一次阅读时，可以先看图和算例，再回到公式核对条件与计算步骤。</p>
+<p>文里配了 75 张编号图和 1 张房间题补充图。第一次阅读时，可以先看图和算例，再回到公式核对条件与计算步骤。</p>
 <p>教程从一个具体问题讲起：你站在 3 米外跟音箱说话，它怎样从噪声、混响和自身播放声中提取你的语音。如果另一个人同时讲话，或者你边说边走，系统还会遇到分离和追踪问题。这些任务需要的输入、输出和评价方式不同：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
@@ -428,7 +428,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <tr>
 <td class="tutorial-short-column" style="--tutorial-column-width:3em">07</td>
 <td><code><a href="07_wpe-dereverberation.html">07_wpe-dereverberation.md</a></code></td>
-<td>图21、图24、图59，共 3 张</td>
+<td>图21、图24、图59、图75，共 4 张</td>
 <td class="tutorial-short-column" style="--tutorial-column-width:6em">进阶</td>
 <td>预测模型；求解与时间边界</td>
 </tr>
@@ -561,10 +561,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>AEC 与其他模块的参考关系见 §10.1 和图 23。评测要同时考虑远端单讲时的回声返回损失增强（Echo Return Loss Enhancement，ERLE）、双讲稳定性、近端语音损伤和主观听测；ERLE 高并不能证明近端语音无损。WebRTC AEC3 可作为公开实现参考。</p>
 <p>读者应能确定回声参考取点，解释 AEC 与波束顺序的条件，并为线性路径、非线性失真和双讲分别选择验证方法。</p>
 <span id="sec-11" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-526b37e71a"><a href="07_wpe-dereverberation.html">07 · 去混响 WPE</a></h3>
-<p>3 张图（图21、图24、图59），进阶。讨论怎样利用跨帧预测估计并减弱晚期混响。</p>
+<p>4 张图（图21、图24、图59、图75），进阶。讨论怎样利用跨帧预测估计并减弱晚期混响。</p>
 <p>WPE 用延迟历史帧预测晚期混响并相减。保护延迟降低误预测当前希望保留的直达声和早期反射的风险，不能保证预测项只含晚期混响。</p>
 <p>正文算例在指定条件下展示混响能量变化；预测延迟和阶数要按帧长、混响与语音损伤验证。多人重叠语音在第 8 章讨论，模块启用条件和参考关系见 §10.1。</p>
 <p>本章给出保护延迟 $\Delta$ 和预测阶数的选择依据，比较单通道与多通道 WPE，并说明已知路径逆滤波、倒谱和谱方差方法各自依赖的假设。</p>
+<p><a href="07_wpe-dereverberation.html#e07-22">E07-22～24</a>结合图75，先算各麦历史对应哪个源时刻，再区分晚期功率与幅度衰减，最后核对六份独立PCM。到达延迟已知、单系数整段拟合的控制只解释索引风险，不能代替盲时差估计或完整WPE。</p>
 <span id="sec-12" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-2aefd39b5f"><a href="08_speech-separation.html">08 · 语音分离</a></h3>
 <p>3 张专属图（图42、图43、图60，另引用链路总图23），进阶。讨论重叠语音的分离方法，以及时频掩码怎样连接分离、协方差估计和波束形成。</p>
 <p>三条路线包括经典盲源分离、导引源分离（Guided Source Separation，GSS）和深度分离。盲分离利用独立性及谱或空间统计模型；GSS 用说话人活动标注约束空间聚类，再以掩码估计协方差并计算目标波束；深度方法学习掩码、波形表示或查询条件与输出之间的映射。</p>
@@ -606,7 +607,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>查阅用。12.1 节是符号表。12.2 节是术语词典，按信号与数学基础、房间声学、自适应滤波与分离、波束形成与阵列度量、定位与追踪、系统与硬件分组。12.3 节介绍复数、分贝、卷积和相关、期望和协方差、最小二乘与特征分解，再展开已知噪声加权和截断、正则化的区别。12.4 节用十九道代码题复算这些步骤，检查复共轭、数值秩与 API 前提。图65及五份同增益音频比较同一输入的三种已知权重。</p>
 <p>遇到未定义符号、术语或数学步骤时，可按主题查阅，无需顺序通读。</p>
 <span id="sec-17" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-ec7064739f"><a href="13_appendix-guide.html">13 · 附录 B：路径、地图、前沿、排错、练习、复现</a></h3>
-<p>查阅加动手。13.1 节是学习路径。13.2 节是教材、会议、期刊、挑战赛与历史地图。13.3 节介绍八个研究方向与泛化失配。13.4 节是排错指南，13.5 节是公式速查卡，13.6 节有 17 道综合书面题及 E13-01～14 稳定编号代码题，13.7 节说明怎样复现 74 张图；E13-02 配合图41检查插值失真，E13-03～10 复算房间结果、相位与来源证据；E13-11～14检验TAC共享结构、数值尺度、时间条件化与同DRR音频。</p>
+<p>查阅加动手。13.1 节是学习路径。13.2 节是教材、会议、期刊、挑战赛与历史地图。13.3 节介绍八个研究方向与泛化失配。13.4 节是排错指南，13.5 节是公式速查卡，13.6 节有 17 道综合书面题及 E13-01～14 稳定编号代码题，13.7 节说明怎样复现 75 张图；E13-02 配合图41检查插值失真，E13-03～10 复算房间结果、相位与来源证据；E13-11～14检验TAC共享结构、数值尺度、时间条件化与同DRR音频。</p>
 <p>需要查学习资料、研究方向、排错方法、练习或复现步骤时，可直接进入对应小节。</p>
 <hr />
 <span id="sec-18" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-d8087d6ad6">4. 阅读顺序</h2>
@@ -694,7 +695,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>完成判据：在一个公开数据集上固定阵列、训练/测试划分和指标，分别实现一个解析基线与一个数据驱动基线，记录模型版本、输入特征和推理资源。将源码获取、依赖构建、示例运行与数值对照分开记录，失败或缺失的步骤也应保留。</li>
 </ol>
 <hr />
-<span id="sec-u-e445ebf98d" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-726cf32300" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-dacd520d2c" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-9c77d218fe" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-ec3f837100" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-8657cda209" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-0d7a1562fa" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-8a5dd76e40" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-f19f47c7c1" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-2b17484f3b" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-cb1ede6c60" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-5edae53c5f" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-5c63f4d83e" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-36fa20efde" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-3ebc13ca5a" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-1e72416790" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-3a0278b879" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-6ef8e18126" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-d538d6d0a5" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-0943a9ed3c" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-1e5d8a2bad" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-d8fd1002de" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-627ed3907e" class="anchor-alias" aria-hidden="true"></span><span id="sec-23" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-dccee38a3d">6. 插图地图：74 张编号图在哪篇</h2>
+<span id="sec-u-dccee38a3d" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-e445ebf98d" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-726cf32300" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-dacd520d2c" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-9c77d218fe" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-ec3f837100" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-8657cda209" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-0d7a1562fa" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-8a5dd76e40" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-f19f47c7c1" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-2b17484f3b" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-cb1ede6c60" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-5edae53c5f" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-5c63f4d83e" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-36fa20efde" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-3ebc13ca5a" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-1e72416790" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-3a0278b879" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-6ef8e18126" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-d538d6d0a5" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-0943a9ed3c" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-1e5d8a2bad" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-d8fd1002de" class="anchor-alias" aria-hidden="true"></span><span id="sec-u-627ed3907e" class="anchor-alias" aria-hidden="true"></span><span id="sec-23" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-55e537d650">6. 插图地图：75 张编号图在哪篇</h2>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:60em">
 <thead>
 <tr>
@@ -1224,6 +1225,13 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td class="tutorial-short-column" style="--tutorial-column-width:6em">播放增益与历史尾声</td>
 <td>已知增益在路径前后的顺序、实际PCM残差及纯回声尾声的活动误判</td>
 </tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:5em">图75</td>
+<td>fig75_prediction_delays</td>
+<td>07</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:6em">到达时间与有效保护延迟</td>
+<td>源时刻手算、实际PCM历史、目标误消与晚期功率衰减单位</td>
+</tr>
 </tbody>
 </table></div>
 <p>示意图用于解释几何关系，曲线展示指定条件下的可复现结果，框图说明模块之间的信号与控制关系。</p>
@@ -1304,8 +1312,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>随后运行代码回归，检查正常、退化和错误输入。需要排查某个章节时，可先按<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/README.md">代码地图</a>选择对应入口和测试。</p>
 <pre><code class="language-bash">.venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 </code></pre>
-<p>要复现生成过程时，再按<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/scripts/README.md">构建说明</a>生成音频、重画相关图并核验。附录 B 的 <a href="13_appendix-guide.html#sec-13-7">§13.7</a>列出 74 张图的复现入口；房间题重生需固定版本的独立环境和新输出目录。图有问题时修改绘图源，音频有问题时修改生成源。</p>
-<p>另有 343 道带答案的<a href="research/05_exercises_and_audio.html">章节代码练习与音频实验</a>，覆盖第 1～11 章、两篇扩展专题与附录 A/B，使用 E01-01、E14-01、E15-01 等稳定编号。第 6 章 E06-07～E06-20 包含算法边界手算与子带、IPNLMS、RLS、Kalman 的小规模复算；附录 B 的 E13-03～10 复算房间结果、相位与来源证据；E13-11～14检验TAC共享结构、数值尺度、时间条件化与同DRR音频。每道题对应输入、执行代码和可核查结果；附录 B 的 1～17 题另用一套编号。</p>
+<p>要复现生成过程时，再按<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/scripts/README.md">构建说明</a>生成音频、重画相关图并核验。附录 B 的 <a href="13_appendix-guide.html#sec-13-7">§13.7</a>列出 75 张图的复现入口；房间题重生需固定版本的独立环境和新输出目录。图有问题时修改绘图源，音频有问题时修改生成源。</p>
+<p>另有 346 道带答案的<a href="research/05_exercises_and_audio.html">章节代码练习与音频实验</a>，覆盖第 1～11 章、两篇扩展专题与附录 A/B，使用 E01-01、E14-01、E15-01 等稳定编号。第 6 章 E06-07～E06-20 包含算法边界手算与子带、IPNLMS、RLS、Kalman 的小规模复算；附录 B 的 E13-03～10 复算房间结果、相位与来源证据；E13-11～14检验TAC共享结构、数值尺度、时间条件化与同DRR音频。每道题对应输入、执行代码和可核查结果；附录 B 的 1～17 题另用一套编号。</p>
 <p><a id="audio-assets"></a></p>
 <p>音频按生成模型和证据用途选择，以下各行独立管理。试听前先调低播放音量；网页控件默认不自动播放，载入文件和客观读回检查不等于人工听测。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -1438,6 +1446,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>同源双音与两条短FIR；完整尾、共同增益，解析/浮点/实际PCM分开</td>
 </tr>
 <tr>
+<td><a href="delay_audio/MANIFEST.json">已知到达与历史索引</a></td>
+<td>6 个</td>
+<td>同一接收时轴、一个实数回归；统一与校正历史的实际PCM目标误差</td>
+</tr>
+<tr>
 <td><a href="room_audio/MANIFEST.json">六位置房间题</a></td>
 <td>18 个</td>
 <td>白噪声源、仅直达与完整房间响应；结合独立数值报告</td>
@@ -1449,7 +1462,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 </tbody>
 </table></div>
-<p>主清单按章保存，每组使用共同导出增益。它包括空间处理与极性/相关噪声反例，回声和去混响的参考、更新及损伤例子，以及时钟、插值、断流、AGC、分块卷积和 FIR 选型实验。二十四套独立合成资产（共138个WAV）及4个真实录音摘录与派生文件均不计入主 109 个样本，生成条件和评分参考不能互相替代。</p>
+<p>主清单按章保存，每组使用共同导出增益。它包括空间处理与极性/相关噪声反例，回声和去混响的参考、更新及损伤例子，以及时钟、插值、断流、AGC、分块卷积和 FIR 选型实验。二十五套独立合成资产（共144个WAV）及4个真实录音摘录与派生文件均不计入主 109 个样本，生成条件和评分参考不能互相替代。</p>
 <p>已有随仓样本可先只读核对，无需先重写文件：</p>
 <pre><code class="language-bash">.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py --check
 .venv/bin/python codes/chapters/ch02/examples/prepare_real_recordings.py --check
@@ -1491,7 +1504,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>公式看不懂怎么办？</strong></p>
 <p>先查第 2 章和附录 A 中的符号、术语与数学基础。第 4 章的定位谱与时差看图 11、图 12，第 5 章的波束权衡看图 15、图 16，第 7 章的 WPE 帧关系与结果看图 24、图 21；第 8 章的 GSS 依赖和跨块拼接分别看图 42、图 43，盲分离的矩阵步骤仍须对照正文算例。</p>
 <p><strong>想跑实验怎么办？</strong></p>
-<p>先按第 8 节运行章节教学基线，确认公式约定和边界输入，再重绘 74 张图。之后可按锁定版本用 pyroomacoustics 建立房间仿真基线。公开数据、模型和硬件实验应根据任务、许可证与设备条件选择，练习入口见附录 B 的 §13.1、§13.6。</p>
+<p>先按第 8 节运行章节教学基线，确认公式约定和边界输入，再重绘 75 张图。之后可按锁定版本用 pyroomacoustics 建立房间仿真基线。公开数据、模型和硬件实验应根据任务、许可证与设备条件选择，练习入口见附录 B 的 §13.1、§13.6。</p>
 <p><strong>不同实验的绝对数值能比吗？</strong></p>
 <p>阵列几何、房间、信噪比、数据集、实现和评测口径不同时，绝对数值不能直接横向排名；总体趋势也可能受场景组成等因素影响。先分别解释各自实验内的变化，再核对共同条件、基线和统计方式。条件可比时才讨论方法差异，仍需报告未对齐的因素与失败项。</p>
 <hr />
@@ -1502,7 +1515,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>[ ] 阅读第 2 章，学会读图 7（主瓣、旁瓣、零陷、主瓣宽度、栅瓣）。</li>
 <li>[ ] 按路径 A 完成 E01-01、E01-02、E04-01 和 E05-02，能解释噪声相关性、音量与信噪比、时差符号和加载代价。</li>
 <li>[ ] 按第 2 节的学习单元读第 4～8 章；每完成一种方法，先手算对应练习，再用代码复核。</li>
-<li>[ ] 对照第 8 节画一遍 74 张图，打开 <code>figures/</code> 对照正文看图。</li>
+<li>[ ] 对照第 8 节画一遍 75 张图，打开 <code>figures/</code> 对照正文看图。</li>
 <li>[ ] 运行 <code>codes/chapters/</code> 的三组基线，并从 <code>codes/chapters/ch00/COVERAGE.md</code> 选一个原理索引项目核对其官方实现边界。</li>
 <li>[ ] 做附录 B 的练习题（入门做 2、3、5、7、10、11、14 题，进阶再做 6、8、12、13、16、17 题）。</li>
 <li>[ ] 用附录 B §13.4 排查常见问题，并按第 10 章编制延迟、同步和标定预算。</li>

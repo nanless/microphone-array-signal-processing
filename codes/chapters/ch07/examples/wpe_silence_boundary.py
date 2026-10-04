@@ -3,7 +3,10 @@
 This is a failure probe, not a robust online processor. The adapted reference
 keeps upstream behavior intentionally. Optional upstream execution verifies the
 exact installed source hash before importing its algorithm; nothing is fetched.
-Run with --upstream --report PATH to record a real comparison (strict JSON).
+The original comparison also requires the existing fixed NARA Git checkout.
+Default output is read-only stdout. --report accepts only the designated new
+current report or an ordinary external destination outside all source roots;
+finite path checks do not eliminate concurrent filesystem races.
 """
 from __future__ import annotations
 
@@ -18,12 +21,16 @@ import json
 import platform
 from pathlib import Path
 import numpy as np
+from codes.chapters.ch04.core import upstream_contracts as contracts
 from codes.chapters.ch02.core.conventions import finite_real_scalar
 from codes.chapters.ch07.examples.compare_online_wpe_reference import (
     NumpyOnlineWPE011, NARA_WPE_VERSION, NARA_WPE_MODULE_SHA256,
-    _load_locked_upstream,
+    _load_locked_module, _check_locked_module, installed_source_roots,
 )
 
+
+ROOT = Path(__file__).resolve().parents[4]
+CURRENT_REPORT = ROOT / 'codes/chapters/ch07/reports/chapter07_online_wpe_silence_current.json'
 
 def classify_scalar(value) -> dict:
     z = complex(np.asarray(value).item())
@@ -42,12 +49,13 @@ def silence_probe(alpha=.95, *, implementation='adapted', max_frames=16000) -> d
         raise ValueError('alpha must be in (0,1]')
     if isinstance(max_frames, (bool, np.bool_)) or not isinstance(max_frames, (int, np.integer)) or max_frames < 1:
         raise ValueError('max_frames must be a positive integer')
+    identity = installed = None
     if implementation == 'adapted':
         state = NumpyOnlineWPE011(taps=1, delay=1, alpha=alpha, frequency_bins=1, channels=1)
         covariance_name = 'inverse_covariance'
     elif implementation == 'upstream':
-        upstream, *_ = _load_locked_upstream()
-        state = upstream(taps=1, delay=1, alpha=alpha, frequency_bins=1, channel=1)
+        original, identity, installed = _load_locked_module()
+        state = original.OnlineWPE(taps=1, delay=1, alpha=alpha, frequency_bins=1, channel=1)
         covariance_name = 'inv_cov'
     else:
         raise ValueError('implementation must be adapted or upstream')
@@ -66,7 +74,10 @@ def silence_probe(alpha=.95, *, implementation='adapted', max_frames=16000) -> d
         final_covariance = classify_scalar(covariance)
         final_output = classify_scalar(output)
         resume = [classify_scalar(state.step_frame(np.ones((1, 1), complex))) for _ in range(3)]
-    return {'implementation': implementation, 'alpha': alpha,
+    if identity is not None:
+        _check_locked_module(identity, installed)
+    return {'source_identity': identity, 'installed_identity': installed,
+            'implementation': implementation, 'alpha': alpha,
             'dimensions': {'frequency_bins': 1, 'channels': 1, 'taps': 1, 'delay_argument': 1},
             'initial_inverse_covariance': 1., 'initial_filter': 0., 'initial_buffer': 'all zeros',
             'observations': 'zero until first non-finite inverse covariance or cap, then three unit frames',
@@ -91,7 +102,10 @@ def run_report(*, upstream=False) -> dict:
         records.append(silence_probe(alpha))
         if upstream:
             records.append(silence_probe(alpha, implementation='upstream'))
-    return {'schema_version': 1, 'scope': 'deterministic float64 silence failure, not room or speech quality',
+    return {'schema_version': 2, 'actual_dependency_sha256': contracts.dependencies(Path(__file__),
+                (Path(__file__).with_name('compare_online_wpe_reference.py'),
+                 ROOT/'codes/chapters/ch02/core/conventions.py')),
+            'scope': 'deterministic float64 silence failure, not room or speech quality',
             'environment': {'python': platform.python_version(), 'numpy': np.__version__,
                             'system': platform.system(), 'machine': platform.machine()},
             'source': {'project': 'nara-wpe', 'version': NARA_WPE_VERSION,
@@ -105,14 +119,20 @@ def run_report(*, upstream=False) -> dict:
             'interpretation': 'No repair is applied. Silence gating, resetting, or bounded covariance are distinct algorithm changes requiring their own validation.'}
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--upstream', action='store_true')
     parser.add_argument('--report', type=Path)
     args = parser.parse_args()
-    encoded = json.dumps(run_report(upstream=args.upstream), ensure_ascii=False, indent=2, allow_nan=False) + '\n'
-    if args.report:
-        args.report.parent.mkdir(parents=True, exist_ok=True)
-        args.report.write_text(encoded)
+    protected = (contracts.CACHE, *installed_source_roots()) if args.report else (contracts.CACHE,)
+    target = contracts.report_target(args.report, CURRENT_REPORT, protected) if args.report else None
+    report = run_report(upstream=args.upstream)
+    if target is not None:
+        contracts.write_report(target, report, CURRENT_REPORT, protected)
     else:
-        print(encoded, end='')
+        print(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False))
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

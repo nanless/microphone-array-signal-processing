@@ -1,0 +1,889 @@
+{
+  "schema_version": 1,
+  "exercise_id": "E07-24",
+  "sample_rate_hz": 16000,
+  "samples_per_channel": 33024,
+  "common_export_gain": 1.0,
+  "origin": "original deterministic known propagation and history-delay control",
+  "source_sha256": {
+    "codes/chapters/ch07/core/delay_audio.py": "af3795222edfee34e30df460840dfb8ba31a3cef1d48a9e18a2118b69f5f1efa",
+    "codes/chapters/ch07/examples/generate_delay_audio.py": "e70f1134c8c87cf05c3eed5409d83f73667eacdc4462b54c982871a00ff44cdb",
+    "codes/chapters/ch07/core/prediction_delays.py": "aa20a0c8c6e6da8ad7b2bbfb9822a4fb4d85bb411c9dda4f56ad9b1596b66bb7",
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
+  },
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "parameters": {
+    "exercise_id": "E07-24",
+    "sample_rate_hz": 16000,
+    "hop_samples": 128,
+    "source_samples": 32256,
+    "samples_per_channel": 33024,
+    "source_period_samples": 1536,
+    "source_period_frames": 12,
+    "source_periods": 21,
+    "pulse_start_frames_in_period": [
+      0,
+      4
+    ],
+    "pulse_samples": 128,
+    "frequency_hz": 500.0,
+    "amplitude": 0.1,
+    "pulse_phase": "cosine at pulse-local sample clock, phase zero; four cycles per pulse",
+    "pulse_envelope": "sin(linspace(0,pi,128)) squared, both endpoints included",
+    "pulse_repetition": "repeat the same finite pulse values; source zero outside the two pulse supports",
+    "observation_delays_samples": {
+      "reference": 384,
+      "auxiliary": 0
+    },
+    "common_auxiliary_history_delay_samples": 384,
+    "aligned_auxiliary_history_delay_samples": 768,
+    "reference_protection_delay_samples": 384,
+    "source_time_gaps_samples": {
+      "common": 0,
+      "aligned": 384
+    },
+    "physical_propagation_tail_samples": 384,
+    "maximum_history_padding_samples": 768,
+    "negative_time_samples": "zero",
+    "complete_retained_support_samples": [
+      0,
+      33024
+    ],
+    "channel_order": [
+      "late_reference",
+      "early_auxiliary"
+    ],
+    "regression": "one auxiliary real history, lambda=1; ordinary transpose; no ridge or reference-history column",
+    "scoring_interval_samples": [
+      1536,
+      30720
+    ],
+    "scoring_samples_per_channel": 29184,
+    "scoring_source_periods": 19,
+    "common_export_gain": 1.0,
+    "alignment": "same causal receiver sample clock; no fitted propagation delay or export gain",
+    "noise": "none",
+    "randomness": "none"
+  },
+  "files": {
+    "delay_reference.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples_per_channel": 33024,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "1f82d209964acc2309ed357f424272068881dfd4178f4524220921edd90277cd",
+      "quantization_max_abs_error": 1.5217939883034777e-05,
+      "peak": 0.0999755859375
+    },
+    "delay_array.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples_per_channel": 33024,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "e6efaee6e75ce6ecf326f9aef7dffcc77fa7e0305ea3593b6b5436d1028258b0",
+      "quantization_max_abs_error": 1.5217939883034777e-05,
+      "peak": 0.0999755859375
+    },
+    "delay_common_history.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples_per_channel": 33024,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "1f82d209964acc2309ed357f424272068881dfd4178f4524220921edd90277cd",
+      "quantization_max_abs_error": 1.5217939883034777e-05,
+      "peak": 0.0999755859375
+    },
+    "delay_aligned_history.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples_per_channel": 33024,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "d636abba48662e4f4d4d649875ba61b44692ea3018356edaa8578c4f77f60afa",
+      "quantization_max_abs_error": 1.5217939883034777e-05,
+      "peak": 0.0999755859375
+    },
+    "delay_common_residual.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples_per_channel": 33024,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "621050576a29e3f64c0412435fa5ecc06a5411ea2726eecbb18ffea2cd5d69ce",
+      "quantization_max_abs_error": 0.0,
+      "peak": 0.0
+    },
+    "delay_aligned_residual.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples_per_channel": 33024,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "1f82d209964acc2309ed357f424272068881dfd4178f4524220921edd90277cd",
+      "quantization_max_abs_error": 1.5217939883034777e-05,
+      "peak": 0.0999755859375
+    }
+  },
+  "samples": {
+    "reference": {
+      "file": "delay_reference.wav",
+      "analytic": {
+        "per_pulse_squared_sum": 0.23812300225076258,
+        "source_period_mean_square": 0.0003100559925140138,
+        "mean_square_per_channel": [
+          0.0003100559925140138
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0
+        ],
+        "reference_NMSE_per_channel": [
+          0.0
+        ],
+        "projection_gain_per_channel": [
+          1.0
+        ],
+        "common_history_coefficient": 1.0,
+        "aligned_history_coefficient": 0.0,
+        "scope": "known repeated finite pulse identity; disjoint support is specific to this fixture"
+      },
+      "float_measurements": {
+        "scoring_interval_samples": [
+          1536,
+          30720
+        ],
+        "samples_per_channel": 29184,
+        "channels": 1,
+        "reference_squared_sum": 9.048674085528974,
+        "mean_square_per_channel": [
+          0.00031005599251401363
+        ],
+        "mean_square_all_channels": 0.00031005599251401363,
+        "reference_error_squared_sum_per_channel": [
+          0.0
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0
+        ],
+        "reference_NMSE_per_channel": [
+          0.0
+        ],
+        "projection_gain_per_channel": [
+          1.0
+        ],
+        "peak_per_channel": [
+          0.09998470286265417
+        ]
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          1536,
+          30720
+        ],
+        "samples_per_channel": 29184,
+        "channels": 1,
+        "reference_squared_sum": 9.048321465030313,
+        "mean_square_per_channel": [
+          0.0003100439098489005
+        ],
+        "mean_square_all_channels": 0.0003100439098489005,
+        "reference_error_squared_sum_per_channel": [
+          0.0
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0
+        ],
+        "reference_NMSE_per_channel": [
+          0.0
+        ],
+        "projection_gain_per_channel": [
+          1.0
+        ],
+        "peak_per_channel": [
+          0.0999755859375
+        ]
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          1536,
+          30720
+        ],
+        "samples_per_channel": 29184,
+        "channels": 1,
+        "integer_squared_sum_E_per_channel": [
+          9715561194
+        ],
+        "integer_denominator_D_per_channel": 31336081391616,
+        "mean_square_per_channel": [
+          0.0003100439098489005
+        ],
+        "integer_squared_sum_E_all_channels": 9715561194,
+        "integer_denominator_D_all_channels": 31336081391616,
+        "mean_square_all_channels": 0.0003100439098489005,
+        "integer_reference_squared_sum_per_channel": 9715561194,
+        "integer_reference_error_squared_sum_per_channel": [
+          0
+        ],
+        "integer_output_reference_cross_sum_per_channel": [
+          9715561194
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0
+        ],
+        "reference_NMSE_per_channel": [
+          0.0
+        ],
+        "projection_gain_per_channel": [
+          1.0
+        ],
+        "pcm_decode_divisor": 32768
+      }
+    },
+    "array": {
+      "file": "delay_array.wav",
+      "analytic": {
+        "per_pulse_squared_sum": 0.23812300225076258,
+        "source_period_mean_square": 0.0003100559925140138,
+        "mean_square_per_channel": [
+          0.0003100559925140138,
+          0.0003100559925140138
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0,
+          0.0006201119850280276
+        ],
+        "reference_NMSE_per_channel": [
+          0.0,
+          2.0
+        ],
+        "projection_gain_per_channel": [
+          1.0,
+          0.0
+        ],
+        "common_history_coefficient": 1.0,
+        "aligned_history_coefficient": 0.0,
+        "scope": "known repeated finite pulse identity; disjoint support is specific to this fixture"
+      },
+      "float_measurements": {
+        "scoring_interval_samples": [
+          1536,
+          30720
+        ],
+        "samples_per_channel": 29184,
+        "channels": 2,
+        "reference_squared_sum": 9.048674085528974,
+        "mean_square_per_channel": [
+          0.00031005599251401363,
+          0.00031005599251401363
+        ],
+        "mean_square_all_channels": 0.00031005599251401363,
+        "reference_error_squared_sum_per_channel": [
+          0.0,
+          18.097348171057952
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0,
+          0.0006201119850280274
+        ],
+        "reference_NMSE_per_channel": [
+          0.0,
+          2.0000000000000004
+        ],
+        "projection_gain_per_channel": [
+          0.9999999999999996,
+          0.0
+        ],
+        "peak_per_channel": [
+          0.09998470286265417,
+          0.09998470286265417
+        ]
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          1536,
+          30720
+        ],
+        "samples_per_channel": 29184,
+        "channels": 2,
+        "reference_squared_sum": 9.048321465030313,
+        "mean_square_per_channel": [
+          0.0003100439098489005,
+          0.0003100439098489005
+        ],
+        "mean_square_all_channels": 0.0003100439098489005,
+        "reference_error_squared_sum_per_channel": [
+          0.0,
+          18.096642930060625
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0,
+          0.000620087819697801
+        ],
+        "reference_NMSE_per_channel": [
+          0.0,
+          2.0
+        ],
+        "projection_gain_per_channel": [
+          1.0,
+          0.0
+        ],
+        "peak_per_channel": [
+          0.0999755859375,
+          0.0999755859375
+        ]
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          1536,
+          30720
+        ],
+        "samples_per_channel": 29184,
+        "channels": 2,
+        "integer_squared_sum_E_per_channel": [
+          9715561194,
+          9715561194
+        ],
+        "integer_denominator_D_per_channel": 31336081391616,
+        "mean_square_per_channel": [
+          0.0003100439098489005,
+          0.0003100439098489005
+        ],
+        "integer_squared_sum_E_all_channels": 19431122388,
+        "integer_denominator_D_all_channels": 62672162783232,
+        "mean_square_all_channels": 0.0003100439098489005,
+        "integer_reference_squared_sum_per_channel": 9715561194,
+        "integer_reference_error_squared_sum_per_channel": [
+          0,
+          19431122388
+        ],
+        "integer_output_reference_cross_sum_per_channel": [
+          9715561194,
+          0
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0,
+          0.000620087819697801
+        ],
+        "reference_NMSE_per_channel": [
+          0.0,
+          2.0
+        ],
+        "projection_gain_per_channel": [
+          1.0,
+          0.0
+        ],
+        "pcm_decode_divisor": 32768
+      }
+    },
+    "common_history": {
+      "file": "delay_common_history.wav",
+      "analytic": {
+        "per_pulse_squared_sum": 0.23812300225076258,
+        "source_period_mean_square": 0.0003100559925140138,
+        "mean_square_per_channel": [
+          0.0003100559925140138
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0
+        ],
+        "reference_NMSE_per_channel": [
+          0.0
+        ],
+        "projection_gain_per_channel": [
+          1.0
+        ],
+        "common_history_coefficient": 1.0,
+        "aligned_history_coefficient": 0.0,
+        "scope": "known repeated finite pulse identity; disjoint support is specific to this fixture"
+      },
+      "float_measurements": {
+        "scoring_interval_samples": [
+          1536,
+          30720
+        ],
+        "samples_per_channel": 29184,
+        "channels": 1,
+        "reference_squared_sum": 9.048674085528974,
+        "mean_square_per_channel": [
+          0.00031005599251401363
+        ],
+        "mean_square_all_channels": 0.00031005599251401363,
+        "reference_error_squared_sum_per_channel": [
+          0.0
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0
+        ],
+        "reference_NMSE_per_channel": [
+          0.0
+        ],
+        "projection_gain_per_channel": [
+          1.0
+        ],
+        "peak_per_channel": [
+          0.09998470286265417
+        ]
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          1536,
+          30720
+        ],
+        "samples_per_channel": 29184,
+        "channels": 1,
+        "reference_squared_sum": 9.048321465030313,
+        "mean_square_per_channel": [
+          0.0003100439098489005
+        ],
+        "mean_square_all_channels": 0.0003100439098489005,
+        "reference_error_squared_sum_per_channel": [
+          0.0
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0
+        ],
+        "reference_NMSE_per_channel": [
+          0.0
+        ],
+        "projection_gain_per_channel": [
+          1.0
+        ],
+        "peak_per_channel": [
+          0.0999755859375
+        ]
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          1536,
+          30720
+        ],
+        "samples_per_channel": 29184,
+        "channels": 1,
+        "integer_squared_sum_E_per_channel": [
+          9715561194
+        ],
+        "integer_denominator_D_per_channel": 31336081391616,
+        "mean_square_per_channel": [
+          0.0003100439098489005
+        ],
+        "integer_squared_sum_E_all_channels": 9715561194,
+        "integer_denominator_D_all_channels": 31336081391616,
+        "mean_square_all_channels": 0.0003100439098489005,
+        "integer_reference_squared_sum_per_channel": 9715561194,
+        "integer_reference_error_squared_sum_per_channel": [
+          0
+        ],
+        "integer_output_reference_cross_sum_per_channel": [
+          9715561194
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0
+        ],
+        "reference_NMSE_per_channel": [
+          0.0
+        ],
+        "projection_gain_per_channel": [
+          1.0
+        ],
+        "pcm_decode_divisor": 32768
+      }
+    },
+    "aligned_history": {
+      "file": "delay_aligned_history.wav",
+      "analytic": {
+        "per_pulse_squared_sum": 0.23812300225076258,
+        "source_period_mean_square": 0.0003100559925140138,
+        "mean_square_per_channel": [
+          0.0003100559925140138
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0006201119850280276
+        ],
+        "reference_NMSE_per_channel": [
+          2.0
+        ],
+        "projection_gain_per_channel": [
+          0.0
+        ],
+        "common_history_coefficient": 1.0,
+        "aligned_history_coefficient": 0.0,
+        "scope": "known repeated finite pulse identity; disjoint support is specific to this fixture"
+      },
+      "float_measurements": {
+        "scoring_interval_samples": [
+          1536,
+          30720
+        ],
+        "samples_per_channel": 29184,
+        "channels": 1,
+        "reference_squared_sum": 9.048674085528974,
+        "mean_square_per_channel": [
+          0.00031005599251401363
+        ],
+        "mean_square_all_channels": 0.00031005599251401363,
+        "reference_error_squared_sum_per_channel": [
+          18.09734817105795
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0006201119850280273
+        ],
+        "reference_NMSE_per_channel": [
+          2.0
+        ],
+        "projection_gain_per_channel": [
+          0.0
+        ],
+        "peak_per_channel": [
+          0.09998470286265417
+        ]
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          1536,
+          30720
+        ],
+        "samples_per_channel": 29184,
+        "channels": 1,
+        "reference_squared_sum": 9.048321465030313,
+        "mean_square_per_channel": [
+          0.0003100439098489005
+        ],
+        "mean_square_all_channels": 0.0003100439098489005,
+        "reference_error_squared_sum_per_channel": [
+          18.096642930060625
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.000620087819697801
+        ],
+        "reference_NMSE_per_channel": [
+          2.0
+        ],
+        "projection_gain_per_channel": [
+          0.0
+        ],
+        "peak_per_channel": [
+          0.0999755859375
+        ]
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          1536,
+          30720
+        ],
+        "samples_per_channel": 29184,
+        "channels": 1,
+        "integer_squared_sum_E_per_channel": [
+          9715561194
+        ],
+        "integer_denominator_D_per_channel": 31336081391616,
+        "mean_square_per_channel": [
+          0.0003100439098489005
+        ],
+        "integer_squared_sum_E_all_channels": 9715561194,
+        "integer_denominator_D_all_channels": 31336081391616,
+        "mean_square_all_channels": 0.0003100439098489005,
+        "integer_reference_squared_sum_per_channel": 9715561194,
+        "integer_reference_error_squared_sum_per_channel": [
+          19431122388
+        ],
+        "integer_output_reference_cross_sum_per_channel": [
+          0
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.000620087819697801
+        ],
+        "reference_NMSE_per_channel": [
+          2.0
+        ],
+        "projection_gain_per_channel": [
+          0.0
+        ],
+        "pcm_decode_divisor": 32768
+      }
+    },
+    "common_residual": {
+      "file": "delay_common_residual.wav",
+      "analytic": {
+        "per_pulse_squared_sum": 0.23812300225076258,
+        "source_period_mean_square": 0.0003100559925140138,
+        "mean_square_per_channel": [
+          0.0
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0003100559925140138
+        ],
+        "reference_NMSE_per_channel": [
+          1.0
+        ],
+        "projection_gain_per_channel": [
+          0.0
+        ],
+        "common_history_coefficient": 1.0,
+        "aligned_history_coefficient": 0.0,
+        "scope": "known repeated finite pulse identity; disjoint support is specific to this fixture"
+      },
+      "float_measurements": {
+        "scoring_interval_samples": [
+          1536,
+          30720
+        ],
+        "samples_per_channel": 29184,
+        "channels": 1,
+        "reference_squared_sum": 9.048674085528974,
+        "mean_square_per_channel": [
+          0.0
+        ],
+        "mean_square_all_channels": 0.0,
+        "reference_error_squared_sum_per_channel": [
+          9.048674085528974
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.00031005599251401363
+        ],
+        "reference_NMSE_per_channel": [
+          1.0
+        ],
+        "projection_gain_per_channel": [
+          0.0
+        ],
+        "peak_per_channel": [
+          0.0
+        ]
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          1536,
+          30720
+        ],
+        "samples_per_channel": 29184,
+        "channels": 1,
+        "reference_squared_sum": 9.048321465030313,
+        "mean_square_per_channel": [
+          0.0
+        ],
+        "mean_square_all_channels": 0.0,
+        "reference_error_squared_sum_per_channel": [
+          9.048321465030313
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0003100439098489005
+        ],
+        "reference_NMSE_per_channel": [
+          1.0
+        ],
+        "projection_gain_per_channel": [
+          0.0
+        ],
+        "peak_per_channel": [
+          0.0
+        ]
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          1536,
+          30720
+        ],
+        "samples_per_channel": 29184,
+        "channels": 1,
+        "integer_squared_sum_E_per_channel": [
+          0
+        ],
+        "integer_denominator_D_per_channel": 31336081391616,
+        "mean_square_per_channel": [
+          0.0
+        ],
+        "integer_squared_sum_E_all_channels": 0,
+        "integer_denominator_D_all_channels": 31336081391616,
+        "mean_square_all_channels": 0.0,
+        "integer_reference_squared_sum_per_channel": 9715561194,
+        "integer_reference_error_squared_sum_per_channel": [
+          9715561194
+        ],
+        "integer_output_reference_cross_sum_per_channel": [
+          0
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0003100439098489005
+        ],
+        "reference_NMSE_per_channel": [
+          1.0
+        ],
+        "projection_gain_per_channel": [
+          0.0
+        ],
+        "pcm_decode_divisor": 32768
+      }
+    },
+    "aligned_residual": {
+      "file": "delay_aligned_residual.wav",
+      "analytic": {
+        "per_pulse_squared_sum": 0.23812300225076258,
+        "source_period_mean_square": 0.0003100559925140138,
+        "mean_square_per_channel": [
+          0.0003100559925140138
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0
+        ],
+        "reference_NMSE_per_channel": [
+          0.0
+        ],
+        "projection_gain_per_channel": [
+          1.0
+        ],
+        "common_history_coefficient": 1.0,
+        "aligned_history_coefficient": 0.0,
+        "scope": "known repeated finite pulse identity; disjoint support is specific to this fixture"
+      },
+      "float_measurements": {
+        "scoring_interval_samples": [
+          1536,
+          30720
+        ],
+        "samples_per_channel": 29184,
+        "channels": 1,
+        "reference_squared_sum": 9.048674085528974,
+        "mean_square_per_channel": [
+          0.00031005599251401363
+        ],
+        "mean_square_all_channels": 0.00031005599251401363,
+        "reference_error_squared_sum_per_channel": [
+          0.0
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0
+        ],
+        "reference_NMSE_per_channel": [
+          0.0
+        ],
+        "projection_gain_per_channel": [
+          1.0
+        ],
+        "peak_per_channel": [
+          0.09998470286265417
+        ]
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          1536,
+          30720
+        ],
+        "samples_per_channel": 29184,
+        "channels": 1,
+        "reference_squared_sum": 9.048321465030313,
+        "mean_square_per_channel": [
+          0.0003100439098489005
+        ],
+        "mean_square_all_channels": 0.0003100439098489005,
+        "reference_error_squared_sum_per_channel": [
+          0.0
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0
+        ],
+        "reference_NMSE_per_channel": [
+          0.0
+        ],
+        "projection_gain_per_channel": [
+          1.0
+        ],
+        "peak_per_channel": [
+          0.0999755859375
+        ]
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          1536,
+          30720
+        ],
+        "samples_per_channel": 29184,
+        "channels": 1,
+        "integer_squared_sum_E_per_channel": [
+          9715561194
+        ],
+        "integer_denominator_D_per_channel": 31336081391616,
+        "mean_square_per_channel": [
+          0.0003100439098489005
+        ],
+        "integer_squared_sum_E_all_channels": 9715561194,
+        "integer_denominator_D_all_channels": 31336081391616,
+        "mean_square_all_channels": 0.0003100439098489005,
+        "integer_reference_squared_sum_per_channel": 9715561194,
+        "integer_reference_error_squared_sum_per_channel": [
+          0
+        ],
+        "integer_output_reference_cross_sum_per_channel": [
+          9715561194
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0
+        ],
+        "reference_NMSE_per_channel": [
+          0.0
+        ],
+        "projection_gain_per_channel": [
+          1.0
+        ],
+        "pcm_decode_divisor": 32768
+      }
+    }
+  },
+  "float_regression": {
+    "common": {
+      "coefficient": 1.0,
+      "history_energy": 9.048674085528974,
+      "cross": 9.048674085528974,
+      "scoring_interval_samples": [
+        1536,
+        30720
+      ]
+    },
+    "aligned": {
+      "coefficient": 0.0,
+      "history_energy": 9.048674085528974,
+      "cross": 0.0,
+      "scoring_interval_samples": [
+        1536,
+        30720
+      ]
+    }
+  },
+  "pcm_regression": {
+    "common": {
+      "coefficient": 1.0,
+      "history_energy": 9.048321465030313,
+      "cross": 9.048321465030313,
+      "scoring_interval_samples": [
+        1536,
+        30720
+      ]
+    },
+    "aligned": {
+      "coefficient": 0.0,
+      "history_energy": 9.048321465030313,
+      "cross": 0.0,
+      "scoring_interval_samples": [
+        1536,
+        30720
+      ]
+    }
+  },
+  "pcm": {
+    "format": "signed little-endian PCM16",
+    "scale": 32768,
+    "rounding": "nearest, ties to even",
+    "dither": "none",
+    "clipping": "rejected",
+    "max_rounding_error_bound": 1.52587890625e-05
+  },
+  "limits": "Original deterministic 500 Hz pulse control, not speech, STFT-WPE, a room measurement or device audio. Known integer propagation and history delays; one real regressor, unit prescribed powers, no ridge. The corrected history has disjoint source-time support only in this declared pulse fixture. Alignment does not generally prevent predictable-target cancellation. No delay/gain fitting to a clean output, random independence, noise, human listening test or industrial performance claim. The common residual is deliberately zero; the aligned residual deliberately duplicates the reference PCM. Physical propagation tail 384 and maximum history padding 768 are different quantities.",
+  "listening": "Start at low volume; never autoplay. No formal listening study."
+}

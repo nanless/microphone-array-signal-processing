@@ -1,0 +1,1043 @@
+{
+  "schema_version": 2,
+  "created_utc": "2026-10-04T12:23:25.658478+00:00",
+  "verified_date_asia_shanghai": "2026-10-04",
+  "audit_source_sha256": "4f6197e23f2558bf96da7dc33bc3d12779dd7a87d98ea1bd495a89dc739bc020",
+  "lock_sha256": "eec80748e5f1fcc01d33e281b91a4482f52566d8e6b74bdb737e017604ec6487",
+  "actual_dependency_sha256": {
+    "codes/chapters/ch07/examples/audit_upstream_wpe_contracts.py": "4f6197e23f2558bf96da7dc33bc3d12779dd7a87d98ea1bd495a89dc739bc020",
+    "codes/chapters/ch04/core/upstream_contracts.py": "2bb8c2191ae73632edf7bd62b0ac6e20ced9d804e28345809aa03d429d186e52",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
+    "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
+  },
+  "source_identities": {
+    "nara_wpe": {
+      "project": "nara_wpe",
+      "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/nara_wpe",
+      "origin": "https://github.com/fgnt/nara_wpe.git",
+      "head": "a166779cca2088817e330481bd20af1a2c598555",
+      "lock_entry": {
+        "id": "nara_wpe",
+        "url": "https://github.com/fgnt/nara_wpe.git",
+        "revision": "a166779cca2088817e330481bd20af1a2c598555",
+        "release": "v0.0.11",
+        "license": "MIT",
+        "fetch_enabled": true,
+        "scope": "offline, block-online and frame-online WPE",
+        "note": "Annotated tag v0.0.11 peels to this commit. Current main was separately inspected at 5fbfc3639274e5a70dffcf08e20615a38c372ebb.",
+        "acquisition": "independent_source_checkout",
+        "entrypoints": [
+          "LICENSE",
+          "nara_wpe/wpe.py",
+          "nara_wpe/tf_wpe.py"
+        ]
+      },
+      "lock_sha256": "eec80748e5f1fcc01d33e281b91a4482f52566d8e6b74bdb737e017604ec6487",
+      "source_document_paths": {
+        "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+        "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+      },
+      "status_sha256": "4cc8cbd48e3e98b51a24705468415d10654aa349f3946fb98ef48e9c4856f4f6",
+      "recorded_complete_selection": {
+        "id": "nara_wpe",
+        "revision": "a166779cca2088817e330481bd20af1a2c598555",
+        "status": "source_verified",
+        "missing_entrypoints": [],
+        "execution": "not_run",
+        "dependency_validation": "not_run",
+        "asset_policy": "existing_checkout_preserved",
+        "requested_source_paths": [
+          "repository"
+        ],
+        "observed_sparse_patterns": [],
+        "expected_sparse_patterns": [],
+        "source_selection_verified": true
+      },
+      "live_complete_selection": {
+        "id": "nara_wpe",
+        "revision": "a166779cca2088817e330481bd20af1a2c598555",
+        "status": "source_verified",
+        "source_selection_verified": true,
+        "missing_entrypoints": [],
+        "observed_sparse_patterns": [],
+        "expected_sparse_patterns": [],
+        "requested_source_paths": [
+          "repository"
+        ],
+        "asset_policy": "existing_checkout_preserved"
+      },
+      "used_source_identity": "verified",
+      "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+      "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+      "ignored_members_before": [],
+      "used_files": {
+        "LICENSE": {
+          "sha256": "f9fad5befd31a5c5540fb671fa56efd59d959959ffe1b6a8156a66549d6410f0",
+          "bytes": 1110,
+          "git_blob": "bee267761def410b69877b6729cd9bb60d8c517b",
+          "actual_blob": "bee267761def410b69877b6729cd9bb60d8c517b"
+        },
+        "nara_wpe/wpe.py": {
+          "sha256": "385a6f1c67071ba3e243c8a24fe4a041484c55280ad4ed0dbadefa4679a606d2",
+          "bytes": 51842,
+          "git_blob": "1069e79d8c21097e246a6451f941f88d67be4775",
+          "actual_blob": "1069e79d8c21097e246a6451f941f88d67be4775"
+        }
+      },
+      "clean_before": true,
+      "clean_after": true,
+      "ignored_members_after": []
+    },
+    "nemo_wpe": {
+      "project": "nemo_wpe",
+      "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/nemo_wpe",
+      "origin": "https://github.com/NVIDIA/NeMo.git",
+      "head": "2381f42f6979449b5b99538f8f80135831009b51",
+      "lock_entry": {
+        "id": "nemo_wpe",
+        "url": "https://github.com/NVIDIA/NeMo.git",
+        "revision": "2381f42f6979449b5b99538f8f80135831009b51",
+        "release": "v2.4.0",
+        "verified_at": "2026-10-01",
+        "license": "Apache-2.0",
+        "license_sha256": "43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1",
+        "fetch_enabled": true,
+        "scope": "MaskBasedDereverbWPE and WPEFilter fixed-source interface comparison",
+        "acquisition": "independent_source_checkout",
+        "note": "Official NVIDIA/NeMo URL now redirects to NVIDIA-NeMo/Speech. Exact selected sources and license only, not a complete installable NeMo distribution. Amplitude mask is squared for power; later iterations regress the previous residual. Invalid lengths are masked before statistics and loading uses diag_reg*trace(Q)+eps without dimension division. Audited statically; Torch/frameworks/models/data are not installed or executed. Version 25.07 documentation is separate from this tag identity. Code license does not cover arbitrary models or datasets. No NOTICE file exists at the checked fixed root path.",
+        "source_paths": [
+          "LICENSE",
+          "README.md",
+          "setup.py",
+          "requirements/requirements_audio.txt",
+          "requirements/requirements_common.txt",
+          "nemo/collections/audio/modules/masking.py",
+          "nemo/collections/audio/modules/transforms.py",
+          "nemo/collections/audio/models/enhancement.py",
+          "nemo/collections/audio/parts/submodules/multichannel.py",
+          "nemo/collections/audio/parts/utils/audio.py",
+          "tests/collections/audio/test_audio_modules.py"
+        ],
+        "entrypoints": [
+          "LICENSE",
+          "README.md",
+          "setup.py",
+          "requirements/requirements_audio.txt",
+          "requirements/requirements_common.txt",
+          "nemo/collections/audio/modules/masking.py",
+          "nemo/collections/audio/modules/transforms.py",
+          "nemo/collections/audio/models/enhancement.py",
+          "nemo/collections/audio/parts/submodules/multichannel.py",
+          "nemo/collections/audio/parts/utils/audio.py",
+          "tests/collections/audio/test_audio_modules.py"
+        ]
+      },
+      "lock_sha256": "eec80748e5f1fcc01d33e281b91a4482f52566d8e6b74bdb737e017604ec6487",
+      "source_document_paths": {
+        "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+        "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+      },
+      "status_sha256": "4cc8cbd48e3e98b51a24705468415d10654aa349f3946fb98ef48e9c4856f4f6",
+      "recorded_complete_selection": {
+        "id": "nemo_wpe",
+        "revision": "2381f42f6979449b5b99538f8f80135831009b51",
+        "status": "source_verified",
+        "missing_entrypoints": [],
+        "execution": "not_run",
+        "dependency_validation": "not_run",
+        "asset_policy": "sparse_source_checkout",
+        "requested_source_paths": [
+          "LICENSE",
+          "README.md",
+          "setup.py",
+          "requirements/requirements_audio.txt",
+          "requirements/requirements_common.txt",
+          "nemo/collections/audio/modules/masking.py",
+          "nemo/collections/audio/modules/transforms.py",
+          "nemo/collections/audio/models/enhancement.py",
+          "nemo/collections/audio/parts/submodules/multichannel.py",
+          "nemo/collections/audio/parts/utils/audio.py",
+          "tests/collections/audio/test_audio_modules.py"
+        ],
+        "observed_sparse_patterns": [
+          "/LICENSE",
+          "/README.md",
+          "/setup.py",
+          "/requirements/requirements_audio.txt",
+          "/requirements/requirements_common.txt",
+          "/nemo/collections/audio/modules/masking.py",
+          "/nemo/collections/audio/modules/transforms.py",
+          "/nemo/collections/audio/models/enhancement.py",
+          "/nemo/collections/audio/parts/submodules/multichannel.py",
+          "/nemo/collections/audio/parts/utils/audio.py",
+          "/tests/collections/audio/test_audio_modules.py",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "expected_sparse_patterns": [
+          "/LICENSE",
+          "/README.md",
+          "/setup.py",
+          "/requirements/requirements_audio.txt",
+          "/requirements/requirements_common.txt",
+          "/nemo/collections/audio/modules/masking.py",
+          "/nemo/collections/audio/modules/transforms.py",
+          "/nemo/collections/audio/models/enhancement.py",
+          "/nemo/collections/audio/parts/submodules/multichannel.py",
+          "/nemo/collections/audio/parts/utils/audio.py",
+          "/tests/collections/audio/test_audio_modules.py",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "source_selection_verified": true
+      },
+      "live_complete_selection": {
+        "id": "nemo_wpe",
+        "revision": "2381f42f6979449b5b99538f8f80135831009b51",
+        "status": "source_verified",
+        "source_selection_verified": true,
+        "missing_entrypoints": [],
+        "observed_sparse_patterns": [
+          "/LICENSE",
+          "/README.md",
+          "/setup.py",
+          "/requirements/requirements_audio.txt",
+          "/requirements/requirements_common.txt",
+          "/nemo/collections/audio/modules/masking.py",
+          "/nemo/collections/audio/modules/transforms.py",
+          "/nemo/collections/audio/models/enhancement.py",
+          "/nemo/collections/audio/parts/submodules/multichannel.py",
+          "/nemo/collections/audio/parts/utils/audio.py",
+          "/tests/collections/audio/test_audio_modules.py",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "expected_sparse_patterns": [
+          "/LICENSE",
+          "/README.md",
+          "/setup.py",
+          "/requirements/requirements_audio.txt",
+          "/requirements/requirements_common.txt",
+          "/nemo/collections/audio/modules/masking.py",
+          "/nemo/collections/audio/modules/transforms.py",
+          "/nemo/collections/audio/models/enhancement.py",
+          "/nemo/collections/audio/parts/submodules/multichannel.py",
+          "/nemo/collections/audio/parts/utils/audio.py",
+          "/tests/collections/audio/test_audio_modules.py",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "requested_source_paths": [
+          "LICENSE",
+          "README.md",
+          "setup.py",
+          "requirements/requirements_audio.txt",
+          "requirements/requirements_common.txt",
+          "nemo/collections/audio/modules/masking.py",
+          "nemo/collections/audio/modules/transforms.py",
+          "nemo/collections/audio/models/enhancement.py",
+          "nemo/collections/audio/parts/submodules/multichannel.py",
+          "nemo/collections/audio/parts/utils/audio.py",
+          "tests/collections/audio/test_audio_modules.py"
+        ],
+        "asset_policy": "sparse_source_checkout"
+      },
+      "used_source_identity": "verified",
+      "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+      "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+      "ignored_members_before": [],
+      "used_files": {
+        "LICENSE": {
+          "sha256": "43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1",
+          "bytes": 11356,
+          "git_blob": "f49a4e16e68b128803cc2dcea614603632b04eac",
+          "actual_blob": "f49a4e16e68b128803cc2dcea614603632b04eac"
+        },
+        "README.md": {
+          "sha256": "345642d7b5beda9834aa1fcd175de24cc4da5e9e17b9bf0b3f022a6d8f802579",
+          "bytes": 32094,
+          "git_blob": "63b9231dfd343f75f84f050f1172f03fd40b0059",
+          "actual_blob": "63b9231dfd343f75f84f050f1172f03fd40b0059"
+        },
+        "setup.py": {
+          "sha256": "cdc64c92e590eab0f1af698ce0f654a4e9f69ca29a87ab48a7bab46a9d614e4a",
+          "bytes": 9967,
+          "git_blob": "cc56af616e57c8280480b50d75103f5715ef5d21",
+          "actual_blob": "cc56af616e57c8280480b50d75103f5715ef5d21"
+        },
+        "requirements/requirements_audio.txt": {
+          "sha256": "afe0013bf8cce9038a81b5163126fea7b05ce270a14e9caaf5079ac6676c67b6",
+          "bytes": 146,
+          "git_blob": "8c1c6ecdf73bb2379739135b66c1e72b9d362506",
+          "actual_blob": "8c1c6ecdf73bb2379739135b66c1e72b9d362506"
+        },
+        "requirements/requirements_common.txt": {
+          "sha256": "7a80b634a857f48cfbe323c8c8237dca5fc8a5eed7231853bf3e713f93a0c0ce",
+          "bytes": 85,
+          "git_blob": "91e6ce6718789963d3b78142be6e92daa137b769",
+          "actual_blob": "91e6ce6718789963d3b78142be6e92daa137b769"
+        },
+        "nemo/collections/audio/modules/masking.py": {
+          "sha256": "7f39caa90a0dfabefdc5579ac27a3ac5e5e850b697fc4c057d6ca7da74d69d5e",
+          "bytes": 44486,
+          "git_blob": "3f0380dccb5d6e9f81742d36574b7b65d49d64d2",
+          "actual_blob": "3f0380dccb5d6e9f81742d36574b7b65d49d64d2"
+        },
+        "nemo/collections/audio/modules/transforms.py": {
+          "sha256": "6714e91bae49c2776621dcf94cfe7d06fd93a17aa73733aaf4275336090035eb",
+          "bytes": 12040,
+          "git_blob": "3279fdfcea40c186f488afd52c05f9908f2e1d41",
+          "actual_blob": "3279fdfcea40c186f488afd52c05f9908f2e1d41"
+        },
+        "nemo/collections/audio/models/enhancement.py": {
+          "sha256": "33018ab99222276c9f247618868be3a6abb31fba8353cfcc2eecd0cade6b020f",
+          "bytes": 56067,
+          "git_blob": "4da6a247d56305d8c91b4d36e25233d3dae27f7f",
+          "actual_blob": "4da6a247d56305d8c91b4d36e25233d3dae27f7f"
+        },
+        "nemo/collections/audio/parts/submodules/multichannel.py": {
+          "sha256": "06a47a910a68acdb78f172d03dba1ebc19ebe2cde9e254dc2ee154491e5f2049",
+          "bytes": 39748,
+          "git_blob": "407e9a3fe03db6ebc3ccaf525280cbdc761e0350",
+          "actual_blob": "407e9a3fe03db6ebc3ccaf525280cbdc761e0350"
+        },
+        "nemo/collections/audio/parts/utils/audio.py": {
+          "sha256": "c692fe097aee1682a000db708f7fb446d738ea2e5ac724abdf397eedf4d475bb",
+          "bytes": 19837,
+          "git_blob": "9019f3ee2945de38110ef09b1257b1d48ecb57cd",
+          "actual_blob": "9019f3ee2945de38110ef09b1257b1d48ecb57cd"
+        },
+        "tests/collections/audio/test_audio_modules.py": {
+          "sha256": "35f04245c50b31960099b8d2e8d291fd8aa27a6d910631208d6d4d34f56a1c41",
+          "bytes": 24765,
+          "git_blob": "46ab5ca92cce42dfd178722a57ef66358a83daf7",
+          "actual_blob": "46ab5ca92cce42dfd178722a57ef66358a83daf7"
+        }
+      },
+      "clean_before": true,
+      "clean_after": true,
+      "ignored_members_after": []
+    }
+  },
+  "identity_selection_boundary": "Used original file identity and complete acquisition selection are independent; no method run upgrades acquisition or full-framework execution",
+  "source_status_sha256": "4cc8cbd48e3e98b51a24705468415d10654aa349f3946fb98ef48e9c4856f4f6",
+  "lock_entries": {
+    "nara_wpe": {
+      "id": "nara_wpe",
+      "url": "https://github.com/fgnt/nara_wpe.git",
+      "revision": "a166779cca2088817e330481bd20af1a2c598555",
+      "release": "v0.0.11",
+      "license": "MIT",
+      "fetch_enabled": true,
+      "scope": "offline, block-online and frame-online WPE",
+      "note": "Annotated tag v0.0.11 peels to this commit. Current main was separately inspected at 5fbfc3639274e5a70dffcf08e20615a38c372ebb.",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "LICENSE",
+        "nara_wpe/wpe.py",
+        "nara_wpe/tf_wpe.py"
+      ]
+    },
+    "nemo_wpe": {
+      "id": "nemo_wpe",
+      "url": "https://github.com/NVIDIA/NeMo.git",
+      "revision": "2381f42f6979449b5b99538f8f80135831009b51",
+      "release": "v2.4.0",
+      "verified_at": "2026-10-01",
+      "license": "Apache-2.0",
+      "license_sha256": "43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1",
+      "fetch_enabled": true,
+      "scope": "MaskBasedDereverbWPE and WPEFilter fixed-source interface comparison",
+      "acquisition": "independent_source_checkout",
+      "note": "Official NVIDIA/NeMo URL now redirects to NVIDIA-NeMo/Speech. Exact selected sources and license only, not a complete installable NeMo distribution. Amplitude mask is squared for power; later iterations regress the previous residual. Invalid lengths are masked before statistics and loading uses diag_reg*trace(Q)+eps without dimension division. Audited statically; Torch/frameworks/models/data are not installed or executed. Version 25.07 documentation is separate from this tag identity. Code license does not cover arbitrary models or datasets. No NOTICE file exists at the checked fixed root path.",
+      "source_paths": [
+        "LICENSE",
+        "README.md",
+        "setup.py",
+        "requirements/requirements_audio.txt",
+        "requirements/requirements_common.txt",
+        "nemo/collections/audio/modules/masking.py",
+        "nemo/collections/audio/modules/transforms.py",
+        "nemo/collections/audio/models/enhancement.py",
+        "nemo/collections/audio/parts/submodules/multichannel.py",
+        "nemo/collections/audio/parts/utils/audio.py",
+        "tests/collections/audio/test_audio_modules.py"
+      ],
+      "entrypoints": [
+        "LICENSE",
+        "README.md",
+        "setup.py",
+        "requirements/requirements_audio.txt",
+        "requirements/requirements_common.txt",
+        "nemo/collections/audio/modules/masking.py",
+        "nemo/collections/audio/modules/transforms.py",
+        "nemo/collections/audio/models/enhancement.py",
+        "nemo/collections/audio/parts/submodules/multichannel.py",
+        "nemo/collections/audio/parts/utils/audio.py",
+        "tests/collections/audio/test_audio_modules.py"
+      ]
+    }
+  },
+  "acquisition_states": {
+    "nara_wpe": {
+      "id": "nara_wpe",
+      "revision": "a166779cca2088817e330481bd20af1a2c598555",
+      "status": "source_verified",
+      "missing_entrypoints": [],
+      "execution": "not_run",
+      "dependency_validation": "not_run",
+      "asset_policy": "existing_checkout_preserved",
+      "requested_source_paths": [
+        "repository"
+      ],
+      "observed_sparse_patterns": [],
+      "expected_sparse_patterns": [],
+      "source_selection_verified": true
+    },
+    "nemo_wpe": {
+      "id": "nemo_wpe",
+      "revision": "2381f42f6979449b5b99538f8f80135831009b51",
+      "status": "source_verified",
+      "missing_entrypoints": [],
+      "execution": "not_run",
+      "dependency_validation": "not_run",
+      "asset_policy": "sparse_source_checkout",
+      "requested_source_paths": [
+        "LICENSE",
+        "README.md",
+        "setup.py",
+        "requirements/requirements_audio.txt",
+        "requirements/requirements_common.txt",
+        "nemo/collections/audio/modules/masking.py",
+        "nemo/collections/audio/modules/transforms.py",
+        "nemo/collections/audio/models/enhancement.py",
+        "nemo/collections/audio/parts/submodules/multichannel.py",
+        "nemo/collections/audio/parts/utils/audio.py",
+        "tests/collections/audio/test_audio_modules.py"
+      ],
+      "observed_sparse_patterns": [
+        "/LICENSE",
+        "/README.md",
+        "/setup.py",
+        "/requirements/requirements_audio.txt",
+        "/requirements/requirements_common.txt",
+        "/nemo/collections/audio/modules/masking.py",
+        "/nemo/collections/audio/modules/transforms.py",
+        "/nemo/collections/audio/models/enhancement.py",
+        "/nemo/collections/audio/parts/submodules/multichannel.py",
+        "/nemo/collections/audio/parts/utils/audio.py",
+        "/tests/collections/audio/test_audio_modules.py",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "expected_sparse_patterns": [
+        "/LICENSE",
+        "/README.md",
+        "/setup.py",
+        "/requirements/requirements_audio.txt",
+        "/requirements/requirements_common.txt",
+        "/nemo/collections/audio/modules/masking.py",
+        "/nemo/collections/audio/modules/transforms.py",
+        "/nemo/collections/audio/models/enhancement.py",
+        "/nemo/collections/audio/parts/submodules/multichannel.py",
+        "/nemo/collections/audio/parts/utils/audio.py",
+        "/tests/collections/audio/test_audio_modules.py",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "source_selection_verified": true
+    }
+  },
+  "original_files": {
+    "nara_wpe": {
+      "LICENSE": {
+        "sha256": "f9fad5befd31a5c5540fb671fa56efd59d959959ffe1b6a8156a66549d6410f0",
+        "git_blob": "bee267761def410b69877b6729cd9bb60d8c517b"
+      },
+      "nara_wpe/wpe.py": {
+        "sha256": "385a6f1c67071ba3e243c8a24fe4a041484c55280ad4ed0dbadefa4679a606d2",
+        "git_blob": "1069e79d8c21097e246a6451f941f88d67be4775"
+      }
+    },
+    "nemo_wpe": {
+      "LICENSE": {
+        "sha256": "43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1",
+        "git_blob": "f49a4e16e68b128803cc2dcea614603632b04eac"
+      },
+      "README.md": {
+        "sha256": "345642d7b5beda9834aa1fcd175de24cc4da5e9e17b9bf0b3f022a6d8f802579",
+        "git_blob": "63b9231dfd343f75f84f050f1172f03fd40b0059"
+      },
+      "setup.py": {
+        "sha256": "cdc64c92e590eab0f1af698ce0f654a4e9f69ca29a87ab48a7bab46a9d614e4a",
+        "git_blob": "cc56af616e57c8280480b50d75103f5715ef5d21"
+      },
+      "requirements/requirements_audio.txt": {
+        "sha256": "afe0013bf8cce9038a81b5163126fea7b05ce270a14e9caaf5079ac6676c67b6",
+        "git_blob": "8c1c6ecdf73bb2379739135b66c1e72b9d362506"
+      },
+      "requirements/requirements_common.txt": {
+        "sha256": "7a80b634a857f48cfbe323c8c8237dca5fc8a5eed7231853bf3e713f93a0c0ce",
+        "git_blob": "91e6ce6718789963d3b78142be6e92daa137b769"
+      },
+      "nemo/collections/audio/modules/masking.py": {
+        "sha256": "7f39caa90a0dfabefdc5579ac27a3ac5e5e850b697fc4c057d6ca7da74d69d5e",
+        "git_blob": "3f0380dccb5d6e9f81742d36574b7b65d49d64d2"
+      },
+      "nemo/collections/audio/modules/transforms.py": {
+        "sha256": "6714e91bae49c2776621dcf94cfe7d06fd93a17aa73733aaf4275336090035eb",
+        "git_blob": "3279fdfcea40c186f488afd52c05f9908f2e1d41"
+      },
+      "nemo/collections/audio/models/enhancement.py": {
+        "sha256": "33018ab99222276c9f247618868be3a6abb31fba8353cfcc2eecd0cade6b020f",
+        "git_blob": "4da6a247d56305d8c91b4d36e25233d3dae27f7f"
+      },
+      "nemo/collections/audio/parts/submodules/multichannel.py": {
+        "sha256": "06a47a910a68acdb78f172d03dba1ebc19ebe2cde9e254dc2ee154491e5f2049",
+        "git_blob": "407e9a3fe03db6ebc3ccaf525280cbdc761e0350"
+      },
+      "nemo/collections/audio/parts/utils/audio.py": {
+        "sha256": "c692fe097aee1682a000db708f7fb446d738ea2e5ac724abdf397eedf4d475bb",
+        "git_blob": "9019f3ee2945de38110ef09b1257b1d48ecb57cd"
+      },
+      "tests/collections/audio/test_audio_modules.py": {
+        "sha256": "35f04245c50b31960099b8d2e8d291fd8aa27a6d910631208d6d4d34f56a1c41",
+        "git_blob": "46ab5ca92cce42dfd178722a57ef66358a83daf7"
+      }
+    }
+  },
+  "before": {
+    "nara_wpe": {
+      "head": "a166779cca2088817e330481bd20af1a2c598555",
+      "tracked_status": "",
+      "untracked_python": []
+    },
+    "nemo_wpe": {
+      "head": "2381f42f6979449b5b99538f8f80135831009b51",
+      "tracked_status": "",
+      "untracked_python": []
+    }
+  },
+  "after": {
+    "nara_wpe": {
+      "head": "a166779cca2088817e330481bd20af1a2c598555",
+      "tracked_status": "",
+      "untracked_python": []
+    },
+    "nemo_wpe": {
+      "head": "2381f42f6979449b5b99538f8f80135831009b51",
+      "tracked_status": "",
+      "untracked_python": []
+    }
+  },
+  "environment": {
+    "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
+    "numpy": "2.5.3",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "executable": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/bin/python",
+    "upstream_bytecode_writes": false,
+    "nemo_or_torch_imported": false
+  },
+  "nara": {
+    "execution_kind": "original_complete_numpy_module_and_methods",
+    "inputs": {
+      "spectra_real": [
+        [
+          [
+            10.0,
+            20.0,
+            30.0,
+            40.0,
+            50.0,
+            60.0
+          ],
+          [
+            100.0,
+            200.0,
+            300.0,
+            400.0,
+            500.0,
+            600.0
+          ]
+        ]
+      ],
+      "spectra_imag": "all zero",
+      "taps": 2,
+      "delay": 1,
+      "alpha": 0.95,
+      "current_time_index": 5,
+      "first_output_filter": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "second_output_filter": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "stateless_buffer_times": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "state_old_buffer_times": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "offline_window": [
+      50.0,
+      500.0,
+      40.0,
+      400.0
+    ],
+    "state_window": [
+      [
+        20.0,
+        30.0,
+        200.0,
+        300.0
+      ]
+    ],
+    "stateless_window": [
+      [
+        40.0,
+        30.0,
+        400.0,
+        300.0
+      ]
+    ],
+    "instrumentation": "Read-only Python return profiling captures the original stateless window local; prior profile restored",
+    "stateless_output": [
+      [
+        -2440.0,
+        600.0
+      ]
+    ],
+    "class_prediction": [
+      [
+        -1820.0,
+        600.0
+      ]
+    ],
+    "class_step_output": [
+      [
+        -1820.0,
+        600.0
+      ]
+    ],
+    "stateless_updated_state_finite": true,
+    "zero_input": {
+      "output": [
+        [
+          0.0,
+          0.0
+        ]
+      ],
+      "inverse_covariance": [
+        [
+          [
+            2.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            2.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            2.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            2.0
+          ]
+        ]
+      ],
+      "filter_unchanged": true
+    },
+    "wrong_frame_shape_exception": {
+      "type": "AssertionError",
+      "message": "Set channel and frequency bins."
+    },
+    "independent_expected": {
+      "offline_window": [
+        50,
+        500,
+        40,
+        400
+      ],
+      "stateless_window": [
+        40,
+        30,
+        400,
+        300
+      ],
+      "state_window": [
+        20,
+        30,
+        200,
+        300
+      ],
+      "stateless_first_output": -2440,
+      "class_first_output": -1820
+    },
+    "absolute_tolerance": 1e-12,
+    "boundary": "dimensionless labeled spectra; deliberately set coefficients; no speech quality or runtime benchmark",
+    "expected_behaviors_verified": true,
+    "input_sha256": "7ae58df688d138ffdda4457ab452110554301a244cc3d5dd7b67f33ec9a2dfa5",
+    "warnings": [],
+    "original_snippets": {
+      "build_y_tilde": {
+        "start_line": 385,
+        "end_line": 466,
+        "sha256": "6ab335255b2e11d9552bcda7bb798fe79b309e0cec93062007ea6b48ab7fafc7"
+      },
+      "online_wpe_step": {
+        "start_line": 696,
+        "end_line": 744,
+        "sha256": "d98a4839c3587666109a88eba58fae27925ad3ecb9dd1f91aa27816039f85f32"
+      },
+      "OnlineWPE._get_prediction": {
+        "start_line": 829,
+        "end_line": 840,
+        "sha256": "0acf2c4ae08262e7f470c6ab307dba22f9e7850714df104ee497789fafec0bf2"
+      },
+      "OnlineWPE.step_frame": {
+        "start_line": 784,
+        "end_line": 803,
+        "sha256": "5be428621a4c26639839625afffb5f5bb7c1e7e3684c72bb2768984c0d06fdd8"
+      }
+    }
+  },
+  "nemo": {
+    "execution_kind": "static_original_ast_only",
+    "framework_executed": false,
+    "facts": {
+      "first_iteration_amplitude_mask": true,
+      "power_is_magnitude_squared": true,
+      "previous_output_is_next_regression_input": true,
+      "returns_spectrum_and_length": true,
+      "inverse_mean_power_plus_eps": true,
+      "length_masks_weights_before_correlations": true,
+      "trace_loading_without_dimension_division": true,
+      "matrix_loading_conditional_on_diag_reg": true,
+      "direct_linear_solve": true,
+      "history_left_padding": true,
+      "history_unfold": true,
+      "model_passes_encoded_length_and_mask": true
+    },
+    "snippets": {
+      "mask_forward": {
+        "start_line": 1028,
+        "end_line": 1063,
+        "original_text_sha256": "d0d3fd174444691e3bd46207e0bcc6558782084419d98aee67c35acac7b8ee18"
+      },
+      "filter_forward": {
+        "start_line": 804,
+        "end_line": 849,
+        "original_text_sha256": "c099100ea1ac31fe30e4e355ab9373545e01dbe179bb34f3a906f273afe8bab4"
+      },
+      "correlations": {
+        "start_line": 921,
+        "end_line": 966,
+        "original_text_sha256": "1f3eb0f38b65c17aaa206a60a14229a4ba93ea6237efcfcef5d6aea9856b30d0"
+      },
+      "filter_estimation": {
+        "start_line": 968,
+        "end_line": 1003,
+        "original_text_sha256": "adba791004e8ea6a8e313a14683673e06def16069e47f597ec6013ebb79dda7a"
+      },
+      "history": {
+        "start_line": 852,
+        "end_line": 891,
+        "original_text_sha256": "04b523035931a3daa70fc300a7e5e4aaefb4225fc8efb9f078c82651b8eeef49"
+      },
+      "model_forward": {
+        "start_line": 100,
+        "end_line": 134,
+        "original_text_sha256": "45264bfa6f9a267399c9d56e01e6cf156b9d540a44678b2f1990c3a7d620b8aa"
+      }
+    },
+    "all_facts_verified": true,
+    "boundary": "batch statistics; no Torch, NeMo package, neural weights or waveform transform executed"
+  },
+  "book_examples": {
+    "execution_kind": "independent_book_numpy_calculations_not_nemo_execution",
+    "mask_example": {
+      "magnitude": 2.0,
+      "amplitude_mask": 0.5,
+      "masked_power": 1.0,
+      "power_mask_interpretation": 2.0,
+      "unmasked_power": 4.0
+    },
+    "iteration_example": {
+      "input": [
+        1.0,
+        2.0,
+        3.0,
+        4.0
+      ],
+      "initial_power": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "taps": 1,
+      "delay": 1,
+      "history": "zero left padding; all frames",
+      "eps": 0.0,
+      "loading": 0.0,
+      "first_output": [
+        1.0,
+        0.5714285714285714,
+        0.1428571428571428,
+        -0.2857142857142856
+      ],
+      "first_coefficient": 1.4285714285714286,
+      "second_power": [
+        1.0,
+        0.32653061224489793,
+        0.02040816326530612,
+        0.08163265306122448
+      ],
+      "fixed_observation_output": [
+        1.0,
+        0.5544554455445547,
+        0.10891089108910945,
+        -0.33663366336633604
+      ],
+      "fixed_observation_coefficient": 1.4455445544554453,
+      "residual_observation_output": [
+        1.0,
+        0.29958391123439665,
+        -0.012482662968099856,
+        -0.32454923717059636
+      ],
+      "residual_observation_coefficient": 0.27184466019417475,
+      "independent_fraction_outputs": {
+        "first": [
+          1.0,
+          0.5714285714285714,
+          0.14285714285714285,
+          -0.2857142857142857
+        ],
+        "fixed_observation": [
+          1.0,
+          0.5544554455445545,
+          0.10891089108910891,
+          -0.33663366336633666
+        ],
+        "residual_observation": [
+          1.0,
+          0.29958391123439665,
+          -0.012482662968099861,
+          -0.3245492371705964
+        ]
+      },
+      "warning": "Initial unit power is prescribed to isolate dataflow; this is not full MaskBasedDereverbWPE output"
+    },
+    "expected_behaviors_verified": true,
+    "boundary": "No original NeMo function or Torch operator executed; no waveform or neural model"
+  },
+  "scope": {
+    "identity": "NARA original reference implementation; NeMo maintainer framework implementation",
+    "excluded": "no full framework, weights, data, acoustic quality, timing or device validation"
+  },
+  "status": "verified_original_nara_static_nemo_and_independent_book_examples"
+}

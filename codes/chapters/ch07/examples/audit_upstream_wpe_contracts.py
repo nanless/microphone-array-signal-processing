@@ -8,6 +8,12 @@ and mark both selected sources verified. This tool never acquires dependencies.
 """
 from __future__ import annotations
 
+# Preserve both the existing direct-file entry and the module entry.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[4]))
+
 import argparse
 import ast
 from datetime import datetime, timezone
@@ -25,10 +31,13 @@ from zoneinfo import ZoneInfo
 
 import numpy as np
 
+from codes.chapters.ch04.core import upstream_contracts as contracts
+
 ROOT = Path(__file__).resolve().parents[4]
 LOCK = ROOT / 'codes/chapters/ch00/SOURCES.lock.json'
 STATUS = ROOT / 'codes/chapters/ch00/SOURCE_STATUS.json'
 CACHE = ROOT / 'codes/chapters/ch00/upstream/_downloads'
+CURRENT_REPORT = ROOT / 'codes/chapters/ch07/reports/upstream_wpe_contracts_current.json'
 ATOL = 1e-12
 SOURCES = {
     'nara_wpe': {
@@ -66,26 +75,15 @@ def digest(value):
                                      allow_nan=False).encode()).hexdigest()
 
 
-def git(directory, *args, binary=False):
-    env = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
-    value = subprocess.check_output(['git', '-C', str(directory), *args], env=env,
-                                    text=not binary, stderr=subprocess.PIPE)
-    return value if binary else value.strip()
+def git(directory, *args):
+    return contracts.git(directory, *args)
 
 
 def checkout_state(directory, revision):
-    directory = Path(directory)
-    if not (directory / '.git').exists():
-        raise FileNotFoundError('Existing independently acquired fixed checkout required')
-    if Path(git(directory, 'rev-parse', '--show-toplevel')).resolve() != directory.resolve():
-        raise RuntimeError('Expected an independent checkout')
-    state = {'head': git(directory, 'rev-parse', 'HEAD'),
-             'tracked_status': git(directory, 'status', '--porcelain', '--untracked-files=no'),
-             'untracked_python': [p for p in git(directory, 'ls-files', '--others',
-                 '--exclude-standard').splitlines() if p.endswith('.py')]}
-    if state['head'] != revision or state['tracked_status'] or state['untracked_python']:
-        raise RuntimeError('Fixed revision or checkout cleanliness differs')
-    return state
+    identity = contracts.verify_project('nara_wpe' if revision == SOURCES['nara_wpe']['revision'] else 'nemo_wpe', directory)
+    if identity['head'] != revision:
+        raise RuntimeError('Fixed source revision differs')
+    return {'head': identity['head'], 'tracked_status': '', 'untracked_python': []}
 
 
 def verify_acquisition(lock, status, lock_sha):
@@ -278,20 +276,19 @@ def independent_numpy_examples():
 
 
 def run_audit(cache=CACHE):
-    lock_sha = sha(LOCK)
-    status_sha = sha(STATUS)
-    lock, status = json.loads(LOCK.read_text()), json.loads(STATUS.read_text())
+    lock, status, lock_sha, status_sha = contracts.source_documents()
     entries, states = verify_acquisition(lock, status, lock_sha)
-    before, files = {}, {}
+    before, files, identities = {}, {}, {}
     for project, spec in SOURCES.items():
-        directory = Path(cache)/project
-        before[project] = checkout_state(directory, spec['revision'])
+        identity = contracts.verify_project(project, Path(cache)/project, spec['files'])
+        identities[project] = identity
+        before[project] = {'head': identity['head'], 'tracked_status': '', 'untracked_python': []}
         files[project] = {}
         for name, expected in spec['files'].items():
-            path = directory/name
-            if sha(path) != expected or path.read_bytes() != git(directory, 'show', 'HEAD:'+name, binary=True):
+            row = identity['used_files'][name]
+            if row['sha256'] != expected:
                 raise RuntimeError('Original source hash/blob differs: '+project+'/'+name)
-            files[project][name] = {'sha256': expected, 'git_blob': git(directory, 'rev-parse', 'HEAD:'+name)}
+            files[project][name] = {'sha256': expected, 'git_blob': row['git_blob']}
     old_bytecode = sys.dont_write_bytecode
     sys.dont_write_bytecode = True
     try:
@@ -320,13 +317,19 @@ def run_audit(cache=CACHE):
     nemo = inspect_nemo((nemo_dir/'modules/masking.py').read_text(),
         (nemo_dir/'parts/submodules/multichannel.py').read_text(), (nemo_dir/'models/enhancement.py').read_text())
     examples = independent_numpy_examples()
-    after = {p: checkout_state(Path(cache)/p, s['revision']) for p,s in SOURCES.items()}
+    for identity in identities.values():
+        contracts.check_unchanged(identity)
+    after = {p: {'head': i['head'], 'tracked_status': '', 'untracked_python': []}
+             for p, i in identities.items()}
     if before != after or sha(LOCK) != lock_sha or sha(STATUS) != status_sha:
         raise RuntimeError('Sources, shared lock or acquisition status changed during audit')
     now = datetime.now(timezone.utc)
-    return {'schema_version': 1, 'created_utc': now.isoformat(),
+    return {'schema_version': 2, 'created_utc': now.isoformat(),
         'verified_date_asia_shanghai': now.astimezone(ZoneInfo('Asia/Shanghai')).date().isoformat(),
         'audit_source_sha256': sha(__file__), 'lock_sha256': lock_sha,
+        'actual_dependency_sha256': contracts.dependencies(Path(__file__)),
+        'source_identities': identities,
+        'identity_selection_boundary': 'Used original file identity and complete acquisition selection are independent; no method run upgrades acquisition or full-framework execution',
         'source_status_sha256': status_sha, 'lock_entries': entries, 'acquisition_states': states,
         'original_files': files, 'before': before, 'after': after,
         'environment': {'python': sys.version, 'numpy': np.__version__, 'platform': platform.platform(),
@@ -344,13 +347,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--report', type=Path)
     args = parser.parse_args()
+    target = contracts.report_target(args.report, CURRENT_REPORT, (CACHE,)) if args.report else None
     report = run_audit()
     serialized = json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False)+'\n'
-    if args.report is None:
+    if target is None:
         print(serialized, end='')
     else:
-        args.report.parent.mkdir(parents=True, exist_ok=True)
-        args.report.write_text(serialized)
+        contracts.write_report(target, report, CURRENT_REPORT, (CACHE,))
     return 0 if report['status'].startswith('verified_') else 1
 
 

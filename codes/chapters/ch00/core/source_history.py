@@ -22,12 +22,14 @@ SNAPSHOT_ROOT = ROOT / 'codes/chapters/ch00/source_snapshots'
 # was reviewed and registered. Extend these sets only with verified raw bytes.
 _HISTORICAL_SNAPSHOTS = {
     'SOURCES': frozenset({
+        'a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505',
         '5dbf0c55fac57d82915ce01c20d7a96505147aaaed550558ce5e6c1c24da1fd0',
         '55ab323ba665633141c4864763095046f9c6161ce2d88ca2aa9332dde7ec23f0',
         'e3478006c7dbc6cec442bf6bccc4df9eca946d7d353b661e947596dd8b87608a',
         '6dab41b1542cfa2cd4731ef4c8a3e807b343dc807f209c4eea17503e203ebf59',
     }),
     'SOURCE_STATUS': frozenset({
+        'abc28f6f15512da8267618bca318b10033909ec2afdb6090b6aa2d0f1281f0e9',
         '230269d62683e0726efb2c87a1661f8179ada3ee041b7b7df266190e471e2652',
         'e3b3176d835837441224e4906b7c2befadcdc4fe2ce6163245b7d9a9ad0d9229',
         'b113b63c97767d19b76ceb44677303961ff310ce8d96f4e9e777944b44916d3c',

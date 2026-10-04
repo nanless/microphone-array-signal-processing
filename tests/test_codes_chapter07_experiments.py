@@ -1,4 +1,4 @@
-"""Independent rational, polynomial, DFT and actual PCM anchors for E07-08..21."""
+"""Independent rational, polynomial, DFT and actual PCM anchors for E07-08..24."""
 import cmath
 import hashlib
 import json
@@ -147,8 +147,12 @@ class Chapter07Experiments(unittest.TestCase):
 
     def test_stable_ids_and_finite_json(self):
         r = ex.run_experiments(repo_root=self.root, mint_directory=self.mint)
-        self.assertEqual(set(r),{f'E07-{i:02d}' for i in range(8,22)})
+        self.assertEqual(set(r),{f'E07-{i:02d}' for i in range(8,25)})
         self.assertEqual(len(r['E07-17']['files']),4)
+        self.assertEqual(r['E07-22']['cases']['common']['residual'], [0,0,0,0])
+        self.assertEqual(r['E07-22']['cases']['aligned']['residual'], [0,1,0,0])
+        self.assertAlmostEqual(r['E07-23']['rows'][-1]['power_ratio'], 1e-6)
+        self.assertEqual(len(r['E07-24']['files']),6)
         json.dumps(r,allow_nan=False)
 
     def test_published_predictable_pcm_independent_integer_score(self):

@@ -3,7 +3,8 @@
 Run from the repository root with:
     .venv/bin/python codes/chapters/ch07/examples/compare_wpe_reference.py
 
-This optional, offline experiment requires NumPy and nara-wpe==0.0.11.
+This optional experiment requires NumPy, installed nara-wpe==0.0.11, and
+the existing fixed NARA Git source checkout with current lock/status records.
 It does not download inputs, install dependencies, or evaluate speech quality.
 Both solvers use valid statistics, no power smoothing and no diagonal loading.
 Only frames with a complete regression history are compared: nara-wpe filters
@@ -15,7 +16,6 @@ from __future__ import annotations
 
 import importlib.metadata
 import hashlib
-import inspect
 import json
 import platform
 from pathlib import Path
@@ -28,20 +28,16 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from codes.chapters.ch07.core.dereverberation import offline_wpe
+from codes.chapters.ch04.core import upstream_contracts as contracts
 
 
 def compare() -> dict:
-    try:
-        version = importlib.metadata.version("nara-wpe")
-        from nara_wpe.wpe import wpe_v6
-    except (ImportError, importlib.metadata.PackageNotFoundError) as error:
-        raise RuntimeError("Install the optional reference nara-wpe==0.0.11 first.") from error
-    if version != "0.0.11":
-        raise RuntimeError(f"This comparison requires nara-wpe 0.0.11; found {version}.")
-    reference_path = Path(inspect.getfile(wpe_v6))
-    reference_sha256 = hashlib.sha256(reference_path.read_bytes()).hexdigest()
-    if reference_sha256 != "385a6f1c67071ba3e243c8a24fe4a041484c55280ad4ed0dbadefa4679a606d2":
-        raise RuntimeError("Reference wpe.py differs from the locked 0.0.11 source; review before comparing.")
+    from codes.chapters.ch07.examples.compare_online_wpe_reference import (
+        _load_locked_module, _check_locked_module, NARA_WPE_MODULE_SHA256,
+    )
+    module, identity, installed = _load_locked_module()
+    wpe_v6, version = module.wpe_v6, installed['version']
+    reference_sha256 = NARA_WPE_MODULE_SHA256
 
     seed = 20260922
     rng = np.random.default_rng(seed)
@@ -78,7 +74,13 @@ def compare() -> dict:
             checks.append({"case": name, "iterations": iterations,
                            "max_absolute_complex_error": max_abs,
                            "relative_l2_error": relative_l2})
+    _check_locked_module(identity, installed)
     return {
+        "source_identity": identity, "installed_identity": installed,
+        "actual_dependency_sha256": contracts.dependencies(Path(__file__),
+            (Path(__file__).with_name("compare_online_wpe_reference.py"),
+             ROOT/"codes/chapters/ch07/core/dereverberation.py",
+             ROOT/"codes/chapters/ch02/core/conventions.py")),
         "reference": f"nara-wpe {version} / wpe_v6",
         "reference_module_sha256": reference_sha256,
         "environment": {"python": platform.python_version(), "numpy": np.__version__,

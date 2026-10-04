@@ -1,8 +1,8 @@
 {
-  "run_utc": "2026-10-04T10:25:36.687701+00:00",
-  "run_asia_shanghai": "2026-10-04T18:25:36.687859+08:00",
+  "run_utc": "2026-10-04T12:13:15.247692+00:00",
+  "run_asia_shanghai": "2026-10-04T20:13:15.247825+08:00",
   "audit_source_sha256": "626a9a7ae981696bc332fe62f995c668a1b8f65549718920777ca2c1c6b6e169",
-  "lock_sha256": "a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505",
+  "lock_sha256": "eec80748e5f1fcc01d33e281b91a4482f52566d8e6b74bdb737e017604ec6487",
   "lock_entries": {
     "pyroomacoustics": {
       "id": "pyroomacoustics",
@@ -162,12 +162,12 @@
           "pyroomacoustics/bss/trinicon.py"
         ]
       },
-      "lock_sha256": "a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505",
+      "lock_sha256": "eec80748e5f1fcc01d33e281b91a4482f52566d8e6b74bdb737e017604ec6487",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "abc28f6f15512da8267618bca318b10033909ec2afdb6090b6aa2d0f1281f0e9",
+      "status_sha256": "4cc8cbd48e3e98b51a24705468415d10654aa349f3946fb98ef48e9c4856f4f6",
       "recorded_complete_selection": {
         "id": "pyroomacoustics",
         "revision": "0dd39f2614b7fc44b2cc63dbe7d60f4641068890",
@@ -300,12 +300,12 @@
           "doatools/utils/conversion.py"
         ]
       },
-      "lock_sha256": "a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505",
+      "lock_sha256": "eec80748e5f1fcc01d33e281b91a4482f52566d8e6b74bdb737e017604ec6487",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "abc28f6f15512da8267618bca318b10033909ec2afdb6090b6aa2d0f1281f0e9",
+      "status_sha256": "4cc8cbd48e3e98b51a24705468415d10654aa349f3946fb98ef48e9c4856f4f6",
       "recorded_complete_selection": {
         "id": "doatools",
         "revision": "9469db201e0418aef6b97583ef54b6fec2769502",
@@ -771,7 +771,7 @@
   },
   "report_source_sha256": {
     "codes/chapters/ch04/examples/audit_upstream_doa.py": "626a9a7ae981696bc332fe62f995c668a1b8f65549718920777ca2c1c6b6e169",
-    "codes/chapters/ch04/core/upstream_contracts.py": "16630220cdc6f66eb97cfc2a91057cb2e159ff0addbc89a2a65cb0dab45ab003",
+    "codes/chapters/ch04/core/upstream_contracts.py": "2bb8c2191ae73632edf7bd62b0ac6e20ced9d804e28345809aa03d429d186e52",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },

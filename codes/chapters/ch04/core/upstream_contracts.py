@@ -53,6 +53,14 @@ PROJECTS = {
         "cf52ede4f38361cdbb03aa93c8254109583dfe2b",
         "MIT AND Apache-2.0 (source components); separate non-commercial model-weight terms", "LICENSE",
         "d3757b5359fd0d6d1ed7dbe9b37da90b11c4a6cabaa11081b26b5f6aa95794af"),
+    'btk20': ('https://github.com/kkumatani/distant_speech_recognition.git', 'feff19ec8bcb770f6530fe280dc3ccafc2f5984a', 'MIT; retain per-file notices', 'LICENSE', '1dfe95044a48d8c90dde9fe0d32fa75beba51633b866cc91f10b803489edeec0'),
+    'espnet': ('https://github.com/espnet/espnet.git', 'be79590bb2ff26ffb01bc825c5f68cb9418b7f0d', 'Apache-2.0', 'LICENSE', '4696c3c9551da6fef1368be1e4ed2c80cf13e55448c6dcf2aba9462f5ff29ef5'),
+    'gss': ('https://github.com/desh2608/gss.git', '10fad18cae85e2e4342c77421abc70c9c5da23ed', 'MIT', 'LICENSE', '5658d3e38fcd75f27608d9ba7ee83a2c1a04cc7a76334509907b41c87b92fc8b'),
+    'metaaf': ('https://github.com/adobe-research/MetaAF.git', '56c4665bdc51c2e0595a7c0cd9b1266408adceff', 'LicenseRef-NCSA-and-Adobe-Research', 'metaaf/LICENSE', '4281265bd0d7692b781b56f3395f9673e9a67e74b10348e470a6c43a4259d3fb'),
+    'nara_wpe': ('https://github.com/fgnt/nara_wpe.git', 'a166779cca2088817e330481bd20af1a2c598555', 'MIT', 'LICENSE', 'f9fad5befd31a5c5540fb671fa56efd59d959959ffe1b6a8156a66549d6410f0'),
+    'nemo_wpe': ('https://github.com/NVIDIA/NeMo.git', '2381f42f6979449b5b99538f8f80135831009b51', 'Apache-2.0', 'LICENSE', '43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1'),
+    'speexdsp': ('https://gitlab.xiph.org/xiph/speexdsp.git', '8e29a256ef0235ebbe7fcb8417b5ac7731eb8307', 'BSD-3-Clause', 'COPYING', '2654a4264b2bfe298dedc508748d140111840c315cc8eb646a3a68c13fa75b01'),
+    'tso_vace_wpe': ('https://github.com/dreadbird06/tso_vace_wpe.git', '10ee77dd020d58af508feb77251f9353208cb33a', 'MIT; retain LICENSE and per-file notices', 'LICENSE', '664fb260188108b8c9b3e21ab0c8c8f57c94b421f8134dc1544ede4627d2713b'),
 }
 
 

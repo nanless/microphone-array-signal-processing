@@ -56,6 +56,10 @@ REFERENCE_AUDIO_ROOT = CODE_CHAPTERS / "ch06" / "reference_audio"
 REFERENCE_AUDIO_WAVS = {"reference_" + name + ".wav" for name in
                         ("early", "late", "echo", "early_residual",
                          "wrong_gain_residual", "late_residual")}
+DELAY_AUDIO_ROOT = CODE_CHAPTERS / "ch07" / "delay_audio"
+DELAY_AUDIO_WAVS = {"delay_" + name + ".wav" for name in
+                    ("reference", "array", "common_history", "aligned_history",
+                     "common_residual", "aligned_residual")}
 MINT_AUDIO_ROOT = ROOT / "codes/chapters/ch07/mint_audio"
 MASK_AUDIO_ROOT = ROOT / "codes/chapters/ch08/mask_audio"
 SCENARIO_AUDIO_ROOT = CODE_CHAPTERS / "ch11" / "scenario_audio"
@@ -134,7 +138,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "04_doa-estimation.md": 48,
     "05_beamforming.md": 44,
     "06_aec.md": 71,  # reference-gain topic and E40/E41/E42 are four independent h4 topics
-    "07_wpe-dereverberation.md": 53,
+    "07_wpe-dereverberation.md": 58,
     "08_speech-separation.md": 59,
     "09_source-tracking.md": 56,
     "10_engineering-practice.md": 54,
@@ -166,14 +170,14 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 16
 EXPECTED_SECTION_COUNT = 151
-EXPECTED_SUBSECTION_COUNT = 711
-EXPECTED_OUTLINE_ITEM_COUNT = 878
-EXPECTED_FIGURE_NUMBERS = set(range(1, 75))
-EXPECTED_EXERCISE_COUNT = 343
+EXPECTED_SUBSECTION_COUNT = 716
+EXPECTED_OUTLINE_ITEM_COUNT = 883
+EXPECTED_FIGURE_NUMBERS = set(range(1, 76))
+EXPECTED_EXERCISE_COUNT = 346
 EXPECTED_EXERCISE_COUNTS = {
     '01_problem-definition.md': 10, '02_basics-signal-model.md': 20,
     '03_array-geometry.md': 18, '04_doa-estimation.md': 25,
-    '05_beamforming.md': 24, '06_aec.md': 42, '07_wpe-dereverberation.md': 21,
+    '05_beamforming.md': 24, '06_aec.md': 42, '07_wpe-dereverberation.md': 24,
     '08_speech-separation.md': 29, '09_source-tracking.md': 23,
     '10_engineering-practice.md': 33, '11_selection-guide.md': 25,
     '12_appendix-symbols-math.md': 19, '13_appendix-guide.md': 14,
@@ -787,7 +791,7 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_reference_figures.py" if number == 74 else "make_beamforming_figures.py" if number == 73 else "make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72)
+            script_name = ("make_delay_figures.py" if number == 75 else "make_reference_figures.py" if number == 74 else "make_beamforming_figures.py" if number == 73 else "make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
@@ -1390,7 +1394,7 @@ def source_digest():
                     if path.is_file())
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
-              ("build_pdf.py", "make_figures.py", "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py")]
+              ("build_pdf.py", "make_figures.py", "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py", "make_delay_figures.py")]
     paths.append(ROOT / "requirements.txt")
     paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
@@ -1411,13 +1415,13 @@ def site_source_digest():
     paths += sorted(main_audio_path(CODE_CHAPTERS, record["group"], record["file"])
                     for record in manifest["files"])
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, SPECTRAL_AUDIO_ROOT, STFT_AUDIO_ROOT, SWEEP_AUDIO_ROOT, BASELINE_AUDIO_ROOT, REFLECTION_AUDIO_ROOT, PHASE_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, REFERENCE_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, SPECTRAL_AUDIO_ROOT, STFT_AUDIO_ROOT, SWEEP_AUDIO_ROOT, BASELINE_AUDIO_ROOT, REFLECTION_AUDIO_ROOT, PHASE_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, REFERENCE_AUDIO_ROOT, DELAY_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
               ("build_site.py", "build_markdown_helpers.py", "inline_layout.js", "heading_aliases.py",
                "legacy_sequential_anchors.json", "code_layout.py", "make_figures.py",
-               "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py")]
+               "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py", "make_delay_figures.py")]
     paths.append(ROOT / "requirements.txt")
     paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
@@ -1764,7 +1768,7 @@ def check_real_audio(errors):
         parser = VisibleMediaParser()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         allowed_audio_roots = ("../audio/", "../real_audio/", "../room_audio/",
-                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../spectral_audio/", "../stft_audio/", "../sweep_audio/", "../baseline_audio/", "../reflection_audio/", "../phase_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../reference_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/", "../scenario_audio/", "../weighted_audio/", "../response_audio/", "../imaging_audio/", "../distributed_audio/")
+                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../spectral_audio/", "../stft_audio/", "../sweep_audio/", "../baseline_audio/", "../reflection_audio/", "../phase_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../reference_audio/", "../delay_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/", "../scenario_audio/", "../weighted_audio/", "../response_audio/", "../imaging_audio/", "../distributed_audio/")
         if any(not (p.get("src") or "").startswith(allowed_audio_roots)
                for p in parser.items):
             fail(errors, "未知试听控件来源")
@@ -3187,6 +3191,108 @@ def check_reference_figure(errors):
         fail(errors, '图74真实来源与评分：'+str(error))
 
 
+def check_delay_audio(errors):
+    """Independently decode exact formal PCM members and integer powers/errors."""
+    try:
+        from codes.chapters.ch07.examples.generate_delay_audio import check_assets
+        manifest = check_assets(DELAY_AUDIO_ROOT)
+        members = DELAY_AUDIO_WAVS | {'MANIFEST.json'}
+        published = SITE/'delay_audio'
+        validate_asset_directory(published, members, check=True)
+        if set(manifest['source_sha256']) != {
+                'codes/chapters/ch07/core/delay_audio.py',
+                'codes/chapters/ch07/examples/generate_delay_audio.py',
+                'codes/chapters/ch07/core/prediction_delays.py',
+                'codes/chapters/ch00/core/audio_samples.py',
+                'codes/chapters/ch00/io_contracts.py'}:
+            raise ValueError('delay true generating dependency set differs')
+        for name in members:
+            if (DELAY_AUDIO_ROOT/name).read_bytes() != (published/name).read_bytes():
+                raise ValueError('delay publication differs from formal bytes: '+name)
+        integers = {}
+        for name in DELAY_AUDIO_WAVS:
+            channels = 2 if name == 'delay_array.wav' else 1
+            with wave.open(str(published/name), 'rb') as reader:
+                if (reader.getframerate(), reader.getnchannels(), reader.getsampwidth(),
+                        reader.getnframes(), reader.getcomptype()) != (16000,channels,2,33024,'NONE'):
+                    raise ValueError('delay formal PCM format differs: '+name)
+                raw = reader.readframes(33024)
+            if len(raw) != 33024*channels*2:
+                raise ValueError('delay PCM payload truncated: '+name)
+            interleaved = struct.unpack('<'+str(33024*channels)+'h', raw)
+            integers[name] = [interleaved[c::channels] for c in range(channels)]
+        reference = integers['delay_reference.wav'][0][1536:30720]
+        reference_energy = sum(x*x for x in reference)
+        if reference_energy != 9715561194:
+            raise ValueError('independent formal reference energy differs')
+        denominator = 29184*32768**2
+        for key, row in manifest['samples'].items():
+            parts = [values[1536:30720] for values in integers[row['file']]]
+            energies = [sum(x*x for x in values) for values in parts]
+            errors_per_channel = [sum((a-b)**2 for a,b in zip(values,reference)) for values in parts]
+            crosses = [sum(a*b for a,b in zip(values,reference)) for values in parts]
+            expected = {'integer_squared_sum_E_per_channel': energies,
+                'integer_denominator_D_per_channel': denominator,
+                'integer_reference_squared_sum_per_channel': reference_energy,
+                'integer_reference_error_squared_sum_per_channel': errors_per_channel,
+                'integer_output_reference_cross_sum_per_channel': crosses,
+                'mean_square_per_channel': [v/denominator for v in energies],
+                'reference_NMSE_per_channel': [v/reference_energy for v in errors_per_channel]}
+            actual = row['pcm_integer_measurements']
+            if any(not same_metadata(actual.get(name), value) for name,value in expected.items()):
+                raise ValueError('delay independent integer E/D differs: '+key)
+        if any(integers['delay_common_residual.wav'][0]):
+            raise ValueError('deliberate common-history control must quantize to zero')
+        if integers['delay_aligned_residual.wav'] != integers['delay_reference.wav']:
+            raise ValueError('deliberate aligned control must match the reference PCM')
+        for page, prefix in ((SITE/'07_wpe-dereverberation.html',''),
+                             (SITE/'research/05_exercises_and_audio.html','../')):
+            _check_visible_audio(page, prefix, 'delay_audio', DELAY_AUDIO_WAVS, {'MANIFEST.json'})
+    except (OSError, ValueError, KeyError, TypeError, wave.Error, struct.error) as error:
+        fail(errors, '独立到达时间与历史索引音频：'+str(error))
+
+
+def check_delay_figure(errors):
+    """Bind figure 75 to actual audio, numerical report and current dependencies."""
+    try:
+        from PIL import Image
+        manifest_path = DELAY_AUDIO_ROOT/'MANIFEST.json'
+        manifest = strict_json_loads(manifest_path.read_bytes())
+        path = ROOT/'codes/chapters/ch07/reports/figure75_prediction_delays.json'
+        report = strict_json_loads(path.read_bytes())
+        source_paths = set(manifest['source_sha256']) | {'scripts/make_figures.py','scripts/make_delay_figures.py'}
+        if set(report['source_sha256']) != source_paths:
+            raise ValueError('figure75 plotting dependencies differ')
+        for name,digest in report['source_sha256'].items():
+            if hashlib.sha256(validate_parent_chain(ROOT/name).read_bytes()).hexdigest() != digest:
+                raise ValueError('figure75 true source SHA differs: '+name)
+        manifest_sha = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+        expected_errors = {'common_residual': {'E':9715561194,'D':9715561194,'nmse':1.0},
+                           'aligned_residual': {'E':0,'D':9715561194,'nmse':0.0}}
+        if (type(report['figure']) is not int or report['figure'] != 75
+                or report['exercise_ids'] != ['E07-22','E07-23','E07-24']
+                or report['audio_manifest_sha256'] != manifest_sha
+                or report['scoring_interval_samples'] != [1536,30720]
+                or not same_metadata(report['parameters'],manifest['parameters'])
+                or not same_metadata(report['pcm_integer_errors'],expected_errors)
+                or report['wav_sha256'] != {n:r['sha256'] for n,r in manifest['files'].items()}):
+            raise ValueError('figure75 formal PCM/report identity differs')
+        decay = report['power_decay_control']
+        if decay['hops'] != list(range(76)) or decay['T60_seconds'] != .6 or decay['hop_seconds'] != .008:
+            raise ValueError('figure75 decay time units differ')
+        for n,power,wrong in zip(decay['hops'],decay['relative_power'],decay['wrong_amplitude_factor_used_as_power'],strict=True):
+            if not math.isclose(power,10**(-.08*n),rel_tol=2e-14) or not math.isclose(wrong,10**(-.04*n),rel_tol=2e-14):
+                raise ValueError('figure75 power/amplitude decay differs')
+        with Image.open(ROOT/'figures/fig75_prediction_delays.png') as picture:
+            metadata = picture.info
+        if (metadata.get('AudioManifestDigest') != manifest_sha
+                or metadata.get('NumericalReportDigest') != hashlib.sha256(path.read_bytes()).hexdigest()
+                or strict_json_loads(metadata.get('GeneratorInputs','{}')) != report['source_sha256']):
+            raise ValueError('figure75 PNG actual inputs/report differ')
+    except (OSError,ValueError,KeyError,TypeError) as error:
+        fail(errors,'图75真实来源与评分：'+str(error))
+
+
 def check_distributed_audio(errors):
     """Exact member/copy checks, current-source replay and independent integer E/D."""
     try:
@@ -3797,6 +3903,8 @@ def main():
     check_phase_audio(errors)
     check_phase_figure(errors)
     check_reference_audio(errors)
+    check_delay_audio(errors)
+    check_delay_figure(errors)
     check_reference_figure(errors)
     check_geometry_audio(errors)
     check_focus_audio(errors)

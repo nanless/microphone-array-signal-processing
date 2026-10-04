@@ -1,8 +1,8 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 109 个 Git 上游项目；已在 `codes/chapters/ch00/upstream/_downloads/` 取得 92 个独立源码工作区。其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件，DiCoW v1 演示与 TS-ASR-Whisper v1 训练源码于 2026-09-28 按固定提交取得。2026-09-30 新增原作者湿空气声速模型，2026-10-01取得SAID及NeMo WPE固定源码，2026-10-02取得TAC四文件，2026-10-04另取得作者WOLA-DANSE、paderwasn与TI-DANSE+ batch三个限定源码选集，并取得WASN的11个与LibriCSS的27个源码/说明/许可文件。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 110 个 Git 上游项目；已在 `codes/chapters/ch00/upstream/_downloads/` 取得 93 个独立源码工作区。其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件，DiCoW v1 演示与 TS-ASR-Whisper v1 训练源码于 2026-09-28 按固定提交取得。2026-09-30 新增原作者湿空气声速模型，2026-10-01取得SAID及NeMo WPE固定源码，2026-10-02取得TAC四文件，2026-10-04另取得作者WOLA-DANSE、paderwasn与TI-DANSE+ batch三个限定源码选集，并取得WASN的11个与LibriCSS的27个源码/说明/许可文件。
 
-当前离线核验逐条比较完整源码包含规则及32条扩展名排除规则：69项通过、22项旧工作区仅有20条排除规则而记为 `source_selection_mismatch`、17项仅登记来源，AEC Challenge 的5个真实录音有本地变动而记为失败。旧工作区均保留，不自动补规则或删除文件。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+当前离线核验逐条比较完整源码包含规则及32条扩展名排除规则：70项通过、22项旧工作区仅有20条排除规则而记为 `source_selection_mismatch`、17项仅登记来源，AEC Challenge 的5个真实录音有本地变动而记为失败。旧工作区均保留，不自动补规则或删除文件。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”表示本地存在独立来源工作区；是否符合当前提交、工作区状态、指定入口和完整选集政策，以状态报告分别判断。取得源码不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -60,6 +60,7 @@ SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构�
 | [s4m](https://github.com/JusperLee/S4M/tree/4990b3fe9d7391e59d652c5a7d2803d1354fd0ae) | 状态空间分离模型；不是完整训练配方 | MIT | 已取得独立源码 |
 | [audiosep](https://github.com/audio-agi/audiosep/tree/944583f18b84589dc965de3ad77525c945334252) | 文本查询条件的声音分离 | MIT | 已取得独立源码 |
 | [sgmse](https://github.com/sp-uhh/sgmse/tree/1961cf4483e37df1bb92ccf0eb8b28bf6f44cb0e) | 分数模型语音增强与去混响 | MIT | 已取得独立源码 |
+| [rir-encoder](https://github.com/sp-uhh/rir-encoder/tree/8ee0ba7e083c8e38170dc13632cc9937a702d0f0) | RIR对比编码器训练与嵌入提取辅助源码 | MIT；1101字节原LICENSE保留 | 2026-10-04八文本20717字节已取得并核officialorigin/HEAD/逐blob/SHA；未取权重/数据、未运行，非完整FiLM-SGMSE管线 |
 | [storm](https://github.com/sp-uhh/storm/tree/257e9636a7251ca40aa200753d5c0fe918e31879) | 回归与扩散的两阶段增强 | MIT | 已取得独立源码 |
 | [arraydps](https://github.com/ArrayDPS/ArrayDPS/tree/750ac2b7c75458f4ca5bad203dafda528f575e55) | 扩散先验多通道盲分离 | MIT | 已取得独立源码 |
 | [doatools](https://github.com/morriswmz/doatools.py/tree/9469db201e0418aef6b97583ef54b6fec2769502) | 源数估计、root-MUSIC、稀疏定位与下界 | MIT | 已取得独立源码 |

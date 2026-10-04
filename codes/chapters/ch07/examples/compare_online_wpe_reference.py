@@ -5,7 +5,10 @@ Run from the repository root with:
 
 The NumPy reference and the hand-calculated index probe have no optional
 dependencies.  When the locked nara-wpe 0.0.11 is installed, the script also
-checks its unmodified implementation.  Nothing is downloaded or installed.
+checks its unmodified implementation against the existing fixed NARA source
+checkout and current source documents. Nothing is downloaded or installed.
+The complete installed wpe.py is loaded after source and license preflight;
+its package initializer is checked but not executed by this loader.
 
 This is an interface and state experiment on synthetic complex STFT frames.
 It is not a speech-quality, latency, or public-dataset evaluation.
@@ -23,10 +26,16 @@ from __future__ import annotations
 
 import hashlib
 import importlib.metadata
-import inspect
+import importlib.util
+import sys
 import json
 import platform
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[4]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+from codes.chapters.ch04.core import upstream_contracts as contracts
 
 import numpy as np
 
@@ -224,27 +233,97 @@ def state_lifetime_experiment(factory=_new_numpy_state) -> dict:
     }
 
 
-def _load_locked_upstream():
-    version = importlib.metadata.version("nara-wpe")
-    if version != NARA_WPE_VERSION:
-        raise RuntimeError(
-            f"Expected optional nara-wpe {NARA_WPE_VERSION}; found {version}."
-        )
-    from nara_wpe.wpe import OnlineWPE, build_y_tilde, online_wpe_step
+NARA_INIT_SHA256 = "26c8332cb0ed6de30286eb6e88f29c96fec8830dadc54fcd15877e6f5a1dbf1d"
+NARA_LICENSE_SHA256 = "f9fad5befd31a5c5540fb671fa56efd59d959959ffe1b6a8156a66549d6410f0"
 
-    source_path = Path(inspect.getfile(build_y_tilde))
-    source_sha256 = hashlib.sha256(source_path.read_bytes()).hexdigest()
-    if source_sha256 != NARA_WPE_MODULE_SHA256:
-        raise RuntimeError(
-            "Installed wpe.py differs from the locked nara-wpe 0.0.11 source."
-        )
-    return OnlineWPE, build_y_tilde, online_wpe_step, source_sha256
+
+def _installed_source_files():
+    """Locate package/license files without importing the NARA package."""
+    distribution = importlib.metadata.distribution('nara-wpe')
+    package = importlib.util.find_spec('nara_wpe')
+    if package is None or not package.submodule_search_locations:
+        raise ImportError('Optional nara_wpe package not found')
+    locations = list(package.submodule_search_locations)
+    if len(locations) != 1:
+        raise RuntimeError('Expected one ordinary installed NARA package root')
+    directory = contracts.validate_parent_chain(Path(locations[0]))
+    licenses = [f for f in distribution.files or () if str(f).endswith('.dist-info/LICENSE')]
+    if len(licenses) != 1:
+        raise RuntimeError('Expected one installed NARA distribution license')
+    license_file = contracts.ordinary_file(distribution.locate_file(licenses[0]))
+    return distribution, {'wpe.py': directory/'wpe.py', '__init__.py': directory/'__init__.py',
+                          'distribution_LICENSE': license_file}
+
+
+def installed_source_roots():
+    try:
+        _, files = _installed_source_files()
+    except (ImportError, importlib.metadata.PackageNotFoundError):
+        return ()
+    return tuple(dict.fromkeys(path.parent for path in files.values()))
+
+
+def _load_locked_module():
+    """Preflight fixed Git source and installed bytes before original execution.
+
+    Load the complete installed wpe.py directly, without executing its package
+    initializer. The initializer is additionally checked as a package identity
+    boundary. Click/NumPy dependencies are ordinary installed dependencies,
+    not claimed to be fixed NARA Git source. Finite checks do not remove races.
+    """
+    distribution, files = _installed_source_files()
+    version = distribution.version
+    if version != NARA_WPE_VERSION:
+        raise RuntimeError(f"Expected optional nara-wpe {NARA_WPE_VERSION}; found {version}.")
+    identity = contracts.verify_project('nara_wpe', relatives=(
+        'nara_wpe/wpe.py', 'nara_wpe/__init__.py'))
+    expected = {'nara_wpe/wpe.py': NARA_WPE_MODULE_SHA256,
+                'nara_wpe/__init__.py': NARA_INIT_SHA256}
+    for name, digest in expected.items():
+        if identity['used_files'][name]['sha256'] != digest:
+            raise RuntimeError('Fixed original source differs from reviewed NARA bytes')
+    hashes = {'wpe.py': NARA_WPE_MODULE_SHA256, '__init__.py': NARA_INIT_SHA256,
+              'distribution_LICENSE': NARA_LICENSE_SHA256}
+    installed = {'version': version, 'files': {}, 'clean_after': False,
+                 'scope': 'installed module, initializer identity and distribution license; not a Git checkout or whole dependency environment'}
+    for name, path in files.items():
+        digest = contracts.sha(path)
+        if digest != hashes[name]:
+            raise RuntimeError('Installed '+name+' differs from the locked nara-wpe 0.0.11 source')
+        installed['files'][name] = {'path': str(path), 'sha256': digest}
+    old_bytecode = sys.dont_write_bytecode
+    sys.dont_write_bytecode = True
+    try:
+        spec = importlib.util.spec_from_file_location('fixed_installed_nara_wpe_original', files['wpe.py'])
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+    finally:
+        sys.dont_write_bytecode = old_bytecode
+    _check_locked_module(identity, installed)
+    return module, identity, installed
+
+
+def _check_locked_module(identity, installed):
+    contracts.check_unchanged(identity)
+    for row in installed['files'].values():
+        if contracts.sha(row['path']) != row['sha256']:
+            raise RuntimeError('Installed original NARA file changed during execution')
+    installed['clean_after'] = True
+
+
+def _load_locked_upstream():
+    # Retained four-item API for older callers; whole-experiment callers below
+    # retain identity and repeat the source check after their actual calls.
+    module, _, _ = _load_locked_module()
+    return module.OnlineWPE, module.build_y_tilde, module.online_wpe_step, NARA_WPE_MODULE_SHA256
 
 
 def compare_locked_upstream() -> dict:
     """Compare hand and NumPy expectations with unmodified nara-wpe 0.0.11."""
 
-    OnlineWPE, build_y_tilde, online_wpe_step, source_sha256 = _load_locked_upstream()
+    module, identity, installed = _load_locked_module()
+    OnlineWPE, build_y_tilde, online_wpe_step = module.OnlineWPE, module.build_y_tilde, module.online_wpe_step
+    source_sha256 = NARA_WPE_MODULE_SHA256
     hand = fixed_index_hand_calculation()
     frames = np.asarray(hand["frames"], dtype=np.complex128)
 
@@ -294,7 +373,10 @@ def compare_locked_upstream() -> dict:
     if upstream_result["first_changed_zero_based_frame_after_reset"] != 24:
         raise AssertionError("Reset experiment did not first diverge at the reset frame.")
 
+    _check_locked_module(identity, installed)
     return {
+        "source_identity": identity, "installed_identity": installed,
+        "actual_dependency_sha256": contracts.dependencies(Path(__file__)),
         "status": "checked",
         "reference": f"nara-wpe {NARA_WPE_VERSION}",
         "reference_module_sha256": source_sha256,

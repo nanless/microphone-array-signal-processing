@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "verified_at": "2026-10-04",
-  "created_utc": "2026-10-04T10:26:58.223794+00:00",
+  "created_utc": "2026-10-04T12:12:59.977603+00:00",
   "status": "static_source_inconsistencies_with_independent_scalar_examples",
   "execution_scope": {
     "source_verification": true,
@@ -53,12 +53,12 @@
         "src/audio/tdfb/tune/sof_bf_paths.m"
       ]
     },
-    "lock_sha256": "a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505",
+    "lock_sha256": "eec80748e5f1fcc01d33e281b91a4482f52566d8e6b74bdb737e017604ec6487",
     "source_document_paths": {
       "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
       "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
     },
-    "status_sha256": "abc28f6f15512da8267618bca318b10033909ec2afdb6090b6aa2d0f1281f0e9",
+    "status_sha256": "4cc8cbd48e3e98b51a24705468415d10654aa349f3946fb98ef48e9c4856f4f6",
     "recorded_complete_selection": {
       "id": "sof",
       "revision": "b6c6a05d52536313fe8e8752b1c4e069b1cc4002",
@@ -277,7 +277,7 @@
   },
   "report_source_sha256": {
     "codes/chapters/ch05/examples/audit_sof_tdfb_design.py": "c764560d9f2a9eb461190a95f7d3f8b40e936187f96986be9393f371d1a8b1a7",
-    "codes/chapters/ch04/core/upstream_contracts.py": "16630220cdc6f66eb97cfc2a91057cb2e159ff0addbc89a2a65cb0dab45ab003",
+    "codes/chapters/ch04/core/upstream_contracts.py": "2bb8c2191ae73632edf7bd62b0ac6e20ced9d804e28345809aa03d429d186e52",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },

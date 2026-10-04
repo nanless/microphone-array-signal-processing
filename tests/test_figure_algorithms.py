@@ -709,7 +709,20 @@ class FigureAlgorithmTest(unittest.TestCase):
             second.get_window_extent(renderer)))
 
     def test_fig21_footer_has_its_own_nonoverlapping_grid_row(self):
-        figure = self.capture_figure(figures.fig_wpe)
+        report_path = ROOT / 'codes/chapters/ch07/reports/figure21_wpe.json'
+        before = (report_path.read_bytes(), report_path.stat().st_mtime_ns)
+        from unittest.mock import patch
+        original_write = Path.write_text
+        with tempfile.TemporaryDirectory() as temporary:
+            isolated_report = Path(temporary) / 'figure21_wpe.json'
+            def redirect_report(path, payload, *args, **kwargs):
+                destination = isolated_report if path == report_path else path
+                return original_write(destination, payload, *args, **kwargs)
+            with patch.object(Path, 'write_text', redirect_report):
+                figure = self.capture_figure(figures.fig_wpe)
+            report = json.loads(isolated_report.read_text())
+            self.assertEqual(report['generator'], 'scripts/make_figures.py::fig_wpe')
+        self.assertEqual((report_path.read_bytes(), report_path.stat().st_mtime_ns), before)
         footer = figure._footer_axis.get_position()
         last_plot = figure.axes[2].get_position()
         self.assertLessEqual(footer.y1, last_plot.y0)

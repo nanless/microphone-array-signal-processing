@@ -19,7 +19,7 @@
 
     1. 运行 `codes/` 中只依赖 NumPy 的教学实现，核对手算结果、数组维度和退化边界。
     2. 在隔离环境中用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线，记录房间、阵列和随机种子。
-    3. 先按 §13.7 生成图所依赖的音频和追踪清单，再运行 `scripts/` 中的四个绘图脚本，按当前参数复现 74 张编号图，并逐图核对正文条件。
+    3. 先按 §13.7 生成图所依赖的音频和追踪清单，再运行 `scripts/` 中的五个绘图脚本，按当前参数复现 75 张编号图，并逐图核对正文条件。
     4. 按研究任务选择公开数据和固定版本参考系统，分别核对代码、模型与数据的许可和评测口径。
     5. 在可用的多通道硬件上测实时性、同步和标定；仿真结果不能代替设备测量。
 
@@ -880,7 +880,9 @@ $X$ 是有限源序列的离散时间傅里叶变换，$H_{\mathrm r}$ 是反射
 
 图74读取第6章六份已知播放增益与尾声PCM。先核验完整资产，再分别绘制给定增益、切换后实际残差、分窗整数功率及播放停止后的帧去均值RMS。已知路径从开始冻结，不做训练或增益拟合；完整1600点尾中当前参考全零，但历史回声非零，十个`near_only`标签只说明活动规则的边界。
 
-图片写入 `figures/`，共 74 张编号图，另有第16题的房间补充图：
+图75读取第7章六份已知到达与历史PCM，分别呈现源时刻手算、同一接收时轴的波形、实际整数目标误差，以及独立的晚期功率自由衰减。保护间隔的单实回归不是完整STFT-WPE，统计功率曲线也不是从这六份音频估计的房间衰减。
+
+图片写入 `figures/`，共 75 张编号图，另有第16题的房间补充图：
 
 ```bash
 .venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
@@ -896,6 +898,7 @@ $X$ 是有限源序列的离散时间傅里叶变换，$H_{\mathrm r}$ 是反射
 .venv/bin/python -m codes.chapters.ch06.examples.generate_apa_audio
 .venv/bin/python -m codes.chapters.ch06.examples.generate_reference_audio  # 六份已知播放增益/尾声WAV；--check严格只读
 .venv/bin/python -m codes.chapters.ch07.examples.mint_teaching_demo
+.venv/bin/python -m codes.chapters.ch07.examples.generate_delay_audio
 .venv/bin/python -m codes.chapters.ch08.examples.mask_representation_demo
 .venv/bin/python -m codes.chapters.ch10.examples.generate_noise_mismatch
 .venv/bin/python -m codes.chapters.ch11.examples.generate_selection_audio
@@ -907,6 +910,7 @@ $X$ 是有限源序列的离散时间傅里叶变换，$H_{\mathrm r}$ 是反射
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～39（回声消除专题）
 .venv/bin/python scripts/make_beamforming_figures.py  # 图73：已知双音的实际PCM与解析相位
 .venv/bin/python scripts/make_reference_figures.py  # 图74：实际PCM播放增益与尾声控制
+.venv/bin/python scripts/make_delay_figures.py  # 图75：已知到达与历史PCM控制
 ```
 
 Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`，其余不变。

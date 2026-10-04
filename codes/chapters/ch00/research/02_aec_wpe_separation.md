@@ -599,17 +599,17 @@ AR-FastMNMF 把自回归混响模型和多源空间/谱模型联合估计，避�
 
 ### W07　MINT、倒谱与晚期谱方差：三种不同问题
 
-**已知路径的 MINT。** [Miyoshi、Kaneda 1988 作者全文](https://www.kanedayyy.jp/asp/pub/sig_ac/MINT1988paper.pdf)研究已知有限脉冲响应的多输入/输出逆滤波结构；本章最小例限定单源、多观测、通道多项式无公共零且逆滤波器长度足够。公共零、路径估计误差、近公共零以及混合后噪声会破坏精确逆或使噪声放大。互素只是存在性条件，不是良好条件数或抗噪保证。本轮已锁库中没有确认可直接映射该原始 MINT 的入口；一般矩阵逆或波束形成不算 MINT 实现。正文小例属于本书独立代数，不能称为作者软件已复现。
+**已知路径的 MINT。** [Miyoshi、Kaneda 1988 作者全文](https://www.kanedayyy.jp/asp/pub/sig_ac/MINT1988paper.pdf)研究已知有限脉冲响应的多输入/输出逆滤波结构；本章最小例限定单源、多观测、通道多项式无公共零且逆滤波器长度足够。公共零、路径估计误差、近公共零以及混合后噪声会破坏精确逆或使噪声放大。互素只是存在性条件，不是良好条件数或抗噪保证。已锁库中没有确认可直接映射该原始 MINT 的入口；一般矩阵逆或波束形成不算 MINT 实现。正文小例属于本书独立代数，不能称为作者软件已复现。
 
 **倒谱滤波。** [Oppenheim、Schafer、Stockham 1968 原文](https://dsp-group.mit.edu/wp-content/uploads/2024/11/nonnlinearfiltering_1968.pdf) §VI 的 Echo Removal 讨论复杂倒谱中的简单回声分离。该 MIT 文件是同年 TAU 重印本，首面注明原刊为 Proceedings of the IEEE 56(8), 1264–1291，正式 DOI 为 [10.1109/PROC.1968.6570](https://doi.org/10.1109/PROC.1968.6570)。作者说明梳状滤波需要回声时间；非等间隔回声不再有同样集中的倒谱位置。短时分块还会带来边缘误差。
 
 本章若定义实倒谱为 `IFFT(log(|X|²))`，它是 `IFFT(log|X|)` 的两倍，且不包含原相位。零谱须声明正地板；lifter 只修改倒频率系数，不能独自恢复任意房间传递函数的相位。保留观测相位属于另加的合成约定，不是无失真逆卷积证明。已锁库的 MFCC liftering 也不能直接归为去混响实现。
 
-本章新增的 [E07-18](../../../../chapters/07_wpe-dereverberation.md#e07-18)用相同幅度谱、不同相位检查这一信息缺口；[E07-19](../../../../chapters/07_wpe-dereverberation.md#e07-19)把加权回归写成设计矩阵并比较 QR/SVD 的病态边界；[E07-20](../../../../chapters/07_wpe-dereverberation.md#e07-20)在 MINT 噪声例上检验带约束的正则化。它们是本书独立小例，不是取得原作者完整房间处理软件；[E07-21](../../../../chapters/07_wpe-dereverberation.md#e07-21)另从实际PCM重读计算已知分量的目标损伤与拖尾，避免用内存浮点评分代替交付音频。
+[E07-18](../../../../chapters/07_wpe-dereverberation.md#e07-18)用相同幅度谱、不同相位检查这一信息缺口；[E07-19](../../../../chapters/07_wpe-dereverberation.md#e07-19)把加权回归写成设计矩阵并比较 QR/SVD 的病态边界；[E07-20](../../../../chapters/07_wpe-dereverberation.md#e07-20)在 MINT 噪声例上检验带约束的正则化。它们是本书独立小例，不是取得原作者完整房间处理软件；[E07-21](../../../../chapters/07_wpe-dereverberation.md#e07-21)另从实际PCM重读计算已知分量的目标损伤与拖尾，避免用内存浮点评分代替交付音频。
 
-**晚期谱方差。** [Habets、Gannot、Cohen 2009，SPL 16(9), 770–773](https://israelcohen.com/wp-content/uploads/2018/05/SPL_Sep2009.pdf) §II～IV 根据 RIR 统计模型估计晚期谱方差，并显式考虑直达声能量。模型依赖频率相关的混响时间与直混比；扩散衰减近似有混合时间和 Schroeder 频率边界。其 §V-C 配合对数谱幅度增益；不能把它与任意维纳增益或单个指数递推混为一谈。功率在一帧时移 H 秒后的指数衰减与幅度不同，见正文的独立单位换算例。
+**晚期谱方差。** [Habets、Gannot、Cohen 2009，SPL 16(9), 770–773](https://israelcohen.com/wp-content/uploads/2018/05/SPL_Sep2009.pdf) §II～IV 根据 RIR 统计模型估计晚期谱方差，并显式考虑直达声能量。模型依赖频率相关的混响时间与直混比；扩散衰减近似有混合时间和 Schroeder 频率边界。其 §V-C 配合对数谱幅度增益；不能把它与任意维纳增益或单个指数递推混为一谈。功率在一帧时移H秒后的指数衰减与幅度不同，逐步换算见[E07-23](../../../../chapters/07_wpe-dereverberation.md#e07-23)：T60=0.6s、H=8ms时，功率每帧乘0.831764，75帧降60dB。它仅是源停止后的晚期自由衰减模型，不是WPE早期方差lambda，也没有实现该文完整估计器。
 
-固定 SpeexDSP 的 `preprocess.c` 虽保留 `SET_DEREVERB`，相关新能量更新已注释，level/decay 控制也留有重新启用提示；把零初始化估计只乘衰减不会产生晚期估计。故本轮不把该 API 登记成已工作的谱方差去混响器。三个传统路线目前分别作为原理及本书小例索引，没有新增原始软件性能声明。
+固定 SpeexDSP 的 `preprocess.c` 虽保留 `SET_DEREVERB`，相关新能量更新已注释，level/decay 控制也留有重新启用提示；把零初始化估计只乘衰减不会产生晚期估计。因此不把该 API 登记成已工作的谱方差去混响器。三个传统路线目前分别作为原理及本书小例索引，没有新增原始软件性能声明。
 
 ### W08　工业证据、BTK 和 GSS 的实际取点
 
@@ -665,11 +665,41 @@ VACE 的 `wpe_th_utils.py` 原生复数分支逐频取时间最大功率的 `1e-
 
 **PnPWPE 仍是有限研究线索。** [2023作者预印本](https://arxiv.org/pdf/2312.02773) §II～III、式(22)～(38)把带加性噪声辅助变量的WPE与RED语音先验组成分裂迭代；这改变目标函数，不是只把原功率替换成网络输出。涉及去噪器的推导有额外条件，不能把任意DNN都当作满足该先验的算子。本次未确认可许可执行的完整作者代码、匹配去噪器/权重与正式版本细节，因此不新增正文目录、性能表或下载，不把一个自写恒等去噪器称为复现论文方法。
 
+<a id="known-arrival-control"></a>
+
+**麦相关预测延迟的源时刻核对。** [Lohmann等ICASSP2023作者原文§4](https://arxiv.org/html/2301.07649v1)讨论分布式麦克风到达差造成的预测延迟失配。本书[E07-22](../../../../chapters/07_wpe-dereverberation.md#e07-22)先定义物理到达延迟为正则晚到，再逐项写出参考当前与各麦历史对应的源索引；不直接套用作者补偿TDOA的正负号。校正的历史可能要求未来样本，不能把所有相对补偿都称为因果。
+
+[E07-24](../../../../chapters/07_wpe-dereverberation.md#e07-24)与[图75](../../../../figures/fig75_prediction_delays.png)另使用已知整数到达、单辅助历史和六份实际PCM控制。统一历史恰好复制当前纯目标，最小二乘会将其全部删去；修正历史在指定脉冲支持上与目标不重叠。该有限例没有STFT、跨频滤波、时差估计、传感器噪声或完整多麦WPE，不能用它宣称一般分布式方法已复现。源码与逐文件评分见[独立清单](../../ch07/delay_audio/MANIFEST.json)及[实验手册§57](05_exercises_and_audio.md#known-arrival-audio)。
+
+<a id="rir-encoder-candidate"></a>
+
+**房间表示能改变神经恢复的条件。** [Khanagha、Gerkmann2026预印本§3](https://arxiv.org/html/2606.09557v1)先用共享RIR的不同语音学习对比嵌入，再以FiLM调制恢复网络的内部特征。输出是房间表示及条件恢复波形，不能把嵌入称为已辨识的完整RIR或新增物理通道。论文实验和本书教学控制的数据与评分不同，这里不按质量数字与WPE横排。
+
+作者明确链接的[rir-encoder固定源码](https://github.com/sp-uhh/rir-encoder/tree/8ee0ba7e083c8e38170dc13632cc9937a702d0f0)已于2026-10-04取得到本地`codes/chapters/ch00/upstream/_downloads/rir-encoder/`：八个文本文件共20717字节，MIT原许可保留。锁表ID为`rir-encoder`；它提供编码器训练和嵌入提取辅助代码，不包含论文完整FiLM-SGMSE恢复系统。README的Drive检查点与数据没有取得或建立独立使用许可，未安装依赖、训练、推理或复现指标。
+
+静态读码先核三个边界。`ReverbDataset._stft`采用`center=False`，提取模板`emb_stft`省略该参数而使用默认居中；直接混用会改变边缘窗支持。Conformer虽接收有效帧数，后续`AdaptiveAvgPool1d(1)`仍对完整输出时间轴平均，填充帧如何处理须用原环境实测。数据集按各worker局部字典分配RIR标签，不能直接将该局部编号用于跨worker的全局身份汇总。本版损失只比较当前批次的标签，没有跨批次汇总；未验证或断言原六worker训练已发生标签冲突。`train.py`与提取模板还在顶层建立目录、读取作者路径/检查点或执行循环，不能作为无副作用导入检查。以上是固定源码观察，不冒称已实际触发网络错误。
+
+<a id="usdnet-plus-candidate"></a>
+
+**USDnet++将传统输出作为弱监督观测。** [Pang等Interspeech2026，4490～4494页，§3～4、式(3)～(15)](https://www.isca-archive.org/interspeech_2026/pang26_interspeech.pdf)在混合重构约束之外，将WPE/WPD结果加入另一项重构损失；并研究交替改进及第二网络使用处理结果作输入。该结果仍可含残余混响和噪声，不能视为干净真值或物理新麦克风。其FCP历史包含可选未来抽头，另有全句滤波求解；两模型方案需运行两个模型，不能由“单通道输入”推断实时性。2026-10-04未核到许可明确且与该论文完整对应的作者实现，保留原理索引，未取得或运行网络/权重，不用自写恒等网络充作复现。
+
 ### W11　固定源码诊断与检索范围
 
-本轮核实日期为 2026-09-28。[诊断脚本](../../ch07/examples/audit_wpe_upstream_interfaces.py)、[JSON 报告](../../ch07/reports/wpe_upstream_interfaces.json)和[离线独立测试](../../../../tests/test_codes_wpe_upstream_interfaces.py)绑定固定提交、所读文件摘要、脚本摘要与输入配置。脚本不下载、不改上游，也不加载神经权重；摘要不符时拒绝套用旧结论。
+**2026-10-04当前运行另存。** [原函数合同报告](../../ch07/reports/upstream_wpe_contracts_current.json)、[上游接口报告](../../ch07/reports/wpe_upstream_interfaces_current.json)和[长静音报告](../../ch07/reports/chapter07_online_wpe_silence_current.json)由当前工具真实运行生成；下文2026-09-28与2026-10-01历史报告保持原字节及原工具摘要，不用当前锁表替换历史身份。当前工具默认只输出JSON，只有显式`--report`才写经过普通文件及父链检查的目标。
 
-**2026-10-01新增验证单独记录。** [新工具](../../ch07/examples/audit_upstream_wpe_contracts.py)、[新报告](../../ch07/reports/upstream_wpe_contracts.json)与[独立测试](../../../../tests/test_codes_ch07_upstream_wpe_contracts.py)不改写上述历史报告。先核当前 [SOURCE_STATUS](../SOURCE_STATUS.json)确实绑定当前锁、两项来源已完成获取核验，再检查原HEAD、文件SHA、Git blob和运行前后工作树；报告同时绑定自身脚本与锁摘要。NARA执行原完整NumPy模块及多抽头标签、零输入和错形状例；无状态历史用只读Python返回剖析读取原函数局部变量，没有替换其body。NeMo仅静态AST，独立NumPy例另列为本书计算，没有Torch兼容桩。
+执行前后核官方origin、独立Git根、固定HEAD、全部所用源码/许可SHA与Git blob、洁净状态；完整获取选集与所用文件身份另列。NARA执行完整NumPy原模块，NeMo与ESPnet检查原AST；MetaAF仅提取原包装函数并使用真实NARA状态及人工STFT边界，没有执行神经网络、真实STFT或完整MetaAF。ESPnet完整选集仍不匹配，不能用限定所用文件核验替代该失败。MetaAF根NCSA许可与`zoo/`的Adobe研究许可分别保留。
+
+长静音报告保留原在线状态在给定配置下首次非有限的调用：alpha=0.5时1024、alpha=0.95时13838；恢复段的两个输出仍非有限。该边界没有通过修补原版、跳过失败或更换评分分母变成成功。离线八种接口控制的最大绝对差约3.17×10⁻¹⁵；在线控制另记录三个真实历史索引，不要求不同更新时序逐样点相同。这些是限定数值合同，不是房间或自然语音质量。
+
+```bash
+.venv/bin/python -m codes.chapters.ch07.examples.audit_upstream_wpe_contracts --report codes/chapters/ch07/reports/upstream_wpe_contracts_current.json
+.venv/bin/python -m codes.chapters.ch07.examples.audit_wpe_upstream_interfaces --report codes/chapters/ch07/reports/wpe_upstream_interfaces_current.json
+.venv/bin/python -m codes.chapters.ch07.examples.wpe_silence_boundary --upstream --report codes/chapters/ch07/reports/chapter07_online_wpe_silence_current.json
+```
+
+以下先保存2026-09-28的历史核实范围；当时报告绑定当时工具，当前工具已另行更新。[诊断脚本](../../ch07/examples/audit_wpe_upstream_interfaces.py)、[JSON 报告](../../ch07/reports/wpe_upstream_interfaces.json)和[离线独立测试](../../../../tests/test_codes_wpe_upstream_interfaces.py)绑定固定提交、所读文件摘要、脚本摘要与输入配置。脚本不下载、不改上游，也不加载神经权重；摘要不符时拒绝套用旧结论。
+
+**2026-10-01新增验证单独记录。** 当时工具身份由提交`34d494dd8074169a92f79bf90b9ff2bbcf25220f`中的原Git字节核对；下列链接显示当前已更新工具，历史JSON仍以原工具SHA为准。当时的整锁及状态由登记的历史来源快照核验，而非当前110项锁表。 [新工具](../../ch07/examples/audit_upstream_wpe_contracts.py)、[新报告](../../ch07/reports/upstream_wpe_contracts.json)与[独立测试](../../../../tests/test_codes_ch07_upstream_wpe_contracts.py)不改写上述历史报告。先核当前 [SOURCE_STATUS](../SOURCE_STATUS.json)确实绑定当前锁、两项来源已完成获取核验，再检查原HEAD、文件SHA、Git blob和运行前后工作树；报告同时绑定自身脚本与锁摘要。NARA执行原完整NumPy模块及多抽头标签、零输入和错形状例；无状态历史用只读Python返回剖析读取原函数局部变量，没有替换其body。NeMo仅静态AST，独立NumPy例另列为本书计算，没有Torch兼容桩。
 
 本次环境为macOS arm64、Python3.13.12、NumPy2.5.3；click可用，SciPy/Torch/TF/JAX/CuPy仍未安装。旧工具另真实重跑到临时目录，原NARA和MetaAF包装函数的限定结果与历史范围一致；没有真实STFT/iSTFT、神经网络、GPU或设备运行。下面关于2026-09-28缺依赖的句子保留当时环境事实，不能外推为当前环境状态。
 

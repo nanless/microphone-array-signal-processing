@@ -1,0 +1,458 @@
+{
+  "schema_version": 2,
+  "actual_dependency_sha256": {
+    "codes/chapters/ch07/examples/wpe_silence_boundary.py": "3d44e26ffb89bc3e67cedb16f118e2a6bb0b3c9bb6f8a4ff319f6d1f217e3648",
+    "codes/chapters/ch04/core/upstream_contracts.py": "2bb8c2191ae73632edf7bd62b0ac6e20ced9d804e28345809aa03d429d186e52",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
+    "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4",
+    "codes/chapters/ch07/examples/compare_online_wpe_reference.py": "6bb47c9ab66c265514cfbcfba4abb4f727d6e92aecc7b2dfba2559ffd66b2f04",
+    "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7"
+  },
+  "scope": "deterministic float64 silence failure, not room or speech quality",
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "source": {
+    "project": "nara-wpe",
+    "version": "0.0.11",
+    "revision": "a166779cca2088817e330481bd20af1a2c598555",
+    "url": "https://github.com/fgnt/nara_wpe/blob/a166779cca2088817e330481bd20af1a2c598555/nara_wpe/wpe.py",
+    "installed_module_sha256": "385a6f1c67071ba3e243c8a24fe4a041484c55280ad4ed0dbadefa4679a606d2",
+    "upstream_execution": "executed_after_hash_verification",
+    "adaptation_notice": "codes/chapters/ch07/licenses/nara_wpe_MIT.txt; adapted comparison preserves upstream behavior"
+  },
+  "generator_inputs": {
+    "codes/chapters/ch07/examples/wpe_silence_boundary.py": "3d44e26ffb89bc3e67cedb16f118e2a6bb0b3c9bb6f8a4ff319f6d1f217e3648",
+    "codes/chapters/ch07/examples/compare_online_wpe_reference.py": "6bb47c9ab66c265514cfbcfba4abb4f727d6e92aecc7b2dfba2559ffd66b2f04"
+  },
+  "records": [
+    {
+      "source_identity": null,
+      "installed_identity": null,
+      "implementation": "adapted",
+      "alpha": 0.5,
+      "dimensions": {
+        "frequency_bins": 1,
+        "channels": 1,
+        "taps": 1,
+        "delay_argument": 1
+      },
+      "initial_inverse_covariance": 1.0,
+      "initial_filter": 0.0,
+      "initial_buffer": "all zeros",
+      "observations": "zero until first non-finite inverse covariance or cap, then three unit frames",
+      "frame_count_convention": "one-based number of processed zero frames",
+      "maximum_zero_frames": 16000,
+      "processed_zero_frames": 1024,
+      "first_nonfinite_state_frame": 1024,
+      "last_pre_step_covariance": {
+        "finite": true,
+        "value_class": "finite",
+        "real": 8.98846567431158e+307,
+        "imag": 0.0
+      },
+      "final_zero_frame_output": {
+        "finite": true,
+        "value_class": "finite",
+        "real": 0.0,
+        "imag": 0.0
+      },
+      "final_zero_frame_covariance": {
+        "finite": false,
+        "value_class": "infinity"
+      },
+      "resumed_unit_frame_outputs": [
+        {
+          "finite": true,
+          "value_class": "finite",
+          "real": 1.0,
+          "imag": 0.0
+        },
+        {
+          "finite": false,
+          "value_class": "nan"
+        },
+        {
+          "finite": false,
+          "value_class": "nan"
+        }
+      ],
+      "first_nonfinite_output_resume_frame": 2,
+      "illustrative_hop_seconds": 0.008,
+      "first_nonfinite_state_seconds_at_8ms_hop": 8.192,
+      "analytic_zero_history_rule": "P_n = alpha**(-n), gain=0 until floating-point range is exceeded"
+    },
+    {
+      "source_identity": {
+        "project": "nara_wpe",
+        "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/nara_wpe",
+        "origin": "https://github.com/fgnt/nara_wpe.git",
+        "head": "a166779cca2088817e330481bd20af1a2c598555",
+        "lock_entry": {
+          "id": "nara_wpe",
+          "url": "https://github.com/fgnt/nara_wpe.git",
+          "revision": "a166779cca2088817e330481bd20af1a2c598555",
+          "release": "v0.0.11",
+          "license": "MIT",
+          "fetch_enabled": true,
+          "scope": "offline, block-online and frame-online WPE",
+          "note": "Annotated tag v0.0.11 peels to this commit. Current main was separately inspected at 5fbfc3639274e5a70dffcf08e20615a38c372ebb.",
+          "acquisition": "independent_source_checkout",
+          "entrypoints": [
+            "LICENSE",
+            "nara_wpe/wpe.py",
+            "nara_wpe/tf_wpe.py"
+          ]
+        },
+        "lock_sha256": "eec80748e5f1fcc01d33e281b91a4482f52566d8e6b74bdb737e017604ec6487",
+        "source_document_paths": {
+          "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+          "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+        },
+        "status_sha256": "4cc8cbd48e3e98b51a24705468415d10654aa349f3946fb98ef48e9c4856f4f6",
+        "recorded_complete_selection": {
+          "id": "nara_wpe",
+          "revision": "a166779cca2088817e330481bd20af1a2c598555",
+          "status": "source_verified",
+          "missing_entrypoints": [],
+          "execution": "not_run",
+          "dependency_validation": "not_run",
+          "asset_policy": "existing_checkout_preserved",
+          "requested_source_paths": [
+            "repository"
+          ],
+          "observed_sparse_patterns": [],
+          "expected_sparse_patterns": [],
+          "source_selection_verified": true
+        },
+        "live_complete_selection": {
+          "id": "nara_wpe",
+          "revision": "a166779cca2088817e330481bd20af1a2c598555",
+          "status": "source_verified",
+          "source_selection_verified": true,
+          "missing_entrypoints": [],
+          "observed_sparse_patterns": [],
+          "expected_sparse_patterns": [],
+          "requested_source_paths": [
+            "repository"
+          ],
+          "asset_policy": "existing_checkout_preserved"
+        },
+        "used_source_identity": "verified",
+        "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+        "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+        "ignored_members_before": [],
+        "used_files": {
+          "LICENSE": {
+            "sha256": "f9fad5befd31a5c5540fb671fa56efd59d959959ffe1b6a8156a66549d6410f0",
+            "bytes": 1110,
+            "git_blob": "bee267761def410b69877b6729cd9bb60d8c517b",
+            "actual_blob": "bee267761def410b69877b6729cd9bb60d8c517b"
+          },
+          "nara_wpe/wpe.py": {
+            "sha256": "385a6f1c67071ba3e243c8a24fe4a041484c55280ad4ed0dbadefa4679a606d2",
+            "bytes": 51842,
+            "git_blob": "1069e79d8c21097e246a6451f941f88d67be4775",
+            "actual_blob": "1069e79d8c21097e246a6451f941f88d67be4775"
+          },
+          "nara_wpe/__init__.py": {
+            "sha256": "26c8332cb0ed6de30286eb6e88f29c96fec8830dadc54fcd15877e6f5a1dbf1d",
+            "bytes": 225,
+            "git_blob": "25a8e18d58d1441fdcc3ce9ea8458d66e0e04343",
+            "actual_blob": "25a8e18d58d1441fdcc3ce9ea8458d66e0e04343"
+          }
+        },
+        "clean_before": true,
+        "clean_after": true,
+        "ignored_members_after": []
+      },
+      "installed_identity": {
+        "version": "0.0.11",
+        "files": {
+          "wpe.py": {
+            "path": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/lib/python3.13/site-packages/nara_wpe/wpe.py",
+            "sha256": "385a6f1c67071ba3e243c8a24fe4a041484c55280ad4ed0dbadefa4679a606d2"
+          },
+          "__init__.py": {
+            "path": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/lib/python3.13/site-packages/nara_wpe/__init__.py",
+            "sha256": "26c8332cb0ed6de30286eb6e88f29c96fec8830dadc54fcd15877e6f5a1dbf1d"
+          },
+          "distribution_LICENSE": {
+            "path": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/lib/python3.13/site-packages/nara_wpe-0.0.11.dist-info/LICENSE",
+            "sha256": "f9fad5befd31a5c5540fb671fa56efd59d959959ffe1b6a8156a66549d6410f0"
+          }
+        },
+        "clean_after": true,
+        "scope": "installed module, initializer identity and distribution license; not a Git checkout or whole dependency environment"
+      },
+      "implementation": "upstream",
+      "alpha": 0.5,
+      "dimensions": {
+        "frequency_bins": 1,
+        "channels": 1,
+        "taps": 1,
+        "delay_argument": 1
+      },
+      "initial_inverse_covariance": 1.0,
+      "initial_filter": 0.0,
+      "initial_buffer": "all zeros",
+      "observations": "zero until first non-finite inverse covariance or cap, then three unit frames",
+      "frame_count_convention": "one-based number of processed zero frames",
+      "maximum_zero_frames": 16000,
+      "processed_zero_frames": 1024,
+      "first_nonfinite_state_frame": 1024,
+      "last_pre_step_covariance": {
+        "finite": true,
+        "value_class": "finite",
+        "real": 8.98846567431158e+307,
+        "imag": 0.0
+      },
+      "final_zero_frame_output": {
+        "finite": true,
+        "value_class": "finite",
+        "real": 0.0,
+        "imag": 0.0
+      },
+      "final_zero_frame_covariance": {
+        "finite": false,
+        "value_class": "infinity"
+      },
+      "resumed_unit_frame_outputs": [
+        {
+          "finite": true,
+          "value_class": "finite",
+          "real": 1.0,
+          "imag": 0.0
+        },
+        {
+          "finite": false,
+          "value_class": "nan"
+        },
+        {
+          "finite": false,
+          "value_class": "nan"
+        }
+      ],
+      "first_nonfinite_output_resume_frame": 2,
+      "illustrative_hop_seconds": 0.008,
+      "first_nonfinite_state_seconds_at_8ms_hop": 8.192,
+      "analytic_zero_history_rule": "P_n = alpha**(-n), gain=0 until floating-point range is exceeded"
+    },
+    {
+      "source_identity": null,
+      "installed_identity": null,
+      "implementation": "adapted",
+      "alpha": 0.95,
+      "dimensions": {
+        "frequency_bins": 1,
+        "channels": 1,
+        "taps": 1,
+        "delay_argument": 1
+      },
+      "initial_inverse_covariance": 1.0,
+      "initial_filter": 0.0,
+      "initial_buffer": "all zeros",
+      "observations": "zero until first non-finite inverse covariance or cap, then three unit frames",
+      "frame_count_convention": "one-based number of processed zero frames",
+      "maximum_zero_frames": 16000,
+      "processed_zero_frames": 13838,
+      "first_nonfinite_state_frame": 13838,
+      "last_pre_step_covariance": {
+        "finite": true,
+        "value_class": "finite",
+        "real": 1.7317038329385077e+308,
+        "imag": 0.0
+      },
+      "final_zero_frame_output": {
+        "finite": true,
+        "value_class": "finite",
+        "real": 0.0,
+        "imag": 0.0
+      },
+      "final_zero_frame_covariance": {
+        "finite": false,
+        "value_class": "infinity"
+      },
+      "resumed_unit_frame_outputs": [
+        {
+          "finite": true,
+          "value_class": "finite",
+          "real": 1.0,
+          "imag": 0.0
+        },
+        {
+          "finite": false,
+          "value_class": "nan"
+        },
+        {
+          "finite": false,
+          "value_class": "nan"
+        }
+      ],
+      "first_nonfinite_output_resume_frame": 2,
+      "illustrative_hop_seconds": 0.008,
+      "first_nonfinite_state_seconds_at_8ms_hop": 110.70400000000001,
+      "analytic_zero_history_rule": "P_n = alpha**(-n), gain=0 until floating-point range is exceeded"
+    },
+    {
+      "source_identity": {
+        "project": "nara_wpe",
+        "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/nara_wpe",
+        "origin": "https://github.com/fgnt/nara_wpe.git",
+        "head": "a166779cca2088817e330481bd20af1a2c598555",
+        "lock_entry": {
+          "id": "nara_wpe",
+          "url": "https://github.com/fgnt/nara_wpe.git",
+          "revision": "a166779cca2088817e330481bd20af1a2c598555",
+          "release": "v0.0.11",
+          "license": "MIT",
+          "fetch_enabled": true,
+          "scope": "offline, block-online and frame-online WPE",
+          "note": "Annotated tag v0.0.11 peels to this commit. Current main was separately inspected at 5fbfc3639274e5a70dffcf08e20615a38c372ebb.",
+          "acquisition": "independent_source_checkout",
+          "entrypoints": [
+            "LICENSE",
+            "nara_wpe/wpe.py",
+            "nara_wpe/tf_wpe.py"
+          ]
+        },
+        "lock_sha256": "eec80748e5f1fcc01d33e281b91a4482f52566d8e6b74bdb737e017604ec6487",
+        "source_document_paths": {
+          "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+          "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+        },
+        "status_sha256": "4cc8cbd48e3e98b51a24705468415d10654aa349f3946fb98ef48e9c4856f4f6",
+        "recorded_complete_selection": {
+          "id": "nara_wpe",
+          "revision": "a166779cca2088817e330481bd20af1a2c598555",
+          "status": "source_verified",
+          "missing_entrypoints": [],
+          "execution": "not_run",
+          "dependency_validation": "not_run",
+          "asset_policy": "existing_checkout_preserved",
+          "requested_source_paths": [
+            "repository"
+          ],
+          "observed_sparse_patterns": [],
+          "expected_sparse_patterns": [],
+          "source_selection_verified": true
+        },
+        "live_complete_selection": {
+          "id": "nara_wpe",
+          "revision": "a166779cca2088817e330481bd20af1a2c598555",
+          "status": "source_verified",
+          "source_selection_verified": true,
+          "missing_entrypoints": [],
+          "observed_sparse_patterns": [],
+          "expected_sparse_patterns": [],
+          "requested_source_paths": [
+            "repository"
+          ],
+          "asset_policy": "existing_checkout_preserved"
+        },
+        "used_source_identity": "verified",
+        "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+        "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+        "ignored_members_before": [],
+        "used_files": {
+          "LICENSE": {
+            "sha256": "f9fad5befd31a5c5540fb671fa56efd59d959959ffe1b6a8156a66549d6410f0",
+            "bytes": 1110,
+            "git_blob": "bee267761def410b69877b6729cd9bb60d8c517b",
+            "actual_blob": "bee267761def410b69877b6729cd9bb60d8c517b"
+          },
+          "nara_wpe/wpe.py": {
+            "sha256": "385a6f1c67071ba3e243c8a24fe4a041484c55280ad4ed0dbadefa4679a606d2",
+            "bytes": 51842,
+            "git_blob": "1069e79d8c21097e246a6451f941f88d67be4775",
+            "actual_blob": "1069e79d8c21097e246a6451f941f88d67be4775"
+          },
+          "nara_wpe/__init__.py": {
+            "sha256": "26c8332cb0ed6de30286eb6e88f29c96fec8830dadc54fcd15877e6f5a1dbf1d",
+            "bytes": 225,
+            "git_blob": "25a8e18d58d1441fdcc3ce9ea8458d66e0e04343",
+            "actual_blob": "25a8e18d58d1441fdcc3ce9ea8458d66e0e04343"
+          }
+        },
+        "clean_before": true,
+        "clean_after": true,
+        "ignored_members_after": []
+      },
+      "installed_identity": {
+        "version": "0.0.11",
+        "files": {
+          "wpe.py": {
+            "path": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/lib/python3.13/site-packages/nara_wpe/wpe.py",
+            "sha256": "385a6f1c67071ba3e243c8a24fe4a041484c55280ad4ed0dbadefa4679a606d2"
+          },
+          "__init__.py": {
+            "path": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/lib/python3.13/site-packages/nara_wpe/__init__.py",
+            "sha256": "26c8332cb0ed6de30286eb6e88f29c96fec8830dadc54fcd15877e6f5a1dbf1d"
+          },
+          "distribution_LICENSE": {
+            "path": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/lib/python3.13/site-packages/nara_wpe-0.0.11.dist-info/LICENSE",
+            "sha256": "f9fad5befd31a5c5540fb671fa56efd59d959959ffe1b6a8156a66549d6410f0"
+          }
+        },
+        "clean_after": true,
+        "scope": "installed module, initializer identity and distribution license; not a Git checkout or whole dependency environment"
+      },
+      "implementation": "upstream",
+      "alpha": 0.95,
+      "dimensions": {
+        "frequency_bins": 1,
+        "channels": 1,
+        "taps": 1,
+        "delay_argument": 1
+      },
+      "initial_inverse_covariance": 1.0,
+      "initial_filter": 0.0,
+      "initial_buffer": "all zeros",
+      "observations": "zero until first non-finite inverse covariance or cap, then three unit frames",
+      "frame_count_convention": "one-based number of processed zero frames",
+      "maximum_zero_frames": 16000,
+      "processed_zero_frames": 13838,
+      "first_nonfinite_state_frame": 13838,
+      "last_pre_step_covariance": {
+        "finite": true,
+        "value_class": "finite",
+        "real": 1.7317038329385077e+308,
+        "imag": 0.0
+      },
+      "final_zero_frame_output": {
+        "finite": true,
+        "value_class": "finite",
+        "real": 0.0,
+        "imag": 0.0
+      },
+      "final_zero_frame_covariance": {
+        "finite": false,
+        "value_class": "infinity"
+      },
+      "resumed_unit_frame_outputs": [
+        {
+          "finite": true,
+          "value_class": "finite",
+          "real": 1.0,
+          "imag": 0.0
+        },
+        {
+          "finite": false,
+          "value_class": "nan"
+        },
+        {
+          "finite": false,
+          "value_class": "nan"
+        }
+      ],
+      "first_nonfinite_output_resume_frame": 2,
+      "illustrative_hop_seconds": 0.008,
+      "first_nonfinite_state_seconds_at_8ms_hop": 110.70400000000001,
+      "analytic_zero_history_rule": "P_n = alpha**(-n), gain=0 until floating-point range is exceeded"
+    }
+  ],
+  "interpretation": "No repair is applied. Silence gating, resetting, or bounded covariance are distinct algorithm changes requiring their own validation."
+}

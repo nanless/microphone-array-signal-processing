@@ -9,7 +9,7 @@
 - **原理索引**：已有原理或来源依据，但尚未形成唯一、许可明确且承担对应计算的源码映射；代码可见而许可不明时也保留此状态，并说明原因。
 - **明确排除**：指定软件的身份或许可不满足本书当前收录方式；不表示删除相应方法的学术讨论。
 
-算法表共 339 行：本仓库可运行基线 70 行、外部参考实现 182 行、原理索引 86 行、明确排除 1 行。练习映射单独计数，不因题数增加算法行；已知激励的逐频正则反卷积新增唯一教学核，同一行保留pyfar外部对照及其限定运行边界。第6章新增一行已知播放增益顺序与历史尾声控制，复用NLMS与NCC，不计作新的自适应算法。MDL、功率谱减、受控 NCC 活动判别与 cACGMM 教学迭代属于本地基线。覆盖表仍有原理索引，不表示全书全部算法已经运行。
+算法表共 342 行：本仓库可运行基线 71 行、外部参考实现 183 行、原理索引 87 行、明确排除 1 行。练习映射单独计数，不因题数增加算法行；已知激励的逐频正则反卷积新增唯一教学核，同一行保留pyfar外部对照及其限定运行边界。第6章新增一行已知播放增益顺序与历史尾声控制，复用NLMS与NCC，不计作新的自适应算法。MDL、功率谱减、受控 NCC 活动判别与 cACGMM 教学迭代属于本地基线。覆盖表仍有原理索引，不表示全书全部算法已经运行。
 
 源码取得与入口核对见 [SOURCE_STATUS.json](SOURCE_STATUS.json)；该文件中的依赖验证和执行字段未开展时为 `not_run`，不承载方法级数值实验结果。实际运行及数值对照见[复现记录](research/04_source_reproduction.md)、[增强研究记录](research/02_aec_wpe_separation.md)和 [WPE 独立对照脚本](../ch07/examples/compare_wpe_reference.py)。工业接口与 SBL 的限定实验报告按主题放在 `codes/chapters/ch04/reports/`、`codes/chapters/ch10/reports/` 等对应章节；实际调用外部代码不将它改列为本仓库教学基线。覆盖状态不是测试结果。完整提交、官方地址、许可与来源 ID 见 [SOURCES.lock.json](SOURCES.lock.json)。表内本仓库教学源文件使用相对于仓库根目录的完整路径；第三方项目的内部路径仍相对于各自项目根目录。出现“同文件”时仅继承上一行文件，不继承其算法或验证结论。
 
@@ -238,6 +238,9 @@
 | 增强研究两阶段去混响 | 输出端PSD训练WPE与单通道维纳后滤 | 原理索引 | 2sderev作者2023论文及官方补充；研究 `#two-stage-dereverb` | 有限滤长残余；HA前40ms/CI16ms目标不同，训练代码未公开、源码许可未核，不取得代码/模型 |
 | §7.10；增强研究 W09 | MetaAF 学习 WPE 滤波器更新 | 外部参考实现 | `metaaf`：`zoo/wpe/wpe.py`、`zoo/wpe/wpe_eval.py`；核心优化器在 `metaaf/` | 固定源码选集已取得，zoo 采用独立非商业许可；未训练、未载入模型、未复现质量指标 |
 | §7.10；增强研究 W09 | VACE-WPE 虚拟通道估计与任务特定前端 | 外部参考实现 | `tso_vace_wpe`：`vace_wpe.py`、`torch_custom/wpe_th_utils.py`、`torch_custom/neural_wpe.py` | MIT 固定源码与直接依赖选集；未取模型和语料，未训练/推理或核验 ASV 性能 |
+| §7.8；E07-22～24 | 已知到达下的源时刻与单历史回归控制 | 本仓库可运行基线 | `codes/chapters/ch07/core/prediction_delays.py`、`core/delay_audio.py`及六PCM生成/核验；图75 | 已知整数到达、一个实数回归、共同接收时轴；不估计时差，不是完整STFT/跨频WPE；T60题仅自由功率衰减换算 |
+| 增强研究W10；`#rir-encoder-candidate` | RIR对比嵌入辅助编码器 | 外部参考实现 | `rir-encoder`：`network.py`、`data_module.py`、`loss_fn.py`、`train.py`、`embedding_extraction.py` | 作者MIT固定八文本已取得，顶层训练有写入；未装依赖/取权重/运行，非论文完整FiLM-SGMSE恢复管线 |
+| 增强研究W10；`#usdnet-plus-candidate` | USDnet++混合与SPD重构弱监督 | 原理索引 | Pang等Interspeech2026，DOI10.21437/Interspeech.2026-2044，原§3～4式3～15 | WPE/WPD结果仍非干净真值；FCP可含未来与全句求解，二模型另计；未核可许可作者整链实现/权重/运行 |
 | §7.2 | 离线单/多通道 WPE | 本仓库可运行基线 | `codes/chapters/ch07/core/dereverberation.py::offline_wpe`；外部对照 `nara_wpe`；`btk20`：`btk20_src/dereverberation/dereverberation.cc`、`.h` | 保护延迟、有效历史、相对加载；BTK20 的通道功率与加载不同，见研究 W08；数值对照见 W01/W11；BTK20 仅静态核对，未构建整链 |
 | §7.4 | 逐帧在线 WPE | 外部参考实现 | `nara_wpe`：`nara_wpe/wpe.py::OnlineWPE` | 三接口 delay 索引不同；独立对照 `codes/chapters/ch07/examples/compare_online_wpe_reference.py`；未来扰动和跨块状态见 `codes/chapters/ch07/wpe_temporal_contract.py`；长静音状态溢出及恢复见 `codes/chapters/ch07/examples/wpe_silence_boundary.py` |
 | §7.4；研究扩展：增强 W03 | 块在线/递推 WPE | 外部参考实现 | `nara_wpe`：`nara_wpe/tf_wpe.py` | TF 固定版权重 .7 乘当前块；块内估计后处理本块，非逐帧因果；静态核对见 W03 |

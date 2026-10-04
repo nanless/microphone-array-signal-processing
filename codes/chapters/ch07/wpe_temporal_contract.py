@@ -24,7 +24,7 @@ import numpy as np
 from codes.chapters.ch07.examples.compare_online_wpe_reference import (
     NARA_WPE_VERSION,
     NumpyOnlineWPE011,
-    _load_locked_upstream,
+    _load_locked_module, _check_locked_module,
 )
 
 
@@ -116,7 +116,9 @@ def report() -> dict:
         "adapted_numpy_reference": temporal_summary(_numpy_factory),
     }
     try:
-        OnlineWPE, _, _, source_sha256 = _load_locked_upstream()
+        module, identity, installed = _load_locked_module()
+        OnlineWPE = module.OnlineWPE
+        source_sha256 = installed["files"]["wpe.py"]["sha256"]
     except (ImportError, importlib.metadata.PackageNotFoundError) as error:
         result["locked_upstream"] = {"status": "not installed", "reason": str(error)}
         return result
@@ -126,7 +128,7 @@ def report() -> dict:
             taps=2, delay=2, alpha=0.95, frequency_bins=2, channel=1
         )
 
-    from nara_wpe.wpe import wpe_v6
+    wpe_v6 = module.wpe_v6
 
     original, changed = fixed_frames()
     original_offline = wpe_v6(
@@ -151,6 +153,9 @@ def report() -> dict:
             "meaning": "A future input frame can change an earlier output when a full-record filter is estimated.",
         },
     }
+    _check_locked_module(identity, installed)
+    result["locked_upstream"]["source_identity"] = identity
+    result["locked_upstream"]["installed_identity"] = installed
     return result
 
 

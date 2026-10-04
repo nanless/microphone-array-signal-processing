@@ -6,7 +6,7 @@
   "common_export_gain": 1.0,
   "source_sha256": {
     "codes/chapters/ch07/core/mint_teaching.py": "4a7be3378d80d3018fe095766610b915d72ae625903e4c7054bdf1e5a10e103a",
-    "codes/chapters/ch07/examples/mint_teaching_demo.py": "5650f17e5f5ff7bc7a77d1cd553129c97b86585f12f1ae56e9ae7711abc34eb1",
+    "codes/chapters/ch07/examples/mint_teaching_demo.py": "c9a16df23cfedba99b96cec984c3f8e11a875c60ccb031186875c80e39c98f3e",
     "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
     "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"

@@ -35,6 +35,85 @@ SOURCE_PATHS = (
 )
 
 
+# Reviewed fixed fixture values and types, independent of runtime metadata.
+REQUIRED_PARAMETERS = {'exercise_id': 'E07-21',
+ 'sample_rate_hz': 16000,
+ 'samples_per_channel': 32512,
+ 'source_samples': 32000,
+ 'source_frequencies_hz': [200, 500, 900, 1200],
+ 'amplitude_per_frequency': 0.05,
+ 'source_phase': 'cosines on absolute sample clock, initial phase zero',
+ 'source_active_interval_samples': [0, 32000],
+ 'fade_samples_each_end': 320,
+ 'fade': 'sin(linspace(0,pi/2,320)) squared, endpoint included; reversed at end',
+ 'reflection_delay_samples': 512,
+ 'reflection_delay_seconds': 0.032,
+ 'paths': {'first': [1.0, 0.5], 'well_second': [1.0, -0.5], 'near_second': [1.0, 0.49]},
+ 'path_tap_positions': [0, 512],
+ 'negative_time_samples': 'zero',
+ 'complete_tail_samples': 512,
+ 'noise_model': 'two independent Rademacher draws times sqrt(5e-7), added after each path at ALL 32512 '
+                'samples',
+ 'noise_variance_per_channel': 5e-07,
+ 'noise_shared_across_conditions': True,
+ 'seed': 20261001,
+ 'random_bit_generator': 'PCG64',
+ 'random_draw': 'integers(0,2,size=(2,32512),dtype=int64), map 0/1 to -1/+1',
+ 'steady_source_population_mean_square': 0.005,
+ 'regularization': 0.0001,
+ 'regularization_interpretation': 'noise variance / declared steady source power = 5e-7/.005',
+ 'designs': {'well_exact': {'weights': [0.5, 0.5],
+                            'weights_exact': ['1/2', '1/2'],
+                            'direct_response': 1.0,
+                            'reflection_response': 0.0,
+                            'weight_norm_squared': 0.5,
+                            'reflection_cost': 0.0,
+                            'regularization_cost': 0.0,
+                            'total_cost': 0.0,
+                            'regularization': 0.0,
+                            'scope': 'direct coefficient sum is one; only reflection and weight norm are '
+                                     'penalized',
+                            'population_noise_mean_square': 2.5e-07,
+                            'population_clean_error_mean_square': 0.0,
+                            'population_total_reference_mse': 2.5e-07},
+             'near_exact': {'weights': [-49.0, 50.0],
+                            'weights_exact': ['-49', '50'],
+                            'direct_response': 1.0,
+                            'reflection_response': 0.0,
+                            'weight_norm_squared': 4901.0,
+                            'reflection_cost': 0.0,
+                            'regularization_cost': 0.0,
+                            'total_cost': 0.0,
+                            'regularization': 0.0,
+                            'scope': 'direct coefficient sum is one; only reflection and weight norm are '
+                                     'penalized',
+                            'population_noise_mean_square': 0.0024505,
+                            'population_clean_error_mean_square': 0.0,
+                            'population_total_reference_mse': 0.0024505},
+             'near_regularized': {'weights': [-16.0, 17.0],
+                                  'weights_exact': ['-16', '17'],
+                                  'direct_response': 1.0,
+                                  'reflection_response': 0.33,
+                                  'weight_norm_squared': 545.0,
+                                  'reflection_cost': 0.1089,
+                                  'regularization_cost': 0.0545,
+                                  'total_cost': 0.1634,
+                                  'regularization': 0.0001,
+                                  'scope': 'direct coefficient sum is one; only reflection and weight norm '
+                                           'are penalized',
+                                  'population_noise_mean_square': 0.0002725,
+                                  'population_clean_error_mean_square': 0.0005445000000000001,
+                                  'population_total_reference_mse': 0.000817}},
+ 'scoring_interval_samples': [2400, 29600],
+ 'scoring_samples_per_channel': 27200,
+ 'tail_interval_samples': [32000, 32512],
+ 'alignment': 'same source sample clock; fixed causal one-tap outputs; no fitted gain or delay',
+ 'common_export_gain': 1.0,
+ 'channel_order': ['first_path', 'second_path'],
+ 'statistics': 'one finite fixed-seed fixture; population expectations and actual cross terms are distinct'}
+REQUIRED_LIMITS = 'Original known-path mathematical synthesis; no speech, measured room or listening study. Noise is added after the two paths, with common draws across conditions. Rademacher population means/cross moments are not substituted for finite-record moments. Fixed causal one-tap filters preserve the direct coefficient sum, not every frequency response. The constrained regularizer penalizes the delayed reflection and weight norm; it is not a general MINT optimum. Float component scores and actual PCM total errors are separate. No posterior gain/time fitting, clipping, dither or per-file normalization. A 512-sample reflection has 512 polynomial zeros; coefficient difference is not zero distance.'
+
+
 def _sha(blob):
     return hashlib.sha256(blob).hexdigest()
 
@@ -44,7 +123,28 @@ def source_digests():
 
 
 def prepare_assets() -> tuple[dict[str, bytes], dict]:
+    # Reject changed declarations before encoding or writing any asset.
+    if (not same_metadata(parameters(), REQUIRED_PARAMETERS)
+            or not same_metadata(LIMITS, REQUIRED_LIMITS)):
+        raise ValueError('mint true parameters differ from the fixed asset contract')
     experiment = run_experiment()
+    if (not isinstance(experiment, dict)
+            or not same_metadata(experiment.get('parameters'), REQUIRED_PARAMETERS)
+            or not same_metadata(experiment.get('limits'), REQUIRED_LIMITS)):
+        raise ValueError('mint experiment parameters differ from the fixed asset contract')
+    if (not isinstance(experiment.get('signals'), dict)
+            or set(experiment['signals']) != set(FILE_NAMES)):
+        raise ValueError('mint experiment must contain all six fixed signals')
+    for key, value in experiment['signals'].items():
+        channels = 2 if key.endswith('_array') else 1
+        if (not isinstance(value, np.ndarray) or value.dtype.kind != 'f'
+                or value.shape != (channels, SAMPLES) or not np.isfinite(value).all()
+                or np.any(value < -1) or np.any(value > 32767/32768)):
+            raise ValueError('mint fixed finite unclipped waveform shape differs: '+key)
+    actual_float = {key: measure_signal(value, experiment['signals']['reference'])
+                    for key, value in experiment['signals'].items()}
+    if not same_metadata(experiment.get('float_measurements'), actual_float):
+        raise ValueError('mint float measurements differ from supplied waveforms')
     blobs, files, decoded, samples = {}, {}, {}, {}
     for key, value in experiment['signals'].items():
         blob = pcm16_bytes(value, SAMPLE_RATE)
@@ -69,6 +169,7 @@ def prepare_assets() -> tuple[dict[str, bytes], dict]:
                 'pcm': 'signed little-endian PCM16, round-to-nearest-even, no dither or per-file gain',
                 'pcm_quantization_step': 1/32768, 'pcm_half_step_error_bound': .5/32768,
                 'limits': LIMITS, 'listening': 'Start at low volume; no automatic playback or listening study.'}
+    strict_json_loads(json.dumps(manifest, allow_nan=False))
     return blobs, manifest
 
 
@@ -77,7 +178,7 @@ def _members(output, *, checking):
 
 
 def _strict_equal(actual, expected):
-    return same_metadata(actual, expected, allow_int_for_float=True)
+    return same_metadata(actual, expected)
 
 
 def check_assets(output: Path = DEFAULT_OUTPUT, *, replay=True) -> dict:

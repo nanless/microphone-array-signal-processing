@@ -7,6 +7,12 @@ This is not an audio transform or a JAX/MetaAF package run.
 """
 from __future__ import annotations
 
+# Preserve both the existing direct-file entry and the module entry.
+if __name__ == "__main__" and not __package__:
+    import sys as _chapter_entry_sys
+    from pathlib import Path as _ChapterEntryPath
+    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[4]))
+
 import argparse
 import ast
 from datetime import datetime, timezone
@@ -21,7 +27,12 @@ import sys
 
 import numpy as np
 
+from codes.chapters.ch04.core import upstream_contracts as contracts
+
 CODES = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[4]
+CURRENT_REPORT = ROOT / 'codes/chapters/ch07/reports/wpe_upstream_interfaces_current.json'
+CACHE = CODES / 'chapters/ch00/upstream/_downloads'
 SOURCES = {'btk20': {'files': {'LICENSE': '1dfe95044a48d8c90dde9fe0d32fa75beba51633b866cc91f10b803489edeec0',
                      'btk20_src/dereverberation/dereverberation.cc': '56dd5e81a2da21f9ab1edd8a0169473233c68a188112534fa706cebbfeac2cad'},
            'revision': 'feff19ec8bcb770f6530fe280dc3ccafc2f5984a'},
@@ -85,19 +96,13 @@ def binding_sha256():
 
 
 def verify_source(path, spec):
-    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
-    def git(*args):
-        return subprocess.check_output(["git", "-C", str(path), *args], env=env,
-                                       text=True, stderr=subprocess.PIPE).strip()
-    if not (path / ".git").exists() or Path(git("rev-parse", "--show-toplevel")).resolve() != path.resolve():
-        raise ValueError("expected independent checkout; fetch separately")
-    if git("rev-parse", "HEAD") != spec["revision"]:
-        raise ValueError("revision mismatch")
-    if git("status", "--porcelain", "--untracked-files=no"):
-        raise ValueError("upstream tracked files modified")
-    for name, digest in spec["files"].items():
-        if sha256(path / name) != digest:
-            raise ValueError("source hash mismatch: " + name)
+    identity = contracts.verify_project(Path(path).name, path, spec['files'])
+    for name, expected in spec['files'].items():
+        if identity['used_files'][name]['sha256'] != expected:
+            raise ValueError('source hash mismatch: '+name)
+    if identity['head'] != spec['revision']:
+        raise ValueError('revision mismatch')
+    return identity
 
 
 def load_original(path, name):
@@ -198,21 +203,26 @@ def run_metaaf(root, nara):
             "note": "step_frame docstring specifies F,D, but implementation accepts a full 3D buffer"}
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source-root", type=Path, default=CODES / "chapters/ch00/upstream/_downloads")
-    parser.add_argument("--report", type=Path)
-    args = parser.parse_args()
+def run_audit(source_root=CACHE):
+    source_root = contracts.validate_parent_chain(source_root)
+    identities = {project: verify_source(source_root/project, spec)
+                  for project, spec in SOURCES.items()}
+    old_bytecode = sys.dont_write_bytecode
     sys.dont_write_bytecode = True
-    for project, spec in SOURCES.items():
-        verify_source(args.source_root / project, spec)
-    nara_root = args.source_root / "nara_wpe"
-    nara = load_original(nara_root / "nara_wpe/wpe.py", "wpe_fixed_audit")
-    esp = args.source_root / "espnet/espnet2/enh/layers"
+    try:
+        nara = load_original(source_root / "nara_wpe/nara_wpe/wpe.py", "wpe_fixed_audit")
+    finally:
+        sys.dont_write_bytecode = old_bytecode
+    esp = source_root / "espnet/espnet2/enh/layers"
     report = {
-        "schema_version": 1, "created_at": datetime.now(timezone.utc).isoformat(),
+        "schema_version": 2, "created_at": datetime.now(timezone.utc).isoformat(),
         "harness_sha256": sha256(__file__), "source_config_sha256": binding_sha256(),
         "sources": SOURCES, "config": CONFIG,
+        "actual_dependency_sha256": contracts.dependencies(Path(__file__)),
+        "source_identities": identities,
+        "lock_sha256": identities['nara_wpe']['lock_sha256'],
+        "source_status_sha256": identities['nara_wpe']['status_sha256'],
+        "static_note_boundary": "static_scope records bounded manual source-review notes; only ESPnet AST facts are checked automatically here. Hash checking other files is not their execution.",
         "environment": {"python": platform.python_version(), "numpy": np.__version__,
                         "platform": platform.platform(), "bytecode_writes": False},
         "nara": run_nara(nara),
@@ -225,18 +235,29 @@ def main():
             "tso_vace_wpe": "read 15 source/notice files; no PyTorch or weights executed",
             "speexdsp": "read disabled dereverb update/control code; no new preprocess execution",
         },
-        "silence_boundary": "Separate experiment: codes/chapters/ch07/reports/chapter07_online_wpe_silence.json",
+        "silence_boundary": "Separate experiment: codes/chapters/ch07/reports/chapter07_online_wpe_silence_current.json",
         "not_executed": ["speech quality", "ASR", "hardware timing", "neural weights", "training"],
     }
     if "metaaf" in SOURCES:
-        report["metaaf_nara_wrapper"] = run_metaaf(args.source_root / "metaaf", nara)
-    payload = json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
-    if args.report:
-        args.report.parent.mkdir(parents=True, exist_ok=True)
-        args.report.write_text(payload)
+        report["metaaf_nara_wrapper"] = run_metaaf(source_root / "metaaf", nara)
+    for identity in identities.values():
+        contracts.check_unchanged(identity)
+    return report
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--source-root", type=Path, default=CACHE)
+    parser.add_argument("--report", type=Path)
+    args = parser.parse_args()
+    target = contracts.report_target(args.report, CURRENT_REPORT, (CACHE, args.source_root)) if args.report else None
+    report = run_audit(args.source_root)
+    if target is not None:
+        contracts.write_report(target, report, CURRENT_REPORT, (CACHE, args.source_root))
     else:
-        print(payload, end="")
+        print(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False))
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

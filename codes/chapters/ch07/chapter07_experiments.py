@@ -1,4 +1,4 @@
-"""Fourteen WPE/MINT arithmetic and audio experiments, E07-08 through E07-21.
+"""Seventeen WPE/MINT arithmetic and audio experiments, E07-08 through E07-24.
 
 These are small declared models, not benchmarks. Complex arrays are encoded
 as separate real/imag lists for strict JSON. Importing does not run or write.
@@ -331,18 +331,36 @@ def actual_mint_audio(directory=None) -> dict:
     return check_assets(DEFAULT_OUTPUT if directory is None else Path(directory))
 
 
-def run_experiments(*, repo_root=ROOT, mint_directory=None) -> dict:
+def source_clock_delays() -> dict:
+    from codes.chapters.ch07.core.prediction_delays import source_clock_example
+    return source_clock_example()
+
+
+def late_power_unit_conversion() -> dict:
+    from codes.chapters.ch07.core.prediction_delays import late_power_decay
+    return late_power_decay()
+
+
+def actual_delay_audio(directory=None) -> dict:
+    from codes.chapters.ch07.examples.generate_delay_audio import DEFAULT_OUTPUT, check_assets
+    return check_assets(DEFAULT_OUTPUT if directory is None else Path(directory))
+
+
+def run_experiments(*, repo_root=ROOT, mint_directory=None, delay_directory=None) -> dict:
     functions = [complex_weighted_fit, power_floor_and_smoothing, history_permutation,
                  frame_count_and_rank, frame_window_overlap, exponential_statistics,
                  mint_near_common_zero, wpe_resource_budget, loaded_wpd_factorization,
                  predictable_target_audio, real_cepstrum_phase_ambiguity,
-                 design_normal_comparison, constrained_regularized_mint, actual_mint_audio]
+                 design_normal_comparison, constrained_regularized_mint, actual_mint_audio,
+                 source_clock_delays, late_power_unit_conversion, actual_delay_audio]
     result = {}
     for i, function in enumerate(functions, 8):
         if function is predictable_target_audio:
             value = function(repo_root)
         elif function is actual_mint_audio:
             value = function(mint_directory)
+        elif function is actual_delay_audio:
+            value = function(delay_directory)
         else:
             value = function()
         result[f'E07-{i:02d}'] = value

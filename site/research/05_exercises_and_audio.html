@@ -1,12 +1,12 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>章节代码练习与音频实验 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="b9a4256417d5"><style>
+<meta name="source-digest" content="f9d33402bd52"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
-@media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
+@media screen{.main a[id^="e06-"],.main a[id^="e07-"]{scroll-margin-top:60px}}
 a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
 .skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
 .skip-link:focus{top:8px}
@@ -394,6 +394,12 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-56-4">56.4 三个评分窗：解析值与实际PCM分别复算</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-56-5">56.5 实际PCM尾声的十个活动标签</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-56-6">56.6 运行入口、生成源与工业接口边界</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-593023041f">57. 第7章：到达时间、预测历史与功率单位</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-57-1">57.1 先从四个整数样本检查时刻</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-57-2">57.2 同一接收时轴的六份正式PCM</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-57-3">57.3 一次固定窗拟合，再分别核功率和误差</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-57-4">57.4 T60是功率60dB，不是幅度的倍率复用</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-57-5">57.5 真实来源、重建与只读检查</a></li>
 </ul>
 <div class="chap"><a href="../01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
 <div class="chap"><a href="../02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
@@ -565,12 +571,18 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-56-4">56.4 三个评分窗：解析值与实际PCM分别复算</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-56-5">56.5 实际PCM尾声的十个活动标签</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-56-6">56.6 运行入口、生成源与工业接口边界</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-593023041f">57. 第7章：到达时间、预测历史与功率单位</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-57-1">57.1 先从四个整数样本检查时刻</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-57-2">57.2 同一接收时轴的六份正式PCM</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-57-3">57.3 一次固定窗拟合，再分别核功率和误差</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-57-4">57.4 T60是功率60dB，不是幅度的倍率复用</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-57-5">57.5 真实来源、重建与只读检查</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="章节代码练习与音频实验" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-c621965c02">章节代码练习与音频实验</h1>
 <p>先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。</p>
-<p>本页索引 343 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
+<p>本页索引 346 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
 <p>E06-07～E06-20 使用无量纲回声模型检查 AEC 的计算与边界，其中 E06-11～20 可用精确答案程序核对。第 15、16 节另提供参数不同的合成音频；试听文件本身不是题目真值。</p>
-<p>第 3～11、13～16、18、21～30、32～34 节对应主清单的 109 个数学合成样本。第 17 节的 18 个房间白噪声合成样本使用独立清单；第 12 节使用另行授权的真实同步录音。第 31 节的 2 份从 PCM 形成定位观测的追踪样本也使用独立清单。第35～39节分别保存双耳、有限窗卷积、多频几何、已知聚焦与导数约束的独立样本。第48节保存分布式协同增强的17个独立样本；第47节保存成像的五个快拍样本。第46节另保存附录B同DRR短RIR的五个独立样本；第55节保存第5章逐频相位的三份独立PCM；第56节保存第6章已知播放增益与历史尾声的六份独立PCM。不同音频的来源和可作的比较不同，试听前先查看各节的条件。</p>
+<p>第 3～11、13～16、18、21～30、32～34 节对应主清单的 109 个数学合成样本。第 17 节的 18 个房间白噪声合成样本使用独立清单；第 12 节使用另行授权的真实同步录音。第 31 节的 2 份从 PCM 形成定位观测的追踪样本也使用独立清单。第35～39节分别保存双耳、有限窗卷积、多频几何、已知聚焦与导数约束的独立样本。第48节保存分布式协同增强的17个独立样本；第47节保存成像的五个快拍样本。第46节另保存附录B同DRR短RIR的五个独立样本；第55节保存第5章逐频相位的三份独立PCM；第56节保存第6章已知播放增益与历史尾声的六份独立PCM；第57节保存第7章已知到达与历史索引的六份独立PCM。不同音频的来源和可作的比较不同，试听前先查看各节的条件。</p>
 <p>主音频按章存放，统一由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/examples/generate_audio_samples.py">生成器</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/audio/MANIFEST.json">清单</a>管理。清单记录每组模型、种子、共同导出增益、采样率、通道、帧数、量化误差、运行环境、源文件摘要与逐 WAV 摘要；不把某组的谐波模板套到其他组。PCM16 编码按最近偶数舍入，不加抖动或自动限幅，RMS 对全部通道与采样一起计算。运行生成器并附加 <code>--check</code> 时只在内存重算和读回比对，不重写资产；严格字节核对也比较 Python、NumPy 和平台记录，异机不通过不等于算法错误。生成中断造成清单与 WAV 不一致时，先保留异常目录，再生成到新的空目录核对，通过后更新受影响资产并构建图和网站；不要手改单个生成文件。样本没有真人录音或模型权重，客观读回和浏览器加载不等于正式听测。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/io_contracts.py">共享文件IO</a>负责写入前的普通父目录、文件成员与严格JSON检查；各生成器继续负责自己的模型、清单结构和评分。已有非空目录须符合该资产的完整成员集合，重复键、非有限数值与把布尔值写成数值参数都会被拒绝。检查适用于本地非并发工作流，不把有限的写前检查当成并发文件系统安全保证。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="1-按章节运行" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-08633b42fc">1. 按章节运行</h2>
@@ -689,6 +701,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>第 7 章 E07-08～21</td>
 <td>复数拟合、功率约束、历史置换、秩、窗重叠、递推先验、MINT、资源、WPD加载与目标损伤音频、倒谱相位、设计求解及逆滤波噪声</td>
 <td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/chapter07_experiments.py">WPE逐步实验</a></td>
+</tr>
+<tr>
+<td>第7章 E07-22～24</td>
+<td>接收与源时刻、历史因果边界、T60功率单位与真实整数PCM控制</td>
+<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/core/prediction_delays.py">唯一数值核</a>、<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/chapter07_experiments.py">章节入口</a>、<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/examples/generate_delay_audio.py">六WAV生成/只读核验</a>；逐步展开见§57</td>
 </tr>
 <tr>
 <td>第 8 章 E08-01～07</td>
@@ -4236,6 +4253,103 @@ e^{-\mathrm j2\pi 2000n/24000},\\
 </code></pre>
 <p>第一项执行E40/41短核，第二项在内存完整重放六文件并核对当前源、严格JSON、固定参数和普通七成员目录，不补文件、不改清单。首次生成去掉<code>--check</code>。唯一<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/core/reference_audio.py">音频核</a>复用NLMS、NCC和共享PCM/IO；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/examples/generate_reference_audio.py">生成器</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_ch06_reference_publication.py">发布测试</a>分别核对资产和网站副本。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/scripts/make_reference_figures.py">图74源</a>读取核验后的PCM，<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/reports/figure74_reference_timing.json">同次报告</a>绑定八音频源、两绘图源、清单与六WAV摘要，分开给定增益、实际残差、解析/PCM功率和尾声帧RMS。WebRTC的音量变化通知与XMOS特定模式的参考活动保持属于各自控制接口，不能由它们推断参考样本已自动乘增益、历史已完整保留或近端声已被识别；固定源码边界见<a href="02_aec_wpe_separation.html">AEC研究</a>与<a href="03_industrial_deployment.html">工业部署</a>。</p>
+<p><a id="known-arrival-audio"></a></p>
+<span id="sec-155" class="anchor-alias" aria-hidden="true"></span><span id="57-第7章到达时间预测历史与功率单位" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-593023041f">57. 第7章：到达时间、预测历史与功率单位</h2>
+<p>本节对应<a href="../07_wpe-dereverberation.html#e07-22">E07-22～24</a>和<a href="../../figures/fig75_prediction_delays.png">图75</a>。先写清每个接收样本来自哪个源时刻，再拟合一个实数历史系数。晚期功率衰减是另一个独立统计模型，不能拿该功率曲线代替下面的PCM测量。</p>
+<span id="sec-156" class="anchor-alias" aria-hidden="true"></span><span id="571-先从四个整数样本检查时刻" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-57-1">57.1 先从四个整数样本检查时刻</h3>
+<p>取无量纲源时刻s[0]=s[4]=1，其余为零。参考到达延迟为3，辅助为0；正数表示更晚到达。在接收t=6、7、8、9上，参考当前向量为[0,1,0,0]。若辅助历史只后移3单位，也得到[0,1,0,0]，它包含的是参考当前的同一个源事件。</p>
+<p>拟合目标为最小化四个样本的平方误差，不作随机期望假设。统一历史的平方和R=1，与参考的内积r=1，所以g=r/R=1，残差全部为零。更安静来自删除了希望保留的目标。</p>
+<p>要让辅助历史对应参考之前3单位的源事件，其接收延迟应为3+3−0=6。此时历史为[1,0,0,0]，R=1、r=0、g=0，参考得以保留。这只依赖该指定脉冲支持；一般语音过去与当前仍可相关。这里只放一个辅助回归列，避免将两条相同的校正历史误说成满秩多通道回归。</p>
+<span id="sec-157" class="anchor-alias" aria-hidden="true"></span><span id="572-同一接收时轴的六份正式pcm" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-57-2">57.2 同一接收时轴的六份正式PCM</h3>
+<p>六文件为16 kHz、PCM16、每通道33024点，时长2.064 s。阵列文件第一通道是晚到参考，第二通道是早到辅助；其余为单声道。源有21个1536点周期，共32256点；每周期在0:128和512:640点放入同一个500 Hz、幅度0.1余弦脉冲，两端采用包含端点的128点sin²包络。不存在随机噪声、真实语音或实际阵列几何。</p>
+<p>物理参考传播延迟是384点，辅助为0。统一辅助历史后移384点，校正历史后移768点。全部文件补至共同表示长度33024，以保留最长历史支持；384点的传播尾和768点的最大历史padding是不同量，不能把后者换算成房间传播距离。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">正式音频</th>
+<th scope="col">查看条件</th>
+<th scope="col">能说明什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../delay_audio/delay_reference.wav">晚到参考</a><audio class="audio-sample" controls preload="none" aria-label="晚到参考" src="../delay_audio/delay_reference.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>单声道，共同接收时轴</td>
+<td>希望保留的目标取点</td>
+</tr>
+<tr>
+<td><a href="../delay_audio/delay_array.wav">双通道观测</a><audio class="audio-sample" controls preload="none" aria-label="双通道观测" src="../delay_audio/delay_array.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>晚参考在前、早辅助在后</td>
+<td>同一源事件先后到达两路</td>
+</tr>
+<tr>
+<td><a href="../delay_audio/delay_common_history.wav">统一历史</a><audio class="audio-sample" controls preload="none" aria-label="统一历史" src="../delay_audio/delay_common_history.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>辅助后移384点</td>
+<td>与参考当前逐点相同</td>
+</tr>
+<tr>
+<td><a href="../delay_audio/delay_aligned_history.wav">校正历史</a><audio class="audio-sample" controls preload="none" aria-label="校正历史" src="../delay_audio/delay_aligned_history.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>辅助后移768点</td>
+<td>同一源事件的波形比参考后移24ms；同一接收点读取更早源事件</td>
+</tr>
+<tr>
+<td><a href="../delay_audio/delay_common_residual.wav">统一历史残差</a><audio class="audio-sample" controls preload="none" aria-label="统一历史残差" src="../delay_audio/delay_common_residual.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>g=1，正式输出为零</td>
+<td>零输出可能是完全目标误消</td>
+</tr>
+<tr>
+<td><a href="../delay_audio/delay_aligned_residual.wav">校正历史残差</a><audio class="audio-sample" controls preload="none" aria-label="校正历史残差" src="../delay_audio/delay_aligned_residual.wav">请使用上方 WAV 链接下载。</audio></td>
+<td>g=0，与参考字节相同</td>
+<td>仅该脉冲支持下目标保留</td>
+</tr>
+</tbody>
+</table></div>
+<p>先调低播放音量，保持共同播放设置。六条共用导出增益1，没有逐文件归一化；零输出和与参考同字节的输出是刻意的数学控制，不是两份独立语音增强成绩。客观读回与浏览器播放不能代替正式听测。</p>
+<span id="sec-158" class="anchor-alias" aria-hidden="true"></span><span id="573-一次固定窗拟合再分别核功率和误差" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-57-3">57.3 一次固定窗拟合，再分别核功率和误差</h3>
+<p>只在半开区间[1536,30720)拟合，包含19个完整源周期，共29184点。得到的单系数随后冻结，用于整个保留记录；这不是逐帧在线适配或跨频WPE。两回归都人为指定lambda=1、不加正则，没有估计功率、到达差、输出增益或输出对齐。</p>
+<p>逐点量化之前，每个脉冲的有限平方和约0.238123002250763，稳定窗参考均方约0.000310055992514。实际PCM参考平方和为9715561194；均方分母是29184×32768²=31336081391616，因此实际均方约0.000310043909849。两种数值不同来自实际量化，不能只复制解析值到PCM栏。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">取点/每通道</th>
+<th scope="col" style="text-align: right;">实际PCM功率平方和</th>
+<th scope="col" style="text-align: right;">相对参考的整数误差平方和</th>
+<th scope="col" style="text-align: right;">参考归一误差NMSE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>参考、统一历史、校正残差</td>
+<td style="text-align: right;">9715561194</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>校正历史、阵列早辅助</td>
+<td style="text-align: right;">9715561194</td>
+<td style="text-align: right;">19431122388</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr>
+<td>统一残差</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">9715561194</td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table></div>
+<p>功率按各通道平方和除以31336081391616计算；参考误差按差平方和除以9715561194计算。阵列早辅助和校正历史在指定窗的脉冲支持与晚参考不重叠，所以其误差是两者能量之和；这不是随机独立性证据。实际PCM回归也给统一g=1、校正g=0，内积与平方和分别保存，不能将先验解析系数伪称为盲估时差结果。</p>
+<span id="sec-159" class="anchor-alias" aria-hidden="true"></span><span id="574-t60是功率60db不是幅度的倍率复用" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-57-4">57.4 T60是功率60dB，不是幅度的倍率复用</h3>
+<p><a href="../07_wpe-dereverberation.html#e07-23">E07-23</a>限定源已经停止、处于所选频带的晚期混合区间，以统计指数自由衰减近似其谱方差。T60=0.6s、时间步8ms时，75步是0.6s；功率比例必须到10⁻⁶。每步功率倍率为10^(−6×0.008/0.6)=0.8317637711，幅度倍率才是其平方根0.9120108394。若错误地用幅度倍率更新方差，75步只降30dB。</p>
+<p>这不是说每条随机房间波形的逐点能量都严格呈该直线，也不是WPE希望保留的早期方差lambda。源仍激励时需要另计新输入能量，不能将自由衰减当作完整Habets晚期估计器。图75(d)只画此独立单位控制，其余三面板才对应源索引或实际PCM。</p>
+<span id="sec-160" class="anchor-alias" aria-hidden="true"></span><span id="575-真实来源重建与只读检查" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-57-5">57.5 真实来源、重建与只读检查</h3>
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch07.chapter07_experiments
+.venv/bin/python -m codes.chapters.ch07.examples.generate_delay_audio
+.venv/bin/python -m codes.chapters.ch07.examples.generate_delay_audio --check
+.venv/bin/python scripts/make_delay_figures.py
+</code></pre>
+<p><a href="../delay_audio/MANIFEST.json">独立清单</a>绑定五个真实源：源时刻与回归唯一核、波形核、生成器、共享PCM编解码与文件IO。严格接受六WAV和清单共七个普通成员；父链链接、额外文件、重复JSON键、非有限值、参数真实类型和过期源摘要均检查。<code>--check</code>从正式字节重算实际整数分子/分母，并完整内存重放，不写入、不修复资产。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_prediction_delays.py">数值测试</a>使用独立小向量、延迟索引和解析功率端点；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_quality_delay_audio.py">音频测试</a>另用标量三角和与标准库PCM解码核验。图75的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/reports/figure75_prediction_delays.json">数值报告</a>绑定实际清单、六WAV及两绘图源摘要。主109份音频保持独立管理；真实录音、盲时差、完整STFT-WPE、神经网络和硬件性能均不在该实验范围内。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

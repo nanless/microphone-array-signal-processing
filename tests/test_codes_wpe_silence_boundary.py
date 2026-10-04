@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import unittest
 import numpy as np
+from tests.test_codes_ch07_source_contracts import old_bytes
 from codes.chapters.ch07.examples.wpe_silence_boundary import silence_probe,classify_scalar
 from codes.chapters.ch07.examples.compare_online_wpe_reference import NumpyOnlineWPE011,NARA_WPE_MODULE_SHA256
 
@@ -43,7 +44,7 @@ class WPESilenceBoundary(unittest.TestCase):
         self.assertEqual(r['source']['installed_module_sha256'],NARA_WPE_MODULE_SHA256)
         self.assertEqual(r['source']['upstream_execution'],'executed_after_hash_verification')
         for path,digest in r['generator_inputs'].items():
-            self.assertEqual(hashlib.sha256((root/path).read_bytes()).hexdigest(),digest)
+            self.assertEqual(hashlib.sha256(old_bytes(root/path)).hexdigest(),digest)
         self.assertEqual(len(r['records']),4)
         for record in r['records']:
             self.assertEqual(record['first_nonfinite_state_frame'],1024 if record['alpha']==.5 else 13838)

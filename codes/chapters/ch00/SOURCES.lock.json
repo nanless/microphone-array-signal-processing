@@ -2324,6 +2324,37 @@
         "idf_component.yml": "b2dcd8a2ac08078781fa1ed06f28886cfff35fe2e3845c8eaf622916da4d0ff3",
         "test_apps/esp-sr-gsc-doa/main/test_doa_accuracy.cpp": "a9d43732962a0fc006c38e7db8c4d158093502dfcc21b954f3d5a3707606232c"
       }
+    },
+    {
+      "id": "rir-encoder",
+      "url": "https://github.com/sp-uhh/rir-encoder.git",
+      "revision": "8ee0ba7e083c8e38170dc13632cc9937a702d0f0",
+      "license": "MIT",
+      "verified_at": "2026-10-04",
+      "fetch_enabled": true,
+      "scope": "Author RIR encoder auxiliary training and embedding extraction source; not the complete FiLM-SGMSE enhancement pipeline",
+      "note": "Only eight fixed text sources and MIT license selected. Drive checkpoints and datasets are not fetched or licensed here. Training has top-level writes and is not imported or run; source verification is not numerical reproduction. See research/02_aec_wpe_separation.md.",
+      "acquisition": "independent_source_checkout",
+      "source_paths": [
+        "LICENSE",
+        "README.md",
+        "requirements.txt",
+        "loss_fn.py",
+        "network.py",
+        "data_module.py",
+        "train.py",
+        "embedding_extraction.py"
+      ],
+      "entrypoints": [
+        "LICENSE",
+        "README.md",
+        "requirements.txt",
+        "loss_fn.py",
+        "network.py",
+        "data_module.py",
+        "train.py",
+        "embedding_extraction.py"
+      ]
     }
   ]
 }

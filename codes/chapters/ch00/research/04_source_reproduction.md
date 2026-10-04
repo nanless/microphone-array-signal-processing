@@ -554,3 +554,14 @@ e3b3176d835837441224e4906b7c2befadcdc4fe2ce6163245b7d9a9ad0d9229
 共享合同增加pb_bss/SOF固定项目身份后，两个第4章当前消费者[DOA合同](../../ch04/reports/upstream_doa_contracts.json)和[SAID合同](../../ch04/reports/said_compression_contracts.json)也实际重新执行，报告绑定更新后的真实合同源。此前六份第4章历史报告未改写；这只是依赖消费者的限定重跑，不是把其他章节提前列为完成。
 
 本书[E05-23相位音频](05_exercises_and_audio.md#phase-reference-audio)与E05-24预滤波矩阵采用独立已知模型，不调用上述原算法来生成“理想答案”。三份PCM的实际量化功率和参考误差分开评分，图73绑定真实源；模型正确与工业系统性能是不同验证范围。
+
+
+### 第7章到达延迟控制与当前来源身份
+
+[E07-22～24的已知到达控制](05_exercises_and_audio.md#known-arrival-audio)把源时刻索引、有限单实回归、实际PCM与晚期功率自由衰减分开。六WAV不是原作者房间数据或完整STFT-WPE；固定时差384点与历史padding768点也分别命名。独立清单绑定当前五真实生成源，核验内存重放全部七个普通成员，并逐字节比较PCM。
+
+2026-10-04取得固定[rir-encoder](https://github.com/sp-uhh/rir-encoder/tree/8ee0ba7e083c8e38170dc13632cc9937a702d0f0)的八份原文本，共20717字节，许可为MIT；包含README、许可、依赖、损失、网络、数据、训练与提取入口。官方origin、固定HEAD、逐blob/SHA与洁净状态均已核验；未导入训练脚本、取得权重或运行完整FiLM-SGMSE恢复链。训练入口含顶层目录创建与执行逻辑，静态阅读不能改称模型运行。[增强研究](02_aec_wpe_separation.md#rir-encoder-candidate)另说明训练与提取的STFT边界差异。
+
+新增前原字节保存在[109项锁表](../source_snapshots/SOURCES.a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505.json)与[当时获取状态](../source_snapshots/SOURCE_STATUS.abc28f6f15512da8267618bca318b10033909ec2afdb6090b6aa2d0f1281f0e9.json)，由历史身份核登记。当前110项由真实获取工具重核：70项通过、22项选集不匹配、17项仅索引、1项既有AEC缓存失败，退出1；旧109项完整状态逐项不变。93项有受管理源码工作区。新增取得状态不能证明方法、GPU或工业性能已运行。
+
+[第7章三个当前报告](02_aec_wpe_separation.md#sec-u-841a085a72)分别绑定当前工具与来源身份，历史三报告保持原字节。共享来源合同变动后，第4章DOA/SAID、第5章三份接口报告、第6章AEC/APA当前报告已真实重跑；DOA首次在主环境因缺pyroomacoustics失败，随后在既有PRA0.10.0隔离环境执行，不能把首次失败省略。原报告中的限定调用、选集不匹配、静态检查及未运行条件继续分别记录。

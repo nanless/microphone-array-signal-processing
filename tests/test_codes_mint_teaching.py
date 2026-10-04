@@ -1,5 +1,6 @@
 """Independent rational, real-sum and signed-integer MINT fixture checks."""
 import hashlib
+import copy
 import io
 import json
 import math
@@ -146,6 +147,59 @@ class MintTeaching(unittest.TestCase):
         self.assertEqual(snapshot(self.directory),before)
         with self.assertRaises(ValueError): demo.generate(self.directory,check=1)
         with self.assertRaises(ValueError): demo.check_assets(self.directory,replay=1)
+
+    def test_fixed_parameter_values_and_types_rejected_before_any_write(self):
+        mutations = []
+        for key in demo.REQUIRED_PARAMETERS:
+            changed = copy.deepcopy(demo.REQUIRED_PARAMETERS)
+            changed[key] = None
+            mutations.append((key, changed))
+        for key, value in (('seed', True), ('source_samples', 32000.0),
+                           ('common_export_gain', True), ('amplitude_per_frequency', 0)):
+            changed = copy.deepcopy(demo.REQUIRED_PARAMETERS)
+            changed[key] = value
+            mutations.append((key+' wrong type', changed))
+        changed = copy.deepcopy(demo.REQUIRED_PARAMETERS)
+        changed['paths']['first'][1] = .6
+        mutations.append(('nested true path', changed))
+        changed = copy.deepcopy(demo.REQUIRED_PARAMETERS)
+        changed['designs']['near_exact']['direct_response'] = 1
+        mutations.append(('nested float type', changed))
+        with tempfile.TemporaryDirectory() as temporary:
+            absent = Path(temporary)/'not_created'
+            before = snapshot(self.directory)
+            for label, params in mutations:
+                changed = {**self.experiment, 'parameters': params}
+                for destination in (absent, self.directory):
+                    with self.subTest(label=label, destination=destination), \
+                            patch.object(demo, 'run_experiment', return_value=changed), \
+                            patch.object(demo, 'pcm16_bytes') as encoder:
+                        with self.assertRaises(ValueError):
+                            demo.generate(destination)
+                        encoder.assert_not_called()
+                self.assertFalse(absent.exists())
+                self.assertEqual(snapshot(self.directory), before)
+
+    def test_runtime_declarations_limits_and_false_float_score_rejected_prewrite(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            absent = Path(temporary)/'not_created'
+            params = copy.deepcopy(demo.REQUIRED_PARAMETERS)
+            params['reflection_delay_samples'] = True
+            with patch.object(demo, 'parameters', return_value=params), \
+                    patch.object(demo, 'run_experiment') as synth, self.assertRaises(ValueError):
+                demo.generate(absent)
+            synth.assert_not_called()
+            for change in ('limits', 'float_measurements'):
+                altered = copy.deepcopy(self.experiment)
+                if change == 'limits':
+                    altered['limits'] = 'measured real room'
+                else:
+                    altered['float_measurements']['near_exact']['total_reference_mse_per_channel'] = [0.]
+                with patch.object(demo, 'run_experiment', return_value=altered), \
+                        patch.object(demo, 'pcm16_bytes') as encoder, self.assertRaises(ValueError):
+                    demo.generate(absent)
+                encoder.assert_not_called()
+            self.assertFalse(absent.exists())
 
     def test_manifest_tampering_is_rejected_without_repair(self):
         mutations={

@@ -12,6 +12,8 @@ import numpy as np
 
 from codes.chapters.ch00.core.source_history import verify_lock_binding
 from codes.chapters.ch07.examples import audit_upstream_wpe_contracts as audit
+from tests.test_codes_ch07_source_contracts import old_bytes
+import hashlib
 
 REPORT = audit.ROOT/'codes/chapters/ch07/reports/upstream_wpe_contracts.json'
 NEMO = audit.CACHE/'nemo_wpe/nemo/collections/audio'
@@ -145,14 +147,14 @@ class AcquisitionTests(unittest.TestCase):
             audit.run_audit()
 
 
-@unittest.skipUnless(REPORT.exists(), 'Current report not yet generated from frozen source')
+@unittest.skipUnless(REPORT.exists(), 'Historical report unavailable')
 class SavedReportTests(unittest.TestCase):
     def setUp(self):
         self.report = strict_json(REPORT.read_text())
 
     def test_report_binds_real_sources_and_scope(self):
         r = self.report
-        self.assertEqual(r['audit_source_sha256'], audit.sha(audit.__file__))
+        self.assertEqual(r['audit_source_sha256'], hashlib.sha256(old_bytes(audit.__file__)).hexdigest())
         binding = verify_lock_binding(r['lock_sha256'], tuple(audit.SOURCES), current_lock=audit.LOCK)
         self.assertEqual(r['lock_entries'], binding['records'])
         self.assertEqual(r['before'], r['after'])
