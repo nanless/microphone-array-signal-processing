@@ -1,4 +1,4 @@
-"""E02-09--18: geometry, statistics, windows and convolution boundaries.
+"""E02-09--20: geometry, statistics, windows and inverse-model boundaries.
 
 Run ``.venv/bin/python -m codes.chapters.ch02.chapter02_experiments``. Results are
 mathematical examples, not room/device or listening measurements. The module
@@ -24,6 +24,8 @@ from codes.chapters.ch00.core.audio_samples import read_pcm16, room_decay_case
 from codes.chapters.ch03.core.covariance import spatial_covariance
 from codes.chapters.ch02.core.spectral import istft, periodic_hann, stft
 from codes.chapters.ch02.core.stft_convolution import finite_window_example
+from codes.chapters.ch02.core.deconvolution import regularized_inverse, score_impulse_response
+from codes.chapters.ch02.core.stft_consistency import consistency_example
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -358,12 +360,49 @@ def short_fir_convolution() -> dict:
             'limits': 'A delayed half-amplitude reflection has quarter energy before source interactions. The two convolved components overlap and need their cross term; this sparse filter has no T60 model.'}
 
 
+def known_excitation_inverse(root: Path = ROOT) -> dict:
+    """E02-19: exact short control plus current, strictly checked audio results.
+
+    The full four-point circular solution and a known three-tap solution are
+    distinct objectives. Published sweep results come only from complete asset
+    replay; this entry never regenerates or repairs a stale manifest.
+    """
+    from codes.chapters.ch02.examples.generate_sweep_audio import check_assets
+    source = np.array([1., .5])
+    response = np.array([1., .5, .5, .25])
+    truth = np.array([1., 0., .5])
+    rows = []
+    for epsilon in (0., .25):
+        result = regularized_inverse(source, response, n_fft=4, regularization=epsilon)
+        rows.append({'absolute_regularization': epsilon,
+                     'estimated_spectrum_real': result['estimated_spectrum'].real.tolist(),
+                     'estimated_spectrum_imag': result['estimated_spectrum'].imag.tolist(),
+                     'estimated_ir': result['impulse_response'].tolist(),
+                     'parameter_space': result['parameter_space'],
+                     'score': score_impulse_response(result['impulse_response'], truth, support_length=3)})
+    linear = np.array([[1., 0., 0.], [.5, 1., 0.], [0., .5, 1.], [0., 0., .5]])
+    known_support = np.linalg.solve(linear.T@linear+.25*np.eye(3), linear.T@response)
+    directory = Path(root)/'codes/chapters/ch02/sweep_audio'
+    manifest = check_assets(directory)
+    payload = (directory/'MANIFEST.json').read_bytes()
+    return {'short_example': {'source': source.tolist(), 'full_response': response.tolist(),
+                             'true_ir': truth.tolist(), 'fft_length': 4, 'cases': rows,
+                             'known_three_tap_matrix': linear.tolist(),
+                             'known_three_tap_regularized_ir': known_support.tolist(),
+                             'known_three_tap_absolute_regularization': .25},
+            'published_sweep_audio': {'manifest_path': 'codes/chapters/ch02/sweep_audio/MANIFEST.json',
+                                     'manifest_sha256': hashlib.sha256(payload).hexdigest(),
+                                     'strict_complete_replay': True, 'manifest': manifest},
+            'limits': 'Known excitation, not blind room identification. Float filtering precedes independent PCM quantization. Fixed full-IR scoring does not crop, fit a gain or shift a delay.'}
+
+
 def run_exercises() -> dict:
     return {'E02-09': near_far_errors(), 'E02-10': diffuse_integration(),
             'E02-11': rir_decay(), 'E02-12': crb_parameter_changes(),
             'E02-13': four_sample_stft(), 'E02-14': sample_centering(),
             'E02-15': short_fir_convolution(), 'E02-16': finite_window_convolution(),
-            'E02-17': correlated_source_noise(), 'E02-18': window_calibration()}
+            'E02-17': correlated_source_noise(), 'E02-18': window_calibration(),
+            'E02-19': known_excitation_inverse(), 'E02-20': consistency_example()}
 
 
 if __name__ == '__main__':

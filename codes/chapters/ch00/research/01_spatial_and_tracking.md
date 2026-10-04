@@ -1,6 +1,6 @@
 # 空间处理与声源追踪：算法、实现和工业使用条件
 
-基础索引核实日期：2026-09-22；第 1 章相关研究核实于2026-09-30、原归一化报告执行于2026-10-01 UTC，本轮原始资料/源码复查及原插值控制执行于2026-10-04；第 2 章相关资料与原方法提取调用核实于2026-09-30，第 4 章相关原始资料及有限原方法调用核实于 2026-10-01，第 5 章相关研究小节、原论文与限定原函数审计复核于 2026-10-01（历史报告仍保留原执行日期）；第 9 章原始资料与限定接口合同复核于 2026-10-01，保留 2026-09-28 的历史运行记录；DCASE 2026 任务状态及近年候选的后续复核日期见各条 2026-09-29 记录。对应正文第 1～5 章和第 9 章。这里按算法的输入、计算步骤和可检查结果整理源码，既包括语音前端，也包括直接相关的球阵录音与工业噪声源成像。后两类任务的输出不同，不能把声源功率图或 Ambisonics 解码结果当成增强语音。
+基础索引核实日期：2026-09-22；第 1 章相关研究核实于2026-09-30、原归一化报告执行于2026-10-01 UTC，本轮原始资料/源码复查及原插值控制执行于2026-10-04；第 2 章历史资料与原方法提取调用核实于2026-09-30，当前原始资料/源码及限定合同复核于2026-10-04，第 4 章相关原始资料及有限原方法调用核实于 2026-10-01，第 5 章相关研究小节、原论文与限定原函数审计复核于 2026-10-01（历史报告仍保留原执行日期）；第 9 章原始资料与限定接口合同复核于 2026-10-01，保留 2026-09-28 的历史运行记录；DCASE 2026 任务状态及近年候选的后续复核日期见各条 2026-09-29 记录。对应正文第 1～5 章和第 9 章。这里按算法的输入、计算步骤和可检查结果整理源码，既包括语音前端，也包括直接相关的球阵录音与工业噪声源成像。后两类任务的输出不同，不能把声源功率图或 Ambisonics 解码结果当成增强语音。
 
 ## 阅读与复现方式
 
@@ -165,7 +165,9 @@ Acoular 提供另一组需要明确区分的对象。固定提交的 `SteeringVe
 | Acoular `transfer` | `ref` 指定的参考位置或距离 | 比较同一个参考，不直接逐元素减去本书向量 |
 | Acoular `steer_vector` | 上一行参考与 `steer_type` | 独立计算目标响应、输出功率归一化 |
 
-本章的[原方法调用工具](../../ch02/examples/audit_upstream_models.py)已经实际运行，结果见[严格 JSON 报告](../../ch02/reports/upstream_models.json)。它从已有固定源码中用 AST 选取定义，在内存中执行原函数体；不导入整包、不修改外部工作树。报告记录锁表、每个锁条目、Git HEAD、与 Git blob 核对后的源文件 SHA、包含脚手架的脚本 SHA、环境、输入与容差。Acoular 的 NumPy 数值体保留，但移除了 Numba/JIT 装饰器；四种权重直接选取原来的 lambda 字典，未实例化 Traits 管线。这种运行能检查所选方法，不能代表已运行完整工业声学成像系统。
+本章的[原方法调用工具](../../ch02/examples/audit_upstream_models.py)已在2026-10-04重新实际运行，结果见[当前严格 JSON 合同](../../ch02/reports/upstream_model_contracts.json)；[历史报告](../../ch02/reports/upstream_models.json)保留当时的源码与运行身份，不改写。工具从已有固定源码中用 AST 选取定义，在内存中执行原函数体；不导入整包、不修改外部工作树。当前报告记录实际官方origin、固定HEAD、所用文件及许可的Git blob/SHA、前后洁净、完整锁表/状态和工具及公共依赖摘要。所用文件通过身份核验与完整稀疏选集是两栏：当前PRA、pyfar、声速项目选集通过，Acoular与doatools仍是`source_selection_mismatch`，限定方法调用没有把它们升级。
+
+Acoular 的 NumPy 数值体保留，但在内存移除了 Numba/JIT 装饰器；四种权重直接选取原来的 lambda 字典，未实例化 Traits 管线。这种运行能检查所选方法，不能代表已运行完整工业声学成像系统。声速项目只核说明和许可身份，没有执行LabVIEW。报告默认只输出stdout；显式写入前检查普通父链和文件，仓内只允许新的当前合同路径，拒绝旧报告、源码和上游缓存。
 
 小输入固定三麦横坐标为 $[-0.1,0,0.1]$ m，近场源为 $[0.2,0,0]$ m，距离依次为 $[0.3,0.2,0.1]$ m；以中间麦为参考，频率 1 kHz，声速 343 m/s。PRA 使用 $f_s=8$ kHz、`nfft=8` 的第 1 个频点。原 `near` 输出相对相位约为 $[+104.9563°,0,-104.9563°]$，幅度全为 1；本书物理响应的相位正负相反，幅度比为 $[2/3,1,2]$。两种 `precompute` 路线都已运行。另用 $[1,0,0]$ **单位方向**调用 `far`；它不能用近场源坐标代替。上层 DOA 构造与搜索半径的连通性仍只是静态核查。
 
@@ -275,7 +277,7 @@ pyroomacoustics 0.10.0 的 `acoustics.py::rt60_eyring` 返回值可写成 $-K V/
 
 Farina 的原作者预印本 *Simultaneous measurement of impulse response and distortion with a swept-sine technique*，AES 第 108 届会议（2000）、preprint 5093，[原 PDF](https://angelofarina.it/Public/Papers/134-AES00.PDF) §2、印刷页 2～7 解释指数扫频和相配逆滤波，以及线性响应与非线性谐波响应在反卷积后分离到不同时刻的条件。它解决的是测量时的响应分离问题；不能只说“播放扫频就得到房间 RIR”，也不表示任意时变非线性都能精确恢复。pyfar 是维护者的独立通用声学工具，下面的通用正则反卷积接口不是原作者测量流程的完整复现。
 
-正文提到的指数正弦扫频需要配套生成测试信号和反卷积实现。pyfar 补充这一入口：本书已将维护者官方仓库 v0.8.1、提交 `0bfe1e8b7d71ab83edd3ea3b5fab7b28761d114a` 的源码子集取得到 `codes/chapters/ch00/upstream/_downloads/pyfar/`，保留 MIT 许可证与作者声明；它是本地独立研究副本，不是已经并入发布仓库的第三方包。本节已阅读固定源码，没有安装运行扫频测量流程，也没有播放声音或采集真实房间数据。[固定版源码](https://github.com/pyfar/pyfar/tree/0bfe1e8b7d71ab83edd3ea3b5fab7b28761d114a)；[许可证](https://github.com/pyfar/pyfar/blob/0bfe1e8b7d71ab83edd3ea3b5fab7b28761d114a/LICENSE)。
+正文提到的指数正弦扫频需要配套生成测试信号和反卷积实现。pyfar 补充这一入口：本书已将维护者官方仓库 v0.8.1、提交 `0bfe1e8b7d71ab83edd3ea3b5fab7b28761d114a` 的源码子集取得到 `codes/chapters/ch00/upstream/_downloads/pyfar/`，保留 MIT 许可证与作者声明；它是本地独立研究副本，不是已经并入发布仓库的第三方包。本轮已执行下面六个原函数的限定合同，没有安装运行整包测量流程，也没有播放声音或采集真实房间数据。[固定版源码](https://github.com/pyfar/pyfar/tree/0bfe1e8b7d71ab83edd3ea3b5fab7b28761d114a)；[许可证](https://github.com/pyfar/pyfar/blob/0bfe1e8b7d71ab83edd3ea3b5fab7b28761d114a/LICENSE)。
 
 `signals/deterministic.py::exponential_sweep_time` 按指数变化的瞬时频率合成信号，输入包括样本数、起止频率、采样率、幅度和末尾淡出长度。若指定 `sweep_rate`，函数会按每秒倍频程数重新计算长度；不能同时假定传入的 `n_samples` 仍决定时长。默认淡出为 90 个样本，它在 16 kHz 下是 5.625 ms，不是接口说明中以 44.1/48 kHz 为例的约 2 ms。频域合成版本 `exponential_sweep_freq` 采用另一条生成路线，不能假定两者拥有逐样本相同的包络。[固定版扫频实现](https://github.com/pyfar/pyfar/blob/0bfe1e8b7d71ab83edd3ea3b5fab7b28761d114a/pyfar/signals/deterministic.py)。
 
@@ -285,7 +287,15 @@ Farina 的原作者预印本 *Simultaneous measurement of impulse response and d
 
 `deconvolve` 还检查输入输出采样率一致，并默认补齐到两者较长的长度。这个长度规则不保证录音已经保留足够的混响尾，也不说明结果已经消除播放/采集的固定延迟。v0.8.1 源码已对该接口和旧逆滤波函数发出将来弃用的提示，推荐 `RegularizedSpectrumInversion` 与 `convolve`；本书固定版本阅读不把将来的接口变化说成已经验证的迁移。
 
-建议的最小验证先完全在数字域完成：生成扫频，经过已知短 FIR，以线性卷积构造输出，再检查延迟、主抽头与带内传输误差。随后加入带外零能量、观测噪声和截断尾部，分别观察正则偏差及失效。只有这一步通过后，才接到带播放参考、足够尾长、未削波的测量系统；所得响应仍包含未单独校准的扬声器和麦克风传输特性。建议实验尚未执行，不与附录 B 已运行的房间仿真混计。
+**原函数实际调用范围。** 2026-10-04的[当前合同](../../ch02/reports/upstream_model_contracts.json)提取并执行完整`exponential_sweep_time`、`_time_domain_sweep`、`_exponential_sweep`、`regularized_spectrum_inversion`、`_cross_fade`和`deconvolve`六个原函数体。本合同仅用人工`SignalAdapter`运行实单声道、NumPy FFT和`fft_norm='none'`控制，补零、归一化匹配与警告类型也由调用脚手架提供；没有验证其多通道行为。原Signal类、整包导入、原卷积包装、Farina加权逆扫频和非线性谐波分离均未执行。
+
+四点控制使用激励`[1,1/2]`、路径`[1,0,1/2]`和完整输出`[1,1/2,1/2,1/4]`。绝对正则项`epsilon=1/4`时，原单边估计谱为`[27/20,5/12,3/4]`，时域四抽头为`[11/15,3/20,19/60,3/20]`。这与E02-19的逐频参数目标一致；它没有施加已知三抽头支持，不能裁掉第四项后宣称得到三抽头约束解。另三项控制保留固定噪声、观测截尾及DC未受激的结果。谱零只使逐频除法失效，已知有限支持的完整线性系统还需独立检查秩。
+
+原扫频控制采用8kHz、1024点、100～3000Hz、幅度0.2、末尾32点淡出，经过路径`[0.8,0,0,0.25]`保留1027点，FFT为2048点。显式零正则的完整IR最大误差约`1.04e-14`；默认`frequency_range=None`仍得到正则项约`2.2031e-8`，IR最大误差约`9.01e-5`。默认很小的正则也有偏差。这一控制与正文16kHz、32000点的独立音频实验使用不同参数，不能混用数字。
+
+正文[E02-19](../../../../chapters/02_basics-signal-model.md#sec-u-30cdf46bd5)另用本书唯一[数值核](../../ch02/core/deconvolution.py)和[四份数字WAV清单](../../ch02/sweep_audio/MANIFEST.json)比较完整、后路径加噪和截尾，并把浮点与实际PCM逆解分开评分。有限扫频的设计瞬时频率范围不表示DFT带外严格为零；弱能量频点会放大量化及观测误差。全65536点IR误差与已知161点支持内误差是两个诊断，不用真值支持裁掉支持外错误。
+
+建议的设备验证仍未执行：保留播放参考和足够混响尾，核查未削波、同步及标定，再估计路径。所得响应包含未单独校准的扬声器和麦克风传输特性，数字控制不代替这一设备链，也不与附录B已运行的房间仿真混计。
 
 ### 3. STFT 与加权重叠相加重构
 
@@ -295,7 +305,7 @@ Farina 的原作者预印本 *Simultaneous measurement of impulse response and d
 
 完整信号的傅里叶变换满足卷积定理。STFT 先乘有限窗，再按帧移取样，其精确系统表示通常同时涉及跨帧卷积和频带耦合。把每个时频点独立写作“输入谱乘一个传输系数”是乘性传输函数近似（Multiplicative Transfer Function，MTF）；它不能仅由 iSTFT 往返误差小推出。
 
-[Avargel 与 Cohen 2007 作者原文](https://www.ee.technion.ac.il/Sites/People/IsraelCohen/Publications/TASL_May2007.pdf)的 §II、式(7)～(11)、印刷页 1307 将 LTI 系统写成带内与跨带滤波之和。需要几个跨带项与分析/合成窗有关，跨帧滤波长度也受原始冲激响应影响。增加可估参数还会改变有限数据估计误差，不能把“更多跨带滤波”直接写作性能必然更好。
+[Avargel 与 Cohen 2007 作者原文](https://webee.technion.ac.il/Sites/People/IsraelCohen/Publications/TASL_May2007.pdf)的 §II、式(7)～(11)、印刷页 1307 将 LTI 系统写成带内与跨带滤波之和。需要几个跨带项与分析/合成窗有关，跨帧滤波长度也受原始冲激响应影响。增加可估参数还会改变有限数据估计误差，不能把“更多跨带滤波”直接写作性能必然更好。
 
 一个最小反例是延迟超出当前窗的短脉冲：当前帧没有输入脉冲，输出帧却仍可能收到先前帧的延迟响应。同一时频点只做相乘无法产生这段跨帧记忆。应先按时域线性卷积得到参考，再采用完全相同的窗、帧移和边界生成参考 STFT，最后统计近似残差；不要用待检逐点模型生成自己的正确答案。
 
@@ -308,6 +318,14 @@ pyroomacoustics `transform/stft.py::compute_synthesis_window` 用分析窗除以
 工程对照应使用脉冲、常量和不能整除帧移的随机信号，核对输入输出长度、启动延迟和末帧；只用稳态正弦容易漏掉边缘问题。实时系统还要记录每次调用消耗和产出的采样数、是否保留跨块状态、前瞻和结束时如何冲洗尾部。块长不会自动等于整个算法延迟。
 
 PSD 的尺度是另一个独立检查。实信号单边功率谱须将成对的正负频率功率合并，直流和偶数长度的 Nyquist 点各只计一次；幅度谱不能直接按同一倍数解释。SciPy `periodogram` 默认 `detrend='constant'`、`scaling='density'`，功率密度单位是输入单位平方/Hz；默认去均值会删除常量信号的直流项。[NumPy `rfft` 的频点与归一化说明](https://numpy.org/doc/stable/reference/generated/numpy.fft.rfft.html)；[SciPy 官方 periodogram 文档](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.periodogram.html)（2026-09-30 阅读）。本书 E02-08 另用 Parseval 和频带积分核对自己的尺度，不把缺少 SciPy 的本机环境写成已执行外部 PSD 接口。
+
+#### 3.3 修改谱还须满足跨帧一致性
+
+NOLA检查保留样本的窗平方和非零；DC和偶数FFT的Nyquist虚部为零检查每帧是否对应实序列。两项都满足，重叠帧仍可能给共享样本指定不同值。正文[E02-20](../../../../chapters/02_basics-signal-model.md#sec-u-9fc99c5f2f)用四点矩形窗、帧移2和三个居中帧逐项展示这种冲突。
+
+对任意待合成谱先WOLA再重新分析，得到同一分析模型能实现的谱。配套分析、合成对合法波形完美重构时，该操作幂等；是否是正交投影还需要指定内积和最小二乘合成。实谱内部频率的正负配对必须计两次，本例完整DFT距离的单边权重是`[1,2,1]`，不能把未加权rFFT距离称为同一误差。
+
+来源为[Griffin–Lim 1984原文§II，式(4)～(6)，印刷236～237页](https://dub.ucsd.edu/CATbox/Reader/GriffinLimMSTFT.pdf)、[SciPy istft官方Notes](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.istft.html)与[Wisdom等原文§3.1式(3)](https://arxiv.org/pdf/1811.08521)。本书[最小数值核](../../ch02/core/stft_consistency.py)仅执行指定三帧控制，不运行完整幅度重建迭代、神经分离器或SciPy接口。[第8章式(8-31)](../../../../chapters/08_speech-separation.md#sec-u-110769710d)讨论同一约束如何与多源混合一致性区分。
 
 ### 4. 批处理、加权与递推空间协方差
 

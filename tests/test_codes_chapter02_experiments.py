@@ -20,7 +20,7 @@ from codes.chapters.ch02.core.spectral import istft
 class Chapter02ExperimentsTest(unittest.TestCase):
     def test_ids_and_serializable_results(self):
         result = ch2.run_exercises()
-        self.assertEqual(set(result), {f'E02-{number:02}' for number in range(9, 19)})
+        self.assertEqual(set(result), {f'E02-{number:02}' for number in range(9, 21)})
         json.dumps(result, allow_nan=False)
 
     def test_near_field_hand_geometry_and_endfire_counterexample(self):

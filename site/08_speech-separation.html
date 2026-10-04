@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 8 章 · 语音分离 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="ef191c5a48bf"><style>
+<meta name="source-digest" content="50383d27a8cc"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -1054,6 +1054,7 @@ z&=E_\theta(x),\\
 <p>$$P_{\mathcal S}(Y)=\mathcal S\!\left(\mathcal S^{-1}(Y)\right),\qquad
 Y=P_{\mathcal S}(Y)\ \text{时称为STFT一致}.\tag{8-31}$$</p>
 <p>这里的 $\mathcal S^{-1}$表示指定窗和端点约定下的合成，不是任意复谱上的双边逆矩阵。要称为欧氏正交投影，还需使用相应的最小二乘合成；仅有完美重构时，至少可把它视为幂等的分析—合成一致性操作。它不保证多源输出相加为混合，更不保证分出了说话人。</p>
+<p>四点窗的逐样本基础计算见<a href="02_basics-signal-model.html#sec-u-9fc99c5f2f">第2章E02-20</a>：每帧实谱端点合法，重叠位置仍可能给出冲突值；其完整DFT误差也说明单边谱为什么必须计入正负频率配对权重。</p>
 <p>对一致的混合输入，等权混合修正与同一线性STFT一致性操作可交换：常数 $1/N$可移进或移出分析—合成算子。按时频点变化的权重一般不能这样移动，先后次序可能改变结果，因此不能无条件宣称“一次操作同时满足两个约束”。<a href="https://arxiv.org/pdf/1811.08521">原文§3.1、§3.3式(3)、(10)</a>。</p>
 <h3 id="sec-u-817c2e095f">按注册身份提取说话人</h3>
 <p>目标说话人提取（Target Speaker Extraction，TSE）不要求输出所有声源，而是用注册语音、视觉或方向等与目标说话人绑定的条件提取一条音轨。声纹网络可把注册语音变成定长数值向量（嵌入），再让混合语音的各帧使用同一个向量；嵌入可在编码器入口拼接，也可用特征线性调制（Feature-wise Linear Modulation，FiLM）或交叉注意力注入。</p>

@@ -38,6 +38,8 @@
 | 图65数值报告 | `scripts/make_figures.py::fig_weighted_noise` → `codes/chapters/appendix_a/reports/figure65_weighted_noise.json` | 三种已知权重、固定解析误差与三个真实PCM整数E/D | 随图重生；同窗同参考，不拟合增益或延迟，谱线正交只限所声明的稳定整数周期窗 |
 | 图66数值报告 | `scripts/make_figures.py::fig_equal_drr_response` → `codes/chapters/appendix_b/reports/figure66_equal_drr_response.json` | 短反射RIR系数、两频解析功率增益与两个真实PCM整数E/D | 随图重生；RIR DRR与给定源加权反射功率分别命名，完整PCM差含量化，不拟合时延或增益 |
 | STFT卷积源与生成物 | `codes/chapters/ch02/core/stft_convolution.py`、`codes/chapters/ch02/examples/generate_stft_convolution.py` → `codes/chapters/ch02/stft_audio/` | 3个同源、完整尾部、共同增益的数学合成WAV与独立清单 | 浮点/PCM结果分别保留；未改谱往返参考原源，逐帧近似参考完整卷积；`--check`严格只读，不混入主109样本 |
+| 数字扫频辨识源与生成物 | `codes/chapters/ch02/core/deconvolution.py`、`codes/chapters/ch02/examples/generate_sweep_audio.py` → `codes/chapters/ch02/sweep_audio/` | 四个16kHz数学合成单声道WAV，激励32000点、三响应32160点与独立清单 | 共同增益1、完整160点尾；浮点及实际PCM逆解分别保留65536点IR、真值161点支持和支持外能量；五真实源/五普通成员，`--check`严格只读完整重放；不是实房间、谐波分离、盲选参数或工业成绩 |
+| 第2章当前原方法合同 | `codes/chapters/ch02/examples/audit_upstream_models.py` → 显式当前 `reports/upstream_model_contracts.json` | 固定PRA/Acoular/doatools/pyfar限定原体调用与独立控制，声速项目仅说明/许可身份 | 默认stdout只读；所用源码身份与完整选集状态分栏，不升级选集不匹配、原失败或未运行；不改上游及历史`upstream_models.json`，只允许显式安全当前报告或仓外普通路径 |
 | 已知聚焦源与生成物 | `codes/chapters/ch04/core/focus_audio.py`、`codes/chapters/ch04/examples/generate_focus_audio.py` → `codes/chapters/ch04/focus_audio/` | 4个16kHz、32024采样单/四声道数学合成WAV，独立清单 | 已知1/3kHz分量酉置换；2400:29600稳定窗解析/浮点/实际PCM分开；六真实源摘要，PCM按32768解码；不能称为盲DOA、完整CSSM或空间别名消除，`--check`严格只读 |
 | 分布式已知统计源与生成物 | `codes/chapters/ch15/core/distributed.py`、`core/distributed_audio.py`、`examples/generate_distributed_audio.py` → `codes/chapters/ch15/distributed_audio/` | 17个16kHz、32000点单/四声道数学合成WAV、独立清单 | 九真实源、共同增益1；28800点稳窗/800点缺口窗分开解析/浮点/PCM整数E/D；广播改变后用缓存接收系数重组实际权重，旧提案另列；已知速率SRC改变观测统计，不称盲DANSE、完整WOLA、真实网络或工业性能；严格18普通成员，`--check`只读完整回放 |
 | 分布式图与原源合同 | `scripts/make_figures.py::fig_distributed_*` → `ch15/reports/figure70～72*.json`；`ch15/examples/audit_upstream_distributed_contracts.py` → 显式当前报告 | 固定方向、当前广播更新、时钟/缺口与原MATLAB静态/paderwasn助手合同 | 真实求解数与当前输出分开记录；MATLAB未执行，三个原Python助手限定调用不等于完整同步器。原失败和无观测、许可冲突、未运行边界如实保存，不修改上游或历史报告 |
@@ -75,7 +77,7 @@
 | 构建源文件 | `scripts/build_site.py`、`scripts/build_pdf.py`、`scripts/build_markdown_helpers.py`、`scripts/inline_layout.js`、`scripts/heading_aliases.py`、`scripts/legacy_sequential_anchors.json` | 生成站点、合订 HTML 和 PDF，共用Markdown数学/代码边界处理及有限行内排版保护，并保护已发布深链的原语义 | 页面结构或渲染有问题时修改这里；标题改号后逐项校验历史语义锚；共享脚本变化须进入两种产物的源摘要 |
 | PDF 公式第三方资源 | `scripts/vendor/mathjax-3.2.2/` | 固定版本的 MathJax 脚本、按需扩展和字体 | 保留上游许可及来源摘要；更新版本时同步更新构建核验与渲染抽查，不手改压缩脚本或字体 |
 | 插图生成物 | `figures/fig*.png` | 正文插图 | 由绘图脚本生成，不直接编辑 |
-| 站点生成物 | `site/*.html`、`site/research/*.html`、`site/real_audio/`、`site/room_audio/`、`site/gss_audio/`、`site/moving_audio/`、`site/tracking_audio/`、`site/noise_audio/`、`site/scenario_audio/`、`site/weighted_audio/`、`site/response_audio/`、`site/binaural_audio/`、`site/spectral_audio/`、`site/stft_audio/`、`site/geometry_audio/`、`site/focus_audio/`、`site/derivative_audio/`、`site/apa_audio/`、`site/mint_audio/`、`site/mask_audio/`、`site/imaging_audio/`、`site/distributed_audio/` | 16 篇教程、6 篇研究手册页面与真实录音、独立合成实验的媒体副本 | 由 `build_site.py` 生成，不直接编辑 |
+| 站点生成物 | `site/*.html`、`site/research/*.html`、`site/real_audio/`、`site/room_audio/`、`site/gss_audio/`、`site/moving_audio/`、`site/tracking_audio/`、`site/noise_audio/`、`site/scenario_audio/`、`site/weighted_audio/`、`site/response_audio/`、`site/binaural_audio/`、`site/spectral_audio/`、`site/stft_audio/`、`site/sweep_audio/`、`site/geometry_audio/`、`site/focus_audio/`、`site/derivative_audio/`、`site/apa_audio/`、`site/mint_audio/`、`site/mask_audio/`、`site/imaging_audio/`、`site/distributed_audio/` | 16 篇教程、6 篇研究手册页面与真实录音、独立合成实验的媒体副本 | 由 `build_site.py` 生成，不直接编辑 |
 | 合订生成物 | `dist/combined.html`、`dist/microphone-array-tutorial.pdf` | 合订 HTML 和 PDF | 由 `build_pdf.py` 生成，不直接编辑 |
 
 `chapters/` 当前包含 16 篇 Markdown，研究手册另有 6 篇网页源文件，项目当前有 72 张编号图和附录 B 房间题的一张补充结果图。文件数量、图号、章节名称或构建入口发生变化时，要同步
@@ -94,6 +96,7 @@
 .venv/bin/python -m codes.chapters.ch01.examples.generate_binaural_cues  # 独立双耳线索 5 个 WAV；--check 只核对
 .venv/bin/python -m codes.chapters.ch01.examples.generate_spectral_cues  # 独立方向谱形/源谱四WAV；--check严格只读
 .venv/bin/python -m codes.chapters.ch02.examples.generate_stft_convolution  # 独立STFT卷积音频
+.venv/bin/python -m codes.chapters.ch02.examples.generate_sweep_audio  # 数字扫频辨识四WAV；--check严格只读
 .venv/bin/python -m codes.chapters.ch03.examples.generate_geometry_audio  # 独立多频几何音频
 .venv/bin/python -m codes.chapters.ch04.examples.generate_focus_audio  # 独立已知酉聚焦音频
 .venv/bin/python -m codes.chapters.ch05.examples.generate_derivative_audio  # 独立三麦导数约束音频
@@ -672,7 +675,7 @@ MathJax 公式统一缩到明显小于相邻正文；优先拆行、使用 `alig
 | 构建脚本或依赖 | 运行受影响命令及最小回归；检查退出状态和输出文件 | 命令正常结束；输出完整；未引入无关依赖或文件变化 |
 
 当前完整构建的基线是 72 张编号 PNG 和 1 张房间补图、16 个教程页面（首页加15篇）与 6 个研究手册页面，以及 PDF 的 16 个章级、151 个节级、
-697 个子节级书签，共 864 个大纲项。子节级书签来自第 1～11 章、扩展专题Ⅰ/Ⅱ与附录 A/B；各篇独立数量见 `scripts/quality_check.py` 的显式清单。
+700 个子节级书签，共 867 个大纲项。子节级书签来自第 1～11 章、扩展专题Ⅰ/Ⅱ与附录 A/B；各篇独立数量见 `scripts/quality_check.py` 的显式清单。
 质量门禁应从独立的发布清单或显式常量读取这些基线，不能只从待检 Markdown 动态生成“期望值”
 再自我比较。构建后应核对数量和名称。若本次任务改变章节或图表结构，先更新发布清单、README 和本节，
 再按新值验收，不能为了通过检查保留过期数字。

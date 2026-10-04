@@ -66,6 +66,21 @@ class FigureAlgorithmTest(unittest.TestCase):
         self.assertEqual(len(figure.legends), 1)
         self.assertIsNone(axis.get_legend())
 
+    def test_figure5_displays_complete_rir_range_and_keeps_decay_time(self):
+        figure = self.capture_figure(figures.fig_room_acoustics)
+        axis = figure.axes[0]
+        rir = axis.lines[0].get_ydata()
+        low, high = axis.get_ylim()
+        self.assertAlmostEqual(float(np.min(rir)), -2.6486010524467476, places=12)
+        self.assertLess(low, float(np.min(rir)))
+        self.assertGreater(high, float(np.max(rir)))
+        self.assertGreaterEqual(high, 3.1)
+        energy = np.cumsum(rir[::-1]**2)[::-1]
+        crossing = np.flatnonzero(energy <= energy[0] * 1e-6)[0]
+        self.assertEqual(int(crossing), 8222)
+        self.assertTrue(any('514 ms' in item.get_text() and '502 ms' in item.get_text()
+                            for item in figure.axes[1].texts))
+
     def capture_figure(self, builder):
         captured = []
         original_save = figures.save

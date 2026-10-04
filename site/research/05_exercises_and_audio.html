@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>章节代码练习与音频实验 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="ef191c5a48bf"><style>
+<meta name="source-digest" content="50383d27a8cc"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -367,6 +367,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-49-2">49.2 逐频复比与全带功率使用不同权重</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-49-3">49.3 从实际整数复算，而不是用解析功率替代</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-49-4">49.4 边界、代码入口与只读回放</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-8d58828b12">50. 第二章：已知激励怎样估计路径，尾部和量化怎样影响答案</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-50-1">50.1 四点手算与不同支持先验</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-50-2">50.2 四份实际WAV与完整IR评分</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-50-3">50.3 源码与只读复算</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-b8ed441b40">51. 第二章：端点合法的谱为何还可能不一致</a></li>
 </ul>
 <div class="chap"><a href="../01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
 <div class="chap"><a href="../02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
@@ -512,10 +517,15 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-49-2">49.2 逐频复比与全带功率使用不同权重</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-49-3">49.3 从实际整数复算，而不是用解析功率替代</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-49-4">49.4 边界、代码入口与只读回放</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-8d58828b12">50. 第二章：已知激励怎样估计路径，尾部和量化怎样影响答案</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-50-1">50.1 四点手算与不同支持先验</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-50-2">50.2 四份实际WAV与完整IR评分</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-50-3">50.3 源码与只读复算</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-b8ed441b40">51. 第二章：端点合法的谱为何还可能不一致</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="章节代码练习与音频实验" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-c621965c02">章节代码练习与音频实验</h1>
 <p>先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。</p>
-<p>本页索引 333 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
+<p>本页索引 335 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
 <p>E06-07～E06-20 使用无量纲回声模型检查 AEC 的计算与边界，其中 E06-11～20 可用精确答案程序核对。第 15、16 节另提供参数不同的合成音频；试听文件本身不是题目真值。</p>
 <p>第 3～11、13～16、18、21～30、32～34 节对应主清单的 109 个数学合成样本。第 17 节的 18 个房间白噪声合成样本使用独立清单；第 12 节使用另行授权的真实同步录音。第 31 节的 2 份从 PCM 形成定位观测的追踪样本也使用独立清单。第35～39节分别保存双耳、有限窗卷积、多频几何、已知聚焦与导数约束的独立样本。第48节保存分布式协同增强的17个独立样本；第47节保存成像的五个快拍样本。第46节另保存附录B同DRR短RIR的五个独立样本。不同音频的来源和可作的比较不同，试听前先查看各节的条件。</p>
 <p>主音频按章存放，统一由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/examples/generate_audio_samples.py">生成器</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/audio/MANIFEST.json">清单</a>管理。清单记录每组模型、种子、共同导出增益、采样率、通道、帧数、量化误差、运行环境、源文件摘要与逐 WAV 摘要；不把某组的谐波模板套到其他组。PCM16 编码按最近偶数舍入，不加抖动或自动限幅，RMS 对全部通道与采样一起计算。运行生成器并附加 <code>--check</code> 时只在内存重算和读回比对，不重写资产；严格字节核对也比较 Python、NumPy 和平台记录，异机不通过不等于算法错误。生成中断造成清单与 WAV 不一致时，先保留异常目录，再生成到新的空目录核对，通过后更新受影响资产并构建图和网站；不要手改单个生成文件。样本没有真人录音或模型权重，客观读回和浏览器加载不等于正式听测。</p>
@@ -578,8 +588,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_spatial.py">空间练习</a></td>
 </tr>
 <tr>
-<td>第 2 章 E02-09～18</td>
-<td>球面与平面响应、三维 DI、EDC 与时轴、CRB、四点 STFT、样本中心化及完整卷积</td>
+<td>第 2 章 E02-09～20</td>
+<td>球面与平面响应、三维 DI、EDC 与时轴、CRB、四点 STFT、样本中心化及完整卷积、已知激励辨识与跨帧一致性</td>
 <td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch02/chapter02_experiments.py">声学模型逐步实验</a></td>
 </tr>
 <tr>
@@ -1998,7 +2008,7 @@ $$</p>
 所以它不是完整的滤波器组卷积算法。未修改谱能恢复原输入，也不能证明任意逐帧乘法能精确模拟房间传播。
 新<a href="../../figures/fig50_stft_convolution.png">图50</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch02/reports/figure50_stft_convolution.json">数值报告</a>
 显示这些相同时间原点下的六点输出；跨帧与跨带模型来源见
-<a href="https://www.ee.technion.ac.il/Sites/People/IsraelCohen/Publications/TASL_May2007.pdf">Avargel与Cohen2007作者原文§II、式(7)～(11)</a>。</p>
+<a href="https://webee.technion.ac.il/Sites/People/IsraelCohen/Publications/TASL_May2007.pdf">Avargel与Cohen2007作者原文§II、式(7)～(11)</a>。</p>
 <span id="sec-65" class="anchor-alias" aria-hidden="true"></span><span id="362-同一间歇源的三条试听与实际pcm计算" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-36-2">36.2 同一间歇源的三条试听与实际PCM计算</h3>
 <p>四个正弦分量为440、997、1733、2819Hz，各幅度0.06。16kHz下的2秒源在
 <code>[3200,6400)</code>、<code>[11200,15200)</code>、<code>[19200,23200)</code>、<code>[26400,29600)</code> 点间歇出现，每段边缘320点线性淡变。
@@ -3721,6 +3731,159 @@ e^{-\mathrm j2\pi 2000n/24000},\\
 .venv/bin/python -m codes.chapters.ch01.chapter01_experiments
 </code></pre>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch01/examples/generate_spectral_cues.py">生成器</a>绑定数值核、自身、共享 PCM 编解码与 IO 合同四个真实源 SHA，严格接受四个 WAV 和清单五个普通成员。<code>--check</code>在内存重建完整 PCM 字节并核对当前源、参数、环境与所有评分，只读且不修补资产。章节练习先完成这一核验，再输出测量及解析边界检查；该入口自身不是音频生成依赖。</p>
+<span id="sec-129" class="anchor-alias" aria-hidden="true"></span><span id="50-第二章已知激励怎样估计路径尾部和量化怎样影响答案" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-8d58828b12">50. 第二章：已知激励怎样估计路径，尾部和量化怎样影响答案</h2>
+<p>E02-19 的完整推导见<a href="../02_basics-signal-model.html#sec-u-30cdf46bd5">正文题目</a>。E02-15/16 已知路径求输出，本题已知激励和输出求路径；MINT 则已知路径求声源的组合逆补偿。先分清未知量，才可以比较求解和误差。</p>
+<span id="sec-130" class="anchor-alias" aria-hidden="true"></span><span id="501-四点手算与不同支持先验" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-50-1">50.1 四点手算与不同支持先验</h3>
+<p>激励为<code>[1,1/2]</code>，路径为<code>[1,0,1/2]</code>，完整输出为<code>[1,1/2,1/2,1/4]</code>。四点激励谱是<code>[3/2,1−j/2,1/2,1+j/2]</code>，输出逐频等于激励谱乘路径谱。采用绝对正则项<code>epsilon=1/4</code>的逐频平方误差加路径谱幅度惩罚，估计谱为<code>[27/20,5/12,3/4,5/12]</code>；逆变换为四抽头<code>[11/15,3/20,19/60,3/20]</code>。</p>
+<p>如果事先知道路径只有三抽头，完整四行线性Toeplitz目标的同强度正则解是<code>[67/84,3/28,8/21]</code>。它与四抽头解前三项的差为<code>[9/140,−3/70,9/140]</code>；两者的差异来自支持约束，不能裁掉第四项冒充有约束解。</p>
+<p>激励<code>[1,1]</code>的四点DFT在Nyquist为零，直接频点除法缺信息；已知三抽头及完整四点线性输出时，Toeplitz矩阵却满列秩，仍可唯一恢复该路径。可辨识性要跟观测和参数空间一起判断，不能只见一个谱零就给整个有限模型判不可能。</p>
+<span id="sec-131" class="anchor-alias" aria-hidden="true"></span><span id="502-四份实际wav与完整ir评分" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-50-2">50.2 四份实际WAV与完整IR评分</h3>
+<p>16kHz的激励有32000点，数字幅度0.2，设计瞬时频率由100指数上升到6000Hz，双边淡变按<code>min(1,n/160,(31999−n)/160)</code>取样。末样本的瞬时频率约5999.23236Hz，有限DFT不严格限于设计频段。数字路径只有<code>h[0]=0.8</code>和<code>h[160]=0.25</code>非零；输出保留完整160点尾，共32160点。后路径噪声标准差0.003，种子2026100402，仅一次固定样例。截尾条件把32000之后的160点置零，保留相同记录长度。</p>
+<p>播放前调低音量，四条文件保持共同增益1及相同设备设置。试听的是激励和路径输出，不是估计IR；声音听起来接近不能代替路径估计评分。</p>
+<ul>
+<li>已知测试激励：<a href="../sweep_audio/sweep_source.wav">sweep_source.wav</a><audio class="audio-sample" controls preload="none" aria-label="sweep_source.wav" src="../sweep_audio/sweep_source.wav">请使用上方 WAV 链接下载。</audio></li>
+<li>完整传播输出：<a href="../sweep_audio/sweep_complete.wav">sweep_complete.wav</a><audio class="audio-sample" controls preload="none" aria-label="sweep_complete.wav" src="../sweep_audio/sweep_complete.wav">请使用上方 WAV 链接下载。</audio></li>
+<li>输出之后加噪：<a href="../sweep_audio/sweep_noisy.wav">sweep_noisy.wav</a><audio class="audio-sample" controls preload="none" aria-label="sweep_noisy.wav" src="../sweep_audio/sweep_noisy.wav">请使用上方 WAV 链接下载。</audio></li>
+<li>丢失传播尾后补零：<a href="../sweep_audio/sweep_cut.wav">sweep_cut.wav</a><audio class="audio-sample" controls preload="none" aria-label="sweep_cut.wav" src="../sweep_audio/sweep_cut.wav">请使用上方 WAV 链接下载。</audio></li>
+</ul>
+<p>先在浮点域生成卷积和噪声，再把各文件分别量化为PCM16；因此实际PCM激励经过真实路径，不必逐点等于实际PCM完整输出。以下整数功率由实际文件读回，解码除以32768。E是整数样本平方和，D是样本数乘32768²；E/D为整条记录的数字均方，不是声压功率或IR误差。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">实际文件</th>
+<th scope="col" style="text-align: right;">样本数</th>
+<th scope="col" style="text-align: right;">整数平方和E</th>
+<th scope="col" style="text-align: right;">整数分母D</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sweep_source.wav</code></td>
+<td style="text-align: right;">32000</td>
+<td style="text-align: right;">682551316575</td>
+<td style="text-align: right;">34359738368000</td>
+</tr>
+<tr>
+<td><code>sweep_complete.wav</code></td>
+<td style="text-align: right;">32160</td>
+<td style="text-align: right;">479665609386</td>
+<td style="text-align: right;">34531537059840</td>
+</tr>
+<tr>
+<td><code>sweep_noisy.wav</code></td>
+<td style="text-align: right;">32160</td>
+<td style="text-align: right;">479941314935</td>
+<td style="text-align: right;">34531537059840</td>
+</tr>
+<tr>
+<td><code>sweep_cut.wav</code></td>
+<td style="text-align: right;">32160</td>
+<td style="text-align: right;">479595214158</td>
+<td style="text-align: right;">34531537059840</td>
+</tr>
+</tbody>
+</table></div>
+<p>反卷积FFT长度65536，估计没有裁支持、拟合增益或移动时延。已知真实路径补到同样长度，参考能量固定为0.8²+0.25²=0.7025。下表是全部65536点估计误差平方和除以该参考能量；实际PCM列的逆解仍是浮点IR，不能把它叫作整数IR误差。每一域的绝对正则项单独取<code>epsilon=rho*max(|U|²)</code>，不能混用浮点与PCM激励的谱最大值。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">观测条件</th>
+<th scope="col" style="text-align: right;">相对参数rho</th>
+<th scope="col" style="text-align: right;">浮点完整IR相对误差</th>
+<th scope="col" style="text-align: right;">实际PCM完整IR相对误差</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>完整</td>
+<td style="text-align: right;">0e+00</td>
+<td style="text-align: right;">1.3681144e-23</td>
+<td style="text-align: right;">0.42315764</td>
+</tr>
+<tr>
+<td>完整</td>
+<td style="text-align: right;">1e-08</td>
+<td style="text-align: right;">0.13136503</td>
+<td style="text-align: right;">0.13289149</td>
+</tr>
+<tr>
+<td>完整</td>
+<td style="text-align: right;">1e-06</td>
+<td style="text-align: right;">0.21815084</td>
+<td style="text-align: right;">0.21816416</td>
+</tr>
+<tr>
+<td>完整</td>
+<td style="text-align: right;">1e-04</td>
+<td style="text-align: right;">0.24749115</td>
+<td style="text-align: right;">0.24749168</td>
+</tr>
+<tr>
+<td>输出后加噪</td>
+<td style="text-align: right;">0e+00</td>
+<td style="text-align: right;">107437.12</td>
+<td style="text-align: right;">65979.904</td>
+</tr>
+<tr>
+<td>输出后加噪</td>
+<td style="text-align: right;">1e-08</td>
+<td style="text-align: right;">62.86357</td>
+<td style="text-align: right;">66.371779</td>
+</tr>
+<tr>
+<td>输出后加噪</td>
+<td style="text-align: right;">1e-06</td>
+<td style="text-align: right;">0.41263535</td>
+<td style="text-align: right;">0.41394282</td>
+</tr>
+<tr>
+<td>输出后加噪</td>
+<td style="text-align: right;">1e-04</td>
+<td style="text-align: right;">0.24926292</td>
+<td style="text-align: right;">0.24926621</td>
+</tr>
+<tr>
+<td>尾部置零</td>
+<td style="text-align: right;">0e+00</td>
+<td style="text-align: right;">289.65461</td>
+<td style="text-align: right;">300.99159</td>
+</tr>
+<tr>
+<td>尾部置零</td>
+<td style="text-align: right;">1e-08</td>
+<td style="text-align: right;">1.1514012</td>
+<td style="text-align: right;">1.1623974</td>
+</tr>
+<tr>
+<td>尾部置零</td>
+<td style="text-align: right;">1e-06</td>
+<td style="text-align: right;">0.26413575</td>
+<td style="text-align: right;">0.26420721</td>
+</tr>
+<tr>
+<td>尾部置零</td>
+<td style="text-align: right;">1e-04</td>
+<td style="text-align: right;">0.25344926</td>
+<td style="text-align: right;">0.25345023</td>
+</tr>
+</tbody>
+</table></div>
+<p>完整无噪声浮点的零正则结果接近数值零，但独立量化后PCM的相对误差约0.42315764。弱频点的直接除法把微小量化差放大到整条IR；这不是额外的房间反射。输出后加噪和截尾的零正则结果更差，不能用补零恢复丢失观测。</p>
+<p>PCM完整零正则的真值支持<code>[0,161)</code>内相对误差约0.0040808014，支持外相对能量约0.41907684，两项相加才是约0.42315764。只展示两个峰或裁掉支持外区间会掩盖大部分错误。这个161点支持仅用于教学诊断，估计器没有得到该先验；已知支持约束求解是前一小节的另一目标。</p>
+<p>正则参数增大后有噪声的弱频点放大下降，但完整无噪声例同样产生偏差；不能按这一个真值样例宣布通用最优参数。全部24行、支持内外能量、当前五真实源SHA及PCM量化边界保存在<a href="../sweep_audio/MANIFEST.json">独立清单</a>。这套资产不并入主109，不是实房间、设备标定、自然语音、非线性谐波分离或正式听测。</p>
+<span id="sec-132" class="anchor-alias" aria-hidden="true"></span><span id="503-源码与只读复算" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-50-3">50.3 源码与只读复算</h3>
+<p>唯一<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch02/core/deconvolution.py">数值核</a>实现逐频正则逆，真实零频点、平方下溢、分子下溢、分母溢出与无激励状态分别处理。评分对不能表示的能量或比值明确拒绝；资源点数上限不是数学可辨识界。浮点极尺度回归与独立分数解见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_deconvolution.py">数学测试</a>，实际文件/JSON/普通父链及只读不修行为见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_sweep_audio.py">资产测试</a>。</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch02.examples.generate_sweep_audio
+.venv/bin/python -m codes.chapters.ch02.examples.generate_sweep_audio --check
+.venv/bin/python -m codes.chapters.ch02.chapter02_experiments
+</code></pre>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch02/examples/generate_sweep_audio.py">生成器</a>严格只接受四WAV和清单五个普通文件；先核普通父链和完整成员，再在内存完整重放。<code>--check</code>实际读取现有PCM、核字节和整数分母，绑定数值核、生成器、约定、共享PCM与IO五真实源，不写文件，不为失败补摘要。章节入口先执行这一核验，再返回本题手算和真实清单结果。</p>
+<p>固定pyfar六个原函数另有<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch02/reports/upstream_model_contracts.json">当前合同报告</a>和<a href="01_spatial_and_tracking.html#sec-2-4">研究说明</a>；短例也用epsilon=1/4，8kHz/1024点扫频则是独立原接口控制。人工Signal/FFT/补零适配与完整原包未执行的边界分开，不把本书四WAV当成原Farina实验复现。</p>
+<span id="sec-133" class="anchor-alias" aria-hidden="true"></span><span id="51-第二章端点合法的谱为何还可能不一致" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-b8ed441b40">51. 第二章：端点合法的谱为何还可能不一致</h2>
+<p>E02-20 的详细矩阵和逐样本最小二乘见<a href="../02_basics-signal-model.html#sec-u-9fc99c5f2f">正文题目</a>。四点矩形窗、帧移2、保留四点、居中零延拓给出起点−2/0/2三个帧。单边谱分别指定<code>[0,0,0]</code>、<code>[0,2,0]</code>、<code>[0,0,0]</code>，每帧DC/Nyquist为实数，保留区间窗平方和也都为2。</p>
+<p>中帧逆变换为<code>[1,0,−1,0]</code>，但两邻帧全零；它们分别要求共享的物理样本0和2同时为0与±1，故没有波形同时满足这些指定谱。WOLA把两套要求平均为<code>[1/2,0,−1/2,0]</code>，重新分析得到<code>[1/2,−1/2,1/2]</code>、<code>[0,1,0]</code>、<code>[−1/2,−1/2,−1/2]</code>。再次分析—合成不再改变它，说明已回到可实现的谱集合。</p>
+<p>完整DFT误差的单边权重为<code>[1,2,1]</code>；原能量8、重分析能量4、残差能量4，相对残差1/2。内部频点等权一次会丢掉负频率配对，改变最小二乘度量。只有说明配套合成和度量，才可以称正交投影；完美重构本身保证的首先是幂等一致性操作。</p>
+<p>唯一<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch02/core/stft_consistency.py">数值核</a>复用现有STFT，不重写共享实现。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_stft_consistency.py">独立测试</a>按完整DFT与逐样本折中计算；单章入口返回E02-20的三帧、波形和三项能量。该题不用音频文件，两个共享样本的矛盾已经足以复算；它不执行Griffin–Lim幅度迭代，不证明分离质量或说话人身份改善。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

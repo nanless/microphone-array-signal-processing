@@ -1,4 +1,4 @@
-"""Execute selected unchanged methods from three existing pinned checkouts.
+"""Execute selected unchanged methods from four existing pinned checkouts.
 
 AST extraction avoids importing optional SciPy/Traits/Numba packages. Only
 Acoular's JIT decorator is removed in memory; its numerical body is unchanged.
@@ -16,20 +16,36 @@ from datetime import datetime, timezone
 import hashlib
 import json
 import math
-import os
 from pathlib import Path
 import platform
-import subprocess
 import sys
-import tempfile
 from types import SimpleNamespace
 import warnings
 
 import numpy as np
 
+from codes.chapters.ch00.io_contracts import (
+    strict_json_loads, validate_parent_chain, validate_report_destination,
+    write_json_report,
+)
+from codes.chapters.ch00.upstream.fetch_upstreams import (
+    inspect_project, run_git, validate_project,
+)
+
 ROOT = Path(__file__).resolve().parents[4]
 LOCK = ROOT / "codes/chapters/ch00/SOURCES.lock.json"
 CACHE = ROOT / "codes/chapters/ch00/upstream/_downloads"
+STATUS = LOCK.with_name("SOURCE_STATUS.json")
+CURRENT_REPORT = ROOT / "codes/chapters/ch02/reports/upstream_model_contracts.json"
+HISTORICAL_REPORT = CURRENT_REPORT.with_name("upstream_models.json")
+HISTORICAL_PROJECTS = ("pyroomacoustics", "acoular", "doatools")
+HISTORICAL_SCRIPT_REVISION = "82911654fae648f85dea5870b61fc6ad5422be78"
+HISTORICAL_SCRIPT_SHA256 = "86f824d086eb19782eb25e1ff93a1deb841d7bc623162cc1badd619d0625fcf0"
+SOURCE_DEPENDENCIES = (
+    "codes/chapters/ch02/examples/audit_upstream_models.py",
+    "codes/chapters/ch00/io_contracts.py",
+    "codes/chapters/ch00/upstream/fetch_upstreams.py",
+)
 PROJECTS = {
     "pyroomacoustics": {
         "revision": "0dd39f2614b7fc44b2cc63dbe7d60f4641068890",
@@ -45,6 +61,20 @@ PROJECTS = {
         "license": "MIT", "files": (
             "doatools/model/sources.py", "doatools/utils/math.py",
             "doatools/performance/utils.py", "doatools/performance/crb.py", "LICENSE.md")},
+    "pyfar": {
+        "revision": "0bfe1e8b7d71ab83edd3ea3b5fab7b28761d114a",
+        "license": "MIT", "files": (
+            "pyfar/signals/deterministic.py", "pyfar/dsp/dsp.py", "LICENSE", "pyproject.toml")},
+    "speed-of-sound-in-air": {
+        "revision": "5c7e6652cf2fd7b4c52e83d8fa3782b3c56e61de",
+        "license": "GPL-3.0", "files": ("ReadMe.txt", "LICENSE")},
+}
+ORIGINS = {
+    "pyroomacoustics": "https://github.com/LCAV/pyroomacoustics.git",
+    "acoular": "https://github.com/acoular/acoular.git",
+    "doatools": "https://github.com/morriswmz/doatools.py.git",
+    "pyfar": "https://github.com/pyfar/pyfar.git",
+    "speed-of-sound-in-air": "https://github.com/RobertoGavioso/Speed-of-sound-in-air.git",
 }
 ABS_TOLERANCE = 1e-12
 ACOULAR_ABS_TOLERANCE = 2e-6  # Original kernel rounds its phase to float32.
@@ -54,43 +84,96 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _git(checkout: Path, *arguments: str) -> bytes:
-    return subprocess.run(["git", *arguments], cwd=checkout, capture_output=True,
-                          check=True, timeout=60).stdout
+def ordinary_file(path: Path) -> Path:
+    path = validate_parent_chain(path)
+    if not path.is_file():
+        raise ValueError(f"An existing ordinary file is required: {path}")
+    return path
 
 
-def verify_sources(cache: Path = CACHE, lock_path: Path = LOCK) -> dict:
-    """Reject changed locks, wrong HEADs, dirty trees and changed source bytes."""
-    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+def report_target(path: Path) -> Path:
+    target = validate_report_destination(path, forbidden_roots=(CACHE, LOCK, STATUS,
+        HISTORICAL_REPORT, ROOT / "codes/chapters/ch00/source_snapshots"))
+    if target.resolve().is_relative_to(ROOT.resolve()) and target.resolve() != CURRENT_REPORT.resolve():
+        raise ValueError("Only the new current model-contract report may be written inside the repository")
+    return target
+
+
+def _git(checkout: Path, *arguments: str) -> str:
+    return run_git(list(arguments), cwd=checkout)
+
+
+def verify_sources(cache: Path = CACHE, lock_path: Path = LOCK,
+                   status_path: Path = STATUS) -> dict:
+    """Verify used files; report the full selection separately, without repairing it."""
+    lock_raw = ordinary_file(lock_path).read_bytes()
+    status_raw = ordinary_file(status_path).read_bytes()
+    lock, status = strict_json_loads(lock_raw), strict_json_loads(status_raw)
+    lock_sha = hashlib.sha256(lock_raw).hexdigest()
+    for document in (lock, status):
+        if (type(document) is not dict or type(document.get("schema_version")) is not int
+                or document["schema_version"] != 1 or type(document.get("projects")) is not list
+                or any(type(row) is not dict for row in document["projects"])):
+            raise ValueError("Source documents require schema 1 with object project records")
+        ids = [row.get("id") for row in document["projects"]]
+        if any(type(name) is not str for name in ids) or len(set(ids)) != len(ids):
+            raise ValueError("Source project records require unique string IDs")
+    if status.get("lock_sha256") != lock_sha:
+        raise ValueError("Current source status must bind the actual current lock bytes")
     result = {}
     for project, spec in PROJECTS.items():
-        checkout = cache / project
-        if not (checkout / ".git").exists():
-            raise FileNotFoundError(f"Existing locked checkout required: {checkout}")
+        checkout = validate_parent_chain(cache / project)
+        validate_parent_chain(checkout / ".git")
+        if not checkout.is_dir() or not (checkout / ".git").is_dir():
+            raise ValueError(f"Existing independent ordinary checkout required: {checkout}")
         entries = [p for p in lock["projects"] if p["id"] == project]
         if len(entries) != 1:
             raise ValueError(f"Expected one lock entry for {project}")
         entry = entries[0]
+        validate_project(entry)
         if (entry["revision"], entry["license"]) != (spec["revision"], spec["license"]):
             raise ValueError(f"Review changed source lock before running: {project}")
-        head = _git(checkout, "rev-parse", "HEAD").decode().strip()
+        if entry["url"] != ORIGINS[project]:
+            raise ValueError(f"Unexpected official URL in source lock: {project}")
+        if _git(checkout, "rev-parse", "--show-toplevel") != str(checkout.resolve()):
+            raise ValueError(f"Checkout must be its own Git top level: {project}")
+        origin = _git(checkout, "remote", "get-url", "origin")
+        if origin != ORIGINS[project]:
+            raise ValueError(f"Unexpected actual upstream origin: {project}")
+        head = _git(checkout, "rev-parse", "HEAD")
         if head != spec["revision"]:
             raise ValueError(f"Unexpected upstream HEAD: {project}: {head}")
         if _git(checkout, "status", "--porcelain", "--untracked-files=all"):
             raise ValueError(f"Upstream worktree is not clean: {project}")
-        hashes = {}
+        hashes, files = {}, {}
         for relative in spec["files"]:
-            actual = (checkout / relative).read_bytes()
-            if actual != _git(checkout, "show", f"{head}:{relative}"):
+            path = ordinary_file(checkout / relative)
+            actual = path.read_bytes()
+            blob = _git(checkout, "rev-parse", f"{head}:{relative}")
+            actual_blob = _git(checkout, "hash-object", "--", str(path))
+            if actual_blob != blob:
                 raise ValueError(f"Source bytes differ from Git blob: {project}/{relative}")
             hashes[relative] = hashlib.sha256(actual).hexdigest()
+            files[relative] = {"sha256": hashes[relative], "bytes": len(actual),
+                               "head_blob": blob, "actual_blob": actual_blob}
+        states = [row for row in status["projects"] if row["id"] == project]
+        if len(states) != 1 or states[0].get("revision") != head:
+            raise ValueError(f"Current acquisition record must bind fixed revision: {project}")
+        if (type(states[0].get("status")) is not str
+                or type(states[0].get("source_selection_verified")) is not bool):
+            raise ValueError(f"Acquisition state must retain status and boolean selection: {project}")
+        live = inspect_project(entry, cache)
         result[project] = {"url": entry["url"], "revision": head,
+                           "actual_origin": origin, "used_source_identity_verified": True,
+                           "used_file_identity": files, "lock_entry": entry,
+                           "recorded_acquisition": states[0], "live_acquisition_scope": live,
                            "release": entry.get("release"), "license": entry["license"],
                            "worktree_clean": True, "source_sha256": hashes,
                            "lock_entry_sha256": hashlib.sha256(json.dumps(
                                entry, sort_keys=True, ensure_ascii=False,
                                separators=(",", ":")).encode()).hexdigest()}
-    return {"lock_sha256": sha256(lock_path), "projects": result}
+    return {"lock_sha256": lock_sha, "status_sha256": hashlib.sha256(status_raw).hexdigest(),
+            "projects": result}
 
 
 def extract(path: Path, names: tuple[str, ...], namespace: dict, *,
@@ -313,18 +396,185 @@ def audit_crb(cache: Path, extractions: list) -> dict:
             "invalid_P": rejection, "full_ArrayDesign_or_DOA_estimator_executed": False}
 
 
+class SignalAdapter:
+    """Own real Signal/FFT scaffold: only normalization 'none' is supported.
+
+    This is deliberately not pyfar's Signal class or its arithmetic machinery.
+    The audited controls use one real channel and explicit inverse-FFT length.
+    """
+    def __init__(self, time, sampling_rate, fft_norm="none", comment=""):
+        if fft_norm != "none" or np.iscomplexobj(time):
+            raise ValueError("The adapter supports only real normalization-none controls")
+        self.time = np.atleast_2d(np.array(time, dtype=float))
+        self.sampling_rate, self.fft_norm, self.comment = sampling_rate, fft_norm, comment
+
+    @property
+    def n_samples(self):
+        return self.time.shape[-1]
+
+    @property
+    def n_bins(self):
+        return self.n_samples // 2 + 1
+
+    @property
+    def freq(self):
+        return np.fft.rfft(self.time)
+
+    @freq.setter
+    def freq(self, values):
+        self.time = np.fft.irfft(values, n=self.n_samples)
+
+    @property
+    def freq_raw(self):
+        return self.freq
+
+    def copy(self):
+        return copy.deepcopy(self)
+
+    def find_nearest_frequency(self, values):
+        frequencies = np.fft.rfftfreq(self.n_samples, 1 / self.sampling_rate)
+        return np.argmin(abs(frequencies[:, None] - np.asarray(values)), axis=0)
+
+    def __mul__(self, other):
+        if self.n_samples != other.n_samples or self.sampling_rate != other.sampling_rate:
+            raise ValueError("Adapter multiplication requires identical lengths and rates")
+        result = self.copy()
+        result.freq = self.freq * other.freq
+        return result
+
+
+def adapter_pad_zeros(signal, samples):
+    return SignalAdapter(np.pad(signal.time, ((0, 0), (0, int(samples)))),
+                         signal.sampling_rate, signal.fft_norm, signal.comment)
+
+
+def adapter_match_norm(first, second, division=False):
+    if first != "none" or second != "none" or not division:
+        raise ValueError("Only the audited normalization-none division is supported")
+    return "none"
+
+
+class AdapterDeprecationWarning(UserWarning):
+    """Own warning class supplied to original functions; not pyfar's class."""
+
+
+def audit_pyfar(cache: Path, extractions: list) -> dict:
+    base = cache / "pyfar/pyfar"
+    namespace = {"np": np, "warnings": warnings,
+        "PyfarDeprecationWarning": AdapterDeprecationWarning,
+        "pyfar": SimpleNamespace(Signal=SignalAdapter,
+            dsp=SimpleNamespace(pad_zeros=adapter_pad_zeros),
+            classes=SimpleNamespace(audio=SimpleNamespace(_match_fft_norm=adapter_match_norm)))}
+    for relative, names in (
+        ("signals/deterministic.py", ("exponential_sweep_time", "_time_domain_sweep", "_exponential_sweep")),
+        ("dsp/dsp.py", ("regularized_spectrum_inversion", "_cross_fade", "deconvolve")),
+    ):
+        extractions.extend(extract(base / relative, names, namespace))
+    # Independent four-point DFT coefficients, including DC and Nyquist.
+    x, h, y = [1., .5], [1., 0., .5], [1., .5, .5, .25]
+    X, H, noise = np.array([1.5, 1-.5j, .5]), np.array([1.5, .5, 1.5]), np.array([.1, -.1j, -.1])
+    epsilon = .25
+    cases = (
+        ("noiseless_regularized", x, y, H * abs(X)**2 / (abs(X)**2 + epsilon)),
+        ("noise_regularized", x, [1., .6, .5, .25], (H*X + noise)*X.conj() / (abs(X)**2 + epsilon)),
+        ("truncated_output", x, y[:2], abs(X)**2 / (abs(X)**2 + epsilon)),
+        ("unexcited_DC", [1., -1.], [1., -1., .5, -.5],
+         np.array([0., .5*2/(2+epsilon), 1.5*4/(4+epsilon)])),
+    )
+    rows = []
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        for name, xx, yy, expected in cases:
+            result = namespace["deconvolve"](SignalAdapter(yy, 8000), SignalAdapter(xx, 8000),
+                                             fft_length=4, regu_final=epsilon)
+            dc, z, nyquist = expected
+            manual_waveform = np.array([(dc.real+nyquist.real+2*z.real)/4,
+                (dc.real-nyquist.real-2*z.imag)/4, (dc.real+nyquist.real-2*z.real)/4,
+                (dc.real-nyquist.real+2*z.imag)/4])
+            assert_close(result.freq[0], expected)
+            assert_close(result.time[0], manual_waveform)
+            rows.append({"name": name, "input": xx, "output": yy, "epsilon": epsilon,
+                         "fft_length": 4, "response": complex_values(result.freq[0]),
+                         "expected_response": complex_values(expected),
+                         "waveform": result.time[0].tolist(), "manual_waveform": manual_waveform.tolist()})
+        fs, samples, fft_length = 8000, 1024, 2048
+        sweep = namespace["exponential_sweep_time"](samples, [100, 3000], sampling_rate=fs,
+                                                   n_fade_out=32, amplitude=.2)
+        t = np.arange(samples)/fs
+        scale = (samples/fs)/math.log(30)
+        reference_sweep = .2*np.sin(2*math.pi*100*scale*(np.exp(t/scale)-1))
+        reference_sweep[-32:] *= np.cos(np.linspace(0, math.pi/2, 32))**2
+        assert_close(sweep.time[0], reference_sweep)
+        fir = np.array([.8, 0., 0., .25])
+        output = np.convolve(sweep.time[0], fir)
+        reference_fir = np.pad(fir, (0, fft_length-len(fir)))
+        exact = namespace["deconvolve"](SignalAdapter(output, fs), sweep,
+                                        fft_length=fft_length, regu_final=0.)
+        default = namespace["deconvolve"](SignalAdapter(output, fs), sweep, fft_length=fft_length)
+        spectrum = np.fft.rfft(reference_sweep, fft_length)
+        default_epsilon = float(1e-10*np.max(abs(spectrum)**2))
+        expected_default = np.fft.rfft(reference_fir)*abs(spectrum)**2/(abs(spectrum)**2+default_epsilon)
+        assert_close(exact.time[0], reference_fir, atol=2e-12)
+        assert_close(default.freq[0], expected_default, atol=2e-12)
+        rows.append({"name": "digital_ESS_full_support", "fs_hz": fs, "sweep_samples": samples,
+            "record_samples": len(output), "fft_length": fft_length, "frequency_range_hz": [100, 3000],
+            "amplitude": .2, "n_fade_out": 32, "fir": fir.tolist(),
+            "sweep_vs_independent_max_error": float(np.max(abs(sweep.time[0]-reference_sweep))),
+            "unregularized_full_fir_max_error": float(np.max(abs(exact.time[0]-reference_fir))),
+            "default_epsilon": default_epsilon,
+            "default_fir_max_error": float(np.max(abs(default.time[0]-reference_fir))),
+            "minimum_input_spectral_power": float(np.min(abs(spectrum)**2)),
+            "input_float64_sha256": hashlib.sha256(sweep.time.astype('<f8').tobytes()).hexdigest(),
+            "output_float64_sha256": hashlib.sha256(output.astype('<f8').tobytes()).hexdigest(),
+            "relation_to_chapter_audio": "Independent 8-kHz/1024-point contract; not the 16-kHz chapter audio experiment"})
+    return {"scope": "Six complete unchanged original function bodies with own minimal real Signal/FFT/pad_zeros/normalization-none adapters",
+        "short_control_fir": h, "short_control_epsilon": epsilon, "cases": rows,
+        "warnings": [{"category": type(w.message).__name__, "message": str(w.message)} for w in caught],
+        "zero_bin_boundary": "A zero DFT bin blocks pointwise division at that bin; it does not prove nonidentifiability of known-length FIR from complete linear output",
+        "not_executed": ["pyfar package import", "original Signal class, arithmetic and FFT normalization machinery",
+            "original pad_zeros implementation", "original warning class", "original convolve wrapper",
+            "Farina weighted reversed-sweep inverse", "nonlinear harmonic separation", "playback or capture",
+            "equipment, calibration or ISO measurement"]}
+
+
+def source_dependencies() -> dict:
+    return {relative: sha256(ordinary_file(ROOT / relative)) for relative in SOURCE_DEPENDENCIES}
+
+
 def run_audit(cache: Path = CACHE) -> dict:
+    started = datetime.now(timezone.utc).isoformat()
+    dependencies = source_dependencies()
     sources = verify_sources(cache)
     extractions = []
     results = {"pyroomacoustics": audit_pra(cache, extractions),
                "acoular": audit_acoular(cache, extractions),
-               "doatools": audit_crb(cache, extractions)}
-    if verify_sources(cache) != sources:
+               "doatools": audit_crb(cache, extractions),
+               "pyfar": audit_pyfar(cache, extractions)}
+    sources_after = verify_sources(cache)
+    if sources_after != sources:
         raise ValueError("Source or lock changed while the audit ran")
-    report = {"schema_version": 1, "executed_at_utc": datetime.now(timezone.utc).isoformat(),
+    if source_dependencies() != dependencies:
+        raise ValueError("Audit or shared source changed while the audit ran")
+    report = {"schema_version": 2, "executed_at_utc": datetime.now(timezone.utc).isoformat(),
               "audit_source": str(Path(__file__).resolve().relative_to(ROOT)),
               "audit_source_sha256": sha256(Path(__file__)), "sources": sources,
+              "source_sha256": dependencies,
+              "source_verification": {"started_at_utc": started,
+                  "before_after_equal": True,
+                  "canonical_sources_before_sha256": hashlib.sha256(json.dumps(
+                      sources, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()).hexdigest(),
+                  "canonical_sources_after_sha256": hashlib.sha256(json.dumps(
+                      sources_after, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()).hexdigest(),
+                  "shared_dependencies_before_after_equal": True,
+                  "scope": "Actual origin/HEAD/used blobs/licences/clean tree, complete live selection, lock/status bytes and local helper SHA rechecked after execution"},
               "scope": "original-method AST extraction and execution; not full-package validation",
+              "method_scopes": {
+                  "pyroomacoustics": "Original speed/ModeVector/Eyring/RT60 functions with own grid; no room simulation or upper DOA constructor",
+                  "acoular": "Original transfer kernel body with JIT decorator removed and four dictionary lambdas; no Traits/Numba pipeline",
+                  "doatools": "Original source/derivative/projection/CRB definitions with own ideal ArrayAdapter; no full ArrayDesign or estimator",
+                  "pyfar": results["pyfar"]["scope"],
+                  "speed-of-sound-in-air": "ReadMe/LICENSE identity only; no VI, executable or LabVIEW runtime executed"},
+              "selection_status_boundary": "Full acquisition selection is independent of used-file identity and numerical behavior; source_selection_mismatch is not upgraded",
               "environment": {"python": sys.version, "executable": sys.executable,
                               "numpy": np.__version__, "platform": platform.platform()},
               "tolerances": {"default_absolute": ABS_TOLERANCE, "default_relative": 0.,
@@ -332,38 +582,32 @@ def run_audit(cache: Path = CACHE) -> dict:
                              "rt60_absolute_s": 1e-10, "crb_absolute": 1e-14, "crb_relative": 1e-12},
               "scaffold": {"upstream_modified": False, "upstream_imports_executed": False,
                            "extractions": extractions,
-                           "own_adapters": ["SimpleNamespace grid xyz", "ArrayAdapter.steering_matrix"],
+                           "own_adapters": ["SimpleNamespace grid xyz", "ArrayAdapter.steering_matrix",
+                                            "SignalAdapter with NumPy real FFT", "adapter_pad_zeros",
+                                            "adapter_match_norm", "AdapterDeprecationWarning"],
                            "runtime_not_required": ["SciPy nonlinear fit", "Traits", "Numba JIT"]},
               "all_expected_behaviors_observed": True, "results": results,
               "not_executed": ["full-package import", "room generation", "upper DOA pipeline",
-                               "pyfar deconvolution", "HARK complex spectrum loading",
+                               "original pyfar Signal and package pipeline", "HARK complex spectrum loading",
                                "LabVIEW humid-air model", "equipment or ISO acceptance"]}
-    json.dumps(report, allow_nan=False)  # Refuse non-standard NaN/Infinity JSON.
+    strict_json_loads(json.dumps(report, allow_nan=False))
     return report
 
 
-def main() -> None:
+def main(argv=None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--report", type=Path, help="Write strict JSON report atomically")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
+    target = report_target(args.report) if args.report is not None else None
     report = run_audit()
-    report["command"] = [sys.executable, "-m", "codes.chapters.ch02.examples.audit_upstream_models", *sys.argv[1:]]
+    report["command"] = [sys.executable, "-m", "codes.chapters.ch02.examples.audit_upstream_models", *(sys.argv[1:] if argv is None else argv)]
     text = json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
     if args.report is None:
         print(text, end="")
     else:
-        args.report.parent.mkdir(parents=True, exist_ok=True)
-        temporary = None
-        try:
-            with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=args.report.parent,
-                                             prefix=".upstream-models-", suffix=".tmp", delete=False) as out:
-                temporary = Path(out.name)
-                out.write(text)
-            os.replace(temporary, args.report)
-        finally:
-            if temporary is not None:
-                temporary.unlink(missing_ok=True)
-        print(f"Verified extracted methods; report: {args.report}")
+        # Recheck the caller policy and shared ordinary-path contract before replace.
+        write_json_report(report_target(target), report, forbidden_roots=(CACHE, LOCK, STATUS, HISTORICAL_REPORT))
+        print(f"Verified extracted methods; report: {target}")
 
 
 if __name__ == "__main__":

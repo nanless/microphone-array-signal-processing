@@ -458,6 +458,7 @@ class ResearchBuildTest(unittest.TestCase):
                                              (output / "binaural_audio").resolve(),
                                              (output / "spectral_audio").resolve(),
                                              (output / "stft_audio").resolve(),
+                                             (output / "sweep_audio").resolve(),
                                              (output / "geometry_audio").resolve(),
                                              (output / "focus_audio").resolve(),
                                              (output / "derivative_audio").resolve(),
@@ -470,7 +471,7 @@ class ResearchBuildTest(unittest.TestCase):
                                              (output / "response_audio").resolve(),
                                              (output / "distributed_audio").resolve()}:
                             owner = {"gss_audio": "ch08", "moving_audio": "ch09",
-                                     "tracking_audio": "ch09", "binaural_audio": "ch01", "spectral_audio": "ch01", "stft_audio": "ch02",
+                                     "tracking_audio": "ch09", "binaural_audio": "ch01", "spectral_audio": "ch01", "stft_audio": "ch02", "sweep_audio": "ch02",
                                      "geometry_audio": "ch03", "focus_audio": "ch04", "derivative_audio": "ch05",
                                      "apa_audio": "ch06", "mint_audio": "ch07", "mask_audio": "ch08",
                                      "noise_audio": "ch10", "scenario_audio": "ch11",

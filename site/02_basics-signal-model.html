@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 2 章 · 声音到达阵列时发生了什么 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="ef191c5a48bf"><style>
+<meta name="source-digest" content="50383d27a8cc"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -291,6 +291,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-59870d19e1">E02-16：FFT 补零后，逐帧乘法就等于完整卷积吗？</a></li>
 <li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-f997371ee0">E02-17：噪声为空间白噪声，为何仍看不到源特征值？</a></li>
 <li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-aef676ca20">E02-18：Hann 窗校正幅度和校正功率，为什么不能用同一个因子？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-30cdf46bd5">E02-19：已知测试信号，怎样反推未知的路径？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-14a48a3357">数字扫频实验：完整尾部、噪声和量化分别影响什么</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-9fc99c5f2f">E02-20：每帧都能逆变换，为何仍不是一致的 STFT？</a></li>
 </ul>
 <div class="chap"><a href="03_array-geometry.html">第 3 章 · 阵列几何形态</a></div>
 <div class="chap"><a href="04_doa-estimation.html">第 4 章 · 声源定位（DOA 估计）</a></div>
@@ -363,6 +366,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-59870d19e1">E02-16：FFT 补零后，逐帧乘法就等于完整卷积吗？</a></li>
 <li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-f997371ee0">E02-17：噪声为空间白噪声，为何仍看不到源特征值？</a></li>
 <li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-aef676ca20">E02-18：Hann 窗校正幅度和校正功率，为什么不能用同一个因子？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-30cdf46bd5">E02-19：已知测试信号，怎样反推未知的路径？</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-14a48a3357">数字扫频实验：完整尾部、噪声和量化分别影响什么</a></li>
+<li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-9fc99c5f2f">E02-20：每帧都能逆变换，为何仍不是一致的 STFT？</a></li>
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是教程正文第 2 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。</p>
@@ -618,7 +624,7 @@ T_{60}&=\frac{24\ln10}{c}\frac VA,\\
 <h3 id="sec-2-4-4">2.4.4 仿真与实测房间脉冲响应</h3>
 <p><strong>仿真怎么造混响</strong>：镜像法（Image Method，镜像声源法）把墙面反射等效为镜像声源的叠加，算法定义见 <a href="https://doi.org/10.1121/1.382599" title="citation">Allen 与 Berkley 1979 原论文</a>。开源库 pyroomacoustics 可生成给定房间和阵列的 RIR；本书固定链接到 <a href="https://pypi.org/project/pyroomacoustics/0.10.0/" title="citation">pyroomacoustics 0.10.0 的 PyPI 发布页</a>，示例接口以该版本为准。不同版本的接口、默认值或依赖可能变化，复现时应记录实际安装版本。</p>
 <p><strong>反过来，怎么实测一个房间的混响</strong>：拍手或爆破气球后观察衰减只能作粗略估计。更可控的做法是<strong>指数正弦扫频（Exponential Sine Sweep，ESS）</strong>：播放频率指数上升的已知扫频，录音后用相应逆滤波器反卷积得到 RIR，方法见 <a href="https://www.angelofarina.it/Public/papers/134-AES00.PDF" title="citation">Farina 2000，AES Convention Paper 5093，原作者全文 §2</a>；<a href="https://aes.org/publications/elibrary-page/?id=10211" title="citation">AES 正式出版记录</a>给出论文书目信息。</p>
-<p>在系统近似时不变、没有削波且扫频长度足够时，ESS 可将若干谐波失真成分与线性 RIR 在反卷积结果中分开。环境噪声、削波、时变非线性和播放/录音链路的频响仍会影响测量。</p>
+<p>在系统近似时不变、没有削波且扫频长度足够时，ESS 可将若干谐波失真成分与线性 RIR 在反卷积结果中分开。环境噪声、削波、时变非线性和播放／录音链路的频响仍会影响测量。E02-19 从四点数字例子展开反卷积的目标、正则偏差和完整尾部，再用已知 FIR 与扫频音频核对；数字控制不替代一次实际测量。</p>
 <p>无法播放测试音时，也可研究从普通语音盲估房间参数，但不同参数需要不同模型。两麦相干函数可用于估计直达－弥散比，不能仅凭一个比值直接得到 $T_{60}$；后者还需要衰减形态或混响统计模型。</p>
 <p>镜像仿真也要区分能量吸收系数 $\alpha$ 与理想幅度反射系数 $\sqrt{1-\alpha}$。由赛宾公式反求的材料参数与反射阶数只是仿真配置，生成后仍要测量衰减曲线。ESS 实测则应保留播放参考、扫频频带、录音尾长、噪声底和反卷积设置；本书合成 RIR 不能替代一次实际测量。固定版本的源码入口、声速与测量接口差异见<a href="research/01_spatial_and_tracking.html">空间处理研究手册</a>。手册也提供 2025 年高精度声速模型的研究导航；本章手算仍统一采用 $c\approx343$ m/s，不能不记录环境参数就把另一个模型值代入比较。</p>
 <p>房间传播模型解释了麦克风信号的组成。算法实现还需要把连续波形组织成 STFT、快拍和协方差矩阵。</p>
@@ -638,7 +644,7 @@ f_k&=\frac{kf_s}{N},\qquad 0\le k\le\lfloor N/2\rfloor\text{。}
 <p>STFT 把宽带语音分解为一组<strong>近似窄带</strong>问题。时延 $\tau$ 对应的相位旋转 $2\pi f_k\tau$ 随频率变化，因此第 $k$ 个频点要使用自己的 $\vec a(f_k,\theta)$。</p>
 <p>对直达场，在每个时频点写 $\vec{x}(f_k,\ell)\approx\vec{a}(f_k,\theta)s(f_k,\ell)+\vec n(f_k,\ell)$ 仍需窄带近似。加入房间反射后，乘法模型的通道因子应来自房间传递函数，不能继续把它解释成只有几何时延的单位模长导向。</p>
 <p>完整傅里叶变换把时不变卷积精确变成乘法；有限窗的 STFT 则一般还包含跨帧与跨频带项。先卷积再截窗，与先截窗再卷积，可能把同一个输入样本乘上不同窗系数，也可能遗漏窗外的输入贡献。省略这些项后，才得到当前帧的逐频点乘法近似；是否采用直达导向还是含反射的相对传递函数，是另一项模型选择。E02-16 用完整时域卷积、四点帧内循环卷积和补零后的帧内线性卷积逐样本比较。</p>
-<p>长房间响应、过短窗或频率变化过快时误差更大。第 4、5 章逐频点处理时，需把窗长与有效冲激响应长度纳入验证。跨帧项与跨带项分别表示时间帧之间、频率通道之间的耦合，不能混为一项；推导可参阅 <a href="https://www.ee.technion.ac.il/Sites/People/IsraelCohen/Publications/TASL_May2007.pdf" title="citation">Avargel 与 Cohen 2007，§II，式(7)～(11)</a>。</p>
+<p>长房间响应、过短窗或频率变化过快时误差更大。第 4、5 章逐频点处理时，需把窗长与有效冲激响应长度纳入验证。跨帧项与跨带项分别表示时间帧之间、频率通道之间的耦合，不能混为一项；推导可参阅 <a href="https://webee.technion.ac.il/Sites/People/IsraelCohen/Publications/TASL_May2007.pdf" title="citation">Avargel 与 Cohen 2007，印刷 p.1307、§II，式(7)～(11)</a>。</p>
 <p><strong>STFT 分帧数字例子</strong>：阵列配置为 4 麦常规小间距，采样率 16 kHz、窗长 32 ms、帧移 8 ms。</p>
 <ul>
 <li>窗长为 $16000\times0.032=512$ 点，FFT 常用 512 点。</li>
@@ -706,7 +712,7 @@ D_g[n]&=\sum_\ell g^2[q_\ell],\\
 <p>这里 $q_\ell$ 是样本 $n$ 相对于第 $\ell$ 帧起点的位置；窗外的 $g$ 与 $z$ 取零。分子因此是 $x_m[n]D_g[n]$，只有分母非零才能恢复该样本。这是非零重叠相加（Nonzero Overlap Add，NOLA）条件；采用这个逐点归一化时，并不要求分母处处是同一常数。实际还须覆盖每个要保留的样本，见 <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.check_NOLA.html" title="citation">SciPy NOLA 与重构说明</a>（2026-09-28 核实）。</p>
 <p>数学上 $D_g[n]>0$ 与数值上可安全相除是两件事。本书 <code>istft</code> 默认拒绝 $D_g[n]\le10^{-12}$，参数名为 <code>denominator_floor</code>，尺度对应窗幅度的平方。把自定义窗整体缩得很小，可能仍满足数学 NOLA，却触发这个保护；例如四点周期 Hann 乘 $10^{-7}$。因此比较接口时应同时记录窗归一化与阈值，不能把数值拒绝解释成声音没有信息。</p>
 <p><code>center=True</code> 会在两端补半窗，因此离线重构可对齐原波形；实时系统不能据此把延迟写成零，还要把首帧等待、窗长、帧移、分块缓存和可能的前瞻一并计入端到端延迟。</p>
-<p><strong>修改单边谱后的实信号约定。</strong> 实波形的 DC 系数必须为实数；偶数 FFT 长度的 Nyquist 系数也必须为实数，奇数长度则没有 Nyquist 点。本书合成接口沿用 <a href="https://numpy.org/doc/stable/reference/generated/numpy.fft.irfft.html" title="citation">NumPy <code>irfft</code> 的端点约定</a>（2026-09-30 核实）：DC 以及偶数长度 Nyquist 的虚部不进入实波形，相当于取实部；奇数长度最后一个频点仍是普通正频点，其虚部必须保留。这里的实数投影会丢弃不满足端点约束的修改量，不能据“逆变换能返回实数组”宣称保留了全部任意复数输入。E02-13 补充最小例子。</p>
+<p><strong>修改单边谱后的实信号约定。</strong> 实波形的 DC 系数必须为实数；偶数 FFT 长度的 Nyquist 系数也必须为实数，奇数长度则没有 Nyquist 点。本书合成接口沿用 <a href="https://numpy.org/doc/stable/reference/generated/numpy.fft.irfft.html" title="citation">NumPy <code>irfft</code> 的端点约定</a>（2026-09-30 核实）：DC 以及偶数长度 Nyquist 的虚部不进入实波形，相当于取实部；奇数长度最后一个频点仍是普通正频点，其虚部必须保留。这里的实数投影会丢弃不满足端点约束的修改量，不能据“逆变换能返回实数组”宣称保留了全部任意复数输入。E02-13 补充端点最小例子。端点合法也不保证重叠帧对共享样本提出相容要求；E02-20 用三帧明确展示合成后重分析会改变原谱，先检查这一约束，再解释修改谱的结果。</p>
 <h3 id="sec-u-446d4b2fd0">协方差递推：初始化与有效权重</h3>
 <p>协方差实现同时给出批量估计和指数递归更新。递推的旧状态应当是厄米半正定矩阵，例如零矩阵或合法快拍外积的平均；只有这样的初始化，配合非负凸组合权重，才能保证后续仍是合法二阶矩。对称化只处理厄米残差，不能把明显负的方差变成有效统计量。</p>
 <p>掩码在某个频点全为零时，代码会报错，而不是用 $\varepsilon$ 伪造一个无统计依据的矩阵。非零掩码先除以该频点的最大权重，再累积归一化二阶矩；这个共同缩放不改变估计值，却避免把很小的权重单位误判成没有数据。</p>
@@ -764,7 +770,7 @@ B(f,\Omega)&=\vec w^H\vec a(f,\Omega)\text{。}
 <ul>
 <li><strong>主瓣（main lobe）</strong>：围绕所选指向的主要峰。本图将峰值归一化为 0 dB；无失真还须核对实际权重的目标复响应；</li>
 <li><strong>旁瓣（side lobes）</strong>：主瓣以外的其他局部峰；旁瓣高度由几何、频率与权重决定，不必依次变矮；</li>
-<li><strong>零点（nulls）</strong>：瓣与瓣之间的深谷——这些方向上各麦信号恰好相消干涉，几乎完全听不到；</li>
+<li><strong>零点（nulls）</strong>：波束图中响应为零的方向；在当前频点和理想模型下，各路贡献相消。单个频点的零点不表示宽带录音全部消失；</li>
 </ul>
 <p>同相叠加形成峰，反相抵消形成谷；等比数列求和得到完整阵因子，见 §5.2。图 7（a）先帮助读者辨认这些结构，后面再计算其宽度和电平。</p>
 <p><img alt="图7 波束图解剖与栅瓣" src="../figures/fig07_beampattern_anatomy.png" onerror="this.alt+='（图缺失）'" /></p>
@@ -830,7 +836,7 @@ B(f,\Omega)&=\vec w^H\vec a(f,\Omega)\text{。}
 <h3 id="sec-2-6-6">2.6.6 精度理论下界：克拉美－罗界</h3>
 <p>这一部分的统计内容较重，第一遍可以跳过，在第 4 章需要分析定位精度时再读。<strong>克拉美－罗界（Cramér–Rao Bound，CRB）</strong>是在给定观测模型和正则条件下，对无偏波达方向（Direction of Arrival，DOA）估计器方差的下界。</p>
 <p>下面的显式式子采用单源、窄带、确定性信号模型。每个快拍的未知复幅度作为干扰参数；阵列是 $M$ 元均匀线阵（Uniform Linear Array，ULA）、间距为 $d$；共有 $T$ 个独立快拍；噪声为各阵元方差均为 $\sigma^2$ 的圆对称复白高斯噪声。</p>
-<p>这里的单阵元线性 SNR 定义为 $\mathrm{SNR}=\sum_{t=1}^{T}|s_t|^2/(T\sigma^2)$。在这些约定下可得到下式。改变复/实噪声、已知/未知幅度或 SNR 定义会改变常数，推导口径见 <a href="https://doi.org/10.1109/29.17564" title="citation">Stoica 与 Nehorai 1989</a>：</p>
+<p>这里的单阵元线性 SNR 定义为 $\mathrm{SNR}=\sum_{t=1}^{T}|s_t|^2/(T\sigma^2)$。在这些约定下可得到下式。改变复／实噪声、已知／未知幅度或 SNR 定义会改变常数，推导口径见 <a href="https://doi.org/10.1109/29.17564" title="citation">Stoica 与 Nehorai 1989</a>：</p>
 <p>$$\begin{aligned}
 \eta(\theta)&=\frac{2\pi d}{\lambda}\cos\theta,\\
 G_\theta&=M(M^2-1)\eta^2(\theta),\\
@@ -842,6 +848,8 @@ G_\theta&=M(M^2-1)\eta^2(\theta),\\
 <li>固定物理孔径 $D=(M-1)d$ 时，同一项可写成 $M(M+1)D^2/(M-1)$，约按 $MD^2$ 增长，不能仍称为 $M^3$ 标度。</li>
 </ul>
 <p>公式里的 $M(M^2-1)$ 来自各麦位置绕阵列中心的二阶矩 $\sum_{m=1}^{M}(m-\frac{M+1}{2})^2=\frac{M(M^2-1)}{12}$。</p>
+<p>还要区分<strong>局部方向信息</strong>与<strong>整个搜索区间的唯一性</strong>。例如四麦线阵取 $d=\lambda$，$\theta=\pm30°$ 时，导向矢量都为 $[1,-1,1,-1]^\top$；这两个方向在本窄带模型中给出相同观测分布。每个方向附近的相位导数却非零。取 $T=100$、线性 $\mathrm{SNR}=10$，将 $\cos^2 30°=3/4$ 代入式(2-14)，得到局部方差 $1/(30000\pi^2)$ rad²、标准差约 0.1053°。</p>
+<p>这个有限数字不能排除相隔 60° 的两个候选。若要求估计器在同时包含两方向的区域上无偏，相同观测分布要求相同估计均值，却不可能同时等于 −30° 与 +30°。因此应用 CRB 前还须检查搜索分支与模型可辨识性；提高 SNR 或增加相同频点的快拍，不会消除已经相同的导向。</p>
 <h3 id="sec-2-6-7">2.6.7 算例 2-1：复算 CRB 的五个因子</h3>
 <p>阵列配置——6 麦、间距 1.4 cm、孔径 7 cm；正横方向、$f=1$ kHz、$T=100$ 快拍。</p>
 <p>在上述模型内，任何满足正则条件的无偏估计器，其方差都不低于该 CRB。它不直接约束有偏估计器的均方误差，也不能脱离模型解释成所有算法的绝对极限。</p>
@@ -897,7 +905,7 @@ r_m&=r-\vec u^\top\vec q_m\\
 <p>条件不满足时，改用球面导向 $\vec{a}(\vec{p})$。SRP 搜索也应匹配任务维度：限定水平面时，由方位角搜索扩展为平面位置搜索；完整三维任务则由方位角和俯仰角搜索扩展为三维位置搜索（§4.3 的 $\tau_{ij}(\vec{r})$ 已按距离差写出）。</p>
 <p>本章从传播时延建立了远近场模型，并定义了 STFT、快拍、协方差及四项阵列度量。第 3 章将讨论麦克风几何如何限制这些观测与指标。</p>
 <span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-f7a201edb9">本章练习</h2>
-<p>本章练习按稳定标识组织。E02-01～08 练习分析合成与协方差估计，E02-09～15 分别检查近场误差、声场积分、房间衰减、精度下界、分析合成、中心化和卷积。E02-16～18 再检查有限窗卷积近似、源噪声交叉项和窗归一化。先手算关键中间量，再运行代码核对；代码返回的有限数值不能代替模型前提。</p>
+<p>本章练习按稳定标识组织。E02-01～08 练习分析合成与协方差估计，E02-09～15 分别检查近场误差、声场积分、房间衰减、精度下界、分析合成、中心化和卷积。E02-16～18 再检查有限窗卷积近似、源噪声交叉项和窗归一化；E02-19～20 分别反推已知激励的路径，以及检查相邻谱帧是否对应同一波形。先手算关键中间量，再运行代码核对；代码返回的有限数值不能代替模型前提。</p>
 <p>以下六题的复算入口为 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_spatial.py"><code>exercises_spatial.py</code></a>，结果采用稳定标识 E02-01～E02-06。</p>
 <h3 id="sec-u-c820e5558a">E02-01：同一段录音为什么有两种帧数？</h3>
 <p>对 8 kHz、1 s 的信号，取窗长 256 点、帧移 64 点，分别使用 <code>center=False</code> 和 <code>center=True</code>。再对其中同一个 256 点窗做 256 点与 512 点实 FFT。哪些输出数量改变，哪些物理信息没有增加？</p>
@@ -1538,6 +1546,303 @@ U_g&=\frac1N\sum_{q=0}^{N-1}g^2[q],\\
 <p><strong>第四步：说明功率校正的边界。</strong> 对一般有限记录，加窗能量校正得到的是 $\sum_qg^2[q]x^2[q]/\sum_qg^2[q]$，它是按窗平方加权的均方值，不必等于 $N^{-1}\sum_qx^2[q]$。例如 E02-13 的 $x=[1,2,3,4]$，原均方值为7.5，四点Hann加窗均方值为 $(1+9+4)/4=3.5$，除以 $3/8$ 得 $28/3\approx9.3333$；大值样本被窗中心赋予较大权重，不能用一个普适常数消去这种记录内的差异。</p>
 <p>因此，估计内部孤立谱线幅度时核对相干增益与频点位置；估计噪声PSD时核对窗能量、采样率、单边系数和去均值设置。按 <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.periodogram.html" title="citation">SciPy <code>periodogram</code> 的归一化约定</a>，保持 <code>detrend=False</code> 时，本书未归一化DFT的单边PSD分母为 $f_s\sum_qg^2[q]$，与 E02-08 一样再按频率间隔求和；不能用未经校正的STFT模方图直接替代PSD。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch02/chapter02_experiments.py"><code>chapter02_experiments.py</code></a> 的 <code>E02-18</code> 返回窗系数、两个增益、ENBW、纯音幅度和完整256种序列的二阶矩。这里的1.5倍差别来自校正量选择，不是一个窗或算法额外产生了噪声，也不是实际录音的实验收益。</p>
+<h3 id="sec-u-30cdf46bd5">E02-19：已知测试信号，怎样反推未知的路径？</h3>
+<p>E02-15 和 E02-16 已知滤波器，计算它产生什么输出。本题改为已知激励 $u$ 与完整输出 $x$，估计滤波器 $h$。它是已知激励的系统辨识；第 7 章的 MINT 则已知多条路径，求组合逆滤波器来恢复声源，两者的未知量不同。</p>
+<p><strong>从四个样本开始。</strong> 取 $u=[1,1/2]$，真实路径为 $h=[1,0,1/2]$，边界外输入为零。完整卷积是 $x=[1,1/2,1/2,1/4]$，长度为 $2+3-1=4$。估计时使用四点 DFT，把激励和真实路径补零到四点。先暂时没有噪声，不截去输出尾部。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col" style="text-align: right;">四点 DFT 的频点 $k$</th>
+<th scope="col">激励谱 $U[k]$</th>
+<th scope="col">输出谱 $X[k]$</th>
+<th scope="col">真实路径谱 $H[k]$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">0</td>
+<td>$3/2$</td>
+<td>$9/4$</td>
+<td>$3/2$</td>
+</tr>
+<tr>
+<td style="text-align: right;">1</td>
+<td>$1-\mathrm j/2$</td>
+<td>$1/2-\mathrm j/4$</td>
+<td>$1/2$</td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td>$1/2$</td>
+<td>$3/4$</td>
+<td>$3/2$</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td>$1+\mathrm j/2$</td>
+<td>$1/2+\mathrm j/4$</td>
+<td>$1/2$</td>
+</tr>
+</tbody>
+</table></div>
+<p>例如 $X[1]=1-\mathrm j/2-1/2+\mathrm j/4=1/2-\mathrm j/4$。逐项验证 $X[k]=U[k]H[k]$；本例 $U[k]$ 全部非零，所以无噪声逐频除法 $X[k]/U[k]$ 恢复真实路径谱，逆 DFT 得 $[1,0,1/2,0]$。</p>
+<p><strong>加入噪声后，除法放大了什么？</strong> 测量模型改为 $X[k]=U[k]H[k]+V[k]$，$V$ 是路径输出之后加入的噪声。直接除法得到 $H[k]+V[k]/U[k]$：激励幅度很小的频点会放大这项噪声。播放参考自身有误差、噪声在路径输入之前加入，是另一个观测模型，不能沿用同一放大结论。</p>
+<p>本题采用逐频 Tikhonov 正则化，以路径谱幅度惩罚限制求逆。固定频点，未知复数记作 $z$，问题是</p>
+<p>$$\begin{aligned}
+\widehat H[k]&=\mathop{\arg\min}_{z\in\mathbb C}
+\left(|U[k]z-X[k]|^2+\varepsilon|z|^2\right),\\
+\widehat H[k]&=\frac{U^*[k]X[k]}{|U[k]|^2+\varepsilon}\text{。}
+\end{aligned}\tag{2-24}$$</p>
+<p>这里 $\varepsilon\ge0$ 为绝对正则项，与 $|U[k]|^2$ 同量纲；它不是直接加在时间波形上的噪声幅度。前向 DFT 没有除以长度，因此改变 FFT 归一化时也须重新核对该项的尺度。本书后面的音频设 $\varepsilon=\rho\max_k|U[k]|^2$，$\rho$ 才是无量纲的相对参数。</p>
+<p>把模平方展开为 $(|U|^2+\varepsilon)|z|^2-2\operatorname{Re}(z^*U^*X)+|X|^2$，再对 $z$ 的实部和虚部分别求导。两条实正规方程合成 $(|U|^2+\varepsilon)z=U^*X$，得到式(2-24)。分母严格为正时解唯一；$\varepsilon=0$ 且 $U=0$ 时，目标不能确定这个频点的 $z$。</p>
+<p>将测量模型代入，可把误差的两个来源分开：</p>
+<p>$$\begin{aligned}
+\widehat H[k]&=\gamma_kH[k]
++\frac{U^*[k]V[k]}{|U[k]|^2+\varepsilon},\\
+\gamma_k&=\frac{|U[k]|^2}{|U[k]|^2+\varepsilon}\text{。}
+\end{aligned}\tag{2-25}$$</p>
+<p>第一项在 $\varepsilon>0$ 时收缩真实路径，形成偏差；第二项改变测量噪声进入估计的增益。正则化能限制弱激励频点的放大，也会改变无噪声答案。这里没有给出真实噪声或路径先验的概率模型，不能把此式自动称为 Wiener 最优估计。</p>
+<p><strong>用分数复算正则化。</strong> 令 $\varepsilon=1/4$，四个 $|U[k]|^2$ 分别是 $9/4,5/4,1/4,5/4$。式(2-25)的收缩系数分别为 $9/10,5/6,1/2,5/6$，因此 $\widehat H=[27/20,5/12,3/4,5/12]$。这四项均为实数，且正负频率成对。</p>
+<p>按四点逆 DFT：首抽头为 $(27/20+5/12+3/4+5/12)/4=11/15$；第一个和最后一个偏移抽头均为 $(27/20-3/4)/4=3/20$；中间抽头为 $(27/20-5/12+3/4-5/12)/4=19/60$。结果是</p>
+<p>$$\widehat h=[11/15,\ 3/20,\ 19/60,\ 3/20]\text{。}$$</p>
+<p>这不是原来的三抽头 $[1,0,1/2]$。本题频点求解允许四点循环参数空间中的所有四个抽头，没有把“最后一个抽头必须为零”作为约束。正则化收缩与参数空间都要写清，不能只报告“反卷积得到了一个脉冲响应”。</p>
+<p><strong>已知三抽头支持会改变求解。</strong> 若把长度恰为三抽头当成可信先验，完整线性模型是 $\vec x=\mathbf T_u\vec h$，其中</p>
+<p>$$\mathbf T_u=\begin{bmatrix}
+1&0&0\\
+1/2&1&0\\
+0&1/2&1\\
+0&0&1/2
+\end{bmatrix}\text{。}$$</p>
+<p>最小化 $\|\mathbf T_u\vec h-\vec x\|^2+(1/4)\|\vec h\|^2$ 的正规方程系数为 $\mathbf T_u^\top\mathbf T_u+(1/4)\mathbf I$：对角项都是 $3/2$，相邻非对角项为 $1/2$。右端为 $[5/4,3/4,5/8]^\top$，解为 $[67/84,3/28,8/21]^\top$。可逐行代入检查，例如首行为 $(3/2)(67/84)+(1/2)(3/28)=5/4$。</p>
+<p>这项有限支持约束改变了估计问题。它的解与前面四抽头解的前三项不同；截去第四项不能替代带约束求解。本题两组解都有偏差，只比较目标和条件，不宣称某组对所有测量更好。</p>
+<p><strong>频谱零点与可辨识性要按模型判断。</strong> 把激励改为 $u=[1,1]$，四点 DFT 的 Nyquist 项为零，直接逐频相除在那里无定义。不过，已知三抽头时，其完整线性卷积矩阵为</p>
+<p>$$\mathbf T_u=\begin{bmatrix}1&0&0\\1&1&0\\0&1&1\\0&0&1\end{bmatrix}\text{。}$$</p>
+<p>该矩阵前三行的行列式为 1，故满列秩。完整输出 $[1,1,1/2,1/2]$ 依次给出 $h_0=x_0=1$、$h_1=x_1-h_0=0$、$h_2=x_2-h_1=1/2$；最后一行再检查 $x_3=h_2$。这套有限支持线性模型仍可唯一辨识。</p>
+<p>若允许四个循环抽头，$[1,-1,1,-1]$ 是该激励的循环零空间方向。它与 $[1,1]$ 的<strong>完整线性</strong>卷积却是 $[1,0,0,0,-1]$，两个端点只有循环折叠后才抵消。不能先丢掉完整支持或改成循环模型，再把结论泛化为“有一个频谱零点，任何有限路径都不能估计”。</p>
+<p>本题数值核 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch02/core/deconvolution.py"><code>deconvolution.py</code></a> 对 $\varepsilon=0$ 的真实零激励系数明确报错；系数非零但平方下溢为零时另行处理，不把它误判为无信息。$\varepsilon>0$、激励全零时数学最小解为零，但返回 <code>no_excitation=True</code>；这不表示恢复了未知路径。FFT 点数不足以容纳两条完整记录、输入类型错误或中间量超出浮点范围时也会拒绝计算。</p>
+<p>下面的<a href="#sec-u-14a48a3357">数字扫频实验</a>把同一估计问题扩展到可试听的长记录，并分别检查完整尾部、输出噪声和实际文件量化。</p>
+<h3 id="sec-u-14a48a3357">数字扫频实验：完整尾部、噪声和量化分别影响什么</h3>
+<p>这是 E02-19 的音频扩展，使用已知数字路径，不进行实际扬声器—房间测量。为理解 ESS 的频率变化，令起止频率为 $f_1,f_2>0$、设计时长为 $T_s$，则 $f(t)=f_1\exp[t\ln(f_2/f_1)/T_s]$。相位是 $2\pi f(t)$ 对时间的积分：</p>
+<p>$$\begin{aligned}
+L_s&=\frac{T_s}{\ln(f_2/f_1)},\\
+\varphi(t)&=2\pi f_1L_s\left(e^{t/L_s}-1\right),\\
+u[n]&=A_s\,a[n]\sin\varphi(n/f_s)\text{。}
+\end{aligned}\tag{2-26}$$</p>
+<p>$L_s$ 单位是 s，$\varphi$ 单位是 rad；$A_s$ 是数字幅度，$a[n]$ 是无量纲淡变包络。求导得到 $\varphi'(t)/(2\pi)=f_1e^{t/L_s}$，可核对相位不是直接把频率写入正弦。<a href="https://www.angelofarina.it/Public/papers/134-AES00.PDF" title="citation">Farina 2000 原文 §2、正文 p.6</a>给出这项指数扫频形式；这里的有限 FIR 与逐频正则逆是本书数字控制，不等同于原文的谐波失真分离实验。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">固定配置</th>
+<th scope="col">本题数值与含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>激励</td>
+<td>$f_s=16000$ Hz，32000 点，$T_s=2$ s，$f_1=100$ Hz，$f_2=6000$ Hz，$A_s=0.2$</td>
+</tr>
+<tr>
+<td>淡变</td>
+<td>$a[n]=\min\{1,n/160,(31999-n)/160\}$，首尾各 160 点按该采样口径变化</td>
+</tr>
+<tr>
+<td>数字路径</td>
+<td>$h[0]=0.8$、$h[160]=0.25$，其余为零；反射晚 10 ms</td>
+</tr>
+<tr>
+<td>完整输出</td>
+<td>32160 点，保留激励结束后的 160 点传播尾</td>
+</tr>
+<tr>
+<td>输出后噪声</td>
+<td>标准差 0.003 的固定高斯序列，种子 2026100402；一次样例</td>
+</tr>
+<tr>
+<td>反卷积</td>
+<td>$N_{\mathrm{FFT}}=65536$，$\rho=0,10^{-8},10^{-6},10^{-4}$；按各域自身激励谱计算 $\varepsilon$</td>
+</tr>
+</tbody>
+</table></div>
+<p>激励样本时刻为 $n/f_s$，$n=0,\ldots,31999$。最后一个时刻小于 2 s，瞬时频率约为 5999.23236 Hz；6000 Hz 是连续设计式在 $t=2$ s 的值。有限记录、包络与补零后的 DFT 仍有带外系数，不能把设计频段写成严格的带外零谱。</p>
+<p>四条试听文件按生成条件排列：</p>
+<ul>
+<li>激励：<a href="sweep_audio/sweep_source.wav">已知扫频激励</a><audio class="audio-sample" controls preload="none" aria-label="已知扫频激励" src="sweep_audio/sweep_source.wav">请使用上方 WAV 链接下载。</audio></li>
+<li>完整尾部：<a href="sweep_audio/sweep_complete.wav">完整路径输出</a><audio class="audio-sample" controls preload="none" aria-label="完整路径输出" src="sweep_audio/sweep_complete.wav">请使用上方 WAV 链接下载。</audio></li>
+<li>输出后噪声：<a href="sweep_audio/sweep_noisy.wav">加入固定噪声的输出</a><audio class="audio-sample" controls preload="none" aria-label="加入固定噪声的输出" src="sweep_audio/sweep_noisy.wav">请使用上方 WAV 链接下载。</audio></li>
+<li>尾部缺失：<a href="sweep_audio/sweep_cut.wav">把传播尾置零的输出</a><audio class="audio-sample" controls preload="none" aria-label="把传播尾置零的输出" src="sweep_audio/sweep_cut.wav">请使用上方 WAV 链接下载。</audio></li>
+</ul>
+<p>激励文件为 32000 点，其余均为 32160 点；截尾条件保留同样长度，只把 $[32000,32160)$ 替换为零。四条文件共同导出增益为 1，不逐文件归一化。</p>
+<p>生成顺序是“浮点激励 → 浮点路径卷积 → 完整／加噪／截尾条件 → 各文件独立 PCM16 量化”。因此实际 PCM 激励经过滤波器，并不必然逐样本等于实际 PCM 完整输出；两条量化误差分别进入已知激励的逆问题。PCM 对照必须从各文件重新解码计算，不能用浮点无噪声结果代替。</p>
+<p><strong>评分保留整个估计，不只看两个峰。</strong> 真实路径补零到 65536 点，参考能量为 $0.8^2+0.25^2=0.7025$。对两条相同长度的真实与估计 IR，定义</p>
+<p>$$\begin{aligned}
+E_h&=\sum_{n=0}^{N_{\mathrm{FFT}}-1}|h[n]|^2,\\
+E_e&=\sum_{n=0}^{N_{\mathrm{FFT}}-1}|\widehat h[n]-h[n]|^2,\\
+\varepsilon_h&=E_e/E_h\text{。}
+\end{aligned}\tag{2-27}$$</p>
+<p>$\varepsilon_h$ 是完整 IR 的相对误差能量，不是输出噪声 SNR。诊断再分开已知支持 $[0,161)$ 内的误差与 $[161,65536)$ 外的估计能量；两项相加才是完整误差。已知支持用于本题真值评分，估计器没有据此裁剪、拟合增益或移动时延。</p>
+<p><a href="sweep_audio/MANIFEST.json">独立清单</a>保留三条件、四个 $\rho$、浮点与实际 PCM 两域的全部 24 行结果，以及各 WAV 的整数能量、分母和源摘要。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch02/examples/generate_sweep_audio.py">生成与只读核验入口</a>使用 <code>--check</code> 完整重放并核对现有文件。章节入口的 E02-19 返回这些实际核验结果，不能把清单过期后的旧数值当作当前实验。</p>
+<p>下表列出当前生成后完整核验的相对误差能量 $\varepsilon_h$。浮点列使用量化前激励和输出，PCM 列使用四条 WAV 实际解码的激励与对应输出；各域的 $\varepsilon$ 分别由自身激励谱最大模平方计算。两列共用真实路径和完整 65536 点评分区间，数值按八位有效数字展示，不把它们取 dB 后平均。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">输出条件</th>
+<th scope="col" style="text-align: right;">$\rho$</th>
+<th scope="col" style="text-align: right;">浮点完整 IR 相对误差能量</th>
+<th scope="col" style="text-align: right;">实际 PCM 完整 IR 相对误差能量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>完整尾部，无后加噪声</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">$1.3681144\times10^{-23}$</td>
+<td style="text-align: right;">0.42315764</td>
+</tr>
+<tr>
+<td>完整尾部，无后加噪声</td>
+<td style="text-align: right;">$10^{-8}$</td>
+<td style="text-align: right;">0.13136503</td>
+<td style="text-align: right;">0.13289149</td>
+</tr>
+<tr>
+<td>完整尾部，无后加噪声</td>
+<td style="text-align: right;">$10^{-6}$</td>
+<td style="text-align: right;">0.21815084</td>
+<td style="text-align: right;">0.21816416</td>
+</tr>
+<tr>
+<td>完整尾部，无后加噪声</td>
+<td style="text-align: right;">$10^{-4}$</td>
+<td style="text-align: right;">0.24749115</td>
+<td style="text-align: right;">0.24749168</td>
+</tr>
+<tr>
+<td>完整尾部，后加噪声</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">107437.12</td>
+<td style="text-align: right;">65979.904</td>
+</tr>
+<tr>
+<td>完整尾部，后加噪声</td>
+<td style="text-align: right;">$10^{-8}$</td>
+<td style="text-align: right;">62.863570</td>
+<td style="text-align: right;">66.371779</td>
+</tr>
+<tr>
+<td>完整尾部，后加噪声</td>
+<td style="text-align: right;">$10^{-6}$</td>
+<td style="text-align: right;">0.41263535</td>
+<td style="text-align: right;">0.41394282</td>
+</tr>
+<tr>
+<td>完整尾部，后加噪声</td>
+<td style="text-align: right;">$10^{-4}$</td>
+<td style="text-align: right;">0.24926292</td>
+<td style="text-align: right;">0.24926621</td>
+</tr>
+<tr>
+<td>把 160 点尾部置零</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">289.65461</td>
+<td style="text-align: right;">300.99159</td>
+</tr>
+<tr>
+<td>把 160 点尾部置零</td>
+<td style="text-align: right;">$10^{-8}$</td>
+<td style="text-align: right;">1.1514012</td>
+<td style="text-align: right;">1.1623974</td>
+</tr>
+<tr>
+<td>把 160 点尾部置零</td>
+<td style="text-align: right;">$10^{-6}$</td>
+<td style="text-align: right;">0.26413575</td>
+<td style="text-align: right;">0.26420721</td>
+</tr>
+<tr>
+<td>把 160 点尾部置零</td>
+<td style="text-align: right;">$10^{-4}$</td>
+<td style="text-align: right;">0.25344926</td>
+<td style="text-align: right;">0.25345023</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>先看没有后加噪声的一行。</strong> 浮点无正则误差只有舍入量级，是完整数字卷积关系的控制。实际 PCM 完整输出虽然没有额外高斯噪声，却有独立量化；无正则误差为 0.42315764，不能沿用浮点的近乎精确恢复结论。浮点激励补零后的最小与最大谱功率约为 $9.7245\times10^{-10}$ 和 $1.5137\times10^4$，实际 PCM 激励约为 $7.9164\times10^{-10}$ 和 $1.5137\times10^4$。这些值相差许多个数量级，小量化误差在弱激励频点相除后可能很大。</p>
+<p>实际 PCM 无正则估计在已知支持 $[0,161)$ 内的相对误差只有 0.0040808014，支持外却有 0.41907684；两项相加是表中的 0.42315764。只看直达和反射附近、或者事后裁掉支持外部分，会隐去本题估计器真实产生的误差，不能把裁后结果替代完整结果。</p>
+<p><strong>再看噪声与截尾。</strong> 无正则时，两种失配都受到弱谱系数求逆的放大，完整误差可以超过参考能量很多倍。截尾不是一般的白噪声：它改变输出最后 160 点，使原来的完整卷积频谱关系失效。在这一次加噪样例中，$\rho=10^{-4}$ 的 PCM 误差降到约 0.2493；但同一参数对无后加噪声的浮点控制引入了约 0.2475 的误差。这是稳健性与偏差的交换，不能由这四档参数和一个噪声种子宣称取得普遍最优参数。</p>
+<p>这套实验只说明给定激励、固定数字路径与一次噪声条件下的偏差和误差。试听文件不是实际房间 RIR，也没有非线性谐波响应、盲估计或人工听测结论。播放参考、设备时钟、扬声器与麦克风频响和测量尾长，是实际测量时必须另外处理的条件。</p>
+<h3 id="sec-u-9fc99c5f2f">E02-20：每帧都能逆变换，为何仍不是一致的 STFT？</h3>
+<p>E02-13 检查 DC 和 Nyquist 必须为实数。本题让所有实谱端点都合法，再检查相邻帧是否对同一波形样本提出相容要求。使用四点矩形窗 $g=[1,1,1,1]$、帧移 2、<code>center=True</code>，原波形保留 4 点，边界外补零。帧起点为 $-2,0,2$，每个保留样本被两帧覆盖，窗平方和都是 2，满足 NOLA。</p>
+<p>给三帧指定单边谱 $Y_\ell[k]$：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col" style="text-align: right;">帧起点</th>
+<th scope="col">$Y_\ell[0],Y_\ell[1],Y_\ell[2]$</th>
+<th scope="col">逆实 FFT 的四点帧</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">−2</td>
+<td>$[0,0,0]$</td>
+<td>$[0,0,0,0]$</td>
+</tr>
+<tr>
+<td style="text-align: right;">0</td>
+<td>$[0,2,0]$</td>
+<td>$[1,0,-1,0]$</td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td>$[0,0,0]$</td>
+<td>$[0,0,0,0]$</td>
+</tr>
+</tbody>
+</table></div>
+<p>中间帧的完整 DFT 为 $[0,2,0,2]$，所以逆变换是 $[1,0,-1,0]$。DC 与 Nyquist 都为实数，每一帧单独看都是合法实谱；矛盾发生在帧与帧之间。</p>
+<p><strong>找出两个共享样本。</strong> 物理样本 $n=0$ 在起点 −2 的帧内位于 $q=2$，要求为 0；在起点 0 的帧内位于 $q=0$，要求为 1。物理样本 $n=2$ 在起点 0 的帧内要求为 −1，在起点 2 的帧内要求为 0。不存在一条实波形同时满足这些指定值。</p>
+<p><strong>合成实际取折中值。</strong> 式(2-9)在 $n=0$ 的分子为 $0+1$，分母为 2，得到 $1/2$；$n=2$ 同理得到 $-1/2$。另外两点为零，合成输出为 $\widehat x=[1/2,0,-1/2,0]$。从逐样本最小二乘也可核对：$n=0$ 的代价是 $x^2+(x-1)^2$，求导得 $4x-2=0$；$n=2$ 的代价是 $(x+1)^2+x^2$，解为 $-1/2$。</p>
+<p><strong>重新分析后，谱已经改变。</strong> 用同一窗、帧移、边界与长度分析 $\widehat x$：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col" style="text-align: right;">帧起点</th>
+<th scope="col">实际截出的四点帧</th>
+<th scope="col">重新分析的单边谱</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">−2</td>
+<td>$[0,0,1/2,0]$</td>
+<td>$[1/2,-1/2,1/2]$</td>
+</tr>
+<tr>
+<td style="text-align: right;">0</td>
+<td>$[1/2,0,-1/2,0]$</td>
+<td>$[0,1,0]$</td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td>$[-1/2,0,0,0]$</td>
+<td>$[-1/2,-1/2,-1/2]$</td>
+</tr>
+</tbody>
+</table></div>
+<p>首帧只有 $q=2$ 的 $1/2$ 非零，DFT 中的相位因子依次为 $1,-1,1$，所以第一行可以直接手算。中间正频点从 2 变成 1，两侧帧也出现非零谱；“合成器返回实波形”不等于“这条波形保留了原来指定的全部谱值”。</p>
+<p>记分析算子为 $\mathcal S$、配套合成算子为 $\mathcal T$。第 8 章将同一配套合成记作 $\mathcal S^{-1}$；这里单独命名为 $\mathcal T$，便于区分合成操作与任意修改谱的真正双边逆。在给定窗和边界上，若 $\mathcal T\mathcal S x=x$ 对合法波形成立，则</p>
+<p>$$\begin{aligned}
+P(Y)&=\mathcal S(\mathcal T Y),\\
+P(P(Y))&=P(Y),\\
+Y&=P(Y)\quad\text{时称为STFT一致}\text{。}
+\end{aligned}\tag{2-28}$$</p>
+<p>第二行利用 $\mathcal T\mathcal S(\mathcal T Y)=\mathcal T Y$。本题再合成、再分析一次，结果不变：第一轮已经得到一条实际波形的 STFT。这是指定分析—合成的一致性操作，不是任意复数矩阵上的双边逆。</p>
+<p><strong>平方误差必须按完整谱计数。</strong> 本题前向 DFT 不归一化，四点 Parseval 给出“每帧完整谱误差平方和 = 4 × 对应帧的时域误差平方和”。用单边谱存储时，与 E02-08 一样取 $c=[1,2,1]$，距离为</p>
+<p>$$D(Y,Z)=\sum_\ell\sum_{k=0}^{2}c_k|Y_\ell[k]-Z_\ell[k]|^2\text{。}\tag{2-29}$$</p>
+<p>原谱到零的距离为 8，重新分析谱到零的距离为 4，原谱与重新分析谱之间的距离为 4，相对原谱距离是 $4/8=1/2$。逐帧列数：两个外侧帧的残差距离各为 $(1/2)^2+2(1/2)^2+(1/2)^2=1$；中间帧的残差只有内部频点 1，距离为 $2\times1^2=2$。</p>
+<p>本题 WOLA 恰好最小化这项完整 DFT 距离，因此可在这个加权度量下称为正交投影。若只把三个储存频点等权相加，残差距离变成 $3/4+1+3/4=5/2$，已经改变度量。一般配套算子只有完美重构时，式(2-28)保证幂等；要进一步称正交投影，还须核对使用的最小二乘合成和距离定义。</p>
+<p><a href="https://doi.org/10.1109/TASSP.1984.1164317" title="citation">Griffin 与 Lim 1984，§II、式(4)～(6)，pp.236～237</a>给出修改 STFT 的最小二乘合成；<a href="https://dub.ucsd.edu/CATbox/Reader/GriffinLimMSTFT.pdf" title="citation">原论文全文</a>可核对推导，<a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.istft.html" title="citation">SciPy <code>istft</code> 官方 Notes</a>也明确说明修改谱不保证可实现。本题只处理给定复谱的一次操作，不执行仅给定幅度谱的 Griffin–Lim 迭代。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch02/core/stft_consistency.py"><code>stft_consistency.py</code></a>与章节入口 E02-20 返回三帧逆变换、共享样本、重新分析谱及距离，独立测试用逐项 DFT 和最小二乘复核。<a href="08_speech-separation.html#sec-u-110769710d">第 8 章式(8-31)</a>在此基础上讨论分离输出；STFT 一致性不保证各源相加等于混合，也不证明输出具有正确的说话人身份或质量。</p>
 <hr />
 <blockquote>
 <p>📄 本篇信息：配图 7 张 ｜ <a href="index.html">回首页</a></p>

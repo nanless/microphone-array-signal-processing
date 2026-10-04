@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import re
 import sys
+import struct
 import hashlib
 import json
 import wave
@@ -84,6 +85,9 @@ NOISE_AUDIO_WAVS = {"noise_" + name + ".wav" for name in
 FOCUS_AUDIO_ROOT = ROOT / "codes/chapters/ch04/focus_audio"
 GEOMETRY_AUDIO_ROOT = ROOT / "codes/chapters/ch03/geometry_audio"
 STFT_AUDIO_ROOT = ROOT / "codes/chapters/ch02/stft_audio"
+SWEEP_AUDIO_ROOT = CODE_CHAPTERS / 'ch02' / 'sweep_audio'
+SWEEP_AUDIO_LENGTHS = {'sweep_source.wav': 32000, 'sweep_complete.wav': 32160,
+                       'sweep_noisy.wav': 32160, 'sweep_cut.wav': 32160}
 
 EDITING_MARKERS = re.compile(
     r"待核实|待补(?:实测|充)?|链接待补|成绩待补|清单#|"
@@ -112,7 +116,7 @@ EXPECTED_SECTION_COUNTS = {
 # 基线，不从构建脚本或待检产物反推。
 EXPECTED_SUBSECTION_COUNTS = {
     "01_problem-definition.md": 19,
-    "02_basics-signal-model.md": 46,  # 两个独立主题：STFT合成与协方差启动权重
+    "02_basics-signal-model.md": 49,  # 新增E19、独立数字扫频主题与E20
     "03_array-geometry.md": 31,
     "04_doa-estimation.md": 45,
     "05_beamforming.md": 41,
@@ -149,12 +153,12 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 16
 EXPECTED_SECTION_COUNT = 151
-EXPECTED_SUBSECTION_COUNT = 697
-EXPECTED_OUTLINE_ITEM_COUNT = 864
+EXPECTED_SUBSECTION_COUNT = 700
+EXPECTED_OUTLINE_ITEM_COUNT = 867
 EXPECTED_FIGURE_NUMBERS = set(range(1, 73))
-EXPECTED_EXERCISE_COUNT = 333
+EXPECTED_EXERCISE_COUNT = 335
 EXPECTED_EXERCISE_COUNTS = {
-    '01_problem-definition.md': 10, '02_basics-signal-model.md': 18,
+    '01_problem-definition.md': 10, '02_basics-signal-model.md': 20,
     '03_array-geometry.md': 17, '04_doa-estimation.md': 23,
     '05_beamforming.md': 22, '06_aec.md': 39, '07_wpe-dereverberation.md': 21,
     '08_speech-separation.md': 29, '09_source-tracking.md': 23,
@@ -1394,7 +1398,7 @@ def site_source_digest():
     paths += sorted(main_audio_path(CODE_CHAPTERS, record["group"], record["file"])
                     for record in manifest["files"])
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, SPECTRAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, SPECTRAL_AUDIO_ROOT, STFT_AUDIO_ROOT, SWEEP_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
@@ -1747,7 +1751,7 @@ def check_real_audio(errors):
         parser = VisibleMediaParser()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         allowed_audio_roots = ("../audio/", "../real_audio/", "../room_audio/",
-                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../spectral_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/", "../scenario_audio/", "../weighted_audio/", "../response_audio/", "../imaging_audio/", "../distributed_audio/")
+                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../spectral_audio/", "../stft_audio/", "../sweep_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/", "../scenario_audio/", "../weighted_audio/", "../response_audio/", "../imaging_audio/", "../distributed_audio/")
         if any(not (p.get("src") or "").startswith(allowed_audio_roots)
                for p in parser.items):
             fail(errors, "未知试听控件来源")
@@ -2853,6 +2857,45 @@ def check_spectral_audio(errors):
         fail(errors, '独立方向谱形音频：' + str(error))
 
 
+def check_sweep_audio(errors):
+    """Read-only source replay, published bytes and separate Python-integer power."""
+    try:
+        from codes.chapters.ch02.examples.generate_sweep_audio import check_assets
+        source, published = SWEEP_AUDIO_ROOT, SITE / 'sweep_audio'
+        manifest = check_assets(source)
+        members = set(SWEEP_AUDIO_LENGTHS) | {'MANIFEST.json'}
+        validate_asset_directory(published, members, check=True)
+        required_sources = {'codes/chapters/ch02/core/deconvolution.py',
+                            'codes/chapters/ch02/examples/generate_sweep_audio.py',
+                            'codes/chapters/ch02/core/conventions.py',
+                            'codes/chapters/ch00/core/audio_samples.py',
+                            'codes/chapters/ch00/io_contracts.py'}
+        if set(manifest['source_sha256']) != required_sources:
+            raise ValueError('sweep generating source set differs')
+        for name in members:
+            if (source/name).read_bytes() != (published/name).read_bytes():
+                raise ValueError('sweep published bytes differ: ' + name)
+        for name, count in SWEEP_AUDIO_LENGTHS.items():
+            with wave.open(str(published/name), 'rb') as stream:
+                if (stream.getframerate(), stream.getnchannels(), stream.getsampwidth(),
+                        stream.getnframes(), stream.getcomptype()) != (16000, 1, 2, count, 'NONE'):
+                    raise ValueError('sweep independent PCM format differs: ' + name)
+                data = stream.readframes(count)
+            if len(data) != 2*count:
+                raise ValueError('sweep PCM payload is incomplete')
+            energy = sum(value[0]**2 for value in struct.iter_unpack('<h', data))
+            denominator = count*32768**2
+            expected = {'squared_sum_E': energy, 'integer_denominator_D': denominator,
+                        'samples': count, 'mean_square': energy/denominator}
+            if manifest['files'][name]['pcm_integer_measurements'] != expected:
+                raise ValueError('sweep independent integer scoring differs: ' + name)
+        for page, prefix in ((SITE/'02_basics-signal-model.html', ''),
+                             (SITE/'research/05_exercises_and_audio.html', '../')):
+            _check_visible_audio(page, prefix, 'sweep_audio', set(SWEEP_AUDIO_LENGTHS), {'MANIFEST.json'})
+    except (OSError, ValueError, KeyError, TypeError, wave.Error, struct.error) as error:
+        fail(errors, '独立数字扫频音频：' + str(error))
+
+
 def check_distributed_audio(errors):
     """Exact member/copy checks, current-source replay and independent integer E/D."""
     try:
@@ -3457,6 +3500,7 @@ def main():
     check_binaural_audio(errors)
     check_spectral_audio(errors)
     check_stft_audio(errors)
+    check_sweep_audio(errors)
     check_geometry_audio(errors)
     check_focus_audio(errors)
     check_derivative_audio(errors)

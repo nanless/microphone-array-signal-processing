@@ -1,0 +1,2063 @@
+{
+  "schema_version": 2,
+  "executed_at_utc": "2026-10-04T05:27:07.267566+00:00",
+  "audit_source": "codes/chapters/ch02/examples/audit_upstream_models.py",
+  "audit_source_sha256": "efd9bf05059d48360201bd2078933791b402d8259dccabd94308a1acc75f92e0",
+  "sources": {
+    "lock_sha256": "6dab41b1542cfa2cd4731ef4c8a3e807b343dc807f209c4eea17503e203ebf59",
+    "status_sha256": "1142cc2290d93ea33e6b2dcdf72b9b52307efdd837b84c1739262c2c968186d6",
+    "projects": {
+      "pyroomacoustics": {
+        "url": "https://github.com/LCAV/pyroomacoustics.git",
+        "revision": "0dd39f2614b7fc44b2cc63dbe7d60f4641068890",
+        "actual_origin": "https://github.com/LCAV/pyroomacoustics.git",
+        "used_source_identity_verified": true,
+        "used_file_identity": {
+          "pyroomacoustics/parameters.py": {
+            "sha256": "dac6389cdaf949659cb2d8dbe01655593f423b35492bc857a43c4af9b24b4ed2",
+            "bytes": 21926,
+            "head_blob": "e36853133fc48fad36f2813e0f9eeda05a5a18b7",
+            "actual_blob": "e36853133fc48fad36f2813e0f9eeda05a5a18b7"
+          },
+          "pyroomacoustics/doa/doa.py": {
+            "sha256": "8332e1fc9234ff37613b6cddcae2e4d67dc73f624fb8640dcdd5b5721b6e110c",
+            "bytes": 19459,
+            "head_blob": "132b70cb37651f737fda815f0350500854d0428e",
+            "actual_blob": "132b70cb37651f737fda815f0350500854d0428e"
+          },
+          "pyroomacoustics/acoustics.py": {
+            "sha256": "3196254709071ab1061982133f05be94e7da554f2619db98d829203839d7c4d2",
+            "bytes": 36950,
+            "head_blob": "d6becec68609bf9a163cc3e9dac16882a8699db3",
+            "actual_blob": "d6becec68609bf9a163cc3e9dac16882a8699db3"
+          },
+          "pyroomacoustics/experimental/rt60.py": {
+            "sha256": "c066a78677371003818123efe3b8e1a7dbd75c8a21de6404ab94ea95c0e2c1f3",
+            "bytes": 6673,
+            "head_blob": "6a3162e2e4900a8799ab2b76a1d38373e5f889d0",
+            "actual_blob": "6a3162e2e4900a8799ab2b76a1d38373e5f889d0"
+          },
+          "LICENSE": {
+            "sha256": "0922c9a0c1f5bb35a1e0df7b56954864e27cfc625fc3b041acde0707ce797e46",
+            "bytes": 1058,
+            "head_blob": "faa9d4ecdd27b2138955f73d1167853e99605b38",
+            "actual_blob": "faa9d4ecdd27b2138955f73d1167853e99605b38"
+          }
+        },
+        "lock_entry": {
+          "id": "pyroomacoustics",
+          "url": "https://github.com/LCAV/pyroomacoustics.git",
+          "revision": "0dd39f2614b7fc44b2cc63dbe7d60f4641068890",
+          "release": "v0.10.0",
+          "license": "MIT",
+          "fetch_enabled": true,
+          "scope": "room simulation, STFT, DOA, beamforming, BSS, and general-purpose real-valued RLS/BlockRLS adaptive filters",
+          "note": "The book's optional reproduction environment and this source revision are pinned to 0.10.0. Current main was separately inspected at ff7d61f219e4eb41489963c4bb5f57bea5bc2c69. CSSM/WAVES/TOPS static indexing concerns are documented in codes/chapters/ch00/research/01_spatial_and_tracking.md; acquisition is not numerical validation.",
+          "acquisition": "independent_source_checkout",
+          "entrypoints": [
+            "pyroomacoustics/room.py",
+            "pyroomacoustics/transform/stft.py",
+            "pyroomacoustics/doa/music.py",
+            "pyroomacoustics/doa/normmusic.py",
+            "pyroomacoustics/doa/srp.py",
+            "pyroomacoustics/doa/cssm.py",
+            "pyroomacoustics/doa/waves.py",
+            "pyroomacoustics/doa/tops.py",
+            "pyroomacoustics/doa/frida.py",
+            "pyroomacoustics/doa/tools_fri_doa_plane.py",
+            "pyroomacoustics/beamforming.py",
+            "pyroomacoustics/adaptive/rls.py",
+            "pyroomacoustics/adaptive/subband_lms.py",
+            "LICENSE",
+            "pyroomacoustics/parameters.py",
+            "pyroomacoustics/acoustics.py",
+            "pyroomacoustics/experimental/rt60.py",
+            "pyroomacoustics/doa/doa.py",
+            "pyroomacoustics/bss/auxiva.py",
+            "pyroomacoustics/bss/common.py",
+            "pyroomacoustics/bss/fastmnmf.py",
+            "pyroomacoustics/bss/fastmnmf2.py",
+            "pyroomacoustics/bss/ilrma.py",
+            "pyroomacoustics/bss/trinicon.py"
+          ]
+        },
+        "recorded_acquisition": {
+          "id": "pyroomacoustics",
+          "revision": "0dd39f2614b7fc44b2cc63dbe7d60f4641068890",
+          "status": "source_verified",
+          "missing_entrypoints": [],
+          "execution": "not_run",
+          "dependency_validation": "not_run",
+          "asset_policy": "existing_checkout_preserved",
+          "requested_source_paths": [
+            "repository"
+          ],
+          "observed_sparse_patterns": [],
+          "expected_sparse_patterns": [],
+          "source_selection_verified": true
+        },
+        "live_acquisition_scope": {
+          "id": "pyroomacoustics",
+          "revision": "0dd39f2614b7fc44b2cc63dbe7d60f4641068890",
+          "status": "source_verified",
+          "missing_entrypoints": [],
+          "execution": "not_run",
+          "dependency_validation": "not_run",
+          "asset_policy": "existing_checkout_preserved",
+          "requested_source_paths": [
+            "repository"
+          ],
+          "observed_sparse_patterns": [],
+          "expected_sparse_patterns": [],
+          "source_selection_verified": true
+        },
+        "release": "v0.10.0",
+        "license": "MIT",
+        "worktree_clean": true,
+        "source_sha256": {
+          "pyroomacoustics/parameters.py": "dac6389cdaf949659cb2d8dbe01655593f423b35492bc857a43c4af9b24b4ed2",
+          "pyroomacoustics/doa/doa.py": "8332e1fc9234ff37613b6cddcae2e4d67dc73f624fb8640dcdd5b5721b6e110c",
+          "pyroomacoustics/acoustics.py": "3196254709071ab1061982133f05be94e7da554f2619db98d829203839d7c4d2",
+          "pyroomacoustics/experimental/rt60.py": "c066a78677371003818123efe3b8e1a7dbd75c8a21de6404ab94ea95c0e2c1f3",
+          "LICENSE": "0922c9a0c1f5bb35a1e0df7b56954864e27cfc625fc3b041acde0707ce797e46"
+        },
+        "lock_entry_sha256": "30bb1f0d69f329712befda827a563d5db81fbd68dc5e996baf546a73d2e5b11f"
+      },
+      "acoular": {
+        "url": "https://github.com/acoular/acoular.git",
+        "revision": "13d3d7df74ac1a8135c7ec71da098cbbc03d8652",
+        "actual_origin": "https://github.com/acoular/acoular.git",
+        "used_source_identity_verified": true,
+        "used_file_identity": {
+          "acoular/fastFuncs.py": {
+            "sha256": "07e8f4b07b5b47ff4703ae360d90b967f8407a8c95238371fb6d9f6ce5f97a5f",
+            "bytes": 37701,
+            "head_blob": "35cdeb9961a3f2d4758ed15e1f293bd6fe55b101",
+            "actual_blob": "35cdeb9961a3f2d4758ed15e1f293bd6fe55b101"
+          },
+          "acoular/fbeamform.py": {
+            "sha256": "451f0258cb176d663a57f33377078bb36d6fb1ad074f02033493aafaa5354d11",
+            "bytes": 98020,
+            "head_blob": "39f3764b35f2df69c588e0cdc1a4a378e4bca24e",
+            "actual_blob": "39f3764b35f2df69c588e0cdc1a4a378e4bca24e"
+          },
+          "LICENSE": {
+            "sha256": "b5bc3bfa7c76d388170a8f29f8dc3047bc3ca0abcd3160781f4ec54d3e95f69f",
+            "bytes": 1505,
+            "head_blob": "ccdb66780767dc4941b72856f979192919f05db3",
+            "actual_blob": "ccdb66780767dc4941b72856f979192919f05db3"
+          }
+        },
+        "lock_entry": {
+          "id": "acoular",
+          "url": "https://github.com/acoular/acoular.git",
+          "revision": "13d3d7df74ac1a8135c7ec71da098cbbc03d8652",
+          "license": "BSD-3-Clause",
+          "scope": "工业声源成像：DAMAS、CLEAN-SC、CMF、移动/旋转源",
+          "fetch_enabled": true,
+          "note": "声源功率图不等于增强语音；测量校准、流场模型、FFT口径和数据许可另核对。",
+          "entrypoints": [
+            "acoular/fbeamform.py",
+            "acoular/tbeamform.py",
+            "LICENSE",
+            "acoular/calib.py",
+            "acoular/fastFuncs.py",
+            "acoular/environments.py"
+          ]
+        },
+        "recorded_acquisition": {
+          "id": "acoular",
+          "revision": "13d3d7df74ac1a8135c7ec71da098cbbc03d8652",
+          "status": "source_selection_mismatch",
+          "missing_entrypoints": [],
+          "execution": "not_run",
+          "dependency_validation": "not_run",
+          "asset_policy": "sparse_source_checkout",
+          "requested_source_paths": [
+            "repository"
+          ],
+          "observed_sparse_patterns": [
+            "/*",
+            "!**/*.wav",
+            "!**/*.flac",
+            "!**/*.mp3",
+            "!**/*.mp4",
+            "!**/*.ogg",
+            "!**/*.pt",
+            "!**/*.pth",
+            "!**/*.ckpt",
+            "!**/*.onnx",
+            "!**/*.tflite",
+            "!**/*.h5",
+            "!**/*.hdf5",
+            "!**/*.npz",
+            "!**/*.npy",
+            "!**/*.so",
+            "!**/*.dll",
+            "!**/*.dylib",
+            "!**/*.zip",
+            "!**/*.tar",
+            "!**/*.gz"
+          ],
+          "expected_sparse_patterns": [
+            "/*",
+            "!**/*.wav",
+            "!**/*.flac",
+            "!**/*.mp3",
+            "!**/*.mp4",
+            "!**/*.ogg",
+            "!**/*.pt",
+            "!**/*.pth",
+            "!**/*.ckpt",
+            "!**/*.onnx",
+            "!**/*.tflite",
+            "!**/*.h5",
+            "!**/*.hdf5",
+            "!**/*.npz",
+            "!**/*.npy",
+            "!**/*.so",
+            "!**/*.dll",
+            "!**/*.dylib",
+            "!**/*.zip",
+            "!**/*.tar",
+            "!**/*.gz",
+            "!**/*.bin",
+            "!**/*.pb",
+            "!**/*.pkl",
+            "!**/*.pickle",
+            "!**/*.mat",
+            "!**/*.safetensors",
+            "!**/*.whl",
+            "!**/*.a",
+            "!**/*.o",
+            "!**/*.exe",
+            "!**/*.wasm",
+            "!**/*.weights"
+          ],
+          "source_selection_verified": false
+        },
+        "live_acquisition_scope": {
+          "id": "acoular",
+          "revision": "13d3d7df74ac1a8135c7ec71da098cbbc03d8652",
+          "status": "source_selection_mismatch",
+          "missing_entrypoints": [],
+          "execution": "not_run",
+          "dependency_validation": "not_run",
+          "asset_policy": "sparse_source_checkout",
+          "requested_source_paths": [
+            "repository"
+          ],
+          "observed_sparse_patterns": [
+            "/*",
+            "!**/*.wav",
+            "!**/*.flac",
+            "!**/*.mp3",
+            "!**/*.mp4",
+            "!**/*.ogg",
+            "!**/*.pt",
+            "!**/*.pth",
+            "!**/*.ckpt",
+            "!**/*.onnx",
+            "!**/*.tflite",
+            "!**/*.h5",
+            "!**/*.hdf5",
+            "!**/*.npz",
+            "!**/*.npy",
+            "!**/*.so",
+            "!**/*.dll",
+            "!**/*.dylib",
+            "!**/*.zip",
+            "!**/*.tar",
+            "!**/*.gz"
+          ],
+          "expected_sparse_patterns": [
+            "/*",
+            "!**/*.wav",
+            "!**/*.flac",
+            "!**/*.mp3",
+            "!**/*.mp4",
+            "!**/*.ogg",
+            "!**/*.pt",
+            "!**/*.pth",
+            "!**/*.ckpt",
+            "!**/*.onnx",
+            "!**/*.tflite",
+            "!**/*.h5",
+            "!**/*.hdf5",
+            "!**/*.npz",
+            "!**/*.npy",
+            "!**/*.so",
+            "!**/*.dll",
+            "!**/*.dylib",
+            "!**/*.zip",
+            "!**/*.tar",
+            "!**/*.gz",
+            "!**/*.bin",
+            "!**/*.pb",
+            "!**/*.pkl",
+            "!**/*.pickle",
+            "!**/*.mat",
+            "!**/*.safetensors",
+            "!**/*.whl",
+            "!**/*.a",
+            "!**/*.o",
+            "!**/*.exe",
+            "!**/*.wasm",
+            "!**/*.weights"
+          ],
+          "source_selection_verified": false
+        },
+        "release": null,
+        "license": "BSD-3-Clause",
+        "worktree_clean": true,
+        "source_sha256": {
+          "acoular/fastFuncs.py": "07e8f4b07b5b47ff4703ae360d90b967f8407a8c95238371fb6d9f6ce5f97a5f",
+          "acoular/fbeamform.py": "451f0258cb176d663a57f33377078bb36d6fb1ad074f02033493aafaa5354d11",
+          "LICENSE": "b5bc3bfa7c76d388170a8f29f8dc3047bc3ca0abcd3160781f4ec54d3e95f69f"
+        },
+        "lock_entry_sha256": "5287e02ac95cf6b206c626ffd34ed3f3f7c30cd743954b98775065c5b858e099"
+      },
+      "doatools": {
+        "url": "https://github.com/morriswmz/doatools.py.git",
+        "revision": "9469db201e0418aef6b97583ef54b6fec2769502",
+        "actual_origin": "https://github.com/morriswmz/doatools.py.git",
+        "used_source_identity_verified": true,
+        "used_file_identity": {
+          "doatools/model/sources.py": {
+            "sha256": "0fe676c55c4b6f2e73ad99323398bd71bc8d80bbf8c56b24f9313af85e980e25",
+            "bytes": 20288,
+            "head_blob": "8e619a642692de2f11adf280b428e0191954194f",
+            "actual_blob": "8e619a642692de2f11adf280b428e0191954194f"
+          },
+          "doatools/utils/math.py": {
+            "sha256": "0b1e286ecb1c89811225bb72c0d263de6a82d647b3617ca23cab6346e4331148",
+            "bytes": 5491,
+            "head_blob": "56c298f914bc614f52e1e26c3f2d53482f9e43d4",
+            "actual_blob": "56c298f914bc614f52e1e26c3f2d53482f9e43d4"
+          },
+          "doatools/performance/utils.py": {
+            "sha256": "a54d0d34fdab9dcb34e86abf93103e426c6a8948b4d848a4ae18662f42cef394",
+            "bytes": 1950,
+            "head_blob": "0fa08301d2c56c02dfc77639ae0811e61caa38b3",
+            "actual_blob": "0fa08301d2c56c02dfc77639ae0811e61caa38b3"
+          },
+          "doatools/performance/crb.py": {
+            "sha256": "aedc92e2d4e4006c31dad01601bde0d6b1a1b0402f3e028bc0daa34b1d592d6c",
+            "bytes": 10121,
+            "head_blob": "dbb68093c9710b077d0c1a66312ee278cdf2d832",
+            "actual_blob": "dbb68093c9710b077d0c1a66312ee278cdf2d832"
+          },
+          "LICENSE.md": {
+            "sha256": "39ddd5dcfeb6eb77f18c99e8955341dc7b4d4823a3a121e0124e20de336b507a",
+            "bytes": 1081,
+            "head_blob": "44c4071ad5a8e3262012b9b9d3b2d95c608b730c",
+            "actual_blob": "44c4071ad5a8e3262012b9b9d3b2d95c608b730c"
+          }
+        },
+        "lock_entry": {
+          "id": "doatools",
+          "url": "https://github.com/morriswmz/doatools.py.git",
+          "revision": "9469db201e0418aef6b97583ef54b6fec2769502",
+          "license": "MIT",
+          "scope": "root-MUSIC、空间平滑、源数估计、稀疏协方差定位、统计下界; array geometry, coarray direct augmentation/spatial smoothing and given-perturbation forward models",
+          "fetch_enabled": true,
+          "note": "作者维护的理论研究工具；需要逐方法核对阵列和角度约定，求解器成功不等于DOA正确。 Fixed ESPRIT default row weighting mutates overlapping views; actual LS/TLS and safe-copy diagnostic recorded in reports/doatools_esprit_reference.json (2026-09-28). resolved=True does not validate an angle.",
+          "entrypoints": [
+            "doatools/estimation/music.py",
+            "doatools/estimation/preprocessing.py",
+            "doatools/estimation/source_number.py",
+            "doatools/estimation/sparse.py",
+            "LICENSE.md",
+            "doatools/performance/crb.py",
+            "doatools/model/arrays.py",
+            "doatools/model/coarray.py",
+            "doatools/estimation/coarray.py",
+            "doatools/model/perturbations.py",
+            "doatools/estimation/esprit.py",
+            "doatools/estimation/core.py",
+            "doatools/model/sources.py",
+            "doatools/utils/conversion.py"
+          ]
+        },
+        "recorded_acquisition": {
+          "id": "doatools",
+          "revision": "9469db201e0418aef6b97583ef54b6fec2769502",
+          "status": "source_selection_mismatch",
+          "missing_entrypoints": [],
+          "execution": "not_run",
+          "dependency_validation": "not_run",
+          "asset_policy": "sparse_source_checkout",
+          "requested_source_paths": [
+            "repository"
+          ],
+          "observed_sparse_patterns": [
+            "/*",
+            "!**/*.wav",
+            "!**/*.flac",
+            "!**/*.mp3",
+            "!**/*.mp4",
+            "!**/*.ogg",
+            "!**/*.pt",
+            "!**/*.pth",
+            "!**/*.ckpt",
+            "!**/*.onnx",
+            "!**/*.tflite",
+            "!**/*.h5",
+            "!**/*.hdf5",
+            "!**/*.npz",
+            "!**/*.npy",
+            "!**/*.so",
+            "!**/*.dll",
+            "!**/*.dylib",
+            "!**/*.zip",
+            "!**/*.tar",
+            "!**/*.gz"
+          ],
+          "expected_sparse_patterns": [
+            "/*",
+            "!**/*.wav",
+            "!**/*.flac",
+            "!**/*.mp3",
+            "!**/*.mp4",
+            "!**/*.ogg",
+            "!**/*.pt",
+            "!**/*.pth",
+            "!**/*.ckpt",
+            "!**/*.onnx",
+            "!**/*.tflite",
+            "!**/*.h5",
+            "!**/*.hdf5",
+            "!**/*.npz",
+            "!**/*.npy",
+            "!**/*.so",
+            "!**/*.dll",
+            "!**/*.dylib",
+            "!**/*.zip",
+            "!**/*.tar",
+            "!**/*.gz",
+            "!**/*.bin",
+            "!**/*.pb",
+            "!**/*.pkl",
+            "!**/*.pickle",
+            "!**/*.mat",
+            "!**/*.safetensors",
+            "!**/*.whl",
+            "!**/*.a",
+            "!**/*.o",
+            "!**/*.exe",
+            "!**/*.wasm",
+            "!**/*.weights"
+          ],
+          "source_selection_verified": false
+        },
+        "live_acquisition_scope": {
+          "id": "doatools",
+          "revision": "9469db201e0418aef6b97583ef54b6fec2769502",
+          "status": "source_selection_mismatch",
+          "missing_entrypoints": [],
+          "execution": "not_run",
+          "dependency_validation": "not_run",
+          "asset_policy": "sparse_source_checkout",
+          "requested_source_paths": [
+            "repository"
+          ],
+          "observed_sparse_patterns": [
+            "/*",
+            "!**/*.wav",
+            "!**/*.flac",
+            "!**/*.mp3",
+            "!**/*.mp4",
+            "!**/*.ogg",
+            "!**/*.pt",
+            "!**/*.pth",
+            "!**/*.ckpt",
+            "!**/*.onnx",
+            "!**/*.tflite",
+            "!**/*.h5",
+            "!**/*.hdf5",
+            "!**/*.npz",
+            "!**/*.npy",
+            "!**/*.so",
+            "!**/*.dll",
+            "!**/*.dylib",
+            "!**/*.zip",
+            "!**/*.tar",
+            "!**/*.gz"
+          ],
+          "expected_sparse_patterns": [
+            "/*",
+            "!**/*.wav",
+            "!**/*.flac",
+            "!**/*.mp3",
+            "!**/*.mp4",
+            "!**/*.ogg",
+            "!**/*.pt",
+            "!**/*.pth",
+            "!**/*.ckpt",
+            "!**/*.onnx",
+            "!**/*.tflite",
+            "!**/*.h5",
+            "!**/*.hdf5",
+            "!**/*.npz",
+            "!**/*.npy",
+            "!**/*.so",
+            "!**/*.dll",
+            "!**/*.dylib",
+            "!**/*.zip",
+            "!**/*.tar",
+            "!**/*.gz",
+            "!**/*.bin",
+            "!**/*.pb",
+            "!**/*.pkl",
+            "!**/*.pickle",
+            "!**/*.mat",
+            "!**/*.safetensors",
+            "!**/*.whl",
+            "!**/*.a",
+            "!**/*.o",
+            "!**/*.exe",
+            "!**/*.wasm",
+            "!**/*.weights"
+          ],
+          "source_selection_verified": false
+        },
+        "release": null,
+        "license": "MIT",
+        "worktree_clean": true,
+        "source_sha256": {
+          "doatools/model/sources.py": "0fe676c55c4b6f2e73ad99323398bd71bc8d80bbf8c56b24f9313af85e980e25",
+          "doatools/utils/math.py": "0b1e286ecb1c89811225bb72c0d263de6a82d647b3617ca23cab6346e4331148",
+          "doatools/performance/utils.py": "a54d0d34fdab9dcb34e86abf93103e426c6a8948b4d848a4ae18662f42cef394",
+          "doatools/performance/crb.py": "aedc92e2d4e4006c31dad01601bde0d6b1a1b0402f3e028bc0daa34b1d592d6c",
+          "LICENSE.md": "39ddd5dcfeb6eb77f18c99e8955341dc7b4d4823a3a121e0124e20de336b507a"
+        },
+        "lock_entry_sha256": "4c352513e5e82f8c474d4979edd3190977aed51fe056a3e952118af894dc4240"
+      },
+      "pyfar": {
+        "url": "https://github.com/pyfar/pyfar.git",
+        "revision": "0bfe1e8b7d71ab83edd3ea3b5fab7b28761d114a",
+        "actual_origin": "https://github.com/pyfar/pyfar.git",
+        "used_source_identity_verified": true,
+        "used_file_identity": {
+          "pyfar/signals/deterministic.py": {
+            "sha256": "eb44afe2e0095899f1dfb0c674fecd035fb4048df0cff8f6bc5ec49b6dd2f989",
+            "bytes": 40039,
+            "head_blob": "6dc49decef4ce177f272985eca5259c9e1703b07",
+            "actual_blob": "6dc49decef4ce177f272985eca5259c9e1703b07"
+          },
+          "pyfar/dsp/dsp.py": {
+            "sha256": "ccc94b39466aaca943e94bcb944f60026f0e5bcc89e4bbb837874c803a3b1fe8",
+            "bytes": 118843,
+            "head_blob": "ef8562fab2a24f388fac4bc90569069b11e8cb45",
+            "actual_blob": "ef8562fab2a24f388fac4bc90569069b11e8cb45"
+          },
+          "LICENSE": {
+            "sha256": "55a096b21e7fc419f6dba2e3afa46dc754936e85dc30802638b5892f7bd2a431",
+            "bytes": 1068,
+            "head_blob": "430184952c6fcb292ee01cb114bb9c39f32f78ff",
+            "actual_blob": "430184952c6fcb292ee01cb114bb9c39f32f78ff"
+          },
+          "pyproject.toml": {
+            "sha256": "b99e9198d44474a9ff74b61225cb7203142049bcf064e9405cb15ae8c4d4cf9a",
+            "bytes": 4511,
+            "head_blob": "c286b1adefee0cf9ffccfd73c2c010dbb56a6426",
+            "actual_blob": "c286b1adefee0cf9ffccfd73c2c010dbb56a6426"
+          }
+        },
+        "lock_entry": {
+          "id": "pyfar",
+          "url": "https://github.com/pyfar/pyfar.git",
+          "revision": "0bfe1e8b7d71ab83edd3ea3b5fab7b28761d114a",
+          "release": "v0.8.1",
+          "license": "MIT",
+          "scope": "声学测试信号、指数扫频、频带受限反卷积、音频容器和频谱归一化；不等于已完成设备测量",
+          "fetch_enabled": true,
+          "note": "2026-09-28核实官方v0.8.1；仅固定源码与许可，不获取录音/测量数据，不执行上游。代码取得、运行和实机ESS测量分别记录。",
+          "source_paths": [
+            "pyfar/",
+            "LICENSE",
+            "README.md",
+            "pyproject.toml"
+          ],
+          "entrypoints": [
+            "LICENSE",
+            "pyfar/signals/deterministic.py",
+            "pyfar/dsp/dsp.py",
+            "pyproject.toml"
+          ]
+        },
+        "recorded_acquisition": {
+          "id": "pyfar",
+          "revision": "0bfe1e8b7d71ab83edd3ea3b5fab7b28761d114a",
+          "status": "source_verified",
+          "missing_entrypoints": [],
+          "execution": "not_run",
+          "dependency_validation": "not_run",
+          "asset_policy": "sparse_source_checkout",
+          "requested_source_paths": [
+            "pyfar/",
+            "LICENSE",
+            "README.md",
+            "pyproject.toml"
+          ],
+          "observed_sparse_patterns": [
+            "/pyfar/",
+            "/LICENSE",
+            "/README.md",
+            "/pyproject.toml",
+            "!**/*.wav",
+            "!**/*.flac",
+            "!**/*.mp3",
+            "!**/*.mp4",
+            "!**/*.ogg",
+            "!**/*.pt",
+            "!**/*.pth",
+            "!**/*.ckpt",
+            "!**/*.onnx",
+            "!**/*.tflite",
+            "!**/*.h5",
+            "!**/*.hdf5",
+            "!**/*.npz",
+            "!**/*.npy",
+            "!**/*.so",
+            "!**/*.dll",
+            "!**/*.dylib",
+            "!**/*.zip",
+            "!**/*.tar",
+            "!**/*.gz",
+            "!**/*.bin",
+            "!**/*.pb",
+            "!**/*.pkl",
+            "!**/*.pickle",
+            "!**/*.mat",
+            "!**/*.safetensors",
+            "!**/*.whl",
+            "!**/*.a",
+            "!**/*.o",
+            "!**/*.exe",
+            "!**/*.wasm",
+            "!**/*.weights"
+          ],
+          "expected_sparse_patterns": [
+            "/pyfar/",
+            "/LICENSE",
+            "/README.md",
+            "/pyproject.toml",
+            "!**/*.wav",
+            "!**/*.flac",
+            "!**/*.mp3",
+            "!**/*.mp4",
+            "!**/*.ogg",
+            "!**/*.pt",
+            "!**/*.pth",
+            "!**/*.ckpt",
+            "!**/*.onnx",
+            "!**/*.tflite",
+            "!**/*.h5",
+            "!**/*.hdf5",
+            "!**/*.npz",
+            "!**/*.npy",
+            "!**/*.so",
+            "!**/*.dll",
+            "!**/*.dylib",
+            "!**/*.zip",
+            "!**/*.tar",
+            "!**/*.gz",
+            "!**/*.bin",
+            "!**/*.pb",
+            "!**/*.pkl",
+            "!**/*.pickle",
+            "!**/*.mat",
+            "!**/*.safetensors",
+            "!**/*.whl",
+            "!**/*.a",
+            "!**/*.o",
+            "!**/*.exe",
+            "!**/*.wasm",
+            "!**/*.weights"
+          ],
+          "source_selection_verified": true
+        },
+        "live_acquisition_scope": {
+          "id": "pyfar",
+          "revision": "0bfe1e8b7d71ab83edd3ea3b5fab7b28761d114a",
+          "status": "source_verified",
+          "missing_entrypoints": [],
+          "execution": "not_run",
+          "dependency_validation": "not_run",
+          "asset_policy": "sparse_source_checkout",
+          "requested_source_paths": [
+            "pyfar/",
+            "LICENSE",
+            "README.md",
+            "pyproject.toml"
+          ],
+          "observed_sparse_patterns": [
+            "/pyfar/",
+            "/LICENSE",
+            "/README.md",
+            "/pyproject.toml",
+            "!**/*.wav",
+            "!**/*.flac",
+            "!**/*.mp3",
+            "!**/*.mp4",
+            "!**/*.ogg",
+            "!**/*.pt",
+            "!**/*.pth",
+            "!**/*.ckpt",
+            "!**/*.onnx",
+            "!**/*.tflite",
+            "!**/*.h5",
+            "!**/*.hdf5",
+            "!**/*.npz",
+            "!**/*.npy",
+            "!**/*.so",
+            "!**/*.dll",
+            "!**/*.dylib",
+            "!**/*.zip",
+            "!**/*.tar",
+            "!**/*.gz",
+            "!**/*.bin",
+            "!**/*.pb",
+            "!**/*.pkl",
+            "!**/*.pickle",
+            "!**/*.mat",
+            "!**/*.safetensors",
+            "!**/*.whl",
+            "!**/*.a",
+            "!**/*.o",
+            "!**/*.exe",
+            "!**/*.wasm",
+            "!**/*.weights"
+          ],
+          "expected_sparse_patterns": [
+            "/pyfar/",
+            "/LICENSE",
+            "/README.md",
+            "/pyproject.toml",
+            "!**/*.wav",
+            "!**/*.flac",
+            "!**/*.mp3",
+            "!**/*.mp4",
+            "!**/*.ogg",
+            "!**/*.pt",
+            "!**/*.pth",
+            "!**/*.ckpt",
+            "!**/*.onnx",
+            "!**/*.tflite",
+            "!**/*.h5",
+            "!**/*.hdf5",
+            "!**/*.npz",
+            "!**/*.npy",
+            "!**/*.so",
+            "!**/*.dll",
+            "!**/*.dylib",
+            "!**/*.zip",
+            "!**/*.tar",
+            "!**/*.gz",
+            "!**/*.bin",
+            "!**/*.pb",
+            "!**/*.pkl",
+            "!**/*.pickle",
+            "!**/*.mat",
+            "!**/*.safetensors",
+            "!**/*.whl",
+            "!**/*.a",
+            "!**/*.o",
+            "!**/*.exe",
+            "!**/*.wasm",
+            "!**/*.weights"
+          ],
+          "source_selection_verified": true
+        },
+        "release": "v0.8.1",
+        "license": "MIT",
+        "worktree_clean": true,
+        "source_sha256": {
+          "pyfar/signals/deterministic.py": "eb44afe2e0095899f1dfb0c674fecd035fb4048df0cff8f6bc5ec49b6dd2f989",
+          "pyfar/dsp/dsp.py": "ccc94b39466aaca943e94bcb944f60026f0e5bcc89e4bbb837874c803a3b1fe8",
+          "LICENSE": "55a096b21e7fc419f6dba2e3afa46dc754936e85dc30802638b5892f7bd2a431",
+          "pyproject.toml": "b99e9198d44474a9ff74b61225cb7203142049bcf064e9405cb15ae8c4d4cf9a"
+        },
+        "lock_entry_sha256": "3c60acee767974216f249b09f236e76e717264ac4bf75bea1a71688fc5e7067d"
+      },
+      "speed-of-sound-in-air": {
+        "url": "https://github.com/RobertoGavioso/Speed-of-sound-in-air.git",
+        "revision": "5c7e6652cf2fd7b4c52e83d8fa3782b3c56e61de",
+        "actual_origin": "https://github.com/RobertoGavioso/Speed-of-sound-in-air.git",
+        "used_source_identity_verified": true,
+        "used_file_identity": {
+          "ReadMe.txt": {
+            "sha256": "ddd3eb9c6926bf02c97a4ead35c7e56f7763b4ad249db3e2632da4521fb0247b",
+            "bytes": 2964,
+            "head_blob": "f58a7f98f343b42fdbab50f04decfd6f1e9ab650",
+            "actual_blob": "f58a7f98f343b42fdbab50f04decfd6f1e9ab650"
+          },
+          "LICENSE": {
+            "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+            "bytes": 35149,
+            "head_blob": "f288702d2fa16d3cdf0035b15a9fcbc552cd88e7",
+            "actual_blob": "f288702d2fa16d3cdf0035b15a9fcbc552cd88e7"
+          }
+        },
+        "lock_entry": {
+          "id": "speed-of-sound-in-air",
+          "url": "https://github.com/RobertoGavioso/Speed-of-sound-in-air.git",
+          "revision": "5c7e6652cf2fd7b4c52e83d8fa3782b3c56e61de",
+          "license": "GPL-3.0",
+          "fetch_enabled": true,
+          "scope": "Original authors' 2025 humid-air sound-speed and uncertainty model in LabVIEW; environmental calibration reference, not the tutorial's default propagation constant",
+          "source_paths": [
+            "source labview files/",
+            "LICENSE",
+            "ReadMe.txt"
+          ],
+          "entrypoints": [
+            "source labview files/SoS_AIR_2025.vi",
+            "source labview files/Plot & Save SoS_AIR.vi",
+            "source labview files/T from SoS_AIR.vi",
+            "LICENSE",
+            "ReadMe.txt"
+          ],
+          "acquisition": "independent_source_checkout",
+          "note": "Original-author identity verified 2026-09-30 via DOI 10.1063/5.0294663, section 6 and reference 81. Fixed tree contains 43 VI source files; source-only selection excludes EXE files and paper PDF. Source requires LabVIEW later than 2016 (64-bit); separate executables require LabVIEW 2016 32-bit Runtime. VI acquisition is neither graphical-source inspection nor model execution. Root GPLv3 license does not cover proprietary runtime; no project-level or-later notice verified."
+        },
+        "recorded_acquisition": {
+          "id": "speed-of-sound-in-air",
+          "revision": "5c7e6652cf2fd7b4c52e83d8fa3782b3c56e61de",
+          "status": "source_verified",
+          "missing_entrypoints": [],
+          "execution": "not_run",
+          "dependency_validation": "not_run",
+          "asset_policy": "sparse_source_checkout",
+          "requested_source_paths": [
+            "source labview files/",
+            "LICENSE",
+            "ReadMe.txt"
+          ],
+          "observed_sparse_patterns": [
+            "/source labview files/",
+            "/LICENSE",
+            "/ReadMe.txt",
+            "!**/*.wav",
+            "!**/*.flac",
+            "!**/*.mp3",
+            "!**/*.mp4",
+            "!**/*.ogg",
+            "!**/*.pt",
+            "!**/*.pth",
+            "!**/*.ckpt",
+            "!**/*.onnx",
+            "!**/*.tflite",
+            "!**/*.h5",
+            "!**/*.hdf5",
+            "!**/*.npz",
+            "!**/*.npy",
+            "!**/*.so",
+            "!**/*.dll",
+            "!**/*.dylib",
+            "!**/*.zip",
+            "!**/*.tar",
+            "!**/*.gz",
+            "!**/*.bin",
+            "!**/*.pb",
+            "!**/*.pkl",
+            "!**/*.pickle",
+            "!**/*.mat",
+            "!**/*.safetensors",
+            "!**/*.whl",
+            "!**/*.a",
+            "!**/*.o",
+            "!**/*.exe",
+            "!**/*.wasm",
+            "!**/*.weights"
+          ],
+          "expected_sparse_patterns": [
+            "/source labview files/",
+            "/LICENSE",
+            "/ReadMe.txt",
+            "!**/*.wav",
+            "!**/*.flac",
+            "!**/*.mp3",
+            "!**/*.mp4",
+            "!**/*.ogg",
+            "!**/*.pt",
+            "!**/*.pth",
+            "!**/*.ckpt",
+            "!**/*.onnx",
+            "!**/*.tflite",
+            "!**/*.h5",
+            "!**/*.hdf5",
+            "!**/*.npz",
+            "!**/*.npy",
+            "!**/*.so",
+            "!**/*.dll",
+            "!**/*.dylib",
+            "!**/*.zip",
+            "!**/*.tar",
+            "!**/*.gz",
+            "!**/*.bin",
+            "!**/*.pb",
+            "!**/*.pkl",
+            "!**/*.pickle",
+            "!**/*.mat",
+            "!**/*.safetensors",
+            "!**/*.whl",
+            "!**/*.a",
+            "!**/*.o",
+            "!**/*.exe",
+            "!**/*.wasm",
+            "!**/*.weights"
+          ],
+          "source_selection_verified": true
+        },
+        "live_acquisition_scope": {
+          "id": "speed-of-sound-in-air",
+          "revision": "5c7e6652cf2fd7b4c52e83d8fa3782b3c56e61de",
+          "status": "source_verified",
+          "missing_entrypoints": [],
+          "execution": "not_run",
+          "dependency_validation": "not_run",
+          "asset_policy": "sparse_source_checkout",
+          "requested_source_paths": [
+            "source labview files/",
+            "LICENSE",
+            "ReadMe.txt"
+          ],
+          "observed_sparse_patterns": [
+            "/source labview files/",
+            "/LICENSE",
+            "/ReadMe.txt",
+            "!**/*.wav",
+            "!**/*.flac",
+            "!**/*.mp3",
+            "!**/*.mp4",
+            "!**/*.ogg",
+            "!**/*.pt",
+            "!**/*.pth",
+            "!**/*.ckpt",
+            "!**/*.onnx",
+            "!**/*.tflite",
+            "!**/*.h5",
+            "!**/*.hdf5",
+            "!**/*.npz",
+            "!**/*.npy",
+            "!**/*.so",
+            "!**/*.dll",
+            "!**/*.dylib",
+            "!**/*.zip",
+            "!**/*.tar",
+            "!**/*.gz",
+            "!**/*.bin",
+            "!**/*.pb",
+            "!**/*.pkl",
+            "!**/*.pickle",
+            "!**/*.mat",
+            "!**/*.safetensors",
+            "!**/*.whl",
+            "!**/*.a",
+            "!**/*.o",
+            "!**/*.exe",
+            "!**/*.wasm",
+            "!**/*.weights"
+          ],
+          "expected_sparse_patterns": [
+            "/source labview files/",
+            "/LICENSE",
+            "/ReadMe.txt",
+            "!**/*.wav",
+            "!**/*.flac",
+            "!**/*.mp3",
+            "!**/*.mp4",
+            "!**/*.ogg",
+            "!**/*.pt",
+            "!**/*.pth",
+            "!**/*.ckpt",
+            "!**/*.onnx",
+            "!**/*.tflite",
+            "!**/*.h5",
+            "!**/*.hdf5",
+            "!**/*.npz",
+            "!**/*.npy",
+            "!**/*.so",
+            "!**/*.dll",
+            "!**/*.dylib",
+            "!**/*.zip",
+            "!**/*.tar",
+            "!**/*.gz",
+            "!**/*.bin",
+            "!**/*.pb",
+            "!**/*.pkl",
+            "!**/*.pickle",
+            "!**/*.mat",
+            "!**/*.safetensors",
+            "!**/*.whl",
+            "!**/*.a",
+            "!**/*.o",
+            "!**/*.exe",
+            "!**/*.wasm",
+            "!**/*.weights"
+          ],
+          "source_selection_verified": true
+        },
+        "release": null,
+        "license": "GPL-3.0",
+        "worktree_clean": true,
+        "source_sha256": {
+          "ReadMe.txt": "ddd3eb9c6926bf02c97a4ead35c7e56f7763b4ad249db3e2632da4521fb0247b",
+          "LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+        },
+        "lock_entry_sha256": "28b6ef6a86a7fdebd3c8d7bff7856dba62959fbb171a1de2574086d39ef77a9f"
+      }
+    }
+  },
+  "source_sha256": {
+    "codes/chapters/ch02/examples/audit_upstream_models.py": "efd9bf05059d48360201bd2078933791b402d8259dccabd94308a1acc75f92e0",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
+    "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
+  },
+  "source_verification": {
+    "started_at_utc": "2026-10-04T05:27:06.657813+00:00",
+    "before_after_equal": true,
+    "canonical_sources_before_sha256": "109ccb2fce8868b2633f66bf0dd09d51bc58898695b7dff9ed30f15d579b64b2",
+    "canonical_sources_after_sha256": "109ccb2fce8868b2633f66bf0dd09d51bc58898695b7dff9ed30f15d579b64b2",
+    "shared_dependencies_before_after_equal": true,
+    "scope": "Actual origin/HEAD/used blobs/licences/clean tree, complete live selection, lock/status bytes and local helper SHA rechecked after execution"
+  },
+  "scope": "original-method AST extraction and execution; not full-package validation",
+  "method_scopes": {
+    "pyroomacoustics": "Original speed/ModeVector/Eyring/RT60 functions with own grid; no room simulation or upper DOA constructor",
+    "acoular": "Original transfer kernel body with JIT decorator removed and four dictionary lambdas; no Traits/Numba pipeline",
+    "doatools": "Original source/derivative/projection/CRB definitions with own ideal ArrayAdapter; no full ArrayDesign or estimator",
+    "pyfar": "Six complete unchanged original function bodies with own minimal real Signal/FFT/pad_zeros/normalization-none adapters",
+    "speed-of-sound-in-air": "ReadMe/LICENSE identity only; no VI, executable or LabVIEW runtime executed"
+  },
+  "selection_status_boundary": "Full acquisition selection is independent of used-file identity and numerical behavior; source_selection_mismatch is not upgraded",
+  "environment": {
+    "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
+    "executable": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/bin/python",
+    "numpy": "2.5.3",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O"
+  },
+  "tolerances": {
+    "default_absolute": 1e-12,
+    "default_relative": 0.0,
+    "acoular_absolute": 2e-06,
+    "rt60_absolute_s": 1e-10,
+    "crb_absolute": 1e-14,
+    "crb_relative": 1e-12
+  },
+  "scaffold": {
+    "upstream_modified": false,
+    "upstream_imports_executed": false,
+    "extractions": [
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/pyroomacoustics/pyroomacoustics/parameters.py",
+        "name": "calculate_speed_of_sound",
+        "start_line": 226,
+        "end_line": 247,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/pyroomacoustics/pyroomacoustics/doa/doa.py",
+        "name": "ModeVector",
+        "start_line": 21,
+        "end_line": 134,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/pyroomacoustics/pyroomacoustics/acoustics.py",
+        "name": "rt60_eyring",
+        "start_line": 1132,
+        "end_line": 1155,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/pyroomacoustics/pyroomacoustics/experimental/rt60.py",
+        "name": "_fit_exp_and_extrapolate",
+        "start_line": 38,
+        "end_line": 72,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/pyroomacoustics/pyroomacoustics/experimental/rt60.py",
+        "name": "measure_rt60",
+        "start_line": 75,
+        "end_line": 201,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/acoular/acoular/fastFuncs.py",
+        "name": "_transferCoreFunc",
+        "start_line": 893,
+        "end_line": 897,
+        "removed_decorators": [
+          "lazyjit(nb.guvectorize([(nb.float64[:], nb.float64[:], nb.float64[:], nb.complex128[:])], '(),(m),()->(m)', nopython=True, target=PARALLEL_OPTION, cache=CACHED_OPTION, fastmath=FAST_OPTION))"
+        ]
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/acoular/acoular/fbeamform.py",
+        "name": "SteeringVector._steer_funcs_freq dictionary only",
+        "start_line": 145,
+        "end_line": 153,
+        "removed_decorators": [],
+        "traits_Dict_constructor_executed": false
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/model/sources.py",
+        "name": "_validate_sensor_location_ndim",
+        "start_line": 9,
+        "end_line": 11,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/model/sources.py",
+        "name": "SourcePlacement",
+        "start_line": 13,
+        "end_line": 155,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/model/sources.py",
+        "name": "FarField1DSourcePlacement",
+        "start_line": 157,
+        "end_line": 322,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/utils/math.py",
+        "name": "projm",
+        "start_line": 39,
+        "end_line": 56,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/performance/utils.py",
+        "name": "reduce_output_matrix",
+        "start_line": 45,
+        "end_line": 59,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/doatools/doatools/performance/crb.py",
+        "name": "crb_det_farfield_1d",
+        "start_line": 75,
+        "end_line": 141,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/pyfar/pyfar/signals/deterministic.py",
+        "name": "exponential_sweep_time",
+        "start_line": 316,
+        "end_line": 392,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/pyfar/pyfar/signals/deterministic.py",
+        "name": "_time_domain_sweep",
+        "start_line": 912,
+        "end_line": 950,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/pyfar/pyfar/signals/deterministic.py",
+        "name": "_exponential_sweep",
+        "start_line": 968,
+        "end_line": 989,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/pyfar/pyfar/dsp/dsp.py",
+        "name": "regularized_spectrum_inversion",
+        "start_line": 892,
+        "end_line": 999,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/pyfar/pyfar/dsp/dsp.py",
+        "name": "_cross_fade",
+        "start_line": 1002,
+        "end_line": 1039,
+        "removed_decorators": []
+      },
+      {
+        "path": "codes/chapters/ch00/upstream/_downloads/pyfar/pyfar/dsp/dsp.py",
+        "name": "deconvolve",
+        "start_line": 1709,
+        "end_line": 1842,
+        "removed_decorators": []
+      }
+    ],
+    "own_adapters": [
+      "SimpleNamespace grid xyz",
+      "ArrayAdapter.steering_matrix",
+      "SignalAdapter with NumPy real FFT",
+      "adapter_pad_zeros",
+      "adapter_match_norm",
+      "AdapterDeprecationWarning"
+    ],
+    "runtime_not_required": [
+      "SciPy nonlinear fit",
+      "Traits",
+      "Numba JIT"
+    ]
+  },
+  "all_expected_behaviors_observed": true,
+  "results": {
+    "pyroomacoustics": {
+      "speed": [
+        {
+          "temperature_c": 20,
+          "relative_humidity_percent": 0,
+          "pressure_kpa": 101.325,
+          "output_m_s": 343.4,
+          "expected_m_s": 343.4
+        },
+        {
+          "temperature_c": 20,
+          "relative_humidity_percent": 50,
+          "pressure_kpa": 101.325,
+          "output_m_s": 344.02,
+          "expected_m_s": 344.02
+        },
+        {
+          "temperature_c": 20,
+          "relative_humidity_percent": 50,
+          "pressure_kpa": 80,
+          "output_m_s": 344.02,
+          "expected_m_s": 344.02
+        }
+      ],
+      "mode_vector": {
+        "sensor_xy_m": [
+          [
+            -0.1,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.1,
+            0.0
+          ]
+        ],
+        "fs_hz": 8000,
+        "nfft": 8,
+        "frequency_index": 1,
+        "frequency_hz": 1000,
+        "c_m_s": 343,
+        "reference_channel_zero_based": 1,
+        "cases": [
+          {
+            "mode": "near",
+            "precompute": false,
+            "grid_xyz": [
+              0.2,
+              0.0,
+              0.0
+            ],
+            "grid_identity": "absolute source position in metres",
+            "relative_response": [
+              {
+                "real": -0.25808171383637907,
+                "imag": 0.9661230920453551
+              },
+              {
+                "real": 1.0,
+                "imag": 2.5796517395745434e-17
+              },
+              {
+                "real": -0.258081713836378,
+                "imag": -0.9661230920453553
+              }
+            ],
+            "expected_response": [
+              {
+                "real": -0.25808171383637757,
+                "imag": 0.9661230920453553
+              },
+              {
+                "real": 1.0,
+                "imag": 0.0
+              },
+              {
+                "real": -0.2580817138363782,
+                "imag": -0.9661230920453552
+              }
+            ]
+          },
+          {
+            "mode": "near",
+            "precompute": true,
+            "grid_xyz": [
+              0.2,
+              0.0,
+              0.0
+            ],
+            "grid_identity": "absolute source position in metres",
+            "relative_response": [
+              {
+                "real": -0.25808171383637907,
+                "imag": 0.9661230920453551
+              },
+              {
+                "real": 1.0,
+                "imag": 2.5796517395745434e-17
+              },
+              {
+                "real": -0.258081713836378,
+                "imag": -0.9661230920453553
+              }
+            ],
+            "expected_response": [
+              {
+                "real": -0.25808171383637757,
+                "imag": 0.9661230920453553
+              },
+              {
+                "real": 1.0,
+                "imag": 0.0
+              },
+              {
+                "real": -0.2580817138363782,
+                "imag": -0.9661230920453552
+              }
+            ]
+          },
+          {
+            "mode": "far",
+            "precompute": false,
+            "grid_xyz": [
+              1.0,
+              0.0,
+              0.0
+            ],
+            "grid_identity": "unit direction; not a source range",
+            "relative_response": [
+              {
+                "real": -0.25808171383637796,
+                "imag": -0.9661230920453552
+              },
+              {
+                "real": 1.0,
+                "imag": 0.0
+              },
+              {
+                "real": -0.25808171383637796,
+                "imag": 0.9661230920453552
+              }
+            ],
+            "expected_response": [
+              {
+                "real": -0.2580817138363782,
+                "imag": -0.9661230920453552
+              },
+              {
+                "real": 1.0,
+                "imag": 0.0
+              },
+              {
+                "real": -0.2580817138363782,
+                "imag": 0.9661230920453552
+              }
+            ]
+          },
+          {
+            "mode": "far",
+            "precompute": true,
+            "grid_xyz": [
+              1.0,
+              0.0,
+              0.0
+            ],
+            "grid_identity": "unit direction; not a source range",
+            "relative_response": [
+              {
+                "real": -0.25808171383637796,
+                "imag": -0.9661230920453552
+              },
+              {
+                "real": 1.0,
+                "imag": 0.0
+              },
+              {
+                "real": -0.25808171383637796,
+                "imag": 0.9661230920453552
+              }
+            ],
+            "expected_response": [
+              {
+                "real": -0.2580817138363782,
+                "imag": -0.9661230920453552
+              },
+              {
+                "real": 1.0,
+                "imag": 0.0
+              },
+              {
+                "real": -0.2580817138363782,
+                "imag": 0.9661230920453552
+              }
+            ]
+          }
+        ],
+        "independent_physical_near_response": [
+          {
+            "real": -0.1720544758909184,
+            "imag": -0.6440820613635703
+          },
+          {
+            "real": 1.0,
+            "imag": 0.0
+          },
+          {
+            "real": -0.5161634276727564,
+            "imag": 1.9322461840907104
+          }
+        ],
+        "physical_near_amplitudes": [
+          0.6666666666666666,
+          1.0,
+          2.0
+        ],
+        "odd_fft": {
+          "classification": "rejected",
+          "exception": "Signal length must be even."
+        },
+        "upper_doa_constructor_executed": false
+      },
+      "eyring": {
+        "surface_m2": 100.0,
+        "volume_m3": 56.0,
+        "energy_absorption": 0.2,
+        "c_m_s": 343.0,
+        "cases": [
+          {
+            "air_absorption_parameter_per_m": 0.0,
+            "output_s": 0.4043304943745113,
+            "expected_fixed_source_s": 0.4043304943745113,
+            "independent_positive_absorption_reference_s": 0.4043304943745113,
+            "classification": "zero_air_reference"
+          },
+          {
+            "air_absorption_parameter_per_m": 0.001,
+            "output_s": 0.4084304751218133,
+            "expected_fixed_source_s": 0.4084304751218133,
+            "independent_positive_absorption_reference_s": 0.4003120098750091,
+            "classification": "positive_but_increases_with_absorption"
+          },
+          {
+            "air_absorption_parameter_per_m": 0.01,
+            "output_s": 0.44944777467913616,
+            "expected_fixed_source_s": 0.44944777467913616,
+            "independent_positive_absorption_reference_s": 0.36744496826106327,
+            "classification": "positive_but_increases_with_absorption"
+          },
+          {
+            "air_absorption_parameter_per_m": 0.1,
+            "output_s": -105.34634931000221,
+            "expected_fixed_source_s": -105.34634931000221,
+            "independent_positive_absorption_reference_s": 0.2017780244267862,
+            "classification": "negative_time_invalid"
+          }
+        ],
+        "room_simulation_executed": false
+      },
+      "measure_rt60": {
+        "fs_hz": 16000,
+        "target_t60_s": 0.6,
+        "decay_db": 20,
+        "energy_thres": 1.0,
+        "linear_domain_fit": false,
+        "plot": false,
+        "expected_derivation": "h squared has -60/target dB per second; geometric tail sum preserves slope away from truncation",
+        "cases": [
+          {
+            "name": "analytic_exponential",
+            "sample_count": 32000,
+            "input": "exp(-3*ln(10)*n/(fs*target_t60))",
+            "input_float64_sha256": "65b51a11b657e0e44d1c8654edac715583c1f2d0931b2b917d02200ada221f77",
+            "output_s": 0.6000000000000001,
+            "expected_s": 0.6,
+            "measurement_valid_for_fixture": true,
+            "classification": "valid_analytic_decay",
+            "warnings": [],
+            "zero_energy_edc_classification": null
+          },
+          {
+            "name": "zero_energy",
+            "sample_count": 8,
+            "input": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "input_float64_sha256": "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b",
+            "output_s": 0.0,
+            "expected_s": 0.0,
+            "measurement_valid_for_fixture": false,
+            "classification": "zero_energy",
+            "warnings": [
+              {
+                "category": "RuntimeWarning",
+                "message": "divide by zero encountered in log10"
+              },
+              {
+                "category": "RuntimeWarning",
+                "message": "invalid value encountered in subtract"
+              }
+            ],
+            "zero_energy_edc_classification": "undefined_log_and_normalization"
+          },
+          {
+            "name": "below_5db_decay",
+            "sample_count": 3,
+            "input": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "input_float64_sha256": "04ae04134c8318578c932394683055fea108f3f586ff5b055613752c5f03e6f5",
+            "output_s": 0.0,
+            "expected_s": 0.0,
+            "measurement_valid_for_fixture": false,
+            "classification": "below_5db_decay",
+            "warnings": [],
+            "zero_energy_edc_classification": null
+          }
+        ]
+      }
+    },
+    "acoular": {
+      "reference_distance_m": 0.2,
+      "mic_distances_m": [
+        0.3,
+        0.2,
+        0.1
+      ],
+      "frequency_hz": 1000,
+      "c_m_s": 343,
+      "transfer": [
+        {
+          "real": -0.17205442984898886,
+          "imag": -0.6440820693969728
+        },
+        {
+          "real": 1.0,
+          "imag": 0.0
+        },
+        {
+          "real": -0.5161632895469666,
+          "imag": 1.932246208190918
+        }
+      ],
+      "independent_transfer": [
+        {
+          "real": -0.1720544758909184,
+          "imag": -0.6440820613635703
+        },
+        {
+          "real": 1.0,
+          "imag": 0.0
+        },
+        {
+          "real": -0.5161634276727564,
+          "imag": 1.9322461840907104
+        }
+      ],
+      "cases": [
+        {
+          "steer_type": "classic",
+          "weights": [
+            {
+              "real": -0.08602721545631331,
+              "imag": -0.322041036689339
+            },
+            {
+              "real": 0.3333333333333333,
+              "imag": 0.0
+            },
+            {
+              "real": -0.08602721545631331,
+              "imag": 0.3220410366893389
+            }
+          ],
+          "target_response": {
+            "real": 1.222222216727125,
+            "imag": -1.3877787807814457e-17
+          },
+          "squared_weight_norm": 0.3333333333333333,
+          "expected_target_response": 1.2222222222222223,
+          "expected_squared_weight_norm": 0.3333333333333333
+        },
+        {
+          "steer_type": "inverse",
+          "weights": [
+            {
+              "real": -0.1290408239821983,
+              "imag": -0.48306155802028733
+            },
+            {
+              "real": 0.3333333333333333,
+              "imag": 0.0
+            },
+            {
+              "real": -0.0430136079940661,
+              "imag": 0.16102051934009579
+            }
+          ],
+          "target_response": {
+            "real": 1.0,
+            "imag": 4.831540451226308e-18
+          },
+          "squared_weight_norm": 0.3888888923233246,
+          "expected_target_response": 1.0,
+          "expected_squared_weight_norm": 0.3888888888888889
+        },
+        {
+          "steer_type": "true level",
+          "weights": [
+            {
+              "real": -0.031601834372854354,
+              "imag": -0.11830078945060091
+            },
+            {
+              "real": 0.18367347124157798,
+              "imag": -9.090961374819606e-20
+            },
+            {
+              "real": -0.09480550311856305,
+              "imag": 0.35490236835180267
+            }
+          ],
+          "target_response": {
+            "real": 1.0,
+            "imag": 0.0
+          },
+          "squared_weight_norm": 0.18367347124157798,
+          "expected_target_response": 1.0,
+          "expected_squared_weight_norm": 0.1836734693877551
+        },
+        {
+          "steer_type": "true location",
+          "weights": [
+            {
+              "real": -0.0425724308099488,
+              "imag": -0.15936898200992416
+            },
+            {
+              "real": 0.24743583090138607,
+              "imag": -6.123447132199934e-20
+            },
+            {
+              "real": -0.1277172924298464,
+              "imag": 0.4781069460297724
+            }
+          ],
+          "target_response": {
+            "real": 1.3471506213107072,
+            "imag": -2.7755575615628914e-17
+          },
+          "squared_weight_norm": 0.3333333333333333,
+          "expected_target_response": 1.3471506281091268,
+          "expected_squared_weight_norm": 0.3333333333333333
+        }
+      ],
+      "numba_compilation_executed": false,
+      "traits_pipeline_executed": false
+    },
+    "doatools": {
+      "array": "own six-sensor ideal ULA adapter",
+      "spacing_m": 0.014,
+      "wavelength_m": 0.343,
+      "source_second_moment": [
+        [
+          10.0
+        ]
+      ],
+      "noise_variance": 1.0,
+      "independent_snapshots": 100,
+      "cases": [
+        {
+          "angle_deg": 0.0,
+          "source_unit": "rad",
+          "variance_unit": "rad^2",
+          "variance": 0.00043441457486652314,
+          "expected_variance": 0.0004344145748665233,
+          "standard_deviation_deg": 1.1941938389179014
+        },
+        {
+          "angle_deg": 60.0,
+          "source_unit": "rad",
+          "variance_unit": "rad^2",
+          "variance": 0.001737658299466092,
+          "expected_variance": 0.0017376582994660932,
+          "standard_deviation_deg": 2.3883876778358024
+        },
+        {
+          "angle_deg": 0.0,
+          "source_unit": "deg",
+          "variance_unit": "deg^2",
+          "variance": 1.4260989249094744,
+          "expected_variance": 1.4260989249094749,
+          "standard_deviation_deg": 1.1941938389179012
+        },
+        {
+          "angle_deg": 60.0,
+          "source_unit": "deg",
+          "variance_unit": "deg^2",
+          "variance": 5.704395699637895,
+          "expected_variance": 5.7043956996378995,
+          "standard_deviation_deg": 2.388387677835802
+        }
+      ],
+      "independent_formula": "6/(T*SNR*M*(M^2-1)*(2*pi*d*cos(theta)/lambda)^2)",
+      "invalid_P": {
+        "classification": "rejected_1d_P",
+        "exception": "The sample covariance matrix of the source signals must be a K x K matrix, where K is the number of sources."
+      },
+      "full_ArrayDesign_or_DOA_estimator_executed": false
+    },
+    "pyfar": {
+      "scope": "Six complete unchanged original function bodies with own minimal real Signal/FFT/pad_zeros/normalization-none adapters",
+      "short_control_fir": [
+        1.0,
+        0.0,
+        0.5
+      ],
+      "short_control_epsilon": 0.25,
+      "cases": [
+        {
+          "name": "noiseless_regularized",
+          "input": [
+            1.0,
+            0.5
+          ],
+          "output": [
+            1.0,
+            0.5,
+            0.5,
+            0.25
+          ],
+          "epsilon": 0.25,
+          "fft_length": 4,
+          "response": [
+            {
+              "real": 1.35,
+              "imag": 0.0
+            },
+            {
+              "real": 0.41666666666666674,
+              "imag": -5.551115123125783e-17
+            },
+            {
+              "real": 0.75,
+              "imag": 0.0
+            }
+          ],
+          "expected_response": [
+            {
+              "real": 1.35,
+              "imag": 0.0
+            },
+            {
+              "real": 0.4166666666666667,
+              "imag": 0.0
+            },
+            {
+              "real": 0.75,
+              "imag": 0.0
+            }
+          ],
+          "waveform": [
+            0.7333333333333334,
+            0.15000000000000005,
+            0.31666666666666665,
+            0.15
+          ],
+          "manual_waveform": [
+            0.7333333333333334,
+            0.15000000000000002,
+            0.31666666666666665,
+            0.15000000000000002
+          ]
+        },
+        {
+          "name": "noise_regularized",
+          "input": [
+            1.0,
+            0.5
+          ],
+          "output": [
+            1.0,
+            0.6,
+            0.5,
+            0.25
+          ],
+          "epsilon": 0.25,
+          "fft_length": 4,
+          "response": [
+            {
+              "real": 1.4100000000000004,
+              "imag": 0.0
+            },
+            {
+              "real": 0.44999999999999996,
+              "imag": -0.06666666666666671
+            },
+            {
+              "real": 0.6500000000000001,
+              "imag": 0.0
+            }
+          ],
+          "expected_response": [
+            {
+              "real": 1.4100000000000001,
+              "imag": 0.0
+            },
+            {
+              "real": 0.44999999999999996,
+              "imag": -0.06666666666666664
+            },
+            {
+              "real": 0.65,
+              "imag": 0.0
+            }
+          ],
+          "waveform": [
+            0.7400000000000001,
+            0.22333333333333344,
+            0.29000000000000015,
+            0.15666666666666673
+          ],
+          "manual_waveform": [
+            0.74,
+            0.22333333333333336,
+            0.29000000000000004,
+            0.1566666666666667
+          ]
+        },
+        {
+          "name": "truncated_output",
+          "input": [
+            1.0,
+            0.5
+          ],
+          "output": [
+            1.0,
+            0.5
+          ],
+          "epsilon": 0.25,
+          "fft_length": 4,
+          "response": [
+            {
+              "real": 0.9000000000000001,
+              "imag": 0.0
+            },
+            {
+              "real": 0.8333333333333334,
+              "imag": -1.1102230246251565e-16
+            },
+            {
+              "real": 0.5,
+              "imag": 0.0
+            }
+          ],
+          "expected_response": [
+            {
+              "real": 0.9,
+              "imag": 0.0
+            },
+            {
+              "real": 0.8333333333333334,
+              "imag": 0.0
+            },
+            {
+              "real": 0.5,
+              "imag": 0.0
+            }
+          ],
+          "waveform": [
+            0.7666666666666667,
+            0.10000000000000009,
+            -0.06666666666666665,
+            0.09999999999999998
+          ],
+          "manual_waveform": [
+            0.7666666666666666,
+            0.1,
+            -0.06666666666666671,
+            0.1
+          ]
+        },
+        {
+          "name": "unexcited_DC",
+          "input": [
+            1.0,
+            -1.0
+          ],
+          "output": [
+            1.0,
+            -1.0,
+            0.5,
+            -0.5
+          ],
+          "epsilon": 0.25,
+          "fft_length": 4,
+          "response": [
+            {
+              "real": -1.1102230246251565e-16,
+              "imag": 0.0
+            },
+            {
+              "real": 0.44444444444444436,
+              "imag": 0.0
+            },
+            {
+              "real": 1.4117647058823528,
+              "imag": 0.0
+            }
+          ],
+          "expected_response": [
+            {
+              "real": 0.0,
+              "imag": 0.0
+            },
+            {
+              "real": 0.4444444444444444,
+              "imag": 0.0
+            },
+            {
+              "real": 1.411764705882353,
+              "imag": 0.0
+            }
+          ],
+          "waveform": [
+            0.5751633986928104,
+            -0.35294117647058826,
+            0.13071895424836605,
+            -0.35294117647058826
+          ],
+          "manual_waveform": [
+            0.5751633986928104,
+            -0.35294117647058826,
+            0.13071895424836605,
+            -0.35294117647058826
+          ]
+        },
+        {
+          "name": "digital_ESS_full_support",
+          "fs_hz": 8000,
+          "sweep_samples": 1024,
+          "record_samples": 1027,
+          "fft_length": 2048,
+          "frequency_range_hz": [
+            100,
+            3000
+          ],
+          "amplitude": 0.2,
+          "n_fade_out": 32,
+          "fir": [
+            0.8,
+            0.0,
+            0.0,
+            0.25
+          ],
+          "sweep_vs_independent_max_error": 0.0,
+          "unregularized_full_fir_max_error": 1.0449054350609086e-14,
+          "default_epsilon": 2.2031004955682262e-08,
+          "default_fir_max_error": 9.005796266144078e-05,
+          "minimum_input_spectral_power": 1.1867745240525186e-05,
+          "input_float64_sha256": "d857adaa65f7c9ba35ca0c7968d9c7cabdecd6fbb23ae3dbc1cb6f5543e0aab1",
+          "output_float64_sha256": "5825e552abff690a557b828aa606cdea5fcf931e635b4916c746f74836bed710",
+          "relation_to_chapter_audio": "Independent 8-kHz/1024-point contract; not the 16-kHz chapter audio experiment"
+        }
+      ],
+      "warnings": [
+        {
+          "category": "AdapterDeprecationWarning",
+          "message": "`pyfar.dsp.deconvolve` will be deprecated in pyfar v0.10.0.It is recommended to use `pyfar.dsp.RegularizedSpectrumInversion` and `pyfar.dsp.convolve` for deconvolution."
+        },
+        {
+          "category": "AdapterDeprecationWarning",
+          "message": "'regularized_spectrum_inversion' will be deprecated in pyfar 0.10.0 in favor of 'RegularizedSpectrumInversion'"
+        },
+        {
+          "category": "AdapterDeprecationWarning",
+          "message": "`pyfar.dsp.deconvolve` will be deprecated in pyfar v0.10.0.It is recommended to use `pyfar.dsp.RegularizedSpectrumInversion` and `pyfar.dsp.convolve` for deconvolution."
+        },
+        {
+          "category": "AdapterDeprecationWarning",
+          "message": "'regularized_spectrum_inversion' will be deprecated in pyfar 0.10.0 in favor of 'RegularizedSpectrumInversion'"
+        },
+        {
+          "category": "AdapterDeprecationWarning",
+          "message": "`pyfar.dsp.deconvolve` will be deprecated in pyfar v0.10.0.It is recommended to use `pyfar.dsp.RegularizedSpectrumInversion` and `pyfar.dsp.convolve` for deconvolution."
+        },
+        {
+          "category": "AdapterDeprecationWarning",
+          "message": "'regularized_spectrum_inversion' will be deprecated in pyfar 0.10.0 in favor of 'RegularizedSpectrumInversion'"
+        },
+        {
+          "category": "AdapterDeprecationWarning",
+          "message": "`pyfar.dsp.deconvolve` will be deprecated in pyfar v0.10.0.It is recommended to use `pyfar.dsp.RegularizedSpectrumInversion` and `pyfar.dsp.convolve` for deconvolution."
+        },
+        {
+          "category": "AdapterDeprecationWarning",
+          "message": "'regularized_spectrum_inversion' will be deprecated in pyfar 0.10.0 in favor of 'RegularizedSpectrumInversion'"
+        },
+        {
+          "category": "AdapterDeprecationWarning",
+          "message": "`pyfar.dsp.deconvolve` will be deprecated in pyfar v0.10.0.It is recommended to use `pyfar.dsp.RegularizedSpectrumInversion` and `pyfar.dsp.convolve` for deconvolution."
+        },
+        {
+          "category": "AdapterDeprecationWarning",
+          "message": "'regularized_spectrum_inversion' will be deprecated in pyfar 0.10.0 in favor of 'RegularizedSpectrumInversion'"
+        },
+        {
+          "category": "AdapterDeprecationWarning",
+          "message": "`pyfar.dsp.deconvolve` will be deprecated in pyfar v0.10.0.It is recommended to use `pyfar.dsp.RegularizedSpectrumInversion` and `pyfar.dsp.convolve` for deconvolution."
+        },
+        {
+          "category": "AdapterDeprecationWarning",
+          "message": "'regularized_spectrum_inversion' will be deprecated in pyfar 0.10.0 in favor of 'RegularizedSpectrumInversion'"
+        }
+      ],
+      "zero_bin_boundary": "A zero DFT bin blocks pointwise division at that bin; it does not prove nonidentifiability of known-length FIR from complete linear output",
+      "not_executed": [
+        "pyfar package import",
+        "original Signal class, arithmetic and FFT normalization machinery",
+        "original pad_zeros implementation",
+        "original warning class",
+        "original convolve wrapper",
+        "Farina weighted reversed-sweep inverse",
+        "nonlinear harmonic separation",
+        "playback or capture",
+        "equipment, calibration or ISO measurement"
+      ]
+    }
+  },
+  "not_executed": [
+    "full-package import",
+    "room generation",
+    "upper DOA pipeline",
+    "original pyfar Signal and package pipeline",
+    "HARK complex spectrum loading",
+    "LabVIEW humid-air model",
+    "equipment or ISO acceptance"
+  ],
+  "command": [
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/bin/python",
+    "-m",
+    "codes.chapters.ch02.examples.audit_upstream_models",
+    "--report",
+    "codes/chapters/ch02/reports/upstream_model_contracts.json"
+  ]
+}

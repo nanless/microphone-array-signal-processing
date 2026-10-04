@@ -11,6 +11,7 @@
 .venv/bin/python -m codes.chapters.ch01.examples.generate_binaural_cues  # 独立双耳线索 5 个 WAV；--check 只核对
 .venv/bin/python -m codes.chapters.ch01.examples.generate_spectral_cues  # 四份人工频率响应 WAV；--check 只读完整回放
 .venv/bin/python -m codes.chapters.ch02.examples.generate_stft_convolution  # 独立有限窗卷积 3 个 WAV；--check 只核对
+.venv/bin/python -m codes.chapters.ch02.examples.generate_sweep_audio  # 数字扫频辨识四WAV；--check只读完整回放
 .venv/bin/python -m codes.chapters.ch08.examples.mask_representation_demo  # 六份已知掩码表示WAV
 .venv/bin/python -m codes.chapters.ch08.examples.gss_teaching_demo  # 独立 GSS 教学音频与状态
 .venv/bin/python -m codes.chapters.ch09.examples.chapter09_tracking_audio  # 独立PCM观测与追踪音频
@@ -49,9 +50,9 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 | `heading_aliases.py`、`legacy_sequential_anchors.json` | 按主题维护已发布节号和顺序深链；构建器插入历史别名，门禁另外核对主题与唯一性 | 网页和合订HTML中的兼容锚点 |
 | `../codes/chapters/ch00/io_contracts.py` | 音频生成和上游获取共用的路径、成员、严格JSON、元数据类型和报告写入原语；各调用者保留独立清单、评分与许可逻辑 | 无独立产物；实际参与生成的源摘要进入相应清单 |
 | `inline_layout.js` | 站点与合订本共用的成品排版辅助。等待公式与字体完成后，只保护适合当前宽度的行内公式及紧邻短单位/标点、可见普通文字中的稳定题号；短粗体引导在纸版跟随下一段。视窗和字体变化后重新核对宽度。合订预览在打印前即采用 A4 正文几何，打印期间不重排 DOM；单页网站打印前拆除屏幕分组，结束后恢复。保留 TeX、代码、链接、辅助公式树和长式的滚动接口。脚本内容计入两种产物及独立门禁的源摘要 | 由两个构建器嵌入 HTML；无单独生成物 |
-| `quality_check.py` | 发布门禁。用独立基线检查 16 篇/151 节/697 个指定子节/72 图，核对图号、alt、公式编号与引用、小节语义链接、PNG 绘图脚本摘要、网页导航和 PDF 三级书签。确定性问题阻断发布，高风险口语只提醒人工复核 | 通过、失败清单，以及不阻断发布的人工复核与可访问性提示 |
+| `quality_check.py` | 发布门禁。用独立基线检查 16 篇/151 节/700 个指定子节/72 图，核对图号、alt、公式编号与引用、小节语义链接、PNG 绘图脚本摘要、网页导航和 PDF 三级书签。确定性问题阻断发布，高风险口语只提醒人工复核 | 通过、失败清单，以及不阻断发布的人工复核与可访问性提示 |
 
-333 道稳定编号的代码题可从各章入口复算，例如：
+335 道稳定编号的代码题可从各章入口复算，例如：
 
 ```bash
 .venv/bin/python -m codes.chapters.ch04.chapter04_experiments
@@ -94,7 +95,7 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 
 **发布与验收说明**
 
-**书签与人工抽查**：合订本 PDF 顶层是导读、11 章正文、2 篇扩展专题和 2 篇附录，第二层来自各篇实际小节；第 1～11 章、两篇扩展专题与附录共有 697 个源 h4 作为第三级书签，并保持在各自父节之下。
+**书签与人工抽查**：合订本 PDF 顶层是导读、11 章正文、2 篇扩展专题和 2 篇附录，第二层来自各篇实际小节；第 1～11 章、两篇扩展专题与附录共有 700 个源 h4 作为第三级书签，并保持在各自父节之下。
 
 书签使用 HTML 标题 id 对应的 PDF 命名目标，保留页内定位。命名目标缺失、越界或同名却指向不同位置时构建失败；发布门禁独立比较每项书签与正文目标的页码及视图参数。目录和正文可能出现同名标题，仅检查落页文字不能识别误跳到目录的问题。
 
@@ -108,7 +109,7 @@ PDF 正文固定为 16 px，MathJax 公式按 100% 字号打印；网页公式�
 
 **PDF 可访问性边界**：Chrome 使用 `--export-tagged-pdf` 导出结构树，pypdf 完整克隆页面后添加书签；构建和发布门禁检查标记根、父树及页面连接。标签存在不等于公式辅助文本、阅读顺序或 PDF/UA 已完整验收，最终版仍需辅助技术实测。
 
-**独立结构基线**：发布门禁的独立结构基线为 16 个顶级书签、151 个二级书签、697 个三级书签，共 864 个大纲项，以及图 1～72。它还检查图号与 alt、公式编号与引用、小节语义链接、每个源 h2/h3/h4 标题是否真的出现在当前页导航中（源 h1 可排除），以及 PNG 中的 `SourceScript` 和完整 `SourceScriptDigest`。
+**独立结构基线**：发布门禁的独立结构基线为 16 个顶级书签、151 个二级书签、700 个三级书签，共 867 个大纲项，以及图 1～72。它还检查图号与 alt、公式编号与引用、小节语义链接、每个源 h2/h3/h4 标题是否真的出现在当前页导航中（源 h1 可排除），以及 PNG 中的 `SourceScript` 和完整 `SourceScriptDigest`。
 
 修改绘图脚本后未重画的 PNG 会使门禁失败；高风险口语命中只输出人工复核提示。
 
@@ -168,12 +169,15 @@ PRA_NUM_THREADS=2 /tmp/masp-room-pra/bin/python -m codes.chapters.appendix_b.exa
 ```bash
 .venv/bin/python -m codes.chapters.ch02.chapter02_experiments
 .venv/bin/python -m codes.chapters.ch02.examples.generate_stft_convolution --check
-.venv/bin/python -m codes.chapters.ch02.examples.audit_upstream_models --report codes/chapters/ch02/reports/upstream_models.json
+.venv/bin/python -m codes.chapters.ch02.examples.generate_sweep_audio --check
+.venv/bin/python -m codes.chapters.ch02.examples.audit_upstream_models
 ```
 
-第一条包含 E02-09～18；第二条只读核对 `codes/chapters/ch02/stft_audio/` 的三份 WAV、真实 PCM 评分、参数和六个生成源摘要。建站时独立核验后复制到 `site/stft_audio/`，不混入主 109 个样本。图 50 的六点确定性结果由 `make_figures.py` 同次写入 `codes/chapters/ch02/reports/figure50_stft_convolution.json`；逐帧补零但丢掉滤波尾部的对照不能称为完整卷积实现。
+第一条包含 E02-09～20；第二条只读核对 `codes/chapters/ch02/stft_audio/` 的三份 WAV、真实 PCM 评分、参数和六个生成源摘要。建站时独立核验后复制到 `site/stft_audio/`，不混入主 109 个样本。图 50 的六点确定性结果由 `make_figures.py` 同次写入 `codes/chapters/ch02/reports/figure50_stft_convolution.json`；逐帧补零但丢掉滤波尾部的对照不能称为完整卷积实现。
 
-第三条要求已经取得锁定的 pyroomacoustics、Acoular 和 doatools 源码。它验证精确提交、原文件和清洁工作区，提取原方法进行调用，再写报告；不运行完整包、设备或房间仿真。Acoular 数值核去掉 JIT 装饰器，doatools 使用本书理想阵列适配器，运行范围随报告保存。入口、逐步计算及试听见[练习与音频实验 §36](../codes/chapters/ch00/research/05_exercises_and_audio.md#36-第二章有限窗卷积二阶交叉项与窗归一化)。
+第三条只读完整重放数字扫频的四份WAV与独立清单，核五真实源SHA、参数、环境、完整字节及浮点/实际PCM两域的IR评分；不混入主109。首次生成可运行同一命令去掉`--check`。源32000点与三响应32160点保留完整传播尾，所有估计IR的65536点均计分，真值161点支持只作额外诊断。
+
+第四条要求已取得固定PRA、Acoular、doatools、pyfar与声速项目。它独立验证官方origin、提交、所用blob/许可及洁净，完整选集状态另列；默认只输出stdout。需要保存当前报告时显式加入`--report codes/chapters/ch02/reports/upstream_model_contracts.json`；旧`upstream_models.json`保持历史身份，不能覆盖。PRA/Acoular/doatools原方法与六个pyfar原函数仅限定调用，声速项目仅核说明和许可。人工适配与未运行原模块随报告保存，不代表整包、设备或房间测量。入口、逐步计算及试听见[练习与音频实验§36](../codes/chapters/ch00/research/05_exercises_and_audio.md#36-第二章有限窗卷积二阶交叉项与窗归一化)及§50～51。
 
 ## 第三章：几何、标定与多频观测
 

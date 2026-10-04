@@ -5,7 +5,7 @@
     .venv/bin/python scripts/build_site.py
 
 产物：site/index.html（首页）+ site/01..15_*.html（15 篇正文/专题/附录），
-另有 site/research/index.html 和 5 篇独立研究页、主清单 109 个与独立实验 115 个合成 WAV，
+另有 site/research/index.html 和 5 篇独立研究页、主清单 109 个与独立实验 119 个合成 WAV，
 以及 4 个真实录音/派生 WAV；源码按章保存，发布 URL 保持原样。
 左侧边栏 = 首页 + 15 篇 + 每篇的二级及以下小节锚点，顶部面包屑，
 文末上一篇/下一篇（首页不输出该盒）。图片直接引用 ../figures/（不复制）。
@@ -55,6 +55,8 @@ BINAURAL_AUDIO_ROOT = CODE_CHAPTERS / "ch01" / "binaural_audio"
 SPECTRAL_AUDIO_ROOT = CODE_CHAPTERS / "ch01" / "spectral_audio"
 SPECTRAL_AUDIO_WAVS = {'flat_source.wav', 'flat_stereo.wav', 'tilted_source.wav', 'tilted_stereo.wav'}
 STFT_AUDIO_ROOT = CODE_CHAPTERS / "ch02" / "stft_audio"
+SWEEP_AUDIO_ROOT = CODE_CHAPTERS / 'ch02' / 'sweep_audio'
+SWEEP_AUDIO_WAVS = {'sweep_source.wav', 'sweep_complete.wav', 'sweep_noisy.wav', 'sweep_cut.wav'}
 DERIVATIVE_AUDIO_ROOT = CODE_CHAPTERS / "ch05" / "derivative_audio"
 APA_AUDIO_ROOT = CODE_CHAPTERS / "ch06" / "apa_audio"
 MINT_AUDIO_ROOT = CODE_CHAPTERS / "ch07" / "mint_audio"
@@ -539,6 +541,19 @@ def stage_spectral_audio(source, destination):
     return expected
 
 
+def stage_sweep_audio(source, destination):
+    """Publish four digital excitation/response controls after current-source replay."""
+    expected = SWEEP_AUDIO_WAVS | {'MANIFEST.json'}
+    _preflight_asset_stage(source, destination, expected)
+    from codes.chapters.ch02.examples.generate_sweep_audio import check_assets
+    check_assets(source)
+    validate_asset_directory(destination, expected, check=False)
+    destination.mkdir()
+    for name in sorted(expected):
+        shutil.copy2(source / name, destination / name)
+    return expected
+
+
 def stage_stft_audio(source, destination):
     """Publish three independent finite-window convolution fixtures with complete tails."""
     _preflight_asset_stage(source, destination, STFT_AUDIO_WAVS | {"MANIFEST.json"})
@@ -968,7 +983,7 @@ def source_digest():
     paths += [main_audio_manifest_path(CODE_CHAPTERS)]
     paths += sorted(main_audio_sources())
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, SPECTRAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, SPECTRAL_AUDIO_ROOT, STFT_AUDIO_ROOT, SWEEP_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "build_markdown_helpers.py",
@@ -1109,6 +1124,9 @@ def rewrite_site_links(html, source_path):
         if target.parent == STFT_AUDIO_ROOT.resolve() and target.name in (STFT_AUDIO_WAVS | {"MANIFEST.json"}):
             relative = os.path.relpath("stft_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
+        if target.parent == SWEEP_AUDIO_ROOT.resolve() and target.name in (SWEEP_AUDIO_WAVS | {'MANIFEST.json'}):
+            relative = os.path.relpath('sweep_audio/' + target.name, Path(current).parent).replace(os.sep, '/')
+            return urlunsplit(('', '', relative, parsed.query, parsed.fragment))
         if target.parent == GEOMETRY_AUDIO_ROOT.resolve() and target.name in (set(GEOMETRY_AUDIO_WAVS) | {"MANIFEST.json"}):
             relative = os.path.relpath("geometry_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
@@ -1157,7 +1175,7 @@ def rewrite_site_links(html, source_path):
         # input as a download link; only the explicit mono derivatives play.
         if parsed.path.endswith("real_audio/demand_nriver_16ch_10s.wav"):
             return match.group(0)
-        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|spectral_audio|stft_audio|geometry_audio|focus_audio|derivative_audio|apa_audio|mint_audio|mask_audio|noise_audio|scenario_audio|weighted_audio|response_audio|imaging_audio|distributed_audio)/[a-z0-9_]+\.wav", parsed.path):
+        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|spectral_audio|stft_audio|sweep_audio|geometry_audio|focus_audio|derivative_audio|apa_audio|mint_audio|mask_audio|noise_audio|scenario_audio|weighted_audio|response_audio|imaging_audio|distributed_audio)/[a-z0-9_]+\.wav", parsed.path):
             return match.group(0)
         safe_href = escape(href, quote=True)
         safe_label = escape(re.sub(r'<[^>]+>', '', unescape(label)), quote=True)
@@ -1459,8 +1477,9 @@ def _validate_site_output(directory):
     validate_imaging(directory / "imaging_audio", IMAGING_AUDIO_WAVS | {"MANIFEST.json"}, check=False)
     validate_imaging(directory / "distributed_audio", DISTRIBUTED_AUDIO_WAVS | {"MANIFEST.json"}, check=False)
     validate_imaging(directory / "spectral_audio", SPECTRAL_AUDIO_WAVS | {"MANIFEST.json"}, check=False)
+    validate_imaging(directory / 'sweep_audio', SWEEP_AUDIO_WAVS | {'MANIFEST.json'}, check=False)
     subdirectories = ('research', 'audio', 'real_audio', 'room_audio', 'moving_audio',
-                      'tracking_audio', 'gss_audio', 'binaural_audio', 'spectral_audio', 'stft_audio',
+                      'tracking_audio', 'gss_audio', 'binaural_audio', 'spectral_audio', 'stft_audio', 'sweep_audio',
                       'geometry_audio', 'focus_audio', 'derivative_audio', 'apa_audio',
                       'mint_audio', 'mask_audio', 'noise_audio', 'scenario_audio', 'weighted_audio', 'response_audio', 'imaging_audio', 'distributed_audio')
     for folder in (directory, *(directory/name for name in subdirectories)):
@@ -1654,6 +1673,8 @@ def main():
         (OUT / "distributed_audio").mkdir(exist_ok=True)
         spectral_names = stage_spectral_audio(SPECTRAL_AUDIO_ROOT, temp_out / "spectral_audio")
         (OUT / "spectral_audio").mkdir(exist_ok=True)
+        sweep_names = stage_sweep_audio(SWEEP_AUDIO_ROOT, temp_out / 'sweep_audio')
+        (OUT / 'sweep_audio').mkdir(exist_ok=True)
         publish_files([(temp_out / name, OUT / name) for name in sorted(expected)] +
                       [(temp_out / "audio" / name, OUT / "audio" / name) for name in audio_names] +
                       [(temp_out / "real_audio" / name, OUT / "real_audio" / name)
@@ -1695,7 +1716,9 @@ def main():
                       [(temp_out / "distributed_audio" / name, OUT / "distributed_audio" / name)
                        for name in sorted(distributed_names)] +
                       [(temp_out / "spectral_audio" / name, OUT / "spectral_audio" / name)
-                       for name in sorted(spectral_names)], stale, boundary=OUT)
+                       for name in sorted(spectral_names)] +
+                      [(temp_out / 'sweep_audio' / name, OUT / 'sweep_audio' / name)
+                       for name in sorted(sweep_names)], stale, boundary=OUT)
     print("DONE", len(expected), "pages")
 
 

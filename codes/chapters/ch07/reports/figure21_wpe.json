@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "generator": "scripts/make_figures.py::fig_wpe",
-  "source_sha256": "bf808f6aadae8184fd8b636008b79c1fcf3e4d35701706dd299a525ca39f8eb0",
+  "source_sha256": "d65c3662aee4929a1ebb030c13df4413ce7abbf36f28d6ddab29a2e084b1b1d9",
   "generator_inputs": {
-    "scripts/make_figures.py": "bf808f6aadae8184fd8b636008b79c1fcf3e4d35701706dd299a525ca39f8eb0",
+    "scripts/make_figures.py": "d65c3662aee4929a1ebb030c13df4413ce7abbf36f28d6ddab29a2e084b1b1d9",
     "codes/chapters/ch07/core/dereverberation.py": "39c93bf31d1b1deac607cd734bbacee596cdacce2d58c4b5c304b04df7e04eb7",
     "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7"
   },

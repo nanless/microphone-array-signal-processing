@@ -1384,7 +1384,11 @@ def fig_room_acoustics():
     ax.axvspan(92, 700, color=C_RED, alpha=0.11)
     ax.axvline(12, color="gray", ls="--", lw=0.9, alpha=0.8)
     ax.axvline(92, color="gray", ls="--", lw=0.9, alpha=0.8)
-    ax.set_ylim(-2.6, 3.1)
+    # Keep every simulated RIR sample visible, including the negative peak.
+    # Retain annotation headroom instead of clipping data to a fixed range.
+    amplitude_margin = 0.05 * np.ptp(rir)
+    ax.set_ylim(min(-2.6, float(rir.min() - amplitude_margin)),
+                max(3.1, float(rir.max() + amplitude_margin)))
     ax.annotate("指定直达脉冲\n（12 ms；非全局最大峰）", xy=(12, 1.0), xytext=(16, 2.72), fontsize=FS_SMALL, color=C_GREEN,
                 arrowprops=dict(arrowstyle="->", color=C_GREEN))
     ax.annotate("早期区：离散反射 + 随机尾\n（直达后 0–80 ms）", xy=(55, 0.7), xytext=(180, 2.15), fontsize=FS_SMALL,
