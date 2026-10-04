@@ -200,7 +200,7 @@ Acoular 传播内核使用相同距离及 0.2 m 参考距离。独立期望由�
 
 实际通道还包含麦克风、外壳、模拟前端和数字滤波的响应。若这些响应为 $G_m(f,\Omega)$，相对参考流形要包含 $G_m/G_1$，而不只是距离差。方向相关的外壳散射不能靠每通道一个常数修正；独立设备的时钟漂移也不是一个固定相位校准可以长期消除的量。
 
-Acoular `Calib.result()` 将每个数据块逐通道乘以指定校准因子，因子单位为 Pa/unit；频域输入也可使用按频点、通道排列的因子。这个接口应用已有校准数据，不会自动测量灵敏度，不会推断麦克风坐标或同步偏差。其 XML 读取路径载入实数因子，不能把这种文件称为完整复频响校准。[固定版校准源码](https://github.com/acoular/acoular/blob/13d3d7df74ac1a8135c7ec71da098cbbc03d8652/acoular/calib.py)。
+Acoular `Calib.result()` 将每个数据块逐通道乘以指定校准因子，因子单位为 Pa/unit；频域输入按频点、通道组合展平为长度`M*F`的一维因子，再按数据块逐行广播；不是直接传入二维系数矩阵。这个接口应用已有校准数据，不会自动测量灵敏度，不会推断麦克风坐标或同步偏差。其 XML 读取路径载入实数因子，不能把这种文件称为完整复频响校准。[固定版校准源码](https://github.com/acoular/acoular/blob/13d3d7df74ac1a8135c7ec71da098cbbc03d8652/acoular/calib.py)。
 
 设备实验至少保留以下记录；缺少某项时，缩小结论到已知范围。
 
@@ -1401,7 +1401,7 @@ FFT 接口约定由 [NumPy `rfft`](https://numpy.org/doc/stable/reference/genera
 
 ## 声学成像：原始方法、固定源码与实际执行边界
 
-对应[扩展专题Ⅰ](../../../../chapters/14_acoustic-imaging.md)，完整输入、推导和16道分步题在那里展开。本节用于选择原始资料、定位源码接口和区分实际执行范围。声学成像输出频率与空间网格上的源量估计；它与输出目标语音波形的增强链具有不同的输出合同。
+对应[扩展专题Ⅰ](../../../../chapters/14_acoustic-imaging.md)，完整输入、推导和18道分步题在那里展开。本节用于选择原始资料、定位源码接口和区分实际执行范围。声学成像输出频率与空间网格上的源量估计；它与输出目标语音波形的增强链具有不同的输出合同。
 
 ### 原始资料怎样连接到实现
 
@@ -1409,7 +1409,7 @@ FFT 接口约定由 [NumPy `rfft`](https://numpy.org/doc/stable/reference/genera
 |---|---|---|
 | [Brooks、Humphreys，AIAA 2004-2954 DAMAS 原文](https://ntrs.nasa.gov/api/citations/20080015889/downloads/20080015889.pdf) | 非相干源、扫描图与点扩散矩阵、非负迭代；原外层迭代包括前向和反向扫描 | 保留一般对角除法与两种轮次；NASA 重印记录年份不改写为论文首次年份。DAMAS 截断更新不能直接称为最小化扫描平方残差的 NNLS |
 | [Sijtsma，NLR-TP-2007-345](https://reports.nlr.nl/server/api/core/bitstreams/813b0521-b37c-4aff-be61-7a8bceaa06d4/content) | §4.6 式(32)～(34) 的完整CSM分量剥离，与删对角后需要额外迭代的分支分开 | 正文实现作者 full-CSM 教学式，推导剩余矩阵的半正定条件；扣出的相干分量不自动等于一个真实源 |
-| [Yardibi 等，2008](https://doi.org/10.1121/1.2896754) | §V 式(22) 含非负源量、非负噪声量与源量总和约束；相关源扩展改变模型 | 本书小型无噪声/已知白噪声拟合只用于目标比较，不称为完成原 CMF-C 或全部约束优化 |
+| [Yardibi 等，2008](https://doi.org/10.1121/1.2896754) | 本轮读取出版社及作者机构摘要，确认CMF和相关源扩展；未取得全文，未独立核原约束式号 | 本书小型无噪声/已知白噪声拟合只用于目标比较，不称为完成原 CMF-C 或全部约束优化；正文预算模型是给定教学控制 |
 | [Chardon、Picheral、Ollivier，DAMAS 与协方差拟合分析](https://gilleschardon.fr/papers/damascmf.pdf) | 比较 DAMAS 的二次型驻点和协方差残差，等价性需要相应 Gram 模型 | 明确扫描 NNLS、DAMAS 更新与完整CSM拟合的目标差别，不由同名变量或非负输出推断等价 |
 | [Sarradj，BeBeC-2012-11](https://www.bebec.eu/fileadmin/bebec/downloads/bebec-2012/papers/BeBeC-2012-11.pdf)；[2012 期刊论文](https://doi.org/10.1155/2012/292695) | 三维位置和不同导向归一化的量纲与峰行为 | 采用球面传播与显式源参考位置；单位响应不意味着多源混合峰必在真位置。两篇原文分别引用 |
 | [NASA 2017 阵列校准报告](https://ntrs.nasa.gov/api/citations/20170006081/downloads/20170006081.pdf) | 通道、阵列几何及测量环境的校准条件 | 工业配置须保存幅相校准、温度、流动与坐标条件；本书数字WAV不能证明绝对声压校准 |
@@ -1418,13 +1418,15 @@ FFT 接口约定由 [NumPy `rfft`](https://numpy.org/doc/stable/reference/genera
 
 原项目为[Acoular](https://github.com/acoular/acoular/tree/13d3d7df74ac1a8135c7ec71da098cbbc03d8652)，固定提交 `13d3d7df74ac1a8135c7ec71da098cbbc03d8652`，BSD-3-Clause。已有下载缓存位于 `codes/chapters/ch00/upstream/_downloads/acoular/`，由来源锁表管理，不把忽略缓存重复提交到本书树。许可文件SHA-256为 `b5bc3bfa7c76d388170a8f29f8dc3047bc3ca0abcd3160781f4ec54d3e95f69f`。
 
-[本轮合同工具](../../ch14/examples/audit_upstream_imaging_contracts.py)在执行前后分别核官方origin、固定HEAD、所用文件的原Git blob和SHA、普通文件身份与工作区洁净。`fbeamform.py`、`fastFuncs.py`、`spectra.py`、`version.py`和LICENSE逐项身份随[当前实际报告](../../ch14/reports/upstream_imaging_contracts.json)保存。完整来源选集仍为 `source_selection_mismatch`，这是获取范围状态；所用原文件身份通过不把完整选集改成成功。
+[本轮合同工具](../../ch14/examples/audit_upstream_imaging_contracts.py)在执行前后分别核官方origin、固定HEAD、所用文件的原Git blob和SHA、普通文件身份与工作区洁净。`fbeamform.py`、`fastFuncs.py`、`spectra.py`、`version.py`和LICENSE逐项身份随[当前实际报告](../../ch14/reports/upstream_imaging_contracts_current.json)保存。完整来源选集仍为 `source_selection_mismatch`，这是获取范围状态；所用原文件身份通过不把完整选集改成成功。
+
+历史[2026-10-03原报告](../../ch14/reports/upstream_imaging_contracts.json)保留当时执行字节；该历史报告对应的旧工具来自提交`ba622a6a2999cc30e15efe3e77a15c30d99cb51d`，不能用现在的工具摘要替换。当前工具另核锁表和当前获取状态的真实字节、执行前后的本地依赖与原源码、ignored成员边界；完整选集仍不匹配，有限原方法执行与获取状态分栏。报告路径拒绝覆盖旧历史报告，默认终端输出。
 
 本轮有限调用采用原AST方法体，移除JIT装饰器，以协议对象代替Traits构造，自定义网格驱动代替原JIT分派，NumPy FFT代替SciPy FFT。原数学方法体没有修补；这些调用没有覆盖完整包、Numba并行、HDF5缓存、完整风洞数据链或CMF估计器。工具默认只读stdout，显式 `--report` 才写当前报告。
 
 ```bash
 .venv/bin/python -m codes.chapters.ch14.examples.audit_upstream_imaging_contracts
-.venv/bin/python -m codes.chapters.ch14.examples.audit_upstream_imaging_contracts --report codes/chapters/ch14/reports/upstream_imaging_contracts.json
+.venv/bin/python -m codes.chapters.ch14.examples.audit_upstream_imaging_contracts --report codes/chapters/ch14/reports/upstream_imaging_contracts_current.json
 .venv/bin/python -m unittest tests.test_codes_imaging_contracts -v
 ```
 
@@ -1445,9 +1447,21 @@ FFT 接口约定由 [NumPy `rfft`](https://numpy.org/doc/stable/reference/genera
 
 独立合同测试还覆盖错误origin、HEAD、文件摘要、脏工作区、路径与报告写入边界。测试使用本地Git夹具；原实际数值结果由工具调用取得，不用夹具成功替代外部运行。
 
+### 同一合法CSM的目标对照与作者原模块
+
+新Acoular报告的`additional_valid_csm_controls`另记录一份合法秩一CSM，经原Base与PSF方法形成扫描输入，再调用原DAMAS类；它不是把旧`b=(1,0)`与任意矩阵拼成一条运行。原结果`(1,0)`的完整CSM平方残差为`28/9`，扫描NNLS点`(16/17,0)`的完整CSM残差为`8128/2601`；原21项控制的次序与13/8计数保持不变。详细手算、归一化与成立条件见[E14-17](../../../../chapters/14_acoustic-imaging.md#e14-17)。
+
+[固定作者DAMAS/CMF原模块](https://github.com/gilleschardon/DAMAS/blob/61987952e2237e6b088a169ee891dd96576f2565/damas.py "citation")已有独立[限定工具](../../ch14/examples/audit_damas_author_contracts.py)与[真实当前报告](../../ch14/reports/damas_author_contracts_current.json)。完整原模块字节及原imports在隔离进程执行，9个控制中8项数值吻合独立期望，1项零CSM保留原`NameError`。四原求解入口分别针对完整CSM、完整扫描残差、去对角CSM、去对角扫描残差；相同输入下得到`(1,0)`、`(16/17,0)`、`(2/3,0)`、`(16/15,0)`。不能将它们排成声学性能榜。
+
+重复列控制中原`unique=True`只来自已激活支持的正定Gram；另一个非负解`(0,1)`仍产生相同观测。作者单源full CLEAN-SC两步得到`1.68`，与其显式原公式一致；该限定点不覆盖任意双源或DR支路。取得的21个GPL文本与实际使用的LICENSE及一个Python文件分开，三份数据、MATLAB、MEX和论文大规模实验未执行。原NumPy、SciPy与matplotlib三个直接模块入口的前后SHA和版本已记录，未宣称核验这些库全部转依赖或二进制闭包。
+
 ### 工业入口与先进方法怎样继续研究
 
 固定源码中的风洞入口为 `examples/wind_tunnel_examples/example_airfoil_in_open_jet_freq_domain_methods.py`，另有CMF、导向与区域选择示例。工业复现应保存测量通道次序、校准文件、CSM窗与完整帧计数、网格/声源参考、剪切层或流动模型、对角处理、正则与区域积分。源码的下载入口使用浮动分支，配套数据许可须独立核实；本轮未取得风洞数据或运行该整链，不记录设备性能排名。
+
+两个固定风洞入口采用的频带不同：[频域方法示例](https://github.com/acoular/acoular/blob/13d3d7df74ac1a8135c7ec71da098cbbc03d8652/examples/wind_tunnel_examples/example_airfoil_in_open_jet_freq_domain_methods.py "citation")定义`cfreq=4000`与`num=3`，循环调用`b.synthetic(cfreq,num)`，因此采用三分之一倍频程。[CMF示例](https://github.com/acoular/acoular/blob/13d3d7df74ac1a8135c7ec71da098cbbc03d8652/examples/wind_tunnel_examples/example_airfoil_in_open_jet_cmf.py "citation")虽有同样的变量声明，实际调用却是`b.synthetic(cfreq,1)`，采用八度带。两个文件不能互相代替。设置`Environment(c=346.04)`也不等于已经使用`GeneralFlowEnvironment`或完成剪切层修正。
+
+[固定calib.py](https://github.com/acoular/acoular/blob/13d3d7df74ac1a8135c7ec71da098cbbc03d8652/acoular/calib.py "citation")解析XML的实数`factor`。时域系数按通道排列；频域接口要求把通道与频点的系数展平为长度`M*F`的一维数组，再对数据块逐行广播相乘，并非直接输入二维`M×F`系数矩阵。这是应用给定因子，不是从未知录音自动估计频率相关复响应、相位或时钟。数据与传播模型必须保持同一校准约定。
 
 DAMAS-C/CMF-C用于允许源间相关的模型，HR-CLEAN-SC关注多个分量与峰选择，SODIX引入不同的源表示和约束，移动/旋转源还需要运动轨迹与接收时刻模型。它们应逐一核观测、目标与额外假设，不能只更换算法名就沿用本章非相干PSF矩阵。上述扩展本轮仅保留研究入口，没有宣称运行。近场声全息的重建面与正则逆问题、DCASE的语义事件输出也不由本章功率成像覆盖。
 

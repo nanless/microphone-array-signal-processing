@@ -15,7 +15,9 @@ HISTORICAL_SEQUENTIAL_IDS = json.loads(
 )
 
 HISTORICAL_SECTION_IDS = {
+    "14_acoustic-imaging.md": {"sec-u-c93fb52739": "sec-u-8378eb57b1"},
     "00_overview.md": {
+        "sec-u-d12b48e159": "sec-u-bd5fecaa8e",  # 79→80张图，同一插图地图
         "sec-u-10c3704f3f": "sec-u-d12b48e159",  # 78→79张图，保留原插图地图主题
         "sec-u-f96924fd43": "sec-u-10c3704f3f",  # 77→78张图，同一插图地图
         "sec-u-8838edd879": "sec-u-f96924fd43",  # 76→77张图，仍是原插图地图

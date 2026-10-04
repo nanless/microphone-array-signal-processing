@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>章节代码练习与音频实验 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="85b156d2a968"><style>
+<meta name="source-digest" content="d689204a92b2"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -354,7 +354,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-46-4">46.4 E13-14：相同RIR能量比为何产生不同输出</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-46-5">46.5 独立重建、只读核验和来源范围</a></li>
 <li><a href="05_exercises_and_audio.html#sec-u-c4be61285a">47. 扩展专题Ⅰ：声学成像的源量、模型与快拍音频</a></li>
-<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-47-1">47.1 十六题分别核对什么</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-47-1">47.1 十八题分别核对什么</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-47-2">47.2 五份已知传播快拍WAV</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-47-3">47.3 评分窗、复幅度与单位</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-47-4">47.4 重建与严格只读核验</a></li>
@@ -544,7 +544,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-46-4">46.4 E13-14：相同RIR能量比为何产生不同输出</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-46-5">46.5 独立重建、只读核验和来源范围</a></li>
 <li><a href="05_exercises_and_audio.html#sec-u-c4be61285a">47. 扩展专题Ⅰ：声学成像的源量、模型与快拍音频</a></li>
-<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-47-1">47.1 十六题分别核对什么</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-47-1">47.1 十八题分别核对什么</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-47-2">47.2 五份已知传播快拍WAV</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-47-3">47.3 评分窗、复幅度与单位</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-47-4">47.4 重建与严格只读核验</a></li>
@@ -609,7 +609,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="章节代码练习与音频实验" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-c621965c02">章节代码练习与音频实验</h1>
 <p>先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。</p>
-<p>本页索引 355 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
+<p>本页索引 357 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
 <p>E06-07～E06-20 使用无量纲回声模型检查 AEC 的计算与边界，其中 E06-11～20 可用精确答案程序核对。第 15、16 节另提供参数不同的合成音频；试听文件本身不是题目真值。</p>
 <p>第 3～11、13～16、18、21～30、32～34 节对应主清单的 109 个数学合成样本。第 17 节的 18 个房间白噪声合成样本使用独立清单；第 12 节使用另行授权的真实同步录音。第 31 节的 2 份从 PCM 形成定位观测的追踪样本也使用独立清单。第35～39节分别保存双耳、有限窗卷积、多频几何、已知聚焦与导数约束的独立样本。第48节保存分布式协同增强的17个独立样本；第47节保存成像的五个快拍样本。第46节另保存附录B同DRR短RIR的五个独立样本；第55节保存第5章逐频相位的三份独立PCM；第56节保存第6章已知播放增益与历史尾声的六份独立PCM；第57节保存第7章已知到达与历史索引的六份独立PCM。不同音频的来源和可作的比较不同，试听前先查看各节的条件。</p>
 <p>主音频按章存放，统一由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/examples/generate_audio_samples.py">生成器</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/audio/MANIFEST.json">清单</a>管理。清单记录每组模型、种子、共同导出增益、采样率、通道、帧数、量化误差、运行环境、源文件摘要与逐 WAV 摘要；不把某组的谐波模板套到其他组。PCM16 编码按最近偶数舍入，不加抖动或自动限幅，RMS 对全部通道与采样一起计算。运行生成器并附加 <code>--check</code> 时只在内存重算和读回比对，不重写资产；严格字节核对也比较 Python、NumPy 和平台记录，异机不通过不等于算法错误。生成中断造成清单与 WAV 不一致时，先保留异常目录，再生成到新的空目录核对，通过后更新受影响资产并构建图和网站；不要手改单个生成文件。样本没有真人录音或模型权重，客观读回和浏览器加载不等于正式听测。</p>
@@ -3258,8 +3258,8 @@ $$</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_b/core/response_audio.py">响应核</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_b/examples/generate_response_audio.py">生成入口</a>复用主PCM编解码；清单绑定这两个源、<code>audio_samples.py</code> 和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/io_contracts.py">共享文件IO</a>四个真实源摘要。独立目录只接受五WAV和清单共六个普通文件，拒绝额外成员、符号链接、重复或非有限JSON、过期源及不符PCM。<code>--check</code>读取正式文件并在内存完整重放，失败时不重生或修复资产；验证前后文件字节与修改时刻保持不变。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_response_audio.py">独立响应测试</a>核对解析频响、尾部、评分窗、整数分母与资产拒绝边界；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_appendix_b_experiments.py">附录逐步测试</a>另核对四题中间量。<a href="04_source_reproduction.html#tac-contracts">TAC来源合同</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_b/reports/tac_contracts.json">来源报告</a>是静态证据，不能用本书标量夹具或这五WAV补写成原神经模型成功执行。</p>
 <span id="sec-111" class="anchor-alias" aria-hidden="true"></span><span id="47-扩展专题ⅰ声学成像的源量模型与快拍音频" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-c4be61285a">47. 扩展专题Ⅰ：声学成像的源量、模型与快拍音频</h2>
-<p>对应<a href="../14_acoustic-imaging.html">声学成像正文</a>。这里把代码入口、输入和复算目标集中起来；完整概念与分步答案放在正文。16题采用E14稳定身份，阅读顺序在第11章后、附录前，原E12/E13不改号。</p>
-<span id="sec-112" class="anchor-alias" aria-hidden="true"></span><span id="471-十六题分别核对什么" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-47-1">47.1 十六题分别核对什么</h3>
+<p>对应<a href="../14_acoustic-imaging.html">声学成像正文</a>。这里把代码入口、输入和复算目标集中起来；完整概念与分步答案放在正文。18题采用E14稳定身份，阅读顺序在第11章后、附录前，原E12/E13不改号。</p>
+<span id="sec-112" class="anchor-alias" aria-hidden="true"></span><span id="471-十八题分别核对什么" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-47-1">47.1 十八题分别核对什么</h3>
 <p>在仓库根目录运行：</p>
 <pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch14.chapter14_exercises
 </code></pre>
@@ -3353,44 +3353,54 @@ $$</p>
 <td>白噪声与源量的可辨识性</td>
 <td>两麦已知字典联合估计<code>q=2,σ²=.5</code>；一麦只有总量，不能人为拆分</td>
 </tr>
+<tr>
+<td>E14-17</td>
+<td>同一合法CSM的Gram目标</td>
+<td><code>G=DP,h=Db</code>；GS/完整CSM点<code>(1,0)</code>与扫描LS点<code>(16/17,0)</code>；不等列幅逐行归一化，DR须重建两个投影模板</td>
+</tr>
+<tr>
+<td>E14-18</td>
+<td>列不同仍可能不可辨识</td>
+<td>四传播列各异，但完整CSM字典与PSF秩均3；三个不同非负分配给出同一<code>2I</code>观测</td>
+</tr>
 </tbody>
 </table></div>
 <p>所有核心方法的唯一实现见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch14/core/imaging.py">imaging.py</a>，主程序见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch14/chapter14_exercises.py">chapter14_exercises.py</a>，独立手算、边界及音频测试见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_imaging.py">test_codes_imaging.py</a>。有限活动集NNLS只支持至多8列的教学小系统，441格实验只扫描和计算已知两源PSF，没有对441未知量枚举反演。单源噪声拟合是明确的小型已知统计控制，未加入原CMF的全部稀疏约束。</p>
 <span id="sec-113" class="anchor-alias" aria-hidden="true"></span><span id="472-五份已知传播快拍wav" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-47-2">47.2 五份已知传播快拍WAV</h3>
 <p>所有文件为24kHz、PCM16、48004采样点、共同导出增益1；前48000点是20个2400点块，最后4点保留完整因果传播尾。第一源峰幅<code>.2</code>，第二源<code>.1</code>，两者使用相同块包络；第二源到第二麦相对延迟4点。</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:44em">
 <thead>
 <tr>
-<th scope="col">文件</th>
-<th scope="col" style="text-align: right;">通道</th>
-<th scope="col">内容</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:22em">文件</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:3em" class="tutorial-short-column">通道</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:18em">内容</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><a href="../imaging_audio/source_1.wav">source_1.wav</a><audio class="audio-sample" controls preload="none" aria-label="source_1.wav" src="../imaging_audio/source_1.wav">请使用上方 WAV 链接下载。</audio></td>
-<td style="text-align: right;">1</td>
-<td>共同第一源，2kHz，块间相位不变</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:22em"><a href="../imaging_audio/source_1.wav">source_1.wav</a><audio class="audio-sample" controls preload="none" aria-label="source_1.wav" src="../imaging_audio/source_1.wav">请使用上方 WAV 链接下载。</audio></td>
+<td style="text-align: right;--tutorial-column-width:3em" class="tutorial-short-column">1</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">共同第一源，2kHz，块间相位不变</td>
 </tr>
 <tr>
-<td><a href="../imaging_audio/source_2_phase_code.wav">source_2_phase_code.wav</a><audio class="audio-sample" controls preload="none" aria-label="source_2_phase_code.wav" src="../imaging_audio/source_2_phase_code.wav">请使用上方 WAV 链接下载。</audio></td>
-<td style="text-align: right;">1</td>
-<td>第二源在20快拍取平衡正负相位码</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:22em"><a href="../imaging_audio/source_2_phase_code.wav">source_2_phase_code.wav</a><audio class="audio-sample" controls preload="none" aria-label="source_2_phase_code.wav" src="../imaging_audio/source_2_phase_code.wav">请使用上方 WAV 链接下载。</audio></td>
+<td style="text-align: right;--tutorial-column-width:3em" class="tutorial-short-column">1</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">第二源在20快拍取平衡正负相位码</td>
 </tr>
 <tr>
-<td><a href="../imaging_audio/source_2_coherent.wav">source_2_coherent.wav</a><audio class="audio-sample" controls preload="none" aria-label="source_2_coherent.wav" src="../imaging_audio/source_2_coherent.wav">请使用上方 WAV 链接下载。</audio></td>
-<td style="text-align: right;">1</td>
-<td>第二源始终与第一源同相</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:22em"><a href="../imaging_audio/source_2_coherent.wav">source_2_coherent.wav</a><audio class="audio-sample" controls preload="none" aria-label="source_2_coherent.wav" src="../imaging_audio/source_2_coherent.wav">请使用上方 WAV 链接下载。</audio></td>
+<td style="text-align: right;--tutorial-column-width:3em" class="tutorial-short-column">1</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">第二源始终与第一源同相</td>
 </tr>
 <tr>
-<td><a href="../imaging_audio/array_phase_code.wav">array_phase_code.wav</a><audio class="audio-sample" controls preload="none" aria-label="array_phase_code.wav" src="../imaging_audio/array_phase_code.wav">请使用上方 WAV 链接下载。</audio></td>
-<td style="text-align: right;">2</td>
-<td>相位码条件的真实两路PCM混合，麦1在前</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:22em"><a href="../imaging_audio/array_phase_code.wav">array_phase_code.wav</a><audio class="audio-sample" controls preload="none" aria-label="array_phase_code.wav" src="../imaging_audio/array_phase_code.wav">请使用上方 WAV 链接下载。</audio></td>
+<td style="text-align: right;--tutorial-column-width:3em" class="tutorial-short-column">2</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">相位码条件的真实两路PCM混合，麦1在前</td>
 </tr>
 <tr>
-<td><a href="../imaging_audio/array_coherent.wav">array_coherent.wav</a><audio class="audio-sample" controls preload="none" aria-label="array_coherent.wav" src="../imaging_audio/array_coherent.wav">请使用上方 WAV 链接下载。</audio></td>
-<td style="text-align: right;">2</td>
-<td>同相条件的真实两路PCM混合，麦1在前</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:22em"><a href="../imaging_audio/array_coherent.wav">array_coherent.wav</a><audio class="audio-sample" controls preload="none" aria-label="array_coherent.wav" src="../imaging_audio/array_coherent.wav">请使用上方 WAV 链接下载。</audio></td>
+<td style="text-align: right;--tutorial-column-width:3em" class="tutorial-short-column">2</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">同相条件的真实两路PCM混合，麦1在前</td>
 </tr>
 </tbody>
 </table></div>
@@ -3412,11 +3422,13 @@ e^{-\mathrm j2\pi 2000n/24000},\\
 <pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch14.examples.generate_imaging_audio
 .venv/bin/python -m codes.chapters.ch14.examples.generate_imaging_audio --check
 </code></pre>
-<p>唯一<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch14/examples/generate_imaging_audio.py">生成器</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch14/core/imaging_audio.py">快拍数值核</a>复用主PCM编解码和公共IO。目录严格接受五WAV及一个清单，检查普通父链、成员类型、完整实际源摘要、PCM字节与评分；<code>--check</code>只读内存重放，不能修复或覆盖资产。五样本不并入主109份清单。</p>
+<p>唯一<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch14/examples/generate_imaging_audio.py">生成器</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch14/core/imaging_audio.py">快拍数值核</a>复用主PCM编解码和公共IO。目录严格接受五WAV及一个清单，检查普通父链、成员类型、完整实际源摘要、PCM字节与评分；<code>--check</code>只读内存重放，不能修复或覆盖资产。五样本不并入主109份清单。写入前另以固定参数、逐样本公式、直接DFT/外积及PCM整数编码独立核内部输出；布尔增益、变更频率、虚假范围或失配浮点结果均在创建目录之前拒绝。</p>
 <p>图67～69由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/scripts/make_figures.py">绘图源</a>生成，报告分别在<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch14/reports">ch14/reports/</a>。图67的二维控制用8麦半径<code>.2m</code>环阵、<code>z=.6m</code>源面、4kHz球面传播和441格；弱源局部扫描峰偏到<code>.18m</code>。每格扫描值会重复计入响应，直接相加72.17394不是两源参考总量1.25。</p>
+<p>图80的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch14/reports/figure80_imaging_objectives.json">数值报告</a>同时保存151×101全部局部系数网格、两种目标及不等列幅控制，PNG绑定报告真实字节。独立发布门禁逐点按标量公式复算，不调用教学或绘图实现。</p>
 <span id="sec-116" class="anchor-alias" aria-hidden="true"></span><span id="475-固定上游的方法合同" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-47-5">47.5 固定上游的方法合同</h3>
-<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch14/examples/audit_upstream_imaging_contracts.py">原Acoular限定工具</a>默认只输出终端，只有显式<code>--report</code>写当前<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch14/reports/upstream_imaging_contracts.json">合同报告</a>。原源码身份、完整选集不匹配、限定方法相符、已确认差异和依赖缺失分别保存；详细条件见<a href="01_spatial_and_tracking.html#imaging-contract-audit">空间源码研究</a>。</p>
-<p>本书CLEAN-SC教学核采用作者完整CSM公式；固定Acoular的full支路在独立单源控制中会过量分配，不能作为正确答案。CMF半三角权重及默认截距也分别改变目标。原类方法的提取调用不等于Traits对象图、Numba JIT、HDF5、sklearn估计器或真实风洞整链运行。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch14/examples/audit_upstream_imaging_contracts.py">原Acoular限定工具</a>默认只输出终端，只有显式<code>--report</code>写当前<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch14/reports/upstream_imaging_contracts_current.json">合同报告</a>。原源码身份、完整选集不匹配、限定方法相符、已确认差异和依赖缺失分别保存；详细条件见<a href="01_spatial_and_tracking.html#imaging-contract-audit">空间源码研究</a>。</p>
+<p>本书CLEAN-SC教学核采用作者完整CSM公式；固定Acoular的full支路在独立单源控制中会过量分配，不能作为正确答案。CMF半三角权重及默认截距也分别改变目标。原类方法的提取调用不等于Traits对象图、Numba JIT、HDF5、sklearn估计器或真实风洞整链运行。当前Acoular报告另在合法CSM上形成扫描与PSF，再执行原DAMAS；旧21项次序及13吻合/8差异/1未执行保持。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch14/examples/audit_damas_author_contracts.py">作者完整Python原模块</a>的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch14/reports/damas_author_contracts_current.json">当前报告</a>独立记录9个控制：8个数值吻合、1个零CSM原NameError。原<code>unique=True</code>只检查活跃支持，重复列存在另一个同观测非负解；不能称全局唯一。作者full CLEAN-SC单源两步为1.68，与显式公式一致。两个工具默认终端输出，历史报告拒绝覆盖；源码获取、限定执行与完整论文实验分别记。</p>
 <p><a id="distributed-exercises-audio"></a></p>
 <span id="sec-117" class="anchor-alias" aria-hidden="true"></span><span id="48-分布式协同增强从指定目标到真实广播状态" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-0703c10be1">48. 分布式协同增强：从指定目标到真实广播状态</h2>
 <span id="sec-118" class="anchor-alias" aria-hidden="true"></span><span id="481-先确定要估计什么" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-48-1">48.1 先确定要估计什么</h3>

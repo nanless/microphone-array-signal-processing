@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 B · 路径地图与练习 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="85b156d2a968"><style>
+<meta name="source-digest" content="d689204a92b2"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -351,7 +351,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <ol>
 <li>运行 <code>codes/</code> 中只依赖 NumPy 的教学实现，核对手算结果、数组维度和退化边界。</li>
 <li>在隔离环境中用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线，记录房间、阵列和随机种子。</li>
-<li>先按 §13.7 生成图所依赖的音频和追踪清单，再运行 <code>scripts/</code> 中的九个绘图脚本，按当前参数复现 79 张编号图，并逐图核对正文条件。</li>
+<li>先按 §13.7 生成图所依赖的音频和追踪清单，再运行 <code>scripts/</code> 中的九个绘图脚本，按当前参数复现 80 张编号图，并逐图核对正文条件。</li>
 <li>按研究任务选择公开数据和固定版本参考系统，分别核对代码、模型与数据的许可和评测口径。</li>
 <li>在可用的多通道硬件上测实时性、同步和标定；仿真结果不能代替设备测量。</li>
 </ol>
@@ -1490,7 +1490,7 @@ $$</p>
 <p>图61从第9章E20与E21的指定解析模型生成：相关观测不能被重复计为独立证据，在忽略传播时延、以源状态时刻取瞬时方位的模型中，固定阵列不能辨认未知距离与速度的共同尺度。这不等于固定接收时钟的迟滞声学波形也完全相同。它不读取音频、不做随机抽样；数值报告在 <code>codes/chapters/ch09/reports/figure61_tracking_information.json</code>。</p>
 <p>图62计算第10章的给定噪声软更新、有限尾部逆积分和非抢占阻塞。图63读取第10章<a href="noise_audio/MANIFEST.json">独立六WAV清单</a>，分开浮点分解与实际PCM总误差；已知方差对照使用额外真值，不能称盲估计。</p>
 <p>图64读取第11章同源单音与双音场景的八WAV清单，区分解析与实际PCM误差、共同场景权重和最坏场景。图65读取附录A的已知噪声权重五WAV，比较正确权重与反权重。图66读取本附录的同DRR短RIR五WAV，说明源谱和反射相位怎样改变输出；后三组也须先生成各自独立清单。</p>
-<p>图67～69由声学成像专题的解析控制生成，分别检查PSF、相干失配、完整CSM剥离、校准与区域量。其16道练习和五份独立音频见<a href="14_acoustic-imaging.html">扩展专题Ⅰ</a>。</p>
+<p>图67～69由声学成像专题的解析控制生成，分别检查PSF、相干失配、完整CSM剥离、校准与区域量。其18道练习和五份独立音频见<a href="14_acoustic-imaging.html">扩展专题Ⅰ</a>。</p>
 <p>图70～72与24道E15题见<a href="15_distributed-enhancement.html">分布式协同增强专题</a>。17份独立WAV使用即时已知协方差混合；时钟、量化和缺包有不同误差来源，不能把它们并入主109样本或称为真实无线录音。</p>
 <p>图73读取第5章三份已知双音PCM。相位反号和正交变化保持解析稳态功率，却增加同钟参考误差；量化后三份功率分别保存，不假定完全相等。它由独立绘图脚本生成，不重写其他图的源摘要。</p>
 <p>图74读取第6章六份已知播放增益与尾声PCM。先核验完整资产，再分别绘制给定增益、切换后实际残差、分窗整数功率及播放停止后的帧去均值RMS。已知路径从开始冻结，不做训练或增益拟合；完整1600点尾中当前参考全零，但历史回声非零，十个<code>near_only</code>标签只说明活动规则的边界。</p>
@@ -1499,7 +1499,8 @@ $$</p>
 <p>图77读取第9章既有两份独立PCM，197帧有效标记驱动单槽候选、确认与退役。可用时刻龄期与状态龄期分别给出事件、ID及187/189个确认发布帧；图与报告绑定12真实源，不生成新音频或声称运行多目标身份识别。</p>
 <p>图78读取第10章六份已知坏麦PCM与独立清单，同时显示目标响应、总NMSE与固定波形窗。失效前权重在剩余通道相消目标；重算权重保持目标，而两者解析总误差相同。图报告绑定九个真实源，PCM量化差异不写成严格相等，不是盲故障检测。</p>
 <p>图79从第11章E11-27的已知三麦单频模型计算DS和三种加载MVDR。实际噪声协方差与另模型DI分开；声学硬条件先筛选，设备延迟未测则保留证据不足。图与报告绑定八个真实源，不生成新音频或代表整机性能。</p>
-<p>图片写入 <code>figures/</code>，共 79 张编号图，另有第16题的房间补充图：</p>
+<p>图80在同一合法CSM下比较扫描平方残差与完整CSM Frobenius平方残差。局部非负区域内分别标两个最优点及其各目标值，不把跨目标的数值大小当作性能排名。E14-17推导 <code>G=DP</code> 与 <code>h=Db</code>，E14-18说明不同传播列仍可能共同线性相关。</p>
+<p>图片写入 <code>figures/</code>，共 80 张编号图，另有第16题的房间补充图：</p>
 <pre><code class="language-bash">.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
 .venv/bin/python -m codes.chapters.ch01.examples.generate_binaural_cues
 .venv/bin/python -m codes.chapters.ch02.examples.generate_stft_convolution

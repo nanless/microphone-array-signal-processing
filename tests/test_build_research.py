@@ -172,6 +172,32 @@ class ResearchBuildTest(unittest.TestCase):
     def render(self, markdown, source):
         return build_site.render(markdown, source)[0]
 
+    def test_actual_imaging_author_table_keeps_readable_columns_and_native_headers(self):
+        source = RESEARCH/'04_source_reproduction.md'
+        html = self.render(source.read_text(), source)
+        tables = [m for m in re.finditer(r'<table([^>]*)>(.*?)</table>', html, re.S)
+                  if 'damas.py::proddamastranspose' in m.group(2)]
+        self.assertEqual(len(tables), 1)
+        table = tables[0]
+        self.assertIn('source-contract-readable-table', table.group(1))
+        headers = re.findall(r'<th\b[^>]*>(.*?)</th>', table.group(2), re.S)
+        self.assertEqual(headers, ['原文件与入口', '在算法中做什么', '复现时必须分清什么'])
+        self.assertEqual(table.group(2).count('scope="col"'), 3)
+        self.assertIn('class="table-scroll" tabindex="0" role="region"', html)
+
+    def test_actual_imaging_handbook_player_table_preserves_three_readable_columns(self):
+        source = RESEARCH/'05_exercises_and_audio.md'
+        html = self.render(source.read_text(), source)
+        tables = [m for m in re.finditer(r'<table([^>]*)>(.*?)</table>', html, re.S)
+                  if 'imaging_audio/array_phase_code.wav' in m.group(2)]
+        self.assertEqual(len(tables), 1)
+        table = tables[0]
+        self.assertIn('tutorial-budget-table', table.group(1))
+        self.assertIn('--tutorial-table-width:44em', table.group(1))
+        self.assertEqual(table.group(2).count('<audio '), 5)
+        for width in (22, 3, 18):
+            self.assertEqual(table.group(2).count(f'--tutorial-column-width:{width}em'), 6)
+
     def test_explicit_page_map_has_16_tutorial_and_6_research_pages(self):
         paths = list(build_site.source_outputs().values())
         self.assertEqual(len(paths), 22)

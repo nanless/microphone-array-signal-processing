@@ -71,7 +71,7 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 | `make_selection_figures.py` | 图79：同一已知三麦模型的DS/三加载MVDR，实际噪声与另模型DI分开，声学两硬条件及设备证据三态；8真实源 | `figures/fig79_selection_evidence.png`和`ch11/reports/figure79_selection_evidence.json`；无新音频 |
 | `quality_check.py` | 发布门禁。用独立基线检查 16 篇/151 节/732 个指定子节/79 图，核对图号、alt、公式编号与引用、小节语义链接、PNG 绘图脚本摘要、网页导航和 PDF 三级书签。确定性问题阻断发布，高风险口语只提醒人工复核 | 通过、失败清单，以及不阻断发布的人工复核与可访问性提示 |
 
-355 道稳定编号的代码题可从各章入口复算，例如：
+357 道稳定编号的代码题可从各章入口复算，例如：
 
 ```bash
 .venv/bin/python -m codes.chapters.ch04.chapter04_experiments
@@ -138,7 +138,7 @@ PDF 正文固定为 16 px，MathJax 公式按 100% 字号打印；网页公式�
 
 ## 附录 B 房间仿真复算
 
-第 16 题的六位置房间重算需要 `pyroomacoustics==0.10.0`。可在临时虚拟环境安装，保留仓库 `.venv` 的主依赖集；下列命令以 Python 3.13 的 macOS/Linux 环境为例。没有该依赖仍能生成正文的 79 张编号图，并查阅随仓的附录 B 结果图和 18 个房间 WAV。固定版本说明见[官方 PyPI 页面](https://pypi.org/project/pyroomacoustics/0.10.0/)。
+第 16 题的六位置房间重算需要 `pyroomacoustics==0.10.0`。可在临时虚拟环境安装，保留仓库 `.venv` 的主依赖集；下列命令以 Python 3.13 的 macOS/Linux 环境为例。没有该依赖仍能生成正文的 80 张编号图，并查阅随仓的附录 B 结果图和 18 个房间 WAV。固定版本说明见[官方 PyPI 页面](https://pypi.org/project/pyroomacoustics/0.10.0/)。
 
 在有 Python 3.13 的 macOS/Linux 主机上，可从仓库根目录用新目录复算，不覆盖本书样本：
 
@@ -256,7 +256,7 @@ PRA_NUM_THREADS=2 /tmp/masp-room-pra/bin/python -m codes.chapters.appendix_b.exa
 .venv/bin/python -m codes.chapters.ch14.examples.audit_upstream_imaging_contracts
 ```
 
-16题只读计算；五个独立24kHz数学WAV保留完整四点传播尾，不混入主109份。图67～69分别复算PSF与二维泄漏、非相干模型及full-CSM CLEAN-SC、校准与不同拟合目标。三报告绑定当前四个真实源；原Acoular限定调用报告保留目标差异与未执行条件。源、PCM、图和网页/PDF验收分别记，不能用其中一项代替另一项。详见[音频实验§47](../codes/chapters/ch00/research/05_exercises_and_audio.md#sec-47-1)与[原源合同](../codes/chapters/ch00/research/01_spatial_and_tracking.md#imaging-contract-audit)。
+18题只读计算；五个独立24kHz数学WAV保留完整四点传播尾，不混入主109份。图67～69分别复算PSF与二维泄漏、非相干模型及full-CSM CLEAN-SC、校准与不同拟合目标。图80另比较同一合法CSM下的扫描与完整CSM目标。四报告绑定当前四个真实源；原Acoular限定调用报告保留目标差异与未执行条件。源、PCM、图和网页/PDF验收分别记，不能用其中一项代替另一项。详见[音频实验§47](../codes/chapters/ch00/research/05_exercises_and_audio.md#sec-47-1)与[原源合同](../codes/chapters/ch00/research/01_spatial_and_tracking.md#imaging-contract-audit)。
 
 
 ## 扩展专题Ⅱ的已知统计、音频与原源码合同
@@ -278,3 +278,5 @@ PRA_NUM_THREADS=2 /tmp/masp-room-pra/bin/python -m codes.chapters.appendix_b.exa
 第9章E09-24～26的入口仍为`codes.chapters.ch09.chapter09_experiments`。`codes.chapters.ch09.examples.tracking_lifecycle_demo`默认只读，重新核正式PCM后给出两种时钟协议；图77由`make_tracking_figures.py`独立生成，报告完整绑定12真实源、清单和两WAV。它不生成新音频、不运行多人关联或永久身份识别。移动/追踪生成源分别为5/9个，写入前拒绝现有配置漂移，`--check`不修复。两份当前上游工具显式使用`reports/*_current.json`，旧报告只保留历史身份。
 
 第10章E10-34由唯一MVDR核重建剩余通道约束，[六WAV独立清单](../codes/chapters/ch10/channel_audio/MANIFEST.json)不能并入主109；图78与实际PCM表使用同一27200点窗口，不拟合增益或时延。生成后使用`generate_channel_audio --check`严格只读完整回放，再运行`make_channel_figures.py`。累计遥测RTF与可选逐帧服务RTF独立命名；校验器不证明跨记录计时或重启关系。
+
+扩展专题Ⅰ作者原模块核验需现有环境提供NumPy、SciPy和matplotlib：`python -B -m codes.chapters.ch14.examples.audit_damas_author_contracts`默认只读终端。显式 `--report codes/chapters/ch14/reports/damas_author_contracts_current.json`才保存新当前报告；原零CSM失败与未运行的数据/MATLAB/MEX分别记录。取得源码前先按[来源手册§13](../codes/chapters/ch00/research/04_source_reproduction.md#imaging-author-source)核固定版本与GPL许可。

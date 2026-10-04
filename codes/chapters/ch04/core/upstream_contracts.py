@@ -21,6 +21,12 @@ STATUS = LOCK.with_name("SOURCE_STATUS.json")
 CACHE = LOCK.parent / "upstream/_downloads"
 HISTORICAL_REVISION = "e4d54a158d892b224e37cc49b93066e667babf08"
 PROJECTS = {
+    'damas-author': ('https://github.com/gilleschardon/DAMAS.git',
+        '61987952e2237e6b088a169ee891dd96576f2565', 'GPL-3.0', 'LICENSE',
+        '3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986'),
+    'acoular': ('https://github.com/acoular/acoular.git',
+        '13d3d7df74ac1a8135c7ec71da098cbbc03d8652', 'BSD-3-Clause', 'LICENSE',
+        'b5bc3bfa7c76d388170a8f29f8dc3047bc3ca0abcd3160781f4ec54d3e95f69f'),
     "pyaec": ("https://github.com/ewan-xu/pyaec.git",
         "5b9c02c57075d790b7df8652884618189d49bbc4", "Apache-2.0", "LICENSE",
         "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"),

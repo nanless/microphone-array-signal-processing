@@ -1,4 +1,4 @@
-"""Run E14-01..16 without writing files, downloading data or importing Acoular.
+"""Run E14-01..18 without writing files, downloading data or importing Acoular.
 
 Usage: python -m codes.chapters.ch14.chapter14_exercises [--exercise E14-06]
 The JSON wrapper keeps metadata separate from the stable ID-to-result map.
@@ -20,12 +20,13 @@ from codes.chapters.ch14.core.imaging import (
     point_spread_function, damas_gauss_seidel, finite_nnls, clean_sc_full_csm,
     hermitian_real_vector, csm_residual, single_source_csm_fit,
     one_sided_csm_density, integrate_psd, region_power,
+    damas_csm_objective_experiment, distinct_column_ambiguity_experiment,
 )
 from codes.chapters.ch14.core.imaging_audio import (
     make_signals, measure_signal, measure_source_pairs, SAMPLE_RATE, parameters,
 )
 
-EXERCISE_IDS = tuple('E14-'+str(i).zfill(2) for i in range(1, 17))
+EXERCISE_IDS = tuple('E14-'+str(i).zfill(2) for i in range(1, 19))
 
 
 def _json(value):
@@ -45,7 +46,7 @@ def _json(value):
 
 
 def run_experiments():
-    """Return finite JSON with exercises[E14-01..16]; no file IO or side effects."""
+    """Return finite JSON with exercises[E14-01..18]; no file IO or side effects."""
     toy = two_cell_experiment(); a, w, p = toy['A'], toy['W'], toy['P']
     cases = toy['cases']; independent = cases['independent']; coherent = cases['coherent']
     sphere = spherical_scan_experiment()
@@ -189,6 +190,8 @@ def run_experiments():
                    'one_microphone': single_source_csm_fit([[2.5]], [1.], include_white_noise=True),
                    'one_microphone_identifiable_relation': 'q + sigma_squared = 2.5',
                    'scope': 'known single steering, independent equal white sensor noise; not constrained production CMF'},
+        'E14-17': damas_csm_objective_experiment(),
+        'E14-18': distinct_column_ambiguity_experiment(),
     }
     return _json({'schema_version': 1, 'scope': 'original finite known-model teaching experiments, no industrial ranking',
                   'complex_encoding': 'last dimension [real,imag] for keys marked real_imag and complex states',

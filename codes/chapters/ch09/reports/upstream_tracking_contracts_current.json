@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-04T19:54:56.691481+00:00",
+  "generated_at": "2026-10-04T21:21:03.464628+00:00",
   "tool_sha256": "c0217b37c0f745c55f615d3fb90ddda6af9ad1d2396c42612f80fdaf31be03a6",
-  "source_lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
-  "source_status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+  "source_lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
+  "source_status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
   "actual_dependencies_sha256": {
     "codes/chapters/ch09/examples/audit_upstream_tracking_contracts.py": "c0217b37c0f745c55f615d3fb90ddda6af9ad1d2396c42612f80fdaf31be03a6",
-    "codes/chapters/ch04/core/upstream_contracts.py": "f61d18b3239614aaf1304b9707038ad913f602160ff6de378e52692540490f30",
+    "codes/chapters/ch04/core/upstream_contracts.py": "4898ceaddfcd0821a6564360bc68489766438afef13ef783f0d182ffc0dddeb1",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4",
     "codes/chapters/ch09/examples/audit_tracking_upstream_interfaces.py": "52273ebfbe456cc2d2fe03c235872fee5bbeaffa33b0be0ed86b26abff05a9b7"
@@ -46,12 +46,12 @@
           "demo/odaslive/parameters.c"
         ]
       },
-      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+      "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+      "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
       "recorded_complete_selection": {
         "id": "odas",
         "revision": "bcb845434495e293df3d48f1203b7a86e1852449",
@@ -262,12 +262,12 @@
           "extras/safmex/safmex_tracker3d.m"
         ]
       },
-      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+      "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+      "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
       "recorded_complete_selection": {
         "id": "spatial-audio-framework",
         "revision": "18fd5aba46e20787b51f28f7197a68506c965c07",
@@ -560,12 +560,12 @@
           "filterpy/kalman/unscented_transform.py"
         ]
       },
-      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+      "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+      "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
       "recorded_complete_selection": {
         "id": "filterpy",
         "revision": "3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33",
@@ -845,12 +845,12 @@
           "stonesoup/hypothesiser/probability.py"
         ]
       },
-      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+      "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+      "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
       "recorded_complete_selection": {
         "id": "stonesoup",
         "revision": "8d1edeb07ef8505ed065cbef435cfb5e517d9bdc",
@@ -1303,10 +1303,10 @@
         "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/odas/src/system/kalman2kalman.c",
         "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/odas/src/signal/kalman.c",
         "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/odas/src/utils/matrix.c",
-        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-tracking-ory9__it/odas_contract.c",
+        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-tracking-3u6gy8vr/odas_contract.c",
         "-lm",
         "-o",
-        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-tracking-ory9__it/odas_contract"
+        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-tracking-3u6gy8vr/odas_contract"
       ],
       "compiler": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin25.6.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
       "compile_stdout": "",
@@ -1377,10 +1377,10 @@
         "/usr/bin/cc",
         "-std=c11",
         "-O0",
-        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-tracking-ory9__it/saf_step_contract.c",
+        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-tracking-3u6gy8vr/saf_step_contract.c",
         "-lm",
         "-o",
-        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-tracking-ory9__it/saf_step_contract"
+        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-tracking-3u6gy8vr/saf_step_contract"
       ],
       "compiler": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin25.6.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
       "compile_stdout": "",
@@ -1559,12 +1559,12 @@
             "filterpy/kalman/unscented_transform.py"
           ]
         },
-        "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+        "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
         "source_document_paths": {
           "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
           "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
         },
-        "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+        "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
         "recorded_complete_selection": {
           "id": "filterpy",
           "revision": "3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33",
@@ -2119,12 +2119,12 @@
             "stonesoup/hypothesiser/probability.py"
           ]
         },
-        "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+        "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
         "source_document_paths": {
           "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
           "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
         },
-        "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+        "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
         "recorded_complete_selection": {
           "id": "stonesoup",
           "revision": "8d1edeb07ef8505ed065cbef435cfb5e517d9bdc",
@@ -2317,12 +2317,12 @@
             "filterpy/kalman/unscented_transform.py"
           ]
         },
-        "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+        "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
         "source_document_paths": {
           "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
           "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
         },
-        "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+        "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
         "recorded_complete_selection": {
           "id": "filterpy",
           "revision": "3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33",

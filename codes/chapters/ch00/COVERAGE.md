@@ -168,9 +168,9 @@
 | 研究扩展：空间 §26 | 球谐 ESPRIT | 外部参考实现 | `spherical-array-processing`：`sphESPRIT.m` | 与阵元 ULA 结构不同 |
 | 研究扩展：空间 §27 | C/C++ 球阵编码块处理 | 外部参考实现 | `spatial-audio-framework`：`examples/src/array2sh/array2sh.c` | 核心 ISC、可选 GPL 模块与后端另核 |
 | 研究扩展：空间 §23 | Acoustic Rake | 外部参考实现 | `pyroomacoustics`：`pyroomacoustics/beamforming.py::rake_mvdr_filters` | 需要反射模型，不是通用去混响器 |
-| 专题Ⅰ §14.5、E14-03；空间 §28 | DAMAS 双向与前向教学控制 | 本仓库可运行基线 | `codes/chapters/ch14/core/imaging.py::damas_gauss_seidel`；外部 `acoular`：`BeamformerDamas`、`damasSolverGaussSeidel` | 原论文每轮前后扫；原Acoular仅前扫/dirty初值/单位对角；不保证唯一或等同残差NNLS |
+| 专题Ⅰ §14.5、E14-03/17；空间 §28 | DAMAS 双向与前向教学控制 | 本仓库可运行基线 | `codes/chapters/ch14/core/imaging.py::damas_gauss_seidel`；外部 `acoular`：`BeamformerDamas`、`damasSolverGaussSeidel`；`damas-author`：完整`damas.py` | 完整CSM/匹配模板下Gram逐行归一化与GS相连，扫描残差NNLS是不同目标；作者九限定控制8吻合/1原NameError；GPL获取不等于MATLAB/MEX大实验，不保证全局唯一 |
 | 专题Ⅰ §14.6、E14-11；空间 §29 | 完整CSM CLEAN-SC | 本仓库可运行基线 | `codes/chapters/ch14/core/imaging.py::clean_sc_full_csm`；外部 `acoular`：`BeamformerCleansc` | 教学采用作者full-CSM式；原full支路单源20轮过量分配保留在合同；DR隐式式不混用 |
-| 专题Ⅰ §14.7、E14-12；空间 §30 | 原CMF与可选目标 | 外部参考实现 | `acoular`：`acoular/fbeamform.py::BeamformerCMF`；[限定合同](../ch14/reports/upstream_imaging_contracts.json) | 原字典已调用；半三角无√2与默认截距改变目标；sklearn估计器未执行，非原稀疏约束论文整链 |
+| 专题Ⅰ §14.7、E14-12；空间 §30 | 原CMF与可选目标 | 外部参考实现 | `acoular`：`acoular/fbeamform.py::BeamformerCMF`；[限定合同](../ch14/reports/upstream_imaging_contracts_current.json) | 原字典已调用；半三角无√2与默认截距改变目标；sklearn估计器未执行，非原稀疏约束论文整链 |
 | 专题Ⅰ §14.5、E14-08 | 扫描域小系统NNLS | 本仓库可运行基线 | `codes/chapters/ch14/core/imaging.py::finite_nnls` | 至多8列活动集枚举和KKT；不反演441未知格；与DAMAS的目标和固定点不同 |
 | 专题Ⅰ §14.7、E14-12、E14-16 | 简化CSM拟合及已知白噪声辨识 | 本仓库可运行基线 | `codes/chapters/ch14/core/imaging.py::hermitian_real_vector`、`single_source_csm_fit`、`finite_nnls` | 完整Frobenius和有限非负小系统；单源/白噪声LS无约束、另报告非负性；不含原CMF全部稀疏约束；一麦源噪声拆分不可辨 |
 | 研究扩展：空间 §30 | SODIX | 外部参考实现 | `acoular`：`acoular/fbeamform.py::BeamformerSODIX` | 源强和指向性可辨识性 |
@@ -430,11 +430,11 @@
 
 ## 章节代码练习与音频映射
 
-343 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 339 行算法统计。补充的空间精算、增强步骤、时间状态模块分别提供3/5/4道题。三个原有 `exercises_` 模块各自提供 `run_exercises()`，分别有 28/23/25 道题；AEC 小实验另有 4 道，进阶 AEC 手算另有 10 道；E03-07、E04-08、E09-06 与 E10-13 由独立实验入口提供。E04-08 的 200 次独立双源抽样只说明固定模型中的分辨事件频率和 Wilson 区间。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
+357 道代码练习沿用各章已有模型，稳定 ID 与原有数字题号并存。下表只登记学习入口，不改变上面的 349 行算法统计。补充的空间精算、增强步骤、时间状态模块分别提供3/5/4道题。三个原有 `exercises_` 模块各自提供 `run_exercises()`，分别有 28/23/25 道题；AEC 小实验另有 4 道，进阶 AEC 手算另有 10 道；E03-07、E04-08、E09-06 与 E10-13 由独立实验入口提供。E04-08 的 200 次独立双源抽样只说明固定模型中的分辨事件频率和 Wilson 区间。E04-04 是固定矩阵的前向空间平滑演示，不扩称为支持任意阵列的公共估计接口。
 
 | 章节与稳定 ID | 练习入口 | 回归测试 |
 |---|---|---|
-| 扩展专题Ⅰ：E14-01～16（16题） | [成像逐层复算](../ch14/chapter14_exercises.py)、[五份快拍音频](../ch14/imaging_audio/MANIFEST.json)、[原源合同](../ch14/reports/upstream_imaging_contracts.json) | [独立教学/PCM测试](../../../tests/test_codes_imaging.py)、[原源和目标测试](../../../tests/test_codes_imaging_contracts.py) |
+| 扩展专题Ⅰ：E14-01～18（18题） | [成像逐层复算](../ch14/chapter14_exercises.py)、[五份快拍音频](../ch14/imaging_audio/MANIFEST.json)、[原源合同](../ch14/reports/upstream_imaging_contracts_current.json) | [独立教学/PCM测试](../../../tests/test_codes_imaging.py)、[原源和目标测试](../../../tests/test_codes_imaging_contracts.py) |
 | 扩展专题Ⅱ：E15-01～24（24题） | [分布式逐步复算](../ch15/chapter15_exercises.py)、[17份传输控制音频](../ch15/distributed_audio/MANIFEST.json)、[固定原源合同](../ch15/reports/upstream_distributed_contracts.json) | [独立数学/状态测试](../../../tests/test_codes_distributed.py)、[PCM资产测试](../../../tests/test_codes_distributed_audio.py)、[上游合同测试](../../../tests/test_codes_distributed_contracts.py) |
 | 第6章：E06-34～39（6题） | [APA五个完整缩例](../ch06/aec_affine_projection_demo.py)、[有色参考训练/留出](../ch06/examples/generate_apa_audio.py) | [状态/手算测试](../../../tests/test_codes_aec_affine_projection.py)、[PCM实验测试](../../../tests/test_codes_aec_apa_audio.py) |
 | 第6章：E06-40～42（3题） | [增益与尾声逐样本控制](../ch06/core/reference_timing.py)、[章节入口](../ch06/chapter06_experiments.py)、[六份PCM生成/只读核验](../ch06/examples/generate_reference_audio.py) | [独立手算边界](../../../tests/test_codes_ch06_reference_timing.py)、[完整PCM回放](../../../tests/test_codes_ch06_reference_audio.py)、[发布与整数评分](../../../tests/test_ch06_reference_publication.py) |
@@ -495,7 +495,7 @@
 本仓库不提交下载缓存、模型权重或未经授权的第三方语料。109 个自行合成的教学 WAV 按章放在 `codes/chapters/*/audio/`，单一总清单位于 `codes/chapters/ch00/audio/MANIFEST.json`；许可明确的 DEMAND 小型摘录和派生文件位于 `codes/chapters/ch02/real_audio/`，不包含完整下载归档。独立上游工作目录的取得、许可保留与未执行项目按来源状态记录报告。算法、源码或排除范围变化时，同步修改本表、研究说明、来源清单和真实验证记录。
 
 
-真实数据练习 R01 使用 [prepare_real_recordings.py](../ch02/examples/prepare_real_recordings.py) 与 [real_recordings.py](../ch02/core/real_recordings.py)，测试见 [test_codes_real_recordings.py](../../../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 343 道合成/手算代码题。数据来源和许可另见 [real_audio/](../ch02/real_audio/README.md)。
+真实数据练习 R01 使用 [prepare_real_recordings.py](../ch02/examples/prepare_real_recordings.py) 与 [real_recordings.py](../ch02/core/real_recordings.py)，测试见 [test_codes_real_recordings.py](../../../tests/test_codes_real_recordings.py)。R01 比较 DEMAND 录音的数字域二阶矩、交叉项与零延时均值，不是新增定位或增强算法，亦不计入上述 357 道合成/手算代码题。数据来源和许可另见 [real_audio/](../ch02/real_audio/README.md)。
 
 四组模型与边界练习对应以下独立实现；主音频新增的 4 个 interpolation 文件验证固定滤波误差，不是完整采样率转换性能。
 
@@ -511,3 +511,7 @@
 附录B补充E13-11～14：共享TAC置换与复制、DRR/EDC幅度尺度、时间条件化、同DRR短FIR的五份正式PCM。唯一[response生成源](../appendix_b/examples/generate_response_audio.py)管理五WAV与严格清单；图66及[数值报告](../appendix_b/reports/figure66_equal_drr_response.json)从实际PCM取整数分子/分母。房间21成员由[只读核验](../appendix_b/examples/check_room_assets.py)检查当前源和格式，普通资产核验不等于重新执行PRA。TAC增加唯一一行外部算法，不由四新题增加四行。
 
 2026-10-05 第10章增加一行已知失效选集重建机制，复用原MVDR，不把六WAV或一道练习登记成新算法；当前四工业报告与历史报告分开，完整选集状态不升级为已运行整链。
+
+E14-17/18复用[唯一成像数值核](../ch14/core/imaging.py)，[独立目标与边界测试](../../../tests/test_codes_imaging_objectives.py)核Gram与集体零空间。图80逐网格复算；非负拟合不自动等于真实源恢复。新增两题不重复登记算法行。
+
+[作者原模块限定入口](../ch14/examples/audit_damas_author_contracts.py)和[真实当前报告](../ch14/reports/damas_author_contracts_current.json)保留8数值吻合与1原NameError；21个GPL文本取得不等于MATLAB/MEX/数据实验运行。

@@ -45,17 +45,33 @@ def _matrix(value, name):
     return array
 
 
+def _complex_real_scale(array, scale):
+    """Divide real/imaginary parts without forming a reciprocal of scale.
+
+    NumPy complex division can overflow internally for a positive subnormal
+    real divisor even when both normalized components are representable.
+    """
+    result = np.empty_like(array)
+    result.real = array.real/scale
+    result.imag = array.imag/scale
+    return result
+
+
 def _hermitian(value, *, positive=False):
     array = _matrix(value, 'CSM')
     if array.shape[0] != array.shape[1]:
         raise ValueError('CSM must be square')
     scale = float(np.max(abs(array)))
     if scale:
-        normalized = array/scale
+        normalized = _complex_real_scale(array, scale)
         if np.max(abs(normalized-normalized.conj().T)) > 1e-12:
             raise ValueError('CSM must be Hermitian')
         if positive and np.min(np.linalg.eigvalsh(hermitian_part(normalized))) < -1e-12:
             raise ValueError('full CSM must be positive semidefinite')
+    # Exact Hermitian subnormals must not be halved into zero merely to
+    # remove an asymmetry they do not have. Return a copy, never the input.
+    if np.array_equal(array, array.conj().T):
+        return array.copy()
     # Only the accepted relative round-off asymmetry is removed.
     return hermitian_part(array)
 
@@ -125,7 +141,14 @@ Use only interior positive-frequency real-signal tones. DC/Nyquist do not
 obey this peak-amplitude factor; use the spectrum normalization below.
 """
     z = _matrix(amplitudes, 'amplitudes')
-    return (z/np.sqrt(2*z.shape[1]))@(z/np.sqrt(2*z.shape[1])).conj().T
+    scaled = z/np.sqrt(2*z.shape[1])
+    result = scaled@scaled.conj().T
+    # BLAS matmul need not honor NumPy's floating-point error mode.
+    if not np.all(np.isfinite(result)):
+        raise ValueError('calculation exceeds float64 support')
+    if np.any(z != 0) and not np.any(result != 0):
+        raise ValueError('nonzero CSM underflows float64')
+    return result
 
 
 @_numeric
@@ -271,6 +294,12 @@ norm squared. False intentionally demonstrates unequal matrix weighting.
 
 @_numeric
 def csm_residual(measured, model):
+    """Physical squared errors plus a scale-stable relative Frobenius norm.
+
+    Physical squares that round entirely to zero are retained and explicitly
+    flagged. A genuinely zero reference has no relative error. Unsupported
+    overflow raises ValueError; scaling does not invent a physical square.
+    """
     measured, model = _hermitian(measured), _hermitian(model)
     if model.shape != measured.shape:
         raise ValueError('CSM shapes must agree')
@@ -278,9 +307,26 @@ def csm_residual(measured, model):
     reference = hermitian_real_vector(measured)
     denominator = float(reference@reference)
     numerator = float(residual@residual)
+    upper = hermitian_real_vector(model-measured, frobenius=False)
+    upper_squared = float(np.sum(upper**2))
+    scale = max(float(np.max(abs(measured))), float(np.max(abs(model))))
+    relative = None
+    if np.any(measured != 0):
+        scaled_reference = hermitian_real_vector(_complex_real_scale(measured, scale))
+        scaled_residual = hermitian_real_vector(
+            _complex_real_scale(model, scale)-_complex_real_scale(measured, scale))
+        # hypot avoids another square underflow when the two matrices have
+        # very different magnitudes, even after the common normalization.
+        reference_norm = np.hypot.reduce(abs(scaled_reference))
+        residual_norm = np.hypot.reduce(abs(scaled_residual))
+        relative = float(residual_norm/reference_norm)
     return {'frobenius_squared': numerator, 'reference_frobenius_squared': denominator,
-            'relative_frobenius': float(np.sqrt(numerator/denominator)) if denominator else None,
-            'upper_unweighted_squared': float(np.sum(hermitian_real_vector(model-measured, frobenius=False)**2))}
+            'relative_frobenius': relative,
+            'upper_unweighted_squared': upper_squared,
+            'squared_underflow': {
+                'frobenius_squared': bool(numerator == 0 and np.any(residual != 0)),
+                'reference_frobenius_squared': bool(denominator == 0 and np.any(reference != 0)),
+                'upper_unweighted_squared': bool(upper_squared == 0 and np.any(upper != 0))}}
 
 
 @_numeric
@@ -381,6 +427,74 @@ def two_cell_experiment():
     return {'A': a, 'W': w, 'P': p, 'q': q, 'cases': cases,
             'coherence_gamma': gammas, 'coherence_inverse_q': np.asarray(estimates),
             'scope': 'two known grid cells; digital mean-square reference, not acoustic watts'}
+
+
+def damas_csm_objective_experiment():
+    """E14-17: full CSM Gram objective versus scan-domain squared residual.
+
+    Only matched conventional weights and unchanged full rank-one templates
+    are used. Both minimizers are model fits, not actual source recovery.
+    The existing finite NNLS and coordinate GS kernels remain unique.
+    """
+    a = np.array([[1., 1.], [1., np.exp(-2j*np.pi/3)]], complex)
+    w = conventional_weights(a)
+    v = np.sqrt(4/3)*np.array([1., np.exp(1j*np.pi/3)])
+    r = np.outer(v, v.conj())
+    p, b = point_spread_function(w, a), scan_power(r, w)
+    templates = [np.outer(a[:, j], a[:, j].conj()) for j in range(2)]
+    design = np.column_stack([hermitian_real_vector(t) for t in templates])
+    target = hermitian_real_vector(r)
+    gram, rhs = design.T@design, design.T@target
+    d = np.sum(abs(a)**2, axis=0)**2
+    gs = damas_gauss_seidel(p, b, iterations=10)
+    scan = finite_nnls(p, b)
+    csm = finite_nnls(design, target)
+    common_scale = max(float(np.max(abs(design))), float(np.max(abs(target))))
+    losses, scaled_losses = {}, {}
+    for label, q in [('GS', gs['q']), ('scan', scan['q']), ('CSM', csm['q'])]:
+        residual = design@q-target
+        losses[label] = {'scan_squared': float(np.sum((p@q-b)**2)),
+                         'csm_frobenius_squared': float(residual@residual)}
+        scaled = (design/common_scale)@q-target/common_scale
+        scaled_losses[label] = float(scaled@scaled)
+    unequal = a*np.array([1., 2.])
+    unequal_w = conventional_weights(unequal)
+    unequal_design = np.column_stack([
+        hermitian_real_vector(np.outer(column, column.conj()))
+        for column in unequal.T])
+    return {'A': a, 'W': w, 'R': r, 'P': p, 'b': b, 'D': np.diag(d),
+            'G': gram, 'h': rhs, 'csm_dictionary_real': design,
+            'csm_target_real': target, 'q_GS': gs['q'], 'q_scan': scan['q'],
+            'q_CSM': csm['q'], 'losses': losses,
+            'csm_gradient_at_solution': gram@csm['q']-rhs,
+            'objective_common_scale': common_scale, 'scaled_csm_objectives': scaled_losses,
+            'nonuniform_control': {
+                'A': unequal, 'W': unequal_w,
+                'P': point_spread_function(unequal_w, unequal),
+                'D': np.diag(np.sum(abs(unequal)**2, axis=0)**2),
+                'G': unequal_design.T@unequal_design,
+                'b': scan_power(r, unequal_w), 'h': unequal_design.T@target},
+            'scope': 'full CSM Frobenius with matched conventional weights; no DR, noise column, trace budget or intercept'}
+
+
+def distinct_column_ambiguity_experiment():
+    """E14-18: distinct columns, yet a feasible collective null direction."""
+    a = np.array([[1., 1., 1., 1.], [1., 1j, -1., -1j]], complex)
+    w = conventional_weights(a)
+    design = np.column_stack([hermitian_real_vector(np.outer(column, column.conj()))
+                              for column in a.T])
+    examples = np.array([[1., 0., 1., 0.], [0., 1., 0., 1.], [.5, .5, .5, .5]])
+    matrices = np.asarray([source_power_csm(a, q) for q in examples])
+    p = point_spread_function(w, a)
+    return {'A': a, 'W': w, 'P': p, 'R': matrices[0],
+            'csm_dictionary_real': design, 'dictionary_rank': int(np.linalg.matrix_rank(design)),
+            'psf_rank': int(np.linalg.matrix_rank(p)), 'psf_eigenvalues': np.linalg.eigvalsh(p),
+            'null_direction': np.array([1., -1., 1., -1.]),
+            'q_examples': examples, 'model_csms': matrices,
+            'b_examples': np.asarray([scan_power(r, w) for r in matrices]),
+            'feasible_family_t_interval': [-.5, .5],
+            'alternative_white_noise': {'q': np.zeros(4), 'variance': 2., 'R': 2*np.eye(2)},
+            'scope': 'first assume known zero sensor noise; unknown white noise is a separate enlarged model'}
 
 
 def spherical_scan_experiment():

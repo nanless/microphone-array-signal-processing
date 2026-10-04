@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "created_at": "2026-10-04T19:53:52.835368+00:00",
+  "created_at": "2026-10-04T21:20:48.285707+00:00",
   "harness_sha256": "46db9ff99142b2476dcd2a2564a35374db6ac28856e2efd3b20faf611e9efeca",
   "source_config_sha256": "f8cb9a3df22c7f5018e8a219f2e3b0a2a63b568e98acf89dd69e6c2a7944dbb7",
   "sources": {
@@ -119,7 +119,7 @@
   },
   "actual_dependency_sha256": {
     "codes/chapters/ch07/examples/audit_wpe_upstream_interfaces.py": "46db9ff99142b2476dcd2a2564a35374db6ac28856e2efd3b20faf611e9efeca",
-    "codes/chapters/ch04/core/upstream_contracts.py": "f61d18b3239614aaf1304b9707038ad913f602160ff6de378e52692540490f30",
+    "codes/chapters/ch04/core/upstream_contracts.py": "4898ceaddfcd0821a6564360bc68489766438afef13ef783f0d182ffc0dddeb1",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },
@@ -149,12 +149,12 @@
           "btk20_src/dereverberation/dereverberation.h"
         ]
       },
-      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+      "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+      "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
       "recorded_complete_selection": {
         "id": "btk20",
         "revision": "feff19ec8bcb770f6530fe280dc3ccafc2f5984a",
@@ -365,12 +365,12 @@
           "espnet2/enh/separator/tfgridnet_separator.py"
         ]
       },
-      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+      "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+      "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
       "recorded_complete_selection": {
         "id": "espnet",
         "revision": "be79590bb2ff26ffb01bc825c5f68cb9418b7f0d",
@@ -571,12 +571,12 @@
           "gss/core/gss.py"
         ]
       },
-      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+      "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+      "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
       "recorded_complete_selection": {
         "id": "gss",
         "revision": "10fad18cae85e2e4342c77421abc70c9c5da23ed",
@@ -812,12 +812,12 @@
         ],
         "verified_at": "2026-09-28"
       },
-      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+      "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+      "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
       "recorded_complete_selection": {
         "id": "metaaf",
         "revision": "56c4665bdc51c2e0595a7c0cd9b1266408adceff",
@@ -1091,12 +1091,12 @@
           "nara_wpe/tf_wpe.py"
         ]
       },
-      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+      "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+      "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
       "recorded_complete_selection": {
         "id": "nara_wpe",
         "revision": "a166779cca2088817e330481bd20af1a2c598555",
@@ -1180,12 +1180,12 @@
           "include/speex/speex_resampler.h"
         ]
       },
-      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+      "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+      "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
       "recorded_complete_selection": {
         "id": "speexdsp",
         "revision": "8e29a256ef0235ebbe7fcb8417b5ac7731eb8307",
@@ -1277,12 +1277,12 @@
         ],
         "note": "Official Yang/Chang repository; root MIT copyright 2021 dreadbird06, selected file headers contain no conflicting license. models/ and data/ excluded; torch_custom direct local dependencies included. No model loading, PyTorch installation, training, inference or claimed ASV gain validated. Fixed README identifies TASLP 30,3144–3159(2022), DOI10.1109/TASLP.2022.3205752."
       },
-      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+      "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+      "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
       "recorded_complete_selection": {
         "id": "tso_vace_wpe",
         "revision": "10ee77dd020d58af508feb77251f9353208cb33a",
@@ -1632,8 +1632,8 @@
       "ignored_members_after": []
     }
   },
-  "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
-  "source_status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+  "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
+  "source_status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
   "static_note_boundary": "static_scope records bounded manual source-review notes; only ESPnet AST facts are checked automatically here. Hash checking other files is not their execution.",
   "environment": {
     "python": "3.13.12",

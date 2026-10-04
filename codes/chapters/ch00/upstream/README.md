@@ -106,3 +106,12 @@ Vo RFS 追踪源码归档单独取得和核验：
 ```
 
 这两个固定提交分别取得15和16个许可明确文本，只用于原源码研究；排除未经授权的助手、录音和MAT数据。ODC-BY文件头与munkres BSD两条款分别保留，完整清单见[SOURCES.lock.json](../SOURCES.lock.json)。选集缺少原入口所需依赖，不提供可运行完整评分器的承诺；静态差异见[空间研究§61.4](../research/01_spatial_and_tracking.md#tracking-model-lifecycle-sphere)。
+
+
+## 专题Ⅰ论文作者的DAMAS/CMF原代码
+
+```bash
+.venv/bin/python -B codes/chapters/ch00/upstream/fetch_upstreams.py --project damas-author
+```
+
+固定作者提交`61987952e2237e6b088a169ee891dd96576f2565`的21个GPLv3文本已取得，共74510字节。完整许可和源通知保留在独立忽略工作树；三份MAT数据、预编译MEX不在选集。本轮未运行MATLAB/MEX或作者论文实验。原矩阵产品、CSM与扫描NNLS目标以及Python原边界见[源码复现研究§13](../research/04_source_reproduction.md#imaging-author-source)。

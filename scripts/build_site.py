@@ -1519,7 +1519,10 @@ def render(md_text, source_path=None):
             inner = match.group(1)
             headers = re.findall(r'<th\b[^>]*>(.*?)</th>', inner, flags=re.S)
             labels = tuple(unescape(re.sub(r'<[^>]+>', '', value)).strip() for value in headers)
-            readable = labels == ("核查对象", "固定源中实际结构", "证据所能支持的范围")
+            readable = labels in {
+                ("核查对象", "固定源中实际结构", "证据所能支持的范围"),
+                ("原文件与入口", "在算法中做什么", "复现时必须分清什么"),
+            }
             return '<table'+(' class="source-contract-readable-table"' if readable else '')+'>'+inner+'</table>'
         html = re.sub(r'<table>(.*?)</table>', source_contract_table, html, flags=re.S)
     if source_path.resolve() == (RESEARCH_ROOT / "02_aec_wpe_separation.md").resolve():
@@ -1528,12 +1531,21 @@ def render(md_text, source_path=None):
         html = re.sub(r'<a id="(bss|neural|tflocoformer|separation-upstream-audit|mffca)"></a>',
                       r'<a id="\1" class="separation-topic-anchor"></a>', html)
     policies = NARROW_TABLE_POLICIES.get(source_path.resolve(), {})
-    if policies:
+    imaging_audio_page = source_path.resolve() in {
+        (SRC / "14_acoustic-imaging.md").resolve(),
+        (RESEARCH_ROOT / "05_exercises_and_audio.md").resolve(),
+    }
+    if policies or imaging_audio_page:
         def budget_table(match):
             attrs, inner = match.group(1), match.group(2)
             headers = re.findall(r'<th\b[^>]*>(.*?)</th>', inner, flags=re.S)
             labels = tuple(unescape(re.sub(r'<[^>]+>', '', value)).strip() for value in headers)
             policy = policies.get(labels)
+            if (imaging_audio_page and labels == ("文件", "通道", "内容")
+                    and "imaging_audio/" in inner):
+                # Keep the native player, narrow channel count and explanatory
+                # column readable together; only this chapter's five WAVs.
+                policy = (44, {1: 22, 2: 3, 3: 18})
             if policy is None:
                 return match.group(0)
             width, columns = policy

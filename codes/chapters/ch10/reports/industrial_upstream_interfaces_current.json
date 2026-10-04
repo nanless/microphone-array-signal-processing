@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-04T19:55:57.030926+00:00",
+  "generated_at": "2026-10-04T21:21:02.436915+00:00",
   "harness_sha256": "ed54cd842d81027e811c53e2a4b23236397cb94831817a3c5c1a5fc92bfff784",
   "source_config_sha256": "7c49e37038b015ae3d36633480760ce3c8e7e3309aa2bd5b5f5fd77ef4492cfd",
   "sources": {
@@ -373,12 +373,12 @@
           "pystoi"
         ]
       },
-      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+      "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+      "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
       "recorded_complete_selection": {
         "id": "pystoi",
         "revision": "74872b000753a7a42ff51aa0868af8c82c7f9053",
@@ -617,12 +617,12 @@
           "LICENSE"
         ]
       },
-      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+      "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+      "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
       "recorded_complete_selection": {
         "id": "deepfilternet",
         "revision": "d375b2d8309e0935d165700c91da9de862a99c31",
@@ -818,7 +818,7 @@
   },
   "actual_dependencies_sha256": {
     "codes/chapters/ch10/examples/audit_industrial_upstream_interfaces.py": "ed54cd842d81027e811c53e2a4b23236397cb94831817a3c5c1a5fc92bfff784",
-    "codes/chapters/ch04/core/upstream_contracts.py": "f61d18b3239614aaf1304b9707038ad913f602160ff6de378e52692540490f30",
+    "codes/chapters/ch04/core/upstream_contracts.py": "4898ceaddfcd0821a6564360bc68489766438afef13ef783f0d182ffc0dddeb1",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4",
     "codes/chapters/ch10/examples/run_industrial_interfaces.py": "6501c7bdb2e5cd529dd9436cbc99ffd31ec1398fced8d0dc98c62a8524c3111c"

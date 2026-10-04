@@ -225,9 +225,9 @@ class ImagingAudioTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             measure_signal(make_signals()['source_1'],'source_1',pcm=True)
 
-    def test_all_sixteen_ids_and_finite_json(self):
+    def test_all_eighteen_ids_and_finite_json(self):
         results=run_experiments()
-        self.assertEqual(set(results['exercises']),{'E14-'+str(i).zfill(2) for i in range(1,17)})
+        self.assertEqual(set(results['exercises']),{'E14-'+str(i).zfill(2) for i in range(1,19)})
         json.dumps(results,allow_nan=False)
         self.assertFalse(results['exercises']['E14-12']['sklearn_executed'])
         self.assertAlmostEqual(results['exercises']['E14-12']['affine_math_q'],87/35)

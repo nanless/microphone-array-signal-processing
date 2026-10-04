@@ -29,12 +29,14 @@ from codes.chapters.ch00.io_contracts import (
     strict_json_loads, validate_parent_chain, validate_report_destination,
     write_json_report,
 )
-from codes.chapters.ch00.upstream.fetch_upstreams import inspect_project, run_git
+from codes.chapters.ch00.upstream.fetch_upstreams import run_git
+from codes.chapters.ch04.core import upstream_contracts as upstream
 
 ROOT = Path(__file__).resolve().parents[4]
 CACHE = ROOT / 'codes/chapters/ch00/upstream/_downloads'
 LOCK = ROOT / 'codes/chapters/ch00/SOURCES.lock.json'
-CURRENT_REPORT = ROOT / 'codes/chapters/ch14/reports/upstream_imaging_contracts.json'
+HISTORICAL_REPORT = ROOT / 'codes/chapters/ch14/reports/upstream_imaging_contracts.json'
+CURRENT_REPORT = HISTORICAL_REPORT.with_name('upstream_imaging_contracts_current.json')
 REVISION = '13d3d7df74ac1a8135c7ec71da098cbbc03d8652'
 ORIGIN = 'https://github.com/acoular/acoular.git'
 FILES = {
@@ -66,7 +68,7 @@ def report_target(path, cache=CACHE):
     Ordinary external paths (for example test temporary directories) are allowed.
     This finite preflight does not claim race-proof or crash-proof publication.
     """
-    forbidden = (CACHE, Path(cache), ROOT / 'reviews', LOCK,
+    forbidden = (CACHE, Path(cache), ROOT / 'reviews', LOCK, upstream.STATUS, HISTORICAL_REPORT,
                  Path(__file__), ROOT / 'tests/test_codes_imaging_contracts.py')
     target = validate_report_destination(path, forbidden_roots=forbidden)
     normalized = target.resolve()
@@ -116,21 +118,11 @@ def verify_checkout(checkout, *, revision, origin, files):
 
 
 def verify_sources(cache=CACHE):
-    lock_data = ordinary_file(LOCK).read_bytes()
-    rows = strict_json_loads(lock_data)['projects']
-    matching = [p for p in rows if p['id'] == 'acoular']
-    if len(matching) != 1:
-        raise ValueError('Acoular source lock entry must be unique')
-    project = matching[0]
-    if (project['revision'] != REVISION or project['url'] != ORIGIN
-            or project['license'] != 'BSD-3-Clause'
-            or any(p not in project['entrypoints'] for p in
-                   ('LICENSE', 'acoular/fastFuncs.py', 'acoular/fbeamform.py'))):
-        raise ValueError('fixed Acoular source lock identity changed')
     checkout = validate_parent_chain(Path(cache) / 'acoular')
-    identity = verify_checkout(checkout, revision=REVISION, origin=ORIGIN, files=FILES)
-    # Selection is inspected live, not relabeled from an old report or repaired.
-    acquisition = inspect_project(project, Path(cache))
+    identity = upstream.verify_project('acoular', checkout, relatives=tuple(FILES))
+    for relative, expected in FILES.items():
+        if identity['used_files'][relative]['sha256'] != expected:
+            raise ValueError('fixed used-source SHA changed: ' + relative)
     version_tree = ast.parse((checkout / 'acoular/version.py').read_text())
     version = next(ast.literal_eval(n.value) for n in version_tree.body
                    if isinstance(n, ast.Assign)
@@ -138,8 +130,11 @@ def verify_sources(cache=CACHE):
     if version != '26.08':
         raise ValueError('fixed source version changed')
     return {**identity, 'source_version': version,
-            'source_lock_sha256': digest(lock_data),
-            'source_lock_entry': project, 'acquisition_scope': acquisition,
+            'source_lock_sha256': identity['lock_sha256'],
+            'source_status_sha256': identity['status_sha256'],
+            'source_lock_entry': identity['lock_entry'],
+            'acquisition_scope': identity['live_complete_selection'],
+            'required_source_identity_verified': True,
             'license': {'name': 'BSD-3-Clause', 'path': 'LICENSE', 'sha256': FILES['LICENSE']}}
 
 
@@ -507,25 +502,67 @@ def spectral_cases(original):
     return rows
 
 
+def covariance_bridge_case(original):
+    """A distinct valid-CSM control; never relabel the historic 21 cases."""
+    h = np.array([[1., 1.], [1., np.exp(-2j * np.pi / 3)]])
+    v = np.sqrt(4 / 3) * np.array([1., np.exp(1j * np.pi / 3)])
+    csm = np.outer(v, v.conj())
+    steering = SteeringProtocol(h)
+    base = configured_body(original.Base, steering, csm)
+    base._calc([0])
+    psf = original.PSF(steering)._psf_call(np.arange(2))
+    damas = configured_body(original.Damas, steering, csm)
+    damas._calc([0])
+    expected = np.array([1., 0.])
+    scan_nnls = np.array([16 / 17, 0.])
+    def residual(q):
+        return float(np.linalg.norm(h @ np.diag(q) @ h.conj().T - csm, 'fro') ** 2)
+    row = comparison('valid_csm_damas_covariance_bridge', damas._ac[0], expected,
+                     transfer=json_array(h), csm=json_array(csm),
+                     dirty_map=json_array(base._ac[0]), psf=json_array(psf),
+                     independent_scan_residual_nnls=json_array(scan_nnls),
+                     covariance_residual_squared=residual(damas._ac[0]),
+                     independent_covariance_residual_squared=28 / 9,
+                     scan_nnls_covariance_residual_squared=residual(scan_nnls),
+                     independent_scan_nnls_covariance_residual_squared=8128 / 2601,
+                     target='full CSM Frobenius objective with matched true-level steering; distinct from map-residual NNLS',
+                     limitations='known positive-semidefinite rank-one CSM; not an arbitrary PSF guarantee or original CMF estimator execution')
+    if (not np.allclose(base._ac[0], [1., 0.], atol=ATOL, rtol=0)
+            or not np.allclose(psf, [[1., .25], [.25, 1.]], atol=ATOL, rtol=0)
+            or abs(row['covariance_residual_squared'] - 28 / 9) > ATOL
+            or abs(row['scan_nnls_covariance_residual_squared'] - 8128 / 2601) > ATOL):
+        raise ValueError('independent valid-CSM bridge failed')
+    return row
+
+
 def run_audit(cache=CACHE):
+    direct_before = upstream.dependencies(__file__)
     before = verify_sources(cache)
     checkout = validate_parent_chain(Path(cache) / 'acoular')
     original = load_original_bodies(checkout)
     rows = beamforming_cases(original) + clean_cases(original)
     cmf_rows, estimator = cmf_dictionary_cases(original, checkout)
     rows += cmf_rows + spectral_cases(original)
-    after = verify_sources(cache)
-    if before != after:
+    bridge = covariance_bridge_case(original)
+    after = upstream.check_unchanged(copy.deepcopy(before))
+    repeat = verify_sources(cache)
+    if before != repeat:
         raise ValueError('original checkout or source lock changed during the audit')
+    direct_after = upstream.dependencies(__file__)
+    if direct_before != direct_after:
+        raise ValueError('actual local audit dependencies changed during execution')
     matches = sum(r['matched_independent_expected'] for r in rows)
-    direct_sources = [Path(__file__), ROOT / 'codes/chapters/ch00/io_contracts.py',
-                      ROOT / 'codes/chapters/ch00/upstream/fetch_upstreams.py']
     report = {
-        'schema_version': 1, 'created_utc': datetime.now(timezone.utc).isoformat(),
+        'schema_version': 2, 'created_utc': datetime.now(timezone.utc).isoformat(),
         'status': 'audit_completed_with_original_differences',
         'source_identity_before': before, 'source_identity_after': after,
         'before_clean': True, 'after_clean': True,
-        'direct_sources': {str(p.relative_to(ROOT)): digest(ordinary_file(p).read_bytes()) for p in direct_sources},
+        'direct_sources': direct_after,
+        'actual_dependencies_before': direct_before,
+        'actual_dependencies_after': direct_after,
+        'actual_dependencies_unchanged': True,
+        'source_lock_sha256': before['lock_sha256'],
+        'source_status_sha256': before['status_sha256'],
         'environment': {'python': platform.python_version(), 'numpy': np.__version__,
                         'platform': platform.platform()},
         'original_definitions': original.extraction_records,
@@ -544,6 +581,7 @@ def run_audit(cache=CACHE):
                            'moving-source or SODIX algorithms'],
         },
         'cases': rows, 'unexecuted_estimator': estimator,
+        'additional_valid_csm_controls': [bridge],
         'primary_reference_locators': {
             'clean_sc_full_csm': {
                 'title': 'Sijtsma, CLEAN based on spatial source coherence, NLR-TP-2007-345',

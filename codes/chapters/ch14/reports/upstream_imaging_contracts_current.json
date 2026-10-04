@@ -1,0 +1,2549 @@
+{
+  "schema_version": 2,
+  "created_utc": "2026-10-04T21:27:08.039760+00:00",
+  "status": "audit_completed_with_original_differences",
+  "source_identity_before": {
+    "project": "acoular",
+    "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/acoular",
+    "origin": "https://github.com/acoular/acoular.git",
+    "head": "13d3d7df74ac1a8135c7ec71da098cbbc03d8652",
+    "lock_entry": {
+      "id": "acoular",
+      "url": "https://github.com/acoular/acoular.git",
+      "revision": "13d3d7df74ac1a8135c7ec71da098cbbc03d8652",
+      "license": "BSD-3-Clause",
+      "scope": "工业声源成像：DAMAS、CLEAN-SC、CMF、移动/旋转源",
+      "fetch_enabled": true,
+      "note": "声源功率图不等于增强语音；测量校准、流场模型、FFT口径和数据许可另核对。",
+      "entrypoints": [
+        "acoular/fbeamform.py",
+        "acoular/tbeamform.py",
+        "LICENSE",
+        "acoular/calib.py",
+        "acoular/fastFuncs.py",
+        "acoular/environments.py"
+      ]
+    },
+    "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
+    "source_document_paths": {
+      "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+      "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+    },
+    "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
+    "recorded_complete_selection": {
+      "id": "acoular",
+      "revision": "13d3d7df74ac1a8135c7ec71da098cbbc03d8652",
+      "status": "source_selection_mismatch",
+      "missing_entrypoints": [],
+      "execution": "not_run",
+      "dependency_validation": "not_run",
+      "asset_policy": "sparse_source_checkout",
+      "requested_source_paths": [
+        "repository"
+      ],
+      "observed_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz"
+      ],
+      "expected_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "source_selection_verified": false
+    },
+    "live_complete_selection": {
+      "id": "acoular",
+      "revision": "13d3d7df74ac1a8135c7ec71da098cbbc03d8652",
+      "status": "source_selection_mismatch",
+      "source_selection_verified": false,
+      "missing_entrypoints": [],
+      "observed_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz"
+      ],
+      "expected_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "requested_source_paths": [
+        "repository"
+      ],
+      "asset_policy": "sparse_source_checkout"
+    },
+    "used_source_identity": "verified",
+    "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+    "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+    "ignored_members_before": [],
+    "used_files": {
+      "LICENSE": {
+        "sha256": "b5bc3bfa7c76d388170a8f29f8dc3047bc3ca0abcd3160781f4ec54d3e95f69f",
+        "bytes": 1505,
+        "git_blob": "ccdb66780767dc4941b72856f979192919f05db3",
+        "actual_blob": "ccdb66780767dc4941b72856f979192919f05db3"
+      },
+      "acoular/fbeamform.py": {
+        "sha256": "451f0258cb176d663a57f33377078bb36d6fb1ad074f02033493aafaa5354d11",
+        "bytes": 98020,
+        "git_blob": "39f3764b35f2df69c588e0cdc1a4a378e4bca24e",
+        "actual_blob": "39f3764b35f2df69c588e0cdc1a4a378e4bca24e"
+      },
+      "acoular/fastFuncs.py": {
+        "sha256": "07e8f4b07b5b47ff4703ae360d90b967f8407a8c95238371fb6d9f6ce5f97a5f",
+        "bytes": 37701,
+        "git_blob": "35cdeb9961a3f2d4758ed15e1f293bd6fe55b101",
+        "actual_blob": "35cdeb9961a3f2d4758ed15e1f293bd6fe55b101"
+      },
+      "acoular/spectra.py": {
+        "sha256": "8ec8532714e3bf42e9fe5dc64d854cad418e4dbb974865d3ec55237ab0778db0",
+        "bytes": 26611,
+        "git_blob": "7a2cd998dd92eaeeeb504232915ac099c910e235",
+        "actual_blob": "7a2cd998dd92eaeeeb504232915ac099c910e235"
+      },
+      "acoular/version.py": {
+        "sha256": "2223d2cbdcea241130dd9d0d52c1192de80ae000cdce1c8263f437aea9567935",
+        "bytes": 357,
+        "git_blob": "67bd3dad20fa3e31d1a1a62182e9a340e2698c94",
+        "actual_blob": "67bd3dad20fa3e31d1a1a62182e9a340e2698c94"
+      }
+    },
+    "clean_before": true,
+    "clean_after": false,
+    "source_version": "26.08",
+    "source_lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
+    "source_status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
+    "source_lock_entry": {
+      "id": "acoular",
+      "url": "https://github.com/acoular/acoular.git",
+      "revision": "13d3d7df74ac1a8135c7ec71da098cbbc03d8652",
+      "license": "BSD-3-Clause",
+      "scope": "工业声源成像：DAMAS、CLEAN-SC、CMF、移动/旋转源",
+      "fetch_enabled": true,
+      "note": "声源功率图不等于增强语音；测量校准、流场模型、FFT口径和数据许可另核对。",
+      "entrypoints": [
+        "acoular/fbeamform.py",
+        "acoular/tbeamform.py",
+        "LICENSE",
+        "acoular/calib.py",
+        "acoular/fastFuncs.py",
+        "acoular/environments.py"
+      ]
+    },
+    "acquisition_scope": {
+      "id": "acoular",
+      "revision": "13d3d7df74ac1a8135c7ec71da098cbbc03d8652",
+      "status": "source_selection_mismatch",
+      "source_selection_verified": false,
+      "missing_entrypoints": [],
+      "observed_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz"
+      ],
+      "expected_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "requested_source_paths": [
+        "repository"
+      ],
+      "asset_policy": "sparse_source_checkout"
+    },
+    "required_source_identity_verified": true,
+    "license": {
+      "name": "BSD-3-Clause",
+      "path": "LICENSE",
+      "sha256": "b5bc3bfa7c76d388170a8f29f8dc3047bc3ca0abcd3160781f4ec54d3e95f69f"
+    }
+  },
+  "source_identity_after": {
+    "project": "acoular",
+    "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/acoular",
+    "origin": "https://github.com/acoular/acoular.git",
+    "head": "13d3d7df74ac1a8135c7ec71da098cbbc03d8652",
+    "lock_entry": {
+      "id": "acoular",
+      "url": "https://github.com/acoular/acoular.git",
+      "revision": "13d3d7df74ac1a8135c7ec71da098cbbc03d8652",
+      "license": "BSD-3-Clause",
+      "scope": "工业声源成像：DAMAS、CLEAN-SC、CMF、移动/旋转源",
+      "fetch_enabled": true,
+      "note": "声源功率图不等于增强语音；测量校准、流场模型、FFT口径和数据许可另核对。",
+      "entrypoints": [
+        "acoular/fbeamform.py",
+        "acoular/tbeamform.py",
+        "LICENSE",
+        "acoular/calib.py",
+        "acoular/fastFuncs.py",
+        "acoular/environments.py"
+      ]
+    },
+    "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
+    "source_document_paths": {
+      "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+      "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+    },
+    "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
+    "recorded_complete_selection": {
+      "id": "acoular",
+      "revision": "13d3d7df74ac1a8135c7ec71da098cbbc03d8652",
+      "status": "source_selection_mismatch",
+      "missing_entrypoints": [],
+      "execution": "not_run",
+      "dependency_validation": "not_run",
+      "asset_policy": "sparse_source_checkout",
+      "requested_source_paths": [
+        "repository"
+      ],
+      "observed_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz"
+      ],
+      "expected_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "source_selection_verified": false
+    },
+    "live_complete_selection": {
+      "id": "acoular",
+      "revision": "13d3d7df74ac1a8135c7ec71da098cbbc03d8652",
+      "status": "source_selection_mismatch",
+      "source_selection_verified": false,
+      "missing_entrypoints": [],
+      "observed_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz"
+      ],
+      "expected_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "requested_source_paths": [
+        "repository"
+      ],
+      "asset_policy": "sparse_source_checkout"
+    },
+    "used_source_identity": "verified",
+    "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+    "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+    "ignored_members_before": [],
+    "used_files": {
+      "LICENSE": {
+        "sha256": "b5bc3bfa7c76d388170a8f29f8dc3047bc3ca0abcd3160781f4ec54d3e95f69f",
+        "bytes": 1505,
+        "git_blob": "ccdb66780767dc4941b72856f979192919f05db3",
+        "actual_blob": "ccdb66780767dc4941b72856f979192919f05db3"
+      },
+      "acoular/fbeamform.py": {
+        "sha256": "451f0258cb176d663a57f33377078bb36d6fb1ad074f02033493aafaa5354d11",
+        "bytes": 98020,
+        "git_blob": "39f3764b35f2df69c588e0cdc1a4a378e4bca24e",
+        "actual_blob": "39f3764b35f2df69c588e0cdc1a4a378e4bca24e"
+      },
+      "acoular/fastFuncs.py": {
+        "sha256": "07e8f4b07b5b47ff4703ae360d90b967f8407a8c95238371fb6d9f6ce5f97a5f",
+        "bytes": 37701,
+        "git_blob": "35cdeb9961a3f2d4758ed15e1f293bd6fe55b101",
+        "actual_blob": "35cdeb9961a3f2d4758ed15e1f293bd6fe55b101"
+      },
+      "acoular/spectra.py": {
+        "sha256": "8ec8532714e3bf42e9fe5dc64d854cad418e4dbb974865d3ec55237ab0778db0",
+        "bytes": 26611,
+        "git_blob": "7a2cd998dd92eaeeeb504232915ac099c910e235",
+        "actual_blob": "7a2cd998dd92eaeeeb504232915ac099c910e235"
+      },
+      "acoular/version.py": {
+        "sha256": "2223d2cbdcea241130dd9d0d52c1192de80ae000cdce1c8263f437aea9567935",
+        "bytes": 357,
+        "git_blob": "67bd3dad20fa3e31d1a1a62182e9a340e2698c94",
+        "actual_blob": "67bd3dad20fa3e31d1a1a62182e9a340e2698c94"
+      }
+    },
+    "clean_before": true,
+    "clean_after": true,
+    "source_version": "26.08",
+    "source_lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
+    "source_status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
+    "source_lock_entry": {
+      "id": "acoular",
+      "url": "https://github.com/acoular/acoular.git",
+      "revision": "13d3d7df74ac1a8135c7ec71da098cbbc03d8652",
+      "license": "BSD-3-Clause",
+      "scope": "工业声源成像：DAMAS、CLEAN-SC、CMF、移动/旋转源",
+      "fetch_enabled": true,
+      "note": "声源功率图不等于增强语音；测量校准、流场模型、FFT口径和数据许可另核对。",
+      "entrypoints": [
+        "acoular/fbeamform.py",
+        "acoular/tbeamform.py",
+        "LICENSE",
+        "acoular/calib.py",
+        "acoular/fastFuncs.py",
+        "acoular/environments.py"
+      ]
+    },
+    "acquisition_scope": {
+      "id": "acoular",
+      "revision": "13d3d7df74ac1a8135c7ec71da098cbbc03d8652",
+      "status": "source_selection_mismatch",
+      "source_selection_verified": false,
+      "missing_entrypoints": [],
+      "observed_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz"
+      ],
+      "expected_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "requested_source_paths": [
+        "repository"
+      ],
+      "asset_policy": "sparse_source_checkout"
+    },
+    "required_source_identity_verified": true,
+    "license": {
+      "name": "BSD-3-Clause",
+      "path": "LICENSE",
+      "sha256": "b5bc3bfa7c76d388170a8f29f8dc3047bc3ca0abcd3160781f4ec54d3e95f69f"
+    },
+    "ignored_members_after": []
+  },
+  "before_clean": true,
+  "after_clean": true,
+  "direct_sources": {
+    "codes/chapters/ch14/examples/audit_upstream_imaging_contracts.py": "c0a3c499bf0b1fc557c3bb5525a98c2c83be883380d02ec316fde0558aba891b",
+    "codes/chapters/ch04/core/upstream_contracts.py": "4898ceaddfcd0821a6564360bc68489766438afef13ef783f0d182ffc0dddeb1",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
+    "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
+  },
+  "actual_dependencies_before": {
+    "codes/chapters/ch14/examples/audit_upstream_imaging_contracts.py": "c0a3c499bf0b1fc557c3bb5525a98c2c83be883380d02ec316fde0558aba891b",
+    "codes/chapters/ch04/core/upstream_contracts.py": "4898ceaddfcd0821a6564360bc68489766438afef13ef783f0d182ffc0dddeb1",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
+    "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
+  },
+  "actual_dependencies_after": {
+    "codes/chapters/ch14/examples/audit_upstream_imaging_contracts.py": "c0a3c499bf0b1fc557c3bb5525a98c2c83be883380d02ec316fde0558aba891b",
+    "codes/chapters/ch04/core/upstream_contracts.py": "4898ceaddfcd0821a6564360bc68489766438afef13ef783f0d182ffc0dddeb1",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
+    "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
+  },
+  "actual_dependencies_unchanged": true,
+  "source_lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
+  "source_status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O"
+  },
+  "original_definitions": [
+    {
+      "source_file": "acoular/fastFuncs.py",
+      "qualified_name": "calcCSM",
+      "start_line": 30,
+      "end_line": 58,
+      "removed_decorators": [
+        "lazyjit(nb.njit([nb.complex128[:, :, ::1](nb.complex128[:, :, ::1], nb.complex128[:, ::1]), nb.complex64[:, :, ::1](nb.complex64[:, :, ::1], nb.complex64[:, ::1])], cache=CACHED_OPTION, parallel=True, fastmath=FAST_OPTION))"
+      ],
+      "original_definition_ast_sha256": "4bd5ca49db0acf3ada83f3fe9df65295e3ca8abcde2846802f5d8698fd17972f",
+      "executed_definition_ast_sha256": "8b1b194ff76d888e6953b65ac9ae5bef931b5108e8454c66f09c6238fcfbb9ff",
+      "mathematical_body_ast_sha256": "b0ebbd92f4ffdab0130a2c482d11b4a3bb09704d00718c204d96b1f87bdc96b6",
+      "mathematical_body_unchanged": true
+    },
+    {
+      "source_file": "acoular/fastFuncs.py",
+      "qualified_name": "damasSolverGaussSeidel",
+      "start_line": 820,
+      "end_line": 855,
+      "removed_decorators": [
+        "lazyjit(nb.guvectorize([(nb.float64[:, :], nb.float64[:], nb.int64[:], nb.float64[:], nb.float64[:])], '(g,g),(g),(),()->(g)', nopython=True, target=PARALLEL_OPTION, cache=CACHED_OPTION, fastmath=FAST_OPTION))"
+      ],
+      "original_definition_ast_sha256": "175ef933d666cb779f62c5c70a04eb172c941d3c04d2ec88b394e145f264757e",
+      "executed_definition_ast_sha256": "e7a2e0bb4f00e69f5c9a59c4adf784618726913d6548ddb625ba9861089c7cbd",
+      "mathematical_body_ast_sha256": "dbd25df1b9e77e46d5d1a0b59edc95a4658a58870d00ad104065c587c4390889",
+      "mathematical_body_unchanged": true
+    },
+    {
+      "source_file": "acoular/fastFuncs.py",
+      "qualified_name": "_freqBeamformer_SpecificSteerVec_FullCSM",
+      "start_line": 424,
+      "end_line": 445,
+      "removed_decorators": [
+        "lazyjit(nb.guvectorize([(nb.complex128[:, :], nb.complex128[:], nb.float64[:], nb.float64[:], nb.float64[:])], '(m,m),(m),()->(),()', nopython=True, target=PARALLEL_OPTION, cache=CACHED_OPTION, fastmath=FAST_OPTION))"
+      ],
+      "original_definition_ast_sha256": "12e55c3f84b2ba1dba9be6d2002d716b94527ca5ab8f38e0b5959b4fccfd9ff4",
+      "executed_definition_ast_sha256": "4f8dc84b8785c9948f7e9f4dc0e01f9231a6aa0f35d489c6914b16243be349cd",
+      "mathematical_body_ast_sha256": "f70f23e7e41bf1c5d421fa1373c89abb189481c7c6e3a8fb7b9b19f65f417293",
+      "mathematical_body_unchanged": true
+    },
+    {
+      "source_file": "acoular/fastFuncs.py",
+      "qualified_name": "_freqBeamformer_SpecificSteerVec_CsmRemovedDiag",
+      "start_line": 458,
+      "end_line": 476,
+      "removed_decorators": [
+        "lazyjit(nb.guvectorize([(nb.complex128[:, :], nb.complex128[:], nb.float64[:], nb.float64[:], nb.float64[:])], '(m,m),(m),()->(),()', nopython=True, target=PARALLEL_OPTION, cache=CACHED_OPTION, fastmath=FAST_OPTION))"
+      ],
+      "original_definition_ast_sha256": "8a8f4952b97a5aa7400ade56b8017b42f62398e7ad98ab5e44e79b3955e5cb44",
+      "executed_definition_ast_sha256": "247976cf5f161fb315405db1b8039de1ce06854b8e5596fe7ecc7601f701214e",
+      "mathematical_body_ast_sha256": "b4bd274c7f00bf77e31b108170c2df0265608e7b5abcefc27caa2048dbce2402",
+      "mathematical_body_unchanged": true
+    },
+    {
+      "source_file": "acoular/fastFuncs.py",
+      "qualified_name": "_freqBeamformer_EigValProb_SpecificSteerVec_FullCSM",
+      "start_line": 489,
+      "end_line": 516,
+      "removed_decorators": [
+        "lazyjit(nb.guvectorize([(nb.float64[:], nb.complex128[:, :], nb.complex128[:], nb.float64[:], nb.float64[:], nb.float64[:])], '(e),(m,e),(m),()->(),()', nopython=True, target=PARALLEL_OPTION, cache=CACHED_OPTION, fastmath=FAST_OPTION))"
+      ],
+      "original_definition_ast_sha256": "4b4c79e9d866f148146b7d0c600c5c186daf6cc7e4b17c17bf0d5a4158b907b5",
+      "executed_definition_ast_sha256": "73a3ff3042a0c228e210aebe42df23f1e120707cb8a72d00ba4e85051da60f3f",
+      "mathematical_body_ast_sha256": "43b3190a53173a370ae528ed54cdfd239b268aaae30839470b86ec29a9381c50",
+      "mathematical_body_unchanged": true
+    },
+    {
+      "source_file": "acoular/fastFuncs.py",
+      "qualified_name": "_freqBeamformer_EigValProb_SpecificSteerVec_CsmRemovedDiag",
+      "start_line": 529,
+      "end_line": 559,
+      "removed_decorators": [
+        "lazyjit(nb.guvectorize([(nb.float64[:], nb.complex128[:, :], nb.complex128[:], nb.float64[:], nb.float64[:], nb.float64[:])], '(e),(m,e),(m),()->(),()', nopython=True, target=PARALLEL_OPTION, cache=CACHED_OPTION, fastmath=FAST_OPTION))"
+      ],
+      "original_definition_ast_sha256": "25f05e5447ffcb33e4cccab541003dcdb093dd4688c367560d7f5969611ce4cc",
+      "executed_definition_ast_sha256": "efe8ffd603adf128503ac04417c1415468f96b5f9a4f99ba8fb27cb8ab891aaf",
+      "mathematical_body_ast_sha256": "f50c8925f636f69c4058c312ed7569acd6d89232890b73abfad06e161cbcbf54",
+      "mathematical_body_unchanged": true
+    },
+    {
+      "source_file": "acoular/fbeamform.py",
+      "qualified_name": "BeamformerBase.sig_loss_norm",
+      "start_line": 438,
+      "end_line": 451,
+      "removed_decorators": [],
+      "original_definition_ast_sha256": "92542a827aa21ff2fed357b97090a8b5aac641d8165b41cfb0fb44f230ab3683",
+      "executed_definition_ast_sha256": "92542a827aa21ff2fed357b97090a8b5aac641d8165b41cfb0fb44f230ab3683",
+      "mathematical_body_ast_sha256": "b0b7e10c36a0e741be578c6c122b3e63df014344abd84e2db2ec905d165f9ab6",
+      "mathematical_body_unchanged": true
+    },
+    {
+      "source_file": "acoular/fbeamform.py",
+      "qualified_name": "BeamformerBase._beamformer_params",
+      "start_line": 453,
+      "end_line": 473,
+      "removed_decorators": [],
+      "original_definition_ast_sha256": "07bef94540719572b9d399220a494e534b94751ea0e8ffff926d94f64908b2f7",
+      "executed_definition_ast_sha256": "07bef94540719572b9d399220a494e534b94751ea0e8ffff926d94f64908b2f7",
+      "mathematical_body_ast_sha256": "ac925a46e6e4cd56ed662d59a7cd702715ee711a5649d9cfd4edb664b0cc4ad6",
+      "mathematical_body_unchanged": true
+    },
+    {
+      "source_file": "acoular/fbeamform.py",
+      "qualified_name": "BeamformerBase._calc",
+      "start_line": 475,
+      "end_line": 510,
+      "removed_decorators": [],
+      "original_definition_ast_sha256": "0ffda7b62e60ed7ce7865c68282a83076d32618ef63211fa4f6266cdfd09d4b5",
+      "executed_definition_ast_sha256": "0ffda7b62e60ed7ce7865c68282a83076d32618ef63211fa4f6266cdfd09d4b5",
+      "mathematical_body_ast_sha256": "0dc728ebb315fa57a9f86b5f6e8f87469fb71dc72015c23ba2aea08c35c9f450",
+      "mathematical_body_unchanged": true
+    },
+    {
+      "source_file": "acoular/fbeamform.py",
+      "qualified_name": "PointSpreadFunction._psf_call",
+      "start_line": 1096,
+      "end_line": 1124,
+      "removed_decorators": [],
+      "original_definition_ast_sha256": "f10f430af47c8842dc5ec262d4efb93908bf6a30e52f6d5c2b74596cf6c35452",
+      "executed_definition_ast_sha256": "f10f430af47c8842dc5ec262d4efb93908bf6a30e52f6d5c2b74596cf6c35452",
+      "mathematical_body_ast_sha256": "af4c88a885da4596e5ad17f7964da171980237878d0757025b071fce04676850",
+      "mathematical_body_unchanged": true
+    },
+    {
+      "source_file": "acoular/fbeamform.py",
+      "qualified_name": "BeamformerDamas._calc",
+      "start_line": 1167,
+      "end_line": 1208,
+      "removed_decorators": [],
+      "original_definition_ast_sha256": "92621769e80d5f882f589be53c44815e427b329cd126a66bbdf00c66b6add7c8",
+      "executed_definition_ast_sha256": "92621769e80d5f882f589be53c44815e427b329cd126a66bbdf00c66b6add7c8",
+      "mathematical_body_ast_sha256": "10f76a3913731cf1c7cd4bb1da6f33fd32d5c3b91babf97a0f5d0cc26180c07b",
+      "mathematical_body_unchanged": true
+    },
+    {
+      "source_file": "acoular/fbeamform.py",
+      "qualified_name": "BeamformerCleansc._calc",
+      "start_line": 1431,
+      "end_line": 1492,
+      "removed_decorators": [],
+      "original_definition_ast_sha256": "c7ef7e8beaafaf507c0f4cc171304c94e61ddc916139aaea0e3582838b90f1df",
+      "executed_definition_ast_sha256": "c7ef7e8beaafaf507c0f4cc171304c94e61ddc916139aaea0e3582838b90f1df",
+      "mathematical_body_ast_sha256": "06f28a93fc755a50057c0c56db4c1e7c9abc31820dddecff3cc9df60de8b2f3f",
+      "mathematical_body_unchanged": true
+    },
+    {
+      "source_file": "acoular/fbeamform.py",
+      "qualified_name": "BeamformerCMF._get__csm_indices",
+      "start_line": 1679,
+      "end_line": 1685,
+      "removed_decorators": [
+        "cached_property"
+      ],
+      "original_definition_ast_sha256": "1f84836856bda5bc0e05f757f2246b98e0c03ec63dc9a9453f23f6465ee19fc3",
+      "executed_definition_ast_sha256": "9873a575d24ac0b87c2e9c323074be5f894edb602677a8c4843d15b768f6b586",
+      "mathematical_body_ast_sha256": "217e8415be1238f3cd4cda8a09d7bd31676f6584c38e61aff740e64de06a3d57",
+      "mathematical_body_unchanged": true
+    },
+    {
+      "source_file": "acoular/fbeamform.py",
+      "qualified_name": "BeamformerCMF._build_dictionary",
+      "start_line": 1687,
+      "end_line": 1698,
+      "removed_decorators": [],
+      "original_definition_ast_sha256": "96d9de0fa59da8257eaf518a6bbe412034df3c7cf6bbc7916226d6d6860f01dd",
+      "executed_definition_ast_sha256": "96d9de0fa59da8257eaf518a6bbe412034df3c7cf6bbc7916226d6d6860f01dd",
+      "mathematical_body_ast_sha256": "2d7e4b4a2cf3f71aec12bb9c910e9a14b55140c8d58799db0207d5218380fef1",
+      "mathematical_body_unchanged": true
+    },
+    {
+      "source_file": "acoular/fbeamform.py",
+      "qualified_name": "BeamformerCMF._vectorize_csm",
+      "start_line": 1700,
+      "end_line": 1705,
+      "removed_decorators": [],
+      "original_definition_ast_sha256": "69adbd56974210d2d522c8bc4b0792661e5712999cfc8ec47992c3bdc4c097fd",
+      "executed_definition_ast_sha256": "69adbd56974210d2d522c8bc4b0792661e5712999cfc8ec47992c3bdc4c097fd",
+      "mathematical_body_ast_sha256": "2bafe67fa7b7fc501737ec5076065c1575ef5bdfd9fdf23797d0323635d76d16",
+      "mathematical_body_unchanged": true
+    },
+    {
+      "source_file": "acoular/spectra.py",
+      "qualified_name": "BaseSpectra._get_source_data",
+      "start_line": 171,
+      "end_line": 183,
+      "removed_decorators": [],
+      "original_definition_ast_sha256": "ff145bc389582b127030d4117668f7490e46ae70ca72f2179a220c3072f81d07",
+      "executed_definition_ast_sha256": "ff145bc389582b127030d4117668f7490e46ae70ca72f2179a220c3072f81d07",
+      "mathematical_body_ast_sha256": "6a7ab62ad5b2531a50cdbedaf37551e97d4a8e146f95ac10416b88ed6afdeb3a",
+      "mathematical_body_unchanged": true
+    },
+    {
+      "source_file": "acoular/spectra.py",
+      "qualified_name": "PowerSpectra._get_num_blocks",
+      "start_line": 282,
+      "end_line": 283,
+      "removed_decorators": [
+        "property_depends_on(['source.num_samples', 'block_size', 'overlap'])"
+      ],
+      "original_definition_ast_sha256": "38d023e4ce6a98f1d94c4c27599390f8010997af0acd2453dbe3a81a39a5937f",
+      "executed_definition_ast_sha256": "35065ad1541cc49fea1cbf9d8fd3ddb6d59250881ed674f98c98290a45e16f9c",
+      "mathematical_body_ast_sha256": "23713fd19930e0200df74ff51c264ad4280d2f7bd32910702a31c5d240d01831",
+      "mathematical_body_unchanged": true
+    },
+    {
+      "source_file": "acoular/spectra.py",
+      "qualified_name": "PowerSpectra.calc_csm",
+      "start_line": 366,
+      "end_line": 416,
+      "removed_decorators": [],
+      "original_definition_ast_sha256": "534ac81ccec2d7ada3d6b4bc636d9835dc526df43f6993f362ee553400e972ff",
+      "executed_definition_ast_sha256": "534ac81ccec2d7ada3d6b4bc636d9835dc526df43f6993f362ee553400e972ff",
+      "mathematical_body_ast_sha256": "00f6a68c36fed9e146ee37a35821647d9b649a4af72311bf795031f9cb5cbb65",
+      "mathematical_body_unchanged": true
+    }
+  ],
+  "execution_scope": {
+    "package_imported": false,
+    "source_math_bodies_changed": false,
+    "decorators_removed": true,
+    "traits_construction_replaced_by_protocol_objects": true,
+    "custom_grid_driver_replaces_original_beamformerFreq_and_guvectorize_dispatch": true,
+    "original_custom_scalar_beamformer_kernels_executed": true,
+    "numpy_fft_replaces_scipy_fft": true,
+    "numba_prange_replaced_by_range": true,
+    "psf_branch": "original custom steering _psf_call, no cache/HDF5 path",
+    "damas_class_initialization": "original x=y.copy(), not tutorial zero initial state",
+    "input": "known deterministic two/three-microphone mathematical controls; no recording or dataset",
+    "unexecuted": [
+      "complete Acoular package/Traits graph",
+      "Numba JIT/parallel dispatch",
+      "HDF5 caching",
+      "CMF sklearn/scipy/pylops estimators",
+      "wind-tunnel data pipeline",
+      "GeneralFlow ODE/interpolation",
+      "moving-source or SODIX algorithms"
+    ]
+  },
+  "cases": [
+    {
+      "name": "custom_full_csm_psf",
+      "execution": "limited original function/method body",
+      "actual": [
+        [
+          1.0,
+          0.2500000000000001
+        ],
+        [
+          0.2500000000000001,
+          1.0
+        ]
+      ],
+      "independent_expected": [
+        [
+          1.0,
+          0.25
+        ],
+        [
+          0.25,
+          1.0
+        ]
+      ],
+      "absolute_tolerance": 2e-14,
+      "max_absolute_error": 1.1102230246251565e-16,
+      "matched_independent_expected": true,
+      "classification": "matched_independent_expected",
+      "transfer": {
+        "real": [
+          [
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            -0.49999999999999983
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -0.8660254037844387
+          ]
+        ]
+      },
+      "weights": {
+        "real": [
+          [
+            0.5,
+            0.5
+          ],
+          [
+            0.5,
+            -0.24999999999999992
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -0.43301270189221935
+          ]
+        ]
+      },
+      "target": "abs(w_i^H a_j)^2; unit diagonal"
+    },
+    {
+      "name": "base_full_csm",
+      "execution": "limited original function/method body",
+      "actual": [
+        1.05,
+        0.45000000000000007
+      ],
+      "independent_expected": [
+        1.05,
+        0.45
+      ],
+      "absolute_tolerance": 2e-14,
+      "max_absolute_error": 5.551115123125783e-17,
+      "matched_independent_expected": true,
+      "classification": "matched_independent_expected",
+      "csm": {
+        "real": [
+          [
+            1.2,
+            0.9
+          ],
+          [
+            0.9,
+            1.2000000000000002
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.17320508075688776
+          ],
+          [
+            -0.17320508075688776,
+            0.0
+          ]
+        ]
+      },
+      "known_power": [
+        1.0,
+        0.2
+      ],
+      "raw_before_original_clipping": [
+        1.05,
+        0.45000000000000007
+      ],
+      "signal_loss_normalization": 1.0,
+      "inputs_unchanged": true,
+      "target": "original Base behavior including default clipping"
+    },
+    {
+      "name": "base_removed_diagonal",
+      "execution": "limited original function/method body",
+      "actual": [
+        0.9,
+        0.0
+      ],
+      "independent_expected": [
+        0.9,
+        0.0
+      ],
+      "absolute_tolerance": 2e-14,
+      "max_absolute_error": 0.0,
+      "matched_independent_expected": true,
+      "classification": "matched_independent_expected",
+      "csm": {
+        "real": [
+          [
+            1.2,
+            0.9
+          ],
+          [
+            0.9,
+            1.2000000000000002
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.17320508075688776
+          ],
+          [
+            -0.17320508075688776,
+            0.0
+          ]
+        ]
+      },
+      "known_power": [
+        1.0,
+        0.2
+      ],
+      "raw_before_original_clipping": [
+        0.9,
+        -0.2999999999999998
+      ],
+      "signal_loss_normalization": 2.0,
+      "inputs_unchanged": true,
+      "target": "original Base behavior including default clipping"
+    },
+    {
+      "name": "damas_original_class_1_sweeps",
+      "execution": "limited original function/method body",
+      "actual": [
+        0.9375,
+        0.21562499999999996
+      ],
+      "independent_expected": [
+        0.9375,
+        0.215625
+      ],
+      "absolute_tolerance": 2e-14,
+      "max_absolute_error": 5.551115123125783e-17,
+      "matched_independent_expected": true,
+      "classification": "matched_independent_expected",
+      "iterations": 1,
+      "initial_solution": [
+        1.05,
+        0.45
+      ],
+      "relax": 1.0,
+      "target": "analytic unit-diagonal two-cell iteration from dirty-map initial state"
+    },
+    {
+      "name": "damas_original_class_20_sweeps",
+      "execution": "limited original function/method body",
+      "actual": [
+        1.0,
+        0.19999999999999996
+      ],
+      "independent_expected": [
+        1.0,
+        0.2
+      ],
+      "absolute_tolerance": 2e-14,
+      "max_absolute_error": 5.551115123125783e-17,
+      "matched_independent_expected": true,
+      "classification": "matched_independent_expected",
+      "iterations": 20,
+      "initial_solution": [
+        1.05,
+        0.45
+      ],
+      "relax": 1.0,
+      "target": "analytic unit-diagonal two-cell iteration from dirty-map initial state"
+    },
+    {
+      "name": "damas_gs_is_not_map_residual_nnls",
+      "execution": "limited original function/method body",
+      "actual": [
+        1.0,
+        0.0
+      ],
+      "independent_expected": [
+        0.9411764705882353,
+        0.0
+      ],
+      "absolute_tolerance": 2e-14,
+      "max_absolute_error": 0.05882352941176472,
+      "matched_independent_expected": false,
+      "classification": "observed_original_behavior_difference",
+      "matrix": [
+        [
+          1.0,
+          0.25
+        ],
+        [
+          0.25,
+          1.0
+        ]
+      ],
+      "dirty_map": [
+        1.0,
+        0.0
+      ],
+      "iterations": 20,
+      "initial_solution": [
+        1.0,
+        0.0
+      ],
+      "relax": 1.0,
+      "target": "independent NNLS minimizing ||A x-b||^2",
+      "original_residual_squared": 0.0625,
+      "independent_nnls_residual_squared": 0.058823529411764705,
+      "reason": "clipped GS solves a different quadratic stationarity problem",
+      "independent_prediction_of_original_behavior": [
+        1.0,
+        0.0
+      ],
+      "matched_prediction_of_original_behavior": true
+    },
+    {
+      "name": "cleansc_full_csm_1",
+      "execution": "limited original function/method body",
+      "actual": [
+        1.2000000476837158
+      ],
+      "independent_expected": [
+        1.2
+      ],
+      "absolute_tolerance": 2e-06,
+      "max_absolute_error": 4.768371586472142e-08,
+      "matched_independent_expected": true,
+      "classification": "matched_independent_expected",
+      "csm": {
+        "real": [
+          [
+            2.0,
+            2.0
+          ],
+          [
+            2.0,
+            2.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "iterations": 1,
+      "r_diag": false,
+      "loop_gain": 0.6,
+      "known_source_power": 2.0,
+      "target": "single-source paper full-CSM rank-one subtraction, 2*(1-.4**n)",
+      "original_internal_h_iterations": 20,
+      "original_result_dtype": "float32",
+      "source_locator": "BeamformerCleansc._calc; original D1 always removes the CSM diagonal",
+      "reason": "original full-CSM path retains diagonal-removed component iteration",
+      "warnings": [],
+      "inputs_unchanged": true,
+      "independent_prediction_of_original_behavior": [
+        1.1999999999999997
+      ],
+      "matched_prediction_of_original_behavior": true
+    },
+    {
+      "name": "cleansc_full_csm_2",
+      "execution": "limited original function/method body",
+      "actual": [
+        2.101766347885132
+      ],
+      "independent_expected": [
+        1.68
+      ],
+      "absolute_tolerance": 2e-06,
+      "max_absolute_error": 0.4217663478851319,
+      "matched_independent_expected": false,
+      "classification": "observed_original_behavior_difference",
+      "csm": {
+        "real": [
+          [
+            2.0,
+            2.0
+          ],
+          [
+            2.0,
+            2.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "iterations": 2,
+      "r_diag": false,
+      "loop_gain": 0.6,
+      "known_source_power": 2.0,
+      "target": "single-source paper full-CSM rank-one subtraction, 2*(1-.4**n)",
+      "original_internal_h_iterations": 20,
+      "original_result_dtype": "float32",
+      "source_locator": "BeamformerCleansc._calc; original D1 always removes the CSM diagonal",
+      "reason": "original full-CSM path retains diagonal-removed component iteration",
+      "warnings": [],
+      "inputs_unchanged": true,
+      "independent_prediction_of_original_behavior": [
+        2.1017662350913713
+      ],
+      "matched_prediction_of_original_behavior": true
+    },
+    {
+      "name": "cleansc_full_csm_4",
+      "execution": "limited original function/method body",
+      "actual": [
+        3.2886545658111572
+      ],
+      "independent_expected": [
+        1.9488
+      ],
+      "absolute_tolerance": 2e-06,
+      "max_absolute_error": 1.3398545658111571,
+      "matched_independent_expected": false,
+      "classification": "observed_original_behavior_difference",
+      "csm": {
+        "real": [
+          [
+            2.0,
+            2.0
+          ],
+          [
+            2.0,
+            2.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "iterations": 4,
+      "r_diag": false,
+      "loop_gain": 0.6,
+      "known_source_power": 2.0,
+      "target": "single-source paper full-CSM rank-one subtraction, 2*(1-.4**n)",
+      "original_internal_h_iterations": 20,
+      "original_result_dtype": "float32",
+      "source_locator": "BeamformerCleansc._calc; original D1 always removes the CSM diagonal",
+      "reason": "original full-CSM path retains diagonal-removed component iteration",
+      "warnings": [],
+      "inputs_unchanged": true,
+      "independent_prediction_of_original_behavior": [
+        3.2886545621512813
+      ],
+      "matched_prediction_of_original_behavior": true
+    },
+    {
+      "name": "cleansc_full_csm_20",
+      "execution": "limited original function/method body",
+      "actual": [
+        4.812502861022949
+      ],
+      "independent_expected": [
+        1.9999999780097675
+      ],
+      "absolute_tolerance": 2e-06,
+      "max_absolute_error": 2.812502883013182,
+      "matched_independent_expected": false,
+      "classification": "observed_original_behavior_difference",
+      "csm": {
+        "real": [
+          [
+            2.0,
+            2.0
+          ],
+          [
+            2.0,
+            2.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "iterations": 20,
+      "r_diag": false,
+      "loop_gain": 0.6,
+      "known_source_power": 2.0,
+      "target": "single-source paper full-CSM rank-one subtraction, 2*(1-.4**n)",
+      "original_internal_h_iterations": 20,
+      "original_result_dtype": "float32",
+      "source_locator": "BeamformerCleansc._calc; original D1 always removes the CSM diagonal",
+      "reason": "original full-CSM path retains diagonal-removed component iteration",
+      "warnings": [],
+      "inputs_unchanged": true,
+      "independent_prediction_of_original_behavior": [
+        4.812502831773954
+      ],
+      "matched_prediction_of_original_behavior": true
+    },
+    {
+      "name": "cleansc_removed_diagonal_1",
+      "execution": "limited original function/method body",
+      "actual": [
+        1.2000000476837158
+      ],
+      "independent_expected": [
+        1.2
+      ],
+      "absolute_tolerance": 2e-06,
+      "max_absolute_error": 4.768371586472142e-08,
+      "matched_independent_expected": true,
+      "classification": "matched_independent_expected",
+      "csm": {
+        "real": [
+          [
+            2.0,
+            2.0
+          ],
+          [
+            2.0,
+            2.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "iterations": 1,
+      "r_diag": true,
+      "loop_gain": 0.6,
+      "known_source_power": 2.0,
+      "target": "single-source paper full-CSM rank-one subtraction, 2*(1-.4**n)",
+      "original_internal_h_iterations": 20,
+      "original_result_dtype": "float32",
+      "source_locator": "BeamformerCleansc._calc; original D1 always removes the CSM diagonal",
+      "reason": "diagonal-removed fixed-point matches this symmetric control",
+      "warnings": [],
+      "inputs_unchanged": true,
+      "independent_prediction_of_original_behavior": [
+        1.2
+      ],
+      "matched_prediction_of_original_behavior": true
+    },
+    {
+      "name": "cleansc_removed_diagonal_2",
+      "execution": "limited original function/method body",
+      "actual": [
+        1.6800004243850708
+      ],
+      "independent_expected": [
+        1.68
+      ],
+      "absolute_tolerance": 2e-06,
+      "max_absolute_error": 4.2438507086295374e-07,
+      "matched_independent_expected": true,
+      "classification": "matched_independent_expected",
+      "csm": {
+        "real": [
+          [
+            2.0,
+            2.0
+          ],
+          [
+            2.0,
+            2.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "iterations": 2,
+      "r_diag": true,
+      "loop_gain": 0.6,
+      "known_source_power": 2.0,
+      "target": "single-source paper full-CSM rank-one subtraction, 2*(1-.4**n)",
+      "original_internal_h_iterations": 20,
+      "original_result_dtype": "float32",
+      "source_locator": "BeamformerCleansc._calc; original D1 always removes the CSM diagonal",
+      "reason": "diagonal-removed fixed-point matches this symmetric control",
+      "warnings": [],
+      "inputs_unchanged": true,
+      "independent_prediction_of_original_behavior": [
+        1.68
+      ],
+      "matched_prediction_of_original_behavior": true
+    },
+    {
+      "name": "cleansc_removed_diagonal_4",
+      "execution": "limited original function/method body",
+      "actual": [
+        1.948800802230835
+      ],
+      "independent_expected": [
+        1.9488
+      ],
+      "absolute_tolerance": 2e-06,
+      "max_absolute_error": 8.022308348731855e-07,
+      "matched_independent_expected": true,
+      "classification": "matched_independent_expected",
+      "csm": {
+        "real": [
+          [
+            2.0,
+            2.0
+          ],
+          [
+            2.0,
+            2.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "iterations": 4,
+      "r_diag": true,
+      "loop_gain": 0.6,
+      "known_source_power": 2.0,
+      "target": "single-source paper full-CSM rank-one subtraction, 2*(1-.4**n)",
+      "original_internal_h_iterations": 20,
+      "original_result_dtype": "float32",
+      "source_locator": "BeamformerCleansc._calc; original D1 always removes the CSM diagonal",
+      "reason": "diagonal-removed fixed-point matches this symmetric control",
+      "warnings": [],
+      "inputs_unchanged": true,
+      "independent_prediction_of_original_behavior": [
+        1.9488
+      ],
+      "matched_prediction_of_original_behavior": true
+    },
+    {
+      "name": "cleansc_removed_diagonal_20",
+      "execution": "limited original function/method body",
+      "actual": [
+        2.0000009536743164
+      ],
+      "independent_expected": [
+        1.9999999780097675
+      ],
+      "absolute_tolerance": 2e-06,
+      "max_absolute_error": 9.756645489300553e-07,
+      "matched_independent_expected": true,
+      "classification": "matched_independent_expected",
+      "csm": {
+        "real": [
+          [
+            2.0,
+            2.0
+          ],
+          [
+            2.0,
+            2.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "iterations": 20,
+      "r_diag": true,
+      "loop_gain": 0.6,
+      "known_source_power": 2.0,
+      "target": "single-source paper full-CSM rank-one subtraction, 2*(1-.4**n)",
+      "original_internal_h_iterations": 20,
+      "original_result_dtype": "float32",
+      "source_locator": "BeamformerCleansc._calc; original D1 always removes the CSM diagonal",
+      "reason": "diagonal-removed fixed-point matches this symmetric control",
+      "warnings": [],
+      "inputs_unchanged": true,
+      "independent_prediction_of_original_behavior": [
+        1.9999999780097675
+      ],
+      "matched_prediction_of_original_behavior": true
+    },
+    {
+      "name": "cmf_dictionary_full_csm",
+      "execution": "limited original function/method body",
+      "actual": [
+        [
+          2.5
+        ],
+        [
+          2.0
+        ],
+        [
+          2.5
+        ],
+        [
+          3.5
+        ],
+        [
+          4.0
+        ],
+        [
+          8.5
+        ],
+        [
+          -0.5
+        ],
+        [
+          0.0
+        ],
+        [
+          -0.5
+        ]
+      ],
+      "independent_expected": [
+        [
+          2.5
+        ],
+        [
+          2.0
+        ],
+        [
+          2.5
+        ],
+        [
+          3.5
+        ],
+        [
+          4.0
+        ],
+        [
+          8.5
+        ],
+        [
+          -0.5
+        ],
+        [
+          0.0
+        ],
+        [
+          -0.5
+        ]
+      ],
+      "absolute_tolerance": 2e-14,
+      "max_absolute_error": 0.0,
+      "matched_independent_expected": true,
+      "classification": "matched_independent_expected",
+      "dictionary": [
+        [
+          1.0,
+          1.0
+        ],
+        [
+          1.0,
+          0.0
+        ],
+        [
+          1.0,
+          1.0
+        ],
+        [
+          2.0,
+          -1.0
+        ],
+        [
+          2.0,
+          0.0
+        ],
+        [
+          4.0,
+          1.0
+        ],
+        [
+          0.0,
+          -1.0
+        ],
+        [
+          0.0,
+          -0.0
+        ],
+        [
+          0.0,
+          -1.0
+        ]
+      ],
+      "vectorized_csm": [
+        [
+          2.5
+        ],
+        [
+          2.0
+        ],
+        [
+          2.5
+        ],
+        [
+          3.5
+        ],
+        [
+          4.0
+        ],
+        [
+          8.5
+        ],
+        [
+          -0.5
+        ],
+        [
+          0.0
+        ],
+        [
+          -0.5
+        ]
+      ],
+      "transfer": {
+        "real": [
+          [
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            0.0
+          ],
+          [
+            2.0,
+            -1.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "csm": {
+        "real": [
+          [
+            2.5,
+            2.0,
+            3.5
+          ],
+          [
+            2.0,
+            2.5,
+            4.0
+          ],
+          [
+            3.5,
+            4.0,
+            8.5
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            -0.5,
+            0.0
+          ],
+          [
+            0.5,
+            0.0,
+            -0.5
+          ],
+          [
+            0.0,
+            0.5,
+            0.0
+          ]
+        ]
+      },
+      "real_pairs": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          2
+        ]
+      ],
+      "imaginary_pairs": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "rank": 2,
+      "known_power": [
+        2.0,
+        0.5
+      ],
+      "dictionary_matches_independent_pairs": true,
+      "vectorization_matches_independent_pairs": true,
+      "estimator_execution": "not_run",
+      "target": "original real half-triangle dictionary on a known noncoherent model"
+    },
+    {
+      "name": "cmf_dictionary_removed_diagonal",
+      "execution": "limited original function/method body",
+      "actual": [
+        [
+          2.0
+        ],
+        [
+          3.5
+        ],
+        [
+          4.0
+        ],
+        [
+          -0.5
+        ],
+        [
+          0.0
+        ],
+        [
+          -0.5
+        ]
+      ],
+      "independent_expected": [
+        [
+          2.0
+        ],
+        [
+          3.5
+        ],
+        [
+          4.0
+        ],
+        [
+          -0.5
+        ],
+        [
+          0.0
+        ],
+        [
+          -0.5
+        ]
+      ],
+      "absolute_tolerance": 2e-14,
+      "max_absolute_error": 0.0,
+      "matched_independent_expected": true,
+      "classification": "matched_independent_expected",
+      "dictionary": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          2.0,
+          -1.0
+        ],
+        [
+          2.0,
+          0.0
+        ],
+        [
+          0.0,
+          -1.0
+        ],
+        [
+          0.0,
+          -0.0
+        ],
+        [
+          0.0,
+          -1.0
+        ]
+      ],
+      "vectorized_csm": [
+        [
+          2.0
+        ],
+        [
+          3.5
+        ],
+        [
+          4.0
+        ],
+        [
+          -0.5
+        ],
+        [
+          0.0
+        ],
+        [
+          -0.5
+        ]
+      ],
+      "transfer": {
+        "real": [
+          [
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            0.0
+          ],
+          [
+            2.0,
+            -1.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "csm": {
+        "real": [
+          [
+            2.5,
+            2.0,
+            3.5
+          ],
+          [
+            2.0,
+            2.5,
+            4.0
+          ],
+          [
+            3.5,
+            4.0,
+            8.5
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            -0.5,
+            0.0
+          ],
+          [
+            0.5,
+            0.0,
+            -0.5
+          ],
+          [
+            0.0,
+            0.5,
+            0.0
+          ]
+        ]
+      },
+      "real_pairs": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "imaginary_pairs": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "rank": 2,
+      "known_power": [
+        2.0,
+        0.5
+      ],
+      "dictionary_matches_independent_pairs": true,
+      "vectorization_matches_independent_pairs": true,
+      "estimator_execution": "not_run",
+      "target": "original real half-triangle dictionary on a known noncoherent model"
+    },
+    {
+      "name": "cmf_half_triangle_vs_full_frobenius",
+      "execution": "original dictionary/vector methods plus independent one-variable optimization",
+      "actual": [
+        1.9523809523809523
+      ],
+      "independent_expected": [
+        1.64
+      ],
+      "absolute_tolerance": 2e-14,
+      "max_absolute_error": 0.3123809523809524,
+      "matched_independent_expected": false,
+      "classification": "observed_original_behavior_difference",
+      "dictionary": [
+        1.0,
+        2.0,
+        4.0,
+        0.0
+      ],
+      "vectorized_csm": [
+        1.0,
+        0.0,
+        10.0,
+        0.0
+      ],
+      "csm": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          10.0
+        ]
+      ],
+      "transfer": [
+        [
+          1.0
+        ],
+        [
+          2.0
+        ]
+      ],
+      "target": "full-matrix Frobenius norm requires double off-diagonal weight",
+      "reason": "original half-triangle real/imag vector has no sqrt(2) weighting",
+      "estimator_execution": "not_run",
+      "independent_prediction_of_original_behavior": [
+        1.9523809523809523
+      ],
+      "matched_prediction_of_original_behavior": true
+    },
+    {
+      "name": "power_spectra_integer_cosine",
+      "execution": "limited original function/method body",
+      "actual": [
+        0.5
+      ],
+      "independent_expected": [
+        0.5
+      ],
+      "absolute_tolerance": 2e-14,
+      "max_absolute_error": 0.0,
+      "matched_independent_expected": true,
+      "classification": "matched_independent_expected",
+      "input_sample_count": 128,
+      "block_size": 128,
+      "window": "rectangular",
+      "overlap_factor": 1.0,
+      "input_definition": "cos(2*pi*8*n/128)",
+      "actual_complete_blocks": 1,
+      "original_num_blocks": 1.0,
+      "target": "analytic one-sided mean-square power of the complete 128-sample cosine/DC/Nyquist block",
+      "reason": "interior integer-cycle frequency and integer block count",
+      "spectrum_diagonal_real": [
+        5.594418993226262e-32,
+        1.817484634696095e-33,
+        9.84105272115084e-33,
+        5.2926702452533715e-33,
+        6.437077966555452e-33,
+        8.058957906831687e-33,
+        8.430768178895158e-33,
+        5.917706529208812e-32,
+        0.5,
+        2.814890291782343e-32,
+        2.4726461280081085e-32,
+        5.636168884388112e-33,
+        4.3715834357432795e-33,
+        3.629499690289966e-33,
+        6.829028115437723e-33,
+        5.157923231631685e-32,
+        2.143526660978685e-31,
+        5.817081078001661e-32,
+        9.152641728158838e-33,
+        2.68050621782249e-33,
+        4.404365689383224e-33,
+        3.1858375365993232e-34,
+        1.1735194916146332e-33,
+        8.182149461226608e-34,
+        9.901935990997742e-33,
+        1.4680662614550433e-32,
+        6.377351783263654e-33,
+        3.3247455117465e-33,
+        1.0610090836763165e-32,
+        7.265015438590741e-34,
+        1.0488378297318313e-32,
+        4.62939428927757e-32,
+        1.4019262655856902e-31,
+        2.365958518550759e-32,
+        2.7479898437954084e-33,
+        2.083910788987606e-35,
+        1.4180598611134052e-33,
+        2.5701378160341707e-33,
+        2.6321088574950474e-33,
+        5.033348842475081e-32,
+        1.016127266490209e-32,
+        5.871337805878529e-32,
+        5.2904160730349315e-33,
+        7.539621792148458e-34,
+        1.9092036639811002e-33,
+        5.515381756252982e-34,
+        1.0888367300207954e-33,
+        9.50501104493644e-33,
+        1.4962320419927206e-33,
+        3.6736560554251737e-32,
+        1.2513201628065325e-32,
+        2.360535768139339e-33,
+        1.3497459890200426e-32,
+        3.5549046618709676e-33,
+        1.2236556377954742e-32,
+        6.189879382963479e-32,
+        1.5584001009083484e-33,
+        2.4480341132563526e-32,
+        8.817680143344664e-34,
+        9.85508434562536e-35,
+        1.0871343940700908e-33,
+        3.1836942327963144e-34,
+        5.283391366514254e-33,
+        3.6597568890232296e-32,
+        6.005203810754069e-33
+      ],
+      "fft_boundary": "NumPy rfft replaces scipy.fft.rfft; original calcCSM body, prange replaced by range",
+      "independent_prediction_of_original_behavior": [
+        0.5
+      ],
+      "matched_prediction_of_original_behavior": true
+    },
+    {
+      "name": "power_spectra_nonintegral_block_count",
+      "execution": "limited original function/method body",
+      "actual": [
+        0.32
+      ],
+      "independent_expected": [
+        0.5
+      ],
+      "absolute_tolerance": 2e-14,
+      "max_absolute_error": 0.18,
+      "matched_independent_expected": false,
+      "classification": "observed_original_behavior_difference",
+      "input_sample_count": 200,
+      "block_size": 128,
+      "window": "rectangular",
+      "overlap_factor": 1.0,
+      "input_definition": "cos(2*pi*8*n/128)",
+      "actual_complete_blocks": 1,
+      "original_num_blocks": 1.5625,
+      "target": "analytic one-sided mean-square power of the complete 128-sample cosine/DC/Nyquist block",
+      "reason": "nonintegral original divisor despite one complete consumed block",
+      "spectrum_diagonal_real": [
+        3.580428155664808e-32,
+        1.163190166205501e-33,
+        6.298273741536538e-33,
+        3.387308956962158e-33,
+        4.119729898595489e-33,
+        5.157733060372279e-33,
+        5.395691634492901e-33,
+        3.7873321786936393e-32,
+        0.32,
+        1.8015297867406996e-32,
+        1.5824935219251895e-32,
+        3.6071480860083916e-33,
+        2.797813398875699e-33,
+        2.322879801785578e-33,
+        4.370577993880142e-33,
+        3.3010708682442785e-32,
+        1.3718570630263585e-31,
+        3.722931889921063e-32,
+        5.857690706021656e-33,
+        1.7155239794063937e-33,
+        2.8187940412052633e-33,
+        2.038936023423567e-34,
+        7.5105247463336525e-34,
+        5.2365756551850295e-34,
+        6.337239034238555e-33,
+        9.395624073312277e-33,
+        4.081505141288739e-33,
+        2.12783712751776e-33,
+        6.790458135528425e-33,
+        4.6496098806980745e-34,
+        6.71256211028372e-33,
+        2.9628123451376447e-32,
+        8.972328099748417e-32,
+        1.5142134518724858e-32,
+        1.7587135000290613e-33,
+        1.333702904952068e-35,
+        9.075583111125794e-34,
+        1.6448882022618694e-33,
+        1.6845496687968305e-33,
+        3.221343259184052e-32,
+        6.503214505537338e-33,
+        3.7576561957622586e-32,
+        3.385866286742356e-33,
+        4.825357946975013e-34,
+        1.2218903449479042e-33,
+        3.5298443240019083e-34,
+        6.9685550721330905e-34,
+        6.083207068759322e-33,
+        9.575885068753412e-34,
+        2.351139875472111e-32,
+        8.008449041961809e-33,
+        1.510742891609177e-33,
+        8.638374329728273e-33,
+        2.2751389835974192e-33,
+        7.831396081891035e-33,
+        3.9615228050966266e-32,
+        9.97376064581343e-34,
+        1.5667418324840657e-32,
+        5.643315291740585e-34,
+        6.30725398120023e-35,
+        6.957660122048581e-34,
+        2.0375643089896414e-34,
+        3.381370474569123e-33,
+        2.342244408974867e-32,
+        3.8433304388826044e-33
+      ],
+      "fft_boundary": "NumPy rfft replaces scipy.fft.rfft; original calcCSM body, prange replaced by range",
+      "independent_prediction_of_original_behavior": [
+        0.32
+      ],
+      "matched_prediction_of_original_behavior": true
+    },
+    {
+      "name": "power_spectra_dc_endpoint",
+      "execution": "limited original function/method body",
+      "actual": [
+        2.0
+      ],
+      "independent_expected": [
+        1.0
+      ],
+      "absolute_tolerance": 2e-14,
+      "max_absolute_error": 1.0,
+      "matched_independent_expected": false,
+      "classification": "observed_original_behavior_difference",
+      "input_sample_count": 128,
+      "block_size": 128,
+      "window": "rectangular",
+      "overlap_factor": 1.0,
+      "input_definition": "dc",
+      "actual_complete_blocks": 1,
+      "original_num_blocks": 1.0,
+      "target": "analytic one-sided mean-square power of the complete 128-sample cosine/DC/Nyquist block",
+      "reason": "original multiplies all one-sided bins by two, including endpoints",
+      "spectrum_diagonal_real": [
+        2.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "fft_boundary": "NumPy rfft replaces scipy.fft.rfft; original calcCSM body, prange replaced by range",
+      "independent_prediction_of_original_behavior": [
+        2.0
+      ],
+      "matched_prediction_of_original_behavior": true
+    },
+    {
+      "name": "power_spectra_nyquist_endpoint",
+      "execution": "limited original function/method body",
+      "actual": [
+        2.0
+      ],
+      "independent_expected": [
+        1.0
+      ],
+      "absolute_tolerance": 2e-14,
+      "max_absolute_error": 1.0,
+      "matched_independent_expected": false,
+      "classification": "observed_original_behavior_difference",
+      "input_sample_count": 128,
+      "block_size": 128,
+      "window": "rectangular",
+      "overlap_factor": 1.0,
+      "input_definition": "nyquist",
+      "actual_complete_blocks": 1,
+      "original_num_blocks": 1.0,
+      "target": "analytic one-sided mean-square power of the complete 128-sample cosine/DC/Nyquist block",
+      "reason": "original multiplies all one-sided bins by two, including endpoints",
+      "spectrum_diagonal_real": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.0
+      ],
+      "fft_boundary": "NumPy rfft replaces scipy.fft.rfft; original calcCSM body, prange replaced by range",
+      "independent_prediction_of_original_behavior": [
+        2.0
+      ],
+      "matched_prediction_of_original_behavior": true
+    }
+  ],
+  "unexecuted_estimator": {
+    "name": "original_cmf_nnls_estimator",
+    "execution": "not_run",
+    "reason": "no sklearn estimator is invoked; this bounded audit loads dictionary methods only",
+    "dependency_present": false,
+    "factory_static": "LinearRegression(positive=True)",
+    "factory_line": 1819,
+    "fit_intercept_argument_explicit": false,
+    "official_default_fit_intercept": true,
+    "official_interface_source": "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html",
+    "independent_conditional_intercept_control": {
+      "execution": "independent analytic positive one-column regression; not original estimator",
+      "assumption": "fit_intercept=True default and positive coefficient constraint",
+      "power": 2.4857142857142858,
+      "intercept": -1.5999999999999996,
+      "through_origin_reduced_power": 1.9523809523809523,
+      "full_frobenius_power": 1.64,
+      "original_column_normalization_does_not_remove_intercept": true
+    }
+  },
+  "additional_valid_csm_controls": [
+    {
+      "name": "valid_csm_damas_covariance_bridge",
+      "execution": "limited original function/method body",
+      "actual": [
+        1.0,
+        0.0
+      ],
+      "independent_expected": [
+        1.0,
+        0.0
+      ],
+      "absolute_tolerance": 2e-14,
+      "max_absolute_error": 0.0,
+      "matched_independent_expected": true,
+      "classification": "matched_independent_expected",
+      "transfer": {
+        "real": [
+          [
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            -0.49999999999999983
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -0.8660254037844387
+          ]
+        ]
+      },
+      "csm": {
+        "real": [
+          [
+            1.3333333333333333,
+            0.6666666666666667
+          ],
+          [
+            0.6666666666666667,
+            1.3333333333333333
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            -1.1547005383792512
+          ],
+          [
+            1.1547005383792512,
+            -4.692354624973018e-17
+          ]
+        ]
+      },
+      "dirty_map": [
+        1.0,
+        5.551115123125783e-17
+      ],
+      "psf": [
+        [
+          1.0,
+          0.2500000000000001
+        ],
+        [
+          0.2500000000000001,
+          1.0
+        ]
+      ],
+      "independent_scan_residual_nnls": [
+        0.9411764705882353,
+        0.0
+      ],
+      "covariance_residual_squared": 3.1111111111111094,
+      "independent_covariance_residual_squared": 3.111111111111111,
+      "scan_nnls_covariance_residual_squared": 3.1249519415609366,
+      "independent_scan_nnls_covariance_residual_squared": 3.124951941560938,
+      "target": "full CSM Frobenius objective with matched true-level steering; distinct from map-residual NNLS",
+      "limitations": "known positive-semidefinite rank-one CSM; not an arbitrary PSF guarantee or original CMF estimator execution"
+    }
+  ],
+  "primary_reference_locators": {
+    "clean_sc_full_csm": {
+      "title": "Sijtsma, CLEAN based on spatial source coherence, NLR-TP-2007-345",
+      "url": "https://reports.nlr.nl/server/api/core/bitstreams/813b0521-b37c-4aff-be61-7a8bceaa06d4/content",
+      "locator": "section 4.6, equation 32: full-CSM component update"
+    },
+    "damas_cmf_target": {
+      "title": "Chardon, Picheral and Ollivier, Theoretical analysis of the DAMAS algorithm and efficient implementation of covariance matrix fitting for large-scale acoustic imaging",
+      "url": "https://gilleschardon.fr/papers/damascmf.pdf",
+      "locator": "DAMAS quadratic stationarity and covariance-fitting objective; applicable Gram-model conditions"
+    }
+  },
+  "counts": {
+    "limited_numerical_cases": 21,
+    "matched_independent_expected": 13,
+    "observed_original_behavior_differences": 8,
+    "unexecuted_estimators": 1
+  },
+  "interpretation": "Audit completion is not algorithm correctness or complete source-selection success. Known differences and unexecuted entries are preserved."
+}

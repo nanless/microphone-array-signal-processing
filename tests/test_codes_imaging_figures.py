@@ -69,7 +69,7 @@ class ImagingFigureGateTests(unittest.TestCase):
             with self.subTest(source=relative):
                 path.write_bytes(before+b'changed\n')
                 errors = self.run_gate()
-                self.assertEqual(len(errors), 3)
+                self.assertEqual(len(errors), 4)
                 self.assertTrue(all('真实源摘要过期' in error for error in errors))
                 path.write_bytes(before)
 
@@ -168,6 +168,50 @@ class ImagingFigureGateTests(unittest.TestCase):
         path.unlink()
         os.link(backup, path)
         self.assertIn('singly linked', self.run_gate()[0])
+
+    def test_objective_grid_gram_normalization_and_solution_tampering_fail(self):
+        original = copy.deepcopy(self.reports[80])
+        cases = (
+            (('experiment', 'G', 0, 1), 1.1, 'Gram目标'),
+            (('experiment', 'h', 1), .1, 'Gram目标'),
+            (('experiment', 'q_CSM', 0), 16/17, 'Gram目标'),
+            (('experiment', 'csm_target_real', 3), 2., 'Gram目标'),
+            (('experiment', 'objective_common_scale'), 1., '共同数值尺度'),
+            (('experiment', 'nonuniform_control', 'P', 1, 0), .25, '逐行归一化'),
+            (('experiment', 'losses', 'scan', 'csm_frobenius_squared'), 28/9, '完整CSM目标'),
+            (('plotted', 'scan_squared', 30, 100), 0., '扫描等值线'),
+            (('plotted', 'csm_squared', 55, 70), 0., '完整CSM等值线'),
+            (('plotted', 'view'), 'full domain', '局部显示'),
+        )
+        for keys, value, message in cases:
+            with self.subTest(field=keys):
+                self.reports[80] = copy.deepcopy(original)
+                container = self.reports[80]['results']
+                for key in keys[:-1]:
+                    container = container[key]
+                container[keys[-1]] = value
+                self.write(80)
+                errors = self.run_gate()
+                self.assertEqual(len(errors), 1)
+                self.assertIn(message, errors[0])
+
+    def test_objective_png_binds_actual_report_and_current_script_bytes(self):
+        from PIL import Image, PngImagePlugin
+        path = self.root/'figure80.png'
+        def write_png(report_digest, script_digest):
+            metadata = PngImagePlugin.PngInfo()
+            metadata.add_text('NumericalReportDigest', report_digest)
+            metadata.add_text('SourceScriptDigest', script_digest)
+            Image.new('RGB', (2, 2)).save(path, pnginfo=metadata)
+        digest = hashlib.sha256(self.path(80).read_bytes()).hexdigest()
+        script_digest = self.sources['scripts/make_figures.py']
+        write_png(digest, script_digest)
+        with patch.object(gate, 'ROOT', self.root):
+            gate.check_imaging_objective_png(path, self.path(80))
+            for wrong_report, wrong_script in ((digest, '0'*64), ('0'*64, script_digest)):
+                write_png(wrong_report, wrong_script)
+                with self.assertRaisesRegex(ValueError, '摘要失效'):
+                    gate.check_imaging_objective_png(path, self.path(80))
 
 
 if __name__ == '__main__':

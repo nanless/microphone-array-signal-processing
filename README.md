@@ -4,7 +4,7 @@
 
 正文提供关键公式推导、可复算例子、适用边界，以及与各章公式对应的 NumPy/标准库教学代码。
 
-全书有 355 道可运行代码练习、79 张脚本生成的编号图和 1 张房间题补充图，以及 27 组共 109 个[主清单合成 WAV](codes/chapters/ch00/audio/MANIFEST.json)。[练习与音频实验手册](codes/chapters/ch00/research/05_exercises_and_audio.md)逐题列出输入、答案、试听条件与代码入口。音频是数学合成样本，不是真实语音或正式听测；第 6 章两组合成 AEC 音频的参数也不完全等同于 E06-07～20 手算题。
+全书有 357 道可运行代码练习、80 张脚本生成的编号图和 1 张房间题补充图，以及 27 组共 109 个[主清单合成 WAV](codes/chapters/ch00/audio/MANIFEST.json)。[练习与音频实验手册](codes/chapters/ch00/research/05_exercises_and_audio.md)逐题列出输入、答案、试听条件与代码入口。音频是数学合成样本，不是真实语音或正式听测；第 6 章两组合成 AEC 音频的参数也不完全等同于 E06-07～20 手算题。
 
 第四章另有[四份已知酉聚焦合成WAV](codes/chapters/ch04/focus_audio/MANIFEST.json)：用稳定窗逐频复幅度与实际PCM检查相干双源的多频协方差秩；指定角度和频率分量已知，不作为盲定位或正式听测结果。
 
@@ -42,6 +42,8 @@ English version: [README_EN.md](README_EN.md)
 
 扩展专题Ⅰ另有[五份成像快拍WAV](codes/chapters/ch14/imaging_audio/MANIFEST.json)：同源、共同增益1、完整4点传播尾，比较指定快拍集交叉项抵消与完全相干。实际PCM、浮点和解析CSM分开；播放混合不能证明源强反演正确。
 
+扩展专题Ⅰ新增[E14-17/18](chapters/14_acoustic-imaging.md#e14-17)：逐项推导DAMAS与完整CSM拟合的联系，并用不同传播列展示整体不可辨识。图80在同一输入下比较两种目标；固定作者原模块九个控制保留8数值吻合与1原异常，源码取得和完整工业实验分开。
+
 第8章新增[四份既定槽位极性与增益音频](codes/chapters/ch08/css_audio/MANIFEST.json)，配合E08-30～32与图76，分别核对一致性顺序、PCA目标丢失和重叠回归。音频没有执行盲CSS。
 
 第9章补充E09-24～26与图77，逐步计算完整IMM模式密度、连续缺测、实际PCM的单槽生命周期，以及已知姿态和静态vMF条件化。它们复用原五个独立WAV，不以局部ID证明说话人身份；代码与边界见[章节练习](codes/chapters/ch00/research/05_exercises_and_audio.md#tracking-model-lifecycle-sphere-exercises)。
@@ -53,7 +55,7 @@ English version: [README_EN.md](README_EN.md)
 | 目录/文件 | 说明 |
 |---|---|
 | `chapters/` | 教程正文 16 篇 Markdown（`00_overview.md` 是入口，`01`～`11` 是 11 章正文，`14`/`15` 是扩展专题Ⅰ/Ⅱ，`12`/`13` 是附录 A/B；阅读顺序以导航为准） |
-| `figures/` | 79 张编号图（`fig01`～`fig79_*.png`），房间题补充图另存于 `codes/chapters/appendix_b/room_audio/ROOM_RESULTS.png`；全部由脚本生成、可复现 |
+| `figures/` | 80 张编号图（`fig01`～`fig80_*.png`），房间题补充图另存于 `codes/chapters/appendix_b/room_audio/ROOM_RESULTS.png`；全部由脚本生成、可复现 |
 | `codes/chapters/` | 导读、第 1～11 章、扩展专题Ⅰ/Ⅱ及附录 A/B 的源码、实验、报告和资产；逐章目录与命令见[代码地图](codes/chapters/README.md) |
 | `codes/chapters/ch10/channel_audio/` | 六个已知坏麦数学合成WAV，8真实源、共同增益1；分开解析、浮点与27200点实际PCM整数评分 |
 | `codes/chapters/ch00/audio/MANIFEST.json`、各章 `audio/` | 主清单统一管理 27 组、109 个按章节存放的本书合成 WAV；由脚本生成，不直接编辑 |
@@ -123,7 +125,7 @@ python3 -m venv .venv
 .venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 
-# 3. 先生成 109 个音频，再生成 79 张图（图 34～36、40～41、43～45、47、49、58～60、63～66 读取生成的音频）
+# 3. 先生成 109 个音频，再生成 80 张图（图 34～36、40～41、43～45、47、49、58～60、63～66 读取生成的音频）
 .venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
 .venv/bin/python -m codes.chapters.ch06.examples.generate_apa_audio
 .venv/bin/python -m codes.chapters.ch06.examples.generate_reference_audio  # 六份已知播放增益/尾声WAV；--check严格只读

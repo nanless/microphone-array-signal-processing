@@ -2494,6 +2494,49 @@
       "note": "Independently reviewed 2026-10-05. Each selected author .m explicitly names ODC-BY v1.0 in its own header; retain all notices. No repository-wide license is inferred. License anchor main_evaluation.m SHA-256 696e66ca69a6e27e3d085444463e84bd3fc6addcbaeb83cb83350893909a6851. The nested Munkres license SHA-256 1376fb7ea22678c345ac2c1af8489a66077289754cc7a5b0053d0d90b07c6730 applies only to that BSD helper; identical unnested utils/munkres.m is excluded to avoid ambiguity. README and files without established permission are excluded; datasets, dependencies and MATLAB are not acquired or run. MathWorks internal angdiff.m, unlicensed Hungarian.m/stats_for_paper.m/latexTable/rm_VAD_legend.m are excluded; measures/main still reference excluded helpers, so this partial selection cannot be presented as a runnable full evaluator.",
       "acquisition": "independent_source_checkout",
       "verified_at": "2026-10-05"
+    },
+    {
+      "id": "damas-author",
+      "url": "https://github.com/gilleschardon/DAMAS.git",
+      "revision": "61987952e2237e6b088a169ee891dd96576f2565",
+      "license": "GPL-3.0",
+      "fetch_enabled": true,
+      "scope": "Author DAMAS and covariance matrix fitting reference code, fixed text-only source selection",
+      "acquisition": "independent_source_checkout",
+      "source_paths": [
+        "DEMO_cmf_nnls.m",
+        "DEMO_cmf_nnls.py",
+        "LICENSE",
+        "README.md",
+        "cmf_nnls.m",
+        "cmf_nnls_dr.m",
+        "damas.c",
+        "damas.py",
+        "damas_nnls.m",
+        "damas_nnls_dr.m",
+        "damas_rand.c",
+        "dictionary.m",
+        "figures/FIGS_2D_EXP.m",
+        "figures/FIGS_2D_SIM.m",
+        "figures/FIGS_3D_EXP.m",
+        "figures/plothist.m",
+        "proddamas.m",
+        "proddamasDR.m",
+        "proddamasDR_support.m",
+        "proddamas_support.m",
+        "proddamastranspose.m"
+      ],
+      "entrypoints": [
+        "LICENSE",
+        "README.md",
+        "damas.py",
+        "cmf_nnls.m",
+        "cmf_nnls_dr.m",
+        "proddamas.m",
+        "proddamasDR.m"
+      ],
+      "verified_at": "2026-10-05",
+      "note": "Chardon, Picheral and Ollivier author reference linked by DOI 10.5281/zenodo.4609267. Twenty-one GPLv3 text files (74510 bytes at the fixed commit); retain the complete root LICENSE and source notices. No three MAT datasets or precompiled MEX binaries selected, no MATLAB/MEX execution, no author benchmark or Acoular package run. Original Python solver limitations are preserved and discussed separately; acquired source does not prove runtime correctness or permit relicensing."
     }
   ]
 }

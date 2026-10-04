@@ -5,6 +5,7 @@ import hashlib
 import io
 import json
 import os
+import subprocess
 from pathlib import Path
 import tempfile
 import unittest
@@ -114,6 +115,8 @@ class ImagingReportBoundaryTests(unittest.TestCase):
 
     def test_upstream_old_reports_and_source_destinations_are_protected(self):
         for target in (audit.CACHE / 'acoular' / 'new-report.json',
+                       audit.HISTORICAL_REPORT,
+                       audit.upstream.STATUS,
                        audit.ROOT / 'codes/chapters/ch09/reports/upstream_tracking_contracts.json',
                        audit.ROOT / 'reviews/old-review.json', Path(audit.__file__), audit.LOCK):
             with self.subTest(path=target), self.assertRaises(ValueError):
@@ -133,8 +136,9 @@ class ImagingReportBoundaryTests(unittest.TestCase):
 
     def test_preflight_precedes_original_execution(self):
         with patch.object(audit, 'run_audit') as run:
-            with self.assertRaises(ValueError):
-                audit.main(['--report', str(audit.CACHE / 'acoular' / 'bad.json')])
+            for target in (audit.CACHE / 'acoular' / 'bad.json', audit.HISTORICAL_REPORT):
+                with self.subTest(target=target), self.assertRaises(ValueError):
+                    audit.main(['--report', str(target)])
             run.assert_not_called()
 
     def test_default_stdout_does_not_write_report(self):
@@ -171,7 +175,11 @@ class ImagingOriginalMethodTests(unittest.TestCase):
 
     def test_real_source_identity_and_selection_are_separate(self):
         before = self.report['source_identity_before']
-        self.assertEqual(before, self.report['source_identity_after'])
+        after = self.report['source_identity_after']
+        self.assertFalse(before['clean_after'])
+        self.assertTrue(after['clean_after'])
+        self.assertEqual(before['used_files'], after['used_files'])
+        self.assertEqual(before['ignored_members_before'], after['ignored_members_after'])
         self.assertEqual(before['origin'], audit.ORIGIN)
         self.assertEqual(before['head'], audit.REVISION)
         self.assertEqual(before['source_version'], '26.08')
@@ -181,9 +189,15 @@ class ImagingOriginalMethodTests(unittest.TestCase):
         if selection['status'] == 'source_selection_mismatch':
             self.assertFalse(selection['source_selection_verified'])
         for path, expected in audit.FILES.items():
-            identity = before['files'][path]
+            identity = before['used_files'][path]
             self.assertEqual(identity['sha256'], expected)
-            self.assertEqual(identity['head_blob'], identity['actual_blob'])
+            self.assertEqual(identity['git_blob'], identity['actual_blob'])
+        self.assertEqual(before['live_complete_selection'], before['acquisition_scope'])
+        lock, status, lock_sha, status_sha = audit.upstream.source_documents()
+        self.assertEqual(before['lock_sha256'], lock_sha)
+        self.assertEqual(before['status_sha256'], status_sha)
+        self.assertEqual(before['recorded_complete_selection'],
+                         next(row for row in status['projects'] if row['id'] == 'acoular'))
 
     def test_psf_dirty_map_and_causal_phase_from_hand_calculation(self):
         np.testing.assert_allclose(self.rows['custom_full_csm_psf']['actual'],
@@ -212,6 +226,35 @@ class ImagingOriginalMethodTests(unittest.TestCase):
         self.assertEqual(row['independent_expected'], [16/17, 0.])
         self.assertEqual(row['original_residual_squared'], 1/16)
         self.assertEqual(row['independent_nnls_residual_squared'], 1/17)
+
+    def test_valid_csm_bridge_retains_both_objectives_and_original_case_count(self):
+        row, = self.report['additional_valid_csm_controls']
+        c = np.array(row['csm']['real']) + 1j * np.array(row['csm']['imag'])
+        self.assertGreaterEqual(np.linalg.eigvalsh(c)[0], -audit.ATOL)
+        a = np.array(row['transfer']['real']) + 1j * np.array(row['transfer']['imag'])
+        w = a / np.sum(abs(a)**2, axis=0)
+        b = np.real(np.diag(w.conj().T @ c @ w))
+        np.testing.assert_allclose(b, [1, 0], atol=audit.ATOL, rtol=0)
+        np.testing.assert_allclose(row['dirty_map'], b, atol=audit.ATOL, rtol=0)
+        np.testing.assert_allclose(row['actual'], [1, 0], atol=audit.ATOL, rtol=0)
+        self.assertAlmostEqual(row['covariance_residual_squared'], float(Fraction(28, 9)), places=13)
+        self.assertAlmostEqual(row['scan_nnls_covariance_residual_squared'],
+                               float(Fraction(8128, 2601)), places=13)
+        self.assertGreater(row['scan_nnls_covariance_residual_squared'], row['covariance_residual_squared'])
+        self.assertEqual(self.report['counts']['limited_numerical_cases'], 21)
+
+    def test_actual_dependencies_unchanged_and_exactly_current(self):
+        self.assertEqual(self.report['actual_dependencies_before'], self.report['actual_dependencies_after'])
+        self.assertEqual(self.report['direct_sources'], audit.upstream.dependencies(audit.__file__))
+        self.assertTrue(self.report['actual_dependencies_unchanged'])
+
+    def test_changed_local_dependency_is_rejected(self):
+        actual = audit.upstream.dependencies(audit.__file__)
+        changed = dict(actual)
+        changed['codes/chapters/ch00/io_contracts.py'] = '0' * 64
+        with patch.object(audit.upstream, 'dependencies', side_effect=[actual, changed]):
+            with self.assertRaisesRegex(ValueError, 'dependencies changed'):
+                audit.run_audit()
 
     def test_full_cleansc_difference_not_hidden_by_tool_completion(self):
         row = self.rows['cleansc_full_csm_20']
@@ -276,6 +319,30 @@ class ImagingOriginalMethodTests(unittest.TestCase):
         self.assertEqual(self.report['direct_sources']['codes/chapters/ch14/examples/audit_upstream_imaging_contracts.py'],
                          hashlib.sha256(Path(audit.__file__).read_bytes()).hexdigest())
         strict_json_loads(json.dumps(self.report, allow_nan=False))
+
+
+class ImagingHistoricalReportTests(unittest.TestCase):
+    """Preserve real historical bytes and their real historical tool binding."""
+    revision = 'ba622a6a2999cc30e15efe3e77a15c30d99cb51d'
+
+    def blob(self, relative):
+        env = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
+        env['GIT_NO_LAZY_FETCH'] = '1'
+        return subprocess.check_output(['git', 'show', self.revision + ':' + relative],
+                                       cwd=audit.ROOT, env=env)
+
+    def test_original_report_and_bound_tool_are_real_preedit_git_bytes(self):
+        relative = str(audit.HISTORICAL_REPORT.relative_to(audit.ROOT))
+        old = self.blob(relative)
+        self.assertEqual(audit.HISTORICAL_REPORT.read_bytes(), old)
+        report = strict_json_loads(old)
+        tool = 'codes/chapters/ch14/examples/audit_upstream_imaging_contracts.py'
+        self.assertEqual(hashlib.sha256(self.blob(tool)).hexdigest(), report['direct_sources'][tool])
+        for relative, expected in report['direct_sources'].items():
+            self.assertEqual(hashlib.sha256(self.blob(relative)).hexdigest(), expected)
+        self.assertEqual(report['counts']['limited_numerical_cases'], 21)
+        self.assertEqual(report['counts']['observed_original_behavior_differences'], 8)
+        self.assertNotEqual(audit.HISTORICAL_REPORT, audit.CURRENT_REPORT)
 
 
 if __name__ == '__main__':

@@ -401,9 +401,17 @@ $$\begin{aligned}
 
 若求解器只接受实数，目标 $\vec q$仍然是实数非负源量；不能通过丢弃字典虚部来让输入变实。虚部保存了传播相位的重要信息。
 
-#### 原CMF还有噪声与稀疏约束
+#### DAMAS固定点何时对应完整CSM拟合
 
-Yardibi等的原CMF联合拟合白噪声，并限制非负源系数总量。其单位范数传播列记作 $\tilde{\mathbf A}$，源系数记作 $\vec d$，以区别本篇参考位置的 $\vec q$：
+§14.5的截断GS与扫描域NNLS目标不同，但在完整CSM与匹配权重的条件下，GS可以对应另一个明确目标：非负的完整CSM Frobenius拟合。用秩一模板的Gram矩阵展开目标，再按一个坐标最小化，便得到同一未松弛GS更新。[Chardon等，§3.1～3.3，定理1～3与式(15)～(18)](https://gilleschardon.fr/papers/damascmf.pdf "citation")
+
+这个联系要求观测和模板保持相同处理，不删对角、不裁剪扫描值，也不添加噪声列、预算或截距。各传播列不必有相同范数，但需用正的行尺度将PSF转换为对称Gram矩阵。它不把任意有限轮GS输出直接宣称为最优或唯一。
+
+[E14-17](#e14-17)先逐项推导式(14-29)～(14-31)，再用同一有效CSM计算两种目标的不同最小点。删对角或改变约束时，应重新推导模板、目标和更新，不能只沿用算法名称。
+
+#### 噪声与源量预算怎样改变拟合目标
+
+Yardibi等研究稀疏约束的反卷积与协方差拟合。为说明噪声项、列归一化和源量预算如何改变目标，本书给定下面的联合模型；不将这个控制称为已复现完整原CMF。单位范数传播列记作 $\tilde{\mathbf A}$，源系数记作 $\vec d$，以区别本篇参考位置的 $\vec q$：
 
 $$\begin{aligned}
 \mathbf R_{\rm model}&=\tilde{\mathbf A}\operatorname{diag}(\vec d)\\
@@ -413,7 +421,7 @@ $$\begin{aligned}
 &\sum_jd_j\le\Lambda.
 \end{aligned}\tag{14-20}$$
 
-式(14-20)中的 $\mathbf R_{\rm model}$包括源与空间白噪声的模型CSM。原文还给出 $\Lambda$的谱估计选择，定义依赖其列归一化和源量尺度。[Yardibi等2008，§V、式(20)、(22)](https://doi.org/10.1121/1.2896754 "citation") 不能把式(14-18)与该完整目标混同，也不能用原文的量直接约束未经尺度转换的参考声压量。
+式(14-20)中的 $\mathbf R_{\rm model}$包括源与空间白噪声的模型CSM，$\Lambda$是本控制给定的非负源量预算，数值须与单位范数列及 $\vec d$ 的尺度配套。论文的具体预算选择与完整实现须另查原文；出版社摘要不提供这些推导。[Yardibi等2008，出版社摘要](https://doi.org/10.1121%2F1.2896754 "citation") 不能把式(14-18)与这个扩展目标混同，也不能用未经尺度转换的预算约束参考声压量。
 
 E14-16只在已知空间白噪声模型下，教学性联合估计 $q$、$\sigma^2$，不加入原论文的稀疏预算。代码先解无约束最小二乘并报告结果是否非负；本题答案恰好非负，不代表接口自动求解了非负约束问题。该例能说明噪声模型改变字典，也能展示一麦下两种贡献不可辨识。
 
@@ -486,6 +494,14 @@ $$\begin{gathered}
 若两个候选位置在所用频率和阵列上具有相同传播列，交换或重新分配二者的源量不改变CSM。非负约束不能区分它们；例如重复两列的总量1，可分成 $[1,0]$、$[1/2,1/2]$或 $[0,1]$。
 
 相近而非完全相同的列会产生病态问题。图上更细的网格可以更精确地表示位置，却可能降低数值可辨识性和增加计算量。选网格时应同时检查孔径、频率、列相关、误差敏感性和区域总量，而不只检查像素尺寸。
+
+#### 不重复的列也可能整体不可辨识
+
+检查两列是否相同还不够。源量作用在CSM模板 $\vec a_j\vec a_j^H$上；即使每个模板都不同，多个模板仍可能整体线性相关。E14-18给出双麦四个不同相位列，两种非负源分布都生成 $2\mathbf I$，连完整CSM也不能区分。
+
+本书先假定传感器噪声已知为零，再展示这个源字典自身的歧义。若另把未知白噪声加入模型，$2\mathbf I$还能完全解释为空间白噪声；这是扩大模型后的另一种歧义，不能倒过来声称该控制的真实噪声为2。
+
+未知格数不超过 $M^2$只是维度上可能充分，不保证字典满列秩，更不保证某个非负观测的唯一分解。秩亏表示存在不可见的变化方向，但该方向是否能在某个给定解附近保持非负，还要实际检查；不能笼统推断每个非负观测都具有多解。
 
 #### 离网格、源区外与深度错误
 
@@ -596,13 +612,13 @@ NASA的现场部署研究区分部署前后台架基线和在场响应漂移监�
 
 不同方法是否值得进一步使用，由已经出现的失效决定：相干交叉项需要源协方差模型，指向性失配需要更丰富传递模型，移动需要时变传播，声全息需要其对应测量面和逆传播条件。只增加一个方法名称，不会给本篇静止单极子例子增加这些条件。
 
-DAMAS-C与CMF-C保留源协方差的非对角项，使模型能表示相干源。代价是从每格一个非负标量变成一个半正定源协方差矩阵；参数更多，辨识约束也改变。原CMF-C以完整源协方差拟合CSM，并约束其迹；不能把式(14-18)的非负标量拟合简单改名为CMF-C。[Yardibi等2008，§VI式(26)](https://doi.org/10.1121/1.2896754 "citation") 本篇先用 E14-05证明为什么需要这个扩展，完整求解不并入初学者的三种主线核。
+相关源需要额外建模源间互谱，DAMAS-C与CMF-C都是相应扩展，但各扩展的相关模型与约束并不相同。增加交叉项后，参数更多，辨识约束也改变。Yardibi等提出CMF-C处理相关源，并与DAMAS-C比较；相关模型和约束须另读原文，不能把式(14-18)的非负标量目标直接改名为完整CMF-C。[Yardibi等2008，出版社摘要](https://doi.org/10.1121%2F1.2896754 "citation") 本篇先用 E14-05证明为什么需要这个扩展，完整求解不并入初学者的三种主线核。
 
 HR-CLEAN-SC先获得候选源，再在对应主瓣中选择源标记位置：那里对目标源仍有响应，但来自其他候选源的PSF污染较少。用标记位置提取相干成分后，再扫描该成分来更新源位置。它仍需要可信的候选源和传播模型；若标记位置对目标源几乎失敏，提取也会不稳定。[Sijtsma、Snellen 2016，§2.5](https://www.bebec.eu/fileadmin/bebec/downloads/bebec-2016/papers/BeBeC-2016-S1.pdf "citation") 本篇保留其解决问题的过程，不把它的论文实验分辨率当作本书已验证结果。
 
 SODIX直接拟合CSM，并为每个源到每支麦的方向引入非负幅度参数。一个源不再由一个统一的 $q_j$决定所有通道幅度；源位置数乘麦数的未知量可能超过CSM的独立信息，需要方向和空间平滑等约束。[Funke等2014，式(6)～(10)](https://elib.dlr.de/94587/1/BeBeC-2014-11_Funke_SODIX.pdf "citation") 本篇双麦两格数据并不能承担一般指向性反演，因此只提供原模型入口。
 
-NAH的关键是测量面到重建面的逆传播。除行进波外，近场中还有随距离指数衰减的倏逝分量；逆传播会放大它们对应的测量噪声。测量距离、空间采样、有限孔径与正则化是其核心条件。[Maynard等1985，§III](https://doi.org/10.1121/1.392911 "citation") 它值得作为近场场量重建的相邻专题，但本篇点源功率字典与16题不构成该测量流程。
+NAH的关键是测量面到重建面的逆传播。除行进波外，近场中还有随距离指数衰减的倏逝分量；逆传播会放大它们对应的测量噪声。测量距离、空间采样、有限孔径与正则化是其核心条件。[Maynard等1985，§III](https://doi.org/10.1121/1.392911 "citation") 它值得作为近场场量重建的相邻专题，但本篇点源功率字典与18题不构成该测量流程。
 
 #### 开源实现要逐项核对接口
 
@@ -610,23 +626,33 @@ Acoular提供传播、频谱、PSF、DAMAS、CLEAN-SC和CMF等维护者实现。
 
 对照时要核对：CSM使用 $xx^H$还是其转置、谱值是否已含单边因子与频格宽度、DR默认是否开启、PSF与扫描是否同样处理、GS遍历方向、CMF实向量权重、求解器截距、列归一化及原单位恢复。每项都会影响数值；方法类名相同不能省略这些检查。
 
+固定Acoular CMF风洞示例还说明了为何必须读实际调用：变量声明为 `cfreq=4000`、`num=3`，循环却执行 `synthetic(cfreq,1)`，实际取八度带，不能按注释或未使用变量称作三分之一倍频程。它使用 `Environment(c=346.04)`，没有在这条链中启用流场或剪切层传播补偿；数据来自风洞也不等于软件已修正开口喷流传播。[固定原示例](https://github.com/acoular/acoular/blob/13d3d7df74ac1a8135c7ec71da098cbbc03d8652/examples/wind_tunnel_examples/example_airfoil_in_open_jet_cmf.py "citation") 本书未运行该现场数据整链，不用这些配置声称测量性能。
+
+固定 `calib.py`将XML的 `factor`读为实浮点数，时域接受每通道一维系数，频域接受长度 $M F$ 的展平一维系数，并对各输入块逐项相乘。这里 $M F$ 是系数个数，不是二维输入形状。它是系数的应用，不会在这个接口内自动辨识复数响应、相位或时钟误差。[固定校准模块](https://github.com/acoular/acoular/blob/13d3d7df74ac1a8135c7ec71da098cbbc03d8652/acoular/calib.py "citation") 因此式(14-28)允许一般复校正，并不表示原XML接口已经提供这种自动标定。
+
 原论文公式、本书教学核、固定上游原调用和隔离修正调用分别记录。源码取得不等于方法已运行，限定函数调用也不等于风洞完整整链运行。第三方数据、音频与代码的许可分别检查，复现命令只使用明确的本地来源。
 
-本书[当前上游成像接口报告](../codes/chapters/ch14/reports/upstream_imaging_contracts.json)固定Acoular 26.08、提交 `13d3d7df74ac1a8135c7ec71da098cbbc03d8652`，记录原调用前后的源码身份与洁净状态。单源 $q=2$、循环增益0.6、20轮控制中，固定原实现的完整CSM支路返回约4.812502861；作者式(14-15)与本书独立核返回约1.999999978。这个差异只对应报告中的原支路和参数，不能把原输出写成作者公式的验证。
+本书[历史上游成像接口报告](../codes/chapters/ch14/reports/upstream_imaging_contracts.json)固定Acoular 26.08、提交 `13d3d7df74ac1a8135c7ec71da098cbbc03d8652`，记录原调用前后的源码身份与洁净状态。单源 $q=2$、循环增益0.6、20轮控制中，固定原实现的完整CSM支路返回约4.812502861；作者式(14-15)与本书独立核返回约1.999999978。这个差异只对应报告中的原支路和参数，不能把原输出写成作者公式的验证。
 
-报告还区分不加权半三角与完整Frobenius目标，以及默认截距的独立代数控制。原scikit-learn估计器未运行，不能把 E14-12的截距算例称为其运行结果。完整稀疏选集仍记录 `source_selection_mismatch`；所用原文件已核身份不等于完整选集核对通过。
+报告还区分不加权半三角与完整Frobenius目标，以及默认截距的独立代数控制。原scikit-learn估计器未运行，不能把 E14-12的截距算例称为其运行结果。历史报告的完整稀疏选集记录 `source_selection_mismatch`；所用原文件已核身份不等于当时完整选集核对通过。新的限定运行另见[当前上游成像接口报告](../codes/chapters/ch14/reports/upstream_imaging_contracts_current.json)，不能给历史报告换摘要或将原失败改成成功。
+
+作者的[固定DAMAS / CMF源码](https://github.com/gilleschardon/DAMAS/blob/61987952e2237e6b088a169ee891dd96576f2565/damas.py "citation")另有[当前原模块合同报告](../codes/chapters/ch14/reports/damas_author_contracts_current.json)。本书取得21个选定源码与许可文本，保留GPL-3.0许可；实际导入完整原 `damas.py`，限定9个控制中8个数值与独立期望匹配，零CSM控制保留原异常路径的 `NameError`，未修改上游来消除失败。
+
+原模块在重复列控制中返回的 `unique=True`不能证明全字典的非负解唯一。某次活动列子集的Gram可正定，却仍存在其他支撑上的同观测解，E14-18给出这种整体歧义。源码README另指向后继项目acosolo，只作为维护者入口；本书没有运行其整链，也没有执行原MATLAB、MEX或论文大规模基准。
 
 ### 14.12 本书代码与音频怎样使用
 
 #### 先运行不写文件的练习
 
-本书核心实现位于[声学成像数值核](../codes/chapters/ch14/core/imaging.py)，16题的结果目录位于[练习入口](../codes/chapters/ch14/chapter14_exercises.py)。从仓库根目录运行：
+本书核心实现位于[声学成像数值核](../codes/chapters/ch14/core/imaging.py)，18题的结果目录位于[练习入口](../codes/chapters/ch14/chapter14_exercises.py)。从仓库根目录运行：
 
 ```bash
 .venv/bin/python -m codes.chapters.ch14.chapter14_exercises
 ```
 
-`run_experiments()`返回可序列化结果字典，其中 `exercises`按稳定ID包含 E14-01～E14-16。纯数学控制、浮点音频和真实PCM读回结果分别命名；各题答案说明采用哪一种口径。
+`run_experiments()`返回可序列化结果字典，其中 `exercises`按稳定ID包含 E14-01～E14-18。纯数学控制、浮点音频和真实PCM读回结果分别命名；各题答案说明采用哪一种口径。
+
+数值核还区分真实零与float64表示范围。非零复幅度若形成的整个CSM下溢为零，接口明确拒绝；不能把机器数值零当作没有声音。CSM残差的物理平方若下溢为零，保留该字段并通过 `squared_underflow`明确标记；相对Frobenius残差用两矩阵共同尺度计算。真实零参考仍返回未定义的相对量，上溢则拒绝计算，不以归一化伪造物理平方。
 
 #### 已知延迟音频保留什么
 
@@ -873,7 +899,7 @@ F(q)&=(q-1)^2+(4q-10)^2\\
 
 不加权实字典为 $[1,4,2,0]^\top$，目标为 $[1,10,0,0]^\top$。若再加一列全1，独立最小二乘解为斜率 $87/35\approx2.48571429$、截距 $-8/5$。这列常数同时改变对角、非对角实部与虚部，不能解释为CSM中的白噪声 $\sigma^2\mathbf I$。
 
-该截距结果是本书独立代数对照，没有运行原scikit-learn估计器。原CMF的白噪声字典和稀疏约束见式(14-20)，E14-16再计算合法的白噪声项。
+该截距结果是本书独立代数对照，没有运行原scikit-learn估计器。本书给定的白噪声字典和源量预算控制见式(14-20)，E14-16再计算合法的白噪声项。
 
 <a id="e14-13"></a>
 
@@ -944,13 +970,146 @@ $$\begin{aligned}
 
 一麦、传播为1时，源和白噪声的两列都为 $[1]$，设计秩只有1。观测只限定 $q+\sigma^2=2.5$，无穷多非负拆分成立。代码报告不可辨识并不返回任意拆分量；最小范数拆成两半只是额外数值选择，不能称为已估计实际噪声。
 
+<a id="e14-17"></a>
+
+#### E14-17：同一个扫描图，两个不同的最小化目标
+
+**题干。** 沿用 E14-02的双麦两列字典与 $\mathbf P$。观测由 $\vec v=\sqrt{4/3}[1,e^{\mathrm j\pi/3}]^\top$形成 $\mathbf R=\vec v\vec v^H$，因此是有效半正定CSM。复算 $\vec b$、$\mathbf G$、$\vec h$，比较完整CSM非负拟合与扫描域NNLS。最小点能否称为真实源功率？
+
+**答案。** 先推导一般的完整CSM目标，再代入本题。
+
+令 $\mathbf T_j=\vec a_j\vec a_j^H$。本段沿用式(14-8)的匹配权重，并保持完整观测与模板。两个模板的Frobenius内积，是把前一模板各元素取共轭，再与后一模板对应元素相乘并求和；在此秩一结构下，它等于传播列内积的模平方。定义实数Gram矩阵 $\mathbf G$、右侧 $\vec h$与正对角矩阵 $\mathbf D$：
+
+$$\begin{aligned}
+G_{ij}&=|\vec a_i^H\vec a_j|^2,\\
+h_i&=\vec a_i^H\hat{\mathbf R}\vec a_i,\\
+D_{ii}&=(\vec a_i^H\vec a_i)^2>0,\\
+\mathbf G&=\mathbf D\mathbf P,\\
+\vec h&=\mathbf D\vec b.
+\end{aligned}\tag{14-29}$$
+
+本段的 $\mathbf G$是 $J\times J$模板Gram矩阵，$\vec h$是 $J$维拟合右侧，和CLEAN-SC的 $M$维通道成分不同。$\mathbf D$也只是本段的行尺度，不是§14.6的残差CSM。先固定这些维度，便不会把相同字母误当成相同物理量。
+
+将式(14-18)的完整CSM平方目标记为 $F$，逐项展开得到
+
+$$\begin{aligned}
+F(\vec q)&=\left\|\sum_jq_j\mathbf T_j
+-\hat{\mathbf R}\right\|_F^2,\\
+&=\vec q^\top\mathbf G\vec q
+-2\vec h^\top\vec q\\
+&\quad+\|\hat{\mathbf R}\|_F^2.
+\end{aligned}\tag{14-30}$$
+
+为何第一项含 $G_{ij}$？平方展开中，第 $i$、$j$个模板的交叉乘积为 $q_iq_j\langle\mathbf T_i,\mathbf T_j\rangle_F$；第二项则把每个模板与观测相乘，产生 $-2q_ih_i$。最后一项不含 $\vec q$，不会改变最小值的位置。
+
+固定其他分量，只更新第 $i$个量。先把减去其他坐标贡献后的右侧分别记为 $r_i^G$与 $r_i^P$：
+
+$$\begin{aligned}
+r_i^G&=h_i-\sum_{j\ne i}G_{ij}q_j,\\
+r_i^P&=b_i-\sum_{j\ne i}P_{ij}q_j.
+\end{aligned}$$
+
+非负坐标最小值为
+
+$$\begin{aligned}
+q_i&\leftarrow\max(0,r_i^G/G_{ii}),\\
+&=\max(0,r_i^P/P_{ii}).
+\end{aligned}\tag{14-31}$$
+
+第二行由同一行的正尺度 $D_{ii}$约去得到。这正是未加松弛时的非负坐标GS更新。固定点满足 $\vec q\ge0$、$\mathbf G\vec q-\vec h\ge0$以及逐项互补条件；因为 $\mathbf G$是模板Gram矩阵，$F$为凸二次目标，这些条件刻画其最优解。[Chardon等，§3.1～3.3，定理1～3与式(15)～(18)](https://gilleschardon.fr/papers/damascmf.pdf "citation")
+
+各列范数不相同时，$\mathbf P$未必对称，但 $\mathbf G=\mathbf D\mathbf P$仍对称。应从Gram矩阵判断目标，不能只因PSF不对称就否认上述关系。有限轮迭代的输出尚须检查互补条件；该推导不把任意PSF、松弛过程或病态网格都宣称为已收敛且唯一。
+
+这个联系也没有把扫描域目标 $\|\mathbf P\vec q-\vec b\|_2^2$变成 $F$。前者的二次项是 $\mathbf P^\top\mathbf P$，后者是 $\mathbf G$。下面用本题同一有效CSM复算两种最小点。
+
+若删除对角，必须对观测和每个模板做相同投影，重新建立Gram与右侧；沿用完整PSF或先把负扫描值裁零，都不满足本段等式。本书GS接口只接受非负PSF，因此这里也没有用它冒充一般有符号DR字典的优化器。加入白噪声、总量预算、不同矩阵权重或截距后，应重新推导目标与约束，不能直接套用本段结论。
+
+回到给定字典，两列能量都为2，故 $\mathbf D=4\mathbf I$。传播列内积模平方为1，Gram和右侧是
+
+$$\begin{gathered}
+\mathbf G=\begin{pmatrix}4&1\\1&4\end{pmatrix},\\
+\vec b=\begin{pmatrix}1\\0\end{pmatrix},\qquad
+\vec h=\begin{pmatrix}4\\0\end{pmatrix},\\
+\|\mathbf R\|_F^2=64/9.
+\end{gathered}\tag{14-32}$$
+
+第二扫描值为何为零？$\vec a_2^H\vec v=\sqrt{4/3}(1+e^{\mathrm j\pi})=0$。第一值为 $\frac{4/3}{4}|1+e^{\mathrm j\pi/3}|^2=1$。因此此处不是任意杜撰一个不能由CSM形成的扫描输入。
+
+把 $q_1=u$、$q_2=v$记为两个实数非负未知量；这里的标量 $v$与题设复向量 $\vec v$不同。两个平方目标分别为
+
+$$\begin{aligned}
+F(u,v)&=4u^2+2uv+4v^2\\
+&\quad-8u+64/9,\\
+S(u,v)&=(u+v/4-1)^2\\
+&\quad+(u/4+v)^2.
+\end{aligned}\tag{14-33}$$
+
+这里把平方目标梯度的一半称为半梯度；正的共同因子2不影响互补条件。完整CSM目标在 $[1,0]^\top$处的半梯度 $\mathbf G\vec q-\vec h=[0,1]^\top$，满足非负互补条件。$\mathbf G$的两个特征值为3、5，因而本题的CSM最小点唯一，$F=28/9$。未松弛GS从零开始，先得 $u=1$，再把 $v=\max(0,-1/4)$截成0；下一轮不变。
+
+扫描域在边界 $v=0$上，$S(u,0)=(u-1)^2+u^2/16$。导数为 $2(u-1)+u/8$，令其为零得到 $u=16/17$。该点的扫描域半梯度为 $[0,15/68]^\top$，也满足互补条件。
+
+| 方案 | $\vec q$ | 扫描平方 $S$ | 完整CSM平方 $F$ |
+|---|---|---|---|
+| GS / CSM非负拟合 | $[1,0]^\top$ | $1/16$ | $28/9$ |
+| 扫描域NNLS | $[16/17,0]^\top$ | $1/17$ | $8128/2601$ |
+
+最后一格可不重新展开整个矩阵：在 $v=0$时，$F(u,0)=4(u-1)^2+28/9$，代入 $u=16/17$便得 $28/9+4/289=8128/2601$。两方案各自在自己的目标上更小；不能跨列比较数值来宣布某算法更准确。
+
+若把字典第二列扩大2倍，其能量变为8，$\mathbf D=\operatorname{diag}(4,64)$。此时 $\mathbf P$的两非对角元为1与 $1/16$，不再对称；$\mathbf G$的两非对角元仍同为4。代码同时核 $\mathbf G=\mathbf D\mathbf P$与 $\vec h=\mathbf D\vec b$，说明等价联系并不要求相同列范数。
+
+![图80 两种成像目标的非负等值线与不同最小点](../figures/fig80_imaging_objectives.png)
+
+图80分别画扫描域平方目标和完整CSM平方目标，并放大两个相近最小点附近的非负区域。每个面板使用自己的等值线与最小值，二者不是同一误差刻度。观测向量不等于字典任一列，最小CSM残差仍大于零；图中最小点是所选模型的拟合结果，没有证明真实源位、独立源功率或工业定位性能。程序复用本章唯一GS、有限NNLS和完整Frobenius实字典，不调用Acoular求解器。
+
+<a id="e14-18"></a>
+
+#### E14-18：四个不同的传播列为什么仍分不清
+
+**题干。** 已知传感器噪声为零，双麦有四个候选列 $\vec a_j=[1,z_j]^\top$，其中 $z_j$依次为 $1,\mathrm j,-1,-\mathrm j$。证明 $[1,0,1,0]^\top$与 $[0,1,0,1]^\top$形成同一CSM。求扫描值、字典秩和一族非负解；再单独讨论增加未知白噪声后的模型。
+
+**答案。** 每列不同，对应模板也不同，但正负相位的互谱会抵消：
+
+$$\begin{aligned}
+\mathbf T_1+\mathbf T_3&=2\mathbf I,\\
+\mathbf T_2+\mathbf T_4&=2\mathbf I.
+\end{aligned}\tag{14-34}$$
+
+例如 $\mathbf T_1$的两个互谱都为1，$\mathbf T_3$的两个互谱都为 $-1$，相加为零，对角各相加为2。另两列的互谱分别为 $-\mathrm j$与 $+\mathrm j$，相加也为零。所有量非负，并不排除这种不同位置集合间的歧义。
+
+匹配权重为 $\vec a_i/2$。两列相位差为四分之一圈时，PSF为 $|1\pm\mathrm j|^2/4=1/2$；相反时为零。因而
+
+$$\begin{gathered}
+\mathbf P=\frac12\begin{pmatrix}
+2&1&0&1\\
+1&2&1&0\\
+0&1&2&1\\
+1&0&1&2
+\end{pmatrix},\\
+\vec b=\begin{pmatrix}1\\1\\1\\1\end{pmatrix}.
+\end{gathered}\tag{14-35}$$
+
+完整Hermitian实字典的四列依次为 $[1,1,\sqrt2,0]^\top$、$[1,1,0,-\sqrt2]^\top$、$[1,1,-\sqrt2,0]^\top$、$[1,1,0,\sqrt2]^\top$。前两行总相同，独立维度只有3；这里 $J=M^2=4$，仍未达到列满秩。PSF的特征值为0、1、1、2，同样秩3。
+
+不可见方向为 $\vec n=[1,-1,1,-1]^\top$，满足 $\mathbf H\vec n=0$及 $\mathbf P\vec n=0$。于是从中间非负解出发，
+
+$$\begin{gathered}
+\vec q(t)=\tfrac12\begin{pmatrix}1\\1\\1\\1\end{pmatrix}
++t\begin{pmatrix}1\\-1\\1\\-1\end{pmatrix},\\
+-1/2\le t\le1/2.
+\end{gathered}\tag{14-36}$$
+
+两端正是题干的两组两源分布，中间是四个非零分量；它们都给出 $2\mathbf I$、相同的扫描图和总量2。源总量在本族中可确定，位置分配与非零源数不能由这一CSM确定。更细网格或更多求解轮数没有新增观测信息，稀疏约束也不能区分两个同样稀疏的端点。
+
+最后才扩大噪声模型：若允许未知空间白噪声，$\vec q=0$、$\sigma^2=2$也解释 $2\mathbf I$。这说明新增噪声字典可能增加歧义，不是说原无噪声题已经识别出噪声。程序返回显式三组解、零空间方向和矩阵，保留非唯一结果，不任选一组标作真实位置。
+
 ### 14.14 原始资料与继续阅读
 
-以下资料支撑本篇的观测模型、算法差异和测量条件，核实日期为2026-10-04。公式重写和小例计算属于本书推导；引用资料中的实验性能不作为本书运行结果。
+以下资料支撑本篇的观测模型、算法差异和测量条件，核实日期为2026-10-05。公式重写和小例计算属于本书推导；引用资料中的实验性能不作为本书运行结果。
 
 - Brooks, T. F.、Humphreys, W. M.，*A Deconvolution Approach for the Mapping of Acoustic Sources (DAMAS) Determined from Phased Microphone Arrays*，AIAA2004-2954：式(18)～(24)及第10～13页网格、区域与反射边界。[NASA原始PDF](https://ntrs.nasa.gov/api/citations/20080015889/downloads/20080015889.pdf "citation")；期刊版发表于JSV294，2006，[正式DOI](https://doi.org/10.1016/j.jsv.2005.12.046 "citation")。NASA所提供此PDF为18页会议版本，不把两个版本页码混用。
+- Chardon, G.等，*Theoretical analysis of the DAMAS algorithm and efficient implementation of the Covariance Matrix Fitting method for large-scale problems*：§3.1～3.3，定理1～3及式(15)～(18)比较DAMAS、完整CSM拟合与向量NNLS；扫描域NNLS为另一目标。[作者原稿](https://gilleschardon.fr/papers/damascmf.pdf "citation")。
 - Sijtsma, P.，*CLEAN based on spatial source coherence*，NLR-TP-2007-345，2007：式(26)～(30)、§4.3～4.6。[NLR原报告](https://reports.nlr.nl/server/api/core/bitstreams/813b0521-b37c-4aff-be61-7a8bceaa06d4/content "citation")。
-- Yardibi, T.等，*Sparsity constrained deconvolution approaches for acoustic source mapping*，JASA123(5)，2008：§II、§V式(22)、§VI式(26)。[正式DOI](https://doi.org/10.1121/1.2896754 "citation")。
+- Yardibi, T.等，*Sparsity constrained deconvolution approaches for acoustic source mapping*，JASA123(5)，2008：出版社摘要介绍稀疏反卷积及相关源扩展，完整约束须查原文。[正式DOI](https://doi.org/10.1121%2F1.2896754 "citation")。
 - Sarradj, E.，*Three-Dimensional Acoustic Source Mapping with Different Beamforming Steering Vector Formulations*，2012：§2四种权重、§3二维/三维控制。[正式DOI](https://doi.org/10.1155/2012/292695 "citation")。
 - Humphreys, W. M.等，*Evaluation of Methods for In-Situ Calibration of Field-Deployable Microphone Phased Arrays*，AIAA2017-4176：§II～IV的基线、修正与现场响应监测。[NASA原始PDF](https://ntrs.nasa.gov/api/citations/20170006081/downloads/20170006081.pdf "citation")。
 - Sijtsma, P.、Snellen, M.，*High resolution CLEAN-SC*，BeBeC-2016-S1：§2.5的源标记选择与位置更新。[作者会议原文](https://www.bebec.eu/fileadmin/bebec/downloads/bebec-2016/papers/BeBeC-2016-S1.pdf "citation")。

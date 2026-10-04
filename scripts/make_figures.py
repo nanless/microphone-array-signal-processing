@@ -4811,6 +4811,63 @@ def fig_imaging_calibration():
     save(fig, 'fig69_imaging_calibration.png')
 
 
+def fig_imaging_objectives():
+    """Same nonnegative two-cell domain; two genuinely different objectives."""
+    from codes.chapters.ch14.core.imaging import damas_csm_objective_experiment
+    experiment = damas_csm_objective_experiment()
+    q1 = np.linspace(.8, 1.1, 151)
+    q2 = np.linspace(0., .2, 101)
+    first, second = np.meshgrid(q1, q2)
+    powers = np.stack([first, second], axis=-1)
+    # Evaluate the actual two models, rather than turn an image into evidence.
+    scan_residual = powers @ experiment['P'].T - experiment['b']
+    scan_squared = np.sum(scan_residual**2, axis=-1)
+    dictionary = experiment['csm_dictionary_real']
+    csm_residual = powers @ dictionary.T - experiment['csm_target_real']
+    csm_squared = np.sum(csm_residual**2, axis=-1)
+    report_name = 'figure80_imaging_objectives.json'
+    _imaging_report(report_name, {'experiment': experiment,
+        'plotted': {'q1': q1, 'q2': q2, 'scan_squared': scan_squared,
+                    'csm_squared': csm_squared, 'axis_range': [[.8, 1.1], [0., .2]],
+                    'view': 'local nonnegative domain; not full domain'}})
+    report_digest = hashlib.sha256((CODE_CHAPTERS/'ch14/reports'/report_name).read_bytes()).hexdigest()
+    fig, axes = plt.subplots(1, 2, figsize=(9., 4.8))
+    configurations = (
+        (axes[0], scan_squared, [0.065, .085, .12, .17, .22],
+         '(a) 扫描平方残差 ‖Pq−b‖²', '1/17 ≈ 0.05882', '1/16 = 0.06250', C_BLUE),
+        (axes[1], csm_squared, [3.13, 3.2, 3.4, 3.65, 3.9],
+         '(b) 完整 CSM Frobenius 平方残差', '8128/2601 ≈ 3.12495', '28/9 ≈ 3.11111', C_GREEN),
+    )
+    for ax, objective, levels, title, scan_value, csm_value, color in configurations:
+        contours = ax.contour(first, second, objective, levels=levels, colors=color, linewidths=1.1)
+        ax.clabel(contours, levels=levels[::2], inline=True, fontsize=11.5, fmt='%.3f')
+        ax.scatter(*experiment['q_scan'], marker='o', color=C_BLUE, s=70, zorder=5, clip_on=False)
+        ax.scatter(*experiment['q_CSM'], marker='s', color=C_GREEN, s=65, zorder=5, clip_on=False)
+        ax.annotate('扫描 LS：q=(16/17, 0)\n'+scan_value,
+                    xy=experiment['q_scan'], xytext=(.815, .152), fontsize=12,
+                    ha='left', va='center', zorder=6,
+                    bbox={'facecolor': 'white', 'edgecolor': 'none', 'pad': 3},
+                    arrowprops={'arrowstyle': '->', 'color': C_BLUE, 'lw': 1.1})
+        ax.annotate('GS / CSM：q=(1, 0)\n'+csm_value,
+                    xy=experiment['q_CSM'], xytext=(.925, .082), fontsize=12,
+                    ha='left', va='center', zorder=6,
+                    bbox={'facecolor': 'white', 'edgecolor': 'none', 'pad': 3},
+                    arrowprops={'arrowstyle': '->', 'color': C_GREEN, 'lw': 1.1})
+        ax.set(xlim=(.8, 1.1), ylim=(0., .2), xlabel='非负格源系数 q₁', ylabel='非负格源系数 q₂',
+               xticks=[.8, .9, 1., 1.1], yticks=[0., .1, .2])
+        ax.set_title(title, fontsize=12, pad=10)
+        ax.xaxis.label.set_fontsize(12); ax.yaxis.label.set_fontsize(12)
+        ax.tick_params(labelsize=11.5)
+        ax.grid(ls=':', alpha=.2)
+    fig.suptitle('图80  同一输入，扫描 LS 与完整 CSM 拟合的最优点不同', fontsize=14, y=.98)
+    fig.text(.5, .025, '局部非负象限；两面板分别标本目标值，不跨目标比较数值大小。\n'
+             'R 是给定有效 CSM，并非两格非相干源的真值；边界最小点不等于物理真源。',
+             ha='center', va='bottom', fontsize=12)
+    fig.subplots_adjust(left=.075, right=.985, bottom=.26, top=.81, wspace=.28)
+    save(fig, 'fig80_imaging_objectives.png',
+         extra_metadata={'NumericalReportDigest': report_digest})
+
+
 def _distributed_audio_control():
     """Replay the frozen fixture and independently read its real PCM integers."""
     import wave
@@ -5054,6 +5111,7 @@ def main():
     fig_imaging_psf()
     fig_imaging_model_checks()
     fig_imaging_calibration()
+    fig_imaging_objectives()
     fig_distributed_compression()
     fig_distributed_updates()
     fig_distributed_transport()

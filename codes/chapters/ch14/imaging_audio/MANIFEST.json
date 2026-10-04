@@ -5,9 +5,9 @@
   "samples_per_channel": 48004,
   "common_export_gain": 1.0,
   "source_sha256": {
-    "codes/chapters/ch14/core/imaging.py": "7f3aa9baaedfb4e197934cbabef5273587e6b3e675012b59b78d74a5c3c5067a",
+    "codes/chapters/ch14/core/imaging.py": "4154e4667e13c6fcefe0f7893a98d60edd2fcd45deeed814ce260cf2b1d824b9",
     "codes/chapters/ch14/core/imaging_audio.py": "86406505b9901c209ef989b085c4f09f19d9fc9659d597360bc39e13f8c625cb",
-    "codes/chapters/ch14/examples/generate_imaging_audio.py": "62e21fe2a2ba5f0f48426b5c25b8054a979dda2ad80ff2f3c118919b8f6ac61c",
+    "codes/chapters/ch14/examples/generate_imaging_audio.py": "a703dfbaaa52d43ef9a5189d3dc58612c5a09455cf47cb9024499d95c058e6d4",
     "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
     "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
@@ -1111,8 +1111,13 @@
         "full_csm_residual": {
           "frobenius_squared": 2.946823278189376e-32,
           "reference_frobenius_squared": 0.0018999999999999122,
-          "relative_frobenius": 3.938222467179506e-15,
-          "upper_unweighted_squared": 2.7354976057759485e-32
+          "relative_frobenius": 3.953535376054116e-15,
+          "upper_unweighted_squared": 2.7354976057759485e-32,
+          "squared_underflow": {
+            "frobenius_squared": false,
+            "reference_frobenius_squared": false,
+            "upper_unweighted_squared": false
+          }
         }
       },
       "pcm_measurements": {
@@ -1356,8 +1361,13 @@
         "full_csm_residual": {
           "frobenius_squared": 2.738871241280591e-12,
           "reference_frobenius_squared": 0.0018999155109091833,
-          "relative_frobenius": 3.796808243127681e-05,
-          "upper_unweighted_squared": 2.7371981550501923e-12
+          "relative_frobenius": 3.7968082431294036e-05,
+          "upper_unweighted_squared": 2.7371981550501923e-12,
+          "squared_underflow": {
+            "frobenius_squared": false,
+            "reference_frobenius_squared": false,
+            "upper_unweighted_squared": false
+          }
         },
         "pcm_decode_divisor": 32768,
         "integer_scored_squared_sum_by_channel": [
@@ -1612,8 +1622,13 @@
         "full_csm_residual": {
           "frobenius_squared": 0.0005399999999999916,
           "reference_frobenius_squared": 0.003599999999999856,
-          "relative_frobenius": 0.3872983346207464,
-          "upper_unweighted_squared": 0.0005039999999999932
+          "relative_frobenius": 0.38729833462074637,
+          "upper_unweighted_squared": 0.0005039999999999932,
+          "squared_underflow": {
+            "frobenius_squared": false,
+            "reference_frobenius_squared": false,
+            "upper_unweighted_squared": false
+          }
         }
       },
       "pcm_measurements": {
@@ -1857,8 +1872,13 @@
         "full_csm_residual": {
           "frobenius_squared": 0.0005398766352267005,
           "reference_frobenius_squared": 0.0035996003814175075,
-          "relative_frobenius": 0.38727558769675635,
-          "upper_unweighted_squared": 0.0005038742889811343
+          "relative_frobenius": 0.3872755876967564,
+          "upper_unweighted_squared": 0.0005038742889811343,
+          "squared_underflow": {
+            "frobenius_squared": false,
+            "reference_frobenius_squared": false,
+            "upper_unweighted_squared": false
+          }
         },
         "pcm_decode_divisor": 32768,
         "integer_scored_squared_sum_by_channel": [

@@ -585,3 +585,52 @@ e3b3176d835837441224e4906b7c2befadcdc4fe2ce6163245b7d9a9ad0d9229
 第9章两个工具默认stdout；接口工具显式`--output`写[当前接口报告](../../ch09/reports/tracking_upstream_interfaces_current.json)，原方法合同工具显式`--report`写[当前原方法合同](../../ch09/reports/upstream_tracking_contracts_current.json)，路径均须通过安全检查，不覆盖两旧历史报告。ODAS限定原C、SAF控制流替身、FilterPy原包/原方法和StoneSoup三个原AST方法各记执行范围；完整稀疏选集不匹配不抹去。FilterPy本轮预检63个跟踪源文件，33个实际导入模块分别记录；EKF组合接口`None`的原TypeError及部分K/S更新保留，不能改写成原包缺测路径成功。
 
 2026-10-05第10章四组原接口复验保存为current报告，旧四报告与其历史工具身份保持原样；当前编译依赖、原失败及未执行范围见[工业研究§9](03_industrial_deployment.md#industrial-current-interface-contracts)。上文复跑命令写显式current路径；仓内其他报告目标由写前守卫拒绝，普通仓外路径可另存试验。
+
+
+<a id="imaging-author-source"></a>
+## 13. 成像原实现：固定作者代码与当前报告
+
+专题Ⅰ的[E14-17](../../../../chapters/14_acoustic-imaging.md#e14-17)比较同一互谱矩阵的两种目标。作者[Chardon、Picheral、Ollivier论文§3.1～3.3](https://gilleschardon.fr/papers/damascmf.pdf "citation")把DAMAS固定点与完整矩阵Frobenius拟合联系起来；扫描图的最小二乘仍是另一目标。论文参考文献[17]给出[作者代码归档DOI](https://doi.org/10.5281/zenodo.4609267 "citation")，本书实际取得的是下面的固定Git文本选集，不把Git提交与归档版本混称同一身份。
+
+### 13.1 实际取得的21个原文本
+
+2026-10-05从[作者官方仓库](https://github.com/gilleschardon/DAMAS/tree/61987952e2237e6b088a169ee891dd96576f2565 "citation")取得提交`61987952e2237e6b088a169ee891dd96576f2565`。21个选定文本共74510字节，含完整GPLv3、README、Python/MATLAB方法与两个C语言MEX源文件；不含三个MAT数据或预编译MEX文件。许可SHA-256为`3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986`。原代码放在`codes/chapters/ch00/upstream/_downloads/damas-author/`的独立受管理工作树，保留GPL条款和源通知，不复制进本书教学数值核。
+
+[固定原README](https://github.com/gilleschardon/DAMAS/blob/61987952e2237e6b088a169ee891dd96576f2565/README.md "citation")明确说明本仓库不再维护，并指向作者后续项目acosolo。这是继续研究的入口；本轮没有因此取得或运行后继项目，也没有把固定原代码称为最新维护版本。
+
+| 原文件与入口 | 在算法中做什么 | 复现时必须分清什么 |
+|---|---|---|
+| `damas.py::proddamastranspose`、`proddamas`、`proddamasdr` | 不构造完整格点方阵，先形成传感器矩阵再计算各格二次型；DR分支去掉传感器矩阵对角 | 输入是原传播矩阵，原未归一化Gram与本书单位匹配PSF通过行尺度对应；DR不是把旧PSF原封不动重用 |
+| `cmf_nnls.m`、`cmf_nnls_dr.m`及Python同名控制 | 非负源量拟合完整CSM或去对角观测 | 观测、模板、噪声字典和预算都必须一致；原CMF-NNLS不等于Yardibi含所有约束的原CMF-C |
+| `damas_nnls.m`、`damas_nnls_dr.m`及Python对应控制 | 最小化扫描图残差 | 正规方程出现Gram的平方；不能因同有NNLS名字就与CSM拟合合并 |
+| `damas.c`、`damas_rand.c` | C语言MEX的顺序/随机坐标更新源码 | 得到C源不代表已编译MEX、启动MATLAB或复现论文实验；本轮均未执行 |
+| `figures/FIGS_2D_EXP.m`、`FIGS_3D_EXP.m`、`FIGS_2D_SIM.m` | 作者实验/仿真作图流程 | 原数据与运行依赖另核；README声明仿真含非确定性，不把一次输出当普遍性能 |
+
+[原Python文件](https://github.com/gilleschardon/DAMAS/blob/61987952e2237e6b088a169ee891dd96576f2565/damas.py "citation")的`lawson_hanson`还有具体边界：循环未进入时`Gram`没有赋值，异常处理写作`except e`；末尾唯一性判断只看当前支持的Gram。正定支持不足以证明整个非负字典只有一个解，四不同列反例见[E14-18](../../../../chapters/14_acoustic-imaging.md#e14-18)。这些静态原语句必须保留，不能先修上游再把改后成功写成原结果。
+
+### 13.2 整表核验与历史身份
+
+新锁表共有115个Git项目，真实离线工具记录75项通过、22项旧选集不匹配、17项仅索引和1项旧AEC缓存失败，退出1。新增作者选集通过，旧114个完整状态记录逐条相同；获取成功没有升级任何算法或数据执行状态。
+
+扩充前[114项原锁字节](../source_snapshots/SOURCES.ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f.json)及[原状态字节](../source_snapshots/SOURCE_STATUS.56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469.json)按完整SHA登记。旧报告保留原源码与执行条件；当前报告必须由实际工具重新执行，不替换JSON中的摘要字符串。
+
+```bash
+.venv/bin/python -B codes/chapters/ch00/upstream/fetch_upstreams.py --project damas-author
+.venv/bin/python -B codes/chapters/ch00/upstream/fetch_upstreams.py --verify --report codes/chapters/ch00/SOURCE_STATUS.json
+```
+
+整表退出1对应上面保留的旧失败与选集不匹配。该命令检查来源获取，既不安装依赖，也不执行原算法。
+
+
+### 13.3 本轮实际执行的限定原方法
+
+[Acoular当前报告](../../ch14/reports/upstream_imaging_contracts_current.json)保存21个原数值控制（13匹配、8个观察到的目标差异）、1个未执行CMF估计器，另列同一合法CSM经原Base/PSF/DAMAS形成的桥接控制。完整原Traits/JIT/HDF5、工业数据链和sklearn估计器均未运行。[历史原报告](../../ch14/reports/upstream_imaging_contracts.json)字节不改；当前工具拒绝写入旧报告路径。
+
+[作者当前报告](../../ch14/reports/damas_author_contracts_current.json)由完整原Python模块的真实字节和imports在新的隔离进程执行。9个控制保留8项独立数值匹配与零CSM的原`NameError`，原重复列`unique=True`不当成全局可辨识证明。原Python模块没有修改；NumPy/SciPy/matplotlib直接入口的版本与前后SHA单独记录，未声称覆盖整库二进制闭包。MATLAB、MEX、原演示及作者论文数据/实验均未运行。
+
+```bash
+.venv/bin/python -B -m codes.chapters.ch14.examples.audit_upstream_imaging_contracts --report codes/chapters/ch14/reports/upstream_imaging_contracts_current.json
+python -B -m codes.chapters.ch14.examples.audit_damas_author_contracts --report codes/chapters/ch14/reports/damas_author_contracts_current.json
+```
+
+第二条命令需要具有NumPy、SciPy及matplotlib的既有独立环境。默认输出到终端，只有显式当前普通报告路径才写入；本轮在既有隔离环境真实执行，未安装依赖。缺依赖或进程超时会保留未完成记录，不降为替代函数成功，也不修补上游再宣称原代码通过。两工具均核官方origin、固定HEAD、原blob/许可、当前锁与获取状态、执行前后实际依赖和源码成员边界。

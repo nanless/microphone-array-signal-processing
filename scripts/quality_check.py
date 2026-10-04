@@ -149,7 +149,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "11_selection-guide.md": 41,  # two evidence topics and E11-26/27 are independently navigable
     "12_appendix-symbols-math.md": 36,
     "13_appendix-guide.md": 29,
-    "14_acoustic-imaging.md": 61,
+    "14_acoustic-imaging.md": 65,
     # 39 separately navigable topics and 24 exercise headings, manually read.
     "15_distributed-enhancement.md": 63,
 }
@@ -174,10 +174,10 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 16
 EXPECTED_SECTION_COUNT = 151
-EXPECTED_SUBSECTION_COUNT = 732
-EXPECTED_OUTLINE_ITEM_COUNT = 899
-EXPECTED_FIGURE_NUMBERS = set(range(1, 80))
-EXPECTED_EXERCISE_COUNT = 355
+EXPECTED_SUBSECTION_COUNT = 736
+EXPECTED_OUTLINE_ITEM_COUNT = 903
+EXPECTED_FIGURE_NUMBERS = set(range(1, 81))
+EXPECTED_EXERCISE_COUNT = 357
 EXPECTED_EXERCISE_COUNTS = {
     '01_problem-definition.md': 10, '02_basics-signal-model.md': 20,
     '03_array-geometry.md': 18, '04_doa-estimation.md': 25,
@@ -185,7 +185,7 @@ EXPECTED_EXERCISE_COUNTS = {
     '08_speech-separation.md': 32, '09_source-tracking.md': 26,
     '10_engineering-practice.md': 34, '11_selection-guide.md': 27,
     '12_appendix-symbols-math.md': 19, '13_appendix-guide.md': 14,
-    '14_acoustic-imaging.md': 16, '15_distributed-enhancement.md': 24,
+    '14_acoustic-imaging.md': 18, '15_distributed-enhancement.md': 24,
 }
 # 研究附站使用独立显式清单，不挤占 16 篇教程或教程 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
@@ -795,11 +795,13 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_selection_figures.py" if number == 79 else "make_channel_figures.py" if number == 78 else "make_tracking_figures.py" if number == 77 else "make_css_figures.py" if number == 76 else "make_delay_figures.py" if number == 75 else "make_reference_figures.py" if number == 74 else "make_beamforming_figures.py" if number == 73 else "make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72)
+            script_name = ("make_selection_figures.py" if number == 79 else "make_channel_figures.py" if number == 78 else "make_tracking_figures.py" if number == 77 else "make_css_figures.py" if number == 76 else "make_delay_figures.py" if number == 75 else "make_reference_figures.py" if number == 74 else "make_beamforming_figures.py" if number == 73 else "make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 80)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
                 fail(errors, f"PNG 溯源失效：figures/{name}: {issue}")
+            if number == 80:
+                check_imaging_objective_png(path, ROOT/'codes/chapters/ch14/reports/figure80_imaging_objectives.json')
             if number == 21:
                 report_path = ROOT / "codes/chapters/ch07/reports/figure21_wpe.json"
                 with Image.open(path) as image:
@@ -866,11 +868,24 @@ IMAGING_FIGURE_REPORTS = {
     67: 'figure67_imaging_psf.json',
     68: 'figure68_imaging_model_checks.json',
     69: 'figure69_imaging_calibration.json',
+    80: 'figure80_imaging_objectives.json',
 }
 IMAGING_FIGURE_SOURCES = (
     'scripts/make_figures.py', 'codes/chapters/ch14/core/imaging.py',
     'codes/chapters/ch02/core/conventions.py', 'codes/chapters/ch00/io_contracts.py',
 )
+
+
+def check_imaging_objective_png(path, report_path):
+    """Bind decoded PNG to its actual current report bytes and drawing source."""
+    from PIL import Image
+    digest = hashlib.sha256(validate_parent_chain(report_path).read_bytes()).hexdigest()
+    script_digest = hashlib.sha256(validate_parent_chain(ROOT/'scripts/make_figures.py').read_bytes()).hexdigest()
+    with Image.open(validate_parent_chain(path)) as picture:
+        picture.load()
+        if (picture.info.get('NumericalReportDigest') != digest
+                or picture.info.get('SourceScriptDigest') != script_digest):
+            raise ValueError('图80 PNG报告或真实绘图源摘要失效')
 
 
 def _check_imaging_figure_report(path, number):
@@ -1043,12 +1058,59 @@ def _check_imaging_figure_report(path, number):
               [10*np.log10(5/4), 10*np.log10(25/16), -10*np.log10(2)], '线性量汇总后的dB')
         if data['scope'] != 'analytic controls; default-intercept estimate is independent mathematics, not sklearn execution':
             raise ValueError('图69截距执行范围说明不同')
+    elif number == 80:
+        if set(data) != {'experiment', 'plotted'}:
+            raise ValueError('图80实验与绘图结构不同')
+        experiment, plotted = data['experiment'], data['plotted']
+        r = np.array([[4/3, 2/3-2j*np.sqrt(3)/3],
+                      [2/3+2j*np.sqrt(3)/3, 4/3]])
+        dictionary = np.array([[1., 1.], [1., 1.],
+                               [np.sqrt(2), -np.sqrt(2)/2], [0., np.sqrt(6)/2]])
+        target = np.array([4/3, 4/3, 2*np.sqrt(2)/3, -2*np.sqrt(6)/3])
+        for key, expected in (('A', a), ('W', w), ('R', r)):
+            complex_close(experiment[key], expected, '合法CSM与传播 '+key)
+        for key, expected in (('P', p), ('b', [1., 0.]), ('D', np.diag([4., 4.])),
+                              ('G', [[4., 1.], [1., 4.]]), ('h', [4., 0.]),
+                              ('csm_dictionary_real', dictionary), ('csm_target_real', target),
+                              ('q_GS', [1., 0.]), ('q_CSM', [1., 0.]),
+                              ('q_scan', [16/17, 0.]), ('csm_gradient_at_solution', [0., 1.])):
+            close(experiment[key], expected, 'Gram目标 '+key)
+        scale = 2*np.sqrt(6)/3
+        close(experiment['objective_common_scale'], scale, '共同数值尺度')
+        for label, scan_loss, csm_loss in (('GS', 1/16, 28/9),
+                                          ('CSM', 1/16, 28/9),
+                                          ('scan', 1/17, 8128/2601)):
+            close(experiment['losses'][label]['scan_squared'], scan_loss, label+'扫描目标')
+            close(experiment['losses'][label]['csm_frobenius_squared'], csm_loss, label+'完整CSM目标')
+            close(experiment['scaled_csm_objectives'][label], csm_loss/scale**2,
+                  label+'同尺度目标')
+        unequal = experiment['nonuniform_control']
+        complex_close(unequal['A'], a*np.array([1., 2.]), '不等列幅传播')
+        complex_close(unequal['W'], w*np.array([1., .5]), '不等列幅权重')
+        for key, expected in (('P', [[1., 1.], [1/16, 1.]]), ('D', np.diag([4., 64.])),
+                              ('G', [[4., 4.], [4., 64.]]), ('b', [1., 0.]), ('h', [4., 0.])):
+            close(unequal[key], expected, '逐行归一化 '+key)
+        if experiment['scope'] != ('full CSM Frobenius with matched conventional weights; '
+                                   'no DR, noise column, trace budget or intercept'):
+            raise ValueError('图80拟合适用范围不同')
+        if set(plotted) != {'q1', 'q2', 'scan_squared', 'csm_squared', 'axis_range', 'view'}:
+            raise ValueError('图80绘图字段不同')
+        first, second = np.meshgrid(np.linspace(.8, 1.1, 151), np.linspace(0., .2, 101))
+        close(plotted['q1'], first[0], '151个横坐标')
+        close(plotted['q2'], second[:, 0], '101个纵坐标')
+        close(plotted['scan_squared'], (first+.25*second-1)**2+(.25*first+second)**2,
+              '全部扫描等值线网格')
+        close(plotted['csm_squared'], 64/9+4*(first**2+second**2)+2*first*second-8*first,
+              '全部完整CSM等值线网格')
+        close(plotted['axis_range'], [[.8, 1.1], [0., .2]], '局部坐标范围')
+        if plotted['view'] != 'local nonnegative domain; not full domain':
+            raise ValueError('图80局部显示范围不同')
     else:
         raise ValueError('unknown imaging figure identity')
 
 
 def check_imaging_figures(errors):
-    """Strictly read three reports, preserving every failed source/numeric check."""
+    """Strictly read four reports, preserving every failed source/numeric check."""
     for number, filename in IMAGING_FIGURE_REPORTS.items():
         try:
             _check_imaging_figure_report(ROOT/'codes/chapters/ch14/reports'/filename, number)

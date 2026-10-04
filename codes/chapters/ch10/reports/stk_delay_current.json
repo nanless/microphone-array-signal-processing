@@ -32,12 +32,12 @@
       ],
       "note": "Maintainer official synthesis toolkit; only source and notices, no rawwaves or device audio. DelayL is studied as an interpolation component, not a complete array frontend."
     },
-    "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+    "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
     "source_document_paths": {
       "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
       "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
     },
-    "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+    "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
     "recorded_complete_selection": {
       "id": "stk",
       "revision": "6aacd357d76250bb7da2b1ddf675651828784bbc",
@@ -1509,15 +1509,15 @@
     "dependency_files": [
       {
         "path": "tu0.d",
-        "sha256": "943cd60743e695f811a510a2671a1853c5e3f747fd32d5c96f9c167545f790e5"
+        "sha256": "3cec6d62217f826a094b9f4c50cb4b77c9bb2d96ec4c943ddf43b2fd442d993d"
       },
       {
         "path": "tu1.d",
-        "sha256": "1e21d37ef96d3356547c7d46f0d9e659f7e599861658de0648743b6ee6ac52f2"
+        "sha256": "95d7b92066f41e72f260c0564cabcc6e3c86805e18fe723c989d4c7cbc6d836a"
       },
       {
         "path": "tu2.d",
-        "sha256": "c3740a5156d9e19f4053176dd13857d07add86e44aece40e7a2c02b6e41c7302"
+        "sha256": "29cc4f0985599e7dd0ba7e3e448b0c209c864099aaa02bd86357647e5aa16c5f"
       }
     ],
     "original_compile_inputs": {
@@ -4869,7 +4869,7 @@
   "binary_sha256": "f0e3f672b10405abf88a5966ba62a4d59451b09c985427b38fceed3086c56bc9",
   "actual_dependencies_sha256": {
     "codes/chapters/ch10/examples/run_stk_delay_probe.py": "649912f62b3c20a2ad31df0f515875e016760d5c16923f060839eaf5a2d136a3",
-    "codes/chapters/ch04/core/upstream_contracts.py": "f61d18b3239614aaf1304b9707038ad913f602160ff6de378e52692540490f30",
+    "codes/chapters/ch04/core/upstream_contracts.py": "4898ceaddfcd0821a6564360bc68489766438afef13ef783f0d182ffc0dddeb1",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4",
     "codes/chapters/ch10/examples/stk_delay_probe.cpp": "00cf0d68ed5c99feb156d016de587d80ca9ff033aa523943ae1be27e827ea7c0",

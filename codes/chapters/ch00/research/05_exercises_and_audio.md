@@ -2,7 +2,7 @@
 
 先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。
 
-本页索引 355 道带稳定编号的代码题，以及独立的真实录音练习 R01。`E01-01` 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。
+本页索引 357 道带稳定编号的代码题，以及独立的真实录音练习 R01。`E01-01` 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。
 
 E06-07～E06-20 使用无量纲回声模型检查 AEC 的计算与边界，其中 E06-11～20 可用精确答案程序核对。第 15、16 节另提供参数不同的合成音频；试听文件本身不是题目真值。
 
@@ -1793,9 +1793,9 @@ $$
 
 ## 47. 扩展专题Ⅰ：声学成像的源量、模型与快拍音频
 
-对应[声学成像正文](../../../../chapters/14_acoustic-imaging.md)。这里把代码入口、输入和复算目标集中起来；完整概念与分步答案放在正文。16题采用E14稳定身份，阅读顺序在第11章后、附录前，原E12/E13不改号。
+对应[声学成像正文](../../../../chapters/14_acoustic-imaging.md)。这里把代码入口、输入和复算目标集中起来；完整概念与分步答案放在正文。18题采用E14稳定身份，阅读顺序在第11章后、附录前，原E12/E13不改号。
 
-### 47.1 十六题分别核对什么
+### 47.1 十八题分别核对什么
 
 在仓库根目录运行：
 
@@ -1823,6 +1823,8 @@ $$
 | E14-14 | 改变源参考位置 | 传播列与每源量同时变换，传感器CSM不变；不同参考量不能直接比较 |
 | E14-15 | 频带积分及点量/密度 | bin线性相加，PSD乘频宽；点量不再乘面积，面密度才乘格面积 |
 | E14-16 | 白噪声与源量的可辨识性 | 两麦已知字典联合估计`q=2,σ²=.5`；一麦只有总量，不能人为拆分 |
+| E14-17 | 同一合法CSM的Gram目标 | `G=DP,h=Db`；GS/完整CSM点`(1,0)`与扫描LS点`(16/17,0)`；不等列幅逐行归一化，DR须重建两个投影模板 |
+| E14-18 | 列不同仍可能不可辨识 | 四传播列各异，但完整CSM字典与PSF秩均3；三个不同非负分配给出同一`2I`观测 |
 
 所有核心方法的唯一实现见[imaging.py](../../ch14/core/imaging.py)，主程序见[chapter14_exercises.py](../../ch14/chapter14_exercises.py)，独立手算、边界及音频测试见[test_codes_imaging.py](../../../../tests/test_codes_imaging.py)。有限活动集NNLS只支持至多8列的教学小系统，441格实验只扫描和计算已知两源PSF，没有对441未知量枚举反演。单源噪声拟合是明确的小型已知统计控制，未加入原CMF的全部稀疏约束。
 
@@ -1868,15 +1870,19 @@ e^{-\mathrm j2\pi 2000n/24000},\\
 .venv/bin/python -m codes.chapters.ch14.examples.generate_imaging_audio --check
 ```
 
-唯一[生成器](../../ch14/examples/generate_imaging_audio.py)与[快拍数值核](../../ch14/core/imaging_audio.py)复用主PCM编解码和公共IO。目录严格接受五WAV及一个清单，检查普通父链、成员类型、完整实际源摘要、PCM字节与评分；`--check`只读内存重放，不能修复或覆盖资产。五样本不并入主109份清单。
+唯一[生成器](../../ch14/examples/generate_imaging_audio.py)与[快拍数值核](../../ch14/core/imaging_audio.py)复用主PCM编解码和公共IO。目录严格接受五WAV及一个清单，检查普通父链、成员类型、完整实际源摘要、PCM字节与评分；`--check`只读内存重放，不能修复或覆盖资产。五样本不并入主109份清单。写入前另以固定参数、逐样本公式、直接DFT/外积及PCM整数编码独立核内部输出；布尔增益、变更频率、虚假范围或失配浮点结果均在创建目录之前拒绝。
 
 图67～69由[绘图源](../../../../scripts/make_figures.py)生成，报告分别在[ch14/reports/](../../ch14/reports/)。图67的二维控制用8麦半径`.2m`环阵、`z=.6m`源面、4kHz球面传播和441格；弱源局部扫描峰偏到`.18m`。每格扫描值会重复计入响应，直接相加72.17394不是两源参考总量1.25。
 
+图80的[数值报告](../../ch14/reports/figure80_imaging_objectives.json)同时保存151×101全部局部系数网格、两种目标及不等列幅控制，PNG绑定报告真实字节。独立发布门禁逐点按标量公式复算，不调用教学或绘图实现。
+
 ### 47.5 固定上游的方法合同
 
-[原Acoular限定工具](../../ch14/examples/audit_upstream_imaging_contracts.py)默认只输出终端，只有显式`--report`写当前[合同报告](../../ch14/reports/upstream_imaging_contracts.json)。原源码身份、完整选集不匹配、限定方法相符、已确认差异和依赖缺失分别保存；详细条件见[空间源码研究](01_spatial_and_tracking.md#imaging-contract-audit)。
+[原Acoular限定工具](../../ch14/examples/audit_upstream_imaging_contracts.py)默认只输出终端，只有显式`--report`写当前[合同报告](../../ch14/reports/upstream_imaging_contracts_current.json)。原源码身份、完整选集不匹配、限定方法相符、已确认差异和依赖缺失分别保存；详细条件见[空间源码研究](01_spatial_and_tracking.md#imaging-contract-audit)。
 
-本书CLEAN-SC教学核采用作者完整CSM公式；固定Acoular的full支路在独立单源控制中会过量分配，不能作为正确答案。CMF半三角权重及默认截距也分别改变目标。原类方法的提取调用不等于Traits对象图、Numba JIT、HDF5、sklearn估计器或真实风洞整链运行。
+本书CLEAN-SC教学核采用作者完整CSM公式；固定Acoular的full支路在独立单源控制中会过量分配，不能作为正确答案。CMF半三角权重及默认截距也分别改变目标。原类方法的提取调用不等于Traits对象图、Numba JIT、HDF5、sklearn估计器或真实风洞整链运行。当前Acoular报告另在合法CSM上形成扫描与PSF，再执行原DAMAS；旧21项次序及13吻合/8差异/1未执行保持。
+
+[作者完整Python原模块](../../ch14/examples/audit_damas_author_contracts.py)的[当前报告](../../ch14/reports/damas_author_contracts_current.json)独立记录9个控制：8个数值吻合、1个零CSM原NameError。原`unique=True`只检查活跃支持，重复列存在另一个同观测非负解；不能称全局唯一。作者full CLEAN-SC单源两步为1.68，与显式公式一致。两个工具默认终端输出，历史报告拒绝覆盖；源码获取、限定执行与完整论文实验分别记。
 
 <a id="distributed-exercises-audio"></a>
 

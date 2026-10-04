@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "created_utc": "2026-10-04T19:53:51.766156+00:00",
+  "created_utc": "2026-10-04T21:20:47.193208+00:00",
   "verified_date_asia_shanghai": "2026-10-05",
   "audit_source_sha256": "55431e1476831bbc38ffadb67e008eaaab8e9313a369af67a63d1cba815fdff3",
-  "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+  "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
   "lock_entry": {
     "id": "pyaec",
     "url": "https://github.com/ewan-xu/pyaec.git",
@@ -24,7 +24,7 @@
   },
   "actual_dependency_sha256": {
     "codes/chapters/ch06/examples/audit_upstream_apa.py": "55431e1476831bbc38ffadb67e008eaaab8e9313a369af67a63d1cba815fdff3",
-    "codes/chapters/ch04/core/upstream_contracts.py": "f61d18b3239614aaf1304b9707038ad913f602160ff6de378e52692540490f30",
+    "codes/chapters/ch04/core/upstream_contracts.py": "4898ceaddfcd0821a6564360bc68489766438afef13ef783f0d182ffc0dddeb1",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },
@@ -51,12 +51,12 @@
         "frequency_domain_adaptive_filters/pfdkf.py"
       ]
     },
-    "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+    "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
     "source_document_paths": {
       "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
       "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
     },
-    "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+    "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
     "recorded_complete_selection": {
       "id": "pyaec",
       "revision": "5b9c02c57075d790b7df8652884618189d49bbc4",
