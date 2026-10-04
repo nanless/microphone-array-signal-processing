@@ -162,8 +162,8 @@ WPE 首先验证延迟回归向量、复共轭和加权正规方程。离线与�
 因此结论限定于记录的标量、单线程配置。
 
 ```bash
-.venv/bin/python codes/chapters/ch10/examples/run_industrial_interfaces.py --report tmp/industrial-rerun.json
-.venv/bin/python codes/chapters/ch04/examples/reproduce_sbl_reference.py --output tmp/sbl-rerun.json
+.venv/bin/python codes/chapters/ch10/examples/run_industrial_interfaces.py --report codes/chapters/ch10/reports/industrial_interfaces_current.json
+.venv/bin/python codes/chapters/ch04/examples/reproduce_sbl_reference.py --output /private/tmp/sbl-rerun.json
 ```
 
 工业输入为 48 kHz、双通道、1 s：一通道在第 12000 帧放幅度 0.5 的脉冲，另一通道放幅度 0.1 的
@@ -179,7 +179,7 @@ WPE 首先验证延迟回归向量、复共轭和加权正规方程。离线与�
 PCM16 的七帧双通道读回得到帧数 3/3/1/0、标量项数 6/6/2/0，归一化误差为 0。
 完整条件和原始数值见[工业报告](../../ch10/reports/industrial_interfaces.json)及[工业研究](03_industrial_deployment.md)。
 
-第10章本次另以[合同脚本](../../ch10/examples/audit_industrial_contracts.py)生成[独立报告](../../ch10/reports/industrial_contracts.json)，不改上述历史三库报告或2026-09-28的STOI/DeepFilterNet报告。报告分别绑定原文件、许可证、HEAD和工具/锁表摘要，保存每项代替边界与运行前后清洁状态；CMSIS的期望来自整数卷积、Speex来自手写递推，VAD及demo来自合法帧与样本计数。
+第10章2026-10-01的[独立历史报告](../../ch10/reports/industrial_contracts.json)由[bde483保存的原合同脚本](https://github.com/nanless/microphone-array-signal-processing/blob/bde483bcc429a553aeaf8830ca3687ab46831db0/codes/chapters/ch10/examples/audit_industrial_contracts.py)生成，不改上述历史三库报告或2026-09-28的STOI/DeepFilterNet报告。2026-10-05的当前复验见[工业研究§9](03_industrial_deployment.md#industrial-current-interface-contracts)，改后工具只显式写新的当前报告。各报告分别绑定运行时的原文件、许可证、HEAD和工具/锁表摘要，保存每项代替边界与运行前后清洁状态；CMSIS的期望来自整数卷积、Speex来自手写递推，VAD及demo来自合法帧与样本计数。
 
 FastEnhancer例使用受控假计时：1000点输入、512点窗、256点帧移、10 ms假耗时，原打印0.125而新增源时长分母为0.16；[E10-32](../../../../chapters/10_engineering-practice.md#e10-32)解释两者。原main的保存分支也在内存接收器上核对裁256点后取原长度，没有写模型输出文件。MCRA受控软更新的[E10-28](../../../../chapters/10_engineering-practice.md#e10-28)是本书给定局部统计的递推子链；Speex原助手的硬标记不能充当该原算法复现。
 
@@ -583,3 +583,5 @@ e3b3176d835837441224e4906b7c2befadcdc4fe2ce6163245b7d9a9ad0d9229
 扩充前的[112项原锁字节](../source_snapshots/SOURCES.d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a.json)和[原获取状态字节](../source_snapshots/SOURCE_STATUS.e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da.json)按完整SHA登记，旧执行报告不换成新锁表身份。当前第4～8章14个直接消费者实际重新执行后绑定新锁表，原故障/未运行边界保留；不能只改JSON字符串。
 
 第9章两个工具默认stdout；接口工具显式`--output`写[当前接口报告](../../ch09/reports/tracking_upstream_interfaces_current.json)，原方法合同工具显式`--report`写[当前原方法合同](../../ch09/reports/upstream_tracking_contracts_current.json)，路径均须通过安全检查，不覆盖两旧历史报告。ODAS限定原C、SAF控制流替身、FilterPy原包/原方法和StoneSoup三个原AST方法各记执行范围；完整稀疏选集不匹配不抹去。FilterPy本轮预检63个跟踪源文件，33个实际导入模块分别记录；EKF组合接口`None`的原TypeError及部分K/S更新保留，不能改写成原包缺测路径成功。
+
+2026-10-05第10章四组原接口复验保存为current报告，旧四报告与其历史工具身份保持原样；当前编译依赖、原失败及未执行范围见[工业研究§9](03_industrial_deployment.md#industrial-current-interface-contracts)。上文复跑命令写显式current路径；仓内其他报告目标由写前守卫拒绝，普通仓外路径可另存试验。

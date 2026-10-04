@@ -582,7 +582,7 @@ Python 核心输入字典 `A` 为 `M × G × F`，观测 `Y` 为 `M × L × F`�
 取得锁定源码后，可在仓库根目录执行；没有源码时程序明确报错，不自动联网或安装依赖：
 
 ```bash
-.venv/bin/python codes/chapters/ch04/examples/reproduce_sbl_reference.py --output codes/chapters/ch04/reports/sbl_reference.json
+.venv/bin/python codes/chapters/ch04/examples/reproduce_sbl_reference.py --output /private/tmp/sbl-rerun.json
 .venv/bin/python -m unittest tests.test_codes_sbl_reference -v
 ```
 

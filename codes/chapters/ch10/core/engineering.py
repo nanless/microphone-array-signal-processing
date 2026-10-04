@@ -460,7 +460,13 @@ TELEMETRY_FIELDS = {
 
 
 def validate_telemetry(record: Mapping[str, object]) -> list[str]:
-    """Return human-readable errors for one engineering telemetry record."""
+    """Check types/ranges for one record, without reconstructing its timing.
+
+    ``rtf`` is the interval's cumulative service/audio-duration ratio. Optional
+    ``frame_service_rtf`` describes this frame alone. The producer declares the
+    interval, newly advanced sample count and measured processing scope. This
+    stateless validator cannot prove those timings or counter continuity.
+    """
 
     if not isinstance(record, Mapping):
         return ["record must be a mapping"]
@@ -512,4 +518,18 @@ def validate_telemetry(record: Mapping[str, object]) -> list[str]:
             total = record.get("dropped_samples")
             if isinstance(total, Integral) and not isinstance(total, (bool, np.bool_)) and known > total:
                 errors.append("known_dropped_samples must not exceed known dropped_samples")
+    if "frame_service_rtf" in record:
+        value = record["frame_service_rtf"]
+        if isinstance(value, (bool, np.bool_)) or not isinstance(value, Real):
+            errors.append("wrong type for frame_service_rtf")
+        else:
+            try:
+                numeric = float(value)
+            except (OverflowError, ValueError):
+                errors.append("frame_service_rtf must be finite")
+            else:
+                if not math.isfinite(numeric):
+                    errors.append("frame_service_rtf must be finite")
+                elif numeric < 0:
+                    errors.append("frame_service_rtf must be non-negative")
     return errors

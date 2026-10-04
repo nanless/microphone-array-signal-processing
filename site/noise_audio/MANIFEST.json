@@ -303,7 +303,7 @@
   "quantization": "signed little-endian PCM16; nearest-even; no dither; decoded amplitude=int16/32768",
   "source_sha256": {
     "codes/chapters/ch10/core/noise_mismatch.py": "d04f564ddad4490a8b8cc3040e670f48a03dca78b2b04e68c27dc078cfb56d40",
-    "codes/chapters/ch10/examples/generate_noise_mismatch.py": "38506cbd2af2cc0c11a6304f4bdec1cd788f395ef934091487ae8b0bf8fe51af",
+    "codes/chapters/ch10/examples/generate_noise_mismatch.py": "f97abf810ed50b7c0ba02a774ac72d0e590939a6a63b0b4fc8c43a06e31be009",
     "codes/chapters/ch10/core/noise_suppression.py": "fbef0765d532c7dfbd17f53e3cdd4799fb4457982344a0f0298b2137f9fd9de3",
     "codes/chapters/ch02/core/spectral.py": "5ade0b101cc00615276b3b60c3659ece3e68ad614cd2cb2edeb568359f034059",
     "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",

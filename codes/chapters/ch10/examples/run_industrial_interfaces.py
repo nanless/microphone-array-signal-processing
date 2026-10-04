@@ -2,7 +2,7 @@
 
 No downloads, package installations or source edits are performed.  Invoke from
 the repository root with ``.venv/bin/python codes/chapters/ch10/examples/run_industrial_interfaces.py``.
-Build products, callback traces and test WAV stay in a fresh ignored tmp directory.
+Build products, callback traces and test WAV stay in a fresh directory outside the repository.
 Only the explicit JSON report is a publication artifact; this module is inert on import.
 """
 
@@ -22,13 +22,16 @@ import subprocess
 import sys
 import tempfile
 import wave
+import shlex
 
 ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(ROOT))
 from codes.chapters.ch00.upstream.fetch_upstreams import inspect_project, load_projects  # noqa: E402
+from codes.chapters.ch04.core import upstream_contracts as upstream
 
 HARNESS = Path(__file__).with_name("industrial_interfaces.c")
 DEFAULT_REPORT = ROOT / "codes/chapters/ch10/reports/industrial_interfaces.json"
+CURRENT = DEFAULT_REPORT.with_name("industrial_interfaces_current.json")
 PCM_EXPECTED = (-32768, 0, 0, 32767, 16384, -16384, 1, -1,
                 12345, -23456, 0, 1000, 32767, -32768)
 OPTIONS = {
@@ -41,6 +44,101 @@ OPTIONS = {
 }
 LIBRARY_FILES = {"libsoxr": "src/libsoxr.a", "libebur128": "libebur128.a",
                  "libsndfile": "libsndfile.a"}
+
+
+def clean_environment():
+    """Remove inherited Git/build/search overrides; do not install anything."""
+    return {key: value for key, value in os.environ.items()
+        if not key.startswith(("GIT_", "CMAKE_", "DYLD_", "LD_", "PYTHON")) and key not in
+        {"CC", "CXX", "CFLAGS", "CXXFLAGS", "CPPFLAGS", "LDFLAGS", "CPATH",
+         "C_INCLUDE_PATH", "CPLUS_INCLUDE_PATH", "LIBRARY_PATH", "PKG_CONFIG_PATH"}}
+
+
+def native_identity(name, source_root=upstream.CACHE):
+    source_root = upstream.validate_parent_chain(source_root)
+    checkout = source_root / name
+    identity = upstream.verify_project(name, checkout)
+    # Full present tracked tree preflight is a source-identity claim, not a
+    # claim that every file was compiled or its every function executed.
+    present, linked, unconsumed_blob_differences = [], [], []
+    for relative in upstream.git(checkout, "ls-files").splitlines():
+        path = checkout / relative
+        if path.is_symlink() or any(parent.is_symlink() for parent in path.parents if parent.is_relative_to(checkout)):
+            linked.append(relative)
+            continue
+        path = upstream.validate_parent_chain(path)
+        if path.exists():
+            upstream.ordinary_file(path)
+            original_blob = upstream.git(checkout, "rev-parse", f"{identity['head']}:{relative}")
+            actual_blob = upstream.git(checkout, "hash-object", "--no-filters", "--", str(path))
+            if original_blob != actual_blob:
+                unconsumed_blob_differences.append({"path": relative, "git_blob": original_blob, "actual_blob": actual_blob, "actual_sha256": upstream.sha(path)})
+                continue
+            present.append(relative)
+    upstream.record_files(identity, present)
+    identity["excluded_linked_members_not_consumed"] = linked
+    identity["unconsumed_nonmatching_blobs"] = unconsumed_blob_differences
+    identity["file_identity_scope"] = "present ordinary HEAD-matching source/build texts preflighted; links and nonmatching unused blobs excluded explicitly; actual compile inputs must be in preflight, separately reported"
+    return identity
+
+
+def verify_failure_sources(identities, error):
+    for name, identity in identities.items():
+        try:
+            upstream.check_unchanged(identity)
+        except Exception as post_error:
+            error.add_note("post-execution source failure " + name + ": " + str(post_error))
+
+
+def compiled_dependencies(work, identities, extra_files=()):
+    """Read compiler-generated Make dependency files; identify finite inputs."""
+    work = upstream.validate_parent_chain(work)
+    paths = set(Path(p).absolute() for p in extra_files)
+    depfiles = []
+    for file in sorted(work.rglob("*.d")):
+        file = upstream.ordinary_file(file)
+        depfiles.append({"path": str(file.relative_to(work)), "sha256": upstream.sha(file)})
+        payload = file.read_text().replace("\\\n", " ")
+        if ":" not in payload:
+            raise ValueError("compiler dependency file has no target")
+        for token in shlex.split(payload.split(":", 1)[1]):
+            path = Path(token)
+            # CMake's native dependency files contain absolute inputs.
+            if not path.is_absolute():
+                path = file.parent / path
+            paths.add(path.absolute())
+    if not depfiles:
+        raise ValueError("compiler produced no dependency membership evidence")
+    original, generated, external, drivers = {}, {}, {}, {}
+    for path in sorted(paths):
+        matched = False
+        for name, identity in identities.items():
+            checkout = Path(identity["checkout"])
+            if path.is_relative_to(checkout):
+                path = upstream.ordinary_file(path)
+                relative = path.relative_to(checkout).as_posix()
+                if relative not in identity["used_files"]:
+                    raise ValueError("compile input was not preflighted: " + relative)
+                original[name + "/" + relative] = identity["used_files"][relative]
+                matched = True
+                break
+        if matched:
+            continue
+        if path.is_relative_to(work):
+            generated[str(path.relative_to(work))] = {"sha256": upstream.sha(path), "bytes": path.stat().st_size}
+        elif path.is_relative_to(ROOT):
+            drivers[str(path.relative_to(ROOT))] = {"sha256": upstream.sha(path), "bytes": path.stat().st_size}
+        else:
+            # System compiler/SDK include symlinks are resolved and reported as
+            # environment inputs, never represented as fixed author sources.
+            resolved = path.resolve(strict=True)
+            if not resolved.is_file():
+                raise ValueError("compiler environment dependency is not a file")
+            external[str(resolved)] = {"sha256": hashlib.sha256(resolved.read_bytes()).hexdigest(), "bytes": resolved.stat().st_size}
+    return {"execution": "compiler-generated dependency membership; not per-function coverage",
+        "dependency_files": depfiles, "original_compile_inputs": original,
+        "generated_build_inputs": generated, "local_drivers": drivers,
+        "compiler_environment_inputs": external}
 
 
 def digest(path: Path) -> str:
@@ -213,12 +311,15 @@ def record_final_source_status(report: dict, projects: dict, source_root: Path) 
     return errors
 
 
-def run(report_path: Path = DEFAULT_REPORT) -> dict:
+def run(report_path: Path | None = None) -> dict:
     cmake, compiler = shutil.which("cmake"), shutil.which("clang")
     if not cmake or not compiler:
         raise RuntimeError("Existing cmake and clang are required; nothing is installed automatically")
+    if report_path is not None:
+        upstream.report_target(report_path, CURRENT, protected=(upstream.CACHE,))
     projects = load_projects()
     source_root = ROOT / "codes/chapters/ch00/upstream/_downloads"
+    identities = {name: native_identity(name) for name in OPTIONS}
     sources = {}
     for name in OPTIONS:
         record = inspect_project(projects[name], source_root)
@@ -226,12 +327,8 @@ def run(report_path: Path = DEFAULT_REPORT) -> dict:
             raise RuntimeError(f"{name}: expected existing verified source, found {record['status']}")
         sources[name] = {"revision": projects[name]["revision"], "origin": projects[name]["url"],
                          "initial_status": record["status"]}
-    (ROOT / "tmp").mkdir(exist_ok=True)
-    work = Path(tempfile.mkdtemp(prefix="industrial-interfaces-", dir=ROOT / "tmp"))
-    environment = {key: value for key, value in os.environ.items()
-                   if not key.startswith(("GIT_", "CMAKE_", "DYLD_")) and key not in
-                   {"CC", "CXX", "CFLAGS", "CXXFLAGS", "CPPFLAGS", "LDFLAGS", "CPATH",
-                    "C_INCLUDE_PATH", "CPLUS_INCLUDE_PATH", "LIBRARY_PATH", "PKG_CONFIG_PATH"}}
+    work = upstream.work_target(tempfile.mkdtemp(prefix="industrial-interfaces-"), protected=(source_root,))
+    environment = clean_environment()
     commands = []
 
     def portable(text: str) -> str:
@@ -243,7 +340,7 @@ def run(report_path: Path = DEFAULT_REPORT) -> dict:
         log = work / f"{label}.log"
         log.write_text(completed.stdout + completed.stderr, encoding="utf-8")
         commands.append({"argv": [portable(arg) for arg in arguments], "returncode": completed.returncode,
-                         "log": str(log.relative_to(ROOT)), "log_sha256": digest(log)})
+                         "log": str(log.relative_to(work)), "log_sha256": digest(log)})
         if completed.returncode:
             raise RuntimeError(f"{label} failed ({completed.returncode}); see {log}")
         return completed
@@ -254,7 +351,8 @@ def run(report_path: Path = DEFAULT_REPORT) -> dict:
                             "runner": {"path": str(Path(__file__).resolve().relative_to(ROOT)), "sha256": digest(Path(__file__))}},
               "environment": {"python": platform.python_version(), "system": platform.system(),
                               "release": platform.release(), "machine": platform.machine()},
-              "work_directory": str(work.relative_to(ROOT)), "commands": commands}
+              "work_directory": str(work), "commands": commands,
+              "source_identities": identities, "actual_dependencies_sha256": upstream.dependencies(__file__, (HARNESS,))}
     primary_error = None
     try:
         report["environment"]["cmake"] = execute([cmake, "--version"], "cmake-version").stdout.splitlines()[0]
@@ -263,11 +361,11 @@ def run(report_path: Path = DEFAULT_REPORT) -> dict:
             source, build = source_root / name, work / name
             execute([cmake, "-S", str(source), "-B", str(build), "-G", "Unix Makefiles",
                      "-DCMAKE_BUILD_TYPE=Release", "-DBUILD_SHARED_LIBS=OFF",
-                     "-DCMAKE_POLICY_VERSION_MINIMUM=3.5", f"-DCMAKE_C_COMPILER={compiler}",
+                     "-DCMAKE_POLICY_VERSION_MINIMUM=3.5", f"-DCMAKE_C_COMPILER={compiler}", "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
                      *options], name + "-configure")
             execute([cmake, "--build", str(build), "--parallel", "2"], name + "-build")
         executable = work / "industrial_interfaces"
-        execute([compiler, "-std=c99", "-O2", "-Wall", "-Wextra", str(HARNESS),
+        execute([compiler, "-std=c99", "-O2", "-Wall", "-Wextra", "-MD", "-MF", str(work / "harness.d"), str(HARNESS),
                  "-I", str(source_root / "libsoxr/src"),
                  "-I", str(source_root / "libebur128/ebur128"),
                  "-I", str(source_root / "libsndfile/include"),
@@ -275,9 +373,10 @@ def run(report_path: Path = DEFAULT_REPORT) -> dict:
                  "-lm", "-o", str(executable)], "harness-build")
         wav_path = work / "fixture_pcm16.wav"
         result = execute([str(executable), str(wav_path)], "harness-run")
-        data = json.loads(result.stdout)
+        data = upstream.strict_json_loads(result.stdout)
         validate_measurements(data)
         validate_variable_ratio_trace(result.stderr, data)
+        report["compiled_dependencies"] = compiled_dependencies(work, identities, (HARNESS,))
         report["measurements"] = data
         report["independent_wave_check"] = verify_wave(wav_path)
         report["binary_sha256"] = digest(executable)
@@ -293,10 +392,21 @@ def run(report_path: Path = DEFAULT_REPORT) -> dict:
     finally:
         report["finished_at_utc"] = datetime.now(timezone.utc).isoformat()
         verification_errors = record_final_source_status(report, projects, source_root)
+        for name, identity in identities.items():
+            try:
+                upstream.check_unchanged(identity)
+            except Exception as error:
+                verification_errors.append(name + ": " + str(error))
         if verification_errors:
+            report["status"] = "failed"
             report["post_build_source_errors"] = [portable(error) for error in verification_errors]
-        report_path.parent.mkdir(parents=True, exist_ok=True)
-        report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+        if report_path is not None:
+            try:
+                upstream.write_report(report_path, report, CURRENT, protected=(source_root,))
+            except Exception as write_error:
+                if primary_error is None:
+                    raise
+                primary_error.add_note("failure report could not be written: " + str(write_error))
         if verification_errors and primary_error is None:
             raise RuntimeError("Post-build source verification failed; see the report")
     return report
@@ -304,8 +414,7 @@ def run(report_path: Path = DEFAULT_REPORT) -> dict:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
+    parser.add_argument("--report", type=Path)
     arguments = parser.parse_args()
     result = run(arguments.report)
-    print(json.dumps({"status": result["status"], "report": str(arguments.report),
-                      "measurements": result["measurements"]}, indent=2, allow_nan=False))
+    print(json.dumps(result, indent=2, allow_nan=False))

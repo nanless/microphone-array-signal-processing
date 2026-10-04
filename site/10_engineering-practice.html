@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 10 章 · 工程实现、评测与产业实践 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="b232a8dba19b"><style>
+<meta name="source-digest" content="5cea3d451101"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -279,6 +279,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="10_engineering-practice.html#sec-10-9">10.9 从模型到设备</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-9-1">10.9.1 开源实现怎样用作工程对照</a></li>
 <li><a href="10_engineering-practice.html#sec-10-10">10.10 联调与验收</a></li>
+<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-u-a134fb8cdf">已知坏麦：同时选择观测、响应与协方差</a></li>
 <li><a href="10_engineering-practice.html#sec-10-11">10.11 本章练习</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-u-3a2ce1aea0">E10-01：把初始错位与 SRO 分开</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-u-a4719e76d5">E10-02：VAD 的迟滞与两帧挂起</a></li>
@@ -313,6 +314,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-u-48ac926809">E10-31：单设备计数与外部计时能辨别哪个时钟</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-u-883aea6471">E10-32：原推理包装器的填充不能变成新音频时长</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-u-01852a5d9c">E10-33：噪声统计失配怎样分别留下残余和损伤目标</a></li>
+<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-u-fbd4df22d3">E10-34：坏麦置零之后，为什么必须重算波束</a></li>
 <li><a href="10_engineering-practice.html#sec-10-12">10.12 本章小结</a></li>
 </ul>
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
@@ -355,6 +357,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="10_engineering-practice.html#sec-10-9">10.9 从模型到设备</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-10-9-1">10.9.1 开源实现怎样用作工程对照</a></li>
 <li><a href="10_engineering-practice.html#sec-10-10">10.10 联调与验收</a></li>
+<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-u-a134fb8cdf">已知坏麦：同时选择观测、响应与协方差</a></li>
 <li><a href="10_engineering-practice.html#sec-10-11">10.11 本章练习</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-u-3a2ce1aea0">E10-01：把初始错位与 SRO 分开</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-u-a4719e76d5">E10-02：VAD 的迟滞与两帧挂起</a></li>
@@ -389,6 +392,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-u-48ac926809">E10-31：单设备计数与外部计时能辨别哪个时钟</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-u-883aea6471">E10-32：原推理包装器的填充不能变成新音频时长</a></li>
 <li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-u-01852a5d9c">E10-33：噪声统计失配怎样分别留下残余和损伤目标</a></li>
+<li>&nbsp;&nbsp;<a href="10_engineering-practice.html#sec-u-fbd4df22d3">E10-34：坏麦置零之后，为什么必须重算波束</a></li>
 <li><a href="10_engineering-practice.html#sec-10-12">10.12 本章小结</a></li>
 </ul></nav></details>
 <blockquote>
@@ -492,39 +496,39 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>WPE、波束和 NS 的先后则要结合实现判断：多通道 WPE 需要多通道输入；单通道 WPE 可以放在波束之后；神经网络若联合完成波束与去混响，也不能再套用传统串行顺序。</p>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-1-1">10.1.1 延迟不能把每个模块的耗时直接相加</h3>
 <p>端到端延迟应沿实际关键路径测量，并分成五类：</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:40em">
 <thead>
 <tr>
-<th scope="col">类别</th>
-<th scope="col">含义</th>
-<th scope="col">常见来源</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">类别</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:16em">含义</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:16em">常见来源</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>前瞻或算法等待</td>
-<td>输出当前样本前必须等待的未来输入</td>
-<td>居中窗、双向网络、判决确认窗</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">前瞻或算法等待</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">输出当前样本前必须等待的未来输入</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">居中窗、双向网络、判决确认窗</td>
 </tr>
 <tr>
-<td>缓冲</td>
-<td>驱动、直接存储器访问（Direct Memory Access，DMA）、网络或帧拼接等待</td>
-<td>声卡周期、抖动缓冲、整帧推理</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">缓冲</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">驱动、直接存储器访问（Direct Memory Access，DMA）、网络或帧拼接等待</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">声卡周期、抖动缓冲、整帧推理</td>
 </tr>
 <tr>
-<td>计算</td>
-<td>当前数据到输出完成的执行时间</td>
-<td>快速傅里叶变换（Fast Fourier Transform，FFT）、矩阵分解、神经网络推理</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">计算</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">当前数据到输出完成的执行时间</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">快速傅里叶变换（Fast Fourier Transform，FFT）、矩阵分解、神经网络推理</td>
 </tr>
 <tr>
-<td>调度</td>
-<td>任务虽已就绪但尚未运行</td>
-<td>操作系统抢占、队列拥塞、加速器排队</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">调度</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">任务虽已就绪但尚未运行</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">操作系统抢占、队列拥塞、加速器排队</td>
 </tr>
 <tr>
-<td>解码与交互</td>
-<td>前端之后的关键路径</td>
-<td>流式 ASR 解码、网络往返、播报准备</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">解码与交互</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">前端之后的关键路径</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">流式 ASR 解码、网络往返、播报准备</td>
 </tr>
 </tbody>
 </table></div>
@@ -571,88 +575,89 @@ $$</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/core/engineering.py"><code>simulate_deadline_queue</code></a> 用一条串行工作队列区分三件事：处理完成晚于本帧期限、队列达到高水位、容量已满而丢帧。平均 RTF 小于 1 仍可能出现其中任何一种。正式设备还要记录<strong>播放下溢</strong>（下一块音频未及时送到设备，underrun）和<strong>采集上溢</strong>（采集数据未及时取走，overrun）；驱动常把两者合称 <code>xrun</code>。线程优先级、CPU 频率策略和并发负载也应一同记录。</p>
 <p>同一时刻的事件需要明确先后：本书模型先释放已经完成的帧，再接收这一时刻到来的新帧；恰在期限完成算准时。</p>
 <p>若到达时刻用乘法、完成时刻用浮点累加，舍入差可能把同一边界误判为队列仍满。教学模拟内部因此用输入浮点数对应的精确有理数比较事件，不加人为宽限；E10-16 用整数时钟刻度独立复核。这种离线记账方式不用于实时音频回调。</p>
-<p>Linux 的 ALSA（Advanced Linux Sound Architecture，先进 Linux 声音架构）还区分具体恢复原因：<code>-EPIPE</code> 表示上溢或下溢，<code>-ESTRPIPE</code> 与挂起有关，<code>-ENODEV</code> 可表示设备移除；某些回声参考设备在关联播放未启动时会返回 <code>-ENODATA</code>。这些状态不能统一解释为“再读一次”。恢复后要记录丢样，并通知依赖连续历史的 AEC、重采样器及后端。<a href="https://www.alsa-project.org/alsa-doc/alsa-lib/pcm.html" title="citation">ALSA PCM 官方接口说明</a></p>
+<p>Linux 的 ALSA（Advanced Linux Sound Architecture，先进 Linux 声音架构）还区分具体恢复原因：<code>-EPIPE</code> 表示上溢或下溢，<code>-ESTRPIPE</code> 与挂起有关，<code>-ENODEV</code> 可表示设备移除；某些回声参考设备在关联播放未启动时会返回 <code>-ENODATA</code>。这些状态不能统一解释为“再读一次”。挂起时可尝试 <code>snd_pcm_resume</code>；不支持或恢复失败时可能需要 <code>snd_pcm_prepare</code>，而 <code>-ENODATA</code> 不在 <code>snd_pcm_recover</code> 的恢复范围内。<a href="https://www.alsa-project.org/alsa-doc/alsa-lib/pcm.html" title="citation">ALSA PCM 官方接口说明，Error codes</a></p>
+<p>恢复成功、是否丢样和物理时间是否连续要分别核查。ALSA 将成功的 <code>snd_pcm_resume</code> 描述为不丢失样本，因此不能仅因一次挂起就增加 <code>dropped_samples</code>。若计数器或可信时间戳证明实际有缺口，才记录已知数量；只知道发生不连续而无法计数时，数量记为未知，并把缺口或重新建立的时间基准通知 AEC、重采样器及后端。保留缓冲内样本也不证明两台设备的时钟关系在挂起期间保持不变。<a href="https://www.alsa-project.org/alsa-doc/alsa-lib/group___p_c_m.html" title="citation">ALSA <code>snd_pcm_resume</code> 接口</a></p>
 <p>参考接口可按下表检查：</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:64em">
 <thead>
 <tr>
-<th scope="col">模块</th>
-<th scope="col">启用条件</th>
-<th scope="col">主要输入</th>
-<th scope="col">主要输出</th>
-<th scope="col">首要检查</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:10em">模块</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:12em">启用条件</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:14em">主要输入</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:14em">主要输出</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:14em">首要检查</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>采集与同步</td>
-<td>多通道输入需要保持时序关系</td>
-<td>麦克风、时钟</td>
-<td>对齐的多通道脉冲编码调制（Pulse-Code Modulation，PCM）样本</td>
-<td>映射、削波、丢帧、相对时延</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">采集与同步</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">多通道输入需要保持时序关系</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">麦克风、时钟</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">对齐的多通道脉冲编码调制（Pulse-Code Modulation，PCM）样本</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">映射、削波、丢帧、相对时延</td>
 </tr>
 <tr>
-<td>AEC</td>
-<td>本机播放可能进入麦克风</td>
-<td>麦克风；播放处理之后、数模转换器/功放之前的播放参考；远端活动/双讲状态</td>
-<td>回声减弱的麦克风信号、残余回声与适配状态</td>
-<td>参考是否覆盖混音、均衡和音量变化；参考—麦克风整体延迟、削波、双讲稳定性</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">AEC</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">本机播放可能进入麦克风</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">麦克风；播放处理之后、数模转换器/功放之前的播放参考；远端活动/双讲状态</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">回声减弱的麦克风信号、残余回声与适配状态</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">参考是否覆盖混音、均衡和音量变化；参考—麦克风整体延迟、削波、双讲稳定性</td>
 </tr>
 <tr>
-<td>WPE</td>
-<td>晚期混响影响任务</td>
-<td>多通道或单通道 STFT</td>
-<td>去混响 STFT</td>
-<td>预测延迟、阶数、语音损伤</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">WPE</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">晚期混响影响任务</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">多通道或单通道 STFT</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">去混响 STFT</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">预测延迟、阶数、语音损伤</td>
 </tr>
 <tr>
-<td>定位/追踪</td>
-<td>波束或应用需要方向/轨迹</td>
-<td>多通道特征、活动状态、测量时间</td>
-<td>坐标系、测量/发布时间、状态与协方差、活动/存在概率、轨迹 ID 与有效期</td>
-<td>坐标变换、过期外推、漏检/虚警、ID 生命周期；接口细节见 §9.4</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">定位/追踪</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">波束或应用需要方向/轨迹</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">多通道特征、活动状态、测量时间</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">坐标系、测量/发布时间、状态与协方差、活动/存在概率、轨迹 ID 与有效期</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">坐标变换、过期外推、漏检/虚警、ID 生命周期；接口细节见 §9.4</td>
 </tr>
 <tr>
-<td>GSS 掩码估计</td>
-<td>已知说话人活动且需要多人空间增强</td>
-<td>分割活动标注；WPE 后的多通道 STFT</td>
-<td>各目标的时频软掩码、有效帧数</td>
-<td>活动标注错位、掩码泄漏和目标缺席帧</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">GSS 掩码估计</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">已知说话人活动且需要多人空间增强</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">分割活动标注；WPE 后的多通道 STFT</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">各目标的时频软掩码、有效帧数</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">活动标注错位、掩码泄漏和目标缺席帧</td>
 </tr>
 <tr>
-<td>目标/干扰 SCM 估计</td>
-<td>已得到同一时频网格上的掩码</td>
-<td>同一 WPE 阶段输出、未做方向归一化的多通道 STFT；对应目标/干扰掩码</td>
-<td>每频点目标/干扰 SCM、有效样本数和条件数</td>
-<td>掩码与 STFT 的时间、频点和通道约定须一致；掩码不是 SCM</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">目标/干扰 SCM 估计</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">已得到同一时频网格上的掩码</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">同一 WPE 阶段输出、未做方向归一化的多通道 STFT；对应目标/干扰掩码</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">每频点目标/干扰 SCM、有效样本数和条件数</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">掩码与 STFT 的时间、频点和通道约定须一致；掩码不是 SCM</td>
 </tr>
 <tr>
-<td>解析波束形成</td>
-<td>需要将空间统计转换为目标音轨</td>
-<td>同一阶段的多通道 STFT；目标/干扰 SCM 或导向矢量</td>
-<td>每目标的增强信号及波束权重</td>
-<td>导向失配、协方差病态和目标泄漏；方向状态只控制需要方向的波束</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">解析波束形成</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">需要将空间统计转换为目标音轨</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">同一阶段的多通道 STFT；目标/干扰 SCM 或导向矢量</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">每目标的增强信号及波束权重</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">导向失配、协方差病态和目标泄漏；方向状态只控制需要方向的波束</td>
 </tr>
 <tr>
-<td>神经分离/CSS/TSE</td>
-<td>重叠内容需多流，或有可靠目标条件</td>
-<td>多通道特征；可选注册语音、视觉或方向条件</td>
-<td>固定/动态输出流、单目标音轨</td>
-<td>左右上下文、首帧延迟、跨块排列、身份泄漏、域外泛化；它是解析波束的替代路径</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">神经分离/CSS/TSE</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">重叠内容需多流，或有可靠目标条件</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">多通道特征；可选注册语音、视觉或方向条件</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">固定/动态输出流、单目标音轨</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">左右上下文、首帧延迟、跨块排列、身份泄漏、域外泛化；它是解析波束的替代路径</td>
 </tr>
 <tr>
-<td>NS/AGC</td>
-<td>残余噪声或电平范围影响后端</td>
-<td>增强信号</td>
-<td>抑噪、稳电平信号</td>
-<td>语音损伤、增益抽动、削波</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">NS/AGC</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">残余噪声或电平范围影响后端</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">增强信号</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">抑噪、稳电平信号</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">语音损伤、增益抽动、削波</td>
 </tr>
 <tr>
-<td>KWS/ASR</td>
-<td>应用需要关键词检测或语音识别</td>
-<td>音频或特征</td>
-<td>事件或文本</td>
-<td>取点、缓存、误报与漏报</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">KWS/ASR</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">应用需要关键词检测或语音识别</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">音频或特征</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">事件或文本</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">取点、缓存、误报与漏报</td>
 </tr>
 </tbody>
 </table></div>
@@ -750,44 +755,44 @@ $$</p>
 <span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-3">10.3 NS、控制信号与唤醒分支</h2>
 <span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-3-1">10.3.1 单通道 NS 的方法和边界</h3>
 <p>单通道 NS 常放在波束输出之后，因为此处计算量较小，也不会反过来破坏传统 AEC 的线性关系。但联合增强网络、多通道掩码估计或为定位专设的增强支路可能采用不同顺序。应依据训练输入和模块假设决定取点。</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:46em">
 <thead>
 <tr>
-<th scope="col">方法</th>
-<th scope="col">基本思想</th>
-<th scope="col">主要风险</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:18em">方法</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:14em">基本思想</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:14em">主要风险</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>谱减</td>
-<td>从带噪功率谱中减去噪声估计</td>
-<td>谱下限过低会产生音乐噪声</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">谱减</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">从带噪功率谱中减去噪声估计</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">谱下限过低会产生音乐噪声</td>
 </tr>
 <tr>
-<td>维纳滤波</td>
-<td>按估计信噪比设置频点增益</td>
-<td>噪声和先验信噪比估计滞后</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">维纳滤波</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">按估计信噪比设置频点增益</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">噪声和先验信噪比估计滞后</td>
 </tr>
 <tr>
-<td>子空间法</td>
-<td>分离语音主子空间与噪声子空间</td>
-<td>阶数估计和矩阵分解成本</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">子空间法</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">分离语音主子空间与噪声子空间</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">阶数估计和矩阵分解成本</td>
 </tr>
 <tr>
-<td>最小均方误差短时谱幅度估计（Minimum Mean-Square Error Short-Time Spectral Amplitude，MMSE-STSA）</td>
-<td>最小化短时谱幅度的均方误差</td>
-<td>分布假设与参数估计失配</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">最小均方误差短时谱幅度估计（Minimum Mean-Square Error Short-Time Spectral Amplitude，MMSE-STSA）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">最小化短时谱幅度的均方误差</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">分布假设与参数估计失配</td>
 </tr>
 <tr>
-<td>最小均方误差对数谱幅度估计（Minimum Mean-Square Error Log-Spectral Amplitude，MMSE-LSA）</td>
-<td>最小化对数谱幅度的均方误差</td>
-<td>低信噪比下仍可能有语音损伤</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">最小均方误差对数谱幅度估计（Minimum Mean-Square Error Log-Spectral Amplitude，MMSE-LSA）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">最小化对数谱幅度的均方误差</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">低信噪比下仍可能有语音损伤</td>
 </tr>
 <tr>
-<td>神经网络掩码/映射</td>
-<td>从数据学习谱或波形映射</td>
-<td>域外噪声、伪影和内容改变</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">神经网络掩码/映射</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">从数据学习谱或波形映射</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">域外噪声、伪影和内容改变</td>
 </tr>
 </tbody>
 </table></div>
@@ -825,7 +830,13 @@ $$</p>
 <p>前一帧功率是 $9$，相减得 $9-4=5$，地板为 $0.04\times9=0.36$，故输出功率 $5$、幅度 $\sqrt5\approx2.2361$；后一帧功率是 $1$，相减得 $-3$，地板为 $0.04$，故输出功率 $0.04$、幅度 $0.2$。</p>
 <p>两帧原相位均为零；若原系数改成 $3\mathrm j$ 和 $1\mathrm j$，输出相应为 $\sqrt5\mathrm j$ 和 $0.2\mathrm j$。不能把功率相减误写成幅度 $3-2=1$。这个手算只证明式(10-8)的数值约定；若噪声统计随时间改变或噪声段混入目标，$D$ 就会失配。</p>
 <p>运行<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/spectral_subtraction_demo.py">谱减练习代码</a>可复算同一频点的两个带噪帧；另运行<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/examples/generate_audio_samples.py">统一音频生成器</a>可重建<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/audio/MANIFEST.json">五个试听文件及参数清单</a>：合成谐波目标、独立高斯噪声、带噪输入、$\beta=0.04$ 输出和 $\beta=0$ 输出。16 kHz、2 s 输入的前 0.4 s 仅有噪声，47 个完整落在该段的 STFT 帧估计 $D_f$；两种处理使用同一输入、同一固定噪声估计和同组共同导出增益。</p>
-<p>先降低播放音量，再比较<a href="audio/spectral_noisy.wav">带噪输入</a><audio class="audio-sample" controls preload="none" aria-label="带噪输入" src="audio/spectral_noisy.wav">请使用上方 WAV 链接下载。</audio>、<a href="audio/spectral_floor04.wav">有地板输出</a><audio class="audio-sample" controls preload="none" aria-label="有地板输出" src="audio/spectral_floor04.wav">请使用上方 WAV 链接下载。</audio>与<a href="audio/spectral_floor00.wav">零地板输出</a><audio class="audio-sample" controls preload="none" aria-label="零地板输出" src="audio/spectral_floor00.wav">请使用上方 WAV 链接下载。</audio>。离散随机残余频点可能听成短促的调性噪声，但这组数学合成信号没有经过人耳听测，不能据此报告语音可懂度、MOS 或产品降噪性能。</p>
+<p>先降低播放音量，再在相同设备音量下比较三个版本：</p>
+<ul>
+<li><a href="audio/spectral_noisy.wav">带噪输入</a><audio class="audio-sample" controls preload="none" aria-label="带噪输入" src="audio/spectral_noisy.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="audio/spectral_floor04.wav">有地板输出</a><audio class="audio-sample" controls preload="none" aria-label="有地板输出" src="audio/spectral_floor04.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="audio/spectral_floor00.wav">零地板输出</a><audio class="audio-sample" controls preload="none" aria-label="零地板输出" src="audio/spectral_floor00.wav">请使用上方 WAV 链接下载。</audio></li>
+</ul>
+<p>离散随机残余频点可能听成短促的调性噪声，但这组数学合成信号没有经过人耳听测，不能据此报告语音可懂度、MOS 或产品降噪性能。</p>
 <p>在生成器的<strong>浮点波形</strong>上计算前 6400 个样本的均方根值，得到下表；三者的共同 WAV 导出增益为 1，表内按四位小数舍入。输入只有噪声，所以这里没有“语音保真”可比。$\beta=0$ 的前奏数值比 $\beta=0.04$ 更低，只说明这个固定输入的平均剩余幅度较低，不能推出音乐噪声更少。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
@@ -860,49 +871,49 @@ $$</p>
 <p><a href="#e10-33">E10-33</a>再用同一合成输入检查噪声估计不足和目标污染的不同后果。该实验的已知方差支路是诊断参考；真实部署还须从观测估计统计量。</p>
 <span id="sec-11" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-10-3-3">10.3.3 控制状态不能只看一个 VAD 比特</h3>
 <p>控制状态需要涵盖近端语音、远端播放和双讲。下表是稳态条件摘要：其中“没有远端参考”还要求相关输入历史已经安静，不能只看当前播放样本是否为零。具体实现可以使用离散状态，也可以使用连续的活动概率。</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:70em">
 <thead>
 <tr>
-<th scope="col">状态</th>
-<th scope="col">AEC 自适应</th>
-<th scope="col">NS 噪声估计</th>
-<th scope="col">波束/空间统计</th>
-<th scope="col">WPE 更新</th>
-<th scope="col">ASR/KWS</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">状态</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:12em">AEC 自适应</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:15em">NS 噪声估计</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:13em">波束/空间统计</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:10em">WPE 更新</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:12em">ASR/KWS</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>仅远端播放</td>
-<td>参考有效且无削波时可更新</td>
-<td>残余回声未污染噪声估计时可更新</td>
-<td>避免把回声当目标</td>
-<td>视残余回声而定</td>
-<td>需要播放时唤醒时，KWS 可监听 AEC 后信号</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">仅远端播放</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">参考有效且无削波时可更新</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">残余回声未污染噪声估计时可更新</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">避免把回声当目标</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">视残余回声而定</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">需要播放时唤醒时，KWS 可监听 AEC 后信号</td>
 </tr>
 <tr>
-<td>仅近端语音</td>
-<td>参考历史无能量时保持</td>
-<td>软更新或保持</td>
-<td>更新目标统计，谨慎更新噪声统计</td>
-<td>可按功率加权更新</td>
-<td>送入后端</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">仅近端语音</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">参考历史无能量时保持</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">软更新或保持</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">更新目标统计，谨慎更新噪声统计</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">可按功率加权更新</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">送入后端</td>
 </tr>
 <tr>
-<td>双讲</td>
-<td>由双讲检测降低步长或采用鲁棒更新</td>
-<td>软更新或保持</td>
-<td>分离目标与干扰统计</td>
-<td>不应仅因“有语音”而冻结</td>
-<td>保留近端语音</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">双讲</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">由双讲检测降低步长或采用鲁棒更新</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">软更新或保持</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">分离目标与干扰统计</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">不应仅因“有语音”而冻结</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">保留近端语音</td>
 </tr>
 <tr>
-<td>无近端、无远端</td>
-<td>保持</td>
-<td>更新背景模型</td>
-<td>更新噪声统计</td>
-<td>按实现选择保持或更新</td>
-<td>后端可休眠，KWS 是否常开由应用需求决定</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">无近端、无远端</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">保持</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">更新背景模型</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">更新噪声统计</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">按实现选择保持或更新</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">后端可休眠，KWS 是否常开由应用需求决定</td>
 </tr>
 </tbody>
 </table></div>
@@ -929,7 +940,8 @@ $$</p>
 <p>$$
 \begin{aligned}
 g_k^\star&=\min(g_{\max},p_\star/p_k),\\
-\widetilde g_k&=(1-\alpha_k)g_{k-1}+\alpha_k g_k^\star,\\
+\widetilde g_k&=(1-\alpha_k)g_{k-1}\\
+&\quad+\alpha_k g_k^\star,\\
 g_k&=\min(\widetilde g_k,1/p_k,g_{\max}),\\
 y_k[n]&=g_kx_k[n].
 \end{aligned}
@@ -1000,27 +1012,27 @@ $$</p>
 <p>重叠 STFT 每次推进的是帧移 $H_i$，不是分析窗长 $N$。例如 16 kHz、512 点窗、128 点帧移，每次服务 4 ms，稳态负载比为 $4/8=0.5$；误用窗长会得到 $4/32=0.125$。启动填窗与末尾排空应在整段计时中另记录，不靠重复计算重叠样本稀释耗时。</p>
 <p>多通道同时记录的 60 ms 仍是 60 ms，不能乘麦克风数量。并行模型的 CPU 累计服务时间、实际经过的墙钟时间、从采集到输出的响应时间也不同；离线 RTF 应明确计的是哪一段墙钟耗时，式(10-12)的串行服务比则用于本书队列预算。对多条独立会话，可报告每流 RTF 或以全部流时长定义总吞吐，但不能拿后者代替各流的期限检查。不同长度任务的单次 RTF 不能无权平均，见 E10-18。</p>
 <p>RTF 不等于 MIPS。预算表应记录测量平台和版本：</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:83em">
 <thead>
 <tr>
-<th scope="col">模块</th>
-<th scope="col">配置与输入尺寸</th>
-<th scope="col" style="text-align: right;">MAC/s 或分析复杂度</th>
-<th scope="col" style="text-align: right;">最坏帧耗时</th>
-<th scope="col" style="text-align: right;">RTF</th>
-<th scope="col" style="text-align: right;">峰值内存</th>
-<th scope="col" style="text-align: right;">平均/峰值功率</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:10em">模块</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:16em">配置与输入尺寸</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:16em" class="tutorial-short-column">MAC/s 或分析复杂度</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:11em" class="tutorial-short-column">最坏帧耗时</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:8em" class="tutorial-short-column">RTF</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:11em" class="tutorial-short-column">峰值内存</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:11em" class="tutorial-short-column">平均/峰值功率</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>示例模块</td>
-<td>麦数、采样率、帧长、模型版本</td>
-<td style="text-align: right;">在同一计数规则下统计</td>
-<td style="text-align: right;">在目标芯片实测</td>
-<td style="text-align: right;">同一段音频实测</td>
-<td style="text-align: right;">高水位实测</td>
-<td style="text-align: right;">功率仪实测</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">示例模块</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">麦数、采样率、帧长、模型版本</td>
+<td style="text-align: right;--tutorial-column-width:16em" class="tutorial-short-column">在同一计数规则下统计</td>
+<td style="text-align: right;--tutorial-column-width:11em" class="tutorial-short-column">在目标芯片实测</td>
+<td style="text-align: right;--tutorial-column-width:8em" class="tutorial-short-column">同一段音频实测</td>
+<td style="text-align: right;--tutorial-column-width:11em" class="tutorial-short-column">高水位实测</td>
+<td style="text-align: right;--tutorial-column-width:11em" class="tutorial-short-column">功率仪实测</td>
 </tr>
 </tbody>
 </table></div>
@@ -1111,7 +1123,10 @@ $$</p>
 <p>若常驻状态分别占 400、200、60 KiB，且每个在途帧使用四通道 $\times160$ 样本 $\times4$ B $=2560$ B $=2.5\ \mathrm{KiB}$，三个在途帧共 7.5 KiB。这里明确假设三块状态同时驻留且帧内存彼此独立，峰值为 $400+200+60+7.5=667.5$ KiB，低于示意 700 KiB 上限；真实程序还要计入线程栈、对齐、库工作区及共享缓冲区的实际生命周期。</p>
 <p>更一般地，设 $\mathcal A(t)$ 是时刻 $t$ 真正同时存活的内存分配集合，每个分配大小为 $m_j$，常驻状态为 $M_0\text{，}$则</p>
 <p>$$
-M_{\mathrm{peak}}=M_0+\max_t\sum_{j\in\mathcal A(t)}m_j.
+\begin{aligned}
+m(t)&=\sum_{j\in\mathcal A(t)}m_j,\\
+M_{\mathrm{peak}}&=M_0+\max_t m(t).
+\end{aligned}
 \tag{10-15}
 $$</p>
 <p>同一物理内存只计一次。串行阶段的临时工作区若可复用，不应直接把两个峰值相加；阶段并发时又不能只取较大者。E10-23 用同一组大小比较这两种生命周期。</p>
@@ -1241,51 +1256,51 @@ $$</p>
 <p>验收阈值应由网络带宽、最长会话和目标任务确定。例如，要求一小时内相位相干的系统与只做句级识别的系统，对残余 SRO 的要求不会相同。</p>
 <span id="sec-19" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-8">10.8 阵列形态与场景约束</h2>
 <p>公开产品的麦克风数量、位置和算法会随硬件版本及地区型号变化。若没有可追溯的一手资料，不应从拆解照片推断算法链。本教程因此只讨论可迁移的设计条件：</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:56em">
 <thead>
 <tr>
-<th scope="col">场景</th>
-<th scope="col">先确认的约束</th>
-<th scope="col">可能启用的模块</th>
-<th scope="col">必测状态</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:10em">场景</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:17em">先确认的约束</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:17em">可能启用的模块</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:12em">必测状态</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>带扬声器的音箱/会议终端</td>
-<td>播放声压、参考取点、覆盖角</td>
-<td>AEC；按混响决定 WPE；按覆盖决定定位/波束</td>
-<td>远端单讲、近端单讲、双讲、音乐播放</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">带扬声器的音箱/会议终端</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:17em">播放声压、参考取点、覆盖角</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:17em">AEC；按混响决定 WPE；按覆盖决定定位/波束</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">远端单讲、近端单讲、双讲、音乐播放</td>
 </tr>
 <tr>
-<td>会议室</td>
-<td>房间混响、座位分布、重叠说话比例</td>
-<td>多波束或分离；晚期混响明显时用 WPE</td>
-<td>单人、抢话、键盘/空调、不同座位</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">会议室</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:17em">房间混响、座位分布、重叠说话比例</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:17em">多波束或分离；晚期混响明显时用 WPE</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">单人、抢话、键盘/空调、不同座位</td>
 </tr>
 <tr>
-<td>车载</td>
-<td>舱位、车速相关噪声、多个时钟域</td>
-<td>分区波束、SRO 补偿、参考完整的 AEC</td>
-<td>怠速、行驶、开窗、空调、音乐与通话并发</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">车载</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:17em">舱位、车速相关噪声、多个时钟域</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:17em">分区波束、SRO 补偿、参考完整的 AEC</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">怠速、行驶、开窗、空调、音乐与通话并发</td>
 </tr>
 <tr>
-<td>耳机/助听设备</td>
-<td>上下行路径、佩戴泄漏、低延迟和电池约束</td>
-<td>固定/自适应双麦波束、NS、反馈抑制</td>
-<td>不同佩戴、风噪、自己说话、最坏增益</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">耳机/助听设备</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:17em">上下行路径、佩戴泄漏、低延迟和电池约束</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:17em">固定/自适应双麦波束、NS、反馈抑制</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">不同佩戴、风噪、自己说话、最坏增益</td>
 </tr>
 <tr>
-<td>机器人</td>
-<td>运动自噪声、阵列姿态、惯性测量单元（Inertial Measurement Unit，IMU）时间戳</td>
-<td>运动前馈、姿态补偿、定位/追踪</td>
-<td>静止、转头、行驶、风扇/电机变速</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">机器人</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:17em">运动自噪声、阵列姿态、惯性测量单元（Inertial Measurement Unit，IMU）时间戳</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:17em">运动前馈、姿态补偿、定位/追踪</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">静止、转头、行驶、风扇/电机变速</td>
 </tr>
 <tr>
-<td>手机/手持设备</td>
-<td>握持、遮挡、横竖屏、通话模式</td>
-<td>通道选择、波束/NS、模式切换</td>
-<td>手指挡孔、风噪、贴脸、免提、录像</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">手机/手持设备</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:17em">握持、遮挡、横竖屏、通话模式</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:17em">通道选择、波束/NS、模式切换</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">手指挡孔、风噪、贴脸、免提、录像</td>
 </tr>
 </tbody>
 </table></div>
@@ -1485,8 +1500,16 @@ $$</p>
 <td>相对指定参考设备、在已配置估计窗内得到的采样率偏移</td>
 </tr>
 <tr>
-<td><code>rtf</code>、<code>deadline_miss</code></td>
-<td>明确计时范围的服务耗时/本次新推进音频时长；是否越过采集与接口规定的期限另记</td>
+<td><code>rtf</code></td>
+<td>在声明的统计区间内，累计服务耗时/累计新推进源音频时长；分析窗重叠部分不重复计入分母</td>
+</tr>
+<tr>
+<td><code>frame_service_rtf</code></td>
+<td>可选的单帧服务耗时/本帧新推进音频时长；与累计 <code>rtf</code> 分开命名</td>
+</tr>
+<tr>
+<td><code>deadline_miss</code></td>
+<td>本帧是否越过采集与接口规定的期限，与累计处理负载分别记录</td>
 </tr>
 <tr>
 <td><code>agc_gain</code>、<code>model_version</code></td>
@@ -1495,6 +1518,7 @@ $$</p>
 </tbody>
 </table></div>
 <p><code>simulate_deadline_queue</code> 的 <code>queue_high_water</code> 包含正在处理的帧，故不能直接写进上表的等待队列深度。<code>xrun</code> 是事件，不一定带精确缺样数量；只有采样计数器、时间戳和设备协议足以确定缺口时，才能填入相应样本数。E10-26 把已知缺口、时间样本和通道展开数量分开计算。实际产品若要记录敏感内容，应按 §10.6 的同意、访问、保留和删除规则另行设计。</p>
+<p>累计 <code>rtf</code> 的统计区间应在应用配置或日志元数据中给出，还要声明服务计时覆盖哪些模块。按式(10-12)，服务时长先相加，新推进源样本对应的时长也先相加，再求比值；各帧服务比的算术平均一般不能代替该结果。一个帧记录可以同时携带当帧 <code>frame_service_rtf</code> 与截至该时刻的区间 <code>rtf</code>。字段类型和有限性校验不能证明生产者已经按此口径计时，也不能把等待时间、端到端响应或 PortAudio 的流CPU负载直接换名填入。</p>
 <p>故障注入要对应恢复动作：</p>
 <ul>
 <li>固定延迟跳变用于检查 AEC 重对齐；</li>
@@ -1541,11 +1565,21 @@ $$</p>
 </tr>
 </tbody>
 </table></div>
+<h3 id="sec-u-a134fb8cdf">已知坏麦：同时选择观测、响应与协方差</h3>
+<p>设备已经报告某个通道不可用时，波束形成器的输入维度发生了变化。把该通道的旧权重设成零，只删除了一个乘积项；原来的单位目标响应约束也可能随之失效。E10-34 给出一个目标响应从 1 恰好变成 0 的反例：错误输出仍有噪声，任意有限整体增益都不能恢复已经抵消的目标。</p>
+<p>设一次窄带处理有 $M$ 个原通道，健康通道按明确顺序列为 $\mathcal I$，共有 $K$ 个。选择矩阵 $\mathbf S\in\mathbb R^{K\times M}$ 的每一行只含一个 1，指出对应的原物理通道；其余元素为 0。观测、目标响应向量和噪声协方差必须按同一顺序一起选择。协方差要同时选择行、列，保留通道间的互协方差；只删一行不能得到一个新的合法协方差。</p>
+<p>频域中沿用第5章的 $\vec x=\vec d S+\vec n$ 和共轭内积 $Y=\vec w^H\vec x$；这里 $S$ 是目标复谱系数，$\vec d$ 是本小专题的已知目标响应，相当于第5章的 $\vec a$，不要与实选择矩阵 $\mathbf S$ 混淆。选择后的模型及重新求权重见 E10-34 的式(10-22)、(10-23)。当选择后的噪声模型可正定求解且目标响应非零时，复用第5章 MVDR，使保留通道的权重再次满足单位目标响应。<a href="https://arxiv.org/pdf/1705.08255" title="citation">Zhang 等2017，§II.C 式(9)～(11)</a>给出这种同步选择的模型；本书只实施已知通道集合的适配，没有实现该论文的最优子集搜索。</p>
+<p>选择集合、权重和处理状态应作为一次有版本的配置更新。控制线程可以验证新模型并计算权重，工作线程在声明的块边界切换，避免一半数据使用旧通道顺序、另一半权重使用新顺序。AEC 路径、WPE 缓存、掩码通道、几何、标定和参考通道也要按各自依赖重新检查；这套教学适配器不实现原子切换、故障检测或实时线程协议。</p>
+<p>若不可用的是原相对传递函数的参考通道，还须明确新的参考及所保护的输出。选出剩余响应并保持原目标幅度定义，与把响应重新除以某个健康通道，是两个不同操作；后一操作会改变输出尺度。本例给定 $\vec d$ 并保持原目标参考，不自动重新归一化。若一个通道也不剩，或者给定模型不合法，应拒绝本次数值求解，再由系统执行事先规定的停流或旁路策略。</p>
 <span id="sec-23" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-11">10.11 本章练习</h2>
-<p>以下三十三题的输入均为本书构造的教学数据。先手算，再运行 E10-01～12 与 E10-14 的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_engineering.py"><code>exercises_engineering.py</code></a>：</p>
+<p>以下三十四题的输入均为本书构造的教学数据。先手算，再运行 E10-01～12 与 E10-14 的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_engineering.py"><code>exercises_engineering.py</code></a>：</p>
 <pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering
 </code></pre>
-<p>E10-13 运行独立的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/spectral_subtraction_demo.py"><code>spectral_subtraction_demo.py</code></a>；E10-15 使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/tracking_time_exercises.py"><code>tracking_time_exercises.py</code></a>，E10-16～17 使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/engineering_boundary_exercises.py"><code>engineering_boundary_exercises.py</code></a>。各程序按稳定编号输出中间量和结果；它们不访问声卡，也不代表硬件性能测量。E10-18～33 使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/chapter10_experiments.py"><code>chapter10_experiments.py</code></a>，运行方式为 <code>.venv/bin/python -m codes.chapters.ch10.chapter10_experiments</code>。</p>
+<p>E10-13 运行独立的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/spectral_subtraction_demo.py"><code>spectral_subtraction_demo.py</code></a>；E10-15 使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/tracking_time_exercises.py"><code>tracking_time_exercises.py</code></a>，E10-16～17 使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/engineering_boundary_exercises.py"><code>engineering_boundary_exercises.py</code></a>。各程序按稳定编号输出中间量和结果；它们不访问声卡，也不代表硬件性能测量。</p>
+<p>E10-18～34 使用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/chapter10_experiments.py"><code>chapter10_experiments.py</code></a>，运行方式如下：</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch10.chapter10_experiments
+</code></pre>
+<p>E10-34 包含已知坏麦的短手算和同模型的实际PCM控制。</p>
 <h3 id="sec-u-3a2ce1aea0">E10-01：把初始错位与 SRO 分开</h3>
 <p>在参考时间 $[0,10,20]$ s 测得相对延迟 $[2,3,4]$ ms。按 §10.2 的一阶模型求截距、ppm、600 s 累积漂移，以及设备转到参考速率所需的“输出/输入”比例。</p>
 <p>答案：斜率为 $(4-2)\ \mathrm{ms}/20\ \mathrm{s}=10^{-4}$，即 100 ppm；截距为 2 ms。累计漂移约 $10^{-4}\times600=0.06$ s，即 60 ms，不含初始的 2 ms；比例约 $1/1.0001=0.99990001$。这组点恰好共线，不能据此认为实录估计也没有噪声，或首尾两点足以识别丢样。</p>
@@ -1902,8 +1936,8 @@ $$</p>
 I_t&=\mathbf1\{r_t>2\},\\
 p'_t&=\alpha_p p'_{t-1}+(1-\alpha_p)I_t,\\
 \widetilde\alpha_{d,t}&=\alpha_d+(1-\alpha_d)p'_t,\\
-D_t&=\widetilde\alpha_{d,t}D_{t-1}
- +(1-\widetilde\alpha_{d,t})P_t.
+D_t&=\widetilde\alpha_{d,t}D_{t-1}\\
+&\quad+(1-\widetilde\alpha_{d,t})P_t.
 \end{aligned}
 \tag{10-18}
 $$</p>
@@ -2071,28 +2105,28 @@ $$</p>
 \begin{aligned}
 D_t^{\mathrm{known}}
 &=\mathbb E|V_{f,t}|^2\\
-&=\sum_{\ell=0}^{511}
- \sigma^2[c_t-256+\ell]\,g^2[\ell].
+&=\sum_{\ell=0}^{511}v_{t,\ell}\,g^2[\ell].
 \end{aligned}
 \tag{10-20}
 $$</p>
-<p>录音范围以外的补零点取方差 0。在固定方差区间，周期 Hann 的平方和为 192，得到前段 $0.03^2\times192=0.1728$、后段 $0.12^2\times192=2.7648$。窗跨过阶跃时必须按各点的方差加权；例如中心恰为 19200 的帧得到 1.47555，不等于把中心的后段方差直接乘192所得的2.7648。</p>
+<p>式中 $v_{t,\ell}=\sigma^2[c_t-256+\ell]$ 是当前窗第 $\ell$ 点的给定噪声方差；它不是该点噪声样本的平方。录音范围以外的补零点取方差 0。在固定方差区间，周期 Hann 的平方和为 192，得到前段 $0.03^2\times192=0.1728$、后段 $0.12^2\times192=2.7648$。窗跨过阶跃时必须按各点的方差加权；例如中心恰为 19200 的帧得到 1.47555，不等于把中心的后段方差直接乘192所得的2.7648。</p>
 <p>已知方差给出的是总体期望，不是本次实际噪声的逐帧模平方，也没有提供干净目标的频谱。因此这条诊断支路仍会留下噪声，并受到观测功率随机波动与谱地板影响；它不是干净恢复 oracle 或可部署的盲估计器。</p>
 <p><strong>第二步：先分解浮点误差，再读回 PCM。</strong> 从实际观测 $Y$ 算出每条支路的增益 $G$ 后，用同一个 $G$ 分别作用于已知目标谱和噪声谱，再重建为 $s_G[n]$、$v_G[n]$。它们的和等于这条支路的未量化输出。令 $d[n]=s_G[n]-s[n]$ 为目标损伤；$G$ 本身依赖混合观测，所以不能假设损伤与残余噪声在有限记录中正交。</p>
-<p>六个 WAV 使用共同导出增益 1，分别编码为 PCM16，解码按有符号整数除以32768；没有分别归一化、时移匹配或拟合增益。对同一半开窗口 $W$、$N=|W|$，以 $u_n$、$z_n$ 表示实际参考和输出的整数 PCM 样本，定义</p>
+<p>六个 WAV 使用共同导出增益 1，分别编码为 PCM16，解码按有符号整数除以32768；没有分别归一化、时移匹配或拟合增益。对同一半开窗口 $W$、$N=|W|$，以 $u_n$、$z_n$ 表示实际参考和输出的整数 PCM 样本。记目标损伤、残余噪声和两者交叉项的窗平均为 $P_d$、$P_v$、$C_{dv}$，实际参考的整数能量为 $U$，则</p>
 <p>$$
-\begin{aligned}
-\mathrm{MSE}_{\mathrm{float}}
-&=\frac1N\sum_{n\in W}(d[n]+v_G[n])^2\\
-&=\frac1N\sum_{n\in W}d^2[n]
- +\frac1N\sum_{n\in W}v_G^2[n]\\
-&\quad+\frac2N\sum_{n\in W}d[n]v_G[n],\\
-E_{\mathrm{PCM}}&=\sum_{n\in W}(z_n-u_n)^2,\\
+\begin{gathered}
+P_d=\frac1N\sum_{n\in W}d^2[n],\\
+P_v=\frac1N\sum_{n\in W}v_G^2[n],\\
+C_{dv}=\frac2N\sum_{n\in W}d[n]v_G[n],\\
+P_e=P_d+P_v+C_{dv},\\
+\mathrm{MSE}_{\mathrm{float}}=P_e,\\
+E_{\mathrm{PCM}}=\sum_{n\in W}(z_n-u_n)^2,\\
+U=\sum_{n\in W}u_n^2,\\
 \mathrm{MSE}_{\mathrm{PCM}}
-&=\frac{E_{\mathrm{PCM}}}{N\,32768^2},\\
+=\frac{E_{\mathrm{PCM}}}{N\,32768^2},\\
 \mathrm{NMSE}_{\mathrm{PCM}}
-&=\frac{E_{\mathrm{PCM}}}{\sum_{n\in W}u_n^2}.
-\end{aligned}
+=\frac{E_{\mathrm{PCM}}}{U}.
+\end{gathered}
 \tag{10-21}
 $$</p>
 <p>均方误差（Mean-Squared Error，MSE）的单位为数字满幅幅度的平方；归一化均方误差（Normalized Mean-Squared Error，NMSE）是无量纲误差能量比，二者越小表示同参考的总误差越小。它们不是 SNR 或主观质量。本题两个参考窗口的能量都严格为正。</p>
@@ -2156,6 +2190,188 @@ $$</p>
 </ul>
 <p>这些文件用于对应数值变化，没有正式听测或语音可懂度评测。</p>
 <p>复现入口为 <code>python -m codes.chapters.ch10.examples.generate_noise_mismatch</code>，已有资产用同命令加 <code>--check</code> 严格只读核验。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/chapter10_experiments.py">章节题入口</a>先核验六文件、清单、生成源和完整模型回放，再实际读取WAV字节重新评分，另列浮点分解；清单或资产过期时失败，不自动重生。</p>
+<p><a id="e10-34"></a></p>
+<h3 id="sec-u-fbd4df22d3">E10-34：坏麦置零之后，为什么必须重算波束</h3>
+<p><strong>题设与目标。</strong> 三通道的已知目标响应为 $\vec d=[1,1,1]^T$。给定噪声协方差 $\mathbf R=\mathbf B\mathbf B^T$，其中</p>
+<p>$$
+\mathbf B=\begin{bmatrix}
+1&0&0\\1&1&0\\0&1&1
+\end{bmatrix},\qquad
+\mathbf R=\begin{bmatrix}
+1&1&0\\1&2&1\\0&1&2
+\end{bmatrix}.
+$$</p>
+<p>这是无量纲归一统计的手算，不是从实际录音估计的逐频协方差。设备已明确报告通道0不可用；通道按0、1、2编号。比较完整阵列的原 MVDR、仅把旧权重0项置零、以及选择通道1、2后重算权重的目标响应与噪声功率。完整阵列用于故障前对照。</p>
+<p><strong>第一步：把选择写入模型。</strong> 对任意给定的合法有序通道集合，观测、响应和噪声统计按同一实选择矩阵变换：</p>
+<p>$$
+\begin{aligned}
+\vec x_{\mathcal I}&=\mathbf S\vec x,\\
+\vec d_{\mathcal I}&=\mathbf S\vec d,\\
+\mathbf R_{\mathcal I}&=\mathbf S\mathbf R\mathbf S^T.
+\end{aligned}
+\tag{10-22}
+$$</p>
+<p>这里 $\mathbf S$ 无量纲。复数协方差为 $\mathbb E[\vec n\vec n^H]$；选择矩阵是实矩阵，所以 $\mathbf S^H=\mathbf S^T$。当输入是频点索引的一组矩阵时，每个频点都选择同一组物理通道，不能只选择频率轴。</p>
+<p>复用第5章的最小方差无失真响应求解，令 $\vec q_{\mathcal I}$ 为线性系统的解，得到</p>
+<p>$$
+\begin{aligned}
+\mathbf R_{\mathcal I}\vec q_{\mathcal I}
+ &=\vec d_{\mathcal I},\\
+\vec w_{\mathcal I}
+ &=\frac{\vec q_{\mathcal I}}{
+ \vec d_{\mathcal I}^H\vec q_{\mathcal I}},\\
+Y_{\mathcal I}&=\vec w_{\mathcal I}^H\vec x_{\mathcal I}.
+\end{aligned}
+\tag{10-23}
+$$</p>
+<p>无加载时要求 $\mathbf R_{\mathcal I}$ 正定且 $\vec d_{\mathcal I}\ne0$。这样分母为严格正实数，权重满足 $\vec w_{\mathcal I}^H\vec d_{\mathcal I}=1$。公开适配器先检查完整给定协方差的厄米性和半正定性，再选择子矩阵；不会用删除通道掩盖一个非法输入模型。秩亏输入是否能求解，取决于实际选后的矩阵及调用方明确声明的相对加载。</p>
+<p><strong>第二步：完整阵列手算。</strong> 记 $\mathbf R\vec q=\vec d$，三个方程是</p>
+<p>$$
+\begin{aligned}
+q_0+q_1&=1,\\
+q_0+2q_1+q_2&=1,\\
+q_1+2q_2&=1.
+\end{aligned}
+$$</p>
+<p>中行减首行得 $q_1+q_2=0$；与末行联立得 $q_2=1$、$q_1=-1$，再由首行得 $q_0=2$。因此 $\vec q=[2,-1,1]^T$，归一分母为2，原权重是 $\vec w=[1,-1/2,1/2]^T$。直接相乘得到 $\mathbf R\vec w=[1/2,1/2,1/2]^T$，所以目标响应为1，噪声功率为 $\vec w^T\mathbf R\vec w=1/2$。</p>
+<p><strong>第三步：只把旧权重置零。</strong> 原数据的通道0变成全零后，输出等价于用保留通道的旧权重 $\vec w_{\mathrm{old},\mathcal I}=[-1/2,1/2]^T$。它对共同目标的响应为 $-1/2+1/2=0$，已经完全抵消目标。乘任意有限标量后仍为0，因此不存在可恢复单位响应的整体增益。</p>
+<p>噪声功率仍需单独计算。保留通道的矩阵与旧权重相乘为 $[-1/2,1/2]^T$，再作内积得到 $1/2$。噪声功率没有增加，并不能说明目标保持了。</p>
+<p><strong>第四步：重算健康子阵。</strong> 按顺序选择通道1、2时</p>
+<p>$$
+\begin{aligned}
+\mathbf S&=\begin{bmatrix}0&1&0\\0&0&1\end{bmatrix},\\
+\mathbf R_{\mathcal I}
+ &=\begin{bmatrix}2&1\\1&2\end{bmatrix},\\
+\vec d_{\mathcal I}&=[1,1]^T.
+\end{aligned}
+$$</p>
+<p>线性方程为 $2q_1+q_2=1$ 与 $q_1+2q_2=1$。相减得 $q_1=q_2$，代回得 $q_1=q_2=1/3$。归一分母为 $2/3$，新权重为 $[1/2,1/2]^T$。目标响应恢复为1，噪声功率变成 $3/2$。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:36em">
+<thead>
+<tr>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:10em">控制</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:8em" class="tutorial-short-column">目标响应</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:10em" class="tutorial-short-column">归一噪声功率</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:8em" class="tutorial-short-column">目标损伤</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">健康完整阵列</td>
+<td style="text-align: right;--tutorial-column-width:8em" class="tutorial-short-column">1</td>
+<td style="text-align: right;--tutorial-column-width:10em" class="tutorial-short-column">0.5</td>
+<td style="text-align: right;--tutorial-column-width:8em" class="tutorial-short-column">0</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">故障后沿用旧权重</td>
+<td style="text-align: right;--tutorial-column-width:8em" class="tutorial-short-column">0</td>
+<td style="text-align: right;--tutorial-column-width:10em" class="tutorial-short-column">0.5</td>
+<td style="text-align: right;--tutorial-column-width:8em" class="tutorial-short-column">1</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">故障后重算子阵</td>
+<td style="text-align: right;--tutorial-column-width:8em" class="tutorial-short-column">1</td>
+<td style="text-align: right;--tutorial-column-width:10em" class="tutorial-short-column">1.5</td>
+<td style="text-align: right;--tutorial-column-width:8em" class="tutorial-short-column">0</td>
+</tr>
+</tbody>
+</table></div>
+<p>表中的目标损伤按单位目标功率下的响应误差平方计算。这里的重算保住了目标，却失去完整阵列的噪声抑制能力；这个给定例子不证明任意健康子集都有相同损失。</p>
+<p><strong>第五步：把同一模型做成波形。</strong> 独立音频使用16 kHz、32000点，目标为 $s[n]=0.1\sin(2\pi500n/16000)$，三路噪声基分别是同幅的1500、2500、3500 Hz正弦。所有分量共用首尾320点的 $\sin^2$ 淡变包络，含两端点，导出增益为1。令 $\vec u[n]$ 为这三路噪声基，构造时域瞬时混合 $\vec x[n]=\vec d\,s[n]+\mathbf B\vec u[n]$；故障输入只把通道0设为零，不增加时间缺口。</p>
+<p>评分窗为 <code>[2400,29600)</code>，共27200点。窗口内包络为1，四个频率分别含850、2550、4250、5950个整周期，各谱线在这个指定窗上正交且样本均值为零。每个分量功率为0.005，因而未量化的时间协方差为 $0.005\mathbf R$，目标功率为0.005。它是给定波形的时间统计，不能当成每个 STFT 频点都有同一 $0.005\mathbf R$ 的证据；这里应用的是固定实权重的时域控制，没有运行盲噪声估计或逐频波束整链。</p>
+<p>健康输出的噪声分量为 $(u_0+u_2)/2$；故障旧权重的目标系数为0，噪声为 $(-u_0+u_2)/2$；重算输出的目标系数为1，噪声为 $(u_0+2u_1+u_2)/2$。这三条表达式可直接用于独立手算功率。</p>
+<p>令实际采用的目标响应为 $g=\vec w^H\vec d$，残余噪声波形为 $n_y$，未量化误差为 $e=y-s$。分量恒等式为</p>
+<p>$$
+\begin{aligned}
+e&=(g-1)s+n_y,\\
+P_e&=|g-1|^2P_s+P_{n_y}+C,\\
+C&=2\operatorname{Re}\mathbb E
+ \big[(g-1)s\,n_y^*\big].
+\end{aligned}
+\tag{10-24}
+$$</p>
+<p>此处 $\mathbb E$ 用指定评分窗的有限样本平均解释。解析交叉项为0来自刚说明的谱线正交，不是用一次人工波形证明随机独立。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:46em">
+<thead>
+<tr>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:10em">控制</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">目标损伤功率</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">残余噪声功率</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">总误差功率</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">解析NMSE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">健康完整阵列</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">0</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">0.0025</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">0.0025</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">0.5</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">故障后沿用旧权重</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">0.005</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">0.0025</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">0.0075</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">1.5</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">故障后重算子阵</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">0</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">0.0075</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">0.0075</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">1.5</td>
+</tr>
+</tbody>
+</table></div>
+<p>后两条总误差相同，但旧权重输出没有目标，重算输出保留了目标。只按一个总NMSE排序不能看出这种区别。实际浮点计算中的舍入残差与PCM量化误差应另外保留；各输出先从未量化模型生成，再分别编码，不把实际PCM总误差直接拆成表中的理想分量。</p>
+<p><strong>第六步：读回实际PCM。</strong> 六个文件的时间原点、长度和导出增益相同。按照式(10-21)，误差整数能量除以 $27200\times32768^2=29205777612800$ 得到MSE，除以实际参考整数能量146027417700得到NMSE；不拟合输出增益或时移。直接读取发布的参考和三条输出得到：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:48em">
+<thead>
+<tr>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:10em">控制</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:14em" class="tutorial-short-column">PCM误差整数能量 $E$</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:12em" class="tutorial-short-column">实际PCM MSE</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:12em" class="tutorial-short-column">实际PCM NMSE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">健康完整阵列</td>
+<td style="text-align: right;--tutorial-column-width:14em" class="tutorial-short-column">73014637900</td>
+<td style="text-align: right;--tutorial-column-width:12em" class="tutorial-short-column">0.002500006638</td>
+<td style="text-align: right;--tutorial-column-width:12em" class="tutorial-short-column">0.5000063622</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">故障后沿用旧权重</td>
+<td style="text-align: right;--tutorial-column-width:14em" class="tutorial-short-column">219018750300</td>
+<td style="text-align: right;--tutorial-column-width:12em" class="tutorial-short-column">0.007499158324</td>
+<td style="text-align: right;--tutorial-column-width:12em" class="tutorial-short-column">1.4998467668</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">故障后重算子阵</td>
+<td style="text-align: right;--tutorial-column-width:14em" class="tutorial-short-column">219050854800</td>
+<td style="text-align: right;--tutorial-column-width:12em" class="tutorial-short-column">0.007500257576</td>
+<td style="text-align: right;--tutorial-column-width:12em" class="tutorial-short-column">1.5000666193</td>
+</tr>
+</tbody>
+</table></div>
+<p>后两条实际PCM总误差不精确相等，因为参考和不同输出分别量化。表中这个很小的差异不改变解析反例，也不能解释成重算子阵在目标保持上更差；目标响应与总误差需要同时检查。完整浮点测量、实际PCM相量诊断、整数功率和误差见<a href="channel_audio/MANIFEST.json">独立音频清单</a>。实际量化后的相量诊断也不是重新估计或补偿权重的输入。</p>
+<p><img alt="图78 已知通道0失效后的有效权重、同窗PCM波形、目标投影与总误差" src="../figures/fig78_channel_failure.png" onerror="this.alt+='（图缺失）'" /></p>
+<p><strong>图78</strong>的(a)列出已知时间噪声协方差 $0.005\mathbf B\mathbf B^T$ 下的有效权重、解析目标响应和噪声均方；(b)使用实际PCM同一128点片段 <code>[2400,2528)</code> 比较目标参考与三条输出，时间轴从150 ms起，没有增益或时移匹配；(c)把实际PCM对参考的投影诊断和总NMSE分别画出，并用横线、菱形另标解析响应与解析NMSE。</p>
+<p>旧权重的解析目标响应为0，但PCM投影诊断约为0.000105；量化后的微小投影不能改称精确无目标，也不能据此认为单位响应已经恢复。本图的协方差控制与原始权重来自已知模型，投影只用于解释实际输出，不参与求解。</p>
+<p>本题的短数值入口复用 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/core/channel_selection.py"><code>channel_selection.py</code></a> 的通道适配和第5章唯一MVDR实现。完整阵列、一个通道、通道换序、复数频域模型以及协方差整体缩放均有独立测试；非法或重复索引、无剩余通道、不合法统计、不可正定求解和非有限输入会拒绝求解。正标量缩放只用于避免求解时的极端功率尺度，返回的选后协方差仍保留输入单位，没有改变相对加载或单位响应目标。</p>
+<p>六个数学合成文件均为16 kHz、32000点；两条阵列输入为三声道，其余为单声道。先调低音量，再用以下文件对应观察目标保留与噪声变化：</p>
+<ul>
+<li><a href="channel_audio/channel_reference.wav">共同目标参考</a><audio class="audio-sample" controls preload="none" aria-label="共同目标参考" src="channel_audio/channel_reference.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="channel_audio/channel_healthy_array.wav">故障前完整阵列输入</a><audio class="audio-sample" controls preload="none" aria-label="故障前完整阵列输入" src="channel_audio/channel_healthy_array.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="channel_audio/channel_faulty_array.wav">通道0置零后的阵列输入</a><audio class="audio-sample" controls preload="none" aria-label="通道0置零后的阵列输入" src="channel_audio/channel_faulty_array.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="channel_audio/channel_healthy_output.wav">健康阵列原权重输出</a><audio class="audio-sample" controls preload="none" aria-label="健康阵列原权重输出" src="channel_audio/channel_healthy_output.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="channel_audio/channel_stale_output.wav">故障后旧权重输出</a><audio class="audio-sample" controls preload="none" aria-label="故障后旧权重输出" src="channel_audio/channel_stale_output.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="channel_audio/channel_recomputed_output.wav">故障后重算子阵输出</a><audio class="audio-sample" controls preload="none" aria-label="故障后重算子阵输出" src="channel_audio/channel_recomputed_output.wav">请使用上方 WAV 链接下载。</audio></li>
+</ul>
+<p>复现入口为 <code>.venv/bin/python -m codes.chapters.ch10.examples.generate_channel_audio</code>；已有资产加 <code>--check</code> 严格只读检查。章节练习入口先核完整六WAV、清单、八个直接源和模型回放，再读取实际PCM重新计算整数误差；过期资产会失败，不自动修复。这些固定正弦和已知故障控制不是实录、真实阵列传播、自动健康检测或正式听测。</p>
 <span id="sec-24" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-10-12">10.12 本章小结</h2>
 <ol>
 <li>图 23 是参考依赖图，不是所有设备必须执行的固定流水线。</li>

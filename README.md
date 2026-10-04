@@ -4,7 +4,7 @@
 
 正文提供关键公式推导、可复算例子、适用边界，以及与各章公式对应的 NumPy/标准库教学代码。
 
-全书有 352 道可运行代码练习、77 张脚本生成的编号图和 1 张房间题补充图，以及 27 组共 109 个[主清单合成 WAV](codes/chapters/ch00/audio/MANIFEST.json)。[练习与音频实验手册](codes/chapters/ch00/research/05_exercises_and_audio.md)逐题列出输入、答案、试听条件与代码入口。音频是数学合成样本，不是真实语音或正式听测；第 6 章两组合成 AEC 音频的参数也不完全等同于 E06-07～20 手算题。
+全书有 353 道可运行代码练习、78 张脚本生成的编号图和 1 张房间题补充图，以及 27 组共 109 个[主清单合成 WAV](codes/chapters/ch00/audio/MANIFEST.json)。[练习与音频实验手册](codes/chapters/ch00/research/05_exercises_and_audio.md)逐题列出输入、答案、试听条件与代码入口。音频是数学合成样本，不是真实语音或正式听测；第 6 章两组合成 AEC 音频的参数也不完全等同于 E06-07～20 手算题。
 
 第四章另有[四份已知酉聚焦合成WAV](codes/chapters/ch04/focus_audio/MANIFEST.json)：用稳定窗逐频复幅度与实际PCM检查相干双源的多频协方差秩；指定角度和频率分量已知，不作为盲定位或正式听测结果。
 
@@ -44,13 +44,16 @@ English version: [README_EN.md](README_EN.md)
 
 第9章补充E09-24～26与图77，逐步计算完整IMM模式密度、连续缺测、实际PCM的单槽生命周期，以及已知姿态和静态vMF条件化。它们复用原五个独立WAV，不以局部ID证明说话人身份；代码与边界见[章节练习](codes/chapters/ch00/research/05_exercises_and_audio.md#tracking-model-lifecycle-sphere-exercises)。
 
+第10章补充E10-34、六份独立已知坏麦WAV与图78，逐步重建选集和保目标约束，分开目标损伤、残余噪声与实际PCM总误差；遥测区分累计RTF与逐帧服务RTF。原工业接口改用四份当前报告，旧历史报告保留。[实验条件与整数评分](codes/chapters/ch00/research/05_exercises_and_audio.md#known-channel-failure-exercise)可复算。
+
 ## 目录结构
 
 | 目录/文件 | 说明 |
 |---|---|
 | `chapters/` | 教程正文 16 篇 Markdown（`00_overview.md` 是入口，`01`～`11` 是 11 章正文，`14`/`15` 是扩展专题Ⅰ/Ⅱ，`12`/`13` 是附录 A/B；阅读顺序以导航为准） |
-| `figures/` | 77 张编号图（`fig01`～`fig77_*.png`），房间题补充图另存于 `codes/chapters/appendix_b/room_audio/ROOM_RESULTS.png`；全部由脚本生成、可复现 |
+| `figures/` | 78 张编号图（`fig01`～`fig78_*.png`），房间题补充图另存于 `codes/chapters/appendix_b/room_audio/ROOM_RESULTS.png`；全部由脚本生成、可复现 |
 | `codes/chapters/` | 导读、第 1～11 章、扩展专题Ⅰ/Ⅱ及附录 A/B 的源码、实验、报告和资产；逐章目录与命令见[代码地图](codes/chapters/README.md) |
+| `codes/chapters/ch10/channel_audio/` | 六个已知坏麦数学合成WAV，8真实源、共同增益1；分开解析、浮点与27200点实际PCM整数评分 |
 | `codes/chapters/ch00/audio/MANIFEST.json`、各章 `audio/` | 主清单统一管理 27 组、109 个按章节存放的本书合成 WAV；由脚本生成，不直接编辑 |
 | `codes/chapters/ch01/spectral_audio/` | 两种数学源谱及已知两抽头响应，2 个单声源与2个双声完整尾输出；独立清单与解析/浮点/PCM评分 |
 | `codes/chapters/ch02/sweep_audio/` | 已知数字扫频、完整/加噪/截尾三响应共4WAV；实际PCM与浮点的完整IR、真值支持及支持外能量分别评分，不是房间测量 |
@@ -74,9 +77,9 @@ English version: [README_EN.md](README_EN.md)
 | `codes/chapters/ch00/research/` | 详细源码研究手册：算法步骤、状态与配置、代码入口、失败实验和工业复现 |
 | `codes/chapters/ch00/upstream/_downloads/` | 本机按需取得的第三方源码缓存，已被 Git 忽略；可能含本地修改，不属于本书提交的文档或教学代码，取得与核验方法见[源码获取说明](codes/chapters/ch00/upstream/README.md) |
 | `codes/chapters/*/reports/` | 随算法所属章保存的小规模运行报告；与源码获取状态、论文全量评测分开 |
-| `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`make_beamforming_figures.py`、`make_reference_figures.py`、`make_delay_figures.py`、`make_css_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
+| `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`make_beamforming_figures.py`、`make_reference_figures.py`、`make_delay_figures.py`、`make_css_figures.py`、`make_tracking_figures.py`、`make_channel_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
 | `site/` | 22 个网页：16 个教程页（含首页）及 `research/` 下 6 个研究手册页；构建产物，可再生 |
-| `dist/` | [当前合订 PDF](dist/microphone-array-tutorial.pdf) 与可再生的合订 HTML；PDF 含 16 个顶级、151 个二级、726 个三级书签，共 893 个 |
+| `dist/` | [当前合订 PDF](dist/microphone-array-tutorial.pdf) 与可再生的合订 HTML；PDF 含 16 个顶级、151 个二级、728 个三级书签，共 895 个 |
 
 ## 章节导览
 
@@ -118,7 +121,7 @@ python3 -m venv .venv
 .venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 
-# 3. 先生成 109 个音频，再生成 77 张图（图 34～36、40～41、43～45、47、49、58～60、63～66 读取生成的音频）
+# 3. 先生成 109 个音频，再生成 78 张图（图 34～36、40～41、43～45、47、49、58～60、63～66 读取生成的音频）
 .venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
 .venv/bin/python -m codes.chapters.ch06.examples.generate_apa_audio
 .venv/bin/python -m codes.chapters.ch06.examples.generate_reference_audio  # 六份已知播放增益/尾声WAV；--check严格只读
@@ -126,6 +129,7 @@ python3 -m venv .venv
 .venv/bin/python -m codes.chapters.ch07.examples.generate_delay_audio  # six known arrival/history WAVs; --check只读
 .venv/bin/python -m codes.chapters.ch08.examples.mask_representation_demo
 .venv/bin/python -m codes.chapters.ch10.examples.generate_noise_mismatch
+.venv/bin/python -m codes.chapters.ch10.examples.generate_channel_audio  # 已知坏麦六独立WAV与清单
 .venv/bin/python -m codes.chapters.ch11.examples.generate_selection_audio  # 8 份独立场景 WAV；--check 只核对
 .venv/bin/python -m codes.chapters.appendix_a.examples.generate_weighted_audio  # 5 份独立已知噪声权重 WAV；--check 只核对
 .venv/bin/python -m codes.chapters.appendix_b.examples.generate_response_audio  # 5 份独立同DRR频响对照 WAV；--check 只核对
@@ -139,6 +143,8 @@ python3 -m venv .venv
 .venv/bin/python scripts/make_delay_figures.py  # 图75：已知到达时间与实际PCM历史控制
 .venv/bin/python scripts/make_css_figures.py  # figure 76: fixed-slot polarity/gain and actual PCM
 .venv/bin/python scripts/make_tracking_figures.py  # 图77：实际PCM生命周期与两个龄期时钟
+.venv/bin/python scripts/make_channel_figures.py  # 图78：已知坏麦、重建约束与实际PCM
+.venv/bin/python -m codes.chapters.ch10.examples.generate_channel_audio --check  # 六独立WAV只读核验
 
 # 4. 建多级页面站（输出 site/*.html）
 .venv/bin/python scripts/build_site.py

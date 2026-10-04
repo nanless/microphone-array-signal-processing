@@ -1,6 +1,6 @@
 # 工业音频实现：从采集、状态到部署和评分
 
-AEC 播放音量通知和 XMOS ALT 保持计数静态复核日期：2026-10-04；原核实日期：2026-09-22；AEC 接口 I03/I05 与评分 I20 复核日期：2026-09-23；I01 时间戳、I18 输入输出绑定与 I28 源码接口核对日期：2026-09-26；第10章工业边界及 I30～I32 复核日期：2026-09-28；FastEnhancer 论文发表状态于 2026-09-29 另行复核。2026-10-01另核第10章直接接口，并执行 I32 所列五项受限原源码合同；旧报告保留原日期和环境。对应正文第 10、11 章和附录 B。这里讨论本书算法进入连续音频系统后需要补上的部分：驱动、参考路由、跨块状态、定点内核、模型运行时和评分器。每项的完整提交以 [`SOURCES.lock.json`](../SOURCES.lock.json) 为准；网页文档版本只说明核实依据，不自动等于本机安装版本。
+DeepFilterNet 宿主计数与 faster-enhancer.c 生命周期/计时静态复核日期：2026-10-05；AEC 播放音量通知和 XMOS ALT 保持计数静态复核日期：2026-10-04；原核实日期：2026-09-22；AEC 接口 I03/I05 与评分 I20 复核日期：2026-09-23；I01 时间戳、I18 输入输出绑定与 I28 源码接口核对日期：2026-09-26；第10章工业边界及 I30～I32 复核日期：2026-09-28；FastEnhancer 论文发表状态于 2026-09-29 另行复核。2026-10-01另核第10章直接接口，并执行 I32 所列五项受限原源码合同；旧报告保留原日期和环境。对应正文第 10、11 章和附录 B。这里讨论本书算法进入连续音频系统后需要补上的部分：驱动、参考路由、跨块状态、定点内核、模型运行时和评分器。每项的完整提交以 [`SOURCES.lock.json`](../SOURCES.lock.json) 为准；网页文档版本只说明核实依据，不自动等于本机安装版本。
 
 除明确写出输入、环境和实测值的本地接口实验外，下面的试验是建议执行的设备验收步骤，不是已经测得的产品结果。源码下载、依赖安装、编译、运行、声学测量是不同状态。没有硬件、模型或数据时，可以完成源码核对，但不能把该项标成已经通过设备验收。
 
@@ -165,6 +165,22 @@ Speex 文件头说明其 AUMDF 通过连续学习率提高双讲鲁棒性，没�
 L461～479 的减延迟分支存在可定位的轴混淆：`o_q` 是按通道排列的队列，`o_q.iter_mut().take(self.frame_size)` 截取的是通道数，每个通道只执行一次 `pop_front`；随后却将 `proc_delay` 减去整个 `frame_size`。取两个通道、帧移480、每路初始960样本且满足该分支前提，本书独立队列小例得到每路余959样本、首剩样本索引1，而状态计数从960变480。若实际丢弃一整帧移，每路应余480样本、首索引480。
 
 这说明该分支的队列变化和元数据不一致；它不证明神经增强内核本身错误，也不能据此算出设备端总延迟。原版保持不改；[I32 的诊断](#industrial-upstream-audit)绑定原文件摘要，明确这是静态源码核查和独立 Python 算例，非 Rust 插件执行。
+
+#### 宿主回调次数不能直接换成模型帧数
+
+减延迟还有一个独立的时间条件。固定版[`run(sample_count)` 的计数分支](https://github.com/Rikorose/DeepFilterNet/blob/d375b2d8309e0935d165700c91da9de862a99c31/ladspa/src/lib.rs#L461-L488)先检查 `t_proc_change > 10 * sr / frame_size`，结束时只加1。`frame_size`是模型帧移，计数递增却发生在每次宿主调用；它没有累加 `sample_count`，也没有用墙钟测量连续稳定10秒。
+
+以48 kHz、模型帧移480点为已知控制，右侧为1000。假定计数初值0、每次满足 `rtf < 0.5`、延迟和输出队列条件且没有中途重置，第1001次调用起始计数恰为1000，严格大于条件仍不成立；第1002次起始1001才进入分支。本书仅按输入长度独立换算：
+
+| 固定宿主块长（点） | 1000次调用推进的音频（s） | 从初值0到第1002次调用的音频（s） |
+|---:|---:|---:|
+| 128 | 2.666667 | 2.672000 |
+| 480 | 10.000000 | 10.020000 |
+| 1024 | 21.333333 | 21.376000 |
+
+同一函数的加延迟分支把计数归零，函数末尾又加1；若从该次调用**结束后**开始数后续稳定调用，则第1001次才满足严格比较。宿主块长可变时要逐次累计实际点数，不能使用表内一个固定倍数。这些是原控制流与输入音频时长的算例，未执行Rust，也没有测出设备恢复时间。
+
+原变量 `rtf` 包围整次回调中的入队、锁和等待，含可能发生的 `sleep`，不同于本书遥测的累计服务耗时比。原日志 `Underrun detected` 是该分支的文字，不能直接增加驱动报告的 `xrun_count`，亦不能据此填一个精确丢样数。换入新宿主或修改量子块时，应分别核对推进点数、响应耗时、依赖历史和队列变化。
 
 ## 3. DSP 固件与模块配合
 
@@ -613,7 +629,7 @@ STK（The Synthesis ToolKit in C++）提供音频合成与处理组件。本节�
 
 在Darwin arm64、Apple clang 21.0.0、C++17/O2、STK默认double下，半采样输出相对独立FIR的最大绝对误差为0；零延迟、一采样延迟的已知边界误差也为0。把同一标量tick调用分成37点组且保留对象状态，输出差为0；每组前清空对象，最大绝对差为0.1519102855。结果、输入条件、编译器和实际源码摘要保存于[STK接口报告](../../ch10/reports/stk_delay.json)。这里的0只表示这组输入在该编译环境下的计算结果，不是任意平台的零误差保证。
 
-复跑命令为 `.venv/bin/python -m codes.chapters.ch10.examples.run_stk_delay_probe --report tmp/stk-delay-rerun.json`，需已取得锁定源码与C++编译器，不联网、不安装依赖。该检查只覆盖标量tick及固定延迟；没有测试StkFrames多通道接口、设备时间戳、实时期限或语音质量。
+复跑命令为 `.venv/bin/python -m codes.chapters.ch10.examples.run_stk_delay_probe --report codes/chapters/ch10/reports/stk_delay_current.json`，需已取得锁定源码与C++编译器，不联网、不安装依赖。该检查只覆盖标量tick及固定延迟；没有测试StkFrames多通道接口、设备时间戳、实时期限或语音质量。
 
 幅度和延迟需分别验证。一次半采样线性插值对6000 Hz的幅度比约0.382683，两次则约0.146447，即使累计相位对应一采样，仍不等同纯一采样移位。完整本书推导、PCM统计区间与图41见[附录B E13-02](../../../../chapters/13_appendix-guide.md#e13-02)。工业选型须另查目标频带误差、可变延迟的状态转换和存储上限；本节不把一个组件检查外推为完整重采样器验收。
 
@@ -641,7 +657,11 @@ RNNoise 将传统分析、基音相关处理与神经增益估计结合；原始
 
 ### I31：faster-enhancer.c 的专用量化运行时与节奏测试
 
-本节收录的是部署实现研究，不新增一种语音分离或增强模型。Kim 的 [*faster-enhancer.c*](https://arxiv.org/html/2607.25350v1) 是2026-07-28的预印本。它独立移植 FastEnhancer-Medium 的48 kHz发布配置，作者明确与 FastEnhancer 原作者无隶属关系。论文§3.1绑定的[官方代码](https://github.com/kdrkdrkdr/faster-enhancer.c/tree/7d78dab11bca854fb200426c621a96d7b37a2983)完整提交为 `7d78dab11bca854fb200426c621a96d7b37a2983`。
+本节收录的是部署实现研究，不新增一种语音分离或增强模型。Kim 的 [*faster-enhancer.c*](https://arxiv.org/html/2607.25350v1) 是2026-07-28的预印本。它独立移植 FastEnhancer-Medium 的48 kHz发布配置，作者明确与 FastEnhancer 原作者无隶属关系。论文§3.1绑定的[官方代码](https://github.com/kdrkdrkdr/faster-enhancer.c/tree/7d78dab11bca854fb200426c621a96d7b37a2983)完整提交如下：
+
+```text
+7d78dab11bca854fb200426c621a96d7b37a2983
+```
 
 #### 相对通用推理器改变什么
 
@@ -659,13 +679,19 @@ RNNoise 将传统分析、基音相关处理与神经增益估计结合；原始
 
 CMake要求3.20和C11，库链接平台数学库；MSVC路径明确拒绝，目标架构和各编译单元还有指令集要求。该选集可研究源码与构建前提，但缺权重时不能运行完整增强；测试执行器存在也不等于跨指令输出检查通过。本书未编译此项目、未加载权重、未运行推理或复现论文计时。核对实际本地取得状态应读取[源码状态报告](../SOURCE_STATUS.json)，而非由本节的下载路径推断。
 
+2026-10-05重新核对同一固定提交的[`include/fe.h`](https://github.com/kdrkdrkdr/faster-enhancer.c/blob/7d78dab11bca854fb200426c621a96d7b37a2983/include/fe.h#L45-L67)：部分浮点权重、偏置及位置嵌入直接引用调用方的原blob，所以它必须一直存活到 `fe_free()`。成功初始化前调用 `fe_run()` 会保持输出缓冲不变；这不等于已产生零输出，调用方不能把未写入的旧缓冲当成有效增强音频。第二次初始化也不会自动换模型，换blob须先释放原实例。
+
+[`src/fe_pipeline.c`](https://github.com/kdrkdrkdr/faster-enhancer.c/blob/7d78dab11bca854fb200426c621a96d7b37a2983/src/fe_pipeline.c#L71-L108)在初始化中执行128个静音帧预热，然后清零流状态；每帧激活量化仍重新计算，预热没有冻结量化尺度。初始化时间应单列，运行状态、派生权重缓冲和仍存活的原blob都可能占用内存；一个状态结构的 `sizeof` 不能代替完整驻留内存峰值。
+
+实际计时入口[`tests/fe_run_file.c`](https://github.com/kdrkdrkdr/faster-enhancer.c/blob/7d78dab11bca854fb200426c621a96d7b37a2983/tests/fe_run_file.c#L271-L309)分别保存 `fe_run()` 前后的逐帧差 `ft[t]`，并在节奏模式中按全局起点和帧序号检查期限。打印的 `elapsed/audio_s` 包含节奏等待，可在计算很快时也接近1；它与计算服务比及其分位数不是同一指标。没有迟到记录也不能证明设备回调期限：输入在此处已放入内存，输出播放和驱动尚不在计时范围。该静态复核没有改变原代码、运行模型或转录论文速度排名。
+
 收录理由限于量化范围、显式流状态和按真实节奏计时三点，均直接对应本章已有工程问题。它不替代 I28 的模型解释，不扩写神经模型排行榜。缺少设备和模型时，可先复算32258这个溢出边界；任何增强质量、内存峰值或性能结论仍需完整运行证据。
 
 <a id="industrial-upstream-audit"></a>
 
 ### I32：固定工业接口诊断的执行范围
 
-[诊断脚本](../../ch10/examples/audit_industrial_upstream_interfaces.py)及[JSON报告](../../ch10/reports/industrial_upstream_interfaces.json)对应本章来源审查 SRC10-01～03。脚本先验证独立上游工作树的完整提交、干净状态、被用源码与许可摘要，再执行；结束再次检查，禁止自动获取依赖和改写上游。报告还绑定脚本摘要及输入配置摘要，JSON不写入非标准 NaN 或 Infinity。
+[诊断脚本](../../ch10/examples/audit_industrial_upstream_interfaces.py)的旧[JSON报告](../../ch10/reports/industrial_upstream_interfaces.json)对应本章来源审查 SRC10-01～03；它绑定的是[bde483历史工具字节](https://github.com/nanless/microphone-array-signal-processing/blob/bde483bcc429a553aeaf8830ca3687ab46831db0/codes/chapters/ch10/examples/audit_industrial_upstream_interfaces.py)，不是改后工具的产物。当前工具的实际复验与新报告见[§9](#industrial-current-interface-contracts)。脚本先验证独立上游工作树的完整提交、干净状态、被用源码与许可摘要，再执行；结束再次检查，禁止自动获取依赖和改写上游。报告还绑定脚本摘要及输入配置摘要，JSON不写入非标准 NaN 或 Infinity。
 
 | 对象 | 本轮实际动作 | 未执行 |
 |---|---|---|
@@ -676,12 +702,12 @@ CMake要求3.20和C11，库链接平台数学库；MSVC路径明确拒绝，目�
 复跑需要 NumPy/SciPy 和已取得的固定源码，不联网安装。采用本机已有隔离环境的示例命令：
 
 ```bash
-PYTHONDONTWRITEBYTECODE=1 /tmp/room-pra-venv/bin/python \
+PYTHONDONTWRITEBYTECODE=1 /private/tmp/masp-appb-pra-venv/bin/python \
   codes/chapters/ch10/examples/audit_industrial_upstream_interfaces.py \
-  --report tmp/industrial-upstream-rerun.json
+  --report codes/chapters/ch10/reports/industrial_upstream_interfaces_current.json
 ```
 
-该临时环境路径只描述本次记录；其他机器须指定自身已有环境。普通[离线测试](../../../../tests/test_codes_industrial_upstream_interfaces.py)只读取报告与本书脚本，无需上游缓存、SciPy或网络。期望值来自独立相关性恒等式、首次只读调用保留值和按通道/按时间样本的计数区别；测试通过不表示已认证这些库的全部输入和硬件。
+该临时环境路径只描述本次记录；其他机器须指定自身已有环境。上面的复跑命令显式保存当前报告，不覆盖2026-09-28的原记录。普通[离线测试](../../../../tests/test_codes_industrial_upstream_interfaces.py)只读取报告与本书脚本，无需上游缓存、SciPy或网络。期望值来自独立相关性恒等式、首次只读调用保留值和按通道/按时间样本的计数区别；测试通过不表示已认证这些库的全部输入和硬件。
 
 本轮检索按“PortAudio callback flags / framesPerBuffer”“ALSA PCM errors / timestamps”“ITU P.835 / P.566 2026”“BS.1770-5 / EBU R128”“STOI ESTOI original paper”“ViSQOL v3”“FastEnhancer ICASSP2026 / faster-enhancer.c”定位官方资料，并实际打开原文或固定代码。STOI作者站PDF本轮访问失败，因此不把代码实跑说成已读并复现作者全文；已有Python接口结论依上面固定源码及原调用报告。P.835与P.566的生效状态、预发布/待发布状态分开核查，不用搜索摘要替代标准条款。
 
@@ -689,7 +715,7 @@ PYTHONDONTWRITEBYTECODE=1 /tmp/room-pra-venv/bin/python \
 
 #### 2026-10-01：五项固定源码合同的受限执行
 
-新[合同工具](../../ch10/examples/audit_industrial_contracts.py)和[对应报告](../../ch10/reports/industrial_contracts.json)另记本次运行，不修改上述2026-09-28报告。工具先核官方地址、完整HEAD、工作树清洁状态、各源码与许可证的SHA及Git blob，再在临时目录编译或提取原函数；结束重复核对。报告绑定工具和完整锁表摘要，严格JSON不写NaN/Infinity。获取工具的 `not_run` 仍表示获取过程没有执行上游，不改成整包运行成功。
+2026-10-01的[历史合同报告](../../ch10/reports/industrial_contracts.json)绑定[bde483保存的原工具字节](https://github.com/nanless/microphone-array-signal-processing/blob/bde483bcc429a553aeaf8830ca3687ab46831db0/codes/chapters/ch10/examples/audit_industrial_contracts.py)，不是改后工具的产物；2026-10-05的当前工具与实际复验见[§9](#industrial-current-interface-contracts)。历史运行不修改上述2026-09-28报告，先核官方地址、完整HEAD、工作树清洁状态、各源码与许可证的SHA及Git blob，再在临时目录编译或提取原函数，结束重复核对。报告绑定当时工具和完整锁表摘要，严格JSON不写NaN/Infinity。获取工具的 `not_run` 仍表示获取过程没有执行上游，不改成整包运行成功。
 
 | 固定对象 | 实际执行与输入 | 独立核对结果 | 代替项和未执行范围 |
 |---|---|---|---|
@@ -707,7 +733,7 @@ FastEnhancer的计时器故意返回0和0.01，人工会话输出确定性斜坡
 
 ```bash
 .venv/bin/python -B -m codes.chapters.ch10.examples.audit_industrial_contracts \
-  --report codes/chapters/ch10/reports/industrial_contracts.json
+  --report codes/chapters/ch10/reports/industrial_contracts_current.json
 .venv/bin/python -B -m unittest tests.test_codes_industrial_contracts -v
 ```
 
@@ -779,3 +805,24 @@ Audinate的[Dante Controller官方时钟页](https://dev.audinate.com/GA/dante-c
 分帧频谱不能套时域码率。例如FFT512、帧移256、complex64单边257个频点，在16kHz下每秒62.5帧，每路有效负载为$257\times8\times62.5=128500$ B/s，即1.028Mbit/s，尚未加帧标签和控制信息。[E15-15](../../../../chapters/15_distributed-enhancement.md#e15-15)同时列出PCM、float32和复谱口径。
 
 另作一个显式包头算式：单路PCM16每10ms发送160点，载荷320B；若假定无扩展/CSRC的12B RTP基本头、8B UDP头和无选项的20B IPv4头，每包360B，每秒100包，即288kbit/s，比纯载荷高12.5%。这些头长分别见[RFC 3550 §5.1](https://www.rfc-editor.org/rfc/rfc3550.html#section-5.1 "citation")、[RFC 768格式](https://www.rfc-editor.org/rfc/rfc768.html "citation")和[RFC 791 §3.1](https://www.rfc-editor.org/rfc/rfc791.html#section-3.1 "citation")。以太网、VLAN、无线竞争/重传、安全封装和PTP均未计入，所以这是声明条件下的数学预算，不是实测吞吐量。广播维数下降还须与目标信息损失、量化误差、等待和缺口分母一起比较，不能仅凭码率称增强质量无损。
+
+
+<a id="industrial-current-interface-contracts"></a>
+
+## 9. 第10章当前原接口复验与运行边界
+
+2026-10-05在上述固定版本上重新执行四组限定接口；实际[五项合同](../../ch10/reports/industrial_contracts_current.json)、[STOI与队列接口](../../ch10/reports/industrial_upstream_interfaces_current.json)、[三库原生接口](../../ch10/reports/industrial_interfaces_current.json)和[STK原生延迟](../../ch10/reports/stk_delay_current.json)独立保存。旧四份报告继续绑定原日期、原工具与原输入，不更新其源码摘要。五个工具默认打印结果；显式报告路径在执行前检查普通父链与目标，仓内只能写对应current路径，不用重跑结果覆盖历史报告。
+
+三库本次原生测量与旧测量语义相同。构建始终在仓外临时目录，先独立核官方origin、固定完整提交、许可和原源码身份，调用后再次核对。完整稀疏选集状态另列，不能用少数原接口成功把WebRTC的`selection_mismatch`改为通过。五项合同分别保存真正编译的CMSIS标量FIR、Speex限定助手，以及WebRTC路由、RNNoise示例和FastEnhancer包装器的替身范围；没有运行神经网络、ARM指令、驱动或实时设备链。
+
+原生报告分别列预检候选源、实际编译输入与编译器依赖，不能把读取过的文件数量当作执行算法的数量。三库预检137/19/362个普通、原blob一致的候选成员；实际依赖记录包含104份编译依赖文件、149个原编译输入、2个构建生成头和190个系统输入。
+
+固定libsoxr中未参与编译的符号链接、libsamplerate中本地原字节与Git blob不同的Win32导出文件另列排除原因；只要实际编译依赖落到这些未验证成员就明确失败，不改变缓存去掩盖差异。STK预检212个成员，而限定编译只用了两份上游实现、本仓driver与相关头；SDK和编译器头单列，不称212个源码全部执行。
+
+STOI仍保留12次原调用的异常、警告和零能量退化结果，不将有限零结果解释为有效语音评分。
+
+DeepFilterNet仅静态读取固定Rust控制流并执行独立计数算例；从初始计数0起，减延迟分支的严格计数条件最早在第1002次宿主回调满足；还须同时满足RTF、延迟与队列条件。清零后末尾递增，后续持续满足这些条件的段落最早在第1001次满足计数条件。宿主块长度与模型hop分别命名；没有编译Rust、加载模型或运行音频宿主。
+
+faster-enhancer.c既有57文件选集的身份和许可已核，权重与完整运行仍未执行。
+
+本次累计RTF字段与可选`frame_service_rtf`分别定义。累计值按声明区间内处理时间总和除以新增音频时长总和，生产者还要记录统计区间、帧数和计时范围。无状态JSON校验只核当前字段类型与数值范围，不证明不同记录用了同一时钟、同一scope或正确的重启边界。调度等待是否计入分子必须说明，不能把包含pacing的elapsed比值当作纯计算性能。

@@ -65,7 +65,12 @@
     "rtf": {
       "type": "number",
       "minimum": 0,
-      "description": "Cumulative processing service time divided by newly advanced source audio duration in the measured interval. Waiting, end-to-end response and deadline misses are separate measurements; overlapping analysis windows do not enlarge the denominator."
+      "description": "Cumulative processing service time divided by newly advanced source audio duration in the measured interval. The producer declares that interval, advanced sample count and processing scope in its configuration or accompanying metadata. Waiting, end-to-end response and deadline misses are separate measurements; overlapping analysis windows do not enlarge the denominator."
+    },
+    "frame_service_rtf": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Optional single-frame processing service time divided by this frame's newly advanced source audio duration. It is distinct from cumulative rtf; its unweighted mean generally differs from rtf. A record validator checks its type/range, not the measured timing or aggregation."
     },
     "vad_active": {
       "type": "boolean",

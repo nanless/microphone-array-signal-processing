@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>章节代码练习与音频实验 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="b232a8dba19b"><style>
+<meta name="source-digest" content="5cea3d451101"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -410,6 +410,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-59-1">59.1 两个模式与连续缺测的逐步计算</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-59-2">59.2 同一实际双麦PCM的事件与两种龄期</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-59-3">59.3 已知姿态与一次静态球面概率</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-a361707370">60. 第10章：已知坏麦后的约束与评分</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-60-1">60.1 先改观测坐标，再重算权重</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-60-2">60.2 六份同源音频与固定权重</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-60-3">60.3 相同总误差可能对应不同目标状态</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-60-4">60.4 真实PCM整数复算</a></li>
 </ul>
 <div class="chap"><a href="../01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
 <div class="chap"><a href="../02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
@@ -595,10 +600,15 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-59-1">59.1 两个模式与连续缺测的逐步计算</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-59-2">59.2 同一实际双麦PCM的事件与两种龄期</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-59-3">59.3 已知姿态与一次静态球面概率</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-a361707370">60. 第10章：已知坏麦后的约束与评分</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-60-1">60.1 先改观测坐标，再重算权重</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-60-2">60.2 六份同源音频与固定权重</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-60-3">60.3 相同总误差可能对应不同目标状态</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-60-4">60.4 真实PCM整数复算</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="章节代码练习与音频实验" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-c621965c02">章节代码练习与音频实验</h1>
 <p>先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。</p>
-<p>本页索引 352 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
+<p>本页索引 353 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
 <p>E06-07～E06-20 使用无量纲回声模型检查 AEC 的计算与边界，其中 E06-11～20 可用精确答案程序核对。第 15、16 节另提供参数不同的合成音频；试听文件本身不是题目真值。</p>
 <p>第 3～11、13～16、18、21～30、32～34 节对应主清单的 109 个数学合成样本。第 17 节的 18 个房间白噪声合成样本使用独立清单；第 12 节使用另行授权的真实同步录音。第 31 节的 2 份从 PCM 形成定位观测的追踪样本也使用独立清单。第35～39节分别保存双耳、有限窗卷积、多频几何、已知聚焦与导数约束的独立样本。第48节保存分布式协同增强的17个独立样本；第47节保存成像的五个快拍样本。第46节另保存附录B同DRR短RIR的五个独立样本；第55节保存第5章逐频相位的三份独立PCM；第56节保存第6章已知播放增益与历史尾声的六份独立PCM；第57节保存第7章已知到达与历史索引的六份独立PCM。不同音频的来源和可作的比较不同，试听前先查看各节的条件。</p>
 <p>主音频按章存放，统一由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/examples/generate_audio_samples.py">生成器</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/audio/MANIFEST.json">清单</a>管理。清单记录每组模型、种子、共同导出增益、采样率、通道、帧数、量化误差、运行环境、源文件摘要与逐 WAV 摘要；不把某组的谐波模板套到其他组。PCM16 编码按最近偶数舍入，不加抖动或自动限幅，RMS 对全部通道与采样一起计算。运行生成器并附加 <code>--check</code> 时只在内存重算和读回比对，不重写资产；严格字节核对也比较 Python、NumPy 和平台记录，异机不通过不等于算法错误。生成中断造成清单与 WAV 不一致时，先保留异常目录，再生成到新的空目录核对，通过后更新受影响资产并构建图和网站；不要手改单个生成文件。样本没有真人录音或模型权重，客观读回和浏览器加载不等于正式听测。</p>
@@ -1841,7 +1851,7 @@ $$</p>
 </table></div>
 <p>三个评分区间分别为半开样本区间 <code>[8000,8320)</code>、<code>[9600,11200)</code>、<code>[16000,17600)</code>。PCM 分母来自实际量化的输入文件，分子来自实际量化的处理文件；不把未量化参考混入 PCM 指标。主清单的 <code>groups.agc_blocks</code> 保留 <code>float_analysis</code>、<code>pcm_analysis</code>、完整参数与每块增益。<code>block_records</code> 分开记录块起点、排他的终点和 <code>available_time_s</code>，后者是计算取得整块输入后的最早可用时刻，未包含硬件、线程调度或播放排队。</p>
 <span id="sec-54" class="anchor-alias" aria-hidden="true"></span><span id="323-练习与复算入口" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-32-3">32.3 练习与复算入口</h3>
-<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/chapter10_experiments.py"><code>chapter10_experiments.py</code></a> 的 <code>run_experiments()</code> 返回 E10-18～33 十六个稳定编号。它从输入重新计算答案，包括重叠帧 RTF、谱减截断偏差、Q15 舍入点、任务依赖、时钟漂移与相位、临时内存生命周期、跨块时钟相位、无抗混叠抽取、遥测单位及本节音频。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/chapter10_experiments.py"><code>chapter10_experiments.py</code></a> 的 <code>run_experiments()</code> 返回 E10-18～34 十七个稳定编号。它从输入重新计算答案，包括重叠帧 RTF、谱减截断偏差、Q15 舍入点、任务依赖、时钟漂移与相位、临时内存生命周期、跨块时钟相位、无抗混叠抽取、遥测单位及本节音频。</p>
 <p>运行 <code>.venv/bin/python -m codes.chapters.ch10.chapter10_experiments</code> 可查看 JSON。运行 <code>.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py</code> 生成主音频；附加 <code>--check</code> 时只在内存重算并比对正式文件与清单，不写入文件。E10-27先核验当前主清单、实际文件与真实源，再解码四个WAV复算PCM结果；缺失或失配不会自动修复。</p>
 <p>本组生成源是 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/core/audio_samples.py"><code>agc_blocks_case</code></a>，没有第三方录音或模型依赖。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_chapter10_experiments.py">独立练习回归</a>从简单解析答案、另一种增益递推写法及实际 PCM 重读结果交叉核对；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_engineering_ch10_boundaries.py">数值边界回归</a>另检查微小复频谱、有限大平均功率、异号极大插值、分配预算、超长定点累加界、巨大整数遥测和失败时状态不变。采样率补偿接口的默认上限是每通道 10,000,000 个输出时间样本，超限会在分配前拒绝；这仍不是全部临时数组的内存预算保证。</p>
@@ -2805,7 +2815,7 @@ PSD还须写采样率、Hz分母、单边折叠和去均值策略。
 <p>请先调低音量。<a href="../mask_audio/MANIFEST.json">独立清单</a>保存五个真实源、每份WAV摘要、解析/浮点/实际PCM结果及整数分母；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch08/examples/mask_representation_demo.py">生成与只读检查入口</a>使用 <code>--check</code> 时不修复资产。六文件不并入主109个样本，也未进行人工听测。</p>
 <span id="sec-90" class="anchor-alias" aria-hidden="true"></span><span id="43-第十章噪声统计失配与工程计算条件" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-13a303a371">43. 第十章：噪声统计失配与工程计算条件</h2>
 <span id="sec-91" class="anchor-alias" aria-hidden="true"></span><span id="431-五个可独立手算的反例" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-43-1">43.1 五个可独立手算的反例</h3>
-<p>下面五题是指定模型的计算，没有声卡、模型推理或主观听测。先复算中间量，再用<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/chapter10_experiments.py">第十章入口</a>核对。第十章共有33道稳定题；该入口提供E10-18～33的16个答案，其余由既有跨章入口提供。</p>
+<p>下面五题是指定模型的计算，没有声卡、模型推理或主观听测。先复算中间量，再用<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/chapter10_experiments.py">第十章入口</a>核对。第十章共有34道稳定题；该入口提供E10-18～34的17个答案，其余由既有跨章入口提供。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
 <tr>
@@ -4467,6 +4477,102 @@ e^{-\mathrm j2\pi 2000n/24000},\\
 .venv/bin/python scripts/make_tracking_figures.py
 </code></pre>
 <p>前三个命令只读复算；最后一条真实生成图77与数值报告。来源与原始方法边界见<a href="01_spatial_and_tracking.html#tracking-model-lifecycle-sphere">空间研究§61</a>，数值与失败输入的独立测试见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_ch09_imm_spherical.py">IMM/球面回归</a>、<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_ch09_lifecycle.py">生命周期回归</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_quality_ch09_lifecycle_publication.py">发布合同回归</a>。本节未实现动态球面滤波、未知姿态估计或真实房间定位，客观PCM核验也不是正式听测。</p>
+<p><a id="known-channel-failure-exercise"></a></p>
+<span id="sec-169" class="anchor-alias" aria-hidden="true"></span><span id="60-第10章已知坏麦后的约束与评分" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-a361707370">60. 第10章：已知坏麦后的约束与评分</h2>
+<span id="sec-170" class="anchor-alias" aria-hidden="true"></span><span id="601-先改观测坐标再重算权重" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-60-1">60.1 先改观测坐标，再重算权重</h3>
+<p><a href="../10_engineering-practice.html#e10-34">E10-34</a>给定目标响应<code>[1,1,1]</code>与已知噪声矩阵<code>R=[[1,1,0],[1,2,1],[0,1,2]]</code>。它是<code>B Bᵀ</code>，其中<code>B=[[1,0,0],[1,1,0],[0,1,1]]</code>；三个顺序主子式均为1，因此正定。解<code>R q=d</code>得<code>q=[2,-1,1]</code>，再除以<code>dᵀq=2</code>，健康权重为<code>[1,-1/2,1/2]</code>。</p>
+<p>已知第0路不可用，选择矩阵必须同时作用于观测、目标响应与协方差的行列。剩余矩阵为<code>[[2,1],[1,2]]</code>，响应为<code>[1,1]</code>。旧权重仅截去第一项后是<code>[-1/2,1/2]</code>，两目标项相消；重新求解得到<code>[1/2,1/2]</code>，目标响应回到1。直接把坏通道置零再保留旧权重，不会自动满足新约束。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/core/channel_selection.py">唯一选集适配核</a>拒绝布尔/重复/越界或空索引，先检查完整输入统计，再选择两个协方差轴；它复用第5章唯一MVDR实现。没有自动猜坏麦、自动伪逆或自动对角加载；本题也是给定约束的控制，并未执行论文中的最优麦克风子集搜索。<a href="https://arxiv.org/pdf/1705.08255" title="citation">原论文选择矩阵条件</a>可与第10章正文对照。</p>
+<span id="sec-171" class="anchor-alias" aria-hidden="true"></span><span id="602-六份同源音频与固定权重" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-60-2">60.2 六份同源音频与固定权重</h3>
+<p>六份都是16kHz、32000点PCM16数学合成样本。目标为500Hz、振幅0.1的正弦，三路噪声基为1500、2500、3500Hz同幅正弦；使用共同绝对采样起点，首尾各320点平滑包络，共同导出增益1。通道混合矩阵为上一节的B，三个输出用固定实权重，没有随机生成、学习统计或按输出响度归一化。</p>
+<ul>
+<li><a href="../channel_audio/channel_reference.wav">目标参考</a><audio class="audio-sample" controls preload="none" aria-label="目标参考" src="../channel_audio/channel_reference.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="../channel_audio/channel_healthy_array.wav">健康三通道观测</a><audio class="audio-sample" controls preload="none" aria-label="健康三通道观测" src="../channel_audio/channel_healthy_array.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="../channel_audio/channel_faulty_array.wav">已知第0路置零的三通道观测</a><audio class="audio-sample" controls preload="none" aria-label="已知第0路置零的三通道观测" src="../channel_audio/channel_faulty_array.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="../channel_audio/channel_healthy_output.wav">健康权重输出</a><audio class="audio-sample" controls preload="none" aria-label="健康权重输出" src="../channel_audio/channel_healthy_output.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="../channel_audio/channel_stale_output.wav">坏麦后仍用旧权重</a><audio class="audio-sample" controls preload="none" aria-label="坏麦后仍用旧权重" src="../channel_audio/channel_stale_output.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="../channel_audio/channel_recomputed_output.wav">同步重建约束后的输出</a><audio class="audio-sample" controls preload="none" aria-label="同步重建约束后的输出" src="../channel_audio/channel_recomputed_output.wav">请使用上方 WAV 链接下载。</audio></li>
+</ul>
+<p>播放前降低音量，比较时保持同一设备音量；多声道文件记录观测，不把声卡自动混音当作算法输出。听到的响度不能证明目标保持或总误差更小，计算要使用指定窗口与参考。</p>
+<span id="sec-172" class="anchor-alias" aria-hidden="true"></span><span id="603-相同总误差可能对应不同目标状态" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-60-3">60.3 相同总误差可能对应不同目标状态</h3>
+<p>评分窗为半开区间[2400,29600)，27200点；目标850周期，三个基分别2550、4250、5950周期。有限窗正交只在这组确定性频率与窗口内成立，不证明随机独立。目标参考功率0.005，实际已知时域噪声协方差为0.005R，不能把单位矩阵算例直接当作STFT频点统计。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:72em">
+<thead>
+<tr>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:12em">控制</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:10em" class="tutorial-short-column">目标增益</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">目标损伤功率</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">残余噪声功率</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">总误差功率</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:11em" class="tutorial-short-column">解析NMSE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">健康权重</td>
+<td style="text-align: right;--tutorial-column-width:10em" class="tutorial-short-column">1</td>
+<td style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">0</td>
+<td style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">0.0025</td>
+<td style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">0.0025</td>
+<td style="text-align: right;--tutorial-column-width:11em" class="tutorial-short-column">0.5</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">坏麦后旧权重</td>
+<td style="text-align: right;--tutorial-column-width:10em" class="tutorial-short-column">0</td>
+<td style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">0.005</td>
+<td style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">0.0025</td>
+<td style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">0.0075</td>
+<td style="text-align: right;--tutorial-column-width:11em" class="tutorial-short-column">1.5</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">重建约束</td>
+<td style="text-align: right;--tutorial-column-width:10em" class="tutorial-short-column">1</td>
+<td style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">0</td>
+<td style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">0.0075</td>
+<td style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">0.0075</td>
+<td style="text-align: right;--tutorial-column-width:11em" class="tutorial-short-column">1.5</td>
+</tr>
+</tbody>
+</table></div>
+<p>旧权重把目标完全抵消，但留下的噪声较小；重算权重保留目标，同时承担更大噪声。两个失效后控制的解析总误差相同，不能据此说它们保留了同样的信号，也不能将约束MVDR称为所有候选中总MSE最小。图78把两种量并排显示。</p>
+<span id="sec-173" class="anchor-alias" aria-hidden="true"></span><span id="604-真实pcm整数复算" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-60-4">60.4 真实PCM整数复算</h3>
+<p>每份音频先重读有符号PCM整数，参考整数能量为146027417700，线性MSE的分母为<code>27200×32768²=29205777612800</code>。误差整数能量按<code>sum((output-reference)²)</code>计算；NMSE再除以参考整数能量。不拟合增益、不移动波形，也不混用未量化参考。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:54em">
+<thead>
+<tr>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:10em">输出</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:17em" class="tutorial-short-column">PCM误差整数能量E</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:14em" class="tutorial-short-column">实际PCM MSE</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">实际PCM NMSE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">健康权重</td>
+<td style="text-align: right;--tutorial-column-width:17em" class="tutorial-short-column">73014637900</td>
+<td style="text-align: right;--tutorial-column-width:14em" class="tutorial-short-column">0.002500006638</td>
+<td style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">0.500006362161</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">坏麦后旧权重</td>
+<td style="text-align: right;--tutorial-column-width:17em" class="tutorial-short-column">219018750300</td>
+<td style="text-align: right;--tutorial-column-width:14em" class="tutorial-short-column">0.007499158324</td>
+<td style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">1.499846766790</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">重建约束</td>
+<td style="text-align: right;--tutorial-column-width:17em" class="tutorial-short-column">219050854800</td>
+<td style="text-align: right;--tutorial-column-width:14em" class="tutorial-short-column">0.007500257576</td>
+<td style="text-align: right;--tutorial-column-width:13em" class="tutorial-short-column">1.500066619339</td>
+</tr>
+</tbody>
+</table></div>
+<p>量化后的两项NMSE有细小差别，应保留实际值。PCM投影增益仅为诊断，不用它补偿输出；量化误差也不随意分摊为目标损伤与噪声。浮点分量与实际PCM总误差在<a href="../channel_audio/MANIFEST.json">独立清单</a>中分别记录；八个真实生成源与六WAV摘要绑定完整重放，严格只有七个普通文件。</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch10.chapter10_experiments
+.venv/bin/python -m codes.chapters.ch10.examples.generate_channel_audio --check
+.venv/bin/python scripts/make_channel_figures.py
+</code></pre>
+<p>前两条只读计算与核验；最后一条从正式PCM生成图78及<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/reports/figure78_channel_failure.json">数值报告</a>，绑定九个真实源及清单、六WAV。更改生成源后先实际生成并核验资产，不手改SHA。旧噪声失配生成器也在任何写入前检查固定参数的类型、全部值和实际方程、种子与分解结果；漂移要明确失败，不能生成后再发现清单不合格。本节没有盲故障检测、自然语音、随机噪声独立性、阵列实录或工业成绩。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

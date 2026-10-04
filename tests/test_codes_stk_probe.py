@@ -1,6 +1,7 @@
 """Offline report validation; native compilation is an explicit experiment."""
 import unittest
-from codes.chapters.ch10.examples.run_stk_delay_probe import validate_measurements
+from codes.chapters.ch10.examples.run_stk_delay_probe import validate_measurements, run_probe, ROOT
+import shutil
 
 
 class STKProbeTest(unittest.TestCase):
@@ -28,6 +29,21 @@ class STKProbeTest(unittest.TestCase):
             data[key] = key.startswith('reset_')
             with self.subTest(key=key), self.assertRaises(ValueError):
                 validate_measurements(data)
+
+
+class STKActualSourceTest(unittest.TestCase):
+    @unittest.skipUnless((ROOT/'codes/chapters/ch00/upstream/_downloads/stk/src/DelayL.cpp').is_file()
+        and shutil.which('c++'), 'optional fixed STK checkout and local C++ compiler required')
+    def test_three_actual_translation_units_and_unchanged_identity(self):
+        report = run_probe()
+        self.assertTrue(report['source_identity']['clean_before'])
+        self.assertTrue(report['source_identity']['clean_after'])
+        dependencies = report['compiled_dependencies']
+        self.assertEqual(len(dependencies['dependency_files']), 3)
+        for name in ('src/DelayL.cpp', 'src/Stk.cpp', 'include/DelayL.h', 'include/Filter.h', 'include/Stk.h'):
+            row = dependencies['original_compile_inputs']['stk/' + name]
+            self.assertEqual(row['git_blob'], row['actual_blob'])
+        validate_measurements(report['measurements'])
 
 
 if __name__ == '__main__':

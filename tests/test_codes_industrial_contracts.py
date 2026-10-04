@@ -48,13 +48,13 @@ class IndustrialContractOfflineTest(unittest.TestCase):
             root = Path(tmp).resolve()
             cache = root / "upstream"
             cache.mkdir()
-            with self.assertRaisesRegex(ValueError, "upstream cache"):
+            with self.assertRaisesRegex(ValueError, "forbidden|protected"):
                 audit.write_report(cache / "output.json", {"status": "fixture"}, cache)
             outside = root / "outside.json"
             outside.write_text("preserved")
             link = root / "linked.json"
             link.symlink_to(outside)
-            with self.assertRaisesRegex(ValueError, "symlink"):
+            with self.assertRaisesRegex(ValueError, "symbolic link"):
                 audit.write_report(link, {"status": "fixture"}, cache)
             self.assertEqual(outside.read_text(), "preserved")
             linked_directory = root / "linked-directory"
@@ -63,7 +63,7 @@ class IndustrialContractOfflineTest(unittest.TestCase):
             linked_directory.symlink_to(directory, target_is_directory=True)
             for traversal in [linked_directory / ".." / "outside.json",
                               root / "ordinary" / ".." / "outside.json"]:
-                with self.subTest(path=traversal), self.assertRaisesRegex(ValueError, "contain.*\\.\\."):
+                with self.subTest(path=traversal), self.assertRaisesRegex(ValueError, "parent traversal"):
                     audit.write_report(traversal, {"status": "fixture"}, cache)
             self.assertEqual(outside.read_text(), "preserved")
             self.assertEqual(list(directory.iterdir()), [])
@@ -90,12 +90,17 @@ class IndustrialContractActualCacheTest(unittest.TestCase):
         r = self.report
         self.assertEqual(r["tool_sha256"], audit.file_sha(audit.__file__))
         self.assertEqual(r["source_lock_sha256"], audit.file_sha(audit.LOCK))
-        self.assertEqual(r["sources_before"], r["sources_after"])
         for name, record in r["sources_before"].items():
-            self.assertTrue(record["clean"])
-            self.assertEqual(record["revision"], audit.SOURCES[name]["revision"])
-            for source in record["files"].values():
-                self.assertEqual(source["sha256"], source["git_blob_sha256"])
+            self.assertTrue(record["clean_before"])
+            self.assertFalse(record["clean_after"])
+            after = r["sources_after"][name]
+            self.assertTrue(after["clean_after"])
+            self.assertEqual(record["head"], audit.SOURCES[name]["revision"])
+            self.assertEqual(record["used_files"], after["used_files"])
+            self.assertEqual(record["recorded_complete_selection"], after["recorded_complete_selection"])
+            for source in record["used_files"].values():
+                self.assertEqual(source["git_blob"], source["actual_blob"])
+        self.assertEqual(r["sources_after"]["webrtc"]["live_complete_selection"]["status"], "source_selection_mismatch")
         json.loads(audit.strict_json(r), parse_constant=lambda x: self.fail(x))
 
     def test_q15_original_whole_vs_chunks_and_rational_model(self):

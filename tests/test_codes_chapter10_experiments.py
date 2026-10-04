@@ -1,4 +1,4 @@
-"""Independent answers for E10-18..33 and read-only PCM contract failures."""
+"""Independent answers for E10-18..34 and read-only PCM contract failures."""
 import math
 import json
 import shutil
@@ -9,7 +9,7 @@ from fractions import Fraction
 from pathlib import Path
 import unittest
 import numpy as np
-from codes.chapters.ch10.chapter10_experiments import run_experiments, agc_anchor, noise_mismatch_anchor, ROOT
+from codes.chapters.ch10.chapter10_experiments import run_experiments, agc_anchor, noise_mismatch_anchor, channel_selection_anchor, ROOT
 from codes.chapters.ch10.core.noise_mismatch import build_fixture
 from codes.chapters.ch10.examples.generate_noise_mismatch import OUTPUT as NOISE_OUTPUT
 from codes.chapters.ch00.core.audio_samples import agc_blocks_case, prepare_exports, read_pcm16
@@ -21,7 +21,49 @@ class Chapter10ExperimentsTests(unittest.TestCase):
         cls.answers = run_experiments()
 
     def test_identifiers(self):
-        self.assertEqual(list(self.answers), [f'E10-{i}' for i in range(18, 34)])
+        self.assertEqual(list(self.answers), [f'E10-{i}' for i in range(18, 35)])
+
+    def test_channel_selection_separates_target_loss_and_noise(self):
+        answer = self.answers['E10-34']
+        controls = answer['mathematical_control']['controls']
+        self.assertEqual(controls['stale']['target_response_real_imag'], [0, 0])
+        self.assertEqual(controls['stale']['normalized_noise_power'], .5)
+        self.assertAlmostEqual(controls['recomputed']['target_response_real_imag'][0], 1)
+        self.assertAlmostEqual(controls['recomputed']['normalized_noise_power'], 1.5)
+        self.assertTrue(answer['pcm_validation']['checked_read_only'])
+        self.assertTrue(answer['pcm_validation']['scored_from_stored_integer_pcm'])
+        measured = answer['pcm_analysis']
+        self.assertEqual(measured['reference_squared_sum_pcm_integer'], 146027417700)
+        self.assertEqual(measured['mse_integer_denominator'], 29205777612800)
+        for role, error in [('healthy_output', 73014637900), ('stale_output', 219018750300),
+                            ('recomputed_output', 219050854800)]:
+            row = measured['scores'][role]
+            self.assertEqual(row['error_squared_sum_pcm_integer'], error)
+            self.assertEqual(row['mse'], error/29205777612800)
+            self.assertEqual(row['nmse'], error/146027417700)
+
+    def test_channel_missing_assets_are_not_generated(self):
+        with tempfile.TemporaryDirectory() as directory:
+            missing = Path(directory)/'not-generated'
+            with self.assertRaises(ValueError):
+                channel_selection_anchor(missing)
+            self.assertFalse(missing.exists())
+
+    def test_channel_corrupt_pcm_is_not_repaired(self):
+        from codes.chapters.ch10.examples.generate_channel_audio import DEFAULT_OUTPUT
+        with tempfile.TemporaryDirectory() as directory:
+            destination = Path(directory)/'assets'
+            shutil.copytree(DEFAULT_OUTPUT, destination)
+            path = destination/'channel_stale_output.wav'
+            changed = bytearray(path.read_bytes())
+            changed[44+2*10000] ^= 1
+            path.write_bytes(changed)
+            before = {p.name: (p.read_bytes(), p.stat().st_mtime_ns)
+                      for p in destination.iterdir()}
+            with self.assertRaises(ValueError):
+                channel_selection_anchor(destination)
+            self.assertEqual(before, {p.name: (p.read_bytes(), p.stat().st_mtime_ns)
+                                     for p in destination.iterdir()})
 
     def test_rtf_uses_hop_and_duration_weights(self):
         x = self.answers['E10-18']

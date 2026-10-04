@@ -5,6 +5,14 @@ the queue example below is independent Python arithmetic, not a Rust execution.
 """
 from __future__ import annotations
 
+if __name__ == "__main__" and not __package__:
+    import sys as _sys
+    from pathlib import Path as _Path
+    _sys.path.insert(0, str(_Path(__file__).resolve().parents[4]))
+
+from codes.chapters.ch04.core import upstream_contracts as upstream
+from codes.chapters.ch10.examples.run_industrial_interfaces import verify_failure_sources
+
 import argparse
 from collections import deque
 from datetime import datetime, timezone
@@ -18,6 +26,7 @@ import sys
 import warnings
 
 CODES = Path(__file__).resolve().parents[3]
+CURRENT = upstream.ROOT / "codes/chapters/ch10/reports/industrial_upstream_interfaces_current.json"
 SOURCES = {
     "pystoi": {
         "revision": "74872b000753a7a42ff51aa0868af8c82c7f9053",
@@ -57,22 +66,53 @@ def binding_sha256():
 
 
 def verify_sources(root):
-    locks = {p["id"]: p for p in json.loads((CODES / "chapters/ch00/SOURCES.lock.json").read_text())["projects"]}
-    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+    identities = {}
     for name, spec in SOURCES.items():
-        checkout = root / name
-        def git(*args):
-            return subprocess.check_output(["git", "-C", str(checkout), *args], env=env,
-                                           text=True, stderr=subprocess.PIPE).strip()
-        if locks[name]["revision"] != spec["revision"] or git("rev-parse", "HEAD") != spec["revision"]:
-            raise ValueError("revision mismatch: " + name)
-        if Path(git("rev-parse", "--show-toplevel")).resolve() != checkout.resolve():
-            raise ValueError("not an independent checkout: " + name)
-        if git("status", "--porcelain", "--untracked-files=all"):
-            raise ValueError("upstream worktree is not clean: " + name)
-        for relative, digest in spec["files"].items():
-            if sha256(checkout / relative) != digest:
+        identity = upstream.verify_project(name, Path(root) / name,
+            relatives=tuple(spec["files"]))
+        for relative, expected in spec["files"].items():
+            if identity["used_files"][relative]["sha256"] != expected:
                 raise ValueError("source digest mismatch: " + name + "/" + relative)
+        identities[name] = identity
+    return identities
+
+
+def loaded_pystoi_modules(identity):
+    loaded = {}
+    for name, module in sorted(sys.modules.items()):
+        if name == "pystoi" or name.startswith("pystoi."):
+            filename = getattr(module, "__file__", None)
+            if not filename:
+                raise ValueError("pystoi module has no ordinary source: " + name)
+            path = upstream.ordinary_file(filename)
+            try:
+                relative = path.relative_to(identity["checkout"]).as_posix()
+            except ValueError as error:
+                raise ValueError("foreign preloaded pystoi module: " + name) from error
+            if relative not in identity["used_files"]:
+                raise ValueError("pystoi module was not preflighted: " + relative)
+            loaded[name] = {"path": str(path), "sha256": upstream.sha(path)}
+    return loaded
+
+
+def callback_clock_example():
+    """Independent arithmetic of the fixed Rust counter, not Rust execution."""
+    rows = []
+    for initial, label in ((0, "initial_counter_zero"), (1, "after_reset_then_unconditional_increment")):
+        counter = initial
+        calls = 0
+        while True:
+            calls += 1
+            if counter > 1000:
+                break
+            counter += 1
+        rows.append({"initial_counter": initial, "initial_condition": label,
+            "first_eligible_callback": calls,
+            "input_audio_seconds_by_host_block": {str(n): calls * n / 48000 for n in (128, 480, 1024)}})
+    return {"execution": "independent Python integer clock arithmetic", "sample_rate_hz": 48000,
+        "model_hop_samples": 480, "threshold": 1000, "strict_test": "counter > 10*sr/model_hop",
+        "other_branch_conditions_assumed": "rtf < .5 and sufficient processing delay/output queue",
+        "rows": rows, "not_measured": "Rust host, scheduling and actual elapsed wall time"}
 
 
 def queue_semantics_example():
@@ -100,6 +140,8 @@ def inspect_dfn(root):
         "metadata_frame_decrement": "self.proc_delay -= self.frame_size;",
         "blocking_wait": "sleep(self.sleep_duration);",
         "delay_limit": "if self.proc_delay >= self.sr",
+        "callback_counter": "self.t_proc_change += 1;",
+        "hop_based_counter_threshold": "self.t_proc_change > 10 * self.sr / self.frame_size",
     }
     matches = {}
     for name, pattern in patterns.items():
@@ -107,10 +149,14 @@ def inspect_dfn(root):
         if not matches[name]:
             raise ValueError("expected static evidence missing: " + name)
     return {"execution": "static source inspection only", "rust_plugin_executed": False,
-            "evidence_lines": matches, "queue_example": queue_semantics_example()}
+            "evidence_lines": matches, "queue_example": queue_semantics_example(),
+            "callback_clock_example": callback_clock_example()}
 
 
 def run_pystoi(root):
+    sys.dont_write_bytecode = True
+    identity = verify_sources(root)["pystoi"]
+    loaded_pystoi_modules(identity)
     import numpy as np
     import scipy
     sys.path.insert(0, str((root / "pystoi").resolve()))
@@ -118,6 +164,10 @@ def run_pystoi(root):
     from pystoi import stoi
     if Path(pystoi.__file__).resolve().parent != (root / "pystoi/pystoi").resolve():
         raise ValueError("imported unexpected pystoi package")
+    loaded_pystoi_modules(identity)
+    function_path = upstream.ordinary_file(stoi.__code__.co_filename)
+    if function_path != Path(identity['checkout'])/'pystoi/stoi.py':
+        raise ValueError('imported foreign pystoi callable')
     cfg = CONFIG["pystoi"]
     inputs = [("zeros_" + str(n), np.zeros(n)) for n in cfg["zero_lengths"]]
     inputs += [("random_self", np.random.default_rng(4).normal(size=cfg["self_comparison_length"]))]
@@ -148,25 +198,37 @@ def run_pystoi(root):
         np.random.set_state(previous_rng_state)
     return {"execution": "original pystoi package functions", "numpy": np.__version__,
             "scipy": scipy.__version__, "records": records,
+            "loaded_original_modules": loaded_pystoi_modules(identity),
+            "environment_dependencies": {m.__name__: {"version": m.__version__, "path": str(upstream.ordinary_file(m.__file__)), "sha256": upstream.sha(m.__file__)} for m in (np, scipy)},
             "not_executed": ["MATLAB/Octave reference", "natural speech corpus", "resampling path (all inputs already 10 kHz)"]}
 
 
 def run(root):
     sys.dont_write_bytecode = True
-    verify_sources(root)
-    result = {"schema_version": 1, "generated_at": datetime.now(timezone.utc).isoformat(),
-              "harness_sha256": sha256(__file__), "source_config_sha256": binding_sha256(),
-              "sources": SOURCES, "config": CONFIG,
-              "environment": {"python": sys.version, "executable": sys.executable, "platform": platform.platform()},
-              "pystoi": run_pystoi(root), "deepfilternet": inspect_dfn(root)}
-    verify_sources(root)
-    return result
+    root = upstream.validate_parent_chain(root)
+    identities = verify_sources(root)
+    try:
+        result = {"schema_version": 1, "generated_at": datetime.now(timezone.utc).isoformat(),
+                  "harness_sha256": sha256(__file__), "source_config_sha256": binding_sha256(),
+                  "sources": SOURCES, "config": CONFIG,
+                  "environment": {"python": sys.version, "executable": sys.executable, "platform": platform.platform()},
+                  "pystoi": run_pystoi(root), "deepfilternet": inspect_dfn(root)}
+        result["source_identities"] = {name: upstream.check_unchanged(identity) for name, identity in identities.items()}
+        result["actual_dependencies_sha256"] = upstream.dependencies(__file__, (Path(verify_failure_sources.__code__.co_filename),))
+        return result
+    except BaseException as error:
+        verify_failure_sources(identities, error)
+        raise
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--upstream-root", type=Path, default=CODES / "chapters/ch00/upstream/_downloads")
-    parser.add_argument("--report", type=Path, required=True)
+    parser.add_argument("--report", type=Path)
     args = parser.parse_args()
+    if args.report is not None:
+        upstream.report_target(args.report, CURRENT, protected=(upstream.CACHE, args.upstream_root))
     result = run(args.upstream_root)
-    args.report.write_text(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + "\n")
+    if args.report is not None:
+        upstream.write_report(args.report, result, CURRENT, protected=(upstream.CACHE, args.upstream_root))
+    print(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False))

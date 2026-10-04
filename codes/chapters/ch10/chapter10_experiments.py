@@ -1,4 +1,4 @@
-"""E10-18..33: engineering calculations and checked PCM, not hardware benchmarks.
+"""E10-18..34: engineering calculations and checked PCM, not hardware benchmarks.
 
 Run ``python -m codes.chapters.ch10.chapter10_experiments``. Every answer is computed
 from the stated inputs. Published audio is checked read-only, never regenerated.
@@ -25,6 +25,7 @@ from codes.chapters.ch00.examples.generate_audio_samples import INPUTS
 from codes.chapters.ch10.sro_closed_loop_demo import StatefulLinearClockCorrector
 from codes.chapters.ch10.core.noise_mismatch import build_fixture, analyze_fixture, analyze_pcm, STEMS
 from codes.chapters.ch10.examples.generate_noise_mismatch import check_assets, OUTPUT as NOISE_OUTPUT
+from codes.chapters.ch10.core.channel_selection import teaching_channel_selection
 
 
 def rtf_anchor():
@@ -354,12 +355,63 @@ def noise_mismatch_anchor(directory=None):
             'scope': 'fixed/polluted/known expected noise power; offline centered WOLA; no adaptive MCRA or speech benchmark'}
 
 
+def channel_selection_anchor(directory=None):
+    """E10-34 hand control plus strict read-only check of actual six PCM files.
+
+    No source estimation or repair: missing, changed, or stale assets fail.
+    Recompute PCM integer error from actual stored samples, separately from
+    the given-statistics solution and unquantized component measurements.
+    """
+    from codes.chapters.ch10.examples.generate_channel_audio import check_assets as check_channel_assets, DEFAULT_OUTPUT
+    from codes.chapters.ch10.core.channel_audio import FILE_NAMES, SCORING_INTERVAL
+    directory = DEFAULT_OUTPUT if directory is None else Path(directory)
+    manifest = check_channel_assets(directory)
+    integers, hashes = {}, {}
+    for role, filename in FILE_NAMES.items():
+        path = directory/filename
+        hashes[filename] = hashlib.sha256(path.read_bytes()).hexdigest()
+        channels = 3 if role in ('healthy_array', 'faulty_array') else 1
+        with wave.open(str(path), 'rb') as reader:
+            if (reader.getframerate(), reader.getnchannels(), reader.getnframes(),
+                    reader.getsampwidth(), reader.getcomptype()) != (16000, channels, 32000, 2, 'NONE'):
+                raise ValueError('fixed channel selection PCM format required')
+            raw = reader.readframes(32000)
+        integers[role] = struct.unpack('<'+'h'*(32000*channels), raw)
+    lo, hi = SCORING_INTERVAL
+    reference = integers['reference'][lo:hi]
+    reference_energy = sum(value*value for value in reference)
+    if reference_energy <= 0:
+        raise ValueError('channel selection PCM reference must have positive energy')
+    denominator = (hi-lo)*32768**2
+    scores = {}
+    for role in ('healthy_output', 'stale_output', 'recomputed_output'):
+        values = integers[role][lo:hi]
+        error_energy = sum((value-truth)**2 for value, truth in zip(values, reference))
+        power_energy = sum(value*value for value in values)
+        scores[role] = {'error_squared_sum_pcm_integer': error_energy,
+                       'power_squared_sum_pcm_integer': power_energy,
+                       'mse': error_energy/denominator,
+                       'nmse': error_energy/reference_energy}
+    return {'mathematical_control': teaching_channel_selection(),
+            'parameters': manifest['parameters'], 'analytic': manifest['analytic'],
+            'pcm_analysis': {'score_interval_samples': [lo, hi], 'samples': hi-lo,
+                             'reference_squared_sum_pcm_integer': reference_energy,
+                             'mse_integer_denominator': denominator, 'scores': scores},
+            'pcm_validation': {'checked_read_only': True, 'wav_sha256': hashes,
+                               'manifest_sha256': hashlib.sha256((directory/'MANIFEST.json').read_bytes()).hexdigest(),
+                               'source_sha256': manifest['source_sha256'],
+                               'scored_from_stored_integer_pcm': True},
+            'unquantized_measurements': {role: sample['float_measurements']
+                                         for role, sample in manifest['samples'].items()},
+            'scope': manifest['limits']}
+
+
 def run_experiments():
     functions = [rtf_anchor, subtraction_anchor, q15_anchor, critical_path_anchor,
                  phase_drift_anchor, memory_anchor, streaming_anchor, alias_anchor,
                  telemetry_anchor, agc_anchor, noise_update_anchor, finite_rir_anchor,
                  blocking_anchor, clock_identifiability_anchor, padded_rtf_anchor,
-                 noise_mismatch_anchor]
+                 noise_mismatch_anchor, channel_selection_anchor]
     return {f'E10-{number:02d}': function() for number, function in enumerate(functions, 18)}
 
 

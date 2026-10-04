@@ -24,7 +24,9 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(ROOT))
-from codes.chapters.ch00.upstream.fetch_upstreams import inspect_project, load_projects  # noqa: E402
+from codes.chapters.ch00.upstream.fetch_upstreams import inspect_project, load_projects
+from codes.chapters.ch04.core import upstream_contracts as upstream
+from codes.chapters.ch10.examples.run_industrial_interfaces import clean_environment, verify_failure_sources, native_identity, compiled_dependencies  # noqa: E402
 
 REFERENCE_RATE = 16_000
 FIRST_PPM = 100
@@ -255,7 +257,7 @@ def validate_clock_result(uncorrected: dict, corrected: dict) -> dict:
 
 
 def _run_command(arguments: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
-    result = subprocess.run(arguments, cwd=cwd, capture_output=True, text=True, timeout=240, check=False)
+    result = subprocess.run(arguments, cwd=cwd, env=clean_environment(), capture_output=True, text=True, timeout=240, check=False)
     if result.returncode:
         raise RuntimeError(f"{Path(arguments[0]).name} exited {result.returncode}:\n{result.stderr[-3000:]}")
     return result
@@ -266,55 +268,64 @@ def run() -> dict:
     project = projects["libsamplerate"]
     downloaded = ROOT / "codes/chapters/ch00/upstream/_downloads"
     source = downloaded / "libsamplerate"
-    status = inspect_project(project, downloaded)
-    if status["status"] != "source_verified":
-        raise RuntimeError(f"locked libsamplerate checkout not verified: {status['status']}")
-    cmake, compiler = shutil.which("cmake"), shutil.which("clang") or shutil.which("cc")
-    if not cmake or not compiler:
-        raise RuntimeError("local CMake and C compiler are required; no tool is installed automatically")
-    with tempfile.TemporaryDirectory(prefix="libsamplerate-sro-") as temporary:
-        work = Path(temporary)
-        harness, build = work / "sro_probe.c", work / "build"
-        harness.write_text(HARNESS, encoding="utf-8")
-        _run_command([cmake, "-S", str(source), "-B", str(build),
-                      "-DCMAKE_BUILD_TYPE=Release", "-DBUILD_SHARED_LIBS=OFF",
-                      "-DBUILD_TESTING=OFF", "-DLIBSAMPLERATE_EXAMPLES=OFF",
-                      "-DLIBSAMPLERATE_INSTALL=OFF", f"-DCMAKE_C_COMPILER={compiler}"], work)
-        _run_command([cmake, "--build", str(build), "--target", "samplerate", "--parallel", "2"], work)
-        library = build / "src/libsamplerate.a"
-        executable = work / "sro_probe"
-        _run_command([compiler, "-std=c99", "-O2", "-Wall", "-Wextra",
-                      "-I", str(source / "include"), str(harness), str(library),
-                      "-lm", "-o", str(executable)], work)
-        cases = {}
-        for name in ("uncorrected", "corrected"):
-            audio, trace = work / f"{name}.f32", work / f"{name}.csv"
-            version = _run_command([str(executable), str(audio), str(trace), name], work).stdout.strip()
-            frames, offsets = marker_offsets(audio)
-            case = {"output_frames": frames, "marker_offsets_frames": offsets,
-                    "trace": inspect_trace(trace, frames, name == "corrected"),
-                    "audio_sha256": sha256(audio), "trace_sha256": sha256(trace)}
-            cases[name] = case
-        result = validate_clock_result(cases["uncorrected"], cases["corrected"])
-        final_status = inspect_project(project, downloaded)["status"]
-        if final_status != "source_verified":
-            raise RuntimeError(f"source changed during experiment: {final_status}")
-        return {"status": "passed", "scope": "synthetic fixed-known two-clock correction, not estimation or hardware",
-                "source": {"id": "libsamplerate", "revision": project["revision"],
-                           "license": project["license"], "final_status": final_status},
-                "build": {"cmake": _run_command([cmake, "--version"], work).stdout.splitlines()[0],
-                          "compiler": _run_command([compiler, "--version"], work).stdout.splitlines()[0],
-                          "library_sha256": sha256(library), "harness_sha256": sha256(harness),
-                          "host": f"{platform.system()} {platform.machine()}"},
-                "configuration": {"reference_rate_hz": REFERENCE_RATE,
-                                  "first_device_ppm": FIRST_PPM, "second_device_ppm": SECOND_PPM,
-                                  "switch_seconds": SWITCH_SECONDS, "duration_seconds": DURATION_SECONDS,
-                                  "marker_seconds": MARKER_SECONDS, "input_frames": clock_frame(DURATION_SECONDS),
-                                  "input_block_frames": CHUNK_FRAMES, "output_capacity_frames": OUTPUT_CAPACITY,
-                                  "converter": "SRC_SINC_MEDIUM_QUALITY", "libsamplerate_version": version,
-                                  "ratio_rule": "output sample rate / input sample rate",
-                                  "alignment": "No fitted shift or gain; compare pulse peaks against reference clock"},
-                "cases": cases, "independent_clock_check": result}
+    identity = native_identity("libsamplerate", downloaded)
+    try:
+        status = inspect_project(project, downloaded)
+        if status["status"] != "source_verified":
+            raise RuntimeError(f"locked libsamplerate checkout not verified: {status['status']}")
+        cmake, compiler = shutil.which("cmake"), shutil.which("clang") or shutil.which("cc")
+        if not cmake or not compiler:
+            raise RuntimeError("local CMake and C compiler are required; no tool is installed automatically")
+        with tempfile.TemporaryDirectory(prefix="libsamplerate-sro-") as temporary:
+            work = upstream.work_target(temporary, protected=(downloaded,))
+            harness, build = work / "sro_probe.c", work / "build"
+            harness.write_text(HARNESS, encoding="utf-8")
+            _run_command([cmake, "-S", str(source), "-B", str(build),
+                          "-DCMAKE_BUILD_TYPE=Release", "-DBUILD_SHARED_LIBS=OFF",
+                          "-DBUILD_TESTING=OFF", "-DLIBSAMPLERATE_EXAMPLES=OFF",
+                          "-DLIBSAMPLERATE_INSTALL=OFF", f"-DCMAKE_C_COMPILER={compiler}", "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"], work)
+            _run_command([cmake, "--build", str(build), "--target", "samplerate", "--parallel", "2"], work)
+            library = build / "src/libsamplerate.a"
+            executable = work / "sro_probe"
+            _run_command([compiler, "-std=c99", "-O2", "-Wall", "-Wextra", "-MD", "-MF", str(work / "harness.d"),
+                          "-I", str(source / "include"), str(harness), str(library),
+                          "-lm", "-o", str(executable)], work)
+            cases = {}
+            for name in ("uncorrected", "corrected"):
+                audio, trace = work / f"{name}.f32", work / f"{name}.csv"
+                version = _run_command([str(executable), str(audio), str(trace), name], work).stdout.strip()
+                frames, offsets = marker_offsets(audio)
+                case = {"output_frames": frames, "marker_offsets_frames": offsets,
+                        "trace": inspect_trace(trace, frames, name == "corrected"),
+                        "audio_sha256": sha256(audio), "trace_sha256": sha256(trace)}
+                cases[name] = case
+            result = validate_clock_result(cases["uncorrected"], cases["corrected"])
+            upstream.check_unchanged(identity)
+            compilation = compiled_dependencies(work, {"libsamplerate": identity}, (harness,))
+            final_status = inspect_project(project, downloaded)["status"]
+            if final_status != "source_verified":
+                raise RuntimeError(f"source changed during experiment: {final_status}")
+            return {"status": "passed", "scope": "synthetic fixed-known two-clock correction, not estimation or hardware",
+                    "source_identity": identity, "compiled_dependencies": compilation,
+                    "actual_dependencies_sha256": upstream.dependencies(__file__, (Path(clean_environment.__code__.co_filename),)),
+                    "source": {"id": "libsamplerate", "revision": project["revision"],
+                               "license": project["license"], "final_status": final_status},
+                    "build": {"cmake": _run_command([cmake, "--version"], work).stdout.splitlines()[0],
+                              "compiler": _run_command([compiler, "--version"], work).stdout.splitlines()[0],
+                              "library_sha256": sha256(library), "harness_sha256": sha256(harness),
+                              "host": f"{platform.system()} {platform.machine()}"},
+                    "configuration": {"reference_rate_hz": REFERENCE_RATE,
+                                      "first_device_ppm": FIRST_PPM, "second_device_ppm": SECOND_PPM,
+                                      "switch_seconds": SWITCH_SECONDS, "duration_seconds": DURATION_SECONDS,
+                                      "marker_seconds": MARKER_SECONDS, "input_frames": clock_frame(DURATION_SECONDS),
+                                      "input_block_frames": CHUNK_FRAMES, "output_capacity_frames": OUTPUT_CAPACITY,
+                                      "converter": "SRC_SINC_MEDIUM_QUALITY", "libsamplerate_version": version,
+                                      "ratio_rule": "output sample rate / input sample rate",
+                                      "alignment": "No fitted shift or gain; compare pulse peaks against reference clock"},
+                    "cases": cases, "independent_clock_check": result}
+    except BaseException as error:
+        verify_failure_sources({'libsamplerate': identity}, error)
+        raise
 
 
 if __name__ == "__main__":

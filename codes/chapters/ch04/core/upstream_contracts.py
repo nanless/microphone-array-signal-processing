@@ -74,6 +74,17 @@ PROJECTS = {
     'filterpy': ('https://github.com/rlabbe/filterpy.git', '3b51149ebcff0401ff1e10bf08ffca7b6bbc4a33', 'MIT', 'LICENSE', '8ffce1097f1b1c0fba42e4449ef49aa05cb7b45566dd0989407839dba07af99c'),
     'stonesoup': ('https://github.com/dstl/Stone-Soup.git', '8d1edeb07ef8505ed065cbef435cfb5e517d9bdc', 'MIT', 'LICENSE', '2462f3d8a857f601e266f048a4ff051366c1e05f098cf3a1524eaf922f879815'),
 
+    'pystoi': ('https://github.com/mpariente/pystoi.git', '74872b000753a7a42ff51aa0868af8c82c7f9053', 'MIT for Python core; MATLAB test notices separate', 'LICENSE', '35c25f6087c4e1857ba6d4bc0b7957b7bc523c9ff190a9e2cccb4b5ecba018ab'),
+    'deepfilternet': ('https://github.com/Rikorose/DeepFilterNet.git', 'd375b2d8309e0935d165700c91da9de862a99c31', 'Apache-2.0 OR MIT', 'LICENSE-MIT', '24e6bb09c928af8d8e56268082f87413247ce36b39dd5d33add2f9893968065e'),
+    'cmsis_dsp': ('https://github.com/ARM-software/CMSIS-DSP.git', '83a2d7bc98c81b4bbe4a6f48b1f2ecf179868a0b', 'Apache-2.0', 'LICENSE', 'b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1'),
+    'webrtc': ('https://webrtc.googlesource.com/src', '0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e', 'BSD-3-Clause', 'LICENSE', 'ab00a482b6a3902e40211b43c5d0441962ea99b6cc7c25c0f243fa270b78d482'),
+    'rnnoise': ('https://gitlab.xiph.org/xiph/rnnoise.git', '70f1d256acd4b34a572f999a05c87bf00b67730d', 'BSD-3-Clause', 'COPYING', '45d37ca1cdb278c088e1aa85e0e65ca3a534ed86a28dcc96ca16810248a61d35'),
+    'fastenhancer': ('https://github.com/aask1357/fastenhancer.git', 'f85223bd546b27f39dc0744e0310dcd246f750a4', 'MIT; released weights and datasets separately', 'LICENSE', '38164c22720cdccceb5f0dbb8f7218dcf17bac97ac536cad2e77c33dfbc45a18'),
+    'libsoxr': ('https://git.code.sf.net/p/soxr/code', '945b592b70470e29f917f4de89b4281fbbd540c0', 'LGPL-2.1-or-later; embedded PFFFT terms separate', 'LICENCE', 'dc98676341fdcd29d9f279c9679d6a75288785b174ded8d1b2e316c366166135'),
+    'libebur128': ('https://github.com/jiixyj/libebur128.git', '67b33abe1558160ed76ada1322329b0e9e058b02', 'MIT', 'COPYING', 'd6b4754bb67bdd08b97d5d11b2d7434997a371585a78fe77007149df3af8d09c'),
+    'libsndfile': ('https://github.com/libsndfile/libsndfile.git', 'b9103bd48b6c8fb517ae737fe3baee0c718b804c', 'LGPL-2.1-or-later; dependencies separately', 'COPYING', 'ad01ea5cd2755f6048383c8d54c88459cd6fcb17757c5c8892f8c5ea060f6140'),
+    'libsamplerate': ('https://github.com/libsndfile/libsamplerate.git', '0844c208f683527c08ea8a80acc13b398aa9c8bf', 'BSD-2-Clause', 'COPYING', '2c1f76ce2effdddb425018405d5690c0b1ab4e6976e35296b0a6db65c5e1a55d'),
+    'stk': ('https://github.com/thestk/stk.git', '6aacd357d76250bb7da2b1ddf675651828784bbc', 'MIT-STK; see per-file notices', 'LICENSE', '342901da98ec7c044426f3d1c2e1b8dd2ac79001e0916b49c2cf71b158b13aa5'),
 }
 
 

@@ -19,7 +19,7 @@
 
     1. 运行 `codes/` 中只依赖 NumPy 的教学实现，核对手算结果、数组维度和退化边界。
     2. 在隔离环境中用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线，记录房间、阵列和随机种子。
-    3. 先按 §13.7 生成图所依赖的音频和追踪清单，再运行 `scripts/` 中的七个绘图脚本，按当前参数复现 77 张编号图，并逐图核对正文条件。
+    3. 先按 §13.7 生成图所依赖的音频和追踪清单，再运行 `scripts/` 中的八个绘图脚本，按当前参数复现 78 张编号图，并逐图核对正文条件。
     4. 按研究任务选择公开数据和固定版本参考系统，分别核对代码、模型与数据的许可和评测口径。
     5. 在可用的多通道硬件上测实时性、同步和标定；仿真结果不能代替设备测量。
 
@@ -130,7 +130,7 @@ CHiME-9 设置了两个输入与目标都不同的任务。MCoRec 使用房间�
 
 DiCoW（Polok et al., *Computer Speech & Language* 95:101841，2026，[DOI 10.1016/j.csl.2025.101841](https://doi.org/10.1016/j.csl.2025.101841 "citation")）针对多人混合录音中“只转写指定一人”的问题，把说话人分割给出的活动信息作为条件输入 Whisper；输出是该目标的文字，而不是分离后的干净音轨。这与先分离出波形再送入普通识别器的做法不同。
 
-作者[演示仓固定提交](https://github.com/BUTSpeechFIT/DiCoW/tree/e9326bd536bf632e823357438b210102903ba620 "citation")内有两个不同入口：[`example.py` 使用 DiCoW v1 与 Pyannote 3.1](https://github.com/BUTSpeechFIT/DiCoW/blob/e9326bd536bf632e823357438b210102903ba620/example.py#L8-L14 "citation")，[`app.py` 使用 DiCoW v2 与 Pyannote 3.1](https://github.com/BUTSpeechFIT/DiCoW/blob/e9326bd536bf632e823357438b210102903ba620/app.py#L31-L39 "citation")；不能仅凭仓库提交号把两者叫作同版。原工作相关的[训练/推理源码仓固定版本](https://github.com/BUTSpeechFIT/TS-ASR-Whisper/tree/0ea6679d44405f5ff39188030123524686c198e9 "citation")另行锁定。演示仓后续主分支引入 DiariZen 等新依赖，不应把这套后续演示条件倒写为上述固定提交的必需条件。
+作者[演示仓固定提交](https://github.com/BUTSpeechFIT/DiCoW/tree/e9326bd536bf632e823357438b210102903ba620 "citation")内有两个不同入口：[`example.py` 使用 DiCoW v1 与 Pyannote 3.1](https://github.com/BUTSpeechFIT/DiCoW/blob/e9326bd536bf632e823357438b210102903ba620/example.py#L8-L14 "citation")，[`app.py` 使用 DiCoW v2 与 Pyannote 3.1](https://github.com/BUTSpeechFIT/DiCoW/blob/e9326bd536bf632e823357438b210102903ba620/app.py#L31-L39 "citation")；不能仅凭仓库提交号把两者叫作同版。原工作相关的[训练/推理源码仓固定版本](https://github.com/BUTSpeechFIT/TS-ASR-Whisper/tree/0ea6679d44405f5ff39188030123534686c198e9 "citation")另行锁定。演示仓后续主分支引入 DiariZen 等新依赖，不应把这套后续演示条件倒写为上述固定提交的必需条件。
 
 源码、模型和数据分开核对许可：上述代码按 Apache-2.0，[DiCoW v1 权重](https://huggingface.co/BUT-FIT/DiCoW_v1 "citation")与[DiCoW v2 权重](https://huggingface.co/BUT-FIT/DiCoW_v2 "citation")的模型卡各标 CC BY 4.0；后续演示使用的 [DiariZen 权重](https://github.com/BUTSpeechFIT/DiariZen/blob/main/MODEL_LICENSE "citation")按 CC BY-NC 4.0，不能由代码许可推断其商用权利。[Pyannote 3.1](https://huggingface.co/pyannote/speaker-diarization-3.1 "citation")模型还须核对门控获取条件与访问凭据。取得源码不表示权重已获许可或系统已经运行。
 
@@ -886,7 +886,9 @@ $X$ 是有限源序列的离散时间傅里叶变换，$H_{\mathrm r}$ 是反射
 
 图77读取第9章既有两份独立PCM，197帧有效标记驱动单槽候选、确认与退役。可用时刻龄期与状态龄期分别给出事件、ID及187/189个确认发布帧；图与报告绑定12真实源，不生成新音频或声称运行多目标身份识别。
 
-图片写入 `figures/`，共 77 张编号图，另有第16题的房间补充图：
+图78读取第10章六份已知坏麦PCM与独立清单，同时显示目标响应、总NMSE与固定波形窗。失效前权重在剩余通道相消目标；重算权重保持目标，而两者解析总误差相同。图报告绑定九个真实源，PCM量化差异不写成严格相等，不是盲故障检测。
+
+图片写入 `figures/`，共 78 张编号图，另有第16题的房间补充图：
 
 ```bash
 .venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
@@ -906,6 +908,7 @@ $X$ 是有限源序列的离散时间傅里叶变换，$H_{\mathrm r}$ 是反射
 .venv/bin/python -m codes.chapters.ch07.examples.generate_delay_audio
 .venv/bin/python -m codes.chapters.ch08.examples.mask_representation_demo
 .venv/bin/python -m codes.chapters.ch10.examples.generate_noise_mismatch
+.venv/bin/python -m codes.chapters.ch10.examples.generate_channel_audio  # 已知坏麦六独立WAV与清单
 .venv/bin/python -m codes.chapters.ch11.examples.generate_selection_audio
 .venv/bin/python -m codes.chapters.appendix_a.examples.generate_weighted_audio
 .venv/bin/python -m codes.chapters.appendix_b.examples.generate_response_audio
@@ -918,6 +921,8 @@ $X$ 是有限源序列的离散时间傅里叶变换，$H_{\mathrm r}$ 是反射
 .venv/bin/python scripts/make_delay_figures.py  # 图75：已知到达与历史PCM控制
 .venv/bin/python scripts/make_css_figures.py  # 图76：既定槽位极性/增益与实际PCM
 .venv/bin/python scripts/make_tracking_figures.py  # 图77：实际PCM生命周期与两个龄期时钟
+.venv/bin/python scripts/make_channel_figures.py  # 图78：已知坏麦、重建约束与实际PCM
+.venv/bin/python -m codes.chapters.ch10.examples.generate_channel_audio --check  # 六独立WAV只读核验
 ```
 
 Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`，其余不变。

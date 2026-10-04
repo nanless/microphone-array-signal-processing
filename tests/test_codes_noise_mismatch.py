@@ -12,6 +12,7 @@ import sys
 import tempfile
 import unittest
 import wave
+from unittest.mock import patch
 
 import numpy as np
 from codes.chapters.ch10.core.noise_mismatch import build_fixture, analyze_fixture, analyze_pcm
@@ -170,6 +171,46 @@ class NoiseMismatchTests(unittest.TestCase):
             self.assertFalse((Path(temp)/'escape').exists())
             with self.assertRaises(ValueError): generator.generate(Path(temp)/'missing',check='yes')
             self.assertFalse((Path(temp)/'missing').exists())
+
+    def test_trusted_builder_drift_is_rejected_before_any_publication(self):
+        # Five formerly accepted true-type/value/model claims plus shape and
+        # decomposition drift. These are internal contract controls, not an
+        # assertion that arbitrary external input can replace Python functions.
+        mutations = [lambda f: f['parameters'].update(seed=20261001.),
+                     lambda f: f['parameters'].update(seed=True),
+                     lambda f: f['parameters'].update(center=False),
+                     lambda f: f['parameters'].update(common_export_gain=.5),
+                     lambda f: f['parameters'].update(known_variance_scope='full blind clean recovery'),
+                     lambda f: f['parameters'].update(noise_step_sample=True),
+                     lambda f: f['parameters']['target_frequencies_hz'].__setitem__(0, 500.),
+                     lambda f: f['parameters'].update(extra='claim'),
+                     lambda f: f['signals'].update(noise_reference=f['signals']['noise_reference'][0]),
+                     lambda f: f['signals'].update(noise_reference=f['signals']['noise_reference'].astype(np.float32)),
+                     lambda f: f['signals']['noise_reference'].__setitem__((0, 10000), np.nan),
+                     lambda f: f['signals'].update(extra=f['signals']['noise_reference']),
+                     lambda f: f['components']['noise_fixed']['noise'].__setitem__((0, 10000), np.nan),
+                     lambda f: f['spectral']['known_variance_power'].__setitem__(150, 1.0),
+                     lambda f: f['spectral']['frame_centers_samples'].__setitem__(100, 100),
+                     lambda f: f['signals']['noise_fixed'].__setitem__((0, 10000), .2)]
+        with tempfile.TemporaryDirectory() as temp:
+            target = Path(temp)/'never-created'
+            for mutation in mutations:
+                fixture = copy.deepcopy(self.fixture); mutation(fixture)
+                with self.subTest(mutation=mutation), patch.object(generator, 'build_fixture', return_value=fixture):
+                    with self.assertRaises(ValueError): generator.generate(target)
+                    self.assertFalse(target.exists())
+            before = {p.name: (p.read_bytes(), p.stat().st_mtime_ns) for p in self.directory.iterdir()}
+            fixture = copy.deepcopy(self.fixture); fixture['parameters']['seed'] = True
+            with patch.object(generator, 'build_fixture', return_value=fixture):
+                with self.assertRaises(ValueError): generator.generate(self.directory)
+            self.assertEqual(before, {p.name: (p.read_bytes(), p.stat().st_mtime_ns) for p in self.directory.iterdir()})
+            with patch.object(generator, 'ROOT', Path(temp)/'missing-sources'):
+                with self.assertRaises(ValueError): generator.generate(target)
+            self.assertFalse(target.exists())
+            for name, value in [('SAMPLE_RATE', True), ('SAMPLES', 32000.), ('STEMS', ('noise_reference',))]:
+                with self.subTest(name=name), patch.object(generator, name, value):
+                    with self.assertRaises(ValueError): generator.generate(target)
+                    self.assertFalse(target.exists())
 
     def test_missing_directory_does_not_get_created_by_check(self):
         with tempfile.TemporaryDirectory() as temp:

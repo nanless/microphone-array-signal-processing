@@ -98,6 +98,13 @@ class TestNativeProbe(unittest.TestCase):
         report = run()
         self.assertEqual(report["status"], "passed")
         self.assertEqual(report["source"]["final_status"], "source_verified")
+        identity = report['source_identity']
+        self.assertTrue(identity['clean_before'] and identity['clean_after'])
+        self.assertEqual(identity['origin'], 'https://github.com/libsndfile/libsamplerate.git')
+        compiled = report['compiled_dependencies']['original_compile_inputs']
+        self.assertIn('libsamplerate/src/samplerate.c', compiled)
+        self.assertTrue(all(row['git_blob'] == row['actual_blob'] for row in compiled.values()))
+        self.assertNotIn('libsamplerate/Win32/libsamplerate-0.def', compiled)
         self.assertEqual(report["independent_clock_check"]["independent_expected_span_frames"], 16)
         self.assertLessEqual(abs(report["independent_clock_check"]["corrected_residual_span_frames"]), 3)
         self.assertGreater(report["cases"]["corrected"]["trace"]["partial_input_calls"], 0)

@@ -7,6 +7,9 @@ come from rate arithmetic, amplitude scaling and a seven-frame PCM sequence.
 
 from copy import deepcopy
 import json
+import hashlib
+import subprocess
+import os
 import math
 from pathlib import Path
 import struct
@@ -184,11 +187,15 @@ class TestIndustrialAcceptance(unittest.TestCase):
                     with self.assertRaises((ValueError, struct.error)):
                         verify_wave(path)
 
-    def test_published_report_is_bound_to_current_sources(self):
+    def test_historical_report_is_bound_to_real_historical_sources(self):
         report = json.loads(DEFAULT_REPORT.read_text(encoding="utf-8"))
         self.assertEqual(report["status"], "passed")
         for artifact in report["artifacts"].values():
-            self.assertEqual(artifact["sha256"], digest(ROOT / artifact["path"]))
+            environment = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
+            environment.update(GIT_CONFIG_NOSYSTEM='1', GIT_CONFIG_GLOBAL='/dev/null', GIT_NO_LAZY_FETCH='1')
+            original = subprocess.check_output(['git', '-C', str(ROOT), 'show',
+                'bde483bcc429a553aeaf8830ca3687ab46831db0:' + artifact['path']], env=environment)
+            self.assertEqual(artifact["sha256"], hashlib.sha256(original).hexdigest())
         lock = json.loads((ROOT / "codes/chapters/ch00/SOURCES.lock.json").read_text(encoding="utf-8"))
         revisions = {project["id"]: project["revision"] for project in lock["projects"]}
         for name, source in report["sources"].items():

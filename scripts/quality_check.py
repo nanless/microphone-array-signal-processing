@@ -91,6 +91,8 @@ WEIGHTED_AUDIO_WAVS = {"weighted_" + name + ".wav" for name in
                        ("target", "array", "ols", "gls", "reversed")}
 SCENARIO_AUDIO_WAVS = {f"selection_{scene}_{kind}.wav" for scene in ("single", "dual")
                        for kind in ("target", "mixture", "fir3", "fir9")}
+CHANNEL_AUDIO_ROOT = CODE_CHAPTERS / "ch10" / "channel_audio"
+CHANNEL_AUDIO_WAVS = {"channel_"+role+".wav" for role in ("reference", "healthy_array", "faulty_array", "healthy_output", "stale_output", "recomputed_output")}
 NOISE_AUDIO_ROOT = CODE_CHAPTERS / "ch10" / "noise_audio"
 NOISE_AUDIO_WAVS = {"noise_" + name + ".wav" for name in
                     ("reference", "component", "mixture", "fixed", "polluted", "known_variance")}
@@ -143,7 +145,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "07_wpe-dereverberation.md": 58,
     "08_speech-separation.md": 63,  # OverIVA topic and three separately navigable exercises
     "09_source-tracking.md": 62,  # three independent topics and E09-24/25/26
-    "10_engineering-practice.md": 54,
+    "10_engineering-practice.md": 56,
     "11_selection-guide.md": 37,
     "12_appendix-symbols-math.md": 36,
     "13_appendix-guide.md": 29,
@@ -172,16 +174,16 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 16
 EXPECTED_SECTION_COUNT = 151
-EXPECTED_SUBSECTION_COUNT = 726
-EXPECTED_OUTLINE_ITEM_COUNT = 893
-EXPECTED_FIGURE_NUMBERS = set(range(1, 78))
-EXPECTED_EXERCISE_COUNT = 352
+EXPECTED_SUBSECTION_COUNT = 728
+EXPECTED_OUTLINE_ITEM_COUNT = 895
+EXPECTED_FIGURE_NUMBERS = set(range(1, 79))
+EXPECTED_EXERCISE_COUNT = 353
 EXPECTED_EXERCISE_COUNTS = {
     '01_problem-definition.md': 10, '02_basics-signal-model.md': 20,
     '03_array-geometry.md': 18, '04_doa-estimation.md': 25,
     '05_beamforming.md': 24, '06_aec.md': 42, '07_wpe-dereverberation.md': 24,
     '08_speech-separation.md': 32, '09_source-tracking.md': 26,
-    '10_engineering-practice.md': 33, '11_selection-guide.md': 25,
+    '10_engineering-practice.md': 34, '11_selection-guide.md': 25,
     '12_appendix-symbols-math.md': 19, '13_appendix-guide.md': 14,
     '14_acoustic-imaging.md': 16, '15_distributed-enhancement.md': 24,
 }
@@ -793,7 +795,7 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_tracking_figures.py" if number == 77 else "make_css_figures.py" if number == 76 else "make_delay_figures.py" if number == 75 else "make_reference_figures.py" if number == 74 else "make_beamforming_figures.py" if number == 73 else "make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72)
+            script_name = ("make_channel_figures.py" if number == 78 else "make_tracking_figures.py" if number == 77 else "make_css_figures.py" if number == 76 else "make_delay_figures.py" if number == 75 else "make_reference_figures.py" if number == 74 else "make_beamforming_figures.py" if number == 73 else "make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
@@ -1396,7 +1398,7 @@ def source_digest():
                     if path.is_file())
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
-              ("build_pdf.py", "make_figures.py", "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py", "make_delay_figures.py", "make_css_figures.py", "make_tracking_figures.py")]
+              ("build_pdf.py", "make_figures.py", "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py", "make_delay_figures.py", "make_css_figures.py", "make_tracking_figures.py", "make_channel_figures.py")]
     paths.append(ROOT / "requirements.txt")
     paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
@@ -1417,13 +1419,13 @@ def site_source_digest():
     paths += sorted(main_audio_path(CODE_CHAPTERS, record["group"], record["file"])
                     for record in manifest["files"])
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, SPECTRAL_AUDIO_ROOT, STFT_AUDIO_ROOT, SWEEP_AUDIO_ROOT, BASELINE_AUDIO_ROOT, REFLECTION_AUDIO_ROOT, PHASE_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, REFERENCE_AUDIO_ROOT, DELAY_AUDIO_ROOT, CSS_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, SPECTRAL_AUDIO_ROOT, STFT_AUDIO_ROOT, SWEEP_AUDIO_ROOT, BASELINE_AUDIO_ROOT, REFLECTION_AUDIO_ROOT, PHASE_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, REFERENCE_AUDIO_ROOT, DELAY_AUDIO_ROOT, CSS_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, CHANNEL_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
               ("build_site.py", "build_markdown_helpers.py", "inline_layout.js", "heading_aliases.py",
                "legacy_sequential_anchors.json", "code_layout.py", "make_figures.py",
-               "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py", "make_delay_figures.py", "make_css_figures.py", "make_tracking_figures.py")]
+               "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py", "make_delay_figures.py", "make_css_figures.py", "make_tracking_figures.py", "make_channel_figures.py")]
     paths.append(ROOT / "requirements.txt")
     paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
@@ -1770,7 +1772,7 @@ def check_real_audio(errors):
         parser = VisibleMediaParser()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         allowed_audio_roots = ("../audio/", "../real_audio/", "../room_audio/",
-                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../spectral_audio/", "../stft_audio/", "../sweep_audio/", "../baseline_audio/", "../reflection_audio/", "../phase_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../reference_audio/", "../delay_audio/", "../css_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/", "../scenario_audio/", "../weighted_audio/", "../response_audio/", "../imaging_audio/", "../distributed_audio/")
+                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../spectral_audio/", "../stft_audio/", "../sweep_audio/", "../baseline_audio/", "../reflection_audio/", "../phase_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../reference_audio/", "../delay_audio/", "../css_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/", "../channel_audio/", "../scenario_audio/", "../weighted_audio/", "../response_audio/", "../imaging_audio/", "../distributed_audio/")
         if any(not (p.get("src") or "").startswith(allowed_audio_roots)
                for p in parser.items):
             fail(errors, "未知试听控件来源")
@@ -3794,6 +3796,198 @@ def check_imaging_audio(errors):
         fail(errors, '独立声学成像音频：' + str(error))
 
 
+CHANNEL_GENERATING_SOURCES = {
+    'codes/chapters/ch10/core/channel_audio.py',
+    'codes/chapters/ch10/examples/generate_channel_audio.py',
+    'codes/chapters/ch10/core/channel_selection.py',
+    'codes/chapters/ch05/core/beamforming.py',
+    'codes/chapters/ch04/core/covariance.py',
+    'codes/chapters/ch02/core/conventions.py',
+    'codes/chapters/ch00/core/audio_samples.py',
+    'codes/chapters/ch00/io_contracts.py',
+}
+
+
+def _check_channel_pcm(directory, manifest):
+    """Independent integer sums, fixed known model and finite-window controls."""
+    import numpy as np
+    validate_asset_directory(directory, CHANNEL_AUDIO_WAVS | {'MANIFEST.json'}, check=True)
+    if (type(manifest['schema_version']) is not int or manifest['schema_version'] != 1
+            or manifest['exercise_id'] != 'E10-34'
+            or type(manifest['sample_rate_hz']) is not int or manifest['sample_rate_hz'] != 16000
+            or type(manifest['samples_per_channel']) is not int or manifest['samples_per_channel'] != 32000
+            or type(manifest['common_export_gain']) is not float or manifest['common_export_gain'] != 1.0
+            or set(manifest['source_sha256']) != CHANNEL_GENERATING_SOURCES
+            or set(manifest['files']) != CHANNEL_AUDIO_WAVS):
+        raise ValueError('channel audio fixed format or source set differs')
+    for name, digest in manifest['source_sha256'].items():
+        if hashlib.sha256(validate_parent_chain(ROOT/name).read_bytes()).hexdigest() != digest:
+            raise ValueError('channel generating source SHA differs: '+name)
+    model = manifest['model']
+    fixed_model = {'noise_covariance': [[.005,.005,0],[.005,.01,.005],[0,.005,.01]],
+        'full_weights': [1,-.5,.5], 'selected_covariance': [[.01,.005],[.005,.01]],
+        'selected_steering': [1,1], 'selected_weights': [.5,.5],
+        'selection_matrix': [[0,1,0],[0,0,1]], 'stale_remaining_weights': [-.5,.5]}
+    if set(model) != set(fixed_model) or any(
+            not np.allclose(model[key], value, rtol=0, atol=2e-15)
+            for key, value in fixed_model.items()):
+        raise ValueError('channel selected model or known covariance differs')
+    parameters = manifest['parameters']
+    for key, value in {'target_frequency_hz':500.0, 'noise_basis_frequencies_hz':[1500.,2500.,3500.],
+            'amplitude_each':.1, 'fade_samples_each_end':320, 'tail_samples':0,
+            'scoring_interval_samples':[2400,29600], 'scoring_samples_per_channel':27200,
+            'target_cycles_in_score':850, 'noise_basis_cycles_in_score':[2550,4250,5950],
+            'known_failed_channel':0, 'selected_channels':[1,2]}.items():
+        if not same_metadata(parameters[key], value):
+            raise ValueError('channel fixed scoring parameter differs: '+key)
+    roles = ('reference','healthy_array','faulty_array','healthy_output','stale_output','recomputed_output')
+    if set(manifest['samples']) != set(roles):
+        raise ValueError('channel six sample roles differ')
+    pcm = {}
+    for role in roles:
+        filename = 'channel_'+role+'.wav'
+        blob = validate_parent_chain(directory/filename).read_bytes()
+        if hashlib.sha256(blob).hexdigest() != manifest['files'][filename]['sha256']:
+            raise ValueError('channel actual WAV SHA differs: '+filename)
+        channels = 3 if role.endswith('_array') else 1
+        with wave.open(str(directory/filename), 'rb') as reader:
+            if (reader.getframerate(),reader.getnchannels(),reader.getsampwidth(),
+                    reader.getnframes(),reader.getcomptype()) != (16000,channels,2,32000,'NONE'):
+                raise ValueError('channel actual PCM format differs: '+filename)
+            raw = reader.readframes(32000)
+        if len(raw) != 32000*channels*2:
+            raise ValueError('channel actual PCM payload differs')
+        decoded = struct.unpack('<'+str(32000*channels)+'h',raw)
+        pcm[role] = [decoded[c::channels] for c in range(channels)]
+    reference = pcm['reference'][0][2400:29600]
+    ref_energy = sum(x*x for x in reference)
+    denominator = 27200*32768**2
+    if (ref_energy, denominator) != (146027417700,29205777612800):
+        raise ValueError('channel actual reference or integer denominator differs')
+    if any(pcm['faulty_array'][0]) or pcm['faulty_array'][1:] != pcm['healthy_array'][1:]:
+        raise ValueError('channel prescribed failed observation differs')
+    for role in roles:
+        row = manifest['samples'][role]
+        if row['file'] != 'channel_'+role+'.wav':
+            raise ValueError('channel role points to a different file')
+        channels = len(pcm[role]); energies=[]; errors=[]; crosses=[]
+        for values in pcm[role]:
+            window = values[2400:29600]
+            energies.append(sum(x*x for x in window))
+            errors.append(sum((x-y)**2 for x,y in zip(window,reference)))
+            crosses.append(sum(x*y for x,y in zip(window,reference)))
+        expected = {'scoring_interval_samples':[2400,29600], 'samples_per_channel':27200,
+            'channels':channels, 'integer_squared_sum_E_per_channel':energies,
+            'integer_denominator_D_per_channel':denominator,
+            'mean_square_per_channel':[x/denominator for x in energies],
+            'integer_squared_sum_E_all_channels':sum(energies),
+            'integer_denominator_D_all_channels':denominator*channels,
+            'mean_square_all_channels':sum(energies)/(denominator*channels),
+            'integer_reference_squared_sum_per_channel':[ref_energy]*channels,
+            'integer_reference_error_squared_sum_per_channel':errors,
+            'integer_output_reference_cross_sum_per_channel':crosses,
+            'reference_error_mean_square_per_channel':[x/denominator for x in errors],
+            'reference_NMSE_per_channel':[x/ref_energy for x in errors],
+            'projection_gain_per_channel':[x/ref_energy for x in crosses], 'pcm_decode_divisor':32768,
+            'projection_scope':'reference projection diagnostic only; no gain compensation applied'}
+        if not same_metadata(row['pcm_integer_measurements'], expected):
+            raise ValueError('channel independent integer E/D differs: '+role)
+        measurement=row['pcm_measurements']
+        for key in ('scoring_interval_samples','samples_per_channel','mean_square_per_channel',
+                    'reference_error_mean_square_per_channel','reference_NMSE_per_channel'):
+            if not same_metadata(measurement[key],expected[key]):
+                raise ValueError('channel decoded PCM score differs: '+role+'/'+key)
+        n=np.arange(2400,29600,dtype=float)
+        for channel, values in enumerate(pcm[role]):
+            phasor=2*np.mean(np.asarray(values[2400:29600],dtype=float)/32768
+                            *np.exp(-2j*np.pi*500*n/16000))
+            recorded=complex(measurement['target_frequency_phasor_real_per_channel'][channel],
+                             measurement['target_frequency_phasor_imag_per_channel'][channel])
+            if abs(recorded-phasor)>5e-14:
+                raise ValueError('channel actual PCM target phasor differs')
+    for role, gain, noise, total in (('healthy_output',1.,.0025,.0025),
+            ('stale_output',0.,.0025,.0075),('recomputed_output',1.,.0075,.0075)):
+        analytic={'target_gain':gain,'target_mean_square':.005*gain**2,'noise_mean_square':noise,
+            'output_mean_square':.005*gain**2+noise,
+            'reference_error_mean_square':total,'reference_NMSE':total/.005}
+        if not same_metadata(manifest['analytic'][role],analytic):
+            raise ValueError('channel analytic target/noise/total control differs')
+        floating=manifest['samples'][role]['float_measurements']
+        if (not math.isclose(floating['reference_error_mean_square_per_channel'][0],total,rel_tol=0,abs_tol=1e-14)
+                or not math.isclose(floating['reference_NMSE_per_channel'][0],total/.005,rel_tol=0,abs_tol=3e-12)):
+            raise ValueError('channel float and analytic fixed score disagree')
+    return pcm
+
+
+def check_channel_audio(errors):
+    try:
+        from codes.chapters.ch10.examples.generate_channel_audio import check_assets
+        manifest=check_assets(CHANNEL_AUDIO_ROOT)
+        _check_channel_pcm(CHANNEL_AUDIO_ROOT,manifest)
+        published=SITE/'channel_audio'
+        validate_asset_directory(published,CHANNEL_AUDIO_WAVS|{'MANIFEST.json'},check=True)
+        for name in CHANNEL_AUDIO_WAVS|{'MANIFEST.json'}:
+            if (published/name).read_bytes() != (CHANNEL_AUDIO_ROOT/name).read_bytes():
+                raise ValueError('channel published bytes differ: '+name)
+        for page,prefix in ((SITE/'10_engineering-practice.html',''),
+                           (SITE/'research/05_exercises_and_audio.html','../')):
+            _check_visible_audio(page,prefix,'channel_audio',CHANNEL_AUDIO_WAVS,{'MANIFEST.json'})
+    except (OSError,ValueError,KeyError,TypeError,wave.Error,struct.error) as error:
+        fail(errors,'独立已知坏麦音频：'+str(error))
+
+
+def _check_channel_figure_report(report, manifest, pcm, directory):
+    import numpy as np
+    paths=CHANNEL_GENERATING_SOURCES|{'scripts/make_channel_figures.py'}
+    sources={name:hashlib.sha256(validate_parent_chain(ROOT/name).read_bytes()).hexdigest() for name in paths}
+    inputs={name:hashlib.sha256((directory/name).read_bytes()).hexdigest()
+            for name in CHANNEL_AUDIO_WAVS|{'MANIFEST.json'}}
+    if (type(report['schema_version']) is not int or report['schema_version']!=1
+            or report['exercise_id']!='E10-34' or report['source_sha256']!=sources
+            or report['script_sha256']!=sources['scripts/make_channel_figures.py']
+            or report['input_sha256']!=inputs):
+        raise ValueError('figure78 actual source or input identity differs')
+    for key in ('parameters','model','analytic','samples','files','limits'):
+        if not same_metadata(report[key],manifest[key]):
+            raise ValueError('figure78 audio contract differs: '+key)
+    plot=report['plot_data'];roles=['healthy_output','stale_output','recomputed_output']
+    fixed={'output_roles':roles,'effective_weights_after_prescribed_fault':[[1.,-.5,.5],[0.,-.5,.5],[0.,.5,.5]],
+        'target_gain_analytic':[1.,0.,1.],'reference_NMSE_analytic':[.5,1.5,1.5],
+        'waveform_interval_samples':[2400,2528],'waveform_time_ms':[n/16 for n in range(2400,2528)],
+        'scoring_interval_samples':[2400,29600],'samples_per_channel':27200,
+        'projection_scope':'same-window actual PCM reference projection diagnostic; no gain compensation',
+        'known_covariance_units':'waveform amplitude squared; broadband time-window covariance, not per-frequency SCM',
+        'waveform_pcm':{role:[x/32768 for x in pcm[role][0][2400:2528]] for role in ['reference',*roles]},
+        'reference_NMSE_pcm':[], 'projection_gain_pcm_diagnostic':[]}
+    reference=pcm['reference'][0][2400:29600];energy=sum(x*x for x in reference)
+    for role in roles:
+        output=pcm[role][0][2400:29600]
+        fixed['reference_NMSE_pcm'].append(sum((x-y)**2 for x,y in zip(output,reference))/energy)
+        fixed['projection_gain_pcm_diagnostic'].append(sum(x*y for x,y in zip(output,reference))/energy)
+    if not same_metadata(plot,fixed):
+        raise ValueError('figure78 plotted PCM, target or known total controls differ')
+
+
+def check_channel_figure(errors):
+    try:
+        from PIL import Image
+        manifest_path=CHANNEL_AUDIO_ROOT/'MANIFEST.json'
+        manifest=_read_audio_manifest(manifest_path)
+        pcm=_check_channel_pcm(CHANNEL_AUDIO_ROOT,manifest)
+        report_path=ROOT/'codes/chapters/ch10/reports/figure78_channel_failure.json'
+        report=_read_audio_manifest(report_path)
+        _check_channel_figure_report(report,manifest,pcm,CHANNEL_AUDIO_ROOT)
+        with Image.open(validate_parent_chain(ROOT/'figures/fig78_channel_failure.png')) as picture:
+            if (picture.info.get('SourceScript')!='scripts/make_channel_figures.py'
+                    or picture.info.get('SourceScriptDigest')!=report['script_sha256']
+                    or strict_json_loads(picture.info['GeneratorInputs'])!=report['source_sha256']
+                    or picture.info.get('AudioManifestDigest')!=report['input_sha256']['MANIFEST.json']
+                    or picture.info.get('NumericalReportDigest')!=hashlib.sha256(report_path.read_bytes()).hexdigest()):
+                raise ValueError('figure78 PNG source, audio or report binding differs')
+    except (OSError,ValueError,KeyError,TypeError,wave.Error,struct.error) as error:
+        fail(errors,'图78已知坏麦与实际PCM：'+str(error))
+
+
 def check_noise_audio(errors):
     """Independent actual integer scoring plus current-source replay and visibility."""
     import math
@@ -4157,6 +4351,8 @@ def main():
     check_mint_audio(errors)
     check_mask_audio(errors)
     check_noise_audio(errors)
+    check_channel_audio(errors)
+    check_channel_figure(errors)
     check_weighted_audio(errors)
     check_response_audio(errors)
     check_imaging_audio(errors)

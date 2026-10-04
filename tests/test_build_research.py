@@ -396,6 +396,15 @@ class ResearchBuildTest(unittest.TestCase):
                 self.assertEqual((output / "reference_audio" / name).read_bytes(),
                                  (reference_source / name).read_bytes())
             pages = {}
+            channel_source = ROOT / 'codes/chapters/ch10/channel_audio'
+            channel_names = {'MANIFEST.json', 'channel_reference.wav',
+                'channel_healthy_array.wav', 'channel_faulty_array.wav',
+                'channel_healthy_output.wav', 'channel_stale_output.wav',
+                'channel_recomputed_output.wav'}
+            self.assertEqual({p.name for p in (output/'channel_audio').iterdir()}, channel_names)
+            for name in channel_names:
+                self.assertEqual((output/'channel_audio'/name).read_bytes(),
+                                 (channel_source/name).read_bytes())
             mint_source = ROOT / "codes/chapters/ch07/mint_audio"
             mint_names = {"mint_reference.wav", "mint_well_array.wav", "mint_near_array.wav",
                           "mint_well_exact.wav", "mint_near_exact.wav", "mint_near_regularized.wav",
@@ -487,6 +496,7 @@ class ResearchBuildTest(unittest.TestCase):
                                              (output / "mint_audio").resolve(),
                                              (output / "mask_audio").resolve(),
                                              (output / "noise_audio").resolve(),
+                                             (output / "channel_audio").resolve(),
                                              (output / "scenario_audio").resolve(),
                                              (output / "weighted_audio").resolve(),
                                              (output / "response_audio").resolve(),
@@ -495,7 +505,7 @@ class ResearchBuildTest(unittest.TestCase):
                                      "tracking_audio": "ch09", "binaural_audio": "ch01", "spectral_audio": "ch01", "stft_audio": "ch02", "sweep_audio": "ch02",
                                      "geometry_audio": "ch03", "baseline_audio": "ch03", "reflection_audio": "ch04", "focus_audio": "ch04", "derivative_audio": "ch05", "phase_audio": "ch05",
                                      "apa_audio": "ch06", "reference_audio": "ch06", "delay_audio": "ch07", "css_audio": "ch08", "mint_audio": "ch07", "mask_audio": "ch08",
-                                     "noise_audio": "ch10", "scenario_audio": "ch11",
+                                     "noise_audio": "ch10", "channel_audio": "ch10", "scenario_audio": "ch11",
                                      "weighted_audio": "appendix_a", "response_audio": "appendix_b",
                                      "distributed_audio": "ch15"}[target.parent.name]
                             if target.parent.name == "apa_audio":

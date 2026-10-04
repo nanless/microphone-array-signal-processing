@@ -140,7 +140,9 @@ WPE 历史帧、追踪状态、递归协方差和因果 AGC 时间常数是历�
 
 若到达时刻用乘法、完成时刻用浮点累加，舍入差可能把同一边界误判为队列仍满。教学模拟内部因此用输入浮点数对应的精确有理数比较事件，不加人为宽限；E10-16 用整数时钟刻度独立复核。这种离线记账方式不用于实时音频回调。
 
-Linux 的 ALSA（Advanced Linux Sound Architecture，先进 Linux 声音架构）还区分具体恢复原因：`-EPIPE` 表示上溢或下溢，`-ESTRPIPE` 与挂起有关，`-ENODEV` 可表示设备移除；某些回声参考设备在关联播放未启动时会返回 `-ENODATA`。这些状态不能统一解释为“再读一次”。恢复后要记录丢样，并通知依赖连续历史的 AEC、重采样器及后端。[ALSA PCM 官方接口说明](https://www.alsa-project.org/alsa-doc/alsa-lib/pcm.html "citation")
+Linux 的 ALSA（Advanced Linux Sound Architecture，先进 Linux 声音架构）还区分具体恢复原因：`-EPIPE` 表示上溢或下溢，`-ESTRPIPE` 与挂起有关，`-ENODEV` 可表示设备移除；某些回声参考设备在关联播放未启动时会返回 `-ENODATA`。这些状态不能统一解释为“再读一次”。挂起时可尝试 `snd_pcm_resume`；不支持或恢复失败时可能需要 `snd_pcm_prepare`，而 `-ENODATA` 不在 `snd_pcm_recover` 的恢复范围内。[ALSA PCM 官方接口说明，Error codes](https://www.alsa-project.org/alsa-doc/alsa-lib/pcm.html "citation")
+
+恢复成功、是否丢样和物理时间是否连续要分别核查。ALSA 将成功的 `snd_pcm_resume` 描述为不丢失样本，因此不能仅因一次挂起就增加 `dropped_samples`。若计数器或可信时间戳证明实际有缺口，才记录已知数量；只知道发生不连续而无法计数时，数量记为未知，并把缺口或重新建立的时间基准通知 AEC、重采样器及后端。保留缓冲内样本也不证明两台设备的时钟关系在挂起期间保持不变。[ALSA `snd_pcm_resume` 接口](https://www.alsa-project.org/alsa-doc/alsa-lib/group___p_c_m.html "citation")
 
 参考接口可按下表检查：
 
@@ -363,7 +365,13 @@ Boll 的[原始谱减论文](https://doi.org/10.1109/TASSP.1979.1163209 "citatio
 
 运行[谱减练习代码](../codes/chapters/ch10/spectral_subtraction_demo.py)可复算同一频点的两个带噪帧；另运行[统一音频生成器](../codes/chapters/ch00/examples/generate_audio_samples.py)可重建[五个试听文件及参数清单](../codes/chapters/ch00/audio/MANIFEST.json)：合成谐波目标、独立高斯噪声、带噪输入、$\beta=0.04$ 输出和 $\beta=0$ 输出。16 kHz、2 s 输入的前 0.4 s 仅有噪声，47 个完整落在该段的 STFT 帧估计 $D_f$；两种处理使用同一输入、同一固定噪声估计和同组共同导出增益。
 
-先降低播放音量，再比较[带噪输入](../codes/chapters/ch10/audio/spectral_noisy.wav)、[有地板输出](../codes/chapters/ch10/audio/spectral_floor04.wav)与[零地板输出](../codes/chapters/ch10/audio/spectral_floor00.wav)。离散随机残余频点可能听成短促的调性噪声，但这组数学合成信号没有经过人耳听测，不能据此报告语音可懂度、MOS 或产品降噪性能。
+先降低播放音量，再在相同设备音量下比较三个版本：
+
+- [带噪输入](../codes/chapters/ch10/audio/spectral_noisy.wav)
+- [有地板输出](../codes/chapters/ch10/audio/spectral_floor04.wav)
+- [零地板输出](../codes/chapters/ch10/audio/spectral_floor00.wav)
+
+离散随机残余频点可能听成短促的调性噪声，但这组数学合成信号没有经过人耳听测，不能据此报告语音可懂度、MOS 或产品降噪性能。
 
 在生成器的**浮点波形**上计算前 6400 个样本的均方根值，得到下表；三者的共同 WAV 导出增益为 1，表内按四位小数舍入。输入只有噪声，所以这里没有“语音保真”可比。$\beta=0$ 的前奏数值比 $\beta=0.04$ 更低，只说明这个固定输入的平均剩余幅度较低，不能推出音乐噪声更少。
 
@@ -439,7 +447,8 @@ AGC 要区分“把正常语音逐渐推向目标电平”和“避免数字输�
 $$
 \begin{aligned}
 g_k^\star&=\min(g_{\max},p_\star/p_k),\\
-\widetilde g_k&=(1-\alpha_k)g_{k-1}+\alpha_k g_k^\star,\\
+\widetilde g_k&=(1-\alpha_k)g_{k-1}\\
+&\quad+\alpha_k g_k^\star,\\
 g_k&=\min(\widetilde g_k,1/p_k,g_{\max}),\\
 y_k[n]&=g_kx_k[n].
 \end{aligned}
@@ -598,7 +607,10 @@ $w_i$ 是等待时长，$\ell_i$ 是响应时长；首帧令线程在到达时�
 更一般地，设 $\mathcal A(t)$ 是时刻 $t$ 真正同时存活的内存分配集合，每个分配大小为 $m_j$，常驻状态为 $M_0\text{，}$则
 
 $$
-M_{\mathrm{peak}}=M_0+\max_t\sum_{j\in\mathcal A(t)}m_j.
+\begin{aligned}
+m(t)&=\sum_{j\in\mathcal A(t)}m_j,\\
+M_{\mathrm{peak}}&=M_0+\max_t m(t).
+\end{aligned}
 \tag{10-15}
 $$
 
@@ -831,10 +843,14 @@ PipeWire 的 `capture/source/sink/playback` 依次是麦克风采集、应用读
 | `known_dropped_samples` | 可选的非负整数，表示累计中已经确认的部分；不代表未知部分为 0，不替代 `xrun_count` 事件次数 |
 | `clipping_fraction` | 本帧所有通道标量样本中的削波比例 |
 | `sro_ppm` | 相对指定参考设备、在已配置估计窗内得到的采样率偏移 |
-| `rtf`、`deadline_miss` | 明确计时范围的服务耗时/本次新推进音频时长；是否越过采集与接口规定的期限另记 |
+| `rtf` | 在声明的统计区间内，累计服务耗时/累计新推进源音频时长；分析窗重叠部分不重复计入分母 |
+| `frame_service_rtf` | 可选的单帧服务耗时/本帧新推进音频时长；与累计 `rtf` 分开命名 |
+| `deadline_miss` | 本帧是否越过采集与接口规定的期限，与累计处理负载分别记录 |
 | `agc_gain`、`model_version` | 本帧线性幅度增益；完整有序模型链的稳定版本标识 |
 
 `simulate_deadline_queue` 的 `queue_high_water` 包含正在处理的帧，故不能直接写进上表的等待队列深度。`xrun` 是事件，不一定带精确缺样数量；只有采样计数器、时间戳和设备协议足以确定缺口时，才能填入相应样本数。E10-26 把已知缺口、时间样本和通道展开数量分开计算。实际产品若要记录敏感内容，应按 §10.6 的同意、访问、保留和删除规则另行设计。
+
+累计 `rtf` 的统计区间应在应用配置或日志元数据中给出，还要声明服务计时覆盖哪些模块。按式(10-12)，服务时长先相加，新推进源样本对应的时长也先相加，再求比值；各帧服务比的算术平均一般不能代替该结果。一个帧记录可以同时携带当帧 `frame_service_rtf` 与截至该时刻的区间 `rtf`。字段类型和有限性校验不能证明生产者已经按此口径计时，也不能把等待时间、端到端响应或 PortAudio 的流CPU负载直接换名填入。
 
 故障注入要对应恢复动作：
 
@@ -856,15 +872,35 @@ PipeWire 的 `capture/source/sink/playback` 依次是麦克风采集、应用读
 | 唤醒差但 ASR 正常 | KWS 取点、缓存、训练域和阈值曲线 | VAD 是否错误截断 KWS 输入 |
 | 平均实时但偶尔爆音 | 最坏帧耗时、调度抖动、缓冲下溢 | 平均 RTF 和内存带宽 |
 
+#### 已知坏麦：同时选择观测、响应与协方差
+
+设备已经报告某个通道不可用时，波束形成器的输入维度发生了变化。把该通道的旧权重设成零，只删除了一个乘积项；原来的单位目标响应约束也可能随之失效。E10-34 给出一个目标响应从 1 恰好变成 0 的反例：错误输出仍有噪声，任意有限整体增益都不能恢复已经抵消的目标。
+
+设一次窄带处理有 $M$ 个原通道，健康通道按明确顺序列为 $\mathcal I$，共有 $K$ 个。选择矩阵 $\mathbf S\in\mathbb R^{K\times M}$ 的每一行只含一个 1，指出对应的原物理通道；其余元素为 0。观测、目标响应向量和噪声协方差必须按同一顺序一起选择。协方差要同时选择行、列，保留通道间的互协方差；只删一行不能得到一个新的合法协方差。
+
+频域中沿用第5章的 $\vec x=\vec d S+\vec n$ 和共轭内积 $Y=\vec w^H\vec x$；这里 $S$ 是目标复谱系数，$\vec d$ 是本小专题的已知目标响应，相当于第5章的 $\vec a$，不要与实选择矩阵 $\mathbf S$ 混淆。选择后的模型及重新求权重见 E10-34 的式(10-22)、(10-23)。当选择后的噪声模型可正定求解且目标响应非零时，复用第5章 MVDR，使保留通道的权重再次满足单位目标响应。[Zhang 等2017，§II.C 式(9)～(11)](https://arxiv.org/pdf/1705.08255 "citation")给出这种同步选择的模型；本书只实施已知通道集合的适配，没有实现该论文的最优子集搜索。
+
+选择集合、权重和处理状态应作为一次有版本的配置更新。控制线程可以验证新模型并计算权重，工作线程在声明的块边界切换，避免一半数据使用旧通道顺序、另一半权重使用新顺序。AEC 路径、WPE 缓存、掩码通道、几何、标定和参考通道也要按各自依赖重新检查；这套教学适配器不实现原子切换、故障检测或实时线程协议。
+
+若不可用的是原相对传递函数的参考通道，还须明确新的参考及所保护的输出。选出剩余响应并保持原目标幅度定义，与把响应重新除以某个健康通道，是两个不同操作；后一操作会改变输出尺度。本例给定 $\vec d$ 并保持原目标参考，不自动重新归一化。若一个通道也不剩，或者给定模型不合法，应拒绝本次数值求解，再由系统执行事先规定的停流或旁路策略。
+
 ### 10.11 本章练习
 
-以下三十三题的输入均为本书构造的教学数据。先手算，再运行 E10-01～12 与 E10-14 的 [`exercises_engineering.py`](../codes/chapters/ch00/cross_chapter/exercises_engineering.py)：
+以下三十四题的输入均为本书构造的教学数据。先手算，再运行 E10-01～12 与 E10-14 的 [`exercises_engineering.py`](../codes/chapters/ch00/cross_chapter/exercises_engineering.py)：
 
 ```bash
 .venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering
 ```
 
-E10-13 运行独立的 [`spectral_subtraction_demo.py`](../codes/chapters/ch10/spectral_subtraction_demo.py)；E10-15 使用 [`tracking_time_exercises.py`](../codes/chapters/ch00/cross_chapter/tracking_time_exercises.py)，E10-16～17 使用 [`engineering_boundary_exercises.py`](../codes/chapters/ch00/cross_chapter/engineering_boundary_exercises.py)。各程序按稳定编号输出中间量和结果；它们不访问声卡，也不代表硬件性能测量。E10-18～33 使用 [`chapter10_experiments.py`](../codes/chapters/ch10/chapter10_experiments.py)，运行方式为 `.venv/bin/python -m codes.chapters.ch10.chapter10_experiments`。
+E10-13 运行独立的 [`spectral_subtraction_demo.py`](../codes/chapters/ch10/spectral_subtraction_demo.py)；E10-15 使用 [`tracking_time_exercises.py`](../codes/chapters/ch00/cross_chapter/tracking_time_exercises.py)，E10-16～17 使用 [`engineering_boundary_exercises.py`](../codes/chapters/ch00/cross_chapter/engineering_boundary_exercises.py)。各程序按稳定编号输出中间量和结果；它们不访问声卡，也不代表硬件性能测量。
+
+E10-18～34 使用 [`chapter10_experiments.py`](../codes/chapters/ch10/chapter10_experiments.py)，运行方式如下：
+
+```bash
+.venv/bin/python -m codes.chapters.ch10.chapter10_experiments
+```
+
+E10-34 包含已知坏麦的短手算和同模型的实际PCM控制。
 
 #### E10-01：把初始错位与 SRO 分开
 
@@ -1239,8 +1275,8 @@ $$
 I_t&=\mathbf1\{r_t>2\},\\
 p'_t&=\alpha_p p'_{t-1}+(1-\alpha_p)I_t,\\
 \widetilde\alpha_{d,t}&=\alpha_d+(1-\alpha_d)p'_t,\\
-D_t&=\widetilde\alpha_{d,t}D_{t-1}
- +(1-\widetilde\alpha_{d,t})P_t.
+D_t&=\widetilde\alpha_{d,t}D_{t-1}\\
+&\quad+(1-\widetilde\alpha_{d,t})P_t.
 \end{aligned}
 \tag{10-18}
 $$
@@ -1370,33 +1406,33 @@ $$
 \begin{aligned}
 D_t^{\mathrm{known}}
 &=\mathbb E|V_{f,t}|^2\\
-&=\sum_{\ell=0}^{511}
- \sigma^2[c_t-256+\ell]\,g^2[\ell].
+&=\sum_{\ell=0}^{511}v_{t,\ell}\,g^2[\ell].
 \end{aligned}
 \tag{10-20}
 $$
 
-录音范围以外的补零点取方差 0。在固定方差区间，周期 Hann 的平方和为 192，得到前段 $0.03^2\times192=0.1728$、后段 $0.12^2\times192=2.7648$。窗跨过阶跃时必须按各点的方差加权；例如中心恰为 19200 的帧得到 1.47555，不等于把中心的后段方差直接乘192所得的2.7648。
+式中 $v_{t,\ell}=\sigma^2[c_t-256+\ell]$ 是当前窗第 $\ell$ 点的给定噪声方差；它不是该点噪声样本的平方。录音范围以外的补零点取方差 0。在固定方差区间，周期 Hann 的平方和为 192，得到前段 $0.03^2\times192=0.1728$、后段 $0.12^2\times192=2.7648$。窗跨过阶跃时必须按各点的方差加权；例如中心恰为 19200 的帧得到 1.47555，不等于把中心的后段方差直接乘192所得的2.7648。
 
 已知方差给出的是总体期望，不是本次实际噪声的逐帧模平方，也没有提供干净目标的频谱。因此这条诊断支路仍会留下噪声，并受到观测功率随机波动与谱地板影响；它不是干净恢复 oracle 或可部署的盲估计器。
 
 **第二步：先分解浮点误差，再读回 PCM。** 从实际观测 $Y$ 算出每条支路的增益 $G$ 后，用同一个 $G$ 分别作用于已知目标谱和噪声谱，再重建为 $s_G[n]$、$v_G[n]$。它们的和等于这条支路的未量化输出。令 $d[n]=s_G[n]-s[n]$ 为目标损伤；$G$ 本身依赖混合观测，所以不能假设损伤与残余噪声在有限记录中正交。
 
-六个 WAV 使用共同导出增益 1，分别编码为 PCM16，解码按有符号整数除以32768；没有分别归一化、时移匹配或拟合增益。对同一半开窗口 $W$、$N=|W|$，以 $u_n$、$z_n$ 表示实际参考和输出的整数 PCM 样本，定义
+六个 WAV 使用共同导出增益 1，分别编码为 PCM16，解码按有符号整数除以32768；没有分别归一化、时移匹配或拟合增益。对同一半开窗口 $W$、$N=|W|$，以 $u_n$、$z_n$ 表示实际参考和输出的整数 PCM 样本。记目标损伤、残余噪声和两者交叉项的窗平均为 $P_d$、$P_v$、$C_{dv}$，实际参考的整数能量为 $U$，则
 
 $$
-\begin{aligned}
-\mathrm{MSE}_{\mathrm{float}}
-&=\frac1N\sum_{n\in W}(d[n]+v_G[n])^2\\
-&=\frac1N\sum_{n\in W}d^2[n]
- +\frac1N\sum_{n\in W}v_G^2[n]\\
-&\quad+\frac2N\sum_{n\in W}d[n]v_G[n],\\
-E_{\mathrm{PCM}}&=\sum_{n\in W}(z_n-u_n)^2,\\
+\begin{gathered}
+P_d=\frac1N\sum_{n\in W}d^2[n],\\
+P_v=\frac1N\sum_{n\in W}v_G^2[n],\\
+C_{dv}=\frac2N\sum_{n\in W}d[n]v_G[n],\\
+P_e=P_d+P_v+C_{dv},\\
+\mathrm{MSE}_{\mathrm{float}}=P_e,\\
+E_{\mathrm{PCM}}=\sum_{n\in W}(z_n-u_n)^2,\\
+U=\sum_{n\in W}u_n^2,\\
 \mathrm{MSE}_{\mathrm{PCM}}
-&=\frac{E_{\mathrm{PCM}}}{N\,32768^2},\\
+=\frac{E_{\mathrm{PCM}}}{N\,32768^2},\\
 \mathrm{NMSE}_{\mathrm{PCM}}
-&=\frac{E_{\mathrm{PCM}}}{\sum_{n\in W}u_n^2}.
-\end{aligned}
+=\frac{E_{\mathrm{PCM}}}{U}.
+\end{gathered}
 \tag{10-21}
 $$
 
@@ -1437,6 +1473,146 @@ PCM 总误差包含输出与参考各自的量化差，不能直接拆成上面�
 这些文件用于对应数值变化，没有正式听测或语音可懂度评测。
 
 复现入口为 `python -m codes.chapters.ch10.examples.generate_noise_mismatch`，已有资产用同命令加 `--check` 严格只读核验。[章节题入口](../codes/chapters/ch10/chapter10_experiments.py)先核验六文件、清单、生成源和完整模型回放，再实际读取WAV字节重新评分，另列浮点分解；清单或资产过期时失败，不自动重生。
+
+<a id="e10-34"></a>
+
+#### E10-34：坏麦置零之后，为什么必须重算波束
+
+**题设与目标。** 三通道的已知目标响应为 $\vec d=[1,1,1]^T$。给定噪声协方差 $\mathbf R=\mathbf B\mathbf B^T$，其中
+
+$$
+\mathbf B=\begin{bmatrix}
+1&0&0\\1&1&0\\0&1&1
+\end{bmatrix},\qquad
+\mathbf R=\begin{bmatrix}
+1&1&0\\1&2&1\\0&1&2
+\end{bmatrix}.
+$$
+
+这是无量纲归一统计的手算，不是从实际录音估计的逐频协方差。设备已明确报告通道0不可用；通道按0、1、2编号。比较完整阵列的原 MVDR、仅把旧权重0项置零、以及选择通道1、2后重算权重的目标响应与噪声功率。完整阵列用于故障前对照。
+
+**第一步：把选择写入模型。** 对任意给定的合法有序通道集合，观测、响应和噪声统计按同一实选择矩阵变换：
+
+$$
+\begin{aligned}
+\vec x_{\mathcal I}&=\mathbf S\vec x,\\
+\vec d_{\mathcal I}&=\mathbf S\vec d,\\
+\mathbf R_{\mathcal I}&=\mathbf S\mathbf R\mathbf S^T.
+\end{aligned}
+\tag{10-22}
+$$
+
+这里 $\mathbf S$ 无量纲。复数协方差为 $\mathbb E[\vec n\vec n^H]$；选择矩阵是实矩阵，所以 $\mathbf S^H=\mathbf S^T$。当输入是频点索引的一组矩阵时，每个频点都选择同一组物理通道，不能只选择频率轴。
+
+复用第5章的最小方差无失真响应求解，令 $\vec q_{\mathcal I}$ 为线性系统的解，得到
+
+$$
+\begin{aligned}
+\mathbf R_{\mathcal I}\vec q_{\mathcal I}
+ &=\vec d_{\mathcal I},\\
+\vec w_{\mathcal I}
+ &=\frac{\vec q_{\mathcal I}}{
+ \vec d_{\mathcal I}^H\vec q_{\mathcal I}},\\
+Y_{\mathcal I}&=\vec w_{\mathcal I}^H\vec x_{\mathcal I}.
+\end{aligned}
+\tag{10-23}
+$$
+
+无加载时要求 $\mathbf R_{\mathcal I}$ 正定且 $\vec d_{\mathcal I}\ne0$。这样分母为严格正实数，权重满足 $\vec w_{\mathcal I}^H\vec d_{\mathcal I}=1$。公开适配器先检查完整给定协方差的厄米性和半正定性，再选择子矩阵；不会用删除通道掩盖一个非法输入模型。秩亏输入是否能求解，取决于实际选后的矩阵及调用方明确声明的相对加载。
+
+**第二步：完整阵列手算。** 记 $\mathbf R\vec q=\vec d$，三个方程是
+
+$$
+\begin{aligned}
+q_0+q_1&=1,\\
+q_0+2q_1+q_2&=1,\\
+q_1+2q_2&=1.
+\end{aligned}
+$$
+
+中行减首行得 $q_1+q_2=0$；与末行联立得 $q_2=1$、$q_1=-1$，再由首行得 $q_0=2$。因此 $\vec q=[2,-1,1]^T$，归一分母为2，原权重是 $\vec w=[1,-1/2,1/2]^T$。直接相乘得到 $\mathbf R\vec w=[1/2,1/2,1/2]^T$，所以目标响应为1，噪声功率为 $\vec w^T\mathbf R\vec w=1/2$。
+
+**第三步：只把旧权重置零。** 原数据的通道0变成全零后，输出等价于用保留通道的旧权重 $\vec w_{\mathrm{old},\mathcal I}=[-1/2,1/2]^T$。它对共同目标的响应为 $-1/2+1/2=0$，已经完全抵消目标。乘任意有限标量后仍为0，因此不存在可恢复单位响应的整体增益。
+
+噪声功率仍需单独计算。保留通道的矩阵与旧权重相乘为 $[-1/2,1/2]^T$，再作内积得到 $1/2$。噪声功率没有增加，并不能说明目标保持了。
+
+**第四步：重算健康子阵。** 按顺序选择通道1、2时
+
+$$
+\begin{aligned}
+\mathbf S&=\begin{bmatrix}0&1&0\\0&0&1\end{bmatrix},\\
+\mathbf R_{\mathcal I}
+ &=\begin{bmatrix}2&1\\1&2\end{bmatrix},\\
+\vec d_{\mathcal I}&=[1,1]^T.
+\end{aligned}
+$$
+
+线性方程为 $2q_1+q_2=1$ 与 $q_1+2q_2=1$。相减得 $q_1=q_2$，代回得 $q_1=q_2=1/3$。归一分母为 $2/3$，新权重为 $[1/2,1/2]^T$。目标响应恢复为1，噪声功率变成 $3/2$。
+
+| 控制 | 目标响应 | 归一噪声功率 | 目标损伤 |
+|---|---:|---:|---:|
+| 健康完整阵列 | 1 | 0.5 | 0 |
+| 故障后沿用旧权重 | 0 | 0.5 | 1 |
+| 故障后重算子阵 | 1 | 1.5 | 0 |
+
+表中的目标损伤按单位目标功率下的响应误差平方计算。这里的重算保住了目标，却失去完整阵列的噪声抑制能力；这个给定例子不证明任意健康子集都有相同损失。
+
+**第五步：把同一模型做成波形。** 独立音频使用16 kHz、32000点，目标为 $s[n]=0.1\sin(2\pi500n/16000)$，三路噪声基分别是同幅的1500、2500、3500 Hz正弦。所有分量共用首尾320点的 $\sin^2$ 淡变包络，含两端点，导出增益为1。令 $\vec u[n]$ 为这三路噪声基，构造时域瞬时混合 $\vec x[n]=\vec d\,s[n]+\mathbf B\vec u[n]$；故障输入只把通道0设为零，不增加时间缺口。
+
+评分窗为 `[2400,29600)`，共27200点。窗口内包络为1，四个频率分别含850、2550、4250、5950个整周期，各谱线在这个指定窗上正交且样本均值为零。每个分量功率为0.005，因而未量化的时间协方差为 $0.005\mathbf R$，目标功率为0.005。它是给定波形的时间统计，不能当成每个 STFT 频点都有同一 $0.005\mathbf R$ 的证据；这里应用的是固定实权重的时域控制，没有运行盲噪声估计或逐频波束整链。
+
+健康输出的噪声分量为 $(u_0+u_2)/2$；故障旧权重的目标系数为0，噪声为 $(-u_0+u_2)/2$；重算输出的目标系数为1，噪声为 $(u_0+2u_1+u_2)/2$。这三条表达式可直接用于独立手算功率。
+
+令实际采用的目标响应为 $g=\vec w^H\vec d$，残余噪声波形为 $n_y$，未量化误差为 $e=y-s$。分量恒等式为
+
+$$
+\begin{aligned}
+e&=(g-1)s+n_y,\\
+P_e&=|g-1|^2P_s+P_{n_y}+C,\\
+C&=2\operatorname{Re}\mathbb E
+ \big[(g-1)s\,n_y^*\big].
+\end{aligned}
+\tag{10-24}
+$$
+
+此处 $\mathbb E$ 用指定评分窗的有限样本平均解释。解析交叉项为0来自刚说明的谱线正交，不是用一次人工波形证明随机独立。
+
+| 控制 | 目标损伤功率 | 残余噪声功率 | 总误差功率 | 解析NMSE |
+|---|---:|---:|---:|---:|
+| 健康完整阵列 | 0 | 0.0025 | 0.0025 | 0.5 |
+| 故障后沿用旧权重 | 0.005 | 0.0025 | 0.0075 | 1.5 |
+| 故障后重算子阵 | 0 | 0.0075 | 0.0075 | 1.5 |
+
+后两条总误差相同，但旧权重输出没有目标，重算输出保留了目标。只按一个总NMSE排序不能看出这种区别。实际浮点计算中的舍入残差与PCM量化误差应另外保留；各输出先从未量化模型生成，再分别编码，不把实际PCM总误差直接拆成表中的理想分量。
+
+**第六步：读回实际PCM。** 六个文件的时间原点、长度和导出增益相同。按照式(10-21)，误差整数能量除以 $27200\times32768^2=29205777612800$ 得到MSE，除以实际参考整数能量146027417700得到NMSE；不拟合输出增益或时移。直接读取发布的参考和三条输出得到：
+
+| 控制 | PCM误差整数能量 $E$ | 实际PCM MSE | 实际PCM NMSE |
+|---|---:|---:|---:|
+| 健康完整阵列 | 73014637900 | 0.002500006638 | 0.5000063622 |
+| 故障后沿用旧权重 | 219018750300 | 0.007499158324 | 1.4998467668 |
+| 故障后重算子阵 | 219050854800 | 0.007500257576 | 1.5000666193 |
+
+后两条实际PCM总误差不精确相等，因为参考和不同输出分别量化。表中这个很小的差异不改变解析反例，也不能解释成重算子阵在目标保持上更差；目标响应与总误差需要同时检查。完整浮点测量、实际PCM相量诊断、整数功率和误差见[独立音频清单](../codes/chapters/ch10/channel_audio/MANIFEST.json)。实际量化后的相量诊断也不是重新估计或补偿权重的输入。
+
+![图78 已知通道0失效后的有效权重、同窗PCM波形、目标投影与总误差](../figures/fig78_channel_failure.png)
+
+**图78**的(a)列出已知时间噪声协方差 $0.005\mathbf B\mathbf B^T$ 下的有效权重、解析目标响应和噪声均方；(b)使用实际PCM同一128点片段 `[2400,2528)` 比较目标参考与三条输出，时间轴从150 ms起，没有增益或时移匹配；(c)把实际PCM对参考的投影诊断和总NMSE分别画出，并用横线、菱形另标解析响应与解析NMSE。
+
+旧权重的解析目标响应为0，但PCM投影诊断约为0.000105；量化后的微小投影不能改称精确无目标，也不能据此认为单位响应已经恢复。本图的协方差控制与原始权重来自已知模型，投影只用于解释实际输出，不参与求解。
+
+本题的短数值入口复用 [`channel_selection.py`](../codes/chapters/ch10/core/channel_selection.py) 的通道适配和第5章唯一MVDR实现。完整阵列、一个通道、通道换序、复数频域模型以及协方差整体缩放均有独立测试；非法或重复索引、无剩余通道、不合法统计、不可正定求解和非有限输入会拒绝求解。正标量缩放只用于避免求解时的极端功率尺度，返回的选后协方差仍保留输入单位，没有改变相对加载或单位响应目标。
+
+六个数学合成文件均为16 kHz、32000点；两条阵列输入为三声道，其余为单声道。先调低音量，再用以下文件对应观察目标保留与噪声变化：
+
+- [共同目标参考](../codes/chapters/ch10/channel_audio/channel_reference.wav)
+- [故障前完整阵列输入](../codes/chapters/ch10/channel_audio/channel_healthy_array.wav)
+- [通道0置零后的阵列输入](../codes/chapters/ch10/channel_audio/channel_faulty_array.wav)
+- [健康阵列原权重输出](../codes/chapters/ch10/channel_audio/channel_healthy_output.wav)
+- [故障后旧权重输出](../codes/chapters/ch10/channel_audio/channel_stale_output.wav)
+- [故障后重算子阵输出](../codes/chapters/ch10/channel_audio/channel_recomputed_output.wav)
+
+复现入口为 `.venv/bin/python -m codes.chapters.ch10.examples.generate_channel_audio`；已有资产加 `--check` 严格只读检查。章节练习入口先核完整六WAV、清单、八个直接源和模型回放，再读取实际PCM重新计算整数误差；过期资产会失败，不自动修复。这些固定正弦和已知故障控制不是实录、真实阵列传播、自动健康检测或正式听测。
 
 ### 10.12 本章小结
 

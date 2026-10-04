@@ -1,11 +1,11 @@
 {
   "schema_version": 2,
-  "created_at": "2026-10-04T16:43:41.251093+00:00",
+  "created_at": "2026-10-04T18:11:58.526749+00:00",
   "harness_sha256": "402e182dc93ae70f40d507deb1f5750e3997787a2bf1051ebdbe625170e00e46",
   "source_config_sha256": "15a4e95df6e6df44dfd9fb3b7fdc9071255aecd4e3bf81ada14f80dee22cf51d",
   "actual_dependency_sha256": {
     "codes/chapters/ch08/examples/audit_separation_upstream_interfaces.py": "402e182dc93ae70f40d507deb1f5750e3997787a2bf1051ebdbe625170e00e46",
-    "codes/chapters/ch04/core/upstream_contracts.py": "8400275d56d40d54a89d6093a4d0646cba4d4f858f8fbeaea4d1ca60f34b90c4",
+    "codes/chapters/ch04/core/upstream_contracts.py": "1ac9b1d1688a15fd73356f111af0cb6993adb26a6732cfab2c00a87e4086c46d",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },

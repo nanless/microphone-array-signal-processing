@@ -1,5 +1,8 @@
 """Offline report oracles: no downloaded source, SciPy or network required."""
 import json
+import hashlib
+import subprocess
+import os
 from pathlib import Path
 import unittest
 
@@ -16,7 +19,11 @@ class IndustrialUpstreamReportTest(unittest.TestCase):
 
     def test_binding_and_scope(self):
         r = self.report
-        self.assertEqual(r['harness_sha256'], audit.sha256(audit.__file__))
+        environment = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
+        environment.update(GIT_CONFIG_NOSYSTEM='1', GIT_CONFIG_GLOBAL='/dev/null', GIT_NO_LAZY_FETCH='1')
+        payload = subprocess.check_output(['git', '-C', str(ROOT), 'show',
+            'bde483bcc429a553aeaf8830ca3687ab46831db0:codes/chapters/ch10/examples/audit_industrial_upstream_interfaces.py'], env=environment)
+        self.assertEqual(r['harness_sha256'], hashlib.sha256(payload).hexdigest())
         self.assertEqual(r['source_config_sha256'], audit.binding_sha256())
         self.assertEqual(r['sources'], audit.SOURCES)
         self.assertEqual(r['config'], audit.CONFIG)

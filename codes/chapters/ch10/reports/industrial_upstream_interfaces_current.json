@@ -1,0 +1,826 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-04T18:25:26.447002+00:00",
+  "harness_sha256": "ed54cd842d81027e811c53e2a4b23236397cb94831817a3c5c1a5fc92bfff784",
+  "source_config_sha256": "7c49e37038b015ae3d36633480760ce3c8e7e3309aa2bd5b5f5fd77ef4492cfd",
+  "sources": {
+    "pystoi": {
+      "revision": "74872b000753a7a42ff51aa0868af8c82c7f9053",
+      "files": {
+        "pystoi/__init__.py": "48ce9882b6ba42f643f8305481a48902ddee97aa4f07bca13e44fea1b7d104ea",
+        "pystoi/stoi.py": "482b30bfa8e60f1453200315afcd5564fc9e9aa1d14aeb9710a58fd7a9f52658",
+        "pystoi/utils.py": "0222df0354a248ccc7f8525eda9bda9da815e5d60106f611a5f4750d1ba7f321",
+        "LICENSE": "35c25f6087c4e1857ba6d4bc0b7957b7bc523c9ff190a9e2cccb4b5ecba018ab"
+      }
+    },
+    "deepfilternet": {
+      "revision": "d375b2d8309e0935d165700c91da9de862a99c31",
+      "files": {
+        "ladspa/src/lib.rs": "d8fd5bfb0432609f3225648e6389505a8fcf0568d54da2bd9cb3cb30ed70ede8",
+        "LICENSE-MIT": "24e6bb09c928af8d8e56268082f87413247ce36b39dd5d33add2f9893968065e",
+        "LICENSE-APACHE": "1eaee808c5fb6b4e895ba30425285a5cdc5dd25bba2cd230f264c2200c331aec"
+      }
+    }
+  },
+  "config": {
+    "pystoi": {
+      "sample_rate_hz": 10000,
+      "zero_lengths": [
+        256,
+        1024,
+        10000
+      ],
+      "self_comparison_length": 10000,
+      "input_rng": "default_rng(4).normal",
+      "normalization_seeds": [
+        0,
+        1
+      ],
+      "alignment_samples": 0
+    },
+    "dfn_queue": {
+      "channels": 2,
+      "frame_size": 480,
+      "initial_queue_length_per_channel": 960,
+      "proc_delay_before": 960
+    },
+    "scope": "synthetic numerical inputs; no speech quality, hardware or model inference"
+  },
+  "environment": {
+    "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
+    "executable": "/private/tmp/masp-appb-pra-venv/bin/python",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O"
+  },
+  "pystoi": {
+    "execution": "original pystoi package functions",
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "records": [
+      {
+        "input": "zeros_256",
+        "samples": 256,
+        "extended": false,
+        "normalization_seed": 0,
+        "input_sha256": "e5a00aa9991ac8a5ee3109844d84a55583bd20572ad3ffcd42792f3c36b183ad",
+        "reference_equals_degraded": true,
+        "reference_has_energy": false,
+        "value": null,
+        "finite": false,
+        "classification": "exception",
+        "exception_type": "AxisError",
+        "exception_message": "axis 1 is out of bounds for array of dimension 1",
+        "warnings": []
+      },
+      {
+        "input": "zeros_256",
+        "samples": 256,
+        "extended": true,
+        "normalization_seed": 0,
+        "input_sha256": "e5a00aa9991ac8a5ee3109844d84a55583bd20572ad3ffcd42792f3c36b183ad",
+        "reference_equals_degraded": true,
+        "reference_has_energy": false,
+        "value": null,
+        "finite": false,
+        "classification": "exception",
+        "exception_type": "AxisError",
+        "exception_message": "axis 1 is out of bounds for array of dimension 1",
+        "warnings": []
+      },
+      {
+        "input": "zeros_256",
+        "samples": 256,
+        "extended": true,
+        "normalization_seed": 1,
+        "input_sha256": "e5a00aa9991ac8a5ee3109844d84a55583bd20572ad3ffcd42792f3c36b183ad",
+        "reference_equals_degraded": true,
+        "reference_has_energy": false,
+        "value": null,
+        "finite": false,
+        "classification": "exception",
+        "exception_type": "AxisError",
+        "exception_message": "axis 1 is out of bounds for array of dimension 1",
+        "warnings": []
+      },
+      {
+        "input": "zeros_1024",
+        "samples": 1024,
+        "extended": false,
+        "normalization_seed": 0,
+        "input_sha256": "9f1dcbc35c350d6027f98be0f5c8b43b42ca52b7604459c0c42be3aa88913d47",
+        "reference_equals_degraded": true,
+        "reference_has_energy": false,
+        "value": 1e-05,
+        "finite": true,
+        "classification": "warning_sentinel",
+        "warnings": [
+          {
+            "category": "RuntimeWarning",
+            "message": "Not enough STFT frames to compute intermediate intelligibility measure after removing silent frames. Returning 1e-5. Please check you wav files"
+          }
+        ]
+      },
+      {
+        "input": "zeros_1024",
+        "samples": 1024,
+        "extended": true,
+        "normalization_seed": 0,
+        "input_sha256": "9f1dcbc35c350d6027f98be0f5c8b43b42ca52b7604459c0c42be3aa88913d47",
+        "reference_equals_degraded": true,
+        "reference_has_energy": false,
+        "value": 1e-05,
+        "finite": true,
+        "classification": "warning_sentinel",
+        "warnings": [
+          {
+            "category": "RuntimeWarning",
+            "message": "Not enough STFT frames to compute intermediate intelligibility measure after removing silent frames. Returning 1e-5. Please check you wav files"
+          }
+        ]
+      },
+      {
+        "input": "zeros_1024",
+        "samples": 1024,
+        "extended": true,
+        "normalization_seed": 1,
+        "input_sha256": "9f1dcbc35c350d6027f98be0f5c8b43b42ca52b7604459c0c42be3aa88913d47",
+        "reference_equals_degraded": true,
+        "reference_has_energy": false,
+        "value": 1e-05,
+        "finite": true,
+        "classification": "warning_sentinel",
+        "warnings": [
+          {
+            "category": "RuntimeWarning",
+            "message": "Not enough STFT frames to compute intermediate intelligibility measure after removing silent frames. Returning 1e-5. Please check you wav files"
+          }
+        ]
+      },
+      {
+        "input": "zeros_10000",
+        "samples": 10000,
+        "extended": false,
+        "normalization_seed": 0,
+        "input_sha256": "f8c784aa6b57396e7c5e094c34d079d8252473e46e2f60593a921dbebf941fcc",
+        "reference_equals_degraded": true,
+        "reference_has_energy": false,
+        "value": 0.0,
+        "finite": true,
+        "classification": "finite_zero_energy_invalid",
+        "warnings": []
+      },
+      {
+        "input": "zeros_10000",
+        "samples": 10000,
+        "extended": true,
+        "normalization_seed": 0,
+        "input_sha256": "f8c784aa6b57396e7c5e094c34d079d8252473e46e2f60593a921dbebf941fcc",
+        "reference_equals_degraded": true,
+        "reference_has_energy": false,
+        "value": 0.00856518978523145,
+        "finite": true,
+        "classification": "finite_zero_energy_invalid",
+        "warnings": []
+      },
+      {
+        "input": "zeros_10000",
+        "samples": 10000,
+        "extended": true,
+        "normalization_seed": 1,
+        "input_sha256": "f8c784aa6b57396e7c5e094c34d079d8252473e46e2f60593a921dbebf941fcc",
+        "reference_equals_degraded": true,
+        "reference_has_energy": false,
+        "value": -0.00020999388836695469,
+        "finite": true,
+        "classification": "finite_zero_energy_invalid",
+        "warnings": []
+      },
+      {
+        "input": "random_self",
+        "samples": 10000,
+        "extended": false,
+        "normalization_seed": 0,
+        "input_sha256": "357c59a264da44c0a81d02c46cdf86964acdc163d43868da3b89c8abae4b7f0f",
+        "reference_equals_degraded": true,
+        "reference_has_energy": true,
+        "value": 1.0,
+        "finite": true,
+        "classification": "finite_self_comparison",
+        "warnings": []
+      },
+      {
+        "input": "random_self",
+        "samples": 10000,
+        "extended": true,
+        "normalization_seed": 0,
+        "input_sha256": "357c59a264da44c0a81d02c46cdf86964acdc163d43868da3b89c8abae4b7f0f",
+        "reference_equals_degraded": true,
+        "reference_has_energy": true,
+        "value": 1.0,
+        "finite": true,
+        "classification": "finite_self_comparison",
+        "warnings": []
+      },
+      {
+        "input": "random_self",
+        "samples": 10000,
+        "extended": true,
+        "normalization_seed": 1,
+        "input_sha256": "357c59a264da44c0a81d02c46cdf86964acdc163d43868da3b89c8abae4b7f0f",
+        "reference_equals_degraded": true,
+        "reference_has_energy": true,
+        "value": 1.0,
+        "finite": true,
+        "classification": "finite_self_comparison",
+        "warnings": []
+      }
+    ],
+    "loaded_original_modules": {
+      "pystoi": {
+        "path": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/pystoi/pystoi/__init__.py",
+        "sha256": "48ce9882b6ba42f643f8305481a48902ddee97aa4f07bca13e44fea1b7d104ea"
+      },
+      "pystoi.stoi": {
+        "path": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/pystoi/pystoi/stoi.py",
+        "sha256": "482b30bfa8e60f1453200315afcd5564fc9e9aa1d14aeb9710a58fd7a9f52658"
+      },
+      "pystoi.utils": {
+        "path": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/pystoi/pystoi/utils.py",
+        "sha256": "0222df0354a248ccc7f8525eda9bda9da815e5d60106f611a5f4750d1ba7f321"
+      }
+    },
+    "environment_dependencies": {
+      "numpy": {
+        "version": "2.5.3",
+        "path": "/private/tmp/masp-appb-pra-venv/lib/python3.13/site-packages/numpy/__init__.py",
+        "sha256": "09295a80660f17925ae23765ce8cbd7ff7ceae968d5f2f89349f1cb74c0b9e11"
+      },
+      "scipy": {
+        "version": "1.18.1",
+        "path": "/private/tmp/masp-appb-pra-venv/lib/python3.13/site-packages/scipy/__init__.py",
+        "sha256": "39ccae300a4739cc53719bd3b39ce3f8f66e736c6eb672006e338a4c5cc3dc76"
+      }
+    },
+    "not_executed": [
+      "MATLAB/Octave reference",
+      "natural speech corpus",
+      "resampling path (all inputs already 10 kHz)"
+    ]
+  },
+  "deepfilternet": {
+    "execution": "static source inspection only",
+    "rust_plugin_executed": false,
+    "evidence_lines": {
+      "channel_iteration": [
+        472
+      ],
+      "one_pop_per_channel": [
+        425,
+        473
+      ],
+      "metadata_frame_decrement": [
+        479
+      ],
+      "blocking_wait": [
+        431
+      ],
+      "delay_limit": [
+        443
+      ],
+      "callback_counter": [
+        488
+      ],
+      "hop_based_counter_threshold": [
+        461
+      ]
+    },
+    "queue_example": {
+      "execution": "independent Python queue semantics example, not upstream execution",
+      "queue_lengths_after": [
+        959,
+        959
+      ],
+      "first_remaining_sample_indices": [
+        1,
+        1
+      ],
+      "actual_removed_per_channel": [
+        1,
+        1
+      ],
+      "proc_delay_after": 480,
+      "intended_frame_drop_lengths": [
+        480,
+        480
+      ]
+    },
+    "callback_clock_example": {
+      "execution": "independent Python integer clock arithmetic",
+      "sample_rate_hz": 48000,
+      "model_hop_samples": 480,
+      "threshold": 1000,
+      "strict_test": "counter > 10*sr/model_hop",
+      "other_branch_conditions_assumed": "rtf < .5 and sufficient processing delay/output queue",
+      "rows": [
+        {
+          "initial_counter": 0,
+          "initial_condition": "initial_counter_zero",
+          "first_eligible_callback": 1002,
+          "input_audio_seconds_by_host_block": {
+            "128": 2.672,
+            "480": 10.02,
+            "1024": 21.376
+          }
+        },
+        {
+          "initial_counter": 1,
+          "initial_condition": "after_reset_then_unconditional_increment",
+          "first_eligible_callback": 1001,
+          "input_audio_seconds_by_host_block": {
+            "128": 2.6693333333333333,
+            "480": 10.01,
+            "1024": 21.354666666666667
+          }
+        }
+      ],
+      "not_measured": "Rust host, scheduling and actual elapsed wall time"
+    }
+  },
+  "source_identities": {
+    "pystoi": {
+      "project": "pystoi",
+      "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/pystoi",
+      "origin": "https://github.com/mpariente/pystoi.git",
+      "head": "74872b000753a7a42ff51aa0868af8c82c7f9053",
+      "lock_entry": {
+        "id": "pystoi",
+        "url": "https://github.com/mpariente/pystoi.git",
+        "revision": "74872b000753a7a42ff51aa0868af8c82c7f9053",
+        "license": "MIT for Python core; MATLAB test notices separate",
+        "fetch_enabled": true,
+        "scope": "STOI and ESTOI",
+        "acquisition": "independent_source_checkout",
+        "note": "Software-author implementation, not original-paper authors' Python package. Requires SciPy. The short-active-audio 1e-5 warning is not a universal invalid-input detector: fixed-version calls on all-silent input can raise before that check or return a finite score (ESTOI may include random epsilon dither). Validate reference/estimate length, energy and scoring region separately; see industrial source audit.",
+        "entrypoints": [
+          "LICENSE",
+          "pystoi/stoi.py",
+          "pystoi/utils.py",
+          "setup.py"
+        ],
+        "source_paths": [
+          "LICENSE",
+          "README.md",
+          "setup.py",
+          "pystoi"
+        ]
+      },
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+      "source_document_paths": {
+        "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+        "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+      },
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+      "recorded_complete_selection": {
+        "id": "pystoi",
+        "revision": "74872b000753a7a42ff51aa0868af8c82c7f9053",
+        "status": "source_verified",
+        "missing_entrypoints": [],
+        "execution": "not_run",
+        "dependency_validation": "not_run",
+        "asset_policy": "sparse_source_checkout",
+        "requested_source_paths": [
+          "LICENSE",
+          "README.md",
+          "setup.py",
+          "pystoi"
+        ],
+        "observed_sparse_patterns": [
+          "/LICENSE",
+          "/README.md",
+          "/setup.py",
+          "/pystoi",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "expected_sparse_patterns": [
+          "/LICENSE",
+          "/README.md",
+          "/setup.py",
+          "/pystoi",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "source_selection_verified": true
+      },
+      "live_complete_selection": {
+        "id": "pystoi",
+        "revision": "74872b000753a7a42ff51aa0868af8c82c7f9053",
+        "status": "source_verified",
+        "source_selection_verified": true,
+        "missing_entrypoints": [],
+        "observed_sparse_patterns": [
+          "/LICENSE",
+          "/README.md",
+          "/setup.py",
+          "/pystoi",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "expected_sparse_patterns": [
+          "/LICENSE",
+          "/README.md",
+          "/setup.py",
+          "/pystoi",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "requested_source_paths": [
+          "LICENSE",
+          "README.md",
+          "setup.py",
+          "pystoi"
+        ],
+        "asset_policy": "sparse_source_checkout"
+      },
+      "used_source_identity": "verified",
+      "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+      "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+      "ignored_members_before": [],
+      "used_files": {
+        "LICENSE": {
+          "sha256": "35c25f6087c4e1857ba6d4bc0b7957b7bc523c9ff190a9e2cccb4b5ecba018ab",
+          "bytes": 1072,
+          "git_blob": "09d0593af9dc60229ad832b7d0025a33f4a28854",
+          "actual_blob": "09d0593af9dc60229ad832b7d0025a33f4a28854"
+        },
+        "pystoi/__init__.py": {
+          "sha256": "48ce9882b6ba42f643f8305481a48902ddee97aa4f07bca13e44fea1b7d104ea",
+          "bytes": 46,
+          "git_blob": "967e61d89f8a97aed91845f651979f0f9e308e44",
+          "actual_blob": "967e61d89f8a97aed91845f651979f0f9e308e44"
+        },
+        "pystoi/stoi.py": {
+          "sha256": "482b30bfa8e60f1453200315afcd5564fc9e9aa1d14aeb9710a58fd7a9f52658",
+          "bytes": 4837,
+          "git_blob": "e955afbe963bf46f7fbb9e0ddc0912071eaad357",
+          "actual_blob": "e955afbe963bf46f7fbb9e0ddc0912071eaad357"
+        },
+        "pystoi/utils.py": {
+          "sha256": "0222df0354a248ccc7f8525eda9bda9da815e5d60106f611a5f4750d1ba7f321",
+          "bytes": 6799,
+          "git_blob": "c1fdb3ee5b04c8ce9ce4420d480792b7152f7e9d",
+          "actual_blob": "c1fdb3ee5b04c8ce9ce4420d480792b7152f7e9d"
+        }
+      },
+      "clean_before": true,
+      "clean_after": true,
+      "ignored_members_after": []
+    },
+    "deepfilternet": {
+      "project": "deepfilternet",
+      "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/deepfilternet",
+      "origin": "https://github.com/Rikorose/DeepFilterNet.git",
+      "head": "d375b2d8309e0935d165700c91da9de862a99c31",
+      "lock_entry": {
+        "id": "deepfilternet",
+        "url": "https://github.com/Rikorose/DeepFilterNet.git",
+        "revision": "d375b2d8309e0935d165700c91da9de862a99c31",
+        "license": "Apache-2.0 OR MIT",
+        "scope": "48 kHz 深度滤波增强、Rust 推理、LADSPA/PipeWire 集成",
+        "fetch_enabled": true,
+        "note": "2026-09-22 作者官方源码、双许可与 git ls-remote 已核实；下载代码不自动安装 Rust/Python 依赖，也不下载外部训练语料；模型配置和权重摘要应单独记录。",
+        "entrypoints": [
+          "DeepFilterNet/df",
+          "libDF/src",
+          "ladspa",
+          "ladspa/src/lib.rs",
+          "libDF/src/tract.rs",
+          "LICENSE"
+        ]
+      },
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+      "source_document_paths": {
+        "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+        "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+      },
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+      "recorded_complete_selection": {
+        "id": "deepfilternet",
+        "revision": "d375b2d8309e0935d165700c91da9de862a99c31",
+        "status": "source_verified",
+        "missing_entrypoints": [],
+        "execution": "not_run",
+        "dependency_validation": "not_run",
+        "asset_policy": "sparse_source_checkout",
+        "requested_source_paths": [
+          "repository"
+        ],
+        "observed_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "expected_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "source_selection_verified": true
+      },
+      "live_complete_selection": {
+        "id": "deepfilternet",
+        "revision": "d375b2d8309e0935d165700c91da9de862a99c31",
+        "status": "source_verified",
+        "source_selection_verified": true,
+        "missing_entrypoints": [],
+        "observed_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "expected_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "requested_source_paths": [
+          "repository"
+        ],
+        "asset_policy": "sparse_source_checkout"
+      },
+      "used_source_identity": "verified",
+      "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+      "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+      "ignored_members_before": [],
+      "used_files": {
+        "LICENSE-MIT": {
+          "sha256": "24e6bb09c928af8d8e56268082f87413247ce36b39dd5d33add2f9893968065e",
+          "bytes": 1083,
+          "git_blob": "16974dce46da311c7fd8d30f04362ca0ad03a8ca",
+          "actual_blob": "16974dce46da311c7fd8d30f04362ca0ad03a8ca"
+        },
+        "ladspa/src/lib.rs": {
+          "sha256": "d8fd5bfb0432609f3225648e6389505a8fcf0568d54da2bd9cb3cb30ed70ede8",
+          "bytes": 25511,
+          "git_blob": "d05ad31d55a1f1c1dc0399fd56dea2f158a0273e",
+          "actual_blob": "d05ad31d55a1f1c1dc0399fd56dea2f158a0273e"
+        },
+        "LICENSE-APACHE": {
+          "sha256": "1eaee808c5fb6b4e895ba30425285a5cdc5dd25bba2cd230f264c2200c331aec",
+          "bytes": 10837,
+          "git_blob": "9bc871371b0ccae4563f0353dd6024db299b80e0",
+          "actual_blob": "9bc871371b0ccae4563f0353dd6024db299b80e0"
+        }
+      },
+      "clean_before": true,
+      "clean_after": true,
+      "ignored_members_after": []
+    }
+  },
+  "actual_dependencies_sha256": {
+    "codes/chapters/ch10/examples/audit_industrial_upstream_interfaces.py": "ed54cd842d81027e811c53e2a4b23236397cb94831817a3c5c1a5fc92bfff784",
+    "codes/chapters/ch04/core/upstream_contracts.py": "1ac9b1d1688a15fd73356f111af0cb6993adb26a6732cfab2c00a87e4086c46d",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
+    "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4",
+    "codes/chapters/ch10/examples/run_industrial_interfaces.py": "6501c7bdb2e5cd529dd9436cbc99ffd31ec1398fced8d0dc98c62a8524c3111c"
+  }
+}

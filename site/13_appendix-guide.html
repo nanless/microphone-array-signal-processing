@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 B · 路径地图与练习 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="b232a8dba19b"><style>
+<meta name="source-digest" content="5cea3d451101"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -350,7 +350,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <ol>
 <li>运行 <code>codes/</code> 中只依赖 NumPy 的教学实现，核对手算结果、数组维度和退化边界。</li>
 <li>在隔离环境中用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线，记录房间、阵列和随机种子。</li>
-<li>先按 §13.7 生成图所依赖的音频和追踪清单，再运行 <code>scripts/</code> 中的七个绘图脚本，按当前参数复现 77 张编号图，并逐图核对正文条件。</li>
+<li>先按 §13.7 生成图所依赖的音频和追踪清单，再运行 <code>scripts/</code> 中的八个绘图脚本，按当前参数复现 78 张编号图，并逐图核对正文条件。</li>
 <li>按研究任务选择公开数据和固定版本参考系统，分别核对代码、模型与数据的许可和评测口径。</li>
 <li>在可用的多通道硬件上测实时性、同步和标定；仿真结果不能代替设备测量。</li>
 </ol>
@@ -500,7 +500,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <h3 id="sec-u-10eb2b38cb">研究方向七：CHiME-9 与大模型后端</h3>
 <p>CHiME-9 设置了两个输入与目标都不同的任务。MCoRec 使用房间中央的 360° 视频和音频，要求转写说话内容，并判断哪些人属于同一段会话；ECHI 则研究让佩戴者听清对话对象的低延迟增强。后一任务的<a href="https://www.chimechallenge.org/challenges/chime9/task2/rules" title="citation">官方规则</a>要求流式处理且算法延迟至多 20 ms。两任务不能共用一张“CHiME-9 语音增强”成绩表。<a href="https://www.chimechallenge.org/challenges/chime9/index" title="citation">CHiME-9 官方任务页</a></p>
 <p>DiCoW（Polok et al., <em>Computer Speech &amp; Language</em> 95:101841，2026，<a href="https://doi.org/10.1016/j.csl.2025.101841" title="citation">DOI 10.1016/j.csl.2025.101841</a>）针对多人混合录音中“只转写指定一人”的问题，把说话人分割给出的活动信息作为条件输入 Whisper；输出是该目标的文字，而不是分离后的干净音轨。这与先分离出波形再送入普通识别器的做法不同。</p>
-<p>作者<a href="https://github.com/BUTSpeechFIT/DiCoW/tree/e9326bd536bf632e823357438b210102903ba620" title="citation">演示仓固定提交</a>内有两个不同入口：<a href="https://github.com/BUTSpeechFIT/DiCoW/blob/e9326bd536bf632e823357438b210102903ba620/example.py#L8-L14" title="citation"><code>example.py</code> 使用 DiCoW v1 与 Pyannote 3.1</a>，<a href="https://github.com/BUTSpeechFIT/DiCoW/blob/e9326bd536bf632e823357438b210102903ba620/app.py#L31-L39" title="citation"><code>app.py</code> 使用 DiCoW v2 与 Pyannote 3.1</a>；不能仅凭仓库提交号把两者叫作同版。原工作相关的<a href="https://github.com/BUTSpeechFIT/TS-ASR-Whisper/tree/0ea6679d44405f5ff39188030123524686c198e9" title="citation">训练/推理源码仓固定版本</a>另行锁定。演示仓后续主分支引入 DiariZen 等新依赖，不应把这套后续演示条件倒写为上述固定提交的必需条件。</p>
+<p>作者<a href="https://github.com/BUTSpeechFIT/DiCoW/tree/e9326bd536bf632e823357438b210102903ba620" title="citation">演示仓固定提交</a>内有两个不同入口：<a href="https://github.com/BUTSpeechFIT/DiCoW/blob/e9326bd536bf632e823357438b210102903ba620/example.py#L8-L14" title="citation"><code>example.py</code> 使用 DiCoW v1 与 Pyannote 3.1</a>，<a href="https://github.com/BUTSpeechFIT/DiCoW/blob/e9326bd536bf632e823357438b210102903ba620/app.py#L31-L39" title="citation"><code>app.py</code> 使用 DiCoW v2 与 Pyannote 3.1</a>；不能仅凭仓库提交号把两者叫作同版。原工作相关的<a href="https://github.com/BUTSpeechFIT/TS-ASR-Whisper/tree/0ea6679d44405f5ff39188030123534686c198e9" title="citation">训练/推理源码仓固定版本</a>另行锁定。演示仓后续主分支引入 DiariZen 等新依赖，不应把这套后续演示条件倒写为上述固定提交的必需条件。</p>
 <p>源码、模型和数据分开核对许可：上述代码按 Apache-2.0，<a href="https://huggingface.co/BUT-FIT/DiCoW_v1" title="citation">DiCoW v1 权重</a>与<a href="https://huggingface.co/BUT-FIT/DiCoW_v2" title="citation">DiCoW v2 权重</a>的模型卡各标 CC BY 4.0；后续演示使用的 <a href="https://github.com/BUTSpeechFIT/DiariZen/blob/main/MODEL_LICENSE" title="citation">DiariZen 权重</a>按 CC BY-NC 4.0，不能由代码许可推断其商用权利。<a href="https://huggingface.co/pyannote/speaker-diarization-3.1" title="citation">Pyannote 3.1</a>模型还须核对门控获取条件与访问凭据。取得源码不表示权重已获许可或系统已经运行。</p>
 <p>复现时至少要固定分割标签的来源、目标说话人、录音片段和识别评分方式，并与不加说话人条件的识别结果对照；若分割标签错位，也要检查词漏识别。该方法不能直接当作 ECHI 的 20 ms 助听增强基线。</p>
 <h3 id="sec-u-0a5abcc280">研究方向八：扩散先验用于无监督盲分离</h3>
@@ -1496,7 +1496,8 @@ $$</p>
 <p>图75读取第7章六份已知到达与历史PCM，分别呈现源时刻手算、同一接收时轴的波形、实际整数目标误差，以及独立的晚期功率自由衰减。保护间隔的单实回归不是完整STFT-WPE，统计功率曲线也不是从这六份音频估计的房间衰减。</p>
 <p>图76读取第8章四份同槽同钟PCM，区分解析拼接倍率与实际波形，并分别核主/后评分窗的合并整数误差。正确排列不保证极性或增益正确；本控制没有运行盲CSS或身份识别。</p>
 <p>图77读取第9章既有两份独立PCM，197帧有效标记驱动单槽候选、确认与退役。可用时刻龄期与状态龄期分别给出事件、ID及187/189个确认发布帧；图与报告绑定12真实源，不生成新音频或声称运行多目标身份识别。</p>
-<p>图片写入 <code>figures/</code>，共 77 张编号图，另有第16题的房间补充图：</p>
+<p>图78读取第10章六份已知坏麦PCM与独立清单，同时显示目标响应、总NMSE与固定波形窗。失效前权重在剩余通道相消目标；重算权重保持目标，而两者解析总误差相同。图报告绑定九个真实源，PCM量化差异不写成严格相等，不是盲故障检测。</p>
+<p>图片写入 <code>figures/</code>，共 78 张编号图，另有第16题的房间补充图：</p>
 <pre><code class="language-bash">.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
 .venv/bin/python -m codes.chapters.ch01.examples.generate_binaural_cues
 .venv/bin/python -m codes.chapters.ch02.examples.generate_stft_convolution
@@ -1514,6 +1515,7 @@ $$</p>
 .venv/bin/python -m codes.chapters.ch07.examples.generate_delay_audio
 .venv/bin/python -m codes.chapters.ch08.examples.mask_representation_demo
 .venv/bin/python -m codes.chapters.ch10.examples.generate_noise_mismatch
+.venv/bin/python -m codes.chapters.ch10.examples.generate_channel_audio  # 已知坏麦六独立WAV与清单
 .venv/bin/python -m codes.chapters.ch11.examples.generate_selection_audio
 .venv/bin/python -m codes.chapters.appendix_a.examples.generate_weighted_audio
 .venv/bin/python -m codes.chapters.appendix_b.examples.generate_response_audio
@@ -1526,6 +1528,8 @@ $$</p>
 .venv/bin/python scripts/make_delay_figures.py  # 图75：已知到达与历史PCM控制
 .venv/bin/python scripts/make_css_figures.py  # 图76：既定槽位极性/增益与实际PCM
 .venv/bin/python scripts/make_tracking_figures.py  # 图77：实际PCM生命周期与两个龄期时钟
+.venv/bin/python scripts/make_channel_figures.py  # 图78：已知坏麦、重建约束与实际PCM
+.venv/bin/python -m codes.chapters.ch10.examples.generate_channel_audio --check  # 六独立WAV只读核验
 </code></pre>
 <p>Windows 上把 <code>.venv/bin/python</code> 换成 <code>.venv\Scripts\python</code>，其余不变。</p>
 <p>运行时间取决于硬件、软件版本和负载；报告耗时时，应写明这些条件、运行次数与统计口径。</p>

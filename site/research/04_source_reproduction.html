@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码获取与独立复现记录 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="b232a8dba19b"><style>
+<meta name="source-digest" content="5cea3d451101"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -612,8 +612,8 @@ ViSQOL 还需固定 speech/audio 模式、采样率和映射模型，不能混�
 随后调用<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/examples/industrial_interfaces.c">原创 C 夹具</a>。它不下载或安装依赖，
 要求先取得锁定源码，并已具备 CMake 与 clang。构建关闭可选编解码器、OpenMP 和 soxr SIMD 路径，
 因此结论限定于记录的标量、单线程配置。</p>
-<pre><code class="language-bash">.venv/bin/python codes/chapters/ch10/examples/run_industrial_interfaces.py --report tmp/industrial-rerun.json
-.venv/bin/python codes/chapters/ch04/examples/reproduce_sbl_reference.py --output tmp/sbl-rerun.json
+<pre><code class="language-bash">.venv/bin/python codes/chapters/ch10/examples/run_industrial_interfaces.py --report codes/chapters/ch10/reports/industrial_interfaces_current.json
+.venv/bin/python codes/chapters/ch04/examples/reproduce_sbl_reference.py --output /private/tmp/sbl-rerun.json
 </code></pre>
 <p>工业输入为 48 kHz、双通道、1 s：一通道在第 12000 帧放幅度 0.5 的脉冲，另一通道放幅度 0.1 的
 1 kHz 正弦。显式 HQ 配置重采样到 16 kHz，整段及 127/509 帧供给均得到 16000 帧，
@@ -624,7 +624,7 @@ ViSQOL 还需固定 speech/audio 模式、采样率和映射模型，不能混�
 幅度从 0.1 变为 0.05 后下降 6.0206 LU；静音记录为 <code>null</code> 并保留无有效门控能量的原因。</p>
 <p>PCM16 的七帧双通道读回得到帧数 3/3/1/0、标量项数 6/6/2/0，归一化误差为 0。
 完整条件和原始数值见<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/reports/industrial_interfaces.json">工业报告</a>及<a href="03_industrial_deployment.html">工业研究</a>。</p>
-<p>第10章本次另以<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/examples/audit_industrial_contracts.py">合同脚本</a>生成<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/reports/industrial_contracts.json">独立报告</a>，不改上述历史三库报告或2026-09-28的STOI/DeepFilterNet报告。报告分别绑定原文件、许可证、HEAD和工具/锁表摘要，保存每项代替边界与运行前后清洁状态；CMSIS的期望来自整数卷积、Speex来自手写递推，VAD及demo来自合法帧与样本计数。</p>
+<p>第10章2026-10-01的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/reports/industrial_contracts.json">独立历史报告</a>由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/bde483bcc429a553aeaf8830ca3687ab46831db0/codes/chapters/ch10/examples/audit_industrial_contracts.py">bde483保存的原合同脚本</a>生成，不改上述历史三库报告或2026-09-28的STOI/DeepFilterNet报告。2026-10-05的当前复验见<a href="03_industrial_deployment.html#industrial-current-interface-contracts">工业研究§9</a>，改后工具只显式写新的当前报告。各报告分别绑定运行时的原文件、许可证、HEAD和工具/锁表摘要，保存每项代替边界与运行前后清洁状态；CMSIS的期望来自整数卷积、Speex来自手写递推，VAD及demo来自合法帧与样本计数。</p>
 <p>FastEnhancer例使用受控假计时：1000点输入、512点窗、256点帧移、10 ms假耗时，原打印0.125而新增源时长分母为0.16；<a href="../10_engineering-practice.html#e10-32">E10-32</a>解释两者。原main的保存分支也在内存接收器上核对裁256点后取原长度，没有写模型输出文件。MCRA受控软更新的<a href="../10_engineering-practice.html#e10-28">E10-28</a>是本书给定局部统计的递推子链；Speex原助手的硬标记不能充当该原算法复现。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/examples/reproduce_sbl_reference.py">SBL 程序</a>实际调用独立目录中未改动的作者实现，
 以四麦、200 个快拍、1° 网格核对两源定位。标准条件得到 −30°、30°；将两源均移出网格 0.5° 后，
@@ -1081,6 +1081,7 @@ $\left[\begin{smallmatrix}1/10&1/5\\1/10&1/5\end{smallmatrix}\right]$。</p>
 <p>2026-10-05按逐文件许可取得LOCATA I/O与eval的15/16个文本选集；不是完整MATLAB运行环境，未取得数据或执行官方评分。范围、原语句静态疑点与许可分别见<a href="01_spatial_and_tracking.html#tracking-model-lifecycle-sphere">空间研究§61.4</a>及<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/THIRD_PARTY.md">第三方记录</a>。完整锁表114项实际离线核验为74通过、22原选集不匹配、17索引和1原AEC缓存失败，工具退出1；97个项目有独立受管理工作区，原112项状态逐项保留。</p>
 <p>扩充前的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/source_snapshots/SOURCES.d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a.json">112项原锁字节</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/source_snapshots/SOURCE_STATUS.e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da.json">原获取状态字节</a>按完整SHA登记，旧执行报告不换成新锁表身份。当前第4～8章14个直接消费者实际重新执行后绑定新锁表，原故障/未运行边界保留；不能只改JSON字符串。</p>
 <p>第9章两个工具默认stdout；接口工具显式<code>--output</code>写<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/reports/tracking_upstream_interfaces_current.json">当前接口报告</a>，原方法合同工具显式<code>--report</code>写<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch09/reports/upstream_tracking_contracts_current.json">当前原方法合同</a>，路径均须通过安全检查，不覆盖两旧历史报告。ODAS限定原C、SAF控制流替身、FilterPy原包/原方法和StoneSoup三个原AST方法各记执行范围；完整稀疏选集不匹配不抹去。FilterPy本轮预检63个跟踪源文件，33个实际导入模块分别记录；EKF组合接口<code>None</code>的原TypeError及部分K/S更新保留，不能改写成原包缺测路径成功。</p>
+<p>2026-10-05第10章四组原接口复验保存为current报告，旧四报告与其历史工具身份保持原样；当前编译依赖、原失败及未执行范围见<a href="03_industrial_deployment.html#industrial-current-interface-contracts">工业研究§9</a>。上文复跑命令写显式current路径；仓内其他报告目标由写前守卫拒绝，普通仓外路径可另存试验。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

@@ -1,0 +1,1535 @@
+{
+  "schema_version": 1,
+  "exercise_id": "E10-34",
+  "script_sha256": "4e00b035c214de0348239cfe0fc8400fb7a1ba69e7233f2b1d6529d1474797e8",
+  "source_sha256": {
+    "scripts/make_channel_figures.py": "4e00b035c214de0348239cfe0fc8400fb7a1ba69e7233f2b1d6529d1474797e8",
+    "codes/chapters/ch10/core/channel_audio.py": "111138f767dcfb4fdb2ee02a5dbf33d1b8fd47a01c3406ff52aec065bd7d85e7",
+    "codes/chapters/ch10/examples/generate_channel_audio.py": "0b605efd531be4801b6558e963a655cef1ab0419201015d45dacad424c84df85",
+    "codes/chapters/ch10/core/channel_selection.py": "86394cf00835bdd30ca33f3d4f57f9894cea8c21de8ea421554d75f835f31c54",
+    "codes/chapters/ch05/core/beamforming.py": "481f79a66fcc4c1f232704ee3a516b596d28ebc89d9045c494b71f6206b77216",
+    "codes/chapters/ch04/core/covariance.py": "d704be037100ee53caf6e2130fbabbe14ce6eeff9e3d11dde389fd368d271249",
+    "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
+  },
+  "input_sha256": {
+    "channel_reference.wav": "e1edd0f7fc1d7008986c41128b6f81b5bbbb5258267522cc7d2186375b54726e",
+    "channel_healthy_array.wav": "5558bd155a08a4edc519c4f4623066a9faf978e018d4e498700bbcde7b643d29",
+    "channel_faulty_array.wav": "0335b0a4ea8e7e18a9fcd1d356412184a6435e050e1fe2c6605a2f1ca16e2fde",
+    "channel_healthy_output.wav": "1a95e19a4a455ae4dfe4f990d0c697e9f5e2453fb657eb6228ff3b33aaa843b0",
+    "channel_stale_output.wav": "99689f241f4d4f81cf2c19355cb2da7a10fa64cd317ba305d1ed4ad5acd9f6f9",
+    "channel_recomputed_output.wav": "35285ba307f92e4928efc4d1225a87f65b3afec8f2ab389ab1d52392870f9d27",
+    "MANIFEST.json": "51245c0bd402601a9bbfa00df28930c913b84f6c87df3f0d7639d2a5cdabc975"
+  },
+  "parameters": {
+    "exercise_id": "E10-34",
+    "sample_rate_hz": 16000,
+    "samples_per_channel": 32000,
+    "target_frequency_hz": 500.0,
+    "noise_basis_frequencies_hz": [
+      1500.0,
+      2500.0,
+      3500.0
+    ],
+    "amplitude_each": 0.1,
+    "phase": "sine, phase zero at the common absolute sample origin",
+    "fade_samples_each_end": 320,
+    "envelope": "sin(linspace(0,pi/2,320)) squared; reversed at end; both endpoints zero",
+    "common_export_gain": 1.0,
+    "tail_samples": 0,
+    "scoring_interval_samples": [
+      2400,
+      29600
+    ],
+    "scoring_samples_per_channel": 27200,
+    "target_cycles_in_score": 850,
+    "noise_basis_cycles_in_score": [
+      2550,
+      4250,
+      5950
+    ],
+    "mixing_matrix_B": [
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        1.0
+      ]
+    ],
+    "steering": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "known_failed_channel": 0,
+    "selected_channels": [
+      1,
+      2
+    ],
+    "fault": "replace channel zero by zeros before applying the former full weights",
+    "noise_covariance": "known score-window time covariance 0.005*B*B.T; fixed real weights across all tones",
+    "solver": "unique Chapter05 MVDR; selection by Chapter10 channel_selection; no loading",
+    "scoring": "same samples and common reference; no output gain/time matching",
+    "randomness": "none",
+    "noise_scope": "three deterministic orthogonal basis tones, not random noise"
+  },
+  "model": {
+    "noise_covariance": [
+      [
+        0.005,
+        0.005,
+        0.0
+      ],
+      [
+        0.005,
+        0.01,
+        0.005
+      ],
+      [
+        0.0,
+        0.005,
+        0.01
+      ]
+    ],
+    "full_weights": [
+      1.0,
+      -0.5,
+      0.5
+    ],
+    "selected_covariance": [
+      [
+        0.01,
+        0.005
+      ],
+      [
+        0.005,
+        0.01
+      ]
+    ],
+    "selected_steering": [
+      1.0,
+      1.0
+    ],
+    "selected_weights": [
+      0.5,
+      0.4999999999999999
+    ],
+    "selection_matrix": [
+      [
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "stale_remaining_weights": [
+      -0.5,
+      0.5
+    ]
+  },
+  "analytic": {
+    "healthy_output": {
+      "target_gain": 1.0,
+      "target_mean_square": 0.005,
+      "noise_mean_square": 0.0025,
+      "output_mean_square": 0.0075,
+      "reference_error_mean_square": 0.0025,
+      "reference_NMSE": 0.5
+    },
+    "stale_output": {
+      "target_gain": 0.0,
+      "target_mean_square": 0.0,
+      "noise_mean_square": 0.0025,
+      "output_mean_square": 0.0025,
+      "reference_error_mean_square": 0.0075,
+      "reference_NMSE": 1.5
+    },
+    "recomputed_output": {
+      "target_gain": 1.0,
+      "target_mean_square": 0.005,
+      "noise_mean_square": 0.0075,
+      "output_mean_square": 0.0125,
+      "reference_error_mean_square": 0.0075,
+      "reference_NMSE": 1.5
+    }
+  },
+  "samples": {
+    "reference": {
+      "file": "channel_reference.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "mean_square_per_channel": [
+          0.005000000000000002
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0
+        ],
+        "reference_NMSE_per_channel": [
+          0.0
+        ],
+        "target_frequency_phasor_real_per_channel": [
+          -1.6971718148497797e-17
+        ],
+        "target_frequency_phasor_imag_per_channel": [
+          -0.10000000000000002
+        ],
+        "phasor_convention": "2/N sum x[n] exp(-j*2*pi*500*n/fs); .1 sine -> -.1j; diagnostic only"
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "mean_square_per_channel": [
+          0.004999949655029923
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0
+        ],
+        "reference_NMSE_per_channel": [
+          0.0
+        ],
+        "target_frequency_phasor_real_per_channel": [
+          3.21166745159369e-14
+        ],
+        "target_frequency_phasor_imag_per_channel": [
+          -0.09999949574059387
+        ],
+        "phasor_convention": "2/N sum x[n] exp(-j*2*pi*500*n/fs); .1 sine -> -.1j; diagnostic only"
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 1,
+        "integer_squared_sum_E_per_channel": [
+          146027417700
+        ],
+        "integer_denominator_D_per_channel": 29205777612800,
+        "mean_square_per_channel": [
+          0.004999949655029923
+        ],
+        "integer_squared_sum_E_all_channels": 146027417700,
+        "integer_denominator_D_all_channels": 29205777612800,
+        "mean_square_all_channels": 0.004999949655029923,
+        "integer_reference_squared_sum_per_channel": [
+          146027417700
+        ],
+        "integer_reference_error_squared_sum_per_channel": [
+          0
+        ],
+        "integer_output_reference_cross_sum_per_channel": [
+          146027417700
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0
+        ],
+        "reference_NMSE_per_channel": [
+          0.0
+        ],
+        "projection_gain_per_channel": [
+          1.0
+        ],
+        "pcm_decode_divisor": 32768,
+        "projection_scope": "reference projection diagnostic only; no gain compensation applied"
+      }
+    },
+    "healthy_array": {
+      "file": "channel_healthy_array.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "mean_square_per_channel": [
+          0.010000000000000021,
+          0.014999999999999946,
+          0.014999999999999904
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.005000000000000003,
+          0.009999999999999938,
+          0.009999999999999953
+        ],
+        "reference_NMSE_per_channel": [
+          1.0000000000000002,
+          1.9999999999999867,
+          1.99999999999999
+        ],
+        "target_frequency_phasor_real_per_channel": [
+          3.570673168904731e-17,
+          -1.2245106889248049e-18,
+          -1.1932040323112941e-16
+        ],
+        "target_frequency_phasor_imag_per_channel": [
+          -0.10000000000000017,
+          -0.10000000000000009,
+          -0.09999999999999952
+        ],
+        "phasor_convention": "2/N sum x[n] exp(-j*2*pi*500*n/fs); .1 sine -> -.1j; diagnostic only"
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "mean_square_per_channel": [
+          0.009999240166507661,
+          0.015000746061559767,
+          0.015000297513324767
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.005000373523216695,
+          0.010001388262026012,
+          0.010000650770962238
+        ],
+        "reference_NMSE_per_channel": [
+          1.0000847744909482,
+          2.000297793391713,
+          2.000150293693785
+        ],
+        "target_frequency_phasor_real_per_channel": [
+          3.2111552999980474e-14,
+          3.212444811796042e-14,
+          3.215370780087228e-14
+        ],
+        "target_frequency_phasor_imag_per_channel": [
+          -0.099993664033501,
+          -0.10000138296204794,
+          -0.09999959876662283
+        ],
+        "phasor_convention": "2/N sum x[n] exp(-j*2*pi*500*n/fs); .1 sine -> -.1j; diagnostic only"
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 3,
+        "integer_squared_sum_E_per_channel": [
+          292035584600,
+          438108453500,
+          438095353300
+        ],
+        "integer_denominator_D_per_channel": 29205777612800,
+        "mean_square_per_channel": [
+          0.009999240166507661,
+          0.015000746061559767,
+          0.015000297513324767
+        ],
+        "integer_squared_sum_E_all_channels": 1168239391400,
+        "integer_denominator_D_all_channels": 87617332838400,
+        "mean_square_all_channels": 0.013333427913797399,
+        "integer_reference_squared_sum_per_channel": [
+          146027417700,
+          146027417700,
+          146027417700
+        ],
+        "integer_reference_error_squared_sum_per_channel": [
+          146039797100,
+          292098321400,
+          292076782400
+        ],
+        "integer_output_reference_cross_sum_per_channel": [
+          146011602600,
+          146018774900,
+          146022994300
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.005000373523216695,
+          0.010001388262026012,
+          0.010000650770962238
+        ],
+        "reference_NMSE_per_channel": [
+          1.0000847744909482,
+          2.000297793391713,
+          2.000150293693785
+        ],
+        "projection_gain_per_channel": [
+          0.9998916977356096,
+          0.9999408138544382,
+          0.9999697084282549
+        ],
+        "pcm_decode_divisor": 32768,
+        "projection_scope": "reference projection diagnostic only; no gain compensation applied"
+      }
+    },
+    "faulty_array": {
+      "file": "channel_faulty_array.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "mean_square_per_channel": [
+          0.0,
+          0.014999999999999946,
+          0.014999999999999904
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.005000000000000002,
+          0.009999999999999938,
+          0.009999999999999953
+        ],
+        "reference_NMSE_per_channel": [
+          1.0,
+          1.9999999999999867,
+          1.99999999999999
+        ],
+        "target_frequency_phasor_real_per_channel": [
+          0.0,
+          -1.2245106889248049e-18,
+          -1.1932040323112941e-16
+        ],
+        "target_frequency_phasor_imag_per_channel": [
+          0.0,
+          -0.10000000000000009,
+          -0.09999999999999952
+        ],
+        "phasor_convention": "2/N sum x[n] exp(-j*2*pi*500*n/fs); .1 sine -> -.1j; diagnostic only"
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "mean_square_per_channel": [
+          0.0,
+          0.015000746061559767,
+          0.015000297513324767
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.004999949655029923,
+          0.010001388262026012,
+          0.010000650770962238
+        ],
+        "reference_NMSE_per_channel": [
+          1.0,
+          2.000297793391713,
+          2.000150293693785
+        ],
+        "target_frequency_phasor_real_per_channel": [
+          0.0,
+          3.212444811796042e-14,
+          3.215370780087228e-14
+        ],
+        "target_frequency_phasor_imag_per_channel": [
+          0.0,
+          -0.10000138296204794,
+          -0.09999959876662283
+        ],
+        "phasor_convention": "2/N sum x[n] exp(-j*2*pi*500*n/fs); .1 sine -> -.1j; diagnostic only"
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 3,
+        "integer_squared_sum_E_per_channel": [
+          0,
+          438108453500,
+          438095353300
+        ],
+        "integer_denominator_D_per_channel": 29205777612800,
+        "mean_square_per_channel": [
+          0.0,
+          0.015000746061559767,
+          0.015000297513324767
+        ],
+        "integer_squared_sum_E_all_channels": 876203806800,
+        "integer_denominator_D_all_channels": 87617332838400,
+        "mean_square_all_channels": 0.010000347858294845,
+        "integer_reference_squared_sum_per_channel": [
+          146027417700,
+          146027417700,
+          146027417700
+        ],
+        "integer_reference_error_squared_sum_per_channel": [
+          146027417700,
+          292098321400,
+          292076782400
+        ],
+        "integer_output_reference_cross_sum_per_channel": [
+          0,
+          146018774900,
+          146022994300
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.004999949655029923,
+          0.010001388262026012,
+          0.010000650770962238
+        ],
+        "reference_NMSE_per_channel": [
+          1.0,
+          2.000297793391713,
+          2.000150293693785
+        ],
+        "projection_gain_per_channel": [
+          0.0,
+          0.9999408138544382,
+          0.9999697084282549
+        ],
+        "pcm_decode_divisor": 32768,
+        "projection_scope": "reference projection diagnostic only; no gain compensation applied"
+      }
+    },
+    "healthy_output": {
+      "file": "channel_healthy_output.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "mean_square_per_channel": [
+          0.007499999999999974
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0024999999999999844
+        ],
+        "reference_NMSE_per_channel": [
+          0.49999999999999667
+        ],
+        "target_frequency_phasor_real_per_channel": [
+          -2.3465706502095677e-17
+        ],
+        "target_frequency_phasor_imag_per_channel": [
+          -0.0999999999999999
+        ],
+        "phasor_convention": "2/N sum x[n] exp(-j*2*pi*500*n/fs); .1 sine -> -.1j; diagnostic only"
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "mean_square_per_channel": [
+          0.00749942974653095
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0025000066380016506
+        ],
+        "reference_NMSE_per_channel": [
+          0.5000063621613984
+        ],
+        "target_frequency_phasor_real_per_channel": [
+          3.212744612829714e-14
+        ],
+        "target_frequency_phasor_imag_per_channel": [
+          -0.09999689208395598
+        ],
+        "phasor_convention": "2/N sum x[n] exp(-j*2*pi*500*n/fs); .1 sine -> -.1j; diagnostic only"
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 1,
+        "integer_squared_sum_E_per_channel": [
+          219026677400
+        ],
+        "integer_denominator_D_per_channel": 29205777612800,
+        "mean_square_per_channel": [
+          0.00749942974653095
+        ],
+        "integer_squared_sum_E_all_channels": 219026677400,
+        "integer_denominator_D_all_channels": 29205777612800,
+        "mean_square_all_channels": 0.00749942974653095,
+        "integer_reference_squared_sum_per_channel": [
+          146027417700
+        ],
+        "integer_reference_error_squared_sum_per_channel": [
+          73014637900
+        ],
+        "integer_output_reference_cross_sum_per_channel": [
+          146019728600
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.0025000066380016506
+        ],
+        "reference_NMSE_per_channel": [
+          0.5000063621613984
+        ],
+        "projection_gain_per_channel": [
+          0.999947344819753
+        ],
+        "pcm_decode_divisor": 32768,
+        "projection_scope": "reference projection diagnostic only; no gain compensation applied"
+      }
+    },
+    "stale_output": {
+      "file": "channel_stale_output.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "mean_square_per_channel": [
+          0.0025000000000000157
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.007500000000000046
+        ],
+        "reference_NMSE_per_channel": [
+          1.5000000000000087
+        ],
+        "target_frequency_phasor_real_per_channel": [
+          -5.916427478655016e-17
+        ],
+        "target_frequency_phasor_imag_per_channel": [
+          2.8847226894805375e-16
+        ],
+        "phasor_convention": "2/N sum x[n] exp(-j*2*pi*500*n/fs); .1 sine -> -.1j; diagnostic only"
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "mean_square_per_channel": [
+          0.0025002564070746303
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.007499158324208111
+        ],
+        "reference_NMSE_per_channel": [
+          1.499846766789741
+        ],
+        "target_frequency_phasor_real_per_channel": [
+          1.7649280729702856e-17
+        ],
+        "target_frequency_phasor_imag_per_channel": [
+          -8.140438316463794e-06
+        ],
+        "phasor_convention": "2/N sum x[n] exp(-j*2*pi*500*n/fs); .1 sine -> -.1j; diagnostic only"
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 1,
+        "integer_squared_sum_E_per_channel": [
+          73021932600
+        ],
+        "integer_denominator_D_per_channel": 29205777612800,
+        "mean_square_per_channel": [
+          0.0025002564070746303
+        ],
+        "integer_squared_sum_E_all_channels": 73021932600,
+        "integer_denominator_D_all_channels": 29205777612800,
+        "mean_square_all_channels": 0.0025002564070746303,
+        "integer_reference_squared_sum_per_channel": [
+          146027417700
+        ],
+        "integer_reference_error_squared_sum_per_channel": [
+          219018750300
+        ],
+        "integer_output_reference_cross_sum_per_channel": [
+          15300000
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.007499158324208111
+        ],
+        "reference_NMSE_per_channel": [
+          1.499846766789741
+        ],
+        "projection_gain_per_channel": [
+          0.0001047748446215248
+        ],
+        "pcm_decode_divisor": 32768,
+        "projection_scope": "reference projection diagnostic only; no gain compensation applied"
+      }
+    },
+    "recomputed_output": {
+      "file": "channel_recomputed_output.wav",
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "mean_square_per_channel": [
+          0.012499999999999905
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.007499999999999928
+        ],
+        "reference_NMSE_per_channel": [
+          1.499999999999985
+        ],
+        "target_frequency_phasor_real_per_channel": [
+          -6.018470036065416e-17
+        ],
+        "target_frequency_phasor_imag_per_channel": [
+          -0.0999999999999998
+        ],
+        "phasor_convention": "2/N sum x[n] exp(-j*2*pi*500*n/fs); .1 sine -> -.1j; diagnostic only"
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "mean_square_per_channel": [
+          0.012499491043854505
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.007500257575884461
+        ],
+        "reference_NMSE_per_channel": [
+          1.500066619338705
+        ],
+        "target_frequency_phasor_real_per_channel": [
+          3.213824223087116e-14
+        ],
+        "target_frequency_phasor_imag_per_channel": [
+          -0.09999780193800581
+        ],
+        "phasor_convention": "2/N sum x[n] exp(-j*2*pi*500*n/fs); .1 sine -> -.1j; diagnostic only"
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 1,
+        "integer_squared_sum_E_per_channel": [
+          365057355700
+        ],
+        "integer_denominator_D_per_channel": 29205777612800,
+        "mean_square_per_channel": [
+          0.012499491043854505
+        ],
+        "integer_squared_sum_E_all_channels": 365057355700,
+        "integer_denominator_D_all_channels": 29205777612800,
+        "mean_square_all_channels": 0.012499491043854505,
+        "integer_reference_squared_sum_per_channel": [
+          146027417700
+        ],
+        "integer_reference_error_squared_sum_per_channel": [
+          219050854800
+        ],
+        "integer_output_reference_cross_sum_per_channel": [
+          146016959300
+        ],
+        "reference_error_mean_square_per_channel": [
+          0.007500257575884461
+        ],
+        "reference_NMSE_per_channel": [
+          1.500066619338705
+        ],
+        "projection_gain_per_channel": [
+          0.9999283805728765
+        ],
+        "pcm_decode_divisor": 32768,
+        "projection_scope": "reference projection diagnostic only; no gain compensation applied"
+      }
+    }
+  },
+  "files": {
+    "channel_reference.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sample_rate_hz": 16000,
+      "sample_width_bytes": 2,
+      "sha256": "e1edd0f7fc1d7008986c41128b6f81b5bbbb5258267522cc7d2186375b54726e",
+      "peak": 0.100006103515625,
+      "quantization_max_abs_error": 1.5256584875459429e-05
+    },
+    "channel_healthy_array.wav": {
+      "channels": 3,
+      "samples_per_channel": 32000,
+      "sample_rate_hz": 16000,
+      "sample_width_bytes": 2,
+      "sha256": "5558bd155a08a4edc519c4f4623066a9faf978e018d4e498700bbcde7b643d29",
+      "peak": 0.223052978515625,
+      "quantization_max_abs_error": 1.5252406073806846e-05
+    },
+    "channel_faulty_array.wav": {
+      "channels": 3,
+      "samples_per_channel": 32000,
+      "sample_rate_hz": 16000,
+      "sample_width_bytes": 2,
+      "sha256": "0335b0a4ea8e7e18a9fcd1d356412184a6435e050e1fe2c6605a2f1ca16e2fde",
+      "peak": 0.223052978515625,
+      "quantization_max_abs_error": 1.5252406073806846e-05
+    },
+    "channel_healthy_output.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sample_rate_hz": 16000,
+      "sample_width_bytes": 2,
+      "sha256": "1a95e19a4a455ae4dfe4f990d0c697e9f5e2453fb657eb6228ff3b33aaa843b0",
+      "peak": 0.12066650390625,
+      "quantization_max_abs_error": 1.5245975404490353e-05
+    },
+    "channel_stale_output.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sample_rate_hz": 16000,
+      "sample_width_bytes": 2,
+      "sha256": "99689f241f4d4f81cf2c19355cb2da7a10fa64cd317ba305d1ed4ad5acd9f6f9",
+      "peak": 0.090606689453125,
+      "quantization_max_abs_error": 1.5251695392265452e-05
+    },
+    "channel_recomputed_output.wav": {
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sample_rate_hz": 16000,
+      "sample_width_bytes": 2,
+      "sha256": "35285ba307f92e4928efc4d1225a87f65b3afec8f2ab389ab1d52392870f9d27",
+      "peak": 0.19598388671875,
+      "quantization_max_abs_error": 1.5224220583394312e-05
+    }
+  },
+  "limits": "Known failed-channel, fixed-real-weight time-domain covariance control. The target and three noise bases are mathematical sinusoids; finite-window orthogonality is not random independence. The broadband noise covariance is known, not a per-frequency SCM estimate. Channel zero is prescribed failed and replaced by zero, not diagnosed. Selection removes both covariance axes and the matching steering and observation entries; it does not preserve the former noise optimum. No physical propagation, speech, device recording, blind fault detection, per-file normalization, reference gain/delay fitting or formal listening study. Equal analytic total NMSE does not imply equal target retention; the two actual PCM NMSE values need not be exactly equal.",
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "matplotlib": "3.11.2"
+  },
+  "plot_data": {
+    "output_roles": [
+      "healthy_output",
+      "stale_output",
+      "recomputed_output"
+    ],
+    "effective_weights_after_prescribed_fault": [
+      [
+        1.0,
+        -0.5,
+        0.5
+      ],
+      [
+        0.0,
+        -0.5,
+        0.5
+      ],
+      [
+        0.0,
+        0.5,
+        0.5
+      ]
+    ],
+    "target_gain_analytic": [
+      1.0,
+      0.0,
+      1.0
+    ],
+    "projection_gain_pcm_diagnostic": [
+      0.999947344819753,
+      0.0001047748446215248,
+      0.9999283805728765
+    ],
+    "projection_scope": "same-window actual PCM reference projection diagnostic; no gain compensation",
+    "reference_NMSE_analytic": [
+      0.5,
+      1.5,
+      1.5
+    ],
+    "reference_NMSE_pcm": [
+      0.5000063621613984,
+      1.499846766789741,
+      1.500066619338705
+    ],
+    "waveform_interval_samples": [
+      2400,
+      2528
+    ],
+    "waveform_time_ms": [
+      150.0,
+      150.0625,
+      150.125,
+      150.1875,
+      150.25,
+      150.3125,
+      150.375,
+      150.4375,
+      150.5,
+      150.5625,
+      150.625,
+      150.6875,
+      150.75,
+      150.8125,
+      150.875,
+      150.9375,
+      151.0,
+      151.0625,
+      151.125,
+      151.1875,
+      151.25,
+      151.3125,
+      151.375,
+      151.4375,
+      151.5,
+      151.5625,
+      151.625,
+      151.6875,
+      151.75,
+      151.8125,
+      151.875,
+      151.9375,
+      152.0,
+      152.0625,
+      152.125,
+      152.1875,
+      152.25,
+      152.3125,
+      152.375,
+      152.4375,
+      152.5,
+      152.5625,
+      152.625,
+      152.6875,
+      152.75,
+      152.8125,
+      152.875,
+      152.9375,
+      153.0,
+      153.0625,
+      153.125,
+      153.1875,
+      153.25,
+      153.3125,
+      153.375,
+      153.4375,
+      153.5,
+      153.5625,
+      153.625,
+      153.6875,
+      153.75,
+      153.8125,
+      153.875,
+      153.9375,
+      154.0,
+      154.0625,
+      154.125,
+      154.1875,
+      154.25,
+      154.3125,
+      154.375,
+      154.4375,
+      154.5,
+      154.5625,
+      154.625,
+      154.6875,
+      154.75,
+      154.8125,
+      154.875,
+      154.9375,
+      155.0,
+      155.0625,
+      155.125,
+      155.1875,
+      155.25,
+      155.3125,
+      155.375,
+      155.4375,
+      155.5,
+      155.5625,
+      155.625,
+      155.6875,
+      155.75,
+      155.8125,
+      155.875,
+      155.9375,
+      156.0,
+      156.0625,
+      156.125,
+      156.1875,
+      156.25,
+      156.3125,
+      156.375,
+      156.4375,
+      156.5,
+      156.5625,
+      156.625,
+      156.6875,
+      156.75,
+      156.8125,
+      156.875,
+      156.9375,
+      157.0,
+      157.0625,
+      157.125,
+      157.1875,
+      157.25,
+      157.3125,
+      157.375,
+      157.4375,
+      157.5,
+      157.5625,
+      157.625,
+      157.6875,
+      157.75,
+      157.8125,
+      157.875,
+      157.9375
+    ],
+    "waveform_pcm": {
+      "reference": [
+        0.0,
+        0.019500732421875,
+        0.03826904296875,
+        0.0555419921875,
+        0.070709228515625,
+        0.083160400390625,
+        0.092376708984375,
+        0.09808349609375,
+        0.100006103515625,
+        0.09808349609375,
+        0.092376708984375,
+        0.083160400390625,
+        0.070709228515625,
+        0.0555419921875,
+        0.03826904296875,
+        0.019500732421875,
+        0.0,
+        -0.019500732421875,
+        -0.03826904296875,
+        -0.0555419921875,
+        -0.070709228515625,
+        -0.083160400390625,
+        -0.092376708984375,
+        -0.09808349609375,
+        -0.100006103515625,
+        -0.09808349609375,
+        -0.092376708984375,
+        -0.083160400390625,
+        -0.070709228515625,
+        -0.0555419921875,
+        -0.03826904296875,
+        -0.019500732421875,
+        0.0,
+        0.019500732421875,
+        0.03826904296875,
+        0.0555419921875,
+        0.070709228515625,
+        0.083160400390625,
+        0.092376708984375,
+        0.09808349609375,
+        0.100006103515625,
+        0.09808349609375,
+        0.092376708984375,
+        0.083160400390625,
+        0.070709228515625,
+        0.0555419921875,
+        0.03826904296875,
+        0.019500732421875,
+        0.0,
+        -0.019500732421875,
+        -0.03826904296875,
+        -0.0555419921875,
+        -0.070709228515625,
+        -0.083160400390625,
+        -0.092376708984375,
+        -0.09808349609375,
+        -0.100006103515625,
+        -0.09808349609375,
+        -0.092376708984375,
+        -0.083160400390625,
+        -0.070709228515625,
+        -0.0555419921875,
+        -0.03826904296875,
+        -0.019500732421875,
+        0.0,
+        0.019500732421875,
+        0.03826904296875,
+        0.0555419921875,
+        0.070709228515625,
+        0.083160400390625,
+        0.092376708984375,
+        0.09808349609375,
+        0.100006103515625,
+        0.09808349609375,
+        0.092376708984375,
+        0.083160400390625,
+        0.070709228515625,
+        0.0555419921875,
+        0.03826904296875,
+        0.019500732421875,
+        0.0,
+        -0.019500732421875,
+        -0.03826904296875,
+        -0.0555419921875,
+        -0.070709228515625,
+        -0.083160400390625,
+        -0.092376708984375,
+        -0.09808349609375,
+        -0.100006103515625,
+        -0.09808349609375,
+        -0.092376708984375,
+        -0.083160400390625,
+        -0.070709228515625,
+        -0.0555419921875,
+        -0.03826904296875,
+        -0.019500732421875,
+        0.0,
+        0.019500732421875,
+        0.03826904296875,
+        0.0555419921875,
+        0.070709228515625,
+        0.083160400390625,
+        0.092376708984375,
+        0.09808349609375,
+        0.100006103515625,
+        0.09808349609375,
+        0.092376708984375,
+        0.083160400390625,
+        0.070709228515625,
+        0.0555419921875,
+        0.03826904296875,
+        0.019500732421875,
+        0.0,
+        -0.019500732421875,
+        -0.03826904296875,
+        -0.0555419921875,
+        -0.070709228515625,
+        -0.083160400390625,
+        -0.092376708984375,
+        -0.09808349609375,
+        -0.100006103515625,
+        -0.09808349609375,
+        -0.092376708984375,
+        -0.083160400390625,
+        -0.070709228515625,
+        -0.0555419921875,
+        -0.03826904296875,
+        -0.019500732421875
+      ],
+      "healthy_output": [
+        0.0,
+        0.0963134765625,
+        0.103607177734375,
+        0.063018798828125,
+        0.070709228515625,
+        0.12066650390625,
+        0.11944580078125,
+        0.0467529296875,
+        0.0,
+        0.0467529296875,
+        0.11944580078125,
+        0.12066650390625,
+        0.070709228515625,
+        0.063018798828125,
+        0.103607177734375,
+        0.0963134765625,
+        0.0,
+        -0.0963134765625,
+        -0.103607177734375,
+        -0.063018798828125,
+        -0.070709228515625,
+        -0.12066650390625,
+        -0.11944580078125,
+        -0.0467529296875,
+        0.0,
+        -0.0467529296875,
+        -0.11944580078125,
+        -0.12066650390625,
+        -0.070709228515625,
+        -0.063018798828125,
+        -0.103607177734375,
+        -0.0963134765625,
+        0.0,
+        0.0963134765625,
+        0.103607177734375,
+        0.063018798828125,
+        0.070709228515625,
+        0.12066650390625,
+        0.11944580078125,
+        0.0467529296875,
+        0.0,
+        0.0467529296875,
+        0.11944580078125,
+        0.12066650390625,
+        0.070709228515625,
+        0.063018798828125,
+        0.103607177734375,
+        0.0963134765625,
+        0.0,
+        -0.0963134765625,
+        -0.103607177734375,
+        -0.063018798828125,
+        -0.070709228515625,
+        -0.12066650390625,
+        -0.11944580078125,
+        -0.0467529296875,
+        0.0,
+        -0.0467529296875,
+        -0.11944580078125,
+        -0.12066650390625,
+        -0.070709228515625,
+        -0.063018798828125,
+        -0.103607177734375,
+        -0.0963134765625,
+        0.0,
+        0.0963134765625,
+        0.103607177734375,
+        0.063018798828125,
+        0.070709228515625,
+        0.12066650390625,
+        0.11944580078125,
+        0.0467529296875,
+        0.0,
+        0.0467529296875,
+        0.11944580078125,
+        0.12066650390625,
+        0.070709228515625,
+        0.063018798828125,
+        0.103607177734375,
+        0.0963134765625,
+        0.0,
+        -0.0963134765625,
+        -0.103607177734375,
+        -0.063018798828125,
+        -0.070709228515625,
+        -0.12066650390625,
+        -0.11944580078125,
+        -0.0467529296875,
+        0.0,
+        -0.0467529296875,
+        -0.11944580078125,
+        -0.12066650390625,
+        -0.070709228515625,
+        -0.063018798828125,
+        -0.103607177734375,
+        -0.0963134765625,
+        0.0,
+        0.0963134765625,
+        0.103607177734375,
+        0.063018798828125,
+        0.070709228515625,
+        0.12066650390625,
+        0.11944580078125,
+        0.0467529296875,
+        0.0,
+        0.0467529296875,
+        0.11944580078125,
+        0.12066650390625,
+        0.070709228515625,
+        0.063018798828125,
+        0.103607177734375,
+        0.0963134765625,
+        0.0,
+        -0.0963134765625,
+        -0.103607177734375,
+        -0.063018798828125,
+        -0.070709228515625,
+        -0.12066650390625,
+        -0.11944580078125,
+        -0.0467529296875,
+        0.0,
+        -0.0467529296875,
+        -0.11944580078125,
+        -0.12066650390625,
+        -0.070709228515625,
+        -0.063018798828125,
+        -0.103607177734375,
+        -0.0963134765625
+      ],
+      "stale_output": [
+        0.0,
+        0.021270751953125,
+        -0.027069091796875,
+        -0.090606689453125,
+        -0.070709228515625,
+        0.018035888671875,
+        0.065338134765625,
+        0.031829833984375,
+        0.0,
+        0.031829833984375,
+        0.065338134765625,
+        0.018035888671875,
+        -0.070709228515625,
+        -0.090606689453125,
+        -0.027069091796875,
+        0.021270751953125,
+        0.0,
+        -0.021270751953125,
+        0.027069091796875,
+        0.090606689453125,
+        0.070709228515625,
+        -0.018035888671875,
+        -0.065338134765625,
+        -0.031829833984375,
+        0.0,
+        -0.031829833984375,
+        -0.065338134765625,
+        -0.018035888671875,
+        0.070709228515625,
+        0.090606689453125,
+        0.027069091796875,
+        -0.021270751953125,
+        0.0,
+        0.021270751953125,
+        -0.027069091796875,
+        -0.090606689453125,
+        -0.070709228515625,
+        0.018035888671875,
+        0.065338134765625,
+        0.031829833984375,
+        0.0,
+        0.031829833984375,
+        0.065338134765625,
+        0.018035888671875,
+        -0.070709228515625,
+        -0.090606689453125,
+        -0.027069091796875,
+        0.021270751953125,
+        0.0,
+        -0.021270751953125,
+        0.027069091796875,
+        0.090606689453125,
+        0.070709228515625,
+        -0.018035888671875,
+        -0.065338134765625,
+        -0.031829833984375,
+        0.0,
+        -0.031829833984375,
+        -0.065338134765625,
+        -0.018035888671875,
+        0.070709228515625,
+        0.090606689453125,
+        0.027069091796875,
+        -0.021270751953125,
+        0.0,
+        0.021270751953125,
+        -0.027069091796875,
+        -0.090606689453125,
+        -0.070709228515625,
+        0.018035888671875,
+        0.065338134765625,
+        0.031829833984375,
+        0.0,
+        0.031829833984375,
+        0.065338134765625,
+        0.018035888671875,
+        -0.070709228515625,
+        -0.090606689453125,
+        -0.027069091796875,
+        0.021270751953125,
+        0.0,
+        -0.021270751953125,
+        0.027069091796875,
+        0.090606689453125,
+        0.070709228515625,
+        -0.018035888671875,
+        -0.065338134765625,
+        -0.031829833984375,
+        0.0,
+        -0.031829833984375,
+        -0.065338134765625,
+        -0.018035888671875,
+        0.070709228515625,
+        0.090606689453125,
+        0.027069091796875,
+        -0.021270751953125,
+        0.0,
+        0.021270751953125,
+        -0.027069091796875,
+        -0.090606689453125,
+        -0.070709228515625,
+        0.018035888671875,
+        0.065338134765625,
+        0.031829833984375,
+        0.0,
+        0.031829833984375,
+        0.065338134765625,
+        0.018035888671875,
+        -0.070709228515625,
+        -0.090606689453125,
+        -0.027069091796875,
+        0.021270751953125,
+        0.0,
+        -0.021270751953125,
+        0.027069091796875,
+        0.090606689453125,
+        0.070709228515625,
+        -0.018035888671875,
+        -0.065338134765625,
+        -0.031829833984375,
+        0.0,
+        -0.031829833984375,
+        -0.065338134765625,
+        -0.018035888671875,
+        0.070709228515625,
+        0.090606689453125,
+        0.027069091796875,
+        -0.021270751953125
+      ],
+      "recomputed_output": [
+        0.0,
+        0.179473876953125,
+        0.19598388671875,
+        0.08251953125,
+        0.0,
+        0.022613525390625,
+        0.0811767578125,
+        0.102294921875,
+        0.100006103515625,
+        0.102294921875,
+        0.0811767578125,
+        0.022613525390625,
+        0.0,
+        0.08251953125,
+        0.19598388671875,
+        0.179473876953125,
+        0.0,
+        -0.179473876953125,
+        -0.19598388671875,
+        -0.08251953125,
+        0.0,
+        -0.022613525390625,
+        -0.0811767578125,
+        -0.102294921875,
+        -0.100006103515625,
+        -0.102294921875,
+        -0.0811767578125,
+        -0.022613525390625,
+        0.0,
+        -0.08251953125,
+        -0.19598388671875,
+        -0.179473876953125,
+        0.0,
+        0.179473876953125,
+        0.19598388671875,
+        0.08251953125,
+        0.0,
+        0.022613525390625,
+        0.0811767578125,
+        0.102294921875,
+        0.100006103515625,
+        0.102294921875,
+        0.0811767578125,
+        0.022613525390625,
+        0.0,
+        0.08251953125,
+        0.19598388671875,
+        0.179473876953125,
+        0.0,
+        -0.179473876953125,
+        -0.19598388671875,
+        -0.08251953125,
+        0.0,
+        -0.022613525390625,
+        -0.0811767578125,
+        -0.102294921875,
+        -0.100006103515625,
+        -0.102294921875,
+        -0.0811767578125,
+        -0.022613525390625,
+        0.0,
+        -0.08251953125,
+        -0.19598388671875,
+        -0.179473876953125,
+        0.0,
+        0.179473876953125,
+        0.19598388671875,
+        0.08251953125,
+        0.0,
+        0.022613525390625,
+        0.0811767578125,
+        0.102294921875,
+        0.100006103515625,
+        0.102294921875,
+        0.0811767578125,
+        0.022613525390625,
+        0.0,
+        0.08251953125,
+        0.19598388671875,
+        0.179473876953125,
+        0.0,
+        -0.179473876953125,
+        -0.19598388671875,
+        -0.08251953125,
+        0.0,
+        -0.022613525390625,
+        -0.0811767578125,
+        -0.102294921875,
+        -0.100006103515625,
+        -0.102294921875,
+        -0.0811767578125,
+        -0.022613525390625,
+        0.0,
+        -0.08251953125,
+        -0.19598388671875,
+        -0.179473876953125,
+        0.0,
+        0.179473876953125,
+        0.19598388671875,
+        0.08251953125,
+        0.0,
+        0.022613525390625,
+        0.0811767578125,
+        0.102294921875,
+        0.100006103515625,
+        0.102294921875,
+        0.0811767578125,
+        0.022613525390625,
+        0.0,
+        0.08251953125,
+        0.19598388671875,
+        0.179473876953125,
+        0.0,
+        -0.179473876953125,
+        -0.19598388671875,
+        -0.08251953125,
+        0.0,
+        -0.022613525390625,
+        -0.0811767578125,
+        -0.102294921875,
+        -0.100006103515625,
+        -0.102294921875,
+        -0.0811767578125,
+        -0.022613525390625,
+        0.0,
+        -0.08251953125,
+        -0.19598388671875,
+        -0.179473876953125
+      ]
+    },
+    "scoring_interval_samples": [
+      2400,
+      29600
+    ],
+    "samples_per_channel": 27200,
+    "known_covariance_units": "waveform amplitude squared; broadband time-window covariance, not per-frequency SCM"
+  }
+}

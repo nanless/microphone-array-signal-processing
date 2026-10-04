@@ -5,7 +5,7 @@
     .venv/bin/python scripts/build_site.py
 
 产物：site/index.html（首页）+ site/01..15_*.html（15 篇正文/专题/附录），
-另有 site/research/index.html 和 5 篇独立研究页、主清单 109 个与独立实验 148 个合成 WAV，
+另有 site/research/index.html 和 5 篇独立研究页、主清单 109 个与独立实验 154 个合成 WAV，
 以及 4 个真实录音/派生 WAV；源码按章保存，发布 URL 保持原样。
 左侧边栏 = 首页 + 15 篇 + 每篇的二级及以下小节锚点，顶部面包屑，
 文末上一篇/下一篇（首页不输出该盒）。图片直接引用 ../figures/（不复制）。
@@ -102,6 +102,10 @@ WEIGHTED_AUDIO_WAVS = {"weighted_" + name + ".wav" for name in
 SCENARIO_AUDIO_WAVS = {f"selection_{scene}_{kind}.wav" for scene in ("single", "dual")
                        for kind in ("target", "mixture", "fir3", "fir9")}
 NOISE_AUDIO_ROOT = CODE_CHAPTERS / "ch10" / "noise_audio"
+CHANNEL_AUDIO_ROOT = CODE_CHAPTERS / "ch10" / "channel_audio"
+CHANNEL_AUDIO_WAVS = {"channel_" + name + ".wav" for name in
+                      ("reference", "healthy_array", "faulty_array", "healthy_output",
+                       "stale_output", "recomputed_output")}
 NOISE_AUDIO_WAVS = {"noise_" + name + ".wav" for name in
                     ("reference", "component", "mixture", "fixed", "polluted", "known_variance")}
 MASK_AUDIO_WAVS = {"mask_" + name + ".wav" for name in
@@ -242,6 +246,17 @@ NARROW_TABLE_POLICIES = {
         ("处理输出", "脉冲测得固定延迟", "[2,3) s 回声功率／对齐后总输出功率", r"[3,4) s $g_\Delta$", r"[3,4) s $E_\Delta$"): (54, {1: 10, 2: 10, 3: 16, 4: 9, 5: 9}),
         ("文件分量", "切换窗 $E$", "稳定窗 $E$", "尾窗 $E$"): (52, {1: 8, 2: 15, 3: 15, 4: 14}),
     },
+    SRC / "10_engineering-practice.md": {
+        ("类别", "含义", "常见来源"): (40, {1: 8, 2: 16, 3: 16}),
+        ("模块", "启用条件", "主要输入", "主要输出", "首要检查"): (64, {1: 10, 2: 12, 3: 14, 4: 14, 5: 14}),
+        ("方法", "基本思想", "主要风险"): (46, {1: 18, 2: 14, 3: 14}),
+        ("状态", "AEC 自适应", "NS 噪声估计", "波束/空间统计", "WPE 更新", "ASR/KWS"): (70, {1: 8, 2: 12, 3: 15, 4: 13, 5: 10, 6: 12}),
+        ("模块", "配置与输入尺寸", "MAC/s 或分析复杂度", "最坏帧耗时", "RTF", "峰值内存", "平均/峰值功率"): (83, {1: 10, 2: 16, 3: 16, 4: 11, 5: 8, 6: 11, 7: 11}),
+        ("场景", "先确认的约束", "可能启用的模块", "必测状态"): (56, {1: 10, 2: 17, 3: 17, 4: 12}),
+        ("控制", "目标响应", "归一噪声功率", "目标损伤"): (36, {1: 10, 2: 8, 3: 10, 4: 8}),
+        ("控制", "目标损伤功率", "残余噪声功率", "总误差功率", "解析NMSE"): (46, {1: 10, 2: 9, 3: 9, 4: 9, 5: 9}),
+        ("控制", r"PCM误差整数能量 $E$", "实际PCM MSE", "实际PCM NMSE"): (48, {1: 10, 2: 14, 3: 12, 4: 12}),
+    },
     SRC / "08_speech-separation.md": {
         ("后窗输出", "每声道整数误差", "实际PCM MSE", "实际PCM相对误差"): (44, {1: 8, 2: 13, 3: 11, 4: 12}),
     },
@@ -279,6 +294,8 @@ NARROW_TABLE_POLICIES = {
         ("要核的条件", "固定源码静态事实", "不能推出的判断"): (48, {1: 8, 2: 24, 3: 16}),
     },
     RESEARCH_ROOT / "05_exercises_and_audio.md": {
+        ("控制", "目标增益", "目标损伤功率", "残余噪声功率", "总误差功率", "解析NMSE"): (72, {1: 12, 2: 10, 3: 13, 4: 13, 5: 13, 6: 11}),
+        ("输出", "PCM误差整数能量E", "实际PCM MSE", "实际PCM NMSE"): (54, {1: 10, 2: 17, 3: 14, 4: 13}),
         ("协议", "首次确认事件可用时刻（s）", "退役帧与可用时刻", "再次确认可用时刻（s）", "已确认发布帧数/总帧数"): (66, {1: 12, 2: 14, 3: 14, 4: 14, 5: 12}),
         ("文件", "取点或输出", "查看重点"): (60, {1: 20, 2: 18, 3: 22}),
         ("取点或输出", "切换窗整数E", "稳定窗整数E", "尾窗整数E"): (52, {1: 16, 2: 12, 3: 12, 4: 12}),
@@ -923,6 +940,19 @@ def stage_noise_audio(source, destination):
     return expected
 
 
+def stage_channel_audio(source, destination):
+    """Publish the six known-channel-failure PCM controls after full replay."""
+    expected = CHANNEL_AUDIO_WAVS | {"MANIFEST.json"}
+    _preflight_asset_stage(source, destination, expected)
+    from codes.chapters.ch10.examples.generate_channel_audio import check_assets
+    check_assets(source)
+    destination.mkdir()
+    for name in sorted(expected):
+        shutil.copy2(source / name, destination / name)
+    check_assets(destination)
+    return expected
+
+
 def stage_scenario_audio(source, destination):
     """Publish the replayed eight-WAV chapter-11 scenario comparison."""
     _preflight_asset_stage(source, destination, SCENARIO_AUDIO_WAVS | {"MANIFEST.json"})
@@ -1125,7 +1155,7 @@ def source_digest():
     paths += [main_audio_manifest_path(CODE_CHAPTERS)]
     paths += sorted(main_audio_sources())
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, SPECTRAL_AUDIO_ROOT, STFT_AUDIO_ROOT, SWEEP_AUDIO_ROOT, BASELINE_AUDIO_ROOT, REFLECTION_AUDIO_ROOT, PHASE_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, REFERENCE_AUDIO_ROOT, DELAY_AUDIO_ROOT, CSS_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, SPECTRAL_AUDIO_ROOT, STFT_AUDIO_ROOT, SWEEP_AUDIO_ROOT, BASELINE_AUDIO_ROOT, REFLECTION_AUDIO_ROOT, PHASE_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, REFERENCE_AUDIO_ROOT, DELAY_AUDIO_ROOT, CSS_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, CHANNEL_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "build_markdown_helpers.py",
@@ -1139,7 +1169,8 @@ def source_digest():
               ROOT / "scripts" / "make_reference_figures.py",
               ROOT / "scripts" / "make_delay_figures.py",
               ROOT / "scripts" / "make_css_figures.py",
-              ROOT / "scripts" / "make_tracking_figures.py", ROOT / "requirements.txt"]
+              ROOT / "scripts" / "make_tracking_figures.py",
+              ROOT / "scripts" / "make_channel_figures.py", ROOT / "requirements.txt"]
     paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
         digest.update(path.relative_to(ROOT).as_posix().encode("utf-8"))
@@ -1327,6 +1358,9 @@ def rewrite_site_links(html, source_path):
         if target.parent == NOISE_AUDIO_ROOT.resolve() and target.name in (NOISE_AUDIO_WAVS | {"MANIFEST.json"}):
             relative = os.path.relpath("noise_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
+        if target.parent == CHANNEL_AUDIO_ROOT.resolve() and target.name in (CHANNEL_AUDIO_WAVS | {"MANIFEST.json"}):
+            relative = os.path.relpath("channel_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
+            return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
         if target.parent == MASK_AUDIO_ROOT.resolve() and target.name in (MASK_AUDIO_WAVS | {"MANIFEST.json"}):
             relative = os.path.relpath("mask_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
@@ -1345,7 +1379,7 @@ def rewrite_site_links(html, source_path):
         # input as a download link; only the explicit mono derivatives play.
         if parsed.path.endswith("real_audio/demand_nriver_16ch_10s.wav"):
             return match.group(0)
-        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|spectral_audio|stft_audio|sweep_audio|baseline_audio|reflection_audio|phase_audio|geometry_audio|focus_audio|derivative_audio|apa_audio|reference_audio|delay_audio|css_audio|mint_audio|mask_audio|noise_audio|scenario_audio|weighted_audio|response_audio|imaging_audio|distributed_audio)/[a-z0-9_]+\.wav", parsed.path):
+        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|spectral_audio|stft_audio|sweep_audio|baseline_audio|reflection_audio|phase_audio|geometry_audio|focus_audio|derivative_audio|apa_audio|reference_audio|delay_audio|css_audio|mint_audio|mask_audio|noise_audio|channel_audio|scenario_audio|weighted_audio|response_audio|imaging_audio|distributed_audio)/[a-z0-9_]+\.wav", parsed.path):
             return match.group(0)
         safe_href = escape(href, quote=True)
         safe_label = escape(re.sub(r'<[^>]+>', '', unescape(label)), quote=True)
@@ -1642,6 +1676,8 @@ def _validate_site_output(directory):
     directory = Path(directory)
     from codes.chapters.ch10.examples.generate_noise_mismatch import validate_asset_directory
     validate_asset_directory(directory / "noise_audio", check=False)
+    from codes.chapters.ch00.io_contracts import validate_asset_directory as validate_channel
+    validate_channel(directory / "channel_audio", CHANNEL_AUDIO_WAVS | {"MANIFEST.json"}, check=False)
     from codes.chapters.ch11.examples.generate_selection_audio import validate_asset_directory as validate_scenario
     validate_scenario(directory / "scenario_audio", check=False)
     from codes.chapters.appendix_a.examples.generate_weighted_audio import validate_asset_directory as validate_weighted
@@ -1662,7 +1698,7 @@ def _validate_site_output(directory):
     subdirectories = ('research', 'audio', 'real_audio', 'room_audio', 'moving_audio',
                       'tracking_audio', 'gss_audio', 'binaural_audio', 'spectral_audio', 'stft_audio', 'sweep_audio', 'baseline_audio', 'reflection_audio', 'phase_audio',
                       'geometry_audio', 'focus_audio', 'derivative_audio', 'apa_audio', 'reference_audio', 'delay_audio', 'css_audio',
-                      'mint_audio', 'mask_audio', 'noise_audio', 'scenario_audio', 'weighted_audio', 'response_audio', 'imaging_audio', 'distributed_audio')
+                      'mint_audio', 'mask_audio', 'noise_audio', 'channel_audio', 'scenario_audio', 'weighted_audio', 'response_audio', 'imaging_audio', 'distributed_audio')
     for folder in (directory, *(directory/name for name in subdirectories)):
         if folder.is_symlink() or (folder.exists() and not folder.is_dir()):
             raise ValueError('站点目标必须为普通目录：'+str(folder))
@@ -1848,6 +1884,8 @@ def main():
                   if path.is_file() and path.name not in mask_names]
         noise_names = stage_noise_audio(NOISE_AUDIO_ROOT, temp_out / "noise_audio")
         (OUT / "noise_audio").mkdir(exist_ok=True)
+        channel_names = stage_channel_audio(CHANNEL_AUDIO_ROOT, temp_out / "channel_audio")
+        (OUT / "channel_audio").mkdir(exist_ok=True)
         scenario_names = stage_scenario_audio(SCENARIO_AUDIO_ROOT, temp_out / "scenario_audio")
         (OUT / "scenario_audio").mkdir(exist_ok=True)
         weighted_names = stage_weighted_audio(WEIGHTED_AUDIO_ROOT, temp_out / "weighted_audio")
@@ -1904,6 +1942,8 @@ def main():
                        for name in sorted(mask_names)] +
                       [(temp_out / "noise_audio" / name, OUT / "noise_audio" / name)
                        for name in sorted(noise_names)] +
+                      [(temp_out / "channel_audio" / name, OUT / "channel_audio" / name)
+                       for name in sorted(channel_names)] +
                       [(temp_out / "scenario_audio" / name, OUT / "scenario_audio" / name)
                        for name in sorted(scenario_names)] +
                       [(temp_out / "weighted_audio" / name, OUT / "weighted_audio" / name)

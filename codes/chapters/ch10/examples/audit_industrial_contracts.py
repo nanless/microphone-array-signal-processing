@@ -7,9 +7,18 @@ Only --report writes a report; compilation and raw PCM stay in a temporary dir.
 """
 from __future__ import annotations
 
+if __name__ == "__main__" and not __package__:
+    import sys as _sys
+    from pathlib import Path as _Path
+    _sys.path.insert(0, str(_Path(__file__).resolve().parents[4]))
+
+from codes.chapters.ch04.core import upstream_contracts as upstream
+from codes.chapters.ch10.examples.run_industrial_interfaces import clean_environment, verify_failure_sources
+
 import argparse
 import ast
 import contextlib
+import copy
 from datetime import datetime, timezone
 import hashlib
 import io
@@ -28,7 +37,8 @@ import types
 
 ROOT = Path(__file__).resolve().parents[4]
 LOCK = ROOT / "codes/chapters/ch00/SOURCES.lock.json"
-DEFAULT_CACHE = ROOT / "codes/chapters/ch00/upstream/_downloads"
+DEFAULT_CACHE = upstream.CACHE
+CURRENT = ROOT / "codes/chapters/ch10/reports/industrial_contracts_current.json"
 SOURCES = {
     "cmsis_dsp": {
         "revision": "83a2d7bc98c81b4bbe4a6f48b1f2ecf179868a0b",
@@ -100,42 +110,14 @@ def _git_env():
 
 
 def verify_sources(cache):
-    """Reject a changed revision, symlink, inherited repo or uncommitted source."""
-    cache = Path(cache).resolve()
-    locks = {p["id"]: p for p in json.loads(LOCK.read_text())["projects"]}
     records = {}
     for name, spec in SOURCES.items():
-        checkout = cache / name
-        if checkout.is_symlink() or not checkout.is_dir():
-            raise ValueError("missing/non-directory independent source: " + name)
-        def git(*args):
-            return subprocess.check_output(
-                ["git", "-C", str(checkout), *args], env=_git_env(),
-                text=True, stderr=subprocess.PIPE).strip()
-        if Path(git("rev-parse", "--show-toplevel")).resolve() != checkout.resolve():
-            raise ValueError("not an independent checkout: " + name)
-        head = git("rev-parse", "HEAD")
-        if head != spec["revision"] or locks[name]["revision"] != head:
-            raise ValueError("fixed revision mismatch: " + name)
-        if locks[name]["url"] != SOURCE_URLS[name] or git("remote", "get-url", "origin") != SOURCE_URLS[name]:
-            raise ValueError("official source URL mismatch: " + name)
-        status = git("status", "--porcelain", "--untracked-files=all")
-        if status:
-            raise ValueError("upstream worktree is not clean: " + name)
-        files = {}
+        identity = upstream.verify_project(name, Path(cache) / name,
+            relatives=tuple(spec["files"]))
         for relative, expected in spec["files"].items():
-            path = checkout / relative
-            if path.is_symlink() or not path.is_file() or not path.resolve().is_relative_to(checkout.resolve()):
-                raise ValueError("unsafe upstream source: " + name + "/" + relative)
-            actual = file_sha(path)
-            blob = git("rev-parse", "HEAD:" + relative)
-            blob_sha = digest(subprocess.check_output(
-                ["git", "-C", str(checkout), "show", "HEAD:" + relative], env=_git_env()))
-            if actual != expected or blob_sha != actual:
-                raise ValueError("source/blob digest mismatch: " + name + "/" + relative)
-            files[relative] = {"sha256": actual, "git_blob": blob, "git_blob_sha256": blob_sha}
-        records[name] = {"revision": head, "lock_url": locks[name]["url"],
-                         "license": spec["license"], "clean": True, "files": files}
+            if identity["used_files"][relative]["sha256"] != expected:
+                raise ValueError("source digest mismatch: " + name + "/" + relative)
+        records[name] = identity
     return records
 
 
@@ -164,7 +146,7 @@ def c_fragment(path, name):
 def _compile(compiler, name, files, directory, flags=()):
     target = directory / name
     command = [compiler, "-std=c11", "-O2", *flags, *map(str, files), "-o", str(target)]
-    run = subprocess.run(command, capture_output=True, text=True, timeout=60)
+    run = subprocess.run(command, env=clean_environment(), capture_output=True, text=True, timeout=60)
     if run.returncode:
         raise RuntimeError("compiler failed: " + run.stderr)
     return target, {"command": command, "returncode": run.returncode,
@@ -172,7 +154,7 @@ def _compile(compiler, name, files, directory, flags=()):
 
 
 def _execute(target, *args):
-    run = subprocess.run([str(target), *map(str, args)], capture_output=True,
+    run = subprocess.run([str(target), *map(str, args)], env=clean_environment(), capture_output=True,
                          text=True, timeout=30)
     if run.returncode:
         raise RuntimeError("C contract process failed: " + run.stderr)
@@ -454,63 +436,42 @@ def probe_fast(cache):
 
 
 def run_audit(cache=DEFAULT_CACHE):
-    cache = Path(cache).resolve()
+    cache = upstream.validate_parent_chain(cache)
     before = verify_sources(cache)
-    compiler = shutil.which("cc")
-    if compiler is None:
-        raise RuntimeError("C compiler cc is required; no installation is attempted")
-    compiler_version = subprocess.check_output([compiler, "--version"], text=True).strip()
-    with tempfile.TemporaryDirectory(prefix="masp-industrial-contracts-") as temporary:
-        directory = Path(temporary)
-        contracts = {"cmsis_q15": probe_cmsis(cache, directory, compiler),
-                     "speex_noise_helpers": probe_speex(cache, directory, compiler),
-                     "webrtc_vad_router": probe_vad(cache, directory, compiler),
-                     "rnnoise_demo": probe_rnnoise(cache, directory, compiler),
-                     "fastenhancer_wrapper": probe_fast(cache)}
-    after = verify_sources(cache)
-    if before != after:
-        raise ValueError("source bindings changed during the controlled run")
-    report = {"schema": "industrial-contracts-v1", "status": "passed_limited_controlled_contracts",
-              "generated_at_utc": datetime.now(timezone.utc).isoformat(),
-              "tool_sha256": file_sha(__file__), "source_lock_sha256": file_sha(LOCK),
-              "source_cache": str(cache), "sources_before": before, "sources_after": after,
-              "scope": "fixed-source control flow and numerical helpers; substitutes are not actual model/audio/hardware execution",
-              "environment": {"python": sys.version, "executable": sys.executable,
-                              "platform": platform.platform(), "machine": platform.machine(),
-                              "byteorder": sys.byteorder, "compiler": compiler_version,
-                              "numpy": contracts["fastenhancer_wrapper"]["numpy_version"]},
-              "contracts": contracts}
-    strict_json(report)
-    return report
+    try:
+        preflight = copy.deepcopy(before)
+        compiler = shutil.which("cc")
+        if compiler is None:
+            raise RuntimeError("C compiler cc is required; no installation is attempted")
+        compiler_version = subprocess.check_output([compiler, "--version"], env=clean_environment(), text=True).strip()
+        with tempfile.TemporaryDirectory(prefix="masp-industrial-contracts-") as temporary:
+            directory = Path(temporary)
+            contracts = {"cmsis_q15": probe_cmsis(cache, directory, compiler),
+                         "speex_noise_helpers": probe_speex(cache, directory, compiler),
+                         "webrtc_vad_router": probe_vad(cache, directory, compiler),
+                         "rnnoise_demo": probe_rnnoise(cache, directory, compiler),
+                         "fastenhancer_wrapper": probe_fast(cache)}
+        after = {name: upstream.check_unchanged(identity) for name, identity in before.items()}
+        report = {"schema": "industrial-contracts-v1", "status": "passed_limited_controlled_contracts",
+                  "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+                  "tool_sha256": file_sha(__file__), "source_lock_sha256": file_sha(LOCK),
+                  "actual_dependencies_sha256": upstream.dependencies(__file__, (Path(clean_environment.__code__.co_filename),)),
+                  "source_cache": str(cache), "sources_before": preflight, "sources_after": after,
+                  "scope": "fixed-source control flow and numerical helpers; substitutes are not actual model/audio/hardware execution",
+                  "environment": {"python": sys.version, "executable": sys.executable,
+                                  "platform": platform.platform(), "machine": platform.machine(),
+                                  "byteorder": sys.byteorder, "compiler": compiler_version,
+                                  "numpy": contracts["fastenhancer_wrapper"]["numpy_version"]},
+                  "contracts": contracts}
+        strict_json(report)
+        return report
+    except BaseException as error:
+        verify_failure_sources(before, error)
+        raise
 
 
 def write_report(path, report, cache=DEFAULT_CACHE):
-    """Never place a requested output inside the immutable upstream checkout."""
-    path = Path(path)
-    # Reject before normalization: linked/../output can traverse a symbolic
-    # directory even though that component disappears from a normalized path.
-    if ".." in path.parts:
-        raise ValueError("report path must not contain '..'")
-    path = path.absolute()
-    current = path
-    while current != current.parent:
-        if current.is_symlink():
-            raise ValueError("report path contains a symlink")
-        current = current.parent
-    if path.resolve().is_relative_to(Path(cache).resolve()):
-        raise ValueError("report must not alter the upstream cache")
-    if path.exists() and not path.is_file():
-        raise ValueError("report target must be a regular file")
-    text = strict_json(report)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    descriptor, temporary = tempfile.mkstemp(prefix=".industrial-report-", dir=path.parent)
-    try:
-        with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
-            stream.write(text)
-        os.replace(temporary, path)
-    finally:
-        if os.path.exists(temporary):
-            os.unlink(temporary)
+    upstream.write_report(path, report, CURRENT, protected=(DEFAULT_CACHE, cache))
 
 
 def main():
@@ -518,6 +479,8 @@ def main():
     parser.add_argument("--cache", type=Path, default=DEFAULT_CACHE)
     parser.add_argument("--report", type=Path, help="explicit new report; default only prints JSON")
     args = parser.parse_args()
+    if args.report is not None:
+        upstream.report_target(args.report, CURRENT, protected=(DEFAULT_CACHE, args.cache))
     report = run_audit(args.cache)
     if args.report is not None:
         write_report(args.report, report, args.cache)

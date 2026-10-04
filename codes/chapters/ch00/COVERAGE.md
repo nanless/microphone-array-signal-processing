@@ -9,7 +9,7 @@
 - **原理索引**：已有原理或来源依据，但尚未形成唯一、许可明确且承担对应计算的源码映射；代码可见而许可不明时也保留此状态，并说明原因。
 - **明确排除**：指定软件的身份或许可不满足本书当前收录方式；不表示删除相应方法的学术讨论。
 
-算法表共 348 行：本仓库可运行基线 76 行、外部参考实现 183 行、原理索引 88 行、明确排除 1 行。练习映射单独计数，不因题数增加算法行；已知激励的逐频正则反卷积新增唯一教学核，同一行保留pyfar外部对照及其限定运行边界。第6章新增一行已知播放增益顺序与历史尾声控制，复用NLMS与NCC，不计作新的自适应算法。MDL、功率谱减、受控 NCC 活动判别与 cACGMM 教学迭代属于本地基线。覆盖表仍有原理索引，不表示全书全部算法已经运行。
+算法表共 349 行：本仓库可运行基线 77 行、外部参考实现 183 行、原理索引 88 行、明确排除 1 行。练习映射单独计数，不因题数增加算法行；已知激励的逐频正则反卷积新增唯一教学核，同一行保留pyfar外部对照及其限定运行边界。第6章新增一行已知播放增益顺序与历史尾声控制，复用NLMS与NCC，不计作新的自适应算法。MDL、功率谱减、受控 NCC 活动判别与 cACGMM 教学迭代属于本地基线。覆盖表仍有原理索引，不表示全书全部算法已经运行。
 
 源码取得与入口核对见 [SOURCE_STATUS.json](SOURCE_STATUS.json)；该文件中的依赖验证和执行字段未开展时为 `not_run`，不承载方法级数值实验结果。实际运行及数值对照见[复现记录](research/04_source_reproduction.md)、[增强研究记录](research/02_aec_wpe_separation.md)和 [WPE 独立对照脚本](../ch07/examples/compare_wpe_reference.py)。工业接口与 SBL 的限定实验报告按主题放在 `codes/chapters/ch04/reports/`、`codes/chapters/ch10/reports/` 等对应章节；实际调用外部代码不将它改列为本仓库教学基线。覆盖状态不是测试结果。完整提交、官方地址、许可与来源 ID 见 [SOURCES.lock.json](SOURCES.lock.json)。表内本仓库教学源文件使用相对于仓库根目录的完整路径；第三方项目的内部路径仍相对于各自项目根目录。出现“同文件”时仅继承上一行文件，不继承其算法或验证结论。
 
@@ -387,7 +387,8 @@
 | 专题Ⅱ §15.12；工业 §8 | TI-GEVD-DANSE 2024共同规范化 | 原理索引 | EUSIPCO 2024作者稿§III/IV | 协方差与滤波器共享同一坐标变换；未运行完整网络GEVD，不能独立归一每向量冒充 |
 | 专题Ⅱ §15.12；工业 §8 | TI-DANSE+ 2026扩展 | 原理索引 | 作者arXiv:2506.02797v2、定理1/2与§III-G/IV-D | 目标秩、统计重构和实验条件分别核；2025批量源码不自动复现该版 |
 | 专题Ⅱ §15.12 | TI-dMWF 2026全局与局部源模型 | 原理索引 | 作者arXiv:2607.05561v1、模型与Remark1 | 只在一节点局部或全部节点共同的源条件；部分子集可见源不援引原证明 |
-| §10.10 | 遥测记录校验 | 本仓库可运行基线 | `codes/chapters/ch10/core/engineering.py::validate_telemetry`、`codes/chapters/ch10/engineering/telemetry_schema.json` | 留存、隐私、统计窗、时钟域 |
+| §10.10 | 遥测记录校验 | 本仓库可运行基线 | `codes/chapters/ch10/core/engineering.py::validate_telemetry`、`codes/chapters/ch10/engineering/telemetry_schema.json` | 类型/范围的无状态检查；累计RTF与可选逐帧服务RTF分开；生产者声明统计窗/计时范围/时钟域，校验器不证明跨记录关系 |
+| §10.10；E10-34 | 已知失效选集与约束重建 | 本仓库可运行基线 | `codes/chapters/ch10/core/channel_selection.py::select_channel_observations`、`select_mvdr_channels`；六份独立PCM与图78 | 已知删除列表同时选择观测、响应与协方差双轴；复用第5章MVDR，不计作新波束算法；无盲检测/自动加载/任意频率性能 |
 
 ## 任务评分与排除范围
 
@@ -450,7 +451,7 @@
 | 第 10～11 章、附录 A/B：`E10-01`～`E10-14`、`E11-01`～`E11-07`、`E12-01`～`E12-04`、`E13-01`（26 题） | [exercises_engineering.py](cross_chapter/exercises_engineering.py)（25 题）；[谱减 E10-13](../ch10/spectral_subtraction_demo.py)（1 题） | [test_codes_exercises_engineering.py](../../../tests/test_codes_exercises_engineering.py)、[test_codes_spectral_subtraction.py](../../../tests/test_codes_spectral_subtraction.py) |
 | E02-07、E04-10、E05-06（3题） | [空间精算](cross_chapter/spatial_precision_exercises.py) | [独立测试](../../../tests/test_codes_spatial_precision.py) |
 | E09-10～26（17题） | [第9章逐步计算](../ch09/chapter09_experiments.py) | [独立解析测试](../../../tests/test_codes_chapter09_experiments.py)、[PCM音频](../../../tests/test_codes_tracking_audio.py) |
-| E10-18～33（16题） | [第10章工程逐步计算](../ch10/chapter10_experiments.py) | [独立解析与PCM测试](../../../tests/test_codes_chapter10_experiments.py)、[数值边界](../../../tests/test_codes_engineering_ch10_boundaries.py) |
+| E10-18～34（16题） | [第10章工程逐步计算](../ch10/chapter10_experiments.py) | [独立解析与PCM测试](../../../tests/test_codes_chapter10_experiments.py)、[数值边界](../../../tests/test_codes_engineering_ch10_boundaries.py) |
 | E11-10～25（16题） | [第11章约束与选型逐步计算](../ch11/chapter11_experiments.py)；[小规模选型与评分模型](../ch11/core/selection.py)；[四路同增益FIR音频](audio/MANIFEST.json)、[独立双场景八WAV](../ch11/scenario_audio/MANIFEST.json)；[原词编辑核合同](../ch11/reports/meeting_kernel_contracts.json) | [独立解析、整数边界与PCM测试](../../../tests/test_codes_chapter11_experiments.py)、[完整资产回放](../../../tests/test_codes_selection_audio.py)、[原核身份与执行](../../../tests/test_codes_meeting_kernel_contracts.py) |
 | E08-12～32（21题） | [第8章逐步计算](../ch08/chapter08_experiments.py) | [独立测试](../../../tests/test_codes_chapter08_experiments.py) |
 | E07-08～21（14题） | [第7章逐步计算](../ch07/chapter07_experiments.py) | [独立测试](../../../tests/test_codes_chapter07_experiments.py) |
@@ -508,3 +509,5 @@
 第10章新增E10-28～33与图62/63，复算限定噪声软更新、有限IR尾部、非抢占阻塞、外部计时尺度、填充RTF和噪声估计失配。[独立六WAV](../ch10/noise_audio/MANIFEST.json)不混入主109；相同谱减的诊断与MCRA限定子链不重复计算完整算法。[当前工业合同](../ch10/reports/industrial_contracts.json)分开CMSIS标量FIR、Speex限定统计、WebRTC路由、RNNoise示例控制流与FastEnhancer包装器；后三项替身不等于运行原分类器或神经模型。该阶段保持308项覆盖与99来源锁；附录B后的当前数量见本页开头。
 
 附录B补充E13-11～14：共享TAC置换与复制、DRR/EDC幅度尺度、时间条件化、同DRR短FIR的五份正式PCM。唯一[response生成源](../appendix_b/examples/generate_response_audio.py)管理五WAV与严格清单；图66及[数值报告](../appendix_b/reports/figure66_equal_drr_response.json)从实际PCM取整数分子/分母。房间21成员由[只读核验](../appendix_b/examples/check_room_assets.py)检查当前源和格式，普通资产核验不等于重新执行PRA。TAC增加唯一一行外部算法，不由四新题增加四行。
+
+2026-10-05 第10章增加一行已知失效选集重建机制，复用原MVDR，不把六WAV或一道练习登记成新算法；当前四工业报告与历史报告分开，完整选集状态不升级为已运行整链。

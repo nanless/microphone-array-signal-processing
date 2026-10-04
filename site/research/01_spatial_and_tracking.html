@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>空间处理与追踪源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="b232a8dba19b"><style>
+<meta name="source-digest" content="5cea3d451101"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -1231,7 +1231,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>独立校验没有用 SBL 自身生成期望值：±30° 的导向列可手算为 <code>[1,−j,−1,j]</code> 与 <code>[1,j,−1,−j]</code>，两列正交；基本条件的总体协方差特征值因此为 4.02、4.02、0.02、0.02。逐通道、逐快拍的标量求和与矩阵乘法所得样本二阶矩最大差小于 $8\times10^{-15}$。方向峰另由严格局部极大值检查，峰不足时不补索引 0；错设一个源的结果保留漏源数，不计算容易误导的双源平均误差。上游报告的迭代字段从 0 开始，本表用实际执行次数，即该字段加 1。</p>
 <p>离网格样例的两个峰各偏离真值 0.5°，说明这次输出仍受离散候选限制。有色样例这次找对两个网格点，却不能证明白噪声模型对有色噪声普遍有效。低信噪比与错设源数两行没有满足停止阈值，不能称为收敛解。报告还保留同一输入、同一假定源数的 MUSIC 峰值；这些单次、配对结果不构成成功率估计、论文性能复现或算法优劣排名。达到小更新误差本身也不证明方向正确。</p>
 <p>取得锁定源码后，可在仓库根目录执行；没有源码时程序明确报错，不自动联网或安装依赖：</p>
-<pre><code class="language-bash">.venv/bin/python codes/chapters/ch04/examples/reproduce_sbl_reference.py --output codes/chapters/ch04/reports/sbl_reference.json
+<pre><code class="language-bash">.venv/bin/python codes/chapters/ch04/examples/reproduce_sbl_reference.py --output /private/tmp/sbl-rerun.json
 .venv/bin/python -m unittest tests.test_codes_sbl_reference -v
 </code></pre>
 <span id="sec-27" class="anchor-alias" aria-hidden="true"></span><span id="robustsbl异常快拍的损失函数选择" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-u-4bad3720c3">RobustSBL：异常快拍的损失函数选择</h4>

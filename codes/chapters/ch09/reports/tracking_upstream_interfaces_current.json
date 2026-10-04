@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-04T16:43:46.069886+00:00",
+  "generated_at": "2026-10-04T18:15:02.977694+00:00",
   "harness_sha256": "52273ebfbe456cc2d2fe03c235872fee5bbeaffa33b0be0ed86b26abff05a9b7",
   "source_config_sha256": "e73d6446f7feb9827a661ac83c74d47e80bb4beee139e274f2569c9da7efb4de",
   "source_lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
   "source_status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
   "actual_dependencies_sha256": {
     "codes/chapters/ch09/examples/audit_tracking_upstream_interfaces.py": "52273ebfbe456cc2d2fe03c235872fee5bbeaffa33b0be0ed86b26abff05a9b7",
-    "codes/chapters/ch04/core/upstream_contracts.py": "8400275d56d40d54a89d6093a4d0646cba4d4f858f8fbeaea4d1ca60f34b90c4",
+    "codes/chapters/ch04/core/upstream_contracts.py": "1ac9b1d1688a15fd73356f111af0cb6993adb26a6732cfab2c00a87e4086c46d",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },

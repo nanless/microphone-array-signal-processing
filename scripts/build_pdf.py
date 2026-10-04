@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""合订本构建脚本：15 篇文档 → 单页 HTML → Chrome 无头打印 A4 PDF。
+"""合订本构建脚本：16 篇文档 → 单页 HTML → Chrome 无头打印 A4 PDF。
 
 做的事情（按顺序）：
-  1. 读 chapters/ 15 篇 Markdown，用 markdown 库转 HTML（数学段先 shield 再贴回，
+  1. 读 chapters/ 16 篇 Markdown，用 markdown 库转 HTML（数学段先 shield 再贴回，
      与 build_site.py 同逻辑，保证两端渲染一致）。
   2. 每篇包进 <div class="chap">，篇标题记 id="ch-{i}"；统一标题层级后，
      编号小节使用 ch-{i}-sec-x-y 稳定标识，并保留旧顺序别名。
@@ -277,7 +277,8 @@ def source_digest():
               ROOT / "scripts" / "make_reference_figures.py",
               ROOT / "scripts" / "make_delay_figures.py",
               ROOT / "scripts" / "make_css_figures.py",
-              ROOT / "scripts" / "make_tracking_figures.py", ROOT / "requirements.txt"]
+              ROOT / "scripts" / "make_tracking_figures.py",
+              ROOT / "scripts" / "make_channel_figures.py", ROOT / "requirements.txt"]
     paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
         digest.update(path.relative_to(ROOT).as_posix().encode("utf-8"))
@@ -845,7 +846,7 @@ def print_pdf(combined, pdf, timeout_min_pages=100):
 
 
 def check_figures():
-    """合订前检查：正文引用的图必须存在、非空，并覆盖 77 个编号文件。"""
+    """合订前检查：正文引用的图必须存在、非空，并覆盖 78 个编号文件。"""
     missing = []
     refs = set()
     for fname, _ in CHAPTERS:
@@ -857,8 +858,8 @@ def check_figures():
                 missing.append(f"{fname}: {m.group(1)}")
     if missing:
         raise SystemExit("缺图，中止：\n" + "\n".join(missing))
-    if len(refs) != 77:
-        raise SystemExit(f"唯一图片数异常：期望 77，实际 {len(refs)}")
+    if len(refs) != 78:
+        raise SystemExit(f"唯一图片数异常：期望 78，实际 {len(refs)}")
     print(f"图片检查通过（{len(CHAPTERS)} 篇、{len(refs)} 张唯一图片）")
 
 
