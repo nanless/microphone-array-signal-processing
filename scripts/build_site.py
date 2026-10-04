@@ -5,7 +5,7 @@
     .venv/bin/python scripts/build_site.py
 
 产物：site/index.html（首页）+ site/01..15_*.html（15 篇正文/专题/附录），
-另有 site/research/index.html 和 5 篇独立研究页、主清单 109 个与独立实验 111 个合成 WAV，
+另有 site/research/index.html 和 5 篇独立研究页、主清单 109 个与独立实验 115 个合成 WAV，
 以及 4 个真实录音/派生 WAV；源码按章保存，发布 URL 保持原样。
 左侧边栏 = 首页 + 15 篇 + 每篇的二级及以下小节锚点，顶部面包屑，
 文末上一篇/下一篇（首页不输出该盒）。图片直接引用 ../figures/（不复制）。
@@ -52,6 +52,8 @@ MOVING_AUDIO_ROOT = CODE_CHAPTERS / "ch09" / "moving_audio"
 TRACKING_AUDIO_ROOT = CODE_CHAPTERS / "ch09" / "tracking_audio"
 GSS_AUDIO_ROOT = CODE_CHAPTERS / "ch08" / "gss_audio"
 BINAURAL_AUDIO_ROOT = CODE_CHAPTERS / "ch01" / "binaural_audio"
+SPECTRAL_AUDIO_ROOT = CODE_CHAPTERS / "ch01" / "spectral_audio"
+SPECTRAL_AUDIO_WAVS = {'flat_source.wav', 'flat_stereo.wav', 'tilted_source.wav', 'tilted_stereo.wav'}
 STFT_AUDIO_ROOT = CODE_CHAPTERS / "ch02" / "stft_audio"
 DERIVATIVE_AUDIO_ROOT = CODE_CHAPTERS / "ch05" / "derivative_audio"
 APA_AUDIO_ROOT = CODE_CHAPTERS / "ch06" / "apa_audio"
@@ -215,7 +217,13 @@ NARROW_TABLE_POLICIES = {
         ("声源位置", "完整 WAV 帧数", "前 1 秒 SRP 方位", "整段 SRP 方位", "后者减前者"): (60, {1: 8}),
         ("完整输出", "整数误差平方和 $E$", "实际PCM MSE", "实际PCM NMSE"): (48, {1: 6}),
     },
+    RESEARCH_ROOT / "01_spatial_and_tracking.md": {
+        ("源码入口", "实际操作", "与本章的关系及限制"): (64, {1: 32, 2: 18, 3: 22}),
+        ("人工输入 [左, 右]", "独立计算的预期", "实际调用结果", "可以支持什么"): (52, {1: 8, 2: 16, 3: 16, 4: 12}),
+        ("延迟值的存储方式与查询", "独立数学预期：左右IR／延迟值", "原函数实际结果", "解释"): (50, {1: 16, 2: 12, 3: 12, 4: 12}),
+    },
     RESEARCH_ROOT / "05_exercises_and_audio.md": {
+        ("条件", "单声道源", "双通道人工响应输出"): (46, {1: 6}),
         ("题号", "输入和计算", "能支持的结论"): (36, {1: 6}),
         ("输出", "解析MSE", "实际PCM误差整数平方和$E$", "实际PCM MSE", "实际PCM NMSE"): (60, {1: 6}),
         ("完整输出", "解析稳态MSE", "实际PCM整数误差平方和 $E$", "实际PCM MSE", "实际PCM NMSE"): (60, {1: 6}),
@@ -269,6 +277,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .tutorial-math-tail{display:inline-block;white-space:nowrap;overflow-wrap:normal;vertical-align:baseline;overflow:visible}
 .tutorial-math-tail mjx-assistive-mml{max-width:1px!important;min-width:0!important;white-space:normal}
 .tutorial-exercise-id{white-space:nowrap;overflow-wrap:normal}
+.tutorial-table-label{white-space:nowrap;overflow-wrap:normal}
 @media(max-width:900px){.selection-readable-table{min-width:760px}.selection-readable-table th,.selection-readable-table td{min-width:10em}.selection-readable-table th:first-child,.selection-readable-table td:first-child{min-width:6em}}
 @media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}.tracking-readable-table th,.tracking-readable-table td{min-width:8em}.industrial-readable-table th,.industrial-readable-table td{min-width:8em}}
 @media(max-width:900px){.noise-readable-table th:first-child,.noise-readable-table td:first-child{min-width:6em}}
@@ -511,6 +520,19 @@ def stage_binaural_audio(source, destination):
                 raise ValueError(f"双耳线索PCM格式不符：{name}")
             if len(wav.readframes(32008)) != 32008 * 2 * 2:
                 raise ValueError(f"双耳线索PCM数据截断：{name}")
+    destination.mkdir()
+    for name in sorted(expected):
+        shutil.copy2(source / name, destination / name)
+    return expected
+
+
+def stage_spectral_audio(source, destination):
+    """Publish four complete known-FIR/source-spectrum controls after read-only replay."""
+    expected = SPECTRAL_AUDIO_WAVS | {'MANIFEST.json'}
+    _preflight_asset_stage(source, destination, expected)
+    from codes.chapters.ch01.examples.generate_spectral_cues import check_assets
+    check_assets(source)
+    validate_asset_directory(destination, expected, check=False)
     destination.mkdir()
     for name in sorted(expected):
         shutil.copy2(source / name, destination / name)
@@ -946,7 +968,7 @@ def source_digest():
     paths += [main_audio_manifest_path(CODE_CHAPTERS)]
     paths += sorted(main_audio_sources())
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, SPECTRAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "build_markdown_helpers.py",
@@ -1081,6 +1103,9 @@ def rewrite_site_links(html, source_path):
         if target.parent == BINAURAL_AUDIO_ROOT.resolve() and target.name in (BINAURAL_AUDIO_WAVS | {"MANIFEST.json"}):
             relative = os.path.relpath("binaural_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
+        if target.parent == SPECTRAL_AUDIO_ROOT.resolve() and target.name in (SPECTRAL_AUDIO_WAVS | {"MANIFEST.json"}):
+            relative = os.path.relpath("spectral_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
+            return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
         if target.parent == STFT_AUDIO_ROOT.resolve() and target.name in (STFT_AUDIO_WAVS | {"MANIFEST.json"}):
             relative = os.path.relpath("stft_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
@@ -1132,7 +1157,7 @@ def rewrite_site_links(html, source_path):
         # input as a download link; only the explicit mono derivatives play.
         if parsed.path.endswith("real_audio/demand_nriver_16ch_10s.wav"):
             return match.group(0)
-        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|stft_audio|geometry_audio|focus_audio|derivative_audio|apa_audio|mint_audio|mask_audio|noise_audio|scenario_audio|weighted_audio|response_audio|imaging_audio|distributed_audio)/[a-z0-9_]+\.wav", parsed.path):
+        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|spectral_audio|stft_audio|geometry_audio|focus_audio|derivative_audio|apa_audio|mint_audio|mask_audio|noise_audio|scenario_audio|weighted_audio|response_audio|imaging_audio|distributed_audio)/[a-z0-9_]+\.wav", parsed.path):
             return match.group(0)
         safe_href = escape(href, quote=True)
         safe_label = escape(re.sub(r'<[^>]+>', '', unescape(label)), quote=True)
@@ -1433,8 +1458,9 @@ def _validate_site_output(directory):
     from codes.chapters.ch00.io_contracts import validate_asset_directory as validate_imaging
     validate_imaging(directory / "imaging_audio", IMAGING_AUDIO_WAVS | {"MANIFEST.json"}, check=False)
     validate_imaging(directory / "distributed_audio", DISTRIBUTED_AUDIO_WAVS | {"MANIFEST.json"}, check=False)
+    validate_imaging(directory / "spectral_audio", SPECTRAL_AUDIO_WAVS | {"MANIFEST.json"}, check=False)
     subdirectories = ('research', 'audio', 'real_audio', 'room_audio', 'moving_audio',
-                      'tracking_audio', 'gss_audio', 'binaural_audio', 'stft_audio',
+                      'tracking_audio', 'gss_audio', 'binaural_audio', 'spectral_audio', 'stft_audio',
                       'geometry_audio', 'focus_audio', 'derivative_audio', 'apa_audio',
                       'mint_audio', 'mask_audio', 'noise_audio', 'scenario_audio', 'weighted_audio', 'response_audio', 'imaging_audio', 'distributed_audio')
     for folder in (directory, *(directory/name for name in subdirectories)):
@@ -1626,6 +1652,8 @@ def main():
         (OUT / "imaging_audio").mkdir(exist_ok=True)
         distributed_names = stage_distributed_audio(DISTRIBUTED_AUDIO_ROOT, temp_out / "distributed_audio")
         (OUT / "distributed_audio").mkdir(exist_ok=True)
+        spectral_names = stage_spectral_audio(SPECTRAL_AUDIO_ROOT, temp_out / "spectral_audio")
+        (OUT / "spectral_audio").mkdir(exist_ok=True)
         publish_files([(temp_out / name, OUT / name) for name in sorted(expected)] +
                       [(temp_out / "audio" / name, OUT / "audio" / name) for name in audio_names] +
                       [(temp_out / "real_audio" / name, OUT / "real_audio" / name)
@@ -1665,7 +1693,9 @@ def main():
                       [(temp_out / "imaging_audio" / name, OUT / "imaging_audio" / name)
                        for name in sorted(imaging_names)] +
                       [(temp_out / "distributed_audio" / name, OUT / "distributed_audio" / name)
-                       for name in sorted(distributed_names)], stale, boundary=OUT)
+                       for name in sorted(distributed_names)] +
+                      [(temp_out / "spectral_audio" / name, OUT / "spectral_audio" / name)
+                       for name in sorted(spectral_names)], stale, boundary=OUT)
     print("DONE", len(expected), "pages")
 
 

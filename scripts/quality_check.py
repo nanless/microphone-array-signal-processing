@@ -44,6 +44,9 @@ MOVING_AUDIO_ROOT = CODE_CHAPTERS / "ch09" / "moving_audio"
 TRACKING_AUDIO_ROOT = CODE_CHAPTERS / "ch09" / "tracking_audio"
 GSS_AUDIO_ROOT = CODE_CHAPTERS / "ch08" / "gss_audio"
 BINAURAL_AUDIO_ROOT = CODE_CHAPTERS / "ch01" / "binaural_audio"
+SPECTRAL_AUDIO_ROOT = CODE_CHAPTERS / "ch01" / "spectral_audio"
+SPECTRAL_AUDIO_CHANNELS = {'flat_source.wav': 1, 'flat_stereo.wav': 2,
+                           'tilted_source.wav': 1, 'tilted_stereo.wav': 2}
 DERIVATIVE_AUDIO_ROOT = ROOT / "codes/chapters/ch05/derivative_audio"
 APA_AUDIO_ROOT = ROOT / "codes/chapters/ch06/apa_audio"
 MINT_AUDIO_ROOT = ROOT / "codes/chapters/ch07/mint_audio"
@@ -108,7 +111,7 @@ EXPECTED_SECTION_COUNTS = {
 # 第 1～13 章的源 h4 进入合订目录和 PDF 第三级书签。此表是独立发布
 # 基线，不从构建脚本或待检产物反推。
 EXPECTED_SUBSECTION_COUNTS = {
-    "01_problem-definition.md": 18,
+    "01_problem-definition.md": 19,
     "02_basics-signal-model.md": 46,  # 两个独立主题：STFT合成与协方差启动权重
     "03_array-geometry.md": 31,
     "04_doa-estimation.md": 45,
@@ -146,12 +149,12 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 16
 EXPECTED_SECTION_COUNT = 151
-EXPECTED_SUBSECTION_COUNT = 696
-EXPECTED_OUTLINE_ITEM_COUNT = 863
+EXPECTED_SUBSECTION_COUNT = 697
+EXPECTED_OUTLINE_ITEM_COUNT = 864
 EXPECTED_FIGURE_NUMBERS = set(range(1, 73))
-EXPECTED_EXERCISE_COUNT = 332
+EXPECTED_EXERCISE_COUNT = 333
 EXPECTED_EXERCISE_COUNTS = {
-    '01_problem-definition.md': 9, '02_basics-signal-model.md': 18,
+    '01_problem-definition.md': 10, '02_basics-signal-model.md': 18,
     '03_array-geometry.md': 17, '04_doa-estimation.md': 23,
     '05_beamforming.md': 22, '06_aec.md': 39, '07_wpe-dereverberation.md': 21,
     '08_speech-separation.md': 29, '09_source-tracking.md': 23,
@@ -1391,7 +1394,7 @@ def site_source_digest():
     paths += sorted(main_audio_path(CODE_CHAPTERS, record["group"], record["file"])
                     for record in manifest["files"])
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, SPECTRAL_AUDIO_ROOT, STFT_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
@@ -1744,7 +1747,7 @@ def check_real_audio(errors):
         parser = VisibleMediaParser()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         allowed_audio_roots = ("../audio/", "../real_audio/", "../room_audio/",
-                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/", "../scenario_audio/", "../weighted_audio/", "../response_audio/", "../imaging_audio/", "../distributed_audio/")
+                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../spectral_audio/", "../stft_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/", "../scenario_audio/", "../weighted_audio/", "../response_audio/", "../imaging_audio/", "../distributed_audio/")
         if any(not (p.get("src") or "").startswith(allowed_audio_roots)
                for p in parser.items):
             fail(errors, "未知试听控件来源")
@@ -2806,6 +2809,50 @@ def _distributed_integer_pcm(directory):
     return measurements
 
 
+def check_spectral_audio(errors):
+    """Current-source replay plus independent header, byte and integer-power checks."""
+    try:
+        import numpy as np
+        from codes.chapters.ch01.examples.generate_spectral_cues import check_assets
+        source, published = SPECTRAL_AUDIO_ROOT, SITE / 'spectral_audio'
+        manifest = check_assets(source)
+        members = set(SPECTRAL_AUDIO_CHANNELS) | {'MANIFEST.json'}
+        validate_asset_directory(published, members, check=True)
+        required_sources = {'codes/chapters/ch01/core/spectral_cues.py',
+                            'codes/chapters/ch01/examples/generate_spectral_cues.py',
+                            'codes/chapters/ch00/core/audio_samples.py',
+                            'codes/chapters/ch00/io_contracts.py'}
+        if set(manifest['source_sha256']) != required_sources:
+            raise ValueError('spectral generating source set differs')
+        for name in members:
+            if (source/name).read_bytes() != (published/name).read_bytes():
+                raise ValueError('spectral published bytes differ: ' + name)
+        for name, channels in SPECTRAL_AUDIO_CHANNELS.items():
+            frames = 32000 if channels == 1 else 32001
+            with wave.open(str(published/name), 'rb') as stream:
+                if (stream.getframerate(), stream.getnchannels(), stream.getsampwidth(),
+                        stream.getnframes(), stream.getcomptype()) != (16000, channels, 2, frames, 'NONE'):
+                    raise ValueError('spectral independent PCM format differs: ' + name)
+                pcm = np.frombuffer(stream.readframes(frames), dtype='<i2').reshape(-1, channels)
+            if channels == 2:
+                # Python integer squares provide a separate route from the
+                # generator's NumPy reduction and decoded-float scoring.
+                energy = [sum(int(value)**2 for value in pcm[1600:30400, c]) for c in range(2)]
+                expected = {'left_squared_sum_E': energy[0], 'right_squared_sum_E': energy[1],
+                            'integer_denominator_D': 28800*32768**2, 'samples': 28800,
+                            'left_mean_square': energy[0]/(28800*32768**2),
+                            'right_mean_square': energy[1]/(28800*32768**2),
+                            'ild_right_minus_left_db': 10*math.log10(energy[1]/energy[0])}
+                actual = manifest['samples'][name.split('_')[0]]['pcm_integer_measurements']
+                if actual != expected:
+                    raise ValueError('spectral independent integer scoring differs: ' + name)
+        for page, prefix in ((SITE/'01_problem-definition.html', ''),
+                             (SITE/'research/05_exercises_and_audio.html', '../')):
+            _check_visible_audio(page, prefix, 'spectral_audio', set(SPECTRAL_AUDIO_CHANNELS), {'MANIFEST.json'})
+    except (OSError, ValueError, KeyError, TypeError, wave.Error) as error:
+        fail(errors, '独立方向谱形音频：' + str(error))
+
+
 def check_distributed_audio(errors):
     """Exact member/copy checks, current-source replay and independent integer E/D."""
     try:
@@ -3408,6 +3455,7 @@ def main():
     check_tracking_audio(errors)
     check_gss_audio(errors)
     check_binaural_audio(errors)
+    check_spectral_audio(errors)
     check_stft_audio(errors)
     check_geometry_audio(errors)
     check_focus_audio(errors)

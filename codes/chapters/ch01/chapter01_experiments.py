@@ -1,6 +1,6 @@
 """Chapter 1: finite records, alignment error and two distinct head models.
 
-Run ``.venv/bin/python -m codes.chapters.ch01.chapter01_experiments``. E01-04--09
+Run ``.venv/bin/python -m codes.chapters.ch01.chapter01_experiments``. E01-04--10
 use deterministic mathematical inputs and actual published mathematical WAVs,
 not device or listener measurements.
 No files are written. Powers are dimensionless digital mean squares, without
@@ -220,12 +220,59 @@ def white_noise_gain() -> dict:
                       "White-noise gain concerns the equal-variance uncorrelated-noise model, not arbitrary noise or directivity."}
 
 
+def spectral_response_and_source_spectrum() -> dict:
+    """E01-10: artificial FIRs, source-weighted ILD and nonzero support.
+
+The four published WAVs are verified and reread by the strict read-only
+generator check. They are mathematical controls, not measured HRIRs.
+"""
+    from codes.chapters.ch01.examples.generate_spectral_cues import check_assets as check_spectral_assets
+    from codes.chapters.ch01.core.spectral_cues import (
+        build_cases, measure_response, FREQUENCIES, SAMPLE_RATE,
+    )
+    manifest = check_spectral_assets()
+    analytic = []
+    for frequency in FREQUENCIES:
+        omega = 2 * np.pi * frequency / SAMPLE_RATE
+        left = 1 + .5 * np.exp(-1j * omega)
+        right = 1 - .5 * np.exp(-1j * omega)
+        ratio = right / left
+        analytic.append({
+            "frequency_hz": frequency,
+            "left_power_gain": float(1.25 + np.cos(omega)),
+            "right_power_gain": float(1.25 - np.cos(omega)),
+            "ild_right_minus_left_db": float(20 * np.log10(abs(ratio))),
+            "ipd_right_minus_left_rad": float(np.angle(ratio)),
+            "ipd_right_minus_left_deg": float(np.rad2deg(np.angle(ratio))),
+        })
+    signals = build_cases()
+    controls = []
+    zero_right = signals['flat_stereo'].copy()
+    zero_right[1] = 0
+    for name, source, stereo in (
+            ('zero_source_and_outputs', signals['flat_source'] * 0, signals['flat_stereo'] * 0),
+            ('zero_right_channel', signals['flat_source'], zero_right)):
+        try:
+            measure_response(source, stereo)
+        except ValueError as error:
+            controls.append({"case": name, "finite_metrics_rejected": True, "reason": str(error)})
+        else:
+            raise AssertionError(f"Expected undefined finite cue metrics for {name}")
+    return {"published_audio": manifest, "analytic_spectral": analytic,
+            "zero_support_controls": controls,
+            "limits": "Known-frequency artificial FIR controls. Zero-channel controls are outside the two-FIR fixture. "
+                      "No measured HRTF/HRIR, calibrated sound pressure or direction truth. "
+                      "Source cancellation needs nonzero support; total-band ILD remains source-weighted. "
+                      "Quantized PCM response ratios need not equal analytic ratios exactly."}
+
+
 def run_exercises() -> dict:
     """Stable exercise IDs; metadata lives inside each individual result."""
     return {"E01-04": finite_record_cross_terms(),
             "E01-05": residual_sample_delay(), "E01-06": woodworth_comparison(),
             "E01-07": mixture_power_and_identifiability(),
-            "E01-08": binaural_level_and_delay(), "E01-09": white_noise_gain()}
+            "E01-08": binaural_level_and_delay(), "E01-09": white_noise_gain(),
+            "E01-10": spectral_response_and_source_spectrum()}
 
 
 if __name__ == "__main__":

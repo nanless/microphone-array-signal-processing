@@ -45,9 +45,16 @@ pairs. Positive lag compares left[n+lag] with right[n], hence left arrives later
 No circular wrap, window-size-dependent denominator or mean removal is used.
 """
     values = np.asarray(stereo)
-    if (np.iscomplexobj(values) or values.shape != (2, OUTPUT_SAMPLES)
+    if (np.iscomplexobj(values) or values.dtype.kind not in 'biuf'
+            or values.shape != (2, OUTPUT_SAMPLES)
             or not np.isfinite(values).all()):
         raise ValueError("Expected finite real stereo cue with 32008 frames")
+    # Widen before every square/product: PCM integers must not wrap in their
+    # original dtype. Values remain in the caller's amplitude units.
+    with np.errstate(over='ignore', invalid='ignore'):
+        values = values.astype(np.float64, copy=False)
+    if not np.isfinite(values).all():
+        raise ValueError("Stereo values must be representable as finite float64")
     if tuple(delays) not in {(0, 0), (8, 0)}:
         raise ValueError("This fixture supports only the documented (0,0) or (8,0) delays")
     start, stop = WINDOW

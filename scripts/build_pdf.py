@@ -167,6 +167,7 @@ h3{font-size:16.5px}h4{font-size:15px}
 .tutorial-math-tail{display:inline-block;white-space:nowrap;overflow-wrap:normal;vertical-align:baseline;overflow:visible}
 .tutorial-math-tail mjx-assistive-mml{max-width:1px!important;min-width:0!important;white-space:normal}
 .tutorial-exercise-id{white-space:nowrap;overflow-wrap:normal}
+.tutorial-table-label{white-space:nowrap;overflow-wrap:normal}
 .book-end{text-align:center;color:#777;margin:36px 0 8px;font-size:13px}
 .book-ending{break-inside:avoid;page-break-inside:avoid}
 /* MathJax 的 serif 中文回退在部分 macOS 字体中会生成部首码位的 ToUnicode。 */

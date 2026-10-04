@@ -1,0 +1,912 @@
+{
+  "schema_version": 1,
+  "executed_at_utc": "2026-10-04T02:54:29.919935+00:00",
+  "audit_source": "codes/chapters/ch01/examples/audit_libmysofa_interpolation.py",
+  "audit_source_sha256": "3e95781cafd24746b962f0540f29665049c50634b619c654163df77d77174fa3",
+  "audit_dependencies_sha256": {
+    "codes/chapters/ch01/examples/audit_libmysofa_interpolation.py": "3e95781cafd24746b962f0540f29665049c50634b619c654163df77d77174fa3",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
+    "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
+  },
+  "scope": "complete original mysofa_interpolate plus tools.c; artificial caller-controlled structure and neighbor list only",
+  "source": {
+    "origin": "https://github.com/hoene/libmysofa.git",
+    "head": "6cc5b15a73e9bd97810d03767082edda7f315881",
+    "worktree_clean": true,
+    "required_source_identity_verified": true,
+    "files": {
+      "src/hrtf/interpolate.c": {
+        "sha256": "a554ad7b3c25f9d2a685b60e1fe9887b6167f9e81e4e114c570c5a51fbce7e44",
+        "bytes": 4403,
+        "head_blob": "4829543d874fb35df5fda0aa66cc85ab3bd166a7",
+        "actual_blob": "4829543d874fb35df5fda0aa66cc85ab3bd166a7"
+      },
+      "src/hrtf/tools.c": {
+        "sha256": "55238724d257d3221c6c16bfcf62d6990c176b248ad81786e0f100e172f4fa22",
+        "bytes": 3826,
+        "head_blob": "48f1c3d6bfb80aaa1d4ecd4dcaede06bfe30f71d",
+        "actual_blob": "48f1c3d6bfb80aaa1d4ecd4dcaede06bfe30f71d"
+      },
+      "src/hrtf/tools.h": {
+        "sha256": "2fb4fa5f73609ab963fbd5c94f24fd2411d45ebec138b4af48d82ba75b3fb59e",
+        "bytes": 1456,
+        "head_blob": "56888c1a0122ae7c2d24784ed8d07c557bafa18b",
+        "actual_blob": "56888c1a0122ae7c2d24784ed8d07c557bafa18b"
+      },
+      "src/hrtf/mysofa.h": {
+        "sha256": "fe24a1a424dae943624b942723af48b0f345d8d13911be88b0202096e546f834",
+        "bytes": 7870,
+        "head_blob": "538f0b6b2376bdf859ce048f93a553d1946a4051",
+        "actual_blob": "538f0b6b2376bdf859ce048f93a553d1946a4051"
+      },
+      "src/resampler/speex_resampler.h": {
+        "sha256": "ced479f7a027e2601c2c0ec129ba280d56e0021b0aa65f2e6f51e767efb3c622",
+        "bytes": 14246,
+        "head_blob": "0507e9ffb62c0855571d52f9f8b0580736bba859",
+        "actual_blob": "0507e9ffb62c0855571d52f9f8b0580736bba859"
+      },
+      "LICENSE": {
+        "sha256": "9c8713ccc5d6d93d20c7a1cfcb876e64baf551bfbe67faa4e60d39cda9ffd023",
+        "bytes": 1453,
+        "head_blob": "b1939dbb62ab1d89b9f4c68e1766392b12605af3",
+        "actual_blob": "b1939dbb62ab1d89b9f4c68e1766392b12605af3"
+      }
+    },
+    "source_version": "v1.3.5",
+    "source_lock_sha256": "6dab41b1542cfa2cd4731ef4c8a3e807b343dc807f209c4eea17503e203ebf59",
+    "source_lock_entry": {
+      "id": "libmysofa",
+      "url": "https://github.com/hoene/libmysofa.git",
+      "revision": "6cc5b15a73e9bd97810d03767082edda7f315881",
+      "license": "BSD-3-Clause; third-party code notices separate",
+      "scope": "SOFA读取、HRIR方向插值、重采样与显式归一化接口；不是DOA估计器",
+      "fetch_enabled": true,
+      "note": "2026-09-28核实v1.3.5；仅获取源码与许可，不获取share/tests的SOFA测量数据，不执行上游代码。源码内嵌数据仍需单独核对；取得代码不表示构建或数值运行成功。",
+      "source_paths": [
+        "src/hrtf/",
+        "src/hdf/",
+        "src/resampler/",
+        "LICENSE",
+        "README.md",
+        "CMakeLists.txt",
+        "src/CMakeLists.txt",
+        "src/config.h.in"
+      ],
+      "entrypoints": [
+        "src/hrtf/mysofa.h",
+        "src/hrtf/easy.c",
+        "LICENSE",
+        "README.md",
+        "src/hrtf/kdtree.c",
+        "src/hrtf/loudness.c",
+        "src/hrtf/interpolate.c"
+      ]
+    },
+    "source_status_sha256": "1142cc2290d93ea33e6b2dcdf72b9b52307efdd837b84c1739262c2c968186d6",
+    "recorded_acquisition": {
+      "id": "libmysofa",
+      "revision": "6cc5b15a73e9bd97810d03767082edda7f315881",
+      "status": "source_verified",
+      "missing_entrypoints": [],
+      "execution": "not_run",
+      "dependency_validation": "not_run",
+      "asset_policy": "sparse_source_checkout",
+      "requested_source_paths": [
+        "src/hrtf/",
+        "src/hdf/",
+        "src/resampler/",
+        "LICENSE",
+        "README.md",
+        "CMakeLists.txt",
+        "src/CMakeLists.txt",
+        "src/config.h.in"
+      ],
+      "observed_sparse_patterns": [
+        "/src/hrtf/",
+        "/src/hdf/",
+        "/src/resampler/",
+        "/LICENSE",
+        "/README.md",
+        "/CMakeLists.txt",
+        "/src/CMakeLists.txt",
+        "/src/config.h.in",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "expected_sparse_patterns": [
+        "/src/hrtf/",
+        "/src/hdf/",
+        "/src/resampler/",
+        "/LICENSE",
+        "/README.md",
+        "/CMakeLists.txt",
+        "/src/CMakeLists.txt",
+        "/src/config.h.in",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "source_selection_verified": true
+    },
+    "live_acquisition_scope": {
+      "id": "libmysofa",
+      "revision": "6cc5b15a73e9bd97810d03767082edda7f315881",
+      "status": "source_verified",
+      "missing_entrypoints": [],
+      "execution": "not_run",
+      "dependency_validation": "not_run",
+      "asset_policy": "sparse_source_checkout",
+      "requested_source_paths": [
+        "src/hrtf/",
+        "src/hdf/",
+        "src/resampler/",
+        "LICENSE",
+        "README.md",
+        "CMakeLists.txt",
+        "src/CMakeLists.txt",
+        "src/config.h.in"
+      ],
+      "observed_sparse_patterns": [
+        "/src/hrtf/",
+        "/src/hdf/",
+        "/src/resampler/",
+        "/LICENSE",
+        "/README.md",
+        "/CMakeLists.txt",
+        "/src/CMakeLists.txt",
+        "/src/config.h.in",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "expected_sparse_patterns": [
+        "/src/hrtf/",
+        "/src/hdf/",
+        "/src/resampler/",
+        "/LICENSE",
+        "/README.md",
+        "/CMakeLists.txt",
+        "/src/CMakeLists.txt",
+        "/src/config.h.in",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "source_selection_verified": true
+    },
+    "license": {
+      "name": "BSD-3-Clause; third-party code notices separate",
+      "path": "LICENSE",
+      "sha256": "9c8713ccc5d6d93d20c7a1cfcb876e64baf551bfbe67faa4e60d39cda9ffd023",
+      "retention": "Unchanged upstream headers and root BSD notice retained; no upstream code or binary copied into this report",
+      "supporting_header": "speex_resampler.h retains Jean-Marc Valin 2007 BSD notice; its resampler is not compiled or called"
+    }
+  },
+  "source_before_after_identical": true,
+  "source_after": {
+    "origin": "https://github.com/hoene/libmysofa.git",
+    "head": "6cc5b15a73e9bd97810d03767082edda7f315881",
+    "worktree_clean": true,
+    "required_source_identity_verified": true,
+    "files": {
+      "src/hrtf/interpolate.c": {
+        "sha256": "a554ad7b3c25f9d2a685b60e1fe9887b6167f9e81e4e114c570c5a51fbce7e44",
+        "bytes": 4403,
+        "head_blob": "4829543d874fb35df5fda0aa66cc85ab3bd166a7",
+        "actual_blob": "4829543d874fb35df5fda0aa66cc85ab3bd166a7"
+      },
+      "src/hrtf/tools.c": {
+        "sha256": "55238724d257d3221c6c16bfcf62d6990c176b248ad81786e0f100e172f4fa22",
+        "bytes": 3826,
+        "head_blob": "48f1c3d6bfb80aaa1d4ecd4dcaede06bfe30f71d",
+        "actual_blob": "48f1c3d6bfb80aaa1d4ecd4dcaede06bfe30f71d"
+      },
+      "src/hrtf/tools.h": {
+        "sha256": "2fb4fa5f73609ab963fbd5c94f24fd2411d45ebec138b4af48d82ba75b3fb59e",
+        "bytes": 1456,
+        "head_blob": "56888c1a0122ae7c2d24784ed8d07c557bafa18b",
+        "actual_blob": "56888c1a0122ae7c2d24784ed8d07c557bafa18b"
+      },
+      "src/hrtf/mysofa.h": {
+        "sha256": "fe24a1a424dae943624b942723af48b0f345d8d13911be88b0202096e546f834",
+        "bytes": 7870,
+        "head_blob": "538f0b6b2376bdf859ce048f93a553d1946a4051",
+        "actual_blob": "538f0b6b2376bdf859ce048f93a553d1946a4051"
+      },
+      "src/resampler/speex_resampler.h": {
+        "sha256": "ced479f7a027e2601c2c0ec129ba280d56e0021b0aa65f2e6f51e767efb3c622",
+        "bytes": 14246,
+        "head_blob": "0507e9ffb62c0855571d52f9f8b0580736bba859",
+        "actual_blob": "0507e9ffb62c0855571d52f9f8b0580736bba859"
+      },
+      "LICENSE": {
+        "sha256": "9c8713ccc5d6d93d20c7a1cfcb876e64baf551bfbe67faa4e60d39cda9ffd023",
+        "bytes": 1453,
+        "head_blob": "b1939dbb62ab1d89b9f4c68e1766392b12605af3",
+        "actual_blob": "b1939dbb62ab1d89b9f4c68e1766392b12605af3"
+      }
+    },
+    "source_version": "v1.3.5",
+    "source_lock_sha256": "6dab41b1542cfa2cd4731ef4c8a3e807b343dc807f209c4eea17503e203ebf59",
+    "source_lock_entry": {
+      "id": "libmysofa",
+      "url": "https://github.com/hoene/libmysofa.git",
+      "revision": "6cc5b15a73e9bd97810d03767082edda7f315881",
+      "license": "BSD-3-Clause; third-party code notices separate",
+      "scope": "SOFA读取、HRIR方向插值、重采样与显式归一化接口；不是DOA估计器",
+      "fetch_enabled": true,
+      "note": "2026-09-28核实v1.3.5；仅获取源码与许可，不获取share/tests的SOFA测量数据，不执行上游代码。源码内嵌数据仍需单独核对；取得代码不表示构建或数值运行成功。",
+      "source_paths": [
+        "src/hrtf/",
+        "src/hdf/",
+        "src/resampler/",
+        "LICENSE",
+        "README.md",
+        "CMakeLists.txt",
+        "src/CMakeLists.txt",
+        "src/config.h.in"
+      ],
+      "entrypoints": [
+        "src/hrtf/mysofa.h",
+        "src/hrtf/easy.c",
+        "LICENSE",
+        "README.md",
+        "src/hrtf/kdtree.c",
+        "src/hrtf/loudness.c",
+        "src/hrtf/interpolate.c"
+      ]
+    },
+    "source_status_sha256": "1142cc2290d93ea33e6b2dcdf72b9b52307efdd837b84c1739262c2c968186d6",
+    "recorded_acquisition": {
+      "id": "libmysofa",
+      "revision": "6cc5b15a73e9bd97810d03767082edda7f315881",
+      "status": "source_verified",
+      "missing_entrypoints": [],
+      "execution": "not_run",
+      "dependency_validation": "not_run",
+      "asset_policy": "sparse_source_checkout",
+      "requested_source_paths": [
+        "src/hrtf/",
+        "src/hdf/",
+        "src/resampler/",
+        "LICENSE",
+        "README.md",
+        "CMakeLists.txt",
+        "src/CMakeLists.txt",
+        "src/config.h.in"
+      ],
+      "observed_sparse_patterns": [
+        "/src/hrtf/",
+        "/src/hdf/",
+        "/src/resampler/",
+        "/LICENSE",
+        "/README.md",
+        "/CMakeLists.txt",
+        "/src/CMakeLists.txt",
+        "/src/config.h.in",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "expected_sparse_patterns": [
+        "/src/hrtf/",
+        "/src/hdf/",
+        "/src/resampler/",
+        "/LICENSE",
+        "/README.md",
+        "/CMakeLists.txt",
+        "/src/CMakeLists.txt",
+        "/src/config.h.in",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "source_selection_verified": true
+    },
+    "live_acquisition_scope": {
+      "id": "libmysofa",
+      "revision": "6cc5b15a73e9bd97810d03767082edda7f315881",
+      "status": "source_verified",
+      "missing_entrypoints": [],
+      "execution": "not_run",
+      "dependency_validation": "not_run",
+      "asset_policy": "sparse_source_checkout",
+      "requested_source_paths": [
+        "src/hrtf/",
+        "src/hdf/",
+        "src/resampler/",
+        "LICENSE",
+        "README.md",
+        "CMakeLists.txt",
+        "src/CMakeLists.txt",
+        "src/config.h.in"
+      ],
+      "observed_sparse_patterns": [
+        "/src/hrtf/",
+        "/src/hdf/",
+        "/src/resampler/",
+        "/LICENSE",
+        "/README.md",
+        "/CMakeLists.txt",
+        "/src/CMakeLists.txt",
+        "/src/config.h.in",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "expected_sparse_patterns": [
+        "/src/hrtf/",
+        "/src/hdf/",
+        "/src/resampler/",
+        "/LICENSE",
+        "/README.md",
+        "/CMakeLists.txt",
+        "/src/CMakeLists.txt",
+        "/src/config.h.in",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "source_selection_verified": true
+    },
+    "license": {
+      "name": "BSD-3-Clause; third-party code notices separate",
+      "path": "LICENSE",
+      "sha256": "9c8713ccc5d6d93d20c7a1cfcb876e64baf551bfbe67faa4e60d39cda9ffd023",
+      "retention": "Unchanged upstream headers and root BSD notice retained; no upstream code or binary copied into this report",
+      "supporting_header": "speex_resampler.h retains Jean-Marc Valin 2007 BSD notice; its resampler is not compiled or called"
+    }
+  },
+  "environment": {
+    "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O"
+  },
+  "compiler": {
+    "executable": "/usr/bin/cc",
+    "version": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin25.6.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin\n",
+    "command": [
+      "/usr/bin/cc",
+      "-std=c99",
+      "-O0",
+      "-I",
+      "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/ch01-libmysofa-interpolation-hg41mthx",
+      "-I",
+      "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/libmysofa/src/hrtf",
+      "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/ch01-libmysofa-interpolation-hg41mthx/probe.c",
+      "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/libmysofa/src/hrtf/interpolate.c",
+      "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/libmysofa/src/hrtf/tools.c",
+      "-lm",
+      "-o",
+      "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/ch01-libmysofa-interpolation-hg41mthx/probe"
+    ],
+    "stdout": "",
+    "stderr": "",
+    "flags": [
+      "-std=c99",
+      "-O0"
+    ]
+  },
+  "scaffold": {
+    "export_header": "#ifndef MYSOFA_EXPORT\n#define MYSOFA_EXPORT\n#endif\n",
+    "export_header_sha256": "1f9efb7e749c691eab429577c481e34e5e8405f92f19e5e5e2a6812bf0942eec",
+    "harness_sha256": "2196b2773959c025045fe31d132133d5ec862923918ccded94c54bd21b950623",
+    "upstream_patched": false,
+    "temporary_binary_retained": false,
+    "compiled_original_files": [
+      "src/hrtf/interpolate.c",
+      "src/hrtf/tools.c"
+    ],
+    "compiled_original_headers": [
+      "src/hrtf/mysofa.h",
+      "src/hrtf/tools.h"
+    ],
+    "additional_identity_files": [
+      "src/resampler/speex_resampler.h",
+      "LICENSE"
+    ]
+  },
+  "config": {
+    "dimensions": {
+      "I": 1,
+      "E": 1,
+      "M": 2,
+      "N": 1,
+      "C": 3,
+      "R": 2
+    },
+    "positions_cartesian_m": [
+      [
+        -1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ]
+    ],
+    "input_ir_by_position_left_right": [
+      [
+        2.0,
+        4.0
+      ],
+      [
+        4.0,
+        6.0
+      ]
+    ],
+    "nearest_index": 0,
+    "caller_supplied_neighbors": [
+      1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1
+    ],
+    "delay_units": "raw DataDelay numbers; no sample/second conversion is tested",
+    "absolute_tolerance": 2e-06,
+    "randomness": "none; deterministic artificial coefficients",
+    "independent_expectation": "midpoint equal distances 1 m: average IR and directional delays; global delays unchanged"
+  },
+  "native_stdout": "global_exact 2 4 8 16\nglobal_midpoint 3 5 4 8\nglobal_zero_midpoint 3 5 0 0\nper_direction_same_midpoint 3 5 8 16\nper_direction_vary_midpoint 3 5 10 18\n",
+  "cases": [
+    {
+      "name": "global_exact",
+      "input_delay_elements": 2,
+      "input_delays_raw": [
+        8.0,
+        16.0
+      ],
+      "query_cartesian_m": [
+        -1.0,
+        0.0,
+        0.0
+      ],
+      "observed_ir_left_right": [
+        2.0,
+        4.0
+      ],
+      "observed_delays_raw": [
+        8.0,
+        16.0
+      ],
+      "independent_expected_ir_left_right": [
+        2.0,
+        4.0
+      ],
+      "independent_expected_delays_raw": [
+        8.0,
+        16.0
+      ],
+      "ir_interpolation_invariant_passed": true,
+      "delay_interpolation_invariant_passed": true,
+      "mathematical_invariants_passed": true,
+      "known_upstream_expected_delays_raw": [
+        8.0,
+        16.0
+      ],
+      "expected_upstream_behavior_observed": true,
+      "delay_error_from_mathematical_expectation": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "global_midpoint",
+      "input_delay_elements": 2,
+      "input_delays_raw": [
+        8.0,
+        16.0
+      ],
+      "query_cartesian_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "observed_ir_left_right": [
+        3.0,
+        5.0
+      ],
+      "observed_delays_raw": [
+        4.0,
+        8.0
+      ],
+      "independent_expected_ir_left_right": [
+        3.0,
+        5.0
+      ],
+      "independent_expected_delays_raw": [
+        8.0,
+        16.0
+      ],
+      "ir_interpolation_invariant_passed": true,
+      "delay_interpolation_invariant_passed": false,
+      "mathematical_invariants_passed": false,
+      "known_upstream_expected_delays_raw": [
+        4.0,
+        8.0
+      ],
+      "expected_upstream_behavior_observed": true,
+      "delay_error_from_mathematical_expectation": [
+        -4.0,
+        -8.0
+      ]
+    },
+    {
+      "name": "global_zero_midpoint",
+      "input_delay_elements": 2,
+      "input_delays_raw": [
+        0.0,
+        0.0
+      ],
+      "query_cartesian_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "observed_ir_left_right": [
+        3.0,
+        5.0
+      ],
+      "observed_delays_raw": [
+        0.0,
+        0.0
+      ],
+      "independent_expected_ir_left_right": [
+        3.0,
+        5.0
+      ],
+      "independent_expected_delays_raw": [
+        0.0,
+        0.0
+      ],
+      "ir_interpolation_invariant_passed": true,
+      "delay_interpolation_invariant_passed": true,
+      "mathematical_invariants_passed": true,
+      "known_upstream_expected_delays_raw": [
+        0.0,
+        0.0
+      ],
+      "expected_upstream_behavior_observed": true,
+      "delay_error_from_mathematical_expectation": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "per_direction_same_midpoint",
+      "input_delay_elements": 4,
+      "input_delays_raw": [
+        8.0,
+        16.0,
+        8.0,
+        16.0
+      ],
+      "query_cartesian_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "observed_ir_left_right": [
+        3.0,
+        5.0
+      ],
+      "observed_delays_raw": [
+        8.0,
+        16.0
+      ],
+      "independent_expected_ir_left_right": [
+        3.0,
+        5.0
+      ],
+      "independent_expected_delays_raw": [
+        8.0,
+        16.0
+      ],
+      "ir_interpolation_invariant_passed": true,
+      "delay_interpolation_invariant_passed": true,
+      "mathematical_invariants_passed": true,
+      "known_upstream_expected_delays_raw": [
+        8.0,
+        16.0
+      ],
+      "expected_upstream_behavior_observed": true,
+      "delay_error_from_mathematical_expectation": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "per_direction_vary_midpoint",
+      "input_delay_elements": 4,
+      "input_delays_raw": [
+        8.0,
+        16.0,
+        12.0,
+        20.0
+      ],
+      "query_cartesian_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "observed_ir_left_right": [
+        3.0,
+        5.0
+      ],
+      "observed_delays_raw": [
+        10.0,
+        18.0
+      ],
+      "independent_expected_ir_left_right": [
+        3.0,
+        5.0
+      ],
+      "independent_expected_delays_raw": [
+        10.0,
+        18.0
+      ],
+      "ir_interpolation_invariant_passed": true,
+      "delay_interpolation_invariant_passed": true,
+      "mathematical_invariants_passed": true,
+      "known_upstream_expected_delays_raw": [
+        10.0,
+        18.0
+      ],
+      "expected_upstream_behavior_observed": true,
+      "delay_error_from_mathematical_expectation": [
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "all_mathematical_invariants_passed": false,
+  "mathematical_failure_cases": [
+    "global_midpoint"
+  ],
+  "expected_upstream_behavior_observed": true,
+  "not_executed": [
+    "SOFA parser or measurements",
+    "mysofa_check",
+    "automatic lookup/neighborhood",
+    "mysofa_open/easy float or short API",
+    "resampling or delay unit conversion",
+    "audio convolution/rendering",
+    "device acceptance"
+  ]
+}

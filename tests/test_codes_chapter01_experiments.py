@@ -16,7 +16,7 @@ from codes.chapters.ch00.core.audio_samples import alignment_error_case, prepare
 class Chapter01ExperimentsTest(unittest.TestCase):
     def test_result_ids_and_finite_json(self):
         results = run_exercises()
-        self.assertEqual(set(results), {'E01-04', 'E01-05', 'E01-06', 'E01-07', 'E01-08', 'E01-09'})
+        self.assertEqual(set(results), {'E01-04', 'E01-05', 'E01-06', 'E01-07', 'E01-08', 'E01-09', 'E01-10'})
         json.dumps(results, allow_nan=False)
 
     def test_short_record_cross_terms_are_not_assumed_zero(self):
@@ -174,6 +174,19 @@ class Chapter01ExperimentsTest(unittest.TestCase):
             self.assertAlmostEqual(pcm['ild_right_minus_left_db'], sign * 20 * math.log10(2), delta=.0002)
             self.assertEqual(pcm['correlation_window_samples'], 28800)
             self.assertEqual(pcm['power_window_samples'], 28800)
+
+    def test_spectral_exercise_reads_four_assets_and_keeps_nonzero_conditions(self):
+        result = run_exercises()['E01-10']
+        manifest = result['published_audio']
+        self.assertEqual(set(manifest['files']), {'flat_source.wav', 'flat_stereo.wav',
+                                                'tilted_source.wav', 'tilted_stereo.wav'})
+        self.assertEqual(manifest['common_export_gain'], 1.)
+        self.assertEqual(set(manifest['samples']), {'flat', 'tilted'})
+        cosine = math.sqrt(2 + math.sqrt(2)) / 2
+        for row, sign in zip(result['analytic_spectral'], (1, -1)):
+            self.assertAlmostEqual(row['left_power_gain'], 1.25 + sign*cosine)
+            self.assertAlmostEqual(row['right_power_gain'], 1.25 - sign*cosine)
+        self.assertTrue(all(row['finite_metrics_rejected'] for row in result['zero_support_controls']))
 
 
 if __name__ == '__main__':

@@ -63,12 +63,12 @@ $$
 在仿真中，若能分别取得目标分量 $s[n]$ 和噪声分量 $v[n]$，就能在相同时间段上分别计算 $P_s$、$P_v$。**信噪比（Signal-to-Noise Ratio，SNR）**及其改善量定义为：
 
 $$
-\begin{aligned}
-\mathrm{SNR}&=\frac{P_s}{P_v},\qquad
+\begin{gathered}
+\mathrm{SNR}=\frac{P_s}{P_v},\\
 \mathrm{SNR}_{\mathrm{dB}}=10\log_{10}\frac{P_s}{P_v},\\
-G&=\frac{\mathrm{SNR}_{\mathrm{out}}}{\mathrm{SNR}_{\mathrm{in}}},\qquad
+G=\frac{\mathrm{SNR}_{\mathrm{out}}}{\mathrm{SNR}_{\mathrm{in}}},\\
 G_{\mathrm{dB}}=10\log_{10}G.
-\end{aligned} \tag{1-2}
+\end{gathered} \tag{1-2}
 $$
 
 计算有限的 SNR 及改善量时，输入目标功率、输入噪声功率与输出噪声功率都要求大于零。输入目标功率为零时，$\mathrm{SNR}_{\mathrm{in}}=0$，不能继续用它作 $G$ 的分母。若输入有目标、输出目标完全被抵消而输出噪声仍为正，则输出 SNR 与 $G$ 都为零，对数值按极限记为 $-\infty$。噪声功率为零时也需要单独解释，不能把无穷量相除或 $0/0$ 当成普通改善量。
@@ -102,12 +102,12 @@ WNG 中需要分清**空间白**与**时间白**。本章的关键条件是：�
 **先看直接求和。** 输出 $z[n]$ 与再除以 $M$ 的平均输出 $y[n]$ 分别是：
 
 $$
-\begin{aligned}
-z[n]&=\sum_{m=1}^{M}x_m[n]
-     =M s[n]+\sum_{m=1}^{M}v_m[n],\\
-y[n]&=\frac{z[n]}{M}
-     =s[n]+\frac{1}{M}\sum_{m=1}^{M}v_m[n].
-\end{aligned} \tag{1-3}
+\begin{gathered}
+z[n]=\sum_{m=1}^{M}x_m[n],\\
+z[n]=M s[n]+\sum_{m=1}^{M}v_m[n],\\
+y[n]=\frac{z[n]}{M},\\
+y[n]=s[n]+\frac{1}{M}\sum_{m=1}^{M}v_m[n].
+\end{gathered} \tag{1-3}
 $$
 
 求和使目标幅度变成 $M$ 倍，因此目标功率变成 $M^2P_s$。噪声则要先展开平方：每一路提供自己的平方项，不同路之间还存在乘积项。例如两路时，$(v_1+v_2)^2=v_1^2+v_2^2+2v_1v_2$。在上述噪声模型的统计期望下，交叉乘积为零，剩下 $M$ 项 $P_v$，所以求和噪声功率为 $MP_v$。
@@ -115,9 +115,11 @@ $$
 **再看平均。** 把整个输出除以 $M$，目标和噪声的功率都除以 $M^2$。目标功率恢复为 $P_s$，噪声功率成为 $P_v/M$，因此：
 
 $$
-\mathrm{SNR}_{\mathrm{out}}=\frac{P_s}{P_v/M}
-=M\,\mathrm{SNR}_{\mathrm{in}},\qquad
-G_{\mathrm{dB}}=10\log_{10}M. \tag{1-4}
+\begin{gathered}
+\mathrm{SNR}_{\mathrm{out}}=\frac{P_s}{P_v/M},\\
+\mathrm{SNR}_{\mathrm{out}}=M\,\mathrm{SNR}_{\mathrm{in}},\\
+G_{\mathrm{dB}}=10\log_{10}M.
+\end{gathered} \tag{1-4}
 $$
 
 式(1-4)使用模型的总体二阶矩计算理论 SNR 比值，不是把许多短记录的 SNR 比值再求平均；后者是不同的统计量。实际短记录不保证恰好得到式(1-4)。以每路目标和噪声功率均为 1 的四麦为例，可逐列核对：
@@ -151,6 +153,8 @@ $$
 
 图1(a)标出双耳与方向约定：红色外向箭头指向声源方位，蓝色内向箭头表示声波向双耳传播；$30^\circ$ 方位弧从正前方量到声源方向。图1(b)比较球头模型和无遮挡双点模型的 ITD；图1(c)区分纯音细结构、双耳声级差和高频包络的实验条件。
 
+窄屏上可[打开图1原图](../figures/fig01_binaural.png)，放大查看模型曲线与实验条件。
+
 曲线是指定几何模型的计算，不是人体测量；文字框也不表示所有人的统一频率截止。
 
 #### 双耳时间差：把几何模型算清楚
@@ -169,10 +173,12 @@ $a$ 以米计，$c$ 是声速，单位 m/s；括号内的 $\theta$ 必须用弧�
 取 $a=8.75\ \mathrm{cm}=0.0875\ \mathrm{m}$、$c=343\ \mathrm{m/s}$。正右方对应 $90^\circ=\pi/2$，有
 
 $$
-\tau_{\mathrm{球头}}(90^\circ)
-=\frac{0.0875}{343}\left(\frac{\pi}{2}+1\right)
-\approx0.000655815\ \mathrm{s}
+\begin{gathered}
+\tau_{\mathrm{球头}}(90^\circ)\\
+=\frac{0.0875}{343}\left(\frac{\pi}{2}+1\right)\\
+\approx0.000655815\ \mathrm{s}\\
 \approx656\ \mu\mathrm{s}.
+\end{gathered}
 $$
 
 正前方偏 $1^\circ$ 时，先换成 $\theta=\pi/180\approx0.0174533$，再代入 $\sin\theta\approx0.0174524$，得到约 $8.9045\ \mu\mathrm{s}$，即图中的约 $9\ \mu\mathrm{s}$。这只说明模型中一度角对应多少时差，不能据此断言人能分辨一度或九微秒。
@@ -213,6 +219,12 @@ Woodworth 模型是高频射线近似，不是覆盖任意频率、耳位与个�
 
 机器阵列不能照搬人的这条纯音实验界限。以 2 kHz 纯音为例，一个周期是 $1/2000=0.0005$ 秒，即 $500\ \mu\mathrm{s}$。延迟 $100\ \mu\mathrm{s}$ 与延迟 $600\ \mu\mathrm{s}$ 相差一个完整周期，对无限持续的这个纯音产生相同的相位；只有在几何允许两种时延时，二者才同时构成候选。由相位绕圈产生的数学歧义，与听觉神经对快速细结构的锁相能力下降，是两件不同的事。
 
+**双耳相位差（Interaural Phase Difference，IPD）**比较同一频率的左右相位，本章同样采用右减左。对两耳谱值都非零的纯延迟模型，右减左相位为 $2\pi f\tau$，只在相差整数个 $2\pi$ 时视为同一相位，且 $\tau=t_L-t_R$。
+
+于是 2 kHz 下，$360^\circ\times2000\times0.0001=72^\circ$，而 $360^\circ\times2000\times0.0006=432^\circ$；减去一整圈 $360^\circ$ 后仍是 $72^\circ$。这项相位计算没有为两个时差增添新的区分信息。17.5 cm 的无遮挡双点最大时差只有约 510 μs，因此 600 μs 不属于该特定几何的候选。
+
+一般滤波响应还会改变相位，不能直接把任意 IPD 除以 $2\pi f$ 当作传播 ITD；正式复比定义及失效例见本章 E01-10，傅里叶时移正号见[§2.3](02_basics-signal-model.md#sec-2-3)。
+
 对机器而言，相位歧义还取决于麦间距和几何。宽带信息、非均匀阵列或实测阵列响应可以提供额外约束，但不是自动消除歧义的保证（§2.6、§3.2）。准备好时，可继续复算[第 4 章 E04-18 的纯音与多频对照](04_doa-estimation.md#sec-u-56493f2d40)，参数及试听见[音频实验总览第 26 节](../codes/chapters/ch00/research/05_exercises_and_audio.md#26-纯音的时差歧义与宽频相位约束)。
 
 #### 方向相关频谱与头相关传递函数
@@ -222,6 +234,8 @@ Woodworth 模型是高频射线近似，不是覆盖任意频率、耳位与个�
 **头相关传递函数（Head-Related Transfer Function，HRTF）**描述指定声源位置到某一耳的频率响应，通常相对头部不存在时的自由场参考来定义。左右耳各有一个传递函数。它同时包含幅度和相位信息，因此 ITD、ILD 与 HRTF 并不是三种互不相关的物理信号；这里第三类线索专指方向相关的谱形变化。
 
 谱形线索也受声源本身的频谱影响：耳朵接收的频谱同时包含声源谱与传播滤波，某个频率很弱，既可能来自方向相关谱谷，也可能是声源原本就很弱。
+
+E01-10 用两个人工短滤波器复算这一点：在非零频率分量上，左右复比可以消去共同源谱；把各频率功率相加后，全带声级差仍会受源谱权重影响。该例不使用人体测量或方向真值。
 
 单一纯音只在一个频率上提供信息，不能展示一段完整的谱峰与谱谷。因此，不能仅凭一个未知声音的单耳谱谷就唯一判定方向；较宽频带的声音、双耳比较、运动和已有经验能提供更多约束。
 
@@ -245,14 +259,14 @@ Woodworth 模型是高频射线近似，不是覆盖任意频率、耳位与个�
 
 ### 本章练习
 
-E01-01～E01-03 使用 [`exercises_spatial.py`](../codes/chapters/ch00/cross_chapter/exercises_spatial.py)；E01-04～E01-09 使用 [`chapter01_experiments.py`](../codes/chapters/ch01/chapter01_experiments.py)。均不需下载数据；在仓库根目录运行：
+E01-01～E01-03 使用 [`exercises_spatial.py`](../codes/chapters/ch00/cross_chapter/exercises_spatial.py)；E01-04～E01-10 使用 [`chapter01_experiments.py`](../codes/chapters/ch01/chapter01_experiments.py)。均不需下载数据；在仓库根目录运行：
 
 ```bash
 .venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_spatial
 .venv/bin/python -m codes.chapters.ch01.chapter01_experiments
 ```
 
-第一条命令是第 1～5 章的跨章入口，会输出 28 道题的结果，其中还包含第 4 章的最小描述长度（Minimum Description Length，MDL）声源数估计重复试验：7 组条件、每组 200 次。阅读本章时只需核对其中的 E01-01～E01-03；第二条命令运行本章的 E01-04～E01-09。
+第一条命令是第 1～5 章的跨章入口，会输出 28 道题的结果，其中还包含第 4 章的最小描述长度（Minimum Description Length，MDL）声源数估计重复试验：7 组条件、每组 200 次。阅读本章时只需核对其中的 E01-01～E01-03；第二条命令运行本章的 E01-04～E01-10。
 
 以下数字来自本书手算及确定性实验，不是设备或听者实测。中间计算保留更多位，表中按所列精度舍入。
 
@@ -331,10 +345,10 @@ $$
 
 $C_{12}$ 是未去均值的交叉二阶矩；裁切后三点的样本均值不为零，不能直接把它称为去均值协方差。
 
-| 使用窗口 | 逐样本乘积 | $P_1,P_2$ | $C_{12}$ | 平均输出 | 输出均方 |
+| <span class="tutorial-table-label">使用窗口</span> | 逐样本乘积 | $P_1,P_2$ | $C_{12}$ | 平均输出 | 输出均方 |
 |---|---|---|---|---|---|
-| 全部四点 | $[1,-1,-1,1]$ | 1，1 | 0 | $[1,0,0,-1]$ | $2/4=0.5$ |
-| 前三点 | $[1,-1,-1]$ | 1，1 | $-1/3$ | $[1,0,0]$ | $1/3$ |
+| <span class="tutorial-table-label">全部四点</span> | $[1,-1,-1,1]$ | 1，1 | 0 | $[1,0,0,-1]$ | $2/4=0.5$ |
+| <span class="tutorial-table-label">前三点</span> | $[1,-1,-1]$ | 1，1 | $-1/3$ | $[1,0,0]$ | $1/3$ |
 
 四点窗口中，式(1-8)为 $(1+1+0)/4=0.5$；三点窗口中为 $(1+1-2/3)/4=1/3$。相对第一路的噪声功率降低量分别为 $10\log_{10}2\approx3.01$ dB 和 $10\log_{10}3\approx4.77$ dB。
 
@@ -366,10 +380,10 @@ $$
 
 **试听与复算。** 本书的 `alignment_error` 音频组使用 2 秒的 1 kHz 与 4 kHz 双音，每个正弦幅度为 0.18，首尾各有 20 ms 线性淡入淡出。四个文件使用共同增益 1：
 
-- [两路输入 `alignment_array.wav`](../codes/chapters/ch02/audio/alignment_array.wav)；
-- [直接平均 `alignment_unaligned.wav`](../codes/chapters/ch02/audio/alignment_unaligned.wav)；
-- [补偿后平均 `alignment_aligned.wav`](../codes/chapters/ch02/audio/alignment_aligned.wav)；
-- [同样共同延迟的参考 `alignment_reference.wav`](../codes/chapters/ch02/audio/alignment_reference.wav)。
+- 两路输入：[`alignment_array.wav`](../codes/chapters/ch02/audio/alignment_array.wav)
+- 直接平均：[`alignment_unaligned.wav`](../codes/chapters/ch02/audio/alignment_unaligned.wav)
+- 补偿后平均：[`alignment_aligned.wav`](../codes/chapters/ch02/audio/alignment_aligned.wav)
+- 同样共同延迟的参考：[`alignment_reference.wav`](../codes/chapters/ch02/audio/alignment_reference.wav)
 
 这组跨章音频按固定组映射归入第 2 章的 `audio/`，参数和逐文件摘要见[主音频清单](../codes/chapters/ch00/audio/MANIFEST.json)，生成源见 [`alignment_error_case()`](../codes/chapters/ch00/core/audio_samples.py)。补偿后文件与参考相同，是这一确定性对齐实验的预期结果。
 
@@ -440,9 +454,11 @@ $C_{sv}$ 是这次记录里目标与干扰的未中心化交叉二阶矩。它�
 **第一步：分清均方与均方根。** 记左右的均方功率为 $P_L,P_R$，均方根（Root Mean Square，RMS）幅度为 $A_L=\sqrt{P_L}$、$A_R=\sqrt{P_R}$。左右采用同一正参考幅度 $A_0$ 时，两个电平分别是 $L_L=20\log_{10}(A_L/A_0)$、$L_R=20\log_{10}(A_R/A_0)$。相减时共同参考消去，得到本书使用的声级差定义：
 
 $$
-\mathrm{ILD}=L_R-L_L
-=20\log_{10}\frac{A_R}{A_L}
+\begin{gathered}
+\mathrm{ILD}=L_R-L_L\\
+=20\log_{10}\frac{A_R}{A_L}\\
 =10\log_{10}\frac{P_R}{P_L}.
+\end{gathered}
 \tag{1-11}
 $$
 
@@ -457,10 +473,12 @@ ILD 的单位是 dB。两路的 RMS 都须为正才能得到有限值；只有�
 **第四步：分别改变时间与幅度。** 以下五个文件使用同一个数学合成源 $s[n]$：16 kHz 下长 2 秒，包含 500、800、1300、2400 Hz 四个正弦，每个幅度 0.08，首尾各 20 ms 线性淡入淡出。令负下标及源结束后的样本为零，双通道模型为
 
 $$
-\begin{aligned}
-x_L[n]&=g_Ls[n-d_L],\qquad x_R[n]=g_Rs[n-d_R],\\
-\tau&=\frac{d_L-d_R}{f_s},\qquad f_s=16000\ \mathrm{Hz}.
-\end{aligned}\tag{1-12}
+\begin{gathered}
+x_L[n]=g_Ls[n-d_L],\\
+x_R[n]=g_Rs[n-d_R],\\
+\tau=\frac{d_L-d_R}{f_s},\\
+f_s=16000\ \mathrm{Hz}.
+\end{gathered}\tag{1-12}
 $$
 
 $d_L,d_R$ 是整数延迟，单位为采样点；这里右通道延迟 $d_R=0$。左右增益均为正，所以幅度比与 RMS 比相同。8 点延迟对应 $8/16000=0.0005$ s，即 +500 μs。所有输出都是双通道 PCM16 文件，统一保留 32008 帧，让延迟尾部完整留在文件中；共同导出增益为 1，不逐文件归一化。
@@ -502,9 +520,11 @@ $d_L,d_R$ 是整数延迟，单位为采样点；这里右通道延迟 $d_R=0$�
 **第二步：噪声要按平方计算。** 展开 $(w_1v_1+w_2v_2)^2$，得到 $w_1^2v_1^2+w_2^2v_2^2+2w_1w_2v_1v_2$。在题设的总体二阶矩下，最后一项期望为零，两路单位功率则给出
 
 $$
-P_{v,\mathrm{out}}=w_1^2+w_2^2,\qquad
-\mathrm{WNG}=\frac{1}{w_1^2+w_2^2},\qquad
+\begin{gathered}
+P_{v,\mathrm{out}}=w_1^2+w_2^2,\\
+\mathrm{WNG}=\frac{1}{w_1^2+w_2^2},\\
 \mathrm{WNG}_{\mathrm{dB}}=10\log_{10}\mathrm{WNG}.
+\end{gathered}
 \tag{1-13}
 $$
 
@@ -519,7 +539,101 @@ $$
 
 负的 dB WNG 表示相对单麦的 SNR 变差，不是线性 WNG 或噪声功率为负。这个例子也没有构造指定干扰方向的零陷，不能凭权重正负推断 DI 或方向抑制效果。通道噪声若相关，就必须把交叉项重新加回；目标若没准确对齐，$w_1+w_2=1$ 也不再保证真实目标保持。
 
-可在[章节代码练习与音频实验](../codes/chapters/ch00/research/05_exercises_and_audio.md)中试听既有“单麦输入”“对齐后平均”和本章的残余时差、双耳线索样本。文件保留各组共同增益，使用数学合成信号；先从低播放音量开始。听音帮助发现差别，功率、延迟与模型判断仍需以上述计算为准。
+#### E01-10：源谱改变，双耳声级差会怎样改变
+
+E01-08 只改变常增益与纯延迟。现在保持左右滤波器不变，分别输入两种不同源谱，检查逐频声级差、相位差和全带声级差。两个人工有限冲激响应（Finite Impulse Response，FIR）为 $h_L=[1,0.5]$、$h_R=[1,-0.5]$；下标从 0 开始，没有测量人体、头部散射或声源方向，因此它们不是实测头相关冲激响应（Head-Related Impulse Response，HRIR）。
+
+**第一步：从两个抽头写出传递响应。** 离散单位脉冲 $\delta[n]$ 在 $n=0$ 时为 1，其他下标为 0。因此 $h_L[n]=\delta[n]+0.5\delta[n-1]$，$h_R[n]=\delta[n]-0.5\delta[n-1]$。本题把人工输入记为 $s[n]$，负下标及源结束后的样本均为零，输出逐点为 $y_L[n]=s[n]+0.5s[n-1]$、$y_R[n]=s[n]-0.5s[n-1]$。
+
+固定频率 $f$，数字角频率 $\omega=2\pi f/f_s$ 的单位是 rad/样本。前向傅里叶核采用负指数，延迟一采样便乘 $e^{-\mathrm j\omega}$。把输入谱记为 $S(\omega)$，左右输出谱记为 $Y_L(\omega),Y_R(\omega)$，得到
+
+$$\begin{gathered}
+H_L(\omega)=1+0.5e^{-\mathrm j\omega},\\
+H_R(\omega)=1-0.5e^{-\mathrm j\omega},\\
+Y_L(\omega)=S(\omega)H_L(\omega),\\
+Y_R(\omega)=S(\omega)H_R(\omega),\\
+|H_L(\omega)|^2=1.25+\cos\omega,\\
+|H_R(\omega)|^2=1.25-\cos\omega.
+\end{gathered}\tag{1-14}$$
+
+最后两行可直接展开验证：$(1+0.5e^{-\mathrm j\omega})(1+0.5e^{\mathrm j\omega})=1+0.25+0.5(e^{-\mathrm j\omega}+e^{\mathrm j\omega})$，括号内等于 $2\cos\omega$。右侧负抽头只让交叉项反号，功率增益仍非负。这是完整离散卷积及其傅里叶响应，不把有限帧 STFT 的逐频点乘法无条件当作精确卷积，见 §2.3、§2.5。
+
+**第二步：在非零支持上消去共同源谱。** 若 $S(\omega)H_L(\omega)\ne0$，定义左右复比 $B_{RL}$，共同的 $S$ 才能约去。若两耳谱值都非零，还能计算有限的逐频 ILD 和 IPD：
+
+$$\begin{gathered}
+B_{RL}(\omega)=\frac{Y_R(\omega)}{Y_L(\omega)},\\
+B_{RL}(\omega)=\frac{H_R(\omega)}{H_L(\omega)},\\
+\mathrm{ILD}(\omega)=20\log_{10}|B_{RL}(\omega)|,\\
+\mathrm{IPD}(\omega)=\arg B_{RL}(\omega).
+\end{gathered}\tag{1-15}$$
+
+这里 ILD 为右减左声级，单位 dB；IPD 为右减左相位，单位 rad。$\arg$ 表示复数相位，本题取主值区间 $[-\pi,\pi)$，相差整圈的相位视为相同。$Y_R/Y_L$ 的相位等于 $Y_RY_L^*$ 的相位，因为后者只是前者乘以正数 $|Y_L|^2$。只有纯延迟、两耳谱非零的模型，才有 §1.1 的 $2\pi f\tau$ 关系；本题两个 FIR 不是纯延迟，不能据此换算唯一 ITD。
+
+取 $f_s=16000$ Hz，1 kHz、7 kHz 分别有 $\omega=\pi/8,7\pi/8$。两者余弦分别为 $+0.9238795,-0.9238795$，所以左右功率增益交换：
+
+| 频率 | 左功率增益 | 右功率增益 | 解析逐频 ILD | 解析逐频 IPD（右减左） |
+|---|---|---|---|---|
+| 1 kHz | 2.173880 | 0.326120 | −8.238574 dB | +27.032701° |
+| 7 kHz | 0.326120 | 2.173880 | +8.238574 dB | +27.032701° |
+
+相位也能复算：1 kHz 下 $H_L\approx1.461940-0.191342\mathrm j$、$H_R\approx0.538060+0.191342\mathrm j$，右除左约为 $0.345005+0.176037\mathrm j$。这个复比的相位是 $\arctan(0.176037/0.345005)\approx0.471810$ rad，即 +27.032701°；本例实部为正，其他象限应同时保留实部与虚部的符号。7 kHz 下复比不同，但恰好具有同样相位。这是指定 FIR 的结果，不是普适的双耳规则。
+
+**第三步：全带功率还要按源谱加权。** 两种输入均为长 2 秒、首尾各 20 ms 线性淡入淡出的 1 kHz／7 kHz 正弦之和；第一种两音幅度为 $(0.1,0.1)$，第二种为 $(0.12,0.04)$。两源、两双通道输出共同导出增益为 1，不逐文件峰值归一化。每个源含 32000 点，完整两抽头卷积输出含 32001 帧双通道，保留末尾一点。
+
+在半开区间 $[1600,30400)$ 上评分，共 28800 点。一采样历史也处于稳态区间，没有淡入淡出；1 kHz、7 kHz 分别含 1800、12600 个整周期，交叉平均为零。正弦幅度 $A$ 的均方为 $A^2/2$，所以左侧全带输出功率为 $P_L=\sum_{f\in\{1000,7000\}}(A_f^2/2)|H_L(f)|^2$，右侧同理。这里用 $H(f)$ 简写式(1-14)在 $\omega=2\pi f/f_s$ 的响应。
+
+第一种源的每音功率均为 0.005，于是 $P_L=0.005(2.1738795+0.3261205)=0.0125$，$P_R$ 相同，全带 ILD 为 0 dB。第二种源的每音功率分别为 $0.12^2/2=0.0072$、$0.04^2/2=0.0008$：
+
+$$\begin{gathered}
+P_L=0.0072(2.1738795)\\
+{}+0.0008(0.3261205)\\
+\approx0.015912829,\\
+P_R=0.0072(0.3261205)\\
+{}+0.0008(2.1738795)\\
+\approx0.004087171.
+\end{gathered}$$
+
+因此全带 ILD 为 $10\log_{10}(0.004087171/0.015912829)\approx-5.903246$ dB。两种输入的总功率分别是 0.01 与 0.008，未作等能量控制；改变全带 ILD 的是两音的相对权重，而共同缩放两音不会改变这个比值。两种源谱下的左右响应分别保持不变，逐频 ILD/IPD 的解析值也一直相同，不能把它们的 dB 值直接平均成全带 ILD。
+
+**第四步：读回实际 PCM，再比较解析值。** 两种源及双通道输出可分别试听，双通道次序都是左、右；先从低播放音量开始：
+
+**等幅源谱。** [单声道输入](../codes/chapters/ch01/spectral_audio/flat_source.wav)
+
+[左右人工响应输出](../codes/chapters/ch01/spectral_audio/flat_stereo.wav)
+
+**改变源谱。** [单声道输入](../codes/chapters/ch01/spectral_audio/tilted_source.wav)
+
+[同一对人工响应输出](../codes/chapters/ch01/spectral_audio/tilted_stereo.wav)
+
+E01-10 实际核对四个文件与当前生成源，再按同一稳窗分别报告解析、浮点和 PCM 值。PCM16 整数除以 32768 解码；整数平方和 $E$ 的共同分母为 $D=28800\times32768^2=30923764531200$，所以 $P=E/D$，没有增益拟合或延迟重对齐。
+
+| 输入源谱 | 左 PCM 整数平方和 | 右 PCM 整数平方和 | 左 PCM 均方 | 右 PCM 均方 | 全带 PCM ILD |
+|---|---|---|---|---|---|
+| 等幅 | 386556004800 | 386556004800 | 0.012500289 | 0.012500289 | 0.000000 dB |
+| 改变 | 492118106400 | 126383569200 | 0.015913913 | 0.004086940 | −5.903787 dB |
+
+逐频复幅度以已知频率投影计算：在同一稳窗中把样本乘 $e^{-\mathrm j\omega n}$，求和后乘 $2/28800$。对这里非 DC、非 Nyquist 的整周期正弦，这个系数的模是正弦幅度；纯正弦的系数为 $-\mathrm jA$，不是 RMS。左右比值中的相同投影因子消去。PCM 各文件独立舍入，投影所得复比会略偏离未量化的 $H_R/H_L$：
+
+| 输入源谱 | 频率 | PCM 逐频 ILD | PCM 逐频 IPD（右减左） |
+|---|---|---|---|
+| 等幅 | 1 kHz | −8.237377 dB | +27.027252° |
+| 等幅 | 7 kHz | +8.237377 dB | +27.027252° |
+| 改变 | 1 kHz | −8.239027 dB | +27.023913° |
+| 改变 | 7 kHz | +8.237087 dB | +27.026835° |
+
+实际 PCM 不应被写成逐频比值精确不变。输出均方包含全部量化后样本，逐频投影只测两个指定频率；它不是盲估计或完整 HRTF 测量。模型与当前源、文件摘要见[独立清单](../codes/chapters/ch01/spectral_audio/MANIFEST.json)，唯一实现见 [`spectral_cues.py`](../codes/chapters/ch01/core/spectral_cues.py)，只读核验入口为：
+
+```bash
+.venv/bin/python -m codes.chapters.ch01.examples.generate_spectral_cues --check
+```
+
+**失效与反例。** 若某频率的 $S=0$，两耳谱都为零，即使滤波响应非零，观测复比与 ILD 都成为 $0/0$，IPD 也无定义。本题两个人工响应没有零点；为了单独检查滤波零点，另取 $h_L=[1,1]$、$h_R=[1,-1]$：在 $\omega=\pi$ 且 $S\ne0$ 时，左响应为零、右响应为 2，右除左无定义，ILD 按极限为 $+\infty$；在 $\omega=0$ 时则右响应为零，ILD 为 $-\infty$。这两种情形都没有可比较的双耳相位。DC／Nyquist 只用于解析边界检查，不作为上述试听刺激。
+
+实现只返回有限可表示的指标：零窗口、零通道、已知频率投影不足以分辨，以及功率或增益不能以正有限浮点数表示时明确报错。投影支持阈值是该稳窗峰值的 $64\epsilon_{\mathrm{mach}}$，其中 $\epsilon_{\mathrm{mach}}$ 是双精度浮点数的机器精度；这个检查拒绝舍入级泄漏，不把地板当作真实源分量。
+
+最后，即使得到可信复比，也没有从方向到响应的校准流形，不能仅凭它反演唯一人体或阵列方向；参见 §3.4。该题只补足共同源谱、频率响应与观测比值的关系。
+
+可在[章节代码练习与音频实验](../codes/chapters/ch00/research/05_exercises_and_audio.md)中试听既有“单麦输入”“对齐后平均”和本章的残余时差、双耳线索、人工频率响应样本。文件保留各组共同增益，使用数学合成信号；先从低播放音量开始。听音帮助发现差别，功率、延迟与模型判断仍需以上述计算为准。
 
 ---
 

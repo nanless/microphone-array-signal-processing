@@ -1,0 +1,352 @@
+{
+  "schema_version": 1,
+  "exercise_id": "E01-10",
+  "sample_rate_hz": 16000,
+  "common_export_gain": 1.0,
+  "channel_order": [
+    "left",
+    "right"
+  ],
+  "source_sha256": {
+    "codes/chapters/ch01/core/spectral_cues.py": "606f1eafdd111e15b2906afb17230c5539f44414a65b36ae617b7e516d0d6504",
+    "codes/chapters/ch01/examples/generate_spectral_cues.py": "aac7b1914a38531c25dd608c4522beda8304f23acbce35b6d425945cedb9a000",
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
+  },
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "byteorder": "little",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O"
+  },
+  "parameters": {
+    "frequencies_hz": [
+      1000,
+      7000
+    ],
+    "source_amplitudes": {
+      "flat": [
+        0.1,
+        0.1
+      ],
+      "tilted": [
+        0.12,
+        0.04
+      ]
+    },
+    "filters_left_right": [
+      [
+        1.0,
+        0.5
+      ],
+      [
+        1.0,
+        -0.5
+      ]
+    ],
+    "source_samples": 32000,
+    "output_samples": 32001,
+    "source_duration_s": 2.0,
+    "output_duration_s": 2.0000625,
+    "fade": "min(1,t/0.02,(2-t)/0.02)",
+    "edge_fade_s": 0.02,
+    "scoring_window": [
+      1600,
+      30400
+    ],
+    "scoring_samples": 28800,
+    "initial_history": "zero",
+    "tail": "complete one-sample FIR tail, excluded from scoring",
+    "seed": null
+  },
+  "conventions": {
+    "fourier": "forward negative exponential",
+    "ild": "right minus left; 10 log10 power ratio",
+    "ipd": "arg(right*conjugate(left)); radians and degrees",
+    "spectral": "known-frequency real sine/cosine projection on the stable integer-period window",
+    "power": "uncentered digital mean square"
+  },
+  "quantization": {
+    "format": "signed little-endian PCM16",
+    "scale": 32768,
+    "rounding": "nearest, ties to even",
+    "clipping": "rejected",
+    "max_rounding_error_bound": 1.52587890625e-05
+  },
+  "limits": "Artificial known FIRs, two noiseless mathematical tone sources; not measured HRIR/HRTF, human localization, speech, a blind response estimator or a direction manifold. Sources have different total power. PCM ratios need not be exactly invariant.",
+  "listening": "Start at low volume, retain stereo channels; never autoplay. No formal listening test.",
+  "files": {
+    "flat_source.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "ca68f942d281ba1d83d8d45028a670b5447b85e9dc4134339190bc1632b2c7ef",
+      "peak": 0.184783935546875,
+      "quantization_max_abs_error": 1.5258676450411943e-05
+    },
+    "flat_stereo.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples_per_channel": 32001,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "b30605690bf57ee4841b3ec0c076b66614b3094fc532431c9f992dfe5ab12944",
+      "peak": 0.184783935546875,
+      "quantization_max_abs_error": 1.5258676450411943e-05
+    },
+    "tilted_source.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples_per_channel": 32000,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "c6fc0f05c45aef8c62144fcab6c40615fbd72f9a90ab18a09570823fa6735b98",
+      "peak": 0.1478271484375,
+      "quantization_max_abs_error": 1.5179441747420475e-05
+    },
+    "tilted_stereo.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples_per_channel": 32001,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "2df534466fdd9c20b41ada67da684115b2829602c6ee41cc3f2280123092f78a",
+      "peak": 0.187835693359375,
+      "quantization_max_abs_error": 1.5257235036704583e-05
+    }
+  },
+  "samples": {
+    "flat": {
+      "source_file": "flat_source.wav",
+      "stereo_file": "flat_stereo.wav",
+      "analytic": {
+        "source_mean_square": 0.010000000000000002,
+        "left_mean_square": 0.012500000000000002,
+        "right_mean_square": 0.012500000000000002,
+        "ild_right_minus_left_db": 0.0
+      },
+      "float_measurements": {
+        "source_mean_square": 0.009999999999999924,
+        "left_mean_square": 0.012499999999999865,
+        "right_mean_square": 0.01249999999999994,
+        "ild_right_minus_left_db": 2.4424906541753444e-14,
+        "spectral": [
+          {
+            "frequency_hz": 1000,
+            "source_complex": [
+              -1.3422787798299313e-14,
+              -0.09999999999999937
+            ],
+            "left_complex": [
+              -0.019134171618273958,
+              -0.1461939766255609
+            ],
+            "right_complex": [
+              0.01913417161824711,
+              -0.05380602337443781
+            ],
+            "left_power_gain": 2.173879532511289,
+            "right_power_gain": 0.3261204674887122,
+            "ild_right_minus_left_db": -8.238574173909782,
+            "ipd_right_minus_left_rad": 0.4718096415676878,
+            "ipd_right_minus_left_deg": 27.03270119540864
+          },
+          {
+            "frequency_hz": 7000,
+            "source_complex": [
+              -9.154639242173297e-14,
+              -0.09999999999999933
+            ],
+            "left_complex": [
+              -0.019134171618303938,
+              -0.05380602337441773
+            ],
+            "right_complex": [
+              0.019134171618120845,
+              -0.14619397662558092
+            ],
+            "left_power_gain": 0.32612046748871387,
+            "right_power_gain": 2.1738795325112896,
+            "ild_right_minus_left_db": 8.238574173909763,
+            "ipd_right_minus_left_rad": 0.47180964156769534,
+            "ipd_right_minus_left_deg": 27.03270119540907
+          }
+        ]
+      },
+      "pcm_measurements": {
+        "source_mean_square": 0.010000795358791947,
+        "left_mean_square": 0.012500289361923931,
+        "right_mean_square": 0.012500289361923931,
+        "ild_right_minus_left_db": 0.0,
+        "spectral": [
+          {
+            "frequency_hz": 1000,
+            "source_complex": [
+              5.118308668360003e-14,
+              -0.10000397671092963
+            ],
+            "left_complex": [
+              -0.019132235130568977,
+              -0.1461932782418508
+            ],
+            "right_complex": [
+              0.019132235130671343,
+              -0.05381467518000843
+            ],
+            "left_power_gain": 2.17367881713536,
+            "right_power_gain": 0.32618022557732046,
+            "ild_right_minus_left_db": -8.237377443847791,
+            "ipd_right_minus_left_rad": 0.4717145324157981,
+            "ipd_right_minus_left_deg": 27.02725184241229
+          },
+          {
+            "frequency_hz": 7000,
+            "source_complex": [
+              2.6719008738858996e-13,
+              -0.10000397671092917
+            ],
+            "left_complex": [
+              -0.01913223513050029,
+              -0.05381467518006911
+            ],
+            "right_complex": [
+              0.019132235131034667,
+              -0.1461932782417892
+            ],
+            "left_power_gain": 0.326180225577322,
+            "right_power_gain": 2.1736788171353614,
+            "ild_right_minus_left_db": 8.237377443847771,
+            "ipd_right_minus_left_rad": 0.4717145324158061,
+            "ipd_right_minus_left_deg": 27.02725184241275
+          }
+        ]
+      },
+      "pcm_integer_measurements": {
+        "left_squared_sum_E": 386556004800,
+        "right_squared_sum_E": 386556004800,
+        "integer_denominator_D": 30923764531200,
+        "samples": 28800,
+        "left_mean_square": 0.012500289361923933,
+        "right_mean_square": 0.012500289361923933,
+        "ild_right_minus_left_db": 0.0
+      }
+    },
+    "tilted": {
+      "source_file": "tilted_source.wav",
+      "stereo_file": "tilted_stereo.wav",
+      "analytic": {
+        "source_mean_square": 0.008,
+        "left_mean_square": 0.015912829008072237,
+        "right_mean_square": 0.004087170991927765,
+        "ild_right_minus_left_db": -5.903245887285964
+      },
+      "float_measurements": {
+        "source_mean_square": 0.007999999999999967,
+        "left_mean_square": 0.01591282900807216,
+        "right_mean_square": 0.004087170991927745,
+        "ild_right_minus_left_db": -5.903245887285966,
+        "spectral": [
+          {
+            "frequency_hz": 1000,
+            "source_complex": [
+              -1.582624433545164e-14,
+              -0.11999999999999976
+            ],
+            "left_complex": [
+              -0.022961005941928448,
+              -0.17543277195067386
+            ],
+            "right_complex": [
+              0.022961005941896803,
+              -0.06456722804932566
+            ],
+            "left_power_gain": 2.173879532511287,
+            "right_power_gain": 0.3261204674887129,
+            "ild_right_minus_left_db": -8.238574173909772,
+            "ipd_right_minus_left_rad": 0.4718096415676878,
+            "ipd_right_minus_left_deg": 27.03270119540864
+          },
+          {
+            "frequency_hz": 7000,
+            "source_complex": [
+              -3.6846796196707066e-14,
+              -0.03999999999999959
+            ],
+            "left_complex": [
+              -0.007653668647321815,
+              -0.021522409349766947
+            ],
+            "right_complex": [
+              0.007653668647248118,
+              -0.05847759065023222
+            ],
+            "left_power_gain": 0.32612046748871465,
+            "right_power_gain": 2.173879532511292,
+            "ild_right_minus_left_db": 8.238574173909758,
+            "ipd_right_minus_left_rad": 0.4718096415677042,
+            "ipd_right_minus_left_deg": 27.032701195409583
+          }
+        ]
+      },
+      "pcm_measurements": {
+        "source_mean_square": 0.008000179310329258,
+        "left_mean_square": 0.015913913259282708,
+        "right_mean_square": 0.004086939967237411,
+        "ild_right_minus_left_db": -5.903787281181538,
+        "spectral": [
+          {
+            "frequency_hz": 1000,
+            "source_complex": [
+              6.143087793214117e-14,
+              -0.12000139454847568
+            ],
+            "left_complex": [
+              -0.022962732598557235,
+              -0.175438335017288
+            ],
+            "right_complex": [
+              0.022950289160617834,
+              -0.0645696083204713
+            ],
+            "left_power_gain": 2.1739700602924343,
+            "right_power_gain": 0.3261000658067317,
+            "ild_right_minus_left_db": -8.23902672283185,
+            "ipd_right_minus_left_rad": 0.4716562511802893,
+            "ipd_right_minus_left_deg": 27.02391257359283
+          },
+          {
+            "frequency_hz": 7000,
+            "source_complex": [
+              1.0671523559433434e-13,
+              -0.040000296760393746
+            ],
+            "left_complex": [
+              -0.007652265608444634,
+              -0.021526093345487905
+            ],
+            "right_complex": [
+              0.007653919453501547,
+              -0.05847518522026383
+            ],
+            "left_power_gain": 0.32620132458839607,
+            "right_power_gain": 2.173673852830467,
+            "ild_right_minus_left_db": 8.237086610429593,
+            "ipd_right_minus_left_rad": 0.471707258258367,
+            "ipd_right_minus_left_deg": 27.026835063891976
+          }
+        ]
+      },
+      "pcm_integer_measurements": {
+        "left_squared_sum_E": 492118106400,
+        "right_squared_sum_E": 126383569200,
+        "integer_denominator_D": 30923764531200,
+        "samples": 28800,
+        "left_mean_square": 0.015913913259282708,
+        "right_mean_square": 0.004086939967237413,
+        "ild_right_minus_left_db": -5.903787281181538
+      }
+    }
+  }
+}

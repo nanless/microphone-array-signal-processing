@@ -171,12 +171,29 @@ class BinauralCueTest(unittest.TestCase):
 
     def test_analysis_rejects_silence_complex_and_wrong_shape(self):
         for invalid in (np.zeros((2, 32008)), np.ones((2, 32008), dtype=complex),
-                        np.ones((2, 32000)), np.full((2, 32008), np.nan)):
+                        np.ones((2, 32000)), np.full((2, 32008), np.nan),
+                        np.full((2, 32008), np.inf)):
             with self.subTest(shape=invalid.shape, dtype=invalid.dtype):
                 with self.assertRaises(ValueError):
                     measure_cues(invalid, (0, 0))
         with self.assertRaises(ValueError):
             measure_cues(build_cues()['reference'], (0, 8))
+
+    def test_integer_amplitudes_are_squared_without_dtype_wrap(self):
+        # Python integer arithmetic supplies the expected squares, independent
+        # of both NumPy's original dtype and the measurement implementation.
+        for dtype, amplitude in ((np.int16, 300), (np.int16, 32767),
+                                 (np.int32, 100000)):
+            with self.subTest(dtype=dtype, amplitude=amplitude):
+                values = np.full((2, 32008), amplitude, dtype=dtype)
+                before = values.copy()
+                result = measure_cues(values, (0, 0))
+                self.assertEqual(result['left_mean_square'], amplitude * amplitude)
+                self.assertEqual(result['right_mean_square'], amplitude * amplitude)
+                self.assertEqual(result['left_rms'], amplitude)
+                self.assertEqual(result['ild_right_minus_left_db'], 0.0)
+                self.assertAlmostEqual(result['winning_correlation'], 1.0)
+                np.testing.assert_array_equal(values, before)
 
 
 if __name__ == '__main__':

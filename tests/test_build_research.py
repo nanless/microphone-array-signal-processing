@@ -288,6 +288,18 @@ class ResearchBuildTest(unittest.TestCase):
                     with mock.patch.object(Path, "read_bytes", read):
                         self.assertNotEqual(before, digest())
 
+    def test_site_digests_bind_every_spectral_asset(self):
+        original_read = Path.read_bytes
+        self.assertEqual(build_site.source_digest(), quality_check.site_source_digest())
+        for digest in (build_site.source_digest, quality_check.site_source_digest):
+            before = digest()
+            for changed in sorted(build_site.SPECTRAL_AUDIO_ROOT.iterdir()):
+                def read(path):
+                    return original_read(path) + (b"changed" if path == changed else b"")
+                with self.subTest(digest=digest.__qualname__, asset=changed.name):
+                    with mock.patch.object(Path, "read_bytes", read):
+                        self.assertNotEqual(before, digest())
+
     def test_pdf_same_chapter_fragment_gets_chapter_prefix(self):
         result = build_pdf.rewrite_repository_links(
             '<a href="#sec-4-9">MDL</a><a href="#sec-1">章首</a>',
@@ -444,6 +456,7 @@ class ResearchBuildTest(unittest.TestCase):
                                              (output / "moving_audio").resolve(),
                                              (output / "tracking_audio").resolve(),
                                              (output / "binaural_audio").resolve(),
+                                             (output / "spectral_audio").resolve(),
                                              (output / "stft_audio").resolve(),
                                              (output / "geometry_audio").resolve(),
                                              (output / "focus_audio").resolve(),
@@ -457,7 +470,7 @@ class ResearchBuildTest(unittest.TestCase):
                                              (output / "response_audio").resolve(),
                                              (output / "distributed_audio").resolve()}:
                             owner = {"gss_audio": "ch08", "moving_audio": "ch09",
-                                     "tracking_audio": "ch09", "binaural_audio": "ch01", "stft_audio": "ch02",
+                                     "tracking_audio": "ch09", "binaural_audio": "ch01", "spectral_audio": "ch01", "stft_audio": "ch02",
                                      "geometry_audio": "ch03", "focus_audio": "ch04", "derivative_audio": "ch05",
                                      "apa_audio": "ch06", "mint_audio": "ch07", "mask_audio": "ch08",
                                      "noise_audio": "ch10", "scenario_audio": "ch11",

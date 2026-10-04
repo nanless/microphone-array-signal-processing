@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>空间处理与追踪源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="3da085ae88b5"><style>
+<meta name="source-digest" content="ef191c5a48bf"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -48,6 +48,7 @@ h4{font-size:15.5px;margin-top:20px;color:#333}
 .tutorial-math-tail{display:inline-block;white-space:nowrap;overflow-wrap:normal;vertical-align:baseline;overflow:visible}
 .tutorial-math-tail mjx-assistive-mml{max-width:1px!important;min-width:0!important;white-space:normal}
 .tutorial-exercise-id{white-space:nowrap;overflow-wrap:normal}
+.tutorial-table-label{white-space:nowrap;overflow-wrap:normal}
 @media(max-width:900px){.selection-readable-table{min-width:760px}.selection-readable-table th,.selection-readable-table td{min-width:10em}.selection-readable-table th:first-child,.selection-readable-table td:first-child{min-width:6em}}
 @media(max-width:900px){.side{display:none}.main{padding:20px}.toc-mobile{display:block}.topbar{font-size:14px}mjx-container[jax="CHTML"]:not([display="true"]){display:inline-block;vertical-align:middle}.aec-readable-table th,.aec-readable-table td,.wpe-readable-table th,.wpe-readable-table td,.separation-readable-table th,.separation-readable-table td{min-width:8em}.tracking-readable-table th,.tracking-readable-table td{min-width:8em}.industrial-readable-table th,.industrial-readable-table td{min-width:8em}}
 @media(max-width:900px){.noise-readable-table th:first-child,.noise-readable-table td:first-child{min-width:6em}}
@@ -483,7 +484,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="01_spatial_and_tracking.html#sec-u-fe0d164adb">工业入口与先进方法怎样继续研究</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="空间处理与声源追踪算法实现和工业使用条件" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-8b9c858ba6">空间处理与声源追踪：算法、实现和工业使用条件</h1>
-<p>基础索引核实日期：2026-09-22；第 1 章相关研究及最小原生调用、第 2 章相关资料与原方法提取调用核实于 2026-09-30，第 4 章相关原始资料及有限原方法调用核实于 2026-10-01，第 5 章相关研究小节、原论文与限定原函数审计复核于 2026-10-01（历史报告仍保留原执行日期）；第 9 章原始资料与限定接口合同复核于 2026-10-01，保留 2026-09-28 的历史运行记录；DCASE 2026 任务状态及近年候选的后续复核日期见各条 2026-09-29 记录。对应正文第 1～5 章和第 9 章。这里按算法的输入、计算步骤和可检查结果整理源码，既包括语音前端，也包括直接相关的球阵录音与工业噪声源成像。后两类任务的输出不同，不能把声源功率图或 Ambisonics 解码结果当成增强语音。</p>
+<p>基础索引核实日期：2026-09-22；第 1 章相关研究核实于2026-09-30、原归一化报告执行于2026-10-01 UTC，本轮原始资料/源码复查及原插值控制执行于2026-10-04；第 2 章相关资料与原方法提取调用核实于2026-09-30，第 4 章相关原始资料及有限原方法调用核实于 2026-10-01，第 5 章相关研究小节、原论文与限定原函数审计复核于 2026-10-01（历史报告仍保留原执行日期）；第 9 章原始资料与限定接口合同复核于 2026-10-01，保留 2026-09-28 的历史运行记录；DCASE 2026 任务状态及近年候选的后续复核日期见各条 2026-09-29 记录。对应正文第 1～5 章和第 9 章。这里按算法的输入、计算步骤和可检查结果整理源码，既包括语音前端，也包括直接相关的球阵录音与工业噪声源成像。后两类任务的输出不同，不能把声源功率图或 Ambisonics 解码结果当成增强语音。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="阅读与复现方式" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-37b31460d5">阅读与复现方式</h2>
 <p>先运行本书的 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/ch02_05_baselines.py"><code>ch02_05_baselines.py</code></a> 和 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/ch06_09_baselines.py"><code>ch06_09_baselines.py</code></a>，确认时延正负、共轭、通道顺序和角度零点。再按下面的文件入口阅读外部实现。外部目录位于 <code>codes/chapters/ch00/upstream/_downloads/&lt;项目 ID&gt;/</code>，由锁定清单和获取工具管理。下载、导入、单次演示成功、论文实验复现和设备验收是不同结果。</p>
 <p>本文的“最小实验”是建议的独立验证方案，未附运行结果的方案均未在本文中宣称通过。固定版本源码中的静态疑点集中放在末节；它们不能被隐藏在“有官方实现”的分类里。外部包缺少编译器、求解器、MATLAB、模型或测量数据时，仍可阅读源码，但不能据此声称运行验证完成。</p>
@@ -609,39 +610,39 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 </tbody>
 </table></div>
-<p>这些任务有不同的软件入口。例如 SOFA 官方的 <a href="https://www.sofacoustics.org/mediawiki/index.php/Software_and_APIs">Software and APIs</a> 页面列出 libmysofa 的 C 数据读取、IRCAM Spat/Panoramix 的空间创作与混音，以及 3D Tune-In 的耳机空间化用途。这里只用项目说明核对应用范围，不以这些入口证明设备性能或部署规模。第 1 章优先用已锁定的 libmysofa 检查共同增益；个体化 HRTF 与神经插值需要数据、基线误差和渲染实验，本章不再增加只有名称的模型。</p>
+<p>这些任务有不同的软件入口。例如 SOFA 官方的 <a href="https://www.sofacoustics.org/mediawiki/index.php/Software_and_APIs">Software and APIs</a> 页面列出 libmysofa 的 C 数据读取、IRCAM Spat/Panoramix 的空间创作与混音，以及 3D Tune-In 的耳机空间化用途。用途还可直接查<a href="https://forum.ircam.fr/media/uploads/forumnet-legacy/2016/12/Panoramix-QuickStart2.pdf">IRCAM Panoramix维护者手册§1与§6</a>中的空间创作、混音及双耳输出，以及<a href="https://github.com/3DTune-In/3dti_AudioToolkit">3D Tune-In维护者说明</a>中的耳机空间化模块。2026-10-04仅审读这些用途段落，未取得这两个项目的源码或验证当前许可、运行平台、渲染和设备性能；数据许可与代码许可仍须分别核查。第 1 章优先用已锁定的 libmysofa 检查共同增益；个体化 HRTF 与神经插值需要数据、基线误差和渲染实验，本章不再增加只有名称的模型。</p>
 <p>ODAS 是现有源码中连接声源定位、追踪与分离的入口之一。其维护者 README 把定位、追踪、分离和后滤波列为不同功能；本书固定的 <code>mod_ssl.c</code>、<code>mod_sst.c</code>、<code>mod_sss.c</code> 也分别保留这些模块。它可以帮助读者理解方向候选如何变成连续轨迹、轨迹怎样控制输出流，但取得这些 C 源文件不能证明已经在某个设备上达到实时性能。<a href="https://github.com/introlab/odas/blob/bcb845434495e293df3d48f1203b7a86e1852449/README.md">ODAS 固定版本说明</a></p>
 <p>对麦克风平均增益，还要分别记录目标与噪声。若两者都减半，输出功率都会降到四分之一，信噪比保持不变；若噪声通道相关，则四麦等权平均也不必得到 6.02 dB。第 1 章 E01-01～E01-03 已给出这两类反例与不等噪声权重计算。实际录音缺少目标和噪声的分量参考时，只能报告可测的总输出功率或其他明确指标，不能由声音变小反推 SNR 增益。</p>
 <span id="现有官方源码怎样用于双耳研究" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-1ccd13aea4">现有官方源码怎样用于双耳研究</h3>
 <p>优先复用已经取得的 Spatial Audio Framework（SAF）。本节核对的是固定提交 <code>18fd5aba46e20787b51f28f7197a68506c965c07</code> 的源码行为；尚未在本节运行其编译和音频渲染，也没有将其函数改名当成本书独立实现。相关模块源码和头文件声明 ISC 许可，其他可选模块及第三方依赖仍按上表分别核对。</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:64em">
 <thead>
 <tr>
-<th scope="col">源码入口</th>
-<th scope="col">实际操作</th>
-<th scope="col">与本章的关系及限制</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:32em">源码入口</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:18em">实际操作</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:22em">与本章的关系及限制</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>framework/modules/saf_hrir/saf_hrir.c::estimateITDs</code></td>
-<td>左右 HRIR 先经 750 Hz 二阶低通，再寻找互相关最大值，换算到秒并限幅</td>
-<td>是特定带宽及峰值规则的时差估计，不是 Woodworth 几何公式或听觉神经模型</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:32em"><code>framework/modules/saf_hrir/saf_hrir.c::estimateITDs</code></td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">左右 HRIR 先经 750 Hz 二阶低通，再寻找互相关最大值，换算到秒并限幅</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:22em">是特定带宽及峰值规则的时差估计，不是 Woodworth 几何公式或听觉神经模型</td>
 </tr>
 <tr>
-<td>同文件 <code>HRIRs2HRTFs</code></td>
-<td>对每个方向、每只耳朵作实数 FFT；FFT 长度不短于 HRIR 时补零，否则先截断</td>
-<td>可以从 HRIR 检查频率响应；补零不增加测量信息，短 FFT 会丢失尾部</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:32em">同文件 <code>HRIRs2HRTFs</code></td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">对每个方向、每只耳朵作实数 FFT；FFT 长度不短于 HRIR 时补零，否则先截断</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:22em">可以从 HRIR 检查频率响应；补零不增加测量信息，短 FFT 会丢失尾部</td>
 </tr>
 <tr>
-<td>同文件 <code>interpHRTFs</code></td>
-<td>可直接插值复数 HRTF；提供 ITD 时走幅度与时差相关的处理分支</td>
-<td>插值规则会改变幅相；要分别测中间方向与原测量方向的误差</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:32em">同文件 <code>interpHRTFs</code></td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">可直接插值复数 HRTF；提供 ITD 时走幅度与时差相关的处理分支</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:22em">插值规则会改变幅相；要分别测中间方向与原测量方向的误差</td>
 </tr>
 <tr>
-<td><code>framework/modules/saf_hrir/saf_hrir.h</code></td>
-<td>定义方向、左右耳、滤波器长度与输出布局</td>
-<td>适配前先检查实际内存顺序，不能仅按二维数组外观猜左右声道</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:32em"><code>framework/modules/saf_hrir/saf_hrir.h</code></td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">定义方向、左右耳、滤波器长度与输出布局</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:22em">适配前先检查实际内存顺序，不能仅按二维数组外观猜左右声道</td>
 </tr>
 </tbody>
 </table></div>
@@ -649,39 +650,88 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>建议先用左右相同的人工脉冲、交换左右的整数延迟脉冲、近边界时延和全零输入检查符号、网格与退化输出，再使用数据集 HRIR。这里的人工脉冲用于检查软件接口，不是人体响应。全零输入和强干扰峰尤其应单列，因为函数返回的有限时差本身并不证明存在可靠的声源证据。</p>
 <span id="sofa-数据接口与新增资源的收录边界" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-7a1b197af1">SOFA 数据接口与新增资源的收录边界</h3>
 <p>空间定向声学格式（Spatially Oriented Format for Acoustics，SOFA）用于交换 HRTF、双耳或空间房间脉冲响应等数据。格式兼容只说明软件知道怎样组织数据；仍须读取具体文件中的坐标、采样率、接收器顺序、时延及数据许可。<a href="https://www.sofacoustics.org/mediawiki/index.php/Main_Page">SOFA 项目说明与规范入口</a></p>
-<p>读取 SOFA、按方向获取和插值左右滤波器，可阅读维护者官方实现 <a href="https://github.com/hoene/libmysofa">libmysofa</a>。SOFA 项目的 <a href="https://www.sofacoustics.org/mediawiki/index.php/Software_and_APIs">Software and APIs</a> 页面直接链接该实现。本书锁定版本为 v1.3.5、提交 <code>6cc5b15a73e9bd97810d03767082edda7f315881</code>，其<a href="https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/LICENSE">许可证文件</a>给出三条款 BSD 条件。源码子集和许可证已取得到 <code>codes/chapters/ch00/upstream/_downloads/libmysofa/</code>。2026-09-30 仅对原方法的公共归一化函数进行了提取调用：直接编译原始 <code>loudness.c</code> 和 <code>tools.c</code>，在临时目录用人工结构调用；未取得 <code>share/</code> 和 <code>tests/</code> 中的 SOFA 测量数据，也未运行完整读取与渲染链。</p>
+<p>读取 SOFA、按方向获取和插值左右滤波器，可阅读维护者官方实现 <a href="https://github.com/hoene/libmysofa">libmysofa</a>。SOFA 项目的 <a href="https://www.sofacoustics.org/mediawiki/index.php/Software_and_APIs">Software and APIs</a> 页面直接链接该实现。本书锁定版本为 v1.3.5、提交 <code>6cc5b15a73e9bd97810d03767082edda7f315881</code>，其<a href="https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/LICENSE">许可证文件</a>给出三条款 BSD 条件。源码子集和许可证已取得到 <code>codes/chapters/ch00/upstream/_downloads/libmysofa/</code>。原归一化报告的实际执行日期为2026-10-01 UTC，2026-09-30是此前资料审读日期；该次仅对原方法的公共归一化函数进行了提取调用：直接编译原始 <code>loudness.c</code> 和 <code>tools.c</code>，在临时目录用人工结构调用；未取得 <code>share/</code> 和 <code>tests/</code> 中的 SOFA 测量数据，也未运行完整读取与渲染链。</p>
 <p>官方接口文档说明 <code>mysofa_open</code> 会在读取时归一化，而 <code>mysofa_open_no_norm</code> 保留未归一化数据。研究方向间增益、ILD 或不同软件输出时，应明确实际调用和增益处理；归一化、重采样和插值都不是“原始文件完全未变”。固定版 <code>loudness.c</code> 计算一个公共缩放因子，并乘到整个 <code>DataIR</code> 数组，两耳不会在这一步各自归一化。<a href="https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/README.md">维护者接口说明</a></p>
 <p><strong>最小原生调用的实际结果。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch01/examples/audit_libmysofa_loudness.py">调用工具</a>先核对来源锁表、HEAD、干净工作树及编译所需源码与头文件的 Git 字节和 SHA；原始 C 文件直接参与编译，不修改上游。临时导出头只定义空的 <code>MYSOFA_EXPORT</code> 宏，是编译脚手架。自写调用程序设一个球坐标方向 <code>[0°, 0°, 1 m]</code>、两个接收器和每耳一个系数，结构尺寸为 <code>M=1、C=3、R=2、N=1</code>。人工系数不是测量 HRIR。</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:52em">
 <thead>
 <tr>
-<th scope="col">人工输入 <code>[左, 右]</code></th>
-<th scope="col">独立计算的预期</th>
-<th scope="col">实际调用结果</th>
-<th scope="col">可以支持什么</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">人工输入 <code>[左, 右]</code></th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:16em">独立计算的预期</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:16em">实际调用结果</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:12em">可以支持什么</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>[1, 0.5]</code></td>
-<td>两耳能量和 <code>1²+0.5²=1.25</code>；公共因子 <code>sqrt(2/1.25)</code>，约 1.264911</td>
-<td>因子约 1.264911；输出约 <code>[1.264911, 0.632456]</code>，两耳能量和约 2、幅度比约 2</td>
-<td>该输入下共同缩放保持右减左 ILD 约 −6.02 dB</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em"><code>[1, 0.5]</code></td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">两耳能量和 <code>1²+0.5²=1.25</code>；公共因子 <code>sqrt(2/1.25)</code>，约 1.264911</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">因子约 1.264911；输出约 <code>[1.264911, 0.632456]</code>，两耳能量和约 2、幅度比约 2</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">该输入下共同缩放保持右减左 ILD 约 −6.02 dB</td>
 </tr>
 <tr>
-<td><code>[0, 0]</code></td>
-<td>选定响应能量为零，公式涉及除零与无穷乘零</td>
-<td>因子为正无穷，两耳输出都是 NaN</td>
-<td>该固定版本及编译配置下的退化；不是成功归一化</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em"><code>[0, 0]</code></td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">选定响应能量为零，公式涉及除零与无穷乘零</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">因子为正无穷，两耳输出都是 NaN</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">该固定版本及编译配置下的退化；不是成功归一化</td>
 </tr>
 </tbody>
 </table></div>
 <p>运行使用 Apple clang 21.0.0、C99、<code>-O0</code>，非零数值的绝对核对容差为 <code>2×10⁻⁶</code>。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch01/reports/libmysofa_loudness.json">实际报告</a>保留编译器、实际命令、源 SHA、脚手架摘要、输入、输出与未执行范围；非有限结果以 <code>null</code> 和分类字段保存，符合严格 JSON。报告中的“符合预期”包括确认全零退化，不代表两例都成功归一化。可在已有锁定源码与 C 编译器的环境运行：</p>
-<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch01.examples.audit_libmysofa_loudness --report codes/chapters/ch01/reports/libmysofa_loudness.json
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch01.examples.audit_libmysofa_loudness
 </code></pre>
-<p>参考方向的选择也有条件。固定版 <code>loudness.c</code> 先在球坐标中最小化方位角与仰角的和 <code>c[0]+c[1]</code>，相同时再比较半径；它不是一般的角距离最小化。此次只有一个方向，验证了公共缩放与全零退化，没有验证多方向网格的参考选择。使用自己的数据网格时，仍须核对哪个响应被选作参考及其能量。<a href="https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/src/hrtf/loudness.c">固定版函数，行 30–55</a></p>
+<p>参考方向的选择也有条件。固定版 <code>loudness.c</code> 先在球坐标中最小化方位角与仰角的和 <code>c[0]+c[1]</code>，相同时再比较半径；它不是一般的角距离最小化。此次只有一个方向，验证了公共缩放与全零退化，没有验证多方向网格的参考选择。2026-10-04重新执行默认只读stdout，两个结果保持；未覆盖或改写这份历史报告。使用自己的数据网格时，仍须核对哪个响应被选作参考及其能量。<a href="https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/src/hrtf/loudness.c">固定版函数，行 30–55</a></p>
 <p>额外延迟需单独核查。固定版 README 将浮点接口的延迟标为秒、short 接口标为采样数，但源码与 SOFA 的数据单位之间存在不一致：SOFA 将 <code>Data.Delay</code> 定义为采样数；<code>reader.c</code> 直接读取该数组，<code>interpolate.c</code> 对其取值或加权，浮点接口直接返回所得数值。重采样时 <code>resample.c</code> 按新旧采样率之比缩放延迟，而 short 接口会将插值结果再乘当前采样率。</p>
 <p>因此，不能只按 README 的“秒”注释决定补偿量，也不能忽略额外延迟。本书记录的是固定版本的静态源码矛盾，尚未用含非零 <code>Data.Delay</code>、不同输入输出采样率的文件运行验证，不据此声称端到端渲染已经正确。<a href="https://www.sofaconventions.org/mediawiki/index.php/GeneralFIR">SOFA 延迟定义</a>；<a href="https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/src/hrtf/easy.c">固定版接口实现</a>；<a href="https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/src/hrtf/resample.c">固定版重采样实现</a>。</p>
+<p><strong>方向查询还须转换坐标。</strong> 本书水平面角度以正前方为零、向右为正；固定版libmysofa的说明采用X向前、Y向左、Z向上，方位角逆时针增加。在听者朝向及上下轴一致、水平面、采用该球坐标约定时，输入方位应为本书角度的负值：本书右30°对应SOFA −30°，或同一方向的330°。原归一化案例只有0°，所以不能检出左右镜像。使用具体文件前还要读坐标类型、<code>ListenerView</code>、<code>ListenerUp</code>与接收器次序；这个负号关系不能用于朝向或坐标轴已经旋转的任意文件。<a href="https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/README.md">固定版坐标说明</a></p>
+<p><strong>公共延迟的原插值控制（2026-10-04实际运行）。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch01/examples/audit_libmysofa_interpolation.py">独立工具</a>编译完整原<code>interpolate.c</code>与<code>tools.c</code>，由人工调用者提供两个位置、最近点及邻点索引。两个位置为(−1,0,0)/(1,0,0)，每个接收器仅一个IR系数，两位置的左右系数分别为[2,4]/[4,6]；查询中点到两位置的距离均为1，所以IR的独立预期为[3,5]。这不是经过SOFA读取、格式检查和自动邻域查询的测量数据。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:50em">
+<thead>
+<tr>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:16em">延迟值的存储方式与查询</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:12em">独立数学预期：左右IR／延迟值</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:12em">原函数实际结果</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:12em">解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">公共[8,16]，准确命中第一位置</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">[2,4]／[8,16]</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">[2,4]／[8,16]</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">距离为零时直接返回</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">公共[8,16]，等距中点</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">[3,5]／[8,16]</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">[3,5]／[4,8]</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">公共延迟保持的不变量失败</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">公共[0,0]，等距中点</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">[3,5]／[0,0]</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">[3,5]／[0,0]</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">零值会掩盖上述缺陷</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">每方向均[8,16]，等距中点</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">[3,5]／[8,16]</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">[3,5]／[8,16]</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">相同延迟换成逐方向布局则保持</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">两方向[8,16]/[12,20]，等距中点</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">[3,5]／[10,18]</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">[3,5]／[10,18]</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">逐方向分支累计邻点后正确平均</td>
+</tr>
+</tbody>
+</table></div>
+<p>原因在固定版原代码的公共延迟分支：先把最近点延迟乘距离倒数，加入邻点时却只在逐方向延迟布局下累计延迟，最后两种布局都除以总权重。中点的两个权重均为1，公共分支只有一个分子的[8,16]，却除以2。因此IR插值正确、延迟返回有限值，都不能证明延迟保持正确。<a href="https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/src/hrtf/interpolate.c">固定原函数</a></p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch01/reports/libmysofa_interpolation.json">实际报告</a>把独立数学不变量失败与成功复现原缺陷分开保存，记录完整origin/提交、六所用原文件的Git blob/SHA与许可、前后洁净、当前锁表/状态及完整选集核验范围。Apple clang21、C99、<code>-O0</code>的五人工控制不验证延迟单位转换；表内是裸结构的延迟数值，不能由本次调用声称秒或采样数已经正确处理。SOFA GeneralFIR规范的<code>Data.Delay</code>定义为采样数且允许公共IR/逐方向MR布局，是另一个规范依据；前述easy/重采样单位矛盾仍保留静态范围。原SOFA解析、自动方向查询、真实数据、重采样、卷积、渲染与设备实验均未运行，上游和旧归一化报告不改。</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch01.examples.audit_libmysofa_interpolation
+</code></pre>
+<p>此命令默认只写stdout；只有显式<code>--report codes/chapters/ch01/reports/libmysofa_interpolation.json</code>才写当前报告，写前拒绝符号链接、受保护路径或覆盖其他仓内文件。</p>
 <p>SAF 提供听觉响应的处理函数，libmysofa 补充 SOFA 数据读取及方向查询入口，两者承担不同步骤。源码筛选保留 <code>src/hrtf/</code>、<code>src/hdf/</code>、<code>src/resampler/</code>（K-D 树源码位于 <code>src/hrtf/kdtree.c</code>）、必要构建说明、README 和许可证；省略测试和测量数据，不表示已经形成可直接重现官方测试的完整环境。重采样器与 K-D 树的原始源码声明也随文件保留。HRTF 个体化、神经插值及神经双耳渲染需要独立的数据、误差定义和渲染实验，本章不把这些方法名称堆入入门任务目录。</p>
 <span id="sec-4" class="anchor-alias" aria-hidden="true"></span><span id="基础模型统计估计与校准" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-e77feefd5d">基础模型、统计估计与校准</h2>
 <span id="sec-5" class="anchor-alias" aria-hidden="true"></span><span id="1-远场与近场导向矢量" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-3ee9a1ab52">1. 远场与近场导向矢量</h3>

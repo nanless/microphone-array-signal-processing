@@ -1,6 +1,6 @@
 # 空间处理与声源追踪：算法、实现和工业使用条件
 
-基础索引核实日期：2026-09-22；第 1 章相关研究及最小原生调用、第 2 章相关资料与原方法提取调用核实于 2026-09-30，第 4 章相关原始资料及有限原方法调用核实于 2026-10-01，第 5 章相关研究小节、原论文与限定原函数审计复核于 2026-10-01（历史报告仍保留原执行日期）；第 9 章原始资料与限定接口合同复核于 2026-10-01，保留 2026-09-28 的历史运行记录；DCASE 2026 任务状态及近年候选的后续复核日期见各条 2026-09-29 记录。对应正文第 1～5 章和第 9 章。这里按算法的输入、计算步骤和可检查结果整理源码，既包括语音前端，也包括直接相关的球阵录音与工业噪声源成像。后两类任务的输出不同，不能把声源功率图或 Ambisonics 解码结果当成增强语音。
+基础索引核实日期：2026-09-22；第 1 章相关研究核实于2026-09-30、原归一化报告执行于2026-10-01 UTC，本轮原始资料/源码复查及原插值控制执行于2026-10-04；第 2 章相关资料与原方法提取调用核实于2026-09-30，第 4 章相关原始资料及有限原方法调用核实于 2026-10-01，第 5 章相关研究小节、原论文与限定原函数审计复核于 2026-10-01（历史报告仍保留原执行日期）；第 9 章原始资料与限定接口合同复核于 2026-10-01，保留 2026-09-28 的历史运行记录；DCASE 2026 任务状态及近年候选的后续复核日期见各条 2026-09-29 记录。对应正文第 1～5 章和第 9 章。这里按算法的输入、计算步骤和可检查结果整理源码，既包括语音前端，也包括直接相关的球阵录音与工业噪声源成像。后两类任务的输出不同，不能把声源功率图或 Ambisonics 解码结果当成增强语音。
 
 ## 阅读与复现方式
 
@@ -70,7 +70,7 @@ Brughera、Dunai 与 Hartmann 的实验使用等声级耳机纯音，起止包�
 | 多人同时讲话且都要保留 | 混合音频 → 多个输出流及各自活动范围 | 输出流的说话人身份是否跨时间一致；单束目标增强不等于完整分离 |
 | 用耳机呈现一个虚拟方向 | 干声、方向和左右 HRIR → 左右耳输出 | 数据坐标及通道顺序；个体差异、耳机响应和头动是否被处理 |
 
-这些任务有不同的软件入口。例如 SOFA 官方的 [Software and APIs](https://www.sofacoustics.org/mediawiki/index.php/Software_and_APIs) 页面列出 libmysofa 的 C 数据读取、IRCAM Spat/Panoramix 的空间创作与混音，以及 3D Tune-In 的耳机空间化用途。这里只用项目说明核对应用范围，不以这些入口证明设备性能或部署规模。第 1 章优先用已锁定的 libmysofa 检查共同增益；个体化 HRTF 与神经插值需要数据、基线误差和渲染实验，本章不再增加只有名称的模型。
+这些任务有不同的软件入口。例如 SOFA 官方的 [Software and APIs](https://www.sofacoustics.org/mediawiki/index.php/Software_and_APIs) 页面列出 libmysofa 的 C 数据读取、IRCAM Spat/Panoramix 的空间创作与混音，以及 3D Tune-In 的耳机空间化用途。用途还可直接查[IRCAM Panoramix维护者手册§1与§6](https://forum.ircam.fr/media/uploads/forumnet-legacy/2016/12/Panoramix-QuickStart2.pdf)中的空间创作、混音及双耳输出，以及[3D Tune-In维护者说明](https://github.com/3DTune-In/3dti_AudioToolkit)中的耳机空间化模块。2026-10-04仅审读这些用途段落，未取得这两个项目的源码或验证当前许可、运行平台、渲染和设备性能；数据许可与代码许可仍须分别核查。第 1 章优先用已锁定的 libmysofa 检查共同增益；个体化 HRTF 与神经插值需要数据、基线误差和渲染实验，本章不再增加只有名称的模型。
 
 ODAS 是现有源码中连接声源定位、追踪与分离的入口之一。其维护者 README 把定位、追踪、分离和后滤波列为不同功能；本书固定的 `mod_ssl.c`、`mod_sst.c`、`mod_sss.c` 也分别保留这些模块。它可以帮助读者理解方向候选如何变成连续轨迹、轨迹怎样控制输出流，但取得这些 C 源文件不能证明已经在某个设备上达到实时性能。[ODAS 固定版本说明](https://github.com/introlab/odas/blob/bcb845434495e293df3d48f1203b7a86e1852449/README.md)
 
@@ -95,7 +95,7 @@ ODAS 是现有源码中连接声源定位、追踪与分离的入口之一。其
 
 空间定向声学格式（Spatially Oriented Format for Acoustics，SOFA）用于交换 HRTF、双耳或空间房间脉冲响应等数据。格式兼容只说明软件知道怎样组织数据；仍须读取具体文件中的坐标、采样率、接收器顺序、时延及数据许可。[SOFA 项目说明与规范入口](https://www.sofacoustics.org/mediawiki/index.php/Main_Page)
 
-读取 SOFA、按方向获取和插值左右滤波器，可阅读维护者官方实现 [libmysofa](https://github.com/hoene/libmysofa)。SOFA 项目的 [Software and APIs](https://www.sofacoustics.org/mediawiki/index.php/Software_and_APIs) 页面直接链接该实现。本书锁定版本为 v1.3.5、提交 `6cc5b15a73e9bd97810d03767082edda7f315881`，其[许可证文件](https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/LICENSE)给出三条款 BSD 条件。源码子集和许可证已取得到 `codes/chapters/ch00/upstream/_downloads/libmysofa/`。2026-09-30 仅对原方法的公共归一化函数进行了提取调用：直接编译原始 `loudness.c` 和 `tools.c`，在临时目录用人工结构调用；未取得 `share/` 和 `tests/` 中的 SOFA 测量数据，也未运行完整读取与渲染链。
+读取 SOFA、按方向获取和插值左右滤波器，可阅读维护者官方实现 [libmysofa](https://github.com/hoene/libmysofa)。SOFA 项目的 [Software and APIs](https://www.sofacoustics.org/mediawiki/index.php/Software_and_APIs) 页面直接链接该实现。本书锁定版本为 v1.3.5、提交 `6cc5b15a73e9bd97810d03767082edda7f315881`，其[许可证文件](https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/LICENSE)给出三条款 BSD 条件。源码子集和许可证已取得到 `codes/chapters/ch00/upstream/_downloads/libmysofa/`。原归一化报告的实际执行日期为2026-10-01 UTC，2026-09-30是此前资料审读日期；该次仅对原方法的公共归一化函数进行了提取调用：直接编译原始 `loudness.c` 和 `tools.c`，在临时目录用人工结构调用；未取得 `share/` 和 `tests/` 中的 SOFA 测量数据，也未运行完整读取与渲染链。
 
 官方接口文档说明 `mysofa_open` 会在读取时归一化，而 `mysofa_open_no_norm` 保留未归一化数据。研究方向间增益、ILD 或不同软件输出时，应明确实际调用和增益处理；归一化、重采样和插值都不是“原始文件完全未变”。固定版 `loudness.c` 计算一个公共缩放因子，并乘到整个 `DataIR` 数组，两耳不会在这一步各自归一化。[维护者接口说明](https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/README.md)
 
@@ -109,14 +109,36 @@ ODAS 是现有源码中连接声源定位、追踪与分离的入口之一。其
 运行使用 Apple clang 21.0.0、C99、`-O0`，非零数值的绝对核对容差为 `2×10⁻⁶`。[实际报告](../../ch01/reports/libmysofa_loudness.json)保留编译器、实际命令、源 SHA、脚手架摘要、输入、输出与未执行范围；非有限结果以 `null` 和分类字段保存，符合严格 JSON。报告中的“符合预期”包括确认全零退化，不代表两例都成功归一化。可在已有锁定源码与 C 编译器的环境运行：
 
 ```bash
-.venv/bin/python -m codes.chapters.ch01.examples.audit_libmysofa_loudness --report codes/chapters/ch01/reports/libmysofa_loudness.json
+.venv/bin/python -m codes.chapters.ch01.examples.audit_libmysofa_loudness
 ```
 
-参考方向的选择也有条件。固定版 `loudness.c` 先在球坐标中最小化方位角与仰角的和 `c[0]+c[1]`，相同时再比较半径；它不是一般的角距离最小化。此次只有一个方向，验证了公共缩放与全零退化，没有验证多方向网格的参考选择。使用自己的数据网格时，仍须核对哪个响应被选作参考及其能量。[固定版函数，行 30–55](https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/src/hrtf/loudness.c)
+参考方向的选择也有条件。固定版 `loudness.c` 先在球坐标中最小化方位角与仰角的和 `c[0]+c[1]`，相同时再比较半径；它不是一般的角距离最小化。此次只有一个方向，验证了公共缩放与全零退化，没有验证多方向网格的参考选择。2026-10-04重新执行默认只读stdout，两个结果保持；未覆盖或改写这份历史报告。使用自己的数据网格时，仍须核对哪个响应被选作参考及其能量。[固定版函数，行 30–55](https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/src/hrtf/loudness.c)
 
 额外延迟需单独核查。固定版 README 将浮点接口的延迟标为秒、short 接口标为采样数，但源码与 SOFA 的数据单位之间存在不一致：SOFA 将 `Data.Delay` 定义为采样数；`reader.c` 直接读取该数组，`interpolate.c` 对其取值或加权，浮点接口直接返回所得数值。重采样时 `resample.c` 按新旧采样率之比缩放延迟，而 short 接口会将插值结果再乘当前采样率。
 
 因此，不能只按 README 的“秒”注释决定补偿量，也不能忽略额外延迟。本书记录的是固定版本的静态源码矛盾，尚未用含非零 `Data.Delay`、不同输入输出采样率的文件运行验证，不据此声称端到端渲染已经正确。[SOFA 延迟定义](https://www.sofaconventions.org/mediawiki/index.php/GeneralFIR)；[固定版接口实现](https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/src/hrtf/easy.c)；[固定版重采样实现](https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/src/hrtf/resample.c)。
+
+**方向查询还须转换坐标。** 本书水平面角度以正前方为零、向右为正；固定版libmysofa的说明采用X向前、Y向左、Z向上，方位角逆时针增加。在听者朝向及上下轴一致、水平面、采用该球坐标约定时，输入方位应为本书角度的负值：本书右30°对应SOFA −30°，或同一方向的330°。原归一化案例只有0°，所以不能检出左右镜像。使用具体文件前还要读坐标类型、`ListenerView`、`ListenerUp`与接收器次序；这个负号关系不能用于朝向或坐标轴已经旋转的任意文件。[固定版坐标说明](https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/README.md)
+
+**公共延迟的原插值控制（2026-10-04实际运行）。** [独立工具](../../ch01/examples/audit_libmysofa_interpolation.py)编译完整原`interpolate.c`与`tools.c`，由人工调用者提供两个位置、最近点及邻点索引。两个位置为(−1,0,0)/(1,0,0)，每个接收器仅一个IR系数，两位置的左右系数分别为[2,4]/[4,6]；查询中点到两位置的距离均为1，所以IR的独立预期为[3,5]。这不是经过SOFA读取、格式检查和自动邻域查询的测量数据。
+
+| 延迟值的存储方式与查询 | 独立数学预期：左右IR／延迟值 | 原函数实际结果 | 解释 |
+|---|---|---|---|
+| 公共[8,16]，准确命中第一位置 | [2,4]／[8,16] | [2,4]／[8,16] | 距离为零时直接返回 |
+| 公共[8,16]，等距中点 | [3,5]／[8,16] | [3,5]／[4,8] | 公共延迟保持的不变量失败 |
+| 公共[0,0]，等距中点 | [3,5]／[0,0] | [3,5]／[0,0] | 零值会掩盖上述缺陷 |
+| 每方向均[8,16]，等距中点 | [3,5]／[8,16] | [3,5]／[8,16] | 相同延迟换成逐方向布局则保持 |
+| 两方向[8,16]/[12,20]，等距中点 | [3,5]／[10,18] | [3,5]／[10,18] | 逐方向分支累计邻点后正确平均 |
+
+原因在固定版原代码的公共延迟分支：先把最近点延迟乘距离倒数，加入邻点时却只在逐方向延迟布局下累计延迟，最后两种布局都除以总权重。中点的两个权重均为1，公共分支只有一个分子的[8,16]，却除以2。因此IR插值正确、延迟返回有限值，都不能证明延迟保持正确。[固定原函数](https://github.com/hoene/libmysofa/blob/6cc5b15a73e9bd97810d03767082edda7f315881/src/hrtf/interpolate.c)
+
+[实际报告](../../ch01/reports/libmysofa_interpolation.json)把独立数学不变量失败与成功复现原缺陷分开保存，记录完整origin/提交、六所用原文件的Git blob/SHA与许可、前后洁净、当前锁表/状态及完整选集核验范围。Apple clang21、C99、`-O0`的五人工控制不验证延迟单位转换；表内是裸结构的延迟数值，不能由本次调用声称秒或采样数已经正确处理。SOFA GeneralFIR规范的`Data.Delay`定义为采样数且允许公共IR/逐方向MR布局，是另一个规范依据；前述easy/重采样单位矛盾仍保留静态范围。原SOFA解析、自动方向查询、真实数据、重采样、卷积、渲染与设备实验均未运行，上游和旧归一化报告不改。
+
+```bash
+.venv/bin/python -m codes.chapters.ch01.examples.audit_libmysofa_interpolation
+```
+
+此命令默认只写stdout；只有显式`--report codes/chapters/ch01/reports/libmysofa_interpolation.json`才写当前报告，写前拒绝符号链接、受保护路径或覆盖其他仓内文件。
 
 SAF 提供听觉响应的处理函数，libmysofa 补充 SOFA 数据读取及方向查询入口，两者承担不同步骤。源码筛选保留 `src/hrtf/`、`src/hdf/`、`src/resampler/`（K-D 树源码位于 `src/hrtf/kdtree.c`）、必要构建说明、README 和许可证；省略测试和测量数据，不表示已经形成可直接重现官方测试的完整环境。重采样器与 K-D 树的原始源码声明也随文件保留。HRTF 个体化、神经插值及神经双耳渲染需要独立的数据、误差定义和渲染实验，本章不把这些方法名称堆入入门任务目录。
 
