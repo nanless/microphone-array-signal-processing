@@ -1,11 +1,12 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 6 章 · 声学回声消除（AEC） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f82c588994c1"><style>
+<meta name="source-digest" content="b9a4256417d5"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
+@media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
 .skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
 .skip-link:focus{top:8px}
@@ -273,6 +274,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="06_aec.html#sec-6-8">6.8 WebRTC AEC3 的结构与排障</a></li>
 <li><a href="06_aec.html#sec-6-9">6.9 多参考 AEC 模型与去相关选型</a></li>
 <li><a href="06_aec.html#sec-6-10">6.10 播放链参考抽头位置及其对 ERLE 的影响</a></li>
+<li>&nbsp;&nbsp;<a href="06_aec.html#sec-u-feed1a66f5">时变增益为何要先进入参考，再经过路径？</a></li>
 <li><a href="06_aec.html#sec-6-11">6.11 测试覆盖与验收矩阵</a></li>
 <li><a href="06_aec.html#sec-6-12">6.12 AEC 诊断方法与 NLP 工作点</a></li>
 <li><a href="06_aec.html#sec-6-13">6.13 个性化 AEC 的合规检查</a></li>
@@ -324,6 +326,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-u-fb3a9ac6ae">E06-37：秩亏的窗口能否靠正则变得可辨识？</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-u-6b979b2236">E06-38：路径先验怎样选解，为什么还需要独立留出？</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-u-3abd5cb679">E06-39：有色参考中，投影阶数增加为何也可能付出噪声代价？</a></li>
+<li>&nbsp;&nbsp;<a href="06_aec.html#sec-u-ef4cfdfcf5">E06-40：已知当前播放增益，为什么后乘回声预测仍会错？</a></li>
+<li>&nbsp;&nbsp;<a href="06_aec.html#sec-u-76a7b68f55">E06-41：当前参考静音，麦克风为什么仍可能只有纯回声？</a></li>
+<li>&nbsp;&nbsp;<a href="06_aec.html#sec-u-edec7d8254">E06-42：用实际 PCM 核对增益切换与纯回声尾声</a></li>
 <li><a href="06_aec.html#sec-6-17">6.17 延伸阅读</a></li>
 </ul>
 <div class="chap"><a href="07_wpe-dereverberation.html">第 7 章 · 去混响（WPE）</a></div>
@@ -371,6 +376,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="06_aec.html#sec-6-8">6.8 WebRTC AEC3 的结构与排障</a></li>
 <li><a href="06_aec.html#sec-6-9">6.9 多参考 AEC 模型与去相关选型</a></li>
 <li><a href="06_aec.html#sec-6-10">6.10 播放链参考抽头位置及其对 ERLE 的影响</a></li>
+<li>&nbsp;&nbsp;<a href="06_aec.html#sec-u-feed1a66f5">时变增益为何要先进入参考，再经过路径？</a></li>
 <li><a href="06_aec.html#sec-6-11">6.11 测试覆盖与验收矩阵</a></li>
 <li><a href="06_aec.html#sec-6-12">6.12 AEC 诊断方法与 NLP 工作点</a></li>
 <li><a href="06_aec.html#sec-6-13">6.13 个性化 AEC 的合规检查</a></li>
@@ -422,6 +428,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-u-fb3a9ac6ae">E06-37：秩亏的窗口能否靠正则变得可辨识？</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-u-6b979b2236">E06-38：路径先验怎样选解，为什么还需要独立留出？</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-u-3abd5cb679">E06-39：有色参考中，投影阶数增加为何也可能付出噪声代价？</a></li>
+<li>&nbsp;&nbsp;<a href="06_aec.html#sec-u-ef4cfdfcf5">E06-40：已知当前播放增益，为什么后乘回声预测仍会错？</a></li>
+<li>&nbsp;&nbsp;<a href="06_aec.html#sec-u-76a7b68f55">E06-41：当前参考静音，麦克风为什么仍可能只有纯回声？</a></li>
+<li>&nbsp;&nbsp;<a href="06_aec.html#sec-u-edec7d8254">E06-42：用实际 PCM 核对增益切换与纯回声尾声</a></li>
 <li><a href="06_aec.html#sec-6-17">6.17 延伸阅读</a></li>
 </ul></nav></details>
 <blockquote>
@@ -968,12 +977,13 @@ g_l&=\frac{1-\kappa}{2L}
 <p><strong>从一个方向到一个小窗口。</strong> NLMS 每次沿当前回归向量修正权重。有色参考的相邻回归向量常常接近，使不同方向的学习速度差异很大。仿射投影算法（Affine Projection Algorithm，APA，也简称 AP）把最近若干个真实观测一起用于本次更新，先求一个小型相关矩阵方程，再组合这几个回归方向。它不是换一套 FIR 卷积，也不是把几次已经完成的 NLMS 更新简单相加。</p>
 <p><a href="https://doi.org/10.1002/ecja.4400670503" title="citation">Ozeki 与 Umeda 1984 的论文</a>是经典来源；这里的窗口定义、最小改变量及正则解释参照 <a href="https://www.eurasip.org/Proceedings/Eusipco/Eusipco2004/defevent/papers/cr1033.pdf" title="citation">Rey 等，EUSIPCO 2004，§2、印刷页1810、式(1)～(2)</a>，并按本章实数、最近参考样本在前的约定重新推导。本书的短滤波教学实现不含延迟估计、自动双讲检测或残余抑制。</p>
 <p>设 FIR 长度为 $L$，最大投影阶数为 $K$；启动时只使用已取得的真实观测，实际窗口大小 $K_n\le K$。令 $\mathbf x_i=[x_i,x_{i-1},\ldots,x_{i-L+1}]^\top$，把当前到过去的回归向量排成 $L\times K_n$ 矩阵，麦克风观测排成 $K_n$ 维向量：</p>
-<p>$$\begin{aligned}
-U_n&=[\mathbf x_n,\mathbf x_{n-1},\ldots,\mathbf x_{n-K_n+1}],\\
-\mathbf d_n&=[d_n,d_{n-1},\ldots,d_{n-K_n+1}]^\top,\\
-\mathbf e_n^-&=\mathbf d_n-U_n^\top\mathbf w_{n-1},\\
-G_n&=U_n^\top U_n.
-\end{aligned}\tag{6-12}$$</p>
+<p>记本窗口最早观测的下标为 $i_\mathrm{min}=n-K_n+1$，则</p>
+<p>$$\begin{gathered}
+U_n=[\mathbf x_n,\mathbf x_{n-1},\ldots,\mathbf x_{i_\mathrm{min}}],\\
+\mathbf d_n=[d_n,d_{n-1},\ldots,d_{i_\mathrm{min}}]^\top,\\
+\mathbf e_n^-=\mathbf d_n-U_n^\top\mathbf w_{n-1},\\
+G_n=U_n^\top U_n.
+\end{gathered}\tag{6-12}$$</p>
 <p>其中 $\mathbf w_{n-1}$ 是本次更新前的 $L$ 维权重，$G_n$ 是 $K_n\times K_n$ Gram 矩阵。这里假定整个短窗口可用同一条局部路径解释；若路径刚突变，或窗口含近端语音，这个假设会受破坏。</p>
 <p><strong>每个误差都用同一套旧权重。</strong> 当前因果输出是 $\hat y_n^-=\mathbf x_n^\top\mathbf w_{n-1}$，当前残差是 $d_n-\hat y_n^-$，即式(6-12)的首项。其余旧观测也要用现在这套 $\mathbf w_{n-1}$ 重新预测。过去真正输出的先验残差用了当时的旧权重，不能直接拼入当前误差向量；E06-35 给出两者相差多少的手算。</p>
 <p><strong>无正则、一步完全投影。</strong> 先取 $K_n\le L$ 且 $U_n$ 满列秩，希望以最小的权重改变量同时满足窗口观测。记改变量为 $\Delta\mathbf w$，本书的约束问题为</p>
@@ -984,21 +994,25 @@ G_n&=U_n^\top U_n.
 <p>引入 $K_n$ 维乘子 $\boldsymbol\alpha$，拉格朗日函数取 $\frac12\|\Delta\mathbf w\|^2-\boldsymbol\alpha^\top(U_n^\top\Delta\mathbf w-\mathbf e_n^-)$。对改变量求导得到 $\Delta\mathbf w=U_n\boldsymbol\alpha$；代回约束，得到 $G_n\boldsymbol\alpha=\mathbf e_n^-$。所以满列秩时，最小改变量为 $U_nG_n^{-1}\mathbf e_n^-$。</p>
 <p>这一步不是拟合全部历史数据。它只要求当前小窗口的后验误差为零，而且采用最小的本次权重变化；一旦观测含噪声或近端，也会努力拟合其中的干扰。</p>
 <p><strong>正则与步长。</strong> 实际相邻回归可能近似共线，$G_n$ 求解会放大观测误差。取 $\delta>0$，先用正则问题得到改变量，再以无量纲步长 $\mu$ 控制采用多少：</p>
-<p>$$\begin{aligned}
+<p>$$\begin{gathered}
+\begin{aligned}
+J_\delta(\Delta\mathbf w)
+&=\|U_n^\top\Delta\mathbf w-\mathbf e_n^-\|^2\\
+&\quad+\delta\|\Delta\mathbf w\|^2,
+\end{aligned}\\
 \Delta\mathbf w_\delta
-&=\arg\min_{\Delta\mathbf w}
-\left\{\|U_n^\top\Delta\mathbf w-\mathbf e_n^-\|^2
-+\delta\|\Delta\mathbf w\|^2\right\},\\
-\mathbf w_n
-&=\mathbf w_{n-1}
-+\mu U_n(G_n+\delta I_{K_n})^{-1}\mathbf e_n^-.
-\end{aligned}\tag{6-14}$$</p>
+=\arg\min_{\Delta\mathbf w}J_\delta(\Delta\mathbf w),\\
+(G_n+\delta I_{K_n})\boldsymbol\alpha_{\delta,n}
+=\mathbf e_n^-,\\
+\mathbf w_n=\mathbf w_{n-1}+\mu U_n\boldsymbol\alpha_{\delta,n}.
+\end{gathered}\tag{6-14}$$</p>
+<p>这里 $\boldsymbol\alpha_{\delta,n}$ 是本次正则小矩阵求解的辅助向量，且 $\Delta\mathbf w_\delta=U_n\boldsymbol\alpha_{\delta,n}$。后两行合起来就是原来的 $\mu U_n(G_n+\delta I_{K_n})^{-1}\mathbf e_n^-$ 更新；分开写只是为了显示求解步骤。</p>
 <p>对正则目标求导，先得到 $(U_nU_n^\top+\delta I_L)\Delta\mathbf w_\delta=U_n\mathbf e_n^-$。恒等式 $(U_nU_n^\top+\delta I_L)U_n=U_n(G_n+\delta I_{K_n})$ 把它化成上式的小矩阵解，避免直接求一个 $L\times L$ 的逆。实际代码解线性方程，不先显式构造逆矩阵。</p>
 <p>$\delta$ 与 $G_n$ 的元素同为参考幅度平方量纲，不能把“相对系数0.001”和“已加到矩阵上的0.001”混写。若参考和麦克风都乘以 $a\ne0$，要保持同一步权重更新，正则也应乘以 $a^2$，见 E06-37。对未归一化输入，照搬一个常数会改变有效更新。</p>
 <p><strong>先验与后验仍须分开。</strong> 将更新代回同一窗口，得到</p>
-<p>$$\mathbf e_n^+
-=\left[I_{K_n}-\mu G_n(G_n+\delta I_{K_n})^{-1}\right]\mathbf e_n^-.
+<p>$$\mathbf e_n^+=\mathbf e_n^--\mu G_n\boldsymbol\alpha_{\delta,n}.
 \tag{6-15}$$</p>
+<p>将式(6-14)的 $\boldsymbol\alpha_{\delta,n}=(G_n+\delta I_{K_n})^{-1}\mathbf e_n^-$ 代入，就得到窗口误差的矩阵缩放 $I_{K_n}-\mu G_n(G_n+\delta I_{K_n})^{-1}$。</p>
 <p>满列秩、$\delta=0,\mu=1$ 时才同时消掉这 $K_n$ 个窗口误差；$\delta>0$ 时一般仍有后验误差。</p>
 <p>沿 $G_n$ 的特征值 $\lambda_i\ge0$ 对应方向，误差缩放为 $1-\mu\lambda_i/(\lambda_i+\delta)$。这里的特征向量属于 $K_n$ 维窗口误差空间。零特征值方向满足 $U_n\mathbf v=0$，这类误差不能通过任何权重改变量消掉。</p>
 <p>它不同于 $L$ 维路径空间中满足 $U_n^\top\mathbf z=0$ 的不可辨识方向。后者表示沿 $\mathbf z$ 改变路径而不改变窗口预测。正则让求解可计算，却没有增加观测的可辨识秩。</p>
@@ -1141,65 +1155,65 @@ K_m&=P_m^-H_m^HS_m^{-1},\\
 <p>这些是本书一组短合成序列的算术输出，不是双讲 ERLE、自动检测成绩、自然语音质量或 RLS/FDKF 的一般性能排名。RLS 的遗忘因子与 Kalman 的 $Q,\Psi$ 描述不同先验，也不能把参数数值设成相同就称为“公平调参”。</p>
 <p><a href="research/05_exercises_and_audio.html#15-同源短路径-aec-的线性残差">另一组合成音频</a>用 16 kHz、四抽头已知路径和同一麦克风输入导出 NLMS、IPNLMS、RLS、短实数矩阵 Kalman 的先验线性残差；中途人为改变路径，另存真值回声与背景噪声。音频只对应这四种时域教学实现，不含完整子带 AEC、FDKF/PBFDKF、真实语音或实机结果。四法的参数并非等效调优，表格中的单次均方误差也不是普适优劣顺序。</p>
 <p><strong>方法对比。</strong> 下表比较模型和资源依赖，不给没有共同输入、路径、收敛目标与实现条件支撑的“快、中、慢”排名。若要比较实际收敛，需在同一播放参考、回声路径、双讲安排和统计窗口上运行各实现，并分别报告初始收敛、突变恢复与稳态误差。图32给出排障流程，而不是算法性能排序。</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:48em">
 <thead>
 <tr>
-<th scope="col">算法</th>
-<th scope="col">每样本主要计算</th>
-<th scope="col">收敛受什么影响</th>
-<th scope="col">双讲更新控制</th>
-<th scope="col">适用条件</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">算法</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:13em">每样本主要计算</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:10em">收敛受什么影响</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:9em">双讲更新控制</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">适用条件</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>时域 NLMS</td>
-<td>$O(L)$；朴素约 $3L$，能量递推主要项约 $2L$</td>
-<td>输入谱、步长、路径变化</td>
-<td>需外部冻结或连续步长控制</td>
-<td>路径较短，或资源允许逐样本更新</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">时域 NLMS</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">$O(L)$；朴素约 $3L$，能量递推主要项约 $2L$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">输入谱、步长、路径变化</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">需外部冻结或连续步长控制</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">路径较短，或资源允许逐样本更新</td>
 </tr>
 <tr>
-<td>比例更新</td>
-<td>IPNLMS：$O(L)$，另有比例权重计算</td>
-<td>稀疏路径可能更快；稠密尾声不能照搬该趋势</td>
-<td>仍需双讲控制</td>
-<td>有明显强抽头且已测得收益</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">比例更新</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">IPNLMS：$O(L)$，另有比例权重计算</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">稀疏路径可能更快；稠密尾声不能照搬该趋势</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">仍需双讲控制</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">有明显强抽头且已测得收益</td>
 </tr>
 <tr>
-<td>仿射投影 APA</td>
-<td>直接实现约 $O(LK^2+K^3)$；小阶窗口解</td>
-<td>投影阶数、相关性、正则和窗口干扰</td>
-<td>冻结仍可能保留污染窗口，需定义清窗策略</td>
-<td>小投影阶数、有色参考及可接受的求解成本</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">仿射投影 APA</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">直接实现约 $O(LK^2+K^3)$；小阶窗口解</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">投影阶数、相关性、正则和窗口干扰</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">冻结仍可能保留污染窗口，需定义清窗策略</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">小投影阶数、有色参考及可接受的求解成本</td>
 </tr>
 <tr>
-<td>分区频域</td>
-<td>PBFDAF：无约束约 $O(\log N+L/N)$；逐分区约束另加 $O((L/N)\log N)$</td>
-<td>频点归一化、块长和梯度约束</td>
-<td>需二值或连续控制</td>
-<td>长路径且可接受分块处理</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">分区频域</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">PBFDAF：无约束约 $O(\log N+L/N)$；逐分区约束另加 $O((L/N)\log N)$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">频点归一化、块长和梯度约束</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">需二值或连续控制</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">长路径且可接受分块处理</td>
 </tr>
 <tr>
-<td>子带自适应</td>
-<td>分带、降采样与每带短滤波</td>
-<td>带内谱、分析/合成混叠</td>
-<td>仍需双讲控制</td>
-<td>已核对带间混叠和系统延迟</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">子带自适应</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">分带、降采样与每带短滤波</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">带内谱、分析/合成混叠</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">仍需双讲控制</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">已核对带间混叠和系统延迟</td>
 </tr>
 <tr>
-<td>RLS</td>
-<td>标准全矩阵实现 $O(L^2)$</td>
-<td>遗忘因子、参考条件数和噪声</td>
-<td>干扰会影响更新，不能只调遗忘因子</td>
-<td>短滤波器或研究对照</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">RLS</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">标准全矩阵实现 $O(L^2)$</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">遗忘因子、参考条件数和噪声</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">干扰会影响更新，不能只调遗忘因子</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">短滤波器或研究对照</td>
 </tr>
 <tr>
-<td>频域卡尔曼 FDKF</td>
-<td>频域滤波外另维护状态统计量</td>
-<td>过程/观测噪声估计与状态模型</td>
-<td>增益可软门控，但不自动识别双讲</td>
-<td>路径变化且统计模型可校验</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">频域卡尔曼 FDKF</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">频域滤波外另维护状态统计量</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">过程/观测噪声估计与状态模型</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">增益可软门控，但不自动识别双讲</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">路径变化且统计模型可校验</td>
 </tr>
 </tbody>
 </table></div>
@@ -1327,6 +1341,7 @@ M&=\max_{0\le j\lt L}|x_a(n-j)|,\\
 </tbody>
 </table></div>
 <p>“参考活动、麦克风不活动”可能来自零或很弱的回声路径，不应因为麦克风安静就把正在播放的远端归为静音。这是基线的活动标签语义，不是算法证明了不存在低于门限的近端声。</p>
+<p>同样，“参考不活动、麦克风活动”只说明<strong>当前帧</strong>的两路活动关系，不能证明麦克风里只有近端语音。播放停止后，较早的参考仍可经 FIR 的延迟抽头形成纯回声尾声；此时基线会输出 <code>near_only</code>，即使真实近端分量处处为零。§6.1 的 STNE 描述物理声源条件，这里的标签是有限窗口的操作判决，两者不能直接等同。<a href="#e06-41">E06-41</a>逐帧复算这个反例；它与丢失本应可用参考的 E06-26 是两种不同情况。</p>
 <p>对长度 $B$ 的帧，先去均值得 $\tilde x_b=x_b-\bar x$、$\tilde d_b=d_b-\bar d$，$b=0,\ldots,B-1$。本书基线使用绝对 NCC：</p>
 <p>$$\begin{aligned}
 P_x&=\sum_b\tilde x_b^2,\\
@@ -1451,37 +1466,37 @@ c_{xd}&=\frac{|\sum_b\tilde x_b\tilde d_b|}{\sqrt{P_xP_d}}.
 <p>第二种为处理缺失通道提供了结构上的可能，仍需在训练中覆盖通道数、阵列几何和通道置换。多通道网络还要保持跨通道相位一致性，否则会损害后续波束形成。</p>
 <p>对实时语音交互，设备播放语音时仍要检测用户插话。通常先用线性 AEC 降低设备自身播放，再把残差送入语音活动检测和识别；残余抑制的工作点要同时检查回声泄漏、近端语音失真和下游识别。若参考信号只能在远端获得，模块顺序需要按实际接口重新设计。</p>
 <p><strong>三类神经方案对比</strong>（定性；需要在相同数据、延迟和硬件下实测）：</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:52em">
 <thead>
 <tr>
-<th scope="col">路线</th>
-<th scope="col">代表方案</th>
-<th scope="col">可检查的内部量</th>
-<th scope="col">主要风险</th>
-<th scope="col">资源验证</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">路线</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:11em">代表方案</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:13em">可检查的内部量</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:11em">主要风险</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:9em">资源验证</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>混合式</td>
-<td>线性 AEC 加学习型残余抑制</td>
-<td>线性段路径、残差和 ERLE</td>
-<td>后滤波可能损伤近端语音</td>
-<td>按频带数、模型版本和目标硬件测量</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">混合式</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:11em">线性 AEC 加学习型残余抑制</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">线性段路径、残差和 ERLE</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:11em">后滤波可能损伤近端语音</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">按频带数、模型版本和目标硬件测量</td>
 </tr>
 <tr>
-<td>端到端</td>
-<td>以麦克风信号和播放参考直接估计近端语音</td>
-<td>通常缺少显式路径估计</td>
-<td>域外设备、低 SER 和故障定位</td>
-<td>按模型、上下文和目标硬件测量</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">端到端</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:11em">以麦克风信号和播放参考直接估计近端语音</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">通常缺少显式路径估计</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:11em">域外设备、低 SER 和故障定位</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">按模型、上下文和目标硬件测量</td>
 </tr>
 <tr>
-<td>神经卡尔曼</td>
-<td>保留状态递推并学习增益或统计量</td>
-<td>递推增益、状态估计和残差</td>
-<td>统计量估计失配、模型计算量</td>
-<td>同时报递推部分与网络部分</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">神经卡尔曼</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:11em">保留状态递推并学习增益或统计量</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">递推增益、状态估计和残差</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:11em">统计量估计失配、模型计算量</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">同时报递推部分与网络部分</td>
 </tr>
 </tbody>
 </table></div>
@@ -1613,37 +1628,37 @@ E_e&=\sum_n|e_{\mathrm{echo}}(n)|^2,\\
 <span id="sec-6-1-10" class="anchor-alias" aria-hidden="true"></span><span id="sec-18" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-6-9">6.9 多参考 AEC 模型与去相关选型</h2>
 <p>单参考 AEC 假设只有一路播放；立体声外放、双扬声器和多分区播放属于多参考问题。模型是否可辨识取决于参考声道之间的相关性和各条回声路径，不能用固定 ERLE 损失概括。</p>
 <p><strong>三种多参考实现组织</strong>。前两行都估计单个麦克风的多路播放回声，差别在系数怎样更新，不能把它们当作两种不同的物理传播模型：</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:50em">
 <thead>
 <tr>
-<th scope="col">模型</th>
-<th scope="col">结构</th>
-<th scope="col">可辨识性</th>
-<th scope="col">资源关系</th>
-<th scope="col">适用条件</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:9em">模型</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:15em">结构</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:10em">可辨识性</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">资源关系</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">适用条件</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>逐参考分支、共享总残差</td>
-<td>各分支预测先相加，再以同一个 $e=d-\sum_r\hat y_r$ 更新；归一化可分支设置，但须重新核步长与联合稳定性</td>
-<td>忽略跨参考统计量时，强相关输入仍会使路径估计病态</td>
-<td>滤波与状态近似随参考路数增加</td>
-<td>单个麦克风接收多路播放，需核对总残差与更新控制</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">逐参考分支、共享总残差</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">各分支预测先相加，再以同一个 $e=d-\sum_r\hat y_r$ 更新；归一化可分支设置，但须重新核步长与联合稳定性</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">忽略跨参考统计量时，强相关输入仍会使路径估计病态</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">滤波与状态近似随参考路数增加</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">单个麦克风接收多路播放，需核对总残差与更新控制</td>
 </tr>
 <tr>
-<td>联合 MISO（多输入单输出，Multiple-Input Single-Output）</td>
-<td>拼接多路参考回归向量，以总预测与共同残差联合估计多条路径</td>
-<td>仍受拼接参考相关矩阵条件数限制</td>
-<td>同时维护多组路径；全矩阵方法还维护交叉统计量</td>
-<td>需要显式处理参考间相关性时</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">联合 MISO（多输入单输出，Multiple-Input Single-Output）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">拼接多路参考回归向量，以总预测与共同残差联合估计多条路径</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">仍受拼接参考相关矩阵条件数限制</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">同时维护多组路径；全矩阵方法还维护交叉统计量</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">需要显式处理参考间相关性时</td>
 </tr>
 <tr>
-<td>MIMO 阵列联合</td>
-<td>多参考和多麦克风联合估计，例如广义回声与干扰对消（GEIC）和扩展多通道维纳滤波（extended Multichannel Wiener Filter，MWFext）</td>
-<td>可联合利用跨通道统计量，但仍需满秩激励</td>
-<td>随参考数、麦克风数和状态维度增加</td>
-<td>需要联合回声与空间干扰处理</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">MIMO 阵列联合</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:15em">多参考和多麦克风联合估计，例如广义回声与干扰对消（GEIC）和扩展多通道维纳滤波（extended Multichannel Wiener Filter，MWFext）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">可联合利用跨通道统计量，但仍需满秩激励</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">随参考数、麦克风数和状态维度增加</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">需要联合回声与空间干扰处理</td>
 </tr>
 </tbody>
 </table></div>
@@ -1703,161 +1718,179 @@ e&=d-\hat y.
 <p>参考抽头越早，抽头之后未反映在参考中的处理越多。固定、线性时不变、因果且能在<strong>已对齐的同一采样时钟</strong>上用有限长 FIR 表示的处理，可以并入式(6-1)的等效路径；跨独立时钟的重采样或持续采样率偏移不能直接并入同一固定 FIR，需检查 §6.12 的 SRO 诊断。时变增益、削波、丢帧和编解码伪影也可能造成难以稳定建模的残余。</p>
 <p class="keep-next"><strong>抽头点对照表</strong>（T1 最早、T5 最晚；实际系统可能只能访问其中一部分）：</p>
 
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:48em">
 <thead>
 <tr>
-<th scope="col">抽头点</th>
-<th scope="col">位置</th>
-<th scope="col">抽头之后的变换</th>
-<th scope="col">主要风险</th>
-<th scope="col">检查方法</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:7em">抽头点</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">位置</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:13em">抽头之后的变换</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:9em">主要风险</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:11em">检查方法</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>T1 应用层原始音源</td>
-<td>应用输出</td>
-<td>混音、系统音量及全部后处理</td>
-<td>参考可能缺少其他应用声音和时变处理</td>
-<td>切换音源、通知音和音量，观察参考是否同步变化</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:7em">T1 应用层原始音源</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">应用输出</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">混音、系统音量及全部后处理</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">参考可能缺少其他应用声音和时变处理</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:11em">切换音源、通知音和音量，观察参考是否同步变化</td>
 </tr>
 <tr>
-<td>T2 混音后、音效前</td>
-<td>混音器输出</td>
-<td>EQ、AGC/DRC、限幅及后续处理</td>
-<td>时变增益或限幅造成失配</td>
-<td>分别旁路后处理，比较残余与路径估计</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:7em">T2 混音后、音效前</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">混音器输出</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">EQ、AGC/DRC、限幅及后续处理</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">时变增益或限幅造成失配</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:11em">分别旁路后处理，比较残余与路径估计</td>
 </tr>
 <tr>
-<td>T3 音效后、AGC 前</td>
-<td>均衡后</td>
-<td>AGC/DRC 增益包络、限幅及后续处理</td>
-<td>增益变化和削波未进入参考</td>
-<td>扫描播放电平并记录残余、削波和恢复过程</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:7em">T3 音效后、AGC 前</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">均衡后</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">AGC/DRC 增益包络、限幅及后续处理</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">增益变化和削波未进入参考</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:11em">扫描播放电平并记录残余、削波和恢复过程</td>
 </tr>
 <tr>
-<td>T4 限幅后、编解码前</td>
-<td>限幅器输出</td>
-<td>重采样、编解码和传输链路</td>
-<td>延迟抖动、丢帧或编码伪影</td>
-<td>注入已知信号并记录端到端延迟分布和残余</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:7em">T4 限幅后、编解码前</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">限幅器输出</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">重采样、编解码和传输链路</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">延迟抖动、丢帧或编码伪影</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:11em">注入已知信号并记录端到端延迟分布和残余</td>
 </tr>
 <tr>
-<td>T5 最晚可用数字参考</td>
-<td>DAC 前的可访问节点</td>
-<td>DAC、功放、扬声器和声学路径</td>
-<td>模拟与声学非线性仍不在参考中</td>
-<td>作为候选基线，与电压/电流参考及更早抽头对照</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:7em">T5 最晚可用数字参考</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">DAC 前的可访问节点</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">DAC、功放、扬声器和声学路径</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">模拟与声学非线性仍不在参考中</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:11em">作为候选基线，与电压/电流参考及更早抽头对照</td>
 </tr>
 </tbody>
 </table></div>
 <p>在可访问的节点中，通常优先评估包含更多数字处理且时间戳可靠的较晚参考。</p>
-<p>若音量增益发生在抽头之后，线性区内播放增益变化会等比例改变等效路径增益；收敛时间和 ERLE 变化量需在目标实现上测量。抽头位于时变增益之前时，可以比较包络补偿与改取较晚参考两种方案。</p>
+<p>若音量增益发生在抽头之后，<strong>固定增益</strong>在线性区内可并入等效路径；收敛时间和 ERLE 变化量需在目标实现上测量。抽头位于时变增益之前时，可以比较包络补偿与改取较晚参考两种方案，但补偿的位置必须与实际播放链一致。</p>
+<h3 id="sec-u-feed1a66f5">时变增益为何要先进入参考，再经过路径？</h3>
+<p>设早参考为 $x[n]$，抽头之后的已知增益为 $g[n]$，较晚参考为 $r[n]=g[n]x[n]$。这里只讨论同一采样时轴上的乘法增益和固定因果 FIR 路径 $h[\ell]$，不包含削波、重采样或未知时钟偏移。真实回声是路径对<strong>过去各时刻已经乘过增益的样本</strong>求和。</p>
+<p>若先用早参考预测，再把整项预测乘当前增益，得到的是另一种运算。记这个错误顺序的预测为 $\hat y_{\mathrm{after}}[n]$，逐项相减可得</p>
+<p>$$\begin{gathered}
+r[n]=g[n]x[n],\\
+y[n]=\sum_{\ell=0}^{L-1}h[\ell]r[n-\ell],\\
+\hat y_{\mathrm{after}}[n]=g[n]\hat y_x[n],\\
+\hat y_x[n]=\sum_{\ell=0}^{L-1}h[\ell]x[n-\ell].
+\end{gathered}\tag{6-34}$$</p>
+<p>其中 $\hat y_x[n]$ 是早参考的固定路径预测。记错误后乘支路的残差为 $e_\mathrm a[n]=y[n]-\hat y_{\mathrm{after}}[n]$；下标 a 在这里仅表示后乘支路。逐延迟项写成</p>
+<p>$$\begin{gathered}
+e_\mathrm a[n]=\sum_{\ell=0}^{L-1}h[\ell]\Delta g_{n,\ell}\,x[n-\ell],\\
+\Delta g_{n,\ell}=g[n-\ell]-g[n].
+\end{gathered}\tag{6-35}$$</p>
+<p>当前样本的 $\ell=0$ 项总是抵消，延迟项却可能不抵消。因此，知道当前音量并不等于知道整段回声应该乘哪个共同增益。若增益在所有相关历史样本上恒定，两种顺序相同；若路径只有零延迟抽头，两种顺序也相同。一般多径路径在增益变化边界处不满足这些条件。个别样本的正负项偶然抵消，不是两种运算恒等的证明。</p>
+<p>“包络补偿”若指在卷积前恢复 $r[n]$，且增益和时序确实已知，就可以在此有限模型里恢复正确参考；若指对已形成的预测后乘 $g[n]$，则会留下式(6-35)的误差。<a href="#e06-40">E06-40</a>包含完整尾部的五点例子，<a href="#e06-42">E06-42</a>提供同一数学关系的实际 PCM 样本。本书没有自动估计增益包络，也没有据此宣布真实设备已解决参考失配。</p>
+<p><img alt="图74 已知增益的处理顺序与播放停止后的纯回声尾声" src="../figures/fig74_reference_timing.png" onerror="this.alt+='（图缺失）'" /></p>
+<p>图74对照增益变化时三种固定预测的残余，并展示播放停止后仍由过去参考形成的纯回声尾声。路径和增益都是合成真值，较晚参考控制的全部权重冻结；活动标签不作为近端分量真值。图中没有增益估计、真实语音、未知路径训练或工业性能结果。</p>
 <p>无线或外接播放链路还要实测延迟分布、突变和丢帧，并让延迟搜索与缓冲覆盖所需分位数，而不是采用固定抖动范围。</p>
 <p>云端若拿不到与麦克风时钟对齐、且能代表实际播放链路的参考，就不能直接运行依赖该参考的线性 AEC；此时可在端侧完成 AEC，云端再做无参考或弱参考的声学回声抑制（Acoustic Echo Suppression，AES）。另一种方案是上传对齐后的参考波形或特征，但会增加上行带宽、同步、隐私和故障恢复负担。选择哪种划分应同时记录参考取点、时间戳精度、传输抖动与端云总延迟，不能把“云端只做 AES”当作架构定律。</p>
 <span id="sec-6-1-12" class="anchor-alias" aria-hidden="true"></span><span id="sec-20" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-6-11">6.11 测试覆盖与验收矩阵</h2>
 <p>下面的矩阵用于组织测试，不给出通用认证阈值。若项目受某项通信、车载或主观听测标准约束，应记录标准号、版本、测试序列、设备配置和适用 profile，并直接采用该版本规定的判据。</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:54em">
 <thead>
 <tr>
-<th scope="col">#</th>
-<th scope="col">测试项</th>
-<th scope="col">条件</th>
-<th scope="col">记录结果</th>
-<th scope="col">阈值来源</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:3em">#</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:12em">测试项</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:13em">条件</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:12em">记录结果</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:14em">阈值来源</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>C1</td>
-<td>STFE 收敛后线性段 ERLE</td>
-<td>远端单讲，排除初始收敛段</td>
-<td>均值或分位数、统计窗口、输入与线性输出取点</td>
-<td>目标设备线性段基线</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:3em">C1</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">STFE 收敛后线性段 ERLE</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">远端单讲，排除初始收敛段</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">均值或分位数、统计窗口、输入与线性输出取点</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">目标设备线性段基线</td>
 </tr>
 <tr>
-<td>C2</td>
-<td>STFE 最终输出</td>
-<td>与 C1 使用同一录音</td>
-<td>最终残余、AECMOS 回声维和听测结果</td>
-<td>目标应用的可闻回声要求</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:3em">C2</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">STFE 最终输出</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">与 C1 使用同一录音</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">最终残余、AECMOS 回声维和听测结果</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">目标应用的可闻回声要求</td>
 </tr>
 <tr>
-<td>C3</td>
-<td>初始收敛</td>
-<td>规定冷启动状态和播放材料</td>
-<td>从播放开始到达到项目基线的时间分布</td>
-<td>交互延迟与任务要求</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:3em">C3</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">初始收敛</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">规定冷启动状态和播放材料</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">从播放开始到达到项目基线的时间分布</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">交互延迟与任务要求</td>
 </tr>
 <tr>
-<td>C4</td>
-<td>路径突变重收敛</td>
-<td>规定移动、遮挡或设备切换动作</td>
-<td>恢复时间、成功比例和暂态最大残余</td>
-<td>目标场景允许的中断时间</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:3em">C4</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">路径突变重收敛</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">规定移动、遮挡或设备切换动作</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">恢复时间、成功比例和暂态最大残余</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">目标场景允许的中断时间</td>
 </tr>
 <tr>
-<td>C5</td>
-<td>双讲语音质量</td>
-<td>规定 SER、说话人和双讲序列</td>
-<td>近端质量、内容保持与残余回声</td>
-<td>选定标准或项目听测基线</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:3em">C5</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">双讲语音质量</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">规定 SER、说话人和双讲序列</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">近端质量、内容保持与残余回声</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">选定标准或项目听测基线</td>
 </tr>
 <tr>
-<td>C6</td>
-<td>双讲回声泄漏</td>
-<td>与 C5 同一批样本</td>
-<td>AECMOS 回声维及真人听测</td>
-<td>固定模型版本和听测协议</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:3em">C6</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">双讲回声泄漏</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">与 C5 同一批样本</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">AECMOS 回声维及真人听测</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">固定模型版本和听测协议</td>
 </tr>
 <tr>
-<td>C7</td>
-<td>STNE 近端损伤</td>
-<td>近端单讲，AEC 开关对照</td>
-<td>频谱、客观质量、下游任务与听测差异</td>
-<td>旁路基线和允许损伤</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:3em">C7</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">STNE 近端损伤</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">近端单讲，AEC 开关对照</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">频谱、客观质量、下游任务与听测差异</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">旁路基线和允许损伤</td>
 </tr>
 <tr>
-<td>C8</td>
-<td>沉默期稳定性</td>
-<td>覆盖项目最长空闲段并在期间改变路径</td>
-<td>系数漂移及重新播放后的恢复过程</td>
-<td>最长会话和使用状态</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:3em">C8</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">沉默期稳定性</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">覆盖项目最长空闲段并在期间改变路径</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">系数漂移及重新播放后的恢复过程</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">最长会话和使用状态</td>
 </tr>
 <tr>
-<td>C9</td>
-<td>非线性播放</td>
-<td>覆盖目标播放电平和材料，并含双讲</td>
-<td>线性段残余、最终残余和近端损伤</td>
-<td>设备声学过载与音质要求</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:3em">C9</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">非线性播放</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">覆盖目标播放电平和材料，并含双讲</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">线性段残余、最终残余和近端损伤</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">设备声学过载与音质要求</td>
 </tr>
 <tr>
-<td>C10</td>
-<td>时钟偏移</td>
-<td>覆盖实际播放与采集时钟域及最长会话</td>
-<td>延迟漂移、重采样状态和残余趋势</td>
-<td>时钟规格和最长运行时间</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:3em">C10</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">时钟偏移</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">覆盖实际播放与采集时钟域及最长会话</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">延迟漂移、重采样状态和残余趋势</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">时钟规格和最长运行时间</td>
 </tr>
 <tr>
-<td>C11</td>
-<td>输出切换与丢帧</td>
-<td>执行目标系统支持的切换和故障注入</td>
-<td>延迟重搜、恢复时间和音频连续性</td>
-<td>交互与通话连续性要求</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:3em">C11</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">输出切换与丢帧</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">执行目标系统支持的切换和故障注入</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">延迟重搜、恢复时间和音频连续性</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">交互与通话连续性要求</td>
 </tr>
 <tr>
-<td>C12</td>
-<td>适用的认证指标</td>
-<td>按所选标准及 profile 生成条件</td>
-<td>标准要求的指标和统计过程</td>
-<td>所选标准的明确版本与条款</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:3em">C12</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">适用的认证指标</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">按所选标准及 profile 生成条件</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">标准要求的指标和统计过程</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">所选标准的明确版本与条款</td>
 </tr>
 <tr>
-<td>C13</td>
-<td>下游任务</td>
-<td>AEC 旁路与启用使用同一批输入</td>
-<td>唤醒、识别或通信任务的差异</td>
-<td>任务基线与允许退化</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:3em">C13</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">下游任务</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:13em">AEC 旁路与启用使用同一批输入</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">唤醒、识别或通信任务的差异</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:14em">任务基线与允许退化</td>
 </tr>
 </tbody>
 </table></div>
@@ -2205,6 +2238,12 @@ e&=d-\hat y.
 <td>E06-39</td>
 <td>系数误差、浮点分量与实际 PCM 总残差分开，不是干净 ERLE 或工业排名</td>
 </tr>
+<tr>
+<td>图74</td>
+<td>时变增益的参考位置与纯回声尾声</td>
+<td>§6.10、E06-40～E06-42</td>
+<td>已知路径全冻结；后乘增益不等于先改变参考，活动标签不等于近端真值</td>
+</tr>
 </tbody>
 </table></div>
 </blockquote>
@@ -2362,44 +2401,44 @@ $$</p>
 <p>四个输出取点及更新控制<strong>不相同</strong>，因此下表只呈现各自条件下可复核的观测量，不给统一性能排名。</p>
 <p>评价前还用一条独立的全零参考、单个 10000 PCM 计数脉冲检查输出时间位置。本机固定构建中，Speex 核心首个非零与峰值样本都和输入同位；AEC3 线性段晚 64 个采样（4 ms），最终段晚 128 个采样（8 ms）。</p>
 <p>下表先按这些<strong>单独测得</strong>的固定延迟配对输出和参考，再用式(6-31)计算注入增量；没有在评分区拟合延迟或增益。远端单讲列是已知量化回声功率与<strong>总输出</strong>功率之比；只在教学 NLMS 的纯线性残差中，才可把它按该无噪声模型解释为线性回声消除量。</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:54em">
 <thead>
 <tr>
-<th scope="col">处理输出</th>
-<th scope="col" style="text-align: right;">脉冲测得固定延迟</th>
-<th scope="col" style="text-align: right;"><code>[2,3)</code> s 回声功率／对齐后总输出功率</th>
-<th scope="col" style="text-align: right;"><code>[3,4)</code> s $g_\Delta$</th>
-<th scope="col" style="text-align: right;"><code>[3,4)</code> s $E_\Delta$</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:10em">处理输出</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:10em" class="tutorial-short-column">脉冲测得固定延迟</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:16em" class="tutorial-short-column"><code>[2,3)</code> s 回声功率／对齐后总输出功率</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column"><code>[3,4)</code> s $g_\Delta$</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column"><code>[3,4)</code> s $E_\Delta$</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>教学 NLMS，真值冻结</td>
-<td style="text-align: right;">0 样本</td>
-<td style="text-align: right;">79.27 dB</td>
-<td style="text-align: right;">1.000</td>
-<td style="text-align: right;">约 0</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">教学 NLMS，真值冻结</td>
+<td style="text-align: right;--tutorial-column-width:10em" class="tutorial-short-column">0 样本</td>
+<td style="text-align: right;--tutorial-column-width:16em" class="tutorial-short-column">79.27 dB</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">1.000</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">约 0</td>
 </tr>
 <tr>
-<td>SpeexDSP 同步核心</td>
-<td style="text-align: right;">0 样本</td>
-<td style="text-align: right;">37.12 dB</td>
-<td style="text-align: right;">0.982</td>
-<td style="text-align: right;">0.027</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">SpeexDSP 同步核心</td>
+<td style="text-align: right;--tutorial-column-width:10em" class="tutorial-short-column">0 样本</td>
+<td style="text-align: right;--tutorial-column-width:16em" class="tutorial-short-column">37.12 dB</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">0.982</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">0.027</td>
 </tr>
 <tr>
-<td>AEC3 导出线性段</td>
-<td style="text-align: right;">64 样本</td>
-<td style="text-align: right;">60.58 dB</td>
-<td style="text-align: right;">0.964</td>
-<td style="text-align: right;">0.241</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">AEC3 导出线性段</td>
+<td style="text-align: right;--tutorial-column-width:10em" class="tutorial-short-column">64 样本</td>
+<td style="text-align: right;--tutorial-column-width:16em" class="tutorial-short-column">60.58 dB</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">0.964</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">0.241</td>
 </tr>
 <tr>
-<td>AEC3 导出最终段</td>
-<td style="text-align: right;">128 样本</td>
-<td style="text-align: right;">30.63 dB</td>
-<td style="text-align: right;">0.193</td>
-<td style="text-align: right;">0.763</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">AEC3 导出最终段</td>
+<td style="text-align: right;--tutorial-column-width:10em" class="tutorial-short-column">128 样本</td>
+<td style="text-align: right;--tutorial-column-width:16em" class="tutorial-short-column">30.63 dB</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">0.193</td>
+<td style="text-align: right;--tutorial-column-width:9em" class="tutorial-short-column">0.763</td>
 </tr>
 </tbody>
 </table></div>
@@ -2999,14 +3038,17 @@ G+I=\begin{bmatrix}6&2\\2&2\end{bmatrix},\\
 <p>训练区间为 <code>[0,24000)</code>，每次都先输出本样本回声预测和残差再更新。从第24000点起冻结全部权重；FIR参考历史和APA观测历史仍推进，但本题之后不恢复适应。</p>
 <p>评分仅用 <code>[24000,32000)</code> 的8000点，共0.5s。最后13个尾样本保留在文件中，却不计入训练或评分。权重误差轨迹每160点记录一次；这只是记录间隔，不把逐样本APA改成每160点更新一次。</p>
 <p><strong>分开定义系数误差和输出误差。</strong> 令 $w_\mathrm{tr}$ 为训练结束后的固定权重，$\mathcal I$为上述冻结评分区间，$N_\mathcal I=8000$，$y_n$为已知干净回声，$v_n$为观测噪声，$\hat y_n^-$为因果先验预测。定义</p>
-<p>$$\begin{aligned}
-\rho_h&=\frac{\|w_\mathrm{tr}-h\|}{\|h\|},\\
-\epsilon_{y,n}&=y_n-\hat y_n^-,\qquad e_n^-=\epsilon_{y,n}+v_n,\\
-P_\mathrm{clean}&=\frac1{N_\mathcal I}\sum_{n\in\mathcal I}\epsilon_{y,n}^2,\\
-P_\mathrm{total}&=\frac1{N_\mathcal I}\sum_{n\in\mathcal I}(e_n^-)^2\\
-&=P_\mathrm{clean}+\frac1{N_\mathcal I}\sum_{n\in\mathcal I}v_n^2
-+\frac2{N_\mathcal I}\sum_{n\in\mathcal I}\epsilon_{y,n}v_n.
-\end{aligned}\tag{6-33}$$</p>
+<p>$$\begin{gathered}
+\rho_h=\frac{\|w_\mathrm{tr}-h\|}{\|h\|},\\
+\epsilon_{y,n}=y_n-\hat y_n^-,\\
+e_n^-=\epsilon_{y,n}+v_n,\\
+P_\mathrm{clean}=\frac1{N_\mathcal I}\sum_{n\in\mathcal I}\epsilon_{y,n}^2,\\
+P_v=\frac1{N_\mathcal I}\sum_{n\in\mathcal I}v_n^2,\\
+C_{\epsilon v}=\frac1{N_\mathcal I}\sum_{n\in\mathcal I}\epsilon_{y,n}v_n,\\
+P_\mathrm{total}=\frac1{N_\mathcal I}\sum_{n\in\mathcal I}(e_n^-)^2,\\
+P_\mathrm{total}=P_\mathrm{clean}+P_v+2C_{\epsilon v}.
+\end{gathered}\tag{6-33}$$</p>
+<p>$P_v$ 是评分窗内的噪声实测均方，$C_{\epsilon v}$ 是同窗有限样本的交叉均值。分开命名后，最后一行仍是逐点平方展开再求平均，并没有假定交叉项消失。</p>
 <p>这些定义的真值分量只在生成器里已知。有限冻结窗口的交叉项不一定恰为零，即使输入生成时噪声独立；本次三法的两倍交叉均值分别约为 $1.1040\times10^{-8}$、$-1.0238\times10^{-7}$、$-1.4416\times10^{-7}$。本次噪声均方是 $8.85524\times10^{-6}$，不是把总体标准差平方 $9\times10^{-6}$ 当成这8000点的实测均方。</p>
 <p><strong>无噪与含噪要分开看。</strong> 同一参考另在内存里运行无观测噪声控制组，没有额外无噪WAV。训练结束时，NLMS相对路径误差约 $8.14\times10^{-7}$，APA2、APA4都已接近浮点数值精度；不把约 $10^{-16}$ 的结果称为数学精确零。图58保留整个轨迹，可查看启动过程，而不是只凭末点宣布收敛速度。</p>
 <p>下表属于标准差0.003的含噪组，三种MSE均使用同一8000点评分区间。浮点真值分解与实际PCM总输出是不同取点：</p>
@@ -3059,6 +3101,223 @@ P_\mathrm{total}&=\frac1{N_\mathcal I}\sum_{n\in\mathcal I}(e_n^-)^2\\
 <li><a href="apa_audio/apa_apa4_residual.wav">APA4先验残差</a><audio class="audio-sample" controls preload="none" aria-label="APA4先验残差" src="apa_audio/apa_apa4_residual.wav">请使用上方 WAV 链接下载。</audio></li>
 </ul>
 <p>试听只用于观察合成有色噪声与残差，不能靠听感证明系数正确；本题没有人工听测。开始播放时可先调低音量。</p>
+<p><a id="e06-40"></a></p>
+<h3 id="sec-u-ef4cfdfcf5">E06-40：已知当前播放增益，为什么后乘回声预测仍会错？</h3>
+<p>取早参考 $x=[1,1,1,1]$、路径 $h=[1,1/2]$，初始过去样本为零。增益在第2点从1切换为2，即 $g=[1,1,2,2]$。保留完整一点卷积尾部：在第4点令 $x[4]=0$，并明确当前增益仍为 $g[4]=2$。所有系数冻结，不训练或重新估计路径。</p>
+<p>分别求真实回声、直接使用早参考的固定预测、先卷积后乘当前增益的预测，以及使用较晚参考 $r[n]=g[n]x[n]$ 的预测。解释为什么第三种方法只在变化边界留下误差，而不是处处都错。</p>
+<p><strong>解答：先列输入，再逐点计算。</strong> 含尾部的早参考为 $[1,1,1,1,0]$，晚参考为 $[1,1,2,2,0]$。真实回声满足 $y[n]=r[n]+r[n-1]/2$，故第2点为 $2+1/2=5/2$，第3点为 $2+2/2=3$，尾部第4点为 $0+2/2=1$。</p>
+<p>早参考固定预测是 $x[n]+x[n-1]/2$；错误后乘预测是 $g[n](x[n]+x[n-1]/2)$。所有残差均定义为真实回声减预测，符号保留：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">点 $n$</th>
+<th scope="col" style="text-align: right;">真实回声</th>
+<th scope="col" style="text-align: right;">早参考预测</th>
+<th scope="col" style="text-align: right;">错误后乘预测</th>
+<th scope="col" style="text-align: right;">晚参考预测</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr>
+<td>1</td>
+<td style="text-align: right;">$3/2$</td>
+<td style="text-align: right;">$3/2$</td>
+<td style="text-align: right;">$3/2$</td>
+<td style="text-align: right;">$3/2$</td>
+</tr>
+<tr>
+<td>2</td>
+<td style="text-align: right;">$5/2$</td>
+<td style="text-align: right;">$3/2$</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">$5/2$</td>
+</tr>
+<tr>
+<td>3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">$3/2$</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr>
+<td>4，完整尾部</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">$1/2$</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table></div>
+<p>早参考固定残差为 $[0,0,1,3/2,1/2]$，错误后乘残差为 $[0,0,-1/2,0,0]$，晚参考残差为全零。第2点的延迟样本仍只乘过1，后乘预测却把它当成乘过2，故多预测了 $1/2$。第3点两项历史增益都为2，第4点仍延续增益2，因此这两点没有该顺序误差。</p>
+<p>由式(6-35)，本题只剩 $\tfrac12(g[n-1]-g[n])x[n-1]$。把增益改为恒定，或把路径改为只有零延迟抽头，再核对差为零。这两个控制检验成立条件，而不意味着真实多径路径中的时变增益可以统一移到卷积外。</p>
+<p>完整复算见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/core/reference_timing.py"><code>reference_gain_order()</code></a>；较晚参考还由已知路径、全冻结 <code>NLMSState</code> 独立形成先验预测。没有利用被评分的麦克风样本更新路径。</p>
+<p><a id="e06-41"></a></p>
+<h3 id="sec-u-76a7b68f55">E06-41：当前参考静音，麦克风为什么仍可能只有纯回声？</h3>
+<p>取三个长度4的帧，第一帧播放 $[1,-1,1,-1]$，以后8点全部为零。已知路径只有延迟4点的抽头 $h[4]=1/2$，真实近端分量 $s[n]=0$，噪声也为零。参考从未丢失，物理播放在第4点确实停止。使用 §6.4.1 的当前帧基线，活动均方根门限0.1、绝对 NCC 门限0.8。</p>
+<p><strong>解答：把当前活动与历史回声分开。</strong> $y[n]=x[n-4]/2$，初始负时刻参考为零。因此麦克风前三帧分别是全零、$[1/2,-1/2,1/2,-1/2]$、全零。去均值不改变这些零均值帧，参考和麦克风均方根直接由各帧平方均值开方得到：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">帧，样本区间</th>
+<th scope="col" style="text-align: right;">当前参考RMS</th>
+<th scope="col" style="text-align: right;">麦克风RMS</th>
+<th scope="col">基线标签</th>
+<th scope="col">实际分量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0，$[0,4)$</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td><code>far_only</code></td>
+<td>播放活动，回声尚未到达</td>
+</tr>
+<tr>
+<td>1，$[4,8)$</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">$1/2$</td>
+<td><code>near_only</code></td>
+<td>只有过去播放的纯回声尾声</td>
+</tr>
+<tr>
+<td>2，$[8,12)$</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td><code>silence</code></td>
+<td>无回声、近端或噪声</td>
+</tr>
+</tbody>
+</table></div>
+<p>每帧都有一路去均值能量为零，NCC 分母不能形成；实现记录0表示没有相关证据，不是实测得出两路统计不相关。活动分支仍会输出表中的标签。第1帧的 <code>near_only</code> 不是近端分量真值，更不能当作已经恢复出近端语音。</p>
+<p>把已知 $h$ 放进长度5、全冻结的 <code>NLMSState</code>，保留正常推进的参考历史，第1帧仍可读取第0帧的有效样本，全部12点先验残差为零。若只看当前参考帧而清掉历史，就会丢掉可预测的尾声；“当前参考为零”与“整个 FIR 历史为零”是两个条件。</p>
+<p>这只是一个反例，并不提供通用尾声鉴定器。未知路径、噪声或同时出现近端语音时，延长参考活动保持时间可能改变标签，却不能单独证明麦克风分量来自哪一端。实际系统还应核对路径支持、历史参考、延迟和残余统计。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/core/reference_timing.py"><code>echo_tail_activity()</code></a>返回完整三个帧、实际基线标签与冻结预测；它没有用真值标签控制检测器。</p>
+<p>E06-40、E06-41也在 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/chapter06_experiments.py"><code>chapter06_experiments.py</code></a> 中以独立稳定ID输出，原E06-22～E06-33的输入和结果保留。</p>
+<p><a id="e06-42"></a></p>
+<h3 id="sec-u-edec7d8254">E06-42：用实际 PCM 核对增益切换与纯回声尾声</h3>
+<p>把 E06-40、E06-41 的有限模型扩展到可播放文件。采样率为16 kHz，源长32000点，额外保留1600点完整卷积尾部，因此六个单声道文件均为33600点、2.1 s。没有近端分量或观测噪声。</p>
+<p><strong>先固定生成真值与参考位置。</strong> 未加包络的源为 $0.08\cos(2\pi500n/16000)+0.06\sin(2\pi730n/16000)$。首尾各320点乘端点包含在内的平方正弦淡入、淡出，结束后补零。早参考 $x[n]$ 位于播放增益之前，晚参考 $r[n]=g[n]x[n]$ 位于增益之后、固定路径之前。第16000点增益由1切换为2，停止播放后的尾部仍把当前 $g[n]$ 定义为2。</p>
+<p>路径只有两个非零抽头：$h[0]=0.7$、$h[1600]=0.35$，即第二项延迟100 ms。真实回声由独立稀疏卷积形成：</p>
+<p>$$\begin{gathered}
+\begin{aligned}
+y[n]&=0.7r[n]\\
+&\quad+0.35r[n-1600],
+\end{aligned}\\
+\begin{aligned}
+\hat y_\mathrm{early}[n]&=0.7x[n]\\
+&\quad+0.35x[n-1600],
+\end{aligned}\\
+\hat y_\mathrm{after}[n]=g[n]\hat y_\mathrm{early}[n].
+\end{gathered}\tag{6-36}$$</p>
+<p>负时刻参考为零。早、晚参考分别进入1601抽头的 <code>NLMSState</code>，初值就是已知真路径，全部33600点冻结权重，只推进参考历史并输出先验预测。错误后乘支路再把早参考预测乘当前增益。这里不训练未知路径，不估计增益，不拟合时延；晚参考不是从麦克风里反推出来的。</p>
+<p><strong>三个窗口分别回答三个问题。</strong> 切换窗为 $[16000,17600)$，检查旧增益历史尚未走完路径时的残差；稳定窗为 $[19200,28800)$，检查全部相关参考都已经乘2的结果；尾窗为 $[32000,33600)$，检查当前播放停止后过去样本仍产生的回声。窗长分别是1600、9600、1600点，互不混用。</p>
+<p>切换窗的500/730 Hz分量恰为50/73个周期，稳定窗为300/438个周期，均不经过淡入淡出。因此 $x[n-1600]=x[n]$，两谱线的交叉均值为零，源均方为</p>
+<p>$$\begin{aligned}
+P_x&=\frac{0.08^2+0.06^2}{2}=0.005,\\
+P_{c x}&=c^2P_x.
+\end{aligned}\tag{6-37}$$</p>
+<p>切换窗中当前增益是2、延迟样本的增益仍是1：真实回声系数为 $0.7\times2+0.35\times1=1.75$；早参考残差系数为 $1.75-1.05=0.7$；后乘残差系数为 $1.75-2\times1.05=-0.35$。稳定窗中真实回声系数为2.1，早参考残差系数为1.05，后乘残差理想为零。把各系数平方后乘0.005，得到：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">分量</th>
+<th scope="col" style="text-align: right;">切换窗解析均方</th>
+<th scope="col" style="text-align: right;">稳定窗解析均方</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>真实回声</td>
+<td style="text-align: right;">0.0153125</td>
+<td style="text-align: right;">0.02205</td>
+</tr>
+<tr>
+<td>早参考固定残差</td>
+<td style="text-align: right;">0.00245</td>
+<td style="text-align: right;">0.0055125</td>
+</tr>
+<tr>
+<td>错误后乘残差</td>
+<td style="text-align: right;">0.0006125</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>晚参考固定残差</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table></div>
+<p>后乘支路在稳定窗正确，却在切换窗多预测了过去样本的增益。此处只说明顺序错误随路径记忆持续1600点，不能据此估计未知设备的路径长度。</p>
+<p><strong>尾部用有限样本求和，不能套稳态周期均方。</strong> 尾部当前 $x[n]=r[n]=0$，但延迟样本尚未清空，故真实回声为 $0.7x[n-1600]$，早参考残差为 $0.35x[n-1600]$。这段延迟源包含淡出；浮点真实回声与早参考残差的均方分别约为0.00216323765148、0.000540809412869，而不是直接用0.005乘系数平方。后乘和晚参考支路的理想残差为零。</p>
+<p><strong>实际文件另按 PCM 整数核对。</strong> 共同导出增益为1，各文件独立量化为PCM16，不逐文件归一化。令 $q_n$ 为文件中有符号整数，评分用 $E=\sum q_n^2$、$D=N\times32768^2$，均方为 $E/D$。切换窗与尾窗的 $D=1717986918400$，稳定窗的 $D=10307921510400$；实际整数平方和如下，勿把解析小数当作量化实测：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:52em">
+<thead>
+<tr>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:8em">文件分量</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:15em" class="tutorial-short-column">切换窗 $E$</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:15em" class="tutorial-short-column">稳定窗 $E$</th>
+<th scope="col" style="text-align: right;--tutorial-column-width:14em" class="tutorial-short-column">尾窗 $E$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">早参考</td>
+<td style="text-align: right;--tutorial-column-width:15em" class="tutorial-short-column">8589947251</td>
+<td style="text-align: right;--tutorial-column-width:15em" class="tutorial-short-column">51539683506</td>
+<td style="text-align: right;--tutorial-column-width:14em" class="tutorial-short-column">0</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">晚参考</td>
+<td style="text-align: right;--tutorial-column-width:15em" class="tutorial-short-column">34359936344</td>
+<td style="text-align: right;--tutorial-column-width:15em" class="tutorial-short-column">206159618064</td>
+<td style="text-align: right;--tutorial-column-width:14em" class="tutorial-short-column">0</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">真实回声</td>
+<td style="text-align: right;--tutorial-column-width:15em" class="tutorial-short-column">26306750961</td>
+<td style="text-align: right;--tutorial-column-width:15em" class="tutorial-short-column">227291471160</td>
+<td style="text-align: right;--tutorial-column-width:14em" class="tutorial-short-column">3716443945</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">早参考残差</td>
+<td style="text-align: right;--tutorial-column-width:15em" class="tutorial-short-column">4209136228</td>
+<td style="text-align: right;--tutorial-column-width:15em" class="tutorial-short-column">56821523154</td>
+<td style="text-align: right;--tutorial-column-width:14em" class="tutorial-short-column">929133267</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">错误后乘残差</td>
+<td style="text-align: right;--tutorial-column-width:15em" class="tutorial-short-column">1052295351</td>
+<td style="text-align: right;--tutorial-column-width:15em" class="tutorial-short-column">0</td>
+<td style="text-align: right;--tutorial-column-width:14em" class="tutorial-short-column">0</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">晚参考残差</td>
+<td style="text-align: right;--tutorial-column-width:15em" class="tutorial-short-column">0</td>
+<td style="text-align: right;--tutorial-column-width:15em" class="tutorial-short-column">0</td>
+<td style="text-align: right;--tutorial-column-width:14em" class="tutorial-short-column">0</td>
+</tr>
+</tbody>
+</table></div>
+<p>例如，切换窗错误后乘残差均方为 $1052295351/1717986918400\approx0.000612516509718$，与解析0.0006125略有量化差别。晚参考浮点残差仍有舍入误差，三窗均方约为 $1.85\times10^{-34}$、$3.42\times10^{-34}$、$1.88\times10^{-35}$；导出的PCM残差整数均为零，不能反过来把浮点输出说成严格数学零。也不能对分别量化后的参考重新滤波，要求逐字节重现独立量化的输出。</p>
+<p><strong>用实际尾部再检查活动标签。</strong> 将已解码的晚参考与真实回声PCM送入 §6.4.1 基线，帧长160点、去均值RMS门限0.001、绝对NCC门限0.85。尾窗十帧均输出 <code>near_only</code>，但生成真值中的近端分量一直为零。参考方差为零使NCC未定义，记录的0只是占位；麦克风当前有活动，不能证明是近端语音。</p>
+<p>每个标签到该帧结束才可取得，十帧可用时刻依次为第32160、32320、…、33600点。若要用标签控制同一帧，必须先缓冲完整帧；不能把这里的整帧统计称为逐样本零等待检测。</p>
+<p><strong>代码与样本。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/core/reference_audio.py"><code>core/reference_audio.py</code></a>给出完整生成模型与冻结预测；<a href="reference_audio/MANIFEST.json">独立清单</a>分别保存解析、浮点、实际PCM整数分母和尾部活动标签。在仓库根目录运行 <code>.venv/bin/python -m codes.chapters.ch06.examples.generate_reference_audio --check</code>，严格只读回放与核对六个文件。这组样本不并入主109个WAV，试听也不构成人工听测或工业效果验证。</p>
+<ul>
+<li><a href="reference_audio/reference_early.wav">增益前的早参考</a><audio class="audio-sample" controls preload="none" aria-label="增益前的早参考" src="reference_audio/reference_early.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="reference_audio/reference_late.wav">增益后的晚参考</a><audio class="audio-sample" controls preload="none" aria-label="增益后的晚参考" src="reference_audio/reference_late.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="reference_audio/reference_echo.wav">包含完整尾部的真实回声</a><audio class="audio-sample" controls preload="none" aria-label="包含完整尾部的真实回声" src="reference_audio/reference_echo.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="reference_audio/reference_early_residual.wav">早参考固定预测的残差</a><audio class="audio-sample" controls preload="none" aria-label="早参考固定预测的残差" src="reference_audio/reference_early_residual.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="reference_audio/reference_wrong_gain_residual.wav">错误后乘当前增益的残差</a><audio class="audio-sample" controls preload="none" aria-label="错误后乘当前增益的残差" src="reference_audio/reference_wrong_gain_residual.wav">请使用上方 WAV 链接下载。</audio></li>
+<li><a href="reference_audio/reference_late_residual.wav">晚参考固定预测的残差</a><audio class="audio-sample" controls preload="none" aria-label="晚参考固定预测的残差" src="reference_audio/reference_late_residual.wav">请使用上方 WAV 链接下载。</audio></li>
+</ul>
 <span id="sec-6-1-18" class="anchor-alias" aria-hidden="true"></span><span id="sec-26" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-6-17">6.17 延伸阅读</h2>
 <ol>
 <li><strong>Hänsler &amp; Schmidt, <em>Acoustic Echo and Noise Control</em>（Wiley 2004）</strong>——自适应理论与免提终端工程。<a href="https://onlinelibrary.wiley.com/doi/book/10.1002/0471678406" title="citation">Wiley 在线版</a></li>

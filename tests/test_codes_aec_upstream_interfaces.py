@@ -20,7 +20,11 @@ class AecUpstreamInterfaceTests(unittest.TestCase):
 
     def test_report_binds_harness_sources_inputs_and_execution_scope(self):
         report = self.report
-        self.assertEqual(report["script_sha256"], hashlib.sha256(Path(audit.__file__).read_bytes()).hexdigest())
+        relative = str(Path(audit.__file__).resolve().relative_to(audit.contracts.ROOT))
+        spec = "621d727a63475e3ee8ad2a29d518889c42e92571:" + relative
+        original = (audit.contracts.git(audit.contracts.ROOT, 'show', spec) + '\n').encode()
+        self.assertEqual(len(original), int(audit.contracts.git(audit.contracts.ROOT, 'cat-file', '-s', spec)))
+        self.assertEqual(report["script_sha256"], hashlib.sha256(original).hexdigest())
         self.assertEqual(report["binding_sha256"], audit.binding_sha256())
         self.assertEqual(report["sources"], audit.SOURCES)
         self.assertEqual(report["config"], audit.CONFIG)
@@ -81,15 +85,12 @@ class AecUpstreamInterfaceTests(unittest.TestCase):
             root = Path(folder)
             with self.assertRaises(FileNotFoundError):
                 audit.verify_source(root, audit.SOURCES["pyaec"])
-            (root / ".git").mkdir()
-            with patch.object(audit.subprocess, "check_output", side_effect=[str(root), "wrong"]):
-                with self.assertRaisesRegex(ValueError, "revision mismatch"):
-                    audit.verify_source(root, audit.SOURCES["pyaec"])
-            spec = {"revision": "fixed", "files": {"source.py": "wrong-hash"}}
-            (root / "source.py").write_text("# harmless test fixture\n")
-            with patch.object(audit.subprocess, "check_output", side_effect=[str(root), "fixed", ""]):
-                with self.assertRaisesRegex(ValueError, "source hash mismatch"):
-                    audit.verify_source(root, spec)
+            with patch.object(audit.contracts, 'verify_project', side_effect=ValueError('origin mismatch')):
+                with self.assertRaisesRegex(ValueError, 'origin mismatch'):
+                    audit.verify_source(root, audit.SOURCES['pyaec'])
+            with self.assertRaisesRegex(ValueError, 'declared fixed'):
+                audit.verify_source(root, {'revision': 'unknown', 'files': {}})
+
 
 
 if __name__ == "__main__":

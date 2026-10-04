@@ -1,0 +1,903 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-04T10:27:37.325891+00:00",
+  "environment": {
+    "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
+    "numpy": "2.5.3",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "executable": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/bin/python"
+  },
+  "script_sha256": "38f54269f351cee09a66bbf9dc55583678307596c55059b329836f087f63f03d",
+  "binding_sha256": "1f31b18d52c55230d52f1e5bc1d4ec234b9c200457a36ea0c99fddfa5447e7fd",
+  "actual_dependency_sha256": {
+    "codes/chapters/ch06/examples/audit_aec_upstream_interfaces.py": "38f54269f351cee09a66bbf9dc55583678307596c55059b329836f087f63f03d",
+    "codes/chapters/ch04/core/upstream_contracts.py": "16630220cdc6f66eb97cfc2a91057cb2e159ff0addbc89a2a65cb0dab45ab003",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
+    "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
+  },
+  "sources": {
+    "pyaec": {
+      "revision": "5b9c02c57075d790b7df8652884618189d49bbc4",
+      "files": {
+        "LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "time_domain_adaptive_filters/rls.py": "f154c7cbfdca33c86efcf4ed6a9fc846a4330769ebc43a659680c16288467a16",
+        "time_domain_adaptive_filters/kalman.py": "b9b678fb120f570cac61c909403f47fba5107a43718dcb7db86cf4f3ad9df6f0",
+        "frequency_domain_adaptive_filters/fdkf.py": "8f8520e126d8efded74cbec9003a4d5451eb21958840a8a2ab50f0ce1019f758",
+        "frequency_domain_adaptive_filters/pfdkf.py": "970cb59273da20b611bbc1044572f01452a34ed2b53bdff61b9af3a2b6e41387"
+      }
+    },
+    "echocatzh-pfdkf": {
+      "revision": "7c8c86b5691966c330015d8e0960db0733b4844f",
+      "files": {
+        "LICENSE": "b6c53ea4c5cf363eeef563f592f0b7308ad0943627e7803e9b0df05bf592b5d5",
+        "pfdkf.py": "43d7b53953f44b12310b0ec68f77a42c4dbad886ac57bdb5d7d1f7c280d64410"
+      }
+    },
+    "dtln_aec": {
+      "revision": "9d24e128b4f409db18227b8babb343016625921f",
+      "files": {
+        "LICENSE": "aa95acd8c8a7341bfcdb2823694dcbb27a2a4143e860bb52db1ff0f29c85e5a1",
+        "run_aec.py": "99e4c179b8a2838bb0f257308e24a28a8565d1f93f40546bbdf585f4305dc317"
+      }
+    }
+  },
+  "config": {
+    "randomness": "none; dimensionless synthetic arrays, no recordings",
+    "pyaec": {
+      "x": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "d": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "N": 2,
+      "fdkf_M": 4,
+      "fdkf_input_length": 8,
+      "pfdkf_N": 2,
+      "pfdkf_M": 4
+    },
+    "echocatzh": {
+      "N": 1,
+      "M": 2,
+      "x": [
+        1.0,
+        1.0
+      ],
+      "d": [
+        1.0,
+        1.0
+      ],
+      "update_called": false,
+      "res_modes": [
+        false,
+        true
+      ]
+    },
+    "dtln": {
+      "sample_rate_hz": 16000,
+      "mic_samples": 768,
+      "reference_samples": 640,
+      "input_values": 0.0,
+      "fake_stage1_mask": 1.0,
+      "fake_stage2_constants": [
+        -0.5,
+        0.5
+      ],
+      "real_tensorflow_or_weights_loaded": false,
+      "real_soundfile_write": false
+    }
+  },
+  "source_identities": {
+    "pyaec": {
+      "project": "pyaec",
+      "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/pyaec",
+      "origin": "https://github.com/ewan-xu/pyaec.git",
+      "head": "5b9c02c57075d790b7df8652884618189d49bbc4",
+      "lock_entry": {
+        "id": "pyaec",
+        "url": "https://github.com/ewan-xu/pyaec.git",
+        "revision": "5b9c02c57075d790b7df8652884618189d49bbc4",
+        "license": "Apache-2.0",
+        "scope": "Educational time-domain APA/RLS/Kalman and frequency-domain FDKF/PFDKF AEC examples",
+        "fetch_enabled": true,
+        "note": "Official repository and Apache-2.0 license rechecked 2026-10-01. Minimal research examples, not a complete AEC frontend or the original FDKF/APA authors' implementation; no delay search, double-talk controller or residual suppressor. The original APA real-valued buffers discard imaginary components, use fixed 0.01 diagonal loading and return min(input lengths)-N samples; the chapter 6 read-only method audit records these actual observations. Legacy np.complex in FDKF/PFDKF requires compatibility checking with modern NumPy. Requirements mention librosa and pyroomacoustics; sample-audio rights are separate. Sparse source acquisition does not claim complete package or acoustic-performance reproduction.",
+        "entrypoints": [
+          "LICENSE",
+          "README.md",
+          "time_domain_adaptive_filters/apa.py",
+          "time_domain_adaptive_filters/rls.py",
+          "time_domain_adaptive_filters/kalman.py",
+          "frequency_domain_adaptive_filters/fdkf.py",
+          "frequency_domain_adaptive_filters/pfdkf.py"
+        ]
+      },
+      "lock_sha256": "a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505",
+      "source_document_paths": {
+        "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+        "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+      },
+      "status_sha256": "abc28f6f15512da8267618bca318b10033909ec2afdb6090b6aa2d0f1281f0e9",
+      "recorded_complete_selection": {
+        "id": "pyaec",
+        "revision": "5b9c02c57075d790b7df8652884618189d49bbc4",
+        "status": "source_verified",
+        "missing_entrypoints": [],
+        "execution": "not_run",
+        "dependency_validation": "not_run",
+        "asset_policy": "sparse_source_checkout",
+        "requested_source_paths": [
+          "repository"
+        ],
+        "observed_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "expected_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "source_selection_verified": true
+      },
+      "live_complete_selection": {
+        "id": "pyaec",
+        "revision": "5b9c02c57075d790b7df8652884618189d49bbc4",
+        "status": "source_verified",
+        "source_selection_verified": true,
+        "missing_entrypoints": [],
+        "observed_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "expected_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "requested_source_paths": [
+          "repository"
+        ],
+        "asset_policy": "sparse_source_checkout"
+      },
+      "used_source_identity": "verified",
+      "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+      "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+      "ignored_members_before": [],
+      "used_files": {
+        "LICENSE": {
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "bytes": 11357,
+          "git_blob": "261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64",
+          "actual_blob": "261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64"
+        },
+        "time_domain_adaptive_filters/rls.py": {
+          "sha256": "f154c7cbfdca33c86efcf4ed6a9fc846a4330769ebc43a659680c16288467a16",
+          "bytes": 1158,
+          "git_blob": "6ad3792f3361ce4e4d5046564f0e2614af8d13cf",
+          "actual_blob": "6ad3792f3361ce4e4d5046564f0e2614af8d13cf"
+        },
+        "time_domain_adaptive_filters/kalman.py": {
+          "sha256": "b9b678fb120f570cac61c909403f47fba5107a43718dcb7db86cf4f3ad9df6f0",
+          "bytes": 1200,
+          "git_blob": "fbf3245636a75b63f1b6289f44fc5bab6a54c27f",
+          "actual_blob": "fbf3245636a75b63f1b6289f44fc5bab6a54c27f"
+        },
+        "frequency_domain_adaptive_filters/fdkf.py": {
+          "sha256": "8f8520e126d8efded74cbec9003a4d5451eb21958840a8a2ab50f0ce1019f758",
+          "bytes": 1603,
+          "git_blob": "d101e0b1969f708668e36f1aecf6f331db4df5f9",
+          "actual_blob": "d101e0b1969f708668e36f1aecf6f331db4df5f9"
+        },
+        "frequency_domain_adaptive_filters/pfdkf.py": {
+          "sha256": "970cb59273da20b611bbc1044572f01452a34ed2b53bdff61b9af3a2b6e41387",
+          "bytes": 2602,
+          "git_blob": "a6cd7640a1691a3fab92984b3c59dc2726e9b444",
+          "actual_blob": "a6cd7640a1691a3fab92984b3c59dc2726e9b444"
+        }
+      },
+      "clean_before": true,
+      "clean_after": true,
+      "ignored_members_after": []
+    },
+    "echocatzh-pfdkf": {
+      "project": "echocatzh-pfdkf",
+      "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/echocatzh-pfdkf",
+      "origin": "https://github.com/echocatzh/PFDKF.git",
+      "head": "7c8c86b5691966c330015d8e0960db0733b4844f",
+      "lock_entry": {
+        "id": "echocatzh-pfdkf",
+        "url": "https://github.com/echocatzh/PFDKF.git",
+        "revision": "7c8c86b5691966c330015d8e0960db0733b4844f",
+        "license": "MIT",
+        "scope": "Educational partitioned-block frequency-domain Kalman AEC with optional residual processing",
+        "fetch_enabled": true,
+        "note": "Official repository, source and license checked 2026-09-23. README credits pyaec for filter/update API and lists an unconstrained version as unfinished; it is not an original-paper implementation or an industrial frontend. NumPy is required; soundfile is used by its script demo. The default res=True output includes extra residual processing, so it is not the bare linear prediction error. Demo WAV rights are separate; sparse source acquisition does not claim a local run.",
+        "entrypoints": [
+          "LICENSE",
+          "README.md",
+          "pfdkf.py"
+        ]
+      },
+      "lock_sha256": "a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505",
+      "source_document_paths": {
+        "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+        "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+      },
+      "status_sha256": "abc28f6f15512da8267618bca318b10033909ec2afdb6090b6aa2d0f1281f0e9",
+      "recorded_complete_selection": {
+        "id": "echocatzh-pfdkf",
+        "revision": "7c8c86b5691966c330015d8e0960db0733b4844f",
+        "status": "source_verified",
+        "missing_entrypoints": [],
+        "execution": "not_run",
+        "dependency_validation": "not_run",
+        "asset_policy": "sparse_source_checkout",
+        "requested_source_paths": [
+          "repository"
+        ],
+        "observed_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "expected_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "source_selection_verified": true
+      },
+      "live_complete_selection": {
+        "id": "echocatzh-pfdkf",
+        "revision": "7c8c86b5691966c330015d8e0960db0733b4844f",
+        "status": "source_verified",
+        "source_selection_verified": true,
+        "missing_entrypoints": [],
+        "observed_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "expected_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "requested_source_paths": [
+          "repository"
+        ],
+        "asset_policy": "sparse_source_checkout"
+      },
+      "used_source_identity": "verified",
+      "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+      "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+      "ignored_members_before": [],
+      "used_files": {
+        "LICENSE": {
+          "sha256": "b6c53ea4c5cf363eeef563f592f0b7308ad0943627e7803e9b0df05bf592b5d5",
+          "bytes": 1069,
+          "git_blob": "7feb55936b16743ace5318be92fa23871a2f9998",
+          "actual_blob": "7feb55936b16743ace5318be92fa23871a2f9998"
+        },
+        "pfdkf.py": {
+          "sha256": "43d7b53953f44b12310b0ec68f77a42c4dbad886ac57bdb5d7d1f7c280d64410",
+          "bytes": 3516,
+          "git_blob": "67532e0516b23f5361a2ec7ede60de1646f64fda",
+          "actual_blob": "67532e0516b23f5361a2ec7ede60de1646f64fda"
+        }
+      },
+      "clean_before": true,
+      "clean_after": true,
+      "ignored_members_after": []
+    },
+    "dtln_aec": {
+      "project": "dtln_aec",
+      "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/dtln_aec",
+      "origin": "https://github.com/breizhn/DTLN-aec.git",
+      "head": "9d24e128b4f409db18227b8babb343016625921f",
+      "lock_entry": {
+        "id": "dtln_aec",
+        "url": "https://github.com/breizhn/DTLN-aec.git",
+        "revision": "9d24e128b4f409db18227b8babb343016625921f",
+        "license": "MIT",
+        "scope": "Dual-signal neural AEC inference",
+        "fetch_enabled": true,
+        "note": "MIT applies to code; TFLite models and sample audio need separate asset review. Acquisition must not run inference or install dependencies.",
+        "entrypoints": [
+          "LICENSE",
+          "run_aec.py"
+        ]
+      },
+      "lock_sha256": "a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505",
+      "source_document_paths": {
+        "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+        "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+      },
+      "status_sha256": "abc28f6f15512da8267618bca318b10033909ec2afdb6090b6aa2d0f1281f0e9",
+      "recorded_complete_selection": {
+        "id": "dtln_aec",
+        "revision": "9d24e128b4f409db18227b8babb343016625921f",
+        "status": "source_verified",
+        "missing_entrypoints": [],
+        "execution": "not_run",
+        "dependency_validation": "not_run",
+        "asset_policy": "sparse_source_checkout",
+        "requested_source_paths": [
+          "repository"
+        ],
+        "observed_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "expected_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "source_selection_verified": true
+      },
+      "live_complete_selection": {
+        "id": "dtln_aec",
+        "revision": "9d24e128b4f409db18227b8babb343016625921f",
+        "status": "source_verified",
+        "source_selection_verified": true,
+        "missing_entrypoints": [],
+        "observed_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "expected_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "requested_source_paths": [
+          "repository"
+        ],
+        "asset_policy": "sparse_source_checkout"
+      },
+      "used_source_identity": "verified",
+      "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+      "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+      "ignored_members_before": [],
+      "used_files": {
+        "LICENSE": {
+          "sha256": "aa95acd8c8a7341bfcdb2823694dcbb27a2a4143e860bb52db1ff0f29c85e5a1",
+          "bytes": 1075,
+          "git_blob": "30eb7a4a290e389b3b101db0984f28b7e8491125",
+          "actual_blob": "30eb7a4a290e389b3b101db0984f28b7e8491125"
+        },
+        "run_aec.py": {
+          "sha256": "99e4c179b8a2838bb0f257308e24a28a8565d1f93f40546bbdf585f4305dc317",
+          "bytes": 8687,
+          "git_blob": "4cbbaa4bfad0280c897c452fbaef45201e761182",
+          "actual_blob": "4cbbaa4bfad0280c897c452fbaef45201e761182"
+        }
+      },
+      "clean_before": true,
+      "clean_after": true,
+      "ignored_members_after": []
+    }
+  },
+  "source_verification": "fixed used original blobs and licenses verified before and after; complete selection recorded separately",
+  "upstream_modified": false,
+  "performance_evaluation": false,
+  "write_boundary": "Only explicit safe current report or external ordinary report; finite preflight does not eliminate concurrent races",
+  "results": {
+    "pyaec": {
+      "rls": {
+        "execution_kind": "original_source_function_call",
+        "actual_residual": [
+          1.0,
+          2.0,
+          3.0,
+          4.0
+        ],
+        "input_samples": 6,
+        "returned_samples": 4,
+        "unprocessed_sample_indices": [
+          4,
+          5
+        ],
+        "analytic_zero_reference_residual": [
+          1.0,
+          2.0,
+          3.0,
+          4.0,
+          5.0,
+          6.0
+        ],
+        "status": "tail_not_processed"
+      },
+      "kalman": {
+        "execution_kind": "original_source_function_call",
+        "actual_residual": [
+          1.0,
+          2.0,
+          3.0,
+          4.0
+        ],
+        "input_samples": 6,
+        "returned_samples": 4,
+        "unprocessed_sample_indices": [
+          4,
+          5
+        ],
+        "analytic_zero_reference_residual": [
+          1.0,
+          2.0,
+          3.0,
+          4.0,
+          5.0,
+          6.0
+        ],
+        "status": "tail_not_processed"
+      },
+      "fdkf": {
+        "execution_kind": "original_source_function_call",
+        "exception_type": "AttributeError",
+        "message": "module 'numpy' has no attribute 'complex'.",
+        "status": "numpy_complex_removed",
+        "output_computed": false
+      },
+      "pfdkf": {
+        "execution_kind": "original_source_constructor_call",
+        "exception_type": "AttributeError",
+        "message": "module 'numpy' has no attribute 'complex'.",
+        "status": "numpy_complex_removed",
+        "output_computed": false
+      }
+    },
+    "echocatzh": {
+      "execution_kind": "original_source_method_call",
+      "rows": [
+        {
+          "res": false,
+          "error": [
+            1.0,
+            1.0
+          ],
+          "reported_echo": [
+            0.0,
+            0.0
+          ],
+          "filter_coefficients_remain_zero": true,
+          "update_called": false
+        },
+        {
+          "res": true,
+          "error": [
+            0.500000000009375,
+            0.500000000009375
+          ],
+          "reported_echo": [
+            0.49999999999062505,
+            0.49999999999062505
+          ],
+          "filter_coefficients_remain_zero": true,
+          "update_called": false
+        }
+      ],
+      "analytic_reference": {
+        "bare_linear_error": [
+          1.0,
+          1.0
+        ],
+        "res_error": [
+          0.500000000009375,
+          0.500000000009375
+        ],
+        "derivation": "Four-point X=E=[2,-1+i,0]; P=1, m=|E|^2/2. W=1-|X|^2/(2|X|^2+1e-10). Valid IFFT samples equal W0/2+W1/2."
+      },
+      "scope": "One initial block only; residual suppression precedes any learned path update"
+    },
+    "dtln": {
+      "execution_kind": "unmodified_function_ast_with_fake_interpreters_and_memory_io",
+      "function_first_line": 29,
+      "function_last_line": 149,
+      "function_sha256": "da61f5a4a84ba1e1c2f52cc1dea83b344a26a7ca5c3fb74532eb0452ad95b570",
+      "real_neural_inference": false,
+      "real_audio_write": false,
+      "rows": [
+        {
+          "fake_stage2_constant": -0.5,
+          "output_samples": 640,
+          "minimum": -2.0,
+          "maximum": -2.0,
+          "samples_outside_unit_range": 640,
+          "stage_invocation_counts": [
+            8,
+            8
+          ]
+        },
+        {
+          "fake_stage2_constant": 0.5,
+          "output_samples": 640,
+          "minimum": 0.99,
+          "maximum": 0.99,
+          "samples_outside_unit_range": 0,
+          "stage_invocation_counts": [
+            8,
+            8
+          ]
+        }
+      ],
+      "analytic_reference": "512/128=4 overlapping constant blocks: +/-0.5 yields +/-2. Positive maximum guard rescales +2 to .99, but leaves -2 unchanged.",
+      "scope": "Orchestration and asymmetric output range guard only; not a model failure or measured PCM clipping"
+    }
+  }
+}

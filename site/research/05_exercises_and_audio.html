@@ -1,11 +1,12 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>章节代码练习与音频实验 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f82c588994c1"><style>
+<meta name="source-digest" content="b9a4256417d5"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
+@media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
 .skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
 .skip-link:focus{top:8px}
@@ -386,6 +387,13 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-55-2">55.2 从解析功率到实际PCM整数</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-55-3">55.3 试听与只读复算</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-55-4">55.4 通道掩码为什么要重新检查空间模型</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-88a7535bcf">56. 第6章：播放增益的位置与历史回声</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-56-1">56.1 五个样本：当前增益不能搬到卷积之后</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-56-2">56.2 三帧：参考静音不等于回声消失</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-56-3">56.3 六份连续音频的共同条件</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-56-4">56.4 三个评分窗：解析值与实际PCM分别复算</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-56-5">56.5 实际PCM尾声的十个活动标签</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-56-6">56.6 运行入口、生成源与工业接口边界</a></li>
 </ul>
 <div class="chap"><a href="../01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
 <div class="chap"><a href="../02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
@@ -550,12 +558,19 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-55-2">55.2 从解析功率到实际PCM整数</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-55-3">55.3 试听与只读复算</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-55-4">55.4 通道掩码为什么要重新检查空间模型</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-88a7535bcf">56. 第6章：播放增益的位置与历史回声</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-56-1">56.1 五个样本：当前增益不能搬到卷积之后</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-56-2">56.2 三帧：参考静音不等于回声消失</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-56-3">56.3 六份连续音频的共同条件</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-56-4">56.4 三个评分窗：解析值与实际PCM分别复算</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-56-5">56.5 实际PCM尾声的十个活动标签</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-56-6">56.6 运行入口、生成源与工业接口边界</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="章节代码练习与音频实验" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-c621965c02">章节代码练习与音频实验</h1>
 <p>先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。</p>
-<p>本页索引 340 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
+<p>本页索引 343 道带稳定编号的代码题，以及独立的真实录音练习 R01。<code>E01-01</code> 表示第 1 章的第 1 道代码题；附录 B 中另有按 1～17 编号的综合题，两套题号各自使用。</p>
 <p>E06-07～E06-20 使用无量纲回声模型检查 AEC 的计算与边界，其中 E06-11～20 可用精确答案程序核对。第 15、16 节另提供参数不同的合成音频；试听文件本身不是题目真值。</p>
-<p>第 3～11、13～16、18、21～30、32～34 节对应主清单的 109 个数学合成样本。第 17 节的 18 个房间白噪声合成样本使用独立清单；第 12 节使用另行授权的真实同步录音。第 31 节的 2 份从 PCM 形成定位观测的追踪样本也使用独立清单。第35～39节分别保存双耳、有限窗卷积、多频几何、已知聚焦与导数约束的独立样本。第48节保存分布式协同增强的17个独立样本；第47节保存成像的五个快拍样本。第46节另保存附录B同DRR短RIR的五个独立样本；第55节保存第5章逐频相位的三份独立PCM。不同音频的来源和可作的比较不同，试听前先查看各节的条件。</p>
+<p>第 3～11、13～16、18、21～30、32～34 节对应主清单的 109 个数学合成样本。第 17 节的 18 个房间白噪声合成样本使用独立清单；第 12 节使用另行授权的真实同步录音。第 31 节的 2 份从 PCM 形成定位观测的追踪样本也使用独立清单。第35～39节分别保存双耳、有限窗卷积、多频几何、已知聚焦与导数约束的独立样本。第48节保存分布式协同增强的17个独立样本；第47节保存成像的五个快拍样本。第46节另保存附录B同DRR短RIR的五个独立样本；第55节保存第5章逐频相位的三份独立PCM；第56节保存第6章已知播放增益与历史尾声的六份独立PCM。不同音频的来源和可作的比较不同，试听前先查看各节的条件。</p>
 <p>主音频按章存放，统一由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/examples/generate_audio_samples.py">生成器</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/audio/MANIFEST.json">清单</a>管理。清单记录每组模型、种子、共同导出增益、采样率、通道、帧数、量化误差、运行环境、源文件摘要与逐 WAV 摘要；不把某组的谐波模板套到其他组。PCM16 编码按最近偶数舍入，不加抖动或自动限幅，RMS 对全部通道与采样一起计算。运行生成器并附加 <code>--check</code> 时只在内存重算和读回比对，不重写资产；严格字节核对也比较 Python、NumPy 和平台记录，异机不通过不等于算法错误。生成中断造成清单与 WAV 不一致时，先保留异常目录，再生成到新的空目录核对，通过后更新受影响资产并构建图和网站；不要手改单个生成文件。样本没有真人录音或模型权重，客观读回和浏览器加载不等于正式听测。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/io_contracts.py">共享文件IO</a>负责写入前的普通父目录、文件成员与严格JSON检查；各生成器继续负责自己的模型、清单结构和评分。已有非空目录须符合该资产的完整成员集合，重复键、非有限数值与把布尔值写成数值参数都会被拒绝。检查适用于本地非并发工作流，不把有限的写前检查当成并发文件系统安全保证。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="1-按章节运行" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-08633b42fc">1. 按章节运行</h2>
@@ -659,6 +674,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>第 6 章 E06-22～33</td>
 <td>多参考共同分母与可辨识性、因果对齐、漂移、参考断流、NCC、先验评分、冻结、PSD、dB平均、归一化偏差和注入增量分解</td>
 <td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/chapter06_experiments.py">AEC逐步实验</a></td>
+</tr>
+<tr>
+<td>第6章 E06-40～42</td>
+<td>已知播放增益与卷积顺序、参考当前静音与纯回声尾声、三个实际PCM评分窗</td>
+<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/core/reference_timing.py">逐样本控制</a>、<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/chapter06_experiments.py">章节入口</a>、<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/examples/generate_reference_audio.py">六WAV生成/核验</a>；完整展开见§56</td>
 </tr>
 <tr>
 <td>第 7 章 E07-01～05</td>
@@ -4095,6 +4115,127 @@ e^{-\mathrm j2\pi 2000n/24000},\\
 <p>E05-24固定原目标向量 $\vec a=[1,1]^T$。各通道乘平方根掩码 $[1,1/2]$ 后，向量变为 $[1,1/2]^T$，其外积为 $[[1,1/2],[1/2,1/4]]$。若噪声协方差设为单位阵，从这个处理后的RTF算得权重 $[0.8,0.4]^T$；应用于处理后目标时响应为1，应用于原目标时却为1.2。必须说明协方差和最终权重应用在预滤波前还是预滤波后，不能只凭单位归一说原声像不失真。</p>
 <p>若两帧掩码轮换为 $[1,1/4]$ 和 $[1/4,1]$，处理后两向量为 $[1,1/2]^T$ 与 $[1/2,1]^T$。除以帧数2的外积均值为 $[[5/8,1/2],[1/2,5/8]]$，特征值是9/8和1/8，行列式9/64，有效秩2。原两帧同为 $[1,1]^T$，外积均值秩1；逐通道、逐帧变化可以改变这个结构，而不是在原矩阵外乘一个公共数。</p>
 <p>对应共同标量掩码0.625时，除以帧数得到0.625乘全1矩阵；按正文式(5-21)除以掩码和则得到全1矩阵。这是两个不同分母。上面逐通道控制采用每帧预滤波后除以帧数，并不使用式(5-21)的掩码和归一；其半正定性也不保证保留原始RTF或秩。2026年的滑窗方法原文与完整算法未运行边界见<a href="01_spatial_and_tracking.html#per-channel-mask-evidence">空间研究补充</a>。</p>
+<span id="sec-148" class="anchor-alias" aria-hidden="true"></span><span id="56-第6章播放增益的位置与历史回声" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-88a7535bcf">56. 第6章：播放增益的位置与历史回声</h2>
+<p>本节对应正文<a href="../06_aec.html#e06-40">E06-40</a>、<a href="../06_aec.html#e06-41">E06-41</a>和<a href="../06_aec.html#e06-42">E06-42</a>。先用五点与十二点手算弄清运算顺序，再核对六份独立PCM。路径和增益均为给定真值，没有训练、时延估计、增益拟合、近端声或噪声；它们解释接口条件，不提供产品排名。</p>
+<span id="sec-149" class="anchor-alias" aria-hidden="true"></span><span id="561-五个样本当前增益不能搬到卷积之后" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-56-1">56.1 五个样本：当前增益不能搬到卷积之后</h3>
+<p>E40令早参考为 $x=[1,1,1,1,0]$，播放增益为 $g=[1,1,2,2,2]$，声学路径为 $h=[1,1/2]$。最后的0用于保留完整一采样尾声；增益在这一点仍为2。晚参考先逐点相乘，得到 $r=[1,1,2,2,0]$，再作卷积。</p>
+<p>真实回声第0点为 $1$，第1点为 $1+(1/2)1=1.5$；切换后的第2点为 $2+(1/2)1=2.5$，第3点为 $2+(1/2)2=3$；第4点仍有 $(1/2)2=1$。完整结果是 $[1,1.5,2.5,3,1]$。</p>
+<p>若用早参考和同一冻结路径，预测为 $[1,1.5,1.5,1.5,0.5]$，先验残差为 $[0,0,1,1.5,0.5]$。若将这个预测再乘当前增益，得到 $[1,1.5,3,3,1]$，残差为 $[0,0,-0.5,0,0]$。第2点错在历史项：真实项仍乘过去的增益1，后乘方案却把它乘成当前增益2。</p>
+<p>一般差值按各抽头相加：每项是 $h[\ell]\{g[n-\ell]-g[n]\}x[n-\ell]$。相关历史支持内增益相同，或各差项恰为0，是可以直接核对的交换条件；不同抽头差项相消也可能使某一点总差为0。只有零延迟抽头的路径、恒定增益都是充分条件；不能由某一稳定窗误差0推出切换瞬间也成立。晚参考直接进入同一已知路径时，五点残差均为0。</p>
+<p>“仅一个非零抽头”本身还不够：若 $h=[0,1]$，$x=[1,1,0]$、$g=[1,2,2]$，真实前三点为 $[0,1,2]$，预测后乘增益却为 $[0,2,2]$。这个延迟单抽头同样访问过去的增益。</p>
+<span id="sec-150" class="anchor-alias" aria-hidden="true"></span><span id="562-三帧参考静音不等于回声消失" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-56-2">56.2 三帧：参考静音不等于回声消失</h3>
+<p>E41令首帧参考为 $[1,-1,1,-1]$，随后两帧为0；路径只有延迟4点的系数 $1/2$。麦克风的三帧依次是0、$[1/2,-1/2,1/2,-1/2]$、0，近端真值始终为0。</p>
+<p>帧内去均值RMS的参考值为 $[1,0,0]$，麦克风值为 $[0,1/2,0]$。采用活动门限0.1、NCC门限0.8的教学规则，依次给出<code>far_only</code>、<code>near_only</code>、<code>silence</code>。第二帧实际只有历史回声，因而<code>near_only</code>是当前两路活动关系的标签，不能当作近端说话的证据。</p>
+<p>每帧至少一路方差为0，NCC分母为0。程序返回的0只是未定义占位，不能解释成“测得不相关”。已知五抽头NLMS冻结系数、继续推进历史缓存时，十二个样本的先验残差仍全为0。这里是物理播放停止，不是丢失本应存在的播放参考；两种故障需要分别判断。</p>
+<span id="sec-151" class="anchor-alias" aria-hidden="true"></span><span id="563-六份连续音频的共同条件" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-56-3">56.3 六份连续音频的共同条件</h3>
+<p>E42将这个运算顺序扩为可播放的数学模型。采样率16kHz，源32000点，保留1600点完整传播尾后，每份单声道PCM16共33600点。早参考是 $0.08\cos(2\pi500t)+0.06\sin(2\pi730t)$；首尾各320点用端点包含的正弦平方淡入淡出。中间按1600点周期构造，两个频率在该周期内分别整50、73周。</p>
+<p>播放增益在第16000点由1变2，并在尾部保持2；晚参考为增益乘早参考。路径只有 $h[0]=0.7$、$h[1600]=0.35$ 两个非零抽头，两个NLMS状态均用这个已知1601点路径初始化，全33600点冻结系数，历史继续更新。共同导出增益为1，所有文件同一因果时轴，没有按文件归一化或补偿拟合。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:60em">
+<thead>
+<tr>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:20em">文件</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:18em">取点或输出</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:22em">查看重点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:20em"><a href="../reference_audio/reference_early.wav">早参考</a><audio class="audio-sample" controls preload="none" aria-label="早参考" src="../reference_audio/reference_early.wav">请使用上方 WAV 链接下载。</audio></td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">播放增益之前</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:22em">源在第32000点后为0</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:20em"><a href="../reference_audio/reference_late.wav">晚参考</a><audio class="audio-sample" controls preload="none" aria-label="晚参考" src="../reference_audio/reference_late.wav">请使用上方 WAV 链接下载。</audio></td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">播放增益之后、固定声学路径之前</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:22em">第16000点开始放大两倍</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:20em"><a href="../reference_audio/reference_echo.wav">真实数学回声</a><audio class="audio-sample" controls preload="none" aria-label="真实数学回声" src="../reference_audio/reference_echo.wav">请使用上方 WAV 链接下载。</audio></td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">晚参考经过给定路径</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:22em">播放停止后仍有100ms尾声</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:20em"><a href="../reference_audio/reference_early_residual.wav">早参考固定路径残差</a><audio class="audio-sample" controls preload="none" aria-label="早参考固定路径残差" src="../reference_audio/reference_early_residual.wav">请使用上方 WAV 链接下载。</audio></td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">回声减冻结的早参考预测</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:22em">增益切换后及尾部均可非零</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:20em"><a href="../reference_audio/reference_wrong_gain_residual.wav">预测后乘增益残差</a><audio class="audio-sample" controls preload="none" aria-label="预测后乘增益残差" src="../reference_audio/reference_wrong_gain_residual.wav">请使用上方 WAV 链接下载。</audio></td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">回声减当前增益乘早参考预测</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:22em">切换附近仍有历史增益失配</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:20em"><a href="../reference_audio/reference_late_residual.wav">晚参考固定路径残差</a><audio class="audio-sample" controls preload="none" aria-label="晚参考固定路径残差" src="../reference_audio/reference_late_residual.wav">请使用上方 WAV 链接下载。</audio></td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">回声减冻结的晚参考预测</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:22em">浮点舍入与量化结果分别保存</td>
+</tr>
+</tbody>
+</table></div>
+<p>播放器加载只核对可读取的媒体。试听前降低音量；零残差文件是已知路径控制，不代表在线算法已经学习成功，也不是语音、房间实录或正式听测。</p>
+<span id="sec-152" class="anchor-alias" aria-hidden="true"></span><span id="564-三个评分窗解析值与实际pcm分别复算" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-56-4">56.4 三个评分窗：解析值与实际PCM分别复算</h3>
+<p>切换窗是 $[16000,17600)$ 的1600点，稳定窗是 $[19200,28800)$ 的9600点；两窗都避开源包络，覆盖整数周期，源解析功率是 $(0.08^2+0.06^2)/2=0.005$。历史延迟恰为该双音公共周期，因此本例的早参考固定路径预测为 $1.05x[n]$。这一简化依赖已声明频率和延迟，不能搬到一般语音。</p>
+<p>切换窗内当前增益为2、延迟项增益仍为1，回声是 $(0.7\times2+0.35\times1)x=1.75x$。早参考残差为 $0.7x$，解析功率 $0.7^2\times0.005=0.00245$；后乘方案残差为 $-0.35x$，解析功率为0.0006125。</p>
+<p>稳定窗内两个历史增益均为2，回声是 $2.1x$。早参考残差为 $1.05x$，解析功率为0.0055125；后乘方案与晚参考方案的解析残差均为0。尾窗为 $[32000,33600)$ 的1600点，包含源淡出经延迟传播的包络，须按实际有限样本求均方，不能继续套0.005的恒包络周期平均。</p>
+<p>读取正式WAV的PCM整数 $q[n]$，逐窗先求 $E=\sum q[n]^2$，再除以 $D=N\times32768^2$。切换窗和尾窗各用 $D=1717986918400$；稳定窗用 $D=10307921510400$。分母是PCM幅度单位和采样数，不是回声参考能量，下面的 $E/D$ 是均方幅度，不是NMSE或ERLE。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:52em">
+<thead>
+<tr>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:16em">取点或输出</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:12em">切换窗整数E</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:12em">稳定窗整数E</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:12em">尾窗整数E</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">早参考</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">8589947251</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">51539683506</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">0</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">晚参考</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">34359936344</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">206159618064</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">0</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">回声</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">26306750961</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">227291471160</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">3716443945</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">早参考固定路径残差</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">4209136228</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">56821523154</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">929133267</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">预测后乘增益残差</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">1052295351</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">0</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">0</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">晚参考固定路径残差</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">0</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">0</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:12em">0</td>
+</tr>
+</tbody>
+</table></div>
+<p>例如切换窗早参考残差的实际PCM均方为 $4209136228/1717986918400\approx0.00245003974$，与解析0.00245接近但不逐位相等。量化前模型、量化后输出和解析控制分别记录，不能用解析数替换正式PCM整数。<a href="../reference_audio/MANIFEST.json">独立清单</a>保存三层测量、六文件摘要、八真实生成源与完整参数。</p>
+<span id="sec-153" class="anchor-alias" aria-hidden="true"></span><span id="565-实际pcm尾声的十个活动标签" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-56-5">56.5 实际PCM尾声的十个活动标签</h3>
+<p>尾窗切为十个160点帧。正式晚参考PCM十帧全零，正式回声PCM十帧的去均值RMS均超过0.001门限，教学活动规则于是全部给出<code>near_only</code>。每帧NCC均未定义，程序的0占位与<code>tail_ncc_defined=false</code>共同保存；近端真值十帧均为不存在。</p>
+<p>各标签在完整帧收到之后才可用：第32160、32320、……、33600点。若用同帧判据决定该帧更新，必须缓存完整帧，不能在帧首预知帧尾。图74(d)的RMS直接从实际PCM求出；给定稀疏路径的历史尾声不能换成仅看当前参考的语音检测结论。</p>
+<span id="sec-154" class="anchor-alias" aria-hidden="true"></span><span id="566-运行入口生成源与工业接口边界" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-56-6">56.6 运行入口、生成源与工业接口边界</h3>
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch06.chapter06_experiments
+.venv/bin/python -m codes.chapters.ch06.examples.generate_reference_audio --check
+.venv/bin/python scripts/make_reference_figures.py
+</code></pre>
+<p>第一项执行E40/41短核，第二项在内存完整重放六文件并核对当前源、严格JSON、固定参数和普通七成员目录，不补文件、不改清单。首次生成去掉<code>--check</code>。唯一<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/core/reference_audio.py">音频核</a>复用NLMS、NCC和共享PCM/IO；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/examples/generate_reference_audio.py">生成器</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_ch06_reference_publication.py">发布测试</a>分别核对资产和网站副本。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/scripts/make_reference_figures.py">图74源</a>读取核验后的PCM，<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/reports/figure74_reference_timing.json">同次报告</a>绑定八音频源、两绘图源、清单与六WAV摘要，分开给定增益、实际残差、解析/PCM功率和尾声帧RMS。WebRTC的音量变化通知与XMOS特定模式的参考活动保持属于各自控制接口，不能由它们推断参考样本已自动乘增益、历史已完整保留或近端声已被识别；固定源码边界见<a href="02_aec_wpe_separation.html">AEC研究</a>与<a href="03_industrial_deployment.html">工业部署</a>。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

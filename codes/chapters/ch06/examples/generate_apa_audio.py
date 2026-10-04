@@ -17,7 +17,7 @@ import numpy as np
 
 from codes.chapters.ch00.core.audio_samples import pcm16_bytes, read_pcm16
 from codes.chapters.ch06.core.apa_audio import (
-    FILE_NAMES, LIMITS, SAMPLE_RATE, SAMPLES, measure_pcm, run_experiment,
+    FILE_NAMES, LIMITS, SAMPLE_RATE, SAMPLES, measure_pcm, run_experiment, parameters,
 )
 
 from codes.chapters.ch00.io_contracts import (
@@ -38,12 +38,63 @@ SOURCE_PATHS = (
 )
 
 
+# Literal fixed values and exact types; checked before simulation and encoding.
+REQUIRED_PARAMETERS = {'exercise_id': 'E06-39',
+ 'sample_rate_hz': 16000,
+ 'source_samples': 32000,
+ 'samples_per_channel': 32013,
+ 'convolution_tail_samples': 13,
+ 'seed': 20261001,
+ 'random_bit_generator': 'PCG64',
+ 'ar_coefficient': 0.98,
+ 'ar_initial_previous_sample': 0.0,
+ 'excitation_standard_deviation': 0.015,
+ 'true_path_current_first': [0.6,
+                             0.0,
+                             0.0,
+                             -0.2,
+                             0.0,
+                             0.0,
+                             0.0,
+                             0.1,
+                             0.0,
+                             0.0,
+                             0.0,
+                             0.0,
+                             0.0,
+                             0.05,
+                             0.0,
+                             0.0],
+ 'filter_length': 16,
+ 'step_size': 0.2,
+ 'regularization': 0.001,
+ 'regularization_units': 'squared digital signal amplitude',
+ 'projection_orders': [1, 2, 4],
+ 'observation_noise_standard_deviation': 0.003,
+ 'random_draw_order': '32000 AR excitation draws, then 32013 independent observation-noise draws',
+ 'training_interval_samples': [0, 24000],
+ 'holdout_interval_samples': [24000, 32000],
+ 'holdout_sample_denominator': 8000,
+ 'trace_interval_samples': 160,
+ 'initial_weights': 'all zero',
+ 'initial_reference_and_projection_history': 'empty/zero past reference',
+ 'output': 'current prior prediction/error before any microphone-dependent update',
+ 'freeze': 'all samples at and after 24000; reference and projection histories still advance',
+ 'common_export_gain': 1.0,
+ 'alignment': 'same causal sample clock, no fitted compensation',
+ 'export_condition': 'observation noise standard deviation .003',
+ 'noiseless_control': 'in-memory generated component, no extra WAV'}
+
 def sha(data):
     return hashlib.sha256(data).hexdigest()
 
 
 def prepare_assets():
+    if not same_metadata(parameters(), REQUIRED_PARAMETERS):
+        raise ValueError("APA true parameters differ from the fixed asset contract")
     signals, experiment = run_experiment()
+    if not same_metadata(experiment.get("parameters"), REQUIRED_PARAMETERS):
+        raise ValueError("APA returned parameters differ from the fixed asset contract")
     blobs, decoded, files = {}, {}, {}
     for key, x in signals.items():
         name = FILE_NAMES[key]

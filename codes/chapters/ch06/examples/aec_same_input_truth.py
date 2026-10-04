@@ -38,7 +38,7 @@ import tempfile
 import numpy as np
 
 from codes.chapters.ch06.core.aec import nlms
-from codes.chapters.ch06.examples.aec3_offline_compare import command, read_wav, write_wav
+from codes.chapters.ch06.examples.aec3_offline_compare import command, read_wav, write_wav, preflight_members, contracts
 from codes.chapters.ch06.aec_controlled_doubletalk import checked_pcm_add, increment_metrics
 from codes.chapters.ch06.examples.aec_real_pair_experiment import speex_linear_aec
 
@@ -150,9 +150,7 @@ def _score(base: np.ndarray, injected: np.ndarray, known_near: np.ndarray,
 
 def _verify_binary(path: Path, expected_digest: str, label: str, *,
                    digest_source: str = "documented local build") -> tuple[Path, str]:
-    resolved = path.resolve(strict=True)
-    if not resolved.is_file():
-        raise ValueError(f"{label} must be a file")
+    resolved = contracts.ordinary_file(path).resolve()
     digest = hashlib.sha256(resolved.read_bytes()).hexdigest()
     if digest != expected_digest:
         raise ValueError(f"{label} SHA-256 differs from the {digest_source}")
@@ -171,12 +169,10 @@ def _unique_json_pairs(pairs: list[tuple[str, object]]) -> dict:
 def _load_build_manifest(path: Path) -> tuple[dict, str]:
     """Validate self-reported build metadata before executing either binary."""
 
-    resolved = path.resolve(strict=True)
-    if not resolved.is_file():
-        raise ValueError("build manifest must be a file")
+    resolved = contracts.ordinary_file(path).resolve()
     raw = resolved.read_bytes()
     try:
-        manifest = json.loads(raw, object_pairs_hook=_unique_json_pairs)
+        manifest = contracts.strict_json_loads(raw)
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise ValueError("build manifest must be valid UTF-8 JSON") from exc
     if not isinstance(manifest, dict) or set(manifest) != MANIFEST_KEYS:
@@ -258,6 +254,12 @@ def _verified_inputs(speex_library: Path, audioproc: Path,
             "python": sys.version.split()[0],
             "numpy": np.__version__,
             "script_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+            "actual_dependency_sha256": contracts.dependencies(Path(__file__), (
+                Path(__file__).with_name('aec3_offline_compare.py'),
+                Path(__file__).with_name('aec_real_pair_experiment.py'),
+                contracts.ROOT / 'codes/chapters/ch06/core/aec.py',
+                contracts.ROOT / 'codes/chapters/ch06/core/aec_numeric.py',
+                contracts.ROOT / 'codes/chapters/ch06/aec_controlled_doubletalk.py')),
         },
     })
     return speex_library, audioproc, provenance
@@ -265,15 +267,23 @@ def _verified_inputs(speex_library: Path, audioproc: Path,
 
 def _run_aec3(binary: Path, render: np.ndarray, microphone: np.ndarray,
               directory: Path, label: str) -> dict[str, np.ndarray]:
+    directory = preflight_members(directory,
+        [f"{label}_{suffix}.wav" for suffix in ("mic", "render", "final", "linear")],
+        protected=(binary,))
     mic = directory / f"{label}_mic.wav"
     far = directory / f"{label}_render.wav"
     final = directory / f"{label}_final.wav"
     linear = directory / f"{label}_linear.wav"
     order = directory / "call_order_rc.txt"
     if not order.exists():
-        order.write_text("rc\n")
+        preflight_members(directory, [order.name], protected=(binary,))
+        with order.open('x') as stream:
+            stream.write("rc\n")
+    elif contracts.ordinary_file(order).read_text() != "rc\n":
+        raise ValueError("existing call-order file is not rc")
     write_wav(mic, microphone)
     write_wav(far, render)
+    preflight_members(directory, [final.name, linear.name], protected=(binary,))
     invocation = command(binary, mic, far, final, linear, order)
     completed = subprocess.run(invocation, cwd=directory, capture_output=True, text=True)
     if completed.returncode:

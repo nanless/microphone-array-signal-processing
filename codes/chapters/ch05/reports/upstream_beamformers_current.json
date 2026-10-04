@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "created_utc": "2026-10-04T09:14:41.314878+00:00",
+  "created_utc": "2026-10-04T10:26:57.970893+00:00",
   "verified_date_asia_shanghai": "2026-10-04",
   "audit_source_sha256": "81c7f48530ec5556bed3f5cfcba7ef5ad020ce89023305c5df209cc2bf48d43d",
   "lock_sha256": "a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505",
@@ -271,7 +271,7 @@
   },
   "report_source_sha256": {
     "codes/chapters/ch05/examples/audit_upstream_beamformers.py": "81c7f48530ec5556bed3f5cfcba7ef5ad020ce89023305c5df209cc2bf48d43d",
-    "codes/chapters/ch04/core/upstream_contracts.py": "6712197a2d0718ba4e82ad8df8f2f5bd938a8785f3769b77a83aafbeff5ff483",
+    "codes/chapters/ch04/core/upstream_contracts.py": "16630220cdc6f66eb97cfc2a91057cb2e159ff0addbc89a2a65cb0dab45ab003",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },

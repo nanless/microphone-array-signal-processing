@@ -1,6 +1,6 @@
 # 工业音频实现：从采集、状态到部署和评分
 
-原核实日期：2026-09-22；AEC 接口 I03/I05 与评分 I20 复核日期：2026-09-23；I01 时间戳、I18 输入输出绑定与 I28 源码接口核对日期：2026-09-26；第10章工业边界及 I30～I32 复核日期：2026-09-28；FastEnhancer 论文发表状态于 2026-09-29 另行复核。2026-10-01另核第10章直接接口，并执行 I32 所列五项受限原源码合同；旧报告保留原日期和环境。对应正文第 10、11 章和附录 B。这里讨论本书算法进入连续音频系统后需要补上的部分：驱动、参考路由、跨块状态、定点内核、模型运行时和评分器。每项的完整提交以 [`SOURCES.lock.json`](../SOURCES.lock.json) 为准；网页文档版本只说明核实依据，不自动等于本机安装版本。
+AEC 播放音量通知和 XMOS ALT 保持计数静态复核日期：2026-10-04；原核实日期：2026-09-22；AEC 接口 I03/I05 与评分 I20 复核日期：2026-09-23；I01 时间戳、I18 输入输出绑定与 I28 源码接口核对日期：2026-09-26；第10章工业边界及 I30～I32 复核日期：2026-09-28；FastEnhancer 论文发表状态于 2026-09-29 另行复核。2026-10-01另核第10章直接接口，并执行 I32 所列五项受限原源码合同；旧报告保留原日期和环境。对应正文第 10、11 章和附录 B。这里讨论本书算法进入连续音频系统后需要补上的部分：驱动、参考路由、跨块状态、定点内核、模型运行时和评分器。每项的完整提交以 [`SOURCES.lock.json`](../SOURCES.lock.json) 为准；网页文档版本只说明核实依据，不自动等于本机安装版本。
 
 除明确写出输入、环境和实测值的本地接口实验外，下面的试验是建议执行的设备验收步骤，不是已经测得的产品结果。源码下载、依赖安装、编译、运行、声学测量是不同状态。没有硬件、模型或数据时，可以完成源码核对，但不能把该项标成已经通过设备验收。
 
@@ -49,6 +49,8 @@ PipeWire 官方开发仓库位于 freedesktop GitLab，`PipeWire/pipewire` 是�
 `set_stream_delay_ms()` 的参数由参考进入 APM 后至实际播放、以及麦克风采样后至进入 APM 的缓冲时间构成，不能用房间传播时间或录音文件头里的采样率代替。
 
 固定版 [`audio_processing_impl.cc`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/audio_processing_impl.cc) 对超出 0～500 ms 的延迟值截断并返回警告；记录调用参数、返回码和 `stream_delay_ms()` 读回值，才能知道真正送入 AEC 的值。要比较线性抵消与最终输出，配置 `echo_canceller.export_linear_aec_output=true`，在 `ProcessStream()` 后调用 `GetLinearAecOutput()` 并检查返回值。该公开取点约为 10 ms、16 kHz；与最终输出对齐时不能把它按输入设备采样率直接拼接。两套 AEC 并开时，两边都要记录实际获得的参考与处理取点；只看到虚拟设备存在并不能证明应用内 APM 收到了正确参考。接口细节另见[增强研究 A06](02_aec_wpe_separation.md#a06-aec3-的延迟线性抵消残余抑制与舒适噪声)。
+
+**音量通知与参考样本分开核。** 固定 WebRTC 的 `CreatePlayoutVolumeChange()` 是未归一化整数通知；捕获侧比较后传播 `gain_change`，并不按样本生成音量补偿。原 refined 更新增益的[变化分支仍为 TODO](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/refined_filter_update_gain.cc#52)，另有 ERLE 状态重置，不能称为滤波器自动重标定。把参考抽取位置、音量作用位置和变更样本时刻一并记录；[增强研究 A06](02_aec_wpe_separation.md#a06-aec3-的延迟线性抵消残余抑制与舒适噪声)给出固定控制流及未运行边界。这次只静态复核，没有新增设备或生产 C++ 执行。
 
 ### I04：libsamplerate 的有状态重采样
 
@@ -173,6 +175,8 @@ L461～479 的减延迟分支存在可定位的轴混淆：`o_q` 是按通道排
 配置应明确麦克风和播放参考通道数、帧移、主/影子滤波分区、内存池、线程调度和参考延迟。先确认参考完整，再测延迟估计器如何触发调整及 AEC 重置；不能只把其滤波器换成教学 NLMS 后继续沿用所有控制常数。
 
 建议注入播放延迟阶跃、扬声器路径变化、静音参考和双讲。记录重对齐请求、滤波重置、残余回声和近端损伤。官方 [`LICENSE.rst`](https://github.com/xmos/lib_voice/blob/c9f1a9bf95cd88c7950adf4bf631c217f900ad25/LICENSE.rst)为 XMOS Public Licence v1；商用使用限定 XMOS 设备，并有特殊用途条款。它可以作为可获取的供应商源码研究，但不能标成不受硬件限制的 MIT/BSD 方案。
+
+**参考静音后的保持仅适用于 ALT 分支。** 固定 [`stage1.h`](https://github.com/xmos/lib_voice/blob/c9f1a9bf95cd88c7950adf4bf631c217f900ad25/lib_voice/api/stage1/stage1.h)默认 `ALT_ARCH_MODE=0`；[`stage1.c`](https://github.com/xmos/lib_voice/blob/c9f1a9bf95cd88c7950adf4bf631c217f900ad25/lib_voice/src/stage1/stage1.c#L49)的 ALT 控制先经延迟缓存处理，再判断参考活动，门限为 $16000\times3/240=200$ 帧。原流程先检查 `count > limit` 再递增：从 AEC 启用且计数归零开始，连续前 201 个无参考活动帧保持 AEC 并向后级强制参考活动，第 202 帧才旁路。因此“3 s”是配置预算，不能把实际严格比较改写成恰好 200 帧停用，也不能推成默认所有模式的策略。这是 AEC/IC 路由保持，不是回声尾声真值或近端单讲识别；本轮没有 XCORE 执行。当前 XMOS 文档版本与此固定提交分开，未成功读取的 XVF3510 4.2 PDF 不作为逐式证据。
 
 ### I11：XMOS IC 与 VNR 的控制关系
 

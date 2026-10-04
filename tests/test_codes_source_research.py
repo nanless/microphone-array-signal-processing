@@ -13,16 +13,16 @@ ROOT = Path(__file__).resolve().parents[1]
 class SourceResearchTests(unittest.TestCase):
     def test_algorithm_inventory_counts_actual_status_rows_and_published_totals(self):
         coverage = (ROOT / 'codes/chapters/ch00/COVERAGE.md').read_text()
-        expected = {'本仓库可运行基线': 69, '外部参考实现': 182,
-                    '原理索引': 84, '明确排除': 1}
+        expected = {'本仓库可运行基线': 70, '外部参考实现': 182,
+                    '原理索引': 86, '明确排除': 1}
         counts = Counter()
         for line in coverage.splitlines():
             cells = [cell.strip() for cell in line.split('|')]
             if len(cells) == 7 and cells[3] in expected:
                 counts[cells[3]] += 1
         self.assertEqual(counts, expected)
-        self.assertEqual(sum(counts.values()), 336)
-        self.assertIn('算法表共 336 行', coverage)
+        self.assertEqual(sum(counts.values()), 339)
+        self.assertIn('算法表共 339 行', coverage)
         for status, count in expected.items():
             self.assertIn(f'{status} {count} 行', coverage)
 

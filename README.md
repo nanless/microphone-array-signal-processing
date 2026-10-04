@@ -4,13 +4,15 @@
 
 正文提供关键公式推导、可复算例子、适用边界，以及与各章公式对应的 NumPy/标准库教学代码。
 
-全书有 340 道可运行代码练习、73 张脚本生成的编号图和 1 张房间题补充图，以及 27 组共 109 个[主清单合成 WAV](codes/chapters/ch00/audio/MANIFEST.json)。[练习与音频实验手册](codes/chapters/ch00/research/05_exercises_and_audio.md)逐题列出输入、答案、试听条件与代码入口。音频是数学合成样本，不是真实语音或正式听测；第 6 章两组合成 AEC 音频的参数也不完全等同于 E06-07～20 手算题。
+全书有 343 道可运行代码练习、74 张脚本生成的编号图和 1 张房间题补充图，以及 27 组共 109 个[主清单合成 WAV](codes/chapters/ch00/audio/MANIFEST.json)。[练习与音频实验手册](codes/chapters/ch00/research/05_exercises_and_audio.md)逐题列出输入、答案、试听条件与代码入口。音频是数学合成样本，不是真实语音或正式听测；第 6 章两组合成 AEC 音频的参数也不完全等同于 E06-07～20 手算题。
 
 第四章另有[四份已知酉聚焦合成WAV](codes/chapters/ch04/focus_audio/MANIFEST.json)：用稳定窗逐频复幅度与实际PCM检查相干双源的多频协方差秩；指定角度和频率分量已知，不作为盲定位或正式听测结果。
 
 第五章另有[四份导数约束三麦合成WAV](codes/chapters/ch05/derivative_audio/MANIFEST.json)：同一两音和观测噪声输入比较单约束与零导数权重，分开目标失真、噪声代价和实际PCM总误差。共同因果参考不作后验增益或时移补偿；不是语音或设备实录。
 
 第六章另有[六份有色参考APA合成WAV](codes/chapters/ch06/apa_audio/MANIFEST.json)：同源NLMS与APA的训练后冻结比较，保留13点非零卷积尾；无噪声和含噪声的浮点分量、8000点实际PCM总功率分别报告。较高投影阶数在本次含噪条件下有更大留出误差，不能据此作设备或语音质量排名。
+
+第六章的[六份播放增益与尾声音频](codes/chapters/ch06/reference_audio/MANIFEST.json)配合E06-40～42与图74：同一已知路径冻结，比较早参考、预测后乘当前增益和晚参考。完整100ms尾声保留，三个评分窗的解析、浮点与实际PCM整数功率分别记录；当前参考静音时的`near_only`活动标签不能证明近端有人讲话。
 
 第七章另有[六份已知路径逆合成WAV](codes/chapters/ch07/mint_audio/MANIFEST.json)：同一四音与后路径噪声比较精确逆和约束正则。保留完整512点尾，理论噪声增益与27200点实际PCM总误差分开；不是盲WPE、实测房间或一般MINT实现。
 
@@ -41,7 +43,7 @@ English version: [README_EN.md](README_EN.md)
 | 目录/文件 | 说明 |
 |---|---|
 | `chapters/` | 教程正文 16 篇 Markdown（`00_overview.md` 是入口，`01`～`11` 是 11 章正文，`14`/`15` 是扩展专题Ⅰ/Ⅱ，`12`/`13` 是附录 A/B；阅读顺序以导航为准） |
-| `figures/` | 73 张编号图（`fig01`～`fig73_*.png`），房间题补充图另存于 `codes/chapters/appendix_b/room_audio/ROOM_RESULTS.png`；全部由脚本生成、可复现 |
+| `figures/` | 74 张编号图（`fig01`～`fig74_*.png`），房间题补充图另存于 `codes/chapters/appendix_b/room_audio/ROOM_RESULTS.png`；全部由脚本生成、可复现 |
 | `codes/chapters/` | 导读、第 1～11 章、扩展专题Ⅰ/Ⅱ及附录 A/B 的源码、实验、报告和资产；逐章目录与命令见[代码地图](codes/chapters/README.md) |
 | `codes/chapters/ch00/audio/MANIFEST.json`、各章 `audio/` | 主清单统一管理 27 组、109 个按章节存放的本书合成 WAV；由脚本生成，不直接编辑 |
 | `codes/chapters/ch01/spectral_audio/` | 两种数学源谱及已知两抽头响应，2 个单声源与2个双声完整尾输出；独立清单与解析/浮点/PCM评分 |
@@ -53,6 +55,7 @@ English version: [README_EN.md](README_EN.md)
 | `codes/chapters/ch04/focus_audio/` | 另外四份独立已知酉聚焦合成WAV；两份单声道源、两份四声道观测，固定稳定窗检查双频池化秩 |
 | `codes/chapters/ch05/derivative_audio/` | 四份独立三麦导数约束WAV；八个真实生成源，固定参考的实际PCM误差 |
 | `codes/chapters/ch06/apa_audio/` | 六份有色参考APA合成WAV；训练/冻结留出、完整13点尾及浮点/PCM评分 |
+| `codes/chapters/ch06/reference_audio/` | 六份已知播放增益/尾声WAV；同钟冻结路径、完整1600点尾及分窗整数评分 |
 | `codes/chapters/ch07/mint_audio/` | 六份已知稀疏路径逆合成WAV；完整512点尾、共同增益及独立参数/评分清单 |
 | `codes/chapters/appendix_b/response_audio/` | 五份同DRR已知短FIR频响对照WAV；四真实生成源、完整尾部、共同增益与实际PCM整数评分 |
 | `codes/chapters/ch08/mask_audio/`、`codes/chapters/ch10/noise_audio/` | 两套独立数学合成实验，各6个WAV；已知掩码表示与固定噪声估计失配分别记录解析、浮点和实际PCM评分 |
@@ -64,9 +67,9 @@ English version: [README_EN.md](README_EN.md)
 | `codes/chapters/ch00/research/` | 详细源码研究手册：算法步骤、状态与配置、代码入口、失败实验和工业复现 |
 | `codes/chapters/ch00/upstream/_downloads/` | 本机按需取得的第三方源码缓存，已被 Git 忽略；可能含本地修改，不属于本书提交的文档或教学代码，取得与核验方法见[源码获取说明](codes/chapters/ch00/upstream/README.md) |
 | `codes/chapters/*/reports/` | 随算法所属章保存的小规模运行报告；与源码获取状态、论文全量评测分开 |
-| `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
-| `site/` | 21 个网页：16 个教程页（含首页）及 `research/` 下 6 个研究手册页；构建产物，可再生 |
-| `dist/` | [当前合订 PDF](dist/microphone-array-tutorial.pdf) 与可再生的合订 HTML；PDF 含 16 个顶级、151 个二级、694 个三级书签，共 861 个 |
+| `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`make_beamforming_figures.py`、`make_reference_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
+| `site/` | 22 个网页：16 个教程页（含首页）及 `research/` 下 6 个研究手册页；构建产物，可再生 |
+| `dist/` | [当前合订 PDF](dist/microphone-array-tutorial.pdf) 与可再生的合订 HTML；PDF 含 16 个顶级、151 个二级、711 个三级书签，共 878 个 |
 
 ## 章节导览
 
@@ -108,9 +111,10 @@ python3 -m venv .venv
 .venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 
-# 3. 先生成 109 个音频，再生成 73 张图（图 34～36、40～41、43～45、47、49、58～60、63～66 读取生成的音频）
+# 3. 先生成 109 个音频，再生成 74 张图（图 34～36、40～41、43～45、47、49、58～60、63～66 读取生成的音频）
 .venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
 .venv/bin/python -m codes.chapters.ch06.examples.generate_apa_audio
+.venv/bin/python -m codes.chapters.ch06.examples.generate_reference_audio  # 六份已知播放增益/尾声WAV；--check严格只读
 .venv/bin/python -m codes.chapters.ch07.examples.mint_teaching_demo
 .venv/bin/python -m codes.chapters.ch08.examples.mask_representation_demo
 .venv/bin/python -m codes.chapters.ch10.examples.generate_noise_mismatch
@@ -123,6 +127,7 @@ python3 -m venv .venv
 .venv/bin/python scripts/make_figures.py
 .venv/bin/python scripts/make_aec_figures.py
 .venv/bin/python scripts/make_beamforming_figures.py  # figure 73: checked actual PCM
+.venv/bin/python scripts/make_reference_figures.py  # 图74：实际PCM播放增益与尾声控制
 
 # 4. 建多级页面站（输出 site/*.html）
 .venv/bin/python scripts/build_site.py

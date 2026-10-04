@@ -66,6 +66,10 @@ PHASE_AUDIO_ROOT = CODE_CHAPTERS / "ch05" / "phase_audio"
 PHASE_AUDIO_WAVS = {"phase_reference.wav", "phase_flip.wav", "phase_quadrature.wav"}
 DERIVATIVE_AUDIO_ROOT = CODE_CHAPTERS / "ch05" / "derivative_audio"
 APA_AUDIO_ROOT = CODE_CHAPTERS / "ch06" / "apa_audio"
+REFERENCE_AUDIO_ROOT = CODE_CHAPTERS / "ch06" / "reference_audio"
+REFERENCE_AUDIO_WAVS = {"reference_" + name + ".wav" for name in
+                        ("early", "late", "echo", "early_residual",
+                         "wrong_gain_residual", "late_residual")}
 MINT_AUDIO_ROOT = CODE_CHAPTERS / "ch07" / "mint_audio"
 MASK_AUDIO_ROOT = CODE_CHAPTERS / "ch08" / "mask_audio"
 SCENARIO_AUDIO_ROOT = CODE_CHAPTERS / "ch11" / "scenario_audio"
@@ -223,6 +227,13 @@ NARROW_TABLE_POLICIES = {
     },
     SRC / "06_aec.md": {
         ("#", "征兆", "量测", "工具/信号", "判断依据"): (70, {1: 3, 2: 9, 3: 10, 4: 20, 5: 18}),
+        ("算法", "每样本主要计算", "收敛受什么影响", "双讲更新控制", "适用条件"): (48, {1: 8, 2: 13, 3: 10, 4: 9, 5: 8}),
+        ("路线", "代表方案", "可检查的内部量", "主要风险", "资源验证"): (52, {1: 8, 2: 11, 3: 13, 4: 11, 5: 9}),
+        ("模型", "结构", "可辨识性", "资源关系", "适用条件"): (50, {1: 9, 2: 15, 3: 10, 4: 8, 5: 8}),
+        ("抽头点", "位置", "抽头之后的变换", "主要风险", "检查方法"): (48, {1: 7, 2: 8, 3: 13, 4: 9, 5: 11}),
+        ("#", "测试项", "条件", "记录结果", "阈值来源"): (54, {1: 3, 2: 12, 3: 13, 4: 12, 5: 14}),
+        ("处理输出", "脉冲测得固定延迟", "[2,3) s 回声功率／对齐后总输出功率", r"[3,4) s $g_\Delta$", r"[3,4) s $E_\Delta$"): (54, {1: 10, 2: 10, 3: 16, 4: 9, 5: 9}),
+        ("文件分量", "切换窗 $E$", "稳定窗 $E$", "尾窗 $E$"): (52, {1: 8, 2: 15, 3: 15, 4: 14}),
     },
     SRC / "11_selection-guide.md": {
         ("场景", "条件变化", "方案怎样变化"): (36, {1: 6}),
@@ -249,6 +260,8 @@ NARROW_TABLE_POLICIES = {
         ("延迟值的存储方式与查询", "独立数学预期：左右IR／延迟值", "原函数实际结果", "解释"): (50, {1: 16, 2: 12, 3: 12, 4: 12}),
     },
     RESEARCH_ROOT / "05_exercises_and_audio.md": {
+        ("文件", "取点或输出", "查看重点"): (60, {1: 20, 2: 18, 3: 22}),
+        ("取点或输出", "切换窗整数E", "稳定窗整数E", "尾窗整数E"): (52, {1: 16, 2: 12, 3: 12, 4: 12}),
         ("文件", "输出整数能量E_y", "误差整数能量E_e", "实际PCM功率E_y/D", "实际PCM总MSE E_e/D", "实际PCM NMSE"): (72, {1: 8, 2: 13, 3: 13, 4: 13, 5: 13, 6: 12}),
         ("实际文件/通道", "整数能量E", "每通道分母D", "实际PCM均方"): (50, {1: 14, 2: 11, 3: 13, 4: 12}),
         ("条件", "单声道源", "双通道人工响应输出"): (46, {1: 6}),
@@ -263,6 +276,7 @@ CSS = """
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
+@media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
 .skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
 .skip-link:focus{top:8px}
@@ -794,11 +808,24 @@ def stage_apa_audio(source, destination):
     if str(ROOT.resolve()) not in sys.path:
         sys.path.insert(0, str(ROOT.resolve()))
     from codes.chapters.ch06.examples.generate_apa_audio import check_assets
-    check_assets(source, replay=False)
+    check_assets(source, replay=True)
     expected = APA_AUDIO_WAVS | {"MANIFEST.json"}
     destination.mkdir()
     for name in sorted(expected):
         shutil.copy2(source / name, destination / name)
+    return expected
+
+
+def stage_reference_audio(source, destination):
+    """Publish six known playback-gain/tail controls after complete read-only replay."""
+    expected = REFERENCE_AUDIO_WAVS | {"MANIFEST.json"}
+    _preflight_asset_stage(source, destination, expected)
+    from codes.chapters.ch06.examples.generate_reference_audio import check_assets
+    check_assets(source)
+    destination.mkdir()
+    for name in sorted(expected):
+        shutil.copy2(source / name, destination / name)
+    check_assets(destination)
     return expected
 
 
@@ -1049,7 +1076,7 @@ def source_digest():
     paths += [main_audio_manifest_path(CODE_CHAPTERS)]
     paths += sorted(main_audio_sources())
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, SPECTRAL_AUDIO_ROOT, STFT_AUDIO_ROOT, SWEEP_AUDIO_ROOT, BASELINE_AUDIO_ROOT, REFLECTION_AUDIO_ROOT, PHASE_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, SPECTRAL_AUDIO_ROOT, STFT_AUDIO_ROOT, SWEEP_AUDIO_ROOT, BASELINE_AUDIO_ROOT, REFLECTION_AUDIO_ROOT, PHASE_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, REFERENCE_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "build_markdown_helpers.py",
@@ -1059,7 +1086,8 @@ def source_digest():
               ROOT / "scripts" / "code_layout.py",
               ROOT / "scripts" / "make_figures.py",
               ROOT / "scripts" / "make_aec_figures.py",
-              ROOT / "scripts" / "make_beamforming_figures.py", ROOT / "requirements.txt"]
+              ROOT / "scripts" / "make_beamforming_figures.py",
+              ROOT / "scripts" / "make_reference_figures.py", ROOT / "requirements.txt"]
     paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
         digest.update(path.relative_to(ROOT).as_posix().encode("utf-8"))
@@ -1217,6 +1245,9 @@ def rewrite_site_links(html, source_path):
         if target.parent == APA_AUDIO_ROOT.resolve() and target.name in (APA_AUDIO_WAVS | {"MANIFEST.json"}):
             relative = os.path.relpath("apa_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
+        if target.parent == REFERENCE_AUDIO_ROOT.resolve() and target.name in (REFERENCE_AUDIO_WAVS | {"MANIFEST.json"}):
+            relative = os.path.relpath("reference_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
+            return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
         if target.parent == MINT_AUDIO_ROOT.resolve() and target.name in (set(MINT_AUDIO_WAVS) | {"MANIFEST.json"}):
             relative = os.path.relpath("mint_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
@@ -1256,7 +1287,7 @@ def rewrite_site_links(html, source_path):
         # input as a download link; only the explicit mono derivatives play.
         if parsed.path.endswith("real_audio/demand_nriver_16ch_10s.wav"):
             return match.group(0)
-        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|spectral_audio|stft_audio|sweep_audio|baseline_audio|reflection_audio|phase_audio|geometry_audio|focus_audio|derivative_audio|apa_audio|mint_audio|mask_audio|noise_audio|scenario_audio|weighted_audio|response_audio|imaging_audio|distributed_audio)/[a-z0-9_]+\.wav", parsed.path):
+        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|spectral_audio|stft_audio|sweep_audio|baseline_audio|reflection_audio|phase_audio|geometry_audio|focus_audio|derivative_audio|apa_audio|reference_audio|mint_audio|mask_audio|noise_audio|scenario_audio|weighted_audio|response_audio|imaging_audio|distributed_audio)/[a-z0-9_]+\.wav", parsed.path):
             return match.group(0)
         safe_href = escape(href, quote=True)
         safe_label = escape(re.sub(r'<[^>]+>', '', unescape(label)), quote=True)
@@ -1562,9 +1593,10 @@ def _validate_site_output(directory):
     validate_imaging(directory / 'baseline_audio', BASELINE_AUDIO_WAVS | {'MANIFEST.json'}, check=False)
     validate_imaging(directory / 'reflection_audio', REFLECTION_AUDIO_WAVS | {'MANIFEST.json'}, check=False)
     validate_imaging(directory / 'phase_audio', PHASE_AUDIO_WAVS | {'MANIFEST.json'}, check=False)
+    validate_imaging(directory / 'reference_audio', REFERENCE_AUDIO_WAVS | {'MANIFEST.json'}, check=False)
     subdirectories = ('research', 'audio', 'real_audio', 'room_audio', 'moving_audio',
                       'tracking_audio', 'gss_audio', 'binaural_audio', 'spectral_audio', 'stft_audio', 'sweep_audio', 'baseline_audio', 'reflection_audio', 'phase_audio',
-                      'geometry_audio', 'focus_audio', 'derivative_audio', 'apa_audio',
+                      'geometry_audio', 'focus_audio', 'derivative_audio', 'apa_audio', 'reference_audio',
                       'mint_audio', 'mask_audio', 'noise_audio', 'scenario_audio', 'weighted_audio', 'response_audio', 'imaging_audio', 'distributed_audio')
     for folder in (directory, *(directory/name for name in subdirectories)):
         if folder.is_symlink() or (folder.exists() and not folder.is_dir()):
@@ -1735,6 +1767,8 @@ def main():
         (OUT / "apa_audio").mkdir(exist_ok=True)
         stale += [path for path in (OUT / "apa_audio").iterdir()
                   if path.is_file() and path.name not in apa_names]
+        reference_names = stage_reference_audio(REFERENCE_AUDIO_ROOT, temp_out / "reference_audio")
+        (OUT / "reference_audio").mkdir(exist_ok=True)
         mint_names = stage_mint_audio(MINT_AUDIO_ROOT, temp_out / "mint_audio")
         (OUT / "mint_audio").mkdir(exist_ok=True)
         stale += [path for path in (OUT / "mint_audio").iterdir()
@@ -1789,6 +1823,8 @@ def main():
                        for name in sorted(derivative_names)] +
                       [(temp_out / "apa_audio" / name, OUT / "apa_audio" / name)
                        for name in sorted(apa_names)] +
+                      [(temp_out / "reference_audio" / name, OUT / "reference_audio" / name)
+                       for name in sorted(reference_names)] +
                       [(temp_out / "mint_audio" / name, OUT / "mint_audio" / name)
                        for name in sorted(mint_names)] +
                       [(temp_out / "mask_audio" / name, OUT / "mask_audio" / name)

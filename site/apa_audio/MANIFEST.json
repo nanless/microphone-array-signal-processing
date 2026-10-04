@@ -5,7 +5,7 @@
   "common_export_gain": 1.0,
   "source_sha256": {
     "codes/chapters/ch06/core/apa_audio.py": "3dcf8174a6a30989248db506638bf034b69759578fd28e5efea842ef833149ac",
-    "codes/chapters/ch06/examples/generate_apa_audio.py": "ca9f05238b209c10aee19a973b75c0a8f612bab3266e0eadff432986b7d48548",
+    "codes/chapters/ch06/examples/generate_apa_audio.py": "ab9f4c3aae87e3420c15e5fc517fc0f1f230ed4df048af8c10e7dcde28c9d231",
     "codes/chapters/ch06/core/aec.py": "6f534c06a0e3a0376b9052a70eda7da776ad25eaf1eeae960be094d4d9037e37",
     "codes/chapters/ch06/core/aec_numeric.py": "23e0251d4c161cfe757606156f8b1a7472cc33e729544096eb8ce76255108236",
     "codes/chapters/ch06/core/aec_affine_projection.py": "41dcc604e0fa96ccad1284e22ee3b6e858a212244fb70cb05d9827c268992f1b",

@@ -16,6 +16,8 @@ import wave
 
 import numpy as np
 
+from codes.chapters.ch04.core import upstream_contracts as contracts
+
 
 ROOT = Path(__file__).resolve().parents[4]
 PAIR_DIR = ROOT / "codes/chapters/ch00/upstream/_downloads/aec-challenge/datasets/real"
@@ -38,7 +40,7 @@ def load_pinned_pair(directory: Path = PAIR_DIR) -> tuple[np.ndarray, np.ndarray
     files: dict[str, dict] = {}
     for kind in ("lpb", "mic"):
         path = directory / f"{PREFIX}{kind}.wav"
-        blob = path.read_bytes()
+        blob = contracts.ordinary_file(path).read_bytes()
         digest = hashlib.sha256(blob).hexdigest()
         if digest != SOURCE_SHA256[kind]:
             raise ValueError(f"{kind} SHA-256 differs from pinned original (or is an LFS pointer)")
@@ -96,7 +98,8 @@ def speex_linear_aec(library: Path, reference: np.ndarray,
     # can have positive or negative strides that a raw pointer cannot express.
     reference = np.ascontiguousarray(reference, dtype=np.int16)
     microphone = np.ascontiguousarray(microphone, dtype=np.int16)
-    dsp = ctypes.CDLL(str(library.resolve(strict=True)))
+    library = contracts.ordinary_file(library)
+    dsp = ctypes.CDLL(str(library))
     dsp.speex_echo_state_init.argtypes = [ctypes.c_int, ctypes.c_int]
     dsp.speex_echo_state_init.restype = ctypes.c_void_p
     dsp.speex_echo_ctl.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_void_p]
@@ -137,6 +140,7 @@ def power_ratio_db(before: np.ndarray, after: np.ndarray) -> float:
 
 
 def run(library: Path, directory: Path = PAIR_DIR) -> tuple[dict, np.ndarray]:
+    library = contracts.ordinary_file(library)
     reference, microphone, files = load_pinned_pair(directory)
     common = min(len(reference), len(microphone))
     usable = common - common % FRAME
@@ -165,6 +169,8 @@ def run(library: Path, directory: Path = PAIR_DIR) -> tuple[dict, np.ndarray]:
         "algorithm": "SpeexDSP synchronous speex_echo_cancellation; core AUMDF output only",
         "speex_source_commit": "8e29a256ef0235ebbe7fcb8417b5ac7731eb8307",
         "library_sha256": hashlib.sha256(library.read_bytes()).hexdigest(),
+        "binary_provenance_warning": "Actual library bytes recorded; a source commit label does not prove this binary was built from it.",
+        "actual_dependency_sha256": contracts.dependencies(Path(__file__)),
         "pcm_format": "mono 16-bit 16000 Hz; no resampling, gain scaling or time shift",
         "frame_samples": FRAME, "filter_samples": FILTER, "filter_duration_ms": 1000 * FILTER / RATE,
         "speex_rate_readback_hz": actual_rate,
@@ -202,23 +208,35 @@ def run(library: Path, directory: Path = PAIR_DIR) -> tuple[dict, np.ndarray]:
     return result, output
 
 
+def output_destination(path, *, protected=()):
+    """External new ordinary file only; finite checks are not race prevention."""
+    target = contracts.report_target(path, protected=(contracts.CACHE, *protected))
+    if target.exists():
+        raise FileExistsError(f"refusing to overwrite {target}")
+    return target
+
+
+def write_output_wav(path, output, *, protected=()):
+    target = output_destination(path, protected=protected)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    # Exclusive creation additionally rejects a member appearing after preflight.
+    with target.open('xb') as stream, wave.open(stream, 'wb') as wav:
+        wav.setparams((1, 2, RATE, len(output), "NONE", "not compressed"))
+        wav.writeframes(output.astype("<i2").tobytes())
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--speex-library", type=Path, required=True)
     parser.add_argument("--pair-dir", type=Path, default=PAIR_DIR)
     parser.add_argument("--output-wav", type=Path,
-                        help="Optional ignored local PCM16 output for listening; never commit it")
+                        help="Optional new ordinary PCM16 output outside the repository and source cache")
     args = parser.parse_args()
+    protected = (args.pair_dir, args.speex_library)
+    target = output_destination(args.output_wav, protected=protected) if args.output_wav else None
     result, output = run(args.speex_library, args.pair_dir)
-    if args.output_wav is not None:
-        destination = args.output_wav.resolve()
-        if not destination.is_relative_to((ROOT / "codes/chapters/ch00/upstream/_downloads").resolve()):
-            raise ValueError("output WAV must stay inside the Git-ignored upstream cache")
-        if destination.exists():
-            raise FileExistsError("refusing to overwrite an existing output WAV")
-        with wave.open(str(destination), "wb") as wav:
-            wav.setparams((1, 2, RATE, len(output), "NONE", "not compressed"))
-            wav.writeframes(output.astype("<i2").tobytes())
+    if target is not None:
+        write_output_wav(target, output, protected=protected)
     print(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False))
 
 

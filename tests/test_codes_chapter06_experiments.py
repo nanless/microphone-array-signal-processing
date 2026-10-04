@@ -1,4 +1,4 @@
-"""Hand fractions and independent physical/metric anchors for E06-22..33."""
+"""Hand fractions and independent physical/metric anchors for E06-22..33,40..41."""
 from fractions import Fraction as F
 import json
 import math
@@ -13,7 +13,7 @@ class Chapter06Experiments(unittest.TestCase):
         cls.results = run_experiments()
 
     def test_ids_and_finite_serialization(self):
-        self.assertEqual(set(self.results), {f'E06-{n}' for n in range(22,34)})
+        self.assertEqual(set(self.results), {f'E06-{n}' for n in range(22,34)} | {'E06-40', 'E06-41'})
         json.dumps(self.results, allow_nan=False)
 
     def test_shared_normalization_independent_error_recurrence(self):

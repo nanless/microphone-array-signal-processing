@@ -1,4 +1,4 @@
-"""Explicit cross-module, chapter and research inventory for 340 exercises."""
+"""Explicit cross-module, chapter and research inventory for 343 exercises."""
 
 import json
 import re
@@ -29,6 +29,7 @@ from codes.chapters.ch05 import chapter05_experiments
 from codes.chapters.ch06 import chapter06_experiments
 from codes.chapters.ch06.aec_affine_projection_demo import run_demo as apa_demo
 from codes.chapters.ch06.core.apa_audio import run_experiment as apa_audio_experiment
+from codes.chapters.ch06.examples.generate_reference_audio import prepare_assets as reference_audio_assets
 from codes.chapters.ch07 import chapter07_experiments
 from codes.chapters.ch08 import chapter08_experiments
 from codes.chapters.ch09 import chapter09_experiments
@@ -47,6 +48,7 @@ EXPECTED = {
     "imaging": {f"E14-{n:02d}" for n in range(1, 17)},
     "apa": {f"E06-{n:02d}" for n in range(34, 39)},
     "apa_audio": {"E06-39"},
+    "reference_audio": {"E06-42"},
     "appendix_b": {f"E13-{n:02d}" for n in range(3, 15)},
     "appendix_a": {f"E12-{n:02d}" for n in range(6, 20)},
     "chapter11": {f"E11-{n:02d}" for n in range(10, 26)},
@@ -54,7 +56,7 @@ EXPECTED = {
     "chapter09": {f"E09-{n:02d}" for n in range(10, 24)},
     "chapter08": {f"E08-{n:02d}" for n in range(12, 30)},
     "chapter07": {f"E07-{n:02d}" for n in range(8, 22)},
-    "chapter06": {f"E06-{n:02d}" for n in range(22, 34)},
+    "chapter06": {f"E06-{n:02d}" for n in range(22, 34)} | {"E06-40", "E06-41"},
     "chapter05": {f"E05-{n:02d}" for n in range(8, 25)},
     "chapter04": {f"E04-{n:02d}" for n in range(12, 26)},
     "chapter03": {f"E03-{n:02d}" for n in range(8, 19)},
@@ -94,7 +96,7 @@ EXPECTED = {
 }
 AEC_CASE_KEYS = {"E06-07": "overlap_save", "E06-08": "ipnlms",
                  "E06-09": "geigel", "E06-10": "delay_polarity"}
-RUNNERS = {"distributed": lambda: chapter15_exercises.run_experiments()["exercises"], "imaging": lambda: chapter14_exercises.run_experiments()["exercises"], "apa": lambda: {k: v for k, v in apa_demo().items() if k != "scope"}, "apa_audio": lambda: {"E06-39": apa_audio_experiment()[1]}, "appendix_b": appendix_b_experiments.run_exercises,
+RUNNERS = {"distributed": lambda: chapter15_exercises.run_experiments()["exercises"], "imaging": lambda: chapter14_exercises.run_experiments()["exercises"], "apa": lambda: {k: v for k, v in apa_demo().items() if k != "scope"}, "apa_audio": lambda: {"E06-39": apa_audio_experiment()[1]}, "reference_audio": lambda: {"E06-42": reference_audio_assets()[1]}, "appendix_b": appendix_b_experiments.run_exercises,
            "appendix_a": appendix_a_experiments.run_experiments,
            "chapter11": chapter11_experiments.run_experiments,
            "chapter09": chapter09_experiments.run_experiments,
@@ -144,9 +146,9 @@ class ExerciseCatalogTest(unittest.TestCase):
     def setUpClass(cls):
         cls.results = {name: run() for name, run in RUNNERS.items()}
 
-    def test_independent_inventory_has_340_unique_ids(self):
-        self.assertEqual(len(ALL_IDS), 340)
-        self.assertEqual(sum(map(len, EXPECTED.values())), 340)
+    def test_independent_inventory_has_343_unique_ids(self):
+        self.assertEqual(len(ALL_IDS), 343)
+        self.assertEqual(sum(map(len, EXPECTED.values())), 343)
 
     def test_each_module_returns_exact_assigned_ids(self):
         for name, results in self.results.items():
@@ -169,7 +171,7 @@ class ExerciseCatalogTest(unittest.TestCase):
                 text = chapters[0].read_text(encoding="utf-8")
                 self.assertRegex(text, rf"\b{re.escape(exercise_id)}\b")
 
-    def test_chapter_and_research_inventories_cover_exactly_340_ids(self):
+    def test_chapter_and_research_inventories_cover_exactly_343_ids(self):
         chapters = "\n".join(path.read_text(encoding="utf-8")
                              for path in (ROOT / "chapters").glob("*.md"))
         research = (ROOT / "codes/chapters/ch00/research/05_exercises_and_audio.md").read_text(encoding="utf-8")

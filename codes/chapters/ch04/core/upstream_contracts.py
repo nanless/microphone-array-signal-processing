@@ -21,6 +21,15 @@ STATUS = LOCK.with_name("SOURCE_STATUS.json")
 CACHE = LOCK.parent / "upstream/_downloads"
 HISTORICAL_REVISION = "e4d54a158d892b224e37cc49b93066e667babf08"
 PROJECTS = {
+    "pyaec": ("https://github.com/ewan-xu/pyaec.git",
+        "5b9c02c57075d790b7df8652884618189d49bbc4", "Apache-2.0", "LICENSE",
+        "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"),
+    "echocatzh-pfdkf": ("https://github.com/echocatzh/PFDKF.git",
+        "7c8c86b5691966c330015d8e0960db0733b4844f", "MIT", "LICENSE",
+        "b6c53ea4c5cf363eeef563f592f0b7308ad0943627e7803e9b0df05bf592b5d5"),
+    "dtln_aec": ("https://github.com/breizhn/DTLN-aec.git",
+        "9d24e128b4f409db18227b8babb343016625921f", "MIT", "LICENSE",
+        "aa95acd8c8a7341bfcdb2823694dcbb27a2a4143e860bb52db1ff0f29c85e5a1"),
     "pb_bss": ("https://github.com/fgnt/pb_bss.git",
         "10acc347fc9ea21e3d312806a0bd751d0d0af183", "MIT", "LICENSE",
         "48241e1eae6ab4c15c5718992ca60d3d15961212a4e324e09e5dbfbc79b78214"),

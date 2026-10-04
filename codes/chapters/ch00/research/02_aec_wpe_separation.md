@@ -1,6 +1,6 @@
 # AEC、去混响与语音分离：算法、工业实现与源码研究
 
-SGMSE+/StoRM实际采样分派与零峰值边界复核日期：2026-10-02；BSS/GSS/CSS 固定源码合同、ArrayDPS 取点与参数层、神经方法身份复核日期：2026-10-01；WPE 原始资料、NARA 多通道历史排列与 NeMo 固定源码复核日期：2026-10-01；AEC 的 APA 原函数、APM 通道边界与神经方法分类复核日期：2026-10-01；AEC 原论文、接口诊断与近年候选原核实日期：2026-09-28；原核实日期：2026-09-22；AEC 工业接口与配对数据说明复核日期：2026-09-23；BSS/GSS 源码入口与实验复核日期：2026-09-24；WPE 与 cACGMM 源码入口于 2026-09-29 扩充并离线重核；推导练习及 Stream.FM、TF-Locoformer 静态审查日期：2026-09-26。对应正文 [第 6 章](../../../../chapters/06_aec.md)、[第 7 章](../../../../chapters/07_wpe-dereverberation.md) 与 [第 8 章](../../../../chapters/08_speech-separation.md)。本篇按处理对象分开说明算法、源码位置和复现实验；正式版本和许可边界由 [SOURCES.lock.json](../SOURCES.lock.json) 固定。
+AEC 播放增益、历史回声、当前来源合同与 LMPAN/DiffVQE 原文复核日期：2026-10-04；SGMSE+/StoRM实际采样分派与零峰值边界复核日期：2026-10-02；BSS/GSS/CSS 固定源码合同、ArrayDPS 取点与参数层、神经方法身份复核日期：2026-10-01；WPE 原始资料、NARA 多通道历史排列与 NeMo 固定源码复核日期：2026-10-01；AEC 的 APA 原函数、APM 通道边界与神经方法分类复核日期：2026-10-01；AEC 原论文、接口诊断与近年候选原核实日期：2026-09-28；原核实日期：2026-09-22；AEC 工业接口与配对数据说明复核日期：2026-09-23；BSS/GSS 源码入口与实验复核日期：2026-09-24；WPE 与 cACGMM 源码入口于 2026-09-29 扩充并离线重核；推导练习及 Stream.FM、TF-Locoformer 静态审查日期：2026-09-26。对应正文 [第 6 章](../../../../chapters/06_aec.md)、[第 7 章](../../../../chapters/07_wpe-dereverberation.md) 与 [第 8 章](../../../../chapters/08_speech-separation.md)。本篇按处理对象分开说明算法、源码位置和复现实验；正式版本和许可边界由 [SOURCES.lock.json](../SOURCES.lock.json) 固定。
 
 “外部实现”表示可以找到承担该算法计算的代码，不表示本书已经训练、编译或测完该系统。本篇实际运行的结果单独列出，包括[教学基线测试](../../../../tests/test_codes_aec_wpe_sep_track.py)与 W01 的独立实现对照；未附执行结果的外部实验均为复现设计。外部代码、权重和数据分别遵守各自条款。
 
@@ -94,7 +94,7 @@ RLS 对 $L$ 抽头需要 $L\times L$ 逆相关状态，常规每样本更新为 
 
 现有固定 [pyaec `apa.py`](https://github.com/ewan-xu/pyaec/blob/5b9c02c57075d790b7df8652884618189d49bbc4/time_domain_adaptive_filters/apa.py)是维护者的 Apache-2.0 独立教学实现，不是 Ozeki/Umeda 作者代码。它硬编码 $0.01I$ 正则项并显式求逆；当前到过去的参考矩阵及观测向量每次调用都清零，没有跨调用状态、冻结、DTD、延迟对齐或后滤。固定 pyroomacoustics v0.10.0 的自适应接口没有 APA，不能把其 BlockLMS 或 SubbandLMS 改名为 APA。
 
-[原函数审计工具](../../ch06/examples/audit_upstream_apa.py)完整加载原单文件并直接调用 `apa()`，不提取 AST、不补丁、不替换 NumPy；[真实报告](../../ch06/reports/upstream_apa.json)绑定工具、全锁表、原文件、许可证与 Git blob 摘要、HEAD 和前后工作树状态。[独立测试](../../../../tests/test_codes_ch06_upstream_apa.py)以标量有理闭式和二阶 Gram 的手写伴随矩阵计算核对结果。
+[原函数审计工具](../../ch06/examples/audit_upstream_apa.py)完整加载原单文件并直接调用 `apa()`，不提取 AST、不补丁、不替换 NumPy；[2026-10-01 历史报告](../../ch06/reports/upstream_apa.json)保留当时的工具、锁表与源码身份。[2026-10-04 当前报告](../../ch06/reports/upstream_apa_current.json)由新工具实际重跑，记录官方 origin、独立工作树根、固定 HEAD、所用原文件及许可的完整 SHA/Git blob、前后洁净状态和真实依赖摘要；完整获取选集状态另列，不能用所用两文件的身份替代全部选集核验。[独立测试](../../../../tests/test_codes_ch06_upstream_apa.py)以标量有理闭式和二阶 Gram 的手写伴随矩阵计算核对结果。
 
 | 固定输入，步长均为 1 | 原函数实际先验残差 | 此例检验的边界 |
 |---|---|---|
@@ -103,10 +103,10 @@ RLS 对 $L$ 抽头需要 $L\times L$ 逆相关状态，常规每样本更新为 
 | $x=[1,1,0,0,0],d=[1,3,2,0,0]$；$N=P=2$ | $[1,203/101,40502/1040401]$ | 两个过去观测共用旧权重；返回的是更新前当前残差，末尾两点仍缺失 |
 | 五点 $x=i,d=1$；$N=P=1$ | $[1,1,1,1]$，附真实 `ComplexWarning` | 实数缓冲丢弃虚部，不能当作有效复数 APA |
 
-四例是无单位确定数组，没有训练声学路径、真实录音或统计性能排名。末尾截断、警告与限制保持原貌，不把“期望行为核对通过”写成算法在所有输入上成功。默认只打印报告；显式写当前报告的命令如下，普通测试不联网、不获取源码：
+四例是无单位确定数组，没有训练声学路径、真实录音或统计性能排名。末尾截断、警告与限制保持原貌，不把“期望行为核对通过”写成算法在所有输入上成功。默认只打印报告；显式写当前报告的命令如下，普通测试不联网、不获取源码；历史报告路径已拒绝写入，默认标准输出不落盘：
 
 ```bash
-.venv/bin/python -m codes.chapters.ch06.examples.audit_upstream_apa --report codes/chapters/ch06/reports/upstream_apa.json
+.venv/bin/python -m codes.chapters.ch06.examples.audit_upstream_apa --report codes/chapters/ch06/reports/upstream_apa_current.json
 ```
 
 ### A05　DTD：二值判决与连续自适应控制
@@ -116,6 +116,8 @@ RLS 对 $L$ 抽头需要 $L\times L$ 逆相关状态，常规每样本更新为 
 最小实验由远端单讲、双讲、近端单讲与静音四段组成，分别保存检测量、步长与系数误差。失败实验保持远端播放同时改变路径，比较“误判双讲导致冻结”和“漏判双讲导致误更新”。即使两者输出能量相近，恢复办法也不同。不要仅用一个总体准确率验收 DTD。
 
 **已执行：自动四状态检测与路径突变反例。** [第 6 章 §6.4.1](../../../../chapters/06_aec.md#sec-6-4-1)给出固定种子、16 kHz、每帧 160 点的数学合成实验；[检测器](../../ch06/core/double_talk.py)只读取已对齐的参考和麦克风信号，真值标签仅供[脚本](../../ch06/aec_dtd_demo.py)统计。沉默、远端单讲（含恢复段）、近端单讲、双讲四类分别为 20、40、20、20 帧，本次混淆矩阵对角线正好是这四个计数。检测结果用于 NLMS 冻结时，双讲段已知回声分量残差 RMS 从不冻结的 0.1492 降至 0.0812；在另一个只有远端播放、路径从 $[0.6,0.25]$ 改为 $[0.1,0.75]$ 的反例里，20/20 帧被误判为双讲。这些是单次合成夹具的结果，不能代表真实语音准确率或路径变化时的稳健性；Speex 和 AEC3 的内部控制也不是本检测器。
+
+**播放停止不等于历史回声消失。** 当前参考帧静音、麦克风帧有能量时，也可能只有旧播放的回声尾声；不能仅凭这两个活动位断言近端单讲。[固定 AEC3 的残余估计](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/residual_echo_estimator.cc#307)使用参考历史及混响状态；[原 `ReverbModel`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/reverb_model.cc)在正衰减系数下递推旧状态与新功率。因此当前功率为零并不自动清除历史尾声。这是原 C++ 的静态控制证据，不是本书单帧 NCC 已运行该生产控制器或测得尾声真值。
 
 ### A06　AEC3 的延迟、线性抵消、残余抑制与舒适噪声
 
@@ -128,6 +130,8 @@ WebRTC 的 [`modules/audio_processing/aec3/`](https://webrtc.googlesource.com/sr
 这个提交的 `int16` 接口只接受 8、16、32、48 kHz，且采集输入、输出与播放反向流的采样率必须相同，输出布局还须与采集输入一致；浮点接口才允许头文件所述较宽的合法采样率范围及不同的输入、输出布局。应用拿到 44.1 kHz 的整数 PCM，不能仅把采样率写入配置就交给 `int16` 接口，须先转换到受支持的速率，或按浮点接口的要求准备数据。APM 外部接口限制与锁定 AEC3 内部 `aec3_common.h` 的 16、32、48 kHz 分带速率不是同一层约束；内部每块 64 个最低频带样本，也不等于要求应用每次只交 64 点。[固定版头文件的 `Initialize()` 约束与 `NativeRate` 枚举](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/api/audio/audio_processing.h#509)
 
 `set_stream_delay_ms()` 报告的是播放帧进入 APM 到硬件实际播放、以及麦克风采样到采集帧进入 APM 的缓冲时间之和，不是房间传播时间或滤波器尾长。固定版 [`audio_processing_impl.cc`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/audio_processing_impl.cc) 的 `set_stream_delay_ms()` 把负值截到 0 ms、超过 500 ms 的值截到 500 ms，并返回 `kBadStreamParameterWarning`。接入层应保存输入参数、返回码、`stream_delay_ms()` 读回值与两路硬件时间戳；无线或外接播放的延迟若超出该范围，不能只按传入值解释后续对齐结果。500 ms 是这个提交的接口行为，不是声学路径或其他 AEC 的通用限值。
+
+**播放音量通知不是样本补偿。** 固定接口的 `CreatePlayoutVolumeChange()` 接收未归一化整数通知；[`audio_processing_impl.cc`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/audio_processing_impl.cc#816)入队后在捕获侧比较音量，形成 `gain_change`。它不把参考样本乘上一个已知时变增益。[`subtractor.cc`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/subtractor.cc#138)把变化传给 refined 更新增益；其[原 gain 分支](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/refined_filter_update_gain.cc#52)仍为 TODO 空操作，未重标定路径系数。[`aec_state.cc`](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/aec3/aec_state.cc#157)另重置 ERLE 状态。静态分支核查不等于本轮生产 C++ 执行，也不能证明自动音量补偿；应用仍须确定音量处理位于参考抽取之前还是之后，并保留增益变化的样本时刻与历史。
 
 线性段并非只能从内部调试转储取得。固定版公开的 `Config::EchoCanceller::export_linear_aec_output` 默认 `false`；需要线性取点时须在配置 AEC 时设为 `true`。处理采集帧后调用 `GetLinearAecOutput()` 并检查布尔返回值，可取得最近约 10 ms、16 kHz 的线性 AEC 输出。本书已运行的单通道配置得到单声道；不能把这一事实扩大成所有配置的接口保证。固定头文件虽写多通道采集时返回单声道，实际 `num_proc_channels()` 还检查 `pipeline.multi_channel_capture` 与构建支持；线性缓冲按该通道数分配，`GetLinearAecOutput()` 逐通道复制。多通道接入须核对处理通道数与传入 `ArrayView` 长度；本次仅静态核查这条分支，未运行多通道声学实验。它与公开 `ProcessStream()` 的最终输出可能采用不同采样率及取点，必须按对应采样区间对齐后比较。若所用构建或接入层没有成功导出，记录“线性取点未取得”及配置、返回值，而不是用最终输出冒名顶替。入口见[固定版公开头文件的配置与接口](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/api/audio/audio_processing.h)和[`audio_processing_impl.cc` 的缓冲分配与返回实现](https://webrtc.googlesource.com/src/+/0467d2b91cc20b9b001c2bbb73d43ea6b2491f3e/modules/audio_processing/audio_processing_impl.cc)。
 
@@ -177,7 +181,7 @@ WebRTC 与 SpeexDSP 锁定源码分别以 BSD-3-Clause 许可登记在[第三方
 
 **已运行：一对真实录音上的 SpeexDSP 同步 AEC（2026-09-23）。** 使用 Microsoft AEC Challenge 固定提交 `6c633d0a9d2a143a0e364899b91b06f127315b18` 的 `datasets/real/-0AcvGNEdEK-DQGxWmtq2Q_farend_singletalk_{lpb,mic}.wav`。同一 GUID 是官方远端单讲配对；`lpb` 是 Windows 播放环回，`mic` 是麦克风录音，不是干净回声真值。
 
-两文件都是单声道、16 kHz、PCM16，分别有 188320 与 188480 个样本。文件 SHA-256 分别为 `9b204ad5473726526d14830103e53647897699ef89d49624964b7f2449040426` 与 `6b4c3e01b969c5cad91f248ff967cfa03df6554f3a060d6e5b06b7d20341bba6`。原始文件仅在 Git 忽略缓存中，处理输出默认不落盘；脚本仅允许把可选试听 WAV 写到同一缓存，不随本书再分发。[官方数据说明](https://github.com/microsoft/AEC-Challenge/blob/6c633d0a9d2a143a0e364899b91b06f127315b18/datasets/README.md)与[数据许可段](https://github.com/microsoft/AEC-Challenge/blob/6c633d0a9d2a143a0e364899b91b06f127315b18/README.md#dataset-licenses)不能被代码 MIT 许可替代。
+两文件都是单声道、16 kHz、PCM16，分别有 188320 与 188480 个样本。文件 SHA-256 分别为 `9b204ad5473726526d14830103e53647897699ef89d49624964b7f2449040426` 与 `6b4c3e01b969c5cad91f248ff967cfa03df6554f3a060d6e5b06b7d20341bba6`。原始文件仅在 Git 忽略缓存中，处理输出默认不落盘；当前脚本只允许把可选试听 WAV 写到仓外新普通文件，拒绝仓内及来源缓存路径，也不随本书再分发。[官方数据说明](https://github.com/microsoft/AEC-Challenge/blob/6c633d0a9d2a143a0e364899b91b06f127315b18/datasets/README.md)与[数据许可段](https://github.com/microsoft/AEC-Challenge/blob/6c633d0a9d2a143a0e364899b91b06f127315b18/README.md#dataset-licenses)不能被代码 MIT 许可替代。
 
 对两路共同的 `[0,188320)` 样本按原样逐帧输入，舍弃麦克风末尾 160 个样本；不重采样、不时移、不调增益。锁定版 SpeexDSP `8e29a256ef0235ebbe7fcb8417b5ac7731eb8307` 在 macOS arm64 / AppleClang 21 上以 CMake `Release`、共享库、浮点配置构建，库 SHA-256 为 `c3e70172a3a9bf60b60bfd0bddfd58550a1899fef09078a9c7d5270d4a12105d`。
 
@@ -286,7 +290,7 @@ PATH=/path/to/depot_tools:$PATH DEPOT_TOOLS_UPDATE=0 \
 ```bash
 .venv/bin/python -m codes.chapters.ch06.examples.aec3_offline_compare \
   --audioproc codes/chapters/ch00/upstream/_downloads/webrtc_aec3_checkout/src/out/aec3/audioproc_f \
-  --output-dir codes/chapters/ch00/upstream/_downloads/aec3-comparison-new-run
+  --output-dir /private/tmp/aec3-comparison-new-run
 ```
 
 本次对两对真实录音分别从全新状态运行，16 kHz、单声道 PCM16，每帧 160 点、同帧先参考后采集；评分前 3 s 只用于适应。表中数字为 $10\log_{10}(P_{\mathrm{mic}}/P_{\mathrm{out}})$，功率按相同窗口的 PCM16 归一化样本平方均值计算。它是**总数字功率变化，不是真值 ERLE**。
@@ -296,7 +300,7 @@ PATH=/path/to/depot_tools:$PATH DEPOT_TOOLS_UPDATE=0 \
 | 远端单讲，`[48000,188320)` 点（`[3,11.77)` s） | 7.685 dB | 15.731 dB |
 | 双讲，`[48000,128000)` 点（`[3,8)` s） | 3.384 dB | 3.851 dB |
 
-线性输出 WAV 的 SHA-256 依次为 `6022c2a5354c9f760a3cac54e8e8ac9c63c1aec7bd16f3f2275f7257f27abc4e`、`9ca8a7e81bc7c07e8b4cf337832de20ff0cea5b94e3e937d7bbcb870baed8fab`；最终输出依次为 `cece4d1134285b5fe251a999d5b8915642753b1be19e63a72882d1e2e624944d`、`adcdd3b2d98181d0a9ae4c7d9a85181aa39c9bc2a50d4b51acb9a428df60c5b4`。录音原件及输出位于 Git 忽略缓存，输入摘要由适配器逐次检查；复做时须使用新的输出目录，避免覆盖旧实验。
+线性输出 WAV 的 SHA-256 依次为 `6022c2a5354c9f760a3cac54e8e8ac9c63c1aec7bd16f3f2275f7257f27abc4e`、`9ca8a7e81bc7c07e8b4cf337832de20ff0cea5b94e3e937d7bbcb870baed8fab`；最终输出依次为 `cece4d1134285b5fe251a999d5b8915642753b1be19e63a72882d1e2e624944d`、`adcdd3b2d98181d0a9ae4c7d9a85181aa39c9bc2a50d4b51acb9a428df60c5b4`。历史录音原件及输出位于 Git 忽略缓存，输入摘要由适配器逐次检查；当前适配器仅接受仓外新空普通输出目录，写入或调用二进制前检查全部九个预期成员，并拒绝来源、历史、缓存与符号链接目标。历史路径代表当时执行条件，不改写为新目录下实测。
 
 远端单讲最终输出比线性输出的功率降得更多，符合两个取点包含不同处理的事实，却不能把差额全部归因于残余回声抑制。双讲录音没有独立干净近端或干净回声分量真值，因此 3.384/3.851 dB 既不证明近端保护，也不证明双讲回声抑制量。真实配对录音仍不能给出真值性能排序，也没有设备声学回路或时钟漂移测量；[运行状态表](04_source_reproduction.md)按实现分别记录。
 
@@ -418,7 +422,7 @@ AEC 入口是 `zoo/aec/aec.py` 的任务滤波器，再看 `optimizer_kf.py` 的
 
 ### A18　固定上游接口的实际诊断与失败记录
 
-[诊断程序](../../ch06/examples/audit_aec_upstream_interfaces.py)、[机器可读报告](../../ch06/reports/aec_upstream_interfaces.json)与[离线测试](../../../../tests/test_codes_aec_upstream_interfaces.py)于 2026-09-28 使用 Python 3.13.12、NumPy 2.5.3 运行。程序先核对三个独立检出的完整提交、所用文件和许可证摘要，再导入；禁止写入上游字节码。报告绑定输入配置、脚本摘要、函数摘要和运行环境。输入为无单位的确定数组，没有录音、随机抽样或性能评价；原版文件未修改。
+[诊断程序](../../ch06/examples/audit_aec_upstream_interfaces.py)、[历史机器可读报告](../../ch06/reports/aec_upstream_interfaces.json)与[离线测试](../../../../tests/test_codes_aec_upstream_interfaces.py)于 2026-09-28 使用 Python 3.13.12、NumPy 2.5.3 运行。程序先核对三个独立检出的完整提交、所用文件和许可证摘要，再导入；禁止写入上游字节码。报告绑定输入配置、脚本摘要、函数摘要和运行环境。输入为无单位的确定数组，没有录音、随机抽样或性能评价；原版文件未修改。
 
 1. **pyaec 原函数实调。** 给六点零参考、观测 `[1,2,3,4,5,6]`、两抽头长度，`rls()` 和 `kalman()` 均只返回 `[1,2,3,4]`。零参考下任何权重的线性输出都为零，完整残差应为全部六点观测；源码 `nIters=min(...)-N` 丢的是末尾两点，不是启动前两点。RLS 初始 `P=delta*I` 是其参数约定，不能未经换算套成本书的逆正则化先验。`fdkf()` 与 `PFDKF()` 分别在实际函数调用和构造时触发 `np.complex` 的 `AttributeError`，未得到输出；没有用补丁后的结果覆盖原版失败。
 2. **echocatzh 原方法实调。** `N=1,M=2`，初始权重为零，输入和观测均为 `[1,1]`，只调用 `filt()`、不调用 `update()`。`res=False` 返回误差 `[1,1]` 与回声 `[0,0]`；默认残余抑制开启时，误差约 `[0.5,0.5]`，第二返回值也约 `[0.5,0.5]`，但路径权重仍全零。因此该返回值是观测减最终残差，不能冒充已学得的线性回声。四点 DFT 的独立分数计算验证这个结果。便利函数 `pfdkf()` 不暴露 `res` 参数，末尾不足一块的输入也被截掉。它与 pyaec 在误差加窗、状态衰减和后滤位置上不同，名称相同不保证逐式相同。
@@ -430,7 +434,15 @@ AEC 入口是 `zoo/aec/aec.py` 的任务滤波器，再看 `optimizer_kf.py` 的
 .venv/bin/python codes/chapters/ch06/examples/audit_aec_upstream_interfaces.py
 ```
 
-标准输出为新报告；只有显式给 `--report` 才写文件。成功取得源码、某个接口返回数组、算法达到统计收敛和设备端可用是四种不同证据。
+2026-10-04 已用 Python 3.13.12、NumPy 2.5.3 实际重跑，[新当前报告](../../ch06/reports/aec_upstream_interfaces_current.json)保留上述原失败和限定执行范围。运行前后另核官方 origin、独立工作树根、固定 HEAD、全部所用原 blob 与许可 SHA、洁净状态；`source_identities` 中的所用身份与完整获取选集状态分栏。`actual_dependency_sha256` 绑定当前真实工具、公共合同、IO 与获取核，不给旧报告换工具摘要。
+
+两份历史 JSON 原字节、摘要和修改时间均保留，历史测试绑定提交 `621d727a63475e3ee8ad2a29d518889c42e92571` 中的真实原工具 blob。新合同和写入负控制见[来源合同测试](../../../../tests/test_codes_ch06_source_contracts.py)。默认只输出到标准输出；显式保存当前报告用：
+
+```bash
+.venv/bin/python -m codes.chapters.ch06.examples.audit_aec_upstream_interfaces --report codes/chapters/ch06/reports/aec_upstream_interfaces_current.json
+```
+
+仓内只接受各工具指定的新当前报告；仓外接受经过普通父链/成员检查的报告文件。源、锁、缓存、历史报告和符号链接目标在原方法调用前拒绝；严格 JSON 拒绝重复键和非有限数，报告原子替换。有限写前检查不声称消除并发竞态或保证崩溃持久性。取得源码、接口返回、统计收敛和设备端可用仍是四种不同证据。
 
 ### A19　2024～2026 年候选、评测工具和收录边界
 
@@ -451,6 +463,14 @@ AEC 入口是 `zoo/aec/aec.py` 的任务滤波器，再看 `optimizer_kf.py` 的
 本书可用“同参考的两组零训练残差解 → 独立重新混音留出 → 正确/错误先验”的小输入解释选型，联系 [E06-23 的不可辨识性](../../../../chapters/06_aec.md#sec-u-b3804c4e3d)和 A04 的 $Q$；这满足问题、改变步骤、假设和最小复现用途四项要求，但仅采用为研究阅读，不新增正文算法目录。先验是在已有多个可能路径中提供附加信息，不能凭初始化创造新的播放激励或证明路径唯一。
 
 本次未找到可靠、许可明确的作者完整源码，未取得权重或执行原系统；不下载同名第三方示例。原文式(18)的矩阵记号与后续标量能量文字需要区分，故此处不直接复制能量差为未经论证的 PSD 协方差公式，也不采用其实验性能作本机实测数字。
+
+**LMPAN：对齐后级的三个输入关系。** [正式 Interspeech 2026 条目](https://www.isca-archive.org/interspeech_2026/liu26b_interspeech.html)为 4945–4949 页、DOI `10.21437/Interspeech.2026-191`；本次逐方法读取[作者版 v1，2026-07-02，§2～3](https://arxiv.org/html/2607.02062v1)。它针对残余回声与对齐误差，把麦克风、播放参考和 NLMS 线性残差两两软对齐，再用 GTCRN 细化并混合线性残差与麦克风输出。WavLM 损失属于训练，不是推理输入；动态训练目标依赖已知语音、噪声和回声分量。32 ms 窗、16 ms 帧移与“最大 100 延迟等于 1 s”的文字时钟口径不一致，不能据此给出精确端到端延迟。可设计对齐误差及缺失参考的消融，但不冒称重现原网络。
+
+[作者所属 Alibaba 的统一音频仓库](https://github.com/alibaba/unified-audio)在本次读取时仍把 AEC 列为 Developing；未核定 LMPAN 对应实现、权重和配套数据。该仓库一般源码的 Apache-2.0 不证明未核定的 AEC 资产已可取得，因此不下载无关模型填充 `codes/`，仅保留研究阅读，不增设正文算法或性能排名。
+
+**DiffVQE：单次扩散求解仍可能非因果。** [正式条目](https://www.isca-archive.org/interspeech_2026/lugo26_interspeech.html)为 4971–4976 页、DOI `10.21437/Interspeech.2026-2337`；技术阅读使用[作者版 v2，2026-06-17，§2～4](https://arxiv.org/pdf/2605.08189v2)。先由麦克风/参考条件网络得到判别式估计，再经加噪与一次 score 修正生成输出；扩散时间不是音频帧时钟。512 点窗、128 点帧移、双向 GRU 和离线 GCC-PHAT 使“单次求解”不能推出因果部署。论文同时检查感知质量与语音内容保持；其中 DeepVQE 是相同自建数据上的重训练基线，不是跨论文榜单。可研究非因果上下文、内容失真和参考错位，不能用 CPU RTF 代替声学端到端延迟。
+
+[作者官方 demo](https://ifnspaml.github.io/DiffVQE-Demo/)及其[源码仓库](https://github.com/ifnspaml/DiffVQE-Demo)仅有展示页与样例，未核定算法实现、权重或可再分发许可。本轮未取得这些音频或运行网络，只补充已有 DeepVQE 的研究比较，不把展示材料称为可复现实装。两项正式 PDF 入口本轮未成功读取；方法证据明确来自上述作者版全文，不以搜索摘要替代原文。
 
 **评测工具与标准。** [EC Evaluation Toolbox](https://github.com/ifnspaml/EC-Evaluation-Toolbox/tree/aec8873325ed8e4d93eadc53e5c0af84be4db4fd)固定提交提供动态 RIR 与评测入口线索，但根目录未找到明确许可，已读文件头也未给复制授权；模型代码另有未取得的 `speechlightning` 依赖。只建来源索引，不取得源码或执行安装命令；README 的路线图不作为已完成能力。它不是新增的一种 AEC 算法。
 

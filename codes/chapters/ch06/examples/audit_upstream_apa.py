@@ -13,19 +13,20 @@ import hashlib
 import importlib.util
 import json
 import math
-import os
 from pathlib import Path
 import platform
-import subprocess
 import sys
 import warnings
 from zoneinfo import ZoneInfo
 
 import numpy as np
 
+from codes.chapters.ch04.core import upstream_contracts as contracts
+
 ROOT = Path(__file__).resolve().parents[4]
 LOCK = ROOT / 'codes/chapters/ch00/SOURCES.lock.json'
 CACHE = ROOT / 'codes/chapters/ch00/upstream/_downloads/pyaec'
+CURRENT_REPORT = ROOT / 'codes/chapters/ch06/reports/upstream_apa_current.json'
 REVISION = '5b9c02c57075d790b7df8652884618189d49bbc4'
 SOURCE = 'time_domain_adaptive_filters/apa.py'
 SOURCE_SHA = {SOURCE: 'c6c703bd912c1477eea126fa64f1795366766ba608cdc5981c8fb1ee656ab821',
@@ -37,26 +38,13 @@ def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def git(directory, *args, binary=False):
-    env = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
-    value = subprocess.check_output(['git', '-C', str(directory), *args],
-                                    env=env, text=not binary)
-    return value if binary else value.strip()
+def git(directory, *args):
+    return contracts.git(directory, *args)
 
 
 def checkout_state(directory):
-    directory = Path(directory)
-    if not (directory / '.git').exists():
-        raise FileNotFoundError('Existing independent fixed pyaec checkout required')
-    if Path(git(directory, 'rev-parse', '--show-toplevel')).resolve() != directory.resolve():
-        raise RuntimeError('Expected an independent upstream checkout')
-    state = {'head': git(directory, 'rev-parse', 'HEAD'),
-             'status': git(directory, 'status', '--porcelain', '--untracked-files=no'),
-             'untracked_python': [p for p in git(directory, 'ls-files', '--others',
-                 '--exclude-standard').splitlines() if p.endswith('.py')]}
-    if state['head'] != REVISION or state['status'] or state['untracked_python']:
-        raise RuntimeError('Fixed upstream revision or cleanliness differs')
-    return state
+    identity = contracts.verify_project('pyaec', directory, SOURCE_SHA)
+    return {'head': identity['head'], 'status': '', 'untracked_python': []}
 
 
 def encode(value):
@@ -94,19 +82,16 @@ def independent_expectations():
 
 
 def run_audit(directory=CACHE):
-    directory = Path(directory)
-    entry = next(p for p in json.loads(LOCK.read_text())['projects'] if p['id'] == 'pyaec')
-    if entry['revision'] != REVISION or entry['license'] != 'Apache-2.0':
-        raise RuntimeError('Lock entry differs from fixed pyaec conditions')
+    directory = contracts.validate_parent_chain(directory)
+    identity = contracts.verify_project('pyaec', directory, SOURCE_SHA)
+    entry = identity['lock_entry']
     if SOURCE not in entry['entrypoints']:
         raise RuntimeError('APA source must be registered in the shared lock')
-    before = checkout_state(directory)
-    files = {}
     for name, expected in SOURCE_SHA.items():
-        path = directory/name
-        if sha(path) != expected or path.read_bytes() != git(directory, 'show', 'HEAD:'+name, binary=True):
+        if identity['used_files'][name]['sha256'] != expected:
             raise RuntimeError('Original source hash differs: '+name)
-        files[name] = {'sha256': sha(path), 'git_blob': git(directory, 'rev-parse', 'HEAD:'+name)}
+    before = {'head': identity['head'], 'status': '', 'untracked_python': []}
+    files = {name: dict(identity['used_files'][name]) for name in SOURCE_SHA}
     old_bytecode = sys.dont_write_bytecode
     sys.dont_write_bytecode = True
     try:
@@ -154,13 +139,16 @@ def run_audit(directory=CACHE):
         else:
             row['expected_behavior_verified'] &= not row['warnings']
         rows[name] = row
-    after = checkout_state(directory)
+    contracts.check_unchanged(identity)
+    after = {'head': identity['head'], 'status': '', 'untracked_python': []}
     if before != after:
         raise RuntimeError('Upstream state changed during the audit')
     now = datetime.now(timezone.utc)
-    return {'schema_version': 1, 'created_utc': now.isoformat(),
+    return {'schema_version': 2, 'created_utc': now.isoformat(),
             'verified_date_asia_shanghai': now.astimezone(ZoneInfo('Asia/Shanghai')).date().isoformat(),
-            'audit_source_sha256': sha(__file__), 'lock_sha256': sha(LOCK), 'lock_entry': entry,
+            'audit_source_sha256': sha(__file__), 'lock_sha256': identity['lock_sha256'], 'lock_entry': entry,
+            'actual_dependency_sha256': contracts.dependencies(Path(__file__)),
+            'source_identity': identity,
             'reproduction_command': '.venv/bin/python -m codes.chapters.ch06.examples.audit_upstream_apa',
             'original_files': files, 'before': before, 'after': after,
             'environment': {'python': sys.version, 'numpy': np.__version__,
@@ -179,11 +167,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--report', type=Path)
     args = parser.parse_args()
+    target = contracts.report_target(args.report, CURRENT_REPORT, (contracts.CACHE,)) if args.report else None
     report = run_audit()
     serialized = json.dumps(encode(report), ensure_ascii=False, indent=2, allow_nan=False)+'\n'
-    if args.report is not None:
-        args.report.parent.mkdir(parents=True, exist_ok=True)
-        args.report.write_text(serialized)
+    if target is not None:
+        contracts.write_report(target, encode(report), CURRENT_REPORT, (contracts.CACHE,))
     else:
         print(serialized, end='')
     return 0 if report['status'] == 'expected_behaviors_verified_warnings_preserved' else 1

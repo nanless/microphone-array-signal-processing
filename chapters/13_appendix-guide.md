@@ -19,7 +19,7 @@
 
     1. 运行 `codes/` 中只依赖 NumPy 的教学实现，核对手算结果、数组维度和退化边界。
     2. 在隔离环境中用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线，记录房间、阵列和随机种子。
-    3. 先按 §13.7 生成图所依赖的音频和追踪清单，再运行 `scripts/` 中的三个绘图脚本，按当前参数复现 73 张编号图，并逐图核对正文条件。
+    3. 先按 §13.7 生成图所依赖的音频和追踪清单，再运行 `scripts/` 中的四个绘图脚本，按当前参数复现 74 张编号图，并逐图核对正文条件。
     4. 按研究任务选择公开数据和固定版本参考系统，分别核对代码、模型与数据的许可和评测口径。
     5. 在可用的多通道硬件上测实时性、同步和标定；仿真结果不能代替设备测量。
 
@@ -856,7 +856,7 @@ $X$ 是有限源序列的离散时间傅里叶变换，$H_{\mathrm r}$ 是反射
 
 会议识别复现还要固定数据准备与文本规范化。CHiME-8 的官方 `chime-utils` 提供 SegLST 转写格式、该届规范化及 cpWER/tcpWER 评分；其中缺失场景的忽略选项会改变实际计分范围。应保留每个场景的输入文件数、失败数和最终参与评分的清单，并先用正确转写、说话人交换、漏词和时间戳偏移的小夹具检查评分口径。[CHiME-8 官方评分实现](https://github.com/chimechallenge/chime-utils/tree/152882404f572d40769ef02bf91c5a9a9cfc9c78 "citation")
 
-绘图脚本都在 `scripts/` 里。图 34～36 和图 37～38 读取或复算指定教学数据，图 39 是算法流程图；图 40～49 又分别使用时钟漂移、线性插值、GSS、CSS、追踪音频、波束、选型及附录 A 的确定性数据。先生成主音频与独立的追踪音频/清单，再运行两个绘图脚本；图 44 使用后者。图50提供有限窗STFT卷积的六点对照；图51、52分别计算近共面几何的线性敏感性与六麦圆环多频流形；图53、54分别解释非酉聚焦噪声与指定双频相干模型的池化秩。图55解释导数约束的复响应和噪声期望代价，图56解释给定条件增益下的Bayes后验与几何组合。
+绘图脚本都在 `scripts/` 里。图 34～36 和图 37～38 读取或复算指定教学数据，图 39 是算法流程图；图 40～49 又分别使用时钟漂移、线性插值、GSS、CSS、追踪音频、波束、选型及附录 A 的确定性数据。先生成主音频与独立的追踪音频/清单，再运行相应绘图脚本；图 44 使用后者。图50提供有限窗STFT卷积的六点对照；图51、52分别计算近共面几何的线性敏感性与六麦圆环多频流形；图53、54分别解释非酉聚焦噪声与指定双频相干模型的池化秩。图55解释导数约束的复响应和噪声期望代价，图56解释给定条件增益下的Bayes后验与几何组合。
 
 图50～56均由确定性参数计算，不把图55期望标成单次PCM实测。
 
@@ -878,7 +878,9 @@ $X$ 是有限源序列的离散时间傅里叶变换，$H_{\mathrm r}$ 是反射
 
 图73读取第5章三份已知双音PCM。相位反号和正交变化保持解析稳态功率，却增加同钟参考误差；量化后三份功率分别保存，不假定完全相等。它由独立绘图脚本生成，不重写其他图的源摘要。
 
-图片写入 `figures/`，共 73 张编号图，另有第16题的房间补充图：
+图74读取第6章六份已知播放增益与尾声PCM。先核验完整资产，再分别绘制给定增益、切换后实际残差、分窗整数功率及播放停止后的帧去均值RMS。已知路径从开始冻结，不做训练或增益拟合；完整1600点尾中当前参考全零，但历史回声非零，十个`near_only`标签只说明活动规则的边界。
+
+图片写入 `figures/`，共 74 张编号图，另有第16题的房间补充图：
 
 ```bash
 .venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
@@ -892,6 +894,7 @@ $X$ 是有限源序列的离散时间傅里叶变换，$H_{\mathrm r}$ 是反射
 .venv/bin/python -m codes.chapters.ch09.examples.moving_source_audio
 .venv/bin/python -m codes.chapters.ch09.examples.chapter09_tracking_audio
 .venv/bin/python -m codes.chapters.ch06.examples.generate_apa_audio
+.venv/bin/python -m codes.chapters.ch06.examples.generate_reference_audio  # 六份已知播放增益/尾声WAV；--check严格只读
 .venv/bin/python -m codes.chapters.ch07.examples.mint_teaching_demo
 .venv/bin/python -m codes.chapters.ch08.examples.mask_representation_demo
 .venv/bin/python -m codes.chapters.ch10.examples.generate_noise_mismatch
@@ -903,6 +906,7 @@ $X$ 是有限源序列的离散时间傅里叶变换，$H_{\mathrm r}$ 是反射
 .venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～72
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～39（回声消除专题）
 .venv/bin/python scripts/make_beamforming_figures.py  # 图73：已知双音的实际PCM与解析相位
+.venv/bin/python scripts/make_reference_figures.py  # 图74：实际PCM播放增益与尾声控制
 ```
 
 Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`，其余不变。

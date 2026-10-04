@@ -1,0 +1,672 @@
+{
+  "schema_version": 2,
+  "created_utc": "2026-10-04T10:27:37.488364+00:00",
+  "verified_date_asia_shanghai": "2026-10-04",
+  "audit_source_sha256": "55431e1476831bbc38ffadb67e008eaaab8e9313a369af67a63d1cba815fdff3",
+  "lock_sha256": "a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505",
+  "lock_entry": {
+    "id": "pyaec",
+    "url": "https://github.com/ewan-xu/pyaec.git",
+    "revision": "5b9c02c57075d790b7df8652884618189d49bbc4",
+    "license": "Apache-2.0",
+    "scope": "Educational time-domain APA/RLS/Kalman and frequency-domain FDKF/PFDKF AEC examples",
+    "fetch_enabled": true,
+    "note": "Official repository and Apache-2.0 license rechecked 2026-10-01. Minimal research examples, not a complete AEC frontend or the original FDKF/APA authors' implementation; no delay search, double-talk controller or residual suppressor. The original APA real-valued buffers discard imaginary components, use fixed 0.01 diagonal loading and return min(input lengths)-N samples; the chapter 6 read-only method audit records these actual observations. Legacy np.complex in FDKF/PFDKF requires compatibility checking with modern NumPy. Requirements mention librosa and pyroomacoustics; sample-audio rights are separate. Sparse source acquisition does not claim complete package or acoustic-performance reproduction.",
+    "entrypoints": [
+      "LICENSE",
+      "README.md",
+      "time_domain_adaptive_filters/apa.py",
+      "time_domain_adaptive_filters/rls.py",
+      "time_domain_adaptive_filters/kalman.py",
+      "frequency_domain_adaptive_filters/fdkf.py",
+      "frequency_domain_adaptive_filters/pfdkf.py"
+    ]
+  },
+  "actual_dependency_sha256": {
+    "codes/chapters/ch06/examples/audit_upstream_apa.py": "55431e1476831bbc38ffadb67e008eaaab8e9313a369af67a63d1cba815fdff3",
+    "codes/chapters/ch04/core/upstream_contracts.py": "16630220cdc6f66eb97cfc2a91057cb2e159ff0addbc89a2a65cb0dab45ab003",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
+    "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
+  },
+  "source_identity": {
+    "project": "pyaec",
+    "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/pyaec",
+    "origin": "https://github.com/ewan-xu/pyaec.git",
+    "head": "5b9c02c57075d790b7df8652884618189d49bbc4",
+    "lock_entry": {
+      "id": "pyaec",
+      "url": "https://github.com/ewan-xu/pyaec.git",
+      "revision": "5b9c02c57075d790b7df8652884618189d49bbc4",
+      "license": "Apache-2.0",
+      "scope": "Educational time-domain APA/RLS/Kalman and frequency-domain FDKF/PFDKF AEC examples",
+      "fetch_enabled": true,
+      "note": "Official repository and Apache-2.0 license rechecked 2026-10-01. Minimal research examples, not a complete AEC frontend or the original FDKF/APA authors' implementation; no delay search, double-talk controller or residual suppressor. The original APA real-valued buffers discard imaginary components, use fixed 0.01 diagonal loading and return min(input lengths)-N samples; the chapter 6 read-only method audit records these actual observations. Legacy np.complex in FDKF/PFDKF requires compatibility checking with modern NumPy. Requirements mention librosa and pyroomacoustics; sample-audio rights are separate. Sparse source acquisition does not claim complete package or acoustic-performance reproduction.",
+      "entrypoints": [
+        "LICENSE",
+        "README.md",
+        "time_domain_adaptive_filters/apa.py",
+        "time_domain_adaptive_filters/rls.py",
+        "time_domain_adaptive_filters/kalman.py",
+        "frequency_domain_adaptive_filters/fdkf.py",
+        "frequency_domain_adaptive_filters/pfdkf.py"
+      ]
+    },
+    "lock_sha256": "a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505",
+    "source_document_paths": {
+      "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+      "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+    },
+    "status_sha256": "abc28f6f15512da8267618bca318b10033909ec2afdb6090b6aa2d0f1281f0e9",
+    "recorded_complete_selection": {
+      "id": "pyaec",
+      "revision": "5b9c02c57075d790b7df8652884618189d49bbc4",
+      "status": "source_verified",
+      "missing_entrypoints": [],
+      "execution": "not_run",
+      "dependency_validation": "not_run",
+      "asset_policy": "sparse_source_checkout",
+      "requested_source_paths": [
+        "repository"
+      ],
+      "observed_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "expected_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "source_selection_verified": true
+    },
+    "live_complete_selection": {
+      "id": "pyaec",
+      "revision": "5b9c02c57075d790b7df8652884618189d49bbc4",
+      "status": "source_verified",
+      "source_selection_verified": true,
+      "missing_entrypoints": [],
+      "observed_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "expected_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "requested_source_paths": [
+        "repository"
+      ],
+      "asset_policy": "sparse_source_checkout"
+    },
+    "used_source_identity": "verified",
+    "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+    "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+    "ignored_members_before": [],
+    "used_files": {
+      "LICENSE": {
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "bytes": 11357,
+        "git_blob": "261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64",
+        "actual_blob": "261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64"
+      },
+      "time_domain_adaptive_filters/apa.py": {
+        "sha256": "c6c703bd912c1477eea126fa64f1795366766ba608cdc5981c8fb1ee656ab821",
+        "bytes": 1212,
+        "git_blob": "38080efa28eecb85dd3417a09f370931db9e9d4c",
+        "actual_blob": "38080efa28eecb85dd3417a09f370931db9e9d4c"
+      }
+    },
+    "clean_before": true,
+    "clean_after": true,
+    "ignored_members_after": []
+  },
+  "reproduction_command": ".venv/bin/python -m codes.chapters.ch06.examples.audit_upstream_apa",
+  "original_files": {
+    "time_domain_adaptive_filters/apa.py": {
+      "sha256": "c6c703bd912c1477eea126fa64f1795366766ba608cdc5981c8fb1ee656ab821",
+      "bytes": 1212,
+      "git_blob": "38080efa28eecb85dd3417a09f370931db9e9d4c",
+      "actual_blob": "38080efa28eecb85dd3417a09f370931db9e9d4c"
+    },
+    "LICENSE": {
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357,
+      "git_blob": "261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64",
+      "actual_blob": "261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64"
+    }
+  },
+  "before": {
+    "head": "5b9c02c57075d790b7df8652884618189d49bbc4",
+    "status": "",
+    "untracked_python": []
+  },
+  "after": {
+    "head": "5b9c02c57075d790b7df8652884618189d49bbc4",
+    "status": "",
+    "untracked_python": []
+  },
+  "environment": {
+    "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
+    "numpy": "2.5.3",
+    "executable": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/bin/python",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O"
+  },
+  "scope": {
+    "execution": "original_complete_single_file_module_and_function_call",
+    "identity": "maintainer independent educational implementation; not Ozeki/Umeda author code",
+    "compatibility": "no AST extraction, patches or compatibility facade",
+    "excluded": "No full pyaec package, real audio, double-talk controller, convergence benchmark or device run",
+    "fixed_regularization": ".01 I; explicit inverse; real buffers; state resets per call"
+  },
+  "case_count": 4,
+  "results": {
+    "zero_reference": {
+      "inputs": {
+        "x": {
+          "shape": [
+            6
+          ],
+          "dtype": "float64",
+          "real": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "imag": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "finite": true
+        },
+        "d": {
+          "shape": [
+            6
+          ],
+          "dtype": "float64",
+          "real": [
+            1.0,
+            2.0,
+            3.0,
+            4.0,
+            5.0,
+            6.0
+          ],
+          "imag": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "finite": true
+        },
+        "N": 2,
+        "P": 2,
+        "mu": 1.0
+      },
+      "expected_residual": [
+        1.0,
+        2.0,
+        3.0,
+        4.0
+      ],
+      "absolute_tolerance": 2e-14,
+      "unprocessed_tail_indices": [
+        4,
+        5
+      ],
+      "classification": "zero_reference_tail_not_processed",
+      "warnings": [],
+      "exception": null,
+      "input_sha256": "b379b22bfcb8505bee56443a117401846d054ecca91d1860d391795116223136",
+      "residual": {
+        "shape": [
+          4
+        ],
+        "dtype": "float64",
+        "real": [
+          1.0,
+          2.0,
+          3.0,
+          4.0
+        ],
+        "imag": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "finite": true
+      },
+      "expected_behavior_verified": true
+    },
+    "order_one": {
+      "inputs": {
+        "x": {
+          "shape": [
+            5
+          ],
+          "dtype": "float64",
+          "real": [
+            1.0,
+            2.0,
+            3.0,
+            4.0,
+            5.0
+          ],
+          "imag": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "finite": true
+        },
+        "d": {
+          "shape": [
+            5
+          ],
+          "dtype": "float64",
+          "real": [
+            2.0,
+            4.0,
+            6.0,
+            8.0,
+            10.0
+          ],
+          "imag": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "finite": true
+        },
+        "N": 1,
+        "P": 1,
+        "mu": 1.0
+      },
+      "expected_residual": [
+        2.0,
+        0.039603960396039604,
+        0.00014814449025949976,
+        2.1922973031372513e-07
+      ],
+      "absolute_tolerance": 2e-14,
+      "unprocessed_tail_indices": [
+        4
+      ],
+      "classification": "regularized_real_apa",
+      "warnings": [],
+      "exception": null,
+      "input_sha256": "d8188c17aac8270dbc656935bda5a52affba53a929ef4a8c6147d44d985bab5a",
+      "residual": {
+        "shape": [
+          4
+        ],
+        "dtype": "float64",
+        "real": [
+          2.0,
+          0.03960396039603964,
+          0.00014814449026001597,
+          2.1922973036936355e-07
+        ],
+        "imag": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "finite": true
+      },
+      "expected_behavior_verified": true
+    },
+    "order_two": {
+      "inputs": {
+        "x": {
+          "shape": [
+            5
+          ],
+          "dtype": "float64",
+          "real": [
+            1.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "imag": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "finite": true
+        },
+        "d": {
+          "shape": [
+            5
+          ],
+          "dtype": "float64",
+          "real": [
+            1.0,
+            3.0,
+            2.0,
+            0.0,
+            0.0
+          ],
+          "imag": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "finite": true
+        },
+        "N": 2,
+        "P": 2,
+        "mu": 1.0
+      },
+      "expected_residual": [
+        1.0,
+        2.00990099009901,
+        0.038929220560149407
+      ],
+      "absolute_tolerance": 2e-14,
+      "unprocessed_tail_indices": [
+        3,
+        4
+      ],
+      "classification": "regularized_real_apa",
+      "warnings": [],
+      "exception": null,
+      "input_sha256": "7aacec7ef1b2a0d9891e04284d8ca65110ef99b53381e457c4d67ae1651b3fc9",
+      "residual": {
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "real": [
+          1.0,
+          2.00990099009901,
+          0.038929220560149025
+        ],
+        "imag": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "finite": true
+      },
+      "expected_behavior_verified": true
+    },
+    "complex_discard": {
+      "inputs": {
+        "x": {
+          "shape": [
+            5
+          ],
+          "dtype": "complex128",
+          "real": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "imag": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "finite": true
+        },
+        "d": {
+          "shape": [
+            5
+          ],
+          "dtype": "complex128",
+          "real": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "imag": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "finite": true
+        },
+        "N": 1,
+        "P": 1,
+        "mu": 1.0
+      },
+      "expected_residual": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "absolute_tolerance": 2e-14,
+      "unprocessed_tail_indices": [
+        4
+      ],
+      "classification": "complex_input_discarded",
+      "warnings": [
+        {
+          "category": "ComplexWarning",
+          "message": "Casting complex values to real discards the imaginary part",
+          "file": "time_domain_adaptive_filters/apa.py",
+          "line": 30
+        },
+        {
+          "category": "ComplexWarning",
+          "message": "Casting complex values to real discards the imaginary part",
+          "file": "time_domain_adaptive_filters/apa.py",
+          "line": 34
+        },
+        {
+          "category": "ComplexWarning",
+          "message": "Casting complex values to real discards the imaginary part",
+          "file": "time_domain_adaptive_filters/apa.py",
+          "line": 30
+        },
+        {
+          "category": "ComplexWarning",
+          "message": "Casting complex values to real discards the imaginary part",
+          "file": "time_domain_adaptive_filters/apa.py",
+          "line": 34
+        },
+        {
+          "category": "ComplexWarning",
+          "message": "Casting complex values to real discards the imaginary part",
+          "file": "time_domain_adaptive_filters/apa.py",
+          "line": 30
+        },
+        {
+          "category": "ComplexWarning",
+          "message": "Casting complex values to real discards the imaginary part",
+          "file": "time_domain_adaptive_filters/apa.py",
+          "line": 34
+        },
+        {
+          "category": "ComplexWarning",
+          "message": "Casting complex values to real discards the imaginary part",
+          "file": "time_domain_adaptive_filters/apa.py",
+          "line": 30
+        },
+        {
+          "category": "ComplexWarning",
+          "message": "Casting complex values to real discards the imaginary part",
+          "file": "time_domain_adaptive_filters/apa.py",
+          "line": 34
+        }
+      ],
+      "exception": null,
+      "input_sha256": "c1fc280f550bc540243924dcece964303581b98b569c14457ad7e71f2c6d8e7c",
+      "residual": {
+        "shape": [
+          4
+        ],
+        "dtype": "float64",
+        "real": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "imag": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "finite": true
+      },
+      "expected_behavior_verified": true
+    }
+  },
+  "status": "expected_behaviors_verified_warnings_preserved"
+}

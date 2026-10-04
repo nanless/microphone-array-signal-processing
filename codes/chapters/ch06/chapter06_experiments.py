@@ -1,4 +1,4 @@
-"""Independent-scope AEC arithmetic experiments E06-22 through E06-33.
+"""Independent-scope AEC arithmetic experiments E06-22..33 and E06-40..41.
 
 All values are dimensionless unless units are explicitly recorded. These
 small cases isolate identifiability, state timing and score definitions;
@@ -21,6 +21,7 @@ from codes.chapters.ch06.core.aec_rls import RLSState
 from codes.chapters.ch06.core.double_talk import ncc_activity_states
 from codes.chapters.ch06.aec_kalman_scalar_demo import scalar_kalman_step
 from codes.chapters.ch06.aec_controlled_doubletalk import increment_metrics
+from codes.chapters.ch06.core.reference_timing import reference_gain_order, echo_tail_activity
 
 
 def shared_reference_normalization() -> dict:
@@ -214,7 +215,10 @@ def run_experiments() -> dict:
                  prior_posterior_scoring, freeze_state_clocks, covariance_model_boundaries,
                  block_db_aggregation, normalized_update_expectation,
                  increment_orthogonal_decomposition]
-    return {f'E06-{index:02d}': function() for index, function in enumerate(functions, 22)}
+    cases = {f'E06-{index:02d}': function() for index, function in enumerate(functions, 22)}
+    cases['E06-40'] = reference_gain_order()
+    cases['E06-41'] = echo_tail_activity()
+    return cases
 
 
 if __name__ == '__main__':

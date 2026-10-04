@@ -1,6 +1,7 @@
 """Frame-wise NCC activity gate for a controlled, aligned one-reference AEC.
 
-The four labels are silence, far-end only, near-end only, and double talk.
+The four label names describe current-frame activity heuristics, not component
+truth: ``near_only`` can also label an echo tail after playback has stopped.
 The detector sees only playback and microphone signals, never oracle labels.
 This is a teaching baseline; multipath and path changes can imitate double talk.
 """
@@ -26,11 +27,15 @@ def ncc_activity_states(
     """Return integer states and absolute NCC for non-overlapping frames.
 
     The reference and microphone must already be aligned. A quiet reference
-    disables the double-talk decision: microphone activity then means near-only.
+    disables the double-talk decision: microphone activity then selects the
+    ``near_only`` label. Past playback can still produce an FIR echo tail, so
+    this label does not establish that near-end speech is present.
     A live reference with a quiet microphone is still far-end-only activity.
     A frame is decided only once all its samples have arrived; applying its
     decision to that same frame requires a full-frame buffer.
-    Thresholds are amplitude in input units and dimensionless NCC respectively.
+    Activity uses each frame's mean-removed RMS in input amplitude units; the
+    NCC threshold is dimensionless. Zero-variance frames have NCC placeholder
+    zero, not a measured lack of physical correlation.
     """
 
     x = finite_real_array(reference, "reference")

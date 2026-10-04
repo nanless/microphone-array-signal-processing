@@ -12,15 +12,16 @@ from datetime import datetime, timezone
 import hashlib
 import importlib.util
 import json
-import os
 from pathlib import Path
 import platform
-import subprocess
 import sys
 
 import numpy as np
 
+from codes.chapters.ch04.core import upstream_contracts as contracts
+
 CODES = Path(__file__).resolve().parents[3]
+CURRENT_REPORT = CODES / "chapters/ch06/reports/aec_upstream_interfaces_current.json"
 SOURCES = {
     "pyaec": {
         "revision": "5b9c02c57075d790b7df8652884618189d49bbc4",
@@ -68,23 +69,16 @@ def binding_sha256() -> str:
                                     sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
-def verify_source(path: Path, spec: dict) -> None:
-    """Reject a mismatched checkout before executing any upstream statements."""
-    if not (path / ".git").exists():
-        raise FileNotFoundError("Fetch locked sources separately; this script never downloads")
-    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
-    def git(*args):
-        return subprocess.check_output(["git", "-C", str(path), *args], env=env,
-                                       text=True, stderr=subprocess.PIPE).strip()
-    if Path(git("rev-parse", "--show-toplevel")).resolve() != path.resolve():
-        raise ValueError("expected an independent source checkout")
-    if git("rev-parse", "HEAD") != spec["revision"]:
-        raise ValueError("revision mismatch")
-    if git("status", "--porcelain", "--untracked-files=no"):
-        raise ValueError("tracked upstream files are modified")
+def verify_source(path: Path, spec: dict) -> dict:
+    """Verify fixed origin, original blobs and selection before execution."""
+    names = [name for name, known in SOURCES.items() if known == spec]
+    if len(names) != 1:
+        raise ValueError("Expected a declared fixed AEC source specification")
+    identity = contracts.verify_project(names[0], path, spec["files"])
     for name, expected in spec["files"].items():
-        if sha256(path / name) != expected:
+        if identity["used_files"][name]["sha256"] != expected:
             raise ValueError("source hash mismatch: " + name)
+    return identity
 
 
 def load_original(path: Path):
@@ -208,9 +202,9 @@ def run_dtln_ast(root: Path) -> dict:
 
 
 def run_audit(download_root: Path | None = None) -> dict:
-    root = (download_root or CODES / "chapters/ch00/upstream/_downloads").resolve()
-    for name, spec in SOURCES.items():
-        verify_source(root / name, spec)
+    root = contracts.validate_parent_chain(
+        download_root or CODES / "chapters/ch00/upstream/_downloads")
+    identities = {name: verify_source(root / name, spec) for name, spec in SOURCES.items()}
     old = sys.dont_write_bytecode
     sys.dont_write_bytecode = True
     try:
@@ -219,12 +213,18 @@ def run_audit(download_root: Path | None = None) -> dict:
                    "dtln": run_dtln_ast(root / "dtln_aec")}
     finally:
         sys.dont_write_bytecode = old
-    return {"schema_version": 1, "generated_at": datetime.now(timezone.utc).isoformat(),
+    for identity in identities.values():
+        contracts.check_unchanged(identity)
+    return {"schema_version": 2, "generated_at": datetime.now(timezone.utc).isoformat(),
             "environment": {"python": sys.version, "numpy": np.__version__,
                             "platform": platform.platform(), "executable": sys.executable},
             "script_sha256": sha256(Path(__file__)), "binding_sha256": binding_sha256(),
-            "sources": SOURCES, "config": CONFIG, "source_verification": "all revisions and file hashes matched",
-            "upstream_modified": False, "performance_evaluation": False, "results": results}
+            "actual_dependency_sha256": contracts.dependencies(Path(__file__)),
+            "sources": SOURCES, "config": CONFIG, "source_identities": identities,
+            "source_verification": "fixed used original blobs and licenses verified before and after; complete selection recorded separately",
+            "upstream_modified": False, "performance_evaluation": False,
+            "write_boundary": "Only explicit safe current report or external ordinary report; finite preflight does not eliminate concurrent races",
+            "results": results}
 
 
 def main():
@@ -232,9 +232,12 @@ def main():
     parser.add_argument("--download-root", type=Path)
     parser.add_argument("--report", type=Path)
     args = parser.parse_args()
-    report = json.dumps(run_audit(args.download_root), ensure_ascii=False, indent=2, allow_nan=False) + "\n"
-    if args.report:
-        args.report.write_text(report)
+    protected = (args.download_root or contracts.CACHE,)
+    target = contracts.report_target(args.report, CURRENT_REPORT, protected) if args.report else None
+    report_data = run_audit(args.download_root)
+    report = json.dumps(report_data, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
+    if target is not None:
+        contracts.write_report(target, report_data, CURRENT_REPORT, protected)
     else:
         print(report, end="")
 

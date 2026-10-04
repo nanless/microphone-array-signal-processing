@@ -359,9 +359,20 @@ ArrayDPS固定 `750ac2b7c75458f4ca5bad203dafda528f575e55` 的真实采样入口�
 
 ### 第6章外部 AEC 接口诊断
 
-[诊断入口](../../ch06/examples/audit_aec_upstream_interfaces.py)不下载依赖、不修补上游。它先核对固定提交和原文件摘要，再实际调用 pyaec 的 RLS/Kalman/FDKF/PFDKF 及 echocatzh 的初始块接口。pyaec 的尾截断和 `np.complex` 失败保留在[报告](../../ch06/reports/aec_upstream_interfaces.json)中；echocatzh 的默认后滤输出另列，不能等同于线性残差。
+[接口诊断](../../ch06/examples/audit_aec_upstream_interfaces.py)与[原 APA 审计](../../ch06/examples/audit_upstream_apa.py)不下载依赖、不修补上游。2026-10-04 实际重跑得到[接口当前报告](../../ch06/reports/aec_upstream_interfaces_current.json)和[APA 当前报告](../../ch06/reports/upstream_apa_current.json)，环境为 Python 3.13.12、NumPy 2.5.3。两者核对官方 origin、独立工作树根、固定 HEAD、所用源码及许可 SHA/Git blob、前后洁净状态，记录实际依赖摘要；完整稀疏选集状态与所用文件身份分别列出，不把获取报告的 `execution=not_run` 升级成完整算法运行。
 
-DTLN 部分用原 `process_file` 函数的 AST、内存输入和假解释器检查文件填充、状态及输出缩放，明确没有运行神经网络。这类测试可以发现接口问题，不能据此报告语音效果、实时性或论文复现成功。输入、逐项结果及源码入口见[研究 A18](02_aec_wpe_separation.md#aec)。
+接口报告实际调用 pyaec 的 RLS/Kalman/FDKF/PFDKF 与 echocatzh 初始块：末尾截断、`np.complex` 原失败、默认后滤改变误差仍保留。DTLN 原 `process_file()` AST 只在内存音频和假解释器上执行，没有 TensorFlow、权重或生产音频写入。APA 完整加载原单文件，四个确定数组与独立有理手算对照，保留实数缓冲丢复部的警告。工具退出零表示合同记录生成成功，不表示每个原算法执行成功，更不是声学性能或实时性验收。[原方法与逐例边界](02_aec_wpe_separation.md#aec)
+
+[旧接口报告](../../ch06/reports/aec_upstream_interfaces.json)与[旧 APA 报告](../../ch06/reports/upstream_apa.json)原字节和修改时间保全；对应历史测试绑定真实提交 `621d727a63475e3ee8ad2a29d518889c42e92571` 的旧工具 blob。不能给旧报告换当前工具 SHA 或将当时有限身份核验追记为今天的新合同。新工具默认标准输出，只允许显式写各自当前报告或仓外普通报告，历史、源码、锁表、缓存和符号链接目标在执行前拒绝；严格 JSON 与有限写前检查的边界见[来源合同测试](../../../../tests/test_codes_ch06_source_contracts.py)。
+
+```bash
+.venv/bin/python -m codes.chapters.ch06.examples.audit_aec_upstream_interfaces --report codes/chapters/ch06/reports/aec_upstream_interfaces_current.json
+.venv/bin/python -m codes.chapters.ch06.examples.audit_upstream_apa --report codes/chapters/ch06/reports/upstream_apa_current.json
+```
+
+**生产二进制与落盘边界。** [Speex 配对入口](../../ch06/examples/aec_real_pair_experiment.py)默认只打印报告，`--output-wav` 仅接受仓外新普通文件，写前保护输入与二进制。[AEC3 配对入口](../../ch06/examples/aec3_offline_compare.py)的 `--output-dir` 只接受仓外新空普通目录，执行前检查全部九个产出成员，拒绝缓存与来源路径。[同输入真值入口](../../ch06/examples/aec_same_input_truth.py)在仓外临时目录处理，逐个生产者调用前保护输入/输出；显式 build manifest 严格拒绝重复键和非有限数，核实际二进制 SHA，但声明的构建配置不是独立构建证明。这些有限检查不消除并发竞态。
+
+本轮实际执行的是两个原方法审计和 38 项来源/写入合同测试，没有重跑 Speex/AEC3 生产声学链或设备实验。前文 2026-09-23/24 的配对和合成数字仍是历史运行；不能把今天的路径保护测试称为这些性能实验重新通过。增益通知、XMOS ALT 保持与 2026 两候选的固定原源/缺资产边界见[增强 A06/A17/A19](02_aec_wpe_separation.md#aec)及[工业 I10](03_industrial_deployment.md#i10xmos-libvoice-的-aec-与延迟控制)。
 
 <a id="distributed-reproduction"></a>
 

@@ -339,6 +339,42 @@ class APAActualAudio(unittest.TestCase):
                     generator.check_assets(directory, replay=False)
                 self.assertEqual((external.stat().st_mtime_ns, external.read_bytes()), external_before)
 
+    def test_fixed_true_parameters_reject_before_simulation_and_write(self):
+        cases = []
+        for key in generator.REQUIRED_PARAMETERS:
+            changed = copy.deepcopy(generator.REQUIRED_PARAMETERS)
+            changed[key] = None
+            cases.append((key, changed))
+        for key in ('seed', 'common_export_gain', 'sample_rate_hz', 'step_size'):
+            changed = copy.deepcopy(generator.REQUIRED_PARAMETERS)
+            changed[key] = True
+            cases.append((key+' bool', changed))
+        for key, index in [('projection_orders', 0), ('true_path_current_first', 1)]:
+            changed = copy.deepcopy(generator.REQUIRED_PARAMETERS)
+            changed[key][index] = True
+            cases.append((key+' nested bool', changed))
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary)/'not_created'
+            for label, changed in cases:
+                with self.subTest(label=label), patch.object(generator, 'parameters', return_value=changed), patch.object(generator, 'run_experiment') as run:
+                    with self.assertRaises(ValueError):
+                        generator.main(['--output-dir', str(output)])
+                    run.assert_not_called()
+                    self.assertFalse(output.exists())
+
+    def test_returned_false_parameters_rejected_before_encoding(self):
+        for key, value in [('ar_coefficient', .5), ('seed', True),
+                           ('projection_orders', [True, 2, 4]), ('common_export_gain', True),
+                           ('freeze', 'weights and histories frozen'),
+                           ('random_draw_order', 'different order'),
+                           ('alignment', 'fitted delay'), ('output', 'posterior error')]:
+            changed = copy.deepcopy(self.experiment)
+            changed['parameters'][key] = value
+            with self.subTest(key=key), patch.object(generator, 'run_experiment', return_value=(self.signals, changed)), patch.object(generator, 'pcm16_bytes') as encode:
+                with self.assertRaises(ValueError):
+                    generator.prepare_assets()
+                encode.assert_not_called()
+
     def test_generation_member_and_output_symlink_guards_precede_expensive_run(self):
         for member in (False, True):
             with self.subTest(member=member), tempfile.TemporaryDirectory() as temporary:

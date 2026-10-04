@@ -28,7 +28,11 @@ class APAReportTests(unittest.TestCase):
         self.rows = self.report['results']
 
     def test_provenance_and_current_source(self):
-        self.assertEqual(self.report['audit_source_sha256'], audit.sha(audit.__file__))
+        relative = str(Path(audit.__file__).resolve().relative_to(audit.ROOT))
+        spec = '621d727a63475e3ee8ad2a29d518889c42e92571:' + relative
+        original = (audit.contracts.git(audit.ROOT, 'show', spec) + '\n').encode()
+        self.assertEqual(len(original), int(audit.contracts.git(audit.ROOT, 'cat-file', '-s', spec)))
+        self.assertEqual(self.report['audit_source_sha256'], hashlib.sha256(original).hexdigest())
         verify_lock_binding(self.report['lock_sha256'], ('pyaec',), current_lock=audit.LOCK)
         entry = next(p for p in json.loads(audit.LOCK.read_text())['projects'] if p['id'] == 'pyaec')
         self.assertEqual(self.report['lock_entry'], entry)

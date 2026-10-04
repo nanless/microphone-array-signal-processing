@@ -94,7 +94,6 @@ class EnhancementParagraphTest(unittest.TestCase):
         cases = [
             ("06_aec.md", "#### 6.2.4 IPNLMS：", "**两抽头手算。**", "比例归一化最小均方", 8),
             ("06_aec.md", "第一行描述路径的漂移或突变", "下式是便于复算", "同写为", 4),
-            ("06_aec.md", "D1～D3检查参考", "> **采样率偏移", "ITU-T 已于", 3),
             ("08_speech-separation.md", "**AuxIVA（", "设统计帧数为", "标准实现仍是整段迭代", 3),
             ("09_source-tracking.md", "多目标追踪还要估计", "#### 9.3.3 可执行基线", "最优子模式分配距离", 2),
             ("09_source-tracking.md", "GM-PHD 的高斯权重和", "MHT 已有可阅读的受限参考", "JPDA 也需要明确", 2),
@@ -108,6 +107,20 @@ class EnhancementParagraphTest(unittest.TestCase):
                 self.assertEqual(len(parser.paragraphs), expected_paragraphs)
                 self.assertNotIn(second_start, parser.paragraphs[0])
                 self.assertTrue(parser.paragraphs[1].startswith(second_start))
+
+    def test_aec_diagnostics_preserve_five_separate_topics(self):
+        source, path = self.passage("06_aec.md", "D1～D3检查参考", "> **采样率偏移")
+        html, _ = build_site.render(source, path)
+        parser = ParagraphParser()
+        parser.feed(html)
+        starts = ["D1～D3检查参考", "D2 的两项检查对应不同范围", "图30的300点纯延迟",
+                  "ITU-T 已于", "本书使用的真实 AEC Challenge"]
+        self.assertEqual(len(parser.paragraphs), len(starts))
+        for paragraph, start in zip(parser.paragraphs, starts):
+            self.assertTrue(paragraph.startswith(start), paragraph)
+            for other in starts:
+                if other != start:
+                    self.assertNotIn(other, paragraph)
 
     def test_device_selection_and_wpe_directions_are_four_item_lists(self):
         cases = [

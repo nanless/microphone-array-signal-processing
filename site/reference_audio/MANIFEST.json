@@ -1,0 +1,1101 @@
+{
+  "schema_version": 1,
+  "exercise_id": "E06-42",
+  "sample_rate_hz": 16000,
+  "samples_per_channel": 33600,
+  "common_export_gain": 1.0,
+  "origin": "original deterministic known playback gain and causal FIR reference control",
+  "source_sha256": {
+    "codes/chapters/ch06/core/reference_audio.py": "fcd9073c8379232de708130c264605ae55112f646fb55fd8cdbfb3fbd8bcd50d",
+    "codes/chapters/ch06/examples/generate_reference_audio.py": "ebfd8458648e46e01d3c238230d335c7f25fc83432fd1348550a1a870ae517f6",
+    "codes/chapters/ch06/core/aec.py": "6f534c06a0e3a0376b9052a70eda7da776ad25eaf1eeae960be094d4d9037e37",
+    "codes/chapters/ch06/core/aec_numeric.py": "23e0251d4c161cfe757606156f8b1a7472cc33e729544096eb8ce76255108236",
+    "codes/chapters/ch06/core/double_talk.py": "cf05b1037cbb8b98ca563e5c7ed25cfb4a823ce272de3d39c69470f1880dfc42",
+    "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
+  },
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "parameters": {
+    "exercise_id": "E06-42",
+    "sample_rate_hz": 16000,
+    "source_samples": 32000,
+    "samples_per_channel": 33600,
+    "convolution_tail_samples": 1600,
+    "frequencies_hz": [
+      500.0,
+      730.0
+    ],
+    "source_amplitudes": [
+      0.08,
+      0.06
+    ],
+    "source_model": "0.08*cos(500Hz)+0.06*sin(730Hz); absolute clock, period 1600",
+    "fade_samples": 320,
+    "fade": "squared sine, endpoints included, common envelope",
+    "playback_gain_intervals": [
+      [
+        0,
+        16000,
+        1.0
+      ],
+      [
+        16000,
+        33600,
+        2.0
+      ]
+    ],
+    "early_reference": "source before time-varying playback gain, zero after 32000",
+    "late_reference": "gain times source before the fixed acoustic FIR, zero after 32000",
+    "true_path_delays_samples": [
+      0,
+      1600
+    ],
+    "true_path_coefficients": [
+      0.7,
+      0.35
+    ],
+    "filter_length": 1601,
+    "initial_weights": "known true FIR, current sample first",
+    "initial_history": "1600 zeros",
+    "freeze": "all 33600 samples; history still advances",
+    "nlms_step_size": 0.5,
+    "nlms_epsilon": 1e-08,
+    "wrong_gain_prediction": "current gain times fixed early-reference prediction, tail gain remains 2",
+    "common_export_gain": 1.0,
+    "channel_order": [
+      "mono"
+    ],
+    "scoring_intervals_samples": {
+      "step": [
+        16000,
+        17600
+      ],
+      "stable": [
+        19200,
+        28800
+      ],
+      "tail": [
+        32000,
+        33600
+      ]
+    },
+    "scoring_cycles_per_frequency": {
+      "step": [
+        50,
+        73
+      ],
+      "stable": [
+        300,
+        438
+      ]
+    },
+    "tail_power": "finite known enveloped samples, not a constant-envelope cycle average",
+    "ncc_frame_samples": 160,
+    "ncc_activity_rms": 0.001,
+    "ncc_coherence_threshold": 0.85,
+    "ncc_input": "actual decoded late-reference and true-echo PCM",
+    "ncc_availability": "frame end; same-frame use requires a complete frame buffer",
+    "alignment": "same causal sample clock; no fitted delay or gain",
+    "near_end": "none",
+    "noise": "none",
+    "randomness": "none"
+  },
+  "files": {
+    "reference_early.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples_per_channel": 33600,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "93de05321a4ed50523ab597d785b79636552edc0e5ee349b266d90a3737cce30",
+      "quantization_max_abs_error": 1.5246194361911991e-05,
+      "peak": 0.1400146484375
+    },
+    "reference_late.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples_per_channel": 33600,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "6eb5f90e33ef245250ebf4d2c297248f868ddfd2826124eb13d59448ea3015cf",
+      "quantization_max_abs_error": 1.5246194361911991e-05,
+      "peak": 0.279998779296875
+    },
+    "reference_echo.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples_per_channel": 33600,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "d0b9fa4fb3bb93b0e5393a5636cc57bbf829eb6551884aa3ecff0b5c8d76f774",
+      "quantization_max_abs_error": 1.5256260036389181e-05,
+      "peak": 0.29400634765625
+    },
+    "reference_early_residual.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples_per_channel": 33600,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "8358c351bacca37c98fdee1dc2ce2da10e85894efb2be33d7140e799dd0b7865",
+      "quantization_max_abs_error": 1.5255777599410686e-05,
+      "peak": 0.147003173828125
+    },
+    "reference_wrong_gain_residual.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples_per_channel": 33600,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "f3bdd381301ab70bdc2933de37356944b0ad0b404df7e04c987506c9d10bd04f",
+      "quantization_max_abs_error": 1.5255777599421094e-05,
+      "peak": 0.04901123046875
+    },
+    "reference_late_residual.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples_per_channel": 33600,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "0ae8454b4fbe6a2da2c2d7eef79c663d9100c3fe2d154792a326db4857418abe",
+      "quantization_max_abs_error": 8.326672684688674e-17,
+      "peak": 0.0
+    }
+  },
+  "samples": {
+    "early": {
+      "file": "reference_early.wav",
+      "analytic": {
+        "source_constant_envelope_mean_square": 0.005,
+        "step": {
+          "signed_source_multiplier": 1.0,
+          "mean_square": 0.005
+        },
+        "stable": {
+          "signed_source_multiplier": 1.0,
+          "mean_square": 0.005
+        },
+        "tail": {
+          "power_formula": "sum of squared known enveloped causal samples / 1600",
+          "ideal_zero": true
+        },
+        "interpretation": "constant-envelope known-component identity; not estimated from output"
+      },
+      "float_measurements": {
+        "step": {
+          "scoring_interval_samples": [
+            16000,
+            17600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 0.0050000000000000044,
+          "peak": 0.14
+        },
+        "stable": {
+          "scoring_interval_samples": [
+            19200,
+            28800
+          ],
+          "samples_per_channel": 9600,
+          "channels": 1,
+          "mean_square": 0.0050000000000000044,
+          "peak": 0.14
+        },
+        "tail": {
+          "scoring_interval_samples": [
+            32000,
+            33600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 0.0,
+          "peak": 0.0
+        }
+      },
+      "pcm_measurements": {
+        "step": {
+          "scoring_interval_samples": [
+            16000,
+            17600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 0.005000007368507795,
+          "peak": 0.1400146484375
+        },
+        "stable": {
+          "scoring_interval_samples": [
+            19200,
+            28800
+          ],
+          "samples_per_channel": 9600,
+          "channels": 1,
+          "mean_square": 0.005000007368507795,
+          "peak": 0.1400146484375
+        },
+        "tail": {
+          "scoring_interval_samples": [
+            32000,
+            33600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 0.0,
+          "peak": 0.0
+        }
+      },
+      "pcm_integer_measurements": {
+        "step": {
+          "scoring_interval_samples": [
+            16000,
+            17600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "integer_squared_sum_E_per_channel": [
+            8589947251
+          ],
+          "integer_denominator_D_per_channel": 1717986918400,
+          "mean_square_per_channel": [
+            0.005000007368507795
+          ],
+          "integer_squared_sum_E_all_channels": 8589947251,
+          "integer_denominator_D_all_channels": 1717986918400,
+          "mean_square_all_channels": 0.005000007368507795
+        },
+        "stable": {
+          "scoring_interval_samples": [
+            19200,
+            28800
+          ],
+          "samples_per_channel": 9600,
+          "channels": 1,
+          "integer_squared_sum_E_per_channel": [
+            51539683506
+          ],
+          "integer_denominator_D_per_channel": 10307921510400,
+          "mean_square_per_channel": [
+            0.005000007368507795
+          ],
+          "integer_squared_sum_E_all_channels": 51539683506,
+          "integer_denominator_D_all_channels": 10307921510400,
+          "mean_square_all_channels": 0.005000007368507795
+        },
+        "tail": {
+          "scoring_interval_samples": [
+            32000,
+            33600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "integer_squared_sum_E_per_channel": [
+            0
+          ],
+          "integer_denominator_D_per_channel": 1717986918400,
+          "mean_square_per_channel": [
+            0.0
+          ],
+          "integer_squared_sum_E_all_channels": 0,
+          "integer_denominator_D_all_channels": 1717986918400,
+          "mean_square_all_channels": 0.0
+        }
+      }
+    },
+    "late": {
+      "file": "reference_late.wav",
+      "analytic": {
+        "source_constant_envelope_mean_square": 0.005,
+        "step": {
+          "signed_source_multiplier": 2.0,
+          "mean_square": 0.02
+        },
+        "stable": {
+          "signed_source_multiplier": 2.0,
+          "mean_square": 0.02
+        },
+        "tail": {
+          "power_formula": "sum of squared known enveloped causal samples / 1600",
+          "ideal_zero": true
+        },
+        "interpretation": "constant-envelope known-component identity; not estimated from output"
+      },
+      "float_measurements": {
+        "step": {
+          "scoring_interval_samples": [
+            16000,
+            17600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 0.020000000000000018,
+          "peak": 0.28
+        },
+        "stable": {
+          "scoring_interval_samples": [
+            19200,
+            28800
+          ],
+          "samples_per_channel": 9600,
+          "channels": 1,
+          "mean_square": 0.020000000000000018,
+          "peak": 0.28
+        },
+        "tail": {
+          "scoring_interval_samples": [
+            32000,
+            33600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 0.0,
+          "peak": 0.0
+        }
+      },
+      "pcm_measurements": {
+        "step": {
+          "scoring_interval_samples": [
+            16000,
+            17600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 0.02000011523719877,
+          "peak": 0.279998779296875
+        },
+        "stable": {
+          "scoring_interval_samples": [
+            19200,
+            28800
+          ],
+          "samples_per_channel": 9600,
+          "channels": 1,
+          "mean_square": 0.02000011523719877,
+          "peak": 0.279998779296875
+        },
+        "tail": {
+          "scoring_interval_samples": [
+            32000,
+            33600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 0.0,
+          "peak": 0.0
+        }
+      },
+      "pcm_integer_measurements": {
+        "step": {
+          "scoring_interval_samples": [
+            16000,
+            17600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "integer_squared_sum_E_per_channel": [
+            34359936344
+          ],
+          "integer_denominator_D_per_channel": 1717986918400,
+          "mean_square_per_channel": [
+            0.02000011523719877
+          ],
+          "integer_squared_sum_E_all_channels": 34359936344,
+          "integer_denominator_D_all_channels": 1717986918400,
+          "mean_square_all_channels": 0.02000011523719877
+        },
+        "stable": {
+          "scoring_interval_samples": [
+            19200,
+            28800
+          ],
+          "samples_per_channel": 9600,
+          "channels": 1,
+          "integer_squared_sum_E_per_channel": [
+            206159618064
+          ],
+          "integer_denominator_D_per_channel": 10307921510400,
+          "mean_square_per_channel": [
+            0.02000011523719877
+          ],
+          "integer_squared_sum_E_all_channels": 206159618064,
+          "integer_denominator_D_all_channels": 10307921510400,
+          "mean_square_all_channels": 0.02000011523719877
+        },
+        "tail": {
+          "scoring_interval_samples": [
+            32000,
+            33600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "integer_squared_sum_E_per_channel": [
+            0
+          ],
+          "integer_denominator_D_per_channel": 1717986918400,
+          "mean_square_per_channel": [
+            0.0
+          ],
+          "integer_squared_sum_E_all_channels": 0,
+          "integer_denominator_D_all_channels": 1717986918400,
+          "mean_square_all_channels": 0.0
+        }
+      }
+    },
+    "echo": {
+      "file": "reference_echo.wav",
+      "analytic": {
+        "source_constant_envelope_mean_square": 0.005,
+        "step": {
+          "signed_source_multiplier": 1.75,
+          "mean_square": 0.0153125
+        },
+        "stable": {
+          "signed_source_multiplier": 2.1,
+          "mean_square": 0.02205
+        },
+        "tail": {
+          "power_formula": "sum of squared known enveloped causal samples / 1600",
+          "ideal_zero": false
+        },
+        "interpretation": "constant-envelope known-component identity; not estimated from output"
+      },
+      "float_measurements": {
+        "step": {
+          "scoring_interval_samples": [
+            16000,
+            17600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 0.015312500000000008,
+          "peak": 0.245
+        },
+        "stable": {
+          "scoring_interval_samples": [
+            19200,
+            28800
+          ],
+          "samples_per_channel": 9600,
+          "channels": 1,
+          "mean_square": 0.022050000000000014,
+          "peak": 0.29400000000000004
+        },
+        "tail": {
+          "scoring_interval_samples": [
+            32000,
+            33600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 0.0021632376514776784,
+          "peak": 0.098
+        }
+      },
+      "pcm_measurements": {
+        "step": {
+          "scoring_interval_samples": [
+            16000,
+            17600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 0.01531254439672921,
+          "peak": 0.2449951171875
+        },
+        "stable": {
+          "scoring_interval_samples": [
+            19200,
+            28800
+          ],
+          "samples_per_channel": 9600,
+          "channels": 1,
+          "mean_square": 0.022050174803007395,
+          "peak": 0.29400634765625
+        },
+        "tail": {
+          "scoring_interval_samples": [
+            32000,
+            33600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 0.0021632550895446913,
+          "peak": 0.097991943359375
+        }
+      },
+      "pcm_integer_measurements": {
+        "step": {
+          "scoring_interval_samples": [
+            16000,
+            17600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "integer_squared_sum_E_per_channel": [
+            26306750961
+          ],
+          "integer_denominator_D_per_channel": 1717986918400,
+          "mean_square_per_channel": [
+            0.01531254439672921
+          ],
+          "integer_squared_sum_E_all_channels": 26306750961,
+          "integer_denominator_D_all_channels": 1717986918400,
+          "mean_square_all_channels": 0.01531254439672921
+        },
+        "stable": {
+          "scoring_interval_samples": [
+            19200,
+            28800
+          ],
+          "samples_per_channel": 9600,
+          "channels": 1,
+          "integer_squared_sum_E_per_channel": [
+            227291471160
+          ],
+          "integer_denominator_D_per_channel": 10307921510400,
+          "mean_square_per_channel": [
+            0.022050174803007395
+          ],
+          "integer_squared_sum_E_all_channels": 227291471160,
+          "integer_denominator_D_all_channels": 10307921510400,
+          "mean_square_all_channels": 0.022050174803007395
+        },
+        "tail": {
+          "scoring_interval_samples": [
+            32000,
+            33600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "integer_squared_sum_E_per_channel": [
+            3716443945
+          ],
+          "integer_denominator_D_per_channel": 1717986918400,
+          "mean_square_per_channel": [
+            0.0021632550895446913
+          ],
+          "integer_squared_sum_E_all_channels": 3716443945,
+          "integer_denominator_D_all_channels": 1717986918400,
+          "mean_square_all_channels": 0.0021632550895446913
+        }
+      }
+    },
+    "early_residual": {
+      "file": "reference_early_residual.wav",
+      "analytic": {
+        "source_constant_envelope_mean_square": 0.005,
+        "step": {
+          "signed_source_multiplier": 0.7,
+          "mean_square": 0.00245
+        },
+        "stable": {
+          "signed_source_multiplier": 1.05,
+          "mean_square": 0.0055125
+        },
+        "tail": {
+          "power_formula": "sum of squared known enveloped causal samples / 1600",
+          "ideal_zero": false
+        },
+        "interpretation": "constant-envelope known-component identity; not estimated from output"
+      },
+      "float_measurements": {
+        "step": {
+          "scoring_interval_samples": [
+            16000,
+            17600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 0.0024500000000000017,
+          "peak": 0.098
+        },
+        "stable": {
+          "scoring_interval_samples": [
+            19200,
+            28800
+          ],
+          "samples_per_channel": 9600,
+          "channels": 1,
+          "mean_square": 0.0055125000000000035,
+          "peak": 0.14700000000000005
+        },
+        "tail": {
+          "scoring_interval_samples": [
+            32000,
+            33600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 0.0005408094128694196,
+          "peak": 0.049
+        }
+      },
+      "pcm_measurements": {
+        "step": {
+          "scoring_interval_samples": [
+            16000,
+            17600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 0.0024500397429801524,
+          "peak": 0.097991943359375
+        },
+        "stable": {
+          "scoring_interval_samples": [
+            19200,
+            28800
+          ],
+          "samples_per_channel": 9600,
+          "channels": 1,
+          "mean_square": 0.005512413253891282,
+          "peak": 0.147003173828125
+        },
+        "tail": {
+          "scoring_interval_samples": [
+            32000,
+            33600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 0.0005408267414895818,
+          "peak": 0.04901123046875
+        }
+      },
+      "pcm_integer_measurements": {
+        "step": {
+          "scoring_interval_samples": [
+            16000,
+            17600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "integer_squared_sum_E_per_channel": [
+            4209136228
+          ],
+          "integer_denominator_D_per_channel": 1717986918400,
+          "mean_square_per_channel": [
+            0.0024500397429801524
+          ],
+          "integer_squared_sum_E_all_channels": 4209136228,
+          "integer_denominator_D_all_channels": 1717986918400,
+          "mean_square_all_channels": 0.0024500397429801524
+        },
+        "stable": {
+          "scoring_interval_samples": [
+            19200,
+            28800
+          ],
+          "samples_per_channel": 9600,
+          "channels": 1,
+          "integer_squared_sum_E_per_channel": [
+            56821523154
+          ],
+          "integer_denominator_D_per_channel": 10307921510400,
+          "mean_square_per_channel": [
+            0.005512413253891282
+          ],
+          "integer_squared_sum_E_all_channels": 56821523154,
+          "integer_denominator_D_all_channels": 10307921510400,
+          "mean_square_all_channels": 0.005512413253891282
+        },
+        "tail": {
+          "scoring_interval_samples": [
+            32000,
+            33600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "integer_squared_sum_E_per_channel": [
+            929133267
+          ],
+          "integer_denominator_D_per_channel": 1717986918400,
+          "mean_square_per_channel": [
+            0.0005408267414895818
+          ],
+          "integer_squared_sum_E_all_channels": 929133267,
+          "integer_denominator_D_all_channels": 1717986918400,
+          "mean_square_all_channels": 0.0005408267414895818
+        }
+      }
+    },
+    "wrong_gain_residual": {
+      "file": "reference_wrong_gain_residual.wav",
+      "analytic": {
+        "source_constant_envelope_mean_square": 0.005,
+        "step": {
+          "signed_source_multiplier": -0.35,
+          "mean_square": 0.0006125
+        },
+        "stable": {
+          "signed_source_multiplier": 0.0,
+          "mean_square": 0.0
+        },
+        "tail": {
+          "power_formula": "sum of squared known enveloped causal samples / 1600",
+          "ideal_zero": true
+        },
+        "interpretation": "constant-envelope known-component identity; not estimated from output"
+      },
+      "float_measurements": {
+        "step": {
+          "scoring_interval_samples": [
+            16000,
+            17600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 0.0006125000000000004,
+          "peak": 0.04899999999999999
+        },
+        "stable": {
+          "scoring_interval_samples": [
+            19200,
+            28800
+          ],
+          "samples_per_channel": 9600,
+          "channels": 1,
+          "mean_square": 3.4150687795409646e-34,
+          "peak": 8.326672684688674e-17
+        },
+        "tail": {
+          "scoring_interval_samples": [
+            32000,
+            33600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 1.8831749765371518e-35,
+          "peak": 1.3877787807814457e-17
+        }
+      },
+      "pcm_measurements": {
+        "step": {
+          "scoring_interval_samples": [
+            16000,
+            17600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 0.0006125165097182616,
+          "peak": 0.04901123046875
+        },
+        "stable": {
+          "scoring_interval_samples": [
+            19200,
+            28800
+          ],
+          "samples_per_channel": 9600,
+          "channels": 1,
+          "mean_square": 0.0,
+          "peak": 0.0
+        },
+        "tail": {
+          "scoring_interval_samples": [
+            32000,
+            33600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 0.0,
+          "peak": 0.0
+        }
+      },
+      "pcm_integer_measurements": {
+        "step": {
+          "scoring_interval_samples": [
+            16000,
+            17600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "integer_squared_sum_E_per_channel": [
+            1052295351
+          ],
+          "integer_denominator_D_per_channel": 1717986918400,
+          "mean_square_per_channel": [
+            0.0006125165097182616
+          ],
+          "integer_squared_sum_E_all_channels": 1052295351,
+          "integer_denominator_D_all_channels": 1717986918400,
+          "mean_square_all_channels": 0.0006125165097182616
+        },
+        "stable": {
+          "scoring_interval_samples": [
+            19200,
+            28800
+          ],
+          "samples_per_channel": 9600,
+          "channels": 1,
+          "integer_squared_sum_E_per_channel": [
+            0
+          ],
+          "integer_denominator_D_per_channel": 10307921510400,
+          "mean_square_per_channel": [
+            0.0
+          ],
+          "integer_squared_sum_E_all_channels": 0,
+          "integer_denominator_D_all_channels": 10307921510400,
+          "mean_square_all_channels": 0.0
+        },
+        "tail": {
+          "scoring_interval_samples": [
+            32000,
+            33600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "integer_squared_sum_E_per_channel": [
+            0
+          ],
+          "integer_denominator_D_per_channel": 1717986918400,
+          "mean_square_per_channel": [
+            0.0
+          ],
+          "integer_squared_sum_E_all_channels": 0,
+          "integer_denominator_D_all_channels": 1717986918400,
+          "mean_square_all_channels": 0.0
+        }
+      }
+    },
+    "late_residual": {
+      "file": "reference_late_residual.wav",
+      "analytic": {
+        "source_constant_envelope_mean_square": 0.005,
+        "step": {
+          "signed_source_multiplier": 0.0,
+          "mean_square": 0.0
+        },
+        "stable": {
+          "signed_source_multiplier": 0.0,
+          "mean_square": 0.0
+        },
+        "tail": {
+          "power_formula": "sum of squared known enveloped causal samples / 1600",
+          "ideal_zero": true
+        },
+        "interpretation": "constant-envelope known-component identity; not estimated from output"
+      },
+      "float_measurements": {
+        "step": {
+          "scoring_interval_samples": [
+            16000,
+            17600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 1.8462841409762794e-34,
+          "peak": 5.551115123125783e-17
+        },
+        "stable": {
+          "scoring_interval_samples": [
+            19200,
+            28800
+          ],
+          "samples_per_channel": 9600,
+          "channels": 1,
+          "mean_square": 3.4150687795409646e-34,
+          "peak": 8.326672684688674e-17
+        },
+        "tail": {
+          "scoring_interval_samples": [
+            32000,
+            33600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 1.8831749765371518e-35,
+          "peak": 1.3877787807814457e-17
+        }
+      },
+      "pcm_measurements": {
+        "step": {
+          "scoring_interval_samples": [
+            16000,
+            17600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 0.0,
+          "peak": 0.0
+        },
+        "stable": {
+          "scoring_interval_samples": [
+            19200,
+            28800
+          ],
+          "samples_per_channel": 9600,
+          "channels": 1,
+          "mean_square": 0.0,
+          "peak": 0.0
+        },
+        "tail": {
+          "scoring_interval_samples": [
+            32000,
+            33600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "mean_square": 0.0,
+          "peak": 0.0
+        }
+      },
+      "pcm_integer_measurements": {
+        "step": {
+          "scoring_interval_samples": [
+            16000,
+            17600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "integer_squared_sum_E_per_channel": [
+            0
+          ],
+          "integer_denominator_D_per_channel": 1717986918400,
+          "mean_square_per_channel": [
+            0.0
+          ],
+          "integer_squared_sum_E_all_channels": 0,
+          "integer_denominator_D_all_channels": 1717986918400,
+          "mean_square_all_channels": 0.0
+        },
+        "stable": {
+          "scoring_interval_samples": [
+            19200,
+            28800
+          ],
+          "samples_per_channel": 9600,
+          "channels": 1,
+          "integer_squared_sum_E_per_channel": [
+            0
+          ],
+          "integer_denominator_D_per_channel": 10307921510400,
+          "mean_square_per_channel": [
+            0.0
+          ],
+          "integer_squared_sum_E_all_channels": 0,
+          "integer_denominator_D_all_channels": 10307921510400,
+          "mean_square_all_channels": 0.0
+        },
+        "tail": {
+          "scoring_interval_samples": [
+            32000,
+            33600
+          ],
+          "samples_per_channel": 1600,
+          "channels": 1,
+          "integer_squared_sum_E_per_channel": [
+            0
+          ],
+          "integer_denominator_D_per_channel": 1717986918400,
+          "mean_square_per_channel": [
+            0.0
+          ],
+          "integer_squared_sum_E_all_channels": 0,
+          "integer_denominator_D_all_channels": 1717986918400,
+          "mean_square_all_channels": 0.0
+        }
+      }
+    }
+  },
+  "pcm_tail_activity": {
+    "input": "actual decoded late-reference and true-echo PCM",
+    "frame_samples": 160,
+    "activity_rms": 0.001,
+    "coherence_threshold": 0.85,
+    "tail_interval_samples": [
+      32000,
+      33600
+    ],
+    "tail_frames": 10,
+    "tail_states": [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "tail_labels": [
+      "near_only",
+      "near_only",
+      "near_only",
+      "near_only",
+      "near_only",
+      "near_only",
+      "near_only",
+      "near_only",
+      "near_only",
+      "near_only"
+    ],
+    "tail_absolute_ncc": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "tail_ncc_defined": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "tail_near_end_truth_present": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "available_after_samples": [
+      32160,
+      32320,
+      32480,
+      32640,
+      32800,
+      32960,
+      33120,
+      33280,
+      33440,
+      33600
+    ],
+    "interpretation": "zero NCC is an undefined zero-variance placeholder; near_only is activity label, not component truth"
+  },
+  "pcm": {
+    "format": "signed little-endian PCM16",
+    "scale": 32768,
+    "rounding": "nearest, ties to even",
+    "dither": "none",
+    "clipping": "rejected",
+    "max_rounding_error_bound": 1.52587890625e-05
+  },
+  "limits": "Original deterministic two-tone mathematical control, not speech, room or device audio. Known FIR coefficients initialize frozen NLMS; no training, delay estimation or gain fitting. No near-end signal or noise exists. A current-frame near_only NCC label on a pure echo tail does not establish near-end speech. Full 1600-sample tail is retained. Float model components and actual PCM total powers are separate; no clean ERLE or industrial success claim.",
+  "listening": "Start at low volume; never autoplay. Playback is not a formal listening study."
+}

@@ -50,6 +50,8 @@
 | 导数约束源与生成物 | `codes/chapters/ch05/core/derivative_audio.py`、`codes/chapters/ch05/examples/generate_derivative_audio.py` → `codes/chapters/ch05/derivative_audio/` | 4个16kHz、32002采样单/三声道数学合成WAV，独立清单 | 共同因果参考1点、八真实源、固定seed/共同增益1；2400:29600窗分开解析期望、浮点分解与实际PCM总误差；不把后验LS复响应拟合当增益补偿，不称语音/实录或工业成绩；`--check`严格只读 |
 | 已知逐频相位源与生成物 | `codes/chapters/ch05/core/phase_audio.py`、`examples/generate_phase_audio.py` → `ch05/phase_audio/`；`scripts/make_beamforming_figures.py` → 图73及数值报告 | 三个16kHz、32000点单声道双音数学控制与独立清单 | 共同增益1，2400:29600窗共27200点；五真实源，严格四普通成员；解析/浮点/PCM整数E/D与相位分开，量化后功率不宣称精确相等；无噪声/GEV/STFT/BAN整链或正式听测，`--check`只读 |
 | 仿射投影源与生成物 | `codes/chapters/ch06/core/apa_audio.py`、`codes/chapters/ch06/examples/generate_apa_audio.py` → `codes/chapters/ch06/apa_audio/` | 6个16kHz、32013点单声道数学合成WAV，独立清单 | 同一有色参考/16抽头路径，训练0:24000后冻结；8000点留出分开浮点分量与实际PCM总功率，保留13点尾但不计分；八真实源/共同增益1、单seed；不称真实语音、clean ERLE或工业成绩，`--check`严格只读 |
+| 已知播放增益与尾声源/生成物 | `ch06/core/reference_audio.py`、`examples/generate_reference_audio.py` → `ch06/reference_audio/`；`scripts/make_reference_figures.py` → 图74及报告 | 六个16kHz、33600点单声道数学合成WAV与独立清单 | 已知两抽头路径全冻结，g从1变2且尾部延续2；保留1600完整尾，step1600/stable9600/tail1600点解析、浮点与实际PCM整数E/D分开；八真实源、严格七普通成员/参数类型，实际PCM NCC的near_only不当近端真值，`--check`完整只读回放 |
+| 第6章当前上游合同 | `ch06/examples/audit_aec_upstream_interfaces.py`、`audit_upstream_apa.py` → `reports/*_current.json` | 固定原pyaec/Echo方法及DTLN原AST假解释器 | 官方origin/完整HEAD、实际所用blob/许可与前后洁净、完整选集独立分栏；原尾截断/np.complex失败/复数警告保留。旧JSON及621d727真实工具身份不变；默认stdout、显式普通当前报告安全写入，AST夹具不称神经推理 |
 | 已知路径逆源与生成物 | `codes/chapters/ch07/core/mint_teaching.py`、`codes/chapters/ch07/examples/mint_teaching_demo.py` → `codes/chapters/ch07/mint_audio/` | 6个16kHz、32512点单/双声道数学合成WAV，独立清单 | 两已知稀疏FIR场景、同两路后路径噪声及共同增益1；27200点评分分开解析、浮点分量与真实PCM，保留完整512点尾；不称盲WPE、真实房间或一般MINT实现；五真实源，`--check`严格只读 |
 | 多频几何源与生成物 | `codes/chapters/ch03/core/geometry_audio.py`、`codes/chapters/ch03/examples/generate_geometry_audio.py` → `codes/chapters/ch03/geometry_audio/` | 3个32kHz双频源/两方向六麦数学合成WAV，独立清单 | 共同增益1；稳定窗逐频消除未知公共源幅，解析/浮点/实际PCM分开；六真实源摘要；不把传播包络边缘称作稳定相位别名，`--check`严格只读 |
 | 已知方向基线源与生成物 | `codes/chapters/ch03/core/baseline_calibration.py`、`core/baseline_audio.py`、`examples/generate_baseline_audio.py` → `codes/chapters/ch03/baseline_audio/` | 六个16kHz、32000点单/双声道数学合成WAV、独立清单 | 500Hz已知方向、固定相对延迟、共同增益1；27200点稳窗850周期，解析/浮点/实际PCM及各通道整数E/D分开；六真实源/七普通成员，只读完整重放；主值反时差须已知绝对值小于1ms，不称盲GCC、真实阵列或设备同步 |
@@ -78,14 +80,14 @@
 | 图62/63工程报告与图 | `scripts/make_figures.py::fig_engineering_limits`、`fig_noise_mismatch` | 图62保存限定软更新分数、有限尾部与阻塞时序；图63读取第10章独立噪声清单 | 随真实源生成，图62不是声学性能；图63浮点分解与实际PCM分开，已知方差对照不是盲估计 |
 | 图61信息边界报告 | `scripts/make_figures.py::fig_tracking_information` → `codes/chapters/ch09/reports/figure61_tracking_information.json` | 瞬时方位尺度零空间与相关观测的解析条件化 | 随图生成；纯几何忽略传播时延，不当作接收时钟的声学音频等价或误差覆盖率 |
 | 当前上游追踪合同 | `codes/chapters/ch09/examples/audit_upstream_tracking_contracts.py` → `codes/chapters/ch09/reports/upstream_tracking_contracts.json` | 固定源、原C调用、控制流提取与原Python方法的独立执行记录 | 由实际工具生成，保存执行范围和未执行条件；完整稀疏选集状态与所用原文件身份分栏，选集不匹配不得改成通过；限定执行仍须独立核官方origin、固定提交、全部所用源码/许可摘要与洁净状态。不改写历史报告或把替身控制流当完整算法运行 |
-| 绘图源文件 | `scripts/make_figures.py`、`scripts/make_aec_figures.py`、`scripts/make_beamforming_figures.py` | 生成全部插图 | 图有问题时修改这里，不手工修 PNG |
+| 绘图源文件 | `scripts/make_figures.py`、`scripts/make_aec_figures.py`、`scripts/make_beamforming_figures.py`、`scripts/make_reference_figures.py` | 生成全部插图 | 图有问题时修改对应真实入口，不手工修 PNG |
 | 构建源文件 | `scripts/build_site.py`、`scripts/build_pdf.py`、`scripts/build_markdown_helpers.py`、`scripts/inline_layout.js`、`scripts/heading_aliases.py`、`scripts/legacy_sequential_anchors.json` | 生成站点、合订 HTML 和 PDF，共用Markdown数学/代码边界处理及有限行内排版保护，并保护已发布深链的原语义 | 页面结构或渲染有问题时修改这里；标题改号后逐项校验历史语义锚；共享脚本变化须进入两种产物的源摘要 |
 | PDF 公式第三方资源 | `scripts/vendor/mathjax-3.2.2/` | 固定版本的 MathJax 脚本、按需扩展和字体 | 保留上游许可及来源摘要；更新版本时同步更新构建核验与渲染抽查，不手改压缩脚本或字体 |
 | 插图生成物 | `figures/fig*.png` | 正文插图 | 由绘图脚本生成，不直接编辑 |
-| 站点生成物 | `site/*.html`、`site/research/*.html`、`site/real_audio/`、`site/room_audio/`、`site/gss_audio/`、`site/moving_audio/`、`site/tracking_audio/`、`site/noise_audio/`、`site/scenario_audio/`、`site/weighted_audio/`、`site/response_audio/`、`site/binaural_audio/`、`site/spectral_audio/`、`site/stft_audio/`、`site/sweep_audio/`、`site/geometry_audio/`、`site/baseline_audio/`、`site/focus_audio/`、`site/reflection_audio/`、`site/derivative_audio/`、`site/phase_audio/`、`site/apa_audio/`、`site/mint_audio/`、`site/mask_audio/`、`site/imaging_audio/`、`site/distributed_audio/` | 16 篇教程、6 篇研究手册页面与真实录音、独立合成实验的媒体副本 | 由 `build_site.py` 生成，不直接编辑 |
+| 站点生成物 | `site/*.html`、`site/research/*.html`、`site/real_audio/`、`site/room_audio/`、`site/gss_audio/`、`site/moving_audio/`、`site/tracking_audio/`、`site/noise_audio/`、`site/scenario_audio/`、`site/weighted_audio/`、`site/response_audio/`、`site/binaural_audio/`、`site/spectral_audio/`、`site/stft_audio/`、`site/sweep_audio/`、`site/geometry_audio/`、`site/baseline_audio/`、`site/focus_audio/`、`site/reflection_audio/`、`site/derivative_audio/`、`site/phase_audio/`、`site/apa_audio/`、`site/reference_audio/`、`site/mint_audio/`、`site/mask_audio/`、`site/imaging_audio/`、`site/distributed_audio/` | 16 篇教程、6 篇研究手册页面与真实录音、独立合成实验的媒体副本 | 由 `build_site.py` 生成，不直接编辑 |
 | 合订生成物 | `dist/combined.html`、`dist/microphone-array-tutorial.pdf` | 合订 HTML 和 PDF | 由 `build_pdf.py` 生成，不直接编辑 |
 
-`chapters/` 当前包含 16 篇 Markdown，研究手册另有 6 篇网页源文件，项目当前有 73 张编号图和附录 B 房间题的一张补充结果图。文件数量、图号、章节名称或构建入口发生变化时，要同步
+`chapters/` 当前包含 16 篇 Markdown，研究手册另有 6 篇网页源文件，项目当前有 74 张编号图和附录 B 房间题的一张补充结果图。文件数量、图号、章节名称或构建入口发生变化时，要同步
 更新本节、README、导读中的文件地图和构建说明。
 
 `codes/chapters/` 含导读 `ch00`、第 1～11 章、扩展专题 `ch14`/`ch15` 和附录 A/B。跨章内核按首次完整讲解所在章放入一个 `core/`，其他章节直接导入这一实现；全书索引、来源锁表、获取工具和跨章练习归 `ch00/`。原 `codes/examples/` 的 35 个薄兼容入口已经移除，仓内命令使用新模块名。生成音频、房间、状态和报告时，清单或报告记录的源路径与 SHA 必须来自当前真实源；迁移后要从新源重生并核对每个资产，不可只改清单字符串伪造一致性。历史运行报告中的旧路径代表当时的执行条件，不应改写为新路径下实测。
@@ -109,6 +111,7 @@
 .venv/bin/python -m codes.chapters.ch05.examples.generate_derivative_audio  # 独立三麦导数约束音频
 .venv/bin/python -m codes.chapters.ch05.examples.generate_phase_audio  # 三份已知相位PCM；--check只读
 .venv/bin/python -m codes.chapters.ch06.examples.generate_apa_audio  # 独立有色参考APA训练/留出音频
+.venv/bin/python -m codes.chapters.ch06.examples.generate_reference_audio  # 六份已知播放增益/尾声WAV；--check严格只读
 .venv/bin/python -m codes.chapters.ch07.examples.mint_teaching_demo  # 独立已知路径逆与正则权衡六WAV
 .venv/bin/python -m codes.chapters.ch08.examples.mask_representation_demo  # 独立已知掩码表示六WAV
 .venv/bin/python -m codes.chapters.ch08.examples.gss_teaching_demo  # 独立 GSS 教学音频与状态
@@ -125,6 +128,7 @@
 .venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～72
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、图 37～39
 .venv/bin/python scripts/make_beamforming_figures.py  # 图73：读取已核验实际PCM
+.venv/bin/python scripts/make_reference_figures.py  # 图74：实际PCM播放增益与尾声控制
 .venv/bin/python scripts/build_site.py        # chapters/ → site/*.html
 .venv/bin/python scripts/build_pdf.py         # chapters/ → 合订 HTML 和 PDF
 .venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v  # 教学代码回归
@@ -683,8 +687,8 @@ MathJax 公式统一缩到明显小于相邻正文；优先拆行、使用 `alig
 | 网页与 PDF 可访问性 | 自动检查网页语言、图片替代文本、标题层级、表头、焦点和导航；检查 PDF 文本层、语言、书签、结构标签和阅读顺序，并人工抽查宽表的键盘横向滚动 | 已支持的项目通过；构建链没有结构标签或不能保证阅读顺序时，必须在交付中明确写成限制，不能用“文本可搜索”代替标签化验收 |
 | 构建脚本或依赖 | 运行受影响命令及最小回归；检查退出状态和输出文件 | 命令正常结束；输出完整；未引入无关依赖或文件变化 |
 
-当前完整构建的基线是 73 张编号 PNG 和 1 张房间补图、16 个教程页面（首页加15篇）与 6 个研究手册页面，以及 PDF 的 16 个章级、151 个节级、
-707 个子节级书签，共 874 个大纲项。子节级书签来自第 1～11 章、扩展专题Ⅰ/Ⅱ与附录 A/B；各篇独立数量见 `scripts/quality_check.py` 的显式清单。
+当前完整构建的基线是 74 张编号 PNG 和 1 张房间补图、16 个教程页面（首页加15篇）与 6 个研究手册页面，以及 PDF 的 16 个章级、151 个节级、
+711 个子节级书签，共 878 个大纲项。子节级书签来自第 1～11 章、扩展专题Ⅰ/Ⅱ与附录 A/B；各篇独立数量见 `scripts/quality_check.py` 的显式清单。
 质量门禁应从独立的发布清单或显式常量读取这些基线，不能只从待检 Markdown 动态生成“期望值”
 再自我比较。构建后应核对数量和名称。若本次任务改变章节或图表结构，先更新发布清单、README 和本节，
 再按新值验收，不能为了通过检查保留过期数字。
@@ -740,9 +744,9 @@ Chrome 标签化输出和书签处理后的结构树必须同时保留；存在 
 ### 8.2 源文件与生成物
 
 - 先改源文件，再运行生成流程。不要直接修改可再生的网页、合订 HTML、PDF 或成品图片。
-- 插图只通过 `scripts/make_figures.py` 或 `scripts/make_aec_figures.py` 中相应函数生成。随机过程必须固定种子。
+- 插图只通过文件地图中的四个真实绘图入口生成：`make_figures.py`、`make_aec_figures.py`、`make_beamforming_figures.py`、`make_reference_figures.py`，均位于 `scripts/`。新独立入口须同步文件地图、两构建摘要和门禁的逐图来源映射；不能把原图的生成身份换成新入口。随机过程必须固定种子。
 - 每张 PNG 应记录生成它的脚本路径和脚本摘要。发布门禁核对摘要，脚本变化而图片未重画时必须失败。
-  全量发布还要在当前源文件上重新生成 73 张编号图；差异必须能追到本次缺陷记录或预期修改。
+  全量发布还要在当前源文件上重新生成 74 张编号图；差异必须能追到本次缺陷记录或预期修改。
 - 图片验收按网页约 860 px 正文宽度和 A4 约 165 mm 正文宽度检查。PNG 原尺寸清楚不等于嵌入后可读；
   正文、坐标、图例和注释都要在最终尺寸下检查有效字号。
 - 网页由 `chapters/` 和构建脚本生成；PDF 由合订 HTML 和 PDF 构建脚本生成。
