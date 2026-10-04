@@ -150,8 +150,8 @@ EXPECTED_SUBSECTION_COUNTS = {
     "12_appendix-symbols-math.md": 36,
     "13_appendix-guide.md": 29,
     "14_acoustic-imaging.md": 65,
-    # 39 separately navigable topics and 24 exercise headings, manually read.
-    "15_distributed-enhancement.md": 63,
+    # 40 separately navigable topics and 25 exercise headings, manually read.
+    "15_distributed-enhancement.md": 65,
 }
 # 上表为独立发布基线，不从待检 HTML 或构建器反推。
 EXPECTED_CHAPTERS = [
@@ -174,10 +174,10 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 16
 EXPECTED_SECTION_COUNT = 151
-EXPECTED_SUBSECTION_COUNT = 736
-EXPECTED_OUTLINE_ITEM_COUNT = 903
+EXPECTED_SUBSECTION_COUNT = 738
+EXPECTED_OUTLINE_ITEM_COUNT = 905
 EXPECTED_FIGURE_NUMBERS = set(range(1, 81))
-EXPECTED_EXERCISE_COUNT = 357
+EXPECTED_EXERCISE_COUNT = 358
 EXPECTED_EXERCISE_COUNTS = {
     '01_problem-definition.md': 10, '02_basics-signal-model.md': 20,
     '03_array-geometry.md': 18, '04_doa-estimation.md': 25,
@@ -185,7 +185,7 @@ EXPECTED_EXERCISE_COUNTS = {
     '08_speech-separation.md': 32, '09_source-tracking.md': 26,
     '10_engineering-practice.md': 34, '11_selection-guide.md': 27,
     '12_appendix-symbols-math.md': 19, '13_appendix-guide.md': 14,
-    '14_acoustic-imaging.md': 18, '15_distributed-enhancement.md': 24,
+    '14_acoustic-imaging.md': 18, '15_distributed-enhancement.md': 25,
 }
 # 研究附站使用独立显式清单，不挤占 16 篇教程或教程 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
@@ -3809,6 +3809,83 @@ def check_distributed_figures(errors):
             fail(errors, f'图{number}分布式协同报告：{error}')
 
 
+def _verify_distributed_statistics_control(result):
+    """Independent E15-25 rational baseline, scored in the current physical input."""
+    import numpy as np
+    def close(actual, expected, label):
+        a, b = np.asarray(actual), np.asarray(expected)
+        if (a.dtype.kind not in 'iufc' or a.shape != b.shape
+                or not np.all(np.isfinite(a)) or not np.allclose(a, b, rtol=0, atol=1e-12)):
+            raise ValueError('E15-25 independent baseline differs: '+label)
+    if result['exercise_id'] != 'E15-25':
+        raise ValueError('E15-25 identity differs')
+    close(result['coordinate_map'], [[1, 0], [0, 2]], 'broadcast coordinates')
+    close(result['physical_target_covariance'], [[1, 1], [1, 1]], 'physical target')
+    close(result['physical_noise_covariance'], [[1, 0], [0, 1]], 'physical noise')
+    for name, matrix, cross in (
+            ('old_statistics', [[2, 1], [1, 2]], [1, 1]),
+            ('current_statistics', [[2, 2], [2, 8]], [1, 2]),
+            ('unconverted_mixture_statistics', [[2, 1.5], [1.5, 5]], [1, 1.5]),
+            ('converted_mixture_statistics', [[2, 2], [2, 8]], [1, 2])):
+        close(result[name]['observation_covariance'], matrix, name+' SCM')
+        close(result[name]['cross_covariance'], cross, name+' cross')
+    expected = {
+        'old_coordinates': ([1/3, 1/3], [1/3, 1/3], 1/9, 2/9, 1/3),
+        'current_reset': ([1/3, 1/6], [1/3, 1/3], 1/9, 2/9, 1/3),
+        'unconverted_mixture': ([11/31, 6/31], [11/31, 12/31], 64/961, 265/961, 329/961),
+        'converted_mixture': ([1/3, 1/6], [1/3, 1/3], 1/9, 2/9, 1/3),
+    }
+    if set(result['cases']) != set(expected):
+        raise ValueError('E15-25 physical cases differ')
+    for name, (h, w, distortion, noise, total) in expected.items():
+        case = result['cases'][name]
+        close(case['receiver_weights'], h, name+' receiver')
+        close(case['effective_weights'], w, name+' current effective weights')
+        for field, value in {'target_distortion': distortion, 'noise_power': noise,
+                             'total_mse': total, 'reference_target_power': 1.,
+                             'normalized_mse': total, 'target_noise_cross_term': 0.}.items():
+            close(case['physical_components'][field], value, name+'/'+field)
+    if result['scope'] != 'exact two-channel ensemble statistics; equal mixture of versions, not finite-data online estimation':
+        raise ValueError('E15-25 ensemble/estimation scope differs')
+
+
+def check_distributed_numerical_controls(errors):
+    """Do not accept silent zero physical power or an underflowed stop residual."""
+    try:
+        import math
+        import numpy as np
+        from codes.chapters.ch15.core.distributed import (
+            broadcast_statistics_control, mse_components, distributed_updates,
+        )
+        _verify_distributed_statistics_control(broadcast_statistics_control())
+        scalar = mse_components([[1e-100]], [[1e300]], [0.])
+        for field in ('target_distortion', 'total_mse', 'reference_target_power'):
+            if not math.isclose(scalar[field], 1e-100, rel_tol=1e-12, abs_tol=0):
+                raise ValueError('finite target power was erased: '+field)
+        if scalar['normalized_mse'] != 1.:
+            raise ValueError('finite target normalization differs')
+        for rs, rn, w, reference in (([[1e300]], [[1e-100]], [1.], 0),
+                                     ([[1., 0.], [0., -1e-16]], np.eye(2), [0., 1.], 1)):
+            try:
+                mse_components(rs, rn, w, reference=reference)
+            except ValueError:
+                pass
+            else:
+                raise ValueError('unrepresentable positive ratio or negative reference was accepted')
+        if mse_components([[1e300]], [[0.]], [1.])['normalized_mse'] != 0.:
+            raise ValueError('exact zero error was rejected or changed')
+        a = np.array([1., .5, 2., -.5]); rs = np.outer(a, a)
+        rn = np.eye(4); rn[0, 2] = rn[2, 0] = .2; rn[0, 3] = rn[3, 0] = .8
+        run = distributed_updates(rs, 1e200*rn, ((0, 1), (2, 3)), (0, 2),
+                                  [[1., 0.], [1., 0.]], max_updates=2)
+        observed = run['history'][-1]['normal_equation_relative_residuals']
+        if (run['status'] != 'budget_exhausted' or not np.allclose(
+                observed, [.9201037490907801, .3640401798225748], rtol=1e-12, atol=0)):
+            raise ValueError('underflowed full-array residual falsely stops iteration')
+    except (ValueError, KeyError, TypeError, IndexError, ArithmeticError) as error:
+        fail(errors, '分布式统计坐标与数值域：'+str(error))
+
+
 def check_imaging_audio(errors):
     """Check published bytes and independently recover single-tone PCM CSMs."""
     try:
@@ -4498,6 +4575,7 @@ def main():
     check_figures(errors)
     check_imaging_figures(errors)
     check_distributed_figures(errors)
+    check_distributed_numerical_controls(errors)
     check_site(errors)
     check_research_site(errors)
     check_audio(errors)

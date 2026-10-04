@@ -85,6 +85,8 @@ class DistributedBoundaryTests(unittest.TestCase):
     def test_protected_source_cache_and_historical_reports(self):
         for path in (audit.CACHE / 'paderwasn/report.json', audit.LOCK, Path(audit.__file__),
                      audit.ROOT / 'reviews/old.json',
+                     audit.HISTORICAL_REPORT, audit.upstream.STATUS,
+                     audit.source_history.SNAPSHOT_ROOT / 'old.json',
                      audit.ROOT / 'codes/chapters/ch14/reports/upstream_imaging_contracts.json'):
             with self.subTest(path=path), self.assertRaises(ValueError):
                 audit.report_target(path)
@@ -151,9 +153,13 @@ class DistributedBoundaryTests(unittest.TestCase):
         # The identity stub isolates the lock/selection boundary; it is never
         # presented as an original-source execution or a production report.
         selection = {'status': 'source_selection_mismatch', 'source_selection_verified': False}
-        with patch.object(audit, 'LOCK', lock), patch.object(audit, 'verify_checkout') as verify, \
-                patch.object(audit, 'inspect_project', return_value=selection):
-            verify.return_value = {'required_source_identity_verified': True}
+        def fixture_identity(identifier, checkout, relatives):
+            files = audit.PADER_FILES if identifier == 'paderwasn' else audit.WOLA_FILES
+            return {'used_files': {k: {'sha256': v} for k, v in files.items()},
+                    'live_complete_selection': selection,
+                    'lock_sha256': audit.digest(lock.read_bytes()), 'status_sha256': '1' * 64}
+        with patch.object(audit, 'LOCK', lock), \
+                patch.object(audit.upstream, 'verify_project', side_effect=fixture_identity):
             result = audit.verify_sources(self.directory / 'cache')
             self.assertFalse(result['projects']['paderwasn']['acquisition_scope']['source_selection_verified'])
             projects[0]['license'] = 'BSD-3-Clause'
@@ -200,15 +206,20 @@ class DistributedOriginalTests(unittest.TestCase):
         cls.rows = {r['name']: r for r in cls.report['cases']}
 
     def test_identity_pre_post_and_selection_are_distinct(self):
-        self.assertEqual(self.report['source_identity_before'], self.report['source_identity_after'])
         for identifier, revision, files in (('paderwasn', audit.PADER_REVISION, audit.PADER_FILES),
                                              ('danse-wola', audit.WOLA_REVISION, audit.WOLA_FILES)):
             identity = self.report['source_identity_before']['projects'][identifier]
+            after = self.report['source_identity_after']['projects'][identifier]
             self.assertEqual(identity['head'], revision)
             self.assertTrue(identity['required_source_identity_verified'])
             self.assertIn('acquisition_scope', identity)
+            self.assertFalse(identity['clean_after'])
+            self.assertTrue(after['clean_after'])
+            self.assertEqual(identity['ignored_members_before'], after['ignored_members_after'])
+            self.assertEqual(identity['used_files'], after['used_files'])
+            self.assertEqual(identity['live_complete_selection'], after['live_complete_selection'])
             for path, expected in files.items():
-                self.assertEqual(identity['files'][path]['sha256'], expected)
+                self.assertEqual(identity['used_files'][path]['sha256'], expected)
 
     def test_short_input_and_no_observation_are_preserved(self):
         short = self.rows['coarse_short_input_offset_baseline']

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>导读与导航 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="d689204a92b2"><style>
+<meta name="source-digest" content="645849d8f4d7"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -10,6 +10,7 @@ h1,h2,h3,h4{scroll-margin-top:60px}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
 @media screen{.main .separation-topic-anchor{scroll-margin-top:60px}}
+@media screen{.main .source-reproduction-anchor{scroll-margin-top:60px}}
 a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
 .skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
 .skip-link:focus{top:8px}
@@ -609,7 +610,9 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>专题放在主线之后、附录之前。文件和练习身份14独立于阅读顺序，原附录12/13的题号与书签保持原主题。先修为第2、3、5章；已有DOA分数或增强语音不能替代成像源量。</p>
 <h3 id="sec-u-2d4b4b193b"><a href="15_distributed-enhancement.html">扩展专题Ⅱ · 分布式麦克风协同增强</a></h3>
 <p>多个设备分别保留本地麦克风，只交换压缩信号。专题从指定参考目标的集中式MWF开始，逐步推导线性压缩的无损条件；两节点手算说明目标相消的远端组合仍可能提供有用噪声观测。再比较真实顺序、同步与有限松弛更新，区分论文定理、已知统计教学控制和时钟异步。</p>
-<p>24道E15-01～24题与17份独立数学WAV覆盖多目标秩、复参考、压缩尺度、求解预算、量化、100ppm已知时钟补偿及掉包策略。图70～72分别对应压缩误差、更新状态和传输边界。先修为第2、5、10章；树上求和与广义特征值分解（Generalized Eigenvalue Decomposition，GEVD）白化是最小控制。分布式自适应节点特定信号估计（Distributed Adaptive Node-specific Signal Estimation，DANSE）的拓扑无关形式记为 TI-DANSE，其完整更新及无线设备整链需另行复现，见<a href="15_distributed-enhancement.html#sec-15-13">专题§15.13</a>。</p>
+<p>25道E15-01～25题与17份独立数学WAV覆盖多目标秩、复参考、压缩尺度、求解预算、量化、100ppm已知时钟补偿及掉包策略。<a href="15_distributed-enhancement.html#e15-25">E15-25</a>进一步手算广播改变后，旧协方差与互相关怎样转到新坐标再累计。</p>
+<p>图70～72分别对应压缩误差、更新状态和传输边界。先修为第2、5、10章；树上求和与广义特征值分解（Generalized Eigenvalue Decomposition，GEVD）白化是最小控制。</p>
+<p>分布式自适应节点特定信号估计（Distributed Adaptive Node-specific Signal Estimation，DANSE）的拓扑无关形式记为 TI-DANSE，其完整更新及无线设备整链需另行复现，见<a href="15_distributed-enhancement.html#sec-15-13">专题§15.13</a>。</p>
 <span id="sec-16" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-01420ec5a6"><a href="12_appendix-symbols-math.html">12 · 附录 A：符号、术语、数学</a></h3>
 <p>查阅用。12.1 节是符号表。12.2 节是术语词典，按信号与数学基础、房间声学、自适应滤波与分离、波束形成与阵列度量、定位与追踪、系统与硬件分组。12.3 节介绍复数、分贝、卷积和相关、期望和协方差、最小二乘与特征分解，再展开已知噪声加权和截断、正则化的区别。12.4 节用十九道代码题复算这些步骤，检查复共轭、数值秩与 API 前提。图65及五份同增益音频比较同一输入的三种已知权重。</p>
 <p>遇到未定义符号、术语或数学步骤时，可按主题查阅，无需顺序通读。</p>
@@ -1355,7 +1358,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <pre><code class="language-bash">.venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
 </code></pre>
 <p>要复现生成过程时，再按<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/scripts/README.md">构建说明</a>生成音频、重画相关图并核验。附录 B 的 <a href="13_appendix-guide.html#sec-13-7">§13.7</a>列出 80 张图的复现入口；房间题重生需固定版本的独立环境和新输出目录。图有问题时修改绘图源，音频有问题时修改生成源。</p>
-<p>另有 357 道带答案的<a href="research/05_exercises_and_audio.html">章节代码练习与音频实验</a>，覆盖第 1～11 章、两篇扩展专题与附录 A/B，使用 E01-01、E14-01、E15-01 等稳定编号。第 6 章 E06-07～E06-20 包含算法边界手算与子带、IPNLMS、RLS、Kalman 的小规模复算；附录 B 的 E13-03～10 复算房间结果、相位与来源证据；E13-11～14检验TAC共享结构、数值尺度、时间条件化与同DRR音频。每道题对应输入、执行代码和可核查结果；附录 B 的 1～17 题另用一套编号。</p>
+<p>另有 358 道带答案的<a href="research/05_exercises_and_audio.html">章节代码练习与音频实验</a>，覆盖第 1～11 章、两篇扩展专题与附录 A/B，使用 E01-01、E14-01、E15-01 等稳定编号。第 6 章 E06-07～E06-20 包含算法边界手算与子带、IPNLMS、RLS、Kalman 的小规模复算；附录 B 的 E13-03～10 复算房间结果、相位与来源证据；E13-11～14检验TAC共享结构、数值尺度、时间条件化与同DRR音频。每道题对应输入、执行代码和可核查结果；附录 B 的 1～17 题另用一套编号。</p>
 <p><a id="audio-assets"></a></p>
 <p>音频按生成模型和证据用途选择，以下各行独立管理。试听前先调低播放音量；网页控件默认不自动播放，载入文件和客观读回检查不等于人工听测。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -1573,7 +1576,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>[ ] 用附录 B §13.4 排查常见问题，并按第 10 章编制延迟、同步和标定预算。</li>
 </ul>
 <p>声学成像的独立音频、18题入口和原Acoular限定方法合同见<a href="14_acoustic-imaging.html">扩展专题Ⅰ</a>、<a href="research/05_exercises_and_audio.html#sec-47-1">实验手册§47</a>。</p>
-<p>分布式节点增强的24题、17WAV与有限原源码合同见<a href="15_distributed-enhancement.html">扩展专题Ⅱ</a>、<a href="research/05_exercises_and_audio.html#sec-48-1">实验手册§48</a>。</p>
+<p>分布式节点增强的25题、17WAV与有限原源码合同见<a href="15_distributed-enhancement.html">扩展专题Ⅱ</a>、<a href="research/05_exercises_and_audio.html#sec-48-1">实验手册§48</a>。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

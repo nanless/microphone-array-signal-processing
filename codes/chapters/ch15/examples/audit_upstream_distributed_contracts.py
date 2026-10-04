@@ -5,15 +5,21 @@ original Python function ASTs are executed with NumPy: no package import,
 DWACD/online-WACD, resampler, network transport or GEVD-DANSE execution occurs.
 Known short-input and unobserved-peak behavior remains visible. Mathematical
 and update-order controls are independent rewrites, not MATLAB execution.
-Default output is stdout; only an explicit ordinary --report writes a report.
+Default output is stdout; only an explicit ordinary --report writes a new
+current or external report. Finite pre/post checks do not eliminate races or
+provide crash-persistent publication guarantees.
 """
 from __future__ import annotations
 
 import argparse
+import ast
+import copy
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import platform
+import subprocess
 from types import SimpleNamespace
 
 import numpy as np
@@ -22,7 +28,8 @@ from codes.chapters.ch00.io_contracts import (
     strict_json_loads, validate_parent_chain, validate_report_destination,
     write_json_report,
 )
-from codes.chapters.ch00.upstream.fetch_upstreams import inspect_project
+from codes.chapters.ch00.core import source_history
+from codes.chapters.ch04.core import upstream_contracts as upstream
 from codes.chapters.ch14.examples.audit_upstream_imaging_contracts import (
     digest, ordinary_file, verify_checkout, extract_original, comparison,
 )
@@ -30,7 +37,8 @@ from codes.chapters.ch14.examples.audit_upstream_imaging_contracts import (
 ROOT = Path(__file__).resolve().parents[4]
 CACHE = ROOT / 'codes/chapters/ch00/upstream/_downloads'
 LOCK = ROOT / 'codes/chapters/ch00/SOURCES.lock.json'
-CURRENT_REPORT = ROOT / 'codes/chapters/ch15/reports/upstream_distributed_contracts.json'
+HISTORICAL_REPORT = ROOT / 'codes/chapters/ch15/reports/upstream_distributed_contracts.json'
+CURRENT_REPORT = HISTORICAL_REPORT.with_name('upstream_distributed_contracts_current.json')
 WOLA_REVISION = 'a24b73fcd2dc028659535d07bb08068b06108616'
 PADER_REVISION = 'cd7054fcf72da637e4a5e11f035e8979691faf70'
 WOLA_ORIGIN = 'https://github.com/AlexanderBertrandLab/Old_Code.git'
@@ -50,7 +58,8 @@ GOLDEN_TOLERANCE = 1e-4  # Original helper default: interval width, in samples.
 
 def report_target(path, cache=CACHE):
     target = validate_report_destination(path, forbidden_roots=(
-        CACHE, Path(cache), LOCK, ROOT / 'reviews', Path(__file__),
+        CACHE, Path(cache), LOCK, upstream.STATUS, source_history.SNAPSHOT_ROOT,
+        HISTORICAL_REPORT, ROOT / 'reviews', Path(__file__),
         ROOT / 'tests/test_codes_distributed_contracts.py'))
     if target.resolve().is_relative_to(ROOT.resolve()) and target.resolve() != CURRENT_REPORT.resolve():
         raise ValueError('only the current distributed report may be written inside the repository')
@@ -78,15 +87,67 @@ def verify_sources(cache=CACHE):
         if any(p not in project['entrypoints'] for p in files):
             raise ValueError('required source absent from locked entrypoints: ' + identifier)
         checkout = validate_parent_chain(Path(cache) / identifier)
-        identity = verify_checkout(checkout, revision=revision, origin=origin, files=files)
+        identity = upstream.verify_project(identifier, checkout, relatives=tuple(files))
+        for relative, expected in files.items():
+            if identity['used_files'][relative]['sha256'] != expected:
+                raise ValueError('fixed used-source SHA changed: ' + relative)
         identities[identifier] = {
             **identity, 'source_lock_entry': project,
-            'acquisition_scope': inspect_project(project, Path(cache)),
+            'required_source_identity_verified': True,
+            'acquisition_scope': identity['live_complete_selection'],
             'license': {'name': ('MIT' if identifier == 'paderwasn' else 'custom file header; three redistribution conditions; no standard BSD disclaimer'),
                         'path': ('LICENSE' if identifier == 'paderwasn' else 'WOLA_DANSE1.m'),
                         'sha256': files['LICENSE' if identifier == 'paderwasn' else 'WOLA_DANSE1.m']},
         }
-    return {'source_lock_sha256': digest(lock_bytes), 'projects': identities}
+    if any(row['lock_sha256'] != digest(lock_bytes) for row in identities.values()):
+        raise ValueError('source lock changed during preflight')
+    return {'source_lock_sha256': digest(lock_bytes),
+            'source_status_sha256': identities['paderwasn']['status_sha256'],
+            'projects': identities}
+
+
+def actual_dependencies():
+    return upstream.dependencies(__file__, extras=(
+        ROOT / 'codes/chapters/ch14/examples/audit_upstream_imaging_contracts.py',
+        ROOT / 'codes/chapters/ch00/core/source_history.py'))
+
+
+def numpy_entry_identity():
+    """Identify the actual namespace entry file, not the whole NumPy package."""
+    path = ordinary_file(np.__file__)
+    return {'path': str(path), 'sha256': digest(path.read_bytes()), 'version': np.__version__,
+            'scope': 'actual imported NumPy entry file only; compiled modules and full installed dependency closure not verified'}
+
+
+def historical_provenance():
+    """Verify old bytes without assigning today's tool or status to old results."""
+    payload = ordinary_file(HISTORICAL_REPORT).read_bytes()
+    if digest(payload) != '8a8ef88ae9660ecb2fe8ea99d726652ae9aa44f91790e3f1f02d4d736ee8da4b':
+        raise ValueError('historical distributed report bytes changed')
+    report = strict_json_loads(payload)
+    bindings = {}
+    for relative, expected in report['direct_sources'].items():
+        revision = ('a215b4630c0c21a8744cf27436a2c9ffa9c00053'
+                    if relative == 'codes/chapters/ch14/examples/audit_upstream_imaging_contracts.py'
+                    else '6c1f1448dc0efdeb2ea964b9a6323643406ab209')
+        # The shared Git text interface strips whitespace. Read this one binary
+        # object without altering any bytes, with the same injected-env isolation.
+        environment = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
+        environment.update(GIT_CONFIG_NOSYSTEM='1', GIT_CONFIG_GLOBAL=os.devnull,
+                           GIT_TERMINAL_PROMPT='0', GIT_NO_LAZY_FETCH='1', GIT_NO_REPLACE_OBJECTS='1')
+        original = subprocess.run(
+            ['git', '-c', 'core.hooksPath=/dev/null', '-c', 'core.fsmonitor=false',
+             'show', revision + ':' + relative], cwd=ROOT, env=environment,
+            check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30).stdout
+        actual = digest(original)
+        if actual != expected:
+            raise ValueError('historical source differs from original Git bytes: ' + relative)
+        bindings[relative] = {'commit': revision, 'sha256': actual}
+    lock = source_history.verify_lock_binding(
+        report['source_identity_before']['source_lock_sha256'], ('danse-wola', 'paderwasn'))
+    return {'report_sha256': digest(payload), 'direct_source_git_bindings': bindings,
+            'source_lock_binding': lock,
+            'scope': 'historical bytes and lock provenance only; no historical rerun or current dependency substitution; old report did not bind SOURCE_STATUS'}
 
 
 def load_original_bodies(checkout):
@@ -297,24 +358,97 @@ def independent_matlab_controls():
     ]
 
 
+def dwacd_static_gate_control(path):
+    """Inspect the original slice and evaluate a separate activity-only rewrite.
+
+    No DWACD object, STFT, coherence estimator or resampler executes here.
+    """
+    payload = ordinary_file(path).read_bytes()
+    source = payload.decode('utf-8')
+    tree = ast.parse(source)
+    assignments = {n.targets[0].id: n for n in ast.walk(tree)
+                   if isinstance(n, ast.Assign) and len(n.targets) == 1
+                   and isinstance(n.targets[0], ast.Name)
+                   and n.targets[0].id in ('activity_seg_delayed', 'seg_delayed')}
+    expected = {
+        'activity_seg_delayed': 'activity_sig[start_delayed + shift:start + shift + self.seg_len]',
+        'seg_delayed': 'sig[start_delayed + shift:start_delayed + shift + self.seg_len]',
+    }
+    if set(assignments) != set(expected) or any(
+            ast.unparse(assignments[name].value) != value for name, value in expected.items()):
+        raise ValueError('fixed DWACD delayed-window static contract changed')
+    constructor = next(n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)
+                       and n.name == '__init__'
+                       and {'seg_len', 'temp_dist', 'src_activity_th'} <= {a.arg for a in n.args.args})
+    defaults = dict(zip([a.arg for a in constructor.args.args][-len(constructor.args.defaults):],
+                        [ast.literal_eval(d) for d in constructor.args.defaults]))
+    if (defaults['seg_len'], defaults['temp_dist'], defaults['src_activity_th']) != (8192, 8192, .75):
+        raise ValueError('fixed DWACD default window contract changed')
+    length, distance = defaults['seg_len'], defaults['temp_dist']
+    activity = np.concatenate((np.zeros(length), np.ones(distance)))
+    ref = np.ones(length + distance)
+    start_delayed, shift, start = 0, 0, distance
+    original_delayed = activity[start_delayed+shift:start+shift+length]
+    matching_delayed = activity[start_delayed+shift:start_delayed+shift+length]
+    current = activity[start+shift:start+shift+length]
+    ref_current, ref_delayed = ref[start:start+length], ref[:length]
+    threshold = defaults['src_activity_th'] * length
+    original_counts = [int(np.sum(a)) for a in (ref_delayed, ref_current, original_delayed, current)]
+    matching_counts = [int(np.sum(a)) for a in (ref_delayed, ref_current, matching_delayed, current)]
+    original_gate = all(n > threshold for n in original_counts)
+    matching_gate = all(n > threshold for n in matching_counts)
+    if original_counts != [8192, 8192, 8192, 8192] or matching_counts != [8192, 8192, 0, 8192]:
+        raise ValueError('independent delayed activity counts changed')
+    if not original_gate or matching_gate:
+        raise ValueError('independent delayed activity gate difference changed')
+    return {
+        'static_contract': {'source_file': 'paderwasn/synchronization/sro_estimation.py',
+            'source_sha256': digest(payload), 'original_dwacd_executed': False,
+            'assignments': {k: {'start_line': n.lineno, 'end_line': n.end_lineno,
+                                'expression': ast.unparse(n.value)} for k, n in assignments.items()},
+            'default_segment_length': length, 'default_distance': distance},
+        'independent_control': {
+            'execution': 'independent activity-slice and threshold rewrite only; not original DWACD execution',
+            'segment_index': 0, 'shift': 0, 'microphone_activity': '8192 zeros followed by 8192 ones',
+            'reference_activity': '16384 ones', 'threshold': threshold, 'comparison': 'strictly greater',
+            'count_order': ['reference_delayed', 'reference_current', 'microphone_delayed', 'microphone_current'],
+            'original_slice_length': len(original_delayed), 'matching_signal_slice_length': len(matching_delayed),
+            'original_slice_counts': original_counts, 'matching_signal_slice_counts': matching_counts,
+            'original_slice_gate': original_gate, 'matching_signal_slice_gate': matching_gate,
+            'scope': 'one fixed-default activity control; no SRO estimate, coherence product or acoustic observation'},
+    }
+
+
 def run_audit(cache=CACHE):
+    direct_before = actual_dependencies()
+    external_before = numpy_entry_identity()
+    history_before = historical_provenance()
     before = verify_sources(cache)
     wola = Path(cache) / 'danse-wola/WOLA_DANSE1.m'
     original = load_original_bodies(Path(cache) / 'paderwasn')
     rows = original_cases(original)
     static = matlab_static_contracts(wola)
     controls = independent_matlab_controls()
-    after = verify_sources(cache)
-    if before != after:
+    dwacd = dwacd_static_gate_control(Path(cache) / 'paderwasn/paderwasn/synchronization/sro_estimation.py')
+    after = copy.deepcopy(before)
+    for identifier, identity in after['projects'].items():
+        after['projects'][identifier] = upstream.check_unchanged(identity)
+    if before != verify_sources(cache):
         raise ValueError('fixed sources or source lock changed during the audit')
-    direct = (Path(__file__), ROOT / 'codes/chapters/ch00/io_contracts.py',
-              ROOT / 'codes/chapters/ch00/upstream/fetch_upstreams.py',
-              ROOT / 'codes/chapters/ch14/examples/audit_upstream_imaging_contracts.py')
+    direct_after, external_after = actual_dependencies(), numpy_entry_identity()
+    history_after = historical_provenance()
+    if direct_before != direct_after or external_before != external_after or history_before != history_after:
+        raise ValueError('actual dependencies or historical provenance changed during execution')
     report = {
-        'schema_version': 1, 'created_utc': datetime.now(timezone.utc).isoformat(),
+        'schema_version': 2, 'created_utc': datetime.now(timezone.utc).isoformat(),
         'status': 'audit_completed_with_original_differences_and_unobserved_peaks',
         'source_identity_before': before, 'source_identity_after': after,
-        'direct_sources': {str(p.relative_to(ROOT)): digest(ordinary_file(p).read_bytes()) for p in direct},
+        'direct_sources': direct_after,
+        'actual_dependencies_before': direct_before, 'actual_dependencies_after': direct_after,
+        'external_namespace_before': external_before, 'external_namespace_after': external_after,
+        'actual_dependencies_unchanged': True, 'historical_provenance': history_after,
+        'source_lock_sha256': before['source_lock_sha256'],
+        'source_status_sha256': before['source_status_sha256'],
         'environment': {'python': platform.python_version(), 'numpy': np.__version__, 'platform': platform.platform()},
         'original_definitions': original.extraction_records,
         'execution_scope': {
@@ -323,7 +457,8 @@ def run_audit(cache=CACHE):
             'module_imports_executed': False, 'namespace_dependencies': ['numpy'],
             'decorators': 'none present in these three selected definitions; extraction removes any decorators',
             'matlab_executed': False, 'octave_executed': False,
-            'matlab_status': 'runtime unavailable in current parent probe; no installation attempted',
+            'matlab_status': 'not executed in this audit; runtime availability not probed; no installation attempted',
+            'matlab_runtime_probed': False,
             'dwacd_executed': False, 'online_wacd_executed': False,
             'sro_resampler_executed': False, 'gevd_danse_executed': False,
             'network_transport_executed': False, 'datasets_or_recordings_used': False,
@@ -337,6 +472,7 @@ def run_audit(cache=CACHE):
         },
         'cases': rows, 'matlab_static_contracts': static,
         'matlab_configuration': matlab_configuration(wola), 'independent_matlab_controls': controls,
+        'additional_dwacd_static_activity_control': dwacd,
         'counts': {'original_case_invocations': len(rows),
                    'matched_independent_expected': sum(r.get('matched_independent_expected', False) for r in rows),
                    'observed_original_behavior_differences': sum(r.get('classification') == 'observed_original_behavior_difference' for r in rows),
@@ -356,7 +492,9 @@ def main(argv=None):
     report = run_audit(args.cache)
     if destination is not None:
         report_target(destination, args.cache)
-        write_json_report(destination, report, forbidden_roots=(CACHE, args.cache, LOCK, ROOT / 'reviews'))
+        write_json_report(destination, report, forbidden_roots=(
+            CACHE, args.cache, LOCK, upstream.STATUS, source_history.SNAPSHOT_ROOT,
+            HISTORICAL_REPORT, ROOT / 'reviews'))
     print(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False))
     return 0
 

@@ -42,9 +42,9 @@
 | 第2章当前原方法合同 | `codes/chapters/ch02/examples/audit_upstream_models.py` → 显式当前 `reports/upstream_model_contracts.json` | 固定PRA/Acoular/doatools/pyfar限定原体调用与独立控制，声速项目仅说明/许可身份 | 默认stdout只读；所用源码身份与完整选集状态分栏，不升级选集不匹配、原失败或未运行；不改上游及历史`upstream_models.json`，只允许显式安全当前报告或仓外普通路径 |
 | 相干反射源与生成物 | `codes/chapters/ch04/core/reflection_audio.py`、`examples/generate_reflection_audio.py` → `ch04/reflection_audio/` | 四个16kHz、32012点单/双声道数学合成WAV、独立清单 | 同源4kHz直达8/8点及反射12/11点、完整12点尾、共同增益1；27200点稳窗解析/浮点/PCM及整数E/D分开，五真实源/五普通成员、严格只读完整重放；虚拟0.1I噪声独立控制，不称DPD/盲DP-RTF、真实房间或工业成绩 |
 | 已知聚焦源与生成物 | `codes/chapters/ch04/core/focus_audio.py`、`codes/chapters/ch04/examples/generate_focus_audio.py` → `codes/chapters/ch04/focus_audio/` | 4个16kHz、32024采样单/四声道数学合成WAV，独立清单 | 已知1/3kHz分量酉置换；2400:29600稳定窗解析/浮点/实际PCM分开；六真实源摘要，PCM按32768解码；不能称为盲DOA、完整CSSM或空间别名消除，`--check`严格只读 |
-| 分布式已知统计源与生成物 | `codes/chapters/ch15/core/distributed.py`、`core/distributed_audio.py`、`examples/generate_distributed_audio.py` → `codes/chapters/ch15/distributed_audio/` | 17个16kHz、32000点单/四声道数学合成WAV、独立清单 | 九真实源、共同增益1；28800点稳窗/800点缺口窗分开解析/浮点/PCM整数E/D；广播改变后用缓存接收系数重组实际权重，旧提案另列；已知速率SRC改变观测统计，不称盲DANSE、完整WOLA、真实网络或工业性能；严格18普通成员，`--check`只读完整回放 |
+| 分布式已知统计源与生成物 | `codes/chapters/ch15/core/distributed.py`、`core/distributed_audio.py`、`examples/generate_distributed_audio.py` → `codes/chapters/ch15/distributed_audio/` | 17个16kHz、32000点单/四声道数学合成WAV、独立清单 | 九真实源、共同增益1；28800点稳窗/800点缺口窗分开解析/浮点/PCM整数E/D；首次写前独立核固定类型参数、波形、功率与范围，拒绝内部模型漂移；广播改变后用缓存接收系数重组实际权重，旧提案另列；已知速率SRC改变观测统计，不称盲DANSE、完整WOLA、真实网络或工业性能；严格18普通成员，`--check`只读完整回放 |
 | 第4章当前原源合同 | `ch04/examples/audit_upstream_doa.py`、`audit_said_compression.py` → 显式新 `upstream_doa_contracts.json`、`said_compression_contracts.json` | 固定PRA/doatools限定原方法及SAID压缩接口 | 默认只读stdout；原身份和完整选集分栏，原失败与未运行保留，不覆盖历史；四旧reproduce入口仅仓外普通output/workdir，执行前核路径及前后原源身份 |
-| 分布式图与原源合同 | `scripts/make_figures.py::fig_distributed_*` → `ch15/reports/figure70～72*.json`；`ch15/examples/audit_upstream_distributed_contracts.py` → 显式当前报告 | 固定方向、当前广播更新、时钟/缺口与原MATLAB静态/paderwasn助手合同 | 真实求解数与当前输出分开记录；MATLAB未执行，三个原Python助手限定调用不等于完整同步器。原失败和无观测、许可冲突、未运行边界如实保存，不修改上游或历史报告 |
+| 分布式图与原源合同 | `scripts/make_figures.py::fig_distributed_*` → `ch15/reports/figure70～72*.json`；`ch15/examples/audit_upstream_distributed_contracts.py` → `upstream_distributed_contracts_current.json` | 固定方向、当前广播更新、时钟/缺口与原MATLAB静态/paderwasn助手合同 | 真实求解数与当前输出分开记录；MATLAB未执行，三个原Python助手限定调用不等于完整同步器。DWACD原活动切片仅静态核对与独立数组门控，不称原估计器执行；当前锁表/状态、完整选集、所用原blob与实际依赖前后身份分别记录。原失败和无观测、许可冲突、未运行边界如实保存，不修改上游或历史报告 |
 | 成像快拍源与生成物 | `codes/chapters/ch14/core/imaging_audio.py`、`codes/chapters/ch14/examples/generate_imaging_audio.py` → `codes/chapters/ch14/imaging_audio/` | 五个24kHz、48004点单/双声道数学合成WAV、独立清单 | 共同增益1、完整4点传播尾；20个快拍的252:2160窗共38160点，解析/浮点/实际PCM复幅度和CSM分开；严格六普通成员、当前真实依赖SHA与只读重放；生成前独立核固定类型参数、波形、浮点与PCM，内部模型漂移先拒绝，不把相位编码交叉项抵消当随机独立或工业性能 |
 | 成像图与原源合同 | `scripts/make_figures.py::fig_imaging_*` → `ch14/reports/figure67～69*.json`、`figure80_imaging_objectives.json`；`ch14/examples/audit_upstream_imaging_contracts.py` → `upstream_imaging_contracts_current.json` | 两格、球面441格、目标与校准控制及固定Acoular原方法 | 图绑定真实数值核，不反演441未知源或称功率图为增强波形；原full CLEAN-SC差异、CMF目标和谱端点真实保留；完整选集状态与所用源码身份分栏，不修改上游或历史 |
 | 作者DAMAS原模块合同 | `ch14/examples/audit_damas_author_contracts.py` → 显式 `damas_author_contracts_current.json` | 固定作者GPL完整Python模块九限定控制；8数值吻合、1原NameError | 默认只读stdout；完整模块原imports执行，前后核原文件及三个直接库入口，不称传递闭包、MATLAB/MEX或论文大实验；不覆盖历史报告 |
@@ -705,7 +705,7 @@ MathJax 公式统一缩到明显小于相邻正文；优先拆行、使用 `alig
 | 构建脚本或依赖 | 运行受影响命令及最小回归；检查退出状态和输出文件 | 命令正常结束；输出完整；未引入无关依赖或文件变化 |
 
 当前完整构建的基线是 80 张编号 PNG 和 1 张房间补图、16 个教程页面（首页加15篇）与 6 个研究手册页面，以及 PDF 的 16 个章级、151 个节级、
-736 个子节级书签，共 903 个大纲项。子节级书签来自第 1～11 章、扩展专题Ⅰ/Ⅱ与附录 A/B；各篇独立数量见 `scripts/quality_check.py` 的显式清单。
+738 个子节级书签，共 905 个大纲项。子节级书签来自第 1～11 章、扩展专题Ⅰ/Ⅱ与附录 A/B；各篇独立数量见 `scripts/quality_check.py` 的显式清单。
 质量门禁应从独立的发布清单或显式常量读取这些基线，不能只从待检 Markdown 动态生成“期望值”
 再自我比较。构建后应核对数量和名称。若本次任务改变章节或图表结构，先更新发布清单、README 和本节，
 再按新值验收，不能为了通过检查保留过期数字。

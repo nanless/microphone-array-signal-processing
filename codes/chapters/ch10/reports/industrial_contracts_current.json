@@ -1,12 +1,12 @@
 {
   "schema": "industrial-contracts-v1",
   "status": "passed_limited_controlled_contracts",
-  "generated_at_utc": "2026-10-04T21:21:02.278219+00:00",
+  "generated_at_utc": "2026-10-04T22:54:51.917951+00:00",
   "tool_sha256": "0861060e35dd7170dd84e147866bdeba628b75251f087ac8479fc95ec8466da1",
   "source_lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
   "actual_dependencies_sha256": {
     "codes/chapters/ch10/examples/audit_industrial_contracts.py": "0861060e35dd7170dd84e147866bdeba628b75251f087ac8479fc95ec8466da1",
-    "codes/chapters/ch04/core/upstream_contracts.py": "4898ceaddfcd0821a6564360bc68489766438afef13ef783f0d182ffc0dddeb1",
+    "codes/chapters/ch04/core/upstream_contracts.py": "db86f54c9e7e96217d271f74bcca11831ff4c36985ec8a82df7d0a3f5cd271ef",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4",
     "codes/chapters/ch10/examples/run_industrial_interfaces.py": "6501c7bdb2e5cd529dd9436cbc99ffd31ec1398fced8d0dc98c62a8524c3111c"
@@ -1491,12 +1491,12 @@
           "-std=c11",
           "-O2",
           "-I",
-          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-bgtxx7xm",
-          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-bgtxx7xm/cmsis_contract.c",
+          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-q7mbqrmn",
+          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-q7mbqrmn/cmsis_contract.c",
           "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/cmsis_dsp/Source/FilteringFunctions/arm_fir_q15.c",
           "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/cmsis_dsp/Source/FilteringFunctions/arm_fir_init_q15.c",
           "-o",
-          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-bgtxx7xm/cmsis_contract"
+          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-q7mbqrmn/cmsis_contract"
         ],
         "returncode": 0,
         "stdout": "",
@@ -1827,9 +1827,9 @@
           "-O2",
           "-I",
           "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/speexdsp/libspeexdsp",
-          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-bgtxx7xm/speex_contract.c",
+          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-q7mbqrmn/speex_contract.c",
           "-o",
-          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-bgtxx7xm/speex_contract"
+          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-q7mbqrmn/speex_contract"
         ],
         "returncode": 0,
         "stdout": "",
@@ -2042,9 +2042,9 @@
           "/usr/bin/cc",
           "-std=c11",
           "-O2",
-          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-bgtxx7xm/vad_contract.c",
+          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-q7mbqrmn/vad_contract.c",
           "-o",
-          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-bgtxx7xm/vad_contract"
+          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-q7mbqrmn/vad_contract"
         ],
         "returncode": 0,
         "stdout": "",
@@ -2078,11 +2078,11 @@
           "-std=c11",
           "-O2",
           "-I",
-          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-bgtxx7xm",
+          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-q7mbqrmn",
           "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/rnnoise/examples/rnnoise_demo.c",
-          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-bgtxx7xm/rnnoise_adapter.c",
+          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-q7mbqrmn/rnnoise_adapter.c",
           "-o",
-          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-bgtxx7xm/rnnoise_demo_contract"
+          "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/masp-industrial-contracts-q7mbqrmn/rnnoise_demo_contract"
         ],
         "returncode": 0,
         "stdout": "",

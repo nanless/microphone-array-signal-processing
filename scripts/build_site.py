@@ -265,6 +265,9 @@ NARROW_TABLE_POLICIES = {
         ("追踪输出字段", "含义与单位", "消费方必须检查"): (52, {1: 14, 2: 18, 3: 20}),
         ("状态时刻（s）", "模式1概率", "模式2概率", "均值（度）", "方差（平方度）"): (53, {1: 8, 2: 11, 3: 11, 4: 11, 5: 12}),
     },
+    SRC / "15_distributed-enhancement.md": {
+        ("音频组", "实际文件", "该组回答的问题"): (48, {1: 8, 2: 22, 3: 18}),
+    },
     SRC / "11_selection-guide.md": {
         ("词元", "字符数", "按字符比例分配的区间（s）", "中心点（s）"): (38, {1: 6, 2: 6, 3: 18, 4: 8}),
         ("会话", "参考词元", "交付与评分情况", "实际事件"): (48, {1: 6, 2: 8, 3: 23, 4: 11}),
@@ -325,6 +328,7 @@ h1,h2,h3,h4{scroll-margin-top:60px}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
 @media screen{.main .separation-topic-anchor{scroll-margin-top:60px}}
+@media screen{.main .source-reproduction-anchor{scroll-margin-top:60px}}
 a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
 .skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
 .skip-link:focus{top:8px}
@@ -1530,6 +1534,9 @@ def render(md_text, source_path=None):
         # landing below the sticky screen header, preserving published IDs.
         html = re.sub(r'<a id="(bss|neural|tflocoformer|separation-upstream-audit|mffca)"></a>',
                       r'<a id="\1" class="separation-topic-anchor"></a>', html)
+    if source_path.resolve() == (RESEARCH_ROOT / "04_source_reproduction.md").resolve():
+        html = re.sub(r'<a id="(distributed-reproduction|historical-source-bindings)"></a>',
+                      r'<a id="\1" class="source-reproduction-anchor"></a>', html)
     policies = NARROW_TABLE_POLICIES.get(source_path.resolve(), {})
     imaging_audio_page = source_path.resolve() in {
         (SRC / "14_acoustic-imaging.md").resolve(),

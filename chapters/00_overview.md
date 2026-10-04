@@ -248,7 +248,11 @@ E11-26保留空输出、缺失和评分失败的完整分母，E11-27把数学�
 
 多个设备分别保留本地麦克风，只交换压缩信号。专题从指定参考目标的集中式MWF开始，逐步推导线性压缩的无损条件；两节点手算说明目标相消的远端组合仍可能提供有用噪声观测。再比较真实顺序、同步与有限松弛更新，区分论文定理、已知统计教学控制和时钟异步。
 
-24道E15-01～24题与17份独立数学WAV覆盖多目标秩、复参考、压缩尺度、求解预算、量化、100ppm已知时钟补偿及掉包策略。图70～72分别对应压缩误差、更新状态和传输边界。先修为第2、5、10章；树上求和与广义特征值分解（Generalized Eigenvalue Decomposition，GEVD）白化是最小控制。分布式自适应节点特定信号估计（Distributed Adaptive Node-specific Signal Estimation，DANSE）的拓扑无关形式记为 TI-DANSE，其完整更新及无线设备整链需另行复现，见[专题§15.13](15_distributed-enhancement.md#sec-15-13)。
+25道E15-01～25题与17份独立数学WAV覆盖多目标秩、复参考、压缩尺度、求解预算、量化、100ppm已知时钟补偿及掉包策略。[E15-25](15_distributed-enhancement.md#e15-25)进一步手算广播改变后，旧协方差与互相关怎样转到新坐标再累计。
+
+图70～72分别对应压缩误差、更新状态和传输边界。先修为第2、5、10章；树上求和与广义特征值分解（Generalized Eigenvalue Decomposition，GEVD）白化是最小控制。
+
+分布式自适应节点特定信号估计（Distributed Adaptive Node-specific Signal Estimation，DANSE）的拓扑无关形式记为 TI-DANSE，其完整更新及无线设备整链需另行复现，见[专题§15.13](15_distributed-enhancement.md#sec-15-13)。
 
 ### [12 · 附录 A：符号、术语、数学](12_appendix-symbols-math.md)
 
@@ -471,7 +475,7 @@ E11-26保留空输出、缺失和评分失败的完整分母，E11-27把数学�
 
 要复现生成过程时，再按[构建说明](../scripts/README.md)生成音频、重画相关图并核验。附录 B 的 [§13.7](13_appendix-guide.md#sec-13-7)列出 80 张图的复现入口；房间题重生需固定版本的独立环境和新输出目录。图有问题时修改绘图源，音频有问题时修改生成源。
 
-另有 357 道带答案的[章节代码练习与音频实验](../codes/chapters/ch00/research/05_exercises_and_audio.md)，覆盖第 1～11 章、两篇扩展专题与附录 A/B，使用 E01-01、E14-01、E15-01 等稳定编号。第 6 章 E06-07～E06-20 包含算法边界手算与子带、IPNLMS、RLS、Kalman 的小规模复算；附录 B 的 E13-03～10 复算房间结果、相位与来源证据；E13-11～14检验TAC共享结构、数值尺度、时间条件化与同DRR音频。每道题对应输入、执行代码和可核查结果；附录 B 的 1～17 题另用一套编号。
+另有 358 道带答案的[章节代码练习与音频实验](../codes/chapters/ch00/research/05_exercises_and_audio.md)，覆盖第 1～11 章、两篇扩展专题与附录 A/B，使用 E01-01、E14-01、E15-01 等稳定编号。第 6 章 E06-07～E06-20 包含算法边界手算与子带、IPNLMS、RLS、Kalman 的小规模复算；附录 B 的 E13-03～10 复算房间结果、相位与来源证据；E13-11～14检验TAC共享结构、数值尺度、时间条件化与同DRR音频。每道题对应输入、执行代码和可核查结果；附录 B 的 1～17 题另用一套编号。
 
 <a id="audio-assets"></a>
 
@@ -608,4 +612,4 @@ E11-26保留空输出、缺失和评分失败的完整分母，E11-27把数学�
 
 声学成像的独立音频、18题入口和原Acoular限定方法合同见[扩展专题Ⅰ](14_acoustic-imaging.md)、[实验手册§47](../codes/chapters/ch00/research/05_exercises_and_audio.md#sec-47-1)。
 
-分布式节点增强的24题、17WAV与有限原源码合同见[扩展专题Ⅱ](15_distributed-enhancement.md)、[实验手册§48](../codes/chapters/ch00/research/05_exercises_and_audio.md#sec-48-1)。
+分布式节点增强的25题、17WAV与有限原源码合同见[扩展专题Ⅱ](15_distributed-enhancement.md)、[实验手册§48](../codes/chapters/ch00/research/05_exercises_and_audio.md#sec-48-1)。

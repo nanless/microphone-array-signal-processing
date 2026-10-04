@@ -179,6 +179,22 @@ class DistributedAudioTests(unittest.TestCase):
             self.assertEqual(manifest, self.manifest)
             self.assertEqual(generate_assets(directory, check=True), manifest)
 
+    def test_internal_fixture_drift_cannot_overwrite_existing_members(self):
+        # The output folder can already contain ordinary user files with the
+        # expected names. Model validation must precede their first overwrite.
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = self._populate(Path(temporary)/'assets')
+            before = {p.name: (p.read_bytes(), p.stat().st_mtime_ns) for p in directory.iterdir()}
+            parameters = json.loads(json.dumps(self.manifest['parameters']))
+            parameters['target_frequencies_hz'][0] = 701
+            with (patch('codes.chapters.ch15.examples.generate_distributed_audio.parameters', return_value=parameters),
+                  patch.object(Path, 'write_bytes', side_effect=AssertionError('preflight attempted overwrite')) as writer,
+                  patch.object(Path, 'mkdir', side_effect=AssertionError('preflight attempted mkdir')) as mkdir):
+                with self.assertRaises(ValueError):
+                    generate_assets(directory)
+                writer.assert_not_called(); mkdir.assert_not_called()
+            self.assertEqual(before, {p.name: (p.read_bytes(), p.stat().st_mtime_ns) for p in directory.iterdir()})
+
     def test_extra_missing_symlink_and_linked_parent_rejected(self):
         with tempfile.TemporaryDirectory() as temporary:
             base = Path(temporary); directory = self._populate(base/'assets')

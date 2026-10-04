@@ -2,7 +2,7 @@
   "schema_version": 2,
   "actual_dependency_sha256": {
     "codes/chapters/ch07/examples/wpe_silence_boundary.py": "3d44e26ffb89bc3e67cedb16f118e2a6bb0b3c9bb6f8a4ff319f6d1f217e3648",
-    "codes/chapters/ch04/core/upstream_contracts.py": "4898ceaddfcd0821a6564360bc68489766438afef13ef783f0d182ffc0dddeb1",
+    "codes/chapters/ch04/core/upstream_contracts.py": "db86f54c9e7e96217d271f74bcca11831ff4c36985ec8a82df7d0a3f5cd271ef",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4",
     "codes/chapters/ch07/examples/compare_online_wpe_reference.py": "6bb47c9ab66c265514cfbcfba4abb4f727d6e92aecc7b2dfba2559ffd66b2f04",

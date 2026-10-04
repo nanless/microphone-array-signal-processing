@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "verified_at": "2026-10-04",
-  "created_utc": "2026-10-04T21:20:40.227632+00:00",
+  "created_utc": "2026-10-04T22:54:30.067906+00:00",
   "status": "static_source_inconsistencies_with_independent_scalar_examples",
   "execution_scope": {
     "source_verification": true,
@@ -277,7 +277,7 @@
   },
   "report_source_sha256": {
     "codes/chapters/ch05/examples/audit_sof_tdfb_design.py": "c764560d9f2a9eb461190a95f7d3f8b40e936187f96986be9393f371d1a8b1a7",
-    "codes/chapters/ch04/core/upstream_contracts.py": "4898ceaddfcd0821a6564360bc68489766438afef13ef783f0d182ffc0dddeb1",
+    "codes/chapters/ch04/core/upstream_contracts.py": "db86f54c9e7e96217d271f74bcca11831ff4c36985ec8a82df7d0a3f5cd271ef",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },

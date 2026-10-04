@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "executed_at_utc": "2026-10-04T21:20:36.946182+00:00",
-  "executed_at_local": "2026-10-05T05:20:36.946182+08:00",
+  "executed_at_utc": "2026-10-04T22:54:26.721888+00:00",
+  "executed_at_local": "2026-10-05T06:54:26.721888+08:00",
   "audit_source": "codes/chapters/ch03/examples/audit_upstream_coarray.py",
   "audit_source_sha256": "fa3860c30a3a6a03a77d18752fc9ffcef790e8d6e5b908ac1cdc60af6c9ee748",
   "sources": {
@@ -279,7 +279,7 @@
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },
   "source_verification": {
-    "started_at_utc": "2026-10-04T21:20:36.747000+00:00",
+    "started_at_utc": "2026-10-04T22:54:26.527807+00:00",
     "before_after_equal": true,
     "canonical_sources_before_sha256": "9b5a9fad48683d0fbb9c2175db9e261942bc5cdb9e1eb25c63f8b7a9fa0a3d17",
     "canonical_sources_after_sha256": "9b5a9fad48683d0fbb9c2175db9e261942bc5cdb9e1eb25c63f8b7a9fa0a3d17",

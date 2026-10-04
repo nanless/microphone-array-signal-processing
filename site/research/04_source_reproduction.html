@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码获取与独立复现记录 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="d689204a92b2"><style>
+<meta name="source-digest" content="645849d8f4d7"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -10,6 +10,7 @@ h1,h2,h3,h4{scroll-margin-top:60px}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
 @media screen{.main .separation-topic-anchor{scroll-margin-top:60px}}
+@media screen{.main .source-reproduction-anchor{scroll-margin-top:60px}}
 a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
 .skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
 .skip-link:focus{top:8px}
@@ -852,9 +853,11 @@ $\left[\begin{smallmatrix}1/10&1/5\\1/10&1/5\end{smallmatrix}\right]$。</p>
 </code></pre>
 <p><strong>生产二进制与落盘边界。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/examples/aec_real_pair_experiment.py">Speex 配对入口</a>默认只打印报告，<code>--output-wav</code> 仅接受仓外新普通文件，写前保护输入与二进制。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/examples/aec3_offline_compare.py">AEC3 配对入口</a>的 <code>--output-dir</code> 只接受仓外新空普通目录，执行前检查全部九个产出成员，拒绝缓存与来源路径。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch06/examples/aec_same_input_truth.py">同输入真值入口</a>在仓外临时目录处理，逐个生产者调用前保护输入/输出；显式 build manifest 严格拒绝重复键和非有限数，核实际二进制 SHA，但声明的构建配置不是独立构建证明。这些有限检查不消除并发竞态。</p>
 <p>本轮实际执行的是两个原方法审计和 38 项来源/写入合同测试，没有重跑 Speex/AEC3 生产声学链或设备实验。前文 2026-09-23/24 的配对和合成数字仍是历史运行；不能把今天的路径保护测试称为这些性能实验重新通过。增益通知、XMOS ALT 保持与 2026 两候选的固定原源/缺资产边界见<a href="02_aec_wpe_separation.html#aec">增强 A06/A17/A19</a>及<a href="03_industrial_deployment.html#i10xmos-libvoice-的-aec-与延迟控制">工业 I10</a>。</p>
-<p><a id="distributed-reproduction"></a></p>
+<p><a id="distributed-reproduction" class="source-reproduction-anchor"></a></p>
 <span id="sec-21" class="anchor-alias" aria-hidden="true"></span><span id="8-固定分布式源码静态合同原函数与完整算法" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-3b6143dc0a">8. 固定分布式源码：静态合同、原函数与完整算法</h2>
-<p>2026-10-04的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch15/examples/audit_upstream_distributed_contracts.py">审计入口</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch15/reports/upstream_distributed_contracts.json">当前报告</a>固定两套独立上游工作树。工具不获取源码、不安装依赖、不改写上游；运行前后核对官方origin、完整HEAD、实际使用的源码/许可SHA和Git blob、洁净状态及完整锁表摘要。报告的<code>acquisition_scope</code>另存全部稀疏选集状态，<code>files</code>说明这次实际依赖的文件；不能用少数入口匹配替代完整选集核验，也不把获取过程的<code>execution=not_run</code>改成整包成功。</p>
+<p>2026-10-04的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch15/reports/upstream_distributed_contracts.json">历史报告</a>保留原工具、输入和105项来源索引的身份。2026-10-05修订的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch15/examples/audit_upstream_distributed_contracts.py">审计入口</a>只允许另写<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch15/reports/upstream_distributed_contracts_current.json">当前报告</a>，默认仅打印结果。两次均固定下表的两套独立上游工作树。</p>
+<p>当前工具不获取源码、不安装依赖、不改写上游。运行前后核对官方origin、完整HEAD、所用源码/许可SHA和原Git blob、普通源文件以及洁净状态；当前锁表与获取状态须同时绑定实际完整字节。完整稀疏选集与实际所用源码分别记录，忽略成员另列；少数入口可用不能使整个选集升级为通过，获取记录的<code>execution=not_run</code>也不表示方法已经运行。</p>
+<p>实际本仓工具与共享助手依赖在执行前后各取摘要；NumPy入口文件的身份单列，不称完整NumPy包全部核验。旧报告的工具自身字节来自<code>6c1f1448dc0efdeb2ea964b9a6323643406ab209</code>，其中旧成像助手的原字节则来自<code>a215b4630c0c21a8744cf27436a2c9ffa9c00053</code>，不能把旧整依赖闭包说成来自同一提交。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
 <tr>
@@ -921,8 +924,10 @@ $\left[\begin{smallmatrix}1/10&1/5\\1/10&1/5\end{smallmatrix}\right]$。</p>
 </table></div>
 <p>合计16组顶层用例：13组匹配独立期望，1组短输入差异，2组无峰却返回数值。GCC搜索内部还调用原黄金搜索助手，这个嵌套过程不另计为顶层用例。容差来自优化搜索的区间收缩，不是设备时钟精度、ppm成绩或自然语音同步质量。静音用例说明调用者需要输入/活动和可辨识性检查，不能仅以“返回有限数字”把结果纳入评分。</p>
 <p>固定<code>setup.py</code>的<code>install_requires</code>为空，不表示完整包没有依赖。README另外列出固定的<code>paderbox</code>与<code>lazy_dataset</code>；同步模块还导入SciPy窗与<code>paderbox</code>的STFT/分帧。这里只略去三函数不使用的模块导入以限定执行范围，未安装上述依赖、运行OnlineWACD/DWACD、完整SRO/STO估计、重采样器、波束或录音数据。<a href="https://github.com/fgnt/paderwasn/blob/cd7054fcf72da637e4a5e11f035e8979691faf70/README.md" title="citation">原README</a>与<a href="https://github.com/fgnt/paderwasn/tree/cd7054fcf72da637e4a5e11f035e8979691faf70/paderwasn/synchronization" title="citation">同步源码</a>提供后续整包研究入口。</p>
+<p>固定<code>DynamicWACD</code>还有一个须与论文活动条件分开的静态边界：<a href="https://github.com/fgnt/paderwasn/blob/cd7054fcf72da637e4a5e11f035e8979691faf70/paderwasn/synchronization/sro_estimation.py#L343-L349" title="citation">原349行</a>的延迟麦克风活动段从<code>start_delayed+shift</code>开始，却以<code>start+shift+seg_len</code>结束。默认<code>seg_len=temp_dist=8192</code>且<code>shift=0</code>时，这段长16384点，另三段各长8192点。</p>
+<p>独立数组门控控制将麦克风延迟8192点设为无活动、当前8192点设为活动，参考两段都有活动。原索引取得8192个活动点，按延迟单段取得0点，活动阈值为$0.75\times8192=6144$，四段分别采用严格大于阈值的比较，于是两种门控判断分别为真、假。此处只核切片与门控，不运行原DWACD估计器、不修改上游，也不给时钟或语音性能分数。<a href="https://ris.uni-paderborn.de/download/33807/48990/gburrek_icassp22.pdf" title="citation">DWACD原论文§II～III</a>说明四个片段的活动条件；论文条件与固定源码的窗口边界分别保存。</p>
 <span id="sec-23" class="anchor-alias" aria-hidden="true"></span><span id="原matlab静态合同与五项独立控制" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-ce14b272d7">原MATLAB静态合同与五项独立控制</h3>
-<p>报告保存14项原MATLAB静态行合同，包括帧首VAD、内部/外部滤波器分工、广播版本生效次序、顺序token的作用、普通EVD、直接逆矩阵、窗函数和循环终点；配置与论文实验分开记录，详见<a href="03_industrial_deployment.html#distributed-network-deployment">工业I34</a>。本机MATLAB与Octave运行时均不可用，未安装运行时、未运行原WOLA链、GEVD-DANSE、真实网络或数据集。</p>
+<p>报告保存14项原MATLAB静态行合同，包括帧首VAD、内部/外部滤波器分工、广播版本生效次序、顺序token的作用、普通EVD、直接逆矩阵、窗函数和循环终点；配置与论文实验分开记录，详见<a href="03_industrial_deployment.html#distributed-network-deployment">工业I34</a>。本轮没有探测或执行MATLAB/Octave运行时，也未安装运行时、运行原WOLA链、GEVD-DANSE、真实网络或数据集。原历史报告中的父任务探测措辞不能当作本次探测结果。</p>
 <p>另有五项<strong>数学控制或控制流复写</strong>，不称原MATLAB运行结果：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
@@ -963,15 +968,15 @@ $\left[\begin{smallmatrix}1/10&1/5\\1/10&1/5\end{smallmatrix}\right]$。</p>
 <p>这五项控制中的配置用于隔离数学或时序问题，不是原论文的实验配置。正文的自适应广播教学核、独立数学音频和图报告同样有各自真实源与输入，不借用这份静态记录证明原MATLAB性能。</p>
 <span id="sec-24" class="anchor-alias" aria-hidden="true"></span><span id="复跑与尚未执行的候选" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-870d9e9055">复跑与尚未执行的候选</h3>
 <pre><code class="language-bash">.venv/bin/python -B -m codes.chapters.ch15.examples.audit_upstream_distributed_contracts
-.venv/bin/python -B -m codes.chapters.ch15.examples.audit_upstream_distributed_contracts --report codes/chapters/ch15/reports/upstream_distributed_contracts.json
+.venv/bin/python -B -m codes.chapters.ch15.examples.audit_upstream_distributed_contracts --report codes/chapters/ch15/reports/upstream_distributed_contracts_current.json
 .venv/bin/python -B -m unittest tests.test_codes_distributed_contracts -v
 </code></pre>
 <p>默认仅输出严格JSON，显式<code>--report</code>才通过公共IO原语保存当前报告。工具拒绝上游缓存、源码、锁表、审查记录与旧历史报告作为输出，并检查普通父链/成员、符号链接、硬链接、词法<code>..</code>及非有限数值。有限写前检查与原子替换不宣称消除并发竞态或保证崩溃持久性。离线测试以独立临时Git仓库验证错误origin、完整HEAD、摘要、脏工作树和控制失败；官方缓存缺失时可选原函数实调明确跳过，版本不符则报错。当前报告状态为<code>audit_completed_with_original_differences_and_unobserved_peaks</code>，保留实际差异与无观测输出，不把整份报告改名为全部算法通过。</p>
 <p><a href="https://github.com/p-didier/danse/tree/3f08ffd6e578a8c5301e9310d29dc31112eb20f7" title="citation">p-didier/danse固定提交</a><code>3f08ffd6e578a8c5301e9310d29dc31112eb20f7</code>的完整tree未见明确代码许可，本书只登记索引，未获取代码或其<code>pyANFgen</code>子模块；源码可见不等于取得再分发授权。它可帮助定位SRO-DANSE的作者实现，不能因有链接就登记成已运行。</p>
 <p><a href="https://github.com/p-didier/tidanseplus_batch/tree/0fcc0da19ce9e50bafc978ce1f315bac610d4c0b" title="citation">TI-DANSE+作者批处理仓</a>固定为<code>0fcc0da19ce9e50bafc978ce1f315bac610d4c0b</code>。同一提交的<a href="https://github.com/p-didier/tidanseplus_batch/blob/0fcc0da19ce9e50bafc978ce1f315bac610d4c0b/LICENSE" title="citation">根LICENSE</a>写MIT及2026版权，<a href="https://github.com/p-didier/tidanseplus_batch/blob/0fcc0da19ce9e50bafc978ce1f315bac610d4c0b/README.md" title="citation">README的License段</a>却写GPL-3.0-or-later及2025版权，存在真实矛盾。锁表保留冲突和限定研究范围，不能任选一个标签当作完整可分发许可。该仓用于定位批处理主入口与论文配置，本书未运行TI-DANSE+、原GEVD算法或论文语音指标；2025会议稿与2026扩展预印本的不同证明范围见<a href="03_industrial_deployment.html#distributed-network-deployment">工业I35</a>。</p>
-<p><a id="historical-source-bindings"></a></p>
+<p><a id="historical-source-bindings" class="source-reproduction-anchor"></a></p>
 <span id="sec-25" class="anchor-alias" aria-hidden="true"></span><span id="9-来源索引扩充后怎样核验旧报告" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-6a43af803c">9. 来源索引扩充后怎样核验旧报告</h2>
-<p>整表SHA标识报告运行时实际读取的全部字节。首次新增五个分布式项目时，锁表从100项变为105项，其摘要自然改变；这不意味着旧报告曾在105项索引下运行。随后导读复核又新增LibriCSS，并改变WASN的获取范围，当前为106项。直接给旧报告换成当前摘要会伪造执行条件，直接要求所有旧报告等于当前整表摘要也会把无关的索引扩充误判成所用算法来源改变。</p>
+<p>整表SHA标识报告运行时实际读取的全部字节。首次新增五个分布式项目时，锁表从100项变为105项，其摘要自然改变；这不意味着旧报告曾在105项索引下运行。随后导读复核又新增LibriCSS，并改变WASN的获取范围，当次增至106项；后续逐章扩充后的当前索引为115项。直接给旧报告换成当前摘要会伪造执行条件，直接要求所有旧报告等于当前整表摘要也会把无关的索引扩充误判成所用算法来源改变。</p>
 <p>本书保存提交<code>a215b4630c0c21a8744cf27436a2c9ffa9c00053</code>中两份文件的<strong>原始字节</strong>，文件名包含完整SHA。它们不是重新序列化的JSON，也不是手工删去五项所得的新表。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>

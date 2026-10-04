@@ -296,6 +296,8 @@ class BuildHelpersTest(unittest.TestCase):
              54, {1: 10, 2: 12, 3: 17, 4: 15}),
         ]
         cases.extend([
+            (ROOT / 'chapters/15_distributed-enhancement.md',
+             ('音频组', '实际文件', '该组回答的问题'), 48, {1: 8, 2: 22, 3: 18}),
             (ROOT / 'chapters/09_source-tracking.md',
              ('t（s）', '观测与真标签', '分配至 A/B', '错配数', '硬关联角误差 A/B（度）',
               '真值关联角误差 A/B（度）', 'A 角度方差（度²）'),

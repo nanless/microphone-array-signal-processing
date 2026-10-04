@@ -21,6 +21,12 @@ STATUS = LOCK.with_name("SOURCE_STATUS.json")
 CACHE = LOCK.parent / "upstream/_downloads"
 HISTORICAL_REVISION = "e4d54a158d892b224e37cc49b93066e667babf08"
 PROJECTS = {
+    'danse-wola': ('https://github.com/AlexanderBertrandLab/Old_Code.git',
+        'a24b73fcd2dc028659535d07bb08068b06108616', 'LicenseRef-Bertrand-DANSE-3-Conditions', 'WOLA_DANSE1.m',
+        '54fd630bd7f34ac3d9a97db2a30cee6c7a6a1bc496274b53f9ba9f756ce0772b'),
+    'paderwasn': ('https://github.com/fgnt/paderwasn.git',
+        'cd7054fcf72da637e4a5e11f035e8979691faf70', 'MIT', 'LICENSE',
+        '60be4f44a5baa0db1ed1c9f1bc3ea5f7274b2032bb57bd87c054fa27efaa81fe'),
     'damas-author': ('https://github.com/gilleschardon/DAMAS.git',
         '61987952e2237e6b088a169ee891dd96576f2565', 'GPL-3.0', 'LICENSE',
         '3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986'),

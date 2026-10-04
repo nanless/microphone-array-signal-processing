@@ -18,7 +18,7 @@ from codes.chapters.ch00.core.audio_samples import pcm16_bytes, read_pcm16
 from codes.chapters.ch00.io_contracts import validate_asset_directory, validate_parent_chain, strict_json_loads, same_metadata
 from codes.chapters.ch15.core.distributed_audio import (
     FILE_NAMES, OUTPUT_REFERENCES, SAMPLE_RATE, SAMPLES, LIMITS, parameters,
-    run_experiment, measure_signal,
+    run_experiment, measure_signal, validate_fixed_fixture, validate_fixed_pcm,
 )
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -45,12 +45,29 @@ def source_digests():
 
 
 def prepare_assets():
-    """Prepare full bytes and truthful read-back scores in memory, with no writes."""
+    """Validate the fixed model and all encoded bytes/scores before any write."""
+    if type(SAMPLE_RATE) is not int or SAMPLE_RATE != 16000 or type(SAMPLES) is not int or SAMPLES != 32000:
+        raise ValueError('distributed fixed fixture sample rate/length differs')
     report, arrays = run_experiment()
+    declared_parameters = parameters()
+    literal_signals = validate_fixed_fixture(report, arrays, declared_parameters, LIMITS, FILE_NAMES, OUTPUT_REFERENCES)
     contents, files, samples, decoded = {}, {}, {}, {}
     for key, array in arrays.items():
         filename = FILE_NAMES[key]; blob = pcm16_bytes(array, SAMPLE_RATE)
-        rate, decoded[key] = read_pcm16(blob); contents[filename] = blob
+        rate, decoded[key] = read_pcm16(blob)
+        try:
+            with wave.open(io.BytesIO(blob)) as reader:
+                actual = (reader.getframerate(), reader.getnchannels(), reader.getnframes(),
+                          reader.getsampwidth(), reader.getcomptype())
+                if actual != (16000, array.shape[0], 32000, 2, 'NONE'):
+                    raise ValueError('distributed fixed fixture encoded WAV format differs: '+key)
+                integers = np.frombuffer(reader.readframes(32000), dtype='<i2')
+            actual_pcm = integers.reshape(32000, array.shape[0]).T.astype(float)/32768
+        except (wave.Error, EOFError) as error:
+            raise ValueError('distributed fixed fixture encoded WAV is invalid: '+key) from error
+        if type(rate) is not int or rate != 16000 or not np.array_equal(decoded[key], actual_pcm):
+            raise ValueError('distributed fixed fixture PCM decoder differs from actual WAV: '+key)
+        contents[filename] = blob
         files[filename] = {'channels': array.shape[0], 'samples_per_channel': SAMPLES,
                            'sample_rate_hz': rate, 'sha256': _sha(blob)}
     for key, array in arrays.items():
@@ -60,9 +77,11 @@ def prepare_assets():
                         'float_components': report['float_components'].get(key),
                         'pcm_measurements': measure_signal(decoded[key], key, reference=ref, pcm=True),
                         'quantization_max_abs_error': float(np.max(abs(array-decoded[key])))}
+    validate_fixed_pcm(decoded, {key: sample['pcm_measurements'] for key, sample in samples.items()},
+                       literal_signals, OUTPUT_REFERENCES)
     manifest = {'schema_version': 1, 'origin': 'original known-covariance instantaneous mathematical node mixtures',
                 'sample_rate_hz': SAMPLE_RATE, 'samples_per_channel': SAMPLES, 'common_export_gain': 1.,
-                'source_sha256': source_digests(), 'parameters': parameters(), 'files': files, 'samples': samples,
+                'source_sha256': source_digests(), 'parameters': declared_parameters, 'files': files, 'samples': samples,
                 'float_clock_control': report['clock'], 'float_transport_control': report['transport'],
                 'finite_steady_basis_covariance': report['finite_steady_basis_covariance'],
                 'finite_steady_source_noise_cross': report['finite_steady_source_noise_cross'],

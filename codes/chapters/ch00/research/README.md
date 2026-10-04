@@ -70,6 +70,6 @@
 
 扩展专题Ⅰ新增[声学成像正文](../../../../chapters/14_acoustic-imaging.md)、[逐层源码合同](01_spatial_and_tracking.md#imaging-contract-audit)和[18题及五WAV实验](05_exercises_and_audio.md#sec-47-1)。输出是参考声压贡献及区域量；原算法、教学控制和工业条件分别核对。
 
-分布式专题Ⅱ将[节点目标与压缩条件](../../../../chapters/15_distributed-enhancement.md)、[原论文与工业网络](03_industrial_deployment.md#distributed-network-deployment)、[固定源码合同](04_source_reproduction.md#distributed-reproduction)和[24题及17WAV](05_exercises_and_audio.md#sec-48-1)互链。原统计算法、已知真值音频、源码获取与完整设备执行分别记录。
+分布式专题Ⅱ将[节点目标与压缩条件](../../../../chapters/15_distributed-enhancement.md)、[原论文与工业网络](03_industrial_deployment.md#distributed-network-deployment)、[固定源码合同](04_source_reproduction.md#distributed-reproduction)和[25题及17WAV](05_exercises_and_audio.md#sec-48-1)互链。原统计算法、已知真值音频、源码获取与完整设备执行分别记录。
 
 导读推荐的[WASN同步与LibriCSS公开评测源码](04_source_reproduction.md#overview-source-entrypoints)现已按固定提交取得限定选集。代码身份核验、原接口静态观察与未执行的依赖/评分/设备边界分别保留，不能用源码文件数代表工业验收。

@@ -2,7 +2,7 @@
 
 A beginner-friendly Chinese tutorial on microphone array signal processing at graduate-entry level. It starts with “why use an array of microphones” and covers DOA estimation, beamforming, acoustic echo cancellation (AEC), dereverberation (WPE), speech separation, source tracking, engineering practice, and system selection.
 
-The tutorial provides derivations, reproducible numerical examples, validity limits, 80 script-generated numbered figures plus one supplementary room-exercise figure, and chapter-owned teaching code. It has 357 executable exercises and 109 [main-manifest synthetic WAVs](codes/chapters/ch00/audio/MANIFEST.json) in 27 groups. The [exercise and audio handbook](codes/chapters/ch00/research/05_exercises_and_audio.md) gives inputs, answers, listening conditions, and code entry points. These sounds are mathematical samples, not natural speech or formal listening tests; two Chapter 6 AEC audio groups also use parameters that do not exactly match exercises E06-07–20.
+The tutorial provides derivations, reproducible numerical examples, validity limits, 80 script-generated numbered figures plus one supplementary room-exercise figure, and chapter-owned teaching code. It has 358 executable exercises and 109 [main-manifest synthetic WAVs](codes/chapters/ch00/audio/MANIFEST.json) in 27 groups. The [exercise and audio handbook](codes/chapters/ch00/research/05_exercises_and_audio.md) gives inputs, answers, listening conditions, and code entry points. These sounds are mathematical samples, not natural speech or formal listening tests; two Chapter 6 AEC audio groups also use parameters that do not exactly match exercises E06-07–20.
 
 Chapter 4 provides [four independent known-unitary focusing WAVs](codes/chapters/ch04/focus_audio/MANIFEST.json). Steady-window phasors and actual PCM demonstrate multifrequency covariance rank for coherent sources; directions and tagged components are known, so this is not blind localization or a formal listening test.
 
@@ -81,7 +81,7 @@ Chapter 10 adds E10-34, six independent known-channel-failure WAVs and Figure 78
 | `codes/chapters/*/reports/` | Small-scale run reports beside their algorithm chapters, separate from source acquisition and full paper benchmarks |
 | `scripts/` | Plotting and build scripts (`make_figures.py`, `make_aec_figures.py`, `make_beamforming_figures.py`, `make_reference_figures.py`, `make_delay_figures.py`, `make_css_figures.py`, `make_tracking_figures.py`, `make_channel_figures.py`, `make_selection_figures.py`, `build_site.py`, `build_pdf.py`; see `scripts/README.md`) |
 | `site/` | 22 pages: 16 tutorial pages (including the homepage) and 6 handbook pages under `research/`; reproducible build output |
-| `dist/` | [Current combined PDF](dist/microphone-array-tutorial.pdf) and rebuildable HTML; the PDF has 899 bookmarks: 16 top-level, 151 second-level and 732 third-level |
+| `dist/` | [Current combined PDF](dist/microphone-array-tutorial.pdf) and rebuildable HTML; the PDF has 905 bookmarks: 16 top-level, 151 second-level and 738 third-level |
 
 ## Chapters
 
@@ -100,7 +100,7 @@ Chapter 10 adds E10-34, six independent known-channel-failure WAVs and Figure 78
 | Ch 10 | `chapters/10_engineering-practice.md` | Reference pipeline, critical-path latency, SRO/calibration, resource budgets, evaluation | Intermediate |
 | Ch 11 | `chapters/11_selection-guide.md` | Conditional selection, scenario constraints, verifiable specifications, exercises | Beginner |
 | Extension I | `chapters/14_acoustic-imaging.md` | CSM, spherical scan, PSF, DAMAS/CLEAN-SC/simplified CSM fitting, calibration and region quantities; 18 step-by-step exercises | Advanced |
-| Extension II | `chapters/15_distributed-enhancement.md` | Node-specific MWF, task-related compression, DANSE conditions, tree topology, GEVD, clock and packet controls; 24 exercises and 17 independent WAVs | Advanced |
+| Extension II | `chapters/15_distributed-enhancement.md` | Node-specific MWF, task-related compression, DANSE conditions, tree topology, GEVD, clock and packet controls; 25 exercises and 17 independent WAVs | Advanced |
 | App A | `chapters/12_appendix-symbols-math.md` | Symbols, terminology, math refresher | Reference |
 | App B | `chapters/13_appendix-guide.md` | Learning paths, field map, research frontier, debugging, the 17 comprehensive written exercises and E13-01–14 code exercises, reproduction guide | Reference |
 

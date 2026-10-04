@@ -378,7 +378,11 @@ ArrayDPS固定 `750ac2b7c75458f4ca5bad203dafda528f575e55` 的真实采样入口�
 
 ## 8. 固定分布式源码：静态合同、原函数与完整算法
 
-2026-10-04的[审计入口](../../ch15/examples/audit_upstream_distributed_contracts.py)和[当前报告](../../ch15/reports/upstream_distributed_contracts.json)固定两套独立上游工作树。工具不获取源码、不安装依赖、不改写上游；运行前后核对官方origin、完整HEAD、实际使用的源码/许可SHA和Git blob、洁净状态及完整锁表摘要。报告的`acquisition_scope`另存全部稀疏选集状态，`files`说明这次实际依赖的文件；不能用少数入口匹配替代完整选集核验，也不把获取过程的`execution=not_run`改成整包成功。
+2026-10-04的[历史报告](../../ch15/reports/upstream_distributed_contracts.json)保留原工具、输入和105项来源索引的身份。2026-10-05修订的[审计入口](../../ch15/examples/audit_upstream_distributed_contracts.py)只允许另写[当前报告](../../ch15/reports/upstream_distributed_contracts_current.json)，默认仅打印结果。两次均固定下表的两套独立上游工作树。
+
+当前工具不获取源码、不安装依赖、不改写上游。运行前后核对官方origin、完整HEAD、所用源码/许可SHA和原Git blob、普通源文件以及洁净状态；当前锁表与获取状态须同时绑定实际完整字节。完整稀疏选集与实际所用源码分别记录，忽略成员另列；少数入口可用不能使整个选集升级为通过，获取记录的`execution=not_run`也不表示方法已经运行。
+
+实际本仓工具与共享助手依赖在执行前后各取摘要；NumPy入口文件的身份单列，不称完整NumPy包全部核验。旧报告的工具自身字节来自`6c1f1448dc0efdeb2ea964b9a6323643406ab209`，其中旧成像助手的原字节则来自`a215b4630c0c21a8744cf27436a2c9ffa9c00053`，不能把旧整依赖闭包说成来自同一提交。
 
 | 上游与完整提交 | 本次所用入口 | 许可与范围 |
 |---|---|---|
@@ -402,9 +406,13 @@ ArrayDPS固定 `750ac2b7c75458f4ca5bad203dafda528f575e55` 的真实采样入口�
 
 固定`setup.py`的`install_requires`为空，不表示完整包没有依赖。README另外列出固定的`paderbox`与`lazy_dataset`；同步模块还导入SciPy窗与`paderbox`的STFT/分帧。这里只略去三函数不使用的模块导入以限定执行范围，未安装上述依赖、运行OnlineWACD/DWACD、完整SRO/STO估计、重采样器、波束或录音数据。[原README](https://github.com/fgnt/paderwasn/blob/cd7054fcf72da637e4a5e11f035e8979691faf70/README.md "citation")与[同步源码](https://github.com/fgnt/paderwasn/tree/cd7054fcf72da637e4a5e11f035e8979691faf70/paderwasn/synchronization "citation")提供后续整包研究入口。
 
+固定`DynamicWACD`还有一个须与论文活动条件分开的静态边界：[原349行](https://github.com/fgnt/paderwasn/blob/cd7054fcf72da637e4a5e11f035e8979691faf70/paderwasn/synchronization/sro_estimation.py#L343-L349 "citation")的延迟麦克风活动段从`start_delayed+shift`开始，却以`start+shift+seg_len`结束。默认`seg_len=temp_dist=8192`且`shift=0`时，这段长16384点，另三段各长8192点。
+
+独立数组门控控制将麦克风延迟8192点设为无活动、当前8192点设为活动，参考两段都有活动。原索引取得8192个活动点，按延迟单段取得0点，活动阈值为$0.75\times8192=6144$，四段分别采用严格大于阈值的比较，于是两种门控判断分别为真、假。此处只核切片与门控，不运行原DWACD估计器、不修改上游，也不给时钟或语音性能分数。[DWACD原论文§II～III](https://ris.uni-paderborn.de/download/33807/48990/gburrek_icassp22.pdf "citation")说明四个片段的活动条件；论文条件与固定源码的窗口边界分别保存。
+
 ### 原MATLAB静态合同与五项独立控制
 
-报告保存14项原MATLAB静态行合同，包括帧首VAD、内部/外部滤波器分工、广播版本生效次序、顺序token的作用、普通EVD、直接逆矩阵、窗函数和循环终点；配置与论文实验分开记录，详见[工业I34](03_industrial_deployment.md#distributed-network-deployment)。本机MATLAB与Octave运行时均不可用，未安装运行时、未运行原WOLA链、GEVD-DANSE、真实网络或数据集。
+报告保存14项原MATLAB静态行合同，包括帧首VAD、内部/外部滤波器分工、广播版本生效次序、顺序token的作用、普通EVD、直接逆矩阵、窗函数和循环终点；配置与论文实验分开记录，详见[工业I34](03_industrial_deployment.md#distributed-network-deployment)。本轮没有探测或执行MATLAB/Octave运行时，也未安装运行时、运行原WOLA链、GEVD-DANSE、真实网络或数据集。原历史报告中的父任务探测措辞不能当作本次探测结果。
 
 另有五项**数学控制或控制流复写**，不称原MATLAB运行结果：
 
@@ -422,7 +430,7 @@ ArrayDPS固定 `750ac2b7c75458f4ca5bad203dafda528f575e55` 的真实采样入口�
 
 ```bash
 .venv/bin/python -B -m codes.chapters.ch15.examples.audit_upstream_distributed_contracts
-.venv/bin/python -B -m codes.chapters.ch15.examples.audit_upstream_distributed_contracts --report codes/chapters/ch15/reports/upstream_distributed_contracts.json
+.venv/bin/python -B -m codes.chapters.ch15.examples.audit_upstream_distributed_contracts --report codes/chapters/ch15/reports/upstream_distributed_contracts_current.json
 .venv/bin/python -B -m unittest tests.test_codes_distributed_contracts -v
 ```
 
@@ -436,7 +444,7 @@ ArrayDPS固定 `750ac2b7c75458f4ca5bad203dafda528f575e55` 的真实采样入口�
 
 ## 9. 来源索引扩充后怎样核验旧报告
 
-整表SHA标识报告运行时实际读取的全部字节。首次新增五个分布式项目时，锁表从100项变为105项，其摘要自然改变；这不意味着旧报告曾在105项索引下运行。随后导读复核又新增LibriCSS，并改变WASN的获取范围，当前为106项。直接给旧报告换成当前摘要会伪造执行条件，直接要求所有旧报告等于当前整表摘要也会把无关的索引扩充误判成所用算法来源改变。
+整表SHA标识报告运行时实际读取的全部字节。首次新增五个分布式项目时，锁表从100项变为105项，其摘要自然改变；这不意味着旧报告曾在105项索引下运行。随后导读复核又新增LibriCSS，并改变WASN的获取范围，当次增至106项；后续逐章扩充后的当前索引为115项。直接给旧报告换成当前摘要会伪造执行条件，直接要求所有旧报告等于当前整表摘要也会把无关的索引扩充误判成所用算法来源改变。
 
 本书保存提交`a215b4630c0c21a8744cf27436a2c9ffa9c00053`中两份文件的**原始字节**，文件名包含完整SHA。它们不是重新序列化的JSON，也不是手工删去五项所得的新表。
 

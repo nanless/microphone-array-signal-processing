@@ -3,9 +3,9 @@
   "scope": "known-statistics finite teaching controls; not blind DANSE or industrial performance",
   "source_sha256": {
     "scripts/make_figures.py": "c7544e82e936ad283b33d7e01b6a51e41caaf047b8ced0a6d47013020b58d83f",
-    "codes/chapters/ch15/core/distributed.py": "f0e97412194b705b965b18dcb760b65c9ea69f011791006f502518a87214f0c0",
-    "codes/chapters/ch15/core/distributed_audio.py": "2f2117f0e5aa378e4d598aaa49a31c28e4227e799577f854d6ffd0e836699ade",
-    "codes/chapters/ch15/examples/generate_distributed_audio.py": "141a78c9f149802c47b66a94f32b92866e9f93e9f0a59e97eb5d822c86986c12",
+    "codes/chapters/ch15/core/distributed.py": "b4126c7418a04992c2a17c23d0705b69923c9e38969319f60bda3c38cb06f1ae",
+    "codes/chapters/ch15/core/distributed_audio.py": "c26e3afd0722b010e6156adb47cde43b1cc1289931aea8a84f9bb2937f8091a7",
+    "codes/chapters/ch15/examples/generate_distributed_audio.py": "c732b0befec824e407a7da2fa52c99b8f5b150d9f397defc1218d517d2aa21d9",
     "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
     "codes/chapters/ch04/core/covariance.py": "d704be037100ee53caf6e2130fbabbe14ce6eeff9e3d11dde389fd368d271249",
     "codes/chapters/ch10/sro_closed_loop_demo.py": "a572e60eaac16cdb20c378b955e2bea4590b6531d788ad72d27cce9ad9ac400a",
@@ -208,5 +208,5 @@
     },
     "comparison_scope": "same inputs within each panel; two noise covariance models differ"
   },
-  "audio_manifest_sha256": "6684d7f391668c3ff6773c859bf939ddd778116fead7ec592f654ead1eb5dcaa"
+  "audio_manifest_sha256": "ad9df1a0cb784b0bdff03b77bd8a688b49582d19561ab94a00b0c98f3e218a15"
 }

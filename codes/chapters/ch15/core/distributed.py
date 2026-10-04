@@ -30,19 +30,74 @@ def _integer(value, name, minimum=0):
     return int(value)
 
 
-def _models(target_covariance, noise_covariance):
-    rs = _validate_covariance(_complex(target_covariance, 'target covariance'))
-    rn = _validate_covariance(_complex(noise_covariance, 'noise covariance'))
+def _covariance(value, name):
+    raw = _complex(value, name)
+    validated = _validate_covariance(raw)  # Always check shape, Hermitian and PSD.
+    # Half-and-half averaging erases the minimum positive subnormal. Exact
+    # Hermitian inputs need no repair; retain them only AFTER PSD validation.
+    return raw.copy() if np.array_equal(raw, raw.conj().T) else validated
+
+
+def _physical_models(target_covariance, noise_covariance):
+    rs = _covariance(target_covariance, 'target covariance')
+    rn = _covariance(noise_covariance, 'noise covariance')
     if rs.shape != rn.shape:
         raise ValueError('target/noise covariance shapes differ')
-    peak = float(max(np.max(np.maximum(abs(rs.real), abs(rs.imag))),
-                     np.max(np.maximum(abs(rn.real), abs(rn.imag)))))
+    return rs, rn
+
+
+def _component_peak(value):
+    return float(np.max(np.maximum(abs(value.real), abs(value.imag))))
+
+
+def _scaled_parts(value, scale):
+    # Complex division itself can overflow at subnormal scales.
+    reduced = value.real/scale+1j*(value.imag/scale)
+    if (np.any((value.real != 0) & (reduced.real == 0))
+            or np.any((value.imag != 0) & (reduced.imag == 0))):
+        raise ValueError('normalization erases a nonzero covariance component; model exceeds float64 solve support')
+    return reduced
+
+
+def _models(target_covariance, noise_covariance):
+    rs, rn = _physical_models(target_covariance, noise_covariance)
+    peak = max(_component_peak(rs), _component_peak(rn))
     if not peak:
         raise np.linalg.LinAlgError('zero observation covariance is not positive definite')
-    # Divide components separately, including at subnormal powers.
-    sn = rs.real/peak+1j*(rs.imag/peak)
-    nn = rn.real/peak+1j*(rn.imag/peak)
-    return rs, rn, sn, nn, peak
+    # Solves share coordinates. Refuse a lost nonzero term rather than silently
+    # solving another model. Physical MSE uses each matrix's own scale below.
+    return rs, rn, _scaled_parts(rs, peak), _scaled_parts(rn, peak), peak
+
+
+def _norm_parts(value):
+    if not np.all(np.isfinite(value)):
+        raise ValueError('normal-equation residual must be finite')
+    peak = _component_peak(value)
+    if not peak:
+        return 0., 0.
+    real, imag = value.real/peak, value.imag/peak
+    return peak, math.sqrt(float(np.sum(real*real+imag*imag)))
+
+
+def _normal_residual(residual, rhs):
+    numerator, n = _norm_parts(residual)
+    denominator, d = _norm_parts(rhs)
+    if not denominator:
+        absolute = numerator*n
+        if not math.isfinite(absolute):
+            raise ValueError('absolute normal-equation residual exceeds float64 support')
+        return absolute, 'absolute_scaled_coordinates_zero_rhs'
+    if not numerator:
+        return 0., 'relative_nonzero_rhs'
+    # Form a ratio of norm parts, never square tiny original components.
+    nm, ne = math.frexp(numerator); dm, de = math.frexp(denominator)
+    try:
+        ratio = math.ldexp((nm/dm)*(n/d), ne-de)
+    except OverflowError as error:
+        raise ValueError('relative normal-equation residual exceeds float64 support') from error
+    if not math.isfinite(ratio) or ratio == 0:
+        raise ValueError('nonzero relative normal-equation residual exceeds float64 support')
+    return ratio, 'relative_nonzero_rhs'
 
 
 def _reference(reference, channels):
@@ -64,15 +119,31 @@ def mwf_weights(target_covariance, noise_covariance, reference=0, *, condition_l
 
 
 def _quadratic(matrix, vector, physical_scale):
+    # Exactly zero rows/columns contribute no power. Exclude those coordinates
+    # BEFORE scaling the vector; a huge coefficient there must not hide a
+    # small, physically active coefficient elsewhere.
+    active = np.any(matrix != 0, axis=1)
+    if not np.any(active):
+        return 0.
+    matrix = matrix[np.ix_(active, active)]; vector = vector[active]
     peak = float(np.max(np.maximum(abs(vector.real), abs(vector.imag))))
     if not peak:
         return 0.
     v = vector.real/peak+1j*(vector.imag/peak)
-    reduced = float(np.vdot(v, matrix@v).real)
+    if (np.any((vector.real != 0) & (v.real == 0))
+            or np.any((vector.imag != 0) & (v.imag == 0))):
+        raise ValueError('quadratic vector normalization erases a nonzero component')
+    products = matrix*v[None, :]
+    if np.any((matrix != 0) & (v[None, :] != 0) & (products == 0)):
+        raise ValueError('nonzero quadratic product exceeds float64 intermediate support')
+    action = matrix@v
+    reduced = float(np.vdot(v, action).real)
     # PSD validation permits small roundoff; a negative quadratic is not clipped.
     if reduced < 0:
         raise np.linalg.LinAlgError('quadratic power is negative; model is not usable at this direction')
     if reduced == 0:
+        if np.any(action != 0):
+            raise ValueError('nonzero quadratic action has an unrepresentable reduced power')
         return 0.
     # Combine binary exponents before reconstruction. On some platforms
     # np.longdouble is float64, so a wider dtype cannot be assumed here.
@@ -96,22 +167,26 @@ Target and noise are assumed uncorrelated in this covariance model. The
 distortion uses (w-e_r).H Rs (w-e_r), avoiding cancellation of large terms.
 It is not a cost formula valid only at the MWF optimum.
 """
-    _, _, rs, rn, scale = _models(target_covariance, noise_covariance)
+    rs, rn = _physical_models(target_covariance, noise_covariance)
     reference = _reference(reference, len(rs))
     w = _complex(weights, 'weights')
     if w.shape != (len(rs),):
         raise ValueError('weights must have one entry per global microphone')
+    power = float(rs[reference, reference].real)
+    if power < 0:
+        raise ValueError('reference target power must not be negative, including validation-tolerance roundoff')
     e = np.zeros(len(rs), complex); e[reference] = 1
-    distortion = _quadratic(rs, w-e, scale)
-    noise = _quadratic(rn, w, scale)
+    def physical_quadratic(matrix, vector):
+        scale = _component_peak(matrix)
+        return _quadratic(_scaled_parts(matrix, scale), vector, scale) if scale else 0.
+    distortion = physical_quadratic(rs, w-e)
+    noise = physical_quadratic(rn, w)
     total = distortion+noise
     if not np.isfinite(total):
         raise ValueError('total MSE exceeds float64 support')
-    power = float(np.longdouble(rs[reference, reference].real)*np.longdouble(scale))
-    if not np.isfinite(power) or (rs[reference, reference].real != 0 and power == 0):
-        raise ValueError('reference target power is outside float64 support')
     normalized = total/power if power else None
-    if normalized is not None and not np.isfinite(normalized):
+    if normalized is not None and (not np.isfinite(normalized)
+                                    or (total > 0 and normalized == 0)):
         raise ValueError('normalized MSE exceeds float64 support')
     return {'target_distortion': distortion, 'noise_power': noise, 'total_mse': total,
             'reference_target_power': power, 'normalized_mse': normalized,
@@ -304,11 +379,11 @@ It is neither a distributed covariance estimator nor a theorem guarantee.
             outputs[k] = effective
         for solution in solutions:
             solution['effective_weights_after_broadcast'] = outputs[solution['node']].copy()
-        residuals = []
+        residuals, residual_modes = [], []
         for w, reference in zip(outputs, references):
-            p = rs[:, reference]; norm = float(np.linalg.norm(p))
-            residual = float(np.linalg.norm((rs+rn)@w-p))
-            residuals.append(residual/norm if norm else residual)
+            p = rs[:, reference]
+            residual, mode = _normal_residual((rs+rn)@w-p, p)
+            residuals.append(residual); residual_modes.append(mode)
         history.append({'epoch': epoch, 'active_nodes': active, 'update_solve_count': updates,
                         'total_solve_count': len(nodes)+updates, 'solutions': solutions,
                         'compressions_before': before, 'compressions_after': [c.copy() for c in v],
@@ -319,7 +394,8 @@ It is neither a distributed covariance estimator nor a theorem guarantee.
                         'current_receiver_projections': [t.copy() for t in current_projections],
                         'output_age_in_update_solves': [updates-t for t in output_time],
                         'cached_components': [mse_components(rs_raw, rn_raw, w, r) for w, r in zip(outputs, references)],
-                        'normal_equation_relative_residuals': residuals})
+                        'normal_equation_relative_residuals': residuals,
+                        'normal_equation_residual_modes': residual_modes})
         if len(visited) == len(nodes) and max(residuals) <= tolerance:
             status = 'known_covariance_residual_reached'; break
     return {'schedule': schedule, 'relaxation': relaxation, 'tolerance': tolerance,
@@ -329,8 +405,51 @@ It is neither a distributed covariance estimator nor a theorem guarantee.
             'compressions': [c.copy() for c in v], 'cached_outputs': [w.copy() for w in outputs],
             'receiver_coefficients_raw_coordinates': [u.copy() for u in receivers],
             'receiver_peer_maps': [peers.copy() for peers in receiver_peers],
-            'history': history, 'stop_condition': 'all current-broadcast effective normal-equation residuals <= tolerance, after visiting every node',
+            'history': history, 'stop_condition': 'all current-broadcast effective residuals <= tolerance after visiting every node; relative for nonzero rhs, absolute in scaled covariance coordinates for genuinely zero rhs',
             'scope': 'finite known-global-covariance teaching update; not MATLAB DANSE or its convergence proof'}
+
+
+def broadcast_statistics_control():
+    """E15-25: mix two versions of one invertible broadcast coordinate.
+
+    x1=s+n1, x2=s+n2, with mutually uncorrelated unit-power components.
+    The new observation is C@x, C=diag(1,2). Costs always use the ORIGINAL
+    physical x and target s. A mixed-coordinate SCM is PSD but inconsistent
+    with that current input. This is not online SCM estimation or WOLA.
+    """
+    rs = np.ones((2, 2), complex); rn = np.eye(2, dtype=complex)
+    c = np.diag([1., 2.]).astype(complex)
+    old = {'target_covariance': rs, 'noise_covariance': rn,
+           'observation_covariance': rs+rn, 'cross_covariance': rs[:, 0]}
+    new_rs = c@rs@c.conj().T; new_rn = c@rn@c.conj().T
+    new = {'target_covariance': new_rs, 'noise_covariance': new_rn,
+           'observation_covariance': new_rs+new_rn, 'cross_covariance': c@rs[:, 0]}
+    mix_rs = (rs+new_rs)/2; mix_rn = (rn+new_rn)/2
+    mixed = {'target_covariance': mix_rs, 'noise_covariance': mix_rn,
+             'observation_covariance': mix_rs+mix_rn,
+             'cross_covariance': (old['cross_covariance']+new['cross_covariance'])/2}
+    transformed_old_rs = c@rs@c.conj().T
+    transformed_old_rn = c@rn@c.conj().T
+    aligned_rs = (transformed_old_rs+new_rs)/2
+    aligned_rn = (transformed_old_rn+new_rn)/2
+    cases = {}
+    for name, target, noise, projection in (
+            ('old_coordinates', rs, rn, np.eye(2)),
+            ('current_reset', new_rs, new_rn, c),
+            ('unconverted_mixture', mix_rs, mix_rn, c),
+            ('converted_mixture', aligned_rs, aligned_rn, c)):
+        h = mwf_weights(target, noise)
+        w = projection.conj().T@h
+        cases[name] = {'receiver_weights': h, 'effective_weights': w,
+                       'physical_components': mse_components(rs, rn, w)}
+    return {'exercise_id': 'E15-25', 'coordinate_map': c,
+            'physical_target_covariance': rs, 'physical_noise_covariance': rn,
+            'old_statistics': old, 'current_statistics': new,
+            'unconverted_mixture_statistics': mixed,
+            'converted_mixture_statistics': {'observation_covariance': aligned_rs+aligned_rn,
+                                            'cross_covariance': c@old['cross_covariance']},
+            'cases': cases, 'scope': 'exact two-channel ensemble statistics; equal mixture of versions, not finite-data online estimation',
+            'limits': 'Invertible coordinate changes permit transporting old statistics. A changed compression row space need not admit such a map; missing raw directions are not reconstructed.'}
 
 
 def run_covariance_experiments():

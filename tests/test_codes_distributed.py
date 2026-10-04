@@ -230,7 +230,7 @@ class DistributedTests(unittest.TestCase):
 
     def test_independent_exercise_id_set_and_finite_json(self):
         result = run_experiments()
-        expected = {'E15-'+str(i).zfill(2) for i in range(1, 25)}
+        expected = {'E15-'+str(i).zfill(2) for i in range(1, 26)}
         self.assertEqual(set(result['exercises']), expected)
         self.assertNotIn('schema_version', result['exercises'])
         json.dumps(result, allow_nan=False)

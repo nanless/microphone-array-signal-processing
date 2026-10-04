@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-10-04T21:20:47.030842+00:00",
+  "generated_at": "2026-10-04T22:54:36.834107+00:00",
   "environment": {
     "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
     "numpy": "2.5.3",
@@ -11,7 +11,7 @@
   "binding_sha256": "1f31b18d52c55230d52f1e5bc1d4ec234b9c200457a36ea0c99fddfa5447e7fd",
   "actual_dependency_sha256": {
     "codes/chapters/ch06/examples/audit_aec_upstream_interfaces.py": "38f54269f351cee09a66bbf9dc55583678307596c55059b329836f087f63f03d",
-    "codes/chapters/ch04/core/upstream_contracts.py": "4898ceaddfcd0821a6564360bc68489766438afef13ef783f0d182ffc0dddeb1",
+    "codes/chapters/ch04/core/upstream_contracts.py": "db86f54c9e7e96217d271f74bcca11831ff4c36985ec8a82df7d0a3f5cd271ef",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },

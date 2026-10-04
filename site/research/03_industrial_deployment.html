@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>工业音频实现研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="d689204a92b2"><style>
+<meta name="source-digest" content="645849d8f4d7"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -10,6 +10,7 @@ h1,h2,h3,h4{scroll-margin-top:60px}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
 @media screen{.main .separation-topic-anchor{scroll-margin-top:60px}}
+@media screen{.main .source-reproduction-anchor{scroll-margin-top:60px}}
 a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
 .skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
 .skip-link:focus{top:8px}
@@ -1181,7 +1182,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="sec-61" class="anchor-alias" aria-hidden="true"></span><span id="i34wola源码的滤波时序与论文配置" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-f1f6990f01">I34：WOLA源码的滤波时序与论文配置</h3>
 <p><a href="https://homes.esat.kuleuven.be/~abertran/reports/IWAENC10.pdf" title="citation">IWAENC 2010作者全文</a>§III将频域语音失真加权MWF接入加权重叠相加（WOLA）分析/合成，讨论平方根Hann、50%重叠和指数统计更新；其链路模型忽略传输延迟。§IV的实验使用32kHz、512点窗、$\mu=5$、$\alpha=0.5$与理想VAD。这组论文配置不能由另一版演示文件的默认值反推。</p>
 <p>本书取得的作者<a href="https://github.com/AlexanderBertrandLab/Old_Code/blob/a24b73fcd2dc028659535d07bb08068b06108616/WOLA_DANSE1.m" title="citation">固定 <code>WOLA_DANSE1.m</code> v1.4</a>必须显式传入<code>fs</code>，没有采样率默认值。其示例输入使用16kHz；默认FFT长为<code>512*fs/16000</code>，故该示例对应512点。真正的默认项包括<code>mu=1</code>、<code>alpha=0.7</code>和同时模式开启；协方差与外部平滑的半衰期分别为2s、0.2s。更新门限分别累计每个VAD类别的三秒等效帧数，不代表输入三秒后必定有可用的两类统计。</p>
-<p>静态控制流还揭示四项接入合同。其一，VAD取每帧首样本；外部<code>Wext</code>先用于广播，随后向旧目标平滑，更新事件最后才产生新目标，因而事件产生的新目标在第二个后续广播帧才开始影响消息。其二，即使选择顺序token模式，各节点的内部<code>Wint</code>仍逐帧更新，token限制的是外部目标更新。其三，原文件的对称Hann没有逐点COLA校正，循环也没有排出完整尾部。其四，直接<code>inv</code>没有加载；普通EVD先取代数最大特征值，再取其绝对值，不能当作噪声白化GEVD或正半定投影。这些是固定源的实际步骤，未执行MATLAB。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch15/reports/upstream_distributed_contracts.json">静态定位与独立控制报告</a></p>
+<p>静态控制流还揭示四项接入合同。其一，VAD取每帧首样本；外部<code>Wext</code>先用于广播，随后向旧目标平滑，更新事件最后才产生新目标，因而事件产生的新目标在第二个后续广播帧才开始影响消息。其二，即使选择顺序token模式，各节点的内部<code>Wint</code>仍逐帧更新，token限制的是外部目标更新。其三，原文件的对称Hann没有逐点COLA校正，循环也没有排出完整尾部。其四，直接<code>inv</code>没有加载；普通EVD先取代数最大特征值，再取其绝对值，不能当作噪声白化GEVD或正半定投影。这些是固定源的实际步骤，未执行MATLAB。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch15/reports/upstream_distributed_contracts_current.json">当前静态定位与独立控制报告</a></p>
 <p>读取原源码时应分别保存内部估计权重、当前外部广播权重、外部目标权重和更新时间。把同帧谱直接拼接的演示改成网络程序，还要引入样本标签、广播版本、等待/缺口规则与队列；不能只加一个发送函数就沿用其零延迟观测模型。</p>
 <span id="sec-62" class="anchor-alias" aria-hidden="true"></span><span id="i35拓扑低秩统计与采样率补偿分别改变什么" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-dd0feef1ad">I35：拓扑、低秩统计与采样率补偿分别改变什么</h3>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -1228,6 +1229,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>TI-DANSE的正式卷期是TSIPN 3(1)，130～144，2017，DOI为10.1109/TSIPN.2016.2623095；不要用DOI中的年份替代卷期年份。TI-GEVD作者稿式(11)的目标特征值差写法与式(12)增益不一致；本书白化例依据2016年GEVD原文使用$\lambda-1$与$1-1/\lambda$，不照抄该处差式。<a href="https://ftp.esat.kuleuven.be/SISTA/abertran/reports/GEVD_DS_TSP2016.pdf" title="citation">2016年GEVD作者稿</a></p>
 <p>SRO估计还要区分三层输入。第10章的拟合控制使用精确合成时间戳，不能当作盲音频估计。2023年SRO-DANSE以跨节点相干性变化推测速率，再通过接收计数与整数滑移维持相位历史；丢包、启动错位和声源运动会引入其他变化。16kHz、100ppm的设备每秒多1.6个样本，约0.625s积累一个样本；若帧移为512点，积累一个<strong>整帧移</strong>约需320s。后一个尺度不能用作允许忽略采样偏差的时间。<a href="https://arxiv.org/html/2211.02489v2" title="citation">SRO-DANSE §IV-B</a></p>
 <p><a href="https://ris.uni-paderborn.de/download/33807/48990/gburrek_icassp22.pdf" title="citation">DWACD原文，ICASSP 2022 §II～III</a>允许活动说话人在不同局部片段改变位置，但依赖相关性、活动筛选和短片段内近似稳定的声学关系；其STO讨论还利用位置/传播时间信息，不能把初始错位全当作时钟偏差。其公开同步源码可作后续入口，实际仅运行三个小函数的范围见<a href="04_source_reproduction.html#distributed-reproduction">复现合同</a>。这些方法纳入学习导航，是因为分别解决广播维数、拓扑、低秩统计和采样时钟问题；不将论文中的不同任务与配置排成统一设备排名。</p>
+<p>广播系数更新还改变了接收统计的坐标。<a href="https://arxiv.org/html/2506.02797v2" title="citation">TI-DANSE+ 2026 §III-G1</a>建议在同一迭代内累计、跨迭代重置，并等待目标活动和纯噪声两类帧都有足够支持。若变化只是已知可逆坐标变换，可以同时转换旧协方差与互相关后累计，完整手算见<a href="../15_distributed-enhancement.html#e15-25">E15-25</a>。一般压缩方向改变会丢失旧未保留方向，不能假定仅凭旧压缩统计便可恢复新统计；重置本身也不保证短记录能估准。</p>
 <span id="sec-63" class="anchor-alias" aria-hidden="true"></span><span id="i36rtp时间戳参考时钟与dante的适用范围" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-32e86cc0d6">I36：RTP时间戳、参考时钟与Dante的适用范围</h3>
 <p>包的到达时间、首样本采样时间与播放时间是三个测点。<a href="https://www.rfc-editor.org/rfc/rfc3550.html#section-5.1" title="citation">RFC 3550 §5.1</a>的RTP序号按包递增；时间戳标记包内首个音频采样时刻，按采样时钟推进，起始值可以随机。两个流的裸时间戳不能直接相减，RTCP发送报告中的NTP/RTP对才提供时间映射。§6.4.1的到达间隔抖动是另一统计量，不能直接作为ADC相对ppm。序号缺口也不自动给出缺失的样本数，须结合载荷、时间戳和发送协议。</p>
 <p><a href="https://www.rfc-editor.org/rfc/rfc7273.html" title="citation">RFC 7273 §4～6</a>分别声明时间戳参考时钟与媒体时钟来源；<code>ts-refclk</code>和<code>mediaclk</code>表达不同关系。操作系统墙钟由PTP校准，本身不足以证明音频ADC速率也被该时钟约束。跨节点相干增强应检查参考钟、媒体时钟、初始映射、累计采样计数和不连续事件；缺少关系声明时不能仅以两个文件头相同采样率认定同步。</p>

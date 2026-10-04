@@ -1,4 +1,4 @@
-"""Run E15-01..24 with NumPy and in-memory PCM; never write or download.
+"""Run E15-01..25 with NumPy and in-memory PCM; never write or download.
 
 Usage: python -m codes.chapters.ch15.chapter15_exercises [--exercise E15-06]
 Metadata is outside the stable exercise-ID map. Known-model controls are not
@@ -18,13 +18,13 @@ from codes.chapters.ch00.core.audio_samples import pcm16_bytes, read_pcm16
 from codes.chapters.ch04.core.covariance import _load_covariance
 from codes.chapters.ch15.core.distributed import (
     known_models, mwf_weights, mse_components, compressed_mwf, distributed_updates,
-    run_covariance_experiments, jacobi_control, step_size_control, tree_sum_control, gevd_control,
+    run_covariance_experiments, jacobi_control, step_size_control, tree_sum_control, gevd_control, broadcast_statistics_control,
 )
 from codes.chapters.ch15.core.distributed_audio import (
     SAMPLE_RATE, POWER, run_experiment, measure_signal, OUTPUT_REFERENCES,
 )
 
-EXERCISE_IDS = tuple('E15-'+str(i).zfill(2) for i in range(1, 25))
+EXERCISE_IDS = tuple('E15-'+str(i).zfill(2) for i in range(1, 26))
 
 
 def _json(value):
@@ -171,6 +171,7 @@ def run_experiments():
         'E15-22': step_size_control(),
         'E15-23': tree_sum_control(),
         'E15-24': gevd_control(),
+        'E15-25': broadcast_statistics_control(),
     }
     if set(exercises) != set(EXERCISE_IDS):
         raise AssertionError('exercise ID set differs')
