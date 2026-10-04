@@ -1,0 +1,1092 @@
+{
+  "schema_version": 1,
+  "exercise_id": "E04-24",
+  "sample_rate_hz": 16000,
+  "samples_per_channel": 32012,
+  "common_export_gain": 1.0,
+  "origin": "original deterministic coherent direct/reflection mathematical synthesis",
+  "source_sha256": {
+    "codes/chapters/ch04/core/reflection_audio.py": "55bf651f1cdc0d83763871e9729210c89e92c1861a99d4da54ea616b50cf78fb",
+    "codes/chapters/ch04/examples/generate_reflection_audio.py": "31a78db1a48fd2102ef1695ae096578885f5c54956f2ad87ab7abc079e0f39fb",
+    "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
+  },
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "parameters": {
+    "exercise_id": "E04-24",
+    "sample_rate_hz": 16000,
+    "source_samples": 32000,
+    "samples_per_channel": 32012,
+    "frequency_hz": 4000.0,
+    "source_amplitude": 0.1,
+    "sound_speed_m_s": 343.0,
+    "microphone_spacing_m": 0.042875,
+    "source_direction_convention": "unit vector from array toward source; tau=-d*sin(theta)/c",
+    "direct_angle_deg": 0.0,
+    "reflection_angle_deg": 30.0,
+    "direct_delay_samples": [
+      8,
+      8
+    ],
+    "reflection_delay_samples": [
+      12,
+      11
+    ],
+    "common_export_gain": 1.0,
+    "fade_samples": 320,
+    "fade": "squared sine, endpoints included, before all delays",
+    "waveform_model": "reference=F; direct=[D8 F,D8 F]; reflection=[D12 F,D11 F]; mixed=direct+reflection",
+    "delay_implementation": "integer causal delay, zero extension, complete 12-sample tail",
+    "channel_order": [
+      "microphone_0",
+      "microphone_1"
+    ],
+    "scoring_interval_samples": [
+      2400,
+      29600
+    ],
+    "samples_in_scoring_window": 27200,
+    "scoring_cycles": 6800,
+    "phasor_convention": "cos coefficient minus j*sin coefficient; absolute sample clock",
+    "normalized_covariance": "(z/0.1)(z/0.1)^H; single known phasor outer product",
+    "virtual_covariance_diagonal": 0.1,
+    "virtual_covariance_scope": "model control only; no noise added to any WAV",
+    "randomness": "none",
+    "noise": "none"
+  },
+  "pcm": {
+    "format": "signed little-endian PCM16",
+    "scale": 32768,
+    "rounding": "nearest, ties to even",
+    "dither": "none",
+    "clipping": "rejected",
+    "max_rounding_error_bound": 1.52587890625e-05
+  },
+  "files": {
+    "reflection_reference.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "samples_per_channel": 32012,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "a38a30500c6c02f99515301a0f1b4f742ebf8ec7b99072ddc815c75ba8149708",
+      "peak": 0.100006103515625,
+      "quantization_max_abs_error": 1.5192425745935711e-05
+    },
+    "reflection_direct.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples_per_channel": 32012,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "a35bc3a7fe2395878025d6aa5147e54d451c4f580cb3655ac702365b4b3bc79f",
+      "peak": 0.100006103515625,
+      "quantization_max_abs_error": 1.5192425745935711e-05
+    },
+    "reflection_component.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples_per_channel": 32012,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "a94f6e87a5afaa747e58c956076fdfb4dad134632e7860253ad8cacbc0af5c9a",
+      "peak": 0.100006103515625,
+      "quantization_max_abs_error": 1.5192425745935711e-05
+    },
+    "reflection_mixed.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples_per_channel": 32012,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "20fdbcbea0b7fbe45ff9a3fbeae6cc4b94b40119daa3829d397c37fbd0efc994",
+      "peak": 0.20001220703125,
+      "quantization_max_abs_error": 1.5226381039901149e-05
+    }
+  },
+  "samples": {
+    "reference": {
+      "file": "reflection_reference.wav",
+      "analytic": {
+        "channels": 1,
+        "mean_square_per_channel": [
+          0.005000000000000001
+        ],
+        "mean_square_all_channels": 0.005000000000000001,
+        "phasor_real_imag": [
+          [
+            0.1,
+            0.0
+          ]
+        ],
+        "amplitudes": [
+          0.1
+        ],
+        "normalized_phasor_real_imag": [
+          [
+            1.0,
+            0.0
+          ]
+        ],
+        "normalizing_source_amplitude": 0.1,
+        "normalized_outer_product_real_imag": [
+          [
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        ],
+        "outer_product_denominator": 1,
+        "outer_product_eigenvalues": [
+          1.0
+        ],
+        "outer_product_rank": 1
+      },
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 1,
+        "real_ls_design_columns": 2,
+        "squared_sum_per_channel": [
+          136.00000000000006
+        ],
+        "mean_square_per_channel": [
+          0.005000000000000002
+        ],
+        "mean_square_all_channels": 0.005000000000000002,
+        "known_tone_fit_residual_squared_sum_per_channel": [
+          1.1550957434456886e-27
+        ],
+        "peak": 0.1,
+        "phasor_real_imag": [
+          [
+            0.09999999999999971,
+            0.0
+          ]
+        ],
+        "amplitudes": [
+          0.09999999999999971
+        ],
+        "normalized_phasor_real_imag": [
+          [
+            0.9999999999999971,
+            0.0
+          ]
+        ],
+        "normalizing_source_amplitude": 0.1,
+        "normalized_outer_product_real_imag": [
+          [
+            [
+              0.9999999999999942,
+              0.0
+            ]
+          ]
+        ],
+        "outer_product_denominator": 1,
+        "outer_product_eigenvalues": [
+          0.9999999999999942
+        ],
+        "outer_product_rank": 1
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 1,
+        "real_ls_design_columns": 2,
+        "squared_sum_per_channel": [
+          136.01660206913948
+        ],
+        "mean_square_per_channel": [
+          0.0050006103701889515
+        ],
+        "mean_square_all_channels": 0.0050006103701889515,
+        "known_tone_fit_residual_squared_sum_per_channel": [
+          1.1550957434456886e-27
+        ],
+        "peak": 0.100006103515625,
+        "phasor_real_imag": [
+          [
+            0.10000610351562471,
+            0.0
+          ]
+        ],
+        "amplitudes": [
+          0.10000610351562471
+        ],
+        "normalized_phasor_real_imag": [
+          [
+            1.0000610351562471,
+            0.0
+          ]
+        ],
+        "normalizing_source_amplitude": 0.1,
+        "normalized_outer_product_real_imag": [
+          [
+            [
+              1.0001220740377845,
+              0.0
+            ]
+          ]
+        ],
+        "outer_product_denominator": 1,
+        "outer_product_eigenvalues": [
+          1.0001220740377845
+        ],
+        "outer_product_rank": 1
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 1,
+        "integer_squared_sum_E_per_channel": [
+          146046714400
+        ],
+        "integer_denominator_D_per_channel": 29205777612800,
+        "mean_square_per_channel": [
+          0.0050006103701889515
+        ],
+        "integer_squared_sum_E_all_channels": 146046714400,
+        "integer_denominator_D_all_channels": 29205777612800,
+        "mean_square_all_channels": 0.0050006103701889515
+      }
+    },
+    "direct": {
+      "file": "reflection_direct.wav",
+      "analytic": {
+        "channels": 2,
+        "mean_square_per_channel": [
+          0.005000000000000001,
+          0.005000000000000001
+        ],
+        "mean_square_all_channels": 0.005000000000000001,
+        "phasor_real_imag": [
+          [
+            0.1,
+            0.0
+          ],
+          [
+            0.1,
+            0.0
+          ]
+        ],
+        "amplitudes": [
+          0.1,
+          0.1
+        ],
+        "normalized_phasor_real_imag": [
+          [
+            1.0,
+            0.0
+          ],
+          [
+            1.0,
+            0.0
+          ]
+        ],
+        "normalizing_source_amplitude": 0.1,
+        "normalized_outer_product_real_imag": [
+          [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        ],
+        "outer_product_denominator": 1,
+        "outer_product_eigenvalues": [
+          0.0,
+          2.0
+        ],
+        "outer_product_rank": 1,
+        "channel_1_over_channel_0_real_imag": [
+          1.0,
+          0.0
+        ],
+        "relative_phase_rad": 0.0,
+        "amplitude_ratio": 1.0,
+        "phase_only_apparent_angle_deg": 0.0,
+        "phase_angle_scope": "principal visible half-wave branch; does not fit amplitude ratio"
+      },
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "real_ls_design_columns": 2,
+        "squared_sum_per_channel": [
+          136.00000000000006,
+          136.00000000000006
+        ],
+        "mean_square_per_channel": [
+          0.005000000000000002,
+          0.005000000000000002
+        ],
+        "mean_square_all_channels": 0.005000000000000002,
+        "known_tone_fit_residual_squared_sum_per_channel": [
+          1.1550957434456886e-27,
+          1.1550957434456886e-27
+        ],
+        "peak": 0.1,
+        "phasor_real_imag": [
+          [
+            0.09999999999999971,
+            0.0
+          ],
+          [
+            0.09999999999999971,
+            0.0
+          ]
+        ],
+        "amplitudes": [
+          0.09999999999999971,
+          0.09999999999999971
+        ],
+        "normalized_phasor_real_imag": [
+          [
+            0.9999999999999971,
+            0.0
+          ],
+          [
+            0.9999999999999971,
+            0.0
+          ]
+        ],
+        "normalizing_source_amplitude": 0.1,
+        "normalized_outer_product_real_imag": [
+          [
+            [
+              0.9999999999999942,
+              0.0
+            ],
+            [
+              0.9999999999999942,
+              0.0
+            ]
+          ],
+          [
+            [
+              0.9999999999999942,
+              0.0
+            ],
+            [
+              0.9999999999999942,
+              0.0
+            ]
+          ]
+        ],
+        "outer_product_denominator": 1,
+        "outer_product_eigenvalues": [
+          0.0,
+          1.9999999999999885
+        ],
+        "outer_product_rank": 1,
+        "channel_1_over_channel_0_real_imag": [
+          1.0,
+          0.0
+        ],
+        "relative_phase_rad": 0.0,
+        "amplitude_ratio": 1.0,
+        "phase_only_apparent_angle_deg": 0.0,
+        "phase_angle_scope": "principal visible half-wave branch; does not fit amplitude ratio"
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "real_ls_design_columns": 2,
+        "squared_sum_per_channel": [
+          136.01660206913948,
+          136.01660206913948
+        ],
+        "mean_square_per_channel": [
+          0.0050006103701889515,
+          0.0050006103701889515
+        ],
+        "mean_square_all_channels": 0.0050006103701889515,
+        "known_tone_fit_residual_squared_sum_per_channel": [
+          1.1550957434456886e-27,
+          1.1550957434456886e-27
+        ],
+        "peak": 0.100006103515625,
+        "phasor_real_imag": [
+          [
+            0.10000610351562471,
+            0.0
+          ],
+          [
+            0.10000610351562471,
+            0.0
+          ]
+        ],
+        "amplitudes": [
+          0.10000610351562471,
+          0.10000610351562471
+        ],
+        "normalized_phasor_real_imag": [
+          [
+            1.0000610351562471,
+            0.0
+          ],
+          [
+            1.0000610351562471,
+            0.0
+          ]
+        ],
+        "normalizing_source_amplitude": 0.1,
+        "normalized_outer_product_real_imag": [
+          [
+            [
+              1.0001220740377845,
+              0.0
+            ],
+            [
+              1.0001220740377845,
+              0.0
+            ]
+          ],
+          [
+            [
+              1.0001220740377845,
+              0.0
+            ],
+            [
+              1.0001220740377845,
+              0.0
+            ]
+          ]
+        ],
+        "outer_product_denominator": 1,
+        "outer_product_eigenvalues": [
+          0.0,
+          2.000244148075569
+        ],
+        "outer_product_rank": 1,
+        "channel_1_over_channel_0_real_imag": [
+          0.9999999999999999,
+          0.0
+        ],
+        "relative_phase_rad": 0.0,
+        "amplitude_ratio": 0.9999999999999999,
+        "phase_only_apparent_angle_deg": 0.0,
+        "phase_angle_scope": "principal visible half-wave branch; does not fit amplitude ratio"
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "integer_squared_sum_E_per_channel": [
+          146046714400,
+          146046714400
+        ],
+        "integer_denominator_D_per_channel": 29205777612800,
+        "mean_square_per_channel": [
+          0.0050006103701889515,
+          0.0050006103701889515
+        ],
+        "integer_squared_sum_E_all_channels": 292093428800,
+        "integer_denominator_D_all_channels": 58411555225600,
+        "mean_square_all_channels": 0.0050006103701889515
+      }
+    },
+    "reflection": {
+      "file": "reflection_component.wav",
+      "analytic": {
+        "channels": 2,
+        "mean_square_per_channel": [
+          0.005000000000000001,
+          0.005000000000000001
+        ],
+        "mean_square_all_channels": 0.005000000000000001,
+        "phasor_real_imag": [
+          [
+            0.1,
+            0.0
+          ],
+          [
+            0.0,
+            0.1
+          ]
+        ],
+        "amplitudes": [
+          0.1,
+          0.1
+        ],
+        "normalized_phasor_real_imag": [
+          [
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "normalizing_source_amplitude": 0.1,
+        "normalized_outer_product_real_imag": [
+          [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              -1.0
+            ]
+          ],
+          [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        ],
+        "outer_product_denominator": 1,
+        "outer_product_eigenvalues": [
+          0.0,
+          2.0
+        ],
+        "outer_product_rank": 1,
+        "channel_1_over_channel_0_real_imag": [
+          0.0,
+          1.0
+        ],
+        "relative_phase_rad": 1.5707963267948966,
+        "amplitude_ratio": 1.0,
+        "phase_only_apparent_angle_deg": 29.999999999999996,
+        "phase_angle_scope": "principal visible half-wave branch; does not fit amplitude ratio"
+      },
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "real_ls_design_columns": 2,
+        "squared_sum_per_channel": [
+          136.00000000000006,
+          136.00000000000006
+        ],
+        "mean_square_per_channel": [
+          0.005000000000000002,
+          0.005000000000000002
+        ],
+        "mean_square_all_channels": 0.005000000000000002,
+        "known_tone_fit_residual_squared_sum_per_channel": [
+          1.1550957434456886e-27,
+          1.1550957434456886e-27
+        ],
+        "peak": 0.1,
+        "phasor_real_imag": [
+          [
+            0.09999999999999971,
+            0.0
+          ],
+          [
+            0.0,
+            0.09999999999999971
+          ]
+        ],
+        "amplitudes": [
+          0.09999999999999971,
+          0.09999999999999971
+        ],
+        "normalized_phasor_real_imag": [
+          [
+            0.9999999999999971,
+            0.0
+          ],
+          [
+            0.0,
+            0.9999999999999971
+          ]
+        ],
+        "normalizing_source_amplitude": 0.1,
+        "normalized_outer_product_real_imag": [
+          [
+            [
+              0.9999999999999942,
+              0.0
+            ],
+            [
+              0.0,
+              -0.9999999999999942
+            ]
+          ],
+          [
+            [
+              0.0,
+              0.9999999999999942
+            ],
+            [
+              0.9999999999999942,
+              0.0
+            ]
+          ]
+        ],
+        "outer_product_denominator": 1,
+        "outer_product_eigenvalues": [
+          0.0,
+          1.9999999999999885
+        ],
+        "outer_product_rank": 1,
+        "channel_1_over_channel_0_real_imag": [
+          0.0,
+          1.0
+        ],
+        "relative_phase_rad": 1.5707963267948966,
+        "amplitude_ratio": 1.0,
+        "phase_only_apparent_angle_deg": 29.999999999999996,
+        "phase_angle_scope": "principal visible half-wave branch; does not fit amplitude ratio"
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "real_ls_design_columns": 2,
+        "squared_sum_per_channel": [
+          136.01660206913948,
+          136.01660206913948
+        ],
+        "mean_square_per_channel": [
+          0.0050006103701889515,
+          0.0050006103701889515
+        ],
+        "mean_square_all_channels": 0.0050006103701889515,
+        "known_tone_fit_residual_squared_sum_per_channel": [
+          1.1550957434456886e-27,
+          1.1550957434456886e-27
+        ],
+        "peak": 0.100006103515625,
+        "phasor_real_imag": [
+          [
+            0.10000610351562471,
+            0.0
+          ],
+          [
+            0.0,
+            0.10000610351562471
+          ]
+        ],
+        "amplitudes": [
+          0.10000610351562471,
+          0.10000610351562471
+        ],
+        "normalized_phasor_real_imag": [
+          [
+            1.0000610351562471,
+            0.0
+          ],
+          [
+            0.0,
+            1.0000610351562471
+          ]
+        ],
+        "normalizing_source_amplitude": 0.1,
+        "normalized_outer_product_real_imag": [
+          [
+            [
+              1.0001220740377845,
+              0.0
+            ],
+            [
+              0.0,
+              -1.0001220740377845
+            ]
+          ],
+          [
+            [
+              0.0,
+              1.0001220740377845
+            ],
+            [
+              1.0001220740377845,
+              0.0
+            ]
+          ]
+        ],
+        "outer_product_denominator": 1,
+        "outer_product_eigenvalues": [
+          0.0,
+          2.000244148075569
+        ],
+        "outer_product_rank": 1,
+        "channel_1_over_channel_0_real_imag": [
+          0.0,
+          0.9999999999999999
+        ],
+        "relative_phase_rad": 1.5707963267948966,
+        "amplitude_ratio": 0.9999999999999999,
+        "phase_only_apparent_angle_deg": 29.999999999999996,
+        "phase_angle_scope": "principal visible half-wave branch; does not fit amplitude ratio"
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "integer_squared_sum_E_per_channel": [
+          146046714400,
+          146046714400
+        ],
+        "integer_denominator_D_per_channel": 29205777612800,
+        "mean_square_per_channel": [
+          0.0050006103701889515,
+          0.0050006103701889515
+        ],
+        "integer_squared_sum_E_all_channels": 292093428800,
+        "integer_denominator_D_all_channels": 58411555225600,
+        "mean_square_all_channels": 0.0050006103701889515
+      }
+    },
+    "mixed": {
+      "file": "reflection_mixed.wav",
+      "analytic": {
+        "channels": 2,
+        "mean_square_per_channel": [
+          0.020000000000000004,
+          0.010000000000000004
+        ],
+        "mean_square_all_channels": 0.015000000000000003,
+        "phasor_real_imag": [
+          [
+            0.2,
+            0.0
+          ],
+          [
+            0.1,
+            0.1
+          ]
+        ],
+        "amplitudes": [
+          0.2,
+          0.14142135623730953
+        ],
+        "normalized_phasor_real_imag": [
+          [
+            2.0,
+            0.0
+          ],
+          [
+            1.0,
+            1.0
+          ]
+        ],
+        "normalizing_source_amplitude": 0.1,
+        "normalized_outer_product_real_imag": [
+          [
+            [
+              4.0,
+              0.0
+            ],
+            [
+              2.0,
+              -2.0
+            ]
+          ],
+          [
+            [
+              2.0,
+              2.0
+            ],
+            [
+              2.0,
+              0.0
+            ]
+          ]
+        ],
+        "outer_product_denominator": 1,
+        "outer_product_eigenvalues": [
+          -8.141635513917814e-16,
+          6.0
+        ],
+        "outer_product_rank": 1,
+        "channel_1_over_channel_0_real_imag": [
+          0.5,
+          0.5
+        ],
+        "relative_phase_rad": 0.7853981633974483,
+        "amplitude_ratio": 0.7071067811865476,
+        "phase_only_apparent_angle_deg": 14.477512185929925,
+        "phase_angle_scope": "principal visible half-wave branch; does not fit amplitude ratio"
+      },
+      "float_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "real_ls_design_columns": 2,
+        "squared_sum_per_channel": [
+          544.0000000000002,
+          272.0000000000001
+        ],
+        "mean_square_per_channel": [
+          0.020000000000000007,
+          0.010000000000000004
+        ],
+        "mean_square_all_channels": 0.015000000000000006,
+        "known_tone_fit_residual_squared_sum_per_channel": [
+          4.620382973782754e-27,
+          2.310191486891377e-27
+        ],
+        "peak": 0.2,
+        "phasor_real_imag": [
+          [
+            0.19999999999999943,
+            0.0
+          ],
+          [
+            0.09999999999999971,
+            0.09999999999999971
+          ]
+        ],
+        "amplitudes": [
+          0.19999999999999943,
+          0.14142135623730911
+        ],
+        "normalized_phasor_real_imag": [
+          [
+            1.9999999999999942,
+            0.0
+          ],
+          [
+            0.9999999999999971,
+            0.9999999999999971
+          ]
+        ],
+        "normalizing_source_amplitude": 0.1,
+        "normalized_outer_product_real_imag": [
+          [
+            [
+              3.999999999999977,
+              0.0
+            ],
+            [
+              1.9999999999999885,
+              -1.9999999999999885
+            ]
+          ],
+          [
+            [
+              1.9999999999999885,
+              1.9999999999999885
+            ],
+            [
+              1.9999999999999885,
+              -8.332343311396937e-30
+            ]
+          ]
+        ],
+        "outer_product_denominator": 1,
+        "outer_product_eigenvalues": [
+          -7.401486830834386e-16,
+          5.9999999999999645
+        ],
+        "outer_product_rank": 1,
+        "channel_1_over_channel_0_real_imag": [
+          0.5,
+          0.5
+        ],
+        "relative_phase_rad": 0.7853981633974483,
+        "amplitude_ratio": 0.7071067811865476,
+        "phase_only_apparent_angle_deg": 14.477512185929925,
+        "phase_angle_scope": "principal visible half-wave branch; does not fit amplitude ratio"
+      },
+      "pcm_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "real_ls_design_columns": 2,
+        "squared_sum_per_channel": [
+          544.0664082765579,
+          272.03320413827896
+        ],
+        "mean_square_per_channel": [
+          0.020002441480755806,
+          0.010001220740377903
+        ],
+        "mean_square_all_channels": 0.015001831110566854,
+        "known_tone_fit_residual_squared_sum_per_channel": [
+          4.620382973782754e-27,
+          2.310191486891377e-27
+        ],
+        "peak": 0.20001220703125,
+        "phasor_real_imag": [
+          [
+            0.20001220703124942,
+            0.0
+          ],
+          [
+            0.10000610351562471,
+            0.10000610351562471
+          ]
+        ],
+        "amplitudes": [
+          0.20001220703124942,
+          0.14142998791188413
+        ],
+        "normalized_phasor_real_imag": [
+          [
+            2.0001220703124942,
+            0.0
+          ],
+          [
+            1.0000610351562471,
+            1.0000610351562471
+          ]
+        ],
+        "normalizing_source_amplitude": 0.1,
+        "normalized_outer_product_real_imag": [
+          [
+            [
+              4.000488296151138,
+              0.0
+            ],
+            [
+              2.000244148075569,
+              -2.000244148075569
+            ]
+          ],
+          [
+            [
+              2.000244148075569,
+              2.000244148075569
+            ],
+            [
+              2.000244148075569,
+              3.523657060494566e-19
+            ]
+          ]
+        ],
+        "outer_product_denominator": 1,
+        "outer_product_eigenvalues": [
+          2.2200846374970922e-16,
+          6.000732444226708
+        ],
+        "outer_product_rank": 1,
+        "channel_1_over_channel_0_real_imag": [
+          0.49999999999999994,
+          0.49999999999999994
+        ],
+        "relative_phase_rad": 0.7853981633974483,
+        "amplitude_ratio": 0.7071067811865475,
+        "phase_only_apparent_angle_deg": 14.477512185929925,
+        "phase_angle_scope": "principal visible half-wave branch; does not fit amplitude ratio"
+      },
+      "pcm_integer_measurements": {
+        "scoring_interval_samples": [
+          2400,
+          29600
+        ],
+        "samples_per_channel": 27200,
+        "channels": 2,
+        "integer_squared_sum_E_per_channel": [
+          584186857600,
+          292093428800
+        ],
+        "integer_denominator_D_per_channel": 29205777612800,
+        "mean_square_per_channel": [
+          0.020002441480755806,
+          0.010001220740377903
+        ],
+        "integer_squared_sum_E_all_channels": 876280286400,
+        "integer_denominator_D_all_channels": 58411555225600,
+        "mean_square_all_channels": 0.015001831110566854
+      }
+    }
+  },
+  "virtual_covariance_control": {
+    "normalized_mixed_phasor_real_imag": [
+      [
+        2.0,
+        0.0
+      ],
+      [
+        1.0,
+        1.0
+      ]
+    ],
+    "diagonal_white_noise_variance": 0.1,
+    "covariance_real_imag": [
+      [
+        [
+          4.1,
+          0.0
+        ],
+        [
+          2.0,
+          -2.0
+        ]
+      ],
+      [
+        [
+          2.0,
+          2.0
+        ],
+        [
+          2.1,
+          0.0
+        ]
+      ]
+    ],
+    "eigenvalues": [
+      0.09999999999999905,
+      6.1
+    ],
+    "scope": "virtual vv^H+0.1I model only; actual WAVs have no added noise"
+  },
+  "limits": "Original deterministic mathematical 4-kHz tone, not speech, a real room or hardware. Known direct and reflected components share one source and are coherent. The reference is the undelayed source; direct delays are 8/8 samples and reflection delays 12/11 samples. The common extra four samples are a whole tone period. Known single-tone cos/sin projections are not blind DOA, DPD or CTF estimation. A phase-only apparent angle does not match the mixed vector amplitude ratio. Single-vector covariance rank one is an algebraic property of this known model, not evidence of unknown direct sound or random statistical independence. The separate virtual covariance vv^H+0.1I contains a model white-noise term; the actual WAVs contain no added noise. Fades and tail are excluded from scoring. Playback is not localization accuracy or a formal listening study.",
+  "listening": "Start at low volume; never autoplay. Stereo playback is not direct-sound or localization evidence."
+}

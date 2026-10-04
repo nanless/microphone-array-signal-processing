@@ -1,0 +1,905 @@
+{
+  "run_utc": "2026-10-04T07:41:02.752534+00:00",
+  "run_asia_shanghai": "2026-10-04T15:41:02.752781+08:00",
+  "audit_source_sha256": "1934582b929a5765ef88f1542f9f4a7976c0d5e02f294db681e7cf2814421999",
+  "lock_sha256": "a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505",
+  "lock_entry": {
+    "id": "said-spatial-imaging",
+    "url": "https://github.com/IN03X/SAID.git",
+    "revision": "cf52ede4f38361cdbb03aa93c8254109583dfe2b",
+    "license": "MIT AND Apache-2.0 (source components); separate non-commercial model-weight terms",
+    "fetch_enabled": true,
+    "scope": "Audio2Sph spherical direction encoder, Sph2Imaging source masks and classes, DCASE 2026 Track A inference and compression utilities",
+    "note": "September 2026 preprint arXiv:2609.31492v1. Source components retain LICENSES and THIRD_PARTY_NOTICES.md. Released SAID checkpoints are non-commercial research only; AudioMAE weights are CC-BY-NC-4.0. This acquisition excludes said/demo_data and checkpoints. No trained network or DCASE benchmark has been run by this tutorial.",
+    "acquisition": "independent_source_checkout",
+    "entrypoints": [
+      "LICENSE",
+      "LICENSES/README.md",
+      "LICENSES/SAID-Model-Weights-NonCommercial-1.0.txt",
+      "LICENSES/AudioMAE-CC-BY-NC-4.0.txt",
+      "THIRD_PARTY_NOTICES.md",
+      "pyproject.toml",
+      "said/models/audio2sph.py",
+      "said/models/sph2imaging.py",
+      "said/models/said.py",
+      "said/inference/infer.py",
+      "said/evaluation/output2dcase.py",
+      "said/utils/compression.py"
+    ],
+    "source_paths": [
+      "LICENSE",
+      "LICENSES",
+      "THIRD_PARTY_NOTICES.md",
+      "README.md",
+      "CITATION.cff",
+      "pyproject.toml",
+      "MANIFEST.in",
+      "configs",
+      "docs",
+      "said/arrays",
+      "said/data",
+      "said/evaluation",
+      "said/inference",
+      "said/models",
+      "said/rendering",
+      "said/training",
+      "said/utils",
+      "said/README.md",
+      "said/__init__.py",
+      "said/cli.py"
+    ]
+  },
+  "source_contract": {
+    "project": "said-spatial-imaging",
+    "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/said-spatial-imaging",
+    "origin": "https://github.com/IN03X/SAID.git",
+    "head": "cf52ede4f38361cdbb03aa93c8254109583dfe2b",
+    "lock_entry": {
+      "id": "said-spatial-imaging",
+      "url": "https://github.com/IN03X/SAID.git",
+      "revision": "cf52ede4f38361cdbb03aa93c8254109583dfe2b",
+      "license": "MIT AND Apache-2.0 (source components); separate non-commercial model-weight terms",
+      "fetch_enabled": true,
+      "scope": "Audio2Sph spherical direction encoder, Sph2Imaging source masks and classes, DCASE 2026 Track A inference and compression utilities",
+      "note": "September 2026 preprint arXiv:2609.31492v1. Source components retain LICENSES and THIRD_PARTY_NOTICES.md. Released SAID checkpoints are non-commercial research only; AudioMAE weights are CC-BY-NC-4.0. This acquisition excludes said/demo_data and checkpoints. No trained network or DCASE benchmark has been run by this tutorial.",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "LICENSE",
+        "LICENSES/README.md",
+        "LICENSES/SAID-Model-Weights-NonCommercial-1.0.txt",
+        "LICENSES/AudioMAE-CC-BY-NC-4.0.txt",
+        "THIRD_PARTY_NOTICES.md",
+        "pyproject.toml",
+        "said/models/audio2sph.py",
+        "said/models/sph2imaging.py",
+        "said/models/said.py",
+        "said/inference/infer.py",
+        "said/evaluation/output2dcase.py",
+        "said/utils/compression.py"
+      ],
+      "source_paths": [
+        "LICENSE",
+        "LICENSES",
+        "THIRD_PARTY_NOTICES.md",
+        "README.md",
+        "CITATION.cff",
+        "pyproject.toml",
+        "MANIFEST.in",
+        "configs",
+        "docs",
+        "said/arrays",
+        "said/data",
+        "said/evaluation",
+        "said/inference",
+        "said/models",
+        "said/rendering",
+        "said/training",
+        "said/utils",
+        "said/README.md",
+        "said/__init__.py",
+        "said/cli.py"
+      ]
+    },
+    "lock_sha256": "a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505",
+    "source_document_paths": {
+      "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+      "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+    },
+    "status_sha256": "abc28f6f15512da8267618bca318b10033909ec2afdb6090b6aa2d0f1281f0e9",
+    "recorded_complete_selection": {
+      "id": "said-spatial-imaging",
+      "revision": "cf52ede4f38361cdbb03aa93c8254109583dfe2b",
+      "status": "source_verified",
+      "missing_entrypoints": [],
+      "execution": "not_run",
+      "dependency_validation": "not_run",
+      "asset_policy": "sparse_source_checkout",
+      "requested_source_paths": [
+        "LICENSE",
+        "LICENSES",
+        "THIRD_PARTY_NOTICES.md",
+        "README.md",
+        "CITATION.cff",
+        "pyproject.toml",
+        "MANIFEST.in",
+        "configs",
+        "docs",
+        "said/arrays",
+        "said/data",
+        "said/evaluation",
+        "said/inference",
+        "said/models",
+        "said/rendering",
+        "said/training",
+        "said/utils",
+        "said/README.md",
+        "said/__init__.py",
+        "said/cli.py"
+      ],
+      "observed_sparse_patterns": [
+        "/LICENSE",
+        "/LICENSES",
+        "/THIRD_PARTY_NOTICES.md",
+        "/README.md",
+        "/CITATION.cff",
+        "/pyproject.toml",
+        "/MANIFEST.in",
+        "/configs",
+        "/docs",
+        "/said/arrays",
+        "/said/data",
+        "/said/evaluation",
+        "/said/inference",
+        "/said/models",
+        "/said/rendering",
+        "/said/training",
+        "/said/utils",
+        "/said/README.md",
+        "/said/__init__.py",
+        "/said/cli.py",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "expected_sparse_patterns": [
+        "/LICENSE",
+        "/LICENSES",
+        "/THIRD_PARTY_NOTICES.md",
+        "/README.md",
+        "/CITATION.cff",
+        "/pyproject.toml",
+        "/MANIFEST.in",
+        "/configs",
+        "/docs",
+        "/said/arrays",
+        "/said/data",
+        "/said/evaluation",
+        "/said/inference",
+        "/said/models",
+        "/said/rendering",
+        "/said/training",
+        "/said/utils",
+        "/said/README.md",
+        "/said/__init__.py",
+        "/said/cli.py",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "source_selection_verified": true
+    },
+    "live_complete_selection": {
+      "id": "said-spatial-imaging",
+      "revision": "cf52ede4f38361cdbb03aa93c8254109583dfe2b",
+      "status": "source_verified",
+      "source_selection_verified": true,
+      "missing_entrypoints": [],
+      "observed_sparse_patterns": [
+        "/LICENSE",
+        "/LICENSES",
+        "/THIRD_PARTY_NOTICES.md",
+        "/README.md",
+        "/CITATION.cff",
+        "/pyproject.toml",
+        "/MANIFEST.in",
+        "/configs",
+        "/docs",
+        "/said/arrays",
+        "/said/data",
+        "/said/evaluation",
+        "/said/inference",
+        "/said/models",
+        "/said/rendering",
+        "/said/training",
+        "/said/utils",
+        "/said/README.md",
+        "/said/__init__.py",
+        "/said/cli.py",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "expected_sparse_patterns": [
+        "/LICENSE",
+        "/LICENSES",
+        "/THIRD_PARTY_NOTICES.md",
+        "/README.md",
+        "/CITATION.cff",
+        "/pyproject.toml",
+        "/MANIFEST.in",
+        "/configs",
+        "/docs",
+        "/said/arrays",
+        "/said/data",
+        "/said/evaluation",
+        "/said/inference",
+        "/said/models",
+        "/said/rendering",
+        "/said/training",
+        "/said/utils",
+        "/said/README.md",
+        "/said/__init__.py",
+        "/said/cli.py",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "requested_source_paths": [
+        "LICENSE",
+        "LICENSES",
+        "THIRD_PARTY_NOTICES.md",
+        "README.md",
+        "CITATION.cff",
+        "pyproject.toml",
+        "MANIFEST.in",
+        "configs",
+        "docs",
+        "said/arrays",
+        "said/data",
+        "said/evaluation",
+        "said/inference",
+        "said/models",
+        "said/rendering",
+        "said/training",
+        "said/utils",
+        "said/README.md",
+        "said/__init__.py",
+        "said/cli.py"
+      ],
+      "asset_policy": "sparse_source_checkout"
+    },
+    "used_source_identity": "verified",
+    "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+    "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+    "ignored_members_before": [],
+    "used_files": {
+      "LICENSE": {
+        "sha256": "d3757b5359fd0d6d1ed7dbe9b37da90b11c4a6cabaa11081b26b5f6aa95794af",
+        "bytes": 1255,
+        "git_blob": "5ed56d64b782c574463388dc2ae76947ac5d7ad7",
+        "actual_blob": "5ed56d64b782c574463388dc2ae76947ac5d7ad7"
+      },
+      "said/utils/compression.py": {
+        "sha256": "6bf2cff5ec690858092e143062b1eb17e28001ffccd4fe5feefc164d695d7b79",
+        "bytes": 21254,
+        "git_blob": "1715e764bf29c94404891576f05c2e82cd36bdc1",
+        "actual_blob": "1715e764bf29c94404891576f05c2e82cd36bdc1"
+      },
+      "THIRD_PARTY_NOTICES.md": {
+        "sha256": "05afd015b9f4521ef349a2134c72d7863f2c54a43e671b360c15c746adff15a1",
+        "bytes": 11088,
+        "git_blob": "e3549b49bba81840ec40a62a57bf9fb3ce1a4ca3",
+        "actual_blob": "e3549b49bba81840ec40a62a57bf9fb3ce1a4ca3"
+      },
+      "LICENSES/SAID-Model-Weights-NonCommercial-1.0.txt": {
+        "sha256": "a122d2c3f3511c55654d71831f63ebab3bb884b2b430529efbfaf3187e4de1fc",
+        "bytes": 4929,
+        "git_blob": "a320d18076ffa1e2ae98e8fc6b744fdcf2da54c7",
+        "actual_blob": "a320d18076ffa1e2ae98e8fc6b744fdcf2da54c7"
+      },
+      "LICENSES/AudioMAE-CC-BY-NC-4.0.txt": {
+        "sha256": "8206f1dde48cd58173b6d445a8d8e60ac01810bf63f860cd83d534366f1ee633",
+        "bytes": 19339,
+        "git_blob": "6ac89ca94d7df2180e22dfb0a9dd1f040a96b3c0",
+        "actual_blob": "6ac89ca94d7df2180e22dfb0a9dd1f040a96b3c0"
+      }
+    },
+    "clean_before": true,
+    "clean_after": true,
+    "ignored_members_after": []
+  },
+  "report_source_sha256": {
+    "codes/chapters/ch04/examples/audit_said_compression.py": "1934582b929a5765ef88f1542f9f4a7976c0d5e02f294db681e7cf2814421999",
+    "codes/chapters/ch04/core/upstream_contracts.py": "7b61d230515e892a09e461c431f8c14ee9cf0bd1435ca201fbe7326a6cc80dab",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
+    "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
+  },
+  "before": {
+    "head": "cf52ede4f38361cdbb03aa93c8254109583dfe2b",
+    "status": ""
+  },
+  "after": {
+    "head": "cf52ede4f38361cdbb03aa93c8254109583dfe2b",
+    "status": ""
+  },
+  "sources": {
+    "said/utils/compression.py": {
+      "sha256": "6bf2cff5ec690858092e143062b1eb17e28001ffccd4fe5feefc164d695d7b79",
+      "bytes": 21254,
+      "git_blob": "1715e764bf29c94404891576f05c2e82cd36bdc1",
+      "actual_blob": "1715e764bf29c94404891576f05c2e82cd36bdc1"
+    },
+    "LICENSE": {
+      "sha256": "d3757b5359fd0d6d1ed7dbe9b37da90b11c4a6cabaa11081b26b5f6aa95794af",
+      "bytes": 1255,
+      "git_blob": "5ed56d64b782c574463388dc2ae76947ac5d7ad7",
+      "actual_blob": "5ed56d64b782c574463388dc2ae76947ac5d7ad7"
+    },
+    "THIRD_PARTY_NOTICES.md": {
+      "sha256": "05afd015b9f4521ef349a2134c72d7863f2c54a43e671b360c15c746adff15a1",
+      "bytes": 11088,
+      "git_blob": "e3549b49bba81840ec40a62a57bf9fb3ce1a4ca3",
+      "actual_blob": "e3549b49bba81840ec40a62a57bf9fb3ce1a4ca3"
+    },
+    "LICENSES/SAID-Model-Weights-NonCommercial-1.0.txt": {
+      "sha256": "a122d2c3f3511c55654d71831f63ebab3bb884b2b430529efbfaf3187e4de1fc",
+      "bytes": 4929,
+      "git_blob": "a320d18076ffa1e2ae98e8fc6b744fdcf2da54c7",
+      "actual_blob": "a320d18076ffa1e2ae98e8fc6b744fdcf2da54c7"
+    },
+    "LICENSES/AudioMAE-CC-BY-NC-4.0.txt": {
+      "sha256": "8206f1dde48cd58173b6d445a8d8e60ac01810bf63f860cd83d534366f1ee633",
+      "bytes": 19339,
+      "git_blob": "6ac89ca94d7df2180e22dfb0a9dd1f040a96b3c0",
+      "actual_blob": "6ac89ca94d7df2180e22dfb0a9dd1f040a96b3c0"
+    }
+  },
+  "environment": {
+    "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
+    "executable": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/bin/python",
+    "numpy": "2.5.3"
+  },
+  "scope": {
+    "execution": "unchanged original compression.py loaded as standalone module; stdlib + NumPy; no said package import",
+    "functions": [
+      "compress_annotation",
+      "compress_prediction_directory(workers=1)",
+      "_wrapped_coordinates",
+      "_minimum_wrapped_distance_squared"
+    ],
+    "claims_excluded": [
+      "Torch/model execution",
+      "weights acquisition",
+      "acoustic prediction accuracy",
+      "paper Table1 reproduction",
+      "20MB large-recording success",
+      "multithread/process path"
+    ]
+  },
+  "tolerances": {
+    "float32_boundary_absolute": 2e-05,
+    "serialized_energy_absolute": 0.0001
+  },
+  "results": {
+    "high_confidence_input": {
+      "id": 7,
+      "image_id": 11,
+      "category_id": 1,
+      "score": 0.9,
+      "extra": "preserved",
+      "segmentation": [
+        [
+          [
+            0,
+            0,
+            1
+          ],
+          [
+            2,
+            0,
+            0.5
+          ],
+          [
+            8,
+            0,
+            0.09
+          ],
+          [
+            12,
+            0,
+            0
+          ]
+        ]
+      ]
+    },
+    "high_confidence_output": {
+      "id": 7,
+      "image_id": 11,
+      "category_id": 1,
+      "score": 0.9,
+      "extra": "preserved",
+      "segmentation": [
+        [
+          [
+            0,
+            0,
+            1.0
+          ],
+          [
+            2,
+            0,
+            0.5
+          ]
+        ]
+      ]
+    },
+    "low_confidence_input": {
+      "id": 8,
+      "image_id": 11,
+      "category_id": 1,
+      "score": 0.1,
+      "segmentation": [
+        [
+          [
+            359,
+            0,
+            1
+          ]
+        ]
+      ]
+    },
+    "low_confidence_output": {
+      "id": 8,
+      "image_id": 11,
+      "category_id": 1,
+      "score": 0.1,
+      "segmentation": [
+        [
+          [
+            359,
+            0,
+            1.0
+          ],
+          [
+            357.586,
+            0,
+            0.12
+          ],
+          [
+            357.586,
+            1.414,
+            0.12
+          ],
+          [
+            0.414,
+            0,
+            0.12
+          ],
+          [
+            0.414,
+            1.414,
+            0.12
+          ],
+          [
+            359,
+            0,
+            0.12
+          ],
+          [
+            359,
+            2,
+            0.12
+          ],
+          [
+            357,
+            0,
+            0.12
+          ],
+          [
+            1,
+            0,
+            0.12
+          ]
+        ]
+      ]
+    },
+    "wrapped_coordinates": [
+      [
+        1.0,
+        0.0
+      ],
+      [
+        359.0,
+        179.0
+      ]
+    ],
+    "wrapped_distance_squared": [
+      4.0
+    ],
+    "directory": {
+      "input_payload": {
+        "images": [
+          {
+            "id": 11
+          }
+        ],
+        "annotations": [
+          {
+            "id": 7,
+            "image_id": 11,
+            "category_id": 1,
+            "score": 0.9,
+            "extra": "preserved",
+            "segmentation": [
+              [
+                [
+                  0,
+                  0,
+                  1
+                ],
+                [
+                  2,
+                  0,
+                  0.5
+                ],
+                [
+                  8,
+                  0,
+                  0.09
+                ],
+                [
+                  12,
+                  0,
+                  0
+                ]
+              ]
+            ]
+          },
+          {
+            "id": 8,
+            "image_id": 11,
+            "category_id": 1,
+            "score": 0.1,
+            "segmentation": [
+              [
+                [
+                  359,
+                  0,
+                  1
+                ]
+              ]
+            ]
+          }
+        ]
+      },
+      "output_payload": {
+        "images": [
+          {
+            "id": 11
+          }
+        ],
+        "annotations": [
+          {
+            "id": 7,
+            "image_id": 11,
+            "category_id": 1,
+            "score": 0.9,
+            "extra": "preserved",
+            "segmentation": [
+              [
+                [
+                  0,
+                  0,
+                  1.0
+                ],
+                [
+                  2,
+                  0,
+                  0.5
+                ]
+              ]
+            ]
+          },
+          {
+            "id": 8,
+            "image_id": 11,
+            "category_id": 1,
+            "score": 0.1,
+            "segmentation": [
+              [
+                [
+                  359,
+                  0,
+                  1.0
+                ],
+                [
+                  357.586,
+                  0,
+                  0.12
+                ],
+                [
+                  357.586,
+                  1.414,
+                  0.12
+                ],
+                [
+                  0.414,
+                  0,
+                  0.12
+                ],
+                [
+                  0.414,
+                  1.414,
+                  0.12
+                ],
+                [
+                  359,
+                  0,
+                  0.12
+                ],
+                [
+                  359,
+                  2,
+                  0.12
+                ],
+                [
+                  357,
+                  0,
+                  0.12
+                ],
+                [
+                  1,
+                  0,
+                  0.12
+                ]
+              ]
+            ]
+          }
+        ]
+      },
+      "file_record": {
+        "attempts": [
+          {
+            "output_bytes": 353,
+            "preset": "paper-table1"
+          }
+        ],
+        "fallback_applied": false,
+        "file": "artificial_inference.json",
+        "input_bytes": 285,
+        "input_detection_count": 2,
+        "input_sha256": "460846af747ff3bcd83c3c35d1a47bea2f6528448688cfcc77bf6ae53e453d1f",
+        "output_bytes": 353,
+        "output_detection_count": 2,
+        "output_sha256": "46f4b4ea529271a557256628f81a7c82f0ea8bde1b356e478ab09d85906c9a2c",
+        "preset": "paper-table1"
+      },
+      "actual_input_sha256": "460846af747ff3bcd83c3c35d1a47bea2f6528448688cfcc77bf6ae53e453d1f",
+      "actual_output_sha256": "46f4b4ea529271a557256628f81a7c82f0ea8bde1b356e478ab09d85906c9a2c",
+      "actual_output_bytes": 353,
+      "maximum_file_bytes": 20000000,
+      "initial_preset": {
+        "boundary_band_relative_to_peak": 0.22,
+        "boundary_energy_relative_to_peak": 0.12,
+        "energy_decimals": 4,
+        "high_confidence_boundary_offset_pixels": 0.0,
+        "high_confidence_grid_pixels": 2.0,
+        "high_confidence_threshold": 0.2,
+        "integer_xy": true,
+        "low_confidence_boundary_offset_pixels": 2.0,
+        "low_confidence_grid_pixels": 6.0,
+        "name": "paper-table1",
+        "point_budget": 88,
+        "relative_floor": 0.1,
+        "unlimited_budget_class_ids": [
+          2,
+          3,
+          5,
+          10
+        ],
+        "xy_decimals": 3
+      },
+      "fallback_presets": [
+        {
+          "boundary_band_relative_to_peak": 0.22,
+          "boundary_energy_relative_to_peak": 0.12,
+          "energy_decimals": 4,
+          "high_confidence_boundary_offset_pixels": 0.0,
+          "high_confidence_grid_pixels": 2.0,
+          "high_confidence_threshold": 0.25,
+          "integer_xy": true,
+          "low_confidence_boundary_offset_pixels": 4.0,
+          "low_confidence_grid_pixels": 6.0,
+          "name": "strict-88",
+          "point_budget": 88,
+          "relative_floor": 0.1,
+          "unlimited_budget_class_ids": [],
+          "xy_decimals": 3
+        },
+        {
+          "boundary_band_relative_to_peak": 0.22,
+          "boundary_energy_relative_to_peak": 0.12,
+          "energy_decimals": 4,
+          "high_confidence_boundary_offset_pixels": 0.0,
+          "high_confidence_grid_pixels": 2.0,
+          "high_confidence_threshold": 0.25,
+          "integer_xy": true,
+          "low_confidence_boundary_offset_pixels": 4.0,
+          "low_confidence_grid_pixels": 6.0,
+          "name": "strict-64",
+          "point_budget": 64,
+          "relative_floor": 0.1,
+          "unlimited_budget_class_ids": [],
+          "xy_decimals": 3
+        },
+        {
+          "boundary_band_relative_to_peak": 0.22,
+          "boundary_energy_relative_to_peak": 0.12,
+          "energy_decimals": 4,
+          "high_confidence_boundary_offset_pixels": 0.0,
+          "high_confidence_grid_pixels": 2.0,
+          "high_confidence_threshold": 0.25,
+          "integer_xy": true,
+          "low_confidence_boundary_offset_pixels": 4.0,
+          "low_confidence_grid_pixels": 6.0,
+          "name": "strict-48",
+          "point_budget": 48,
+          "relative_floor": 0.1,
+          "unlimited_budget_class_ids": [],
+          "xy_decimals": 3
+        },
+        {
+          "boundary_band_relative_to_peak": 0.22,
+          "boundary_energy_relative_to_peak": 0.12,
+          "energy_decimals": 4,
+          "high_confidence_boundary_offset_pixels": 0.0,
+          "high_confidence_grid_pixels": 2.0,
+          "high_confidence_threshold": 0.25,
+          "integer_xy": true,
+          "low_confidence_boundary_offset_pixels": 4.0,
+          "low_confidence_grid_pixels": 6.0,
+          "name": "strict-32",
+          "point_budget": 32,
+          "relative_floor": 0.1,
+          "unlimited_budget_class_ids": [],
+          "xy_decimals": 3
+        }
+      ],
+      "file_count": 1,
+      "all_within_limit": true
+    },
+    "failures": {
+      "zero_energy": {
+        "exception_type": "ValueError",
+        "message": "each retained detection must contain a positive-energy point"
+      },
+      "nonfinite_energy": {
+        "exception_type": "ValueError",
+        "message": "segmentation points must contain finite values"
+      },
+      "one_byte_limit": {
+        "exception_type": "RuntimeError",
+        "message": "artificial_inference.json remains above 1 bytes after preset strict-32: 353 bytes",
+        "published_output_exists": false,
+        "temporary_leftovers": [],
+        "scope": "reduced artificial one-byte limit exercises fallback/exhaustion; not a 20MB real recording"
+      }
+    }
+  }
+}

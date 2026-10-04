@@ -1,8 +1,8 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 107 个 Git 上游项目；已在 `codes/chapters/ch00/upstream/_downloads/` 取得 92 个独立源码工作区。其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件，DiCoW v1 演示与 TS-ASR-Whisper v1 训练源码于 2026-09-28 按固定提交取得。2026-09-30 新增原作者湿空气声速模型，2026-10-01取得SAID及NeMo WPE固定源码，2026-10-02取得TAC四文件，2026-10-04另取得作者WOLA-DANSE、paderwasn与TI-DANSE+ batch三个限定源码选集，并取得WASN的11个与LibriCSS的27个源码/说明/许可文件。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 109 个 Git 上游项目；已在 `codes/chapters/ch00/upstream/_downloads/` 取得 92 个独立源码工作区。其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件，DiCoW v1 演示与 TS-ASR-Whisper v1 训练源码于 2026-09-28 按固定提交取得。2026-09-30 新增原作者湿空气声速模型，2026-10-01取得SAID及NeMo WPE固定源码，2026-10-02取得TAC四文件，2026-10-04另取得作者WOLA-DANSE、paderwasn与TI-DANSE+ batch三个限定源码选集，并取得WASN的11个与LibriCSS的27个源码/说明/许可文件。
 
-当前离线核验逐条比较完整源码包含规则及32条扩展名排除规则：69项通过、22项旧工作区仅有20条排除规则而记为 `source_selection_mismatch`、15项仅登记来源，AEC Challenge 的5个真实录音有本地变动而记为失败。旧工作区均保留，不自动补规则或删除文件。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+当前离线核验逐条比较完整源码包含规则及32条扩展名排除规则：69项通过、22项旧工作区仅有20条排除规则而记为 `source_selection_mismatch`、17项仅登记来源，AEC Challenge 的5个真实录音有本地变动而记为失败。旧工作区均保留，不自动补规则或删除文件。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”表示本地存在独立来源工作区；是否符合当前提交、工作区状态、指定入口和完整选集政策，以状态报告分别判断。取得源码不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -266,3 +266,17 @@ Vo归档SHA-256为`fb22c9edecb56049b7f8ede1e1522384f0c4e6bfb5e5577f3bd482f6367ef
 这两个值均为本次取得后本地计算，不是作者公布的独立校验值或数字签名。
 该次核查时，[归档锁表](ARCHIVE_SOURCES.lock.json)登记HARK与Vo两项，与当时97个Git项目分开计数。
 完整压缩包仍在忽略缓存中，包含未选取资产；只有选定工作树排除了二进制、图和数据。缓存及源码工作树不随本书提交推送。
+
+
+## 第4章直达路径与产品接口的新增索引
+
+2026-10-04静态核两项完整提交及所读入口摘要，当前Git索引共109项、92个已取得工作区。两项新增都只索引，不取得发布源码、二进制或数据；当前状态17项index_only，既有失败和选集不匹配保留。
+
+| 固定来源 | 许可与源码边界 | 本轮实际研究 |
+|---|---|---|
+| [dprtf-ssl](https://github.com/Audio-WestlakeU/DP_RTF_SSL/tree/b83e6e672f8248a11feb326d44aef6a333cbc709) | NOASSERTION；四文件树未建立LICENSE/SPDX，作者版权不等于再分发许可 | 静态读README、DP_RTF.m、MCMT.m、stft.m；核16ms窗/4ms帧移、D=30对应120ms、可用PSD帧控制；未MATLAB/Octave或HRIR匹配 |
+| [esp-sr-doa](https://github.com/espressif/esp-sr/tree/76581015af7075681814627a5bb03d2f3f328f8a) | 根许可限定Espressif产品；部分公开头Apache-2.0；核心链接libesp_audio_processor.a | 七入口SHA固定，核planar布局、坐标、频率配置、VAD冻结/旧角和测试分母648；未取得核心库/数据或设备运行 |
+
+逐算法模型、计算及限制见[空间研究58/59](research/01_spatial_and_tracking.md#sec-u-1ca23edba5)。当前来源锁保存各入口SHA；历史原报告仍绑定当时整锁及工具字节，不因新增两项改写旧实验记录。
+
+本机静态研究另在Git忽略的`upstream/_downloads/.research-only/`保留两份固定原文件选集：DP-RTF四文件、ESP-SR七入口，逐blob/SHA核对并保留原许可声明。它们不随书发布，不是Git工作树或完整设备实现，未运行算法，不计入92个受管理源码工作区，也不改变当前17项仅索引状态；详细获取范围见[来源研究记录](research/04_source_reproduction.md)。

@@ -8,6 +8,14 @@ No upstream source or compiled executable is copied into this repository.
 
 from __future__ import annotations
 
+# Support documented direct-file commands without changing upstream imports.
+if __package__ in (None, ""):
+    import sys as _entry_sys
+    from pathlib import Path as _EntryPath
+    _entry_sys.path.insert(0, str(_EntryPath(__file__).resolve().parents[4]))
+
+from codes.chapters.ch04.core import upstream_contracts as contracts
+
 import argparse
 from datetime import datetime, timezone
 import hashlib
@@ -229,26 +237,11 @@ def direct_scores_at_upstream_lookups(phat: np.ndarray, upstream: dict) -> dict[
 
 def verify_upstream(source_dir: Path) -> dict[str, str]:
     """Require the exact clean checkout before compiling its unchanged files."""
-    source_dir = source_dir.resolve()
-    if not (source_dir / ".git").exists():
-        raise FileNotFoundError("locked smpphat checkout is absent")
-    env = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
-
-    def git(*arguments: str) -> str:
-        return subprocess.check_output(
-            ["git", "-C", str(source_dir), *arguments], env=env, text=True,
-            stderr=subprocess.PIPE).strip()
-
-    if Path(git("rev-parse", "--show-toplevel")).resolve() != source_dir:
-        raise ValueError("smpphat directory is not its own checkout")
-    if git("rev-parse", "HEAD") != UPSTREAM_REVISION:
-        raise ValueError("smpphat revision differs from the experiment lock")
-    if git("status", "--porcelain", "--untracked-files=all"):
-        raise ValueError("smpphat worktree contains modified or untracked files")
     files = ["CMakeLists.txt", "LICENSE", "src/signal.c", "src/system.c",
              "include/smpphat/const.h", "include/smpphat/signal.h",
              "include/smpphat/system.h"]
-    return {name: sha256(source_dir / name) for name in files}
+    identity = contracts.verify_project('smpphat', source_dir, files)
+    return {name: identity['used_files'][name]['sha256'] for name in files}
 
 
 def _safe_extract(archive: Path, destination: Path) -> None:
@@ -277,14 +270,17 @@ def _download_fftw_archive(archive: Path, work_dir: Path) -> None:
 
 def ensure_fftw(work_dir: Path, *, download: bool) -> tuple[Path, dict[str, object]]:
     """Build checksum-pinned FFTW single precision under work_dir."""
+    work_dir = contracts.work_target(work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
-    prefix = work_dir / "fftw-prefix-verified"
+    prefix = contracts.validate_parent_chain(work_dir / "fftw-prefix-verified")
     library = prefix / "lib/libfftw3f.a"
     header = prefix / "include/fftw3.h"
-    manifest_path = work_dir / "fftw-prefix-verified-manifest.json"
-    archive = work_dir / f"fftw-{FFTW_VERSION}.tar.gz"
+    manifest_path = contracts.validate_report_destination(work_dir / "fftw-prefix-verified-manifest.json")
+    archive = contracts.validate_report_destination(work_dir / f"fftw-{FFTW_VERSION}.tar.gz")
+    contracts.validate_report_destination(library)
+    contracts.validate_report_destination(header)
     if library.is_file() and header.is_file() and manifest_path.is_file():
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest = contracts.strict_json_loads(manifest_path.read_text(encoding="utf-8"))
         expected = {
             "source": "checksum_verified_official_archive",
             "version": FFTW_VERSION,
@@ -335,9 +331,9 @@ def ensure_fftw(work_dir: Path, *, download: bool) -> tuple[Path, dict[str, obje
 
 
 def validate_fftw_prefix(prefix: Path) -> tuple[Path, dict[str, object]]:
-    prefix = prefix.resolve()
-    header = prefix / "include/fftw3.h"
-    library = prefix / "lib/libfftw3f.a"
+    prefix = contracts.validate_parent_chain(prefix).resolve()
+    header = contracts.validate_report_destination(prefix / "include/fftw3.h")
+    library = contracts.validate_report_destination(prefix / "lib/libfftw3f.a")
     if not header.is_file() or not library.is_file():
         raise FileNotFoundError("FFTW prefix must contain include/fftw3.h and lib/libfftw3f.a")
     return prefix, {
@@ -351,11 +347,12 @@ def validate_fftw_prefix(prefix: Path) -> tuple[Path, dict[str, object]]:
 
 
 def compile_harness(source_dir: Path, fftw_prefix: Path, build_dir: Path) -> tuple[Path, list[str], str]:
+    build_dir = contracts.validate_parent_chain(build_dir)
     build_dir.mkdir(parents=True, exist_ok=True)
     compiler = shutil.which(os.environ.get("CC", "clang"))
     if compiler is None:
         raise FileNotFoundError("a C compiler is required")
-    executable = build_dir / "reproduce_smpphat_harness"
+    executable = contracts.validate_report_destination(build_dir / "reproduce_smpphat_harness")
     command = [
         compiler, "-std=c11", "-O2", "-Wall", "-Wextra",
         "-I", str(fftw_prefix / "include"), "-I", str(source_dir / "include"),
@@ -369,13 +366,14 @@ def compile_harness(source_dir: Path, fftw_prefix: Path, build_dir: Path) -> tup
 
 
 def _write_float32(path: Path, values: np.ndarray) -> None:
+    path = contracts.validate_report_destination(path)
     payload = np.asarray(values, dtype="<f4")
     path.write_bytes(payload.tobytes(order="C"))
 
 
 def _run_case(executable: Path, work_dir: Path, name: str, geometry: np.ndarray,
               directions: np.ndarray, description: str) -> dict[str, object]:
-    case_dir = work_dir / name
+    case_dir = contracts.validate_parent_chain(work_dir / name)
     case_dir.mkdir(parents=True, exist_ok=True)
     geometry_path = case_dir / "geometry.f32"
     directions_path = case_dir / "directions.f32"
@@ -463,12 +461,13 @@ def _run_case(executable: Path, work_dir: Path, name: str, geometry: np.ndarray,
 
 def run_experiment(*, source_dir: Path | None = None, fftw_prefix: Path | None = None,
                    work_dir: Path | None = None, download_fftw: bool = False) -> dict[str, object]:
-    source_dir = (source_dir or ROOT / "chapters/ch00/upstream/_downloads/smpphat").resolve()
+    source_dir = contracts.validate_parent_chain(source_dir or ROOT / "chapters/ch00/upstream/_downloads/smpphat").resolve()
     source_hashes = verify_upstream(source_dir)
+    identity = contracts.verify_project("smpphat", source_dir, source_hashes)
     if work_dir is None:
         work_dir = Path(tempfile.mkdtemp(prefix="smpphat-reference-"))
     else:
-        work_dir = work_dir.resolve()
+        work_dir = contracts.work_target(work_dir, (source_dir,)).resolve()
         work_dir.mkdir(parents=True, exist_ok=True)
     prefix, fftw_provenance = (
         validate_fftw_prefix(fftw_prefix) if fftw_prefix is not None
@@ -478,6 +477,7 @@ def run_experiment(*, source_dir: Path | None = None, fftw_prefix: Path | None =
     directions = fixed_directions()
     cases = [_run_case(executable, work_dir / "inputs", name, geometry, directions, description)
              for name, geometry, description in fixed_geometries()]
+    contracts.check_unchanged(identity)
     final_source_hashes = verify_upstream(source_dir)
     if final_source_hashes != source_hashes:
         raise ValueError("locked smpphat source changed during the experiment")
@@ -494,6 +494,8 @@ def run_experiment(*, source_dir: Path | None = None, fftw_prefix: Path | None =
         or case["comparison"]["intended_signed_lookup_failed"]
         for case in cases)
     return {
+        "source_contract": identity,
+        "report_source_sha256": contracts.dependencies(__file__, (Path(__file__).with_name("reproduce_smpphat_harness.c"),)),
         "schema_version": 1,
         "experiment": "locked_smpphat_srp_vs_merged_pairs",
         "numerical_status": (
@@ -570,14 +572,17 @@ def main() -> None:
                         help="write the diagnosed failure report but return success")
     parser.add_argument("--output", type=Path)
     arguments = parser.parse_args()
+    protected = (arguments.source_dir,) if arguments.source_dir else ()
+    target = contracts.report_target(arguments.output, protected=protected) if arguments.output else None
+    if arguments.work_dir:
+        contracts.work_target(arguments.work_dir, protected)
     report = run_experiment(source_dir=arguments.source_dir, fftw_prefix=arguments.fftw_prefix,
                             work_dir=arguments.work_dir, download_fftw=arguments.download_fftw)
     payload = json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
     if arguments.output is None:
         print(payload, end="")
     else:
-        arguments.output.parent.mkdir(parents=True, exist_ok=True)
-        arguments.output.write_text(payload, encoding="utf-8")
+        contracts.write_report(target, report, protected=protected)
     if report["numerical_status"] == "failed_portability" \
             and not arguments.allow_known_portability_failure:
         parser.exit(2, "locked smpphat failed the all-grid SRP/SMP equivalence check; "

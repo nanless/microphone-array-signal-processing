@@ -6,6 +6,8 @@ from pathlib import Path
 import tempfile
 import unittest
 
+from codes.chapters.ch04.core import upstream_contracts as contracts
+
 import numpy as np
 
 from codes.chapters.ch04.examples import reproduce_sbl_reference as experiment
@@ -17,7 +19,7 @@ class SBLReferenceTests(unittest.TestCase):
         provenance = report["provenance"]
         self.assertEqual(provenance["revision"], experiment.REVISION)
         self.assertEqual(provenance["module_sha256"], experiment.MODULE_SHA256)
-        self.assertEqual(provenance["harness_sha256"], hashlib.sha256(Path(experiment.__file__).read_bytes()).hexdigest())
+        self.assertEqual(provenance["harness_sha256"], hashlib.sha256(contracts.historical_bytes(experiment.__file__)).hexdigest())
         self.assertEqual(len(report["cases"]), 5)
 
     def test_book_phase_convention_against_quarter_cycle_hand_calculation(self):

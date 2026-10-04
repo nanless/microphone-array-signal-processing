@@ -7,6 +7,14 @@ complex snapshots, not recordings or a reproduction of a paper's benchmark.
 
 from __future__ import annotations
 
+# Support documented direct-file commands without changing upstream imports.
+if __package__ in (None, ""):
+    import sys as _entry_sys
+    from pathlib import Path as _EntryPath
+    _entry_sys.path.insert(0, str(_EntryPath(__file__).resolve().parents[4]))
+
+from codes.chapters.ch04.core import upstream_contracts as contracts
+
 import argparse
 import contextlib
 from datetime import datetime, timezone
@@ -14,10 +22,8 @@ import hashlib
 import io
 import json
 import math
-import os
 from pathlib import Path
 import platform
-import subprocess
 import types
 
 import numpy as np
@@ -32,31 +38,18 @@ GRID = np.arange(-80.0, 81.0)
 
 def load_locked_source(source_dir: Path | None = None):
     """Verify the checkout and module before executing its unchanged source."""
-    source_dir = (source_dir or ROOT / "chapters/ch00/upstream/_downloads/sbl").resolve()
+    source_dir = contracts.validate_parent_chain(
+        source_dir or ROOT / "chapters/ch00/upstream/_downloads/sbl").resolve()
+    identity = contracts.verify_project('sbl', source_dir, ('SBL_MF_Python/sbl.py',))
     source = source_dir / "SBL_MF_Python/sbl.py"
-    if not source.is_file() or not (source_dir / ".git").exists():
-        raise FileNotFoundError("Fetch the locked sbl source separately before running")
-    env = {key: value for key, value in os.environ.items()
-           if not key.startswith("GIT_")}
-
-    def git(*args):
-        return subprocess.check_output(
-            ["git", "-C", str(source_dir), *args], env=env, text=True,
-            stderr=subprocess.PIPE).strip()
-
-    if Path(git("rev-parse", "--show-toplevel")).resolve() != source_dir:
-        raise ValueError("SBL directory is not its own checkout")
-    if git("rev-parse", "HEAD") != REVISION:
-        raise ValueError("SBL revision differs from the experiment lock")
-    if git("status", "--porcelain", "--untracked-files=no"):
-        raise ValueError("SBL tracked worktree is modified")
     payload = source.read_bytes()
     if hashlib.sha256(payload).hexdigest() != MODULE_SHA256:
         raise ValueError("SBL core SHA-256 differs from the experiment lock")
     module = types.ModuleType("locked_sbl_reference")
     module.__file__ = str(source)
-    # Execute the verified bytes without creating a pycache in the checkout.
     exec(compile(payload, str(source), "exec"), module.__dict__)
+    contracts.check_unchanged(identity)
+    module._masp_identity = identity
     return module
 
 
@@ -196,14 +189,17 @@ def run_experiment(source_dir: Path | None = None, *, max_iterations: int = 1000
             "scalar_vs_matrix_covariance_max_abs": float(np.max(np.abs(covariance - y[:, :, 0] @ y[:, :, 0].conj().T / 200))),
             "sample_vs_population_relative_frobenius": float(np.linalg.norm(covariance - case["population"]) / np.linalg.norm(case["population"])),
         })
+    contracts.check_unchanged(upstream._masp_identity)
     return {
+        "source_contract": upstream._masp_identity,
+        "report_source_sha256": contracts.dependencies(__file__),
         "schema_version": 1, "experiment": "locked_sbl_four_microphone_single_realization",
         "provenance": {"upstream_url": "https://github.com/gerstoft/SBL",
                        "revision": REVISION, "module_sha256": MODULE_SHA256,
                        "license": "GPL-3.0; separately obtained upstream, not copied into this harness",
                        "source_verified_on": "2026-09-22",
                        "executed_at_utc": datetime.now(timezone.utc).isoformat(),
-                       "source_check_scope": "HEAD and all tracked worktree files; untracked files not audited",
+                       "source_check_scope": "fixed origin/HEAD, original blob and license SHA, tracked/nonignored worktree clean before/after; ignored members and complete acquisition selection separate",
                        "harness_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                        "python": platform.python_version(), "numpy": np.__version__,
                        "platform": platform.platform()},
@@ -229,11 +225,12 @@ def main() -> None:
     parser.add_argument("--source-dir", type=Path)
     parser.add_argument("--output", type=Path, help="write JSON report explicitly")
     args = parser.parse_args()
+    protected = (args.source_dir,) if args.source_dir else ()
+    target = contracts.report_target(args.output, protected=protected) if args.output else None
     result = run_experiment(args.source_dir)
     payload = json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
     if args.output:
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(payload, encoding="utf-8")
+        contracts.write_report(target, result, protected=protected)
     else:
         print(payload, end="")
 

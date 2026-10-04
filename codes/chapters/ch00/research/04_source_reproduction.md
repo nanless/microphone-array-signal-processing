@@ -504,4 +504,15 @@ e3b3176d835837441224e4906b7c2befadcdc4fe2ce6163245b7d9a9ad0d9229
 
 这些状态证明限定源码身份与获取边界。依赖安装、方法级运行、完整语音链路和设备验收仍是分开的工作；两个新选集此次都未运行原方法。已有48份Git跟踪的数值与方法JSON报告字节保持不变，旧失败没有被补成成功。历史105项状态与当时106项状态的关系见上一节。
 
-第3章研究另登记Hybrid作者链接为NOASSERTION，仅索引固定提交，不建立受管理本地选集或复制出版源码。新增前完整保存106项锁表SHA `6dab41b1542cfa2cd4731ef4c8a3e807b343dc807f209c4eea17503e203ebf59`及原状态SHA `1142cc2290d93ea33e6b2dcdf72b9b52307efdd837b84c1739262c2c968186d6`的原字节，并在[source_history.py](../core/source_history.py)登记；旧报告继续绑定其真实历史摘要。当前107项由真实工具离线重核，69项通过、22项选集不匹配、15项仅索引及1项AEC本地修改失败，退出非零；此前106个项目的完整状态记录逐项不变。新增索引不会把源码未取得、原失败或未运行方法改成通过，方法条件见[空间研究§39.10](01_spatial_and_tracking.md#sec-39-10)。
+第3章研究另登记Hybrid作者链接为NOASSERTION，仅索引固定提交，不建立受管理本地选集或复制出版源码。新增前完整保存106项锁表SHA `6dab41b1542cfa2cd4731ef4c8a3e807b343dc807f209c4eea17503e203ebf59`及原状态SHA `1142cc2290d93ea33e6b2dcdf72b9b52307efdd837b84c1739262c2c968186d6`的原字节，并在[source_history.py](../core/source_history.py)登记；旧报告继续绑定其真实历史摘要。第3章验收时107项由真实工具离线重核，69项通过、22项选集不匹配、15项仅索引及1项AEC本地修改失败，退出非零；此前106个项目的完整状态记录逐项不变。新增索引不会把源码未取得、原失败或未运行方法改成通过，方法条件见[空间研究§39.10](01_spatial_and_tracking.md#sec-39-10)。
+
+
+### 第4章新增来源与当前限定调用
+
+第4章新增DP-RTF与ESP-SR两个固定来源仅索引，当前109项由真实获取工具离线核验：69项通过、22项完整选集不匹配、17项index_only、1项既有AEC缓存失败，工具退出1。原107项完整状态逐项不变。新增前保存锁表SHA `5dbf0c55fac57d82915ce01c20d7a96505147aaaed550558ce5e6c1c24da1fd0`和状态SHA `230269d62683e0726efb2c87a1661f8179ada3ee041b7b7df266190e471e2652`的原字节并登记，旧历史方法报告不换工具或整锁摘要。
+
+本机另在`codes/chapters/ch00/upstream/_downloads/.research-only/`导出DP-RTF四个原文件（4863字节）及ESP-SR七个所读入口（33830字节），逐文件对照固定Git blob及锁表SHA，原许可/版权声明保留。两个选集各带`RESEARCH_ACQUISITION.json`，明确是固定对象的文件导出，不是洁净Git工作树，不含二进制、权重、音频或数据集，未运行算法。该忽略缓存不进入提交推送，也不升级受管理109项的获取状态或92个独立工作区数量；静态研究、取得完整实现和获得再分发许可分别判断。
+
+六个第4章原源工具现在统一使用[当前合同核](../../ch04/core/upstream_contracts.py)：sanitized Git、官方origin、固定HEAD、全部声明使用的原blob与许可SHA、跟踪/未忽略成员的前后洁净及忽略成员前后清单，真实完整选集与所用源码身份分栏。默认stdout不写报告；两个audit显式写入仅允许新[DOA当前报告](../../ch04/reports/upstream_doa_contracts.json)、[SAID当前报告](../../ch04/reports/said_compression_contracts.json)或仓外普通路径。四个旧reproduce入口的output/workdir只能仓外，历史报告/源码/上游及链接父链执行前拒绝。有限路径检查不保证消除并发竞态。
+
+本轮使用既有`/private/tmp/masp-appb-pra-venv`真实运行PRA 0.10.0完整TOPS及限定原helper；原峰49°与独立30°分别保留，root-MUSIC原dtype错误与局部门面分开，SAID只执行四个压缩格式助手。ESPRIT与SBL另实际输出到仓外，不给旧报告改成新运行。SMP的FFTW条件不足，本轮没有重建原C；旧失败/临时适配历史与独立DFT测试仍分别说明。DP-RTF MATLAB、完整DPD、FRIDA、学习网络、核心二进制和硬件未执行；详细条件及许可见[空间研究58/59](01_spatial_and_tracking.md#sec-u-1ca23edba5)。

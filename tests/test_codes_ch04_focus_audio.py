@@ -1,4 +1,5 @@
 """Independent real projections and actual PCM checks for known focusing."""
+import copy
 import hashlib
 import io
 import json
@@ -32,6 +33,19 @@ class FocusAudioTests(unittest.TestCase):
             assert (w.getframerate(), w.getnframes(), w.getsampwidth(), w.getcomptype()) == (16000,32024,2,'NONE')
             channels = w.getnchannels()
             return np.frombuffer(w.readframes(32024), '<i2').reshape(32024,channels).T/32768
+
+    def test_numerically_equal_types_still_rejected(self):
+        for key, value in audio.parameters().items():
+            if type(value) not in (int, float): continue
+            replacement = float(value) if type(value) is int else int(value)
+            if replacement != value: continue
+            bad = audio.parameters(); bad[key] = replacement
+            with self.subTest(key=key), patch.object(generator, 'parameters', return_value=bad):
+                with self.assertRaises(ValueError): generator.prepare_assets()
+        for key in ('sample_rate_hz', 'source_samples'):
+            bad = audio.parameters(); bad[key] = str(bad[key])
+            with self.subTest(key=key), patch.object(generator, 'parameters', return_value=bad):
+                with self.assertRaises(ValueError): generator.prepare_assets()
 
     def test_fixed_file_source_and_common_gain_contract(self):
         self.assertEqual(set(self.blobs), {'focus_reference.wav','focus_delayed_source.wav',
@@ -116,6 +130,44 @@ class FocusAudioTests(unittest.TestCase):
                 before={p.name:p.read_bytes() for p in root.iterdir()}
                 with self.assertRaises(ValueError): generator.check_assets(root)
                 self.assertEqual(before,{p.name:p.read_bytes() for p in root.iterdir()})
+
+    def test_false_descriptive_parameters_rejected_before_any_write(self):
+        changes = {'source_2_delay_samples': 999, 'common_propagation_delay_samples': -99,
+                   'frequencies_hz': [999., 1234.], 'source_amplitude_per_frequency': .9,
+                   'noise': 'white noise', 'channel_order': [3, 2, 1, 0],
+                   'samples_in_scoring_window': True,
+                   'phasor_convention': 'cos coefficient plus j*sin coefficient'}
+        for key, value in changes.items():
+            with self.subTest(key=key), tempfile.TemporaryDirectory() as temp:
+                bad = copy.deepcopy(audio.parameters()); bad[key] = value
+                target = Path(temp)/'must-not-exist'
+                with patch.object(generator, 'parameters', return_value=bad):
+                    with self.assertRaises(ValueError):
+                        generator.main(['--output-dir', str(target)])
+                self.assertFalse(target.exists())
+
+    def test_every_contract_field_and_nested_scalar_has_exact_type(self):
+        # Each scalar independently changed, including True replacing integer 1.
+        def leaves(value, path=()):
+            if isinstance(value, dict):
+                for key, item in value.items(): yield from leaves(item, path+(key,))
+            elif isinstance(value, list):
+                for key, item in enumerate(value): yield from leaves(item, path+(key,))
+            else: yield path, value
+        for path, value in leaves(audio.parameters()):
+            bad = copy.deepcopy(audio.parameters()); parent = bad
+            for key in path[:-1]: parent = parent[key]
+            wrong = True if type(value) in (int, float) else value+' invalid'
+            parent[path[-1]] = wrong
+            with self.subTest(path=path), patch.object(generator, 'parameters', return_value=bad):
+                with self.assertRaises(ValueError): generator.prepare_assets()
+        for key in audio.parameters():
+            bad = audio.parameters(); del bad[key]
+            with self.subTest(missing=key), patch.object(generator, 'parameters', return_value=bad):
+                with self.assertRaises(ValueError): generator.prepare_assets()
+        bad = audio.parameters(); bad['invented'] = 'extra'
+        with patch.object(generator, 'parameters', return_value=bad):
+            with self.assertRaises(ValueError): generator.prepare_assets()
 
     def test_shape_zero_energy_and_complex_input_rejected(self):
         for x in (np.zeros((4,32024)),np.zeros((3,32024)),np.zeros((4,32024),complex)):

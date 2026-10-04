@@ -6,11 +6,13 @@
 
 from __future__ import annotations
 
-# Allow the documented direct-file command as well as python -m.
-if __name__ == "__main__" and not __package__:
-    import sys as _chapter_entry_sys
-    from pathlib import Path as _ChapterEntryPath
-    _chapter_entry_sys.path.insert(0, str(_ChapterEntryPath(__file__).resolve().parents[4]))
+# Support documented direct-file commands without changing upstream imports.
+if __package__ in (None, ""):
+    import sys as _entry_sys
+    from pathlib import Path as _EntryPath
+    _entry_sys.path.insert(0, str(_EntryPath(__file__).resolve().parents[4]))
+
+from codes.chapters.ch04.core import upstream_contracts as contracts
 
 import argparse
 import hashlib
@@ -37,8 +39,9 @@ def patch_source(source: str) -> str:
 
 
 def run(*, source_dir: Path, fftw_prefix: Path) -> dict[str, object]:
-    source_dir = source_dir.resolve()
+    source_dir = contracts.validate_parent_chain(source_dir).resolve()
     original_hashes = reference.verify_upstream(source_dir)
+    identity = contracts.verify_project("smpphat", source_dir, original_hashes)
     fftw_prefix, fftw_info = reference.validate_fftw_prefix(fftw_prefix)
     with tempfile.TemporaryDirectory(prefix="smpphat-signed-overlay-") as temp:
         root = Path(temp)
@@ -63,7 +66,10 @@ def run(*, source_dir: Path, fftw_prefix: Path) -> dict[str, object]:
                 or comparison["expected_equivalence_failed"]
                 or comparison["c_srp_vs_c_smp_max_abs"] >= 2e-4):
             raise ArithmeticError(f"有符号索引适配未通过独立对照：{case['case']}")
+    contracts.check_unchanged(identity)
     return {
+        "source_contract": identity,
+        "report_source_sha256": contracts.dependencies(__file__, (reference.__file__, Path(reference.__file__).with_name("reproduce_smpphat_harness.c"))),
         "experiment": "smpphat_signed_delay_overlay",
         "status": "passed_patched_teaching_case",
         "upstream_revision": reference.UPSTREAM_REVISION,
@@ -103,11 +109,11 @@ def main() -> None:
     parser.add_argument("--fftw-prefix", type=Path, required=True)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
+    target = contracts.report_target(args.output, protected=(args.source_dir,)) if args.output else None
     result = run(source_dir=args.source_dir, fftw_prefix=args.fftw_prefix)
     payload = json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
     if args.output:
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(payload, encoding="utf-8")
+        contracts.write_report(target, result, protected=(args.source_dir,))
     else:
         print(payload, end="")
 

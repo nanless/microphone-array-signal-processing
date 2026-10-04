@@ -2271,6 +2271,59 @@
         "SRP-PHAT-DOA.py"
       ],
       "note": "Author repository linked by arXiv:2502.06195v1; GitHub identifies a fork of zcj808/Hybrid-TDOA-Multi-Calib. HEAD/main fixed with ls-remote. Root listing and fixed LICENSE, LICENSE.md, LICENSE.txt and COPYING requests did not establish code permission. Establish the applicable code license before automated acquisition or redistribution. Fixed source was statically inspected through original file responses only; no managed checkout, MATLAB solver, DOA/odometry chain, OneDrive data, dependencies or paper performance has run. The solver fixes the first array pose and relative offset but still estimates first-array drift with a known event-interval reference; the planar SRP entry chooses abs(z) and a coordinate conversion. Paper publication and visible source do not license code or data."
+    },
+    {
+      "id": "dprtf-ssl",
+      "url": "https://github.com/Audio-WestlakeU/DP_RTF_SSL.git",
+      "revision": "b83e6e672f8248a11feb326d44aef6a333cbc709",
+      "license": "NOASSERTION",
+      "fetch_enabled": false,
+      "acquisition": "index_only",
+      "verified_at": "2026-10-04",
+      "scope": "Author-linked binaural batch DP-RTF estimation and CTF PSD cross-relation source; not a complete direction-matching system",
+      "entrypoints": [
+        "README.md",
+        "DP_RTF.m",
+        "MCMT.m",
+        "stft.m"
+      ],
+      "note": "The complete fixed four-file Git tree was statically read. No LICENSE or SPDX permission was established; copyright alone does not authorize redistribution. Keep this entry index-only until applicable permission is established. No MATLAB/Octave, HRIR table, dataset or full estimator ran. D=30 with 4ms hop is 120ms, despite the original 120s comment. The 16ms analysis window, early-reflection gap, enough speech PSD frames and nearest noise frames are method conditions, not a guarantee of direct sound.",
+      "entrypoint_sha256": {
+        "README.md": "d49db4e55ac85e20bd5348dfb563be36f0a08e99fcf1d8e10a92c09de980c1e3",
+        "DP_RTF.m": "6513ba1e1300a5931397066dcb5eafe1a65daa96775cd86780f1e338f86f43b8",
+        "MCMT.m": "0fa926a84e4dd75fbf4b53765259b62e658ecb030e72d4506341256dbbf9350d",
+        "stft.m": "1715ff0aa19ebe0ffc59d33b1a40cdd3c01f07eb67a265fbdec352266f7611ee"
+      }
+    },
+    {
+      "id": "esp-sr-doa",
+      "url": "https://github.com/espressif/esp-sr.git",
+      "revision": "76581015af7075681814627a5bb03d2f3f328f8a",
+      "release": "component 2.5.5",
+      "license": "Espressif product-restricted root license; selected public headers Apache-2.0",
+      "fetch_enabled": false,
+      "acquisition": "index_only",
+      "verified_at": "2026-10-04",
+      "scope": "Official ESP-SR Capon DOA public interface, state/VAD and channel-coordinate contracts; algorithm core is a linked binary library",
+      "entrypoints": [
+        "LICENSE",
+        "include/esp32p4/esp_doa_capon_embedded.h",
+        "include/esp32p4/gsc_core_types.h",
+        "docs/en/direction_of_arrival/README.rst",
+        "CMakeLists.txt",
+        "idf_component.yml",
+        "test_apps/esp-sr-gsc-doa/main/test_doa_accuracy.cpp"
+      ],
+      "note": "The fixed public interface, test and root license were statically read. Root permission is restricted to Espressif products, while selected header notices say Apache-2.0; do not infer that the entire algorithm is freely redistributable. Keep index-only; no binary, weights, test audio/data or hardware build/run was acquired. The implementation is linked as lib/esp32p4/libesp_audio_processor.a. VAD=0 freezes updates and returns the last angle, not a new observation. Vendor accuracy/resource results describe their own configuration and were not reproduced here.",
+      "entrypoint_sha256": {
+        "LICENSE": "7d916fb00bc0742c47cafb0d0144b67f826d76779730b1cb8796045ea6ba1b9a",
+        "include/esp32p4/esp_doa_capon_embedded.h": "1c81502e2fcfff3776d90b46eeb74ec177cf234d77cad3ab1aa547f91dc79ad8",
+        "include/esp32p4/gsc_core_types.h": "1cb99468063633c4f6c3bddd51cb5996cb1739be981da1a59d533385beb0ce15",
+        "docs/en/direction_of_arrival/README.rst": "b61de50cddb53f358a67b2b73ab6b331af8e41e671c388ed16e39714310f8c60",
+        "CMakeLists.txt": "0ce88471feb61f11c34344beeef88d69cae151c8f752877100c8ac2924562bdc",
+        "idf_component.yml": "b2dcd8a2ac08078781fa1ed06f28886cfff35fe2e3845c8eaf622916da4d0ff3",
+        "test_apps/esp-sr-gsc-doa/main/test_doa_accuracy.cpp": "a9d43732962a0fc006c38e7db8c4d158093502dfcc21b954f3d5a3707606232c"
+      }
     }
   ]
 }

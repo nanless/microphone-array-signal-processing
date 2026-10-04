@@ -207,10 +207,10 @@ class RealHistoricalSourceTests(unittest.TestCase):
         old=json.loads(path.read_text());ids=[p['id'] for p in old['projects']]
         self.assertEqual(len(ids),100);result=history.verify_lock_binding(OLD_LOCK_SHA,ids)
         self.assertEqual(result['records'],{p['id']:p for p in old['projects']})
-        current=json.loads(history.LOCK.read_text());self.assertEqual(len(current['projects']),107)
+        current=json.loads(history.LOCK.read_text());self.assertEqual(len(current['projects']),109)
         self.assertEqual({p['id'] for p in current['projects']}-set(ids),
                          {'danse-python','danse-wola','paderwasn','tidanseplus-batch','wasn-platform','libricss',
-                          'hybrid-tdoa-multi-calib'})
+                          'hybrid-tdoa-multi-calib','dprtf-ssl','esp-sr-doa'})
 
     def test_chapter03_index_addition_preserves_all_106_previous_source_records(self):
         lock_sha='6dab41b1542cfa2cd4731ef4c8a3e807b343dc807f209c4eea17503e203ebf59'
@@ -232,6 +232,34 @@ class RealHistoricalSourceTests(unittest.TestCase):
         status=json.loads(history.STATUS.read_bytes())
         row=next(row for row in status['projects'] if row['id']==entry['id'])
         self.assertEqual(row,{'id':entry['id'],'revision':entry['revision'],'status':'index_only'})
+
+    def test_chapter04_preserves_107_records_and_separates_unlicensed_or_binary_interfaces(self):
+        lock_sha='5dbf0c55fac57d82915ce01c20d7a96505147aaaed550558ce5e6c1c24da1fd0'
+        status_sha='230269d62683e0726efb2c87a1661f8179ada3ee041b7b7df266190e471e2652'
+        raw=(history.SNAPSHOT_ROOT/f'SOURCES.{lock_sha}.json').read_bytes()
+        self.assertEqual(sha(raw),lock_sha)
+        old=json.loads(raw); ids=[row['id'] for row in old['projects']]
+        self.assertEqual(len(ids),107)
+        self.assertEqual(history.verify_lock_binding(lock_sha,ids)['records'],
+                         {row['id']:row for row in old['projects']})
+        saved=(history.SNAPSHOT_ROOT/f'SOURCE_STATUS.{status_sha}.json').read_bytes()
+        self.assertEqual(sha(saved),status_sha)
+        self.assertEqual(history.verify_status_binding(status_sha,lock_sha,ids)['records'],
+                         {row['id']:row for row in json.loads(saved)['projects']})
+        entries={row['id']:row for row in json.loads(history.LOCK.read_bytes())['projects']}
+        expected={'dprtf-ssl':('b83e6e672f8248a11feb326d44aef6a333cbc709',4),
+                  'esp-sr-doa':('76581015af7075681814627a5bb03d2f3f328f8a',7)}
+        for name,(revision,count) in expected.items():
+            row=entries[name]
+            self.assertEqual(row['revision'],revision)
+            self.assertIs(row['fetch_enabled'],False)
+            self.assertEqual(row['acquisition'],'index_only')
+            self.assertEqual(len(row['entrypoints']),count)
+            self.assertEqual(set(row['entrypoints']),set(row['entrypoint_sha256']))
+            self.assertTrue(all(len(value)==64 for value in row['entrypoint_sha256'].values()))
+        self.assertEqual(entries['dprtf-ssl']['license'],'NOASSERTION')
+        self.assertIn('product-restricted',entries['esp-sr-doa']['license'])
+        self.assertNotIn('lib/esp32p4/libesp_audio_processor.a',entries['esp-sr-doa']['entrypoints'])
 
     def test_previous_105_lock_preserves_104_records_and_rejects_changed_wasn_policy(self):
         path=history.SNAPSHOT_ROOT/f'SOURCES.{HARMONY_LOCK_SHA}.json'

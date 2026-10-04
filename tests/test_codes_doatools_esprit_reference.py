@@ -7,6 +7,8 @@ from pathlib import Path
 import tempfile
 import unittest
 
+from codes.chapters.ch04.core import upstream_contracts as contracts
+
 import numpy as np
 
 from codes.chapters.ch04.examples import reproduce_doatools_esprit as experiment
@@ -21,7 +23,7 @@ class DoatoolsEspritReferenceTests(unittest.TestCase):
         provenance = self.report["provenance"]
         self.assertEqual(provenance["revision"], experiment.REVISION)
         self.assertEqual(provenance["source_sha256"], experiment.SOURCE_HASHES)
-        self.assertEqual(provenance["harness_sha256"], hashlib.sha256(Path(experiment.__file__).read_bytes()).hexdigest())
+        self.assertEqual(provenance["harness_sha256"], hashlib.sha256(contracts.historical_bytes(experiment.__file__)).hexdigest())
         self.assertEqual(provenance["configuration_sha256"], experiment.configuration_sha256())
         self.assertEqual(self.report["configuration"], experiment.CONFIG)
         self.assertFalse(provenance["upstream_modified"])

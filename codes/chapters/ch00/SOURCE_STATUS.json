@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "lock_sha256": "5dbf0c55fac57d82915ce01c20d7a96505147aaaed550558ce5e6c1c24da1fd0",
+  "lock_sha256": "a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505",
   "report_sources": {
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
@@ -7597,6 +7597,16 @@
     {
       "id": "hybrid-tdoa-multi-calib",
       "revision": "4cc21cb06b9f82f83cc90d65a418f2b100748254",
+      "status": "index_only"
+    },
+    {
+      "id": "dprtf-ssl",
+      "revision": "b83e6e672f8248a11feb326d44aef6a333cbc709",
+      "status": "index_only"
+    },
+    {
+      "id": "esp-sr-doa",
+      "revision": "76581015af7075681814627a5bb03d2f3f328f8a",
       "status": "index_only"
     }
   ]

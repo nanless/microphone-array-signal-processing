@@ -499,7 +499,7 @@ HARK 的工业接口另有明确的数据和时间契约。[官方 LocalizeMUSIC
 
 默认行权为 `[1,√2,√3,2,√3,√2,1]`。四次上游调用都返回 `resolved=True`，但两次默认加权的最大方向误差分别约 1.527825°、1.496900°；该标志不能判定方向正确。未加权两路与独立复制两路的误差均低于 `10⁻⁸` 度。独立 LS 使用 `lstsq`，TLS 使用拼接子阵的 SVD；再用解析导向列替代特征向量作为另一组参考，结果也恢复真角。解析基下的移位特征值直接为 `exp(j*pi*sin(theta))`，无需用上游输出定义答案。
 
-[执行脚本](../../ch04/examples/reproduce_doatools_esprit.py)在调用前核对提交、跟踪文件状态和所调用关键源码摘要，禁止未跟踪 Python 源混入；[报告](../../ch04/reports/doatools_esprit_reference.json)绑定脚本、配置与源码摘要，保留完整协方差、原版四路结果及两组独立参考。普通[离线测试](../../../../tests/test_codes_doatools_esprit_reference.py)只核报告和 NumPy 参考，以标量三角和、±30° 四分之一周期解析基及换基不变性独立校验，不导入外部包或联网。历史运行使用 `/private/tmp/room-pra-venv/bin/python`；2026-10-01 核查该临时环境已不存在。当前重跑需另备固定源码和含 SciPy 的环境，例如本章新的 `/private/tmp/masp-ch04-pra-venv/bin/python`，但不能把新环境运行写回成上述历史执行条件。
+[执行脚本](../../ch04/examples/reproduce_doatools_esprit.py)在调用前核对提交、跟踪文件状态和所调用关键源码摘要，禁止未跟踪 Python 源混入；[报告](../../ch04/reports/doatools_esprit_reference.json)绑定脚本、配置与源码摘要，保留完整协方差、原版四路结果及两组独立参考。普通[离线测试](../../../../tests/test_codes_doatools_esprit_reference.py)只核报告和 NumPy 参考，以标量三角和、±30° 四分之一周期解析基及换基不变性独立校验，不导入外部包或联网。历史运行使用 `/private/tmp/room-pra-venv/bin/python`；2026-10-01 核查该临时环境已不存在。当前重跑需另备固定源码和含 SciPy 的环境，例如本轮实际使用的 `/private/tmp/masp-appb-pra-venv/bin/python`，但不能把新环境运行写回成上述历史执行条件。
 
 [Roy–Kailath 1989 原文，§IV-A～D，印刷页989～991](https://alumni.media.mit.edu/~aggelos/papers/roykailath89.pdf)对成对传感器的一致响应、相同平移和共同采样作出约定，并给出共同子空间基下的相似关系；任意旋转布局不能代替平移子阵。原文 TLS 同时拟合两块误差，不能由其名称推出所有失配下优于 LS。该原文相关页于 2026-10-01 实读。
 
@@ -1358,12 +1358,12 @@ LOCATA 官方 [I/O 框架](https://github.com/cevers/sap_locata_io)与[评价框
 
 2026-09-28 在该既有临时环境中实际执行了 §14 的 doatools ESPRIT 四路诊断，并保存独立报告；没有安装新依赖，没有修改上游源码。此次方法级计算不覆盖 root-MUSIC、稀疏求解器、FRIDA 或其他定位接口，也不改变先前两次导入失败的历史记录。源码获取状态与方法运行状态分别记录。
 
-2026-10-01 新建的隔离环境是 `/private/tmp/masp-ch04-pra-venv`，实际安装 PRA 0.10.0 wheel、NumPy 2.5.3、SciPy 1.18.1、Cython 3.3.0、pybind11 3.1.0；主 `.venv` 和下载源码未改变。[审计脚本](../../ch04/examples/audit_upstream_doa.py)、[当次报告](../../ch04/reports/upstream_doa.json)及[独立测试](../../../../tests/test_codes_ch04_upstream_doa.py)绑定当前工具 SHA、整锁摘要、项目条目、HEAD、原 Git blob 与文件 SHA、前后洁净状态。原完整 TOPS 所用七份相关 DOA Python 文件与固定缓存逐字节一致；CSSM/WAVES 明确为 AST 方法提取，root-MUSIC 明确先记录原失败再用局部兼容门面。未运行 CSSM/WAVES 整流程、FRIDA、稀疏求解器、硬件或论文大样本基准。
+2026-10-01 新建的隔离环境是 `/private/tmp/masp-ch04-pra-venv`，实际安装 PRA 0.10.0 wheel、NumPy 2.5.3、SciPy 1.18.1、Cython 3.3.0、pybind11 3.1.0；主 `.venv` 和下载源码未改变。[审计脚本](../../ch04/examples/audit_upstream_doa.py)、[当次报告](../../ch04/reports/upstream_doa.json)及[独立测试](../../../../tests/test_codes_ch04_upstream_doa.py)绑定当次工具 SHA、整锁摘要、项目条目、HEAD、原 Git blob 与文件 SHA、前后洁净状态。原完整 TOPS 所用七份相关 DOA Python 文件与固定缓存逐字节一致；CSSM/WAVES 明确为 AST 方法提取，root-MUSIC 明确先记录原失败再用局部兼容门面。未运行 CSSM/WAVES 整流程、FRIDA、稀疏求解器、硬件或论文大样本基准。
 
 ```bash
-/private/tmp/masp-ch04-pra-venv/bin/python codes/chapters/ch04/examples/audit_upstream_doa.py --report codes/chapters/ch04/reports/upstream_doa.json
-/private/tmp/masp-ch04-pra-venv/bin/python -m unittest tests.test_codes_ch04_upstream_doa -v
-.venv/bin/python codes/chapters/ch04/examples/audit_said_compression.py --report codes/chapters/ch04/reports/said_compression.json
+/private/tmp/masp-appb-pra-venv/bin/python codes/chapters/ch04/examples/audit_upstream_doa.py --report codes/chapters/ch04/reports/upstream_doa_contracts.json
+/private/tmp/masp-appb-pra-venv/bin/python -m unittest tests.test_codes_ch04_upstream_doa -v
+.venv/bin/python codes/chapters/ch04/examples/audit_said_compression.py --report codes/chapters/ch04/reports/said_compression_contracts.json
 .venv/bin/python -m unittest tests.test_codes_ch04_said_compression -v
 ```
 
@@ -1442,3 +1442,94 @@ FFT 接口约定由 [NumPy `rfft`](https://numpy.org/doc/stable/reference/genera
 固定源码中的风洞入口为 `examples/wind_tunnel_examples/example_airfoil_in_open_jet_freq_domain_methods.py`，另有CMF、导向与区域选择示例。工业复现应保存测量通道次序、校准文件、CSM窗与完整帧计数、网格/声源参考、剪切层或流动模型、对角处理、正则与区域积分。源码的下载入口使用浮动分支，配套数据许可须独立核实；本轮未取得风洞数据或运行该整链，不记录设备性能排名。
 
 DAMAS-C/CMF-C用于允许源间相关的模型，HR-CLEAN-SC关注多个分量与峰选择，SODIX引入不同的源表示和约束，移动/旋转源还需要运动轨迹与接收时刻模型。它们应逐一核观测、目标与额外假设，不能只更换算法名就沿用本章非相干PSF矩阵。上述扩展本轮仅保留研究入口，没有宣称运行。近场声全息的重建面与正则逆问题、DCASE的语义事件输出也不由本章功率成像覆盖。
+
+
+## 58. 直达路径证据：DPD筛选与DP-RTF不是同一计算
+
+定位器面对的首先是麦克风总声场，不是已经分好的直达声。高相干说明两路在该频点近似由同一个复比例解释；无噪单频信号二阶矩秩一说明该频点的有效空间分量只有一个。若同一声源的直达和反射仍相干，这两个性质都可能成立，却无法据此确认该分量的传播方向。第4章E04-24以两麦半波距、4kHz直达与同源反射给出有限假峰；[四个PCM控制](05_exercises_and_audio.md#sec-u-ed41d4e99e)让模型、实文件和评分互相核对。
+
+### 58.1 先区分筛选、特征估计与方向匹配
+
+直达占优检验（direct-path dominance test，DPD）筛选较符合单一主导传播方向的时频区域，然后定位器消费这些区域。它通常改变哪些观测进入方向估计，并不自动分离或输出干净语音。通过阈值只说明通过当前模型下的检验，不能称为已证明“无反射”。
+
+直达路径相对传递函数（direct-path relative transfer function，DP-RTF）则尝试估计两麦直达响应的复比，再与候选方向响应匹配。复比同时包含相对幅度与相位；将相位直接变成角度仍需要阵列几何、传播正号、频率、可辨方向域及相应响应模型。HRTF表、通道校准和房间条件都会改变匹配关系。
+
+| 路线 | 处理的对象 | 新增的模型条件 | 本书实际范围 |
+|---|---|---|---|
+| 平滑后奇异值比DPD | 球谐声场的局部空间统计 | 球阵编码、径向补偿、跨频同坐标与足够局部样本 | 原论文与后续作者说明；未实现完整DPD |
+| 声场指向性DPD | 球谐系数对应的扫描声场 | 阶数、球谐声场模型、方向性度量和阈值 | 2018作者替代方案；不能机械要求同一频率平滑 |
+| DP-RTF | 双通道CTF首系数比 | 跨帧模型、首段与直达关系、PSD估计及噪声条件 | E04-25只做精确人工帧CTF交叉关系 |
+| 普通单频相干度/秩检查 | 麦克风总声场 | 单频二阶统计 | E04-24证明不能单凭它确认直达 |
+
+第一行的原始入口为[Nadiri、Rafaely 2014](https://doi.org/10.1109/TASLP.2014.2337846)。本轮取得机构摘要和作者2018稿中的原方法说明，没有取得2014全文，不补写未经实读的实验细节。后续[Rafaely、Alhaiany 2018正式论文](https://doi.org/10.1016/j.sigpro.2017.08.010)及[作者上传稿](https://arxiv.org/html/2310.03688v1)§II～IV区分奇异值比检验与声场指向性替代；上传年份2023不改写方法年份2018。
+
+### 58.2 为什么频率平滑也有坐标和噪声条件
+
+未补偿时，不同频率的球阵模态响应各不相同。作者方法先进行球谐表示及径向处理，再在局部频率与时间区域形成统计量；不能把任意阵列的原始协方差直接相加后沿用同一导向矢量。任意阵列的推广还涉及适当聚焦，见[2018作者研究记录](https://doi.org/10.1109/ICSEE.2018.8646090)。
+
+理想单平面波经过合适的共同坐标表示，空间系数有固定方向结构。多方向反射的频率相位发生变化时，局部平滑可能使它们不再表现为同一个合成分量，因而奇异值结构与单平面波不同。这是有条件的统计区分：频率跨度过小、延迟差过小、反射方向相近或样本不足时，都可能仍难以区分。
+
+径向补偿、白化或一般聚焦也会变换噪声。如果变换不是酉矩阵，原白噪声不一定仍为白噪声；奇异值阈值与MUSIC噪声子空间必须消费正确的噪声模型。[E04-19](../../../../chapters/04_doa-estimation.md#e04-19)已有非酉噪声控制，[E04-22](../../../../chapters/04_doa-estimation.md#e04-22)只用已知酉置换展示跨频秩改变，二者均不是完整DPD实现。
+
+2018声场指向性替代在相应球谐模型下避免该频率平均与特征分解。它的扫描度量和计算优势依赖阵列阶数、网格与实现；不能把论文条件下的优势写成任意两麦、任意芯片的耗时保证。本书不把这两种检验混成一个必然步骤表。
+
+### 58.3 DP-RTF的首系数从哪里来
+
+[Li等2016作者论文](https://www.gipsa-lab.grenoble-inp.fr/~laurent.girin/papers/Li_et_al_TASLP_2016.pdf)，DOI [10.1109/TASLP.2016.2598319](https://doi.org/10.1109/TASLP.2016.2598319)，§II～III式(3)、(7)～(12)把时域长路径近似为逐频跨帧CTF，再用两通道交叉关系估计归一化系数。跨频项与可能的非因果帧项不是因为写了CTF就消失，采用它们的近似要说明窗、帧移及路径条件。
+
+CTF首系数是RIR第一段与分析/合成窗相应权重的组合，不是无条件等于某一个时域直达抽头。若直达和最早反射的间隔足够大，适当短窗的首段才更接近直达响应；窗覆盖早反射时，首系数比也会被污染。窗变短还影响频率分辨率及谱估计方差，不能简单宣布越短越好。
+
+令双通道人工帧模型为x=a*s、y=b*s，其中卷积发生在帧序号上。交换卷积得a*y=b*x；令a0非零，再将其他系数除以a0，得到线性回归。这里是普通乘法与转置，不能把交叉关系误改成复内积的共轭转置。E04-25给出Q=2的三行设计矩阵、消元、行列式与条件数，最后比较首比1+j和人工帧调制频率π/2处的整路径比0.1+0.8j。
+
+真实算法不能直接把含噪x/y当无误差回归列。原文随后形成PSD/互PSD统计，并用不同帧区间的差分处理相应噪声项；其成立依赖噪声平稳性、源噪不相关与可用观测。有限平均残余、语音活动检测失误、时变路径和病态设计矩阵仍会造成误差。单一持续复指数使设计行成比例，样本多不自动补足列秩；a0接近零时归一化也会放大误差。
+
+### 58.4 作者实现的逐文件入口与未运行边界
+
+固定作者仓库为[Audio-WestlakeU/DP_RTF_SSL](https://github.com/Audio-WestlakeU/DP_RTF_SSL/tree/b83e6e672f8248a11feb326d44aef6a333cbc709)，完整提交`b83e6e672f8248a11feb326d44aef6a333cbc709`。本轮静态读完整四文件树，逐文件SHA保存在来源锁的`dprtf-ssl`条目；没有建立LICENSE/SPDX授权，所以只索引，没有把作者代码复制入本书发布目录。论文许可不能替代软件许可。
+
+本机另将这四个固定原blob导出到Git忽略的`codes/chapters/ch00/upstream/_downloads/.research-only/dprtf-ssl-b83e6e672f82/`，保留原字节及`RESEARCH_ACQUISITION.json`逐文件摘要。它是供本地静态研究的文件选集，不是Git工作树，不随本书发布，也不改变受管理来源的index_only状态；未运行MATLAB或取得方向匹配数据。
+
+| 固定文件 | 实际承担的步骤 | 需要检查的合同 |
+|---|---|---|
+| `stft.m` | 使用调用方传入窗的STFT与重叠平方和归一化 | Hamming窗由DP_RTF.m选择；16kHz下256点窗、64点帧移；端点与轴序 |
+| `MCMT.m` | 基于Erlang与最小值统计的语音/噪声阈值 | 输入sl/st/fn形成th_s/th_n；延迟向量与D段PSD平均在DP_RTF.m，不由此文件配对 |
+| `DP_RTF.m` | 静态双通道批量特征估计 | 输入N×2、语音和噪声统计、可用帧数、首系数归一化 |
+| `README.md` | 作者入口说明 | 不提供完整候选方向匹配表或一套可直接评测的HRIR数据 |
+
+256/16000=16ms，64/16000=4ms。代码D=30的时间长度是30×4ms=120ms，原注释写120s；本书按实际配置解释，不修上游。默认T60=400ms时，路径设置的约80ms除以4ms帧移对应Q=20，另有最多50的限制；这些是该实现的参数规则，不能称为普遍正确的混响路径长度。
+
+每个频点至少需要2Q−1=39个有效语音PSD统计段才满足该代码的最低长度控制；不足时跳过该频点并保留零，不表示整批所有频点都为零。零特征可能表示此控制触发，不能直接当“方向为零”或“无声源”。每个语音统计段另按时间索引距离选最近噪声统计段，同距时取原find顺序的第一项，再作PSD差分；缺少有效统计输入不是用多复制几个帧即可解决。本轮没有MATLAB/Octave执行、训练、HRIR匹配或作者数据实验，E04-25也没有实现这些完整步骤。
+
+## 59. ESP-SR：从Capon接口到有效的新方向观测
+
+[官方DOA说明](https://docs.espressif.com/projects/esp-sr/en/latest/esp32/direction_of_arrival/README.html)与固定[esp-sr源码](https://github.com/espressif/esp-sr/tree/76581015af7075681814627a5bb03d2f3f328f8a)分别承担当前产品接口说明和可追溯静态阅读。锁表ID为`esp-sr-doa`，组件声明2.5.5。本轮读公开头文件、默认参数、CMake、组件配置、原测试及根许可，没有构建设备程序或运行任何硬件。
+
+### 59.1 声道、坐标、块长与角度先对齐
+
+当前官方说明针对ESP32-P4/S31，支持2～8麦。麦坐标以米计，采用右手坐标；数组中第m个坐标必须与输入第m声道对应。文档URL含esp32路径，不意味着该功能支持所有名字含ESP32的芯片。
+
+输入块每声道128点，16kHz下是8ms；接口采用按通道连续的planar布局。普通多声道WAV是逐采样交织的interleaved布局，两者不一致。两通道例中，WAV的L0,R0,L1,R1必须拆成[L0,L1,…]与[R0,R1,…]，再按接口装入块；通道次序或布局错误会改变空间关系，不能当作算法失效。
+
+默认FFT256点，物理bin间隔16000/256=62.5Hz。默认扫描频率1500～4500Hz、名义步长100Hz形成31个配置频率，但100Hz不是62.5Hz的整数倍。公开接口不足以证明它们都映射到不同的物理bin、采用哪种插值或如何重复加权；这些细节在链接核心内，不能从配置列表推算完整实现。
+
+方位从+x轴起逆时针，默认0～350°步长10°，共36点。若本书二维ULA角θ从+y宽侧向+x测量，则在同一平面约定内θ=90°−φ，随后按当前方向域处理折返；不能只把返回数值贴进以宽侧为零点的图。平面阵列本身的上下半空间歧义也不会因输出0～350°方位而消失。
+
+### 59.2 VAD关闭时返回旧角，不产生新观测
+
+固定公开头文件说明，VAD=0冻结协方差更新、逆与谱等相应自适应步骤，并返回上一角度。这个值可用于显示保持，但不能赋一个新的测量时刻交给追踪器，否则同一旧信息会被重复计权，产生虚假的置信收缩。−1错误返回则应走无效观测分支，不能当作有效的−1°方向。
+
+接入第9章时应分别保存音频块时刻、状态最近更新时刻、返回时刻和当前VAD/有效标志。启动与暖机期间要明确何时首个角度有效；保持显示、真正新方向观测和错误三种状态应分别处理。VAD强制为1的测试也不能证明静默或双讲场景下这一状态控制正确。
+
+### 59.3 厂商测试能支持哪些结论
+
+固定`test_doa_accuracy.cpp`使用半径5cm的四麦阵列、距离2m、12个方向，每方向64块，前10块不计，分母为12×(64−10)=648。该测试强制VAD=1；648是准确匹配与±10°计数的评分分母，原程序只打印这两个计数，没有断言它们都等于648。准确性相关的最终断言是invalid_angles为0，检查全部12×64=768个返回值，包含暖机块。厂商文档另报告exact和±10°各648/648；软件测试通过本身不能单独证明这份全正确报告。它不能代替本书实际设备结果，也不能推断任意房间、反射、信噪比、运动或校准误差下的定位率。
+
+文档给出的400MHz条件下约0.65ms及内存配置是厂商条件报告，不是本书测量。8ms输入块长也不等于算法端到端延迟；还需记录FFT帧历史、暖机、调度、缓冲、任务阻塞和返回时刻。平均计算用时小于8ms不能单独保证每块实时期限。
+
+### 59.4 公开接口与核心许可分别核对
+
+根LICENSE要求在Espressif产品范围内使用，所读部分公开头文件标Apache-2.0。不能将某个头文件的许可扩展为整个产品许可，或据Capon名称假定核心C源已公开。固定CMake链接`lib/esp32p4/libesp_audio_processor.a`；本轮公开选集没有取得与该库对应的完整算法实现。
+
+锁表只登记七个入口的固定SHA和不同许可层，`fetch_enabled=false`、`acquisition=index_only`。没有取得二进制、权重、测试音频或设备依赖，没有运行厂商648例。读者后续应在适用许可及支持设备上核布局、坐标、VAD与状态、真实频率映射和错误码，再分别测声学效果与时间期限；本书此处是接口研究，不是新增本地Capon替代实现。
+
+本机研究文件选集位于Git忽略的`codes/chapters/ch00/upstream/_downloads/.research-only/esp-sr-doa-76581015af70/`，只导出上述七个已核原blob，包含根LICENSE及所读头文件的原许可声明。`RESEARCH_ACQUISITION.json`记录官方origin、固定提交、各blob/SHA和非发布、非运行范围。该目录不是完整1156文件树的检出，也不含链接的算法库；七个接口文件不能算作已取得整个DOA实现。

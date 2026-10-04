@@ -5,7 +5,7 @@
     .venv/bin/python scripts/build_site.py
 
 产物：site/index.html（首页）+ site/01..15_*.html（15 篇正文/专题/附录），
-另有 site/research/index.html 和 5 篇独立研究页、主清单 109 个与独立实验 125 个合成 WAV，
+另有 site/research/index.html 和 5 篇独立研究页、主清单 109 个与独立实验 129 个合成 WAV，
 以及 4 个真实录音/派生 WAV；源码按章保存，发布 URL 保持原样。
 左侧边栏 = 首页 + 15 篇 + 每篇的二级及以下小节锚点，顶部面包屑，
 文末上一篇/下一篇（首页不输出该盒）。图片直接引用 ../figures/（不复制）。
@@ -55,6 +55,8 @@ BINAURAL_AUDIO_ROOT = CODE_CHAPTERS / "ch01" / "binaural_audio"
 SPECTRAL_AUDIO_ROOT = CODE_CHAPTERS / "ch01" / "spectral_audio"
 SPECTRAL_AUDIO_WAVS = {'flat_source.wav', 'flat_stereo.wav', 'tilted_source.wav', 'tilted_stereo.wav'}
 STFT_AUDIO_ROOT = CODE_CHAPTERS / "ch02" / "stft_audio"
+REFLECTION_AUDIO_ROOT = CODE_CHAPTERS / 'ch04' / 'reflection_audio'
+REFLECTION_AUDIO_WAVS = {'reflection_reference.wav', 'reflection_direct.wav', 'reflection_component.wav', 'reflection_mixed.wav'}
 BASELINE_AUDIO_ROOT = CODE_CHAPTERS / 'ch03' / 'baseline_audio'
 BASELINE_AUDIO_WAVS = {'baseline_source.wav', 'baseline_train_px.wav', 'baseline_train_nx.wav',
                        'baseline_train_py.wav', 'baseline_train_pz.wav', 'baseline_heldout.wav'}
@@ -202,6 +204,10 @@ NARROW_TABLE_POLICIES = {
     SRC / "03_array-geometry.md": {
         ("失配类型", "示例量级", "首先受影响的量", "按该示例计算", "可采取的措施"): (70, {1: 7, 2: 9, 3: 9, 4: 18, 5: 16}),
     },
+    SRC / "04_doa-estimation.md": {
+        ("路线", "输入怎样形成", "输出是什么", "使用前要检查什么"): (44, {1: 8, 2: 12, 3: 10, 4: 14}),
+        ("方法", "主要输入与输出", "是否预先给源数", "主要模型条件", "典型失败模式", "主要计算项"): (66, {1: 9, 2: 11, 3: 8, 4: 12, 5: 12, 6: 14}),
+    },
     SRC / "06_aec.md": {
         ("#", "征兆", "量测", "工具/信号", "判断依据"): (70, {1: 3, 2: 9, 3: 10, 4: 20, 5: 18}),
     },
@@ -224,11 +230,13 @@ NARROW_TABLE_POLICIES = {
     },
     RESEARCH_ROOT / "01_spatial_and_tracking.md": {
         ("原始路线", "输入与额外前提", "求解目标和关键改变", "本书当前证据"): (54, {1: 8, 2: 15, 3: 16, 4: 15}),
+        ("路线", "处理的对象", "新增的模型条件", "本书实际范围"): (54, {1: 10, 2: 12, 3: 17, 4: 15}),
         ("源码入口", "实际操作", "与本章的关系及限制"): (64, {1: 32, 2: 18, 3: 22}),
         ("人工输入 [左, 右]", "独立计算的预期", "实际调用结果", "可以支持什么"): (52, {1: 8, 2: 16, 3: 16, 4: 12}),
         ("延迟值的存储方式与查询", "独立数学预期：左右IR／延迟值", "原函数实际结果", "解释"): (50, {1: 16, 2: 12, 3: 12, 4: 12}),
     },
     RESEARCH_ROOT / "05_exercises_and_audio.md": {
+        ("实际文件/通道", "整数能量E", "每通道分母D", "实际PCM均方"): (50, {1: 14, 2: 11, 3: 13, 4: 12}),
         ("条件", "单声道源", "双通道人工响应输出"): (46, {1: 6}),
         ("题号", "输入和计算", "能支持的结论"): (36, {1: 6}),
         ("输出", "解析MSE", "实际PCM误差整数平方和$E$", "实际PCM MSE", "实际PCM NMSE"): (60, {1: 6}),
@@ -563,6 +571,19 @@ def stage_baseline_audio(source, destination):
     expected = BASELINE_AUDIO_WAVS | {'MANIFEST.json'}
     _preflight_asset_stage(source, destination, expected)
     from codes.chapters.ch03.examples.generate_baseline_audio import check_assets
+    check_assets(source)
+    validate_asset_directory(destination, expected, check=False)
+    destination.mkdir()
+    for name in sorted(expected):
+        shutil.copy2(source / name, destination / name)
+    return expected
+
+
+def stage_reflection_audio(source, destination):
+    """Publish four coherent-reflection controls after full source replay."""
+    expected = REFLECTION_AUDIO_WAVS | {'MANIFEST.json'}
+    _preflight_asset_stage(source, destination, expected)
+    from codes.chapters.ch04.examples.generate_reflection_audio import check_assets
     check_assets(source)
     validate_asset_directory(destination, expected, check=False)
     destination.mkdir()
@@ -1000,7 +1021,7 @@ def source_digest():
     paths += [main_audio_manifest_path(CODE_CHAPTERS)]
     paths += sorted(main_audio_sources())
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, SPECTRAL_AUDIO_ROOT, STFT_AUDIO_ROOT, SWEEP_AUDIO_ROOT, BASELINE_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, SPECTRAL_AUDIO_ROOT, STFT_AUDIO_ROOT, SWEEP_AUDIO_ROOT, BASELINE_AUDIO_ROOT, REFLECTION_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [Path(__file__), ROOT / "scripts" / "build_markdown_helpers.py",
@@ -1147,6 +1168,9 @@ def rewrite_site_links(html, source_path):
         if target.parent == BASELINE_AUDIO_ROOT.resolve() and target.name in (BASELINE_AUDIO_WAVS | {'MANIFEST.json'}):
             relative = os.path.relpath('baseline_audio/' + target.name, Path(current).parent).replace(os.sep, '/')
             return urlunsplit(('', '', relative, parsed.query, parsed.fragment))
+        if target.parent == REFLECTION_AUDIO_ROOT.resolve() and target.name in (REFLECTION_AUDIO_WAVS | {'MANIFEST.json'}):
+            relative = os.path.relpath('reflection_audio/' + target.name, Path(current).parent).replace(os.sep, '/')
+            return urlunsplit(('', '', relative, parsed.query, parsed.fragment))
         if target.parent == GEOMETRY_AUDIO_ROOT.resolve() and target.name in (set(GEOMETRY_AUDIO_WAVS) | {"MANIFEST.json"}):
             relative = os.path.relpath("geometry_audio/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
@@ -1195,7 +1219,7 @@ def rewrite_site_links(html, source_path):
         # input as a download link; only the explicit mono derivatives play.
         if parsed.path.endswith("real_audio/demand_nriver_16ch_10s.wav"):
             return match.group(0)
-        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|spectral_audio|stft_audio|sweep_audio|baseline_audio|geometry_audio|focus_audio|derivative_audio|apa_audio|mint_audio|mask_audio|noise_audio|scenario_audio|weighted_audio|response_audio|imaging_audio|distributed_audio)/[a-z0-9_]+\.wav", parsed.path):
+        if parsed.scheme or parsed.query or parsed.fragment or not re.fullmatch(r"(?:\.\./)?(?:audio|real_audio|moving_audio|tracking_audio|gss_audio|binaural_audio|spectral_audio|stft_audio|sweep_audio|baseline_audio|reflection_audio|geometry_audio|focus_audio|derivative_audio|apa_audio|mint_audio|mask_audio|noise_audio|scenario_audio|weighted_audio|response_audio|imaging_audio|distributed_audio)/[a-z0-9_]+\.wav", parsed.path):
             return match.group(0)
         safe_href = escape(href, quote=True)
         safe_label = escape(re.sub(r'<[^>]+>', '', unescape(label)), quote=True)
@@ -1499,8 +1523,9 @@ def _validate_site_output(directory):
     validate_imaging(directory / "spectral_audio", SPECTRAL_AUDIO_WAVS | {"MANIFEST.json"}, check=False)
     validate_imaging(directory / 'sweep_audio', SWEEP_AUDIO_WAVS | {'MANIFEST.json'}, check=False)
     validate_imaging(directory / 'baseline_audio', BASELINE_AUDIO_WAVS | {'MANIFEST.json'}, check=False)
+    validate_imaging(directory / 'reflection_audio', REFLECTION_AUDIO_WAVS | {'MANIFEST.json'}, check=False)
     subdirectories = ('research', 'audio', 'real_audio', 'room_audio', 'moving_audio',
-                      'tracking_audio', 'gss_audio', 'binaural_audio', 'spectral_audio', 'stft_audio', 'sweep_audio', 'baseline_audio',
+                      'tracking_audio', 'gss_audio', 'binaural_audio', 'spectral_audio', 'stft_audio', 'sweep_audio', 'baseline_audio', 'reflection_audio',
                       'geometry_audio', 'focus_audio', 'derivative_audio', 'apa_audio',
                       'mint_audio', 'mask_audio', 'noise_audio', 'scenario_audio', 'weighted_audio', 'response_audio', 'imaging_audio', 'distributed_audio')
     for folder in (directory, *(directory/name for name in subdirectories)):
@@ -1698,6 +1723,8 @@ def main():
         (OUT / 'sweep_audio').mkdir(exist_ok=True)
         baseline_names = stage_baseline_audio(BASELINE_AUDIO_ROOT, temp_out / 'baseline_audio')
         (OUT / 'baseline_audio').mkdir(exist_ok=True)
+        reflection_names = stage_reflection_audio(REFLECTION_AUDIO_ROOT, temp_out / 'reflection_audio')
+        (OUT / 'reflection_audio').mkdir(exist_ok=True)
         publish_files([(temp_out / name, OUT / name) for name in sorted(expected)] +
                       [(temp_out / "audio" / name, OUT / "audio" / name) for name in audio_names] +
                       [(temp_out / "real_audio" / name, OUT / "real_audio" / name)
@@ -1743,7 +1770,9 @@ def main():
                       [(temp_out / 'sweep_audio' / name, OUT / 'sweep_audio' / name)
                        for name in sorted(sweep_names)] +
                       [(temp_out / 'baseline_audio' / name, OUT / 'baseline_audio' / name)
-                       for name in sorted(baseline_names)], stale, boundary=OUT)
+                       for name in sorted(baseline_names)] +
+                      [(temp_out / 'reflection_audio' / name, OUT / 'reflection_audio' / name)
+                       for name in sorted(reflection_names)], stale, boundary=OUT)
     print("DONE", len(expected), "pages")
 
 

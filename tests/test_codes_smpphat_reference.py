@@ -7,6 +7,8 @@ import os
 from pathlib import Path
 import tempfile
 import unittest
+
+from codes.chapters.ch04.core import upstream_contracts as contracts
 from unittest import mock
 
 import numpy as np
@@ -69,7 +71,7 @@ class SMPPHATReferenceTests(unittest.TestCase):
         else:
             self.fail(f"unknown FFTW provenance: {fftw['source']}")
         self.assertEqual(
-            provenance["runner_sha256"], hashlib.sha256(Path(experiment.__file__).read_bytes()).hexdigest())
+            provenance["runner_sha256"], hashlib.sha256(contracts.historical_bytes(experiment.__file__)).hexdigest())
         harness = Path(experiment.__file__).with_name("reproduce_smpphat_harness.c")
         self.assertEqual(provenance["harness_sha256"], hashlib.sha256(harness.read_bytes()).hexdigest())
         self.assertFalse(report["build"]["upstream_cmake_used"])

@@ -349,7 +349,7 @@ $$\tau_{ij}=\frac{d_i-d_j}{c}\,f_s=\frac{d_i-d_j}{0.0214375}\text{。}$$
 
 - **候选点 A**：6 对麦的预测时延都等于真值，每对贡献 1，SRP 得分 $=6\times1=\mathbf{6.0000}$；
 - **候选点 B**：6 对的贡献分别为 $0.9384$、$0.9681$、$0.9990$、$0.8250$、$0.9531$、$0.9557$，合计 $\mathbf{5.6392}$。显示项分别舍入，总分用未舍入值求和。各麦对的时延偏差不同，累积得分低于 A；
-- 镜像方向候选点 $(-1,\,1.5)$ 的六对贡献约为 $0.12$、$0.83$、$0.10$、$0.05$、$0.86$、$0.12$，合计约 $2.08$。其中多组预测时延已落到 sinc 主峰之外。
+- 另一侧候选点 $(-1,\,1.5)$ 的六对贡献约为 $0.12$、$0.83$、$0.10$、$0.05$、$0.86$、$0.12$，合计约 $2.08$。其中多组预测时延已落到 sinc 主峰之外。
 
 **结果解释**：候选点 B 虽然与真源相距较远，得分仍接近峰值，说明小孔径阵列的空间响应峰可能较宽。错位量以采样点计时，16 kHz 下 1 个采样点对应约 2.14 cm 的传播距离，因此实际系统常用亚采样插值（§4.2 细节①）。网格间隔、插值方式和 GCC 峰宽都会影响最终定位精度。
 
@@ -824,7 +824,31 @@ CSSM（coherent signal-subspace method，相干信号子空间方法）是代表
 
 选择时先检查具体聚焦构造的初值、噪声和几何条件，再检查跨频平均后的可用秩。TOPS 的免聚焦初值不等于免源数、免模型或自动处理完全相干源；ULA 的空间平滑还必须同时检查子阵长度、源数上界和损失的有效孔径。
 
-> 子空间法完成宽带扩展后，§4.7 转向稀疏重构与数据驱动定位。
+#### 直达路径证据：秩一、高相干与正确方向的区别
+
+前面的空间平滑和宽带聚焦主要处理可用信号子空间的维数。混响定位还要回答另一个问题：某个时频片段提供的方向线索，更接近直达声，还是直达与反射叠加后的响应？恢复矩阵秩和选择直达路径证据解决不同的问题。
+
+**一个大特征值不保证直达占优。** 同一个发声源沿两条路径到达阵列时，在一个固定频点上可写成 $\vec x=(\vec a+\beta\vec b)S$。$\vec a、\vec b$ 是两条路径的导向，$\beta$ 是反射相对直达的复幅度，$S$ 是公共源系数。只要这个片段中路径响应固定，信号协方差仍然秩一；它的主向量却是 $\vec a+\beta\vec b$，未必对应真实直达方向。
+
+[E04-24](#e04-24)给出完整两麦反例：无噪通道相干系数为1，添加一个虚拟白噪声控制后特征值比达到61，单源MUSIC却在14.4775°形成有限假峰，直达方向实际为0°。相干性描述两路观测的线性关系；它没有标出关系中的哪一部分来自直达。高峰背比也不能据此成为正确方向概率。
+
+**直达占优检验要说明统计窗口与阵列坐标。** 直达占优检验（Direct-Path Dominance，DPD）希望筛选更适合定位的时频片段，再将保留的方向证据合并。[Nadiri与Rafaely的2014年原论文](https://doi.org/10.1109/TASLP.2014.2337846 "citation")提出球面阵列的相关方法；[Rafaely与Alhaiany的2018年作者公开稿，§II](https://arxiv.org/html/2310.03688v1 "citation")重述了其中的奇异值检验。该公开稿于2023年上传，算法的正式期刊年份仍为2018。
+
+这个具体检验在球谐域形成时间—频率邻域的相关矩阵，并比较最大与第二大奇异值。频率平滑在其中承担区分相干反射与单一方向响应的作用：不同频点须先处于匹配的球谐方向坐标，不能直接把ULA的原始导向平均。单帧外积天然秩一，单频高比值也可能被上述反例满足。将它们替代原检验，便丢掉了重要的观测条件。
+
+球谐变换的阶数、麦克风数、径向补偿和正则化会影响有效频带；阵列噪声经变换后的统计也要检查。比值阈值取决于数据与误差模型，不能指定一个全场景通用值。2018年论文还提出基于声场指向性的另一种检验，详见其§III；它采用不同的方向集中度统计，不能把“频率平滑加奇异值比”概括为所有DPD方法的必要步骤。这里介绍方法和条件，没有运行完整球面阵列DPD系统。
+
+**整段相对响应与首段相对响应要分开。** 普通相对传递函数（Relative Transfer Function，RTF）比较两路完整传播响应。若房间反射明显，它的相位一般同时包含直达和反射贡献。直达路径相对传递函数（Direct-Path Relative Transfer Function，DP-RTF）则希望提取更接近直达的通道相对响应。
+
+[Li、Girin、Horaud与Gannot的2016年原论文，§II～IV](https://www.gipsa-lab.grenoble-inp.fr/~laurent.girin/papers/Li_et_al_TASLP_2016.pdf "citation")采用卷积传递函数（Convolutive Transfer Function，CTF）近似：在固定STFT频点 $k$，用跨帧短滤波器描述房间响应，利用两通道的卷积交叉关系估计首CTF系数比。该跨帧模型比“每帧只乘一个复数”的窄带近似保留了更多混响记忆，但仍省略了完整STFT卷积中的交叉频带项；不是任意窗、帧移和房间条件下的精确等式。
+
+真实CTF的首系数来自分析窗、合成窗加权的RIR首段。只有直达与首个反射的间隔相对窗支持足够长等条件满足时，它才接近纯直达响应；窗内已有早反射时，首系数仍会含反射。首系数比不是自动得到的真实方向，还需与阵列标定或已知方向模板匹配。[E04-25](#e04-25)用一个精确人工CTF拆解交叉关系，并明确区分首系数比与整CTF响应比。
+
+原DP-RTF方法还用时变语音与平稳噪声的PSD差分形成回归。它需要足够的有效统计段、可辨识的设计矩阵、近似平稳的噪声及相应源—噪声关系；期望层面的噪声抵消不保证有限PSD估计恰好无噪。相邻统计段的相关性、近零参考首系数、房间变化和低能量频点都需要独立处理，不能用本书的无噪三行方程代替整条估计链。
+
+采用这些方法时，应分别记录输入特征、筛选或回归条件、方向映射和拒绝输出的情形。[空间研究手册的直达证据与DP-RTF条目](../codes/chapters/ch00/research/01_spatial_and_tracking.md#sec-u-1ca23edba5)整理原方法与固定来源；原作者源码可见不等于允许复制再分发。本书后面的两题使用独立人工构造，没有执行原作者MATLAB定位系统。
+
+> 子空间法完成宽带扩展与直达路径证据的检查后，§4.7 转向稀疏重构与数据驱动定位。
 
 ### 4.7 稀疏重构、学习式定位与实现边界
 
@@ -1343,7 +1367,7 @@ $$\begin{aligned}
 
 本例运行入口为 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.spatial_model_exercises` 的 `E04-11`，使用[本书源码](../codes/chapters/ch00/cross_chapter/spatial_model_exercises.py)与现有 `music_spectrum`。完整输出保留白化矩阵、特征值、网格和三个峰；测试另用上述秩一投影表达式核对矩阵，避免只靠同一特征分解程序自证正确。
 
-下面十二题使用同一个[补充实验入口](../codes/chapters/ch04/chapter04_experiments.py)：
+下面十四题使用同一个[补充实验入口](../codes/chapters/ch04/chapter04_experiments.py)：
 
 ```bash
 .venv/bin/python -m codes.chapters.ch04.chapter04_experiments
@@ -1560,16 +1584,17 @@ $$\mathbf T_2=\begin{bmatrix}2&-1\\-1&2\end{bmatrix}\text{。}$$
 
 逐项检查 $\mathbf T_2\vec a=\vec a$，再计算两频等权聚焦后的信号、噪声和总矩阵。若把最大的一个特征向量直接当作目标，会选对吗？怎样按已知聚焦噪声修正？
 
-**第一步：把信号变换与噪声变换分别写出来。** 对一般频点，设原噪声协方差为 $\sigma_j^2\mathbf I$，源与噪声不相关，聚焦矩阵为 $\mathbf T_j$。等权平均的总体矩阵为
+**第一步：把信号变换与噪声变换分别写出来。** 对一般频点，设原噪声协方差为 $\sigma_j^2\mathbf I$，源与噪声不相关，聚焦矩阵为 $\mathbf T_j$。记变换后的导向矩阵 $\widetilde{\mathbf A}_j=\mathbf T_j\mathbf A_j$，等权平均的总体矩阵为
 
 $$\begin{aligned}
-\mathbf R_f&=\frac1J\sum_{j=1}^J
-  \mathbf T_j\mathbf A_j\mathbf S_j\mathbf A_j^H\mathbf T_j^H+\mathbf C_f,\\
+\mathbf R_{s,f}&=\frac1J\sum_{j=1}^J
+  \widetilde{\mathbf A}_j\mathbf S_j\widetilde{\mathbf A}_j^H,\\
 \mathbf C_f&=\frac1J\sum_{j=1}^J
-  \sigma_j^2\mathbf T_j\mathbf T_j^H\text{。}
+  \sigma_j^2\mathbf T_j\mathbf T_j^H,\\
+\mathbf R_f&=\mathbf R_{s,f}+\mathbf C_f\text{。}
 \end{aligned}\tag{4-25}$$
 
-这里 $J$ 是参与聚焦的频点数，$\mathbf T_j$ 为 $M\times M$ 变换，$\mathbf A_j$ 为 $M\times K$ 导向矩阵，$\mathbf S_j$ 为 $K\times K$ 源协方差；$\mathbf R_f、\mathbf C_f$ 都是 $M\times M$ 的功率矩阵。它们不是把不同频点的时域波形直接相加得到的瞬时信号。
+这里 $J$ 是参与聚焦的频点数，$\mathbf T_j$ 为 $M\times M$ 变换，$\mathbf A_j$ 为 $M\times K$ 导向矩阵，$\mathbf S_j$ 为 $K\times K$ 源协方差；$\mathbf R_{s,f}$ 是聚焦后的信号项，$\mathbf R_f、\mathbf R_{s,f}、\mathbf C_f$ 都是 $M\times M$ 的功率矩阵。它们不是把不同频点的时域波形直接相加得到的瞬时信号。
 
 本题 $J=2、M=2$。先算 $\mathbf T_2\vec a=[2-1,-1+2]^\top=\vec a$，所以平均后的信号项仍为 $\vec a\vec a^H$。噪声却成为
 
@@ -1614,9 +1639,10 @@ $$\mathbf P_a=\frac{\vec a\vec a^H}{2},\qquad
 **第一步：保留相同拟合量，区分不同惩罚。** 由式(4-19)，记 $F_k=N(M-k)\ln(a_k/g_k)$。§4.9 的实自由参数数目为 $\nu_k=k(2M-k)+1$。AIC 用两倍负对数似然加 $2\nu_k$；去掉各候选共有的常数，得到
 
 $$\begin{aligned}
-\mathrm{AIC}(k)&=2N(M-k)\ln(a_k/g_k)+2k(2M-k),\\
-\hat K_{\mathrm{AIC}}&=\underset{0\le k<M}{\arg\min}\;\mathrm{AIC}(k)\text{。}
+\mathrm{AIC}(k)&=2F_k+2k(2M-k)
 \end{aligned}\tag{4-26}$$
+
+在候选 $k=0,\ldots,M-1$ 中选择AIC最小的一项，其下标就是 $\hat K_{\mathrm{AIC}}$。
 
 MDL 仍使用式(4-20)，即 $F_k+\tfrac12k(2M-k)\ln N$。起始似然与参数计数来自 [Wax–Kailath《Determining the number of signals by information theoretic criteria》，ICASSP 1984四页会议稿，§IV、印刷页6.3.3、式(14)～(15)](https://www.researchgate.net/profile/Mati-Wax/publication/3177764_Detection_of_signals_by_information_theoretic_criteria/links/56cacde408aee3cee54041cd/Detection-of-signals-by-information-theoretic-criteria.pdf "citation")；本题仅换一组指定谱，展开两种准则的比较。
 
@@ -1673,17 +1699,20 @@ $$\mathbf C=\sigma^2(\mathbf I_3+\vec1\vec1^\top)
 
 $$\mathbf J=-\sqrt2\begin{bmatrix}1&0\\0&1\\1&1\end{bmatrix}\text{。}$$
 
-局部残差约为 $\vec z=\mathbf J\Delta\vec p+\vec\eta$，三个残差为一个三维列向量，$\Delta\vec p$ 为二维位置修正，$\mathbf J$ 为 $3\times2$；$\vec\eta$ 的协方差为 $\mathbf C$。若 $\mathbf C$ 正定、$\mathbf J$ 满列秩，则最小化白化残差平方得到
+局部残差约为 $\vec z=\mathbf J\Delta\vec p+\vec\eta$，三个残差为一个三维列向量，$\Delta\vec p$ 为二维位置修正，$\mathbf J$ 为 $3\times2$；$\vec\eta$ 的协方差为 $\mathbf C$。若 $\mathbf C$ 正定、$\mathbf J$ 满列秩，可通过最小化白化残差平方求位置更新。
+
+对每个候选修正 $\Delta\vec p$，先记线性残差 $\vec r=\vec z-\mathbf J\Delta\vec p$。用 $q(\Delta\vec p)$ 表示其加权残差平方，并记二维信息矩阵 $\mathbf H=\mathbf J^\top\mathbf C^{-1}\mathbf J$。这些记号只是缩短下面的表达式，目标没有改变：
 
 $$\begin{aligned}
+q(\Delta\vec p)&=\vec r^\top\mathbf C^{-1}\vec r,\\
 \widehat{\Delta\vec p}_{\mathrm{GLS}}
-&=\arg\min_{\Delta\vec p}\\
-&\quad(\vec z-\mathbf J\Delta\vec p)^\top\mathbf C^{-1}(\vec z-\mathbf J\Delta\vec p),\\
-\mathbf G&=(\mathbf J^\top\mathbf C^{-1}\mathbf J)^{-1}\mathbf J^\top\mathbf C^{-1},\\
+&=\arg\min_{\Delta\vec p}\;q(\Delta\vec p),\\
+\mathbf G&=\mathbf H^{-1}\mathbf J^\top\mathbf C^{-1},\\
 \widehat{\Delta\vec p}_{\mathrm{GLS}}&=\mathbf G\vec z,\\
-\operatorname{Cov}(\widehat{\Delta\vec p}_{\mathrm{GLS}})
-&=(\mathbf J^\top\mathbf C^{-1}\mathbf J)^{-1}\text{。}
+\mathbf V_{\mathrm{GLS}}&=\mathbf H^{-1}\text{。}
 \end{aligned}\tag{4-27}$$
+
+其中 $\mathbf V_{\mathrm{GLS}}=\operatorname{Cov}(\widehat{\Delta\vec p}_{\mathrm{GLS}})$ 是修正量的误差协方差。
 
 末行针对固定 $\mathbf J$ 的线性模型：误差零均值且协方差匹配，并没有保证非线性定位在任意初值附近都达到该值。$\mathbf J$ 无量纲，$\mathbf C^{-1}$ 的单位为 m⁻²，所以更新为米、协方差为 m²。
 
@@ -1757,12 +1786,12 @@ $$\vec v_1=\vec a_- -j\vec a_+,\qquad
 把两列写成分量可复查：$\vec v_1=[1-j,1-j,-1+j,-1+j]^\top$，$\mathbf P\vec v_3=[1+j,-1-j,-1-j,1+j]^\top$。每项模平方都是2，所以两者的范数平方各为8；内积为 $4+j\times j\times4=0$。等权池化得到
 
 $$\begin{aligned}
+\vec v_3'&=\mathbf P\vec v_3,\\
 \mathbf R_{\mathrm{pool}}
-&=\frac12\left[\vec v_1\vec v_1^H+
-(\mathbf P\vec v_3)(\mathbf P\vec v_3)^H\right],\\
-&=\mathbf A_1\left(\frac{\mathbf S_1+\mathbf S_3}{2}\right)\mathbf A_1^H,\\
-\mathbf A_1&=[\vec a_-,\vec a_+],\qquad
-\frac{\mathbf S_1+\mathbf S_3}{2}=\mathbf I_2\text{。}
+&=\tfrac12(\vec v_1\vec v_1^H+\vec v_3'(\vec v_3')^H),\\
+\overline{\mathbf S}&=\tfrac12(\mathbf S_1+\mathbf S_3)=\mathbf I_2,\\
+\mathbf A_1&=[\vec a_-,\vec a_+],\\
+\mathbf R_{\mathrm{pool}}&=\mathbf A_1\overline{\mathbf S}\mathbf A_1^H\text{。}
 \end{aligned}\tag{4-28}$$
 
 所以 $\mathbf R_{\mathrm{pool}}=\mathbf A_1\mathbf A_1^H$，特征值为 $[4,4,0,0]$，恢复两维。这是指定频率相量外积的平均，不是把实 PCM 的全记录时间协方差直接写成上述数值；余弦幅度、时间平均及边界会带来不同尺度。
@@ -1809,12 +1838,14 @@ $$\mathbf Q=\mathbf E_n\mathbf E_n^H
 
 令 $z=e^{j\pi\sin\theta}$，候选导向为 $\vec a(z)=[1,z,z^2]^\top$。求 MUSIC 分母对应的多项式、所有根及其角度含义。这里诊断理想多项式，不实现一个对任意有噪数据通用的 root-MUSIC 选根接口。
 
-**第一步：只在单位圆上把共轭换成倒数。** 因为 $|z|=1$，$z^*=z^{-1}$，所以 $\vec a^H(z)=[1,z^{-1},z^{-2}]$。下标 $m,n=0,1,2$ 时，投影分母为 $\sum_{m,n}Q_{mn}z^{n-m}$。它含负幂，是 Laurent 多项式；乘 $z^2$ 得到普通四次多项式：
+**第一步：只在单位圆上把共轭换成倒数。** 因为 $|z|=1$，$z^*=z^{-1}$，所以 $\vec a^H(z)=[1,z^{-1},z^{-2}]$。下标 $m,n=0,1,2$ 时，投影分母为 $\sum_{m,n}Q_{mn}z^{n-m}$。将相同幂次的项合并，记 $c_r=\sum_{n-m=r}Q_{mn}$，其中 $r=-2,\ldots,2$。这个 Laurent 多项式含负幂；乘 $z^2$ 得到普通四次多项式：
 
 $$\begin{aligned}
-p(z)&=z^2\sum_{m=0}^2\sum_{n=0}^2Q_{mn}z^{n-m},\\
-&=-\frac13-\frac23z+2z^2-\frac23z^3-\frac13z^4,\\
-&=-\frac13(z-1)^2(z^2+4z+1)\text{。}
+p(z)&=\sum_{r=-2}^2c_rz^{r+2},\\
+3p(z)&=6z^2-2(z+z^3)\\
+&\quad-(1+z^4),\\
+p(z)&=-\frac13(z-1)^2\\
+&\quad\cdot(z^2+4z+1)\text{。}
 \end{aligned}\tag{4-29}$$
 
 逐条对角线可以检查系数：主对角元素之和为2，给 $2z^2$；两条相邻对角线的元素和各为 $-2/3$，给 $z、z^3$ 两项；两条最外对角线各只有一个 $-1/3$，给常数项和 $z^4$ 项。乘 $z^2$ 没有在单位圆引入零点，因为那里 $z\ne0$。
@@ -1830,6 +1861,155 @@ p(z)&=z^2\sum_{m=0}^2\sum_{n=0}^2Q_{mn}z^{n-m},\\
 一般有噪 root-MUSIC 还需指定源数、根对选择、靠近单位圆的规则及所用角度分支；本题不把解析根硬编码成一个通用估计器。对照[空间研究手册](../codes/chapters/ch00/research/01_spatial_and_tracking.md)中的固定上游方法调用时，也要保留其选根约定。
 
 **边界。** 半波距 ULA 的 $+90°、-90°$ 都给 $z=-1$，原几何端点混叠仍在；更大间距也可能对应多个方向。免角度网格不等于免空间混叠、免源数或免模型校准。先由 $\mathbf Q$ 的正交性复算正确方向，再看根，才能区分模型结论和求根器的数值行为。
+
+<a id="e04-24"></a>
+
+#### E04-24：相干系数为1，MUSIC峰为什么仍偏离直达？
+
+一个发声源沿直达和反射两条路径到达双麦。固定 $f=4000$ Hz、$c=343$ m/s、$f_s=16000$ Hz，阵距取 $d=c/(2f)=0.042875$ m，即此频点的半波长。使用本书正横为0°的导向 $\vec a(\theta)=[1,e^{j\pi\sin\theta}]^\top$。
+
+直达方向为0°，反射的到达方向为30°。在这个固定频点令两条路径等幅，公共传播相位相同，因此
+
+$$\begin{aligned}
+\vec a&=[1,1]^\top,\\
+\vec b&=[1,j]^\top,\\
+\vec v&=\vec a+\vec b=[2,1+j]^\top\text{。}
+\end{aligned}$$
+
+两条路径来自同一个发声源，不是两个独立发声源。将公共源复系数 $S$ 的功率归一化为1，观测为 $\vec x=\vec vS$。求信号矩阵的秩、通道相干系数和单源MUSIC的全局峰。再加入一个仅用于矩阵计算的 $0.1\mathbf I_2$ 白噪声协方差控制，检查特征值比是否足以证明直达占优。
+
+**第一步：分别计算路径数、矩阵秩与相干系数。** 信号协方差为外积；其行列式为0，迹为6，所以特征值为0、6：
+
+$$\begin{aligned}
+\mathbf R_s&=\begin{bmatrix}4&2-2j\\2+2j&2\end{bmatrix},\\
+\gamma_{12}&=\frac{|[\mathbf R_s]_{12}|}
+{\sqrt{[\mathbf R_s]_{11}[\mathbf R_s]_{22}}}=1,\\
+\mathbf R&=\mathbf R_s+0.1\mathbf I_2,\\
+\operatorname{eig}(\mathbf R)&=[0.1,6.1]\text{。}
+\end{aligned}\tag{4-30}$$
+
+这里 $\gamma_{12}$ 是相干系数的模，模平方相干性也为1。最大与最小总特征值之比为61，信号秩为1；这些量描述观测的相关结构，却没有区分直达与反射。虚拟白噪声控制不改变主向量，也不加入下面发布的音频；若计算加噪总矩阵的通道相干系数，它便不再恰好为1。
+
+**第二步：写出实际噪声投影。** 单源MUSIC把 $\vec v/\sqrt6$ 当作信号向量，噪声投影为 $\mathbf Q=\mathbf I_2-\vec v\vec v^H/6$。设候选相邻相位为 $\psi=\pi\sin\theta$，候选导向是 $[1,e^{j\psi}]^\top$。利用 $\vec a^H\vec a=2$ 和 $\vec v^H\vec a=2+(1-j)e^{j\psi}$，分母为
+
+$$E(\psi)=2-\tfrac16|2+(1-j)e^{j\psi}|^2\text{。}$$
+
+分母最小值的倒数就是伪谱最大值。将模平方展开为余弦后，可分别计算它们：
+
+$$\begin{aligned}
+E(\psi)&=\vec a(\theta)^H\mathbf Q\vec a(\theta),\\
+&=1-\tfrac{2\sqrt2}{3}\cos(\psi-\pi/4),\\
+E_{\min}&=1-\tfrac{2\sqrt2}{3}>0,\\
+P_{\max}&=9+6\sqrt2\text{。}
+\end{aligned}\tag{4-31}$$
+
+当 $\psi=\pi/4$ 时取最小分母，故 $\sin\theta=1/4$，得到 $\theta=\arcsin(1/4)\approx14.477512°$。数值分母约为0.0571909584，伪谱约17.4852814。直达0°与反射30°都给出分母 $1/3$、伪谱3，假峰比两条路径的真实方向都高。
+
+**第三步：说明为什么峰有限。** 混合观测的通道复比为 $(1+j)/2$，模为 $1/\sqrt2$；单一等幅平面波导向的通道复比模却固定为1。$\vec v$不属于候选的单平面波流形，任何共同复幅度都无法消除这个幅比差异，所以最小投影不为零、峰不发散。相位拟合的最佳候选位于两条路径之间；它不是已恢复的直达方向，也不能解释为第二个独立发声源。
+
+这个反例针对单频秩和单频相干性。§4.6的[直达路径证据专题](#sec-u-a503df9284)介绍了带额外统计和阵列条件的DPD方法；不能用本题代替或否定完整DPD检验。单频纯音还没有提供识别先到路径所需的宽带时序信息。
+
+**音频对照与评分。** 独立音频使用同一幅度0.1的4 kHz数学合成余弦、共同导出增益1，保留完整12点传播尾。每个文件有32012点；参考单声道，另外三份双声道按麦1、麦2排序。评分窗为 $[2400,29600)$、27200点，解析相量、浮点波形和实际PCM16读回分别记录。将复相量除以已知源幅度0.1后，才与上面的归一化导向比较；这不是后验拟合增益。
+
+本题的秩一矩阵属于单频复系数模型，不能用实波形的全频时域二阶矩替代。稳窗中两个实通道分别为 $0.2\cos(2\pi fn/f_s)$ 和 $0.1[\cos(2\pi fn/f_s)-\sin(2\pi fn/f_s)]$，因此解析时域二阶矩为 $0.01\left[\begin{smallmatrix}2&1\\1&1\end{smallmatrix}\right]$，反而满秩。两者使用不同的观测表示；这个区别不否定式(4-30)，也不能用时域满秩宣称恢复了两个独立发声源。
+
+- [公共源参考](../codes/chapters/ch04/reflection_audio/reflection_reference.wav)
+- [仅直达两麦观测](../codes/chapters/ch04/reflection_audio/reflection_direct.wav)
+- [已知反射分量](../codes/chapters/ch04/reflection_audio/reflection_component.wav)
+- [直达与反射叠加](../codes/chapters/ch04/reflection_audio/reflection_mixed.wav)
+
+这些文件为已知路径的数学构造，不是真实房间录音、语音或盲路径估计。音量包络边缘不参加稳窗相量评分；实际PCM复比和整数误差不能由解析值直接替代。共同增益、传播参数、评分分母和文件摘要见[独立清单](../codes/chapters/ch04/reflection_audio/MANIFEST.json)，播放前先调低音量。
+
+运行补充入口的 `E04-24` 可得到精确矩阵、虚拟噪声控制与三个候选伪谱；它不重生音频。音频读回和严格只读核验见[练习与音频手册](../codes/chapters/ch00/research/05_exercises_and_audio.md#sec-u-ed41d4e99e)。本题的解析假峰和固定PCM测量均不是跨房间定位准确率。
+
+<a id="e04-25"></a>
+
+#### E04-25：首CTF系数比怎样从交叉关系中求出？
+
+本题直接规定一个精确人工帧域CTF，不从WAV计算STFT，也不估计原DP-RTF方法所用的噪声PSD。在一个固定频点上，两条CTF各有 $Q=2$ 个系数；$Q$是抽头数，$p$是帧索引，系数下标0、1表示帧滞后：
+
+$$\begin{aligned}
+\left[a_0,a_1\right]&=[1,1/2],\\
+\left[b_0,b_1\right]&=[1+j,1/4-j/2]\text{。}
+\end{aligned}$$
+
+给定公共源帧 $s_0,s_1,s_2,s_3=[1,0,0,1]$，其他源帧为0。观测是 $x_p=a_0s_p+a_1s_{p-1}$、$y_p=b_0s_p+b_1s_{p-1}$。求首系数比 $b_0/a_0$，解释它为什么不同于整CTF的频率响应比，并检查源持续为单音时的可辨识性。
+
+**第一步：从卷积交换律消去未知公共源。** 由 $x=a*s、y=b*s$，有 $a*y=b*x$。展开到两抽头，两路卷积结果相等：
+
+$$\begin{aligned}
+&a_0y_p+a_1y_{p-1}\\
+&\qquad=b_0x_p+b_1x_{p-1}\text{。}
+\end{aligned}$$
+
+利用 $a_0\ne0$ 归一化，记三个待估复系数为 $\vec g=[g_0,g_1,g_2]^\top$，便得到
+
+$$\begin{aligned}
+\vec z_p&=[x_p,x_{p-1},y_{p-1}]^\top,\\
+g_0&=b_0/a_0,\\
+g_1&=b_1/a_0,\\
+g_2&=-a_1/a_0,\\
+y_p&=\vec z_p^\top\vec g\text{。}
+\end{aligned}\tag{4-32}$$
+
+所有项都是普通复系数相乘，这个卷积交叉关系不取共轭。式(4-32)写的是 $y_p=\vec z_p^\top\vec g$，不是 $\vec z_p^H\vec g$。展开后仍为 $y_p=g_0x_p+g_1x_{p-1}+g_2y_{p-1}$。求最小二乘时采用复数内积是另一回事，不能反过来把数据模型改成共轭转置。
+
+**第二步：逐帧算出输入输出，保留尾部。** 例如 $x_1=1\times0+(1/2)\times1=1/2$；$y_1=(1+j)\times0+(1/4-j/2)\times1=1/4-j/2$。帧4虽已没有源输入，仍含滤波尾部：
+
+| 帧 $p$ | $s_p$ | $x_p$ | $y_p$ |
+|---:|---:|---:|---:|
+| 0 | 1 | 1 | $1+j$ |
+| 1 | 0 | $1/2$ | $1/4-j/2$ |
+| 2 | 0 | 0 | 0 |
+| 3 | 1 | 1 | $1+j$ |
+| 4 | 0 | $1/2$ | $1/4-j/2$ |
+
+只使用帧1、2、3组成三行回归，完整尾部仍保留在输出中。令 $\vec y=[y_1,y_2,y_3]^\top$，则
+
+$$\begin{aligned}
+\mathbf Z&=\begin{bmatrix}
+\tfrac12&1&1+j\\0&\tfrac12&\tfrac14-\tfrac12j\\1&0&0
+\end{bmatrix},\\
+\vec y&=\begin{bmatrix}\tfrac14-\tfrac12j\\0\\1+j\end{bmatrix},\\
+\mathbf Z\vec g&=\vec y,\\
+\det\mathbf Z&=-1/4-j\ne0\text{。}
+\end{aligned}\tag{4-33}$$
+
+设计矩阵为 $3\times3$，满列秩。行数达到3还不够；这里非零行列式才证明三条复方程给出了独立约束。
+
+**第三步：逐步消元。** 第三行直接给出 $g_0=1+j$。第二行给出 $g_1=(-1/2+j)g_2$。将这两项放入第一行：
+
+$$\begin{aligned}
+\tfrac14-\tfrac12j-\tfrac12(1+j)&=-\tfrac14-j,\\
+(-\tfrac12+j)+(1+j)&=\tfrac12+2j,\\
+(\tfrac12+2j)g_2&=-\tfrac14-j,\\
+g_2&=-\tfrac12,\\
+g_1&=\tfrac14-\tfrac12j\text{。}
+\end{aligned}$$
+
+所以首系数比为 $g_0=1+j$，模为 $\sqrt2$、相位45°。将 $[1+j,1/4-j/2,-1/2]^\top$逐行代回式(4-33)，分别得到 $1/4-j/2、0、1+j$，可直接检查符号和共轭是否放错。
+
+实现用QR/SVD型最小二乘接口，不显式构造正规方程的逆。该矩阵的奇异值约为 $1.88587826、0.96809022、0.56459234$，2范数条件数约为3.34024770。它只描述这个回归的敏感性，不代表真实STFT估计误差；参数和观测缩放改变时还要重新解释条件数。
+
+**第四步：与整CTF响应比做同口径比较。** 令 $\omega$表示这个人工序列沿帧索引变化的调制频率，单位rad/帧。它不同于固定STFT频点的物理频率 $f_k$。整CTF响应为 $A(\omega)=a_0+a_1e^{-j\omega}$、$B(\omega)=b_0+b_1e^{-j\omega}$。
+
+在 $\omega=\pi/2$，$e^{-j\omega}=-j$，所以 $A=1-j/2$、$B=1/2+3j/4$。相除后
+
+$$\begin{aligned}
+\frac BA&=\frac{1/2+3j/4}{1-j/2},\\
+&=\frac{(1/2+3j/4)(1+j/2)}{1+1/4},\\
+&=0.1+0.8j\text{。}
+\end{aligned}$$
+
+整响应比的模约0.806225775，相位约82.874983651°，与首系数比 $1+j$不同。观测单个稳态帧调制成分的 $y/x$，不能据此直接当成首CTF系数比，更不能把该帧调制相位当作声学传播的DOA真值。
+
+**第五步：检查持续单音的退化设计。** 若源从所有整数帧一直保持 $s_p=e^{j\omega p}$，已经没有启动瞬态，那么 $x_p=A(\omega)e^{j\omega p}$、$y_p=B(\omega)e^{j\omega p}$。设计矩阵的每一行都只是上一行乘 $e^{j\omega}$。本题两响应均非零，因此设计秩为1，无法唯一解出三元 $\vec g$。
+
+这不是“再多收三帧就够”的问题：任意数量的同型行仍只提供一种约束。源变化、所用统计段和设计矩阵有效秩都必须检查；原DP-RTF方法的PSD回归也不能只按行数宣称可辨识。
+
+**边界与原方法联系。** 本题 $a_0=1$且无噪；实际参考首系数接近0时，归一化比值可能极不稳定。真实CTF首系数受分析/合成窗、帧移、交叉频带近似和窗内早反射影响，只有另外满足直达建模条件才可解释为近似DP-RTF。真实PSD估计还要检查噪声平稳性、源—噪声关系、有限样本误差和相关统计段。代数精确回代不证明这些条件已经成立。
+
+补充入口 `E04-25`输出完整五帧观测、三行设计、解、条件数、整响应比及持续单音秩控制；没有音频导出或原作者代码调用。[空间研究手册](../codes/chapters/ch00/research/01_spatial_and_tracking.md#sec-u-1ca23edba5)核对原作者固定源码的接口和运行边界，[练习手册](../codes/chapters/ch00/research/05_exercises_and_audio.md#sec-u-935768b998)说明本题的精确人工CTF口径。它提供交叉关系的入门复算，不声称已实现从真实STFT估计的盲DP-RTF定位器。
 
 ---
 

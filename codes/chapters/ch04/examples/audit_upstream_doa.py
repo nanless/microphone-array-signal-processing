@@ -5,6 +5,14 @@ network, cache writes, or upstream fixes occur here. --report is the sole opt-in
 repository output; original failures are evidence, not successful estimators.
 """
 from __future__ import annotations
+
+# Support documented direct-file commands without changing upstream imports.
+if __package__ in (None, ""):
+    import sys as _entry_sys
+    from pathlib import Path as _EntryPath
+    _entry_sys.path.insert(0, str(_EntryPath(__file__).resolve().parents[4]))
+
+from codes.chapters.ch04.core import upstream_contracts as contracts
 import argparse
 import cmath
 import math
@@ -15,7 +23,6 @@ import hashlib
 import importlib.metadata
 import json
 import pathlib
-import subprocess
 import sys
 import types
 import warnings
@@ -25,12 +32,14 @@ ROOT = pathlib.Path(__file__).resolve().parents[4]
 LOCK = ROOT / 'codes/chapters/ch00/SOURCES.lock.json'
 CACHE = ROOT / 'codes/chapters/ch00/upstream/_downloads'
 files = {}
+identities = {}
+CURRENT_REPORT = ROOT / "codes/chapters/ch04/reports/upstream_doa_contracts.json"
 
 def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 def git(directory, *args):
-    return subprocess.check_output(['git', '-C', str(directory), *args], text=True).strip()
+    return contracts.git(directory, *args)
 
 def extract(project, relative, cls, name, globals_):
     """Execute the unchanged selected AST body after verifying its original blob."""
@@ -68,33 +77,25 @@ def independent_tops_norms(angles_deg):
 REVISIONS = {'pyroomacoustics': '0dd39f2614b7fc44b2cc63dbe7d60f4641068890', 'doatools': '9469db201e0418aef6b97583ef54b6fec2769502'}
 
 def verify_checkout(project):
-    directory = CACHE / project
-    entry = next((p for p in json.loads(LOCK.read_text())['projects'] if p['id'] == project))
-    if entry['revision'] != REVISIONS[project]:
-        raise RuntimeError(f'unsupported source revision: {project}')
-    if git(directory, 'rev-parse', 'HEAD') != REVISIONS[project]:
-        raise RuntimeError(f'checkout HEAD differs: {project}')
-    if git(directory, 'status', '--porcelain', '--untracked-files=no'):
-        raise RuntimeError(f'modified tracked upstream files: {project}')
-    untracked = git(directory, 'ls-files', '--others', '--exclude-standard')
-    if any((path.endswith('.py') for path in untracked.splitlines())):
-        raise RuntimeError(f'untracked Python source: {project}')
-    return entry
+    if project in identities:
+        contracts.check_unchanged(identities[project])
+    else:
+        identities[project] = contracts.verify_project(project, all_python=project == 'doatools')
+    return identities[project]['lock_entry']
+
 
 def record_original_file(project, relative):
-    directory = CACHE / project
-    path = directory / relative
-    original = subprocess.check_output(['git', '-C', str(directory), 'show', f'HEAD:{relative}'])
-    if path.read_bytes() != original:
-        raise RuntimeError(f'local source differs from HEAD: {relative}')
-    files[f'{project}/{relative}'] = {'sha256': sha(path), 'git_blob': git(directory, 'rev-parse', f'HEAD:{relative}')}
+    contracts.record_files(identities[project], (relative,))
+    files[f'{project}/{relative}'] = identities[project]['used_files'][relative].copy()
+
 
 def build_report():
+    identities.clear()
+    files.clear()
+    entries = {project: verify_checkout(project) for project in REVISIONS}
     import pyroomacoustics as pra
     if importlib.metadata.version('pyroomacoustics') != '0.10.0':
         raise RuntimeError('requires pyroomacoustics==0.10.0')
-    entries = {project: verify_checkout(project) for project in REVISIONS}
-    files.clear()
     state_before = {p: {'head': git(CACHE / p, 'rev-parse', 'HEAD'), 'status': git(CACHE / p, 'status', '--porcelain', '--untracked-files=no')} for p in ('pyroomacoustics', 'doatools')}
     r = {}
     M = 3
@@ -218,21 +219,21 @@ def build_report():
         verify_checkout(project)
     if state_before != state_after:
         raise RuntimeError('upstream checkout changed during execution')
-    return {'run_utc': datetime.now(timezone.utc).isoformat(), 'run_asia_shanghai': datetime.now(ZoneInfo('Asia/Shanghai')).isoformat(), 'audit_source_sha256': sha(pathlib.Path(__file__)), 'lock_sha256': sha(LOCK), 'lock_entries': entries, 'scope': {'TOPS': 'installed 0.10.0 original full class; seven relevant Python DOA files exactly equal fixed cache', 'CSSM_WAVES': 'original AST helper bodies with simulated first-frequency rejection; WAVES diagonal eigenspace adapter; original _process not run', 'RootMUSIC': 'original estimate method and fixed helper imports; original NumPy failure, then local complex_ alias facade', 'SRP': 'original constructor and mode-vector inspection only; no complete near-field renderer', 'spatial_smooth': 'original AST preprocessing method, float/complex success and integer dtype failure', 'source_counts': 'original AST ld_stat/aic/mdl; ascending inputs, scalar log-sum reference and classified product underflow', 'claims_excluded': ['fixed upstream patch', 'real audio accuracy', 'hardware validation', 'paper benchmark reproduction', 'FRIDA', 'sparse solvers', 'full package compatibility']}, 'tolerances': {'root_angle_deg': 1e-06, 'smoothing_absolute': 1e-14, 'independent_TOPS_true_norm': 1e-12, 'wheel_source_equal': 'byte exact'}, 'python': sys.version, 'executable': sys.executable, 'environment': {x: importlib.metadata.version(x) for x in ['numpy', 'scipy', 'pyroomacoustics', 'Cython', 'pybind11']}, 'before': state_before, 'after': state_after, 'sources': files.copy(), 'wheel_python_sources': wheel_match, 'results': r}
+    return {'run_utc': datetime.now(timezone.utc).isoformat(), 'run_asia_shanghai': datetime.now(ZoneInfo('Asia/Shanghai')).isoformat(), 'audit_source_sha256': sha(pathlib.Path(__file__)), 'lock_sha256': sha(LOCK), 'lock_entries': entries, 'scope': {'TOPS': 'installed 0.10.0 original full class; seven relevant Python DOA files exactly equal fixed cache', 'CSSM_WAVES': 'original AST helper bodies with simulated first-frequency rejection; WAVES diagonal eigenspace adapter; original _process not run', 'RootMUSIC': 'original estimate method and fixed helper imports; original NumPy failure, then local complex_ alias facade', 'SRP': 'original constructor and mode-vector inspection only; no complete near-field renderer', 'spatial_smooth': 'original AST preprocessing method, float/complex success and integer dtype failure', 'source_counts': 'original AST ld_stat/aic/mdl; ascending inputs, scalar log-sum reference and classified product underflow', 'claims_excluded': ['fixed upstream patch', 'real audio accuracy', 'hardware validation', 'paper benchmark reproduction', 'FRIDA', 'sparse solvers', 'full package compatibility']}, 'tolerances': {'root_angle_deg': 1e-06, 'smoothing_absolute': 1e-14, 'independent_TOPS_true_norm': 1e-12, 'wheel_source_equal': 'byte exact'}, 'python': sys.version, 'executable': sys.executable, 'environment': {x: importlib.metadata.version(x) for x in ['numpy', 'scipy', 'pyroomacoustics', 'Cython', 'pybind11']}, 'before': state_before, 'after': state_after, 'source_contracts': identities.copy(), 'report_source_sha256': contracts.dependencies(__file__), 'sources': files.copy(), 'wheel_python_sources': wheel_match, 'results': r}
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--report', type=pathlib.Path, help='explicitly write the current execution report')
     args = parser.parse_args()
+    target = contracts.report_target(args.report, CURRENT_REPORT) if args.report else None
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter('always')
         report = build_report()
     report['warnings'] = [{'category': type(w.message).__name__, 'message': str(w.message)} for w in caught]
     content = json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + '\n'
     if args.report:
-        args.report.parent.mkdir(parents=True, exist_ok=True)
-        args.report.write_text(content, encoding='utf-8')
-        print(args.report)
+        contracts.write_report(target, report, CURRENT_REPORT)
+        print(target)
     else:
         print(content, end='')
 if __name__ == '__main__':

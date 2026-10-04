@@ -23,6 +23,7 @@ from codes.chapters.ch04.core.focus_audio import (
 
 from codes.chapters.ch00.io_contracts import (
     validate_asset_directory as _shared_asset_directory, strict_json_loads, same_metadata,
+    validate_parent_chain,
 )
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -37,13 +38,44 @@ SOURCE_PATHS = (
 )
 
 
+MEMBERS = set(FILE_NAMES.values()) | {"MANIFEST.json"}
+# Fixed truth independent of parameters(); exact recursive types reject bool-as-number.
+REQUIRED_PARAMETERS = {'exercise_id': 'E04-22',
+ 'sample_rate_hz': 16000,
+ 'source_samples': 32000,
+ 'samples_per_channel': 32024,
+ 'sound_speed_m_s': 343.0,
+ 'positions_m': [[0.0, 0.0], [0.1715, 0.0], [0.343, 0.0], [0.5145000000000001, 0.0]],
+ 'source_angles_deg': [-30.0, 30.0],
+ 'source_2_delay_samples': 4,
+ 'common_propagation_delay_samples': 12,
+ 'frequencies_hz': [1000.0, 3000.0],
+ 'source_amplitude_per_frequency': 0.08,
+ 'fade_samples': 320,
+ 'fade': 'squared sine, endpoints included, before all delays',
+ 'propagation_model': 'x_m=D_(12+4m) F + D_(16-4m) F, m=0..3; full zero-extended tail',
+ 'known_focusing': 'keep tagged 1-kHz contribution; permute tagged 3-kHz contribution [0,3,2,1]',
+ 'channel_order': [0, 1, 2, 3],
+ 'scoring_interval_samples': [2400, 29600],
+ 'samples_in_scoring_window': 27200,
+ 'phasor_convention': 'cos coefficient minus j*sin coefficient; absolute sample clock',
+ 'normalized_covariance': '(z/0.08)(z/0.08)^H; equal mean over two frequencies',
+ 'rank_relative_threshold': 1e-10,
+ 'randomness': 'none',
+ 'noise': 'none'}
+
 def _sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
 def prepare_assets() -> tuple[dict[str, bytes], dict]:
     """Prepare deterministic assets in memory; neither import nor call writes."""
+    true_parameters = parameters()
+    if not same_metadata(true_parameters, REQUIRED_PARAMETERS):
+        raise ValueError("focus true parameters differ from the fixed asset contract")
     signals = generate_signals()
+    if set(signals) != set(FILE_NAMES):
+        raise ValueError("focus fixture requires exactly four signals")
     blobs, files, samples = {}, {}, {}
     for name, x in signals.items():
         filename = FILE_NAMES[name]
@@ -58,29 +90,30 @@ def prepare_assets() -> tuple[dict[str, bytes], dict]:
     manifest = {"schema_version": 1, "sample_rate_hz": SAMPLE_RATE,
                 "samples_per_channel": SAMPLES, "common_export_gain": 1.0,
                 "origin": "original deterministic known-component focusing synthesis",
-                "source_sha256": {path: _sha((ROOT/path).read_bytes()) for path in SOURCE_PATHS},
+                "source_sha256": {path: _sha(validate_parent_chain(ROOT/path).read_bytes()) for path in SOURCE_PATHS},
                 "environment": {"python": platform.python_version(), "numpy": np.__version__,
                                 "system": platform.system(), "machine": platform.machine()},
                 "pcm": "signed little-endian PCM16, round-to-nearest-even, no dither or per-file gain",
                 "pcm_encode_multiplier": 32768, "pcm_decode_divisor": 32768,
                 "pcm_quantization_step": 1/32768,
                 "pcm_half_step_error_bound": .5/32768,
-                "parameters": parameters(), "files": files, "samples": samples,
+                "parameters": true_parameters, "files": files, "samples": samples,
                 "limits": LIMITS, "listening": "Start at low volume; no automatic playback. Four-channel playback is device-dependent."}
+    strict_json_loads(json.dumps(manifest, allow_nan=False))
     return blobs, manifest
 
 
 def check_assets(output: Path) -> dict:
     """Read-check exact file set, current sources, actual WAVs and new scores."""
     output = Path(output)
-    _shared_asset_directory(output, set(FILE_NAMES.values()) | {'MANIFEST.json'}, check=True)
+    _shared_asset_directory(output, MEMBERS, check=True)
     expected_names = set(FILE_NAMES.values()) | {"MANIFEST.json"}
     if not output.is_dir() or {p.name for p in output.iterdir()} != expected_names:
         raise ValueError("focus_audio must contain exactly four WAVs and MANIFEST.json")
     manifest = strict_json_loads((output/"MANIFEST.json").read_text())
     if not isinstance(manifest, dict):
         raise ValueError('manifest must be an object')
-    current_sources = {path: _sha((ROOT/path).read_bytes()) for path in SOURCE_PATHS}
+    current_sources = {path: _sha(validate_parent_chain(ROOT/path).read_bytes()) for path in SOURCE_PATHS}
     if manifest.get("source_sha256") != current_sources:
         raise ValueError("focus_audio source set or SHA is stale")
     expected_blobs, expected_manifest = prepare_assets()
@@ -114,9 +147,10 @@ def main(argv=None) -> int:
     if args.check:
         manifest = check_assets(args.output_dir)
     else:
-        _shared_asset_directory(args.output_dir, set(FILE_NAMES.values()) | {'MANIFEST.json'}, check=False)
+        _shared_asset_directory(args.output_dir, MEMBERS, check=False)
         blobs, manifest = prepare_assets()
         args.output_dir.mkdir(parents=True, exist_ok=True)
+        _shared_asset_directory(args.output_dir, MEMBERS, check=False)
         for filename, blob in blobs.items():
             (args.output_dir/filename).write_bytes(blob)
         (args.output_dir/"MANIFEST.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2, allow_nan=False)+"\n")

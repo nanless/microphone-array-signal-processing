@@ -5,6 +5,14 @@ explicitly saves a current execution record; it does not download dependencies.
 """
 from __future__ import annotations
 
+# Support documented direct-file commands without changing upstream imports.
+if __package__ in (None, ""):
+    import sys as _entry_sys
+    from pathlib import Path as _EntryPath
+    _entry_sys.path.insert(0, str(_EntryPath(__file__).resolve().parents[4]))
+
+from codes.chapters.ch04.core import upstream_contracts as contracts
+
 import argparse
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
@@ -13,7 +21,6 @@ import importlib.metadata
 import importlib.util
 import json
 import pathlib
-import subprocess
 import sys
 import tempfile
 
@@ -25,6 +32,10 @@ LOCK = ROOT / 'codes/chapters/ch00/SOURCES.lock.json'
 PROJECT = 'said-spatial-imaging'
 CACHE = ROOT / 'codes/chapters/ch00/upstream/_downloads' / PROJECT
 REVISION = 'cf52ede4f38361cdbb03aa93c8254109583dfe2b'
+CURRENT_REPORT = ROOT / 'codes/chapters/ch04/reports/said_compression_contracts.json'
+SOURCE_FILES = ('said/utils/compression.py', 'LICENSE', 'THIRD_PARTY_NOTICES.md',
+                'LICENSES/SAID-Model-Weights-NonCommercial-1.0.txt',
+                'LICENSES/AudioMAE-CC-BY-NC-4.0.txt')
 
 
 def sha(path):
@@ -32,33 +43,21 @@ def sha(path):
 
 
 def git(*args):
-    return subprocess.check_output(['git', '-C', str(CACHE), *args], text=True).strip()
+    return contracts.git(CACHE, *args)
 
 
 def verify():
-    entry = next(p for p in json.loads(LOCK.read_text())['projects'] if p['id'] == PROJECT)
-    if entry['revision'] != REVISION or git('rev-parse', 'HEAD') != REVISION:
-        raise RuntimeError('SAID lock/HEAD differs from supported revision')
-    if git('status', '--porcelain', '--untracked-files=no'):
-        raise RuntimeError('modified upstream tracked source')
-    if any(p.endswith('.py') for p in git('ls-files', '--others', '--exclude-standard').splitlines()):
-        raise RuntimeError('untracked Python source in upstream')
-    return entry
+    return contracts.verify_project(PROJECT, CACHE, SOURCE_FILES)['lock_entry']
 
 
 def build_report():
-    entry = verify()
+    identity = contracts.verify_project(PROJECT, CACHE, SOURCE_FILES)
+    entry = identity["lock_entry"]
     before = {'head': git('rev-parse', 'HEAD'),
               'status': git('status', '--porcelain', '--untracked-files=no')}
     records = {}
-    for relative in ('said/utils/compression.py', 'LICENSE', 'THIRD_PARTY_NOTICES.md',
-                     'LICENSES/SAID-Model-Weights-NonCommercial-1.0.txt',
-                     'LICENSES/AudioMAE-CC-BY-NC-4.0.txt'):
-        path = CACHE / relative
-        original = subprocess.check_output(['git', '-C', str(CACHE), 'show', f'HEAD:{relative}'])
-        if path.read_bytes() != original:
-            raise RuntimeError(f'local file differs from fixed blob: {relative}')
-        records[relative] = {'sha256': sha(path), 'git_blob': git('rev-parse', f'HEAD:{relative}')}
+    for relative in SOURCE_FILES:
+        records[relative] = identity['used_files'][relative].copy()
     # Import the entire unchanged source file directly; importing said package
     # would pull in model dependencies. No AST edit or compatibility facade.
     name = '_masp_said_original_compression'
@@ -126,7 +125,7 @@ def build_report():
             sys.modules.pop(name, None)
         else:
             sys.modules[name] = prior
-    verify()
+    contracts.check_unchanged(identity)
     after = {'head': git('rev-parse', 'HEAD'),
              'status': git('status', '--porcelain', '--untracked-files=no')}
     if before != after:
@@ -134,7 +133,8 @@ def build_report():
     return {
         'run_utc': datetime.now(timezone.utc).isoformat(), 'run_asia_shanghai': datetime.now(ZoneInfo('Asia/Shanghai')).isoformat(),
         'audit_source_sha256': sha(pathlib.Path(__file__)), 'lock_sha256': sha(LOCK),
-        'lock_entry': entry, 'before': before, 'after': after, 'sources': records,
+        'lock_entry': entry, 'source_contract': identity,
+        'report_source_sha256': contracts.dependencies(__file__), 'before': before, 'after': after, 'sources': records,
         'environment': {'python': sys.version, 'executable': sys.executable, 'numpy': importlib.metadata.version('numpy')},
         'scope': {
             'execution': 'unchanged original compression.py loaded as standalone module; stdlib + NumPy; no said package import',
@@ -155,11 +155,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--report', type=pathlib.Path, help='explicit current report destination')
     args = parser.parse_args()
-    content = json.dumps(build_report(), indent=2, ensure_ascii=False, allow_nan=False)+'\n'
+    target = contracts.report_target(args.report, CURRENT_REPORT) if args.report else None
+    report = build_report()
+    content = json.dumps(report, indent=2, ensure_ascii=False, allow_nan=False)+'\n'
     if args.report:
-        args.report.parent.mkdir(parents=True, exist_ok=True)
-        args.report.write_text(content)
-        print(args.report)
+        contracts.write_report(target, report, CURRENT_REPORT)
+        print(target)
     else:
         print(content, end='')
 

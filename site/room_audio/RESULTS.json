@@ -8,7 +8,7 @@
   "assets": {
     "audio_manifest": {
       "file": "MANIFEST.json",
-      "sha256": "28a8ba86fe93599c1f80f4266925001c12c95b8c61035e5bb6f9d6772ff79483"
+      "sha256": "a554a6d14bd264ebd260b0984fbbc24f4422407f091ced654d08e86dc51d5af2"
     },
     "figure": {
       "file": "ROOM_RESULTS.png",
@@ -423,7 +423,7 @@
     "codes/chapters/ch02/core/spectral.py": "5ade0b101cc00615276b3b60c3659ece3e68ad614cd2cb2edeb568359f034059",
     "codes/chapters/ch03/core/geometry.py": "5a680848301358415f74647199a4c57b65086f0b2580f91706c912ad208d7bdb",
     "codes/chapters/ch04/core/covariance.py": "d704be037100ee53caf6e2130fbabbe14ce6eeff9e3d11dde389fd368d271249",
-    "codes/chapters/ch04/core/doa.py": "f3d7eaa8251b732efe0f9579fa2b32a71f506fb884d80b17503f09697b659ed4"
+    "codes/chapters/ch04/core/doa.py": "33582d40ec9030537709d79bf13f4a904d2246f388e628aada7f66e8fb6dec04"
   },
   "source_signal": "1 s independent PCG64 white Gaussian noise per case; no additive noise",
   "status": "pyroomacoustics_simulation_executed",

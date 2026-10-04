@@ -111,6 +111,8 @@ def gcc_phat(
     the result is a sampled periodic inverse transform restricted to physical
     lags, and changing the FFT length can change its values.  Optional
     three-point interpolation is local and does not change the lag search range.
+    ``max_tau`` is an inclusive bound on the represented lag times in seconds;
+    no absolute floating-point tolerance widens this physical search interval.
     """
     sample_rate = finite_real_scalar(sample_rate, "sample_rate")
     epsilon = finite_real_scalar(epsilon, "epsilon")
@@ -153,7 +155,7 @@ def gcc_phat(
         if not np.isfinite(max_tau) or max_tau < 0.0:
             raise ValueError("max_tau must be finite and non-negative")
         with np.errstate(over="ignore", divide="ignore"):
-            keep = np.abs(lags / sample_rate) <= max_tau + np.finfo(float).eps
+            keep = np.abs(lags / sample_rate) <= max_tau
         correlation = correlation[keep]
         lags = lags[keep]
         if lags.size == 0:

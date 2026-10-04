@@ -199,7 +199,7 @@ class BuildHelpersTest(unittest.TestCase):
     @staticmethod
     def budget_fixture(headers, *, aligned=False):
         cells = ['`$x<y$`', '$z^H z$', '[证据](https://example.org/source)',
-                 '完整说明', '第五列'][:len(headers)]
+                 '完整说明', '第五列', '第六列'][:len(headers)]
         separators = ['---'] * len(headers)
         if aligned:
             separators[0] = ':---:'
@@ -216,6 +216,12 @@ class BuildHelpersTest(unittest.TestCase):
             (ROOT / 'chapters/03_array-geometry.md',
              ('失配类型', '示例量级', '首先受影响的量', '按该示例计算', '可采取的措施'),
              70, {1: 7, 2: 9, 3: 9, 4: 18, 5: 16}),
+            (ROOT / 'chapters/04_doa-estimation.md',
+             ('路线', '输入怎样形成', '输出是什么', '使用前要检查什么'),
+             44, {1: 8, 2: 12, 3: 10, 4: 14}),
+            (ROOT / 'chapters/04_doa-estimation.md',
+             ('方法', '主要输入与输出', '是否预先给源数', '主要模型条件', '典型失败模式', '主要计算项'),
+             66, {1: 9, 2: 11, 3: 8, 4: 12, 5: 12, 6: 14}),
             (ROOT / 'chapters/06_aec.md',
              ('#', '征兆', '量测', '工具/信号', '判断依据'),
              70, {1: 3, 2: 9, 3: 10, 4: 20, 5: 18}),
@@ -224,9 +230,15 @@ class BuildHelpersTest(unittest.TestCase):
              52, {1: 6}),
             (build_site.RESEARCH_ROOT / '05_exercises_and_audio.md',
              ('题号', '输入和计算', '能支持的结论'), 36, {1: 6}),
+            (build_site.RESEARCH_ROOT / '05_exercises_and_audio.md',
+             ('实际文件/通道', '整数能量E', '每通道分母D', '实际PCM均方'),
+             50, {1: 14, 2: 11, 3: 13, 4: 12}),
             (build_site.RESEARCH_ROOT / '01_spatial_and_tracking.md',
              ('原始路线', '输入与额外前提', '求解目标和关键改变', '本书当前证据'),
              54, {1: 8, 2: 15, 3: 16, 4: 15}),
+            (build_site.RESEARCH_ROOT / '01_spatial_and_tracking.md',
+             ('路线', '处理的对象', '新增的模型条件', '本书实际范围'),
+             54, {1: 10, 2: 12, 3: 17, 4: 15}),
         ]
         for path, headers, width, columns in cases:
             with self.subTest(path=path, headers=headers):

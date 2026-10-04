@@ -7,16 +7,22 @@ reference is an independent expression of LS/TLS, not an upstream patch.
 
 from __future__ import annotations
 
+# Support documented direct-file commands without changing upstream imports.
+if __package__ in (None, ""):
+    import sys as _entry_sys
+    from pathlib import Path as _EntryPath
+    _entry_sys.path.insert(0, str(_EntryPath(__file__).resolve().parents[4]))
+
+from codes.chapters.ch04.core import upstream_contracts as contracts
+
 import argparse
 from datetime import datetime, timezone
 import hashlib
 import importlib
 import inspect
 import json
-import os
 from pathlib import Path
 import platform
-import subprocess
 import sys
 import warnings
 
@@ -92,32 +98,17 @@ def safe_rotation(subspace: np.ndarray, formulation: str, weighted: bool = True)
     }
 
 
-def verify_source(source_dir: Path) -> None:
-    if not (source_dir / ".git").exists():
-        raise FileNotFoundError("Fetch locked doatools separately; this script never downloads it")
-    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
-
-    def git(*args):
-        return subprocess.check_output(["git", "-C", str(source_dir), *args],
-                                       env=env, text=True, stderr=subprocess.PIPE).strip()
-
-    if Path(git("rev-parse", "--show-toplevel")).resolve() != source_dir:
-        raise ValueError("source directory must be its own checkout")
-    if git("rev-parse", "HEAD") != REVISION:
-        raise ValueError("doatools revision does not match the lock")
-    if git("status", "--porcelain", "--untracked-files=no"):
-        raise ValueError("tracked upstream files are modified")
-    # Avoid executing untracked Python shadows in this otherwise clean checkout.
-    if git("ls-files", "--others", "--exclude-standard", "--", "*.py"):
-        raise ValueError("untracked Python source in the upstream checkout")
+def verify_source(source_dir: Path) -> dict:
+    identity = contracts.verify_project('doatools', source_dir, SOURCE_HASHES, all_python=True)
     for name, expected in SOURCE_HASHES.items():
-        if hashlib.sha256((source_dir / name).read_bytes()).hexdigest() != expected:
+        if identity['used_files'][name]['sha256'] != expected:
             raise ValueError("source hash mismatch: " + name)
+    return identity
 
 
 def run_experiment(source_dir: Path | None = None) -> dict:
-    source_dir = (source_dir or ROOT / "chapters/ch00/upstream/_downloads/doatools").resolve()
-    verify_source(source_dir)
+    source_dir = contracts.validate_parent_chain(source_dir or ROOT / "chapters/ch00/upstream/_downloads/doatools").resolve()
+    identity = verify_source(source_dir)
     if any(name == "doatools" or name.startswith("doatools.") for name in sys.modules):
         raise RuntimeError("run in a fresh process, without previously imported doatools")
     original_bytecode = sys.dont_write_bytecode
@@ -155,7 +146,10 @@ def run_experiment(source_dir: Path | None = None) -> dict:
         reference_passed = all(
             np.max(np.abs(np.array(result["angles_deg"]) - truth)) <= CONFIG["direction_error_tolerance_deg"]
             for group in (references, analytic) for result in group.values())
+        contracts.check_unchanged(identity)
         return {
+            "source_contract": identity,
+            "report_source_sha256": contracts.dependencies(__file__),
             "schema_version": 1,
             "status": "failed_default_row_weighting" if expected_failure and reference_passed else "unexpected_diagnostic_result",
             "created_utc": datetime.now(timezone.utc).isoformat(),
@@ -186,9 +180,12 @@ def main():
     parser.add_argument("--source-dir", type=Path)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
-    payload = json.dumps(run_experiment(args.source_dir), ensure_ascii=False, indent=2, allow_nan=False) + "\n"
+    protected = (args.source_dir,) if args.source_dir else ()
+    target = contracts.report_target(args.output, protected=protected) if args.output else None
+    report = run_experiment(args.source_dir)
+    payload = json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
     if args.output:
-        args.output.write_text(payload)
+        contracts.write_report(target, report, protected=protected)
     else:
         print(payload, end="")
 

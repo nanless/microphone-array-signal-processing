@@ -5,6 +5,8 @@ import json
 from pathlib import Path
 import unittest
 
+from codes.chapters.ch04.core import upstream_contracts as contracts
+
 import numpy as np
 
 from codes.chapters.ch00.core.source_history import verify_lock_binding
@@ -28,7 +30,7 @@ class ReportTests(unittest.TestCase):
         self.results = self.report['results']
 
     def test_provenance_and_scope(self):
-        self.assertEqual(self.report['audit_source_sha256'], audit.sha(Path(audit.__file__)))
+        self.assertEqual(self.report['audit_source_sha256'], hashlib.sha256(contracts.historical_bytes(audit.__file__)).hexdigest())
         verify_lock_binding(self.report['lock_sha256'], tuple(audit.REVISIONS), current_lock=audit.LOCK)
         for project, revision in audit.REVISIONS.items():
             self.assertEqual(self.report['before'][project]['head'], revision)

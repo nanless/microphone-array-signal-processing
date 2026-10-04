@@ -1,4 +1,4 @@
-"""E04-12..23: deterministic DOA anchors, boundaries and PCM phase checks.
+"""E04-12..25: deterministic DOA anchors, boundaries and PCM phase checks.
 
 Run with ``python -m codes.chapters.ch04.chapter04_experiments``. No files are
 written; no external implementation is imported or run. Local bounds and
@@ -17,7 +17,9 @@ import io
 from pathlib import Path
 import wave
 import numpy as np
-from codes.chapters.ch04.core.doa import esprit_ula, srp_phat, aic_source_count, mdl_source_count
+from codes.chapters.ch04.core.doa import (
+    esprit_ula, srp_phat, aic_source_count, mdl_source_count, music_spectrum,
+)
 from codes.chapters.ch03.core.geometry import plane_wave_steering
 from codes.chapters.ch00.core.audio_samples import doa_ambiguity_case, prepare_exports, read_pcm16
 
@@ -285,11 +287,127 @@ def root_music_polynomial():
             'limits':'Repeated roots split numerically; reciprocal roots and proximity to the unit circle are diagnostics, not automatic correctness evidence.'}
 
 
+def coherent_reflection_false_peak():
+    """E04-24: rank one does not identify the direct path of one emitter.
+
+    The signal covariance is exact and noiseless. The separate 0.1 I control
+    is a virtual white-noise covariance, not noise added to the audio assets.
+    This is neither a DPD implementation nor a blind room/path estimator.
+    """
+    frequency, sample_rate, sound_speed = 4000., 16000., 343.
+    spacing = sound_speed/(2*frequency)
+    direct = np.ones(2, dtype=complex)
+    reflection = np.array([1., 1j])
+    mixture = direct+reflection
+    signal_covariance = np.outer(mixture, mixture.conj())
+    power = float(np.vdot(mixture, mixture).real)
+    virtual_noise = .1
+    covariance = signal_covariance+virtual_noise*np.eye(2)
+    relative_response = mixture[1]/mixture[0]
+    best_phase = float(np.angle(relative_response))
+    best_angle = float(np.arcsin(best_phase*sound_speed/(2*np.pi*frequency*spacing)))
+    angles = np.array([0., best_angle, np.pi/6])
+    steering = np.exp(2j*np.pi*frequency*spacing/sound_speed
+                      * np.sin(angles[:, None])*np.arange(2))
+    projector = np.eye(2)-signal_covariance/power
+    projection = np.einsum('gi,ij,gj->g', steering.conj(), projector, steering).real
+    denominator_minimum = 2-(abs(mixture[0])+abs(mixture[1]))**2/power
+    def pairs(value):
+        return np.stack((value.real, value.imag), axis=-1).tolist()
+    return {
+        'frequency_hz':frequency, 'sample_rate_hz':sample_rate,
+        'sound_speed_m_s':sound_speed, 'spacing_m':spacing,
+        'physical_emitter_count':1, 'propagation_path_count':2,
+        'direct_angle_deg':0., 'reflection_angle_deg':30.,
+        'direct_vector_real_imag':pairs(direct),
+        'reflection_vector_real_imag':pairs(reflection),
+        'mixture_vector_real_imag':pairs(mixture),
+        'signal_covariance_real_imag':pairs(signal_covariance),
+        'signal_eigenvalues':np.linalg.eigvalsh(signal_covariance).tolist(),
+        'signal_rank':int(np.linalg.matrix_rank(signal_covariance)),
+        'signal_coherence_magnitude':float(abs(signal_covariance[0,1])/np.sqrt(
+            signal_covariance[0,0].real*signal_covariance[1,1].real)),
+        'relative_response_real_imag':pairs(np.asarray(relative_response)),
+        'relative_response_magnitude':float(abs(relative_response)),
+        'virtual_white_noise_variance':virtual_noise,
+        'virtual_total_eigenvalues':np.linalg.eigvalsh(covariance).tolist(),
+        'virtual_eigenvalue_ratio':float(np.linalg.eigvalsh(covariance)[-1]
+                                       /np.linalg.eigvalsh(covariance)[0]),
+        'noise_projector_real_imag':pairs(projector),
+        'best_phase_rad':best_phase, 'false_peak_angle_deg':float(np.rad2deg(best_angle)),
+        'minimum_projection_energy':float(denominator_minimum),
+        'maximum_music_score':float(1/denominator_minimum),
+        'comparison_angles_deg':np.rad2deg(angles).tolist(),
+        'comparison_projection_energies':projection.tolist(),
+        'comparison_music_scores':music_spectrum(covariance,steering,source_count=1).tolist(),
+        'limits':'Exact single-frequency coherent paths from one emitter; unequal channel amplitudes '
+                 'miss the unit-amplitude single-plane-wave manifold. The peak is finite. '
+                 'Virtual noise is not exported to WAVs; this is not a DPD test or measured localization performance.',
+    }
+
+
+def exact_ctf_cross_relation():
+    """E04-25: exact artificial two-tap frame-domain CTF, without STFT audio.
+
+    Cross convolution uses plain coefficients, not conjugated coefficients.
+    Source frames and the complete one-frame output tails are retained. Only
+    frames 1..3 form the regression; the steady sinusoid is a separate rank
+    control, not a replacement of the transient source used for that fit.
+    """
+    first_path = np.array([1., .5], dtype=complex)
+    second_path = np.array([1+1j, .25-.5j])
+    source = np.array([1., 0., 0., 1.], dtype=complex)
+    first = np.convolve(first_path,source)
+    second = np.convolve(second_path,source)
+    frames = np.array([1,2,3])
+    design = np.column_stack((first[frames],first[frames-1],second[frames-1]))
+    coefficients = np.linalg.lstsq(design,second[frames],rcond=None)[0]
+    residual = second[frames]-design@coefficients
+    cross_residual = np.convolve(first_path,second)-np.convolve(second_path,first)
+    singular = np.linalg.svd(design,compute_uv=False)
+    omega = np.pi/2
+    phase = np.exp(-1j*omega)
+    first_response = first_path[0]+first_path[1]*phase
+    second_response = second_path[0]+second_path[1]*phase
+    full_ratio = second_response/first_response
+    # This source exists for all integer frames, unlike the finite transient.
+    tone = np.exp(1j*omega*np.arange(4))
+    tone_first, tone_second = first_response*tone, second_response*tone
+    tone_design = np.column_stack((tone_first[1:],tone_first[:-1],tone_second[:-1]))
+    def pairs(value):
+        return np.stack((value.real, value.imag),axis=-1).tolist()
+    return {
+        'ctf_tap_count':2, 'source_frames_real_imag':pairs(source),
+        'first_path_real_imag':pairs(first_path), 'second_path_real_imag':pairs(second_path),
+        'output_frame_indices':list(range(5)), 'first_output_real_imag':pairs(first),
+        'second_output_real_imag':pairs(second), 'regression_frames':frames.tolist(),
+        'design_real_imag':pairs(design), 'target_real_imag':pairs(second[frames]),
+        'estimated_coefficients_real_imag':pairs(coefficients),
+        'design_determinant_real_imag':pairs(np.asarray(np.linalg.det(design))),
+        'design_rank':int(np.linalg.matrix_rank(design)), 'design_singular_values':singular.tolist(),
+        'design_condition_2':float(singular[0]/singular[-1]),
+        'regression_residual_norm':float(np.linalg.norm(residual)),
+        'full_cross_convolution_residual_max':float(np.max(abs(cross_residual))),
+        'first_coefficient_ratio_real_imag':pairs(np.asarray(coefficients[0])),
+        'frame_modulation_frequency_rad':float(omega),
+        'whole_ctf_frequency_ratio_real_imag':pairs(np.asarray(full_ratio)),
+        'whole_ctf_frequency_ratio_magnitude':float(abs(full_ratio)),
+        'whole_ctf_frequency_ratio_phase_deg':float(np.rad2deg(np.angle(full_ratio))),
+        'steady_sinusoid_design_real_imag':pairs(tone_design),
+        'steady_sinusoid_design_rank':int(np.linalg.matrix_rank(tone_design)),
+        'steady_sinusoid_design_singular_values':np.linalg.svd(tone_design,compute_uv=False).tolist(),
+        'limits':'Artificial exact frame-domain CTF, not STFT estimation from WAV or a blind DP-RTF '
+                 'PSD estimator. Omega is a frame modulation frequency, not an acoustic Hz bin. '
+                 'The first CTF coefficient in actual STFT models depends on windows and may contain early reflections.',
+    }
+
+
 def run_exercises():
     functions = [nyquist_interpolation, srp_frequency_and_grid, phat_order_and_floors,
                  esprit_basis_and_alias, gauss_newton_one_step, local_delay_crlb, audio_phase_ambiguity,
                  nonunitary_focusing_noise, aic_mdl_comparison, correlated_tdoa_gls,
-                 unitary_coherent_focusing, root_music_polynomial]
+                 unitary_coherent_focusing, root_music_polynomial,
+                 coherent_reflection_false_peak, exact_ctf_cross_relation]
     return {f'E04-{i:02d}': function() for i, function in enumerate(functions, 12)}
 
 
