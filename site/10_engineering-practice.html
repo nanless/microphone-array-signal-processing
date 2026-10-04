@@ -1,10 +1,11 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 10 章 · 工程实现、评测与产业实践 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="da8b52b156df"><style>
+<meta name="source-digest" content="3da085ae88b5"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
+h1,h2,h3,h4{scroll-margin-top:60px}
 a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
 .skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
 .skip-link:focus{top:8px}
@@ -694,7 +695,7 @@ $$</p>
 \tag{10-4}
 $$</p>
 <p>教学函数报告最后一行的一阶值。例如 $\widehat s=0.0001$ 时一阶报告为 100 ppm，精确反解约为 100.010 ppm。截距描述初始错位，不进入速率换算；丢样阶跃也不应混进拟合斜率，见 <span style="white-space: nowrap">E10-12</span>。</p>
-<p>重采样函数用线性插值演示长度和方向。线性插值没有足够的带外抑制，降低输出采样率时尤其不能省去抗混叠滤波；已有<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/figures/fig41_interpolation_error.png">图 41 的独立对照</a>及 E10-25 展示高频折回。设备实现还要保留跨块滤波状态并测量补偿后的相位残差。</p>
+<p>重采样函数用线性插值演示长度和方向。线性插值没有足够的带外抑制，降低输出采样率时尤其不能省去抗混叠滤波；已有<a href="../figures/fig41_interpolation_error.png">图 41 的独立对照</a>及 E10-25 展示高频折回。设备实现还要保留跨块滤波状态并测量补偿后的相位残差。</p>
 <p>教学离线接口 <code>resample_sro_to_reference</code> 的 <code>max_output_samples</code> 默认上限为每通道 10 000 000 个输出时间样本，在分配前检查；它限制输出长度，不保证所有中间数组都符合设备内存预算。极小的正速率比仍可能对应巨大输出，不能只检查“比例大于零”。对相反符号的大幅输入，插值采用加权凸组合，避免先做端点差发生溢出；这些数值边界测试不表示真实 PCM 可达这种幅值。</p>
 <span id="sec-u-38edc89a29" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-f9e36547b8">专题：有状态重采样的比率、余量与时间标记</h3>
 <p>先明确输出样本应该落在输入时间轴的哪里。设输入首样本物理时刻为 $t_0$，输入率为 $f_d$，输出参考率为 $f_s$；输出索引 $k$ 对应参考时刻 $k/f_s$，其输入分数索引为</p>

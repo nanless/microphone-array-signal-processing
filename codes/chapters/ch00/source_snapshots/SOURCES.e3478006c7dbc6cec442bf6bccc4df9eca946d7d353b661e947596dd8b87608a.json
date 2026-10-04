@@ -2137,29 +2137,14 @@
       "verified_at": "2026-10-04",
       "license": "Apache-2.0",
       "license_sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
-      "fetch_enabled": true,
-      "scope": "Fixed DXCP-PhaT, pipe I/O, known-SRO simulation and resampling source; not a complete installed hardware or SED system",
-      "acquisition": "independent_source_checkout",
+      "fetch_enabled": false,
+      "scope": "Hardware/deployment framework and DXCP-PhaT synchronization reference",
+      "acquisition": "index_only",
       "entrypoints": [
-        "README.md",
         "LICENSE",
-        "DXCPPhaT_demo/system/DXCP_PhaT/dxcp_phat.py",
-        "DXCPPhaT_demo/system/DXCP_PhaT/dxcp_phat_module.py",
-        "marvelo_utils/marvelo_utils/pipe/reader.py",
-        "marvelo_utils/marvelo_utils/pipe/writer.py",
-        "sync_sed/system/resample.py",
-        "sync_sed/system/sim_sro.py"
+        "README.md"
       ],
-      "note": "The complete fixed 40-member tree and all selected source headers/imports were inspected on 2026-10-04. Only source, root Apache-2.0 terms and topology configuration are selected; no firmware binaries, models, audio, submodules or additional license/NOTICE files were present in this fixed tree. The unselected setup.py contains a template MIT classifier and an empty install_requires despite NumPy/SciPy/sounddevice/Pyro4 imports, so installation and complete-package license/dependency claims are not inferred. Source acquisition and static reading do not execute DXCP-PhaT, resampling, MARVELO, SED, a device or a live network.",
-      "source_paths": [
-        "README.md",
-        "LICENSE",
-        "DXCPPhaT_demo/system/DXCP_PhaT/",
-        "DXCPPhaT_demo/topology/DXCP_PhaT/Configurate_DXCP_PhaT_Demo.xml",
-        "marvelo_utils/marvelo_utils/__init__.py",
-        "marvelo_utils/marvelo_utils/pipe/",
-        "sync_sed/system/"
-      ]
+      "note": "Fixed root LICENSE and README have been checked. The hardware framework is indexed separately from this chapter covariance controls; source modules, device firmware, dependencies and real-time hardware deployment have not been inspected or run. Acquisition can be enabled in a deployment-focused stage after exact source/firmware component boundaries are checked."
     },
     {
       "id": "tidanseplus-batch",
@@ -2195,62 +2180,6 @@
         "package/online.py"
       ],
       "note": "The same fixed commit has conflicting MIT root and GPL-3.0-or-later README declarations. Preserve both in an ignored local source checkout for research; do not claim a single redistribution permission or publish the source with this tutorial. No dependency installation, original experiment or paper performance reproduction has run. The 2025 conference source identity does not automatically reproduce the 2026 extension."
-    },
-    {
-      "id": "libricss",
-      "url": "https://github.com/chenzhuo1011/libri_css.git",
-      "revision": "9e3b7b0c9bffd8ef6da19f7056f3a2f2c2484ffa",
-      "verified_at": "2026-10-04",
-      "license": "MIT; original py-webrtcvad MIT and WebRTC BSD-3-Clause notices retained",
-      "license_sha256": "e7758cf56804cdf83cde84d0d19f70df9173193f8be5831d31e52625e95b93d7",
-      "readme_sha256": "48d7e78349996ff1fd03dd0b2f3f13bc8df284e46372d0fd448c872923392a97",
-      "fetch_enabled": true,
-      "scope": "Official LibriCSS data-preparation, VAD/ASR interface and continuous/utterance evaluation tool source, not the CSS separation network",
-      "acquisition": "independent_source_checkout",
-      "source_paths": [
-        "README.md",
-        "LICENSE",
-        "conda_env.yml",
-        "install.sh",
-        "activate.sh",
-        "asr/python/gen_asrinput_continuous.py",
-        "asr/python/gen_asrinput_raw_utterance.py",
-        "asr/python/get_vad.py",
-        "asr/python/get_wer.py",
-        "asr/python/sortctm.py",
-        "asr/scripts/asr_path.sh",
-        "asr/scripts/asr_setup.sh",
-        "asr/scripts/gen_asrinput_raw_continuous.sh",
-        "asr/scripts/gen_asrinput_raw_utterance.sh",
-        "asr/scripts/gen_asrinput_separated_continuous.sh",
-        "asr/scripts/gen_asrinput_separated_utterance.sh",
-        "asr/scripts/run_asr_continuous.sh",
-        "asr/scripts/run_asr_utterance.sh",
-        "asr/scripts/run_wer_raw_utterance.sh",
-        "asr/scripts/run_wer_separated_utterance.sh",
-        "dataprep/python/dataprep.py",
-        "dataprep/scripts/dataprep.sh",
-        "dataprep/scripts/dataprep_separation.sh",
-        "scoring/python/asclite_libricss.py",
-        "scoring/python/asclite_libricss_batch.py",
-        "scoring/python/report.py",
-        "scoring/scripts/eval_continuous.sh"
-      ],
-      "entrypoints": [
-        "README.md",
-        "LICENSE",
-        "dataprep/python/dataprep.py",
-        "asr/python/gen_asrinput_continuous.py",
-        "asr/python/gen_asrinput_raw_utterance.py",
-        "asr/python/get_vad.py",
-        "asr/python/sortctm.py",
-        "asr/python/get_wer.py",
-        "scoring/python/asclite_libricss.py",
-        "scoring/python/asclite_libricss_batch.py",
-        "scoring/python/report.py",
-        "scoring/scripts/eval_continuous.sh"
-      ],
-      "note": "The fixed HEAD/master and complete 1593-member tree were checked on 2026-10-04; these paths select 27 ordinary program/license/configuration files. The 715 sample CTMs, 715 reference STMs, speaker-enrollment JSONL and separately unverified NIST-derived RT04 GLM are excluded, as are external audio, acoustic models, SCTK, PyKaldi and Docker. get_vad.py acknowledges py-webrtcvad-derived code; keep the complete original license notices. Install and data-download script text is retained but never executed by acquisition. The original continuous scoring wrapper has Windows/Linux branches and requires SCTK plus GLM/STM/CTM; utterance-wise lowest WER uses ground-truth segmentation and is a different protocol. Original interface limitations are preserved; no ASR, official scoring, CSS model, dataset or paper performance has been run or reproduced. The root MIT text and py-webrtcvad MIT notice are complete, but the original final WebRTC BSD disclaimer ends at DAMAG; preserve that original byte sequence rather than silently repairing upstream terms. No WebRTC C source is part of this subset; the installed external VAD dependency retains separate terms. asr/python/get_wer.py retains duplicate functions and cumulative E/R in the development loop, and two run_wer shell scripts pass the unsupported --data_path flag; these are static observations, not runtime test results."
     }
   ]
 }

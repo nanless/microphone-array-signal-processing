@@ -1,10 +1,11 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>章节代码练习与音频实验 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="da8b52b156df"><style>
+<meta name="source-digest" content="3da085ae88b5"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
+h1,h2,h3,h4{scroll-margin-top:60px}
 a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
 .skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
 .skip-link:focus{top:8px}
@@ -1984,7 +1985,7 @@ $$</p>
 <p>八点FFT足以容纳一个四点加窗帧与三抽头滤波器的线性卷积，因而去除了该帧的圆折叠。
 这里的控制仍只取原四点窗支持再合成，丢弃了帧滤波尾；窗与时移的耦合也没有消失。
 所以它不是完整的滤波器组卷积算法。未修改谱能恢复原输入，也不能证明任意逐帧乘法能精确模拟房间传播。
-新<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/figures/fig50_stft_convolution.png">图50</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch02/reports/figure50_stft_convolution.json">数值报告</a>
+新<a href="../../figures/fig50_stft_convolution.png">图50</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch02/reports/figure50_stft_convolution.json">数值报告</a>
 显示这些相同时间原点下的六点输出；跨帧与跨带模型来源见
 <a href="https://www.ee.technion.ac.il/Sites/People/IsraelCohen/Publications/TASL_May2007.pdf">Avargel与Cohen2007作者原文§II、式(7)～(11)</a>。</p>
 <span id="sec-65" class="anchor-alias" aria-hidden="true"></span><span id="362-同一间歇源的三条试听与实际pcm计算" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-36-2">36.2 同一间歇源的三条试听与实际PCM计算</h3>

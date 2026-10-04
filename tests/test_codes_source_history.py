@@ -12,6 +12,8 @@ from codes.chapters.ch00.core import source_history as history
 
 OLD_LOCK_SHA = '55ab323ba665633141c4864763095046f9c6161ce2d88ca2aa9332dde7ec23f0'
 OLD_STATUS_SHA = 'e3b3176d835837441224e4906b7c2befadcdc4fe2ce6163245b7d9a9ad0d9229'
+HARMONY_LOCK_SHA = 'e3478006c7dbc6cec442bf6bccc4df9eca946d7d353b661e947596dd8b87608a'
+HARMONY_STATUS_SHA = 'b113b63c97767d19b76ceb44677303961ff310ce8d96f4e9e777944b44916d3c'
 
 
 def encoded(value):
@@ -205,9 +207,33 @@ class RealHistoricalSourceTests(unittest.TestCase):
         old=json.loads(path.read_text());ids=[p['id'] for p in old['projects']]
         self.assertEqual(len(ids),100);result=history.verify_lock_binding(OLD_LOCK_SHA,ids)
         self.assertEqual(result['records'],{p['id']:p for p in old['projects']})
-        current=json.loads(history.LOCK.read_text());self.assertEqual(len(current['projects']),105)
+        current=json.loads(history.LOCK.read_text());self.assertEqual(len(current['projects']),106)
         self.assertEqual({p['id'] for p in current['projects']}-set(ids),
-                         {'danse-python','danse-wola','paderwasn','tidanseplus-batch','wasn-platform'})
+                         {'danse-python','danse-wola','paderwasn','tidanseplus-batch','wasn-platform','libricss'})
+
+    def test_previous_105_lock_preserves_104_records_and_rejects_changed_wasn_policy(self):
+        path=history.SNAPSHOT_ROOT/f'SOURCES.{HARMONY_LOCK_SHA}.json'
+        self.assertEqual(sha(path.read_bytes()),HARMONY_LOCK_SHA)
+        old=json.loads(path.read_text());self.assertEqual(len(old['projects']),105)
+        records={p['id']:p for p in old['projects'] if p['id']!='wasn-platform'}
+        result=history.verify_lock_binding(HARMONY_LOCK_SHA,list(records))
+        self.assertTrue(result['historical'])
+        self.assertEqual(result['records'],records)
+        with self.assertRaisesRegex(ValueError,'project record differs'):
+            history.verify_lock_binding(HARMONY_LOCK_SHA,['wasn-platform'])
+
+    def test_previous_105_status_preserves_all_104_actual_states_including_failures(self):
+        path=history.SNAPSHOT_ROOT/f'SOURCE_STATUS.{HARMONY_STATUS_SHA}.json'
+        self.assertEqual(sha(path.read_bytes()),HARMONY_STATUS_SHA)
+        old=json.loads(path.read_text());self.assertEqual(len(old['projects']),105)
+        records={p['id']:p for p in old['projects'] if p['id']!='wasn-platform'}
+        result=history.verify_status_binding(HARMONY_STATUS_SHA,HARMONY_LOCK_SHA,list(records))
+        self.assertTrue(result['historical'])
+        self.assertEqual(result['records'],records)
+        self.assertEqual(records['aec-challenge']['status'],'failed')
+        self.assertEqual(sum(p['status']=='source_selection_mismatch' for p in records.values()),22)
+        self.assertNotIn('execution',records['aec-challenge'])
+        self.assertTrue(all(p['execution']=='not_run' for p in records.values() if 'execution' in p))
 
     def test_real_tracking_status_keeps_three_selection_mismatches(self):
         path=history.SNAPSHOT_ROOT/f'SOURCE_STATUS.{OLD_STATUS_SHA}.json';self.assertEqual(sha(path.read_bytes()),OLD_STATUS_SHA)

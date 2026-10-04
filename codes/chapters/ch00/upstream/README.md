@@ -11,6 +11,8 @@
 ```bash
 .venv/bin/python codes/chapters/ch00/upstream/fetch_upstreams.py --list
 .venv/bin/python codes/chapters/ch00/upstream/fetch_upstreams.py --project nara_wpe
+.venv/bin/python codes/chapters/ch00/upstream/fetch_upstreams.py --project wasn-platform
+.venv/bin/python codes/chapters/ch00/upstream/fetch_upstreams.py --project libricss
 .venv/bin/python codes/chapters/ch00/upstream/fetch_upstreams.py --all --report tmp/source-acquisition.json
 .venv/bin/python codes/chapters/ch00/upstream/fetch_upstreams.py --verify --report tmp/source-verification.json
 ```
@@ -43,6 +45,8 @@ Git 调用清理外层仓库选择与配置环境变量，避免命令被重定�
 独立本地下载适合阅读大型框架或 copyleft 项目的源码。再分发、商业集成、权重和数据使用仍按各自条款判断。
 WebRTC 的这一份工作树只包含主源码库，不是 `depot_tools` 管理的完整构建环境；其他含子模块的项目同理。
 无许可证、只许评估或学术用途的记录保持明确索引状态，不能混称自由开源软件。
+
+WASN与LibriCSS在2026-10-04分别取得11和27个限定源码/说明/许可文件。前者定位同步接口与已知SRO重采样；后者定位数据准备及会议评分，均不构成可安装的整链。精确提交、许可、静态接口观察及未执行条件见[导读的两个来源入口](../research/04_source_reproduction.md#overview-source-entrypoints)。
 
 更新锁定版本前先检查已有修改归属，在新目录核验，勿将 `_downloads/` 整体加入本仓库 Git。逐算法读码方法见[源码复现手册](../research/04_source_reproduction.md)。
 

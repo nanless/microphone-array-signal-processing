@@ -203,6 +203,16 @@ class ResearchBuildTest(unittest.TestCase):
         self.assertIn("<code>note.md</code>", html)
         self.assertNotIn("README.html", html)
 
+    def test_existing_figure_links_open_local_original_from_chapter_and_research(self):
+        figure = next(iter(sorted((ROOT / 'figures').glob('fig34*.png')))).name
+        html = self.render(f'[原图](../figures/{figure}?view=full#image)',
+                           ROOT / 'chapters' / '00_overview.md')
+        self.assertIn(f'href="../figures/{figure}?view=full#image"', html)
+        html = self.render(f'[原图](../../../../figures/{figure})', RESEARCH / 'README.md')
+        self.assertIn(f'href="../../figures/{figure}"', html)
+        missing = self.render('[文件](../figures/missing.png)', ROOT / 'chapters' / '00_overview.md')
+        self.assertIn(build_site.REPOSITORY_BLOB_BASE + 'figures/missing.png', missing)
+
     def test_query_fragment_and_uri_encoded_path_preserved(self):
         html = self.render('[文档](../codes/chapters/ch00/%43OVERAGE.md?plain=1&view=source#说明)',
                            ROOT / "chapters" / "06_aec.md")
@@ -309,6 +319,11 @@ class ResearchBuildTest(unittest.TestCase):
     def test_temporary_build_navigation_and_all_local_deep_links(self):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "site"
+            # Production serves figures beside site/, rather than copying them into it.
+            figure_root = Path(temporary) / "figures"
+            figure_root.mkdir()
+            for figure in (ROOT / "figures").glob("*.png"):
+                (figure_root / figure.name).write_bytes(figure.read_bytes())
             with mock.patch.object(build_site, "OUT", output), contextlib.redirect_stdout(io.StringIO()):
                 build_site.main()
             room_source = ROOT / "codes" / "chapters" / "appendix_b" / "room_audio"
@@ -463,6 +478,10 @@ class ResearchBuildTest(unittest.TestCase):
                             self.assertEqual(target.parent, (output / "audio").resolve())
                             self.assertTrue(target.is_file())
                             self.assertFalse(uri.fragment)
+                            continue
+                        if target.parent == figure_root.resolve():
+                            self.assertTrue(target.is_file())
+                            self.assertEqual(target.read_bytes(), (ROOT / "figures" / target.name).read_bytes())
                             continue
                         self.assertIn(target, pages)
                         if uri.fragment:

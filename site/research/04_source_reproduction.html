@@ -1,10 +1,11 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码获取与独立复现记录 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="da8b52b156df"><style>
+<meta name="source-digest" content="3da085ae88b5"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
+h1,h2,h3,h4{scroll-margin-top:60px}
 a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
 .skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
 .skip-link:focus{top:8px}
@@ -261,6 +262,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-ce14b272d7">原MATLAB静态合同与五项独立控制</a></li>
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-870d9e9055">复跑与尚未执行的候选</a></li>
 <li><a href="04_source_reproduction.html#sec-u-6a43af803c">9. 来源索引扩充后怎样核验旧报告</a></li>
+<li><a href="04_source_reproduction.html#sec-u-a04e37fd68">10. 导读的两个来源入口：同步接口与会议评分</a></li>
+<li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-dcf88e17a0">WASN：先区分估计时钟与按已知时钟重采样</a></li>
+<li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-d50665334b">LibriCSS：评分协议也是系统输入的一部分</a></li>
+<li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-c6545a4faa">获取、核验与当前真实状态</a></li>
 </ul>
 <div class="chap"><a href="05_exercises_and_audio.html">章节代码练习与音频实验</a></div>
 <div class="chap"><a href="../01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
@@ -304,6 +309,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-ce14b272d7">原MATLAB静态合同与五项独立控制</a></li>
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-870d9e9055">复跑与尚未执行的候选</a></li>
 <li><a href="04_source_reproduction.html#sec-u-6a43af803c">9. 来源索引扩充后怎样核验旧报告</a></li>
+<li><a href="04_source_reproduction.html#sec-u-a04e37fd68">10. 导读的两个来源入口：同步接口与会议评分</a></li>
+<li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-dcf88e17a0">WASN：先区分估计时钟与按已知时钟重采样</a></li>
+<li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-d50665334b">LibriCSS：评分协议也是系统输入的一部分</a></li>
+<li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-c6545a4faa">获取、核验与当前真实状态</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="取得源码后怎样复现" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-515383f30b">取得源码后怎样复现</h1>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="1-先确定复现对象" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-630cc32c87">1. 先确定复现对象</h2>
@@ -933,7 +942,7 @@ $\left[\begin{smallmatrix}1/10&1/5\\1/10&1/5\end{smallmatrix}\right]$。</p>
 <p><a href="https://github.com/p-didier/tidanseplus_batch/tree/0fcc0da19ce9e50bafc978ce1f315bac610d4c0b" title="citation">TI-DANSE+作者批处理仓</a>固定为<code>0fcc0da19ce9e50bafc978ce1f315bac610d4c0b</code>。同一提交的<a href="https://github.com/p-didier/tidanseplus_batch/blob/0fcc0da19ce9e50bafc978ce1f315bac610d4c0b/LICENSE" title="citation">根LICENSE</a>写MIT及2026版权，<a href="https://github.com/p-didier/tidanseplus_batch/blob/0fcc0da19ce9e50bafc978ce1f315bac610d4c0b/README.md" title="citation">README的License段</a>却写GPL-3.0-or-later及2025版权，存在真实矛盾。锁表保留冲突和限定研究范围，不能任选一个标签当作完整可分发许可。该仓用于定位批处理主入口与论文配置，本书未运行TI-DANSE+、原GEVD算法或论文语音指标；2025会议稿与2026扩展预印本的不同证明范围见<a href="03_industrial_deployment.html#distributed-network-deployment">工业I35</a>。</p>
 <p><a id="historical-source-bindings"></a></p>
 <span id="sec-25" class="anchor-alias" aria-hidden="true"></span><span id="9-来源索引扩充后怎样核验旧报告" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-6a43af803c">9. 来源索引扩充后怎样核验旧报告</h2>
-<p>整表SHA标识报告运行时实际读取的全部字节。新增五个分布式项目后，当前锁表从100项变为105项，其摘要自然改变；这不意味着旧报告曾在105项索引下运行。直接给旧报告换成当前摘要会伪造执行条件，直接要求所有旧报告等于当前整表摘要也会把无关的索引扩充误判成所用算法来源改变。</p>
+<p>整表SHA标识报告运行时实际读取的全部字节。首次新增五个分布式项目时，锁表从100项变为105项，其摘要自然改变；这不意味着旧报告曾在105项索引下运行。随后导读复核又新增LibriCSS，并改变WASN的获取范围，当前为106项。直接给旧报告换成当前摘要会伪造执行条件，直接要求所有旧报告等于当前整表摘要也会把无关的索引扩充误判成所用算法来源改变。</p>
 <p>本书保存提交<code>a215b4630c0c21a8744cf27436a2c9ffa9c00053</code>中两份文件的<strong>原始字节</strong>，文件名包含完整SHA。它们不是重新序列化的JSON，也不是手工删去五项所得的新表。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
@@ -951,6 +960,14 @@ $\left[\begin{smallmatrix}1/10&1/5\\1/10&1/5\end{smallmatrix}\right]$。</p>
 <td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/source_snapshots/SOURCE_STATUS.e3b3176d835837441224e4906b7c2befadcdc4fe2ce6163245b7d9a9ad0d9229.json">当时的获取状态</a></td>
 <td>第9章追踪报告记录的状态摘要；该状态中的<code>lock_sha256</code>精确指向上一行</td>
 </tr>
+<tr>
+<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/source_snapshots/SOURCES.e3478006c7dbc6cec442bf6bccc4df9eca946d7d353b661e947596dd8b87608a.json">105项来源锁表</a></td>
+<td>第15章分布式原函数报告运行时的完整锁表；其中所用<code>danse-wola</code>和<code>paderwasn</code>记录与当前完全一致</td>
+</tr>
+<tr>
+<td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/source_snapshots/SOURCE_STATUS.b113b63c97767d19b76ceb44677303961ff310ce8d96f4e9e777944b44916d3c.json">105项获取状态</a></td>
+<td>扩充前67项通过及原22项选集不匹配、AEC失败等完整记录；绑定上一行105项锁表，不把后来取得的源码追记为当时成功</td>
+</tr>
 </tbody>
 </table></div>
 <p>100项锁表的完整SHA-256：</p>
@@ -962,6 +979,32 @@ $\left[\begin{smallmatrix}1/10&1/5\\1/10&1/5\end{smallmatrix}\right]$。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/core/source_history.py">只读核验函数</a>先核当前表真实字节SHA；历史摘要只允许明确登记的快照，并核文件完整SHA、严格JSON、普通父链/文件和唯一项目ID。随后按每份报告明确列出的使用项目，将历史与当前的<strong>整个项目记录</strong>逐字段、逐类型比较，而非只比仓库名或提交号。来源地址、提交、许可、源码入口、选择政策或获取状态中任一使用字段变化都会使这项沿用检查失败；与该报告无关的新项目可以存在。</p>
 <p>第9章还核历史状态绑定历史锁表、当前状态绑定当前锁表，以及ODAS、Spatial Audio Framework、FilterPy、Stone Soup四项完整状态记录一致。原<code>source_selection_verified=false</code>与选集不匹配原样保留，不将获取失败升级为原方法运行成功。第7章报告另有更早的状态摘要；上面的状态快照<strong>不覆盖它</strong>，不据此补写核验结论。</p>
 <p>这些检查验证来源身份的延续，不是重新执行旧算法。原报告的工具摘要、所用原文件/blob、官方origin、完整HEAD、前后洁净状态、执行范围、失败观察与数值断言仍分别检查；各报告原有项目摘要的JSON序列化口径也保持。若使用项目确实改变，应保留旧证据并另行运行和保存新报告，不能通过更换摘要消除差异。</p>
+<p>新增的两份105项快照逐字节取自提交<code>c889808ab071ed4c5c2884f8d1fd007a9e6a0e75</code>的原始文件，文件名中的完整SHA就是实际原文件摘要。104个原项目的锁定记录和获取状态保持不变；WASN由只登记变为限定取得，其完整记录确实变化，因此历史核验函数对该项目会拒绝沿用，而不会仅因origin和提交相同就忽略获取政策。AEC失败原记录没有<code>execution</code>字段，核验保留原结构，不补字段制造一致。</p>
+<p><span id="overview-source-entrypoints" class="anchor-alias" aria-hidden="true"></span></p>
+<span id="sec-26" class="anchor-alias" aria-hidden="true"></span><span id="10-导读的两个来源入口同步接口与会议评分" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-a04e37fd68">10. 导读的两个来源入口：同步接口与会议评分</h2>
+<p>导读推荐的任务路线需要能落到实际接口。2026-10-04取得以下两个固定选集，并对38个普通文件逐个比较完整Git blob、真实SHA及字节数；官方origin、完整HEAD和洁净状态也分别核对。源码保存在<code>codes/chapters/ch00/upstream/_downloads/</code>的独立忽略工作区，锁表和获取器可以重建它们；本书没有把上游源码改写后混入教学数值核。</p>
+<span id="sec-27" class="anchor-alias" aria-hidden="true"></span><span id="wasn先区分估计时钟与按已知时钟重采样" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-dcf88e17a0">WASN：先区分估计时钟与按已知时钟重采样</h3>
+<p>官方<a href="https://github.com/CN-UPB/WASN/tree/9b2590eb104abcde2a35af52c74d64ce30bf5ae2" title="citation">CN-UPB/WASN</a>采用提交<code>9b2590eb104abcde2a35af52c74d64ce30bf5ae2</code>的11个限定文件，共52411字节，覆盖README、根LICENSE、DXCP-PhaT实现及封装、拓扑配置、管道读写和<code>sync_sed/system/</code>中的重采样/模拟入口。<a href="https://github.com/CN-UPB/WASN/blob/9b2590eb104abcde2a35af52c74d64ce30bf5ae2/LICENSE" title="citation">根LICENSE</a>是Apache-2.0，SHA-256为<code>c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4</code>；外部安装依赖的许可与兼容性仍分别判断。</p>
+<p>独立设备的采样率有微小差异时，两路记录的相对时移随记录长度积累。估计器从观测中推测采样率偏差，重采样器则使用给定偏差改变取样位置；两者的输入和输出不同。DXCP-PhaT入口用于定位前者的实现，管道读写用于观察数据怎样传递。此次没有完整复审DXCP数学主体或运行它，不能从文件取得推断估计精度。</p>
+<p><a href="https://github.com/CN-UPB/WASN/blob/9b2590eb104abcde2a35af52c74d64ce30bf5ae2/sync_sed/system/resample.py" title="citation"><code>resample.py::STFTResampler</code></a>的构造参数<code>sro</code>以ppm输入，构造器除以一百万；该参数非空时，逐次调用传入的<code>sro</code>被忽略。原注释把这个配置用于<strong>模拟</strong>给定偏差，补偿已知$x$ ppm则要求构造器传入$-x$。这说明符号与单位需要从实际接口确认，不能看见“resample”就认定程序会盲估计时钟。</p>
+<p>无固定构造值时，<code>__call__(..., sro)</code>中的参数直接参与延迟递推，原方法没有再次除以一百万。因此调用参数应是无量纲相对速差：80 ppm在这个入口传$80\times10^{-6}$，而不是80。同名参数在构造与逐块调用中有不同单位，照搬数值会产生一百万倍的尺度错误。</p>
+<p>例如80 ppm表示相对采样率差$80\times10^{-6}$；按16 kHz名义时钟持续10 s，相对累计样本差的量级为$16000\times10\times80\times10^{-6}=12.8$点。这是单位换算的数学例子，不是原程序执行结果；取样率比值、延迟正负与接收端时间原点仍要在所选接口下解释。导读工程基线和<a href="../15_distributed-enhancement.html">第15章</a>提供可独立复算的教学入口。</p>
+<p><a href="https://github.com/CN-UPB/WASN/blob/9b2590eb104abcde2a35af52c74d64ce30bf5ae2/sync_sed/system/sim_sro.py" title="citation"><code>sim_sro.py</code></a>逐块调用上述重采样器，只在返回非空时向输出管道写块。重采样器保留内部缓冲；此封装没有显式排空记录尾部的步骤。实际流还需明确块长、首次可用输出、积累状态与记录尾部；等待期间的空返回或块延迟不能直接解释为音频丢失，结束时的剩余样本则要另行处理。</p>
+<p>所取文件涉及NumPy、SciPy、sounddevice或Pyro4等导入，没有安装或执行。本次也没有取得固件、访问麦克风设备、部署MARVELO/SED或验证网络性能。未选择的包安装模板含MIT分类而根许可为Apache-2.0，其空依赖列表也不能代替直接导入核对；这里没有把选集称为完整可安装包。</p>
+<span id="sec-28" class="anchor-alias" aria-hidden="true"></span><span id="libricss评分协议也是系统输入的一部分" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-d50665334b">LibriCSS：评分协议也是系统输入的一部分</h3>
+<p>官方<a href="https://github.com/chenzhuo1011/libri_css/tree/9e3b7b0c9bffd8ef6da19f7056f3a2f2c2484ffa" title="citation">LibriCSS工具仓</a>采用提交<code>9e3b7b0c9bffd8ef6da19f7056f3a2f2c2484ffa</code>的27个限定文件，共69954字节，覆盖README与许可、环境/安装说明、数据准备、VAD、ASR输入生成和评分的Python及命令入口。源码选择逐项列在<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCES.lock.json">SOURCES.lock.json</a>，不是把所有<code>.py</code>或整仓库当作已经核过的数据闭包。</p>
+<p><a href="https://github.com/chenzhuo1011/libri_css/blob/9e3b7b0c9bffd8ef6da19f7056f3a2f2c2484ffa/README.md" title="citation">原README</a>区分连续会议评测与已切分语音评测。前者要从连续输入得到分离或识别结果，再把带时间与流身份的输出送入会议评分；后者使用给定语音分段，参考信息和排列选择条件不同。因此不能拿分段结果直接证明一个连续系统能够处理未知活动边界。本选集是准备与评分工具，没有CSS神经网络主体、权重或可直接运行的整链。</p>
+<p><a href="https://github.com/chenzhuo1011/libri_css/blob/9e3b7b0c9bffd8ef6da19f7056f3a2f2c2484ffa/scoring/python/asclite_libricss.py" title="citation"><code>asclite_libricss.py</code></a>读取STM参考、CTM识别结果、GLM文本规则及SCTK路径，调用外部asclite再汇总错误数与参考词数。最终WER按总错误数除以总参考词数计算；<a href="https://github.com/chenzhuo1011/libri_css/blob/9e3b7b0c9bffd8ef6da19f7056f3a2f2c2484ffa/scoring/python/report.py" title="citation"><code>report.py</code></a>跨记录汇总也按参考词数加权。例如10词中2错与100词中10错，应为$(2+10)/(10+100)=10.91\%$，而非两个百分比的算术均值15%。这只是手算协议例，不是已执行的LibriCSS成绩。</p>
+<p>参考文字、识别文字、时间戳、输出流身份和文本归一化规则都是评分输入；评分输出是错误数、参考词数及其比值，不是增强波形。若缺少参考、时标不一致或分段口径变化，数字即使能够打印，也不具备同协议比较的含义。连续会议的时间/排列问题还可对照<a href="../11_selection-guide.html">第11章</a>的MeetEval接口研究，不把两种评分器默认当作同一指标。</p>
+<p>静态读取还发现原工具的使用限制：<code>run_asclite</code>封装只分Windows/Linux分支，这不是“SCTK算法不能在macOS运行”的结论；数据准备还调用外部下载包内的<code>segment_libricss.py</code>。<code>asr/python/get_wer.py</code>存在同名函数的后续覆盖及配置循环中的累计量，两份<code>run_wer_*_utterance.sh</code>还传入解析器没有的<code>--data_path</code>。这些是固定源的静态观察，尚未实际调用验证，原文件未修补；读者不能把取得选集等同于原脚本已经顺畅执行。</p>
+<p><a href="https://github.com/chenzhuo1011/libri_css/blob/9e3b7b0c9bffd8ef6da19f7056f3a2f2c2484ffa/LICENSE" title="citation">根LICENSE</a>SHA-256为<code>e7758cf56804cdf83cde84d0d19f70df9173193f8be5831d31e52625e95b93d7</code>，保留项目MIT及所含py-webrtcvad MIT文本；上游WebRTC声明的最后免责声明原样截于<code>DAMAG</code>，不自行补齐或宣称第三方条款齐备。此次未取WebRTC C源；安装的外部VAD依赖还要检查其实际分发文本。715个CTM、715个STM、说话人JSONL、NIST派生GLM、音频和模型均未取得，数据许可不能由代码MIT代替。SCTK、PyKaldi、Docker环境也未安装或运行。</p>
+<span id="sec-29" class="anchor-alias" aria-hidden="true"></span><span id="获取核验与当前真实状态" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-c6545a4faa">获取、核验与当前真实状态</h3>
+<pre><code class="language-bash">.venv/bin/python -B codes/chapters/ch00/upstream/fetch_upstreams.py --project wasn-platform
+.venv/bin/python -B codes/chapters/ch00/upstream/fetch_upstreams.py --project libricss
+.venv/bin/python -B codes/chapters/ch00/upstream/fetch_upstreams.py --verify
+</code></pre>
+<p>前两项在本机实际取得选集，并核验为<code>source_verified</code>；离线全表核验则真实返回非零：106项中69项通过、22项旧选集不匹配、14项仅索引、1项AEC工作树失败。全部核验不执行方法，失败的AEC记录保留原字段结构。锁定项目中92项有本地工作区，另有不计入此锁表的专用构建依赖目录；Git项目数也不包含独立的两项源码归档。</p>
+<p>这些状态证明限定源码身份与获取边界。依赖安装、方法级运行、完整语音链路和设备验收仍是分开的工作；两个新选集此次都未运行原方法。已有48份Git跟踪的数值与方法JSON报告字节保持不变，旧失败没有被补成成功。历史105项状态与当前106项状态的关系见上一节。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

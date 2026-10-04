@@ -1,6 +1,8 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 105 个 Git 上游项目；已在 `codes/chapters/ch00/upstream/_downloads/` 取得 90 个独立源码工作区，其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件，DiCoW v1 演示与 TS-ASR-Whisper v1 训练源码于 2026-09-28 按固定提交取得。2026-09-30 新增原作者湿空气声速模型，2026-10-01取得SAID及NeMo WPE固定源码，2026-10-02取得TAC四文件，2026-10-04另取得作者WOLA-DANSE、paderwasn与TI-DANSE+ batch三个限定源码选集。当前离线核验逐条比较完整源码包含规则及32条扩展名排除规则：67项通过、22项旧工作区仅有20条排除规则而记为 `source_selection_mismatch`、15项仅登记来源，AEC Challenge 的5个真实录音有本地变动而记为失败。旧工作区均保留，不自动补规则或删除文件。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 106 个 Git 上游项目；已在 `codes/chapters/ch00/upstream/_downloads/` 取得 92 个独立源码工作区。其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件，DiCoW v1 演示与 TS-ASR-Whisper v1 训练源码于 2026-09-28 按固定提交取得。2026-09-30 新增原作者湿空气声速模型，2026-10-01取得SAID及NeMo WPE固定源码，2026-10-02取得TAC四文件，2026-10-04另取得作者WOLA-DANSE、paderwasn与TI-DANSE+ batch三个限定源码选集，并取得WASN的11个与LibriCSS的27个源码/说明/许可文件。
+
+当前离线核验逐条比较完整源码包含规则及32条扩展名排除规则：69项通过、22项旧工作区仅有20条排除规则而记为 `source_selection_mismatch`、14项仅登记来源，AEC Challenge 的5个真实录音有本地变动而记为失败。旧工作区均保留，不自动补规则或删除文件。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”表示本地存在独立来源工作区；是否符合当前提交、工作区状态、指定入口和完整选集政策，以状态报告分别判断。取得源码不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -29,7 +31,8 @@ SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构�
 | [paderwasn](https://github.com/fgnt/paderwasn/tree/cd7054fcf72da637e4a5e11f035e8979691faf70) | OnlineWACD、DWACD、STO及同步/波束源码 | MIT，固定根LICENSE原样保留 | 同步目录、source_extraction和直接实验入口已取；3原AST helper执行16例，不等于完整SRO/STO估计器或语音整链 |
 | [作者TI-DANSE+ batch](https://github.com/p-didier/tidanseplus_batch/tree/0fcc0da19ce9e50bafc978ce1f315bac610d4c0b) | 2025批量协方差与拓扑更新实验 | 同提交根LICENSE为MIT2026，README为GPL3-or-later2025；声明冲突如实保留 | 源码、配置和两许可声明已取到忽略独立工作区供研究；不随本书分发，不声称单一许可或运行原实验 |
 | [p-didier/danse](https://github.com/p-didier/danse/tree/3f08ffd6e578a8c5301e9310d29dc31112eb20f7) | Python DANSE/GEVD、采样时钟研究参考 | 固定完整85成员树无主项目许可文件 | 仅固定来源索引；不从pyANFgen子模块借许可，不取主源码/数据或运行 |
-| [CN-UPB/WASN](https://github.com/CN-UPB/WASN/tree/9b2590eb104abcde2a35af52c74d64ce30bf5ae2) | 硬件部署与DXCP-PhaT同步框架 | 固定根Apache2文本已核；组件另查 | 此阶段仅核固定README/LICENSE并索引；固件、硬件与实际网络部署未执行 |
+| [CN-UPB/WASN](https://github.com/CN-UPB/WASN/tree/9b2590eb104abcde2a35af52c74d64ce30bf5ae2) | DXCP-PhaT同步入口、流管道与已知SRO重采样 | 固定根Apache-2.0文本原样保留；外部依赖另查 | 11个源码/配置/许可文件，52411字节；不含固件或录音，未安装依赖、执行同步算法或部署网络 |
+| [LibriCSS官方评测工具](https://github.com/chenzhuo1011/libri_css/tree/9e3b7b0c9bffd8ef6da19f7056f3a2f2c2484ffa) | 数据准备、VAD与ASR接口、连续会议和分段语音评分 | 根MIT及所含py-webrtcvad MIT原文保留；原WebRTC声明尾部截于`DAMAG`，不补写或称完整 | 27个源码/说明/许可文件，69954字节；不取CTM/STM/GLM、音频、模型或外部工具，不安装或执行原整链 |
 | [Speed of sound in air](https://github.com/RobertoGavioso/Speed-of-sound-in-air/tree/5c7e6652cf2fd7b4c52e83d8fa3782b3c56e61de) | 2025湿空气声速与不确定度模型，供环境校准研究 | 根GPLv3文本；未核得项目级or-later声明，LabVIEW运行时独立 | 2026-09-30取得43个VI图形源码、ReadMe和LICENSE，45文件共2147682字节；省略EXE和独立许可论文PDF。VI框图未读取、模型未执行；源使用需要LabVIEW晚于2016的64位版本 |
 | [SAID](https://github.com/IN03X/SAID/tree/cf52ede4f38361cdbb03aa93c8254109583dfe2b) | Audio2Sph球面方向编码、Sph2Imaging逐源能量图与类别、DCASE 2026 Track A压缩提交 | 原创源MIT，所列第三方组件MIT/Apache-2.0；权重独立非商业研究条款，AudioMAE权重CC BY-NC 4.0 | 固定源码选集及完整LICENSES/第三方声明已取得；未取检查点或said/demo_data，未运行网络、训练或榜单评测；原压缩单文件实验范围见空间研究 |
 | [TAC作者单阶段FaSNet变体](https://github.com/yluo42/TAC/tree/e3373b73358a96af6f64fdbe25327def8d6bd973) | 共享通道变换、平均和拼接；与参考通道封装分别核对 | README声明CC BY-NC-SA 3.0 US，固定树无独立LICENSE；不能误称MIT或自由商用 | 2026-10-02取得README、FaSNet.py、utility/__init__.py、utility/models.py四文件，只在忽略的独立工作区保留；静态合同核查未执行Torch网络，不取音频/模型/训练数据 |

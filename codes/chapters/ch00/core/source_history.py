@@ -21,8 +21,14 @@ SNAPSHOT_ROOT = ROOT / 'codes/chapters/ch00/source_snapshots'
 # A correctly named file alone does not establish that a historical snapshot
 # was reviewed and registered. Extend these sets only with verified raw bytes.
 _HISTORICAL_SNAPSHOTS = {
-    'SOURCES': frozenset({'55ab323ba665633141c4864763095046f9c6161ce2d88ca2aa9332dde7ec23f0'}),
-    'SOURCE_STATUS': frozenset({'e3b3176d835837441224e4906b7c2befadcdc4fe2ce6163245b7d9a9ad0d9229'}),
+    'SOURCES': frozenset({
+        '55ab323ba665633141c4864763095046f9c6161ce2d88ca2aa9332dde7ec23f0',
+        'e3478006c7dbc6cec442bf6bccc4df9eca946d7d353b661e947596dd8b87608a',
+    }),
+    'SOURCE_STATUS': frozenset({
+        'e3b3176d835837441224e4906b7c2befadcdc4fe2ce6163245b7d9a9ad0d9229',
+        'b113b63c97767d19b76ceb44677303961ff310ce8d96f4e9e777944b44916d3c',
+    }),
 }
 
 

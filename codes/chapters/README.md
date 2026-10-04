@@ -56,15 +56,19 @@
 
 来源索引扩充后，旧运行报告仍保留当时的整表摘要。[历史快照](ch00/source_snapshots/)保存真实原始字节；[只读核验核](ch00/core/source_history.py)检查已登记快照的完整SHA，以及报告实际使用项目的全部来源/获取记录是否仍与当前一致。它不改报告、不重跑算法，也不把旧选集失败改成通过；具体配对和覆盖范围见[复现手册](ch00/research/04_source_reproduction.md#historical-source-bindings)。
 
-本书的主[合成音频清单](ch00/audio/MANIFEST.json)记录 27 组、109 个分章存放的 PCM16 WAV 的输入、所属章节、共同增益、种子、运行环境、生成源码与逐文件 SHA-256。另有第 1 章的 5 个[双耳线索 WAV](ch01/binaural_audio/MANIFEST.json)、第 2 章的 3 个[STFT卷积 WAV](ch02/stft_audio/MANIFEST.json)、第3章的3个[多频几何WAV](ch03/geometry_audio/MANIFEST.json)、第4章的4个[已知聚焦WAV](ch04/focus_audio/MANIFEST.json)、第5章的4个[导数约束WAV](ch05/derivative_audio/MANIFEST.json)、第6章的6个[有色参考APA WAV](ch06/apa_audio/MANIFEST.json)、第7章的6个[已知路径逆WAV](ch07/mint_audio/MANIFEST.json)、第8章的6个[已知掩码表示WAV](ch08/mask_audio/MANIFEST.json)、附录 B 的 18 个[房间合成 WAV 与结果报告](appendix_b/room_audio/RESULTS.json)、[GSS 教学链](ch08/gss_audio/MANIFEST.json)的 5 个 WAV 和中间状态、[连续移动声源](ch09/moving_audio/MANIFEST.json)的 3 个 WAV，以及[观测到追踪](ch09/tracking_audio/MANIFEST.json)的 2 个 WAV；这些是彼此独立的实验，不并入主 109 个样本。相同实验组使用共同导出增益，不逐文件做峰值归一化。生成物出现问题应修改生成源码并重新生成、只读核对清单，再重建图和站点；不得手改单个 WAV、清单或报告。
+本书的主[合成音频清单](ch00/audio/MANIFEST.json)记录 27 组、109 个分章存放的 PCM16 WAV 的输入、所属章节、共同增益、种子、运行环境、生成源码与逐文件 SHA-256。另有十八套独立合成实验，共111个WAV；双耳、STFT卷积、几何、聚焦、导数约束、APA、已知逆、掩码、GSS、移动、追踪、噪声失配、选型、成像、分布式、已知权重、同DRR和房间的逐套清单及用途见[导读的完整音频表](../../chapters/00_overview.md#sec-u-6d43c0086f)。它们不并入主109，GSS状态与房间数值报告也不能按WAV计数。
+
+相同合成实验组使用共同导出增益，不逐文件做峰值归一化。生成物出现问题应修改生成源码并重新生成、只读核对清单，再重建图和站点；不得手改单个 WAV、清单或报告。
 
 主音频由 `.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py` 生成，附加 `--check` 时只读重算并核对现有清单与 WAV。它们是数学合成样本，没有真人录音、模型权重或下载素材，不用于证明真实语音或设备效果；试听前先调低播放音量。各组的信号模型、参考、评分窗口和代码题见[音频实验手册](ch00/research/05_exercises_and_audio.md)。
 
 [DEMAND 数据说明](ch02/real_audio/README.md)记录 10 秒同步 16 通道真实环境录音摘录和 3 个派生文件的来源、通道及 CC BY-SA 3.0 条件。它们没有干净语音或位置真值，不用于声学增强性能结论。另一个 AEC 真实成对录音实验只使用本地忽略的 Microsoft AEC Challenge 缓存；其文件与可选输出不进入本书发布音频。正确、全零及错位参考的结果只是固定片段的接口观察，不是真值 ERLE。
 
-外部代码由[固定 Git 来源清单](ch00/SOURCES.lock.json)和[独立归档清单](ch00/ARCHIVE_SOURCES.lock.json)管理，来源、许可证与用途见[第三方记录](ch00/THIRD_PARTY.md)。截至 2026-10-04，105 个 Git 项目中有 90 个本地工作区；按完整32条排除规则核验，[状态报告](ch00/SOURCE_STATUS.json)分别记录67项通过、22项旧稀疏规则不匹配、15项仅索引和1项本地修改失败。22个工作区仍只有20条排除规则，保留原样，不自动修复；AEC Challenge 缓存中有本地修改的真实录音，核验没有把它当成通过。取得源码、构建依赖、实际运行和复现论文性能是不同层级；固定版诊断的执行条件与失败记录见[复现手册](ch00/research/04_source_reproduction.md)。
+外部代码由[固定 Git 来源清单](ch00/SOURCES.lock.json)和[独立归档清单](ch00/ARCHIVE_SOURCES.lock.json)管理，来源、许可证与用途见[第三方记录](ch00/THIRD_PARTY.md)。截至 2026-10-04，106 个 Git 项目中有 92 个本地工作区；按完整32条排除规则核验，[状态报告](ch00/SOURCE_STATUS.json)分别记录69项通过、22项旧稀疏规则不匹配、14项仅索引和1项本地修改失败。22个工作区仍只有20条排除规则，保留原样，不自动修复；AEC Challenge 缓存中有本地修改的真实录音，核验没有把它当成通过。取得源码、构建依赖、实际运行和复现论文性能是不同层级；固定版诊断的执行条件与失败记录见[复现手册](ch00/research/04_source_reproduction.md)。
 
-上游获取工具放在[源码工具目录](ch00/upstream/README.md)。下载源码留在 Git 忽略的独立工作区，不随本书推送；已有工作区及修改必须保留。HARKTOOL5 与 Vo RFS 的归档摘要和选择范围单独记录，不混入 105 个 Git 项目数。本仓库根目录目前没有明确的 `LICENSE` 或 `COPYING`，源码可见不等于已经获得复制、修改或再分发许可；第三方项目的许可证也不自动覆盖本书、模型或数据。
+本轮补取的WASN同步源码与LibriCSS评测工具分别保存在独立忽略目录，固定提交、许可与选集见[复现入口](ch00/research/04_source_reproduction.md#overview-source-entrypoints)。它们仍未安装、运行设备或执行官方评分；LibriCSS原评分包装与脚本的接口限制保留。
+
+上游获取工具放在[源码工具目录](ch00/upstream/README.md)。下载源码留在 Git 忽略的独立工作区，不随本书推送；已有工作区及修改必须保留。HARKTOOL5 与 Vo RFS 的归档摘要和选择范围单独记录，不混入 106 个 Git 项目数。本仓库根目录目前没有明确的 `LICENSE` 或 `COPYING`，源码可见不等于已经获得复制、修改或再分发许可；第三方项目的许可证也不自动覆盖本书、模型或数据。
 
 
 第二章的`E02-16～18`分别检查有限窗卷积、源噪声二阶交叉项与窗的幅度/功率归一化。

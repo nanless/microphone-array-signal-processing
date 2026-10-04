@@ -226,6 +226,7 @@ CSS = """
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
+h1,h2,h3,h4{scroll-margin-top:60px}
 a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
 .skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
 .skip-link:focus{top:8px}
@@ -1054,6 +1055,9 @@ def rewrite_site_links(html, source_path):
             return href
         if target in outputs:
             relative = os.path.relpath(outputs[target], Path(current).parent).replace(os.sep, "/")
+            return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
+        if target.parent == (ROOT / "figures").resolve() and target.suffix.lower() == ".png" and target.is_file():
+            relative = os.path.relpath("../figures/" + target.name, Path(current).parent).replace(os.sep, "/")
             return urlunsplit(("", "", relative, parsed.query, parsed.fragment))
         main_audio = main_audio_sources()
         if target in main_audio:

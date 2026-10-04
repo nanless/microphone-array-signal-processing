@@ -349,6 +349,7 @@
 | §10.9.1；工业 I13 | SOF 固定 FIR 波束 | 外部参考实现 | `sof`：`src/audio/tdfb/tdfb_generic.c` | 滤波组/方向，不是 SCM 自适应 MVDR |
 | §10.9.1；工业 I14 | SOF 固件 SRC | 外部参考实现 | `sof`：`src/audio/src/` | 固定比转换不等于异步补偿 |
 | §10.7 | 分布式阵列同步/融合 | 原理索引 | 正文分布式模型 | SRO 拟合不是完整网络系统 |
+| 导读复现；§10.2.1/10.7 | WASN DXCP-PhaT同步源码接口 | 外部参考实现 | `wasn-platform`：`DXCPPhaT_demo/system/DXCP_PhaT/dxcp_phat.py`、`sync_sed/system/resample.py`；[固定源集](research/04_source_reproduction.md#overview-source-entrypoints) | 限定源/许可已取得；DXCP算法、MARVELO、完整同步及设备未运行 |
 | 专题Ⅱ §15.5～8、E15-04～08 | 指定LMMSE任务的固定线性压缩 | 本仓库可运行基线 | `codes/chapters/ch15/core/distributed.py::compressed_mwf` | 已知总体协方差、归一接收坐标；不称一般非线性充分统计或有限码率无损 |
 | 专题Ⅱ §15.9～10、E15-09～11 | 有限顺序、同时与固定松弛广播更新 | 本仓库可运行基线 | `codes/chapters/ch15/core/distributed.py::distributed_updates` | 真实广播前求解与广播后当前接收分开；停止看所有实际有效权重；非rS+定理完整实现 |
 | 专题Ⅱ §15.12、E15-24 | 已知统计的秩一GEVD-MWF白化控制 | 本仓库可运行基线 | `codes/chapters/ch15/core/distributed.py::gevd_control` | 两维白化与λ−1目标重构，不是完整分布式GEVD-DANSE |
@@ -376,6 +377,7 @@
 | §11.2 | DI-cpWER | 外部参考实现 | `meeteval`：`meeteval/wer/wer/di_cp.py` | 锁定入口使用贪心匹配；与理论最优定义、简化文档示例及 sa-WER 均须区分 |
 | §13.7；工业 I21 | tcpWER | 外部参考实现 | `meeteval`：`meeteval/wer/wer/time_constrained.py` | 时间约束、容差和词时间戳 |
 | §13.7；工业 I21 | CHiME-8 文本规范化/评分 | 外部参考实现 | `chime-utils`：`chime_utils/scoring/meeteval.py`、`chime_utils/text_norm/`、`tests/test_normalizer.py` | 固定源码的缺文件分支和规范化幂等检查另有受控诊断；届次、划分、缺失场景与数据许可 |
+| 导读路径C；§10.5/10.6 | LibriCSS公开评测程序 | 外部参考实现 | `libricss`：`scoring/python/asclite_libricss.py`、`asr/python/get_wer.py`；[源集与协议](research/04_source_reproduction.md#overview-source-entrypoints) | 连续评分与真值切段最低WER不同；外部SCTK/GLM/数据闭包未取，原接口限制/未运行状态保留 |
 | §11.2 | sa-WER 说话人归属口径 | 原理索引 | 正文指标区别 | 不声称锁定 MeetEval 覆盖全部定义 |
 | §5.9 | 未指定实现的“DNNBeamformer” | 明确排除 | 无唯一算法/项目身份 | 具体网络需按模型和官方实现另登记 |
 
@@ -454,7 +456,7 @@
 
 题目、答案和 27 组、109 个合成音频的对应关系见[练习与音频实验](research/05_exercises_and_audio.md)。音频由 [generate_audio_samples.py](examples/generate_audio_samples.py) 生成，参数和摘要见 [MANIFEST.json](audio/MANIFEST.json)；它们只展示特定条件下的现象，不作为完整算法、工业性能或自然语音听测的新增覆盖证据。
 
-另有六套独立合成资产：[双耳线索五路WAV](../ch01/binaural_audio/MANIFEST.json)、[STFT卷积三路WAV](../ch02/stft_audio/MANIFEST.json)、[GSS 五路 WAV 与中间状态](../ch08/gss_audio/MANIFEST.json)、[自由场移动声源三路 WAV 与轨迹真值](../ch09/moving_audio/MANIFEST.json)、[第 9 章两路追踪音频与逐帧观测](../ch09/tracking_audio/MANIFEST.json)，以及[附录 B 六位置房间题的 18 路 WAV、结果图与数值报告](../appendix_b/room_audio/MANIFEST.json)。它们不计入主清单的 109 个音频；合成模型与评分条件各自独立，均不等于真实语音或设备验证。
+另有十八套独立合成资产，共111个WAV；逐套清单、用途与边界见[导读完整音频表](../../../chapters/00_overview.md#sec-u-6d43c0086f)。它们不计入主109；GSS的STATE与房间结果报告不是额外WAV，合成模型及评分条件各自独立，不等于真实语音或设备验证。
 
 第8章另有[六份已知掩码表示WAV](../ch08/mask_audio/MANIFEST.json)，对应E08-28与图60；全记录FFT和已知目标构造只检验表示范围，27200点实际PCM评分与解析、浮点结果分开，不计为新分离算法或工业性能覆盖。
 

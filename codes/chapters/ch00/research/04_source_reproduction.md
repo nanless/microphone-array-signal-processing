@@ -425,7 +425,7 @@ DTLN 部分用原 `process_file` 函数的 AST、内存输入和假解释器检�
 
 ## 9. 来源索引扩充后怎样核验旧报告
 
-整表SHA标识报告运行时实际读取的全部字节。新增五个分布式项目后，当前锁表从100项变为105项，其摘要自然改变；这不意味着旧报告曾在105项索引下运行。直接给旧报告换成当前摘要会伪造执行条件，直接要求所有旧报告等于当前整表摘要也会把无关的索引扩充误判成所用算法来源改变。
+整表SHA标识报告运行时实际读取的全部字节。首次新增五个分布式项目时，锁表从100项变为105项，其摘要自然改变；这不意味着旧报告曾在105项索引下运行。随后导读复核又新增LibriCSS，并改变WASN的获取范围，当前为106项。直接给旧报告换成当前摘要会伪造执行条件，直接要求所有旧报告等于当前整表摘要也会把无关的索引扩充误判成所用算法来源改变。
 
 本书保存提交`a215b4630c0c21a8744cf27436a2c9ffa9c00053`中两份文件的**原始字节**，文件名包含完整SHA。它们不是重新序列化的JSON，也不是手工删去五项所得的新表。
 
@@ -433,6 +433,8 @@ DTLN 部分用原 `process_file` 函数的 AST、内存输入和假解释器检�
 |---|---|
 | [100项来源锁表](../source_snapshots/SOURCES.55ab323ba665633141c4864763095046f9c6161ce2d88ca2aa9332dde7ec23f0.json) | 第1～9章十份固定原实现报告所记录的锁表摘要；其中第4章DOA和SAID分为两份 |
 | [当时的获取状态](../source_snapshots/SOURCE_STATUS.e3b3176d835837441224e4906b7c2befadcdc4fe2ce6163245b7d9a9ad0d9229.json) | 第9章追踪报告记录的状态摘要；该状态中的`lock_sha256`精确指向上一行 |
+| [105项来源锁表](../source_snapshots/SOURCES.e3478006c7dbc6cec442bf6bccc4df9eca946d7d353b661e947596dd8b87608a.json) | 第15章分布式原函数报告运行时的完整锁表；其中所用`danse-wola`和`paderwasn`记录与当前完全一致 |
+| [105项获取状态](../source_snapshots/SOURCE_STATUS.b113b63c97767d19b76ceb44677303961ff310ce8d96f4e9e777944b44916d3c.json) | 扩充前67项通过及原22项选集不匹配、AEC失败等完整记录；绑定上一行105项锁表，不把后来取得的源码追记为当时成功 |
 
 100项锁表的完整SHA-256：
 
@@ -451,3 +453,53 @@ e3b3176d835837441224e4906b7c2befadcdc4fe2ce6163245b7d9a9ad0d9229
 第9章还核历史状态绑定历史锁表、当前状态绑定当前锁表，以及ODAS、Spatial Audio Framework、FilterPy、Stone Soup四项完整状态记录一致。原`source_selection_verified=false`与选集不匹配原样保留，不将获取失败升级为原方法运行成功。第7章报告另有更早的状态摘要；上面的状态快照**不覆盖它**，不据此补写核验结论。
 
 这些检查验证来源身份的延续，不是重新执行旧算法。原报告的工具摘要、所用原文件/blob、官方origin、完整HEAD、前后洁净状态、执行范围、失败观察与数值断言仍分别检查；各报告原有项目摘要的JSON序列化口径也保持。若使用项目确实改变，应保留旧证据并另行运行和保存新报告，不能通过更换摘要消除差异。
+
+新增的两份105项快照逐字节取自提交`c889808ab071ed4c5c2884f8d1fd007a9e6a0e75`的原始文件，文件名中的完整SHA就是实际原文件摘要。104个原项目的锁定记录和获取状态保持不变；WASN由只登记变为限定取得，其完整记录确实变化，因此历史核验函数对该项目会拒绝沿用，而不会仅因origin和提交相同就忽略获取政策。AEC失败原记录没有`execution`字段，核验保留原结构，不补字段制造一致。
+
+<span id="overview-source-entrypoints" class="anchor-alias" aria-hidden="true"></span>
+
+## 10. 导读的两个来源入口：同步接口与会议评分
+
+导读推荐的任务路线需要能落到实际接口。2026-10-04取得以下两个固定选集，并对38个普通文件逐个比较完整Git blob、真实SHA及字节数；官方origin、完整HEAD和洁净状态也分别核对。源码保存在`codes/chapters/ch00/upstream/_downloads/`的独立忽略工作区，锁表和获取器可以重建它们；本书没有把上游源码改写后混入教学数值核。
+
+### WASN：先区分估计时钟与按已知时钟重采样
+
+官方[CN-UPB/WASN](https://github.com/CN-UPB/WASN/tree/9b2590eb104abcde2a35af52c74d64ce30bf5ae2 "citation")采用提交`9b2590eb104abcde2a35af52c74d64ce30bf5ae2`的11个限定文件，共52411字节，覆盖README、根LICENSE、DXCP-PhaT实现及封装、拓扑配置、管道读写和`sync_sed/system/`中的重采样/模拟入口。[根LICENSE](https://github.com/CN-UPB/WASN/blob/9b2590eb104abcde2a35af52c74d64ce30bf5ae2/LICENSE "citation")是Apache-2.0，SHA-256为`c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4`；外部安装依赖的许可与兼容性仍分别判断。
+
+独立设备的采样率有微小差异时，两路记录的相对时移随记录长度积累。估计器从观测中推测采样率偏差，重采样器则使用给定偏差改变取样位置；两者的输入和输出不同。DXCP-PhaT入口用于定位前者的实现，管道读写用于观察数据怎样传递。此次没有完整复审DXCP数学主体或运行它，不能从文件取得推断估计精度。
+
+[`resample.py::STFTResampler`](https://github.com/CN-UPB/WASN/blob/9b2590eb104abcde2a35af52c74d64ce30bf5ae2/sync_sed/system/resample.py "citation")的构造参数`sro`以ppm输入，构造器除以一百万；该参数非空时，逐次调用传入的`sro`被忽略。原注释把这个配置用于**模拟**给定偏差，补偿已知$x$ ppm则要求构造器传入$-x$。这说明符号与单位需要从实际接口确认，不能看见“resample”就认定程序会盲估计时钟。
+
+无固定构造值时，`__call__(..., sro)`中的参数直接参与延迟递推，原方法没有再次除以一百万。因此调用参数应是无量纲相对速差：80 ppm在这个入口传$80\times10^{-6}$，而不是80。同名参数在构造与逐块调用中有不同单位，照搬数值会产生一百万倍的尺度错误。
+
+例如80 ppm表示相对采样率差$80\times10^{-6}$；按16 kHz名义时钟持续10 s，相对累计样本差的量级为$16000\times10\times80\times10^{-6}=12.8$点。这是单位换算的数学例子，不是原程序执行结果；取样率比值、延迟正负与接收端时间原点仍要在所选接口下解释。导读工程基线和[第15章](../../../../chapters/15_distributed-enhancement.md)提供可独立复算的教学入口。
+
+[`sim_sro.py`](https://github.com/CN-UPB/WASN/blob/9b2590eb104abcde2a35af52c74d64ce30bf5ae2/sync_sed/system/sim_sro.py "citation")逐块调用上述重采样器，只在返回非空时向输出管道写块。重采样器保留内部缓冲；此封装没有显式排空记录尾部的步骤。实际流还需明确块长、首次可用输出、积累状态与记录尾部；等待期间的空返回或块延迟不能直接解释为音频丢失，结束时的剩余样本则要另行处理。
+
+所取文件涉及NumPy、SciPy、sounddevice或Pyro4等导入，没有安装或执行。本次也没有取得固件、访问麦克风设备、部署MARVELO/SED或验证网络性能。未选择的包安装模板含MIT分类而根许可为Apache-2.0，其空依赖列表也不能代替直接导入核对；这里没有把选集称为完整可安装包。
+
+### LibriCSS：评分协议也是系统输入的一部分
+
+官方[LibriCSS工具仓](https://github.com/chenzhuo1011/libri_css/tree/9e3b7b0c9bffd8ef6da19f7056f3a2f2c2484ffa "citation")采用提交`9e3b7b0c9bffd8ef6da19f7056f3a2f2c2484ffa`的27个限定文件，共69954字节，覆盖README与许可、环境/安装说明、数据准备、VAD、ASR输入生成和评分的Python及命令入口。源码选择逐项列在[SOURCES.lock.json](../SOURCES.lock.json)，不是把所有`.py`或整仓库当作已经核过的数据闭包。
+
+[原README](https://github.com/chenzhuo1011/libri_css/blob/9e3b7b0c9bffd8ef6da19f7056f3a2f2c2484ffa/README.md "citation")区分连续会议评测与已切分语音评测。前者要从连续输入得到分离或识别结果，再把带时间与流身份的输出送入会议评分；后者使用给定语音分段，参考信息和排列选择条件不同。因此不能拿分段结果直接证明一个连续系统能够处理未知活动边界。本选集是准备与评分工具，没有CSS神经网络主体、权重或可直接运行的整链。
+
+[`asclite_libricss.py`](https://github.com/chenzhuo1011/libri_css/blob/9e3b7b0c9bffd8ef6da19f7056f3a2f2c2484ffa/scoring/python/asclite_libricss.py "citation")读取STM参考、CTM识别结果、GLM文本规则及SCTK路径，调用外部asclite再汇总错误数与参考词数。最终WER按总错误数除以总参考词数计算；[`report.py`](https://github.com/chenzhuo1011/libri_css/blob/9e3b7b0c9bffd8ef6da19f7056f3a2f2c2484ffa/scoring/python/report.py "citation")跨记录汇总也按参考词数加权。例如10词中2错与100词中10错，应为$(2+10)/(10+100)=10.91\%$，而非两个百分比的算术均值15%。这只是手算协议例，不是已执行的LibriCSS成绩。
+
+参考文字、识别文字、时间戳、输出流身份和文本归一化规则都是评分输入；评分输出是错误数、参考词数及其比值，不是增强波形。若缺少参考、时标不一致或分段口径变化，数字即使能够打印，也不具备同协议比较的含义。连续会议的时间/排列问题还可对照[第11章](../../../../chapters/11_selection-guide.md)的MeetEval接口研究，不把两种评分器默认当作同一指标。
+
+静态读取还发现原工具的使用限制：`run_asclite`封装只分Windows/Linux分支，这不是“SCTK算法不能在macOS运行”的结论；数据准备还调用外部下载包内的`segment_libricss.py`。`asr/python/get_wer.py`存在同名函数的后续覆盖及配置循环中的累计量，两份`run_wer_*_utterance.sh`还传入解析器没有的`--data_path`。这些是固定源的静态观察，尚未实际调用验证，原文件未修补；读者不能把取得选集等同于原脚本已经顺畅执行。
+
+[根LICENSE](https://github.com/chenzhuo1011/libri_css/blob/9e3b7b0c9bffd8ef6da19f7056f3a2f2c2484ffa/LICENSE "citation")SHA-256为`e7758cf56804cdf83cde84d0d19f70df9173193f8be5831d31e52625e95b93d7`，保留项目MIT及所含py-webrtcvad MIT文本；上游WebRTC声明的最后免责声明原样截于`DAMAG`，不自行补齐或宣称第三方条款齐备。此次未取WebRTC C源；安装的外部VAD依赖还要检查其实际分发文本。715个CTM、715个STM、说话人JSONL、NIST派生GLM、音频和模型均未取得，数据许可不能由代码MIT代替。SCTK、PyKaldi、Docker环境也未安装或运行。
+
+### 获取、核验与当前真实状态
+
+```bash
+.venv/bin/python -B codes/chapters/ch00/upstream/fetch_upstreams.py --project wasn-platform
+.venv/bin/python -B codes/chapters/ch00/upstream/fetch_upstreams.py --project libricss
+.venv/bin/python -B codes/chapters/ch00/upstream/fetch_upstreams.py --verify
+```
+
+前两项在本机实际取得选集，并核验为`source_verified`；离线全表核验则真实返回非零：106项中69项通过、22项旧选集不匹配、14项仅索引、1项AEC工作树失败。全部核验不执行方法，失败的AEC记录保留原字段结构。锁定项目中92项有本地工作区，另有不计入此锁表的专用构建依赖目录；Git项目数也不包含独立的两项源码归档。
+
+这些状态证明限定源码身份与获取边界。依赖安装、方法级运行、完整语音链路和设备验收仍是分开的工作；两个新选集此次都未运行原方法。已有48份Git跟踪的数值与方法JSON报告字节保持不变，旧失败没有被补成成功。历史105项状态与当前106项状态的关系见上一节。
