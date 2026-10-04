@@ -202,12 +202,34 @@ class SourceHistoryFixtures(unittest.TestCase):
 
 
 class RealHistoricalSourceTests(unittest.TestCase):
+
+    def test_chapter08_expansion_preserves_all_previous_110_source_records(self):
+        lock_sha = 'eec80748e5f1fcc01d33e281b91a4482f52566d8e6b74bdb737e017604ec6487'
+        status_sha = '4cc8cbd48e3e98b51a24705468415d10654aa349f3946fb98ef48e9c4856f4f6'
+        saved = json.loads((history.SNAPSHOT_ROOT/f'SOURCES.{lock_sha}.json').read_bytes())
+        ids = [r['id'] for r in saved['projects']]
+        self.assertEqual(len(ids),110)
+        self.assertEqual(history.verify_lock_binding(lock_sha,ids)['records'], {r['id']:r for r in saved['projects']})
+        result = history.verify_status_binding(status_sha,lock_sha,ids)
+        self.assertTrue(result['historical'])
+        self.assertEqual(result['records']['aec-challenge']['status'],'failed')
+        self.assertEqual(sum(r['status']=='source_selection_mismatch' for r in result['records'].values()),22)
+        current = json.loads(history.LOCK.read_bytes())
+        row = next(r for r in current['projects'] if r['id']=='overiva-author')
+        self.assertEqual(row['revision'],'1cb3189112889ebfe2ccbbde0f55b1db6020fc48')
+        self.assertEqual(row['license'],'MIT')
+        self.assertEqual(row['source_paths'],['LICENSE','README.md','overiva.py','auxiva_pca.py'])
+        self.assertEqual(row['entrypoints'],row['source_paths'])
+        self.assertIs(row['fetch_enabled'],True)
+
     def test_exact_historical_bytes_and_all_hundred_old_entries_are_preserved(self):
         path=history.SNAPSHOT_ROOT/f'SOURCES.{OLD_LOCK_SHA}.json';self.assertEqual(sha(path.read_bytes()),OLD_LOCK_SHA)
         old=json.loads(path.read_text());ids=[p['id'] for p in old['projects']]
         self.assertEqual(len(ids),100);result=history.verify_lock_binding(OLD_LOCK_SHA,ids)
         self.assertEqual(result['records'],{p['id']:p for p in old['projects']})
-        current=json.loads(history.LOCK.read_text());self.assertEqual(len(current['projects']),109)
+        previous_path = history.SNAPSHOT_ROOT/'SOURCES.a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505.json'
+        self.assertEqual(sha(previous_path.read_bytes()),'a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505')
+        current=json.loads(previous_path.read_text());self.assertEqual(len(current['projects']),109)
         self.assertEqual({p['id'] for p in current['projects']}-set(ids),
                          {'danse-python','danse-wola','paderwasn','tidanseplus-batch','wasn-platform','libricss',
                           'hybrid-tdoa-multi-calib','dprtf-ssl','esp-sr-doa'})

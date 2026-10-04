@@ -2,12 +2,62 @@
 
 Both arrays must describe the SAME sample times. Matching does not correct
 latency, polarity, gain or waveform distortion. Ambiguity returns no mapping.
+The separate scalar helper requires a previously matched overlap and does not
+turn a correlation decision into a speaker identity or a delay estimate.
 """
 from __future__ import annotations
 
+import math
 import numpy as np
 
 from codes.chapters.ch02.core.conventions import finite_real_array, finite_real_scalar
+
+
+def overlap_application_gain(previous, current, *, minimum_rms=1e-8):
+    """Return the real LS scalar applied directly to each matched current row.
+
+    Inputs are real (2,L), L>=2, at identical sample times, already associated.
+    The objective uses original samples, without centering: ||p-g*c||^2.
+    Current RMS <= minimum_rms is rejected; a nonzero but contaminated overlap
+    is not detected by this limited helper. There is no gain limit, latency
+    correction, cross-block policy, or reference-speaker information.
+    """
+    old = finite_real_array(previous, "previous")
+    new = finite_real_array(current, "current")
+    if old.ndim != 2 or old.shape[0] != 2 or old.shape[1] < 2 or new.shape != old.shape:
+        raise ValueError("overlaps must have the same (2,L) shape with L >= 2")
+    threshold = finite_real_scalar(minimum_rms, "minimum_rms")
+    if threshold < 0:
+        raise ValueError("minimum_rms must be nonnegative")
+    gains = []
+    for p, c in zip(old, new):
+        cp = float(np.max(np.abs(c)))
+        if cp == 0:
+            raise ValueError("current overlap has zero energy")
+        cn = c/cp
+        rms = float(np.linalg.norm(cn)/np.sqrt(c.size))
+        with np.errstate(over="ignore", under="ignore"):
+            too_small = rms <= threshold/np.float64(cp)
+        if too_small:
+            raise ValueError("current overlap is below the RMS policy threshold")
+        pp = float(np.max(np.abs(p)))
+        if pp == 0:
+            gains.append(0.)
+            continue
+        numerator = float(cn @ (p/pp))
+        denominator = float(cn @ cn)
+        # Keep scale exponents separate: neither pp/cp nor coefficient*pp
+        # needs to be representable when their final product is finite.
+        pm, pe = math.frexp(pp)
+        cm, ce = math.frexp(cp)
+        try:
+            gain = math.ldexp((numerator/denominator)*(pm/cm), pe-ce)
+        except OverflowError as exc:
+            raise ValueError("application gain is not representable as float64") from exc
+        if not np.isfinite(gain):
+            raise ValueError("application gain is not representable as float64")
+        gains.append(float(gain))
+    return np.array(gains)
 
 
 def match_two_source_overlap(previous, current, *, minimum_rms=1e-8,

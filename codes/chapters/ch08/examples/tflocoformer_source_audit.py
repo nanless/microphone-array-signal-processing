@@ -6,6 +6,11 @@ explicit assert/transpose/concatenate/Conv2d statements checked below.
 
 from __future__ import annotations
 
+if __name__ == "__main__" and not __package__:
+    import sys as _entry_sys
+    from pathlib import Path as _EntryPath
+    _entry_sys.path.insert(0, str(_EntryPath(__file__).resolve().parents[4]))
+
 import argparse
 import ast
 import hashlib
@@ -13,6 +18,9 @@ import json
 from pathlib import Path
 import subprocess
 
+from codes.chapters.ch04.core import upstream_contracts as contracts
+
+CURRENT_REPORT = Path(__file__).resolve().parents[4] / "codes/chapters/ch08/reports/tflocoformer_source_audit_current.json"
 REVISION = "7a615460d347ff7334a13dbb831d16280da72cdc"
 EXPECTED = {
     "standalone/tflocoformer_separator.py": "6c01fa3cd005c0da5705ebf5399c48c686aba7c0319820bece0aaefa86cc6aa2",
@@ -83,7 +91,10 @@ def inspect_separator(source):
 
 
 def audit(root):
-    revision = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
+    root = contracts.validate_parent_chain(root)
+    actual_dependencies = contracts.dependencies(Path(__file__))
+    identity = contracts.verify_project('tf-locoformer', root, EXPECTED)
+    revision = identity['head']
     if revision != REVISION:
         raise ValueError("source revision differs from the audited revision")
     files = {}
@@ -95,7 +106,12 @@ def audit(root):
         files[relative] = {"sha256": digest}
         if relative.endswith("tflocoformer_separator.py"):
             files[relative]["inspection"] = inspect_separator(payload.decode("utf-8"))
-    return {"source": "https://github.com/merlresearch/tf-locoformer",
+    contracts.check_unchanged(identity)
+    if contracts.dependencies(Path(__file__)) != actual_dependencies:
+        raise ValueError('Current dependencies changed during audit')
+    return {"schema_version": 2, "source_identity": identity,
+            "actual_dependency_sha256": actual_dependencies,
+            "tool_sha256": contracts.sha(__file__), "source": "https://github.com/merlresearch/tf-locoformer",
             "revision": revision, "method": "AST and dimension-only replay",
             "executed_upstream": False, "files": files}
 
@@ -105,10 +121,11 @@ def main():
     parser.add_argument("--source", type=Path, default=Path(__file__).resolve().parents[3] / "chapters/ch00/upstream/_downloads/tf-locoformer")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
-    report = json.dumps(audit(args.source), ensure_ascii=False, indent=2) + "\n"
-    if args.output:
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(report, encoding="utf-8")
+    target = contracts.report_target(args.output, CURRENT_REPORT, protected=(args.source,)) if args.output else None
+    result = audit(args.source)
+    report = json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
+    if target:
+        contracts.write_report(target, result, CURRENT_REPORT, protected=(args.source,))
     else:
         print(report, end="")
 

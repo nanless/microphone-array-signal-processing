@@ -47,12 +47,12 @@ class SourceAuditTests(TestCase):
             with self.assertRaises(ValueError):
                 inspect_separator(source)
 
-    @patch("codes.chapters.ch08.examples.tflocoformer_source_audit.subprocess.check_output", return_value="different")
+    @patch("codes.chapters.ch08.examples.tflocoformer_source_audit.contracts.verify_project", return_value={"head":"different"})
     def test_changed_revision_is_rejected(self, _):
         with self.assertRaisesRegex(ValueError, "revision"):
             audit(Path("unused"))
 
-    @patch("codes.chapters.ch08.examples.tflocoformer_source_audit.subprocess.check_output", return_value=REVISION)
+    @patch("codes.chapters.ch08.examples.tflocoformer_source_audit.contracts.verify_project", return_value={"head":REVISION})
     def test_changed_bytes_are_rejected(self, _):
         with TemporaryDirectory() as directory:
             root = Path(directory)

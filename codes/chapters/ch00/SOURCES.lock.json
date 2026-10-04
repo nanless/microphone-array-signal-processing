@@ -2355,6 +2355,74 @@
         "train.py",
         "embedding_extraction.py"
       ]
+    },
+    {
+      "id": "overiva-author",
+      "url": "https://github.com/onolab-tmu/overiva.git",
+      "revision": "1cb3189112889ebfe2ccbbde0f55b1db6020fc48",
+      "license": "MIT",
+      "fetch_enabled": true,
+      "scope": "Original OverIVA and PCA followed by determined IVA; four-file teaching source selection",
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "LICENSE",
+        "README.md",
+        "overiva.py",
+        "auxiva_pca.py"
+      ],
+      "source_paths": [
+        "LICENSE",
+        "README.md",
+        "overiva.py",
+        "auxiva_pca.py"
+      ],
+      "note": "Author code for Scheibler and Ono 2019. Fixed source and copyright notice; no samples, simulation/data-download entrypoints, trained models or paper benchmark execution. Original column-filter layout and PCA target loss are discussed in chapter 8. Acquisition is not full algorithm validation."
+    },
+    {
+      "url": "https://github.com/rlaehghks5/MECO.git",
+      "revision": "375ac4dee2a8e193aaa48553289499a6f43d93e6",
+      "license": "MIT (root); selected core excludes Apache-notice backbone helpers and NVIDIA-NC native kernels; weights and data separate",
+      "source_paths": [
+        "LICENSE",
+        "README.md",
+        "requirements.txt",
+        "train.py",
+        "evaluate.py",
+        "flowmse/scripts/train_multi-channel_one-step_MeCo.sh",
+        "flowmse/model_MeCo.py",
+        "flowmse/odes.py",
+        "flowmse/sampling/__init__.py",
+        "flowmse/sampling/odesolvers.py",
+        "flowmse/data_module_multichannel.py",
+        "flowmse/util/inference.py",
+        "flowmse/util/other.py",
+        "flowmse/util/registry.py",
+        "flowmse/util/tensors.py",
+        "utils.py"
+      ],
+      "id": "meco",
+      "fetch_enabled": true,
+      "acquisition": "independent_source_checkout",
+      "entrypoints": [
+        "LICENSE",
+        "README.md",
+        "requirements.txt",
+        "train.py",
+        "evaluate.py",
+        "flowmse/scripts/train_multi-channel_one-step_MeCo.sh",
+        "flowmse/model_MeCo.py",
+        "flowmse/odes.py",
+        "flowmse/sampling/__init__.py",
+        "flowmse/sampling/odesolvers.py",
+        "flowmse/data_module_multichannel.py",
+        "flowmse/util/inference.py",
+        "flowmse/util/other.py",
+        "flowmse/util/registry.py",
+        "flowmse/util/tensors.py",
+        "utils.py"
+      ],
+      "scope": "MeanFlow one-step correction: sixteen author core, training/evaluation entry, config and licence texts for static research",
+      "note": "Fixed author implementation for arXiv:2606.09677v1. Partial MIT core selection, not standalone: backbone source with Apache-notice helpers and NVIDIA-NC CUDA kernels excluded. No torch/CUDA execution, checkpoints, speech datasets or paper benchmark results. Original per-file notices retained; selected source identity is separate from full dependency closure."
     }
   ]
 }

@@ -9,7 +9,7 @@
 - **原理索引**：已有原理或来源依据，但尚未形成唯一、许可明确且承担对应计算的源码映射；代码可见而许可不明时也保留此状态，并说明原因。
 - **明确排除**：指定软件的身份或许可不满足本书当前收录方式；不表示删除相应方法的学术讨论。
 
-算法表共 342 行：本仓库可运行基线 71 行、外部参考实现 183 行、原理索引 87 行、明确排除 1 行。练习映射单独计数，不因题数增加算法行；已知激励的逐频正则反卷积新增唯一教学核，同一行保留pyfar外部对照及其限定运行边界。第6章新增一行已知播放增益顺序与历史尾声控制，复用NLMS与NCC，不计作新的自适应算法。MDL、功率谱减、受控 NCC 活动判别与 cACGMM 教学迭代属于本地基线。覆盖表仍有原理索引，不表示全书全部算法已经运行。
+算法表共 346 行：本仓库可运行基线 73 行、外部参考实现 184 行、原理索引 88 行、明确排除 1 行。练习映射单独计数，不因题数增加算法行；已知激励的逐频正则反卷积新增唯一教学核，同一行保留pyfar外部对照及其限定运行边界。第6章新增一行已知播放增益顺序与历史尾声控制，复用NLMS与NCC，不计作新的自适应算法。MDL、功率谱减、受控 NCC 活动判别与 cACGMM 教学迭代属于本地基线。覆盖表仍有原理索引，不表示全书全部算法已经运行。
 
 源码取得与入口核对见 [SOURCE_STATUS.json](SOURCE_STATUS.json)；该文件中的依赖验证和执行字段未开展时为 `not_run`，不承载方法级数值实验结果。实际运行及数值对照见[复现记录](research/04_source_reproduction.md)、[增强研究记录](research/02_aec_wpe_separation.md)和 [WPE 独立对照脚本](../ch07/examples/compare_wpe_reference.py)。工业接口与 SBL 的限定实验报告按主题放在 `codes/chapters/ch04/reports/`、`codes/chapters/ch10/reports/` 等对应章节；实际调用外部代码不将它改列为本仓库教学基线。覆盖状态不是测试结果。完整提交、官方地址、许可与来源 ID 见 [SOURCES.lock.json](SOURCES.lock.json)。表内本仓库教学源文件使用相对于仓库根目录的完整路径；第三方项目的内部路径仍相对于各自项目根目录。出现“同文件”时仅继承上一行文件，不继承其算法或验证结论。
 
@@ -254,7 +254,9 @@
 | §8.3 | AuxIVA 迭代投影 | 外部参考实现 | `ssspy`：`ssspy/bss/iva.py`；`codes/chapters/ch08/examples/reproduce_auxiva_reference.py` 调用固定源码 | 已跑一组数学合成盲估计及谐波反例；不等于语音论文复现或本书教学实现 |
 | 研究扩展：增强 B02 | IVA 迭代源导向 ISS | 外部参考实现 | `ssspy`：同文件 ISS 选项 | 与 IP 不同，固定 ISS1/ISS2 |
 | 研究扩展：增强 B02 | projection-back | 外部参考实现 | `ssspy`：`ssspy/algorithm/` | SI-SDR 通过不能证明尺度恢复 |
-| 研究扩展：增强 B03 | OverIVA | 外部参考实现 | `piva`：`piva/auxiva.py` | 过定源数、背景模型；GPL |
+| §8.3；研究扩展：增强 B03 | OverIVA | 外部参考实现 | `overiva-author`：`overiva.py`、`auxiva_pca.py`；`piva`：`piva/auxiva.py` | MIT作者四文件选集与GPL编译路线分开；只核源码/轴序，未运行作者论文仿真 |
+| §8.3；E08-31 | 给定目标行的OverIVA背景二阶约束 | 本仓库可运行基线 | `codes/chapters/ch08/core/overiva_teaching.py` | 只解所选坐标块；奇异拒绝、复共轭单独核，不是完整盲分离 |
+| §8.6；E08-30 | 加权混合修正与STFT一致性操作次序 | 本仓库可运行基线 | `codes/chapters/ch08/core/consistency_teaching.py`，复用ch02唯一STFT | 六点两帧、非零给定估计；谱差与波形差分开，不评价真实源或训练网络 |
 | 研究扩展：增强 B03 | FIVE | 外部参考实现 | `piva`：`piva/five.py` | 单目标提取不等于全部分离 |
 | §8.3 | ILRMA | 外部参考实现 | `ssspy`：`ssspy/bss/ilrma.py` | NMF 基数与局部最优 |
 | §8.3 | 满秩 MNMF | 外部参考实现 | `ssspy`：`ssspy/bss/mnmf.py::GaussMNMF` | 欠定模型不保证可辨识 |
@@ -282,7 +284,9 @@
 | 研究扩展：增强 N07 | Mamba-TasNet/Dual-Path Mamba | 外部参考实现 | `mamba_tasnet`：`train_wsj0mix.py`、`modules/` | 配置变体、GPL、WSJ0 许可分别固定 |
 | §8.6 | SpeakerBeam 方法 | 原理索引 | 增强 N08 原论文与注册模型 | 目标缺席、注册泄漏、设备失配 |
 | 研究扩展：增强 N08 | BUTSpeechFIT/speakerbeam 软件 | 外部参考实现 | `speakerbeam`：`src/models/td_speakerbeam.py` | 原样本地内部评估；不修改、再分发或声称依赖/模型已运行 |
-| §8.6；E08-23 | 双路 CSS 重叠相关排列关联 | 本仓库可运行基线 | `codes/chapters/ch08/core/css.py::match_two_source_overlap` | 仅两槽实波形的重叠关联，不是分离器；静音、弱相关与并列返回不确定 |
+| §8.6；E08-23、29、32 | 双路 CSS 重叠相关排列关联 | 本仓库可运行基线 | `codes/chapters/ch08/core/css.py::match_two_source_overlap`、`overlap_application_gain` | 仅两槽实波形的重叠关联与同钟标量回归，不是分离器；静音、弱相关与并列返回不确定；四独立WAV不运行盲CSS |
+| 研究扩展：增强N19 | MeCo一步平均流纠正 | 外部参考实现 | `meco`：`flowmse/model_MeCo.py`、`odes.py`、`sampling/odesolvers.py` | 16文件MIT部分选集；排除混合许可骨干/CUDA，非standalone；静态与论文分别读，未训练/前向/取模型 |
+| 研究扩展：增强N20 | SIS说话人身份训练监督 | 原理索引 | MERL TR2026-137 §2～3；作者`merlresearch/sis_sep`仅发布预告 | 同身份异句辅助用于训练而非TSE推理注册；无方法实现/许可，不取得名义代码或运行模型 |
 | §8.6；研究扩展：增强 N09 | 连续语音分离 CSS | 外部参考实现 | `notsofar1`：`css/css.py`、`css/css_with_conformer/separate.py` | 窗口、跨块排列、槽位、配置；不执行资产下载 |
 | §13.3；研究扩展：增强 N10 | SGMSE+ | 外部参考实现 | `sgmse`：`enhancement.py`、`sgmse/model.py` | 采样器、权重和语料另核 |
 | §13.3；研究扩展：增强 N10 | StoRM | 外部参考实现 | `storm`：`enhancement.py`、`sgmse/model.py` | 再生成不等于 SGMSE 推理流程 |

@@ -23,6 +23,8 @@ import wave
 
 import numpy as np
 
+from codes.chapters.ch04.core import upstream_contracts as contracts
+from codes.chapters.ch08.examples.audit_separation_upstream_interfaces import package_preflight, package_unchanged, original_source_imports
 from codes.chapters.ch08.core.separation import pit_permutation, si_sdr
 from codes.chapters.ch02.core.spectral import istft, stft
 
@@ -39,28 +41,23 @@ ITERATIONS = 30
 MIXING = np.array([[1.0, 0.9], [0.8, 1.0]])
 
 
+@original_source_imports("ssspy")
 def pinned_auxiva_class():
     """Load only the checked-out version recorded in SOURCES.lock.json."""
 
-    if not (SOURCE_TREE / "ssspy/bss/iva.py").is_file():
-        raise RuntimeError("Fetch the locked ssspy source tree before this experiment")
-    revision = subprocess.run(
-        ["git", "-C", str(SOURCE_TREE), "rev-parse", "HEAD"],
-        check=True, capture_output=True, text=True,
-    ).stdout.strip()
-    if revision != SOURCE_REVISION:
-        raise RuntimeError(f"ssspy revision {revision} differs from lock {SOURCE_REVISION}")
-    changed = subprocess.run(
-        ["git", "-C", str(SOURCE_TREE), "status", "--porcelain"],
-        check=True, capture_output=True, text=True,
-    ).stdout.strip()
-    if changed:
-        raise RuntimeError("ssspy checkout has local modifications; inspect them before reproduction")
+    sys.dont_write_bytecode = True
+    files = [name for name in contracts.git(SOURCE_TREE, 'ls-files', '--', '*.py').splitlines()
+             if (SOURCE_TREE/name).is_file()]
+    identity = contracts.verify_project('ssspy', SOURCE_TREE, files)
+    if identity['head'] != SOURCE_REVISION:
+        raise ValueError('ssspy fixed revision differs')
     sys.path.insert(0, str(SOURCE_TREE))
+    installed = package_preflight('ssspy', SOURCE_TREE, SOURCE_TREE/'ssspy')
     from ssspy.bss.iva import AuxLaplaceIVA
-
     if not Path(inspect.getfile(AuxLaplaceIVA)).resolve().is_relative_to(SOURCE_TREE.resolve()):
-        raise RuntimeError("Imported AuxLaplaceIVA from a different source tree")
+        raise RuntimeError('Imported AuxLaplaceIVA from a different source tree')
+    pinned_auxiva_class.identity = identity
+    pinned_auxiva_class.installed = installed
     return AuxLaplaceIVA
 
 
@@ -116,7 +113,14 @@ def _read_mono_pcm16(path: Path) -> tuple[np.ndarray, int]:
     return samples.astype(np.float64) / 32768.0, sample_rate
 
 
+@original_source_imports("ssspy")
 def run_experiment(*, harmonic_counterexample: bool = True) -> dict:
+    extra_dependencies = (ROOT/'codes/chapters/ch08/examples/audit_separation_upstream_interfaces.py',
+                          ROOT/'codes/chapters/ch08/core/separation.py', ROOT/'codes/chapters/ch02/core/spectral.py')
+    actual_dependencies = contracts.dependencies(Path(__file__), extra_dependencies)
+    harmonic_paths = ('codes/chapters/ch08/audio/separation_source1.wav',
+                      'codes/chapters/ch08/audio/separation_source2.wav')
+    asset_identity = {name: contracts.sha(ROOT/name) for name in harmonic_paths} if harmonic_counterexample else {}
     auxiva_class = pinned_auxiva_class()
     sources = independent_sources()
     observation = MIXING @ sources
@@ -178,6 +182,17 @@ def run_experiment(*, harmonic_counterexample: bool = True) -> dict:
         report["rank_deficient_boundary"]["upstream_run"] = {
             "status": "returned_without_identifiability_guarantee",
         }
+    report['source_identity'] = contracts.check_unchanged(pinned_auxiva_class.identity)
+    report['installed_python_identity'] = package_unchanged(pinned_auxiva_class.installed)
+    report['actual_dependency_sha256'] = actual_dependencies
+    if contracts.dependencies(Path(__file__), extra_dependencies) != actual_dependencies:
+        raise ValueError('Experiment dependencies changed during execution')
+    if harmonic_counterexample:
+        if {name: contracts.sha(ROOT/name) for name in harmonic_paths} != asset_identity:
+            raise ValueError('Harmonic PCM changed during experiment')
+        report['harmonic_counterexample']['asset_sha256'] = asset_identity
+    report['python_loading'] = 'direct checked source; existing package pyc bypassed and preserved'
+    report['bytecode_writes'] = False
     return report
 
 

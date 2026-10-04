@@ -1,4 +1,4 @@
-"""Eighteen original small experiments E08-12..29, without upstream imports.
+"""Original small experiments E08-12..32, without upstream imports.
 
 Run with python -m codes.chapters.ch08.chapter08_experiments. No files are written.
 Substeps and supplied source/slot models are not complete separation systems.
@@ -20,7 +20,7 @@ import wave
 import numpy as np
 
 from codes.chapters.ch00.core.audio_samples import css_overlap_case
-from codes.chapters.ch08.core.css import match_two_source_overlap
+from codes.chapters.ch08.core.css import match_two_source_overlap, overlap_application_gain
 from codes.chapters.ch08.core.gss_teaching import guided_cacgmm_mvdr
 from codes.chapters.ch08.core.separation import guided_activity_posterior, masked_spatial_covariance, si_sdr
 from codes.chapters.ch00.cross_chapter.enhancement_step_exercises import ip_row
@@ -211,7 +211,7 @@ def css_polarity_minicase():
         current = multiplier*previous
         matching = match_two_source_overlap(previous, current)
         aligned = current[matching['current_indices_for_previous']]
-        gain = np.sum(previous*aligned, axis=1)/np.sum(aligned**2, axis=1)
+        gain = overlap_application_gain(previous, aligned)
         signed = previous @ current.T/2/abs(multiplier)
         cases.append({'current_multiplier': multiplier, 'current': current,
                       'matching': matching, 'signed_centered_correlation': signed,
@@ -369,6 +369,22 @@ def run_experiments() -> dict:
     result['E08-28'] = {'floating_point_experiment': mask_report,
                         'published_audio': check_assets()}
     result['E08-29'] = css_polarity_minicase()
+    from codes.chapters.ch08.core.consistency_teaching import run_experiment as consistency_experiment
+    from codes.chapters.ch08.core.overiva_teaching import run_experiment as overiva_experiment
+    result['E08-30'] = consistency_experiment()
+    result['E08-31'] = overiva_experiment()
+    from codes.chapters.ch08.core.css_audio import (FILE_NAMES, generate_experiment,
+        parameters as css_parameters, analytic_measurements, measure_signal)
+    from codes.chapters.ch08.examples.generate_css_audio import check_assets as check_css_assets
+    css_control = generate_experiment()
+    css_signals = css_control['signals']
+    result['E08-32'] = {'parameters': css_parameters(),
+                        'overlap_matching': css_control['overlap_matching'],
+                        'overlap_application_gain': css_control['overlap_application_gain'],
+                        'analytic': {name: analytic_measurements(name) for name in FILE_NAMES},
+                        'floating_point_measurements': {name: measure_signal(value, css_signals['reference'])
+                                                        for name, value in css_signals.items()},
+                        'published_audio': check_css_assets()}
     return _plain(result)
 
 

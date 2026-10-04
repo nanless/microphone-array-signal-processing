@@ -275,7 +275,8 @@ def source_digest():
               ROOT / "scripts" / "make_aec_figures.py",
               ROOT / "scripts" / "make_beamforming_figures.py",
               ROOT / "scripts" / "make_reference_figures.py",
-              ROOT / "scripts" / "make_delay_figures.py", ROOT / "requirements.txt"]
+              ROOT / "scripts" / "make_delay_figures.py",
+              ROOT / "scripts" / "make_css_figures.py", ROOT / "requirements.txt"]
     paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
         digest.update(path.relative_to(ROOT).as_posix().encode("utf-8"))
@@ -843,7 +844,7 @@ def print_pdf(combined, pdf, timeout_min_pages=100):
 
 
 def check_figures():
-    """合订前检查：正文引用的图必须存在、非空，并覆盖 75 个编号文件。"""
+    """合订前检查：正文引用的图必须存在、非空，并覆盖 76 个编号文件。"""
     missing = []
     refs = set()
     for fname, _ in CHAPTERS:
@@ -855,8 +856,8 @@ def check_figures():
                 missing.append(f"{fname}: {m.group(1)}")
     if missing:
         raise SystemExit("缺图，中止：\n" + "\n".join(missing))
-    if len(refs) != 75:
-        raise SystemExit(f"唯一图片数异常：期望 75，实际 {len(refs)}")
+    if len(refs) != 76:
+        raise SystemExit(f"唯一图片数异常：期望 76，实际 {len(refs)}")
     print(f"图片检查通过（{len(CHAPTERS)} 篇、{len(refs)} 张唯一图片）")
 
 

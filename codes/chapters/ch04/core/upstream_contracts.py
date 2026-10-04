@@ -61,6 +61,15 @@ PROJECTS = {
     'nemo_wpe': ('https://github.com/NVIDIA/NeMo.git', '2381f42f6979449b5b99538f8f80135831009b51', 'Apache-2.0', 'LICENSE', '43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1'),
     'speexdsp': ('https://gitlab.xiph.org/xiph/speexdsp.git', '8e29a256ef0235ebbe7fcb8417b5ac7731eb8307', 'BSD-3-Clause', 'COPYING', '2654a4264b2bfe298dedc508748d140111840c315cc8eb646a3a68c13fa75b01'),
     'tso_vace_wpe': ('https://github.com/dreadbird06/tso_vace_wpe.git', '10ee77dd020d58af508feb77251f9353208cb33a', 'MIT; retain LICENSE and per-file notices', 'LICENSE', '664fb260188108b8c9b3e21ab0c8c8f57c94b421f8134dc1544ede4627d2713b'),
+    'ssspy': ('https://github.com/tky823/ssspy.git', '38b9389e8b1914422561f1936d9b28d042d62d2c', 'Apache-2.0', 'LICENSE', '809ba860a2750092fd00a8ca4cb4dc459ae4f9f6e538f574ea52b8b1daae91b6'),
+    'arraydps': ('https://github.com/ArrayDPS/ArrayDPS.git', '750ac2b7c75458f4ca5bad203dafda528f575e55', 'MIT', 'LICENSE', '5d40b048a5fb04cc63482634406ddc2d9df2b14eddfe600c4f40a66872a4de0e'),
+    'asteroid': ('https://github.com/asteroid-team/asteroid.git', 'fce87469132760fbab41c20616ea0f0e079aad38', 'MIT', 'LICENSE', 'c12aebc7a4eeeec2e482414004fd5d68275d7608552031cd48f4088b403f902d'),
+    'mamba_tasnet': ('https://github.com/xi-j/Mamba-TasNet.git', 'a35c692f27213781a11b1606c375cda1e1f0fb62', 'GPL-3.0', 'LICENSE', '3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986'),
+    'notsofar1': ('https://github.com/microsoft/NOTSOFAR1-Challenge.git', '6f58e08b008f7530ba4141f0aeb02447c70b6fd7', 'MIT code; DATA_LICENSE and dataset-version restrictions separate', 'LICENSE', 'c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383'),
+    'streamfm': ('https://github.com/sp-uhh/streamfm.git', 'ab2700c1154acc5c2ce67a5344182028336413f5', 'AGPL-3.0; weights and datasets separately', 'LICENSE', '8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef'),
+    'tf-locoformer': ('https://github.com/merlresearch/tf-locoformer.git', '7a615460d347ff7334a13dbb831d16280da72cdc', 'Apache-2.0 and per-file SPDX notices; weights and data separately', 'LICENSE.md', '0b3204d175388251410569d1e6ae8efc9e7e4ae2572ef11ace4015e0ca8d61b7'),
+    'overiva-author': ('https://github.com/onolab-tmu/overiva.git', '1cb3189112889ebfe2ccbbde0f55b1db6020fc48', 'MIT', 'LICENSE', 'a872a2a232076ca5034f53a33709efecfe61c7481dbda84b595549f7015f03bc'),
+
 }
 
 

@@ -4,12 +4,20 @@ Does not import/execute upstream code, download weights or test inference.
 This intentionally narrow audit is not a general Python attribute checker.
 """
 from __future__ import annotations
+if __name__ == "__main__" and not __package__:
+    import sys as _entry_sys
+    from pathlib import Path as _EntryPath
+    _entry_sys.path.insert(0, str(_EntryPath(__file__).resolve().parents[4]))
+
 import argparse
 import ast
 import hashlib
 import json
 from pathlib import Path
 
+from codes.chapters.ch04.core import upstream_contracts as contracts
+
+CURRENT_REPORT = Path(__file__).resolve().parents[4] / "codes/chapters/ch08/reports/streamfm_source_audit_current.json"
 COMMIT = 'ab2700c1154acc5c2ce67a5344182028336413f5'
 SOURCE_SHA256 = 'd88c7bb526a97ae11d3cdede0e03e81b7c6e38cd2c6ad92296a37f974668d80a'
 DEFAULT_SOURCE = Path(__file__).resolve().parents[3] / 'chapters/ch00/upstream/_downloads/streamfm/sgmse/backbones/streaming_unet.py'
@@ -55,19 +63,34 @@ def inspect_source(text: str) -> dict:
 
 
 def audit_file(path: Path) -> dict:
+    path = contracts.ordinary_file(path)
     raw = path.read_bytes()
     digest = hashlib.sha256(raw).hexdigest()
     if digest != SOURCE_SHA256:
         raise ValueError('source differs from audited fixed-commit file; review before using this report')
-    return {'upstream_commit': COMMIT, 'relative_source': 'sgmse/backbones/streaming_unet.py',
+    root = path.parents[2]
+    identity = contracts.verify_project('streamfm', root, ['sgmse/backbones/streaming_unet.py'])
+    result = {'schema_version': 2, 'actual_dependency_sha256': contracts.dependencies(Path(__file__)),
+            'source_identity': identity, 'tool_sha256': contracts.sha(__file__),
+            'upstream_commit': COMMIT, 'relative_source': 'sgmse/backbones/streaming_unet.py',
             'source_sha256': digest, 'observations': inspect_source(raw.decode('utf-8'))}
+    contracts.check_unchanged(identity)
+    if contracts.dependencies(Path(__file__)) != result['actual_dependency_sha256']:
+        raise ValueError('Current dependencies changed during audit')
+    return result
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', type=Path, default=DEFAULT_SOURCE)
+    parser.add_argument('--report', type=Path)
     args = parser.parse_args()
-    print(json.dumps(audit_file(args.source), indent=2, allow_nan=False))
+    target = contracts.report_target(args.report, CURRENT_REPORT, protected=(args.source.parents[2],)) if args.report else None
+    result = audit_file(args.source)
+    if target:
+        contracts.write_report(target, result, CURRENT_REPORT, protected=(args.source.parents[2],))
+    else:
+        print(json.dumps(result, indent=2, allow_nan=False))
 
 
 if __name__ == '__main__':

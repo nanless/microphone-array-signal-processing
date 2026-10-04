@@ -22,6 +22,8 @@ SNAPSHOT_ROOT = ROOT / 'codes/chapters/ch00/source_snapshots'
 # was reviewed and registered. Extend these sets only with verified raw bytes.
 _HISTORICAL_SNAPSHOTS = {
     'SOURCES': frozenset({
+        '36b1d9ca02eeee8ac432f4a02bb0b9f5479d6a91df58735f05a1fcda9098dcd1',
+        'eec80748e5f1fcc01d33e281b91a4482f52566d8e6b74bdb737e017604ec6487',
         'a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505',
         '5dbf0c55fac57d82915ce01c20d7a96505147aaaed550558ce5e6c1c24da1fd0',
         '55ab323ba665633141c4864763095046f9c6161ce2d88ca2aa9332dde7ec23f0',
@@ -29,6 +31,8 @@ _HISTORICAL_SNAPSHOTS = {
         '6dab41b1542cfa2cd4731ef4c8a3e807b343dc807f209c4eea17503e203ebf59',
     }),
     'SOURCE_STATUS': frozenset({
+        'e9ec8413f23f15d670c73c5ee4dbd39254ac137402a241177329cbca617f6b78',
+        '4cc8cbd48e3e98b51a24705468415d10654aa349f3946fb98ef48e9c4856f4f6',
         'abc28f6f15512da8267618bca318b10033909ec2afdb6090b6aa2d0f1281f0e9',
         '230269d62683e0726efb2c87a1661f8179ada3ee041b7b7df266190e471e2652',
         'e3b3176d835837441224e4906b7c2befadcdc4fe2ce6163245b7d9a9ad0d9229',

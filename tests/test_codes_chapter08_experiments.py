@@ -1,4 +1,4 @@
-"""Analytic/fractional expectations and actual PCM for E08-12..29."""
+"""Analytic/fractional expectations and actual PCM for E08-12..32."""
 import hashlib
 import json
 from pathlib import Path
@@ -18,7 +18,7 @@ class Chapter08Exercises(unittest.TestCase):
         cls.r = run_experiments()
 
     def test_ids_and_finite_json(self):
-        self.assertEqual(set(self.r), {f'E08-{i:02}' for i in range(12, 30)})
+        self.assertEqual(set(self.r), {f'E08-{i:02}' for i in range(12, 33)})
         json.dumps(self.r, allow_nan=False)
 
     def test_sequential_complex_rows(self):
@@ -33,6 +33,29 @@ class Chapter08Exercises(unittest.TestCase):
         np.testing.assert_allclose(r['individual_gains'], [2, 5/2])
         np.testing.assert_allclose(r['individual_sum'], [2, 5/2, 9/2])
         np.testing.assert_allclose(complex_array(r['complex_application_gain']), [2+1j])
+
+    def test_new_constraint_order_and_background_controls(self):
+        r=self.r['E08-30']
+        self.assertEqual(r['order_max_waveform_difference'],1/8)
+        self.assertEqual(r['consistency_then_mix']['consistency_max_spectrum_error'],1/4)
+        self.assertEqual(r['mix_then_consistency']['consistency_max_spectrum_error'],0)
+        b=self.r['E08-31']['background_constraint_control']
+        np.testing.assert_allclose(complex_array(b['J']),[[4/5]])
+        np.testing.assert_allclose(complex_array(b['background_second_moment']),[[42/25]])
+
+    def test_css_continuous_post_overlap_gain_control(self):
+        r=self.r['E08-32']
+        self.assertEqual(r['overlap_matching']['current_indices_for_previous'],[0,1])
+        np.testing.assert_allclose(r['overlap_application_gain'],[-.5,-.5])
+        for name,nmse in (('reference',0),('naive',9),('polarity',1),('corrected',0)):
+            a=r['analytic'][name]['post_overlap']
+            np.testing.assert_allclose(a['reference_NMSE_per_channel'],[nmse,nmse],atol=1e-12)
+        self.assertEqual(len(r['published_audio']['files']),4)
+        # Actual PCM corrected/reference identity is stronger than rounded
+        # display scores and is checked without regenerating either waveform.
+        directory=ROOT/'codes/chapters/ch08/css_audio'
+        self.assertEqual((directory/'css_corrected.wav').read_bytes(),
+                         (directory/'css_reference.wav').read_bytes())
 
     def test_zero_reference_image(self):
         r = self.r['E08-14']

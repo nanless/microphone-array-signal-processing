@@ -271,9 +271,15 @@ class BuildHelpersTest(unittest.TestCase):
             (ROOT / 'chapters/05_beamforming.md',
              ('方法', '优化目标或固定规则', '需要的统计量/先验', '目标保持条件', '主要失败模式', '主要计算'),
              85, {1: 10, 2: 15, 3: 16, 4: 14, 5: 16, 6: 14}),
+            (ROOT / 'chapters/08_speech-separation.md',
+             ('后窗输出', '每声道整数误差', '实际PCM MSE', '实际PCM相对误差'),
+             44, {1: 8, 2: 13, 3: 11, 4: 12}),
             (ROOT / 'chapters/12_appendix-symbols-math.md',
              ('权重', '误差均方的逐项计算', '解析 MSE', '解析 NMSE（除以 $0.02$）'),
              52, {1: 6}),
+            (build_site.RESEARCH_ROOT / '02_aec_wpe_separation.md',
+             ('要核的条件', '固定源码静态事实', '不能推出的判断'),
+             48, {1: 8, 2: 24, 3: 16}),
             (build_site.RESEARCH_ROOT / '05_exercises_and_audio.md',
              ('题号', '输入和计算', '能支持的结论'), 36, {1: 6}),
             (build_site.RESEARCH_ROOT / '05_exercises_and_audio.md',
@@ -981,10 +987,10 @@ class BuildHelpersTest(unittest.TestCase):
         )
 
     def test_figure_semantics_accept_any_reuse_and_reject_mismatch_or_orphan(self):
-        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 76)]
+        refs = [(f"图{i} 示意", f"fig{i:02d}_x.png", i) for i in range(1, 77)]
         refs.extend([("图1 复用", "fig01_x.png", 1),
                      ("图23 复用", "fig23_x.png", 23)])
-        names = [f"fig{i:02d}_x.png" for i in range(1, 76)]
+        names = [f"fig{i:02d}_x.png" for i in range(1, 77)]
         self.assertEqual(quality_check.figure_inventory_issues(refs, names), [])
         bad_refs = list(refs)
         bad_refs[0] = ("图2 错配", "fig01_x.png", 1)

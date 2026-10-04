@@ -20,7 +20,7 @@ from codes.chapters.ch08.core.mask_representation import (
 )
 
 from codes.chapters.ch00.io_contracts import (
-    validate_asset_directory as _shared_asset_directory, strict_json_loads, same_metadata,
+    validate_asset_directory as _shared_asset_directory, strict_json_loads, same_metadata, validate_parent_chain,
 )
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -34,16 +34,64 @@ SOURCE_PATHS = (
 )
 
 
+# Reviewed fixed model values/types; not obtained from the runtime report.
+REQUIRED_PARAMETERS = {'exercise_id': 'E08-28',
+ 'sample_rate_hz': 16000,
+ 'samples_per_channel': 32000,
+ 'frequencies_hz': [500, 1250],
+ 'positive_rfft_bins': [1000, 2500],
+ 'source': 'target=.1*cos(500Hz)-.1*sin(1250Hz); other=-.08*cos(500Hz)+.1*cos(1250Hz)',
+ 'fft': 'full 32000-sample unwindowed periodic record; numpy rfft/irfft; only bins 1000/2500 retained',
+ 'target_phasors': [[0.1, 0.0], [0.0, 0.1]],
+ 'mixture_phasors': [[0.02, 0.0], [0.1, 0.1]],
+ 'masks': {'bounded_real': [[1.0, 0.0], [0.5, 0.0]],
+           'unbounded_real': [[5.0, 0.0], [0.5, 0.0]],
+           'complex_oracle': [[5.0, 0.0], [0.5, 0.5]]},
+ 'envelope': 'after FFT operator: sin(linspace(0,pi/2,320)) squared at each end, reversed at end; '
+             'endpoints zero',
+ 'fade_samples_each_end': 320,
+ 'scoring_interval_samples': [2400, 29600],
+ 'scoring_samples_per_channel': 27200,
+ 'alignment': 'same absolute source clock; no propagation or fitted gain/delay',
+ 'common_export_gain': 1.0,
+ 'algorithm_lookahead': 'entire 2-second record; noncausal offline known mask',
+ 'analytic_steady_reference_power': 0.01,
+ 'analytic_steady_mse': {'target': 0.0,
+                         'other': 0.0262,
+                         'mixture': 0.0082,
+                         'bounded_real': 0.0057,
+                         'unbounded_real': 0.0025,
+                         'complex_oracle': 0.0}}
+REQUIRED_LIMITS = 'Known-bin full-record offline representation, not an estimated mask, blind separator, speech recording or listening evaluation. The same sin-squared listening envelope is applied after the rFFT operator. Nonselected numerical-leakage bins are set to zero. No delay/gain fitting, per-file normalization, dither or clipping. Phase LS measures the fixed absolute sample clock; it does not compensate the output.'
+
 def _sha(blob):
     return hashlib.sha256(blob).hexdigest()
 
 
 def source_digests():
-    return {path: _sha((ROOT/path).read_bytes()) for path in SOURCE_PATHS}
+    return {path: _sha(validate_parent_chain(ROOT/path).read_bytes()) for path in SOURCE_PATHS}
 
 
 def prepare_assets() -> tuple[dict, dict[str, bytes]]:
+    true_parameters = parameters()
     report, arrays = run_experiment()
+    if (not same_metadata(true_parameters, REQUIRED_PARAMETERS)
+            or not same_metadata(report.get('parameters'), REQUIRED_PARAMETERS)
+            or not same_metadata(LIMITS, REQUIRED_LIMITS)
+            or not same_metadata(report.get('limits'), REQUIRED_LIMITS)
+            or type(SAMPLE_RATE) is not int or SAMPLE_RATE != 16000
+            or type(SAMPLES) is not int or SAMPLES != 32000
+            or not same_metadata(FILE_NAMES, {key: 'mask_'+key+'.wav' for key in
+                ('target', 'other', 'mixture', 'bounded_real', 'unbounded_real', 'complex_oracle')})):
+        raise ValueError('mask true parameters differ from fixed asset contract')
+    if (not isinstance(arrays, dict) or set(arrays) != set(FILE_NAMES)
+            or any(not isinstance(value, np.ndarray) or value.dtype.kind != 'f'
+                   or value.shape != (1, 32000) or not np.isfinite(value).all()
+                   or np.max(abs(value)) >= 1 for value in arrays.values())):
+        raise ValueError('fixed finite unclipped mask waveforms required')
+    actual_float = {key: measure_signal(value, arrays['target']) for key, value in arrays.items()}
+    if not same_metadata(report.get('float_measurements'), actual_float):
+        raise ValueError('mask float report differs from generated waveforms')
     contents, files, decoded, samples = {}, {}, {}, {}
     for key, value in arrays.items():
         blob = pcm16_bytes(value, SAMPLE_RATE)

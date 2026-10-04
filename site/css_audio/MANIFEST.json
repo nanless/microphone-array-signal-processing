@@ -1,0 +1,1352 @@
+{
+  "schema_version": 1,
+  "exercise_id": "E08-32",
+  "sample_rate_hz": 16000,
+  "samples_per_channel": 32000,
+  "common_export_gain": 1.0,
+  "origin": "original fixed-slot same-clock polarity/gain stitching control",
+  "source_sha256": {
+    "codes/chapters/ch08/core/css_audio.py": "bfebe44aa305f6adb3969bf5d23f6b7a586912b78e69e3ece383fa6cda820f24",
+    "codes/chapters/ch08/examples/generate_css_audio.py": "7ea4a1d1d48d11b7ada8274db540a1b0ce993705660f31790bc75862df541329",
+    "codes/chapters/ch08/core/css.py": "d5b76cdb13f6f7ec30ec29a1a3ae25cdcc5c553c8e9294b9e45c259a70bd3226",
+    "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
+    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
+  },
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "parameters": {
+    "exercise_id": "E08-32",
+    "sample_rate_hz": 16000,
+    "samples_per_channel": 32000,
+    "frequencies_hz": [
+      500.0,
+      1500.0
+    ],
+    "amplitudes": [
+      0.1,
+      0.1
+    ],
+    "channel_order": [
+      "fixed_source_slot_1",
+      "fixed_source_slot_2"
+    ],
+    "phase": "sine at the common absolute sample clock, phase zero",
+    "envelope": "sin(linspace(0,pi/2,320)) squared at each end, reversed at end; endpoints zero",
+    "fade_samples_each_end": 320,
+    "first_block_samples": [
+      0,
+      19200
+    ],
+    "second_block_samples": [
+      12800,
+      32000
+    ],
+    "overlap_samples": [
+      12800,
+      19200
+    ],
+    "overlap_samples_per_channel": 6400,
+    "overlap_cycles_per_channel": [
+      200,
+      600
+    ],
+    "second_block_multiplier": -2.0,
+    "crossfade": "complementary linear weights: current r=linspace(0,1,6400), previous 1-r, endpoints included",
+    "slot_matching": "absolute centered correlation on observed overlap; apply current indices for previous",
+    "application_gain_fit": "ordinary real raw-sample LS current dot previous / current dot current; no centering",
+    "polarity_control": "sign of the overlap application gain only; magnitude remains 2",
+    "scoring_intervals_samples": {
+      "primary": [
+        2400,
+        29600
+      ],
+      "post_overlap": [
+        19200,
+        29600
+      ]
+    },
+    "scoring_samples_per_channel": {
+      "primary": 27200,
+      "post_overlap": 10400
+    },
+    "post_overlap_cycles_per_channel": [
+      325,
+      975
+    ],
+    "common_export_gain": 1.0,
+    "noise": "none",
+    "randomness": "none",
+    "alignment": "same known slot order and receiving sample clock; no delay or clean-reference gain fit"
+  },
+  "files": {
+    "css_reference.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples_per_channel": 32000,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "c1c6e0178745c9244dd8ed952a80ddf0b57215b5d5631486319f6d6bfa6c1181",
+      "quantization_max_abs_error": 1.5256584875459429e-05,
+      "peak": 0.100006103515625
+    },
+    "css_naive.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples_per_channel": 32000,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "07900ed65cbcedc9054ef3e7c0366344ba0ff7b07965851d0619fbfa81be9433",
+      "quantization_max_abs_error": 1.5257373512211903e-05,
+      "peak": 0.20001220703125
+    },
+    "css_polarity.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples_per_channel": 32000,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "6825867edc8913c83caaf09c68f34c891d8eb1a9c363cb9e33408f3842af1bbc",
+      "quantization_max_abs_error": 1.5257373511642913e-05,
+      "peak": 0.20001220703125
+    },
+    "css_corrected.wav": {
+      "sample_rate_hz": 16000,
+      "channels": 2,
+      "samples_per_channel": 32000,
+      "sample_width_bytes": 2,
+      "compression": "NONE",
+      "sha256": "c1c6e0178745c9244dd8ed952a80ddf0b57215b5d5631486319f6d6bfa6c1181",
+      "quantization_max_abs_error": 1.5256584875459429e-05,
+      "peak": 0.100006103515625
+    }
+  },
+  "samples": {
+    "reference": {
+      "file": "css_reference.wav",
+      "analytic": {
+        "primary": {
+          "scoring_interval_samples": [
+            2400,
+            29600
+          ],
+          "samples_per_channel": 27200,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            136.0000000000001,
+            135.99999999999994
+          ],
+          "mean_square_per_channel": [
+            0.0050000000000000044,
+            0.0049999999999999975
+          ],
+          "mean_square_all_channels": 0.005000000000000001,
+          "reference_error_squared_sum_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_NMSE_per_channel": [
+            0.0,
+            0.0
+          ],
+          "scope": "finite trigonometric sum of the declared crossfade; post-overlap integer-cycle control"
+        },
+        "post_overlap": {
+          "scoring_interval_samples": [
+            19200,
+            29600
+          ],
+          "samples_per_channel": 10400,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            52.00000000000008,
+            51.99999999999997
+          ],
+          "mean_square_per_channel": [
+            0.005000000000000008,
+            0.0049999999999999975
+          ],
+          "mean_square_all_channels": 0.005000000000000003,
+          "reference_error_squared_sum_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_NMSE_per_channel": [
+            0.0,
+            0.0
+          ],
+          "scope": "finite trigonometric sum of the declared crossfade; post-overlap integer-cycle control"
+        }
+      },
+      "float_measurements": {
+        "primary": {
+          "scoring_interval_samples": [
+            2400,
+            29600
+          ],
+          "samples_per_channel": 27200,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            136.00000000000006,
+            136.0000000000001
+          ],
+          "mean_square_per_channel": [
+            0.005000000000000002,
+            0.0050000000000000044
+          ],
+          "mean_square_all_channels": 0.005000000000000003,
+          "reference_error_squared_sum_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_NMSE_per_channel": [
+            0.0,
+            0.0
+          ],
+          "projection_gain_per_channel": [
+            1.0,
+            1.0
+          ]
+        },
+        "post_overlap": {
+          "scoring_interval_samples": [
+            19200,
+            29600
+          ],
+          "samples_per_channel": 10400,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            51.999999999999986,
+            51.99999999999997
+          ],
+          "mean_square_per_channel": [
+            0.004999999999999998,
+            0.0049999999999999975
+          ],
+          "mean_square_all_channels": 0.0049999999999999975,
+          "reference_error_squared_sum_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_NMSE_per_channel": [
+            0.0,
+            0.0
+          ],
+          "projection_gain_per_channel": [
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "pcm_measurements": {
+        "primary": {
+          "scoring_interval_samples": [
+            2400,
+            29600
+          ],
+          "samples_per_channel": 27200,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            135.9986306168139,
+            135.9986306168139
+          ],
+          "mean_square_per_channel": [
+            0.004999949655029923,
+            0.004999949655029923
+          ],
+          "mean_square_all_channels": 0.004999949655029923,
+          "reference_error_squared_sum_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_NMSE_per_channel": [
+            0.0,
+            0.0
+          ],
+          "projection_gain_per_channel": [
+            1.0,
+            1.0
+          ]
+        },
+        "post_overlap": {
+          "scoring_interval_samples": [
+            19200,
+            29600
+          ],
+          "samples_per_channel": 10400,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            51.999476412311196,
+            51.999476412311196
+          ],
+          "mean_square_per_channel": [
+            0.004999949655029923,
+            0.004999949655029923
+          ],
+          "mean_square_all_channels": 0.004999949655029923,
+          "reference_error_squared_sum_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_NMSE_per_channel": [
+            0.0,
+            0.0
+          ],
+          "projection_gain_per_channel": [
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "pcm_integer_measurements": {
+        "primary": {
+          "scoring_interval_samples": [
+            2400,
+            29600
+          ],
+          "samples_per_channel": 27200,
+          "channels": 2,
+          "integer_squared_sum_E_per_channel": [
+            146027417700,
+            146027417700
+          ],
+          "integer_denominator_D_per_channel": 29205777612800,
+          "mean_square_per_channel": [
+            0.004999949655029923,
+            0.004999949655029923
+          ],
+          "integer_squared_sum_E_all_channels": 292054835400,
+          "integer_denominator_D_all_channels": 58411555225600,
+          "mean_square_all_channels": 0.004999949655029923,
+          "integer_reference_squared_sum_per_channel": [
+            146027417700,
+            146027417700
+          ],
+          "integer_reference_error_squared_sum_per_channel": [
+            0,
+            0
+          ],
+          "integer_output_reference_cross_sum_per_channel": [
+            146027417700,
+            146027417700
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_NMSE_per_channel": [
+            0.0,
+            0.0
+          ],
+          "projection_gain_per_channel": [
+            1.0,
+            1.0
+          ],
+          "pcm_decode_divisor": 32768
+        },
+        "post_overlap": {
+          "scoring_interval_samples": [
+            19200,
+            29600
+          ],
+          "samples_per_channel": 10400,
+          "channels": 2,
+          "integer_squared_sum_E_per_channel": [
+            55834012650,
+            55834012650
+          ],
+          "integer_denominator_D_per_channel": 11166914969600,
+          "mean_square_per_channel": [
+            0.004999949655029923,
+            0.004999949655029923
+          ],
+          "integer_squared_sum_E_all_channels": 111668025300,
+          "integer_denominator_D_all_channels": 22333829939200,
+          "mean_square_all_channels": 0.004999949655029923,
+          "integer_reference_squared_sum_per_channel": [
+            55834012650,
+            55834012650
+          ],
+          "integer_reference_error_squared_sum_per_channel": [
+            0,
+            0
+          ],
+          "integer_output_reference_cross_sum_per_channel": [
+            55834012650,
+            55834012650
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_NMSE_per_channel": [
+            0.0,
+            0.0
+          ],
+          "projection_gain_per_channel": [
+            1.0,
+            1.0
+          ],
+          "pcm_decode_divisor": 32768
+        }
+      }
+    },
+    "naive": {
+      "file": "css_naive.wav",
+      "analytic": {
+        "primary": {
+          "scoring_interval_samples": [
+            2400,
+            29600
+          ],
+          "samples_per_channel": 27200,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            136.0000000000001,
+            135.99999999999994
+          ],
+          "mean_square_per_channel": [
+            0.010735842406688836,
+            0.01073584538482562
+          ],
+          "mean_square_all_channels": 0.010735843895757227,
+          "reference_error_squared_sum_per_channel": [
+            564.0299158060529,
+            564.0299968113732
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.02073639396345783,
+            0.0207363969415946
+          ],
+          "reference_NMSE_per_channel": [
+            4.147278792691562,
+            4.147279388318922
+          ],
+          "scope": "finite trigonometric sum of the declared crossfade; post-overlap integer-cycle control"
+        },
+        "post_overlap": {
+          "scoring_interval_samples": [
+            19200,
+            29600
+          ],
+          "samples_per_channel": 10400,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            52.00000000000008,
+            51.99999999999997
+          ],
+          "mean_square_per_channel": [
+            0.02000000000000003,
+            0.01999999999999999
+          ],
+          "mean_square_all_channels": 0.02000000000000001,
+          "reference_error_squared_sum_per_channel": [
+            468.00000000000074,
+            467.9999999999997
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.04500000000000007,
+            0.04499999999999997
+          ],
+          "reference_NMSE_per_channel": [
+            9.0,
+            9.0
+          ],
+          "scope": "finite trigonometric sum of the declared crossfade; post-overlap integer-cycle control"
+        }
+      },
+      "float_measurements": {
+        "primary": {
+          "scoring_interval_samples": [
+            2400,
+            29600
+          ],
+          "samples_per_channel": 27200,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            136.00000000000006,
+            136.0000000000001
+          ],
+          "mean_square_per_channel": [
+            0.010735842406688827,
+            0.01073584538482562
+          ],
+          "mean_square_all_channels": 0.010735843895757224,
+          "reference_error_squared_sum_per_channel": [
+            564.0299158060526,
+            564.0299968113732
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.020736393963457816,
+            0.0207363969415946
+          ],
+          "reference_NMSE_per_channel": [
+            4.147278792691561,
+            4.147279388318917
+          ],
+          "projection_gain_per_channel": [
+            -0.5000551556768982,
+            -0.5000551556768972
+          ]
+        },
+        "post_overlap": {
+          "scoring_interval_samples": [
+            19200,
+            29600
+          ],
+          "samples_per_channel": 10400,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            51.999999999999986,
+            51.99999999999997
+          ],
+          "mean_square_per_channel": [
+            0.019999999999999993,
+            0.01999999999999999
+          ],
+          "mean_square_all_channels": 0.01999999999999999,
+          "reference_error_squared_sum_per_channel": [
+            467.99999999999994,
+            467.9999999999998
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.04499999999999999,
+            0.04499999999999998
+          ],
+          "reference_NMSE_per_channel": [
+            9.000000000000002,
+            9.0
+          ],
+          "projection_gain_per_channel": [
+            -2.0,
+            -2.0
+          ]
+        }
+      },
+      "pcm_measurements": {
+        "primary": {
+          "scoring_interval_samples": [
+            2400,
+            29600
+          ],
+          "samples_per_channel": 27200,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            135.9986306168139,
+            135.9986306168139
+          ],
+          "mean_square_per_channel": [
+            0.01073623805782785,
+            0.010736240661285324
+          ],
+          "mean_square_all_channels": 0.010736239359556587,
+          "reference_error_squared_sum_per_channel": [
+            564.044780430384,
+            564.0448200618848
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.02073694045699941,
+            0.020736941914039884
+          ],
+          "reference_NMSE_per_channel": [
+            4.14742985184624,
+            4.147430143257268
+          ],
+          "projection_gain_per_channel": [
+            -0.5000803097198095,
+            -0.5000801950769551
+          ]
+        },
+        "post_overlap": {
+          "scoring_interval_samples": [
+            19200,
+            29600
+          ],
+          "samples_per_channel": 10400,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            51.999476412311196,
+            51.999476412311196
+          ],
+          "mean_square_per_channel": [
+            0.020001084776595235,
+            0.020001084776595235
+          ],
+          "mean_square_all_channels": 0.020001084776595235,
+          "reference_error_squared_sum_per_channel": [
+            468.01534933038056,
+            468.01534933038056
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.04500147589715198,
+            0.04500147589715198
+          ],
+          "reference_NMSE_per_channel": [
+            9.000385804261196,
+            9.000385804261196
+          ],
+          "projection_gain_per_channel": [
+            -2.000064285188,
+            -2.000064285188
+          ]
+        }
+      },
+      "pcm_integer_measurements": {
+        "primary": {
+          "scoring_interval_samples": [
+            2400,
+            29600
+          ],
+          "samples_per_channel": 27200,
+          "channels": 2,
+          "integer_squared_sum_E_per_channel": [
+            313560181115,
+            313560257151
+          ],
+          "integer_denominator_D_per_channel": 29205777612800,
+          "mean_square_per_channel": [
+            0.01073623805782785,
+            0.010736240661285324
+          ],
+          "integer_squared_sum_E_all_channels": 627120438266,
+          "integer_denominator_D_all_channels": 58411555225600,
+          "mean_square_all_channels": 0.010736239359556587,
+          "integer_reference_squared_sum_per_channel": [
+            146027417700,
+            146027417700
+          ],
+          "integer_reference_error_squared_sum_per_channel": [
+            605638471357,
+            605638513911
+          ],
+          "integer_output_reference_cross_sum_per_channel": [
+            -73025436271,
+            -73025419530
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.02073694045699941,
+            0.020736941914039884
+          ],
+          "reference_NMSE_per_channel": [
+            4.14742985184624,
+            4.147430143257268
+          ],
+          "projection_gain_per_channel": [
+            -0.5000803097198095,
+            -0.5000801950769551
+          ],
+          "pcm_decode_divisor": 32768
+        },
+        "post_overlap": {
+          "scoring_interval_samples": [
+            19200,
+            29600
+          ],
+          "samples_per_channel": 10400,
+          "channels": 2,
+          "integer_squared_sum_E_per_channel": [
+            223350413000,
+            223350413000
+          ],
+          "integer_denominator_D_per_channel": 11166914969600,
+          "mean_square_per_channel": [
+            0.020001084776595235,
+            0.020001084776595235
+          ],
+          "integer_squared_sum_E_all_channels": 446700826000,
+          "integer_denominator_D_all_channels": 22333829939200,
+          "mean_square_all_channels": 0.020001084776595235,
+          "integer_reference_squared_sum_per_channel": [
+            55834012650,
+            55834012650
+          ],
+          "integer_reference_error_squared_sum_per_channel": [
+            502527654850,
+            502527654850
+          ],
+          "integer_output_reference_cross_sum_per_channel": [
+            -111671614600,
+            -111671614600
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.04500147589715198,
+            0.04500147589715198
+          ],
+          "reference_NMSE_per_channel": [
+            9.000385804261196,
+            9.000385804261196
+          ],
+          "projection_gain_per_channel": [
+            -2.000064285188,
+            -2.000064285188
+          ],
+          "pcm_decode_divisor": 32768
+        }
+      }
+    },
+    "polarity": {
+      "file": "css_polarity.wav",
+      "analytic": {
+        "primary": {
+          "scoring_interval_samples": [
+            2400,
+            29600
+          ],
+          "samples_per_channel": 27200,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            136.0000000000001,
+            135.99999999999994
+          ],
+          "mean_square_per_channel": [
+            0.012304227625973873,
+            0.012304227956877946
+          ],
+          "mean_square_all_channels": 0.012304227791425908,
+          "reference_error_squared_sum_per_channel": [
+            62.66999064511699,
+            62.669999645708124
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.002304043773717536,
+            0.002304044104621622
+          ],
+          "reference_NMSE_per_channel": [
+            0.4608087547435069,
+            0.4608088209243246
+          ],
+          "scope": "finite trigonometric sum of the declared crossfade; post-overlap integer-cycle control"
+        },
+        "post_overlap": {
+          "scoring_interval_samples": [
+            19200,
+            29600
+          ],
+          "samples_per_channel": 10400,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            52.00000000000008,
+            51.99999999999997
+          ],
+          "mean_square_per_channel": [
+            0.02000000000000003,
+            0.01999999999999999
+          ],
+          "mean_square_all_channels": 0.02000000000000001,
+          "reference_error_squared_sum_per_channel": [
+            52.00000000000008,
+            51.99999999999997
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.005000000000000008,
+            0.0049999999999999975
+          ],
+          "reference_NMSE_per_channel": [
+            1.0,
+            1.0
+          ],
+          "scope": "finite trigonometric sum of the declared crossfade; post-overlap integer-cycle control"
+        }
+      },
+      "float_measurements": {
+        "primary": {
+          "scoring_interval_samples": [
+            2400,
+            29600
+          ],
+          "samples_per_channel": 27200,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            136.00000000000006,
+            136.0000000000001
+          ],
+          "mean_square_per_channel": [
+            0.012304227625973864,
+            0.012304227956877953
+          ],
+          "mean_square_all_channels": 0.012304227791425908,
+          "reference_error_squared_sum_per_channel": [
+            62.66999064511695,
+            62.66999964570813
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.002304043773717535,
+            0.0023040441046216224
+          ],
+          "reference_NMSE_per_channel": [
+            0.46080875474350674,
+            0.4608088209243241
+          ],
+          "projection_gain_per_channel": [
+            1.5000183852256324,
+            1.5000183852256321
+          ]
+        },
+        "post_overlap": {
+          "scoring_interval_samples": [
+            19200,
+            29600
+          ],
+          "samples_per_channel": 10400,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            51.999999999999986,
+            51.99999999999997
+          ],
+          "mean_square_per_channel": [
+            0.019999999999999993,
+            0.01999999999999999
+          ],
+          "mean_square_all_channels": 0.01999999999999999,
+          "reference_error_squared_sum_per_channel": [
+            51.999999999999986,
+            51.99999999999997
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.004999999999999998,
+            0.0049999999999999975
+          ],
+          "reference_NMSE_per_channel": [
+            1.0,
+            1.0
+          ],
+          "projection_gain_per_channel": [
+            2.0,
+            2.0
+          ]
+        }
+      },
+      "pcm_measurements": {
+        "primary": {
+          "scoring_interval_samples": [
+            2400,
+            29600
+          ],
+          "samples_per_channel": 27200,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            135.9986306168139,
+            135.9986306168139
+          ],
+          "mean_square_per_channel": [
+            0.0123046197867199,
+            0.012304625971146914
+          ],
+          "mean_square_all_channels": 0.012304622878933406,
+          "reference_error_squared_sum_per_channel": [
+            62.676287421025336,
+            62.676352977752686
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.0023042752728318137,
+            0.0023042776830056134
+          ],
+          "reference_NMSE_per_channel": [
+            0.4608596949598733,
+            0.46086017699948684
+          ],
+          "projection_gain_per_channel": [
+            1.5000445208311042,
+            1.500044898260226
+          ]
+        },
+        "post_overlap": {
+          "scoring_interval_samples": [
+            19200,
+            29600
+          ],
+          "samples_per_channel": 10400,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            51.999476412311196,
+            51.999476412311196
+          ],
+          "mean_square_per_channel": [
+            0.020001084776595235,
+            0.020001084776595235
+          ],
+          "mean_square_all_channels": 0.020001084776595235,
+          "reference_error_squared_sum_per_channel": [
+            52.00616684742272,
+            52.00616684742272
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.005000592966098338,
+            0.005000592966098338
+          ],
+          "reference_NMSE_per_channel": [
+            1.0001286635091953,
+            1.0001286635091953
+          ],
+          "projection_gain_per_channel": [
+            2.000064285188,
+            2.000064285188
+          ]
+        }
+      },
+      "pcm_integer_measurements": {
+        "primary": {
+          "scoring_interval_samples": [
+            2400,
+            29600
+          ],
+          "samples_per_channel": 27200,
+          "channels": 2,
+          "integer_squared_sum_E_per_channel": [
+            359365989101,
+            359366169722
+          ],
+          "integer_denominator_D_per_channel": 29205777612800,
+          "mean_square_per_channel": [
+            0.0123046197867199,
+            0.012304625971146914
+          ],
+          "integer_squared_sum_E_all_channels": 718732158823,
+          "integer_denominator_D_all_channels": 58411555225600,
+          "mean_square_all_channels": 0.012304622878933408,
+          "integer_reference_squared_sum_per_channel": [
+            146027417700,
+            146027417700
+          ],
+          "integer_reference_error_squared_sum_per_channel": [
+            67298151177,
+            67298221568
+          ],
+          "integer_output_reference_cross_sum_per_channel": [
+            219047627812,
+            219047682927
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.0023042752728318137,
+            0.0023042776830056134
+          ],
+          "reference_NMSE_per_channel": [
+            0.4608596949598733,
+            0.46086017699948684
+          ],
+          "projection_gain_per_channel": [
+            1.5000445208311042,
+            1.500044898260226
+          ],
+          "pcm_decode_divisor": 32768
+        },
+        "post_overlap": {
+          "scoring_interval_samples": [
+            19200,
+            29600
+          ],
+          "samples_per_channel": 10400,
+          "channels": 2,
+          "integer_squared_sum_E_per_channel": [
+            223350413000,
+            223350413000
+          ],
+          "integer_denominator_D_per_channel": 11166914969600,
+          "mean_square_per_channel": [
+            0.020001084776595235,
+            0.020001084776595235
+          ],
+          "integer_squared_sum_E_all_channels": 446700826000,
+          "integer_denominator_D_all_channels": 22333829939200,
+          "mean_square_all_channels": 0.020001084776595235,
+          "integer_reference_squared_sum_per_channel": [
+            55834012650,
+            55834012650
+          ],
+          "integer_reference_error_squared_sum_per_channel": [
+            55841196450,
+            55841196450
+          ],
+          "integer_output_reference_cross_sum_per_channel": [
+            111671614600,
+            111671614600
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.005000592966098338,
+            0.005000592966098338
+          ],
+          "reference_NMSE_per_channel": [
+            1.0001286635091953,
+            1.0001286635091953
+          ],
+          "projection_gain_per_channel": [
+            2.000064285188,
+            2.000064285188
+          ],
+          "pcm_decode_divisor": 32768
+        }
+      }
+    },
+    "corrected": {
+      "file": "css_corrected.wav",
+      "analytic": {
+        "primary": {
+          "scoring_interval_samples": [
+            2400,
+            29600
+          ],
+          "samples_per_channel": 27200,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            136.0000000000001,
+            135.99999999999994
+          ],
+          "mean_square_per_channel": [
+            0.0050000000000000044,
+            0.0049999999999999975
+          ],
+          "mean_square_all_channels": 0.005000000000000001,
+          "reference_error_squared_sum_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_NMSE_per_channel": [
+            0.0,
+            0.0
+          ],
+          "scope": "finite trigonometric sum of the declared crossfade; post-overlap integer-cycle control"
+        },
+        "post_overlap": {
+          "scoring_interval_samples": [
+            19200,
+            29600
+          ],
+          "samples_per_channel": 10400,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            52.00000000000008,
+            51.99999999999997
+          ],
+          "mean_square_per_channel": [
+            0.005000000000000008,
+            0.0049999999999999975
+          ],
+          "mean_square_all_channels": 0.005000000000000003,
+          "reference_error_squared_sum_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_NMSE_per_channel": [
+            0.0,
+            0.0
+          ],
+          "scope": "finite trigonometric sum of the declared crossfade; post-overlap integer-cycle control"
+        }
+      },
+      "float_measurements": {
+        "primary": {
+          "scoring_interval_samples": [
+            2400,
+            29600
+          ],
+          "samples_per_channel": 27200,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            136.00000000000006,
+            136.0000000000001
+          ],
+          "mean_square_per_channel": [
+            0.005000000000000002,
+            0.0050000000000000044
+          ],
+          "mean_square_all_channels": 0.005000000000000003,
+          "reference_error_squared_sum_per_channel": [
+            6.85029207094235e-32,
+            7.248718828187459e-32
+          ],
+          "reference_error_mean_square_per_channel": [
+            2.518489731964099e-36,
+            2.66497015742186e-36
+          ],
+          "reference_NMSE_per_channel": [
+            5.036979463928196e-34,
+            5.329940314843716e-34
+          ],
+          "projection_gain_per_channel": [
+            1.0,
+            1.0
+          ]
+        },
+        "post_overlap": {
+          "scoring_interval_samples": [
+            19200,
+            29600
+          ],
+          "samples_per_channel": 10400,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            51.999999999999986,
+            51.99999999999997
+          ],
+          "mean_square_per_channel": [
+            0.004999999999999998,
+            0.0049999999999999975
+          ],
+          "mean_square_all_channels": 0.0049999999999999975,
+          "reference_error_squared_sum_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_NMSE_per_channel": [
+            0.0,
+            0.0
+          ],
+          "projection_gain_per_channel": [
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "pcm_measurements": {
+        "primary": {
+          "scoring_interval_samples": [
+            2400,
+            29600
+          ],
+          "samples_per_channel": 27200,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            135.9986306168139,
+            135.9986306168139
+          ],
+          "mean_square_per_channel": [
+            0.004999949655029923,
+            0.004999949655029923
+          ],
+          "mean_square_all_channels": 0.004999949655029923,
+          "reference_error_squared_sum_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_NMSE_per_channel": [
+            0.0,
+            0.0
+          ],
+          "projection_gain_per_channel": [
+            1.0,
+            1.0
+          ]
+        },
+        "post_overlap": {
+          "scoring_interval_samples": [
+            19200,
+            29600
+          ],
+          "samples_per_channel": 10400,
+          "channels": 2,
+          "reference_squared_sum_per_channel": [
+            51.999476412311196,
+            51.999476412311196
+          ],
+          "mean_square_per_channel": [
+            0.004999949655029923,
+            0.004999949655029923
+          ],
+          "mean_square_all_channels": 0.004999949655029923,
+          "reference_error_squared_sum_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_NMSE_per_channel": [
+            0.0,
+            0.0
+          ],
+          "projection_gain_per_channel": [
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "pcm_integer_measurements": {
+        "primary": {
+          "scoring_interval_samples": [
+            2400,
+            29600
+          ],
+          "samples_per_channel": 27200,
+          "channels": 2,
+          "integer_squared_sum_E_per_channel": [
+            146027417700,
+            146027417700
+          ],
+          "integer_denominator_D_per_channel": 29205777612800,
+          "mean_square_per_channel": [
+            0.004999949655029923,
+            0.004999949655029923
+          ],
+          "integer_squared_sum_E_all_channels": 292054835400,
+          "integer_denominator_D_all_channels": 58411555225600,
+          "mean_square_all_channels": 0.004999949655029923,
+          "integer_reference_squared_sum_per_channel": [
+            146027417700,
+            146027417700
+          ],
+          "integer_reference_error_squared_sum_per_channel": [
+            0,
+            0
+          ],
+          "integer_output_reference_cross_sum_per_channel": [
+            146027417700,
+            146027417700
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_NMSE_per_channel": [
+            0.0,
+            0.0
+          ],
+          "projection_gain_per_channel": [
+            1.0,
+            1.0
+          ],
+          "pcm_decode_divisor": 32768
+        },
+        "post_overlap": {
+          "scoring_interval_samples": [
+            19200,
+            29600
+          ],
+          "samples_per_channel": 10400,
+          "channels": 2,
+          "integer_squared_sum_E_per_channel": [
+            55834012650,
+            55834012650
+          ],
+          "integer_denominator_D_per_channel": 11166914969600,
+          "mean_square_per_channel": [
+            0.004999949655029923,
+            0.004999949655029923
+          ],
+          "integer_squared_sum_E_all_channels": 111668025300,
+          "integer_denominator_D_all_channels": 22333829939200,
+          "mean_square_all_channels": 0.004999949655029923,
+          "integer_reference_squared_sum_per_channel": [
+            55834012650,
+            55834012650
+          ],
+          "integer_reference_error_squared_sum_per_channel": [
+            0,
+            0
+          ],
+          "integer_output_reference_cross_sum_per_channel": [
+            55834012650,
+            55834012650
+          ],
+          "reference_error_mean_square_per_channel": [
+            0.0,
+            0.0
+          ],
+          "reference_NMSE_per_channel": [
+            0.0,
+            0.0
+          ],
+          "projection_gain_per_channel": [
+            1.0,
+            1.0
+          ],
+          "pcm_decode_divisor": 32768
+        }
+      }
+    }
+  },
+  "overlap_fit": {
+    "matching": {
+      "status": "matched",
+      "reason": "matched",
+      "current_indices_for_previous": [
+        0,
+        1
+      ],
+      "absolute_centered_correlation": [
+        [
+          1.0,
+          3.4555285306944325e-15
+        ],
+        [
+          3.4555285306944325e-15,
+          1.0
+        ]
+      ],
+      "candidate_mean_scores_identity_swap": [
+        1.0,
+        3.4555285306944325e-15
+      ],
+      "margin": 0.9999999999999966,
+      "thresholds": {
+        "minimum_centered_rms": 1e-08,
+        "minimum_correlation": 0.5,
+        "minimum_margin": 0.05
+      }
+    },
+    "float_application_gain": [
+      -0.5,
+      -0.5
+    ],
+    "decoded_pcm_overlap_application_gain": [
+      -0.49998391809555326,
+      -0.49998391809555326
+    ],
+    "pcm_overlap_scope": "separate in-memory PCM encoding of the two observed blocks; not a new export or re-fit of corrected WAV",
+    "application": "floating overlap gain applied before common PCM export; decoded gain is diagnostic only"
+  },
+  "pcm": {
+    "format": "signed little-endian PCM16",
+    "scale": 32768,
+    "rounding": "nearest, ties to even",
+    "dither": "none",
+    "clipping": "rejected",
+    "max_rounding_error_bound": 1.52587890625e-05
+  },
+  "limits": "Original known two-slot sinusoid stitching control, not speech, a blind CSS separator, STFT separation, speaker recognition or industrial performance. The source-slot order and sample-clock correspondence are fixed. Absolute correlation assigns slots but does not repair polarity or gain. A real scalar is fitted only between observed overlapping blocks, not to clean truth; it cannot repair arbitrary distortion, delay or frequency-dependent phase. Reference and fully corrected PCM deliberately match. No per-file normalization, fitted reference delay, noise, random independence or formal listening study. Fixed-window uncompensated MSE/NMSE measures the gain error; SI-SDR is not used as a gain check.",
+  "listening": "Start at low volume; never autoplay. No formal listening study."
+}

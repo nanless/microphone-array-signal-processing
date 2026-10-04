@@ -562,6 +562,16 @@ e3b3176d835837441224e4906b7c2befadcdc4fe2ce6163245b7d9a9ad0d9229
 
 2026-10-04取得固定[rir-encoder](https://github.com/sp-uhh/rir-encoder/tree/8ee0ba7e083c8e38170dc13632cc9937a702d0f0)的八份原文本，共20717字节，许可为MIT；包含README、许可、依赖、损失、网络、数据、训练与提取入口。官方origin、固定HEAD、逐blob/SHA与洁净状态均已核验；未导入训练脚本、取得权重或运行完整FiLM-SGMSE恢复链。训练入口含顶层目录创建与执行逻辑，静态阅读不能改称模型运行。[增强研究](02_aec_wpe_separation.md#rir-encoder-candidate)另说明训练与提取的STFT边界差异。
 
-新增前原字节保存在[109项锁表](../source_snapshots/SOURCES.a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505.json)与[当时获取状态](../source_snapshots/SOURCE_STATUS.abc28f6f15512da8267618bca318b10033909ec2afdb6090b6aa2d0f1281f0e9.json)，由历史身份核登记。当前110项由真实获取工具重核：70项通过、22项选集不匹配、17项仅索引、1项既有AEC缓存失败，退出1；旧109项完整状态逐项不变。93项有受管理源码工作区。新增取得状态不能证明方法、GPU或工业性能已运行。
+新增前原字节保存在[109项锁表](../source_snapshots/SOURCES.a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505.json)与[当时获取状态](../source_snapshots/SOURCE_STATUS.abc28f6f15512da8267618bca318b10033909ec2afdb6090b6aa2d0f1281f0e9.json)，由历史身份核登记。加入该项目后的110项当时由真实获取工具重核：70项通过、22项选集不匹配、17项仅索引、1项既有AEC缓存失败，退出1；旧109项完整状态逐项不变。93项有受管理源码工作区。新增取得状态不能证明方法、GPU或工业性能已运行。
 
 [第7章三个当前报告](02_aec_wpe_separation.md#sec-u-841a085a72)分别绑定当前工具与来源身份，历史三报告保持原字节。共享来源合同变动后，第4章DOA/SAID、第5章三份接口报告、第6章AEC/APA当前报告已真实重跑；DOA首次在主环境因缺pyroomacoustics失败，随后在既有PRA0.10.0隔离环境执行，不能把首次失败省略。原报告中的限定调用、选集不匹配、静态检查及未运行条件继续分别记录。
+
+
+## 12. 第8章作者OverIVA与MeCo来源及历史状态
+
+2026-10-04取得[OverIVA作者固定提交](https://github.com/onolab-tmu/overiva/tree/1cb3189112889ebfe2ccbbde0f55b1db6020fc48 "citation")四文件选集，MIT通知、输入/滤波器轴序与PCA入口静态边界见[增强研究B03](02_aec_wpe_separation.md)。未取得语音数据或执行作者论文仿真。
+
+新增前原110项锁表SHA为`eec80748e5f1fcc01d33e281b91a4482f52566d8e6b74bdb737e017604ec6487`，原状态SHA为`4cc8cbd48e3e98b51a24705468415d10654aa349f3946fb98ef48e9c4856f4f6`；原字节保存于[source_snapshots](../source_snapshots/)并由[source_history.py](../core/source_history.py)登记。加入OverIVA后的111项当时用真实工具离线核验，71项通过、22项原选集不匹配、17项仅索引、1项原AEC缓存失败，真实退出1。当时94项有独立受管理工作区。旧报告继续保留真实历史身份，当前方法执行与源码取得状态分别记录。
+
+
+随后按固定`375ac4dee2a8e193aaa48553289499a6f43d93e6`取得MeCo的16个MIT核心/入口/配置原文本，共95305字节。部分选集不包括混合许可骨干和NVIDIA NC CUDA，缺少独立运行闭包；未执行Torch/CUDA或取得权重与数据。具体原输入、默认参数、JVP与评价边界见[增强N19](02_aec_wpe_separation.md#meco-candidate)。新增前111项原锁/状态再次按原字节保存并登记，当前112项实际离线核验为72通过、22原选集不匹配、17仅索引、1原AEC失败，真实退出1；95项有受管理工作区。所有原111项完整状态保持，来源取得不是性能成绩。

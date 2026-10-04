@@ -1,8 +1,8 @@
 # 第三方实现与工业生态索引
 
-原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 110 个 Git 上游项目；已在 `codes/chapters/ch00/upstream/_downloads/` 取得 93 个独立源码工作区。其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件，DiCoW v1 演示与 TS-ASR-Whisper v1 训练源码于 2026-09-28 按固定提交取得。2026-09-30 新增原作者湿空气声速模型，2026-10-01取得SAID及NeMo WPE固定源码，2026-10-02取得TAC四文件，2026-10-04另取得作者WOLA-DANSE、paderwasn与TI-DANSE+ batch三个限定源码选集，并取得WASN的11个与LibriCSS的27个源码/说明/许可文件。
+原有索引核实于 2026-09-22，新增 RLS/Kalman AEC 来源核实于 2026-09-23。此索引包含 112 个 Git 上游项目；已在 `codes/chapters/ch00/upstream/_downloads/` 取得 95 个独立源码工作区。其中 pyaec、PFDKF 与 Subband_Kalman_AEC 于 2026-09-24 按固定提交取得指定源码和许可文件，DiCoW v1 演示与 TS-ASR-Whisper v1 训练源码于 2026-09-28 按固定提交取得。2026-09-30 新增原作者湿空气声速模型，2026-10-01取得SAID及NeMo WPE固定源码，2026-10-02取得TAC四文件，2026-10-04另取得作者WOLA-DANSE、paderwasn与TI-DANSE+ batch三个限定源码选集，并取得WASN的11个与LibriCSS的27个源码/说明/许可文件。
 
-当前离线核验逐条比较完整源码包含规则及32条扩展名排除规则：70项通过、22项旧工作区仅有20条排除规则而记为 `source_selection_mismatch`、17项仅登记来源，AEC Challenge 的5个真实录音有本地变动而记为失败。旧工作区均保留，不自动补规则或删除文件。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
+当前离线核验逐条比较完整源码包含规则及32条扩展名排除规则：72项通过、22项旧工作区仅有20条排除规则而记为 `source_selection_mismatch`、17项仅登记来源，AEC Challenge 的5个真实录音有本地变动而记为失败。旧工作区均保留，不自动补规则或删除文件。pystoi 是软件作者维护的 Python 实现，不称为原论文作者的官方 Python 程序。获取状态与完整提交见 [SOURCE_STATUS.json](SOURCE_STATUS.json) 和 [SOURCES.lock.json](SOURCES.lock.json)。状态报告由获取工具离线生成；不能用源码获取结果证明新增项目已运行。
 
 “已取得”表示本地存在独立来源工作区；是否符合当前提交、工作区状态、指定入口和完整选集政策，以状态报告分别判断。取得源码不表示已经安装依赖、编译、运行训练、取得权重、完成声学测试或取得产品使用资格。每项的完整入口和限制保存在锁定清单；逐算法解释、最小实验和失效条件见[研究手册](research/README.md)。
 
@@ -52,6 +52,8 @@ SMP-PHAT 的本地实验额外使用 FFTW 3.3.10 单精度静态库。它是构�
 | [onnxruntime](https://github.com/microsoft/onnxruntime/tree/48795e0281bcaa6b3b63b28af5e078b4c41e995f) | 算子、执行提供程序与线程调度 | MIT | 已取得独立源码 |
 | [icodoa](https://github.com/DavidDiazGuerra/icoDOA/tree/04d1a89594c78ae3cf42f07d94c3737bdc1f7c82) | 二十面体卷积定位及追踪 | AGPL-3.0 | 已取得独立源码 |
 | [torchaudio](https://github.com/pytorch/audio/tree/b85c99ccac635a06b1afaf5284bf4c1a00c1f9b5) | SoudenMVDR 教程与多通道接口 | BSD-2-Clause | 已取得独立源码 |
+| [MeCo作者核心](https://github.com/rlaehghks5/MECO/tree/375ac4dee2a8e193aaa48553289499a6f43d93e6) | 一步平均流纠正、训练/评价接口 | MIT核心；不纳入Apache助手/NVIDIA NC CUDA，权重与数据另核 | 16原文本95305B部分选集已取得；非独立软件、未训练或执行模型；静态边界见增强N19 |
+| [OverIVA作者实现](https://github.com/onolab-tmu/overiva/tree/1cb3189112889ebfe2ccbbde0f55b1db6020fc48) | 过定目标与高斯背景、PCA对照 | MIT；完整原版权与通知保留 | 四文件固定选集已取得；轴序与入口静态核查，未运行论文仿真或取得数据；E08-31为独立给定约束计算 |
 | [piva](https://github.com/fakufaku/piva/tree/7fa273e9aa597aba57067aef2e7b6c999dadef26) | AuxIVA、OverIVA、FIVE 与更新规则 | GPL-3.0 | 已取得独立源码 |
 | [meeteval](https://github.com/fgnt/meeteval/tree/6e3dc81284f2d6928f7ef9e620fd3b6906daa429) | 说话人、排列及时间约束的会议评分 | MIT | 已取得独立源码 |
 | [kaldialign](https://github.com/pzelasko/kaldialign/tree/06ac40f03c3d368932adf8536965a088d54189b1) | MeetEval相关编辑距离路径的Python/C++编译依赖；源自Kaldi对齐代码 | Apache-2.0；构建还需另核pybind11依赖及其条款 | 已取得源码选集并核验提交/范围；未构建、安装或运行评分接口 |

@@ -29,7 +29,7 @@ from codes.chapters.ch02.core.spectral import istft, stft
 
 
 from codes.chapters.ch00.io_contracts import (
-    validate_asset_directory as _shared_asset_directory,
+    validate_asset_directory as _shared_asset_directory, same_metadata, strict_json_loads, validate_parent_chain,
 )
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -37,6 +37,35 @@ OUT = ROOT / "codes/chapters/ch08/gss_audio"
 ASSET_NAMES = {"source_1.wav", "source_2.wav", "mixture.wav", "enhanced_correct.wav",
                "enhanced_missed.wav", "STATE.npz", "MANIFEST.json"}
 
+
+# Reviewed exact declarations of this deterministic teaching fixture.
+REQUIRED_MODEL = {'scope': 'original NumPy activity-guided cACG fixed-count updates, target/non-target SCM and mask-MVDR '
+          'on synthetic anechoic noise-like sources; not exact conditional-likelihood EM, official '
+          'GPU-GSS or speech',
+ 'sample_rate_hz': 16000,
+ 'seed': 20260924,
+ 'stft': {'n_fft': 256,
+          'hop': 128,
+          'center': True,
+          'window': 'periodic Hann',
+          'padding': '128 zeros at each end; complete frames',
+          'synthesis': 'weighted overlap-add, trim leading 128 and return 32000 samples'},
+ 'sources': 'two independent seeded Gaussian sequences with 30 ms onset/offset; first active [0.1,1.5) '
+            's, second [0.5,1.9) s',
+ 'array': 'two microphones; source 1 direct at mic 0 and delayed two samples at mic 1; source 2 '
+          'reversed; independent microphone noise RMS 0.003',
+ 'wpe': 'bypassed because the fixture contains no reverberation; code can optionally call the '
+        'independent offline WPE teaching implementation',
+ 'cacgmm_iterations': 8,
+ 'shape_loading': 0.02,
+ 'energy_gate': {'absolute_norm_floor': 1e-12, 'relative_to_bin_peak': 1e-07},
+ 'state_phase': 'posterior uses e_step_shapes/priors; shape_matrices/post_update_priors follow its '
+                'final M-like update',
+ 'stopping_rule': 'fixed iteration count on nonempty bins; no convergence claim',
+ 'scored_interval_seconds': [0.2, 1.45],
+ 'limits': 'one deterministic room-free mixture, external near-oracle activity, reference microphone 0, '
+           'no diarization, room, real meeting, ASR or WER; single-case SI-SDR is not a general '
+           'performance claim'}
 
 def _check_output_members(out_dir: Path, *, check: bool) -> None:
     _shared_asset_directory(out_dir, ASSET_NAMES, check=check)
@@ -125,13 +154,39 @@ def generate(out_dir: Path = OUT, *, check: bool = False) -> dict:
     out_dir = Path(out_dir)
     _check_output_members(out_dir, check=check)
     result, arrays = run_experiment()
+    if not isinstance(result, dict) or any(not same_metadata(result.get(key), value)
+                                          for key, value in REQUIRED_MODEL.items()):
+        raise ValueError('GSS true parameters differ from fixed asset contract')
     wav_names = ["source_1", "source_2", "mixture", "enhanced_correct", "enhanced_missed"]
+    if (not isinstance(arrays, dict) or any(name not in arrays for name in wav_names)
+            or any(not isinstance(arrays[name], np.ndarray) or arrays[name].dtype.kind != 'f'
+                   or arrays[name].shape != (2 if name == 'mixture' else 1, 32000)
+                   or not np.isfinite(arrays[name]).all() for name in wav_names)):
+        raise ValueError('fixed finite GSS waveform shapes required')
+    truth = arrays['source_1'][0, 3200:23200]
+    scored = {name: si_sdr(arrays[name][0, 3200:23200], truth)
+              for name in ('mixture', 'enhanced_correct', 'enhanced_missed')}
+    if (not same_metadata(result.get('si_sdr_db'), {'reference_mic0': scored['mixture'],
+                                                   'correct_activity_output': scored['enhanced_correct']})
+            or not same_metadata(result.get('activity_error'), {
+                'missed_target_interval_seconds': [0.1, 1.5],
+                'correct_output_scored_si_sdr_db': scored['enhanced_correct'],
+                'missed_output_scored_si_sdr_db': scored['enhanced_missed'],
+                'missed_target_max_posterior': 0.0})):
+        raise ValueError('GSS float scores differ from generated waveforms')
+    for name, value in arrays.items():
+        if not isinstance(value, np.ndarray) or value.dtype.kind not in 'ifcb' or not np.isfinite(value).all():
+            raise ValueError('finite numeric GSS state arrays required: '+name)
     peak = max(float(np.max(np.abs(arrays[name]))) for name in wav_names)
+    if not np.isfinite(peak) or peak <= 0:
+        raise ValueError('positive finite GSS export peak required')
     gain = 0.7 / peak
+    if not np.isfinite(gain) or gain <= 0:
+        raise ValueError('positive finite GSS common export gain required')
     result["common_export_gain"] = gain
     result["environment"] = {"python": platform.python_version(), "numpy": np.__version__, "system": platform.system(), "machine": platform.machine()}
     sources = ["codes/chapters/ch08/examples/gss_teaching_demo.py", "codes/chapters/ch08/core/gss_teaching.py", "codes/chapters/ch08/core/separation.py", "codes/chapters/ch02/core/spectral.py", "codes/chapters/ch02/core/conventions.py", "codes/chapters/ch00/core/audio_samples.py", "codes/chapters/ch07/core/dereverberation.py", 'codes/chapters/ch00/io_contracts.py']
-    result["generator_inputs"] = {path: hashlib.sha256((ROOT / path).read_bytes()).hexdigest() for path in sources}
+    result["generator_inputs"] = {path: hashlib.sha256(validate_parent_chain(ROOT / path).read_bytes()).hexdigest() for path in sources}
     result["pcm"] = "little-endian signed PCM16, nearest-even rounding, no dither; common gain for all files"
     result["score"] = "reference mic0 source1, [3200,23200) samples, centered SI-SDR; no time alignment, float and decoded PCM reported separately"
     files = {}
@@ -152,12 +207,15 @@ def generate(out_dir: Path = OUT, *, check: bool = False) -> dict:
     files["STATE.npz"] = {"sha256": hashlib.sha256(contents["STATE.npz"]).hexdigest()}
     result["files"] = files
     contents["MANIFEST.json"] = (json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + "\n").encode()
+    strict_json_loads(contents['MANIFEST.json'])
     if check:
+        strict_json_loads((out_dir/'MANIFEST.json').read_bytes())
         for name, content in contents.items():
             if not (out_dir / name).is_file() or (out_dir / name).read_bytes() != content:
                 raise ValueError(f"GSS asset missing or stale: {name}")
     else:
         out_dir.mkdir(parents=True, exist_ok=True)
+        _check_output_members(out_dir, check=False)
         for name, content in contents.items():
             (out_dir / name).write_bytes(content)
     return result

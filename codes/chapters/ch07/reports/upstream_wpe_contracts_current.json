@@ -1,12 +1,12 @@
 {
   "schema_version": 2,
-  "created_utc": "2026-10-04T12:23:25.658478+00:00",
+  "created_utc": "2026-10-04T14:28:05.792698+00:00",
   "verified_date_asia_shanghai": "2026-10-04",
   "audit_source_sha256": "4f6197e23f2558bf96da7dc33bc3d12779dd7a87d98ea1bd495a89dc739bc020",
-  "lock_sha256": "eec80748e5f1fcc01d33e281b91a4482f52566d8e6b74bdb737e017604ec6487",
+  "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
   "actual_dependency_sha256": {
     "codes/chapters/ch07/examples/audit_upstream_wpe_contracts.py": "4f6197e23f2558bf96da7dc33bc3d12779dd7a87d98ea1bd495a89dc739bc020",
-    "codes/chapters/ch04/core/upstream_contracts.py": "2bb8c2191ae73632edf7bd62b0ac6e20ced9d804e28345809aa03d429d186e52",
+    "codes/chapters/ch04/core/upstream_contracts.py": "f4ede23fef31d6b1d37db6ac5a28797edd3a9c27f32d5c20974d6fe83eec65e5",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },
@@ -32,12 +32,12 @@
           "nara_wpe/tf_wpe.py"
         ]
       },
-      "lock_sha256": "eec80748e5f1fcc01d33e281b91a4482f52566d8e6b74bdb737e017604ec6487",
+      "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "4cc8cbd48e3e98b51a24705468415d10654aa349f3946fb98ef48e9c4856f4f6",
+      "status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
       "recorded_complete_selection": {
         "id": "nara_wpe",
         "revision": "a166779cca2088817e330481bd20af1a2c598555",
@@ -132,12 +132,12 @@
           "tests/collections/audio/test_audio_modules.py"
         ]
       },
-      "lock_sha256": "eec80748e5f1fcc01d33e281b91a4482f52566d8e6b74bdb737e017604ec6487",
+      "lock_sha256": "d679c9d005768ea5f5d51b3e1f5dc33a99f317e859eee252250d343ca2ddb63a",
       "source_document_paths": {
         "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
         "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
       },
-      "status_sha256": "4cc8cbd48e3e98b51a24705468415d10654aa349f3946fb98ef48e9c4856f4f6",
+      "status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
       "recorded_complete_selection": {
         "id": "nemo_wpe",
         "revision": "2381f42f6979449b5b99538f8f80135831009b51",
@@ -440,7 +440,7 @@
     }
   },
   "identity_selection_boundary": "Used original file identity and complete acquisition selection are independent; no method run upgrades acquisition or full-framework execution",
-  "source_status_sha256": "4cc8cbd48e3e98b51a24705468415d10654aa349f3946fb98ef48e9c4856f4f6",
+  "source_status_sha256": "e6108565144184bdafbd9c6813cf510fb2c9ee6448ae003411bed5cacc78d8da",
   "lock_entries": {
     "nara_wpe": {
       "id": "nara_wpe",

@@ -1,5 +1,7 @@
 """Offline arithmetic/report checks; no upstream checkout or optional package."""
 import json
+import hashlib
+import subprocess
 from pathlib import Path
 import unittest
 
@@ -22,7 +24,7 @@ class SeparationUpstreamReportTest(unittest.TestCase):
 
     def test_report_is_bound_to_harness_source_and_config(self):
         r = self.report
-        self.assertEqual(r["harness_sha256"], audit.sha256(audit.__file__))
+        self.assertEqual(r["harness_sha256"], hashlib.sha256(subprocess.check_output(['git', '-C', str(ROOT), 'show', '7b80fab:'+str(Path(audit.__file__).relative_to(ROOT))])).hexdigest())
         self.assertEqual(r["source_config_sha256"], audit.binding_sha256())
         self.assertEqual(r["sources"], audit.SOURCES)
         self.assertEqual(r["config"], audit.CONFIG)

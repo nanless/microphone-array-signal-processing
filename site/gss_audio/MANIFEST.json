@@ -314,7 +314,7 @@
     "machine": "arm64"
   },
   "generator_inputs": {
-    "codes/chapters/ch08/examples/gss_teaching_demo.py": "4fcccf61d7305704ff8b226caae341ba39fb6282a8c1bb966a810d5bdeed34de",
+    "codes/chapters/ch08/examples/gss_teaching_demo.py": "ab89f0e59af37fda5914f2939420600f53cf15872373d0b8ca7130fdf373a11e",
     "codes/chapters/ch08/core/gss_teaching.py": "dbe3b55d66763b99a5b6dba082a04cae9c23b5484051511ec97bc6cefb482a7f",
     "codes/chapters/ch08/core/separation.py": "cd5cc1e465188f16070d2f347c5234bea41d28d0be8f16f1bb24e47365feb888",
     "codes/chapters/ch02/core/spectral.py": "5ade0b101cc00615276b3b60c3659ece3e68ad614cd2cb2edeb568359f034059",

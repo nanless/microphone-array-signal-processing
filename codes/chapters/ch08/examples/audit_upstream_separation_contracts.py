@@ -3,11 +3,16 @@
 No downloads, patches, model weights, Torch/CuPy facades or bytecode writes.
 Only --report writes a report. Run using the existing PRA 0.10.0 environment
 for the original PRA calls; unavailable packages remain explicit failures.
-The historical audit/report is not rewritten. Its unchanged helpers are reused
-and their source hash is checked. NeMo examples below are independent NumPy
+The historical audit/report is not rewritten. Current helper dependencies are bound to their actual source hashes. NeMo examples below are independent NumPy
 calculations, never executions of NeMo or Torch methods.
 """
 from __future__ import annotations
+# Preserve the direct-file and module entries.
+if __name__ == "__main__" and not __package__:
+    import sys as _entry_sys
+    from pathlib import Path as _EntryPath
+    _entry_sys.path.insert(0, str(_EntryPath(__file__).resolve().parents[4]))
+
 import argparse
 import ast
 from datetime import datetime, timezone
@@ -24,6 +29,9 @@ import sys
 from zoneinfo import ZoneInfo
 import numpy as np
 
+from codes.chapters.ch04.core import upstream_contracts as contracts
+
+CURRENT_REPORT = Path(__file__).resolve().parents[4] / "codes/chapters/ch08/reports/upstream_separation_contracts_current.json"
 ROOT = Path(__file__).resolve().parents[4]
 LOCK = ROOT / 'codes/chapters/ch00/SOURCES.lock.json'
 CACHE = ROOT / 'codes/chapters/ch00/upstream/_downloads'
@@ -120,27 +128,18 @@ def checkout_state(directory, revision):
 
 
 def verify_sources(cache):
-    lock = json.loads(LOCK.read_text())
-    verified = {}
+    identities = {}
     for name, spec in SOURCES.items():
-        entries = [p for p in lock['projects'] if p['id'] == name]
-        if len(entries) != 1 or entries[0]['revision'] != spec['revision'] or \
-                entries[0]['license'] != spec['license']:
-            raise RuntimeError('Lock binding differs: '+name)
-        directory = cache / name
-        row = {'before': checkout_state(directory, spec['revision']), 'files': {}}
+        files = list(spec['files'])
+        if name == 'ssspy':
+            files.extend(p for p in contracts.git(cache/name, 'ls-files', '--', '*.py').splitlines()
+                         if (cache/name/p).is_file())
+        identity = contracts.verify_project(name, cache/name, files)
         for filename, expected in spec['files'].items():
-            path = directory / filename
-            if path.is_symlink() or not path.is_file():
-                raise RuntimeError('Expected regular original source: '+filename)
-            blob = git(directory, 'show', spec['revision']+':'+filename, binary=True)
-            blob_sha = hashlib.sha256(blob).hexdigest()
-            if sha(path) != expected or blob_sha != expected:
-                raise RuntimeError('Source/blob SHA mismatch: '+name+'/'+filename)
-            row['files'][filename] = {'sha256': expected, 'git_blob_sha256': blob_sha,
-                'git_blob_id': git(directory, 'rev-parse', spec['revision']+':'+filename)}
-        verified[name] = row
-    return verified
+            if identity['used_files'][filename]['sha256'] != expected:
+                raise ValueError('Source/blob SHA mismatch: '+name+'/'+filename)
+        identities[name] = identity
+    return identities
 
 
 def method(text, dotted):
@@ -316,7 +315,15 @@ import json, sys, numpy as np
 sys.dont_write_bytecode = True
 sys.path.insert(0, sys.argv[1])
 try:
-    from ssspy.bss.cacgmm import CACGMM
+    from pathlib import Path
+    import importlib.machinery
+    spec=importlib.machinery.PathFinder.find_spec('ssspy',sys.path)
+    if spec is None or Path(spec.origin).resolve().parent != (Path(sys.argv[1])/'ssspy').resolve():
+        raise ValueError('ssspy package location differs before import')
+    from codes.chapters.ch08.examples.audit_separation_upstream_interfaces import source_imports, package_preflight, package_unchanged
+    installed = package_preflight('ssspy', Path(sys.argv[1]), Path(sys.argv[1])/'ssspy')
+    with source_imports('ssspy'):
+        from ssspy.bss.cacgmm import CACGMM
     x=np.array([[[1,0,2,0]],[[0,1,0,2]]],dtype=complex)
     m=CACGMM(n_sources=2,normalization=False,permutation_alignment=False,
              record_loss=False,reference_id=0,rng=np.random.default_rng(3))
@@ -329,6 +336,7 @@ try:
     m.update_parameters()
     expected=np.array([[[[1.5,0],[0,.5]]],[[[.5,0],[0,1.5]]]])
     print(json.dumps({'status':'executed','zero_iterations':zero_iter,
+                     'package_python_identity':package_unchanged(installed),
                      'shape_step':{'observed_real':m.covariance.real.tolist(),
                                    'observed_imag':m.covariance.imag.tolist(),
                                    'independent_expected':expected.tolist(),
@@ -341,23 +349,23 @@ except Exception as exc:
     env['PYTHONDONTWRITEBYTECODE'] = '1'
     out = subprocess.run([sys.executable, '-B', '-c', code, str(cache/'ssspy')], env=env,
                          capture_output=True, text=True, timeout=30, check=True)
-    result = json.loads(out.stdout)
+    result = contracts.strict_json_loads(out.stdout)
     result.update({'execution_kind': 'original_package_import_and_bounded_call_attempt',
                    'stderr': out.stderr, 'dependencies_installed': False,
-                   'source_patched': False, 'bytecode_writes': False})
+                   'source_patched': False, 'bytecode_writes': False, 'python_loading': 'direct checked source; package pyc bypassed and preserved'})
     return result
 
 
 def build_report(cache=CACHE):
     sys.dont_write_bytecode = True
     cache = Path(cache)
+    cache = contracts.validate_parent_chain(cache)
     lock_sha = sha(LOCK)
+    actual_dependencies = contracts.dependencies(Path(__file__), (LEGACY,))
     before = verify_sources(cache)
-    if sha(LEGACY) != LEGACY_SHA:
-        raise RuntimeError('Historical helper source differs; do not silently change this audit')
     spec = importlib.util.spec_from_file_location('ch08_original_helpers', LEGACY)
     legacy = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(legacy)
+    exec(compile(contracts.ordinary_file(LEGACY).read_bytes(), str(LEGACY), 'exec', dont_inherit=True), legacy.__dict__)
     legacy.verify_sources(cache)
     try:
         pra = legacy.run_pra(cache)
@@ -365,10 +373,14 @@ def build_report(cache=CACHE):
         pra = {'execution_kind': 'original_package_unavailable',
                'exception_type': type(exc).__name__, 'message': str(exc)}
     now = datetime.now(timezone.utc)
-    report = {'schema_version': 1, 'created_at': now.isoformat(),
+    report = {'schema_version': 2, 'created_at': now.isoformat(),
               'verified_at_local': now.astimezone(ZoneInfo('Asia/Shanghai')).isoformat(),
               'tool_sha256': sha(__file__), 'source_lock_sha256': lock_sha,
-              'legacy_helper_sha256': LEGACY_SHA, 'source_contract_sha256': digest(SOURCES),
+              'current_helper_sha256': sha(LEGACY),
+              'historical_helper_sha256': LEGACY_SHA,
+              'actual_dependency_sha256': actual_dependencies,
+              'source_status_sha256': before['gss']['status_sha256'],
+              'source_identities': before, 'source_contract_sha256': digest(SOURCES),
               'sources': SOURCES, 'verification': before,
               'environment': {'python': platform.python_version(), 'numpy': np.__version__,
                               'executable': sys.executable, 'platform': platform.platform(),
@@ -384,13 +396,12 @@ def build_report(cache=CACHE):
               'not_executed': ['Torch or CuPy', 'ArrayDPS sampling/SDR/weights',
                                'NeMo operators', 'NOTSOFAR pipeline', 'ASR',
                                'natural speech separation quality', 'hardware or latency']}
-    after = verify_sources(cache)
-    for project in before:
-        if before[project] != after[project]:
-            raise RuntimeError('Upstream changed during audit: '+project)
-        report['verification'][project]['after'] = after[project]['before']
+    for identity in before.values():
+        contracts.check_unchanged(identity)
     if sha(LOCK) != lock_sha or sha(__file__) != report['tool_sha256']:
         raise RuntimeError('Audit inputs changed during execution')
+    if contracts.dependencies(Path(__file__), (LEGACY,)) != actual_dependencies:
+        raise ValueError('Current tool dependencies changed during audit')
     json.dumps(report, allow_nan=False)
     return report
 
@@ -400,10 +411,11 @@ def main():
     parser.add_argument('--source-root', type=Path, default=CACHE)
     parser.add_argument('--report', type=Path)
     args = parser.parse_args()
+    target = contracts.report_target(args.report, CURRENT_REPORT, protected=(args.source_root,)) if args.report else None
     report = build_report(args.source_root)
     payload = json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False)+'\n'
-    if args.report:
-        args.report.write_text(payload)
+    if target:
+        contracts.write_report(target, report, CURRENT_REPORT, protected=(args.source_root,))
     else:
         print(payload, end='')
 

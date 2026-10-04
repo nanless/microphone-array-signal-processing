@@ -6,11 +6,20 @@ place of CuPy; this is neither a GPU test nor execution of the GSS package.
 """
 from __future__ import annotations
 
+# Preserve the direct-file and module entries.
+if __name__ == "__main__" and not __package__:
+    import sys as _entry_sys
+    from pathlib import Path as _EntryPath
+    _entry_sys.path.insert(0, str(_EntryPath(__file__).resolve().parents[4]))
+
 import argparse
+import contextlib
+import functools
 import ast
 from datetime import datetime, timezone
 import hashlib
 import importlib.util
+import importlib.machinery
 import json
 import os
 from pathlib import Path
@@ -20,6 +29,10 @@ import sys
 
 import numpy as np
 
+from codes.chapters.ch04.core import upstream_contracts as contracts
+
+ROOT = Path(__file__).resolve().parents[4]
+CURRENT_REPORT = ROOT / "codes/chapters/ch08/reports/separation_upstream_interfaces_current.json"
 CODES = Path(__file__).resolve().parents[3]
 SOURCES = {'asteroid': {'files': {'LICENSE': 'c12aebc7a4eeeec2e482414004fd5d68275d7608552031cd48f4088b403f902d',
                         'asteroid/masknn/norms.py': '80bc9d54d9bbae5b3a110516cb927b5fc9a8ff72e10a257acb6ed4569c1e605b',
@@ -86,27 +99,114 @@ def complex_record(x):
 
 
 def verify_sources(root):
-    locked = {p["id"]: p for p in json.loads((CODES / "chapters/ch00/SOURCES.lock.json").read_text())["projects"]}
+    root = contracts.validate_parent_chain(root)
+    identities = {}
     for project, spec in SOURCES.items():
-        if locked[project]["revision"] != spec["revision"]:
-            raise ValueError("lock revision mismatch: " + project)
-        checkout = root / project
-        env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
-        def read_git(*args):
-            return subprocess.check_output(["git", "-C", str(checkout), *args],
-                                           env=env, text=True, stderr=subprocess.PIPE).strip()
-        if not (checkout / ".git").exists() or Path(read_git("rev-parse", "--show-toplevel")).resolve() != checkout.resolve():
-            raise ValueError("expected independent checkout: " + project)
-        if read_git("rev-parse", "HEAD") != spec["revision"]:
-            raise ValueError("checkout revision mismatch: " + project)
-        if read_git("status", "--porcelain", "--untracked-files=no"):
-            raise ValueError("tracked source modified: " + project)
-        for name, digest in spec["files"].items():
-            if sha256(root / project / name) != digest:
-                raise ValueError("source hash mismatch: " + project + "/" + name)
+        names = list(spec['files'])
+        if project == 'ssspy':
+            names.extend(name for name in contracts.git(root/project, 'ls-files', '--', '*.py').splitlines()
+                         if (root/project/name).is_file())
+        identity = contracts.verify_project(project, root/project, names)
+        for name, digest in spec['files'].items():
+            if identity['used_files'][name]['sha256'] != digest:
+                raise ValueError('source hash mismatch: '+project+'/'+name)
+        identities[project] = identity
+    return identities
 
 
+@contextlib.contextmanager
+def source_imports(package):
+    """Read target-package Python sources directly; leave existing pyc untouched."""
+    class OriginalSourceLoader(importlib.machinery.SourceFileLoader):
+        def get_code(self, fullname):
+            source = contracts.ordinary_file(self.path).read_bytes()
+            return compile(source, self.path, 'exec', dont_inherit=True)
+
+        def exec_module(self, module):
+            super().exec_module(module)
+            module.__micarray_original_source_sha256__ = sha256(self.path)
+
+    class OriginalSourceFinder:
+        def find_spec(self, fullname, path=None, target=None):
+            if fullname != package and not fullname.startswith(package+'.'):
+                return None
+            spec = importlib.machinery.PathFinder.find_spec(fullname, path)
+            if spec is not None and isinstance(spec.loader, importlib.machinery.SourceFileLoader):
+                spec.loader = OriginalSourceLoader(fullname, spec.origin)
+            return spec
+
+    finder = OriginalSourceFinder()
+    sys.meta_path.insert(0, finder)
+    try:
+        yield
+    finally:
+        sys.meta_path.remove(finder)
+
+
+def original_source_imports(package):
+    def decorate(function):
+        @functools.wraps(function)
+        def wrapped(*args, **kwargs):
+            with source_imports(package):
+                return function(*args, **kwargs)
+        return wrapped
+    return decorate
+
+
+def package_preflight(package, checkout, expected_root=None):
+    """Read every discoverable installed Python file before importing the package.
+
+    Python source identity is separate from compiled extensions, third-party
+    dependencies and method execution. It is not a proof against concurrent edits.
+    """
+    spec = importlib.machinery.PathFinder.find_spec(package, sys.path)
+    if spec is None or not spec.origin or not spec.submodule_search_locations:
+        raise ModuleNotFoundError('No original package available: '+package)
+    root = contracts.validate_parent_chain(Path(spec.origin).parent)
+    if expected_root is not None and root != Path(expected_root).resolve():
+        raise ValueError('Imported package root differs from fixed checkout')
+    for name, module in tuple(sys.modules.items()):
+        if name == package or name.startswith(package+'.'):
+            filename = getattr(module, '__file__', None)
+            if filename and not Path(filename).resolve().is_relative_to(root):
+                raise ValueError('Preloaded package module differs from checked root')
+            if filename and filename.endswith('.py') and getattr(module, '__micarray_original_source_sha256__', None) != sha256(contracts.ordinary_file(filename)):
+                raise ValueError('Preloaded Python module has no verified direct-source import identity')
+    files = {}
+    revision = contracts.git(checkout, 'rev-parse', 'HEAD')
+    for path in sorted(root.rglob('*.py')):
+        path = contracts.ordinary_file(path)
+        relative = package+'/'+str(path.relative_to(root))
+        blob = contracts.git(checkout, 'rev-parse', revision+':'+relative)
+        actual = contracts.git(checkout, 'hash-object', '--no-filters', '--', str(path))
+        if actual != blob:
+            raise ValueError('Installed original Python blob differs: '+relative)
+        files[relative] = {'path': str(path), 'sha256': sha256(path), 'git_blob': blob}
+    cache_files = {str(p.relative_to(root)): sha256(contracts.ordinary_file(p)) for p in sorted(root.rglob('*.pyc'))}
+    return {'package_root': str(root), 'python_files': files,
+            'existing_pyc_sha256': cache_files, 'existing_pyc_execution': 'bypassed by direct-source loader',
+            'scope': 'all discovered package Python files, before import; compiled extensions and external dependencies are not fixed-source Python blobs'}
+
+
+def package_unchanged(record):
+    root = Path(record['package_root'])
+    if sorted(str(p.relative_to(root)) for p in root.rglob('*.py')) != sorted(
+            str(Path(r['path']).relative_to(root)) for r in record['python_files'].values()):
+        raise ValueError('Package Python membership changed')
+    for row in record['python_files'].values():
+        if sha256(contracts.ordinary_file(row['path'])) != row['sha256']:
+            raise ValueError('Package Python changed during execution')
+    after_cache = {str(p.relative_to(root)): sha256(contracts.ordinary_file(p)) for p in sorted(root.rglob('*.pyc'))}
+    if after_cache != record['existing_pyc_sha256']:
+        raise ValueError('Existing package bytecode cache changed')
+    record['unchanged_after'] = True
+    return record
+
+
+@original_source_imports("pyroomacoustics")
 def run_pra(source_root):
+    sys.dont_write_bytecode = True
+    installed = package_preflight("pyroomacoustics", source_root/"pyroomacoustics")
     import pyroomacoustics as pra
     import scipy
     package_root = Path(pra.__file__).parent
@@ -186,6 +286,8 @@ def run_pra(source_root):
                       "output_length": z.shape[1], "mismatched_original_sample_indices": mismatch.tolist(),
                       "expected_same_length_delayed_input": expected.tolist()})
     return {"execution_kind": "original_installed_methods_matching_locked_file_hashes",
+            "installed_python_identity": package_unchanged(installed),
+            "python_loading": "direct checked source; existing package pyc bypassed and preserved",
             "package_version": pra.__version__, "package_directory": str(package_root),
             "scipy_version": scipy.__version__, "input": complex_record(x),
             "auxiva_eigen_initialization": auxiva, "ilrma": ilrma,
@@ -202,7 +304,7 @@ def extract_function(text, name, namespace):
 def load_original_module(path, name):
     spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    exec(compile(contracts.ordinary_file(path).read_bytes(), str(path), 'exec', dont_inherit=True), module.__dict__)
     return module
 
 
@@ -261,28 +363,41 @@ def static_facts(root):
             "neural_frameworks_executed": False}
 
 
+def run_audit(source_root=CODES / 'chapters/ch00/upstream/_downloads'):
+    sys.dont_write_bytecode = True
+    identities = verify_sources(source_root)
+    report = {"schema_version": 2, "created_at": datetime.now(timezone.utc).isoformat(),
+              "harness_sha256": sha256(__file__), "source_config_sha256": binding_sha256(),
+              "actual_dependency_sha256": contracts.dependencies(Path(__file__)),
+              "source_identities": identities,
+              "lock_sha256": identities['gss']['lock_sha256'],
+              "source_status_sha256": identities['gss']['status_sha256'],
+              "sources": SOURCES, "config": CONFIG,
+              "environment": {"python": platform.python_version(), "numpy": np.__version__,
+                              "platform": platform.platform(), "bytecode_writes": False},
+              "pra": run_pra(source_root), "gss_arithmetic": run_gss_arithmetic(source_root),
+              "projection_back": run_projection_back(source_root),
+              "static": static_facts(source_root),
+              "not_executed": ["GPU GSS pipeline", "neural forward or training", "weights",
+                               "speech data", "ASR", "separation quality", "hardware timing"]}
+    for identity in identities.values():
+        contracts.check_unchanged(identity)
+    if contracts.dependencies(Path(__file__)) != report['actual_dependency_sha256']:
+        raise ValueError('Current tool dependencies changed during audit')
+    return report
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source-root", type=Path, default=CODES / "chapters/ch00/upstream/_downloads")
     parser.add_argument("--report", type=Path)
     args = parser.parse_args()
-    sys.dont_write_bytecode = True
-    verify_sources(args.source_root)
-    report = {"schema_version": 1, "created_at": datetime.now(timezone.utc).isoformat(),
-              "harness_sha256": sha256(__file__), "source_config_sha256": binding_sha256(),
-              "sources": SOURCES, "config": CONFIG,
-              "environment": {"python": platform.python_version(), "numpy": np.__version__,
-                              "platform": platform.platform(), "bytecode_writes": False},
-              "pra": run_pra(args.source_root), "gss_arithmetic": run_gss_arithmetic(args.source_root),
-              "projection_back": run_projection_back(args.source_root),
-              "static": static_facts(args.source_root),
-              "not_executed": ["GPU GSS pipeline", "neural forward or training", "weights",
-                               "speech data", "ASR", "separation quality", "hardware timing"]}
-    payload = json.dumps(report, indent=2, ensure_ascii=False, allow_nan=False)+"\n"
-    if args.report:
-        args.report.write_text(payload)
+    target = contracts.report_target(args.report, CURRENT_REPORT, protected=(args.source_root,)) if args.report else None
+    report = run_audit(args.source_root)
+    if target:
+        contracts.write_report(target, report, CURRENT_REPORT, protected=(args.source_root,))
     else:
-        print(payload, end="")
+        print(json.dumps(report, indent=2, ensure_ascii=False, allow_nan=False))
 
 
 if __name__ == "__main__":

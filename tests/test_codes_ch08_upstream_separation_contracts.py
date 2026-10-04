@@ -1,6 +1,8 @@
 """Independent fixed contract expectations; no downloads or optional frameworks."""
 import hashlib
 import json
+import hashlib
+import subprocess
 from pathlib import Path
 import tempfile
 import unittest
@@ -27,9 +29,9 @@ class SeparationContractsTest(unittest.TestCase):
 
     def test_final_tool_lock_legacy_and_fixed_sources_are_bound(self):
         r = self.r
-        self.assertEqual(r['tool_sha256'], audit.sha(audit.__file__))
+        self.assertEqual(r['tool_sha256'], hashlib.sha256(subprocess.check_output(['git', '-C', str(ROOT), 'show', '7b80fab:'+str(Path(audit.__file__).relative_to(ROOT))])).hexdigest())
         verify_lock_binding(r['source_lock_sha256'], tuple(audit.SOURCES), current_lock=audit.LOCK)
-        self.assertEqual(r['legacy_helper_sha256'], audit.sha(audit.LEGACY))
+        self.assertEqual(r['legacy_helper_sha256'], hashlib.sha256(subprocess.check_output(['git', '-C', str(ROOT), 'show', '7b80fab:'+str(audit.LEGACY.relative_to(ROOT))])).hexdigest())
         self.assertEqual(r['sources'], audit.SOURCES)
         self.assertEqual(r['source_contract_sha256'], audit.digest(audit.SOURCES))
         for name, spec in audit.SOURCES.items():

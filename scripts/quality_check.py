@@ -62,6 +62,8 @@ DELAY_AUDIO_WAVS = {"delay_" + name + ".wav" for name in
                      "common_residual", "aligned_residual")}
 MINT_AUDIO_ROOT = ROOT / "codes/chapters/ch07/mint_audio"
 MASK_AUDIO_ROOT = ROOT / "codes/chapters/ch08/mask_audio"
+CSS_AUDIO_ROOT = CODE_CHAPTERS / "ch08" / "css_audio"
+CSS_AUDIO_WAVS = {"css_"+n+".wav" for n in ("reference","naive","polarity","corrected")}
 SCENARIO_AUDIO_ROOT = CODE_CHAPTERS / "ch11" / "scenario_audio"
 WEIGHTED_AUDIO_ROOT = CODE_CHAPTERS / "appendix_a" / "weighted_audio"
 RESPONSE_AUDIO_ROOT = CODE_CHAPTERS / "appendix_b" / "response_audio"
@@ -139,7 +141,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "05_beamforming.md": 44,
     "06_aec.md": 71,  # reference-gain topic and E40/E41/E42 are four independent h4 topics
     "07_wpe-dereverberation.md": 58,
-    "08_speech-separation.md": 59,
+    "08_speech-separation.md": 63,  # OverIVA topic and three separately navigable exercises
     "09_source-tracking.md": 56,
     "10_engineering-practice.md": 54,
     "11_selection-guide.md": 37,
@@ -170,15 +172,15 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 16
 EXPECTED_SECTION_COUNT = 151
-EXPECTED_SUBSECTION_COUNT = 716
-EXPECTED_OUTLINE_ITEM_COUNT = 883
-EXPECTED_FIGURE_NUMBERS = set(range(1, 76))
-EXPECTED_EXERCISE_COUNT = 346
+EXPECTED_SUBSECTION_COUNT = 720
+EXPECTED_OUTLINE_ITEM_COUNT = 887
+EXPECTED_FIGURE_NUMBERS = set(range(1, 77))
+EXPECTED_EXERCISE_COUNT = 349
 EXPECTED_EXERCISE_COUNTS = {
     '01_problem-definition.md': 10, '02_basics-signal-model.md': 20,
     '03_array-geometry.md': 18, '04_doa-estimation.md': 25,
     '05_beamforming.md': 24, '06_aec.md': 42, '07_wpe-dereverberation.md': 24,
-    '08_speech-separation.md': 29, '09_source-tracking.md': 23,
+    '08_speech-separation.md': 32, '09_source-tracking.md': 23,
     '10_engineering-practice.md': 33, '11_selection-guide.md': 25,
     '12_appendix-symbols-math.md': 19, '13_appendix-guide.md': 14,
     '14_acoustic-imaging.md': 16, '15_distributed-enhancement.md': 24,
@@ -791,7 +793,7 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_delay_figures.py" if number == 75 else "make_reference_figures.py" if number == 74 else "make_beamforming_figures.py" if number == 73 else "make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72)
+            script_name = ("make_css_figures.py" if number == 76 else "make_delay_figures.py" if number == 75 else "make_reference_figures.py" if number == 74 else "make_beamforming_figures.py" if number == 73 else "make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
@@ -1394,7 +1396,7 @@ def source_digest():
                     if path.is_file())
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
-              ("build_pdf.py", "make_figures.py", "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py", "make_delay_figures.py")]
+              ("build_pdf.py", "make_figures.py", "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py", "make_delay_figures.py", "make_css_figures.py")]
     paths.append(ROOT / "requirements.txt")
     paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
@@ -1415,13 +1417,13 @@ def site_source_digest():
     paths += sorted(main_audio_path(CODE_CHAPTERS, record["group"], record["file"])
                     for record in manifest["files"])
     for asset_root in (REAL_AUDIO_ROOT, ROOM_AUDIO_ROOT, MOVING_AUDIO_ROOT,
-                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, SPECTRAL_AUDIO_ROOT, STFT_AUDIO_ROOT, SWEEP_AUDIO_ROOT, BASELINE_AUDIO_ROOT, REFLECTION_AUDIO_ROOT, PHASE_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, REFERENCE_AUDIO_ROOT, DELAY_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
+                       TRACKING_AUDIO_ROOT, GSS_AUDIO_ROOT, BINAURAL_AUDIO_ROOT, SPECTRAL_AUDIO_ROOT, STFT_AUDIO_ROOT, SWEEP_AUDIO_ROOT, BASELINE_AUDIO_ROOT, REFLECTION_AUDIO_ROOT, PHASE_AUDIO_ROOT, GEOMETRY_AUDIO_ROOT, FOCUS_AUDIO_ROOT, DERIVATIVE_AUDIO_ROOT, APA_AUDIO_ROOT, REFERENCE_AUDIO_ROOT, DELAY_AUDIO_ROOT, CSS_AUDIO_ROOT, MINT_AUDIO_ROOT, MASK_AUDIO_ROOT, NOISE_AUDIO_ROOT, SCENARIO_AUDIO_ROOT, WEIGHTED_AUDIO_ROOT, RESPONSE_AUDIO_ROOT, IMAGING_AUDIO_ROOT, DISTRIBUTED_AUDIO_ROOT):
         paths += sorted(asset_root.glob("*"))
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
               ("build_site.py", "build_markdown_helpers.py", "inline_layout.js", "heading_aliases.py",
                "legacy_sequential_anchors.json", "code_layout.py", "make_figures.py",
-               "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py", "make_delay_figures.py")]
+               "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py", "make_delay_figures.py", "make_css_figures.py")]
     paths.append(ROOT / "requirements.txt")
     paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
@@ -1768,7 +1770,7 @@ def check_real_audio(errors):
         parser = VisibleMediaParser()
         parser.feed((SITE / "research/05_exercises_and_audio.html").read_text())
         allowed_audio_roots = ("../audio/", "../real_audio/", "../room_audio/",
-                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../spectral_audio/", "../stft_audio/", "../sweep_audio/", "../baseline_audio/", "../reflection_audio/", "../phase_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../reference_audio/", "../delay_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/", "../scenario_audio/", "../weighted_audio/", "../response_audio/", "../imaging_audio/", "../distributed_audio/")
+                               "../gss_audio/", "../moving_audio/", "../tracking_audio/", "../binaural_audio/", "../spectral_audio/", "../stft_audio/", "../sweep_audio/", "../baseline_audio/", "../reflection_audio/", "../phase_audio/", "../geometry_audio/", "../focus_audio/", "../derivative_audio/", "../apa_audio/", "../reference_audio/", "../delay_audio/", "../css_audio/", "../mint_audio/", "../mask_audio/", "../noise_audio/", "../scenario_audio/", "../weighted_audio/", "../response_audio/", "../imaging_audio/", "../distributed_audio/")
         if any(not (p.get("src") or "").startswith(allowed_audio_roots)
                for p in parser.items):
             fail(errors, "未知试听控件来源")
@@ -3293,6 +3295,92 @@ def check_delay_figure(errors):
         fail(errors,'图75真实来源与评分：'+str(error))
 
 
+
+def check_css_audio(errors):
+    """Independent ordinary-member, actual integer PCM and publication checks."""
+    try:
+        from codes.chapters.ch08.examples.generate_css_audio import check_assets
+        manifest = check_assets(CSS_AUDIO_ROOT)
+        published = SITE/'css_audio'
+        validate_asset_directory(published, CSS_AUDIO_WAVS | {'MANIFEST.json'}, check=True)
+        values = {}
+        for name in CSS_AUDIO_WAVS:
+            blob = (CSS_AUDIO_ROOT/name).read_bytes()
+            if blob != (published/name).read_bytes():
+                raise ValueError('CSS published WAV differs: '+name)
+            with wave.open(str(published/name),'rb') as reader:
+                if (reader.getframerate(),reader.getnchannels(),reader.getsampwidth(),reader.getnframes(),reader.getcomptype()) != (16000,2,2,32000,'NONE'):
+                    raise ValueError('CSS actual PCM format differs')
+                raw = reader.readframes(32000)
+            if len(raw) != 128000:
+                raise ValueError('CSS actual PCM truncated')
+            interleaved = struct.unpack('<64000h',raw)
+            values[name] = [interleaved[::2],interleaved[1::2]]
+        if (published/'MANIFEST.json').read_bytes() != (CSS_AUDIO_ROOT/'MANIFEST.json').read_bytes():
+            raise ValueError('CSS published manifest differs')
+        reference = values['css_reference.wav']
+        if reference != values['css_corrected.wav']:
+            raise ValueError('fixed exact correction must match reference PCM')
+        for key,row in manifest['samples'].items():
+            for window,(start,stop) in {'primary':(2400,29600),'post_overlap':(19200,29600)}.items():
+                parts = [v[start:stop] for v in values[row['file']]]
+                truth = [v[start:stop] for v in reference]
+                powers = [sum(v*v for v in x) for x in parts]
+                refs = [sum(v*v for v in x) for x in truth]
+                error = [sum((a-b)**2 for a,b in zip(x,r)) for x,r in zip(parts,truth)]
+                cross = [sum(a*b for a,b in zip(x,r)) for x,r in zip(parts,truth)]
+                denominator = (stop-start)*32768**2
+                expected = {'scoring_interval_samples':[start,stop], 'samples_per_channel':stop-start,
+                    'channels':2,'integer_squared_sum_E_per_channel':powers,
+                    'integer_denominator_D_per_channel':denominator,
+                    'integer_squared_sum_E_all_channels':sum(powers), 'integer_denominator_D_all_channels':2*denominator,
+                    'integer_reference_squared_sum_per_channel':refs,'integer_reference_error_squared_sum_per_channel':error,
+                    'integer_output_reference_cross_sum_per_channel':cross,
+                    'reference_NMSE_per_channel':[v/r for v,r in zip(error,refs)]}
+                actual = row['pcm_integer_measurements'][window]
+                if any(not same_metadata(actual.get(name),v) for name,v in expected.items()):
+                    raise ValueError('independent CSS integer E/D differs: '+key+'/'+window)
+        for page,prefix in ((SITE/'08_speech-separation.html',''),(SITE/'research/05_exercises_and_audio.html','../')):
+            _check_visible_audio(page,prefix,'css_audio',CSS_AUDIO_WAVS,{'MANIFEST.json'})
+    except (OSError,ValueError,KeyError,TypeError,wave.Error,struct.error) as error:
+        fail(errors,'独立CSS极性与增益音频：'+str(error))
+
+
+def check_css_figure(errors):
+    """Bind figure76 to actual audio and source identity, with strict field types."""
+    try:
+        from PIL import Image
+        manifest_path = CSS_AUDIO_ROOT/'MANIFEST.json'
+        manifest = strict_json_loads(manifest_path.read_bytes())
+        path = ROOT/'codes/chapters/ch08/reports/figure76_css_polarity_gain.json'
+        report = strict_json_loads(path.read_bytes())
+        expected_sources = set(manifest['source_sha256']) | {'scripts/make_figures.py','scripts/make_css_figures.py'}
+        if set(report['source_sha256']) != expected_sources:
+            raise ValueError('figure76 actual plotting dependencies differ')
+        for name,digest in report['source_sha256'].items():
+            if hashlib.sha256(validate_parent_chain(ROOT/name).read_bytes()).hexdigest() != digest:
+                raise ValueError('figure76 actual source SHA differs: '+name)
+        manifest_sha = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+        measurements = {k:r['pcm_integer_measurements'] for k,r in manifest['samples'].items()}
+        if (type(report['figure']) is not int or report['figure'] != 76
+                or report['exercise_ids'] != ['E08-29','E08-32']
+                or report['audio_manifest_sha256'] != manifest_sha
+                or report['waveform_display_interval_samples'] != [14800,15120]
+                or not same_metadata(report['parameters'],manifest['parameters'])
+                or not same_metadata(report['overlap_fit'],manifest['overlap_fit'])
+                or not same_metadata(report['pcm_integer_measurements'],measurements)
+                or report['wav_sha256'] != {n:r['sha256'] for n,r in manifest['files'].items()}):
+            raise ValueError('figure76 actual audio/report mismatch')
+        with Image.open(ROOT/'figures/fig76_css_polarity_gain.png') as picture:
+            metadata = picture.info
+        if (metadata.get('AudioManifestDigest') != manifest_sha
+                or metadata.get('NumericalReportDigest') != hashlib.sha256(path.read_bytes()).hexdigest()
+                or strict_json_loads(metadata.get('GeneratorInputs','{}')) != report['source_sha256']):
+            raise ValueError('figure76 PNG actual inputs/report differ')
+    except (OSError,ValueError,KeyError,TypeError) as error:
+        fail(errors,'图76真实来源与评分：'+str(error))
+
+
 def check_distributed_audio(errors):
     """Exact member/copy checks, current-source replay and independent integer E/D."""
     try:
@@ -3905,6 +3993,8 @@ def main():
     check_reference_audio(errors)
     check_delay_audio(errors)
     check_delay_figure(errors)
+    check_css_audio(errors)
+    check_css_figure(errors)
     check_reference_figure(errors)
     check_geometry_audio(errors)
     check_focus_audio(errors)

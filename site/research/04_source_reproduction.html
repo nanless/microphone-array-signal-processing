@@ -1,12 +1,14 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码获取与独立复现记录 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f9d33402bd52"><style>
+<meta name="source-digest" content="88408a687172"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
-@media screen{.main a[id^="e06-"],.main a[id^="e07-"]{scroll-margin-top:60px}}
+@media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
+@media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
+@media screen{.main .separation-topic-anchor{scroll-margin-top:60px}}
 a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
 .skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
 .skip-link:focus{top:8px}
@@ -271,6 +273,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-af06dd4c7e">第4章新增来源与当前限定调用</a></li>
 <li><a href="04_source_reproduction.html#sec-u-a91662f52c">11. 第5章当前原方法合同与相位控制</a></li>
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-22b5d220d1">第7章到达延迟控制与当前来源身份</a></li>
+<li><a href="04_source_reproduction.html#sec-u-137c1dc16f">12. 第8章作者OverIVA与MeCo来源及历史状态</a></li>
 </ul>
 <div class="chap"><a href="05_exercises_and_audio.html">章节代码练习与音频实验</a></div>
 <div class="chap"><a href="../01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
@@ -321,6 +324,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-af06dd4c7e">第4章新增来源与当前限定调用</a></li>
 <li><a href="04_source_reproduction.html#sec-u-a91662f52c">11. 第5章当前原方法合同与相位控制</a></li>
 <li>&nbsp;&nbsp;<a href="04_source_reproduction.html#sec-u-22b5d220d1">第7章到达延迟控制与当前来源身份</a></li>
+<li><a href="04_source_reproduction.html#sec-u-137c1dc16f">12. 第8章作者OverIVA与MeCo来源及历史状态</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="取得源码后怎样复现" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-515383f30b">取得源码后怎样复现</h1>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="1-先确定复现对象" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-630cc32c87">1. 先确定复现对象</h2>
@@ -1065,8 +1069,12 @@ $\left[\begin{smallmatrix}1/10&1/5\\1/10&1/5\end{smallmatrix}\right]$。</p>
 <span id="sec-32" class="anchor-alias" aria-hidden="true"></span><span id="第7章到达延迟控制与当前来源身份" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-22b5d220d1">第7章到达延迟控制与当前来源身份</h3>
 <p><a href="05_exercises_and_audio.html#known-arrival-audio">E07-22～24的已知到达控制</a>把源时刻索引、有限单实回归、实际PCM与晚期功率自由衰减分开。六WAV不是原作者房间数据或完整STFT-WPE；固定时差384点与历史padding768点也分别命名。独立清单绑定当前五真实生成源，核验内存重放全部七个普通成员，并逐字节比较PCM。</p>
 <p>2026-10-04取得固定<a href="https://github.com/sp-uhh/rir-encoder/tree/8ee0ba7e083c8e38170dc13632cc9937a702d0f0">rir-encoder</a>的八份原文本，共20717字节，许可为MIT；包含README、许可、依赖、损失、网络、数据、训练与提取入口。官方origin、固定HEAD、逐blob/SHA与洁净状态均已核验；未导入训练脚本、取得权重或运行完整FiLM-SGMSE恢复链。训练入口含顶层目录创建与执行逻辑，静态阅读不能改称模型运行。<a href="02_aec_wpe_separation.html#rir-encoder-candidate">增强研究</a>另说明训练与提取的STFT边界差异。</p>
-<p>新增前原字节保存在<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/source_snapshots/SOURCES.a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505.json">109项锁表</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/source_snapshots/SOURCE_STATUS.abc28f6f15512da8267618bca318b10033909ec2afdb6090b6aa2d0f1281f0e9.json">当时获取状态</a>，由历史身份核登记。当前110项由真实获取工具重核：70项通过、22项选集不匹配、17项仅索引、1项既有AEC缓存失败，退出1；旧109项完整状态逐项不变。93项有受管理源码工作区。新增取得状态不能证明方法、GPU或工业性能已运行。</p>
+<p>新增前原字节保存在<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/source_snapshots/SOURCES.a93ae64f3d6464b5c19bfa99d93f6d001782e5d5cbcec3222b5b7f5ce45a5505.json">109项锁表</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/source_snapshots/SOURCE_STATUS.abc28f6f15512da8267618bca318b10033909ec2afdb6090b6aa2d0f1281f0e9.json">当时获取状态</a>，由历史身份核登记。加入该项目后的110项当时由真实获取工具重核：70项通过、22项选集不匹配、17项仅索引、1项既有AEC缓存失败，退出1；旧109项完整状态逐项不变。93项有受管理源码工作区。新增取得状态不能证明方法、GPU或工业性能已运行。</p>
 <p><a href="02_aec_wpe_separation.html#sec-u-841a085a72">第7章三个当前报告</a>分别绑定当前工具与来源身份，历史三报告保持原字节。共享来源合同变动后，第4章DOA/SAID、第5章三份接口报告、第6章AEC/APA当前报告已真实重跑；DOA首次在主环境因缺pyroomacoustics失败，随后在既有PRA0.10.0隔离环境执行，不能把首次失败省略。原报告中的限定调用、选集不匹配、静态检查及未运行条件继续分别记录。</p>
+<span id="sec-33" class="anchor-alias" aria-hidden="true"></span><span id="12-第8章作者overiva与meco来源及历史状态" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-137c1dc16f">12. 第8章作者OverIVA与MeCo来源及历史状态</h2>
+<p>2026-10-04取得<a href="https://github.com/onolab-tmu/overiva/tree/1cb3189112889ebfe2ccbbde0f55b1db6020fc48" title="citation">OverIVA作者固定提交</a>四文件选集，MIT通知、输入/滤波器轴序与PCA入口静态边界见<a href="02_aec_wpe_separation.html">增强研究B03</a>。未取得语音数据或执行作者论文仿真。</p>
+<p>新增前原110项锁表SHA为<code>eec80748e5f1fcc01d33e281b91a4482f52566d8e6b74bdb737e017604ec6487</code>，原状态SHA为<code>4cc8cbd48e3e98b51a24705468415d10654aa349f3946fb98ef48e9c4856f4f6</code>；原字节保存于<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/source_snapshots">source_snapshots</a>并由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/core/source_history.py">source_history.py</a>登记。加入OverIVA后的111项当时用真实工具离线核验，71项通过、22项原选集不匹配、17项仅索引、1项原AEC缓存失败，真实退出1。当时94项有独立受管理工作区。旧报告继续保留真实历史身份，当前方法执行与源码取得状态分别记录。</p>
+<p>随后按固定<code>375ac4dee2a8e193aaa48553289499a6f43d93e6</code>取得MeCo的16个MIT核心/入口/配置原文本，共95305字节。部分选集不包括混合许可骨干和NVIDIA NC CUDA，缺少独立运行闭包；未执行Torch/CUDA或取得权重与数据。具体原输入、默认参数、JVP与评价边界见<a href="02_aec_wpe_separation.html#meco-candidate">增强N19</a>。新增前111项原锁/状态再次按原字节保存并登记，当前112项实际离线核验为72通过、22原选集不匹配、17仅索引、1原AEC失败，真实退出1；95项有受管理工作区。所有原111项完整状态保持，来源取得不是性能成绩。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

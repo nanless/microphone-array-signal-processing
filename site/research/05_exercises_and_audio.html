@@ -1,12 +1,14 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>章节代码练习与音频实验 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f9d33402bd52"><style>
+<meta name="source-digest" content="88408a687172"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
-@media screen{.main a[id^="e06-"],.main a[id^="e07-"]{scroll-margin-top:60px}}
+@media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
+@media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
+@media screen{.main .separation-topic-anchor{scroll-margin-top:60px}}
 a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
 .skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
 .skip-link:focus{top:8px}
@@ -400,6 +402,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-57-3">57.3 一次固定窗拟合，再分别核功率和误差</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-57-4">57.4 T60是功率60dB，不是幅度的倍率复用</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-57-5">57.5 真实来源、重建与只读检查</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-cde623a629">58. 第8章：两个一致性次序、过定背景与连续增益</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-58-1">58.1 六点手算检查两个一致性操作</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-58-2">58.2 PCA保留能量，背景约束检查交叉量</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-58-3">58.3 连续输出排列已正确，极性与增益仍可错误</a></li>
 </ul>
 <div class="chap"><a href="../01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a></div>
 <div class="chap"><a href="../02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></div>
@@ -577,6 +583,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-57-3">57.3 一次固定窗拟合，再分别核功率和误差</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-57-4">57.4 T60是功率60dB，不是幅度的倍率复用</a></li>
 <li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-57-5">57.5 真实来源、重建与只读检查</a></li>
+<li><a href="05_exercises_and_audio.html#sec-u-cde623a629">58. 第8章：两个一致性次序、过定背景与连续增益</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-58-1">58.1 六点手算检查两个一致性操作</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-58-2">58.2 PCA保留能量，背景约束检查交叉量</a></li>
+<li>&nbsp;&nbsp;<a href="05_exercises_and_audio.html#sec-58-3">58.3 连续输出排列已正确，极性与增益仍可错误</a></li>
 </ul></nav></details>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="章节代码练习与音频实验" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-c621965c02">章节代码练习与音频实验</h1>
 <p>先按章节做手算，再运行对应脚本，最后听同一模型产生的音频。代码输出不是预填的答案表；程序从输入重新计算结果，回归测试另外保留手算、解析边界或已知模型作为判据。</p>
@@ -713,8 +723,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/exercises_enhancement.py">增强练习</a></td>
 </tr>
 <tr>
-<td>第 8 章 E08-12～29</td>
-<td>复数逐行IP、联合回投影、零参考、混合一致性、方向与功率、活动对称性、先验反例、NMF更新、欠定分解、合同对角化、相消掩码与CSS关联音频、白化反例、联合对角边界、雅可比、加权一致性、掩码表示及极性</td>
+<td>第 8 章 E08-12～32</td>
+<td>复数逐行IP、联合回投影、零参考、混合一致性、方向与功率、活动对称性、先验反例、NMF更新、欠定分解、合同对角化、相消掩码与CSS关联音频、白化反例、联合对角边界、雅可比、加权一致性、掩码表示、极性、投影次序、PCA/背景约束及连续增益</td>
 <td><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch08/chapter08_experiments.py">分离逐步实验</a></td>
 </tr>
 <tr>
@@ -4350,6 +4360,53 @@ e^{-\mathrm j2\pi 2000n/24000},\\
 </code></pre>
 <p><a href="../delay_audio/MANIFEST.json">独立清单</a>绑定五个真实源：源时刻与回归唯一核、波形核、生成器、共享PCM编解码与文件IO。严格接受六WAV和清单共七个普通成员；父链链接、额外文件、重复JSON键、非有限值、参数真实类型和过期源摘要均检查。<code>--check</code>从正式字节重算实际整数分子/分母，并完整内存重放，不写入、不修复资产。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_prediction_delays.py">数值测试</a>使用独立小向量、延迟索引和解析功率端点；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_quality_delay_audio.py">音频测试</a>另用标量三角和与标准库PCM解码核验。图75的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch07/reports/figure75_prediction_delays.json">数值报告</a>绑定实际清单、六WAV及两绘图源摘要。主109份音频保持独立管理；真实录音、盲时差、完整STFT-WPE、神经网络和硬件性能均不在该实验范围内。</p>
+<span id="sec-161" class="anchor-alias" aria-hidden="true"></span><span id="58-第8章两个一致性次序过定背景与连续增益" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-cde623a629">58. 第8章：两个一致性次序、过定背景与连续增益</h2>
+<span id="sec-162" class="anchor-alias" aria-hidden="true"></span><span id="581-六点手算检查两个一致性操作" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-58-1">58.1 六点手算检查两个一致性操作</h3>
+<p><a href="../08_speech-separation.html#e08-30">E08-30</a>共用第2章唯一STFT核：4点矩形窗、2点帧移、不中心补零，混合为六个1。第一路两帧分别为四个0与四个1，第二路全零；第一路修正比例分别为3/4与1/4，不能当作跨帧常数。</p>
+<p>先修混合再合成重分析，第一路波形为<code>[3/4,3/4,7/8,7/8,1,1]</code>；反向操作后合成为<code>[3/4,3/4,3/4,3/4,1,1]</code>。两波形最大差1/8，而后一操作谱与其合成再分析的最大差为1/4；未归一化DFT的谱差与样本差分别记录。两路最终波形均相加为原混合，不能据此证明每路是正确目标。</p>
+<p>改成跨时频固定权重可作交换控制；全零初值不能用来声称本例已经产生不同波形。纯数值核为<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch08/core/consistency_teaching.py">consistency_teaching.py</a>，完整共享点平均和控制边界在正文，无须把六个常数点包装为试听样本。</p>
+<span id="sec-163" class="anchor-alias" aria-hidden="true"></span><span id="582-pca保留能量背景约束检查交叉量" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-58-2">58.2 PCA保留能量，背景约束检查交叉量</h3>
+<p><a href="../08_speech-separation.html#e08-31">E08-31</a>的三麦二阶矩<code>diag(9,4,1)</code>指定强背景为第一方向、两目标为后两方向。保留最大两个主成分丢掉第三方向。加同一正标量δI不会改变特征值排序，被删除的方向也不会恢复。另一独立两麦控制给定目标行<code>[1,1/2]</code>与矩阵<code>[[2,1],[1,2]]</code>，复算背景行<code>[4/5,-1]</code>、交叉量0、两路二阶矩3.5与1.68、扩展行列式−1.4。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch08/core/overiva_teaching.py">overiva_teaching.py</a>只解给定目标行后的坐标约束；复数共轭与奇异坐标块分别测试。没有盲估目标行，也不以二阶正交代替独立性。作者MIT原代码取得、轴序与PCA入口边界见<a href="02_aec_wpe_separation.html">增强研究B03</a>。</p>
+<span id="sec-164" class="anchor-alias" aria-hidden="true"></span><span id="583-连续输出排列已正确极性与增益仍可错误" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-58-3">58.3 连续输出排列已正确，极性与增益仍可错误</h3>
+<p><a href="../08_speech-separation.html#e08-32">E08-32</a>与图76采用四个独立双声道WAV：16kHz、32000点，共同gain1；两声道为固定输出槽位的500/1500Hz数学正弦，各端320点平方正弦包络。前块<code>[0,19200)</code>、当前块<code>[12800,32000)</code>已同钟同序，当前输出是−2倍；6400点观测重叠回归得到直接应用系数−1/2，不用干净参考估计该系数。</p>
+<p>过渡权重为<code>j/6399</code>，含两端；未校正倍率为<code>1−3r</code>，仅翻极性为<code>1+r</code>，完整校正为1。主评分窗<code>[2400,29600)</code>含渐变，后窗<code>[19200,29600)</code>只含稳定倍数；不能把后窗解析相对误差9、1、0套到主窗。左/右声道代表槽位，不代表双耳或麦克风位置。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">输出</th>
+<th scope="col">主窗两路实际PCM整数误差</th>
+<th scope="col" style="text-align: right;">后窗每路实际PCM整数误差</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>未校正</td>
+<td>605638471357；605638513911</td>
+<td style="text-align: right;">502527654850</td>
+</tr>
+<tr>
+<td>仅极性</td>
+<td>67298151177；67298221568</td>
+<td style="text-align: right;">55841196450</td>
+</tr>
+<tr>
+<td>完整标量校正</td>
+<td>0；0</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table></div>
+<p>主窗每路参考整数能量146027417700、MSE分母29205777612800；后窗分别为55834012650与11166914969600。图76合并两路线性整数误差，再除合并参考能量，未平均dB。完整校正WAV与参考同字节，但主窗浮点仍保留约2.52/2.66×10⁻³⁶的MSE；实际PCM与浮点对象不能合并成一个“零误差”。SI-SDR消去非零标量，不能用它单独验证增益。</p>
+<p><a href="../css_audio/css_reference.wav">共同参考</a><audio class="audio-sample" controls preload="none" aria-label="共同参考" src="../css_audio/css_reference.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../css_audio/css_naive.wav">未校正</a><audio class="audio-sample" controls preload="none" aria-label="未校正" src="../css_audio/css_naive.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../css_audio/css_polarity.wav">仅翻极性</a><audio class="audio-sample" controls preload="none" aria-label="仅翻极性" src="../css_audio/css_polarity.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../css_audio/css_corrected.wav">完整标量校正</a><audio class="audio-sample" controls preload="none" aria-label="完整标量校正" src="../css_audio/css_corrected.wav">请使用上方 WAV 链接下载。</audio></p>
+<p><a href="../css_audio/MANIFEST.json">独立清单</a>绑定六个真实源、两个评分窗和四WAV的SHA；观测块另作内存PCM回归仅用于量化诊断，不重新应用到正式输出。唯一<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch08/core/css.py">标量核</a>、<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch08/core/css_audio.py">长信号核</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch08/examples/generate_css_audio.py">生成器</a>可复做：</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch08.chapter08_experiments
+.venv/bin/python -m codes.chapters.ch08.examples.generate_css_audio --check
+</code></pre>
+<p>只读核验拒绝多余成员、链接、元数据漂移和真实源变化，不自动修补。这个实验没有运行CSS分离器、识别说话人、修复任意时延或频率相位，也不是自然语音或正式听测。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>
