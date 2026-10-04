@@ -1,5 +1,7 @@
 """Offline independent oracles; no downloaded source or scientific packages."""
 import itertools
+import hashlib
+import subprocess
 import json
 from pathlib import Path
 import unittest
@@ -31,7 +33,9 @@ class MeetingScoringReportTest(unittest.TestCase):
 
     def test_binding_and_execution_scopes(self):
         r = self.report
-        self.assertEqual(r["harness_sha256"], audit.sha256(audit.__file__))
+        historical = subprocess.check_output(["git", "show", "801bfb9e7cb6e2cb56a2e23920c991d44e2acdc6:codes/chapters/ch11/examples/audit_meeting_scoring_interfaces.py"])
+        self.assertEqual(r["harness_sha256"], hashlib.sha256(historical).hexdigest())
+        self.assertEqual(hashlib.sha256((ROOT / "codes/chapters/ch11/reports/meeting_scoring_interfaces.json").read_bytes()).hexdigest(), "0d12839fd2db92d4baefd6f67077f670b858b4b03be90b4a6802cd733c1f7bf5")
         self.assertEqual(r["source_config_sha256"], audit.binding_sha256())
         self.assertEqual(r["sources"], audit.SOURCES)
         self.assertEqual(r["config"], audit.CONFIG)

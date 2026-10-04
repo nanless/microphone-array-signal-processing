@@ -1,13 +1,14 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 B · 路径地图与练习 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5cea3d451101"><style>
+<meta name="source-digest" content="85b156d2a968"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
 @media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
+@media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
 @media screen{.main .separation-topic-anchor{scroll-margin-top:60px}}
 a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
 .skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
@@ -350,7 +351,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <ol>
 <li>运行 <code>codes/</code> 中只依赖 NumPy 的教学实现，核对手算结果、数组维度和退化边界。</li>
 <li>在隔离环境中用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线，记录房间、阵列和随机种子。</li>
-<li>先按 §13.7 生成图所依赖的音频和追踪清单，再运行 <code>scripts/</code> 中的八个绘图脚本，按当前参数复现 78 张编号图，并逐图核对正文条件。</li>
+<li>先按 §13.7 生成图所依赖的音频和追踪清单，再运行 <code>scripts/</code> 中的九个绘图脚本，按当前参数复现 79 张编号图，并逐图核对正文条件。</li>
 <li>按研究任务选择公开数据和固定版本参考系统，分别核对代码、模型与数据的许可和评测口径。</li>
 <li>在可用的多通道硬件上测实时性、同步和标定；仿真结果不能代替设备测量。</li>
 </ol>
@@ -1497,7 +1498,8 @@ $$</p>
 <p>图76读取第8章四份同槽同钟PCM，区分解析拼接倍率与实际波形，并分别核主/后评分窗的合并整数误差。正确排列不保证极性或增益正确；本控制没有运行盲CSS或身份识别。</p>
 <p>图77读取第9章既有两份独立PCM，197帧有效标记驱动单槽候选、确认与退役。可用时刻龄期与状态龄期分别给出事件、ID及187/189个确认发布帧；图与报告绑定12真实源，不生成新音频或声称运行多目标身份识别。</p>
 <p>图78读取第10章六份已知坏麦PCM与独立清单，同时显示目标响应、总NMSE与固定波形窗。失效前权重在剩余通道相消目标；重算权重保持目标，而两者解析总误差相同。图报告绑定九个真实源，PCM量化差异不写成严格相等，不是盲故障检测。</p>
-<p>图片写入 <code>figures/</code>，共 78 张编号图，另有第16题的房间补充图：</p>
+<p>图79从第11章E11-27的已知三麦单频模型计算DS和三种加载MVDR。实际噪声协方差与另模型DI分开；声学硬条件先筛选，设备延迟未测则保留证据不足。图与报告绑定八个真实源，不生成新音频或代表整机性能。</p>
+<p>图片写入 <code>figures/</code>，共 79 张编号图，另有第16题的房间补充图：</p>
 <pre><code class="language-bash">.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
 .venv/bin/python -m codes.chapters.ch01.examples.generate_binaural_cues
 .venv/bin/python -m codes.chapters.ch02.examples.generate_stft_convolution
@@ -1529,6 +1531,7 @@ $$</p>
 .venv/bin/python scripts/make_css_figures.py  # 图76：既定槽位极性/增益与实际PCM
 .venv/bin/python scripts/make_tracking_figures.py  # 图77：实际PCM生命周期与两个龄期时钟
 .venv/bin/python scripts/make_channel_figures.py  # 图78：已知坏麦、重建约束与实际PCM
+.venv/bin/python scripts/make_selection_figures.py  # 图79：已知物理模型的硬条件与设备证据
 .venv/bin/python -m codes.chapters.ch10.examples.generate_channel_audio --check  # 六独立WAV只读核验
 </code></pre>
 <p>Windows 上把 <code>.venv/bin/python</code> 换成 <code>.venv\Scripts\python</code>，其余不变。</p>

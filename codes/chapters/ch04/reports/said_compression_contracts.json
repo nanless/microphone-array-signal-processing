@@ -1,6 +1,6 @@
 {
-  "run_utc": "2026-10-04T18:11:43.137924+00:00",
-  "run_asia_shanghai": "2026-10-05T02:11:43.138793+08:00",
+  "run_utc": "2026-10-04T19:53:42.968388+00:00",
+  "run_asia_shanghai": "2026-10-05T03:53:42.973379+08:00",
   "audit_source_sha256": "1934582b929a5765ef88f1542f9f4a7976c0d5e02f294db681e7cf2814421999",
   "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
   "lock_entry": {
@@ -426,7 +426,7 @@
   },
   "report_source_sha256": {
     "codes/chapters/ch04/examples/audit_said_compression.py": "1934582b929a5765ef88f1542f9f4a7976c0d5e02f294db681e7cf2814421999",
-    "codes/chapters/ch04/core/upstream_contracts.py": "1ac9b1d1688a15fd73356f111af0cb6993adb26a6732cfab2c00a87e4086c46d",
+    "codes/chapters/ch04/core/upstream_contracts.py": "f61d18b3239614aaf1304b9707038ad913f602160ff6de378e52692540490f30",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },

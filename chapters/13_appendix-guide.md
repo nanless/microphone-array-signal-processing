@@ -19,7 +19,7 @@
 
     1. 运行 `codes/` 中只依赖 NumPy 的教学实现，核对手算结果、数组维度和退化边界。
     2. 在隔离环境中用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线，记录房间、阵列和随机种子。
-    3. 先按 §13.7 生成图所依赖的音频和追踪清单，再运行 `scripts/` 中的八个绘图脚本，按当前参数复现 78 张编号图，并逐图核对正文条件。
+    3. 先按 §13.7 生成图所依赖的音频和追踪清单，再运行 `scripts/` 中的九个绘图脚本，按当前参数复现 79 张编号图，并逐图核对正文条件。
     4. 按研究任务选择公开数据和固定版本参考系统，分别核对代码、模型与数据的许可和评测口径。
     5. 在可用的多通道硬件上测实时性、同步和标定；仿真结果不能代替设备测量。
 
@@ -888,7 +888,9 @@ $X$ 是有限源序列的离散时间傅里叶变换，$H_{\mathrm r}$ 是反射
 
 图78读取第10章六份已知坏麦PCM与独立清单，同时显示目标响应、总NMSE与固定波形窗。失效前权重在剩余通道相消目标；重算权重保持目标，而两者解析总误差相同。图报告绑定九个真实源，PCM量化差异不写成严格相等，不是盲故障检测。
 
-图片写入 `figures/`，共 78 张编号图，另有第16题的房间补充图：
+图79从第11章E11-27的已知三麦单频模型计算DS和三种加载MVDR。实际噪声协方差与另模型DI分开；声学硬条件先筛选，设备延迟未测则保留证据不足。图与报告绑定八个真实源，不生成新音频或代表整机性能。
+
+图片写入 `figures/`，共 79 张编号图，另有第16题的房间补充图：
 
 ```bash
 .venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
@@ -922,6 +924,7 @@ $X$ 是有限源序列的离散时间傅里叶变换，$H_{\mathrm r}$ 是反射
 .venv/bin/python scripts/make_css_figures.py  # 图76：既定槽位极性/增益与实际PCM
 .venv/bin/python scripts/make_tracking_figures.py  # 图77：实际PCM生命周期与两个龄期时钟
 .venv/bin/python scripts/make_channel_figures.py  # 图78：已知坏麦、重建约束与实际PCM
+.venv/bin/python scripts/make_selection_figures.py  # 图79：已知物理模型的硬条件与设备证据
 .venv/bin/python -m codes.chapters.ch10.examples.generate_channel_audio --check  # 六独立WAV只读核验
 ```
 

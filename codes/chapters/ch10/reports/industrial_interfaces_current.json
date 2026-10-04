@@ -40,7 +40,7 @@
     "cmake": "cmake version 4.3.2",
     "compiler": "Apple clang version 21.0.0 (clang-2100.3.34.2)"
   },
-  "work_directory": "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-vtfjdg94",
+  "work_directory": "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-r8h5c0ql",
   "commands": [
     {
       "argv": [
@@ -66,7 +66,7 @@
         "-S",
         "${REPO_ROOT}/codes/chapters/ch00/upstream/_downloads/libsoxr",
         "-B",
-        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-vtfjdg94/libsoxr",
+        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-r8h5c0ql/libsoxr",
         "-G",
         "Unix Makefiles",
         "-DCMAKE_BUILD_TYPE=Release",
@@ -84,19 +84,19 @@
       ],
       "returncode": 0,
       "log": "libsoxr-configure.log",
-      "log_sha256": "ebaf3ddfcac5ce2b7fe612a796f2100cf5c1b1ff6246486702ea75659b798ae7"
+      "log_sha256": "353ddef0cd48e85c05e9ee42bffb65a89daf9faa8757d2811a0703056c988e82"
     },
     {
       "argv": [
         "cmake",
         "--build",
-        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-vtfjdg94/libsoxr",
+        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-r8h5c0ql/libsoxr",
         "--parallel",
         "2"
       ],
       "returncode": 0,
       "log": "libsoxr-build.log",
-      "log_sha256": "ba1633faa9ed6c27f8410a809ffd136903543a74ca4979cbef4ab0e8873910e8"
+      "log_sha256": "21df3eae8bdce6ee9cba2537ced0e34953b73e5c5d9f91c9a998649a0f2b3610"
     },
     {
       "argv": [
@@ -104,7 +104,7 @@
         "-S",
         "${REPO_ROOT}/codes/chapters/ch00/upstream/_downloads/libebur128",
         "-B",
-        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-vtfjdg94/libebur128",
+        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-r8h5c0ql/libebur128",
         "-G",
         "Unix Makefiles",
         "-DCMAKE_BUILD_TYPE=Release",
@@ -117,13 +117,13 @@
       ],
       "returncode": 0,
       "log": "libebur128-configure.log",
-      "log_sha256": "4315c96921ce8aaf1a50266bced4c57dbcc803e1cb4f12ec85a22a2d2fc8f6b6"
+      "log_sha256": "fe5e710998e7cf84f4730924adbacb6c9349c10e6840a8d7b0f7a3822a745ad3"
     },
     {
       "argv": [
         "cmake",
         "--build",
-        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-vtfjdg94/libebur128",
+        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-r8h5c0ql/libebur128",
         "--parallel",
         "2"
       ],
@@ -137,7 +137,7 @@
         "-S",
         "${REPO_ROOT}/codes/chapters/ch00/upstream/_downloads/libsndfile",
         "-B",
-        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-vtfjdg94/libsndfile",
+        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-r8h5c0ql/libsndfile",
         "-G",
         "Unix Makefiles",
         "-DCMAKE_BUILD_TYPE=Release",
@@ -154,19 +154,19 @@
       ],
       "returncode": 0,
       "log": "libsndfile-configure.log",
-      "log_sha256": "07bac4b3e5c94011d536c5d5006e0040b2a65612c6a4a700c349d556ee675d83"
+      "log_sha256": "fb1c731189b57f1f6c1a65ad398b73128a34b6b92c0559672ea226807df61d88"
     },
     {
       "argv": [
         "cmake",
         "--build",
-        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-vtfjdg94/libsndfile",
+        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-r8h5c0ql/libsndfile",
         "--parallel",
         "2"
       ],
       "returncode": 0,
       "log": "libsndfile-build.log",
-      "log_sha256": "18b97c4d36681367ff16408d8255e7f9898e4e1c3f08d10239319bf38e429e6f"
+      "log_sha256": "011768ea25c9526fbc27ecdfd3f89959b0b5b8324593efc46cbc37c41fa6e0f6"
     },
     {
       "argv": [
@@ -177,7 +177,7 @@
         "-Wextra",
         "-MD",
         "-MF",
-        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-vtfjdg94/harness.d",
+        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-r8h5c0ql/harness.d",
         "${REPO_ROOT}/codes/chapters/ch10/examples/industrial_interfaces.c",
         "-I",
         "${REPO_ROOT}/codes/chapters/ch00/upstream/_downloads/libsoxr/src",
@@ -185,12 +185,12 @@
         "${REPO_ROOT}/codes/chapters/ch00/upstream/_downloads/libebur128/ebur128",
         "-I",
         "${REPO_ROOT}/codes/chapters/ch00/upstream/_downloads/libsndfile/include",
-        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-vtfjdg94/libsoxr/src/libsoxr.a",
-        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-vtfjdg94/libebur128/libebur128.a",
-        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-vtfjdg94/libsndfile/libsndfile.a",
+        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-r8h5c0ql/libsoxr/src/libsoxr.a",
+        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-r8h5c0ql/libebur128/libebur128.a",
+        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-r8h5c0ql/libsndfile/libsndfile.a",
         "-lm",
         "-o",
-        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-vtfjdg94/industrial_interfaces"
+        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-r8h5c0ql/industrial_interfaces"
       ],
       "returncode": 0,
       "log": "harness-build.log",
@@ -198,8 +198,8 @@
     },
     {
       "argv": [
-        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-vtfjdg94/industrial_interfaces",
-        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-vtfjdg94/fixture_pcm16.wav"
+        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-r8h5c0ql/industrial_interfaces",
+        "/var/folders/45/yy0c7x29677b72dxs1t0bfgr0000gn/T/industrial-interfaces-r8h5c0ql/fixture_pcm16.wav"
       ],
       "returncode": 0,
       "log": "harness-run.log",
@@ -3930,7 +3930,7 @@
   },
   "actual_dependencies_sha256": {
     "codes/chapters/ch10/examples/run_industrial_interfaces.py": "6501c7bdb2e5cd529dd9436cbc99ffd31ec1398fced8d0dc98c62a8524c3111c",
-    "codes/chapters/ch04/core/upstream_contracts.py": "1ac9b1d1688a15fd73356f111af0cb6993adb26a6732cfab2c00a87e4086c46d",
+    "codes/chapters/ch04/core/upstream_contracts.py": "f61d18b3239614aaf1304b9707038ad913f602160ff6de378e52692540490f30",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4",
     "codes/chapters/ch10/examples/industrial_interfaces.c": "0c71ef70e0ed2f7e59c6613e72b35dc13f3d963ca02a4b16da90c0e3a479bff8"
@@ -3940,7 +3940,7 @@
     "dependency_files": [
       {
         "path": "harness.d",
-        "sha256": "55d3a09c6bfaddf0ae25fb1d3c130f005dc0deda7d86905e2904ed2abe5c6a34"
+        "sha256": "4b237863a85fd52240dec770b7a2f4ad7be5583015d2e3a099bcd6c36b1b37e6"
       },
       {
         "path": "libebur128/ebur128/CMakeFiles/ebur128.dir/ebur128.c.o.d",
@@ -3952,19 +3952,19 @@
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/ALAC/ag_dec.c.o.d",
-        "sha256": "a9c2b7049b04ffb12f9bed3af3c2c7c7aa958935d481bf716ad618766e172c3e"
+        "sha256": "6ef03d156fb94aea356e4d69e66603f719c4673ded7d424b017a27953106b46d"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/ALAC/ag_enc.c.o.d",
-        "sha256": "aa9b5db5568fc9b4f47593575a5ba06a8625bc0235377623e4fc333d487f9fe6"
+        "sha256": "6628d8fe07f60428013faa82af6f6faddb1013bcaf23f15eae3e9c07322ae161"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/ALAC/alac_decoder.c.o.d",
-        "sha256": "62aa2f663129d5a8eeffeec9b7dbbb02f308a983cd85007ffaed03258127303f"
+        "sha256": "29f3de93304bbca23e85f9c3674e19c9f83e95406cb2ab696d2660543466896d"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/ALAC/alac_encoder.c.o.d",
-        "sha256": "c328aa2bdcf5067a5f8d3aa630c55942acbd33d98fc18865c6a3287dcae6dc12"
+        "sha256": "30add94b964aaeced428b119dc0359dcbc19039c4f32210d87168f09f3f0a69b"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/ALAC/dp_dec.c.o.d",
@@ -3976,11 +3976,11 @@
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/ALAC/matrix_dec.c.o.d",
-        "sha256": "e4b29d7cff1c28ad1c5d8d27ada6c41c32c9494467820a19b8aab8f7d2be8810"
+        "sha256": "a5639c76706ed85c8721c955709bdcaf67195fe8e7af91c6f4b1d28bbd07ebad"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/ALAC/matrix_enc.c.o.d",
-        "sha256": "368dd7878fabf9efb4c087c71339304c00f0f35c14af623b98055385c5b6f3e5"
+        "sha256": "a854e26799834b503e68cbc6eba19ec10295ab8a8366341193204a76e10d9e47"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/G72x/g721.c.o.d",
@@ -4060,275 +4060,275 @@
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/aiff.c.o.d",
-        "sha256": "942344a2d2f50edaea5371f387d4efbbe073077c27bd8440f1b952abd5fb74d8"
+        "sha256": "572e313bae2f7fa394844dcffcd7ada32575b958782b648d42f2f9ae9d5d0697"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/alac.c.o.d",
-        "sha256": "843d7d2c72d52c7ef8a4e333d4df7009b15baf75ec5f4d9a7ca6a02299634c41"
+        "sha256": "7560ab13c41ed1c396666bcef3877b220b3416ba2d9dbd290d3f41c466683bca"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/alaw.c.o.d",
-        "sha256": "90c85200ad691df9e6e877e1cc57831c6bbd68652a75065ada4849cc067db67b"
+        "sha256": "5b243ca8e8da508373c95db3263df8c2c3a6a138d43b1c268fe04ebf29178c56"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/au.c.o.d",
-        "sha256": "70150a07d1df7dbd563eeb04bcf8164b45e4b5512ef409ace5598c5b2b75c9da"
+        "sha256": "b3c34940b4aef4bd7d834fee52552df86358a1c9c0927753332fd299a11bc4ac"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/audio_detect.c.o.d",
-        "sha256": "1c1efa25f129de05841cd8f155ac4eddb2c8dc82ad6ef52dff29373fcc48941d"
+        "sha256": "ac17e27c0c922ae195108b84a08eaee0bc21865ff9c2976fa59149545f5b06dc"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/avr.c.o.d",
-        "sha256": "ec87128b15185140b1ae7fb126e4fc91bbc5339b1da0c3de0f466a7a96208a05"
+        "sha256": "21218497a202f5dbf540fdfa9e953b0b8228a2980966f5846660cb3046f9d620"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/broadcast.c.o.d",
-        "sha256": "6d234389bf9b39dfae613cd76d6f3303e51a97e42b26bacaadd8c66b5f59bdb3"
+        "sha256": "af4577c17359c6998e97ca5fa45c9e968ed36070d1cb0041b477920575b77416"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/caf.c.o.d",
-        "sha256": "9b4fabdcfd4a7654e3defa12a9e906868bea9a18518432e2298fe5700b36ebc0"
+        "sha256": "d90f967966aac3de02256769e8685937b23351e3af972f386bd76e50596a658f"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/cart.c.o.d",
-        "sha256": "48c24caf5668a16867fbcf2952c676bcb1558d5d2f363a195cf88be0c0e43843"
+        "sha256": "255b522395cb75abc2b32d21c18273a4e23c9ff2a63f08a9da8ae82ad34de520"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/chanmap.c.o.d",
-        "sha256": "c7791043a1f08e1d19678e8a0b7b9192d3f46ca1410c29cfadceeb32d7f5ddbd"
+        "sha256": "79b087f616b74eb208b9492266104182baa6699cbf6758bd8099645cab2e1ed8"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/chunk.c.o.d",
-        "sha256": "524c2d14b03e58753f804c3eb1b8a0f2f53e0ade175b4dad68ae2f6ba01c7dcc"
+        "sha256": "3fca295e2125db00856917f048dd175e957296b44144801bffccce658d9be043"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/command.c.o.d",
-        "sha256": "6fd001297c784a4e9f16531e8437e3ae29f29d1ff3610562a89e23b7b83e0a88"
+        "sha256": "957aa94cd1d8895ec28516ea0958784f3e34adb2ddbefdb5313df8da3445391e"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/common.c.o.d",
-        "sha256": "46cdc89704405c9e80cd21fad195c444f55e66777f2691ceae1bb4c2f32cfb18"
+        "sha256": "9fd95e6adc86fd6599d8e7524eecbf621f339c172fdaa5c9b26e248c0d2ce2ef"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/dither.c.o.d",
-        "sha256": "77d1c7cf177c87a0bb302751a6d89c1b374074de0dd3f526179c0d8e3f3c6a1a"
+        "sha256": "3379aa43ef31d3bb1ff628ea4e55ce40fc5874a829e47cb78bb200c6f6a0491a"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/double64.c.o.d",
-        "sha256": "8c98720eb1deb3f2191c863ee9c580ea02814c0e59a5d61dfee3a553d8350941"
+        "sha256": "1a00cd92461d9b5aa68ec69fc8c804bd2cfa287ddadd3173b54dc676b18e39c8"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/dwd.c.o.d",
-        "sha256": "f39a0ce155b6ba3dd1b2b992393d7f3c9597a0c024274cb766dd96a10b48fe7a"
+        "sha256": "f383443bc4d5a75ea9a32b15c9bf95d085d87716144f2e5ed90e55919105f5b8"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/dwvw.c.o.d",
-        "sha256": "755f023a4acd1f26ac66c8a686e0b77f64baf7d1e2fd888d5ff4966a02d6a33c"
+        "sha256": "6e82feebf46b36f957aeb406931427633fb22a34cf26280a8cf9e43858a06eae"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/file_io.c.o.d",
-        "sha256": "4495a273ac99cf4d121b0df8f0a52e73d63eaac307298d233ed01eb8edb47833"
+        "sha256": "ee21d9b702baa5ee4f38f18d75fa28e257baac8cc422c689f10ffd3df5986d67"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/flac.c.o.d",
-        "sha256": "da95f7fd1a556ed499d2d4790a4961de27f3d6abd2811dc55b6dafd6a95dad25"
+        "sha256": "bae62541dbf7d6a71614db95750141d89fe7d595311c3310f09bdda69954c7ac"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/float32.c.o.d",
-        "sha256": "e42c3e32ea2817f50f62d802ebdd9cb5dea88031458faa5f9de1a4e5ceea0532"
+        "sha256": "e74bf75d3d398a99618487633630513b59799538381422c364c0fe1c28b72174"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/g72x.c.o.d",
-        "sha256": "1338ce0e8dc2e21fcf518d54d8fd058ca650d99794c8afab69c42d088799df1d"
+        "sha256": "97247901787d886d5b4f605e3c0caaadf5f431a0930c7689cd56c9aecf563400"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/gsm610.c.o.d",
-        "sha256": "32592c423bc07b82d16a628bdfd2935fabdc2ede45ff9f904758968ab5894f2c"
+        "sha256": "7b20bdb5391665f6f8a2f16bf177887947706d64a69fa23999b5d462838cb5af"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/htk.c.o.d",
-        "sha256": "89d73527bbe238a7f68017118b8295af0e827f51950e4b37cce166cbc57cfa3d"
+        "sha256": "d67b4884a0a00dee49587531c3809c095ba37eb554aa1537a0f3f58a9b49162f"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/id3.c.o.d",
-        "sha256": "c8971ccb90b8da09251963aa30cae40803ad605deaa149e1a79ae44a9070f3cc"
+        "sha256": "ec3f4e39c10bad07c62b2a7a6fce8d99cb7b63e1631cfcc21a1798fa79804b7d"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/ima_adpcm.c.o.d",
-        "sha256": "365a80b25caf138df82f34a5978cc4277ed750adff0b8f55f7baa67649a52b2d"
+        "sha256": "a92015f1b4afc65390b5fba14411ae633cc71d90090448a00335f35f797101ac"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/ima_oki_adpcm.c.o.d",
-        "sha256": "65e53da37bfe87fd623a620b426b5f7ba8f3cc117cff3cb1066d504f61630b73"
+        "sha256": "3d3d7f397b64ec9cbc44a6d3bec64f6dd86d809a5bdf883f66ea99bacf0eb8f4"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/interleave.c.o.d",
-        "sha256": "4b498da431e92a6f0681eb335f26cf6c7dbedce27e836c50ac42a690aee95536"
+        "sha256": "3edeae433b24b2d713dea61d86439c26b0fe14128b2cea48abf410c3378ed721"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/ircam.c.o.d",
-        "sha256": "04e0893ead91d0f04c10e159050c186ffbcf3af5da075ca6cf13e027e237517a"
+        "sha256": "16bd2d796e7df3816f84e58d2a60f28ba7d65e4fc583fe9ac924b747fc9b8bfa"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/macos.c.o.d",
-        "sha256": "5d2f76ee9d8a6fa133d367d730488991e2c77f1cced7da75b02b4396285310ab"
+        "sha256": "5392ad574260a200d9d806fca55e6eb43052d764628dd54854b30a7cac143896"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/mat4.c.o.d",
-        "sha256": "8eec4c5bac9e9be150efa13d175ea855091d301eb8a616fd84824d52c0ce4b1e"
+        "sha256": "7d8f59d16247d9cbd1e1f6391fae6d72908168322d6890e58dd59b1690efdc41"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/mat5.c.o.d",
-        "sha256": "d42e7997474c3f5cbc41d8157597c87216d00a21d190460795fb3bd46e3b7709"
+        "sha256": "d80cbdba2a213b01d81ecc1e9f7c9e3c91babc3ed94becf41bcd63041026ef66"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/mpc2k.c.o.d",
-        "sha256": "e169f127c8a5b6de7ed73bcf9be3ea41be973cb9773476d7f180b9de50416e1c"
+        "sha256": "dbc79bc978616f1a92f7febcfec35c074e64615725ec3997d3f5cec21d70c9b1"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/mpeg.c.o.d",
-        "sha256": "ceaa0bd9df575f5cf598184879a22e8f500033abc6ab1dca96d455c779b9acb4"
+        "sha256": "93139307b6e8ce72935d7809a2dbd461e51c5795701a89b3b3090b72dcc6cf6f"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/mpeg_decode.c.o.d",
-        "sha256": "03a30075bb0ac30280b061049296774fbf752a96ab34dfa2eb2cd7c45aa066d0"
+        "sha256": "7444904d2e14f354943f5ae84c191ff5df12b8d185c525eff744931359c913a2"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/mpeg_l3_encode.c.o.d",
-        "sha256": "ca563d637f4e47775b0c54ee14b520b7be4afb7de5bc1a59505fa6f878925ded"
+        "sha256": "0f1f4d123afeb066d3ca1076b2b110b13ea367a40f77ee8882aaa38b74231e0d"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/ms_adpcm.c.o.d",
-        "sha256": "ca72e7b7c6bb39d205ad0bee9dc50134d79ea27c74e41131d25b04d0cfdfdbf5"
+        "sha256": "1c4e3e1ba04b47df593d9737c45f4c813521c8e37b29f42169bf039d66dee7ab"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/nist.c.o.d",
-        "sha256": "d1ae4a8e66f1e703d85e466d94fcd50a1147ed981776a786fe7591583739fb1a"
+        "sha256": "6817d3515343be9779a5e99b968e81e5f0c164b1122db9e7acda00711729d1b0"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/nms_adpcm.c.o.d",
-        "sha256": "4858d32456e645df04476b1e7e38d5019bd66204b7a1ad84b385d7c749ba2b00"
+        "sha256": "c8dbf0cacbdf1ef60687c9089f9268b407109e4c55585d3b8711e8a497708b05"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/ogg.c.o.d",
-        "sha256": "f0802f47ec121c1f547238bc1d9863c5d0f7a61f6ce98f1cf5a315195e0cc77d"
+        "sha256": "b05947933fe80a7479f38cab14163510d7cc9922a0ab36cf894c8b9a6a3ad968"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/ogg_opus.c.o.d",
-        "sha256": "d7b0360c9550ae697bc6e7b9fb87ec8d15d36339f40277348a188e9ce67348f8"
+        "sha256": "e32ffd27f9953a5427455fc03062497d359953a2060344f37ff6a5dcfd733cb5"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/ogg_pcm.c.o.d",
-        "sha256": "84111cac0975916a54c32f651971cffe6a59de7320de702c6d241d73b416459b"
+        "sha256": "ed4c4877f3b42b0447fdb925989853bc464311dfff67081b637320033a54d595"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/ogg_speex.c.o.d",
-        "sha256": "96ac336faec617c0da719b87f5650ef85b4f1b713d28dc28c791cf7dfb57ac51"
+        "sha256": "af232109470610d688b3db6f0e8afbe70751a057aa0b892903bb50746943f820"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/ogg_vcomment.c.o.d",
-        "sha256": "d65771a2d6eb4e6f3447c882f6fdf4233f46e8b56e564099ff57376d38422d0c"
+        "sha256": "fa5c3abadfa3cab66b149caf809532002eba929968091c45ac85782c2d47d473"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/ogg_vorbis.c.o.d",
-        "sha256": "2be66b0d58f5e99f0897195f32df63ecc4bd5f00f44938f1dc4b6f47c6370018"
+        "sha256": "7622588d06b8948268acc3a88fe075533b75bf3005f1986e368c37327eb54410"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/paf.c.o.d",
-        "sha256": "885c449d98143b9315e22f0c94dedd0d3496b002f92d33022f560727463934ed"
+        "sha256": "01fe27293020674eb6aa78281cc6487e5ac2d40fa338dc23a811827cce1e223a"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/pcm.c.o.d",
-        "sha256": "0dc1674682f1f37a883e9fdef38761c9ad208cb949bcc72221f9a639d993c740"
+        "sha256": "b3c4b675dd2ebb8a208a2955d7cfe2f08fdd910a9476d968a2345de300af730a"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/pvf.c.o.d",
-        "sha256": "e551b9756493ed7de6ce3914c6890494ee516b8c6c98c92fee8466f2c914cf0d"
+        "sha256": "d2c7755f38f6b9e72bbf525fe640e0be46b42630ab748bbdef4c1af7af4ad533"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/raw.c.o.d",
-        "sha256": "6931679f8004f831de64ba8fb7f31f1a7a9692be3b5be69242502614d374d481"
+        "sha256": "ec8c968e5d053c4c54a6b2e051f94fba793fbb051ed4c9bceda95ffdf5b65dbc"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/rf64.c.o.d",
-        "sha256": "8b2fdffd2ef8ec7f13f2c818c9e80cfeba604b46bb7b1b2d63c23840a5f724e8"
+        "sha256": "71925dc0c8f37d2a829d55374c21ebd128054f0d9ad380af9ea638aa738a4712"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/rx2.c.o.d",
-        "sha256": "457af8827d85303a29ceaaffd7282a75286612ea9f1814c3f30cadc523be09a3"
+        "sha256": "ded96e59f1fbd91573702805e49e0e0090781742efe57a1aad57c4c8b977e6a3"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/sd2.c.o.d",
-        "sha256": "dbdcda0814556640ebe26ac4cb70f4c9cfa9ec026ff775f4359fe253b85454de"
+        "sha256": "648776917cf15bd2a5ede03219f7f478a7ae807cdddd878b312859e7463a2c61"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/sds.c.o.d",
-        "sha256": "3c87fd76599f509eb83f15ffa658fbfc239342025c76e8d9a9d4680c8cb829c4"
+        "sha256": "e7e3f0e794de114580fb47509a03378380ecf4f3f313f0b1993d7c3a5c81c82e"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/sndfile.c.o.d",
-        "sha256": "fdfdd3e64fc4fb0d031fbedc5cd00b27544f81e582b7efa10998b65c399e1595"
+        "sha256": "66ecc9b2e2129646723eafb3749180534fb199fd72e09654512224f8384a3bb5"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/strings.c.o.d",
-        "sha256": "678d10a1438fe7b3c497e721a9c262b5744b66a8d06c857cf6412e6c12b17f50"
+        "sha256": "ec763d1d18bc225f73ff1208a572432c9658790ecef806afd7b0701d75c6ad9e"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/svx.c.o.d",
-        "sha256": "1534cd50f4f9cb78d624c4b5f0f822f67e7b7c95c3e3143d9ec33258b8de7519"
+        "sha256": "40fb36ad45b697ca248ea786dd244231fea631bfe53c3d19b990711af6f436ed"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/txw.c.o.d",
-        "sha256": "2566ddc180ff7a9d17d391c1614b8c7a7f003312297fb82e38fd144f6559ff46"
+        "sha256": "6a463376df22c3696ff22238a39175c6b4609c45d9e8d86206400b76d534c078"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/ulaw.c.o.d",
-        "sha256": "f5f989f2ea7211d70562b518188106638c09703b7a2171bd9c34cac57e3c8202"
+        "sha256": "32f1cfbec0d542e1890596aabe74909a6b3e8172ccd865364771035b6abfd82d"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/voc.c.o.d",
-        "sha256": "c4a39d4ffd217bd39dec47daf289c796511f66331d3f0bee0db19eacd87fa59b"
+        "sha256": "b898e781ef68b899db962d2ff381dcfa338ddab57e7cb96dc7364298351b936a"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/vox_adpcm.c.o.d",
-        "sha256": "5f202933ff305848b441d4fe39e746777ca49029100582fc01f2ba64c0ee258a"
+        "sha256": "e27925e004201837bcc85918db32156d1573c49360bffc4654d43a4e7d7bb584"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/w64.c.o.d",
-        "sha256": "537324ed1397d07991144bbf9367337ea8e6702f0da00f310916b41cea0f04fd"
+        "sha256": "cabfd3662d24914dbe2acb8d5820072b362de6c20bdf50543a85695db9928884"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/wav.c.o.d",
-        "sha256": "a669ab8588757f4ecdaf2c3a063ca6143c8e033a26e7acc3c7590fbc7b3c7ade"
+        "sha256": "4a56c5a39eb24145e89a8a1e4797a66a6c38d97617c6fc1a1e5bade89eb82d4b"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/wavlike.c.o.d",
-        "sha256": "32c5cf2b8f29a7da462c5c5e1f6bc9b4cc1a9876d9b826b5c768a4a9818e4ee8"
+        "sha256": "f8fe3c975be66f18c838a6cb1270c5305d0b2023c099a16314b384267d2d8590"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/wve.c.o.d",
-        "sha256": "e0f41d596a0b912054f91c131d56902770b092f8b41c8f08945d363808f5b12d"
+        "sha256": "2c4dc9d75002ed5883c611453bf7c0867768dec8d308e51ecfde1397759919ab"
       },
       {
         "path": "libsndfile/CMakeFiles/sndfile.dir/src/xi.c.o.d",
-        "sha256": "07548e0fbe2700d866a6d60f51f855aea32b9208eda8cbac3a75e30834116806"
+        "sha256": "ef23f8cbde1ce2839554793cc603971239fe542c4077c9b3bd7ddf816f6a94ce"
       },
       {
         "path": "libsoxr/src/CMakeFiles/soxr.dir/cr.c.o.d",
-        "sha256": "7f40022f768080f1973ae51d2bdac24b099f6d2105fe8039822cbcdb4bc919ff"
+        "sha256": "9935aad4cb510376d3e806c9b80cbf2605626c35c7ef04e8059b60e2c89e1507"
       },
       {
         "path": "libsoxr/src/CMakeFiles/soxr.dir/cr32.c.o.d",
-        "sha256": "4c5605f1581f3e478043bc6a92a71e741806a23a4488de61923574a60e75a055"
+        "sha256": "97a7d6718c113b6f7c29ed924028cca938a57f5638ef2cc5c7c53104e259a9b1"
       },
       {
         "path": "libsoxr/src/CMakeFiles/soxr.dir/cr64.c.o.d",
-        "sha256": "da410fd25b32a36af7e92561c02fe83665b2f224e1716c3888de82c6957e15b1"
+        "sha256": "1ef4cf3ce528cc4fa0650739eb0eeb9460e4ffe15a4b645d82aa47ce57d58974"
       },
       {
         "path": "libsoxr/src/CMakeFiles/soxr.dir/data-io.c.o.d",
-        "sha256": "6c2e56717741f7ccce07594e747cd0bcca4261a2aa33854a039d51299cb9628c"
+        "sha256": "182cf21d090a17a0bf24a57ce93e85541fd97c8f3d50781a529aa798bb708c13"
       },
       {
         "path": "libsoxr/src/CMakeFiles/soxr.dir/dbesi0.c.o.d",
@@ -4336,23 +4336,23 @@
       },
       {
         "path": "libsoxr/src/CMakeFiles/soxr.dir/fft4g32.c.o.d",
-        "sha256": "03632bd564a18b98676bcf719d0f11f7c685b34828021d1c9d8aaaa6ed431ef9"
+        "sha256": "0dece8495d752568df57f3ce2476c7f900d8ed21a7a283dfa8afd2d07d4b73d2"
       },
       {
         "path": "libsoxr/src/CMakeFiles/soxr.dir/fft4g64.c.o.d",
-        "sha256": "2cc1f6620922532a75a0d17eac47747ccfa3ff59386d2b3e221bb531565e13dc"
+        "sha256": "788c1aad7263b0ebcae65e96feb1039f7136be526d6d9319296670fb53a98eae"
       },
       {
         "path": "libsoxr/src/CMakeFiles/soxr.dir/filter.c.o.d",
-        "sha256": "cf8a88d6172de373bdaa9a63b73e3a3c0bb3b8c9d5e7dfc2c6d9ab23640c97d8"
+        "sha256": "749f913e0de66f4695a2b82232826c13b3f30eb943be75e0399b51ff37bd1c67"
       },
       {
         "path": "libsoxr/src/CMakeFiles/soxr.dir/soxr.c.o.d",
-        "sha256": "2d9a543df1b84ee679edf63fa8deadfa29dea04b68d63e2059174629eba9fb0c"
+        "sha256": "06a225423e2072ade94b76444267883b59682bfb254829857123ae24573b762b"
       },
       {
         "path": "libsoxr/src/CMakeFiles/soxr.dir/vr32.c.o.d",
-        "sha256": "534e07894ee267acf70175bb3d5d8eac5ef89674179aa0a0307f37d4489d9ea0"
+        "sha256": "cb0636b2c2ae9a0edfffbc8a06efb1df1c3a9f8a1b854111063c65a0b474b238"
       }
     ],
     "original_compile_inputs": {
@@ -6302,10 +6302,10 @@
   },
   "binary_sha256": "6a4e10d2644e3f4517acb528f8077d1e3d5ded5d848cd940e0fd5e4341d58484",
   "static_library_sha256": {
-    "libsoxr": "2c4ec329f547add8853f3e0d95f44d87f6b91c810a556f6b74b6ca39c0e6e6ff",
-    "libebur128": "72844db139389bb7168de3f24ab359f7fbd4129f1c5c162abc9f7e8aa55c4fb5",
-    "libsndfile": "5bc172e8cd87b10af4220fe6614c70f94eed0b2c1b1e45b0928e70b30e728831"
+    "libsoxr": "417cef3846af60e6c3686cdb59fb26a18088b85ea218bc20215f7da4eb2dca19",
+    "libebur128": "5a972b252e228884fdf6e50013883d5e0e0081a5f56f8df8ab6f37ee04f740fa",
+    "libsndfile": "6f488b13373bc00d9d15bc9ee54250ed9d74d37a1454f96a7abaf9389b60be9a"
   },
   "callback_trace_rows": 10569,
-  "finished_at_utc": "2026-10-04T18:25:47.281580+00:00"
+  "finished_at_utc": "2026-10-04T19:55:50.606766+00:00"
 }

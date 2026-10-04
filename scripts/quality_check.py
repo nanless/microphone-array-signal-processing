@@ -146,7 +146,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "08_speech-separation.md": 63,  # OverIVA topic and three separately navigable exercises
     "09_source-tracking.md": 62,  # three independent topics and E09-24/25/26
     "10_engineering-practice.md": 56,
-    "11_selection-guide.md": 37,
+    "11_selection-guide.md": 41,  # two evidence topics and E11-26/27 are independently navigable
     "12_appendix-symbols-math.md": 36,
     "13_appendix-guide.md": 29,
     "14_acoustic-imaging.md": 61,
@@ -174,16 +174,16 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 16
 EXPECTED_SECTION_COUNT = 151
-EXPECTED_SUBSECTION_COUNT = 728
-EXPECTED_OUTLINE_ITEM_COUNT = 895
-EXPECTED_FIGURE_NUMBERS = set(range(1, 79))
-EXPECTED_EXERCISE_COUNT = 353
+EXPECTED_SUBSECTION_COUNT = 732
+EXPECTED_OUTLINE_ITEM_COUNT = 899
+EXPECTED_FIGURE_NUMBERS = set(range(1, 80))
+EXPECTED_EXERCISE_COUNT = 355
 EXPECTED_EXERCISE_COUNTS = {
     '01_problem-definition.md': 10, '02_basics-signal-model.md': 20,
     '03_array-geometry.md': 18, '04_doa-estimation.md': 25,
     '05_beamforming.md': 24, '06_aec.md': 42, '07_wpe-dereverberation.md': 24,
     '08_speech-separation.md': 32, '09_source-tracking.md': 26,
-    '10_engineering-practice.md': 34, '11_selection-guide.md': 25,
+    '10_engineering-practice.md': 34, '11_selection-guide.md': 27,
     '12_appendix-symbols-math.md': 19, '13_appendix-guide.md': 14,
     '14_acoustic-imaging.md': 16, '15_distributed-enhancement.md': 24,
 }
@@ -795,7 +795,7 @@ def check_figures(errors: list[str]):
             if width < 800 or height < 300:
                 fail(errors, f"图片分辨率过低：figures/{name}: {width}×{height}")
             number = int(re.match(r"fig(\d{2})_", name).group(1))
-            script_name = ("make_channel_figures.py" if number == 78 else "make_tracking_figures.py" if number == 77 else "make_css_figures.py" if number == 76 else "make_delay_figures.py" if number == 75 else "make_reference_figures.py" if number == 74 else "make_beamforming_figures.py" if number == 73 else "make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72)
+            script_name = ("make_selection_figures.py" if number == 79 else "make_channel_figures.py" if number == 78 else "make_tracking_figures.py" if number == 77 else "make_css_figures.py" if number == 76 else "make_delay_figures.py" if number == 75 else "make_reference_figures.py" if number == 74 else "make_beamforming_figures.py" if number == 73 else "make_figures.py" if number <= 25 or number in (33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72)
                            else "make_aec_figures.py")
             script_path = ROOT / "scripts" / script_name
             for issue in png_provenance_issues(path, script_path):
@@ -1398,7 +1398,7 @@ def source_digest():
                     if path.is_file())
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
-              ("build_pdf.py", "make_figures.py", "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py", "make_delay_figures.py", "make_css_figures.py", "make_tracking_figures.py", "make_channel_figures.py")]
+              ("build_pdf.py", "make_figures.py", "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py", "make_delay_figures.py", "make_css_figures.py", "make_tracking_figures.py", "make_channel_figures.py", "make_selection_figures.py")]
     paths.append(ROOT / "requirements.txt")
     paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
@@ -1425,7 +1425,7 @@ def site_source_digest():
     paths += [ROOT / "scripts" / name for name in
               ("build_site.py", "build_markdown_helpers.py", "inline_layout.js", "heading_aliases.py",
                "legacy_sequential_anchors.json", "code_layout.py", "make_figures.py",
-               "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py", "make_delay_figures.py", "make_css_figures.py", "make_tracking_figures.py", "make_channel_figures.py")]
+               "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py", "make_delay_figures.py", "make_css_figures.py", "make_tracking_figures.py", "make_channel_figures.py", "make_selection_figures.py")]
     paths.append(ROOT / "requirements.txt")
     paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
@@ -3988,6 +3988,121 @@ def check_channel_figure(errors):
         fail(errors,'图78已知坏麦与实际PCM：'+str(error))
 
 
+def _check_selection_figure_report(report):
+    """Independent scalar rank-one oracle; no teaching solver supplies expected values."""
+    import cmath
+    paths = {'scripts/make_selection_figures.py', 'codes/chapters/ch11/core/selection_physics.py',
+             'codes/chapters/ch11/core/selection.py', 'codes/chapters/ch03/core/geometry.py',
+             'codes/chapters/ch05/core/beamforming.py', 'codes/chapters/ch04/core/covariance.py',
+             'codes/chapters/ch02/core/conventions.py', 'codes/chapters/ch00/io_contracts.py'}
+    sources = {p: hashlib.sha256(validate_parent_chain(ROOT/p).read_bytes()).hexdigest() for p in paths}
+    if (type(report['schema_version']) is not int or report['schema_version'] != 1
+            or report['exercise_id'] != 'E11-27' or report['source_sha256'] != sources
+            or report['script_sha256'] != sources['scripts/make_selection_figures.py']):
+        raise ValueError('figure79 actual source identity differs')
+    case, plot = report['numerical_case'], report['plot_data']
+    scope = 'known single-frequency ensemble covariances; no device measurements, audio or optimizer for worst-case uncertainty'
+    limits = ('Known single-frequency ensemble statistics and prescribed 5-degree target mismatch only; '
+              'no WAV, estimated covariance/DOA, worst-case optimizer, device latency, ASR or listening test.')
+    if (case.keys() != {'parameters', 'noise_covariance_real_imag', 'diffuse_coherence',
+            'steering_vectors_real_imag', 'candidates', 'acoustically_eligible',
+            'lowest_actual_NMSE_eligible', 'device_selected', 'scope'}
+            or case['scope'] != scope or report['limits'] != limits):
+        raise ValueError('figure79 report scope cannot claim unexecuted methods or device results')
+    parameters = {'positions_m': [[-.04, 0., 0.], [0., 0., 0.], [.04, 0., 0.]],
+        'frequency_hz': 1000., 'sound_speed_m_s': 343., 'reference_channel': 1,
+        'nominal_target_deg': 0., 'interference_deg': 20., 'actual_target_deg': 5.,
+        'target_power': 1., 'interference_power': 1., 'independent_sensor_noise_power': .01,
+        'azimuth_convention': '+y zero; positive toward +x', 'WNG_lower_limit_dB': 0.,
+        'response_amplitude_error_upper_limit': .03, 'latency_upper_limit_ms': 150.,
+        'diffuse_model': 'separate 3-D isotropic sinc coherence'}
+    if not same_metadata(case['parameters'], parameters):
+        raise ValueError('figure79 fixed physical parameters or hard thresholds differ')
+    def close(actual, expected):
+        if type(expected) is float:
+            return type(actual) is float and math.isfinite(actual) and math.isclose(actual, expected, rel_tol=3e-11, abs_tol=3e-12)
+        if isinstance(expected, list):
+            return type(actual) is list and len(actual) == len(expected) and all(close(a, e) for a, e in zip(actual, expected))
+        return same_metadata(actual, expected)
+    def pairs(values):
+        return [[float(complex(v).real), float(complex(v).imag)] for v in values]
+    def dot(x, y):
+        return sum(complex(a).conjugate()*b for a, b in zip(x, y))
+    xs = [-.04, 0., .04]
+    k = 2*math.pi*1000/343
+    vectors = {name: [cmath.exp(1j*k*x*math.sin(math.radians(deg))) for x in xs]
+               for name, deg in [('nominal', 0), ('interference', 20), ('actual', 5)]}
+    b, actual = vectors['interference'], vectors['actual']
+    covariance = [[b[i]*b[j].conjugate()+(.01 if i == j else 0.) for j in range(3)] for i in range(3)]
+    gamma = [[math.sin(k*abs(x-y))/(k*abs(x-y)) if x != y else 1. for y in xs] for x in xs]
+    if not close(case['noise_covariance_real_imag'], [pairs(row) for row in covariance]) or not close(case['diffuse_coherence'], gamma):
+        raise ValueError('figure79 actual noise and separate diffuse models differ')
+    for name, v in vectors.items():
+        if not close(case['steering_vectors_real_imag'][name], pairs(v)):
+            raise ValueError('figure79 propagation sign or reference differs')
+    ids, labels = ['ds', 'mvdr_0', 'mvdr_0_1', 'mvdr_1'], ['DS', 'α=0', 'α=0.1', 'α=1']
+    acoustic, device = ['pass', 'fail', 'fail', 'pass'], ['undetermined', 'fail', 'fail', 'undetermined']
+    if len(case['candidates']) != 4:
+        raise ValueError('figure79 candidate count differs')
+    expected_plot = {'candidate_ids': ids, 'labels': labels,
+        'response_amplitude_error_upper_limit': .03, 'WNG_lower_limit_dB': 0.,
+        'acoustic_verdicts': acoustic, 'device_verdicts': device,
+        'DI_scope': 'DI uses the separate 3-D isotropic diffuse coherence Gamma, not the actual R_n',
+        'decision_scope': 'known nominal/actual directions; acoustic-only eligibility does not supply missing device evidence'}
+    for key in ('noise_power_normalized_by_target', 'actual_NMSE', 'response_amplitude_error', 'WNG_dB', 'DI_dB_separate_diffuse_model'):
+        expected_plot[key] = []
+    for i, alpha in enumerate([None, 0., .1, 1.]):
+        if alpha is None:
+            w = [1/3]*3
+        else:
+            q = .01+1.01*alpha
+            z = [(1-bm*sum(v.conjugate() for v in b)/(q+3))/q for bm in b]
+            w = [zm/sum(z) for zm in z]
+        norm, h = sum(abs(v)**2 for v in w), dot(w, actual)
+        noise = abs(dot(w, b))**2+.01*norm
+        diffuse = sum(complex(w[r]).conjugate()*gamma[r][c]*w[c] for r in range(3) for c in range(3)).real
+        metrics = {'actual_noise_power': noise, 'actual_NMSE': noise+abs(h-1)**2,
+                   'response_amplitude_error': abs(h-1), 'WNG_dB': -10*math.log10(norm),
+                   'DI_dB': -10*math.log10(diffuse), 'nominal_NMSE': noise}
+        row = case['candidates'][i]
+        fixed = {'candidate_id': ids[i], 'label': labels[i], 'relative_diagonal_loading': alpha,
+                 'absolute_diagonal_loading': None if alpha is None else 1.01*alpha,
+                 'weights_real_imag': pairs(w), 'nominal_response_real_imag': [1., 0.],
+                 'actual_response_real_imag': [float(h.real), float(h.imag)],
+                 'acoustic_verdict': acoustic[i], 'device_verdict': device[i], 'measured_latency_ms': None,
+                 **metrics}
+        if row.keys() != fixed.keys() or any(not close(row[key], value) for key, value in fixed.items()):
+            raise ValueError('figure79 independent weights, statistics or evidence states differ')
+        for key, source in [('noise_power_normalized_by_target', 'actual_noise_power'),
+                ('actual_NMSE', 'actual_NMSE'), ('response_amplitude_error', 'response_amplitude_error'),
+                ('WNG_dB', 'WNG_dB'), ('DI_dB_separate_diffuse_model', 'DI_dB')]:
+            expected_plot[key].append(metrics[source])
+    if plot.keys() != expected_plot.keys():
+        raise ValueError('figure79 plotted schema differs')
+    for key, value in expected_plot.items():
+        if not close(plot[key], value):
+            raise ValueError('figure79 plotted statistics or thresholds differ: '+key)
+    if (case['acoustically_eligible'] != ['ds', 'mvdr_1']
+            or case['lowest_actual_NMSE_eligible'] != 'mvdr_1' or case['device_selected'] is not None):
+        raise ValueError('figure79 missing device evidence cannot become a device selection')
+
+
+def check_selection_figure(errors):
+    try:
+        from PIL import Image
+        report_path = ROOT/'codes/chapters/ch11/reports/figure79_selection_evidence.json'
+        report = _read_audio_manifest(report_path)
+        _check_selection_figure_report(report)
+        with Image.open(validate_parent_chain(ROOT/'figures/fig79_selection_evidence.png')) as picture:
+            if (picture.info.get('SourceScript') != 'scripts/make_selection_figures.py'
+                    or picture.info.get('SourceScriptDigest') != report['script_sha256']
+                    or strict_json_loads(picture.info['GeneratorInputs']) != report['source_sha256']
+                    or picture.info.get('NumericalReportDigest') != hashlib.sha256(report_path.read_bytes()).hexdigest()):
+                raise ValueError('figure79 PNG source or numerical report binding differs')
+    except (OSError, ValueError, KeyError, TypeError, OverflowError) as error:
+        fail(errors, '图79独立物理复算与证据状态：'+str(error))
+
+
 def check_noise_audio(errors):
     """Independent actual integer scoring plus current-source replay and visibility."""
     import math
@@ -4353,6 +4468,7 @@ def main():
     check_noise_audio(errors)
     check_channel_audio(errors)
     check_channel_figure(errors)
+    check_selection_figure(errors)
     check_weighted_audio(errors)
     check_response_audio(errors)
     check_imaging_audio(errors)

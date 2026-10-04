@@ -339,7 +339,11 @@ DI-cpWER 可以帮助诊断说话人归属约束对结果的影响，但作者 �
 
 普通词编辑距离只比较词序。如果参考“春天”的区间为 `[0,1]` 秒，假设同词却在 `[10,11]` 秒，普通错误数为0；下面实际运行的固定时间核只能删除并插入，错误数为2。正重叠区间 `[0,1]` 与 `[0.5,1.5]` 则可以匹配，错误数为0。[E11-24](../../../../chapters/11_selection-guide.md#e11-24)说明词时间、容差与内容评分的关系；词元是预先分好的整个词，不把“春天”自动拆成两个汉字。
 
-触点边界须按版本另记。固定 [`levenshtein.h` 的 `overlaps`](https://github.com/fgnt/meeteval/blob/6e3dc81284f2d6928f7ef9e620fd3b6906daa429/meeteval/wer/matching/levenshtein.h#L94)使用严格正重叠，区间 `[0,1]` 与 `[1,2]` 仅端点相接，实际错误数为2。2025原稿式(10)以间隔大于容差为禁止条件；零容差下的等号边界不能直接代替这个固定实现的严格比较。该版本差异不推翻原论文的整体评分方法。实际使用 tcpWER 包装器还需固定容差及词时间生成方式；这里直接调用两核，不运行包装器，也不把较宽的容差解释为 DER 的排除评分区域。
+触点边界须按版本另记。固定 [`levenshtein.h` 的 `overlaps`](https://github.com/fgnt/meeteval/blob/6e3dc81284f2d6928f7ef9e620fd3b6906daa429/meeteval/wer/matching/levenshtein.h#L94)检查两条严格不等式：参考起点小于假设终点，假设起点小于参考终点。两条正长度区间 `[0,1]` 与 `[1,2]` 仅端点相接，实际错误数为2。若假设是零时长点，这个规则仍允许点位于参考区间内部，不能概括成“所有输入的交集必须有正长度”。2025原稿式(10)以间隔大于容差为禁止条件；零容差下的等号边界不能直接代替这个固定实现的严格比较。实际使用 tcpWER 包装器还需固定容差及词时间生成方式；这里直接调用两核，不运行包装器，也不把较宽容差解释为 DER 的排除评分区域。
+
+固定 [`time_constrained.py` 的时间助手与包装器默认参数](https://github.com/fgnt/meeteval/blob/6e3dc81284f2d6928f7ef9e620fd3b6906daa429/meeteval/wer/wer/time_constrained.py#L75-L102)将参考话段按词的字符数分配区间，将假设词放在对应区间的中点。对话段 `abc b`、起止时间0～4 s，字符数为3和1，参考词区间依次是 `[0,3]`、`[3,4]`，假设则是 `[1.5,1.5]`、`[3.5,3.5]`。新诊断只实际调用这两个原助手，并核对这组手算，不运行完整tcpWER。
+
+这些是近似时间，不能称为从波形得到的真实词边界。[作者2025原稿v1 §V-C](https://arxiv.org/html/2508.02112v1)说明假设用中点是为了避免扩大词区间来改善匹配；字符数比例也不保证等于中文词的发音时长。本书E11-24教学核只接受正时长区间，这是有限接口条件，不是原核不能处理点。[作者2023原文 §4.2，印刷第30页](https://www.isca-archive.org/chime_2023/neumann23_chime.pdf)的容差选择依赖当时数据与标注误差；不把该实验的5 s当成所有数据集的默认正确值。
 
 #### 缺失会话不能随意从统计分母中消失
 
@@ -369,11 +373,13 @@ DI-cpWER 可以帮助诊断说话人归属约束对结果的影响，但作者 �
 
 #### 诊断的执行层次与复算入口
 
-[诊断脚本](../../ch11/examples/audit_meeting_scoring_interfaces.py)与[固定报告](../../ch11/reports/meeting_scoring_interfaces.json)绑定源码提交、所读文件摘要、输入配置、脚本摘要和运行环境，区分四类证据：原 MeetEval 会话分发函数调用；原简化文档函数提取调用；原 CHiME 控制函数加模拟文件接口；未执行生产算法的静态核对。
+[诊断脚本](../../ch11/examples/audit_meeting_scoring_interfaces.py)与[当前报告](../../ch11/reports/meeting_scoring_interfaces_current.json)区分原会话分发函数、提取的原简化文档函数、原词时间助手、带模拟文件接口的原CHiME控制函数，以及生产评分器的实际依赖失败。[2026-09-28历史报告](../../ch11/reports/meeting_scoring_interfaces.json)保留原始字节和当时工具身份。
 
 2026-09-28的隔离环境中，MeetEval 可以导入，但真实 `cp_word_error_rate` 调用因缺少编译扩展 `cy_levenshtein` 而失败。文档函数在同一环境中给出三人两槽例的 cp 错误数 2、ORC 错误数 0；这不能改写成生产包已算出对应 WER。没有运行 ASR、说话人分离、CHiME 音频评测、模型推理或设备测试。
 
-普通[离线测试](../../../../tests/test_codes_meeting_scoring_interfaces.py)不依赖下载目录、NumPy 或 SciPy，用独立全矩阵编辑距离与排列枚举核对记录。要重新执行外部诊断，需固定源码和含 NumPy/SciPy 的隔离环境；输出先放到新临时文件，再比较报告。脚本核对原文件摘要和干净工作树，不安装依赖、不编译扩展、不修正上游，也不下载会议录音。
+普通[离线测试](../../../../tests/test_codes_meeting_scoring_interfaces.py)用独立全矩阵编辑距离与排列枚举核对历史记录。当前工具先核官方origin、固定提交、许可、原始Git blob、普通父链和完整选集状态，再在具备NumPy/SciPy的隔离Python子进程中执行。全部预核Python文件和32个实际导入原模块分别记录；预核不表示每个函数都执行。当前MeetEval完整选集仍不匹配，只将实际使用的固定源码身份记为已核实，不把下载状态改成成功。
+
+默认只输出JSON。显式`--output codes/chapters/ch11/reports/meeting_scoring_interfaces_current.json`才写仓内指定当前报告，其他仓内源码、历史报告与上游树均拒绝写入；仓外普通报告可显式指定。父进程与子进程都检查前后身份，拒绝预先加载的MeetEval及未核字节码/扩展，子进程不污染调用者模块状态。不安装依赖、不编译Python扩展、不修正上游或下载会议录音。
 
 <a id="meeting-kernel-contracts"></a>
 
@@ -381,7 +387,7 @@ DI-cpWER 可以帮助诊断说话人归属约束对结果的影响，但作者 �
 
 [当前核审计工具](../../ch11/examples/audit_meeting_kernel_contracts.py)完整包含固定版原 `levenshtein.h`，实际调用 `levenshtein_distance_` 与 `time_constrained_levenshtein_distance_v2_`。自写驱动只把已分词文字映射成无符号词元，并传入以秒为单位的非负 double 区间；没有改写原方法、替换算法或加入 ORC 外层分配。
 
-九例均以插入、删除、替换代价1及正确匹配代价0运行。期望来自手算，[独立测试](../../../../tests/test_codes_meeting_kernel_contracts.py)另用完整二维编辑距离矩阵核对，不用原核输出生成期望。两词时间整体错位时，每个词都要删除并插入，总错误数为4；空输入按实际词数计错，双空为0。
+原九例保留，并增加四个点时间控制，当前共13例，均以插入、删除、替换代价1及正确匹配代价0运行。期望来自手算，[独立测试](../../../../tests/test_codes_meeting_kernel_contracts.py)另用完整二维编辑距离矩阵核对，不用原核输出生成期望。两词时间整体错位时，每个词都要删除并插入，总错误数为4；空输入按实际词数计错，双空为0。
 
 | 已分词输入与时间关系 | 普通错误数 | 固定时间核错误数 |
 |---|---:|---:|
@@ -394,15 +400,19 @@ DI-cpWER 可以帮助诊断说话人归属约束对结果的影响，但作者 �
 | 参考两词、空假设 | 2 | 2 |
 | 双空 | 0 | 0 |
 | 同两词、两段时间均完全分离 | 0 | 4 |
+| 同词参考 `[0,3]`，假设点1.5在内部 | 0 | 0 |
+| 同词参考 `[0,3]`，假设点0在左端点 | 0 | 2 |
+| 同词参考 `[0,3]`，假设点3在右端点 | 0 | 2 |
+| 两词参考 `[0,3]`、`[3,4]`，同词假设点1.5、3.5 | 0 | 0 |
 
-本机原核执行另存于[当前报告](../../ch11/reports/meeting_kernel_contracts.json)，2026-09-28的旧诊断保留。报告绑定100项锁表的实际摘要、固定 HEAD 与 origin、七个原文件的 Git blob/SHA、原 MIT 许可、工具和自写驱动摘要、编译器与实际命令，并核对源工作树执行前后洁净。其余六个文件只作接口、许可和来源核对；仅原头文件参与编译。中文词元不测试分词算法，时间区间也不是从录音估计的。
+本机原核执行另存于[当前报告](../../ch11/reports/meeting_kernel_contracts_current.json)，[原九例历史报告](../../ch11/reports/meeting_kernel_contracts.json)保留。当前报告绑定114项真实锁表、完整选集状态与所用七个原文件身份；原头文件、驱动和系统编译依赖由真实编译器依赖文件分别登记，其余六个原文件仅作静态核对。编译前清除继承的构建搜索覆盖，编译和运行后再核来源、文件与洁净状态。中文词元不测试分词算法，时间输入也不是从录音估计的。
 
 ```bash
 .venv/bin/python -B -m codes.chapters.ch11.examples.audit_meeting_kernel_contracts
-.venv/bin/python -B -m codes.chapters.ch11.examples.audit_meeting_kernel_contracts --report codes/chapters/ch11/reports/meeting_kernel_contracts.json
+.venv/bin/python -B -m codes.chapters.ch11.examples.audit_meeting_kernel_contracts --report codes/chapters/ch11/reports/meeting_kernel_contracts_current.json
 ```
 
-默认只输出 JSON；编译仅在临时目录，退出后清理。只有显式 `--report` 才写入普通 JSON 文件；输出路径拒绝符号链接、非目录父链、字面 `..` 与上游缓存内部路径，并原子替换报告。工具不下载或安装依赖，所需环境为 Python 标准库、Git 与 C++17 编译器。可选缓存或编译器缺失时，普通测试明确跳过原核实调；版本、来源或摘要不符则失败。原核成功没有补齐旧环境缺少的 Python 编译扩展，也不代表生产 cpWER/ORC-WER/tcpWER、ASR、说话人关联、模型或硬件已运行。
+默认只输出 JSON；编译仅在临时目录，退出后清理。只有显式 `--report` 才原子写入普通JSON；仓内只允许指定新当前报告，拒绝旧报告、源码、符号链接、非目录父链、字面 `..` 与上游缓存内部路径。有限写前检查不保证消除并发竞态或崩溃持久性。工具不下载或安装依赖，环境为Python标准库、Git与C++17编译器；来源或摘要不符必须失败。原核成功没有补齐缺少的Python编译扩展，也不代表生产cpWER/ORC-WER/tcpWER、ASR、说话人关联、模型或硬件已运行。
 
 ## 6. 怎样把项目变成可执行实验
 

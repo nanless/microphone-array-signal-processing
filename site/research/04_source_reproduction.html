@@ -1,13 +1,14 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码获取与独立复现记录 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="5cea3d451101"><style>
+<meta name="source-digest" content="85b156d2a968"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
 @media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
+@media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
 @media screen{.main .separation-topic-anchor{scroll-margin-top:60px}}
 a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
 .skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
@@ -667,8 +668,8 @@ ViSQOL 还需固定 speech/audio 模式、采样率和映射模型，不能混�
 <p><code>null</code> 表示这份结构尚未填入实验条件，不是测量得到零。研究记录可以保留未执行状态；正文性能表只引用
 条件齐全的真实结果。最终记录同时保留成功和失败实验，失败原因写到具体输入或依赖，不用删除记录制造全通过状态。</p>
 <p>比较候选时还要保存配对关系。E11-09 用同一六次会话的两列错误计数，分别报告合并 WER、四胜一负一平，以及预定单侧符号检验的 0.1875；<a href="../11_selection-guide.html#sec-11-6">题干与推导</a>写明独立性、平局和检验对象。它只复算本书构造的统计例子，没有执行 ASR，也不把“未达到显著性”解释成两个系统等效。</p>
-<p>第11章的<a href="03_industrial_deployment.html#meeting-kernel-contracts">原词编辑核合同</a>另有<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch11/examples/audit_meeting_kernel_contracts.py">独立工具</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch11/reports/meeting_kernel_contracts.json">报告</a>：完整包含固定 MeetEval 原头文件，原生运行普通核与时间约束核的九个小输入，手算和独立二维矩阵分别核对期望。原方法不经 AST 提取或改写；自写 C++ 调用者只适配完整词元与给定秒区间。使用 <code>.venv/bin/python -B -m codes.chapters.ch11.examples.audit_meeting_kernel_contracts</code> 时只输出 JSON，显式 <code>--report</code> 才保存当前运行结果，且编译始终在临时目录。</p>
-<p>这个证据能揭示同词错时、仅端点相接、正重叠与空输入的固定版本行为，对应 <a href="../11_selection-guide.html#e11-24">E11-24 词时间</a>；<a href="../11_selection-guide.html#e11-23">E11-23 话段边界</a>则由本书独立枚举解释。原核工具不运行生产 cpWER/ORC-WER/tcpWER 包装器，更不运行 ASR、身份关联或设备。2026-09-28旧接口报告中的完整 Python 调用缺扩展失败保留为历史事实；新的原生两核成功不能覆盖那次失败，也不能说明完整包依赖已齐。</p>
+<p>第11章的<a href="03_industrial_deployment.html#meeting-kernel-contracts">原词编辑核合同</a>另有<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch11/examples/audit_meeting_kernel_contracts.py">独立工具</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch11/reports/meeting_kernel_contracts_current.json">当前报告</a>：完整包含固定 MeetEval 原头文件，原生运行普通核与时间约束核的13个小输入，原9例与新增4个点时间控制分别登记。手算和独立二维矩阵分别核对期望；原9例的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch11/reports/meeting_kernel_contracts.json">历史报告</a>保持原字节。原方法不经 AST 提取或改写；自写 C++ 调用者只适配完整词元与给定秒区间。使用 <code>.venv/bin/python -B -m codes.chapters.ch11.examples.audit_meeting_kernel_contracts</code> 时只输出 JSON，显式 <code>--report codes/chapters/ch11/reports/meeting_kernel_contracts_current.json</code> 才保存仓内当前运行结果，也可指定仓外普通JSON；不允许覆盖历史或其他源文件。编译始终在临时目录，真实<code>.d</code>闭包与源码身份逐项记录。</p>
+<p>这个证据能揭示同词错时、仅端点相接、正重叠与空输入的固定版本行为。原时间核的两个严格不等式还允许假设点落在正长度参考区间内部，两端点则不允许；本书小核先要求正持续时间，这个更窄输入域不能冒称原核拒绝点输入，对应 <a href="../11_selection-guide.html#e11-24">E11-24 词时间</a>；<a href="../11_selection-guide.html#e11-23">E11-23 话段边界</a>则由本书独立枚举解释。原核工具不运行生产 cpWER/ORC-WER/tcpWER 包装器，更不运行 ASR、身份关联或设备。2026-09-28旧接口报告中的完整 Python 调用缺扩展失败保留为历史事实；新的原生两核成功不能覆盖那次失败，也不能说明完整包依赖已齐。</p>
 <p><a id="appendix-solver-contracts"></a></p>
 <span id="sec-13" class="anchor-alias" aria-hidden="true"></span><span id="附录-a最小二乘回退数值秩与物理目标" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-1cd13055df">附录 A：最小二乘回退、数值秩与物理目标</h3>
 <p>矩阵求解成功后还要问两个问题：结果是否满足所需的优化目标，数组类型是否保存了求解器返回的数值。<a href="../12_appendix-symbols-math.html#sec-u-3899a8c1b7">附录 A 的 E12-03</a>说明零残差不保证参数唯一；<a href="../12_appendix-symbols-math.html#sec-u-935c1036ea">E12-05</a>说明奇异协方差中的最小范数线性方程解，不自动成为约束噪声最小化的解。这两个判断分别涉及代数目标和物理目标，不能用“输出有限”替代。</p>

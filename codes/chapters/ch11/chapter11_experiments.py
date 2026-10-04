@@ -1,4 +1,4 @@
-"""E11-10..25: computed selection examples, not product benchmark scores.
+"""E11-10..27: computed selection examples, not product benchmark scores.
 
 Run ``python -m codes.chapters.ch11.chapter11_experiments``. No network, model or
 recording is used. Tables are constructed; E11-19/25 strictly check and read
@@ -218,12 +218,33 @@ def scenario_audio_anchor(directory=None):
             'floating_point': analyze_fixture(fixture), 'published_audio': manifest}
 
 
+def scoring_events_anchor():
+    from codes.chapters.ch11.core.selection import score_session_events, token_edit_distance
+    sessions = [{'session_id': 's0', 'reference': ['a', 'b'], 'hypothesis': ['a', 'c']},
+                {'session_id': 's1', 'reference': ['d', 'e'], 'hypothesis': []},
+                {'session_id': 's2', 'reference': ['f', 'g', 'h']},
+                {'session_id': 's3', 'reference': ['i'], 'hypothesis': 'i'},
+                {'session_id': 's4', 'reference': ['j', 'k'], 'hypothesis': ['j', 'k']}]
+    def controlled_scorer(reference, hypothesis):
+        if reference == ['j', 'k']:
+            raise RuntimeError('controlled teaching scorer failure')
+        return token_edit_distance(reference, hypothesis)
+    return {'planned_inputs': sessions, **score_session_events(sessions, scorer=controlled_scorer),
+            'scope': 'constructed tokens and an actual controlled callback exception; no ASR or production scorer run'}
+
+
+def physical_selection_anchor():
+    from codes.chapters.ch11.core.selection_physics import beamformer_selection_case
+    return beamformer_selection_case()
+
+
 def run_experiments(*, scenario_directory=None):
     functions = [pareto_anchor, composition_anchor, missing_score_anchor, simultaneous_risk_anchor,
                  interval_anchor, interaction_anchor, slots_anchor, threshold_anchor, exact_sro_anchor, audio_anchor,
                  unsupported_weight_anchor, interval_dominance_anchor, poisson_exposure_anchor,
                  utterance_boundary_anchor, time_edit_anchor,
-                 lambda: scenario_audio_anchor(scenario_directory)]
+                 lambda: scenario_audio_anchor(scenario_directory), scoring_events_anchor,
+                 physical_selection_anchor]
     return {f'E11-{i}': function() for i, function in enumerate(functions, 10)}
 
 

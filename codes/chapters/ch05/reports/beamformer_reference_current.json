@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "created_utc": "2026-10-04T18:11:53.543766+00:00",
+  "created_utc": "2026-10-04T19:53:51.249987+00:00",
   "status": "original_failures_preserved",
   "environment": {
     "python": "3.13.12",
@@ -2090,7 +2090,7 @@
   },
   "report_source_sha256": {
     "codes/chapters/ch05/examples/audit_beamformer_reference.py": "fb3f01b3e3a988a62b3b9b424fa0d66759a03b6813657db4769bc3e9349aa19c",
-    "codes/chapters/ch04/core/upstream_contracts.py": "1ac9b1d1688a15fd73356f111af0cb6993adb26a6732cfab2c00a87e4086c46d",
+    "codes/chapters/ch04/core/upstream_contracts.py": "f61d18b3239614aaf1304b9707038ad913f602160ff6de378e52692540490f30",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },

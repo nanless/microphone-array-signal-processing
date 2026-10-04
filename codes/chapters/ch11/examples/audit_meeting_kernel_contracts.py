@@ -20,9 +20,16 @@ import subprocess
 import sys
 import tempfile
 
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
+
+from codes.chapters.ch04.core import upstream_contracts as upstream
+from codes.chapters.ch10.examples.run_industrial_interfaces import clean_environment, compiled_dependencies, verify_failure_sources
+
 ROOT = Path(__file__).resolve().parents[4]
 LOCK = ROOT / "codes/chapters/ch00/SOURCES.lock.json"
 CACHE = ROOT / "codes/chapters/ch00/upstream/_downloads"
+CURRENT = ROOT / "codes/chapters/ch11/reports/meeting_kernel_contracts_current.json"
 REVISION = "6e3dc81284f2d6928f7ef9e620fd3b6906daa429"
 ORIGIN = "https://github.com/fgnt/meeteval.git"
 FILES = {
@@ -48,47 +55,27 @@ CASES = (
     ("two_words_temporal_shift", ["春天", "夏天"], ["春天", "夏天"],
      [[0, 1], [2, 3]], [[10, 11], [12, 13]], 0, 4),
 )
+# Added current controls; the historical report's original nine cases stay fixed.
+EXTRA_POINT_CASES = (
+    ("interior_hypothesis_point", ["春天"], ["春天"], [[0, 3]], [[1.5, 1.5]], 0, 0),
+    ("left_endpoint_hypothesis_point", ["春天"], ["春天"], [[0, 3]], [[0, 0]], 0, 2),
+    ("right_endpoint_hypothesis_point", ["春天"], ["春天"], [[0, 3]], [[3, 3]], 0, 2),
+    ("character_based_two_hypothesis_points", ["abc", "b"], ["abc", "b"],
+     [[0, 3], [3, 4]], [[1.5, 1.5], [3.5, 3.5]], 0, 0),
+)
 
 
 def digest(data):
     return hashlib.sha256(data).hexdigest()
 
 
-def strict_loads(data):
-    def reject(value):
-        raise ValueError("non-finite JSON constant: " + value)
-    def finite_float(value):
-        number = float(value)
-        if not math.isfinite(number):
-            raise ValueError("non-finite JSON number: " + value)
-        return number
-    def unique_object(pairs):
-        result = {}
-        for key, value in pairs:
-            if key in result:
-                raise ValueError("duplicate JSON field: " + key)
-            result[key] = value
-        return result
-    return json.loads(data, parse_constant=reject, parse_float=finite_float,
-                      object_pairs_hook=unique_object)
+strict_loads = upstream.strict_json_loads
 
 
 def ordinary_path(path, *, directory=False, allow_missing=False):
-    """Check lexical parents before resolution, including a cancelled link/.. ."""
-    path = Path(path)
-    if ".." in path.parts:
-        raise ValueError("lexical parent traversal is forbidden")
-    path = path.absolute()
-    for current in reversed((path, *path.parents)):
-        if current.is_symlink():
-            raise ValueError("symbolic link is forbidden: " + str(current))
-        if current == path:
-            continue
-        if not current.is_dir():
-            raise ValueError("parent is not a directory: " + str(current))
+    path = upstream.validate_parent_chain(path)
     if path.exists():
-        mode = path.stat().st_mode
-        if not (stat.S_ISDIR(mode) if directory else stat.S_ISREG(mode)):
+        if not (path.is_dir() if directory else path.is_file()):
             raise ValueError("unexpected file type: " + str(path))
     elif not allow_missing:
         raise ValueError("required path is absent: " + str(path))
@@ -96,36 +83,17 @@ def ordinary_path(path, *, directory=False, allow_missing=False):
 
 
 def verify_sources(cache=CACHE):
-    checkout = ordinary_path(Path(cache) / "meeteval", directory=True)
-    lock_path = ordinary_path(LOCK)
-    lock_bytes = lock_path.read_bytes()
-    projects = strict_loads(lock_bytes)["projects"]
-    entry = next(p for p in projects if p["id"] == "meeteval")
-    if entry["revision"] != REVISION or entry["url"] != ORIGIN:
-        raise ValueError("fixed MeetEval lock identity changed")
-    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
-    def git(*args, binary=False):
-        result = subprocess.check_output(["git", "-C", str(checkout), *args], env=env,
-                                         stderr=subprocess.PIPE)
-        return result if binary else result.decode().strip()
-    if git("rev-parse", "HEAD") != REVISION or git("remote", "get-url", "origin") != ORIGIN:
-        raise ValueError("upstream HEAD or origin changed")
-    if Path(git("rev-parse", "--show-toplevel")) != checkout:
-        raise ValueError("not an independent checkout")
-    if git("status", "--porcelain", "--untracked-files=all"):
-        raise ValueError("upstream worktree is not clean")
-    sources = []
+    identity = upstream.verify_project("meeteval", Path(cache) / "meeteval", FILES)
     for relative, expected in FILES.items():
-        content = ordinary_path(checkout / relative).read_bytes()
-        original = git("show", REVISION + ":" + relative, binary=True)
-        if content != original or digest(content) != expected:
-            raise ValueError("source digest/blob mismatch: " + relative)
-        sources.append({"path": relative, "sha256": digest(content),
-                        "git_blob": git("rev-parse", REVISION + ":" + relative),
-                        "role": "native include" if relative.endswith(".h") else "static contract/identity evidence"})
-    return {"checkout": str(checkout), "revision": REVISION, "origin": ORIGIN,
-            "source_lock_sha256": digest(lock_bytes), "source_lock_project_count": len(projects),
-            "sources": sources, "clean": True}
+        if identity["used_files"][relative]["sha256"] != expected:
+            raise ValueError("fixed source digest differs: " + relative)
+    sources = [{"path": path, **row,
+                "role": "native include" if path.endswith(".h") else "static contract/identity evidence"}
+               for path, row in identity["used_files"].items()]
+    return {"checkout": identity["checkout"], "revision": identity["head"],
+            "origin": identity["origin"], "source_lock_sha256": identity["lock_sha256"],
+            "source_lock_project_count": len(upstream.source_documents()[0]["projects"]),
+            "sources": sources, "clean": True, "source_identity": identity}
 
 
 def driver_text(header):
@@ -134,10 +102,11 @@ def driver_text(header):
     lines = ["#include <iostream>", "#include <stdexcept>", "#include " + include,
              "using V=std::vector<unsigned int>; using T=std::vector<std::pair<double,double>>;",
              'int main(){std::cout<<"[";']
-    words = {word: i + 1 for i, word in enumerate(sorted({w for c in CASES for seq in c[1:3] for w in seq}))}
+    cases = CASES + EXTRA_POINT_CASES
+    words = {word: i + 1 for i, word in enumerate(sorted({w for c in cases for seq in c[1:3] for w in seq}))}
     vector = lambda sequence: "{" + ",".join(str(words[w]) for w in sequence) + "}"
     times = lambda sequence: "{" + ",".join("{" + str(a) + "," + str(b) + "}" for a, b in sequence) + "}"
-    for i, (name, ref, hyp, rt, ht, _, _) in enumerate(CASES):
+    for i, (name, ref, hyp, rt, ht, _, _) in enumerate(cases):
         if i:
             lines.append('std::cout<<",";')
         lines.append("{V r=" + vector(ref) + ";V h=" + vector(hyp) + ";T rt=" + times(rt) + ";T ht=" + times(ht) + ";")
@@ -157,23 +126,33 @@ def run_audit(cache=CACHE, compiler="c++"):
     with tempfile.TemporaryDirectory(prefix="masp-meeting-kernel-", dir="/private/tmp") as folder:
         source, binary = Path(folder) / "driver.cc", Path(folder) / "driver"
         source.write_text(text, encoding="utf-8")
-        command = [executable, "-std=c++17", "-O2", str(source), "-o", str(binary)]
-        compiled = subprocess.run(command, capture_output=True, text=True, check=True, timeout=60)
-        execution = subprocess.run([str(binary)], capture_output=True, text=True, check=True, timeout=10)
-        rows = strict_loads(execution.stdout)
-    if len(rows) != len(CASES):
+        command = [executable, "-std=c++17", "-O2", "-MD", "-MF", str(Path(folder) / "driver.d"), str(source), "-o", str(binary)]
+        environment = clean_environment()
+        try:
+            compiled = subprocess.run(command, capture_output=True, text=True, check=True, timeout=60, env=environment)
+            dependencies = compiled_dependencies(Path(folder), {"meeteval": before["source_identity"]}, [source])
+            execution = subprocess.run([str(binary)], capture_output=True, text=True, check=True, timeout=10, env=environment)
+            rows = strict_loads(execution.stdout)
+        finally:
+            error = sys.exception()
+            if error is not None:
+                verify_failure_sources({"meeteval": before["source_identity"]}, error)
+            else:
+                upstream.check_unchanged(before["source_identity"])
+    cases = CASES + EXTRA_POINT_CASES
+    if len(rows) != len(cases):
         raise ValueError("native result count changed")
-    for row, (name, ref, hyp, rt, ht, ordinary, timed) in zip(rows, CASES):
+    for index, (row, (name, ref, hyp, rt, ht, ordinary, timed)) in enumerate(zip(rows, cases)):
         if (row.get("name") != name or type(row.get("ordinary")) is not int or
                 type(row.get("timed")) is not int or (row["ordinary"], row["timed"]) != (ordinary, timed)):
             raise ValueError("native result disagrees with hand oracle: " + name)
         row.update(reference_words=ref, hypothesis_words=hyp, reference_intervals_s=rt,
                    hypothesis_intervals_s=ht, expected_ordinary=ordinary, expected_timed=timed,
-                   status="matched_independent_hand_expected")
-    after = verify_sources(cache)
-    if after != before:
-        raise ValueError("upstream or lock changed during native audit")
-    return {"created_utc": datetime.now(timezone.utc).isoformat(), "tool_sha256": digest(Path(__file__).read_bytes()),
+                   status="matched_independent_hand_expected",
+                   case_group="original_nine" if index < len(CASES) else "current_point_controls")
+    upstream.check_unchanged(before["source_identity"])
+    return {"schema_version": 2, "actual_dependencies": upstream.dependencies(__file__, [Path(clean_environment.__code__.co_filename)]), "compiled_dependencies": dependencies,
+            "created_utc": datetime.now(timezone.utc).isoformat(), "tool_sha256": digest(Path(__file__).read_bytes()),
             **before, "before_clean": True, "after_clean": True,
             "execution": {"original_functions": ["levenshtein_distance_", "time_constrained_levenshtein_distance_v2_"],
                           "scope": "complete original header, two native kernels only",
@@ -183,36 +162,19 @@ def run_audit(cache=CACHE, compiler="c++"):
                           "driver_license": "self-authored repository code; original included header remains MIT",
                           "driver_sha256": digest(text.encode()), "token_encoding": words,
                           "costs": {"insertion": 1, "deletion": 1, "substitution": 1, "correct": 0},
-                          "timing_rule": "strict positive interval overlap; zero collar, endpoint contact is forbidden",
-                          "compile_command": command, "compiler": subprocess.check_output([executable, "--version"], text=True),
+                          "timing_rule": "a_begin < b_end and b_begin < a_end; zero collar; endpoint contact forbidden, interior hypothesis points accepted",
+                          "historical_case_count": 9, "current_case_count": 13,
+                          "compile_command": command, "compiler_binary": {"path": str(Path(executable).resolve()), "sha256": digest(Path(executable).resolve().read_bytes())}, "compiler": subprocess.check_output([executable, "--version"], text=True, env=environment),
                           "compile_stderr": compiled.stderr, "execution_stderr": execution.stderr},
             "license": {"name": "MIT", "path": "LICENSE", "sha256": FILES["LICENSE"]},
-            "environment": {"python": sys.version, "platform": platform.platform(), "scientific_packages_required": False},
+            "environment": {"python": sys.version, "platform": platform.platform(), "scientific_packages_required": False, "compile_environment_policy": "Git, Python, CMake, compiler, include and linker overrides removed"},
             "static_scope": "other six files verify identity, binding and wrapper contracts; not executed",
             "historical_failure": "2026-09-28 separate report retained: Python production cp call lacked cy_levenshtein; native success does not erase it",
             "cases": rows}
 
 
 def write_report(path, report, cache=CACHE):
-    target = ordinary_path(path, allow_missing=True)
-    # Check before any write, including alternate lexical spellings of cache paths.
-    if target.is_relative_to(CACHE.absolute()) or target.is_relative_to(Path(cache).absolute()):
-        raise ValueError("report must not be inside upstream cache")
-    payload = json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
-    temporary = None
-    try:
-        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=target.parent,
-                                         prefix=".meeting-report-", delete=False) as handle:
-            temporary = Path(handle.name)
-            handle.write(payload)
-            handle.flush()
-            os.fsync(handle.fileno())
-        ordinary_path(target, allow_missing=True)
-        os.replace(temporary, target)
-        temporary = None
-    finally:
-        if temporary is not None:
-            temporary.unlink(missing_ok=True)
+    upstream.write_report(path, report, CURRENT, (CACHE, Path(cache)))
 
 
 def main(argv=None):
@@ -221,11 +183,8 @@ def main(argv=None):
     parser.add_argument("--compiler", default="c++")
     parser.add_argument("--report", type=Path)
     args = parser.parse_args(argv)
-    # Preflight before compile so an invalid destination has no write side effects.
     if args.report is not None:
-        target = ordinary_path(args.report, allow_missing=True)
-        if target.is_relative_to(CACHE.absolute()) or target.is_relative_to(args.cache.absolute()):
-            raise ValueError("report must not be inside upstream cache")
+        upstream.report_target(args.report, CURRENT, (CACHE, args.cache))
     report = run_audit(args.cache, args.compiler)
     if args.report is not None:
         write_report(args.report, report, args.cache)

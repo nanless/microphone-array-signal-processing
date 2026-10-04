@@ -400,7 +400,7 @@
 | §11.2 | ORC-WER | 外部参考实现 | `meeteval`：`meeteval/wer/wer/orc.py` | 参考片段到流映射，偏向内容完整性；不保证身份连续 |
 | §11.2 | MIMO-WER | 外部参考实现 | `meeteval`：`meeteval/wer/wer/mimo.py` | 流顺序、允许映射 |
 | §11.2 | DI-cpWER | 外部参考实现 | `meeteval`：`meeteval/wer/wer/di_cp.py` | 锁定入口使用贪心匹配；与理论最优定义、简化文档示例及 sa-WER 均须区分 |
-| §13.7；工业 I21 | tcpWER | 外部参考实现 | `meeteval`：`meeteval/wer/wer/time_constrained.py` | 时间约束、容差和词时间戳 |
+| §11.2；E11-24；§13.7；工业 I21 | tcpWER | 外部参考实现 | `meeteval`：`meeteval/wer/wer/time_constrained.py` | 时间约束、容差和词时间戳 |
 | §13.7；工业 I21 | CHiME-8 文本规范化/评分 | 外部参考实现 | `chime-utils`：`chime_utils/scoring/meeteval.py`、`chime_utils/text_norm/`、`tests/test_normalizer.py` | 固定源码的缺文件分支和规范化幂等检查另有受控诊断；届次、划分、缺失场景与数据许可 |
 | 导读路径C；§10.5/10.6 | LibriCSS公开评测程序 | 外部参考实现 | `libricss`：`scoring/python/asclite_libricss.py`、`asr/python/get_wer.py`；[源集与协议](research/04_source_reproduction.md#overview-source-entrypoints) | 连续评分与真值切段最低WER不同；外部SCTK/GLM/数据闭包未取，原接口限制/未运行状态保留 |
 | §11.2 | sa-WER 说话人归属口径 | 原理索引 | 正文指标区别 | 不声称锁定 MeetEval 覆盖全部定义 |
@@ -452,7 +452,7 @@
 | E02-07、E04-10、E05-06（3题） | [空间精算](cross_chapter/spatial_precision_exercises.py) | [独立测试](../../../tests/test_codes_spatial_precision.py) |
 | E09-10～26（17题） | [第9章逐步计算](../ch09/chapter09_experiments.py) | [独立解析测试](../../../tests/test_codes_chapter09_experiments.py)、[PCM音频](../../../tests/test_codes_tracking_audio.py) |
 | E10-18～34（16题） | [第10章工程逐步计算](../ch10/chapter10_experiments.py) | [独立解析与PCM测试](../../../tests/test_codes_chapter10_experiments.py)、[数值边界](../../../tests/test_codes_engineering_ch10_boundaries.py) |
-| E11-10～25（16题） | [第11章约束与选型逐步计算](../ch11/chapter11_experiments.py)；[小规模选型与评分模型](../ch11/core/selection.py)；[四路同增益FIR音频](audio/MANIFEST.json)、[独立双场景八WAV](../ch11/scenario_audio/MANIFEST.json)；[原词编辑核合同](../ch11/reports/meeting_kernel_contracts.json) | [独立解析、整数边界与PCM测试](../../../tests/test_codes_chapter11_experiments.py)、[完整资产回放](../../../tests/test_codes_selection_audio.py)、[原核身份与执行](../../../tests/test_codes_meeting_kernel_contracts.py) |
+| E11-10～27（18题） | [第11章约束与选型逐步计算](../ch11/chapter11_experiments.py)；[小规模选型与评分模型](../ch11/core/selection.py)；[同一物理阵列选型](../ch11/core/selection_physics.py)；[四路同增益FIR音频](audio/MANIFEST.json)、[独立双场景八WAV](../ch11/scenario_audio/MANIFEST.json)；[原词编辑核合同](../ch11/reports/meeting_kernel_contracts_current.json) | [独立解析、整数边界与PCM测试](../../../tests/test_codes_chapter11_experiments.py)、[完整资产回放](../../../tests/test_codes_selection_audio.py)、[事件与独立物理闭式](../../../tests/test_codes_selection_evidence.py)、[写前模型保护](../../../tests/test_codes_ch11_selection_fixture_guard.py)、[原核身份与执行](../../../tests/test_codes_meeting_kernel_contracts.py) |
 | E08-12～32（21题） | [第8章逐步计算](../ch08/chapter08_experiments.py) | [独立测试](../../../tests/test_codes_chapter08_experiments.py) |
 | E07-08～21（14题） | [第7章逐步计算](../ch07/chapter07_experiments.py) | [独立测试](../../../tests/test_codes_chapter07_experiments.py) |
 | E06-21、E07-06、E08-08～10（5题） | [增强逐步计算](cross_chapter/enhancement_step_exercises.py) | [独立测试](../../../tests/test_codes_enhancement_steps.py) |

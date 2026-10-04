@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "executed_at_utc": "2026-10-04T18:59:16.973818+00:00",
+  "executed_at_utc": "2026-10-04T19:53:42.468184+00:00",
   "audit_source": "codes/chapters/ch02/examples/audit_upstream_models.py",
   "audit_source_sha256": "efd9bf05059d48360201bd2078933791b402d8259dccabd94308a1acc75f92e0",
   "sources": {
@@ -1017,7 +1017,7 @@
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },
   "source_verification": {
-    "started_at_utc": "2026-10-04T18:59:16.360881+00:00",
+    "started_at_utc": "2026-10-04T19:53:41.860986+00:00",
     "before_after_equal": true,
     "canonical_sources_before_sha256": "3349ef50674867a1670ed06116718d543c8315a9577764401db4c3e088eec527",
     "canonical_sources_after_sha256": "3349ef50674867a1670ed06116718d543c8315a9577764401db4c3e088eec527",
@@ -1035,7 +1035,7 @@
   "selection_status_boundary": "Full acquisition selection is independent of used-file identity and numerical behavior; source_selection_mismatch is not upgraded",
   "environment": {
     "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
-    "executable": "/private/tmp/masp-appb-pra-venv/bin/python",
+    "executable": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/bin/python",
     "numpy": "2.5.3",
     "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O"
   },
@@ -2054,10 +2054,10 @@
     "equipment or ISO acceptance"
   ],
   "command": [
-    "/private/tmp/masp-appb-pra-venv/bin/python",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/bin/python",
     "-m",
     "codes.chapters.ch02.examples.audit_upstream_models",
     "--report",
-    "codes/chapters/ch02/reports/upstream_model_contracts.json"
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch02/reports/upstream_model_contracts.json"
   ]
 }

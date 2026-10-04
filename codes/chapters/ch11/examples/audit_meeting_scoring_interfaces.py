@@ -22,7 +22,14 @@ import subprocess
 import sys
 import types
 
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
+
+from codes.chapters.ch04.core import upstream_contracts as upstream
+from codes.chapters.ch10.examples.run_industrial_interfaces import clean_environment, verify_failure_sources
+
 CODES = Path(__file__).resolve().parents[3]
+CURRENT = upstream.ROOT / "codes/chapters/ch11/reports/meeting_scoring_interfaces_current.json"
 SOURCES = {
     "meeteval": {
         "revision": "6e3dc81284f2d6928f7ef9e620fd3b6906daa429",
@@ -72,22 +79,25 @@ def binding_sha256():
 
 
 def verify_sources(root):
-    locks = {p["id"]: p for p in json.loads((CODES / "chapters/ch00/SOURCES.lock.json").read_text())["projects"]}
-    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+    root = upstream.validate_parent_chain(root)
+    identities = {}
     for name, spec in SOURCES.items():
         checkout = root / name
-        def git(*args):
-            return subprocess.check_output(["git", "-C", str(checkout), *args], env=env,
-                                           text=True, stderr=subprocess.PIPE).strip()
-        if locks[name]["revision"] != spec["revision"] or git("rev-parse", "HEAD") != spec["revision"]:
-            raise ValueError("revision mismatch: " + name)
-        if Path(git("rev-parse", "--show-toplevel")).resolve() != checkout.resolve():
-            raise ValueError("not an independent checkout: " + name)
-        if git("status", "--porcelain", "--untracked-files=all"):
-            raise ValueError("upstream worktree is not clean: " + name)
-        for relative, digest in spec["files"].items():
-            if sha256(checkout / relative) != digest:
+        relatives = list(spec["files"])
+        if name == "meeteval":
+            package_root = checkout / "meeteval"
+            for path in package_root.rglob("*"):
+                if path.suffix in {".pyc", ".pyo", ".so", ".pyd", ".dylib"}:
+                    raise ValueError("unverified author bytecode/native extension is forbidden: " + str(path))
+            # This present source closure is verified before any author import;
+            # the worker reports only actual imported files separately.
+            relatives.extend(str(p.relative_to(checkout)) for p in sorted(package_root.rglob("*.py")))
+        identity = upstream.verify_project(name, checkout, tuple(dict.fromkeys(relatives)))
+        for relative, expected in spec["files"].items():
+            if identity["used_files"][relative]["sha256"] != expected:
                 raise ValueError("source digest mismatch: " + name + "/" + relative)
+        identities[name] = identity
+    return identities
 
 
 def call_result(fn):
@@ -246,25 +256,90 @@ def chime_controlled_calls(root):
             "source_line": node.lineno, "cases": records}
 
 
-def run(root):
-    import numpy as np
-    import scipy
-    verify_sources(root)
-    previous = sys.dont_write_bytecode
-    sys.dont_write_bytecode = True
+def word_time_calls():
+    from meeteval.io import SegLST
+    from meeteval.wer.wer.time_constrained import get_pseudo_word_level_timings
+    segments = SegLST([{"words": "abc b", "start_time": 0, "end_time": 4}])
+    reference = list(get_pseudo_word_level_timings(segments, "character_based"))
+    hypothesis = list(get_pseudo_word_level_timings(segments, "character_based_points"))
+    # Independent character counts 3:1 split four seconds at t=3.
+    expected_ref = [{"words": "abc", "start_time": 0., "end_time": 3.},
+                    {"words": "b", "start_time": 3., "end_time": 4.}]
+    expected_hyp = [{"words": "abc", "start_time": 1.5, "end_time": 1.5},
+                    {"words": "b", "start_time": 3.5, "end_time": 3.5}]
+    if reference != expected_ref or hypothesis != expected_hyp:
+        raise ValueError("original pseudo-word timing differs from independent 3:1 oracle")
+    return {"execution": "original package timing helpers only; no complete tcpWER call",
+            "input_segment": list(segments), "reference_strategy": "character_based",
+            "hypothesis_strategy": "character_based_points", "reference": reference,
+            "hypothesis": hypothesis, "expected_reference": expected_ref,
+            "expected_hypothesis": expected_hyp, "matched_independent_expected": True}
+
+
+def _worker(root):
+    if any(name == "meeteval" or name.startswith("meeteval.") for name in sys.modules):
+        raise ValueError("preloaded MeetEval modules are forbidden")
+    identities = verify_sources(root)
     try:
         docs = documentation_calls(root)
         package = package_calls(root)
+        word_times = word_time_calls()
         chime = chime_controlled_calls(root)
+        imported = {}
+        checkout = Path(identities["meeteval"]["checkout"])
+        for name, module in tuple(sys.modules.items()):
+            if name != "meeteval" and not name.startswith("meeteval."):
+                continue
+            filename = getattr(module, "__file__", None)
+            if filename is None:
+                raise ValueError("author module has no source file: " + name)
+            path = upstream.ordinary_file(filename)
+            if not path.is_relative_to(checkout):
+                raise ValueError("author import outside fixed checkout: " + name)
+            relative = path.relative_to(checkout).as_posix()
+            if relative not in identities["meeteval"]["used_files"]:
+                raise ValueError("author dependency was not preflighted: " + relative)
+            imported[name] = {"path": relative, **identities["meeteval"]["used_files"][relative]}
+        import numpy as np
+        import scipy
+        return {"documentation": docs, "package": package, "chime": chime,
+                "word_timing": word_times, "actual_imported_original_modules": imported,
+                "environment": {"python": sys.version, "executable": sys.executable,
+                                "platform": platform.platform(), "numpy": np.__version__, "scipy": scipy.__version__}}
     finally:
-        sys.dont_write_bytecode = previous
-    verify_sources(root)
-    return {"schema_version": 1, "created_utc": datetime.now(timezone.utc).isoformat(),
+        error = sys.exception()
+        if error is not None:
+            verify_failure_sources(identities, error)
+        else:
+            for identity in identities.values():
+                upstream.check_unchanged(identity)
+
+
+def run(root):
+    if any(name == "meeteval" or name.startswith("meeteval.") for name in sys.modules):
+        raise ValueError("preloaded MeetEval modules are forbidden")
+    root = upstream.validate_parent_chain(root)
+    identities = verify_sources(root)
+    command = [sys.executable, "-B", "-m", __spec__.name if __spec__ is not None else
+               "codes.chapters.ch11.examples.audit_meeting_scoring_interfaces", "--worker", "--upstream-root", str(root)]
+    try:
+        completed = subprocess.run(command, cwd=upstream.ROOT, env=clean_environment(),
+                                   capture_output=True, text=True, check=True, timeout=60)
+        result = upstream.strict_json_loads(completed.stdout)
+    finally:
+        error = sys.exception()
+        if error is not None:
+            verify_failure_sources(identities, error)
+        else:
+            for identity in identities.values():
+                upstream.check_unchanged(identity)
+    return {"schema_version": 2, "created_utc": datetime.now(timezone.utc).isoformat(),
             "harness_sha256": sha256(__file__), "source_config_sha256": binding_sha256(),
-            "sources": SOURCES, "config": CONFIG,
-            "environment": {"python": sys.version, "executable": sys.executable,
-                            "platform": platform.platform(), "numpy": np.__version__, "scipy": scipy.__version__},
-            "documentation": docs, "package": package, "chime": chime,
+            "actual_dependencies": upstream.dependencies(__file__, [Path(clean_environment.__code__.co_filename)]),
+            "source_identities": identities, "sources": SOURCES, "config": CONFIG,
+            "worker": {"command": command, "stderr": completed.stderr,
+                       "isolation": "fresh -B Python child; no upstream compilation or installation"},
+            **result,
             "static_di_cp": {"execution": "static only; production greedy algorithm not executed",
                              "entrypoint": "meeteval/wer/wer/di_cp.py::greedy_di_cp_word_error_rate",
                              "reference_hypothesis_swapped_for_orc": True,
@@ -272,15 +347,25 @@ def run(root):
                              "normalization": "original reference word count"}}
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--run", action="store_true", required=True)
+    parser.add_argument("--run", action="store_true", help="compatibility flag; the default also runs the limited audit")
+    parser.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--upstream-root", type=Path, default=CODES / "chapters/ch00/upstream/_downloads")
-    parser.add_argument("--output", type=Path, required=True)
-    args = parser.parse_args()
-    report = run(args.upstream_root)
-    args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + "\n")
-    print("Wrote controlled scoring audit:", args.output)
+    parser.add_argument("--output", type=Path)
+    args = parser.parse_args(argv)
+    if args.output is not None:
+        upstream.report_target(args.output, CURRENT, (upstream.CACHE, args.upstream_root))
+    if args.worker:
+        if args.output is not None:
+            raise ValueError("worker output is stdout only")
+        report = _worker(args.upstream_root)
+    else:
+        report = run(args.upstream_root)
+    if args.output is not None:
+        upstream.write_report(args.output, report, CURRENT, (upstream.CACHE, args.upstream_root))
+    else:
+        print(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False))
 
 
 if __name__ == "__main__":

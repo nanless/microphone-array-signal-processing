@@ -85,6 +85,8 @@ PROJECTS = {
     'libsndfile': ('https://github.com/libsndfile/libsndfile.git', 'b9103bd48b6c8fb517ae737fe3baee0c718b804c', 'LGPL-2.1-or-later; dependencies separately', 'COPYING', 'ad01ea5cd2755f6048383c8d54c88459cd6fcb17757c5c8892f8c5ea060f6140'),
     'libsamplerate': ('https://github.com/libsndfile/libsamplerate.git', '0844c208f683527c08ea8a80acc13b398aa9c8bf', 'BSD-2-Clause', 'COPYING', '2c1f76ce2effdddb425018405d5690c0b1ab4e6976e35296b0a6db65c5e1a55d'),
     'stk': ('https://github.com/thestk/stk.git', '6aacd357d76250bb7da2b1ddf675651828784bbc', 'MIT-STK; see per-file notices', 'LICENSE', '342901da98ec7c044426f3d1c2e1b8dd2ac79001e0916b49c2cf71b158b13aa5'),
+    'meeteval': ('https://github.com/fgnt/meeteval.git', '6e3dc81284f2d6928f7ef9e620fd3b6906daa429', 'MIT', 'LICENSE', '5515c2bdda551fa20d771e99ab31deebbb4f9626bef6f6c25f26125c964fd34c'),
+    'chime-utils': ('https://github.com/chimechallenge/chime-utils.git', '152882404f572d40769ef02bf91c5a9a9cfc9c78', 'MIT', 'LICENSE', 'e2f48f797fd76ec12f6792c39555e986b8b4329604194e7da1416837b68c8ee4'),
 }
 
 

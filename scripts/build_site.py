@@ -266,6 +266,12 @@ NARROW_TABLE_POLICIES = {
         ("状态时刻（s）", "模式1概率", "模式2概率", "均值（度）", "方差（平方度）"): (53, {1: 8, 2: 11, 3: 11, 4: 11, 5: 12}),
     },
     SRC / "11_selection-guide.md": {
+        ("词元", "字符数", "按字符比例分配的区间（s）", "中心点（s）"): (38, {1: 6, 2: 6, 3: 18, 4: 8}),
+        ("会话", "参考词元", "交付与评分情况", "实际事件"): (48, {1: 6, 2: 8, 3: 23, 4: 11}),
+        ("汇总量", "分子与分母", "结果"): (36, {1: 12, 2: 15, 3: 9}),
+        ("候选", "WNG（dB）", "另模型DI（dB）", "实际输出噪声功率"): (46, {1: 10, 2: 10, 3: 12, 4: 14}),
+        ("候选", "实际H", "幅差 ε_H", "目标误差功率", "实际总NMSE"): (50, {1: 11, 2: 9, 3: 9, 4: 11, 5: 10}),
+        ("候选", "声学两条件", "设备延迟证据", "完整规格状态"): (42, {1: 12, 2: 10, 3: 10, 4: 10}),
         ("场景", "条件变化", "方案怎样变化"): (36, {1: 6}),
         ("项目", "应写内容"): (30, {1: 6}),
         ("候选", "1500 Hz目标幅度保留", "3500 Hz噪声衰减（dB）", "对齐NMSE（dB）"): (44, {1: 6}),
@@ -294,6 +300,8 @@ NARROW_TABLE_POLICIES = {
         ("要核的条件", "固定源码静态事实", "不能推出的判断"): (48, {1: 8, 2: 24, 3: 16}),
     },
     RESEARCH_ROOT / "05_exercises_and_audio.md": {
+        ("候选", "1500 Hz 幅度保留，浮点 / PCM", "3500 Hz 衰减，浮点 / PCM（dB）"): (44, {1: 8, 2: 18, 3: 18}),
+        ("候选", "对齐后整体 NMSE，浮点（dB）", "对齐后整体 NMSE，PCM（dB）"): (44, {1: 8, 2: 18, 3: 18}),
         ("控制", "目标增益", "目标损伤功率", "残余噪声功率", "总误差功率", "解析NMSE"): (72, {1: 12, 2: 10, 3: 13, 4: 13, 5: 13, 6: 11}),
         ("输出", "PCM误差整数能量E", "实际PCM MSE", "实际PCM NMSE"): (54, {1: 10, 2: 17, 3: 14, 4: 13}),
         ("协议", "首次确认事件可用时刻（s）", "退役帧与可用时刻", "再次确认可用时刻（s）", "已确认发布帧数/总帧数"): (66, {1: 12, 2: 14, 3: 14, 4: 14, 5: 12}),
@@ -315,6 +323,7 @@ CSS = """
 h1,h2,h3,h4{scroll-margin-top:60px}
 @media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
+@media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
 @media screen{.main .separation-topic-anchor{scroll-margin-top:60px}}
 a:focus-visible,summary:focus-visible{outline:3px solid #e67e22;outline-offset:3px}
 .skip-link{position:absolute;left:10px;top:-60px;z-index:30;background:#fff;color:#1a1a2e;padding:8px 12px;border:2px solid #e67e22}
@@ -1170,7 +1179,8 @@ def source_digest():
               ROOT / "scripts" / "make_delay_figures.py",
               ROOT / "scripts" / "make_css_figures.py",
               ROOT / "scripts" / "make_tracking_figures.py",
-              ROOT / "scripts" / "make_channel_figures.py", ROOT / "requirements.txt"]
+              ROOT / "scripts" / "make_channel_figures.py",
+              ROOT / "scripts" / "make_selection_figures.py", ROOT / "requirements.txt"]
     paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
         digest.update(path.relative_to(ROOT).as_posix().encode("utf-8"))

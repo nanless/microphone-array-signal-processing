@@ -1,0 +1,378 @@
+{
+  "schema_version": 1,
+  "exercise_id": "E11-27",
+  "script_sha256": "dc1f06c31d3aef7e182a1bad2d3cb5767165b47c66a597d6064b267ced364fc2",
+  "source_sha256": {
+    "scripts/make_selection_figures.py": "dc1f06c31d3aef7e182a1bad2d3cb5767165b47c66a597d6064b267ced364fc2",
+    "codes/chapters/ch11/core/selection_physics.py": "70a2d908422e0b8861ca3ab6759334a488c40d5eb76073ad43a4105355f81eac",
+    "codes/chapters/ch11/core/selection.py": "987e61d30e9300941d55816629447110b92d28efa342dfbde895b2912df8e2cf",
+    "codes/chapters/ch03/core/geometry.py": "5a680848301358415f74647199a4c57b65086f0b2580f91706c912ad208d7bdb",
+    "codes/chapters/ch05/core/beamforming.py": "481f79a66fcc4c1f232704ee3a516b596d28ebc89d9045c494b71f6206b77216",
+    "codes/chapters/ch04/core/covariance.py": "d704be037100ee53caf6e2130fbabbe14ce6eeff9e3d11dde389fd368d271249",
+    "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
+  },
+  "numerical_case": {
+    "parameters": {
+      "positions_m": [
+        [
+          -0.04,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.04,
+          0.0,
+          0.0
+        ]
+      ],
+      "frequency_hz": 1000.0,
+      "sound_speed_m_s": 343.0,
+      "reference_channel": 1,
+      "nominal_target_deg": 0.0,
+      "interference_deg": 20.0,
+      "actual_target_deg": 5.0,
+      "target_power": 1.0,
+      "interference_power": 1.0,
+      "independent_sensor_noise_power": 0.01,
+      "azimuth_convention": "+y zero; positive toward +x",
+      "WNG_lower_limit_dB": 0.0,
+      "response_amplitude_error_upper_limit": 0.03,
+      "latency_upper_limit_ms": 150.0,
+      "diffuse_model": "separate 3-D isotropic sinc coherence"
+    },
+    "noise_covariance_real_imag": [
+      [
+        [
+          1.01,
+          -6.219809001152842e-18
+        ],
+        [
+          0.9687614641672425,
+          -0.24799440627671543
+        ],
+        [
+          0.8769975489109189,
+          -0.4804948482598337
+        ]
+      ],
+      [
+        [
+          0.9687614641672425,
+          0.24799440627671543
+        ],
+        [
+          1.01,
+          0.0
+        ],
+        [
+          0.9687614641672425,
+          -0.24799440627671543
+        ]
+      ],
+      [
+        [
+          0.8769975489109189,
+          0.4804948482598337
+        ],
+        [
+          0.9687614641672425,
+          0.24799440627671543
+        ],
+        [
+          1.01,
+          6.219809001152842e-18
+        ]
+      ]
+    ],
+    "diffuse_coherence": [
+      [
+        1.0,
+        0.9128887424322474,
+        0.6785950068590928
+      ],
+      [
+        0.9128887424322474,
+        1.0,
+        0.9128887424322474
+      ],
+      [
+        0.6785950068590928,
+        0.9128887424322474,
+        1.0
+      ]
+    ],
+    "steering_vectors_real_imag": {
+      "nominal": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          1.0,
+          0.0
+        ],
+        [
+          1.0,
+          0.0
+        ]
+      ],
+      "interference": [
+        [
+          0.9687614641672425,
+          -0.24799440627671543
+        ],
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.9687614641672425,
+          0.24799440627671543
+        ]
+      ],
+      "actual": [
+        [
+          0.9979615226268606,
+          -0.06381848757435532
+        ],
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.9979615226268606,
+          0.06381848757435532
+        ]
+      ]
+    },
+    "candidates": [
+      {
+        "candidate_id": "ds",
+        "label": "DS",
+        "relative_diagonal_loading": null,
+        "absolute_diagonal_loading": null,
+        "weights_real_imag": [
+          [
+            0.3333333333333333,
+            0.0
+          ],
+          [
+            0.3333333333333333,
+            0.0
+          ],
+          [
+            0.3333333333333333,
+            0.0
+          ]
+        ],
+        "nominal_response_real_imag": [
+          1.0,
+          0.0
+        ],
+        "actual_response_real_imag": [
+          0.9986410150845737,
+          1.1320853962723472e-18
+        ],
+        "response_amplitude_error": 0.0013589849154262978,
+        "WNG_dB": 4.771212547196624,
+        "DI_dB": 0.50678044474606,
+        "actual_noise_power": 0.9621156616100898,
+        "nominal_NMSE": 0.9621156616100898,
+        "actual_NMSE": 0.9621175084500901,
+        "acoustic_verdict": "pass",
+        "measured_latency_ms": null,
+        "device_verdict": "undetermined"
+      },
+      {
+        "candidate_id": "mvdr_0",
+        "label": "α=0",
+        "relative_diagonal_loading": 0.0,
+        "absolute_diagonal_loading": 0.0,
+        "weights_real_imag": [
+          [
+            0.40962035589760254,
+            1.8168669910200257
+          ],
+          [
+            0.18075928820478895,
+            8.534472170530318e-15
+          ],
+          [
+            0.40962035589760837,
+            -1.816866991020033
+          ]
+        ],
+        "nominal_response_real_imag": [
+          0.9999999999999999,
+          -1.1102230246251565e-15
+        ],
+        "actual_response_real_imag": [
+          0.7664305893645145,
+          -7.894654129190384e-16
+        ],
+        "response_amplitude_error": 0.23356941063548553,
+        "WNG_dB": -8.43249159995002,
+        "DI_dB": -4.75418855357637,
+        "actual_noise_power": 0.07507001110743083,
+        "nominal_NMSE": 0.07507001110743083,
+        "actual_NMSE": 0.1296246806920389,
+        "acoustic_verdict": "fail",
+        "measured_latency_ms": null,
+        "device_verdict": "fail"
+      },
+      {
+        "candidate_id": "mvdr_0_1",
+        "label": "α=0.1",
+        "relative_diagonal_loading": 0.1,
+        "absolute_diagonal_loading": 0.10100000000000002,
+        "weights_real_imag": [
+          [
+            0.37678468458343717,
+            1.0348460740491146
+          ],
+          [
+            0.24643063083312525,
+            2.314593642929051e-16
+          ],
+          [
+            0.37678468458343767,
+            -1.0348460740491146
+          ]
+        ],
+        "nominal_response_real_imag": [
+          1.0,
+          -2.220446049250313e-16
+        ],
+        "actual_response_real_imag": [
+          0.8663792432557148,
+          -1.8464498056273015e-16
+        ],
+        "response_amplitude_error": 0.1336207567442852,
+        "WNG_dB": -3.955839654725215,
+        "DI_dB": -1.9445277180001252,
+        "actual_noise_power": 0.23940742190767123,
+        "nominal_NMSE": 0.23940742190767123,
+        "actual_NMSE": 0.25726192854058666,
+        "acoustic_verdict": "fail",
+        "measured_latency_ms": null,
+        "device_verdict": "fail"
+      },
+      {
+        "candidate_id": "mvdr_1",
+        "label": "α=1",
+        "relative_diagonal_loading": 1.0,
+        "absolute_diagonal_loading": 1.01,
+        "weights_real_imag": [
+          [
+            0.3422486165956459,
+            0.21232816972562643
+          ],
+          [
+            0.31550276680870826,
+            -2.6710787226085846e-18
+          ],
+          [
+            0.34224861659564587,
+            -0.21232816972562646
+          ]
+        ],
+        "nominal_response_real_imag": [
+          1.0,
+          2.7755575615628914e-17
+        ],
+        "actual_response_real_imag": [
+          0.9715037425555221,
+          3.057169791858571e-17
+        ],
+        "response_amplitude_error": 0.028496257444477924,
+        "WNG_dB": 3.726579787311656,
+        "DI_dB": 0.38076195477959585,
+        "actual_noise_power": 0.7669012364162175,
+        "nominal_NMSE": 0.7669012364162175,
+        "actual_NMSE": 0.7677132731045595,
+        "acoustic_verdict": "pass",
+        "measured_latency_ms": null,
+        "device_verdict": "undetermined"
+      }
+    ],
+    "acoustically_eligible": [
+      "ds",
+      "mvdr_1"
+    ],
+    "lowest_actual_NMSE_eligible": "mvdr_1",
+    "device_selected": null,
+    "scope": "known single-frequency ensemble covariances; no device measurements, audio or optimizer for worst-case uncertainty"
+  },
+  "plot_data": {
+    "candidate_ids": [
+      "ds",
+      "mvdr_0",
+      "mvdr_0_1",
+      "mvdr_1"
+    ],
+    "labels": [
+      "DS",
+      "α=0",
+      "α=0.1",
+      "α=1"
+    ],
+    "noise_power_normalized_by_target": [
+      0.9621156616100898,
+      0.07507001110743083,
+      0.23940742190767123,
+      0.7669012364162175
+    ],
+    "actual_NMSE": [
+      0.9621175084500901,
+      0.1296246806920389,
+      0.25726192854058666,
+      0.7677132731045595
+    ],
+    "response_amplitude_error": [
+      0.0013589849154262978,
+      0.23356941063548553,
+      0.1336207567442852,
+      0.028496257444477924
+    ],
+    "WNG_dB": [
+      4.771212547196624,
+      -8.43249159995002,
+      -3.955839654725215,
+      3.726579787311656
+    ],
+    "DI_dB_separate_diffuse_model": [
+      0.50678044474606,
+      -4.75418855357637,
+      -1.9445277180001252,
+      0.38076195477959585
+    ],
+    "response_amplitude_error_upper_limit": 0.03,
+    "WNG_lower_limit_dB": 0.0,
+    "acoustic_verdicts": [
+      "pass",
+      "fail",
+      "fail",
+      "pass"
+    ],
+    "device_verdicts": [
+      "undetermined",
+      "fail",
+      "fail",
+      "undetermined"
+    ],
+    "DI_scope": "DI uses the separate 3-D isotropic diffuse coherence Gamma, not the actual R_n",
+    "decision_scope": "known nominal/actual directions; acoustic-only eligibility does not supply missing device evidence"
+  },
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.5.3",
+    "matplotlib": "3.11.2"
+  },
+  "limits": "Known single-frequency ensemble statistics and prescribed 5-degree target mismatch only; no WAV, estimated covariance/DOA, worst-case optimizer, device latency, ASR or listening test."
+}

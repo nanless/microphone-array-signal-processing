@@ -1,0 +1,1845 @@
+{
+  "schema_version": 2,
+  "created_utc": "2026-10-04T20:03:56.577257+00:00",
+  "harness_sha256": "2a2e83f9eb275fc64c7d2f6feb9c73c8ec313e2026c3fdc5b01fa17472374713",
+  "source_config_sha256": "e0aa596788df2d6b2ef2b65bd74f9ebba5144ceecb5f7d7a61983c33fc7a8f22",
+  "actual_dependencies": {
+    "codes/chapters/ch11/examples/audit_meeting_scoring_interfaces.py": "2a2e83f9eb275fc64c7d2f6feb9c73c8ec313e2026c3fdc5b01fa17472374713",
+    "codes/chapters/ch04/core/upstream_contracts.py": "f61d18b3239614aaf1304b9707038ad913f602160ff6de378e52692540490f30",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
+    "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4",
+    "codes/chapters/ch10/examples/run_industrial_interfaces.py": "6501c7bdb2e5cd529dd9436cbc99ffd31ec1398fced8d0dc98c62a8524c3111c"
+  },
+  "source_identities": {
+    "meeteval": {
+      "project": "meeteval",
+      "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/meeteval",
+      "origin": "https://github.com/fgnt/meeteval.git",
+      "head": "6e3dc81284f2d6928f7ef9e620fd3b6906daa429",
+      "lock_entry": {
+        "id": "meeteval",
+        "url": "https://github.com/fgnt/meeteval.git",
+        "revision": "6e3dc81284f2d6928f7ef9e620fd3b6906daa429",
+        "license": "MIT",
+        "fetch_enabled": true,
+        "scope": "cpWER, ORC-WER, MIMO-WER and DI-cpWER meeting evaluation",
+        "note": "Input transcripts and challenge datasets retain their own terms. Pinned source/doc inspected 2026-09-28: cpWER requires global speaker-grouped streams, while ORC-WER allows reference utterance redistribution; a reused CSS output slot is not automatically a permanent speaker identity. The real installed scoring interface was not runnable without its compiled edit-distance dependency; controlled extracted-method probes are recorded separately.",
+        "acquisition": "independent_source_checkout",
+        "entrypoints": [
+          "doc/algorithms.md",
+          "meeteval/wer/wer/cp.py",
+          "meeteval/wer/wer/orc.py",
+          "meeteval/wer/wer/time_constrained.py",
+          "meeteval/wer/preprocess.py",
+          "meeteval/wer/wer/mimo.py",
+          "meeteval/wer/wer/di_cp.py",
+          "meeteval/wer/wer/siso.py",
+          "meeteval/wer/wer/utils.py",
+          "meeteval/wer/wer/error_rate.py",
+          "meeteval/io/seglst.py",
+          "meeteval/wer/matching/levenshtein.h",
+          "setup.py"
+        ]
+      },
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+      "source_document_paths": {
+        "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+        "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+      },
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+      "recorded_complete_selection": {
+        "id": "meeteval",
+        "revision": "6e3dc81284f2d6928f7ef9e620fd3b6906daa429",
+        "status": "source_selection_mismatch",
+        "missing_entrypoints": [],
+        "execution": "not_run",
+        "dependency_validation": "not_run",
+        "asset_policy": "sparse_source_checkout",
+        "requested_source_paths": [
+          "repository"
+        ],
+        "observed_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz"
+        ],
+        "expected_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "source_selection_verified": false
+      },
+      "live_complete_selection": {
+        "id": "meeteval",
+        "revision": "6e3dc81284f2d6928f7ef9e620fd3b6906daa429",
+        "status": "source_selection_mismatch",
+        "source_selection_verified": false,
+        "missing_entrypoints": [],
+        "observed_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz"
+        ],
+        "expected_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "requested_source_paths": [
+          "repository"
+        ],
+        "asset_policy": "sparse_source_checkout"
+      },
+      "used_source_identity": "verified",
+      "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+      "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+      "ignored_members_before": [],
+      "used_files": {
+        "LICENSE": {
+          "sha256": "5515c2bdda551fa20d771e99ab31deebbb4f9626bef6f6c25f26125c964fd34c",
+          "bytes": 1121,
+          "git_blob": "fdd9c489404e6800e8d375dd2ac142e29687edca",
+          "actual_blob": "fdd9c489404e6800e8d375dd2ac142e29687edca"
+        },
+        "doc/algorithms.md": {
+          "sha256": "be8a5721286973d737a09c8810028afd76a4ac5d5d287ec4f703e6ed994c3593",
+          "bytes": 30747,
+          "git_blob": "23cc51c3917728e7ed81d772dd25488c573633c0",
+          "actual_blob": "23cc51c3917728e7ed81d772dd25488c573633c0"
+        },
+        "meeteval/io/seglst.py": {
+          "sha256": "10d643f3a2784a20f6351e6d549f40da39d4ab4a2481442797f5aa44a484d755",
+          "bytes": 27107,
+          "git_blob": "5af7129152a7dd7a8b0e65a5c5f528f27beb1c06",
+          "actual_blob": "5af7129152a7dd7a8b0e65a5c5f528f27beb1c06"
+        },
+        "meeteval/wer/wer/cp.py": {
+          "sha256": "2ead616c81b2119e6381532fb337e550c1b12e4ae0ecdfcc96557df32404c1f2",
+          "bytes": 23153,
+          "git_blob": "83dfec0370445f1f030f60ba5bd41e92f805dfcf",
+          "actual_blob": "83dfec0370445f1f030f60ba5bd41e92f805dfcf"
+        },
+        "meeteval/wer/wer/di_cp.py": {
+          "sha256": "7db500db70164de2006bced8550fef0ffaa03baf2d760493923de303574f6c53",
+          "bytes": 10859,
+          "git_blob": "131c524226a6ebcbe73344f740c120e60bebc4a8",
+          "actual_blob": "131c524226a6ebcbe73344f740c120e60bebc4a8"
+        },
+        "meeteval/wer/wer/orc.py": {
+          "sha256": "7aac2cfdaeb8fbe975aa5087baaa64bff99a08a6093aaffac014cfdb8b2ce9b7",
+          "bytes": 18315,
+          "git_blob": "caf66d352ffddc53113fce24231252a73618e1da",
+          "actual_blob": "caf66d352ffddc53113fce24231252a73618e1da"
+        },
+        "meeteval/wer/wer/siso.py": {
+          "sha256": "98ae734c9c2554a53dae3c8482a073a319d7c2826bb9efe3985178fc6a30b0c3",
+          "bytes": 7811,
+          "git_blob": "b6282d3fd44f7d35015f0bb8fbf248feb1398958",
+          "actual_blob": "b6282d3fd44f7d35015f0bb8fbf248feb1398958"
+        },
+        "meeteval/wer/wer/utils.py": {
+          "sha256": "32cfd8434dfafdcb463220a96609e3ad55b800ee490f9b293f655f562c955963",
+          "bytes": 1828,
+          "git_blob": "af5aa985f2c8d0728df0945fbc0372b4a5d0eda1",
+          "actual_blob": "af5aa985f2c8d0728df0945fbc0372b4a5d0eda1"
+        },
+        "meeteval/wer/matching/levenshtein.h": {
+          "sha256": "04e013ba7265a6df8f261f793624ba425b57b7beee9ec9b572f4dd4f1e79ce06",
+          "bytes": 19088,
+          "git_blob": "9a54bf3750b50a8e42473b1c8ee4f2b16e1d986e",
+          "actual_blob": "9a54bf3750b50a8e42473b1c8ee4f2b16e1d986e"
+        },
+        "setup.py": {
+          "sha256": "4f6d5e2372b7786ec99b8b8f4c0c8079e4297d3f7d0628e07a551c82eff3d32e",
+          "bytes": 5132,
+          "git_blob": "9f5d6f85d818fb3643ca2fd88b015eb07441b27e",
+          "actual_blob": "9f5d6f85d818fb3643ca2fd88b015eb07441b27e"
+        },
+        "meeteval/__init__.py": {
+          "sha256": "eca10ac1072887675646f9cfc5f78fee17c39a495e99d608c5e3737bbadcb293",
+          "bytes": 94,
+          "git_blob": "de82c64580a0126bcd104425867dfcb848c80053",
+          "actual_blob": "de82c64580a0126bcd104425867dfcb848c80053"
+        },
+        "meeteval/_typing.py": {
+          "sha256": "09a037d11afb5011695eb322a27ac2eee57b32496c9820c383166592d97a93ab",
+          "bytes": 393,
+          "git_blob": "7a9240b57e6916acf1a69026981c405735f4f099",
+          "actual_blob": "7a9240b57e6916acf1a69026981c405735f4f099"
+        },
+        "meeteval/der/__init__.py": {
+          "sha256": "0725b18e00fa344bb813e76b8d7b2df828e6be099e556c9fdedf9b626b409fbb",
+          "bytes": 30,
+          "git_blob": "8e196b08250e13681f15c40ab0a39d08c0f85120",
+          "actual_blob": "8e196b08250e13681f15c40ab0a39d08c0f85120"
+        },
+        "meeteval/der/__main__.py": {
+          "sha256": "df664e2dbe727ad092489ae181b986bbcc34db1d8ff761d84f5ec0918697483d",
+          "bytes": 3003,
+          "git_blob": "a40894fdb62fe8778145e4d4b53d74767a903b34",
+          "actual_blob": "a40894fdb62fe8778145e4d4b53d74767a903b34"
+        },
+        "meeteval/der/api.py": {
+          "sha256": "7c54c49000d6b7754579a370bae971265c66d4ba24de201c3ca28e01b169566b",
+          "bytes": 1126,
+          "git_blob": "f037611ae592fba4b996c3ccea0e617a4720a040",
+          "actual_blob": "f037611ae592fba4b996c3ccea0e617a4720a040"
+        },
+        "meeteval/der/md_eval.py": {
+          "sha256": "5846e094469ac0e3d2f1e44ce98da03fb106ae89ca6fcef278d96a79310cb4da",
+          "bytes": 14533,
+          "git_blob": "b66fbbdc8369cbaf58d97b4e44977237771aac25",
+          "actual_blob": "b66fbbdc8369cbaf58d97b4e44977237771aac25"
+        },
+        "meeteval/der/nryant_dscore.py": {
+          "sha256": "bf5c6daeccbc88d9023a7fb0d411a0a00af25fb4a86c28ac6f76cf40f08316c7",
+          "bytes": 10363,
+          "git_blob": "121ab4a860f427785cfe3e0cf066bc714635478f",
+          "actual_blob": "121ab4a860f427785cfe3e0cf066bc714635478f"
+        },
+        "meeteval/io/__init__.py": {
+          "sha256": "129c691f718d8fd128662a92e041028dc011ae1d2dfba1c08a95e74235fb3c00",
+          "bytes": 372,
+          "git_blob": "aa0fae67220ccb7421f2ca05fdbf1fdf5e99fbc1",
+          "actual_blob": "aa0fae67220ccb7421f2ca05fdbf1fdf5e99fbc1"
+        },
+        "meeteval/io/__main__.py": {
+          "sha256": "ed9d9e41a07d147cb81fbfe17f1e476e30bc4aeec33442be275bf5536c5b31d7",
+          "bytes": 6785,
+          "git_blob": "4e41c17591a4f41e88bceba80d71ff9581ce36dd",
+          "actual_blob": "4e41c17591a4f41e88bceba80d71ff9581ce36dd"
+        },
+        "meeteval/io/base.py": {
+          "sha256": "66ee4654fc7d7549b0f12320f1447d36b3754bd5d02c7bfd4a3cdde08854c888",
+          "bytes": 15379,
+          "git_blob": "4afa7f6935ab5f4b7c7ca070af073c6c9015acef",
+          "actual_blob": "4afa7f6935ab5f4b7c7ca070af073c6c9015acef"
+        },
+        "meeteval/io/chime7.py": {
+          "sha256": "6a9c0c2bd7488792e94e7d05b71aaf9caf78cf4621a90895bf5314b14277f59c",
+          "bytes": 8684,
+          "git_blob": "981fb02fc128db45fb770c3c10d5a3714f6c46a6",
+          "actual_blob": "981fb02fc128db45fb770c3c10d5a3714f6c46a6"
+        },
+        "meeteval/io/ctm.py": {
+          "sha256": "50b1dc98f672ad2c1fc615ade300d15a605ad8f18de9f43d6ab92398d73056cd",
+          "bytes": 9509,
+          "git_blob": "80e6f0d0250cfeff5b02bcd871a3e02e07526d17",
+          "actual_blob": "80e6f0d0250cfeff5b02bcd871a3e02e07526d17"
+        },
+        "meeteval/io/keyed_text.py": {
+          "sha256": "c39fea82f3ba767b6cdc8a4b3908b190ee5efb52dfd838bccdb36ff83bcae1ee",
+          "bytes": 2151,
+          "git_blob": "33c3def419087b2f9eb6e65282c531aadc463baa",
+          "actual_blob": "33c3def419087b2f9eb6e65282c531aadc463baa"
+        },
+        "meeteval/io/pbjson.py": {
+          "sha256": "2333d8fc757018c51ce15cb1e8f63b8ede35e250e977c7ccbd9d68fac69c5309",
+          "bytes": 5979,
+          "git_blob": "f5fbd7a5e4ba4903766c9c53a883a464550aaa2a",
+          "actual_blob": "f5fbd7a5e4ba4903766c9c53a883a464550aaa2a"
+        },
+        "meeteval/io/py.py": {
+          "sha256": "4470694ffea8b315a94535b9da8ad482f8c7e967006a06e92e10694cadc79002",
+          "bytes": 12048,
+          "git_blob": "bf887846774c9821ca87ba8891a8ce218adbcc76",
+          "actual_blob": "bf887846774c9821ca87ba8891a8ce218adbcc76"
+        },
+        "meeteval/io/rttm.py": {
+          "sha256": "dd57a2e59319668fc70957ebefc1c46c2c88ec23e4fd69efa561071cfa58bd8f",
+          "bytes": 6277,
+          "git_blob": "c63800378fae084bc2d2cce514ecaffd99b6da29",
+          "actual_blob": "c63800378fae084bc2d2cce514ecaffd99b6da29"
+        },
+        "meeteval/io/smart.py": {
+          "sha256": "b1dfd6302f473669914df0fa470d7fc7ecb545aa6d894ebcc5e233de9fea3c2c",
+          "bytes": 7126,
+          "git_blob": "f860c0b69a0e736175b427b93e18c29f63337aa0",
+          "actual_blob": "f860c0b69a0e736175b427b93e18c29f63337aa0"
+        },
+        "meeteval/io/stm.py": {
+          "sha256": "12d91b9c96f262d7d019d2cace0afa44ea826ce8b87e5be1a8edf8c2a8d03b2f",
+          "bytes": 4874,
+          "git_blob": "f792f3e7ebae4a7792819d121245dc92d64a5968",
+          "actual_blob": "f792f3e7ebae4a7792819d121245dc92d64a5968"
+        },
+        "meeteval/io/uem.py": {
+          "sha256": "b75acd6c7ef950c263ab94761bced53d8ff9c636960cdbf2a8be0e67ef4321a2",
+          "bytes": 4256,
+          "git_blob": "00e016055db68a447c12d95ac07bde48aecca003",
+          "actual_blob": "00e016055db68a447c12d95ac07bde48aecca003"
+        },
+        "meeteval/viz/__init__.py": {
+          "sha256": "69bc964c49dc57a71efa58006db4f964433066dd870a3e91a33b7c0d0695e911",
+          "bytes": 57,
+          "git_blob": "7c735ea905e6788bffdec0ac225df0450f2ac87b",
+          "actual_blob": "7c735ea905e6788bffdec0ac225df0450f2ac87b"
+        },
+        "meeteval/viz/__main__.py": {
+          "sha256": "8f02cae70b1107f3fa0c82225f71db1a35e977592d6cf5fd40505745b2ca7b92",
+          "bytes": 13235,
+          "git_blob": "946ff275306b7b54069a08f4897416f47c680939",
+          "actual_blob": "946ff275306b7b54069a08f4897416f47c680939"
+        },
+        "meeteval/viz/file_server.py": {
+          "sha256": "6fda8f53067498299049a22501badc3c960b6b7dd5e634b2af9c345723305050",
+          "bytes": 5812,
+          "git_blob": "8d5ca46552beb6546e69b863efa8c4a70673f9dc",
+          "actual_blob": "8d5ca46552beb6546e69b863efa8c4a70673f9dc"
+        },
+        "meeteval/viz/overview_table.py": {
+          "sha256": "f3cc5085859bd14525ccab06450c693c16db36f3bd9dff2f46a63fe721ee6e0b",
+          "bytes": 2792,
+          "git_blob": "3fd309d16afaf934fbafa178553fed0713bf1a0e",
+          "actual_blob": "3fd309d16afaf934fbafa178553fed0713bf1a0e"
+        },
+        "meeteval/viz/visualize.py": {
+          "sha256": "3cfa3ac296adc6eafbbc6f7a6c1f8e5220969f41ee118aedd8820564721a5bca",
+          "bytes": 32882,
+          "git_blob": "bab59c13f08c555c08d2356dffadbadd7e432468",
+          "actual_blob": "bab59c13f08c555c08d2356dffadbadd7e432468"
+        },
+        "meeteval/wer/__init__.py": {
+          "sha256": "f219e984c39779c59ff10f515f39493b85f56857fda6d527bfd03139c9dbd675",
+          "bytes": 56,
+          "git_blob": "5ea3a314c3ffb994076968e6efe15c320280c8b3",
+          "actual_blob": "5ea3a314c3ffb994076968e6efe15c320280c8b3"
+        },
+        "meeteval/wer/__main__.py": {
+          "sha256": "eeb9fbd34f1b6a48e0145557751436b4d355b9d2dd5659b84f8fe1e2702b41cf",
+          "bytes": 28817,
+          "git_blob": "beb5030398da154a458d8def9af4b16ede836a58",
+          "actual_blob": "beb5030398da154a458d8def9af4b16ede836a58"
+        },
+        "meeteval/wer/api.py": {
+          "sha256": "abbb4192914e458803d99c8d3deb8bb12d21973f5626eaf6146454ecdd3f64da",
+          "bytes": 13893,
+          "git_blob": "a5647a9a8de0b92541fb3ff2311bfd30231a9ed9",
+          "actual_blob": "a5647a9a8de0b92541fb3ff2311bfd30231a9ed9"
+        },
+        "meeteval/wer/matching/__init__.py": {
+          "sha256": "fd4d7eb43070248feacdb84ca2e21a591dadb18ecfe7819fceba72a4569784e5",
+          "bytes": 147,
+          "git_blob": "7170c929d798e68be61cd8cf3101532f3d277fbd",
+          "actual_blob": "7170c929d798e68be61cd8cf3101532f3d277fbd"
+        },
+        "meeteval/wer/matching/greedy_combination_matching.py": {
+          "sha256": "8374bef15fd248be046a83d1c2d76f686cc87f8a037afc0e3be560b46bab0695",
+          "bytes": 15594,
+          "git_blob": "65536f2fc090d739c2e1ab657a2055fec0a8a62d",
+          "actual_blob": "65536f2fc090d739c2e1ab657a2055fec0a8a62d"
+        },
+        "meeteval/wer/matching/mimo_matching.py": {
+          "sha256": "18def3943991a4a9130aeae5cf3e212c0747abfafd16245628a9444bcc554196",
+          "bytes": 6180,
+          "git_blob": "1a9d2881c0a3d3331c70775aa7aa0ae7db3c5f2f",
+          "actual_blob": "1a9d2881c0a3d3331c70775aa7aa0ae7db3c5f2f"
+        },
+        "meeteval/wer/matching/orc_matching.py": {
+          "sha256": "2c9be19dce9d4eaa3417322ebc2532ca19b301ce60cda738e10313943e98d424",
+          "bytes": 5929,
+          "git_blob": "d7c8a73cc5b2dcfb21697b51f8acf20159e781d9",
+          "actual_blob": "d7c8a73cc5b2dcfb21697b51f8acf20159e781d9"
+        },
+        "meeteval/wer/normalizer.py": {
+          "sha256": "40afd5f4a8c59944ba6f5b3a1573e2ec2836b78bccb4308ba47c0eb28b8e2a4d",
+          "bytes": 5306,
+          "git_blob": "f9e8ba2c2ad1b8c87e756b5a3c27c20a80e7b698",
+          "actual_blob": "f9e8ba2c2ad1b8c87e756b5a3c27c20a80e7b698"
+        },
+        "meeteval/wer/preprocess.py": {
+          "sha256": "6d1139a3f73784fc8ee627c072d82b8f2ca63871c351aeb58911f8d122e468ac",
+          "bytes": 21624,
+          "git_blob": "1e1783ee2574854548c6c417b3696d17211ba7e6",
+          "actual_blob": "1e1783ee2574854548c6c417b3696d17211ba7e6"
+        },
+        "meeteval/wer/utils.py": {
+          "sha256": "2fb5f3aa47911d77a29911822b222a113db20454c99e4b2472072f66ca681ac1",
+          "bytes": 889,
+          "git_blob": "682da8f15cb3e2dcc2d24da4005061bb88db419c",
+          "actual_blob": "682da8f15cb3e2dcc2d24da4005061bb88db419c"
+        },
+        "meeteval/wer/wer/__init__.py": {
+          "sha256": "605347e97b5cbfdc58f5587f1bbad72d93c2726171ec7e7bae9efb3188eba759",
+          "bytes": 1085,
+          "git_blob": "c3097b3bf7beec7e09f0e184482bb5f247b26518",
+          "actual_blob": "c3097b3bf7beec7e09f0e184482bb5f247b26518"
+        },
+        "meeteval/wer/wer/error_rate.py": {
+          "sha256": "3796ba2e4d026584a44b74c90cf753b90c140e7b4754456c3eb11b840fed456d",
+          "bytes": 13519,
+          "git_blob": "b111f1c91d4ffb21a49665e00c5f475fbf90c8c1",
+          "actual_blob": "b111f1c91d4ffb21a49665e00c5f475fbf90c8c1"
+        },
+        "meeteval/wer/wer/mimo.py": {
+          "sha256": "38f11c00a01e1dd664c37786b2e4da926c60b5fda85989a1be845c904ae8548c",
+          "bytes": 9776,
+          "git_blob": "007d8023d2df7d49cb43142a103f5d36e8d3495d",
+          "actual_blob": "007d8023d2df7d49cb43142a103f5d36e8d3495d"
+        },
+        "meeteval/wer/wer/time_constrained.py": {
+          "sha256": "b2d6c0c18f4add17484edf53dbea8f9926f37216c9ccd7612871c92ce537435c",
+          "bytes": 39723,
+          "git_blob": "0a3847224637e74411f2480506d9099641d11ad5",
+          "actual_blob": "0a3847224637e74411f2480506d9099641d11ad5"
+        },
+        "meeteval/wer/wer/time_constrained_mimo.py": {
+          "sha256": "e5a7ca77115fa7f561a783c480a7e8f1ff87060fe74988c827cf3351433e68c9",
+          "bytes": 9847,
+          "git_blob": "f797b2f3b8a7a1129beee4197d8cd8ab8436148d",
+          "actual_blob": "f797b2f3b8a7a1129beee4197d8cd8ab8436148d"
+        },
+        "meeteval/wer/wer/time_constrained_orc.py": {
+          "sha256": "1c7940a8623f1fe2a112e655ff603d266019a312f0dd7c78eeaa6bfe8eaf11a1",
+          "bytes": 10967,
+          "git_blob": "2a28e2c3b1f020e70be3bffe6caf8df42c0e7cfc",
+          "actual_blob": "2a28e2c3b1f020e70be3bffe6caf8df42c0e7cfc"
+        }
+      },
+      "clean_before": true,
+      "clean_after": true,
+      "ignored_members_after": []
+    },
+    "chime-utils": {
+      "project": "chime-utils",
+      "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/chime-utils",
+      "origin": "https://github.com/chimechallenge/chime-utils.git",
+      "head": "152882404f572d40769ef02bf91c5a9a9cfc9c78",
+      "lock_entry": {
+        "id": "chime-utils",
+        "url": "https://github.com/chimechallenge/chime-utils.git",
+        "revision": "152882404f572d40769ef02bf91c5a9a9cfc9c78",
+        "license": "MIT",
+        "scope": "CHiME-8 DASR 数据清单、文本规范化和会议评分",
+        "fetch_enabled": true,
+        "note": "2026-09-28 pinned source inspected: challenge-scoring missing-file branch and text-normalization idempotence guard require explicit validation; see controlled source audit. Data-preparation commands download corpora and are not executed; cpWER/tcpWER, missing-session handling and evaluation scope bind to this challenge edition.",
+        "entrypoints": [
+          "chime_utils",
+          "chime_utils/scoring/meeteval.py",
+          "chime_utils/text_norm",
+          "tests/test_normalizer.py",
+          "README.md",
+          "DATAPREP.md"
+        ]
+      },
+      "lock_sha256": "ab89e7792c073e807508e9d76acf696e482542a026a7de482ed13b510500861f",
+      "source_document_paths": {
+        "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+        "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+      },
+      "status_sha256": "56f4a2b5bbd1e2debb57e71e2e6b362a27c8f9ab430ec6dd46aee1f15eea8469",
+      "recorded_complete_selection": {
+        "id": "chime-utils",
+        "revision": "152882404f572d40769ef02bf91c5a9a9cfc9c78",
+        "status": "source_verified",
+        "missing_entrypoints": [],
+        "execution": "not_run",
+        "dependency_validation": "not_run",
+        "asset_policy": "sparse_source_checkout",
+        "requested_source_paths": [
+          "repository"
+        ],
+        "observed_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "expected_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "source_selection_verified": true
+      },
+      "live_complete_selection": {
+        "id": "chime-utils",
+        "revision": "152882404f572d40769ef02bf91c5a9a9cfc9c78",
+        "status": "source_verified",
+        "source_selection_verified": true,
+        "missing_entrypoints": [],
+        "observed_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "expected_sparse_patterns": [
+          "/*",
+          "!**/*.wav",
+          "!**/*.flac",
+          "!**/*.mp3",
+          "!**/*.mp4",
+          "!**/*.ogg",
+          "!**/*.pt",
+          "!**/*.pth",
+          "!**/*.ckpt",
+          "!**/*.onnx",
+          "!**/*.tflite",
+          "!**/*.h5",
+          "!**/*.hdf5",
+          "!**/*.npz",
+          "!**/*.npy",
+          "!**/*.so",
+          "!**/*.dll",
+          "!**/*.dylib",
+          "!**/*.zip",
+          "!**/*.tar",
+          "!**/*.gz",
+          "!**/*.bin",
+          "!**/*.pb",
+          "!**/*.pkl",
+          "!**/*.pickle",
+          "!**/*.mat",
+          "!**/*.safetensors",
+          "!**/*.whl",
+          "!**/*.a",
+          "!**/*.o",
+          "!**/*.exe",
+          "!**/*.wasm",
+          "!**/*.weights"
+        ],
+        "requested_source_paths": [
+          "repository"
+        ],
+        "asset_policy": "sparse_source_checkout"
+      },
+      "used_source_identity": "verified",
+      "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+      "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+      "ignored_members_before": [],
+      "used_files": {
+        "LICENSE": {
+          "sha256": "e2f48f797fd76ec12f6792c39555e986b8b4329604194e7da1416837b68c8ee4",
+          "bytes": 1072,
+          "git_blob": "86a5ea99b897ecd8bfa8d2763bda6d0ab79ef38e",
+          "actual_blob": "86a5ea99b897ecd8bfa8d2763bda6d0ab79ef38e"
+        },
+        "chime_utils/scoring/meeteval.py": {
+          "sha256": "5b2573e673cf373932bed76bf063432804d92c902177e7af8ca5cba6db3ac1ad",
+          "bytes": 8077,
+          "git_blob": "1a9e934a0604d11716d96e1c4941cf55402eae29",
+          "actual_blob": "1a9e934a0604d11716d96e1c4941cf55402eae29"
+        }
+      },
+      "clean_before": true,
+      "clean_after": true,
+      "ignored_members_after": []
+    }
+  },
+  "sources": {
+    "meeteval": {
+      "revision": "6e3dc81284f2d6928f7ef9e620fd3b6906daa429",
+      "files": {
+        "LICENSE": "5515c2bdda551fa20d771e99ab31deebbb4f9626bef6f6c25f26125c964fd34c",
+        "doc/algorithms.md": "be8a5721286973d737a09c8810028afd76a4ac5d5d287ec4f703e6ed994c3593",
+        "meeteval/io/seglst.py": "10d643f3a2784a20f6351e6d549f40da39d4ab4a2481442797f5aa44a484d755",
+        "meeteval/wer/wer/cp.py": "2ead616c81b2119e6381532fb337e550c1b12e4ae0ecdfcc96557df32404c1f2",
+        "meeteval/wer/wer/di_cp.py": "7db500db70164de2006bced8550fef0ffaa03baf2d760493923de303574f6c53",
+        "meeteval/wer/wer/orc.py": "7aac2cfdaeb8fbe975aa5087baaa64bff99a08a6093aaffac014cfdb8b2ce9b7",
+        "meeteval/wer/wer/siso.py": "98ae734c9c2554a53dae3c8482a073a319d7c2826bb9efe3985178fc6a30b0c3",
+        "meeteval/wer/wer/utils.py": "32cfd8434dfafdcb463220a96609e3ad55b800ee490f9b293f655f562c955963",
+        "meeteval/wer/matching/levenshtein.h": "04e013ba7265a6df8f261f793624ba425b57b7beee9ec9b572f4dd4f1e79ce06",
+        "setup.py": "4f6d5e2372b7786ec99b8b8f4c0c8079e4297d3f7d0628e07a551c82eff3d32e"
+      }
+    },
+    "chime-utils": {
+      "revision": "152882404f572d40769ef02bf91c5a9a9cfc9c78",
+      "files": {
+        "LICENSE": "e2f48f797fd76ec12f6792c39555e986b8b4329604194e7da1416837b68c8ee4",
+        "chime_utils/scoring/meeteval.py": "5b2573e673cf373932bed76bf063432804d92c902177e7af8ca5cba6db3ac1ad"
+      }
+    }
+  },
+  "config": {
+    "slot_reuse": {
+      "reference_speakers": [
+        "a",
+        "b",
+        "c"
+      ],
+      "hypothesis_slots": [
+        "ac",
+        "b"
+      ],
+      "reference_words": 3,
+      "word_encoding": "one character is one word in upstream documentation",
+      "order": "A:a and B:b overlap first; C:c follows and reuses slot 0"
+    },
+    "utterance_boundary": {
+      "reference_utterances": [
+        "a",
+        "bc"
+      ],
+      "hypothesis_slots": [
+        "ab",
+        "c"
+      ]
+    },
+    "chime": {
+      "scenarios": [
+        "chime6",
+        "mixer6",
+        "dipco",
+        "notsofar1"
+      ],
+      "dset_part": "dev",
+      "words": "aaa",
+      "start_time": 0,
+      "end_time": 1,
+      "normalizers": [
+        "identity",
+        "remove_first_character"
+      ]
+    },
+    "multifile": {
+      "allowed_empty_examples_ratio": 0.1,
+      "cases": [
+        "one_missing_of_ten",
+        "one_missing_of_two",
+        "extra_hypothesis",
+        "partial_extra_hypothesis",
+        "empty_reference"
+      ]
+    },
+    "scope": "synthetic text; no ASR, diarization, audio, challenge data or hardware"
+  },
+  "worker": {
+    "command": [
+      "/private/tmp/masp-appb-pra-venv/bin/python",
+      "-B",
+      "-m",
+      "codes.chapters.ch11.examples.audit_meeting_scoring_interfaces",
+      "--worker",
+      "--upstream-root",
+      "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads"
+    ],
+    "stderr": "",
+    "isolation": "fresh -B Python child; no upstream compilation or installation"
+  },
+  "documentation": {
+    "execution": "original documentation functions extracted by AST; not production compiled kernels",
+    "function_lines": {
+      "update_lev_row": 28,
+      "levenshtein_distance": 56,
+      "cp_lev": 201,
+      "orc_lev_brute_force": 297,
+      "orc_lev_dynamic_programming": 331,
+      "di_cp_lev": 715
+    },
+    "cp_errors": 2,
+    "orc_errors": 0,
+    "cp_rate": 0.6666666666666666,
+    "orc_rate": 0.0,
+    "orc_indivisible_utterance_errors": 2,
+    "identity_cp_errors": 0,
+    "di_cp_documentation_call": {
+      "status": "exception",
+      "exception_type": "NameError",
+      "exception_message": "name 'hypothesis' is not defined"
+    }
+  },
+  "package": {
+    "execution": "original package imported from fixed checkout",
+    "package_path": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/meeteval/meeteval/__init__.py",
+    "cp_word_error_rate": {
+      "reference": [
+        {
+          "session_id": "example",
+          "speaker": "A",
+          "words": "a",
+          "start_time": 0,
+          "end_time": 1
+        },
+        {
+          "session_id": "example",
+          "speaker": "B",
+          "words": "b",
+          "start_time": 0,
+          "end_time": 1
+        },
+        {
+          "session_id": "example",
+          "speaker": "C",
+          "words": "c",
+          "start_time": 2,
+          "end_time": 3
+        }
+      ],
+      "hypothesis": [
+        {
+          "session_id": "example",
+          "speaker": "slot0",
+          "words": "a",
+          "start_time": 0,
+          "end_time": 1
+        },
+        {
+          "session_id": "example",
+          "speaker": "slot1",
+          "words": "b",
+          "start_time": 0,
+          "end_time": 1
+        },
+        {
+          "session_id": "example",
+          "speaker": "slot0",
+          "words": "c",
+          "start_time": 2,
+          "end_time": 3
+        }
+      ],
+      "status": "exception",
+      "exception_type": "ModuleNotFoundError",
+      "exception_message": "No module named 'meeteval.wer.matching.cy_levenshtein'"
+    },
+    "multifile_execution": "original apply_multi_file with segment-count callback; no WER scoring",
+    "multifile_cases": [
+      {
+        "case": "one_missing_of_ten",
+        "reference_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "hypothesis_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "partial": false,
+        "status": "returned",
+        "value": {
+          "0": {
+            "reference_segments": 1,
+            "hypothesis_segments": 1
+          },
+          "1": {
+            "reference_segments": 1,
+            "hypothesis_segments": 1
+          },
+          "2": {
+            "reference_segments": 1,
+            "hypothesis_segments": 1
+          },
+          "3": {
+            "reference_segments": 1,
+            "hypothesis_segments": 1
+          },
+          "4": {
+            "reference_segments": 1,
+            "hypothesis_segments": 1
+          },
+          "5": {
+            "reference_segments": 1,
+            "hypothesis_segments": 1
+          },
+          "6": {
+            "reference_segments": 1,
+            "hypothesis_segments": 1
+          },
+          "7": {
+            "reference_segments": 1,
+            "hypothesis_segments": 1
+          },
+          "8": {
+            "reference_segments": 1,
+            "hypothesis_segments": 1
+          },
+          "9": {
+            "reference_segments": 1,
+            "hypothesis_segments": 0
+          }
+        },
+        "logs": [
+          "Missing 10.000 % = 1/10 of recordings in hypothesis. An exception will be raised when this number exceeds 10.0 %.",
+          "Please check if your system ignored recordings. It is recommended to output an empty transcript if silence was recognized in order to reliably detect errors.",
+          "Missing (showing first 5): ['9']",
+          "The computation continues with the assumption that the system predicted silence for the missing recordings."
+        ]
+      },
+      {
+        "case": "one_missing_of_two",
+        "reference_ids": [
+          0,
+          1
+        ],
+        "hypothesis_ids": [
+          0
+        ],
+        "partial": false,
+        "status": "exception",
+        "exception_type": "RuntimeError",
+        "exception_message": "Missing 50.000 % = 1/2 of recordings in hypothesis. This exceeds the threshold of 10.0 %.\nPlease check if your system ignored recordings. It is recommended to output an empty transcript if silence was recognized in order to reliably detect errors.\nMissing (showing first 5): ['1']",
+        "logs": []
+      },
+      {
+        "case": "extra_hypothesis",
+        "reference_ids": [
+          0
+        ],
+        "hypothesis_ids": [
+          0,
+          1
+        ],
+        "partial": false,
+        "status": "exception",
+        "exception_type": "RuntimeError",
+        "exception_message": "1 of 2 session IDs are present in the hypothesis but missing in the reference.\nMissing: ['1']\nIf this is intentional, consider setting `partial=True`.",
+        "logs": []
+      },
+      {
+        "case": "partial_extra_hypothesis",
+        "reference_ids": [
+          0
+        ],
+        "hypothesis_ids": [
+          0,
+          1
+        ],
+        "partial": true,
+        "status": "returned",
+        "value": {
+          "0": {
+            "reference_segments": 1,
+            "hypothesis_segments": 1
+          }
+        },
+        "logs": [
+          "1 of 2 session IDs are present in the hypothesis but missing in the reference.",
+          "Missing: ['1']",
+          "`partial=True`, so the computation continues with the assumption that only the sub-set of sessions present in the reference should be evaluated."
+        ]
+      },
+      {
+        "case": "empty_reference",
+        "reference_ids": [],
+        "hypothesis_ids": [],
+        "partial": false,
+        "status": "exception",
+        "exception_type": "RuntimeError",
+        "exception_message": "Empty reference.",
+        "logs": []
+      }
+    ]
+  },
+  "chime": {
+    "execution": "original AST-extracted _load_and_prepare; fake paths, loader, SegLST and normalizer",
+    "challenge_pipeline_executed": false,
+    "official_normalizer_executed": false,
+    "source_line": 21,
+    "cases": [
+      {
+        "case": "complete",
+        "missing_reference_scenario": null,
+        "missing_hypothesis_scenario": null,
+        "ignore_missing": false,
+        "normalizer": "identity",
+        "status": "returned",
+        "value": null,
+        "yielded": [
+          {
+            "part": "dev",
+            "scenario": "chime6",
+            "reference": [
+              {
+                "session_id": "chime6_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ],
+            "hypothesis": [
+              {
+                "session_id": "chime6_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ]
+          },
+          {
+            "part": "dev",
+            "scenario": "mixer6",
+            "reference": [
+              {
+                "session_id": "mixer6_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ],
+            "hypothesis": [
+              {
+                "session_id": "mixer6_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ]
+          },
+          {
+            "part": "dev",
+            "scenario": "dipco",
+            "reference": [
+              {
+                "session_id": "dipco_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ],
+            "hypothesis": [
+              {
+                "session_id": "dipco_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ]
+          },
+          {
+            "part": "dev",
+            "scenario": "notsofar1",
+            "reference": [
+              {
+                "session_id": "notsofar1_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ],
+            "hypothesis": [
+              {
+                "session_id": "notsofar1_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ]
+          }
+        ],
+        "logs": []
+      },
+      {
+        "case": "first_reference_missing",
+        "missing_reference_scenario": "chime6",
+        "missing_hypothesis_scenario": null,
+        "ignore_missing": false,
+        "normalizer": "identity",
+        "status": "exception",
+        "exception_type": "UnboundLocalError",
+        "exception_message": "cannot access local variable 'r' where it is not associated with a value",
+        "yielded": [],
+        "logs": [
+          "root/chime6/transcriptions_scoring/dev should contain the reference jsons, but couldn't find them. We cannot score chime6. You can use --ignore-missing to skip scoring for some scenarios."
+        ]
+      },
+      {
+        "case": "first_hypothesis_missing",
+        "missing_reference_scenario": null,
+        "missing_hypothesis_scenario": "chime6",
+        "ignore_missing": false,
+        "normalizer": "identity",
+        "status": "exception",
+        "exception_type": "UnboundLocalError",
+        "exception_message": "cannot access local variable 'h' where it is not associated with a value",
+        "yielded": [],
+        "logs": [
+          "The file hyp/dev/chime6.json doesn't exists. We cannot score chime6. Exiting. You can use --ignore-missing to skip scoring for some scenarios."
+        ]
+      },
+      {
+        "case": "second_reference_missing",
+        "missing_reference_scenario": "mixer6",
+        "missing_hypothesis_scenario": null,
+        "ignore_missing": false,
+        "normalizer": "identity",
+        "status": "returned",
+        "value": null,
+        "yielded": [
+          {
+            "part": "dev",
+            "scenario": "chime6",
+            "reference": [
+              {
+                "session_id": "chime6_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ],
+            "hypothesis": [
+              {
+                "session_id": "chime6_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ]
+          },
+          {
+            "part": "dev",
+            "scenario": "mixer6",
+            "reference": [
+              {
+                "session_id": "chime6_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ],
+            "hypothesis": [
+              {
+                "session_id": "mixer6_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ]
+          },
+          {
+            "part": "dev",
+            "scenario": "dipco",
+            "reference": [
+              {
+                "session_id": "dipco_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ],
+            "hypothesis": [
+              {
+                "session_id": "dipco_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ]
+          },
+          {
+            "part": "dev",
+            "scenario": "notsofar1",
+            "reference": [
+              {
+                "session_id": "notsofar1_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ],
+            "hypothesis": [
+              {
+                "session_id": "notsofar1_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ]
+          }
+        ],
+        "logs": [
+          "root/mixer6/transcriptions_scoring/dev should contain the reference jsons, but couldn't find them. We cannot score mixer6. You can use --ignore-missing to skip scoring for some scenarios."
+        ]
+      },
+      {
+        "case": "second_hypothesis_missing",
+        "missing_reference_scenario": null,
+        "missing_hypothesis_scenario": "mixer6",
+        "ignore_missing": false,
+        "normalizer": "identity",
+        "status": "returned",
+        "value": null,
+        "yielded": [
+          {
+            "part": "dev",
+            "scenario": "chime6",
+            "reference": [
+              {
+                "session_id": "chime6_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ],
+            "hypothesis": [
+              {
+                "session_id": "chime6_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ]
+          },
+          {
+            "part": "dev",
+            "scenario": "mixer6",
+            "reference": [
+              {
+                "session_id": "mixer6_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ],
+            "hypothesis": [
+              {
+                "session_id": "chime6_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ]
+          },
+          {
+            "part": "dev",
+            "scenario": "dipco",
+            "reference": [
+              {
+                "session_id": "dipco_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ],
+            "hypothesis": [
+              {
+                "session_id": "dipco_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ]
+          },
+          {
+            "part": "dev",
+            "scenario": "notsofar1",
+            "reference": [
+              {
+                "session_id": "notsofar1_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ],
+            "hypothesis": [
+              {
+                "session_id": "notsofar1_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ]
+          }
+        ],
+        "logs": [
+          "The file hyp/dev/mixer6.json doesn't exists. We cannot score mixer6. Exiting. You can use --ignore-missing to skip scoring for some scenarios."
+        ]
+      },
+      {
+        "case": "skip_second_reference",
+        "missing_reference_scenario": "mixer6",
+        "missing_hypothesis_scenario": null,
+        "ignore_missing": true,
+        "normalizer": "identity",
+        "status": "returned",
+        "value": null,
+        "yielded": [
+          {
+            "part": "dev",
+            "scenario": "chime6",
+            "reference": [
+              {
+                "session_id": "chime6_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ],
+            "hypothesis": [
+              {
+                "session_id": "chime6_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ]
+          },
+          {
+            "part": "dev",
+            "scenario": "dipco",
+            "reference": [
+              {
+                "session_id": "dipco_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ],
+            "hypothesis": [
+              {
+                "session_id": "dipco_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ]
+          },
+          {
+            "part": "dev",
+            "scenario": "notsofar1",
+            "reference": [
+              {
+                "session_id": "notsofar1_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ],
+            "hypothesis": [
+              {
+                "session_id": "notsofar1_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aaa"
+              }
+            ]
+          }
+        ],
+        "logs": [
+          "root/mixer6/transcriptions_scoring/dev should contain the reference jsons, but couldn't find them. We cannot score mixer6. Skipping since --ignore-missing is set."
+        ]
+      },
+      {
+        "case": "non_idempotent_normalizer",
+        "missing_reference_scenario": null,
+        "missing_hypothesis_scenario": null,
+        "ignore_missing": false,
+        "normalizer": "remove_first_character",
+        "status": "returned",
+        "value": null,
+        "yielded": [
+          {
+            "part": "dev",
+            "scenario": "chime6",
+            "reference": [
+              {
+                "session_id": "chime6_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aa"
+              }
+            ],
+            "hypothesis": [
+              {
+                "session_id": "chime6_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aa"
+              }
+            ]
+          },
+          {
+            "part": "dev",
+            "scenario": "mixer6",
+            "reference": [
+              {
+                "session_id": "mixer6_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aa"
+              }
+            ],
+            "hypothesis": [
+              {
+                "session_id": "mixer6_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aa"
+              }
+            ]
+          },
+          {
+            "part": "dev",
+            "scenario": "dipco",
+            "reference": [
+              {
+                "session_id": "dipco_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aa"
+              }
+            ],
+            "hypothesis": [
+              {
+                "session_id": "dipco_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aa"
+              }
+            ]
+          },
+          {
+            "part": "dev",
+            "scenario": "notsofar1",
+            "reference": [
+              {
+                "session_id": "notsofar1_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aa"
+              }
+            ],
+            "hypothesis": [
+              {
+                "session_id": "notsofar1_session",
+                "speaker": "A",
+                "start_time": 0,
+                "end_time": 1,
+                "words": "aa"
+              }
+            ]
+          }
+        ],
+        "logs": []
+      }
+    ]
+  },
+  "word_timing": {
+    "execution": "original package timing helpers only; no complete tcpWER call",
+    "input_segment": [
+      {
+        "words": "abc b",
+        "start_time": 0,
+        "end_time": 4
+      }
+    ],
+    "reference_strategy": "character_based",
+    "hypothesis_strategy": "character_based_points",
+    "reference": [
+      {
+        "words": "abc",
+        "start_time": 0.0,
+        "end_time": 3.0
+      },
+      {
+        "words": "b",
+        "start_time": 3.0,
+        "end_time": 4.0
+      }
+    ],
+    "hypothesis": [
+      {
+        "words": "abc",
+        "start_time": 1.5,
+        "end_time": 1.5
+      },
+      {
+        "words": "b",
+        "start_time": 3.5,
+        "end_time": 3.5
+      }
+    ],
+    "expected_reference": [
+      {
+        "words": "abc",
+        "start_time": 0.0,
+        "end_time": 3.0
+      },
+      {
+        "words": "b",
+        "start_time": 3.0,
+        "end_time": 4.0
+      }
+    ],
+    "expected_hypothesis": [
+      {
+        "words": "abc",
+        "start_time": 1.5,
+        "end_time": 1.5
+      },
+      {
+        "words": "b",
+        "start_time": 3.5,
+        "end_time": 3.5
+      }
+    ],
+    "matched_independent_expected": true
+  },
+  "actual_imported_original_modules": {
+    "meeteval.io.smart": {
+      "path": "meeteval/io/smart.py",
+      "sha256": "b1dfd6302f473669914df0fa470d7fc7ecb545aa6d894ebcc5e233de9fea3c2c",
+      "bytes": 7126,
+      "git_blob": "f860c0b69a0e736175b427b93e18c29f63337aa0",
+      "actual_blob": "f860c0b69a0e736175b427b93e18c29f63337aa0"
+    },
+    "meeteval.io.base": {
+      "path": "meeteval/io/base.py",
+      "sha256": "66ee4654fc7d7549b0f12320f1447d36b3754bd5d02c7bfd4a3cdde08854c888",
+      "bytes": 15379,
+      "git_blob": "4afa7f6935ab5f4b7c7ca070af073c6c9015acef",
+      "actual_blob": "4afa7f6935ab5f4b7c7ca070af073c6c9015acef"
+    },
+    "meeteval.io.py": {
+      "path": "meeteval/io/py.py",
+      "sha256": "4470694ffea8b315a94535b9da8ad482f8c7e967006a06e92e10694cadc79002",
+      "bytes": 12048,
+      "git_blob": "bf887846774c9821ca87ba8891a8ce218adbcc76",
+      "actual_blob": "bf887846774c9821ca87ba8891a8ce218adbcc76"
+    },
+    "meeteval._typing": {
+      "path": "meeteval/_typing.py",
+      "sha256": "09a037d11afb5011695eb322a27ac2eee57b32496c9820c383166592d97a93ab",
+      "bytes": 393,
+      "git_blob": "7a9240b57e6916acf1a69026981c405735f4f099",
+      "actual_blob": "7a9240b57e6916acf1a69026981c405735f4f099"
+    },
+    "meeteval.io.seglst": {
+      "path": "meeteval/io/seglst.py",
+      "sha256": "10d643f3a2784a20f6351e6d549f40da39d4ab4a2481442797f5aa44a484d755",
+      "bytes": 27107,
+      "git_blob": "5af7129152a7dd7a8b0e65a5c5f528f27beb1c06",
+      "actual_blob": "5af7129152a7dd7a8b0e65a5c5f528f27beb1c06"
+    },
+    "meeteval.io.stm": {
+      "path": "meeteval/io/stm.py",
+      "sha256": "12d91b9c96f262d7d019d2cace0afa44ea826ce8b87e5be1a8edf8c2a8d03b2f",
+      "bytes": 4874,
+      "git_blob": "f792f3e7ebae4a7792819d121245dc92d64a5968",
+      "actual_blob": "f792f3e7ebae4a7792819d121245dc92d64a5968"
+    },
+    "meeteval.io.ctm": {
+      "path": "meeteval/io/ctm.py",
+      "sha256": "50b1dc98f672ad2c1fc615ade300d15a605ad8f18de9f43d6ab92398d73056cd",
+      "bytes": 9509,
+      "git_blob": "80e6f0d0250cfeff5b02bcd871a3e02e07526d17",
+      "actual_blob": "80e6f0d0250cfeff5b02bcd871a3e02e07526d17"
+    },
+    "meeteval.io.rttm": {
+      "path": "meeteval/io/rttm.py",
+      "sha256": "dd57a2e59319668fc70957ebefc1c46c2c88ec23e4fd69efa561071cfa58bd8f",
+      "bytes": 6277,
+      "git_blob": "c63800378fae084bc2d2cce514ecaffd99b6da29",
+      "actual_blob": "c63800378fae084bc2d2cce514ecaffd99b6da29"
+    },
+    "meeteval.io.uem": {
+      "path": "meeteval/io/uem.py",
+      "sha256": "b75acd6c7ef950c263ab94761bced53d8ff9c636960cdbf2a8be0e67ef4321a2",
+      "bytes": 4256,
+      "git_blob": "00e016055db68a447c12d95ac07bde48aecca003",
+      "actual_blob": "00e016055db68a447c12d95ac07bde48aecca003"
+    },
+    "meeteval.io.keyed_text": {
+      "path": "meeteval/io/keyed_text.py",
+      "sha256": "c39fea82f3ba767b6cdc8a4b3908b190ee5efb52dfd838bccdb36ff83bcae1ee",
+      "bytes": 2151,
+      "git_blob": "33c3def419087b2f9eb6e65282c531aadc463baa",
+      "actual_blob": "33c3def419087b2f9eb6e65282c531aadc463baa"
+    },
+    "meeteval.io": {
+      "path": "meeteval/io/__init__.py",
+      "sha256": "129c691f718d8fd128662a92e041028dc011ae1d2dfba1c08a95e74235fb3c00",
+      "bytes": 372,
+      "git_blob": "aa0fae67220ccb7421f2ca05fdbf1fdf5e99fbc1",
+      "actual_blob": "aa0fae67220ccb7421f2ca05fdbf1fdf5e99fbc1"
+    },
+    "meeteval.io.pbjson": {
+      "path": "meeteval/io/pbjson.py",
+      "sha256": "2333d8fc757018c51ce15cb1e8f63b8ede35e250e977c7ccbd9d68fac69c5309",
+      "bytes": 5979,
+      "git_blob": "f5fbd7a5e4ba4903766c9c53a883a464550aaa2a",
+      "actual_blob": "f5fbd7a5e4ba4903766c9c53a883a464550aaa2a"
+    },
+    "meeteval.wer.wer.utils": {
+      "path": "meeteval/wer/wer/utils.py",
+      "sha256": "32cfd8434dfafdcb463220a96609e3ad55b800ee490f9b293f655f562c955963",
+      "bytes": 1828,
+      "git_blob": "af5aa985f2c8d0728df0945fbc0372b4a5d0eda1",
+      "actual_blob": "af5aa985f2c8d0728df0945fbc0372b4a5d0eda1"
+    },
+    "meeteval.wer.preprocess": {
+      "path": "meeteval/wer/preprocess.py",
+      "sha256": "6d1139a3f73784fc8ee627c072d82b8f2ca63871c351aeb58911f8d122e468ac",
+      "bytes": 21624,
+      "git_blob": "1e1783ee2574854548c6c417b3696d17211ba7e6",
+      "actual_blob": "1e1783ee2574854548c6c417b3696d17211ba7e6"
+    },
+    "meeteval.wer.wer.error_rate": {
+      "path": "meeteval/wer/wer/error_rate.py",
+      "sha256": "3796ba2e4d026584a44b74c90cf753b90c140e7b4754456c3eb11b840fed456d",
+      "bytes": 13519,
+      "git_blob": "b111f1c91d4ffb21a49665e00c5f475fbf90c8c1",
+      "actual_blob": "b111f1c91d4ffb21a49665e00c5f475fbf90c8c1"
+    },
+    "meeteval.wer.wer.cp": {
+      "path": "meeteval/wer/wer/cp.py",
+      "sha256": "2ead616c81b2119e6381532fb337e550c1b12e4ae0ecdfcc96557df32404c1f2",
+      "bytes": 23153,
+      "git_blob": "83dfec0370445f1f030f60ba5bd41e92f805dfcf",
+      "actual_blob": "83dfec0370445f1f030f60ba5bd41e92f805dfcf"
+    },
+    "meeteval.wer.wer.siso": {
+      "path": "meeteval/wer/wer/siso.py",
+      "sha256": "98ae734c9c2554a53dae3c8482a073a319d7c2826bb9efe3985178fc6a30b0c3",
+      "bytes": 7811,
+      "git_blob": "b6282d3fd44f7d35015f0bb8fbf248feb1398958",
+      "actual_blob": "b6282d3fd44f7d35015f0bb8fbf248feb1398958"
+    },
+    "meeteval.wer.utils": {
+      "path": "meeteval/wer/utils.py",
+      "sha256": "2fb5f3aa47911d77a29911822b222a113db20454c99e4b2472072f66ca681ac1",
+      "bytes": 889,
+      "git_blob": "682da8f15cb3e2dcc2d24da4005061bb88db419c",
+      "actual_blob": "682da8f15cb3e2dcc2d24da4005061bb88db419c"
+    },
+    "meeteval.wer.wer.mimo": {
+      "path": "meeteval/wer/wer/mimo.py",
+      "sha256": "38f11c00a01e1dd664c37786b2e4da926c60b5fda85989a1be845c904ae8548c",
+      "bytes": 9776,
+      "git_blob": "007d8023d2df7d49cb43142a103f5d36e8d3495d",
+      "actual_blob": "007d8023d2df7d49cb43142a103f5d36e8d3495d"
+    },
+    "meeteval.wer.wer.orc": {
+      "path": "meeteval/wer/wer/orc.py",
+      "sha256": "7aac2cfdaeb8fbe975aa5087baaa64bff99a08a6093aaffac014cfdb8b2ce9b7",
+      "bytes": 18315,
+      "git_blob": "caf66d352ffddc53113fce24231252a73618e1da",
+      "actual_blob": "caf66d352ffddc53113fce24231252a73618e1da"
+    },
+    "meeteval.wer.wer.time_constrained": {
+      "path": "meeteval/wer/wer/time_constrained.py",
+      "sha256": "b2d6c0c18f4add17484edf53dbea8f9926f37216c9ccd7612871c92ce537435c",
+      "bytes": 39723,
+      "git_blob": "0a3847224637e74411f2480506d9099641d11ad5",
+      "actual_blob": "0a3847224637e74411f2480506d9099641d11ad5"
+    },
+    "meeteval.wer.wer.di_cp": {
+      "path": "meeteval/wer/wer/di_cp.py",
+      "sha256": "7db500db70164de2006bced8550fef0ffaa03baf2d760493923de303574f6c53",
+      "bytes": 10859,
+      "git_blob": "131c524226a6ebcbe73344f740c120e60bebc4a8",
+      "actual_blob": "131c524226a6ebcbe73344f740c120e60bebc4a8"
+    },
+    "meeteval.wer.wer.time_constrained_orc": {
+      "path": "meeteval/wer/wer/time_constrained_orc.py",
+      "sha256": "1c7940a8623f1fe2a112e655ff603d266019a312f0dd7c78eeaa6bfe8eaf11a1",
+      "bytes": 10967,
+      "git_blob": "2a28e2c3b1f020e70be3bffe6caf8df42c0e7cfc",
+      "actual_blob": "2a28e2c3b1f020e70be3bffe6caf8df42c0e7cfc"
+    },
+    "meeteval.wer.wer.time_constrained_mimo": {
+      "path": "meeteval/wer/wer/time_constrained_mimo.py",
+      "sha256": "e5a7ca77115fa7f561a783c480a7e8f1ff87060fe74988c827cf3351433e68c9",
+      "bytes": 9847,
+      "git_blob": "f797b2f3b8a7a1129beee4197d8cd8ab8436148d",
+      "actual_blob": "f797b2f3b8a7a1129beee4197d8cd8ab8436148d"
+    },
+    "meeteval.wer.wer": {
+      "path": "meeteval/wer/wer/__init__.py",
+      "sha256": "605347e97b5cbfdc58f5587f1bbad72d93c2726171ec7e7bae9efb3188eba759",
+      "bytes": 1085,
+      "git_blob": "c3097b3bf7beec7e09f0e184482bb5f247b26518",
+      "actual_blob": "c3097b3bf7beec7e09f0e184482bb5f247b26518"
+    },
+    "meeteval.wer.api": {
+      "path": "meeteval/wer/api.py",
+      "sha256": "abbb4192914e458803d99c8d3deb8bb12d21973f5626eaf6146454ecdd3f64da",
+      "bytes": 13893,
+      "git_blob": "a5647a9a8de0b92541fb3ff2311bfd30231a9ed9",
+      "actual_blob": "a5647a9a8de0b92541fb3ff2311bfd30231a9ed9"
+    },
+    "meeteval.wer": {
+      "path": "meeteval/wer/__init__.py",
+      "sha256": "f219e984c39779c59ff10f515f39493b85f56857fda6d527bfd03139c9dbd675",
+      "bytes": 56,
+      "git_blob": "5ea3a314c3ffb994076968e6efe15c320280c8b3",
+      "actual_blob": "5ea3a314c3ffb994076968e6efe15c320280c8b3"
+    },
+    "meeteval.der.api": {
+      "path": "meeteval/der/api.py",
+      "sha256": "7c54c49000d6b7754579a370bae971265c66d4ba24de201c3ca28e01b169566b",
+      "bytes": 1126,
+      "git_blob": "f037611ae592fba4b996c3ccea0e617a4720a040",
+      "actual_blob": "f037611ae592fba4b996c3ccea0e617a4720a040"
+    },
+    "meeteval.der": {
+      "path": "meeteval/der/__init__.py",
+      "sha256": "0725b18e00fa344bb813e76b8d7b2df828e6be099e556c9fdedf9b626b409fbb",
+      "bytes": 30,
+      "git_blob": "8e196b08250e13681f15c40ab0a39d08c0f85120",
+      "actual_blob": "8e196b08250e13681f15c40ab0a39d08c0f85120"
+    },
+    "meeteval.viz.visualize": {
+      "path": "meeteval/viz/visualize.py",
+      "sha256": "3cfa3ac296adc6eafbbc6f7a6c1f8e5220969f41ee118aedd8820564721a5bca",
+      "bytes": 32882,
+      "git_blob": "bab59c13f08c555c08d2356dffadbadd7e432468",
+      "actual_blob": "bab59c13f08c555c08d2356dffadbadd7e432468"
+    },
+    "meeteval.viz": {
+      "path": "meeteval/viz/__init__.py",
+      "sha256": "69bc964c49dc57a71efa58006db4f964433066dd870a3e91a33b7c0d0695e911",
+      "bytes": 57,
+      "git_blob": "7c735ea905e6788bffdec0ac225df0450f2ac87b",
+      "actual_blob": "7c735ea905e6788bffdec0ac225df0450f2ac87b"
+    },
+    "meeteval": {
+      "path": "meeteval/__init__.py",
+      "sha256": "eca10ac1072887675646f9cfc5f78fee17c39a495e99d608c5e3737bbadcb293",
+      "bytes": 94,
+      "git_blob": "de82c64580a0126bcd104425867dfcb848c80053",
+      "actual_blob": "de82c64580a0126bcd104425867dfcb848c80053"
+    }
+  },
+  "environment": {
+    "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
+    "executable": "/private/tmp/masp-appb-pra-venv/bin/python",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "numpy": "2.5.3",
+    "scipy": "1.18.1"
+  },
+  "static_di_cp": {
+    "execution": "static only; production greedy algorithm not executed",
+    "entrypoint": "meeteval/wer/wer/di_cp.py::greedy_di_cp_word_error_rate",
+    "reference_hypothesis_swapped_for_orc": true,
+    "insertions_deletions_swapped_back": true,
+    "normalization": "original reference word count"
+  }
+}

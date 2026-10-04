@@ -104,6 +104,74 @@ def token_edit_distance(reference, hypothesis):
     return row[-1]
 
 
+def score_session_events(sessions, *, scorer=token_edit_distance):
+    """Keep planned sessions, valid empty output and scoring failures separate.
+
+    References are explicit nonempty token lists. An absent ``hypothesis`` key
+    means missing output; an empty token list is a valid hypothesis. The
+    callback supplies only a total edit count, so this wrapper never infers
+    substitutions/deletions/insertions or fabricates an edit traceback.
+    Complete-set WER is undefined if any planned session fails to score.
+    """
+    sessions = _sequence(sessions, 'sessions')
+    if not 1 <= len(sessions) <= 64 or not callable(scorer):
+        raise ValueError('one to 64 planned sessions and a callable scorer required')
+    prepared, seen = [], set()
+    for session in sessions:
+        if not isinstance(session, dict):
+            raise ValueError('each planned session must be a dictionary')
+        identifier = session.get('session_id')
+        if not isinstance(identifier, str) or not identifier or identifier in seen:
+            raise ValueError('planned session IDs must be unique nonempty strings')
+        reference = _tokens(session.get('reference'), 'reference')
+        if not reference:
+            raise ValueError('each planned reference must contain at least one token')
+        seen.add(identifier)
+        prepared.append((session, reference))
+    rows, words, errors = [], 0, 0
+    for session, reference in prepared:
+        row = {'session_id': session['session_id'], 'reference_words': len(reference),
+               'errors': None, 'wer': None, 'exception_type': None,
+               'exception_message': None}
+        if 'hypothesis' not in session:
+            row['status'] = 'missing_hypothesis'
+        else:
+            try:
+                hypothesis = _tokens(session['hypothesis'], 'hypothesis')
+            except ValueError as error:
+                row.update(status='format_error', exception_type=type(error).__name__,
+                           exception_message=str(error))
+            else:
+                try:
+                    # A callback may alter its own token lists. Preserve the
+                    # frozen plan and coverage denominators independently.
+                    count = scorer(list(reference), list(hypothesis))
+                    if isinstance(count, (bool, np.bool_)) or not isinstance(count, Integral) or count < 0:
+                        raise ValueError('scorer must return a nonnegative integer edit count')
+                except Exception as error:
+                    row.update(status='scoring_exception', exception_type=type(error).__name__,
+                               exception_message=str(error))
+                else:
+                    count = int(count)
+                    row.update(status='empty_output' if not hypothesis else 'scored',
+                               errors=count, wer=count / len(reference))
+                    words += len(reference)
+                    errors += count
+        rows.append(row)
+    successful = sum(row['errors'] is not None for row in rows)
+    planned_words = sum(len(reference) for _, reference in prepared)
+    complete = successful == len(rows)
+    return {'rows': rows, 'planned_sessions': len(rows), 'scored_sessions': successful,
+            'failed_sessions': len(rows)-successful, 'planned_reference_words': planned_words,
+            'scored_reference_words': words, 'scored_errors': errors,
+            'session_coverage': successful/len(rows), 'reference_word_coverage': words/planned_words,
+            'successful_subset_wer': errors/words if words else None,
+            'complete_wer': errors/planned_words if complete else None,
+            'eligible_for_complete_ranking': complete,
+            'failure_policy': 'retain unscored sessions; missing hypotheses are not imputed as empty',
+            'edit_components_inferred': False}
+
+
 def small_slot_word_errors(utterances, speakers, hypotheses):
     """Compare global speaker permutation with utterance-to-slot assignment.
 

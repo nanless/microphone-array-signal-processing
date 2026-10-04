@@ -24,6 +24,7 @@ from codes.chapters.ch11.core.selection_audio import (
 
 from codes.chapters.ch00.io_contracts import (
     validate_asset_directory as _shared_asset_directory, strict_json_loads, same_metadata,
+    validate_parent_chain,
 )
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -51,9 +52,86 @@ def _same_metadata(actual, expected, path='manifest'):
         raise ValueError(f'{path} has invalid types or differs from current source/PCM replay')
 
 
+def _fixed_parameters():
+    """The declared teaching fixture, independent of the model's metadata.
+
+    This preflight detects drift in our trusted internal model. It is not an
+    input API for arbitrary scenes or a claim about hostile callbacks.
+    """
+    filters = {}
+    for length in (3, 9):
+        taps = (np.ones(length) / abs(sum(
+            np.exp(-2j*np.pi*500*k/16000) for k in range(length)))).tolist()
+        delay = (length-1)//2
+        filters[f'fir{length}'] = {'taps': taps, 'group_delay_samples': delay,
+                                 'output_score': [1600+delay, 30400+delay]}
+    return {'sample_rate_hz': 16000, 'source_samples': 32000,
+            'samples_per_channel': 32008, 'source_duration_s': 2.,
+            'export_duration_s': 32008/16000, 'component_amplitude': .2,
+            'source_score': [1600, 30400], 'common_export_gain': .8,
+            'fade': 'linear min(1,t/.02,(2-t)/.02), n=0..31999; then eight zeros',
+            'scene_target_frequencies_hz': {'single': [500], 'dual': [500, 1500]},
+            'noise_frequency_hz': 3500, 'target_steady_power': {'single': .02, 'dual': .04},
+            'input_steady_snr_db': {'single': 0., 'dual': 10*math.log10(2)},
+            'filters': filters,
+            'convolution': 'causal full linear convolution with zero initial history; common 32008 length',
+            'score': 'known group delay only; no gain/time fitting; no scoring of fade/startup/tail',
+            'pcm_fit': 'DC and cos/sin orthogonal projections at three whole-cycle frequencies; no compensation'}
+
+
+def _validate_fixture(fixture):
+    """Check fixed types, the whole causal signal support and component truth.
+
+    The equations below validate this finite tone/FIR fixture only; they are
+    not a second filtering interface. Checks precede directory creation and
+    every write. They do not guarantee concurrent-race or crash safety.
+    """
+    stems = tuple(f'selection_{scene}_{kind}' for scene in ('single', 'dual')
+                  for kind in ('target', 'mixture', 'fir3', 'fir9'))
+    _same_metadata((SAMPLE_RATE, SAMPLES, GAIN, STEMS), (16000, 32008, .8, stems), 'fixed constants')
+    if type(fixture) is not dict or set(fixture) != {'signals', 'components', 'parameters'}:
+        raise ValueError('fixture must contain exactly signals, components and parameters')
+    parameters = _fixed_parameters()
+    _same_metadata(fixture['parameters'], parameters, 'fixed parameters')
+    signals, components = fixture['signals'], fixture['components']
+    component_names = {f'selection_{scene}_fir{length}' for scene in ('single', 'dual') for length in (3, 9)}
+    if type(signals) is not dict or set(signals) != set(stems):
+        raise ValueError('fixture requires the exact eight signal names')
+    if type(components) is not dict or set(components) != component_names:
+        raise ValueError('fixture requires the exact four component records')
+
+    def waveform(value, expected, name):
+        if (type(value) is not np.ndarray or value.dtype != np.dtype('float64') or
+                value.shape != (32008,) or not np.all(np.isfinite(value))):
+            raise ValueError(f'{name} must be a finite float64 mono array of 32008 samples')
+        if not np.array_equal(value, expected):
+            raise ValueError(f'{name} differs from the fixed tone/FIR equations')
+        if np.max(np.abs(value*.8)) > 32767/32768:
+            raise ValueError(f'{name} exceeds the declared common-gain PCM headroom')
+
+    t = np.arange(32000)/16000
+    fade = np.minimum(np.clip(t/.02, 0, 1), np.clip((2-t)/.02, 0, 1))
+    tones = {frequency: .2*np.cos(2*np.pi*frequency*t)*fade for frequency in (500, 1500, 3500)}
+    for scene in ('single', 'dual'):
+        target = tones[500] + (tones[1500] if scene == 'dual' else 0)
+        noise = tones[3500]
+        waveform(signals[f'selection_{scene}_target'], np.pad(target, (0, 8)), f'{scene} target')
+        waveform(signals[f'selection_{scene}_mixture'], np.pad(target+noise, (0, 8)), f'{scene} mixture')
+        for length in (3, 9):
+            name = f'selection_{scene}_fir{length}'
+            taps = parameters['filters'][f'fir{length}']['taps']
+            padding = (0, 9-length)
+            waveform(signals[name], np.pad(np.convolve(target+noise, taps), padding), name)
+            if type(components[name]) is not dict or set(components[name]) != {'clean', 'noise'}:
+                raise ValueError(f'{name} requires exactly clean and noise components')
+            waveform(components[name]['clean'], np.pad(np.convolve(target, taps), padding), name+' clean')
+            waveform(components[name]['noise'], np.pad(np.convolve(noise, taps), padding), name+' noise')
+
+
 def expected_assets():
     """Pure full replay, with source hashes from the actual four dependencies."""
     fixture = build_fixture()
+    _validate_fixture(fixture)
     buffers = {}
     for name, signal in fixture['signals'].items():
         if np.max(np.abs(signal*GAIN)) > 32767/32768:
@@ -65,7 +143,8 @@ def expected_assets():
         'parameters': fixture['parameters'], 'analytic': analytic_results(fixture), 'floating_point': analyze_fixture(fixture),
         'pcm_analysis': analyze_pcm(buffers),
         'quantization': 'signed little-endian PCM16; nearest-even; no dither; decoded amplitude=int16/32768',
-        'source_sha256': {name: hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in SOURCE_PATHS},
+        'source_sha256': {name: hashlib.sha256(validate_parent_chain(ROOT/name).read_bytes()).hexdigest()
+                          for name in SOURCE_PATHS},
         'environment': {'python': platform.python_version(), 'numpy': np.__version__, 'platform': platform.platform()},
         'files': {name: {'channels': 1, 'samples_per_channel': SAMPLES,
                          'sha256': hashlib.sha256(data).hexdigest()} for name, data in buffers.items()},

@@ -34,6 +34,7 @@
 .venv/bin/python scripts/make_css_figures.py  # figure 76: fixed-slot polarity/gain and actual PCM
 .venv/bin/python scripts/make_tracking_figures.py  # 图77：实际PCM生命周期与两个龄期时钟
 .venv/bin/python scripts/make_channel_figures.py  # 图78：已知坏麦、重建约束与实际PCM
+.venv/bin/python scripts/make_selection_figures.py  # 图79：同阵列模型的硬筛选与设备证据边界
 .venv/bin/python -m codes.chapters.ch10.examples.generate_channel_audio --check  # 六独立WAV只读核验
 .venv/bin/python scripts/build_site.py        # 16 个教程页 + 6 个研究页，共 22 页 → site/
 .venv/bin/python scripts/build_pdf.py         # 合订 chapters/ → dist/combined.html → dist/microphone-array-tutorial.pdf（需 Chrome）
@@ -67,9 +68,10 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 | `inline_layout.js` | 站点与合订本共用的成品排版辅助。等待公式与字体完成后，只保护适合当前宽度的行内公式及紧邻短单位/标点、可见普通文字中的稳定题号；短粗体引导在纸版跟随下一段。视窗和字体变化后重新核对宽度。合订预览在打印前即采用 A4 正文几何，打印期间不重排 DOM；单页网站打印前拆除屏幕分组，结束后恢复。保留 TeX、代码、链接、辅助公式树和长式的滚动接口。脚本内容计入两种产物及独立门禁的源摘要 | 由两个构建器嵌入 HTML；无单独生成物 |
 | `make_tracking_figures.py` | 图77：先严格只读核实际PCM，计算单槽生命周期及可用/状态龄期；12真实源与3输入摘要、全部197行/5事件独立验收 | `figures/fig77_tracking_lifecycle.png`及第9章数值报告 |
 | `make_channel_figures.py` | 图78：先只读核六已知坏麦PCM与清单，分开目标响应、总NMSE与128点波形；9真实源及7输入摘要 | `figures/fig78_channel_failure.png`和第10章数值报告 |
-| `quality_check.py` | 发布门禁。用独立基线检查 16 篇/151 节/728 个指定子节/78 图，核对图号、alt、公式编号与引用、小节语义链接、PNG 绘图脚本摘要、网页导航和 PDF 三级书签。确定性问题阻断发布，高风险口语只提醒人工复核 | 通过、失败清单，以及不阻断发布的人工复核与可访问性提示 |
+| `make_selection_figures.py` | 图79：同一已知三麦模型的DS/三加载MVDR，实际噪声与另模型DI分开，声学两硬条件及设备证据三态；8真实源 | `figures/fig79_selection_evidence.png`和`ch11/reports/figure79_selection_evidence.json`；无新音频 |
+| `quality_check.py` | 发布门禁。用独立基线检查 16 篇/151 节/732 个指定子节/79 图，核对图号、alt、公式编号与引用、小节语义链接、PNG 绘图脚本摘要、网页导航和 PDF 三级书签。确定性问题阻断发布，高风险口语只提醒人工复核 | 通过、失败清单，以及不阻断发布的人工复核与可访问性提示 |
 
-353 道稳定编号的代码题可从各章入口复算，例如：
+355 道稳定编号的代码题可从各章入口复算，例如：
 
 ```bash
 .venv/bin/python -m codes.chapters.ch04.chapter04_experiments
@@ -86,7 +88,7 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 
 附录 B 的 E13-03～14 为只读逐步实验；最后一条 `--check` 仅核对第 16 题的固定房间几何和 Sabine 输入，**不会**重新计算房间脉冲响应或改写已发布资产。完整仿真命令见下文[附录 B 房间仿真复算](#附录-b-房间仿真复算)。改图练习须使用脚本副本或独立输出目录，记录改变的参数，不覆盖本书的发布图。
 
-第 11 章 [`chapter11_experiments.py`](../codes/chapters/ch11/chapter11_experiments.py) 包含 E11-10～25 十六道选型计算。图 46 读取本书构造的四候选表；图 47 在四个实际导出的 FIR 音频通过摘要校验后，从 PCM 重新投影频率并核对对齐误差。图64另读两场景八个独立WAV，共同增益与完整尾部保留。三图的条件、数据与脚本入口见[第 11 章](../chapters/11_selection-guide.md)和[音频实验 §33与§44](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
+第 11 章 [`chapter11_experiments.py`](../codes/chapters/ch11/chapter11_experiments.py) 包含 E11-10～27 十八道选型计算。图 46 读取本书构造的四候选表；图 47 在四个实际导出的 FIR 音频通过摘要校验后，从 PCM 重新投影频率并核对对齐误差。图64另读两场景八个独立WAV，共同增益与完整尾部保留。图79另用已知单频统计比较四个真实计算候选，分开实际噪声、另模型DI、声学硬条件与未测设备延迟，不产生新WAV。四图的条件、数据与脚本入口见[第 11 章](../chapters/11_selection-guide.md)和[音频实验 §33与§44](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
 
 附录 A 的入口复算E12-06～19。E12-08先核20个真实主生成源，再读正式三WAV的整数样本；源摘要过期、文件缺失或PCM不符时直接失败。E12-19核对`weighted_audio/`严格六成员与四个真实源，在同一28800点稳定窗比较三种固定权重。图65从实际PCM读整数分子、分母，随图生成`appendix_a/reports/figure65_weighted_noise.json`。参数与试听入口见[音频实验§45](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
 
@@ -112,7 +114,7 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 
 **发布与验收说明**
 
-**书签与人工抽查**：合订本 PDF 顶层是导读、11 章正文、2 篇扩展专题和 2 篇附录，第二层来自各篇实际小节；第 1～11 章、两篇扩展专题与附录共有 728 个源 h4 作为第三级书签，并保持在各自父节之下。
+**书签与人工抽查**：合订本 PDF 顶层是导读、11 章正文、2 篇扩展专题和 2 篇附录，第二层来自各篇实际小节；第 1～11 章、两篇扩展专题与附录共有 732 个源 h4 作为第三级书签，并保持在各自父节之下。
 
 书签使用 HTML 标题 id 对应的 PDF 命名目标，保留页内定位。命名目标缺失、越界或同名却指向不同位置时构建失败；发布门禁独立比较每项书签与正文目标的页码及视图参数。目录和正文可能出现同名标题，仅检查落页文字不能识别误跳到目录的问题。
 
@@ -126,7 +128,7 @@ PDF 正文固定为 16 px，MathJax 公式按 100% 字号打印；网页公式�
 
 **PDF 可访问性边界**：Chrome 使用 `--export-tagged-pdf` 导出结构树，pypdf 完整克隆页面后添加书签；构建和发布门禁检查标记根、父树及页面连接。标签存在不等于公式辅助文本、阅读顺序或 PDF/UA 已完整验收，最终版仍需辅助技术实测。
 
-**独立结构基线**：发布门禁的独立结构基线为 16 个顶级书签、151 个二级书签、728 个三级书签，共 895 个大纲项，以及图 1～78。它还检查图号与 alt、公式编号与引用、小节语义链接、每个源 h2/h3/h4 标题是否真的出现在当前页导航中（源 h1 可排除），以及 PNG 中的 `SourceScript` 和完整 `SourceScriptDigest`。
+**独立结构基线**：发布门禁的独立结构基线为 16 个顶级书签、151 个二级书签、732 个三级书签，共 899 个大纲项，以及图 1～79。它还检查图号与 alt、公式编号与引用、小节语义链接、每个源 h2/h3/h4 标题是否真的出现在当前页导航中（源 h1 可排除），以及 PNG 中的 `SourceScript` 和完整 `SourceScriptDigest`。
 
 修改绘图脚本后未重画的 PNG 会使门禁失败；高风险口语命中只输出人工复核提示。
 
@@ -136,7 +138,7 @@ PDF 正文固定为 16 px，MathJax 公式按 100% 字号打印；网页公式�
 
 ## 附录 B 房间仿真复算
 
-第 16 题的六位置房间重算需要 `pyroomacoustics==0.10.0`。可在临时虚拟环境安装，保留仓库 `.venv` 的主依赖集；下列命令以 Python 3.13 的 macOS/Linux 环境为例。没有该依赖仍能生成正文的 78 张编号图，并查阅随仓的附录 B 结果图和 18 个房间 WAV。固定版本说明见[官方 PyPI 页面](https://pypi.org/project/pyroomacoustics/0.10.0/)。
+第 16 题的六位置房间重算需要 `pyroomacoustics==0.10.0`。可在临时虚拟环境安装，保留仓库 `.venv` 的主依赖集；下列命令以 Python 3.13 的 macOS/Linux 环境为例。没有该依赖仍能生成正文的 79 张编号图，并查阅随仓的附录 B 结果图和 18 个房间 WAV。固定版本说明见[官方 PyPI 页面](https://pypi.org/project/pyroomacoustics/0.10.0/)。
 
 在有 Python 3.13 的 macOS/Linux 主机上，可从仓库根目录用新目录复算，不覆盖本书样本：
 

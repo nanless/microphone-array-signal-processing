@@ -32,7 +32,7 @@ class Chapter11ExperimentsTests(unittest.TestCase):
         cls.audio = selection_tradeoff_case()
 
     def test_identifiers_and_pareto_analytic_intersection(self):
-        self.assertEqual(list(self.results), [f'E11-{i}' for i in range(10, 26)])
+        self.assertEqual(list(self.results), [f'E11-{i}' for i in range(10, 28)])
         x = self.results['E11-10']
         self.assertEqual(x['feasible'], ['A', 'B', 'C'])
         self.assertEqual(x['pareto'], ['A', 'B'])

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "executed_at_utc": "2026-10-04T18:59:17.244787+00:00",
-  "executed_at_local": "2026-10-05T02:59:17.244787+08:00",
+  "executed_at_utc": "2026-10-04T19:53:42.724659+00:00",
+  "executed_at_local": "2026-10-05T03:53:42.724659+08:00",
   "audit_source": "codes/chapters/ch03/examples/audit_upstream_coarray.py",
   "audit_source_sha256": "fa3860c30a3a6a03a77d18752fc9ffcef790e8d6e5b908ac1cdc60af6c9ee748",
   "sources": {
@@ -279,7 +279,7 @@
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },
   "source_verification": {
-    "started_at_utc": "2026-10-04T18:59:17.053811+00:00",
+    "started_at_utc": "2026-10-04T19:53:42.538813+00:00",
     "before_after_equal": true,
     "canonical_sources_before_sha256": "42f8fb82be48a3a4310418a8a5d61a1bbd4294c5d62ab361bcead59e47f0203e",
     "canonical_sources_after_sha256": "42f8fb82be48a3a4310418a8a5d61a1bbd4294c5d62ab361bcead59e47f0203e",
@@ -292,7 +292,7 @@
   "environment": {
     "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
     "numpy": "2.5.3",
-    "executable": "/private/tmp/masp-appb-pra-venv/bin/python",
+    "executable": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/bin/python",
     "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O"
   },
   "tolerances": {
@@ -1776,10 +1776,10 @@
     "hardware or equipment acceptance"
   ],
   "command": [
-    "/private/tmp/masp-appb-pra-venv/bin/python",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/bin/python",
     "-m",
     "codes.chapters.ch03.examples.audit_upstream_coarray",
     "--report",
-    "codes/chapters/ch03/reports/upstream_coarray_contracts.json"
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch03/reports/upstream_coarray_contracts.json"
   ]
 }
